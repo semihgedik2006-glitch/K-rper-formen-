@@ -1,110 +1,58 @@
 # Körperformen – Internes Portal (`intern.html`)
 
-Ein internes Portal für dein Team: **Team-Chat**, ein **Chef-Bereich** zum Rundschicken von
-Infos und **To-dos pro Studio** (15 Stück), die die Mitarbeiter abhaken können.
-
-Die Werbe-Website (`index.html`) bleibt davon komplett unberührt.
-
----
-
-## 1. Schnellstart (sofort ausprobieren)
-
-1. Öffne die Datei **`intern.html`** im Browser (Doppelklick oder über deinen Webspace).
-2. **Als Mitarbeiter:** Namen eingeben, Studio wählen → *Anmelden*.
-3. **Als Chef:** oben „Chef" wählen, Namen + **Chef-Code** eingeben → *Anmelden*.
-   - Standard-Code: **`1234`** → bitte unbedingt ändern (siehe unten).
-
-> **Demo-Modus:** Ohne weitere Einrichtung laufen die Daten nur **lokal im Browser**
-> (verschiedene Tabs desselben Browsers synchronisieren sich). Zum echten Betrieb über
-> mehrere Handys/PCs brauchst du den Live-Modus (Abschnitt 4).
+Internes Portal fürs Team: **Team-Chat**, **Chef-Bereich** für Rundnachrichten und
+**To-dos pro Studio** (15 Stück) zum Abhaken. Läuft **geräteübergreifend** über
+**Firebase** (Login + Echtzeit-Datenbank). Die Werbeseite (`index.html`) bleibt unberührt.
 
 ---
 
-## 2. Was kann das Portal?
+## 1. Was schon eingerichtet ist
 
-| Bereich | Mitarbeiter | Chef |
-|---|---|---|
-| **Chat** | „Allgemein" (alle) + eigener Studio-Kanal | alle Kanäle (alle 15 Studios) |
-| **Aufgaben** | sieht To-dos des eigenen Studios, kann abhaken | sieht & verteilt To-dos für alle Studios, kann löschen |
-| **Infos** | sieht Ankündigungen an alle / an sein Studio | – |
-| **Chef-Bereich** | – | Ankündigung an alle senden, Aufgaben erstellen, Studio-Übersicht |
+- **Firebase-Projekt:** `formenchat` – die Zugangsdaten (Config) sind bereits in
+  `intern.html` eingetragen.
+- **Login:** E-Mail + Passwort (Firebase Authentication).
+- **Datenbank:** Firestore (Chat, Aufgaben, Ankündigungen – alles live auf allen Geräten).
 
-**Der separate Chef-Link:** Hänge `#chef` an die Adresse an, z. B.
-`…/intern.html#chef` – dann ist der Chef-Zugang direkt vorausgewählt.
+## 2. Was du in der Firebase-Konsole noch aktivieren musst
 
----
+In <https://console.firebase.google.com> → Projekt **formenchat**:
 
-## 3. Anpassungen (oben in `intern.html` im `<script>`)
+1. **Authentication** → „Get started" → Tab **Sign-in method** →
+   **E-Mail/Passwort** aktivieren.
+2. **Firestore Database** → „Datenbank erstellen" → **Testmodus** → Region **europe-west1**.
+   *(Wichtig: Firestore, nicht Realtime Database.)*
+
+Danach funktioniert Registrierung und Login sofort.
+
+## 3. Online stellen
+
+`intern.html` ist eine einzelne Datei. Auf deinen Webspace oder GitHub Pages laden →
+erreichbar z. B. unter `https://DEIN-LINK/intern.html`.
+
+## 4. Auf dem Handy nutzen („wie eine App")
+
+1. Den Link im **Handy-Browser** öffnen (Safari auf iPhone, Chrome auf Android).
+2. Menü öffnen → **„Zum Home-Bildschirm hinzufügen"**.
+3. Es erscheint ein App-Symbol **„KF Portal"**. Beim Öffnen läuft es im **Vollbild**
+   wie eine echte App. Der Login bleibt gespeichert – kein ständiges Neu-Anmelden.
+
+> Falls mal „Verbindung wird hergestellt…" zu lange steht: nach 12 Sekunden erscheint
+> automatisch der Login bzw. ein **„Neu laden"**-Knopf. Meist hilft kurz neu laden
+> oder Internetverbindung prüfen.
+
+## 5. Anpassungen (oben in `intern.html` im `<script>`)
 
 ```js
-// Die 15 Studios – Namen frei ändern:
-var STUDIOS = ["Studio 1","Studio 2", ... "Studio 15"];
-
-// Chef-Code zum Anmelden – BITTE ÄNDERN:
-var CHEF_PIN = "1234";
+var STUDIOS = ["Studio 1", ... "Studio 15"];  // echte Namen eintragen
+var CHEF_PIN = "1234";                          // Chef-Code – BITTE ÄNDERN!
 ```
 
-Du kannst z. B. die echten Studio-Namen/Städte eintragen.
+- **Mitarbeiter** registriert sich mit Name + Studio.
+- **Chef** registriert sich mit dem Chef-Code (Standard `1234`).
+- Separater Chef-Link: `…/intern.html#chef` (Chef-Tab ist dann vorausgewählt).
 
----
+## 6. Sicherheit (empfohlen)
 
-## 4. Live-Modus: echter Betrieb über mehrere Geräte (kostenlos mit Firebase)
-
-Damit **alle Mitarbeiter geräteübergreifend** chatten und dieselben Aufgaben sehen,
-brauchst du eine kostenlose Online-Datenbank. Am einfachsten: **Firebase** von Google.
-
-**Schritt für Schritt:**
-
-1. Gehe auf <https://console.firebase.google.com> und melde dich mit einem Google-Konto an.
-2. **„Projekt hinzufügen"** → Namen vergeben (z. B. `koerperformen-intern`) → erstellen.
-3. Links im Menü **„Realtime Database"** → **„Datenbank erstellen"**.
-   - Standort wählen (Europa, z. B. *europe-west1*).
-   - Starte im **„Testmodus"** (für den Anfang ok; siehe Sicherheitshinweis unten).
-4. Oben links aufs **Zahnrad → Projekteinstellungen → „Meine Apps" → Web-App `</>`**.
-   - App-Namen vergeben, registrieren. Du bekommst einen Block `const firebaseConfig = {...}`.
-5. Diese Werte in `intern.html` eintragen. Suche dort nach `var FIREBASE_CONFIG = null;`
-   und ersetze es z. B. durch:
-
-```js
-var FIREBASE_CONFIG = {
-  apiKey: "AIza…",
-  authDomain: "koerperformen-intern.firebaseapp.com",
-  databaseURL: "https://koerperformen-intern-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "koerperformen-intern",
-  appId: "1:…:web:…"
-};
-```
-
-> Wichtig: Die `databaseURL` muss dabei sein (steht in der Realtime-Database-Ansicht oben).
-
-6. Speichern, Seite neu laden. Oben steht jetzt **„Live"** statt „Demo". Fertig 🎉
-
-**Sicherheitshinweis:** Der Firebase-Testmodus erlaubt jedem mit der Adresse Zugriff und
-läuft nach ~30 Tagen ab. Für den Dauerbetrieb solltest du in der Datenbank unter „Regeln"
-einen Schutz einrichten (z. B. Firebase-Authentifizierung). Sag Bescheid, dann richte ich
-dir passende Sicherheitsregeln ein.
-
----
-
-## 5. Online stellen
-
-`intern.html` ist eine einzelne Datei und läuft auf jedem Webspace. Wenn die Werbeseite
-schon über **GitHub Pages** läuft, ist das Portal automatisch erreichbar unter:
-
-```
-https://DEIN-PAGES-LINK/intern.html
-```
-
-Tipp: Nicht öffentlich verlinken. Die Seite ist bereits auf `noindex` gesetzt
-(taucht nicht bei Google auf).
-
----
-
-## Fragen / Wünsche
-
-Sag einfach Bescheid, wenn du möchtest:
-- echte Studio-Namen statt „Studio 1–15",
-- Login mit persönlichem Passwort pro Mitarbeiter,
-- Foto-/Datei-Versand im Chat,
-- E-Mail-/Push-Benachrichtigung bei neuen Aufgaben,
-- sichere Firebase-Regeln.
+Der Firestore-**Testmodus** erlaubt jedem mit der Adresse Zugriff und läuft nach ~30 Tagen
+ab. Für den Dauerbetrieb sollten echte Sicherheitsregeln rein (nur eingeloggte Nutzer).
+Sag Bescheid – dann richte ich dir passende Firestore-Regeln ein.
