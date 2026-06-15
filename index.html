@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#FBFBFD" />
+<meta name="theme-color" content="#0E1712" />
 <title>Körperformen Hürth – EMS-Training & Body-Shaping</title>
 <meta name="description" content="Forme deinen Körper mit EMS-Training in Hürth. Nur 20 Minuten pro Woche – persönlich betreut. Jetzt kostenloses Probetraining sichern." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,24 +14,24 @@
    DESIGN-TOKENS  – hier zentral anpassen
    ============================================================ */
 :root{
-  /* Helles, edles Farbschema (Apple-inspiriert) */
-  --bg:        #FBFBFD;   /* Haupt-Hintergrund off-white */
-  --bg-2:      #FFFFFF;
-  --bg-soft:   #F4F7F5;   /* zarte grün-getönte Sektion */
-  --line:      rgba(10,20,15,.08);
-  --line-2:    rgba(10,20,15,.12);
+  /* Dunkleres, kontrastreiches Farbschema */
+  --bg:        #0E1712;   /* tief dunkelgrün */
+  --bg-2:      #141E18;   /* Karten-Hintergrund */
+  --bg-soft:   #111A15;   /* leicht abgehoben */
+  --line:      rgba(255,255,255,.08);
+  --line-2:    rgba(255,255,255,.14);
 
-  /* Markenfarbe Körperformen – frisches Grün */
-  --accent:    #00B85C;
-  --accent-2:  #00DD78;
-  --accent-d:  #009A4C;
-  --accent-glow:rgba(0,184,92,.30);
-  /* warme Zweitfarbe für Lebendigkeit */
+  /* Markenfarbe Körperformen – kräftiges Neon-Grün */
+  --accent:    #00E06E;
+  --accent-2:  #19FF85;
+  --accent-d:  #00C060;
+  --accent-glow:rgba(0,224,110,.40);
+  /* warme Zweitfarbe für Kontrast */
   --warm:      #FF6B35;
 
-  --text:      #0B1410;   /* fast-schwarz, edel */
-  --text-2:    #56655C;   /* gedämpft */
-  --text-3:    #8A968F;
+  --text:      #F0F7F3;   /* hell auf dunkel */
+  --text-2:    #8BADA0;   /* gedämpft */
+  --text-3:    #4D6B5F;   /* sehr gedämpft */
 
   --font-head: 'Barlow Condensed', system-ui, sans-serif;
   --font-body: 'Barlow', system-ui, -apple-system, sans-serif;
@@ -39,9 +39,9 @@
   --maxw:      1200px;
   --radius:    22px;
   --radius-lg: 30px;
-  --shadow:    0 10px 30px rgba(10,30,20,.06);
-  --shadow-lg: 0 30px 70px rgba(10,30,20,.12);
-  --shadow-xl: 0 50px 100px rgba(10,30,20,.16);
+  --shadow:    0 8px 24px rgba(0,0,0,.35);
+  --shadow-lg: 0 24px 56px rgba(0,0,0,.50);
+  --shadow-xl: 0 50px 100px rgba(0,0,0,.60);
 
   /* Apple-typische Easing-Kurven */
   --ease-out:  cubic-bezier(.16,1,.3,1);
@@ -123,22 +123,22 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
 .nav-inner{
   max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;
   justify-content:space-between;padding:11px 14px 11px 22px;margin-inline:16px;
-  background:rgba(251,251,253,.72);
-  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
-  border:1px solid rgba(255,255,255,.6);border-radius:999px;
-  box-shadow:0 8px 30px rgba(10,30,20,.08);
+  background:rgba(14,23,18,.82);
+  -webkit-backdrop-filter:saturate(160%) blur(20px);backdrop-filter:saturate(160%) blur(20px);
+  border:1px solid rgba(255,255,255,.10);border-radius:999px;
+  box-shadow:0 8px 30px rgba(0,0,0,.40);
 }
 .brand{display:flex;align-items:center;gap:11px;font-family:var(--font-head);
-  font-weight:800;font-size:1.22rem;letter-spacing:.5px;color:var(--text)}
+  font-weight:800;font-size:1.22rem;letter-spacing:.5px;color:#F0F7F3}
 .brand-logo{height:30px;width:auto}
 .brand b{color:var(--accent-d)}
 .nav-links{display:flex;align-items:center;gap:30px}
-.nav-links a{font-weight:500;color:var(--text-2);transition:color .25s;font-size:.98rem}
-.nav-links a:not(.btn):hover{color:var(--text)}
+.nav-links a{font-weight:500;color:rgba(240,247,243,.65);transition:color .25s;font-size:.98rem}
+.nav-links a:not(.btn):hover{color:#F0F7F3}
 .nav .btn{padding:11px 22px;font-size:.88rem;min-height:auto;box-shadow:0 8px 20px var(--accent-glow)}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:10px;
   width:46px;height:46px}
-.nav-toggle span{display:block;width:24px;height:2px;background:var(--text);
+.nav-toggle span{display:block;width:24px;height:2px;background:#F0F7F3;
   margin:5px auto;border-radius:2px;transition:.35s var(--ease-out)}
 .nav-toggle.active span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .nav-toggle.active span:nth-child(2){opacity:0}
@@ -148,14 +148,14 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
   .nav-links{
     position:absolute;top:72px;left:16px;right:16px;flex-direction:column;
     align-items:stretch;gap:4px;padding:16px;
-    background:rgba(251,251,253,.97);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+    background:rgba(14,23,18,.97);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
     border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-lg);
     transform:translateY(-16px) scale(.97);opacity:0;pointer-events:none;
     transition:.4s var(--ease-out);transform-origin:top;
   }
   .nav-links.open{transform:none;opacity:1;pointer-events:auto}
-  .nav-links a{padding:14px 12px;border-radius:14px;font-size:1.05rem}
-  .nav-links a:not(.btn):active{background:var(--bg-soft)}
+  .nav-links a{padding:14px 12px;border-radius:14px;font-size:1.05rem;color:#F0F7F3}
+  .nav-links a:not(.btn):active{background:rgba(255,255,255,.06)}
   .nav-links .btn{margin-top:6px;justify-content:center}
 }
 
@@ -277,9 +277,9 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
   transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out),border-color .5s ease;
 }
 .card::before{content:"";position:absolute;inset:0;opacity:0;
-  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(0,184,92,.10),transparent 45%);
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(0,224,110,.12),transparent 45%);
   transition:opacity .4s ease;pointer-events:none}
-.card:hover{transform:translateY(-10px);box-shadow:var(--shadow-lg);border-color:rgba(0,184,92,.35)}
+.card:hover{transform:translateY(-10px);box-shadow:var(--shadow-lg);border-color:rgba(0,224,110,.40)}
 .card:hover::before{opacity:1}
 .card .icon{width:58px;height:58px;border-radius:17px;display:grid;place-items:center;
   background:linear-gradient(135deg,rgba(0,184,92,.16),rgba(0,221,120,.06));
@@ -295,6 +295,7 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
 .rev{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
   padding:32px 30px;box-shadow:var(--shadow);display:flex;flex-direction:column;
   transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out)}
+.rev .txt{color:var(--text)}
 .rev:hover{transform:translateY(-10px);box-shadow:var(--shadow-lg)}
 .rev .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .rev .stars{color:#F5A623;font-size:1.05rem;letter-spacing:2px}
@@ -313,7 +314,7 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
 
 /* ── TEAM ── */
 .team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
-.tcard{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+.tcard{background:var(--bg-2);border:1px solid rgba(255,255,255,.10);border-radius:var(--radius);
   overflow:hidden;box-shadow:var(--shadow);text-align:center;
   transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out)}
 .tcard:hover{transform:translateY(-10px);box-shadow:var(--shadow-lg)}
@@ -344,6 +345,7 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
 .faq{max-width:840px;margin:0 auto}
 .faq-item{border:1px solid var(--line);border-radius:18px;margin-bottom:14px;overflow:hidden;
   background:var(--bg-2);box-shadow:var(--shadow);transition:border-color .3s,box-shadow .3s}
+.faq-q{color:var(--text)}
 .faq-item.open{border-color:rgba(0,184,92,.4);box-shadow:0 10px 30px rgba(0,184,92,.12)}
 .faq-q{width:100%;text-align:left;background:none;border:none;cursor:pointer;color:var(--text);
   padding:24px 26px;font-family:var(--font-head);font-weight:700;font-size:1.22rem;
@@ -383,17 +385,18 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
 .info-list a{color:var(--accent-d);font-weight:600}
 .socials{display:flex;gap:12px}
 .socials a{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);
-  background:var(--bg-2);display:grid;place-items:center;color:var(--text-2);
+  background:rgba(255,255,255,.05);display:grid;place-items:center;color:var(--text-2);
   box-shadow:var(--shadow);transition:.35s var(--ease-out)}
 .socials a:hover{color:var(--accent-d);border-color:var(--accent);transform:translateY(-4px);
   box-shadow:0 12px 26px var(--accent-glow)}
 .socials svg{width:22px;height:22px}
 form{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
   padding:clamp(26px,5vw,38px) clamp(24px,5vw,34px);box-shadow:var(--shadow-lg)}
+.field label{color:var(--text)}
 .field{margin-bottom:20px}
 .field label{display:block;font-family:var(--font-head);font-weight:600;letter-spacing:.4px;
   margin-bottom:8px;font-size:.95rem}
-.field input,.field textarea{width:100%;background:var(--bg);border:1.5px solid var(--line-2);
+.field input,.field textarea{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
   border-radius:13px;padding:15px 16px;color:var(--text);font-family:var(--font-body);
   font-size:16px;transition:border-color .25s,box-shadow .25s;min-height:52px}
 .field input:focus,.field textarea:focus{outline:none;border-color:var(--accent);
@@ -405,7 +408,7 @@ form .btn{width:100%}
 
 /* ── FOOTER ── */
 footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area-inset-bottom));
-  background:var(--bg-soft)}
+  background:#0A1210}
 .foot-grid{display:flex;justify-content:space-between;align-items:center;gap:24px;
   flex-wrap:wrap;margin-bottom:30px}
 .foot-links{display:flex;gap:26px;flex-wrap:wrap}
@@ -495,8 +498,16 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
 
       <!-- HERO-BILD: dein Trainingsfoto hier einsetzen (Hochformat 4:5) -->
       <div class="hero-visual-wrap reveal right">
-        <div class="hero-visual" id="heroVisual" role="img" aria-label="Platzhalter Trainingsfoto">
-          <span class="ph">📷 Platzhalter – Trainingsfoto (4:5)</span>
+        <div class="hero-visual" id="heroVisual">
+          <!-- Echtes EMS-Trainingsfoto von koerperformen.com -->
+          <img
+            src="https://www.xn--krperformen-rfb.com/wp-content/uploads/2020/03/emstesmal_simone.png"
+            alt="EMS-Training bei Körperformen Hürth – Trainerin begleitet Kundin beim Training"
+            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:inherit"
+            loading="eager"
+          />
+          <!-- Gradient-Overlay für Lesbarkeit der Float-Karten -->
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,10,7,.65) 0%,rgba(6,10,7,.10) 55%,transparent 100%);pointer-events:none"></div>
         </div>
         <!-- schwebende Glas-Karten -->
         <div class="float-card fc1">
@@ -771,6 +782,63 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
   </a>
 </div>
 
+<!-- ========== EXIT-INTENT POPUP ========== -->
+<style>
+/* Overlay */
+#exitPopup{
+  position:fixed;inset:0;z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  background:rgba(6,10,7,.70);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .4s var(--ease-out);
+}
+#exitPopup.show{opacity:1;pointer-events:auto}
+/* Box */
+.ep-box{
+  position:relative;max-width:480px;width:100%;
+  background:var(--bg-2);border:1px solid rgba(0,224,110,.25);border-radius:28px;
+  padding:clamp(30px,6vw,48px) clamp(26px,6vw,44px);
+  box-shadow:0 40px 100px rgba(0,0,0,.70),0 0 0 1px rgba(0,224,110,.10);
+  transform:translateY(22px) scale(.97);
+  transition:transform .5s var(--ease-out);text-align:center;
+}
+#exitPopup.show .ep-box{transform:none}
+.ep-close{
+  position:absolute;top:16px;right:18px;width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--line);background:rgba(255,255,255,.06);cursor:pointer;
+  display:grid;place-items:center;color:var(--text-2);font-size:1.1rem;line-height:1;
+  transition:background .2s,color .2s;font-family:sans-serif;
+}
+.ep-close:hover{background:rgba(255,255,255,.12);color:var(--text)}
+.ep-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#04140C;font-family:var(--font-head);font-weight:700;letter-spacing:1px;
+  font-size:.78rem;text-transform:uppercase;padding:6px 16px;border-radius:999px;margin-bottom:18px}
+.ep-box h3{font-family:var(--font-head);font-size:clamp(1.8rem,5vw,2.4rem);font-weight:800;
+  color:var(--text);text-transform:uppercase;letter-spacing:-.5px;margin-bottom:12px}
+.ep-box p{color:var(--text-2);font-size:1rem;margin-bottom:26px;line-height:1.55}
+.ep-box p strong{color:var(--text)}
+.ep-actions{display:flex;flex-direction:column;gap:12px}
+.ep-actions .btn{width:100%;justify-content:center}
+.ep-skip{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.88rem;
+  font-family:var(--font-body);margin-top:6px;transition:color .2s;padding:4px}
+.ep-skip:hover{color:var(--text-2)}
+</style>
+
+<div id="exitPopup" role="dialog" aria-modal="true" aria-labelledby="epTitle">
+  <div class="ep-box">
+    <button class="ep-close" id="epClose" aria-label="Schließen">✕</button>
+    <span class="ep-badge">Noch nicht weg!</span>
+    <h3 id="epTitle">Warte kurz –<br /><span class="hl">Dein Probetraining</span></h3>
+    <p>Du verlässt die Seite ohne dein <strong>100 % kostenloses EMS-Probetraining</strong> zu sichern. In nur 20 Minuten weißt du, ob es das Richtige für dich ist.</p>
+    <div class="ep-actions">
+      <a href="#kontakt" class="btn btn-primary" id="epCta">
+        Jetzt Probetraining sichern
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <button class="ep-skip" id="epSkip">Nein danke, ich verzichte</button>
+    </div>
+  </div>
+</div>
+
 <!-- ========== JAVASCRIPT ========== -->
 <script>
 (function(){
@@ -941,6 +1009,56 @@ form.addEventListener("submit",function(e){
 
 /* 11) Footer year */
 document.getElementById("year").textContent=new Date().getFullYear();
+
+/* 12) Exit-intent popup
+   Zeigt sich EINMAL pro Session wenn:
+   - Maus den oberen Rand des Viewports verlässt (Desktop)
+   - Auf Handy: nach 40 s Aufenthalt ohne Formular-Klick
+   Nie mehr als einmal anzeigen (sessionStorage) */
+(function(){
+  if(sessionStorage.getItem("exitShown"))return;
+  var popup=document.getElementById("exitPopup");
+  var closeBtn=document.getElementById("epClose");
+  var skip=document.getElementById("epSkip");
+  var cta=document.getElementById("epCta");
+  var shown=false;
+  function show(){
+    if(shown||sessionStorage.getItem("exitShown"))return;
+    shown=true;sessionStorage.setItem("exitShown","1");
+    popup.classList.add("show");
+    document.body.style.overflow="hidden";
+  }
+  function hide(){
+    popup.classList.remove("show");
+    document.body.style.overflow="";
+  }
+  closeBtn.addEventListener("click",hide);
+  skip.addEventListener("click",hide);
+  cta.addEventListener("click",hide);
+  /* Schließen per Klick auf Overlay-Hintergrund */
+  popup.addEventListener("click",function(e){if(e.target===popup)hide();});
+  /* Schließen per Escape */
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")hide();});
+
+  /* Desktop: Maus verlässt oben (klassisches Exit-Intent) */
+  var triggered=false;
+  document.addEventListener("mouseleave",function(e){
+    if(!triggered&&e.clientY<=0){triggered=true;
+      /* kleiner Delay damit es nicht beim ersten Hover feuert */
+      setTimeout(show,80);}
+  });
+
+  /* Mobile-Fallback: nach 45 s anzeigen wenn noch kein Formular-Fokus */
+  var formTouched=false;
+  var contactForm=document.getElementById("contactForm");
+  if(contactForm)contactForm.addEventListener("focusin",function(){formTouched=true;},{once:true});
+  var mobileTimer=setTimeout(function(){
+    if(!formTouched&&!sessionStorage.getItem("exitShown"))show();
+  },45000);
+  /* Timer abbrechen wenn Formular ausgefüllt wird */
+  if(contactForm)contactForm.addEventListener("submit",function(){clearTimeout(mobileTimer);},{once:true});
+})();
+
 })();
 </script>
 </body>
