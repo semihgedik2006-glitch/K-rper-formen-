@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0E1712" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Körperformen – Internes Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   KÖRPERFORMEN – INTERNES PORTAL
+   Design-Tokens identisch zur Website (index.html)
+   ============================================================ */
+:root{
+  --bg:#0E1712; --bg-2:#141E18; --bg-soft:#111A15;
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.14);
+  --accent:#00E06E; --accent-2:#19FF85; --accent-d:#00C060; --accent-glow:rgba(0,224,110,.40);
+  --warm:#FF6B35; --danger:#EF4444;
+  --text:#F0F7F3; --text-2:#8BADA0; --text-3:#4D6B5F;
+  --font-head:'Barlow Condensed',system-ui,sans-serif;
+  --font-body:'Barlow',system-ui,-apple-system,sans-serif;
+  --radius:18px; --radius-lg:26px;
+  --shadow:0 8px 24px rgba(0,0,0,.35); --shadow-lg:0 24px 56px rgba(0,0,0,.50);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);
+  line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100svh}
+h1,h2,h3,h4{font-family:var(--font-head);font-weight:800;line-height:1.05;
+  letter-spacing:-.5px;text-transform:uppercase}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+button{font-family:inherit}
+input,textarea,select{font-family:inherit;font-size:16px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:10px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:var(--font-head);font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  font-size:.95rem;padding:13px 24px;border-radius:999px;cursor:pointer;border:none;
+  min-height:46px;transition:transform .35s var(--ease-out),box-shadow .35s var(--ease-out),background .25s}
+.btn:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#04140C;
+  box-shadow:0 10px 26px var(--accent-glow)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 18px 40px var(--accent-glow)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1.5px solid var(--line-2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent-d)}
+.btn-sm{padding:8px 16px;min-height:38px;font-size:.82rem}
+.btn-danger{background:rgba(239,68,68,.12);color:#ff8a8a;border:1.5px solid rgba(239,68,68,.3)}
+.btn-danger:hover{background:rgba(239,68,68,.22)}
+
+/* ── Inputs ── */
+.field{margin-bottom:16px}
+.field label{display:block;font-family:var(--font-head);font-weight:600;letter-spacing:.4px;
+  margin-bottom:7px;font-size:.92rem;color:var(--text)}
+.inp{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
+  border-radius:12px;padding:13px 15px;color:var(--text);min-height:48px;transition:border-color .2s,box-shadow .2s}
+textarea.inp{resize:vertical;min-height:80px;line-height:1.5}
+.inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,184,92,.13)}
+.inp::placeholder{color:var(--text-3)}
+select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238BADA0' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 15px center;padding-right:40px}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+.login-wrap{min-height:100vh;min-height:100svh;display:flex;align-items:center;justify-content:center;
+  padding:24px;position:relative;overflow:hidden}
+.login-mesh{position:absolute;inset:-20%;z-index:0;filter:blur(70px);opacity:.7;pointer-events:none}
+.login-mesh i{position:absolute;display:block;border-radius:50%}
+.login-mesh .a{width:50vw;height:50vw;background:radial-gradient(circle,rgba(0,221,120,.40),transparent 70%);top:-10%;right:-10%}
+.login-mesh .b{width:40vw;height:40vw;background:radial-gradient(circle,rgba(255,107,53,.16),transparent 70%);bottom:-15%;left:-5%}
+.login-card{position:relative;z-index:1;width:100%;max-width:440px;background:var(--bg-2);
+  border:1px solid var(--line-2);border-radius:var(--radius-lg);padding:clamp(28px,6vw,42px);
+  box-shadow:var(--shadow-lg)}
+.login-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:800;
+  font-size:1.5rem;letter-spacing:.5px;margin-bottom:6px}
+.login-brand b{color:var(--accent-d)}
+.login-card .sub{color:var(--text-2);margin-bottom:26px;font-size:.98rem}
+.role-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.role-opt{border:1.5px solid var(--line-2);border-radius:14px;padding:16px 12px;text-align:center;
+  cursor:pointer;transition:border-color .2s,background .2s;background:rgba(255,255,255,.03)}
+.role-opt:hover{border-color:var(--accent-d)}
+.role-opt.active{border-color:var(--accent);background:rgba(0,224,110,.10)}
+.role-opt .ico{width:38px;height:38px;margin:0 auto 8px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,rgba(0,184,92,.18),rgba(0,221,120,.06));color:var(--accent-d)}
+.role-opt .ico svg{width:20px;height:20px}
+.role-opt b{display:block;font-family:var(--font-head);font-size:1.05rem}
+.role-opt span{font-size:.78rem;color:var(--text-2)}
+.login-err{color:#ff8a8a;font-size:.9rem;margin-top:4px;min-height:1.1em}
+.login-foot{margin-top:18px;text-align:center;font-size:.85rem;color:var(--text-3)}
+.login-foot a{color:var(--accent-d)}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app{display:none;min-height:100vh;min-height:100svh;flex-direction:column}
+.app.show{display:flex}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
+  gap:14px;padding:12px clamp(14px,4vw,28px);background:rgba(14,23,18,.88);
+  -webkit-backdrop-filter:saturate(160%) blur(18px);backdrop-filter:saturate(160%) blur(18px);
+  border-bottom:1px solid var(--line)}
+.tb-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:800;
+  font-size:1.18rem;letter-spacing:.5px}
+.tb-brand b{color:var(--accent-d)}
+.tb-mode{font-family:var(--font-body);font-weight:600;font-size:.66rem;text-transform:uppercase;
+  letter-spacing:1px;padding:4px 9px;border-radius:999px;border:1px solid var(--line-2);color:var(--text-3)}
+.tb-mode.live{color:var(--accent-d);border-color:rgba(0,224,110,.35);background:rgba(0,224,110,.08)}
+.tb-user{display:flex;align-items:center;gap:11px}
+.tb-user .who{text-align:right;line-height:1.2}
+.tb-user .who b{font-family:var(--font-head);font-size:1rem;display:block}
+.tb-user .who span{font-size:.76rem;color:var(--text-2)}
+.avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+  font-family:var(--font-head);font-weight:800;font-size:.95rem;color:#04140C;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+.avatar.chef{background:linear-gradient(135deg,var(--warm),#ffa06b);color:#2a0e00}
+.icon-btn{width:42px;height:42px;border-radius:12px;border:1px solid var(--line-2);
+  background:rgba(255,255,255,.04);color:var(--text-2);cursor:pointer;display:grid;place-items:center;
+  transition:background .2s,color .2s}
+.icon-btn:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.icon-btn svg{width:19px;height:19px}
+
+.shell{flex:1;display:flex;max-width:1280px;width:100%;margin:0 auto;min-height:0}
+
+/* Sidebar tabs (desktop) */
+.side{width:220px;flex-shrink:0;padding:20px 14px;border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:4px}
+.tab{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:13px;cursor:pointer;
+  color:var(--text-2);font-family:var(--font-head);font-weight:600;font-size:1.05rem;letter-spacing:.3px;
+  background:none;border:none;width:100%;text-align:left;transition:background .2s,color .2s;position:relative}
+.tab svg{width:20px;height:20px;flex-shrink:0}
+.tab:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.tab.active{background:rgba(0,224,110,.12);color:var(--accent-2)}
+.tab .badge{margin-left:auto;background:var(--accent);color:#04140C;font-family:var(--font-body);
+  font-weight:700;font-size:.72rem;min-width:20px;height:20px;border-radius:999px;display:grid;
+  place-items:center;padding:0 6px}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.view{display:none;flex:1;min-height:0;flex-direction:column}
+.view.show{display:flex}
+.view-head{padding:22px clamp(16px,4vw,30px) 14px}
+.view-head h2{font-size:clamp(1.5rem,4vw,2rem)}
+.view-head p{color:var(--text-2);font-size:.95rem;margin-top:4px}
+
+/* ── CHAT ── */
+.chat-channels{display:flex;gap:8px;padding:0 clamp(16px,4vw,30px) 8px;overflow-x:auto;flex-wrap:wrap}
+.chan{padding:7px 15px;border-radius:999px;border:1px solid var(--line-2);background:rgba(255,255,255,.04);
+  color:var(--text-2);cursor:pointer;font-size:.88rem;font-weight:600;white-space:nowrap;transition:.2s}
+.chan:hover{color:var(--text)}
+.chan.active{background:rgba(0,224,110,.14);border-color:rgba(0,224,110,.4);color:var(--accent-2)}
+.chat-scroll{flex:1;overflow-y:auto;padding:10px clamp(16px,4vw,30px);display:flex;flex-direction:column;gap:10px}
+.msg{max-width:78%;padding:10px 14px;border-radius:16px;background:var(--bg-2);border:1px solid var(--line);
+  align-self:flex-start;word-wrap:break-word;overflow-wrap:anywhere}
+.msg.mine{align-self:flex-end;background:rgba(0,224,110,.13);border-color:rgba(0,224,110,.25)}
+.msg .meta{display:flex;align-items:center;gap:7px;margin-bottom:3px;font-size:.78rem}
+.msg .meta b{font-family:var(--font-head);font-size:.92rem;letter-spacing:.2px}
+.msg .meta .tag{font-size:.64rem;text-transform:uppercase;letter-spacing:.6px;padding:2px 6px;border-radius:999px;font-weight:700}
+.msg .meta .tag.chef{background:rgba(255,107,53,.18);color:#ffb38c}
+.msg .meta .tag.studio{background:rgba(0,224,110,.14);color:var(--accent-2)}
+.msg .meta time{color:var(--text-3);margin-left:auto;font-size:.72rem}
+.msg .body{font-size:.98rem;color:var(--text);white-space:pre-wrap}
+.chat-empty{margin:auto;text-align:center;color:var(--text-3);padding:40px}
+.chat-input{display:flex;gap:10px;padding:12px clamp(16px,4vw,30px) calc(14px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line);background:var(--bg-soft)}
+.chat-input textarea{flex:1;min-height:48px;max-height:140px;resize:none}
+
+/* ── TODOS ── */
+.scroll-area{flex:1;overflow-y:auto;padding:0 clamp(16px,4vw,30px) 30px}
+.todo-progress{display:flex;align-items:center;gap:14px;margin:6px 0 18px;padding:16px 18px;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
+.pbar{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  width:0;transition:width .5s var(--ease-out)}
+.pcount{font-family:var(--font-head);font-weight:800;font-size:1.1rem;white-space:nowrap}
+.todo{display:flex;gap:13px;align-items:flex-start;padding:15px 16px;background:var(--bg-2);
+  border:1px solid var(--line);border-radius:14px;margin-bottom:10px;transition:border-color .2s,opacity .2s}
+.todo.done{opacity:.6}
+.todo.done .t-title{text-decoration:line-through;color:var(--text-2)}
+.check{width:26px;height:26px;flex-shrink:0;border-radius:8px;border:2px solid var(--line-2);
+  background:none;cursor:pointer;display:grid;place-items:center;margin-top:1px;transition:.2s}
+.check svg{width:16px;height:16px;color:#04140C;opacity:0;transform:scale(.5);transition:.2s}
+.todo.done .check{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent}
+.todo.done .check svg{opacity:1;transform:scale(1)}
+.t-body{flex:1;min-width:0}
+.t-title{font-family:var(--font-head);font-weight:700;font-size:1.12rem;letter-spacing:.2px}
+.t-desc{color:var(--text-2);font-size:.92rem;margin-top:2px;white-space:pre-wrap}
+.t-foot{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:7px;font-size:.76rem;color:var(--text-3)}
+.t-foot .done-by{color:var(--accent-d);font-weight:600}
+.t-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:6px;border-radius:8px;flex-shrink:0}
+.t-del:hover{color:#ff8a8a;background:rgba(239,68,68,.1)}
+.t-del svg{width:17px;height:17px}
+.empty{text-align:center;color:var(--text-3);padding:50px 20px}
+.empty svg{width:44px;height:44px;margin-bottom:12px;opacity:.5}
+
+/* ── ANNOUNCEMENTS ── */
+.ann{padding:18px 20px;background:linear-gradient(150deg,var(--bg-2),var(--bg-soft));
+  border:1px solid var(--line);border-left:4px solid var(--warm);border-radius:14px;margin-bottom:12px}
+.ann .ann-head{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.ann .ann-head .pin{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;
+  background:rgba(255,107,53,.16);color:var(--warm)}
+.ann .ann-head .pin svg{width:16px;height:16px}
+.ann .ann-head b{font-family:var(--font-head);font-size:1.05rem}
+.ann .ann-head time{margin-left:auto;color:var(--text-3);font-size:.78rem}
+.ann .ann-body{color:var(--text);white-space:pre-wrap;font-size:1rem}
+.ann .ann-target{display:inline-block;margin-top:9px;font-size:.74rem;color:var(--accent-d);font-weight:600;
+  background:rgba(0,224,110,.1);padding:3px 10px;border-radius:999px}
+
+/* ── CARDS / FORMS in views ── */
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:clamp(18px,4vw,26px);margin-bottom:18px}
+.card h3{font-size:1.3rem;margin-bottom:4px}
+.card .hint{color:var(--text-2);font-size:.9rem;margin-bottom:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+
+/* Studio overview grid (chef) */
+.studio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.studio-tile{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+.studio-tile b{font-family:var(--font-head);font-size:1.05rem;display:block;margin-bottom:8px}
+.studio-tile .mini{height:7px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:6px}
+.studio-tile .mini i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0}
+.studio-tile small{color:var(--text-2);font-size:.78rem}
+
+/* ── Mobile bottom nav ── */
+.mobnav{display:none}
+@media(max-width:820px){
+  .side{display:none}
+  .shell{flex-direction:column}
+  .main{padding-bottom:70px}
+  .mobnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
+    background:rgba(14,23,18,.94);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .mobnav button{flex:1;background:none;border:none;color:var(--text-3);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;font-size:.66rem;
+    font-weight:600;position:relative}
+  .mobnav button svg{width:22px;height:22px}
+  .mobnav button.active{color:var(--accent-2)}
+  .mobnav .badge{position:absolute;top:2px;right:50%;transform:translateX(16px);
+    background:var(--accent);color:#04140C;font-size:.6rem;font-weight:700;min-width:16px;height:16px;
+    border-radius:999px;display:grid;place-items:center;padding:0 4px}
+}
+
+/* Toast */
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);z-index:60;
+  background:var(--bg-2);border:1px solid var(--accent-d);color:var(--text);padding:12px 20px;
+  border-radius:999px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.35s var(--ease-out);
+  font-weight:600;font-size:.92rem}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN
+     ============================================================ -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-mesh" aria-hidden="true"><i class="a"></i><i class="b"></i></div>
+  <div class="login-card">
+    <div class="login-brand">KÖRPER<b>FORMEN</b></div>
+    <p class="sub" id="loginSub">Internes Portal &middot; Anmeldung</p>
+
+    <div class="role-pick" id="rolePick">
+      <div class="role-opt active" data-role="mitarbeiter">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+        <b>Mitarbeiter</b><span>Studio-Team</span>
+      </div>
+      <div class="role-opt" data-role="chef">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/></svg></div>
+        <b>Chef</b><span>Leitung</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="inName">Dein Name</label>
+      <input class="inp" id="inName" type="text" placeholder="z. B. Marcel" autocomplete="name" maxlength="40" />
+    </div>
+
+    <div class="field" id="studioField">
+      <label for="inStudio">Dein Studio</label>
+      <select class="inp" id="inStudio"></select>
+    </div>
+
+    <div class="field" id="pinField" style="display:none">
+      <label for="inPin">Chef-Code</label>
+      <input class="inp" id="inPin" type="password" placeholder="Geheimer Code" autocomplete="off" inputmode="numeric" />
+    </div>
+
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn btn-primary" id="loginBtn" style="width:100%">Anmelden</button>
+
+    <div class="login-foot">
+      <span id="modeNote"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     APP
+     ============================================================ -->
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="tb-brand">KÖRPER<b>FORMEN</b> <span class="tb-mode" id="tbMode">Demo</span></div>
+    <div class="tb-user">
+      <div class="who"><b id="uName">–</b><span id="uMeta">–</span></div>
+      <div class="avatar" id="uAvatar">?</div>
+      <button class="icon-btn" id="logoutBtn" title="Abmelden" aria-label="Abmelden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <!-- Sidebar -->
+    <nav class="side" id="side"></nav>
+
+    <div class="main">
+      <!-- CHAT -->
+      <section class="view" id="view-chat">
+        <div class="view-head"><h2>Team-Chat</h2><p>Schreibe mit allen oder nur mit deinem Studio.</p></div>
+        <div class="chat-channels" id="chatChannels"></div>
+        <div class="chat-scroll" id="chatScroll"></div>
+        <div class="chat-input">
+          <textarea class="inp" id="chatText" rows="1" placeholder="Nachricht schreiben …" maxlength="2000"></textarea>
+          <button class="btn btn-primary" id="chatSend" aria-label="Senden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- AUFGABEN -->
+      <section class="view" id="view-todos">
+        <div class="view-head"><h2 id="todoTitle">Aufgaben</h2><p id="todoSubtitle">Deine offenen To-dos – einfach abhaken.</p></div>
+        <div class="scroll-area" id="todoArea"></div>
+      </section>
+
+      <!-- ANKÜNDIGUNGEN -->
+      <section class="view" id="view-ann">
+        <div class="view-head"><h2>Ankündigungen</h2><p>Infos von der Leitung an alle.</p></div>
+        <div class="scroll-area" id="annArea"></div>
+      </section>
+
+      <!-- CHEF-BEREICH -->
+      <section class="view" id="view-chef">
+        <div class="view-head"><h2>Chef-Bereich</h2><p>An alle senden &amp; Aufgaben für die Studios verteilen.</p></div>
+        <div class="scroll-area">
+          <!-- Broadcast -->
+          <div class="card">
+            <h3>📣 Ankündigung an alle</h3>
+            <p class="hint">Wird sofort bei jedem im Portal angezeigt.</p>
+            <div class="field">
+              <textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea>
+            </div>
+            <div class="field">
+              <label for="bcTarget">Empfänger</label>
+              <select class="inp" id="bcTarget"></select>
+            </div>
+            <button class="btn btn-primary" id="bcSend">Ankündigung senden</button>
+          </div>
+
+          <!-- New Todo -->
+          <div class="card">
+            <h3>✅ Neue Aufgabe</h3>
+            <p class="hint">Aufgabe einem oder allen Studios zuweisen.</p>
+            <div class="field">
+              <label for="ntTitle">Aufgabe</label>
+              <input class="inp" id="ntTitle" type="text" placeholder="z. B. Geräte desinfizieren" maxlength="120" />
+            </div>
+            <div class="field">
+              <label for="ntDesc">Beschreibung (optional)</label>
+              <textarea class="inp" id="ntDesc" placeholder="Details zur Aufgabe …" maxlength="1000"></textarea>
+            </div>
+            <div class="field">
+              <label for="ntStudio">Für welches Studio?</label>
+              <select class="inp" id="ntStudio"></select>
+            </div>
+            <button class="btn btn-primary" id="ntAdd">Aufgabe erstellen</button>
+          </div>
+
+          <!-- Overview -->
+          <div class="card">
+            <h3>📊 Übersicht aller Studios</h3>
+            <p class="hint">Fortschritt der Aufgaben pro Studio.</p>
+            <div class="studio-grid" id="studioGrid"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <nav class="mobnav" id="mobnav"></nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   1) KONFIGURATION  –  HIER ANPASSEN
+   ============================================================ */
+
+/* Die 15 Studios. Namen einfach ändern. */
+var STUDIOS = [
+  "Studio 1","Studio 2","Studio 3","Studio 4","Studio 5",
+  "Studio 6","Studio 7","Studio 8","Studio 9","Studio 10",
+  "Studio 11","Studio 12","Studio 13","Studio 14","Studio 15"
+];
+
+/* Chef-Code zum Anmelden als Chef. UNBEDINGT ÄNDERN! */
+var CHEF_PIN = "1234";
+
+/* FIREBASE (für echten Live-Betrieb über mehrere Geräte).
+   Solange null -> Demo-Modus (Daten nur im Browser, Sync zwischen Tabs).
+   Anleitung siehe ANLEITUNG-INTERN.md
+   Beispiel:
+   var FIREBASE_CONFIG = {
+     apiKey:"...", authDomain:"...", databaseURL:"https://xxx.firebaseio.com",
+     projectId:"...", appId:"..."
+   };
+*/
+var FIREBASE_CONFIG = null;
+
+/* ============================================================
+   2) HELFER
+   ============================================================ */
+function $(id){return document.getElementById(id);}
+function el(tag,cls){var e=document.createElement(tag);if(cls)e.className=cls;return e;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function initials(name){return String(name||"?").trim().split(/\s+/).map(function(w){return w[0]||"";})
+  .slice(0,2).join("").toUpperCase()||"?";}
+function studioId(name){return "studio-"+(STUDIOS.indexOf(name));}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+function fmtTime(ts){
+  var d=new Date(ts),now=new Date();
+  var t=d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+  if(d.toDateString()===now.toDateString())return t;
+  return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"})+" "+t;
+}
+var toastTimer;
+function toast(msg){
+  var t=$("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove("show");},2600);
+}
+
+/* ============================================================
+   3) STORE  –  Demo (localStorage + BroadcastChannel) ODER Firebase
+   Einheitliche Schnittstelle:
+     store.state -> {messages:{chan:[..]}, announcements:[..], todos:{studioId:[..]}}
+     store.onChange(cb)
+     store.addMessage(channel,msg) / addAnnouncement(a)
+     store.addTodo(sid,todo) / toggleTodo(sid,id,done,by) / deleteTodo(sid,id)
+   ============================================================ */
+function createLocalStore(){
+  var KEY="kf_intern_data_v1";
+  var state=load();
+  var listeners=[];
+  var bc=("BroadcastChannel" in window)?new BroadcastChannel("kf-intern"):null;
+
+  function load(){
+    try{var raw=localStorage.getItem(KEY);if(raw)return JSON.parse(raw);}catch(e){}
+    return {messages:{}, announcements:[], todos:{}};
+  }
+  function persist(broadcast){
+    try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+    if(broadcast&&bc)bc.postMessage("update");
+    emit();
+  }
+  function emit(){listeners.forEach(function(cb){cb(state);});}
+
+  if(bc)bc.onmessage=function(){state=load();emit();};
+  window.addEventListener("storage",function(e){if(e.key===KEY){state=load();emit();}});
+
+  return {
+    mode:"demo",
+    get state(){return state;},
+    onChange:function(cb){listeners.push(cb);cb(state);},
+    addMessage:function(chan,msg){
+      if(!state.messages[chan])state.messages[chan]=[];
+      state.messages[chan].push(msg);persist(true);
+    },
+    addAnnouncement:function(a){state.announcements.push(a);persist(true);},
+    addTodo:function(sid,todo){
+      if(!state.todos[sid])state.todos[sid]=[];
+      state.todos[sid].push(todo);persist(true);
+    },
+    toggleTodo:function(sid,id,done,by){
+      var list=state.todos[sid]||[];
+      for(var i=0;i<list.length;i++)if(list[i].id===id){
+        list[i].done=done;list[i].doneBy=done?by:null;list[i].doneAt=done?Date.now():null;break;
+      }
+      persist(true);
+    },
+    deleteTodo:function(sid,id){
+      state.todos[sid]=(state.todos[sid]||[]).filter(function(t){return t.id!==id;});
+      persist(true);
+    }
+  };
+}
+
+function createFirebaseStore(cb){
+  /* Lädt Firebase per Modul-Import und nutzt die Realtime Database. */
+  var state={messages:{}, announcements:[], todos:{}};
+  var listeners=[];
+  var refs={};
+  function emit(){listeners.forEach(function(c){c(state);});}
+
+  Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js")
+  ]).then(function(mods){
+    var appMod=mods[0], dbMod=mods[1];
+    var app=appMod.initializeApp(FIREBASE_CONFIG);
+    var db=dbMod.getDatabase(app);
+    refs.db=db;refs.m=dbMod;
+
+    function toArr(obj){
+      if(!obj)return [];
+      return Object.keys(obj).map(function(k){var v=obj[k]||{};v.id=k;return v;})
+        .sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+    }
+
+    dbMod.onValue(dbMod.ref(db,"messages"),function(snap){
+      var val=snap.val()||{};var out={};
+      Object.keys(val).forEach(function(chan){out[chan]=toArr(val[chan]);});
+      state.messages=out;emit();
+    });
+    dbMod.onValue(dbMod.ref(db,"announcements"),function(snap){
+      state.announcements=toArr(snap.val());emit();
+    });
+    dbMod.onValue(dbMod.ref(db,"todos"),function(snap){
+      var val=snap.val()||{};var out={};
+      Object.keys(val).forEach(function(sid){out[sid]=toArr(val[sid]);});
+      state.todos=out;emit();
+    });
+
+    var api={
+      mode:"live",
+      get state(){return state;},
+      onChange:function(c){listeners.push(c);c(state);},
+      addMessage:function(chan,msg){dbMod.push(dbMod.ref(db,"messages/"+chan),msg);},
+      addAnnouncement:function(a){dbMod.push(dbMod.ref(db,"announcements"),a);},
+      addTodo:function(sid,todo){dbMod.push(dbMod.ref(db,"todos/"+sid),todo);},
+      toggleTodo:function(sid,id,done,by){
+        dbMod.update(dbMod.ref(db,"todos/"+sid+"/"+id),
+          {done:done,doneBy:done?by:null,doneAt:done?Date.now():null});
+      },
+      deleteTodo:function(sid,id){dbMod.remove(dbMod.ref(db,"todos/"+sid+"/"+id));}
+    };
+    cb(api);
+  }).catch(function(err){
+    console.error("Firebase konnte nicht geladen werden, nutze Demo-Modus.",err);
+    cb(createLocalStore());
+  });
+}
+
+/* ============================================================
+   4) SESSION
+   ============================================================ */
+var SKEY="kf_intern_session";
+function loadSession(){try{return JSON.parse(sessionStorage.getItem(SKEY)||localStorage.getItem(SKEY));}catch(e){return null;}}
+function saveSession(s){var j=JSON.stringify(s);sessionStorage.setItem(SKEY,j);localStorage.setItem(SKEY,j);}
+function clearSession(){sessionStorage.removeItem(SKEY);localStorage.removeItem(SKEY);}
+
+var session=null;   // {name, role:'chef'|'mitarbeiter', studio}
+var store=null;
+
+/* ============================================================
+   5) LOGIN-UI
+   ============================================================ */
+var selectedRole="mitarbeiter";
+
+function initLogin(){
+  // Studios in Dropdown
+  var sel=$("inStudio");
+  STUDIOS.forEach(function(s){var o=el("option");o.value=s;o.textContent=s;sel.appendChild(o);});
+
+  // Modus-Hinweis
+  $("modeNote").innerHTML = FIREBASE_CONFIG
+    ? 'Live-Modus aktiv &middot; geräteübergreifend'
+    : 'Demo-Modus &middot; Daten bleiben in diesem Browser';
+
+  // Rollenwahl
+  $("rolePick").addEventListener("click",function(e){
+    var opt=e.target.closest(".role-opt");if(!opt)return;
+    selectedRole=opt.getAttribute("data-role");
+    document.querySelectorAll(".role-opt").forEach(function(o){o.classList.toggle("active",o===opt);});
+    $("pinField").style.display = selectedRole==="chef"?"block":"none";
+    $("studioField").style.display = selectedRole==="chef"?"none":"block";
+  });
+
+  // Chef-Link: #chef öffnet direkt Chef-Rolle vorausgewählt
+  if(location.hash.toLowerCase()==="#chef"){
+    document.querySelector('.role-opt[data-role="chef"]').click();
+    $("loginSub").textContent="Chef-Zugang · Anmeldung";
+  }
+
+  $("loginBtn").addEventListener("click",doLogin);
+  [$("inName"),$("inPin")].forEach(function(i){i.addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});});
+
+  // Auto-Login falls Session vorhanden
+  var s=loadSession();
+  if(s&&s.name){session=s;startApp();}
+}
+
+function doLogin(){
+  var err=$("loginErr");err.textContent="";
+  var name=$("inName").value.trim();
+  if(!name){err.textContent="Bitte gib deinen Namen ein.";return;}
+  if(selectedRole==="chef"){
+    if($("inPin").value!==CHEF_PIN){err.textContent="Falscher Chef-Code.";return;}
+    session={name:name,role:"chef",studio:null};
+  }else{
+    session={name:name,role:"mitarbeiter",studio:$("inStudio").value};
+  }
+  saveSession(session);
+  startApp();
+}
+
+/* ============================================================
+   6) APP-START
+   ============================================================ */
+function startApp(){
+  $("loginWrap").style.display="none";
+  $("app").classList.add("show");
+
+  // Topbar
+  $("uName").textContent=session.name;
+  $("uMeta").textContent = session.role==="chef" ? "Chef · Leitung" : session.studio;
+  var av=$("uAvatar");av.textContent=initials(session.name);
+  av.classList.toggle("chef",session.role==="chef");
+
+  buildNav();
+  buildChannels();
+  buildChefSelects();
+
+  // Store initialisieren
+  if(FIREBASE_CONFIG){
+    createFirebaseStore(function(s){store=s;afterStore();});
+  }else{
+    store=createLocalStore();afterStore();
+  }
+}
+
+function afterStore(){
+  var mode=$("tbMode");
+  if(store.mode==="live"){mode.textContent="Live";mode.classList.add("live");}
+  else{mode.textContent="Demo";}
+  store.onChange(render);
+  bindActions();
+  showView(session.role==="chef"?"chef":"chat");
+  render(store.state);
+}
+
+/* ── Navigation ── */
+var NAV_ITEMS = [
+  {id:"chat", label:"Chat",   icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
+  {id:"todos",label:"Aufgaben",icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
+  {id:"ann",  label:"Infos",  icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
+  {id:"chef", label:"Chef",   icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>', chefOnly:true}
+];
+function buildNav(){
+  var side=$("side"), mob=$("mobnav");side.innerHTML="";mob.innerHTML="";
+  NAV_ITEMS.forEach(function(it){
+    if(it.chefOnly && session.role!=="chef")return;
+    var b=el("button","tab");b.dataset.view=it.id;
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+it.icon+'</svg>'+
+      '<span>'+it.label+'</span><span class="badge" data-badge="'+it.id+'" style="display:none"></span>';
+    b.addEventListener("click",function(){showView(it.id);});
+    side.appendChild(b);
+
+    var mb=el("button");mb.dataset.view=it.id;
+    mb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+it.icon+'</svg>'+
+      '<span>'+it.label+'</span><span class="badge" data-mbadge="'+it.id+'" style="display:none"></span>';
+    mb.addEventListener("click",function(){showView(it.id);});
+    mob.appendChild(mb);
+  });
+}
+
+var currentView="chat";
+function showView(id){
+  currentView=id;
+  document.querySelectorAll(".view").forEach(function(v){v.classList.toggle("show",v.id==="view-"+id);});
+  document.querySelectorAll(".tab,[data-view]").forEach(function(t){
+    if(t.dataset.view!==undefined)t.classList.toggle("active",t.dataset.view===id);
+  });
+  if(id==="chat")scrollChatBottom();
+}
+
+/* ── Channels ── */
+var currentChannel="allgemein";
+function channelsFor(){
+  var arr=[{id:"allgemein",label:"Allgemein (alle)"}];
+  if(session.role==="chef"){
+    STUDIOS.forEach(function(s){arr.push({id:studioId(s),label:s});});
+  }else{
+    arr.push({id:studioId(session.studio),label:"Mein Studio · "+session.studio});
+  }
+  return arr;
+}
+function buildChannels(){
+  var wrap=$("chatChannels");wrap.innerHTML="";
+  channelsFor().forEach(function(c){
+    var b=el("button","chan"+(c.id===currentChannel?" active":""));
+    b.textContent=c.label;b.dataset.chan=c.id;
+    b.addEventListener("click",function(){
+      currentChannel=c.id;
+      document.querySelectorAll(".chan").forEach(function(x){x.classList.toggle("active",x.dataset.chan===c.id);});
+      renderChat();scrollChatBottom();
+    });
+    wrap.appendChild(b);
+  });
+}
+
+/* ── Chef Dropdowns ── */
+function buildChefSelects(){
+  if(session.role!=="chef")return;
+  var t=$("bcTarget");t.innerHTML="";
+  var oAll=el("option");oAll.value="all";oAll.textContent="Alle Mitarbeiter";t.appendChild(oAll);
+  STUDIOS.forEach(function(s){var o=el("option");o.value=studioId(s);o.textContent="Nur "+s;t.appendChild(o);});
+
+  var ns=$("ntStudio");ns.innerHTML="";
+  var oa=el("option");oa.value="all";oa.textContent="Alle 15 Studios";ns.appendChild(oa);
+  STUDIOS.forEach(function(s){var o=el("option");o.value=studioId(s);o.textContent=s;ns.appendChild(o);});
+}
+
+/* ============================================================
+   7) RENDER
+   ============================================================ */
+function render(state){
+  renderChat();
+  renderTodos();
+  renderAnn();
+  if(session.role==="chef")renderStudioGrid();
+  updateBadges();
+}
+
+function renderChat(){
+  var box=$("chatScroll");
+  var msgs=(store.state.messages[currentChannel]||[]).slice();
+  if(!msgs.length){
+    box.innerHTML='<div class="chat-empty">Noch keine Nachrichten.<br>Schreib die erste! 👋</div>';return;
+  }
+  box.innerHTML=msgs.map(function(m){
+    var mine=m.name===session.name && (m.studio||null)===(session.studio||null) && m.role===session.role;
+    var tag = m.role==="chef"
+      ? '<span class="tag chef">Chef</span>'
+      : (m.studio?'<span class="tag studio">'+esc(m.studio)+'</span>':'');
+    return '<div class="msg'+(mine?' mine':'')+'">'+
+      '<div class="meta"><b>'+esc(m.name)+'</b>'+tag+'<time>'+fmtTime(m.ts)+'</time></div>'+
+      '<div class="body">'+esc(m.text)+'</div></div>';
+  }).join("");
+  scrollChatBottom();
+}
+function scrollChatBottom(){var b=$("chatScroll");if(b)b.scrollTop=b.scrollHeight;}
+
+function renderTodos(){
+  var area=$("todoArea");
+  if(session.role==="chef"){
+    // Chef sieht alle Studios gruppiert
+    $("todoTitle").textContent="Aufgaben aller Studios";
+    $("todoSubtitle").textContent="Überblick über alle offenen und erledigten To-dos.";
+    var html="";
+    STUDIOS.forEach(function(s){
+      var sid=studioId(s);var list=(store.state.todos[sid]||[]);
+      if(!list.length)return;
+      html+='<h3 style="margin:18px 0 10px;font-size:1.15rem;color:var(--accent-2)">'+esc(s)+'</h3>';
+      html+=list.map(function(t){return todoHTML(t,sid,true);}).join("");
+    });
+    area.innerHTML = html || emptyHTML("Noch keine Aufgaben verteilt.","Erstelle welche im Chef-Bereich.");
+    bindTodoEvents(area);
+    return;
+  }
+  // Mitarbeiter: eigenes Studio
+  var sid=studioId(session.studio);
+  var list=(store.state.todos[sid]||[]).slice().sort(function(a,b){return (a.done-b.done)||(a.ts-b.ts);});
+  $("todoTitle").textContent="Aufgaben · "+session.studio;
+  var done=list.filter(function(t){return t.done;}).length;
+  var total=list.length;
+  var pct=total?Math.round(done/total*100):0;
+  var head=total?('<div class="todo-progress"><div class="pbar"><i style="width:'+pct+'%"></i></div>'+
+    '<span class="pcount">'+done+'/'+total+'</span></div>'):"";
+  area.innerHTML = total
+    ? head + list.map(function(t){return todoHTML(t,sid,false);}).join("")
+    : emptyHTML("Alles erledigt! 🎉","Aktuell sind keine Aufgaben offen.");
+  bindTodoEvents(area);
+}
+
+function todoHTML(t,sid,chefView){
+  var foot=[];
+  foot.push("erstellt von "+esc(t.createdBy||"Chef"));
+  if(t.done && t.doneBy)foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
+  return '<div class="todo'+(t.done?' done':'')+'" data-id="'+t.id+'" data-sid="'+sid+'">'+
+    '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
+    '<div class="t-body"><div class="t-title">'+esc(t.title)+'</div>'+
+    (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
+    '<div class="t-foot">'+foot.join('<span>·</span>')+'</div></div>'+
+    (chefView?'<button class="t-del" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>':'')+
+    '</div>';
+}
+function emptyHTML(title,sub){
+  return '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'+
+    '<h3 style="font-size:1.3rem;margin-bottom:6px">'+esc(title)+'</h3><p>'+esc(sub)+'</p></div>';
+}
+function bindTodoEvents(area){
+  area.querySelectorAll(".todo").forEach(function(node){
+    var id=node.dataset.id, sid=node.dataset.sid;
+    var chk=node.querySelector(".check");
+    if(chk)chk.addEventListener("click",function(){
+      var done=!node.classList.contains("done");
+      store.toggleTodo(sid,id,done,session.name);
+    });
+    var del=node.querySelector(".t-del");
+    if(del)del.addEventListener("click",function(){
+      if(confirm("Diese Aufgabe wirklich löschen?"))store.deleteTodo(sid,id);
+    });
+  });
+}
+
+function renderAnn(){
+  var area=$("annArea");
+  var list=store.state.announcements.slice().sort(function(a,b){return b.ts-a.ts;});
+  // Mitarbeiter sehen: an alle ODER an ihr Studio
+  if(session.role!=="chef"){
+    var mySid=studioId(session.studio);
+    list=list.filter(function(a){return !a.target || a.target==="all" || a.target===mySid;});
+  }
+  if(!list.length){area.innerHTML=emptyHTML("Keine Ankündigungen","Hier erscheinen Infos von der Leitung.");return;}
+  area.innerHTML=list.map(function(a){
+    var targetLabel = (!a.target||a.target==="all")?"An alle":("Nur "+studioName(a.target));
+    return '<div class="ann"><div class="ann-head">'+
+      '<span class="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>'+
+      '<b>'+esc(a.from||"Leitung")+'</b><time>'+fmtTime(a.ts)+'</time></div>'+
+      '<div class="ann-body">'+esc(a.text)+'</div>'+
+      '<span class="ann-target">'+esc(targetLabel)+'</span></div>';
+  }).join("");
+}
+function studioName(sid){
+  var idx=parseInt(String(sid).replace("studio-",""),10);
+  return STUDIOS[idx]||sid;
+}
+
+function renderStudioGrid(){
+  var grid=$("studioGrid");
+  grid.innerHTML=STUDIOS.map(function(s){
+    var sid=studioId(s);var list=(store.state.todos[sid]||[]);
+    var done=list.filter(function(t){return t.done;}).length;
+    var total=list.length;var pct=total?Math.round(done/total*100):0;
+    return '<div class="studio-tile"><b>'+esc(s)+'</b>'+
+      '<div class="mini"><i style="width:'+pct+'%"></i></div>'+
+      '<small>'+(total?done+' / '+total+' erledigt':'keine Aufgaben')+'</small></div>';
+  }).join("");
+}
+
+/* Badges: ungelesene Hinweise (einfach: Anzahl offener Todos / neue Infos seit letztem Besuch) */
+function updateBadges(){
+  var counts={chat:0,todos:0,ann:0,chef:0};
+  if(session.role!=="chef"){
+    var sid=studioId(session.studio);
+    counts.todos=(store.state.todos[sid]||[]).filter(function(t){return !t.done;}).length;
+  }
+  Object.keys(counts).forEach(function(k){
+    var n=counts[k];
+    document.querySelectorAll('[data-badge="'+k+'"],[data-mbadge="'+k+'"]').forEach(function(b){
+      if(n>0){b.textContent=n;b.style.display="grid";}else{b.style.display="none";}
+    });
+  });
+}
+
+/* ============================================================
+   8) AKTIONEN
+   ============================================================ */
+function bindActions(){
+  // Chat senden
+  var ta=$("chatText");
+  function sendChat(){
+    var text=ta.value.trim();if(!text)return;
+    store.addMessage(currentChannel,{
+      name:session.name, role:session.role,
+      studio:session.role==="chef"?null:session.studio,
+      text:text, ts:Date.now()
+    });
+    ta.value="";ta.style.height="auto";ta.focus();
+  }
+  $("chatSend").addEventListener("click",sendChat);
+  ta.addEventListener("keydown",function(e){
+    if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}
+  });
+  ta.addEventListener("input",function(){ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,140)+"px";});
+
+  // Logout
+  $("logoutBtn").addEventListener("click",function(){
+    if(confirm("Abmelden?")){clearSession();location.reload();}
+  });
+
+  if(session.role==="chef"){
+    // Broadcast
+    $("bcSend").addEventListener("click",function(){
+      var text=$("bcText").value.trim();
+      if(!text){toast("Bitte Text eingeben.");return;}
+      store.addAnnouncement({from:session.name,text:text,target:$("bcTarget").value,ts:Date.now()});
+      $("bcText").value="";toast("Ankündigung gesendet ✓");
+    });
+    // Neue Aufgabe
+    $("ntAdd").addEventListener("click",function(){
+      var title=$("ntTitle").value.trim();
+      if(!title){toast("Bitte Aufgabe eingeben.");return;}
+      var desc=$("ntDesc").value.trim();
+      var target=$("ntStudio").value;
+      var targets = target==="all" ? STUDIOS.map(studioId) : [target];
+      targets.forEach(function(sid){
+        store.addTodo(sid,{id:uid(),title:title,desc:desc,done:false,doneBy:null,doneAt:null,
+          createdBy:session.name,ts:Date.now()});
+      });
+      $("ntTitle").value="";$("ntDesc").value="";
+      toast(target==="all"?"Aufgabe an alle 15 Studios ✓":"Aufgabe erstellt ✓");
+    });
+  }
+}
+
+/* ============================================================
+   START
+   ============================================================ */
+initLogin();
+
+})();
+</script>
+</body>
+</html>
