@@ -5,16 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0E1712" />
 <meta name="robots" content="noindex, nofollow" />
-<!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+<!-- PWA: Manifest + App-Icons -->
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
 <!-- Handy: als App zum Home-Bildschirm hinzufügbar (Vollbild) -->
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="KF Portal" />
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='70' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3EKF%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="icon.svg" />
 <title>Körperformen – Internes Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -329,6 +328,10 @@ var FIREBASE_CONFIG = {
   <div class="auth-card">
     <div class="auth-brand">KÖRPER<b>FORMEN</b></div>
     <p class="auth-sub">Internes Portal · Anmeldung</p>
+    <button id="installBtn" class="btn btn-ghost btn-sm" style="display:none;width:100%;margin-bottom:14px"
+      onclick="(function(){var p=window._deferredInstall;if(!p)return;p.prompt();p.userChoice.then(function(){window._deferredInstall=null;document.getElementById('installBtn').style.display='none';});})()">
+      📲 Als App installieren
+    </button>
 
     <div class="auth-tabs" role="tablist">
       <button class="auth-tab active" id="tabLogin" role="tab" aria-selected="true">Anmelden</button>
@@ -595,22 +598,47 @@ window.addEventListener('unhandledrejection', function(ev){
   }
 });
 
-/* Web-App-Manifest zur Laufzeit (für „Zum Startbildschirm" als Vollbild-App auf Android) */
-(function addManifest(){
-  try{
-    var icon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' rx='110' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='200' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3EKF%3C/text%3E%3C/svg%3E";
-    var manifest={
-      name:"Körperformen Portal", short_name:"KF Portal",
-      start_url:".", display:"standalone",
-      background_color:"#0E1712", theme_color:"#0E1712",
-      icons:[{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]
-    };
-    var blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
-    var link=document.createElement('link');
-    link.rel='manifest'; link.href=URL.createObjectURL(blob);
-    document.head.appendChild(link);
-  }catch(e){/* unkritisch */}
-})();
+/* Service Worker registrieren: macht die Seite zur installierbaren App
+   und sorgt für sofortigen Start beim 2. Besuch (Cache). */
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      // Auf Updates lauschen und neue Version sofort aktivieren
+      reg.addEventListener('updatefound', function(){
+        var nw = reg.installing;
+        if(!nw) return;
+        nw.addEventListener('statechange', function(){
+          if(nw.state === 'installed' && navigator.serviceWorker.controller){
+            // Update aktivieren und einmal neu laden
+            nw.postMessage('SKIP_WAITING');
+          }
+        });
+      });
+    }).catch(function(err){
+      console.warn('SW-Registrierung fehlgeschlagen:', err.message);
+    });
+
+    var reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if(reloaded) return;
+      reloaded = true;
+      location.reload();
+    });
+  });
+}
+
+/* Install-Knopf: erscheint, wenn das Handy die App installieren kann */
+window._deferredInstall = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  window._deferredInstall = e;
+  var btn = document.getElementById('installBtn');
+  if(btn) btn.style.display = 'inline-flex';
+});
+window.addEventListener('appinstalled', function(){
+  var btn = document.getElementById('installBtn');
+  if(btn) btn.style.display = 'none';
+});
 
 /* ============================================================
    HILFSFUNKTIONEN

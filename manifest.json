@@ -1,0 +1,21 @@
+{
+  "name": "Körperformen Internes Portal",
+  "short_name": "KF Portal",
+  "description": "Internes Team-Portal: Chat, Aufgaben und Ankündigungen.",
+  "start_url": "./intern.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1712",
+  "theme_color": "#0E1712",
+  "lang": "de",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

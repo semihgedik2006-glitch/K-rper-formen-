@@ -1,58 +1,75 @@
-# Körperformen – Internes Portal (`intern.html`)
+# Körperformen – Internes Portal (PWA)
 
-Internes Portal fürs Team: **Team-Chat**, **Chef-Bereich** für Rundnachrichten und
-**To-dos pro Studio** (15 Stück) zum Abhaken. Läuft **geräteübergreifend** über
-**Firebase** (Login + Echtzeit-Datenbank). Die Werbeseite (`index.html`) bleibt unberührt.
+Internes Portal mit Team-Chat, Aufgaben pro Studio und Chef-Bereich – läuft als **PWA**
+(Progressive Web App), also wie eine echte App auf dem Handy.
 
----
+## Die Dateien
 
-## 1. Was schon eingerichtet ist
+Vier Dateien gehören zusammen und müssen **im selben Ordner** liegen:
 
-- **Firebase-Projekt:** `formenchat` – die Zugangsdaten (Config) sind bereits in
-  `intern.html` eingetragen.
-- **Login:** E-Mail + Passwort (Firebase Authentication).
-- **Datenbank:** Firestore (Chat, Aufgaben, Ankündigungen – alles live auf allen Geräten).
+| Datei | Zweck |
+|---|---|
+| `intern.html` | Die App selbst |
+| `manifest.json` | Sagt dem Handy: „Ich bin eine App" |
+| `sw.js` | Service Worker (Caching, schneller Start, offline) |
+| `icon.svg` | App-Icon (KF-Logo) |
 
-## 2. Was du in der Firebase-Konsole noch aktivieren musst
+`index.html` (die Werbeseite) bleibt unberührt.
+
+## Online stellen
+
+Alle vier Dateien auf den Webspace oder zu **GitHub Pages** hochladen. Erreichbar dann
+unter z. B. `https://DEIN-LINK/intern.html`.
+
+> ⚠️ Wichtig: Damit der Service Worker funktioniert, muss die Seite über **HTTPS**
+> erreichbar sein (GitHub Pages, Netlify, dein Hoster – alle modernen machen das automatisch).
+> Auf `http://` funktionieren PWA-Features nicht.
+
+## Auf dem Handy installieren
+
+**Android (Chrome):** Im Login-Screen erscheint ein Knopf **„📲 Als App installieren"** –
+einfach antippen. Alternativ Browser-Menü → „App installieren".
+
+**iPhone (Safari):** Apple erlaubt PWAs nur über das Teilen-Menü:
+1. Teilen-Symbol antippen (Quadrat mit Pfeil nach oben).
+2. „Zum Home-Bildschirm" wählen.
+
+Nach der Installation:
+- App-Icon „KF Portal" auf dem Home-Screen.
+- Beim Öffnen: Vollbild, kein Browser-Balken.
+- **Startet sofort** beim zweiten Öffnen (alles ist im Cache).
+- Login bleibt gespeichert.
+
+## Firebase-Einstellungen (einmalig)
 
 In <https://console.firebase.google.com> → Projekt **formenchat**:
 
-1. **Authentication** → „Get started" → Tab **Sign-in method** →
-   **E-Mail/Passwort** aktivieren.
-2. **Firestore Database** → „Datenbank erstellen" → **Testmodus** → Region **europe-west1**.
-   *(Wichtig: Firestore, nicht Realtime Database.)*
+1. **Authentication** → Sign-in method → **E-Mail/Passwort** aktivieren.
+2. **Firestore Database** → erstellen (Testmodus, Region `europe-west1`).
+3. **Authentication → Settings → Authorized domains** → falls die Seite nicht unter
+   `formenchat.firebaseapp.com` läuft (z. B. GitHub Pages): **eigene Domain hinzufügen**.
 
-Danach funktioniert Registrierung und Login sofort.
-
-## 3. Online stellen
-
-`intern.html` ist eine einzelne Datei. Auf deinen Webspace oder GitHub Pages laden →
-erreichbar z. B. unter `https://DEIN-LINK/intern.html`.
-
-## 4. Auf dem Handy nutzen („wie eine App")
-
-1. Den Link im **Handy-Browser** öffnen (Safari auf iPhone, Chrome auf Android).
-2. Menü öffnen → **„Zum Home-Bildschirm hinzufügen"**.
-3. Es erscheint ein App-Symbol **„KF Portal"**. Beim Öffnen läuft es im **Vollbild**
-   wie eine echte App. Der Login bleibt gespeichert – kein ständiges Neu-Anmelden.
-
-> Falls mal „Verbindung wird hergestellt…" zu lange steht: nach 12 Sekunden erscheint
-> automatisch der Login bzw. ein **„Neu laden"**-Knopf. Meist hilft kurz neu laden
-> oder Internetverbindung prüfen.
-
-## 5. Anpassungen (oben in `intern.html` im `<script>`)
+## Anpassungen (in `intern.html` oben im `<script>`)
 
 ```js
-var STUDIOS = ["Studio 1", ... "Studio 15"];  // echte Namen eintragen
+var STUDIOS = ["Studio 1", ... "Studio 15"];  // echte Namen
 var CHEF_PIN = "1234";                          // Chef-Code – BITTE ÄNDERN!
 ```
 
-- **Mitarbeiter** registriert sich mit Name + Studio.
-- **Chef** registriert sich mit dem Chef-Code (Standard `1234`).
-- Separater Chef-Link: `…/intern.html#chef` (Chef-Tab ist dann vorausgewählt).
+## Updates ausrollen
 
-## 6. Sicherheit (empfohlen)
+Wenn ich später Änderungen an `intern.html` oder `sw.js` mache:
 
-Der Firestore-**Testmodus** erlaubt jedem mit der Adresse Zugriff und läuft nach ~30 Tagen
-ab. Für den Dauerbetrieb sollten echte Sicherheitsregeln rein (nur eingeloggte Nutzer).
-Sag Bescheid – dann richte ich dir passende Firestore-Regeln ein.
+1. Im **Service Worker** (`sw.js`) die Zeile `const VERSION = 'v3';` hochzählen
+   (z. B. auf `'v4'`) – das löscht den alten Cache.
+2. Alle Dateien neu hochladen.
+3. Bei den Nutzern: App einmal schließen und neu öffnen – Update kommt automatisch.
+
+## Falls etwas nicht klappt
+
+- **Spinner bleibt ewig auf Handy:** App komplett schließen (aus dem App-Switcher wischen)
+  und neu öffnen. Falls weiterhin: Browser-Cache leeren oder im privaten Modus testen.
+- **„Als App installieren"-Knopf erscheint nicht:** Du bist nicht auf HTTPS, oder die
+  App ist schon installiert. Auf iOS gibt es den Knopf nicht – dort musst du es über
+  „Teilen → Zum Home-Bildschirm" machen.
+- **Login klappt nicht:** Domain in Firebase „Authorized domains" eintragen (siehe oben).
