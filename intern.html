@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0E1712" />
 <meta name="robots" content="noindex, nofollow" />
+<!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <!-- Handy: als App zum Home-Bildschirm hinzufügbar (Vollbild) -->
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -282,7 +286,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 <!-- ── Loading ── -->
 <div id="loadingWrap">
   <div class="spinner"></div>
-  <p>Verbindung wird hergestellt …</p>
+  <p id="loadingStatus">Verbindung wird hergestellt …</p>
+  <p id="loadingStep" style="color:var(--text-3);font-size:.78rem;margin-top:-6px">Schritt 1/3: Lade Code …</p>
+  <button id="loadingForce" onclick="document.getElementById('loadingWrap').style.display='none';document.getElementById('authWrap').classList.add('show');"
+    style="display:none;margin-top:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#F0F7F3;padding:10px 18px;border-radius:999px;font-family:inherit;font-size:.85rem;cursor:pointer">
+    Login trotzdem anzeigen
+  </button>
+  <button id="loadingReload" onclick="location.reload(true)" style="display:none;margin-top:8px;background:linear-gradient(135deg,#00E06E,#19FF85);color:#04140C;border:none;padding:11px 22px;border-radius:999px;font-weight:700;font-family:inherit;font-size:.9rem;cursor:pointer">
+    Seite neu laden
+  </button>
 </div>
 
 <!-- ── Setup Notice (wenn Firebase Config fehlt) ── -->
@@ -503,15 +515,31 @@ function loadingError(msg){
     '</div>';
 }
 
-/* Sicherheits-Timeout: nach 12 s nicht mehr endlos „laden" */
+function setLoadingStep(text){
+  var el = document.getElementById('loadingStep');
+  if(el) el.textContent = text;
+}
+
+/* Nach 5 s "Fortfahren"-Knöpfe einblenden, damit man nicht ewig wartet */
+setTimeout(function(){
+  if(_loadingDone) return;
+  var f = document.getElementById('loadingForce');
+  var r = document.getElementById('loadingReload');
+  if(f) f.style.display = 'inline-block';
+  if(r) r.style.display = 'inline-block';
+  setLoadingStep('Dauert ungewöhnlich lange. Du kannst den Login schon antippen.');
+}, 5000);
+
+/* Harter Timeout: nach 10 s automatisch zum Login springen */
 var _loadTimeout = setTimeout(function(){
   if(_loadingDone) return;
   hideLoading();
-  // Wenn nach 12 s noch niemand eingeloggt ist, zeige den Login-Screen
   if(!document.getElementById('app').classList.contains('show')){
     document.getElementById('authWrap').classList.add('show');
   }
-}, 12000);
+}, 10000);
+
+setLoadingStep('Schritt 2/3: Verbinde mit Firebase …');
 
 var isConfigured = FIREBASE_CONFIG.apiKey !== "DEIN_API_KEY";
 
@@ -540,6 +568,7 @@ try{
   });
   // Login auf dem Gerät merken (kein ständiges Neu-Anmelden auf dem Handy)
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+  setLoadingStep('Schritt 3/3: Prüfe Anmeldung …');
 }catch(e){
   loadingError('Firebase-Fehler: '+e.message+'<br>Bitte Config prüfen.');
   return;
