@@ -531,13 +531,40 @@ var auth, db;
 try{
   firebase.initializeApp(FIREBASE_CONFIG);
   auth = firebase.auth();
-  db   = firebase.firestore();
+  // Firestore mit Long-Polling-Auto-Detection: fixt Mobilfunk-/Proxy-Probleme
+  // auf Handy (Samsung/iPhone), wenn der normale WebChannel-Stream blockiert wird
+  db = firebase.firestore();
+  db.settings({
+    experimentalAutoDetectLongPolling: true,
+    merge: true
+  });
   // Login auf dem Gerät merken (kein ständiges Neu-Anmelden auf dem Handy)
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
 }catch(e){
   loadingError('Firebase-Fehler: '+e.message+'<br>Bitte Config prüfen.');
   return;
 }
+
+/* Globale Fehler ans UI weiterleiten (damit man auf dem Handy sieht, was los ist) */
+window.addEventListener('error', function(ev){
+  var t = document.getElementById('toast');
+  if(t && ev && ev.message){
+    t.textContent = 'Fehler: '+ev.message.slice(0,90);
+    t.style.borderColor = 'var(--danger)';
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 5000);
+  }
+});
+window.addEventListener('unhandledrejection', function(ev){
+  var t = document.getElementById('toast');
+  var msg = (ev && ev.reason && (ev.reason.message||ev.reason.code))||'Promise-Fehler';
+  if(t){
+    t.textContent = 'Fehler: '+String(msg).slice(0,90);
+    t.style.borderColor = 'var(--danger)';
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 5000);
+  }
+});
 
 /* Web-App-Manifest zur Laufzeit (für „Zum Startbildschirm" als Vollbild-App auf Android) */
 (function addManifest(){
