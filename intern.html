@@ -322,6 +322,16 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .notif-banner .nb-txt{flex:1;font-size:.86rem;color:var(--text-2)}
 .notif-banner .nb-txt b{color:var(--text);font-family:var(--font-head)}
 .notif-banner button{flex-shrink:0}
+
+/* ── Studio-Mehrfachauswahl (Registrierung) ── */
+.studio-checks{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:220px;overflow-y:auto;
+  padding:4px;margin-bottom:4px}
+.studio-check{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1.5px solid var(--line-2);
+  border-radius:11px;cursor:pointer;font-size:.9rem;background:rgba(255,255,255,.02);transition:.15s;
+  user-select:none}
+.studio-check.on{border-color:var(--accent);background:rgba(0,224,110,.1);color:var(--accent-2)}
+.studio-check input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin:0}
+@media(max-width:420px){.studio-checks{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -403,8 +413,8 @@ var FIREBASE_CONFIG = {
       </div>
       <div class="field"><label for="rgName">Dein Name</label>
         <input class="inp" id="rgName" type="text" placeholder="Vor- und Nachname" autocomplete="name" maxlength="50" /></div>
-      <div class="field" id="rgStudioWrap"><label for="rgStudio">Dein Studio</label>
-        <select class="inp" id="rgStudio"></select></div>
+      <div class="field" id="rgStudioWrap"><label>Deine Studios (mehrere möglich)</label>
+        <div class="studio-checks" id="rgStudios"></div></div>
       <div class="field" id="rgPinWrap" style="display:none"><label for="rgPin">Chef-Code</label>
         <input class="inp" id="rgPin" type="password" placeholder="Geheimer Chef-Code" inputmode="numeric" /></div>
       <div class="field"><label for="rgEmail">E-Mail</label>
@@ -710,6 +720,7 @@ function initials(n){
 }
 function studioKey(name){ return 'studio-'+STUDIOS.indexOf(name); }
 function studioName(key){ var i=parseInt(String(key).replace('studio-',''),10); return STUDIOS[i]||key; }
+function channelStudioName(ch){ return (ch && ch.indexOf('studio-')===0) ? studioName(ch) : null; }
 function fmtTime(ts){
   if(!ts) return '';
   var d=new Date(ts), now=new Date();
@@ -810,9 +821,15 @@ var _knownTodoIds = null;    // zum Erkennen wirklich neuer Aufgaben
 var regRole = 'mitarbeiter';
 
 (function initAuthScreen(){
-  // Füllt Studio-Dropdown für Registrierung
-  var sel = $('rgStudio');
-  STUDIOS.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  // Studio-Checkboxen für Registrierung (Mehrfachauswahl)
+  var wrap = $('rgStudios');
+  STUDIOS.forEach(function(s){
+    var lab=document.createElement('label'); lab.className='studio-check';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.value=s;
+    cb.addEventListener('change',function(){ lab.classList.toggle('on', cb.checked); });
+    var span=document.createElement('span'); span.textContent=s;
+    lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
+  });
 
   // Tab-Wechsel
   $('tabLogin').addEventListener('click', function(){ setAuthMode('login'); });
@@ -884,11 +901,14 @@ function doRegister(){
   var email = $('rgEmail').value.trim();
   var pw    = $('rgPw').value;
   var pw2   = $('rgPw2').value;
-  var studio = regRole==='mitarbeiter' ? $('rgStudio').value : null;
+  var studios = regRole==='mitarbeiter'
+    ? Array.prototype.slice.call($('rgStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; })
+    : [];
   var pin    = regRole==='chef'        ? $('rgPin').value    : null;
   $('regErr').textContent = '';
 
   if(!name||!email||!pw){ $('regErr').textContent='Bitte alle Felder ausfüllen.'; return; }
+  if(regRole==='mitarbeiter' && !studios.length){ $('regErr').textContent='Bitte mindestens ein Studio auswählen.'; return; }
   if(pw!==pw2){ $('regErr').textContent='Passwörter stimmen nicht überein.'; return; }
   if(regRole==='chef' && pin!==CHEF_PIN){ $('regErr').textContent='Falscher Chef-Code.'; return; }
 
@@ -896,7 +916,8 @@ function doRegister(){
   auth.createUserWithEmailAndPassword(email, pw)
     .then(function(cred){
       return db.collection('users').doc(cred.user.uid).set({
-        name:name, email:email, role:regRole, studio:studio, createdAt:Date.now()
+        name:name, email:email, role:regRole,
+        studios:studios, studio:studios[0]||null, createdAt:Date.now()
       });
     })
     .catch(function(e){
@@ -915,6 +936,11 @@ auth.onAuthStateChanged(function(user){
       .then(function(doc){
         if(doc.exists){
           session = Object.assign({ uid:user.uid }, doc.data());
+          // Mehrere Studios unterstützen (alte Konten haben evtl. nur 'studio')
+          session.studios = (session.studios && session.studios.length)
+            ? session.studios
+            : (session.studio ? [session.studio] : []);
+          session.studioKeys = session.studios.map(studioKey);
           $('authWrap').classList.remove('show');
           showApp();
         } else {
@@ -942,7 +968,8 @@ auth.onAuthStateChanged(function(user){
 function showApp(){
   $('app').classList.add('show');
   $('uName').textContent = session.name;
-  $('uMeta').textContent = session.role==='chef' ? 'Chef · Leitung' : session.studio;
+  $('uMeta').textContent = session.role==='chef' ? 'Chef · Leitung'
+    : (session.studios.length>2 ? session.studios.slice(0,2).join(', ')+' +'+(session.studios.length-2) : session.studios.join(', '));
   var av=$('uAvatar'); av.textContent=initials(session.name);
   av.classList.toggle('chef', session.role==='chef');
 
@@ -1015,8 +1042,8 @@ function registerFcmToken(){
     // Token speichern, damit die Server-Funktion daran Push schicken kann
     return db.collection('pushTokens').doc(token).set({
       uid: session.uid, name: session.name, role: session.role,
-      studio: session.studio||null,
-      studioKey: session.studio ? studioKey(session.studio) : null,
+      studios: session.studios || [],
+      studioKeys: session.studioKeys || [],
       updatedAt: Date.now()
     });
   }).catch(function(e){ console.warn('FCM-Token:', e.message); });
@@ -1068,7 +1095,7 @@ function buildChannels(){
   if(session.role==='chef'){
     STUDIOS.forEach(function(s){ chans.push({id:studioKey(s),label:s}); });
   } else {
-    chans.push({id:studioKey(session.studio),label:'Mein Studio · '+session.studio});
+    session.studios.forEach(function(s){ chans.push({id:studioKey(s),label:s}); });
   }
   chans.forEach(function(c){
     var b=document.createElement('button');
@@ -1134,39 +1161,31 @@ function listenChannel(channelId){
 function listenTodos(){
   _todosUnsubs.forEach(function(u){ u(); }); _todosUnsubs=[];
   cachedTodos={};
+  // Chef sieht alle Studios; Mitarbeiter nur die eigenen
+  var keys = session.role==='chef' ? STUDIOS.map(studioKey) : session.studioKeys;
+  var notify = session.role!=='chef'; // Mitarbeiter bei neuen Aufgaben benachrichtigen
+  keys.forEach(function(sk){ listenTodoStudio(sk, notify); });
+}
 
-  if(session.role==='chef'){
-    STUDIOS.forEach(function(s){
-      var sk=studioKey(s);
-      var unsub=db.collection('studios').doc(sk).collection('todos')
-        .orderBy('ts')
-        .onSnapshot(function(snap){
-          cachedTodos[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
-          renderTodos();
-        }, function(e){ console.error('Todos '+s+':',e.message); });
-      _todosUnsubs.push(unsub);
-    });
-  } else {
-    var sk=studioKey(session.studio);
-    var first=true, startTs=Date.now();
-    var unsub=db.collection('studios').doc(sk).collection('todos')
-      .orderBy('ts')
-      .onSnapshot(function(snap){
-        if(!first){
-          snap.docChanges().forEach(function(ch){
-            if(ch.type!=='added') return;
-            var t=ch.doc.data();
-            if((t.ts||0)>=startTs && t.createdByUid!==session.uid){
-              localNotify('Neue Aufgabe', t.title||'');
-            }
-          });
-        }
-        first=false;
-        cachedTodos[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
-        renderTodos();
-      }, function(e){ console.error('Todos:',e.message); });
-    _todosUnsubs.push(unsub);
-  }
+function listenTodoStudio(sk, notify){
+  var first=true, startTs=Date.now();
+  var unsub=db.collection('studios').doc(sk).collection('todos')
+    .orderBy('ts')
+    .onSnapshot(function(snap){
+      if(notify && !first){
+        snap.docChanges().forEach(function(ch){
+          if(ch.type!=='added') return;
+          var t=ch.doc.data();
+          if((t.ts||0)>=startTs && t.createdByUid!==session.uid){
+            localNotify('Neue Aufgabe', t.title||'');
+          }
+        });
+      }
+      first=false;
+      cachedTodos[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderTodos();
+    }, function(e){ console.error('Todos '+sk+':',e.message); });
+  _todosUnsubs.push(unsub);
 }
 
 /* Ankündigungen */
@@ -1219,15 +1238,24 @@ function renderTodos(){
     });
     area.innerHTML = html || emptyHTML('Noch keine Aufgaben.','Erstelle welche im Chef-Bereich.');
   } else {
-    var sk=studioKey(session.studio);
-    var list=(cachedTodos[sk]||[]).slice().sort(function(a,b){ return (a.done-b.done)||(a.ts-b.ts); });
-    $('todoTitle').textContent='Aufgaben · '+session.studio;
-    var done=list.filter(function(t){ return t.done; }).length, total=list.length;
-    var pct=total?Math.round(done/total*100):0;
-    var head=total?'<div class="todo-progress"><div class="pbar"><i style="width:'+pct+'%"></i></div><span class="pcount">'+done+'/'+total+'</span></div>':'';
-    area.innerHTML = total
-      ? head+list.map(function(t){ return todoHTML(t,sk,false); }).join('')
-      : emptyHTML('Alles erledigt! 🎉','Aktuell keine offenen Aufgaben.');
+    var multi = session.studios.length>1;
+    $('todoTitle').textContent = multi ? 'Meine Aufgaben' : ('Aufgaben · '+(session.studios[0]||''));
+    $('todoSub').textContent = multi ? 'Aufgaben deiner Studios – einfach abhaken.' : 'Deine To-dos – einfach abhaken.';
+    var html='';
+    session.studioKeys.forEach(function(sk, idx){
+      var sName=session.studios[idx];
+      var list=(cachedTodos[sk]||[]).slice().sort(function(a,b){ return (a.done-b.done)||(a.ts-b.ts); });
+      var done=list.filter(function(t){ return t.done; }).length, total=list.length;
+      var pct=total?Math.round(done/total*100):0;
+      if(multi) html+='<h3 style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(sName)+'</h3>';
+      if(total){
+        html+='<div class="todo-progress"><div class="pbar"><i style="width:'+pct+'%"></i></div><span class="pcount">'+done+'/'+total+'</span></div>';
+        html+=list.map(function(t){ return todoHTML(t,sk,false); }).join('');
+      } else {
+        html+='<p style="color:var(--text-3);font-size:.9rem;margin:2px 0 14px">Keine offenen Aufgaben. 🎉</p>';
+      }
+    });
+    area.innerHTML = html || emptyHTML('Keine Studios','Dir ist noch kein Studio zugeordnet.');
   }
   bindTodoClicks(area);
   updateBadges();
@@ -1278,8 +1306,7 @@ var _todoPhotoTarget=null;
 function renderAnnouncements(anns){
   var area=$('annArea');
   if(session.role!=='chef'){
-    var sk=studioKey(session.studio);
-    anns=anns.filter(function(a){ return !a.target||a.target==='all'||a.target===sk; });
+    anns=anns.filter(function(a){ return !a.target||a.target==='all'||session.studioKeys.indexOf(a.target)>=0; });
   }
   if(!anns.length){ area.innerHTML=emptyHTML('Keine Ankündigungen','Infos von der Leitung erscheinen hier.'); return; }
   area.innerHTML=anns.map(function(a){
@@ -1312,8 +1339,9 @@ function emptyHTML(h,s){
 function updateBadges(){
   var open=0;
   if(session&&session.role!=='chef'){
-    var sk=studioKey(session.studio);
-    open=(cachedTodos[sk]||[]).filter(function(t){ return !t.done; }).length;
+    session.studioKeys.forEach(function(sk){
+      open += (cachedTodos[sk]||[]).filter(function(t){ return !t.done; }).length;
+    });
   }
   document.querySelectorAll('[data-badge="todos"],[data-mbadge="todos"]').forEach(function(b){
     b.textContent=open; b.style.display=open?'grid':'none';
@@ -1334,7 +1362,7 @@ function bindActions(){
     clearChatImg();
     var doc={
       uid:session.uid, name:session.name, role:session.role,
-      studio:session.studio||null, text:text, ts:Date.now()
+      studio:channelStudioName(currentChannel), text:text, ts:Date.now()
     };
     if(img) doc.img=img;
     db.collection('channels').doc(currentChannel).collection('messages').add(doc)

@@ -38,9 +38,12 @@ var STUDIOS = [
 ];
 ```
 
-> Schick mir die 15 Namen, dann trage ich sie für dich ein.
 > Wichtig: Reihenfolge nicht nachträglich umsortieren, sonst verschieben sich
 > bestehende Aufgaben/Kanäle (sie hängen an der Position in der Liste).
+
+**Mehrere Studios pro Mitarbeiter:** Bei der Registrierung kann ein Mitarbeiter
+beliebig viele Studios anhaken (z. B. Hürth + Brühl + Longerich). Er sieht dann
+alle Chat-Kanäle und Aufgaben dieser Studios und wird für alle benachrichtigt.
 
 Chef-Code (zum Registrieren als Chef) ebenfalls dort ändern:
 ```js

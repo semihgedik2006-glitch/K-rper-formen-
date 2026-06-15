@@ -24,6 +24,12 @@ async function collectTokens(filterFn, excludeUid) {
   return tokens;
 }
 
+/* Gehört dieses Gerät zum Studio? (Mehrfach-Studios; alte Tokens mit Einzel-Feld weiter unterstützt) */
+function inStudio(d, key) {
+  if (Array.isArray(d.studioKeys)) return d.studioKeys.indexOf(key) >= 0;
+  return d.studioKey === key;
+}
+
 /* Push an eine Liste von Tokens senden + ungültige Tokens aufräumen */
 async function sendPush(tokens, title, body) {
   if (!tokens.length) return;
@@ -55,7 +61,7 @@ exports.onNewMessage = region.firestore
     const isGeneral = channelId === 'allgemein';
     const tokens = await collectTokens(d => {
       if (isGeneral) return true;                 // Allgemein → alle
-      return d.studioKey === channelId || d.role === 'chef'; // Studio-Kanal → Studio + Chefs
+      return inStudio(d, channelId) || d.role === 'chef'; // Studio-Kanal → Studio + Chefs
     }, m.uid);
     const body = m.text ? m.text : (m.img ? '📷 Foto' : '');
     await sendPush(tokens, 'Neue Nachricht von ' + (m.name || 'Team'), body);
@@ -67,7 +73,7 @@ exports.onNewTodo = region.firestore
   .onCreate(async (snap, ctx) => {
     const t = snap.data() || {};
     const studioKey = ctx.params.studioKey;
-    const tokens = await collectTokens(d => d.studioKey === studioKey, t.createdByUid);
+    const tokens = await collectTokens(d => inStudio(d, studioKey), t.createdByUid);
     await sendPush(tokens, 'Neue Aufgabe', t.title || '');
   });
 
@@ -79,7 +85,7 @@ exports.onNewAnnouncement = region.firestore
     const target = a.target || 'all';
     const tokens = await collectTokens(d => {
       if (target === 'all') return true;
-      return d.studioKey === target || d.role === 'chef';
+      return inStudio(d, target) || d.role === 'chef';
     }, a.uid);
     await sendPush(tokens, '📣 ' + (a.from || 'Leitung'), a.text || '');
   });
