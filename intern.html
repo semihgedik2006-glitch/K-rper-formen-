@@ -93,13 +93,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Auth Screen ── */
 .auth-wrap{min-height:100vh;min-height:100svh;display:none;align-items:center;justify-content:center;
-  padding:24px;position:relative;overflow:hidden}
+  padding:24px;position:relative;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .auth-wrap.show{display:flex}
-.auth-mesh{position:absolute;inset:-20%;z-index:0;filter:blur(70px);opacity:.7;pointer-events:none}
+.auth-mesh{position:fixed;inset:-20%;z-index:0;filter:blur(70px);opacity:.7;pointer-events:none}
 .auth-mesh i{position:absolute;display:block;border-radius:50%}
 .auth-mesh .a{width:50vw;height:50vw;background:radial-gradient(circle,rgba(0,221,120,.4),transparent 70%);top:-10%;right:-10%}
 .auth-mesh .b{width:40vw;height:40vw;background:radial-gradient(circle,rgba(255,107,53,.18),transparent 70%);bottom:-15%;left:-5%}
-.auth-card{position:relative;z-index:1;width:100%;max-width:450px;background:var(--bg-2);
+.auth-card{position:relative;z-index:1;width:100%;max-width:450px;margin:auto;background:var(--bg-2);
   border:1px solid var(--line-2);border-radius:var(--radius-lg);padding:clamp(24px,6vw,40px);
   box-shadow:var(--shadow-lg)}
 .auth-brand{font-family:var(--font-head);font-weight:800;font-size:1.5rem;letter-spacing:.5px;margin-bottom:4px}
@@ -127,7 +127,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .auth-foot a{color:var(--accent-d);cursor:pointer}
 
 /* ── App Shell ── */
-.app{display:none;min-height:100vh;min-height:100svh;flex-direction:column}
+.app{display:none;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 .app.show{display:flex}
 .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
   gap:14px;padding:11px clamp(14px,4vw,26px);
@@ -166,7 +166,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   font-weight:700;font-size:.7rem;min-width:19px;height:19px;border-radius:999px;display:none;
   place-items:center;padding:0 5px}
 
-.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
 .view.show{display:flex}
 .view-head{padding:20px clamp(14px,4vw,28px) 12px;flex-shrink:0}
