@@ -1,0 +1,85 @@
+/* ============================================================
+   Körperformen – Push-Benachrichtigungen (Firebase Cloud Functions, 1. Gen)
+   Sendet Push, wenn eine neue Chat-Nachricht, Aufgabe oder Ankündigung entsteht.
+   Region: europe-west1 (passend zu Firestore).
+   ============================================================ */
+
+const functions = require('firebase-functions/v1');
+const admin = require('firebase-admin');
+
+admin.initializeApp();
+const db = admin.firestore();
+const region = functions.region('europe-west1');
+
+/* Tokens aus pushTokens holen, die zu den Kriterien passen.
+   filterFn(data) → true = an dieses Gerät senden. excludeUid = Absender nicht benachrichtigen. */
+async function collectTokens(filterFn, excludeUid) {
+  const snap = await db.collection('pushTokens').get();
+  const tokens = [];
+  snap.forEach(doc => {
+    const d = doc.data() || {};
+    if (excludeUid && d.uid === excludeUid) return;
+    if (filterFn(d)) tokens.push(doc.id);
+  });
+  return tokens;
+}
+
+/* Push an eine Liste von Tokens senden + ungültige Tokens aufräumen */
+async function sendPush(tokens, title, body) {
+  if (!tokens.length) return;
+  const message = {
+    notification: { title, body: body || '' },
+    tokens: tokens.slice(0, 500)
+  };
+  const res = await admin.messaging().sendEachForMulticast(message);
+  // Ungültige (abgemeldete) Tokens löschen
+  const dead = [];
+  res.responses.forEach((r, i) => {
+    if (!r.success) {
+      const code = r.error && r.error.code;
+      if (code === 'messaging/registration-token-not-registered' ||
+          code === 'messaging/invalid-registration-token') {
+        dead.push(tokens[i]);
+      }
+    }
+  });
+  await Promise.all(dead.map(t => db.collection('pushTokens').doc(t).delete().catch(() => {})));
+}
+
+/* ── Neue Chat-Nachricht ── */
+exports.onNewMessage = region.firestore
+  .document('channels/{channelId}/messages/{msgId}')
+  .onCreate(async (snap, ctx) => {
+    const m = snap.data() || {};
+    const channelId = ctx.params.channelId;
+    const isGeneral = channelId === 'allgemein';
+    const tokens = await collectTokens(d => {
+      if (isGeneral) return true;                 // Allgemein → alle
+      return d.studioKey === channelId || d.role === 'chef'; // Studio-Kanal → Studio + Chefs
+    }, m.uid);
+    const body = m.text ? m.text : (m.img ? '📷 Foto' : '');
+    await sendPush(tokens, 'Neue Nachricht von ' + (m.name || 'Team'), body);
+  });
+
+/* ── Neue Aufgabe ── */
+exports.onNewTodo = region.firestore
+  .document('studios/{studioKey}/todos/{todoId}')
+  .onCreate(async (snap, ctx) => {
+    const t = snap.data() || {};
+    const studioKey = ctx.params.studioKey;
+    const tokens = await collectTokens(d => d.studioKey === studioKey, t.createdByUid);
+    await sendPush(tokens, 'Neue Aufgabe', t.title || '');
+  });
+
+/* ── Neue Ankündigung ── */
+exports.onNewAnnouncement = region.firestore
+  .document('announcements/{annId}')
+  .onCreate(async (snap) => {
+    const a = snap.data() || {};
+    const target = a.target || 'all';
+    const tokens = await collectTokens(d => {
+      if (target === 'all') return true;
+      return d.studioKey === target || d.role === 'chef';
+    }, a.uid);
+    await sendPush(tokens, '📣 ' + (a.from || 'Leitung'), a.text || '');
+  });

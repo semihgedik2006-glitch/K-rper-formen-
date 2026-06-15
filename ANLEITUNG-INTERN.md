@@ -1,75 +1,111 @@
-# Körperformen – Internes Portal (PWA)
+# Körperformen – Internes Portal
 
-Internes Portal mit Team-Chat, Aufgaben pro Studio und Chef-Bereich – läuft als **PWA**
-(Progressive Web App), also wie eine echte App auf dem Handy.
+Team-Chat (mit Fotos), Aufgaben pro Studio (mit Fotos), Ankündigungen,
+Push-Benachrichtigungen und sichere Firebase-Regeln.
 
-## Die Dateien
+## Dateien
 
-Vier Dateien gehören zusammen und müssen **im selben Ordner** liegen:
+| Datei | Zweck | Pflicht |
+|---|---|---|
+| `intern.html` | Die App | ✅ |
+| `firebase-messaging-sw.js` | Empfängt Push bei geschlossener App | nur für Push |
+| `firestore.rules` | Sichere Datenbank-Regeln | ✅ (einmal einspielen) |
+| `functions/` | Server-Funktion, die Push verschickt | nur für Push |
 
-| Datei | Zweck |
-|---|---|
-| `intern.html` | Die App selbst |
-| `manifest.json` | Sagt dem Handy: „Ich bin eine App" |
-| `sw.js` | Service Worker (Caching, schneller Start, offline) |
-| `icon.svg` | App-Icon (KF-Logo) |
+`intern.html` und `firebase-messaging-sw.js` müssen **im selben Ordner** liegen
+und über **HTTPS** erreichbar sein (z. B. GitHub Pages).
 
-`index.html` (die Werbeseite) bleibt unberührt.
+---
 
-## Online stellen
+## 1. Fotos im Chat & bei Aufgaben  ✅ läuft sofort, kostenlos
 
-Alle vier Dateien auf den Webspace oder zu **GitHub Pages** hochladen. Erreichbar dann
-unter z. B. `https://DEIN-LINK/intern.html`.
+- Im Chat: auf das **Büroklammer-Symbol** tippen → Bild wählen → senden.
+- Bei Aufgaben: Chef kann beim Erstellen ein **Foto** anhängen; jeder im Studio
+  kann per **„Foto hinzufügen"** ein Foto an eine Aufgabe hängen (z. B. als Nachweis).
+- Bilder werden automatisch verkleinert/komprimiert und direkt in der Datenbank
+  gespeichert – **kein Blaze-Plan nötig**. (Nur Bilder, keine PDFs/Word-Dateien.)
+- Tippen auf ein Bild öffnet es im Vollbild.
 
-> ⚠️ Wichtig: Damit der Service Worker funktioniert, muss die Seite über **HTTPS**
-> erreichbar sein (GitHub Pages, Netlify, dein Hoster – alle modernen machen das automatisch).
-> Auf `http://` funktionieren PWA-Features nicht.
+---
 
-## Auf dem Handy installieren
+## 2. Echte Studio-Namen eintragen
 
-**Android (Chrome):** Im Login-Screen erscheint ein Knopf **„📲 Als App installieren"** –
-einfach antippen. Alternativ Browser-Menü → „App installieren".
-
-**iPhone (Safari):** Apple erlaubt PWAs nur über das Teilen-Menü:
-1. Teilen-Symbol antippen (Quadrat mit Pfeil nach oben).
-2. „Zum Home-Bildschirm" wählen.
-
-Nach der Installation:
-- App-Icon „KF Portal" auf dem Home-Screen.
-- Beim Öffnen: Vollbild, kein Browser-Balken.
-- **Startet sofort** beim zweiten Öffnen (alles ist im Cache).
-- Login bleibt gespeichert.
-
-## Firebase-Einstellungen (einmalig)
-
-In <https://console.firebase.google.com> → Projekt **formenchat**:
-
-1. **Authentication** → Sign-in method → **E-Mail/Passwort** aktivieren.
-2. **Firestore Database** → erstellen (Testmodus, Region `europe-west1`).
-3. **Authentication → Settings → Authorized domains** → falls die Seite nicht unter
-   `formenchat.firebaseapp.com` läuft (z. B. GitHub Pages): **eigene Domain hinzufügen**.
-
-## Anpassungen (in `intern.html` oben im `<script>`)
+Oben in `intern.html` im `<script>`:
 
 ```js
-var STUDIOS = ["Studio 1", ... "Studio 15"];  // echte Namen
-var CHEF_PIN = "1234";                          // Chef-Code – BITTE ÄNDERN!
+var STUDIOS = [
+  "Hürth", "Köln-Süd", ...   // deine 15 echten Namen
+];
 ```
 
-## Updates ausrollen
+> Schick mir die 15 Namen, dann trage ich sie für dich ein.
+> Wichtig: Reihenfolge nicht nachträglich umsortieren, sonst verschieben sich
+> bestehende Aufgaben/Kanäle (sie hängen an der Position in der Liste).
 
-Wenn ich später Änderungen an `intern.html` oder `sw.js` mache:
+Chef-Code (zum Registrieren als Chef) ebenfalls dort ändern:
+```js
+var CHEF_PIN = "1234";   // BITTE ÄNDERN!
+```
 
-1. Im **Service Worker** (`sw.js`) die Zeile `const VERSION = 'v3';` hochzählen
-   (z. B. auf `'v4'`) – das löscht den alten Cache.
-2. Alle Dateien neu hochladen.
-3. Bei den Nutzern: App einmal schließen und neu öffnen – Update kommt automatisch.
+---
 
-## Falls etwas nicht klappt
+## 3. Sichere Firebase-Regeln einspielen  ✅ wichtig
 
-- **Spinner bleibt ewig auf Handy:** App komplett schließen (aus dem App-Switcher wischen)
-  und neu öffnen. Falls weiterhin: Browser-Cache leeren oder im privaten Modus testen.
-- **„Als App installieren"-Knopf erscheint nicht:** Du bist nicht auf HTTPS, oder die
-  App ist schon installiert. Auf iOS gibt es den Knopf nicht – dort musst du es über
-  „Teilen → Zum Home-Bildschirm" machen.
-- **Login klappt nicht:** Domain in Firebase „Authorized domains" eintragen (siehe oben).
+1. [Firebase Console](https://console.firebase.google.com) → Projekt **formenchat**
+   → **Firestore Database** → Tab **Regeln (Rules)**.
+2. Den gesamten Inhalt von **`firestore.rules`** hineinkopieren → **Veröffentlichen**.
+
+Damit darf nur, wer eingeloggt ist, etwas lesen; Aufgaben und Ankündigungen
+kann nur ein Chef anlegen. (Ersetzt den unsicheren Testmodus.)
+
+---
+
+## 4. Push-Benachrichtigungen „auch bei gesperrtem Handy"
+
+Das braucht 3 Schritte. **Ohne diese Schritte funktioniert die App trotzdem** –
+nur die Benachrichtigung kommt dann nur, solange die App offen/im Hintergrund ist.
+
+### Schritt A – Blaze-Plan aktivieren
+Push über eine Server-Funktion braucht den **Blaze-Plan** (Pay-as-you-go).
+Er hat ein großzügiges Gratis-Kontingent – für ein 15-Studio-Team entstehen
+praktisch keine Kosten. Console → unten links **„Upgrade" → Blaze**.
+
+### Schritt B – Web-Push-Schlüssel (VAPID) holen
+Console → ⚙️ **Projekteinstellungen → Cloud Messaging** →
+Abschnitt **„Web Push certificates"** → **Schlüsselpaar generieren** →
+den **öffentlichen Schlüssel** kopieren und in `intern.html` eintragen:
+
+```js
+var VAPID_KEY = "HIER_DEN_SCHLÜSSEL_EINFÜGEN";
+```
+
+> Schick mir den Schlüssel, dann trage ich ihn ein.
+
+### Schritt C – Server-Funktion hochladen
+Einmalig am PC (Node.js + Firebase CLI nötig):
+
+```bash
+npm install -g firebase-tools      # Firebase CLI installieren
+firebase login                     # mit deinem Google-Konto anmelden
+cd <Projektordner>                 # Ordner mit dem functions/-Verzeichnis
+firebase deploy --only functions   # Funktion hochladen
+```
+
+Danach verschickt Firebase automatisch Push, sobald eine neue Nachricht,
+Aufgabe oder Ankündigung entsteht.
+
+> Wenn dir Schritt C zu technisch ist: sag Bescheid, ich führe dich durch oder
+> mache es mit dir zusammen.
+
+### Auf dem Handy aktivieren
+Nach dem Login erscheint oben im Chat ein Banner **„Benachrichtigungen aktivieren"**.
+Antippen und erlauben. (iPhone: funktioniert nur, wenn die Seite über
+„Teilen → Zum Home-Bildschirm" als App installiert wurde, iOS 16.4+.)
+
+---
+
+## Was ich noch von dir brauche
+
+1. Die **15 echten Studio-Namen**.
+2. Den **VAPID-Schlüssel** (Schritt B) – falls du Hintergrund-Push willst.
+3. Sag, ob du beim **Funktion-Hochladen** (Schritt C) Hilfe brauchst.

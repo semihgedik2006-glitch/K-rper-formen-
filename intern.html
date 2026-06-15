@@ -5,15 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0E1712" />
 <meta name="robots" content="noindex, nofollow" />
-<!-- PWA: Manifest + App-Icons -->
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <!-- Handy: als App zum Home-Bildschirm hinzufügbar (Vollbild) -->
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="KF Portal" />
-<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='70' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3EKF%3C/text%3E%3C/svg%3E" />
 <title>Körperformen – Internes Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -278,6 +279,49 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation:none!important}}
+
+/* ── Foto-Anhänge im Chat ── */
+.msg .msg-img{margin-top:6px;border-radius:12px;max-width:240px;max-height:280px;width:auto;
+  display:block;cursor:pointer;border:1px solid var(--line)}
+.attach-btn{width:46px;min-width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line-2);
+  background:rgba(255,255,255,.04);color:var(--text-2);cursor:pointer;display:grid;place-items:center;
+  transition:.2s;flex-shrink:0}
+.attach-btn:hover{color:var(--accent-d);border-color:var(--accent)}
+.attach-btn svg{width:20px;height:20px}
+.hidden-file{display:none}
+/* Vorschau eines ausgewählten Bildes vor dem Senden */
+.img-preview{display:none;align-items:center;gap:10px;padding:8px clamp(14px,4vw,28px);
+  background:var(--bg-soft);border-top:1px solid var(--line)}
+.img-preview.show{display:flex}
+.img-preview img{height:54px;width:54px;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)}
+.img-preview .pv-info{flex:1;min-width:0;font-size:.82rem;color:var(--text-2)}
+.img-preview .pv-x{background:rgba(239,68,68,.12);color:#ff8a8a;border:none;border-radius:9px;
+  width:34px;height:34px;cursor:pointer;flex-shrink:0;font-size:1.1rem}
+
+/* ── Foto bei Aufgaben ── */
+.t-photo{margin-top:8px;border-radius:10px;max-width:160px;max-height:160px;cursor:pointer;
+  border:1px solid var(--line);display:block}
+.t-photo-add{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:.78rem;
+  color:var(--accent-d);cursor:pointer;background:rgba(0,224,110,.08);border:1px solid rgba(0,224,110,.2);
+  padding:5px 11px;border-radius:999px;font-weight:600}
+.t-photo-add svg{width:14px;height:14px}
+
+/* ── Bild-Lightbox (Vollbild) ── */
+#lightbox{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.9);padding:20px;cursor:zoom-out}
+#lightbox.show{display:flex}
+#lightbox img{max-width:100%;max-height:100%;border-radius:8px}
+#lightbox .lb-close{position:absolute;top:16px;right:18px;width:42px;height:42px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.3rem;cursor:pointer}
+
+/* ── Benachrichtigungs-Banner ── */
+.notif-banner{display:none;align-items:center;gap:12px;margin:0 clamp(14px,4vw,28px) 10px;
+  padding:12px 16px;background:rgba(0,224,110,.08);border:1px solid rgba(0,224,110,.3);border-radius:14px}
+.notif-banner.show{display:flex}
+.notif-banner svg{width:22px;height:22px;color:var(--accent-d);flex-shrink:0}
+.notif-banner .nb-txt{flex:1;font-size:.86rem;color:var(--text-2)}
+.notif-banner .nb-txt b{color:var(--text);font-family:var(--font-head)}
+.notif-banner button{flex-shrink:0}
 </style>
 </head>
 <body>
@@ -328,10 +372,6 @@ var FIREBASE_CONFIG = {
   <div class="auth-card">
     <div class="auth-brand">KÖRPER<b>FORMEN</b></div>
     <p class="auth-sub">Internes Portal · Anmeldung</p>
-    <button id="installBtn" class="btn btn-ghost btn-sm" style="display:none;width:100%;margin-bottom:14px"
-      onclick="(function(){var p=window._deferredInstall;if(!p)return;p.prompt();p.userChoice.then(function(){window._deferredInstall=null;document.getElementById('installBtn').style.display='none';});})()">
-      📲 Als App installieren
-    </button>
 
     <div class="auth-tabs" role="tablist">
       <button class="auth-tab active" id="tabLogin" role="tab" aria-selected="true">Anmelden</button>
@@ -401,9 +441,23 @@ var FIREBASE_CONFIG = {
       <!-- CHAT -->
       <section class="view" id="view-chat">
         <div class="view-head"><h2>Team-Chat</h2><p>Schreibe mit allen oder nur mit deinem Studio.</p></div>
+        <div class="notif-banner" id="notifBanner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <div class="nb-txt"><b>Benachrichtigungen an?</b> Erhalte Töne &amp; Hinweise bei neuen Nachrichten und Aufgaben.</div>
+          <button class="btn btn-primary btn-sm" id="notifEnable">Aktivieren</button>
+        </div>
         <div class="chat-channels" id="chatChannels"></div>
         <div class="chat-scroll" id="chatScroll"></div>
+        <div class="img-preview" id="imgPreview">
+          <img id="imgPreviewImg" alt="Vorschau" />
+          <div class="pv-info" id="imgPreviewInfo">Bild bereit zum Senden</div>
+          <button class="pv-x" id="imgPreviewX" aria-label="Bild entfernen">✕</button>
+        </div>
         <div class="chat-input">
+          <input type="file" accept="image/*" class="hidden-file" id="chatFile" />
+          <button class="attach-btn" id="chatAttach" aria-label="Foto anhängen" title="Foto anhängen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
           <textarea class="inp" id="chatText" rows="1" placeholder="Nachricht … (Enter = senden, Shift+Enter = Zeilenumbruch)" maxlength="2000"></textarea>
           <button class="btn btn-primary btn-sm" id="chatSend" aria-label="Senden">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
@@ -443,6 +497,15 @@ var FIREBASE_CONFIG = {
               <textarea class="inp" id="ntDesc" placeholder="Details …" maxlength="1000"></textarea></div>
             <div class="field"><label for="ntStudio">Für welches Studio?</label>
               <select class="inp" id="ntStudio"></select></div>
+            <div class="field">
+              <label>Foto (optional)</label>
+              <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
+              <button type="button" class="btn btn-ghost btn-sm" id="ntAttach" style="width:100%">📷 Foto hinzufügen</button>
+              <div id="ntPreviewWrap" style="display:none;margin-top:10px;align-items:center;gap:10px">
+                <img id="ntPreviewImg" alt="Vorschau" style="height:60px;width:60px;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)" />
+                <button type="button" class="pv-x" id="ntPreviewX" aria-label="Foto entfernen" style="display:inline-block">✕</button>
+              </div>
+            </div>
             <button class="btn btn-primary btn-sm" id="ntAdd">Aufgabe erstellen</button>
           </div>
           <div class="card">
@@ -460,10 +523,17 @@ var FIREBASE_CONFIG = {
 
 <div class="toast" id="toast"></div>
 
+<!-- Bild-Lightbox (Vollbild-Ansicht) -->
+<div id="lightbox"><button class="lb-close" aria-label="Schließen">✕</button><img id="lightboxImg" alt="" /></div>
+
+<!-- Gemeinsames Datei-Feld für Foto an Aufgabe -->
+<input type="file" accept="image/*" class="hidden-file" id="todoFileShared" />
+
 <!-- Firebase SDKs (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 
 <script>
 (function(){
@@ -480,6 +550,16 @@ var STUDIOS = [
 ];
 
 var CHEF_PIN = "1234"; // Chef-Registrierungscode – BITTE ÄNDERN!
+
+/* VAPID-Schlüssel für Push-Benachrichtigungen (auch bei gesperrtem Handy).
+   Holen: Firebase Console → Projekteinstellungen → Cloud Messaging →
+   "Web Push-Zertifikate" → Schlüsselpaar generieren → öffentlichen Schlüssel hier einfügen.
+   Solange leer: Foto + In-App-Hinweise funktionieren, aber kein Hintergrund-Push. */
+var VAPID_KEY = "";
+
+/* Max. Bildgröße fürs kostenlose Speichern (in der Datenbank). Bilder werden
+   automatisch auf diese Kantenlänge verkleinert und komprimiert. */
+var IMG_MAX_DIM = 1100;
 
 /* Firebase-Config – deine echten Projektdaten (Projekt: formenchat) */
 var FIREBASE_CONFIG = {
@@ -598,47 +678,22 @@ window.addEventListener('unhandledrejection', function(ev){
   }
 });
 
-/* Service Worker registrieren: macht die Seite zur installierbaren App
-   und sorgt für sofortigen Start beim 2. Besuch (Cache). */
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').then(function(reg){
-      // Auf Updates lauschen und neue Version sofort aktivieren
-      reg.addEventListener('updatefound', function(){
-        var nw = reg.installing;
-        if(!nw) return;
-        nw.addEventListener('statechange', function(){
-          if(nw.state === 'installed' && navigator.serviceWorker.controller){
-            // Update aktivieren und einmal neu laden
-            nw.postMessage('SKIP_WAITING');
-          }
-        });
-      });
-    }).catch(function(err){
-      console.warn('SW-Registrierung fehlgeschlagen:', err.message);
-    });
-
-    var reloaded = false;
-    navigator.serviceWorker.addEventListener('controllerchange', function(){
-      if(reloaded) return;
-      reloaded = true;
-      location.reload();
-    });
-  });
-}
-
-/* Install-Knopf: erscheint, wenn das Handy die App installieren kann */
-window._deferredInstall = null;
-window.addEventListener('beforeinstallprompt', function(e){
-  e.preventDefault();
-  window._deferredInstall = e;
-  var btn = document.getElementById('installBtn');
-  if(btn) btn.style.display = 'inline-flex';
-});
-window.addEventListener('appinstalled', function(){
-  var btn = document.getElementById('installBtn');
-  if(btn) btn.style.display = 'none';
-});
+/* Web-App-Manifest zur Laufzeit (für „Zum Startbildschirm" als Vollbild-App auf Android) */
+(function addManifest(){
+  try{
+    var icon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' rx='110' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='200' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3EKF%3C/text%3E%3C/svg%3E";
+    var manifest={
+      name:"Körperformen Portal", short_name:"KF Portal",
+      start_url:".", display:"standalone",
+      background_color:"#0E1712", theme_color:"#0E1712",
+      icons:[{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]
+    };
+    var blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
+    var link=document.createElement('link');
+    link.rel='manifest'; link.href=URL.createObjectURL(blob);
+    document.head.appendChild(link);
+  }catch(e){/* unkritisch */}
+})();
 
 /* ============================================================
    HILFSFUNKTIONEN
@@ -681,6 +736,58 @@ var AUTH_ERRORS = {
 };
 function authErrMsg(code){ return AUTH_ERRORS[code]||('Fehler ('+code+')'); }
 
+/* ── Bild verkleinern + komprimieren → data-URL (kostenlos, in Firestore speicherbar) ── */
+function fileToCompressedDataURL(file){
+  return new Promise(function(resolve,reject){
+    if(!file || !/^image\//.test(file.type)){ reject(new Error('Nur Bilder erlaubt.')); return; }
+    var reader=new FileReader();
+    reader.onerror=function(){ reject(new Error('Datei konnte nicht gelesen werden.')); };
+    reader.onload=function(){
+      var img=new Image();
+      img.onerror=function(){ reject(new Error('Bild ungültig.')); };
+      img.onload=function(){
+        var w=img.width, h=img.height;
+        var scale=Math.min(1, IMG_MAX_DIM/Math.max(w,h));
+        w=Math.round(w*scale); h=Math.round(h*scale);
+        var c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        // Qualität so weit senken, bis das Ergebnis sicher < ~650 KB ist
+        var q=0.72, data=c.toDataURL('image/jpeg',q);
+        while(data.length>650000 && q>0.35){ q-=0.1; data=c.toDataURL('image/jpeg',q); }
+        // Falls immer noch zu groß: Kantenlänge halbieren und erneut
+        if(data.length>650000){
+          var c2=document.createElement('canvas'); c2.width=Math.round(w/1.4); c2.height=Math.round(h/1.4);
+          c2.getContext('2d').drawImage(img,0,0,c2.width,c2.height);
+          data=c2.toDataURL('image/jpeg',0.5);
+        }
+        resolve(data);
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ── Lightbox (Bild im Vollbild) ── */
+function openLightbox(src){
+  var lb=$('lightbox'); $('lightboxImg').src=src; lb.classList.add('show');
+}
+function clearChatImg(){
+  _pendingChatImg=null;
+  var p=$('imgPreview'); if(p) p.classList.remove('show');
+  var im=$('imgPreviewImg'); if(im) im.src='';
+}
+(function initLightbox(){
+  var lb=document.getElementById('lightbox');
+  if(!lb) return;
+  lb.addEventListener('click',function(){ lb.classList.remove('show'); $('lightboxImg').src=''; });
+  // Klick auf jedes Bild mit data-zoom öffnet es im Vollbild
+  document.addEventListener('click',function(e){
+    var im = e.target.closest && e.target.closest('img[data-zoom]');
+    if(im && im.src){ openLightbox(im.src); }
+  });
+})();
+
 /* ============================================================
    STATE
    ============================================================ */
@@ -691,6 +798,11 @@ var cachedTodos = {}; // studioKey -> [{...}]
 var _chatUnsub = null;
 var _todosUnsubs = [];
 var _annUnsub = null;
+var _pendingChatImg = null;  // komprimiertes Bild, das mit der nächsten Nachricht gesendet wird
+var _pendingTaskImg = null;  // Bild für die nächste neue Aufgabe (Chef)
+var messaging = null;        // Firebase Cloud Messaging
+var _firstChatLoad = true;   // beim ersten Laden nicht benachrichtigen
+var _knownTodoIds = null;    // zum Erkennen wirklich neuer Aufgaben
 
 /* ============================================================
    AUTH-SCREEN
@@ -839,7 +951,81 @@ function showApp(){
   if(session.role==='chef') buildChefSelects();
   bindActions();
   startListeners();
+  initMessaging();
+  maybeShowNotifBanner();
   showView(session.role==='chef' ? 'chef' : 'chat');
+}
+
+/* ============================================================
+   BENACHRICHTIGUNGEN / PUSH (Firebase Cloud Messaging)
+   ============================================================ */
+
+/* Lokaler Hinweis (Ton/Banner), wenn die App offen, aber im Hintergrund/anderer Tab ist */
+function localNotify(title, body){
+  try{
+    if('Notification' in window && Notification.permission==='granted'){
+      var n=new Notification(title, {
+        body: body || '',
+        icon: 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27192%27 height=%27192%27%3E%3Crect width=%27192%27 height=%27192%27 rx=%2742%27 fill=%27%230E1712%27/%3E%3Ctext x=%2750%25%27 y=%2756%25%27 font-family=%27Arial%27 font-size=%2784%27 font-weight=%27bold%27 fill=%27%2300E06E%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27%3EKF%3C/text%3E%3C/svg%3E',
+        tag: 'kf-'+Date.now()
+      });
+      n.onclick=function(){ window.focus(); n.close(); };
+    } else {
+      toast(title+(body?': '+body:''));
+    }
+  }catch(e){ /* ignorieren */ }
+}
+
+/* Berechtigung anfragen + FCM-Token holen und speichern (für Hintergrund-Push) */
+function enablePush(){
+  if(!('Notification' in window)){ toast('Dein Browser kann keine Benachrichtigungen.',true); return; }
+  Notification.requestPermission().then(function(perm){
+    if(perm!=='granted'){ toast('Benachrichtigungen nicht erlaubt.',true); return; }
+    $('notifBanner').classList.remove('show');
+    toast('Benachrichtigungen aktiviert ✓');
+    registerFcmToken();
+  });
+}
+
+/* FCM initialisieren (Service Worker + Vordergrund-Empfang) */
+function initMessaging(){
+  try{
+    if(typeof firebase==='undefined' || !firebase.messaging || !firebase.messaging.isSupported || !firebase.messaging.isSupported()) return;
+    messaging = firebase.messaging();
+    // Wenn App offen ist und eine Push-Nachricht kommt → lokal anzeigen
+    messaging.onMessage(function(payload){
+      var n=(payload && payload.notification)||{};
+      localNotify(n.title||'Neue Nachricht', n.body||'');
+    });
+    // Falls Berechtigung schon erteilt: Token (neu) registrieren
+    if('Notification' in window && Notification.permission==='granted') registerFcmToken();
+  }catch(e){ console.warn('Messaging init:', e.message); }
+}
+
+function registerFcmToken(){
+  if(!messaging || !VAPID_KEY){ return; } // ohne VAPID-Key kein Hintergrund-Push
+  var swReg = null;
+  var p = ('serviceWorker' in navigator)
+    ? navigator.serviceWorker.register('firebase-messaging-sw.js').then(function(r){ swReg=r; return r; })
+    : Promise.resolve(null);
+  p.then(function(){
+    return messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg||undefined });
+  }).then(function(token){
+    if(!token) return;
+    // Token speichern, damit die Server-Funktion daran Push schicken kann
+    return db.collection('pushTokens').doc(token).set({
+      uid: session.uid, name: session.name, role: session.role,
+      studio: session.studio||null,
+      studioKey: session.studio ? studioKey(session.studio) : null,
+      updatedAt: Date.now()
+    });
+  }).catch(function(e){ console.warn('FCM-Token:', e.message); });
+}
+
+function maybeShowNotifBanner(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission==='default') $('notifBanner').classList.add('show');
+  else $('notifBanner').classList.remove('show');
 }
 
 /* ── Navigation ── */
@@ -926,9 +1112,20 @@ function stopListeners(){
 /* Chat: wechselt bei Kanalwechsel */
 function listenChannel(channelId){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
+  var first=true, startTs=Date.now();
   _chatUnsub = db.collection('channels').doc(channelId).collection('messages')
     .orderBy('ts').limitToLast(120)
     .onSnapshot(function(snap){
+      if(!first){
+        snap.docChanges().forEach(function(ch){
+          if(ch.type!=='added') return;
+          var m=ch.doc.data();
+          if(m.uid!==session.uid && (m.ts||0)>=startTs && (document.hidden || currentView!=='chat')){
+            localNotify('Neue Nachricht von '+(m.name||''), m.text || (m.img?'📷 Foto':''));
+          }
+        });
+      }
+      first=false;
       renderMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
     }, function(e){ console.error('Chat:',e.message); });
 }
@@ -951,9 +1148,20 @@ function listenTodos(){
     });
   } else {
     var sk=studioKey(session.studio);
+    var first=true, startTs=Date.now();
     var unsub=db.collection('studios').doc(sk).collection('todos')
       .orderBy('ts')
       .onSnapshot(function(snap){
+        if(!first){
+          snap.docChanges().forEach(function(ch){
+            if(ch.type!=='added') return;
+            var t=ch.doc.data();
+            if((t.ts||0)>=startTs && t.createdByUid!==session.uid){
+              localNotify('Neue Aufgabe', t.title||'');
+            }
+          });
+        }
+        first=false;
         cachedTodos[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
         renderTodos();
       }, function(e){ console.error('Todos:',e.message); });
@@ -985,9 +1193,11 @@ function renderMessages(msgs){
     var tag=m.role==='chef'
       ?'<span class="tag chef">Chef</span>'
       :(m.studio?'<span class="tag studio">'+esc(m.studio)+'</span>':'');
+    var imgHtml = m.img ? '<img class="msg-img" data-zoom src="'+m.img+'" alt="Foto" />' : '';
+    var bodyHtml = m.text ? '<div class="body">'+esc(m.text)+'</div>' : '';
     return '<div class="msg'+(mine?' mine':'')+'">'+
       '<div class="meta"><b>'+esc(m.name)+'</b>'+tag+'<time>'+fmtTime(m.ts)+'</time></div>'+
-      '<div class="body">'+esc(m.text)+'</div></div>';
+      bodyHtml+imgHtml+'</div>';
   }).join('');
   if(atBottom) scrollBottom();
 }
@@ -1027,11 +1237,15 @@ function renderTodos(){
 function todoHTML(t,sk,chefView){
   var foot=['erstellt von '+esc(t.createdBy||'Chef')];
   if(t.done&&t.doneBy) foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
+  var photoHtml = t.photo
+    ? '<img class="t-photo" data-zoom src="'+t.photo+'" alt="Foto zur Aufgabe" />'
+    : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
   return '<div class="todo'+(t.done?' done':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
     '<div class="t-body"><div class="t-title">'+esc(t.title)+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
-    '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div></div>'+
+    '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
+    photoHtml+'</div>'+
     (chefView?'<button class="t-del" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>':'')+
     '</div>';
 }
@@ -1052,8 +1266,14 @@ function bindTodoClicks(area){
         db.collection('studios').doc(sk).collection('todos').doc(id).delete()
           .catch(function(e){ toast('Fehler: '+e.message,true); });
     });
+    var padd=node.querySelector('[data-photoadd]');
+    if(padd) padd.addEventListener('click',function(){
+      _todoPhotoTarget={ sk:sk, id:id };
+      $('todoFileShared').click();
+    });
   });
 }
+var _todoPhotoTarget=null;
 
 function renderAnnouncements(anns){
   var area=$('annArea');
@@ -1104,15 +1324,22 @@ function updateBadges(){
    AKTIONEN
    ============================================================ */
 function bindActions(){
-  // Chat senden
+  // Chat senden (Text und/oder Foto)
   var ta=$('chatText');
   function sendMsg(){
-    var text=ta.value.trim(); if(!text) return;
-    ta.value=''; ta.style.height='auto'; ta.focus();
-    db.collection('channels').doc(currentChannel).collection('messages').add({
+    var text=ta.value.trim();
+    var img=_pendingChatImg;
+    if(!text && !img) return;
+    ta.value=''; ta.style.height='auto';
+    clearChatImg();
+    var doc={
       uid:session.uid, name:session.name, role:session.role,
       studio:session.studio||null, text:text, ts:Date.now()
-    }).catch(function(e){ toast('Sendefehler: '+e.message,true); });
+    };
+    if(img) doc.img=img;
+    db.collection('channels').doc(currentChannel).collection('messages').add(doc)
+      .catch(function(e){ toast('Sendefehler: '+e.message,true); });
+    ta.focus();
   }
   $('chatSend').addEventListener('click',sendMsg);
   ta.addEventListener('keydown',function(e){
@@ -1121,6 +1348,38 @@ function bindActions(){
   ta.addEventListener('input',function(){
     ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,130)+'px';
   });
+
+  // Foto an Chat anhängen
+  $('chatAttach').addEventListener('click',function(){ $('chatFile').click(); });
+  $('chatFile').addEventListener('change',function(){
+    var f=this.files&&this.files[0]; this.value='';
+    if(!f) return;
+    toast('Bild wird vorbereitet …');
+    fileToCompressedDataURL(f).then(function(data){
+      _pendingChatImg=data;
+      $('imgPreviewImg').src=data;
+      $('imgPreviewInfo').textContent='Bild bereit – „Senden" zum Abschicken';
+      $('imgPreview').classList.add('show');
+    }).catch(function(e){ toast(e.message,true); });
+  });
+  $('imgPreviewX').addEventListener('click',clearChatImg);
+
+  // Foto an Aufgabe anhängen (gemeinsames Feld)
+  $('todoFileShared').addEventListener('change',function(){
+    var f=this.files&&this.files[0]; this.value='';
+    if(!f || !_todoPhotoTarget) return;
+    var tgt=_todoPhotoTarget; _todoPhotoTarget=null;
+    toast('Foto wird hochgeladen …');
+    fileToCompressedDataURL(f).then(function(data){
+      return db.collection('studios').doc(tgt.sk).collection('todos').doc(tgt.id)
+        .update({ photo:data, photoBy:session.name, photoAt:Date.now() });
+    }).then(function(){ toast('Foto hinzugefügt ✓'); })
+      .catch(function(e){ toast('Fehler: '+e.message,true); });
+  });
+
+  // Benachrichtigungen aktivieren
+  var nb=$('notifEnable');
+  if(nb) nb.addEventListener('click',enablePush);
 
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){
@@ -1142,25 +1401,45 @@ function bindActions(){
         .catch(function(e){ toast('Fehler: '+e.message,true); });
     });
 
+    // Foto an neue Aufgabe anhängen
+    $('ntAttach').addEventListener('click',function(){ $('ntFile').click(); });
+    $('ntFile').addEventListener('change',function(){
+      var f=this.files&&this.files[0]; this.value='';
+      if(!f) return;
+      toast('Bild wird vorbereitet …');
+      fileToCompressedDataURL(f).then(function(data){
+        _pendingTaskImg=data;
+        $('ntPreviewImg').src=data;
+        $('ntPreviewWrap').style.display='flex';
+      }).catch(function(e){ toast(e.message,true); });
+    });
+    $('ntPreviewX').addEventListener('click',function(){
+      _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
+    });
+
     // Aufgabe erstellen
     $('ntAdd').addEventListener('click',function(){
       var title=$('ntTitle').value.trim();
       if(!title){ toast('Bitte Aufgabe eingeben.',true); return; }
       var desc=$('ntDesc').value.trim();
       var target=$('ntStudio').value;
+      var photo=_pendingTaskImg;
       var targets=target==='all'?STUDIOS.map(studioKey):[target];
       var batch=db.batch();
       targets.forEach(function(sk){
         var ref=db.collection('studios').doc(sk).collection('todos').doc();
-        batch.set(ref,{
+        var data={
           title:title, desc:desc, done:false, doneBy:null, doneAt:null,
           createdBy:session.name, createdByUid:session.uid, ts:Date.now()
-        });
+        };
+        if(photo) data.photo=photo;
+        batch.set(ref,data);
       });
       batch.commit()
         .then(function(){
           $('ntTitle').value=''; $('ntDesc').value='';
-          toast(target==='all'?'Aufgabe an alle 15 Studios erstellt ✓':'Aufgabe erstellt ✓');
+          _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
+          toast(target==='all'?('Aufgabe an alle '+STUDIOS.length+' Studios erstellt ✓'):'Aufgabe erstellt ✓');
         })
         .catch(function(e){ toast('Fehler: '+e.message,true); });
     });
