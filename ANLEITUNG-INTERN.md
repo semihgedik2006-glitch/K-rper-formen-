@@ -1,4 +1,4 @@
-# Körperformen – Internes Portal
+# StudioChat – Körperformen Team-Portal
 
 Team-Chat (mit Fotos), Aufgaben pro Studio (mit Fotos), Ankündigungen,
 Push-Benachrichtigungen und sichere Firebase-Regeln.

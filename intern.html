@@ -13,9 +13,9 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="KF Portal" />
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='70' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3EKF%3C/text%3E%3C/svg%3E" />
-<title>Körperformen – Internes Portal</title>
+<meta name="apple-mobile-web-app-title" content="StudioChat" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='70' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3ESC%3C/text%3E%3C/svg%3E" />
+<title>StudioChat – Körperformen Team</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -332,6 +332,60 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .studio-check.on{border-color:var(--accent);background:rgba(0,224,110,.1);color:var(--accent-2)}
 .studio-check input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin:0}
 @media(max-width:420px){.studio-checks{grid-template-columns:1fr}}
+
+/* ============================================================
+   ANIMATIONEN & QUALITY-OF-LIFE
+   ============================================================ */
+/* Sanftes Einblenden beim Ansicht-/Tab-Wechsel */
+.view.show{animation:viewIn .32s var(--ease-out)}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Auth-Karte gleitet herein, Mesh-Blobs leben */
+.auth-card{animation:cardIn .5s var(--ease-out)}
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.auth-mesh .a{animation:floatA 16s ease-in-out infinite}
+.auth-mesh .b{animation:floatB 20s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-5%,7%) scale(1.12)}}
+@keyframes floatB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(6%,-5%) scale(1.15)}}
+
+/* Live-Badge pulsiert dezent */
+.tb-live{animation:liveGlow 2.6s ease-in-out infinite}
+@keyframes liveGlow{0%,100%{box-shadow:0 0 0 0 rgba(0,224,110,0)}50%{box-shadow:0 0 0 4px rgba(0,224,110,.12)}}
+
+/* Micro-Interaktionen: Druck-Feedback */
+.btn:active{transform:scale(.96)}
+.icon-btn:active,.attach-btn:active,.chan:active,.tab:active{transform:scale(.92)}
+.role-opt:active,.studio-check:active,.studio-tile:active{transform:scale(.98)}
+.studio-tile{transition:transform .2s var(--ease-out),border-color .2s}
+.studio-tile:hover{border-color:rgba(0,224,110,.3);transform:translateY(-2px)}
+
+/* Häkchen „ploppt" beim Erledigen, Bilder blenden ein */
+.todo.done .check{animation:checkPop .32s var(--ease-out)}
+@keyframes checkPop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+.msg-img,.t-photo{animation:imgIn .35s var(--ease-out)}
+@keyframes imgIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+
+/* Links in Nachrichten */
+.msg .body a{color:var(--accent-2);text-decoration:underline;word-break:break-all}
+
+/* Tag-Trenner im Chat (Heute / Gestern / Datum) */
+.day-sep{align-self:center;margin:8px 0 4px;padding:3px 13px;border-radius:999px;
+  background:rgba(255,255,255,.05);color:var(--text-3);font-size:.72rem;font-weight:600;
+  border:1px solid var(--line)}
+
+/* „Nach unten"-Knopf im Chat */
+#view-chat{position:relative}
+.scroll-fab{position:absolute;right:16px;bottom:78px;width:42px;height:42px;border-radius:50%;
+  background:var(--bg-2);border:1px solid var(--line-2);color:var(--accent-2);cursor:pointer;
+  display:grid;place-items:center;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;
+  transform:translateY(10px) scale(.9);transition:.25s var(--ease-out);z-index:20}
+.scroll-fab.show{opacity:1;pointer-events:auto;transform:none}
+.scroll-fab svg{width:20px;height:20px}
+
+/* Konfetti-Effekt */
+.confetti{position:fixed;top:-14px;width:9px;height:14px;z-index:300;pointer-events:none;
+  border-radius:2px;animation:confFall linear forwards}
+@keyframes confFall{to{transform:translateY(106vh) rotate(720deg);opacity:.85}}
 </style>
 </head>
 <body>
@@ -380,8 +434,8 @@ var FIREBASE_CONFIG = {
 <div class="auth-wrap" id="authWrap">
   <div class="auth-mesh" aria-hidden="true"><i class="a"></i><i class="b"></i></div>
   <div class="auth-card">
-    <div class="auth-brand">KÖRPER<b>FORMEN</b></div>
-    <p class="auth-sub">Internes Portal · Anmeldung</p>
+    <div class="auth-brand">STUDIO<b>CHAT</b></div>
+    <p class="auth-sub">Körperformen · Team-Portal</p>
 
     <div class="auth-tabs" role="tablist">
       <button class="auth-tab active" id="tabLogin" role="tab" aria-selected="true">Anmelden</button>
@@ -434,7 +488,7 @@ var FIREBASE_CONFIG = {
 <!-- ── App ── -->
 <div class="app" id="app">
   <header class="topbar">
-    <div class="tb-brand">KÖRPER<b>FORMEN</b> <span class="tb-live">Live</span></div>
+    <div class="tb-brand">STUDIO<b>CHAT</b> <span class="tb-live">Live</span></div>
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar">?</div>
@@ -458,6 +512,9 @@ var FIREBASE_CONFIG = {
         </div>
         <div class="chat-channels" id="chatChannels"></div>
         <div class="chat-scroll" id="chatScroll"></div>
+        <button class="scroll-fab" id="scrollFab" aria-label="Nach unten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        </button>
         <div class="img-preview" id="imgPreview">
           <img id="imgPreviewImg" alt="Vorschau" />
           <div class="pv-info" id="imgPreviewInfo">Bild bereit zum Senden</div>
@@ -691,9 +748,9 @@ window.addEventListener('unhandledrejection', function(ev){
 /* Web-App-Manifest zur Laufzeit (für „Zum Startbildschirm" als Vollbild-App auf Android) */
 (function addManifest(){
   try{
-    var icon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' rx='110' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='200' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3EKF%3C/text%3E%3C/svg%3E";
+    var icon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' rx='110' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='200' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3ESC%3C/text%3E%3C/svg%3E";
     var manifest={
-      name:"Körperformen Portal", short_name:"KF Portal",
+      name:"StudioChat", short_name:"StudioChat",
       start_url:".", display:"standalone",
       background_color:"#0E1712", theme_color:"#0E1712",
       icons:[{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]
@@ -721,6 +778,36 @@ function initials(n){
 function studioKey(name){ return 'studio-'+STUDIOS.indexOf(name); }
 function studioName(key){ var i=parseInt(String(key).replace('studio-',''),10); return STUDIOS[i]||key; }
 function channelStudioName(ch){ return (ch && ch.indexOf('studio-')===0) ? studioName(ch) : null; }
+/* Macht http(s)-Links in (bereits escaptem) Text klickbar */
+function linkify(escaped){
+  return escaped.replace(/(https?:\/\/[^\s<]+)/g, function(u){
+    return '<a href="'+u+'" target="_blank" rel="noopener">'+u+'</a>';
+  });
+}
+/* Tag-Trenner-Label für den Chat */
+function dayLabel(ts){
+  var d=new Date(ts), now=new Date();
+  var startToday=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  if(ts>=startToday) return 'Heute';
+  if(ts>=startToday-86400000) return 'Gestern';
+  return d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+}
+/* Kleiner Konfetti-Regen (z. B. wenn ein Studio alle Aufgaben erledigt hat) */
+function fireConfetti(){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var colors=['#00E06E','#19FF85','#FF6B35','#F5A623','#ffffff'];
+  for(var i=0;i<46;i++){
+    var c=document.createElement('div'); c.className='confetti';
+    c.style.left=(Math.random()*100)+'vw';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    var dur=2.4+Math.random()*1.8;
+    c.style.animationDuration=dur+'s';
+    c.style.animationDelay=(Math.random()*0.3)+'s';
+    c.style.transform='rotate('+(Math.random()*360)+'deg)';
+    document.body.appendChild(c);
+    (function(el,ms){ setTimeout(function(){ el.remove(); }, ms); })(c,(dur+0.6)*1000);
+  }
+}
 function fmtTime(ts){
   if(!ts) return '';
   var d=new Date(ts), now=new Date();
@@ -993,7 +1080,7 @@ function localNotify(title, body){
     if('Notification' in window && Notification.permission==='granted'){
       var n=new Notification(title, {
         body: body || '',
-        icon: 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27192%27 height=%27192%27%3E%3Crect width=%27192%27 height=%27192%27 rx=%2742%27 fill=%27%230E1712%27/%3E%3Ctext x=%2750%25%27 y=%2756%25%27 font-family=%27Arial%27 font-size=%2784%27 font-weight=%27bold%27 fill=%27%2300E06E%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27%3EKF%3C/text%3E%3C/svg%3E',
+        icon: 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27192%27 height=%27192%27%3E%3Crect width=%27192%27 height=%27192%27 rx=%2742%27 fill=%27%230E1712%27/%3E%3Ctext x=%2750%25%27 y=%2756%25%27 font-family=%27Arial%27 font-size=%2784%27 font-weight=%27bold%27 fill=%27%2300E06E%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27%3ESC%3C/text%3E%3C/svg%3E',
         tag: 'kf-'+Date.now()
       });
       n.onclick=function(){ window.focus(); n.close(); };
@@ -1085,7 +1172,10 @@ function showView(id){
   currentView=id;
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
   document.querySelectorAll('[data-view]').forEach(function(t){ t.classList.toggle('active',t.dataset.view===id); });
-  if(id==='chat') setTimeout(scrollBottom,60);
+  if(id==='chat'){
+    setTimeout(scrollBottom,60);
+    if(window.innerWidth>820){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
+  }
 }
 
 /* ── Chat Channels ── */
@@ -1207,17 +1297,21 @@ function renderMessages(msgs){
     return;
   }
   var atBottom = box.scrollHeight-box.scrollTop-box.clientHeight < 100;
-  box.innerHTML=msgs.map(function(m){
+  var lastDay=null, html='';
+  msgs.forEach(function(m){
+    var dl=dayLabel(m.ts||Date.now());
+    if(dl!==lastDay){ html+='<div class="day-sep">'+esc(dl)+'</div>'; lastDay=dl; }
     var mine=m.uid===session.uid;
     var tag=m.role==='chef'
       ?'<span class="tag chef">Chef</span>'
       :(m.studio?'<span class="tag studio">'+esc(m.studio)+'</span>':'');
     var imgHtml = m.img ? '<img class="msg-img" data-zoom src="'+m.img+'" alt="Foto" />' : '';
-    var bodyHtml = m.text ? '<div class="body">'+esc(m.text)+'</div>' : '';
-    return '<div class="msg'+(mine?' mine':'')+'">'+
+    var bodyHtml = m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '';
+    html+='<div class="msg'+(mine?' mine':'')+'">'+
       '<div class="meta"><b>'+esc(m.name)+'</b>'+tag+'<time>'+fmtTime(m.ts)+'</time></div>'+
       bodyHtml+imgHtml+'</div>';
-  }).join('');
+  });
+  box.innerHTML=html;
   if(atBottom) scrollBottom();
 }
 
@@ -1284,6 +1378,11 @@ function bindTodoClicks(area){
     var chk=node.querySelector('.check');
     if(chk) chk.addEventListener('click',function(){
       var done=!node.classList.contains('done');
+      if(done){
+        var list=cachedTodos[sk]||[];
+        var openOthers=list.filter(function(t){ return !t.done && t.id!==id; }).length;
+        if(openOthers===0 && list.length>0){ fireConfetti(); toast('Alle Aufgaben erledigt! 🎉'); }
+      }
       db.collection('studios').doc(sk).collection('todos').doc(id)
         .update({done:done,doneBy:done?session.name:null,doneAt:done?Date.now():null})
         .catch(function(e){ toast('Fehler: '+e.message,true); });
@@ -1391,6 +1490,16 @@ function bindActions(){
     }).catch(function(e){ toast(e.message,true); });
   });
   $('imgPreviewX').addEventListener('click',clearChatImg);
+
+  // „Nach unten"-Knopf im Chat
+  var cs=$('chatScroll'), fab=$('scrollFab');
+  if(cs && fab){
+    cs.addEventListener('scroll',function(){
+      var nearBottom = cs.scrollHeight-cs.scrollTop-cs.clientHeight < 120;
+      fab.classList.toggle('show', !nearBottom);
+    });
+    fab.addEventListener('click',function(){ scrollBottom(); fab.classList.remove('show'); });
+  }
 
   // Foto an Aufgabe anhängen (gemeinsames Feld)
   $('todoFileShared').addEventListener('change',function(){
