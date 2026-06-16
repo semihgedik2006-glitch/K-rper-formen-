@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Körperformen Brühl – Gratis EMS-Training für die Giesler Galerie</title>
+<meta name="description" content="Du arbeitest in der Giesler Galerie Brühl? Dann trainierst du bei Körperformen Brühl GRATIS. EMS-Training – nur 20 Minuten pro Woche." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   KÖRPERFORMEN BRÜHL · FLYER (A4) · "Giesler Galerie trainiert gratis"
+   Druckfertig (A4 hoch) + schöne Bildschirm-Ansicht
+   Marken-Tokens identisch zur Website
+   ============================================================ */
+:root{
+  --bg:        #0E1712;
+  --bg-2:      #141E18;
+  --line:      rgba(255,255,255,.10);
+  --line-2:    rgba(255,255,255,.16);
+  --accent:    #00E06E;
+  --accent-2:  #19FF85;
+  --accent-d:  #00C060;
+  --accent-glow:rgba(0,224,110,.40);
+  --warm:      #FF6B35;
+  --text:      #F0F7F3;
+  --text-2:    #9CC0B2;
+  --text-3:    #5C7C6E;
+  --ink:       #04140C;
+  --font-head: 'Barlow Condensed', system-ui, sans-serif;
+  --font-body: 'Barlow', system-ui, -apple-system, sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#070d0a;color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column;align-items:center;gap:26px;padding:36px 16px 60px}
+h1,h2,h3,.h{font-family:var(--font-head);font-weight:800;line-height:.96;letter-spacing:-.5px;text-transform:uppercase}
+.hl{background:linear-gradient(110deg,var(--accent),var(--accent-2) 45%,var(--warm) 90%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+
+/* ---- Druck-Steuerleiste (nur Bildschirm) ---- */
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;
+  font-family:var(--font-head);text-transform:uppercase;letter-spacing:.5px}
+.toolbar .note{color:var(--text-2);font-family:var(--font-body);text-transform:none;letter-spacing:0;font-size:.9rem;max-width:560px;text-align:center}
+.btn{display:inline-flex;align-items:center;gap:9px;cursor:pointer;border:none;
+  font-family:var(--font-head);font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:1rem;
+  padding:14px 26px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:var(--ink);box-shadow:0 12px 30px var(--accent-glow);transition:transform .25s,box-shadow .25s}
+.btn:hover{transform:translateY(-3px);box-shadow:0 20px 44px var(--accent-glow)}
+.btn svg{width:18px;height:18px}
+
+/* ============================================================
+   A4-SEITE
+   ============================================================ */
+.page{
+  position:relative;
+  width:210mm;height:297mm;
+  background:
+    radial-gradient(900px circle at 78% 8%,rgba(0,221,120,.20),transparent 55%),
+    radial-gradient(700px circle at 8% 96%,rgba(255,107,53,.12),transparent 55%),
+    linear-gradient(160deg,#0c1410 0%,#0E1712 45%,#101a14 100%);
+  color:var(--text);overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;
+}
+/* feines Linienraster */
+.page::before{content:"";position:absolute;inset:0;z-index:0;opacity:.5;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:42px 42px;
+  -webkit-mask-image:radial-gradient(circle at 75% 18%,#000,transparent 75%);
+  mask-image:radial-gradient(circle at 75% 18%,#000,transparent 75%)}
+
+.pad{position:relative;z-index:2;padding:16mm 15mm;display:flex;flex-direction:column;height:100%}
+
+/* ---- Kopf ---- */
+.head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:46px;height:46px;border-radius:13px;flex-shrink:0;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--ink);
+  box-shadow:0 8px 22px var(--accent-glow)}
+.brand .mark svg{width:26px;height:26px}
+.brand .name{font-family:var(--font-head);font-weight:900;font-size:1.5rem;letter-spacing:.3px;line-height:1}
+.brand .name b{color:var(--accent)}
+.brand .name small{display:block;font-weight:600;font-size:.72rem;letter-spacing:3px;color:var(--text-2);margin-top:3px}
+.head .loc{text-align:right;font-family:var(--font-head);font-weight:700;text-transform:uppercase;
+  font-size:.78rem;letter-spacing:2px;color:var(--accent-d);display:flex;align-items:center;gap:7px}
+.head .loc svg{width:15px;height:15px}
+
+/* ---- Hero / Headline ---- */
+.kicker{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;margin-top:8mm;
+  padding:9px 18px;border:1px solid var(--line-2);border-radius:999px;
+  font-family:var(--font-head);font-weight:700;text-transform:uppercase;letter-spacing:2px;
+  font-size:.8rem;color:var(--text);background:rgba(0,224,110,.08)}
+.kicker .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+
+h1{font-size:51px;margin-top:12px;letter-spacing:-2px;padding-right:34mm}
+h1 .free{display:inline-block}
+.sub{margin-top:11px;font-size:16.5px;color:var(--text-2);max-width:150mm;line-height:1.5}
+.sub b{color:var(--text)}
+
+/* ---- Gratis-Stempel ---- */
+.stamp{position:absolute;top:34mm;right:14mm;z-index:3;width:46mm;height:46mm;border-radius:50%;
+  display:grid;place-items:center;text-align:center;transform:rotate(9deg);
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--ink);
+  box-shadow:0 18px 44px var(--accent-glow);border:3px solid rgba(255,255,255,.35)}
+.stamp .big{font-family:var(--font-head);font-weight:900;font-size:30px;line-height:.85;letter-spacing:-1px}
+.stamp .small{font-family:var(--font-head);font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+
+/* ---- Highlight-Box: die Aktion ---- */
+.offer{margin-top:auto;position:relative;border-radius:20px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(0,224,110,.14),rgba(0,224,110,.04));
+  border:1px solid rgba(0,224,110,.35);padding:18px 24px;display:flex;gap:20px;align-items:center}
+.offer .ic{width:58px;height:58px;flex-shrink:0;border-radius:16px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--ink);box-shadow:0 10px 26px var(--accent-glow)}
+.offer .ic svg{width:30px;height:30px}
+.offer .txt h3{font-size:24px}
+.offer .txt p{color:var(--text-2);font-size:15px;margin-top:4px;line-height:1.45}
+.offer .txt p b{color:var(--accent)}
+
+/* ---- Vorteile (3 Spalten) ---- */
+.perks{margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.perk{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:18px 16px}
+.perk .pi{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;margin-bottom:12px;
+  background:linear-gradient(135deg,rgba(0,224,110,.18),rgba(0,224,110,.05));color:var(--accent)}
+.perk .pi svg{width:22px;height:22px}
+.perk h4{font-family:var(--font-head);font-weight:700;text-transform:uppercase;font-size:16px;letter-spacing:.3px}
+.perk p{color:var(--text-2);font-size:12.5px;margin-top:5px;line-height:1.4}
+
+/* ---- CTA-Streifen ---- */
+.cta{margin-top:14px;display:grid;grid-template-columns:1.25fr .75fr;gap:14px;align-items:stretch}
+.cta .left{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--ink);
+  border-radius:18px;padding:20px 24px;display:flex;flex-direction:column;justify-content:center}
+.cta .left .small{font-family:var(--font-head);font-weight:700;text-transform:uppercase;letter-spacing:2px;font-size:12px;opacity:.8}
+.cta .left .big{font-family:var(--font-head);font-weight:900;font-size:26px;line-height:1;margin-top:6px}
+.cta .left .how{margin-top:10px;font-size:13px;font-weight:600;line-height:1.4}
+.cta .left .how b{font-weight:800}
+.cta .qr{background:#fff;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px}
+.cta .qr img{width:108px;height:108px;display:block}
+.cta .qr span{font-family:var(--font-head);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;font-size:11px;color:#0b1410;text-align:center}
+
+/* ---- Kontakt-Fuß ---- */
+.foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center;justify-content:space-between}
+.foot .ci{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--text)}
+.foot .ci svg{width:17px;height:17px;color:var(--accent);flex-shrink:0}
+.foot .ci b{color:var(--text)}
+.foot .tag{font-family:var(--font-head);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+  font-size:11px;color:var(--text-3)}
+
+/* ============================================================
+   DRUCK
+   ============================================================ */
+@media print{
+  @page{size:A4;margin:0}
+  html,body{background:#fff}
+  body{padding:0;gap:0;display:block}
+  .toolbar{display:none !important}
+  .page{width:210mm;height:297mm;box-shadow:none;page-break-after:always;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* Bildschirm-Skalierung für kleine Screens */
+@media(max-width:840px){
+  .page{transform:scale(.62);transform-origin:top center;margin-bottom:-115mm}
+}
+@media(max-width:520px){
+  .page{transform:scale(.44);margin-bottom:-166mm}
+}
+</style>
+</head>
+<body>
+
+<!-- ====== Druck-Steuerleiste (erscheint NICHT im Druck/PDF) ====== -->
+<div class="toolbar">
+  <button class="btn" onclick="window.print()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+    Flyer drucken / als PDF speichern
+  </button>
+  <p class="note">Tipp: Beim Drucken „Hintergrundgrafiken“ aktivieren und Ränder auf „Keine“ stellen – dann kommt das Design randlos auf A4. Platzhalter in [eckigen Klammern] mit euren echten Daten ersetzen.</p>
+</div>
+
+<!-- ====== A4-FLYER ====== -->
+<div class="page">
+  <div class="pad">
+
+    <!-- Kopf -->
+    <div class="head">
+      <div class="brand">
+        <span class="mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6.5 6.5 17.5 17.5M3 9l1.5-1.5M21 15l-1.5 1.5M7 3l2 2M17 19l-2 2M9 7 7 9M17 15l-2 2"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/></svg>
+        </span>
+        <span class="name">KÖRPER<b>FORMEN</b><small>BRÜHL · EMS-STUDIO</small></span>
+      </div>
+      <div class="loc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        Direkt in Brühl
+      </div>
+    </div>
+
+    <!-- Gratis-Stempel -->
+    <div class="stamp">
+      <div>
+        <div class="big">100%<br>GRATIS</div>
+        <div class="small">Für Giesler-Galerie-Team</div>
+      </div>
+    </div>
+
+    <!-- Headline -->
+    <span class="kicker"><span class="dot"></span>Exklusiv für die Giesler Galerie Brühl</span>
+    <h1>Du arbeitest in der<br><span class="hl">Giesler Galerie?</span><br>Dann trainierst du<br><span class="hl">gratis bei uns.</span></h1>
+    <p class="sub">Alle Mitarbeiter:innen der Giesler Galerie trainieren bei <b>Körperformen Brühl</b> kostenlos – mit <b>EMS-Training</b>: nur <b>20 Minuten pro Woche</b>, 1:1 betreut, gelenkschonend und hocheffektiv. Stärker, fitter, entspannter – ohne dass dein Feierabend draufgeht.</p>
+
+    <!-- Aktions-Box -->
+    <div class="offer">
+      <span class="ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 12v8H4v-8M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7ZM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z"/></svg>
+      </span>
+      <div class="txt">
+        <h3>Dein Vorteil als Galerie-Team</h3>
+        <p>Zeig einfach deinen <b>Mitarbeiterausweis</b> oder Arbeitsnachweis aus der Giesler Galerie – und sicher dir dein <b>kostenloses Probetraining</b> plus exklusive Team-Konditionen. Keine versteckten Kosten, kein Risiko.</p>
+      </div>
+    </div>
+
+    <!-- Vorteile -->
+    <div class="perks">
+      <div class="perk">
+        <div class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <h4>Nur 20 Min / Woche</h4>
+        <p>Perfekt in jede Mittagspause oder vor/nach der Schicht – maximale Wirkung in Minimalzeit.</p>
+      </div>
+      <div class="perk">
+        <div class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></div>
+        <h4>1:1 Betreuung</h4>
+        <p>Persönlicher Trainer bei jeder Einheit – exakt auf deine Ziele abgestimmt.</p>
+      </div>
+      <div class="perk">
+        <div class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg></div>
+        <h4>Rückenfreundlich</h4>
+        <p>Gelenkschonend & ideal gegen Verspannungen vom langen Stehen oder Sitzen.</p>
+      </div>
+    </div>
+
+    <!-- CTA + QR -->
+    <div class="cta">
+      <div class="left">
+        <span class="small">So sicherst du dir dein Gratis-Training</span>
+        <span class="big">Termin holen &amp; loslegen</span>
+        <span class="how"><b>1.</b> Anrufen oder QR scannen &nbsp; <b>2.</b> Galerie-Nachweis zeigen &nbsp; <b>3.</b> Kostenlos trainieren</span>
+      </div>
+      <div class="qr">
+        <!-- QR zeigt aktuell auf koerperformen.com – durch euren echten Buchungslink / WhatsApp ersetzen -->
+        <img alt="QR-Code zum Probetraining"
+          src="data:image/png;base64,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" />
+        <span>Scannen &amp; Termin sichern</span>
+      </div>
+    </div>
+
+    <!-- Kontakt -->
+    <div class="foot">
+      <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg><b>[Telefon eintragen]</b></div>
+      <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><b>[Studio-Adresse Brühl eintragen]</b></div>
+      <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg><b>@koerperformen_bruehl</b></div>
+      <span class="tag">Körperformen Brühl · EMS-Training</span>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
