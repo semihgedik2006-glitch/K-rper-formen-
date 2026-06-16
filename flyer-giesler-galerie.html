@@ -16,7 +16,7 @@
    ============================================================ */
 :root{
   --paper:#F7F5EF; --paper-2:#FFFFFF;
-  --ink:#3D4543; --ink-2:#6E7672;
+  --ink:#3D4543; --ink-2:#5A625D;
   --lime:#93C02F; --lime-d:#5C7A18; --lime-tint:#EEF4DF;
   --dark:#343D38;
   --line:#E2DED4;
@@ -36,7 +36,7 @@ body{display:flex;flex-direction:column;align-items:center;gap:24px;padding:34px
 
 .page{position:relative;width:210mm;height:297mm;background:var(--paper);color:var(--ink);
   overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.28);display:flex;flex-direction:column}
-.pad{position:relative;z-index:2;padding:11mm 15mm 9mm;display:flex;flex-direction:column;height:100%}
+.pad{position:relative;z-index:2;padding:10mm 15mm 8mm;display:flex;flex-direction:column;height:100%}
 
 /* Kopf mit offiziellem Logo */
 .head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:11px;border-bottom:1.5px solid var(--ink)}
@@ -46,27 +46,27 @@ body{display:flex;flex-direction:column;align-items:center;gap:24px;padding:34px
 .head .loc svg{width:15px;height:15px;color:var(--lime-d);flex-shrink:0}
 
 /* Hero */
-.hero{display:grid;grid-template-columns:1.12fr .88fr;gap:9mm;margin-top:4mm;align-items:center}
+.hero{display:grid;grid-template-columns:1.12fr .88fr;gap:9mm;margin-top:3mm;align-items:center}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-head);font-weight:700;
   text-transform:uppercase;letter-spacing:2px;font-size:.82rem;color:var(--lime-d);margin-bottom:10px}
 .eyebrow::before{content:"";width:24px;height:2px;background:var(--lime);display:inline-block}
 .pre{font-weight:500;font-size:17.5px;color:var(--ink-2);line-height:1.35}
-h1{font-family:var(--font-head);font-weight:800;font-size:43px;line-height:1.0;letter-spacing:-.6px;margin-top:6px}
+h1{font-family:var(--font-head);font-weight:800;font-size:41px;line-height:1.0;letter-spacing:-.6px;margin-top:6px}
 h1 em{font-style:normal;color:var(--lime-d)}
-.sub{margin-top:11px;font-size:15px;color:var(--ink-2);line-height:1.48}
+.sub{margin-top:10px;font-size:14.5px;color:var(--ink-2);line-height:1.42}
 .sub b{color:var(--ink);font-weight:600}
-.hero-photo{height:65mm;border-radius:12px;overflow:hidden;border:1px solid var(--line);position:relative}
+.hero-photo{height:58mm;border-radius:12px;overflow:hidden;border:1px solid var(--line);position:relative}
 .hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center 28%}
 .hero-photo .cap{position:absolute;left:0;bottom:0;background:rgba(52,61,56,.9);color:#fff;font-family:var(--font-head);
   font-weight:600;text-transform:uppercase;letter-spacing:1.2px;font-size:.7rem;padding:7px 12px}
 
 /* Aktions-Bande 1 Monat */
-.deal{margin-top:4mm;display:flex;align-items:stretch;border-radius:14px;overflow:hidden;flex-shrink:0;
+.deal{margin-top:3mm;display:flex;align-items:stretch;border-radius:14px;overflow:hidden;flex-shrink:0;
   background:var(--dark);color:#fff;box-shadow:0 10px 26px rgba(52,61,56,.28)}
 .deal .big{flex-shrink:0;background:var(--lime);color:#2C3514;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 28px;text-align:center}
 .deal .big .n{font-family:var(--font-head);font-weight:800;font-size:64px;line-height:.85}
 .deal .big .u{font-family:var(--font-head);font-weight:700;text-transform:uppercase;letter-spacing:3px;font-size:14px;margin-top:2px}
-.deal .txt{padding:12px 24px;display:flex;flex-direction:column;justify-content:center}
+.deal .txt{padding:10px 24px;display:flex;flex-direction:column;justify-content:center}
 .deal .txt h2{font-family:var(--font-head);font-weight:700;text-transform:uppercase;font-size:23px;letter-spacing:.3px;line-height:1.05}
 .deal .txt h2 span{color:#C4E87A}
 .deal .txt p{margin-top:7px;font-size:14px;color:rgba(255,255,255,.82);line-height:1.45}
@@ -74,10 +74,20 @@ h1 em{font-style:normal;color:var(--lime-d)}
 .deal .txt .chips span{font-family:var(--font-head);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:11px;
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:5px 10px;border-radius:999px}
 
+/* Vertrauens-Streifen (Social Proof / Autoritaet) */
+.trust{margin-top:3mm;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);
+  border-radius:11px;overflow:hidden;background:var(--paper-2);flex-shrink:0}
+.trust .t{display:flex;align-items:center;justify-content:center;gap:9px;padding:7px 8px;text-align:center}
+.trust .t + .t{border-left:1px solid var(--line)}
+.trust .t .ic{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.trust .t .ic svg{width:17px;height:17px;color:var(--lime-d)}
+.trust .t .stars{color:#E8A93B;font-size:14px;letter-spacing:1px;line-height:1}
+.trust .t b{font-family:var(--font-head);font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:13.5px;color:var(--ink);line-height:1.05}
+
 /* Vorteile */
-.perks{margin-top:4mm;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);
+.perks{margin-top:3mm;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);
   border-radius:12px;overflow:hidden;background:var(--paper-2);flex-shrink:0}
-.perk{padding:12px 15px} .perk + .perk{border-left:1px solid var(--line)}
+.perk{padding:10px 14px} .perk + .perk{border-left:1px solid var(--line)}
 .perk .ph{display:flex;align-items:center;gap:9px;margin-bottom:6px}
 .perk .ph .ck{width:24px;height:24px;border-radius:50%;background:var(--lime-tint);color:var(--lime-d);display:grid;place-items:center;flex-shrink:0}
 .perk .ph .ck svg{width:14px;height:14px}
@@ -85,28 +95,28 @@ h1 em{font-style:normal;color:var(--lime-d)}
 .perk p{color:var(--ink-2);font-size:13px;margin-top:5px;line-height:1.4}
 
 /* CTA: vorbeikommen oder anrufen */
-.cta{margin-top:4mm;display:grid;grid-template-columns:1fr .8fr;border-radius:14px;overflow:hidden;border:1.5px solid var(--lime);flex-shrink:0}
-.cta .left{background:var(--lime-tint);padding:15px 22px;display:flex;flex-direction:column;justify-content:center}
+.cta{margin-top:3mm;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.82fr);border-radius:14px;overflow:hidden;border:1.5px solid var(--lime);flex-shrink:0}
+.cta .left{background:var(--lime-tint);padding:13px 20px;display:flex;flex-direction:column;justify-content:center}
 .cta .left .tagline{font-family:var(--font-head);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;font-size:11px;color:var(--lime-d)}
 .cta .left h3{font-family:var(--font-head);font-weight:700;text-transform:uppercase;font-size:23px;letter-spacing:.2px;line-height:1.04;margin-top:4px;color:var(--ink)}
 .cta .left p{font-size:14px;color:var(--ink-2);line-height:1.45;margin-top:7px}
 .cta .left p b{color:var(--ink);font-weight:600}
-.cta .right{background:var(--dark);color:#fff;padding:15px 22px;display:flex;flex-direction:column;justify-content:center;gap:11px}
+.cta .right{background:var(--dark);color:#fff;padding:13px 20px;display:flex;flex-direction:column;justify-content:center;gap:11px}
 .cta .right .row{display:flex;align-items:center;gap:12px}
 .cta .right .row svg{width:22px;height:22px;color:var(--lime);flex-shrink:0}
 .cta .right .lbl{display:block;font-family:var(--font-head);font-weight:600;text-transform:uppercase;letter-spacing:1.5px;font-size:10px;color:rgba(255,255,255,.6);line-height:1}
-.cta .right .val{display:block;font-family:var(--font-head);font-weight:700;font-size:23px;line-height:1.05;margin-top:2px}
-.cta .right .val.sm{font-size:16px;font-weight:600;font-family:var(--font-body)}
+.cta .right .val{display:block;font-family:var(--font-head);font-weight:800;font-size:22px;line-height:1.04;margin-top:3px;letter-spacing:.2px;white-space:nowrap}
+.cta .right .val.sm{font-size:15.5px;font-weight:600;font-family:var(--font-body);white-space:normal;line-height:1.25}
 .cta .right .div{height:1px;background:rgba(255,255,255,.16)}
 
 /* Kontakt */
-.contact{margin-top:auto;padding-top:9px;border-top:1.5px solid var(--ink)}
+.contact{margin-top:auto;padding-top:8px;border-top:1.5px solid var(--ink)}
 .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .ci{display:flex;align-items:flex-start;gap:10px}
 .ci svg{width:18px;height:18px;color:var(--lime-d);flex-shrink:0;margin-top:2px}
 .ci .lbl{display:block;font-family:var(--font-head);font-weight:600;text-transform:uppercase;letter-spacing:1.3px;font-size:10px;color:var(--ink-2);line-height:1}
 .ci .val{display:block;font-weight:600;font-size:14px;line-height:1.3;margin-top:3px}
-.cbar{margin-top:9px;padding-top:8px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.cbar{margin-top:7px;padding-top:7px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .cbar .park{font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
 .cbar .park svg{width:15px;height:15px;color:var(--lime-d)}
 .cbar .sig{font-family:var(--font-head);font-weight:600;text-transform:uppercase;letter-spacing:1.3px;font-size:11px;color:var(--ink-2)}
@@ -154,6 +164,12 @@ h1 em{font-style:normal;color:var(--lime-d)}
       </div>
     </div>
 
+    <div class="trust">
+      <div class="t"><span class="ic"><span class="stars">★★★★★</span></span><b>Top bewertet</b></div>
+      <div class="t"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><b>Zertifizierte Trainer</b></div>
+      <div class="t"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2h6M9 2v6l-5 9a2 2 0 0 0 1.8 3h12.4a2 2 0 0 0 1.8-3l-5-9V2"/><path d="M7.5 14h9"/></svg></span><b>Wissenschaftlich fundiert</b></div>
+    </div>
+
     <div class="perks">
       <div class="perk"><div class="ph"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><h4>20 Minuten / Woche</h4></div><p>Eine intensive Einheit pro Woche genügt. Mehr Zeit braucht es nicht.</p></div>
       <div class="perk"><div class="ph"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><h4>Persönliche Betreuung</h4></div><p>Ein erfahrener Trainer begleitet jede Einheit – abgestimmt auf Ihre Ziele.</p></div>
@@ -177,7 +193,7 @@ h1 em{font-style:normal;color:var(--lime-d)}
       <div class="cgrid">
         <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span><span class="lbl">Adresse</span><span class="val">Clemens-August-Str. 15, 50321 Brühl</span></span></div>
         <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg><span><span class="lbl">Telefon</span><span class="val">02232 96 24 900</span></span></div>
-        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v14H3z"/><path d="m3 7 9 6 9-6"/></svg><span><span class="lbl">E-Mail</span><span class="val">bruehl@koerperformen.com</span></span></div>
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v14H3z"/><path d="m3 7 9 6 9-6"/></svg><span><span class="lbl">E-Mail</span><span class="val">bruehl@kformen.com</span></span></div>
       </div>
       <div class="cbar">
         <span class="park"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>Kostenlos parken im Parkhaus Giesler Galerie</span>
