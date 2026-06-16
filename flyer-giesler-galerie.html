@@ -92,7 +92,7 @@ body{display:flex;flex-direction:column;align-items:center;gap:24px;padding:34px
 
 /* Kontakt */
 .contact{margin-top:auto;padding-top:8px;border-top:1.5px solid var(--ink)}
-.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.cgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .ci{display:flex;align-items:flex-start;gap:8px}
 .ci svg{width:18px;height:18px;color:var(--lime-d);flex-shrink:0;margin-top:2px}
 .ci .lbl{display:block;font-family:var(--font-head);font-weight:600;text-transform:uppercase;letter-spacing:1.2px;font-size:11.5px;color:var(--ink-2);line-height:1}
@@ -119,7 +119,7 @@ body{display:flex;flex-direction:column;align-items:center;gap:24px;padding:34px
 
     <div class="head">
       <img class="logo" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI2LjAuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkViZW5lXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCA1ODAgMTU4IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA1ODAgMTU4OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+Cgkuc3Qwe2ZpbGw6IzNENDU0Mzt9Cgkuc3Qxe2ZpbGw6IzkzQzAyRjt9Cjwvc3R5bGU+CjxnPgoJPGc+CgkJPGc+CgkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0zNjIsNjIuNXY1LjRjMCwxLjEsMCwyLjMtMC40LDMuMWMtMC40LDEuMS0xLjksMS41LTQuMiwxLjVoLTI0VjU4LjFoMjRDMzYwLjUsNTgsMzYyLDU5LjUsMzYyLDYyLjUKCQkJCSBNMzMzLjMsOTYuMlY3OC42aDEyLjJsMTgsMTcuNkgzNzVsLTE5LjgtMTcuNmg2LjFjNi4xLDAsOS42LTIuNyw5LjYtOC40di05LjljMC01LjctMy4xLTguOC05LjYtOC44SDMyNXY0NWg4LjRMMzMzLjMsOTYuMgoJCQkJTDMzMy4zLDk2LjJ6IE0zMDguOSw5Ni4ydi02LjVoLTM3Vjc2LjNIMjk0di02LjVoLTIyLjFWNTguNGgzNi42di02LjVoLTQ1LjR2NDVoNDUuOFY5Ni4yeiBNMjM4LjQsNjIuMnY1LjdjMCwyLjctMS41LDQuMi01LDQuMgoJCQkJaC0yNS41VjU4aDI1LjVDMjM2LjgsNTgsMjM4LjQsNTkuNSwyMzguNCw2Mi4yIE0yMDcuOSw5Ni4yVjc4LjZoMjkuNGM2LjUsMCw5LjktMi43LDkuOS04LjR2LTkuOWMwLTUuNy0zLjQtOC44LTkuOS04LjhoLTM3LjgKCQkJCXY0NWg4LjRMMjA3LjksOTYuMkwyMDcuOSw5Ni4yeiBNMTcwLjksNjIuNXY1LjRjMCwxLjEsMCwyLjMtMC40LDMuMWMtMC40LDEuMS0xLjksMS41LTQuMiwxLjVoLTI0VjU4LjFoMjQKCQkJCUMxNjkuMyw1OCwxNzAuOSw1OS41LDE3MC45LDYyLjUgTTE0Mi4yLDk2LjJWNzguNmgxMi4ybDE4LDE3LjZoMTEuNUwxNjQsNzguNmg2LjFjNi4xLDAsOS42LTIuNyw5LjYtOC40di05LjkKCQkJCWMwLTUuNy0zLjEtOC44LTkuNi04LjhoLTM2LjJ2NDVoOC40di0wLjNIMTQyLjJ6IE03MC4xLDU4aDM3LjR2MzEuNkg3MC4xVjU4eiBNNjEuMyw4NS45YzAsNC4yLDAuOCw2LjksMi4zLDguNHM0LjYsMi4zLDguOCwyLjMKCQkJCWgzMi40YzQuMiwwLDcuMy0wLjgsOC44LTIuM3MyLjMtNC4yLDIuMy04LjRWNjIuMmMwLTQuMi0wLjgtNi45LTIuMy04LjRjLTEuNS0xLjUtNC42LTIuMy04LjgtMi4zSDcyLjRjLTQuMiwwLTcuMywwLjgtOC44LDIuMwoJCQkJYy0xLjUsMS41LTIuMyw0LjItMi4zLDguNEM2MS4zLDYyLjIsNjEuMyw4NS45LDYxLjMsODUuOXogTTkuOCw5Ni4yVjc1LjlsMjkuNywyMC4yaDEzLjhMMTYuNiw3My4zbDMzLjItMjEuOEgzOGwtMjguMiwxOXYtMTlIMQoJCQkJdjQ1aDguOFY5Ni4yeiIvPgoJCTwvZz4KCTwvZz4KCTxnPgoJCTxnPgoJCQk8cGF0aCBjbGFzcz0ic3QxIiBkPSJNNTM5LjQsMTI4LjJsMzMuNiwyOS43aDUuN3YtNDVoLThWMTQwYzAsMy4xLDAuNCw1LjcsMC44LDguNGMtMS41LTIuMy0zLjQtNC4yLTUuNC02LjFsLTMyLjgtMjkuNGgtNi41djQ1CgkJCQloOHYtMjcuOGMwLTIuNy0wLjQtNS40LTAuOC04QzUzNS41LDEyNCw1MzcuMSwxMjYuMyw1MzkuNCwxMjguMiBNNTExLjUsMTU4di02LjVoLTM3di0xMy40aDIyLjF2LTYuNWgtMjIuMXYtMTEuNWgzNi42di02LjVoLTQ1CgkJCQl2NDVoNDUuNFYxNTh6IE00MDAuMSwxMjcuOGwxOCwyMi45aDIuM2wxNy4yLTIzLjJjMS4xLTEuNSwxLjktMy40LDMuMS02LjFjLTAuNCwxLjktMC40LDQuMi0wLjQsNi4xdjMwLjFoOHYtNDQuN2gtOGwtMjAuNiwyOQoJCQkJbC0yMi41LTI5aC02Ljl2NDVoNi45di0zMC4xbC0wLjQtNi4xQzM5Ny44LDEyNCwzOTksMTI1LjksNDAwLjEsMTI3LjggTTM2Mi40LDEyNHY1LjRjMCwxLjEsMCwyLjMtMC40LDMuMQoJCQkJYy0wLjQsMS4xLTEuOSwxLjUtNC4yLDEuNWgtMjR2LTE0LjVoMjRDMzYwLjgsMTE5LjgsMzYyLjQsMTIxLDM2Mi40LDEyNCBNMzMzLjcsMTU4di0xNy42aDEyLjJsMTgsMTcuNmgxMS41bC0xOS44LTE3LjZoNi4xCgkJCQljNi4xLDAsOS42LTIuNyw5LjYtOC40di0xMC4zYzAtNS43LTMuMS04LjgtOS42LTguOGgtMzYuMnY0NUwzMzMuNywxNThMMzMzLjcsMTU4eiBNMjYzLjksMTE5LjhoMzcuNHYzMS42aC0zNy40VjExOS44egoJCQkJIE0yNTUuNSwxNDcuM2MwLDQuMiwwLjgsNi45LDIuMyw4LjRzNC42LDIuMyw4LjgsMi4zSDI5OWM0LjIsMCw3LjMtMC44LDguOC0yLjNzMi4zLTQuMiwyLjMtOC40di0yMy42YzAtNC4yLTAuOC02LjktMi4zLTguNAoJCQkJcy00LjYtMi4zLTguOC0yLjNoLTMyLjRjLTQuMiwwLTcuMywwLjgtOC44LDIuM3MtMi4zLDQuMi0yLjMsOC40TDI1NS41LDE0Ny4zTDI1NS41LDE0Ny4zeiBNMjA3LjksMTU4di0xOGgyMC42di02LjVoLTIwLjYKCQkJCXYtMTMuOGgzNi4ydi02LjVoLTQ0Ljd2NDVoOC40TDIwNy45LDE1OEwyMDcuOSwxNTh6Ii8+CgkJPC9nPgoJPC9nPgo8L2c+CjxnPgoJPGc+CgkJPGc+CgkJCTxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik0xOTguNyw0Mi40YzAsMCw2Ny45LTUzLjEsMTUyLjYtMzUuNWM4NS4xLDE3LjYsMTI5LjQsOTIsMjIzLjIsNTMuMWMwLDAtNTguOCw0Mi43LTE1MS44LTEyLjIKCQkJCUMzMjkuNS03LjMsMjU3LjQsMTIuNiwxOTguNyw0Mi40Ii8+CgkJPC9nPgoJPC9nPgo8L2c+CjxnPgoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTU2Ny4yLDNjMy4xLDAsNS43LDEuMSw3LjksMy4zYzIuMiwyLjIsMy4zLDQuOCwzLjMsNy45cy0xLjEsNS44LTMuMyw4Yy0yLjIsMi4yLTQuOCwzLjMtNy45LDMuMwoJCWMtMy4xLDAtNS44LTEuMS04LTMuM2MtMi4yLTIuMi0zLjMtNC45LTMuMy04YzAtMy4xLDEuMS01LjcsMy4zLTcuOUM1NjEuNCw0LjEsNTY0LjEsMyw1NjcuMiwzeiBNNTY3LjEsNC42CgkJYy0yLjYsMC00LjksMC45LTYuNywyLjhjLTEuOSwxLjktMi44LDQuMi0yLjgsNi45czAuOSw1LDIuOCw2LjljMS45LDEuOSw0LjEsMi44LDYuNywyLjhjMi42LDAsNC45LTAuOSw2LjctMi44CgkJYzEuOS0xLjksMi44LTQuMiwyLjgtNi45YzAtMi43LTAuOS01LTIuOC02LjhDNTcyLDUuNSw1NjkuOCw0LjYsNTY3LjEsNC42eiBNNTYxLjgsMjAuNFY3LjloNi40YzIuOCwwLDQuMiwxLjMsNC4yLDMuOQoJCWMwLDEuOS0wLjYsMy0xLjksMy40YzEuMiwwLjMsMS44LDEuMSwxLjgsMi41djIuOGgtMi42di0yLjNjMC0xLjItMC42LTEuOC0xLjgtMS44aC0zLjR2NC4xSDU2MS44eiBNNTY0LjUsMTQuMWgzLjQKCQljMS40LDAsMi4xLTAuNywyLjEtMmMwLTEuMy0wLjYtMi0xLjktMmgtMy41VjE0LjF6Ii8+CjwvZz4KPHJlY3QgeD0iNzYuMiIgeT0iMzIuOCIgY2xhc3M9InN0MSIgd2lkdGg9IjguNCIgaGVpZ2h0PSI5LjkiLz4KPHJlY3QgeD0iOTIuNiIgeT0iMzIuOCIgY2xhc3M9InN0MSIgd2lkdGg9IjguNCIgaGVpZ2h0PSI5LjkiLz4KPHJlY3QgeD0iNzYuMiIgeT0iMzIuOCIgY2xhc3M9InN0MSIgd2lkdGg9IjguNCIgaGVpZ2h0PSI5LjkiLz4KPHJlY3QgeD0iOTIuNSIgeT0iMzIuOCIgY2xhc3M9InN0MSIgd2lkdGg9IjguNCIgaGVpZ2h0PSI5LjkiLz4KPC9zdmc+Cg==" alt="Körperformen Logo" />
-      <div class="loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Direkt an der Giesler Galerie<br>Clemens-August-Str. 15 · Brühl</span></div>
+      <div class="loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Auf dem Parkdeck der Giesler Galerie<br>Clemens-August-Str. 15 · Brühl</span></div>
     </div>
 
     <span class="eyebrow">Exklusiv für Mitarbeiter:innen der Giesler Galerie</span>
@@ -128,29 +128,28 @@ body{display:flex;flex-direction:column;align-items:center;gap:24px;padding:34px
       <div class="big"><span class="n">1</span><span class="u">Monat</span></div>
       <div class="txt">
         <h1>Gratis<br><span>trainieren</span></h1>
-        <p>Ihr Arbeitsplatz schenkt Ihnen <b>30 Tage kostenlos</b> – voll betreut & unverbindlich.</p>
+        <p>Wir schenken unseren Nachbarn <b>30 Tage kostenlos</b> – voll betreut & unverbindlich.</p>
       </div>
     </div>
 
-    <p class="sub"><b>20 Minuten pro Woche. Ein Trainer. Spürbare Ergebnisse.</b> EMS-Training, das gelenkschonend ist und perfekt neben den Berufsalltag passt.</p>
+    <p class="sub"><b>20 Minuten pro Woche. Spürbare Ergebnisse.</b><br>EMS-Training, das gelenkschonend ist und perfekt in Ihren Alltag passt.</p>
 
     <div class="perks">
       <div class="perk"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><h4>20 Min / Woche</h4><p>Kurz, intensiv, effektiv.</p></div>
-      <div class="perk"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><h4>Persönliche Betreuung</h4><p>Ein Trainer an Ihrer Seite.</p></div>
-      <div class="perk"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><h4>Rücken stärkend</h4><p>Starke Tiefenmuskulatur.</p></div>
+      <div class="perk"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><h4>Persönliche Betreuung</h4><p>Begleitung bei jeder Einheit.</p></div>
+      <div class="perk"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span><h4>Rücken stärkend</h4><p>Für eine starke Muskulatur.</p></div>
     </div>
 
     <div class="cta">
       <span class="tagline">So sichern Sie sich Ihren Gratis-Monat</span>
       <h3>Kommen Sie vorbei oder rufen Sie an</h3>
       <div class="phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg><b>02232 96 24 900</b></div>
-      <p class="visit">Oder direkt im Studio vorbeischauen – <b>Arbeitsnachweis mitbringen</b>, und los geht's.</p>
+      <p class="visit">Um das Angebot wahrzunehmen, brauchen wir nur einen <b>Arbeitsnachweis</b> (z. B. Mitarbeiterausweis).</p>
     </div>
 
     <div class="contact">
       <div class="cgrid">
         <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span><span class="lbl">Adresse</span><span class="val">Clemens-August-Str. 15, Brühl</span></span></div>
-        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg><span><span class="lbl">Telefon</span><span class="val">02232 96 24 900</span></span></div>
         <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v14H3z"/><path d="m3 7 9 6 9-6"/></svg><span><span class="lbl">E-Mail</span><span class="val">bruehl@kformen.com</span></span></div>
       </div>
     </div>
