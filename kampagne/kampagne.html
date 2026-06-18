@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<title>Körperformen Hürth – Sommerkampagne 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap');
+
+:root{
+  --bg:#04140C;
+  --bg-2:#07241A;
+  --card:#0C2A1E;
+  --card-2:#103527;
+  --line:rgba(255,255,255,.10);
+  --line-2:rgba(255,255,255,.16);
+  --accent:#00E06E;
+  --accent-2:#19FF85;
+  --accent-d:#00C060;
+  --warm:#FF6B35;
+  --text:#F0F7F3;
+  --text-2:#9DBFB2;
+  --text-3:#5E7E70;
+  --head:'Barlow Condensed', sans-serif;
+  --body:'Barlow', sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+@page{ size:A4; margin:0; }
+
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+body{ font-family:var(--body); color:var(--text); background:var(--bg); line-height:1.5; }
+
+h1,h2,h3,h4{ font-family:var(--head); font-weight:800; line-height:1.0; letter-spacing:.2px; }
+
+.page{
+  position:relative;
+  width:210mm; height:297mm;
+  overflow:hidden;
+  background:var(--bg);
+  page-break-after:always;
+  padding:18mm 16mm;
+}
+.page:last-child{ page-break-after:auto; }
+
+.bg-glow{ position:absolute; border-radius:50%; filter:blur(0); }
+.glow-a{ width:340mm; height:340mm; top:-160mm; right:-150mm;
+  background:radial-gradient(circle, rgba(0,224,110,.16), rgba(0,224,110,0) 60%); }
+.glow-b{ width:240mm; height:240mm; bottom:-120mm; left:-110mm;
+  background:radial-gradient(circle, rgba(255,107,53,.12), rgba(255,107,53,0) 60%); }
+
+.kicker{ display:inline-block; font-family:var(--head); font-weight:700; font-size:11pt;
+  letter-spacing:3px; text-transform:uppercase; color:var(--accent);
+  border:1px solid rgba(0,224,110,.35); border-radius:40px; padding:5px 16px; }
+.dot{ color:var(--accent); }
+
+.brand-row{ display:flex; align-items:center; gap:10px; }
+.brand-mark{ width:30px; height:30px; border-radius:9px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  color:#04140C; font-family:var(--head); font-weight:800; font-size:17pt; }
+.brand-name{ font-family:var(--head); font-weight:800; font-size:15pt; letter-spacing:.5px; }
+.brand-name small{ display:block; font-family:var(--body); font-weight:600;
+  font-size:7.5pt; letter-spacing:3px; color:var(--text-3); text-transform:uppercase; margin-top:1px; }
+
+.foot{ position:absolute; left:16mm; right:16mm; bottom:11mm;
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:8pt; color:var(--text-3); letter-spacing:.5px;
+  border-top:1px solid var(--line); padding-top:8px; }
+.foot b{ color:var(--text-2); font-weight:700; }
+
+.section-no{ font-family:var(--head); font-weight:800; font-size:13pt; color:var(--accent); }
+
+/* generic helpers */
+.lead{ color:var(--text-2); font-size:11.5pt; line-height:1.6; }
+.tag{ display:inline-block; background:rgba(0,224,110,.12); color:var(--accent-2);
+  border-radius:6px; padding:3px 10px; font-size:8.5pt; font-weight:600; margin:2px 3px 2px 0; }
+.tag.warm{ background:rgba(255,107,53,.14); color:#FFB494; }
+
+/* ============ COVER ============ */
+.cover{ display:flex; flex-direction:column; justify-content:space-between; padding:20mm 18mm; }
+.cover h1{ font-size:62pt; line-height:.92; margin:14px 0 0; }
+.cover h1 em{ font-style:normal; color:var(--accent); }
+.cover .sub{ font-size:14pt; color:var(--text-2); max-width:150mm; margin-top:18px; line-height:1.5; }
+.cover-meta{ display:flex; gap:40px; margin-top:30px; }
+.cover-meta .m-l{ font-size:8pt; letter-spacing:2px; text-transform:uppercase; color:var(--text-3); }
+.cover-meta .m-v{ font-family:var(--head); font-weight:700; font-size:15pt; color:var(--text); margin-top:3px; }
+.cover-strip{ display:flex; gap:10px; margin-top:8px; }
+.cover-strip .chip{ flex:1; background:var(--card); border:1px solid var(--line);
+  border-radius:14px; padding:16px 16px; }
+.cover-strip .chip .big{ font-family:var(--head); font-weight:800; font-size:26pt; color:var(--accent); }
+.cover-strip .chip .lbl{ font-size:9pt; color:var(--text-2); margin-top:2px; }
+
+/* ============ headings on content pages ============ */
+.page-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px; }
+.page-head h2{ font-size:34pt; line-height:.95; }
+.page-head h2 em{ font-style:normal; color:var(--accent); }
+.page-head .ph-sub{ color:var(--text-2); font-size:10.5pt; margin-top:7px; max-width:120mm; }
+
+/* cards grid */
+.grid-2{ display:flex; gap:14px; flex-wrap:wrap; }
+.grid-2 > *{ width:calc(50% - 7px); }
+.grid-3{ display:flex; gap:12px; flex-wrap:wrap; }
+.grid-3 > *{ width:calc(33.333% - 8px); }
+
+.card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; }
+.card h3{ font-size:15pt; margin-bottom:7px; }
+.card h3 .ic{ color:var(--accent); margin-right:6px; }
+.card p{ color:var(--text-2); font-size:10pt; line-height:1.55; }
+.card .num{ font-family:var(--head); font-weight:800; font-size:30pt; color:var(--accent); line-height:1; }
+
+.callout{ background:linear-gradient(135deg, rgba(0,224,110,.14), rgba(0,224,110,.04));
+  border:1px solid rgba(0,224,110,.30); border-radius:18px; padding:22px 24px; }
+.callout.warm{ background:linear-gradient(135deg, rgba(255,107,53,.16), rgba(255,107,53,.04));
+  border-color:rgba(255,107,53,.32); }
+
+/* offer page */
+.offer-hero{ background:linear-gradient(135deg,var(--accent),var(--accent-d));
+  border-radius:24px; padding:34px 36px; color:#04140C; position:relative; overflow:hidden; }
+.offer-hero h2{ font-size:40pt; color:#04140C; line-height:.95; }
+.offer-hero .price{ display:flex; align-items:baseline; gap:14px; margin-top:14px; }
+.offer-hero .price .now{ font-family:var(--head); font-weight:800; font-size:54pt; }
+.offer-hero .price .was{ font-family:var(--head); font-weight:700; font-size:24pt; opacity:.55; text-decoration:line-through; }
+.offer-hero .price .unit{ font-size:12pt; font-weight:700; }
+.offer-hero p{ font-size:12pt; font-weight:600; max-width:130mm; margin-top:6px; }
+.offer-list{ margin-top:16px; display:flex; flex-direction:column; gap:9px; }
+.offer-list .row{ display:flex; gap:11px; align-items:flex-start; font-size:11pt; color:var(--text); }
+.offer-list .row .ck{ width:22px; height:22px; border-radius:50%;
+  background:rgba(0,224,110,.16); color:var(--accent); flex:none;
+  display:flex; align-items:center; justify-content:center; font-size:12pt; font-weight:800; }
+.offer-list .row b{ color:var(--accent-2); }
+
+/* ===== phone / IG mockups ===== */
+.phones{ display:flex; gap:14px; flex-wrap:wrap; }
+.phone{ width:calc(33.333% - 10px); background:var(--card); border:1px solid var(--line-2);
+  border-radius:22px; overflow:hidden; }
+.phone .ph-top{ display:flex; align-items:center; gap:8px; padding:9px 11px; }
+.phone .ph-av{ width:22px; height:22px; border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2)); flex:none; }
+.phone .ph-han{ font-size:8.5pt; font-weight:700; }
+.phone .ph-han small{ display:block; font-size:6.5pt; color:var(--text-3); font-weight:500; }
+.phone .ph-dots{ margin-left:auto; color:var(--text-3); font-weight:800; letter-spacing:1px; }
+.phone .ph-img{ height:118px; position:relative; display:flex; flex-direction:column;
+  justify-content:center; align-items:center; text-align:center; padding:14px; }
+.ph-img .ovl{ font-family:var(--head); font-weight:800; font-size:16pt; line-height:1.02; color:#fff;
+  text-shadow:0 2px 12px rgba(0,0,0,.5); }
+.ph-img .ovl em{ font-style:normal; color:var(--accent-2); }
+.ph-img .ovl-sub{ font-size:8pt; font-weight:700; color:#fff; margin-top:5px; letter-spacing:.5px;
+  background:rgba(0,0,0,.30); padding:3px 9px; border-radius:20px; }
+.phone .ph-acts{ display:flex; gap:9px; padding:8px 11px 3px; font-size:11pt; }
+.phone .ph-cap{ padding:0 11px 12px; font-size:7.6pt; color:var(--text-2); line-height:1.45; }
+.phone .ph-cap b{ color:var(--text); }
+.phone .ph-cap .hh{ color:var(--accent); }
+
+/* image fills via gradient themes */
+.img-green{ background:linear-gradient(150deg,#0a3a26,#062018); }
+.img-dark{ background:linear-gradient(150deg,#0d2c20,#04140C); }
+.img-warm{ background:linear-gradient(150deg,#3a1c10,#1a0c06); }
+.img-accent{ background:linear-gradient(150deg,var(--accent-d),#0a3a26); }
+
+.note{ font-size:8.5pt; color:var(--text-3); margin-top:5px; }
+
+/* story strips */
+.stories{ display:flex; gap:12px; }
+.story{ width:calc(25% - 9px); aspect-ratio:9/16; border-radius:16px; border:1px solid var(--line);
+  padding:14px; display:flex; flex-direction:column; justify-content:space-between; }
+.story .s-top{ font-size:7.5pt; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--accent); }
+.story .s-mid{ font-family:var(--head); font-weight:800; font-size:14.5pt; line-height:1.05; }
+.story .s-bot{ font-size:8pt; color:var(--text-2); line-height:1.4; }
+.story .s-cta{ background:#fff; color:#04140C; font-weight:800; font-size:8pt; text-align:center;
+  border-radius:20px; padding:6px; margin-top:8px; }
+
+/* reels list */
+.reel{ display:flex; gap:14px; background:var(--card); border:1px solid var(--line);
+  border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.reel .r-no{ font-family:var(--head); font-weight:800; font-size:22pt; color:var(--accent); width:34px; flex:none; }
+.reel .r-body h4{ font-size:12.5pt; margin-bottom:3px; }
+.reel .r-body p{ font-size:9.2pt; color:var(--text-2); line-height:1.5; }
+.reel .r-body .hook{ color:var(--accent-2); font-weight:600; }
+
+/* facebook post */
+.fb{ background:#fff; border-radius:14px; overflow:hidden; color:#1c1e21; }
+.fb .fb-top{ display:flex; align-items:center; gap:10px; padding:12px 14px; }
+.fb .fb-av{ width:38px; height:38px; border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent-d)); flex:none; }
+.fb .fb-name{ font-weight:700; font-size:10.5pt; color:#050505; }
+.fb .fb-name small{ display:block; font-weight:500; font-size:8pt; color:#65676b; }
+.fb .fb-text{ padding:0 14px 12px; font-size:9.5pt; line-height:1.5; color:#1c1e21; }
+.fb .fb-text b{ font-weight:700; }
+.fb .fb-img{ height:120px; display:flex; align-items:center; justify-content:center; text-align:center; padding:16px; }
+.fb .fb-img .t{ font-family:var(--head); font-weight:800; font-size:22pt; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.5); }
+.fb .fb-img .t em{ font-style:normal; color:var(--accent-2); }
+.fb .fb-btn{ background:#f0f2f5; color:#050505; font-weight:700; font-size:9.5pt;
+  text-align:center; padding:10px; margin:0; }
+.fb .fb-bar{ display:flex; justify-content:space-around; padding:8px 0; border-top:1px solid #e4e6eb; font-size:8.5pt; color:#65676b; font-weight:600; }
+
+/* calendar */
+.cal{ width:100%; border-collapse:separate; border-spacing:6px; }
+.cal th{ font-family:var(--head); font-weight:700; font-size:9pt; color:var(--text-3);
+  text-transform:uppercase; letter-spacing:1px; text-align:left; padding:4px 8px; }
+.cal td{ background:var(--card); border:1px solid var(--line); border-radius:10px;
+  padding:9px 10px; font-size:8.4pt; color:var(--text-2); vertical-align:top; line-height:1.4; }
+.cal td .wk{ font-family:var(--head); font-weight:800; font-size:11pt; color:var(--accent); }
+.cal td b{ color:var(--text); display:block; font-size:8.6pt; }
+.pill{ display:inline-block; font-size:6.8pt; font-weight:700; border-radius:5px; padding:1px 6px; margin-bottom:3px; }
+.p-reel{ background:rgba(255,107,53,.18); color:#FFB494; }
+.p-post{ background:rgba(0,224,110,.16); color:var(--accent-2); }
+.p-story{ background:rgba(120,160,255,.18); color:#9DB4FF; }
+.p-ad{ background:rgba(255,210,80,.18); color:#FFDD8A; }
+
+/* ===== FLYER pages ===== */
+.flyer{ position:absolute; inset:0; display:flex; flex-direction:column; }
+.flyer-tag{ position:absolute; top:10mm; right:12mm; font-size:8pt; letter-spacing:2px;
+  text-transform:uppercase; color:var(--text-3); z-index:5; }
+
+/* Flyer 1 hero */
+.fl1-top{ flex:1.15; background:linear-gradient(160deg,#062018,#0a3a26 70%); position:relative;
+  display:flex; flex-direction:column; justify-content:center; padding:24mm 20mm 14mm; }
+.fl1-top .badge{ display:inline-block; background:var(--warm); color:#fff; font-family:var(--head);
+  font-weight:800; font-size:12pt; letter-spacing:1px; padding:6px 16px; border-radius:30px; align-self:flex-start; }
+.fl1-top h1{ font-size:58pt; line-height:.9; margin-top:16px; }
+.fl1-top h1 em{ font-style:normal; color:var(--accent); }
+.fl1-top .pun{ font-size:15pt; color:var(--text-2); margin-top:14px; max-width:120mm; line-height:1.4; }
+.fl1-bot{ flex:1; background:var(--bg); padding:16mm 20mm; display:flex; flex-direction:column; justify-content:center; }
+.fl1-offerbox{ background:linear-gradient(135deg,var(--accent),var(--accent-d)); border-radius:22px;
+  padding:24px 28px; color:#04140C; display:flex; align-items:center; gap:24px; }
+.fl1-offerbox .l .now{ font-family:var(--head); font-weight:800; font-size:50pt; line-height:.9; }
+.fl1-offerbox .l .lbl{ font-weight:700; font-size:11pt; }
+.fl1-offerbox .r{ border-left:2px solid rgba(4,20,12,.25); padding-left:24px; }
+.fl1-offerbox .r div{ font-weight:700; font-size:11.5pt; margin:4px 0; }
+.fl1-contact{ display:flex; justify-content:space-between; align-items:center; margin-top:22px; }
+.fl1-contact .c-l{ font-size:10pt; color:var(--text-2); line-height:1.6; }
+.fl1-contact .c-l b{ color:var(--text); }
+.qr{ width:30mm; height:30mm; border-radius:12px; background:
+  repeating-linear-gradient(45deg,#fff,#fff 3px,#0a3a26 3px,#0a3a26 6px); flex:none;
+  border:5px solid #fff; }
+.qr-wrap{ text-align:center; }
+.qr-wrap small{ display:block; font-size:7.5pt; color:var(--text-3); margin-top:5px; letter-spacing:1px; }
+
+/* Flyer 2 - friend */
+.fl2{ background:linear-gradient(160deg,#3a1c10,#1a0c06); }
+.fl2 .badge2{ background:var(--accent); color:#04140C; }
+.fl2 h1 em{ color:var(--warm); }
+
+/* generic flyer info list */
+.fl-points{ display:flex; gap:10px; margin-top:8px; }
+.fl-points .fp{ flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line);
+  border-radius:14px; padding:14px; text-align:center; }
+.fl-points .fp .n{ font-family:var(--head); font-weight:800; font-size:22pt; color:var(--accent); }
+.fl-points .fp .t{ font-size:8.5pt; color:var(--text-2); margin-top:3px; }
+
+/* poster */
+.poster{ background:linear-gradient(165deg,#04140C 30%,#0a3a26); align-items:center; justify-content:center; text-align:center; }
+.poster .p-kick{ color:var(--accent); font-family:var(--head); font-weight:700; font-size:16pt; letter-spacing:6px; text-transform:uppercase; }
+.poster h1{ font-size:84pt; line-height:.88; margin:18px 0; }
+.poster h1 em{ font-style:normal; color:var(--accent); }
+.poster .p-sub{ font-size:18pt; color:var(--text-2); max-width:150mm; line-height:1.4; }
+.poster .p-cta{ margin-top:30px; background:var(--warm); color:#fff; font-family:var(--head); font-weight:800;
+  font-size:20pt; padding:14px 40px; border-radius:50px; }
+
+/* checklist page */
+.steps .step{ display:flex; gap:16px; margin-bottom:14px; align-items:flex-start; }
+.steps .step .sn{ width:38px; height:38px; border-radius:11px; background:rgba(0,224,110,.14);
+  color:var(--accent); font-family:var(--head); font-weight:800; font-size:18pt; flex:none;
+  display:flex; align-items:center; justify-content:center; }
+.steps .step h4{ font-size:13pt; margin-bottom:2px; }
+.steps .step p{ font-size:9.5pt; color:var(--text-2); line-height:1.5; }
+
+.hashbox{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:12px; }
+.hashbox .hb-t{ font-family:var(--head); font-weight:700; font-size:11pt; color:var(--accent); margin-bottom:7px; }
+.hashbox .hb-h{ font-size:9pt; color:var(--text-2); line-height:1.7; }
+
+.disc{ font-size:7.5pt; color:var(--text-3); line-height:1.5; margin-top:6px; }
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE 1 · COVER ================= -->
+<section class="page cover">
+  <div class="bg-glow glow-a"></div>
+  <div class="bg-glow glow-b"></div>
+
+  <div class="brand-row">
+    <div class="brand-mark">K</div>
+    <div class="brand-name">KÖRPERFORMEN<small>Hürth · EMS-Studio</small></div>
+  </div>
+
+  <div>
+    <span class="kicker">Kampagnen-Konzept · Sommer 2026</span>
+    <h1>Dein Sommer.<br/>Deine <em>Bestform.</em></h1>
+    <p class="sub">Eine Neukunden-Kampagne für Instagram, Facebook & Print – damit dein Studio
+    im Sommer die größte Anfragewelle des Jahres erlebt. Ein durchgängiges Konzept, sofort umsetzbar.</p>
+
+    <div class="cover-strip">
+      <div class="chip"><div class="big">20</div><div class="lbl">Minuten Training pro Woche</div></div>
+      <div class="chip"><div class="big">6 Wo.</div><div class="lbl">Kampagnen-Laufzeit</div></div>
+      <div class="chip"><div class="big">3</div><div class="lbl">Kanäle: IG · FB · Flyer</div></div>
+      <div class="chip"><div class="big">0 €</div><div class="lbl">Probetraining als Einstieg</div></div>
+    </div>
+  </div>
+
+  <div class="cover-meta">
+    <div><div class="m-l">Erstellt für</div><div class="m-v">Körperformen Hürth</div></div>
+    <div><div class="m-l">Kanäle</div><div class="m-v">Instagram · Facebook · Print</div></div>
+    <div><div class="m-l">Zeitraum</div><div class="m-v">Juni – August 2026</div></div>
+  </div>
+</section>
+
+<!-- ================= PAGE 2 · KONZEPT ================= -->
+<section class="page">
+  <div class="bg-glow glow-a"></div>
+  <div class="page-head">
+    <div><span class="section-no">01</span>
+      <h2>Die Kampagne<br/>auf einen <em>Blick</em></h2>
+      <p class="ph-sub">Ein klarer roter Faden für alle Kanäle. Eine Botschaft, ein Angebot, ein Ziel –
+      konsequent über 6 Wochen ausgespielt.</p>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-bottom:16px;">
+    <div style="font-family:var(--head); font-weight:700; font-size:11pt; color:var(--accent); letter-spacing:2px; text-transform:uppercase;">Kampagnen-Claim</div>
+    <div style="font-family:var(--head); font-weight:800; font-size:30pt; margin-top:6px;">„In 20 Minuten zur Sommerfigur."</div>
+    <p class="lead" style="margin-top:8px;">Alternativen je nach Tonalität: <b style="color:var(--text)">„Dein Sommer-Body beginnt jetzt"</b> · <b style="color:var(--text)">„Bikini-fit – nur 20 Min/Woche"</b> · <b style="color:var(--text)">„Forme jetzt, genieße im Sommer"</b></p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:16px;">
+    <div class="card"><h3><span class="ic">◎</span>Ziel</h3><p>Maximale Neukunden-Anfragen über das kostenlose Probetraining. Messgröße: Probetrainings/Woche & abgeschlossene Verträge.</p></div>
+    <div class="card"><h3><span class="ic">◎</span>Idee</h3><p>Der Sommer als emotionaler Auslöser + die Angst „zu spät dran zu sein" auflösen: 20 Min/Woche statt stundenlanges Gym.</p></div>
+    <div class="card"><h3><span class="ic">◎</span>Mechanik</h3><p>Zeitlich begrenztes Sommer-Angebot + kostenloses Probetraining. Verknappung („nur bis 31.07.") erzeugt Handlungsdruck.</p></div>
+  </div>
+
+  <h3 style="font-size:15pt; margin-bottom:10px;">Die 5 Content-Säulen</h3>
+  <div class="grid-2">
+    <div class="card"><h3 style="font-size:13pt;">1 · Resultate &amp; Stimmen</h3><p>Vorher/Nachher, Testimonials, Google-Bewertungen, Erfolgsgeschichten aus Hürth. Schafft Vertrauen &amp; Beweis.</p></div>
+    <div class="card"><h3 style="font-size:13pt;">2 · Wissen &amp; Aufklärung</h3><p>Was ist EMS? Warum 20 Min reichen. Gelenkschonend, 90 % Muskelaktivierung. Räumt Zweifel aus.</p></div>
+    <div class="card"><h3 style="font-size:13pt;">3 · Mensch &amp; Studio</h3><p>Trainer-Vorstellung, Blick ins Studio, persönliche Betreuung. Macht euch nahbar &amp; lokal in Hürth.</p></div>
+    <div class="card"><h3 style="font-size:13pt;">4 · Aktion &amp; CTA</h3><p>Das Sommer-Angebot, Countdown, „Jetzt Probetraining sichern". Der klare Handlungsaufruf.</p></div>
+  </div>
+</section>
+
+<!-- ================= PAGE 3 · ZIELGRUPPE ================= -->
+<section class="page">
+  <div class="bg-glow glow-b"></div>
+  <div class="page-head">
+    <div><span class="section-no">02</span>
+      <h2>Zielgruppe &amp;<br/><em>Kernbotschaft</em></h2>
+      <p class="ph-sub">Wen wir ansprechen – und mit welcher Sprache wir ihn abholen.</p>
+    </div>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:18px;">
+    <div class="card">
+      <h3>Die Berufstätige</h3>
+      <p style="margin-bottom:8px;"><b style="color:var(--text)">28–48 J. · wenig Zeit</b></p>
+      <p>„Ich will fit aussehen, habe aber keine 3× pro Woche fürs Fitnessstudio." → 20 Minuten sind ihr Argument.</p>
+    </div>
+    <div class="card">
+      <h3>Nach der Schwangerschaft</h3>
+      <p style="margin-bottom:8px;"><b style="color:var(--text)">30–45 J. · Rückbildung</b></p>
+      <p>Will sanft &amp; gezielt zur Form zurück. → gelenkschonend, persönliche Betreuung, Beckenboden.</p>
+    </div>
+    <div class="card">
+      <h3>Der Wiedereinsteiger</h3>
+      <p style="margin-bottom:8px;"><b style="color:var(--text)">40–60 J. · Rücken</b></p>
+      <p>Will Rückenschmerzen los &amp; Muskeln aufbauen ohne Verletzungsrisiko. → effektiv &amp; schonend.</p>
+    </div>
+  </div>
+
+  <h3 style="font-size:15pt; margin-bottom:10px;">Kernbotschaften &amp; Tonalität</h3>
+  <div class="grid-2">
+    <div class="callout">
+      <p class="lead" style="color:var(--text);"><b>Tonalität:</b> motivierend, ehrlich, nahbar – kein Druck, keine leeren Versprechen. „Wir holen dich da ab, wo du stehst."</p>
+    </div>
+    <div class="card">
+      <p style="font-size:10pt;">Wiederkehrende Botschaften:</p>
+      <div style="margin-top:8px;">
+        <span class="tag">Nur 20 Min/Woche</span>
+        <span class="tag">Persönlich betreut</span>
+        <span class="tag">Gelenkschonend</span>
+        <span class="tag">90 % Muskeln aktiv</span>
+        <span class="tag warm">Kostenloses Probetraining</span>
+        <span class="tag warm">Mitten in Hürth</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warm" style="margin-top:16px;">
+    <div style="font-family:var(--head); font-weight:700; font-size:10.5pt; color:#FFB494; letter-spacing:2px; text-transform:uppercase;">Einwand-Auflösung (für Captions &amp; Ads)</div>
+    <p class="lead" style="margin-top:6px; color:var(--text);">„Keine Zeit" → 20 Min/Woche &nbsp;·&nbsp; „Zu spät für den Sommer" → erste Resultate in Wochen &nbsp;·&nbsp; „Zu anstrengend/Rücken" → gelenkschonend &amp; betreut &nbsp;·&nbsp; „Zu teuer" → Probetraining gratis, danach faires Sommer-Angebot</p>
+  </div>
+</section>
+
+<!-- ================= PAGE 4 · ANGEBOT ================= -->
+<section class="page">
+  <div class="bg-glow glow-a"></div>
+  <div class="page-head">
+    <div><span class="section-no">03</span>
+      <h2>Das <em>Sommer-Angebot</em></h2>
+      <p class="ph-sub">Der Kern jeder Werbeanzeige. Zahlen sind Vorschläge – wir passen sie an deine Preise an.</p>
+    </div>
+  </div>
+
+  <div class="offer-hero">
+    <span style="display:inline-block; background:#04140C; color:var(--accent); font-family:var(--head); font-weight:800; font-size:11pt; letter-spacing:1px; padding:5px 14px; border-radius:30px;">SOMMER-START AKTION · NUR BIS 31.07.</span>
+    <h2>Starte gratis in<br/>deine Bestform.</h2>
+    <div class="price">
+      <span class="now">0 €</span>
+      <span class="was">99 €</span>
+      <span class="unit">Startgebühr<br/>+ kostenloses Probetraining</span>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:18px;">
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Was der Neukunde bekommt</h3>
+      <div class="offer-list">
+        <div class="row"><span class="ck">✓</span><div><b>Kostenloses Probetraining</b> inkl. Körperanalyse &amp; Beratung</div></div>
+        <div class="row"><span class="ck">✓</span><div><b>0 € statt 99 €</b> Startgebühr bei Anmeldung im Aktionszeitraum</div></div>
+        <div class="row"><span class="ck">✓</span><div>Persönlicher <b>Trainingsplan</b> für deine Sommerziele</div></div>
+        <div class="row"><span class="ck">✓</span><div>Funktionswäsche &amp; Equipment <b>inklusive</b> – einfach kommen</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Verkaufs-Hebel</h3>
+      <div class="offer-list">
+        <div class="row"><span class="ck">⏱</span><div><b>Verknappung:</b> „nur bis 31.07." &amp; „begrenzte Plätze" erzeugen Tempo</div></div>
+        <div class="row"><span class="ck">★</span><div><b>Risikofrei:</b> gratis testen senkt die Hürde fast auf null</div></div>
+        <div class="row"><span class="ck">♥</span><div><b>Empfehlung:</b> „Bring deine:n Beste:n mit" (siehe Flyer 2)</div></div>
+        <div class="row"><span class="ck">↗</span><div><b>Upsell:</b> nach dem Probetraining direkt zum Sommer-Paket</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:16px;">
+    <p class="lead" style="color:var(--text);"><b>Empfehlung der Agentur:</b> Halte das Angebot <b>einfach</b> – ein Hauptargument (gratis testen + 0 € Start). Je weniger der Interessent rechnen muss, desto höher die Conversion. Buchung über WhatsApp / Link-in-Bio / Anruf so reibungslos wie möglich.</p>
+  </div>
+
+  <div class="foot"><span><b>Körperformen Hürth</b> · Sommerkampagne 2026</span><span>Seite 04</span></div>
+</section>
+
+<!-- ================= PAGE 5 · INSTAGRAM FEED 1 ================= -->
+<section class="page">
+  <div class="bg-glow glow-a"></div>
+  <div class="page-head">
+    <div><span class="section-no">04</span>
+      <h2>Instagram · <em>Feed-Posts</em></h2>
+      <p class="ph-sub">6 fertige Post-Ideen mit Bildmotiv &amp; Caption. Vollständige Texte zum Kopieren in der Begleit-Datei.</p>
+    </div>
+  </div>
+
+  <div class="phones">
+    <div class="phone">
+      <div class="ph-top"><div class="ph-av"></div><div class="ph-han">koerperformen.huerth<small>Hürth</small></div><div class="ph-dots">•••</div></div>
+      <div class="ph-img img-green"><div class="ovl">In <em>20 Min</em><br/>zur Sommerfigur</div><div class="ovl-sub">EMS · nur 1× pro Woche</div></div>
+      <div class="ph-acts">♥ &nbsp; 💬 &nbsp; ➤</div>
+      <div class="ph-cap"><b>koerperformen.huerth</b> Keine Zeit fürs Gym? Brauchst du nicht. 20 Minuten EMS = bis zu 90 % deiner Muskeln aktiv. ☀️ <span class="hh">#emstraining #hürth</span></div>
+    </div>
+    <div class="phone">
+      <div class="ph-top"><div class="ph-av"></div><div class="ph-han">koerperformen.huerth<small>Hürth</small></div><div class="ph-dots">•••</div></div>
+      <div class="ph-img img-dark"><div class="ovl-sub" style="background:var(--warm);">VORHER</div><div class="ovl" style="margin-top:8px;">12 Wochen.<br/>Ein <em>Ergebnis.</em></div><div class="ovl-sub">NACHHER</div></div>
+      <div class="ph-acts">♥ &nbsp; 💬 &nbsp; ➤</div>
+      <div class="ph-cap"><b>koerperformen.huerth</b> Echte Veränderung aus Hürth 💪 Was in nur 20 Min/Woche möglich ist… <span class="hh">#vorhernachher #bodytransformation</span></div>
+    </div>
+    <div class="phone">
+      <div class="ph-top"><div class="ph-av"></div><div class="ph-han">koerperformen.huerth<small>Hürth</small></div><div class="ph-dots">•••</div></div>
+      <div class="ph-img img-accent"><div class="ovl" style="color:#04140C;">3 Mythen<br/>über <em style="color:#fff;">EMS</em></div><div class="ovl-sub" style="background:rgba(4,20,12,.25);">Swipe →</div></div>
+      <div class="ph-acts">♥ &nbsp; 💬 &nbsp; ➤</div>
+      <div class="ph-cap"><b>koerperformen.huerth</b> „EMS ist nur Strom"? 🙅 Wir klären die 3 größten Mythen auf. Speichern! <span class="hh">#emsmythen #fitness</span></div>
+    </div>
+  </div>
+
+  <div class="phones" style="margin-top:16px;">
+    <div class="phone">
+      <div class="ph-top"><div class="ph-av"></div><div class="ph-han">koerperformen.huerth<small>Hürth</small></div><div class="ph-dots">•••</div></div>
+      <div class="ph-img img-warm"><div class="ovl-sub" style="background:var(--accent); color:#04140C;">GRATIS</div><div class="ovl" style="margin-top:8px;">Teste uns –<br/><em>0 € Risiko</em></div></div>
+      <div class="ph-acts">♥ &nbsp; 💬 &nbsp; ➤</div>
+      <div class="ph-cap"><b>koerperformen.huerth</b> Sommer-Aktion ☀️ Kostenloses Probetraining + 0 € Start bis 31.07. Link in Bio! <span class="hh">#probetraining #hürth</span></div>
+    </div>
+    <div class="phone">
+      <div class="ph-top"><div class="ph-av"></div><div class="ph-han">koerperformen.huerth<small>Hürth</small></div><div class="ph-dots">•••</div></div>
+      <div class="ph-img img-green"><div class="ovl">Triff dein<br/><em>Trainer-Team</em></div><div class="ovl-sub">Persönlich. Immer dabei.</div></div>
+      <div class="ph-acts">♥ &nbsp; 💬 &nbsp; ➤</div>
+      <div class="ph-cap"><b>koerperformen.huerth</b> Bei uns trainierst du nie allein 🤝 Dein Trainer passt jede Einheit an dich an. <span class="hh">#personaltraining</span></div>
+    </div>
+    <div class="phone">
+      <div class="ph-top"><div class="ph-av"></div><div class="ph-han">koerperformen.huerth<small>Hürth</small></div><div class="ph-dots">•••</div></div>
+      <div class="ph-img img-dark"><div class="ovl">„Endlich<br/>schmerzfrei."</div><div class="ovl-sub" style="background:var(--accent); color:#04140C;">★★★★★ Google</div></div>
+      <div class="ph-acts">♥ &nbsp; 💬 &nbsp; ➤</div>
+      <div class="ph-cap"><b>koerperformen.huerth</b> Danke für 5 Sterne, Sabine! ❤️ Rücken stärken, ohne Gelenke zu belasten. <span class="hh">#kundenstimme</span></div>
+    </div>
+  </div>
+
+  <p class="note">Bildmotive sind Platzhalter im Markendesign – ideal mit echten Studio-/Trainingsfotos &amp; Vorher-Nachher-Bildern ersetzen (mit Einverständnis der Kund:innen).</p>
+  <div class="foot"><span><b>Körperformen Hürth</b> · Sommerkampagne 2026</span><span>Seite 05</span></div>
+</section>
+
+<!-- ================= PAGE 6 · STORIES & REELS ================= -->
+<section class="page">
+  <div class="bg-glow glow-b"></div>
+  <div class="page-head">
+    <div><span class="section-no">05</span>
+      <h2>Stories &amp; <em>Reels</em></h2>
+      <p class="ph-sub">Reels treiben aktuell die meiste Reichweite. Hier 4 Story-Vorlagen und 4 Reel-Skripte.</p>
+    </div>
+  </div>
+
+  <h3 style="font-size:14pt; margin-bottom:10px;">Story-Vorlagen (9:16)</h3>
+  <div class="stories">
+    <div class="story img-green"><div class="s-top">Umfrage</div><div class="s-mid">Wie viele Min. Sport schaffst du pro Woche?</div><div class="s-bot">Sticker: &lt;30 / 30–60 / keine 😅</div><div class="s-cta">Antwort = DM-Einstieg</div></div>
+    <div class="story img-dark"><div class="s-top">Countdown</div><div class="s-mid">Sommer-Aktion endet in…</div><div class="s-bot">Countdown-Sticker auf 31.07.</div><div class="s-cta">Jetzt sichern</div></div>
+    <div class="story img-warm"><div class="s-top">Behind the Scenes</div><div class="s-mid">Ein Tag im Studio Hürth</div><div class="s-bot">Trainer, Ablauf, Probetraining live</div><div class="s-cta">Link: Termin</div></div>
+    <div class="story img-accent"><div class="s-top" style="color:#04140C;">Frage-Box</div><div class="s-mid" style="color:#04140C;">Eure EMS-Fragen – wir antworten!</div><div class="s-bot" style="color:#04140C;">Sticker „Fragen?"</div><div class="s-cta" style="background:#04140C; color:var(--accent);">Mehr erfahren</div></div>
+  </div>
+
+  <h3 style="font-size:14pt; margin:22px 0 10px;">Reel-Skripte (15–30 Sek.)</h3>
+  <div class="reel"><div class="r-no">1</div><div class="r-body"><h4>„20 Minuten – das war's"</h4><p><span class="hook">Hook (0–3s):</span> „Das ist mein komplettes Wochen-Workout." Schneller Schnitt durchs Training, Timer läuft, am Ende: zufrieden raus. Text: „20 Min. EMS = bis zu 90 % Muskeln aktiv."</p></div></div>
+  <div class="reel"><div class="r-no">2</div><div class="r-body"><h4>„POV: erstes Probetraining"</h4><p><span class="hook">Hook:</span> „POV – du testest EMS zum ersten Mal." Ankommen → Anlegen des Anzugs → Trainer erklärt → erste Reaktion. Authentisch, mit echtem Neukunden.</p></div></div>
+  <div class="reel"><div class="r-no">3</div><div class="r-body"><h4>„Gym vs. EMS"</h4><p><span class="hook">Hook:</span> „1,5 Std Gym oder 20 Min hier?" Split-Screen-Vergleich. Endbild: Sommer-Angebot + CTA.</p></div></div>
+  <div class="reel"><div class="r-no">4</div><div class="r-body"><h4>Transformation-Reel</h4><p><span class="hook">Hook:</span> „12 Wochen. 1× pro Woche. Schau dir das an." Vorher/Nachher mit Trend-Audio &amp; Zahlen-Overlays. Stärkster Conversion-Treiber.</p></div></div>
+
+  <div class="foot"><span><b>Körperformen Hürth</b> · Sommerkampagne 2026</span><span>Seite 06</span></div>
+</section>
+
+<!-- ================= PAGE 7 · FACEBOOK ================= -->
+<section class="page">
+  <div class="bg-glow glow-a"></div>
+  <div class="page-head">
+    <div><span class="section-no">06</span>
+      <h2>Facebook · <em>Posts &amp; Ads</em></h2>
+      <p class="ph-sub">Auf Facebook erreichst du die etwas ältere, kaufkräftige Zielgruppe in Hürth &amp; Umgebung – ideal für regionale Anzeigen.</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="fb">
+      <div class="fb-top"><div class="fb-av"></div><div class="fb-name">Körperformen Hürth<small>Gesponsert · Hürth &amp; Umgebung</small></div></div>
+      <div class="fb-text">☀️ <b>Endlich Zeit für dich – in nur 20 Minuten pro Woche.</b><br/>Du willst dich im Sommer wieder wohlfühlen, hast aber keine Lust auf stundenlanges Fitnessstudio? EMS-Training bei Körperformen in Hürth aktiviert bis zu 90 % deiner Muskeln – gelenkschonend &amp; persönlich betreut. 💪</div>
+      <div class="fb-img img-green"><div class="t">Teste <em>gratis.</em></div></div>
+      <div class="fb-btn">▸ Kostenloses Probetraining sichern</div>
+      <div class="fb-bar"><span>👍 Gefällt mir</span><span>💬 Kommentieren</span><span>↗ Teilen</span></div>
+    </div>
+
+    <div class="fb">
+      <div class="fb-top"><div class="fb-av"></div><div class="fb-name">Körperformen Hürth<small>Gesponsert · Hürth &amp; Umgebung</small></div></div>
+      <div class="fb-text"><b>Sommer-Aktion – nur bis 31.07.! ⏳</b><br/>Kostenloses Probetraining <b>+ 0 € Startgebühr (statt 99 €)</b>. Wir haben nur eine begrenzte Anzahl an Plätzen für neue Mitglieder. Sichere dir jetzt deinen Termin in Hürth – wir freuen uns auf dich!</div>
+      <div class="fb-img img-warm"><div class="t">0 € <em>Start</em></div></div>
+      <div class="fb-btn">▸ Jetzt Platz sichern</div>
+      <div class="fb-bar"><span>👍 Gefällt mir</span><span>💬 Kommentieren</span><span>↗ Teilen</span></div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:18px;">
+    <div style="font-family:var(--head); font-weight:700; font-size:10.5pt; color:var(--accent); letter-spacing:2px; text-transform:uppercase;">Ad-Empfehlung der Agentur</div>
+    <p class="lead" style="margin-top:6px; color:var(--text);"><b>Zielgruppe:</b> Umkreis 10–15 km um Hürth, Alter 28–55. &nbsp;<b>Kampagnenziel:</b> Leads/Nachrichten (nicht nur Reichweite). &nbsp;<b>Budget-Idee:</b> 8–15 €/Tag über die 6 Wochen, Anzeige A/B-testen (Motiv „20 Min" vs. „Vorher/Nachher"). &nbsp;<b>Conversion:</b> direkt in WhatsApp/Messenger leiten – schnelle Antwort schließt am meisten ab.</p>
+  </div>
+
+  <div class="foot"><span><b>Körperformen Hürth</b> · Sommerkampagne 2026</span><span>Seite 07</span></div>
+</section>
+
+<!-- ================= PAGE 8 · KALENDER ================= -->
+<section class="page">
+  <div class="bg-glow glow-b"></div>
+  <div class="page-head">
+    <div><span class="section-no">07</span>
+      <h2>Content-<em>Kalender</em></h2>
+      <p class="ph-sub">6 Wochen, 3–4 Beiträge pro Woche. Reels für Reichweite, Posts für Vertrauen, Stories täglich, Ads durchgängig.</p>
+    </div>
+  </div>
+
+  <table class="cal">
+    <tr><th style="width:8%"></th><th>Mo / Di</th><th>Mi / Do</th><th>Fr / Sa</th><th>Durchgängig</th></tr>
+    <tr>
+      <td><span class="wk">KW 1</span><br/>Auftakt</td>
+      <td><span class="pill p-reel">REEL</span><b>20 Min – das war's</b>Aufmerksamkeit &amp; Reichweite</td>
+      <td><span class="pill p-post">POST</span><b>Was ist EMS?</b>Aufklärung, Karussell</td>
+      <td><span class="pill p-post">POST</span><b>Sommer-Aktion startet</b>Angebot vorstellen</td>
+      <td><span class="pill p-story">STORY</span>tägl. Behind-the-Scenes<br/><span class="pill p-ad">AD</span>FB/IG „20 Min"</td>
+    </tr>
+    <tr>
+      <td><span class="wk">KW 2</span><br/>Beweis</td>
+      <td><span class="pill p-reel">REEL</span><b>POV Probetraining</b></td>
+      <td><span class="pill p-post">POST</span><b>Vorher/Nachher</b></td>
+      <td><span class="pill p-post">POST</span><b>Google-Bewertung</b></td>
+      <td><span class="pill p-story">STORY</span>Umfrage + Countdown<br/><span class="pill p-ad">AD</span>A/B-Test Motive</td>
+    </tr>
+    <tr>
+      <td><span class="wk">KW 3</span><br/>Vertrauen</td>
+      <td><span class="pill p-reel">REEL</span><b>Triff dein Team</b></td>
+      <td><span class="pill p-post">POST</span><b>3 EMS-Mythen</b></td>
+      <td><span class="pill p-post">POST</span><b>Bring-a-Friend</b></td>
+      <td><span class="pill p-story">STORY</span>Frage-Box EMS<br/><span class="pill p-ad">AD</span>Sieger-Motiv skalieren</td>
+    </tr>
+    <tr>
+      <td><span class="wk">KW 4</span><br/>Nutzen</td>
+      <td><span class="pill p-reel">REEL</span><b>Gym vs. EMS</b></td>
+      <td><span class="pill p-post">POST</span><b>EMS &amp; Rücken</b></td>
+      <td><span class="pill p-post">POST</span><b>Kundenstimme</b></td>
+      <td><span class="pill p-story">STORY</span>Tag im Studio<br/><span class="pill p-ad">AD</span>Retargeting Profilbesucher</td>
+    </tr>
+    <tr>
+      <td><span class="wk">KW 5</span><br/>Sog</td>
+      <td><span class="pill p-reel">REEL</span><b>Transformation</b></td>
+      <td><span class="pill p-post">POST</span><b>Häufige Fragen</b></td>
+      <td><span class="pill p-post">POST</span><b>„Noch X Plätze"</b></td>
+      <td><span class="pill p-story">STORY</span>Countdown verstärkt<br/><span class="pill p-ad">AD</span>Budget leicht erhöhen</td>
+    </tr>
+    <tr>
+      <td><span class="wk">KW 6</span><br/>Finale</td>
+      <td><span class="pill p-reel">REEL</span><b>„Letzte Chance"</b></td>
+      <td><span class="pill p-post">POST</span><b>Erfolg der Aktion</b></td>
+      <td><span class="pill p-post">POST</span><b>Aktion endet heute!</b></td>
+      <td><span class="pill p-story">STORY</span>Last-Minute-Push<br/><span class="pill p-ad">AD</span>Verknappung „endet 31.07."</td>
+    </tr>
+  </table>
+
+  <div class="callout" style="margin-top:14px;">
+    <p class="lead" style="color:var(--text);"><b>Posting-Zeiten (Erfahrungswert):</b> werktags 11–13 Uhr &amp; 18–20 Uhr. Reels am besten Di/Do. <b>Wichtig:</b> auf jeden Kommentar &amp; jede DM schnell antworten – Reaktionszeit entscheidet über Abschlüsse.</p>
+  </div>
+
+  <div class="foot"><span><b>Körperformen Hürth</b> · Sommerkampagne 2026</span><span>Seite 08</span></div>
+</section>
+
+<!-- ================= PAGE 9 · FLYER 1 ================= -->
+<section class="page" style="padding:0;">
+  <span class="flyer-tag">Flyer 1 · Hauptaktion · DIN A5/A6</span>
+  <div class="flyer">
+    <div class="fl1-top">
+      <span class="badge">SOMMER-AKTION 2026</span>
+      <h1>In 20 Minuten<br/>zur <em>Sommerfigur.</em></h1>
+      <p class="pun">EMS-Training in Hürth – nur 1× pro Woche, persönlich betreut, gelenkschonend. Forme jetzt deinen Körper für den Sommer.</p>
+      <div class="fl-points">
+        <div class="fp"><div class="n">20</div><div class="t">Min / Woche</div></div>
+        <div class="fp"><div class="n">90%</div><div class="t">Muskeln aktiv</div></div>
+        <div class="fp"><div class="n">1:1</div><div class="t">Betreuung</div></div>
+      </div>
+    </div>
+    <div class="fl1-bot">
+      <div class="fl1-offerbox">
+        <div class="l"><div class="now">0 €</div><div class="lbl">Probetraining<br/>+ 0 € Startgebühr</div></div>
+        <div class="r"><div>✓ Kostenlos testen</div><div>✓ Körperanalyse &amp; Beratung</div><div>✓ Nur bis 31.07.2026</div></div>
+      </div>
+      <div class="fl1-contact">
+        <div class="c-l">
+          <b>Körperformen Hürth</b><br/>
+          Krankenhausstr. 111 · 50354 Hürth<br/>
+          Tel. 02233 966 71 81<br/>
+          huerth@koerperformen.com · koerperformen.com
+        </div>
+        <div class="qr-wrap"><div class="qr"></div><small>TERMIN SCANNEN</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PAGE 10 · FLYER 2 (Friend) ================= -->
+<section class="page" style="padding:0;">
+  <span class="flyer-tag">Flyer 2 · Freundschafts-Aktion · DIN A5/A6</span>
+  <div class="flyer fl2" style="display:flex; flex-direction:column;">
+    <div class="fl1-top" style="background:transparent; flex:1.1;">
+      <span class="badge badge2" style="background:var(--accent); color:#04140C;">GEMEINSAM STÄRKER</span>
+      <h1 style="color:#fff;">Zu zweit<br/>zur <em style="color:var(--warm);">Bestform.</em></h1>
+      <p class="pun" style="color:#F3D8C8;">Trainieren macht zu zweit mehr Spaß – und hält länger durch. Bring deine:n Liebste:n, Freund:in oder Kolleg:in mit zum EMS-Training in Hürth.</p>
+    </div>
+    <div class="fl1-bot" style="background:rgba(4,20,12,.55); flex:1;">
+      <div class="fl1-offerbox" style="background:linear-gradient(135deg,var(--warm),#E0531F); color:#fff;">
+        <div class="l"><div class="now">2 ×</div><div class="lbl">gratis<br/>Probetraining</div></div>
+        <div class="r" style="border-color:rgba(255,255,255,.3);"><div>✓ Du + 1 Begleitung testet kostenlos</div><div>✓ Beide melden sich an = 0 € Start</div><div>✓ Extra-Bonus für dich als Empfehler:in</div></div>
+      </div>
+      <div class="fl1-contact">
+        <div class="c-l">
+          <b>Körperformen Hürth</b><br/>
+          Krankenhausstr. 111 · 50354 Hürth<br/>
+          Tel. 02233 966 71 81<br/>
+          huerth@koerperformen.com
+        </div>
+        <div class="qr-wrap"><div class="qr"></div><small>TERMIN SCANNEN</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PAGE 11 · POSTER A4 ================= -->
+<section class="page poster" style="padding:0; display:flex; flex-direction:column;">
+  <span class="flyer-tag" style="color:var(--text-2);">Flyer 3 · Schaufenster-Plakat · DIN A4</span>
+  <div class="bg-glow glow-a"></div>
+  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24mm;">
+    <div class="brand-row" style="justify-content:center; margin-bottom:18px;">
+      <div class="brand-mark">K</div><div class="brand-name" style="text-align:left;">KÖRPERFORMEN<small>Hürth · EMS-Studio</small></div>
+    </div>
+    <div class="p-kick">Sommer-Aktion</div>
+    <h1>Dein Sommer-<br/>Body startet<br/><em>hier.</em></h1>
+    <p class="p-sub">Kostenloses Probetraining + 0 € Startgebühr.<br/>Nur 20 Minuten pro Woche. Nur bis 31.07.</p>
+    <div class="p-cta">▸ Jetzt gratis testen</div>
+    <div style="margin-top:28px; color:var(--text-2); font-size:12pt; line-height:1.7;">
+      <b style="color:var(--text); font-family:var(--head); font-size:14pt;">Krankenhausstr. 111 · 50354 Hürth</b><br/>
+      Tel. 02233 966 71 81 · huerth@koerperformen.com
+    </div>
+  </div>
+</section>
+
+<!-- ================= PAGE 12 · HANDOUT / TÜRANHÄNGER ================= -->
+<section class="page">
+  <div class="bg-glow glow-b"></div>
+  <div class="page-head">
+    <div><span class="section-no">08</span>
+      <h2>Weitere <em>Print-Ideen</em></h2>
+      <p class="ph-sub">Kleine Formate für Auslage, Verteilung &amp; Empfehlung – günstig zu drucken, hohe Wirkung lokal in Hürth.</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="img-green" style="padding:22px; text-align:center;">
+        <div style="font-family:var(--head); font-weight:800; font-size:24pt;">Gönn dir<br/><span style="color:var(--accent);">20 Minuten.</span></div>
+        <div style="margin-top:10px; display:inline-block; background:var(--warm); color:#fff; font-weight:800; font-size:10pt; padding:5px 14px; border-radius:20px;">GRATIS PROBETRAINING</div>
+      </div>
+      <div style="padding:16px;">
+        <h3 style="font-size:13pt;">Visitenkarten-Gutschein</h3>
+        <p style="font-size:9.5pt; color:var(--text-2); margin-top:4px;">Scheckkartenformat zum Verteilen &amp; an der Theke. Rückseite: Adresse + QR-Code zur Terminbuchung. Bestehende Mitglieder geben sie an Freunde weiter.</p>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="img-warm" style="padding:22px; text-align:center;">
+        <div style="font-family:var(--head); font-weight:800; font-size:22pt; color:#fff;">Schon ab<br/><span style="color:var(--accent-2);">0 € Start</span></div>
+        <div style="margin-top:10px; font-size:9pt; color:#F3D8C8;">Sommer-Aktion · nur bis 31.07.</div>
+      </div>
+      <div style="padding:16px;">
+        <h3 style="font-size:13pt;">DIN-lang Flyer (Briefkasten)</h3>
+        <p style="font-size:9.5pt; color:var(--text-2); margin-top:4px;">Klassischer Wurfsendungs-Flyer für die Nachbarschaft rund um die Krankenhausstr. Vorderseite Angebot, Rückseite „So läuft dein Probetraining ab" in 3 Schritten.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:14px;">
+    <div class="card">
+      <h3 style="font-size:13pt;"><span style="color:var(--accent);">▣</span> Aufsteller / Tischkarte</h3>
+      <p style="font-size:9.5pt; color:var(--text-2); margin-top:4px;">Für Partner vor Ort (Apotheke, Friseur, Café, Physio in Hürth): kleiner Aufsteller mit QR-Code – lokale Kooperationen bringen warme Empfehlungen.</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:13pt;"><span style="color:var(--accent);">▣</span> Plakat A2 / Banner</h3>
+      <p style="font-size:9.5pt; color:var(--text-2); margin-top:4px;">Größere Variante des A4-Plakats fürs Schaufenster oder ein Außenbanner – maximale Sichtbarkeit für Passanten &amp; Autofahrer.</p>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:14px;">
+    <p class="lead" style="color:var(--text);"><b>Druck-Tipp:</b> Alle Flyer im selben Design halten (Wiedererkennung). Empfohlene Auflösung 300 dpi, Anschnitt 3 mm. Wir liefern die finalen Druckdaten als PDF/X, sobald die Texte &amp; Preise final freigegeben sind.</p>
+  </div>
+
+  <div class="foot"><span><b>Körperformen Hürth</b> · Sommerkampagne 2026</span><span>Seite 12</span></div>
+</section>
+
+<!-- ================= PAGE 13 · HASHTAGS & NEXT STEPS ================= -->
+<section class="page">
+  <div class="bg-glow glow-a"></div>
+  <div class="page-head">
+    <div><span class="section-no">09</span>
+      <h2>Hashtags &amp;<br/><em>nächste Schritte</em></h2>
+      <p class="ph-sub">Fertige Hashtag-Sets zum Rotieren und ein klarer Fahrplan für den Start.</p>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:6px;">
+    <div>
+      <div class="hashbox"><div class="hb-t">Set A · Lokal (Hürth/Köln)</div><div class="hb-h">#emstraining #emshürth #fitnesshürth #hürth #köln #fitnesskoeln #personaltraining #bodyforming #abnehmenhürth</div></div>
+      <div class="hashbox"><div class="hb-t">Set B · Thema EMS</div><div class="hb-h">#ems #emsworkout #20minuten #muskelaufbau #ganzkörpertraining #effektivtrainieren #gelenkschonend #rückentraining</div></div>
+    </div>
+    <div>
+      <div class="hashbox"><div class="hb-t">Set C · Sommer/Motivation</div><div class="hb-h">#sommerfigur #sommerbody #bikinifit #fitfürdensommer #abnehmen2026 #gesundleben #motivation #selbstliebe #wohlfühlen</div></div>
+      <div class="hashbox"><div class="hb-t">Set D · Beweis/Aktion</div><div class="hb-h">#vorhernachher #transformation #erfolgsgeschichte #probetraining #kostenlostesten #neukundenaktion #jetztstarten</div></div>
+    </div>
+  </div>
+
+  <h3 style="font-size:14pt; margin:14px 0 10px;">Dein Fahrplan zum Start</h3>
+  <div class="steps">
+    <div class="step"><div class="sn">1</div><div><h4>Angebot &amp; Preise final festlegen</h4><p>Startgebühr-Wert, Aktionsende-Datum &amp; Buchungsweg (WhatsApp/Link) bestätigen – dann passe ich alle Texte &amp; Flyer an.</p></div></div>
+    <div class="step"><div class="sn">2</div><div><h4>Echte Fotos &amp; Videos sammeln</h4><p>Studio, Trainer-Team, 2–3 Vorher/Nachher (mit Einverständnis) und ein paar Trainings-Clips fürs erste Reel.</p></div></div>
+    <div class="step"><div class="sn">3</div><div><h4>Profile &amp; Buchung vorbereiten</h4><p>Bio mit Aktion + Link-in-Bio (z. B. Linktree zu WhatsApp/Termin), Facebook-Seite aktualisieren.</p></div></div>
+    <div class="step"><div class="sn">4</div><div><h4>Woche 1 vorproduzieren &amp; Ads schalten</h4><p>Erste Beiträge nach Kalender einplanen, FB/IG-Anzeige im Umkreis Hürth starten – dann Woche für Woche nachsteuern.</p></div></div>
+  </div>
+
+  <div class="callout warm" style="margin-top:14px;">
+    <p class="lead" style="color:var(--text);"><b>Lass uns die Feinheiten gemeinsam abstimmen.</b> Sag mir einfach, welche Preise/Daten stimmen sollen und welchen Claim du am liebsten magst – ich aktualisiere die Captions, Flyer &amp; das PDF entsprechend.</p>
+  </div>
+
+  <p class="disc">Alle genannten Preise (z. B. 99 € Startgebühr, 0 €-Aktion), Rabatte und Daten sind Vorschläge der Agentur und müssen vor Veröffentlichung geprüft &amp; freigegeben werden. Aussagen wie „90 % Muskelaktivierung" entsprechen der bestehenden Website und sollten ggf. mit dem Hinweis auf individuelle Ergebnisse versehen werden. Vorher/Nachher-Bilder nur mit schriftlichem Einverständnis der abgebildeten Personen verwenden.</p>
+
+  <div class="foot"><span><b>Körperformen Hürth</b> · Sommerkampagne 2026</span><span>Seite 13</span></div>
+</section>
+
+</body>
+</html>
