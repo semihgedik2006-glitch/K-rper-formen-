@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&display=swap');
+:root{--green:#93C02F;--green-d:#7BA525;--green-l:#EAF3D8;--ink:#3D4543;--ink-2:#5E6764;--warm:#C9772E;--font:'Barlow',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box}
+@page{size:110mm 110mm;margin:0;}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+body{font-family:var(--font);}
+.post{width:110mm;height:110mm;page-break-after:always;position:relative;overflow:hidden;padding:11mm;display:flex;flex-direction:column;}
+.post:last-child{page-break-after:auto;}
+.logo{height:7mm;}
+.logo-w{height:7mm;filter:brightness(0) invert(1);} /* weiße Logo-Variante */
+h1{font-weight:900;line-height:.92;letter-spacing:-.5px;}
+.blob{position:absolute;border-radius:50%;}
+.pulse{position:absolute;bottom:0;left:0;right:0;height:18mm;display:flex;align-items:flex-end;gap:3px;padding:0 9mm;}
+.pulse span{flex:1;border-radius:3px 3px 0 0;}
+.chip{display:inline-block;font-weight:800;font-size:11pt;letter-spacing:.5px;padding:7px 18px;border-radius:30px;align-self:flex-start;}
+.kick{font-weight:800;font-size:10pt;letter-spacing:2px;text-transform:uppercase;}
+
+/* 1 · HOOK hell */
+.p1{background:linear-gradient(140deg,var(--green-l),#FBFDF7);}
+.p1 .b{width:90mm;height:90mm;top:-30mm;right:-30mm;background:radial-gradient(circle,rgba(147,192,47,.35),rgba(147,192,47,0) 70%);}
+.p1 .num{font-weight:900;font-size:115pt;color:var(--green-d);line-height:.8;}
+.p1 h1{font-size:27pt;color:var(--ink);margin-top:2mm;}
+.p1 .pulse span{background:linear-gradient(180deg,var(--green),var(--green-d));opacity:.55;}
+
+/* 2 · ANGEBOT dunkel */
+.p2{background:var(--ink);color:#fff;}
+.p2 .b{width:80mm;height:80mm;bottom:-30mm;left:-25mm;background:radial-gradient(circle,rgba(147,192,47,.30),rgba(147,192,47,0) 70%);}
+.p2 .chip{background:var(--green);color:#fff;}
+.p2 .num{font-weight:900;font-size:80pt;color:var(--green);line-height:.85;}
+.p2 h1{font-size:25pt;color:#fff;}
+.p2 .sub{color:#C7CECC;font-size:12pt;font-weight:500;margin-top:3mm;}
+.p2 .cta{margin-top:auto;background:var(--green);color:var(--ink);font-weight:800;font-size:12pt;text-align:center;padding:11px;border-radius:12px;}
+
+/* 3 · GESUNDHEIT hell */
+.p3{background:#fff;}
+.p3 .b{width:85mm;height:85mm;top:-35mm;left:-30mm;background:radial-gradient(circle,rgba(147,192,47,.22),rgba(147,192,47,0) 70%);}
+.p3 h1{font-size:30pt;color:var(--ink);}
+.p3 h1 em{font-style:normal;color:var(--green-d);}
+.p3 .sub{color:var(--ink-2);font-size:13pt;margin-top:3mm;line-height:1.4;}
+.p3 .feat{display:flex;gap:7px;margin-top:5mm;}
+.p3 .feat .f{flex:1;background:var(--green-l);border-radius:11px;padding:9px;text-align:center;font-weight:700;font-size:9pt;color:var(--green-d);}
+.p3 .pulse{height:14mm;} .p3 .pulse span{background:linear-gradient(180deg,var(--green),var(--green-d));opacity:.5;}
+
+/* 4 · ZU ZWEIT warm */
+.p4{background:linear-gradient(140deg,#F6ECE2,#FBFDF7);}
+.p4 .b{width:85mm;height:85mm;top:-30mm;right:-28mm;background:radial-gradient(circle,rgba(201,119,46,.26),rgba(201,119,46,0) 70%);}
+.p4 .chip{background:var(--warm);color:#fff;}
+.p4 h1{font-size:34pt;color:var(--ink);margin-top:3mm;}
+.p4 h1 em{font-style:normal;color:var(--green-d);}
+.p4 .big{font-weight:900;font-size:52pt;color:var(--warm);line-height:.9;margin-top:3mm;}
+.p4 .sub{color:var(--ink-2);font-size:12pt;font-weight:600;margin-top:3mm;}
+.p4 .pulse span:nth-child(odd){background:var(--warm);opacity:.5;} .p4 .pulse span:nth-child(even){background:var(--green);opacity:.6;}
+</style></head><body>
+
+<!-- 1 HOOK -->
+<section class="post p1">
+  <div class="blob b"></div>
+  <img class="logo" src="assets/kf_logo.png">
+  <div style="margin-top:auto;position:relative;z-index:2;">
+    <div class="kick" style="color:var(--green-d)">Nur</div>
+    <div class="num">20</div>
+    <h1>Minuten pro Woche.<br>Mehr braucht dein<br>Training nicht.</h1>
+  </div>
+  <div class="pulse"><span style="height:30%"></span><span style="height:55%"></span><span style="height:40%"></span><span style="height:80%"></span><span style="height:62%"></span><span style="height:95%"></span><span style="height:70%"></span><span style="height:48%"></span><span style="height:85%"></span><span style="height:58%"></span><span style="height:72%"></span><span style="height:38%"></span></div>
+</section>
+
+<!-- 2 ANGEBOT -->
+<section class="post p2">
+  <div class="blob b"></div>
+  <div style="background:#fff;border-radius:9px;padding:6px 11px;align-self:flex-start;"><img class="logo" src="assets/kf_logo.png"></div>
+  <div style="margin-top:5mm;position:relative;z-index:2;">
+    <span class="chip">Sommer-Aktion · bis 31.07.</span>
+    <div class="num" style="margin-top:5mm;">0 €</div>
+    <h1>Probetraining<br>+ 0 € Startgebühr.</h1>
+    <div class="sub">Kostenlos &amp; unverbindlich testen.</div>
+  </div>
+  <div class="cta">👉 Jetzt Termin sichern</div>
+</section>
+
+<!-- 3 GESUNDHEIT -->
+<section class="post p3">
+  <div class="blob b"></div>
+  <img class="logo" src="assets/kf_logo.png">
+  <div style="margin-top:auto;position:relative;z-index:2;">
+    <span class="kick" style="color:var(--green-d)">EMS-Training</span>
+    <h1 style="margin-top:3mm;">Gut für deinen<br><em>Rücken.</em></h1>
+    <div class="sub">Gelenkschonend, effektiv und<br>immer persönlich betreut.</div>
+    <div class="feat"><div class="f">Gelenkschonend</div><div class="f">Betreut 1:1</div><div class="f">Jedes Level</div></div>
+  </div>
+  <div class="pulse"><span style="height:35%"></span><span style="height:60%"></span><span style="height:45%"></span><span style="height:82%"></span><span style="height:66%"></span><span style="height:92%"></span><span style="height:72%"></span><span style="height:50%"></span><span style="height:80%"></span><span style="height:60%"></span></div>
+</section>
+
+<!-- 4 ZU ZWEIT -->
+<section class="post p4">
+  <div class="blob b"></div>
+  <img class="logo" src="assets/kf_logo.png">
+  <div style="margin-top:auto;position:relative;z-index:2;">
+    <span class="chip">Gemeinsam stärker</span>
+    <h1>Zu zweit zur <em>Form.</em></h1>
+    <div class="big">2× gratis</div>
+    <div class="sub">Probetraining – bring jemanden mit.</div>
+  </div>
+  <div class="pulse"><span style="height:45%"></span><span style="height:75%"></span><span style="height:50%"></span><span style="height:88%"></span><span style="height:60%"></span><span style="height:80%"></span><span style="height:55%"></span><span style="height:90%"></span><span style="height:65%"></span><span style="height:48%"></span></div>
+</section>
+
+</body></html>
