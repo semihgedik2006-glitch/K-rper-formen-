@@ -63,11 +63,11 @@ if(sub){
   else{
     var cur=document.createElement("span");cur.className="cur";cur.setAttribute("aria-hidden","true");
     sub.appendChild(cur);var ti=0;
-    (function type(){
+    function type(){
       if(ti<txt.length){sub.insertBefore(document.createTextNode(txt[ti++]),cur);
         setTimeout(type,ti<4?60:Math.random()*32+18);}
       else setTimeout(function(){cur.remove();},1400);
-    });
+    }
     setTimeout(type,1100);
   }
 }
