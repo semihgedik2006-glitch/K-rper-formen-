@@ -1,2 +1,10 @@
 __pycache__/
 *.pyc
+
+# Umgebung & Geheimnisse
+.env
+venv/
+.venv/
+
+# Lokal gespeicherte Anfragen (Leads)
+data/

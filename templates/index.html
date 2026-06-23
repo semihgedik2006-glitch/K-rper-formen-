@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0E1712" />
+<title>{{ studio.name }} – EMS-Training &amp; Body-Shaping</title>
+<meta name="description" content="Forme deinen Körper mit EMS-Training in {{ studio.city }}. Nur 20 Minuten pro Woche – persönlich betreut. Jetzt kostenloses Probetraining sichern." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- ========== NAV ========== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#hero" class="brand" aria-label="{{ studio.name }} Startseite">
+      <img class="brand-logo"
+        src="https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg"
+        alt="Körperformen Logo" onerror="this.style.display='none'" />
+      <span>KÖRPER<b>FORMEN</b></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#vorteile">Vorteile</a></li>
+      <li><a href="#rezensionen">Rezensionen</a></li>
+      <li><a href="#team">Team</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#buchen" class="btn btn-primary">Gratis starten</a></li>
+    </ul>
+    <button class="nav-toggle" id="navToggle" aria-label="Menü öffnen" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<header class="hero" id="hero">
+  <div class="mesh" aria-hidden="true"><i class="m1"></i><i class="m2"></i><i class="m3"></i></div>
+  <div class="hero-grid-bg" aria-hidden="true"></div>
+
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <span class="hero-badge reveal"><span class="dot"></span> {{ studio.badge }}</span>
+        <h1 id="heroTitle" data-words="Forme deinen Körper.|%Wie nie zuvor.%"></h1>
+        <p class="sub" id="heroSub"></p>
+        <div class="hero-cta reveal">
+          <a href="#buchen" class="btn btn-primary">
+            Kostenloses Probetraining
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#rezensionen" class="btn btn-ghost">Rezensionen ansehen</a>
+        </div>
+      </div>
+
+      <div class="hero-visual-wrap reveal right">
+        <div class="hero-visual" id="heroVisual">
+          <img
+            src="{{ studio.hero_image }}"
+            alt="EMS-Training bei {{ studio.name }} – Trainerin begleitet Kundin beim Training"
+            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:inherit"
+            loading="eager"
+          />
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,10,7,.65) 0%,rgba(6,10,7,.10) 55%,transparent 100%);pointer-events:none"></div>
+        </div>
+        <div class="float-card fc1">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <span><b>20 Min</b><span>pro Woche</span></span>
+        </div>
+        <div class="float-card fc2">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"/></svg></span>
+          <span><b>100 %</b><span>betreut</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animierte Statistik-Leiste -->
+    <div class="hero-stats reveal">
+      {% for s in studio.stats %}
+      <div class="stat"><div class="num" data-count="{{ s.count }}"{% if s.suffix %} data-suffix="{{ s.suffix }}"{% endif %}>0</div><div class="lbl">{{ s.label }}</div></div>
+      {% endfor %}
+    </div>
+  </div>
+</header>
+
+<!-- ========== VORTEILE ========== -->
+<section class="section" id="vorteile">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Warum diese Methode</span>
+      <h2>Maximales Ergebnis,<br /><span class="hl">minimaler Zeitaufwand</span></h2>
+      <p class="lead" style="margin-top:14px">EMS-Training aktiviert über 90 % deiner Muskeln gleichzeitig – wissenschaftlich fundiert, gelenkschonend und individuell begleitet.</p>
+    </div>
+    <div class="cards">
+      <article class="card reveal tilt">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <h3>Nur 20 Minuten</h3>
+        <p>Ein effizientes Workout pro Woche genügt – perfekt für einen vollen Alltag und nachhaltige Ergebnisse.</p>
+      </article>
+      <article class="card reveal tilt">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></div>
+        <h3>1:1 Betreuung</h3>
+        <p>Dein persönlicher Trainer begleitet jede Einheit und passt das Training exakt an deine Ziele an.</p>
+      </article>
+      <article class="card reveal tilt">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg></div>
+        <h3>Gesund &amp; gelenkschonend</h3>
+        <p>Ideal bei Rückenproblemen – kräftigt gezielt die Tiefenmuskulatur, schonend und sicher.</p>
+      </article>
+      <article class="card reveal tilt">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg></div>
+        <h3>Schnelle Resultate</h3>
+        <p>Spürbar straffer und stärker schon nach wenigen Wochen – mess- und sichtbar.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div class="wave" style="background:var(--bg)">
+  <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="fill:var(--bg-soft)"><path d="M0,0 C360,70 1080,70 1440,0 L1440,70 L0,70Z"/></svg>
+</div>
+
+<!-- ========== REZENSIONEN ========== -->
+<section class="section soft" id="rezensionen">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Rezensionen</span>
+      <h2>Was unsere Mitglieder<br /><span class="hl">über uns sagen</span></h2>
+      <p class="lead" style="margin-top:14px">Über 10.000 Menschen haben mit Körperformen ihren Traumkörper erreicht. Hier sind ihre Geschichten.</p>
+    </div>
+    <div class="reviews">
+      {% for r in studio.reviews %}
+      <article class="rev reveal">
+        <div class="top"><div class="stars">{{ "★" * r.stars }}</div><span class="gg"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-7.8Z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.2 1-3.8 1-2.9 0-5.4-2-6.3-4.6H2v2.8A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.2-1.4.4-2.1V7H2a11 11 0 0 0 0 9.9L5.7 14Z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.2 1.7l3.1-3.1A11 11 0 0 0 2 7l3.7 2.8C6.6 7.3 9.1 5.4 12 5.4Z"/></svg>Google</span></div>
+        <p class="txt">„{{ r.text }}"</p>
+        {% if r.pill %}<span class="pill">{{ r.pill }}</span>{% endif %}
+        <div class="who"><span class="av">{{ r.initials }}</span><span><b>{{ r.author }}</b><span>{{ r.since }}</span></span></div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="reviews-foot reveal">
+      <div class="g-rating">
+        <span class="gl"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-7.8Z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.2 1-3.8 1-2.9 0-5.4-2-6.3-4.6H2v2.8A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.2-1.4.4-2.1V7H2a11 11 0 0 0 0 9.9L5.7 14Z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.2 1.7l3.1-3.1A11 11 0 0 0 2 7l3.7 2.8C6.6 7.3 9.1 5.4 12 5.4Z"/></svg>Google</span>
+        <span class="score">{{ studio.google_rating }}</span>
+        <span class="gstars">★★★★★</span>
+        <span class="gcount">({{ studio.google_rating_count }} Bewertungen)</span>
+      </div>
+      <a href="{{ studio.google_reviews_url }}" target="_blank" rel="noopener" class="btn btn-ghost">
+        Alle Bewertungen auf Google ansehen
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="wave" style="background:var(--bg-soft)">
+  <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="fill:var(--bg)"><path d="M0,70 C360,0 1080,0 1440,70 L1440,70 L0,70Z"/></svg>
+</div>
+
+<!-- ========== TEAM ========== -->
+<section class="section" id="team">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Unser Team</span>
+      <h2>Deine <span class="hl">Experten</span> vor Ort</h2>
+      <p class="lead" style="margin-top:14px">Erfahrene, zertifizierte Trainer – immer an deiner Seite, immer für deine Ziele da.</p>
+    </div>
+    <div class="team-grid">
+      {% for t in studio.team %}
+      <div class="tcard reveal">
+        <div class="tphoto">{% if t.photo %}<img src="{{ t.photo }}" alt="{{ t.name }}" />{% else %}📷 Foto einfügen{% endif %}</div>
+        <div class="tinfo"><h3>{{ t.name }}</h3><span class="role">{{ t.role }}</span>
+          <p>{{ t.text }}</p></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="wave" style="background:var(--bg)">
+  <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="fill:var(--bg-soft)"><path d="M0,0 C360,70 1080,70 1440,0 L1440,70 L0,70Z"/></svg>
+</div>
+
+<!-- ========== KUNDENSTIMMEN ========== -->
+<section class="section soft" id="stimmen">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Kundenstimmen</span>
+      <h2>Stimmen aus <span class="hl">dem Studio</span></h2>
+    </div>
+    <div class="quotes">
+      {% for q in studio.quotes %}
+      <figure class="quote reveal"><div class="qm">"</div>
+        <p>{{ q.text }}</p>
+        <figcaption class="who"><span class="av">{{ q.initials }}</span><span><b>{{ q.author }}</b><span>{{ q.since }}</span></span></figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="wave" style="background:var(--bg-soft)">
+  <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="fill:var(--bg)"><path d="M0,70 C360,0 1080,0 1440,70 L1440,70 L0,70Z"/></svg>
+</div>
+
+<!-- ========== FAQ ========== -->
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">FAQ</span>
+      <h2>Häufige <span class="hl">Fragen</span></h2>
+    </div>
+    <div class="faq">
+      <div class="faq-item reveal">
+        <button class="faq-q" aria-expanded="false">Was ist EMS-Training eigentlich?<span class="plus" aria-hidden="true"></span></button>
+        <div class="faq-a"><p>Bei der Elektro-Muskel-Stimulation (EMS) werden deine Muskeln durch sanfte elektrische Impulse zusätzlich aktiviert. So trainierst du in 20 Minuten über 90 % deiner Muskulatur gleichzeitig – hocheffizient und gelenkschonend.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" aria-expanded="false">Für wen ist das Training geeignet?<span class="plus" aria-hidden="true"></span></button>
+        <div class="faq-a"><p>Für nahezu jeden – vom Einsteiger über Vielbeschäftigte bis zum Profi. Besonders beliebt ist EMS bei Rückenbeschwerden, zum Abnehmen und beim Wiedereinstieg nach einer Pause.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" aria-expanded="false">Wie schnell sehe ich Ergebnisse?<span class="plus" aria-hidden="true"></span></button>
+        <div class="faq-a"><p>Viele Mitglieder spüren bereits nach 4–6 Wochen eine deutliche Verbesserung von Kraft und Körpergefühl. Sichtbare Resultate folgen bei regelmäßigem Training meist innerhalb von 8–12 Wochen.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" aria-expanded="false">Brauche ich Vorerfahrung oder eigene Ausrüstung?<span class="plus" aria-hidden="true"></span></button>
+        <div class="faq-a"><p>Nein. Trainingskleidung und Equipment stellen wir komplett. Du wirst von der ersten Minute an persönlich angeleitet – Vorkenntnisse sind nicht nötig.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" aria-expanded="false">Kann ich unverbindlich ein Probetraining machen?<span class="plus" aria-hidden="true"></span></button>
+        <div class="faq-a"><p>Ja, sehr gerne! Buche einfach hier auf der Seite dein kostenloses Probetraining. Wir besprechen deine Ziele und du erlebst EMS direkt selbst.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wave" style="background:var(--bg)">
+  <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="fill:var(--bg-soft)"><path d="M0,0 C360,70 1080,70 1440,0 L1440,70 L0,70Z"/></svg>
+</div>
+
+<!-- ========== PROBETRAINING BUCHEN ========== -->
+<section class="section soft" id="buchen">
+  <div class="container">
+    <div class="booking-wrap">
+      <div class="booking-side reveal left">
+        <span class="eyebrow">Probetraining</span>
+        <h2>Sichere dir dein <span class="hl">kostenloses Probetraining</span></h2>
+        <p class="lead" style="margin-top:12px">Wähle einfach deinen Wunschtermin – wir bestätigen ihn telefonisch und freuen uns auf dich.</p>
+        <div class="booking-steps">
+          <div class="bstep"><span class="no">1</span><span><b>Termin wählen</b><span>Tag und Wunschzeit eintragen – dauert keine Minute.</span></span></div>
+          <div class="bstep"><span class="no">2</span><span><b>Wir melden uns</b><span>Wir bestätigen deinen Termin und klären offene Fragen.</span></span></div>
+          <div class="bstep"><span class="no">3</span><span><b>20 Minuten erleben</b><span>Kleidung &amp; Equipment stellen wir – komm einfach vorbei.</span></span></div>
+        </div>
+      </div>
+
+      <form class="reveal right" id="bookingForm" novalidate>
+        <input type="hidden" name="studio" value="{{ studio.slug }}" />
+        <div class="hp" aria-hidden="true"><label>Bitte freilassen<input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+        <div class="field-row">
+          <div class="field"><label for="bName">Name</label>
+            <input type="text" id="bName" name="name" placeholder="Dein Name" autocomplete="name" required /></div>
+          <div class="field"><label for="bPhone">Telefon</label>
+            <input type="tel" id="bPhone" name="phone" placeholder="0151 …" autocomplete="tel" inputmode="tel" required /></div>
+        </div>
+        <div class="field"><label for="bEmail">E-Mail</label>
+          <input type="email" id="bEmail" name="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" required /></div>
+        <div class="field-row">
+          <div class="field"><label for="bookingDate">Wunschtag</label>
+            <input type="date" id="bookingDate" name="date" required /></div>
+          <div class="field"><label for="bSlot">Wunschzeit</label>
+            <select id="bSlot" name="slot">
+              {% for slot in studio.booking_slots %}<option value="{{ slot }}">{{ slot }}</option>{% endfor %}
+            </select></div>
+        </div>
+        <div class="field"><label for="bNote">Nachricht (optional)</label>
+          <textarea id="bNote" name="note" placeholder="Dein Ziel, Fragen o. Ä. …" style="min-height:90px"></textarea></div>
+        <button type="submit" class="btn btn-primary">Probetraining anfragen</button>
+        <p class="form-note" id="bookingNote" role="status"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ========== KONTAKT ========== -->
+<section class="section" id="kontakt">
+  <div class="container">
+    <div class="cta-band reveal" style="margin-bottom:clamp(48px,7vw,72px)">
+      <h2>Bereit für deine <span class="hl">beste Form?</span></h2>
+      <p>Sichere dir jetzt dein <b style="color:#fff">100 % kostenloses Probetraining</b> – unverbindlich, persönlich und ohne Vorkenntnisse.</p>
+      <a href="#buchen" class="btn btn-primary" style="position:relative">
+        Jetzt gratis sichern
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="contact">
+      <div class="reveal left">
+        <span class="eyebrow">Kontakt</span>
+        <h2 style="font-size:clamp(1.8rem,4.5vw,2.6rem)">Sprich mit <span class="hl">uns</span></h2>
+        <p class="lead" style="margin-top:12px">Wir melden uns innerhalb von 24 Stunden bei dir – versprochen.</p>
+        <ul class="info-list">
+          <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+            <span><b>Adresse</b><span>{{ studio.address }}, {{ studio.postal_city }}</span></span></li>
+          <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></span>
+            <span><b>Telefon</b><span><a href="tel:{{ studio.phone_tel }}">{{ studio.phone_display }}</a></span></span></li>
+          <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v14H3z"/><path d="m3 7 9 6 9-6"/></svg></span>
+            <span><b>E-Mail</b><span><a href="mailto:{{ studio.email }}">{{ studio.email }}</a></span></span></li>
+          <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
+            <span><b>Öffnungszeiten</b><span>{{ studio.hours }}</span></span></li>
+        </ul>
+        <div class="socials">
+          <a href="{{ studio.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="{{ studio.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/></svg></a>
+          <a class="wa" href="{{ studio.whatsapp_link }}" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20Zm4.4-6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.1-.2 0-.4.1-.5l.4-.5.2-.4v-.4l-.7-1.7c-.2-.4-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c2 .8 2 .5 2.4.5a2.6 2.6 0 0 0 1.7-1.2c.2-.5.2-1 .1-1.1l-.4-.2Z"/></svg></a>
+          <a href="tel:{{ studio.phone_tel }}" aria-label="Anrufen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></a>
+        </div>
+      </div>
+
+      <form class="reveal right" id="contactForm" novalidate>
+        <input type="hidden" name="studio" value="{{ studio.slug }}" />
+        <div class="hp" aria-hidden="true"><label>Bitte freilassen<input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+        <div class="field"><label for="name">Name</label>
+          <input type="text" id="name" name="name" placeholder="Dein Name" autocomplete="name" required /></div>
+        <div class="field"><label for="email">E-Mail</label>
+          <input type="email" id="email" name="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" required /></div>
+        <div class="field"><label for="message">Nachricht</label>
+          <textarea id="message" name="message" placeholder="Ich möchte mehr über EMS-Training erfahren …" required></textarea></div>
+        <button type="submit" class="btn btn-primary">Nachricht senden</button>
+        <p class="form-note" id="formNote" role="status"></p>
+      </form>
+    </div>
+
+    <!-- Google-Maps-Karte -->
+    <div class="map-wrap reveal">
+      <iframe src="{{ studio.maps_embed }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="Standort {{ studio.name }} auf Google Maps" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="brand"><img class="brand-logo"
+        src="https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg"
+        alt="Körperformen Logo" onerror="this.style.display='none'" />
+        <span>KÖRPER<b>FORMEN</b> {{ studio.brand_suffix|upper }}</span></div>
+      <ul class="foot-links">
+        <li><a href="#vorteile">Vorteile</a></li>
+        <li><a href="#rezensionen">Rezensionen</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#buchen">Probetraining</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+      </ul>
+    </div>
+    <div class="foot-legal">
+      <strong>Impressum (Platzhalter – bitte rechtliche Pflichtangaben ergänzen)</strong><br />
+      {{ studio.name }} · Inhaber: {{ studio.owner }} · {{ studio.address }}, {{ studio.postal_city }}<br />
+      Tel.: {{ studio.phone_display }} · E-Mail: {{ studio.email }}<br />
+      USt-IdNr.: [hier eintragen] · Verantwortlich i.S.d. § 18 Abs. 2 MStV: [Name eintragen]<br />
+      <a href="#">Datenschutz</a> · <a href="#">AGB</a> &nbsp;|&nbsp; © <span id="year"></span> {{ studio.name }}. Alle Rechte vorbehalten.
+    </div>
+  </div>
+</footer>
+
+<!-- Mobile Sticky CTA -->
+<div class="mcta" id="mcta">
+  <a href="#buchen">Kostenloses Probetraining
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </a>
+</div>
+
+<!-- Floating WhatsApp -->
+<a class="wa-float" href="{{ studio.whatsapp_link }}" target="_blank" rel="noopener" aria-label="Per WhatsApp schreiben">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20Zm4.4-6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.1-.2 0-.4.1-.5l.4-.5.2-.4v-.4l-.7-1.7c-.2-.4-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c2 .8 2 .5 2.4.5a2.6 2.6 0 0 0 1.7-1.2c.2-.5.2-1 .1-1.1l-.4-.2Z"/></svg>
+</a>
+
+<!-- ========== EXIT-INTENT POPUP ========== -->
+<div id="exitPopup" role="dialog" aria-modal="true" aria-labelledby="epTitle">
+  <div class="ep-box">
+    <button class="ep-close" id="epClose" aria-label="Schließen">✕</button>
+    <span class="ep-badge">Noch nicht weg!</span>
+    <h3 id="epTitle">Warte kurz –<br /><span class="hl">Dein Probetraining</span></h3>
+    <p>Du verlässt die Seite ohne dein <strong>100 % kostenloses EMS-Probetraining</strong> zu sichern. In nur 20 Minuten weißt du, ob es das Richtige für dich ist.</p>
+    <div class="ep-actions">
+      <a href="#buchen" class="btn btn-primary" id="epCta">
+        Jetzt Probetraining sichern
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <button class="ep-skip" id="epSkip">Nein danke, ich verzichte</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
