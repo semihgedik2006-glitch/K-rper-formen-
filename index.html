@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0E1712" />
-<title>Körperformen Hürth – EMS-Training & Body-Shaping</title>
+<title>Körperformen Hürth – EMS-Training &amp; Body-Shaping</title>
 <meta name="description" content="Forme deinen Körper mit EMS-Training in Hürth. Nur 20 Minuten pro Woche – persönlich betreut. Jetzt kostenloses Probetraining sichern." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -311,6 +311,16 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
   display:grid;place-items:center;color:#04140C;font-family:var(--font-head);font-weight:800;font-size:.9rem}
 .rev .who b{display:block;font-size:.97rem}
 .rev .who span{color:var(--text-2);font-size:.86rem}
+/* Google-Bewertungs-Badge + Button */
+.reviews-foot{display:flex;flex-direction:column;align-items:center;gap:16px;
+  margin-top:clamp(34px,5vw,48px)}
+.g-rating{display:inline-flex;align-items:center;gap:12px;background:var(--bg-2);
+  border:1px solid var(--line);border-radius:999px;padding:12px 22px;box-shadow:var(--shadow)}
+.g-rating .gl{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--text)}
+.g-rating .gl svg{width:18px;height:18px}
+.g-rating .score{font-family:var(--font-head);font-weight:800;font-size:1.3rem;color:var(--text)}
+.g-rating .gstars{color:#F5A623;letter-spacing:1px}
+.g-rating .gcount{color:var(--text-2);font-size:.86rem}
 
 /* ── TEAM ── */
 .team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
@@ -319,9 +329,10 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
   transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out)}
 .tcard:hover{transform:translateY(-10px);box-shadow:var(--shadow-lg)}
 .tphoto{aspect-ratio:1/1;display:flex;align-items:flex-end;justify-content:center;
-  padding-bottom:16px;font-size:.82rem;color:var(--text-3);
+  padding-bottom:16px;font-size:.82rem;color:var(--text-3);overflow:hidden;
   background:linear-gradient(180deg,rgba(0,184,92,.12),rgba(0,184,92,.02)),
     repeating-linear-gradient(135deg,#eef6f1 0 22px,#f6fbf8 22px 44px)}
+.tphoto img{width:100%;height:100%;object-fit:cover}
 .tinfo{padding:24px 22px 28px}
 .tinfo h3{font-size:1.42rem;margin-bottom:5px}
 .tinfo .role{color:var(--accent-d);font-weight:600;font-size:.92rem;margin-bottom:11px;display:block}
@@ -372,6 +383,26 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
 .cta-band p{position:relative;color:rgba(255,255,255,.72);max-width:560px;margin:0 auto 30px;
   font-size:1.1rem}
 
+/* ── BUCHUNG (Probetraining online) ── */
+.booking-wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,48px);align-items:start}
+.booking-side h2{font-size:clamp(1.8rem,4.5vw,2.6rem)}
+.booking-steps{display:grid;gap:18px;margin-top:26px}
+.bstep{display:flex;gap:16px;align-items:flex-start}
+.bstep .no{width:40px;height:40px;flex-shrink:0;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#04140C;
+  display:grid;place-items:center;font-family:var(--font-head);font-weight:800;font-size:1.1rem}
+.bstep b{display:block;color:var(--text);font-family:var(--font-head);font-size:1.15rem;letter-spacing:.3px}
+.bstep span{color:var(--text-2);font-size:.96rem}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:540px){.field-row{grid-template-columns:1fr}}
+.field select{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
+  border-radius:13px;padding:15px 16px;color:var(--text);font-family:var(--font-body);
+  font-size:16px;min-height:52px;transition:border-color .25s,box-shadow .25s}
+.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,184,92,.13)}
+.field input[type=date]{color-scheme:dark}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+@media(max-width:900px){.booking-wrap{grid-template-columns:1fr}}
+
 /* ── KONTAKT ── */
 .contact{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,5vw,54px)}
 .info-list{display:grid;gap:18px;margin:28px 0}
@@ -383,15 +414,16 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
 .info-list b{display:block;color:var(--text)}
 .info-list span{color:var(--text-2);font-size:.96rem}
 .info-list a{color:var(--accent-d);font-weight:600}
-.socials{display:flex;gap:12px}
+.socials{display:flex;gap:12px;flex-wrap:wrap}
 .socials a{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);
   background:rgba(255,255,255,.05);display:grid;place-items:center;color:var(--text-2);
   box-shadow:var(--shadow);transition:.35s var(--ease-out)}
 .socials a:hover{color:var(--accent-d);border-color:var(--accent);transform:translateY(-4px);
   box-shadow:0 12px 26px var(--accent-glow)}
+.socials a.wa:hover{color:#25D366;border-color:#25D366;box-shadow:0 12px 26px rgba(37,211,102,.35)}
 .socials svg{width:22px;height:22px}
 form{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
-  padding:clamp(26px,5vw,38px) clamp(24px,5vw,34px);box-shadow:var(--shadow-lg)}
+  padding:clamp(26px,5vw,38px) clamp(24px,5vw,34px);box-shadow:var(--shadow-lg);position:relative}
 .field label{color:var(--text)}
 .field{margin-bottom:20px}
 .field label{display:block;font-family:var(--font-head);font-weight:600;letter-spacing:.4px;
@@ -404,6 +436,11 @@ form{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--rad
 .field textarea{resize:vertical;min-height:130px}
 form .btn{width:100%}
 .form-note{text-align:center;color:var(--accent-d);margin-top:16px;font-weight:600;min-height:1.2em}
+
+/* ── KARTE (Google Maps) ── */
+.map-wrap{margin-top:clamp(40px,6vw,64px);border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--line);box-shadow:var(--shadow-lg);line-height:0}
+.map-wrap iframe{width:100%;height:380px;border:0;display:block;filter:grayscale(.2) contrast(1.05)}
 @media(max-width:900px){.contact{grid-template-columns:1fr}}
 
 /* ── FOOTER ── */
@@ -429,6 +466,14 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
   padding:17px;border-radius:16px;box-shadow:0 16px 36px var(--accent-glow);font-size:1.05rem}
 @media(min-width:721px){.mcta{display:none}}
 
+/* ── FLOATING WHATSAPP-BUTTON ── */
+.wa-float{position:fixed;right:18px;bottom:90px;z-index:46;width:58px;height:58px;border-radius:50%;
+  background:#25D366;display:grid;place-items:center;color:#fff;
+  box-shadow:0 14px 30px rgba(37,211,102,.45);transition:transform .35s var(--ease-out)}
+.wa-float:hover{transform:scale(1.08) translateY(-2px)}
+.wa-float svg{width:30px;height:30px}
+@media(min-width:721px){.wa-float{bottom:24px}}
+
 /* ── RESPONSIVE GRIDS ── */
 @media(max-width:980px){
   .cards{grid-template-columns:repeat(2,1fr)}
@@ -440,6 +485,43 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
   .hero-stats{margin-top:40px}
 }
 
+/* ── EXIT-INTENT POPUP ── */
+#exitPopup{
+  position:fixed;inset:0;z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  background:rgba(6,10,7,.70);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .4s var(--ease-out);
+}
+#exitPopup.show{opacity:1;pointer-events:auto}
+.ep-box{
+  position:relative;max-width:480px;width:100%;
+  background:var(--bg-2);border:1px solid rgba(0,224,110,.25);border-radius:28px;
+  padding:clamp(30px,6vw,48px) clamp(26px,6vw,44px);
+  box-shadow:0 40px 100px rgba(0,0,0,.70),0 0 0 1px rgba(0,224,110,.10);
+  transform:translateY(22px) scale(.97);
+  transition:transform .5s var(--ease-out);text-align:center;
+}
+#exitPopup.show .ep-box{transform:none}
+.ep-close{
+  position:absolute;top:16px;right:18px;width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--line);background:rgba(255,255,255,.06);cursor:pointer;
+  display:grid;place-items:center;color:var(--text-2);font-size:1.1rem;line-height:1;
+  transition:background .2s,color .2s;font-family:sans-serif;
+}
+.ep-close:hover{background:rgba(255,255,255,.12);color:var(--text)}
+.ep-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#04140C;font-family:var(--font-head);font-weight:700;letter-spacing:1px;
+  font-size:.78rem;text-transform:uppercase;padding:6px 16px;border-radius:999px;margin-bottom:18px}
+.ep-box h3{font-family:var(--font-head);font-size:clamp(1.8rem,5vw,2.4rem);font-weight:800;
+  color:var(--text);text-transform:uppercase;letter-spacing:-.5px;margin-bottom:12px}
+.ep-box p{color:var(--text-2);font-size:1rem;margin-bottom:26px;line-height:1.55}
+.ep-box p strong{color:var(--text)}
+.ep-actions{display:flex;flex-direction:column;gap:12px}
+.ep-actions .btn{width:100%;justify-content:center}
+.ep-skip{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.88rem;
+  font-family:var(--font-body);margin-top:6px;transition:color .2s;padding:4px}
+.ep-skip:hover{color:var(--text-2)}
+
 /* ── REDUCED MOTION (Barrierefreiheit, kein Scroll-Jacking) ── */
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
@@ -447,6 +529,7 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
   .hero h1 .word>span{transform:none}
   .cur{display:none}
 }
+
 </style>
 </head>
 <body>
@@ -456,7 +539,7 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
 <!-- ========== NAV ========== -->
 <nav class="nav">
   <div class="nav-inner">
-    <a href="#hero" class="brand" aria-label="Körperformen Startseite">
+    <a href="#hero" class="brand" aria-label="Körperformen Hürth Startseite">
       <img class="brand-logo"
         src="https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg"
         alt="Körperformen Logo" onerror="this.style.display='none'" />
@@ -467,7 +550,7 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
       <li><a href="#rezensionen">Rezensionen</a></li>
       <li><a href="#team">Team</a></li>
       <li><a href="#faq">FAQ</a></li>
-      <li><a href="#kontakt" class="btn btn-primary">Gratis starten</a></li>
+      <li><a href="#buchen" class="btn btn-primary">Gratis starten</a></li>
     </ul>
     <button class="nav-toggle" id="navToggle" aria-label="Menü öffnen" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -484,11 +567,10 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
     <div class="hero-grid">
       <div>
         <span class="hero-badge reveal"><span class="dot"></span> EMS-Training in Hürth · Nur 20 Min / Woche</span>
-        <!-- Wort-für-Wort-Reveal (Apple-Stil), Wörter werden per JS gewrappt -->
         <h1 id="heroTitle" data-words="Forme deinen Körper.|%Wie nie zuvor.%"></h1>
         <p class="sub" id="heroSub"></p>
         <div class="hero-cta reveal">
-          <a href="#kontakt" class="btn btn-primary">
+          <a href="#buchen" class="btn btn-primary">
             Kostenloses Probetraining
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
@@ -496,20 +578,16 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
         </div>
       </div>
 
-      <!-- HERO-BILD: dein Trainingsfoto hier einsetzen (Hochformat 4:5) -->
       <div class="hero-visual-wrap reveal right">
         <div class="hero-visual" id="heroVisual">
-          <!-- Echtes EMS-Trainingsfoto von koerperformen.com -->
           <img
             src="https://www.xn--krperformen-rfb.com/wp-content/uploads/2020/03/emstesmal_simone.png"
             alt="EMS-Training bei Körperformen Hürth – Trainerin begleitet Kundin beim Training"
             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:inherit"
             loading="eager"
           />
-          <!-- Gradient-Overlay für Lesbarkeit der Float-Karten -->
           <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,10,7,.65) 0%,rgba(6,10,7,.10) 55%,transparent 100%);pointer-events:none"></div>
         </div>
-        <!-- schwebende Glas-Karten -->
         <div class="float-card fc1">
           <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></span>
           <span><b>20 Min</b><span>pro Woche</span></span>
@@ -523,10 +601,15 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
 
     <!-- Animierte Statistik-Leiste -->
     <div class="hero-stats reveal">
+      
       <div class="stat"><div class="num" data-count="20">0</div><div class="lbl">Minuten / Woche</div></div>
+      
       <div class="stat"><div class="num" data-count="10000" data-suffix="+">0</div><div class="lbl">Zufriedene Mitglieder</div></div>
+      
       <div class="stat"><div class="num" data-count="98" data-suffix="%">0</div><div class="lbl">Weiterempfehlung</div></div>
+      
       <div class="stat"><div class="num" data-count="12">0</div><div class="lbl">Jahre Erfahrung</div></div>
+      
     </div>
   </div>
 </header>
@@ -577,24 +660,41 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
       <p class="lead" style="margin-top:14px">Über 10.000 Menschen haben mit Körperformen ihren Traumkörper erreicht. Hier sind ihre Geschichten.</p>
     </div>
     <div class="reviews">
+      
       <article class="rev reveal">
         <div class="top"><div class="stars">★★★★★</div><span class="gg"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-7.8Z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.2 1-3.8 1-2.9 0-5.4-2-6.3-4.6H2v2.8A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.2-1.4.4-2.1V7H2a11 11 0 0 0 0 9.9L5.7 14Z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.2 1.7l3.1-3.1A11 11 0 0 0 2 7l3.7 2.8C6.6 7.3 9.1 5.4 12 5.4Z"/></svg>Google</span></div>
         <p class="txt">„In 12 Wochen habe ich mich komplett verändert – und endlich keine Rückenschmerzen mehr. Das EMS-Training hier ist einfach unglaublich effektiv!"</p>
         <span class="pill">−8 kg in 12 Wochen</span>
         <div class="who"><span class="av">SK</span><span><b>Sandra K.</b><span>Mitglied seit 1 Jahr</span></span></div>
       </article>
+      
       <article class="rev reveal">
         <div class="top"><div class="stars">★★★★★</div><span class="gg"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-7.8Z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.2 1-3.8 1-2.9 0-5.4-2-6.3-4.6H2v2.8A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.2-1.4.4-2.1V7H2a11 11 0 0 0 0 9.9L5.7 14Z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.2 1.7l3.1-3.1A11 11 0 0 0 2 7l3.7 2.8C6.6 7.3 9.1 5.4 12 5.4Z"/></svg>Google</span></div>
         <p class="txt">„Trotz Vollzeitjob und Familie – 20 Minuten pro Woche haben mein Leben verändert. Mehr Energie, weniger Schmerzen, bessere Laune. Klare Empfehlung!"</p>
         <span class="pill">+6 kg Muskelmasse</span>
         <div class="who"><span class="av">MB</span><span><b>Markus B.</b><span>Mitglied seit 2 Jahren</span></span></div>
       </article>
+      
       <article class="rev reveal">
         <div class="top"><div class="stars">★★★★★</div><span class="gg"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-7.8Z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.2 1-3.8 1-2.9 0-5.4-2-6.3-4.6H2v2.8A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.2-1.4.4-2.1V7H2a11 11 0 0 0 0 9.9L5.7 14Z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.2 1.7l3.1-3.1A11 11 0 0 0 2 7l3.7 2.8C6.6 7.3 9.1 5.4 12 5.4Z"/></svg>Google</span></div>
         <p class="txt">„Definierter, stärker und selbstbewusster. Ich freue mich auf jede Einheit. Das Team ist super professionell und immer motivierend!"</p>
         <span class="pill">−12 cm Bauchumfang</span>
         <div class="who"><span class="av">LM</span><span><b>Lena M.</b><span>Mitglied seit 8 Monaten</span></span></div>
       </article>
+      
+    </div>
+
+    <div class="reviews-foot reveal">
+      <div class="g-rating">
+        <span class="gl"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-7.8Z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.2 1-3.8 1-2.9 0-5.4-2-6.3-4.6H2v2.8A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.2-1.4.4-2.1V7H2a11 11 0 0 0 0 9.9L5.7 14Z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.2 1.7l3.1-3.1A11 11 0 0 0 2 7l3.7 2.8C6.6 7.3 9.1 5.4 12 5.4Z"/></svg>Google</span>
+        <span class="score">4,9</span>
+        <span class="gstars">★★★★★</span>
+        <span class="gcount">(120 Bewertungen)</span>
+      </div>
+      <a href="https://www.google.com/search?q=Körperformen+Hürth+Bewertungen" target="_blank" rel="noopener" class="btn btn-ghost">
+        Alle Bewertungen auf Google ansehen
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
     </div>
   </div>
 </section>
@@ -612,24 +712,25 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
       <p class="lead" style="margin-top:14px">Erfahrene, zertifizierte Trainer – immer an deiner Seite, immer für deine Ziele da.</p>
     </div>
     <div class="team-grid">
-      <!-- FOTO 1: Marcel – eigenes Foto einsetzen -->
+      
       <div class="tcard reveal">
         <div class="tphoto">📷 Foto einfügen</div>
         <div class="tinfo"><h3>Marcel Almeida</h3><span class="role">Studioleiter &amp; Head-Trainer</span>
           <p>Über 12 Jahre Erfahrung in EMS-Training und Gesundheitssport. Dein Ansprechpartner für alle Fragen rund ums Training.</p></div>
       </div>
-      <!-- FOTO 2: Name + Text anpassen -->
+      
       <div class="tcard reveal">
         <div class="tphoto">📷 Foto einfügen</div>
         <div class="tinfo"><h3>[Name eintragen]</h3><span class="role">EMS-Spezialist &amp; Personal Trainer</span>
           <p>Zertifizierter EMS-Coach mit Fokus auf Rehabilitation, Muskelaufbau und individuelle Trainingspläne.</p></div>
       </div>
-      <!-- FOTO 3: Name + Text anpassen -->
+      
       <div class="tcard reveal">
         <div class="tphoto">📷 Foto einfügen</div>
         <div class="tinfo"><h3>[Name eintragen]</h3><span class="role">Ernährungsberaterin &amp; Trainerin</span>
           <p>Kombiniert EMS-Training mit Ernährungscoaching für maximale und langfristige Ergebnisse.</p></div>
       </div>
+      
     </div>
   </div>
 </section>
@@ -646,18 +747,22 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
       <h2>Stimmen aus <span class="hl">dem Studio</span></h2>
     </div>
     <div class="quotes">
-      <figure class="quote reveal"><div class="qm">“</div>
+      
+      <figure class="quote reveal"><div class="qm">"</div>
         <p>Endlich ein Training, das in meinen Alltag passt. Das Team ist super motivierend und ich sehe echte Fortschritte.</p>
         <figcaption class="who"><span class="av">JK</span><span><b>Julia K.</b><span>Mitglied seit 2 Jahren</span></span></figcaption>
       </figure>
-      <figure class="quote reveal"><div class="qm">“</div>
+      
+      <figure class="quote reveal"><div class="qm">"</div>
         <p>Nach meiner Rücken-OP hatte ich Angst vor Sport. Hier wurde ich behutsam wieder aufgebaut – ich bin unendlich dankbar.</p>
         <figcaption class="who"><span class="av">TB</span><span><b>Thomas B.</b><span>Mitglied seit 1 Jahr</span></span></figcaption>
       </figure>
-      <figure class="quote reveal"><div class="qm">“</div>
+      
+      <figure class="quote reveal"><div class="qm">"</div>
         <p>Professionell, sauber, persönlich. Die 20 Minuten haben es in sich – und die Ergebnisse sprechen für sich!</p>
         <figcaption class="who"><span class="av">AM</span><span><b>Aylin M.</b><span>Mitglied seit 8 Monaten</span></span></figcaption>
       </figure>
+      
     </div>
   </div>
 </section>
@@ -692,20 +797,66 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
       </div>
       <div class="faq-item reveal">
         <button class="faq-q" aria-expanded="false">Kann ich unverbindlich ein Probetraining machen?<span class="plus" aria-hidden="true"></span></button>
-        <div class="faq-a"><p>Ja, sehr gerne! Buche einfach über das Kontaktformular dein kostenloses Probetraining. Wir besprechen deine Ziele und du erlebst EMS direkt selbst.</p></div>
+        <div class="faq-a"><p>Ja, sehr gerne! Buche einfach hier auf der Seite dein kostenloses Probetraining. Wir besprechen deine Ziele und du erlebst EMS direkt selbst.</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ========== KONTAKT ========== -->
-<section class="section soft" id="kontakt">
+<div class="wave" style="background:var(--bg)">
+  <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="fill:var(--bg-soft)"><path d="M0,0 C360,70 1080,70 1440,0 L1440,70 L0,70Z"/></svg>
+</div>
+
+<!-- ========== PROBETRAINING BUCHEN ========== -->
+<section class="section soft" id="buchen">
   <div class="container">
-    <!-- CTA-Band -->
+    <div class="booking-wrap">
+      <div class="booking-side reveal left">
+        <span class="eyebrow">Probetraining</span>
+        <h2>Sichere dir dein <span class="hl">kostenloses Probetraining</span></h2>
+        <p class="lead" style="margin-top:12px">Wähle einfach deinen Wunschtermin – wir bestätigen ihn telefonisch und freuen uns auf dich.</p>
+        <div class="booking-steps">
+          <div class="bstep"><span class="no">1</span><span><b>Termin wählen</b><span>Tag und Wunschzeit eintragen – dauert keine Minute.</span></span></div>
+          <div class="bstep"><span class="no">2</span><span><b>Wir melden uns</b><span>Wir bestätigen deinen Termin und klären offene Fragen.</span></span></div>
+          <div class="bstep"><span class="no">3</span><span><b>20 Minuten erleben</b><span>Kleidung &amp; Equipment stellen wir – komm einfach vorbei.</span></span></div>
+        </div>
+      </div>
+
+      <form class="reveal right" id="bookingForm" novalidate>
+        <input type="hidden" name="studio" value="huerth" />
+        <div class="hp" aria-hidden="true"><label>Bitte freilassen<input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+        <div class="field-row">
+          <div class="field"><label for="bName">Name</label>
+            <input type="text" id="bName" name="name" placeholder="Dein Name" autocomplete="name" required /></div>
+          <div class="field"><label for="bPhone">Telefon</label>
+            <input type="tel" id="bPhone" name="phone" placeholder="0151 …" autocomplete="tel" inputmode="tel" required /></div>
+        </div>
+        <div class="field"><label for="bEmail">E-Mail</label>
+          <input type="email" id="bEmail" name="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" required /></div>
+        <div class="field-row">
+          <div class="field"><label for="bookingDate">Wunschtag</label>
+            <input type="date" id="bookingDate" name="date" required /></div>
+          <div class="field"><label for="bSlot">Wunschzeit</label>
+            <select id="bSlot" name="slot">
+              <option value="Vormittags (8–12 Uhr)">Vormittags (8–12 Uhr)</option><option value="Mittags (12–15 Uhr)">Mittags (12–15 Uhr)</option><option value="Nachmittags (15–18 Uhr)">Nachmittags (15–18 Uhr)</option><option value="Abends (18–21 Uhr)">Abends (18–21 Uhr)</option><option value="Samstag (10–16 Uhr)">Samstag (10–16 Uhr)</option>
+            </select></div>
+        </div>
+        <div class="field"><label for="bNote">Nachricht (optional)</label>
+          <textarea id="bNote" name="note" placeholder="Dein Ziel, Fragen o. Ä. …" style="min-height:90px"></textarea></div>
+        <button type="submit" class="btn btn-primary">Probetraining anfragen</button>
+        <p class="form-note" id="bookingNote" role="status"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ========== KONTAKT ========== -->
+<section class="section" id="kontakt">
+  <div class="container">
     <div class="cta-band reveal" style="margin-bottom:clamp(48px,7vw,72px)">
       <h2>Bereit für deine <span class="hl">beste Form?</span></h2>
       <p>Sichere dir jetzt dein <b style="color:#fff">100 % kostenloses Probetraining</b> – unverbindlich, persönlich und ohne Vorkenntnisse.</p>
-      <a href="#contactForm" class="btn btn-primary" style="position:relative">
+      <a href="#buchen" class="btn btn-primary" style="position:relative">
         Jetzt gratis sichern
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
@@ -729,21 +880,29 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
         <div class="socials">
           <a href="https://www.instagram.com/koerperformen_huerth/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
           <a href="https://www.facebook.com/koerperformen.huerth/" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/></svg></a>
+          <a class="wa" href="https://wa.me/4922339667181?text=Hallo%21+Ich+interessiere+mich+f%C3%BCr+ein+kostenloses+Probetraining." target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20Zm4.4-6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.1-.2 0-.4.1-.5l.4-.5.2-.4v-.4l-.7-1.7c-.2-.4-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c2 .8 2 .5 2.4.5a2.6 2.6 0 0 0 1.7-1.2c.2-.5.2-1 .1-1.1l-.4-.2Z"/></svg></a>
           <a href="tel:+4922339667181" aria-label="Anrufen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></a>
         </div>
       </div>
 
       <form class="reveal right" id="contactForm" novalidate>
+        <input type="hidden" name="studio" value="huerth" />
+        <div class="hp" aria-hidden="true"><label>Bitte freilassen<input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
         <div class="field"><label for="name">Name</label>
           <input type="text" id="name" name="name" placeholder="Dein Name" autocomplete="name" required /></div>
         <div class="field"><label for="email">E-Mail</label>
           <input type="email" id="email" name="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" required /></div>
         <div class="field"><label for="message">Nachricht</label>
-          <textarea id="message" name="message" placeholder="Ich möchte ein kostenloses Probetraining vereinbaren …" required></textarea></div>
-        <button type="submit" class="btn btn-primary">Probetraining anfragen</button>
-        <!-- HINWEIS: Für echten Versand einen Backend-Service einbinden (z.B. Formspree) -->
+          <textarea id="message" name="message" placeholder="Ich möchte mehr über EMS-Training erfahren …" required></textarea></div>
+        <button type="submit" class="btn btn-primary">Nachricht senden</button>
         <p class="form-note" id="formNote" role="status"></p>
       </form>
+    </div>
+
+    <!-- Google-Maps-Karte -->
+    <div class="map-wrap reveal">
+      <iframe src="https://www.google.com/maps?q=K%C3%B6rperformen+H%C3%BCrth%2C+Krankenhausstr.+111%2C+50354+H%C3%BCrth&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="Standort Körperformen Hürth auf Google Maps" allowfullscreen></iframe>
     </div>
   </div>
 </section>
@@ -760,13 +919,12 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
         <li><a href="#vorteile">Vorteile</a></li>
         <li><a href="#rezensionen">Rezensionen</a></li>
         <li><a href="#team">Team</a></li>
-        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#buchen">Probetraining</a></li>
         <li><a href="#kontakt">Kontakt</a></li>
       </ul>
     </div>
-    <!-- IMPRESSUM-PLATZHALTER: rechtliche Pflichtangaben ergänzen -->
     <div class="foot-legal">
-      <strong>Impressum (Platzhalter)</strong><br />
+      <strong>Impressum (Platzhalter – bitte rechtliche Pflichtangaben ergänzen)</strong><br />
       Körperformen Hürth · Inhaber: Marcel Almeida · Krankenhausstr. 111, 50354 Hürth<br />
       Tel.: 02233 966 71 81 · E-Mail: huerth@koerperformen.com<br />
       USt-IdNr.: [hier eintragen] · Verantwortlich i.S.d. § 18 Abs. 2 MStV: [Name eintragen]<br />
@@ -777,52 +935,17 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
 
 <!-- Mobile Sticky CTA -->
 <div class="mcta" id="mcta">
-  <a href="#kontakt">Kostenloses Probetraining
+  <a href="#buchen">Kostenloses Probetraining
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
   </a>
 </div>
 
-<!-- ========== EXIT-INTENT POPUP ========== -->
-<style>
-/* Overlay */
-#exitPopup{
-  position:fixed;inset:0;z-index:200;
-  display:flex;align-items:center;justify-content:center;padding:20px;
-  background:rgba(6,10,7,.70);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
-  opacity:0;pointer-events:none;transition:opacity .4s var(--ease-out);
-}
-#exitPopup.show{opacity:1;pointer-events:auto}
-/* Box */
-.ep-box{
-  position:relative;max-width:480px;width:100%;
-  background:var(--bg-2);border:1px solid rgba(0,224,110,.25);border-radius:28px;
-  padding:clamp(30px,6vw,48px) clamp(26px,6vw,44px);
-  box-shadow:0 40px 100px rgba(0,0,0,.70),0 0 0 1px rgba(0,224,110,.10);
-  transform:translateY(22px) scale(.97);
-  transition:transform .5s var(--ease-out);text-align:center;
-}
-#exitPopup.show .ep-box{transform:none}
-.ep-close{
-  position:absolute;top:16px;right:18px;width:36px;height:36px;border-radius:50%;
-  border:1px solid var(--line);background:rgba(255,255,255,.06);cursor:pointer;
-  display:grid;place-items:center;color:var(--text-2);font-size:1.1rem;line-height:1;
-  transition:background .2s,color .2s;font-family:sans-serif;
-}
-.ep-close:hover{background:rgba(255,255,255,.12);color:var(--text)}
-.ep-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  color:#04140C;font-family:var(--font-head);font-weight:700;letter-spacing:1px;
-  font-size:.78rem;text-transform:uppercase;padding:6px 16px;border-radius:999px;margin-bottom:18px}
-.ep-box h3{font-family:var(--font-head);font-size:clamp(1.8rem,5vw,2.4rem);font-weight:800;
-  color:var(--text);text-transform:uppercase;letter-spacing:-.5px;margin-bottom:12px}
-.ep-box p{color:var(--text-2);font-size:1rem;margin-bottom:26px;line-height:1.55}
-.ep-box p strong{color:var(--text)}
-.ep-actions{display:flex;flex-direction:column;gap:12px}
-.ep-actions .btn{width:100%;justify-content:center}
-.ep-skip{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.88rem;
-  font-family:var(--font-body);margin-top:6px;transition:color .2s;padding:4px}
-.ep-skip:hover{color:var(--text-2)}
-</style>
+<!-- Floating WhatsApp -->
+<a class="wa-float" href="https://wa.me/4922339667181?text=Hallo%21+Ich+interessiere+mich+f%C3%BCr+ein+kostenloses+Probetraining." target="_blank" rel="noopener" aria-label="Per WhatsApp schreiben">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20Zm4.4-6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.1-.2 0-.4.1-.5l.4-.5.2-.4v-.4l-.7-1.7c-.2-.4-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c2 .8 2 .5 2.4.5a2.6 2.6 0 0 0 1.7-1.2c.2-.5.2-1 .1-1.1l-.4-.2Z"/></svg>
+</a>
 
+<!-- ========== EXIT-INTENT POPUP ========== -->
 <div id="exitPopup" role="dialog" aria-modal="true" aria-labelledby="epTitle">
   <div class="ep-box">
     <button class="ep-close" id="epClose" aria-label="Schließen">✕</button>
@@ -830,7 +953,7 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
     <h3 id="epTitle">Warte kurz –<br /><span class="hl">Dein Probetraining</span></h3>
     <p>Du verlässt die Seite ohne dein <strong>100 % kostenloses EMS-Probetraining</strong> zu sichern. In nur 20 Minuten weißt du, ob es das Richtige für dich ist.</p>
     <div class="ep-actions">
-      <a href="#kontakt" class="btn btn-primary" id="epCta">
+      <a href="#buchen" class="btn btn-primary" id="epCta">
         Jetzt Probetraining sichern
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
@@ -839,7 +962,6 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
   </div>
 </div>
 
-<!-- ========== JAVASCRIPT ========== -->
 <script>
 (function(){
 "use strict";
@@ -848,23 +970,25 @@ var isTouch=window.matchMedia("(hover: none)").matches;
 
 /* 1) Mobile Nav */
 var toggle=document.getElementById("navToggle"),links=document.getElementById("navLinks");
-toggle.addEventListener("click",function(){
-  var o=links.classList.toggle("open");toggle.classList.toggle("active",o);
-  toggle.setAttribute("aria-expanded",o?"true":"false");
-});
-links.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){
-  links.classList.remove("open");toggle.classList.remove("active");
-  toggle.setAttribute("aria-expanded","false");
-});});
+if(toggle&&links){
+  toggle.addEventListener("click",function(){
+    var o=links.classList.toggle("open");toggle.classList.toggle("active",o);
+    toggle.setAttribute("aria-expanded",o?"true":"false");
+  });
+  links.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){
+    links.classList.remove("open");toggle.classList.remove("active");
+    toggle.setAttribute("aria-expanded","false");
+  });});
+}
 
 /* 2) Navbar auto-hide + scroll progress + mobile CTA */
 var nav=document.querySelector(".nav"),bar=document.getElementById("progress"),
     mcta=document.getElementById("mcta"),lastY=0,ticking=false;
 function onScroll(){
   var y=window.scrollY,h=document.documentElement.scrollHeight-window.innerHeight;
-  bar.style.width=(h>0?(y/h*100):0)+"%";
-  nav.style.top=(y>lastY&&y>240)?"-90px":"14px";
-  mcta.classList.toggle("show",y>700);
+  if(bar)bar.style.width=(h>0?(y/h*100):0)+"%";
+  if(nav)nav.style.top=(y>lastY&&y>240)?"-90px":"14px";
+  if(mcta)mcta.classList.toggle("show",y>700);
   lastY=y;ticking=false;
 }
 window.addEventListener("scroll",function(){
@@ -874,39 +998,43 @@ window.addEventListener("scroll",function(){
 /* 3) Hero headline word-by-word reveal (Apple-Stil)
    Syntax in data-words: "Wort Wort.|%Akzent Teil%"  (| = Zeilenumbruch, %..% = Gradient) */
 var title=document.getElementById("heroTitle");
-(function buildTitle(){
-  var raw=title.getAttribute("data-words");
-  var lines=raw.split("|");var di=0;
-  lines.forEach(function(line,li){
-    var accent=false,text=line;
-    if(/^%.*%$/.test(line)){accent=true;text=line.slice(1,-1);}
-    line.replace(/%/g,"");
-    text.split(" ").forEach(function(w){
-      var wrap=document.createElement("span");wrap.className="word";
-      var inner=document.createElement("span");
-      inner.textContent=w+" ";
-      if(accent)inner.classList.add("hl");
-      inner.style.transitionDelay=(di*0.08)+"s";di++;
-      wrap.appendChild(inner);title.appendChild(wrap);
+if(title){
+  (function buildTitle(){
+    var raw=title.getAttribute("data-words");
+    var lines=raw.split("|");var di=0;
+    lines.forEach(function(line,li){
+      var accent=false,text=line;
+      if(/^%.*%$/.test(line)){accent=true;text=line.slice(1,-1);}
+      text.split(" ").forEach(function(w){
+        var wrap=document.createElement("span");wrap.className="word";
+        var inner=document.createElement("span");
+        inner.textContent=w+" ";
+        if(accent)inner.classList.add("hl");
+        inner.style.transitionDelay=(di*0.08)+"s";di++;
+        wrap.appendChild(inner);title.appendChild(wrap);
+      });
+      if(li<lines.length-1)title.appendChild(document.createElement("br"));
     });
-    if(li<lines.length-1)title.appendChild(document.createElement("br"));
-  });
-})();
-requestAnimationFrame(function(){requestAnimationFrame(function(){title.classList.add("in");});});
+  })();
+  requestAnimationFrame(function(){requestAnimationFrame(function(){title.classList.add("in");});});
+}
 
 /* 4) Typewriter hero subtitle */
 var sub=document.getElementById("heroSub");
-var txt="Effektives Ganzkörper-Training mit persönlicher Betreuung. Abnehmen, Muskeln aufbauen und fitter werden – ganz ohne stundenlange Workouts.";
-if(reduce){sub.textContent=txt;}
-else{
-  var cur=document.createElement("span");cur.className="cur";cur.setAttribute("aria-hidden","true");
-  sub.appendChild(cur);var ti=0;
-  function type(){
-    if(ti<txt.length){sub.insertBefore(document.createTextNode(txt[ti++]),cur);
-      setTimeout(type,ti<4?60:Math.random()*32+18);}
-    else setTimeout(function(){cur.remove();},1400);
+if(sub){
+  var txt=sub.getAttribute("data-text")||
+    "Effektives Ganzkörper-Training mit persönlicher Betreuung. Abnehmen, Muskeln aufbauen und fitter werden – ganz ohne stundenlange Workouts.";
+  if(reduce){sub.textContent=txt;}
+  else{
+    var cur=document.createElement("span");cur.className="cur";cur.setAttribute("aria-hidden","true");
+    sub.appendChild(cur);var ti=0;
+    (function type(){
+      if(ti<txt.length){sub.insertBefore(document.createTextNode(txt[ti++]),cur);
+        setTimeout(type,ti<4?60:Math.random()*32+18);}
+      else setTimeout(function(){cur.remove();},1400);
+    });
+    setTimeout(type,1100);
   }
-  setTimeout(type,1100);
 }
 
 /* 5) Scroll reveal with stagger (IntersectionObserver) */
@@ -944,7 +1072,7 @@ if("IntersectionObserver"in window&&!reduce){
 }else{ctrs.forEach(function(c){var v=c.getAttribute("data-count");
   c.textContent=(v>=1000?Number(v).toLocaleString("de-DE"):v)+(c.getAttribute("data-suffix")||"");});}
 
-/* 7) Hero parallax (sanft, nur Desktop, kein Scroll-Jacking) */
+/* 7) Hero parallax (sanft, nur Desktop) */
 var hv=document.getElementById("heroVisual");
 if(hv&&!reduce&&!isTouch){
   window.addEventListener("scroll",function(){
@@ -953,7 +1081,6 @@ if(hv&&!reduce&&!isTouch){
       hv.style.transform="translateY("+(off*-0.06)+"px)";
     });
   },{passive:true});
-  // sanfte 3D-Neigung bei Mausbewegung
   var vw=hv.parentElement;
   vw.addEventListener("pointermove",function(ev){
     var r=vw.getBoundingClientRect();
@@ -967,7 +1094,7 @@ if(hv&&!reduce&&!isTouch){
   });
 }
 
-/* 8) Card spotlight (folgt der Maus) + leichte Tilt */
+/* 8) Card spotlight + magnetische Buttons */
 if(!isTouch&&!reduce){
   document.querySelectorAll(".card").forEach(function(card){
     card.addEventListener("pointermove",function(e){
@@ -976,7 +1103,6 @@ if(!isTouch&&!reduce){
       card.style.setProperty("--my",(e.clientY-r.top)+"px");
     });
   });
-  /* 8b) Magnetische Buttons */
   document.querySelectorAll(".btn-primary").forEach(function(b){
     b.addEventListener("pointermove",function(e){
       var r=b.getBoundingClientRect();
@@ -997,27 +1123,66 @@ document.querySelectorAll(".faq-q").forEach(function(btn){
   });
 });
 
-/* 10) Contact form (Frontend-Demo – für echten Versand Backend/Formspree) */
-var form=document.getElementById("contactForm"),note=document.getElementById("formNote");
-form.addEventListener("submit",function(e){
-  e.preventDefault();
-  if(!form.checkValidity()){note.style.color="#EF4444";
-    note.textContent="Bitte fülle alle Felder korrekt aus.";return;}
-  note.style.color="var(--accent-d)";
-  note.textContent="Danke! Wir melden uns innerhalb von 24 Stunden. 💪";form.reset();
-});
+/* 10) Formulare → echtes Backend (Flask) */
+function handleForm(formId,noteId,endpoint,successText){
+  var form=document.getElementById(formId),note=document.getElementById(noteId);
+  if(!form)return;
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    if(!form.checkValidity()){
+      note.style.color="#EF4444";
+      note.textContent="Bitte fülle alle Pflichtfelder korrekt aus.";
+      form.reportValidity();return;
+    }
+    var btn=form.querySelector("button[type=submit]");
+    var oldLabel=btn?btn.textContent:"";
+    if(btn){btn.disabled=true;btn.textContent="Senden …";}
+    note.style.color="var(--text-2)";note.textContent="";
+
+    var payload={};
+    new FormData(form).forEach(function(v,k){payload[k]=v;});
+
+    fetch(endpoint,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    }).then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+    .then(function(res){
+      if(res.ok&&res.d.ok){
+        note.style.color="var(--accent-d)";
+        note.textContent=res.d.message||successText;
+        form.reset();
+      }else{
+        note.style.color="#EF4444";
+        note.textContent=(res.d&&res.d.error)||"Etwas ist schiefgelaufen. Bitte ruf uns kurz an.";
+      }
+    }).catch(function(){
+      note.style.color="#EF4444";
+      note.textContent="Verbindung fehlgeschlagen. Bitte versuche es erneut.";
+    }).finally(function(){
+      if(btn){btn.disabled=false;btn.textContent=oldLabel;}
+    });
+  });
+}
+handleForm("contactForm","formNote","/api/contact","Danke! Wir melden uns innerhalb von 24 Stunden. 💪");
+handleForm("bookingForm","bookingNote","/api/booking","Top! Wir bestätigen deinen Termin telefonisch. 📅");
+
+/* Mindestdatum der Buchung = heute */
+var dateInput=document.getElementById("bookingDate");
+if(dateInput){
+  var t=new Date();var iso=t.toISOString().split("T")[0];
+  dateInput.min=iso;
+}
 
 /* 11) Footer year */
-document.getElementById("year").textContent=new Date().getFullYear();
+var yearEl=document.getElementById("year");
+if(yearEl)yearEl.textContent=new Date().getFullYear();
 
-/* 12) Exit-intent popup
-   Zeigt sich EINMAL pro Session wenn:
-   - Maus den oberen Rand des Viewports verlässt (Desktop)
-   - Auf Handy: nach 40 s Aufenthalt ohne Formular-Klick
-   Nie mehr als einmal anzeigen (sessionStorage) */
+/* 12) Exit-intent popup (einmal pro Session) */
 (function(){
   if(sessionStorage.getItem("exitShown"))return;
   var popup=document.getElementById("exitPopup");
+  if(!popup)return;
   var closeBtn=document.getElementById("epClose");
   var skip=document.getElementById("epSkip");
   var cta=document.getElementById("epCta");
@@ -1025,41 +1190,31 @@ document.getElementById("year").textContent=new Date().getFullYear();
   function show(){
     if(shown||sessionStorage.getItem("exitShown"))return;
     shown=true;sessionStorage.setItem("exitShown","1");
-    popup.classList.add("show");
-    document.body.style.overflow="hidden";
+    popup.classList.add("show");document.body.style.overflow="hidden";
   }
-  function hide(){
-    popup.classList.remove("show");
-    document.body.style.overflow="";
-  }
-  closeBtn.addEventListener("click",hide);
-  skip.addEventListener("click",hide);
-  cta.addEventListener("click",hide);
-  /* Schließen per Klick auf Overlay-Hintergrund */
+  function hide(){popup.classList.remove("show");document.body.style.overflow="";}
+  if(closeBtn)closeBtn.addEventListener("click",hide);
+  if(skip)skip.addEventListener("click",hide);
+  if(cta)cta.addEventListener("click",hide);
   popup.addEventListener("click",function(e){if(e.target===popup)hide();});
-  /* Schließen per Escape */
   document.addEventListener("keydown",function(e){if(e.key==="Escape")hide();});
 
-  /* Desktop: Maus verlässt oben (klassisches Exit-Intent) */
   var triggered=false;
   document.addEventListener("mouseleave",function(e){
-    if(!triggered&&e.clientY<=0){triggered=true;
-      /* kleiner Delay damit es nicht beim ersten Hover feuert */
-      setTimeout(show,80);}
+    if(!triggered&&e.clientY<=0){triggered=true;setTimeout(show,80);}
   });
 
-  /* Mobile-Fallback: nach 45 s anzeigen wenn noch kein Formular-Fokus */
   var formTouched=false;
   var contactForm=document.getElementById("contactForm");
   if(contactForm)contactForm.addEventListener("focusin",function(){formTouched=true;},{once:true});
   var mobileTimer=setTimeout(function(){
     if(!formTouched&&!sessionStorage.getItem("exitShown"))show();
   },45000);
-  /* Timer abbrechen wenn Formular ausgefüllt wird */
   if(contactForm)contactForm.addEventListener("submit",function(){clearTimeout(mobileTimer);},{once:true});
 })();
 
 })();
+
 </script>
 </body>
 </html>
