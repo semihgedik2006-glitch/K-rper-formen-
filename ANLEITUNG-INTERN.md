@@ -1,5 +1,14 @@
 # StudioChat – Körperformen Team-Portal
 
+## Zugänge / Login (neu)
+- **Mitarbeiter können sich nicht mehr selbst registrieren.** Der **Chef legt die
+  Konten an** (Chef-Bereich → „Mitarbeiter anlegen": Name, E-Mail, Passwort, Studios)
+  und gibt dem Mitarbeiter die Zugangsdaten. Studios lassen sich später jederzeit
+  über „Mitarbeiter" ändern, Zugänge auch entfernen.
+- **Chef-Konto anlegen:** einmalig über `…/intern.html#chef` mit dem Chef-Code.
+- Wegen dieser Änderung müssen die **`firestore.rules` neu veröffentlicht** werden
+  (sie erlauben dem Chef jetzt, Mitarbeiter-Profile zu verwalten).
+
 ## Neu in dieser Version
 - **Wiederkehrende Aufgaben:** Chef kann eine Aufgabe als *täglich* oder *wöchentlich*
   markieren – sie steht nach Tag/Woche automatisch wieder offen da (kein Server nötig).

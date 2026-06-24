@@ -18,9 +18,12 @@ service cloud.firestore {
     // ── Benutzerprofile ──
     match /users/{uid} {
       allow read: if signedIn();
-      allow create: if request.auth.uid == uid;        // eigenes Profil bei Registrierung
-      allow update: if request.auth.uid == uid;        // nur eigenes Profil ändern
-      allow delete: if false;
+      // eigenes Profil (Chef-Registrierung) ODER der Chef legt Mitarbeiter an
+      allow create: if request.auth.uid == uid || isChef();
+      // eigenes Profil ODER der Chef ordnet Studios zu
+      allow update: if request.auth.uid == uid || isChef();
+      // nur der Chef kann einen Zugang entfernen
+      allow delete: if isChef();
     }
 
     // ── Chat-Nachrichten ──

@@ -70,6 +70,8 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.5}
 select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238BADA0' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+/* Dropdown-Einträge lesbar (sonst weiß auf weiß) */
+.inp option{background:#141E18;color:#F0F7F3}
 
 /* ── Loading ── */
 #loadingWrap{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;
@@ -425,6 +427,17 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .mat-add{display:flex;gap:8px;margin-top:14px}
 .mat-add input{flex:1}
 .mat-saved{font-size:.78rem;color:var(--accent-d);min-height:1.1em;margin-top:10px;transition:opacity .3s}
+
+/* ── Mitarbeiterverwaltung (Chef) ── */
+.emp{display:flex;align-items:flex-start;gap:10px;padding:13px 0;border-top:1px solid var(--line)}
+.emp:first-child{border-top:none}
+.emp-info{flex:1;min-width:0}
+.emp-info b{font-family:var(--font-head);font-size:1.05rem;display:block}
+.emp-info .em-mail{color:var(--text-3);font-size:.8rem;word-break:break-all}
+.emp-info .em-studios{color:var(--accent-d);font-size:.82rem;margin-top:3px}
+.emp-actions{display:flex;gap:6px;flex-shrink:0}
+.emp .studio-checks{margin-top:10px}
+.em-saved{font-size:.78rem;color:var(--accent-d);min-height:1em}
 </style>
 </head>
 <body>
@@ -476,11 +489,6 @@ var FIREBASE_CONFIG = {
     <div class="auth-brand">STUDIO<b>CHAT</b></div>
     <p class="auth-sub">Körperformen · Team-Portal</p>
 
-    <div class="auth-tabs" role="tablist">
-      <button class="auth-tab active" id="tabLogin" role="tab" aria-selected="true">Anmelden</button>
-      <button class="auth-tab" id="tabRegister" role="tab" aria-selected="false">Registrieren</button>
-    </div>
-
     <!-- LOGIN -->
     <div id="loginForm">
       <div class="field"><label for="lgEmail">E-Mail</label>
@@ -490,6 +498,7 @@ var FIREBASE_CONFIG = {
       <p class="auth-err" id="loginErr"></p>
       <button class="btn btn-primary" id="loginBtn" style="width:100%">Anmelden</button>
       <div class="auth-foot"><a id="forgotLink">Passwort vergessen?</a></div>
+      <p class="auth-foot" style="margin-top:14px;line-height:1.5">Noch keinen Zugang?<br/>Dein <b style="color:var(--text-2)">Chef</b> legt dein Konto an.</p>
     </div>
 
     <!-- REGISTER -->
@@ -607,6 +616,25 @@ var FIREBASE_CONFIG = {
       <section class="view" id="view-chef">
         <div class="view-head"><h2>Chef-Bereich</h2><p>Nachrichten senden &amp; Aufgaben verteilen.</p></div>
         <div class="scroll-area">
+          <div class="card">
+            <h3>👤 Mitarbeiter anlegen</h3>
+            <p class="hint">Erstellt ein Konto und ordnet Studios zu. Der Mitarbeiter meldet sich danach mit E-Mail + Passwort an.</p>
+            <div class="field"><label for="emName">Name</label>
+              <input class="inp" id="emName" type="text" placeholder="Vor- und Nachname" maxlength="50" /></div>
+            <div class="field"><label for="emEmail">E-Mail</label>
+              <input class="inp" id="emEmail" type="email" placeholder="mitarbeiter@email.de" inputmode="email" autocomplete="off" /></div>
+            <div class="field"><label for="emPw">Passwort (vergibst du, gib es dem Mitarbeiter)</label>
+              <input class="inp" id="emPw" type="text" placeholder="Min. 6 Zeichen" autocomplete="off" /></div>
+            <div class="field"><label>Studios zuordnen</label>
+              <div class="studio-checks" id="emStudios"></div></div>
+            <button class="btn btn-primary btn-sm" id="emCreate">Mitarbeiter anlegen</button>
+            <p class="em-saved" id="emCreateNote"></p>
+          </div>
+          <div class="card">
+            <h3>👥 Mitarbeiter</h3>
+            <p class="hint">Studios anpassen oder Zugang entfernen.</p>
+            <div id="empList"></div>
+          </div>
           <div class="card">
             <h3>📣 Ankündigung an alle</h3>
             <p class="hint">Erscheint sofort bei jedem Mitarbeiter im Portal.</p>
@@ -993,6 +1021,7 @@ function clearChatImg(){
    STATE
    ============================================================ */
 var session = null; // { uid, name, role, studio, email }
+var _registering = false; // verhindert vorzeitiges Ausloggen während der Chef-Registrierung
 var currentChannel = 'allgemein';
 var currentView = 'chat';
 var cachedTodos = {}; // studioKey -> [{...}]
@@ -1026,19 +1055,6 @@ var regRole = 'mitarbeiter';
     lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
   });
 
-  // Tab-Wechsel
-  $('tabLogin').addEventListener('click', function(){ setAuthMode('login'); });
-  $('tabRegister').addEventListener('click', function(){ setAuthMode('register'); });
-
-  // Rollenwahl
-  $('rolePick').addEventListener('click', function(e){
-    var opt = e.target.closest('.role-opt'); if(!opt) return;
-    regRole = opt.dataset.role;
-    document.querySelectorAll('.role-opt').forEach(function(o){ o.classList.toggle('active', o===opt); });
-    $('rgStudioWrap').style.display = regRole==='mitarbeiter' ? 'block' : 'none';
-    $('rgPinWrap').style.display    = regRole==='chef'        ? 'block' : 'none';
-  });
-
   // Login
   $('loginBtn').addEventListener('click', doLogin);
   [$('lgEmail'),$('lgPw')].forEach(function(i){
@@ -1054,26 +1070,28 @@ var regRole = 'mitarbeiter';
       .catch(function(e){ $('loginErr').textContent = authErrMsg(e.code); });
   });
 
-  // Registrierung
+  // Registrierung gibt es NUR als Chef-Zugang (über #chef). Mitarbeiter legt der Chef im Portal an.
   $('registerBtn').addEventListener('click', doRegister);
-  [$('rgEmail'),$('rgPw'),$('rgPw2')].forEach(function(i){
-    i.addEventListener('keydown', function(e){ if(e.key==='Enter') doRegister(); });
+  [$('rgEmail'),$('rgPw'),$('rgPw2'),$('rgPin')].forEach(function(i){
+    if(i) i.addEventListener('keydown', function(e){ if(e.key==='Enter') doRegister(); });
   });
 
-  // #chef Hash → direkt Chef-Tab vorauswählen
   if(location.hash.toLowerCase()==='#chef'){
+    // Chef-Konto anlegen (einmalig für die Leitung)
+    regRole='chef';
+    $('rolePick').style.display='none';
+    $('rgStudioWrap').style.display='none';
+    $('rgPinWrap').style.display='block';
+    $('loginSub') && ($('loginSub').textContent='Chef-Zugang');
     setAuthMode('register');
-    document.querySelector('.role-opt[data-role="chef"]').click();
+  } else {
+    setAuthMode('login');
   }
 })();
 
 function setAuthMode(mode){
   $('loginForm').style.display    = mode==='login'    ? 'block' : 'none';
   $('registerForm').style.display = mode==='register' ? 'block' : 'none';
-  $('tabLogin').classList.toggle('active', mode==='login');
-  $('tabRegister').classList.toggle('active', mode==='register');
-  $('tabLogin').setAttribute('aria-selected', String(mode==='login'));
-  $('tabRegister').setAttribute('aria-selected', String(mode==='register'));
   $('loginErr').textContent = '';
   $('regErr').textContent = '';
 }
@@ -1108,17 +1126,36 @@ function doRegister(){
   if(regRole==='chef' && pin!==CHEF_PIN){ $('regErr').textContent='Falscher Chef-Code.'; return; }
 
   var btn=$('registerBtn'); btn.disabled=true; btn.textContent='…';
+  _registering=true;
   auth.createUserWithEmailAndPassword(email, pw)
     .then(function(cred){
-      return db.collection('users').doc(cred.user.uid).set({
+      var uid=cred.user.uid;
+      return db.collection('users').doc(uid).set({
         name:name, email:email, role:regRole,
         studios:studios, studio:studios[0]||null, createdAt:Date.now()
+      }).then(function(){
+        return db.collection('users').doc(uid).get().then(function(doc){
+          _registering=false;
+          enterApp(uid, doc.data());
+        });
       });
     })
     .catch(function(e){
+      _registering=false;
       $('regErr').textContent = authErrMsg(e.code);
       btn.disabled=false; btn.textContent='Konto erstellen';
     });
+}
+
+/* Gemeinsamer App-Einstieg (verhindert doppeltes Starten) */
+function enterApp(uid, data){
+  if(session || !data) return;
+  session = Object.assign({ uid:uid }, data);
+  session.studios = (session.studios && session.studios.length)
+    ? session.studios : (session.studio ? [session.studio] : []);
+  session.studioKeys = session.studios.map(studioKey);
+  $('authWrap').classList.remove('show');
+  showApp();
 }
 
 /* ============================================================
@@ -1130,19 +1167,15 @@ auth.onAuthStateChanged(function(user){
     db.collection('users').doc(user.uid).get()
       .then(function(doc){
         if(doc.exists){
-          session = Object.assign({ uid:user.uid }, doc.data());
-          // Mehrere Studios unterstützen (alte Konten haben evtl. nur 'studio')
-          session.studios = (session.studios && session.studios.length)
-            ? session.studios
-            : (session.studio ? [session.studio] : []);
-          session.studioKeys = session.studios.map(studioKey);
-          $('authWrap').classList.remove('show');
-          showApp();
+          enterApp(user.uid, doc.data());
+        } else if(_registering){
+          // Profil wird gerade angelegt – nicht ausloggen, doRegister übernimmt
+          return;
         } else {
           auth.signOut();
           $('authWrap').classList.add('show');
-          $('loginErr').textContent = 'Kein Profil gefunden. Bitte registrieren.';
-          setAuthMode('register');
+          setAuthMode('login');
+          $('loginErr').textContent = 'Kein Zugang (mehr) hinterlegt. Bitte beim Chef melden.';
         }
       })
       .catch(function(e){
@@ -1171,7 +1204,7 @@ function showApp(){
   buildNav();
   buildChannels();
   buildMaterialSelect();
-  if(session.role==='chef'){ buildChefSelects(); restoreDrafts(); }
+  if(session.role==='chef'){ buildChefSelects(); buildEmpStudios(); listenEmployees(); restoreDrafts(); }
   bindActions();
   startListeners();
   initMessaging();
@@ -1363,6 +1396,125 @@ function buildMaterialSelect(){
 }
 
 /* ============================================================
+   MITARBEITERVERWALTUNG (nur Chef)
+   ============================================================ */
+var _empUnsub=null;
+
+function buildEmpStudios(){
+  var wrap=$('emStudios'); if(!wrap) return;
+  wrap.innerHTML='';
+  STUDIOS.forEach(function(s){
+    var lab=document.createElement('label'); lab.className='studio-check';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.value=s;
+    cb.addEventListener('change',function(){ lab.classList.toggle('on',cb.checked); });
+    var span=document.createElement('span'); span.textContent=s;
+    lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
+  });
+}
+
+/* Sekundäre Firebase-App: legt den neuen Nutzer an, ohne den Chef auszuloggen */
+function secondaryApp(){
+  try{ return firebase.app('worker'); }
+  catch(e){ return firebase.initializeApp(FIREBASE_CONFIG,'worker'); }
+}
+
+function createEmployee(){
+  var name=$('emName').value.trim();
+  var email=$('emEmail').value.trim();
+  var pw=$('emPw').value;
+  var studios=Array.prototype.slice.call($('emStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; });
+  var note=$('emCreateNote'); note.style.color='#ff8a8a';
+  if(!name||!email||!pw){ note.textContent='Bitte Name, E-Mail und Passwort ausfüllen.'; return; }
+  if(pw.length<6){ note.textContent='Passwort muss mind. 6 Zeichen haben.'; return; }
+  if(!studios.length){ note.textContent='Bitte mindestens ein Studio zuordnen.'; return; }
+  var btn=$('emCreate'); btn.disabled=true; btn.textContent='…';
+  var sec=secondaryApp();
+  sec.auth().createUserWithEmailAndPassword(email,pw)
+    .then(function(cred){
+      return db.collection('users').doc(cred.user.uid).set({
+        name:name, email:email, role:'mitarbeiter',
+        studios:studios, studio:studios[0]||null,
+        createdAt:Date.now(), createdBy:session.uid
+      }).then(function(){ return sec.auth().signOut(); });
+    })
+    .then(function(){
+      note.style.color='var(--accent-d)';
+      note.textContent='✓ '+name+' angelegt. Zugang: '+email+' · Passwort: '+pw;
+      $('emName').value=''; $('emEmail').value=''; $('emPw').value='';
+      $('emStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
+      btn.disabled=false; btn.textContent='Mitarbeiter anlegen';
+    })
+    .catch(function(e){
+      note.textContent=authErrMsg(e.code)||e.message;
+      btn.disabled=false; btn.textContent='Mitarbeiter anlegen';
+      try{ sec.auth().signOut(); }catch(_){}
+    });
+}
+
+function listenEmployees(){
+  if(_empUnsub){ _empUnsub(); _empUnsub=null; }
+  _empUnsub=db.collection('users').where('role','==','mitarbeiter')
+    .onSnapshot(function(snap){
+      var emps=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
+      emps.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+      renderEmployees(emps);
+    }, function(e){ console.error('Mitarbeiter:',e.message); });
+}
+
+function renderEmployees(emps){
+  var box=$('empList'); if(!box) return;
+  if(!emps.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Noch keine Mitarbeiter angelegt.</p>'; return; }
+  box.innerHTML=emps.map(function(e){
+    var studios=(e.studios&&e.studios.length)?e.studios.join(', '):(e.studio||'—');
+    return '<div class="emp" data-uid="'+esc(e.uid)+'">'+
+      '<div class="emp-info"><b>'+esc(e.name||'?')+'</b>'+
+      '<div class="em-mail">'+esc(e.email||'')+'</div>'+
+      '<div class="em-studios">'+esc(studios)+'</div>'+
+      '<div class="emp-edit" style="display:none"><div class="studio-checks"></div>'+
+      '<button class="btn btn-primary btn-sm em-save" style="margin-top:8px">Studios speichern</button></div>'+
+      '</div>'+
+      '<div class="emp-actions">'+
+      '<button class="btn btn-ghost btn-sm em-edit">Studios</button>'+
+      '<button class="btn btn-danger btn-sm em-del" aria-label="entfernen">✕</button>'+
+      '</div></div>';
+  }).join('');
+  box.querySelectorAll('.emp').forEach(function(node){
+    var uid=node.dataset.uid;
+    var emp=emps.filter(function(x){ return x.uid===uid; })[0];
+    node.querySelector('.em-edit').addEventListener('click',function(){
+      var ed=node.querySelector('.emp-edit');
+      var open=ed.style.display==='none';
+      ed.style.display=open?'block':'none';
+      if(open){
+        var cont=ed.querySelector('.studio-checks'); cont.innerHTML='';
+        var cur=emp.studios||(emp.studio?[emp.studio]:[]);
+        STUDIOS.forEach(function(s){
+          var on=cur.indexOf(s)>=0;
+          var lab=document.createElement('label'); lab.className='studio-check'+(on?' on':'');
+          var cb=document.createElement('input'); cb.type='checkbox'; cb.value=s; cb.checked=on;
+          cb.addEventListener('change',function(){ lab.classList.toggle('on',cb.checked); });
+          var span=document.createElement('span'); span.textContent=s;
+          lab.appendChild(cb); lab.appendChild(span); cont.appendChild(lab);
+        });
+      }
+    });
+    node.querySelector('.em-save').addEventListener('click',function(){
+      var sel=Array.prototype.slice.call(node.querySelectorAll('.emp-edit input:checked')).map(function(c){ return c.value; });
+      if(!sel.length){ toast('Mindestens ein Studio wählen.',true); return; }
+      db.collection('users').doc(uid).update({ studios:sel, studio:sel[0] })
+        .then(function(){ toast('Studios aktualisiert ✓'); })
+        .catch(function(e){ toast('Fehler: '+e.message,true); });
+    });
+    node.querySelector('.em-del').addEventListener('click',function(){
+      if(!confirm('Zugang von '+(emp.name||'')+' entfernen? Anmeldung ist dann nicht mehr möglich.')) return;
+      db.collection('users').doc(uid).delete()
+        .then(function(){ toast('Mitarbeiter entfernt ✓'); })
+        .catch(function(e){ toast('Fehler: '+e.message,true); });
+    });
+  });
+}
+
+/* ============================================================
    FIRESTORE-LISTENER
    ============================================================ */
 function startListeners(){
@@ -1376,6 +1528,7 @@ function stopListeners(){
   _todosUnsubs.forEach(function(u){ u(); }); _todosUnsubs=[];
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
+  if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   _matStudioKey=null;
 }
 
@@ -1823,6 +1976,9 @@ function bindActions(){
   });
 
   if(session.role==='chef'){
+    // Mitarbeiter anlegen
+    $('emCreate').addEventListener('click', createEmployee);
+
     // Entwürfe automatisch zwischenspeichern
     ['bcText','ntTitle','ntDesc'].forEach(function(idd){
       var el=$(idd); if(el) el.addEventListener('input', saveDraft);
