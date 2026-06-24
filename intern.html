@@ -631,17 +631,19 @@ var FIREBASE_CONFIG = {
         <div class="view-head"><h2>Dokumente</h2><p>Wichtige Dateien – pro Studio.</p></div>
         <div class="scroll-area">
           <div class="card" id="docUploadCard" style="display:none">
-            <h3>⬆️ Dokument hochladen</h3>
-            <p class="hint">Datei (PDF, Word, Bild …) für ein oder mehrere Studios.</p>
+            <h3>⬆️ Dokument hinzufügen</h3>
+            <p class="hint">Kleine Datei (bis ~0,7 MB, z. B. PDF/Bild) direkt hochladen – oder für große Dateien unten einen Link (Google Drive/Dropbox) einfügen.</p>
             <input type="file" class="hidden-file" id="docFile" />
             <button class="btn btn-ghost btn-sm" id="docPick" style="width:100%">📎 Datei wählen</button>
             <p id="docPicked" style="font-size:.84rem;color:var(--text-2);margin:8px 0 0"></p>
             <div class="field" style="margin-top:12px"><label for="docName">Titel (optional)</label>
               <input class="inp" id="docName" type="text" placeholder="z. B. Hygieneplan 2026" maxlength="80" /></div>
+            <div class="field"><label for="docLink">…oder Link statt Datei (für große Dateien)</label>
+              <input class="inp" id="docLink" type="url" placeholder="https://drive.google.com/…" /></div>
             <div class="field"><label>Für welche Studios?</label>
               <label class="studio-check" id="docAllWrap"><input type="checkbox" id="docAll" /><span><b>Alle Studios</b></span></label>
               <div class="studio-checks" id="docStudios"></div></div>
-            <button class="btn btn-primary btn-sm" id="docUpload">Hochladen</button>
+            <button class="btn btn-primary btn-sm" id="docUpload">Hinzufügen</button>
             <p class="em-saved" id="docNote"></p>
           </div>
           <div id="docList"></div>
@@ -1596,37 +1598,67 @@ function buildDocStudios(){
 
 function uploadDoc(){
   var note=$('docNote'); note.style.color='#ff8a8a';
-  if(!storage){ note.textContent='Storage ist nicht aktiviert (siehe Anleitung Phase 2).'; return; }
-  var file=_pendingDocFile;
-  if(!file){ note.textContent='Bitte zuerst eine Datei wählen.'; return; }
   var all=$('docAll').checked;
   var studios=all?STUDIOS.map(studioKey):Array.prototype.slice.call($('docStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; });
   if(!studios.length){ note.textContent='Bitte mindestens ein Studio wählen.'; return; }
-  var name=$('docName').value.trim()||file.name;
-  var id=uid(), path='documents/'+id+'/'+file.name;
-  var btn=$('docUpload'); btn.disabled=true;
-  note.style.color='var(--text-2)'; note.textContent='Hochladen … 0%';
-  var task=storage.ref(path).put(file);
-  task.on('state_changed', function(s){
-    note.textContent='Hochladen … '+Math.round(s.bytesTransferred/s.totalBytes*100)+'%';
-  }, function(err){
-    note.style.color='#ff8a8a'; note.textContent='Fehler: '+err.message; btn.disabled=false;
-  }, function(){
-    task.snapshot.ref.getDownloadURL().then(function(url){
-      return db.collection('documents').doc(id).set({
-        name:name, fileName:file.name, url:url, path:path,
-        size:file.size, type:file.type||'',
-        studios: all?'all':studios,
-        uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
-      });
+  var target=all?'all':studios;
+  var link=$('docLink').value.trim();
+  var file=_pendingDocFile;
+  var name=$('docName').value.trim();
+  var btn=$('docUpload');
+  function resetForm(){
+    _pendingDocFile=null; $('docFile').value=''; $('docPicked').textContent='';
+    $('docName').value=''; $('docLink').value='';
+    $('docAll').checked=false; $('docAllWrap').classList.remove('on');
+    $('docStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
+  }
+
+  // 1) Link-Dokument (für große Dateien, unbegrenzt & kostenlos)
+  if(link){
+    btn.disabled=true; note.style.color='var(--text-2)'; note.textContent='Wird gespeichert …';
+    db.collection('documents').add({
+      name:name||link, kind:'link', url:link,
+      studios:target, uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
+    }).then(function(){ note.style.color='var(--accent-d)'; note.textContent='✓ Link hinzugefügt.'; resetForm(); btn.disabled=false; })
+      .catch(function(e){ note.style.color='#ff8a8a'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
+    return;
+  }
+
+  // 2) Datei direkt (kostenlos in der Datenbank, bis ~0,7 MB)
+  if(!file){ note.textContent='Bitte Datei wählen oder Link einfügen.'; return; }
+  name=name||file.name;
+  btn.disabled=true; note.style.color='var(--text-2)'; note.textContent='Wird vorbereitet …';
+
+  function store(dataUrl){
+    if(dataUrl.length>950000){
+      note.style.color='#ff8a8a';
+      note.textContent='Datei zu groß für den kostenlosen Upload. Bitte als Link (Google Drive) einfügen.';
+      btn.disabled=false; return;
+    }
+    var id=uid();
+    db.collection('documents').doc(id).set({
+      name:name, fileName:file.name, kind:'file', size:file.size, type:file.type||'',
+      studios:target, uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
     }).then(function(){
-      note.style.color='var(--accent-d)'; note.textContent='✓ Hochgeladen.';
-      _pendingDocFile=null; $('docFile').value=''; $('docPicked').textContent=''; $('docName').value='';
-      $('docAll').checked=false; $('docAllWrap').classList.remove('on');
-      $('docStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
-      btn.disabled=false;
+      return db.collection('documentData').doc(id).set({ data:dataUrl });
+    }).then(function(){
+      note.style.color='var(--accent-d)'; note.textContent='✓ Hinzugefügt.'; resetForm(); btn.disabled=false;
     }).catch(function(e){ note.style.color='#ff8a8a'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
-  });
+  }
+
+  if(/^image\//.test(file.type)){
+    fileToCompressedDataURL(file).then(store).catch(function(e){ note.style.color='#ff8a8a'; note.textContent=e.message; btn.disabled=false; });
+  } else {
+    if(file.size>720000){
+      note.style.color='#ff8a8a';
+      note.textContent='Datei zu groß (max ~0,7 MB). Bitte als Link (Google Drive) einfügen.';
+      btn.disabled=false; return;
+    }
+    var r=new FileReader();
+    r.onerror=function(){ note.style.color='#ff8a8a'; note.textContent='Datei konnte nicht gelesen werden.'; btn.disabled=false; };
+    r.onload=function(){ store(r.result); };
+    r.readAsDataURL(file);
+  }
 }
 
 function listenDocs(){
@@ -1653,22 +1685,37 @@ function renderDocs(docs){
   if(!list.length){ box.innerHTML=emptyHTML('Keine Dokumente','Hier erscheinen Dateien von der Leitung.'); return; }
   var chef=session.role==='chef';
   box.innerHTML=list.map(function(d){
+    var meta=docStudiosLabel(d)+' · '+(d.kind==='link'?'Link':fmtSize(d.size))+' · '+fmtTime(d.ts);
+    var openBtn=(d.kind==='link')
+      ? '<a class="btn btn-ghost btn-sm" href="'+esc(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'
+      : '<button class="btn btn-ghost btn-sm doc-open">Öffnen</button>';
     return '<div class="doc" data-id="'+esc(d.id)+'">'+
       '<div class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>'+
       '<div class="doc-info"><b>'+esc(d.name||d.fileName)+'</b>'+
-      '<div class="doc-meta">'+esc(docStudiosLabel(d))+' · '+fmtSize(d.size)+' · '+fmtTime(d.ts)+'</div></div>'+
-      '<div class="doc-actions">'+
-      '<a class="btn btn-ghost btn-sm" href="'+esc(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'+
+      '<div class="doc-meta">'+esc(meta)+'</div></div>'+
+      '<div class="doc-actions">'+ openBtn +
       (chef?'<button class="btn btn-ghost btn-sm doc-task">Als Aufgabe</button><button class="btn btn-danger btn-sm doc-del" aria-label="löschen">✕</button>':'')+
       '</div></div>';
   }).join('');
-  if(chef){
-    box.querySelectorAll('.doc').forEach(function(node){
-      var id=node.dataset.id, d=list.filter(function(x){ return x.id===id; })[0];
+  box.querySelectorAll('.doc').forEach(function(node){
+    var id=node.dataset.id, d=list.filter(function(x){ return x.id===id; })[0];
+    var op=node.querySelector('.doc-open'); if(op) op.addEventListener('click',function(){ openDocFile(d); });
+    if(chef){
       var t=node.querySelector('.doc-task'); if(t) t.addEventListener('click',function(){ docToTodo(d); });
       var del=node.querySelector('.doc-del'); if(del) del.addEventListener('click',function(){ deleteDoc(d); });
-    });
-  }
+    }
+  });
+}
+
+/* In der Datenbank gespeicherte Datei herunterladen/öffnen */
+function openDocFile(d){
+  toast('Wird geöffnet …');
+  db.collection('documentData').doc(d.id).get().then(function(doc){
+    if(!doc.exists || !doc.data().data){ toast('Datei nicht gefunden.',true); return; }
+    var a=document.createElement('a'); a.href=doc.data().data;
+    a.download=d.fileName||d.name||'dokument';
+    document.body.appendChild(a); a.click(); a.remove();
+  }).catch(function(e){ toast('Fehler: '+e.message,true); });
 }
 
 function docToTodo(d){
@@ -1677,8 +1724,9 @@ function docToTodo(d){
   studios.forEach(function(sk){
     var ref=db.collection('studios').doc(sk).collection('todos').doc();
     batch.set(ref,{
-      title:'📄 '+(d.name||d.fileName), desc:'Dokument bearbeiten/abarbeiten.',
-      docUrl:d.url, done:false, doneBy:null, doneAt:null,
+      title:'📄 '+(d.name||d.fileName),
+      desc:(d.kind==='link'?'Dokument öffnen und abarbeiten.':'Dokument im Tab „Dokumente" abarbeiten.'),
+      docUrl:(d.kind==='link'?d.url:null), done:false, doneBy:null, doneAt:null,
       createdBy:session.name, createdByUid:session.uid, ts:Date.now()
     });
   });
@@ -1689,7 +1737,7 @@ function docToTodo(d){
 function deleteDoc(d){
   if(!confirm('Dokument „'+(d.name||d.fileName)+'" löschen?')) return;
   db.collection('documents').doc(d.id).delete().then(function(){
-    if(storage && d.path) storage.ref(d.path).delete().catch(function(){});
+    if(d.kind!=='link') db.collection('documentData').doc(d.id).delete().catch(function(){});
     toast('Dokument gelöscht ✓');
   }).catch(function(e){ toast('Fehler: '+e.message,true); });
 }

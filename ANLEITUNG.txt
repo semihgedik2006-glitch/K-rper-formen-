@@ -84,15 +84,19 @@ und nur der Chef Aufgaben, Infos, Mitarbeiter und Dokumente verwalten darf.
 
 
 ----------------------------------------------------------------
- 6) DOKUMENTE-UPLOAD AKTIVIEREN (Firebase Storage)
+ 6) DOKUMENTE (kostenlos, KEIN Storage/Blaze noetig)
 ----------------------------------------------------------------
-1. Build -> Storage -> "Jetzt starten" / "Get started"
-   - Region europe-west -> aktivieren
-2. Storage -> Tab "Regeln" (Rules)
-   - Inhalt der Datei storage.rules hineinkopieren -> Veroeffentlichen
-3. Fertig: Im Tab "Dokumente" kann der Chef jetzt Dateien hochladen
-   (PDF/Word/Bilder), Studios zuordnen oder "Als Aufgabe" senden.
-   Max. 20 MB pro Datei.
+Funktioniert automatisch, sobald die firestore.rules aus Schritt 3
+veroeffentlicht sind (die enthalten jetzt "documents" + "documentData").
+
+So funktioniert es im Tab "Dokumente" (als Chef):
+- Kleine Datei (bis ca. 0,7 MB, z. B. PDF/Bild) -> "Datei waehlen" -> direkt
+  in der Datenbank gespeichert.
+- Grosse Datei -> in Google Drive/Dropbox hochladen, Freigabe-Link kopieren,
+  unten ins Feld "...oder Link statt Datei" einfuegen.
+- Studios anhaken, optional "Als Aufgabe" -> wird in den Studios zur To-do.
+
+Firebase Storage und die Datei storage.rules werden NICHT gebraucht.
 
 
 ----------------------------------------------------------------
@@ -156,7 +160,7 @@ D) In der App oben im Chat auf "Benachrichtigungen aktivieren" tippen.
 [ ] Firestore angelegt + firestore.rules veroeffentlicht
 [ ] Chef-Konto ueber #chef angelegt
 [ ] Mitarbeiter im Chef-Bereich angelegt
-[ ] Storage an + storage.rules veroeffentlicht (fuer Dokumente)
+[ ] Dokumente laufen ueber firestore.rules (kein Storage noetig)
 [ ] (optional) Google Sheets verbunden
 [ ] (optional) Push: Blaze + functions deploy
 

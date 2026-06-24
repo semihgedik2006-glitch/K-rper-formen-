@@ -62,8 +62,13 @@ service cloud.firestore {
       allow write: if signedIn();
     }
 
-    // ── Dokumente (Metadaten; die Dateien selbst liegen in Storage) ──
+    // ── Dokumente (Metadaten) ──
     match /documents/{docId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isChef();
+    }
+    // ── Dokument-Inhalte (kleine Dateien direkt in der Datenbank, kostenlos) ──
+    match /documentData/{docId} {
       allow read: if signedIn();
       allow create, update, delete: if isChef();
     }
