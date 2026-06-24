@@ -9,6 +9,34 @@
 - Wegen dieser Änderung müssen die **`firestore.rules` neu veröffentlicht** werden
   (sie erlauben dem Chef jetzt, Mitarbeiter-Profile zu verwalten).
 
+## Phase 2: Dokumente & Google Sheets
+
+### A) Dokumente-Ordner (Datei-Upload)
+Neuer Tab **Dokumente**. Der **Chef** lädt Dateien (PDF, Word, Bilder …) hoch,
+wählt die Studios und kann ein Dokument auch **„Als Aufgabe"** an Studios schicken
+(erscheint dann als To-do mit Link). Mitarbeiter sehen/öffnen die Dokumente ihrer Studios.
+
+**Einrichtung in Firebase (Console → Projekt formenchat):**
+1. **Storage** → „Jetzt starten" → Region `europe-west` → aktivieren.
+2. **Storage → Regeln** → Inhalt von **`storage.rules`** einfügen → Veröffentlichen.
+3. **Firestore → Regeln** → die aktualisierte **`firestore.rules`** veröffentlichen
+   (enthält jetzt die `documents`-Sammlung).
+
+> Hinweis: Storage gehört zum Blaze-Plan (hast du schon). Datei-Limit aktuell 20 MB.
+
+### B) Material live in Google Sheets
+1. Neue Google-Tabelle öffnen → **Erweiterungen → Apps Script**.
+2. Inhalt von **`MATERIAL-SHEETS.gs`** einfügen, speichern.
+3. **Bereitstellen → Neue Bereitstellung → Web-App** (Ausführen als „Ich",
+   Zugriff „Jeder") → **Web-App-URL kopieren**.
+4. In `intern.html` oben einsetzen: `var SHEETS_WEBHOOK_URL = "DEINE_URL";`
+
+Danach landet **jede Material-Änderung automatisch** im Blatt „Material"
+(Spalten: Studio, Material, Vorhanden, Fehlt, Aktualisiert, von).
+Der Excel-Download bleibt zusätzlich erhalten.
+
+> Schick mir die Web-App-URL, dann trage ich sie für dich ein.
+
 ## Neu in dieser Version
 - **Wiederkehrende Aufgaben:** Chef kann eine Aufgabe als *täglich* oder *wöchentlich*
   markieren – sie steht nach Tag/Woche automatisch wieder offen da (kein Server nötig).

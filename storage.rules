@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// Firebase Storage – Regeln für den Dokumente-Ordner
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Dokumente: alle Eingeloggten dürfen lesen/herunterladen,
+    // hochladen/löschen darf nur der Chef. Max. 20 MB pro Datei.
+    match /documents/{docId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'chef'
+        && request.resource.size < 20 * 1024 * 1024;
+    }
+
+    // alles andere gesperrt
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

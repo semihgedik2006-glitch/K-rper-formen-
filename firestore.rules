@@ -62,6 +62,12 @@ service cloud.firestore {
       allow write: if signedIn();
     }
 
+    // ── Dokumente (Metadaten; die Dateien selbst liegen in Storage) ──
+    match /documents/{docId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isChef();
+    }
+
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {

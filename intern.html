@@ -437,7 +437,21 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .emp-info .em-studios{color:var(--accent-d);font-size:.82rem;margin-top:3px}
 .emp-actions{display:flex;gap:6px;flex-shrink:0}
 .emp .studio-checks{margin-top:10px}
-.em-saved{font-size:.78rem;color:var(--accent-d);min-height:1em}
+.em-saved{font-size:.78rem;color:var(--accent-d);min-height:1em;word-break:break-word}
+
+/* ── Dokumente ── */
+.doc{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--bg-2);
+  border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
+.doc .doc-ic{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:grid;place-items:center;
+  background:rgba(0,224,110,.12);color:var(--accent-2)}
+.doc .doc-ic svg{width:20px;height:20px}
+.doc-info{flex:1;min-width:0}
+.doc-info b{font-family:var(--font-head);font-size:1.02rem;display:block;word-break:break-word}
+.doc-info .doc-meta{color:var(--text-3);font-size:.78rem;margin-top:2px}
+.doc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:130px}
+.t-doc{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:.82rem;font-weight:600;
+  color:var(--accent-2);background:rgba(0,224,110,.1);border:1px solid rgba(0,224,110,.25);
+  padding:5px 11px;border-radius:999px}
 </style>
 </head>
 <body>
@@ -612,6 +626,28 @@ var FIREBASE_CONFIG = {
         </div>
       </section>
 
+      <!-- DOKUMENTE -->
+      <section class="view" id="view-docs">
+        <div class="view-head"><h2>Dokumente</h2><p>Wichtige Dateien – pro Studio.</p></div>
+        <div class="scroll-area">
+          <div class="card" id="docUploadCard" style="display:none">
+            <h3>⬆️ Dokument hochladen</h3>
+            <p class="hint">Datei (PDF, Word, Bild …) für ein oder mehrere Studios.</p>
+            <input type="file" class="hidden-file" id="docFile" />
+            <button class="btn btn-ghost btn-sm" id="docPick" style="width:100%">📎 Datei wählen</button>
+            <p id="docPicked" style="font-size:.84rem;color:var(--text-2);margin:8px 0 0"></p>
+            <div class="field" style="margin-top:12px"><label for="docName">Titel (optional)</label>
+              <input class="inp" id="docName" type="text" placeholder="z. B. Hygieneplan 2026" maxlength="80" /></div>
+            <div class="field"><label>Für welche Studios?</label>
+              <label class="studio-check" id="docAllWrap"><input type="checkbox" id="docAll" /><span><b>Alle Studios</b></span></label>
+              <div class="studio-checks" id="docStudios"></div></div>
+            <button class="btn btn-primary btn-sm" id="docUpload">Hochladen</button>
+            <p class="em-saved" id="docNote"></p>
+          </div>
+          <div id="docList"></div>
+        </div>
+      </section>
+
       <!-- CHEF -->
       <section class="view" id="view-chef">
         <div class="view-head"><h2>Chef-Bereich</h2><p>Nachrichten senden &amp; Aufgaben verteilen.</p></div>
@@ -697,6 +733,7 @@ var FIREBASE_CONFIG = {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <script>
 (function(){
@@ -739,6 +776,10 @@ var DEFAULT_MATERIALS = [
   "Desinfektionsmittel",
   "Unterwäsche S","Unterwäsche M","Unterwäsche L","Unterwäsche XL","Unterwäsche XXL"
 ];
+
+/* Google-Sheets-Live-Sync: URL der Apps-Script-Web-App (siehe MATERIAL-SHEETS.gs + Anleitung).
+   Solange leer: Material läuft normal, nur ohne automatische Google-Tabelle. */
+var SHEETS_WEBHOOK_URL = "";
 
 /* Firebase-Config – deine echten Projektdaten (Projekt: formenchat) */
 var FIREBASE_CONFIG = {
@@ -817,7 +858,7 @@ if(typeof firebase === 'undefined' || !firebase.initializeApp){
   return;
 }
 
-var auth, db;
+var auth, db, storage;
 try{
   firebase.initializeApp(FIREBASE_CONFIG);
   auth = firebase.auth();
@@ -830,6 +871,7 @@ try{
   });
   // Login auf dem Gerät merken (kein ständiges Neu-Anmelden auf dem Handy)
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+  try{ storage = firebase.storage(); }catch(_){ storage=null; }
   setLoadingStep('Schritt 3/3: Prüfe Anmeldung …');
 }catch(e){
   loadingError('Firebase-Fehler: '+e.message+'<br>Bitte Config prüfen.');
@@ -1204,7 +1246,10 @@ function showApp(){
   buildNav();
   buildChannels();
   buildMaterialSelect();
-  if(session.role==='chef'){ buildChefSelects(); buildEmpStudios(); listenEmployees(); restoreDrafts(); }
+  if(session.role==='chef'){
+    buildChefSelects(); buildEmpStudios(); listenEmployees(); restoreDrafts();
+    $('docUploadCard').style.display='block'; buildDocStudios();
+  }
   bindActions();
   startListeners();
   initMessaging();
@@ -1290,6 +1335,7 @@ var NAV = [
   {id:'todos', label:'Aufgaben', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
   {id:'material', label:'Material', icon:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>'},
+  {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
   {id:'chef',  label:'Chef',     icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>', chefOnly:true}
 ];
 function buildNav(){
@@ -1515,12 +1561,147 @@ function renderEmployees(emps){
 }
 
 /* ============================================================
+   DOKUMENTE (Firebase Storage)
+   ============================================================ */
+var _docsUnsub=null;
+var _pendingDocFile=null;
+
+function fmtSize(b){ b=b||0; return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'; }
+
+function buildDocStudios(){
+  var wrap=$('docStudios'); if(!wrap) return;
+  wrap.innerHTML='';
+  STUDIOS.forEach(function(s){
+    var lab=document.createElement('label'); lab.className='studio-check';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.value=studioKey(s);
+    cb.addEventListener('change',function(){
+      lab.classList.toggle('on',cb.checked);
+      if(!cb.checked){ $('docAll').checked=false; $('docAllWrap').classList.remove('on'); }
+    });
+    var span=document.createElement('span'); span.textContent=s;
+    lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
+  });
+  var all=$('docAll');
+  all.addEventListener('change',function(){
+    $('docAllWrap').classList.toggle('on',all.checked);
+    wrap.querySelectorAll('input').forEach(function(cb){ cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked); });
+  });
+  $('docPick').addEventListener('click',function(){ $('docFile').click(); });
+  $('docFile').addEventListener('change',function(){
+    _pendingDocFile=(this.files&&this.files[0])||null;
+    $('docPicked').textContent=_pendingDocFile?('Gewählt: '+_pendingDocFile.name+' ('+fmtSize(_pendingDocFile.size)+')'):'';
+  });
+  $('docUpload').addEventListener('click',uploadDoc);
+}
+
+function uploadDoc(){
+  var note=$('docNote'); note.style.color='#ff8a8a';
+  if(!storage){ note.textContent='Storage ist nicht aktiviert (siehe Anleitung Phase 2).'; return; }
+  var file=_pendingDocFile;
+  if(!file){ note.textContent='Bitte zuerst eine Datei wählen.'; return; }
+  var all=$('docAll').checked;
+  var studios=all?STUDIOS.map(studioKey):Array.prototype.slice.call($('docStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; });
+  if(!studios.length){ note.textContent='Bitte mindestens ein Studio wählen.'; return; }
+  var name=$('docName').value.trim()||file.name;
+  var id=uid(), path='documents/'+id+'/'+file.name;
+  var btn=$('docUpload'); btn.disabled=true;
+  note.style.color='var(--text-2)'; note.textContent='Hochladen … 0%';
+  var task=storage.ref(path).put(file);
+  task.on('state_changed', function(s){
+    note.textContent='Hochladen … '+Math.round(s.bytesTransferred/s.totalBytes*100)+'%';
+  }, function(err){
+    note.style.color='#ff8a8a'; note.textContent='Fehler: '+err.message; btn.disabled=false;
+  }, function(){
+    task.snapshot.ref.getDownloadURL().then(function(url){
+      return db.collection('documents').doc(id).set({
+        name:name, fileName:file.name, url:url, path:path,
+        size:file.size, type:file.type||'',
+        studios: all?'all':studios,
+        uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
+      });
+    }).then(function(){
+      note.style.color='var(--accent-d)'; note.textContent='✓ Hochgeladen.';
+      _pendingDocFile=null; $('docFile').value=''; $('docPicked').textContent=''; $('docName').value='';
+      $('docAll').checked=false; $('docAllWrap').classList.remove('on');
+      $('docStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
+      btn.disabled=false;
+    }).catch(function(e){ note.style.color='#ff8a8a'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
+  });
+}
+
+function listenDocs(){
+  if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
+  _docsUnsub=db.collection('documents').orderBy('ts','desc').limit(200)
+    .onSnapshot(function(snap){
+      renderDocs(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
+    }, function(e){ console.error('Dokumente:',e.message); });
+}
+
+function docVisible(d){
+  if(d.studios==='all'||!d.studios) return true;
+  if(session.role==='chef') return true;
+  return Array.isArray(d.studios) && d.studios.some(function(k){ return session.studioKeys.indexOf(k)>=0; });
+}
+function docStudiosLabel(d){
+  if(d.studios==='all'||!d.studios) return 'Alle Studios';
+  return d.studios.map(studioName).join(', ');
+}
+
+function renderDocs(docs){
+  var box=$('docList'); if(!box) return;
+  var list=docs.filter(docVisible);
+  if(!list.length){ box.innerHTML=emptyHTML('Keine Dokumente','Hier erscheinen Dateien von der Leitung.'); return; }
+  var chef=session.role==='chef';
+  box.innerHTML=list.map(function(d){
+    return '<div class="doc" data-id="'+esc(d.id)+'">'+
+      '<div class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>'+
+      '<div class="doc-info"><b>'+esc(d.name||d.fileName)+'</b>'+
+      '<div class="doc-meta">'+esc(docStudiosLabel(d))+' · '+fmtSize(d.size)+' · '+fmtTime(d.ts)+'</div></div>'+
+      '<div class="doc-actions">'+
+      '<a class="btn btn-ghost btn-sm" href="'+esc(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'+
+      (chef?'<button class="btn btn-ghost btn-sm doc-task">Als Aufgabe</button><button class="btn btn-danger btn-sm doc-del" aria-label="löschen">✕</button>':'')+
+      '</div></div>';
+  }).join('');
+  if(chef){
+    box.querySelectorAll('.doc').forEach(function(node){
+      var id=node.dataset.id, d=list.filter(function(x){ return x.id===id; })[0];
+      var t=node.querySelector('.doc-task'); if(t) t.addEventListener('click',function(){ docToTodo(d); });
+      var del=node.querySelector('.doc-del'); if(del) del.addEventListener('click',function(){ deleteDoc(d); });
+    });
+  }
+}
+
+function docToTodo(d){
+  var studios=(d.studios==='all'||!d.studios)?STUDIOS.map(studioKey):d.studios;
+  var batch=db.batch();
+  studios.forEach(function(sk){
+    var ref=db.collection('studios').doc(sk).collection('todos').doc();
+    batch.set(ref,{
+      title:'📄 '+(d.name||d.fileName), desc:'Dokument bearbeiten/abarbeiten.',
+      docUrl:d.url, done:false, doneBy:null, doneAt:null,
+      createdBy:session.name, createdByUid:session.uid, ts:Date.now()
+    });
+  });
+  batch.commit().then(function(){ toast('Als Aufgabe an '+studios.length+' Studio'+(studios.length>1?'s':'')+' ✓'); })
+    .catch(function(e){ toast('Fehler: '+e.message,true); });
+}
+
+function deleteDoc(d){
+  if(!confirm('Dokument „'+(d.name||d.fileName)+'" löschen?')) return;
+  db.collection('documents').doc(d.id).delete().then(function(){
+    if(storage && d.path) storage.ref(d.path).delete().catch(function(){});
+    toast('Dokument gelöscht ✓');
+  }).catch(function(e){ toast('Fehler: '+e.message,true); });
+}
+
+/* ============================================================
    FIRESTORE-LISTENER
    ============================================================ */
 function startListeners(){
   listenChannel(currentChannel);
   listenTodos();
   listenAnnouncements();
+  listenDocs();
 }
 
 function stopListeners(){
@@ -1529,6 +1710,7 @@ function stopListeners(){
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
+  if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
   _matStudioKey=null;
 }
 
@@ -1690,6 +1872,7 @@ function todoHTML(t,sk,chefView){
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
+    (t.docUrl?'<a class="t-doc" href="'+esc(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
     photoHtml+'</div>'+
     (chefView?'<button class="t-del" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>':'')+
@@ -1833,11 +2016,25 @@ function scheduleMaterialSave(){
 function saveMaterialNow(){
   if(!_matStudioKey) return;
   clearTimeout(_matSaveTimer);
-  db.collection('inventory').doc(_matStudioKey).set({
-    items:_matItems, updatedAt:Date.now(), updatedBy:session.name
+  var sk=_matStudioKey, items=_matItems.slice();
+  db.collection('inventory').doc(sk).set({
+    items:items, updatedAt:Date.now(), updatedBy:session.name
   }).then(function(){
     var s=$('matSaved'); if(s){ s.textContent='✓ Gespeichert'; setTimeout(function(){ s.style.opacity='0'; },1500); }
+    pushToSheets(sk, items);
   }).catch(function(e){ toast('Speicherfehler: '+e.message,true); });
+}
+
+/* Material live in eine Google-Tabelle pushen (Apps-Script-Web-App) */
+function pushToSheets(sk, items){
+  if(!SHEETS_WEBHOOK_URL) return;
+  try{
+    fetch(SHEETS_WEBHOOK_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({ studio:studioName(sk), studioKey:sk, items:items, updatedBy:session.name, ts:Date.now() })
+    }).catch(function(){});
+  }catch(e){}
 }
 function addMaterial(){
   var name=$('matNewName').value.trim(); if(!name) return;
