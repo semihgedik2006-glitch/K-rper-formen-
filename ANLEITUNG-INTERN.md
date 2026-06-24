@@ -1,5 +1,21 @@
 # StudioChat – Körperformen Team-Portal
 
+## Neu in dieser Version
+- **Wiederkehrende Aufgaben:** Chef kann eine Aufgabe als *täglich* oder *wöchentlich*
+  markieren – sie steht nach Tag/Woche automatisch wieder offen da (kein Server nötig).
+- **Aufgaben gezielt mehreren Studios** zuweisen (Checkboxen + „Alle").
+- **Material-Seite pro Studio:** jeder trägt vorhandene/fehlende Materialien ein
+  (live synchron). Chef hat einen **Excel-Export** über alle Studios.
+- **Auffällige Marker:** neue Nachricht/Info zeigt einen pulsierenden Punkt in der Navigation.
+- **Chef-Entwürfe** für Ankündigung/Aufgabe werden automatisch zwischengespeichert.
+
+> ⚠️ **Wichtig:** Wegen der neuen Material-Funktion musst du die **`firestore.rules`
+> neu veröffentlichen** (Firebase → Firestore → Regeln → Inhalt von `firestore.rules`
+> einfügen → Veröffentlichen). Sonst lässt sich Material nicht speichern.
+
+---
+
+
 Team-Chat (mit Fotos), Aufgaben pro Studio (mit Fotos), Ankündigungen,
 Push-Benachrichtigungen und sichere Firebase-Regeln.
 

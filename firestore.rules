@@ -52,6 +52,13 @@ service cloud.firestore {
       allow update, delete: if isChef();
     }
 
+    // ── Materialbestand pro Studio ──
+    // Jeder Eingeloggte darf den Bestand lesen und eintragen.
+    match /inventory/{studioKey} {
+      allow read: if signedIn();
+      allow write: if signedIn();
+    }
+
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {

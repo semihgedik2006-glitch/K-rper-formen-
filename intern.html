@@ -386,6 +386,45 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .confetti{position:fixed;top:-14px;width:9px;height:14px;z-index:300;pointer-events:none;
   border-radius:2px;animation:confFall linear forwards}
 @keyframes confFall{to{transform:translateY(106vh) rotate(720deg);opacity:.85}}
+
+/* ── Wiederhol-Badge bei Aufgaben ── */
+.t-rep{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--accent-2);
+  background:rgba(0,224,110,.12);padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+
+/* ── Auffälliger Unread-Marker auf Nav ── */
+.tab .ndot,.mobnav .ndot{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--warm);
+  display:none;animation:ndotPulse 1.5s infinite}
+.tab .ndot.show,.mobnav .ndot.show{display:block}
+.tab .ndot{right:13px;top:11px}
+.mobnav .ndot{top:5px;right:50%;transform:translateX(13px)}
+@keyframes ndotPulse{0%{box-shadow:0 0 0 0 rgba(255,107,53,.55)}70%{box-shadow:0 0 0 7px rgba(255,107,53,0)}100%{box-shadow:0 0 0 0 rgba(255,107,53,0)}}
+
+/* ── Entwurf zwischenspeichern ── */
+.draft-row{display:flex;gap:8px;align-items:center;margin-top:4px}
+.draft-note{font-size:.76rem;color:var(--text-3);flex:1}
+.draft-note b{color:var(--accent-d)}
+
+/* ── Material-Seite ── */
+.mat-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 16px}
+.mat-bar select{flex:1;min-width:160px}
+.mat-table{margin-top:4px}
+.mat-head,.mat-row{display:grid;grid-template-columns:1fr 78px 78px 34px;gap:8px;align-items:center}
+.mat-head{padding:0 0 8px;color:var(--text-3);font-size:.7rem;text-transform:uppercase;
+  letter-spacing:.5px;font-weight:700}
+.mat-head span:nth-child(2),.mat-head span:nth-child(3){text-align:center}
+.mat-row{padding:9px 0;border-top:1px solid var(--line)}
+.mat-name{font-weight:600;font-size:.95rem;word-break:break-word}
+.mat-row input.num{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
+  border-radius:9px;padding:7px 4px;color:var(--text);text-align:center;min-height:40px;font-size:15px}
+.mat-row input.num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,184,92,.13)}
+.mat-row input.need[data-warn="1"]{border-color:var(--warm);color:#ffb38c}
+.mat-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:1.1rem;
+  border-radius:8px;height:34px}
+.mat-del:hover{color:#ff8a8a;background:rgba(239,68,68,.1)}
+.mat-add{display:flex;gap:8px;margin-top:14px}
+.mat-add input{flex:1}
+.mat-saved{font-size:.78rem;color:var(--accent-d);min-height:1.1em;margin-top:10px;transition:opacity .3s}
 </style>
 </head>
 <body>
@@ -544,6 +583,26 @@ var FIREBASE_CONFIG = {
         <div class="scroll-area" id="annArea"></div>
       </section>
 
+      <!-- MATERIAL -->
+      <section class="view" id="view-material">
+        <div class="view-head"><h2>Material</h2><p>Bestand pro Studio – vorhanden &amp; fehlend eintragen.</p></div>
+        <div class="scroll-area">
+          <div class="mat-bar">
+            <select class="inp" id="matStudio"></select>
+            <button class="btn btn-ghost btn-sm" id="matExport" style="display:none">⬇️ Excel-Export (alle)</button>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="mat-head"><span>Material</span><span>Vorhanden</span><span>Fehlt</span><span></span></div>
+            <div class="mat-table" id="matTable"></div>
+            <div class="mat-add">
+              <input class="inp" id="matNewName" type="text" placeholder="Eigenes Material hinzufügen …" maxlength="60" />
+              <button class="btn btn-ghost btn-sm" id="matAdd">+ Hinzufügen</button>
+            </div>
+            <p class="mat-saved" id="matSaved"></p>
+          </div>
+        </div>
+      </section>
+
       <!-- CHEF -->
       <section class="view" id="view-chef">
         <div class="view-head"><h2>Chef-Bereich</h2><p>Nachrichten senden &amp; Aufgaben verteilen.</p></div>
@@ -554,6 +613,7 @@ var FIREBASE_CONFIG = {
             <div class="field"><textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea></div>
             <div class="field"><label for="bcTarget">Empfänger</label><select class="inp" id="bcTarget"></select></div>
             <button class="btn btn-primary btn-sm" id="bcSend">Ankündigung senden</button>
+            <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
           </div>
           <div class="card">
             <h3>✅ Neue Aufgabe erstellen</h3>
@@ -562,8 +622,15 @@ var FIREBASE_CONFIG = {
               <input class="inp" id="ntTitle" type="text" placeholder="z. B. Geräte desinfizieren" maxlength="120" /></div>
             <div class="field"><label for="ntDesc">Beschreibung (optional)</label>
               <textarea class="inp" id="ntDesc" placeholder="Details …" maxlength="1000"></textarea></div>
-            <div class="field"><label for="ntStudio">Für welches Studio?</label>
-              <select class="inp" id="ntStudio"></select></div>
+            <div class="field"><label>Für welche Studios?</label>
+              <label class="studio-check" style="margin-bottom:7px" id="ntAllWrap"><input type="checkbox" id="ntAllStudios" /><span><b>Alle Studios</b></span></label>
+              <div class="studio-checks" id="ntStudios"></div></div>
+            <div class="field"><label for="ntRepeat">Wiederholung</label>
+              <select class="inp" id="ntRepeat">
+                <option value="">Keine (einmalig)</option>
+                <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
+                <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
+              </select></div>
             <div class="field">
               <label>Foto (optional)</label>
               <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
@@ -574,6 +641,7 @@ var FIREBASE_CONFIG = {
               </div>
             </div>
             <button class="btn btn-primary btn-sm" id="ntAdd">Aufgabe erstellen</button>
+            <div class="draft-row"><p class="draft-note" id="ntDraftNote"></p></div>
           </div>
           <div class="card">
             <h3>📊 Übersicht aller Studios</h3>
@@ -627,6 +695,14 @@ var VAPID_KEY = "BG-Ibkh7PLobYuR7_q2HC63kh7krkKYDi7zUzIAjoiCddfGr1vwq0Kaq1yDNvP2
 /* Max. Bildgröße fürs kostenlose Speichern (in der Datenbank). Bilder werden
    automatisch auf diese Kantenlänge verkleinert und komprimiert. */
 var IMG_MAX_DIM = 1100;
+
+/* Standard-Materialien je Studio (können pro Studio ergänzt/gelöscht werden) */
+var DEFAULT_MATERIALS = [
+  "Arm-Manschetten (Paare)","Bein-Manschetten (Paare)","Po-Gurte",
+  "Kabel weiß (Paare)","Kabel blau (Paare)","Kabel schwarz (Paare)",
+  "Desinfektionsmittel",
+  "Unterwäsche S","Unterwäsche M","Unterwäsche L","Unterwäsche XL","Unterwäsche XXL"
+];
 
 /* Firebase-Config – deine echten Projektdaten (Projekt: formenchat) */
 var FIREBASE_CONFIG = {
@@ -808,6 +884,25 @@ function fireConfetti(){
     (function(el,ms){ setTimeout(function(){ el.remove(); }, ms); })(c,(dur+0.6)*1000);
   }
 }
+
+/* ── Wiederkehrende Aufgaben: „erledigt" gilt nur für die aktuelle Periode ── */
+function periodStart(rep){
+  var now=new Date();
+  if(rep==='weekly'){
+    var d=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    var day=(d.getDay()+6)%7; // Montag = 0
+    d.setDate(d.getDate()-day);
+    return d.getTime();
+  }
+  return new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(); // heute 00:00
+}
+function isDone(t){
+  if(t.recurring==='daily'||t.recurring==='weekly'){
+    return !!t.done && (t.doneAt||0) >= periodStart(t.recurring);
+  }
+  return !!t.done;
+}
+function repLabel(rep){ return rep==='daily'?'täglich':(rep==='weekly'?'wöchentlich':''); }
 function fmtTime(ts){
   if(!ts) return '';
   var d=new Date(ts), now=new Date();
@@ -901,6 +996,11 @@ var _pendingTaskImg = null;  // Bild für die nächste neue Aufgabe (Chef)
 var messaging = null;        // Firebase Cloud Messaging
 var _firstChatLoad = true;   // beim ersten Laden nicht benachrichtigen
 var _knownTodoIds = null;    // zum Erkennen wirklich neuer Aufgaben
+var unread = { chat:false, ann:false };  // auffällige Marker auf der Navigation
+var _matUnsub = null;        // Material-Listener
+var _matStudioKey = null;    // aktuell angezeigtes Studio in der Material-Ansicht
+var _matItems = [];          // aktuelle Material-Liste
+var _matSaveTimer = null;    // Debounce fürs Speichern
 
 /* ============================================================
    AUTH-SCREEN
@@ -1062,7 +1162,8 @@ function showApp(){
 
   buildNav();
   buildChannels();
-  if(session.role==='chef') buildChefSelects();
+  buildMaterialSelect();
+  if(session.role==='chef'){ buildChefSelects(); restoreDrafts(); }
   bindActions();
   startListeners();
   initMessaging();
@@ -1147,6 +1248,7 @@ var NAV = [
   {id:'chat',  label:'Chat',     icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
   {id:'todos', label:'Aufgaben', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
+  {id:'material', label:'Material', icon:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>'},
   {id:'chef',  label:'Chef',     icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>', chefOnly:true}
 ];
 function buildNav(){
@@ -1159,7 +1261,8 @@ function buildNav(){
       b.dataset.view=it.id;
       if(!isMob) b.className='tab';
       b.innerHTML=svg+'<span>'+it.label+'</span>'+
-        '<span class="badge" data-'+(isMob?'mb':'b')+'adge="'+it.id+'"></span>';
+        '<span class="badge" data-'+(isMob?'mb':'b')+'adge="'+it.id+'"></span>'+
+        '<span class="ndot" data-ndot="'+it.id+'"></span>';
       b.addEventListener('click',function(){ showView(it.id); });
       return b;
     }
@@ -1172,10 +1275,24 @@ function showView(id){
   currentView=id;
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
   document.querySelectorAll('[data-view]').forEach(function(t){ t.classList.toggle('active',t.dataset.view===id); });
+  // Unread-Marker beim Öffnen der Ansicht löschen
+  if(id==='chat') unread.chat=false;
+  if(id==='ann')  unread.ann=false;
+  updateNavMarkers();
   if(id==='chat'){
     setTimeout(scrollBottom,60);
     if(window.innerWidth>820){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
   }
+  if(id==='material') ensureMaterialLoaded();
+}
+
+/* Auffällige Marker (Punkte) auf der Navigation aktualisieren */
+function updateNavMarkers(){
+  var map={ chat:unread.chat, ann:unread.ann };
+  document.querySelectorAll('[data-ndot]').forEach(function(d){
+    var on = !!map[d.dataset.ndot] && currentView!==d.dataset.ndot;
+    d.classList.toggle('show', on);
+  });
 }
 
 /* ── Chat Channels ── */
@@ -1206,9 +1323,35 @@ function buildChefSelects(){
   var oa=document.createElement('option'); oa.value='all'; oa.textContent='Alle Mitarbeiter'; t.appendChild(oa);
   STUDIOS.forEach(function(s){ var o=document.createElement('option'); o.value=studioKey(s); o.textContent='Nur '+s; t.appendChild(o); });
 
-  var ns=$('ntStudio'); ns.innerHTML='';
-  var ob=document.createElement('option'); ob.value='all'; ob.textContent='Alle 15 Studios'; ns.appendChild(ob);
-  STUDIOS.forEach(function(s){ var o=document.createElement('option'); o.value=studioKey(s); o.textContent=s; ns.appendChild(o); });
+  // Aufgaben: Studio-Mehrfachauswahl (Checkboxen)
+  var ns=$('ntStudios'); ns.innerHTML='';
+  STUDIOS.forEach(function(s){
+    var lab=document.createElement('label'); lab.className='studio-check';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.value=studioKey(s);
+    cb.addEventListener('change',function(){
+      lab.classList.toggle('on',cb.checked);
+      if(!cb.checked){ $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on'); }
+    });
+    var span=document.createElement('span'); span.textContent=s;
+    lab.appendChild(cb); lab.appendChild(span); ns.appendChild(lab);
+  });
+  var all=$('ntAllStudios');
+  all.addEventListener('change',function(){
+    $('ntAllWrap').classList.toggle('on', all.checked);
+    ns.querySelectorAll('input').forEach(function(cb){
+      cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked);
+    });
+  });
+}
+
+/* Material: Studio-Auswahl (Chef: alle, Mitarbeiter: eigene) */
+function buildMaterialSelect(){
+  var sel=$('matStudio'); if(!sel) return;
+  sel.innerHTML='';
+  var list = session.role==='chef' ? STUDIOS : session.studios;
+  list.forEach(function(s){ var o=document.createElement('option'); o.value=studioKey(s); o.textContent=s; sel.appendChild(o); });
+  sel.onchange=function(){ loadMaterial(sel.value); };
+  if(session.role==='chef'){ var ex=$('matExport'); if(ex){ ex.style.display='inline-flex'; ex.onclick=exportMaterialExcel; } }
 }
 
 /* ============================================================
@@ -1224,6 +1367,8 @@ function stopListeners(){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
   _todosUnsubs.forEach(function(u){ u(); }); _todosUnsubs=[];
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
+  if(_matUnsub){ _matUnsub(); _matUnsub=null; }
+  _matStudioKey=null;
 }
 
 /* Chat: wechselt bei Kanalwechsel */
@@ -1239,6 +1384,7 @@ function listenChannel(channelId){
           var m=ch.doc.data();
           if(m.uid!==session.uid && (m.ts||0)>=startTs && (document.hidden || currentView!=='chat')){
             localNotify('Neue Nachricht von '+(m.name||''), m.text || (m.img?'📷 Foto':''));
+            unread.chat=true; updateNavMarkers();
           }
         });
       }
@@ -1281,8 +1427,22 @@ function listenTodoStudio(sk, notify){
 /* Ankündigungen */
 function listenAnnouncements(){
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
+  var first=true, startTs=Date.now();
   _annUnsub=db.collection('announcements').orderBy('ts','desc').limit(60)
     .onSnapshot(function(snap){
+      if(!first){
+        snap.docChanges().forEach(function(ch){
+          if(ch.type!=='added') return;
+          var a=ch.doc.data();
+          if((a.ts||0)<startTs || a.uid===session.uid) return;
+          var forMe = session.role==='chef' || !a.target || a.target==='all' || session.studioKeys.indexOf(a.target)>=0;
+          if(forMe){
+            unread.ann=true; updateNavMarkers();
+            if(document.hidden || currentView!=='ann') localNotify('📣 '+(a.from||'Leitung'), a.text||'');
+          }
+        });
+      }
+      first=false;
       renderAnnouncements(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
     }, function(e){ console.error('Ann:',e.message); });
 }
@@ -1338,8 +1498,8 @@ function renderTodos(){
     var html='';
     session.studioKeys.forEach(function(sk, idx){
       var sName=session.studios[idx];
-      var list=(cachedTodos[sk]||[]).slice().sort(function(a,b){ return (a.done-b.done)||(a.ts-b.ts); });
-      var done=list.filter(function(t){ return t.done; }).length, total=list.length;
+      var list=(cachedTodos[sk]||[]).slice().sort(function(a,b){ return (isDone(a)-isDone(b))||(a.ts-b.ts); });
+      var done=list.filter(isDone).length, total=list.length;
       var pct=total?Math.round(done/total*100):0;
       if(multi) html+='<h3 style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(sName)+'</h3>';
       if(total){
@@ -1357,14 +1517,17 @@ function renderTodos(){
 }
 
 function todoHTML(t,sk,chefView){
+  var done=isDone(t);
   var foot=['erstellt von '+esc(t.createdBy||'Chef')];
-  if(t.done&&t.doneBy) foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
+  if(done&&t.doneBy) foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
+  var rep=(t.recurring==='daily'||t.recurring==='weekly')
+    ? '<span class="t-rep">🔁 '+repLabel(t.recurring)+'</span>' : '';
   var photoHtml = t.photo
     ? '<img class="t-photo" data-zoom src="'+t.photo+'" alt="Foto zur Aufgabe" />'
     : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
-  return '<div class="todo'+(t.done?' done':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
+  return '<div class="todo'+(done?' done':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
-    '<div class="t-body"><div class="t-title">'+esc(t.title)+'</div>'+
+    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
     photoHtml+'</div>'+
@@ -1380,7 +1543,7 @@ function bindTodoClicks(area){
       var done=!node.classList.contains('done');
       if(done){
         var list=cachedTodos[sk]||[];
-        var openOthers=list.filter(function(t){ return !t.done && t.id!==id; }).length;
+        var openOthers=list.filter(function(t){ return !isDone(t) && t.id!==id; }).length;
         if(openOthers===0 && list.length>0){ fireConfetti(); toast('Alle Aufgaben erledigt! 🎉'); }
       }
       db.collection('studios').doc(sk).collection('todos').doc(id)
@@ -1422,7 +1585,7 @@ function renderStudioGrid(){
   var grid=$('studioGrid'); if(!grid) return;
   grid.innerHTML=STUDIOS.map(function(s){
     var sk=studioKey(s), list=cachedTodos[sk]||[];
-    var done=list.filter(function(t){ return t.done; }).length, total=list.length;
+    var done=list.filter(isDone).length, total=list.length;
     var pct=total?Math.round(done/total*100):0;
     return '<div class="studio-tile"><b>'+esc(s)+'</b>'+
       '<div class="mini"><i style="width:'+pct+'%"></i></div>'+
@@ -1439,12 +1602,130 @@ function updateBadges(){
   var open=0;
   if(session&&session.role!=='chef'){
     session.studioKeys.forEach(function(sk){
-      open += (cachedTodos[sk]||[]).filter(function(t){ return !t.done; }).length;
+      open += (cachedTodos[sk]||[]).filter(function(t){ return !isDone(t); }).length;
     });
   }
   document.querySelectorAll('[data-badge="todos"],[data-mbadge="todos"]').forEach(function(b){
     b.textContent=open; b.style.display=open?'grid':'none';
   });
+}
+
+/* ============================================================
+   MATERIAL-SEITE (Bestand pro Studio)
+   ============================================================ */
+function ensureMaterialLoaded(){
+  var sel=$('matStudio'); if(!sel||!sel.options.length) return;
+  if(!_matStudioKey) _matStudioKey=sel.value;
+  sel.value=_matStudioKey;
+  loadMaterial(_matStudioKey);
+}
+
+function loadMaterial(sk){
+  _matStudioKey=sk;
+  if(_matUnsub){ _matUnsub(); _matUnsub=null; }
+  _matUnsub=db.collection('inventory').doc(sk).onSnapshot(function(doc){
+    // Eigene Schreibvorgänge oder aktives Tippen nicht überschreiben
+    if(doc.metadata.hasPendingWrites) return;
+    if(document.activeElement && document.activeElement.closest && document.activeElement.closest('#matTable')) return;
+    var data=doc.exists?doc.data():null;
+    if(data && Array.isArray(data.items) && data.items.length){
+      _matItems=data.items.map(function(i){ return {name:i.name, have:i.have||0, need:i.need||0}; });
+    } else {
+      _matItems=DEFAULT_MATERIALS.map(function(n){ return {name:n, have:0, need:0}; });
+    }
+    renderMaterial();
+  }, function(e){ console.error('Material:',e.message); });
+}
+
+function renderMaterial(){
+  var tbl=$('matTable'); if(!tbl) return;
+  tbl.innerHTML=_matItems.map(function(it,idx){
+    var warn=(it.need||0)>0?' data-warn="1"':'';
+    return '<div class="mat-row">'+
+      '<div class="mat-name">'+esc(it.name)+'</div>'+
+      '<input class="num have" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="have" value="'+(it.have||0)+'" />'+
+      '<input class="num need" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="need" value="'+(it.need||0)+'"'+warn+' />'+
+      '<button class="mat-del" data-del="'+idx+'" title="Entfernen" aria-label="Entfernen">✕</button>'+
+    '</div>';
+  }).join('');
+  tbl.querySelectorAll('input.num').forEach(function(inp){
+    inp.addEventListener('input',function(){
+      var idx=+inp.dataset.idx, f=inp.dataset.f;
+      _matItems[idx][f]=Math.max(0, parseInt(inp.value,10)||0);
+      if(f==='need') inp.setAttribute('data-warn', _matItems[idx].need>0?'1':'0');
+      scheduleMaterialSave();
+    });
+  });
+  tbl.querySelectorAll('[data-del]').forEach(function(b){
+    b.addEventListener('click',function(){
+      _matItems.splice(+b.dataset.del,1); renderMaterial(); saveMaterialNow();
+    });
+  });
+}
+
+function scheduleMaterialSave(){
+  clearTimeout(_matSaveTimer);
+  var s=$('matSaved'); if(s){ s.textContent='Wird gespeichert …'; s.style.opacity='1'; }
+  _matSaveTimer=setTimeout(saveMaterialNow, 700);
+}
+function saveMaterialNow(){
+  if(!_matStudioKey) return;
+  clearTimeout(_matSaveTimer);
+  db.collection('inventory').doc(_matStudioKey).set({
+    items:_matItems, updatedAt:Date.now(), updatedBy:session.name
+  }).then(function(){
+    var s=$('matSaved'); if(s){ s.textContent='✓ Gespeichert'; setTimeout(function(){ s.style.opacity='0'; },1500); }
+  }).catch(function(e){ toast('Speicherfehler: '+e.message,true); });
+}
+function addMaterial(){
+  var name=$('matNewName').value.trim(); if(!name) return;
+  _matItems.push({name:name, have:0, need:0}); $('matNewName').value='';
+  renderMaterial(); saveMaterialNow();
+}
+
+/* Excel-Export aller Studios (öffnet sich direkt in Excel) */
+function exportMaterialExcel(){
+  toast('Export wird erstellt …');
+  db.collection('inventory').get().then(function(snap){
+    var map={}; snap.forEach(function(d){ map[d.id]=d.data(); });
+    var rows='<tr><th>Studio</th><th>Material</th><th>Vorhanden</th><th>Fehlt</th></tr>';
+    STUDIOS.forEach(function(s){
+      var sk=studioKey(s), data=map[sk];
+      var items=(data&&Array.isArray(data.items)&&data.items.length)
+        ? data.items : DEFAULT_MATERIALS.map(function(n){ return {name:n,have:0,need:0}; });
+      items.forEach(function(it){
+        rows+='<tr><td>'+esc(s)+'</td><td>'+esc(it.name)+'</td><td>'+(it.have||0)+'</td><td>'+(it.need||0)+'</td></tr>';
+      });
+    });
+    var html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head>'+
+      '<body><table border="1">'+rows+'</table></body></html>';
+    var blob=new Blob(['﻿'+html],{type:'application/vnd.ms-excel'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download='Material_Koerperformen.xls';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+  }).catch(function(e){ toast('Export-Fehler: '+e.message,true); });
+}
+
+/* ============================================================
+   ENTWÜRFE (Chef) – automatisch zwischenspeichern
+   ============================================================ */
+var DRAFT_KEY='kf_chef_draft';
+function saveDraft(){
+  if(!session || session.role!=='chef') return;
+  var d={ bc:$('bcText').value, ntTitle:$('ntTitle').value, ntDesc:$('ntDesc').value };
+  try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); }catch(e){}
+  var bn=$('bcDraftNote'); if(bn) bn.innerHTML = d.bc ? '<b>Entwurf gespeichert</b> – bleibt erhalten, bis du sendest.' : '';
+  var nn=$('ntDraftNote'); if(nn) nn.innerHTML = (d.ntTitle||d.ntDesc) ? '<b>Entwurf gespeichert</b> – bleibt erhalten, bis du sendest.' : '';
+}
+function restoreDrafts(){
+  try{
+    var d=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null'); if(!d) return;
+    if(d.bc) $('bcText').value=d.bc;
+    if(d.ntTitle) $('ntTitle').value=d.ntTitle;
+    if(d.ntDesc) $('ntDesc').value=d.ntDesc;
+    saveDraft();
+  }catch(e){}
 }
 
 /* ============================================================
@@ -1518,6 +1799,10 @@ function bindActions(){
   var nb=$('notifEnable');
   if(nb) nb.addEventListener('click',enablePush);
 
+  // Material: eigenes Item hinzufügen
+  var matAdd=$('matAdd'); if(matAdd) matAdd.addEventListener('click',addMaterial);
+  var matNew=$('matNewName'); if(matNew) matNew.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addMaterial(); } });
+
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){
     if(confirm('Abmelden?')){
@@ -1527,6 +1812,11 @@ function bindActions(){
   });
 
   if(session.role==='chef'){
+    // Entwürfe automatisch zwischenspeichern
+    ['bcText','ntTitle','ntDesc'].forEach(function(idd){
+      var el=$(idd); if(el) el.addEventListener('input', saveDraft);
+    });
+
     // Ankündigung
     $('bcSend').addEventListener('click',function(){
       var text=$('bcText').value.trim();
@@ -1534,7 +1824,7 @@ function bindActions(){
       db.collection('announcements').add({
         uid:session.uid, from:session.name, text:text,
         target:$('bcTarget').value, ts:Date.now()
-      }).then(function(){ $('bcText').value=''; toast('Ankündigung gesendet ✓'); })
+      }).then(function(){ $('bcText').value=''; saveDraft(); toast('Ankündigung gesendet ✓'); })
         .catch(function(e){ toast('Fehler: '+e.message,true); });
     });
 
@@ -1554,14 +1844,15 @@ function bindActions(){
       _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
     });
 
-    // Aufgabe erstellen
+    // Aufgabe erstellen (an ausgewählte Studios, optional wiederkehrend)
     $('ntAdd').addEventListener('click',function(){
       var title=$('ntTitle').value.trim();
       if(!title){ toast('Bitte Aufgabe eingeben.',true); return; }
+      var targets=Array.prototype.slice.call($('ntStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; });
+      if(!targets.length){ toast('Bitte mindestens ein Studio wählen.',true); return; }
       var desc=$('ntDesc').value.trim();
-      var target=$('ntStudio').value;
+      var recurring=$('ntRepeat').value||null;
       var photo=_pendingTaskImg;
-      var targets=target==='all'?STUDIOS.map(studioKey):[target];
       var batch=db.batch();
       targets.forEach(function(sk){
         var ref=db.collection('studios').doc(sk).collection('todos').doc();
@@ -1569,14 +1860,18 @@ function bindActions(){
           title:title, desc:desc, done:false, doneBy:null, doneAt:null,
           createdBy:session.name, createdByUid:session.uid, ts:Date.now()
         };
+        if(recurring) data.recurring=recurring;
         if(photo) data.photo=photo;
         batch.set(ref,data);
       });
       batch.commit()
         .then(function(){
-          $('ntTitle').value=''; $('ntDesc').value='';
+          $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value='';
+          $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');
+          $('ntStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
           _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
-          toast(target==='all'?('Aufgabe an alle '+STUDIOS.length+' Studios erstellt ✓'):'Aufgabe erstellt ✓');
+          saveDraft();
+          toast('Aufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' erstellt ✓');
         })
         .catch(function(e){ toast('Fehler: '+e.message,true); });
     });
