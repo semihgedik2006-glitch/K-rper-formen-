@@ -697,7 +697,16 @@ var IMG_MAX_DIM = 1100;
 
 /* Standard-Materialien je Studio (können pro Studio ergänzt/gelöscht werden) */
 var DEFAULT_MATERIALS = [
-  "Arm-Manschetten (Paare)","Bein-Manschetten (Paare)","Po-Gurte",
+  "Arm-Manschetten (Paare)",
+  "Bein-Manschetten Größe 2 (Paare)",
+  "Bein-Manschetten Größe 3 (Paare)",
+  "Po-Gurt Größe 1",
+  "Po-Gurt Größe 2",
+  "Po-Gurt Größe 3",
+  "Weste V1",
+  "Weste V2",
+  "Brezeasy",
+  "Hauptkabel",
   "Kabel weiß (Paare)","Kabel blau (Paare)","Kabel schwarz (Paare)",
   "Desinfektionsmittel",
   "Unterwäsche S","Unterwäsche M","Unterwäsche L","Unterwäsche XL","Unterwäsche XXL"
@@ -1627,11 +1636,12 @@ function loadMaterial(sk){
     if(doc.metadata.hasPendingWrites) return;
     if(document.activeElement && document.activeElement.closest && document.activeElement.closest('#matTable')) return;
     var data=doc.exists?doc.data():null;
-    if(data && Array.isArray(data.items) && data.items.length){
-      _matItems=data.items.map(function(i){ return {name:i.name, have:i.have||0, need:i.need||0}; });
-    } else {
-      _matItems=DEFAULT_MATERIALS.map(function(n){ return {name:n, have:0, need:0}; });
-    }
+    var saved=(data && Array.isArray(data.items)) ? data.items : [];
+    var items=saved.map(function(i){ return {name:i.name, have:i.have||0, need:i.need||0}; });
+    // Fehlende Standard-Artikel ergänzen, damit neue Teile überall auftauchen
+    var present={}; items.forEach(function(i){ present[i.name]=true; });
+    DEFAULT_MATERIALS.forEach(function(n){ if(!present[n]) items.push({name:n, have:0, need:0}); });
+    _matItems=items;
     renderMaterial();
   }, function(e){ console.error('Material:',e.message); });
 }
@@ -1690,8 +1700,10 @@ function exportMaterialExcel(){
     var rows='<tr><th>Studio</th><th>Material</th><th>Vorhanden</th><th>Fehlt</th></tr>';
     STUDIOS.forEach(function(s){
       var sk=studioKey(s), data=map[sk];
-      var items=(data&&Array.isArray(data.items)&&data.items.length)
-        ? data.items : DEFAULT_MATERIALS.map(function(n){ return {name:n,have:0,need:0}; });
+      var saved=(data&&Array.isArray(data.items))?data.items:[];
+      var present={}; saved.forEach(function(i){ present[i.name]=true; });
+      var items=saved.slice();
+      DEFAULT_MATERIALS.forEach(function(n){ if(!present[n]) items.push({name:n,have:0,need:0}); });
       items.forEach(function(it){
         rows+='<tr><td>'+esc(s)+'</td><td>'+esc(it.name)+'</td><td>'+(it.have||0)+'</td><td>'+(it.need||0)+'</td></tr>';
       });
