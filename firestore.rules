@@ -56,7 +56,10 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create: if isChef()
         && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if isChef();
+      // Chef darf alles; Mitarbeiter dürfen nur das Lesen markieren (readBy)
+      allow update: if isChef()
+        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']));
+      allow delete: if isChef();
     }
 
     // ── Materialbestand pro Studio ──

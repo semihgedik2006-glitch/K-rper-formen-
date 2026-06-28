@@ -32,6 +32,21 @@
   --shadow:0 8px 24px rgba(0,0,0,.35);--shadow-lg:0 24px 56px rgba(0,0,0,.50);
   --ease-out:cubic-bezier(.16,1,.3,1);
 }
+/* ── Hell-Modus ── */
+body.light{
+  --bg:#EDF3EF;--bg-2:#ffffff;--bg-soft:#E2ECE6;
+  --line:rgba(0,0,0,.09);--line-2:rgba(0,0,0,.15);
+  --accent:#00B85C;--accent-2:#00A050;--accent-d:#00824a;--accent-glow:rgba(0,184,92,.25);
+  --text:#0E1712;--text-2:#516760;--text-3:#869b91;
+  --shadow:0 6px 18px rgba(20,40,30,.10);--shadow-lg:0 18px 40px rgba(20,40,30,.16);
+}
+body.light .topbar{background:rgba(255,255,255,.9)}
+body.light .mobnav{background:rgba(255,255,255,.93)}
+body.light ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18)}
+body.light .auth-mesh{opacity:.35}
+body.light .day-sep{background:rgba(0,0,0,.05)}
+body.light .inp option{background:#ffffff;color:#0E1712}
+body.light .msg{box-shadow:0 1px 2px rgba(20,40,30,.06)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%;height:100%}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);
@@ -240,6 +255,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ann-body{color:var(--text);white-space:pre-wrap;font-size:.97rem}
 .ann-target{display:inline-block;margin-top:8px;font-size:.72rem;color:var(--accent-d);font-weight:600;
   background:rgba(0,224,110,.1);padding:3px 9px;border-radius:999px}
+.ann-read{display:inline-block;margin-top:8px;margin-left:6px;font-size:.72rem;color:var(--text-2);
+  font-weight:600;background:rgba(255,255,255,.06);padding:3px 9px;border-radius:999px}
 
 /* ── Cards / Chef ── */
 .card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
@@ -254,6 +271,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .studio-tile .mini{height:7px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:5px}
 .studio-tile .mini i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0}
 .studio-tile small{color:var(--text-2);font-size:.76rem}
+/* Chef-Dashboard */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.dash-tile{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:14px 15px}
+.dash-tile .dn{font-family:var(--font-head);font-weight:800;font-size:1.7rem;line-height:1;
+  background:linear-gradient(135deg,var(--accent-d),var(--accent-2));-webkit-background-clip:text;
+  background-clip:text;-webkit-text-fill-color:transparent}
+.dash-tile .dn.warn{background:none;-webkit-text-fill-color:initial;color:#ff8a8a}
+.dash-tile .dl{color:var(--text-2);font-size:.8rem;margin-top:5px}
 
 /* ── Mobile nav ── */
 .mobnav{display:none}
@@ -393,6 +418,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .t-rep{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
   text-transform:uppercase;letter-spacing:.4px;color:var(--accent-2);
   background:rgba(0,224,110,.12);padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.t-due{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
+  letter-spacing:.3px;color:var(--text-2);background:rgba(255,255,255,.06);
+  padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.t-due.over{background:rgba(239,68,68,.16);color:#ff8a8a}
 
 /* ── Auffälliger Unread-Marker auf Nav ── */
 .tab .ndot,.mobnav .ndot{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--warm);
@@ -427,6 +456,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .mat-add{display:flex;gap:8px;margin-top:14px}
 .mat-add input{flex:1}
 .mat-saved{font-size:.78rem;color:var(--accent-d);min-height:1.1em;margin-top:10px;transition:opacity .3s}
+.mat-alert{align-items:center;gap:10px;padding:11px 15px;margin-bottom:14px;border-radius:13px;
+  background:rgba(255,107,53,.12);border:1px solid rgba(255,107,53,.35);color:#ffb38c;
+  font-size:.9rem;font-weight:600}
+.mat-alert.show{display:flex}
 
 /* ── Mitarbeiterverwaltung (Chef) ── */
 .emp{display:flex;align-items:flex-start;gap:10px;padding:13px 0;border-top:1px solid var(--line)}
@@ -562,6 +595,12 @@ var FIREBASE_CONFIG = {
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar">?</div>
+      <button class="icon-btn" id="searchBtn" title="Suchen" aria-label="Suchen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" title="Hell/Dunkel" aria-label="Hell/Dunkel umschalten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
       <button class="icon-btn" id="logoutBtn" title="Abmelden" aria-label="Abmelden">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
       </button>
@@ -622,6 +661,7 @@ var FIREBASE_CONFIG = {
             <select class="inp" id="matStudio"></select>
             <button class="btn btn-ghost btn-sm" id="matExport" style="display:none">⬇️ Excel-Export (alle)</button>
           </div>
+          <div class="mat-alert" id="matAlert" style="display:none"></div>
           <div class="card" style="margin-bottom:14px">
             <div class="mat-head"><span>Material</span><span>Vorhanden</span><span>Fehlt</span><span></span></div>
             <div class="mat-table" id="matTable"></div>
@@ -669,8 +709,9 @@ var FIREBASE_CONFIG = {
 
       <!-- CHEF -->
       <section class="view" id="view-chef">
-        <div class="view-head"><h2>Chef-Bereich</h2><p>Nachrichten senden &amp; Aufgaben verteilen.</p></div>
+        <div class="view-head"><h2>Chef-Bereich</h2><p>Überblick, Nachrichten &amp; Aufgaben verteilen.</p></div>
         <div class="scroll-area">
+          <div class="dash-grid" id="dashGrid"></div>
           <div class="card">
             <h3>👤 Mitarbeiter anlegen</h3>
             <p class="hint">Erstellt ein Konto und ordnet Studios zu. Der Mitarbeiter meldet sich danach mit E-Mail + Passwort an.</p>
@@ -724,6 +765,8 @@ var FIREBASE_CONFIG = {
                   <option value="w">Wochen</option>
                 </select>
               </div></div>
+            <div class="field"><label for="ntDue">Fällig bis (optional)</label>
+              <input class="inp" id="ntDue" type="date" /></div>
             <div class="field">
               <label>Foto (optional)</label>
               <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
@@ -767,6 +810,16 @@ var FIREBASE_CONFIG = {
 <script>
 (function(){
 'use strict';
+
+/* ── Hell-/Dunkel-Modus (läuft sofort, auch am Login) ── */
+(function initTheme(){
+  try{ if(localStorage.getItem('kf_theme')==='light') document.body.classList.add('light'); }catch(e){}
+  var btn=document.getElementById('themeBtn');
+  if(btn) btn.addEventListener('click',function(){
+    var light=document.body.classList.toggle('light');
+    try{ localStorage.setItem('kf_theme', light?'light':'dark'); }catch(e){}
+  });
+})();
 
 /* ============================================================
    KONFIGURATION – HIER ANPASSEN
@@ -1297,7 +1350,7 @@ function showApp(){
   buildChannels();
   buildMaterialSelect();
   if(session.role==='chef'){
-    buildChefSelects(); buildEmpStudios(); listenEmployees(); restoreDrafts();
+    buildChefSelects(); buildEmpStudios(); listenEmployees(); listenInventoryAll(); restoreDrafts();
     $('docUploadCard').style.display='block'; buildDocStudios();
   }
   bindActions();
@@ -1418,7 +1471,7 @@ function showView(id){
   document.querySelectorAll('[data-view]').forEach(function(t){ t.classList.toggle('active',t.dataset.view===id); });
   // Unread-Marker beim Öffnen der Ansicht löschen
   if(id==='chat') unread.chat=false;
-  if(id==='ann')  unread.ann=false;
+  if(id==='ann'){ unread.ann=false; markAnnouncementsRead(); }
   updateNavMarkers();
   if(id==='chat'){
     setTimeout(scrollBottom,60);
@@ -1557,6 +1610,7 @@ function listenEmployees(){
     .onSnapshot(function(snap){
       var emps=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
       emps.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+      _employees=emps; renderDashboard();
       renderEmployees(emps);
     }, function(e){ console.error('Mitarbeiter:',e.message); });
 }
@@ -1812,6 +1866,7 @@ function stopListeners(){
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
+  if(_invUnsub){ _invUnsub(); _invUnsub=null; }
   _matStudioKey=null;
 }
 
@@ -1887,8 +1942,23 @@ function listenAnnouncements(){
         });
       }
       first=false;
-      renderAnnouncements(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
+      _allAnns=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderAnnouncements(_allAnns);
+      if(currentView==='ann') markAnnouncementsRead();
     }, function(e){ console.error('Ann:',e.message); });
+}
+var _allAnns=[];
+
+/* Mitarbeiter: sichtbare Ankündigungen als gelesen markieren */
+function markAnnouncementsRead(){
+  if(!session || session.role==='chef') return;
+  var fv=firebase.firestore.FieldValue;
+  _allAnns.forEach(function(a){
+    var forMe = !a.target||a.target==='all'||session.studioKeys.indexOf(a.target)>=0;
+    if(forMe && (a.readBy||[]).indexOf(session.uid)<0){
+      db.collection('announcements').doc(a.id).update({ readBy: fv.arrayUnion(session.uid) }).catch(function(){});
+    }
+  });
 }
 
 /* ============================================================
@@ -1959,7 +2029,7 @@ function renderTodos(){
   }
   bindTodoClicks(area);
   updateBadges();
-  if(session.role==='chef'){ renderStudioGrid(); renderArchive(); }
+  if(session.role==='chef'){ renderStudioGrid(); renderArchive(); renderDashboard(); }
 }
 
 /* Chef-Archiv: erledigte (einmalige) Aufgaben, gruppiert pro Studio */
@@ -2000,12 +2070,18 @@ function todoHTML(t,sk,chefView){
   if(done&&t.doneBy) foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
   var rep=t.recurring
     ? '<span class="t-rep">🔁 '+esc(repLabelFor(t))+'</span>' : '';
+  var dueBadge='';
+  if(t.due){
+    var over=!done && Date.now()>t.due;
+    var dd=new Date(t.due);
+    dueBadge='<span class="t-due'+(over?' over':'')+'">'+(over?'⚠ überfällig':'bis '+dd.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}))+'</span>';
+  }
   var photoHtml = t.photo
     ? '<img class="t-photo" data-zoom src="'+t.photo+'" alt="Foto zur Aufgabe" />'
     : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
   return '<div class="todo'+(done?' done':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
-    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+'</div>'+
+    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     (t.docUrl?'<a class="t-doc" href="'+esc(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
@@ -2051,14 +2127,21 @@ function renderAnnouncements(anns){
   }
   if(!anns.length){ area.innerHTML=emptyHTML('Keine Ankündigungen','Infos von der Leitung erscheinen hier.'); return; }
   var chef=session.role==='chef';
+  var empUids={}; _employees.forEach(function(e){ empUids[e.uid]=1; });
+  var totalEmp=_employees.length;
   area.innerHTML=anns.map(function(a){
     var label=(!a.target||a.target==='all')?'An alle':'Nur '+studioName(a.target);
     var delBtn = chef ? '<button class="ann-del" data-id="'+esc(a.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
+    var readHtml='';
+    if(chef){
+      var n=(a.readBy||[]).filter(function(uid){ return empUids[uid]; }).length;
+      readHtml='<span class="ann-read">👁 '+n+(totalEmp?'/'+totalEmp:'')+' gelesen</span>';
+    }
     return '<div class="ann"><div class="ann-head">'+
       '<span class="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>'+
       '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+delBtn+'</div>'+
       '<div class="ann-body">'+esc(a.text)+'</div>'+
-      '<span class="ann-target">'+esc(label)+'</span></div>';
+      '<span class="ann-target">'+esc(label)+'</span>'+readHtml+'</div>';
   }).join('');
   if(chef){
     area.querySelectorAll('.ann-del').forEach(function(b){
@@ -2080,6 +2163,43 @@ function renderStudioGrid(){
     return '<div class="studio-tile"><b>'+esc(s)+'</b>'+
       '<div class="mini"><i style="width:'+pct+'%"></i></div>'+
       '<small>'+(total?done+' / '+total+' erledigt':'keine Aufgaben')+'</small></div>';
+  }).join('');
+}
+
+/* ── Chef-Dashboard ── */
+var _invAll={}, _employees=[], _invUnsub=null;
+function listenInventoryAll(){
+  if(_invUnsub){ _invUnsub(); _invUnsub=null; }
+  _invUnsub=db.collection('inventory').onSnapshot(function(snap){
+    _invAll={}; snap.forEach(function(d){ _invAll[d.id]=(d.data().items||[]); });
+    renderDashboard();
+  }, function(e){ console.error('Inventar:',e.message); });
+}
+function renderDashboard(){
+  var grid=$('dashGrid'); if(!grid || !session || session.role!=='chef') return;
+  var open=0, overdue=0, todayDone=0, now=Date.now();
+  var startToday=new Date(); startToday.setHours(0,0,0,0); startToday=startToday.getTime();
+  STUDIOS.forEach(function(s){
+    (cachedTodos[studioKey(s)]||[]).forEach(function(t){
+      if(!isDone(t) && !isArchived(t)) open++;
+      if(!isDone(t) && t.due && now>t.due) overdue++;
+      if(t.doneAt && t.doneAt>=startToday) todayDone++;
+    });
+  });
+  var missStudios=0;
+  STUDIOS.forEach(function(s){
+    var items=_invAll[studioKey(s)]||[];
+    if(items.some(function(it){ return (it.need||0)>0; })) missStudios++;
+  });
+  var tiles=[
+    {n:open, l:'Offene Aufgaben'},
+    {n:overdue, l:'Überfällig', warn:overdue>0},
+    {n:todayDone, l:'Heute erledigt'},
+    {n:missStudios, l:'Studios mit Materialbedarf', warn:missStudios>0},
+    {n:_employees.length, l:'Mitarbeiter'}
+  ];
+  grid.innerHTML=tiles.map(function(t){
+    return '<div class="dash-tile"><div class="dn'+(t.warn?' warn':'')+'">'+t.n+'</div><div class="dl">'+esc(t.l)+'</div></div>';
   }).join('');
 }
 
@@ -2152,6 +2272,13 @@ function renderMaterial(){
       _matItems.splice(+b.dataset.del,1); renderMaterial(); saveMaterialNow();
     });
   });
+  // Nachbestell-Alarm
+  var miss=_matItems.filter(function(it){ return (it.need||0)>0; });
+  var al=$('matAlert');
+  if(al){
+    if(miss.length){ al.className='mat-alert show'; al.textContent='⚠️ '+miss.length+' Artikel fehlen – bitte nachbestellen.'; }
+    else { al.className='mat-alert'; al.style.display='none'; }
+  }
 }
 
 function scheduleMaterialSave(){
@@ -2424,6 +2551,8 @@ function bindActions(){
         intervalMs=intN*mult;
         if(!intN || intervalMs<=0){ toast('Bitte ein gültiges Intervall angeben.',true); return; }
       }
+      var dueVal=$('ntDue').value;
+      var due = dueVal ? new Date(dueVal+'T23:59:59').getTime() : 0;
       var photo=_pendingTaskImg;
       var batch=db.batch();
       targets.forEach(function(sk){
@@ -2436,12 +2565,13 @@ function bindActions(){
           data.recurring=recurring;
           if(recurring==='custom'){ data.intervalMs=intervalMs; data.intervalN=intN; data.intervalUnit=intUnit; }
         }
+        if(due) data.due=due;
         if(photo) data.photo=photo;
         batch.set(ref,data);
       });
       batch.commit()
         .then(function(){
-          $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value=''; $('ntCustomWrap').style.display='none';
+          $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value=''; $('ntCustomWrap').style.display='none'; $('ntDue').value='';
           $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');
           $('ntStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
           _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
