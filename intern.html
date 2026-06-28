@@ -2095,20 +2095,56 @@ function addMaterial(){
 function exportMaterialExcel(){
   toast('Export wird erstellt …');
   db.collection('inventory').get().then(function(snap){
-    var map={}; snap.forEach(function(d){ map[d.id]=d.data(); });
-    var rows='<tr><th>Studio</th><th>Material</th><th>Vorhanden</th><th>Fehlt</th></tr>';
+    var byStudio={}; snap.forEach(function(d){ byStudio[d.id]=(d.data().items||[]); });
+
+    // Materialnamen: Standardliste + alle eigenen Artikel
+    var names=DEFAULT_MATERIALS.slice();
     STUDIOS.forEach(function(s){
-      var sk=studioKey(s), data=map[sk];
-      var saved=(data&&Array.isArray(data.items))?data.items:[];
-      var present={}; saved.forEach(function(i){ present[i.name]=true; });
-      var items=saved.slice();
-      DEFAULT_MATERIALS.forEach(function(n){ if(!present[n]) items.push({name:n,have:0,need:0}); });
-      items.forEach(function(it){
-        rows+='<tr><td>'+esc(s)+'</td><td>'+esc(it.name)+'</td><td>'+(it.have||0)+'</td><td>'+(it.need||0)+'</td></tr>';
-      });
+      (byStudio[studioKey(s)]||[]).forEach(function(it){ if(names.indexOf(it.name)<0) names.push(it.name); });
     });
-    var html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head>'+
-      '<body><table border="1">'+rows+'</table></body></html>';
+    function find(sk,name){ var a=byStudio[sk]||[]; for(var i=0;i<a.length;i++){ if(a[i].name===name) return a[i]; } return null; }
+
+    var now=new Date();
+    var stamp=now.toLocaleDateString('de-DE')+' '+now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    var ncols=1+STUDIOS.length;
+
+    var thMat='style="background:#0E1712;color:#19FF85;font-weight:bold;border:1px solid #2a3a32;padding:6px 10px;text-align:left"';
+    var thStu='style="background:#00B85C;color:#04140C;font-weight:bold;border:1px solid #2a3a32;padding:6px 8px;text-align:center"';
+    var tdMat='style="border:1px solid #d9e2dd;padding:5px 10px;font-weight:bold;background:#f3f8f5"';
+
+    function block(title, bg, txt, cellFn){
+      var h='<tr><td colspan="'+ncols+'" style="background:'+bg+';color:'+txt+';font-weight:bold;font-size:13px;padding:7px 10px;border:1px solid #2a3a32">'+title+'</td></tr>';
+      h+='<tr><td '+thMat+'>Material</td>';
+      STUDIOS.forEach(function(s){ h+='<td '+thStu+'>'+esc(s)+'</td>'; });
+      h+='</tr>';
+      names.forEach(function(nm){
+        h+='<tr><td '+tdMat+'>'+esc(nm)+'</td>';
+        STUDIOS.forEach(function(s){ h+=cellFn(find(studioKey(s),nm)); });
+        h+='</tr>';
+      });
+      return h;
+    }
+    function fehltCell(it){
+      var n=it?(it.need||0):0;
+      return n>0
+        ? '<td style="border:1px solid #f0c9c0;padding:5px 8px;text-align:center;background:#ffd6d6;color:#a30000;font-weight:bold">'+n+'</td>'
+        : '<td style="border:1px solid #d9e2dd;padding:5px 8px;text-align:center;background:#eafff2;color:#6a8a7c">–</td>';
+    }
+    function vorhCell(it){
+      var n=it?(it.have||0):0;
+      return '<td style="border:1px solid #d9e2dd;padding:5px 8px;text-align:center;'+(n===0?'background:#fff3e8;color:#c2660f;font-weight:bold':'color:#0a7a3c')+'">'+n+'</td>';
+    }
+
+    var html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">'+
+      '<style>table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:11px}</style></head><body><table>'+
+      '<tr><td colspan="'+ncols+'" style="background:#0E1712;color:#19FF85;font-size:17px;font-weight:bold;padding:10px">KÖRPERFORMEN – Materialbestand</td></tr>'+
+      '<tr><td colspan="'+ncols+'" style="color:#555;padding:3px 10px;font-size:10px">Stand: '+esc(stamp)+'</td></tr>'+
+      '<tr><td colspan="'+ncols+'" style="height:6px"></td></tr>'+
+      block('FEHLT – Nachbestellen (rot markiert)', '#FFE0D6', '#B23A00', fehltCell)+
+      '<tr><td colspan="'+ncols+'" style="height:12px"></td></tr>'+
+      block('VORHANDEN – Bestand (orange = 0)', '#DBF4E6', '#0A6B3A', vorhCell)+
+      '</table></body></html>';
+
     var blob=new Blob(['﻿'+html],{type:'application/vnd.ms-excel'});
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a'); a.href=url; a.download='Material_Koerperformen.xls';
