@@ -35,7 +35,11 @@ service cloud.firestore {
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 2000;
       allow update: if false;
-      allow delete: if signedIn() && resource.data.uid == request.auth.uid; // eigene löschbar
+      // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
+      allow delete: if isChef()
+        || (signedIn()
+            && resource.data.uid == request.auth.uid
+            && request.time.toMillis() < resource.data.ts + 3600000);
     }
 
     // ── Aufgaben pro Studio ──

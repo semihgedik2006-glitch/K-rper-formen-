@@ -452,6 +452,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .t-doc{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:.82rem;font-weight:600;
   color:var(--accent-2);background:rgba(0,224,110,.1);border:1px solid rgba(0,224,110,.25);
   padding:5px 11px;border-radius:999px}
+
+/* Löschen-Buttons (Chat & Ankündigungen) */
+.msg-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.78rem;line-height:1;
+  padding:2px 5px;border-radius:6px;margin-left:2px;opacity:.55;flex-shrink:0}
+.msg-del:hover{color:#ff8a8a;background:rgba(239,68,68,.14);opacity:1}
+.ann-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.92rem;line-height:1;
+  padding:3px 7px;border-radius:7px;margin-left:6px;flex-shrink:0}
+.ann-del:hover{color:#ff8a8a;background:rgba(239,68,68,.12)}
 </style>
 </head>
 <body>
@@ -1854,13 +1862,15 @@ function renderMessages(msgs){
     var dl=dayLabel(m.ts||Date.now());
     if(dl!==lastDay){ html+='<div class="day-sep">'+esc(dl)+'</div>'; lastDay=dl; }
     var mine=m.uid===session.uid;
+    var canDel = session.role==='chef' || (mine && (Date.now()-(m.ts||0) < 3600000));
     var tag=m.role==='chef'
       ?'<span class="tag chef">Chef</span>'
       :(m.studio?'<span class="tag studio">'+esc(m.studio)+'</span>':'');
     var imgHtml = m.img ? '<img class="msg-img" data-zoom src="'+m.img+'" alt="Foto" />' : '';
     var bodyHtml = m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '';
+    var delBtn = canDel ? '<button class="msg-del" data-id="'+esc(m.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
     html+='<div class="msg'+(mine?' mine':'')+'">'+
-      '<div class="meta"><b>'+esc(m.name)+'</b>'+tag+'<time>'+fmtTime(m.ts)+'</time></div>'+
+      '<div class="meta"><b>'+esc(m.name)+'</b>'+tag+'<time>'+fmtTime(m.ts)+'</time>'+delBtn+'</div>'+
       bodyHtml+imgHtml+'</div>';
   });
   box.innerHTML=html;
@@ -1964,14 +1974,25 @@ function renderAnnouncements(anns){
     anns=anns.filter(function(a){ return !a.target||a.target==='all'||session.studioKeys.indexOf(a.target)>=0; });
   }
   if(!anns.length){ area.innerHTML=emptyHTML('Keine Ankündigungen','Infos von der Leitung erscheinen hier.'); return; }
+  var chef=session.role==='chef';
   area.innerHTML=anns.map(function(a){
     var label=(!a.target||a.target==='all')?'An alle':'Nur '+studioName(a.target);
+    var delBtn = chef ? '<button class="ann-del" data-id="'+esc(a.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
     return '<div class="ann"><div class="ann-head">'+
       '<span class="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>'+
-      '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time></div>'+
+      '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+delBtn+'</div>'+
       '<div class="ann-body">'+esc(a.text)+'</div>'+
       '<span class="ann-target">'+esc(label)+'</span></div>';
   }).join('');
+  if(chef){
+    area.querySelectorAll('.ann-del').forEach(function(b){
+      b.addEventListener('click',function(){
+        if(confirm('Ankündigung löschen?'))
+          db.collection('announcements').doc(b.dataset.id).delete()
+            .catch(function(e){ toast('Fehler: '+e.message,true); });
+      });
+    });
+  }
 }
 
 function renderStudioGrid(){
@@ -2218,8 +2239,18 @@ function bindActions(){
   });
   $('imgPreviewX').addEventListener('click',clearChatImg);
 
+  // Nachricht löschen (Chef: alle, Mitarbeiter: eigene < 1 Std.)
+  var cs=$('chatScroll');
+  if(cs) cs.addEventListener('click',function(e){
+    var b=e.target.closest && e.target.closest('.msg-del'); if(!b) return;
+    var id=b.dataset.id; if(!id) return;
+    if(confirm('Nachricht löschen?'))
+      db.collection('channels').doc(currentChannel).collection('messages').doc(id).delete()
+        .catch(function(err){ toast('Löschen fehlgeschlagen: '+err.message,true); });
+  });
+
   // „Nach unten"-Knopf im Chat
-  var cs=$('chatScroll'), fab=$('scrollFab');
+  var fab=$('scrollFab');
   if(cs && fab){
     cs.addEventListener('scroll',function(){
       var nearBottom = cs.scrollHeight-cs.scrollTop-cs.clientHeight < 120;
