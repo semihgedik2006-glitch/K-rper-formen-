@@ -713,7 +713,17 @@ var FIREBASE_CONFIG = {
                 <option value="">Keine (einmalig)</option>
                 <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
                 <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
+                <option value="custom">🔁 Eigenes Intervall …</option>
               </select></div>
+            <div class="field" id="ntCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
+              <div style="display:flex;gap:8px">
+                <input class="inp" id="ntIntN" type="number" min="1" value="6" style="flex:0 0 90px" />
+                <select class="inp" id="ntIntUnit" style="flex:1">
+                  <option value="h">Stunden</option>
+                  <option value="d">Tage</option>
+                  <option value="w">Wochen</option>
+                </select>
+              </div></div>
             <div class="field">
               <label>Foto (optional)</label>
               <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
@@ -1001,12 +1011,23 @@ function isDone(t){
   if(t.recurring==='daily'||t.recurring==='weekly'){
     return !!t.done && (t.doneAt||0) >= periodStart(t.recurring);
   }
+  if(t.recurring==='custom' && t.intervalMs){
+    return !!t.done && !!t.doneAt && (Date.now() < (t.doneAt + t.intervalMs));
+  }
   return !!t.done;
 }
-function repLabel(rep){ return rep==='daily'?'täglich':(rep==='weekly'?'wöchentlich':''); }
-/* Erledigte einmalige Aufgabe, die alt genug ist -> ins Archiv (raus aus aktiver Liste) */
+function repLabelFor(t){
+  if(t.recurring==='daily') return 'täglich';
+  if(t.recurring==='weekly') return 'wöchentlich';
+  if(t.recurring==='custom'){
+    var u={h:'Std.',d:'Tage',w:'Wochen'}[t.intervalUnit]||'';
+    return 'alle '+(t.intervalN||'?')+' '+u;
+  }
+  return '';
+}
+/* Erledigte EINMALIGE Aufgabe (nicht wiederkehrend), die alt genug ist -> ins Archiv */
 function isArchived(t){
-  return t.recurring!=='daily' && t.recurring!=='weekly'
+  return !t.recurring
     && !!t.done && !!t.doneAt
     && (Date.now()-t.doneAt > ARCHIVE_AFTER_HOURS*3600000);
 }
@@ -1977,8 +1998,8 @@ function todoHTML(t,sk,chefView){
   var done=isDone(t);
   var foot=['erstellt von '+esc(t.createdBy||'Chef')];
   if(done&&t.doneBy) foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
-  var rep=(t.recurring==='daily'||t.recurring==='weekly')
-    ? '<span class="t-rep">🔁 '+repLabel(t.recurring)+'</span>' : '';
+  var rep=t.recurring
+    ? '<span class="t-rep">🔁 '+esc(repLabelFor(t))+'</span>' : '';
   var photoHtml = t.photo
     ? '<img class="t-photo" data-zoom src="'+t.photo+'" alt="Foto zur Aufgabe" />'
     : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
@@ -2383,6 +2404,11 @@ function bindActions(){
     });
 
     // Aufgabe erstellen (an ausgewählte Studios, optional wiederkehrend)
+    // Eigenes-Intervall-Feld ein-/ausblenden
+    $('ntRepeat').addEventListener('change',function(){
+      $('ntCustomWrap').style.display = this.value==='custom' ? 'block' : 'none';
+    });
+
     $('ntAdd').addEventListener('click',function(){
       var title=$('ntTitle').value.trim();
       if(!title){ toast('Bitte Aufgabe eingeben.',true); return; }
@@ -2390,6 +2416,14 @@ function bindActions(){
       if(!targets.length){ toast('Bitte mindestens ein Studio wählen.',true); return; }
       var desc=$('ntDesc').value.trim();
       var recurring=$('ntRepeat').value||null;
+      var intN=0, intUnit='h', intervalMs=0;
+      if(recurring==='custom'){
+        intN=parseInt($('ntIntN').value,10)||0;
+        intUnit=$('ntIntUnit').value;
+        var mult={h:3600000,d:86400000,w:604800000}[intUnit]||3600000;
+        intervalMs=intN*mult;
+        if(!intN || intervalMs<=0){ toast('Bitte ein gültiges Intervall angeben.',true); return; }
+      }
       var photo=_pendingTaskImg;
       var batch=db.batch();
       targets.forEach(function(sk){
@@ -2398,13 +2432,16 @@ function bindActions(){
           title:title, desc:desc, done:false, doneBy:null, doneAt:null,
           createdBy:session.name, createdByUid:session.uid, ts:Date.now()
         };
-        if(recurring) data.recurring=recurring;
+        if(recurring){
+          data.recurring=recurring;
+          if(recurring==='custom'){ data.intervalMs=intervalMs; data.intervalN=intN; data.intervalUnit=intUnit; }
+        }
         if(photo) data.photo=photo;
         batch.set(ref,data);
       });
       batch.commit()
         .then(function(){
-          $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value='';
+          $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value=''; $('ntCustomWrap').style.display='none';
           $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');
           $('ntStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
           _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
