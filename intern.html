@@ -1635,8 +1635,9 @@ function uploadDoc(){
       note.textContent='Datei zu groß für den kostenlosen Upload. Bitte als Link (Google Drive) einfügen.';
       btn.disabled=false; return;
     }
-    var id=uid();
-    db.collection('documents').doc(id).set({
+    var ref=db.collection('documents').doc();
+    var id=ref.id;
+    ref.set({
       name:name, fileName:file.name, kind:'file', size:file.size, type:file.type||'',
       studios:target, uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
     }).then(function(){
