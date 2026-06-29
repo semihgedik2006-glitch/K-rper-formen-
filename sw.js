@@ -2,9 +2,9 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = 'studiochat-' + VERSION;
-const PRECACHE = ['./index.html', './manifest.json', './icon.svg'];
+const PRECACHE = ['./index.html', './icon.svg'];
 
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
@@ -47,6 +47,8 @@ self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   const h = url.hostname;
+  // Manifest NIE cachen, damit start_url immer aktuell ist
+  if (url.pathname.indexOf('manifest.json') >= 0) return;
   // Live-Verbindungen von Firebase/Google NIE cachen
   if (h.indexOf('googleapis.com') >= 0 || h.indexOf('firebaseio') >= 0 ||
       h.indexOf('identitytoolkit') >= 0 || h.indexOf('securetoken') >= 0 ||
