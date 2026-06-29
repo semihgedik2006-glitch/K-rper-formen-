@@ -80,6 +80,25 @@ service cloud.firestore {
       allow create, update, delete: if isChef();
     }
 
+    // ── Konfiguration (z. B. Onboarding-Checkliste) ──
+    match /config/{doc} {
+      allow read: if signedIn();
+      allow write: if isChef();
+    }
+
+    // ── Direktnachrichten (1:1) – nur die beiden Beteiligten ──
+    // dmId hat die Form  dm_<uidA>_<uidB>
+    match /dms/{dmId}/messages/{msgId} {
+      allow read: if signedIn() && dmId.split('_').hasAny([request.auth.uid]);
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && dmId.split('_').hasAny([request.auth.uid]);
+      allow delete: if signedIn() && dmId.split('_').hasAny([request.auth.uid])
+        && (isChef()
+            || (resource.data.uid == request.auth.uid
+                && request.time.toMillis() < resource.data.ts + 3600000));
+    }
+
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {
