@@ -319,6 +319,26 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ob-erow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
 .ob-erow:first-child{border-top:none}
 .ob-erow span{flex:1;font-size:.94rem}
+/* DM-Verlauf & Checklisten */
+.dm-section{font-size:.68rem;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);
+  font-weight:700;padding:10px 4px 4px}
+.dm-unread{width:11px;height:11px;border-radius:50%;background:var(--warm);flex-shrink:0}
+.dm-time{font-size:.72rem;color:var(--text-3);white-space:nowrap;flex-shrink:0}
+.dm-checklist{background:rgba(0,224,110,.08);border:1px solid rgba(0,224,110,.22);border-radius:12px;padding:10px 12px;margin-top:4px}
+.dm-cl-h{font-family:var(--font-head);font-weight:700;font-size:.92rem;margin-bottom:6px;color:var(--accent-2)}
+.dm-cl-item{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:.95rem;cursor:pointer}
+.dm-cl-item input{width:17px;height:17px;accent-color:var(--accent);flex-shrink:0}
+.dm-cl-item.done span{text-decoration:line-through;color:var(--text-2)}
+/* Profil-Editor */
+#profileModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#profileModal.show{display:flex}
+.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:20px;padding:24px;box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
+.pm-colors{display:flex;gap:9px;flex-wrap:wrap}
+.pm-color{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .15s}
+.pm-color:hover{transform:scale(1.1)}
+.pm-color.sel{border-color:var(--text)}
 
 /* ── Mobile nav ── */
 .mobnav{display:none}
@@ -639,7 +659,7 @@ var FIREBASE_CONFIG = {
     <div class="tb-brand">STUDIO<b>CHAT</b> <span class="tb-live">Live</span></div>
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
-      <div class="avatar" id="uAvatar">?</div>
+      <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>
       <button class="icon-btn" id="searchBtn" title="Suchen" aria-label="Suchen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
@@ -760,6 +780,9 @@ var FIREBASE_CONFIG = {
             </button>
             <div class="avatar" id="dmPeerAv">?</div>
             <b id="dmPeer">Name</b>
+            <button class="icon-btn" id="dmChecklist" title="Checkliste senden" aria-label="Checkliste senden" style="margin-left:auto;display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </button>
           </div>
           <div class="chat-scroll" id="dmScroll"></div>
           <div class="chat-input">
@@ -815,6 +838,9 @@ var FIREBASE_CONFIG = {
               <input class="inp" id="obNew" type="text" placeholder="Neuer Schritt, z. B. EMS-Einweisung" maxlength="100" />
               <button class="btn btn-ghost btn-sm" id="obAdd">+ Hinzufügen</button>
             </div>
+            <div class="field" style="margin-top:14px"><label for="obSendTo">Als To-do-Checkliste per DM senden an …</label>
+              <select class="inp" id="obSendTo"></select></div>
+            <button class="btn btn-primary btn-sm" id="obSend">📋 Checkliste per DM senden</button>
           </div>
           <div class="card">
             <h3>📣 Ankündigung an alle</h3>
@@ -891,6 +917,21 @@ var FIREBASE_CONFIG = {
       <button id="searchClose" aria-label="Schließen">✕</button>
     </div>
     <div id="searchResults"></div>
+  </div>
+</div>
+
+<!-- Profil-Editor -->
+<div id="profileModal">
+  <div class="pm-box">
+    <button class="lb-close" id="pmClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
+    <h3 style="margin-bottom:16px">Mein Profil</h3>
+    <div style="text-align:center;margin-bottom:16px"><div class="avatar" id="pmPreview" style="width:66px;height:66px;font-size:1.5rem;margin:0 auto">?</div></div>
+    <div class="field"><label for="pmName">Name</label><input class="inp" id="pmName" maxlength="50" /></div>
+    <div class="field"><label for="pmStatus">Status / Spruch (optional)</label><input class="inp" id="pmStatus" maxlength="80" placeholder="z. B. Trainer in Hürth 💪" /></div>
+    <div class="field"><label for="pmEmoji">Avatar-Emoji statt Initialen (optional)</label><input class="inp" id="pmEmoji" maxlength="2" placeholder="z. B. 💪" /></div>
+    <div class="field"><label>Avatar-Farbe</label><div class="pm-colors" id="pmColors"></div></div>
+    <p class="auth-err" id="pmErr"></p>
+    <button class="btn btn-primary" id="pmSave" style="width:100%">Speichern</button>
   </div>
 </div>
 
@@ -1440,8 +1481,7 @@ function showApp(){
   $('uName').textContent = session.name;
   $('uMeta').textContent = session.role==='chef' ? 'Chef · Leitung'
     : (session.studios.length>2 ? session.studios.slice(0,2).join(', ')+' +'+(session.studios.length-2) : session.studios.join(', '));
-  var av=$('uAvatar'); av.textContent=initials(session.name);
-  av.classList.toggle('chef', session.role==='chef');
+  applyOwnAvatar();
 
   buildNav();
   buildChannels();
@@ -1453,6 +1493,7 @@ function showApp(){
   bindActions();
   startListeners();
   listenAllUsers();
+  listenDmThreads();
   listenOnboarding();
   initMessaging();
   maybeShowNotifBanner();
@@ -1712,7 +1753,7 @@ function listenEmployees(){
     .onSnapshot(function(snap){
       var emps=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
       emps.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
-      _employees=emps; renderDashboard();
+      _employees=emps; renderDashboard(); renderOnboarding();
       renderEmployees(emps);
     }, function(e){ console.error('Mitarbeiter:',e.message); });
 }
@@ -1972,6 +2013,7 @@ function stopListeners(){
   if(_invUnsub){ _invUnsub(); _invUnsub=null; }
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
+  if(_dmThreadsUnsub){ _dmThreadsUnsub(); _dmThreadsUnsub=null; }
   if(_obUnsub){ _obUnsub(); _obUnsub=null; }
   _matStudioKey=null;
 }
@@ -2591,6 +2633,17 @@ function doSearch(q){
    DIREKTNACHRICHTEN (1:1)
    ============================================================ */
 var _allUsers=[], _usersUnsub=null, _dmUnsub=null, _dmPeer=null, _dmId=null;
+var _dmThreads=[], _dmThreadsUnsub=null, _dmThreadPrev={}, _dmThreadsFirst=true;
+
+function _userById(uid){ for(var i=0;i<_allUsers.length;i++){ if(_allUsers[i].uid===uid) return _allUsers[i]; } return null; }
+function avatarMarkup(u){
+  u=u||{};
+  var bg=u.color?(' style="background:'+esc(u.color)+'"'):'';
+  var chef=(u.role==='chef' && !u.color)?' chef':'';
+  var c=u.emoji?esc(u.emoji):esc(initials(u.name));
+  return '<div class="avatar'+chef+'"'+bg+'>'+c+'</div>';
+}
+
 function listenAllUsers(){
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   _usersUnsub=db.collection('users').onSnapshot(function(snap){
@@ -2598,33 +2651,99 @@ function listenAllUsers(){
     if(currentView==='dm' && $('dmConvo').style.display==='none') renderDmPeople($('dmSearch').value);
   }, function(e){ console.error('Users:',e.message); });
 }
+
+/* Verlauf-Liste (Unterhaltungen) + Benachrichtigungen */
+function listenDmThreads(){
+  if(_dmThreadsUnsub){ _dmThreadsUnsub(); _dmThreadsUnsub=null; }
+  _dmThreadsFirst=true;
+  _dmThreadsUnsub=db.collection('dms').where('participants','array-contains',session.uid)
+    .onSnapshot(function(snap){
+      _dmThreads=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      _dmThreads.sort(function(a,b){ return (b.lastTs||0)-(a.lastTs||0); });
+      if(!_dmThreadsFirst){
+        _dmThreads.forEach(function(t){
+          var prev=_dmThreadPrev[t.id]||0;
+          var unread=(t.lastTs||0) > ((t.readTs&&t.readTs[session.uid])||0) && t.lastSender!==session.uid;
+          var viewing=currentView==='dm' && _dmId===t.id;
+          var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+          if(_allUsers.length && !_userById(peer)) return; // gelöschter Account
+          if((t.lastTs||0)>prev && unread && !viewing){
+            localNotify('Neue Nachricht von '+((t.names&&t.names[peer])||'Team'), t.last||'');
+          }
+        });
+      }
+      _dmThreads.forEach(function(t){ _dmThreadPrev[t.id]=(t.lastTs||0); });
+      _dmThreadsFirst=false;
+      updateDmBadge();
+      if(currentView==='dm' && $('dmConvo').style.display==='none' && (!$('dmSearch')||!$('dmSearch').value)) renderDmPeople('');
+    }, function(e){ console.error('DM-Threads:',e.message); });
+}
+function dmUnreadCount(){
+  return _dmThreads.filter(function(t){
+    var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+    if(_allUsers.length && !_userById(peer)) return false;
+    return (t.lastTs||0) > ((t.readTs&&t.readTs[session.uid])||0) && t.lastSender!==session.uid;
+  }).length;
+}
+function updateDmBadge(){
+  var n=dmUnreadCount();
+  document.querySelectorAll('[data-badge="dm"],[data-mbadge="dm"]').forEach(function(b){ b.textContent=n; b.style.display=n?'grid':'none'; });
+}
+
+function bindDmPersonClicks(box){
+  box.querySelectorAll('.dm-person').forEach(function(el){
+    el.addEventListener('click',function(){ openDm(el.dataset.uid, el.dataset.name); });
+  });
+}
 function renderDmPeople(filter){
   var box=$('dmPeople'); if(!box) return;
   filter=(filter||'').trim().toLowerCase();
+  // Ohne Suchtext: bestehende Unterhaltungen zeigen
+  if(!filter && _dmThreads.length){
+    var html='<div class="dm-section">Unterhaltungen</div>';
+    html+=_dmThreads.map(function(t){
+      var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+      if(_allUsers.length && !_userById(peer)) return ''; // gelöschte Accounts ausblenden
+      var nm=(t.names&&t.names[peer])||'?';
+      var u=_userById(peer)||{name:nm};
+      var unread=(t.lastTs||0) > ((t.readTs&&t.readTs[session.uid])||0) && t.lastSender!==session.uid;
+      var prev=(t.lastSender===session.uid?'Du: ':'')+(t.last||'');
+      return '<div class="dm-person" data-uid="'+esc(peer)+'" data-name="'+esc(nm)+'">'+
+        avatarMarkup(u)+
+        '<div class="who2"><b>'+esc(nm)+'</b><span>'+esc(prev)+'</span></div>'+
+        (unread?'<span class="dm-unread"></span>':'<span class="dm-time">'+(t.lastTs?fmtTime(t.lastTs):'')+'</span>')+
+      '</div>';
+    }).join('');
+    html+='<div class="dm-section">Neue Nachricht? Oben nach einer Person suchen.</div>';
+    box.innerHTML=html; bindDmPersonClicks(box); return;
+  }
+  // Mit Suchtext (oder ohne Unterhaltungen): Personenliste
   var list=_allUsers.filter(function(u){ return u.uid!==session.uid && (!filter || (u.name||'').toLowerCase().indexOf(filter)>=0); });
   list.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
   if(!list.length){ box.innerHTML=emptyHTML('Niemand gefunden','Hier erscheinen alle aus dem Team.'); return; }
   box.innerHTML=list.map(function(u){
-    var sub=u.role==='chef'?'Chef':((u.studios&&u.studios.length)?u.studios.join(', '):(u.studio||''));
-    return '<div class="dm-person" data-uid="'+esc(u.uid)+'" data-name="'+esc(u.name||'')+'" data-chef="'+(u.role==='chef'?'1':'')+'">'+
-      '<div class="avatar'+(u.role==='chef'?' chef':'')+'">'+esc(initials(u.name))+'</div>'+
+    var sub=u.status?u.status:(u.role==='chef'?'Chef':((u.studios&&u.studios.length)?u.studios.join(', '):(u.studio||'')));
+    return '<div class="dm-person" data-uid="'+esc(u.uid)+'" data-name="'+esc(u.name||'')+'">'+
+      avatarMarkup(u)+
       '<div class="who2"><b>'+esc(u.name||'?')+'</b><span>'+esc(sub)+'</span></div></div>';
   }).join('');
-  box.querySelectorAll('.dm-person').forEach(function(el){
-    el.addEventListener('click',function(){ openDm(el.dataset.uid, el.dataset.name, el.dataset.chef==='1'); });
-  });
+  bindDmPersonClicks(box);
 }
-function openDm(uid,name,isChef){
-  _dmPeer={uid:uid,name:name};
+function openDm(uid,name){
+  var pu=_userById(uid)||{name:name};
+  _dmPeer={uid:uid,name:pu.name||name};
   _dmId='dm_'+[session.uid,uid].sort().join('_');
-  $('dmPeer').textContent=name;
-  var av=$('dmPeerAv'); av.textContent=initials(name); av.classList.toggle('chef',!!isChef);
+  $('dmPeer').textContent=_dmPeer.name;
+  var av=$('dmPeerAv'); av.textContent=pu.emoji?pu.emoji:initials(_dmPeer.name);
+  av.style.background=pu.color||''; av.classList.toggle('chef', pu.role==='chef' && !pu.color);
+  $('dmChecklist').style.display = session.role==='chef' ? 'grid' : 'none';
   $('dmListWrap').style.display='none';
   $('dmConvo').style.display='flex';
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
   _dmUnsub=db.collection('dms').doc(_dmId).collection('messages').orderBy('ts').limitToLast(200)
     .onSnapshot(function(snap){ renderDmMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })); },
       function(e){ console.error('DM:',e.message); });
+  markDmRead();
   setTimeout(function(){ var t=$('dmText'); if(t&&window.innerWidth>820) t.focus(); },60);
 }
 function closeDmConvo(){
@@ -2632,6 +2751,11 @@ function closeDmConvo(){
   _dmPeer=null; _dmId=null;
   $('dmConvo').style.display='none';
   $('dmListWrap').style.display='block';
+}
+function markDmRead(){
+  if(!_dmId) return;
+  var u={}; u['readTs.'+session.uid]=Date.now();
+  db.collection('dms').doc(_dmId).update(u).catch(function(){});
 }
 function renderDmMessages(msgs){
   var box=$('dmScroll'); if(!box) return;
@@ -2641,8 +2765,17 @@ function renderDmMessages(msgs){
     var mine=m.uid===session.uid;
     var canDel = session.role==='chef' || (mine && (Date.now()-(m.ts||0) < 3600000));
     var del = canDel ? '<button class="msg-del" data-del="'+esc(m.id)+'" title="Löschen">✕</button>' : '';
-    return '<div class="msg'+(mine?' mine':'')+'"><div class="meta"><b>'+esc(m.name)+'</b><time>'+fmtTime(m.ts)+'</time>'+del+'</div>'+
-      '<div class="body">'+linkify(esc(m.text||''))+'</div></div>';
+    var body;
+    if(m.type==='checklist'){
+      var done=(m.items||[]).filter(function(i){ return i.done; }).length;
+      body='<div class="dm-checklist"><div class="dm-cl-h">📋 Checkliste · '+done+'/'+(m.items||[]).length+'</div>'+
+        (m.items||[]).map(function(it,ix){
+          return '<label class="dm-cl-item'+(it.done?' done':'')+'"><input type="checkbox" data-mid="'+esc(m.id)+'" data-ix="'+ix+'"'+(it.done?' checked':'')+' /><span>'+esc(it.t)+'</span></label>';
+        }).join('')+'</div>';
+    } else {
+      body='<div class="body">'+linkify(esc(m.text||''))+'</div>';
+    }
+    return '<div class="msg'+(mine?' mine':'')+'"><div class="meta"><b>'+esc(m.name)+'</b><time>'+fmtTime(m.ts)+'</time>'+del+'</div>'+body+'</div>';
   }).join('');
   box.querySelectorAll('.msg-del').forEach(function(b){
     b.addEventListener('click',function(){
@@ -2651,7 +2784,28 @@ function renderDmMessages(msgs){
           .catch(function(e){ toast('Fehler: '+e.message,true); });
     });
   });
+  box.querySelectorAll('input[data-mid]').forEach(function(cb){
+    cb.addEventListener('change',function(){
+      var mid=cb.dataset.mid, ix=+cb.dataset.ix;
+      var msg=msgs.filter(function(x){ return x.id===mid; })[0]; if(!msg) return;
+      var items=(msg.items||[]).map(function(i){ return {t:i.t, done:i.done}; });
+      if(items[ix]) items[ix].done=cb.checked;
+      db.collection('dms').doc(_dmId).collection('messages').doc(mid).update({items:items})
+        .catch(function(e){ toast('Fehler: '+e.message,true); });
+    });
+  });
   if(atBottom) box.scrollTop=box.scrollHeight;
+  markDmRead();
+}
+function touchDmThread(preview){
+  if(!_dmId || !_dmPeer) return;
+  var now=Date.now();
+  var names={}; names[session.uid]=session.name; names[_dmPeer.uid]=_dmPeer.name;
+  var rt={}; rt[session.uid]=now;
+  db.collection('dms').doc(_dmId).set({
+    participants:[session.uid,_dmPeer.uid], names:names,
+    last:preview, lastTs:now, lastSender:session.uid, readTs:rt
+  }, {merge:true}).catch(function(){});
 }
 function sendDm(){
   if(!_dmId) return;
@@ -2659,8 +2813,24 @@ function sendDm(){
   ta.value=''; ta.style.height='auto';
   db.collection('dms').doc(_dmId).collection('messages').add({
     uid:session.uid, name:session.name, text:text, ts:Date.now()
-  }).catch(function(e){ toast('Sendefehler: '+e.message,true); });
+  }).then(function(){ touchDmThread(text); }).catch(function(e){ toast('Sendefehler: '+e.message,true); });
   ta.focus();
+}
+/* Checkliste/To-do per DM an eine Person senden */
+function sendChecklistDM(peerUid, peerName, items){
+  items=(items||[]).map(function(t){ return String(t).trim(); }).filter(Boolean);
+  if(!items.length){ toast('Keine Schritte angegeben.',true); return; }
+  var dmId='dm_'+[session.uid,peerUid].sort().join('_');
+  var now=Date.now();
+  db.collection('dms').doc(dmId).collection('messages').add({
+    uid:session.uid, name:session.name, type:'checklist',
+    items:items.map(function(t){ return {t:t, done:false}; }), ts:now
+  }).then(function(){
+    var names={}; names[session.uid]=session.name; names[peerUid]=peerName;
+    var rt={}; rt[session.uid]=now;
+    return db.collection('dms').doc(dmId).set({ participants:[session.uid,peerUid], names:names, last:'📋 Checkliste', lastTs:now, lastSender:session.uid, readTs:rt }, {merge:true});
+  }).then(function(){ toast('Checkliste an '+peerName+' gesendet ✓'); })
+    .catch(function(e){ toast('Fehler: '+e.message,true); });
 }
 
 /* ============================================================
@@ -2686,6 +2856,12 @@ function renderOnboarding(){
       ? _onboardSteps.map(function(s,i){ return '<div class="ob-erow"><span>'+esc(s)+'</span><button class="t-del" data-i="'+i+'" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button></div>'; }).join('')
       : '<p style="color:var(--text-3);font-size:.88rem">Noch keine Schritte – unten hinzufügen.</p>';
     ed.querySelectorAll('[data-i]').forEach(function(b){ b.addEventListener('click',function(){ _onboardSteps.splice(+b.dataset.i,1); saveOnboardingSteps(); }); });
+    var sel=$('obSendTo');
+    if(sel){
+      var cur=sel.value;
+      sel.innerHTML=_employees.map(function(e){ return '<option value="'+esc(e.uid)+'">'+esc(e.name||e.email||'?')+'</option>'; }).join('');
+      if(cur) sel.value=cur;
+    }
     return;
   }
   var card=$('obCard'); if(!card) return;
@@ -2711,7 +2887,60 @@ function renderOnboarding(){
   });
 }
 
+/* ============================================================
+   PROFIL-EDITOR
+   ============================================================ */
+var PROFILE_COLORS=['#00C060','#FF6B35','#3B82F6','#A855F7','#EF4444','#F59E0B','#14B8A6','#EC4899','#64748B'];
+var _pmColor='';
+function applyOwnAvatar(){
+  var av=$('uAvatar'); if(!av) return;
+  av.textContent = session.emoji ? session.emoji : initials(session.name);
+  av.style.background = session.color || '';
+  av.classList.toggle('chef', session.role==='chef' && !session.color);
+}
+function pmPreview(){
+  var av=$('pmPreview'); if(!av) return;
+  var name=$('pmName').value||session.name, emoji=$('pmEmoji').value.trim();
+  av.textContent = emoji ? emoji : initials(name);
+  av.style.background = _pmColor || '';
+}
+function openProfile(){
+  $('pmName').value=session.name||'';
+  $('pmStatus').value=session.status||'';
+  $('pmEmoji').value=session.emoji||'';
+  _pmColor=session.color||'';
+  var c=$('pmColors');
+  c.innerHTML='<div class="pm-color'+(_pmColor?'':' sel')+'" data-c="" style="background:linear-gradient(135deg,#00E06E,#19FF85)" title="Standard"></div>'+
+    PROFILE_COLORS.map(function(col){ return '<div class="pm-color'+(_pmColor===col?' sel':'')+'" data-c="'+col+'" style="background:'+col+'"></div>'; }).join('');
+  c.querySelectorAll('.pm-color').forEach(function(el){ el.addEventListener('click',function(){
+    _pmColor=el.dataset.c;
+    c.querySelectorAll('.pm-color').forEach(function(x){ x.classList.remove('sel'); });
+    el.classList.add('sel'); pmPreview();
+  }); });
+  $('pmErr').textContent=''; pmPreview();
+  $('profileModal').classList.add('show');
+}
+function closeProfile(){ $('profileModal').classList.remove('show'); }
+function saveProfile(){
+  var name=$('pmName').value.trim();
+  if(!name){ $('pmErr').textContent='Name darf nicht leer sein.'; return; }
+  var data={ name:name, status:$('pmStatus').value.trim()||null, emoji:$('pmEmoji').value.trim()||null, color:_pmColor||null };
+  var btn=$('pmSave'); btn.disabled=true;
+  db.collection('users').doc(session.uid).update(data).then(function(){
+    session.name=data.name; session.status=data.status; session.emoji=data.emoji; session.color=data.color;
+    $('uName').textContent=session.name; applyOwnAvatar();
+    btn.disabled=false; closeProfile(); toast('Profil gespeichert ✓');
+  }).catch(function(e){ $('pmErr').textContent=e.message; btn.disabled=false; });
+}
+
 function bindActions(){
+  // Profil
+  var ua=$('uAvatar'); if(ua) ua.addEventListener('click',openProfile);
+  var pmc=$('pmClose'); if(pmc) pmc.addEventListener('click',closeProfile);
+  var pms=$('pmSave'); if(pms) pms.addEventListener('click',saveProfile);
+  var pmo=$('profileModal'); if(pmo) pmo.addEventListener('click',function(e){ if(e.target===pmo) closeProfile(); });
+  ['pmName','pmEmoji'].forEach(function(idd){ var el=$(idd); if(el) el.addEventListener('input',pmPreview); });
+
   // Suche
   var sb=$('searchBtn'); if(sb) sb.addEventListener('click',openSearch);
   var si=$('searchInput'); if(si) si.addEventListener('input',function(){ doSearch(this.value); });
@@ -2723,6 +2952,11 @@ function bindActions(){
   var dmSearch=$('dmSearch'); if(dmSearch) dmSearch.addEventListener('input',function(){ renderDmPeople(this.value); });
   var dmBack=$('dmBack'); if(dmBack) dmBack.addEventListener('click',closeDmConvo);
   var dmSend=$('dmSend'); if(dmSend) dmSend.addEventListener('click',sendDm);
+  var dmCl=$('dmChecklist'); if(dmCl) dmCl.addEventListener('click',function(){
+    if(!_dmPeer) return;
+    var raw=prompt('Checkliste an '+_dmPeer.name+' senden.\nPunkte mit Komma trennen:');
+    if(raw) sendChecklistDM(_dmPeer.uid, _dmPeer.name, raw.split(','));
+  });
   var dmText=$('dmText');
   if(dmText){
     dmText.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendDm(); } });
@@ -2827,6 +3061,11 @@ function bindActions(){
     function addObStep(){ var v=obNew.value.trim(); if(!v) return; _onboardSteps.push(v); obNew.value=''; saveOnboardingSteps(); }
     if(obAdd) obAdd.addEventListener('click', addObStep);
     if(obNew) obNew.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addObStep(); } });
+    var obSend=$('obSend'); if(obSend) obSend.addEventListener('click',function(){
+      var sel=$('obSendTo'); if(!sel||!sel.value){ toast('Bitte Mitarbeiter wählen.',true); return; }
+      if(!_onboardSteps.length){ toast('Erst Schritte anlegen.',true); return; }
+      sendChecklistDM(sel.value, sel.options[sel.selectedIndex].text, _onboardSteps);
+    });
 
     // Archiv leeren
     var ac=$('archClear'); if(ac) ac.addEventListener('click', clearArchive);
