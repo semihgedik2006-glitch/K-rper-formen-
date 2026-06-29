@@ -20,10 +20,14 @@ jobs:
       - name: Code auschecken
         uses: actions/checkout@v4
 
-      - name: Node 20 einrichten
+      - name: Node 22 einrichten
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+
+      - name: Functions-Abhängigkeiten installieren
+        working-directory: functions
+        run: npm install
 
       - name: Google-Auth (Service-Account aus GitHub-Secret)
         id: auth
