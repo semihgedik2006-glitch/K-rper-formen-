@@ -2703,7 +2703,7 @@ function listenDmThreads(){
       _dmThreadsFirst=false;
       updateDmBadge();
       if(currentView==='dm' && $('dmConvo').style.display==='none' && (!$('dmSearch')||!$('dmSearch').value)) renderDmPeople('');
-    }, function(e){ console.error('DM-Threads:',e.message); });
+    }, function(e){ console.error('DM-Threads:',e.message); toast('Verlauf-Fehler: '+e.message,true); });
 }
 function dmUnreadCount(){
   return _dmThreads.filter(function(t){
@@ -2770,7 +2770,7 @@ function openDm(uid,name){
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
   _dmUnsub=db.collection('dms').doc(_dmId).collection('messages').orderBy('ts').limitToLast(200)
     .onSnapshot(function(snap){ renderDmMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })); },
-      function(e){ console.error('DM:',e.message); });
+      function(e){ console.error('DM:',e.message); toast('Chat-Fehler: '+e.message,true); });
   markDmRead();
   setTimeout(function(){ var t=$('dmText'); if(t&&window.innerWidth>820) t.focus(); },60);
 }
@@ -2835,7 +2835,7 @@ function touchDmThread(preview){
   db.collection('dms').doc(_dmId).set({
     participants:[session.uid,_dmPeer.uid], names:names,
     last:preview, lastTs:now, lastSender:session.uid, readTs:rt
-  }, {merge:true}).catch(function(){});
+  }, {merge:true}).catch(function(e){ toast('Verlauf-Fehler: '+e.message,true); });
 }
 function sendDm(){
   if(!_dmId) return;
