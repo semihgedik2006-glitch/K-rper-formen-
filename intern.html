@@ -1224,25 +1224,13 @@ try{
   return;
 }
 
-/* Globale Fehler ans UI weiterleiten (damit man auf dem Handy sieht, was los ist) */
+/* Globale Fehler nur in die Konsole – KEINE Toasts für generische/herkunftsfremde
+   „Script error." (kommen auf iOS oft harmlos von Firebase/Fonts und verwirren nur). */
 window.addEventListener('error', function(ev){
-  var t = document.getElementById('toast');
-  if(t && ev && ev.message){
-    t.textContent = 'Fehler: '+ev.message.slice(0,90);
-    t.style.borderColor = 'var(--danger)';
-    t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 5000);
-  }
+  if(ev && ev.message) console.warn('Fehler:', ev.message);
 });
 window.addEventListener('unhandledrejection', function(ev){
-  var t = document.getElementById('toast');
-  var msg = (ev && ev.reason && (ev.reason.message||ev.reason.code))||'Promise-Fehler';
-  if(t){
-    t.textContent = 'Fehler: '+String(msg).slice(0,90);
-    t.style.borderColor = 'var(--danger)';
-    t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 5000);
-  }
+  console.warn('Promise:', (ev && ev.reason && (ev.reason.message||ev.reason.code))||ev.reason);
 });
 
 /* Manifest wird jetzt statisch über manifest.json eingebunden (siehe <head>). */
