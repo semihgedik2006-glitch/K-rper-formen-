@@ -4,7 +4,7 @@
    Bei Code-Änderungen VERSION hochzählen. */
 const VERSION = 'v1';
 const CACHE = 'studiochat-' + VERSION;
-const PRECACHE = ['./intern.html', './manifest.json', './icon.svg'];
+const PRECACHE = ['./index.html', './manifest.json', './icon.svg'];
 
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
@@ -29,7 +29,7 @@ self.addEventListener('notificationclick', function (e) {
   e.notification.close();
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
     for (const c of list) { if ('focus' in c) return c.focus(); }
-    if (self.clients.openWindow) return self.clients.openWindow('./intern.html');
+    if (self.clients.openWindow) return self.clients.openWindow('./index.html');
   }));
 });
 
@@ -59,7 +59,7 @@ self.addEventListener('fetch', function (e) {
       fetch(e.request).then(function (r) {
         const cp = r.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, cp); });
         return r;
-      }).catch(function () { return caches.match(e.request).then(function (m) { return m || caches.match('./intern.html'); }); })
+      }).catch(function () { return caches.match(e.request).then(function (m) { return m || caches.match('./index.html'); }); })
     );
     return;
   }
