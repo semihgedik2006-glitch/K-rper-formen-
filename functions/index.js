@@ -89,3 +89,58 @@ exports.onNewAnnouncement = region.firestore
     }, a.uid);
     await sendPush(tokens, '📣 ' + (a.from || 'Leitung'), a.text || '');
   });
+
+/* ── Neue Direktnachricht → Push an den Empfänger ── */
+exports.onNewDm = region.firestore
+  .document('dms/{dmId}/messages/{msgId}')
+  .onCreate(async (snap, ctx) => {
+    const m = snap.data() || {};
+    const parts = String(ctx.params.dmId).split('_'); // ['dm', uidA, uidB]
+    const peers = parts.slice(1);
+    const recipient = peers.find(u => u !== m.uid);
+    if (!recipient) return;
+    const tokens = await collectTokens(d => d.uid === recipient, m.uid);
+    const body = m.type === 'checklist' ? '📋 Checkliste' : (m.text || '');
+    await sendPush(tokens, m.name || 'Neue Nachricht', body);
+  });
+
+/* ── Täglicher Geburtstagsgruß vom System-Account ── */
+exports.birthdayGreetings = region.pubsub
+  .schedule('every day 08:00')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const now = new Date();
+    const mm = now.getMonth() + 1, dd = now.getDate(), year = now.getFullYear();
+    // System-Account (Anzeige) sicherstellen
+    await db.collection('users').doc('system')
+      .set({ name: 'Körperformen 🎂', role: 'chef', system: true }, { merge: true });
+
+    const snap = await db.collection('users').get();
+    for (const doc of snap.docs) {
+      const u = doc.data() || {};
+      if (!u.bday) continue;
+      const p = String(u.bday).split('-');
+      if (p.length < 3) continue;
+      if (+p[1] === mm && +p[2] === dd && u.lastBdayDM !== year) {
+        const uid = doc.id;
+        const dmId = 'dm_' + ['system', uid].sort().join('_');
+        const ts = Date.now();
+        await db.collection('dms').doc(dmId).collection('messages').add({
+          uid: 'system', name: 'Körperformen 🎂',
+          text: '🎉 Alles Gute zum Geburtstag, ' + (u.name || '') + '! Hab einen tollen Tag. – dein Körperformen-Team',
+          ts: ts
+        });
+        const names = { system: 'Körperformen 🎂' }; names[uid] = u.name || '';
+        const readTs = { system: ts };
+        await db.collection('dms').doc(dmId).set({
+          participants: ['system', uid], names: names,
+          last: '🎉 Alles Gute zum Geburtstag!', lastTs: ts, lastSender: 'system', readTs: readTs
+        }, { merge: true });
+        // Push
+        const tokens = await collectTokens(d => d.uid === uid, 'system');
+        await sendPush(tokens, 'Körperformen 🎂', 'Alles Gute zum Geburtstag! 🎉');
+        await db.collection('users').doc(uid).update({ lastBdayDM: year });
+      }
+    }
+    return null;
+  });

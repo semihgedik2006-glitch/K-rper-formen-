@@ -339,6 +339,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pm-color{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .15s}
 .pm-color:hover{transform:scale(1.1)}
 .pm-color.sel{border-color:var(--text)}
+#personModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#personModal.show{display:flex}
+.pm-photo-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.pm-photo-row .avatar{width:56px;height:56px;font-size:1.3rem;flex-shrink:0}
 
 /* ── Mobile nav ── */
 .mobnav{display:none}
@@ -558,6 +563,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ann-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.92rem;line-height:1;
   padding:3px 7px;border-radius:7px;margin-left:6px;flex-shrink:0}
 .ann-del:hover{color:#ff8a8a;background:rgba(239,68,68,.12)}
+.chat-author{cursor:pointer}
+.chat-author:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -818,8 +825,7 @@ var FIREBASE_CONFIG = {
               <input class="inp" id="emEmail" type="email" placeholder="mitarbeiter@email.de" inputmode="email" autocomplete="off" /></div>
             <div class="field"><label for="emPw">Passwort (vergibst du, gib es dem Mitarbeiter)</label>
               <input class="inp" id="emPw" type="text" placeholder="Min. 6 Zeichen" autocomplete="off" /></div>
-            <div class="field"><label for="emBday">Geburtstag (optional)</label>
-              <input class="inp" id="emBday" type="date" /></div>
+            <p class="hint" style="margin:-4px 0 12px">Geburtstag & Profilbild trägt der Mitarbeiter selbst im Profil ein.</p>
             <div class="field"><label>Studios zuordnen</label>
               <div class="studio-checks" id="emStudios"></div></div>
             <button class="btn btn-primary btn-sm" id="emCreate">Mitarbeiter anlegen</button>
@@ -925,13 +931,34 @@ var FIREBASE_CONFIG = {
   <div class="pm-box">
     <button class="lb-close" id="pmClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
     <h3 style="margin-bottom:16px">Mein Profil</h3>
-    <div style="text-align:center;margin-bottom:16px"><div class="avatar" id="pmPreview" style="width:66px;height:66px;font-size:1.5rem;margin:0 auto">?</div></div>
+    <div style="text-align:center;margin-bottom:14px">
+      <div class="avatar" id="pmPreview" style="width:74px;height:74px;font-size:1.6rem;margin:0 auto">?</div>
+      <input type="file" accept="image/*" class="hidden-file" id="pmPhotoFile" />
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:center">
+        <button type="button" class="btn btn-ghost btn-sm" id="pmPhotoBtn">📷 Bild wählen</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="pmPhotoRemove" style="display:none">Entfernen</button>
+      </div>
+    </div>
     <div class="field"><label for="pmName">Name</label><input class="inp" id="pmName" maxlength="50" /></div>
     <div class="field"><label for="pmStatus">Status / Spruch (optional)</label><input class="inp" id="pmStatus" maxlength="80" placeholder="z. B. Trainer in Hürth 💪" /></div>
-    <div class="field"><label for="pmEmoji">Avatar-Emoji statt Initialen (optional)</label><input class="inp" id="pmEmoji" maxlength="2" placeholder="z. B. 💪" /></div>
+    <div class="field"><label for="pmBday">Geburtstag (optional)</label><input class="inp" id="pmBday" type="date" /></div>
+    <div class="field"><label for="pmEmoji">Avatar-Emoji statt Initialen (optional, wenn kein Bild)</label><input class="inp" id="pmEmoji" maxlength="2" placeholder="z. B. 💪" /></div>
     <div class="field"><label>Avatar-Farbe</label><div class="pm-colors" id="pmColors"></div></div>
     <p class="auth-err" id="pmErr"></p>
     <button class="btn btn-primary" id="pmSave" style="width:100%">Speichern</button>
+  </div>
+</div>
+
+<!-- Profil ansehen (andere) -->
+<div id="personModal">
+  <div class="pm-box" style="text-align:center">
+    <button class="lb-close" id="pmpClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
+    <div class="avatar" id="pmpAv" style="width:84px;height:84px;font-size:1.9rem;margin:8px auto 12px"></div>
+    <h3 id="pmpName">Name</h3>
+    <p id="pmpStatus" style="color:var(--text-2);margin:8px 0 4px;min-height:1em"></p>
+    <p id="pmpRole" style="color:var(--text-3);font-size:.85rem;margin-bottom:18px"></p>
+    <button class="btn btn-primary" id="pmpDm" style="width:100%">✉️ Direktnachricht</button>
+    <button class="btn btn-ghost btn-sm" id="pmpChecklist" style="width:100%;margin-top:8px;display:none">📋 Checkliste senden</button>
   </div>
 </div>
 
@@ -1249,7 +1276,8 @@ var AUTH_ERRORS = {
 function authErrMsg(code){ return AUTH_ERRORS[code]||('Fehler ('+code+')'); }
 
 /* ── Bild verkleinern + komprimieren → data-URL (kostenlos, in Firestore speicherbar) ── */
-function fileToCompressedDataURL(file){
+function fileToCompressedDataURL(file, maxDim, maxBytes){
+  maxDim=maxDim||IMG_MAX_DIM; maxBytes=maxBytes||650000;
   return new Promise(function(resolve,reject){
     if(!file || !/^image\//.test(file.type)){ reject(new Error('Nur Bilder erlaubt.')); return; }
     var reader=new FileReader();
@@ -1259,15 +1287,13 @@ function fileToCompressedDataURL(file){
       img.onerror=function(){ reject(new Error('Bild ungültig.')); };
       img.onload=function(){
         var w=img.width, h=img.height;
-        var scale=Math.min(1, IMG_MAX_DIM/Math.max(w,h));
+        var scale=Math.min(1, maxDim/Math.max(w,h));
         w=Math.round(w*scale); h=Math.round(h*scale);
         var c=document.createElement('canvas'); c.width=w; c.height=h;
         c.getContext('2d').drawImage(img,0,0,w,h);
-        // Qualität so weit senken, bis das Ergebnis sicher < ~650 KB ist
         var q=0.72, data=c.toDataURL('image/jpeg',q);
-        while(data.length>650000 && q>0.35){ q-=0.1; data=c.toDataURL('image/jpeg',q); }
-        // Falls immer noch zu groß: Kantenlänge halbieren und erneut
-        if(data.length>650000){
+        while(data.length>maxBytes && q>0.35){ q-=0.1; data=c.toDataURL('image/jpeg',q); }
+        if(data.length>maxBytes){
           var c2=document.createElement('canvas'); c2.width=Math.round(w/1.4); c2.height=Math.round(h/1.4);
           c2.getContext('2d').drawImage(img,0,0,c2.width,c2.height);
           data=c2.toDataURL('image/jpeg',0.5);
@@ -1498,6 +1524,7 @@ function showApp(){
   initMessaging();
   maybeShowNotifBanner();
   showView(session.role==='chef' ? 'chef' : 'chat');
+  birthdayCheck();
   // Regelmäßig neu zeichnen, damit erledigte Aufgaben automatisch ins Archiv wandern
   if(!_archiveTimer) _archiveTimer=setInterval(function(){ if(session) renderTodos(); }, 5*60*1000);
 }
@@ -1722,21 +1749,20 @@ function createEmployee(){
   if(!name||!email||!pw){ note.textContent='Bitte Name, E-Mail und Passwort ausfüllen.'; return; }
   if(pw.length<6){ note.textContent='Passwort muss mind. 6 Zeichen haben.'; return; }
   if(!studios.length){ note.textContent='Bitte mindestens ein Studio zuordnen.'; return; }
-  var bday=$('emBday').value||null;
   var btn=$('emCreate'); btn.disabled=true; btn.textContent='…';
   var sec=secondaryApp();
   sec.auth().createUserWithEmailAndPassword(email,pw)
     .then(function(cred){
       return db.collection('users').doc(cred.user.uid).set({
         name:name, email:email, role:'mitarbeiter',
-        studios:studios, studio:studios[0]||null, bday:bday,
+        studios:studios, studio:studios[0]||null,
         createdAt:Date.now(), createdBy:session.uid
       }).then(function(){ return sec.auth().signOut(); });
     })
     .then(function(){
       note.style.color='var(--accent-d)';
       note.textContent='✓ '+name+' angelegt. Zugang: '+email+' · Passwort: '+pw;
-      $('emName').value=''; $('emEmail').value=''; $('emPw').value=''; $('emBday').value='';
+      $('emName').value=''; $('emEmail').value=''; $('emPw').value='';
       $('emStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
       btn.disabled=false; btn.textContent='Mitarbeiter anlegen';
     })
@@ -2133,7 +2159,7 @@ function renderMessages(msgs){
     var bodyHtml = m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '';
     var delBtn = canDel ? '<button class="msg-del" data-id="'+esc(m.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
     html+='<div class="msg'+(mine?' mine':'')+'">'+
-      '<div class="meta"><b>'+esc(m.name)+'</b>'+tag+'<time>'+fmtTime(m.ts)+'</time>'+delBtn+'</div>'+
+      '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+'<time>'+fmtTime(m.ts)+'</time>'+delBtn+'</div>'+
       bodyHtml+imgHtml+'</div>';
   });
   box.innerHTML=html;
@@ -2638,6 +2664,7 @@ var _dmThreads=[], _dmThreadsUnsub=null, _dmThreadPrev={}, _dmThreadsFirst=true;
 function _userById(uid){ for(var i=0;i<_allUsers.length;i++){ if(_allUsers[i].uid===uid) return _allUsers[i]; } return null; }
 function avatarMarkup(u){
   u=u||{};
+  if(u.photo) return '<div class="avatar" style="background-image:url('+u.photo+');background-size:cover;background-position:center"></div>';
   var bg=u.color?(' style="background:'+esc(u.color)+'"'):'';
   var chef=(u.role==='chef' && !u.color)?' chef':'';
   var c=u.emoji?esc(u.emoji):esc(initials(u.name));
@@ -2698,34 +2725,36 @@ function bindDmPersonClicks(box){
 function renderDmPeople(filter){
   var box=$('dmPeople'); if(!box) return;
   filter=(filter||'').trim().toLowerCase();
-  // Ohne Suchtext: bestehende Unterhaltungen zeigen
-  if(!filter && _dmThreads.length){
-    var html='<div class="dm-section">Unterhaltungen</div>';
-    html+=_dmThreads.map(function(t){
-      var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
-      if(_allUsers.length && !_userById(peer)) return ''; // gelöschte Accounts ausblenden
-      var nm=(t.names&&t.names[peer])||'?';
-      var u=_userById(peer)||{name:nm};
-      var unread=(t.lastTs||0) > ((t.readTs&&t.readTs[session.uid])||0) && t.lastSender!==session.uid;
-      var prev=(t.lastSender===session.uid?'Du: ':'')+(t.last||'');
-      return '<div class="dm-person" data-uid="'+esc(peer)+'" data-name="'+esc(nm)+'">'+
+  // Mit Suchtext: Personen suchen (so startet man neue Unterhaltungen)
+  if(filter){
+    var list=_allUsers.filter(function(u){ return u.uid!==session.uid && !u.system && (u.name||'').toLowerCase().indexOf(filter)>=0; });
+    list.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+    if(!list.length){ box.innerHTML=emptyHTML('Niemand gefunden','Tippe einen anderen Namen ein.'); return; }
+    box.innerHTML='<div class="dm-section">Ergebnisse</div>'+list.map(function(u){
+      var sub=u.status?u.status:(u.role==='chef'?'Chef':((u.studios&&u.studios.length)?u.studios.join(', '):(u.studio||'')));
+      return '<div class="dm-person" data-uid="'+esc(u.uid)+'" data-name="'+esc(u.name||'')+'">'+
         avatarMarkup(u)+
-        '<div class="who2"><b>'+esc(nm)+'</b><span>'+esc(prev)+'</span></div>'+
-        (unread?'<span class="dm-unread"></span>':'<span class="dm-time">'+(t.lastTs?fmtTime(t.lastTs):'')+'</span>')+
-      '</div>';
+        '<div class="who2"><b>'+esc(u.name||'?')+'</b><span>'+esc(sub)+'</span></div></div>';
     }).join('');
-    html+='<div class="dm-section">Neue Nachricht? Oben nach einer Person suchen.</div>';
-    box.innerHTML=html; bindDmPersonClicks(box); return;
+    bindDmPersonClicks(box); return;
   }
-  // Mit Suchtext (oder ohne Unterhaltungen): Personenliste
-  var list=_allUsers.filter(function(u){ return u.uid!==session.uid && (!filter || (u.name||'').toLowerCase().indexOf(filter)>=0); });
-  list.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
-  if(!list.length){ box.innerHTML=emptyHTML('Niemand gefunden','Hier erscheinen alle aus dem Team.'); return; }
-  box.innerHTML=list.map(function(u){
-    var sub=u.status?u.status:(u.role==='chef'?'Chef':((u.studios&&u.studios.length)?u.studios.join(', '):(u.studio||'')));
-    return '<div class="dm-person" data-uid="'+esc(u.uid)+'" data-name="'+esc(u.name||'')+'">'+
+  // Ohne Suchtext: nur der Verlauf (wie WhatsApp)
+  var threads=_dmThreads.filter(function(t){
+    var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+    return !(_allUsers.length && !_userById(peer));
+  });
+  if(!threads.length){ box.innerHTML=emptyHTML('Noch keine Unterhaltungen','Tippe oben einen Namen ein, um jemandem zu schreiben.'); return; }
+  box.innerHTML='<div class="dm-section">Unterhaltungen</div>'+threads.map(function(t){
+    var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+    var nm=(t.names&&t.names[peer])||'?';
+    var u=_userById(peer)||{name:nm};
+    var unread=(t.lastTs||0) > ((t.readTs&&t.readTs[session.uid])||0) && t.lastSender!==session.uid;
+    var prev=(t.lastSender===session.uid?'Du: ':'')+(t.last||'');
+    return '<div class="dm-person" data-uid="'+esc(peer)+'" data-name="'+esc(nm)+'">'+
       avatarMarkup(u)+
-      '<div class="who2"><b>'+esc(u.name||'?')+'</b><span>'+esc(sub)+'</span></div></div>';
+      '<div class="who2"><b>'+esc(nm)+'</b><span>'+esc(prev)+'</span></div>'+
+      (unread?'<span class="dm-unread"></span>':'<span class="dm-time">'+(t.lastTs?fmtTime(t.lastTs):'')+'</span>')+
+    '</div>';
   }).join('');
   bindDmPersonClicks(box);
 }
@@ -2734,8 +2763,7 @@ function openDm(uid,name){
   _dmPeer={uid:uid,name:pu.name||name};
   _dmId='dm_'+[session.uid,uid].sort().join('_');
   $('dmPeer').textContent=_dmPeer.name;
-  var av=$('dmPeerAv'); av.textContent=pu.emoji?pu.emoji:initials(_dmPeer.name);
-  av.style.background=pu.color||''; av.classList.toggle('chef', pu.role==='chef' && !pu.color);
+  applyAvatarEl($('dmPeerAv'), pu);
   $('dmChecklist').style.display = session.role==='chef' ? 'grid' : 'none';
   $('dmListWrap').style.display='none';
   $('dmConvo').style.display='flex';
@@ -2891,24 +2919,35 @@ function renderOnboarding(){
    PROFIL-EDITOR
    ============================================================ */
 var PROFILE_COLORS=['#00C060','#FF6B35','#3B82F6','#A855F7','#EF4444','#F59E0B','#14B8A6','#EC4899','#64748B'];
-var _pmColor='';
-function applyOwnAvatar(){
-  var av=$('uAvatar'); if(!av) return;
-  av.textContent = session.emoji ? session.emoji : initials(session.name);
-  av.style.background = session.color || '';
-  av.classList.toggle('chef', session.role==='chef' && !session.color);
+var _pmColor='', _pmPhoto='';
+function applyAvatarEl(av, u){
+  if(!av) return;
+  if(u.photo){
+    av.textContent='';
+    av.style.background='';
+    av.style.backgroundImage='url('+u.photo+')';
+    av.style.backgroundSize='cover'; av.style.backgroundPosition='center';
+    av.classList.remove('chef');
+  } else {
+    av.style.backgroundImage='';
+    av.textContent = u.emoji ? u.emoji : initials(u.name);
+    av.style.background = u.color || '';
+    av.classList.toggle('chef', u.role==='chef' && !u.color);
+  }
 }
+function applyOwnAvatar(){ applyAvatarEl($('uAvatar'), session); }
 function pmPreview(){
   var av=$('pmPreview'); if(!av) return;
   var name=$('pmName').value||session.name, emoji=$('pmEmoji').value.trim();
-  av.textContent = emoji ? emoji : initials(name);
-  av.style.background = _pmColor || '';
+  applyAvatarEl(av, { photo:_pmPhoto||'', emoji:emoji, color:_pmColor, name:name, role:session.role });
 }
 function openProfile(){
   $('pmName').value=session.name||'';
   $('pmStatus').value=session.status||'';
   $('pmEmoji').value=session.emoji||'';
-  _pmColor=session.color||'';
+  $('pmBday').value=session.bday||'';
+  _pmColor=session.color||''; _pmPhoto=session.photo||'';
+  $('pmPhotoRemove').style.display=_pmPhoto?'inline-flex':'none';
   var c=$('pmColors');
   c.innerHTML='<div class="pm-color'+(_pmColor?'':' sel')+'" data-c="" style="background:linear-gradient(135deg,#00E06E,#19FF85)" title="Standard"></div>'+
     PROFILE_COLORS.map(function(col){ return '<div class="pm-color'+(_pmColor===col?' sel':'')+'" data-c="'+col+'" style="background:'+col+'"></div>'; }).join('');
@@ -2924,22 +2963,80 @@ function closeProfile(){ $('profileModal').classList.remove('show'); }
 function saveProfile(){
   var name=$('pmName').value.trim();
   if(!name){ $('pmErr').textContent='Name darf nicht leer sein.'; return; }
-  var data={ name:name, status:$('pmStatus').value.trim()||null, emoji:$('pmEmoji').value.trim()||null, color:_pmColor||null };
+  var data={
+    name:name, status:$('pmStatus').value.trim()||null, emoji:$('pmEmoji').value.trim()||null,
+    color:_pmColor||null, bday:$('pmBday').value||null, photo:_pmPhoto||null
+  };
   var btn=$('pmSave'); btn.disabled=true;
   db.collection('users').doc(session.uid).update(data).then(function(){
-    session.name=data.name; session.status=data.status; session.emoji=data.emoji; session.color=data.color;
+    session.name=data.name; session.status=data.status; session.emoji=data.emoji;
+    session.color=data.color; session.bday=data.bday; session.photo=data.photo;
     $('uName').textContent=session.name; applyOwnAvatar();
     btn.disabled=false; closeProfile(); toast('Profil gespeichert ✓');
   }).catch(function(e){ $('pmErr').textContent=e.message; btn.disabled=false; });
 }
 
+/* Profil ansehen (andere Person) */
+var _pmpUid=null, _pmpName='';
+function openPersonPopup(uid){
+  if(uid===session.uid){ openProfile(); return; }
+  var u=_userById(uid);
+  if(!u){ toast('Profil nicht verfügbar.'); return; }
+  _pmpUid=uid; _pmpName=u.name||'?';
+  applyAvatarEl($('pmpAv'), u);
+  $('pmpName').textContent=u.name||'?';
+  $('pmpStatus').textContent=u.status||'';
+  $('pmpRole').textContent = u.role==='chef'?'Chef · Leitung':((u.studios&&u.studios.length)?u.studios.join(', '):(u.studio||''));
+  $('pmpChecklist').style.display = (session.role==='chef')?'block':'none';
+  $('personModal').classList.add('show');
+}
+function closePersonPopup(){ $('personModal').classList.remove('show'); }
+
+/* Geburtstags-Feier beim Login (visuell). Der echte DM-Gruß kommt zusätzlich
+   vom System-Account über die Cloud Function (functions/index.js). */
+function birthdayCheck(){
+  if(!session || !session.bday) return;
+  var p=String(session.bday).split('-'); if(p.length<3) return;
+  var now=new Date(), y=now.getFullYear();
+  var isToday = (+p[1]===now.getMonth()+1) && (+p[2]===now.getDate());
+  if(isToday && session.lastBdayCheer!==y){
+    session.lastBdayCheer=y;
+    db.collection('users').doc(session.uid).update({lastBdayCheer:y}).catch(function(){});
+    setTimeout(function(){ fireConfetti(); toast('🎉 Alles Gute zum Geburtstag, '+(session.name||'')+'!'); }, 900);
+  }
+}
+
 function bindActions(){
-  // Profil
+  // Profil bearbeiten
   var ua=$('uAvatar'); if(ua) ua.addEventListener('click',openProfile);
   var pmc=$('pmClose'); if(pmc) pmc.addEventListener('click',closeProfile);
   var pms=$('pmSave'); if(pms) pms.addEventListener('click',saveProfile);
   var pmo=$('profileModal'); if(pmo) pmo.addEventListener('click',function(e){ if(e.target===pmo) closeProfile(); });
   ['pmName','pmEmoji'].forEach(function(idd){ var el=$(idd); if(el) el.addEventListener('input',pmPreview); });
+  var pmPB=$('pmPhotoBtn'); if(pmPB) pmPB.addEventListener('click',function(){ $('pmPhotoFile').click(); });
+  var pmPF=$('pmPhotoFile'); if(pmPF) pmPF.addEventListener('change',function(){
+    var f=this.files&&this.files[0]; this.value=''; if(!f) return;
+    toast('Bild wird vorbereitet …');
+    fileToCompressedDataURL(f,160,60000).then(function(d){ _pmPhoto=d; $('pmPhotoRemove').style.display='inline-flex'; pmPreview(); })
+      .catch(function(e){ toast(e.message,true); });
+  });
+  var pmPR=$('pmPhotoRemove'); if(pmPR) pmPR.addEventListener('click',function(){ _pmPhoto=''; this.style.display='none'; pmPreview(); });
+
+  // Profil ansehen (Popup)
+  var pmpC=$('pmpClose'); if(pmpC) pmpC.addEventListener('click',closePersonPopup);
+  var pmpM=$('personModal'); if(pmpM) pmpM.addEventListener('click',function(e){ if(e.target===pmpM) closePersonPopup(); });
+  var pmpDm=$('pmpDm'); if(pmpDm) pmpDm.addEventListener('click',function(){ var id=_pmpUid,nm=_pmpName; closePersonPopup(); showView('dm'); openDm(id,nm); });
+  var pmpCl=$('pmpChecklist'); if(pmpCl) pmpCl.addEventListener('click',function(){
+    var raw=prompt('Checkliste an '+_pmpName+' senden.\nPunkte mit Komma trennen:');
+    if(raw){ var id=_pmpUid,nm=_pmpName; closePersonPopup(); sendChecklistDM(id,nm,raw.split(',')); }
+  });
+  // Namen im Gruppenchat antippen → Profil
+  var csA=$('chatScroll'); if(csA) csA.addEventListener('click',function(e){
+    var a=e.target.closest && e.target.closest('.chat-author'); if(a && a.dataset.uid) openPersonPopup(a.dataset.uid);
+  });
+  // DM-Kopf antippen → Profil
+  var dmPeerN=$('dmPeer'); if(dmPeerN){ dmPeerN.style.cursor='pointer'; dmPeerN.addEventListener('click',function(){ if(_dmPeer) openPersonPopup(_dmPeer.uid); }); }
+  var dmPeerAvEl=$('dmPeerAv'); if(dmPeerAvEl){ dmPeerAvEl.style.cursor='pointer'; dmPeerAvEl.addEventListener('click',function(){ if(_dmPeer) openPersonPopup(_dmPeer.uid); }); }
 
   // Suche
   var sb=$('searchBtn'); if(sb) sb.addEventListener('click',openSearch);
