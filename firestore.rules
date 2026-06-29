@@ -89,7 +89,10 @@ service cloud.firestore {
     // ── Direktnachrichten (1:1) – nur die beiden Beteiligten ──
     // dmId hat die Form  dm_<uidA>_<uidB>
     match /dms/{dmId} {
-      allow read, write: if signedIn() && dmId.split('_').hasAny([request.auth.uid]);
+      // Lesen/Abfragen über das participants-Feld (funktioniert auch für Listen-Abfragen)
+      allow read: if signedIn() && request.auth.uid in resource.data.participants;
+      allow create: if signedIn() && request.auth.uid in request.resource.data.participants;
+      allow update: if signedIn() && request.auth.uid in resource.data.participants;
     }
     match /dms/{dmId}/messages/{msgId} {
       allow read: if signedIn() && dmId.split('_').hasAny([request.auth.uid]);
