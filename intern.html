@@ -147,7 +147,16 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   box-shadow:var(--shadow-lg)}
 .auth-brand{font-family:var(--font-head);font-weight:800;font-size:1.5rem;letter-spacing:.5px;margin-bottom:4px}
 .auth-brand b{color:var(--accent-d)}
-.auth-sub{color:var(--text-2);margin-bottom:22px;font-size:.95rem}
+.auth-sub{color:var(--text-2);margin-bottom:22px;font-size:.95rem;text-align:center}
+.auth-brand{text-align:center}
+.auth-logo{display:flex;justify-content:center;margin-bottom:8px}
+.auth-logo svg{width:74px;height:74px;animation:scGlow 2.6s ease-in-out infinite}
+.auth-logo .al-ring{stroke-dasharray:252;stroke-dashoffset:252;animation:scDraw 1.1s var(--ease-out) .2s forwards}
+@keyframes scDraw{to{stroke-dashoffset:0}}
+@keyframes scGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(34,211,238,.4))}50%{filter:drop-shadow(0 0 18px rgba(236,72,153,.7))}}
+.tb-logo{display:inline-flex;align-items:center}
+.tb-logo svg{width:26px;height:26px;filter:drop-shadow(0 0 5px rgba(124,58,237,.55))}
+@media(prefers-reduced-motion:reduce){.auth-logo .al-ring,.sp-ring{stroke-dashoffset:0!important}}
 /* Tabs */
 .auth-tabs{display:flex;gap:0;border:1px solid var(--line-2);border-radius:999px;padding:3px;margin-bottom:22px;background:rgba(0,0,0,.2)}
 .auth-tab{flex:1;padding:9px;border-radius:999px;border:none;background:none;cursor:pointer;
@@ -595,6 +604,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 </head>
 <body>
 
+<!-- StudioChat-Logo-Farbverlauf (einmal global definiert) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="scGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#8B5CF6"/><stop offset="0.5" stop-color="#22D3EE"/><stop offset="1" stop-color="#EC4899"/>
+  </linearGradient>
+</defs></svg>
+
 <!-- ── Splash-Screen (animierter Start) ── -->
 <div id="splash" aria-hidden="true">
   <div class="sp-logo">
@@ -656,6 +672,13 @@ var FIREBASE_CONFIG = {
 <div class="auth-wrap" id="authWrap">
   <div class="auth-mesh" aria-hidden="true"><i class="a"></i><i class="b"></i></div>
   <div class="auth-card">
+    <div class="auth-logo">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="al-ring" cx="60" cy="56" r="40" fill="none" stroke="url(#scGrad)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M38 88 q-3 13 -15 18 q15 0 25 -12 z" fill="url(#scGrad)"/>
+        <text x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="url(#scGrad)" text-anchor="middle" dominant-baseline="central">SC</text>
+      </svg>
+    </div>
     <div class="auth-brand">STUDIO<b>CHAT</b></div>
     <p class="auth-sub">Körperformen · Team-Portal</p>
 
@@ -706,7 +729,13 @@ var FIREBASE_CONFIG = {
 <!-- ── App ── -->
 <div class="app" id="app">
   <header class="topbar">
-    <div class="tb-brand">STUDIO<b>CHAT</b> <span class="tb-live">Live</span></div>
+    <div class="tb-brand">
+      <span class="tb-logo"><svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="56" r="40" fill="none" stroke="url(#scGrad)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M38 88 q-3 13 -15 18 q15 0 25 -12 z" fill="url(#scGrad)"/>
+        <text x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="url(#scGrad)" text-anchor="middle" dominant-baseline="central">SC</text>
+      </svg></span>
+      STUDIO<b>CHAT</b> <span class="tb-live">Live</span></div>
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>
