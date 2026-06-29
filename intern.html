@@ -2779,6 +2779,8 @@ function closeDmConvo(){
   _dmPeer=null; _dmId=null;
   $('dmConvo').style.display='none';
   $('dmListWrap').style.display='block';
+  if($('dmSearch')) $('dmSearch').value='';
+  renderDmPeople('');
 }
 function markDmRead(){
   if(!_dmId) return;
