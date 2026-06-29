@@ -1,0 +1,168 @@
+================================================================
+ STUDIOCHAT – EINRICHTUNGS-ANLEITUNG (Schritt fuer Schritt)
+ Koerperformen Team-Portal
+================================================================
+
+Diese Datei kannst du mit jedem Text-Programm oeffnen (Editor / Notepad).
+
+
+----------------------------------------------------------------
+ 0) DIE DATEIEN – was ist was?
+----------------------------------------------------------------
+- intern.html ............ die App selbst (das Wichtigste)
+- firebase-messaging-sw.js  fuer Push-Nachrichten (gleicher Ordner!)
+- firestore.rules ........ Sicherheitsregeln Datenbank (in Firebase einfuegen)
+- storage.rules .......... Sicherheitsregeln Datei-Upload (in Firebase einfuegen)
+- functions/ ............. Server-Funktion fuer Push (optional, fuer Hintergrund-Push)
+- MATERIAL-SHEETS.gs ..... Google-Tabellen-Sync (in Google Apps Script einfuegen)
+
+intern.html und firebase-messaging-sw.js MUESSEN im selben Ordner liegen
+und ueber HTTPS erreichbar sein (z. B. GitHub Pages).
+
+
+----------------------------------------------------------------
+ 1) SEITE ONLINE STELLEN
+----------------------------------------------------------------
+1. Alle Dateien zu deinem Webspace / GitHub Pages hochladen.
+2. Adresse merken, z. B. https://deinname.github.io/intern.html
+3. Wichtig: Adresse muss mit https:// beginnen (nicht http://).
+
+
+----------------------------------------------------------------
+ 2) FIREBASE GRUNDEINRICHTUNG  (console.firebase.google.com)
+----------------------------------------------------------------
+Projekt: formenchat
+
+A) Anmeldung aktivieren:
+   - Build -> Authentication -> "Get started"
+   - Tab "Sign-in method" -> E-Mail/Passwort -> aktivieren -> Speichern
+
+B) Datenbank anlegen:
+   - Build -> Firestore Database -> "Datenbank erstellen"
+   - Modus: erst Testmodus (wird gleich durch Regeln ersetzt)
+   - Region: europe-west -> Aktivieren
+
+C) Erlaubte Domains (falls Login nicht geht):
+   - Authentication -> Settings -> "Authorized domains"
+   - Deine Online-Adresse hinzufuegen (z. B. deinname.github.io)
+
+
+----------------------------------------------------------------
+ 3) SICHERE REGELN EINSPIELEN (Datenbank)
+----------------------------------------------------------------
+1. Firestore Database -> Tab "Regeln" (Rules)
+2. Gesamten Inhalt der Datei firestore.rules hineinkopieren
+   (alles ersetzen)
+3. "Veroeffentlichen" klicken
+
+Diese Regeln sorgen dafuer, dass nur eingeloggte Personen Zugriff haben
+und nur der Chef Aufgaben, Infos, Mitarbeiter und Dokumente verwalten darf.
+
+
+----------------------------------------------------------------
+ 4) ERSTES CHEF-KONTO ANLEGEN
+----------------------------------------------------------------
+1. Im Browser die Adresse mit #chef oeffnen:
+   https://deinname.github.io/intern.html#chef
+2. Name, E-Mail, Passwort und den Chef-Code eingeben.
+   (Chef-Code steht oben in intern.html bei  var CHEF_PIN = "...")
+3. "Konto erstellen" -> du bist als Chef drin.
+
+
+----------------------------------------------------------------
+ 5) MITARBEITER ANLEGEN  (macht der Chef in der App)
+----------------------------------------------------------------
+1. Unten/links auf "Chef" gehen.
+2. Karte "Mitarbeiter anlegen":
+   - Name, E-Mail, Passwort vergeben
+   - Studios anhaken
+   - "Mitarbeiter anlegen"
+3. Zugangsdaten (E-Mail + Passwort) dem Mitarbeiter geben.
+   Mitarbeiter koennen sich NICHT mehr selbst registrieren.
+4. Spaeter aenderbar in der Karte "Mitarbeiter"
+   (Studios anpassen oder Zugang entfernen).
+
+
+----------------------------------------------------------------
+ 6) DOKUMENTE (kostenlos, KEIN Storage/Blaze noetig)
+----------------------------------------------------------------
+Funktioniert automatisch, sobald die firestore.rules aus Schritt 3
+veroeffentlicht sind (die enthalten jetzt "documents" + "documentData").
+
+So funktioniert es im Tab "Dokumente" (als Chef):
+- Kleine Datei (bis ca. 0,7 MB, z. B. PDF/Bild) -> "Datei waehlen" -> direkt
+  in der Datenbank gespeichert.
+- Grosse Datei -> in Google Drive/Dropbox hochladen, Freigabe-Link kopieren,
+  unten ins Feld "...oder Link statt Datei" einfuegen.
+- Studios anhaken, optional "Als Aufgabe" -> wird in den Studios zur To-do.
+
+Firebase Storage und die Datei storage.rules werden NICHT gebraucht.
+
+
+----------------------------------------------------------------
+ 7) MATERIAL LIVE IN GOOGLE SHEETS (optional)
+----------------------------------------------------------------
+1. Neue Google-Tabelle oeffnen.
+2. Menue: Erweiterungen -> Apps Script
+3. Inhalt der Datei MATERIAL-SHEETS.gs einfuegen -> speichern (Disketten-Symbol)
+4. Oben rechts: "Bereitstellen" -> "Neue Bereitstellung"
+   - Typ: Web-App
+   - Ausfuehren als: Ich
+   - Zugriff: Jeder (Anyone)
+   - "Bereitstellen" -> Web-App-URL KOPIEREN
+5. In intern.html oben eintragen:
+      var SHEETS_WEBHOOK_URL = "HIER_DIE_URL";
+   (oder die URL an Claude schicken, er traegt sie ein)
+6. Ab jetzt landet jede Material-Aenderung automatisch im Blatt "Material".
+
+
+----------------------------------------------------------------
+ 8) PUSH "AUCH BEI GESPERRTEM HANDY" (optional)
+----------------------------------------------------------------
+A) Blaze-Plan aktivieren (Console unten links "Upgrade").
+   Hat ein grosszuegiges Gratis-Kontingent.
+B) VAPID-Schluessel (ist schon eingetragen). Falls neu noetig:
+   Projekteinstellungen -> Cloud Messaging -> "Web Push certificates"
+   -> Schluesselpaar generieren -> oeffentlichen Schluessel in
+      var VAPID_KEY = "..."  eintragen.
+C) Server-Funktion hochladen (einmalig am PC, Node.js noetig):
+      npm install -g firebase-tools
+      firebase login
+      cd <Ordner mit dem functions-Verzeichnis>
+      firebase deploy --only functions
+D) In der App oben im Chat auf "Benachrichtigungen aktivieren" tippen.
+   (iPhone: vorher ueber Teilen -> "Zum Home-Bildschirm" installieren.)
+
+
+----------------------------------------------------------------
+ 9) AUF DEM HANDY ALS APP
+----------------------------------------------------------------
+- Adresse im Handy-Browser oeffnen.
+- Menue -> "Zum Home-Bildschirm hinzufuegen".
+- App "StudioChat" oeffnet im Vollbild, Login bleibt gespeichert.
+
+
+----------------------------------------------------------------
+ EINSTELLUNGEN (oben in intern.html im <script>-Bereich)
+----------------------------------------------------------------
+- var STUDIOS = [ ... ]        die 12 Standorte
+- var CHEF_PIN = "..."         Code zum Anlegen eines Chef-Kontos
+- var VAPID_KEY = "..."        Push-Schluessel
+- var SHEETS_WEBHOOK_URL = ""  Google-Tabellen-URL
+- var DEFAULT_MATERIALS = [..] Standard-Materialliste
+
+
+----------------------------------------------------------------
+ KURZ-CHECKLISTE
+----------------------------------------------------------------
+[ ] Dateien online (HTTPS)
+[ ] Authentication: E-Mail/Passwort an
+[ ] Firestore angelegt + firestore.rules veroeffentlicht
+[ ] Chef-Konto ueber #chef angelegt
+[ ] Mitarbeiter im Chef-Bereich angelegt
+[ ] Dokumente laufen ueber firestore.rules (kein Storage noetig)
+[ ] (optional) Google Sheets verbunden
+[ ] (optional) Push: Blaze + functions deploy
+
+Bei Fragen: einfach Claude schreiben.
+================================================================
