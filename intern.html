@@ -14,7 +14,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="StudioChat" />
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='70' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3ESC%3C/text%3E%3C/svg%3E" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="apple-touch-icon" href="icon.png" />
 <title>StudioChat – Körperformen Team</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -95,6 +97,30 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loadingWrap p{color:var(--text-2);font-size:.9rem}
+
+/* ── Splash-Screen ── */
+#splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:18px;
+  background:radial-gradient(circle at 50% 38%, #2a1252 0%, #120a26 55%, #0b0a1c 100%);
+  animation:spFade .5s ease 2s forwards}
+#splash.hide{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s ease,visibility .45s}
+@keyframes spFade{to{opacity:0;visibility:hidden;pointer-events:none}}
+.sp-logo{filter:drop-shadow(0 0 14px rgba(124,58,237,.65));animation:spPop .7s var(--ease-out) both, spGlow 1.8s ease-in-out .7s infinite}
+@keyframes spPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes spGlow{0%,100%{filter:drop-shadow(0 0 10px rgba(34,211,238,.45))}50%{filter:drop-shadow(0 0 22px rgba(236,72,153,.75))}}
+.sp-ring{stroke-dasharray:252;stroke-dashoffset:252;animation:spDraw 1s var(--ease-out) .15s forwards}
+@keyframes spDraw{to{stroke-dashoffset:0}}
+.sp-tail,.sp-sc{opacity:0;animation:spIn .5s ease .8s forwards}
+@keyframes spIn{to{opacity:1}}
+.sp-word{font-family:var(--font-head);font-weight:800;font-size:1.7rem;letter-spacing:3px;color:#fff;
+  opacity:0;transform:translateY(10px);animation:spWord .6s var(--ease-out) 1s forwards}
+.sp-word b{background:linear-gradient(110deg,#8B5CF6,#22D3EE,#EC4899);-webkit-background-clip:text;
+  background-clip:text;-webkit-text-fill-color:transparent}
+@keyframes spWord{to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  #splash{animation:spFade .3s ease .8s forwards}
+  .sp-logo,.sp-ring,.sp-tail,.sp-sc,.sp-word{animation:none;opacity:1;stroke-dashoffset:0;transform:none}
+}
 
 /* ── Setup Notice ── */
 #setupNotice{position:fixed;inset:0;z-index:998;display:none;align-items:center;justify-content:center;
@@ -569,6 +595,23 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 </head>
 <body>
 
+<!-- ── Splash-Screen (animierter Start) ── -->
+<div id="splash" aria-hidden="true">
+  <div class="sp-logo">
+    <svg viewBox="0 0 120 120" width="130" height="130">
+      <defs>
+        <linearGradient id="spg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#8B5CF6"/><stop offset="0.5" stop-color="#22D3EE"/><stop offset="1" stop-color="#EC4899"/>
+        </linearGradient>
+      </defs>
+      <circle class="sp-ring" cx="60" cy="56" r="40" fill="none" stroke="url(#spg)" stroke-width="6" stroke-linecap="round"/>
+      <path class="sp-tail" d="M38 88 q-3 13 -15 18 q15 0 25 -12 z" fill="url(#spg)"/>
+      <text class="sp-sc" x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="url(#spg)" text-anchor="middle" dominant-baseline="central">SC</text>
+    </svg>
+  </div>
+  <div class="sp-word">STUDIO<b>CHAT</b></div>
+</div>
+
 <!-- ── Loading ── -->
 <div id="loadingWrap">
   <div class="spinner"></div>
@@ -986,6 +1029,29 @@ var FIREBASE_CONFIG = {
   });
 })();
 
+/* ── Service Worker (App-Start, Offline, Push) – holt HTML immer frisch ── */
+if('serviceWorker' in navigator && location.protocol!=='file:'){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      reg.addEventListener('updatefound',function(){
+        var nw=reg.installing; if(!nw) return;
+        nw.addEventListener('statechange',function(){
+          if(nw.state==='installed' && navigator.serviceWorker.controller) nw.postMessage('SKIP_WAITING');
+        });
+      });
+    }).catch(function(){});
+    var reloaded=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){ if(reloaded) return; reloaded=true; location.reload(); });
+  });
+}
+
+/* ── Splash: Tippen überspringt, danach entfernen ── */
+(function initSplash(){
+  var sp=document.getElementById('splash'); if(!sp) return;
+  sp.addEventListener('click',function(){ sp.classList.add('hide'); });
+  setTimeout(function(){ if(sp&&sp.parentNode) sp.parentNode.removeChild(sp); }, 3200);
+})();
+
 /* ============================================================
    KONFIGURATION – HIER ANPASSEN
    ============================================================ */
@@ -1150,22 +1216,7 @@ window.addEventListener('unhandledrejection', function(ev){
   }
 });
 
-/* Web-App-Manifest zur Laufzeit (für „Zum Startbildschirm" als Vollbild-App auf Android) */
-(function addManifest(){
-  try{
-    var icon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' rx='110' fill='%230E1712'/%3E%3Ctext x='50%25' y='56%25' font-family='Arial,sans-serif' font-size='200' font-weight='bold' fill='%2300E06E' text-anchor='middle' dominant-baseline='middle'%3ESC%3C/text%3E%3C/svg%3E";
-    var manifest={
-      name:"StudioChat", short_name:"StudioChat",
-      start_url:".", display:"standalone",
-      background_color:"#0E1712", theme_color:"#0E1712",
-      icons:[{src:icon,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]
-    };
-    var blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
-    var link=document.createElement('link');
-    link.rel='manifest'; link.href=URL.createObjectURL(blob);
-    document.head.appendChild(link);
-  }catch(e){/* unkritisch */}
-})();
+/* Manifest wird jetzt statisch über manifest.json eingebunden (siehe <head>). */
 
 /* ============================================================
    HILFSFUNKTIONEN
@@ -1578,12 +1629,9 @@ function initMessaging(){
 
 function registerFcmToken(){
   if(!messaging || !VAPID_KEY){ return; } // ohne VAPID-Key kein Hintergrund-Push
-  var swReg = null;
-  var p = ('serviceWorker' in navigator)
-    ? navigator.serviceWorker.register('firebase-messaging-sw.js').then(function(r){ swReg=r; return r; })
-    : Promise.resolve(null);
-  p.then(function(){
-    return messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg||undefined });
+  var p = ('serviceWorker' in navigator) ? navigator.serviceWorker.ready : Promise.resolve(null);
+  p.then(function(reg){
+    return messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg||undefined });
   }).then(function(token){
     if(!token) return;
     // Token speichern, damit die Server-Funktion daran Push schicken kann
