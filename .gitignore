@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+functions/.env
+functions/node_modules/

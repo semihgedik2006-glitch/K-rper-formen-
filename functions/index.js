@@ -104,43 +104,73 @@ exports.onNewDm = region.firestore
     await sendPush(tokens, m.name || 'Neue Nachricht', body);
   });
 
+/* ── Geburtstags-Logik (gemeinsam für den täglichen Lauf und den Test-Auslöser) ──
+   Verschickt an alle, deren Geburtstag heute ist, einmal pro Jahr.
+   Gibt die Anzahl der gesendeten Grüße zurück. */
+async function processBirthdays() {
+  const now = new Date();
+  const mm = now.getMonth() + 1, dd = now.getDate(), year = now.getFullYear();
+  // System-Account (Anzeige) sicherstellen
+  await db.collection('users').doc('system')
+    .set({ name: 'Körperformen 🎂', role: 'chef', system: true }, { merge: true });
+
+  const snap = await db.collection('users').get();
+  let sent = 0;
+  for (const doc of snap.docs) {
+    const u = doc.data() || {};
+    if (!u.bday) continue;
+    const p = String(u.bday).split('-');
+    if (p.length < 3) continue;
+    if (+p[1] === mm && +p[2] === dd && u.lastBdayDM !== year) {
+      const uid = doc.id;
+      const dmId = 'dm_' + ['system', uid].sort().join('_');
+      const ts = Date.now();
+      await db.collection('dms').doc(dmId).collection('messages').add({
+        uid: 'system', name: 'Körperformen 🎂',
+        text: '🎉 Alles Gute zum Geburtstag, ' + (u.name || '') + '! Hab einen tollen Tag. – dein Körperformen-Team',
+        ts: ts
+      });
+      const names = { system: 'Körperformen 🎂' }; names[uid] = u.name || '';
+      const readTs = { system: ts };
+      await db.collection('dms').doc(dmId).set({
+        participants: ['system', uid], names: names,
+        last: '🎉 Alles Gute zum Geburtstag!', lastTs: ts, lastSender: 'system', readTs: readTs
+      }, { merge: true });
+      // Push
+      const tokens = await collectTokens(d => d.uid === uid, 'system');
+      await sendPush(tokens, 'Körperformen 🎂', 'Alles Gute zum Geburtstag! 🎉');
+      await db.collection('users').doc(uid).update({ lastBdayDM: year });
+      sent++;
+    }
+  }
+  return sent;
+}
+
 /* ── Täglicher Geburtstagsgruß vom System-Account ── */
 exports.birthdayGreetings = region.pubsub
   .schedule('every day 08:00')
   .timeZone('Europe/Berlin')
   .onRun(async () => {
-    const now = new Date();
-    const mm = now.getMonth() + 1, dd = now.getDate(), year = now.getFullYear();
-    // System-Account (Anzeige) sicherstellen
-    await db.collection('users').doc('system')
-      .set({ name: 'Körperformen 🎂', role: 'chef', system: true }, { merge: true });
-
-    const snap = await db.collection('users').get();
-    for (const doc of snap.docs) {
-      const u = doc.data() || {};
-      if (!u.bday) continue;
-      const p = String(u.bday).split('-');
-      if (p.length < 3) continue;
-      if (+p[1] === mm && +p[2] === dd && u.lastBdayDM !== year) {
-        const uid = doc.id;
-        const dmId = 'dm_' + ['system', uid].sort().join('_');
-        const ts = Date.now();
-        await db.collection('dms').doc(dmId).collection('messages').add({
-          uid: 'system', name: 'Körperformen 🎂',
-          text: '🎉 Alles Gute zum Geburtstag, ' + (u.name || '') + '! Hab einen tollen Tag. – dein Körperformen-Team',
-          ts: ts
-        });
-        const names = { system: 'Körperformen 🎂' }; names[uid] = u.name || '';
-        const readTs = { system: ts };
-        await db.collection('dms').doc(dmId).set({
-          participants: ['system', uid], names: names,
-          last: '🎉 Alles Gute zum Geburtstag!', lastTs: ts, lastSender: 'system', readTs: readTs
-        }, { merge: true });
-        // Push
-        const tokens = await collectTokens(d => d.uid === uid, 'system');
-        await sendPush(tokens, 'Körperformen 🎂', 'Alles Gute zum Geburtstag! 🎉');
-        await db.collection('users').doc(uid).update({ lastBdayDM: year });
-      }
-    }
+    await processBirthdays();
     return null;
   });
+
+/* ── TEST-Auslöser: führt den Geburtstags-Check sofort aus ──
+   Aufruf:  .../runBirthdayCheckNow?key=GEHEIM
+   Der Schlüssel kommt aus der Umgebungsvariable BDAY_TEST_KEY (functions/.env,
+   die im GitHub-Workflow aus dem Secret BDAY_TEST_KEY geschrieben wird).
+   Ohne korrekten Schlüssel: 403. */
+exports.runBirthdayCheckNow = region.https.onRequest(async (req, res) => {
+  const expected = process.env.BDAY_TEST_KEY || '';
+  const got = String((req.query && req.query.key) || '');
+  if (!expected || got !== expected) {
+    res.status(403).send('Falscher oder fehlender Schlüssel.');
+    return;
+  }
+  try {
+    const sent = await processBirthdays();
+    res.status(200).send('OK – Geburtstags-Check ausgeführt. Gesendete Grüße: ' + sent);
+  } catch (e) {
+    res.status(500).send('Fehler: ' + (e && e.message));
+  }
+});
