@@ -2,7 +2,7 @@
   "name": "koerperformen-functions",
   "description": "Push-Benachrichtigungen für das interne Portal",
   "engines": {
-    "node": "22"
+    "node": "20"
   },
   "main": "index.js",
   "dependencies": {
