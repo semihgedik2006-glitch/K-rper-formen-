@@ -107,6 +107,28 @@ service cloud.firestore {
                 && request.time.toMillis() < resource.data.ts + 3600000));
     }
 
+    // ── Marketing-App (marketing.html): Kampagnen-Projekte mit Versionen ──
+    // Jeder Eingeloggte darf lesen und Projekte anlegen/pflegen.
+    // Löschen: nur Chef oder wer das Projekt bzw. die Version angelegt hat.
+    match /mkProjects/{projectId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if signedIn();
+      allow delete: if isChef()
+        || (signedIn() && resource.data.createdBy == request.auth.uid);
+
+      match /versions/{versionId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.createdBy == request.auth.uid;
+        // Versionen sind unveränderlich (Historie bleibt echt)
+        allow update: if false;
+        allow delete: if isChef()
+          || (signedIn() && resource.data.createdBy == request.auth.uid);
+      }
+    }
+
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {

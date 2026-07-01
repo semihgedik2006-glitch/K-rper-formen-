@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0E1712" />
+<title>KF Marketing – Kampagnen, KI &amp; Archiv</title>
+<meta name="description" content="Internes Marketing-Tool: KI-Ideen, Post-Erstellung, Bild-Bearbeitung und Projekt-Archiv mit Versionen." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   DESIGN-TOKENS – gleiches Branding wie werbung.html / StudioChat
+   ============================================================ */
+:root{
+  --bg:        #0E1712;
+  --bg-2:      #141E18;
+  --bg-soft:   #111A15;
+  --line:      rgba(255,255,255,.08);
+  --line-2:    rgba(255,255,255,.14);
+  --accent:    #00E06E;
+  --accent-2:  #19FF85;
+  --accent-d:  #00C060;
+  --accent-glow:rgba(0,224,110,.35);
+  --warm:      #FF6B35;
+  --text:      #F0F7F3;
+  --text-2:    #8BADA0;
+  --text-3:    #4D6B5F;
+  --danger:    #ff8a8a;
+  --font-head: 'Barlow Condensed', system-ui, sans-serif;
+  --font-body: 'Barlow', system-ui, -apple-system, sans-serif;
+  --radius:    16px;
+  --radius-lg: 22px;
+  --shadow:    0 8px 24px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+img{max-width:100%;display:block}
+button{font-family:var(--font-body)}
+input,textarea,select{font-family:var(--font-body);font-size:1rem;color:var(--text);background:var(--bg-soft);border:1px solid var(--line-2);border-radius:12px;padding:11px 13px;width:100%;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238BADA0' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+label{font-size:.82rem;color:var(--text-2);display:block;margin:10px 0 4px;font-weight:600;letter-spacing:.02em}
+h1,h2,h3{font-family:var(--font-head);letter-spacing:.01em}
+::placeholder{color:var(--text-3)}
+a{color:var(--accent)}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;border-radius:999px;padding:12px 22px;font-weight:700;font-size:.95rem;transition:transform .12s ease,opacity .12s ease}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#04140C;box-shadow:0 4px 18px var(--accent-glow)}
+.btn-ghost{background:var(--bg-soft);color:var(--text);border:1px solid var(--line-2)}
+.btn-small{padding:8px 14px;font-size:.85rem}
+.btn-danger{background:rgba(255,110,110,.12);color:var(--danger);border:1px solid rgba(255,110,110,.3)}
+.btn[disabled]{opacity:.5;cursor:default}
+
+/* ── Layout ── */
+#authWrap,#app{display:none}
+#authWrap.show,#app.show{display:block}
+.container{max-width:1100px;margin:0 auto;padding:0 16px}
+header.topbar{position:sticky;top:0;z-index:40;background:rgba(14,23,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.logo{font-family:var(--font-head);font-weight:800;font-size:1.35rem;letter-spacing:.03em}
+.logo b{color:var(--accent)}
+.topbar-user{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--text-2)}
+
+/* Tabs */
+nav.tabs{display:flex;gap:6px;max-width:1100px;margin:14px auto 0;padding:0 16px}
+nav.tabs button{flex:1;max-width:220px;background:var(--bg-soft);border:1px solid var(--line);color:var(--text-2);border-radius:12px;padding:12px 8px;font-weight:700;font-size:.95rem;cursor:pointer}
+nav.tabs button.active{background:linear-gradient(135deg,rgba(0,224,110,.16),rgba(25,255,133,.08));border-color:var(--accent);color:var(--accent-2)}
+main{padding:18px 0 90px}
+.view{display:none}
+.view.show{display:block}
+
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow)}
+.card + .card{margin-top:16px}
+.card h2{font-size:1.25rem;margin-bottom:6px}
+.card .sub{color:var(--text-2);font-size:.88rem;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+
+/* ── Login ── */
+.auth-box{max-width:400px;margin:10vh auto;padding:0 16px}
+.auth-card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-lg);padding:26px;box-shadow:var(--shadow)}
+.auth-card h1{font-size:1.7rem;margin-bottom:4px}
+.auth-card p{color:var(--text-2);font-size:.9rem;margin-bottom:14px}
+.auth-err{color:var(--danger);font-size:.88rem;margin-top:10px;min-height:1.2em}
+
+/* ── Chat ── */
+#chatLog{display:flex;flex-direction:column;gap:12px;margin:14px 0;max-height:56vh;overflow-y:auto;padding-right:4px}
+.msg{max-width:88%;border-radius:var(--radius);padding:12px 15px;font-size:.95rem;white-space:normal;word-wrap:break-word}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,rgba(0,224,110,.18),rgba(25,255,133,.10));border:1px solid rgba(0,224,110,.35)}
+.msg.ai{align-self:flex-start;background:var(--bg-soft);border:1px solid var(--line-2)}
+.msg.ai h4{color:var(--accent-2);font-family:var(--font-head);font-size:1.05rem;margin:10px 0 4px}
+.msg.ai ul{margin:6px 0 6px 18px}
+.msg.ai li{margin:3px 0}
+.msg.ai p{margin:6px 0}
+.msg .msg-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.msg img.msg-img{border-radius:10px;max-height:180px;margin-bottom:8px}
+.typing{color:var(--text-2);font-size:.9rem;font-style:italic}
+.chat-inputrow{display:flex;gap:8px;margin-top:8px}
+.chat-inputrow textarea{min-height:52px;max-height:160px;flex:1}
+details.briefing{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px}
+details.briefing summary{cursor:pointer;font-weight:700;color:var(--accent-2)}
+
+/* ── Erstellen / Studio ── */
+.gen-result img,.editor-stage{border-radius:var(--radius);border:1px solid var(--line-2)}
+.editor-stage{background:#000;display:flex;align-items:center;justify-content:center;min-height:220px;overflow:hidden}
+.editor-stage canvas{max-width:100%;max-height:60vh}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px 16px;margin-top:10px}
+.sliders label{margin:6px 0 2px}
+input[type=range]{width:100%;accent-color:var(--accent);padding:0;background:transparent;border:none}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{background:var(--bg-soft);border:1px solid var(--line-2);color:var(--text-2);border-radius:999px;padding:7px 14px;font-size:.83rem;cursor:pointer;font-weight:600}
+.chip.active{border-color:var(--accent);color:var(--accent-2);background:rgba(0,224,110,.10)}
+.drop{border:2px dashed var(--line-2);border-radius:var(--radius);padding:26px;text-align:center;color:var(--text-2);cursor:pointer}
+.drop:hover{border-color:var(--accent)}
+
+/* ── Archiv ── */
+.arch-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.arch-toolbar input,.arch-toolbar select{width:auto;flex:1;min-width:130px}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.proj-card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .15s}
+.proj-card:hover{border-color:var(--accent)}
+.proj-card h3{font-size:1.15rem;margin-bottom:6px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.badge{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:6px;padding:3px 8px}
+.badge.kanal{background:rgba(0,224,110,.12);color:var(--accent-2)}
+.badge.status-entwurf{background:rgba(255,255,255,.08);color:var(--text-2)}
+.badge.status-freigegeben{background:rgba(255,107,53,.15);color:var(--warm)}
+.badge.status-live{background:rgba(0,224,110,.2);color:var(--accent-2)}
+.badge.tag{background:var(--bg-soft);color:var(--text-2);border:1px solid var(--line)}
+.proj-meta{color:var(--text-3);font-size:.8rem;margin-top:6px}
+
+.ver-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.ver-item{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.ver-item.compare-sel{border-color:var(--accent)}
+.ver-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ver-num{font-family:var(--font-head);font-weight:800;color:var(--accent);font-size:1.05rem}
+.ver-date{color:var(--text-3);font-size:.8rem}
+.ver-preview{color:var(--text-2);font-size:.88rem;margin-top:6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ver-thumb{max-height:90px;border-radius:8px;margin-top:8px}
+.ver-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* ── Modals ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:80;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow-y:auto}
+.modal-bg.show{display:flex}
+.modal{background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--radius-lg);padding:22px;max-width:760px;width:100%;box-shadow:var(--shadow);margin-bottom:6vh}
+.modal.wide{max-width:1000px}
+.modal h2{font-size:1.3rem;margin-bottom:10px}
+.modal-close{float:right;background:none;border:none;color:var(--text-2);font-size:1.5rem;cursor:pointer;line-height:1}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.cmp-grid{grid-template-columns:1fr}}
+.cmp-col{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius);padding:14px;font-size:.9rem}
+.cmp-col .ver-num{display:block;margin-bottom:8px}
+.cmp-col img{border-radius:10px}
+.pick-list{display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow-y:auto;margin:10px 0}
+.pick-item{background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:11px 14px;cursor:pointer;text-align:left;color:var(--text);font-size:.95rem}
+.pick-item:hover{border-color:var(--accent)}
+
+/* Toast */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--bg-2);border:1px solid var(--accent);color:var(--text);border-radius:999px;padding:11px 22px;font-size:.9rem;z-index:120;display:none;box-shadow:var(--shadow)}
+
+/* Loading */
+#loadingWrap{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:14px}
+.spinner{width:38px;height:38px;border:3px solid var(--line-2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.muted{color:var(--text-2);font-size:.9rem}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ── Ladebildschirm ── -->
+<div id="loadingWrap">
+  <div class="spinner"></div>
+  <div class="muted" id="loadingStep">Verbinde …</div>
+</div>
+
+<!-- ── Login ── -->
+<div id="authWrap">
+  <div class="auth-box">
+    <div class="auth-card">
+      <h1>KF <b style="color:var(--accent)">Marketing</b></h1>
+      <p>Kampagnen planen, Posts erstellen, Ideen mit KI entwickeln – Login wie im StudioChat.</p>
+      <label>E-Mail</label>
+      <input id="loginEmail" type="email" autocomplete="username" placeholder="name@beispiel.de" />
+      <label>Passwort</label>
+      <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" />
+      <div class="auth-err" id="loginErr"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="doLogin()">Einloggen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── App ── -->
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">KF <b>Marketing</b></div>
+      <div class="topbar-user">
+        <span id="userName"></span>
+        <button class="btn btn-ghost btn-small" onclick="doLogout()">Abmelden</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button id="tabBtn-chat" class="active" onclick="showTab('chat')">💡 KI-Assistent</button>
+    <button id="tabBtn-studio" onclick="showTab('studio')">🎨 Erstellen</button>
+    <button id="tabBtn-archiv" onclick="showTab('archiv')">🗂️ Archiv</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- ════════ TAB 1: KI-ASSISTENT ════════ -->
+    <section id="view-chat" class="view show">
+      <div class="card">
+        <h2>Kampagnen-Ideen mit KI</h2>
+        <div class="sub">Briefing ausfüllen, Ideen entwickeln lassen, dann im Chat verfeinern. Gute Ergebnisse direkt im Archiv speichern.</div>
+
+        <details class="briefing" id="briefingBox" open>
+          <summary>📋 Briefing (für den Start)</summary>
+          <div class="grid2">
+            <div>
+              <label>Produkt / Anlass</label>
+              <input id="bfProdukt" placeholder="z. B. Probetraining-Aktion im Herbst" />
+            </div>
+            <div>
+              <label>Zielgruppe</label>
+              <input id="bfZielgruppe" placeholder="z. B. Berufstätige 30–50, wenig Zeit" />
+            </div>
+            <div>
+              <label>Kanal</label>
+              <select id="bfKanal">
+                <option>Instagram</option>
+                <option>Facebook</option>
+                <option>Instagram + Facebook</option>
+                <option>Google Ads</option>
+                <option>Flyer (Print)</option>
+                <option>Plakat (Print)</option>
+                <option>Print + Digital gemischt</option>
+              </select>
+            </div>
+            <div>
+              <label>Ton / Stil</label>
+              <select id="bfTon">
+                <option>Motivierend &amp; energiegeladen</option>
+                <option>Nahbar &amp; persönlich</option>
+                <option>Seriös &amp; informativ</option>
+                <option>Humorvoll</option>
+                <option>Plakativ &amp; kurz</option>
+              </select>
+            </div>
+          </div>
+          <label>Zusätzliche Wünsche (optional)</label>
+          <textarea id="bfExtra" placeholder="z. B. 3 Post-Varianten, Fokus auf 20-Minuten-Training, Rabatt erwähnen …"></textarea>
+          <div style="margin-top:12px">
+            <button class="btn btn-primary" id="btnBriefing" onclick="sendBriefing()">✨ Ideen entwickeln</button>
+          </div>
+        </details>
+
+        <div id="chatLog"></div>
+
+        <div class="chat-inputrow">
+          <textarea id="chatInput" placeholder="Nachricht an die KI … (z. B. »Mach Variante 2 kürzer und füge einen Call-to-Action hinzu«)"></textarea>
+          <button class="btn btn-primary" id="btnSend" onclick="sendChat()" style="align-self:flex-end">Senden</button>
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn btn-ghost btn-small" onclick="resetChat()">🗑️ Chat leeren</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ TAB 2: ERSTELLEN ════════ -->
+    <section id="view-studio" class="view">
+
+      <div class="card">
+        <h2>KI-Bild erzeugen</h2>
+        <div class="sub">Beschreibe das gewünschte Motiv – die KI erstellt ein Bild im passenden Format. Danach im Editor zuschneiden &amp; filtern.</div>
+        <label>Bildbeschreibung</label>
+        <textarea id="genPrompt" placeholder="z. B. Modernes Fitnessstudio, Person beim EMS-Training mit Trainerin, dunkelgrüne Farbwelt mit Neon-Akzenten, professionelle Werbefotografie"></textarea>
+        <label>Format</label>
+        <div class="chip-row" id="genAspectRow">
+          <button class="chip active" data-aspect="1:1" onclick="pickAspect(this)">Quadrat 1:1 (Feed)</button>
+          <button class="chip" data-aspect="9:16" onclick="pickAspect(this)">Story 9:16</button>
+          <button class="chip" data-aspect="4:3" onclick="pickAspect(this)">Quer 4:3</button>
+          <button class="chip" data-aspect="16:9" onclick="pickAspect(this)">Breit 16:9</button>
+          <button class="chip" data-aspect="3:4" onclick="pickAspect(this)">Hoch 3:4 (≈ Flyer/Plakat)</button>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btnGen" onclick="generateImage()">🖼️ Bild generieren</button>
+        </div>
+        <div class="gen-result" id="genResult" style="margin-top:14px"></div>
+      </div>
+
+      <div class="card">
+        <h2>Eigenes Foto hochladen &amp; analysieren</h2>
+        <div class="sub">Foto hochladen – die KI gibt konkrete Verbesserungsvorschläge (Ausschnitt, Farben, Text-Overlays, Eignung pro Kanal).</div>
+        <div class="drop" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          📷 Foto hierher ziehen oder tippen zum Auswählen
+        </div>
+        <input type="file" id="fileInput" accept="image/*" class="hidden" />
+        <div id="uploadPreviewWrap" class="hidden" style="margin-top:12px">
+          <img id="uploadPreview" style="max-height:220px;border-radius:12px" />
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-small" id="btnAnalyze" onclick="analyzePhoto()">🔎 Mit KI analysieren</button>
+            <button class="btn btn-ghost btn-small" onclick="loadUploadIntoEditor()">✂️ In den Editor</button>
+          </div>
+          <div id="analysisResult" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Editor: Zuschnitt &amp; Filter</h2>
+        <div class="sub">Format wählen (Social oder Print), Filter anwenden, dann herunterladen oder im Archiv speichern.</div>
+        <div class="editor-stage" id="editorStage">
+          <span class="muted" id="editorEmpty">Noch kein Bild geladen – generiere eins oder lade ein Foto hoch.</span>
+          <canvas id="editorCanvas" class="hidden"></canvas>
+        </div>
+
+        <label style="margin-top:14px">Zuschnitt / Ausgabeformat</label>
+        <div class="chip-row" id="cropRow">
+          <button class="chip active" data-crop="orig" onclick="pickCrop(this)">Original</button>
+          <button class="chip" data-crop="1:1" onclick="pickCrop(this)">Post 1:1</button>
+          <button class="chip" data-crop="4:5" onclick="pickCrop(this)">Feed 4:5</button>
+          <button class="chip" data-crop="9:16" onclick="pickCrop(this)">Story 9:16</button>
+          <button class="chip" data-crop="16:9" onclick="pickCrop(this)">Banner 16:9</button>
+          <button class="chip" data-crop="a4h" onclick="pickCrop(this)">A4 hoch (Flyer)</button>
+          <button class="chip" data-crop="a4q" onclick="pickCrop(this)">A4 quer</button>
+          <button class="chip" data-crop="a1" onclick="pickCrop(this)">Plakat A1 hoch</button>
+        </div>
+
+        <label style="margin-top:12px">Filter-Vorlagen</label>
+        <div class="chip-row" id="presetRow">
+          <button class="chip active" data-preset="none" onclick="pickPreset(this)">Original</button>
+          <button class="chip" data-preset="fresh" onclick="pickPreset(this)">Frisch</button>
+          <button class="chip" data-preset="warm" onclick="pickPreset(this)">Warm</button>
+          <button class="chip" data-preset="punch" onclick="pickPreset(this)">Kontrast+</button>
+          <button class="chip" data-preset="bw" onclick="pickPreset(this)">Schwarz/Weiß</button>
+          <button class="chip" data-preset="fade" onclick="pickPreset(this)">Soft</button>
+        </div>
+
+        <div class="sliders">
+          <div><label>Helligkeit <span id="valBright">100 %</span></label>
+            <input type="range" id="slBright" min="40" max="180" value="100" oninput="renderEditor()"></div>
+          <div><label>Kontrast <span id="valContrast">100 %</span></label>
+            <input type="range" id="slContrast" min="40" max="180" value="100" oninput="renderEditor()"></div>
+          <div><label>Sättigung <span id="valSat">100 %</span></label>
+            <input type="range" id="slSat" min="0" max="220" value="100" oninput="renderEditor()"></div>
+          <div><label>Wärme <span id="valWarm">0 %</span></label>
+            <input type="range" id="slWarm" min="0" max="70" value="0" oninput="renderEditor()"></div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="downloadEditor()">⬇️ Herunterladen (JPG)</button>
+          <button class="btn btn-ghost" onclick="saveEditorToArchive()">🗂️ Im Archiv speichern</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ TAB 3: ARCHIV ════════ -->
+    <section id="view-archiv" class="view">
+      <div class="card">
+        <h2>Projekt-Archiv</h2>
+        <div class="sub">Jede Kampagne ist ein Projekt. Jede Änderung wird als Version gespeichert – nichts geht verloren, alles bleibt vergleichbar.</div>
+        <div class="arch-toolbar">
+          <input id="fltSearch" placeholder="🔍 Suchen …" oninput="renderProjects()" />
+          <select id="fltKanal" onchange="renderProjects()">
+            <option value="">Kanal: alle</option>
+            <option value="digital">Digital</option>
+            <option value="print">Print</option>
+            <option value="beides">Print + Digital</option>
+          </select>
+          <select id="fltStatus" onchange="renderProjects()">
+            <option value="">Status: alle</option>
+            <option value="entwurf">Entwurf</option>
+            <option value="freigegeben">Freigegeben</option>
+            <option value="live">Live</option>
+          </select>
+          <button class="btn btn-primary btn-small" onclick="openNewProject()">＋ Neues Projekt</button>
+        </div>
+        <div class="proj-grid" id="projGrid"></div>
+        <div class="muted" id="projEmpty" style="margin-top:10px;display:none">Noch keine Projekte. Leg das erste an – oder speichere eine KI-Idee aus dem Assistenten.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ── Modal: Neues Projekt ── -->
+<div class="modal-bg" id="mNewProject">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('mNewProject')">×</button>
+    <h2>Neues Projekt</h2>
+    <label>Name der Kampagne</label>
+    <input id="npName" placeholder="z. B. Herbst-Aktion Probetraining" />
+    <label>Kanal</label>
+    <select id="npKanal">
+      <option value="digital">Digital (Social/Ads)</option>
+      <option value="print">Print (Flyer/Plakat)</option>
+      <option value="beides">Print + Digital</option>
+    </select>
+    <label>Tags (mit Komma trennen)</label>
+    <input id="npTags" placeholder="z. B. herbst, probetraining, rabatt" />
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="createProject()">Anlegen</button>
+      <button class="btn btn-ghost" onclick="closeModal('mNewProject')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Projekt-Auswahl (beim Speichern) ── -->
+<div class="modal-bg" id="mPickProject">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('mPickProject')">×</button>
+    <h2>Wohin speichern?</h2>
+    <p class="muted">Wähle ein Projekt – der Inhalt wird dort als neue Version abgelegt.</p>
+    <div class="pick-list" id="pickList"></div>
+    <label>Notiz zur Version (optional)</label>
+    <input id="pickNote" placeholder="z. B. Variante mit Rabatt-Fokus" />
+    <div style="margin-top:14px">
+      <button class="btn btn-ghost btn-small" onclick="closeModal('mPickProject');openNewProject(true)">＋ Erst neues Projekt anlegen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Projekt-Detail ── -->
+<div class="modal-bg" id="mProject">
+  <div class="modal wide">
+    <button class="modal-close" onclick="closeModal('mProject')">×</button>
+    <h2 id="pdTitle"></h2>
+    <div class="badges" id="pdBadges"></div>
+    <div class="grid2" style="margin-top:10px">
+      <div>
+        <label>Status</label>
+        <select id="pdStatus" onchange="updateProjectMeta()">
+          <option value="entwurf">Entwurf</option>
+          <option value="freigegeben">Freigegeben</option>
+          <option value="live">Live</option>
+        </select>
+      </div>
+      <div>
+        <label>Tags (mit Komma trennen)</label>
+        <input id="pdTags" onchange="updateProjectMeta()" />
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-ghost btn-small" onclick="addNoteVersion()">＋ Notiz als Version</button>
+      <button class="btn btn-ghost btn-small" id="btnCompare" onclick="openCompare()" disabled>⚖️ 2 Versionen vergleichen</button>
+      <button class="btn btn-danger btn-small" onclick="deleteProject()" style="margin-left:auto">Projekt löschen</button>
+    </div>
+    <div class="ver-list" id="verList"></div>
+  </div>
+</div>
+
+<!-- ── Modal: Version ansehen ── -->
+<div class="modal-bg" id="mVersion">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('mVersion')">×</button>
+    <h2 id="vvTitle"></h2>
+    <div id="vvBody" style="font-size:.95rem"></div>
+  </div>
+</div>
+
+<!-- ── Modal: Vergleich ── -->
+<div class="modal-bg" id="mCompare">
+  <div class="modal wide">
+    <button class="modal-close" onclick="closeModal('mCompare')">×</button>
+    <h2>Versions-Vergleich</h2>
+    <div class="cmp-grid" id="cmpGrid"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<script>
+/* ============================================================
+   KF MARKETING – App-Logik
+   Gleiche Firebase-Konten wie StudioChat (Projekt: formenchat).
+   KI läuft über Cloud Functions (marketingChat / marketingImage) –
+   API-Schlüssel liegen nur auf dem Server.
+   ============================================================ */
+
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAvYVUzTbT86jeH6bsCAS0PyK9ArNb6pRw",
+  authDomain: "formenchat.firebaseapp.com",
+  databaseURL: "https://formenchat-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "formenchat",
+  storageBucket: "formenchat.firebasestorage.app",
+  messagingSenderId: "873830492257",
+  appId: "1:873830492257:web:07fb34b80fd47c1873e220",
+  measurementId: "G-H0WMHW25QT"
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+var auth = firebase.auth();
+var db = firebase.firestore();
+var fns = firebase.app().functions('europe-west1');
+var callChat = fns.httpsCallable('marketingChat', { timeout: 300000 });
+var callImage = fns.httpsCallable('marketingImage', { timeout: 300000 });
+
+var me = null;          // { uid, name }
+var chatHistory = [];   // [{role, content}] – content String oder Block-Array
+var projects = [];      // Projektliste (live)
+var unsubProjects = null;
+var currentProject = null;   // geöffnetes Projekt {id, data}
+var currentVersions = [];    // Versionen des geöffneten Projekts
+var compareSel = [];         // ausgewählte Versions-IDs für Vergleich
+var pendingSave = null;      // Inhalt, der auf Projekt-Auswahl wartet
+
+/* ── Kleine Helfer ── */
+function $(id){ return document.getElementById(id); }
+function toast(msg){
+  var t = $('toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.style.display = 'none'; }, 2600);
+}
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(ts){
+  if(!ts) return '';
+  var d = new Date(ts);
+  return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
+         d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+/* Sehr einfache Markdown-Ausgabe (Überschriften, Fett, Listen) – XSS-sicher durch esc() vorab */
+function mdLite(src){
+  var lines = esc(src).split('\n');
+  var out = [], inList = false;
+  for(var i=0;i<lines.length;i++){
+    var l = lines[i];
+    var isLi = /^\s*[-*•]\s+/.test(l);
+    if(isLi && !inList){ out.push('<ul>'); inList = true; }
+    if(!isLi && inList){ out.push('</ul>'); inList = false; }
+    l = l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+    if(/^#{1,4}\s+/.test(l)){ out.push('<h4>'+ l.replace(/^#{1,4}\s+/,'') +'</h4>'); continue; }
+    if(isLi){ out.push('<li>'+ l.replace(/^\s*[-*•]\s+/,'') +'</li>'); continue; }
+    if(l.trim()===''){ out.push(''); continue; }
+    out.push('<p>'+ l +'</p>');
+  }
+  if(inList) out.push('</ul>');
+  return out.join('');
+}
+function fnErr(e){
+  return (e && e.message) ? e.message : 'Unbekannter Fehler – bitte erneut versuchen.';
+}
+function openModal(id){ $(id).classList.add('show'); }
+function closeModal(id){ $(id).classList.remove('show'); }
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function doLogin(){
+  var email = $('loginEmail').value.trim();
+  var pass = $('loginPass').value;
+  $('loginErr').textContent = '';
+  if(!email || !pass){ $('loginErr').textContent = 'Bitte E-Mail und Passwort eingeben.'; return; }
+  auth.signInWithEmailAndPassword(email, pass).catch(function(e){
+    $('loginErr').textContent = 'Login fehlgeschlagen: ' + (e.code === 'auth/invalid-credential'
+      ? 'E-Mail oder Passwort falsch.' : e.message);
+  });
+}
+$('loginPass').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
+function doLogout(){ auth.signOut(); }
+
+auth.onAuthStateChanged(function(user){
+  $('loadingWrap').style.display = 'none';
+  if(user){
+    me = { uid: user.uid, name: user.email || '' };
+    db.collection('users').doc(user.uid).get().then(function(snap){
+      var d = snap.exists ? snap.data() : {};
+      me.name = d.name || me.name;
+      $('userName').textContent = me.name;
+    }).catch(function(){ $('userName').textContent = me.name; });
+    $('authWrap').classList.remove('show');
+    $('app').classList.add('show');
+    subscribeProjects();
+  } else {
+    me = null;
+    if(unsubProjects){ unsubProjects(); unsubProjects = null; }
+    $('app').classList.remove('show');
+    $('authWrap').classList.add('show');
+  }
+});
+
+/* ============================================================
+   TABS
+   ============================================================ */
+function showTab(name){
+  ['chat','studio','archiv'].forEach(function(t){
+    $('view-'+t).classList.toggle('show', t === name);
+    $('tabBtn-'+t).classList.toggle('active', t === name);
+  });
+}
+
+/* ============================================================
+   TAB 1 – KI-CHAT
+   ============================================================ */
+function addMsg(role, html, actions){
+  var log = $('chatLog');
+  var div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+  div.innerHTML = html;
+  if(actions){ div.appendChild(actions); }
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+function aiActions(text){
+  var wrap = document.createElement('div');
+  wrap.className = 'msg-actions';
+  var b = document.createElement('button');
+  b.className = 'btn btn-ghost btn-small';
+  b.textContent = '🗂️ Im Archiv speichern';
+  b.onclick = function(){ startSaveToArchive({ kind:'text', text:text }); };
+  wrap.appendChild(b);
+  return wrap;
+}
+
+function sendBriefing(){
+  var p = $('bfProdukt').value.trim(), z = $('bfZielgruppe').value.trim();
+  var k = $('bfKanal').value, t = $('bfTon').value, x = $('bfExtra').value.trim();
+  if(!p){ toast('Bitte mindestens Produkt/Anlass ausfüllen.'); return; }
+  var msg = 'Neues Kampagnen-Briefing:\n' +
+    '- Produkt/Anlass: ' + p + '\n' +
+    (z ? '- Zielgruppe: ' + z + '\n' : '') +
+    '- Kanal: ' + k + '\n' +
+    '- Ton/Stil: ' + t + '\n' +
+    (x ? '- Zusätzliche Wünsche: ' + x + '\n' : '') +
+    '\nEntwickle bitte konkrete Kampagnen-Ideen mit fertigen Texten (inkl. Bildideen und – falls Social – Hashtags).';
+  $('briefingBox').removeAttribute('open');
+  sendToAI(msg, 'Briefing: ' + p + ' (' + k + ')');
+}
+
+function sendChat(){
+  var v = $('chatInput').value.trim();
+  if(!v) return;
+  $('chatInput').value = '';
+  sendToAI(v, v);
+}
+
+function sendToAI(fullText, displayText, imageBlock){
+  if(!me) return;
+  var content;
+  if(imageBlock){
+    content = [ imageBlock, { type:'text', text: fullText } ];
+  } else {
+    content = fullText;
+  }
+  chatHistory.push({ role:'user', content: content });
+
+  var shownHtml = mdLite(displayText);
+  if(imageBlock){
+    shownHtml = '<img class="msg-img" src="data:' + imageBlock.source.media_type + ';base64,' +
+      imageBlock.source.data + '" />' + shownHtml;
+  }
+  addMsg('user', shownHtml);
+  var typing = addMsg('ai', '<span class="typing">KI denkt nach …</span>');
+  setBusy('btnSend', true); setBusy('btnBriefing', true);
+
+  callChat({ messages: chatHistory })
+    .then(function(res){
+      var text = (res.data && res.data.text) || '';
+      chatHistory.push({ role:'assistant', content: text });
+      typing.innerHTML = mdLite(text);
+      typing.appendChild(aiActions(text));
+    })
+    .catch(function(e){
+      chatHistory.pop(); // fehlgeschlagene Frage nicht in der Historie lassen
+      typing.innerHTML = '<span style="color:var(--danger)">' + esc(fnErr(e)) + '</span>';
+    })
+    .finally(function(){
+      setBusy('btnSend', false); setBusy('btnBriefing', false);
+      $('chatLog').scrollTop = $('chatLog').scrollHeight;
+    });
+}
+$('chatInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
+});
+function resetChat(){
+  chatHistory = [];
+  $('chatLog').innerHTML = '';
+  $('briefingBox').setAttribute('open','');
+}
+function setBusy(id, busy){ var b = $(id); if(b) b.disabled = !!busy; }
+
+/* ============================================================
+   TAB 2 – ERSTELLEN
+   ============================================================ */
+var genAspect = '1:1';
+function pickAspect(btn){
+  genAspect = btn.dataset.aspect;
+  var row = $('genAspectRow').children;
+  for(var i=0;i<row.length;i++) row[i].classList.toggle('active', row[i] === btn);
+}
+
+function generateImage(){
+  var prompt = $('genPrompt').value.trim();
+  if(!prompt){ toast('Bitte eine Bildbeschreibung eingeben.'); return; }
+  setBusy('btnGen', true);
+  $('genResult').innerHTML = '<span class="typing">Bild wird erzeugt … das kann 20–60 Sekunden dauern.</span>';
+  callImage({ prompt: prompt, aspect: genAspect })
+    .then(function(res){
+      var d = res.data || {};
+      var url = 'data:' + (d.mime || 'image/png') + ';base64,' + d.data;
+      var html =
+        '<img src="' + url + '" style="max-height:380px" />' +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn btn-ghost btn-small" onclick="loadGenIntoEditor()">✂️ In den Editor</button>' +
+        '<button class="btn btn-ghost btn-small" onclick="saveGenToArchive()">🗂️ Im Archiv speichern</button>' +
+        '</div>';
+      $('genResult').innerHTML = html;
+      $('genResult')._img = url;
+    })
+    .catch(function(e){
+      $('genResult').innerHTML = '<span style="color:var(--danger)">' + esc(fnErr(e)) + '</span>';
+    })
+    .finally(function(){ setBusy('btnGen', false); });
+}
+function loadGenIntoEditor(){
+  if($('genResult')._img) loadEditorImage($('genResult')._img);
+}
+function saveGenToArchive(){
+  if($('genResult')._img) startSaveToArchive({ kind:'img', img: $('genResult')._img, note0:'KI-generiertes Bild' });
+}
+
+/* ── Foto-Upload & Analyse ── */
+var uploadData = null; // { media_type, data } (Base64 ohne Prefix)
+
+$('fileInput').addEventListener('change', function(){
+  if(this.files && this.files[0]) handleUpload(this.files[0]);
+});
+$('dropZone').addEventListener('dragover', function(e){ e.preventDefault(); });
+$('dropZone').addEventListener('drop', function(e){
+  e.preventDefault();
+  if(e.dataTransfer.files && e.dataTransfer.files[0]) handleUpload(e.dataTransfer.files[0]);
+});
+
+function handleUpload(file){
+  if(!/^image\//.test(file.type)){ toast('Bitte eine Bilddatei wählen.'); return; }
+  // Bild laden und für den Versand verkleinern (max. 1568 px lange Kante)
+  var url = URL.createObjectURL(file);
+  var img = new Image();
+  img.onload = function(){
+    URL.revokeObjectURL(url);
+    var scaled = scaleToDataUrl(img, 1568, .88);
+    uploadData = { media_type: 'image/jpeg', data: scaled.split(',')[1] };
+    $('uploadPreview').src = scaled;
+    $('uploadPreviewWrap').classList.remove('hidden');
+    $('analysisResult').innerHTML = '';
+  };
+  img.onerror = function(){ toast('Bild konnte nicht geladen werden.'); };
+  img.src = url;
+}
+function scaleToDataUrl(img, maxEdge, quality){
+  var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  var f = Math.min(1, maxEdge / Math.max(w, h));
+  var c = document.createElement('canvas');
+  c.width = Math.round(w * f); c.height = Math.round(h * f);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', quality);
+}
+
+function analyzePhoto(){
+  if(!uploadData) return;
+  setBusy('btnAnalyze', true);
+  $('analysisResult').innerHTML = '<span class="typing">KI analysiert das Foto …</span>';
+  var block = { type:'image', source:{ type:'base64', media_type: uploadData.media_type, data: uploadData.data } };
+  var q = 'Analysiere dieses Foto für unser Marketing: Bildwirkung, idealer Ausschnitt, Farbwirkung, ' +
+          'konkrete Text-Overlay-Vorschläge und für welche Kanäle/Formate es sich eignet. ' +
+          'Gib am Ende 2–3 fertige Post-Text-Vorschläge dazu.';
+  callChat({ messages: [{ role:'user', content:[ block, { type:'text', text:q } ] }] })
+    .then(function(res){
+      var text = (res.data && res.data.text) || '';
+      $('analysisResult').innerHTML = '<div class="msg ai" style="max-width:100%">' + mdLite(text) + '</div>';
+      var act = aiActions(text);
+      $('analysisResult').firstChild.appendChild(act);
+    })
+    .catch(function(e){
+      $('analysisResult').innerHTML = '<span style="color:var(--danger)">' + esc(fnErr(e)) + '</span>';
+    })
+    .finally(function(){ setBusy('btnAnalyze', false); });
+}
+function loadUploadIntoEditor(){
+  if(uploadData) loadEditorImage('data:' + uploadData.media_type + ';base64,' + uploadData.data);
+}
+
+/* ── Editor (Canvas) ── */
+var editorImg = null;      // Image-Objekt (Quelle)
+var cropMode = 'orig';
+var presetMode = 'none';
+var CROPS = { '1:1':1, '4:5':4/5, '9:16':9/16, '16:9':16/9, 'a4h':210/297, 'a4q':297/210, 'a1':594/841 };
+var PRESETS = {
+  none:  { b:100, c:100, s:100, w:0 },
+  fresh: { b:106, c:108, s:118, w:0 },
+  warm:  { b:103, c:104, s:108, w:28 },
+  punch: { b:100, c:130, s:112, w:0 },
+  bw:    { b:102, c:112, s:0,   w:0 },
+  fade:  { b:108, c:90,  s:88,  w:8 }
+};
+
+function loadEditorImage(dataUrl){
+  var img = new Image();
+  img.onload = function(){
+    editorImg = img;
+    $('editorEmpty').classList.add('hidden');
+    $('editorCanvas').classList.remove('hidden');
+    renderEditor();
+    showTab('studio');
+    $('editorStage').scrollIntoView({ behavior:'smooth', block:'center' });
+  };
+  img.src = dataUrl;
+}
+function pickCrop(btn){
+  cropMode = btn.dataset.crop;
+  var row = $('cropRow').children;
+  for(var i=0;i<row.length;i++) row[i].classList.toggle('active', row[i] === btn);
+  renderEditor();
+}
+function pickPreset(btn){
+  presetMode = btn.dataset.preset;
+  var p = PRESETS[presetMode];
+  $('slBright').value = p.b; $('slContrast').value = p.c; $('slSat').value = p.s; $('slWarm').value = p.w;
+  var row = $('presetRow').children;
+  for(var i=0;i<row.length;i++) row[i].classList.toggle('active', row[i] === btn);
+  renderEditor();
+}
+function currentFilter(){
+  var b = +$('slBright').value, c = +$('slContrast').value, s = +$('slSat').value, w = +$('slWarm').value;
+  $('valBright').textContent = b + ' %'; $('valContrast').textContent = c + ' %';
+  $('valSat').textContent = s + ' %'; $('valWarm').textContent = w + ' %';
+  return 'brightness(' + b + '%) contrast(' + c + '%) saturate(' + s + '%)' + (w > 0 ? ' sepia(' + w + '%)' : '');
+}
+/* Zeichnet das Bild mit Zuschnitt+Filter auf ein Canvas. maxEdge begrenzt die Auflösung. */
+function drawEdited(canvas, maxEdge){
+  var img = editorImg;
+  var sw = img.naturalWidth, sh = img.naturalHeight;
+  var sx = 0, sy = 0;
+  if(cropMode !== 'orig'){
+    var target = CROPS[cropMode];
+    var current = sw / sh;
+    if(current > target){ var nw = sh * target; sx = (sw - nw) / 2; sw = nw; }
+    else { var nh = sw / target; sy = (sh - nh) / 2; sh = nh; }
+  }
+  var f = Math.min(1, maxEdge / Math.max(sw, sh));
+  canvas.width = Math.round(sw * f); canvas.height = Math.round(sh * f);
+  var ctx = canvas.getContext('2d');
+  ctx.filter = currentFilter();
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+}
+function renderEditor(){
+  if(!editorImg){ currentFilter(); return; }
+  drawEdited($('editorCanvas'), 1400);
+}
+function downloadEditor(){
+  if(!editorImg){ toast('Kein Bild im Editor.'); return; }
+  var c = document.createElement('canvas');
+  drawEdited(c, 2480); // Print-tauglich (A4 lange Kante bei ~300 dpi)
+  var a = document.createElement('a');
+  a.download = 'kf-marketing-' + Date.now() + '.jpg';
+  a.href = c.toDataURL('image/jpeg', .92);
+  a.click();
+}
+/* Für Firestore komprimieren: Base64 muss unter ~750 KB bleiben (1-MB-Dokumentlimit) */
+function editorToStorableDataUrl(){
+  var edge = 1400, q = .85, url;
+  for(var i=0;i<8;i++){
+    var c = document.createElement('canvas');
+    drawEdited(c, edge);
+    url = c.toDataURL('image/jpeg', q);
+    if(url.length < 750000) return url;
+    if(q > .6) q -= .1; else edge = Math.round(edge * .8);
+  }
+  return url;
+}
+function saveEditorToArchive(){
+  if(!editorImg){ toast('Kein Bild im Editor.'); return; }
+  startSaveToArchive({ kind:'img', img: editorToStorableDataUrl(), note0:'Bearbeitetes Bild (' + cropMode + ')' });
+}
+
+/* ============================================================
+   TAB 3 – ARCHIV
+   ============================================================ */
+function subscribeProjects(){
+  if(unsubProjects) unsubProjects();
+  unsubProjects = db.collection('mkProjects').orderBy('lastTs','desc')
+    .onSnapshot(function(snap){
+      projects = [];
+      snap.forEach(function(doc){ projects.push({ id: doc.id, data: doc.data() }); });
+      renderProjects();
+    }, function(e){
+      console.error(e);
+      toast('Archiv konnte nicht geladen werden – sind die Firestore-Regeln aktualisiert?');
+    });
+}
+
+function renderProjects(){
+  var q = ($('fltSearch').value || '').toLowerCase();
+  var fk = $('fltKanal').value, fs = $('fltStatus').value;
+  var grid = $('projGrid'); grid.innerHTML = '';
+  var shown = 0;
+  projects.forEach(function(p){
+    var d = p.data;
+    if(fk && d.channel !== fk) return;
+    if(fs && d.status !== fs) return;
+    if(q){
+      var hay = (d.name + ' ' + (d.tags||[]).join(' ')).toLowerCase();
+      if(hay.indexOf(q) < 0) return;
+    }
+    shown++;
+    var card = document.createElement('div');
+    card.className = 'proj-card';
+    card.innerHTML =
+      '<h3>' + esc(d.name) + '</h3>' +
+      '<div class="badges">' +
+        '<span class="badge kanal">' + esc(channelLabel(d.channel)) + '</span>' +
+        '<span class="badge status-' + esc(d.status||'entwurf') + '">' + esc(d.status||'entwurf') + '</span>' +
+        (d.tags||[]).map(function(t){ return '<span class="badge tag">#' + esc(t) + '</span>'; }).join('') +
+      '</div>' +
+      '<div class="proj-meta">' + (d.versionCount||0) + ' Version(en) · zuletzt ' + fmtDate(d.lastTs) +
+      ' · von ' + esc(d.creatorName||'') + '</div>';
+    card.onclick = function(){ openProject(p.id); };
+    grid.appendChild(card);
+  });
+  $('projEmpty').style.display = shown ? 'none' : 'block';
+}
+function channelLabel(c){
+  return c === 'print' ? 'Print' : (c === 'beides' ? 'Print + Digital' : 'Digital');
+}
+
+function openNewProject(fromPick){
+  $('npName').value = ''; $('npTags').value = '';
+  openModal('mNewProject');
+  $('mNewProject')._fromPick = !!fromPick;
+}
+function createProject(){
+  var name = $('npName').value.trim();
+  if(!name){ toast('Bitte einen Namen eingeben.'); return; }
+  var tags = $('npTags').value.split(',').map(function(t){ return t.trim().toLowerCase(); }).filter(Boolean);
+  var now = Date.now();
+  db.collection('mkProjects').add({
+    name: name,
+    channel: $('npKanal').value,
+    status: 'entwurf',
+    tags: tags,
+    createdAt: now, lastTs: now,
+    createdBy: me.uid, creatorName: me.name,
+    versionCount: 0
+  }).then(function(ref){
+    closeModal('mNewProject');
+    toast('Projekt angelegt.');
+    if($('mNewProject')._fromPick && pendingSave){
+      saveVersionTo(ref.id, pendingSave, $('pickNote') ? $('pickNote').value : '');
+      pendingSave = null;
+    } else {
+      showTab('archiv');
+    }
+  }).catch(function(e){ toast('Fehler: ' + fnErr(e)); });
+}
+
+/* ── Version speichern (aus Chat / Bild / Editor) ── */
+function startSaveToArchive(payload){
+  pendingSave = payload;
+  var list = $('pickList'); list.innerHTML = '';
+  $('pickNote').value = payload.note0 || '';
+  if(!projects.length){
+    closeModal('mPickProject');
+    openNewProject(true);
+    return;
+  }
+  projects.forEach(function(p){
+    var b = document.createElement('button');
+    b.className = 'pick-item';
+    b.innerHTML = '<b>' + esc(p.data.name) + '</b> <span class="muted">(' +
+      (p.data.versionCount||0) + ' Versionen)</span>';
+    b.onclick = function(){
+      var note = $('pickNote').value;
+      closeModal('mPickProject');
+      saveVersionTo(p.id, pendingSave, note);
+      pendingSave = null;
+    };
+    list.appendChild(b);
+  });
+  openModal('mPickProject');
+}
+
+function saveVersionTo(projectId, payload, note){
+  var ref = db.collection('mkProjects').doc(projectId);
+  ref.get().then(function(snap){
+    if(!snap.exists) throw new Error('Projekt nicht gefunden.');
+    var n = (snap.data().versionCount || 0) + 1;
+    var now = Date.now();
+    var doc = {
+      n: n,
+      kind: payload.kind,
+      note: (note || '').slice(0, 300),
+      createdAt: now,
+      createdBy: me.uid, creatorName: me.name
+    };
+    if(payload.kind === 'text') doc.text = String(payload.text || '').slice(0, 100000);
+    if(payload.kind === 'img') doc.img = payload.img;
+    var batch = db.batch();
+    batch.set(ref.collection('versions').doc(), doc);
+    batch.update(ref, { versionCount: n, lastTs: now });
+    return batch.commit();
+  }).then(function(){
+    toast('Als Version gespeichert ✓');
+    if(currentProject && currentProject.id === projectId) loadVersions(projectId);
+  }).catch(function(e){ toast('Speichern fehlgeschlagen: ' + fnErr(e)); });
+}
+
+/* ── Projekt-Detail ── */
+function openProject(id){
+  var p = projects.find(function(x){ return x.id === id; });
+  if(!p) return;
+  currentProject = p;
+  compareSel = [];
+  $('pdTitle').textContent = p.data.name;
+  $('pdStatus').value = p.data.status || 'entwurf';
+  $('pdTags').value = (p.data.tags||[]).join(', ');
+  $('pdBadges').innerHTML =
+    '<span class="badge kanal">' + esc(channelLabel(p.data.channel)) + '</span>' +
+    '<span class="badge status-' + esc(p.data.status||'entwurf') + '">' + esc(p.data.status||'entwurf') + '</span>';
+  loadVersions(id);
+  openModal('mProject');
+}
+function updateProjectMeta(){
+  if(!currentProject) return;
+  var tags = $('pdTags').value.split(',').map(function(t){ return t.trim().toLowerCase(); }).filter(Boolean);
+  db.collection('mkProjects').doc(currentProject.id).update({
+    status: $('pdStatus').value,
+    tags: tags,
+    lastTs: Date.now()
+  }).then(function(){ toast('Gespeichert ✓'); })
+    .catch(function(e){ toast('Fehler: ' + fnErr(e)); });
+}
+function deleteProject(){
+  if(!currentProject) return;
+  if(!confirm('Projekt »' + currentProject.data.name + '« mit allen Versionen löschen?')) return;
+  var pid = currentProject.id;
+  db.collection('mkProjects').doc(pid).collection('versions').get().then(function(snap){
+    var batch = db.batch();
+    snap.forEach(function(d){ batch.delete(d.ref); });
+    batch.delete(db.collection('mkProjects').doc(pid));
+    return batch.commit();
+  }).then(function(){
+    closeModal('mProject');
+    toast('Projekt gelöscht.');
+  }).catch(function(e){ toast('Löschen fehlgeschlagen: ' + fnErr(e)); });
+}
+
+function loadVersions(pid){
+  db.collection('mkProjects').doc(pid).collection('versions').orderBy('n','desc').get()
+    .then(function(snap){
+      currentVersions = [];
+      snap.forEach(function(d){ currentVersions.push({ id: d.id, data: d.data() }); });
+      renderVersions();
+    });
+}
+function renderVersions(){
+  var list = $('verList'); list.innerHTML = '';
+  if(!currentVersions.length){
+    list.innerHTML = '<div class="muted">Noch keine Versionen. Speichere eine KI-Idee oder ein Bild hierher.</div>';
+  }
+  currentVersions.forEach(function(v){
+    var d = v.data;
+    var item = document.createElement('div');
+    item.className = 'ver-item' + (compareSel.indexOf(v.id) >= 0 ? ' compare-sel' : '');
+    var inner =
+      '<div class="ver-head">' +
+        '<span class="ver-num">V' + d.n + '</span>' +
+        (d.note ? '<span>' + esc(d.note) + '</span>' : '') +
+        '<span class="ver-date">' + fmtDate(d.createdAt) + ' · ' + esc(d.creatorName||'') + '</span>' +
+      '</div>';
+    if(d.kind === 'img' && d.img){
+      inner += '<img class="ver-thumb" src="' + d.img + '" />';
+    } else if(d.text){
+      inner += '<div class="ver-preview">' + esc(d.text) + '</div>';
+    }
+    item.innerHTML = inner;
+
+    var acts = document.createElement('div');
+    acts.className = 'ver-actions';
+    acts.appendChild(mkBtn('👁️ Ansehen', function(){ viewVersion(v); }));
+    acts.appendChild(mkBtn(compareSel.indexOf(v.id) >= 0 ? '✔ Zum Vergleich gewählt' : '⚖️ Vergleichen', function(){ toggleCompare(v.id); }));
+    acts.appendChild(mkBtn('✨ Mit KI verbessern', function(){ improveVersion(v); }));
+    if(me && (d.createdBy === me.uid)){
+      var del = mkBtn('Löschen', function(){ deleteVersion(v); });
+      del.className = 'btn btn-danger btn-small';
+      acts.appendChild(del);
+    }
+    item.appendChild(acts);
+    list.appendChild(item);
+  });
+  $('btnCompare').disabled = compareSel.length !== 2;
+}
+function mkBtn(label, fn){
+  var b = document.createElement('button');
+  b.className = 'btn btn-ghost btn-small';
+  b.textContent = label;
+  b.onclick = fn;
+  return b;
+}
+function deleteVersion(v){
+  if(!confirm('Version V' + v.data.n + ' löschen?')) return;
+  db.collection('mkProjects').doc(currentProject.id).collection('versions').doc(v.id).delete()
+    .then(function(){ loadVersions(currentProject.id); toast('Version gelöscht.'); })
+    .catch(function(e){ toast('Fehler: ' + fnErr(e)); });
+}
+function viewVersion(v){
+  $('vvTitle').textContent = 'Version V' + v.data.n + (v.data.note ? ' – ' + v.data.note : '');
+  $('vvBody').innerHTML = v.data.kind === 'img'
+    ? '<img src="' + v.data.img + '" style="border-radius:12px" />'
+    : mdLite(v.data.text || '');
+  openModal('mVersion');
+}
+function toggleCompare(id){
+  var i = compareSel.indexOf(id);
+  if(i >= 0) compareSel.splice(i, 1);
+  else {
+    if(compareSel.length >= 2) compareSel.shift();
+    compareSel.push(id);
+  }
+  renderVersions();
+}
+function openCompare(){
+  if(compareSel.length !== 2) return;
+  var grid = $('cmpGrid'); grid.innerHTML = '';
+  compareSel
+    .map(function(id){ return currentVersions.find(function(v){ return v.id === id; }); })
+    .sort(function(a,b){ return a.data.n - b.data.n; })
+    .forEach(function(v){
+      var col = document.createElement('div');
+      col.className = 'cmp-col';
+      col.innerHTML = '<span class="ver-num">V' + v.data.n +
+        (v.data.note ? ' – ' + esc(v.data.note) : '') + '</span>' +
+        (v.data.kind === 'img'
+          ? '<img src="' + v.data.img + '" />'
+          : mdLite(v.data.text || ''));
+      grid.appendChild(col);
+    });
+  openModal('mCompare');
+}
+
+/* »Mit KI verbessern«: Version als Ausgangspunkt in den Assistenten laden.
+   Die alte Version bleibt erhalten – das Ergebnis speichert man als neue Version. */
+function improveVersion(v){
+  closeModal('mProject');
+  showTab('chat');
+  $('briefingBox').removeAttribute('open');
+  if(v.data.kind === 'img' && v.data.img){
+    var parts = v.data.img.split(',');
+    var mime = (parts[0].match(/data:(.*?);/) || [,'image/jpeg'])[1];
+    var block = { type:'image', source:{ type:'base64', media_type: mime, data: parts[1] } };
+    sendToAI(
+      'Dies ist Version V' + v.data.n + ' aus dem Projekt »' + currentProject.data.name + '«. ' +
+      'Analysiere das Bild und mache konkrete Verbesserungsvorschläge für die nächste Version.',
+      'Verbessere Bild-Version V' + v.data.n + ' aus »' + currentProject.data.name + '«',
+      block
+    );
+  } else {
+    sendToAI(
+      'Dies ist Version V' + v.data.n + ' aus dem Projekt »' + currentProject.data.name + '«:\n\n' +
+      (v.data.text || '') +
+      '\n\nVerbessere diese Version: mache sie stärker, konkreter und wirkungsvoller. ' +
+      'Erkläre kurz, was du geändert hast.',
+      'Verbessere Version V' + v.data.n + ' aus »' + currentProject.data.name + '«'
+    );
+  }
+}
+
+/* Notiz manuell als Version anlegen */
+function addNoteVersion(){
+  if(!currentProject) return;
+  var txt = prompt('Notiz / Text für die neue Version:');
+  if(!txt || !txt.trim()) return;
+  saveVersionTo(currentProject.id, { kind:'text', text: txt.trim() }, 'Manuelle Notiz');
+}
+
+/* Modals per Klick auf den Hintergrund schließen */
+document.querySelectorAll('.modal-bg').forEach(function(bg){
+  bg.addEventListener('click', function(e){ if(e.target === bg) bg.classList.remove('show'); });
+});
+</script>
+</body>
+</html>

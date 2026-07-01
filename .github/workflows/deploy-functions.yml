@@ -29,8 +29,11 @@ jobs:
         working-directory: functions
         run: npm install
 
-      - name: .env für Functions schreiben (Geheim-Schlüssel für Test-Auslöser)
-        run: echo "BDAY_TEST_KEY=${{ secrets.BDAY_TEST_KEY }}" > functions/.env
+      - name: .env für Functions schreiben (Geheim-Schlüssel)
+        run: |
+          echo "BDAY_TEST_KEY=${{ secrets.BDAY_TEST_KEY }}" > functions/.env
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> functions/.env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> functions/.env
 
       - name: Google-Auth (Service-Account aus GitHub-Secret)
         id: auth

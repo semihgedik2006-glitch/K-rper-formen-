@@ -6,6 +6,7 @@
 
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
+const Anthropic = require('@anthropic-ai/sdk');
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -174,3 +175,159 @@ exports.runBirthdayCheckNow = region.https.onRequest(async (req, res) => {
     res.status(500).send('Fehler: ' + (e && e.message));
   }
 });
+
+/* ============================================================
+   MARKETING-APP (marketing.html)
+   Zwei geschützte KI-Funktionen. Die API-Schlüssel liegen NUR hier
+   auf dem Server (functions/.env), nie im Browser.
+   - marketingChat  → Claude API (Ideen, Texte, Foto-Analyse)
+   - marketingImage → Gemini API (Bild-Generierung)
+   ============================================================ */
+
+const MARKETING_SYSTEM_PROMPT =
+  'Du bist der Marketing-Assistent des EMS-Studios "Körperformen" (Body-Shaping, ' +
+  '20-Minuten-EMS-Training, persönliche Betreuung, mehrere Standorte im Raum Köln/Hürth). ' +
+  'Du hilfst dem Team bei Marketing-Kampagnen: Ideen, Konzepte, Post-Texte (Instagram, ' +
+  'Facebook, Google), Flyer- und Plakat-Texte, Hashtags, Zielgruppen-Ansprache und ' +
+  'Verbesserung bestehender Entwürfe. ' +
+  'Antworte auf Deutsch. Sei konkret und direkt umsetzbar: liefere fertige Texte statt ' +
+  'nur Ratschläge, nenne bei Post-Ideen immer Bildidee + Text + Hashtags, und passe ' +
+  'Tonalität und Länge an den genannten Kanal an (Print = kurz und plakativ, ' +
+  'Social = nahbar und aktivierend). Wenn ein Foto mitgeschickt wird, analysiere es ' +
+  'konkret: Bildwirkung, Ausschnitt, Farben, Text-Overlay-Vorschläge und wofür es ' +
+  'sich eignet. Formatiere mit kurzen Überschriften und Listen.';
+
+/* Prüft Login und liefert eine saubere Fehlermeldung für die App */
+function requireAuth(context) {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Bitte zuerst einloggen.');
+  }
+}
+
+/* Nachrichten aus der App validieren/begrenzen (Text + optionale Bilder) */
+function sanitizeMessages(raw) {
+  const msgs = Array.isArray(raw) ? raw.slice(-24) : [];
+  const out = [];
+  for (const m of msgs) {
+    if (!m || (m.role !== 'user' && m.role !== 'assistant')) continue;
+    if (typeof m.content === 'string') {
+      out.push({ role: m.role, content: m.content.slice(0, 20000) });
+    } else if (Array.isArray(m.content)) {
+      const blocks = [];
+      for (const b of m.content.slice(0, 6)) {
+        if (!b) continue;
+        if (b.type === 'text' && typeof b.text === 'string') {
+          blocks.push({ type: 'text', text: b.text.slice(0, 20000) });
+        } else if (b.type === 'image' && b.source && b.source.type === 'base64'
+          && typeof b.source.data === 'string'
+          && ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].indexOf(b.source.media_type) >= 0) {
+          blocks.push({
+            type: 'image',
+            source: { type: 'base64', media_type: b.source.media_type, data: b.source.data }
+          });
+        }
+      }
+      if (blocks.length) out.push({ role: m.role, content: blocks });
+    }
+  }
+  return out;
+}
+
+/* ── KI-Chat: Ideen, Texte, Foto-Analyse (Claude) ── */
+exports.marketingChat = region
+  .runWith({ timeoutSeconds: 300, memory: '512MB' })
+  .https.onCall(async (data, context) => {
+    requireAuth(context);
+    const apiKey = process.env.ANTHROPIC_API_KEY || '';
+    if (!apiKey) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'ANTHROPIC_API_KEY fehlt. Bitte als GitHub-Secret hinterlegen und Functions neu deployen (siehe ANLEITUNG-MARKETING.txt).');
+    }
+    const messages = sanitizeMessages(data && data.messages);
+    if (!messages.length) {
+      throw new functions.https.HttpsError('invalid-argument', 'Keine Nachricht übergeben.');
+    }
+    try {
+      const client = new Anthropic({ apiKey });
+      const response = await client.messages.create({
+        model: 'claude-opus-4-8',
+        max_tokens: 8192,
+        thinking: { type: 'adaptive' },
+        system: MARKETING_SYSTEM_PROMPT,
+        messages
+      });
+      if (response.stop_reason === 'refusal') {
+        throw new functions.https.HttpsError('failed-precondition',
+          'Die KI hat diese Anfrage abgelehnt. Bitte anders formulieren.');
+      }
+      const text = response.content
+        .filter(b => b.type === 'text')
+        .map(b => b.text)
+        .join('\n')
+        .trim();
+      return { text: text || 'Keine Antwort erhalten – bitte erneut versuchen.' };
+    } catch (e) {
+      if (e instanceof functions.https.HttpsError) throw e;
+      console.error('marketingChat:', e);
+      const msg = (e && e.status === 429)
+        ? 'Zu viele Anfragen – bitte kurz warten und erneut versuchen.'
+        : 'KI-Anfrage fehlgeschlagen: ' + ((e && e.message) || 'Unbekannter Fehler');
+      throw new functions.https.HttpsError('internal', msg);
+    }
+  });
+
+/* ── Bild-Generierung (Gemini) ──
+   Liefert { mime, data } (Base64). aspect ist optional: "1:1", "3:4", "4:3", "9:16", "16:9". */
+exports.marketingImage = region
+  .runWith({ timeoutSeconds: 300, memory: '512MB' })
+  .https.onCall(async (data, context) => {
+    requireAuth(context);
+    const apiKey = process.env.GEMINI_API_KEY || '';
+    if (!apiKey) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'GEMINI_API_KEY fehlt. Bitte als GitHub-Secret hinterlegen und Functions neu deployen (siehe ANLEITUNG-MARKETING.txt).');
+    }
+    const prompt = String((data && data.prompt) || '').slice(0, 4000).trim();
+    if (!prompt) {
+      throw new functions.https.HttpsError('invalid-argument', 'Bitte eine Bildbeschreibung eingeben.');
+    }
+    const aspect = String((data && data.aspect) || '');
+    const body = { contents: [{ parts: [{ text: prompt }] }] };
+    if (['1:1', '3:4', '4:3', '9:16', '16:9'].indexOf(aspect) >= 0) {
+      body.generationConfig = { imageConfig: { aspectRatio: aspect } };
+    }
+    try {
+      const resp = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify(body)
+        }
+      );
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        console.error('marketingImage HTTP ' + resp.status + ':', JSON.stringify(json).slice(0, 500));
+        throw new functions.https.HttpsError('internal',
+          'Bild-Generierung fehlgeschlagen (' + resp.status + '): ' +
+          ((json.error && json.error.message) || 'Unbekannter Fehler'));
+      }
+      const parts = (json.candidates && json.candidates[0] && json.candidates[0].content
+        && json.candidates[0].content.parts) || [];
+      const imgPart = parts.find(p => p.inlineData && p.inlineData.data);
+      if (!imgPart) {
+        const textPart = parts.find(p => p.text);
+        throw new functions.https.HttpsError('internal',
+          'Es wurde kein Bild erzeugt.' + (textPart ? ' Hinweis der KI: ' + String(textPart.text).slice(0, 300) : ''));
+      }
+      return {
+        mime: imgPart.inlineData.mimeType || 'image/png',
+        data: imgPart.inlineData.data
+      };
+    } catch (e) {
+      if (e instanceof functions.https.HttpsError) throw e;
+      console.error('marketingImage:', e);
+      throw new functions.https.HttpsError('internal',
+        'Bild-Generierung fehlgeschlagen: ' + ((e && e.message) || 'Unbekannter Fehler'));
+    }
+  });
