@@ -300,53 +300,47 @@ exports.marketingChat = region
     }
   });
 
-/* ── Bild-Generierung (Gemini) ──
+/* Ziel-Pixelmaße pro Seitenverhältnis (lange Kante ~1200px, reicht für Social + Web-Vorschau) */
+const ASPECT_DIMENSIONS = {
+  '1:1':  { w: 1024, h: 1024 },
+  '3:4':  { w: 900,  h: 1200 },
+  '4:3':  { w: 1200, h: 900  },
+  '9:16': { w: 810,  h: 1440 },
+  '16:9': { w: 1440, h: 810  }
+};
+
+/* ── Bild-Generierung (Pollinations.ai) ──
+   Komplett kostenlos, kein API-Key nötig – im Gegensatz zu Googles Bild-Modellen,
+   die selbst im "kostenlosen" Tarif ein Kontingent von 0 haben (Rechnungskonto Pflicht).
    Liefert { mime, data } (Base64). aspect ist optional: "1:1", "3:4", "4:3", "9:16", "16:9". */
 exports.marketingImage = region
   .runWith({ timeoutSeconds: 300, memory: '512MB' })
   .https.onCall(async (data, context) => {
     requireAuth(context);
-    const apiKey = process.env.GEMINI_API_KEY || '';
-    if (!apiKey) {
-      throw new functions.https.HttpsError('failed-precondition',
-        'GEMINI_API_KEY fehlt. Bitte als GitHub-Secret hinterlegen und Functions neu deployen (siehe ANLEITUNG-MARKETING.txt).');
-    }
     const prompt = String((data && data.prompt) || '').slice(0, 4000).trim();
     if (!prompt) {
       throw new functions.https.HttpsError('invalid-argument', 'Bitte eine Bildbeschreibung eingeben.');
     }
     const aspect = String((data && data.aspect) || '');
-    const body = { contents: [{ parts: [{ text: prompt }] }] };
-    if (['1:1', '3:4', '4:3', '9:16', '16:9'].indexOf(aspect) >= 0) {
-      body.generationConfig = { imageConfig: { aspectRatio: aspect } };
-    }
+    const dims = ASPECT_DIMENSIONS[aspect] || ASPECT_DIMENSIONS['1:1'];
+    const seed = Math.floor(Math.random() * 1e9); // verhindert, dass gleiche Prompts immer dasselbe Bild liefern
+    const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) +
+      '?width=' + dims.w + '&height=' + dims.h + '&seed=' + seed +
+      '&nologo=true&model=flux';
     try {
-      const resp = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-          body: JSON.stringify(body)
-        }
-      );
-      const json = await resp.json().catch(() => ({}));
+      const resp = await fetch(url);
       if (!resp.ok) {
-        console.error('marketingImage HTTP ' + resp.status + ':', JSON.stringify(json).slice(0, 500));
+        console.error('marketingImage HTTP ' + resp.status);
         throw new functions.https.HttpsError('internal',
-          'Bild-Generierung fehlgeschlagen (' + resp.status + '): ' +
-          ((json.error && json.error.message) || 'Unbekannter Fehler'));
+          'Bild-Generierung fehlgeschlagen (' + resp.status + '). Bitte kurz warten und erneut versuchen.');
       }
-      const parts = (json.candidates && json.candidates[0] && json.candidates[0].content
-        && json.candidates[0].content.parts) || [];
-      const imgPart = parts.find(p => p.inlineData && p.inlineData.data);
-      if (!imgPart) {
-        const textPart = parts.find(p => p.text);
-        throw new functions.https.HttpsError('internal',
-          'Es wurde kein Bild erzeugt.' + (textPart ? ' Hinweis der KI: ' + String(textPart.text).slice(0, 300) : ''));
+      const buf = Buffer.from(await resp.arrayBuffer());
+      if (!buf.length) {
+        throw new functions.https.HttpsError('internal', 'Es wurde kein Bild erzeugt. Bitte erneut versuchen.');
       }
       return {
-        mime: imgPart.inlineData.mimeType || 'image/png',
-        data: imgPart.inlineData.data
+        mime: resp.headers.get('content-type') || 'image/jpeg',
+        data: buf.toString('base64')
       };
     } catch (e) {
       if (e instanceof functions.https.HttpsError) throw e;
