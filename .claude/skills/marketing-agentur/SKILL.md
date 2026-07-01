@@ -20,7 +20,7 @@ Bei jeder Anfrage zu: Social-Media-Posts/Captions, Werbeanzeigen (Meta/Google Ad
 - **Kernbotschaften:**
   - EMS aktiviert über 90 % der Muskulatur gleichzeitig – effizient und gelenkschonend.
   - Nur 20 Minuten Training pro Woche statt stundenlanger Gym-Sessions.
-  - Persönliche 1:1-Betreuung durch zertifizierte Trainer.
+  - Persönliche Betreuung durch zertifizierte Trainer, real meist 1:1 oder 1:2 (ein Trainer betreut max. zwei Trainierende gleichzeitig) – nie "1:1" als Fakt behaupten, sondern "persönlich betreut" / "in kleinen Gruppen von max. 2" verwenden.
   - Beliebt bei Rückenbeschwerden, Wiedereinstieg nach Pause, Zeitmangel im Alltag.
   - 12 Studio-Standorte (siehe `STUDIOS` in `index.html`).
 - **Tonalität:** direkt, motivierend, auf Augenhöhe, keine leeren Superlative. Kurze, aktive Sätze. Deutsch, Du-Ansprache. Fitness-selbstbewusst, aber seriös (kein Bro-Marketing).
