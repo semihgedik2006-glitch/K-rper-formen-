@@ -6,7 +6,6 @@
 
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
-const Anthropic = require('@anthropic-ai/sdk');
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -178,10 +177,11 @@ exports.runBirthdayCheckNow = region.https.onRequest(async (req, res) => {
 
 /* ============================================================
    MARKETING-APP (marketing.html)
-   Zwei geschützte KI-Funktionen. Die API-Schlüssel liegen NUR hier
-   auf dem Server (functions/.env), nie im Browser.
-   - marketingChat  → Claude API (Ideen, Texte, Foto-Analyse)
-   - marketingImage → Gemini API (Bild-Generierung)
+   Zwei geschützte KI-Funktionen, beide über die Gemini-API
+   (kostenloses Kontingent, keine Kreditkarte nötig). Der API-Schlüssel
+   liegt NUR hier auf dem Server (functions/.env), nie im Browser.
+   - marketingChat  → Text-Modell (Ideen, Texte, Foto-Analyse)
+   - marketingImage → Bild-Modell (Bild-Generierung)
    ============================================================ */
 
 const MARKETING_SYSTEM_PROMPT =
@@ -233,46 +233,70 @@ function sanitizeMessages(raw) {
   return out;
 }
 
-/* ── KI-Chat: Ideen, Texte, Foto-Analyse (Claude) ── */
+/* Unsere App-Nachrichtenform ({role, content}) in Geminis "contents"-Form
+   übersetzen: role "assistant" → "model", Bild-Blöcke → inlineData. */
+function toGeminiContents(messages) {
+  return messages.map(m => {
+    const role = m.role === 'assistant' ? 'model' : 'user';
+    if (typeof m.content === 'string') {
+      return { role, parts: [{ text: m.content }] };
+    }
+    const parts = m.content.map(b => {
+      if (b.type === 'text') return { text: b.text };
+      return { inlineData: { mimeType: b.source.media_type, data: b.source.data } };
+    });
+    return { role, parts };
+  });
+}
+
+/* ── KI-Chat: Ideen, Texte, Foto-Analyse (Gemini) ── */
 exports.marketingChat = region
   .runWith({ timeoutSeconds: 300, memory: '512MB' })
   .https.onCall(async (data, context) => {
     requireAuth(context);
-    const apiKey = process.env.ANTHROPIC_API_KEY || '';
+    const apiKey = process.env.GEMINI_API_KEY || '';
     if (!apiKey) {
       throw new functions.https.HttpsError('failed-precondition',
-        'ANTHROPIC_API_KEY fehlt. Bitte als GitHub-Secret hinterlegen und Functions neu deployen (siehe ANLEITUNG-MARKETING.txt).');
+        'GEMINI_API_KEY fehlt. Bitte als GitHub-Secret hinterlegen und Functions neu deployen (siehe ANLEITUNG-MARKETING.txt).');
     }
     const messages = sanitizeMessages(data && data.messages);
     if (!messages.length) {
       throw new functions.https.HttpsError('invalid-argument', 'Keine Nachricht übergeben.');
     }
+    const body = {
+      systemInstruction: { parts: [{ text: MARKETING_SYSTEM_PROMPT }] },
+      contents: toGeminiContents(messages)
+    };
     try {
-      const client = new Anthropic({ apiKey });
-      const response = await client.messages.create({
-        model: 'claude-opus-4-8',
-        max_tokens: 8192,
-        thinking: { type: 'adaptive' },
-        system: MARKETING_SYSTEM_PROMPT,
-        messages
-      });
-      if (response.stop_reason === 'refusal') {
+      const resp = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify(body)
+        }
+      );
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        console.error('marketingChat HTTP ' + resp.status + ':', JSON.stringify(json).slice(0, 500));
+        const msg = resp.status === 429
+          ? 'Zu viele Anfragen – bitte kurz warten und erneut versuchen.'
+          : 'KI-Anfrage fehlgeschlagen (' + resp.status + '): ' + ((json.error && json.error.message) || 'Unbekannter Fehler');
+        throw new functions.https.HttpsError('internal', msg);
+      }
+      if (json.promptFeedback && json.promptFeedback.blockReason) {
         throw new functions.https.HttpsError('failed-precondition',
           'Die KI hat diese Anfrage abgelehnt. Bitte anders formulieren.');
       }
-      const text = response.content
-        .filter(b => b.type === 'text')
-        .map(b => b.text)
-        .join('\n')
-        .trim();
+      const parts = (json.candidates && json.candidates[0] && json.candidates[0].content
+        && json.candidates[0].content.parts) || [];
+      const text = parts.filter(p => typeof p.text === 'string').map(p => p.text).join('\n').trim();
       return { text: text || 'Keine Antwort erhalten – bitte erneut versuchen.' };
     } catch (e) {
       if (e instanceof functions.https.HttpsError) throw e;
       console.error('marketingChat:', e);
-      const msg = (e && e.status === 429)
-        ? 'Zu viele Anfragen – bitte kurz warten und erneut versuchen.'
-        : 'KI-Anfrage fehlgeschlagen: ' + ((e && e.message) || 'Unbekannter Fehler');
-      throw new functions.https.HttpsError('internal', msg);
+      throw new functions.https.HttpsError('internal',
+        'KI-Anfrage fehlgeschlagen: ' + ((e && e.message) || 'Unbekannter Fehler'));
     }
   });
 

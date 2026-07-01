@@ -26,25 +26,22 @@ marketing.html ist eine eigene App fuer Marketing-Kampagnen:
 Login: DIESELBEN Konten wie im StudioChat (intern.html).
 Es muss niemand neu angelegt werden.
 
-Die KI-Schluessel liegen NUR auf dem Server (Cloud Functions),
-niemals im Browser. Deshalb braucht es die Schritte unten.
+Die App nutzt fuer ALLES (Texte, Ideen, Foto-Analyse UND Bild-
+Generierung) ausschliesslich die kostenlose Gemini-API von Google -
+keine Kreditkarte noetig. Der Schluessel liegt NUR auf dem Server
+(Cloud Functions), niemals im Browser. Deshalb braucht es die
+Schritte unten.
 
 
 ----------------------------------------------------------------
- 1) KI-SCHLUESSEL BESORGEN (einmalig, ca. 10 Minuten)
+ 1) GEMINI-SCHLUESSEL BESORGEN (einmalig, ca. 3 Minuten)
 ----------------------------------------------------------------
-A) Claude API-Schluessel (fuer Ideen, Texte, Foto-Analyse):
-   1. https://console.anthropic.com oeffnen, Konto erstellen/einloggen.
-   2. Links "API Keys" -> "Create Key" -> Namen vergeben -> Schluessel
-      KOPIEREN (wird nur einmal angezeigt!).
-   3. Unter "Billing" ein Zahlungsmittel hinterlegen (Verbrauchskosten,
-      typisch wenige Euro pro Monat bei normaler Nutzung).
-
-B) Gemini API-Schluessel (fuer die Bild-Generierung):
-   1. https://aistudio.google.com oeffnen, mit Google-Konto einloggen.
-   2. "Get API key" -> "Create API key" -> Schluessel KOPIEREN.
-   (Es gibt ein Gratis-Kontingent; fuer viel Bild-Generierung ggf.
-    Abrechnung im Google-Konto aktivieren.)
+1. https://aistudio.google.com oeffnen, mit einem Google-Konto
+   einloggen (ganz normales Gmail-Konto reicht, keine Bezahldaten
+   noetig).
+2. "Get API key" -> "Create API key" -> Schluessel KOPIEREN.
+3. Fertig. Das Gratis-Kontingent reicht fuer normale Marketing-
+   Nutzung locker aus (mehrere hundert Anfragen pro Tag).
 
 
 ----------------------------------------------------------------
@@ -52,10 +49,9 @@ B) Gemini API-Schluessel (fuer die Bild-Generierung):
 ----------------------------------------------------------------
 1. GitHub-Repository oeffnen -> Settings -> Secrets and variables
    -> Actions -> "New repository secret".
-2. Zwei Secrets anlegen (Name exakt so schreiben!):
-      Name:  ANTHROPIC_API_KEY     Wert: der Claude-Schluessel
+2. Ein Secret anlegen (Name exakt so schreiben!):
       Name:  GEMINI_API_KEY        Wert: der Gemini-Schluessel
-3. Fertig. Der Deploy-Workflow schreibt die Schluessel automatisch
+3. Fertig. Der Deploy-Workflow schreibt den Schluessel automatisch
    in die functions/.env auf dem Server.
 
 
@@ -68,9 +64,9 @@ GitHub-Workflow "Cloud Functions deployen" automatisch.
 Manuell anstossen: GitHub -> Tab "Actions" ->
 "Cloud Functions deployen" -> "Run workflow".
 
-Neu dazugekommen sind die Funktionen:
-   marketingChat   (Claude: Ideen, Texte, Foto-Analyse)
-   marketingImage  (Gemini: Bild-Generierung)
+Neu dazugekommen sind die Funktionen (beide ueber Gemini):
+   marketingChat   (Ideen, Texte, Foto-Analyse)
+   marketingImage  (Bild-Generierung)
 
 
 ----------------------------------------------------------------
@@ -113,9 +109,8 @@ Ohne diesen Schritt kann die App das Archiv nicht speichern
 ----------------------------------------------------------------
  KURZ-CHECKLISTE
 ----------------------------------------------------------------
-[ ] Claude-Schluessel erstellt (console.anthropic.com)
 [ ] Gemini-Schluessel erstellt (aistudio.google.com)
-[ ] GitHub-Secrets ANTHROPIC_API_KEY + GEMINI_API_KEY angelegt
+[ ] GitHub-Secret GEMINI_API_KEY angelegt
 [ ] Workflow "Cloud Functions deployen" gelaufen (Actions-Tab gruen)
 [ ] firestore.rules in der Firebase-Konsole veroeffentlicht
 [ ] marketing.html im Browser geoeffnet und eingeloggt
