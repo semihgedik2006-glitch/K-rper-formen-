@@ -1,0 +1,124 @@
+================================================================
+ KF MARKETING – EINRICHTUNGS-ANLEITUNG (Schritt fuer Schritt)
+ Marketing-App: KI-Ideen, Post-Erstellung, Projekt-Archiv
+================================================================
+
+Diese Datei kannst du mit jedem Text-Programm oeffnen (Editor / Notepad).
+
+
+----------------------------------------------------------------
+ 0) WAS IST DAS?
+----------------------------------------------------------------
+marketing.html ist eine eigene App fuer Marketing-Kampagnen:
+
+- KI-ASSISTENT .... Briefing eingeben (Produkt, Zielgruppe, Kanal, Ton),
+                    die KI liefert fertige Kampagnen-Ideen, Post-Texte,
+                    Hashtags. Im Chat weiter verfeinern.
+- ERSTELLEN ....... KI-Bilder generieren (Social- und Print-Formate),
+                    eigene Fotos hochladen und von der KI analysieren
+                    lassen, Bilder zuschneiden + filtern (1:1, Story,
+                    A4-Flyer, Plakat ...).
+- ARCHIV .......... Jede Kampagne ist ein Projekt. Jede Idee / jedes Bild
+                    wird als VERSION gespeichert. Versionen vergleichen,
+                    filtern (Kanal, Status, Tags) und mit einem Klick
+                    "Mit KI verbessern" (alte Version bleibt erhalten).
+
+Login: DIESELBEN Konten wie im StudioChat (intern.html).
+Es muss niemand neu angelegt werden.
+
+Die KI-Schluessel liegen NUR auf dem Server (Cloud Functions),
+niemals im Browser. Deshalb braucht es die Schritte unten.
+
+
+----------------------------------------------------------------
+ 1) KI-SCHLUESSEL BESORGEN (einmalig, ca. 10 Minuten)
+----------------------------------------------------------------
+A) Claude API-Schluessel (fuer Ideen, Texte, Foto-Analyse):
+   1. https://console.anthropic.com oeffnen, Konto erstellen/einloggen.
+   2. Links "API Keys" -> "Create Key" -> Namen vergeben -> Schluessel
+      KOPIEREN (wird nur einmal angezeigt!).
+   3. Unter "Billing" ein Zahlungsmittel hinterlegen (Verbrauchskosten,
+      typisch wenige Euro pro Monat bei normaler Nutzung).
+
+B) Gemini API-Schluessel (fuer die Bild-Generierung):
+   1. https://aistudio.google.com oeffnen, mit Google-Konto einloggen.
+   2. "Get API key" -> "Create API key" -> Schluessel KOPIEREN.
+   (Es gibt ein Gratis-Kontingent; fuer viel Bild-Generierung ggf.
+    Abrechnung im Google-Konto aktivieren.)
+
+
+----------------------------------------------------------------
+ 2) SCHLUESSEL BEI GITHUB HINTERLEGEN
+----------------------------------------------------------------
+1. GitHub-Repository oeffnen -> Settings -> Secrets and variables
+   -> Actions -> "New repository secret".
+2. Zwei Secrets anlegen (Name exakt so schreiben!):
+      Name:  ANTHROPIC_API_KEY     Wert: der Claude-Schluessel
+      Name:  GEMINI_API_KEY        Wert: der Gemini-Schluessel
+3. Fertig. Der Deploy-Workflow schreibt die Schluessel automatisch
+   in die functions/.env auf dem Server.
+
+
+----------------------------------------------------------------
+ 3) FUNCTIONS DEPLOYEN
+----------------------------------------------------------------
+Sobald diese Aenderungen auf dem main-Branch sind, deployt der
+GitHub-Workflow "Cloud Functions deployen" automatisch.
+
+Manuell anstossen: GitHub -> Tab "Actions" ->
+"Cloud Functions deployen" -> "Run workflow".
+
+Neu dazugekommen sind die Funktionen:
+   marketingChat   (Claude: Ideen, Texte, Foto-Analyse)
+   marketingImage  (Gemini: Bild-Generierung)
+
+
+----------------------------------------------------------------
+ 4) FIRESTORE-REGELN AKTUALISIEREN (wichtig!)
+----------------------------------------------------------------
+1. console.firebase.google.com -> Projekt "formenchat"
+2. Firestore Database -> Tab "Regeln" (Rules)
+3. Gesamten Inhalt der Datei firestore.rules hineinkopieren
+   (alles ersetzen) -> "Veroeffentlichen".
+
+Ohne diesen Schritt kann die App das Archiv nicht speichern
+(neue Sammlung "mkProjects").
+
+
+----------------------------------------------------------------
+ 5) APP OEFFNEN
+----------------------------------------------------------------
+1. marketing.html liegt im selben Ordner wie die anderen Dateien
+   und ist nach dem naechsten Pages-Deploy erreichbar unter:
+      https://<deinname>.github.io/<repo>/marketing.html
+2. Mit den normalen StudioChat-Zugangsdaten einloggen.
+3. Aufs Handy: Adresse im Browser oeffnen -> Menue ->
+   "Zum Home-Bildschirm hinzufuegen".
+
+
+----------------------------------------------------------------
+ 6) SO ARBEITET MAN DAMIT (Kurz-Workflow)
+----------------------------------------------------------------
+1. KI-ASSISTENT: Briefing ausfuellen -> "Ideen entwickeln".
+2. Im Chat nachschaerfen ("Variante 2 kuerzer", "mehr Fokus auf ...").
+3. Gute Idee -> "Im Archiv speichern" -> Projekt waehlen oder neu anlegen.
+4. ERSTELLEN: Bild generieren oder Foto hochladen, im Editor Format
+   waehlen (Post, Story, A4, Plakat) + Filter -> speichern/herunterladen.
+5. ARCHIV: Status pflegen (Entwurf -> Freigegeben -> Live), Tags setzen.
+6. Spaeter verbessern: Projekt oeffnen -> Version -> "Mit KI verbessern".
+   Das Ergebnis speicherst du als NEUE Version - die alte bleibt
+   erhalten und laesst sich per "Vergleichen" nebeneinander ansehen.
+
+
+----------------------------------------------------------------
+ KURZ-CHECKLISTE
+----------------------------------------------------------------
+[ ] Claude-Schluessel erstellt (console.anthropic.com)
+[ ] Gemini-Schluessel erstellt (aistudio.google.com)
+[ ] GitHub-Secrets ANTHROPIC_API_KEY + GEMINI_API_KEY angelegt
+[ ] Workflow "Cloud Functions deployen" gelaufen (Actions-Tab gruen)
+[ ] firestore.rules in der Firebase-Konsole veroeffentlicht
+[ ] marketing.html im Browser geoeffnet und eingeloggt
+
+Bei Fragen: einfach Claude schreiben.
+================================================================
