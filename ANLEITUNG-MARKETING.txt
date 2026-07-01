@@ -26,24 +26,30 @@ marketing.html ist eine eigene App fuer Marketing-Kampagnen:
 Login: DIESELBEN Konten wie im StudioChat (intern.html).
 Es muss niemand neu angelegt werden.
 
-Texte, Ideen und Foto-Analyse laufen ueber die kostenlose Gemini-API
-von Google (keine Kreditkarte noetig). Die Bild-Generierung laeuft
-ueber einen komplett kostenlosen Dienst OHNE eigenen Schluessel
-(Pollinations.ai) - Googles Bild-Modell ist naemlich selbst im
-"kostenlosen" Tarif gesperrt (Kontingent 0 ohne Rechnungskonto).
-Der Gemini-Schluessel liegt NUR auf dem Server (Cloud Functions),
-niemals im Browser. Deshalb braucht es die Schritte unten.
+Alles laeuft ueber die Gemini-API von Google. Fuer Texte, Ideen und
+Foto-Analyse reicht das kostenlose Kontingent locker aus. Fuer die
+Bild-Generierung braucht Google zwingend ein verknuepftes Billing-
+Konto (Kreditkarte o.ae.) - ohne das liefert das Bild-Modell einen
+Fehler ("Kontingent = 0"). Der Schluessel liegt NUR auf dem Server
+(Cloud Functions), niemals im Browser. Deshalb braucht es die
+Schritte unten.
 
 
 ----------------------------------------------------------------
  1) GEMINI-SCHLUESSEL BESORGEN (einmalig, ca. 3 Minuten)
 ----------------------------------------------------------------
 1. https://aistudio.google.com oeffnen, mit einem Google-Konto
-   einloggen (ganz normales Gmail-Konto reicht, keine Bezahldaten
-   noetig).
+   einloggen.
 2. "Get API key" -> "Create API key" -> Schluessel KOPIEREN.
-3. Fertig. Das Gratis-Kontingent reicht fuer normale Marketing-
-   Nutzung locker aus (mehrere hundert Anfragen pro Tag).
+3. Fuer die BILD-Generierung zusaetzlich Billing aktivieren (ohne
+   das kommt beim Bild-Erzeugen ein Fehler "Kontingent = 0"):
+   a. console.cloud.google.com oeffnen.
+   b. Das Projekt auswaehlen, das AI Studio automatisch angelegt hat
+      (oben in der Leiste).
+   c. Menue (drei Striche) -> "Abrechnung" / "Billing".
+   d. "Konto verknuepfen" -> Kartendaten hinterlegen.
+   Fuer Text/Ideen/Foto-Analyse ist KEIN Billing noetig, das
+   Gratis-Kontingent reicht dafuer locker aus.
 
 
 ----------------------------------------------------------------
@@ -66,9 +72,9 @@ GitHub-Workflow "Cloud Functions deployen" automatisch.
 Manuell anstossen: GitHub -> Tab "Actions" ->
 "Cloud Functions deployen" -> "Run workflow".
 
-Neu dazugekommen sind die Funktionen:
-   marketingChat   (Gemini: Ideen, Texte, Foto-Analyse)
-   marketingImage  (Pollinations.ai: Bild-Generierung, kein Schluessel noetig)
+Neu dazugekommen sind die Funktionen (beide ueber Gemini):
+   marketingChat   (Ideen, Texte, Foto-Analyse) - laeuft im Gratis-Kontingent
+   marketingImage  (Bild-Generierung) - braucht ein Billing-Konto (siehe unten)
 
 
 ----------------------------------------------------------------
