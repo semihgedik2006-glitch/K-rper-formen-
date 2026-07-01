@@ -24,7 +24,8 @@ Bei jeder Anfrage zu: Social-Media-Posts/Captions, Werbeanzeigen (Meta/Google Ad
   - Beliebt bei Rückenbeschwerden, Wiedereinstieg nach Pause, Zeitmangel im Alltag.
   - 12 Studio-Standorte (siehe `STUDIOS` in `index.html`).
 - **Tonalität:** direkt, motivierend, auf Augenhöhe, keine leeren Superlative. Kurze, aktive Sätze. Deutsch, Du-Ansprache. Fitness-selbstbewusst, aber seriös (kein Bro-Marketing).
-- **Design-/Markenwerte:** Neon-Grün `#00E06E` / `#19FF85` als Hauptakzent, warmes Orange `#FF6B35` als Zweitfarbe, dunkler Hintergrund `#0E1712`. Headlines in Barlow Condensed (fett, UPPERCASE), Fließtext in Barlow. Diese Werte bei visuellen Assets (Anzeigenmotive, Flyer, Slides) konsistent nennen/vorschlagen.
+- **Offizielles Logo & Farben (verbindlich für visuelle Assets):** Das echte Körperformen-Logo liegt unter `https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg` und verwendet ausschließlich zwei Farben: **Lime-Grün `#93C02F`** und **Anthrazit `#3D4543`**. Bei Anzeigenmotiven, Flyern, Social-Posts oder Slides **nur diese beiden Farben** (plus Weiß/neutrale Hintergründe) und **immer das echte Logo** verwenden – kein erfundenes Neon-Grün/Orange/Lila und kein Ersatzlogo (z. B. nicht das `icon.svg`/`icon.png` aus dem Repo, das ist das interne "StudioChat"-App-Icon, nicht das Körperformen-Markenlogo).
+- **Headlines/Fließtext:** Barlow Condensed (fett, UPPERCASE) für Headlines, Barlow für Fließtext.
 
 ## 2) Zielgruppen (Personas)
 
