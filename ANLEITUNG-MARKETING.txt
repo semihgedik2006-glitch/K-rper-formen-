@@ -26,11 +26,13 @@ marketing.html ist eine eigene App fuer Marketing-Kampagnen:
 Login: DIESELBEN Konten wie im StudioChat (intern.html).
 Es muss niemand neu angelegt werden.
 
-Die App nutzt fuer ALLES (Texte, Ideen, Foto-Analyse UND Bild-
-Generierung) ausschliesslich die kostenlose Gemini-API von Google -
-keine Kreditkarte noetig. Der Schluessel liegt NUR auf dem Server
-(Cloud Functions), niemals im Browser. Deshalb braucht es die
-Schritte unten.
+Texte, Ideen und Foto-Analyse laufen ueber die kostenlose Gemini-API
+von Google (keine Kreditkarte noetig). Die Bild-Generierung laeuft
+ueber einen komplett kostenlosen Dienst OHNE eigenen Schluessel
+(Pollinations.ai) - Googles Bild-Modell ist naemlich selbst im
+"kostenlosen" Tarif gesperrt (Kontingent 0 ohne Rechnungskonto).
+Der Gemini-Schluessel liegt NUR auf dem Server (Cloud Functions),
+niemals im Browser. Deshalb braucht es die Schritte unten.
 
 
 ----------------------------------------------------------------
@@ -64,9 +66,9 @@ GitHub-Workflow "Cloud Functions deployen" automatisch.
 Manuell anstossen: GitHub -> Tab "Actions" ->
 "Cloud Functions deployen" -> "Run workflow".
 
-Neu dazugekommen sind die Funktionen (beide ueber Gemini):
-   marketingChat   (Ideen, Texte, Foto-Analyse)
-   marketingImage  (Bild-Generierung)
+Neu dazugekommen sind die Funktionen:
+   marketingChat   (Gemini: Ideen, Texte, Foto-Analyse)
+   marketingImage  (Pollinations.ai: Bild-Generierung, kein Schluessel noetig)
 
 
 ----------------------------------------------------------------
