@@ -26,13 +26,23 @@ marketing.html ist eine eigene App fuer Marketing-Kampagnen:
 Login: DIESELBEN Konten wie im StudioChat (intern.html).
 Es muss niemand neu angelegt werden.
 
-Alles laeuft ueber die Gemini-API von Google. Fuer Texte, Ideen und
-Foto-Analyse reicht das kostenlose Kontingent locker aus. Fuer die
-Bild-Generierung braucht Google zwingend ein verknuepftes Billing-
-Konto (Kreditkarte o.ae.) - ohne das liefert das Bild-Modell einen
-Fehler ("Kontingent = 0"). Der Schluessel liegt NUR auf dem Server
-(Cloud Functions), niemals im Browser. Deshalb braucht es die
+Texte, Ideen und Foto-Analyse laufen ueber die kostenlose Gemini-API
+von Google (KEIN Billing/Kreditkarte noetig). Die Bild-Generierung
+laeuft ueber einen separaten, komplett kostenlosen Dienst OHNE
+eigenen Schluessel (Pollinations.ai) - Googles eigenes Bild-Modell
+verlangt naemlich zwingend ein Prepay-Guthaben, das man manuell in
+AI Studio aufladen muesste. Der Gemini-Schluessel liegt NUR auf dem
+Server (Cloud Functions), niemals im Browser. Deshalb braucht es die
 Schritte unten.
+
+Eigene Fotos hochladen, von der KI analysieren lassen und im Editor
+bearbeiten funktioniert unabhaengig davon immer - das ist der
+zuverlaessigste Weg, wenn die KI-generierten Bilder mal nicht passen.
+
+Hinweis: Falls du bei Google Cloud extra ein Billing-Konto/Karte fuer
+den vorherigen Versuch hinterlegt hast, kannst du diese Verknuepfung
+in console.cloud.google.com -> Abrechnung wieder entfernen - sie wird
+fuer nichts in dieser App mehr gebraucht.
 
 
 ----------------------------------------------------------------
@@ -41,15 +51,7 @@ Schritte unten.
 1. https://aistudio.google.com oeffnen, mit einem Google-Konto
    einloggen.
 2. "Get API key" -> "Create API key" -> Schluessel KOPIEREN.
-3. Fuer die BILD-Generierung zusaetzlich Billing aktivieren (ohne
-   das kommt beim Bild-Erzeugen ein Fehler "Kontingent = 0"):
-   a. console.cloud.google.com oeffnen.
-   b. Das Projekt auswaehlen, das AI Studio automatisch angelegt hat
-      (oben in der Leiste).
-   c. Menue (drei Striche) -> "Abrechnung" / "Billing".
-   d. "Konto verknuepfen" -> Kartendaten hinterlegen.
-   Fuer Text/Ideen/Foto-Analyse ist KEIN Billing noetig, das
-   Gratis-Kontingent reicht dafuer locker aus.
+3. Fertig. Kein Billing, keine Kreditkarte noetig.
 
 
 ----------------------------------------------------------------
@@ -72,9 +74,9 @@ GitHub-Workflow "Cloud Functions deployen" automatisch.
 Manuell anstossen: GitHub -> Tab "Actions" ->
 "Cloud Functions deployen" -> "Run workflow".
 
-Neu dazugekommen sind die Funktionen (beide ueber Gemini):
-   marketingChat   (Ideen, Texte, Foto-Analyse) - laeuft im Gratis-Kontingent
-   marketingImage  (Bild-Generierung) - braucht ein Billing-Konto (siehe unten)
+Neu dazugekommen sind die Funktionen:
+   marketingChat   (Gemini: Ideen, Texte, Foto-Analyse)
+   marketingImage  (Pollinations.ai: Bild-Generierung, kein Schluessel noetig)
 
 
 ----------------------------------------------------------------
