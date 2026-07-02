@@ -354,3 +354,183 @@ exports.marketingImage = region
         'Bild-Generierung fehlgeschlagen: ' + ((e && e.message) || 'Unbekannter Fehler'));
     }
   });
+
+/* ============================================================
+   WACHSTUM & BETRIEB (wachstum.html) – Termin-E-Mails
+   Automatischer Versand an Kundinnen/Kunden:
+   - Bestätigung beim Anlegen (bzw. bei Terminverschiebung erneut)
+   - Storno-Nachricht, wenn ein Termin storniert wird
+   - Erinnerung X Stunden vorher + Follow-up danach (Zeitplan-Funktion)
+   Versand über einen normalen SMTP-Zugang (Nodemailer). Zugangsdaten
+   liegen NUR in functions/.env (aus GitHub-Secrets), nie im Browser.
+   Empfohlen: Brevo Free (300 Mails/Tag, keine Kreditkarte). Alternativ
+   funktioniert jeder SMTP-Zugang, z. B. Gmail mit App-Passwort.
+   Details in ANLEITUNG.txt, Abschnitt 10.
+   ============================================================ */
+
+const nodemailer = require('nodemailer');
+
+/* Wie viele Stunden vor dem Termin erinnert bzw. danach nachgefasst wird.
+   Über functions/.env änderbar (REMINDER_HOURS / FOLLOWUP_HOURS). */
+function reminderHours() { return +(process.env.REMINDER_HOURS || 24) || 24; }
+function followupHours() { return +(process.env.FOLLOWUP_HOURS || 3) || 3; }
+
+/* Standard-Vorlagen. Der Chef kann sie in wachstum.html (Tab "E-Mails")
+   überschreiben – die überschriebenen Fassungen liegen in Firestore unter
+   emailTemplates/<id> und gewinnen gegen diese Standards.
+   Platzhalter: {name} {studio} {datum} {uhrzeit} {notiz} */
+const MAIL_DEFAULTS = {
+  confirm: {
+    subject: 'Terminbestätigung – Körperformen {studio}',
+    body: 'Hallo {name},\n\nhiermit bestätigen wir deinen Termin im Körperformen-Studio {studio}:\n\nDatum: {datum}\nUhrzeit: {uhrzeit} Uhr\n{notiz}\nBitte komm ein paar Minuten früher und bring bequeme Kleidung mit.\nFalls du den Termin nicht wahrnehmen kannst, gib uns bitte rechtzeitig Bescheid.\n\nBis bald!\nDein Körperformen-Team {studio}'
+  },
+  reminder: {
+    subject: 'Erinnerung: dein Termin morgen – Körperformen {studio}',
+    body: 'Hallo {name},\n\nkleine Erinnerung an deinen Termin im Körperformen-Studio {studio}:\n\nDatum: {datum}\nUhrzeit: {uhrzeit} Uhr\n\nWir freuen uns auf dich!\nDein Körperformen-Team {studio}'
+  },
+  followup: {
+    subject: 'Danke für deinen Besuch – Körperformen {studio}',
+    body: 'Hallo {name},\n\ndanke, dass du heute bei uns im Studio {studio} warst – stark gemacht!\nDenk daran, ausreichend zu trinken. Muskelkater in den nächsten Tagen ist völlig normal.\n\nWenn dir das Training gefallen hat, empfiehl uns gern weiter.\nBis zum nächsten Mal!\n\nDein Körperformen-Team {studio}'
+  },
+  cancel: {
+    subject: 'Termin storniert – Körperformen {studio}',
+    body: 'Hallo {name},\n\ndein Termin am {datum} um {uhrzeit} Uhr im Studio {studio} wurde storniert.\nWenn das ein Versehen war oder du einen neuen Termin möchtest, melde dich gern bei uns.\n\nDein Körperformen-Team {studio}'
+  }
+};
+
+/* SMTP-Verbindung aus der Umgebung. Fehlen die Zugangsdaten, wird nichts
+   versendet (die Termin-Verwaltung funktioniert trotzdem). */
+let _mailer = null;
+function getMailer() {
+  if (_mailer) return _mailer;
+  const host = process.env.SMTP_HOST || '';
+  const user = process.env.SMTP_USER || '';
+  const pass = process.env.SMTP_PASS || '';
+  if (!host || !user || !pass) return null;
+  const port = +(process.env.SMTP_PORT || 587) || 587;
+  _mailer = nodemailer.createTransport({
+    host, port,
+    secure: port === 465,
+    auth: { user, pass }
+  });
+  return _mailer;
+}
+
+/* Vorlage laden (Firestore-Überschreibung → sonst Standard) und Platzhalter füllen */
+async function buildMail(tplId, appt) {
+  let tpl = MAIL_DEFAULTS[tplId];
+  try {
+    const snap = await db.collection('emailTemplates').doc(tplId).get();
+    if (snap.exists) {
+      const d = snap.data() || {};
+      if (d.subject && d.body) tpl = { subject: String(d.subject), body: String(d.body) };
+    }
+  } catch (e) { console.error('emailTemplates/' + tplId + ':', e); }
+  const when = new Date(+appt.startsAt || 0);
+  const fmt = (opt) => when.toLocaleString('de-DE', Object.assign({ timeZone: 'Europe/Berlin' }, opt));
+  const vals = {
+    name: appt.customerName || '',
+    studio: appt.studioName || '',
+    datum: fmt({ weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
+    uhrzeit: fmt({ hour: '2-digit', minute: '2-digit' }),
+    notiz: appt.note ? ('Hinweis: ' + appt.note + '\n') : ''
+  };
+  const fill = (s) => String(s).replace(/\{(name|studio|datum|uhrzeit|notiz)\}/g, (m, k) => vals[k]);
+  return { subject: fill(tpl.subject), text: fill(tpl.body) };
+}
+
+/* E-Mail an die Kundin/den Kunden senden und den Versand am Termin vermerken.
+   markField z. B. 'mailConfirmedAt' – verhindert Doppel-Versand. */
+async function sendApptMail(apptRef, appt, tplId, markField) {
+  if (!appt.customerEmail) return false;
+  const mailer = getMailer();
+  if (!mailer) {
+    console.log('E-Mail übersprungen (SMTP nicht konfiguriert):', tplId, apptRef.id);
+    return false;
+  }
+  const mail = await buildMail(tplId, appt);
+  const fromAddr = process.env.MAIL_FROM || process.env.SMTP_USER;
+  await mailer.sendMail({
+    from: '"Körperformen ' + (appt.studioName || '') + '" <' + fromAddr + '>',
+    to: appt.customerEmail,
+    subject: mail.subject,
+    text: mail.text
+  });
+  const patch = {}; patch[markField] = Date.now();
+  await apptRef.update(patch).catch(() => {});
+  return true;
+}
+
+/* ── Termin angelegt → Bestätigung ── */
+exports.onAppointmentCreated = region
+  .runWith({ timeoutSeconds: 60 })
+  .firestore.document('appointments/{apptId}')
+  .onCreate(async (snap) => {
+    const a = snap.data() || {};
+    if (a.status === 'storniert') return;
+    try { await sendApptMail(snap.ref, a, 'confirm', 'mailConfirmedAt'); }
+    catch (e) { console.error('Bestätigungs-Mail:', e); }
+  });
+
+/* ── Termin geändert → Storno-Mail bzw. neue Bestätigung bei Verschiebung ── */
+exports.onAppointmentUpdated = region
+  .runWith({ timeoutSeconds: 60 })
+  .firestore.document('appointments/{apptId}')
+  .onUpdate(async (change) => {
+    const before = change.before.data() || {};
+    const after = change.after.data() || {};
+    try {
+      // Stornierung: einmalig Storno-Mail
+      if (after.status === 'storniert' && before.status !== 'storniert' && !after.mailCancelledAt) {
+        await sendApptMail(change.after.ref, after, 'cancel', 'mailCancelledAt');
+        return;
+      }
+      // Verschiebung eines aktiven Termins: Bestätigung mit neuer Zeit,
+      // Erinnerung/Follow-up für die neue Zeit wieder freigeben
+      if (after.status !== 'storniert' && +after.startsAt !== +before.startsAt) {
+        await change.after.ref.update({
+          mailRemindedAt: admin.firestore.FieldValue.delete(),
+          mailFollowupAt: admin.firestore.FieldValue.delete()
+        }).catch(() => {});
+        await sendApptMail(change.after.ref, after, 'confirm', 'mailConfirmedAt');
+      }
+    } catch (e) { console.error('Termin-Update-Mail:', e); }
+  });
+
+/* ── Zeitplan: Erinnerungen vorher + Follow-ups danach ──
+   Läuft alle 30 Minuten und arbeitet ein Zeitfenster ab; Doppel-Versand
+   wird über mailRemindedAt / mailFollowupAt verhindert. */
+exports.appointmentMailScheduler = region
+  .runWith({ timeoutSeconds: 300 })
+  .pubsub.schedule('every 30 minutes')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const now = Date.now();
+    const H = 3600000;
+
+    // Erinnerungen: Termine innerhalb der nächsten REMINDER_HOURS Stunden
+    const remSnap = await db.collection('appointments')
+      .where('startsAt', '>=', now)
+      .where('startsAt', '<=', now + reminderHours() * H)
+      .get();
+    for (const doc of remSnap.docs) {
+      const a = doc.data() || {};
+      if (a.status === 'storniert' || a.mailRemindedAt || !a.customerEmail) continue;
+      try { await sendApptMail(doc.ref, a, 'reminder', 'mailRemindedAt'); }
+      catch (e) { console.error('Erinnerungs-Mail ' + doc.id + ':', e); }
+    }
+
+    // Follow-ups: Termine, die vor mind. FOLLOWUP_HOURS Stunden waren
+    // (Fenster: letzte 48 Stunden, damit Alt-Daten nicht angeschrieben werden)
+    const fuSnap = await db.collection('appointments')
+      .where('startsAt', '>=', now - 48 * H)
+      .where('startsAt', '<=', now - followupHours() * H)
+      .get();
+    for (const doc of fuSnap.docs) {
+      const a = doc.data() || {};
+      if (a.status === 'storniert' || a.mailFollowupAt || !a.customerEmail) continue;
+      try { await sendApptMail(doc.ref, a, 'followup', 'mailFollowupAt'); }
+      catch (e) { console.error('Follow-up-Mail ' + doc.id + ':', e); }
+    }
+    return null;
+  });

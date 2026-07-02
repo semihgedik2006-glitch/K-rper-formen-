@@ -13,7 +13,9 @@ Diese Datei kannst du mit jedem Text-Programm oeffnen (Editor / Notepad).
 - firebase-messaging-sw.js  fuer Push-Nachrichten (gleicher Ordner!)
 - firestore.rules ........ Sicherheitsregeln Datenbank (in Firebase einfuegen)
 - storage.rules .......... Sicherheitsregeln Datei-Upload (in Firebase einfuegen)
-- functions/ ............. Server-Funktion fuer Push (optional, fuer Hintergrund-Push)
+- functions/ ............. Server-Funktionen (Push, Marketing-KI, Termin-E-Mails)
+- wachstum.html .......... Wachstum & Betrieb: Termine, E-Mail-Automatik,
+                           Franchise-Dashboard (siehe Abschnitt 10)
 - MATERIAL-SHEETS.gs ..... Google-Tabellen-Sync (in Google Apps Script einfuegen)
 
 intern.html und firebase-messaging-sw.js MUESSEN im selben Ordner liegen
@@ -140,6 +142,85 @@ D) In der App oben im Chat auf "Benachrichtigungen aktivieren" tippen.
 - Adresse im Handy-Browser oeffnen.
 - Menue -> "Zum Home-Bildschirm hinzufuegen".
 - App "StudioChat" oeffnet im Vollbild, Login bleibt gespeichert.
+
+
+----------------------------------------------------------------
+ 10) WACHSTUM & BETRIEB (wachstum.html) – Termine, E-Mails, Franchise
+----------------------------------------------------------------
+Neue eigenstaendige Seite: https://.../wachstum.html
+Gleicher Login wie StudioChat (keine neuen Konten noetig).
+- Termine:  Kalender pro Studio, Termin anlegen/bestaetigen/stornieren.
+            Chef sieht alle 12 Studios, Mitarbeiter nur ihre eigenen.
+- E-Mails:  automatische Kunden-Mails (Bestaetigung, Erinnerung ~24 Std.
+            vorher, Follow-up danach, Storno-Info). Vorlagen kann der
+            Chef direkt in der App im Tab "E-Mails" anpassen.
+- Wachstum: Chef-Dashboard (Kennzahlen je Studio, Wettbewerber-Liste,
+            Expansionsplanung). Mitarbeiter sehen diesen Tab nicht.
+
+A) EINMALIG: firestore.rules neu veroeffentlichen
+   Firestore Database -> Regeln -> kompletten Inhalt der Datei
+   firestore.rules einfuegen -> Veroeffentlichen.
+   (Die Datei enthaelt jetzt zusaetzlich: appointments, emailTemplates,
+   studioMetrics, competitors, expansionLeads.)
+
+B) E-MAIL-VERSAND EINRICHTEN (einmalig, ohne Kreditkarte)
+   Der Versand laeuft ueber einen normalen SMTP-Zugang. Empfehlung:
+
+   VARIANTE 1 – BREVO (empfohlen):
+   + 300 Mails/Tag kostenlos, KEINE Kreditkarte noetig
+   + eigene Absender-Adresse moeglich, gute Zustellbarkeit
+   - einmalige Registrierung noetig (ca. 10 Minuten)
+   1. Konto anlegen auf brevo.com (kostenloser Tarif reicht).
+   2. Links im Menue: Einstellungen -> "SMTP & API" -> Tab "SMTP".
+   3. Dort stehen Server (smtp-relay.brevo.com), Port (587),
+      Login (deine Brevo-E-Mail) und ein SMTP-Schluessel
+      ("SMTP-Schluessel generieren" falls noch keiner da ist).
+   4. Absender-Adresse unter "Absender & IPs" bestaetigen.
+
+   VARIANTE 2 – GMAIL MIT APP-PASSWORT (schnellster Start):
+   + in 5 Minuten eingerichtet, nichts Neues anlegen
+   - Absender ist die Gmail-Adresse, Limit ca. 500 Mails/Tag,
+     bei viel Versand landet Gmail eher im Spam-Ordner
+   1. Google-Konto -> Sicherheit -> 2-Faktor aktivieren (falls aus).
+   2. myaccount.google.com/apppasswords -> App-Passwort erstellen.
+   3. Werte: Server smtp.gmail.com, Port 587,
+      Login = Gmail-Adresse, Passwort = das App-Passwort.
+
+C) ZUGANGSDATEN ALS GITHUB-SECRETS HINTERLEGEN
+   GitHub -> Repo -> Settings -> Secrets and variables -> Actions
+   -> "New repository secret". Diese 5 Secrets anlegen:
+      SMTP_HOST   z. B. smtp-relay.brevo.com  (oder smtp.gmail.com)
+      SMTP_PORT   587
+      SMTP_USER   Login (Brevo-E-Mail bzw. Gmail-Adresse)
+      SMTP_PASS   SMTP-Schluessel (Brevo) bzw. App-Passwort (Gmail)
+      MAIL_FROM   Absender-Adresse, z. B. termine@koerperformen.de
+                  (bei Gmail: die Gmail-Adresse selbst)
+   Die Schluessel liegen NUR auf dem Server (Cloud Functions),
+   niemals im Browser-Code.
+
+D) FUNCTIONS NEU DEPLOYEN
+   Passiert automatisch, sobald die Aenderungen auf main landen
+   (GitHub Actions -> "Cloud Functions deployen"). Alternativ im
+   Actions-Tab den Workflow von Hand starten ("Run workflow").
+   Hinweis: Solange die SMTP-Secrets fehlen, funktioniert die
+   Termin-Verwaltung trotzdem – es werden nur keine Mails verschickt.
+
+E) OPTIONAL: ZEITEN ANPASSEN
+   Erinnerung: Standard 24 Stunden vor dem Termin.
+   Follow-up:  Standard 3 Stunden nach dem Termin.
+   Aenderbar ueber zwei weitere Zeilen im Workflow
+   (.github/workflows/deploy-functions.yml, Schritt ".env schreiben"):
+      echo "REMINDER_HOURS=24" >> functions/.env
+      echo "FOLLOWUP_HOURS=3"  >> functions/.env
+
+F) KURZ-CHECKLISTE WACHSTUM
+   [ ] firestore.rules neu veroeffentlicht (Schritt A)
+   [ ] Brevo- oder Gmail-Zugang eingerichtet (Schritt B)
+   [ ] 5 SMTP-Secrets in GitHub angelegt (Schritt C)
+   [ ] Functions deployed (Schritt D)
+   [ ] Test: Termin mit eigener E-Mail-Adresse anlegen ->
+       Bestaetigungs-Mail kommt an
+   [ ] Vorlagen im Tab "E-Mails" durchgelesen/angepasst (als Chef)
 
 
 ----------------------------------------------------------------
