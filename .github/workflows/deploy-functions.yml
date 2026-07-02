@@ -33,6 +33,12 @@ jobs:
         run: |
           echo "BDAY_TEST_KEY=${{ secrets.BDAY_TEST_KEY }}" > functions/.env
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> functions/.env
+          # E-Mail-Versand für Termine (wachstum.html) – siehe ANLEITUNG.txt Abschnitt 10
+          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> functions/.env
+          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> functions/.env
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> functions/.env
+          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> functions/.env
+          echo "MAIL_FROM=${{ secrets.MAIL_FROM }}" >> functions/.env
 
       - name: Google-Auth (Service-Account aus GitHub-Secret)
         id: auth

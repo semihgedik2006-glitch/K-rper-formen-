@@ -129,6 +129,44 @@ service cloud.firestore {
       }
     }
 
+    // ── Wachstum & Betrieb (wachstum.html) ──
+
+    // Termine: jeder Eingeloggte darf lesen/anlegen/pflegen (gleiches Muster
+    // wie Aufgaben; die Studio-Zuordnung filtert die App). Löschen: Chef
+    // oder wer den Termin angelegt hat.
+    match /appointments/{apptId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.customerName is string
+        && request.resource.data.customerName.size() <= 200
+        && request.resource.data.startsAt is number;
+      allow update: if signedIn();
+      allow delete: if isChef()
+        || (signedIn() && resource.data.createdBy == request.auth.uid);
+    }
+
+    // E-Mail-Vorlagen (Bestätigung/Erinnerung/Follow-up/Storno):
+    // nur der Chef pflegt sie; die Server-Funktion liest per Admin-Rechten.
+    match /emailTemplates/{tplId} {
+      allow read, write: if isChef();
+    }
+
+    // Kennzahlen je Studio (Mitglieder, Auslastung, Miete …): nur Chef.
+    match /studioMetrics/{studioKey} {
+      allow read, write: if isChef();
+    }
+
+    // Wettbewerbsbeobachtung: nur Chef.
+    match /competitors/{compId} {
+      allow read, write: if isChef();
+    }
+
+    // Expansionsplanung (mögliche neue Standorte): nur Chef.
+    match /expansionLeads/{leadId} {
+      allow read, write: if isChef();
+    }
+
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {

@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#020617"/>
+<title>KF Wachstum · Körperformen</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="icon.png"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   KF WACHSTUM – Design: Dark-OLED + Glassmorphism ("Mission Control")
+   Akzente: Cyan = Termine, Violett = E-Mails, Grün/Gold = Wachstum
+   ============================================================ */
+:root{
+  --bg:#020617;
+  --panel:#0F172A;
+  --panel-2:#1E293B;
+  --glass:rgba(255,255,255,.05);
+  --glass-2:rgba(255,255,255,.08);
+  --brd:rgba(255,255,255,.09);
+  --brd-2:rgba(255,255,255,.16);
+  --text:#F8FAFC;
+  --text-2:#94A3B8;
+  --cyan:#22D3EE;
+  --violet:#A855F7;
+  --green:#22C55E;
+  --gold:#FBBF24;
+  --red:#F87171;
+  --r:16px;
+  --shadow:0 18px 44px rgba(0,0,0,.45);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font:16px/1.55 "DM Sans",system-ui,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{font-family:"Space Grotesk","DM Sans",sans-serif;letter-spacing:.01em}
+a{color:var(--cyan)}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--text)}
+svg.ic{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic-s{width:16px;height:16px}
+.ic-l{width:26px;height:26px}
+
+/* ── Aurora-Hintergrund (reines CSS, langsam driftend) ── */
+.aurora{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.aurora i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.28;will-change:transform}
+.aurora i:nth-child(1){width:56vmax;height:56vmax;left:-18vmax;top:-22vmax;background:radial-gradient(circle,#0891B2,transparent 65%);animation:drift1 46s var(--ease) infinite alternate}
+.aurora i:nth-child(2){width:48vmax;height:48vmax;right:-16vmax;top:8vmax;background:radial-gradient(circle,#7C3AED,transparent 65%);animation:drift2 58s var(--ease) infinite alternate}
+.aurora i:nth-child(3){width:44vmax;height:44vmax;left:22vmax;bottom:-24vmax;background:radial-gradient(circle,#15803D,transparent 65%);animation:drift3 52s var(--ease) infinite alternate}
+@keyframes drift1{from{transform:translate(0,0) rotate(0)}to{transform:translate(9vmax,7vmax) rotate(40deg)}}
+@keyframes drift2{from{transform:translate(0,0) scale(1)}to{transform:translate(-8vmax,9vmax) scale(1.15)}}
+@keyframes drift3{from{transform:translate(0,0)}to{transform:translate(7vmax,-9vmax)}}
+
+/* ── Glass-Grundbausteine ── */
+.card{
+  background:linear-gradient(160deg,var(--glass-2),var(--glass));
+  border:1px solid var(--brd);
+  border-radius:var(--r);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  box-shadow:var(--shadow);
+  padding:18px;
+  transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s var(--ease);
+}
+.card.hov:hover{transform:translateY(-2px);border-color:var(--brd-2);box-shadow:0 22px 50px rgba(0,0,0,.5)}
+.card h3{display:flex;align-items:center;gap:9px;font-size:17px;margin-bottom:12px}
+.card h3 .ic{width:19px;height:19px}
+.tag-cyan{color:var(--cyan)} .tag-violet{color:var(--violet)}
+.tag-green{color:var(--green)} .tag-gold{color:var(--gold)}
+.muted{color:var(--text-2);font-size:14px}
+.hr{height:1px;background:var(--brd);border:0;margin:14px 0}
+
+/* Einfliegen (staggered) */
+.stagger>*{animation:cardIn .55s var(--ease) both;animation-delay:calc(var(--i,0)*60ms)}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* Status-Puls nach Änderungen */
+@keyframes pulseGlow{
+  0%{box-shadow:0 0 0 0 rgba(34,211,238,.45)}
+  70%{box-shadow:0 0 0 14px rgba(34,211,238,0)}
+  100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}
+}
+.pulse{animation:pulseGlow .9s ease-out 1}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:10px 18px;border-radius:12px;
+  border:1px solid var(--brd);background:var(--glass);
+  color:var(--text);font-weight:500;
+  transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease),background .2s var(--ease);
+}
+.btn:hover{transform:translateY(-2px);border-color:var(--brd-2);background:var(--glass-2)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.tab:focus-visible{
+  outline:2px solid var(--cyan);outline-offset:2px;
+}
+.btn:disabled{opacity:.5;pointer-events:none}
+.btn-cyan{background:linear-gradient(135deg,rgba(34,211,238,.22),rgba(34,211,238,.08));border-color:rgba(34,211,238,.45);color:#CFFAFE}
+.btn-cyan:hover{box-shadow:0 6px 22px rgba(34,211,238,.28)}
+.btn-violet{background:linear-gradient(135deg,rgba(168,85,247,.24),rgba(168,85,247,.08));border-color:rgba(168,85,247,.45);color:#F3E8FF}
+.btn-violet:hover{box-shadow:0 6px 22px rgba(168,85,247,.28)}
+.btn-green{background:linear-gradient(135deg,rgba(34,197,94,.22),rgba(34,197,94,.08));border-color:rgba(34,197,94,.45);color:#DCFCE7}
+.btn-green:hover{box-shadow:0 6px 22px rgba(34,197,94,.25)}
+.btn-danger{border-color:rgba(248,113,113,.45);color:#FECACA}
+.btn-sm{min-height:36px;padding:6px 12px;border-radius:10px;font-size:14px}
+.btn-ic{min-width:44px;padding:10px}
+
+/* ── Formulare ── */
+label.f{display:block;font-size:13px;color:var(--text-2);margin:12px 0 5px;font-weight:500}
+.in{
+  width:100%;min-height:44px;padding:10px 13px;border-radius:12px;
+  background:rgba(2,6,23,.55);border:1px solid var(--brd);
+  transition:border-color .2s,box-shadow .2s;
+}
+.in:focus{border-color:rgba(34,211,238,.6);box-shadow:0 0 0 3px rgba(34,211,238,.14);outline:none}
+select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+select.in option{background:var(--panel);color:var(--text)}
+textarea.in{min-height:90px;resize:vertical}
+::placeholder{color:#64748B}
+
+/* ── Layout ── */
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:18px 16px calc(40px + env(safe-area-inset-bottom))}
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{
+  width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(34,211,238,.25),rgba(168,85,247,.25));
+  border:1px solid var(--brd-2);color:var(--cyan);
+  box-shadow:0 0 18px rgba(34,211,238,.25);
+}
+.brand h1{font-size:21px;line-height:1.15}
+.brand .sub{font-size:12.5px;color:var(--text-2)}
+.topbar .spacer{flex:1}
+.userbox{display:flex;align-items:center;gap:10px}
+.chip{
+  font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;
+  border:1px solid var(--brd);background:var(--glass);color:var(--text-2);
+}
+.chip.chef{color:#FDE68A;border-color:rgba(251,191,36,.4);text-shadow:0 0 8px rgba(251,191,36,.35)}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+  min-height:44px;padding:10px 16px;border-radius:12px;font-weight:600;font-size:15px;
+  border:1px solid transparent;background:transparent;color:var(--text-2);
+  transition:color .2s,background .2s,border-color .2s,box-shadow .2s,transform .2s var(--ease);
+}
+.tab:hover{color:var(--text);transform:translateY(-1px)}
+.tab.active{background:var(--glass-2);border-color:var(--brd-2);color:var(--text);backdrop-filter:blur(20px)}
+.tab.active[data-acc="cyan"]{box-shadow:0 0 16px rgba(34,211,238,.22);color:#CFFAFE}
+.tab.active[data-acc="violet"]{box-shadow:0 0 16px rgba(168,85,247,.22);color:#F3E8FF}
+.tab.active[data-acc="green"]{box-shadow:0 0 16px rgba(34,197,94,.22);color:#DCFCE7}
+
+/* Ansichten (weicher Fade+Slide) */
+.view{display:none}
+.view.show{display:block;animation:viewIn .3s ease-out both}
+@keyframes viewIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── Login ── */
+#authWrap{display:none;position:relative;z-index:1;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+#authWrap.show{display:flex}
+.login-card{width:100%;max-width:400px;padding:30px 26px;text-align:center}
+.login-card .mark{margin:0 auto 14px;width:60px;height:60px;border-radius:18px}
+.login-card h1{font-size:24px;margin-bottom:4px}
+.login-card p{color:var(--text-2);font-size:14px;margin-bottom:18px}
+.err{color:var(--red);font-size:14px;min-height:20px;margin-top:10px}
+
+/* Lade-Overlay + Skeleton */
+#loadingWrap{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.spinner{width:42px;height:42px;border-radius:50%;border:3px solid var(--brd);border-top-color:var(--cyan);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skel{border-radius:var(--r);height:74px;margin-bottom:10px;background:linear-gradient(100deg,var(--glass) 40%,var(--glass-2) 50%,var(--glass) 60%);background-size:220% 100%;animation:shimmer 1.4s linear infinite;border:1px solid var(--brd)}
+@keyframes shimmer{to{background-position:-120% 0}}
+
+/* ── Termine ── */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar .in{width:auto;min-width:170px}
+.datenav{display:flex;align-items:center;gap:6px}
+.datenav .lbl{font-family:"Space Grotesk","DM Sans",sans-serif;font-weight:600;min-width:150px;text-align:center;font-size:15px}
+.seg{display:flex;border:1px solid var(--brd);border-radius:12px;overflow:hidden}
+.seg button{min-height:44px;padding:8px 16px;background:transparent;border:0;color:var(--text-2);font-weight:600}
+.seg button.on{background:rgba(34,211,238,.16);color:#CFFAFE}
+
+.occ-panel .row{display:flex;align-items:center;gap:10px;margin:7px 0}
+.occ-panel .nm{width:150px;font-size:13.5px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.occ-panel .bar{flex:1;height:10px;border-radius:999px;background:rgba(2,6,23,.6);border:1px solid var(--brd);overflow:hidden}
+.occ-panel .bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#0891B2,var(--cyan));box-shadow:0 0 10px rgba(34,211,238,.4);transition:width .7s var(--ease)}
+.occ-panel .ct{width:30px;text-align:right;font-family:"Space Grotesk","DM Sans",sans-serif;font-weight:600;font-size:14px}
+
+.day-group h4{font-size:14px;color:var(--text-2);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.08em}
+.appt{
+  display:flex;gap:14px;align-items:flex-start;padding:14px 16px;margin-bottom:10px;
+  border-left:3px solid var(--cyan);cursor:pointer;
+}
+.appt.st-storniert{border-left-color:var(--red);opacity:.65}
+.appt.st-bestaetigt{border-left-color:var(--green)}
+.appt.st-abgeschlossen{border-left-color:var(--text-2);opacity:.75}
+.appt .time{font-family:"Space Grotesk","DM Sans",sans-serif;font-weight:700;font-size:19px;color:var(--cyan);min-width:58px;text-shadow:0 0 12px rgba(34,211,238,.35)}
+.appt .body{flex:1;min-width:0}
+.appt .nm{font-weight:700;font-size:16px}
+.appt .meta{font-size:13.5px;color:var(--text-2);display:flex;gap:12px;flex-wrap:wrap;margin-top:2px}
+.appt .meta a{color:var(--text-2);text-decoration:none}
+.appt .note{font-size:13.5px;color:var(--text-2);margin-top:4px;font-style:italic}
+.appt .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid}
+.pill.st-geplant{color:#BAE6FD;border-color:rgba(34,211,238,.5);background:rgba(34,211,238,.1)}
+.pill.st-bestaetigt{color:#BBF7D0;border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.1)}
+.pill.st-storniert{color:#FECACA;border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.1)}
+.pill.st-abgeschlossen{color:var(--text-2);border-color:var(--brd-2);background:var(--glass)}
+.mailflags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.mflag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--brd);color:var(--text-2)}
+.mflag.on{color:#E9D5FF;border-color:rgba(168,85,247,.5);background:rgba(168,85,247,.1)}
+
+/* Wochenraster */
+.week{display:grid;grid-template-columns:repeat(7,minmax(132px,1fr));gap:8px;overflow-x:auto;padding-bottom:6px}
+.wday{background:var(--glass);border:1px solid var(--brd);border-radius:14px;padding:9px;min-height:130px;backdrop-filter:blur(20px)}
+.wday .hd{font-family:"Space Grotesk","DM Sans",sans-serif;font-weight:600;font-size:13px;color:var(--text-2);text-align:center;margin-bottom:8px}
+.wday.today{border-color:rgba(34,211,238,.5);box-shadow:0 0 14px rgba(34,211,238,.15)}
+.wday.today .hd{color:var(--cyan)}
+.wchip{
+  display:block;width:100%;text-align:left;font-size:12.5px;padding:6px 8px;margin-bottom:6px;
+  border-radius:9px;border:1px solid var(--brd);border-left:3px solid var(--cyan);
+  background:rgba(2,6,23,.5);transition:transform .18s var(--ease),border-color .18s;
+}
+.wchip:hover{transform:translateY(-1px);border-color:var(--brd-2)}
+.wchip b{font-family:"Space Grotesk"}
+.wchip.st-storniert{border-left-color:var(--red);opacity:.6;text-decoration:line-through}
+.wchip.st-bestaetigt{border-left-color:var(--green)}
+.wchip.st-abgeschlossen{border-left-color:var(--text-2);opacity:.7}
+
+.empty{padding:34px 18px;text-align:center;color:var(--text-2)}
+.empty .ic{width:34px;height:34px;opacity:.5;margin-bottom:8px}
+
+/* ── E-Mails ── */
+.tpl-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.tpl-btns .btn.on{border-color:rgba(168,85,247,.55);background:rgba(168,85,247,.16);color:#F3E8FF}
+.ph-legend{font-size:12.5px;color:var(--text-2);margin-top:8px}
+.ph-legend code{background:rgba(2,6,23,.6);border:1px solid var(--brd);padding:1px 6px;border-radius:6px;font-size:12px;color:#E9D5FF}
+.maillist .appt{border-left-color:var(--violet)}
+.maillist .appt .time{color:var(--violet);text-shadow:0 0 12px rgba(168,85,247,.35);font-size:14px;min-width:96px;line-height:1.35}
+
+/* ── Wachstum / Franchise ── */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi{padding:16px 18px}
+.kpi .lbl{font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:7px}
+.kpi .val{font-family:"Space Grotesk","DM Sans",sans-serif;font-weight:700;font-size:34px;line-height:1.2;margin-top:4px}
+.kpi.k-green .val{color:var(--green);text-shadow:0 0 16px rgba(34,197,94,.35)}
+.kpi.k-cyan .val{color:var(--cyan);text-shadow:0 0 16px rgba(34,211,238,.35)}
+.kpi.k-gold .val{color:var(--gold);text-shadow:0 0 16px rgba(251,191,36,.35)}
+.kpi.k-violet .val{color:var(--violet);text-shadow:0 0 16px rgba(168,85,247,.35)}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.studio-card .hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.studio-card .hd b{font-family:"Space Grotesk","DM Sans",sans-serif;font-size:16.5px}
+.studio-card .rows{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;font-size:13.5px}
+.studio-card .rows .k{color:var(--text-2)}
+.studio-card .rows .v{font-weight:700;text-align:right;font-family:"Space Grotesk"}
+.capbar{height:8px;border-radius:999px;background:rgba(2,6,23,.6);border:1px solid var(--brd);overflow:hidden;margin-top:10px}
+.capbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#15803D,var(--green));box-shadow:0 0 8px rgba(34,197,94,.4);transition:width .7s var(--ease)}
+
+.sec-hd{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+.sec-hd h2{font-size:19px;display:flex;align-items:center;gap:9px}
+.sec-hd .spacer{flex:1}
+
+.comp .hd{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:6px}
+.comp .hd b{font-size:16px;font-family:"Space Grotesk"}
+.comp .meta{font-size:13.5px;color:var(--text-2);display:flex;flex-direction:column;gap:3px}
+.comp .meta a{color:var(--gold);text-decoration:none;word-break:break-all}
+.comp .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;flex-wrap:wrap}
+.comp .check{font-size:12.5px;color:var(--text-2)}
+.comp .check.warn{color:var(--gold)}
+
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(215px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.kcol{background:var(--glass);border:1px solid var(--brd);border-radius:14px;padding:11px;backdrop-filter:blur(20px);min-height:120px}
+.kcol .hd{display:flex;align-items:center;gap:8px;font-family:"Space Grotesk","DM Sans",sans-serif;font-weight:600;font-size:14px;margin-bottom:10px}
+.kcol .hd .dot{width:9px;height:9px;border-radius:50%}
+.kcol[data-st="idee"] .dot{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.kcol[data-st="pruefung"] .dot{background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.kcol[data-st="verhandlung"] .dot{background:var(--violet);box-shadow:0 0 8px var(--violet)}
+.kcol[data-st="eroeffnet"] .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+.kcard{background:rgba(2,6,23,.55);border:1px solid var(--brd);border-radius:11px;padding:10px 11px;margin-bottom:8px;transition:transform .18s var(--ease),border-color .18s}
+.kcard:hover{transform:translateY(-1px);border-color:var(--brd-2)}
+.kcard b{font-size:14.5px}
+.kcard .note{font-size:12.5px;color:var(--text-2);margin-top:2px}
+.kcard .acts{display:flex;gap:5px;margin-top:8px}
+.kcard .acts .btn{min-height:32px;min-width:32px;padding:4px 8px;border-radius:8px}
+
+/* ── Modals ── */
+.modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,23,.7);backdrop-filter:blur(6px)}
+.modal.show{display:flex;animation:viewIn .22s ease-out}
+.modal .box{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;padding:22px}
+.modal .box h3{font-size:19px;margin-bottom:4px}
+.m-foot{display:flex;gap:9px;margin-top:20px;flex-wrap:wrap}
+.m-foot .spacer{flex:1}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.warnbox{
+  display:none;align-items:flex-start;gap:9px;margin-top:14px;padding:11px 13px;border-radius:12px;
+  border:1px solid rgba(251,191,36,.5);background:rgba(251,191,36,.1);color:#FDE68A;font-size:13.5px;
+}
+.warnbox.show{display:flex}
+
+/* Toast */
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:60;opacity:0;pointer-events:none;
+  background:var(--panel-2);border:1px solid var(--brd-2);border-radius:12px;padding:11px 18px;
+  box-shadow:var(--shadow);font-weight:500;max-width:92vw;
+  transition:opacity .25s,transform .25s var(--ease);
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ── Mobil ── */
+@media (max-width:720px){
+  .brand h1{font-size:18px}
+  .toolbar .in{flex:1;min-width:130px}
+  .datenav .lbl{min-width:110px;font-size:13.5px}
+  .appt{flex-direction:column;gap:6px}
+  .appt .time{min-width:0}
+  .kanban{grid-template-columns:repeat(4,minmax(200px,1fr))}
+  .modal{align-items:flex-end;padding:0}
+  .modal .box{max-width:none;border-radius:20px 20px 0 0;max-height:94vh}
+}
+
+/* ── Bewegung reduzieren (Barrierefreiheit) ── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .aurora i{animation:none}
+}
+</style>
+</head>
+<body>
+
+<!-- SVG-Icon-Sprite (Lucide-Stil) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-check-c" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></symbol>
+    <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><path d="M21 12H9"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></symbol>
+  </defs>
+</svg>
+
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<!-- Lade-Overlay -->
+<div id="loadingWrap"><div class="spinner" role="status" aria-label="Lädt"></div></div>
+
+<!-- ── LOGIN ── -->
+<div id="authWrap">
+  <div class="card login-card">
+    <div class="mark brand-mark" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(34,211,238,.25),rgba(168,85,247,.25));border:1px solid var(--brd-2);color:var(--cyan);box-shadow:0 0 22px rgba(34,211,238,.3)">
+      <svg class="ic ic-l"><use href="#i-zap"/></svg>
+    </div>
+    <h1>Wachstum &amp; Betrieb</h1>
+    <p>Körperformen · gleicher Login wie StudioChat</p>
+    <label class="f" for="loginEmail" style="text-align:left">E-Mail</label>
+    <input class="in" id="loginEmail" type="email" autocomplete="username" placeholder="name@beispiel.de"/>
+    <label class="f" for="loginPass" style="text-align:left">Passwort</label>
+    <input class="in" id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••"/>
+    <div class="err" id="loginErr" role="alert"></div>
+    <button class="btn btn-cyan" style="width:100%" id="loginBtn" onclick="doLogin()">Anmelden</button>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div class="wrap view" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark"><svg class="ic ic-l"><use href="#i-zap"/></svg></div>
+      <div>
+        <h1>KF Wachstum</h1>
+        <div class="sub">Körperformen · Termine, E-Mails &amp; Expansion</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="userbox">
+      <span id="userName" class="muted"></span>
+      <span id="roleChip" class="chip"></span>
+      <button class="btn btn-ic" onclick="doLogout()" aria-label="Abmelden" title="Abmelden"><svg class="ic"><use href="#i-out"/></svg></button>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Module">
+    <button class="tab active" id="tabBtn-termine" data-acc="cyan" onclick="showTab('termine')"><svg class="ic"><use href="#i-cal"/></svg>Termine</button>
+    <button class="tab" id="tabBtn-mails" data-acc="violet" onclick="showTab('mails')"><svg class="ic"><use href="#i-mail"/></svg>E-Mails</button>
+    <button class="tab" id="tabBtn-wachstum" data-acc="green" onclick="showTab('wachstum')" style="display:none"><svg class="ic"><use href="#i-trend"/></svg>Wachstum</button>
+  </nav>
+
+  <!-- ════ MODUL 1: TERMINE ════ -->
+  <section class="view show" id="view-termine" aria-label="Termine">
+    <div class="toolbar">
+      <select class="in" id="apptStudioSel" onchange="renderAppts()" aria-label="Studio wählen"></select>
+      <div class="datenav">
+        <button class="btn btn-ic btn-sm" onclick="navDate(-1)" aria-label="Zurück"><svg class="ic"><use href="#i-left"/></svg></button>
+        <button class="btn btn-sm" onclick="goToday()">Heute</button>
+        <button class="btn btn-ic btn-sm" onclick="navDate(1)" aria-label="Weiter"><svg class="ic"><use href="#i-right"/></svg></button>
+        <span class="lbl" id="dateLabel"></span>
+      </div>
+      <div class="seg" role="group" aria-label="Ansicht">
+        <button id="segTag" class="on" onclick="setApptView('tag')">Tag</button>
+        <button id="segWoche" onclick="setApptView('woche')">Woche</button>
+      </div>
+      <div style="flex:1"></div>
+      <button class="btn btn-cyan" onclick="openApptModal(null)"><svg class="ic"><use href="#i-plus"/></svg>Neuer Termin</button>
+    </div>
+
+    <div class="card occ-panel" id="occPanel" style="display:none;margin-bottom:14px">
+      <h3 class="tag-cyan"><svg class="ic"><use href="#i-trend"/></svg>Auslastung diese Woche · alle Studios</h3>
+      <div id="occBars"></div>
+    </div>
+
+    <div id="apptSkeleton"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+    <div id="apptContent"></div>
+  </section>
+
+  <!-- ════ MODUL 2: E-MAILS ════ -->
+  <section class="view" id="view-mails" aria-label="E-Mail-Automatik">
+    <div class="stagger">
+      <div class="card" style="--i:0;margin-bottom:14px">
+        <h3 class="tag-violet"><svg class="ic"><use href="#i-sparkle"/></svg>Automatischer E-Mail-Versand</h3>
+        <p class="muted">
+          Sobald ein Termin mit E-Mail-Adresse angelegt wird, verschickt der Server automatisch eine
+          <b style="color:#E9D5FF">Bestätigung</b>. Eine <b style="color:#E9D5FF">Erinnerung</b> geht ca. 24 Stunden
+          vor dem Termin raus, ein <b style="color:#E9D5FF">Follow-up</b> ein paar Stunden danach. Bei Stornierung
+          folgt eine Absage-Nachricht. Dafür muss der Versand einmalig eingerichtet sein
+          (siehe ANLEITUNG.txt, Abschnitt 10) – bis dahin werden Termine ganz normal gespeichert, nur ohne Mail.
+        </p>
+      </div>
+
+      <div class="card" style="--i:1;margin-bottom:14px" id="tplCard">
+        <h3 class="tag-violet"><svg class="ic"><use href="#i-edit"/></svg>Vorlagen bearbeiten <span class="chip chef" style="margin-left:4px">Chef</span></h3>
+        <div class="tpl-btns" id="tplBtns"></div>
+        <label class="f" for="tplSubject">Betreff</label>
+        <input class="in" id="tplSubject"/>
+        <label class="f" for="tplBody">Text</label>
+        <textarea class="in" id="tplBody" rows="9"></textarea>
+        <p class="ph-legend">Platzhalter: <code>{name}</code> <code>{studio}</code> <code>{datum}</code> <code>{uhrzeit}</code> <code>{notiz}</code> – werden beim Versand automatisch ersetzt.</p>
+        <div class="m-foot">
+          <button class="btn btn-violet" onclick="saveTemplate()"><svg class="ic"><use href="#i-check"/></svg>Vorlage speichern</button>
+          <button class="btn" onclick="resetTemplate()">Auf Standard zurücksetzen</button>
+        </div>
+      </div>
+
+      <div class="card maillist" style="--i:2">
+        <h3 class="tag-violet"><svg class="ic"><use href="#i-mail"/></svg>Versand-Status der letzten Termine</h3>
+        <div id="mailList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ MODUL 3: WACHSTUM / FRANCHISE (nur Chef) ════ -->
+  <section class="view" id="view-wachstum" aria-label="Franchise-Dashboard">
+    <div class="kpis stagger" id="kpiRow">
+      <div class="card kpi k-green" style="--i:0"><div class="lbl"><svg class="ic ic-s"><use href="#i-users"/></svg>Mitglieder gesamt</div><div class="val" id="kpiMembers">–</div></div>
+      <div class="card kpi k-cyan" style="--i:1"><div class="lbl"><svg class="ic ic-s"><use href="#i-cal"/></svg>Termine diese Woche</div><div class="val" id="kpiAppts">–</div></div>
+      <div class="card kpi k-gold" style="--i:2"><div class="lbl"><svg class="ic ic-s"><use href="#i-check-c"/></svg>Offene Aufgaben</div><div class="val" id="kpiTodos">–</div></div>
+      <div class="card kpi k-violet" style="--i:3"><div class="lbl"><svg class="ic ic-s"><use href="#i-flag"/></svg>Expansions-Kandidaten</div><div class="val" id="kpiLeads">–</div></div>
+    </div>
+
+    <div class="sec-hd">
+      <h2 class="tag-green"><svg class="ic"><use href="#i-building"/></svg>Eigene Studios</h2>
+      <div class="spacer"></div>
+      <button class="btn btn-sm" onclick="loadTodoCounts(true)" aria-label="Kennzahlen neu laden"><svg class="ic ic-s"><use href="#i-refresh"/></svg>Aktualisieren</button>
+    </div>
+    <div class="grid2 stagger" id="studioGrid"></div>
+
+    <div class="sec-hd">
+      <h2 class="tag-gold"><svg class="ic"><use href="#i-eye"/></svg>Wettbewerbsbeobachtung</h2>
+      <div class="spacer"></div>
+      <button class="btn btn-sm" onclick="openCompModal(null)"><svg class="ic ic-s"><use href="#i-plus"/></svg>Wettbewerber</button>
+    </div>
+    <p class="muted" style="margin:-4px 0 12px">Manuell gepflegte Liste – bewusst ohne automatisches Auslesen fremder Websites.</p>
+    <div class="grid2 stagger" id="compList"></div>
+
+    <div class="sec-hd">
+      <h2 class="tag-green"><svg class="ic"><use href="#i-flag"/></svg>Expansionsplanung</h2>
+      <div class="spacer"></div>
+      <button class="btn btn-sm btn-green" onclick="openLeadModal(null)"><svg class="ic ic-s"><use href="#i-plus"/></svg>Standort-Idee</button>
+    </div>
+    <div class="kanban" id="kanban"></div>
+  </section>
+</div>
+
+<!-- ── Modal: Termin ── -->
+<div class="modal" id="apptModal" role="dialog" aria-modal="true" aria-labelledby="apptModalTitle">
+  <div class="card box">
+    <h3 id="apptModalTitle" class="tag-cyan">Termin</h3>
+    <p class="muted" id="apptModalSub"></p>
+    <label class="f" for="mStudio">Studio</label>
+    <select class="in" id="mStudio"></select>
+    <label class="f" for="mName">Kundenname *</label>
+    <input class="in" id="mName" placeholder="Vor- und Nachname"/>
+    <div class="frow">
+      <div>
+        <label class="f" for="mPhone">Telefon</label>
+        <input class="in" id="mPhone" type="tel" placeholder="0221 …"/>
+      </div>
+      <div>
+        <label class="f" for="mEmail">E-Mail (für Auto-Mails)</label>
+        <input class="in" id="mEmail" type="email" placeholder="optional"/>
+      </div>
+    </div>
+    <div class="frow">
+      <div>
+        <label class="f" for="mDate">Datum *</label>
+        <input class="in" id="mDate" type="date"/>
+      </div>
+      <div>
+        <label class="f" for="mTime">Uhrzeit *</label>
+        <input class="in" id="mTime" type="time" step="300"/>
+      </div>
+    </div>
+    <div class="frow">
+      <div>
+        <label class="f" for="mDuration">Dauer (Minuten)</label>
+        <input class="in" id="mDuration" type="number" min="5" max="240" step="5" value="20"/>
+      </div>
+      <div>
+        <label class="f" for="mStatus">Status</label>
+        <select class="in" id="mStatus">
+          <option value="geplant">Geplant</option>
+          <option value="bestaetigt">Bestätigt</option>
+          <option value="storniert">Storniert</option>
+          <option value="abgeschlossen">Abgeschlossen</option>
+        </select>
+      </div>
+    </div>
+    <label class="f" for="mNote">Notiz</label>
+    <textarea class="in" id="mNote" rows="2" placeholder="z. B. Probetraining, Rückenfokus …"></textarea>
+    <div class="warnbox" id="conflictWarn"><svg class="ic" style="color:var(--gold)"><use href="#i-warn"/></svg><span id="conflictText"></span></div>
+    <div class="m-foot">
+      <button class="btn btn-cyan" id="apptSaveBtn" onclick="saveAppt()"><svg class="ic"><use href="#i-check"/></svg>Speichern</button>
+      <button class="btn" onclick="closeModal('apptModal')">Abbrechen</button>
+      <div class="spacer"></div>
+      <button class="btn btn-danger btn-ic" id="apptDelBtn" style="display:none" onclick="deleteAppt()" aria-label="Termin löschen" title="Löschen"><svg class="ic"><use href="#i-trash"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Studio-Kennzahlen ── -->
+<div class="modal" id="metricsModal" role="dialog" aria-modal="true" aria-labelledby="metricsTitle">
+  <div class="card box">
+    <h3 id="metricsTitle" class="tag-green">Kennzahlen</h3>
+    <p class="muted" id="metricsSub"></p>
+    <div class="frow">
+      <div>
+        <label class="f" for="xMembers">Mitglieder</label>
+        <input class="in" id="xMembers" type="number" min="0" step="1"/>
+      </div>
+      <div>
+        <label class="f" for="xCapacity">Auslastung (%)</label>
+        <input class="in" id="xCapacity" type="number" min="0" max="100" step="1"/>
+      </div>
+    </div>
+    <div class="frow">
+      <div>
+        <label class="f" for="xRent">Miete (€ / Monat)</label>
+        <input class="in" id="xRent" type="number" min="0" step="1"/>
+      </div>
+      <div>
+        <label class="f" for="xCosts">Weitere Kosten (€ / Monat)</label>
+        <input class="in" id="xCosts" type="number" min="0" step="1"/>
+      </div>
+    </div>
+    <label class="f" for="xNote">Notiz</label>
+    <textarea class="in" id="xNote" rows="2"></textarea>
+    <div class="m-foot">
+      <button class="btn btn-green" onclick="saveMetrics()"><svg class="ic"><use href="#i-check"/></svg>Speichern</button>
+      <button class="btn" onclick="closeModal('metricsModal')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Wettbewerber ── -->
+<div class="modal" id="compModal" role="dialog" aria-modal="true" aria-labelledby="compTitle">
+  <div class="card box">
+    <h3 id="compTitle" class="tag-gold">Wettbewerber</h3>
+    <label class="f" for="cName">Name *</label>
+    <input class="in" id="cName" placeholder="z. B. EMS-Studio XY"/>
+    <label class="f" for="cLocation">Ort / Adresse</label>
+    <input class="in" id="cLocation" placeholder="Straße, PLZ Ort"/>
+    <label class="f" for="cWebsite">Website</label>
+    <input class="in" id="cWebsite" type="url" placeholder="https://…"/>
+    <label class="f" for="cSocial">Social-Media-Link</label>
+    <input class="in" id="cSocial" type="url" placeholder="https://instagram.com/…"/>
+    <label class="f" for="cNote">Notizen (Preise, Angebote, Eindruck …)</label>
+    <textarea class="in" id="cNote" rows="3"></textarea>
+    <label class="f" for="cLastCheck">Zuletzt geprüft am</label>
+    <input class="in" id="cLastCheck" type="date"/>
+    <div class="m-foot">
+      <button class="btn" style="border-color:rgba(251,191,36,.45);color:#FDE68A" onclick="saveComp()"><svg class="ic"><use href="#i-check"/></svg>Speichern</button>
+      <button class="btn" onclick="closeModal('compModal')">Abbrechen</button>
+      <div class="spacer"></div>
+      <button class="btn btn-danger btn-ic" id="compDelBtn" style="display:none" onclick="deleteComp()" aria-label="Wettbewerber löschen" title="Löschen"><svg class="ic"><use href="#i-trash"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Expansions-Standort ── -->
+<div class="modal" id="leadModal" role="dialog" aria-modal="true" aria-labelledby="leadTitle">
+  <div class="card box">
+    <h3 id="leadTitle" class="tag-green">Möglicher Standort</h3>
+    <label class="f" for="lTitle">Ort / Objekt *</label>
+    <input class="in" id="lTitle" placeholder="z. B. Bonn-Beuel, Ladenlokal Hauptstraße"/>
+    <label class="f" for="lStatus">Status</label>
+    <select class="in" id="lStatus">
+      <option value="idee">Idee</option>
+      <option value="pruefung">Prüfung</option>
+      <option value="verhandlung">Verhandlung</option>
+      <option value="eroeffnet">Eröffnet</option>
+    </select>
+    <label class="f" for="lNote">Notiz (Fläche, Miete, Ansprechpartner …)</label>
+    <textarea class="in" id="lNote" rows="3"></textarea>
+    <div class="m-foot">
+      <button class="btn btn-green" onclick="saveLead()"><svg class="ic"><use href="#i-check"/></svg>Speichern</button>
+      <button class="btn" onclick="closeModal('leadModal')">Abbrechen</button>
+      <div class="spacer"></div>
+      <button class="btn btn-danger btn-ic" id="leadDelBtn" style="display:none" onclick="deleteLead()" aria-label="Standort löschen" title="Löschen"><svg class="ic"><use href="#i-trash"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ============================================================
+   KF WACHSTUM – App-Logik
+   Gleiche Firebase-Konten wie StudioChat (Projekt: formenchat).
+   Modul 1: Termine · Modul 2: E-Mail-Automatik (Server) · Modul 3: Franchise
+   ============================================================ */
+
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAvYVUzTbT86jeH6bsCAS0PyK9ArNb6pRw",
+  authDomain: "formenchat.firebaseapp.com",
+  databaseURL: "https://formenchat-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "formenchat",
+  storageBucket: "formenchat.firebasestorage.app",
+  messagingSenderId: "873830492257",
+  appId: "1:873830492257:web:07fb34b80fd47c1873e220",
+  measurementId: "G-H0WMHW25QT"
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+var auth = firebase.auth();
+var db = firebase.firestore();
+
+/* Die 12 Standorte – gleiche Reihenfolge wie in index.html (Schlüssel-Basis!) */
+var STUDIOS = [
+  "Longerich","Nippes","Ebertplatz","Rath","Porz","Rondorf",
+  "Hürth","Brühl","Niederkassel Mondorf","Refrath","Overath","Marialinden"
+];
+function studioKey(name){ return 'studio-'+STUDIOS.indexOf(name); }
+function studioName(key){ var i=+String(key).replace('studio-',''); return STUDIOS[i]||key; }
+
+var STATUS = {
+  geplant:      { label:'Geplant' },
+  bestaetigt:   { label:'Bestätigt' },
+  storniert:    { label:'Storniert' },
+  abgeschlossen:{ label:'Abgeschlossen' }
+};
+
+/* Bewegung reduzieren? (Barrierefreiheit) */
+var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+var session = null;         // { uid, name, role, studios[], studioKeys[] }
+var appts = [];             // Termine (live, letzte ~45 Tage + Zukunft)
+var apptsLoaded = false;
+var metrics = {};           // studioKey -> Kennzahlen
+var competitors = [];
+var leads = [];
+var todoCounts = null;      // studioKey -> offene Aufgaben
+var unsubs = [];
+
+var apptView = 'tag';       // 'tag' | 'woche'
+var apptDate = new Date(); apptDate.setHours(0,0,0,0);
+var editApptId = null;
+var conflictConfirmed = false;
+var editCompId = null, editLeadId = null, editMetricsKey = null;
+var currentTpl = 'confirm';
+var pulseId = null;         // Termin-ID, die nach Statuswechsel kurz aufleuchtet
+
+/* ── Kleine Helfer ── */
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toast(msg){
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+function openModal(id){ $(id).classList.add('show'); }
+function closeModal(id){ $(id).classList.remove('show'); }
+function fmtDay(d){
+  return d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function fmtDayShort(d){
+  return d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+}
+function fmtTime(ts){
+  return new Date(ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+function fmtDateTs(ts){
+  return new Date(ts).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function fmtEuro(n){ return (n==null||isNaN(n)) ? '–' : Math.round(n).toLocaleString('de-DE')+' €'; }
+function weekStart(d){
+  var x = new Date(d); x.setHours(0,0,0,0);
+  var wd = (x.getDay()+6)%7; // Mo=0
+  x.setDate(x.getDate()-wd);
+  return x;
+}
+function sameDay(ts, d){
+  var a = new Date(ts);
+  return a.getFullYear()===d.getFullYear() && a.getMonth()===d.getMonth() && a.getDate()===d.getDate();
+}
+/* Zahl weich hochzählen (bei reduzierter Bewegung: sofort) */
+function animateCount(el, target){
+  target = +target || 0;
+  if(REDUCED || target === 0){ el.textContent = target.toLocaleString('de-DE'); return; }
+  var start = null, dur = 750;
+  function step(t){
+    if(start===null) start = t;
+    var p = Math.min(1,(t-start)/dur);
+    p = 1 - Math.pow(1-p, 3); // ease-out
+    el.textContent = Math.round(target*p).toLocaleString('de-DE');
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function icon(name, cls){ return '<svg class="ic '+(cls||'')+'" aria-hidden="true"><use href="#i-'+name+'"/></svg>'; }
+
+/* ============================================================
+   LOGIN (gleiche Konten wie StudioChat – kein neues Konto nötig)
+   ============================================================ */
+function doLogin(){
+  var email = $('loginEmail').value.trim();
+  var pass = $('loginPass').value;
+  $('loginErr').textContent = '';
+  if(!email || !pass){ $('loginErr').textContent = 'Bitte E-Mail und Passwort eingeben.'; return; }
+  $('loginBtn').disabled = true;
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(function(e){
+      $('loginErr').textContent = 'Login fehlgeschlagen: ' + (e.code === 'auth/invalid-credential'
+        ? 'E-Mail oder Passwort falsch.' : e.message);
+    })
+    .finally(function(){ $('loginBtn').disabled = false; });
+}
+$('loginPass').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
+function doLogout(){ auth.signOut(); }
+
+auth.onAuthStateChanged(function(user){
+  $('loadingWrap').style.display = 'none';
+  if(user){
+    db.collection('users').doc(user.uid).get().then(function(snap){
+      var d = snap.exists ? (snap.data()||{}) : {};
+      var studios = (d.studios && d.studios.length) ? d.studios : (d.studio ? [d.studio] : []);
+      session = {
+        uid: user.uid,
+        name: d.name || user.email || '',
+        role: d.role || 'mitarbeiter',
+        studios: studios,
+        studioKeys: studios.map(studioKey)
+      };
+      startApp();
+    }).catch(function(e){
+      $('authWrap').classList.add('show');
+      $('loginErr').textContent = 'Profil konnte nicht geladen werden: ' + e.message;
+    });
+  } else {
+    session = null;
+    unsubs.forEach(function(u){ try{ u(); }catch(e){} });
+    unsubs = [];
+    appts = []; apptsLoaded = false; metrics = {}; competitors = []; leads = []; todoCounts = null;
+    $('app').classList.remove('show');
+    $('authWrap').classList.add('show');
+  }
+});
+
+function isChef(){ return session && session.role === 'chef'; }
+function myStudioNames(){ return isChef() ? STUDIOS : (session ? session.studios : []); }
+
+function startApp(){
+  $('authWrap').classList.remove('show');
+  $('app').classList.add('show');
+  $('userName').textContent = session.name;
+  var chip = $('roleChip');
+  chip.textContent = isChef() ? 'Chef' : (session.studios.join(', ') || 'Team');
+  chip.classList.toggle('chef', isChef());
+  $('tabBtn-wachstum').style.display = isChef() ? '' : 'none';
+  $('tplCard').style.display = isChef() ? '' : 'none';
+  $('occPanel').style.display = isChef() ? '' : 'none';
+  fillStudioSelects();
+  subscribeAppts();
+  if(isChef()) subscribeChefData();
+  showTab('termine');
+}
+
+/* ============================================================
+   TABS (Fade+Slide-Übergang, siehe CSS .view.show)
+   ============================================================ */
+var currentTab = 'termine';
+function showTab(name){
+  if(name === 'wachstum' && !isChef()) name = 'termine';
+  ['termine','mails','wachstum'].forEach(function(t){
+    $('view-'+t).classList.toggle('show', t === name);
+    $('tabBtn-'+t).classList.toggle('active', t === name);
+  });
+  currentTab = name;
+  if(name === 'termine') renderAppts();
+  if(name === 'mails') renderMails();
+  if(name === 'wachstum'){ renderWachstum(); if(todoCounts === null) loadTodoCounts(false); }
+}
+
+/* ============================================================
+   MODUL 1 – TERMINE
+   ============================================================ */
+function fillStudioSelects(){
+  var names = myStudioNames();
+  var sel = $('apptStudioSel'); sel.innerHTML = '';
+  if(isChef() || names.length > 1){
+    var all = document.createElement('option');
+    all.value = 'all'; all.textContent = isChef() ? 'Alle Studios' : 'Meine Studios';
+    sel.appendChild(all);
+  }
+  names.forEach(function(n){
+    var o = document.createElement('option');
+    o.value = studioKey(n); o.textContent = n;
+    sel.appendChild(o);
+  });
+  var m = $('mStudio'); m.innerHTML = '';
+  names.forEach(function(n){
+    var o = document.createElement('option');
+    o.value = studioKey(n); o.textContent = n;
+    m.appendChild(o);
+  });
+}
+
+function subscribeAppts(){
+  // Letzte 45 Tage + Zukunft reichen für Ansicht, Mail-Status und Kennzahlen
+  var since = Date.now() - 45*86400000;
+  var unsub = db.collection('appointments')
+    .where('startsAt','>=', since)
+    .onSnapshot(function(snap){
+      appts = [];
+      snap.forEach(function(doc){
+        var d = doc.data() || {}; d.id = doc.id;
+        appts.push(d);
+      });
+      appts.sort(function(a,b){ return (a.startsAt||0)-(b.startsAt||0); });
+      apptsLoaded = true;
+      $('apptSkeleton').style.display = 'none';
+      if(currentTab === 'termine') renderAppts();
+      if(currentTab === 'mails') renderMails();
+      if(currentTab === 'wachstum') renderWachstum();
+    }, function(e){
+      apptsLoaded = true;
+      $('apptSkeleton').style.display = 'none';
+      $('apptContent').innerHTML = '<div class="card empty">Termine konnten nicht geladen werden: '+esc(e.message)+'</div>';
+    });
+  unsubs.push(unsub);
+}
+
+/* Sichtbare Termine nach Studio-Filter + Rolle */
+function visibleAppts(){
+  var sel = $('apptStudioSel').value || 'all';
+  var keys = isChef() ? STUDIOS.map(studioKey) : session.studioKeys;
+  return appts.filter(function(a){
+    if(sel === 'all') return keys.indexOf(a.studio) >= 0;
+    return a.studio === sel;
+  });
+}
+
+function navDate(dir){
+  var days = (apptView === 'woche') ? 7 : 1;
+  apptDate.setDate(apptDate.getDate() + dir*days);
+  renderAppts();
+}
+function goToday(){ apptDate = new Date(); apptDate.setHours(0,0,0,0); renderAppts(); }
+function setApptView(v){
+  apptView = v;
+  $('segTag').classList.toggle('on', v==='tag');
+  $('segWoche').classList.toggle('on', v==='woche');
+  renderAppts();
+}
+
+function statusPill(st){
+  var s = STATUS[st] || STATUS.geplant;
+  return '<span class="pill st-'+esc(st)+'">'+esc(s.label)+'</span>';
+}
+function mailFlags(a){
+  if(!a.customerEmail) return '<div class="mailflags"><span class="mflag">keine E-Mail hinterlegt</span></div>';
+  function f(on, label){ return '<span class="mflag'+(on?' on':'')+'">'+icon(on?'check':'clock','ic-s')+label+'</span>'; }
+  var h = '<div class="mailflags">';
+  if(a.status === 'storniert'){ h += f(a.mailCancelledAt,'Storno-Mail'); }
+  else {
+    h += f(a.mailConfirmedAt,'Bestätigung') + f(a.mailRemindedAt,'Erinnerung') + f(a.mailFollowupAt,'Follow-up');
+  }
+  return h + '</div>';
+}
+
+function apptCardHtml(a, idx, withStudio){
+  var acts = '';
+  if(a.status === 'geplant'){
+    acts += '<button class="btn btn-sm btn-green" onclick="event.stopPropagation();setApptStatus(\''+a.id+'\',\'bestaetigt\')">'+icon('check','ic-s')+'Bestätigen</button>';
+  }
+  if(a.status === 'bestaetigt' || a.status === 'geplant'){
+    acts += '<button class="btn btn-sm" onclick="event.stopPropagation();setApptStatus(\''+a.id+'\',\'abgeschlossen\')">'+icon('check-c','ic-s')+'Abschließen</button>';
+    acts += '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();setApptStatus(\''+a.id+'\',\'storniert\')">'+icon('ban','ic-s')+'Stornieren</button>';
+  }
+  acts += '<button class="btn btn-sm" onclick="event.stopPropagation();openApptModal(\''+a.id+'\')">'+icon('edit','ic-s')+'Bearbeiten</button>';
+  return '<div class="card hov appt st-'+esc(a.status)+(a.id===pulseId?' pulse':'')+'" style="--i:'+idx+'" onclick="openApptModal(\''+a.id+'\')" role="button" tabindex="0" data-appt="'+a.id+'">'
+    + '<div class="time">'+fmtTime(a.startsAt)+'</div>'
+    + '<div class="body">'
+    +   '<div class="nm">'+esc(a.customerName)+' '+statusPill(a.status)+'</div>'
+    +   '<div class="meta">'
+    +     (withStudio ? '<span>'+icon('pin','ic-s')+' '+esc(studioName(a.studio))+'</span>' : '')
+    +     (a.customerPhone ? '<a href="tel:'+esc(a.customerPhone)+'" onclick="event.stopPropagation()">'+icon('phone','ic-s')+' '+esc(a.customerPhone)+'</a>' : '')
+    +     '<span>'+icon('clock','ic-s')+' '+(a.durationMin||20)+' Min.</span>'
+    +   '</div>'
+    +   (a.note ? '<div class="note">'+esc(a.note)+'</div>' : '')
+    +   mailFlags(a)
+    +   '<div class="acts">'+acts+'</div>'
+    + '</div></div>';
+}
+
+function renderAppts(){
+  if(!apptsLoaded) return;
+  var list = visibleAppts().filter(function(a){ return a.status !== undefined; });
+  var host = $('apptContent');
+  renderOccupancy();
+
+  if(apptView === 'tag'){
+    $('dateLabel').textContent = fmtDay(apptDate);
+    var day = list.filter(function(a){ return sameDay(a.startsAt, apptDate); });
+    if(!day.length){
+      host.innerHTML = '<div class="card empty">'+icon('cal')+'<div>Keine Termine an diesem Tag.</div></div>';
+    } else {
+      var h = '<div class="stagger">';
+      day.forEach(function(a, i){ h += apptCardHtml(a, i, $('apptStudioSel').value === 'all'); });
+      host.innerHTML = h + '</div>';
+    }
+  } else {
+    var ws = weekStart(apptDate);
+    var we = new Date(ws); we.setDate(we.getDate()+6);
+    $('dateLabel').textContent = fmtDayShort(ws) + ' – ' + fmtDayShort(we);
+    var today = new Date(); today.setHours(0,0,0,0);
+    var h = '<div class="week stagger">';
+    for(var i=0;i<7;i++){
+      var d = new Date(ws); d.setDate(d.getDate()+i);
+      var day = list.filter(function(a){ return sameDay(a.startsAt, d); });
+      h += '<div class="wday'+(d.getTime()===today.getTime()?' today':'')+'" style="--i:'+i+'"><div class="hd">'+fmtDayShort(d)+'</div>';
+      day.forEach(function(a){
+        h += '<button class="wchip st-'+esc(a.status)+'" onclick="openApptModal(\''+a.id+'\')" title="'+esc(a.customerName)+'">'
+          + '<b>'+fmtTime(a.startsAt)+'</b> '+esc(a.customerName)
+          + ($('apptStudioSel').value==='all' ? '<br/><span class="muted" style="font-size:11px">'+esc(studioName(a.studio))+'</span>' : '')
+          + '</button>';
+      });
+      if(!day.length) h += '<div class="muted" style="font-size:12px;text-align:center;padding:8px 0">–</div>';
+      h += '</div>';
+    }
+    host.innerHTML = h + '</div>';
+  }
+  pulseId = null;
+}
+
+/* Chef-Übersicht: Termine pro Studio in der Woche der aktuellen Ansicht */
+function renderOccupancy(){
+  if(!isChef()) return;
+  var ws = weekStart(apptDate).getTime();
+  var we = ws + 7*86400000;
+  var counts = {};
+  STUDIOS.forEach(function(s){ counts[studioKey(s)] = 0; });
+  appts.forEach(function(a){
+    if(a.startsAt >= ws && a.startsAt < we && a.status !== 'storniert' && counts[a.studio] !== undefined) counts[a.studio]++;
+  });
+  var max = 1;
+  STUDIOS.forEach(function(s){ max = Math.max(max, counts[studioKey(s)]); });
+  var h = '';
+  STUDIOS.forEach(function(s){
+    var c = counts[studioKey(s)];
+    h += '<div class="row"><div class="nm">'+esc(s)+'</div>'
+      + '<div class="bar"><i style="width:'+Math.round(c/max*100)+'%"></i></div>'
+      + '<div class="ct">'+c+'</div></div>';
+  });
+  $('occBars').innerHTML = h;
+}
+
+/* ── Termin-Modal ── */
+function openApptModal(id){
+  editApptId = id;
+  conflictConfirmed = false;
+  $('conflictWarn').classList.remove('show');
+  $('apptSaveBtn').innerHTML = icon('check')+'Speichern';
+  var a = id ? appts.find(function(x){ return x.id === id; }) : null;
+  $('apptModalTitle').textContent = a ? 'Termin bearbeiten' : 'Neuer Termin';
+  $('apptModalSub').textContent = a ? ('Angelegt von ' + (a.createdByName || '–')) : '';
+  $('apptDelBtn').style.display = (a && (isChef() || a.createdBy === session.uid)) ? '' : 'none';
+  var d = a ? new Date(a.startsAt) : (function(){
+    var x = new Date(apptDate); var now = new Date();
+    x.setHours(now.getHours()+1, 0, 0, 0);
+    return x;
+  })();
+  $('mStudio').value = a ? a.studio : ($('apptStudioSel').value !== 'all' ? $('apptStudioSel').value : $('mStudio').options[0] && $('mStudio').options[0].value);
+  $('mName').value = a ? (a.customerName||'') : '';
+  $('mPhone').value = a ? (a.customerPhone||'') : '';
+  $('mEmail').value = a ? (a.customerEmail||'') : '';
+  $('mDate').value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  $('mTime').value = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  $('mDuration').value = a ? (a.durationMin||20) : 20;
+  $('mStatus').value = a ? a.status : 'geplant';
+  $('mNote').value = a ? (a.note||'') : '';
+  openModal('apptModal');
+  setTimeout(function(){ $('mName').focus(); }, 60);
+}
+
+/* Doppelbuchungs-Check: gleicher Slot im gleichen Studio (Überschneidung) */
+function findConflict(studio, startsAt, durationMin, excludeId){
+  var end = startsAt + durationMin*60000;
+  return appts.find(function(a){
+    if(a.id === excludeId || a.studio !== studio || a.status === 'storniert') return false;
+    var aEnd = a.startsAt + (a.durationMin||20)*60000;
+    return startsAt < aEnd && a.startsAt < end;
+  });
+}
+
+function saveAppt(){
+  var name = $('mName').value.trim();
+  var dateV = $('mDate').value, timeV = $('mTime').value;
+  if(!name){ toast('Bitte einen Kundennamen eingeben.'); $('mName').focus(); return; }
+  if(!dateV || !timeV){ toast('Bitte Datum und Uhrzeit angeben.'); return; }
+  var dp = dateV.split('-'), tp = timeV.split(':');
+  var startsAt = new Date(+dp[0], +dp[1]-1, +dp[2], +tp[0], +tp[1], 0, 0).getTime();
+  var studio = $('mStudio').value;
+  var durationMin = Math.max(5, +$('mDuration').value || 20);
+  var status = $('mStatus').value;
+
+  // Konflikt-Warnung (kein harter Blocker – zweiter Klick speichert trotzdem)
+  if(status !== 'storniert' && !conflictConfirmed){
+    var c = findConflict(studio, startsAt, durationMin, editApptId);
+    if(c){
+      $('conflictText').textContent = 'Achtung: Um ' + fmtTime(c.startsAt) + ' ist in ' + studioName(studio)
+        + ' bereits ' + c.customerName + ' eingetragen. Nochmal auf „Trotzdem speichern" tippen, wenn das so gewollt ist.';
+      $('conflictWarn').classList.add('show');
+      $('apptSaveBtn').innerHTML = icon('warn')+'Trotzdem speichern';
+      conflictConfirmed = true;
+      return;
+    }
+  }
+
+  var data = {
+    studio: studio,
+    studioName: studioName(studio),
+    customerName: name,
+    customerPhone: $('mPhone').value.trim(),
+    customerEmail: $('mEmail').value.trim().toLowerCase(),
+    startsAt: startsAt,
+    durationMin: durationMin,
+    status: status,
+    note: $('mNote').value.trim(),
+    updatedAt: Date.now()
+  };
+  var p;
+  if(editApptId){
+    p = db.collection('appointments').doc(editApptId).update(data);
+  } else {
+    data.createdBy = session.uid;
+    data.createdByName = session.name;
+    data.createdAt = Date.now();
+    p = db.collection('appointments').add(data);
+  }
+  var savedId = editApptId;
+  p.then(function(ref){
+    pulseId = savedId || (ref && ref.id) || null;
+    closeModal('apptModal');
+    toast(editApptId ? 'Termin aktualisiert.' : (data.customerEmail
+      ? 'Termin gespeichert – Bestätigung geht automatisch per E-Mail raus.'
+      : 'Termin gespeichert.'));
+  }).catch(function(e){ toast('Fehler: '+e.message); });
+}
+
+function setApptStatus(id, status){
+  pulseId = id;
+  db.collection('appointments').doc(id).update({ status: status, updatedAt: Date.now() })
+    .then(function(){
+      var msg = { bestaetigt:'Termin bestätigt.', storniert:'Termin storniert.', abgeschlossen:'Termin abgeschlossen.' }[status];
+      var a = appts.find(function(x){ return x.id === id; });
+      if(status === 'storniert' && a && a.customerEmail) msg += ' Storno-Mail geht automatisch raus.';
+      toast(msg || 'Gespeichert.');
+    })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+
+function deleteAppt(){
+  if(!editApptId) return;
+  if(!confirm('Diesen Termin endgültig löschen? (Zum Absagen besser „Stornieren" nutzen – dann bekommt die Kundin/der Kunde eine Mail.)')) return;
+  db.collection('appointments').doc(editApptId).delete()
+    .then(function(){ closeModal('apptModal'); toast('Termin gelöscht.'); })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+
+/* ============================================================
+   MODUL 2 – E-MAILS (Anzeige + Vorlagen; Versand macht der Server)
+   ============================================================ */
+/* Standard-Vorlagen – identisch zu functions/index.js (MAIL_DEFAULTS).
+   Änderungen des Chefs landen in Firestore (emailTemplates) und gewinnen. */
+var TPL_DEFAULTS = {
+  confirm: {
+    name: 'Bestätigung',
+    subject: 'Terminbestätigung – Körperformen {studio}',
+    body: 'Hallo {name},\n\nhiermit bestätigen wir deinen Termin im Körperformen-Studio {studio}:\n\nDatum: {datum}\nUhrzeit: {uhrzeit} Uhr\n{notiz}\nBitte komm ein paar Minuten früher und bring bequeme Kleidung mit.\nFalls du den Termin nicht wahrnehmen kannst, gib uns bitte rechtzeitig Bescheid.\n\nBis bald!\nDein Körperformen-Team {studio}'
+  },
+  reminder: {
+    name: 'Erinnerung',
+    subject: 'Erinnerung: dein Termin morgen – Körperformen {studio}',
+    body: 'Hallo {name},\n\nkleine Erinnerung an deinen Termin im Körperformen-Studio {studio}:\n\nDatum: {datum}\nUhrzeit: {uhrzeit} Uhr\n\nWir freuen uns auf dich!\nDein Körperformen-Team {studio}'
+  },
+  followup: {
+    name: 'Follow-up',
+    subject: 'Danke für deinen Besuch – Körperformen {studio}',
+    body: 'Hallo {name},\n\ndanke, dass du heute bei uns im Studio {studio} warst – stark gemacht!\nDenk daran, ausreichend zu trinken. Muskelkater in den nächsten Tagen ist völlig normal.\n\nWenn dir das Training gefallen hat, empfiehl uns gern weiter.\nBis zum nächsten Mal!\n\nDein Körperformen-Team {studio}'
+  },
+  cancel: {
+    name: 'Storno',
+    subject: 'Termin storniert – Körperformen {studio}',
+    body: 'Hallo {name},\n\ndein Termin am {datum} um {uhrzeit} Uhr im Studio {studio} wurde storniert.\nWenn das ein Versehen war oder du einen neuen Termin möchtest, melde dich gern bei uns.\n\nDein Körperformen-Team {studio}'
+  }
+};
+
+function renderMails(){
+  if(isChef()) renderTplButtons();
+  var list = visibleAppts().slice().sort(function(a,b){ return b.startsAt - a.startsAt; }).slice(0, 40);
+  var host = $('mailList');
+  if(!apptsLoaded){ host.innerHTML = '<div class="skel"></div><div class="skel"></div>'; return; }
+  if(!list.length){
+    host.innerHTML = '<div class="empty">'+icon('mail')+'<div>Noch keine Termine – sobald welche angelegt sind, siehst du hier den Mail-Status.</div></div>';
+    return;
+  }
+  var h = '<div class="stagger">';
+  list.forEach(function(a, i){
+    h += '<div class="card hov appt st-'+esc(a.status)+'" style="--i:'+Math.min(i,8)+'" onclick="openApptModal(\''+a.id+'\')" role="button" tabindex="0">'
+      + '<div class="time">'+fmtDateTs(a.startsAt)+'<br/>'+fmtTime(a.startsAt)+'</div>'
+      + '<div class="body">'
+      +   '<div class="nm">'+esc(a.customerName)+' '+statusPill(a.status)+'</div>'
+      +   '<div class="meta"><span>'+icon('pin','ic-s')+' '+esc(studioName(a.studio))+'</span>'
+      +   (a.customerEmail ? '<span>'+icon('mail','ic-s')+' '+esc(a.customerEmail)+'</span>' : '')
+      +   '</div>'
+      +   mailFlags(a)
+      + '</div></div>';
+  });
+  host.innerHTML = h + '</div>';
+}
+
+function renderTplButtons(){
+  var h = '';
+  Object.keys(TPL_DEFAULTS).forEach(function(k){
+    h += '<button class="btn btn-sm'+(k===currentTpl?' on':'')+'" onclick="selectTpl(\''+k+'\')">'+esc(TPL_DEFAULTS[k].name)+'</button>';
+  });
+  $('tplBtns').innerHTML = h;
+  loadTpl();
+}
+function selectTpl(k){ currentTpl = k; renderTplButtons(); }
+function loadTpl(){
+  var def = TPL_DEFAULTS[currentTpl];
+  $('tplSubject').value = def.subject;
+  $('tplBody').value = def.body;
+  db.collection('emailTemplates').doc(currentTpl).get().then(function(snap){
+    if(snap.exists){
+      var d = snap.data() || {};
+      if(d.subject) $('tplSubject').value = d.subject;
+      if(d.body) $('tplBody').value = d.body;
+    }
+  }).catch(function(){});
+}
+function saveTemplate(){
+  var subject = $('tplSubject').value.trim();
+  var body = $('tplBody').value.trim();
+  if(!subject || !body){ toast('Betreff und Text dürfen nicht leer sein.'); return; }
+  db.collection('emailTemplates').doc(currentTpl).set({
+    subject: subject, body: body, updatedAt: Date.now(), updatedBy: session.name
+  }).then(function(){ toast('Vorlage „'+TPL_DEFAULTS[currentTpl].name+'" gespeichert.'); })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+function resetTemplate(){
+  db.collection('emailTemplates').doc(currentTpl).delete()
+    .then(function(){ loadTpl(); toast('Vorlage auf Standard zurückgesetzt.'); })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+
+/* ============================================================
+   MODUL 3 – WACHSTUM / FRANCHISE (nur Chef)
+   ============================================================ */
+function subscribeChefData(){
+  unsubs.push(db.collection('studioMetrics').onSnapshot(function(snap){
+    metrics = {};
+    snap.forEach(function(doc){ metrics[doc.id] = doc.data() || {}; });
+    if(currentTab === 'wachstum') renderWachstum();
+  }, function(){}));
+  unsubs.push(db.collection('competitors').onSnapshot(function(snap){
+    competitors = [];
+    snap.forEach(function(doc){ var d = doc.data()||{}; d.id = doc.id; competitors.push(d); });
+    competitors.sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||'')); });
+    if(currentTab === 'wachstum') renderCompetitors();
+  }, function(){}));
+  unsubs.push(db.collection('expansionLeads').onSnapshot(function(snap){
+    leads = [];
+    snap.forEach(function(doc){ var d = doc.data()||{}; d.id = doc.id; leads.push(d); });
+    leads.sort(function(a,b){ return (b.updatedAt||0)-(a.updatedAt||0); });
+    if(currentTab === 'wachstum'){ renderKanban(); renderKpis(); }
+  }, function(){}));
+}
+
+/* Offene Aufgaben je Studio aus StudioChat zählen (einmalig / auf Knopfdruck) */
+function loadTodoCounts(force){
+  if(todoCounts !== null && !force){ renderWachstum(); return; }
+  Promise.all(STUDIOS.map(function(s){
+    var sk = studioKey(s);
+    return db.collection('studios').doc(sk).collection('todos').get()
+      .then(function(snap){
+        var open = 0;
+        snap.forEach(function(doc){ if(!(doc.data()||{}).done) open++; });
+        return { key: sk, open: open };
+      })
+      .catch(function(){ return { key: sk, open: 0 }; });
+  })).then(function(rows){
+    todoCounts = {};
+    rows.forEach(function(r){ todoCounts[r.key] = r.open; });
+    renderWachstum();
+    if(force) toast('Kennzahlen aktualisiert.');
+  });
+}
+
+function weekApptCount(sk){
+  var ws = weekStart(new Date()).getTime(), we = ws + 7*86400000;
+  return appts.filter(function(a){
+    return a.startsAt >= ws && a.startsAt < we && a.status !== 'storniert' && (!sk || a.studio === sk);
+  }).length;
+}
+
+function renderWachstum(){
+  if(!isChef()) return;
+  renderKpis();
+  renderStudioGrid();
+  renderCompetitors();
+  renderKanban();
+}
+
+function renderKpis(){
+  var members = 0;
+  STUDIOS.forEach(function(s){ members += +((metrics[studioKey(s)]||{}).members || 0); });
+  var todos = 0;
+  if(todoCounts){ STUDIOS.forEach(function(s){ todos += todoCounts[studioKey(s)] || 0; }); }
+  var activeLeads = leads.filter(function(l){ return l.status !== 'eroeffnet'; }).length;
+  animateCount($('kpiMembers'), members);
+  animateCount($('kpiAppts'), weekApptCount(null));
+  if(todoCounts) animateCount($('kpiTodos'), todos); else $('kpiTodos').textContent = '…';
+  animateCount($('kpiLeads'), activeLeads);
+}
+
+function renderStudioGrid(){
+  var h = '';
+  STUDIOS.forEach(function(s, i){
+    var sk = studioKey(s);
+    var m = metrics[sk] || {};
+    var cap = Math.max(0, Math.min(100, +m.capacityPct || 0));
+    var open = todoCounts ? (todoCounts[sk] || 0) : null;
+    h += '<div class="card hov studio-card" style="--i:'+i+'">'
+      + '<div class="hd"><b>'+esc(s)+'</b>'
+      + '<button class="btn btn-sm btn-ic" onclick="openMetricsModal(\''+sk+'\')" aria-label="Kennzahlen für '+esc(s)+' bearbeiten" title="Kennzahlen bearbeiten">'+icon('edit','ic-s')+'</button></div>'
+      + '<div class="rows">'
+      +   '<span class="k">Mitglieder</span><span class="v" style="color:var(--green)">'+(m.members!=null?(+m.members).toLocaleString('de-DE'):'–')+'</span>'
+      +   '<span class="k">Termine (Woche)</span><span class="v" style="color:var(--cyan)">'+weekApptCount(sk)+'</span>'
+      +   '<span class="k">Offene Aufgaben</span><span class="v" style="color:var(--gold)">'+(open===null?'…':open)+'</span>'
+      +   '<span class="k">Miete + Kosten</span><span class="v">'+((m.rent!=null||m.costs!=null)?fmtEuro((+m.rent||0)+(+m.costs||0)):'–')+'</span>'
+      + '</div>'
+      + '<div class="capbar" role="img" aria-label="Auslastung '+cap+' Prozent"><i style="width:'+cap+'%"></i></div>'
+      + '<div class="muted" style="font-size:12px;margin-top:4px">Auslastung: '+(m.capacityPct!=null?cap+' %':'nicht gepflegt')+(m.note?' · '+esc(m.note):'')+'</div>'
+      + '</div>';
+  });
+  $('studioGrid').innerHTML = h;
+}
+
+function openMetricsModal(sk){
+  editMetricsKey = sk;
+  var m = metrics[sk] || {};
+  $('metricsSub').textContent = 'Studio ' + studioName(sk) + ' – einfache Pflege-Felder, kein Buchhaltungssystem.';
+  $('xMembers').value = m.members != null ? m.members : '';
+  $('xCapacity').value = m.capacityPct != null ? m.capacityPct : '';
+  $('xRent').value = m.rent != null ? m.rent : '';
+  $('xCosts').value = m.costs != null ? m.costs : '';
+  $('xNote').value = m.note || '';
+  openModal('metricsModal');
+}
+function numOrNull(v){ v = String(v).trim(); return v === '' ? null : +v; }
+function saveMetrics(){
+  if(!editMetricsKey) return;
+  db.collection('studioMetrics').doc(editMetricsKey).set({
+    studioName: studioName(editMetricsKey),
+    members: numOrNull($('xMembers').value),
+    capacityPct: numOrNull($('xCapacity').value),
+    rent: numOrNull($('xRent').value),
+    costs: numOrNull($('xCosts').value),
+    note: $('xNote').value.trim(),
+    updatedAt: Date.now(),
+    updatedBy: session.name
+  }).then(function(){ closeModal('metricsModal'); toast('Kennzahlen gespeichert.'); })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+
+/* ── Wettbewerber ── */
+function renderCompetitors(){
+  var host = $('compList');
+  if(!competitors.length){
+    host.innerHTML = '<div class="card empty" style="grid-column:1/-1">'+icon('eye')+'<div>Noch keine Wettbewerber erfasst.</div></div>';
+    return;
+  }
+  var STALE = 30*86400000; // Hinweis, wenn der letzte Check über 30 Tage her ist
+  var h = '';
+  competitors.forEach(function(c, i){
+    var stale = !c.lastCheck || (Date.now()-c.lastCheck) > STALE;
+    h += '<div class="card hov comp" style="--i:'+Math.min(i,8)+'">'
+      + '<div class="hd"><b>'+esc(c.name)+'</b>'
+      + '<button class="btn btn-sm btn-ic" onclick="openCompModal(\''+c.id+'\')" aria-label="'+esc(c.name)+' bearbeiten" title="Bearbeiten">'+icon('edit','ic-s')+'</button></div>'
+      + '<div class="meta">'
+      +   (c.location ? '<span>'+icon('pin','ic-s')+' '+esc(c.location)+'</span>' : '')
+      +   (c.website ? '<a href="'+esc(c.website)+'" target="_blank" rel="noopener">'+icon('globe','ic-s')+' '+esc(c.website)+'</a>' : '')
+      +   (c.social ? '<a href="'+esc(c.social)+'" target="_blank" rel="noopener">'+icon('globe','ic-s')+' '+esc(c.social)+'</a>' : '')
+      + '</div>'
+      + (c.note ? '<p class="muted" style="margin-top:8px;font-size:13.5px">'+esc(c.note)+'</p>' : '')
+      + '<div class="foot">'
+      +   '<span class="check'+(stale?' warn':'')+'">'+icon(stale?'warn':'check','ic-s')+' zuletzt geprüft: '+(c.lastCheck?fmtDateTs(c.lastCheck):'noch nie')+'</span>'
+      +   '<button class="btn btn-sm" onclick="markCompChecked(\''+c.id+'\')">'+icon('check','ic-s')+'Heute geprüft</button>'
+      + '</div></div>';
+  });
+  host.innerHTML = h;
+}
+function openCompModal(id){
+  editCompId = id;
+  var c = id ? competitors.find(function(x){ return x.id === id; }) : null;
+  $('compTitle').textContent = c ? 'Wettbewerber bearbeiten' : 'Neuer Wettbewerber';
+  $('compDelBtn').style.display = c ? '' : 'none';
+  $('cName').value = c ? (c.name||'') : '';
+  $('cLocation').value = c ? (c.location||'') : '';
+  $('cWebsite').value = c ? (c.website||'') : '';
+  $('cSocial').value = c ? (c.social||'') : '';
+  $('cNote').value = c ? (c.note||'') : '';
+  var lc = c && c.lastCheck ? new Date(c.lastCheck) : null;
+  $('cLastCheck').value = lc ? lc.getFullYear()+'-'+String(lc.getMonth()+1).padStart(2,'0')+'-'+String(lc.getDate()).padStart(2,'0') : '';
+  openModal('compModal');
+}
+function saveComp(){
+  var name = $('cName').value.trim();
+  if(!name){ toast('Bitte einen Namen eingeben.'); return; }
+  var lcV = $('cLastCheck').value;
+  var data = {
+    name: name,
+    location: $('cLocation').value.trim(),
+    website: $('cWebsite').value.trim(),
+    social: $('cSocial').value.trim(),
+    note: $('cNote').value.trim(),
+    lastCheck: lcV ? new Date(lcV+'T12:00:00').getTime() : null,
+    updatedAt: Date.now()
+  };
+  var p = editCompId
+    ? db.collection('competitors').doc(editCompId).update(data)
+    : (data.createdAt = Date.now(), data.createdBy = session.uid, db.collection('competitors').add(data));
+  p.then(function(){ closeModal('compModal'); toast('Wettbewerber gespeichert.'); })
+   .catch(function(e){ toast('Fehler: '+e.message); });
+}
+function markCompChecked(id){
+  db.collection('competitors').doc(id).update({ lastCheck: Date.now(), updatedAt: Date.now() })
+    .then(function(){ toast('Als heute geprüft markiert.'); })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+function deleteComp(){
+  if(!editCompId) return;
+  if(!confirm('Diesen Wettbewerber löschen?')) return;
+  db.collection('competitors').doc(editCompId).delete()
+    .then(function(){ closeModal('compModal'); toast('Gelöscht.'); })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+
+/* ── Expansionsplanung (Kanban) ── */
+var LEAD_COLS = [
+  { key:'idee',        label:'Idee' },
+  { key:'pruefung',    label:'Prüfung' },
+  { key:'verhandlung', label:'Verhandlung' },
+  { key:'eroeffnet',   label:'Eröffnet' }
+];
+function renderKanban(){
+  var h = '';
+  LEAD_COLS.forEach(function(col, ci){
+    var items = leads.filter(function(l){ return (l.status||'idee') === col.key; });
+    h += '<div class="kcol" data-st="'+col.key+'"><div class="hd"><span class="dot"></span>'+col.label+' <span class="muted" style="font-weight:400">('+items.length+')</span></div>';
+    items.forEach(function(l){
+      var canLeft = ci > 0, canRight = ci < LEAD_COLS.length-1;
+      h += '<div class="kcard'+(l.id===pulseId?' pulse':'')+'">'
+        + '<b>'+esc(l.title)+'</b>'
+        + (l.note ? '<div class="note">'+esc(l.note)+'</div>' : '')
+        + '<div class="acts">'
+        + (canLeft ? '<button class="btn" onclick="moveLead(\''+l.id+'\',-1)" aria-label="Einen Schritt zurück" title="Zurück">'+icon('left','ic-s')+'</button>' : '')
+        + (canRight ? '<button class="btn" onclick="moveLead(\''+l.id+'\',1)" aria-label="Einen Schritt weiter" title="Weiter">'+icon('right','ic-s')+'</button>' : '')
+        + '<button class="btn" onclick="openLeadModal(\''+l.id+'\')" aria-label="Bearbeiten" title="Bearbeiten">'+icon('edit','ic-s')+'</button>'
+        + '</div></div>';
+    });
+    if(!items.length) h += '<div class="muted" style="font-size:12.5px;text-align:center;padding:10px 0">–</div>';
+    h += '</div>';
+  });
+  $('kanban').innerHTML = h;
+  pulseId = null;
+}
+function moveLead(id, dir){
+  var l = leads.find(function(x){ return x.id === id; });
+  if(!l) return;
+  var idx = LEAD_COLS.findIndex(function(c){ return c.key === (l.status||'idee'); });
+  var next = LEAD_COLS[Math.max(0, Math.min(LEAD_COLS.length-1, idx+dir))];
+  pulseId = id;
+  db.collection('expansionLeads').doc(id).update({ status: next.key, updatedAt: Date.now() })
+    .then(function(){ toast('„'+l.title+'" → '+next.label); })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+function openLeadModal(id){
+  editLeadId = id;
+  var l = id ? leads.find(function(x){ return x.id === id; }) : null;
+  $('leadTitle').textContent = l ? 'Standort bearbeiten' : 'Neue Standort-Idee';
+  $('leadDelBtn').style.display = l ? '' : 'none';
+  $('lTitle').value = l ? (l.title||'') : '';
+  $('lStatus').value = l ? (l.status||'idee') : 'idee';
+  $('lNote').value = l ? (l.note||'') : '';
+  openModal('leadModal');
+}
+function saveLead(){
+  var title = $('lTitle').value.trim();
+  if(!title){ toast('Bitte Ort/Objekt eingeben.'); return; }
+  var data = { title: title, status: $('lStatus').value, note: $('lNote').value.trim(), updatedAt: Date.now() };
+  var p = editLeadId
+    ? db.collection('expansionLeads').doc(editLeadId).update(data)
+    : (data.createdAt = Date.now(), data.createdBy = session.uid, db.collection('expansionLeads').add(data));
+  p.then(function(){ closeModal('leadModal'); toast('Standort gespeichert.'); })
+   .catch(function(e){ toast('Fehler: '+e.message); });
+}
+function deleteLead(){
+  if(!editLeadId) return;
+  if(!confirm('Diesen Standort aus der Planung löschen?')) return;
+  db.collection('expansionLeads').doc(editLeadId).delete()
+    .then(function(){ closeModal('leadModal'); toast('Gelöscht.'); })
+    .catch(function(e){ toast('Fehler: '+e.message); });
+}
+
+/* Modals per Escape/Klick auf den Hintergrund schließen */
+document.querySelectorAll('.modal').forEach(function(m){
+  m.addEventListener('click', function(e){ if(e.target === m) m.classList.remove('show'); });
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') document.querySelectorAll('.modal.show').forEach(function(m){ m.classList.remove('show'); });
+});
+</script>
+</body>
+</html>
