@@ -24,12 +24,24 @@ designtes Motiv (1080 × 1350 px, 4:5 — das ideale Facebook-Feed-Format):
 Marketing-App (dunkles Grün, Neon-Akzent, Space Grotesk), jeweils mit Headline,
 CTA-Button „Probetraining kostenlos" und Kontaktzeile im Bild.
 
-> **Hinweis zu den Fotos:** Die Foto-Hintergründe (Post 1–8) sind KI-generiert
-> (Pollinations.ai, derselbe Dienst wie in der Marketing-App) — die abgebildeten
-> Personen existieren nicht. Für Werbeanzeigen okay, aber echte Studio-/Team-Fotos
-> wirken authentischer und sind langfristig die bessere Wahl; die Motive lassen sich
-> jederzeit mit euren eigenen Fotos neu bauen. Post 9 + 10 sind reine
-> Statement-Designs ohne Foto und können direkt so verwendet werden.
+> **Hinweis zu den Fotos:** Die Foto-Hintergründe (Post 1–8) sind echte Fotos von
+> **Pexels** — die [Pexels-Lizenz](https://www.pexels.com/license/) erlaubt kostenlose
+> kommerzielle Nutzung inkl. Bearbeitung und Werbung, ohne Namensnennung. Quellen:
+>
+> | Post | Pexels-Foto |
+> |------|-------------|
+> | 1 | [pexels.com/photo/3775607](https://www.pexels.com/photo/3775607/) |
+> | 2 | [pexels.com/photo/32830368](https://www.pexels.com/photo/32830368/) |
+> | 3 | [pexels.com/photo/3776177](https://www.pexels.com/photo/3776177/) |
+> | 4 | [pexels.com/photo/7879994](https://www.pexels.com/photo/7879994/) |
+> | 5 | [pexels.com/photo/4162591](https://www.pexels.com/photo/4162591/) |
+> | 6 | [pexels.com/photo/6922177](https://www.pexels.com/photo/6922177/) |
+> | 7 | [pexels.com/photo/3353573](https://www.pexels.com/photo/3353573/) |
+> | 8 | [pexels.com/photo/9066925](https://www.pexels.com/photo/9066925/) |
+>
+> Langfristig wirken echte Fotos aus eurem Studio in Hürth noch stärker — die Motive
+> lassen sich jederzeit mit eigenen Fotos im selben Design neu bauen. Post 9 + 10 sind
+> reine Statement-Designs ohne Foto.
 
 ---
 
