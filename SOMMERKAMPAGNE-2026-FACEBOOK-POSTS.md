@@ -41,8 +41,21 @@ CTA-Button „Probetraining kostenlos" und Kontaktzeile im Bild.
 >
 > Bewusst ohne klassische Gym-Szenen (Hantelbereiche, Geräteparks) — die Motive
 > zeigen Sommer, Alltag und betreutes Training. Alle Bilder tragen ein einheitliches
-> Color Grading (warm/grün), Vignette, dezentes Filmkorn und die Neon-Pulslinie als
+> Color Grading (warm/grün), Vignette, dezentes Filmkorn und die Pulslinie als
 > EMS-Erkennungszeichen.
+
+## Franchise-Version (für alle Studios)
+
+Die Bild-Motive tragen das **offizielle Körperformen-Logo** (Quelle: körperformen.com,
+im Ordner als `kf-logo.svg` / `kf-logo-white.svg`) und die **offizielle Markenfarbe**
+(Apfelgrün `#93C02F`). Alle Hürth-spezifischen Angaben (Adresse, Telefon) sind aus den
+Bildern entfernt — sie sind damit für **jedes Körperformen-Studio** einsetzbar.
+
+**Komplett-Dokument zum Weiterleiten:**
+[`Koerperformen-Sommerkampagne-2026-Facebook-Posts.pdf`](Koerperformen-Sommerkampagne-2026-Facebook-Posts.pdf)
+— Deckblatt, pro Post eine Seite (Bild-Motiv + Copy-Paste-Text mit Platzhaltern
+`[Adresse deines Studios]`, `[Telefonnummer]`, `#[deinestadt]`) und Posting-Empfehlung.
+Die Texte unten in dieser Datei sind weiterhin die Hürth-Variante mit euren echten Kontaktdaten.
 >
 > Langfristig wirken echte Fotos aus eurem Studio in Hürth noch stärker — die Motive
 > lassen sich jederzeit mit eigenen Fotos im selben Design neu bauen. Post 9 + 10 sind
