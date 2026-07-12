@@ -30,14 +30,19 @@ CTA-Button „Probetraining kostenlos" und Kontaktzeile im Bild.
 >
 > | Post | Pexels-Foto |
 > |------|-------------|
-> | 1 | [pexels.com/photo/3775607](https://www.pexels.com/photo/3775607/) |
-> | 2 | [pexels.com/photo/32830368](https://www.pexels.com/photo/32830368/) |
-> | 3 | [pexels.com/photo/3776177](https://www.pexels.com/photo/3776177/) |
+> | 1 | [pexels.com/photo/10057634](https://www.pexels.com/photo/10057634/) |
+> | 2 | [pexels.com/photo/4865626](https://www.pexels.com/photo/4865626/) |
+> | 3 | [pexels.com/photo/6648578](https://www.pexels.com/photo/6648578/) |
 > | 4 | [pexels.com/photo/7879994](https://www.pexels.com/photo/7879994/) |
-> | 5 | [pexels.com/photo/4162591](https://www.pexels.com/photo/4162591/) |
-> | 6 | [pexels.com/photo/6922177](https://www.pexels.com/photo/6922177/) |
+> | 5 | [pexels.com/photo/5588481](https://www.pexels.com/photo/5588481/) |
+> | 6 | [pexels.com/photo/8795594](https://www.pexels.com/photo/8795594/) |
 > | 7 | [pexels.com/photo/3353573](https://www.pexels.com/photo/3353573/) |
 > | 8 | [pexels.com/photo/9066925](https://www.pexels.com/photo/9066925/) |
+>
+> Bewusst ohne klassische Gym-Szenen (Hantelbereiche, Geräteparks) — die Motive
+> zeigen Sommer, Alltag und betreutes Training. Alle Bilder tragen ein einheitliches
+> Color Grading (warm/grün), Vignette, dezentes Filmkorn und die Neon-Pulslinie als
+> EMS-Erkennungszeichen.
 >
 > Langfristig wirken echte Fotos aus eurem Studio in Hürth noch stärker — die Motive
 > lassen sich jederzeit mit eigenen Fotos im selben Design neu bauen. Post 9 + 10 sind
