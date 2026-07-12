@@ -16,6 +16,21 @@ ohne Startgebühr-Rabatt — wie abgesprochen).
 > Vorschläge — eigene Studio-/Team-Fotos wirken am stärksten. Personenfotos nur mit
 > Einverständnis.
 
+## Fertige Bild-Motive
+
+Im Ordner [`kampagne-bilder/`](kampagne-bilder/) liegt zu jedem Post ein fertig
+designtes Motiv (1080 × 1350 px, 4:5 — das ideale Facebook-Feed-Format):
+`post01.jpg` bis `post10.jpg`, passend zur Nummer des Posts. Design im Look der
+Marketing-App (dunkles Grün, Neon-Akzent, Space Grotesk), jeweils mit Headline,
+CTA-Button „Probetraining kostenlos" und Kontaktzeile im Bild.
+
+> **Hinweis zu den Fotos:** Die Foto-Hintergründe (Post 1–8) sind KI-generiert
+> (Pollinations.ai, derselbe Dienst wie in der Marketing-App) — die abgebildeten
+> Personen existieren nicht. Für Werbeanzeigen okay, aber echte Studio-/Team-Fotos
+> wirken authentischer und sind langfristig die bessere Wahl; die Motive lassen sich
+> jederzeit mit euren eigenen Fotos neu bauen. Post 9 + 10 sind reine
+> Statement-Designs ohne Foto und können direkt so verwendet werden.
+
 ---
 
 ## Post 1 · Stufe 1/10 — Ganz mild · Sommer-Auftakt
