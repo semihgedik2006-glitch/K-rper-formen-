@@ -51,6 +51,12 @@ im Ordner als `kf-logo.svg` / `kf-logo-white.svg`) und die **offizielle Markenfa
 (Apfelgrün `#93C02F`). Alle Hürth-spezifischen Angaben (Adresse, Telefon) sind aus den
 Bildern entfernt — sie sind damit für **jedes Körperformen-Studio** einsetzbar.
 
+**Zwei Varianten pro Post:** Zu jedem Post liegen jetzt zwei Motive im Ordner —
+die Standard-Version (`postNN.jpg`) und eine Alternativ-Version: für Post 1–8 eine
+schlichte **Nur-Text-Version** im Statement-Stil (`postNN-nur-text.jpg`), für Post 9+10
+eine **Foto-Version** (`postNN-mit-foto.jpg`). So lässt sich der Look pro Post frei
+mischen (z. B. Foto- und Statement-Kacheln im Wechsel für einen abwechslungsreichen Feed).
+
 **Komplett-Dokument zum Weiterleiten:**
 [`Koerperformen-Sommerkampagne-2026-Facebook-Posts.pdf`](Koerperformen-Sommerkampagne-2026-Facebook-Posts.pdf)
 — Deckblatt, pro Post eine Seite (Bild-Motiv + Copy-Paste-Text mit Platzhaltern
