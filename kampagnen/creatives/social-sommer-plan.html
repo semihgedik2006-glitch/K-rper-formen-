@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    width:1080px; height:1350px; overflow:hidden; position:relative;
+    font-family:'Liberation Sans', Arial, sans-serif;
+    background:
+      radial-gradient(ellipse 800px 560px at 50% -8%, rgba(255,233,168,.35), transparent 62%),
+      linear-gradient(170deg, #62804a 0%, #47623a 50%, #34482b 100%);
+    color:#f4f1e6;
+  }
+  .sun { position:absolute; top:-190px; left:50%; transform:translateX(-50%); width:640px; height:640px; opacity:.4; }
+  .grain { position:absolute; inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:7px 7px; }
+
+  .topbar { display:flex; align-items:center; justify-content:center; gap:16px; padding-top:64px; position:relative; }
+  .logo .mark { width:46px; height:46px; border-radius:12px; background:#f4f1e6; display:flex; align-items:center; justify-content:center; }
+  .logo { display:flex; align-items:center; gap:16px; }
+  .logo .mark span { color:#3d5230; font-weight:bold; font-size:26px; }
+  .logo .name { font-size:23px; letter-spacing:5px; font-weight:bold; }
+
+  h1 { text-align:center; margin-top:52px; font-size:88px; letter-spacing:-1px; line-height:1; position:relative; }
+  h1 small { display:block; font-size:26px; letter-spacing:10px; font-weight:bold; color:#ffe9a8; margin-bottom:18px; }
+
+  .card { position:absolute; left:70px; right:70px; top:360px; background:#f4f1e6; color:#24272b;
+    border-radius:34px; padding:56px 54px 50px; transform:rotate(-1.2deg);
+    box-shadow:0 30px 60px rgba(18,26,13,.5); }
+  .card .tape { position:absolute; top:-24px; left:50%; transform:translateX(-50%) rotate(2deg);
+    width:220px; height:48px; background:rgba(255,233,168,.9); border-radius:6px;
+    box-shadow:0 4px 10px rgba(0,0,0,.15); }
+  .step { display:flex; align-items:flex-start; gap:30px; padding:30px 0; }
+  .step + .step { border-top:3px dashed #cfd3bd; }
+  .icon { width:88px; height:88px; border-radius:24px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .i1 { background:#3d5230; } .i2 { background:#ffe9a8; } .i3 { background:#24272b; }
+  .step h2 { font-size:36px; margin-bottom:8px; letter-spacing:-.5px; }
+  .step p { font-size:23px; line-height:1.4; color:#5a614e; }
+  .step .n { font-size:17px; font-weight:bold; letter-spacing:4px; color:#8b9371; margin-bottom:4px; }
+
+  .sticker { position:absolute; top:-52px; right:-28px; width:200px; height:200px; transform:rotate(10deg); }
+
+  .footer { position:absolute; left:70px; right:70px; bottom:64px; text-align:center; }
+  .bio { display:inline-flex; align-items:center; gap:16px; background:#24272b; border-radius:999px;
+    padding:26px 46px; font-size:31px; font-weight:bold; color:#f4f1e6;
+    box-shadow:0 16px 34px rgba(18,26,13,.5); }
+  .bio em { font-style:normal; color:#ffe9a8; }
+  .note { margin-top:22px; font-size:22px; color:#e6ead0; }
+  .note b { color:#ffe9a8; }
+</style>
+</head>
+<body>
+  <svg class="sun" viewBox="0 0 100 100">
+    <g fill="#ffe9a8">
+      <circle cx="50" cy="50" r="14"/>
+      <g id="r"><rect x="48.6" y="0" width="2.8" height="24" rx="1.4"/></g>
+      <use href="#r" transform="rotate(30 50 50)"/><use href="#r" transform="rotate(60 50 50)"/>
+      <use href="#r" transform="rotate(90 50 50)"/><use href="#r" transform="rotate(120 50 50)"/>
+      <use href="#r" transform="rotate(150 50 50)"/><use href="#r" transform="rotate(180 50 50)"/>
+      <use href="#r" transform="rotate(210 50 50)"/><use href="#r" transform="rotate(240 50 50)"/>
+      <use href="#r" transform="rotate(270 50 50)"/><use href="#r" transform="rotate(300 50 50)"/>
+      <use href="#r" transform="rotate(330 50 50)"/>
+    </g>
+  </svg>
+  <div class="grain"></div>
+
+  <div class="topbar">
+    <div class="logo">
+      <div class="mark"><span>K</span></div>
+      <div class="name">KÖRPERFORMEN · KÖLN</div>
+    </div>
+  </div>
+
+  <h1><small>SOMMERAKTION</small>Dein Sommer-Plan</h1>
+
+  <div class="card">
+    <div class="tape"></div>
+    <div class="sticker">
+      <svg viewBox="0 0 200 200">
+        <path fill="#ffe9a8" stroke="#24272b" stroke-width="5" d="M100 6 L112 30 L138 17 L142 45 L170 41 L162 68 L190 75 L171 96 L192 116 L165 126 L177 152 L149 151 L151 179 L125 168 L114 194 L96 172 L75 190 L69 163 L41 171 L49 144 L21 141 L39 119 L15 101 L42 90 L27 65 L55 64 L51 36 L78 46 L86 19 Z"/>
+        <text x="100" y="90" text-anchor="middle" font-family="Liberation Sans" font-weight="bold" font-size="46" fill="#24272b">-30%</text>
+        <text x="100" y="116" text-anchor="middle" font-family="Liberation Sans" font-weight="bold" font-size="14" fill="#24272b">GGÜ. MONATSBEITRAG</text>
+        <text x="100" y="136" text-anchor="middle" font-family="Liberation Sans" font-weight="bold" font-size="14" fill="#24272b">NUR IN DEN FERIEN</text>
+      </svg>
+    </div>
+
+    <div class="step">
+      <div class="icon i1">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#f4f1e6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9.5 17 4 11.5"/></svg>
+      </div>
+      <div>
+        <div class="n">SCHRITT 1 · HEUTE</div>
+        <h2>Gutschein sichern</h2>
+        <p>4 Wochen EMS zum Testen – online gebucht in 2 Minuten. Fertig.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="icon i2">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#24272b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7.5" width="16" height="13" rx="2.5"/><path d="M9 7.5V5.2A1.7 1.7 0 0 1 10.7 3.5h2.6A1.7 1.7 0 0 1 15 5.2v2.3M9 7.5v13M15 7.5v13"/></svg>
+      </div>
+      <div>
+        <div class="n">SCHRITT 2 · FERIEN</div>
+        <h2>Ab in den Urlaub</h2>
+        <p>Kein Trainingsdruck, kein schlechtes Gewissen. Dein Start wartet auf dich.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="icon i3">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#ffe9a8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.1 2.1 0 0 0-2.9-.1z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.9 7.4-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.5-3 2-4c1.6-1.1 5 0 5 0"/><path d="M12 15v5s3-.5 4-2c1.1-1.6 0-5 0-5"/></svg>
+      </div>
+      <div>
+        <div class="n">SCHRITT 3 · DANACH</div>
+        <h2>Durchstarten</h2>
+        <p>20 Minuten pro Woche, max. 2 Kunden pro Trainer – in deinem Studio in Köln.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="bio">Link in Bio
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffe9a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      <em>Gutschein sichern</em>
+    </div>
+    <div class="note">Nur solange die Sommerferien laufen – <b>danach ist er weg.</b></div>
+  </div>
+</body>
+</html>

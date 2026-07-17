@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    width:1440px; height:810px; overflow:hidden; position:relative;
+    font-family:'Liberation Sans', Arial, sans-serif;
+    background:linear-gradient(115deg, #24272b 0%, #24272b 58%, #3d5230 58.2%, #47623a 100%);
+    color:#f4f1e6;
+  }
+  .rays { position:absolute; top:-260px; right:-260px; width:760px; height:760px; opacity:.22; }
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:28px 80px 20px; }
+  .logo { display:flex; align-items:center; gap:14px; }
+  .logo .mark { width:42px; height:42px; border-radius:11px; background:#8fbc6b; display:flex; align-items:center; justify-content:center; }
+  .logo .mark span { color:#1d2419; font-weight:bold; font-size:24px; }
+  .logo .name { font-size:20px; letter-spacing:4px; font-weight:bold; }
+  .navlinks { display:flex; gap:36px; font-size:17px; color:#c9cdbb; letter-spacing:1px; }
+
+  .wrap { display:flex; padding:20px 80px 0; gap:60px; align-items:flex-start; position:relative; }
+  .left { width:700px; }
+  .kick { display:inline-flex; align-items:center; gap:10px; border:2px solid #8fbc6b; color:#c9dfb4;
+    border-radius:999px; padding:9px 20px; font-size:15px; letter-spacing:3px; font-weight:bold; margin-bottom:28px; }
+  .kick .dot { width:10px; height:10px; border-radius:50%; background:#ffe9a8; }
+  h1 { font-size:64px; line-height:1.05; letter-spacing:-1.5px; }
+  h1 em { font-style:normal; color:#8fbc6b; }
+  .sub { margin-top:24px; font-size:22px; line-height:1.55; color:#cdd2c0; max-width:640px; }
+  .sub b { color:#f4f1e6; }
+  .cta-row { display:flex; align-items:center; gap:26px; margin-top:30px; }
+  .btn { background:#8fbc6b; color:#1d2419; font-weight:bold; font-size:24px; padding:20px 38px;
+    border-radius:14px; display:flex; align-items:center; gap:14px; white-space:nowrap;
+    box-shadow:0 14px 30px rgba(0,0,0,.4); }
+  .scar { font-size:17px; line-height:1.45; color:#c9cdbb; }
+  .scar b { color:#ffe9a8; }
+  .trust { display:flex; gap:14px; margin-top:28px; }
+  .tchip { display:flex; align-items:center; gap:10px; background:rgba(244,241,230,.07); white-space:nowrap;
+    border:1.5px solid rgba(244,241,230,.22); border-radius:12px; padding:12px 18px; font-size:16px; font-weight:bold; color:#e3e6d6; }
+
+  /* Voucher rechts */
+  .right { flex:1; position:relative; padding-top:26px; }
+  .voucher { background:#f4f1e6; color:#24272b; border-radius:22px; padding:34px 36px; transform:rotate(2.4deg);
+    box-shadow:0 26px 50px rgba(10,14,8,.55); position:relative; }
+  .voucher .vt { font-size:15px; letter-spacing:5px; color:#5d7a45; font-weight:bold; }
+  .voucher h3 { font-size:34px; margin:10px 0 16px; letter-spacing:-.5px; }
+  .vrow { display:flex; justify-content:space-between; font-size:18px; padding:11px 0; border-top:2px dashed #cfd3bd; }
+  .vrow b { color:#3d5230; }
+  .voucher .stamp { position:absolute; top:-38px; right:-30px; width:150px; height:150px; transform:rotate(11deg); }
+  .valid { margin-top:16px; background:#24272b; color:#ffe9a8; border-radius:12px; text-align:center;
+    padding:14px; font-size:17px; font-weight:bold; letter-spacing:2px; }
+</style>
+</head>
+<body>
+  <svg class="rays" viewBox="0 0 100 100">
+    <g fill="#f2edd8">
+      <circle cx="50" cy="50" r="13"/>
+      <g id="r"><rect x="48.7" y="2" width="2.6" height="22" rx="1.3"/></g>
+      <use href="#r" transform="rotate(30 50 50)"/><use href="#r" transform="rotate(60 50 50)"/>
+      <use href="#r" transform="rotate(90 50 50)"/><use href="#r" transform="rotate(120 50 50)"/>
+      <use href="#r" transform="rotate(150 50 50)"/><use href="#r" transform="rotate(180 50 50)"/>
+      <use href="#r" transform="rotate(210 50 50)"/><use href="#r" transform="rotate(240 50 50)"/>
+      <use href="#r" transform="rotate(270 50 50)"/><use href="#r" transform="rotate(300 50 50)"/>
+      <use href="#r" transform="rotate(330 50 50)"/>
+    </g>
+  </svg>
+
+  <div class="nav">
+    <div class="logo">
+      <div class="mark"><span>K</span></div>
+      <div class="name">KÖRPERFORMEN</div>
+    </div>
+    <div class="navlinks"><span>EMS-Training</span><span>Standorte Köln</span><span>Sommeraktion</span></div>
+  </div>
+
+  <div class="wrap">
+    <div class="left">
+      <div class="kick"><span class="dot"></span>SOMMERAKTION · AUSGEWÄHLTE STUDIOS</div>
+      <h1>Erst Urlaub.<br>Dann <em>durchstarten.</em><br>Dein Gutschein wartet.</h1>
+      <p class="sub">Sichere dir jetzt in 2 Minuten deinen <b>4-Wochen-Gutschein</b> für dein Körperformen-Studio in Köln – und starte dein EMS-Training entspannt nach den Ferien. Zum Aktionsstart <b>rund 30&nbsp;% günstiger</b> als der reguläre Monatsbeitrag.</p>
+      <div class="cta-row">
+        <div class="btn">Jetzt Gutschein sichern
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1d2419" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </div>
+        <div class="scar">Unverbindlich testen.<br><b>Nur solange die Sommerferien laufen.</b></div>
+      </div>
+      <div class="trust">
+        <div class="tchip">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8fbc6b" stroke-width="3" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3.5 2"/></svg>
+          20 Min / Woche
+        </div>
+        <div class="tchip">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8fbc6b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.4"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17.5" cy="8.5" r="2.6"/><path d="M15.5 14.6c.7-.3 1.4-.4 2-.4 2.4 0 4 1.4 4.5 4"/></svg>
+          Max. 2 : 1 Betreuung
+        </div>
+        <div class="tchip">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8fbc6b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+          Mehrere Studios in Köln
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="voucher">
+        <div class="stamp">
+          <svg viewBox="0 0 200 200">
+            <path fill="#ffe9a8" stroke="#24272b" stroke-width="5" d="M100 6 L112 30 L138 17 L142 45 L170 41 L162 68 L190 75 L171 96 L192 116 L165 126 L177 152 L149 151 L151 179 L125 168 L114 194 L96 172 L75 190 L69 163 L41 171 L49 144 L21 141 L39 119 L15 101 L42 90 L27 65 L55 64 L51 36 L78 46 L86 19 Z"/>
+            <text x="100" y="98" text-anchor="middle" font-family="Liberation Sans" font-weight="bold" font-size="50" fill="#24272b">-30%</text>
+            <text x="100" y="126" text-anchor="middle" font-family="Liberation Sans" font-weight="bold" font-size="16" fill="#24272b">ZUM AKTIONSSTART</text>
+          </svg>
+        </div>
+        <div class="vt">DEIN SOMMER-DEAL</div>
+        <h3>4-Wochen-Gutschein</h3>
+        <div class="vrow"><span>Training</span><b>EMS · 20 Min / Woche</b></div>
+        <div class="vrow"><span>Betreuung</span><b>Max. 2 Kunden / Trainer</b></div>
+        <div class="vrow"><span>Start</span><b>Nach deinem Urlaub</b></div>
+        <div class="vrow"><span>Buchung</span><b>Online in 2 Minuten</b></div>
+        <div class="valid">GÜLTIG: SOLANGE DIE FERIEN LAUFEN</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

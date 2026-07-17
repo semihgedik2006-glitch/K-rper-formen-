@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    width:1080px; height:1080px; overflow:hidden; position:relative;
+    font-family:'Liberation Sans', Arial, sans-serif;
+    background:
+      radial-gradient(ellipse 900px 600px at 85% -10%, rgba(214,226,168,.55), transparent 60%),
+      linear-gradient(160deg, #5d7a45 0%, #466033 45%, #35492a 100%);
+    color:#f4f1e6;
+  }
+  /* Sonnenstrahlen */
+  .rays { position:absolute; top:-320px; right:-320px; width:900px; height:900px; opacity:.28; }
+  .grain { position:absolute; inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:7px 7px; pointer-events:none; }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:52px 64px 0; }
+  .logo { display:flex; align-items:center; gap:16px; }
+  .logo .mark { width:46px; height:46px; border-radius:12px; background:#f4f1e6;
+    display:flex; align-items:center; justify-content:center; }
+  .logo .mark span { color:#3d5230; font-weight:bold; font-size:26px; }
+  .logo .name { font-size:24px; letter-spacing:5px; font-weight:bold; }
+  .logo .name small { display:block; font-size:14px; letter-spacing:6px; color:#d6e2a8; font-weight:normal; margin-top:3px;}
+  .pill { border:2px solid rgba(244,241,230,.55); border-radius:999px; padding:10px 22px;
+    font-size:17px; letter-spacing:3px; color:#eef0da; }
+
+  h1 { padding:56px 64px 0; font-size:78px; line-height:1.06; letter-spacing:-1px; max-width:900px; }
+  h1 .thin { display:block; font-size:30px; letter-spacing:8px; font-weight:normal; color:#d6e2a8; margin-bottom:16px; }
+  h1 em { font-style:normal; color:#ffe9a8; }
+
+  /* Ticket */
+  .ticket-wrap { position:absolute; left:64px; right:64px; top:460px; transform:rotate(-1.6deg); filter:drop-shadow(0 26px 40px rgba(20,28,15,.5)); }
+  .benefits { position:absolute; left:64px; right:64px; top:812px; display:flex; gap:16px; justify-content:center; }
+  .benefit { display:flex; align-items:center; gap:10px; border:2px solid rgba(244,241,230,.4);
+    border-radius:999px; padding:12px 24px; font-size:20px; font-weight:bold; color:#eef0da; }
+  .benefit .dot { width:9px; height:9px; border-radius:50%; background:#ffe9a8; }
+  .ticket { display:flex; border-radius:26px; overflow:hidden; }
+  .t-main { flex:1; background:#f4f1e6; color:#24272b; padding:38px 44px 34px; position:relative; }
+  .t-stub { width:250px; background:#24272b; color:#f4f1e6; padding:34px 26px; position:relative;
+    border-left:4px dashed rgba(36,39,43,.0); }
+  /* Perforation */
+  .perf { width:0; border-left:5px dashed #8fa06c; position:relative; background:#f4f1e6; }
+  .t-route { display:flex; align-items:center; gap:26px; margin:10px 0 26px; }
+  .t-route .city { font-size:44px; font-weight:bold; letter-spacing:2px; }
+  .t-route .sub { font-size:16px; color:#6c7360; letter-spacing:3px; margin-top:4px; }
+  .t-route .plane { flex:1; display:flex; align-items:center; gap:8px; }
+  .t-route .line { flex:1; border-top:3px dashed #9aa877; }
+  .t-label { font-size:15px; letter-spacing:4px; color:#7c8468; margin-bottom:6px; }
+  .t-grid { display:flex; gap:40px; margin-top:8px; }
+  .t-grid b { font-size:22px; letter-spacing:.5px; }
+  .t-head { display:flex; justify-content:space-between; align-items:center; }
+  .t-head .tt { font-size:19px; letter-spacing:6px; font-weight:bold; color:#3d5230; }
+  .t-head .no { font-size:16px; letter-spacing:3px; color:#7c8468; }
+  .stub-label { font-size:13px; letter-spacing:4px; color:#a9b18f; margin-bottom:6px; }
+  .stub-val { font-size:21px; font-weight:bold; margin-bottom:18px; }
+  .barcode { display:flex; align-items:flex-end; gap:3px; height:64px; margin-top:8px; }
+  .barcode i { background:#f4f1e6; width:4px; display:block; }
+  /* Badge */
+  .badge { position:absolute; top:-128px; right:-38px; width:185px; height:185px; transform:rotate(9deg); }
+  .badge svg { width:100%; height:100%; }
+
+  .cta { position:absolute; left:64px; right:64px; bottom:56px; display:flex; align-items:center; gap:28px; }
+  .btn { background:#ffe9a8; color:#24272b; font-weight:bold; font-size:30px; letter-spacing:1px;
+    padding:26px 46px; border-radius:18px; display:flex; align-items:center; gap:16px;
+    box-shadow:0 14px 30px rgba(20,28,15,.45); white-space:nowrap; }
+  .scar { font-size:22px; line-height:1.35; color:#e6ead0; }
+  .scar b { color:#ffe9a8; }
+</style>
+</head>
+<body>
+  <svg class="rays" viewBox="0 0 100 100">
+    <g fill="#f2edd8">
+      <circle cx="50" cy="50" r="13"/>
+      <g id="r"><rect x="48.7" y="2" width="2.6" height="22" rx="1.3"/></g>
+      <use href="#r" transform="rotate(30 50 50)"/><use href="#r" transform="rotate(60 50 50)"/>
+      <use href="#r" transform="rotate(90 50 50)"/><use href="#r" transform="rotate(120 50 50)"/>
+      <use href="#r" transform="rotate(150 50 50)"/><use href="#r" transform="rotate(180 50 50)"/>
+      <use href="#r" transform="rotate(210 50 50)"/><use href="#r" transform="rotate(240 50 50)"/>
+      <use href="#r" transform="rotate(270 50 50)"/><use href="#r" transform="rotate(300 50 50)"/>
+      <use href="#r" transform="rotate(330 50 50)"/>
+    </g>
+  </svg>
+  <div class="grain"></div>
+
+  <div class="topbar">
+    <div class="logo">
+      <div class="mark"><span>K</span></div>
+      <div class="name">KÖRPERFORMEN<small>EMS-TRAINING · KÖLN</small></div>
+    </div>
+    <div class="pill">SOMMERAKTION</div>
+  </div>
+
+  <h1>
+    <span class="thin">JETZT GUTSCHEIN SICHERN</span>
+    Nach dem Urlaub <em>durchstarten.</em>
+  </h1>
+
+  <div class="ticket-wrap">
+    <div class="ticket">
+      <div class="t-main">
+        <div class="t-head">
+          <div class="tt">4-WOCHEN-GUTSCHEIN</div>
+          <div class="no">BOARDING PASS · KF-2026</div>
+        </div>
+        <div class="t-route">
+          <div>
+            <div class="city">LIEGE</div>
+            <div class="sub">STRANDLIEGE</div>
+          </div>
+          <div class="plane">
+            <div class="line"></div>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="#3d5230">
+              <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+            </svg>
+            <div class="line"></div>
+          </div>
+          <div style="text-align:right">
+            <div class="city">FORM</div>
+            <div class="sub">BESTFORM</div>
+          </div>
+        </div>
+        <div class="t-grid">
+          <div><div class="t-label">ABFLUG</div><b>Nach deinen Ferien</b></div>
+          <div><div class="t-label">GATE</div><b>Dein Studio in Köln</b></div>
+          <div><div class="t-label">CLASS</div><b>Max. 2 : 1 Betreuung</b></div>
+        </div>
+      </div>
+      <div class="perf"></div>
+      <div class="t-stub">
+        <div class="stub-label">TRAINING</div>
+        <div class="stub-val">20 Min / Woche</div>
+        <div class="stub-label">TESTEN</div>
+        <div class="stub-val">Unverbindlich</div>
+        <div class="barcode">
+          <i style="height:100%"></i><i style="height:60%"></i><i style="height:90%;width:7px"></i>
+          <i style="height:100%"></i><i style="height:50%"></i><i style="height:80%"></i>
+          <i style="height:100%;width:8px"></i><i style="height:65%"></i><i style="height:95%"></i>
+          <i style="height:55%;width:6px"></i><i style="height:100%"></i><i style="height:70%"></i>
+          <i style="height:90%"></i><i style="height:100%;width:7px"></i><i style="height:60%"></i>
+          <i style="height:85%"></i><i style="height:100%"></i><i style="height:50%;width:6px"></i>
+          <i style="height:95%"></i><i style="height:75%"></i>
+        </div>
+      </div>
+    </div>
+    <div class="badge">
+      <svg viewBox="0 0 200 200">
+        <g>
+          <path id="star" fill="#ffe9a8" d="M100 4 L113 30 L140 16 L143 46 L173 41 L164 70 L194 76 L174 99 L196 120 L167 130 L180 157 L150 156 L152 186 L124 174 L112 202 L94 178 L72 196 L66 167 L37 176 L45 147 L15 143 L34 120 L10 101 L38 89 L22 63 L52 62 L48 32 L76 42 L84 14 Z" transform="scale(.96) translate(4 -2)"/>
+        </g>
+        <text x="100" y="88" text-anchor="middle" font-family="Liberation Sans" font-weight="bold" font-size="52" fill="#24272b">-30%</text>
+        <text x="100" y="116" text-anchor="middle" font-family="Liberation Sans" font-weight="bold" font-size="15" fill="#24272b">GGÜ. REGULÄREM</text>
+        <text x="100" y="136" text-anchor="middle" font-family="Liberation Sans" font-weight="bold" font-size="15" fill="#24272b">MONATSBEITRAG</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="benefits">
+    <div class="benefit"><span class="dot"></span>Unverbindlich testen</div>
+    <div class="benefit"><span class="dot"></span>EMS · 20 Min / Woche</div>
+    <div class="benefit"><span class="dot"></span>Ausgewählte Studios</div>
+  </div>
+
+  <div class="cta">
+    <div class="btn">Gutschein sichern
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#24272b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </div>
+    <div class="scar">Direkt online buchen – in 2 Minuten.<br><b>Nur solange die Sommerferien laufen.</b></div>
+  </div>
+</body>
+</html>
