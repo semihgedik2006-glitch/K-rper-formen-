@@ -8,57 +8,66 @@
     width:1080px; height:1080px; overflow:hidden; position:relative;
     font-family:'Liberation Sans', Arial, sans-serif;
     background:
-      radial-gradient(ellipse 700px 500px at 15% 110%, rgba(93,122,69,.45), transparent 65%),
-      linear-gradient(150deg, #2b2f30 0%, #24272b 60%, #1d2023 100%);
-    color:#f4f1e6;
+      radial-gradient(ellipse 700px 480px at 12% -8%, rgba(247,217,139,.16), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 88% 108%, rgba(147,192,47,.22), transparent 65%),
+      linear-gradient(150deg, #2B2F30 0%, #24272B 60%, #1D2023 100%);
+    color:#F4F1E6;
   }
-  .grid-bg { position:absolute; inset:0; opacity:.06;
-    background-image:linear-gradient(#f4f1e6 1px, transparent 1px), linear-gradient(90deg, #f4f1e6 1px, transparent 1px);
+  .grid-bg { position:absolute; inset:0; opacity:.05;
+    background-image:linear-gradient(#F4F1E6 1px, transparent 1px), linear-gradient(90deg, #F4F1E6 1px, transparent 1px);
     background-size:90px 90px; }
 
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:52px 64px 0; position:relative; }
-  .logo { display:flex; align-items:center; gap:16px; }
-  .logo .mark { width:46px; height:46px; border-radius:12px; background:#8fbc6b;
-    display:flex; align-items:center; justify-content:center; }
-  .logo .mark span { color:#1d2419; font-weight:bold; font-size:26px; }
-  .logo .name { font-size:24px; letter-spacing:5px; font-weight:bold; }
-  .logo .name small { display:block; font-size:14px; letter-spacing:6px; color:#a9c78e; font-weight:normal; margin-top:3px;}
-  .pill { border:2px solid #8fbc6b; color:#c9dfb4; border-radius:999px; padding:10px 22px; font-size:17px; letter-spacing:3px; }
+  .topbar img { height:50px; }
+  .pill { border:3px solid #93C02F; color:#C9DFA0; border-radius:999px; padding:10px 24px; font-size:18px; letter-spacing:3px; font-weight:bold; }
 
-  .hero { position:absolute; top:150px; left:0; right:0; display:flex; padding:0 64px; align-items:center; gap:40px;}
-  .dial { position:relative; width:470px; height:470px; flex-shrink:0; }
+  .hero { position:absolute; top:170px; left:0; right:0; display:flex; padding:0 64px; align-items:center; gap:44px; }
+  .dial { position:relative; width:430px; height:430px; flex-shrink:0; }
   .dial svg { width:100%; height:100%; }
   .dial .num { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-  .dial .num b { font-size:190px; line-height:.9; letter-spacing:-8px; color:#f4f1e6; }
-  .dial .num span { font-size:26px; letter-spacing:9px; color:#a9c78e; margin-top:10px; font-weight:bold; }
+  .dial .num b { font-size:172px; line-height:.9; letter-spacing:-8px; color:#F4F1E6; }
+  .dial .num span { font-size:24px; letter-spacing:9px; color:#A9C78E; margin-top:10px; font-weight:bold; }
 
-  .copy h1 { font-size:66px; line-height:1.06; letter-spacing:-1px; }
-  .copy h1 em { font-style:normal; color:#8fbc6b; }
-  .chips { display:flex; flex-wrap:wrap; gap:14px; margin-top:34px; }
-  .chip { display:flex; align-items:center; gap:12px; background:rgba(143,188,107,.12);
-    border:2px solid rgba(143,188,107,.5); border-radius:999px; padding:14px 24px; font-size:22px; font-weight:bold; color:#dfe9cf; }
-  .chip svg { flex-shrink:0; }
+  .copy h1 { font-size:62px; line-height:1.06; letter-spacing:-1px; }
+  .copy h1 em { font-style:normal; color:#93C02F; }
+  .chips { display:flex; flex-wrap:wrap; gap:13px; margin-top:30px; }
+  .chip { display:flex; align-items:center; gap:12px; background:rgba(147,192,47,.1);
+    border:2px solid rgba(147,192,47,.45); border-radius:999px; padding:13px 22px; font-size:21px; font-weight:bold; color:#DFE9CF; }
 
-  .offer { position:absolute; left:64px; right:64px; bottom:56px; background:#f4f1e6; color:#24272b;
+  /* Journey: Urlaub -> Training */
+  .journey { position:absolute; left:64px; right:64px; bottom:300px; background:rgba(244,241,230,.06);
+    border:2px solid rgba(244,241,230,.14); border-radius:20px; padding:22px 34px;
+    display:flex; align-items:center; }
+  .stage { display:flex; align-items:center; gap:14px; }
+  .stage .ic { width:58px; height:58px; border-radius:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .s1 .ic { background:#F7D98B; } .s2 .ic { background:#FFE9A8; } .s3 .ic { background:#93C02F; }
+  .stage .lbl b { display:block; font-size:20px; }
+  .stage .lbl span { font-size:15px; letter-spacing:2px; color:#B9BFA9; font-weight:bold; }
+  .arrow { flex:1; height:5px; margin:0 18px; border-radius:3px; position:relative; }
+  .a1 { background:linear-gradient(90deg, #F7D98B, #FFE9A8); }
+  .a2 { background:linear-gradient(90deg, #FFE9A8, #93C02F); }
+  .arrow:after { content:''; position:absolute; right:-2px; top:-6px; border-left:14px solid currentColor;
+    border-top:8px solid transparent; border-bottom:8px solid transparent; }
+  .a1:after { color:#FFE9A8; } .a2:after { color:#93C02F; }
+
+  .offer { position:absolute; left:64px; right:64px; bottom:56px; background:#F4F1E6; color:#24272B;
     border-radius:24px; padding:34px 40px; display:flex; align-items:center; gap:32px;
     box-shadow:0 20px 44px rgba(0,0,0,.45); }
   .offer .txt { flex:1; }
-  .offer .kick { font-size:16px; letter-spacing:5px; color:#5d7a45; font-weight:bold; margin-bottom:8px; }
+  .offer .kick { font-size:16px; letter-spacing:5px; color:#5d7f14; font-weight:bold; margin-bottom:8px; }
   .offer .main { font-size:29px; line-height:1.25; font-weight:bold; }
-  .offer .main em { font-style:normal; background:#ffe9a8; padding:2px 8px; border-radius:8px; }
-  .offer .sub { font-size:19px; color:#6c7360; margin-top:8px; }
-  .btn { background:#3d5230; color:#f4f1e6; font-weight:bold; font-size:27px; padding:24px 38px;
-    border-radius:16px; display:flex; align-items:center; gap:14px; white-space:nowrap; }
+  .offer .main em { font-style:normal; background:#FFE9A8; padding:2px 8px; border-radius:8px; }
+  .offer .sub { font-size:19px; color:#6C7360; margin-top:8px; }
+  .btn { background:#93C02F; color:#1C2410; font-weight:bold; font-size:27px; padding:24px 38px;
+    border-radius:16px; display:flex; align-items:center; gap:14px; white-space:nowrap;
+    box-shadow:0 10px 22px rgba(0,0,0,.2); }
 </style>
 </head>
 <body>
   <div class="grid-bg"></div>
 
   <div class="topbar">
-    <div class="logo">
-      <div class="mark"><span>K</span></div>
-      <div class="name">KÖRPERFORMEN<small>EMS-TRAINING · KÖLN</small></div>
-    </div>
+    <img src="kf-logo-negativ.svg" alt="Körperformen">
     <div class="pill">SOMMERAKTION</div>
   </div>
 
@@ -66,14 +75,13 @@
     <div class="dial">
       <svg viewBox="0 0 200 200">
         <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(244,241,230,.12)" stroke-width="12"/>
-        <!-- 20/60 = 120° Bogen -->
-        <circle cx="100" cy="100" r="88" fill="none" stroke="#8fbc6b" stroke-width="12" stroke-linecap="round"
+        <circle cx="100" cy="100" r="88" fill="none" stroke="#93C02F" stroke-width="12" stroke-linecap="round"
           stroke-dasharray="184.3 368.6" transform="rotate(-90 100 100)"/>
         <g stroke="rgba(244,241,230,.35)" stroke-width="3">
           <line x1="100" y1="6" x2="100" y2="20"/>
-          <line x1="100" y1="180" x2="100" y2="194" transform="rotate(90 100 100)"/>
           <line x1="100" y1="6" x2="100" y2="16" transform="rotate(30 100 100)"/>
           <line x1="100" y1="6" x2="100" y2="16" transform="rotate(60 100 100)"/>
+          <line x1="100" y1="6" x2="100" y2="16" transform="rotate(90 100 100)"/>
           <line x1="100" y1="6" x2="100" y2="16" transform="rotate(120 100 100)"/>
           <line x1="100" y1="6" x2="100" y2="16" transform="rotate(150 100 100)"/>
           <line x1="100" y1="6" x2="100" y2="16" transform="rotate(180 100 100)"/>
@@ -83,7 +91,7 @@
           <line x1="100" y1="6" x2="100" y2="16" transform="rotate(300 100 100)"/>
           <line x1="100" y1="6" x2="100" y2="16" transform="rotate(330 100 100)"/>
         </g>
-        <circle cx="176.2" cy="144" r="9" fill="#ffe9a8"/>
+        <circle cx="176.2" cy="144" r="9" fill="#FFE9A8"/>
       </svg>
       <div class="num"><b>20</b><span>MINUTEN</span></div>
     </div>
@@ -91,22 +99,41 @@
       <h1>Mehr braucht dein Training <em>nicht.</em></h1>
       <div class="chips">
         <div class="chip">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8fbc6b" stroke-width="3" stroke-linecap="round"><path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 20V6A1.5 1.5 0 0 1 5 4.5z"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#93C02F" stroke-width="3" stroke-linecap="round"><path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 20V6A1.5 1.5 0 0 1 5 4.5z"/></svg>
           1 Termin pro Woche
         </div>
         <div class="chip">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8fbc6b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.4"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17.5" cy="8.5" r="2.6"/><path d="M15.5 14.6c.7-.3 1.4-.4 2-.4 2.4 0 4 1.4 4.5 4"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#93C02F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.4"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17.5" cy="8.5" r="2.6"/><path d="M15.5 14.6c.7-.3 1.4-.4 2-.4 2.4 0 4 1.4 4.5 4"/></svg>
           Max. 2 Kunden pro Trainer
         </div>
         <div class="chip">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8fbc6b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
-          Direkt bei dir in Köln
-        </div>
-        <div class="chip">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8fbc6b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#93C02F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>
           EMS: effektiv statt endlos
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="journey">
+    <div class="stage s1">
+      <div class="ic">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3D4543" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg>
+      </div>
+      <div class="lbl"><span>HEUTE</span><b>Gutschein sichern</b></div>
+    </div>
+    <div class="arrow a1"></div>
+    <div class="stage s2">
+      <div class="ic">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3D4543" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7.5" width="16" height="13" rx="2.5"/><path d="M9 7.5V5.2A1.7 1.7 0 0 1 10.7 3.5h2.6A1.7 1.7 0 0 1 15 5.2v2.3M9 7.5v13M15 7.5v13"/></svg>
+      </div>
+      <div class="lbl"><span>FERIEN</span><b>Urlaub genießen</b></div>
+    </div>
+    <div class="arrow a2"></div>
+    <div class="stage s3">
+      <div class="ic">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1C2410" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>
+      </div>
+      <div class="lbl"><span>DANACH</span><b>Durchstarten</b></div>
     </div>
   </div>
 
@@ -114,10 +141,10 @@
     <div class="txt">
       <div class="kick">SOMMERAKTION · NUR IN DER FERIENZEIT</div>
       <div class="main">4 Wochen testen – <em>rund 30 % unter</em> dem regulären Monatsbeitrag.</div>
-      <div class="sub">Jetzt sichern, frisch erholt nach dem Urlaub starten. In ausgewählten Studios.</div>
+      <div class="sub">Jetzt sichern, frisch erholt nach dem Urlaub starten.</div>
     </div>
     <div class="btn">Jetzt testen
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f4f1e6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1C2410" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
     </div>
   </div>
 </body>
