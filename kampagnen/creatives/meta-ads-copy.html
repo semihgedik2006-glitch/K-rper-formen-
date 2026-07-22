@@ -85,14 +85,14 @@
   <header>
     <div class="eyebrow">Meta Ads Manager &middot; Sommeraktion</div>
     <h1>Anzeigentext, bereit zum Einfügen</h1>
-    <p class="lede">Passend zum Creative &bdquo;Nach dem Urlaub durchstarten&ldquo; &mdash; einfach in die jeweiligen Felder im Ads Manager einsetzen.</p>
+    <p class="lede">Passend zum Creative &bdquo;Nach dem Urlaub durchstarten&ldquo; &mdash; einfach in die jeweiligen Felder im Ads Manager einsetzen. Zwei Längen für Primary Text, je nach Placement.</p>
   </header>
 
   <div class="field">
     <div class="field-head">
       <div>
-        <div class="field-name">Primary Text</div>
-        <div class="field-role">Haupttext, über dem Bild</div>
+        <div class="field-name">Primary Text &mdash; kurz</div>
+        <div class="field-role">Für Stories, Reels &amp; andere enge Placements</div>
       </div>
       <div class="count" id="count-primary">0 Zeichen</div>
     </div>
@@ -110,6 +110,39 @@ Nur vor dem Urlaub buchbar.</pre>
     <div class="field-foot">
       <div class="hint">Erste Zeile bleibt vor &bdquo;Mehr anzeigen&ldquo; sichtbar &mdash; trägt den Hook.</div>
       <button class="copy-btn" data-target="primary" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+        Kopieren
+      </button>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="field-head">
+      <div>
+        <div class="field-name">Primary Text &mdash; lang</div>
+        <div class="field-role">Für Feed &amp; rechte Spalte, wenn mehr Platz ist</div>
+      </div>
+      <div class="count" id="count-primary-long">0 Zeichen</div>
+    </div>
+    <div class="field-body">
+      <pre class="copy" id="primary-long">Kurz vor dem Urlaub noch schnell entscheiden – trainiert wird erst danach. 🌴
+
+Du kennst das: Der Vorsatz „nach dem Urlaub wieder ins Training" verläuft im Sand, sobald der Alltag zurück ist. Deshalb dreht die Körperformen-Sommeraktion den Ablauf um – du entscheidest jetzt, trainiert wird erst, wenn du zurück bist.
+
+Sichere dir in 2 Minuten deinen 4-Wochen-Gutschein:
+
+✅ EMS-Training – 20 Minuten pro Woche reichen für den ganzen Körper
+✅ Max. 2 Kunden pro Trainer – persönliche Betreuung statt Gruppentraining
+✅ Unverbindlich testen, kein Vertrag, keine Vorkenntnisse nötig
+✅ Buchung online, startklar in 2 Minuten
+
+Kein Trainingsdruck während der Ferien, kein schlechtes Gewissen im Urlaub – nur ein kleiner Klick heute, der sich danach auszahlt.
+
+Der Gutschein ist nur jetzt, vor der Ferienzeit, buchbar. Sichere dir deinen Platz, bevor du den Koffer packst.</pre>
+    </div>
+    <div class="field-foot">
+      <div class="hint">Kein hartes Limit &mdash; wirkt in der Praxis bis knapp 600 Zeichen noch gelesen.</div>
+      <button class="copy-btn" data-target="primary-long" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
         Kopieren
       </button>
@@ -173,6 +206,7 @@ Nur vor dem Urlaub buchbar.</pre>
     <div class="field-name">Warum so</div>
     <p>Der Haupttext übernimmt bewusst nicht die &bdquo;vor dem Urlaub&ldquo;-Dringlichkeit aus dem Creative, sondern liefert die drei Fakten, die im Bild keinen Platz haben: Trainingsdauer, Betreuungsschlüssel, Buchungsaufwand.</p>
     <p>Der Schlusssatz &bdquo;Nur vor dem Urlaub buchbar&ldquo; spiegelt exakt die Badge im Bild &mdash; Anzeige und Creative widersprechen sich nicht.</p>
+    <p>Die lange Version nimmt sich Zeit für den eigentlichen Einwand &mdash; &bdquo;das nehme ich mir jedes Jahr vor und mache es dann doch nicht&ldquo; &mdash; und beantwortet ihn, bevor er entsteht: Die Reihenfolge ist diesmal umgedreht, entscheiden jetzt, trainieren später. Für Placements mit wenig Platz bleibt die kurze Version die sicherere Wahl.</p>
   </div>
 
   <footer>Körperformen &middot; Sommeraktion KF-2026</footer>
@@ -187,6 +221,7 @@ Nur vor dem Urlaub buchbar.</pre>
     out.classList.toggle('warn', limit ? n > limit : false);
   }
   updateCount('primary', 125);
+  updateCount('primary-long', null);
   updateCount('headline', 40);
   updateCount('description', 30);
 
