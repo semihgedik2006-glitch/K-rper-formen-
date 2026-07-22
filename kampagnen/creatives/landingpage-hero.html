@@ -45,11 +45,19 @@
 
   .photo-wrap { position:absolute; right:56px; top:88px; width:560px; height:534px; z-index:3;
     border-radius:30px; overflow:hidden; box-shadow:0 30px 60px rgba(40,30,10,.32); border:7px solid rgba(255,255,255,.8); }
-  .photo-wrap img { width:100%; height:100%; object-fit:cover; object-position:50% 34%; display:block; }
-  .photo-wrap .tag30 { position:absolute; right:20px; top:20px; font-weight:800; font-size:16px;
+  .p-half { position:absolute; left:0; right:0; overflow:hidden; }
+  .p-half img { width:100%; height:100%; object-fit:cover; display:block; }
+  .p-half.top { top:0; height:264px; }
+  .p-half.top img { object-position:50% 22%; }
+  .p-half.bottom { top:270px; bottom:0; }
+  .p-half.bottom img { object-position:50% 26%; }
+  .seam-line { position:absolute; left:0; right:0; top:258px; height:12px; z-index:2;
+    background:var(--paper); display:flex; align-items:center; }
+  .seam-line svg { width:100%; height:40px; position:absolute; top:-14px; overflow:visible; }
+  .photo-wrap .tag30 { position:absolute; right:20px; top:20px; font-weight:800; font-size:16px; z-index:4;
     color:#182006; background:var(--gold); border-radius:999px; padding:10px 16px; letter-spacing:.5px;
     box-shadow:0 8px 18px rgba(40,30,10,.25); }
-  .photo-wrap .readout { position:absolute; left:20px; bottom:20px; font-size:14px; font-weight:bold;
+  .photo-wrap .readout { position:absolute; left:20px; bottom:20px; font-size:14px; font-weight:bold; z-index:4;
     color:#FFF6E2; background:rgba(32,33,15,.55); backdrop-filter:blur(6px); border-radius:999px; padding:10px 16px; display:flex; align-items:center; gap:9px; }
   .photo-wrap .readout i { width:7px; height:7px; border-radius:50%; background:var(--signal); box-shadow:0 0 8px var(--signal); }
 
@@ -94,9 +102,16 @@
   </div>
 
   <div class="photo-wrap">
-    <img src="ems-foto-warm.png" alt="EMS-Training bei Körperformen">
+    <div class="p-half top"><img src="foto-urlaub.jpg" alt="Sommerurlaub am Strand"></div>
+    <div class="p-half bottom"><img src="foto-training.jpg" alt="Personal Training"></div>
+    <div class="seam-line">
+      <svg viewBox="0 0 560 40" preserveAspectRatio="none">
+        <path d="M0,20 Q40,4 80,20 T160,20 L200,20 L206,2 L212,20 L218,38 L224,20 L280,20 T360,20 Q480,4 560,20" fill="none" stroke="#3E5A18" stroke-width="3" stroke-linecap="round"/>
+        <path d="M0,20 Q40,4 80,20 T160,20 L200,20" fill="none" stroke="#F3A93D" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
     <div class="tag30">&minus;30%</div>
-    <div class="readout"><i></i>EMS &#8226; Live im Studio</div>
+    <div class="readout"><i></i>EMS &#8226; 20 Min &#8226; Woche</div>
   </div>
 
   <div class="wave-wrap">
