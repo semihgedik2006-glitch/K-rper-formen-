@@ -37,10 +37,25 @@
     border-radius:999px; padding:10px 18px; font-size:14px; font-weight:bold; color:#FFF6E2; }
 
   /* pinned snapshot */
-  .pin-wrap { position:absolute; left:864px; top:492px; width:216px; z-index:5; transform:rotate(6deg); }
-  .pin-card { background:#FFFDF6; border-radius:9px; padding:10px 10px 32px; box-shadow:0 22px 38px rgba(0,0,0,.35), 0 2px 0 rgba(255,255,255,.5) inset; }
-  .pin-card img { width:100%; height:138px; object-fit:cover; object-position:50% 28%; display:block; border-radius:2px; }
-  .pin-card .cap { position:absolute; left:14px; right:14px; bottom:10px; font-size:13px; font-weight:bold; color:var(--signal-deep); text-align:center; }
+  .pin-wrap { position:absolute; left:876px; top:470px; width:196px; z-index:5; transform:rotate(6deg); }
+  .pin-card { background:#FFFDF6; border-radius:9px; padding:9px 9px 28px; box-shadow:0 22px 38px rgba(0,0,0,.35), 0 2px 0 rgba(255,255,255,.5) inset; }
+  .pin-card img { width:100%; height:124px; object-fit:cover; object-position:50% 28%; display:block; border-radius:2px; }
+  .pin-card .cap { position:absolute; left:12px; right:12px; bottom:8px; font-size:12px; font-weight:bold; color:var(--signal-deep); text-align:center; }
+
+  /* voucher / ticket */
+  .voucher { position:absolute; left:630px; top:498px; width:272px; height:140px; z-index:6;
+    transform:rotate(-4deg); filter:drop-shadow(0 20px 34px rgba(0,0,0,.4)); }
+  .voucher-bg { position:absolute; inset:0; }
+  .v-main { position:absolute; left:0; top:0; width:200px; height:100%; padding:12px 14px; color:var(--ink); }
+  .v-kick { font-size:9.5px; letter-spacing:1.5px; font-weight:bold; color:#7c7e68; margin-bottom:6px; }
+  .v-title { font-size:18px; font-weight:800; line-height:1.05; letter-spacing:-.3px; margin-bottom:7px; }
+  .v-barcode { display:flex; align-items:flex-end; gap:1.8px; height:18px; }
+  .v-barcode i { display:block; background:var(--ink); width:1.8px; }
+  .v-code { font-size:8px; letter-spacing:.9px; color:#9a9c88; margin-top:4px; font-weight:bold; }
+  .v-stub { position:absolute; left:200px; top:0; width:72px; height:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; }
+  .v-pct { font-size:22px; font-weight:800; color:var(--signal-deep); line-height:1; }
+  .v-sub { font-size:8px; letter-spacing:.7px; color:#8a8c78; margin-top:5px; line-height:1.3; font-weight:bold; }
   .pin-tape { position:absolute; top:-13px; left:50%; transform:translateX(-50%) rotate(-3deg); width:72px; height:22px;
     background:rgba(255,233,168,.85); box-shadow:0 3px 7px rgba(0,0,0,.2); border-radius:2px; }
 
@@ -94,6 +109,34 @@
       <div class="pin-tape"></div>
       <img src="foto-training.jpg" alt="Personal Training bei Körperformen">
       <div class="cap">Danach: Training</div>
+    </div>
+  </div>
+
+  <div class="voucher">
+    <svg class="voucher-bg" viewBox="0 0 272 140" width="272" height="140">
+      <defs>
+        <mask id="tmaskS">
+          <rect x="0" y="0" width="272" height="140" rx="12" fill="white"/>
+          <circle cx="200" cy="0" r="9" fill="black"/>
+          <circle cx="200" cy="140" r="9" fill="black"/>
+        </mask>
+      </defs>
+      <rect x="0" y="0" width="272" height="140" rx="12" fill="#FFFDF6" mask="url(#tmaskS)"/>
+      <line x1="200" y1="12" x2="200" y2="128" stroke="#cfd0ba" stroke-width="1.5" stroke-dasharray="4 4"/>
+    </svg>
+    <div class="v-main">
+      <div class="v-kick">SOMMERAKTION</div>
+      <div class="v-title">4-Wochen-<br>Gutschein</div>
+      <div class="v-barcode">
+        <i style="height:100%"></i><i style="height:60%"></i><i style="height:90%;width:3px"></i>
+        <i style="height:100%"></i><i style="height:50%"></i><i style="height:80%"></i>
+        <i style="height:100%;width:3px"></i><i style="height:65%"></i><i style="height:95%"></i>
+      </div>
+      <div class="v-code">EMS &#8226; KF-2026</div>
+    </div>
+    <div class="v-stub">
+      <div class="v-pct">&minus;30%</div>
+      <div class="v-sub">MONATS-<br>BEITRAG</div>
     </div>
   </div>
 

@@ -31,12 +31,27 @@
   .badge .dot { width:7px; height:7px; border-radius:50%; background:var(--signal); box-shadow:0 0 8px var(--signal); }
 
   /* pinned snapshot */
-  .pin-wrap { position:absolute; top:140px; right:68px; width:300px; z-index:6; transform:rotate(6.5deg); }
-  .pin-card { background:#FFFDF6; border-radius:10px; padding:12px 12px 42px; box-shadow:0 26px 44px rgba(0,0,0,.4), 0 2px 0 rgba(255,255,255,.5) inset; }
-  .pin-card img { width:100%; height:196px; object-fit:cover; object-position:50% 22%; display:block; border-radius:2px; }
-  .pin-card .cap { position:absolute; left:22px; right:22px; bottom:14px; font-size:15px; font-weight:bold; color:var(--signal-deep); text-align:center; letter-spacing:.2px; }
-  .pin-tape { position:absolute; top:-16px; left:50%; transform:translateX(-50%) rotate(-3deg); width:96px; height:30px;
+  .pin-wrap { position:absolute; top:118px; right:96px; width:254px; z-index:6; transform:rotate(7deg); }
+  .pin-card { background:#FFFDF6; border-radius:10px; padding:11px 11px 38px; box-shadow:0 26px 44px rgba(0,0,0,.4), 0 2px 0 rgba(255,255,255,.5) inset; }
+  .pin-card img { width:100%; height:166px; object-fit:cover; object-position:50% 22%; display:block; border-radius:2px; }
+  .pin-card .cap { position:absolute; left:20px; right:20px; bottom:12px; font-size:14px; font-weight:bold; color:var(--signal-deep); text-align:center; letter-spacing:.2px; }
+  .pin-tape { position:absolute; top:-15px; left:50%; transform:translateX(-50%) rotate(-3deg); width:86px; height:27px;
     background:rgba(255,233,168,.85); box-shadow:0 4px 8px rgba(0,0,0,.2); border-radius:2px; }
+
+  /* voucher / ticket */
+  .voucher { position:absolute; top:322px; right:40px; width:390px; height:196px; z-index:7;
+    transform:rotate(-4.5deg); filter:drop-shadow(0 24px 40px rgba(0,0,0,.45)); }
+  .voucher-bg { position:absolute; inset:0; }
+  .v-main { position:absolute; left:0; top:0; width:288px; height:100%; padding:17px 20px; color:var(--ink); }
+  .v-kick { font-size:12px; letter-spacing:2px; font-weight:bold; color:#7c7e68; margin-bottom:9px; }
+  .v-title { font-size:27px; font-weight:800; line-height:1.05; letter-spacing:-.5px; margin-bottom:12px; }
+  .v-barcode { display:flex; align-items:flex-end; gap:2.4px; height:28px; }
+  .v-barcode i { display:block; background:var(--ink); width:2.6px; }
+  .v-code { font-size:10px; letter-spacing:1.4px; color:#9a9c88; margin-top:5px; font-weight:bold; }
+  .v-stub { position:absolute; left:288px; top:0; width:102px; height:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; }
+  .v-pct { font-size:32px; font-weight:800; color:var(--signal-deep); line-height:1; }
+  .v-sub { font-size:10px; letter-spacing:1px; color:#8a8c78; margin-top:7px; line-height:1.35; font-weight:bold; }
 
   .content { position:absolute; left:0; right:0; bottom:0; z-index:5; padding:0 56px 52px; }
   .kick { font-size:16px; letter-spacing:4px; color:var(--gold); font-weight:bold; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
@@ -78,6 +93,37 @@
       <div class="pin-tape"></div>
       <img src="foto-training.jpg" alt="Personal Training bei Körperformen" style="object-position:50% 30%">
       <div class="cap">Danach: Training</div>
+    </div>
+  </div>
+
+  <div class="voucher">
+    <svg class="voucher-bg" viewBox="0 0 390 196" width="390" height="196">
+      <defs>
+        <mask id="tmaskA">
+          <rect x="0" y="0" width="390" height="196" rx="16" fill="white"/>
+          <circle cx="288" cy="0" r="12" fill="black"/>
+          <circle cx="288" cy="196" r="12" fill="black"/>
+        </mask>
+      </defs>
+      <rect x="0" y="0" width="390" height="196" rx="16" fill="#FFFDF6" mask="url(#tmaskA)"/>
+      <line x1="288" y1="18" x2="288" y2="178" stroke="#cfd0ba" stroke-width="2" stroke-dasharray="5 5"/>
+    </svg>
+    <div class="v-main">
+      <div class="v-kick">SOMMERAKTION &#8226; KF-2026</div>
+      <div class="v-title">4-Wochen-<br>Gutschein</div>
+      <div class="v-barcode">
+        <i style="height:100%"></i><i style="height:60%"></i><i style="height:90%;width:4.4px"></i>
+        <i style="height:100%"></i><i style="height:50%"></i><i style="height:80%"></i>
+        <i style="height:100%;width:4.4px"></i><i style="height:65%"></i><i style="height:95%"></i>
+        <i style="height:55%"></i><i style="height:100%"></i><i style="height:70%"></i>
+        <i style="height:90%"></i><i style="height:100%;width:4.4px"></i><i style="height:60%"></i>
+        <i style="height:85%"></i><i style="height:100%"></i><i style="height:50%"></i>
+      </div>
+      <div class="v-code">EMS &#8226; EINLÖSBAR IM STUDIO</div>
+    </div>
+    <div class="v-stub">
+      <div class="v-pct">&minus;30%</div>
+      <div class="v-sub">MONATS-<br>BEITRAG</div>
     </div>
   </div>
 
