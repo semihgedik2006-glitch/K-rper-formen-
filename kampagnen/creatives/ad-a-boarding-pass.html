@@ -24,11 +24,11 @@
     background:linear-gradient(0deg, rgba(15,16,8,.92) 0%, rgba(15,16,8,.78) 38%, rgba(15,16,8,.15) 82%, transparent 100%); }
 
   .topbar { position:absolute; top:44px; left:56px; right:56px; display:flex; align-items:center; justify-content:space-between; z-index:5; }
-  .topbar img { height:40px; filter:drop-shadow(0 2px 10px rgba(0,0,0,.4)) brightness(0) invert(1); }
-  .badge { font-size:14px; letter-spacing:.3px; font-weight:bold; color:#FFF6E2;
-    background:rgba(20,20,10,.45); backdrop-filter:blur(8px); border:1.2px solid rgba(255,255,255,.35); border-radius:999px; padding:11px 20px;
-    display:flex; align-items:center; gap:9px; }
-  .badge .dot { width:7px; height:7px; border-radius:50%; background:var(--signal); box-shadow:0 0 8px var(--signal); }
+  .topbar img { height:46px; filter:drop-shadow(0 2px 10px rgba(0,0,0,.4)) brightness(0) invert(1); }
+  .badge { font-size:17px; letter-spacing:.3px; font-weight:bold; color:#FFF6E2;
+    background:rgba(20,20,10,.45); backdrop-filter:blur(8px); border:1.2px solid rgba(255,255,255,.35); border-radius:999px; padding:13px 24px;
+    display:flex; align-items:center; gap:10px; }
+  .badge .dot { width:8px; height:8px; border-radius:50%; background:var(--signal); box-shadow:0 0 8px var(--signal); }
 
   /* pinned snapshot */
   .pin-wrap { position:absolute; top:118px; right:96px; width:254px; z-index:6; transform:rotate(7deg); }
@@ -43,33 +43,33 @@
     transform:rotate(-4.5deg); filter:drop-shadow(0 24px 40px rgba(0,0,0,.45)); }
   .voucher-bg { position:absolute; inset:0; }
   .v-main { position:absolute; left:0; top:0; width:288px; height:100%; padding:17px 20px; color:var(--ink); }
-  .v-kick { font-size:12px; letter-spacing:2px; font-weight:bold; color:#7c7e68; margin-bottom:9px; }
-  .v-title { font-size:27px; font-weight:800; line-height:1.05; letter-spacing:-.5px; margin-bottom:12px; }
+  .v-kick { font-size:13px; letter-spacing:2px; font-weight:bold; color:#7c7e68; margin-bottom:9px; }
+  .v-title { font-size:31px; font-weight:800; line-height:1.05; letter-spacing:-.5px; margin-bottom:13px; }
   .v-barcode { display:flex; align-items:flex-end; gap:2.4px; height:28px; }
   .v-barcode i { display:block; background:var(--ink); width:2.6px; }
-  .v-code { font-size:10px; letter-spacing:1.4px; color:#9a9c88; margin-top:5px; font-weight:bold; }
+  .v-code { font-size:11px; letter-spacing:1.4px; color:#9a9c88; margin-top:6px; font-weight:bold; }
   .v-stub { position:absolute; left:288px; top:0; width:102px; height:100%; display:flex; flex-direction:column;
     align-items:center; justify-content:center; text-align:center; }
-  .v-pct { font-size:32px; font-weight:800; color:var(--signal-deep); line-height:1; }
-  .v-sub { font-size:10px; letter-spacing:1px; color:#8a8c78; margin-top:7px; line-height:1.35; font-weight:bold; }
+  .v-pct { font-size:46px; font-weight:800; color:var(--signal-deep); line-height:1; }
+  .v-sub { font-size:11px; letter-spacing:1px; color:#8a8c78; margin-top:8px; line-height:1.35; font-weight:bold; }
 
   .content { position:absolute; left:0; right:0; bottom:0; z-index:5; padding:0 56px 52px; }
-  .kick { font-size:16px; letter-spacing:4px; color:var(--gold); font-weight:bold; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
-  .kick i { width:22px; height:2px; background:var(--gold); display:inline-block; border-radius:2px; }
-  h1 { font-size:74px; font-weight:800; line-height:.98; letter-spacing:-2px; transform:scaleX(.95); transform-origin:left; margin-bottom:20px; }
+  .kick { font-size:19px; letter-spacing:4px; color:var(--gold); font-weight:bold; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+  .kick i { width:24px; height:2.4px; background:var(--gold); display:inline-block; border-radius:2px; }
+  h1 { font-size:88px; font-weight:800; line-height:.98; letter-spacing:-2px; transform:scaleX(.95); transform-origin:left; margin-bottom:22px; }
   h1 .g { color:var(--signal); }
 
-  .mini-wave { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
-  .mini-wave svg { width:220px; height:34px; overflow:visible; flex-shrink:0; }
-  .mini-wave .lbl { font-size:14px; letter-spacing:1px; color:#c9cba9; }
+  .mini-wave { display:flex; align-items:center; gap:14px; margin-bottom:30px; }
+  .mini-wave svg { width:230px; height:36px; overflow:visible; flex-shrink:0; }
+  .mini-wave .lbl { font-size:16px; letter-spacing:1px; color:#c9cba9; }
   .mini-wave .lbl b { color:var(--signal); }
 
   .cta-row { display:flex; align-items:center; justify-content:space-between; gap:20px; }
-  .btn { background:var(--signal); color:#141807; font-weight:800; font-size:27px; letter-spacing:.2px;
-    padding:23px 40px; border-radius:999px; display:inline-flex; align-items:center; gap:16px; white-space:nowrap;
+  .btn { background:var(--signal); color:#141807; font-weight:800; font-size:32px; letter-spacing:.2px;
+    padding:26px 44px; border-radius:999px; display:inline-flex; align-items:center; gap:18px; white-space:nowrap;
     box-shadow:0 16px 32px rgba(0,0,0,.4); }
   .btn svg { flex-shrink:0; }
-  .microcopy { font-size:15px; color:#d7d9c2; text-align:right; line-height:1.5; }
+  .microcopy { font-size:17px; color:#d7d9c2; text-align:right; line-height:1.5; }
   .microcopy b { color:var(--gold); }
 </style>
 </head>
@@ -85,7 +85,7 @@
 
   <div class="topbar">
     <img src="kf-logo.svg" alt="Körperformen">
-    <div class="badge"><span class="dot"></span>&minus;30&nbsp;% unter dem Monatsbeitrag</div>
+    <div class="badge"><span class="dot"></span>Nur vor dem Urlaub buchbar</div>
   </div>
 
   <div class="pin-wrap">
@@ -122,13 +122,13 @@
       <div class="v-code">EMS &#8226; EINLÖSBAR IM STUDIO</div>
     </div>
     <div class="v-stub">
-      <div class="v-pct">&minus;30%</div>
-      <div class="v-sub">MONATS-<br>BEITRAG</div>
+      <div class="v-pct">4</div>
+      <div class="v-sub">WOCHEN<br>EMS</div>
     </div>
   </div>
 
   <div class="content">
-    <div class="kick"><i></i>JETZT GUTSCHEIN SICHERN</div>
+    <div class="kick"><i></i>JETZT SICHERN &ndash; VOR DEM URLAUB</div>
     <h1>Nach dem Urlaub<br><span class="g">durchstarten.</span></h1>
     <div class="mini-wave">
       <svg viewBox="0 0 220 34" preserveAspectRatio="none">
@@ -143,7 +143,7 @@
       <div class="btn">Gutschein sichern
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141807" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
       </div>
-      <div class="microcopy">Unverbindlich testen<br><b>Nur solange die Sommerferien laufen.</b></div>
+      <div class="microcopy">In 2 Minuten gesichert<br><b>Bevor du in den Urlaub startest.</b></div>
     </div>
   </div>
 </body>
