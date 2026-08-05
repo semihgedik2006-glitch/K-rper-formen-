@@ -275,7 +275,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .app.show{display:flex}
 .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
   gap:14px;padding:11px clamp(14px,4vw,26px);
-  background:rgba(14,23,18,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  background:rgba(11,10,28,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--line)}
 .tb-brand{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-weight:800;
   font-size:1.15rem;letter-spacing:.5px}
@@ -478,13 +478,18 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   .side{display:none}
   .main{padding-bottom:72px}
   .mobnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
-    background:rgba(14,23,18,.95);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    background:rgba(11,10,28,.96);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
     border-top:1px solid var(--line);padding:5px 4px calc(5px + env(safe-area-inset-bottom))}
-  .mobnav button{flex:1;background:none;border:none;color:var(--text-3);cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;
-    font-size:.63rem;font-weight:600;position:relative}
-  .mobnav button svg{width:21px;height:21px}
-  .mobnav button.active{color:var(--accent-2)}
+  /* Bei 9 Bereichen wird es sonst zu eng: Leiste ist seitlich verschiebbar,
+     die Einträge behalten dadurch lesbare Größe und große Tippflächen. */
+  .mobnav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .mobnav::-webkit-scrollbar{display:none}
+  .mobnav button{flex:0 0 auto;min-width:74px;background:none;border:none;color:var(--text-3);
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:8px 6px;border-radius:12px;font-size:.7rem;font-weight:600;position:relative;
+    transition:color .2s,background .2s}
+  .mobnav button svg{width:22px;height:22px}
+  .mobnav button.active{color:var(--accent);background:rgba(34,211,238,.13)}
   .mobnav .badge{position:absolute;top:1px;right:50%;transform:translateX(15px);
     background:var(--accent);color:var(--on-accent);font-size:.58rem;font-weight:700;min-width:15px;height:15px;
     border-radius:999px;display:none;place-items:center;padding:0 3px}
@@ -550,7 +555,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   user-select:none}
 .studio-check.on{border-color:var(--accent);background:rgba(34,211,238,.1);color:var(--accent-2)}
 .studio-check input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin:0}
-@media(max-width:420px){.studio-checks{grid-template-columns:1fr}}
+@media(max-width:340px){.studio-checks{grid-template-columns:1fr}}
 
 /* ============================================================
    ANIMATIONEN & QUALITY-OF-LIFE
@@ -1041,7 +1046,7 @@ var FIREBASE_CONFIG = {
            SEITE: INFOS – Ankündigungen der Leitung mit Lesebestätigung
            ============================================================ -->
       <section class="view" id="view-ann">
-        <div class="view-head"><h2>Ankündigungen</h2><p>Wichtige Infos von der Leitung.</p></div>
+        <div class="view-head"><h2>Ankündigungen</h2><p>Neuigkeiten von der Leitung. Gelesenes wird automatisch bestätigt.</p></div>
         <div class="scroll-area">
           <div class="card" id="obCard" style="display:none"></div>
           <div id="annArea"></div>
@@ -1053,7 +1058,7 @@ var FIREBASE_CONFIG = {
            SEITE: MATERIAL – Bestand pro Studio, Nachbestell-Alarm, Export
            ============================================================ -->
       <section class="view" id="view-material">
-        <div class="view-head"><h2>Material</h2><p>Bestand pro Studio – vorhanden &amp; fehlend eintragen.</p></div>
+        <div class="view-head"><h2>Material</h2><p>Trage ein, was da ist. Was fehlt, rechnet die App selbst aus.</p></div>
         <div class="scroll-area">
           <div class="mat-bar">
             <select class="inp" id="matStudio"></select>
@@ -1081,12 +1086,31 @@ var FIREBASE_CONFIG = {
              - wird wie Material live in Google Sheets gespiegelt
            ============================================================ -->
       <section class="view" id="view-putzplan">
-        <div class="view-head"><h2>Putzplan</h2><p>Reinigungsaufgaben pro Studio – abhaken mit Name &amp; Uhrzeit.</p></div>
+        <div class="view-head"><h2>Putzplan</h2><p>Aufgabe erledigt? Einfach antippen – Name und Uhrzeit werden automatisch vermerkt.</p></div>
         <div class="scroll-area">
           <div class="mat-bar">
             <select class="inp" id="ppStudio"></select>
           </div>
 
+          <!-- Liste der Putzaufgaben des gewählten Studios -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3 id="ppListTitle">Putzplan</h3>
+              <span class="todo-count" id="ppProgress"></span>
+            </div>
+            <div id="ppList" style="margin-top:8px"></div>
+          </div>
+
+          <!-- Notizen der Mitarbeiter -->
+          <div class="card">
+            <h3>📝 Notizen</h3>
+            <p class="hint">Platz für Hinweise vom Team, z. B. „Wischmopp ist kaputt".</p>
+            <div class="mat-add">
+              <input class="inp" id="ppNoteInput" type="text" placeholder="Notiz schreiben …" maxlength="300" />
+              <button class="btn btn-ghost btn-sm" id="ppNoteAdd">+ Notiz</button>
+            </div>
+            <div id="ppNotes" style="margin-top:12px"></div>
+          </div>
           <!-- Chef: neue Putzaufgabe anlegen -->
           <div class="card" id="ppChefCard" style="display:none">
             <h3>🧽 Putzaufgabe hinzufügen</h3>
@@ -1116,25 +1140,6 @@ var FIREBASE_CONFIG = {
             <p class="em-saved" id="ppAddNote"></p>
           </div>
 
-          <!-- Liste der Putzaufgaben des gewählten Studios -->
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-              <h3 id="ppListTitle">Putzplan</h3>
-              <span class="todo-count" id="ppProgress"></span>
-            </div>
-            <div id="ppList" style="margin-top:8px"></div>
-          </div>
-
-          <!-- Notizen der Mitarbeiter -->
-          <div class="card">
-            <h3>📝 Notizen</h3>
-            <p class="hint">Platz für Hinweise vom Team, z. B. „Wischmopp ist kaputt".</p>
-            <div class="mat-add">
-              <input class="inp" id="ppNoteInput" type="text" placeholder="Notiz schreiben …" maxlength="300" />
-              <button class="btn btn-ghost btn-sm" id="ppNoteAdd">+ Notiz</button>
-            </div>
-            <div id="ppNotes" style="margin-top:12px"></div>
-          </div>
         </div>
       </section>
 
@@ -1143,7 +1148,7 @@ var FIREBASE_CONFIG = {
            SEITE: DOKUMENTE – Dateien und Links für das Team
            ============================================================ -->
       <section class="view" id="view-docs">
-        <div class="view-head"><h2>Dokumente</h2><p>Wichtige Dateien – pro Studio.</p></div>
+        <div class="view-head"><h2>Dokumente</h2><p>Wichtige Dateien und Links, die dein Chef für dich hinterlegt hat.</p></div>
         <div class="scroll-area">
           <div class="card" id="docUploadCard" style="display:none">
             <h3>⬆️ Dokument hinzufügen</h3>
@@ -1170,7 +1175,7 @@ var FIREBASE_CONFIG = {
            SEITE: DIREKT – private 1:1-Nachrichten (wie WhatsApp)
            ============================================================ -->
       <section class="view" id="view-dm">
-        <div class="view-head"><h2 id="dmTitle">Direkt</h2><p>Private 1:1-Nachrichten.</p></div>
+        <div class="view-head"><h2 id="dmTitle">Direkt</h2><p>Private Nachrichten an einzelne Personen. Niemand sonst liest mit.</p></div>
         <div class="scroll-area" id="dmListWrap">
           <input class="inp" id="dmSearch" type="search" placeholder="Person suchen …" autocomplete="off" style="margin-bottom:12px" />
           <div id="dmPeople"></div>
@@ -1228,7 +1233,7 @@ var FIREBASE_CONFIG = {
            SEITE: CHEF-BEREICH – Dashboard, Aufgaben erteilen, Mitarbeiter
            ============================================================ -->
       <section class="view" id="view-chef">
-        <div class="view-head"><h2>Chef-Bereich</h2><p>Überblick, Nachrichten &amp; Aufgaben verteilen.</p></div>
+        <div class="view-head"><h2>Chef-Bereich</h2><p>Hier verwaltest du alles. Nur du siehst diesen Bereich.</p></div>
         <div class="scroll-area">
           <div class="dash-grid" id="dashGrid"></div>
           <div class="dash-bday" id="dashBday"></div>
@@ -2347,7 +2352,7 @@ function renderEmployees(emps){
         .catch(function(e){ toast(errMsg(e),true); });
     });
     node.querySelector('.em-del').addEventListener('click',function(){
-      if(!confirm('Zugang von '+(emp.name||'')+' entfernen? Anmeldung ist dann nicht mehr möglich.')) return;
+      if(!confirm('Zugang von '+(emp.name||'')+' entfernen?\n\nDie Person kann sich danach nicht mehr anmelden. Geschriebene Nachrichten bleiben erhalten.\nDas lässt sich nicht rückgängig machen.')) return;
       db.collection('users').doc(uid).delete()
         .then(function(){ toast('Mitarbeiter entfernt ✓'); })
         .catch(function(e){ toast(errMsg(e),true); });
@@ -2530,7 +2535,7 @@ function docToTodo(d){
 }
 
 function deleteDoc(d){
-  if(!confirm('Dokument „'+(d.name||d.fileName)+'" löschen?')) return;
+  if(!confirm('Dokument „'+(d.name||d.fileName)+'" löschen?\n\nEs verschwindet für alle Studios. Das lässt sich nicht rückgängig machen.')) return;
   db.collection('documents').doc(d.id).delete().then(function(){
     if(d.kind!=='link') db.collection('documentData').doc(d.id).delete().catch(function(){});
     toast('Dokument gelöscht ✓');
@@ -2819,7 +2824,7 @@ function clearArchive(){
     (cachedTodos[sk]||[]).filter(isArchived).forEach(function(t){ refs.push({sk:sk,id:t.id}); });
   });
   if(!refs.length){ toast('Archiv ist leer.'); return; }
-  if(!confirm(refs.length+' erledigte Aufgaben endgültig löschen?')) return;
+  if(!confirm(refs.length+' erledigte Aufgaben endgültig löschen?\n\nNur die Liste im Archiv wird geleert. Die Wochen-Sicherungen oben bleiben erhalten.')) return;
   var chunks=[]; for(var i=0;i<refs.length;i+=400) chunks.push(refs.slice(i,i+400));
   Promise.all(chunks.map(function(ch){
     var b=db.batch();
@@ -2877,7 +2882,7 @@ function bindTodoClicks(area){
     });
     var del=node.querySelector('.t-del');
     if(del) del.addEventListener('click',function(){
-      if(confirm('Aufgabe wirklich löschen?'))
+      if(confirm('Aufgabe löschen?\n\nSie verschwindet für dieses Studio. Das lässt sich nicht rückgängig machen.'))
         db.collection('studios').doc(sk).collection('todos').doc(id).delete()
           .catch(function(e){ toast(errMsg(e),true); });
     });
@@ -2916,7 +2921,7 @@ function renderAnnouncements(anns){
   if(chef){
     area.querySelectorAll('.ann-del').forEach(function(b){
       b.addEventListener('click',function(){
-        if(confirm('Ankündigung löschen?'))
+        if(confirm('Ankündigung löschen?\n\nSie verschwindet bei allen Mitarbeitern.'))
           db.collection('announcements').doc(b.dataset.id).delete()
             .catch(function(e){ toast(errMsg(e),true); });
       });
@@ -3232,7 +3237,7 @@ function bindPutzplanClicks(box){
   box.querySelectorAll('[data-del]').forEach(function(b){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-del');
-      if(!confirm('Putzaufgabe wirklich löschen?')) return;
+      if(!confirm('Putzaufgabe löschen?\n\nSie verschwindet aus dem Putzplan dieses Studios. Bereits gesicherte Wochen bleiben unverändert.')) return;
       db.collection('studios').doc(_ppStudioKey).collection('cleaning').doc(id).delete()
         .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
         .catch(function(e){ toast(errMsg(e),true); });
@@ -4242,7 +4247,7 @@ function bindActions(){
 
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){
-    if(confirm('Abmelden?')){
+    if(confirm('Abmelden?\n\nDeine Daten bleiben gespeichert – du kannst dich jederzeit wieder anmelden.')){
       stopListeners();
       auth.signOut().then(function(){ session=null; cachedTodos={}; currentChannel='allgemein'; });
     }
