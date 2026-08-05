@@ -28,6 +28,8 @@ function doPost(e) {
     }
 
     var studio = data.studio || data.studioKey || '';
+    // Veraltete Sendung? (kommt eine ältere Momentaufnahme nach einer neueren an → ignorieren)
+    if (isStale('MAT:' + studio, data.ts)) return ContentService.createTextOutput('stale');
     var values = sh.getDataRange().getValues();
     for (var i = values.length - 1; i >= 1; i--) {
       if (values[i][0] === studio) sh.deleteRow(i + 1);
@@ -112,6 +114,8 @@ function formatSheet(sh) {
 function handlePutzplan(data) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var studio = data.studio || data.studioKey || '';
+  // Veraltete Sendung überspringen, damit sie keine neuere überschreibt
+  if (isStale('PUTZ:' + studio, data.ts)) return ContentService.createTextOutput('stale');
 
   // --- Aufgaben ---
   var sh = ss.getSheetByName('Putzplan') || ss.insertSheet('Putzplan');
@@ -201,6 +205,19 @@ function formatNotes(sh) {
       .setBorder(true, true, true, true, true, true, '#e2d5ec', SpreadsheetApp.BorderStyle.SOLID);
   }
   for (var c = 1; c <= lastCol; c++) sh.autoResizeColumn(c);
+}
+
+/* Merkt sich pro Studio den zuletzt geschriebenen Zeitstempel und meldet
+   "veraltet", wenn eine ältere Sendung nach einer neueren eintrifft.
+   Läuft innerhalb des Script-Locks aus doPost → sicher gegen Überschneidungen. */
+function isStale(key, ts) {
+  ts = Number(ts) || 0;
+  if (!ts) return false;                       // ohne Zeitstempel immer schreiben
+  var props = PropertiesService.getScriptProperties();
+  var prev = Number(props.getProperty(key) || 0);
+  if (ts < prev) return true;                  // ältere Momentaufnahme → verwerfen
+  props.setProperty(key, String(ts));
+  return false;
 }
 
 function doGet() {

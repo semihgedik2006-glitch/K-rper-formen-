@@ -3188,7 +3188,7 @@ function bindPutzplanClicks(box){
       }
       db.collection('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
         .update({ done:willDone, doneBy:willDone?session.name:null, doneByUid:willDone?session.uid:null, doneAt:willDone?Date.now():null })
-        .then(function(){ pushPutzplanToSheets(_ppStudioKey); })
+        .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -3197,7 +3197,7 @@ function bindPutzplanClicks(box){
       var id=b.getAttribute('data-del');
       if(!confirm('Putzaufgabe wirklich löschen?')) return;
       db.collection('studios').doc(_ppStudioKey).collection('cleaning').doc(id).delete()
-        .then(function(){ pushPutzplanToSheets(_ppStudioKey); })
+        .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -3232,7 +3232,7 @@ function addPutzTask(btn){
       $('ppAllStudios').checked=false; $('ppAllWrap').classList.remove('on');
       $('ppStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
       toast('Putzaufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' erstellt ✓');
-      targets.forEach(function(sk){ pushPutzplanToSheets(sk); });
+      targets.forEach(function(sk){ schedulePutzplanSheets(sk); });
     }).catch(function(e){ toast(errMsg(e),true); });
   });
 }
@@ -3245,7 +3245,7 @@ function addPutzNote(){
   inp.value='';
   db.collection('studios').doc(_ppStudioKey).collection('cleaningNotes').add({
     text:text, by:session.name, byUid:session.uid, ts:Date.now()
-  }).then(function(){ pushPutzplanToSheets(_ppStudioKey); })
+  }).then(function(){ schedulePutzplanSheets(_ppStudioKey); })
     .catch(function(e){ toast(errMsg(e),true); });
 }
 
@@ -3264,18 +3264,38 @@ function renderPutzNotes(){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-notedel');
       db.collection('studios').doc(_ppStudioKey).collection('cleaningNotes').doc(id).delete()
-        .then(function(){ pushPutzplanToSheets(_ppStudioKey); })
+        .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
 }
 
 /* Putzplan eines Studios live in die Google-Tabelle spiegeln (wie Material) */
-function pushPutzplanToSheets(sk){
+/* ── Putzplan → Google Sheets: Sammeln, Verzögern, Serialisieren ──
+   Problem vorher: schnelle Änderungen lösten viele parallele Sendungen aus,
+   die in falscher Reihenfolge ankamen – eine ältere überschrieb die neuere.
+   Lösung: pro Studio nur EINE Sendung ~0,9 s nach der letzten Änderung,
+   und nie zwei gleichzeitig. Kommt während des Sendens noch etwas, wird
+   danach automatisch der dann aktuelle Stand nachgeschickt. */
+var _ppSheetTimers={}, _ppSheetBusy={}, _ppSheetPending={};
+function schedulePutzplanSheets(sk){
   if(!SHEETS_WEBHOOK_URL || !sk) return;
-  // aktuellen Stand direkt aus der Datenbank holen (unabhängig vom offenen Studio)
+  if(_ppSheetBusy[sk]){ _ppSheetPending[sk]=true; return; }
+  clearTimeout(_ppSheetTimers[sk]);
+  _ppSheetTimers[sk]=setTimeout(function(){ runPutzplanSheets(sk); }, 900);
+}
+function runPutzplanSheets(sk){
+  _ppSheetBusy[sk]=true; _ppSheetPending[sk]=false;
+  pushPutzplanToSheets(sk).then(function(){
+    _ppSheetBusy[sk]=false;
+    if(_ppSheetPending[sk]) schedulePutzplanSheets(sk);   // zwischenzeitliche Änderung nachziehen
+  });
+}
+function pushPutzplanToSheets(sk){
+  if(!SHEETS_WEBHOOK_URL || !sk) return Promise.resolve();
+  // immer den AKTUELLEN Stand frisch aus der Datenbank holen
   var studioRef=db.collection('studios').doc(sk);
-  Promise.all([
+  return Promise.all([
     studioRef.collection('cleaning').orderBy('ts').get(),
     studioRef.collection('cleaningNotes').orderBy('ts','desc').limit(50).get()
   ]).then(function(res){
@@ -3286,14 +3306,13 @@ function pushPutzplanToSheets(sk){
         zeitpunkt: isDone(t)&&t.doneAt?fmtDateTime(t.doneAt):'' }; });
     var notes=res[1].docs.map(function(d){ var n=d.data();
       return { text:n.text||'', by:n.by||'', ts:n.ts||0, zeit:fmtDateTime(n.ts) }; });
-    try{
-      fetch(SHEETS_WEBHOOK_URL, {
-        method:'POST', mode:'no-cors',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({ type:'putzplan', studio:studioName(sk), studioKey:sk,
-          tasks:tasks, notes:notes, updatedBy:session.name, ts:Date.now() })
-      }).catch(function(){});
-    }catch(e){}
+    // ts = Sende-Zeitpunkt; das Skript ignoriert damit veraltete Sendungen
+    return fetch(SHEETS_WEBHOOK_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({ type:'putzplan', studio:studioName(sk), studioKey:sk,
+        tasks:tasks, notes:notes, updatedBy:session.name, ts:Date.now() })
+    }).catch(function(){});
   }).catch(function(){});
 }
 
