@@ -725,6 +725,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pp-note-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.72rem;padding:0}
 .pp-note-del:hover{color:var(--danger)}
 
+/* ── Wochen-Sicherungen im Archiv ── */
+.wk-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;
+  background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.wk-info{flex:1;min-width:150px;display:flex;flex-direction:column;gap:2px}
+.wk-info b{font-family:var(--font-head);font-size:1.02rem}
+.wk-info span{font-size:.76rem;color:var(--text-3)}
+.wk-btns{display:flex;gap:8px;flex-wrap:wrap}
+.wk-btns .btn{min-height:38px;padding:0 14px}
+
 /* Wer Animationen im System abgeschaltet hat, bekommt keine */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
@@ -1192,11 +1201,26 @@ var FIREBASE_CONFIG = {
            SEITE: ARCHIV – erledigte Aufgaben (nur Chef)
            ============================================================ -->
       <section class="view" id="view-archive">
-        <div class="view-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
-          <div><h2>Archiv</h2><p>Erledigte Aufgaben aller Studios.</p></div>
-          <button class="btn btn-ghost btn-sm" id="archClear">Alle löschen</button>
+        <div class="view-head"><h2>Archiv</h2><p>Wochen-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.</p></div>
+        <div class="scroll-area">
+          <!-- Wöchentliche Excel-Sicherungen von Material & Putzplan -->
+          <div class="card">
+            <h3>📦 Wochen-Sicherungen</h3>
+            <p class="hint">Für jede Kalenderwoche wird der Stand von Material und Putzplan gesichert.
+              Klicke auf einen Knopf, um die Excel-Datei dieser Woche zu laden.</p>
+            <div id="weekArchives"></div>
+            <button class="btn btn-ghost btn-sm" id="archSaveNow" style="margin-top:12px">Diese Woche jetzt sichern</button>
+          </div>
+          <!-- Erledigte Aufgaben -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+              <div><h3>✅ Erledigte Aufgaben</h3>
+                <p class="hint">Landen hier ungefähr 3 Stunden nach dem Abhaken.</p></div>
+              <button class="btn btn-ghost btn-sm" id="archClear">Liste leeren</button>
+            </div>
+            <div id="archiveArea"></div>
+          </div>
         </div>
-        <div class="scroll-area" id="archiveArea"></div>
       </section>
 
       <!-- CHEF -->
@@ -1292,6 +1316,13 @@ var FIREBASE_CONFIG = {
             <h3>📊 Übersicht aller Studios</h3>
             <p class="hint">Aufgaben-Fortschritt pro Studio.</p>
             <div class="studio-grid" id="studioGrid"></div>
+          </div>
+          <div class="card">
+            <h3>🔄 Google-Tabellen abgleichen</h3>
+            <p class="hint">Änderungen werden automatisch übertragen. Falls in der Tabelle
+              einmal etwas fehlt, schreibt dieser Knopf alle Studios neu – gefahrlos, es
+              wird nichts gelöscht, nur der aktuelle Stand geschrieben.</p>
+            <button class="btn btn-ghost btn-sm" id="syncSheetsBtn">Jetzt alle Studios abgleichen</button>
           </div>
         </div>
       </section>
@@ -1999,6 +2030,9 @@ function showApp(){
   if(session.role==='chef'){
     buildChefSelects(); buildEmpStudios(); listenEmployees(); listenInventoryAll(); restoreDrafts();
     $('docUploadCard').style.display='block'; buildDocStudios();
+    listenArchives();                       // Wochen-Sicherungen anzeigen
+    setTimeout(function(){ maybeArchiveWeek(); }, 4000);   // ggf. Sicherung anlegen
+    setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
   bindActions();
   startListeners();
@@ -2007,6 +2041,7 @@ function showApp(){
   listenOnboarding();
   initMessaging();
   maybeShowNotifBanner();
+  startPeriodWatcher();       // erkennt Tageswechsel/Intervall-Ablauf
   showView(session.role==='chef' ? 'chef' : 'chat');
   birthdayCheck();
   // Regelmäßig neu zeichnen, damit erledigte Aufgaben automatisch ins Archiv wandern
@@ -2526,6 +2561,8 @@ function stopListeners(){
   if(_obUnsub){ _obUnsub(); _obUnsub=null; }
   if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
+  if(_archUnsub){ _archUnsub(); _archUnsub=null; }
+  if(_periodTimer){ clearInterval(_periodTimer); _periodTimer=null; }
   _matStudioKey=null; _ppStudioKey=null;
 }
 
@@ -3278,11 +3315,14 @@ function renderPutzNotes(){
    und nie zwei gleichzeitig. Kommt während des Sendens noch etwas, wird
    danach automatisch der dann aktuelle Stand nachgeschickt. */
 var _ppSheetTimers={}, _ppSheetBusy={}, _ppSheetPending={};
+/* Kurze Sammelzeit: fühlt sich sofort an, fasst aber schnelle Klicks
+   (z. B. 3 Aufgaben hintereinander) zu einer Sendung zusammen. */
+var SHEET_DELAY_MS = 250;
 function schedulePutzplanSheets(sk){
   if(!SHEETS_WEBHOOK_URL || !sk) return;
   if(_ppSheetBusy[sk]){ _ppSheetPending[sk]=true; return; }
   clearTimeout(_ppSheetTimers[sk]);
-  _ppSheetTimers[sk]=setTimeout(function(){ runPutzplanSheets(sk); }, 900);
+  _ppSheetTimers[sk]=setTimeout(function(){ runPutzplanSheets(sk); }, SHEET_DELAY_MS);
 }
 function runPutzplanSheets(sk){
   _ppSheetBusy[sk]=true; _ppSheetPending[sk]=false;
@@ -3306,7 +3346,6 @@ function pushPutzplanToSheets(sk){
         zeitpunkt: isDone(t)&&t.doneAt?fmtDateTime(t.doneAt):'' }; });
     var notes=res[1].docs.map(function(d){ var n=d.data();
       return { text:n.text||'', by:n.by||'', ts:n.ts||0, zeit:fmtDateTime(n.ts) }; });
-    // ts = Sende-Zeitpunkt; das Skript ignoriert damit veraltete Sendungen
     return fetch(SHEETS_WEBHOOK_URL, {
       method:'POST', mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -3314,6 +3353,68 @@ function pushPutzplanToSheets(sk){
         tasks:tasks, notes:notes, updatedBy:session.name, ts:Date.now() })
     }).catch(function(){});
   }).catch(function(){});
+}
+
+/* ── Komplett-Abgleich: ALLE Studios in die Tabelle schreiben ──
+   Nötig, weil sonst nur Studios in der Tabelle landen, in denen jemand
+   gerade etwas geändert hat. Läuft nacheinander (nicht parallel), damit
+   sich die Sendungen nicht überholen. */
+function syncAllPutzplanToSheets(){
+  if(!SHEETS_WEBHOOK_URL) return Promise.resolve();
+  var keys=STUDIOS.map(studioKey), i=0;
+  function next(){
+    if(i>=keys.length) return Promise.resolve();
+    var sk=keys[i++];
+    return pushPutzplanToSheets(sk)
+      .then(function(){ return new Promise(function(r){ setTimeout(r,150); }); })
+      .then(next);
+  }
+  return next();
+}
+function syncAllMaterialToSheets(){
+  if(!SHEETS_WEBHOOK_URL) return Promise.resolve();
+  return db.collection('inventory').get().then(function(snap){
+    var list=[]; snap.forEach(function(d){ list.push({sk:d.id, items:d.data().items||[]}); });
+    var i=0;
+    function next(){
+      if(i>=list.length) return Promise.resolve();
+      var d=list[i++];
+      pushToSheets(d.sk, d.items);
+      return new Promise(function(r){ setTimeout(r,150); }).then(next);
+    }
+    return next();
+  }).catch(function(){});
+}
+/* Beides – wird beim Chef-Login und über den Knopf im Chef-Bereich genutzt */
+function syncAllToSheets(silent){
+  if(!SHEETS_WEBHOOK_URL){ if(!silent) toast('Keine Tabellen-Verbindung eingerichtet.',true); return Promise.resolve(); }
+  if(!silent) toast('Tabellen werden abgeglichen …');
+  return syncAllMaterialToSheets()
+    .then(syncAllPutzplanToSheets)
+    .then(function(){ if(!silent) toast('Tabellen sind auf dem aktuellen Stand ✓'); });
+}
+
+/* ── Wiederkehrende Aufgaben zurücksetzen ──
+   "Erledigt" gilt nur für die aktuelle Periode. Wenn die App lange offen
+   bleibt, muss die Anzeige nach Tageswechsel/Intervall neu gezeichnet und
+   die Tabelle nachgezogen werden – sonst steht dort weiter "erledigt". */
+var _periodTimer=null, _lastPeriodDay=null;
+function startPeriodWatcher(){
+  if(_periodTimer) clearInterval(_periodTimer);
+  _lastPeriodDay=new Date().toDateString();
+  _periodTimer=setInterval(function(){
+    if(!session) return;
+    var today=new Date().toDateString();
+    var newDay = today!==_lastPeriodDay;
+    if(newDay) _lastPeriodDay=today;
+    // Neu zeichnen, damit abgelaufene Erledigungen wieder als offen erscheinen
+    if(currentView==='todos' || newDay) renderTodos();
+    if((currentView==='putzplan' || newDay) && _ppStudioKey) renderPutzplan();
+    if(newDay && session.role==='chef'){
+      syncAllToSheets(true);          // Tabelle nach Tageswechsel nachziehen
+      maybeArchiveWeek();             // ggf. Wochen-Sicherung anlegen
+    }
+  }, 60000);   // jede Minute prüfen
 }
 
 /* Excel-Export aller Studios (öffnet sich direkt in Excel) */
@@ -3376,6 +3477,190 @@ function exportMaterialExcel(){
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
   }).catch(function(e){ toast('Export: '+errMsg(e),true); });
+}
+
+/* ============================================================
+   WOCHEN-ARCHIV (nur Chef)
+   Sichert einmal pro Kalenderwoche den Stand von Material und Putzplan
+   aller Studios. Im Archiv kann man je Woche zwei Excel-Dateien laden.
+   Datenmodell:  archives/{'2026-KW32'}
+   ============================================================ */
+
+/* Kalenderwoche (ISO) zu einem Datum, z. B. "2026-KW32" */
+function isoWeekKey(d){
+  var t=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var day=(t.getUTCDay()+6)%7;              // Montag = 0
+  t.setUTCDate(t.getUTCDate()-day+3);       // Donnerstag der Woche
+  var year=t.getUTCFullYear();
+  var firstThu=new Date(Date.UTC(year,0,4));
+  var fday=(firstThu.getUTCDay()+6)%7;
+  firstThu.setUTCDate(firstThu.getUTCDate()-fday+3);
+  var week=1+Math.round((t-firstThu)/(7*86400000));
+  return year+'-KW'+(week<10?'0':'')+week;
+}
+/* Montag und Sonntag der Woche eines Datums */
+function weekRange(d){
+  var mo=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  mo.setDate(mo.getDate()-((mo.getDay()+6)%7));
+  var so=new Date(mo); so.setDate(so.getDate()+6);
+  return {from:mo, to:so};
+}
+function weekLabel(d){
+  var r=weekRange(d), o={day:'2-digit',month:'2-digit'};
+  return r.from.toLocaleDateString('de-DE',o)+'–'+r.to.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+/* Aktuellen Stand aller Studios einsammeln und als Wochen-Sicherung ablegen.
+   Wird höchstens alle 2 Stunden ausgeführt, damit es nicht unnötig schreibt. */
+function maybeArchiveWeek(force){
+  if(!session || session.role!=='chef') return Promise.resolve();
+  var now=new Date(), key=isoWeekKey(now);
+  if(!force){
+    try{
+      var last=localStorage.getItem('kf_arch_'+key);
+      if(last && (Date.now()-(+last) < 2*3600000)) return Promise.resolve();
+    }catch(e){}
+  }
+  var r=weekRange(now);
+  var jobs=[ db.collection('inventory').get() ];
+  STUDIOS.forEach(function(s){
+    var sk=studioKey(s);
+    jobs.push(db.collection('studios').doc(sk).collection('cleaning').orderBy('ts').get());
+    jobs.push(db.collection('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50).get());
+  });
+  return Promise.all(jobs).then(function(res){
+    var material={};
+    res[0].forEach(function(d){ material[d.id]=(d.data().items||[]).map(function(it){
+      return { name:it.name||'', have:it.have||0, limit:it.limit||0, need:itemNeed(it) }; }); });
+    var cleaning={};
+    STUDIOS.forEach(function(s,i){
+      var sk=studioKey(s);
+      var tSnap=res[1+i*2], nSnap=res[2+i*2];
+      cleaning[sk]={
+        tasks: tSnap.docs.map(function(d){ var t=d.data();
+          return { title:t.title||'', rep:repLabelFor(t)||'einmalig',
+            status:isDone(t)?'erledigt':'offen',
+            by:isDone(t)?(t.doneBy||''):'', at:(isDone(t)&&t.doneAt)?fmtDateTime(t.doneAt):'' }; }),
+        notes: nSnap.docs.map(function(d){ var n=d.data();
+          return { text:n.text||'', by:n.by||'', at:fmtDateTime(n.ts) }; })
+      };
+    });
+    return db.collection('archives').doc(key).set({
+      week:key, label:weekLabel(now), from:r.from.getTime(), to:r.to.getTime(),
+      updatedAt:Date.now(), updatedBy:session.name, material:material, cleaning:cleaning
+    }, {merge:true});
+  }).then(function(){
+    try{ localStorage.setItem('kf_arch_'+key, String(Date.now())); }catch(e){}
+  }).catch(function(e){ console.warn('Wochen-Archiv:', e.message); });
+}
+
+/* Excel-Datei aus einer Wochen-Sicherung erzeugen und herunterladen */
+function downloadArchiveXls(kind, weekKey){
+  db.collection('archives').doc(weekKey).get().then(function(doc){
+    if(!doc.exists){ toast('Sicherung nicht gefunden.',true); return; }
+    var a=doc.data();
+    var html = kind==='material' ? archMaterialHtml(a) : archPutzplanHtml(a);
+    var name = (kind==='material'?'Material_':'Putzplan_')+weekKey+'.xls';
+    var blob=new Blob(['﻿'+html],{type:'application/vnd.ms-excel'});
+    var url=URL.createObjectURL(blob);
+    var el=document.createElement('a'); el.href=url; el.download=name;
+    document.body.appendChild(el); el.click(); el.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+    toast('Datei wird geladen ✓');
+  }).catch(function(e){ toast(errMsg(e),true); });
+}
+
+var XL_HEAD='style="background:#0B0A1C;color:#22D3EE;font-weight:bold;border:1px solid #3a3560;padding:7px 10px;text-align:left"';
+var XL_SUB ='style="background:#7C3AED;color:#ffffff;font-weight:bold;border:1px solid #3a3560;padding:6px 9px;text-align:left"';
+var XL_TD  ='style="border:1px solid #ddd6ee;padding:5px 9px"';
+function xlWrap(title, sub, inner, cols){
+  return '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">'+
+    '<style>table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:11px}</style></head><body><table>'+
+    '<tr><td colspan="'+cols+'" style="background:#0B0A1C;color:#22D3EE;font-size:17px;font-weight:bold;padding:10px">'+esc(title)+'</td></tr>'+
+    '<tr><td colspan="'+cols+'" style="color:#555;padding:3px 10px;font-size:10px">'+esc(sub)+'</td></tr>'+
+    '<tr><td colspan="'+cols+'" style="height:8px"></td></tr>'+ inner +'</table></body></html>';
+}
+/* Material: pro Studio ein Block */
+function archMaterialHtml(a){
+  var h='';
+  STUDIOS_ALPHA.forEach(function(s){
+    var items=(a.material||{})[studioKey(s)]||[];
+    h+='<tr><td colspan="4" '+XL_SUB+'>'+esc(s)+'</td></tr>';
+    h+='<tr><td '+XL_HEAD+'>Material</td><td '+XL_HEAD+'>Soll</td><td '+XL_HEAD+'>Vorhanden</td><td '+XL_HEAD+'>Fehlt</td></tr>';
+    if(!items.length){
+      h+='<tr><td colspan="4" '+XL_TD+' >– keine Einträge –</td></tr>';
+    } else {
+      items.forEach(function(it){
+        var miss=+it.need||0;
+        var cell = miss>0
+          ? 'style="border:1px solid #f0c9c0;padding:5px 9px;text-align:center;background:#ffd6d6;color:#a30000;font-weight:bold"'
+          : 'style="border:1px solid #ddd6ee;padding:5px 9px;text-align:center;color:#6a8a7c"';
+        h+='<tr><td '+XL_TD+'>'+esc(it.name)+'</td>'+
+           '<td '+XL_TD+' align="center">'+(it.limit||0)+'</td>'+
+           '<td '+XL_TD+' align="center">'+(it.have||0)+'</td>'+
+           '<td '+cell+'>'+(miss>0?miss:'–')+'</td></tr>';
+      });
+    }
+    h+='<tr><td colspan="4" style="height:10px"></td></tr>';
+  });
+  return xlWrap('KÖRPERFORMEN – Material · '+(a.week||''), 'Zeitraum: '+(a.label||'')+' · gesichert am '+fmtDateTime(a.updatedAt), h, 4);
+}
+/* Putzplan: pro Studio Aufgaben + Notizen */
+function archPutzplanHtml(a){
+  var h='';
+  STUDIOS_ALPHA.forEach(function(s){
+    var c=(a.cleaning||{})[studioKey(s)]||{tasks:[],notes:[]};
+    h+='<tr><td colspan="5" '+XL_SUB+'>'+esc(s)+'</td></tr>';
+    h+='<tr><td '+XL_HEAD+'>Aufgabe</td><td '+XL_HEAD+'>Wiederholung</td><td '+XL_HEAD+'>Status</td><td '+XL_HEAD+'>Erledigt von</td><td '+XL_HEAD+'>Zeitpunkt</td></tr>';
+    if(!(c.tasks||[]).length){
+      h+='<tr><td colspan="5" '+XL_TD+'>– keine Putzaufgaben –</td></tr>';
+    } else {
+      c.tasks.forEach(function(t){
+        var done=(t.status||'')==='erledigt';
+        var st = done
+          ? 'style="border:1px solid #cfe8d6;padding:5px 9px;text-align:center;background:#dcfce7;color:#166534;font-weight:bold"'
+          : 'style="border:1px solid #efe4bd;padding:5px 9px;text-align:center;background:#fef9c3;color:#854d0e;font-weight:bold"';
+        h+='<tr><td '+XL_TD+'>'+esc(t.title)+'</td><td '+XL_TD+'>'+esc(t.rep||'')+'</td>'+
+           '<td '+st+'>'+esc(t.status||'')+'</td><td '+XL_TD+'>'+esc(t.by||'')+'</td><td '+XL_TD+'>'+esc(t.at||'')+'</td></tr>';
+      });
+    }
+    if((c.notes||[]).length){
+      h+='<tr><td colspan="5" style="background:#fce7f3;color:#9d174d;font-weight:bold;border:1px solid #f0cfe0;padding:5px 9px">Notizen</td></tr>';
+      c.notes.forEach(function(n){
+        h+='<tr><td colspan="3" '+XL_TD+'>'+esc(n.text)+'</td><td '+XL_TD+'>'+esc(n.by||'')+'</td><td '+XL_TD+'>'+esc(n.at||'')+'</td></tr>';
+      });
+    }
+    h+='<tr><td colspan="5" style="height:10px"></td></tr>';
+  });
+  return xlWrap('KÖRPERFORMEN – Putzplan · '+(a.week||''), 'Zeitraum: '+(a.label||'')+' · gesichert am '+fmtDateTime(a.updatedAt), h, 5);
+}
+
+/* Liste der Wochen-Sicherungen im Archiv anzeigen */
+var _archUnsub=null;
+function listenArchives(){
+  if(session.role!=='chef') return;
+  if(_archUnsub){ _archUnsub(); _archUnsub=null; }
+  _archUnsub=db.collection('archives').orderBy('week','desc').limit(52)
+    .onSnapshot(function(snap){
+      var box=$('weekArchives'); if(!box) return;
+      var rows=snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      if(!rows.length){
+        box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Noch keine Sicherung. Sie wird automatisch angelegt, sobald du als Chef die App öffnest.</p>';
+        return;
+      }
+      box.innerHTML=rows.map(function(a){
+        return '<div class="wk-row">'+
+          '<div class="wk-info"><b>'+esc((a.week||'').replace('-',' · '))+'</b>'+
+          '<span>'+esc(a.label||'')+' · Stand '+fmtDateTime(a.updatedAt)+'</span></div>'+
+          '<div class="wk-btns">'+
+            '<button class="btn btn-ghost btn-sm" data-arch="material" data-week="'+esc(a.id)+'">Material</button>'+
+            '<button class="btn btn-ghost btn-sm" data-arch="putzplan" data-week="'+esc(a.id)+'">Putzplan</button>'+
+          '</div></div>';
+      }).join('');
+      box.querySelectorAll('[data-arch]').forEach(function(b){
+        b.addEventListener('click',function(){ downloadArchiveXls(b.getAttribute('data-arch'), b.getAttribute('data-week')); });
+      });
+    }, function(e){ console.warn('Archive:', e.message); });
 }
 
 /* ============================================================
@@ -3980,6 +4265,17 @@ function bindActions(){
 
     // Archiv leeren
     var ac=$('archClear'); if(ac) ac.addEventListener('click', clearArchive);
+    var ssb=$('syncSheetsBtn'); if(ssb) ssb.addEventListener('click',function(){
+      var btn=this;
+      withBusy(btn,function(){ return syncAllToSheets(false); });
+    });
+    var asn=$('archSaveNow'); if(asn) asn.addEventListener('click',function(){
+      var btn=this;
+      withBusy(btn,function(){
+        toast('Sicherung wird erstellt …');
+        return maybeArchiveWeek(true).then(function(){ toast('Woche gesichert ✓'); });
+      });
+    });
 
     // Entwürfe automatisch zwischenspeichern
     ['bcText','ntTitle','ntDesc'].forEach(function(idd){

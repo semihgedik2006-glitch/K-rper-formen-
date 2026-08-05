@@ -188,6 +188,11 @@ service cloud.firestore {
       allow read, write: if isChef();
     }
 
+    // ── Wochen-Sicherungen (Material + Putzplan als Excel) – nur Chef ──
+    match /archives/{weekId} {
+      allow read, write: if isChef();
+    }
+
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {

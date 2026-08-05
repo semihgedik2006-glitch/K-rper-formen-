@@ -28,8 +28,6 @@ function doPost(e) {
     }
 
     var studio = data.studio || data.studioKey || '';
-    // Veraltete Sendung? (kommt eine ältere Momentaufnahme nach einer neueren an → ignorieren)
-    if (isStale('MAT:' + studio, data.ts)) return ContentService.createTextOutput('stale');
     var values = sh.getDataRange().getValues();
     for (var i = values.length - 1; i >= 1; i--) {
       if (values[i][0] === studio) sh.deleteRow(i + 1);
@@ -114,8 +112,6 @@ function formatSheet(sh) {
 function handlePutzplan(data) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var studio = data.studio || data.studioKey || '';
-  // Veraltete Sendung überspringen, damit sie keine neuere überschreibt
-  if (isStale('PUTZ:' + studio, data.ts)) return ContentService.createTextOutput('stale');
 
   // --- Aufgaben ---
   var sh = ss.getSheetByName('Putzplan') || ss.insertSheet('Putzplan');
@@ -207,18 +203,14 @@ function formatNotes(sh) {
   for (var c = 1; c <= lastCol; c++) sh.autoResizeColumn(c);
 }
 
-/* Merkt sich pro Studio den zuletzt geschriebenen Zeitstempel und meldet
-   "veraltet", wenn eine ältere Sendung nach einer neueren eintrifft.
-   Läuft innerhalb des Script-Locks aus doPost → sicher gegen Überschneidungen. */
-function isStale(key, ts) {
-  ts = Number(ts) || 0;
-  if (!ts) return false;                       // ohne Zeitstempel immer schreiben
-  var props = PropertiesService.getScriptProperties();
-  var prev = Number(props.getProperty(key) || 0);
-  if (ts < prev) return true;                  // ältere Momentaufnahme → verwerfen
-  props.setProperty(key, String(ts));
-  return false;
-}
+/* HINWEIS: Es gibt bewusst KEINE Zeitstempel-Prüfung mehr.
+   Eine frühere Version hat Sendungen verworfen, deren Zeitstempel älter war
+   als der zuletzt gespeicherte. Da der Zeitstempel von der Uhr des jeweiligen
+   Handys kam, wurden bei leicht abweichenden Uhrzeiten dauerhaft Sendungen
+   einzelner Geräte ignoriert – dadurch fehlten Studios und Aufgaben.
+   Jede Sendung enthält immer den KOMPLETTEN aktuellen Stand eines Studios,
+   deshalb ist "die zuletzt eingetroffene gewinnt" hier korrekt. Das Sperren
+   (LockService) in doPost verhindert, dass sich zwei Sendungen überschneiden. */
 
 function doGet() {
   return ContentService.createTextOutput('StudioChat Material-Sync laeuft.');
