@@ -514,6 +514,91 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-radius:2px;animation:confFall linear forwards}
 @keyframes confFall{to{transform:translateY(106vh) rotate(720deg);opacity:.85}}
 
+/* ============================================================
+   NEU: KOMFORT & SPIELERISCHES FEEDBACK
+   (Offline-Hinweis, Chat-Marker, Aufgaben-Suche, Erledigt-Animation)
+   ============================================================ */
+
+/* ── Offline-Hinweis (Leiste ganz oben, wenn keine Verbindung) ── */
+.offline-bar{position:fixed;top:0;left:0;right:0;z-index:400;
+  background:linear-gradient(90deg,var(--warm),#ff8f5e);color:#20120A;
+  font-weight:700;font-size:.84rem;text-align:center;padding:7px 12px;
+  transform:translateY(-100%);transition:transform .3s var(--ease-out);
+  padding-top:calc(7px + env(safe-area-inset-top,0px))}
+.offline-bar.show{transform:none}
+
+/* ── Chat: Trenner „Neue Nachrichten" ── */
+.new-sep{display:flex;align-items:center;gap:10px;align-self:stretch;margin:10px 0 4px;
+  color:var(--warm);font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  animation:viewIn .3s var(--ease-out)}
+.new-sep::before,.new-sep::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--warm),transparent)}
+
+/* ── Chat: Zähler am „Nach unten"-Knopf ── */
+.scroll-fab{position:relative}
+.fab-count{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;
+  border-radius:999px;background:var(--warm);color:#20120A;font-size:.7rem;font-weight:800;
+  display:none;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.fab-count.show{display:grid;animation:checkPop .3s var(--ease-out)}
+
+/* ── Aufgaben: Suchfeld ── */
+.todo-tools{display:flex;gap:9px;align-items:center;margin:2px 0 14px}
+.todo-search{flex:1;position:relative}
+.todo-search input{width:100%;padding:11px 14px 11px 38px;border-radius:12px;
+  background:var(--bg-2);border:1.5px solid var(--line);color:var(--text);
+  font-family:var(--font-body);font-size:.94rem;transition:border-color .2s,box-shadow .2s}
+.todo-search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,224,110,.12)}
+.todo-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:var(--text-3);pointer-events:none}
+.todo-count{font-size:.8rem;color:var(--text-2);white-space:nowrap;font-weight:600}
+
+/* ── Aufgaben: spielerisches Erledigt-Feedback ── */
+/* Sanftes Aufleuchten der Karte beim Abhaken */
+.todo.just-done{animation:doneFlash .7s var(--ease-out)}
+@keyframes doneFlash{
+  0%{background:var(--bg-2)}
+  22%{background:rgba(0,224,110,.16);border-color:rgba(0,224,110,.45)}
+  100%{background:var(--bg-2)}
+}
+/* Titel wird beim Erledigen weich durchgestrichen statt hart */
+.todo .t-title{transition:color .3s}
+/* Kleiner Funken-Ring, der aus dem Häkchen springt */
+.check-burst{position:absolute;width:26px;height:26px;border-radius:9px;pointer-events:none;
+  border:2px solid var(--accent-2);animation:burst .55s var(--ease-out) forwards;z-index:60}
+@keyframes burst{from{opacity:.85;transform:scale(1)}to{opacity:0;transform:scale(2.3)}}
+/* Fortschrittsbalken bekommt einen laufenden Glanz, solange nicht fertig */
+.pbar i{position:relative;overflow:hidden}
+.pbar i::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+  transform:translateX(-100%);animation:shimmer 2.4s ease-in-out infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+.todo-progress.complete .pbar i::after{animation:none}
+/* „Alles erledigt"-Zeile */
+.todo-progress.complete{border-color:rgba(0,224,110,.4);background:rgba(0,224,110,.07)}
+.pdone{font-size:.8rem;font-weight:700;color:var(--accent-2);white-space:nowrap}
+
+/* ── Listen blenden leicht versetzt ein (wirkt lebendig, nicht verspielt) ── */
+.todo{animation:rowIn .34s var(--ease-out) both}
+@keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.todo:nth-child(1){animation-delay:.02s}.todo:nth-child(2){animation-delay:.05s}
+.todo:nth-child(3){animation-delay:.08s}.todo:nth-child(4){animation-delay:.11s}
+.todo:nth-child(5){animation-delay:.14s}.todo:nth-child(n+6){animation-delay:.16s}
+/* Karten heben sich beim Überfahren dezent an */
+.todo{transition:opacity .2s,transform .2s var(--ease-out),border-color .2s,background .3s}
+.todo:hover{transform:translateY(-1px);border-color:var(--line-2)}
+.check{position:relative}
+.check:hover{border-color:var(--accent);transform:scale(1.08)}
+
+/* ── Überfällige Aufgaben deutlicher markieren ── */
+.todo.overdue{border-left:3px solid var(--danger)}
+.t-due.over{animation:duePulse 2.2s ease-in-out infinite}
+@keyframes duePulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* Wer Animationen im System abgeschaltet hat, bekommt keine */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important}
+}
+
 /* ── Wiederhol-Badge bei Aufgaben ── */
 .t-rep{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
   text-transform:uppercase;letter-spacing:.4px;color:var(--accent-2);
@@ -603,6 +688,9 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 </style>
 </head>
 <body>
+
+<!-- Hinweis-Leiste: erscheint automatisch, sobald die Internetverbindung weg ist -->
+<div class="offline-bar" id="offlineBar">📴 Keine Internetverbindung – Änderungen werden gesendet, sobald du wieder online bist.</div>
 
 <!-- StudioChat-Logo-Farbverlauf (einmal global definiert) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -767,6 +855,8 @@ var FIREBASE_CONFIG = {
         <div class="chat-scroll" id="chatScroll"></div>
         <button class="scroll-fab" id="scrollFab" aria-label="Nach unten">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          <!-- Zeigt, wie viele neue Nachrichten unten warten -->
+          <span class="fab-count" id="fabCount">0</span>
         </button>
         <div class="img-preview" id="imgPreview">
           <img id="imgPreviewImg" alt="Vorschau" />
@@ -788,6 +878,14 @@ var FIREBASE_CONFIG = {
       <!-- TODOS -->
       <section class="view" id="view-todos">
         <div class="view-head"><h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p></div>
+        <!-- Suchfeld + Zähler: filtert die Aufgabenliste live mit -->
+        <div class="todo-tools" style="padding:0 clamp(14px,4vw,28px)">
+          <div class="todo-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="todoSearch" type="search" placeholder="Aufgabe suchen …" autocomplete="off" />
+          </div>
+          <span class="todo-count" id="todoCount"></span>
+        </div>
         <div class="scroll-area" id="todoArea"></div>
       </section>
 
@@ -1294,6 +1392,27 @@ function fireConfetti(){
   }
 }
 
+/* Kleiner Funken-Ring, der aus einem Element „herausspringt".
+   Wird beim Abhaken einer Aufgabe am Häkchen ausgelöst. */
+function burstAt(el){
+  if(!el) return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var r=el.getBoundingClientRect();
+  var b=document.createElement('div'); b.className='check-burst';
+  b.style.position='fixed';
+  b.style.left=r.left+'px';
+  b.style.top=r.top+'px';
+  b.style.width=r.width+'px';
+  b.style.height=r.height+'px';
+  document.body.appendChild(b);
+  setTimeout(function(){ b.remove(); }, 600);
+}
+
+/* Kurzes Lob beim Abhaken – motivierend, aber sachlich.
+   Wird zufällig gewählt, damit es nicht monoton wirkt. */
+var PRAISE = ['Erledigt ✓','Sauber gemacht ✓','Abgehakt ✓','Top ✓','Weiter so ✓'];
+function pickPraise(){ return PRAISE[Math.floor(Math.random()*PRAISE.length)]; }
+
 /* ── Wiederkehrende Aufgaben: „erledigt" gilt nur für die aktuelle Periode ── */
 function periodStart(rep){
   var now=new Date();
@@ -1354,6 +1473,59 @@ var AUTH_ERRORS = {
   'auth/network-request-failed':'Netzwerkfehler. Verbindung prüfen.'
 };
 function authErrMsg(code){ return AUTH_ERRORS[code]||('Fehler ('+code+')'); }
+
+/* ── Verständliche Fehlermeldungen ──
+   Firebase liefert englische Technik-Texte. Diese Funktion macht daraus
+   einen Satz, mit dem ein Mitarbeiter etwas anfangen kann.
+   Benutzung:  .catch(function(e){ toast(errMsg(e), true); })            */
+var DB_ERRORS = {
+  'permission-denied':'Dafür fehlt dir die Berechtigung.',
+  'unauthenticated':'Du bist nicht mehr angemeldet. Bitte neu einloggen.',
+  'unavailable':'Keine Verbindung zum Server. Internet prüfen.',
+  'deadline-exceeded':'Zeitüberschreitung – bitte nochmal versuchen.',
+  'not-found':'Der Eintrag existiert nicht mehr.',
+  'already-exists':'Gibt es bereits.',
+  'resource-exhausted':'Zu viele Anfragen – bitte kurz warten.',
+  'failed-precondition':'Aktion gerade nicht möglich.',
+  'cancelled':'Vorgang abgebrochen.',
+  'invalid-argument':'Eingabe ungültig.'
+};
+function errMsg(e){
+  if(!e) return 'Unbekannter Fehler.';
+  if(!navigator.onLine) return 'Keine Internetverbindung.';
+  var code = e.code || '';
+  if(DB_ERRORS[code]) return DB_ERRORS[code];
+  if(AUTH_ERRORS[code]) return AUTH_ERRORS[code];
+  return e.message || 'Es ist ein Fehler aufgetreten.';
+}
+
+/* ── Offline-Hinweis oben einblenden/ausblenden ── */
+function updateOnlineState(){
+  var bar=$('offlineBar'); if(!bar) return;
+  bar.classList.toggle('show', !navigator.onLine);
+}
+window.addEventListener('online',  function(){ updateOnlineState(); toast('Wieder online ✓'); });
+window.addEventListener('offline', function(){ updateOnlineState(); });
+updateOnlineState();
+
+/* ── Schutz vor doppeltem Absenden ──
+   Sperrt einen Knopf, solange die Aktion läuft (verhindert doppelte Aufgaben,
+   doppelte Ankündigungen usw. bei langsamer Verbindung).
+   Benutzung:  withBusy(knopf, function(){ return <Promise> }); */
+function withBusy(btn, fn){
+  if(!btn){ fn(); return; }
+  if(btn.dataset.busy==='1') return;         // läuft schon → Klick ignorieren
+  btn.dataset.busy='1';
+  var label=btn.textContent, wasDisabled=btn.disabled;
+  btn.disabled=true; btn.style.opacity='.6';
+  var done=function(){
+    btn.dataset.busy=''; btn.disabled=wasDisabled;
+    btn.style.opacity=''; if(btn.textContent!==label) btn.textContent=label;
+  };
+  var r;
+  try{ r=fn(); }catch(e){ done(); throw e; }
+  if(r && typeof r.then==='function') r.then(done, done); else done();
+}
 
 /* ── Bild verkleinern + komprimieren → data-URL (kostenlos, in Firestore speicherbar) ── */
 function fileToCompressedDataURL(file, maxDim, maxBytes){
@@ -1903,13 +2075,13 @@ function renderEmployees(emps){
       if(!sel.length){ toast('Mindestens ein Studio wählen.',true); return; }
       db.collection('users').doc(uid).update({ studios:sel, studio:sel[0] })
         .then(function(){ toast('Studios aktualisiert ✓'); })
-        .catch(function(e){ toast('Fehler: '+e.message,true); });
+        .catch(function(e){ toast(errMsg(e),true); });
     });
     node.querySelector('.em-del').addEventListener('click',function(){
       if(!confirm('Zugang von '+(emp.name||'')+' entfernen? Anmeldung ist dann nicht mehr möglich.')) return;
       db.collection('users').doc(uid).delete()
         .then(function(){ toast('Mitarbeiter entfernt ✓'); })
-        .catch(function(e){ toast('Fehler: '+e.message,true); });
+        .catch(function(e){ toast(errMsg(e),true); });
     });
   });
 }
@@ -2069,7 +2241,7 @@ function openDocFile(d){
     var a=document.createElement('a'); a.href=doc.data().data;
     a.download=d.fileName||d.name||'dokument';
     document.body.appendChild(a); a.click(); a.remove();
-  }).catch(function(e){ toast('Fehler: '+e.message,true); });
+  }).catch(function(e){ toast(errMsg(e),true); });
 }
 
 function docToTodo(d){
@@ -2085,7 +2257,7 @@ function docToTodo(d){
     });
   });
   batch.commit().then(function(){ toast('Als Aufgabe an '+studios.length+' Studio'+(studios.length>1?'s':'')+' ✓'); })
-    .catch(function(e){ toast('Fehler: '+e.message,true); });
+    .catch(function(e){ toast(errMsg(e),true); });
 }
 
 function deleteDoc(d){
@@ -2093,7 +2265,7 @@ function deleteDoc(d){
   db.collection('documents').doc(d.id).delete().then(function(){
     if(d.kind!=='link') db.collection('documentData').doc(d.id).delete().catch(function(){});
     toast('Dokument gelöscht ✓');
-  }).catch(function(e){ toast('Fehler: '+e.message,true); });
+  }).catch(function(e){ toast(errMsg(e),true); });
 }
 
 /* ============================================================
@@ -2223,10 +2395,14 @@ function renderMessages(msgs){
     return;
   }
   var atBottom = box.scrollHeight-box.scrollTop-box.clientHeight < 100;
-  var lastDay=null, html='';
+  var lastDay=null, html='', sepDone=false;
   msgs.forEach(function(m){
     var dl=dayLabel(m.ts||Date.now());
     if(dl!==lastDay){ html+='<div class="day-sep">'+esc(dl)+'</div>'; lastDay=dl; }
+    // Trenner „Neue Nachrichten": vor der ersten Nachricht, die man noch nicht gesehen hat
+    if(!sepDone && _chatSeenTs && (m.ts||0)>_chatSeenTs && m.uid!==session.uid){
+      html+='<div class="new-sep">Neue Nachrichten</div>'; sepDone=true;
+    }
     var mine=m.uid===session.uid;
     var canDel = session.role==='chef' || (mine && (Date.now()-(m.ts||0) < 3600000));
     var tag=m.role==='chef'
@@ -2240,25 +2416,80 @@ function renderMessages(msgs){
       bodyHtml+imgHtml+'</div>';
   });
   box.innerHTML=html;
-  if(atBottom) scrollBottom();
+  if(atBottom) scrollBottom(); else updateFabCount();
 }
 
-function scrollBottom(){ var b=$('chatScroll'); if(b) b.scrollTop=b.scrollHeight; }
+/* ── Chat: „Nach unten"-Knopf mit Zähler ──
+   _chatSeenTs merkt sich, bis wann man den Verlauf gesehen hat. Alles Neuere
+   zählt als ungelesen und erscheint als Zahl am Knopf + als Trenner im Verlauf. */
+var _chatSeenTs = Date.now();   // beim Start gilt alles Bisherige als gesehen
+
+function updateFabCount(){
+  var badge=$('fabCount'); if(!badge) return;
+  var n=0;
+  (_curMsgs||[]).forEach(function(m){
+    if(m.uid!==session.uid && (m.ts||0)>_chatSeenTs) n++;
+  });
+  badge.textContent = n>99 ? '99+' : n;
+  badge.classList.toggle('show', n>0);
+}
+
+/* Wird aufgerufen, sobald man ganz unten ist: alles gilt als gelesen. */
+function markChatSeen(){
+  _chatSeenTs = Date.now();
+  var badge=$('fabCount'); if(badge) badge.classList.remove('show');
+}
+
+function scrollBottom(){
+  var b=$('chatScroll');
+  if(b) b.scrollTop=b.scrollHeight;
+  markChatSeen();
+}
+
+/* Aktueller Text im Aufgaben-Suchfeld (leer = alles anzeigen) */
+var _todoFilter='';
+
+/* Passt eine Aufgabe zum Suchtext? Sucht in Titel und Beschreibung. */
+function todoMatchesFilter(t){
+  if(!_todoFilter) return true;
+  var hay=((t.title||'')+' '+(t.desc||'')).toLowerCase();
+  return hay.indexOf(_todoFilter)>=0;
+}
+
+/* Baut die Fortschritts-Zeile (Balken + „3/8"). Bei 100 % gibt's Lob dazu. */
+function progressHTML(done,total){
+  var pct=total?Math.round(done/total*100):0;
+  var complete = total>0 && done===total;
+  return '<div class="todo-progress'+(complete?' complete':'')+'">'+
+    '<div class="pbar"><i style="width:'+pct+'%"></i></div>'+
+    '<span class="pcount">'+done+'/'+total+'</span>'+
+    (complete?'<span class="pdone">alles erledigt 🎉</span>':'')+
+  '</div>';
+}
 
 function renderTodos(){
   var area=$('todoArea');
+  var shown=0, totalAll=0, doneAll=0;   // für den Zähler über der Liste
   if(session.role==='chef'){
     $('todoTitle').textContent='Aufgaben aller Studios';
     $('todoSub').textContent='Erteile und überprüfe Aufgaben.';
     var html='';
     STUDIOS_ALPHA.forEach(function(s){
       var sk=studioKey(s);
-      var list=(cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); });
+      var all=(cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); });
+      totalAll+=all.length; doneAll+=all.filter(isDone).length;
+      var list=all.filter(todoMatchesFilter);
       if(!list.length) return;
+      shown+=list.length;
+      // Pro Studio: Überschrift + eigener Fortschrittsbalken
+      var d=all.filter(isDone).length;
       html+='<h3 style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(s)+'</h3>';
+      if(!_todoFilter) html+=progressHTML(d,all.length);
       html+=list.map(function(t){ return todoHTML(t,sk,true); }).join('');
     });
-    area.innerHTML = html || emptyHTML('Noch keine Aufgaben.','Erstelle welche im Chef-Bereich.');
+    area.innerHTML = html || emptyHTML(
+      _todoFilter?'Nichts gefunden':'Noch keine Aufgaben.',
+      _todoFilter?'Für „'+esc(_todoFilter)+'" gibt es keine Aufgabe.':'Erstelle welche im Chef-Bereich.');
   } else {
     var multi = session.studios.length>1;
     $('todoTitle').textContent = multi ? 'Meine Aufgaben' : ('Aufgaben · '+(session.studios[0]||''));
@@ -2266,19 +2497,27 @@ function renderTodos(){
     var html='';
     session.studioKeys.forEach(function(sk, idx){
       var sName=session.studios[idx];
-      var list=(cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); }).sort(function(a,b){ return (isDone(a)-isDone(b))||(a.ts-b.ts); });
-      var done=list.filter(isDone).length, total=list.length;
-      var pct=total?Math.round(done/total*100):0;
+      var all=(cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); }).sort(function(a,b){ return (isDone(a)-isDone(b))||(a.ts-b.ts); });
+      var list=all.filter(todoMatchesFilter);
+      var done=all.filter(isDone).length, total=all.length;
+      totalAll+=total; doneAll+=done; shown+=list.length;
       if(multi) html+='<h3 style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(sName)+'</h3>';
       if(total){
-        html+='<div class="todo-progress"><div class="pbar"><i style="width:'+pct+'%"></i></div><span class="pcount">'+done+'/'+total+'</span></div>';
-        html+=list.map(function(t){ return todoHTML(t,sk,false); }).join('');
+        if(!_todoFilter) html+=progressHTML(done,total);
+        html += list.length
+          ? list.map(function(t){ return todoHTML(t,sk,false); }).join('')
+          : '<p style="color:var(--text-3);font-size:.9rem;margin:2px 0 14px">Nichts gefunden.</p>';
       } else {
         html+='<p style="color:var(--text-3);font-size:.9rem;margin:2px 0 14px">Keine offenen Aufgaben. 🎉</p>';
       }
     });
     area.innerHTML = html || emptyHTML('Keine Studios','Dir ist noch kein Studio zugeordnet.');
   }
+  // Zähler rechts neben dem Suchfeld
+  var cnt=$('todoCount');
+  if(cnt) cnt.textContent = _todoFilter
+    ? (shown+' Treffer')
+    : (totalAll ? (doneAll+' von '+totalAll+' erledigt') : '');
   bindTodoClicks(area);
   updateBadges();
   if(session.role==='chef'){ renderStudioGrid(); renderArchive(); renderDashboard(); }
@@ -2313,7 +2552,7 @@ function clearArchive(){
     var b=db.batch();
     ch.forEach(function(r){ b.delete(db.collection('studios').doc(r.sk).collection('todos').doc(r.id)); });
     return b.commit();
-  })).then(function(){ toast('Archiv geleert ✓'); }).catch(function(e){ toast('Fehler: '+e.message,true); });
+  })).then(function(){ toast('Archiv geleert ✓'); }).catch(function(e){ toast(errMsg(e),true); });
 }
 
 function todoHTML(t,sk,chefView){
@@ -2331,7 +2570,8 @@ function todoHTML(t,sk,chefView){
   var photoHtml = t.photo
     ? '<img class="t-photo" data-zoom src="'+t.photo+'" alt="Foto zur Aufgabe" />'
     : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
-  return '<div class="todo'+(done?' done':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
+  var isOver = !done && t.due && Date.now()>t.due;   // überfällig → roter Balken links
+  return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
@@ -2349,19 +2589,24 @@ function bindTodoClicks(area){
     if(chk) chk.addEventListener('click',function(){
       var done=!node.classList.contains('done');
       if(done){
+        // Sofortiges Feedback, noch bevor der Server antwortet:
+        node.classList.add('just-done');           // Karte leuchtet kurz grün
+        setTimeout(function(){ node.classList.remove('just-done'); }, 720);
+        burstAt(chk);                              // Funken-Ring am Häkchen
         var list=cachedTodos[sk]||[];
         var openOthers=list.filter(function(t){ return !isDone(t) && t.id!==id; }).length;
         if(openOthers===0 && list.length>0){ fireConfetti(); toast('Alle Aufgaben erledigt! 🎉'); }
+        else toast(pickPraise());                  // kleines Lob beim Abhaken
       }
       db.collection('studios').doc(sk).collection('todos').doc(id)
         .update({done:done,doneBy:done?session.name:null,doneAt:done?Date.now():null})
-        .catch(function(e){ toast('Fehler: '+e.message,true); });
+        .catch(function(e){ toast(errMsg(e),true); });
     });
     var del=node.querySelector('.t-del');
     if(del) del.addEventListener('click',function(){
       if(confirm('Aufgabe wirklich löschen?'))
         db.collection('studios').doc(sk).collection('todos').doc(id).delete()
-          .catch(function(e){ toast('Fehler: '+e.message,true); });
+          .catch(function(e){ toast(errMsg(e),true); });
     });
     var padd=node.querySelector('[data-photoadd]');
     if(padd) padd.addEventListener('click',function(){
@@ -2400,7 +2645,7 @@ function renderAnnouncements(anns){
       b.addEventListener('click',function(){
         if(confirm('Ankündigung löschen?'))
           db.collection('announcements').doc(b.dataset.id).delete()
-            .catch(function(e){ toast('Fehler: '+e.message,true); });
+            .catch(function(e){ toast(errMsg(e),true); });
       });
     });
   }
@@ -2582,7 +2827,7 @@ function saveMaterialNow(){
   }).then(function(){
     var s=$('matSaved'); if(s){ s.textContent='✓ Gespeichert'; setTimeout(function(){ s.style.opacity='0'; },1500); }
     pushToSheets(sk, items);
-  }).catch(function(e){ toast('Speicherfehler: '+e.message,true); });
+  }).catch(function(e){ toast(errMsg(e),true); });
 }
 
 /* Material live in eine Google-Tabelle pushen (Apps-Script-Web-App) */
@@ -2662,7 +2907,7 @@ function exportMaterialExcel(){
     var a=document.createElement('a'); a.href=url; a.download='Material_Koerperformen.xls';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
-  }).catch(function(e){ toast('Export-Fehler: '+e.message,true); });
+  }).catch(function(e){ toast('Export: '+errMsg(e),true); });
 }
 
 /* ============================================================
@@ -2780,7 +3025,7 @@ function listenDmThreads(){
       _dmThreadsFirst=false;
       updateDmBadge();
       if(currentView==='dm' && $('dmConvo').style.display==='none' && (!$('dmSearch')||!$('dmSearch').value)) renderDmPeople('');
-    }, function(e){ console.error('DM-Threads:',e.message); toast('Verlauf-Fehler: '+e.message,true); });
+    }, function(e){ console.error('DM-Threads:',e.message); toast('Verlauf: '+errMsg(e),true); });
 }
 function dmUnreadCount(){
   return _dmThreads.filter(function(t){
@@ -2847,7 +3092,7 @@ function openDm(uid,name){
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
   _dmUnsub=db.collection('dms').doc(_dmId).collection('messages').orderBy('ts').limitToLast(200)
     .onSnapshot(function(snap){ renderDmMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })); },
-      function(e){ console.error('DM:',e.message); toast('Chat-Fehler: '+e.message,true); });
+      function(e){ console.error('DM:',e.message); toast('Chat: '+errMsg(e),true); });
   markDmRead();
   setTimeout(function(){ var t=$('dmText'); if(t&&window.innerWidth>820) t.focus(); },60);
 }
@@ -2888,7 +3133,7 @@ function renderDmMessages(msgs){
     b.addEventListener('click',function(){
       if(confirm('Nachricht löschen?'))
         db.collection('dms').doc(_dmId).collection('messages').doc(b.dataset.del).delete()
-          .catch(function(e){ toast('Fehler: '+e.message,true); });
+          .catch(function(e){ toast(errMsg(e),true); });
     });
   });
   box.querySelectorAll('input[data-mid]').forEach(function(cb){
@@ -2898,7 +3143,7 @@ function renderDmMessages(msgs){
       var items=(msg.items||[]).map(function(i){ return {t:i.t, done:i.done}; });
       if(items[ix]) items[ix].done=cb.checked;
       db.collection('dms').doc(_dmId).collection('messages').doc(mid).update({items:items})
-        .catch(function(e){ toast('Fehler: '+e.message,true); });
+        .catch(function(e){ toast(errMsg(e),true); });
     });
   });
   if(atBottom) box.scrollTop=box.scrollHeight;
@@ -2912,7 +3157,7 @@ function touchDmThread(preview){
   db.collection('dms').doc(_dmId).set({
     participants:[session.uid,_dmPeer.uid], names:names,
     last:preview, lastTs:now, lastSender:session.uid, readTs:rt
-  }, {merge:true}).catch(function(e){ toast('Verlauf-Fehler: '+e.message,true); });
+  }, {merge:true}).catch(function(e){ toast('Verlauf: '+errMsg(e),true); });
 }
 function sendDm(){
   if(!_dmId) return;
@@ -2920,7 +3165,7 @@ function sendDm(){
   ta.value=''; ta.style.height='auto';
   db.collection('dms').doc(_dmId).collection('messages').add({
     uid:session.uid, name:session.name, text:text, ts:Date.now()
-  }).then(function(){ touchDmThread(text); }).catch(function(e){ toast('Sendefehler: '+e.message,true); });
+  }).then(function(){ touchDmThread(text); }).catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
   ta.focus();
 }
 /* Checkliste/To-do per DM an eine Person senden */
@@ -2937,7 +3182,7 @@ function sendChecklistDM(peerUid, peerName, items){
     var rt={}; rt[session.uid]=now;
     return db.collection('dms').doc(dmId).set({ participants:[session.uid,peerUid], names:names, last:'📋 Checkliste', lastTs:now, lastSender:session.uid, readTs:rt }, {merge:true});
   }).then(function(){ toast('Checkliste an '+peerName+' gesendet ✓'); })
-    .catch(function(e){ toast('Fehler: '+e.message,true); });
+    .catch(function(e){ toast(errMsg(e),true); });
 }
 
 /* ============================================================
@@ -2953,7 +3198,7 @@ function listenOnboarding(){
 }
 function saveOnboardingSteps(){
   return db.collection('config').doc('onboarding').set({ steps:_onboardSteps }, {merge:true})
-    .catch(function(e){ toast('Fehler: '+e.message,true); });
+    .catch(function(e){ toast(errMsg(e),true); });
 }
 function renderOnboarding(){
   if(!session) return;
@@ -2988,7 +3233,7 @@ function renderOnboarding(){
       if(cb.checked){ if(arr.indexOf(step)<0) arr.push(step); } else { arr=arr.filter(function(x){ return x!==step; }); }
       session.onboardingDone=arr;
       db.collection('users').doc(session.uid).update({ onboardingDone: cb.checked?fv.arrayUnion(step):fv.arrayRemove(step) })
-        .catch(function(e){ toast('Fehler: '+e.message,true); });
+        .catch(function(e){ toast(errMsg(e),true); });
       renderOnboarding();
     });
   });
@@ -3153,7 +3398,7 @@ function bindActions(){
     };
     if(img) doc.img=img;
     db.collection('channels').doc(currentChannel).collection('messages').add(doc)
-      .catch(function(e){ toast('Sendefehler: '+e.message,true); });
+      .catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
     ta.focus();
   }
   $('chatSend').addEventListener('click',sendMsg);
@@ -3186,17 +3431,27 @@ function bindActions(){
     var id=b.dataset.id; if(!id) return;
     if(confirm('Nachricht löschen?'))
       db.collection('channels').doc(currentChannel).collection('messages').doc(id).delete()
-        .catch(function(err){ toast('Löschen fehlgeschlagen: '+err.message,true); });
+        .catch(function(err){ toast('Löschen fehlgeschlagen: '+errMsg(err),true); });
   });
 
-  // „Nach unten"-Knopf im Chat
+  // „Nach unten"-Knopf im Chat (mit Zähler für ungelesene Nachrichten)
   var fab=$('scrollFab');
   if(cs && fab){
     cs.addEventListener('scroll',function(){
       var nearBottom = cs.scrollHeight-cs.scrollTop-cs.clientHeight < 120;
       fab.classList.toggle('show', !nearBottom);
+      if(nearBottom) markChatSeen();   // unten angekommen → alles gelesen
     });
     fab.addEventListener('click',function(){ scrollBottom(); fab.classList.remove('show'); });
+  }
+
+  // Aufgaben-Suche: filtert die Liste live beim Tippen
+  var ts=$('todoSearch');
+  if(ts){
+    ts.addEventListener('input',function(){
+      _todoFilter=this.value.trim().toLowerCase();
+      renderTodos();
+    });
   }
 
   // Foto an Aufgabe anhängen (gemeinsames Feld)
@@ -3209,7 +3464,7 @@ function bindActions(){
       return db.collection('studios').doc(tgt.sk).collection('todos').doc(tgt.id)
         .update({ photo:data, photoBy:session.name, photoAt:Date.now() });
     }).then(function(){ toast('Foto hinzugefügt ✓'); })
-      .catch(function(e){ toast('Fehler: '+e.message,true); });
+      .catch(function(e){ toast(errMsg(e),true); });
   });
 
   // Benachrichtigungen aktivieren
@@ -3253,13 +3508,17 @@ function bindActions(){
 
     // Ankündigung
     $('bcSend').addEventListener('click',function(){
+      var btn=this;
       var text=$('bcText').value.trim();
       if(!text){ toast('Bitte Text eingeben.',true); return; }
-      db.collection('announcements').add({
-        uid:session.uid, from:session.name, text:text,
-        target:$('bcTarget').value, ts:Date.now()
-      }).then(function(){ $('bcText').value=''; saveDraft(); toast('Ankündigung gesendet ✓'); })
-        .catch(function(e){ toast('Fehler: '+e.message,true); });
+      // withBusy sperrt den Knopf, bis gesendet ist → keine doppelte Ankündigung
+      withBusy(btn,function(){
+        return db.collection('announcements').add({
+          uid:session.uid, from:session.name, text:text,
+          target:$('bcTarget').value, ts:Date.now()
+        }).then(function(){ $('bcText').value=''; saveDraft(); toast('Ankündigung gesendet ✓'); })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
     });
 
     // Foto an neue Aufgabe anhängen
@@ -3317,16 +3576,19 @@ function bindActions(){
         if(photo) data.photo=photo;
         batch.set(ref,data);
       });
-      batch.commit()
-        .then(function(){
-          $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value=''; $('ntCustomWrap').style.display='none'; $('ntDue').value='';
-          $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');
-          $('ntStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
-          _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
-          saveDraft();
-          toast('Aufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' erstellt ✓');
-        })
-        .catch(function(e){ toast('Fehler: '+e.message,true); });
+      // withBusy sperrt den Knopf während des Speicherns → keine doppelten Aufgaben
+      withBusy(this,function(){
+        return batch.commit()
+          .then(function(){
+            $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value=''; $('ntCustomWrap').style.display='none'; $('ntDue').value='';
+            $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');
+            $('ntStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
+            _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
+            saveDraft();
+            toast('Aufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' erstellt ✓');
+          })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
     });
   }
 }
