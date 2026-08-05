@@ -51,6 +51,27 @@ service cloud.firestore {
       allow update: if signedIn();
     }
 
+    // ── Putzplan pro Studio (Reinigungsaufgaben) ──
+    match /studios/{studioKey}/cleaning/{taskId} {
+      allow read: if signedIn();
+      allow create: if isChef();                       // Putzaufgaben nur vom Chef
+      allow delete: if isChef();
+      allow update: if signedIn();                     // Mitarbeiter dürfen abhaken
+    }
+
+    // ── Putzplan-Notizen pro Studio (vom Team) ──
+    match /studios/{studioKey}/cleaningNotes/{noteId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.byUid == request.auth.uid;
+      // Chef darf jede Notiz löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
+      allow delete: if isChef()
+        || (signedIn()
+            && resource.data.byUid == request.auth.uid
+            && request.time.toMillis() < resource.data.ts + 3600000);
+      allow update: if false;
+    }
+
     // ── Ankündigungen ──
     match /announcements/{annId} {
       allow read: if signedIn();

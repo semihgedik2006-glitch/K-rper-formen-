@@ -701,6 +701,30 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   .tb-brand .tb-logo{display:none}   /* ganz schmal: nur noch der Schriftzug */
 }
 
+/* ── Putzplan ── */
+.pp-item{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;background:var(--bg-soft);
+  border:1px solid var(--line);border-radius:13px;margin-bottom:8px;
+  transition:background .3s,border-color .2s,transform .2s var(--ease-out);
+  animation:rowIn .3s var(--ease-out) both}
+.pp-item:hover{transform:translateY(-1px);border-color:var(--line-2)}
+.pp-item.done{opacity:.62}
+.pp-item.done .pp-title{text-decoration:line-through;color:var(--text-2)}
+.pp-item.just-done{animation:doneFlash .7s var(--ease-out)}
+.pp-body{flex:1;min-width:0}
+.pp-title{font-family:var(--font-head);font-weight:700;font-size:1.05rem;letter-spacing:.2px}
+.pp-meta{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:4px;font-size:.76rem;color:var(--text-3)}
+.pp-meta .pp-doneby{color:var(--accent-d);font-weight:600}
+.pp-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:6px;border-radius:8px;flex-shrink:0;transition:.2s}
+.pp-del:hover{color:var(--danger);background:rgba(251,78,109,.12)}
+.pp-del svg{width:16px;height:16px}
+/* Notizen */
+.pp-note{padding:11px 14px;background:var(--bg-soft);border:1px solid var(--line);
+  border-left:3px solid var(--accent-3);border-radius:11px;margin-bottom:8px;animation:rowIn .3s var(--ease-out) both}
+.pp-note-text{font-size:.94rem;white-space:pre-wrap;word-break:break-word}
+.pp-note-foot{display:flex;justify-content:space-between;gap:10px;margin-top:5px;font-size:.72rem;color:var(--text-3)}
+.pp-note-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.72rem;padding:0}
+.pp-note-del:hover{color:var(--danger)}
+
 /* Wer Animationen im System abgeschaltet hat, bekommt keine */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
@@ -1035,6 +1059,72 @@ var FIREBASE_CONFIG = {
               <button class="btn btn-ghost btn-sm" id="matAdd">+ Hinzufügen</button>
             </div>
             <p class="mat-saved" id="matSaved"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PUTZPLAN -->
+      <!-- ============================================================
+           SEITE: PUTZPLAN – Reinigungsaufgaben pro Studio
+             - Chef legt Aufgaben mit Wiederholung an
+             - Mitarbeiter haken ab (mit Name + Uhrzeit)
+             - Notizen-Bereich für Mitarbeiter
+             - wird wie Material live in Google Sheets gespiegelt
+           ============================================================ -->
+      <section class="view" id="view-putzplan">
+        <div class="view-head"><h2>Putzplan</h2><p>Reinigungsaufgaben pro Studio – abhaken mit Name &amp; Uhrzeit.</p></div>
+        <div class="scroll-area">
+          <div class="mat-bar">
+            <select class="inp" id="ppStudio"></select>
+          </div>
+
+          <!-- Chef: neue Putzaufgabe anlegen -->
+          <div class="card" id="ppChefCard" style="display:none">
+            <h3>🧽 Putzaufgabe hinzufügen</h3>
+            <p class="hint">Wird für die gewählten Studios angelegt und dort im Putzplan angezeigt.</p>
+            <div class="field"><label for="ppTitle">Aufgabe</label>
+              <input class="inp" id="ppTitle" type="text" placeholder="z. B. Böden wischen" maxlength="120" /></div>
+            <div class="field"><label>Für welche Studios?</label>
+              <label class="studio-check" style="margin-bottom:7px" id="ppAllWrap"><input type="checkbox" id="ppAllStudios" /><span><b>Alle Studios</b></span></label>
+              <div class="studio-checks" id="ppStudios"></div></div>
+            <div class="field"><label for="ppRepeat">Wiederholung</label>
+              <select class="inp" id="ppRepeat">
+                <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
+                <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
+                <option value="">Einmalig</option>
+                <option value="custom">🔁 Eigenes Intervall …</option>
+              </select></div>
+            <div class="field" id="ppCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
+              <div style="display:flex;gap:8px">
+                <input class="inp" id="ppIntN" type="number" min="1" value="2" style="flex:0 0 90px" />
+                <select class="inp" id="ppIntUnit" style="flex:1">
+                  <option value="h">Stunden</option>
+                  <option value="d">Tage</option>
+                  <option value="w">Wochen</option>
+                </select>
+              </div></div>
+            <button class="btn btn-primary btn-sm" id="ppAdd">Putzaufgabe erstellen</button>
+            <p class="em-saved" id="ppAddNote"></p>
+          </div>
+
+          <!-- Liste der Putzaufgaben des gewählten Studios -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3 id="ppListTitle">Putzplan</h3>
+              <span class="todo-count" id="ppProgress"></span>
+            </div>
+            <div id="ppList" style="margin-top:8px"></div>
+          </div>
+
+          <!-- Notizen der Mitarbeiter -->
+          <div class="card">
+            <h3>📝 Notizen</h3>
+            <p class="hint">Platz für Hinweise vom Team, z. B. „Wischmopp ist kaputt".</p>
+            <div class="mat-add">
+              <input class="inp" id="ppNoteInput" type="text" placeholder="Notiz schreiben …" maxlength="300" />
+              <button class="btn btn-ghost btn-sm" id="ppNoteAdd">+ Notiz</button>
+            </div>
+            <div id="ppNotes" style="margin-top:12px"></div>
           </div>
         </div>
       </section>
@@ -1586,6 +1676,15 @@ function fmtTime(ts){
   var t=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   return d.toDateString()===now.toDateString()?t:d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+t;
 }
+/* Immer Datum + Uhrzeit (für Putzplan „erledigt am/um" und Notizen).
+   Heute -> "heute 14:30", sonst "05.08. 14:30". */
+function fmtDateTime(ts){
+  if(!ts) return '';
+  var d=new Date(ts), now=new Date();
+  var t=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  if(d.toDateString()===now.toDateString()) return 'heute '+t+' Uhr';
+  return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+t+' Uhr';
+}
 var _toastTimer;
 function toast(msg, isErr){
   var t=$('toast'); t.textContent=msg;
@@ -1896,6 +1995,7 @@ function showApp(){
   buildNav();
   buildChannels();
   buildMaterialSelect();
+  buildPutzplanSelect();
   if(session.role==='chef'){
     buildChefSelects(); buildEmpStudios(); listenEmployees(); listenInventoryAll(); restoreDrafts();
     $('docUploadCard').style.display='block'; buildDocStudios();
@@ -1989,6 +2089,7 @@ var NAV = [
   {id:'todos', label:'Aufgaben', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
   {id:'material', label:'Material', icon:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>'},
+  {id:'putzplan', label:'Putzplan', icon:'<path d="M3 21h18"/><path d="M9 21V9l6-4v16"/><path d="M15 9l4-2v14"/><path d="M9 13h.01M9 17h.01"/>'},
   {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
   {id:'archive', label:'Archiv', icon:'<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>', chefOnly:true},
@@ -2027,6 +2128,7 @@ function showView(id){
     if(window.innerWidth>820){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
   }
   if(id==='material') ensureMaterialLoaded();
+  if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
 
@@ -2422,7 +2524,9 @@ function stopListeners(){
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
   if(_dmThreadsUnsub){ _dmThreadsUnsub(); _dmThreadsUnsub=null; }
   if(_obUnsub){ _obUnsub(); _obUnsub=null; }
-  _matStudioKey=null;
+  if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
+  if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
+  _matStudioKey=null; _ppStudioKey=null;
 }
 
 /* Chat: wechselt bei Kanalwechsel */
@@ -2978,6 +3082,219 @@ function addMaterial(){
   var name=$('matNewName').value.trim(); if(!name) return;
   _matItems.push({name:name, have:0, need:0}); $('matNewName').value='';
   renderMaterial(); saveMaterialNow();
+}
+
+/* ============================================================
+   PUTZPLAN (Reinigungsaufgaben pro Studio)
+   - Chef legt Aufgaben mit Wiederholung an
+   - Mitarbeiter haken ab -> Name + Uhrzeit werden gespeichert
+   - Notizen-Bereich fürs Team
+   - wird wie Material live in eine Google-Tabelle gespiegelt
+   Datenmodell:
+     studios/{sk}/cleaning/{id}      = einzelne Putzaufgabe
+     studios/{sk}/cleaningNotes/{id} = einzelne Notiz
+   ============================================================ */
+var _ppStudioKey=null, _ppTasks=[], _ppNotes=[], _ppTaskUnsub=null, _ppNoteUnsub=null;
+
+/* Studio-Dropdown füllen: Chef sieht alle, Mitarbeiter nur die eigenen */
+function buildPutzplanSelect(){
+  var sel=$('ppStudio'); if(!sel) return;
+  var list = session.role==='chef'
+    ? STUDIOS_ALPHA
+    : session.studios.slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
+  sel.innerHTML = list.map(function(s){ return '<option value="'+esc(studioKey(s))+'">'+esc(s)+'</option>'; }).join('');
+  // Chef-Karte + Studio-Checkboxen nur für den Chef
+  var chefCard=$('ppChefCard');
+  if(chefCard) chefCard.style.display = session.role==='chef' ? 'block' : 'none';
+  if(session.role==='chef'){
+    var box=$('ppStudios'); if(box){
+      box.innerHTML='';
+      STUDIOS_ALPHA.forEach(function(s){
+        var lab=document.createElement('label'); lab.className='studio-check';
+        var cb=document.createElement('input'); cb.type='checkbox'; cb.value=studioKey(s);
+        cb.addEventListener('change',function(){ lab.classList.toggle('on',cb.checked);
+          if(!cb.checked){ var a=$('ppAllStudios'); if(a){a.checked=false; a.parentElement.classList.remove('on');} } });
+        var span=document.createElement('span'); span.textContent=s;
+        lab.appendChild(cb); lab.appendChild(span); box.appendChild(lab);
+      });
+    }
+  }
+  sel.onchange=function(){ loadPutzplan(sel.value); };
+}
+
+/* Beim Öffnen der Seite: erstes Studio laden (nur einmal aufbauen) */
+function ensurePutzplanLoaded(){
+  var sel=$('ppStudio'); if(!sel) return;
+  if(!sel.options.length) buildPutzplanSelect();
+  if(!_ppStudioKey && sel.value) loadPutzplan(sel.value);
+}
+
+/* Listener für ein Studio (Aufgaben + Notizen) */
+function loadPutzplan(sk){
+  if(!sk) return;
+  _ppStudioKey=sk;
+  var t=$('ppListTitle'); if(t) t.textContent='Putzplan · '+studioName(sk);
+  if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
+  if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
+  _ppTaskUnsub=db.collection('studios').doc(sk).collection('cleaning').orderBy('ts')
+    .onSnapshot(function(snap){
+      _ppTasks=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderPutzplan();
+    }, function(e){ console.error('Putzplan:',e.message); toast('Putzplan: '+errMsg(e),true); });
+  _ppNoteUnsub=db.collection('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50)
+    .onSnapshot(function(snap){
+      _ppNotes=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderPutzNotes();
+    }, function(e){ console.error('Putz-Notizen:',e.message); });
+}
+
+function renderPutzplan(){
+  var box=$('ppList'); if(!box) return;
+  // offene zuerst, dann erledigte; innerhalb nach Erstellzeit
+  var list=_ppTasks.slice().sort(function(a,b){ return (isDone(a)-isDone(b))||((a.ts||0)-(b.ts||0)); });
+  var chef=session.role==='chef';
+  var done=list.filter(isDone).length, total=list.length;
+  var prog=$('ppProgress'); if(prog) prog.textContent = total ? (done+' von '+total+' erledigt') : '';
+  if(!list.length){
+    box.innerHTML=emptyHTML('Kein Putzplan','Der Chef legt hier Reinigungsaufgaben an.');
+    return;
+  }
+  box.innerHTML=list.map(function(t){
+    var d=isDone(t);
+    var rep=t.recurring?'<span class="t-rep">🔁 '+esc(repLabelFor(t))+'</span>':'';
+    var doneInfo = d && t.doneBy
+      ? '<span class="pp-doneby">✓ '+esc(t.doneBy)+' · '+fmtDateTime(t.doneAt)+'</span>'
+      : '';
+    var del = chef ? '<button class="pp-del" data-del="'+esc(t.id)+'" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
+    return '<div class="pp-item'+(d?' done':'')+'" data-id="'+esc(t.id)+'">'+
+      '<button class="check" data-check="'+esc(t.id)+'" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
+      '<div class="pp-body"><div class="pp-title">'+esc(t.title)+rep+'</div>'+
+      '<div class="pp-meta">'+(doneInfo||'<span>noch offen</span>')+'</div></div>'+
+      del+'</div>';
+  }).join('');
+  bindPutzplanClicks(box);
+}
+
+function bindPutzplanClicks(box){
+  box.querySelectorAll('[data-check]').forEach(function(chk){
+    chk.addEventListener('click',function(){
+      var id=chk.getAttribute('data-check');
+      var node=chk.closest('.pp-item');
+      var t=_ppTasks.filter(function(x){ return x.id===id; })[0]; if(!t) return;
+      var willDone=!isDone(t);
+      if(willDone){
+        if(node){ node.classList.add('just-done'); setTimeout(function(){ node.classList.remove('just-done'); },720); }
+        burstAt(chk); toast(pickPraise());
+      }
+      db.collection('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
+        .update({ done:willDone, doneBy:willDone?session.name:null, doneByUid:willDone?session.uid:null, doneAt:willDone?Date.now():null })
+        .then(function(){ pushPutzplanToSheets(_ppStudioKey); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  box.querySelectorAll('[data-del]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-del');
+      if(!confirm('Putzaufgabe wirklich löschen?')) return;
+      db.collection('studios').doc(_ppStudioKey).collection('cleaning').doc(id).delete()
+        .then(function(){ pushPutzplanToSheets(_ppStudioKey); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
+
+/* Chef: neue Putzaufgabe für ausgewählte Studios anlegen */
+function addPutzTask(btn){
+  var title=$('ppTitle').value.trim();
+  if(!title){ toast('Bitte Aufgabe eingeben.',true); return; }
+  var targets=Array.prototype.slice.call($('ppStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; });
+  if(!targets.length){ toast('Bitte mindestens ein Studio wählen.',true); return; }
+  var recurring=$('ppRepeat').value||null;
+  var intN=0,intUnit='d',intervalMs=0;
+  if(recurring==='custom'){
+    intN=parseInt($('ppIntN').value,10)||0; intUnit=$('ppIntUnit').value;
+    var mult={h:3600000,d:86400000,w:604800000}[intUnit]||86400000;
+    intervalMs=intN*mult;
+    if(!intN||intervalMs<=0){ toast('Bitte ein gültiges Intervall angeben.',true); return; }
+  }
+  withBusy(btn,function(){
+    var batch=db.batch();
+    targets.forEach(function(sk){
+      var ref=db.collection('studios').doc(sk).collection('cleaning').doc();
+      var data={ title:title, done:false, doneBy:null, doneAt:null,
+        createdBy:session.name, createdByUid:session.uid, ts:Date.now() };
+      if(recurring){ data.recurring=recurring;
+        if(recurring==='custom'){ data.intervalMs=intervalMs; data.intervalN=intN; data.intervalUnit=intUnit; } }
+      batch.set(ref,data);
+    });
+    return batch.commit().then(function(){
+      $('ppTitle').value='';
+      $('ppAllStudios').checked=false; $('ppAllWrap').classList.remove('on');
+      $('ppStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
+      toast('Putzaufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' erstellt ✓');
+      targets.forEach(function(sk){ pushPutzplanToSheets(sk); });
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
+/* Notiz hinzufügen */
+function addPutzNote(){
+  var inp=$('ppNoteInput'); var text=(inp.value||'').trim();
+  if(!text){ return; }
+  if(!_ppStudioKey){ toast('Bitte zuerst ein Studio wählen.',true); return; }
+  inp.value='';
+  db.collection('studios').doc(_ppStudioKey).collection('cleaningNotes').add({
+    text:text, by:session.name, byUid:session.uid, ts:Date.now()
+  }).then(function(){ pushPutzplanToSheets(_ppStudioKey); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+
+function renderPutzNotes(){
+  var box=$('ppNotes'); if(!box) return;
+  if(!_ppNotes.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.88rem">Noch keine Notizen.</p>'; return; }
+  var chef=session.role==='chef';
+  box.innerHTML=_ppNotes.map(function(n){
+    var mine=n.byUid===session.uid;
+    var canDel = chef || (mine && (Date.now()-(n.ts||0) < 3600000));
+    var del = canDel ? '<button class="pp-note-del" data-notedel="'+esc(n.id)+'">löschen</button>' : '';
+    return '<div class="pp-note"><div class="pp-note-text">'+linkify(esc(n.text))+'</div>'+
+      '<div class="pp-note-foot"><span>'+esc(n.by||'—')+' · '+fmtDateTime(n.ts)+'</span>'+del+'</div></div>';
+  }).join('');
+  box.querySelectorAll('[data-notedel]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-notedel');
+      db.collection('studios').doc(_ppStudioKey).collection('cleaningNotes').doc(id).delete()
+        .then(function(){ pushPutzplanToSheets(_ppStudioKey); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
+
+/* Putzplan eines Studios live in die Google-Tabelle spiegeln (wie Material) */
+function pushPutzplanToSheets(sk){
+  if(!SHEETS_WEBHOOK_URL || !sk) return;
+  // aktuellen Stand direkt aus der Datenbank holen (unabhängig vom offenen Studio)
+  var studioRef=db.collection('studios').doc(sk);
+  Promise.all([
+    studioRef.collection('cleaning').orderBy('ts').get(),
+    studioRef.collection('cleaningNotes').orderBy('ts','desc').limit(50).get()
+  ]).then(function(res){
+    var tasks=res[0].docs.map(function(d){ var t=d.data();
+      return { title:t.title||'', wiederholung:repLabelFor(t)||'einmalig',
+        status:isDone(t)?'erledigt':'offen',
+        erledigtVon: isDone(t)?(t.doneBy||''):'',
+        zeitpunkt: isDone(t)&&t.doneAt?fmtDateTime(t.doneAt):'' }; });
+    var notes=res[1].docs.map(function(d){ var n=d.data();
+      return { text:n.text||'', by:n.by||'', ts:n.ts||0, zeit:fmtDateTime(n.ts) }; });
+    try{
+      fetch(SHEETS_WEBHOOK_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({ type:'putzplan', studio:studioName(sk), studioKey:sk,
+          tasks:tasks, notes:notes, updatedBy:session.name, ts:Date.now() })
+      }).catch(function(){});
+    }catch(e){}
+  }).catch(function(){});
 }
 
 /* Excel-Export aller Studios (öffnet sich direkt in Excel) */
@@ -3606,6 +3923,18 @@ function bindActions(){
   // Material: eigenes Item hinzufügen
   var matAdd=$('matAdd'); if(matAdd) matAdd.addEventListener('click',addMaterial);
   var matNew=$('matNewName'); if(matNew) matNew.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addMaterial(); } });
+
+  // ── Putzplan ──
+  var ppNoteAdd=$('ppNoteAdd'); if(ppNoteAdd) ppNoteAdd.addEventListener('click',addPutzNote);
+  var ppNoteInp=$('ppNoteInput'); if(ppNoteInp) ppNoteInp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addPutzNote(); } });
+  if(session.role==='chef'){
+    var ppRep=$('ppRepeat'); if(ppRep) ppRep.addEventListener('change',function(){ $('ppCustomWrap').style.display = this.value==='custom' ? 'block' : 'none'; });
+    var ppAdd=$('ppAdd'); if(ppAdd) ppAdd.addEventListener('click',function(){ addPutzTask(this); });
+    var ppAll=$('ppAllStudios'); if(ppAll) ppAll.addEventListener('change',function(){
+      $('ppAllWrap').classList.toggle('on', ppAll.checked);
+      $('ppStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=ppAll.checked; cb.parentElement.classList.toggle('on',ppAll.checked); });
+    });
+  }
 
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){
