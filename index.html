@@ -1,4 +1,87 @@
 <!DOCTYPE html>
+<!--
+=================================================================
+  STUDIOCHAT – internes Team-Portal für Körperformen
+=================================================================
+
+  Die ganze App steckt in dieser einen Datei. Sie hat drei große Teile:
+
+     1. STYLE   – das komplette Aussehen          (ab ca. Zeile  25)
+     2. BODY    – der sichtbare Aufbau der Seite  (ab ca. Zeile 690)
+     3. SCRIPT  – die gesamte Logik               (ab ca. Zeile 1145)
+
+  SO FINDEST DU ETWAS
+  Alle Abschnitte haben eine Überschrift in Großbuchstaben.
+  Einfach mit Strg+F (Mac: Cmd+F) nach dem Namen suchen, z. B. "KONFIGURATION".
+
+  -----------------------------------------------------------------
+  TEIL 1 – AUSSEHEN (STYLE)
+  -----------------------------------------------------------------
+    Farben & Grundeinstellungen ... :root      (Farben zentral ändern)
+    Hell-Modus ...................... Hell-Modus
+    Splash-Screen ................... Splash-Screen
+    Anmeldung ....................... Auth Screen
+    Grundgerüst der App ............. App Shell
+    Chat ............................ Chat
+    Aufgaben ........................ Todos
+    Ankündigungen ................... Announcements
+    Chef-Bereich .................... Cards / Chef
+    Handy-Navigation ................ Mobile nav
+    Animationen ..................... ANIMATIONEN & QUALITY-OF-LIFE
+    Komfort & Feedback .............. NEU: KOMFORT & SPIELERISCHES FEEDBACK
+
+  -----------------------------------------------------------------
+  TEIL 2 – AUFBAU DER SEITE (BODY)
+  -----------------------------------------------------------------
+    Offline-Hinweis ................. Hinweis-Leiste
+    Startbildschirm ................. Splash-Screen
+    Anmeldung ....................... Auth Screen
+    Die einzelnen Seiten der App:
+       Chat ......................... id="view-chat"
+       Aufgaben ..................... id="view-todos"
+       Infos/Ankündigungen .......... id="view-ann"
+       Material ..................... id="view-material"
+       Dokumente .................... id="view-docs"
+       Direktnachrichten ............ id="view-dm"
+       Archiv ....................... id="view-archive"
+       Chef-Bereich ................. id="view-chef"
+    Pop-ups (Bild, Suche, Profil) ... Bild-Lightbox / Such-Overlay / Profil-Editor
+
+  -----------------------------------------------------------------
+  TEIL 3 – LOGIK (SCRIPT)
+  -----------------------------------------------------------------
+    KONFIGURATION – HIER ANPASSEN ... Studios, Chef-PIN, Firebase-Zugang
+    INITIALISIERUNG ................. Verbindung zu Firebase aufbauen
+    HILFSFUNKTIONEN ................. kleine Helfer (Datum, Fehlertexte, Bilder)
+    STATE ........................... was die App sich gerade merkt
+    AUTH-SCREEN ..................... Anmelden & Registrieren
+    AUTH STATE OBSERVER ............. reagiert auf An-/Abmelden
+    APP STARTEN ..................... baut die Oberfläche nach dem Login auf
+    BENACHRICHTIGUNGEN / PUSH ....... Push-Nachrichten
+    MITARBEITERVERWALTUNG ........... Zugänge anlegen/ändern (nur Chef)
+    DOKUMENTE ....................... Dateien & Links
+    FIRESTORE-LISTENER .............. horcht auf Änderungen in der Datenbank
+    RENDER .......................... zeichnet Chat, Aufgaben, Infos usw.
+    MATERIAL-SEITE .................. Bestand pro Studio
+    ENTWÜRFE ........................ Zwischenspeichern beim Tippen
+    AKTIONEN ........................ was bei Klicks passiert
+    SUCHE ........................... die Lupe oben
+    DIREKTNACHRICHTEN ............... 1:1-Chats
+    ONBOARDING-CHECKLISTE ........... Einarbeitung neuer Mitarbeiter
+    PROFIL-EDITOR ................... eigenes Profil bearbeiten
+
+  -----------------------------------------------------------------
+  WAS DU AM HÄUFIGSTEN ÄNDERN WILLST
+  -----------------------------------------------------------------
+    Studios hinzufügen .... Abschnitt "KONFIGURATION", Liste STUDIOS
+                            ACHTUNG: nur hinten anhängen, nie umsortieren!
+    Chef-PIN ändern ....... Abschnitt "KONFIGURATION", CHEF_PIN
+    Farben ändern ......... ganz oben im STYLE bei :root
+
+  HINWEIS: Nach jeder Änderung speichern und auf GitHub hochladen –
+  die Seite aktualisiert sich dann von selbst.
+=================================================================
+-->
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
@@ -593,6 +676,22 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .t-due.over{animation:duePulse 2.2s ease-in-out infinite}
 @keyframes duePulse{0%,100%{opacity:1}50%{opacity:.55}}
 
+/* ── Kopfzeile auf schmalen Handys ──
+   Vorher lief der Inhalt über und der Abmelde-Knopf war rechts abgeschnitten.
+   Auf kleinen Displays wird der Schriftzug kleiner und das "Live"-Abzeichen
+   ausgeblendet, damit alle Knöpfe erreichbar bleiben. */
+@media(max-width:520px){
+  .topbar{gap:8px;padding-left:12px;padding-right:12px}
+  .tb-brand{font-size:.98rem;gap:6px;min-width:0;overflow:hidden}
+  .tb-live{display:none}
+  .tb-user{gap:7px;flex-shrink:0}
+  .icon-btn{width:36px;height:36px;border-radius:10px}
+  .icon-btn svg{width:17px;height:17px}
+}
+@media(max-width:360px){
+  .tb-brand .tb-logo{display:none}   /* ganz schmal: nur noch der Schriftzug */
+}
+
 /* Wer Animationen im System abgeschaltet hat, bekommt keine */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
@@ -844,6 +943,9 @@ var FIREBASE_CONFIG = {
     <div class="main">
 
       <!-- CHAT -->
+      <!-- ============================================================
+           SEITE: CHAT – Gruppen-Chat je Kanal (Allgemein + pro Studio)
+           ============================================================ -->
       <section class="view" id="view-chat">
         <div class="view-head"><h2>Team-Chat</h2><p>Schreibe mit allen oder nur mit deinem Studio.</p></div>
         <div class="notif-banner" id="notifBanner">
@@ -876,6 +978,9 @@ var FIREBASE_CONFIG = {
       </section>
 
       <!-- TODOS -->
+      <!-- ============================================================
+           SEITE: AUFGABEN – To-do-Liste mit Suche, Fortschritt und Foto
+           ============================================================ -->
       <section class="view" id="view-todos">
         <div class="view-head"><h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p></div>
         <!-- Suchfeld + Zähler: filtert die Aufgabenliste live mit -->
@@ -890,6 +995,9 @@ var FIREBASE_CONFIG = {
       </section>
 
       <!-- ANNOUNCEMENTS -->
+      <!-- ============================================================
+           SEITE: INFOS – Ankündigungen der Leitung mit Lesebestätigung
+           ============================================================ -->
       <section class="view" id="view-ann">
         <div class="view-head"><h2>Ankündigungen</h2><p>Wichtige Infos von der Leitung.</p></div>
         <div class="scroll-area">
@@ -899,6 +1007,9 @@ var FIREBASE_CONFIG = {
       </section>
 
       <!-- MATERIAL -->
+      <!-- ============================================================
+           SEITE: MATERIAL – Bestand pro Studio, Nachbestell-Alarm, Export
+           ============================================================ -->
       <section class="view" id="view-material">
         <div class="view-head"><h2>Material</h2><p>Bestand pro Studio – vorhanden &amp; fehlend eintragen.</p></div>
         <div class="scroll-area">
@@ -920,6 +1031,9 @@ var FIREBASE_CONFIG = {
       </section>
 
       <!-- DOKUMENTE -->
+      <!-- ============================================================
+           SEITE: DOKUMENTE – Dateien und Links für das Team
+           ============================================================ -->
       <section class="view" id="view-docs">
         <div class="view-head"><h2>Dokumente</h2><p>Wichtige Dateien – pro Studio.</p></div>
         <div class="scroll-area">
@@ -944,6 +1058,9 @@ var FIREBASE_CONFIG = {
       </section>
 
       <!-- DIREKTNACHRICHTEN -->
+      <!-- ============================================================
+           SEITE: DIREKT – private 1:1-Nachrichten (wie WhatsApp)
+           ============================================================ -->
       <section class="view" id="view-dm">
         <div class="view-head"><h2 id="dmTitle">Direkt</h2><p>Private 1:1-Nachrichten.</p></div>
         <div class="scroll-area" id="dmListWrap">
@@ -972,6 +1089,9 @@ var FIREBASE_CONFIG = {
       </section>
 
       <!-- ARCHIV (nur Chef) -->
+      <!-- ============================================================
+           SEITE: ARCHIV – erledigte Aufgaben (nur Chef)
+           ============================================================ -->
       <section class="view" id="view-archive">
         <div class="view-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
           <div><h2>Archiv</h2><p>Erledigte Aufgaben aller Studios.</p></div>
@@ -981,6 +1101,9 @@ var FIREBASE_CONFIG = {
       </section>
 
       <!-- CHEF -->
+      <!-- ============================================================
+           SEITE: CHEF-BEREICH – Dashboard, Aufgaben erteilen, Mitarbeiter
+           ============================================================ -->
       <section class="view" id="view-chef">
         <div class="view-head"><h2>Chef-Bereich</h2><p>Überblick, Nachrichten &amp; Aufgaben verteilen.</p></div>
         <div class="scroll-area">
