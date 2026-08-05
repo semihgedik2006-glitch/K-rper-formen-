@@ -1085,10 +1085,22 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
    KONFIGURATION – HIER ANPASSEN
    ============================================================ */
 
+/* Die 14 Standorte.
+   ⚠️ WICHTIG: Die Reihenfolge NIE ändern und Einträge NIE löschen!
+   Die Datenbank speichert Studios als "studio-<Position in dieser Liste>"
+   (z. B. Longerich = studio-0). Beim Umsortieren würden bestehende Aufgaben,
+   Materiallisten und Ankündigungen dem falschen Studio zugeordnet.
+   Neue Studios also IMMER nur hinten anhängen. */
 var STUDIOS = [
   "Longerich","Nippes","Ebertplatz","Rath","Porz","Rondorf",
-  "Hürth","Brühl","Niederkassel Mondorf","Refrath","Overath","Marialinden"
+  "Hürth","Brühl","Niederkassel Mondorf","Refrath","Overath","Marialinden",
+  "Rösrath","Seelscheid"
 ];
+
+/* Alphabetisch sortierte Kopie – wird NUR für die Anzeige benutzt
+   (Auswahllisten, Kacheln, Tabellen), damit man bei 14 Standorten schnell findet.
+   Die Datenbank-Kennung kommt weiterhin aus studioKey(name) und bleibt unverändert. */
+var STUDIOS_ALPHA = STUDIOS.slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
 
 var CHEF_PIN = "Puls-FF73-2887$"; // Chef-Registrierungscode (nur an Chefs weitergeben!)
 
@@ -1424,7 +1436,7 @@ var regRole = 'mitarbeiter';
 (function initAuthScreen(){
   // Studio-Checkboxen für Registrierung (Mehrfachauswahl)
   var wrap = $('rgStudios');
-  STUDIOS.forEach(function(s){
+  STUDIOS_ALPHA.forEach(function(s){
     var lab=document.createElement('label'); lab.className='studio-check';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.value=s;
     cb.addEventListener('change',function(){ lab.classList.toggle('on', cb.checked); });
@@ -1728,7 +1740,7 @@ function buildChannels(){
   var wrap=$('chatChannels'); wrap.innerHTML='';
   var chans=[{id:'allgemein',label:'Allgemein (alle)'}];
   if(session.role==='chef'){
-    STUDIOS.forEach(function(s){ chans.push({id:studioKey(s),label:s}); });
+    STUDIOS_ALPHA.forEach(function(s){ chans.push({id:studioKey(s),label:s}); });
   } else {
     session.studios.forEach(function(s){ chans.push({id:studioKey(s),label:s}); });
   }
@@ -1749,11 +1761,11 @@ function buildChannels(){
 function buildChefSelects(){
   var t=$('bcTarget'); t.innerHTML='';
   var oa=document.createElement('option'); oa.value='all'; oa.textContent='Alle Mitarbeiter'; t.appendChild(oa);
-  STUDIOS.forEach(function(s){ var o=document.createElement('option'); o.value=studioKey(s); o.textContent='Nur '+s; t.appendChild(o); });
+  STUDIOS_ALPHA.forEach(function(s){ var o=document.createElement('option'); o.value=studioKey(s); o.textContent='Nur '+s; t.appendChild(o); });
 
   // Aufgaben: Studio-Mehrfachauswahl (Checkboxen)
   var ns=$('ntStudios'); ns.innerHTML='';
-  STUDIOS.forEach(function(s){
+  STUDIOS_ALPHA.forEach(function(s){
     var lab=document.createElement('label'); lab.className='studio-check';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.value=studioKey(s);
     cb.addEventListener('change',function(){
@@ -1776,7 +1788,7 @@ function buildChefSelects(){
 function buildMaterialSelect(){
   var sel=$('matStudio'); if(!sel) return;
   sel.innerHTML='';
-  var list = session.role==='chef' ? STUDIOS : session.studios;
+  var list = session.role==='chef' ? STUDIOS_ALPHA : session.studios.slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
   list.forEach(function(s){ var o=document.createElement('option'); o.value=studioKey(s); o.textContent=s; sel.appendChild(o); });
   sel.onchange=function(){ loadMaterial(sel.value); };
   if(session.role==='chef'){ var ex=$('matExport'); if(ex){ ex.style.display='inline-flex'; ex.onclick=exportMaterialExcel; } }
@@ -1790,7 +1802,7 @@ var _empUnsub=null;
 function buildEmpStudios(){
   var wrap=$('emStudios'); if(!wrap) return;
   wrap.innerHTML='';
-  STUDIOS.forEach(function(s){
+  STUDIOS_ALPHA.forEach(function(s){
     var lab=document.createElement('label'); lab.className='studio-check';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.value=s;
     cb.addEventListener('change',function(){ lab.classList.toggle('on',cb.checked); });
@@ -1876,7 +1888,7 @@ function renderEmployees(emps){
       if(open){
         var cont=ed.querySelector('.studio-checks'); cont.innerHTML='';
         var cur=emp.studios||(emp.studio?[emp.studio]:[]);
-        STUDIOS.forEach(function(s){
+        STUDIOS_ALPHA.forEach(function(s){
           var on=cur.indexOf(s)>=0;
           var lab=document.createElement('label'); lab.className='studio-check'+(on?' on':'');
           var cb=document.createElement('input'); cb.type='checkbox'; cb.value=s; cb.checked=on;
@@ -1913,7 +1925,7 @@ function fmtSize(b){ b=b||0; return b>1048576?(b/1048576).toFixed(1)+' MB':Math.
 function buildDocStudios(){
   var wrap=$('docStudios'); if(!wrap) return;
   wrap.innerHTML='';
-  STUDIOS.forEach(function(s){
+  STUDIOS_ALPHA.forEach(function(s){
     var lab=document.createElement('label'); lab.className='studio-check';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.value=studioKey(s);
     cb.addEventListener('change',function(){
@@ -2239,7 +2251,7 @@ function renderTodos(){
     $('todoTitle').textContent='Aufgaben aller Studios';
     $('todoSub').textContent='Erteile und überprüfe Aufgaben.';
     var html='';
-    STUDIOS.forEach(function(s){
+    STUDIOS_ALPHA.forEach(function(s){
       var sk=studioKey(s);
       var list=(cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); });
       if(!list.length) return;
@@ -2276,7 +2288,7 @@ function renderTodos(){
 function renderArchive(){
   var area=$('archiveArea'); if(!area) return;
   var html='';
-  STUDIOS.forEach(function(s){
+  STUDIOS_ALPHA.forEach(function(s){
     var sk=studioKey(s);
     var list=(cachedTodos[sk]||[]).filter(isArchived).sort(function(a,b){ return (b.doneAt||0)-(a.doneAt||0); });
     if(!list.length) return;
@@ -2396,7 +2408,7 @@ function renderAnnouncements(anns){
 
 function renderStudioGrid(){
   var grid=$('studioGrid'); if(!grid) return;
-  grid.innerHTML=STUDIOS.map(function(s){
+  grid.innerHTML=STUDIOS_ALPHA.map(function(s){
     var sk=studioKey(s), list=cachedTodos[sk]||[];
     var done=list.filter(isDone).length, total=list.length;
     var pct=total?Math.round(done/total*100):0;
@@ -2615,11 +2627,11 @@ function exportMaterialExcel(){
     function block(title, bg, txt, cellFn){
       var h='<tr><td colspan="'+ncols+'" style="background:'+bg+';color:'+txt+';font-weight:bold;font-size:13px;padding:7px 10px;border:1px solid #2a3a32">'+title+'</td></tr>';
       h+='<tr><td '+thMat+'>Material</td>';
-      STUDIOS.forEach(function(s){ h+='<td '+thStu+'>'+esc(s)+'</td>'; });
+      STUDIOS_ALPHA.forEach(function(s){ h+='<td '+thStu+'>'+esc(s)+'</td>'; });
       h+='</tr>';
       names.forEach(function(nm){
         h+='<tr><td '+tdMat+'>'+esc(nm)+'</td>';
-        STUDIOS.forEach(function(s){ h+=cellFn(find(studioKey(s),nm)); });
+        STUDIOS_ALPHA.forEach(function(s){ h+=cellFn(find(studioKey(s),nm)); });
         h+='</tr>';
       });
       return h;

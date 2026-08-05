@@ -679,10 +679,15 @@ var auth = firebase.auth();
 var db = firebase.firestore();
 
 /* Die 12 Standorte – gleiche Reihenfolge wie in index.html (Schlüssel-Basis!) */
+/* ⚠️ Muss exakt mit der Liste in index.html übereinstimmen (gleiche Reihenfolge!),
+   da die Datenbank Studios als "studio-<Position>" speichert. */
 var STUDIOS = [
   "Longerich","Nippes","Ebertplatz","Rath","Porz","Rondorf",
-  "Hürth","Brühl","Niederkassel Mondorf","Refrath","Overath","Marialinden"
+  "Hürth","Brühl","Niederkassel Mondorf","Refrath","Overath","Marialinden",
+  "Rösrath","Seelscheid"
 ];
+/* Alphabetisch sortierte Kopie – nur für die Anzeige (Kennungen bleiben gleich). */
+var STUDIOS_ALPHA = STUDIOS.slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
 function studioKey(name){ return 'studio-'+STUDIOS.indexOf(name); }
 function studioName(key){ var i=+String(key).replace('studio-',''); return STUDIOS[i]||key; }
 
@@ -812,7 +817,7 @@ auth.onAuthStateChanged(function(user){
 });
 
 function isChef(){ return session && session.role === 'chef'; }
-function myStudioNames(){ return isChef() ? STUDIOS : (session ? session.studios : []); }
+function myStudioNames(){ return isChef() ? STUDIOS_ALPHA : (session ? session.studios : []); }
 
 function startApp(){
   $('authWrap').classList.remove('show');
@@ -1011,7 +1016,7 @@ function renderOccupancy(){
   var max = 1;
   STUDIOS.forEach(function(s){ max = Math.max(max, counts[studioKey(s)]); });
   var h = '';
-  STUDIOS.forEach(function(s){
+  STUDIOS_ALPHA.forEach(function(s){
     var c = counts[studioKey(s)];
     h += '<div class="row"><div class="nm">'+esc(s)+'</div>'
       + '<div class="bar"><i style="width:'+Math.round(c/max*100)+'%"></i></div>'
@@ -1293,7 +1298,7 @@ function renderKpis(){
 
 function renderStudioGrid(){
   var h = '';
-  STUDIOS.forEach(function(s, i){
+  STUDIOS_ALPHA.forEach(function(s, i){
     var sk = studioKey(s);
     var m = metrics[sk] || {};
     var cap = Math.max(0, Math.min(100, +m.capacityPct || 0));
