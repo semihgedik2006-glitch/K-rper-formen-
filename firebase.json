@@ -4,5 +4,56 @@
   },
   "firestore": {
     "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "firestore.rules",
+      "storage.rules",
+      "**/.*",
+      "**/node_modules/**",
+      "functions/**",
+      "*.md",
+      "*.txt",
+      "*.gs"
+    ],
+    "cleanUrls": true,
+    "headers": [
+      {
+        "//": "Die App selbst NIE zwischenspeichern. GitHub Pages schickt max-age=600 mit, dadurch sahen Geräte bis zu zehn Minuten lang die alte Fassung. Hier bestimmen wir das selbst.",
+        "source": "/index.html",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        ]
+      },
+      {
+        "//": "Der Service Worker muss ebenfalls immer frisch geholt werden, sonst bleibt eine alte Fassung dauerhaft aktiv.",
+        "source": "/sw.js",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        ]
+      },
+      {
+        "source": "/manifest.json",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache" }
+        ]
+      },
+      {
+        "//": "Die anderen Seiten genauso behandeln - es sind alles einzelne HTML-Dateien, die sich ändern.",
+        "source": "**/*.html",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        ]
+      },
+      {
+        "//": "Bilder dürfen zwischengespeichert werden, die ändern sich praktisch nie.",
+        "source": "**/*.@(png|svg|jpg|jpeg|webp|ico)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=604800" }
+        ]
+      }
+    ]
   }
 }
