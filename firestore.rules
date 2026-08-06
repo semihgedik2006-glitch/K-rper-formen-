@@ -45,14 +45,24 @@ service cloud.firestore {
       allow delete: if isChef();
     }
 
+    // Sprachnachrichten liegen als Datenblock in der Nachricht. Ein Dokument
+    // darf 1 MB groß sein – wir begrenzen die Aufnahme auf 800 KB, damit
+    // Text, Bild und Aufnahme zusammen sicher hineinpassen.
+    function audioOk() {
+      return !('audio' in request.resource.data)
+        || (request.resource.data.audio is string
+            && request.resource.data.audio.size() <= 800000);
+    }
+
     // ── Chat-Nachrichten ──
     match /channels/{channelId}/messages/{msgId} {
       allow read: if signedIn();
-      // Nur als man selbst senden; Bilder/Text begrenzen
+      // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
       allow create: if signedIn()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.text is string
-        && request.resource.data.text.size() <= 2000;
+        && request.resource.data.text.size() <= 2000
+        && audioOk();
       // Reagieren darf jeder (nur das Feld reactions).
       // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
       allow update: if signedIn() && (
@@ -156,7 +166,8 @@ service cloud.firestore {
       allow read: if signedIn() && dmId.split('_').hasAny([request.auth.uid]);
       allow create: if signedIn()
         && request.resource.data.uid == request.auth.uid
-        && dmId.split('_').hasAny([request.auth.uid]);
+        && dmId.split('_').hasAny([request.auth.uid])
+        && audioOk();
       // Update nur für Beteiligte (z. B. Checklisten-Häkchen)
       allow update: if signedIn() && dmId.split('_').hasAny([request.auth.uid]);
       allow delete: if signedIn() && dmId.split('_').hasAny([request.auth.uid])
