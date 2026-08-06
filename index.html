@@ -876,6 +876,57 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 #personModal.show .pm-box{animation:sheetIn .46s var(--spring)}
 #personModal{animation:fadeBlur .3s var(--ease-ios)}
 
+/* Weiterleiten und Tastenkürzel nutzen dasselbe Fenster-Aussehen */
+#fwdModal,#keysModal{position:fixed;inset:0;z-index:215;display:none;
+  align-items:center;justify-content:center;padding:20px;
+  background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  animation:fadeBlur .3s var(--ease-ios)}
+#fwdModal.show,#keysModal.show{display:flex}
+#fwdModal.show .pm-box,#keysModal.show .pm-box{animation:sheetIn .46s var(--spring)}
+@media (max-width:620px){
+  #fwdModal,#keysModal{align-items:flex-end;padding:0}
+  #fwdModal .pm-box,#keysModal .pm-box{
+    max-width:none;border-radius:22px 22px 0 0;border-bottom:none;
+    padding:20px 20px calc(24px + var(--sab));max-height:88vh}
+  #fwdModal.show .pm-box,#keysModal.show .pm-box{animation:sheetUp .5s var(--ease-ios)}
+  #fwdModal .pm-box::before,#keysModal .pm-box::before{
+    content:'';display:block;width:38px;height:4px;border-radius:999px;
+    background:var(--line-2);margin:-6px auto 14px}
+}
+/* Ziel-Liste beim Weiterleiten */
+.fwd-item{display:flex;align-items:center;gap:11px;padding:11px 4px;cursor:pointer;
+  border-top:1px solid var(--line);transition:background .2s}
+.fwd-item:first-child{border-top:none}
+.fwd-item:active{background:var(--bg-soft)}
+@media (hover:hover){ .fwd-item:hover{background:var(--bg-soft)} }
+.fwd-ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  background:var(--bg-3);color:var(--accent);flex-shrink:0;font-size:.95rem}
+.fwd-name{flex:1;min-width:0;font-weight:600;font-size:.93rem;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fwd-kind{color:var(--text-3);font-size:.76rem;white-space:nowrap}
+/* Mein Dienst (Startseite) */
+.mysh-row{display:flex;align-items:baseline;gap:10px;padding:9px 0;flex-wrap:wrap;
+  border-top:1px solid var(--line);font-size:.9rem}
+.mysh-row:first-child{border-top:none}
+.mysh-row.today{font-weight:600}
+.mysh-day{flex:0 0 auto;min-width:82px;color:var(--text-2)}
+.mysh-row.today .mysh-day{color:var(--accent)}
+.mysh-time{flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:600}
+.mysh-studio{flex:1;min-width:0;color:var(--text-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mysh-note{flex:0 0 100%;color:var(--text-3);font-size:.78rem}
+
+/* Hinweis über einer weitergeleiteten Nachricht */
+.fwd-mark{font-size:.74rem;color:var(--text-3);font-style:italic;margin-bottom:3px}
+/* Tastenkürzel-Liste */
+.key-row{display:flex;align-items:center;gap:12px;padding:9px 0;
+  border-top:1px solid var(--line);font-size:.89rem}
+.key-row:first-child{border-top:none}
+.key-row kbd{flex:0 0 auto;min-width:26px;text-align:center;
+  background:var(--bg-3);border:1px solid var(--line-2);border-bottom-width:2px;
+  border-radius:7px;padding:3px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:.8rem;color:var(--text)}
+
 /* Reiter im Profil-Menü: Auswahl gleitet mit, statt zu springen */
 .pm-tab{position:relative}
 .pm-tab.on{animation:tabPop .4s var(--spring)}
@@ -1570,6 +1621,15 @@ var FIREBASE_CONFIG = {
         <div class="scroll-area" data-shrinks="1">
           <div id="homeAlerts"></div>
           <div class="home-grid" id="homeGrid"></div>
+          <!-- Mein Dienst: die eigene Woche auf einen Blick. Für Mitarbeiter
+               ist das die wichtigste Frage überhaupt – wann muss ich hin? -->
+          <div class="card" id="myShiftCard" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3>📅 Mein Dienst</h3>
+              <span class="todo-count" id="myShiftSub"></span>
+            </div>
+            <div id="myShiftList"></div>
+          </div>
           <div class="card">
             <h3>⚡ Schnellzugriff</h3>
             <p class="hint">Die Bereiche, die du am häufigsten brauchst.</p>
@@ -2217,6 +2277,27 @@ var FIREBASE_CONFIG = {
   <nav class="mobnav" id="mobnav"></nav>
 </div>
 
+<!-- Weiterleiten: Auswahl, wohin eine Nachricht kopiert werden soll -->
+<div id="fwdModal">
+  <div class="pm-box">
+    <button class="lb-close" id="fwdClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
+    <h3 style="margin-bottom:6px">Weiterleiten</h3>
+    <p class="hint" id="fwdPreview" style="margin-bottom:14px"></p>
+    <input class="inp" id="fwdSearch" type="search" placeholder="Kanal oder Person suchen …" autocomplete="off" style="margin-bottom:12px" />
+    <div id="fwdList"></div>
+  </div>
+</div>
+
+<!-- Tastenkürzel-Übersicht (nur am Rechner sinnvoll) -->
+<div id="keysModal">
+  <div class="pm-box">
+    <button class="lb-close" id="keysClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
+    <h3 style="margin-bottom:14px">⌨️ Tastenkürzel</h3>
+    <div id="keysList"></div>
+    <p class="hint" style="margin-top:14px">Kürzel wirken nicht, während du in ein Feld schreibst.</p>
+  </div>
+</div>
+
 <!-- Druck-Bereich: normalerweise unsichtbar. Beim Drucken wird NUR dieser
      Kasten gedruckt – schwarz auf weiß, ohne Menü und ohne Knöpfe. -->
 <div id="printArea"></div>
@@ -2852,6 +2933,162 @@ function toast(msg, isErr){
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2700);
 }
+/* ============================================================
+   NACHRICHT WEITERLEITEN
+   ------------------------------------------------------------
+   Kopiert eine Nachricht in einen anderen Kanal oder an eine Person.
+   Die Kopie trägt sichtbar den Vermerk, von wem sie ursprünglich stammt –
+   sonst entsteht der Eindruck, jemand hätte das selbst geschrieben.
+   ============================================================ */
+var _fwdMsg=null;
+function fwdSummary(m){
+  if(m.text) return m.text.slice(0,90);
+  if(m.audio) return '🎤 Sprachnachricht';
+  if(m.img) return '📷 Foto';
+  return 'Nachricht';
+}
+function openForward(m){
+  _fwdMsg=m;
+  var p=$('fwdPreview');
+  if(p) p.textContent='„'+fwdSummary(m)+'" von '+(m.name||'?');
+  var se=$('fwdSearch'); if(se) se.value='';
+  renderForwardTargets('');
+  $('fwdModal').classList.add('show');
+  if(se && window.innerWidth>820) setTimeout(function(){ se.focus(); },120);
+}
+function closeForward(){ $('fwdModal').classList.remove('show'); _fwdMsg=null; }
+
+/* Mögliche Ziele: die Kanäle, die man sehen darf, und alle Kolleginnen */
+function forwardTargets(){
+  var list=[];
+  (_chanList||[]).forEach(function(id){
+    list.push({ kind:'chan', id:id, name:(id==='allgemein'?'Allgemein (alle)':studioName(id)), ico:'#' });
+  });
+  (_allUsers||[]).forEach(function(u){
+    if(u.uid===session.uid || u.system) return;
+    list.push({ kind:'dm', id:u.uid, name:u.name||'?', ico:'@' });
+  });
+  return list;
+}
+function renderForwardTargets(filter){
+  var box=$('fwdList'); if(!box) return;
+  filter=(filter||'').toLowerCase();
+  var list=forwardTargets().filter(function(t){
+    return !filter || t.name.toLowerCase().indexOf(filter)>=0;
+  });
+  box.innerHTML = list.length
+    ? list.map(function(t){
+        return '<div class="fwd-item" data-fk="'+t.kind+'" data-fi="'+esc(t.id)+'" data-fn="'+esc(t.name)+'">'+
+          '<span class="fwd-ico">'+t.ico+'</span>'+
+          '<span class="fwd-name">'+esc(t.name)+'</span>'+
+          '<span class="fwd-kind">'+(t.kind==='chan'?'Kanal':'Direkt')+'</span></div>';
+      }).join('')
+    : '<p style="color:var(--text-3);font-size:.9rem;padding:8px 0">Nichts gefunden.</p>';
+  box.querySelectorAll('.fwd-item').forEach(function(el){
+    el.addEventListener('click',function(){
+      doForward(el.getAttribute('data-fk'), el.getAttribute('data-fi'), el.getAttribute('data-fn'));
+    });
+  });
+}
+function doForward(kind, id, name){
+  var m=_fwdMsg; if(!m) return;
+  var doc={
+    uid:session.uid, name:session.name, ts:Date.now(),
+    text:m.text||'',
+    fwdFrom:m.name||''            // Vermerk: von wem die Nachricht ursprünglich ist
+  };
+  if(m.img) doc.img=m.img;
+  if(m.audio){ doc.audio=m.audio; doc.audioMs=m.audioMs||0; }
+  closeForward();
+  if(kind==='chan'){
+    doc.role=session.role;
+    doc.studio=channelStudioName(id);
+    db.collection('channels').doc(id).collection('messages').add(doc)
+      .then(function(){ toast('Weitergeleitet an '+name+' ✓'); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  } else {
+    var dmId='dm_'+[session.uid,id].sort().join('_');
+    var now=Date.now();
+    db.collection('dms').doc(dmId).collection('messages').add(doc)
+      .then(function(){
+        var names={}; names[session.uid]=session.name; names[id]=name;
+        var rt={}; rt[session.uid]=now;
+        return db.collection('dms').doc(dmId).set({
+          participants:[session.uid,id], names:names,
+          last:fwdSummary(m), lastTs:now, lastSender:session.uid, readTs:rt
+        },{merge:true});
+      })
+      .then(function(){ toast('Weitergeleitet an '+name+' ✓'); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  }
+}
+
+/* ============================================================
+   TASTENKÜRZEL (Rechner)
+   ------------------------------------------------------------
+   Am Handy nutzlos, am Schreibtisch spart es viele Klicks – gerade für
+   den Chef, der die App vermutlich am Rechner offen hat.
+   ============================================================ */
+var KEYMAP=[
+  {k:'1', t:'Start'},
+  {k:'2', t:'Austausch (Chat)'},
+  {k:'3', t:'Arbeit (Aufgaben)'},
+  {k:'4', t:'Team'},
+  {k:'5', t:'Verwaltung', manage:true},
+  {k:'S', t:'Suche öffnen'},
+  {k:'N', t:'Neue Aufgabe', manage:true},
+  {k:'A', t:'Neue Ankündigung', manage:true},
+  {k:'Esc', t:'Fenster schließen'},
+  {k:'?', t:'Diese Übersicht'}
+];
+function renderKeysHelp(){
+  var box=$('keysList'); if(!box) return;
+  box.innerHTML=KEYMAP.filter(function(x){ return !x.manage || canManage(); })
+    .map(function(x){ return '<div class="key-row"><kbd>'+esc(x.k)+'</kbd><span>'+esc(x.t)+'</span></div>'; })
+    .join('');
+}
+/* Schreibt der Benutzer gerade irgendwo? Dann darf kein Kürzel greifen. */
+function typingSomewhere(){
+  var el=document.activeElement;
+  if(!el) return false;
+  var tag=(el.tagName||'').toLowerCase();
+  return tag==='input' || tag==='textarea' || tag==='select' || el.isContentEditable;
+}
+function anyModalOpen(){
+  return ['profileModal','personModal','fwdModal','keysModal','searchOverlay','lightbox']
+    .some(function(id){ var e=$(id); return e && e.classList.contains('show'); });
+}
+function closeAllModals(){
+  ['profileModal','personModal','fwdModal','keysModal'].forEach(function(id){
+    var e=$(id); if(e) e.classList.remove('show');
+  });
+  closeSearch();
+}
+function bindShortcuts(){
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){ closeAllModals(); return; }
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    if(typingSomewhere() || anyModalOpen()) return;
+    var k=e.key;
+    var gruppen={'1':'home','2':'chat','3':'todos','4':'team','5':'chef'};
+    if(gruppen[k]){
+      if(k==='5' && !canManage()) return;
+      e.preventDefault(); showView(gruppen[k]); tick(8); return;
+    }
+    var low=(k||'').toLowerCase();
+    if(low==='s'){ e.preventDefault(); openSearch(); return; }
+    if(low==='n' && canManage()){
+      e.preventDefault(); showView('chef'); showChefTab('erstellen');
+      setTimeout(function(){ var f=$('ntTitle'); if(f) f.focus(); },320); return;
+    }
+    if(low==='a' && canManage()){
+      e.preventDefault(); showView('chef'); showChefTab('erstellen');
+      setTimeout(function(){ var f=$('bcText'); if(f) f.focus(); },320); return;
+    }
+    if(k==='?'){ e.preventDefault(); renderKeysHelp(); $('keysModal').classList.add('show'); }
+  });
+}
+
 /* ── Rückgängig ──
    Nach dem Löschen erscheint 8 Sekunden lang eine Leiste. Ein Tipp darauf
    legt den Eintrag wieder an. Damit ist Löschen nicht mehr endgültig und
@@ -4250,6 +4487,7 @@ function renderMessages(msgs){
     var tools='<span class="msg-tools">'+
       '<button class="msg-tool" data-reply="'+esc(m.id)+'" title="Antworten" aria-label="Antworten">↩</button>'+
       '<button class="msg-tool" data-react="'+esc(m.id)+'" title="Reagieren" aria-label="Reagieren">☺</button>'+
+      '<button class="msg-tool" data-fwd="'+esc(m.id)+'" title="Weiterleiten" aria-label="Weiterleiten">↪</button>'+
       (canEdit?'<button class="msg-tool" data-edit="'+esc(m.id)+'" title="Bearbeiten" aria-label="Bearbeiten">✎</button>':'')+
       delBtn+'</span>';
     // Zitat der Nachricht, auf die geantwortet wurde
@@ -4258,11 +4496,12 @@ function renderMessages(msgs){
         '<span>'+esc(m.replyText||'')+'</span></div>'
       : '';
     var edited = m.editedAt ? '<span class="edited">bearbeitet</span>' : '';
+    var fwd = m.fwdFrom ? '<div class="fwd-mark">↪ weitergeleitet von '+esc(m.fwdFrom)+'</div>' : '';
     var iAmMentioned = Array.isArray(m.mentions) && m.mentions.indexOf(session.uid)>=0;
     html+='<div class="msg'+(mine?' mine':'')+(iAmMentioned?' mentioned':'')+'" data-mid="'+esc(m.id)+'">'+
       '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+
       '<time>'+fmtTime(m.ts)+'</time>'+edited+tools+'</div>'+
-      quote+bodyHtml+audioHtml+imgHtml+reactionsHTML(m)+'</div>';
+      fwd+quote+bodyHtml+audioHtml+imgHtml+reactionsHTML(m)+'</div>';
   });
   box.innerHTML=html;
   var lo=$('loadOlder');
@@ -4368,6 +4607,13 @@ function bindMessageTools(box){
   });
   box.querySelectorAll('[data-react]').forEach(function(b){
     b.addEventListener('click',function(e){ e.stopPropagation(); openReactPicker(b, b.getAttribute('data-react')); });
+  });
+  box.querySelectorAll('[data-fwd]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      var m=(_curMsgs||[]).filter(function(x){ return x.id===b.getAttribute('data-fwd'); })[0];
+      if(m) openForward(m);
+    });
   });
   box.querySelectorAll('[data-toggle]').forEach(function(b){
     b.addEventListener('click',function(){ toggleReaction(b.getAttribute('data-mid'), b.getAttribute('data-toggle')); });
@@ -4730,6 +4976,9 @@ function renderHome(){
     });
   }
 
+  // Mein Dienst (lädt höchstens alle fünf Minuten neu)
+  loadMyShifts();
+
   // Schnellzugriff
   var q=$('quickGrid');
   if(q){
@@ -4770,6 +5019,73 @@ function renderHome(){
         }).join('')
       : '<p style="color:var(--text-3);font-size:.9rem">Noch nichts passiert.</p>';
   }
+}
+
+/* ── Mein Dienst ──
+   Zeigt auf der Startseite die eigenen Schichten der nächsten sieben Tage.
+   Bewusst KEIN Dauer-Listener: das wären zusätzliche Abfragen rund um die
+   Uhr für etwas, das sich selten ändert. Stattdessen einmal laden und
+   höchstens alle fünf Minuten erneuern. */
+var _myShifts=[], _myShiftsAt=0, _myShiftsLoading=false;
+var MYSHIFT_TTL = 5*60*1000;
+
+function loadMyShifts(force){
+  if(!session || _myShiftsLoading) return;
+  if(!force && Date.now()-_myShiftsAt < MYSHIFT_TTL){ renderMyShifts(); return; }
+  var keys=session.studioKeys||[];
+  if(!keys.length){ renderMyShifts(); return; }
+  _myShiftsLoading=true;
+  var heute=ymd(new Date());
+  var bis=new Date(); bis.setDate(bis.getDate()+7); bis=ymd(bis);
+  var jobs=keys.map(function(sk){
+    return db.collection('studios').doc(sk).collection('shifts')
+      .where('date','>=',heute).where('date','<=',bis).get()
+      .then(function(sn){
+        return sn.docs.map(function(d){ return Object.assign({id:d.id, sk:sk}, d.data()); });
+      })
+      .catch(function(){ return []; });
+  });
+  Promise.all(jobs).then(function(res){
+    _myShiftsLoading=false;
+    _myShiftsAt=Date.now();
+    var alle=[];
+    res.forEach(function(a){ alle=alle.concat(a); });
+    _myShifts=alle.filter(function(x){ return x.uid===session.uid; })
+      .sort(function(a,b){
+        return (a.date||'').localeCompare(b.date||'') || (a.from||'').localeCompare(b.from||'');
+      });
+    renderMyShifts();
+  });
+}
+
+function renderMyShifts(){
+  var card=$('myShiftCard'), box=$('myShiftList'); if(!card||!box) return;
+  if(!(session.studioKeys||[]).length){ card.style.display='none'; return; }
+  // Chef und Leiter sehen die Karte nur, wenn sie selbst eingeteilt sind
+  if(canManage() && !_myShifts.length){ card.style.display='none'; return; }
+  card.style.display='';
+  var sub=$('myShiftSub');
+  if(sub) sub.textContent = _myShifts.length
+    ? _myShifts.length+(_myShifts.length===1?' Schicht':' Schichten')+' · 7 Tage'
+    : 'nächste 7 Tage';
+  if(!_myShifts.length){
+    box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Für dich ist diese Woche nichts eingetragen.</p>';
+    return;
+  }
+  var heute=ymd(new Date());
+  var morgen=new Date(); morgen.setDate(morgen.getDate()+1); morgen=ymd(morgen);
+  box.innerHTML=_myShifts.map(function(x){
+    var d=new Date(x.date+'T12:00:00');
+    var tag = x.date===heute ? 'Heute'
+            : (x.date===morgen ? 'Morgen'
+            : d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'}));
+    return '<div class="mysh-row'+(x.date===heute?' today':'')+'">'+
+      '<span class="mysh-day">'+esc(tag)+'</span>'+
+      '<span class="mysh-time">'+esc(x.from||'')+'–'+esc(x.to||'')+'</span>'+
+      '<span class="mysh-studio">'+esc(studioName(x.sk))+'</span>'+
+      (x.note?'<span class="mysh-note">'+esc(x.note)+'</span>':'')+
+      '</div>';
+  }).join('');
 }
 
 /* ── Tagesüberblick ──
@@ -6707,7 +7023,8 @@ function renderDmMessages(msgs){
           return '<label class="dm-cl-item'+(it.done?' done':'')+'"><input type="checkbox" data-mid="'+esc(m.id)+'" data-ix="'+ix+'"'+(it.done?' checked':'')+' /><span>'+esc(it.t)+'</span></label>';
         }).join('')+'</div>';
     } else {
-      body = (m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '')
+      body = (m.fwdFrom ? '<div class="fwd-mark">↪ weitergeleitet von '+esc(m.fwdFrom)+'</div>' : '')
+        + (m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '')
         + (m.audio
             ? '<div class="msg-audio"><audio controls preload="none" src="'+m.audio+'"></audio>'+
               '<span class="au-len">🎤 '+esc(fmtDur(m.audioMs||0))+'</span></div>'
@@ -7178,6 +7495,16 @@ function bindActions(){
     clearChatBgImg(); applyPrefs(); buildAppearanceOptions();
     toast('Bild entfernt');
   });
+
+  // Weiterleiten
+  var fwdC=$('fwdClose'); if(fwdC) fwdC.addEventListener('click', closeForward);
+  var fwdM=$('fwdModal'); if(fwdM) fwdM.addEventListener('click',function(e){ if(e.target===fwdM) closeForward(); });
+  var fwdS=$('fwdSearch'); if(fwdS) fwdS.addEventListener('input',function(){ renderForwardTargets(this.value); });
+
+  // Tastenkürzel
+  bindShortcuts();
+  var keyC=$('keysClose'); if(keyC) keyC.addEventListener('click',function(){ $('keysModal').classList.remove('show'); });
+  var keyM=$('keysModal'); if(keyM) keyM.addEventListener('click',function(e){ if(e.target===keyM) keyM.classList.remove('show'); });
 
   // Rückgängig-Knopf
   var ub=$('undoBtn');

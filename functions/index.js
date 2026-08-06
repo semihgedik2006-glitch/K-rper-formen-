@@ -588,3 +588,180 @@ exports.appointmentMailScheduler = region
     }
     return null;
   });
+
+/* ============================================================
+   MONATSBERICHT PER E-MAIL
+   ------------------------------------------------------------
+   Am ersten Werktag des Monats um 08:00 Uhr geht eine Zusammenfassung des
+   vergangenen Monats an den Chef. Gedacht als Ersatz für "mal eben durch
+   alle 14 Studios klicken".
+
+   Bewusste Entscheidungen:
+   - Nur an Konten mit der Rolle "chef". Studio-Leiter bekommen ihn nicht,
+     weil er alle Studios enthält.
+   - Fehlt die SMTP-Einrichtung, passiert nichts (und es wird protokolliert)
+     statt dass die Funktion mit einem Fehler abbricht.
+   - Die Studio-Namen kommen aus den Benutzerprofilen. Die Funktion kennt
+     die Reihenfolge der Studio-Liste in der App nicht und soll sie auch
+     nicht doppelt pflegen müssen.
+   ============================================================ */
+
+/* Kennung "studio-7" → lesbarer Name, soweit aus den Profilen bekannt */
+async function studioNameMap() {
+  const map = {};
+  try {
+    const snap = await db.collection('users').get();
+    snap.forEach(doc => {
+      const d = doc.data() || {};
+      const keys = Array.isArray(d.studioKeys) ? d.studioKeys : [];
+      const names = Array.isArray(d.studios) ? d.studios : [];
+      keys.forEach((k, i) => { if (names[i] && !map[k]) map[k] = names[i]; });
+    });
+  } catch (e) { console.error('studioNameMap:', e); }
+  return map;
+}
+
+/* Zahlen für einen Zeitraum einsammeln */
+async function collectMonthly(vonMs, bisMs) {
+  const namen = await studioNameMap();
+  const keys = Object.keys(namen);
+  const zeilen = [];
+  let erledigt = 0, offen = 0, ueberfaellig = 0, fehlt = 0;
+  const proPerson = {};
+  const jetzt = Date.now();
+
+  for (const key of keys) {
+    let sErledigt = 0, sOffen = 0, sUeber = 0;
+    try {
+      const snap = await db.collection('studios').doc(key).collection('todos').get();
+      snap.forEach(doc => {
+        const t = doc.data() || {};
+        if (t.doneAt && t.doneAt >= vonMs && t.doneAt <= bisMs) {
+          sErledigt++; erledigt++;
+          const wer = t.doneBy || 'Unbekannt';
+          proPerson[wer] = (proPerson[wer] || 0) + 1;
+        }
+        if (!t.done) {
+          sOffen++; offen++;
+          if (t.due && jetzt > t.due) { sUeber++; ueberfaellig++; }
+        }
+      });
+    } catch (e) { console.error('Aufgaben ' + key + ':', e); }
+
+    let sFehlt = 0;
+    try {
+      const inv = await db.collection('inventory').doc(key).get();
+      const items = (inv.exists && inv.data().items) || [];
+      items.forEach(it => {
+        const n = (it.limit > 0) ? Math.max(0, it.limit - (it.have || 0)) : (it.need || 0);
+        if (n > 0) { sFehlt += n; fehlt += n; }
+      });
+    } catch (e) { console.error('Material ' + key + ':', e); }
+
+    zeilen.push({ name: namen[key] || key, erledigt: sErledigt, offen: sOffen, ueber: sUeber, fehlt: sFehlt });
+  }
+
+  zeilen.sort((a, b) => b.erledigt - a.erledigt);
+  return { zeilen, erledigt, offen, ueberfaellig, fehlt, proPerson };
+}
+
+function monatsText(d, vonD, bisD) {
+  const dat = (x) => x.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const L = [];
+  L.push('Monatsbericht StudioChat');
+  L.push('Zeitraum: ' + dat(vonD) + ' bis ' + dat(bisD));
+  L.push('');
+  L.push('AUF EINEN BLICK');
+  L.push('  Aufgaben erledigt:      ' + d.erledigt);
+  L.push('  Aktuell offen:          ' + d.offen);
+  L.push('  Davon überfällig:       ' + d.ueberfaellig);
+  L.push('  Fehlende Artikel:       ' + d.fehlt);
+  L.push('');
+  L.push('NACH STUDIO');
+  d.zeilen.forEach(z => {
+    const ges = z.erledigt + z.offen;
+    const pct = ges ? Math.round(z.erledigt / ges * 100) : 0;
+    L.push('  ' + z.name.padEnd(22) + String(z.erledigt).padStart(4) + ' erledigt · ' +
+      String(z.offen).padStart(3) + ' offen' +
+      (z.ueber ? ' · ' + z.ueber + ' überfällig' : '') +
+      (z.fehlt ? ' · ' + z.fehlt + ' Artikel fehlen' : '') +
+      '   (' + pct + '%)');
+  });
+  const leute = Object.keys(d.proPerson).sort((a, b) => d.proPerson[b] - d.proPerson[a]);
+  if (leute.length) {
+    L.push('');
+    L.push('WER HAT WIE VIEL ERLEDIGT');
+    leute.forEach(n => L.push('  ' + n.padEnd(22) + String(d.proPerson[n]).padStart(4)));
+  }
+  L.push('');
+  L.push('Alle Zahlen im Detail findest du in StudioChat unter Verwaltung → Auswertung.');
+  return L.join('\n');
+}
+
+/* Bericht bauen und an alle Chef-Konten schicken */
+async function sendMonthlyReport(vonD, bisD) {
+  const mailer = getMailer();
+  if (!mailer) { console.log('Monatsbericht übersprungen: SMTP nicht eingerichtet.'); return 0; }
+
+  let empfaenger = [];
+  try {
+    const snap = await db.collection('users').where('role', '==', 'chef').get();
+    snap.forEach(doc => {
+      const d = doc.data() || {};
+      if (d.email) empfaenger.push(d.email);
+    });
+  } catch (e) { console.error('Chef-Konten:', e); }
+  if (!empfaenger.length) { console.log('Monatsbericht: kein Chef mit E-Mail gefunden.'); return 0; }
+
+  const daten = await collectMonthly(vonD.getTime(), bisD.getTime());
+  const text = monatsText(daten, vonD, bisD);
+  const monat = vonD.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+  const fromAddr = process.env.MAIL_FROM || process.env.SMTP_USER;
+
+  await mailer.sendMail({
+    from: '"StudioChat" <' + fromAddr + '>',
+    to: empfaenger.join(', '),
+    subject: 'Monatsbericht ' + monat + ' – StudioChat',
+    text
+  });
+  console.log('Monatsbericht an', empfaenger.length, 'Empfänger gesendet.');
+  return empfaenger.length;
+}
+
+/* Zeitplan: täglich 08:00 – gesendet wird nur am Monatsersten.
+   (Ein eigener Monats-Zeitplan ginge auch, aber so lässt sich der Lauf
+   leichter nachvollziehen und im Fehlerfall am Folgetag nachholen.) */
+exports.monthlyReport = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('0 8 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = new Date();
+    if (jetzt.getDate() !== 1) return null;      // nur am Monatsersten
+    const von = new Date(jetzt.getFullYear(), jetzt.getMonth() - 1, 1, 0, 0, 0);
+    const bis = new Date(jetzt.getFullYear(), jetzt.getMonth(), 0, 23, 59, 59);
+    try { await sendMonthlyReport(von, bis); }
+    catch (e) { console.error('Monatsbericht:', e); }
+    return null;
+  });
+
+/* Zum Ausprobieren, ohne bis zum Monatsersten zu warten.
+   Aufruf: /monthlyReportNow?key=<BDAY_TEST_KEY>&tage=30 */
+exports.monthlyReportNow = region
+  .runWith({ timeoutSeconds: 300 })
+  .https.onRequest(async (req, res) => {
+    const key = process.env.BDAY_TEST_KEY || '';
+    if (!key || req.query.key !== key) { res.status(403).send('Kein Zugriff.'); return; }
+    const tage = Math.min(370, Math.max(1, +(req.query.tage || 30) || 30));
+    const bis = new Date();
+    const von = new Date(Date.now() - tage * 86400000);
+    try {
+      const n = await sendMonthlyReport(von, bis);
+      res.status(200).send(n
+        ? ('Bericht über ' + tage + ' Tage an ' + n + ' Empfänger gesendet.')
+        : 'Nichts gesendet – siehe Protokoll (SMTP oder Chef-E-Mail fehlt).');
+    } catch (e) {
+      console.error('monthlyReportNow:', e);
+      res.status(500).send('Fehler: ' + e.message);
+    }
+  });
