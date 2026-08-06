@@ -1,19 +1,54 @@
 name: Cloud Functions deployen
 
-# Deployt die Firebase Cloud Functions automatisch:
-#  - bei jeder Änderung an functions/ auf dem main-Branch
-#  - oder manuell über den "Run workflow"-Knopf (Actions-Tab)
+# Deployt automatisch nach Firebase:
+#  - Sicherheitsregeln (firestore.rules), sobald sich die Datei ändert
+#  - Cloud Functions, sobald sich functions/ ändert
+#  - oder beides manuell über den "Run workflow"-Knopf im Actions-Tab
+#
+# Beide Aufgaben laufen als getrennte Jobs. Wenn eine scheitert, kommt die
+# andere trotzdem durch – man sieht im Actions-Tab sofort, welche es war.
 on:
   push:
     branches: [main]
     paths:
       - 'functions/**'
+      - 'firestore.rules'
+      - 'storage.rules'
       - 'firebase.json'
       - '.firebaserc'
       - '.github/workflows/deploy-functions.yml'
   workflow_dispatch:
 
 jobs:
+  # ── Sicherheitsregeln ──
+  # Läuft in Sekunden. Damit muss niemand mehr Regeln von Hand in die
+  # Firebase-Konsole kopieren – die Datei im Repo ist die Wahrheit.
+  rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node 20 einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Google-Auth (Service-Account aus GitHub-Secret)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SA_KEY }}
+
+      - name: Firebase CLI installieren
+        run: npm install -g firebase-tools
+
+      - name: Sicherheitsregeln deployen
+        run: firebase deploy --only firestore:rules --project formenchat --non-interactive --force
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+
+  # ── Cloud Functions ──
   deploy:
     runs-on: ubuntu-latest
     steps:
