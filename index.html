@@ -2299,6 +2299,19 @@ var FIREBASE_CONFIG = {
             <button class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">⬇️ Alles als Daten-Datei (JSON)</button>
           </div>
           <div class="card" data-chef-only="1">
+            <h3>📧 Monatsbericht</h3>
+            <p class="hint">Kommt automatisch am Ersten jedes Monats um 8 Uhr per E-Mail.
+              Hier kannst du ihn sofort anfordern, um zu sehen, wie er aussieht.</p>
+            <div class="field"><label for="repTestTage">Zeitraum</label>
+              <select class="inp" id="repTestTage">
+                <option value="7">Letzte 7 Tage</option>
+                <option value="30" selected>Letzte 30 Tage</option>
+                <option value="90">Letzte 90 Tage</option>
+              </select></div>
+            <button class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%">📨 Testbericht jetzt senden</button>
+            <p class="em-saved" id="repTestNote"></p>
+          </div>
+          <div class="card" data-chef-only="1">
             <h3>🔑 Passwort zurücksetzen</h3>
             <p class="hint">Schickt der Person eine E-Mail, mit der sie sich ein neues
               Passwort setzen kann. Du musst kein Passwort kennen oder vergeben.</p>
@@ -2452,6 +2465,7 @@ var FIREBASE_CONFIG = {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 
 <script>
 (function(){
@@ -8197,6 +8211,34 @@ function bindActions(){
     // Sicherung herunterladen
     var ex=$('expXls'); if(ex) ex.addEventListener('click', exportAllXls);
     var ej=$('expJson'); if(ej) ej.addEventListener('click', exportAllJson);
+
+    // Testbericht anfordern. Die Rolle wird auf dem Server geprüft, nicht hier –
+    // der Knopf ist nur die Bequemlichkeit, nicht die Absicherung.
+    var rts=$('repTestSend');
+    if(rts) rts.addEventListener('click',function(){
+      var btn=this, note=$('repTestNote');
+      var tage=parseInt(($('repTestTage')||{}).value,10)||30;
+      if(note){ note.textContent='Wird erstellt und versendet …'; note.style.color='var(--text-2)'; }
+      withBusy(btn,function(){
+        var fns=firebase.app().functions('europe-west1');
+        return fns.httpsCallable('sendTestReport')({ tage:tage })
+          .then(function(res){
+            var n=(res && res.data && res.data.empfaenger)||0;
+            if(note){
+              note.textContent='✓ Gesendet an '+n+(n===1?' Empfänger':' Empfänger')+
+                ' – schau in dein E-Mail-Postfach.';
+              note.style.color='#34D399';
+            }
+            toast('Testbericht gesendet ✓');
+          })
+          .catch(function(e){
+            // Die Server-Meldung ist hier aussagekräftiger als ein Standardtext
+            var msg=(e && e.message) || 'Unbekannter Fehler';
+            if(note){ note.textContent='Hat nicht geklappt: '+msg; note.style.color='var(--danger)'; }
+            toast(msg,true);
+          });
+      });
+    });
 
     // Passwort zurücksetzen (schickt eine E-Mail von Firebase)
     var prs=$('prSend');

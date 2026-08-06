@@ -783,3 +783,40 @@ exports.monthlyReportNow = region
       res.status(500).send('Fehler: ' + e.message);
     }
   });
+
+/* ── Testbericht auf Knopfdruck ──
+   Der HTTPS-Auslöser oben braucht einen Geheim-Schlüssel. Der liegt als
+   GitHub-Secret und lässt sich dort nicht mehr auslesen – man muss ihn also
+   irgendwo notiert haben. Das ist unnötig umständlich.
+
+   Diese Fassung prüft stattdessen die Anmeldung: nur wer in der App als Chef
+   eingeloggt ist, darf sie auslösen. Kein Schlüssel, kein Notizzettel.
+   Die Rolle wird HIER auf dem Server geprüft, nicht in der App – sonst
+   könnte sie jemand umgehen. */
+exports.sendTestReport = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    requireAuth(context);
+
+    const uid = context.auth.uid;
+    const snap = await db.collection('users').doc(uid).get();
+    const profil = snap.exists ? (snap.data() || {}) : {};
+    if (profil.role !== 'chef') {
+      throw new functions.https.HttpsError('permission-denied',
+        'Nur der Chef kann den Bericht anfordern.');
+    }
+
+    const tage = Math.min(370, Math.max(1, +((data && data.tage) || 30) || 30));
+    const bis = new Date();
+    const von = new Date(Date.now() - tage * 86400000);
+
+    const empfaenger = await sendMonthlyReport(von, bis);
+    if (!empfaenger) {
+      // Ehrlich sagen, woran es liegt, statt "hat nicht geklappt"
+      const mailer = getMailer();
+      throw new functions.https.HttpsError('failed-precondition', mailer
+        ? 'Kein Chef-Konto mit hinterlegter E-Mail-Adresse gefunden.'
+        : 'Der E-Mail-Versand ist noch nicht eingerichtet (SMTP-Zugangsdaten fehlen).');
+    }
+    return { ok: true, empfaenger: empfaenger, tage: tage };
+  });
