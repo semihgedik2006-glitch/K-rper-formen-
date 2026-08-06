@@ -64,7 +64,17 @@ exports.onNewMessage = region.firestore
       return inStudio(d, channelId) || d.role === 'chef'; // Studio-Kanal → Studio + Chefs
     }, m.uid);
     const body = m.text ? m.text : (m.img ? '📷 Foto' : '');
-    await sendPush(tokens, 'Neue Nachricht von ' + (m.name || 'Team'), body);
+    // Erwähnte Personen bekommen eine eigene, deutlichere Meldung ...
+    const mentioned = Array.isArray(m.mentions) ? m.mentions : [];
+    let mentionTokens = [];
+    if (mentioned.length) {
+      mentionTokens = await collectTokens(d => mentioned.indexOf(d.uid) >= 0, m.uid);
+      await sendPush(mentionTokens, (m.name || 'Jemand') + ' hat dich erwähnt', body);
+    }
+    // ... und werden aus der normalen Meldung herausgenommen, damit sie
+    // nicht zweimal benachrichtigt werden
+    const rest = tokens.filter(t => mentionTokens.indexOf(t) < 0);
+    await sendPush(rest, 'Neue Nachricht von ' + (m.name || 'Team'), body);
   });
 
 /* ── Neue Aufgabe ── */
@@ -145,6 +155,50 @@ async function processBirthdays() {
   }
   return sent;
 }
+
+/* ── Täglicher Hinweis auf fällige Aufgaben (morgens um 7:30) ──
+   Schaut in allen Studios nach offenen Aufgaben, die heute fällig sind oder
+   schon überfällig, und schickt eine kurze Zusammenfassung an die Geräte
+   des jeweiligen Studios. Zugewiesene Aufgaben gehen nur an die Person. */
+exports.dueTaskReminder = region.pubsub
+  .schedule('every day 07:30')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    const limit = endOfDay.getTime();
+
+    const studios = await db.collection('studios').listDocuments();
+    for (const studioRef of studios) {
+      const snap = await studioRef.collection('todos').get();
+      const offen = [];
+      snap.forEach(doc => {
+        const t = doc.data() || {};
+        if (t.done) return;                  // erledigt (auch wiederkehrend, grob genug)
+        if (!t.due || t.due > limit) return; // noch nicht fällig
+        offen.push(t);
+      });
+      if (!offen.length) continue;
+
+      const studioKey = studioRef.id;
+      // Aufgaben mit fester Zuweisung getrennt behandeln
+      const zugewiesen = offen.filter(t => t.assignedTo);
+      const offenFuerAlle = offen.filter(t => !t.assignedTo);
+
+      for (const t of zugewiesen) {
+        const tk = await collectTokens(d => d.uid === t.assignedTo, null);
+        await sendPush(tk, 'Aufgabe fällig', t.title || '');
+      }
+      if (offenFuerAlle.length) {
+        const tk = await collectTokens(d => inStudio(d, studioKey), null);
+        const titel = offenFuerAlle.length === 1
+          ? offenFuerAlle[0].title
+          : offenFuerAlle.length + ' Aufgaben sind heute fällig';
+        await sendPush(tk, 'Erinnerung', titel);
+      }
+    }
+    return null;
+  });
 
 /* ── Täglicher Geburtstagsgruß vom System-Account ── */
 exports.birthdayGreetings = region.pubsub

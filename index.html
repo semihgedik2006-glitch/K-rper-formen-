@@ -923,6 +923,45 @@ body.light .react{background:rgba(20,10,40,.05)}
 /* Schriftgröße: skaliert die ganze App */
 html{font-size:var(--fs,100%)}
 
+/* ── Tagesüberblick ── */
+.today{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:15px 17px;animation:cardUp .5s var(--ease-ios) both}
+.today.allgood{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.07)}
+.today-h{font-family:var(--font-head);font-weight:800;font-size:1.05rem;margin-bottom:9px}
+.today-row{display:flex;gap:9px;flex-wrap:wrap}
+.today-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;
+  font-size:.84rem;font-weight:700;background:var(--bg-soft);border:1px solid var(--line-2);
+  color:var(--text-2);cursor:pointer;
+  transition:transform .3s var(--spring),border-color .2s,color .2s}
+.today-pill:active{transform:scale(.94)}
+.today-pill b{font-size:1rem;color:var(--text)}
+.today-pill.warn{border-color:var(--danger);color:var(--danger)}
+.today-pill.warn b{color:var(--danger)}
+.today-pill.ok{border-color:var(--accent);color:var(--accent)}
+.today-pill.ok b{color:var(--accent)}
+
+/* ── Online-Punkt am Avatar ── */
+.av-wrap{position:relative;display:inline-block}
+.online-dot{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;
+  background:#34D399;border:2px solid var(--bg-2);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+
+/* ── Zuweisung an eine Person ── */
+.t-assign{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
+  color:var(--accent-2);background:rgba(167,139,250,.15);padding:2px 8px;border-radius:999px;
+  margin-left:6px;vertical-align:middle;white-space:nowrap}
+.t-assign.me{color:var(--accent);background:rgba(34,211,238,.18)}
+
+/* ── Wischen zum Abhaken ──
+   Die Karte lässt sich nach rechts ziehen; dahinter erscheint ein Haken. */
+.todo,.pp-item{position:relative;overflow:hidden;touch-action:pan-y}
+.swipe-hint{position:absolute;inset:0;display:flex;align-items:center;padding-left:18px;
+  background:linear-gradient(90deg, rgba(34,211,238,.35), transparent 60%);
+  opacity:0;pointer-events:none;font-size:1.3rem}
+.swiping .swipe-hint{opacity:1}
+.swipe-body{position:relative;display:flex;gap:12px;align-items:flex-start;width:100%;
+  transition:transform .38s var(--spring)}
+.swiping .swipe-body{transition:none}
+
 /* ── Schnellfilter-Chips (Aufgaben) ── */
 .chip-row{display:flex;gap:8px;flex-wrap:wrap}
 .chip{background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--text-2);
@@ -1246,6 +1285,7 @@ var FIREBASE_CONFIG = {
       <section class="view" id="view-todos">
         <div class="view-head"><h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p></div>
         <!-- Suchfeld + Zähler: filtert die Aufgabenliste live mit -->
+        <div id="todayCard" style="padding:0 clamp(14px,4vw,28px) 12px"></div>
         <div class="todo-tools" style="padding:0 clamp(14px,4vw,28px)">
           <div class="todo-search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -1257,6 +1297,13 @@ var FIREBASE_CONFIG = {
           <button class="chip on" data-tfilter="alle">Alle</button>
           <button class="chip" data-tfilter="offen">Nur offene</button>
           <button class="chip" data-tfilter="faellig">Überfällig</button>
+          <button class="chip" data-tfilter="meine">Für mich</button>
+          <select class="chip" id="todoSort" style="padding-right:26px">
+            <option value="standard">Sortierung: Standard</option>
+            <option value="faellig">Nach Fälligkeit</option>
+            <option value="name">Nach Name</option>
+            <option value="neu">Neueste zuerst</option>
+          </select>
         </div>
         <div class="scroll-area" id="todoArea"></div>
       </section>
@@ -1547,6 +1594,9 @@ var FIREBASE_CONFIG = {
               </div></div>
             <div class="field"><label for="ntDue">Fällig bis (optional)</label>
               <input class="inp" id="ntDue" type="date" /></div>
+            <div class="field"><label for="ntAssign">Wer soll das machen? (optional)</label>
+              <select class="inp" id="ntAssign"><option value="">Jeder im Studio</option></select>
+              <p class="hint" style="margin:6px 0 0">Ohne Auswahl kann sie jeder im Studio abhaken.</p></div>
             <div class="field">
               <label>Foto (optional)</label>
               <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
@@ -1916,6 +1966,13 @@ try{
   db.settings({
     experimentalAutoDetectLongPolling: true,
     merge: true
+  });
+  /* Offline-Speicher: Was man ohne Netz eintippt oder abhakt, wird lokal
+     gemerkt und automatisch gesendet, sobald wieder Verbindung besteht.
+     Schlägt nur fehl, wenn die App in mehreren Tabs offen ist – dann läuft
+     alles wie bisher weiter (nur ohne Offline-Warteschlange). */
+  db.enablePersistence({ synchronizeTabs:true }).catch(function(e){
+    console.warn('Offline-Speicher nicht aktiv:', e && e.code);
   });
   // Login auf dem Gerät merken (kein ständiges Neu-Anmelden auf dem Handy)
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
@@ -2471,6 +2528,8 @@ function showApp(){
   initMessaging();
   maybeShowNotifBanner();
   startPeriodWatcher();       // erkennt Tageswechsel/Intervall-Ablauf
+  setTimeout(checkDueReminders, 6000);   // an heute/morgen fällige Aufgaben erinnern
+  startPresence();            // "ich bin online" melden
   showView(canManage() ? 'chef' : 'chat');
   birthdayCheck();
   // Regelmäßig neu zeichnen, damit erledigte Aufgaben automatisch ins Archiv wandern
@@ -2695,6 +2754,7 @@ function buildChefSelects(){
     var span=document.createElement('span'); span.textContent=s;
     lab.appendChild(cb); lab.appendChild(span); ns.appendChild(lab);
   });
+  buildAssignSelect();
   var all=$('ntAllStudios');
   all.addEventListener('change',function(){
     $('ntAllWrap').classList.toggle('on', all.checked);
@@ -3059,6 +3119,7 @@ function stopListeners(){
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
   if(_periodTimer){ clearInterval(_periodTimer); _periodTimer=null; }
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _chanUnsubs=[];
+  if(_presenceTimer){ clearInterval(_presenceTimer); _presenceTimer=null; }
   _matStudioKey=null; _ppStudioKey=null;
 }
 
@@ -3370,11 +3431,142 @@ function scrollBottom(){
 /* Aktueller Text im Aufgaben-Suchfeld (leer = alles anzeigen) */
 var _todoFilter='';
 
-/* Aktiver Schnellfilter: alle | offen | faellig */
-var _todoMode='alle';
+/* Aktiver Schnellfilter: alle | offen | faellig | meine – und Sortierung */
+var _todoMode='alle', _todoSort='standard';
+
+/* ── Tagesüberblick ──
+   Kurze Zusammenfassung ganz oben: Was ist heute zu tun? Jede Kachel ist
+   anklickbar und setzt den passenden Filter. */
+function renderToday(){
+  var box=$('todayCard'); if(!box || !session) return;
+  var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
+  var offen=0, ueber=0, meine=0, putz=0;
+  var heuteEnde=new Date(); heuteEnde.setHours(23,59,59,999);
+  keys.forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(isArchived(t) || isDone(t)) return;
+      offen++;
+      if(t.due && Date.now()>t.due) ueber++;
+      if(t.assignedTo===session.uid) meine++;
+    });
+  });
+  (_ppTasks||[]).forEach(function(t){ if(!isDone(t)) putz++; });
+
+  var gruss = (function(){
+    var h=new Date().getHours();
+    if(h<11) return 'Guten Morgen';
+    if(h<18) return 'Hallo';
+    return 'Guten Abend';
+  })();
+  var vorname=(session.name||'').split(' ')[0];
+
+  if(!offen){
+    box.innerHTML='<div class="today allgood"><div class="today-h">'+esc(gruss)+', '+esc(vorname)+' 👋</div>'+
+      '<div style="color:var(--text-2);font-size:.92rem">Alles erledigt – nichts Offenes für dich. 🎉</div></div>';
+    return;
+  }
+  var pills='';
+  pills+='<button class="today-pill" data-jump="offen"><b>'+offen+'</b> offen</button>';
+  if(ueber) pills+='<button class="today-pill warn" data-jump="faellig"><b>'+ueber+'</b> überfällig</button>';
+  if(meine) pills+='<button class="today-pill ok" data-jump="meine"><b>'+meine+'</b> für dich</button>';
+  if(putz)  pills+='<button class="today-pill" data-jump="putz"><b>'+putz+'</b> im Putzplan</button>';
+  box.innerHTML='<div class="today"><div class="today-h">'+esc(gruss)+', '+esc(vorname)+' 👋</div>'+
+    '<div class="today-row">'+pills+'</div></div>';
+  box.querySelectorAll('[data-jump]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var j=b.getAttribute('data-jump');
+      tick(8);
+      if(j==='putz'){ showView('putzplan'); return; }
+      _todoMode=j;
+      document.querySelectorAll('[data-tfilter]').forEach(function(x){
+        x.classList.toggle('on', x.getAttribute('data-tfilter')===j);
+      });
+      renderTodos();
+    });
+  });
+}
+
+/* ── Wer ist gerade da? ──
+   Jede App meldet alle 2 Minuten "ich bin online". Wer sich in den letzten
+   5 Minuten gemeldet hat, bekommt einen grünen Punkt am Bild. */
+var _presenceTimer=null;
+function startPresence(){
+  if(_presenceTimer) clearInterval(_presenceTimer);
+  var ping=function(){
+    if(!session || !navigator.onLine) return;
+    db.collection('users').doc(session.uid).update({ lastSeen:Date.now() }).catch(function(){});
+  };
+  ping();
+  _presenceTimer=setInterval(ping, 120000);
+  window.addEventListener('focus', ping);
+}
+function isOnline(u){
+  return !!u && !!u.lastSeen && (Date.now()-u.lastSeen < 5*60000);
+}
+
+/* Auswahlliste "Wer soll das machen?" mit allen Personen der verwalteten Studios */
+function buildAssignSelect(){
+  var sel=$('ntAssign'); if(!sel) return;
+  var keys=managedKeys();
+  var people=_allUsers.filter(function(u){
+    if(u.system || u.uid===session.uid) return false;
+    var uk=(u.studioKeys&&u.studioKeys.length) ? u.studioKeys : (u.studios||[]).map(studioKey);
+    return uk.some(function(k){ return keys.indexOf(k)>=0; });
+  }).sort(function(a,b){ return (a.name||'').localeCompare(b.name||'','de'); });
+  var cur=sel.value;
+  sel.innerHTML='<option value="">Jeder im Studio</option>'+
+    people.map(function(u){ return '<option value="'+esc(u.uid)+'">'+esc(u.name||'?')+'</option>'; }).join('');
+  if(cur) sel.value=cur;
+}
+
+/* ── Erinnerung an bald fällige Aufgaben ──
+   Einmal je Tag beim Öffnen: Was ist heute oder morgen fällig und noch offen?
+   Meldet sich nur, wenn es wirklich etwas gibt. */
+function checkDueReminders(){
+  if(!session) return;
+  var today=new Date(); today.setHours(23,59,59,999);
+  var morgen=new Date(today.getTime()+86400000);
+  var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
+  var heute=[], bald=[];
+  keys.forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(isDone(t) || isArchived(t) || !t.due) return;
+      // Nur eigene oder nicht zugewiesene Aufgaben melden
+      if(t.assignedTo && t.assignedTo!==session.uid) return;
+      if(t.due<=today.getTime()) heute.push(t);
+      else if(t.due<=morgen.getTime()) bald.push(t);
+    });
+  });
+  if(!heute.length && !bald.length) return;
+  var key='kf_due_'+new Date().toDateString();
+  try{ if(localStorage.getItem(key)) return; localStorage.setItem(key,'1'); }catch(e){}
+  var teile=[];
+  if(heute.length) teile.push(heute.length+' heute fällig');
+  if(bald.length) teile.push(bald.length+' morgen fällig');
+  localNotify('Aufgaben-Erinnerung', teile.join(' · '));
+}
+
+/* Aufgaben nach der gewählten Reihenfolge sortieren */
+function sortTodos(list){
+  var a=list.slice();
+  if(_todoSort==='faellig'){
+    a.sort(function(x,y){
+      var dx=x.due||Infinity, dy=y.due||Infinity;
+      return (isDone(x)-isDone(y)) || (dx-dy) || ((x.ts||0)-(y.ts||0));
+    });
+  } else if(_todoSort==='name'){
+    a.sort(function(x,y){ return (x.title||'').localeCompare(y.title||'','de'); });
+  } else if(_todoSort==='neu'){
+    a.sort(function(x,y){ return (y.ts||0)-(x.ts||0); });
+  } else {
+    a.sort(function(x,y){ return (isDone(x)-isDone(y)) || ((x.ts||0)-(y.ts||0)); });
+  }
+  return a;
+}
 
 /* Passt eine Aufgabe zum Suchtext UND zum Schnellfilter? */
 function todoMatchesFilter(t){
+  if(_todoMode==='meine' && t.assignedTo!==session.uid) return false;
   if(_todoMode==='offen' && isDone(t)) return false;
   if(_todoMode==='faellig'){
     if(isDone(t)) return false;
@@ -3405,7 +3597,7 @@ function renderTodos(){
     var html='';
     STUDIOS_ALPHA.forEach(function(s){
       var sk=studioKey(s);
-      var all=(cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); });
+      var all=sortTodos((cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); }));
       totalAll+=all.length; doneAll+=all.filter(isDone).length;
       var list=all.filter(todoMatchesFilter);
       if(!list.length) return;
@@ -3426,7 +3618,7 @@ function renderTodos(){
     var html='';
     session.studioKeys.forEach(function(sk, idx){
       var sName=session.studios[idx];
-      var all=(cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); }).sort(function(a,b){ return (isDone(a)-isDone(b))||(a.ts-b.ts); });
+      var all=sortTodos((cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); }));
       var list=all.filter(todoMatchesFilter);
       var done=all.filter(isDone).length, total=all.length;
       totalAll+=total; doneAll+=done; shown+=list.length;
@@ -3448,6 +3640,7 @@ function renderTodos(){
     ? (shown+(shown===1?' Aufgabe':' Aufgaben'))
     : (totalAll ? (doneAll+' von '+totalAll+' erledigt') : '');
   bindTodoClicks(area);
+  renderToday();
   updateBadges();
   if(canManage()){ renderStudioGrid(); renderArchive(); renderDashboard(); }
 }
@@ -3500,15 +3693,56 @@ function todoHTML(t,sk,chefView){
     ? '<img class="t-photo" data-zoom src="'+t.photo+'" alt="Foto zur Aufgabe" />'
     : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
   var isOver = !done && t.due && Date.now()>t.due;   // überfällig → roter Balken links
+  // Zugewiesene Person anzeigen
+  var assign='';
+  if(t.assignedTo){
+    var mineTask = t.assignedTo===session.uid;
+    assign='<span class="t-assign'+(mineTask?' me':'')+'">'+(mineTask?'für dich':'für '+esc(t.assignedName||'?'))+'</span>';
+  }
   return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
+    '<div class="swipe-hint">✓</div><div class="swipe-body">'+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
-    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+'</div>'+
+    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+assign+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     (t.docUrl?'<a class="t-doc" href="'+esc(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
     photoHtml+'</div>'+
     (chefView?'<button class="t-del" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>':'')+
-    '</div>';
+    '</div></div>';
+}
+
+/* ── Wischen zum Abhaken ──
+   Nach rechts ziehen (> 80 px) löst dieselbe Aktion aus wie das Häkchen.
+   Funktioniert für Aufgaben und Putzplan-Zeilen. */
+function bindSwipe(node, onDone){
+  var body=node.querySelector('.swipe-body'); if(!body) return;
+  var x0=0, y0=0, dx=0, active=false, decided=false;
+  node.addEventListener('touchstart',function(e){
+    if(node.classList.contains('done')) return;
+    var t=e.touches[0]; x0=t.clientX; y0=t.clientY; dx=0; active=true; decided=false;
+  }, {passive:true});
+  node.addEventListener('touchmove',function(e){
+    if(!active) return;
+    var t=e.touches[0];
+    var mx=t.clientX-x0, my=t.clientY-y0;
+    if(!decided){
+      // Erst entscheiden: wischt der Finger seitlich oder scrollt er?
+      if(Math.abs(my)>Math.abs(mx)){ active=false; return; }
+      if(Math.abs(mx)<8) return;
+      decided=true; node.classList.add('swiping');
+    }
+    dx=Math.max(0, Math.min(140, mx));
+    body.style.transform='translateX('+dx+'px)';
+  }, {passive:true});
+  function end(){
+    if(!active){ node.classList.remove('swiping'); return; }
+    active=false; node.classList.remove('swiping');
+    body.style.transform='';
+    if(dx>80){ tick(14); onDone(); }
+    dx=0;
+  }
+  node.addEventListener('touchend', end);
+  node.addEventListener('touchcancel', end);
 }
 
 function bindTodoClicks(area){
@@ -3542,6 +3776,8 @@ function bindTodoClicks(area){
       _todoPhotoTarget={ sk:sk, id:id };
       $('todoFileShared').click();
     });
+    // Nach rechts wischen = abhaken
+    bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
   });
 }
 var _todoPhotoTarget=null;
@@ -3869,10 +4105,11 @@ function renderPutzplan(){
       : '';
     var del = chef ? '<button class="pp-del" data-del="'+esc(t.id)+'" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
     return '<div class="pp-item'+(d?' done':'')+'" data-id="'+esc(t.id)+'">'+
+      '<div class="swipe-hint">✓</div><div class="swipe-body">'+
       '<button class="check" data-check="'+esc(t.id)+'" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
       '<div class="pp-body"><div class="pp-title">'+esc(t.title)+rep+'</div>'+
       '<div class="pp-meta">'+(doneInfo||'<span>noch offen</span>')+'</div></div>'+
-      del+'</div>';
+      del+'</div></div>';
   }).join('');
   bindPutzplanClicks(box);
 }
@@ -3893,6 +4130,10 @@ function bindPutzplanClicks(box){
         .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
+  });
+  box.querySelectorAll('.pp-item').forEach(function(node){
+    var chk=node.querySelector('[data-check]');
+    bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
   });
   box.querySelectorAll('[data-del]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -4383,6 +4624,26 @@ function doSearch(q){
   _curMsgs.forEach(function(m){
     if(hit((m.text||'')+' '+(m.name||''))) res.push({type:'Chat',main:m.text||'📷 Foto',sub:m.name,view:'chat'});
   });
+  // Putzplan des gerade geöffneten Studios
+  (_ppTasks||[]).forEach(function(t){
+    if(hit(t.title)) res.push({type:'Putzplan',main:t.title,
+      sub:studioName(_ppStudioKey)+(isDone(t)?' · erledigt':' · offen'),view:'putzplan'});
+  });
+  (_ppNotes||[]).forEach(function(n){
+    if(hit((n.text||'')+' '+(n.by||''))) res.push({type:'Notiz',main:n.text,
+      sub:studioName(_ppStudioKey)+' · '+(n.by||''),view:'putzplan'});
+  });
+  // Material aller Studios
+  Object.keys(_invAll||{}).forEach(function(sk){
+    if(sks.indexOf(sk)<0) return;
+    (_invAll[sk]||[]).forEach(function(it){
+      if(hit(it.name)){
+        var miss2=itemNeed(it);
+        res.push({type:'Material',main:it.name,
+          sub:studioName(sk)+' · '+(it.have||0)+' da'+(miss2>0?', '+miss2+' fehlen':''),view:'material'});
+      }
+    });
+  });
   if(!res.length){ box.innerHTML='<div class="search-empty">Nichts gefunden.</div>'; return; }
   box.innerHTML=res.slice(0,40).map(function(r){
     return '<div class="sr" data-view="'+r.view+'"><span class="sr-type">'+esc(r.type)+'</span>'+
@@ -4402,11 +4663,18 @@ var _dmThreads=[], _dmThreadsUnsub=null, _dmThreadPrev={}, _dmThreadsFirst=true;
 function _userById(uid){ for(var i=0;i<_allUsers.length;i++){ if(_allUsers[i].uid===uid) return _allUsers[i]; } return null; }
 function avatarMarkup(u){
   u=u||{};
-  if(u.photo) return '<div class="avatar" style="background-image:url('+u.photo+');background-size:cover;background-position:center"></div>';
-  var bg=u.color?(' style="background:'+esc(u.color)+'"'):'';
-  var chef=(u.role==='chef' && !u.color)?' chef':'';
-  var c=u.emoji?esc(u.emoji):esc(initials(u.name));
-  return '<div class="avatar'+chef+'"'+bg+'>'+c+'</div>';
+  // Grüner Punkt, wenn die Person gerade online ist
+  var dot = isOnline(u) ? '<span class="online-dot" title="gerade online"></span>' : '';
+  var inner;
+  if(u.photo){
+    inner='<div class="avatar" style="background-image:url('+u.photo+');background-size:cover;background-position:center"></div>';
+  } else {
+    var bg=u.color?(' style="background:'+esc(u.color)+'"'):'';
+    var chef=(u.role==='chef' && !u.color)?' chef':'';
+    var c=u.emoji?esc(u.emoji):esc(initials(u.name));
+    inner='<div class="avatar'+chef+'"'+bg+'>'+c+'</div>';
+  }
+  return '<span class="av-wrap">'+inner+dot+'</span>';
 }
 
 function listenAllUsers(){
@@ -4418,6 +4686,7 @@ function listenAllUsers(){
     // Erwähnungen (@Name) brauchen die Nutzerliste – Chat einmal neu zeichnen,
     // sobald sie da ist, sonst bleiben die Namen unmarkiert
     if(first && _curMsgs && _curMsgs.length) renderMessages(_curMsgs);
+    if(canManage()) buildAssignSelect();
   }, function(e){ console.error('Users:',e.message); });
 }
 
@@ -5012,6 +5281,9 @@ function bindActions(){
       tick(8); renderTodos();
     });
   });
+  // Sortierung der Aufgaben
+  var tso=$('todoSort');
+  if(tso) tso.addEventListener('change',function(){ _todoSort=this.value; renderTodos(); });
   // Material-Suche
   var ms=$('matSearch');
   if(ms){
@@ -5173,6 +5445,11 @@ function bindActions(){
           title:title, desc:desc, done:false, doneBy:null, doneAt:null,
           createdBy:session.name, createdByUid:session.uid, ts:Date.now()
         };
+        var asel=$('ntAssign');
+        if(asel && asel.value){
+          data.assignedTo=asel.value;
+          data.assignedName=asel.options[asel.selectedIndex].text;
+        }
         if(recurring){
           data.recurring=recurring;
           if(recurring==='custom'){ data.intervalMs=intervalMs; data.intervalN=intN; data.intervalUnit=intUnit; }
@@ -5186,6 +5463,7 @@ function bindActions(){
         return batch.commit()
           .then(function(){
             $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value=''; $('ntCustomWrap').style.display='none'; $('ntDue').value='';
+            if($('ntAssign')) $('ntAssign').value='';
             $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');
             $('ntStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
             _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
