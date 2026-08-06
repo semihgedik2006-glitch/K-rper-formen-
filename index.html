@@ -387,6 +387,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-radius:8px;flex-shrink:0;transition:.2s}
 .t-del:hover{color:#ff8a8a;background:rgba(239,68,68,.1)}
 .t-del svg{width:16px;height:16px}
+/* Frist verschieben (Wecker-Knopf neben dem Papierkorb) */
+.t-snooze{background:none;border:none;color:var(--text-3);cursor:pointer;padding:6px;
+  border-radius:8px;flex-shrink:0;font-size:.95rem;line-height:1;
+  transition:transform .25s var(--spring),color .2s,background .2s}
+.t-snooze:active{transform:scale(.88)}
+@media (hover:hover){ .t-snooze:hover{color:var(--warm);background:rgba(251,191,36,.12)} }
 .empty{text-align:center;color:var(--text-3);padding:48px 20px}
 .empty svg{width:42px;height:42px;margin:0 auto 12px;display:block;opacity:.45}
 
@@ -1071,6 +1077,15 @@ html{font-size:var(--fs,100%)}
   @page{margin:14mm}
 }
 
+/* Einkaufsliste (Material) */
+.shop-row{padding:10px 0;border-top:1px solid var(--line)}
+.shop-row:first-child{border-top:none}
+.shop-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.shop-h b{font-weight:600;font-size:.95rem}
+.shop-n{font-family:var(--font-head);font-weight:800;color:var(--warm);
+  font-size:1.05rem;white-space:nowrap}
+.shop-s{color:var(--text-3);font-size:.78rem;margin-top:3px}
+
 /* "Ältere Nachrichten laden" ganz oben im Chat */
 .load-older{display:block;margin:4px auto 12px;background:var(--bg-2);
   border:1px solid var(--line-2);color:var(--text-2);font-family:var(--font-body);
@@ -1552,6 +1567,24 @@ var FIREBASE_CONFIG = {
             <span class="todo-count" id="matCount"></span>
           </div>
           <div class="mat-alert" id="matAlert" style="display:none"></div>
+
+          <!-- Einkaufsliste: fasst zusammen, was über ALLE Studios fehlt.
+               Sonst müsste der Chef 14 Studios einzeln durchklicken, um zu
+               wissen, was er bestellen muss. -->
+          <div class="card" id="shopCard" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3>🛒 Einkaufsliste</h3>
+              <span class="todo-count" id="shopCount"></span>
+            </div>
+            <p class="hint">Was insgesamt fehlt – zusammengezählt über alle deine Studios.</p>
+            <div id="shopList"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-ghost btn-sm" id="shopPrint">🖨 Drucken</button>
+              <button class="btn btn-ghost btn-sm" id="shopXls">⬇️ Als Excel</button>
+              <button class="btn btn-ghost btn-sm" id="shopCopy">📋 Kopieren</button>
+            </div>
+          </div>
+
           <div class="card" style="margin-bottom:14px">
             <p class="hint" style="margin:0 0 10px">
               <b>Soll</b> = wie viel da sein sollte · <b>Ist</b> = wie viel wirklich da ist ·
@@ -4640,6 +4673,7 @@ function todoHTML(t,sk,chefView){
     (t.docUrl?'<a class="t-doc" href="'+esc(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
     photoHtml+'</div>'+
+    (chefView&&t.due&&!done?'<button class="t-snooze" data-snooze="1" title="Frist verschieben" aria-label="Frist verschieben">⏰</button>':'')+
     (chefView?'<button class="t-del" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>':'')+
     '</div></div>';
 }
@@ -4722,6 +4756,26 @@ function bindTodoClicks(area){
       var backup=t ? JSON.parse(JSON.stringify(t)) : null;
       db.collection('studios').doc(sk).collection('todos').doc(id).delete()
         .then(function(){ if(backup) offerUndoTodo(sk, backup); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+    // Frist verschieben: +1 Tag / +1 Woche / Frist entfernen
+    var sn=node.querySelector('[data-snooze]');
+    if(sn) sn.addEventListener('click',function(){
+      var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
+      if(!t || !t.due) return;
+      var wahl=prompt('Frist verschieben für „'+(t.title||'')+'"\n\n'+
+        '1 = einen Tag später\n7 = eine Woche später\n0 = Frist ganz entfernen','1');
+      if(wahl===null) return;
+      var n=parseInt(wahl,10);
+      if(isNaN(n) || n<0){ toast('Bitte 0, 1 oder 7 eingeben.',true); return; }
+      // Ab HEUTE rechnen, nicht ab der alten Frist – sonst bleibt sie überfällig
+      var basis=Math.max(t.due, Date.now());
+      var neu = n===0 ? null : new Date(basis+n*86400000).setHours(23,59,59,999);
+      db.collection('studios').doc(sk).collection('todos').doc(id)
+        .update({ due: neu })
+        .then(function(){
+          toast(n===0 ? 'Frist entfernt' : 'Frist auf '+new Date(neu).toLocaleDateString('de-DE')+' verschoben');
+        })
         .catch(function(e){ toast(errMsg(e),true); });
     });
     var padd=node.querySelector('[data-photoadd]');
@@ -4824,6 +4878,7 @@ function listenInventoryAll(){
   _invUnsub=db.collection('inventory').onSnapshot(function(snap){
     _invAll={}; snap.forEach(function(d){ _invAll[d.id]=(d.data().items||[]); });
     renderDashboard();
+    renderShoppingList();   // Einkaufsliste mitziehen, sobald sich Bestände ändern
   }, function(e){ console.error('Inventar:',e.message); });
 }
 function renderDashboard(){
@@ -5302,6 +5357,78 @@ function renderMaterial(){
     if(miss.length){ al.className='mat-alert show'; al.textContent='⚠️ '+miss.length+' Artikel fehlen – bitte nachbestellen.'; }
     else { al.className='mat-alert'; al.style.display='none'; }
   }
+  renderShoppingList();
+}
+
+/* ── Einkaufsliste ──
+   Zählt zusammen, was über alle verwalteten Studios fehlt. Für den Chef ist
+   das die eigentliche Frage: "Was muss ich bestellen?" – nicht "wie sieht es
+   in Studio 7 aus?". Rechnet nur mit bereits geladenen Daten. */
+function shoppingData(){
+  var byName={};
+  managedStudios().forEach(function(s){
+    (_invAll[studioKey(s)]||[]).forEach(function(it){
+      var n=itemNeed(it); if(n<=0) return;
+      if(!byName[it.name]) byName[it.name]={ name:it.name, total:0, studios:[] };
+      byName[it.name].total+=n;
+      byName[it.name].studios.push({ studio:s, n:n });
+    });
+  });
+  return Object.keys(byName).map(function(k){ return byName[k]; })
+    .sort(function(a,b){ return b.total-a.total || a.name.localeCompare(b.name,'de'); });
+}
+function renderShoppingList(){
+  var card=$('shopCard'); if(!card || !session) return;
+  // Nur für die Verwaltung – ein Mitarbeiter bestellt nicht ein
+  if(!canManage()){ card.style.display='none'; return; }
+  var rows=shoppingData();
+  card.style.display='';
+  var cnt=$('shopCount');
+  if(cnt) cnt.textContent = rows.length
+    ? rows.length+(rows.length===1?' Artikel':' Artikel')
+    : '';
+  var box=$('shopList'); if(!box) return;
+  box.innerHTML = rows.length
+    ? rows.map(function(r){
+        return '<div class="shop-row"><div class="shop-h"><b>'+esc(r.name)+'</b>'+
+          '<span class="shop-n">'+r.total+'×</span></div>'+
+          '<div class="shop-s">'+r.studios.map(function(x){
+            return esc(x.studio)+' '+x.n;
+          }).join(' · ')+'</div></div>';
+      }).join('')
+    : '<p class="att-ok">✓ Nichts fehlt – alle Studios sind versorgt.</p>';
+}
+function shoppingText(){
+  return shoppingData().map(function(r){
+    return r.name+': '+r.total+' ('+r.studios.map(function(x){ return x.studio+' '+x.n; }).join(', ')+')';
+  }).join('\n');
+}
+function printShoppingList(){
+  var rows=shoppingData();
+  if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
+  var pa=$('printArea'); if(!pa) return;
+  pa.innerHTML='<h1>Einkaufsliste</h1>'+
+    '<p class="p-sub">Stand: '+esc(new Date().toLocaleString('de-DE'))+
+    ' · '+(isChef()?'alle Studios':'meine Studios')+'</p>'+
+    '<table><tr><th>Artikel</th><th>Menge</th><th>Für welche Studios</th><th>Bestellt</th></tr>'+
+    rows.map(function(r){
+      return '<tr><td>'+esc(r.name)+'</td><td>'+r.total+'</td><td>'+
+        esc(r.studios.map(function(x){ return x.studio+' ('+x.n+')'; }).join(', '))+
+        '</td><td class="p-box"></td></tr>';
+    }).join('')+'</table>'+
+    '<p class="p-foot">StudioChat · Körperformen</p>';
+  window.print();
+}
+function exportShoppingList(){
+  var rows=shoppingData();
+  if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
+  downloadXls('StudioChat_Einkaufsliste_'+ymd(new Date())+'.xls',
+    '<h2>Einkaufsliste</h2><p>Stand '+esc(new Date().toLocaleString('de-DE'))+'</p>'+
+    xlsTable('Zu bestellen',['Artikel','Menge gesamt','Aufteilung'],
+      rows.map(function(r){
+        return [r.name, r.total, r.studios.map(function(x){ return x.studio+': '+x.n; }).join(', ')];
+      })));
+  toast('Einkaufsliste gespeichert');
 }
 
 function scheduleMaterialSave(){
@@ -6724,6 +6851,20 @@ function bindActions(){
   var tso=$('todoSort');
   if(tso) tso.addEventListener('change',function(){ _todoSort=this.value; renderTodos(); });
   // Material-Suche
+  // Einkaufsliste: drucken, als Excel, in die Zwischenablage
+  var shP=$('shopPrint'); if(shP) shP.addEventListener('click', printShoppingList);
+  var shX=$('shopXls');   if(shX) shX.addEventListener('click', exportShoppingList);
+  var shC=$('shopCopy');
+  if(shC) shC.addEventListener('click',function(){
+    var t=shoppingText();
+    if(!t){ toast('Es fehlt gerade nichts.',true); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t)
+        .then(function(){ toast('Einkaufsliste kopiert ✓'); })
+        .catch(function(){ toast('Kopieren hat nicht geklappt.',true); });
+    } else { toast('Kopieren wird hier nicht unterstützt.',true); }
+  });
+
   var ms=$('matSearch');
   if(ms){
     ms.addEventListener('input',function(){
