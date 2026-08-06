@@ -121,6 +121,13 @@
   --radius:18px;--radius-lg:26px;
   --shadow:0 8px 24px rgba(0,0,0,.40);--shadow-lg:0 24px 56px rgba(0,0,0,.58);
   --ease-out:cubic-bezier(.16,1,.3,1);
+  /* Sichere Ränder des Geräts (Notch, Dynamic Island, Home-Leiste).
+     Ohne diese Abstände liegen Knöpfe unter der Statusleiste und
+     lassen sich am iPhone nicht antippen. */
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
   /* Apple-typische Kurven: ruhiges Ausgleiten und leichtes Nachfedern */
   --ease-ios:cubic-bezier(.32,.72,0,1);
   --spring:cubic-bezier(.34,1.42,.64,1);
@@ -277,7 +284,9 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .app{display:none;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 .app.show{display:flex}
 .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
-  gap:14px;padding:11px clamp(14px,4vw,26px);
+  gap:14px;
+  padding:calc(11px + var(--sat)) calc(clamp(14px,4vw,26px) + var(--sar))
+          11px calc(clamp(14px,4vw,26px) + var(--sal));
   background:rgba(11,10,28,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--line)}
 .tb-brand{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-weight:800;
@@ -340,7 +349,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .msg .meta time{margin-left:auto;color:var(--text-3);font-size:.7rem;white-space:nowrap}
 .msg .body{font-size:.97rem;color:var(--text);white-space:pre-wrap}
 .chat-empty{margin:auto;text-align:center;color:var(--text-3);padding:40px}
-.chat-input{display:flex;gap:9px;padding:10px clamp(14px,4vw,28px) calc(12px + env(safe-area-inset-bottom));
+.chat-input{display:flex;gap:9px;
+  padding:10px calc(clamp(14px,4vw,28px) + var(--sar)) calc(12px + var(--sab)) calc(clamp(14px,4vw,28px) + var(--sal));
   border-top:1px solid var(--line);background:var(--bg-soft);flex-shrink:0}
 .chat-input textarea{flex:1;min-height:46px;max-height:130px;resize:none}
 
@@ -482,7 +492,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   .main{padding-bottom:72px}
   .mobnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
     background:rgba(11,10,28,.96);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
-    border-top:1px solid var(--line);padding:5px 4px calc(5px + env(safe-area-inset-bottom))}
+    border-top:1px solid var(--line);
+    padding:5px calc(4px + var(--sar)) calc(5px + var(--sab)) calc(4px + var(--sal))}
   /* Bei 9 Bereichen wird es sonst zu eng: Leiste ist seitlich verschiebbar,
      die Einträge behalten dadurch lesbare Größe und große Tippflächen. */
   .mobnav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -568,7 +579,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* Auth-Karte gleitet herein, Mesh-Blobs leben */
-.auth-card{animation:cardIn .5s var(--ease-out)}
+.auth-card{animation:cardIn .5s var(--ease-out);margin-top:var(--sat)}
 @keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
 .auth-mesh .a{animation:floatA 16s ease-in-out infinite}
 .auth-mesh .b{animation:floatB 20s ease-in-out infinite}
@@ -624,7 +635,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background:linear-gradient(90deg,var(--warm),#ff8f5e);color:#20120A;
   font-weight:700;font-size:.84rem;text-align:center;padding:7px 12px;
   transform:translateY(-100%);transition:transform .3s var(--ease-out);
-  padding-top:calc(7px + env(safe-area-inset-top,0px))}
+  padding-top:calc(7px + var(--sat))}
 .offline-bar.show{transform:none}
 
 /* ── Chat: Trenner „Neue Nachrichten" ── */
@@ -796,6 +807,55 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* Fortschrittsbalken füllt sich weich */
 .pbar i{transition:width .7s var(--ease-ios)}
+
+/* ============================================================
+   AUSSEHEN ANPASSEN
+   Chat-Hintergrund, Akzentfarbe und Schriftgröße wählt jeder selbst.
+   Die Auswahl liegt lokal im Gerät (localStorage), nicht in der Datenbank.
+   ============================================================ */
+
+/* Chat-Hintergründe – liegen hinter den Nachrichten */
+.chat-scroll{position:relative;background-attachment:local}
+body[data-chatbg="verlauf"] .chat-scroll{
+  background-image:radial-gradient(900px 500px at 85% 8%, rgba(139,92,246,.16), transparent 62%),
+                   radial-gradient(800px 500px at 10% 92%, rgba(34,211,238,.13), transparent 62%)}
+body[data-chatbg="punkte"] .chat-scroll{
+  background-image:radial-gradient(circle at center, var(--dot) 1.4px, transparent 1.5px);
+  background-size:22px 22px}
+body[data-chatbg="gitter"] .chat-scroll{
+  background-image:linear-gradient(var(--dot) 1px, transparent 1px),
+                   linear-gradient(90deg, var(--dot) 1px, transparent 1px);
+  background-size:34px 34px}
+body[data-chatbg="wellen"] .chat-scroll{
+  background-image:repeating-linear-gradient(135deg, var(--dot) 0 2px, transparent 2px 16px)}
+body[data-chatbg="nacht"] .chat-scroll{
+  background-image:linear-gradient(180deg, rgba(139,92,246,.14), transparent 45%),
+                   linear-gradient(0deg, rgba(236,72,153,.12), transparent 40%)}
+:root{--dot:rgba(255,255,255,.055)}
+body.light{--dot:rgba(20,10,40,.06)}
+
+/* Reiter im Einstellungs-Fenster */
+.pm-tabs{display:flex;gap:6px;background:var(--bg-soft);padding:4px;border-radius:12px;margin-bottom:16px}
+.pm-tab{flex:1;background:none;border:none;color:var(--text-2);font-family:var(--font-body);
+  font-weight:700;font-size:.9rem;padding:9px 6px;border-radius:9px;cursor:pointer;
+  transition:background .28s var(--ease-ios),color .28s var(--ease-ios),transform .3s var(--spring)}
+.pm-tab:active{transform:scale(.96)}
+.pm-tab.on{background:var(--bg-2);color:var(--accent);box-shadow:0 1px 6px rgba(0,0,0,.18)}
+
+/* Auswahlfelder im Design-Menü */
+.opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:9px}
+.opt{border:2px solid var(--line-2);border-radius:13px;padding:9px;cursor:pointer;background:var(--bg-soft);
+  display:flex;flex-direction:column;gap:7px;align-items:center;
+  transition:transform .3s var(--spring),border-color .25s,background .25s}
+.opt:active{transform:scale(.96)}
+.opt.on{border-color:var(--accent);background:rgba(34,211,238,.10)}
+.opt span{font-size:.74rem;font-weight:700;color:var(--text-2)}
+.opt.on span{color:var(--accent)}
+.opt-prev{width:100%;height:42px;border-radius:9px;border:1px solid var(--line);background:var(--bg-2)}
+.acc-dot{width:34px;height:34px;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* Schriftgröße: skaliert die ganze App */
+html{font-size:var(--fs,100%)}
 
 /* ── Schnellfilter-Chips (Aufgaben) ── */
 .chip-row{display:flex;gap:8px;flex-wrap:wrap}
@@ -1470,7 +1530,12 @@ var FIREBASE_CONFIG = {
 <div id="profileModal">
   <div class="pm-box">
     <button class="lb-close" id="pmClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
-    <h3 style="margin-bottom:16px">Mein Profil</h3>
+    <h3 style="margin-bottom:14px">Einstellungen</h3>
+    <div class="pm-tabs">
+      <button class="pm-tab on" data-pmtab="profil">👤 Profil</button>
+      <button class="pm-tab" data-pmtab="aussehen">🎨 Aussehen</button>
+    </div>
+    <div id="pmPaneProfil">
     <div style="text-align:center;margin-bottom:14px">
       <div class="avatar" id="pmPreview" style="width:74px;height:74px;font-size:1.6rem;margin:0 auto">?</div>
       <input type="file" accept="image/*" class="hidden-file" id="pmPhotoFile" />
@@ -1484,8 +1549,28 @@ var FIREBASE_CONFIG = {
     <div class="field"><label for="pmBday">Geburtstag (optional)</label><input class="inp" id="pmBday" type="date" /></div>
     <div class="field"><label for="pmEmoji">Avatar-Emoji statt Initialen (optional, wenn kein Bild)</label><input class="inp" id="pmEmoji" maxlength="2" placeholder="z. B. 💪" /></div>
     <div class="field"><label>Avatar-Farbe</label><div class="pm-colors" id="pmColors"></div></div>
+
+    </div>
+
+    <div id="pmPaneAussehen" style="display:none">
+      <p class="hint" style="margin:2px 0 14px">Gilt nur auf diesem Gerät – ändert nichts für die anderen.</p>
+
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:0 0 7px">Chat-Hintergrund</label>
+      <div class="opt-grid" id="bgOpts"></div>
+
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
+      <div class="opt-grid" id="accOpts"></div>
+
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Schriftgröße</label>
+      <div class="opt-grid" id="fsOpts"></div>
+
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Hell / Dunkel</label>
+      <div class="opt-grid" id="thOpts"></div>
+    </div>
     <p class="auth-err" id="pmErr"></p>
     <button class="btn btn-primary" id="pmSave" style="width:100%">Speichern</button>
+    <p class="hint" id="pmAppearanceNote" style="display:none;text-align:center;margin-top:10px">
+      Aussehen wird sofort übernommen – kein Speichern nötig.</p>
   </div>
 </div>
 
@@ -1516,13 +1601,80 @@ var FIREBASE_CONFIG = {
 (function(){
 'use strict';
 
-/* ── Hell-/Dunkel-Modus (läuft sofort, auch am Login) ── */
+/* ============================================================
+   AUSSEHEN (Hell/Dunkel, Chat-Hintergrund, Akzentfarbe, Schriftgröße)
+   Alles wird lokal im Gerät gespeichert – jeder stellt sich seine
+   Ansicht selbst ein, ohne die anderen zu beeinflussen.
+   ============================================================ */
+var PREFS = {
+  theme:'auto',     // auto | dark | light
+  chatbg:'verlauf', // siehe CHAT_BGS
+  accent:'cyan',    // siehe ACCENTS
+  fs:'100'          // Schriftgröße in Prozent
+};
+var CHAT_BGS = [
+  {id:'keiner',  name:'Schlicht'},
+  {id:'verlauf', name:'Farbverlauf'},
+  {id:'punkte',  name:'Punkte'},
+  {id:'gitter',  name:'Gitter'},
+  {id:'wellen',  name:'Streifen'},
+  {id:'nacht',   name:'Nachtlicht'}
+];
+/* Akzentfarben – jeweils für dunkel und hell, damit der Kontrast stimmt */
+var ACCENTS = {
+  cyan:   {name:'Cyan',    d:'#22D3EE', d2:'#A78BFA', l:'#0E7490', l2:'#7C3AED'},
+  violett:{name:'Violett', d:'#A78BFA', d2:'#22D3EE', l:'#6D28D9', l2:'#0E7490'},
+  pink:   {name:'Pink',    d:'#F472B6', d2:'#A78BFA', l:'#BE185D', l2:'#6D28D9'},
+  gruen:  {name:'Grün',    d:'#34D399', d2:'#22D3EE', l:'#047857', l2:'#0E7490'},
+  bernstein:{name:'Bernstein', d:'#FBBF24', d2:'#F472B6', l:'#B45309', l2:'#BE185D'},
+  blau:   {name:'Blau',    d:'#60A5FA', d2:'#A78BFA', l:'#1D4ED8', l2:'#6D28D9'}
+};
+
+function loadPrefs(){
+  try{
+    var raw=localStorage.getItem('kf_prefs');
+    if(raw) PREFS=Object.assign(PREFS, JSON.parse(raw));
+    // alte Einstellung übernehmen
+    var old=localStorage.getItem('kf_theme');
+    if(old && !raw) PREFS.theme = (old==='light'?'light':'dark');
+  }catch(e){}
+}
+function savePrefs(){
+  try{ localStorage.setItem('kf_prefs', JSON.stringify(PREFS)); }catch(e){}
+}
+/* „auto" folgt der Systemeinstellung des Geräts */
+function systemPrefersLight(){
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+}
+function applyPrefs(){
+  var light = PREFS.theme==='light' || (PREFS.theme==='auto' && systemPrefersLight());
+  document.body.classList.toggle('light', light);
+  document.body.setAttribute('data-chatbg', PREFS.chatbg||'keiner');
+  var a=ACCENTS[PREFS.accent]||ACCENTS.cyan;
+  var r=document.documentElement.style;
+  r.setProperty('--accent',  light?a.l :a.d);
+  r.setProperty('--accent-2',light?a.l2:a.d2);
+  r.setProperty('--accent-d',light?a.l :a.d);
+  r.setProperty('--fs', (PREFS.fs||100)+'%');
+  // Farbe der Statusleiste mitziehen
+  var m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute('content', light?'#F5F3FC':'#08071A');
+}
 (function initTheme(){
-  try{ if(localStorage.getItem('kf_theme')==='light') document.body.classList.add('light'); }catch(e){}
+  loadPrefs(); applyPrefs();
+  // Wenn „auto" gewählt ist, auf Systemwechsel reagieren
+  try{
+    var mq=window.matchMedia('(prefers-color-scheme: light)');
+    var onChange=function(){ if(PREFS.theme==='auto') applyPrefs(); };
+    if(mq.addEventListener) mq.addEventListener('change', onChange);
+    else if(mq.addListener) mq.addListener(onChange);
+  }catch(e){}
+  // Knopf oben schaltet weiterhin schnell zwischen hell und dunkel um
   var btn=document.getElementById('themeBtn');
   if(btn) btn.addEventListener('click',function(){
-    var light=document.body.classList.toggle('light');
-    try{ localStorage.setItem('kf_theme', light?'light':'dark'); }catch(e){}
+    var nowLight=document.body.classList.contains('light');
+    PREFS.theme = nowLight ? 'dark' : 'light';
+    savePrefs(); applyPrefs();
   });
 })();
 
@@ -4276,8 +4428,115 @@ function openProfile(){
     c.querySelectorAll('.pm-color').forEach(function(x){ x.classList.remove('sel'); });
     el.classList.add('sel'); pmPreview();
   }); });
+  buildAppearanceOptions();
+  switchPmTab('profil');
   $('pmErr').textContent=''; pmPreview();
   $('profileModal').classList.add('show');
+}
+
+/* Zwischen den Reitern "Profil" und "Aussehen" umschalten */
+function switchPmTab(which){
+  var p=$('pmPaneProfil'), a=$('pmPaneAussehen'),
+      save=$('pmSave'), err=$('pmErr'), note=$('pmAppearanceNote');
+  var isProfil = which!=='aussehen';
+  if(p) p.style.display = isProfil?'':'none';
+  if(a) a.style.display = isProfil?'none':'';
+  if(save) save.style.display = isProfil?'':'none';
+  if(err) err.style.display = isProfil?'':'none';
+  if(note) note.style.display = isProfil?'none':'block';
+  document.querySelectorAll('[data-pmtab]').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-pmtab')===(isProfil?'profil':'aussehen'));
+  });
+  var box=document.querySelector('.pm-box'); if(box) box.scrollTop=0;
+}
+
+/* Baut die Auswahlkacheln für Chat-Hintergrund, Farbe, Schrift und Modus.
+   Jede Änderung wirkt sofort und wird lokal gespeichert. */
+function buildAppearanceOptions(){
+  // 1) Chat-Hintergrund (mit kleiner Vorschau)
+  var bg=$('bgOpts');
+  if(bg){
+    bg.innerHTML=CHAT_BGS.map(function(b){
+      return '<div class="opt'+(PREFS.chatbg===b.id?' on':'')+'" data-bg="'+b.id+'">'+
+        '<div class="opt-prev" data-prev="'+b.id+'"></div><span>'+esc(b.name)+'</span></div>';
+    }).join('');
+    // Vorschauflächen bekommen dasselbe Muster wie der echte Chat
+    bg.querySelectorAll('[data-prev]').forEach(function(el){
+      var id=el.getAttribute('data-prev');
+      var host=document.createElement('div');
+      host.setAttribute('data-chatbg', id);
+      el.style.backgroundImage=previewBgFor(id);
+      el.style.backgroundSize = (id==='punkte'?'14px 14px':(id==='gitter'?'20px 20px':'auto'));
+    });
+    bg.querySelectorAll('[data-bg]').forEach(function(el){
+      el.addEventListener('click',function(){
+        PREFS.chatbg=el.getAttribute('data-bg'); savePrefs(); applyPrefs();
+        bg.querySelectorAll('[data-bg]').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on'); tick(8);
+      });
+    });
+  }
+  // 2) Akzentfarbe
+  var ac=$('accOpts');
+  if(ac){
+    var light=document.body.classList.contains('light');
+    ac.innerHTML=Object.keys(ACCENTS).map(function(k){
+      var a=ACCENTS[k];
+      return '<div class="opt'+(PREFS.accent===k?' on':'')+'" data-acc="'+k+'">'+
+        '<div class="acc-dot" style="background:linear-gradient(135deg,'+(light?a.l:a.d)+','+(light?a.l2:a.d2)+')"></div>'+
+        '<span>'+esc(a.name)+'</span></div>';
+    }).join('');
+    ac.querySelectorAll('[data-acc]').forEach(function(el){
+      el.addEventListener('click',function(){
+        PREFS.accent=el.getAttribute('data-acc'); savePrefs(); applyPrefs();
+        ac.querySelectorAll('[data-acc]').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on'); tick(8); buildAppearanceOptions();
+      });
+    });
+  }
+  // 3) Schriftgröße
+  var fs=$('fsOpts');
+  if(fs){
+    var sizes=[['90','Klein'],['100','Normal'],['112','Groß'],['125','Sehr groß']];
+    fs.innerHTML=sizes.map(function(v){
+      return '<div class="opt'+(String(PREFS.fs)===v[0]?' on':'')+'" data-fs="'+v[0]+'">'+
+        '<div style="font-weight:800;font-size:'+(v[0]/100*15)+'px;color:var(--text)">Aa</div>'+
+        '<span>'+v[1]+'</span></div>';
+    }).join('');
+    fs.querySelectorAll('[data-fs]').forEach(function(el){
+      el.addEventListener('click',function(){
+        PREFS.fs=el.getAttribute('data-fs'); savePrefs(); applyPrefs();
+        fs.querySelectorAll('[data-fs]').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on'); tick(8);
+      });
+    });
+  }
+  // 4) Hell / Dunkel / Automatisch
+  var th=$('thOpts');
+  if(th){
+    var modes=[['auto','Automatisch','🌗'],['dark','Dunkel','🌙'],['light','Hell','☀️']];
+    th.innerHTML=modes.map(function(m){
+      return '<div class="opt'+(PREFS.theme===m[0]?' on':'')+'" data-th="'+m[0]+'">'+
+        '<div style="font-size:20px">'+m[2]+'</div><span>'+m[1]+'</span></div>';
+    }).join('');
+    th.querySelectorAll('[data-th]').forEach(function(el){
+      el.addEventListener('click',function(){
+        PREFS.theme=el.getAttribute('data-th'); savePrefs(); applyPrefs();
+        th.querySelectorAll('[data-th]').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on'); tick(8); buildAppearanceOptions();
+      });
+    });
+  }
+}
+/* Muster für die kleinen Vorschauflächen im Menü */
+function previewBgFor(id){
+  var dot=document.body.classList.contains('light')?'rgba(20,10,40,.10)':'rgba(255,255,255,.10)';
+  if(id==='verlauf') return 'radial-gradient(60px 40px at 80% 15%, rgba(139,92,246,.5), transparent 65%),radial-gradient(60px 40px at 15% 85%, rgba(34,211,238,.45), transparent 65%)';
+  if(id==='punkte')  return 'radial-gradient(circle at center, '+dot+' 1.4px, transparent 1.5px)';
+  if(id==='gitter')  return 'linear-gradient('+dot+' 1px, transparent 1px),linear-gradient(90deg, '+dot+' 1px, transparent 1px)';
+  if(id==='wellen')  return 'repeating-linear-gradient(135deg, '+dot+' 0 2px, transparent 2px 12px)';
+  if(id==='nacht')   return 'linear-gradient(180deg, rgba(139,92,246,.45), transparent 55%),linear-gradient(0deg, rgba(236,72,153,.4), transparent 50%)';
+  return 'none';
 }
 function closeProfile(){ $('profileModal').classList.remove('show'); }
 function saveProfile(){
@@ -4471,6 +4730,10 @@ function bindActions(){
   var pg=$('emPwGen');
   if(pg) pg.addEventListener('click',function(){
     var f=$('emPw'); if(f){ f.value=suggestPassword(); f.focus(); tick(8); toast('Passwort vorgeschlagen'); }
+  });
+  // Reiter im Einstellungs-Fenster
+  document.querySelectorAll('[data-pmtab]').forEach(function(b){
+    b.addEventListener('click',function(){ switchPmTab(b.getAttribute('data-pmtab')); tick(8); });
   });
   var cp=$('emCopy');
   if(cp) cp.addEventListener('click',function(){
