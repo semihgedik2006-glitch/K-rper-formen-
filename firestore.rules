@@ -248,7 +248,13 @@ service cloud.firestore {
       allow read: if signedIn();
       // Jeder meldet sich selbst; die Verwaltung darf auch für andere eintragen
       allow create: if signedIn()
-        && (request.resource.data.uid == request.auth.uid || manages(studioKey));
+        && (request.resource.data.uid == request.auth.uid || manages(studioKey))
+        // Wer für sich selbst einträgt, darf sich nicht gleich selbst
+        // genehmigen. Krankmeldungen und Einträge der Verwaltung schon.
+        && (manages(studioKey)
+            || request.resource.data.type == 'krank'
+            || request.resource.data.status == 'offen');
+      // Genehmigen und Ablehnen ist Sache der Verwaltung
       allow update: if manages(studioKey);
       allow delete: if manages(studioKey)
         || (signedIn() && resource.data.uid == request.auth.uid);

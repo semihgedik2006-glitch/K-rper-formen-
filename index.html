@@ -1243,6 +1243,30 @@ html{font-size:var(--fs,100%)}
 .msg-audio audio{height:36px;max-width:240px}
 .au-len{font-size:.74rem;color:var(--text-3);white-space:nowrap}
 
+/* Abwesenheiten mit Genehmigung */
+.abs-status{display:inline-block;margin-left:8px;font-size:.7rem;font-weight:700;
+  padding:2px 9px;border-radius:999px;vertical-align:middle;
+  background:rgba(148,163,184,.16);color:var(--text-2)}
+.abs-status.offen{background:rgba(251,191,36,.16);color:var(--warm)}
+.abs-status.genehmigt{background:rgba(52,211,153,.14);color:#34D399}
+.abs-status.abgelehnt{background:rgba(251,78,109,.14);color:var(--danger)}
+.abs-row.offen{border-left:3px solid var(--warm);padding-left:10px}
+.abs-row.abgelehnt{opacity:.6}
+.abs-by{font-size:.76rem;color:var(--text-3);margin-top:3px}
+.abs-actions{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+
+/* Verbrauchs-Vorhersage */
+.fc-row{padding:10px 0;border-top:1px solid var(--line)}
+.fc-row:first-child{border-top:none}
+.fc-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.fc-head b{font-weight:600;font-size:.95rem}
+.fc-w{flex:0 0 auto;font-weight:700;font-size:.86rem;white-space:nowrap;
+  padding:2px 10px;border-radius:999px}
+.fc-w.good{background:rgba(52,211,153,.14);color:#34D399}
+.fc-w.warn{background:rgba(251,191,36,.14);color:var(--warm)}
+.fc-w.bad{background:rgba(251,78,109,.14);color:var(--danger)}
+.fc-sub{color:var(--text-3);font-size:.78rem;margin-top:3px}
+
 /* Einkaufsliste (Material) */
 .shop-row{padding:10px 0;border-top:1px solid var(--line)}
 .shop-row:first-child{border-top:none}
@@ -1768,6 +1792,12 @@ var FIREBASE_CONFIG = {
           <!-- Einkaufsliste: fasst zusammen, was über ALLE Studios fehlt.
                Sonst müsste der Chef 14 Studios einzeln durchklicken, um zu
                wissen, was er bestellen muss. -->
+          <div class="card" id="fcCard" style="display:none">
+            <h3 id="fcTitle">📉 Reicht noch</h3>
+            <p class="hint">Aus den Wochen-Sicherungen im Archiv gerechnet – keine Schätzung,
+              sondern der tatsächliche Rückgang der letzten Wochen.</p>
+            <div id="fcList"></div>
+          </div>
           <div class="card" id="shopCard" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3>🛒 Einkaufsliste</h3>
@@ -4832,25 +4862,78 @@ function buildShiftPersonSelect(){
     || '<option value="">– niemand zugeordnet –</option>';
 }
 
+/* ── Abwesenheiten mit Genehmigung ──
+   Urlaub ist ein Antrag, keine Ankündigung: er wird beantragt und von der
+   Leitung genehmigt oder abgelehnt. Krankmeldung dagegen ist eine reine
+   Mitteilung – da gibt es nichts zu genehmigen, die gilt sofort.
+   Alte Einträge ohne Status gelten als genehmigt, damit nichts, was schon
+   abgesprochen war, plötzlich als offen erscheint. */
+function absStatus(a){
+  if(a.type==='krank') return 'info';
+  return a.status || 'genehmigt';
+}
+var ABS_LABEL={ offen:'wartet auf Antwort', genehmigt:'genehmigt', abgelehnt:'abgelehnt', info:'gemeldet' };
+
 function renderAbsences(){
   var box=$('absList'); if(!box) return;
   var heute=ymd(new Date());
   var kommend=_absences.filter(function(a){ return a.to>=heute; });
+  // Offene Anträge zuerst – die brauchen eine Entscheidung
+  kommend.sort(function(a,b){
+    var oa=absStatus(a)==='offen'?0:1, ob=absStatus(b)==='offen'?0:1;
+    return oa-ob || (a.from||'').localeCompare(b.from||'');
+  });
   if(!kommend.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Keine Einträge.</p>'; return; }
   box.innerHTML=kommend.map(function(a){
     var ico=a.type==='krank'?'🤒':(a.type==='urlaub'?'🌴':'🏠');
     var mine=a.uid===session.uid;
+    var st=absStatus(a);
     var del=(mine||canManage())?'<button class="mini-x" data-absdel="'+esc(a.id)+'">löschen</button>':'';
     var f=a.from.split('-').reverse().join('.'), t=a.to.split('-').reverse().join('.');
-    return '<div class="abs-row"><b>'+ico+' '+esc(a.name||'')+'</b>'+
+    var chip='<span class="abs-status '+st+'">'+esc(ABS_LABEL[st]||st)+'</span>';
+    // Entscheiden darf nur die Verwaltung – und nur bei offenen Anträgen
+    var aktion='';
+    if(canManage() && st==='offen'){
+      aktion='<div class="abs-actions">'+
+        '<button class="btn btn-primary btn-sm" data-absok="'+esc(a.id)+'">Genehmigen</button>'+
+        '<button class="btn btn-ghost btn-sm" data-absno="'+esc(a.id)+'">Ablehnen</button></div>';
+    }
+    var wer = a.decidedBy
+      ? '<div class="abs-by">'+esc(st==='abgelehnt'?'Abgelehnt':'Genehmigt')+' von '+esc(a.decidedBy)+
+        (a.decidedAt?' · '+fmtDateTime(a.decidedAt):'')+'</div>'
+      : '';
+    return '<div class="abs-row'+(st==='offen'?' offen':'')+(st==='abgelehnt'?' abgelehnt':'')+'">'+
+      '<b>'+ico+' '+esc(a.name||'')+'</b>'+chip+
       '<div style="font-size:.86rem;color:var(--text-2);margin-top:2px">'+f+' bis '+t+
-      (a.note?' · '+esc(a.note):'')+'</div>'+
+      (a.note?' · '+esc(a.note):'')+'</div>'+wer+aktion+
       (del?'<div class="bb-head"><span></span>'+del+'</div>':'')+'</div>';
   }).join('');
+
+  function entscheide(id, neuerStatus){
+    db.collection('studios').doc(_teamStudioKey).collection('absences').doc(id)
+      .update({ status:neuerStatus, decidedBy:session.name, decidedByUid:session.uid, decidedAt:Date.now() })
+      .then(function(){ toast(neuerStatus==='genehmigt'?'Genehmigt ✓':'Abgelehnt'); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  }
+  box.querySelectorAll('[data-absok]').forEach(function(b){
+    b.addEventListener('click',function(){ tick(10); entscheide(b.getAttribute('data-absok'),'genehmigt'); });
+  });
+  box.querySelectorAll('[data-absno]').forEach(function(b){
+    b.addEventListener('click',function(){
+      if(!confirm('Antrag ablehnen?')) return;
+      entscheide(b.getAttribute('data-absno'),'abgelehnt');
+    });
+  });
   box.querySelectorAll('[data-absdel]').forEach(function(b){
     b.addEventListener('click',function(){
-      db.collection('studios').doc(_teamStudioKey).collection('absences').doc(b.getAttribute('data-absdel'))
-        .delete().catch(function(e){ toast(errMsg(e),true); });
+      var id=b.getAttribute('data-absdel'), backup=copyOf(_absences, id);
+      db.collection('studios').doc(_teamStudioKey).collection('absences').doc(id)
+        .delete()
+        .then(function(){
+          offerUndoDoc(db.collection('studios').doc(_teamStudioKey).collection('absences').doc(id),
+            backup, 'Eintrag');
+        })
+        .catch(function(e){ toast(errMsg(e),true); });
     });
   });
 }
@@ -5623,6 +5706,7 @@ function listenInventoryAll(){
     _invAll={}; snap.forEach(function(d){ _invAll[d.id]=(d.data().items||[]); });
     renderDashboard();
     renderShoppingList();   // Einkaufsliste mitziehen, sobald sich Bestände ändern
+    renderForecast();
   }, function(e){ console.error('Inventar:',e.message); });
 }
 function renderDashboard(){
@@ -6102,6 +6186,96 @@ function renderMaterial(){
     else { al.className='mat-alert'; al.style.display='none'; }
   }
   renderShoppingList();
+  renderForecast();
+}
+
+/* ── Verbrauchs-Vorhersage ──
+   "Wie lange reichen die Handtücher noch?" – berechnet aus den
+   Wochen-Sicherungen im Archiv. Bewusst OHNE künstliche Intelligenz: ein
+   Mittelwert über die letzten Wochen leistet hier dasselbe, ist
+   nachvollziehbar und kostet nichts.
+
+   Rechenweg, damit man ihn nachprüfen kann:
+   - Für jede Woche wird der Bestand mit dem der Vorwoche verglichen.
+   - Nur SINKENDE Bestände zählen als Verbrauch. Steigt der Bestand,
+     wurde nachgeliefert – das ist kein Verbrauch und wird übersprungen.
+   - Aus den Verbrauchswerten wird der Schnitt pro Woche gebildet.
+   - Aktueller Bestand geteilt durch Wochenverbrauch = Reichweite.
+   Weniger als zwei Vergleichswochen ergeben keine sinnvolle Aussage –
+   dann sagen wir das offen, statt eine Zahl zu erfinden. */
+var FORECAST_MIN_WOCHEN = 2;
+
+function forecastFor(studioKeyWanted){
+  // Sicherungen von alt nach neu sortieren
+  var wochen=_archRows.slice().sort(function(a,b){ return (a.week||'').localeCompare(b.week||''); });
+  if(wochen.length < FORECAST_MIN_WOCHEN+1) return { zuWenig:true, wochen:wochen.length, artikel:[] };
+
+  var verbrauch={};   // Artikel -> [Verbrauch je Woche]
+  for(var i=1;i<wochen.length;i++){
+    var vor=(wochen[i-1].material||{})[studioKeyWanted]||[];
+    var jetzt=(wochen[i].material||{})[studioKeyWanted]||[];
+    var vorMap={}; vor.forEach(function(x){ vorMap[x.name]=x; });
+    jetzt.forEach(function(x){
+      var v=vorMap[x.name]; if(!v) return;
+      var diff=(v.have||0)-(x.have||0);
+      if(diff>0){                       // nur Rückgang = Verbrauch
+        if(!verbrauch[x.name]) verbrauch[x.name]=[];
+        verbrauch[x.name].push(diff);
+      }
+    });
+  }
+
+  var aktuell=_invAll[studioKeyWanted]||[];
+  var artikel=aktuell.map(function(it){
+    var v=verbrauch[it.name]||[];
+    if(v.length < FORECAST_MIN_WOCHEN) return null;
+    var schnitt=v.reduce(function(a,b){ return a+b; },0)/v.length;
+    if(schnitt<=0) return null;
+    var wochenReicht=(it.have||0)/schnitt;
+    return {
+      name: it.name,
+      have: it.have||0,
+      proWoche: Math.round(schnitt*10)/10,
+      wochen: Math.round(wochenReicht*10)/10,
+      basis: v.length
+    };
+  }).filter(Boolean).sort(function(a,b){ return a.wochen-b.wochen; });
+
+  return { zuWenig:false, wochen:wochen.length, artikel:artikel };
+}
+
+function renderForecast(){
+  var box=$('fcList'), card=$('fcCard');
+  if(!box || !card || !session) return;
+  if(!canManage() || !_matStudioKey){ card.style.display='none'; return; }
+  card.style.display='';
+  var titel=$('fcTitle');
+  if(titel) titel.textContent='📉 Reicht noch – '+studioName(_matStudioKey);
+
+  var f=forecastFor(_matStudioKey);
+  if(f.zuWenig){
+    box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">'+
+      'Dafür braucht es mindestens drei Wochen-Sicherungen im Archiv – '+
+      'bisher sind es '+f.wochen+'. Die Vorhersage erscheint von selbst, '+
+      'sobald genug Verlauf da ist.</p>';
+    return;
+  }
+  if(!f.artikel.length){
+    box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">'+
+      'Noch kein regelmäßiger Verbrauch erkennbar. Sobald sich Bestände über '+
+      'mehrere Wochen verringern, steht hier, wie lange sie reichen.</p>';
+    return;
+  }
+  box.innerHTML=f.artikel.map(function(a){
+    var stufe = a.wochen<1 ? 'bad' : (a.wochen<2.5 ? 'warn' : 'good');
+    var txt = a.wochen<1 ? 'unter 1 Woche'
+            : (a.wochen<2 ? 'ca. 1 Woche'
+            : 'ca. '+Math.round(a.wochen)+' Wochen');
+    return '<div class="fc-row"><div class="fc-head">'+
+      '<b>'+esc(a.name)+'</b><span class="fc-w '+stufe+'">'+esc(txt)+'</span></div>'+
+      '<div class="fc-sub">Bestand '+a.have+' · Schnitt '+a.proWoche+
+      ' pro Woche · aus '+a.basis+' Wochen berechnet</div></div>';
+  }).join('');
 }
 
 /* ── Einkaufsliste ──
@@ -6759,6 +6933,7 @@ function archPutzplanHtml(a){
 
 /* Liste der Wochen-Sicherungen im Archiv anzeigen */
 var _archUnsub=null;
+var _archRows=[];
 function listenArchives(){
   if(session.role!=='chef') return;
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
@@ -6766,6 +6941,8 @@ function listenArchives(){
     .onSnapshot(function(snap){
       var box=$('weekArchives'); if(!box) return;
       var rows=snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      _archRows=rows;          // für die Verbrauchs-Vorhersage
+      renderForecast();
       if(!rows.length){
         box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Noch keine Sicherung. Sie wird automatisch angelegt, sobald du als Chef die App öffnest.</p>';
         return;
@@ -7820,10 +7997,19 @@ function bindActions(){
     if(!f){ toast('Bitte ein Startdatum wählen.',true); return; }
     if(t<f){ toast('Das Ende liegt vor dem Beginn.',true); return; }
     withBusy(btn,function(){
+      var typ=$('abType').value;
+      // Krankmeldung gilt sofort; Urlaub und Frei brauchen eine Zusage.
+      // Trägt die Verwaltung selbst etwas ein, ist es damit auch genehmigt.
+      var status = (typ==='krank' || canManage()) ? 'genehmigt' : 'offen';
       return db.collection('studios').doc(_teamStudioKey).collection('absences').add({
-        from:f, to:t, type:$('abType').value, note:$('abNote').value.trim()||null,
+        from:f, to:t, type:typ, note:$('abNote').value.trim()||null,
+        status:status,
         uid:session.uid, name:session.name, ts:Date.now()
-      }).then(function(){ $('abNote').value=''; toast('Abwesenheit gemeldet ✓'); })
+      }).then(function(){
+        $('abNote').value='';
+        toast(status==='offen' ? 'Antrag gestellt – die Leitung entscheidet ✓'
+                               : 'Abwesenheit eingetragen ✓');
+      })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
