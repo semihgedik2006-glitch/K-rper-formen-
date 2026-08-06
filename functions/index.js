@@ -30,6 +30,17 @@ function inStudio(d, key) {
   return d.studioKey === key;
 }
 
+/* Will dieses Gerät diese Art von Meldung überhaupt?
+   Die Einstellungen stehen am Gerät-Eintrag (pushTokens), damit hier nicht
+   für jedes Gerät zusätzlich das Profil geladen werden muss.
+   Fehlt die Angabe (ältere Geräte), gilt sie als eingeschaltet – sonst
+   würden bestehende Installationen stillschweigend verstummen. */
+function willHaben(d, art) {
+  const n = d && d.notify;
+  if (!n) return true;
+  return n[art] !== false;
+}
+
 /* Push an eine Liste von Tokens senden + ungültige Tokens aufräumen */
 async function sendPush(tokens, title, body) {
   if (!tokens.length) return;
@@ -60,6 +71,7 @@ exports.onNewMessage = region.firestore
     const channelId = ctx.params.channelId;
     const isGeneral = channelId === 'allgemein';
     const tokens = await collectTokens(d => {
+      if (!willHaben(d, 'chat')) return false;
       if (isGeneral) return true;                 // Allgemein → alle
       return inStudio(d, channelId) || d.role === 'chef'; // Studio-Kanal → Studio + Chefs
     }, m.uid);
@@ -68,7 +80,8 @@ exports.onNewMessage = region.firestore
     const mentioned = Array.isArray(m.mentions) ? m.mentions : [];
     let mentionTokens = [];
     if (mentioned.length) {
-      mentionTokens = await collectTokens(d => mentioned.indexOf(d.uid) >= 0, m.uid);
+      mentionTokens = await collectTokens(
+        d => mentioned.indexOf(d.uid) >= 0 && willHaben(d, 'mentions'), m.uid);
       await sendPush(mentionTokens, (m.name || 'Jemand') + ' hat dich erwähnt', body);
     }
     // ... und werden aus der normalen Meldung herausgenommen, damit sie
@@ -83,7 +96,8 @@ exports.onNewTodo = region.firestore
   .onCreate(async (snap, ctx) => {
     const t = snap.data() || {};
     const studioKey = ctx.params.studioKey;
-    const tokens = await collectTokens(d => inStudio(d, studioKey), t.createdByUid);
+    const tokens = await collectTokens(
+      d => inStudio(d, studioKey) && willHaben(d, 'todos'), t.createdByUid);
     await sendPush(tokens, 'Neue Aufgabe', t.title || '');
   });
 
@@ -94,6 +108,7 @@ exports.onNewAnnouncement = region.firestore
     const a = snap.data() || {};
     const target = a.target || 'all';
     const tokens = await collectTokens(d => {
+      if (!willHaben(d, 'ann')) return false;
       if (target === 'all') return true;
       return inStudio(d, target) || d.role === 'chef';
     }, a.uid);
@@ -109,7 +124,8 @@ exports.onNewDm = region.firestore
     const peers = parts.slice(1);
     const recipient = peers.find(u => u !== m.uid);
     if (!recipient) return;
-    const tokens = await collectTokens(d => d.uid === recipient, m.uid);
+    const tokens = await collectTokens(
+      d => d.uid === recipient && willHaben(d, 'dm'), m.uid);
     const body = m.type === 'checklist' ? '📋 Checkliste' : (m.text || '');
     await sendPush(tokens, m.name || 'Neue Nachricht', body);
   });
@@ -186,11 +202,13 @@ exports.dueTaskReminder = region.pubsub
       const offenFuerAlle = offen.filter(t => !t.assignedTo);
 
       for (const t of zugewiesen) {
-        const tk = await collectTokens(d => d.uid === t.assignedTo, null);
+        const tk = await collectTokens(
+          d => d.uid === t.assignedTo && willHaben(d, 'todos'), null);
         await sendPush(tk, 'Aufgabe fällig', t.title || '');
       }
       if (offenFuerAlle.length) {
-        const tk = await collectTokens(d => inStudio(d, studioKey), null);
+        const tk = await collectTokens(
+          d => inStudio(d, studioKey) && willHaben(d, 'todos'), null);
         const titel = offenFuerAlle.length === 1
           ? offenFuerAlle[0].title
           : offenFuerAlle.length + ' Aufgaben sind heute fällig';

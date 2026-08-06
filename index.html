@@ -1243,6 +1243,21 @@ html{font-size:var(--fs,100%)}
 .msg-audio audio{height:36px;max-width:240px}
 .au-len{font-size:.74rem;color:var(--text-3);white-space:nowrap}
 
+/* Schalter (Melde-Einstellungen) */
+.sw-row{display:flex;align-items:center;gap:14px;padding:12px 0;cursor:pointer;
+  border-top:1px solid var(--line)}
+.sw-row:first-child{border-top:none}
+.sw-txt{flex:1;min-width:0}
+.sw-txt b{display:block;font-weight:600;font-size:.93rem}
+.sw-txt span{color:var(--text-3);font-size:.78rem}
+.sw{flex:0 0 46px;width:46px;height:27px;border-radius:999px;background:var(--bg-3);
+  border:1px solid var(--line-2);position:relative;
+  transition:background .3s var(--ease-ios),border-color .3s}
+.sw i{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;
+  background:var(--text-3);transition:transform .34s var(--spring),background .3s}
+.sw.on{background:var(--accent);border-color:var(--accent)}
+.sw.on i{transform:translateX(19px);background:var(--on-accent)}
+
 /* Abwesenheiten mit Genehmigung */
 .abs-status{display:inline-block;margin-left:8px;font-size:.7rem;font-weight:700;
   padding:2px 9px;border-radius:999px;vertical-align:middle;
@@ -2360,6 +2375,7 @@ var FIREBASE_CONFIG = {
     <div class="pm-tabs">
       <button class="pm-tab on" data-pmtab="profil">👤 Profil</button>
       <button class="pm-tab" data-pmtab="aussehen">🎨 Aussehen</button>
+      <button class="pm-tab" data-pmtab="melden">🔔 Meldungen</button>
     </div>
     <div id="pmPaneProfil">
     <div style="text-align:center;margin-bottom:14px">
@@ -2400,6 +2416,13 @@ var FIREBASE_CONFIG = {
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Hell / Dunkel</label>
       <div class="opt-grid" id="thOpts"></div>
     </div>
+    <div id="pmPaneMelden" style="display:none">
+      <p class="hint" style="margin:2px 0 14px">Gilt nur für dieses Gerät. Auf dem Handy
+        kannst du also anderes einstellen als am Rechner.</p>
+      <div id="notifyOpts"></div>
+      <p class="hint" id="notifyState" style="margin:14px 0 0"></p>
+    </div>
+
     <p class="auth-err" id="pmErr"></p>
     <button class="btn btn-primary" id="pmSave" style="width:100%">Speichern</button>
     <p class="hint" id="pmAppearanceNote" style="display:none;text-align:center;margin-top:10px">
@@ -2443,8 +2466,19 @@ var PREFS = {
   theme:'auto',     // auto | dark | light
   chatbg:'verlauf', // siehe CHAT_BGS
   accent:'cyan',    // siehe ACCENTS
-  fs:'100'          // Schriftgröße in Prozent
+  fs:'100',         // Schriftgröße in Prozent
+  // Welche Meldungen dieses Gerät bekommen soll. Bewusst pro GERÄT und
+  // nicht pro Person: der Push hängt am Gerät, und viele wollen am Handy
+  // etwas anderes als am Rechner.
+  notify:{ chat:true, dm:true, ann:true, todos:true, mentions:true }
 };
+var NOTIFY_OPTS = [
+  {id:'mentions', name:'Wenn ich erwähnt werde', hint:'@Name im Chat – empfohlen an'},
+  {id:'dm',       name:'Direktnachrichten',      hint:'Persönliche Nachrichten an dich'},
+  {id:'ann',      name:'Infos der Leitung',      hint:'Ankündigungen'},
+  {id:'todos',    name:'Neue Aufgaben',          hint:'Wenn in deinem Studio eine Aufgabe angelegt wird'},
+  {id:'chat',     name:'Alle Chat-Nachrichten',  hint:'Kann viel werden – hier zuerst abschalten'}
+];
 var CHAT_BGS = [
   {id:'keiner',  name:'Schlicht'},
   {id:'verlauf', name:'Farbverlauf'},
@@ -2494,7 +2528,14 @@ var ACCENTS = {
 function loadPrefs(){
   try{
     var raw=localStorage.getItem('kf_prefs');
-    if(raw) PREFS=Object.assign(PREFS, JSON.parse(raw));
+    if(raw){
+      var gespeichert=JSON.parse(raw);
+      // notify getrennt zusammenführen, sonst würden neue Punkte fehlen,
+      // sobald jemand eine ältere Fassung gespeichert hat
+      var n=Object.assign({}, PREFS.notify, gespeichert.notify||{});
+      PREFS=Object.assign(PREFS, gespeichert);
+      PREFS.notify=n;
+    }
     // alte Einstellung übernehmen
     var old=localStorage.getItem('kf_theme');
     if(old && !raw) PREFS.theme = (old==='light'?'light':'dark');
@@ -3686,7 +3727,14 @@ var _archiveTimer=null;
    ============================================================ */
 
 /* Lokaler Hinweis (Ton/Banner), wenn die App offen, aber im Hintergrund/anderer Tab ist */
-function localNotify(title, body){
+/* Meldung anzeigen, während die App offen ist – hält sich an dieselben
+   Einstellungen wie der Push, sonst wäre der Schalter nur halb wirksam.
+   art: 'chat' | 'dm' | 'ann' | 'todos' | 'mentions' (fehlt = immer zeigen) */
+function localNotify(title, body, art){
+  if(art && PREFS.notify && PREFS.notify[art]===false) return;
+  return _localNotify(title, body);
+}
+function _localNotify(title, body){
   try{
     if('Notification' in window && Notification.permission==='granted'){
       var n=new Notification(title, {
@@ -3727,6 +3775,15 @@ function initMessaging(){
   }catch(e){ console.warn('Messaging init:', e.message); }
 }
 
+var _fcmToken=null;
+/* Einstellungen am Gerät-Eintrag nachziehen, wenn man sie ändert */
+function pushNotifyPrefs(){
+  if(!_fcmToken || !session) return;
+  db.collection('pushTokens').doc(_fcmToken)
+    .set({ notify:PREFS.notify, updatedAt:Date.now() }, {merge:true})
+    .catch(function(e){ console.warn('Melde-Einstellungen:', e.message); });
+}
+
 function registerFcmToken(){
   if(!messaging || !VAPID_KEY){ return; } // ohne VAPID-Key kein Hintergrund-Push
   var p = ('serviceWorker' in navigator) ? navigator.serviceWorker.ready : Promise.resolve(null);
@@ -3735,10 +3792,15 @@ function registerFcmToken(){
   }).then(function(token){
     if(!token) return;
     // Token speichern, damit die Server-Funktion daran Push schicken kann
+    _fcmToken=token;
     return db.collection('pushTokens').doc(token).set({
       uid: session.uid, name: session.name, role: session.role,
       studios: session.studios || [],
       studioKeys: session.studioKeys || [],
+      // Die Einstellungen stehen AM GERÄT-Eintrag, nicht im Profil. So kann
+      // die Server-Funktion beim Versand direkt filtern, ohne für jedes
+      // Gerät zusätzlich das Profil zu laden (das wären unnötige Zugriffe).
+      notify: PREFS.notify,
       updatedAt: Date.now()
     });
   }).catch(function(e){ console.warn('FCM-Token:', e.message); });
@@ -4408,10 +4470,10 @@ function listenChannel(channelId){
             var mentionsMe = Array.isArray(m.mentions) && m.mentions.indexOf(session.uid)>=0;
             if(mentionsMe){
               // Erwähnungen immer melden – auch wenn der Chat offen ist
-              localNotify((m.name||'')+' hat dich erwähnt', m.text||'');
+              localNotify((m.name||'')+' hat dich erwähnt', m.text||'', 'mentions');
               tick(20);
             } else if(document.hidden || currentView!=='chat'){
-              localNotify('Neue Nachricht von '+(m.name||''), m.text || (m.img?'📷 Foto':''));
+              localNotify('Neue Nachricht von '+(m.name||''), m.text || (m.img?'📷 Foto':''), 'chat');
             }
             if(document.hidden || currentView!=='chat'){ unread.chat=true; updateNavMarkers(); }
           }
@@ -4443,7 +4505,7 @@ function listenTodoStudio(sk, notify){
           if(ch.type!=='added') return;
           var t=ch.doc.data();
           if((t.ts||0)>=startTs && t.createdByUid!==session.uid){
-            localNotify('Neue Aufgabe', t.title||'');
+            localNotify('Neue Aufgabe', t.title||'', 'todos');
           }
         });
       }
@@ -4468,7 +4530,7 @@ function listenAnnouncements(){
           var forMe = session.role==='chef' || !a.target || a.target==='all' || session.studioKeys.indexOf(a.target)>=0;
           if(forMe){
             unread.ann=true; updateNavMarkers();
-            if(document.hidden || currentView!=='ann') localNotify('📣 '+(a.from||'Leitung'), a.text||'');
+            if(document.hidden || currentView!=='ann') localNotify('📣 '+(a.from||'Leitung'), a.text||'', 'ann');
           }
         });
       }
@@ -7110,7 +7172,7 @@ function listenDmThreads(){
           var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
           if(_allUsers.length && !_userById(peer)) return; // gelöschter Account
           if((t.lastTs||0)>prev && unread && !viewing){
-            localNotify('Neue Nachricht von '+((t.names&&t.names[peer])||'Team'), t.last||'');
+            localNotify('Neue Nachricht von '+((t.names&&t.names[peer])||'Team'), t.last||'', 'dm');
           }
         });
       }
@@ -7469,17 +7531,55 @@ function openProfile(){
 /* Zwischen den Reitern "Profil" und "Aussehen" umschalten */
 function switchPmTab(which){
   var p=$('pmPaneProfil'), a=$('pmPaneAussehen'),
-      save=$('pmSave'), err=$('pmErr'), note=$('pmAppearanceNote');
-  var isProfil = which!=='aussehen';
+      save=$('pmSave'), err=$('pmErr'), note=$('pmAppearanceNote'), m=$('pmPaneMelden');
+  var isProfil = which==='profil' || (which!=='aussehen' && which!=='melden');
   if(p) p.style.display = isProfil?'':'none';
-  if(a) a.style.display = isProfil?'none':'';
+  if(a) a.style.display = which==='aussehen'?'':'none';
+  if(m) m.style.display = which==='melden'?'':'none';
   if(save) save.style.display = isProfil?'':'none';
   if(err) err.style.display = isProfil?'':'none';
-  if(note) note.style.display = isProfil?'none':'block';
+  if(note) note.style.display = which==='aussehen'?'block':'none';
+  if(which==='melden') buildNotifyOptions();
   document.querySelectorAll('[data-pmtab]').forEach(function(b){
-    b.classList.toggle('on', b.getAttribute('data-pmtab')===(isProfil?'profil':'aussehen'));
+    b.classList.toggle('on', b.getAttribute('data-pmtab')===(isProfil?'profil':which));
   });
   var box=document.querySelector('.pm-box'); if(box) box.scrollTop=0;
+}
+
+/* ── Melde-Einstellungen ──
+   Ein Schalter je Art von Meldung. Ändert man etwas, wirkt es sofort und
+   wird auch am Gerät-Eintrag in der Datenbank vermerkt, damit die
+   Server-Funktion beim Versand danach filtert. */
+function buildNotifyOptions(){
+  var box=$('notifyOpts'); if(!box) return;
+  box.innerHTML=NOTIFY_OPTS.map(function(o){
+    var an = PREFS.notify[o.id]!==false;
+    return '<label class="sw-row" data-nk="'+o.id+'">'+
+      '<span class="sw-txt"><b>'+esc(o.name)+'</b><span>'+esc(o.hint)+'</span></span>'+
+      '<span class="sw'+(an?' on':'')+'"><i></i></span></label>';
+  }).join('');
+  box.querySelectorAll('[data-nk]').forEach(function(el){
+    el.addEventListener('click',function(e){
+      e.preventDefault();
+      var k=el.getAttribute('data-nk');
+      PREFS.notify[k] = PREFS.notify[k]===false;   // umschalten
+      el.querySelector('.sw').classList.toggle('on', PREFS.notify[k]);
+      savePrefs(); pushNotifyPrefs(); tick(8);
+    });
+  });
+  // Ehrlich sagen, ob Meldungen überhaupt erlaubt sind
+  var st=$('notifyState');
+  if(st){
+    if(!('Notification' in window)){
+      st.textContent='Dieses Gerät unterstützt keine Meldungen.';
+    } else if(Notification.permission==='denied'){
+      st.textContent='Meldungen sind für StudioChat gesperrt. Das lässt sich nur in den Einstellungen des Geräts wieder erlauben.';
+    } else if(Notification.permission!=='granted'){
+      st.textContent='Meldungen sind noch nicht erlaubt. Tippe oben im Banner auf „Erlauben".';
+    } else {
+      st.textContent='Meldungen sind erlaubt. Änderungen hier wirken sofort.';
+    }
+  }
 }
 
 /* Zeigt "Foto wählen"/"Entfernen" nur, wenn "Eigenes Foto" ausgewählt ist */
