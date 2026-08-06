@@ -2514,8 +2514,9 @@ function showApp(){
     $('docUploadCard').style.display='block'; buildDocStudios();
     setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
+  if(canManage()) listenEmployees();     // Leiter braucht sie für Geburtstage/Lesestand
   if(isChef()){
-    buildEmpStudios(); listenEmployees();
+    buildEmpStudios();
     listenArchives();                       // Wochen-Sicherungen anzeigen
     setTimeout(function(){ maybeArchiveWeek(); }, 4000);
   }
@@ -2698,7 +2699,17 @@ function buildChannels(){
 var _chanList=[], _chanUnsubs=[], _chanLast={};
 function chanReadKey(ch){ return 'kf_read_'+ch; }
 function chanLastRead(ch){
-  try{ return +(localStorage.getItem(chanReadKey(ch))||0); }catch(e){ return 0; }
+  try{
+    var v=localStorage.getItem(chanReadKey(ch));
+    if(v===null){
+      // Erster Start: alles Bisherige gilt als gelesen, sonst stünde überall
+      // sofort ein Zähler, obwohl nichts neu ist
+      var now=String(Date.now());
+      localStorage.setItem(chanReadKey(ch), now);
+      return +now;
+    }
+    return +v;
+  }catch(e){ return Date.now(); }
 }
 function markChannelRead(ch){
   try{ localStorage.setItem(chanReadKey(ch), String(Date.now())); }catch(e){}
@@ -2841,9 +2852,17 @@ function listenEmployees(){
   _empUnsub=db.collection('users').where('role','in',['mitarbeiter','leiter'])
     .onSnapshot(function(snap){
       var emps=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
+      // Studio-Leiter sieht nur Personen aus seinen Studios
+      if(isLeiter()){
+        var mk=managedKeys();
+        emps=emps.filter(function(e){
+          var ek=(e.studioKeys&&e.studioKeys.length)?e.studioKeys:(e.studios||[]).map(studioKey);
+          return ek.some(function(k){ return mk.indexOf(k)>=0; });
+        });
+      }
       emps.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
       _employees=emps; renderDashboard(); renderOnboarding();
-      renderEmployees(emps);
+      if(isChef()) renderEmployees(emps);   // Bearbeiten bleibt Chef-Sache
     }, function(e){ console.error('Mitarbeiter:',e.message); });
 }
 
@@ -3119,7 +3138,7 @@ function stopListeners(){
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
   if(_periodTimer){ clearInterval(_periodTimer); _periodTimer=null; }
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _chanUnsubs=[];
-  if(_presenceTimer){ clearInterval(_presenceTimer); _presenceTimer=null; }
+  _lastPing=0;
   _matStudioKey=null; _ppStudioKey=null;
 }
 
@@ -3489,16 +3508,27 @@ function renderToday(){
 /* ── Wer ist gerade da? ──
    Jede App meldet alle 2 Minuten "ich bin online". Wer sich in den letzten
    5 Minuten gemeldet hat, bekommt einen grünen Punkt am Bild. */
-var _presenceTimer=null;
+/* WICHTIG – Kostenbremse:
+   Früher meldete jedes Gerät alle 2 Minuten "ich bin online". Da alle Geräte
+   gleichzeitig auf die Nutzerliste horchen, löste JEDE Meldung bei ALLEN eine
+   Abfrage aus. Bei 30 Personen waren das über 200.000 Abfragen am Tag – das
+   kostenlose Firebase-Kontingent liegt bei 50.000.
+   Jetzt: nur melden, wenn die App wirklich geöffnet/in den Vordergrund geholt
+   wird, und höchstens alle 15 Minuten. */
+var PRESENCE_MIN_GAP = 15*60*1000;
+var _lastPing = 0;
+function pingPresence(){
+  if(!session || !navigator.onLine) return;
+  if(document.hidden) return;
+  var now=Date.now();
+  if(now-_lastPing < PRESENCE_MIN_GAP) return;
+  _lastPing=now;
+  db.collection('users').doc(session.uid).update({ lastSeen:now }).catch(function(){});
+}
 function startPresence(){
-  if(_presenceTimer) clearInterval(_presenceTimer);
-  var ping=function(){
-    if(!session || !navigator.onLine) return;
-    db.collection('users').doc(session.uid).update({ lastSeen:Date.now() }).catch(function(){});
-  };
-  ping();
-  _presenceTimer=setInterval(ping, 120000);
-  window.addEventListener('focus', ping);
+  pingPresence();
+  document.addEventListener('visibilitychange', pingPresence);
+  window.addEventListener('focus', pingPresence);
 }
 function isOnline(u){
   return !!u && !!u.lastSeen && (Date.now()-u.lastSeen < 5*60000);
@@ -3539,7 +3569,15 @@ function checkDueReminders(){
   });
   if(!heute.length && !bald.length) return;
   var key='kf_due_'+new Date().toDateString();
-  try{ if(localStorage.getItem(key)) return; localStorage.setItem(key,'1'); }catch(e){}
+  try{
+    if(localStorage.getItem(key)) return;
+    // Merker von früheren Tagen entfernen, damit der Speicher nicht zuwächst
+    for(var i=localStorage.length-1;i>=0;i--){
+      var k=localStorage.key(i);
+      if(k && k.indexOf('kf_due_')===0 && k!==key) localStorage.removeItem(k);
+    }
+    localStorage.setItem(key,'1');
+  }catch(e){}
   var teile=[];
   if(heute.length) teile.push(heute.length+' heute fällig');
   if(bald.length) teile.push(bald.length+' morgen fällig');
@@ -3817,8 +3855,9 @@ function renderAnnouncements(anns){
 }
 
 function renderStudioGrid(){
+  // Leiter sieht nur seine Studios
   var grid=$('studioGrid'); if(!grid) return;
-  grid.innerHTML=STUDIOS_ALPHA.map(function(s){
+  grid.innerHTML=managedStudios().map(function(s){
     var sk=studioKey(s), list=cachedTodos[sk]||[];
     var done=list.filter(isDone).length, total=list.length;
     var pct=total?Math.round(done/total*100):0;
@@ -3838,10 +3877,12 @@ function listenInventoryAll(){
   }, function(e){ console.error('Inventar:',e.message); });
 }
 function renderDashboard(){
-  var grid=$('dashGrid'); if(!grid || !session || session.role!=='chef') return;
+  // Auch der Studio-Leiter bekommt Kacheln – nur eben für seine Studios
+  var grid=$('dashGrid'); if(!grid || !session || !canManage()) return;
+  var mine=managedStudios();
   var open=0, overdue=0, todayDone=0, now=Date.now();
   var startToday=new Date(); startToday.setHours(0,0,0,0); startToday=startToday.getTime();
-  STUDIOS.forEach(function(s){
+  mine.forEach(function(s){
     (cachedTodos[studioKey(s)]||[]).forEach(function(t){
       if(!isDone(t) && !isArchived(t)) open++;
       if(!isDone(t) && t.due && now>t.due) overdue++;
@@ -3849,7 +3890,7 @@ function renderDashboard(){
     });
   });
   var missStudios=0;
-  STUDIOS.forEach(function(s){
+  mine.forEach(function(s){
     var items=_invAll[studioKey(s)]||[];
     if(items.some(function(it){ return itemNeed(it)>0; })) missStudios++;
   });
@@ -3858,7 +3899,7 @@ function renderDashboard(){
     {n:overdue, l:'Überfällig', warn:overdue>0},
     {n:todayDone, l:'Heute erledigt'},
     {n:missStudios, l:'Studios mit Materialbedarf', warn:missStudios>0},
-    {n:_employees.length, l:'Mitarbeiter'}
+    {n:_employees.length, l:'Team'}
   ];
   grid.innerHTML=tiles.map(function(t){
     return '<div class="dash-tile"><div class="dn'+(t.warn?' warn':'')+'">'+t.n+'</div><div class="dl">'+esc(t.l)+'</div></div>';
@@ -4679,14 +4720,23 @@ function avatarMarkup(u){
 
 function listenAllUsers(){
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
+  var redrawTimer=null;
   _usersUnsub=db.collection('users').onSnapshot(function(snap){
     var first = !_allUsers.length;
     _allUsers=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
-    if(currentView==='dm' && $('dmConvo').style.display==='none') renderDmPeople($('dmSearch').value);
     // Erwähnungen (@Name) brauchen die Nutzerliste – Chat einmal neu zeichnen,
     // sobald sie da ist, sonst bleiben die Namen unmarkiert
     if(first && _curMsgs && _curMsgs.length) renderMessages(_curMsgs);
-    if(canManage()) buildAssignSelect();
+    // Neuzeichnen sammeln: mehrere Änderungen kurz hintereinander lösen nur
+    // EIN Neuzeichnen aus (sonst flackert die Liste beim Tippen)
+    clearTimeout(redrawTimer);
+    redrawTimer=setTimeout(function(){
+      if(currentView==='dm' && $('dmConvo').style.display==='none'
+         && !(document.activeElement && document.activeElement.id==='dmSearch')){
+        renderDmPeople($('dmSearch')?$('dmSearch').value:'');
+      }
+      if(canManage()) buildAssignSelect();
+    }, 800);
   }, function(e){ console.error('Users:',e.message); });
 }
 
