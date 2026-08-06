@@ -99,15 +99,30 @@ jobs:
         run: npm install
 
       - name: .env für Functions schreiben (Geheim-Schlüssel)
+        # Werte in Anführungszeichen: ein Passwort kann Leerzeichen oder
+        # Sonderzeichen enthalten (Google zeigt App-Passwörter z. B. in
+        # Vierergruppen an). Ohne Anführungszeichen bräche die Datei dann.
         run: |
-          echo "BDAY_TEST_KEY=${{ secrets.BDAY_TEST_KEY }}" > functions/.env
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> functions/.env
-          # E-Mail-Versand für Termine (wachstum.html) – siehe ANLEITUNG.txt Abschnitt 10
-          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> functions/.env
-          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> functions/.env
-          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> functions/.env
-          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> functions/.env
-          echo "MAIL_FROM=${{ secrets.MAIL_FROM }}" >> functions/.env
+          {
+            echo "BDAY_TEST_KEY="${{ secrets.BDAY_TEST_KEY }}""
+            echo "GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}""
+            # E-Mail-Versand: Monatsbericht und Termin-Mails (siehe MAIL-SETUP.md)
+            echo "SMTP_HOST="${{ secrets.SMTP_HOST }}""
+            echo "SMTP_PORT="${{ secrets.SMTP_PORT }}""
+            echo "SMTP_USER="${{ secrets.SMTP_USER }}""
+            echo "SMTP_PASS="${{ secrets.SMTP_PASS }}""
+            echo "MAIL_FROM="${{ secrets.MAIL_FROM }}""
+          } > functions/.env
+
+      - name: Prüfen, ob der E-Mail-Versand eingerichtet ist
+        # Nur ein Hinweis im Protokoll – kein Abbruch. Ohne diese Zeile merkt
+        # man erst beim ersten fehlenden Bericht, dass etwas fehlt.
+        run: |
+          if [ -z "${{ secrets.SMTP_HOST }}" ] || [ -z "${{ secrets.SMTP_USER }}" ] || [ -z "${{ secrets.SMTP_PASS }}" ]; then
+            echo "::warning::SMTP ist nicht eingerichtet – Monatsbericht und Termin-Mails werden nicht versendet. Siehe MAIL-SETUP.md"
+          else
+            echo "SMTP-Zugangsdaten sind hinterlegt."
+          fi
 
       - name: Google-Auth (Service-Account aus GitHub-Secret)
         id: auth
