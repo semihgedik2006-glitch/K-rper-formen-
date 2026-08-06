@@ -330,6 +330,33 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .view-head h2{font-size:clamp(1.4rem,3.5vw,1.9rem)}
 .view-head p{color:var(--text-2);font-size:.9rem;margin-top:3px}
 
+/* ── Kopf schrumpft beim Scrollen ──
+   Auf dem Handy nahm der feste Kopf den halben Bildschirm ein. Sobald man
+   scrollt, rückt er zusammen: Untertitel blendet aus, Titel wird kleiner.
+   Scrollt man zurück nach oben, kommt er weich wieder. */
+.view-head.shrink{transition:padding .35s var(--ease-ios)}
+.view-head.shrink h2{transition:font-size .35s var(--ease-ios)}
+.view-head.shrink p{overflow:hidden;
+  transition:opacity .25s var(--ease-ios),max-height .35s var(--ease-ios),margin-top .35s var(--ease-ios);
+  max-height:3em;opacity:1}
+.view-head.shrink.tight{padding-top:11px;padding-bottom:7px}
+.view-head.shrink.tight h2{font-size:1.12rem}
+.view-head.shrink.tight p{opacity:0;max-height:0;margin-top:0}
+
+/* Filter in EINER Zeile, seitlich schiebbar – zwei Zeilen Knöpfe wirken
+   erschlagend. Der Zähler wandert dafür neben das Suchfeld. */
+#view-todos .chip-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+  padding-bottom:10px;-webkit-overflow-scrolling:touch}
+#view-todos .chip-row::-webkit-scrollbar{display:none}
+#view-todos .chip-row .chip{flex:0 0 auto}
+
+/* Filterleiste bleibt beim Scrollen oben kleben */
+.sticky-tools{position:sticky;top:0;z-index:6;
+  padding-top:6px;margin:0 calc(clamp(14px,4vw,28px) * -1);
+  padding-left:clamp(14px,4vw,28px);padding-right:clamp(14px,4vw,28px);
+  background:var(--bg);transition:box-shadow .3s var(--ease-ios)}
+.sticky-tools.stuck{box-shadow:0 6px 18px -10px rgba(0,0,0,.45)}
+
 /* ── Chat ── */
 .chat-channels{display:flex;gap:7px;padding:0 clamp(14px,4vw,28px) 8px;
   overflow-x:auto;flex-shrink:0;flex-wrap:nowrap;scrollbar-width:none}
@@ -826,6 +853,38 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 #profileModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
 @keyframes fadeBlur{from{opacity:0}to{opacity:1}}
 
+/* ── Menüs auf dem Handy: von unten hereinfahren ──
+   Ein Fenster in der Bildschirmmitte ist am Handy schlecht erreichbar –
+   der Daumen kommt nicht hin. Deshalb werden Menüs unter 620 px zu Blättern,
+   die von unten hereinfahren; oben ein Griff, wie man es von iOS kennt. */
+@media (max-width:620px){
+  #profileModal,#personModal{align-items:flex-end;padding:0}
+  #profileModal .pm-box,#personModal .pm-box{
+    max-width:none;border-radius:22px 22px 0 0;border-bottom:none;
+    padding:20px 20px calc(24px + var(--sab));max-height:90vh}
+  #profileModal.show .pm-box,#personModal.show .pm-box{
+    animation:sheetUp .5s var(--ease-ios)}
+  /* Griff oben – zeigt ohne Worte, dass sich das Blatt schließen lässt */
+  #profileModal .pm-box::before,#personModal .pm-box::before{
+    content:'';display:block;width:38px;height:4px;border-radius:999px;
+    background:var(--line-2);margin:-6px auto 14px}
+}
+@keyframes sheetUp{
+  from{opacity:.4;transform:translateY(100%)}
+  to{opacity:1;transform:none}
+}
+#personModal.show .pm-box{animation:sheetIn .46s var(--spring)}
+#personModal{animation:fadeBlur .3s var(--ease-ios)}
+
+/* Reiter im Profil-Menü: Auswahl gleitet mit, statt zu springen */
+.pm-tab{position:relative}
+.pm-tab.on{animation:tabPop .4s var(--spring)}
+@keyframes tabPop{from{transform:scale(.94)}to{transform:none}}
+
+/* Bereiche im Menü blenden weich ein statt hart umzuschalten */
+#pmPaneProfil,#pmPaneAussehen{animation:paneIn .34s var(--ease-ios)}
+@keyframes paneIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
 /* Hinweis-Blase gleitet mit leichtem Nachfedern herein */
 .toast{transition:opacity .3s var(--ease-ios),transform .44s var(--spring)}
 
@@ -866,7 +925,20 @@ body[data-chatbg="wellen"] .chat-scroll{
 body[data-chatbg="nacht"] .chat-scroll{
   background-image:linear-gradient(180deg, rgba(139,92,246,.14), transparent 45%),
                    linear-gradient(0deg, rgba(236,72,153,.12), transparent 40%)}
-:root{--dot:rgba(255,255,255,.055)}
+/* Eigenes Foto: wird formatfüllend gezeigt und leicht abgedunkelt, damit
+   der Text lesbar bleibt – sonst verschwinden helle Blasen im hellen Bild. */
+body[data-chatbg="eigenes"].has-bg-img .chat-scroll{
+  background-image:var(--chatbg-img);
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  background-attachment:local}
+body[data-chatbg="eigenes"].has-bg-img .chat-scroll::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:rgba(10,12,20,.42);z-index:0}
+body.light[data-chatbg="eigenes"].has-bg-img .chat-scroll::before{
+  background:rgba(255,255,255,.5)}
+body[data-chatbg="eigenes"].has-bg-img .chat-scroll > *{position:relative;z-index:1}
+
+:root{--dot:rgba(255,255,255,.055);--chatbg-img:none}
 body.light{--dot:rgba(20,10,40,.06)}
 
 /* ============================================================
@@ -881,8 +953,20 @@ body.light .msg-quote{background:rgba(20,10,40,.05)}
 .msg-quote span{color:var(--text-2);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* Werkzeuge an einer Nachricht */
-.msg-tools{display:flex;gap:3px;margin-left:auto;opacity:.55;transition:opacity .25s}
-.msg:hover .msg-tools{opacity:1}
+/* ── Werkzeuge an einer Nachricht ──
+   Vier Symbole an JEDER Blase machen den Chat unruhig. Sie erscheinen jetzt
+   erst, wenn man die Nachricht antippt (Handy) oder mit der Maus darüber
+   fährt (Rechner). Auf dem Handy gleiten sie dabei weich auf. */
+.msg-tools{display:flex;gap:3px;margin-left:auto;
+  max-width:0;overflow:hidden;opacity:0;
+  transition:max-width .34s var(--ease-ios),opacity .22s var(--ease-ios)}
+.msg.tools-open .msg-tools{max-width:150px;opacity:1}
+@media (hover:hover){
+  .msg:hover .msg-tools{max-width:150px;opacity:.85}
+  .msg:hover .msg-tools:hover{opacity:1}
+}
+/* Ein angetipptes Nachrichtenfeld hebt sich leicht ab */
+.msg.tools-open{border-color:var(--line-2)}
 .msg-tool{background:none;border:none;color:var(--text-3);cursor:pointer;padding:3px 5px;
   border-radius:7px;font-size:.82rem;line-height:1;
   transition:transform .3s var(--spring),color .2s,background .2s}
@@ -1076,6 +1160,9 @@ html{font-size:var(--fs,100%)}
   #printArea .p-foot{margin-top:8mm;font-size:9pt;color:#666}
   @page{margin:14mm}
 }
+
+/* Der Tagesüberblick scrollt jetzt mit, statt oben zu kleben */
+#todayCard{padding-bottom:12px}
 
 /* ── Sprachnachrichten ── */
 .rec-bar{display:none;align-items:center;gap:10px;padding:10px 14px;
@@ -1479,8 +1566,8 @@ var FIREBASE_CONFIG = {
            SEITE: START – Überblick über alles Wichtige
            ============================================================ -->
       <section class="view" id="view-home">
-        <div class="view-head"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
-        <div class="scroll-area">
+        <div class="view-head shrink"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
+        <div class="scroll-area" data-shrinks="1">
           <div id="homeAlerts"></div>
           <div class="home-grid" id="homeGrid"></div>
           <div class="card">
@@ -1554,30 +1641,36 @@ var FIREBASE_CONFIG = {
       <!-- ============================================================
            SEITE: AUFGABEN – To-do-Liste mit Suche, Fortschritt und Foto
            ============================================================ -->
+      <!-- Der Kopf schrumpft beim Scrollen (Klasse "tight"), Tagesüberblick
+           scrollt ganz weg. Nur die Filterleiste bleibt oben kleben – sie
+           ist das Einzige, was man auch weiter unten noch braucht. -->
       <section class="view" id="view-todos">
-        <div class="view-head"><h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p></div>
-        <!-- Suchfeld + Zähler: filtert die Aufgabenliste live mit -->
-        <div id="todayCard" style="padding:0 clamp(14px,4vw,28px) 12px"></div>
-        <div class="todo-tools" style="padding:0 clamp(14px,4vw,28px)">
-          <div class="todo-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input id="todoSearch" type="search" placeholder="Aufgabe suchen …" autocomplete="off" />
+        <div class="view-head shrink"><h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p></div>
+        <div class="scroll-area" data-shrinks="1">
+          <div id="todayCard"></div>
+          <div class="sticky-tools">
+            <div class="todo-tools">
+              <div class="todo-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="todoSearch" type="search" placeholder="Aufgabe suchen …" autocomplete="off" />
+              </div>
+              <span class="todo-count" id="todoCount"></span>
+            </div>
+            <div class="chip-row">
+              <button class="chip on" data-tfilter="alle">Alle</button>
+              <button class="chip" data-tfilter="offen">Nur offene</button>
+              <button class="chip" data-tfilter="faellig">Überfällig</button>
+              <button class="chip" data-tfilter="meine">Für mich</button>
+              <select class="chip" id="todoSort" style="padding-right:26px">
+                <option value="standard">Sortierung: Standard</option>
+                <option value="faellig">Nach Fälligkeit</option>
+                <option value="name">Nach Name</option>
+                <option value="neu">Neueste zuerst</option>
+              </select>
+            </div>
           </div>
-          <span class="todo-count" id="todoCount"></span>
+          <div id="todoArea"></div>
         </div>
-        <div class="chip-row" style="padding:0 clamp(14px,4vw,28px) 10px">
-          <button class="chip on" data-tfilter="alle">Alle</button>
-          <button class="chip" data-tfilter="offen">Nur offene</button>
-          <button class="chip" data-tfilter="faellig">Überfällig</button>
-          <button class="chip" data-tfilter="meine">Für mich</button>
-          <select class="chip" id="todoSort" style="padding-right:26px">
-            <option value="standard">Sortierung: Standard</option>
-            <option value="faellig">Nach Fälligkeit</option>
-            <option value="name">Nach Name</option>
-            <option value="neu">Neueste zuerst</option>
-          </select>
-        </div>
-        <div class="scroll-area" id="todoArea"></div>
       </section>
 
       <!-- ANNOUNCEMENTS -->
@@ -1585,8 +1678,8 @@ var FIREBASE_CONFIG = {
            SEITE: INFOS – Ankündigungen der Leitung mit Lesebestätigung
            ============================================================ -->
       <section class="view" id="view-ann">
-        <div class="view-head"><h2>Ankündigungen</h2><p>Neuigkeiten von der Leitung. Gelesenes wird automatisch bestätigt.</p></div>
-        <div class="scroll-area">
+        <div class="view-head shrink"><h2>Ankündigungen</h2><p>Neuigkeiten von der Leitung. Gelesenes wird automatisch bestätigt.</p></div>
+        <div class="scroll-area" data-shrinks="1">
           <div class="card" id="obCard" style="display:none"></div>
           <div id="annArea"></div>
         </div>
@@ -1597,8 +1690,8 @@ var FIREBASE_CONFIG = {
            SEITE: MATERIAL – Bestand pro Studio, Nachbestell-Alarm, Export
            ============================================================ -->
       <section class="view" id="view-material">
-        <div class="view-head"><h2>Material</h2><p>Trage ein, was da ist. Was fehlt, rechnet die App selbst aus.</p></div>
-        <div class="scroll-area">
+        <div class="view-head shrink"><h2>Material</h2><p>Trage ein, was da ist. Was fehlt, rechnet die App selbst aus.</p></div>
+        <div class="scroll-area" data-shrinks="1">
           <div class="mat-bar">
             <select class="inp" id="matStudio"></select>
             <button class="btn btn-ghost btn-sm" id="matExport" style="display:none">⬇️ Excel-Export (alle)</button>
@@ -1653,8 +1746,8 @@ var FIREBASE_CONFIG = {
              - wird wie Material live in Google Sheets gespiegelt
            ============================================================ -->
       <section class="view" id="view-putzplan">
-        <div class="view-head"><h2>Putzplan</h2><p>Aufgabe erledigt? Einfach antippen – Name und Uhrzeit werden automatisch vermerkt.</p></div>
-        <div class="scroll-area">
+        <div class="view-head shrink"><h2>Putzplan</h2><p>Aufgabe erledigt? Einfach antippen – Name und Uhrzeit werden automatisch vermerkt.</p></div>
+        <div class="scroll-area" data-shrinks="1">
           <div class="mat-bar">
             <select class="inp" id="ppStudio"></select>
             <button class="btn btn-ghost btn-sm no-print" id="ppPrint" title="Putzplan ausdrucken">🖨 Drucken</button>
@@ -1716,8 +1809,8 @@ var FIREBASE_CONFIG = {
            SEITE: TEAM – Schichtplan, Abwesenheiten, Übergabe, Schwarzes Brett
            ============================================================ -->
       <section class="view" id="view-team">
-        <div class="view-head"><h2>Team</h2><p>Schichtplan, Abwesenheiten, Übergaben und Aushänge.</p></div>
-        <div class="scroll-area">
+        <div class="view-head shrink"><h2>Team</h2><p>Schichtplan, Abwesenheiten, Übergaben und Aushänge.</p></div>
+        <div class="scroll-area" data-shrinks="1">
           <div class="mat-bar">
             <select class="inp" id="teamStudio"></select>
           </div>
@@ -1818,8 +1911,8 @@ var FIREBASE_CONFIG = {
            SEITE: DOKUMENTE – Dateien und Links für das Team
            ============================================================ -->
       <section class="view" id="view-docs">
-        <div class="view-head"><h2>Dokumente</h2><p>Wichtige Dateien und Links, die dein Chef für dich hinterlegt hat.</p></div>
-        <div class="scroll-area">
+        <div class="view-head shrink"><h2>Dokumente</h2><p>Wichtige Dateien und Links, die dein Chef für dich hinterlegt hat.</p></div>
+        <div class="scroll-area" data-shrinks="1">
           <div class="card" id="docUploadCard" style="display:none">
             <h3>⬆️ Dokument hinzufügen</h3>
             <p class="hint">Kleine Datei (bis ~0,7 MB, z. B. PDF/Bild) direkt hochladen – oder für große Dateien unten einen Link (Google Drive/Dropbox) einfügen.</p>
@@ -1890,8 +1983,8 @@ var FIREBASE_CONFIG = {
            SEITE: ARCHIV – erledigte Aufgaben (nur Chef)
            ============================================================ -->
       <section class="view" id="view-archive">
-        <div class="view-head"><h2>Archiv</h2><p id="archSubtitle">Wochen-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.</p></div>
-        <div class="scroll-area">
+        <div class="view-head shrink"><h2>Archiv</h2><p id="archSubtitle">Wochen-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.</p></div>
+        <div class="scroll-area" data-shrinks="1">
           <!-- Wöchentliche Excel-Sicherungen von Material & Putzplan -->
           <div class="card" id="weekArchiveCard">
             <h3>📦 Wochen-Sicherungen</h3>
@@ -1917,8 +2010,8 @@ var FIREBASE_CONFIG = {
            SEITE: CHEF-BEREICH – Dashboard, Aufgaben erteilen, Mitarbeiter
            ============================================================ -->
       <section class="view" id="view-chef">
-        <div class="view-head"><h2 id="chefTitle">Chef-Bereich</h2><p id="chefSub">Hier verwaltest du alles. Nur du siehst diesen Bereich.</p></div>
-        <div class="scroll-area">
+        <div class="view-head shrink"><h2 id="chefTitle">Chef-Bereich</h2><p id="chefSub">Hier verwaltest du alles. Nur du siehst diesen Bereich.</p></div>
+        <div class="scroll-area" data-shrinks="1">
           <!-- Reiter im Chef-Bereich: statt einer sehr langen Seite gibt es
                jetzt fünf klar getrennte Bereiche. Gebaut wird die Leiste in
                buildChefTabs(); die Inhalte stehen unten in .chef-pane. -->
@@ -2179,6 +2272,13 @@ var FIREBASE_CONFIG = {
 
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:0 0 7px">Chat-Hintergrund</label>
       <div class="opt-grid" id="bgOpts"></div>
+      <input type="file" accept="image/*" class="hidden-file" id="bgFile" />
+      <div id="bgOwnRow" style="display:none;gap:8px;margin-top:9px">
+        <button type="button" class="btn btn-ghost btn-sm" id="bgPick" style="flex:1">📷 Foto wählen</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="bgRemove" style="display:none">Entfernen</button>
+      </div>
+      <p class="hint" id="bgOwnNote" style="display:none;margin:7px 0 0">
+        Das Foto bleibt auf diesem Gerät. Es wird nicht hochgeladen und niemand sonst sieht es.</p>
 
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
       <div class="opt-grid" id="accOpts"></div>
@@ -2240,8 +2340,36 @@ var CHAT_BGS = [
   {id:'punkte',  name:'Punkte'},
   {id:'gitter',  name:'Gitter'},
   {id:'wellen',  name:'Streifen'},
-  {id:'nacht',   name:'Nachtlicht'}
+  {id:'nacht',   name:'Nachtlicht'},
+  {id:'eigenes', name:'Eigenes Foto', eigen:true}
 ];
+
+/* ── Eigenes Foto als Chat-Hintergrund ──
+   Das Bild bleibt AUF DIESEM GERÄT. Es wird nicht hochgeladen und niemand
+   sonst sieht es – deshalb liegt es im lokalen Speicher des Browsers und
+   nicht in der Datenbank. Es wird klein gerechnet, damit der Speicher
+   (rund 5 MB) nicht vollläuft. */
+var CHATBG_KEY='kf_chatbg_img';
+var _chatBgImg=null;
+function loadChatBgImg(){
+  try{ _chatBgImg=localStorage.getItem(CHATBG_KEY)||null; }catch(e){ _chatBgImg=null; }
+  return _chatBgImg;
+}
+function saveChatBgImg(dataUrl){
+  try{
+    localStorage.setItem(CHATBG_KEY, dataUrl);
+    _chatBgImg=dataUrl;
+    return true;
+  }catch(e){
+    // Der lokale Speicher ist voll – ehrlich sagen statt still scheitern
+    toast('Das Bild passt nicht mehr in den Speicher dieses Geräts.',true);
+    return false;
+  }
+}
+function clearChatBgImg(){
+  try{ localStorage.removeItem(CHATBG_KEY); }catch(e){}
+  _chatBgImg=null;
+}
 /* Akzentfarben – jeweils für dunkel und hell, damit der Kontrast stimmt */
 var ACCENTS = {
   cyan:   {name:'Cyan',    d:'#22D3EE', d2:'#A78BFA', l:'#0E7490', l2:'#7C3AED'},
@@ -2272,6 +2400,10 @@ function applyPrefs(){
   var light = PREFS.theme==='light' || (PREFS.theme==='auto' && systemPrefersLight());
   document.body.classList.toggle('light', light);
   document.body.setAttribute('data-chatbg', PREFS.chatbg||'keiner');
+  // Eigenes Foto als Hintergrund einsetzen (nur auf diesem Gerät gespeichert)
+  var eigen = (PREFS.chatbg==='eigenes') ? (_chatBgImg||loadChatBgImg()) : null;
+  document.documentElement.style.setProperty('--chatbg-img', eigen ? 'url("'+eigen+'")' : 'none');
+  document.body.classList.toggle('has-bg-img', !!eigen);
   var a=ACCENTS[PREFS.accent]||ACCENTS.cyan;
   var r=document.documentElement.style;
   r.setProperty('--accent',  light?a.l :a.d);
@@ -2891,6 +3023,10 @@ var VOICE_MAX_MS = 60000;       // eine Minute
 var VOICE_MAX_CHARS = 800000;
 var _rec=null, _recChunks=[], _recStream=null, _recTimer=null, _recStart=0;
 var _pendingVoice=null, _pendingVoiceMs=0;
+var _recStarting=false;   // Doppel-Tipper abfangen, solange die Freigabe läuft
+var _recAutoSend=false;   // beim Loslassen sofort abschicken (wie bei WhatsApp)
+var _recTarget='chat';    // wohin die Aufnahme gehört: 'chat' oder 'dm'
+var _recSend=null;        // Funktion, die tatsächlich verschickt
 
 /* Welches Aufnahmeformat kann dieses Gerät? iPhone liefert mp4, andere webm. */
 function pickRecorderMime(){
@@ -2924,11 +3060,17 @@ function showRecBar(on){
   [$('chatMic'),$('dmMic')].forEach(function(m){ if(m) m.classList.toggle('rec-on', !!on); });
 }
 
-function startVoice(){
+function startVoice(target, autoSend){
   if(!voiceSupported()){ toast('Dein Gerät unterstützt keine Sprachnachrichten.',true); return; }
-  if(_rec) return;                      // läuft schon
+  if(_rec || _recStarting) return;      // läuft schon oder Freigabe noch offen
+  _recStarting=true;
+  _recTarget=target||'chat';
+  _recAutoSend=!!autoSend;
   clearVoice();                         // alte Vorschau weg
   navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+    _recStarting=false;
+    // Zwischenzeitlich abgebrochen? Dann Mikrofon gleich wieder freigeben.
+    if(_recCancelled){ _recCancelled=false; stream.getTracks().forEach(function(t){ t.stop(); }); return; }
     _recStream=stream; _recChunks=[]; _recStart=Date.now();
     var mime=pickRecorderMime();
     try{
@@ -2941,6 +3083,13 @@ function startVoice(){
     _rec.onstop=function(){ finishVoice(); };
     _rec.start();
     showRecBar(true);
+    recEls('recTime').forEach(function(t){ t.textContent='0:00'; });
+    recEls('recHint').forEach(function(h){
+      h.textContent=_recAutoSend ? 'Loslassen zum Senden · wegziehen bricht ab'
+                                 : 'Aufnahme läuft – „Fertig" zum Anhören';
+    });
+    // Beim Halten braucht es keinen "Fertig"-Knopf – Loslassen genügt
+    recEls('recStop').forEach(function(b){ b.style.display=_recAutoSend?'none':''; });
     tick(12);
     // Laufende Anzeige + harte Grenze bei 60 Sekunden
     _recTimer=setInterval(function(){
@@ -2948,11 +3097,13 @@ function startVoice(){
       recEls('recTime').forEach(function(t){ t.textContent=fmtDur(ms); });
       var txt = ms>VOICE_MAX_MS-10000
         ? 'noch '+Math.max(0,Math.round((VOICE_MAX_MS-ms)/1000))+' Sek.'
-        : 'Aufnahme läuft …';
+        : (_recAutoSend ? 'Loslassen zum Senden · wegziehen bricht ab'
+                        : 'Aufnahme läuft – „Fertig" zum Anhören');
       recEls('recHint').forEach(function(h){ h.textContent=txt; });
       if(ms>=VOICE_MAX_MS) stopVoice();
     },200);
   }).catch(function(e){
+    _recStarting=false; _recCancelled=false;
     var msg = (e && e.name==='NotAllowedError')
       ? 'Kein Zugriff auf das Mikrofon. Bitte in den Einstellungen erlauben.'
       : 'Mikrofon nicht verfügbar.';
@@ -2965,8 +3116,11 @@ function stopVoice(){
   try{ _rec.stop(); }catch(e){ finishVoice(); }
 }
 
+var _recCancelled=false;
 function cancelVoice(){
-  var r=_rec; _rec=null;
+  // Auch abbrechen, wenn die Mikrofon-Freigabe noch aussteht
+  if(_recStarting){ _recCancelled=true; _recStarting=false; showRecBar(false); toast('Aufnahme verworfen'); return; }
+  var r=_rec; _rec=null; _recAutoSend=false;
   if(r){ r.onstop=null; try{ r.stop(); }catch(e){} }
   _recChunks=[]; stopRecStream(); showRecBar(false);
   toast('Aufnahme verworfen');
@@ -2994,6 +3148,14 @@ function finishVoice(){
     }
     _pendingVoice=reader.result;
     _pendingVoiceMs=ms;
+    // Beim Loslassen sofort abschicken – wie man es von anderen Messengern
+    // kennt. Nur wenn per Knopf getippt wurde, gibt es eine Vorschau.
+    if(_recAutoSend && typeof _recSend==='function'){
+      _recAutoSend=false;
+      _recSend(_recTarget);
+      return;
+    }
+    _recAutoSend=false;
     recEls('recAudio').forEach(function(a){ a.src=_pendingVoice; });
     recEls('recPrev').forEach(function(p){ p.classList.add('show'); });
     toast('Aufnahme fertig ('+fmtDur(ms)+') – „Senden" zum Abschicken');
@@ -3392,6 +3554,39 @@ function buildSubNav(){
   updateNavMarkers();
 }
 
+/* ── Kopf beim Scrollen zusammenrücken ──
+   Auf dem Handy nahm der feste Kopf einer Seite viel Platz weg. Sobald man
+   ein Stück scrollt, rückt er zusammen; oben angekommen klappt er wieder
+   auf. Mit einem Totbereich zwischen den Schwellen, damit er nicht flackert,
+   wenn man genau an der Grenze steht. */
+function bindShrinkHeaders(){
+  document.querySelectorAll('.scroll-area[data-shrinks]').forEach(function(area){
+    if(area._shrinkBound) return;
+    area._shrinkBound=true;
+    var view=area.closest('.view');
+    var head=view && view.querySelector('.view-head.shrink');
+    var tools=area.querySelector('.sticky-tools');
+    var ticking=false;
+    area.addEventListener('scroll',function(){
+      if(ticking) return;
+      ticking=true;
+      requestAnimationFrame(function(){
+        ticking=false;
+        var y=area.scrollTop;
+        if(head){
+          if(y>28) head.classList.add('tight');
+          else if(y<10) head.classList.remove('tight');
+        }
+        if(tools){
+          // Klebt sie? Dann steht ihre Oberkante genau auf der des Bereichs.
+          var klebt = (tools.getBoundingClientRect().top - area.getBoundingClientRect().top) < 2;
+          tools.classList.toggle('stuck', klebt && y>4);
+        }
+      });
+    }, {passive:true});
+  });
+}
+
 function showView(id){
   currentView=id;
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
@@ -3409,6 +3604,7 @@ function showView(id){
     setTimeout(scrollBottom,60);
     if(window.innerWidth>820){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
   }
+  bindShrinkHeaders();
   if(id==='chef') buildChefTabs();
   if(id==='material') ensureMaterialLoaded();
   if(id==='putzplan') ensurePutzplanLoaded();
@@ -4146,6 +4342,18 @@ function findMentions(text){
 
 /* Antworten, Reagieren, Bearbeiten, Löschen an den Nachrichten verdrahten */
 function bindMessageTools(box){
+  // Antippen einer Nachricht zeigt ihre Werkzeuge; erneut antippen (oder
+  // eine andere Nachricht) blendet sie wieder aus. So bleibt der Chat ruhig.
+  if(!box._toolsBound){
+    box._toolsBound=true;
+    box.addEventListener('click',function(e){
+      if(e.target.closest('.msg-tool,.react,.msg-quote,audio,img,a')) return;
+      var m=e.target.closest && e.target.closest('.msg');
+      var offen=m && m.classList.contains('tools-open');
+      box.querySelectorAll('.msg.tools-open').forEach(function(x){ x.classList.remove('tools-open'); });
+      if(m && !offen){ m.classList.add('tools-open'); tick(6); }
+    });
+  }
   box.querySelectorAll('[data-reply]').forEach(function(b){
     b.addEventListener('click',function(){
       var m=(_curMsgs||[]).filter(function(x){ return x.id===b.getAttribute('data-reply'); })[0];
@@ -6762,6 +6970,15 @@ function switchPmTab(which){
   var box=document.querySelector('.pm-box'); if(box) box.scrollTop=0;
 }
 
+/* Zeigt "Foto wählen"/"Entfernen" nur, wenn "Eigenes Foto" ausgewählt ist */
+function updateOwnBgRow(){
+  var row=$('bgOwnRow'), note=$('bgOwnNote'), rm=$('bgRemove');
+  var an = PREFS.chatbg==='eigenes';
+  if(row)  row.style.display = an ? 'flex' : 'none';
+  if(note) note.style.display = an ? 'block' : 'none';
+  if(rm)   rm.style.display = (an && loadChatBgImg()) ? '' : 'none';
+}
+
 /* Baut die Auswahlkacheln für Chat-Hintergrund, Farbe, Schrift und Modus.
    Jede Änderung wirkt sofort und wird lokal gespeichert. */
 function buildAppearanceOptions(){
@@ -6782,11 +6999,23 @@ function buildAppearanceOptions(){
     });
     bg.querySelectorAll('[data-bg]').forEach(function(el){
       el.addEventListener('click',function(){
-        PREFS.chatbg=el.getAttribute('data-bg'); savePrefs(); applyPrefs();
+        var id=el.getAttribute('data-bg');
+        PREFS.chatbg=id; savePrefs(); applyPrefs();
         bg.querySelectorAll('[data-bg]').forEach(function(x){ x.classList.remove('on'); });
         el.classList.add('on'); tick(8);
+        updateOwnBgRow();
+        // Noch kein Bild hinterlegt? Dann direkt die Auswahl öffnen.
+        if(id==='eigenes' && !loadChatBgImg()){ var f=$('bgFile'); if(f) f.click(); }
       });
     });
+    // Vorschau des eigenen Fotos, falls schon eines hinterlegt ist
+    var eigenPrev=bg.querySelector('[data-prev="eigenes"]');
+    if(eigenPrev && loadChatBgImg()){
+      eigenPrev.style.backgroundImage='url("'+_chatBgImg+'")';
+      eigenPrev.style.backgroundSize='cover';
+      eigenPrev.style.backgroundPosition='center';
+    }
+    updateOwnBgRow();
   }
   // 2) Akzentfarbe
   var ac=$('accOpts');
@@ -6930,6 +7159,26 @@ function bindActions(){
   var dmPeerN=$('dmPeer'); if(dmPeerN){ dmPeerN.style.cursor='pointer'; dmPeerN.addEventListener('click',function(){ if(_dmPeer) openPersonPopup(_dmPeer.uid); }); }
   var dmPeerAvEl=$('dmPeerAv'); if(dmPeerAvEl){ dmPeerAvEl.style.cursor='pointer'; dmPeerAvEl.addEventListener('click',function(){ if(_dmPeer) openPersonPopup(_dmPeer.uid); }); }
 
+  // Eigenes Chat-Hintergrundbild wählen bzw. entfernen
+  var bgPick=$('bgPick'); if(bgPick) bgPick.addEventListener('click',function(){ $('bgFile').click(); });
+  var bgFile=$('bgFile');
+  if(bgFile) bgFile.addEventListener('change',function(){
+    var f=this.files&&this.files[0]; this.value=''; if(!f) return;
+    toast('Bild wird vorbereitet …');
+    // Kleiner rechnen als Chat-Fotos: der lokale Speicher fasst nur wenige MB
+    fileToCompressedDataURL(f, 1280, 420000).then(function(data){
+      if(!saveChatBgImg(data)) return;
+      PREFS.chatbg='eigenes'; savePrefs(); applyPrefs();
+      buildAppearanceOptions();
+      toast('Hintergrund gesetzt ✓');
+    }).catch(function(e){ toast(e.message,true); });
+  });
+  var bgRm=$('bgRemove');
+  if(bgRm) bgRm.addEventListener('click',function(){
+    clearChatBgImg(); applyPrefs(); buildAppearanceOptions();
+    toast('Bild entfernt');
+  });
+
   // Rückgängig-Knopf
   var ub=$('undoBtn');
   if(ub) ub.addEventListener('click',function(){
@@ -7007,20 +7256,62 @@ function bindActions(){
     ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,130)+'px';
   });
 
-  // Sprachnachricht: Knopf startet und beendet die Aufnahme
-  var mic=$('chatMic');
-  if(mic){
-    if(!voiceSupported()){
-      mic.style.display='none';   // altes Gerät: Knopf gar nicht erst zeigen
-    } else {
-      mic.addEventListener('click',function(){ if(_rec) stopVoice(); else startVoice(); });
+  /* ── Sprachnachricht aufnehmen ──
+     Zwei Wege, beide vertraut:
+     - GEDRÜCKT HALTEN und loslassen → wird sofort verschickt
+     - KURZ TIPPEN → Aufnahme läuft freihändig weiter, "Fertig" zeigt erst
+       eine Vorschau zum Anhören
+     Nach oben/zur Seite wegziehen bricht ab, ohne zu senden. */
+  _recSend=function(target){ if(target==='dm') sendDm(); else sendMsg(); };
+  function bindMic(btn, target){
+    if(!btn) return;
+    if(!voiceSupported()){ btn.style.display='none'; return; }
+    var gedrueckt=false, langGenug=false, startXY=null, haltTimer=null;
+
+    function los(e){
+      if(_rec || _recStarting) return;      // läuft schon → nichts tun
+      gedrueckt=true; langGenug=false;
+      var t=(e.touches&&e.touches[0])||e;
+      startXY={ x:t.clientX||0, y:t.clientY||0 };
+      // Erst ab 250 ms gilt es als "Halten". Vorher ist es ein Tippen.
+      haltTimer=setTimeout(function(){
+        if(!gedrueckt) return;
+        langGenug=true;
+        startVoice(target, true);           // Halten → beim Loslassen senden
+      },250);
     }
+    function bewegt(e){
+      if(!gedrueckt || !startXY) return;
+      var t=(e.touches&&e.touches[0])||e;
+      var dx=Math.abs((t.clientX||0)-startXY.x), dy=Math.abs((t.clientY||0)-startXY.y);
+      if(dx>70 || dy>70){                   // weggezogen → abbrechen
+        gedrueckt=false; clearTimeout(haltTimer);
+        if(_rec || _recStarting) cancelVoice();
+      }
+    }
+    function auf(){
+      if(!gedrueckt) return;
+      gedrueckt=false; clearTimeout(haltTimer);
+      if(langGenug){
+        stopVoice();                        // Halten beendet → senden
+      } else if(_rec){
+        stopVoice();                        // zweites Tippen beendet
+      } else {
+        startVoice(target, false);          // erstes Tippen: freihändig starten
+      }
+    }
+
+    btn.addEventListener('touchstart',function(e){ e.preventDefault(); los(e); }, {passive:false});
+    btn.addEventListener('touchmove', bewegt, {passive:true});
+    btn.addEventListener('touchend',function(e){ e.preventDefault(); auf(); }, {passive:false});
+    btn.addEventListener('touchcancel',function(){ gedrueckt=false; clearTimeout(haltTimer); });
+    // Maus (Rechner): gleiches Verhalten
+    btn.addEventListener('mousedown',function(e){ if(e.button===0) los(e); });
+    btn.addEventListener('mousemove', bewegt);
+    document.addEventListener('mouseup',function(){ if(gedrueckt) auf(); });
   }
-  var dmMic=$('dmMic');
-  if(dmMic){
-    if(!voiceSupported()) dmMic.style.display='none';
-    else dmMic.addEventListener('click',function(){ if(_rec) stopVoice(); else startVoice(); });
-  }
+  bindMic($('chatMic'),'chat');
+  bindMic($('dmMic'),'dm');
   ['recStop','dmRecStop'].forEach(function(id){
     var b=$(id); if(b) b.addEventListener('click', stopVoice);
   });
