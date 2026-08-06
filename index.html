@@ -107,31 +107,34 @@
 <style>
 :root{
   /* Dunkel – tiefes Indigo wie im Logo-Hintergrund */
-  --bg:#0B0A1C;--bg-2:#17142E;--bg-soft:#131029;
-  --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.17);
+  --bg:#08071A;--bg-2:#171331;--bg-soft:#110E27;--bg-3:#1F1A3F;
+  --line:rgba(255,255,255,.10);--line-2:rgba(255,255,255,.20);
   /* Marken-Trio aus dem StudioChat-Logo: Cyan (primär), Violett, Pink */
   --accent:#22D3EE;--accent-2:#A78BFA;--accent-3:#F472B6;--accent-d:#22D3EE;
   --accent-glow:rgba(34,211,238,.40);
   --on-accent:#08131A;            /* dunkler Text auf Cyan-Flächen */
   --brand:linear-gradient(135deg,#8B5CF6 0%,#22D3EE 52%,#EC4899 100%);
   --warm:#FBBF24;--danger:#FB4E6D;
-  --text:#ECEAFB;--text-2:#A9A3CE;--text-3:#6E6893;
+  --text:#F3F1FF;--text-2:#BDB7DD;--text-3:#8B84B0;
   --font-head:'Barlow Condensed',system-ui,sans-serif;
   --font-body:'Barlow',system-ui,-apple-system,sans-serif;
   --radius:18px;--radius-lg:26px;
-  --shadow:0 8px 24px rgba(0,0,0,.35);--shadow-lg:0 24px 56px rgba(0,0,0,.50);
+  --shadow:0 8px 24px rgba(0,0,0,.40);--shadow-lg:0 24px 56px rgba(0,0,0,.58);
   --ease-out:cubic-bezier(.16,1,.3,1);
+  /* Apple-typische Kurven: ruhiges Ausgleiten und leichtes Nachfedern */
+  --ease-ios:cubic-bezier(.32,.72,0,1);
+  --spring:cubic-bezier(.34,1.42,.64,1);
 }
 /* ── Hell-Modus ── */
 body.light{
-  --bg:#F4F2FB;--bg-2:#ffffff;--bg-soft:#EAE7F6;
-  --line:rgba(20,10,40,.10);--line-2:rgba(20,10,40,.17);
+  --bg:#F5F3FC;--bg-2:#ffffff;--bg-soft:#EDEAF8;--bg-3:#E4E0F4;
+  --line:rgba(20,10,40,.11);--line-2:rgba(20,10,40,.19);
   /* etwas dunklere Logo-Töne, damit sie auf Weiß gut lesbar sind */
-  --accent:#0891B2;--accent-2:#7C3AED;--accent-3:#DB2777;--accent-d:#0E7490;
-  --accent-glow:rgba(8,145,178,.22);
+  --accent:#0E7490;--accent-2:#7C3AED;--accent-3:#DB2777;--accent-d:#155E75;
+  --accent-glow:rgba(14,116,144,.22);
   --on-accent:#ffffff;
   --brand:linear-gradient(135deg,#7C3AED 0%,#0891B2 52%,#DB2777 100%);
-  --text:#191233;--text-2:#544F6B;--text-3:#8983A0;
+  --text:#150F2C;--text-2:#4B4664;--text-3:#6F6889;
   --shadow:0 6px 18px rgba(30,20,60,.10);--shadow-lg:0 18px 40px rgba(30,20,60,.16);
 }
 body.light .topbar{background:rgba(255,255,255,.9)}
@@ -730,6 +733,80 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pp-note-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.72rem;padding:0}
 .pp-note-del:hover{color:var(--danger)}
 
+/* ============================================================
+   BEWEGUNG IM APPLE-STIL
+   Zwei Kurven: --ease-ios gleitet ruhig aus (wie beim Öffnen von Apps),
+   --spring federt am Ende leicht nach (wie Schalter und Häkchen).
+   ============================================================ */
+
+/* Seitenwechsel: leichtes Heranziehen statt hartem Umschalten */
+.view.show{animation:viewIn .5s var(--ease-ios)}
+@keyframes viewIn{
+  from{opacity:0;transform:translateY(10px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+
+/* Karten erscheinen leicht versetzt – wirkt ruhig, nicht verspielt */
+.scroll-area > .card{animation:cardUp .55s var(--ease-ios) both}
+@keyframes cardUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.scroll-area > .card:nth-of-type(1){animation-delay:.03s}
+.scroll-area > .card:nth-of-type(2){animation-delay:.08s}
+.scroll-area > .card:nth-of-type(3){animation-delay:.13s}
+.scroll-area > .card:nth-of-type(4){animation-delay:.18s}
+.scroll-area > .card:nth-of-type(n+5){animation-delay:.22s}
+
+/* Druck-Feedback: kurz eindrücken, weich zurückfedern */
+.btn,.icon-btn,.tab,.chan,.studio-check,.role-opt,.mobnav button,.wk-btns .btn{
+  transition:transform .32s var(--spring),background .25s var(--ease-ios),
+             color .25s var(--ease-ios),border-color .25s var(--ease-ios),
+             box-shadow .32s var(--ease-ios)}
+.btn:active{transform:scale(.965)}
+.icon-btn:active,.chan:active,.tab:active,.mobnav button:active{transform:scale(.9)}
+.studio-check:active,.role-opt:active{transform:scale(.985)}
+.btn-primary:hover{transform:translateY(-2px)}
+
+/* Häkchen federt beim Erledigen nach */
+.todo.done .check{animation:checkPop .45s var(--spring)}
+@keyframes checkPop{0%{transform:scale(1)}45%{transform:scale(1.3)}100%{transform:scale(1)}}
+.check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
+
+/* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
+#profileModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
+  animation:sheetIn .46s var(--spring)}
+@keyframes sheetIn{
+  from{opacity:0;transform:scale(.94) translateY(12px)}
+  to{opacity:1;transform:none}
+}
+#profileModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
+@keyframes fadeBlur{from{opacity:0}to{opacity:1}}
+
+/* Hinweis-Blase gleitet mit leichtem Nachfedern herein */
+.toast{transition:opacity .3s var(--ease-ios),transform .44s var(--spring)}
+
+/* Nachrichten und Listenzeilen gleiten sanft ein */
+.msg{animation:msgIn .42s var(--ease-ios) both}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.ann,.wk-row,.emp{animation:cardUp .45s var(--ease-ios) both}
+
+/* Karten heben sich beim Überfahren leicht an (nur mit echtem Zeiger) */
+@media (hover:hover){
+  .card{transition:transform .4s var(--ease-ios),box-shadow .4s var(--ease-ios),border-color .3s}
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+}
+
+/* Fortschrittsbalken füllt sich weich */
+.pbar i{transition:width .7s var(--ease-ios)}
+
+/* ── Schnellfilter-Chips (Aufgaben) ── */
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--text-2);
+  padding:7px 15px;border-radius:999px;font-family:var(--font-body);font-weight:600;
+  font-size:.84rem;cursor:pointer;
+  transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
+.chip:hover{color:var(--text);border-color:var(--accent)}
+.chip:active{transform:scale(.94)}
+.chip.on{background:rgba(34,211,238,.15);border-color:var(--accent);color:var(--accent)}
+
 /* ── Rollen-Kennzeichen ── */
 .role-badge{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.4px;
   padding:2px 8px;border-radius:999px;vertical-align:middle;
@@ -780,7 +857,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .mat-table{margin-top:4px}
 .mat-head,.mat-row{display:grid;grid-template-columns:1fr 56px 56px 56px 30px;gap:6px;align-items:center}
 .mat-head{padding:0 0 8px;color:var(--text-3);font-size:.66rem;text-transform:uppercase;
-  letter-spacing:.4px;font-weight:700}
+  letter-spacing:.4px;font-weight:700;overflow:hidden}
+.mat-head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mat-head span:nth-child(2),.mat-head span:nth-child(3),.mat-head span:nth-child(4){text-align:center}
 .mat-row{padding:9px 0;border-top:1px solid var(--line)}
 .mat-name{font-weight:600;font-size:.92rem;word-break:break-word}
@@ -1045,6 +1123,11 @@ var FIREBASE_CONFIG = {
           </div>
           <span class="todo-count" id="todoCount"></span>
         </div>
+        <div class="chip-row" style="padding:0 clamp(14px,4vw,28px) 10px">
+          <button class="chip on" data-tfilter="alle">Alle</button>
+          <button class="chip" data-tfilter="offen">Nur offene</button>
+          <button class="chip" data-tfilter="faellig">Überfällig</button>
+        </div>
         <div class="scroll-area" id="todoArea"></div>
       </section>
 
@@ -1071,9 +1154,19 @@ var FIREBASE_CONFIG = {
             <select class="inp" id="matStudio"></select>
             <button class="btn btn-ghost btn-sm" id="matExport" style="display:none">⬇️ Excel-Export (alle)</button>
           </div>
+          <div class="todo-tools" style="padding:0">
+            <div class="todo-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input id="matSearch" type="search" placeholder="Material suchen …" autocomplete="off" />
+            </div>
+            <span class="todo-count" id="matCount"></span>
+          </div>
           <div class="mat-alert" id="matAlert" style="display:none"></div>
           <div class="card" style="margin-bottom:14px">
-            <div class="mat-head"><span>Material</span><span>Soll</span><span>Vorhanden</span><span>Fehlt</span><span></span></div>
+            <p class="hint" style="margin:0 0 10px">
+              <b>Soll</b> = wie viel da sein sollte · <b>Ist</b> = wie viel wirklich da ist ·
+              <b>Fehlt</b> rechnet die App aus.</p>
+            <div class="mat-head"><span>Material</span><span>Soll</span><span>Ist</span><span>Fehlt</span><span></span></div>
             <div class="mat-table" id="matTable"></div>
             <div class="mat-add">
               <input class="inp" id="matNewName" type="text" placeholder="Eigenes Material hinzufügen …" maxlength="60" />
@@ -1251,8 +1344,11 @@ var FIREBASE_CONFIG = {
               <input class="inp" id="emName" type="text" placeholder="Vor- und Nachname" maxlength="50" /></div>
             <div class="field"><label for="emEmail">E-Mail</label>
               <input class="inp" id="emEmail" type="email" placeholder="mitarbeiter@email.de" inputmode="email" autocomplete="off" /></div>
-            <div class="field"><label for="emPw">Passwort (vergibst du, gib es dem Mitarbeiter)</label>
-              <input class="inp" id="emPw" type="text" placeholder="Min. 6 Zeichen" autocomplete="off" /></div>
+            <div class="field"><label for="emPw">Passwort (vergibst du, gib es der Person)</label>
+              <div style="display:flex;gap:8px">
+                <input class="inp" id="emPw" type="text" placeholder="Min. 6 Zeichen" autocomplete="off" style="flex:1" />
+                <button type="button" class="btn btn-ghost btn-sm" id="emPwGen" title="Sicheres Passwort vorschlagen">Vorschlag</button>
+              </div></div>
             <p class="hint" style="margin:-4px 0 12px">Geburtstag & Profilbild trägt der Mitarbeiter selbst im Profil ein.</p>
             <div class="field"><label for="emRole">Rolle</label>
               <select class="inp" id="emRole">
@@ -1264,6 +1360,9 @@ var FIREBASE_CONFIG = {
               <div class="studio-checks" id="emStudios"></div></div>
             <button class="btn btn-primary btn-sm" id="emCreate">Zugang anlegen</button>
             <p class="em-saved" id="emCreateNote"></p>
+            <div id="emCopyWrap" style="display:none;gap:8px;margin-top:8px">
+              <button type="button" class="btn btn-ghost btn-sm" id="emCopy">📋 Zugangsdaten kopieren</button>
+            </div>
           </div>
           <div class="card" data-chef-only="1">
             <h3>👥 Team</h3>
@@ -1732,6 +1831,40 @@ function burstAt(el){
 /* Kurzes Lob beim Abhaken – motivierend, aber sachlich.
    Wird zufällig gewählt, damit es nicht monoton wirkt. */
 var PRAISE = ['Erledigt ✓','Sauber gemacht ✓','Abgehakt ✓','Top ✓','Weiter so ✓'];
+
+/* Kurzes Vibrieren beim Abhaken (nur Handys, die das können) –
+   gibt beim Antippen dasselbe Gefühl wie in nativen Apps. */
+function tick(ms){
+  try{ if(navigator.vibrate) navigator.vibrate(ms||12); }catch(e){}
+}
+
+/* Gut lesbares, sicheres Passwort vorschlagen (keine verwechselbaren Zeichen) */
+function suggestPassword(){
+  var a='abcdefghjkmnpqrstuvwxyz', b='ABCDEFGHJKLMNPQRSTUVWXYZ', c='23456789', d='!?#$%';
+  var all=a+b+c+d, out='';
+  var pick=function(set){ return set[Math.floor(Math.random()*set.length)]; };
+  out+=pick(b)+pick(a)+pick(a)+pick(c)+pick(d);
+  for(var i=0;i<5;i++) out+=pick(all);
+  return out.split('').sort(function(){ return Math.random()-0.5; }).join('');
+}
+
+/* Zugangsdaten in die Zwischenablage legen (zum Weitergeben an die Person) */
+function showCopyCreds(name, email, pw){
+  var box=$('emCopyWrap'); if(!box) return;
+  box.style.display='flex';
+  box.dataset.text='Zugang StudioChat für '+name+'\nE-Mail: '+email+'\nPasswort: '+pw;
+}
+function copyText(t){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(t);
+  }
+  // Rückfalllösung für ältere Browser
+  var ta=document.createElement('textarea'); ta.value=t;
+  ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  ta.remove(); return Promise.resolve();
+}
 function pickPraise(){ return PRAISE[Math.floor(Math.random()*PRAISE.length)]; }
 
 /* ── Wiederkehrende Aufgaben: „erledigt" gilt nur für die aktuelle Periode ── */
@@ -2360,7 +2493,9 @@ function createEmployee(){
     })
     .then(function(){
       note.style.color='var(--accent-d)';
-      note.textContent='✓ '+name+' als '+roleLabel(role)+' angelegt. Zugang: '+email+' · Passwort: '+pw;
+      note.innerHTML='✓ '+esc(name)+' als '+esc(roleLabel(role))+' angelegt.<br>'+
+        'Zugang: <b>'+esc(email)+'</b> · Passwort: <b>'+esc(pw)+'</b>';
+      showCopyCreds(name, email, pw);
       $('emName').value=''; $('emEmail').value=''; $('emPw').value='';
       $('emStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
       btn.disabled=false; btn.textContent='Zugang anlegen';
@@ -2815,8 +2950,16 @@ function scrollBottom(){
 /* Aktueller Text im Aufgaben-Suchfeld (leer = alles anzeigen) */
 var _todoFilter='';
 
-/* Passt eine Aufgabe zum Suchtext? Sucht in Titel und Beschreibung. */
+/* Aktiver Schnellfilter: alle | offen | faellig */
+var _todoMode='alle';
+
+/* Passt eine Aufgabe zum Suchtext UND zum Schnellfilter? */
 function todoMatchesFilter(t){
+  if(_todoMode==='offen' && isDone(t)) return false;
+  if(_todoMode==='faellig'){
+    if(isDone(t)) return false;
+    if(!t.due || Date.now()<=t.due) return false;
+  }
   if(!_todoFilter) return true;
   var hay=((t.title||'')+' '+(t.desc||'')).toLowerCase();
   return hay.indexOf(_todoFilter)>=0;
@@ -2850,7 +2993,7 @@ function renderTodos(){
       // Pro Studio: Überschrift + eigener Fortschrittsbalken
       var d=all.filter(isDone).length;
       html+='<h3 style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(s)+'</h3>';
-      if(!_todoFilter) html+=progressHTML(d,all.length);
+      if(!_todoFilter && _todoMode==='alle') html+=progressHTML(d,all.length);
       html+=list.map(function(t){ return todoHTML(t,sk,true); }).join('');
     });
     area.innerHTML = html || emptyHTML(
@@ -2869,7 +3012,7 @@ function renderTodos(){
       totalAll+=total; doneAll+=done; shown+=list.length;
       if(multi) html+='<h3 style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(sName)+'</h3>';
       if(total){
-        if(!_todoFilter) html+=progressHTML(done,total);
+        if(!_todoFilter && _todoMode==='alle') html+=progressHTML(done,total);
         html += list.length
           ? list.map(function(t){ return todoHTML(t,sk,false); }).join('')
           : '<p style="color:var(--text-3);font-size:.9rem;margin:2px 0 14px">Nichts gefunden.</p>';
@@ -2881,8 +3024,8 @@ function renderTodos(){
   }
   // Zähler rechts neben dem Suchfeld
   var cnt=$('todoCount');
-  if(cnt) cnt.textContent = _todoFilter
-    ? (shown+' Treffer')
+  if(cnt) cnt.textContent = (_todoFilter || _todoMode!=='alle')
+    ? (shown+(shown===1?' Aufgabe':' Aufgaben'))
     : (totalAll ? (doneAll+' von '+totalAll+' erledigt') : '');
   bindTodoClicks(area);
   updateBadges();
@@ -2958,7 +3101,7 @@ function bindTodoClicks(area){
         // Sofortiges Feedback, noch bevor der Server antwortet:
         node.classList.add('just-done');           // Karte leuchtet kurz grün
         setTimeout(function(){ node.classList.remove('just-done'); }, 720);
-        burstAt(chk);                              // Funken-Ring am Häkchen
+        burstAt(chk); tick();                      // Funken-Ring + kurzes Vibrieren
         var list=cachedTodos[sk]||[];
         var openOthers=list.filter(function(t){ return !isDone(t) && t.id!==id; }).length;
         if(openOthers===0 && list.length>0){ fireConfetti(); toast('Alle Aufgaben erledigt! 🎉'); }
@@ -3138,10 +3281,15 @@ function loadMaterial(sk){
 /* Effektiv fehlende Menge: bei gesetztem Soll automatisch (Soll−Vorhanden), sonst manuell */
 function itemNeed(it){ return (it.limit>0) ? Math.max(0, it.limit-(it.have||0)) : (it.need||0); }
 
+var _matFilter='';
 function renderMaterial(){
   var tbl=$('matTable'); if(!tbl) return;
   var chef = canManage();
+  var shown=0;
   tbl.innerHTML=_matItems.map(function(it,idx){
+    // Suchfilter: Zeile ausblenden, aber Index unverändert lassen
+    if(_matFilter && (it.name||'').toLowerCase().indexOf(_matFilter)<0) return '';
+    shown++;
     var lim=it.limit||0, fehlt=itemNeed(it), warn=fehlt>0?' data-warn="1"':'';
     var soll='<input class="num limit" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="limit" value="'+lim+'"'+(chef?'':' readonly')+' />';
     var have='<input class="num have" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="have" value="'+(it.have||0)+'" />';
@@ -3154,6 +3302,11 @@ function renderMaterial(){
       '<button class="mat-del" data-del="'+idx+'" title="Entfernen" aria-label="Entfernen">✕</button>'+
     '</div>';
   }).join('');
+  var mc=$('matCount');
+  if(mc) mc.textContent = _matFilter
+    ? (shown+(shown===1?' Treffer':' Treffer'))
+    : (_matItems.length+' Artikel');
+  if(_matFilter && !shown) tbl.innerHTML='<p style="color:var(--text-3);font-size:.9rem;padding:8px 2px">Nichts gefunden.</p>';
   tbl.querySelectorAll('input.num').forEach(function(inp){
     inp.addEventListener('input',function(){
       var idx=+inp.dataset.idx, f=inp.dataset.f;
@@ -3313,7 +3466,7 @@ function bindPutzplanClicks(box){
       var willDone=!isDone(t);
       if(willDone){
         if(node){ node.classList.add('just-done'); setTimeout(function(){ node.classList.remove('just-done'); },720); }
-        burstAt(chk); toast(pickPraise());
+        burstAt(chk); tick(); toast(pickPraise());
       }
       db.collection('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
         .update({ done:willDone, doneBy:willDone?session.name:null, doneByUid:willDone?session.uid:null, doneAt:willDone?Date.now():null })
@@ -4297,6 +4450,34 @@ function bindActions(){
       renderTodos();
     });
   }
+  // Aufgaben-Schnellfilter (Alle / Nur offene / Überfällig)
+  document.querySelectorAll('[data-tfilter]').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      _todoMode=b.getAttribute('data-tfilter');
+      tick(8); renderTodos();
+    });
+  });
+  // Material-Suche
+  var ms=$('matSearch');
+  if(ms){
+    ms.addEventListener('input',function(){
+      _matFilter=this.value.trim().toLowerCase();
+      renderMaterial();
+    });
+  }
+  // Passwort-Vorschlag und Zugangsdaten kopieren
+  var pg=$('emPwGen');
+  if(pg) pg.addEventListener('click',function(){
+    var f=$('emPw'); if(f){ f.value=suggestPassword(); f.focus(); tick(8); toast('Passwort vorgeschlagen'); }
+  });
+  var cp=$('emCopy');
+  if(cp) cp.addEventListener('click',function(){
+    var w=$('emCopyWrap'); if(!w||!w.dataset.text) return;
+    copyText(w.dataset.text).then(function(){ toast('Zugangsdaten kopiert ✓'); tick(8); })
+      .catch(function(){ toast('Kopieren nicht möglich.',true); });
+  });
 
   // Foto an Aufgabe anhängen (gemeinsames Feld)
   $('todoFileShared').addEventListener('change',function(){
