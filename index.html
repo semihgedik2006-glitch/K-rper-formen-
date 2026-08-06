@@ -330,7 +330,9 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .view-head p{color:var(--text-2);font-size:.9rem;margin-top:3px}
 
 /* ── Chat ── */
-.chat-channels{display:flex;gap:7px;padding:0 clamp(14px,4vw,28px) 8px;overflow-x:auto;flex-shrink:0;flex-wrap:wrap}
+.chat-channels{display:flex;gap:7px;padding:0 clamp(14px,4vw,28px) 8px;
+  overflow-x:auto;flex-shrink:0;flex-wrap:nowrap;scrollbar-width:none}
+.chan{white-space:nowrap;flex:0 0 auto}
 .chat-channels::-webkit-scrollbar{height:0}
 .chan{padding:6px 14px;border-radius:999px;border:1px solid var(--line-2);background:rgba(255,255,255,.04);
   color:var(--text-2);cursor:pointer;font-size:.85rem;font-weight:600;white-space:nowrap;
@@ -341,7 +343,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .msg{max-width:80%;padding:10px 14px;border-radius:16px;background:var(--bg-2);border:1px solid var(--line);
   align-self:flex-start;word-break:break-word}
 .msg.mine{align-self:flex-end;background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.22)}
-.msg .meta{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.msg .meta{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
+.msg .meta .chat-author{white-space:nowrap}
+.msg .meta time{white-space:nowrap}
+.msg .edited{white-space:nowrap}
+.msg-tools{flex-shrink:0}
 .msg .meta b{font-family:var(--font-head);font-size:.9rem;letter-spacing:.2px}
 .tag{font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;border-radius:999px;font-weight:700}
 .tag.chef{background:rgba(251,191,36,.18);color:#ffb38c}
@@ -834,6 +840,66 @@ body[data-chatbg="nacht"] .chat-scroll{
 :root{--dot:rgba(255,255,255,.055)}
 body.light{--dot:rgba(20,10,40,.06)}
 
+/* ============================================================
+   CHAT-ERWEITERUNGEN
+   Antworten (Zitat), Reaktionen, Erwähnungen, Bearbeiten
+   ============================================================ */
+/* Zitat über einer Antwort */
+.msg-quote{border-left:3px solid var(--accent);background:rgba(255,255,255,.05);
+  border-radius:8px;padding:5px 9px;margin-bottom:6px;font-size:.82rem;cursor:pointer}
+body.light .msg-quote{background:rgba(20,10,40,.05)}
+.msg-quote b{display:block;color:var(--accent);font-size:.76rem;margin-bottom:1px}
+.msg-quote span{color:var(--text-2);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Werkzeuge an einer Nachricht */
+.msg-tools{display:flex;gap:3px;margin-left:auto;opacity:.55;transition:opacity .25s}
+.msg:hover .msg-tools{opacity:1}
+.msg-tool{background:none;border:none;color:var(--text-3);cursor:pointer;padding:3px 5px;
+  border-radius:7px;font-size:.82rem;line-height:1;
+  transition:transform .3s var(--spring),color .2s,background .2s}
+.msg-tool:hover{color:var(--accent);background:rgba(255,255,255,.07)}
+.msg-tool:active{transform:scale(.85)}
+
+/* Reaktionen unter einer Nachricht */
+.reacts{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.react{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.07);
+  border:1px solid var(--line-2);border-radius:999px;padding:2px 9px;font-size:.8rem;
+  cursor:pointer;transition:transform .3s var(--spring),background .2s,border-color .2s}
+body.light .react{background:rgba(20,10,40,.05)}
+.react:active{transform:scale(.9)}
+.react.mine{background:rgba(34,211,238,.16);border-color:var(--accent);color:var(--accent)}
+.react b{font-weight:700;font-size:.74rem}
+/* Auswahl der Emojis */
+.react-pick{display:flex;gap:4px;background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:999px;padding:5px 8px;box-shadow:var(--shadow);
+  position:absolute;z-index:80;animation:sheetIn .3s var(--spring)}
+.react-pick button{background:none;border:none;font-size:1.15rem;cursor:pointer;padding:2px 4px;
+  border-radius:8px;transition:transform .3s var(--spring)}
+.react-pick button:hover{transform:scale(1.25)}
+
+/* Erwähnung im Text */
+.mention{color:var(--accent);font-weight:700;background:rgba(34,211,238,.12);
+  padding:1px 5px;border-radius:6px}
+.msg.mentioned{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+
+/* Antwort-/Bearbeiten-Leiste über dem Eingabefeld */
+.compose-bar{display:flex;align-items:center;gap:9px;padding:8px clamp(14px,4vw,28px);
+  background:var(--bg-soft);border-top:1px solid var(--line);animation:cardUp .3s var(--ease-ios)}
+.compose-bar .cb-info{flex:1;min-width:0;font-size:.82rem}
+.compose-bar .cb-info b{display:block;color:var(--accent);font-size:.74rem}
+.compose-bar .cb-info span{color:var(--text-2);display:block;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.compose-bar .cb-x{background:none;border:none;color:var(--text-3);cursor:pointer;
+  font-size:1.05rem;padding:4px 8px;border-radius:8px}
+.compose-bar .cb-x:hover{color:var(--danger)}
+.msg .edited{font-size:.68rem;color:var(--text-3);margin-left:5px}
+
+/* Ungelesen-Zähler an den Kanal-Knöpfen */
+.chan{position:relative}
+.chan-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;
+  border-radius:999px;background:var(--warm);color:#20120A;font-size:.66rem;font-weight:800;
+  display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+
 /* Reiter im Einstellungs-Fenster */
 .pm-tabs{display:flex;gap:6px;background:var(--bg-soft);padding:4px;border-radius:12px;margin-bottom:16px}
 .pm-tab{flex:1;background:none;border:none;color:var(--text-2);font-family:var(--font-body);
@@ -1156,6 +1222,10 @@ var FIREBASE_CONFIG = {
           <img id="imgPreviewImg" alt="Vorschau" />
           <div class="pv-info" id="imgPreviewInfo">Bild bereit zum Senden</div>
           <button class="pv-x" id="imgPreviewX" aria-label="Bild entfernen">✕</button>
+        </div>
+        <div class="compose-bar" id="composeBar" style="display:none">
+          <div class="cb-info"><b id="cbTitle">Antwort an</b><span id="cbText"></span></div>
+          <button class="cb-x" id="cbCancel" aria-label="Abbrechen">✕</button>
         </div>
         <div class="chat-input">
           <input type="file" accept="image/*" class="hidden-file" id="chatFile" />
@@ -2518,6 +2588,7 @@ function showView(id){
   if(id==='ann'){ unread.ann=false; markAnnouncementsRead(); }
   updateNavMarkers();
   if(id==='chat'){
+    markChannelRead(currentChannel);
     setTimeout(scrollBottom,60);
     if(window.innerWidth>820){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
   }
@@ -2551,9 +2622,55 @@ function buildChannels(){
     b.addEventListener('click',function(){
       currentChannel=c.id;
       document.querySelectorAll('.chan').forEach(function(x){ x.classList.toggle('active',x.dataset.chan===c.id); });
+      markChannelRead(c.id);
       listenChannel(c.id);
+      cancelCompose();
     });
     wrap.appendChild(b);
+  });
+  _chanList=chans.map(function(c){ return c.id; });
+  watchChannelUnread();
+  markChannelRead(currentChannel);
+}
+
+/* ── Ungelesen-Zähler je Kanal ──
+   Für jeden Kanal wird nur die letzte Nachricht beobachtet. Ist sie neuer als
+   der zuletzt gelesene Zeitpunkt, erscheint eine Zahl am Kanal-Knopf. */
+var _chanList=[], _chanUnsubs=[], _chanLast={};
+function chanReadKey(ch){ return 'kf_read_'+ch; }
+function chanLastRead(ch){
+  try{ return +(localStorage.getItem(chanReadKey(ch))||0); }catch(e){ return 0; }
+}
+function markChannelRead(ch){
+  try{ localStorage.setItem(chanReadKey(ch), String(Date.now())); }catch(e){}
+  renderChannelBadges();
+}
+function watchChannelUnread(){
+  _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} });
+  _chanUnsubs=[];
+  _chanList.forEach(function(ch){
+    var un=db.collection('channels').doc(ch).collection('messages')
+      .orderBy('ts').limitToLast(12)
+      .onSnapshot(function(snap){
+        var arr=snap.docs.map(function(d){ return d.data(); })
+          .filter(function(m){ return m.uid!==session.uid; });
+        _chanLast[ch]=arr;
+        renderChannelBadges();
+      }, function(){});
+    _chanUnsubs.push(un);
+  });
+}
+function renderChannelBadges(){
+  document.querySelectorAll('.chan').forEach(function(b){
+    var ch=b.dataset.chan;
+    var old=b.querySelector('.chan-badge'); if(old) old.remove();
+    if(ch===currentChannel) return;                      // offener Kanal gilt als gelesen
+    var since=chanLastRead(ch);
+    var n=(_chanLast[ch]||[]).filter(function(m){ return (m.ts||0)>since; }).length;
+    if(!n) return;
+    var s=document.createElement('span');
+    s.className='chan-badge'; s.textContent = n>9 ? '9+' : n;
+    b.appendChild(s);
   });
 }
 
@@ -2941,6 +3058,7 @@ function stopListeners(){
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
   if(_periodTimer){ clearInterval(_periodTimer); _periodTimer=null; }
+  _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _chanUnsubs=[];
   _matStudioKey=null; _ppStudioKey=null;
 }
 
@@ -2955,9 +3073,16 @@ function listenChannel(channelId){
         snap.docChanges().forEach(function(ch){
           if(ch.type!=='added') return;
           var m=ch.doc.data();
-          if(m.uid!==session.uid && (m.ts||0)>=startTs && (document.hidden || currentView!=='chat')){
-            localNotify('Neue Nachricht von '+(m.name||''), m.text || (m.img?'📷 Foto':''));
-            unread.chat=true; updateNavMarkers();
+          if(m.uid!==session.uid && (m.ts||0)>=startTs){
+            var mentionsMe = Array.isArray(m.mentions) && m.mentions.indexOf(session.uid)>=0;
+            if(mentionsMe){
+              // Erwähnungen immer melden – auch wenn der Chat offen ist
+              localNotify((m.name||'')+' hat dich erwähnt', m.text||'');
+              tick(20);
+            } else if(document.hidden || currentView!=='chat'){
+              localNotify('Neue Nachricht von '+(m.name||''), m.text || (m.img?'📷 Foto':''));
+            }
+            if(document.hidden || currentView!=='chat'){ unread.chat=true; updateNavMarkers(); }
           }
         });
       }
@@ -3062,14 +3187,157 @@ function renderMessages(msgs){
         ?'<span class="tag leiter">Leitung</span>'
         :(m.studio?'<span class="tag studio">'+esc(m.studio)+'</span>':''));
     var imgHtml = m.img ? '<img class="msg-img" data-zoom src="'+m.img+'" alt="Foto" />' : '';
-    var bodyHtml = m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '';
-    var delBtn = canDel ? '<button class="msg-del" data-id="'+esc(m.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
-    html+='<div class="msg'+(mine?' mine':'')+'">'+
-      '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+'<time>'+fmtTime(m.ts)+'</time>'+delBtn+'</div>'+
-      bodyHtml+imgHtml+'</div>';
+    var bodyHtml = m.text ? '<div class="body">'+markMentions(linkify(esc(m.text)))+'</div>' : '';
+    var delBtn = canDel ? '<button class="msg-tool msg-del" data-id="'+esc(m.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
+    // Antworten und Reagieren kann jeder; Bearbeiten nur die eigene Nachricht (15 Min.)
+    var canEdit = mine && (Date.now()-(m.ts||0) < EDIT_WINDOW_MS) && !!m.text;
+    var tools='<span class="msg-tools">'+
+      '<button class="msg-tool" data-reply="'+esc(m.id)+'" title="Antworten" aria-label="Antworten">↩</button>'+
+      '<button class="msg-tool" data-react="'+esc(m.id)+'" title="Reagieren" aria-label="Reagieren">☺</button>'+
+      (canEdit?'<button class="msg-tool" data-edit="'+esc(m.id)+'" title="Bearbeiten" aria-label="Bearbeiten">✎</button>':'')+
+      delBtn+'</span>';
+    // Zitat der Nachricht, auf die geantwortet wurde
+    var quote = m.replyTo
+      ? '<div class="msg-quote" data-goto="'+esc(m.replyTo)+'"><b>'+esc(m.replyName||'')+'</b>'+
+        '<span>'+esc(m.replyText||'')+'</span></div>'
+      : '';
+    var edited = m.editedAt ? '<span class="edited">bearbeitet</span>' : '';
+    var iAmMentioned = Array.isArray(m.mentions) && m.mentions.indexOf(session.uid)>=0;
+    html+='<div class="msg'+(mine?' mine':'')+(iAmMentioned?' mentioned':'')+'" data-mid="'+esc(m.id)+'">'+
+      '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+
+      '<time>'+fmtTime(m.ts)+'</time>'+edited+tools+'</div>'+
+      quote+bodyHtml+imgHtml+reactionsHTML(m)+'</div>';
   });
   box.innerHTML=html;
+  bindMessageTools(box);
   if(atBottom) scrollBottom(); else updateFabCount();
+}
+
+/* Antwort- und Bearbeiten-Zustand der Chat-Eingabe */
+var _replyTo=null, _editing=null;
+function startReply(m){
+  _replyTo=m; _editing=null;
+  var bar=$('composeBar'); if(!bar) return;
+  $('cbTitle').textContent='Antwort an '+(m.name||'');
+  $('cbText').textContent=(m.text||(m.img?'📷 Foto':'')).slice(0,120);
+  bar.style.display='flex';
+  var t=$('chatText'); if(t) t.focus();
+  tick(8);
+}
+function startEdit(m){
+  _editing=m.id; _replyTo=null;
+  var bar=$('composeBar'); if(!bar) return;
+  $('cbTitle').textContent='Nachricht bearbeiten';
+  $('cbText').textContent='Ändere den Text und sende erneut.';
+  bar.style.display='flex';
+  var t=$('chatText');
+  if(t){ t.value=m.text||''; t.focus(); t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,130)+'px'; }
+  tick(8);
+}
+function cancelCompose(){
+  _replyTo=null; _editing=null;
+  var bar=$('composeBar'); if(bar) bar.style.display='none';
+}
+
+/* Wie lange darf man eine eigene Nachricht noch bearbeiten? */
+var EDIT_WINDOW_MS = 15*60*1000;
+var REACT_EMOJIS = ['👍','❤️','😂','🎉','👏','😮'];
+
+/* Reaktionen unter einer Nachricht darstellen.
+   m.reactions sieht so aus: { '👍': ['uid1','uid2'], '❤️': ['uid3'] } */
+function reactionsHTML(m){
+  var r=m.reactions||{};
+  var keys=Object.keys(r).filter(function(k){ return (r[k]||[]).length; });
+  if(!keys.length) return '';
+  return '<div class="reacts">'+keys.map(function(k){
+    var list=r[k]||[], mine=list.indexOf(session.uid)>=0;
+    return '<button class="react'+(mine?' mine':'')+'" data-toggle="'+esc(k)+'" data-mid="'+esc(m.id)+'">'+
+      k+'<b>'+list.length+'</b></button>';
+  }).join('')+'</div>';
+}
+
+/* @Namen im Text hervorheben (der Text ist bereits escapt) */
+function markMentions(html){
+  return html.replace(/@([\wÄÖÜäöüß.-]{2,40})/g, function(full, nm){
+    var hit=_allUsers.filter(function(u){
+      return (u.name||'').toLowerCase().replace(/\s+/g,'')===nm.toLowerCase();
+    })[0];
+    return hit ? '<span class="mention">@'+esc(hit.name)+'</span>' : full;
+  });
+}
+
+/* Aus einem Text die erwähnten Personen heraussuchen (für Benachrichtigungen) */
+function findMentions(text){
+  var out=[];
+  (text||'').replace(/@([\wÄÖÜäöüß.-]{2,40})/g, function(full, nm){
+    _allUsers.forEach(function(u){
+      if((u.name||'').toLowerCase().replace(/\s+/g,'')===nm.toLowerCase() && out.indexOf(u.uid)<0) out.push(u.uid);
+    });
+    return full;
+  });
+  return out;
+}
+
+/* Antworten, Reagieren, Bearbeiten, Löschen an den Nachrichten verdrahten */
+function bindMessageTools(box){
+  box.querySelectorAll('[data-reply]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var m=(_curMsgs||[]).filter(function(x){ return x.id===b.getAttribute('data-reply'); })[0];
+      if(m) startReply(m);
+    });
+  });
+  box.querySelectorAll('[data-edit]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var m=(_curMsgs||[]).filter(function(x){ return x.id===b.getAttribute('data-edit'); })[0];
+      if(m) startEdit(m);
+    });
+  });
+  box.querySelectorAll('[data-react]').forEach(function(b){
+    b.addEventListener('click',function(e){ e.stopPropagation(); openReactPicker(b, b.getAttribute('data-react')); });
+  });
+  box.querySelectorAll('[data-toggle]').forEach(function(b){
+    b.addEventListener('click',function(){ toggleReaction(b.getAttribute('data-mid'), b.getAttribute('data-toggle')); });
+  });
+  // Klick aufs Zitat springt zur Originalnachricht
+  box.querySelectorAll('[data-goto]').forEach(function(q){
+    q.addEventListener('click',function(){
+      var el=box.querySelector('[data-mid="'+q.getAttribute('data-goto')+'"]');
+      if(el){ el.scrollIntoView({behavior:'smooth',block:'center'});
+        el.classList.add('just-done'); setTimeout(function(){ el.classList.remove('just-done'); },900); }
+      else toast('Die Nachricht ist nicht mehr im geladenen Verlauf.');
+    });
+  });
+}
+
+/* Auswahl der Reaktions-Emojis über der Nachricht einblenden */
+var _reactPick=null;
+function openReactPicker(anchor, mid){
+  closeReactPicker();
+  var p=document.createElement('div'); p.className='react-pick';
+  p.innerHTML=REACT_EMOJIS.map(function(e){ return '<button data-e="'+e+'">'+e+'</button>'; }).join('');
+  document.body.appendChild(p);
+  var r=anchor.getBoundingClientRect();
+  p.style.top=Math.max(8, r.top-46)+'px';
+  p.style.left=Math.min(window.innerWidth-p.offsetWidth-10, Math.max(8, r.left-60))+'px';
+  p.querySelectorAll('[data-e]').forEach(function(b){
+    b.addEventListener('click',function(){ toggleReaction(mid, b.getAttribute('data-e')); closeReactPicker(); });
+  });
+  _reactPick=p;
+  setTimeout(function(){ document.addEventListener('click', closeReactPicker, {once:true}); },0);
+}
+function closeReactPicker(){ if(_reactPick){ _reactPick.remove(); _reactPick=null; } }
+
+/* Reaktion setzen oder wieder entfernen */
+function toggleReaction(mid, emoji){
+  var m=(_curMsgs||[]).filter(function(x){ return x.id===mid; })[0]; if(!m) return;
+  var r=Object.assign({}, m.reactions||{});
+  var list=(r[emoji]||[]).slice();
+  var i=list.indexOf(session.uid);
+  if(i>=0) list.splice(i,1); else list.push(session.uid);
+  if(list.length) r[emoji]=list; else delete r[emoji];
+  tick(8);
+  db.collection('channels').doc(currentChannel).collection('messages').doc(mid)
+    .update({ reactions:r }).catch(function(e){ toast(errMsg(e),true); });
 }
 
 /* ── Chat: „Nach unten"-Knopf mit Zähler ──
@@ -4144,8 +4412,12 @@ function avatarMarkup(u){
 function listenAllUsers(){
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   _usersUnsub=db.collection('users').onSnapshot(function(snap){
+    var first = !_allUsers.length;
     _allUsers=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
     if(currentView==='dm' && $('dmConvo').style.display==='none') renderDmPeople($('dmSearch').value);
+    // Erwähnungen (@Name) brauchen die Nutzerliste – Chat einmal neu zeichnen,
+    // sobald sie da ist, sonst bleiben die Namen unmarkiert
+    if(first && _curMsgs && _curMsgs.length) renderMessages(_curMsgs);
   }, function(e){ console.error('Users:',e.message); });
 }
 
@@ -4646,18 +4918,40 @@ function bindActions(){
     var text=ta.value.trim();
     var img=_pendingChatImg;
     if(!text && !img) return;
+    // Bearbeiten einer bereits gesendeten Nachricht
+    if(_editing){
+      var id=_editing;
+      ta.value=''; ta.style.height='auto'; cancelCompose();
+      db.collection('channels').doc(currentChannel).collection('messages').doc(id)
+        .update({ text:text, editedAt:Date.now(), mentions:findMentions(text) })
+        .then(function(){ toast('Nachricht bearbeitet ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+      return;
+    }
     ta.value=''; ta.style.height='auto';
     clearChatImg();
     var doc={
       uid:session.uid, name:session.name, role:session.role,
       studio:channelStudioName(currentChannel), text:text, ts:Date.now()
     };
+    var mn=findMentions(text); if(mn.length) doc.mentions=mn;
+    if(_replyTo){
+      doc.replyTo=_replyTo.id;
+      doc.replyName=_replyTo.name||'';
+      doc.replyText=(_replyTo.text||(_replyTo.img?'📷 Foto':'')).slice(0,120);
+    }
+    cancelCompose();
     if(img) doc.img=img;
     db.collection('channels').doc(currentChannel).collection('messages').add(doc)
       .catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
     ta.focus();
   }
   $('chatSend').addEventListener('click',sendMsg);
+  var cbx=$('cbCancel');
+  if(cbx) cbx.addEventListener('click',function(){
+    if(_editing){ var t=$('chatText'); if(t){ t.value=''; t.style.height='auto'; } }
+    cancelCompose();
+  });
   ta.addEventListener('keydown',function(e){
     if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); }
   });
