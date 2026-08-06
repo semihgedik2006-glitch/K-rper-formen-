@@ -5,45 +5,32 @@ jeweils mit Begründung — damit später niemand rätseln muss.
 
 ---
 
-## ⏳ Mit Frist: Node.js 20 läuft aus
+## ✅ Erledigt: Node.js 22 (war bis 30.10.2026 befristet)
 
-**Bis 30. Oktober 2026** (noch rund 85 Tage).
+Am 6. August umgestellt und geprüft. Das Deploy-Protokoll zeigt für alle
+16 Functions:
 
-Im Deploy-Protokoll steht:
+```
+updating Node.js 22 (1st Gen) function ...
+✔ Successful update operation.
+```
 
-> Runtime Node.js 20 was deprecated on 2026-04-30 and will be decommissioned
-> on 2026-10-30, after which you will not be able to deploy without upgrading.
+**Aktualisiert, nicht neu angelegt** — genau darauf kam es an. Beim
+gescheiterten Versuch zuvor war das anders; dabei können Auslöser und
+geplante Läufe verlorengehen. Kein einziges „creating" oder „deleting" im
+Protokoll.
 
-Die Cloud Functions laufen weiter — aber **ab diesem Datum lässt sich nichts
-mehr deployen**, bis auf eine neuere Node-Version umgestellt wurde. Das trifft
-dann auch dringende Korrekturen.
+Während des gesamten Deploys blieben die Functions erreichbar (alle 45
+Sekunden geprüft, kein Ausfall). Alle fünf geplanten Läufe sind mit
+umgezogen: `birthdayGreetings`, `dueTaskReminder`, `monthlyReport`,
+`purgeTrash`, `appointmentMailScheduler`.
 
-### Warum es nicht einfach nebenbei erledigt wurde
-
-Der Versuch gab es in diesem Projekt schon einmal: die Umstellung auf Node 22
-ist daran gescheitert, dass Firebase Functions der **1. Generation** dabei neu
-angelegt statt aktualisiert werden. Dabei können Auslöser und geplante Läufe
-verlorengehen. Damals musste auf Node 20 zurückgedreht werden.
-
-Alle 13 Functions hier sind 1. Generation (`firebase-functions/v1`).
-
-### Wie man es sauber macht
-
-Nicht zwischen Tür und Angel, sondern als eigener Schritt mit Zeit:
-
-1. `functions/package.json`: `"node": "20"` → `"22"`
-2. `firebase-functions` von `^5.0.0` auf die aktuelle Fassung heben
-   (bringt laut Warnung im Protokoll Änderungen mit sich, die geprüft werden
-   müssen)
-3. Deployen und danach **einzeln nachsehen**, ob alles noch da ist:
-   - die geplanten Läufe: `birthdayGreetings` (08:00), `dueTaskReminder`
-     (07:30), `monthlyReport` (08:00 am Ersten), `purgeTrash` (03:30),
-     `appointmentMailScheduler` (alle 30 Minuten)
-   - die Auslöser auf neue Nachrichten, Aufgaben, Infos und Termine
-4. Zum Prüfen den Testbericht-Knopf und den Geburtstags-Auslöser benutzen
-
-**Nicht an einem Tag machen, an dem etwas Wichtiges ansteht.** Falls etwas
-schiefgeht, ist der Rückweg auf Node 20 bis zum 30. Oktober noch offen.
+> Offen bleibt die Warnung, dass `firebase-functions` (^5.0.0) veraltet
+> ist. Das ist **kein** Ablaufdatum, sondern ein Hinweis. Bewusst nicht
+> gleichzeitig geändert: mit zwei Änderungen auf einmal wäre bei einem
+> Fehler nicht zu erkennen gewesen, woran es lag. Kann in Ruhe
+> nachgezogen werden — die Fassung bringt laut Hinweis Änderungen mit
+> sich, die geprüft werden müssen.
 
 ---
 
@@ -107,7 +94,6 @@ auf Knopfdruck lädt — nicht als Dauer-Abgleich.
 - **Wischen zum Abhaken** ist nie auf einem echten Gerät geprüft worden.
   Berührungen lassen sich in der Testumgebung nicht nachstellen. Der Aufbau
   stimmt; ob es sich gut anfühlt, zeigt erst der Alltag.
-- **Drei Test-Chef-Konten** sollten entfernt werden:
-  Chef-Bereich → Team → „Chef-Zugänge".
+- **Test-Chef-Konten**: am 6. August entfernt, zwei echte Konten bleiben.
 - **`firebase-functions`** meldet beim Deploy, dass die Fassung veraltet ist.
-  Zusammen mit dem Node-Wechsel oben erledigen, nicht einzeln.
+  Kein Ablaufdatum, nur ein Hinweis — siehe oben.
