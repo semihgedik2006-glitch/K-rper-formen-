@@ -86,7 +86,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#0B0A1C" />
+<meta name="theme-color" content="#12131C" />
 <meta name="robots" content="noindex, nofollow" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -106,16 +106,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root{
-  /* Dunkel – tiefes Indigo wie im Logo-Hintergrund */
-  --bg:#08071A;--bg-2:#171331;--bg-soft:#110E27;--bg-3:#1F1A3F;
-  --line:rgba(255,255,255,.10);--line-2:rgba(255,255,255,.20);
+  /* Dunkel – ruhiges Schiefer-Blau statt harter Neon-Kontrast.
+     Wirkt sachlich und ist über lange Zeit angenehmer zu lesen. */
+  --bg:#12131C;--bg-2:#1C1E2A;--bg-soft:#171925;--bg-3:#252838;
+  --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.17);
   /* Marken-Trio aus dem StudioChat-Logo: Cyan (primär), Violett, Pink */
-  --accent:#22D3EE;--accent-2:#A78BFA;--accent-3:#F472B6;--accent-d:#22D3EE;
-  --accent-glow:rgba(34,211,238,.40);
-  --on-accent:#08131A;            /* dunkler Text auf Cyan-Flächen */
-  --brand:linear-gradient(135deg,#8B5CF6 0%,#22D3EE 52%,#EC4899 100%);
+  --accent:#38BDF8;--accent-2:#A78BFA;--accent-3:#F472B6;--accent-d:#38BDF8;
+  --accent-glow:rgba(56,189,248,.28);
+  --on-accent:#0A1420;            /* dunkler Text auf hellen Akzentflächen */
+  --brand:linear-gradient(135deg,#7C6BF0 0%,#38BDF8 55%,#E879B9 100%);
   --warm:#FBBF24;--danger:#FB4E6D;
-  --text:#F3F1FF;--text-2:#BDB7DD;--text-3:#8B84B0;
+  --text:#F2F3F8;--text-2:#B4B8C8;--text-3:#848AA0;
   --font-head:'Barlow Condensed',system-ui,sans-serif;
   --font-body:'Barlow',system-ui,-apple-system,sans-serif;
   --radius:18px;--radius-lg:26px;
@@ -134,15 +135,15 @@
 }
 /* ── Hell-Modus ── */
 body.light{
-  --bg:#F5F3FC;--bg-2:#ffffff;--bg-soft:#EDEAF8;--bg-3:#E4E0F4;
-  --line:rgba(20,10,40,.11);--line-2:rgba(20,10,40,.19);
+  --bg:#F4F6FA;--bg-2:#ffffff;--bg-soft:#EDF0F6;--bg-3:#E3E8F1;
+  --line:rgba(15,25,45,.10);--line-2:rgba(15,25,45,.18);
   /* etwas dunklere Logo-Töne, damit sie auf Weiß gut lesbar sind */
-  --accent:#0E7490;--accent-2:#7C3AED;--accent-3:#DB2777;--accent-d:#155E75;
-  --accent-glow:rgba(14,116,144,.22);
+  --accent:#0369A1;--accent-2:#6D28D9;--accent-3:#BE185D;--accent-d:#075985;
+  --accent-glow:rgba(3,105,161,.18);
   --on-accent:#ffffff;
-  --brand:linear-gradient(135deg,#7C3AED 0%,#0891B2 52%,#DB2777 100%);
-  --text:#150F2C;--text-2:#4B4664;--text-3:#6F6889;
-  --shadow:0 6px 18px rgba(30,20,60,.10);--shadow-lg:0 18px 40px rgba(30,20,60,.16);
+  --brand:linear-gradient(135deg,#6D28D9 0%,#0369A1 55%,#BE185D 100%);
+  --text:#111726;--text-2:#48516B;--text-3:#6B7387;
+  --shadow:0 6px 18px rgba(20,30,55,.09);--shadow-lg:0 18px 40px rgba(20,30,55,.14);
 }
 body.light .topbar{background:rgba(255,255,255,.9)}
 body.light .mobnav{background:rgba(255,255,255,.93)}
@@ -287,7 +288,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   gap:14px;
   padding:calc(11px + var(--sat)) calc(clamp(14px,4vw,26px) + var(--sar))
           11px calc(clamp(14px,4vw,26px) + var(--sal));
-  background:rgba(11,10,28,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  background:rgba(18,19,28,.93);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--line)}
 .tb-brand{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-weight:800;
   font-size:1.15rem;letter-spacing:.5px}
@@ -497,7 +498,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   .side{display:none}
   .main{padding-bottom:72px}
   .mobnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
-    background:rgba(11,10,28,.96);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    background:rgba(18,19,28,.96);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
     border-top:1px solid var(--line);
     padding:5px calc(4px + var(--sar)) calc(5px + var(--sab)) calc(4px + var(--sal))}
   /* Bei 9 Bereichen wird es sonst zu eng: Leiste ist seitlich verschiebbar,
@@ -923,6 +924,59 @@ body.light .react{background:rgba(20,10,40,.05)}
 /* Schriftgröße: skaliert die ganze App */
 html{font-size:var(--fs,100%)}
 
+/* ── Reiter innerhalb einer Gruppe ── */
+.subnav{display:flex;gap:6px;padding:10px clamp(14px,4vw,28px) 0;flex-shrink:0;
+  overflow-x:auto;scrollbar-width:none}
+.subnav::-webkit-scrollbar{display:none}
+.subtab{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+  background:var(--bg-2);border:1.5px solid var(--line);color:var(--text-2);
+  padding:9px 15px;border-radius:999px;font-family:var(--font-body);font-weight:600;
+  font-size:.88rem;cursor:pointer;position:relative;
+  transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
+.subtab svg{width:16px;height:16px}
+.subtab:active{transform:scale(.95)}
+.subtab.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.sub-dot{position:absolute;top:5px;right:8px;width:7px;height:7px;border-radius:50%;
+  background:var(--warm);display:none}
+.sub-dot.show{display:block}
+
+/* ── Startseite ── */
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:11px;margin-bottom:16px}
+.home-tile{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 17px;cursor:pointer;animation:cardUp .5s var(--ease-ios) both;
+  transition:transform .35s var(--ease-ios),border-color .25s,box-shadow .35s}
+.home-tile:active{transform:scale(.97)}
+@media (hover:hover){ .home-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2)} }
+.home-tile .hn{font-family:var(--font-head);font-weight:800;font-size:2rem;line-height:1;color:var(--accent)}
+.home-tile .hl{font-size:.86rem;color:var(--text-2);margin-top:5px}
+.home-tile.warn .hn{color:var(--danger)}
+.home-tile.ok .hn{color:#34D399}
+.home-tile.muted .hn{color:var(--text-3)}
+
+.alert-bar{display:flex;align-items:center;gap:11px;padding:13px 15px;border-radius:14px;
+  margin-bottom:11px;cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
+  background:rgba(251,78,109,.12);border:1px solid rgba(251,78,109,.4)}
+.alert-bar.warn{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.42)}
+.alert-bar .ab-ico{font-size:1.2rem;flex-shrink:0}
+.alert-bar .ab-t{flex:1;min-width:0;font-size:.9rem;font-weight:600}
+.alert-bar .ab-go{font-size:.8rem;color:var(--text-3);white-space:nowrap}
+
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:9px}
+.quick{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 8px;
+  background:var(--bg-soft);border:1px solid var(--line);border-radius:14px;cursor:pointer;
+  font-size:.82rem;font-weight:600;color:var(--text-2);
+  transition:transform .3s var(--spring),border-color .25s,color .25s,background .25s}
+.quick:active{transform:scale(.94)}
+.quick svg{width:22px;height:22px;color:var(--accent)}
+@media (hover:hover){ .quick:hover{color:var(--text);border-color:var(--accent)} }
+
+.act-row{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:.87rem}
+.act-row:first-child{border-top:none}
+.act-ico{flex-shrink:0}
+.act-txt{flex:1;min-width:0}
+.act-txt b{display:block;font-weight:600}
+.act-txt span{color:var(--text-3);font-size:.76rem}
+
 /* ── Schichtplan ── */
 .shift-day{border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:8px;
   background:var(--bg-soft);animation:cardUp .4s var(--ease-ios) both}
@@ -1271,6 +1325,29 @@ var FIREBASE_CONFIG = {
   <div class="shell">
     <nav class="side" id="side"></nav>
     <div class="main">
+
+      <!-- Reiter innerhalb der gewählten Gruppe -->
+      <nav class="subnav" id="subnav"></nav>
+
+      <!-- ============================================================
+           SEITE: START – Überblick über alles Wichtige
+           ============================================================ -->
+      <section class="view" id="view-home">
+        <div class="view-head"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
+        <div class="scroll-area">
+          <div id="homeAlerts"></div>
+          <div class="home-grid" id="homeGrid"></div>
+          <div class="card">
+            <h3>⚡ Schnellzugriff</h3>
+            <p class="hint">Die Bereiche, die du am häufigsten brauchst.</p>
+            <div class="quick-grid" id="quickGrid"></div>
+          </div>
+          <div class="card" id="homeActivityCard">
+            <h3>🕒 Zuletzt passiert</h3>
+            <div id="homeActivity"></div>
+          </div>
+        </div>
+      </section>
 
       <!-- CHAT -->
       <!-- ============================================================
@@ -1913,7 +1990,7 @@ function applyPrefs(){
   r.setProperty('--fs', (PREFS.fs||100)+'%');
   // Farbe der Statusleiste mitziehen
   var m=document.querySelector('meta[name="theme-color"]');
-  if(m) m.setAttribute('content', light?'#F5F3FC':'#08071A');
+  if(m) m.setAttribute('content', light?'#F4F6FA':'#12131C');
 }
 (function initTheme(){
   loadPrefs(); applyPrefs();
@@ -2667,7 +2744,7 @@ function showApp(){
   startPeriodWatcher();       // erkennt Tageswechsel/Intervall-Ablauf
   setTimeout(checkDueReminders, 6000);   // an heute/morgen fällige Aufgaben erinnern
   startPresence();            // "ich bin online" melden
-  showView(canManage() ? 'chef' : 'chat');
+  showView('home');
   birthdayCheck();
   // Regelmäßig neu zeichnen, damit erledigte Aufgaben automatisch ins Archiv wandern
   if(!_archiveTimer) _archiveTimer=setInterval(function(){ if(session) renderTodos(); }, 5*60*1000);
@@ -2744,7 +2821,24 @@ function maybeShowNotifBanner(){
 }
 
 /* ── Navigation ── */
+/* ── Navigation in Gruppen ──
+   Zehn Einträge in einer Leiste sind unübersichtlich. Deshalb gibt es jetzt
+   fünf Gruppen unten; innerhalb einer Gruppe wechselt man oben mit Reitern.
+   Das ist ein Klick mehr, dafür findet man alles sofort. */
+var NAVGROUPS = [
+  {id:'g-start', label:'Start', views:['home'],
+   icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
+  {id:'g-komm', label:'Austausch', views:['chat','dm','ann'],
+   icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
+  {id:'g-arbeit', label:'Arbeit', views:['todos','putzplan','material'],
+   icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
+  {id:'g-team', label:'Team', views:['team','docs'],
+   icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
+  {id:'g-chef', label:'Verwaltung', views:['chef','archive'], manageOnly:true,
+   icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>'}
+];
 var NAV = [
+  {id:'home',  label:'Start',    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
   {id:'chat',  label:'Chat',     icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
   {id:'todos', label:'Aufgaben', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
@@ -2756,30 +2850,70 @@ var NAV = [
   {id:'archive', label:'Archiv', icon:'<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>', manageOnly:true},
   {id:'chef',  label:'Chef',     icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>', manageOnly:true}
 ];
+/* Welche Gruppe gehört zu einer Ansicht? */
+function groupOfView(v){
+  for(var i=0;i<NAVGROUPS.length;i++){
+    if(NAVGROUPS[i].views.indexOf(v)>=0) return NAVGROUPS[i];
+  }
+  return NAVGROUPS[0];
+}
+function navItem(id){
+  for(var i=0;i<NAV.length;i++){ if(NAV[i].id===id) return NAV[i]; }
+  return null;
+}
+
 function buildNav(){
   var side=$('side'), mob=$('mobnav'); side.innerHTML=''; mob.innerHTML='';
-  NAV.forEach(function(it){
-    if(it.manageOnly && !canManage()) return;
-    var svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+it.icon+'</svg>';
+  NAVGROUPS.forEach(function(g){
+    if(g.manageOnly && !canManage()) return;
+    var svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+g.icon+'</svg>';
     function makeBtn(isMob){
       var b=document.createElement('button');
-      b.dataset.view=it.id;
+      b.dataset.group=g.id;
       if(!isMob) b.className='tab';
-      b.innerHTML=svg+'<span>'+it.label+'</span>'+
-        '<span class="badge" data-'+(isMob?'mb':'b')+'adge="'+it.id+'"></span>'+
-        '<span class="ndot" data-ndot="'+it.id+'"></span>';
-      b.addEventListener('click',function(){ showView(it.id); });
+      b.innerHTML=svg+'<span>'+g.label+'</span>'+
+        '<span class="badge" data-'+(isMob?'mb':'b')+'adge="'+g.id+'"></span>'+
+        '<span class="ndot" data-ndot="'+g.id+'"></span>';
+      b.addEventListener('click',function(){ showView(g.views[0]); tick(8); });
       return b;
     }
     side.appendChild(makeBtn(false));
     mob.appendChild(makeBtn(true));
   });
+  buildSubNav();
+}
+
+/* Reiter innerhalb der aktuellen Gruppe (oben unter der Kopfzeile) */
+function buildSubNav(){
+  var bar=$('subnav'); if(!bar) return;
+  var g=groupOfView(currentView);
+  var views=g.views.filter(function(v){
+    if(v==='archive' || v==='chef') return canManage();
+    return true;
+  });
+  if(views.length<2){ bar.innerHTML=''; bar.style.display='none'; return; }
+  bar.style.display='flex';
+  bar.innerHTML=views.map(function(v){
+    var it=navItem(v); if(!it) return '';
+    return '<button class="subtab'+(v===currentView?' on':'')+'" data-subview="'+v+'">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+it.icon+'</svg>'+
+      '<span>'+esc(it.label)+'</span>'+
+      '<span class="sub-dot" data-ndot="'+v+'"></span></button>';
+  }).join('');
+  bar.querySelectorAll('[data-subview]').forEach(function(b){
+    b.addEventListener('click',function(){ showView(b.getAttribute('data-subview')); tick(8); });
+  });
+  updateNavMarkers();
 }
 
 function showView(id){
   currentView=id;
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
-  document.querySelectorAll('[data-view]').forEach(function(t){ t.classList.toggle('active',t.dataset.view===id); });
+  // Untere Leiste: die Gruppe markieren, zu der die Ansicht gehört
+  var g=groupOfView(id);
+  document.querySelectorAll('[data-group]').forEach(function(t){ t.classList.toggle('active',t.dataset.group===g.id); });
+  buildSubNav();
+  if(id==='home') renderHome();
   // Unread-Marker beim Öffnen der Ansicht löschen
   if(id==='chat') unread.chat=false;
   if(id==='ann'){ unread.ann=false; markAnnouncementsRead(); }
@@ -2798,6 +2932,10 @@ function showView(id){
 /* Auffällige Marker (Punkte) auf der Navigation aktualisieren */
 function updateNavMarkers(){
   var map={ chat:unread.chat, ann:unread.ann };
+  // Gruppen erben den Marker ihrer Ansichten
+  NAVGROUPS.forEach(function(g){
+    map[g.id]=g.views.some(function(v){ return map[v] && currentView!==v; });
+  });
   document.querySelectorAll('[data-ndot]').forEach(function(d){
     var on = !!map[d.dataset.ndot] && currentView!==d.dataset.ndot;
     d.classList.toggle('show', on);
@@ -3775,6 +3913,140 @@ function renderBoard(){
   });
 }
 
+/* ============================================================
+   STARTSEITE
+   Ein Bildschirm, der alles Wichtige zeigt: dringende Hinweise oben,
+   Kennzahlen als anklickbare Kacheln, Schnellzugriff, letzte Ereignisse.
+   Der Chef sieht zusätzlich Zahlen über alle seine Studios.
+   ============================================================ */
+function renderHome(){
+  if(!session) return;
+  var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
+  var jetzt=Date.now();
+  var startToday=new Date(); startToday.setHours(0,0,0,0); startToday=startToday.getTime();
+
+  // Zahlen sammeln
+  var offen=0, ueber=0, meine=0, heuteFertig=0;
+  keys.forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(isArchived(t)) return;
+      if(isDone(t)){ if(t.doneAt&&t.doneAt>=startToday) heuteFertig++; return; }
+      offen++;
+      if(t.due && jetzt>t.due) ueber++;
+      if(t.assignedTo===session.uid) meine++;
+    });
+  });
+  var matStudios=0, matArtikel=0;
+  keys.forEach(function(sk){
+    var items=_invAll[sk]||[];
+    var fehlt=items.filter(function(it){ return itemNeed(it)>0; });
+    if(fehlt.length){ matStudios++; matArtikel+=fehlt.length; }
+  });
+  var putzOffen=(_ppTasks||[]).filter(function(t){ return !isDone(t); }).length;
+  var dmUngelesen=dmUnreadCount();
+  var infoNeu=_allAnns.filter(function(a){
+    var forMe = isChef()||!a.target||a.target==='all'||(session.studioKeys||[]).indexOf(a.target)>=0;
+    return forMe && !(a.readBy||[]).some(function(u){ return u===session.uid; });
+  }).length;
+
+  // Begrüßung
+  var h=new Date().getHours();
+  var gruss = h<11?'Guten Morgen':(h<18?'Hallo':'Guten Abend');
+  var vorname=(session.name||'').split(' ')[0];
+  var g1=$('homeGreet'), g2=$('homeSub');
+  if(g1) g1.textContent=gruss+', '+vorname;
+  if(g2) g2.textContent = canManage()
+    ? 'Überblick über '+(isChef()?'alle Studios':'deine Studios')+' · '+new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'})
+    : new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'});
+
+  // Dringende Hinweise oben
+  var al=$('homeAlerts');
+  if(al){
+    var alerts=[];
+    if(ueber) alerts.push({k:'',i:'⚠️',t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
+    if(matArtikel) alerts.push({k:' warn',i:'📦',t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),v:'material'});
+    if(infoNeu) alerts.push({k:' warn',i:'📣',t:infoNeu+(infoNeu===1?' neue Info':' neue Infos')+' von der Leitung',v:'ann'});
+    al.innerHTML=alerts.map(function(a){
+      return '<div class="alert-bar'+a.k+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+'>'+
+        '<span class="ab-ico">'+a.i+'</span><span class="ab-t">'+esc(a.t)+'</span>'+
+        '<span class="ab-go">ansehen ›</span></div>';
+    }).join('');
+    al.querySelectorAll('[data-go]').forEach(function(el){
+      el.addEventListener('click',function(){
+        var f=el.getAttribute('data-f');
+        if(f){ _todoMode=f; document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
+        showView(el.getAttribute('data-go'));
+      });
+    });
+  }
+
+  // Kennzahlen-Kacheln
+  var grid=$('homeGrid');
+  if(grid){
+    var tiles=[
+      {n:offen, l:'offene Aufgaben', v:'todos', cls:offen?'':'ok'},
+      {n:ueber, l:'überfällig', v:'todos', cls:ueber?'warn':'muted', f:'faellig'},
+      {n:heuteFertig, l:'heute erledigt', v:'todos', cls:'ok'},
+      {n:putzOffen, l:'im Putzplan offen', v:'putzplan', cls:putzOffen?'':'muted'}
+    ];
+    if(!canManage()) tiles.splice(3,0,{n:meine, l:'für dich', v:'todos', cls:meine?'':'muted', f:'meine'});
+    if(canManage()) tiles.push({n:matStudios, l:'Studios mit Materialbedarf', v:'material', cls:matStudios?'warn':'ok'});
+    tiles.push({n:dmUngelesen, l:'neue Nachrichten', v:'dm', cls:dmUngelesen?'':'muted'});
+    grid.innerHTML=tiles.map(function(t){
+      return '<div class="home-tile '+t.cls+'" data-go="'+t.v+'"'+(t.f?' data-f="'+t.f+'"':'')+'>'+
+        '<div class="hn">'+t.n+'</div><div class="hl">'+esc(t.l)+'</div></div>';
+    }).join('');
+    grid.querySelectorAll('[data-go]').forEach(function(el){
+      el.addEventListener('click',function(){
+        var f=el.getAttribute('data-f');
+        if(f){ _todoMode=f; document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
+        tick(8); showView(el.getAttribute('data-go'));
+      });
+    });
+  }
+
+  // Schnellzugriff
+  var q=$('quickGrid');
+  if(q){
+    var items=['chat','todos','putzplan','material','team','docs','dm','ann'];
+    if(canManage()) items.push('chef');
+    q.innerHTML=items.map(function(v){
+      var it=navItem(v); if(!it) return '';
+      return '<div class="quick" data-go="'+v+'">'+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+it.icon+'</svg>'+
+        '<span>'+esc(it.label)+'</span></div>';
+    }).join('');
+    q.querySelectorAll('[data-go]').forEach(function(el){
+      el.addEventListener('click',function(){ tick(8); showView(el.getAttribute('data-go')); });
+    });
+  }
+
+  // Zuletzt passiert
+  var act=$('homeActivity');
+  if(act){
+    var ev=[];
+    keys.forEach(function(sk){
+      (cachedTodos[sk]||[]).forEach(function(t){
+        if(t.doneAt) ev.push({ts:t.doneAt,i:'✅',t:(t.doneBy||'Jemand')+' hat „'+(t.title||'')+'" erledigt',s:studioName(sk)});
+      });
+    });
+    _allAnns.slice(0,5).forEach(function(a){
+      ev.push({ts:a.ts,i:'📣',t:(a.from||'Leitung')+': '+(a.text||'').slice(0,70),s:'Info'});
+    });
+    (_board||[]).slice(0,3).forEach(function(b){
+      ev.push({ts:b.ts,i:'📌',t:(b.name||'')+' am Brett: '+(b.text||'').slice(0,60),s:'Team'});
+    });
+    ev.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    ev=ev.slice(0,8);
+    act.innerHTML = ev.length
+      ? ev.map(function(e){
+          return '<div class="act-row"><span class="act-ico">'+e.i+'</span>'+
+            '<span class="act-txt"><b>'+esc(e.t)+'</b><span>'+esc(e.s)+' · '+fmtDateTime(e.ts)+'</span></span></div>';
+        }).join('')
+      : '<p style="color:var(--text-3);font-size:.9rem">Noch nichts passiert.</p>';
+  }
+}
+
 /* ── Tagesüberblick ──
    Kurze Zusammenfassung ganz oben: Was ist heute zu tun? Jede Kachel ist
    anklickbar und setzt den passenden Filter. */
@@ -4001,6 +4273,7 @@ function renderTodos(){
     : (totalAll ? (doneAll+' von '+totalAll+' erledigt') : '');
   bindTodoClicks(area);
   renderToday();
+  if(currentView==='home') renderHome();
   updateBadges();
   if(canManage()){ renderStudioGrid(); renderArchive(); renderDashboard(); }
 }
