@@ -33,33 +33,51 @@ Dauert etwa zwei Minuten und braucht **kein** GitHub.
 ```bash
 npm install -g firebase-tools
 firebase login
+cd ~
+git clone https://github.com/semihgedik2006-glitch/K-rper-formen-.git
 ```
 
 Beim Login öffnet sich der Browser — mit dem Google-Konto anmelden, das Zugriff
 auf das Firebase-Projekt `formenchat` hat.
 
+> Ist `firebase-tools` schon installiert, meldet npm eventuell einen
+> Rechte-Fehler (`EACCES`). Das betrifft nur den *Update*-Versuch und ist
+> egal — mit `firebase --version` prüfen, ob es da ist. Nur wenn der Befehl
+> gar nicht gefunden wird, muss wirklich installiert werden.
+
 ### Bei jeder Änderung
 
 ```bash
-cd ~/Pfad/zu/K-rper-formen-
+cd ~/K-rper-formen-
 git pull
-firebase deploy --only hosting --project formenchat
+firebase deploy --only hosting
 ```
 
 Nach etwa 30 Sekunden ist die App live.
 
+> **Immer `--only hosting` verwenden.**
+> Ein reines `firebase deploy` würde auch die Cloud Functions mitnehmen — und
+> die verlieren dabei ihre Geheimschlüssel. `SMTP_PASS`, `BDAY_TEST_KEY` und
+> die übrigen Werte liegen als GitHub-Secrets und werden erst im Workflow in
+> `functions/.env` geschrieben. Auf dem eigenen Rechner gibt es diese Datei
+> nicht; ein Deploy von dort lädt die Functions ohne diese Werte hoch, und
+> danach funktionieren Termin-Mails und Monatsbericht nicht mehr.
+>
+> **Faustregel: die App vom eigenen Rechner, die Functions über GitHub.**
+
 ### Einzelne Teile deployen
 
 ```bash
-# nur die Sicherheitsregeln
-firebase deploy --only firestore:rules --project formenchat
+# nur die App (der Normalfall vom eigenen Rechner)
+firebase deploy --only hosting
 
-# nur die Cloud Functions
-firebase deploy --only functions --project formenchat
-
-# alles zusammen
-firebase deploy --project formenchat
+# nur die Sicherheitsregeln – unbedenklich, braucht keine Geheimschlüssel
+firebase deploy --only firestore:rules
 ```
+
+Die **Cloud Functions** bitte über GitHub deployen lassen (siehe Kasten oben).
+Muss es doch einmal vom eigenen Rechner sein, vorher `functions/.env` mit allen
+Werten anlegen — sonst gehen sie beim Hochladen verloren.
 
 ---
 
