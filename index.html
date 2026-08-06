@@ -2182,6 +2182,20 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
           if(nw.state==='installed' && navigator.serviceWorker.controller) nw.postMessage('SKIP_WAITING');
         });
       });
+      // Auf dem iPhone bleibt eine installierte App im Hintergrund liegen und
+      // lädt beim Zurückholen nicht neu. Deshalb prüfen wir bei jedem
+      // Zurückkommen aktiv, ob es eine neue Version gibt – höchstens einmal
+      // pro Minute, damit es nichts kostet und nichts bremst.
+      var lastCheck=0;
+      function checkUpdate(){
+        if(document.hidden) return;
+        var now=Date.now();
+        if(now-lastCheck < 60000) return;
+        lastCheck=now;
+        reg.update().catch(function(){});
+      }
+      document.addEventListener('visibilitychange', checkUpdate);
+      window.addEventListener('focus', checkUpdate);
     }).catch(function(){});
     var reloaded=false;
     navigator.serviceWorker.addEventListener('controllerchange',function(){ if(reloaded) return; reloaded=true; location.reload(); });

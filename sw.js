@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = 'studiochat-' + VERSION;
 const PRECACHE = ['./index.html', './icon.svg'];
 
@@ -55,10 +55,13 @@ self.addEventListener('fetch', function (e) {
       h.indexOf('google-analytics') >= 0 || h.indexOf('analytics.google') >= 0 ||
       h.indexOf('script.google') >= 0 || h.indexOf('script.googleusercontent') >= 0) return;
 
-  // HTML/Navigation: immer zuerst Netz (kein „alte Version"-Problem), offline aus Cache
+  // HTML/Navigation: immer zuerst Netz (kein „alte Version"-Problem), offline aus Cache.
+  // WICHTIG: cache:'no-store'. GitHub Pages schickt "max-age=600" mit, sonst würde
+  // der Browser bis zu 10 Minuten lang seine eigene alte Kopie liefern – dann sieht
+  // man trotz "Netz zuerst" die alte App.
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request).then(function (r) {
+      fetch(e.request, { cache: 'no-store' }).then(function (r) {
         const cp = r.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, cp); });
         return r;
       }).catch(function () { return caches.match(e.request).then(function (m) { return m || caches.match('./index.html'); }); })
