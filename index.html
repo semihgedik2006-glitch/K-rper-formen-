@@ -1243,6 +1243,9 @@ html{font-size:var(--fs,100%)}
 .msg-audio audio{height:36px;max-width:240px}
 .au-len{font-size:.74rem;color:var(--text-3);white-space:nowrap}
 
+/* Chef-Zugänge */
+.chef-me{font-size:.76rem;color:var(--text-3);font-style:italic;white-space:nowrap}
+
 /* Schalter (Melde-Einstellungen) */
 .sw-row{display:flex;align-items:center;gap:14px;padding:12px 0;cursor:pointer;
   border-top:1px solid var(--line)}
@@ -2226,6 +2229,7 @@ var FIREBASE_CONFIG = {
               <select class="inp" id="emRole">
                 <option value="mitarbeiter">Mitarbeiter – arbeitet in seinen Studios mit</option>
                 <option value="leiter">Studio-Leiter – verwaltet seine Studios wie ein Chef</option>
+                <option value="chef">Chef – voller Zugriff auf alles</option>
               </select>
               <p class="hint" id="emRoleHint" style="margin:6px 0 0">Ein Studio-Leiter darf in seinen Studios Aufgaben und Putzpläne erstellen, Material pflegen und Infos posten – aber keine Zugänge anlegen.</p></div>
             <div class="field"><label>Studios zuordnen</label>
@@ -2240,6 +2244,15 @@ var FIREBASE_CONFIG = {
             <h3>👥 Team</h3>
             <p class="hint">Rolle und Studios anpassen oder Zugang entfernen.</p>
             <div id="empList"></div>
+          </div>
+          <!-- Chef-Konten standen bisher in keiner Liste: die Team-Übersicht
+               zeigt nur Mitarbeiter und Leiter. Man konnte also nicht sehen,
+               wer alles Vollzugriff hat. -->
+          <div class="card" data-chef-only="1">
+            <h3>👑 Chef-Zugänge</h3>
+            <p class="hint">Alle Konten mit vollem Zugriff auf alle Studios. Sie bekommen
+              auch den Monatsbericht per E-Mail.</p>
+            <div id="chefList"></div>
           </div>
           <div class="card" data-chef-only="1">
             <h3>🧭 Onboarding-Checkliste</h3>
@@ -3576,7 +3589,9 @@ var regRole = 'mitarbeiter';
   });
 
   if(location.hash.toLowerCase()==='#chef'){
-    // Chef-Konto anlegen (einmalig für die Leitung)
+    // Chef-Konto anlegen – nur für die allererste Einrichtung gedacht.
+    // Seit August lehnen die Sicherheitsregeln das ab, sobald es bereits
+    // einen Chef gibt: weitere Chef-Zugänge legt ein Chef im Portal an.
     regRole='chef';
     $('rolePick').style.display='none';
     $('rgStudioWrap').style.display='none';
@@ -3623,6 +3638,9 @@ function doRegister(){
   if(regRole==='mitarbeiter' && !studios.length){ $('regErr').textContent='Bitte mindestens ein Studio auswählen.'; return; }
   if(pw!==pw2){ $('regErr').textContent='Passwörter stimmen nicht überein.'; return; }
   if(regRole==='chef' && pin!==CHEF_PIN){ $('regErr').textContent='Falscher Chef-Code.'; return; }
+  // Hinweis: Der Code hier ist nur eine Bequemlichkeit. Die eigentliche
+  // Absicherung stehen in firestore.rules – ein Code im Quelltext der App
+  // kann jeder lesen, der die Seite öffnet.
 
   var btn=$('registerBtn'); btn.disabled=true; btn.textContent='…';
   _registering=true;
@@ -3713,6 +3731,7 @@ function showApp(){
   }
   if(canManage()) listenEmployees();     // Leiter braucht sie für Geburtstage/Lesestand
   if(isChef()){
+    listenChefs();
     buildEmpStudios();
     listenArchives();                       // Wochen-Sicherungen anzeigen
     setTimeout(function(){ maybeArchiveWeek(); }, 4000);
@@ -4168,6 +4187,50 @@ function createEmployee(){
     });
 }
 
+/* ── Chef-Zugänge ──
+   Die Team-Liste zeigt nur Mitarbeiter und Leiter. Wer alles Vollzugriff hat,
+   war dadurch nirgends sichtbar – aufgefallen ist es erst, als der
+   Monatsbericht an fünf Empfänger ging. Diese Liste macht es sichtbar. */
+var _chefs=[], _chefUnsub=null;
+function listenChefs(){
+  if(!isChef()) return;
+  if(_chefUnsub){ _chefUnsub(); _chefUnsub=null; }
+  _chefUnsub=db.collection('users').where('role','==','chef')
+    .onSnapshot(function(snap){
+      _chefs=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); })
+        .sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+      renderChefs();
+    }, function(e){ console.error('Chef-Konten:',e.message); });
+}
+function renderChefs(){
+  var box=$('chefList'); if(!box) return;
+  if(!_chefs.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Keine gefunden.</p>'; return; }
+  box.innerHTML=_chefs.map(function(c){
+    var ich = c.uid===session.uid;
+    // Sich selbst die Rechte zu entziehen wäre die schnellste Art, sich
+    // auszusperren – deshalb geht das hier nicht.
+    var btn = ich
+      ? '<span class="chef-me">das bist du</span>'
+      : '<button class="mini-x" data-chefdown="'+esc(c.uid)+'">zu Mitarbeiter machen</button>';
+    return '<div class="emp"><div class="emp-main"><b>'+esc(c.name||'Ohne Namen')+'</b>'+
+      '<span class="emp-sub">'+esc(c.email||'keine E-Mail hinterlegt')+'</span></div>'+
+      btn+'</div>';
+  }).join('');
+  box.querySelectorAll('[data-chefdown]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var uid=b.getAttribute('data-chefdown');
+      var c=_chefs.filter(function(x){ return x.uid===uid; })[0];
+      if(!confirm('„'+((c&&c.name)||'Dieses Konto')+'" die Chef-Rechte entziehen?\n\n'+
+                  'Das Konto wird zum Mitarbeiter ohne Studio-Zuordnung und bekommt '+
+                  'keinen Monatsbericht mehr.')) return;
+      db.collection('users').doc(uid)
+        .update({ role:'mitarbeiter', studios:[], studioKeys:[] })
+        .then(function(){ toast('Rechte entzogen ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
+
 function listenEmployees(){
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   _empUnsub=db.collection('users').where('role','in',['mitarbeiter','leiter'])
@@ -4454,6 +4517,7 @@ function stopListeners(){
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
   if(_dmThreadsUnsub){ _dmThreadsUnsub(); _dmThreadsUnsub=null; }
   if(_obUnsub){ _obUnsub(); _obUnsub=null; }
+  if(_chefUnsub){ _chefUnsub(); _chefUnsub=null; }
   if(_tplUnsub){ _tplUnsub(); _tplUnsub=null; }
   if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
