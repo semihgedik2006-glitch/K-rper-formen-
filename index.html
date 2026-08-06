@@ -1050,6 +1050,27 @@ html{font-size:var(--fs,100%)}
 .sub-item.done .stxt{text-decoration:line-through;color:var(--text-3)}
 .sub-count{font-size:.76rem;color:var(--text-3);margin-left:6px}
 
+/* ── Drucken ──
+   Der Putzplan hängt in vielen Studios als Zettel an der Wand. Beim Drucken
+   wird deshalb nur #printArea ausgegeben: schwarz auf weiß, ohne Menü,
+   ohne Knöpfe, mit Spalten zum Abhaken von Hand. */
+#printArea{display:none}
+@media print{
+  body{background:#fff!important;color:#000!important}
+  body > *{display:none!important}
+  #printArea{display:block!important;padding:0;color:#000;font-family:Arial,Helvetica,sans-serif}
+  #printArea h1{font-size:20pt;margin:0 0 2mm}
+  #printArea .p-sub{font-size:10pt;color:#444;margin:0 0 6mm}
+  #printArea table{width:100%;border-collapse:collapse;font-size:11pt}
+  #printArea th{background:#eee;border:1px solid #999;padding:2mm 3mm;text-align:left;font-size:10pt}
+  #printArea td{border:1px solid #999;padding:3mm;vertical-align:top}
+  #printArea .p-box{width:8mm}
+  #printArea .p-sign{width:32mm}
+  #printArea .p-note{margin-top:6mm;font-size:10pt}
+  #printArea .p-foot{margin-top:8mm;font-size:9pt;color:#666}
+  @page{margin:14mm}
+}
+
 /* "Ältere Nachrichten laden" ganz oben im Chat */
 .load-older{display:block;margin:4px auto 12px;background:var(--bg-2);
   border:1px solid var(--line-2);color:var(--text-2);font-family:var(--font-body);
@@ -1559,10 +1580,11 @@ var FIREBASE_CONFIG = {
         <div class="scroll-area">
           <div class="mat-bar">
             <select class="inp" id="ppStudio"></select>
+            <button class="btn btn-ghost btn-sm no-print" id="ppPrint" title="Putzplan ausdrucken">🖨 Drucken</button>
           </div>
 
           <!-- Liste der Putzaufgaben des gewählten Studios -->
-          <div class="card">
+          <div class="card" id="ppCard">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3 id="ppListTitle">Putzplan</h3>
               <span class="todo-count" id="ppProgress"></span>
@@ -1838,6 +1860,17 @@ var FIREBASE_CONFIG = {
             <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
           </div>
           <div class="card">
+            <h3>📋 Vorlagen</h3>
+            <p class="hint">Aufgaben, die immer wieder gleich sind, einmal speichern und
+              danach mit zwei Klicks einsetzen.</p>
+            <div class="field"><select class="inp" id="tplSelect"></select></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" id="tplUse">Vorlage einsetzen</button>
+              <button class="btn btn-ghost btn-sm" id="tplSave" data-chef-only="1">Formular als Vorlage speichern</button>
+              <button class="btn btn-ghost btn-sm" id="tplDel" data-chef-only="1">Vorlage löschen</button>
+            </div>
+          </div>
+          <div class="card">
             <h3>✅ Neue Aufgabe erstellen</h3>
             <p class="hint">Einem oder allen Studios zuweisen.</p>
             <div class="field"><label for="ntTitle">Aufgabe</label>
@@ -1999,6 +2032,10 @@ var FIREBASE_CONFIG = {
   </div>
   <nav class="mobnav" id="mobnav"></nav>
 </div>
+
+<!-- Druck-Bereich: normalerweise unsichtbar. Beim Drucken wird NUR dieser
+     Kasten gedruckt – schwarz auf weiß, ohne Menü und ohne Knöpfe. -->
+<div id="printArea"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -2609,15 +2646,29 @@ function hideUndo(){
   var bar=$('undoBar'); if(bar) bar.classList.remove('show');
   clearTimeout(_undoTimer); _undoFn=null;
 }
-/* Eine gelöschte Aufgabe zurückholen (mit derselben Kennung wie vorher). */
-function offerUndoTodo(sk, backup){
-  offerUndo('Aufgabe gelöscht', function(){
-    var id=backup.id, data={};
-    Object.keys(backup).forEach(function(k){ if(k!=='id') data[k]=backup[k]; });
-    return db.collection('studios').doc(sk).collection('todos').doc(id).set(data)
-      .then(function(){ toast('Aufgabe wiederhergestellt ✓'); })
+/* Allgemein: einen gelöschten Eintrag zurückholen – mit derselben Kennung,
+   damit alles (Reihenfolge, Verweise) wieder passt.
+   ref  = das Dokument in der Datenbank
+   item = eine Kopie der Daten VOR dem Löschen (inkl. id)
+   was  = wie es in der Leiste heißen soll, z. B. "Aufgabe" */
+function offerUndoDoc(ref, item, was, danach){
+  if(!item) return;
+  var data={};
+  Object.keys(item).forEach(function(k){ if(k!=='id') data[k]=item[k]; });
+  offerUndo(was+' gelöscht', function(){
+    return ref.set(data)
+      .then(function(){ toast(was+' wiederhergestellt ✓'); if(danach) danach(); })
       .catch(function(e){ toast(errMsg(e),true); });
   });
+}
+/* Eine gelöschte Aufgabe zurückholen. */
+function offerUndoTodo(sk, backup){
+  offerUndoDoc(db.collection('studios').doc(sk).collection('todos').doc(backup.id), backup, 'Aufgabe');
+}
+/* Kopie eines Eintrags aus einer Liste ziehen (vor dem Löschen aufrufen). */
+function copyOf(list, id){
+  var x=(list||[]).filter(function(e){ return e.id===id; })[0];
+  return x ? JSON.parse(JSON.stringify(x)) : null;
 }
 
 var AUTH_ERRORS = {
@@ -2943,6 +2994,7 @@ function showApp(){
   listenAllUsers();
   listenDmThreads();
   listenOnboarding();
+  if(canManage()) listenTemplates();         // Aufgaben-Vorlagen (nur Verwaltung)
   initMessaging();
   maybeShowNotifBanner();
   startPeriodWatcher();       // erkennt Tageswechsel/Intervall-Ablauf
@@ -3615,6 +3667,7 @@ function stopListeners(){
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
   if(_dmThreadsUnsub){ _dmThreadsUnsub(); _dmThreadsUnsub=null; }
   if(_obUnsub){ _obUnsub(); _obUnsub=null; }
+  if(_tplUnsub){ _tplUnsub(); _tplUnsub=null; }
   if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
@@ -4127,7 +4180,9 @@ function renderBoard(){
   }).join('');
   box.querySelectorAll('[data-bbdel]').forEach(function(x){
     x.addEventListener('click',function(){
-      db.collection('board').doc(x.getAttribute('data-bbdel')).delete()
+      var id=x.getAttribute('data-bbdel'), backup=copyOf(_board, id);
+      db.collection('board').doc(id).delete()
+        .then(function(){ offerUndoDoc(db.collection('board').doc(id), backup, 'Beitrag'); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -4722,9 +4777,11 @@ function renderAnnouncements(anns){
     });
     area.querySelectorAll('.ann-del').forEach(function(b){
       b.addEventListener('click',function(){
-        if(confirm('Ankündigung löschen?\n\nSie verschwindet bei allen Mitarbeitern.'))
-          db.collection('announcements').doc(b.dataset.id).delete()
-            .catch(function(e){ toast(errMsg(e),true); });
+        if(!confirm('Ankündigung löschen?\n\nSie verschwindet bei allen Mitarbeitern.')) return;
+        var id=b.dataset.id, backup=copyOf(_allAnns, id);
+        db.collection('announcements').doc(id).delete()
+          .then(function(){ offerUndoDoc(db.collection('announcements').doc(id), backup, 'Ankündigung'); })
+          .catch(function(e){ toast(errMsg(e),true); });
       });
     });
   }
@@ -5345,6 +5402,32 @@ function loadPutzplan(sk){
     }, function(e){ console.error('Putz-Notizen:',e.message); });
 }
 
+/* ── Putzplan ausdrucken ──
+   Erzeugt einen sauberen Wandzettel: eine Zeile je Aufgabe, dazu Kästchen
+   zum Abhaken und ein Feld für das Kürzel. Funktioniert auch auf dem iPhone
+   über „Teilen → Drucken". */
+function printPutzplan(){
+  var pa=$('printArea'); if(!pa) return;
+  var name=studioName(_ppStudioKey)||'Studio';
+  var list=_ppTasks.slice().sort(function(a,b){ return (isDone(a)-isDone(b))||((a.ts||0)-(b.ts||0)); });
+  if(!list.length){ toast('Für dieses Studio gibt es noch keinen Putzplan.',true); return; }
+  var heute=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  var rows=list.map(function(t){
+    return '<tr><td>'+esc(t.title||'')+'</td>'+
+      '<td>'+esc(t.recurring?repLabelFor(t):'einmalig')+'</td>'+
+      '<td class="p-box"></td><td class="p-sign"></td></tr>';
+  }).join('');
+  var notizen=(_ppNotes||[]).slice(0,5).map(function(n){
+    return '<div>• '+esc(n.text||'')+' <i>('+esc(n.by||'')+')</i></div>';
+  }).join('');
+  pa.innerHTML='<h1>Putzplan · '+esc(name)+'</h1>'+
+    '<p class="p-sub">Stand: '+esc(heute)+'</p>'+
+    '<table><tr><th>Aufgabe</th><th>Rhythmus</th><th>Erledigt</th><th>Kürzel</th></tr>'+rows+'</table>'+
+    (notizen?'<div class="p-note"><b>Notizen vom Team:</b>'+notizen+'</div>':'')+
+    '<p class="p-foot">StudioChat · Körperformen — abgehakte Zettel bitte am Wochenende in die App übertragen.</p>';
+  window.print();
+}
+
 function renderPutzplan(){
   var box=$('ppList'); if(!box) return;
   // offene zuerst, dann erledigte; innerhalb nach Erstellzeit
@@ -5398,8 +5481,13 @@ function bindPutzplanClicks(box){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-del');
       if(!confirm('Putzaufgabe löschen?\n\nSie verschwindet aus dem Putzplan dieses Studios. Bereits gesicherte Wochen bleiben unverändert.')) return;
-      db.collection('studios').doc(_ppStudioKey).collection('cleaning').doc(id).delete()
-        .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
+      var sk=_ppStudioKey, backup=copyOf(_ppTasks, id);
+      db.collection('studios').doc(sk).collection('cleaning').doc(id).delete()
+        .then(function(){
+          schedulePutzplanSheets(sk);
+          offerUndoDoc(db.collection('studios').doc(sk).collection('cleaning').doc(id),
+            backup, 'Putzaufgabe', function(){ schedulePutzplanSheets(sk); });
+        })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -6145,6 +6233,83 @@ function sendChecklistDM(peerUid, peerName, items){
 /* ============================================================
    ONBOARDING-CHECKLISTE
    ============================================================ */
+/* ── Aufgaben-Vorlagen ──
+   Viele Aufgaben sind jede Woche gleich. Der Chef speichert sie einmal als
+   Vorlage; danach füllt ein Klick das Formular aus. Liegt in config/
+   taskTemplates – lesen darf jeder, schreiben nur der Chef. */
+var _templates=[], _tplUnsub=null;
+function listenTemplates(){
+  if(_tplUnsub){ _tplUnsub(); _tplUnsub=null; }
+  _tplUnsub=db.collection('config').doc('taskTemplates').onSnapshot(function(doc){
+    _templates=(doc.exists && doc.data().list)||[];
+    renderTemplates();
+  }, function(e){ console.error('Vorlagen:',e.message); });
+}
+function saveTemplates(){
+  return db.collection('config').doc('taskTemplates').set({ list:_templates }, {merge:true})
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+function renderTemplates(){
+  var sel=$('tplSelect'); if(!sel) return;
+  var cur=sel.value;
+  sel.innerHTML = _templates.length
+    ? _templates.map(function(t,i){ return '<option value="'+i+'">'+esc(t.name||('Vorlage '+(i+1)))+'</option>'; }).join('')
+    : '<option value="">Noch keine Vorlage gespeichert</option>';
+  if(cur && _templates[+cur]) sel.value=cur;
+}
+/* Vorlage in das Formular übernehmen (Studios wählt man weiterhin selbst) */
+function useTemplate(){
+  var sel=$('tplSelect'); if(!sel) return;
+  var i=parseInt(sel.value,10);
+  var t=(i>=0 && !isNaN(i)) ? _templates[i] : null;
+  if(!t){ toast('Bitte zuerst eine Vorlage speichern.',true); return; }
+  $('ntTitle').value=t.title||'';
+  $('ntDesc').value=t.desc||'';
+  if($('ntSteps')) $('ntSteps').value=(t.steps||[]).join('\n');
+  $('ntRepeat').value=t.recurring||'';
+  $('ntCustomWrap').style.display = t.recurring==='custom' ? 'block' : 'none';
+  if(t.recurring==='custom'){
+    $('ntIntN').value=t.intervalN||6;
+    $('ntIntUnit').value=t.intervalUnit||'h';
+  }
+  saveDraft();
+  toast('Vorlage eingesetzt – jetzt Studios wählen');
+  var f=$('ntTitle'); if(f && f.scrollIntoView) f.scrollIntoView({behavior:'smooth',block:'center'});
+}
+/* Das aktuelle Formular als Vorlage ablegen */
+function saveAsTemplate(){
+  var title=($('ntTitle').value||'').trim();
+  if(!title){ toast('Bitte erst eine Aufgabe eintragen.',true); return; }
+  var name=prompt('Name der Vorlage:', title);
+  if(!name) return;
+  var steps=(($('ntSteps')&&$('ntSteps').value)||'').split('\n')
+    .map(function(x){ return x.trim(); }).filter(function(x){ return !!x; }).slice(0,20);
+  var t={ name:name.slice(0,60), title:title, desc:($('ntDesc').value||'').trim(),
+          steps:steps, recurring:$('ntRepeat').value||'' };
+  if(t.recurring==='custom'){
+    t.intervalN=parseInt($('ntIntN').value,10)||1;
+    t.intervalUnit=$('ntIntUnit').value;
+  }
+  // Gleicher Name? Dann ersetzen statt doppelt anlegen.
+  var idx=-1;
+  _templates.forEach(function(x,i){ if(x.name===t.name) idx=i; });
+  if(idx>=0) _templates[idx]=t; else _templates.push(t);
+  if(_templates.length>30){ toast('Höchstens 30 Vorlagen.',true); _templates.pop(); return; }
+  renderTemplates();   // Liste sofort aktualisieren, nicht erst wenn der Server antwortet
+  var sel=$('tplSelect'); if(sel) sel.value=String(idx>=0?idx:_templates.length-1);
+  saveTemplates().then(function(){ toast('Vorlage „'+t.name+'" gespeichert ✓'); });
+}
+function deleteTemplate(){
+  var sel=$('tplSelect'); if(!sel) return;
+  var i=parseInt(sel.value,10);
+  var t=(i>=0 && !isNaN(i)) ? _templates[i] : null;
+  if(!t){ toast('Keine Vorlage ausgewählt.',true); return; }
+  if(!confirm('Vorlage „'+t.name+'" löschen?')) return;
+  _templates.splice(i,1);
+  renderTemplates();
+  saveTemplates().then(function(){ toast('Vorlage gelöscht'); });
+}
+
 var _onboardSteps=[], _obUnsub=null;
 function listenOnboarding(){
   if(_obUnsub){ _obUnsub(); _obUnsub=null; }
@@ -6671,6 +6836,7 @@ function bindActions(){
   });
 
   // ── Putzplan ──
+  var ppPr=$('ppPrint'); if(ppPr) ppPr.addEventListener('click',printPutzplan);
   var ppNoteAdd=$('ppNoteAdd'); if(ppNoteAdd) ppNoteAdd.addEventListener('click',addPutzNote);
   var ppNoteInp=$('ppNoteInput'); if(ppNoteInp) ppNoteInp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addPutzNote(); } });
   if(canManage()){
@@ -6718,6 +6884,11 @@ function bindActions(){
         return maybeArchiveWeek(true).then(function(){ toast('Woche gesichert ✓'); });
       });
     });
+
+    // Aufgaben-Vorlagen
+    var tu=$('tplUse'); if(tu) tu.addEventListener('click', useTemplate);
+    var tsv=$('tplSave'); if(tsv) tsv.addEventListener('click', saveAsTemplate);
+    var td=$('tplDel'); if(td) td.addEventListener('click', deleteTemplate);
 
     // Auswertung: Zeitraum wechseln + Bericht speichern
     var rr=$('repRange'); if(rr) rr.addEventListener('change', renderReport);
