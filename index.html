@@ -404,6 +404,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background:rgba(34,211,238,.1);padding:3px 9px;border-radius:999px}
 .ann-read{display:inline-block;margin-top:8px;margin-left:6px;font-size:.72rem;color:var(--text-2);
   font-weight:600;background:rgba(255,255,255,.06);padding:3px 9px;border-radius:999px}
+/* Angeheftete Info: bleibt oben und ist deutlich hervorgehoben */
+.ann.pinned{border-left-color:var(--accent);background:linear-gradient(180deg,rgba(56,189,248,.07),transparent)}
+.ann-pin{background:none;border:none;cursor:pointer;font-size:.95rem;opacity:.35;padding:2px 4px;
+  transition:opacity .2s,transform .25s var(--spring)}
+.ann-pin.on{opacity:1}
+.ann-pin:active{transform:scale(.88)}
+@media (hover:hover){ .ann-pin:hover{opacity:.85} }
 
 /* ── Cards / Chef ── */
 .card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
@@ -522,6 +529,21 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-radius:999px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;
   transition:.3s var(--ease-out);font-weight:600;font-size:.9rem;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Rückgängig-Leiste (Löschen ist damit nicht mehr endgültig) */
+.undobar{position:fixed;bottom:calc(80px + var(--sab));left:50%;
+  transform:translateX(-50%) translateY(16px);z-index:95;display:none;
+  align-items:center;gap:14px;background:var(--bg-2);border:1px solid var(--line-2);
+  color:var(--text);padding:10px 12px 10px 18px;border-radius:999px;
+  box-shadow:var(--shadow-lg);opacity:0;font-size:.88rem;font-weight:600;
+  max-width:calc(100vw - 32px);
+  transition:opacity .3s var(--ease-out),transform .44s var(--spring)}
+.undobar.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
+.undobar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.undobar button{flex-shrink:0;background:var(--accent);border:none;color:var(--on-accent);
+  font-family:var(--font-body);font-weight:700;font-size:.84rem;padding:7px 15px;
+  border-radius:999px;cursor:pointer;transition:transform .25s var(--spring)}
+.undobar button:active{transform:scale(.94)}
 
 @media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation:none!important}}
 
@@ -957,6 +979,7 @@ html{font-size:var(--fs,100%)}
   margin-bottom:11px;cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
   background:rgba(251,78,109,.12);border:1px solid rgba(251,78,109,.4)}
 .alert-bar.warn{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.42)}
+.alert-bar.pin{background:rgba(56,189,248,.11);border-color:rgba(56,189,248,.4)}
 .alert-bar .ab-ico{font-size:1.2rem;flex-shrink:0}
 .alert-bar .ab-t{flex:1;min-width:0;font-size:.9rem;font-weight:600}
 .alert-bar .ab-go{font-size:.8rem;color:var(--text-3);white-space:nowrap}
@@ -976,6 +999,65 @@ html{font-size:var(--fs,100%)}
 .act-txt{flex:1;min-width:0}
 .act-txt b{display:block;font-weight:600}
 .act-txt span{color:var(--text-3);font-size:.76rem}
+
+/* ── Chef-Bereich: Reiter ──
+   Der Chef-Bereich war eine sehr lange Seite. Jetzt liegt jeder Themenblock
+   auf einem eigenen Reiter – ein Klick mehr, dafür sofort auffindbar. */
+.chef-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:16px;
+  padding-bottom:2px}
+.chef-tabs::-webkit-scrollbar{display:none}
+.chef-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+  background:var(--bg-2);border:1.5px solid var(--line);color:var(--text-2);
+  padding:9px 15px;border-radius:999px;font-family:var(--font-body);font-weight:600;
+  font-size:.87rem;cursor:pointer;
+  transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
+.chef-tab:active{transform:scale(.95)}
+.chef-tab.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chef-pane{animation:cardUp .4s var(--ease-ios) both}
+
+/* Zeile "Braucht Aufmerksamkeit" */
+.att-row{display:flex;align-items:center;gap:11px;padding:11px 0;
+  border-top:1px solid var(--line);cursor:pointer}
+.att-row:first-child{border-top:none}
+.att-ico{flex-shrink:0;font-size:1.05rem}
+.att-txt{flex:1;min-width:0;font-size:.88rem}
+.att-txt b{display:block;font-weight:600}
+.att-txt span{color:var(--text-3);font-size:.77rem}
+.att-go{color:var(--text-3);font-size:.8rem;white-space:nowrap}
+.att-ok{color:#34D399;font-size:.9rem;font-weight:600;padding:6px 0}
+
+/* Balken im Bericht */
+.rep-row{padding:9px 0;border-top:1px solid var(--line)}
+.rep-row:first-child{border-top:none}
+.rep-head{display:flex;justify-content:space-between;gap:10px;font-size:.87rem;margin-bottom:6px}
+.rep-head b{font-weight:600}
+.rep-head span{color:var(--text-3);font-size:.8rem;white-space:nowrap}
+.rep-bar{height:8px;border-radius:999px;background:var(--bg-3);overflow:hidden}
+.rep-fill{height:100%;border-radius:999px;background:var(--accent);
+  transition:width .6s var(--ease-ios)}
+.rep-fill.good{background:#34D399}
+.rep-fill.warn{background:var(--warm)}
+.rep-fill.bad{background:var(--danger)}
+
+/* Teilschritte einer Aufgabe */
+.sub-list{margin:8px 0 0;padding:0;list-style:none}
+.sub-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:.86rem;
+  color:var(--text-2);cursor:pointer}
+.sub-item .sbox{flex:0 0 17px;width:17px;height:17px;margin-top:1px;border-radius:5px;
+  border:1.5px solid var(--line-2);display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:transparent;transition:background .2s,border-color .2s,color .2s}
+.sub-item.done .sbox{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.sub-item.done .stxt{text-decoration:line-through;color:var(--text-3)}
+.sub-count{font-size:.76rem;color:var(--text-3);margin-left:6px}
+
+/* "Ältere Nachrichten laden" ganz oben im Chat */
+.load-older{display:block;margin:4px auto 12px;background:var(--bg-2);
+  border:1px solid var(--line-2);color:var(--text-2);font-family:var(--font-body);
+  font-weight:600;font-size:.82rem;padding:7px 16px;border-radius:999px;cursor:pointer;
+  transition:transform .25s var(--spring),color .2s,border-color .2s}
+.load-older:active{transform:scale(.95)}
+.load-older:disabled{opacity:.6;cursor:default}
+@media (hover:hover){ .load-older:hover{color:var(--text);border-color:var(--accent)} }
 
 /* ── Schichtplan ── */
 .shift-day{border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:8px;
@@ -1724,8 +1806,87 @@ var FIREBASE_CONFIG = {
       <section class="view" id="view-chef">
         <div class="view-head"><h2 id="chefTitle">Chef-Bereich</h2><p id="chefSub">Hier verwaltest du alles. Nur du siehst diesen Bereich.</p></div>
         <div class="scroll-area">
+          <!-- Reiter im Chef-Bereich: statt einer sehr langen Seite gibt es
+               jetzt fünf klar getrennte Bereiche. Gebaut wird die Leiste in
+               buildChefTabs(); die Inhalte stehen unten in .chef-pane. -->
+          <div class="chef-tabs" id="chefTabs"></div>
+
+          <!-- ── Reiter 1: Überblick ── -->
+          <div class="chef-pane" data-cpane="ueberblick">
           <div class="dash-grid" id="dashGrid"></div>
           <div class="dash-bday" id="dashBday"></div>
+          <div class="card">
+            <h3>📊 Übersicht aller Studios</h3>
+            <p class="hint">Aufgaben-Fortschritt pro Studio. Tippe ein Studio an, um die Aufgaben zu öffnen.</p>
+            <div class="studio-grid" id="studioGrid"></div>
+          </div>
+          <div class="card">
+            <h3>🚨 Braucht Aufmerksamkeit</h3>
+            <p class="hint">Alles, was gerade hakt – auf einen Blick, ohne Suchen.</p>
+            <div id="chefAttention"></div>
+          </div>
+          </div>
+
+          <!-- ── Reiter 2: Erstellen ── -->
+          <div class="chef-pane" data-cpane="erstellen" style="display:none">
+          <div class="card">
+            <h3>📣 Ankündigung an alle</h3>
+            <p class="hint">Erscheint sofort bei jedem Mitarbeiter im Portal.</p>
+            <div class="field"><textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea></div>
+            <div class="field"><label for="bcTarget">Empfänger</label><select class="inp" id="bcTarget"></select></div>
+            <button class="btn btn-primary btn-sm" id="bcSend">Ankündigung senden</button>
+            <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
+          </div>
+          <div class="card">
+            <h3>✅ Neue Aufgabe erstellen</h3>
+            <p class="hint">Einem oder allen Studios zuweisen.</p>
+            <div class="field"><label for="ntTitle">Aufgabe</label>
+              <input class="inp" id="ntTitle" type="text" placeholder="z. B. Geräte desinfizieren" maxlength="120" /></div>
+            <div class="field"><label for="ntDesc">Beschreibung (optional)</label>
+              <textarea class="inp" id="ntDesc" placeholder="Details …" maxlength="1000"></textarea></div>
+            <div class="field"><label for="ntSteps">Teilschritte (optional, einer pro Zeile)</label>
+              <textarea class="inp" id="ntSteps" placeholder="z. B.&#10;Geräte abwischen&#10;Gurte prüfen&#10;Kabel aufrollen" maxlength="1000"></textarea>
+              <p class="hint" style="margin:6px 0 0">Große Aufgaben werden so zu einer kleinen Checkliste zum Abhaken.</p></div>
+            <div class="field"><label>Für welche Studios?</label>
+              <label class="studio-check" style="margin-bottom:7px" id="ntAllWrap"><input type="checkbox" id="ntAllStudios" /><span><b>Alle Studios</b></span></label>
+              <div class="studio-checks" id="ntStudios"></div></div>
+            <div class="field"><label for="ntRepeat">Wiederholung</label>
+              <select class="inp" id="ntRepeat">
+                <option value="">Keine (einmalig)</option>
+                <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
+                <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
+                <option value="custom">🔁 Eigenes Intervall …</option>
+              </select></div>
+            <div class="field" id="ntCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
+              <div style="display:flex;gap:8px">
+                <input class="inp" id="ntIntN" type="number" min="1" value="6" style="flex:0 0 90px" />
+                <select class="inp" id="ntIntUnit" style="flex:1">
+                  <option value="h">Stunden</option>
+                  <option value="d">Tage</option>
+                  <option value="w">Wochen</option>
+                </select>
+              </div></div>
+            <div class="field"><label for="ntDue">Fällig bis (optional)</label>
+              <input class="inp" id="ntDue" type="date" /></div>
+            <div class="field"><label for="ntAssign">Wer soll das machen? (optional)</label>
+              <select class="inp" id="ntAssign"><option value="">Jeder im Studio</option></select>
+              <p class="hint" style="margin:6px 0 0">Ohne Auswahl kann sie jeder im Studio abhaken.</p></div>
+            <div class="field">
+              <label>Foto (optional)</label>
+              <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
+              <button type="button" class="btn btn-ghost btn-sm" id="ntAttach" style="width:100%">📷 Foto hinzufügen</button>
+              <div id="ntPreviewWrap" style="display:none;margin-top:10px;align-items:center;gap:10px">
+                <img id="ntPreviewImg" alt="Vorschau" style="height:60px;width:60px;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)" />
+                <button type="button" class="pv-x" id="ntPreviewX" aria-label="Foto entfernen" style="display:inline-block">✕</button>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" id="ntAdd">Aufgabe erstellen</button>
+            <div class="draft-row"><p class="draft-note" id="ntDraftNote"></p></div>
+          </div>
+          </div>
+
+          <!-- ── Reiter 3: Team ── -->
+          <div class="chef-pane" data-cpane="team" style="display:none">
           <div class="card" data-chef-only="1">
             <h3>👤 Zugang anlegen</h3>
             <p class="hint">Erstellt ein Konto und ordnet Studios zu. Die Person meldet sich danach mit E-Mail + Passwort an.</p>
@@ -1770,71 +1931,69 @@ var FIREBASE_CONFIG = {
               <select class="inp" id="obSendTo"></select></div>
             <button class="btn btn-primary btn-sm" id="obSend">📋 Checkliste per DM senden</button>
           </div>
-          <div class="card">
-            <h3>📣 Ankündigung an alle</h3>
-            <p class="hint">Erscheint sofort bei jedem Mitarbeiter im Portal.</p>
-            <div class="field"><textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea></div>
-            <div class="field"><label for="bcTarget">Empfänger</label><select class="inp" id="bcTarget"></select></div>
-            <button class="btn btn-primary btn-sm" id="bcSend">Ankündigung senden</button>
-            <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
           </div>
+
+          <!-- ── Reiter 4: Auswertung ── -->
+          <div class="chef-pane" data-cpane="report" style="display:none">
           <div class="card">
-            <h3>✅ Neue Aufgabe erstellen</h3>
-            <p class="hint">Einem oder allen Studios zuweisen.</p>
-            <div class="field"><label for="ntTitle">Aufgabe</label>
-              <input class="inp" id="ntTitle" type="text" placeholder="z. B. Geräte desinfizieren" maxlength="120" /></div>
-            <div class="field"><label for="ntDesc">Beschreibung (optional)</label>
-              <textarea class="inp" id="ntDesc" placeholder="Details …" maxlength="1000"></textarea></div>
-            <div class="field"><label>Für welche Studios?</label>
-              <label class="studio-check" style="margin-bottom:7px" id="ntAllWrap"><input type="checkbox" id="ntAllStudios" /><span><b>Alle Studios</b></span></label>
-              <div class="studio-checks" id="ntStudios"></div></div>
-            <div class="field"><label for="ntRepeat">Wiederholung</label>
-              <select class="inp" id="ntRepeat">
-                <option value="">Keine (einmalig)</option>
-                <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
-                <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
-                <option value="custom">🔁 Eigenes Intervall …</option>
+            <h3>📈 Bericht</h3>
+            <p class="hint">Zeitraum wählen – die Zahlen rechnen sich sofort neu.</p>
+            <div class="field"><label for="repRange">Zeitraum</label>
+              <select class="inp" id="repRange">
+                <option value="7">Letzte 7 Tage</option>
+                <option value="30" selected>Letzte 30 Tage</option>
+                <option value="90">Letzte 90 Tage</option>
+                <option value="0">Alles</option>
               </select></div>
-            <div class="field" id="ntCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
-              <div style="display:flex;gap:8px">
-                <input class="inp" id="ntIntN" type="number" min="1" value="6" style="flex:0 0 90px" />
-                <select class="inp" id="ntIntUnit" style="flex:1">
-                  <option value="h">Stunden</option>
-                  <option value="d">Tage</option>
-                  <option value="w">Wochen</option>
-                </select>
-              </div></div>
-            <div class="field"><label for="ntDue">Fällig bis (optional)</label>
-              <input class="inp" id="ntDue" type="date" /></div>
-            <div class="field"><label for="ntAssign">Wer soll das machen? (optional)</label>
-              <select class="inp" id="ntAssign"><option value="">Jeder im Studio</option></select>
-              <p class="hint" style="margin:6px 0 0">Ohne Auswahl kann sie jeder im Studio abhaken.</p></div>
-            <div class="field">
-              <label>Foto (optional)</label>
-              <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
-              <button type="button" class="btn btn-ghost btn-sm" id="ntAttach" style="width:100%">📷 Foto hinzufügen</button>
-              <div id="ntPreviewWrap" style="display:none;margin-top:10px;align-items:center;gap:10px">
-                <img id="ntPreviewImg" alt="Vorschau" style="height:60px;width:60px;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)" />
-                <button type="button" class="pv-x" id="ntPreviewX" aria-label="Foto entfernen" style="display:inline-block">✕</button>
-              </div>
-            </div>
-            <button class="btn btn-primary btn-sm" id="ntAdd">Aufgabe erstellen</button>
-            <div class="draft-row"><p class="draft-note" id="ntDraftNote"></p></div>
+            <div class="dash-grid" id="repTiles"></div>
+            <button class="btn btn-ghost btn-sm" id="repExport" style="width:100%;margin-top:6px">⬇️ Bericht als Excel speichern</button>
           </div>
           <div class="card">
-            <h3>📊 Übersicht aller Studios</h3>
-            <p class="hint">Aufgaben-Fortschritt pro Studio.</p>
-            <div class="studio-grid" id="studioGrid"></div>
+            <h3>🏆 Studios im Vergleich</h3>
+            <p class="hint">Wie viel Prozent der Aufgaben sind im Zeitraum erledigt worden?</p>
+            <div id="repStudios"></div>
           </div>
           <div class="card">
+            <h3>💪 Wer hat wie viel erledigt?</h3>
+            <p class="hint">Kein Ranking zum Vergleichen – nur damit du siehst, wo Unterstützung fehlt.</p>
+            <div id="repPeople"></div>
+          </div>
+          </div>
+
+          <!-- ── Reiter 5: System ── -->
+          <div class="chef-pane" data-cpane="system" style="display:none">
+          <div class="card" data-chef-only="1">
             <h3>🔄 Google-Tabellen abgleichen</h3>
             <p class="hint">Änderungen werden automatisch übertragen. Falls in der Tabelle
               einmal etwas fehlt, schreibt dieser Knopf alle Studios neu – gefahrlos, es
               wird nichts gelöscht, nur der aktuelle Stand geschrieben.</p>
             <button class="btn btn-ghost btn-sm" id="syncSheetsBtn">Jetzt alle Studios abgleichen</button>
           </div>
+          <div class="card" data-chef-only="1">
+            <h3>💾 Daten sichern</h3>
+            <p class="hint">Lädt alle Aufgaben, Putzpläne, Material, Infos und das Team als
+              Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
+            <button class="btn btn-ghost btn-sm" id="expXls" style="width:100%">⬇️ Alles als Excel speichern</button>
+            <button class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">⬇️ Alles als Daten-Datei (JSON)</button>
+          </div>
+          <div class="card" data-chef-only="1">
+            <h3>🔑 Passwort zurücksetzen</h3>
+            <p class="hint">Schickt der Person eine E-Mail, mit der sie sich ein neues
+              Passwort setzen kann. Du musst kein Passwort kennen oder vergeben.</p>
+            <div class="field"><label for="prEmail">E-Mail der Person</label>
+              <input class="inp" id="prEmail" type="email" placeholder="mitarbeiter@email.de" inputmode="email" autocomplete="off" /></div>
+            <button class="btn btn-ghost btn-sm" id="prSend">E-Mail zum Zurücksetzen senden</button>
+            <p class="em-saved" id="prNote"></p>
+          </div>
+          <div class="card">
+            <h3>ℹ️ Über StudioChat</h3>
+            <p class="hint" id="sysInfo">–</p>
+          </div>
+          </div>
         </div>
       </section>
+
+      <!-- ENDE Chef-Bereich -->
 
     </div>
   </div>
@@ -1842,6 +2001,9 @@ var FIREBASE_CONFIG = {
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Rückgängig-Leiste: erscheint kurz nach dem Löschen -->
+<div class="undobar" id="undoBar"><span id="undoText"></span><button id="undoBtn">Rückgängig</button></div>
 
 <!-- Bild-Lightbox (Vollbild-Ansicht) -->
 <div id="lightbox"><button class="lb-close" aria-label="Schließen">✕</button><img id="lightboxImg" alt="" /></div>
@@ -2416,6 +2578,34 @@ function toast(msg, isErr){
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2700);
 }
+/* ── Rückgängig ──
+   Nach dem Löschen erscheint 8 Sekunden lang eine Leiste. Ein Tipp darauf
+   legt den Eintrag wieder an. Damit ist Löschen nicht mehr endgültig und
+   niemand muss Angst haben, etwas kaputtzumachen. */
+var _undoTimer=null, _undoFn=null;
+function offerUndo(text, fn){
+  var bar=$('undoBar'), tx=$('undoText'); if(!bar||!tx) return;
+  _undoFn=fn;
+  tx.textContent=text;
+  bar.classList.add('show');
+  clearTimeout(_undoTimer);
+  _undoTimer=setTimeout(function(){ bar.classList.remove('show'); _undoFn=null; }, 8000);
+}
+function hideUndo(){
+  var bar=$('undoBar'); if(bar) bar.classList.remove('show');
+  clearTimeout(_undoTimer); _undoFn=null;
+}
+/* Eine gelöschte Aufgabe zurückholen (mit derselben Kennung wie vorher). */
+function offerUndoTodo(sk, backup){
+  offerUndo('Aufgabe gelöscht', function(){
+    var id=backup.id, data={};
+    Object.keys(backup).forEach(function(k){ if(k!=='id') data[k]=backup[k]; });
+    return db.collection('studios').doc(sk).collection('todos').doc(id).set(data)
+      .then(function(){ toast('Aufgabe wiederhergestellt ✓'); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
 var AUTH_ERRORS = {
   'auth/user-not-found':'E-Mail nicht gefunden.',
   'auth/wrong-password':'Passwort falsch.',
@@ -2923,6 +3113,7 @@ function showView(id){
     setTimeout(scrollBottom,60);
     if(window.innerWidth>820){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
   }
+  if(id==='chef') buildChefTabs();
   if(id==='material') ensureMaterialLoaded();
   if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='team') ensureTeamLoaded();
@@ -2959,6 +3150,7 @@ function buildChannels(){
       currentChannel=c.id;
       document.querySelectorAll('.chan').forEach(function(x){ x.classList.toggle('active',x.dataset.chan===c.id); });
       markChannelRead(c.id);
+      _chatLimit=CHAT_PAGE;   // neuer Kanal → wieder nur die neuesten Nachrichten
       listenChannel(c.id);
       cancelCompose();
     });
@@ -3421,11 +3613,14 @@ function stopListeners(){
 }
 
 /* Chat: wechselt bei Kanalwechsel */
+var CHAT_PAGE=120;          // wie viele Nachrichten zuerst geladen werden
+var _chatLimit=CHAT_PAGE;   // wächst, wenn man "Ältere laden" antippt
+var _chatMore=false;        // gibt es überhaupt noch ältere?
 function listenChannel(channelId){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
   var first=true, startTs=Date.now();
   _chatUnsub = db.collection('channels').doc(channelId).collection('messages')
-    .orderBy('ts').limitToLast(120)
+    .orderBy('ts').limitToLast(_chatLimit)
     .onSnapshot(function(snap){
       if(!first){
         snap.docChanges().forEach(function(ch){
@@ -3445,6 +3640,7 @@ function listenChannel(channelId){
         });
       }
       first=false;
+      _chatMore = snap.docs.length >= _chatLimit;   // evtl. gibt es noch ältere
       renderMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
     }, function(e){ console.error('Chat:',e.message); });
 }
@@ -3529,7 +3725,11 @@ function renderMessages(msgs){
     return;
   }
   var atBottom = box.scrollHeight-box.scrollTop-box.clientHeight < 100;
-  var lastDay=null, html='', sepDone=false;
+  var lastDay=null, sepDone=false;
+  // Ganz oben: ältere Nachrichten nachladen (spart Ladezeit beim Start)
+  var html = _chatMore
+    ? '<button class="load-older" id="loadOlder">↑ Ältere Nachrichten laden</button>'
+    : '';
   msgs.forEach(function(m){
     var dl=dayLabel(m.ts||Date.now());
     if(dl!==lastDay){ html+='<div class="day-sep">'+esc(dl)+'</div>'; lastDay=dl; }
@@ -3567,6 +3767,12 @@ function renderMessages(msgs){
       quote+bodyHtml+imgHtml+reactionsHTML(m)+'</div>';
   });
   box.innerHTML=html;
+  var lo=$('loadOlder');
+  if(lo) lo.addEventListener('click',function(){
+    lo.textContent='Wird geladen …'; lo.disabled=true;
+    _chatLimit+=CHAT_PAGE;
+    listenChannel(currentChannel);
+  });
   bindMessageTools(box);
   if(atBottom) scrollBottom(); else updateFabCount();
 }
@@ -3963,6 +4169,13 @@ function renderHome(){
   var al=$('homeAlerts');
   if(al){
     var alerts=[];
+    // Angeheftete Infos stehen ganz oben – das ist das Wichtigste des Tages
+    _allAnns.filter(function(a){
+      if(!a.pinned) return false;
+      return isChef()||!a.target||a.target==='all'||(session.studioKeys||[]).indexOf(a.target)>=0;
+    }).slice(0,2).forEach(function(a){
+      alerts.push({k:' pin',i:'📌',t:(a.text||'').slice(0,90),v:'ann'});
+    });
     if(ueber) alerts.push({k:'',i:'⚠️',t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
     if(matArtikel) alerts.push({k:' warn',i:'📦',t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),v:'material'});
     if(infoNeu) alerts.push({k:' warn',i:'📣',t:infoNeu+(infoNeu===1?' neue Info':' neue Infos')+' von der Leitung',v:'ann'});
@@ -4236,7 +4449,7 @@ function renderTodos(){
       shown+=list.length;
       // Pro Studio: Überschrift + eigener Fortschrittsbalken
       var d=all.filter(isDone).length;
-      html+='<h3 style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(s)+'</h3>';
+      html+='<h3 class="studio-head" style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(s)+'</h3>';
       if(!_todoFilter && _todoMode==='alle') html+=progressHTML(d,all.length);
       html+=list.map(function(t){ return todoHTML(t,sk,true); }).join('');
     });
@@ -4254,7 +4467,7 @@ function renderTodos(){
       var list=all.filter(todoMatchesFilter);
       var done=all.filter(isDone).length, total=all.length;
       totalAll+=total; doneAll+=done; shown+=list.length;
-      if(multi) html+='<h3 style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(sName)+'</h3>';
+      if(multi) html+='<h3 class="studio-head" style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(sName)+'</h3>';
       if(total){
         if(!_todoFilter && _todoMode==='alle') html+=progressHTML(done,total);
         html += list.length
@@ -4275,7 +4488,13 @@ function renderTodos(){
   renderToday();
   if(currentView==='home') renderHome();
   updateBadges();
-  if(canManage()){ renderStudioGrid(); renderArchive(); renderDashboard(); }
+  if(canManage()){
+    renderStudioGrid(); renderArchive(); renderDashboard();
+    if(currentView==='chef'){
+      if(_chefTab==='ueberblick') renderAttention();
+      if(_chefTab==='report') renderReport();
+    }
+  }
 }
 
 /* Chef-Archiv: erledigte (einmalige) Aufgaben, gruppiert pro Studio */
@@ -4332,11 +4551,23 @@ function todoHTML(t,sk,chefView){
     var mineTask = t.assignedTo===session.uid;
     assign='<span class="t-assign'+(mineTask?' me':'')+'">'+(mineTask?'für dich':'für '+esc(t.assignedName||'?'))+'</span>';
   }
+  // Teilschritte: kleine Checkliste innerhalb der Aufgabe
+  var steps=Array.isArray(t.steps)?t.steps:[];
+  var stepsHtml='', stepCount='';
+  if(steps.length){
+    var fertig=steps.filter(function(s){ return s && s.d; }).length;
+    stepCount='<span class="sub-count">'+fertig+'/'+steps.length+'</span>';
+    stepsHtml='<ul class="sub-list">'+steps.map(function(s,i){
+      return '<li class="sub-item'+(s&&s.d?' done':'')+'" data-step="'+i+'">'+
+        '<span class="sbox">✓</span><span class="stxt">'+esc((s&&s.t)||'')+'</span></li>';
+    }).join('')+'</ul>';
+  }
   return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
     '<div class="swipe-hint">✓</div><div class="swipe-body">'+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
-    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+assign+'</div>'+
+    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+assign+stepCount+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
+    stepsHtml+
     (t.docUrl?'<a class="t-doc" href="'+esc(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
     photoHtml+'</div>'+
@@ -4398,11 +4629,31 @@ function bindTodoClicks(area){
         .update({done:done,doneBy:done?session.name:null,doneAt:done?Date.now():null})
         .catch(function(e){ toast(errMsg(e),true); });
     });
+    // Teilschritte abhaken
+    node.querySelectorAll('[data-step]').forEach(function(li){
+      li.addEventListener('click',function(e){
+        e.stopPropagation();
+        var idx=parseInt(li.getAttribute('data-step'),10);
+        var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
+        if(!t || !Array.isArray(t.steps) || !t.steps[idx]) return;
+        var steps=t.steps.map(function(s,i){
+          return { t:s.t, d: i===idx ? !s.d : !!s.d };
+        });
+        li.classList.toggle('done'); tick();       // sofortiges Gefühl, Server folgt
+        db.collection('studios').doc(sk).collection('todos').doc(id)
+          .update({ steps:steps })
+          .catch(function(err){ li.classList.toggle('done'); toast(errMsg(err),true); });
+      });
+    });
     var del=node.querySelector('.t-del');
     if(del) del.addEventListener('click',function(){
-      if(confirm('Aufgabe löschen?\n\nSie verschwindet für dieses Studio. Das lässt sich nicht rückgängig machen.'))
-        db.collection('studios').doc(sk).collection('todos').doc(id).delete()
-          .catch(function(e){ toast(errMsg(e),true); });
+      var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
+      if(!confirm('Aufgabe löschen?\n\n„'+((t&&t.title)||'')+'"')) return;
+      // Gelöschtes lässt sich 8 Sekunden lang zurückholen (Papierkorb im Kopf)
+      var backup=t ? JSON.parse(JSON.stringify(t)) : null;
+      db.collection('studios').doc(sk).collection('todos').doc(id).delete()
+        .then(function(){ if(backup) offerUndoTodo(sk, backup); })
+        .catch(function(e){ toast(errMsg(e),true); });
     });
     var padd=node.querySelector('[data-photoadd]');
     if(padd) padd.addEventListener('click',function(){
@@ -4424,21 +4675,37 @@ function renderAnnouncements(anns){
   var chef=canManage();
   var empUids={}; _employees.forEach(function(e){ empUids[e.uid]=1; });
   var totalEmp=_employees.length;
+  // Angeheftete Infos stehen immer ganz oben
+  anns=anns.slice().sort(function(a,b){
+    return (b.pinned?1:0)-(a.pinned?1:0) || (b.ts||0)-(a.ts||0);
+  });
   area.innerHTML=anns.map(function(a){
     var label=(!a.target||a.target==='all')?'An alle':'Nur '+studioName(a.target);
     var delBtn = chef ? '<button class="ann-del" data-id="'+esc(a.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
+    var pinBtn = chef
+      ? '<button class="ann-pin'+(a.pinned?' on':'')+'" data-pin="'+esc(a.id)+'" data-on="'+(a.pinned?'1':'')+'" title="'+(a.pinned?'Nicht mehr anheften':'Oben anheften')+'" aria-label="Anheften">📌</button>'
+      : '';
     var readHtml='';
     if(chef){
       var n=(a.readBy||[]).filter(function(uid){ return empUids[uid]; }).length;
       readHtml='<span class="ann-read">👁 '+n+(totalEmp?'/'+totalEmp:'')+' gelesen</span>';
     }
-    return '<div class="ann"><div class="ann-head">'+
+    return '<div class="ann'+(a.pinned?' pinned':'')+'"><div class="ann-head">'+
       '<span class="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>'+
-      '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+delBtn+'</div>'+
+      '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
       '<div class="ann-body">'+esc(a.text)+'</div>'+
       '<span class="ann-target">'+esc(label)+'</span>'+readHtml+'</div>';
   }).join('');
   if(chef){
+    area.querySelectorAll('.ann-pin').forEach(function(b){
+      b.addEventListener('click',function(){
+        var on = b.getAttribute('data-on')==='1';
+        tick(8);
+        db.collection('announcements').doc(b.dataset.pin).update({ pinned: !on })
+          .then(function(){ toast(on?'Nicht mehr angeheftet':'Oben angeheftet 📌'); })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
+    });
     area.querySelectorAll('.ann-del').forEach(function(b){
       b.addEventListener('click',function(){
         if(confirm('Ankündigung löschen?\n\nSie verschwindet bei allen Mitarbeitern.'))
@@ -4456,10 +4723,27 @@ function renderStudioGrid(){
     var sk=studioKey(s), list=cachedTodos[sk]||[];
     var done=list.filter(isDone).length, total=list.length;
     var pct=total?Math.round(done/total*100):0;
-    return '<div class="studio-tile"><b>'+esc(s)+'</b>'+
+    return '<div class="studio-tile" data-open-studio="'+esc(s)+'" style="cursor:pointer"><b>'+esc(s)+'</b>'+
       '<div class="mini"><i style="width:'+pct+'%"></i></div>'+
       '<small>'+(total?done+' / '+total+' erledigt':'keine Aufgaben')+'</small></div>';
   }).join('');
+  // Kachel antippen → direkt zu den Aufgaben dieses Studios
+  grid.querySelectorAll('[data-open-studio]').forEach(function(el){
+    el.addEventListener('click',function(){
+      _todoFilter=''; _todoMode='alle';
+      var ts=$('todoSearch'); if(ts) ts.value='';
+      document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')==='alle'); });
+      tick(8); showView('todos');
+      // an die Überschrift des Studios scrollen
+      setTimeout(function(){
+        var name=el.getAttribute('data-open-studio');
+        var heads=document.querySelectorAll('#view-todos .studio-head');
+        for(var i=0;i<heads.length;i++){
+          if(heads[i].textContent.indexOf(name)>=0){ heads[i].scrollIntoView({behavior:'smooth',block:'start'}); break; }
+        }
+      },220);
+    });
+  });
 }
 
 /* ── Chef-Dashboard ── */
@@ -4523,6 +4807,331 @@ function renderDashboard(){
       }).join('');
     } else { bd.style.display='none'; bd.innerHTML=''; }
   }
+}
+
+/* ============================================================
+   CHEF-BEREICH: REITER, AUFMERKSAMKEIT, BERICHT, SICHERUNG
+   ------------------------------------------------------------
+   Früher war der Chef-Bereich eine einzige, sehr lange Seite. Jetzt liegt
+   jeder Themenblock auf einem eigenen Reiter. Das ist ein Klick mehr,
+   dafür findet man alles sofort und verklickt sich nicht.
+   ============================================================ */
+var CHEFTABS=[
+  {id:'ueberblick', label:'📊 Überblick'},
+  {id:'erstellen',  label:'✏️ Erstellen'},
+  {id:'team',       label:'👥 Team', chefOnly:true},
+  {id:'report',     label:'📈 Auswertung'},
+  {id:'system',     label:'⚙️ System'}
+];
+var _chefTab='ueberblick';
+
+function buildChefTabs(){
+  var bar=$('chefTabs'); if(!bar) return;
+  var tabs=CHEFTABS.filter(function(t){ return !t.chefOnly || isChef(); });
+  // Falls der aktuelle Reiter für diese Rolle nicht existiert: zurück auf Start
+  if(!tabs.some(function(t){ return t.id===_chefTab; })) _chefTab=tabs[0].id;
+  bar.innerHTML=tabs.map(function(t){
+    return '<button class="chef-tab'+(t.id===_chefTab?' on':'')+'" data-ctab="'+t.id+'">'+esc(t.label)+'</button>';
+  }).join('');
+  bar.querySelectorAll('[data-ctab]').forEach(function(b){
+    b.addEventListener('click',function(){ showChefTab(b.getAttribute('data-ctab')); tick(8); });
+  });
+  showChefTab(_chefTab, true);
+}
+
+function showChefTab(id, keep){
+  _chefTab=id;
+  document.querySelectorAll('[data-ctab]').forEach(function(b){
+    var on = b.getAttribute('data-ctab')===id;
+    b.classList.toggle('on', on);
+    // Aktiven Reiter in den sichtbaren Bereich schieben
+    if(on && b.scrollIntoView) b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  });
+  document.querySelectorAll('.chef-pane').forEach(function(p){
+    p.style.display = (p.getAttribute('data-cpane')===id) ? '' : 'none';
+  });
+  if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
+  if(id==='report') renderReport();
+  if(id==='system') renderSysInfo();
+  if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
+}
+
+/* ── "Braucht Aufmerksamkeit" ──
+   Sammelt alles, was gerade hakt, in einer einzigen Liste. Jede Zeile
+   springt direkt an die passende Stelle. */
+function renderAttention(){
+  var box=$('chefAttention'); if(!box || !session) return;
+  var rows=[], now=Date.now();
+  var mine=managedStudios();
+
+  // 1) überfällige Aufgaben je Studio
+  mine.forEach(function(s){
+    var sk=studioKey(s);
+    var od=(cachedTodos[sk]||[]).filter(function(t){
+      return !isDone(t) && !isArchived(t) && t.due && now>t.due;
+    });
+    if(od.length) rows.push({i:'⏰', t:od.length+(od.length===1?' überfällige Aufgabe':' überfällige Aufgaben'),
+      s:s, v:'todos', f:'faellig'});
+  });
+  // 2) fehlendes Material je Studio
+  mine.forEach(function(s){
+    var items=_invAll[studioKey(s)]||[];
+    var f=items.filter(function(it){ return itemNeed(it)>0; });
+    if(f.length) rows.push({i:'📦', t:f.length+(f.length===1?' Artikel fehlt':' Artikel fehlen'),
+      s:s+' · '+f.slice(0,3).map(function(x){ return x.name; }).join(', '), v:'material'});
+  });
+  // 3) Studios ganz ohne Aufgaben (meist vergessen einzurichten)
+  var leer=mine.filter(function(s){ return !(cachedTodos[studioKey(s)]||[]).length; });
+  if(leer.length) rows.push({i:'📭', t:leer.length+(leer.length===1?' Studio hat keine Aufgaben':' Studios haben keine Aufgaben'),
+    s:leer.join(', '), v:'chef'});
+  // 4) Team ohne Studio-Zuordnung
+  if(isChef()){
+    var ohne=_employees.filter(function(e){
+      var k=(e.studioKeys&&e.studioKeys.length)?e.studioKeys:(e.studios||[]);
+      return !k.length;
+    });
+    if(ohne.length) rows.push({i:'👤', t:ohne.length+(ohne.length===1?' Person ohne Studio':' Personen ohne Studio'),
+      s:ohne.map(function(e){ return e.name; }).join(', '), v:'chef', ctab:'team'});
+  }
+  // 5) ungelesene Ankündigungen im Team
+  if(isChef() && _employees.length){
+    var alt=_allAnns.filter(function(a){
+      if(!a.ts || now-a.ts < 2*86400000) return false;   // erst ab 2 Tagen melden
+      var gelesen=(a.readBy||[]).length;
+      return gelesen < _employees.length;
+    });
+    if(alt.length) rows.push({i:'👁', t:alt.length+(alt.length===1?' Info wurde nicht von allen gelesen':' Infos wurden nicht von allen gelesen'),
+      s:'älter als 2 Tage', v:'ann'});
+  }
+
+  if(!rows.length){
+    box.innerHTML='<p class="att-ok">✓ Alles im grünen Bereich – nichts Offenes.</p>';
+    return;
+  }
+  box.innerHTML=rows.map(function(r){
+    return '<div class="att-row" data-go="'+r.v+'"'+(r.f?' data-f="'+r.f+'"':'')+
+      (r.ctab?' data-ctab-go="'+r.ctab+'"':'')+'>'+
+      '<span class="att-ico">'+r.i+'</span>'+
+      '<span class="att-txt"><b>'+esc(r.t)+'</b><span>'+esc(r.s)+'</span></span>'+
+      '<span class="att-go">›</span></div>';
+  }).join('');
+  box.querySelectorAll('[data-go]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var ct=el.getAttribute('data-ctab-go');
+      if(ct){ showChefTab(ct); return; }
+      var f=el.getAttribute('data-f');
+      if(f){ _todoMode=f; document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
+      tick(8); showView(el.getAttribute('data-go'));
+    });
+  });
+}
+
+/* ── Bericht ──
+   Rechnet ausschließlich mit Daten, die ohnehin schon geladen sind.
+   Es entstehen also keine zusätzlichen Datenbank-Zugriffe (= keine Kosten). */
+function reportData(){
+  var sel=$('repRange');
+  var days = sel ? parseInt(sel.value,10) : 30;
+  var from = days>0 ? Date.now()-days*86400000 : 0;
+  var mine=managedStudios();
+  var d={ from:from, days:days, erledigt:0, neu:0, offen:0, ueber:0,
+          dauerSum:0, dauerN:0, studios:[], leute:{}, fehlt:0, infos:0 };
+  var now=Date.now();
+  mine.forEach(function(s){
+    var sk=studioKey(s);
+    var st={ name:s, erledigt:0, offen:0, ueber:0 };
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(t.ts && t.ts>=from) d.neu++;
+      if(t.doneAt && t.doneAt>=from){
+        d.erledigt++; st.erledigt++;
+        if(t.ts && t.doneAt>t.ts){ d.dauerSum+=(t.doneAt-t.ts); d.dauerN++; }
+        var wer=t.doneBy||'Unbekannt';
+        d.leute[wer]=(d.leute[wer]||0)+1;
+      }
+      if(!isDone(t) && !isArchived(t)){
+        d.offen++; st.offen++;
+        if(t.due && now>t.due){ d.ueber++; st.ueber++; }
+      }
+    });
+    (_invAll[sk]||[]).forEach(function(it){ if(itemNeed(it)>0) d.fehlt++; });
+    d.studios.push(st);
+  });
+  d.infos=_allAnns.filter(function(a){ return (a.ts||0)>=from; }).length;
+  return d;
+}
+
+function renderReport(){
+  if(!session || !canManage()) return;
+  var d=reportData();
+  var tiles=$('repTiles');
+  if(tiles){
+    var dauer = d.dauerN ? (d.dauerSum/d.dauerN/86400000) : 0;
+    var dauerTxt = d.dauerN ? (dauer<1 ? Math.round(dauer*24)+' Std.' : dauer.toFixed(1)+' Tage') : '–';
+    var list=[
+      {n:d.erledigt, l:'Aufgaben erledigt'},
+      {n:d.neu, l:'Aufgaben neu erstellt'},
+      {n:d.offen, l:'aktuell offen'},
+      {n:d.ueber, l:'davon überfällig', warn:d.ueber>0},
+      {n:dauerTxt, l:'Ø bis erledigt'},
+      {n:d.infos, l:'Infos veröffentlicht'},
+      {n:d.fehlt, l:'Artikel fehlen', warn:d.fehlt>0}
+    ];
+    tiles.innerHTML=list.map(function(t){
+      return '<div class="dash-tile"><div class="dn'+(t.warn?' warn':'')+'">'+esc(String(t.n))+'</div>'+
+        '<div class="dl">'+esc(t.l)+'</div></div>';
+    }).join('');
+  }
+
+  var sb=$('repStudios');
+  if(sb){
+    var rows=d.studios.slice().sort(function(a,b){
+      var pa=a.erledigt+a.offen?a.erledigt/(a.erledigt+a.offen):0;
+      var pb=b.erledigt+b.offen?b.erledigt/(b.erledigt+b.offen):0;
+      return pb-pa;
+    });
+    sb.innerHTML = rows.length ? rows.map(function(s){
+      var ges=s.erledigt+s.offen;
+      var pct=ges?Math.round(s.erledigt/ges*100):0;
+      var cls = !ges ? '' : (pct>=80?' good':(pct>=50?'':' warn'));
+      if(s.ueber) cls=' bad';
+      return '<div class="rep-row"><div class="rep-head"><b>'+esc(s.name)+'</b>'+
+        '<span>'+(ges? pct+'% · '+s.erledigt+'/'+ges : 'keine Aufgaben')+
+        (s.ueber?' · '+s.ueber+' überfällig':'')+'</span></div>'+
+        '<div class="rep-bar"><i class="rep-fill'+cls+'" style="display:block;width:'+pct+'%"></i></div></div>';
+    }).join('') : '<p style="color:var(--text-3);font-size:.9rem">Keine Studios zugeordnet.</p>';
+  }
+
+  var pb=$('repPeople');
+  if(pb){
+    var arr=Object.keys(d.leute).map(function(k){ return {name:k, n:d.leute[k]}; })
+      .sort(function(a,b){ return b.n-a.n; });
+    var max=arr.length?arr[0].n:0;
+    pb.innerHTML = arr.length ? arr.map(function(p){
+      var pct=max?Math.round(p.n/max*100):0;
+      return '<div class="rep-row"><div class="rep-head"><b>'+esc(p.name)+'</b>'+
+        '<span>'+p.n+(p.n===1?' Aufgabe':' Aufgaben')+'</span></div>'+
+        '<div class="rep-bar"><i class="rep-fill good" style="display:block;width:'+pct+'%"></i></div></div>';
+    }).join('') : '<p style="color:var(--text-3);font-size:.9rem">In diesem Zeitraum wurde noch nichts abgehakt.</p>';
+  }
+}
+
+/* Kleine Hilfe: HTML-Tabelle als Excel-Datei herunterladen. */
+function downloadXls(name, innerHtml){
+  var html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head>'+
+    '<body style="font-family:Arial,sans-serif">'+innerHtml+'</body></html>';
+  var blob=new Blob(['﻿'+html],{type:'application/vnd.ms-excel'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+}
+function xlsTable(title, head, rows){
+  var th='style="background:#1C1E2A;color:#38BDF8;font-weight:bold;border:1px solid #ccc;padding:6px 10px;text-align:left"';
+  var td='style="border:1px solid #ddd;padding:5px 10px"';
+  return '<h3>'+esc(title)+'</h3><table cellspacing="0"><tr>'+
+    head.map(function(h){ return '<th '+th+'>'+esc(h)+'</th>'; }).join('')+'</tr>'+
+    rows.map(function(r){
+      return '<tr>'+r.map(function(c){ return '<td '+td+'>'+esc(String(c==null?'':c)).replace(/\n/g,'<br>')+'</td>'; }).join('')+'</tr>';
+    }).join('')+'</table><br>';
+}
+
+function exportReport(){
+  var d=reportData();
+  var zeit = d.days>0 ? ('Letzte '+d.days+' Tage') : 'Gesamter Zeitraum';
+  var dauer = d.dauerN ? (d.dauerSum/d.dauerN/86400000).toFixed(1)+' Tage' : '–';
+  var html='<h2>StudioChat – Bericht</h2><p>'+esc(zeit)+' · Stand '+
+    esc(new Date().toLocaleString('de-DE'))+'</p>';
+  html+=xlsTable('Zusammenfassung',['Kennzahl','Wert'],[
+    ['Aufgaben erledigt',d.erledigt],['Aufgaben neu erstellt',d.neu],
+    ['Aktuell offen',d.offen],['Davon überfällig',d.ueber],
+    ['Ø bis erledigt',dauer],['Infos veröffentlicht',d.infos],
+    ['Artikel fehlen',d.fehlt]
+  ]);
+  html+=xlsTable('Studios',['Studio','Erledigt','Offen','Überfällig','Anteil erledigt'],
+    d.studios.map(function(s){
+      var ges=s.erledigt+s.offen;
+      return [s.name,s.erledigt,s.offen,s.ueber,(ges?Math.round(s.erledigt/ges*100):0)+'%'];
+    }));
+  html+=xlsTable('Personen',['Name','Erledigte Aufgaben'],
+    Object.keys(d.leute).sort(function(a,b){ return d.leute[b]-d.leute[a]; })
+      .map(function(k){ return [k,d.leute[k]]; }));
+  downloadXls('StudioChat_Bericht_'+ymd(new Date())+'.xls', html);
+  toast('Bericht gespeichert');
+}
+
+/* ── Komplette Sicherung ── */
+function backupData(){
+  var out={ erzeugt:new Date().toISOString(), studios:{}, team:[], infos:[] };
+  STUDIOS.forEach(function(s){
+    var sk=studioKey(s);
+    out.studios[s]={
+      aufgaben:(cachedTodos[sk]||[]).map(function(t){
+        return { titel:t.title, beschreibung:t.desc||'', erledigt:!!isDone(t),
+                 erledigtVon:t.doneBy||'', erledigtAm:t.doneAt?new Date(t.doneAt).toISOString():'',
+                 faellig:t.due?new Date(t.due).toISOString():'', wiederholung:t.recurring||'',
+                 erstellt:t.ts?new Date(t.ts).toISOString():'' };
+      }),
+      material:(_invAll[sk]||[]).map(function(it){
+        return { artikel:it.name, soll:it.limit||0, ist:it.have||0, fehlt:itemNeed(it) };
+      })
+    };
+  });
+  out.team=_employees.map(function(e){
+    return { name:e.name, email:e.email||'', rolle:e.role||'mitarbeiter',
+             studios:(e.studios||[]).join(', ') };
+  });
+  out.infos=_allAnns.map(function(a){
+    return { von:a.from||'', text:a.text||'', ziel:a.target||'all',
+             datum:a.ts?new Date(a.ts).toISOString():'' };
+  });
+  return out;
+}
+function exportAllJson(){
+  var blob=new Blob([JSON.stringify(backupData(),null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url;
+  a.download='StudioChat_Sicherung_'+ymd(new Date())+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+  toast('Sicherung gespeichert');
+}
+function exportAllXls(){
+  var html='<h2>StudioChat – Vollständige Sicherung</h2><p>Stand '+
+    esc(new Date().toLocaleString('de-DE'))+'</p>';
+  html+=xlsTable('Team',['Name','E-Mail','Rolle','Studios'],
+    _employees.map(function(e){
+      return [e.name, e.email||'', roleLabel(e.role), (e.studios||[]).join(', ')];
+    }));
+  html+=xlsTable('Infos',['Datum','Von','Empfänger','Text'],
+    _allAnns.map(function(a){
+      return [a.ts?new Date(a.ts).toLocaleString('de-DE'):'', a.from||'',
+              (!a.target||a.target==='all')?'Alle':studioName(a.target), a.text||''];
+    }));
+  STUDIOS.forEach(function(s){
+    var sk=studioKey(s);
+    var todos=cachedTodos[sk]||[], mat=_invAll[sk]||[];
+    if(!todos.length && !mat.length) return;
+    if(todos.length) html+=xlsTable(s+' – Aufgaben',
+      ['Aufgabe','Status','Erledigt von','Erledigt am','Fällig','Wiederholung'],
+      todos.map(function(t){
+        return [t.title||'', isDone(t)?'erledigt':'offen', t.doneBy||'',
+                t.doneAt?new Date(t.doneAt).toLocaleString('de-DE'):'',
+                t.due?new Date(t.due).toLocaleDateString('de-DE'):'',
+                t.recurring?repLabelFor(t):''];
+      }));
+    if(mat.length) html+=xlsTable(s+' – Material',['Artikel','Soll','Ist','Fehlt'],
+      mat.map(function(it){ return [it.name, it.limit||0, it.have||0, itemNeed(it)]; }));
+  });
+  downloadXls('StudioChat_Sicherung_'+ymd(new Date())+'.xls', html);
+  toast('Sicherung gespeichert');
+}
+
+function renderSysInfo(){
+  var el=$('sysInfo'); if(!el) return;
+  var n=0; STUDIOS.forEach(function(s){ n+=(cachedTodos[studioKey(s)]||[]).length; });
+  el.innerHTML='Angemeldet als <b>'+esc(session.name)+'</b> ('+esc(roleLabel(session.role))+')<br>'+
+    STUDIOS.length+' Studios · '+_employees.length+' Personen · '+n+' Aufgaben<br>'+
+    (navigator.onLine?'Verbunden – Änderungen sind sofort bei allen sichtbar.':'Gerade offline – Änderungen werden nachgereicht.');
 }
 
 function emptyHTML(h,s){
@@ -5804,6 +6413,12 @@ function bindActions(){
   var dmPeerN=$('dmPeer'); if(dmPeerN){ dmPeerN.style.cursor='pointer'; dmPeerN.addEventListener('click',function(){ if(_dmPeer) openPersonPopup(_dmPeer.uid); }); }
   var dmPeerAvEl=$('dmPeerAv'); if(dmPeerAvEl){ dmPeerAvEl.style.cursor='pointer'; dmPeerAvEl.addEventListener('click',function(){ if(_dmPeer) openPersonPopup(_dmPeer.uid); }); }
 
+  // Rückgängig-Knopf
+  var ub=$('undoBtn');
+  if(ub) ub.addEventListener('click',function(){
+    var fn=_undoFn; hideUndo(); tick(12); if(fn) fn();
+  });
+
   // Suche
   var sb=$('searchBtn'); if(sb) sb.addEventListener('click',openSearch);
   var si=$('searchInput'); if(si) si.addEventListener('input',function(){ doSearch(this.value); });
@@ -6090,6 +6705,32 @@ function bindActions(){
       });
     });
 
+    // Auswertung: Zeitraum wechseln + Bericht speichern
+    var rr=$('repRange'); if(rr) rr.addEventListener('change', renderReport);
+    var rx=$('repExport'); if(rx) rx.addEventListener('click', exportReport);
+
+    // Sicherung herunterladen
+    var ex=$('expXls'); if(ex) ex.addEventListener('click', exportAllXls);
+    var ej=$('expJson'); if(ej) ej.addEventListener('click', exportAllJson);
+
+    // Passwort zurücksetzen (schickt eine E-Mail von Firebase)
+    var prs=$('prSend');
+    if(prs) prs.addEventListener('click',function(){
+      var btn=this, mail=($('prEmail').value||'').trim();
+      var note=$('prNote');
+      if(!mail){ toast('Bitte E-Mail eingeben.',true); return; }
+      withBusy(btn,function(){
+        return auth.sendPasswordResetEmail(mail).then(function(){
+          if(note){ note.textContent='✓ E-Mail an '+mail+' gesendet.'; note.style.color='#34D399'; }
+          $('prEmail').value='';
+          toast('E-Mail zum Zurücksetzen gesendet ✓');
+        }).catch(function(e){
+          if(note){ note.textContent='Hat nicht geklappt: '+errMsg(e); note.style.color='var(--danger)'; }
+          toast(errMsg(e),true);
+        });
+      });
+    });
+
     // Entwürfe automatisch zwischenspeichern
     ['bcText','ntTitle','ntDesc'].forEach(function(idd){
       var el=$(idd); if(el) el.addEventListener('input', saveDraft);
@@ -6149,6 +6790,13 @@ function bindActions(){
       }
       var dueVal=$('ntDue').value;
       var due = dueVal ? new Date(dueVal+'T23:59:59').getTime() : 0;
+      // Teilschritte: eine Zeile = ein Häkchen in der Aufgabe
+      var stepsEl=$('ntSteps');
+      var steps=(stepsEl ? stepsEl.value : '').split('\n')
+        .map(function(x){ return x.trim(); })
+        .filter(function(x){ return !!x; })
+        .slice(0,20)
+        .map(function(x){ return { t:x.slice(0,120), d:false }; });
       var photo=_pendingTaskImg;
       var batch=db.batch();
       targets.forEach(function(sk){
@@ -6168,6 +6816,7 @@ function bindActions(){
         }
         if(due) data.due=due;
         if(photo) data.photo=photo;
+        if(steps.length) data.steps=steps.map(function(s){ return {t:s.t, d:false}; });
         batch.set(ref,data);
       });
       // withBusy sperrt den Knopf während des Speicherns → keine doppelten Aufgaben
@@ -6175,6 +6824,7 @@ function bindActions(){
         return batch.commit()
           .then(function(){
             $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value=''; $('ntCustomWrap').style.display='none'; $('ntDue').value='';
+            if($('ntSteps')) $('ntSteps').value='';
             if($('ntAssign')) $('ntAssign').value='';
             $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');
             $('ntStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
