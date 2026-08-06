@@ -820,3 +820,40 @@ exports.sendTestReport = region
     }
     return { ok: true, empfaenger: empfaenger, tage: tage };
   });
+
+/* ── Papierkorb automatisch leeren ──
+   Gelöschtes bleibt 30 Tage liegen und verschwindet dann von selbst.
+   Ohne diesen Lauf würde der Papierkorb ewig wachsen: bei Aufgaben mit
+   Foto sind das schnell hunderte Kilobyte je Eintrag.
+
+   Wichtig: Bei gelöschten Dokumenten liegt der Dateiinhalt weiterhin in
+   documentData. Der wird hier mit entfernt – sonst bliebe der Platz
+   dauerhaft belegt, obwohl niemand mehr an die Datei herankommt. */
+exports.purgeTrash = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('30 3 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const grenze = Date.now() - 30 * 86400000;
+    let snap;
+    try {
+      snap = await db.collection('trash').where('deletedAt', '<', grenze).limit(400).get();
+    } catch (e) { console.error('Papierkorb lesen:', e); return null; }
+    if (snap.empty) return null;
+
+    const batch = db.batch();
+    let n = 0;
+    snap.forEach(doc => {
+      const t = doc.data() || {};
+      batch.delete(doc.ref);
+      if (t.col === 'documents' && t.orig && t.data && t.data.kind !== 'link') {
+        batch.delete(db.collection('documentData').doc(t.orig));
+      }
+      n++;
+    });
+    try {
+      await batch.commit();
+      console.log('Papierkorb: ' + n + ' Eintraege endgueltig entfernt.');
+    } catch (e) { console.error('Papierkorb leeren:', e); }
+    return null;
+  });

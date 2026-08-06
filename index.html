@@ -1243,6 +1243,16 @@ html{font-size:var(--fs,100%)}
 .msg-audio audio{height:36px;max-width:240px}
 .au-len{font-size:.74rem;color:var(--text-3);white-space:nowrap}
 
+/* Papierkorb */
+.trash-row{display:flex;align-items:center;gap:11px;padding:11px 0;
+  border-top:1px solid var(--line)}
+.trash-row:first-child{border-top:none}
+.trash-main{flex:1;min-width:0}
+.trash-main b{display:block;font-weight:600;font-size:.92rem;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trash-main span{color:var(--text-3);font-size:.76rem}
+.trash-row .btn{flex-shrink:0}
+
 /* Angeheftete Nachricht über dem Chat */
 .pin-bar{display:none;align-items:center;gap:9px;padding:9px 14px;flex-shrink:0;
   background:rgba(56,189,248,.1);border-bottom:1px solid rgba(56,189,248,.32);
@@ -2339,6 +2349,18 @@ var FIREBASE_CONFIG = {
             <button class="btn btn-ghost btn-sm" id="expXls" style="width:100%">⬇️ Alles als Excel speichern</button>
             <button class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">⬇️ Alles als Daten-Datei (JSON)</button>
           </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3>🗑 Papierkorb</h3>
+              <span class="todo-count" id="trashCount"></span>
+            </div>
+            <p class="hint">Gelöschte Aufgaben, Putzaufgaben, Infos, Dokumente und
+              Brett-Beiträge bleiben 30 Tage hier liegen. Chat- und Direktnachrichten
+              nicht – die werden oft absichtlich gelöscht.</p>
+            <div id="trashList"></div>
+            <button class="btn btn-ghost btn-sm" id="trashEmpty" data-chef-only="1"
+              style="width:100%;margin-top:12px">Papierkorb endgültig leeren</button>
+          </div>
           <div class="card" data-chef-only="1">
             <h3>📧 Monatsbericht</h3>
             <p class="hint">Kommt automatisch am Ersten jedes Monats um 8 Uhr per E-Mail.
@@ -3280,6 +3302,138 @@ function hideUndo(){
   var bar=$('undoBar'); if(bar) bar.classList.remove('show');
   clearTimeout(_undoTimer); _undoFn=null;
 }
+/* ============================================================
+   PAPIERKORB
+   ------------------------------------------------------------
+   Die Rückgängig-Leiste hilft nur acht Sekunden lang. Wer erst am
+   nächsten Tag merkt, dass etwas fehlt, hatte bisher Pech. Gelöschtes
+   wandert deshalb zusätzlich in einen Papierkorb und bleibt dort 30 Tage.
+
+   Bewusst NICHT für Chat- und Direktnachrichten: die werden oft und
+   absichtlich gelöscht, und ein Papierkorb voller Nachrichten wäre eher
+   ein Datenschutzproblem als eine Hilfe.
+   ============================================================ */
+var TRASH_TAGE = 30;
+var TRASH_LABEL = {
+  todos:'Aufgabe', cleaning:'Putzaufgabe', announcements:'Ankündigung',
+  documents:'Dokument', board:'Brett-Beitrag'
+};
+
+/* Kopie in den Papierkorb legen. Läuft absichtlich OHNE Fehlermeldung an
+   den Benutzer: das Löschen selbst hat schon geklappt, und eine Warnung
+   über den Papierkorb würde nur verunsichern. */
+function toTrash(col, sk, item){
+  if(!item || !session) return Promise.resolve();
+  var data={};
+  Object.keys(item).forEach(function(k){ if(k!=='id') data[k]=item[k]; });
+  return db.collection('trash').add({
+    col:col, sk:sk||null, orig:item.id, data:data,
+    deletedBy:session.name, deletedByUid:session.uid, deletedAt:Date.now()
+  }).catch(function(e){ console.warn('Papierkorb:', e.message); });
+}
+
+var _trash=[], _trashUnsub=null;
+function listenTrash(){
+  if(!canManage()) return;
+  if(_trashUnsub){ _trashUnsub(); _trashUnsub=null; }
+
+  // Der Chef darf alles sehen und sortiert direkt in der Abfrage.
+  // Der Leiter darf nur seine Studios sehen – deshalb MUSS die Abfrage
+  // selbst schon danach filtern: Firestore weist eine Abfrage komplett ab,
+  // sobald auch nur ein Treffer nicht gelesen werden dürfte.
+  // Bewusst ohne orderBy, denn "where + orderBy" auf verschiedenen Feldern
+  // bräuchte einen zusätzlichen Index. Sortiert wird hier in der App.
+  var q;
+  if(isChef()){
+    q=db.collection('trash').orderBy('deletedAt','desc').limit(100);
+  } else {
+    var mk=(managedKeys()||[]).slice(0,30);   // "in" verträgt höchstens 30
+    if(!mk.length){ _trash=[]; renderTrash(); return; }
+    q=db.collection('trash').where('sk','in',mk).limit(100);
+  }
+
+  _trashUnsub=q.onSnapshot(function(snap){
+    _trash=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+      .sort(function(a,b){ return (b.deletedAt||0)-(a.deletedAt||0); });
+    renderTrash();
+  }, function(e){ console.warn('Papierkorb:', e.message); });
+}
+
+function renderTrash(){
+  var box=$('trashList'), cnt=$('trashCount'); if(!box) return;
+  var grenze=Date.now()-TRASH_TAGE*86400000;
+  var list=_trash.filter(function(t){ return (t.deletedAt||0)>grenze; });
+  if(cnt) cnt.textContent = list.length ? list.length+(list.length===1?' Eintrag':' Einträge') : '';
+  if(!list.length){
+    box.innerHTML='<p class="att-ok">✓ Papierkorb ist leer.</p>';
+    return;
+  }
+  box.innerHTML=list.map(function(t){
+    var was=TRASH_LABEL[t.col]||'Eintrag';
+    var titel=(t.data&&(t.data.title||t.data.name||t.data.text))||'(ohne Titel)';
+    var tage=Math.max(0, TRASH_TAGE-Math.floor((Date.now()-(t.deletedAt||0))/86400000));
+    return '<div class="trash-row">'+
+      '<div class="trash-main"><b>'+esc(String(titel).slice(0,70))+'</b>'+
+      '<span>'+esc(was)+(t.sk?' · '+esc(studioName(t.sk)):'')+' · gelöscht von '+
+      esc(t.deletedBy||'?')+' · '+fmtDateTime(t.deletedAt)+
+      ' · noch '+tage+' Tage</span></div>'+
+      '<button class="btn btn-ghost btn-sm" data-restore="'+esc(t.id)+'">Zurückholen</button>'+
+      '</div>';
+  }).join('');
+  box.querySelectorAll('[data-restore]').forEach(function(b){
+    b.addEventListener('click',function(){ restoreFromTrash(b.getAttribute('data-restore')); });
+  });
+}
+
+/* Wohin gehört ein Eintrag zurück? */
+function trashRef(t){
+  if(t.col==='todos' || t.col==='cleaning'){
+    if(!t.sk) return null;
+    return db.collection('studios').doc(t.sk).collection(t.col).doc(t.orig);
+  }
+  if(t.col==='announcements') return db.collection('announcements').doc(t.orig);
+  if(t.col==='documents')     return db.collection('documents').doc(t.orig);
+  if(t.col==='board')         return db.collection('board').doc(t.orig);
+  return null;
+}
+
+function restoreFromTrash(id){
+  var t=_trash.filter(function(x){ return x.id===id; })[0];
+  if(!t){ toast('Eintrag nicht gefunden.',true); return; }
+  var ref=trashRef(t);
+  if(!ref){ toast('Dieser Eintrag lässt sich nicht zurückholen.',true); return; }
+  ref.set(t.data||{})
+    .then(function(){
+      // Erst nach erfolgreichem Zurückschreiben aus dem Papierkorb nehmen –
+      // sonst wäre der Eintrag bei einem Fehler ganz weg
+      return db.collection('trash').doc(id).delete();
+    })
+    .then(function(){
+      toast((TRASH_LABEL[t.col]||'Eintrag')+' zurückgeholt ✓');
+      if(t.col==='cleaning' && t.sk) schedulePutzplanSheets(t.sk);
+    })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+
+function emptyTrash(){
+  var n=_trash.length;
+  if(!n){ toast('Der Papierkorb ist schon leer.'); return; }
+  if(!confirm('Papierkorb endgültig leeren?\n\n'+n+' Eintrag'+(n===1?'':'e')+
+              ' werden unwiderruflich gelöscht.')) return;
+  var batch=db.batch();
+  _trash.forEach(function(t){
+    batch.delete(db.collection('trash').doc(t.id));
+    // Jetzt darf auch der Dateiinhalt weg – vorher wäre das Zurückholen
+    // nur eine leere Hülle gewesen
+    if(t.col==='documents' && t.data && t.data.kind!=='link' && t.orig){
+      batch.delete(db.collection('documentData').doc(t.orig));
+    }
+  });
+  batch.commit()
+    .then(function(){ toast('Papierkorb geleert'); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+
 /* Allgemein: einen gelöschten Eintrag zurückholen – mit derselben Kennung,
    damit alles (Reihenfolge, Verweise) wieder passt.
    ref  = das Dokument in der Datenbank
@@ -3790,7 +3944,7 @@ function showApp(){
     $('docUploadCard').style.display='block'; buildDocStudios(); buildDocCatSelect();
     setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
-  if(canManage()) listenEmployees();     // Leiter braucht sie für Geburtstage/Lesestand
+  if(canManage()){ listenEmployees(); listenTrash(); }
   if(isChef()){
     listenChefs();
     buildEmpStudios();
@@ -4602,8 +4756,12 @@ function docToTodo(d){
 
 function deleteDoc(d){
   if(!confirm('Dokument „'+(d.name||d.fileName)+'" löschen?\n\nEs verschwindet für alle Studios. Das lässt sich nicht rückgängig machen.')) return;
+  var backup=JSON.parse(JSON.stringify(d));
   db.collection('documents').doc(d.id).delete().then(function(){
-    if(d.kind!=='link') db.collection('documentData').doc(d.id).delete().catch(function(){});
+    // Die Metadaten wandern in den Papierkorb. Der Datei-Inhalt bleibt in
+    // documentData liegen und wird beim Zurückholen wieder gefunden –
+    // deshalb löschen wir ihn erst, wenn der Papierkorb geleert wird.
+    toTrash('documents', null, backup);
     toast('Dokument gelöscht ✓');
   }).catch(function(e){ toast(errMsg(e),true); });
 }
@@ -4631,6 +4789,7 @@ function stopListeners(){
   if(_dmThreadsUnsub){ _dmThreadsUnsub(); _dmThreadsUnsub=null; }
   if(_obUnsub){ _obUnsub(); _obUnsub=null; }
   if(_chefUnsub){ _chefUnsub(); _chefUnsub=null; }
+  if(_trashUnsub){ _trashUnsub(); _trashUnsub=null; }
   if(_tplUnsub){ _tplUnsub(); _tplUnsub=null; }
   if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
@@ -5245,7 +5404,10 @@ function renderBoard(){
     x.addEventListener('click',function(){
       var id=x.getAttribute('data-bbdel'), backup=copyOf(_board, id);
       db.collection('board').doc(id).delete()
-        .then(function(){ offerUndoDoc(db.collection('board').doc(id), backup, 'Beitrag'); })
+        .then(function(){
+          toTrash('board', null, backup);
+          offerUndoDoc(db.collection('board').doc(id), backup, 'Beitrag');
+        })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -5855,7 +6017,9 @@ function bindTodoClicks(area){
       // Gelöschtes lässt sich 8 Sekunden lang zurückholen (Papierkorb im Kopf)
       var backup=t ? JSON.parse(JSON.stringify(t)) : null;
       db.collection('studios').doc(sk).collection('todos').doc(id).delete()
-        .then(function(){ if(backup) offerUndoTodo(sk, backup); })
+        .then(function(){
+          if(backup){ toTrash('todos', sk, backup); offerUndoTodo(sk, backup); }
+        })
         .catch(function(e){ toast(errMsg(e),true); });
     });
     // Frist verschieben: +1 Tag / +1 Woche / Frist entfernen
@@ -5934,7 +6098,10 @@ function renderAnnouncements(anns){
         if(!confirm('Ankündigung löschen?\n\nSie verschwindet bei allen Mitarbeitern.')) return;
         var id=b.dataset.id, backup=copyOf(_allAnns, id);
         db.collection('announcements').doc(id).delete()
-          .then(function(){ offerUndoDoc(db.collection('announcements').doc(id), backup, 'Ankündigung'); })
+          .then(function(){
+            toTrash('announcements', null, backup);
+            offerUndoDoc(db.collection('announcements').doc(id), backup, 'Ankündigung');
+          })
           .catch(function(e){ toast(errMsg(e),true); });
       });
     });
@@ -6079,7 +6246,7 @@ function showChefTab(id, keep){
   });
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
   if(id==='report') renderReport();
-  if(id==='system') renderSysInfo();
+  if(id==='system'){ renderSysInfo(); renderTrash(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
 
@@ -6803,6 +6970,7 @@ function bindPutzplanClicks(box){
       db.collection('studios').doc(sk).collection('cleaning').doc(id).delete()
         .then(function(){
           schedulePutzplanSheets(sk);
+          toTrash('cleaning', sk, backup);
           offerUndoDoc(db.collection('studios').doc(sk).collection('cleaning').doc(id),
             backup, 'Putzaufgabe', function(){ schedulePutzplanSheets(sk); });
         })
@@ -8445,6 +8613,9 @@ function bindActions(){
     // Auswertung: Zeitraum wechseln + Bericht speichern
     var rr=$('repRange'); if(rr) rr.addEventListener('change', renderReport);
     var rx=$('repExport'); if(rx) rx.addEventListener('click', exportReport);
+
+    // Papierkorb endgültig leeren
+    var te=$('trashEmpty'); if(te) te.addEventListener('click', emptyTrash);
 
     // Sicherung herunterladen
     var ex=$('expXls'); if(ex) ex.addEventListener('click', exportAllXls);

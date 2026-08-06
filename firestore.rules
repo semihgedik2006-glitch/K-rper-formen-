@@ -288,6 +288,22 @@ service cloud.firestore {
         || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // ── Papierkorb ──
+    // Gelöschtes liegt hier 30 Tage. Hineinlegen darf jeder Eingeloggte –
+    // wer den Eintrag löschen durfte, darf ihn auch sichern. Ansehen,
+    // zurückholen und endgültig entfernen ist Sache der Verwaltung.
+    // Der Studio-Leiter sieht nur Einträge aus seinen Studios; Einträge
+    // ohne Studio-Bezug (Infos, Dokumente, Brett) bleiben Chef-Sache.
+    match /trash/{trashId} {
+      allow read: if isChef()
+        || (isLeiter() && resource.data.sk != null && manages(resource.data.sk));
+      allow create: if signedIn()
+        && request.resource.data.deletedByUid == request.auth.uid;
+      allow update: if false;                    // Papierkorb wird nicht bearbeitet
+      allow delete: if isChef()
+        || (isLeiter() && resource.data.sk != null && manages(resource.data.sk));
+    }
+
     // ── Wochen-Sicherungen (Material + Putzplan als Excel) – nur Chef ──
     match /archives/{weekId} {
       allow read, write: if isChef();
