@@ -1243,6 +1243,23 @@ html{font-size:var(--fs,100%)}
 .msg-audio audio{height:36px;max-width:240px}
 .au-len{font-size:.74rem;color:var(--text-3);white-space:nowrap}
 
+/* Angeheftete Nachricht über dem Chat */
+.pin-bar{display:none;align-items:center;gap:9px;padding:9px 14px;flex-shrink:0;
+  background:rgba(56,189,248,.1);border-bottom:1px solid rgba(56,189,248,.32);
+  font-size:.85rem;animation:pinIn .35s var(--ease-ios)}
+.pin-bar.show{display:flex}
+@keyframes pinIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.pin-ico{flex-shrink:0}
+.pin-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-weight:600}
+.pin-go{flex-shrink:0;background:none;border:none;color:var(--accent);cursor:pointer;
+  font-family:var(--font-body);font-weight:700;font-size:.8rem;padding:4px 6px}
+.pin-x{flex-shrink:0;background:none;border:none;color:var(--text-3);cursor:pointer;
+  font-size:.9rem;padding:4px 6px;border-radius:7px;transition:color .2s,background .2s}
+@media (hover:hover){ .pin-x:hover{color:var(--danger);background:rgba(251,78,109,.1)} }
+/* angehefteter Zustand am Werkzeug-Knopf */
+.msg-tool.on{opacity:1;filter:none}
+
 /* Chef-Zugänge */
 .chef-me{font-size:.76rem;color:var(--text-3);font-style:italic;white-space:nowrap}
 
@@ -1696,6 +1713,14 @@ var FIREBASE_CONFIG = {
           <button class="btn btn-primary btn-sm" id="notifEnable">Aktivieren</button>
         </div>
         <div class="chat-channels" id="chatChannels"></div>
+        <!-- Angeheftete Nachricht: bleibt oben stehen, damit Wichtiges nicht
+             im Verlauf verschwindet -->
+        <div class="pin-bar" id="pinBar">
+          <span class="pin-ico">📌</span>
+          <span class="pin-txt" id="pinText"></span>
+          <button class="pin-go" id="pinGo" title="Zur Nachricht springen">ansehen</button>
+          <button class="pin-x" id="pinOff" title="Loslösen" aria-label="Loslösen">✕</button>
+        </div>
         <div class="chat-scroll" id="chatScroll"></div>
         <button class="scroll-fab" id="scrollFab" aria-label="Nach unten">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
@@ -2031,12 +2056,15 @@ var FIREBASE_CONFIG = {
               <input class="inp" id="docName" type="text" placeholder="z. B. Hygieneplan 2026" maxlength="80" /></div>
             <div class="field"><label for="docLink">…oder Link statt Datei (für große Dateien)</label>
               <input class="inp" id="docLink" type="url" placeholder="https://drive.google.com/…" /></div>
+            <div class="field"><label for="docCat">Kategorie</label>
+              <select class="inp" id="docCat"></select></div>
             <div class="field"><label>Für welche Studios?</label>
               <label class="studio-check" id="docAllWrap"><input type="checkbox" id="docAll" /><span><b>Alle Studios</b></span></label>
               <div class="studio-checks" id="docStudios"></div></div>
             <button class="btn btn-primary btn-sm" id="docUpload">Hinzufügen</button>
             <p class="em-saved" id="docNote"></p>
           </div>
+          <div class="chip-row" id="docCatRow" style="margin-bottom:12px"></div>
           <div id="docList"></div>
         </div>
       </section>
@@ -3202,6 +3230,39 @@ function bindShortcuts(){
   });
 }
 
+/* ── Angeheftete Nachricht ──
+   Zeigt die eine angeheftete Nachricht des Kanals über dem Verlauf. Der
+   Balken verschwindet von selbst, wenn nichts angeheftet ist. */
+function renderPinBar(){
+  var bar=$('pinBar'); if(!bar) return;
+  var m=(_curMsgs||[]).filter(function(x){ return x.pinned; })[0];
+  if(!m){ bar.classList.remove('show'); return; }
+  bar.classList.add('show');
+  var txt=$('pinText');
+  if(txt) txt.textContent=(m.name||'')+': '+(m.text || (m.audio?'🎤 Sprachnachricht':(m.img?'📷 Foto':'')));
+  var go=$('pinGo');
+  if(go) go.onclick=function(){
+    var el=document.querySelector('[data-mid="'+m.id+'"]');
+    if(el){
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.classList.add('just-done');
+      setTimeout(function(){ el.classList.remove('just-done'); },900);
+    } else toast('Die Nachricht ist nicht mehr im geladenen Verlauf.');
+  };
+  var off=$('pinOff');
+  if(off){
+    // Loslösen darf nur die Verwaltung – sonst könnte jeder die Info
+    // wegräumen, die für alle oben stehen soll
+    off.style.display = canManage() ? '' : 'none';
+    off.onclick=function(){
+      db.collection('channels').doc(currentChannel).collection('messages').doc(m.id)
+        .update({ pinned:false })
+        .then(function(){ toast('Losgelöst'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    };
+  }
+}
+
 /* ── Rückgängig ──
    Nach dem Löschen erscheint 8 Sekunden lang eine Leiste. Ein Tipp darauf
    legt den Eintrag wieder an. Damit ist Löschen nicht mehr endgültig und
@@ -3726,7 +3787,7 @@ function showApp(){
   buildTeamSelect();
   if(canManage()){
     buildChefSelects(); listenInventoryAll(); restoreDrafts();
-    $('docUploadCard').style.display='block'; buildDocStudios();
+    $('docUploadCard').style.display='block'; buildDocStudios(); buildDocCatSelect();
     setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
   if(canManage()) listenEmployees();     // Leiter braucht sie für Geburtstage/Lesestand
@@ -4368,7 +4429,7 @@ function uploadDoc(){
   if(link){
     btn.disabled=true; note.style.color='var(--text-2)'; note.textContent='Wird gespeichert …';
     db.collection('documents').add({
-      name:name||link, kind:'link', url:link,
+      name:name||link, kind:'link', url:link, cat:(($('docCat')||{}).value||''),
       studios:target, uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
     }).then(function(){ note.style.color='var(--accent-d)'; note.textContent='✓ Link hinzugefügt.'; resetForm(); btn.disabled=false; })
       .catch(function(e){ note.style.color='#ff8a8a'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
@@ -4390,6 +4451,7 @@ function uploadDoc(){
     var id=ref.id;
     ref.set({
       name:name, fileName:file.name, kind:'file', size:file.size, type:file.type||'',
+      cat:(($('docCat')||{}).value||''),
       studios:target, uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
     }).then(function(){
       return db.collection('documentData').doc(id).set({ data:dataUrl });
@@ -4431,14 +4493,65 @@ function docStudiosLabel(d){
   return d.studios.map(studioName).join(', ');
 }
 
+/* ── Kategorien für Dokumente ──
+   Feste Liste statt freier Eingabe: bei freien Schlagworten entstehen
+   erfahrungsgemäß "Hygiene", "hygiene" und "Hygieneplan" nebeneinander,
+   und dann findet niemand mehr etwas. */
+var DOC_CATS = [
+  {id:'',          name:'Ohne Kategorie', ico:'📄'},
+  {id:'hygiene',   name:'Hygiene',        ico:'🧼'},
+  {id:'technik',   name:'Technik',        ico:'🔧'},
+  {id:'personal',  name:'Personal',       ico:'👥'},
+  {id:'vertrag',   name:'Verträge',       ico:'📑'},
+  {id:'marketing', name:'Marketing',      ico:'📣'},
+  {id:'sonstiges', name:'Sonstiges',      ico:'📦'}
+];
+var _docCat='alle';
+function docCatOf(d){ return d.cat||''; }
+function docCatMeta(id){
+  for(var i=0;i<DOC_CATS.length;i++){ if(DOC_CATS[i].id===(id||'')) return DOC_CATS[i]; }
+  return DOC_CATS[0];
+}
+function buildDocCatSelect(){
+  var sel=$('docCat'); if(!sel) return;
+  sel.innerHTML=DOC_CATS.map(function(c){
+    return '<option value="'+c.id+'">'+c.ico+' '+esc(c.name)+'</option>';
+  }).join('');
+}
+/* Filterleiste: zeigt nur Kategorien, in denen wirklich etwas liegt */
+function renderDocCatRow(list){
+  var row=$('docCatRow'); if(!row) return;
+  var zaehler={};
+  list.forEach(function(d){ var c=docCatOf(d); zaehler[c]=(zaehler[c]||0)+1; });
+  var vorhanden=DOC_CATS.filter(function(c){ return zaehler[c.id]; });
+  if(vorhanden.length<2){ row.innerHTML=''; row.style.display='none'; return; }
+  row.style.display='flex';
+  row.innerHTML='<button class="chip'+(_docCat==='alle'?' on':'')+'" data-dcat="alle">Alle ('+list.length+')</button>'+
+    vorhanden.map(function(c){
+      return '<button class="chip'+(_docCat===c.id?' on':'')+'" data-dcat="'+c.id+'">'+
+        c.ico+' '+esc(c.name)+' ('+zaehler[c.id]+')</button>';
+    }).join('');
+  row.querySelectorAll('[data-dcat]').forEach(function(b){
+    b.addEventListener('click',function(){
+      _docCat=b.getAttribute('data-dcat'); tick(8); renderDocs(_allDocs);
+    });
+  });
+}
+
 function renderDocs(docs){
   var box=$('docList'); if(!box) return;
   _allDocs=docs;
-  var list=docs.filter(docVisible);
-  if(!list.length){ box.innerHTML=emptyHTML('Keine Dokumente','Hier erscheinen Dateien von der Leitung.'); return; }
+  var sichtbar=docs.filter(docVisible);
+  renderDocCatRow(sichtbar);
+  var list = _docCat==='alle' ? sichtbar
+    : sichtbar.filter(function(d){ return docCatOf(d)===_docCat; });
+  if(!sichtbar.length){ box.innerHTML=emptyHTML('Keine Dokumente','Hier erscheinen Dateien von der Leitung.'); return; }
+  if(!list.length){ box.innerHTML=emptyHTML('Nichts in dieser Kategorie','Wähle oben eine andere aus.'); return; }
   var chef=canManage();
   box.innerHTML=list.map(function(d){
-    var meta=docStudiosLabel(d)+' · '+(d.kind==='link'?'Link':fmtSize(d.size))+' · '+fmtTime(d.ts);
+    var cm=docCatMeta(docCatOf(d));
+  var meta=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+
+    docStudiosLabel(d)+' · '+(d.kind==='link'?'Link':fmtSize(d.size))+' · '+fmtTime(d.ts);
     var openBtn=(d.kind==='link')
       ? '<a class="btn btn-ghost btn-sm" href="'+esc(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'
       : '<button class="btn btn-ghost btn-sm doc-open">Öffnen</button>';
@@ -4676,6 +4789,7 @@ function renderMessages(msgs){
       '<button class="msg-tool" data-reply="'+esc(m.id)+'" title="Antworten" aria-label="Antworten">↩</button>'+
       '<button class="msg-tool" data-react="'+esc(m.id)+'" title="Reagieren" aria-label="Reagieren">☺</button>'+
       '<button class="msg-tool" data-fwd="'+esc(m.id)+'" title="Weiterleiten" aria-label="Weiterleiten">↪</button>'+
+      (canManage()?'<button class="msg-tool'+(m.pinned?' on':'')+'" data-pin="'+esc(m.id)+'" data-pinned="'+(m.pinned?'1':'')+'" title="'+(m.pinned?'Loslösen':'Oben anheften')+'" aria-label="Anheften">📌</button>':'')+
       (canEdit?'<button class="msg-tool" data-edit="'+esc(m.id)+'" title="Bearbeiten" aria-label="Bearbeiten">✎</button>':'')+
       delBtn+'</span>';
     // Zitat der Nachricht, auf die geantwortet wurde
@@ -4692,6 +4806,7 @@ function renderMessages(msgs){
       fwd+quote+bodyHtml+audioHtml+imgHtml+reactionsHTML(m)+'</div>';
   });
   box.innerHTML=html;
+  renderPinBar();
   var lo=$('loadOlder');
   if(lo) lo.addEventListener('click',function(){
     lo.textContent='Wird geladen …'; lo.disabled=true;
@@ -4795,6 +4910,24 @@ function bindMessageTools(box){
   });
   box.querySelectorAll('[data-react]').forEach(function(b){
     b.addEventListener('click',function(e){ e.stopPropagation(); openReactPicker(b, b.getAttribute('data-react')); });
+  });
+  box.querySelectorAll('[data-pin]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      var id=b.getAttribute('data-pin');
+      var war=b.getAttribute('data-pinned')==='1';
+      // Immer nur EINE angeheftete Nachricht je Kanal. Zwei Pinnwände
+      // nebeneinander wären wieder unübersichtlich.
+      var batch=db.batch();
+      var col=db.collection('channels').doc(currentChannel).collection('messages');
+      (_curMsgs||[]).forEach(function(m){
+        if(m.pinned && m.id!==id) batch.update(col.doc(m.id), { pinned:false });
+      });
+      batch.update(col.doc(id), { pinned: !war });
+      batch.commit()
+        .then(function(){ toast(war?'Losgelöst':'Oben angeheftet 📌'); })
+        .catch(function(err){ toast(errMsg(err),true); });
+    });
   });
   box.querySelectorAll('[data-fwd]').forEach(function(b){
     b.addEventListener('click',function(e){
@@ -7150,7 +7283,10 @@ function doSearch(q){
     });
   });
   _allDocs.filter(docVisible).forEach(function(d){
-    if(hit((d.name||'')+' '+(d.fileName||''))) res.push({type:'Dokument',main:d.name||d.fileName,sub:docStudiosLabel(d),view:'docs'});
+    var cm=docCatMeta(docCatOf(d));
+    if(hit((d.name||'')+' '+(d.fileName||'')+' '+cm.name))
+      res.push({type:'Dokument',main:d.name||d.fileName,
+        sub:(docCatOf(d)?cm.name+' · ':'')+docStudiosLabel(d),view:'docs'});
   });
   _allAnns.forEach(function(a){
     var forMe = session.role==='chef'||!a.target||a.target==='all'||session.studioKeys.indexOf(a.target)>=0;
@@ -7179,6 +7315,44 @@ function doSearch(q){
       }
     });
   });
+  // Personen im Team
+  (_allUsers||[]).forEach(function(u){
+    if(u.system || u.uid===session.uid) return;
+    if(hit((u.name||'')+' '+(u.status||''))){
+      res.push({type:'Person',main:u.name||'?',
+        sub:roleLabel(u.role)+((u.studios&&u.studios.length)?' · '+u.studios.join(', '):''),
+        view:'dm'});
+    }
+  });
+  // Schwarzes Brett
+  (_board||[]).forEach(function(b){
+    if(hit((b.text||'')+' '+(b.name||''))){
+      res.push({type:'Brett',main:b.text,sub:(b.name||'')+' · '+fmtDateTime(b.ts),view:'team'});
+    }
+  });
+  // Abwesenheiten des gerade geöffneten Studios
+  (_absences||[]).forEach(function(a){
+    if(hit((a.name||'')+' '+(a.note||'')+' '+(a.type||''))){
+      var f=(a.from||'').split('-').reverse().join('.'), t=(a.to||'').split('-').reverse().join('.');
+      res.push({type:'Abwesenheit',main:(a.name||'')+' · '+(a.type||''),
+        sub:f+' bis '+t+' · '+(ABS_LABEL[absStatus(a)]||''),view:'team'});
+    }
+  });
+  // Übergabe-Notizen
+  (_handovers||[]).forEach(function(h){
+    if(hit((h.text||'')+' '+(h.name||''))){
+      res.push({type:'Übergabe',main:h.text,sub:(h.name||'')+' · '+fmtDateTime(h.ts),view:'team'});
+    }
+  });
+  // Aufgaben-Vorlagen (nur Verwaltung)
+  if(canManage()){
+    (_templates||[]).forEach(function(t){
+      if(hit((t.name||'')+' '+(t.title||''))){
+        res.push({type:'Vorlage',main:t.name,sub:t.title||'',view:'chef'});
+      }
+    });
+  }
+
   if(!res.length){ box.innerHTML='<div class="search-empty">Nichts gefunden.</div>'; return; }
   box.innerHTML=res.slice(0,40).map(function(r){
     return '<div class="sr" data-view="'+r.view+'"><span class="sr-type">'+esc(r.type)+'</span>'+

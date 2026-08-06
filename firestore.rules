@@ -78,6 +78,9 @@ service cloud.firestore {
             && request.time.toMillis() < resource.data.ts + 900000
             && request.resource.data.diff(resource.data)
                  .affectedKeys().hasOnly(['text','editedAt','mentions']))
+        // Anheften ist Sache der Verwaltung: was oben steht, sehen alle
+        || (manages(channelId)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned']))
       );
       // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
       allow delete: if isChef()
