@@ -9,19 +9,38 @@ service cloud.firestore {
     function myProfile() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
-    function isChef() {
+    function hasProfile() {
       return signedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && myProfile().role == 'chef';
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function isChef() {
+      return hasProfile() && myProfile().role == 'chef';
+    }
+    // Studio-Leiter: wie ein Chef, aber nur in den eigenen Studios
+    function isLeiter() {
+      return hasProfile() && myProfile().role == 'leiter';
+    }
+    // Studios, die ich verwalten darf (als Kennungen, z. B. "studio-6")
+    function myKeys() {
+      return myProfile().get('studioKeys', []);
+    }
+    // Darf ich in DIESEM Studio verwalten?
+    function manages(studioKey) {
+      return isChef() || (isLeiter() && studioKey in myKeys());
     }
 
     // ── Benutzerprofile ──
     match /users/{uid} {
       allow read: if signedIn();
-      // eigenes Profil (Chef-Registrierung) ODER der Chef legt Mitarbeiter an
+      // eigenes Profil (Chef-Registrierung) ODER der Chef legt Zugänge an
       allow create: if request.auth.uid == uid || isChef();
-      // eigenes Profil ODER der Chef ordnet Studios zu
-      allow update: if request.auth.uid == uid || isChef();
+      // Der Chef darf alles ändern. Alle anderen dürfen nur ihr eigenes Profil
+      // bearbeiten und dabei NICHT Rolle oder Studio-Zuordnung anfassen –
+      // sonst könnte sich jemand selbst zum Studio-Leiter machen.
+      allow update: if isChef()
+        || (request.auth.uid == uid
+            && !request.resource.data.diff(resource.data)
+                 .affectedKeys().hasAny(['role','studios','studio','studioKeys']));
       // nur der Chef kann einen Zugang entfernen
       allow delete: if isChef();
     }
@@ -37,6 +56,7 @@ service cloud.firestore {
       allow update: if false;
       // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
       allow delete: if isChef()
+        || manages(channelId)
         || (signedIn()
             && resource.data.uid == request.auth.uid
             && request.time.toMillis() < resource.data.ts + 3600000);
@@ -45,8 +65,8 @@ service cloud.firestore {
     // ── Aufgaben pro Studio ──
     match /studios/{studioKey}/todos/{todoId} {
       allow read: if signedIn();
-      allow create: if isChef();                       // Aufgaben nur vom Chef
-      allow delete: if isChef();
+      allow create: if manages(studioKey);   // Chef überall, Leiter in seinen Studios
+      allow delete: if manages(studioKey);
       // Mitarbeiter dürfen abhaken / Foto anhängen (update erlaubt für Eingeloggte)
       allow update: if signedIn();
     }
@@ -54,8 +74,8 @@ service cloud.firestore {
     // ── Putzplan pro Studio (Reinigungsaufgaben) ──
     match /studios/{studioKey}/cleaning/{taskId} {
       allow read: if signedIn();
-      allow create: if isChef();                       // Putzaufgaben nur vom Chef
-      allow delete: if isChef();
+      allow create: if manages(studioKey);   // Chef überall, Leiter in seinen Studios
+      allow delete: if manages(studioKey);
       allow update: if signedIn();                     // Mitarbeiter dürfen abhaken
     }
 
@@ -65,7 +85,7 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.resource.data.byUid == request.auth.uid;
       // Chef darf jede Notiz löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
-      allow delete: if isChef()
+      allow delete: if manages(studioKey)
         || (signedIn()
             && resource.data.byUid == request.auth.uid
             && request.time.toMillis() < resource.data.ts + 3600000);
@@ -75,30 +95,39 @@ service cloud.firestore {
     // ── Ankündigungen ──
     match /announcements/{annId} {
       allow read: if signedIn();
-      allow create: if isChef()
-        && request.resource.data.uid == request.auth.uid;
-      // Chef darf alles; Mitarbeiter dürfen nur das Lesen markieren (readBy)
+      // Chef an alle oder einzelne Studios; Leiter nur an seine Studios
+      allow create: if request.resource.data.uid == request.auth.uid
+        && (isChef()
+            || (isLeiter() && request.resource.data.target in myKeys()));
+      // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
       allow update: if isChef()
+        || (isLeiter() && resource.data.target in myKeys())
         || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']));
-      allow delete: if isChef();
+      allow delete: if isChef()
+        || (isLeiter() && resource.data.target in myKeys());
     }
 
     // ── Materialbestand pro Studio ──
     // Jeder Eingeloggte darf den Bestand lesen und eintragen.
     match /inventory/{studioKey} {
       allow read: if signedIn();
+      // Eintragen dürfen alle Eingeloggten; das Soll-Limit setzt die Verwaltung
       allow write: if signedIn();
     }
 
     // ── Dokumente (Metadaten) ──
     match /documents/{docId} {
       allow read: if signedIn();
-      allow create, update, delete: if isChef();
+      // Leiter darf nur Dokumente anlegen, die ausschließlich seine Studios betreffen
+      allow create: if isChef()
+        || (isLeiter() && request.resource.data.studios.hasOnly(myKeys()));
+      allow update, delete: if isChef()
+        || (isLeiter() && resource.data.studios.hasOnly(myKeys()));
     }
     // ── Dokument-Inhalte (kleine Dateien direkt in der Datenbank, kostenlos) ──
     match /documentData/{docId} {
       allow read: if signedIn();
-      allow create, update, delete: if isChef();
+      allow create, update, delete: if isChef() || isLeiter();
     }
 
     // ── Konfiguration (z. B. Onboarding-Checkliste) ──
