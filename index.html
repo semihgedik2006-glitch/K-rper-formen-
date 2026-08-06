@@ -923,6 +923,39 @@ body.light .react{background:rgba(20,10,40,.05)}
 /* Schriftgröße: skaliert die ganze App */
 html{font-size:var(--fs,100%)}
 
+/* ── Schichtplan ── */
+.shift-day{border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:8px;
+  background:var(--bg-soft);animation:cardUp .4s var(--ease-ios) both}
+.shift-day.today{border-color:var(--accent);background:rgba(34,211,238,.08)}
+.shift-day-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px}
+.shift-day-h b{font-family:var(--font-head);font-size:1rem}
+.shift-day-h span{font-size:.75rem;color:var(--text-3)}
+.shift-entry{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;
+  background:var(--bg-2);margin-bottom:5px;font-size:.9rem}
+.shift-time{font-weight:800;color:var(--accent);white-space:nowrap;font-size:.84rem}
+.shift-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shift-note{font-size:.76rem;color:var(--text-3)}
+.shift-x{background:none;border:none;color:var(--text-3);cursor:pointer;padding:2px 6px;border-radius:6px}
+.shift-x:hover{color:var(--danger)}
+.shift-empty{font-size:.84rem;color:var(--text-3);padding:3px 2px}
+.abs-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
+  font-size:.78rem;font-weight:700;background:rgba(251,191,36,.15);color:var(--warm);
+  border:1px solid rgba(251,191,36,.35);margin:2px 4px 2px 0}
+.abs-chip.krank{background:rgba(251,78,109,.14);color:var(--danger);border-color:rgba(251,78,109,.35)}
+
+/* ── Abwesenheiten & Brett ── */
+.abs-row,.bb-item,.ho-item{padding:11px 13px;background:var(--bg-soft);border:1px solid var(--line);
+  border-radius:12px;margin-bottom:8px;animation:cardUp .4s var(--ease-ios) both}
+.bb-item{border-left:3px solid var(--accent-3)}
+.ho-item{border-left:3px solid var(--warm)}
+.bb-head,.ho-head{display:flex;justify-content:space-between;gap:9px;font-size:.74rem;
+  color:var(--text-3);margin-top:6px}
+.bb-kind{display:inline-block;font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:999px;
+  background:rgba(244,114,182,.15);color:var(--accent-3);margin-bottom:5px}
+.bb-text,.ho-text{font-size:.94rem;white-space:pre-wrap;word-break:break-word}
+.mini-x{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.72rem;padding:0}
+.mini-x:hover{color:var(--danger)}
+
 /* ── Tagesüberblick ── */
 .today{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
   padding:15px 17px;animation:cardUp .5s var(--ease-ios) both}
@@ -1417,6 +1450,108 @@ var FIREBASE_CONFIG = {
             <p class="em-saved" id="ppAddNote"></p>
           </div>
 
+        </div>
+      </section>
+
+      <!-- TEAM -->
+      <!-- ============================================================
+           SEITE: TEAM – Schichtplan, Abwesenheiten, Übergabe, Schwarzes Brett
+           ============================================================ -->
+      <section class="view" id="view-team">
+        <div class="view-head"><h2>Team</h2><p>Schichtplan, Abwesenheiten, Übergaben und Aushänge.</p></div>
+        <div class="scroll-area">
+          <div class="mat-bar">
+            <select class="inp" id="teamStudio"></select>
+          </div>
+          <div class="pm-tabs" style="margin:0 0 14px">
+            <button class="pm-tab on" data-teamtab="schicht">📅 Schichten</button>
+            <button class="pm-tab" data-teamtab="abwesend">🌴 Abwesend</button>
+            <button class="pm-tab" data-teamtab="uebergabe">🔁 Übergabe</button>
+            <button class="pm-tab" data-teamtab="brett">📌 Brett</button>
+          </div>
+
+          <!-- Schichtplan -->
+          <div id="teamPaneSchicht">
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+                <h3 id="shiftWeekLabel">Diese Woche</h3>
+                <div style="display:flex;gap:7px">
+                  <button class="btn btn-ghost btn-sm" id="shiftPrev">‹</button>
+                  <button class="btn btn-ghost btn-sm" id="shiftToday">Heute</button>
+                  <button class="btn btn-ghost btn-sm" id="shiftNext">›</button>
+                </div>
+              </div>
+              <p class="hint">Wer arbeitet wann? Abwesenheiten werden automatisch angezeigt.</p>
+              <div id="shiftGrid" style="margin-top:10px"></div>
+            </div>
+            <div class="card" id="shiftAddCard" style="display:none">
+              <h3>➕ Schicht eintragen</h3>
+              <div class="row">
+                <div class="field"><label for="shDate">Tag</label><input class="inp" id="shDate" type="date" /></div>
+                <div class="field"><label for="shPerson">Person</label><select class="inp" id="shPerson"></select></div>
+              </div>
+              <div class="row">
+                <div class="field"><label for="shFrom">Von</label><input class="inp" id="shFrom" type="time" value="09:00" /></div>
+                <div class="field"><label for="shTo">Bis</label><input class="inp" id="shTo" type="time" value="17:00" /></div>
+              </div>
+              <div class="field"><label for="shNote">Notiz (optional)</label>
+                <input class="inp" id="shNote" type="text" maxlength="80" placeholder="z. B. Einweisung neuer Kunde" /></div>
+              <button class="btn btn-primary btn-sm" id="shAdd">Schicht speichern</button>
+            </div>
+          </div>
+
+          <!-- Abwesenheiten -->
+          <div id="teamPaneAbwesend" style="display:none">
+            <div class="card">
+              <h3>🌴 Abwesenheit melden</h3>
+              <p class="hint">Urlaub, Krankheit oder frei – erscheint im Schichtplan.</p>
+              <div class="row">
+                <div class="field"><label for="abFrom">Von</label><input class="inp" id="abFrom" type="date" /></div>
+                <div class="field"><label for="abTo">Bis</label><input class="inp" id="abTo" type="date" /></div>
+              </div>
+              <div class="field"><label for="abType">Art</label>
+                <select class="inp" id="abType">
+                  <option value="urlaub">🌴 Urlaub</option>
+                  <option value="krank">🤒 Krank</option>
+                  <option value="frei">🏠 Frei</option>
+                </select></div>
+              <div class="field"><label for="abNote">Notiz (optional)</label>
+                <input class="inp" id="abNote" type="text" maxlength="80" /></div>
+              <button class="btn btn-primary btn-sm" id="abAdd">Melden</button>
+            </div>
+            <div class="card"><h3>Kommende Abwesenheiten</h3><div id="absList"></div></div>
+          </div>
+
+          <!-- Übergabe -->
+          <div id="teamPaneUebergabe" style="display:none">
+            <div class="card">
+              <h3>🔁 Übergabe an die nächste Schicht</h3>
+              <p class="hint">Was muss die nächste Schicht wissen? Bleibt 7 Tage sichtbar.</p>
+              <div class="mat-add">
+                <input class="inp" id="hoNew" type="text" placeholder="z. B. Gerät 3 macht Geräusche …" maxlength="300" />
+                <button class="btn btn-ghost btn-sm" id="hoAdd">+ Eintrag</button>
+              </div>
+              <div id="hoList" style="margin-top:12px"></div>
+            </div>
+          </div>
+
+          <!-- Schwarzes Brett -->
+          <div id="teamPaneBrett" style="display:none">
+            <div class="card">
+              <h3>📌 Schwarzes Brett</h3>
+              <p class="hint">Aushänge fürs ganze Team – Tausch, Mitfahrgelegenheit, Lob.</p>
+              <div class="field"><textarea class="inp" id="bbText" maxlength="500" placeholder="Dein Aushang …"></textarea></div>
+              <div class="field"><label for="bbType">Art</label>
+                <select class="inp" id="bbType">
+                  <option value="info">💬 Info</option>
+                  <option value="tausch">🔄 Schichttausch gesucht</option>
+                  <option value="lob">👏 Lob / Danke</option>
+                  <option value="mitfahr">🚗 Mitfahrgelegenheit</option>
+                </select></div>
+              <button class="btn btn-primary btn-sm" id="bbAdd">Anpinnen</button>
+              <div id="bbList" style="margin-top:14px"></div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -2509,6 +2644,7 @@ function showApp(){
   buildChannels();
   buildMaterialSelect();
   buildPutzplanSelect();
+  buildTeamSelect();
   if(canManage()){
     buildChefSelects(); listenInventoryAll(); restoreDrafts();
     $('docUploadCard').style.display='block'; buildDocStudios();
@@ -2614,6 +2750,7 @@ var NAV = [
   {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
   {id:'material', label:'Material', icon:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>'},
   {id:'putzplan', label:'Putzplan', icon:'<path d="M3 21h18"/><path d="M9 21V9l6-4v16"/><path d="M15 9l4-2v14"/><path d="M9 13h.01M9 17h.01"/>'},
+  {id:'team', label:'Team', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
   {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
   {id:'archive', label:'Archiv', icon:'<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>', manageOnly:true},
@@ -2654,6 +2791,7 @@ function showView(id){
   }
   if(id==='material') ensureMaterialLoaded();
   if(id==='putzplan') ensurePutzplanLoaded();
+  if(id==='team') ensureTeamLoaded();
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
 
@@ -3139,7 +3277,9 @@ function stopListeners(){
   if(_periodTimer){ clearInterval(_periodTimer); _periodTimer=null; }
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _chanUnsubs=[];
   _lastPing=0;
-  _matStudioKey=null; _ppStudioKey=null;
+  [_shiftUnsub,_absUnsub,_hoUnsub,_bbUnsub].forEach(function(u){ if(u) try{ u(); }catch(e){} });
+  _shiftUnsub=_absUnsub=_hoUnsub=_bbUnsub=null;
+  _matStudioKey=null; _ppStudioKey=null; _teamStudioKey=null;
 }
 
 /* Chat: wechselt bei Kanalwechsel */
@@ -3452,6 +3592,188 @@ var _todoFilter='';
 
 /* Aktiver Schnellfilter: alle | offen | faellig | meine – und Sortierung */
 var _todoMode='alle', _todoSort='standard';
+
+/* ============================================================
+   TEAM-BEREICH
+   Schichtplan, Abwesenheiten, Übergaben, Schwarzes Brett.
+   Daten:
+     studios/{sk}/shifts       – einzelne Schichten
+     studios/{sk}/absences     – Urlaub/Krank/Frei
+     studios/{sk}/handovers    – Übergabe-Notizen (7 Tage)
+     board                     – Schwarzes Brett (für alle Studios)
+   ============================================================ */
+var _teamStudioKey=null, _shiftWeek=null;
+var _shifts=[], _absences=[], _handovers=[], _board=[];
+var _shiftUnsub=null, _absUnsub=null, _hoUnsub=null, _bbUnsub=null;
+
+/* Montag der Woche, in der das Datum liegt */
+function mondayOf(d){
+  var m=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  m.setDate(m.getDate()-((m.getDay()+6)%7));
+  return m;
+}
+function ymd(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function buildTeamSelect(){
+  var sel=$('teamStudio'); if(!sel) return;
+  var list = canManage() ? managedStudios()
+    : (session.studios||[]).slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
+  sel.innerHTML=list.map(function(s){ return '<option value="'+esc(studioKey(s))+'">'+esc(s)+'</option>'; }).join('');
+  sel.onchange=function(){ loadTeam(sel.value); };
+  // Schichten darf nur die Verwaltung eintragen
+  var addCard=$('shiftAddCard');
+  if(addCard) addCard.style.display = canManage() ? 'block' : 'none';
+}
+function ensureTeamLoaded(){
+  var sel=$('teamStudio'); if(!sel) return;
+  if(!sel.options.length) buildTeamSelect();
+  if(!_shiftWeek) _shiftWeek=mondayOf(new Date());
+  if(!_teamStudioKey && sel.value) loadTeam(sel.value);
+}
+function loadTeam(sk){
+  if(!sk) return;
+  _teamStudioKey=sk;
+  [_shiftUnsub,_absUnsub,_hoUnsub].forEach(function(u){ if(u) try{ u(); }catch(e){} });
+  var ref=db.collection('studios').doc(sk);
+  _shiftUnsub=ref.collection('shifts').orderBy('date').onSnapshot(function(sn){
+    _shifts=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+    renderShifts();
+  }, function(e){ console.warn('Schichten:',e.message); });
+  _absUnsub=ref.collection('absences').orderBy('from').onSnapshot(function(sn){
+    _absences=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+    renderShifts(); renderAbsences();
+  }, function(e){ console.warn('Abwesenheiten:',e.message); });
+  _hoUnsub=ref.collection('handovers').orderBy('ts','desc').limit(40).onSnapshot(function(sn){
+    _handovers=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+    renderHandovers();
+  }, function(e){ console.warn('Übergabe:',e.message); });
+  if(!_bbUnsub){
+    _bbUnsub=db.collection('board').orderBy('ts','desc').limit(50).onSnapshot(function(sn){
+      _board=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderBoard();
+    }, function(e){ console.warn('Brett:',e.message); });
+  }
+  buildShiftPersonSelect();
+}
+
+/* Woche als Liste von 7 Tagen zeichnen */
+function renderShifts(){
+  var box=$('shiftGrid'); if(!box || !_shiftWeek) return;
+  var lab=$('shiftWeekLabel');
+  var ende=new Date(_shiftWeek); ende.setDate(ende.getDate()+6);
+  var o={day:'2-digit',month:'2-digit'};
+  if(lab) lab.textContent = _shiftWeek.toLocaleDateString('de-DE',o)+' – '+ende.toLocaleDateString('de-DE',o);
+  var heute=ymd(new Date());
+  var namen=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+  var html='';
+  for(var i=0;i<7;i++){
+    var d=new Date(_shiftWeek); d.setDate(d.getDate()+i);
+    var key=ymd(d);
+    var tages=_shifts.filter(function(x){ return x.date===key; })
+      .sort(function(a,b){ return (a.from||'').localeCompare(b.from||''); });
+    // Abwesenheiten, die diesen Tag berühren
+    var abw=_absences.filter(function(a){ return a.from<=key && a.to>=key; });
+    html+='<div class="shift-day'+(key===heute?' today':'')+'">'+
+      '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+d.toLocaleDateString('de-DE',o)+'</span></div>';
+    if(tages.length){
+      html+=tages.map(function(x){
+        var del = canManage() ? '<button class="shift-x" data-shdel="'+esc(x.id)+'" aria-label="entfernen">✕</button>' : '';
+        return '<div class="shift-entry"><span class="shift-time">'+esc(x.from||'')+'–'+esc(x.to||'')+'</span>'+
+          '<span class="shift-name">'+esc(x.name||'')+(x.note?' <span class="shift-note">· '+esc(x.note)+'</span>':'')+'</span>'+del+'</div>';
+      }).join('');
+    } else {
+      html+='<div class="shift-empty">Niemand eingeteilt</div>';
+    }
+    if(abw.length){
+      html+='<div style="margin-top:5px">'+abw.map(function(a){
+        var ico=a.type==='krank'?'🤒':(a.type==='urlaub'?'🌴':'🏠');
+        return '<span class="abs-chip'+(a.type==='krank'?' krank':'')+'">'+ico+' '+esc(a.name||'')+'</span>';
+      }).join('')+'</div>';
+    }
+    html+='</div>';
+  }
+  box.innerHTML=html;
+  box.querySelectorAll('[data-shdel]').forEach(function(b){
+    b.addEventListener('click',function(){
+      if(!confirm('Schicht entfernen?')) return;
+      db.collection('studios').doc(_teamStudioKey).collection('shifts').doc(b.getAttribute('data-shdel'))
+        .delete().catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
+function buildShiftPersonSelect(){
+  var sel=$('shPerson'); if(!sel) return;
+  var keys=[_teamStudioKey];
+  var people=_allUsers.filter(function(u){
+    if(u.system) return false;
+    var uk=(u.studioKeys&&u.studioKeys.length)?u.studioKeys:(u.studios||[]).map(studioKey);
+    return uk.indexOf(_teamStudioKey)>=0;
+  }).sort(function(a,b){ return (a.name||'').localeCompare(b.name||'','de'); });
+  sel.innerHTML=people.map(function(u){ return '<option value="'+esc(u.uid)+'">'+esc(u.name||'?')+'</option>'; }).join('')
+    || '<option value="">– niemand zugeordnet –</option>';
+}
+
+function renderAbsences(){
+  var box=$('absList'); if(!box) return;
+  var heute=ymd(new Date());
+  var kommend=_absences.filter(function(a){ return a.to>=heute; });
+  if(!kommend.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Keine Einträge.</p>'; return; }
+  box.innerHTML=kommend.map(function(a){
+    var ico=a.type==='krank'?'🤒':(a.type==='urlaub'?'🌴':'🏠');
+    var mine=a.uid===session.uid;
+    var del=(mine||canManage())?'<button class="mini-x" data-absdel="'+esc(a.id)+'">löschen</button>':'';
+    var f=a.from.split('-').reverse().join('.'), t=a.to.split('-').reverse().join('.');
+    return '<div class="abs-row"><b>'+ico+' '+esc(a.name||'')+'</b>'+
+      '<div style="font-size:.86rem;color:var(--text-2);margin-top:2px">'+f+' bis '+t+
+      (a.note?' · '+esc(a.note):'')+'</div>'+
+      (del?'<div class="bb-head"><span></span>'+del+'</div>':'')+'</div>';
+  }).join('');
+  box.querySelectorAll('[data-absdel]').forEach(function(b){
+    b.addEventListener('click',function(){
+      db.collection('studios').doc(_teamStudioKey).collection('absences').doc(b.getAttribute('data-absdel'))
+        .delete().catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
+
+function renderHandovers(){
+  var box=$('hoList'); if(!box) return;
+  var grenze=Date.now()-7*86400000;
+  var list=_handovers.filter(function(h){ return (h.ts||0)>grenze; });
+  if(!list.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Keine Übergaben in den letzten 7 Tagen.</p>'; return; }
+  box.innerHTML=list.map(function(h){
+    var mine=h.uid===session.uid;
+    var del=(mine||canManage())?'<button class="mini-x" data-hodel="'+esc(h.id)+'">löschen</button>':'';
+    return '<div class="ho-item"><div class="ho-text">'+linkify(esc(h.text||''))+'</div>'+
+      '<div class="ho-head"><span>'+esc(h.name||'')+' · '+fmtDateTime(h.ts)+'</span>'+del+'</div></div>';
+  }).join('');
+  box.querySelectorAll('[data-hodel]').forEach(function(b){
+    b.addEventListener('click',function(){
+      db.collection('studios').doc(_teamStudioKey).collection('handovers').doc(b.getAttribute('data-hodel'))
+        .delete().catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
+
+var BB_KINDS={info:'💬 Info',tausch:'🔄 Schichttausch',lob:'👏 Lob',mitfahr:'🚗 Mitfahrgelegenheit'};
+function renderBoard(){
+  var box=$('bbList'); if(!box) return;
+  if(!_board.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Noch keine Aushänge.</p>'; return; }
+  box.innerHTML=_board.map(function(b){
+    var mine=b.uid===session.uid;
+    var del=(mine||isChef())?'<button class="mini-x" data-bbdel="'+esc(b.id)+'">löschen</button>':'';
+    return '<div class="bb-item"><span class="bb-kind">'+esc(BB_KINDS[b.kind]||'Info')+'</span>'+
+      '<div class="bb-text">'+linkify(esc(b.text||''))+'</div>'+
+      '<div class="bb-head"><span>'+esc(b.name||'')+' · '+fmtDateTime(b.ts)+'</span>'+del+'</div></div>';
+  }).join('');
+  box.querySelectorAll('[data-bbdel]').forEach(function(x){
+    x.addEventListener('click',function(){
+      db.collection('board').doc(x.getAttribute('data-bbdel')).delete()
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
 
 /* ── Tagesüberblick ──
    Kurze Zusammenfassung ganz oben: Was ist heute zu tun? Jede Kachel ist
@@ -5378,6 +5700,73 @@ function bindActions(){
   // Material: eigenes Item hinzufügen
   var matAdd=$('matAdd'); if(matAdd) matAdd.addEventListener('click',addMaterial);
   var matNew=$('matNewName'); if(matNew) matNew.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addMaterial(); } });
+
+  // ── Team: Reiter, Schichten, Abwesenheiten, Übergabe, Brett ──
+  document.querySelectorAll('[data-teamtab]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var t=b.getAttribute('data-teamtab');
+      document.querySelectorAll('[data-teamtab]').forEach(function(x){ x.classList.toggle('on', x===b); });
+      [['schicht','teamPaneSchicht'],['abwesend','teamPaneAbwesend'],
+       ['uebergabe','teamPaneUebergabe'],['brett','teamPaneBrett']].forEach(function(pair){
+        var el=$(pair[1]); if(el) el.style.display = (pair[0]===t) ? '' : 'none';
+      });
+      tick(8);
+    });
+  });
+  var sp=$('shiftPrev'), sn=$('shiftNext'), st=$('shiftToday');
+  if(sp) sp.addEventListener('click',function(){ _shiftWeek.setDate(_shiftWeek.getDate()-7); renderShifts(); tick(8); });
+  if(sn) sn.addEventListener('click',function(){ _shiftWeek.setDate(_shiftWeek.getDate()+7); renderShifts(); tick(8); });
+  if(st) st.addEventListener('click',function(){ _shiftWeek=mondayOf(new Date()); renderShifts(); tick(8); });
+  var shAdd=$('shAdd');
+  if(shAdd) shAdd.addEventListener('click',function(){
+    var btn=this;
+    var d=$('shDate').value, p=$('shPerson');
+    if(!d){ toast('Bitte einen Tag wählen.',true); return; }
+    if(!p||!p.value){ toast('Bitte eine Person wählen.',true); return; }
+    withBusy(btn,function(){
+      return db.collection('studios').doc(_teamStudioKey).collection('shifts').add({
+        date:d, from:$('shFrom').value||'09:00', to:$('shTo').value||'17:00',
+        uid:p.value, name:p.options[p.selectedIndex].text,
+        note:$('shNote').value.trim()||null,
+        createdBy:session.name, createdByUid:session.uid, ts:Date.now()
+      }).then(function(){ $('shNote').value=''; toast('Schicht eingetragen ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  var abAdd=$('abAdd');
+  if(abAdd) abAdd.addEventListener('click',function(){
+    var btn=this, f=$('abFrom').value, t=$('abTo').value||f;
+    if(!f){ toast('Bitte ein Startdatum wählen.',true); return; }
+    if(t<f){ toast('Das Ende liegt vor dem Beginn.',true); return; }
+    withBusy(btn,function(){
+      return db.collection('studios').doc(_teamStudioKey).collection('absences').add({
+        from:f, to:t, type:$('abType').value, note:$('abNote').value.trim()||null,
+        uid:session.uid, name:session.name, ts:Date.now()
+      }).then(function(){ $('abNote').value=''; toast('Abwesenheit gemeldet ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  var hoAdd=$('hoAdd'), hoNew=$('hoNew');
+  function addHandover(){
+    var t=(hoNew.value||'').trim(); if(!t) return;
+    hoNew.value='';
+    db.collection('studios').doc(_teamStudioKey).collection('handovers').add({
+      text:t, uid:session.uid, name:session.name, ts:Date.now()
+    }).catch(function(e){ toast(errMsg(e),true); });
+  }
+  if(hoAdd) hoAdd.addEventListener('click', addHandover);
+  if(hoNew) hoNew.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addHandover(); } });
+  var bbAdd=$('bbAdd');
+  if(bbAdd) bbAdd.addEventListener('click',function(){
+    var btn=this, t=$('bbText').value.trim();
+    if(!t){ toast('Bitte einen Text eingeben.',true); return; }
+    withBusy(btn,function(){
+      return db.collection('board').add({
+        text:t, kind:$('bbType').value, uid:session.uid, name:session.name, ts:Date.now()
+      }).then(function(){ $('bbText').value=''; toast('Angepinnt ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
 
   // ── Putzplan ──
   var ppNoteAdd=$('ppNoteAdd'); if(ppNoteAdd) ppNoteAdd.addEventListener('click',addPutzNote);

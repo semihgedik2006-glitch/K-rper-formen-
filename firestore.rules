@@ -225,6 +225,42 @@ service cloud.firestore {
       allow read, write: if isChef();
     }
 
+    // ── Schichtplan pro Studio ──
+    match /studios/{studioKey}/shifts/{shiftId} {
+      allow read: if signedIn();
+      // Einteilen darf nur die Verwaltung (Chef bzw. zuständiger Leiter)
+      allow create, update, delete: if manages(studioKey);
+    }
+
+    // ── Abwesenheiten (Urlaub / Krank / Frei) ──
+    match /studios/{studioKey}/absences/{absId} {
+      allow read: if signedIn();
+      // Jeder meldet sich selbst; die Verwaltung darf auch für andere eintragen
+      allow create: if signedIn()
+        && (request.resource.data.uid == request.auth.uid || manages(studioKey));
+      allow update: if manages(studioKey);
+      allow delete: if manages(studioKey)
+        || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // ── Übergabe-Notizen zwischen Schichten ──
+    match /studios/{studioKey}/handovers/{hoId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if manages(studioKey)
+        || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // ── Schwarzes Brett (für alle Studios gemeinsam) ──
+    match /board/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if isChef()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
     // ── Wochen-Sicherungen (Material + Putzplan als Excel) – nur Chef ──
     match /archives/{weekId} {
       allow read, write: if isChef();
