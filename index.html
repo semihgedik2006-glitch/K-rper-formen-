@@ -3030,6 +3030,8 @@ function doForward(kind, id, name){
    den Chef, der die App vermutlich am Rechner offen hat.
    ============================================================ */
 var KEYMAP=[
+  {k:'⌘K', t:'Suche – geht immer, auch beim Schreiben'},
+  {k:'Esc', t:'Aus dem Schreibfeld heraus / Fenster schließen'},
   {k:'1', t:'Start'},
   {k:'2', t:'Austausch (Chat)'},
   {k:'3', t:'Arbeit (Aufgaben)'},
@@ -3038,7 +3040,6 @@ var KEYMAP=[
   {k:'S', t:'Suche öffnen'},
   {k:'N', t:'Neue Aufgabe', manage:true},
   {k:'A', t:'Neue Ankündigung', manage:true},
-  {k:'Esc', t:'Fenster schließen'},
   {k:'?', t:'Diese Übersicht'}
 ];
 function renderKeysHelp(){
@@ -3066,23 +3067,37 @@ function closeAllModals(){
 }
 function bindShortcuts(){
   document.addEventListener('keydown',function(e){
-    if(e.key==='Escape'){ closeAllModals(); return; }
+    // Cmd+K bzw. Strg+K: Suche – funktioniert IMMER, auch beim Schreiben
+    if((e.metaKey||e.ctrlKey) && (e.key==='k'||e.key==='K')){
+      e.preventDefault();
+      if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      openSearch(); return;
+    }
+    if(e.key==='Escape'){
+      // Erst aus dem Schreibfeld heraus – danach sind die Kürzel wieder frei.
+      // (So kennt man es aus anderen Chat-Programmen.)
+      if(typingSomewhere() && !anyModalOpen()){
+        document.activeElement.blur();
+        return;
+      }
+      closeAllModals(); return;
+    }
     if(e.ctrlKey||e.metaKey||e.altKey) return;
     if(typingSomewhere() || anyModalOpen()) return;
     var k=e.key;
     var gruppen={'1':'home','2':'chat','3':'todos','4':'team','5':'chef'};
     if(gruppen[k]){
       if(k==='5' && !canManage()) return;
-      e.preventDefault(); showView(gruppen[k]); tick(8); return;
+      e.preventDefault(); showView(gruppen[k], true); tick(8); return;
     }
     var low=(k||'').toLowerCase();
     if(low==='s'){ e.preventDefault(); openSearch(); return; }
     if(low==='n' && canManage()){
-      e.preventDefault(); showView('chef'); showChefTab('erstellen');
+      e.preventDefault(); showView('chef', true); showChefTab('erstellen');
       setTimeout(function(){ var f=$('ntTitle'); if(f) f.focus(); },320); return;
     }
     if(low==='a' && canManage()){
-      e.preventDefault(); showView('chef'); showChefTab('erstellen');
+      e.preventDefault(); showView('chef', true); showChefTab('erstellen');
       setTimeout(function(){ var f=$('bcText'); if(f) f.focus(); },320); return;
     }
     if(k==='?'){ e.preventDefault(); renderKeysHelp(); $('keysModal').classList.add('show'); }
@@ -3824,7 +3839,7 @@ function bindShrinkHeaders(){
   });
 }
 
-function showView(id){
+function showView(id, fromKey){
   currentView=id;
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
   // Untere Leiste: die Gruppe markieren, zu der die Ansicht gehört
@@ -3839,7 +3854,10 @@ function showView(id){
   if(id==='chat'){
     markChannelRead(currentChannel);
     setTimeout(scrollBottom,60);
-    if(window.innerWidth>820){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
+    // Am Rechner springt der Schreibcursor ins Feld – aber nur, wenn man
+    // per Maus hierherkam. Wer mit der Tastatur navigiert, will weiter
+    // navigieren und nicht plötzlich im Textfeld feststecken.
+    if(window.innerWidth>820 && !fromKey){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
   }
   bindShrinkHeaders();
   if(id==='chef') buildChefTabs();
