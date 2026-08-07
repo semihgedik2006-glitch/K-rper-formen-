@@ -3523,7 +3523,12 @@ function emptyTrash(){
     }
   });
   batch.commit()
-    .then(function(){ toast('Papierkorb geleert'); })
+    .then(function(){
+      // Der Listener holt hoechstens 100 Eintraege. Liegt mehr drin, ist der
+      // Papierkorb danach NICHT leer – das darf die Meldung nicht behaupten.
+      toast(n>=100 ? 'Die ältesten 100 Einträge sind gelöscht – der Rest folgt gleich.'
+                   : 'Papierkorb geleert');
+    })
     .catch(function(e){ toast(errMsg(e),true); });
 }
 
