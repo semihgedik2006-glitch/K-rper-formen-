@@ -16,7 +16,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | 2 | **Startseite** | 🟢 fertig | 2–3 |
 | 3 | **Chat** | 🟢 fertig | 4 |
 | 4 | **Aufgaben** | 🟢 fertig | 5 |
-| 5 | Material | ⚪ offen | – |
+| 5 | **Material** | 🟢 fertig | 6 |
 | 6 | Geräte | ⚪ offen | – |
 | 7 | Team | ⚪ offen | – |
 | 8 | Dokumente | ⚪ offen | – |
@@ -374,6 +374,80 @@ den Schreibcursor in den Titel.
   Projektwerkzeug, das in einem Studio niemand pflegt.
 - **Kommentare an Aufgaben** — dafür ist der Chat da, und zwar der des
   Studios. Eine zweite Kommentarspur würde nur seltener gelesen.
+
+---
+
+## Sitzung 6 — 7. August 2026 · Bereich 5 · Material
+
+Die einzige Seite, auf der jemand **tippt statt tippt-und-weg**: Bestand
+zählen, Zahlen eintragen, weitergehen. Leitfrage: **kann man damit im Lager
+stehen und zählen, ohne sich zu verklicken?**
+
+### Gefundene Probleme
+
+| # | Problem | Schwere | Stand |
+|---|---|---|---|
+| M1 | **Der Nachbestell-Hinweis war nie zu sehen.** Das Markup trug ein Inline-`display:none`, das die Klasse `show` nicht überschreiben kann — „⚠️ 3 Artikel fehlen" wurde seit jeher gebaut und nie angezeigt | 🔴 kritisch | ✅ behoben |
+| M2 | **Die Namensspalte war 103 Pixel breit.** „Bein-Manschetten Größe 2 (Paare)" brach auf **fünf** Zeilen um; drei Zahlenfelder und ein Löschknopf nahmen den Rest | 🔴 hoch | ✅ behoben |
+| M3 | **Löschen ohne Rückfrage, direkt neben dem Zahlenfeld.** Ein Fehlgriff beim Zählen entfernte den Artikel sofort und endgültig | 🔴 hoch | ✅ behoben |
+| M4 | **Mitarbeiter durften löschen, aber kein Soll setzen.** Genau verkehrt herum | 🟠 mittel | ✅ behoben |
+| M5 | **Kein Weg von „3 Artikel fehlen" zu den drei Artikeln.** Bei 22 Zeilen sucht man sie einzeln | 🟠 mittel | ✅ behoben |
+| M6 | **Die Spaltenköpfe scrollten weg** — nach zehn Zeilen weiß niemand mehr, ob die mittlere Spalte „Soll" oder „Ist" ist | 🟠 mittel | ✅ behoben |
+| M7 | **Der Excel-Export über alle Studios stand ganz oben**, über der Liste, in die täglich Zahlen eingetragen werden | 🟡 klein | ✅ behoben |
+| M8 | Ein dreizeiliger Erklärsatz („Soll = … Ist = … Fehlt …") stand dauerhaft über der Tabelle | 🟡 klein | ✅ behoben |
+
+### Was gebaut wurde
+
+**M1 — der Hinweis erscheint.** Ein einzeiliger Fehler mit großer Wirkung:
+die Warnung, für die der ganze Bereich da ist, war unsichtbar. Jetzt steht
+sie über der Liste — und ist zugleich der Weg zum Filter.
+
+**M2 — der Name bekommt Platz.** Zahlenfelder von 56 auf 50 Pixel, Abstände
+enger, Löschknopf nur für die Verwaltung, Silbentrennung an. Namensspalte
+**103 → 160 Pixel**, längster Name **fünf → zwei Zeilen**, Tabelle
+**1.727 → 1.298 Pixel**. Alle Zeilen sind jetzt gleich hoch — das Auge
+findet die Spalte wieder, ohne zu suchen.
+
+**M3/M4 — Löschen ist eine Verwaltungssache mit Rückfrage.** Und danach acht
+Sekunden Rückgängig, mit Rückkehr an dieselbe Stelle in der Liste.
+*Hinweis zur Ehrlichkeit:* die Sicherheitsregeln erlauben allen Angemeldeten
+das Schreiben der Material-Sammlung — der Server kann „Soll setzen" nicht von
+„Ist eintragen" unterscheiden, weil beides im selben Dokument steht. Diese
+Trennung ist eine Regel der Oberfläche, genau wie beim Soll-Feld vorher auch.
+
+**M5 — „nur diese zeigen".** Ein Tipp auf den Hinweis blendet alles
+Vollständige aus, ein zweiter zeigt wieder alles. Zeilen mit Fehlbestand sind
+zusätzlich getönt.
+
+**Die Reihenfolge bleibt bewusst, wie sie ist.** Anders als bei den Aufgaben
+wird hier **nicht** nach Dringlichkeit sortiert: Die Liste bildet den Weg
+durchs Lager ab, und wer zählt, geht sie von oben nach unten durch. Eine
+Liste, die sich beim Eintragen umsortiert, macht das Zählen unmöglich.
+Deshalb Filter statt Sortierung.
+
+### Health Score · Material
+
+| Kriterium | vorher | jetzt | Begründung |
+|---|---|---|---|
+| UX | 4/10 | **8/10** | Man kann die Liste im Lager benutzen, ohne den Namen raten oder sich verklicken zu müssen. |
+| UI | 5/10 | **8/10** | Gleich hohe Zeilen, klebende Köpfe, getönte Fehlbestände. |
+| Performance | 8/10 | 8/10 | Unverändert: ein Dokument je Studio, verzögertes Speichern. |
+| Skalierbarkeit | 6/10 | 6/10 | Ein Dokument je Studio trägt einige hundert Artikel. Darüber bräuchte es eine eigene Sammlung. |
+| Wartbarkeit | 6/10 | 7/10 | Weniger Sonderfälle im Aufbau der Zeile. |
+| Konsistenz | 5/10 | **8/10** | Rückfrage und Rückgängig wie überall sonst; Rollentrennung wie beim Soll-Feld. |
+| Investor | 5/10 | **8/10** | Einkaufsliste, Bestellmail und Verbrauchs-Vorhersage waren schon stark — sie standen nur hinter einer Tabelle, die man nicht lesen konnte. |
+| Kaufwahrscheinlichkeit | 6/10 | **8/10** | |
+| Innovationsgrad | 6/10 | 6/10 | Die Vorhersage aus echten Wochen-Sicherungen bleibt der originelle Teil. |
+| Aufwand | — | klein | rund 90 Zeilen |
+
+### Bewusst NICHT gebaut
+
+- **Sortierung nach Fehlbestand** — siehe oben: die Reihenfolge ist der Weg
+  durchs Lager.
+- **Barcode-Scannen** — klingt gut, scheitert daran, dass Handtücher und
+  Manschetten keine Strichcodes tragen.
+- **Automatische Bestellung beim Lieferanten** — die Bestellmail ist fertig
+  vorbereitet; wer wirklich bestellt, soll ein Mensch bleiben.
 
 ---
 

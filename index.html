@@ -1652,13 +1652,24 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .mat-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 16px}
 .mat-bar select{flex:1;min-width:160px}
 .mat-table{margin-top:4px}
-.mat-head,.mat-row{display:grid;grid-template-columns:1fr 56px 56px 56px 30px;gap:6px;align-items:center}
-.mat-head{padding:0 0 8px;color:var(--text-3);font-size:.66rem;text-transform:uppercase;
+/* Schmalere Felder und der Löschknopf nur für die Verwaltung: der Name
+   bekommt dadurch statt 103 rund 190 Pixel. Vorher brach
+   „Bein-Manschetten Größe 2 (Paare)" auf FÜNF Zeilen um. */
+.mat-head,.mat-row{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:5px;align-items:center}
+.mat-head.chef,.mat-row.chef{grid-template-columns:1fr 50px 50px 50px 30px}
+/* Die Kopfzeile klebt: bei 22 Artikeln weiß man sonst nach dem Scrollen
+   nicht mehr, welche Spalte „Soll" und welche „Ist" ist. */
+.mat-head{position:sticky;top:0;z-index:2;padding:6px 0 8px;background:var(--bg-2);
+  color:var(--text-3);font-size:.66rem;text-transform:uppercase;
   letter-spacing:.4px;font-weight:700;overflow:hidden}
 .mat-head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mat-head span:nth-child(2),.mat-head span:nth-child(3),.mat-head span:nth-child(4){text-align:center}
 .mat-row{padding:9px 0;border-top:1px solid var(--line)}
-.mat-name{font-weight:600;font-size:.92rem;word-break:break-word}
+.mat-name{font-weight:600;font-size:.92rem;line-height:1.25;
+  overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
+/* Fehlt etwas, wird die ganze Zeile leicht getönt – beim Scrollen durch
+   22 Artikel sieht man so von weitem, wo etwas fehlt. */
+.mat-row.fehlt{background:rgba(251,191,36,.06)}
 .mat-row .num{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
   border-radius:9px;padding:7px 3px;color:var(--text);text-align:center;min-height:40px;font-size:15px}
 .mat-row input.num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,184,92,.13)}
@@ -1674,6 +1685,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .mat-add{display:flex;gap:8px;margin-top:14px}
 .mat-add input{flex:1}
 .mat-saved{font-size:.78rem;color:var(--accent-d);min-height:1.1em;margin-top:10px;transition:opacity .3s}
+.mat-alert-go{margin-left:auto;flex-shrink:0;background:none;border:none;cursor:pointer;
+  color:inherit;font-family:var(--font-body);font-weight:800;font-size:.8rem;
+  text-decoration:underline;padding:6px 2px;min-height:36px}
 .mat-alert{align-items:center;gap:10px;padding:11px 15px;margin-bottom:14px;border-radius:13px;
   background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);color:#ffb38c;
   font-size:.9rem;font-weight:600}
@@ -2051,7 +2065,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
         <div class="scroll-area" data-shrinks="1">
           <div class="mat-bar">
             <select class="inp" id="matStudio"></select>
-            <button class="btn btn-ghost btn-sm" id="matExport" style="display:none">⬇️ Excel-Export (alle)</button>
           </div>
           <div class="todo-tools" style="padding:0">
             <div class="todo-search">
@@ -2083,6 +2096,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <button class="btn btn-ghost btn-sm" id="shopXls">⬇️ Als Excel</button>
               <button class="btn btn-ghost btn-sm" id="shopCopy">📋 Kopieren</button>
               <button class="btn btn-ghost btn-sm" id="shopMail">📧 Bestellmail</button>
+              <!-- Der Gesamt-Export gehört hierher, nicht über die Liste, in
+                   die täglich Zahlen eingetragen werden. -->
+              <button class="btn btn-ghost btn-sm" id="matExport" style="display:none">⬇️ Alle Studios</button>
             </div>
             <div class="field" style="margin-top:10px;margin-bottom:0">
               <label for="shopMailTo">Adresse des Lieferanten (nur auf diesem Gerät gespeichert)</label>
@@ -2091,10 +2107,10 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
 
           <div class="card" style="margin-bottom:14px">
-            <p class="hint" style="margin:0 0 10px">
-              <b>Soll</b> = wie viel da sein sollte · <b>Ist</b> = wie viel wirklich da ist ·
-              <b>Fehlt</b> rechnet die App aus.</p>
-            <div class="mat-head"><span>Material</span><span>Soll</span><span>Ist</span><span>Fehlt</span><span></span></div>
+            <!-- Der dreizeilige Erklärsatz stand hier dauerhaft. „Soll" und
+                 „Ist" erklären sich über der Spalte; „Fehlt" wird gerechnet
+                 und erscheint als Abzeichen am Artikel. -->
+            <div class="mat-head" id="matHead"><span>Material</span><span>Soll</span><span>Ist</span><span>Fehlt</span><span></span></div>
             <div class="mat-table" id="matTable"></div>
             <div class="mat-add">
               <input class="inp" id="matNewName" type="text" placeholder="Eigenes Material hinzufügen …" maxlength="60" />
@@ -7796,53 +7812,97 @@ function loadMaterial(sk){
 function itemNeed(it){ return (it.limit>0) ? Math.max(0, it.limit-(it.have||0)) : (it.need||0); }
 
 var _matFilter='';
+var _matNurFehlende=false;   // Filter über die Nachbestell-Leiste
 function renderMaterial(){
   var tbl=$('matTable'); if(!tbl) return;
   var chef = canManage();
   var shown=0;
+  // Die Kopfzeile hat nur dann eine vierte Spalte, wenn es auch einen
+  // Löschknopf gibt – sonst stünden die Überschriften versetzt.
+  var kopf=$('matHead'); if(kopf) kopf.classList.toggle('chef', chef);
+  /* Die Namensspalte war 103 Pixel breit – drei Zahlenfelder und ein
+     Löschknopf nahmen den Rest. „Bein-Manschetten Größe 2 (Paare)" brach
+     dadurch auf FÜNF Zeilen um. Jetzt: schmalere Felder, „Fehlt" nur noch
+     als Abzeichen (es wird ohnehin gerechnet), und der Löschknopf nur für
+     die Verwaltung. Das verdoppelt die Breite für den Namen. */
   tbl.innerHTML=_matItems.map(function(it,idx){
     // Suchfilter: Zeile ausblenden, aber Index unverändert lassen
     if(_matFilter && (it.name||'').toLowerCase().indexOf(_matFilter)<0) return '';
+    var fehlt=itemNeed(it);
+    if(_matNurFehlende && fehlt<=0) return '';
     shown++;
-    var lim=it.limit||0, fehlt=itemNeed(it), warn=fehlt>0?' data-warn="1"':'';
+    var lim=it.limit||0, warn=fehlt>0?' data-warn="1"':'';
     var soll='<input class="num limit" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="limit" value="'+lim+'"'+(chef?'':' readonly')+' />';
     var have='<input class="num have" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="have" value="'+(it.have||0)+'" />';
-    var fehltCell = lim>0
+    // Mit gesetztem Soll ist „Fehlt" ein Rechenergebnis. Ohne Soll bleibt es
+    // eingebbar, sonst könnte man Fehlendes gar nicht melden.
+    var fehltZelle = lim>0
       ? '<div class="num computed" data-fehlt="'+idx+'"'+warn+'>'+fehlt+'</div>'
-      : '<input class="num need" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="need" value="'+(it.need||0)+'"'+warn+' />';
-    return '<div class="mat-row">'+
+      : '<input class="num need" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="need" value="'+(it.need||0)+'"'+warn+' title="Wie viele fehlen?" />';
+    return '<div class="mat-row'+(chef?' chef':'')+(fehlt>0?' fehlt':'')+'">'+
       '<div class="mat-name">'+esc(it.name)+'</div>'+
-      soll+have+fehltCell+
-      '<button class="mat-del" data-del="'+idx+'" title="Entfernen" aria-label="Entfernen">✕</button>'+
+      soll+have+fehltZelle+
+      (chef?'<button class="mat-del" data-del="'+idx+'" title="Entfernen" aria-label="Entfernen">✕</button>':'')+
     '</div>';
   }).join('');
   var mc=$('matCount');
-  if(mc) mc.textContent = _matFilter
+  if(mc) mc.textContent = (_matFilter||_matNurFehlende)
     ? (shown+(shown===1?' Treffer':' Treffer'))
     : (_matItems.length+' Artikel');
-  if(_matFilter && !shown) tbl.innerHTML='<p style="color:var(--text-3);font-size:.9rem;padding:8px 2px">Nichts gefunden.</p>';
+  if(!shown){
+    tbl.innerHTML='<p style="color:var(--text-3);font-size:.9rem;padding:8px 2px">'+
+      (_matNurFehlende && !_matFilter ? '✓ Nichts fehlt in diesem Studio.' : 'Nichts gefunden.')+'</p>';
+  }
   tbl.querySelectorAll('input.num').forEach(function(inp){
     inp.addEventListener('input',function(){
       var idx=+inp.dataset.idx, f=inp.dataset.f;
       _matItems[idx][f]=Math.max(0, parseInt(inp.value,10)||0);
-      var cell=tbl.querySelector('[data-fehlt="'+idx+'"]');
-      if(cell){ var fv=itemNeed(_matItems[idx]); cell.textContent=fv; if(fv>0) cell.setAttribute('data-warn','1'); else cell.removeAttribute('data-warn'); }
+      var zelle=tbl.querySelector('[data-fehlt="'+idx+'"]');
+      if(zelle){
+        var fv=itemNeed(_matItems[idx]);
+        zelle.textContent=fv;
+        if(fv>0) zelle.setAttribute('data-warn','1'); else zelle.removeAttribute('data-warn');
+      }
+      var reihe=inp.closest('.mat-row');
+      if(reihe) reihe.classList.toggle('fehlt', itemNeed(_matItems[idx])>0);
       if(f==='need'){ if(_matItems[idx].need>0) inp.setAttribute('data-warn','1'); else inp.removeAttribute('data-warn'); }
       scheduleMaterialSave();
     });
     if(inp.dataset.f==='limit') inp.addEventListener('change',function(){ renderMaterial(); });
   });
+  /* Löschen lag als 30 Pixel breiter Knopf direkt neben dem Zahlenfeld, das
+     man beim Zählen antippt – ein Fehlgriff hat den Artikel sofort und
+     endgültig entfernt. Jetzt mit Rückfrage und Rückgängig-Leiste. */
   tbl.querySelectorAll('[data-del]').forEach(function(b){
     b.addEventListener('click',function(){
-      _matItems.splice(+b.dataset.del,1); renderMaterial(); saveMaterialNow();
+      var idx=+b.dataset.del, it=_matItems[idx];
+      if(!it) return;
+      if(!confirm('„'+(it.name||'')+'" aus der Materialliste entfernen?')) return;
+      var kopie=JSON.parse(JSON.stringify(it));
+      _matItems.splice(idx,1); renderMaterial(); saveMaterialNow();
+      offerUndo('„'+(kopie.name||'')+'" entfernt', function(){
+        _matItems.splice(Math.min(idx,_matItems.length),0,kopie);
+        renderMaterial(); saveMaterialNow();
+      });
     });
   });
-  // Nachbestell-Alarm
+  // Nachbestell-Alarm – zugleich der Weg zum Filter „nur fehlende"
   var miss=_matItems.filter(function(it){ return itemNeed(it)>0; });
   var al=$('matAlert');
   if(al){
-    if(miss.length){ al.className='mat-alert show'; al.textContent='⚠️ '+miss.length+' Artikel fehlen – bitte nachbestellen.'; }
-    else { al.className='mat-alert'; al.style.display='none'; }
+    if(miss.length){
+      // Das Markup trägt ein Inline-„display:none", das die Klasse „show"
+      // nicht überschreiben kann – dieser Hinweis war deshalb nie zu sehen.
+      al.style.display='';
+      al.className='mat-alert show';
+      al.innerHTML='<span>⚠️ '+miss.length+(miss.length===1?' Artikel fehlt':' Artikel fehlen')+'</span>'+
+        '<button class="mat-alert-go" id="matAlertGo">'+(_matNurFehlende?'alle zeigen':'nur diese zeigen')+'</button>';
+      var go=$('matAlertGo');
+      if(go) go.addEventListener('click',function(){
+        _matNurFehlende=!_matNurFehlende; tick(8); renderMaterial();
+      });
+    }
+    else { al.className='mat-alert'; al.style.display='none'; _matNurFehlende=false; }
   }
   renderShoppingList();
   renderForecast();
