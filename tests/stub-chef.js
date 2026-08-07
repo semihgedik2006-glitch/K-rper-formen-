@@ -146,13 +146,25 @@
   ];
   var SHIFTS = {
     'studio-6': [
-      { id:'s1', date:'2026-08-06', from:'09:00', to:'14:00', uid:'testuid', name:'Test Chef', note:'Einweisung neue Kundin' },
-      { id:'s2', date:'2026-08-07', from:'16:00', to:'21:00', uid:'u2', name:'Anna Meier' }
+      // eigene Schicht -> "Ich kann nicht" muss erscheinen
+      { id:'s1', date:'2026-08-07', from:'09:00', to:'14:00', uid:'testuid', name:'Ich' },
+      // fremde, ausgeschriebene Schicht -> "Ich uebernehme"
+      { id:'s2', date:'2026-08-07', from:'16:00', to:'21:00', uid:'u2', name:'Anna Meier',
+        tausch:'offen', tauschVon:'u2', tauschTs:Date.now()-3600000 },
+      // jemand hat zugesagt -> wartet auf die Leitung
+      { id:'s3', date:'2026-08-07', from:'06:00', to:'09:00', uid:'u3', name:'Ben Kraus',
+        tausch:'zugesagt', tauschNeu:{ uid:'u2', name:'Anna Meier' }, tauschTs:Date.now()-1800000 }
     ],
     'studio-7': [
-      { id:'s3', date:'2026-08-09', from:'10:00', to:'15:00', uid:'testuid', name:'Test Chef' }
+      { id:'s4', date:'2026-08-07', from:'10:00', to:'15:00', uid:'testuid', name:'Ich' }
     ]
   };
+  var CERTS = [
+    { id:'z1', uid:'u2', name:'Anna Meier', art:'ersthelfer', bis:'2026-07-28', ts:Date.now() },
+    { id:'z2', uid:'u3', name:'Ben Kraus',  art:'ems',        bis:'2026-09-06', ts:Date.now() },
+    { id:'z3', uid:'testuid', name:'Ich',   art:'trainer',    bis:'2027-09-11', ts:Date.now() },
+    { id:'z4', uid:'u2', name:'Anna Meier', art:'sonstiges', bez:'Ernaehrungsberater', bis:'2026-12-05', ts:Date.now() }
+  ];
   function collection(path) {
     return {
       _p: path,
@@ -199,7 +211,8 @@
           : gd ? (DEVICES[gd[1]] || [])
           : gl ? (DEVLOG[gl[1]] || [])
           : gt ? (TODOS[gt[1]] || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []);
+          : (path === 'certificates' ? CERTS
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []));
         return Promise.resolve(makeSnap(list.map(function (d) {
           return { id: d.id, data: function () { return d; } };
         })));
@@ -208,6 +221,7 @@
         var m = /^studios\/(.+)\/todos$/.exec(path);
         var mc = /^studios\/(.+)\/cleaning$/.exec(path);
         var mn = /^studios\/(.+)\/cleaningNotes$/.exec(path);
+        var msh = /^studios\/(.+)\/shifts$/.exec(path);
         var md = /^studios\/(.+)\/devices$/.exec(path);
         var ml = /^studios\/(.+)\/deviceLog$/.exec(path);
         var ma = /^studios\/(.+)\/absences$/.exec(path);
@@ -218,11 +232,13 @@
         }
         var mm = /^channels\/(.+)\/messages$/.exec(path);
         var list = m ? (TODOS[m[1]] || []) : mc ? (CLEAN[mc[1]] || []) : mn ? (CLEANNOTES[mn[1]] || []) :
+                   msh ? (SHIFTS[msh[1]] || []) :
                    md ? (DEVICES[md[1]] || []) : ml ? (DEVLOG[ml[1]] || []) :
                    mm ? (mm[1]==='allgemein' ? MESSAGES : []) :
+                   (path==='certificates' ? CERTS :
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
-                   (path==='documents' ? DOCS : [])))));
+                   (path==='documents' ? DOCS : []))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();

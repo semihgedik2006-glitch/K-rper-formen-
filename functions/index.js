@@ -218,6 +218,77 @@ exports.dueTaskReminder = region.pubsub
     return null;
   });
 
+/* ── Ablaufende Nachweise ──
+   Erste-Hilfe-Kurs, Trainerlizenz, EMS-Einweisung: jedes mit eigenem
+   Ablaufdatum. Ohne Erinnerung faellt das erst auf, wenn es zu spaet ist.
+
+   Gemeldet wird an GENAU zwei Tagen: 60 und 14 Tage vorher, dazu einmal am
+   Tag des Ablaufs. Absichtlich nicht taeglich ab Tag 60 - eine Meldung, die
+   46-mal kommt, liest nach der dritten niemand mehr.
+
+   Die Person bekommt ihre eigene Meldung, der Chef eine Sammelmeldung.
+   Die Studio-Leitung bekommt nichts: Qualifikationsdaten gehen sie nichts
+   an (siehe firestore.rules). */
+const CERT_WARN_TAGE = [60, 14, 0];
+
+exports.certExpiry = region
+  .runWith({ timeoutSeconds: 120, memory: '256MB' })
+  .pubsub.schedule('every day 08:15')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const heute = new Date();
+    heute.setHours(0, 0, 0, 0);
+
+    let snap;
+    try { snap = await db.collection('certificates').get(); }
+    catch (e) { console.error('Nachweise lesen:', e); return null; }
+
+    const faellig = [];
+    snap.forEach(doc => {
+      const c = doc.data() || {};
+      if (!c.bis) return;
+      const bis = new Date(c.bis + 'T00:00:00');
+      if (isNaN(bis.getTime())) return;
+      const tage = Math.round((bis.getTime() - heute.getTime()) / 86400000);
+      if (CERT_WARN_TAGE.indexOf(tage) < 0) return;
+      faellig.push({ uid: c.uid, name: c.name || '', art: c.art || '', bez: c.bez || '', tage: tage });
+    });
+    if (!faellig.length) return null;
+
+    const NAMEN = {
+      ersthelfer: 'Erste-Hilfe-Kurs', trainer: 'Trainerlizenz', ems: 'EMS-Einweisung',
+      hygiene: 'Hygieneschulung', brandschutz: 'Brandschutzhelfer', sonstiges: 'Nachweis'
+    };
+    const bezeichnung = c => (c.art === 'sonstiges' && c.bez) ? c.bez : (NAMEN[c.art] || 'Nachweis');
+    const frist = t => t === 0 ? 'laeuft heute ab' : ('laeuft in ' + t + ' Tagen ab');
+
+    // 1. Jede betroffene Person einzeln
+    for (const c of faellig) {
+      if (!c.uid) continue;
+      try {
+        const tk = await collectTokens(d => d.uid === c.uid, null);
+        await sendPush(tk, 'Nachweis ' + frist(c.tage), bezeichnung(c));
+      } catch (e) { console.error('Nachweis-Push:', e); }
+    }
+
+    // 2. Der Chef einmal gesammelt
+    try {
+      const chefs = [];
+      const users = await db.collection('users').get();
+      users.forEach(d => { if ((d.data() || {}).role === 'chef') chefs.push(d.id); });
+      if (chefs.length) {
+        const tk = await collectTokens(d => chefs.indexOf(d.uid) >= 0, null);
+        const text = faellig.length === 1
+          ? (faellig[0].name + ': ' + bezeichnung(faellig[0]) + ' ' + frist(faellig[0].tage))
+          : (faellig.length + ' Nachweise laufen demnaechst ab');
+        await sendPush(tk, 'Nachweise', text);
+      }
+    } catch (e) { console.error('Nachweis-Chefmeldung:', e); }
+
+    console.log('Nachweise: ' + faellig.length + ' Meldungen verschickt.');
+    return null;
+  });
+
 /* ── Täglicher Geburtstagsgruß vom System-Account ── */
 exports.birthdayGreetings = region.pubsub
   .schedule('every day 08:00')
