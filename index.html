@@ -254,9 +254,21 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
 .view.show{display:flex}
-.view-head{padding:20px clamp(14px,4vw,28px) 12px;flex-shrink:0}
+.view-head{padding:20px clamp(14px,4vw,28px) 12px;flex-shrink:0;position:relative}
 .view-head h2{font-size:clamp(1.4rem,3.5vw,1.9rem)}
 .view-head p{color:var(--text-2);font-size:.9rem;margin-top:3px}
+/* Anlegen-Knopf im Seitenkopf, rechts neben der Überschrift.
+   Als absolut gesetzter Knopf lag er über dem Titel „Aufgaben aller
+   Studios" – deshalb eine echte Zeile mit zwei Feldern. */
+.vh-line{display:flex;align-items:flex-start;gap:12px}
+.vh-text{flex:1;min-width:0}
+.kopf-plus{flex-shrink:0;margin-top:3px;
+  min-height:40px;padding:0 15px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--accent);background:rgba(34,211,238,.12);color:var(--accent);
+  font-family:var(--font-body);font-weight:700;font-size:.84rem;white-space:nowrap;
+  transition:transform .25s var(--spring),background .2s}
+.kopf-plus:active{transform:scale(.94)}
+@media (hover:hover){ .kopf-plus:hover{background:rgba(34,211,238,.2)} }
 
 /* ── Kopf schrumpft beim Scrollen ──
    Auf dem Handy nahm der feste Kopf den halben Bildschirm ein. Sobald man
@@ -358,16 +370,19 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .t-desc{color:var(--text-2);font-size:.9rem;margin-top:2px;white-space:pre-wrap}
 .t-foot{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:6px;font-size:.74rem;color:var(--text-3)}
 .t-foot .done-by{color:var(--accent-d);font-weight:600}
-.t-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:6px;
-  border-radius:8px;flex-shrink:0;transition:.2s}
-.t-del:hover{color:#ff8a8a;background:rgba(239,68,68,.1)}
-.t-del svg{width:16px;height:16px}
-/* Frist verschieben (Wecker-Knopf neben dem Papierkorb) */
-.t-snooze{background:none;border:none;color:var(--text-3);cursor:pointer;padding:6px;
-  border-radius:8px;flex-shrink:0;font-size:.95rem;line-height:1;
+/* Kamera in der Fußzeile statt eines Knopfes über die volle Breite */
+.t-cam{margin-left:auto;background:none;border:none;color:var(--text-3);cursor:pointer;
+  width:34px;height:26px;padding:0;border-radius:8px;display:inline-grid;place-items:center;
   transition:transform .25s var(--spring),color .2s,background .2s}
-.t-snooze:active{transform:scale(.88)}
-@media (hover:hover){ .t-snooze:hover{color:var(--warm);background:rgba(251,191,36,.12)} }
+.t-cam svg{width:16px;height:16px}
+.t-cam:active{transform:scale(.88)}
+@media (hover:hover){ .t-cam:hover{color:var(--accent);background:rgba(34,211,238,.12)} }
+/* „Mehr" öffnet das Aktionsblatt – ersetzt drei Symbole am Zeilenrand */
+.t-mehr{background:none;border:none;color:var(--text-3);cursor:pointer;flex-shrink:0;
+  width:34px;min-height:44px;padding:0;border-radius:9px;font-size:1.15rem;line-height:1;
+  transition:transform .25s var(--spring),color .2s,background .2s}
+.t-mehr:active{transform:scale(.88)}
+@media (hover:hover){ .t-mehr:hover{color:var(--accent);background:rgba(255,255,255,.07)} }
 .empty{text-align:center;color:var(--text-3);padding:48px 20px}
 .empty svg{width:42px;height:42px;margin:0 auto 12px;display:block;opacity:.45}
 
@@ -630,10 +645,6 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ── Foto bei Aufgaben ── */
 .t-photo{margin-top:8px;border-radius:10px;max-width:160px;max-height:160px;cursor:pointer;
   border:1px solid var(--line);display:block}
-.t-photo-add{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:.78rem;
-  color:var(--accent-d);cursor:pointer;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);
-  padding:5px 11px;border-radius:999px;font-weight:600}
-.t-photo-add svg{width:14px;height:14px}
 
 /* ── Bild-Lightbox (Vollbild) ── */
 #lightbox{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
@@ -1367,7 +1378,6 @@ html{font-size:var(--fs,100%)}
 }
 
 /* Der Tagesüberblick scrollt jetzt mit, statt oben zu kleben */
-#todayCard{padding-bottom:12px}
 
 /* ── Sprachnachrichten ── */
 .rec-bar{display:none;align-items:center;gap:10px;padding:10px 14px;
@@ -1555,21 +1565,12 @@ html{font-size:var(--fs,100%)}
 .mini-x:hover{color:var(--danger)}
 
 /* ── Tagesüberblick ── */
-.today{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
-  padding:15px 17px;animation:cardUp .5s var(--ease-ios) both}
-.today.allgood{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.07)}
-.today-h{font-family:var(--font-head);font-weight:800;font-size:1.05rem;margin-bottom:9px}
-.today-row{display:flex;gap:9px;flex-wrap:wrap}
-.today-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;
-  font-size:.84rem;font-weight:700;background:var(--bg-soft);border:1px solid var(--line-2);
-  color:var(--text-2);cursor:pointer;
-  transition:transform .3s var(--spring),border-color .2s,color .2s}
-.today-pill:active{transform:scale(.94)}
-.today-pill b{font-size:1rem;color:var(--text)}
-.today-pill.warn{border-color:var(--danger);color:var(--danger)}
-.today-pill.warn b{color:var(--danger)}
-.today-pill.ok{border-color:var(--accent);color:var(--accent)}
-.today-pill.ok b{color:var(--accent)}
+/* Zahl am Filter-Chip – ersetzt die frühere Tagesüberblick-Karte */
+.chip-num{margin-left:6px;padding:0 6px;border-radius:999px;font-size:.72rem;font-weight:800;
+  background:rgba(255,255,255,.1);color:var(--text)}
+body.light .chip-num{background:rgba(20,10,40,.08)}
+.chip-num.warn{background:rgba(251,78,109,.18);color:var(--danger)}
+.chip.on .chip-num{background:rgba(255,255,255,.18)}
 
 /* ── Online-Punkt am Avatar ── */
 .av-wrap{position:relative;display:inline-block}
@@ -1987,13 +1988,23 @@ html{font-size:var(--fs,100%)}
       <!-- ============================================================
            SEITE: AUFGABEN – To-do-Liste mit Suche, Fortschritt und Foto
            ============================================================ -->
-      <!-- Der Kopf schrumpft beim Scrollen (Klasse "tight"), Tagesüberblick
-           scrollt ganz weg. Nur die Filterleiste bleibt oben kleben – sie
-           ist das Einzige, was man auch weiter unten noch braucht. -->
+      <!-- Der Kopf schrumpft beim Scrollen (Klasse "tight"). Nur die
+           Filterleiste bleibt oben kleben – sie ist das Einzige, was man auch
+           weiter unten noch braucht. -->
       <section class="view" id="view-todos">
-        <div class="view-head shrink"><h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p></div>
+        <div class="view-head shrink">
+          <div class="vh-line">
+            <div class="vh-text">
+              <h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p>
+            </div>
+            <!-- Neue Aufgaben ließen sich nur über Verwaltung → Erstellen
+                 anlegen: drei Wechsel weg von der Liste, auf die man dabei
+                 schaut. -->
+            <button class="kopf-plus" id="todoNew" data-manage-only="1"
+              title="Neue Aufgabe erstellen" aria-label="Neue Aufgabe erstellen">+ Neu</button>
+          </div>
+        </div>
         <div class="scroll-area" data-shrinks="1">
-          <div id="todayCard"></div>
           <div class="sticky-tools">
             <div class="todo-tools">
               <div class="todo-search">
@@ -2861,6 +2872,18 @@ html{font-size:var(--fs,100%)}
   </div>
 </div>
 
+<!-- Aktionen an einer Aufgabe – gleiches Muster wie im Chat -->
+<div class="msg-sheet" id="todoSheet">
+  <div class="ms-card">
+    <div class="ms-head">
+      <b id="tbWho"></b>
+      <p id="tbWhere"></p>
+    </div>
+    <div class="ms-acts" id="tbActs"></div>
+    <button class="btn btn-ghost" id="tbClose" style="width:100%">Abbrechen</button>
+  </div>
+</div>
+
 <!-- Aktionen an einer Chat-Nachricht: gleitet von unten herein, dort wo der
      Daumen ohnehin ist. Ersetzt fünf 21-Pixel-Symbole in der Blase. -->
 <div class="msg-sheet" id="msgSheet">
@@ -3338,6 +3361,10 @@ function applyRoleVisibility(){
   document.querySelectorAll('[data-chef-only]').forEach(function(el){
     el.style.display = chef ? '' : 'none';
   });
+  // Für Leiter UND Chef sichtbar, für Mitarbeiter nicht
+  document.querySelectorAll('[data-manage-only]').forEach(function(el){
+    el.style.display = canManage() ? '' : 'none';
+  });
   var t=$('chefTitle'), sub=$('chefSub');
   if(t) t.textContent = chef ? 'Chef-Bereich' : 'Studio-Verwaltung';
   if(sub) sub.textContent = chef
@@ -3734,11 +3761,11 @@ function typingSomewhere(){
   return tag==='input' || tag==='textarea' || tag==='select' || el.isContentEditable;
 }
 function anyModalOpen(){
-  return ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','searchOverlay','lightbox','msgSheet']
+  return ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet']
     .some(function(id){ var e=$(id); return e && e.classList.contains('show'); });
 }
 function closeAllModals(){
-  ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','msgSheet'].forEach(function(id){
+  ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','msgSheet','todoSheet'].forEach(function(id){
     var e=$(id); if(e) e.classList.remove('show');
   });
   closeSearch();
@@ -6664,11 +6691,17 @@ function renderMyShifts(){
 /* ── Tagesüberblick ──
    Kurze Zusammenfassung ganz oben: Was ist heute zu tun? Jede Kachel ist
    anklickbar und setzt den passenden Filter. */
+/* ── Zahlen an den Filtern ──
+   Vorher stand über der Liste eine Karte „Guten Abend, Lisa 👋 · 2 offen ·
+   1 überfällig" mit Sprungknöpfen – und 100 Pixel darunter dieselben Filter
+   noch einmal als Chips. Zweimal dasselbe, und der Gruß gehört auf die
+   Startseite. Die Karte ist weg; die Zahlen stehen jetzt dort, wo man
+   ohnehin hinfasst: an den Filtern selbst. Das spart 112 Pixel über der
+   ersten Aufgabe. */
 function renderToday(){
-  var box=$('todayCard'); if(!box || !session) return;
+  if(!session) return;
   var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
-  var offen=0, ueber=0, meine=0, putz=0;
-  var heuteEnde=new Date(); heuteEnde.setHours(23,59,59,999);
+  var offen=0, ueber=0, meine=0;
   keys.forEach(function(sk){
     (cachedTodos[sk]||[]).forEach(function(t){
       if(isArchived(t) || isDone(t)) return;
@@ -6677,39 +6710,15 @@ function renderToday(){
       if(t.assignedTo===session.uid) meine++;
     });
   });
-  (_ppTasks||[]).forEach(function(t){ if(!isDone(t)) putz++; });
-
-  var gruss = (function(){
-    var h=new Date().getHours();
-    if(h<11) return 'Guten Morgen';
-    if(h<18) return 'Hallo';
-    return 'Guten Abend';
-  })();
-  var vorname=(session.name||'').split(' ')[0];
-
-  if(!offen){
-    box.innerHTML='<div class="today allgood"><div class="today-h">'+esc(gruss)+', '+esc(vorname)+' 👋</div>'+
-      '<div style="color:var(--text-2);font-size:.92rem">Alles erledigt – nichts Offenes für dich. 🎉</div></div>';
-    return;
-  }
-  var pills='';
-  pills+='<button class="today-pill" data-jump="offen"><b>'+offen+'</b> offen</button>';
-  if(ueber) pills+='<button class="today-pill warn" data-jump="faellig"><b>'+ueber+'</b> überfällig</button>';
-  if(meine) pills+='<button class="today-pill ok" data-jump="meine"><b>'+meine+'</b> für dich</button>';
-  if(putz)  pills+='<button class="today-pill" data-jump="putz"><b>'+putz+'</b> im Putzplan</button>';
-  box.innerHTML='<div class="today"><div class="today-h">'+esc(gruss)+', '+esc(vorname)+' 👋</div>'+
-    '<div class="today-row">'+pills+'</div></div>';
-  box.querySelectorAll('[data-jump]').forEach(function(b){
-    b.addEventListener('click',function(){
-      var j=b.getAttribute('data-jump');
-      tick(8);
-      if(j==='putz'){ showView('putzplan'); return; }
-      _todoMode=j;
-      document.querySelectorAll('[data-tfilter]').forEach(function(x){
-        x.classList.toggle('on', x.getAttribute('data-tfilter')===j);
-      });
-      renderTodos();
-    });
+  var zahl={ offen:offen, faellig:ueber, meine:meine };
+  document.querySelectorAll('[data-tfilter]').forEach(function(c){
+    var f=c.getAttribute('data-tfilter');
+    var alt=c.querySelector('.chip-num'); if(alt) alt.remove();
+    if(!(f in zahl) || !zahl[f]) return;
+    var b=document.createElement('b');
+    b.className='chip-num'+(f==='faellig'?' warn':'');
+    b.textContent=zahl[f];
+    c.appendChild(b);
   });
 }
 
@@ -6805,9 +6814,42 @@ function sortTodos(list){
   } else if(_todoSort==='neu'){
     a.sort(function(x,y){ return (y.ts||0)-(x.ts||0); });
   } else {
-    a.sort(function(x,y){ return (isDone(x)-isDone(y)) || ((x.ts||0)-(y.ts||0)); });
+    /* Standard heißt jetzt: was brennt, steht oben. Vorher entschied allein
+       das Erstellungsdatum – eine überfällige Aufgabe von gestern landete
+       hinter zehn entspannten von vorletzter Woche. */
+    a.sort(function(x,y){
+      var ux = (!isDone(x) && x.due && Date.now()>x.due) ? 0 : 1;
+      var uy = (!isDone(y) && y.due && Date.now()>y.due) ? 0 : 1;
+      return (isDone(x)-isDone(y)) || (ux-uy) ||
+             (ux===0 ? (x.due||0)-(y.due||0) : 0) ||
+             ((x.ts||0)-(y.ts||0));
+    });
   }
   return a;
+}
+
+/* ── Leerer Bereich, der die Wahrheit sagt ──
+   Vorher stand bei aktivem Filter „Für mich" immer „Noch keine Aufgaben.
+   Erstelle welche im Chef-Bereich." – obwohl es Aufgaben gab, nur eben keine
+   für einen selbst. Man sucht dann an der falschen Stelle. */
+function leerText(gesamt){
+  var FILTERWORT={ offen:'offenen', faellig:'überfälligen', meine:'dir zugewiesenen' };
+  if(_todoFilter){
+    return emptyHTML('Nichts gefunden',
+      'Für „'+esc(_todoFilter)+'" gibt es keine Aufgabe.'+
+      (_todoMode!=='alle' ? ' Der Filter „'+esc(chipLabel(_todoMode))+'" ist zusätzlich aktiv.' : ''));
+  }
+  if(_todoMode!=='alle'){
+    return emptyHTML('Keine '+FILTERWORT[_todoMode]+' Aufgaben',
+      gesamt ? 'Es gibt '+gesamt+(gesamt===1?' Aufgabe':' Aufgaben')+' – tippe auf „Alle", um sie zu sehen.'
+             : 'Hier ist noch gar nichts angelegt.');
+  }
+  return emptyHTML('Noch keine Aufgaben.',
+    canManage() ? 'Lege oben rechts eine an.' : 'Deine Leitung legt sie an.');
+}
+function chipLabel(modus){
+  var c=document.querySelector('[data-tfilter="'+modus+'"]');
+  return c ? c.textContent.replace(/\d+$/,'').trim() : modus;
 }
 
 /* Passt eine Aufgabe zum Suchtext UND zum Schnellfilter? */
@@ -6834,14 +6876,37 @@ function progressHTML(done,total){
   '</div>';
 }
 
+/* ── Reihenfolge der Studios in der Verwaltungs-Ansicht ──
+   Alphabetisch heißt: eine überfällige Aufgabe in Seelscheid liegt hinter
+   dreizehn Studio-Blöcken. Gemessen musste ein Chef 571 Pixel scrollen, bis
+   die erste überfällige überhaupt im Bild war.
+   Studios MIT überfälligen Aufgaben wandern nach vorn, der Rest bleibt
+   alphabetisch – so verschiebt sich nur, was sich verschieben muss. */
+function studiosNachDringlichkeit(){
+  var jetzt=Date.now();
+  function ueberfaellig(s){
+    return (cachedTodos[studioKey(s)]||[]).filter(function(t){
+      return !isArchived(t) && !isDone(t) && t.due && jetzt>t.due;
+    }).length;
+  }
+  var mit=[], ohne=[];
+  STUDIOS_ALPHA.forEach(function(s){ (ueberfaellig(s) ? mit : ohne).push(s); });
+  mit.sort(function(a,b){ return ueberfaellig(b)-ueberfaellig(a) || a.localeCompare(b,'de'); });
+  return mit.concat(ohne);
+}
+
 function renderTodos(){
   var area=$('todoArea');
   var shown=0, totalAll=0, doneAll=0;   // für den Zähler über der Liste
   if(canManage()){
-    $('todoTitle').textContent = isChef()?'Aufgaben aller Studios':'Aufgaben meiner Studios';
-    $('todoSub').textContent='Erteile und überprüfe Aufgaben.';
+    // Kurzer Titel, Umfang in die Unterzeile: „Aufgaben aller Studios" brach
+    // neben dem Anlegen-Knopf auf zwei Zeilen um.
+    $('todoTitle').textContent='Aufgaben';
+    $('todoSub').textContent = isChef()
+      ? 'Alle '+STUDIOS.length+' Studios.'
+      : 'Deine Studios: '+managedStudios().join(', ');
     var html='';
-    STUDIOS_ALPHA.forEach(function(s){
+    studiosNachDringlichkeit().forEach(function(s){
       var sk=studioKey(s);
       var all=sortTodos((cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); }));
       totalAll+=all.length; doneAll+=all.filter(isDone).length;
@@ -6854,13 +6919,11 @@ function renderTodos(){
       if(!_todoFilter && _todoMode==='alle') html+=progressHTML(d,all.length);
       html+=list.map(function(t){ return todoHTML(t,sk,true); }).join('');
     });
-    area.innerHTML = html || emptyHTML(
-      _todoFilter?'Nichts gefunden':'Noch keine Aufgaben.',
-      _todoFilter?'Für „'+esc(_todoFilter)+'" gibt es keine Aufgabe.':'Erstelle welche im Chef-Bereich.');
+    area.innerHTML = html || leerText(totalAll);
   } else {
     var multi = session.studios.length>1;
-    $('todoTitle').textContent = multi ? 'Meine Aufgaben' : ('Aufgaben · '+(session.studios[0]||''));
-    $('todoSub').textContent = multi ? 'Aufgaben deiner Studios – einfach abhaken.' : 'Deine To-dos – einfach abhaken.';
+    $('todoTitle').textContent = multi ? 'Aufgaben' : ('Aufgaben · '+(session.studios[0]||''));
+    $('todoSub').textContent = multi ? 'Aus deinen Studios – einfach abhaken.' : 'Deine To-dos – einfach abhaken.';
     var html='';
     session.studioKeys.forEach(function(sk, idx){
       var sName=session.studios[idx];
@@ -6873,12 +6936,15 @@ function renderTodos(){
         if(!_todoFilter && _todoMode==='alle') html+=progressHTML(done,total);
         html += list.length
           ? list.map(function(t){ return todoHTML(t,sk,false); }).join('')
-          : '<p style="color:var(--text-3);font-size:.9rem;margin:2px 0 14px">Nichts gefunden.</p>';
+          : '<p style="color:var(--text-3);font-size:.9rem;margin:2px 0 14px">In diesem Studio passt nichts zum Filter.</p>';
       } else {
         html+='<p style="color:var(--text-3);font-size:.9rem;margin:2px 0 14px">Keine offenen Aufgaben. 🎉</p>';
       }
     });
-    area.innerHTML = html || emptyHTML('Keine Studios','Dir ist noch kein Studio zugeordnet.');
+    // Passt nirgends etwas, sagt ein einzelner klarer Hinweis mehr als eine
+    // Reihe von „nichts gefunden" unter jedem Studio.
+    area.innerHTML = (!shown && totalAll) ? leerText(totalAll)
+      : (html || emptyHTML('Keine Studios','Dir ist noch kein Studio zugeordnet.'));
   }
   // Zähler rechts neben dem Suchfeld
   var cnt=$('todoCount');
@@ -6942,9 +7008,16 @@ function todoHTML(t,sk,chefView){
     var dd=new Date(t.due);
     dueBadge='<span class="t-due'+(over?' over':'')+'">'+(over?'⚠ überfällig':'bis '+dd.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}))+'</span>';
   }
+  /* Das Foto ist ein Beleg fürs Erledigen und muss schnell erreichbar sein –
+     aber als Knopf über die volle Breite kostete es 46 Pixel an JEDER Aufgabe,
+     auch an den vielen, die nie eines bekommen. Jetzt steht es als kleines
+     Symbol in der Fußzeile, in derselben Zeile wie „erstellt von". */
   var photoHtml = t.photo
     ? '<img class="t-photo" data-zoom src="'+safeMedia(t.photo)+'" alt="Foto zur Aufgabe" />'
-    : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
+    : '';
+  var photoBtn = t.photo ? '' :
+    '<button class="t-cam" data-photoadd="1" title="Foto hinzufügen" aria-label="Foto hinzufügen">'+
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></button>';
   var isOver = !done && t.due && Date.now()>t.due;   // überfällig → roter Balken links
   // Zugewiesene Person anzeigen
   var assign='';
@@ -6970,11 +7043,12 @@ function todoHTML(t,sk,chefView){
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     stepsHtml+
     (t.docUrl?'<a class="t-doc" href="'+safeUrl(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
-    '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
+    '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+photoBtn+'</div>'+
     photoHtml+'</div>'+
-    (chefView?'<button class="t-snooze" data-tedit="1" title="Bearbeiten" aria-label="Bearbeiten">✎</button>':'')+
-    (chefView&&t.due&&!done?'<button class="t-snooze" data-snooze="1" title="Frist verschieben" aria-label="Frist verschieben">⏰</button>':'')+
-    (chefView?'<button class="t-del" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>':'')+
+    /* Bearbeiten, Frist verschieben und Löschen lagen als 25 × 27 Pixel große
+       Symbole am Rand jeder Zeile. Sie stecken jetzt im Aktionsblatt, das ein
+       Tipp auf die Aufgabe öffnet – beschriftet und daumengroß. */
+    ((chefView || t.photo) ? '<button class="t-mehr" data-tmehr="1" title="Mehr" aria-label="Mehr">⋯</button>' : '')+
     '</div></div>';
 }
 
@@ -7048,44 +7122,11 @@ function bindTodoClicks(area){
           .catch(function(err){ li.classList.toggle('done'); toast(errMsg(err),true); });
       });
     });
-    var del=node.querySelector('.t-del');
-    if(del) del.addEventListener('click',function(){
-      var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
-      if(!confirm('Aufgabe löschen?\n\n„'+((t&&t.title)||'')+'"')) return;
-      // Gelöschtes lässt sich 8 Sekunden lang zurückholen (Papierkorb im Kopf)
-      var backup=t ? JSON.parse(JSON.stringify(t)) : null;
-      db.collection('studios').doc(sk).collection('todos').doc(id).delete()
-        .then(function(){
-          if(backup){ toTrash('todos', sk, backup); offerUndoTodo(sk, backup); }
-        })
-        .catch(function(e){ toast(errMsg(e),true); });
-    });
-    // Bearbeiten: Titel, Beschreibung, Frist, Zuweisung, Teilschritte
-    var ed=node.querySelector('[data-tedit]');
-    if(ed) ed.addEventListener('click',function(e){
+    var mehr=node.querySelector('[data-tmehr]');
+    if(mehr) mehr.addEventListener('click',function(e){
       e.stopPropagation();
       var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
-      if(t) openTodoEdit(t, sk);
-    });
-    // Frist verschieben: +1 Tag / +1 Woche / Frist entfernen
-    var sn=node.querySelector('[data-snooze]');
-    if(sn) sn.addEventListener('click',function(){
-      var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
-      if(!t || !t.due) return;
-      var wahl=prompt('Frist verschieben für „'+(t.title||'')+'"\n\n'+
-        '1 = einen Tag später\n7 = eine Woche später\n0 = Frist ganz entfernen','1');
-      if(wahl===null) return;
-      var n=parseInt(wahl,10);
-      if(isNaN(n) || n<0){ toast('Bitte 0, 1 oder 7 eingeben.',true); return; }
-      // Ab HEUTE rechnen, nicht ab der alten Frist – sonst bleibt sie überfällig
-      var basis=Math.max(t.due, Date.now());
-      var neu = n===0 ? null : new Date(basis+n*86400000).setHours(23,59,59,999);
-      db.collection('studios').doc(sk).collection('todos').doc(id)
-        .update({ due: neu })
-        .then(function(){
-          toast(n===0 ? 'Frist entfernt' : 'Frist auf '+new Date(neu).toLocaleDateString('de-DE')+' verschoben');
-        })
-        .catch(function(e){ toast(errMsg(e),true); });
+      if(t) todoBlattOeffnen(t, sk);
     });
     var padd=node.querySelector('[data-photoadd]');
     if(padd) padd.addEventListener('click',function(){
@@ -8821,7 +8862,7 @@ function verlaufStarten(){
   // Fenster melden sich selbst an, ohne dass jede Öffnen-Stelle das wissen
   // muss: wir beobachten einfach, wann eines sichtbar wird.
   var fenster=['profileModal','personModal','devModal','pollModal','todoEditModal',
-               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet'];
+               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet'];
   fenster.forEach(function(id){
     var el=$(id); if(!el) return;
     new MutationObserver(function(){
@@ -8854,6 +8895,71 @@ function verlaufStarten(){
    sagen, ob es noch derselbe Schritt ist.
    ============================================================ */
 var _teTodo=null, _teSk=null;
+
+/* ── Aktionsblatt an einer Aufgabe ──
+   Dasselbe Muster wie im Chat: ein Tipp öffnet ein Blatt von unten, die
+   Einträge sind beschriftet und 48 Pixel hoch. Vorher hingen drei Symbole
+   von 25 × 27 Pixeln am Rand der Zeile – „✎", „⏰" und ein Mülleimer. */
+var _tbTodo=null, _tbSk=null;
+function todoBlattOeffnen(t, sk){
+  _tbTodo=t; _tbSk=sk;
+  var blatt=$('todoSheet'); if(!blatt) return;
+  var done=isDone(t);
+  $('tbWho').textContent=t.title||'Aufgabe';
+  $('tbWhere').textContent=studioName(sk)+(t.due?' · fällig '+new Date(t.due).toLocaleDateString('de-DE'):'');
+
+  // Ohne Foto steht die Kamera schon in der Fußzeile der Aufgabe – hier
+  // stünde sie ein zweites Mal.
+  var eintraege = t.photo ? [{ id:'foto', ico:'📷', txt:'Foto ersetzen' }] : [];
+  if(canManage()){
+    eintraege.push({ id:'bearbeiten', ico:'✎', txt:'Bearbeiten' });
+    if(t.due && !done){
+      eintraege.push({ id:'plus1', ico:'⏰', txt:'Frist: einen Tag später' });
+      eintraege.push({ id:'plus7', ico:'⏰', txt:'Frist: eine Woche später' });
+      eintraege.push({ id:'keine', ico:'⏳', txt:'Frist entfernen' });
+    }
+    eintraege.push({ id:'loeschen', ico:'🗑', txt:'Löschen', warn:true });
+  }
+  $('tbActs').innerHTML=eintraege.map(function(e){
+    return '<button class="ms-act'+(e.warn?' warn':'')+'" data-tba="'+e.id+'">'+
+      '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
+  }).join('');
+  blatt.classList.add('show');
+  tick(8);
+}
+function todoBlattSchliessen(){ var b=$('todoSheet'); if(b) b.classList.remove('show'); _tbTodo=null; _tbSk=null; }
+
+function todoBlattAktion(was){
+  var t=_tbTodo, sk=_tbSk;
+  if(!t || !sk) return;
+  var ref=db.collection('studios').doc(sk).collection('todos').doc(t.id);
+  todoBlattSchliessen();
+
+  if(was==='foto'){ _todoPhotoTarget={ sk:sk, id:t.id }; $('todoFileShared').click(); return; }
+  if(was==='bearbeiten') return openTodoEdit(t, sk);
+
+  if(was==='plus1' || was==='plus7' || was==='keine'){
+    // Ab HEUTE rechnen, nicht ab der alten Frist – sonst bleibt sie überfällig
+    var tage = was==='plus1' ? 1 : 7;
+    var basis=Math.max(t.due||0, Date.now());
+    var neu = was==='keine' ? null : new Date(basis+tage*86400000).setHours(23,59,59,999);
+    ref.update({ due: neu })
+      .then(function(){
+        toast(neu ? 'Frist auf '+new Date(neu).toLocaleDateString('de-DE')+' verschoben' : 'Frist entfernt');
+      })
+      .catch(function(e){ toast(errMsg(e),true); });
+    return;
+  }
+
+  if(was==='loeschen'){
+    if(!confirm('Aufgabe löschen?\n\n„'+(t.title||'')+'"')) return;
+    // Gelöschtes lässt sich 8 Sekunden lang zurückholen (Papierkorb im Kopf)
+    var backup=JSON.parse(JSON.stringify(t));
+    ref.delete()
+      .then(function(){ toTrash('todos', sk, backup); offerUndoTodo(sk, backup); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  }
+}
 
 function openTodoEdit(t, sk){
   if(!canManage()) return;
@@ -10504,6 +10610,29 @@ function bindActions(){
     }).catch(function(e){ toast(e.message,true); });
   });
   $('imgPreviewX').addEventListener('click',clearChatImg);
+
+  // „+ Neue Aufgabe" auf der Aufgabenseite: führt direkt ins Formular,
+  // statt drei Wechsel über die Verwaltung zu verlangen.
+  var tn=$('todoNew');
+  if(tn) tn.addEventListener('click',function(){
+    showView('chef');
+    setTimeout(function(){
+      showChefTab('erstellen');
+      var f=$('ntTitle');
+      if(f){ f.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){ f.focus(); },250); }
+    }, 120);
+  });
+
+  // Aktionsblatt an einer Aufgabe
+  var tsh=$('todoSheet');
+  if(tsh){
+    tsh.addEventListener('click',function(e){ if(e.target===tsh) todoBlattSchliessen(); });
+    $('tbClose').addEventListener('click', todoBlattSchliessen);
+    $('tbActs').addEventListener('click',function(e){
+      var b=e.target.closest && e.target.closest('[data-tba]');
+      if(b) todoBlattAktion(b.getAttribute('data-tba'));
+    });
+  }
 
   // Aktionsblatt an einer Nachricht
   var cs=$('chatScroll');
