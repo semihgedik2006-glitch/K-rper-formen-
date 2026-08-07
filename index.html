@@ -1177,6 +1177,17 @@ html{font-size:var(--fs,100%)}
 /* Die Sortier-Knöpfe federn kurz, wenn man wechselt */
 .sort-row .chip.on{animation:chipPop .34s var(--spring)}
 @keyframes chipPop{0%{transform:scale(1)}42%{transform:scale(1.09)}100%{transform:scale(1)}}
+.bp-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  padding:13px 15px;background:var(--bg-2);border:1px solid var(--line);
+  border-radius:var(--r-md);margin-bottom:8px;cursor:pointer;
+  transition:transform .25s var(--ease-out),border-color .22s}
+.bp-row:hover{transform:translateY(-1px);border-color:var(--accent)}
+.bp-row:active{transform:scale(.99)}
+.bp-name{flex:0 0 auto;font-family:var(--font-head);font-weight:700;font-size:1rem}
+.bp-was{flex:1;min-width:0;font-size:.8rem;color:var(--text-2);text-align:right}
+.bp-was .bp-warn{color:var(--danger)}
+.bp-pfeil{flex:0 0 auto;color:var(--text-3);font-size:1.1rem}
+
 /* Kachel mit einer Null: da, aber deutlich leiser */
 .home-tile.null{opacity:.5}
 .home-tile.null .hn{color:var(--text-3)}
@@ -1190,6 +1201,13 @@ html{font-size:var(--fs,100%)}
   font-size:1.25rem;font-weight:800}
 .home-ruhe b{display:block;font-family:var(--font-head);font-size:1.1rem;margin-bottom:2px}
 .home-ruhe span{font-size:.86rem;color:var(--text-2)}
+/* Eine Lupe allein sagt nichts. Ab Tablet-Breite steht das Wort daneben –
+   am Handy fehlt der Platz, dort ist die Lupe aber auch geläufig. */
+.suchknopf .sk-wort{display:none}
+@media (min-width:700px){
+  .suchknopf{width:auto;padding:0 14px;gap:8px}
+  .suchknopf .sk-wort{display:inline;font-size:.86rem;font-weight:600}
+}
 .sort-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 12px}
 .sort-lab{font-size:.74rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
   color:var(--text-3);margin-right:2px}
@@ -1712,26 +1730,25 @@ html{font-size:var(--fs,100%)}
 <!-- ── Setup Notice (wenn Firebase Config fehlt) ── -->
 <div id="setupNotice">
   <div class="setup-card">
-    <h2>⚙️ Firebase einrichten</h2>
-    <p>Öffne <code>index.html</code> in einem Texteditor und ersetze den <code>FIREBASE_CONFIG</code>-Block mit deinen Firebase-Zugangsdaten.</p>
-    <p><b>So kommst du zu deiner Config:</b><br/>
-      1. <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → Projekt <b>444677133644</b><br/>
+    <h2>⚙️ Noch nicht eingerichtet</h2>
+    <p>In <code>konfig.js</code> stehen die Firebase-Zugangsdaten – dort sind
+      sie noch nicht ausgefüllt. Alles Kundenspezifische liegt in dieser einen
+      Datei; <code>index.html</code> muss dafür nicht angefasst werden.</p>
+    <p><b>So kommst du an die Werte:</b><br/>
+      1. <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a> → dein Projekt<br/>
       2. Zahnrad → Projekteinstellungen → Web-App registrieren (<code>&lt;/&gt;</code>)<br/>
-      3. Den <code>firebaseConfig</code>-Block kopieren und unten einfügen.
+      3. Den <code>firebaseConfig</code>-Block kopieren und in <code>konfig.js</code>
+         unter <code>firebase:</code> einsetzen.
     </p>
-    <pre>// ↓ Diese Zeilen in index.html suchen und ersetzen:
-var FIREBASE_CONFIG = {
-  apiKey: "AIza...",
-  authDomain: "dein-projekt.firebaseapp.com",
-  projectId: "dein-projekt-id",
-  storageBucket: "dein-projekt.appspot.com",
-  messagingSenderId: "444677133644",
-  appId: "1:444677133644:web:..."
-};</pre>
     <p><b>Außerdem in Firebase aktivieren:</b><br/>
-      • Authentication → Anmeldemethode → <b>E-Mail/Passwort aktivieren</b><br/>
-      • Firestore Database → Datenbank erstellen (<b>Testmodus</b>, Region: europe-west1)
+      • Authentication → Anmeldemethode → <b>E-Mail/Passwort</b><br/>
+      • Firestore Database → Datenbank erstellen, Region <b>europe-west1</b><br/>
+      • Cloud Messaging → Web-Push-Zertifikat erzeugen und als
+        <code>vapidKey</code> eintragen
     </p>
+    <p>In <code>konfig.js</code> stehen außerdem die <b>Studios</b>. Die
+      Reihenfolge darf später nie geändert werden – die Kennung in der
+      Datenbank ist der Listenplatz.</p>
   </div>
 </div>
 
@@ -1777,8 +1794,6 @@ var FIREBASE_CONFIG = {
         <input class="inp" id="rgName" type="text" placeholder="Vor- und Nachname" autocomplete="name" maxlength="50" /></div>
       <div class="field" id="rgStudioWrap"><label>Deine Studios (mehrere möglich)</label>
         <div class="studio-checks" id="rgStudios"></div></div>
-      <div class="field" id="rgPinWrap" style="display:none"><label for="rgPin">Chef-Code</label>
-        <input class="inp" id="rgPin" type="password" placeholder="Geheimer Chef-Code" inputmode="numeric" /></div>
       <div class="field"><label for="rgEmail">E-Mail</label>
         <input class="inp" id="rgEmail" type="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" /></div>
       <div class="row">
@@ -1806,8 +1821,9 @@ var FIREBASE_CONFIG = {
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>
-      <button class="icon-btn" id="searchBtn" title="Suchen" aria-label="Suchen">
+      <button class="icon-btn suchknopf" id="searchBtn" title="Suchen (Cmd/Strg + K)" aria-label="Suchen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span class="sk-wort">Suchen</span>
       </button>
       <button class="icon-btn" id="themeBtn" title="Hell/Dunkel" aria-label="Hell/Dunkel umschalten">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
@@ -1848,6 +1864,9 @@ var FIREBASE_CONFIG = {
           <!-- 2. Wie es steht -->
           <div class="sec-head"><span>Überblick</span><i></i></div>
           <div class="home-grid" id="homeGrid"></div>
+
+          <!-- Nur für die Verwaltung ab zwei Studios: wo etwas los ist -->
+          <div id="homeBrennpunkte" style="display:none"></div>
 
           <div class="card" id="homeActivityCard" data-fold="aktivitaet">
             <h3>🕒 Zuletzt passiert</h3>
@@ -2587,6 +2606,12 @@ var FIREBASE_CONFIG = {
               Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
             <button class="btn btn-ghost btn-sm" id="expXls" style="width:100%">⬇️ Alles als Excel speichern</button>
             <button class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">⬇️ Alles als Daten-Datei (JSON)</button>
+            <p class="hint" style="margin:16px 0 8px"><b>Automatische Sicherung:</b> jede Nacht um 2:40 Uhr
+              wird die komplette Datenbank gesichert. Die letzten sieben Tage bleiben liegen.
+              Anders als die Dateien oben holt das nach einem versehentlichen Löschen wirklich
+              alles zurück.</p>
+            <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-chef-only="1">🛡 Jetzt zusätzlich sichern</button>
+            <p class="em-saved" id="backupNote"></p>
           </div>
           <div class="card" data-fold="trash" data-fold-offen="1">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
@@ -2854,6 +2879,9 @@ var FIREBASE_CONFIG = {
 <!-- Datei-Feld für Fotos an Geräte-Meldungen -->
 <input type="file" accept="image/*" class="hidden-file" id="devFileShared" />
 
+<!-- Konfiguration: alles Kundenspezifische an einer Stelle -->
+<script src="konfig.js"></script>
+
 <!-- Firebase SDKs (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -3044,24 +3072,22 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
    (z. B. Longerich = studio-0). Beim Umsortieren würden bestehende Aufgaben,
    Materiallisten und Ankündigungen dem falschen Studio zugeordnet.
    Neue Studios also IMMER nur hinten anhängen. */
-var STUDIOS = [
-  "Longerich","Nippes","Ebertplatz","Rath","Porz","Rondorf",
-  "Hürth","Brühl","Niederkassel Mondorf","Refrath","Overath","Marialinden",
-  "Rösrath","Seelscheid"
-];
+/* Alle kundenspezifischen Werte kommen aus konfig.js – siehe dort.
+   Die Zwischenvariablen bleiben, damit der restliche Code unverändert
+   weiterläuft. */
+var STUDIOS = KONFIG.studios;
 
 /* Alphabetisch sortierte Kopie – wird NUR für die Anzeige benutzt
    (Auswahllisten, Kacheln, Tabellen), damit man bei 14 Standorten schnell findet.
    Die Datenbank-Kennung kommt weiterhin aus studioKey(name) und bleibt unverändert. */
 var STUDIOS_ALPHA = STUDIOS.slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
 
-var CHEF_PIN = "Puls-FF73-2887$"; // Chef-Registrierungscode (nur an Chefs weitergeben!)
 
 /* VAPID-Schlüssel für Push-Benachrichtigungen (auch bei gesperrtem Handy).
    Holen: Firebase Console → Projekteinstellungen → Cloud Messaging →
    "Web Push-Zertifikate" → Schlüsselpaar generieren → öffentlichen Schlüssel hier einfügen.
    Solange leer: Foto + In-App-Hinweise funktionieren, aber kein Hintergrund-Push. */
-var VAPID_KEY = "BG-Ibkh7PLobYuR7_q2HC63kh7krkKYDi7zUzIAjoiCddfGr1vwq0Kaq1yDNvP27twUprl4H8o8y-9TC58hn_yI";
+var VAPID_KEY = KONFIG.vapidKey;
 
 /* Max. Bildgröße fürs kostenlose Speichern (in der Datenbank). Bilder werden
    automatisch auf diese Kantenlänge verkleinert und komprimiert. */
@@ -3086,23 +3112,14 @@ var DEFAULT_MATERIALS = [
 
 /* Google-Sheets-Live-Sync: URL der Apps-Script-Web-App (siehe MATERIAL-SHEETS.gs + Anleitung).
    Solange leer: Material läuft normal, nur ohne automatische Google-Tabelle. */
-var SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbygK9l443-M3GBhVDYTZQ0tNkGRvSRWYMgeOn6ksNdBDLMb6uc21Vm_20XfyUeibXu_aw/exec";
+var SHEETS_WEBHOOK_URL = KONFIG.sheetsWebhook;
 
 /* Erledigte (einmalige) Aufgaben verschwinden nach so vielen Stunden aus der
    aktiven Liste und landen im Chef-Archiv. Wiederkehrende bleiben davon unberührt. */
-var ARCHIVE_AFTER_HOURS = 3;
+var ARCHIVE_AFTER_HOURS = KONFIG.archivNachStunden;
 
 /* Firebase-Config – deine echten Projektdaten (Projekt: formenchat) */
-var FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAvYVUzTbT86jeH6bsCAS0PyK9ArNb6pRw",
-  authDomain: "formenchat.firebaseapp.com",
-  databaseURL: "https://formenchat-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "formenchat",
-  storageBucket: "formenchat.firebasestorage.app",
-  messagingSenderId: "873830492257",
-  appId: "1:873830492257:web:07fb34b80fd47c1873e220",
-  measurementId: "G-H0WMHW25QT"
-};
+var FIREBASE_CONFIG = KONFIG.firebase;
 
 /* ============================================================
    INITIALISIERUNG
@@ -3155,7 +3172,8 @@ var _loadTimeout = setTimeout(function(){
 
 setLoadingStep('Schritt 2/3: Verbinde mit Firebase …');
 
-var isConfigured = FIREBASE_CONFIG.apiKey !== "DEIN_API_KEY";
+var isConfigured = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey &&
+  FIREBASE_CONFIG.apiKey.indexOf('DEIN_') !== 0);
 
 if(!isConfigured){
   hideLoading();
@@ -3410,7 +3428,7 @@ function isArchived(t){
    Wiederkehrende Aufgaben sind davon nicht betroffen; die setzen sich
    ohnehin von selbst zurück. Aufgaben, die NIEMAND erledigt hat, bleiben
    ebenfalls stehen – sonst wäre die Arbeit einfach weg. */
-var PUTZ_WEG_NACH_STD = 24;
+var PUTZ_WEG_NACH_STD = KONFIG.putzWegNachStunden;
 function ppAbgelaufen(t){
   return !t.recurring
     && !!t.done && !!t.doneAt
@@ -4263,22 +4281,20 @@ var regRole = 'mitarbeiter';
 
   // Registrierung gibt es NUR als Chef-Zugang (über #chef). Mitarbeiter legt der Chef im Portal an.
   $('registerBtn').addEventListener('click', doRegister);
-  [$('rgEmail'),$('rgPw'),$('rgPw2'),$('rgPin')].forEach(function(i){
+  [$('rgEmail'),$('rgPw'),$('rgPw2')].forEach(function(i){
     if(i) i.addEventListener('keydown', function(e){ if(e.key==='Enter') doRegister(); });
   });
 
-  if(location.hash.toLowerCase()==='#chef'){
-    // Chef-Konto anlegen – nur für die allererste Einrichtung gedacht.
-    // Seit August lehnen die Sicherheitsregeln das ab, sobald es bereits
-    // einen Chef gibt: weitere Chef-Zugänge legt ein Chef im Portal an.
-    regRole='chef';
-    $('rolePick').style.display='none';
-    $('rgStudioWrap').style.display='none';
-    $('rgPinWrap').style.display='block';
-    setAuthMode('register');
-  } else {
-    setAuthMode('login');
-  }
+  /* Der Einstieg "#chef" ist entfallen.
+
+     Dahinter lag ein Chef-Code, der im Quelltext der Seite stand – jeder,
+     der die Seite ansah, konnte ihn lesen. Gefährlich war er zuletzt nicht
+     mehr (die Sicherheitsregeln lassen Selbstregistrierung nur als
+     Mitarbeiter zu), aber erklären will man das in keinem Verkaufsgespräch.
+
+     Der allererste Chef-Zugang entsteht bei der Einrichtung des Projekts,
+     jeder weitere über Verwaltung → Team → Zugang anlegen. */
+  setAuthMode('login');
 })();
 
 function setAuthMode(mode){
@@ -4306,19 +4322,16 @@ function doRegister(){
   var email = $('rgEmail').value.trim();
   var pw    = $('rgPw').value;
   var pw2   = $('rgPw2').value;
-  var studios = regRole==='mitarbeiter'
-    ? Array.prototype.slice.call($('rgStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; })
-    : [];
-  var pin    = regRole==='chef'        ? $('rgPin').value    : null;
+  var studios = Array.prototype.slice.call($('rgStudios').querySelectorAll('input:checked'))
+    .map(function(c){ return c.value; });
   $('regErr').textContent = '';
 
   if(!name||!email||!pw){ $('regErr').textContent='Bitte alle Felder ausfüllen.'; return; }
-  if(regRole==='mitarbeiter' && !studios.length){ $('regErr').textContent='Bitte mindestens ein Studio auswählen.'; return; }
+  if(!studios.length){ $('regErr').textContent='Bitte mindestens ein Studio auswählen.'; return; }
   if(pw!==pw2){ $('regErr').textContent='Passwörter stimmen nicht überein.'; return; }
-  if(regRole==='chef' && pin!==CHEF_PIN){ $('regErr').textContent='Falscher Chef-Code.'; return; }
-  // Hinweis: Der Code hier ist nur eine Bequemlichkeit. Die eigentliche
-  // Absicherung stehen in firestore.rules – ein Code im Quelltext der App
-  // kann jeder lesen, der die Seite öffnet.
+  // Wer sich hier anmeldet, wird immer Mitarbeiter. Chef- und
+  // Leiter-Zugänge legt ein Chef in der App an (Verwaltung → Team).
+  // Erzwungen wird das in firestore.rules, nicht hier.
 
   var btn=$('registerBtn'); btn.disabled=true; btn.textContent='…';
   _registering=true;
@@ -4326,7 +4339,7 @@ function doRegister(){
     .then(function(cred){
       var uid=cred.user.uid;
       return db.collection('users').doc(uid).set({
-        name:name, email:email, role:regRole,
+        name:name, email:email, role:'mitarbeiter',
         studios:studios, studio:studios[0]||null, createdAt:Date.now()
       }).then(function(){
         return db.collection('users').doc(uid).get().then(function(doc){
@@ -4651,6 +4664,7 @@ function bindShrinkHeaders(){
 function showView(id, fromKey, ausVerlauf){
   currentView=id;
   if(!ausVerlauf) verlaufMerken(id);
+  letzteAnsichtMerken(id);
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
   // Untere Leiste: die Gruppe markieren, zu der die Ansicht gehört
   var g=groupOfView(id);
@@ -6284,8 +6298,76 @@ function renderHome(){
     });
   }
 
-  // Mein Dienst (lädt höchstens alle fünf Minuten neu)
+  // Mein Dienst (lädt höchstens alle fünf Minuten neu).
+  // Für den Chef mit 14 Studios ist das keine Kernfrage – renderMyShifts()
+  // blendet die Karte für ihn aus, wenn er selbst nicht eingeteilt ist.
   loadMyShifts();
+
+  /* Der Chef sieht zusätzlich, WO etwas los ist. Ohne das musste er raten,
+     welches der 14 Studios er sich ansehen soll – die Zahlen darüber sind
+     Summen und sagen nichts über den Ort.
+     Für Mitarbeiter mit einem Studio wäre die Zeile sinnlos, deshalb erst
+     ab zwei verwalteten Studios. */
+  var brenn=$('homeBrennpunkte');
+  if(brenn){
+    var meine=managedKeys();
+    if(canManage() && meine.length>1){
+      var liste=meine.map(function(sk){
+        var offen=0, ueberf=0, fehlt=0;
+        (cachedTodos[sk]||[]).forEach(function(t){
+          if(isDone(t)||isArchived(t)) return;
+          offen++;
+          if(t.due && Date.now()>t.due) ueberf++;
+        });
+        (_invAll[sk]||[]).forEach(function(it){ if(itemNeed(it)>0) fehlt++; });
+        return { sk:sk, name:studioName(sk), offen:offen, ueberf:ueberf, fehlt:fehlt,
+                 punkte: ueberf*10 + fehlt*3 + offen };
+      }).filter(function(x){ return x.punkte>0; })
+        .sort(function(a,b){ return b.punkte-a.punkte; })
+        .slice(0,4);
+
+      if(liste.length){
+        brenn.style.display='';
+        brenn.innerHTML='<div class="sec-head"><span>Wo etwas los ist</span><i></i></div>'+
+          liste.map(function(x){
+            var teile=[];
+            if(x.ueberf) teile.push('<b class="bp-warn">'+x.ueberf+' überfällig</b>');
+            if(x.fehlt)  teile.push(x.fehlt+' Artikel fehlen');
+            if(x.offen && !x.ueberf) teile.push(x.offen+' offen');
+            return '<button class="bp-row" data-bpgo="'+esc(x.sk)+'">'+
+              '<span class="bp-name">'+esc(x.name)+'</span>'+
+              '<span class="bp-was">'+teile.join(' · ')+'</span>'+
+              '<span class="bp-pfeil">›</span></button>';
+          }).join('');
+        brenn.querySelectorAll('[data-bpgo]').forEach(function(el){
+          el.addEventListener('click',function(){
+            // Zu den offenen Aufgaben und dort an die Überschrift dieses
+            // Studios scrollen – die Aufgabenliste zeigt alle verwalteten
+            // Studios untereinander, es gibt keine Auswahl zum Umschalten.
+            var name=studioName(el.getAttribute('data-bpgo'));
+            _todoFilter=''; _todoMode='offen';
+            var ts=$('todoSearch'); if(ts) ts.value='';
+            document.querySelectorAll('[data-tfilter]').forEach(function(x){
+              x.classList.toggle('on', x.getAttribute('data-tfilter')==='offen');
+            });
+            tick(9); showView('todos');
+            setTimeout(function(){
+              var heads=document.querySelectorAll('#view-todos .studio-head');
+              for(var i=0;i<heads.length;i++){
+                if(heads[i].textContent.indexOf(name)>=0){
+                  heads[i].scrollIntoView({behavior:'smooth',block:'start'}); break;
+                }
+              }
+            }, 320);
+          });
+        });
+      } else {
+        brenn.style.display='none';
+      }
+    } else {
+      brenn.style.display='none';
+    }
+  }
 
   /* Der "Schnellzugriff" ist ersatzlos entfallen.
 
@@ -8484,8 +8566,40 @@ function verlaufMerken(id){
   try{ history.pushState({v:id}, '', '#'+id); }catch(e){}
 }
 
+/* Ansichten, in die man beim Neustart zurückkehren darf. Chat und
+   Direktnachrichten bewusst nicht: dort steht man sonst mitten in einem
+   Gespräch, ohne den Tagesüberblick gesehen zu haben. */
+var WIEDER_OEFFNEN=['todos','putzplan','material','geraete','team','docs','ann','chef','archive'];
+
+function letzteAnsichtMerken(id){
+  if(WIEDER_OEFFNEN.indexOf(id)<0) return;
+  try{ localStorage.setItem('kf_letzte_ansicht', id+'|'+Date.now()); }catch(e){}
+}
+
+/* Nur innerhalb von zwei Stunden. Wer am nächsten Morgen die App öffnet,
+   will den Tagesüberblick sehen und nicht dort weitermachen, wo er gestern
+   Abend aufgehört hat. */
+function letzteAnsichtHolen(){
+  try{
+    var v=(localStorage.getItem('kf_letzte_ansicht')||'').split('|');
+    if(v.length!==2) return null;
+    if(Date.now()-(+v[1]||0) > 2*3600000) return null;
+    return WIEDER_OEFFNEN.indexOf(v[0])>=0 ? v[0] : null;
+  }catch(e){ return null; }
+}
+
 function verlaufStarten(){
   _verlaufBereit=true;
+
+  // Eine Adresse in der Zeile schlägt alles – wer einen Link bekommt, soll
+  // dort landen. Danach erst die zuletzt offene Ansicht.
+  var ausLink=(location.hash||'').replace('#','');
+  var ziel = (ausLink && document.getElementById('view-'+ausLink)) ? ausLink : letzteAnsichtHolen();
+  if(ziel && ziel!==currentView){
+    // Rollen prüfen: der Verwaltungsbereich ist nicht für jeden
+    if((ziel!=='chef' && ziel!=='archive') || canManage()) showView(ziel, true, true);
+  }
+
   try{ history.replaceState({v:currentView||'home'}, '', '#'+(currentView||'home')); }catch(e){}
 
   window.addEventListener('popstate', function(e){
@@ -10381,6 +10495,26 @@ function bindActions(){
     var devA=$('devAdd'); if(devA) devA.addEventListener('click',function(){ addDevice(this); });
   }
 
+  // ── Sofort sichern (nur Chef) ──
+  var bn=$('backupNow');
+  if(bn) bn.addEventListener('click',function(){
+    var note=$('backupNote');
+    if(!confirm('Jetzt eine zusätzliche Sicherung anlegen?\n\nDas dauert je nach Datenmenge ein paar Minuten und läuft im Hintergrund.')) return;
+    withBusy(bn,function(){
+      if(note){ note.style.color='var(--text-2)'; note.textContent='Sicherung läuft …'; }
+      return firebase.app().functions(KONFIG.region).httpsCallable('backupNow')({})
+        .then(function(r){
+          var ok=r && r.data && r.data.ok;
+          if(note){ note.style.color='var(--accent-d)'; note.textContent = ok ? '✓ Sicherung angelegt' : 'Nichts gesichert'; }
+          toast(ok ? 'Sicherung angelegt ✓' : 'Nichts gesichert', !ok);
+        })
+        .catch(function(e){
+          if(note){ note.style.color='#ff8a8a'; note.textContent=errMsg(e); }
+          toast(errMsg(e),true);
+        });
+    });
+  });
+
   // ── Verwaltung: zurück zur Übersicht ──
   var cb=$('chefBack');
   if(cb) cb.addEventListener('click',function(){ showChefTab(CHEF_START); tick(8); });
@@ -10460,7 +10594,7 @@ function bindActions(){
       var tage=parseInt(($('repTestTage')||{}).value,10)||30;
       if(note){ note.textContent='Wird erstellt und versendet …'; note.style.color='var(--text-2)'; }
       withBusy(btn,function(){
-        var fns=firebase.app().functions('europe-west1');
+        var fns=firebase.app().functions(KONFIG.region);
         return fns.httpsCallable('sendTestReport')({ tage:tage })
           .then(function(res){
             var n=(res && res.data && res.data.empfaenger)||0;

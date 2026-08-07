@@ -13,7 +13,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | # | Bereich | Stand | Sitzung |
 |---|---|---|---|
 | 1 | **Navigation** | 🟢 fertig | 1–2 |
-| 2 | **Startseite** | 🟡 in Arbeit | 2 |
+| 2 | **Startseite** | 🟢 fertig | 2–3 |
 | 3 | Chat | ⚪ offen | – |
 | 4 | Aufgaben | ⚪ offen | – |
 | 5 | Material | ⚪ offen | – |
@@ -54,8 +54,8 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | N4 | Gruppennamen „Austausch" / „Arbeit" sind keine Wörter, die jemand benutzt | 🟠 mittel | ✅ behoben |
 | N5 | „Dokumente" sitzt unter „Team" — passt inhaltlich nicht | 🟠 mittel | ✅ behoben |
 | N6 | Verwaltung hat drei Ebenen (Bereich → Ansicht → Reiter), ohne Zurück dazwischen | 🟠 mittel | ✅ behoben |
-| N7 | Suche ist nur eine Lupe ohne Beschriftung | 🟡 klein | offen → Sitzung 3 |
-| N8 | Kein Weg zur zuletzt besuchten Ansicht beim Neustart | 🟡 klein | offen → Sitzung 3 |
+| N7 | Suche ist nur eine Lupe ohne Beschriftung | 🟡 klein | ✅ behoben |
+| N8 | Kein Weg zur zuletzt besuchten Ansicht beim Neustart | 🟡 klein | ✅ behoben |
 
 #### N1–N3 — was gebaut wurde
 
@@ -127,9 +127,9 @@ aus der Ansicht heraus.
 | H1 | **Die Hälfte der Kacheln zeigte eine Null** — drei von sechs beim Mitarbeiter | 🟠 mittel | ✅ behoben |
 | H2 | **Schnellzugriff duplizierte die Navigation** Wort für Wort | 🟠 mittel | ✅ behoben |
 | H3 | Kein „alles gut"-Zustand — bei nichts zu tun sah man sechs Nullen | 🟠 mittel | ✅ behoben |
-| H4 | Chef und Mitarbeiter sehen fast dieselbe Startseite | 🟠 mittel | offen → Sitzung 3 |
-| H5 | Ein neuer Nutzer lernt beim ersten Öffnen nicht, was die App ist | 🟠 mittel | offen → Sitzung 3 |
-| H6 | „Zuletzt passiert" lädt Ereignisse, die niemand liest | 🟡 klein | offen → Sitzung 3 |
+| H4 | Chef und Mitarbeiter sehen fast dieselbe Startseite | 🟠 mittel | ✅ behoben |
+| H5 | Ein neuer Nutzer lernt beim ersten Öffnen nicht, was die App ist | 🟠 mittel | ✅ Willkommen-Karte reicht |
+| H6 | „Zuletzt passiert" lädt Ereignisse, die niemand liest | 🟡 klein | ✅ zusammengeklappt |
 
 **H1/H3:** Kacheln mit Null rutschen nach hinten und werden blass. Ist alles
 auf null, steht dort **„Alles erledigt"** statt sechs Nullen.
@@ -158,16 +158,79 @@ die frei belegbaren Tastenkürzel.
 
 ---
 
+## Sitzung 3 — 7. August 2026 · Aufräum-Runde
+
+Auftrag: **alles Offene beenden.**
+
+### Aus der Alt-Liste erledigt
+
+| Was | War | Jetzt |
+|---|---|---|
+| **Tägliche Datenbank-Sicherung** | 🔴 es gab keine | `dailyBackup` 2:40 Uhr, sieben Tage Aufbewahrung, plus Knopf „Jetzt zusätzlich sichern" für den Chef |
+| **Konfiguration an einer Stelle** | 🟡 doppelt in `index.html` + `sw.js` | `konfig.js` — beide laden dieselbe Datei |
+| **Chef-Code im Quelltext** | 🟡 für jeden lesbar | `#chef`-Einstieg und Code ersatzlos entfernt |
+| **`firebase-functions` veraltet** | 🟡 Fassung 5 | auf 7.3.2, alle 20 Functions laden geprüft |
+
+### Bereich 1 · Navigation — Rest erledigt
+
+- **N7** Suche: ab Tablet-Breite steht das Wort „Suchen" neben der Lupe,
+  mit dem Kürzel im Titel.
+- **N8** Die zuletzt offene Ansicht wird wiederhergestellt — aber nur
+  innerhalb von zwei Stunden und nur bei Arbeitsansichten. Chat und
+  Direktnachrichten bewusst nicht: dort stünde man sonst mitten in einem
+  Gespräch, ohne den Tagesüberblick gesehen zu haben. Eine Adresse in der
+  Zeile schlägt beides.
+
+### Bereich 2 · Startseite — abgeschlossen 🟢
+
+**H4 war der wichtigste Punkt unter „verkaufbar".** Der Chef sah dieselbe
+Startseite wie ein Mitarbeiter: Summen über 14 Studios, aber nirgends, *wo*
+etwas los ist. Er musste raten, welches Studio er sich ansieht.
+
+Neu: **„Wo etwas los ist"** — höchstens vier Studios, sortiert nach
+Dringlichkeit (überfällig zählt zehnfach, fehlendes Material dreifach,
+offene Aufgaben einfach). Antippen springt in die offenen Aufgaben genau
+dieses Studios. Erscheint erst ab zwei verwalteten Studios — für einen
+Mitarbeiter mit einem Studio wäre die Zeile sinnlos.
+
+Gemessen: Chef 1,72 Bildschirme (mit der neuen Zeile), Mitarbeiter 1,31.
+
+**H5:** Die Willkommen-Karte beim ersten Start deckt das ab. Eine zweite
+Erklärungsebene würde die Seite wieder aufblähen — bewusst nicht gebaut.
+
+**H6:** „Zuletzt passiert" ist eine aufklappbare Karte und startet
+zugeklappt. Wer es braucht, klappt es auf.
+
+#### Health Score · Startseite (abschließend)
+
+| Kriterium | Sitzung 2 | jetzt | Begründung |
+|---|---|---|---|
+| UX | 7/10 | **9/10** | Chef und Mitarbeiter bekommen, was sie brauchen. Ein Sprung führt zum Ort des Problems. |
+| UI | 8/10 | 8/10 | unverändert gut |
+| Performance | 8/10 | 8/10 | Die neue Zeile rechnet auf schon geladenen Daten, keine zusätzlichen Abfragen |
+| Skalierbarkeit | 6/10 | 6/10 | unverändert — bei 100 Studios neu zu denken |
+| Wartbarkeit | 8/10 | 8/10 | |
+| Konsistenz | 8/10 | 9/10 | gleiche Abschnittslogik wie überall |
+| Investor | 7/10 | **8/10** | „Wo brennt es?" ist die Frage, die ein Betreiber stellt — sie wird jetzt beantwortet |
+| Kaufwahrscheinlichkeit | 7/10 | **8/10** | |
+| Innovationsgrad | 5/10 | **6/10** | Die gewichtete Dringlichkeit ist ein eigener Gedanke |
+| Aufwand | — | klein | rund 50 Zeilen |
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Details in `OFFEN.md`.
 
-| Was | Schwere |
+Vollständig in `OFFEN.md`. Kurzfassung:
+
+| Was | Wer |
 |---|---|
-| Keine automatische Sicherung der Datenbank | 🔴 |
-| Budget-Warnung bei Firebase setzen (kostenlos, 5 Minuten) | 🟠 |
-| `MATERIAL-SHEETS.gs` in Apps Script einfügen und neu bereitstellen | 🟠 **du** |
-| E-Mail-Absender auf eigene Domain vor Kunden-Mails | 🟡 |
-| `firebase-functions` veraltet (kein Ablaufdatum) | 🟡 |
-| Chef-Code steht im Quelltext (nicht mehr gefährlich, aber unsauber) | 🟡 |
-| Konfiguration liegt an zwei Stellen (`index.html` **und** `sw.js`) | 🟡 |
+| `MATERIAL-SHEETS.gs` in Apps Script einfügen | **du** |
+| Export-Rolle für den Dienstaccount setzen (sonst schlägt die Sicherung fehl) | **du** |
+| Wischen zum Abhaken am echten Gerät prüfen | **du** |
+| E-Mail-Absender auf eigene Domain vor Kunden-Mails | du, später |
+| Google-Tabelle: Formatieren vom Schreiben trennen | ich, bei Bedarf |
+| Suche über alle Studios | bewusst nicht gebaut |
+| Mehrere Firmen in einer App | ab dem 5./6. Kunden |
+| KI-Funktionen | Datenschutz zuerst |

@@ -35,6 +35,13 @@
         ]
       },
       {
+        "//": "Die Konfiguration ebenso: sie enthaelt Studios und Firebase-Zugang. Eine alte Fassung im Zwischenspeicher waere schlimmer als eine langsame Ladezeit.",
+        "source": "/konfig.js",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        ]
+      },
+      {
         "source": "/manifest.json",
         "headers": [
           { "key": "Cache-Control", "value": "no-cache" }

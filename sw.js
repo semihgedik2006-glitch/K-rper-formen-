@@ -2,21 +2,18 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = 'studiochat-' + VERSION;
-const PRECACHE = ['./index.html', './icon.svg'];
+const PRECACHE = ['./index.html', './konfig.js', './icon.svg'];
 
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
-firebase.initializeApp({
-  apiKey: "AIzaSyAvYVUzTbT86jeH6bsCAS0PyK9ArNb6pRw",
-  authDomain: "formenchat.firebaseapp.com",
-  projectId: "formenchat",
-  storageBucket: "formenchat.firebasestorage.app",
-  messagingSenderId: "873830492257",
-  appId: "1:873830492257:web:07fb34b80fd47c1873e220"
-});
+// Zugangsdaten kommen aus konfig.js – dieselbe Datei, die auch die App
+// lädt. Vorher standen sie hier ein zweites Mal; beim nächsten Kunden wäre
+// garantiert eine der beiden Stellen vergessen worden.
+importScripts('./konfig.js');
+firebase.initializeApp(KONFIG.firebase);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
