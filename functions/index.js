@@ -841,18 +841,26 @@ exports.purgeTrash = region
     } catch (e) { console.error('Papierkorb lesen:', e); return null; }
     if (snap.empty) return null;
 
-    const batch = db.batch();
+    // Alle zu loeschenden Verweise sammeln. Je Eintrag koennen es zwei sein
+    // (der Papierkorb-Eintrag und der Dateiinhalt), darum kommen wir bei 400
+    // Eintraegen auf bis zu 800 Loeschungen - ein Firestore-Stapel fasst aber
+    // nur 500. Deshalb in Haeppchen von 400 abarbeiten.
+    const refs = [];
     let n = 0;
     snap.forEach(doc => {
       const t = doc.data() || {};
-      batch.delete(doc.ref);
+      refs.push(doc.ref);
       if (t.col === 'documents' && t.orig && t.data && t.data.kind !== 'link') {
-        batch.delete(db.collection('documentData').doc(t.orig));
+        refs.push(db.collection('documentData').doc(t.orig));
       }
       n++;
     });
     try {
-      await batch.commit();
+      for (let i = 0; i < refs.length; i += 400) {
+        const batch = db.batch();
+        refs.slice(i, i + 400).forEach(r => batch.delete(r));
+        await batch.commit();
+      }
       console.log('Papierkorb: ' + n + ' Eintraege endgueltig entfernt.');
     } catch (e) { console.error('Papierkorb leeren:', e); }
     return null;

@@ -1,86 +1,9 @@
 <!DOCTYPE html>
 <!--
-=================================================================
-  STUDIOCHAT – internes Team-Portal für Körperformen
-=================================================================
-
-  Die ganze App steckt in dieser einen Datei. Sie hat drei große Teile:
-
-     1. STYLE   – das komplette Aussehen          (ab ca. Zeile  25)
-     2. BODY    – der sichtbare Aufbau der Seite  (ab ca. Zeile 690)
-     3. SCRIPT  – die gesamte Logik               (ab ca. Zeile 1145)
-
-  SO FINDEST DU ETWAS
-  Alle Abschnitte haben eine Überschrift in Großbuchstaben.
-  Einfach mit Strg+F (Mac: Cmd+F) nach dem Namen suchen, z. B. "KONFIGURATION".
-
-  -----------------------------------------------------------------
-  TEIL 1 – AUSSEHEN (STYLE)
-  -----------------------------------------------------------------
-    Farben & Grundeinstellungen ... :root      (Farben zentral ändern)
-    Hell-Modus ...................... Hell-Modus
-    Splash-Screen ................... Splash-Screen
-    Anmeldung ....................... Auth Screen
-    Grundgerüst der App ............. App Shell
-    Chat ............................ Chat
-    Aufgaben ........................ Todos
-    Ankündigungen ................... Announcements
-    Chef-Bereich .................... Cards / Chef
-    Handy-Navigation ................ Mobile nav
-    Animationen ..................... ANIMATIONEN & QUALITY-OF-LIFE
-    Komfort & Feedback .............. NEU: KOMFORT & SPIELERISCHES FEEDBACK
-
-  -----------------------------------------------------------------
-  TEIL 2 – AUFBAU DER SEITE (BODY)
-  -----------------------------------------------------------------
-    Offline-Hinweis ................. Hinweis-Leiste
-    Startbildschirm ................. Splash-Screen
-    Anmeldung ....................... Auth Screen
-    Die einzelnen Seiten der App:
-       Chat ......................... id="view-chat"
-       Aufgaben ..................... id="view-todos"
-       Infos/Ankündigungen .......... id="view-ann"
-       Material ..................... id="view-material"
-       Dokumente .................... id="view-docs"
-       Direktnachrichten ............ id="view-dm"
-       Archiv ....................... id="view-archive"
-       Chef-Bereich ................. id="view-chef"
-    Pop-ups (Bild, Suche, Profil) ... Bild-Lightbox / Such-Overlay / Profil-Editor
-
-  -----------------------------------------------------------------
-  TEIL 3 – LOGIK (SCRIPT)
-  -----------------------------------------------------------------
-    KONFIGURATION – HIER ANPASSEN ... Studios, Chef-PIN, Firebase-Zugang
-    INITIALISIERUNG ................. Verbindung zu Firebase aufbauen
-    HILFSFUNKTIONEN ................. kleine Helfer (Datum, Fehlertexte, Bilder)
-    STATE ........................... was die App sich gerade merkt
-    AUTH-SCREEN ..................... Anmelden & Registrieren
-    AUTH STATE OBSERVER ............. reagiert auf An-/Abmelden
-    APP STARTEN ..................... baut die Oberfläche nach dem Login auf
-    BENACHRICHTIGUNGEN / PUSH ....... Push-Nachrichten
-    MITARBEITERVERWALTUNG ........... Zugänge anlegen/ändern (nur Chef)
-    DOKUMENTE ....................... Dateien & Links
-    FIRESTORE-LISTENER .............. horcht auf Änderungen in der Datenbank
-    RENDER .......................... zeichnet Chat, Aufgaben, Infos usw.
-    MATERIAL-SEITE .................. Bestand pro Studio
-    ENTWÜRFE ........................ Zwischenspeichern beim Tippen
-    AKTIONEN ........................ was bei Klicks passiert
-    SUCHE ........................... die Lupe oben
-    DIREKTNACHRICHTEN ............... 1:1-Chats
-    ONBOARDING-CHECKLISTE ........... Einarbeitung neuer Mitarbeiter
-    PROFIL-EDITOR ................... eigenes Profil bearbeiten
-
-  -----------------------------------------------------------------
-  WAS DU AM HÄUFIGSTEN ÄNDERN WILLST
-  -----------------------------------------------------------------
-    Studios hinzufügen .... Abschnitt "KONFIGURATION", Liste STUDIOS
-                            ACHTUNG: nur hinten anhängen, nie umsortieren!
-    Chef-PIN ändern ....... Abschnitt "KONFIGURATION", CHEF_PIN
-    Farben ändern ......... ganz oben im STYLE bei :root
-
-  HINWEIS: Nach jeder Änderung speichern und auf GitHub hochladen –
-  die Seite aktualisiert sich dann von selbst.
-=================================================================
+  StudioChat – internes Team-Portal für Körperformen.
+  Alles in einer Datei: STYLE (Aussehen), BODY (Aufbau), SCRIPT (Logik).
+  Abschnitte haben Überschriften in Großbuchstaben – mit Strg+F / Cmd+F
+  danach suchen, z. B. "KONFIGURATION" für Studios, Chef-PIN und Firebase.
 -->
 <html lang="de">
 <head>
@@ -688,7 +611,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @keyframes confFall{to{transform:translateY(106vh) rotate(720deg);opacity:.85}}
 
 /* ============================================================
-   NEU: KOMFORT & SPIELERISCHES FEEDBACK
+   KOMFORT & RÜCKMELDUNGEN
    (Offline-Hinweis, Chat-Marker, Aufgaben-Suche, Erledigt-Animation)
    ============================================================ */
 
@@ -2884,6 +2807,20 @@ function initials(n){
   return String(n||'?').trim().split(/\s+/).map(function(w){return w[0]||'';})
     .slice(0,2).join('').toUpperCase()||'?';
 }
+/* Adressen, die aus der Datenbank kommen, nie ungeprüft in die Seite schreiben.
+   Sonst könnte jemand, der direkt in die Datenbank schreibt, fremden Code in
+   den Chat aller Kollegen einschleusen. Erlaubt sind nur Bilder/Ton als
+   eingebettete Daten und normale Links. */
+function safeMedia(v){
+  v=String(v||'');
+  // z. B. data:image/jpeg;base64,… oder data:audio/webm;codecs=opus;base64,…
+  return /^data:(image|audio|video)\/[a-z0-9.+-]+(;[a-z0-9.+=-]+)*;base64,[A-Za-z0-9+/=]*$/i.test(v)
+    ? v : '';
+}
+function safeUrl(v){
+  v=String(v||'').trim();
+  return /^(https?:\/\/|mailto:|tel:)/i.test(v) ? esc(v) : '';
+}
 /* ============================================================
    ROLLEN
    Es gibt drei Rollen:
@@ -2906,10 +2843,6 @@ function managedStudios(){
 function managedKeys(){
   if(isChef()) return STUDIOS.map(studioKey);
   return ((session&&session.studioKeys)||[]).slice();
-}
-/* Darf ich dieses eine Studio verwalten? */
-function managesStudio(sk){
-  return isChef() || (isLeiter() && managedKeys().indexOf(sk)>=0);
 }
 /* Anzeigename der Rolle */
 function roleLabel(r){
@@ -3765,6 +3698,7 @@ var _matUnsub = null;        // Material-Listener
 var _matStudioKey = null;    // aktuell angezeigtes Studio in der Material-Ansicht
 var _matItems = [];          // aktuelle Material-Liste
 var _matSaveTimer = null;    // Debounce fürs Speichern
+var _matSaveKey = null;      // zu welchem Studio das Gespeicherte gehört
 
 /* ============================================================
    AUTH-SCREEN
@@ -4252,7 +4186,20 @@ function buildChannels(){
    Für jeden Kanal wird nur die letzte Nachricht beobachtet. Ist sie neuer als
    der zuletzt gelesene Zeitpunkt, erscheint eine Zahl am Kanal-Knopf. */
 var _chanList=[], _chanUnsubs=[], _chanLast={};
-function chanReadKey(ch){ return 'kf_read_'+ch; }
+/* Der Lesestand gehört zur Person, nicht zum Gerät: in den Studios teilen
+   sich mehrere Leute ein Tablet. Ohne die Kennung würde der Nächste keine
+   ungelesenen Nachrichten mehr sehen. */
+function chanReadKey(ch){ return 'kf_read_'+((session&&session.uid)||'x')+'_'+ch; }
+/* Einmalig: Lesestände aus der alten Schreibweise (ohne Kennung) wegräumen,
+   damit sie nicht für immer im Speicher des Geräts liegen bleiben. */
+function cleanOldReadKeys(){
+  try{
+    for(var i=localStorage.length-1;i>=0;i--){
+      var k=localStorage.key(i);
+      if(k && /^kf_read_(all|studio-\d+)$/.test(k)) localStorage.removeItem(k);
+    }
+  }catch(e){}
+}
 function chanLastRead(ch){
   try{
     var v=localStorage.getItem(chanReadKey(ch));
@@ -4271,6 +4218,7 @@ function markChannelRead(ch){
   renderChannelBadges();
 }
 function watchChannelUnread(){
+  cleanOldReadKeys();
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} });
   _chanUnsubs=[];
   _chanList.forEach(function(ch){
@@ -4300,6 +4248,7 @@ function renderChannelBadges(){
 }
 
 /* ── Chef-Dropdowns ── */
+var _chefSelBound=false;
 function buildChefSelects(){
   var t=$('bcTarget'); t.innerHTML='';
   // "Alle Mitarbeiter" darf nur der Chef – ein Studio-Leiter erreicht nur seine Studios
@@ -4321,10 +4270,13 @@ function buildChefSelects(){
     lab.appendChild(cb); lab.appendChild(span); ns.appendChild(lab);
   });
   buildAssignSelect();
+  // Nur einmal verdrahten – "Alle Studios" würde sonst mehrfach umschalten
+  if(_chefSelBound) return;
+  _chefSelBound=true;
   var all=$('ntAllStudios');
   all.addEventListener('change',function(){
     $('ntAllWrap').classList.toggle('on', all.checked);
-    ns.querySelectorAll('input').forEach(function(cb){
+    $('ntStudios').querySelectorAll('input').forEach(function(cb){
       cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked);
     });
   });
@@ -4529,13 +4481,14 @@ function renderEmployees(emps){
 }
 
 /* ============================================================
-   DOKUMENTE (Firebase Storage)
+   DOKUMENTE (Datei-Inhalt liegt in Firestore: documentData)
    ============================================================ */
 var _docsUnsub=null;
 var _pendingDocFile=null;
 
 function fmtSize(b){ b=b||0; return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'; }
 
+var _docUiBound=false;
 function buildDocStudios(){
   var wrap=$('docStudios'); if(!wrap) return;
   wrap.innerHTML='';
@@ -4549,10 +4502,15 @@ function buildDocStudios(){
     var span=document.createElement('span'); span.textContent=s;
     lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
   });
+  // Die Studio-Kästchen werden bei jedem Aufruf neu gebaut, die Knöpfe
+  // darunter gibt es dagegen nur einmal – die dürfen auch nur einmal
+  // verdrahtet werden, sonst lädt eine Datei doppelt hoch.
+  if(_docUiBound) return;
+  _docUiBound=true;
   var all=$('docAll');
   all.addEventListener('change',function(){
     $('docAllWrap').classList.toggle('on',all.checked);
-    wrap.querySelectorAll('input').forEach(function(cb){ cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked); });
+    $('docStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked); });
   });
   $('docPick').addEventListener('click',function(){ $('docFile').click(); });
   $('docFile').addEventListener('change',function(){
@@ -4707,7 +4665,7 @@ function renderDocs(docs){
   var meta=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+
     docStudiosLabel(d)+' · '+(d.kind==='link'?'Link':fmtSize(d.size))+' · '+fmtTime(d.ts);
     var openBtn=(d.kind==='link')
-      ? '<a class="btn btn-ghost btn-sm" href="'+esc(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'
+      ? '<a class="btn btn-ghost btn-sm" href="'+safeUrl(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'
       : '<button class="btn btn-ghost btn-sm doc-open">Öffnen</button>';
     return '<div class="doc" data-id="'+esc(d.id)+'">'+
       '<div class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>'+
@@ -4801,6 +4759,18 @@ function stopListeners(){
   [_shiftUnsub,_absUnsub,_hoUnsub,_bbUnsub].forEach(function(u){ if(u) try{ u(); }catch(e){} });
   _shiftUnsub=_absUnsub=_hoUnsub=_bbUnsub=null;
   _matStudioKey=null; _ppStudioKey=null; _teamStudioKey=null;
+  // Zwischenstände wegräumen. In den Studios teilen sich mehrere Leute ein
+  // Gerät – wer sich als Nächstes anmeldet, darf nichts vom Vorgänger sehen.
+  // Besonders "Mein Dienst": das wird nur alle fünf Minuten neu geladen und
+  // hätte sonst bis zu fünf Minuten lang die Schichten der falschen Person
+  // angezeigt.
+  if(_matSaveTimer){ clearTimeout(_matSaveTimer); _matSaveTimer=null; }
+  _matSaveKey=null;
+  _myShifts=[]; _myShiftsAt=0; _myShiftsLoading=false;
+  _shifts=[]; _absences=[]; _handovers=[]; _board=[];
+  _ppTasks=[]; _ppNotes=[]; _matItems=[];
+  _chanLast={}; _chanList=[];
+  _allUsers=[]; _employees=[]; _invAll={};
 }
 
 /* Chat: wechselt bei Kanalwechsel */
@@ -4935,10 +4905,10 @@ function renderMessages(msgs){
       :(m.role==='leiter'
         ?'<span class="tag leiter">Leitung</span>'
         :(m.studio?'<span class="tag studio">'+esc(m.studio)+'</span>':''));
-    var imgHtml = m.img ? '<img class="msg-img" data-zoom src="'+m.img+'" alt="Foto" />' : '';
+    var imgHtml = m.img ? '<img class="msg-img" data-zoom src="'+safeMedia(m.img)+'" alt="Foto" />' : '';
     // Sprachnachricht: der Abspieler des Browsers, dazu die Länge
     var audioHtml = m.audio
-      ? '<div class="msg-audio"><audio controls preload="none" src="'+m.audio+'"></audio>'+
+      ? '<div class="msg-audio"><audio controls preload="none" src="'+safeMedia(m.audio)+'"></audio>'+
         '<span class="au-len">🎤 '+esc(fmtDur(m.audioMs||0))+'</span></div>'
       : '';
     var bodyHtml = m.text ? '<div class="body">'+markMentions(linkify(esc(m.text)))+'</div>' : '';
@@ -5228,6 +5198,10 @@ function loadTeam(sk){
   if(!sk) return;
   _teamStudioKey=sk;
   [_shiftUnsub,_absUnsub,_hoUnsub].forEach(function(u){ if(u) try{ u(); }catch(e){} });
+  _shiftUnsub=_absUnsub=_hoUnsub=null;
+  // Erst leeren, damit nicht kurz die Schichten des vorigen Studios stehen
+  _shifts=[]; _absences=[]; _handovers=[];
+  renderShifts(); renderAbsences(); renderHandovers();
   var ref=db.collection('studios').doc(sk);
   _shiftUnsub=ref.collection('shifts').orderBy('date').onSnapshot(function(sn){
     _shifts=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
@@ -5919,7 +5893,7 @@ function todoHTML(t,sk,chefView){
     dueBadge='<span class="t-due'+(over?' over':'')+'">'+(over?'⚠ überfällig':'bis '+dd.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}))+'</span>';
   }
   var photoHtml = t.photo
-    ? '<img class="t-photo" data-zoom src="'+t.photo+'" alt="Foto zur Aufgabe" />'
+    ? '<img class="t-photo" data-zoom src="'+safeMedia(t.photo)+'" alt="Foto zur Aufgabe" />'
     : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
   var isOver = !done && t.due && Date.now()>t.due;   // überfällig → roter Balken links
   // Zugewiesene Person anzeigen
@@ -5945,7 +5919,7 @@ function todoHTML(t,sk,chefView){
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+assign+stepCount+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     stepsHtml+
-    (t.docUrl?'<a class="t-doc" href="'+esc(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
+    (t.docUrl?'<a class="t-doc" href="'+safeUrl(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
     photoHtml+'</div>'+
     (chefView&&t.due&&!done?'<button class="t-snooze" data-snooze="1" title="Frist verschieben" aria-label="Frist verschieben">⏰</button>':'')+
@@ -6598,8 +6572,15 @@ function ensureMaterialLoaded(){
 }
 
 function loadMaterial(sk){
+  var wechsel = _matStudioKey && _matStudioKey!==sk;
   _matStudioKey=sk;
+  // Noch nicht gespeicherte Eingaben zuerst wegschreiben – zum alten Studio.
+  if(_matSaveTimer) saveMaterialNow();
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
+  // Beim Studio-Wechsel die alten Zahlen sofort wegnehmen. Sonst stehen kurz
+  // die Bestände des vorigen Studios da – und wer sofort tippt, würde sie
+  // versehentlich beim neuen Studio speichern.
+  if(wechsel){ _matItems=[]; renderMaterial(); }
   _matUnsub=db.collection('inventory').doc(sk).onSnapshot(function(doc){
     // Eigene Schreibvorgänge oder aktives Tippen nicht überschreiben
     if(doc.metadata.hasPendingWrites) return;
@@ -6838,13 +6819,17 @@ function exportShoppingList(){
 
 function scheduleMaterialSave(){
   clearTimeout(_matSaveTimer);
+  // Studio jetzt schon merken: wer tippt und sofort das Studio wechselt,
+  // hätte die Zahlen sonst beim falschen Studio gespeichert.
+  _matSaveKey=_matStudioKey;
   var s=$('matSaved'); if(s){ s.textContent='Wird gespeichert …'; s.style.opacity='1'; }
-  _matSaveTimer=setTimeout(saveMaterialNow, 700);
+  _matSaveTimer=setTimeout(function(){ saveMaterialNow(); }, 700);
 }
 function saveMaterialNow(){
-  if(!_matStudioKey) return;
-  clearTimeout(_matSaveTimer);
-  var sk=_matStudioKey, items=_matItems.slice();
+  var sk=_matSaveKey||_matStudioKey;
+  if(!sk) return;
+  clearTimeout(_matSaveTimer); _matSaveTimer=null; _matSaveKey=null;
+  var items=_matItems.slice();
   db.collection('inventory').doc(sk).set({
     items:items, updatedAt:Date.now(), updatedBy:session.name
   }).then(function(){
@@ -6922,6 +6907,9 @@ function loadPutzplan(sk){
   var t=$('ppListTitle'); if(t) t.textContent='Putzplan · '+studioName(sk);
   if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
+  // Beim Wechsel erst leeren: sonst steht kurz der alte Putzplan unter dem
+  // neuen Studio-Namen – und bei schlechter Verbindung sogar länger.
+  _ppTasks=[]; _ppNotes=[]; renderPutzplan(); renderPutzNotes();
   _ppTaskUnsub=db.collection('studios').doc(sk).collection('cleaning').orderBy('ts')
     .onSnapshot(function(snap){
       _ppTasks=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
@@ -7472,9 +7460,6 @@ function restoreDrafts(){
 }
 
 /* ============================================================
-   AKTIONEN
-   ============================================================ */
-/* ============================================================
    SUCHE (Aufgaben, Dokumente, Infos, offener Chat-Kanal)
    ============================================================ */
 var _allDocs=[], _curMsgs=[];
@@ -7591,9 +7576,9 @@ function avatarMarkup(u){
   var dot = isOnline(u) ? '<span class="online-dot" title="gerade online"></span>' : '';
   var inner;
   if(u.photo){
-    inner='<div class="avatar" style="background-image:url('+u.photo+');background-size:cover;background-position:center"></div>';
+    inner='<div class="avatar" style="background-image:url('+safeMedia(u.photo)+');background-size:cover;background-position:center"></div>';
   } else {
-    var bg=u.color?(' style="background:'+esc(u.color)+'"'):'';
+    var bg=(u.color && /^#[0-9a-f]{3,8}$/i.test(u.color))?(' style="background:'+u.color+'"'):'';
     var chef=(u.role==='chef' && !u.color)?' chef':'';
     var c=u.emoji?esc(u.emoji):esc(initials(u.name));
     inner='<div class="avatar'+chef+'"'+bg+'>'+c+'</div>';
@@ -7750,7 +7735,7 @@ function renderDmMessages(msgs){
       body = (m.fwdFrom ? '<div class="fwd-mark">↪ weitergeleitet von '+esc(m.fwdFrom)+'</div>' : '')
         + (m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '')
         + (m.audio
-            ? '<div class="msg-audio"><audio controls preload="none" src="'+m.audio+'"></audio>'+
+            ? '<div class="msg-audio"><audio controls preload="none" src="'+safeMedia(m.audio)+'"></audio>'+
               '<span class="au-len">🎤 '+esc(fmtDur(m.audioMs||0))+'</span></div>'
             : '');
     }
@@ -7958,7 +7943,7 @@ function applyAvatarEl(av, u){
   if(u.photo){
     av.textContent='';
     av.style.background='';
-    av.style.backgroundImage='url('+u.photo+')';
+    av.style.backgroundImage='url('+safeMedia(u.photo)+')';
     av.style.backgroundSize='cover'; av.style.backgroundPosition='center';
     av.classList.remove('chef');
   } else {
@@ -8206,7 +8191,18 @@ function birthdayCheck(){
   }
 }
 
+/* ============================================================
+   AKTIONEN – alle Klicks und Tastendrücke verdrahten
+   ============================================================ */
+/* Wird nur beim ersten Anmelden aufgerufen. Meldet sich jemand ab und ein
+   Kollege gleich danach an – in den Studios der Normalfall – lädt die Seite
+   neu (siehe „Abmelden"). Ohne das wären alle Klick-Handler doppelt gesetzt
+   und jede Nachricht ginge zweimal raus. Der Riegel hier ist die zweite
+   Sicherung, falls showApp() aus einem anderen Grund erneut läuft. */
+var _actionsBound=false;
 function bindActions(){
+  if(_actionsBound) return;
+  _actionsBound=true;
   // Profil bearbeiten
   var ua=$('uAvatar'); if(ua) ua.addEventListener('click',openProfile);
   var pmc=$('pmClose'); if(pmc) pmc.addEventListener('click',closeProfile);
@@ -8619,7 +8615,13 @@ function bindActions(){
   $('logoutBtn').addEventListener('click',function(){
     if(confirm('Abmelden?\n\nDeine Daten bleiben gespeichert – du kannst dich jederzeit wieder anmelden.')){
       stopListeners();
-      auth.signOut().then(function(){ session=null; cachedTodos={}; currentChannel='allgemein'; });
+      // Neu laden statt nur abmelden: so startet der nächste Kollege auf
+      // demselben Gerät garantiert sauber – ohne doppelte Klick-Handler und
+      // ohne Reste des Vorgängers.
+      auth.signOut().then(function(){
+        session=null; cachedTodos={}; currentChannel='allgemein';
+        location.reload();
+      });
     }
   });
 
