@@ -1,86 +1,9 @@
 <!DOCTYPE html>
 <!--
-=================================================================
-  STUDIOCHAT – internes Team-Portal für Körperformen
-=================================================================
-
-  Die ganze App steckt in dieser einen Datei. Sie hat drei große Teile:
-
-     1. STYLE   – das komplette Aussehen          (ab ca. Zeile  25)
-     2. BODY    – der sichtbare Aufbau der Seite  (ab ca. Zeile 690)
-     3. SCRIPT  – die gesamte Logik               (ab ca. Zeile 1145)
-
-  SO FINDEST DU ETWAS
-  Alle Abschnitte haben eine Überschrift in Großbuchstaben.
-  Einfach mit Strg+F (Mac: Cmd+F) nach dem Namen suchen, z. B. "KONFIGURATION".
-
-  -----------------------------------------------------------------
-  TEIL 1 – AUSSEHEN (STYLE)
-  -----------------------------------------------------------------
-    Farben & Grundeinstellungen ... :root      (Farben zentral ändern)
-    Hell-Modus ...................... Hell-Modus
-    Splash-Screen ................... Splash-Screen
-    Anmeldung ....................... Auth Screen
-    Grundgerüst der App ............. App Shell
-    Chat ............................ Chat
-    Aufgaben ........................ Todos
-    Ankündigungen ................... Announcements
-    Chef-Bereich .................... Cards / Chef
-    Handy-Navigation ................ Mobile nav
-    Animationen ..................... ANIMATIONEN & QUALITY-OF-LIFE
-    Komfort & Feedback .............. NEU: KOMFORT & SPIELERISCHES FEEDBACK
-
-  -----------------------------------------------------------------
-  TEIL 2 – AUFBAU DER SEITE (BODY)
-  -----------------------------------------------------------------
-    Offline-Hinweis ................. Hinweis-Leiste
-    Startbildschirm ................. Splash-Screen
-    Anmeldung ....................... Auth Screen
-    Die einzelnen Seiten der App:
-       Chat ......................... id="view-chat"
-       Aufgaben ..................... id="view-todos"
-       Infos/Ankündigungen .......... id="view-ann"
-       Material ..................... id="view-material"
-       Dokumente .................... id="view-docs"
-       Direktnachrichten ............ id="view-dm"
-       Archiv ....................... id="view-archive"
-       Chef-Bereich ................. id="view-chef"
-    Pop-ups (Bild, Suche, Profil) ... Bild-Lightbox / Such-Overlay / Profil-Editor
-
-  -----------------------------------------------------------------
-  TEIL 3 – LOGIK (SCRIPT)
-  -----------------------------------------------------------------
-    KONFIGURATION – HIER ANPASSEN ... Studios, Chef-PIN, Firebase-Zugang
-    INITIALISIERUNG ................. Verbindung zu Firebase aufbauen
-    HILFSFUNKTIONEN ................. kleine Helfer (Datum, Fehlertexte, Bilder)
-    STATE ........................... was die App sich gerade merkt
-    AUTH-SCREEN ..................... Anmelden & Registrieren
-    AUTH STATE OBSERVER ............. reagiert auf An-/Abmelden
-    APP STARTEN ..................... baut die Oberfläche nach dem Login auf
-    BENACHRICHTIGUNGEN / PUSH ....... Push-Nachrichten
-    MITARBEITERVERWALTUNG ........... Zugänge anlegen/ändern (nur Chef)
-    DOKUMENTE ....................... Dateien & Links
-    FIRESTORE-LISTENER .............. horcht auf Änderungen in der Datenbank
-    RENDER .......................... zeichnet Chat, Aufgaben, Infos usw.
-    MATERIAL-SEITE .................. Bestand pro Studio
-    ENTWÜRFE ........................ Zwischenspeichern beim Tippen
-    AKTIONEN ........................ was bei Klicks passiert
-    SUCHE ........................... die Lupe oben
-    DIREKTNACHRICHTEN ............... 1:1-Chats
-    ONBOARDING-CHECKLISTE ........... Einarbeitung neuer Mitarbeiter
-    PROFIL-EDITOR ................... eigenes Profil bearbeiten
-
-  -----------------------------------------------------------------
-  WAS DU AM HÄUFIGSTEN ÄNDERN WILLST
-  -----------------------------------------------------------------
-    Studios hinzufügen .... Abschnitt "KONFIGURATION", Liste STUDIOS
-                            ACHTUNG: nur hinten anhängen, nie umsortieren!
-    Chef-PIN ändern ....... Abschnitt "KONFIGURATION", CHEF_PIN
-    Farben ändern ......... ganz oben im STYLE bei :root
-
-  HINWEIS: Nach jeder Änderung speichern und auf GitHub hochladen –
-  die Seite aktualisiert sich dann von selbst.
-=================================================================
+  StudioChat – internes Team-Portal für Körperformen.
+  Alles in einer Datei: STYLE (Aussehen), BODY (Aufbau), SCRIPT (Logik).
+  Abschnitte haben Überschriften in Großbuchstaben – mit Strg+F / Cmd+F
+  danach suchen, z. B. "KONFIGURATION" für Studios, Chef-PIN und Firebase.
 -->
 <html lang="de">
 <head>
@@ -175,6 +98,11 @@ input,textarea,select{font-family:inherit;font-size:16px}
 .btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 .btn-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1.5px solid var(--line-2)}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent-d)}
+/* Löschen und Defekt-Meldung: rot, nicht grau. Bisher hatte .btn-danger gar
+   keine eigene Gestaltung und sah aus wie ein normaler Knopf – bei genau den
+   Aktionen, die man nicht aus Versehen antippen soll. */
+.btn-danger{background:rgba(251,78,109,.14);color:var(--danger);border:1.5px solid rgba(251,78,109,.4)}
+.btn-danger:hover{background:rgba(251,78,109,.22);border-color:var(--danger)}
 .btn-sm{padding:8px 16px;min-height:36px;font-size:.8rem}
 
 /* ── Inputs ── */
@@ -526,6 +454,41 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pm-color{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .15s}
 .pm-color:hover{transform:scale(1.1)}
 .pm-color.sel{border-color:var(--text)}
+#pollModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#pollModal.show{display:flex}
+.poll{margin-top:8px;padding:12px 13px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md)}
+.poll-q{font-family:var(--font-head);font-weight:700;font-size:1rem;margin-bottom:9px}
+.poll-opt{position:relative;display:block;width:100%;text-align:left;background:none;border:1.5px solid var(--line-2);
+  border-radius:var(--r-sm);padding:9px 12px;margin-bottom:7px;cursor:pointer;overflow:hidden;
+  color:var(--text);font-size:.9rem;transition:border-color .2s}
+.poll-opt:hover{border-color:var(--accent)}
+.poll-opt.mine{border-color:var(--accent);font-weight:700}
+.poll-fill{position:absolute;inset:0 auto 0 0;background:var(--accent-glow);z-index:0;transition:width .45s var(--ease-out)}
+.poll-lab{position:relative;z-index:1;display:flex;justify-content:space-between;gap:10px}
+.poll-foot{font-size:.74rem;color:var(--text-3);margin-top:2px}
+#devModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#devModal.show{display:flex}
+#devModal .pm-box{max-height:88vh;overflow:auto}
+.dev-item{display:flex;gap:10px;align-items:flex-start;padding:13px 14px;background:var(--bg-soft);
+  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:9px;cursor:pointer;
+  transition:transform .2s var(--ease-out),border-color .2s}
+.dev-item:hover{transform:translateY(-1px);border-color:var(--line-2)}
+.dev-body{flex:1;min-width:0}
+.dev-title{font-family:var(--font-head);font-weight:700;font-size:1.05rem;letter-spacing:.2px}
+.dev-meta{margin-top:4px;font-size:.76rem;color:var(--text-3);line-height:1.5}
+.dev-warn{display:inline-block;margin-top:5px;font-size:.72rem;font-weight:700;
+  padding:3px 8px;border-radius:999px;background:rgba(251,78,109,.16);color:var(--danger)}
+.dev-st{flex-shrink:0;font-size:.72rem;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.dev-st.ok{background:rgba(0,224,110,.14);color:var(--accent-d)}
+.dev-st.defekt{background:rgba(251,78,109,.16);color:var(--danger)}
+.dev-st.wartung{background:rgba(251,191,36,.16);color:var(--warm)}
+.dev-log{padding:10px 12px;background:var(--bg-soft);border:1px solid var(--line);
+  border-radius:var(--r-sm);margin-bottom:8px}
+.dev-log-text{font-size:.92rem;white-space:pre-wrap;word-break:break-word}
+.dev-log-foot{margin-top:5px;font-size:.72rem;color:var(--text-3)}
+.dev-log img{margin-top:8px;border-radius:10px;max-width:150px;max-height:150px;cursor:pointer}
 #personModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 #personModal.show{display:flex}
@@ -583,6 +546,16 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ── Foto-Anhänge im Chat ── */
 .msg .msg-img{margin-top:6px;border-radius:12px;max-width:240px;max-height:280px;width:auto;
   display:block;cursor:pointer;border:1px solid var(--line)}
+.attach-wrap{position:relative;flex-shrink:0}
+.attach-menu{position:absolute;bottom:calc(100% + 8px);left:0;z-index:60;min-width:168px;
+  background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-md);
+  padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.28);
+  opacity:0;visibility:hidden;transform:translateY(8px) scale(.96);
+  transition:opacity .2s var(--ease-out),transform .26s var(--spring),visibility .2s}
+.attach-menu.show{opacity:1;visibility:visible;transform:none}
+.attach-menu button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;
+  color:var(--text);font-size:.94rem;text-align:left;padding:10px 12px;border-radius:var(--r-sm);cursor:pointer}
+.attach-menu button:hover{background:var(--bg-soft);color:var(--accent-d)}
 .attach-btn{width:46px;min-width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line-2);
   background:rgba(255,255,255,.04);color:var(--text-2);cursor:pointer;display:grid;place-items:center;
   transition:.2s;flex-shrink:0}
@@ -688,7 +661,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @keyframes confFall{to{transform:translateY(106vh) rotate(720deg);opacity:.85}}
 
 /* ============================================================
-   NEU: KOMFORT & SPIELERISCHES FEEDBACK
+   KOMFORT & RÜCKMELDUNGEN
    (Offline-Hinweis, Chat-Marker, Aufgaben-Suche, Erledigt-Animation)
    ============================================================ */
 
@@ -844,13 +817,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
 /* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
-#profileModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
+#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
   animation:sheetIn .46s var(--spring)}
 @keyframes sheetIn{
   from{opacity:0;transform:scale(.94) translateY(12px)}
   to{opacity:1;transform:none}
 }
-#profileModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
+#profileModal,#devModal,#pollModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
 @keyframes fadeBlur{from{opacity:0}to{opacity:1}}
 
 /* ── Menüs auf dem Handy: von unten hereinfahren ──
@@ -858,8 +831,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    der Daumen kommt nicht hin. Deshalb werden Menüs unter 620 px zu Blättern,
    die von unten hereinfahren; oben ein Griff, wie man es von iOS kennt. */
 @media (max-width:620px){
-  #profileModal,#personModal{align-items:flex-end;padding:0}
-  #profileModal .pm-box,#personModal .pm-box{
+  #profileModal,#personModal,#devModal,#pollModal{align-items:flex-end;padding:0}
+  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box{
     max-width:none;border-radius:22px 22px 0 0;border-bottom:none;
     padding:20px 20px calc(24px + var(--sab));max-height:90vh}
   #profileModal.show .pm-box,#personModal.show .pm-box{
@@ -1761,9 +1734,17 @@ var FIREBASE_CONFIG = {
         </div>
         <div class="chat-input">
           <input type="file" accept="image/*" class="hidden-file" id="chatFile" />
-          <button class="attach-btn" id="chatAttach" aria-label="Foto anhängen" title="Foto anhängen">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-          </button>
+          <div class="attach-wrap">
+            <button class="attach-btn" id="chatAttach" aria-label="Anhängen" title="Foto oder Umfrage">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <!-- Menü statt einer dritten Schaltfläche: auf einem 360-Pixel-Handy
+                 blieben für das Schreibfeld sonst nur 108 Pixel übrig. -->
+            <div class="attach-menu" id="attachMenu">
+              <button data-att="foto"><span>📷</span> Foto</button>
+              <button data-att="umfrage"><span>📊</span> Umfrage</button>
+            </div>
+          </div>
           <button class="attach-btn" id="chatMic" aria-label="Sprachnachricht aufnehmen" title="Sprachnachricht aufnehmen">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/><path d="M8 22h8"/></svg>
           </button>
@@ -1862,6 +1843,11 @@ var FIREBASE_CONFIG = {
               <button class="btn btn-ghost btn-sm" id="shopPrint">🖨 Drucken</button>
               <button class="btn btn-ghost btn-sm" id="shopXls">⬇️ Als Excel</button>
               <button class="btn btn-ghost btn-sm" id="shopCopy">📋 Kopieren</button>
+              <button class="btn btn-ghost btn-sm" id="shopMail">📧 Bestellmail</button>
+            </div>
+            <div class="field" style="margin-top:10px;margin-bottom:0">
+              <label for="shopMailTo">Adresse des Lieferanten (nur auf diesem Gerät gespeichert)</label>
+              <input class="inp" id="shopMailTo" type="email" placeholder="bestellung@lieferant.de" autocomplete="off" />
             </div>
           </div>
 
@@ -1918,7 +1904,9 @@ var FIREBASE_CONFIG = {
           <!-- Chef: neue Putzaufgabe anlegen -->
           <div class="card" id="ppChefCard" style="display:none">
             <h3>🧽 Putzaufgabe hinzufügen</h3>
-            <p class="hint">Wird für die gewählten Studios angelegt und dort im Putzplan angezeigt.</p>
+            <p class="hint">Wird für die gewählten Studios angelegt und dort im Putzplan angezeigt.
+              Einmalige Aufgaben verschwinden einen Tag nach dem Abhaken von selbst –
+              auch aus der Tabelle. Nicht erledigte bleiben stehen.</p>
             <div class="field"><label for="ppTitle">Aufgabe</label>
               <input class="inp" id="ppTitle" type="text" placeholder="z. B. Böden wischen" maxlength="120" /></div>
             <div class="field"><label>Für welche Studios?</label>
@@ -1928,7 +1916,7 @@ var FIREBASE_CONFIG = {
               <select class="inp" id="ppRepeat">
                 <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
                 <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
-                <option value="">Einmalig</option>
+                <option value="">Einmalig (verschwindet einen Tag nach dem Abhaken)</option>
                 <option value="custom">🔁 Eigenes Intervall …</option>
               </select></div>
             <div class="field" id="ppCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
@@ -1944,6 +1932,40 @@ var FIREBASE_CONFIG = {
             <p class="em-saved" id="ppAddNote"></p>
           </div>
 
+        </div>
+      </section>
+
+      <!-- GERÄTE -->
+      <!-- ============================================================
+           SEITE: GERÄTE – Bestand, Defekte melden, Verlauf je Gerät
+           ============================================================ -->
+      <section class="view" id="view-geraete">
+        <div class="view-head shrink"><h2>Geräte</h2><p>Defekt melden statt im Chat schreiben – so geht es nicht unter und der Verlauf bleibt am Gerät.</p></div>
+        <div class="scroll-area" data-shrinks="1">
+          <div class="mat-bar">
+            <select class="inp" id="devStudio"></select>
+          </div>
+
+          <div class="mat-alert" id="devAlert" style="display:none"></div>
+
+          <div class="card" id="devCard">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3 id="devListTitle">Geräte</h3>
+              <span class="todo-count" id="devCount"></span>
+            </div>
+            <div id="devList" style="margin-top:8px"></div>
+          </div>
+
+          <!-- Verwaltung: neues Gerät aufnehmen -->
+          <div class="card" id="devAddCard" style="display:none">
+            <h3>➕ Gerät aufnehmen</h3>
+            <p class="hint">Einmalig eintragen. Danach kann jeder im Team einen Defekt daran melden.</p>
+            <div class="field"><label for="devName">Bezeichnung</label>
+              <input class="inp" id="devName" type="text" placeholder="z. B. EMS-Gerät 2" maxlength="80" /></div>
+            <div class="field"><label for="devPlace">Wo steht es?</label>
+              <input class="inp" id="devPlace" type="text" placeholder="z. B. Kabine links" maxlength="80" /></div>
+            <button class="btn btn-primary btn-sm" id="devAdd">Gerät aufnehmen</button>
+          </div>
         </div>
       </section>
 
@@ -2507,6 +2529,51 @@ var FIREBASE_CONFIG = {
 </div>
 
 <!-- Profil ansehen (andere) -->
+<!-- Umfrage im Chat starten -->
+<div id="pollModal">
+  <div class="pm-box">
+    <button class="lb-close" id="pollClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
+    <h3>📊 Umfrage</h3>
+    <p class="hint">Spart die 30 Einzelantworten im Chat. Jeder sieht sofort, wie es steht.</p>
+    <div class="field"><label for="pollQ">Frage</label>
+      <input class="inp" id="pollQ" type="text" placeholder="z. B. Wer kann Samstag früh?" maxlength="140" /></div>
+    <div class="field"><label>Antworten</label>
+      <input class="inp" id="pollO1" type="text" placeholder="Antwort 1" maxlength="60" style="margin-bottom:7px" />
+      <input class="inp" id="pollO2" type="text" placeholder="Antwort 2" maxlength="60" style="margin-bottom:7px" />
+      <input class="inp" id="pollO3" type="text" placeholder="Antwort 3 (optional)" maxlength="60" style="margin-bottom:7px" />
+      <input class="inp" id="pollO4" type="text" placeholder="Antwort 4 (optional)" maxlength="60" />
+    </div>
+    <button class="btn btn-primary btn-sm" id="pollSend" style="width:100%">Umfrage senden</button>
+  </div>
+</div>
+
+<!-- Gerät: Verlauf ansehen und Defekt melden -->
+<div id="devModal">
+  <div class="pm-box">
+    <button class="lb-close" id="devmClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
+    <h3 id="devmName">Gerät</h3>
+    <p id="devmPlace" style="color:var(--text-3);font-size:.85rem;margin:4px 0 14px"></p>
+
+    <div class="field"><label for="devmText">Was ist los?</label>
+      <input class="inp" id="devmText" type="text" placeholder="z. B. Weste links gibt keinen Impuls" maxlength="300" /></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <button class="btn btn-ghost btn-sm" id="devmPhoto">📷 Foto</button>
+      <span class="hint" id="devmPhotoNote" style="align-self:center"></span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button class="btn btn-danger btn-sm" id="devmDefekt">⚠ Defekt melden</button>
+      <button class="btn btn-ghost btn-sm" id="devmWartung">🔧 Wartung fällig</button>
+      <button class="btn btn-primary btn-sm" id="devmOk" style="display:none">✓ Wieder in Ordnung</button>
+    </div>
+
+    <h3 style="margin-top:20px;font-size:1rem">Verlauf</h3>
+    <p class="hint" id="devmHint">Jede Meldung bleibt hier stehen – so sieht man, welches Gerät immer wieder ausfällt.</p>
+    <div id="devmLog" style="margin-top:8px;max-height:38vh;overflow:auto"></div>
+
+    <button class="btn btn-ghost btn-sm" id="devmDel" style="width:100%;margin-top:14px;display:none">Gerät entfernen</button>
+  </div>
+</div>
+
 <div id="personModal">
   <div class="pm-box" style="text-align:center">
     <button class="lb-close" id="pmpClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
@@ -2521,6 +2588,9 @@ var FIREBASE_CONFIG = {
 
 <!-- Gemeinsames Datei-Feld für Foto an Aufgabe -->
 <input type="file" accept="image/*" class="hidden-file" id="todoFileShared" />
+
+<!-- Datei-Feld für Fotos an Geräte-Meldungen -->
+<input type="file" accept="image/*" class="hidden-file" id="devFileShared" />
 
 <!-- Firebase SDKs (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -2544,6 +2614,7 @@ var PREFS = {
   chatbg:'verlauf', // siehe CHAT_BGS
   accent:'cyan',    // siehe ACCENTS
   fs:'100',         // Schriftgröße in Prozent
+  lieferantMail:'', // Adresse für die Bestellmail (bleibt auf diesem Gerät)
   // Welche Meldungen dieses Gerät bekommen soll. Bewusst pro GERÄT und
   // nicht pro Person: der Push hängt am Gerät, und viele wollen am Handy
   // etwas anderes als am Rechner.
@@ -2884,6 +2955,20 @@ function initials(n){
   return String(n||'?').trim().split(/\s+/).map(function(w){return w[0]||'';})
     .slice(0,2).join('').toUpperCase()||'?';
 }
+/* Adressen, die aus der Datenbank kommen, nie ungeprüft in die Seite schreiben.
+   Sonst könnte jemand, der direkt in die Datenbank schreibt, fremden Code in
+   den Chat aller Kollegen einschleusen. Erlaubt sind nur Bilder/Ton als
+   eingebettete Daten und normale Links. */
+function safeMedia(v){
+  v=String(v||'');
+  // z. B. data:image/jpeg;base64,… oder data:audio/webm;codecs=opus;base64,…
+  return /^data:(image|audio|video)\/[a-z0-9.+-]+(;[a-z0-9.+=-]+)*;base64,[A-Za-z0-9+/=]*$/i.test(v)
+    ? v : '';
+}
+function safeUrl(v){
+  v=String(v||'').trim();
+  return /^(https?:\/\/|mailto:|tel:)/i.test(v) ? esc(v) : '';
+}
 /* ============================================================
    ROLLEN
    Es gibt drei Rollen:
@@ -2906,10 +2991,6 @@ function managedStudios(){
 function managedKeys(){
   if(isChef()) return STUDIOS.map(studioKey);
   return ((session&&session.studioKeys)||[]).slice();
-}
-/* Darf ich dieses eine Studio verwalten? */
-function managesStudio(sk){
-  return isChef() || (isLeiter() && managedKeys().indexOf(sk)>=0);
 }
 /* Anzeigename der Rolle */
 function roleLabel(r){
@@ -3058,6 +3139,18 @@ function isArchived(t){
     && !!t.done && !!t.doneAt
     && (Date.now()-t.doneAt > ARCHIVE_AFTER_HOURS*3600000);
 }
+/* Dasselbe für den Putzplan, nur mit längerer Frist: eine einmalige
+   Putzaufgabe soll noch einen Tag stehen bleiben, damit die nächste Schicht
+   sieht, dass sie erledigt wurde – danach verschwindet sie.
+   Wiederkehrende Aufgaben sind davon nicht betroffen; die setzen sich
+   ohnehin von selbst zurück. Aufgaben, die NIEMAND erledigt hat, bleiben
+   ebenfalls stehen – sonst wäre die Arbeit einfach weg. */
+var PUTZ_WEG_NACH_STD = 24;
+function ppAbgelaufen(t){
+  return !t.recurring
+    && !!t.done && !!t.doneAt
+    && (Date.now()-t.doneAt > PUTZ_WEG_NACH_STD*3600000);
+}
 function fmtTime(ts){
   if(!ts) return '';
   var d=new Date(ts), now=new Date();
@@ -3204,11 +3297,11 @@ function typingSomewhere(){
   return tag==='input' || tag==='textarea' || tag==='select' || el.isContentEditable;
 }
 function anyModalOpen(){
-  return ['profileModal','personModal','fwdModal','keysModal','searchOverlay','lightbox']
+  return ['profileModal','personModal','devModal','pollModal','fwdModal','keysModal','searchOverlay','lightbox']
     .some(function(id){ var e=$(id); return e && e.classList.contains('show'); });
 }
 function closeAllModals(){
-  ['profileModal','personModal','fwdModal','keysModal'].forEach(function(id){
+  ['profileModal','personModal','devModal','pollModal','fwdModal','keysModal'].forEach(function(id){
     var e=$(id); if(e) e.classList.remove('show');
   });
   closeSearch();
@@ -3765,6 +3858,7 @@ var _matUnsub = null;        // Material-Listener
 var _matStudioKey = null;    // aktuell angezeigtes Studio in der Material-Ansicht
 var _matItems = [];          // aktuelle Material-Liste
 var _matSaveTimer = null;    // Debounce fürs Speichern
+var _matSaveKey = null;      // zu welchem Studio das Gespeicherte gehört
 
 /* ============================================================
    AUTH-SCREEN
@@ -3937,6 +4031,7 @@ function showApp(){
   buildChannels();
   buildMaterialSelect();
   buildPutzplanSelect();
+  buildDeviceSelect();
   buildTeamSelect();
   if(canManage()){
     buildChefSelects(); restoreDrafts();
@@ -4070,7 +4165,7 @@ var NAVGROUPS = [
    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
   {id:'g-komm', label:'Austausch', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
-  {id:'g-arbeit', label:'Arbeit', views:['todos','putzplan','material'],
+  {id:'g-arbeit', label:'Arbeit', views:['todos','putzplan','material','geraete'],
    icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'g-team', label:'Team', views:['team','docs'],
    icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
@@ -4084,6 +4179,7 @@ var NAV = [
   {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
   {id:'material', label:'Material', icon:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>'},
   {id:'putzplan', label:'Putzplan', icon:'<path d="M3 21h18"/><path d="M9 21V9l6-4v16"/><path d="M15 9l4-2v14"/><path d="M9 13h.01M9 17h.01"/>'},
+  {id:'geraete', label:'Geräte', icon:'<rect x="2" y="7" width="20" height="12" rx="2"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M12 11v4M10 13h4"/>'},
   {id:'team', label:'Team', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
   {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
@@ -4203,6 +4299,7 @@ function showView(id, fromKey){
   if(id==='chef') buildChefTabs();
   if(id==='material') ensureMaterialLoaded();
   if(id==='putzplan') ensurePutzplanLoaded();
+  if(id==='geraete') ensureDevicesLoaded();
   if(id==='team') ensureTeamLoaded();
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
@@ -4252,7 +4349,20 @@ function buildChannels(){
    Für jeden Kanal wird nur die letzte Nachricht beobachtet. Ist sie neuer als
    der zuletzt gelesene Zeitpunkt, erscheint eine Zahl am Kanal-Knopf. */
 var _chanList=[], _chanUnsubs=[], _chanLast={};
-function chanReadKey(ch){ return 'kf_read_'+ch; }
+/* Der Lesestand gehört zur Person, nicht zum Gerät: in den Studios teilen
+   sich mehrere Leute ein Tablet. Ohne die Kennung würde der Nächste keine
+   ungelesenen Nachrichten mehr sehen. */
+function chanReadKey(ch){ return 'kf_read_'+((session&&session.uid)||'x')+'_'+ch; }
+/* Einmalig: Lesestände aus der alten Schreibweise (ohne Kennung) wegräumen,
+   damit sie nicht für immer im Speicher des Geräts liegen bleiben. */
+function cleanOldReadKeys(){
+  try{
+    for(var i=localStorage.length-1;i>=0;i--){
+      var k=localStorage.key(i);
+      if(k && /^kf_read_(all|studio-\d+)$/.test(k)) localStorage.removeItem(k);
+    }
+  }catch(e){}
+}
 function chanLastRead(ch){
   try{
     var v=localStorage.getItem(chanReadKey(ch));
@@ -4271,6 +4381,7 @@ function markChannelRead(ch){
   renderChannelBadges();
 }
 function watchChannelUnread(){
+  cleanOldReadKeys();
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} });
   _chanUnsubs=[];
   _chanList.forEach(function(ch){
@@ -4300,6 +4411,7 @@ function renderChannelBadges(){
 }
 
 /* ── Chef-Dropdowns ── */
+var _chefSelBound=false;
 function buildChefSelects(){
   var t=$('bcTarget'); t.innerHTML='';
   // "Alle Mitarbeiter" darf nur der Chef – ein Studio-Leiter erreicht nur seine Studios
@@ -4321,10 +4433,13 @@ function buildChefSelects(){
     lab.appendChild(cb); lab.appendChild(span); ns.appendChild(lab);
   });
   buildAssignSelect();
+  // Nur einmal verdrahten – "Alle Studios" würde sonst mehrfach umschalten
+  if(_chefSelBound) return;
+  _chefSelBound=true;
   var all=$('ntAllStudios');
   all.addEventListener('change',function(){
     $('ntAllWrap').classList.toggle('on', all.checked);
-    ns.querySelectorAll('input').forEach(function(cb){
+    $('ntStudios').querySelectorAll('input').forEach(function(cb){
       cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked);
     });
   });
@@ -4529,13 +4644,14 @@ function renderEmployees(emps){
 }
 
 /* ============================================================
-   DOKUMENTE (Firebase Storage)
+   DOKUMENTE (Datei-Inhalt liegt in Firestore: documentData)
    ============================================================ */
 var _docsUnsub=null;
 var _pendingDocFile=null;
 
 function fmtSize(b){ b=b||0; return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'; }
 
+var _docUiBound=false;
 function buildDocStudios(){
   var wrap=$('docStudios'); if(!wrap) return;
   wrap.innerHTML='';
@@ -4549,10 +4665,15 @@ function buildDocStudios(){
     var span=document.createElement('span'); span.textContent=s;
     lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
   });
+  // Die Studio-Kästchen werden bei jedem Aufruf neu gebaut, die Knöpfe
+  // darunter gibt es dagegen nur einmal – die dürfen auch nur einmal
+  // verdrahtet werden, sonst lädt eine Datei doppelt hoch.
+  if(_docUiBound) return;
+  _docUiBound=true;
   var all=$('docAll');
   all.addEventListener('change',function(){
     $('docAllWrap').classList.toggle('on',all.checked);
-    wrap.querySelectorAll('input').forEach(function(cb){ cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked); });
+    $('docStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked); });
   });
   $('docPick').addEventListener('click',function(){ $('docFile').click(); });
   $('docFile').addEventListener('change',function(){
@@ -4707,7 +4828,7 @@ function renderDocs(docs){
   var meta=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+
     docStudiosLabel(d)+' · '+(d.kind==='link'?'Link':fmtSize(d.size))+' · '+fmtTime(d.ts);
     var openBtn=(d.kind==='link')
-      ? '<a class="btn btn-ghost btn-sm" href="'+esc(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'
+      ? '<a class="btn btn-ghost btn-sm" href="'+safeUrl(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'
       : '<button class="btn btn-ghost btn-sm doc-open">Öffnen</button>';
     return '<div class="doc" data-id="'+esc(d.id)+'">'+
       '<div class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>'+
@@ -4794,13 +4915,28 @@ function stopListeners(){
   if(_tplUnsub){ _tplUnsub(); _tplUnsub=null; }
   if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
+  if(_devUnsub){ _devUnsub(); _devUnsub=null; }
+  if(_devLogUnsub){ _devLogUnsub(); _devLogUnsub=null; }
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
   if(_periodTimer){ clearInterval(_periodTimer); _periodTimer=null; }
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _chanUnsubs=[];
   _lastPing=0;
   [_shiftUnsub,_absUnsub,_hoUnsub,_bbUnsub].forEach(function(u){ if(u) try{ u(); }catch(e){} });
   _shiftUnsub=_absUnsub=_hoUnsub=_bbUnsub=null;
-  _matStudioKey=null; _ppStudioKey=null; _teamStudioKey=null;
+  _matStudioKey=null; _ppStudioKey=null; _teamStudioKey=null; _devStudioKey=null;
+  // Zwischenstände wegräumen. In den Studios teilen sich mehrere Leute ein
+  // Gerät – wer sich als Nächstes anmeldet, darf nichts vom Vorgänger sehen.
+  // Besonders "Mein Dienst": das wird nur alle fünf Minuten neu geladen und
+  // hätte sonst bis zu fünf Minuten lang die Schichten der falschen Person
+  // angezeigt.
+  if(_matSaveTimer){ clearTimeout(_matSaveTimer); _matSaveTimer=null; }
+  _matSaveKey=null;
+  _myShifts=[]; _myShiftsAt=0; _myShiftsLoading=false;
+  _shifts=[]; _absences=[]; _handovers=[]; _board=[];
+  _ppTasks=[]; _ppNotes=[]; _matItems=[];
+  _devices=[]; _devLog=[]; _devOpenId=null; _pendingDevPhoto=null;
+  _chanLast={}; _chanList=[];
+  _allUsers=[]; _employees=[]; _invAll={};
 }
 
 /* Chat: wechselt bei Kanalwechsel */
@@ -4935,13 +5071,14 @@ function renderMessages(msgs){
       :(m.role==='leiter'
         ?'<span class="tag leiter">Leitung</span>'
         :(m.studio?'<span class="tag studio">'+esc(m.studio)+'</span>':''));
-    var imgHtml = m.img ? '<img class="msg-img" data-zoom src="'+m.img+'" alt="Foto" />' : '';
+    var imgHtml = m.img ? '<img class="msg-img" data-zoom src="'+safeMedia(m.img)+'" alt="Foto" />' : '';
     // Sprachnachricht: der Abspieler des Browsers, dazu die Länge
     var audioHtml = m.audio
-      ? '<div class="msg-audio"><audio controls preload="none" src="'+m.audio+'"></audio>'+
+      ? '<div class="msg-audio"><audio controls preload="none" src="'+safeMedia(m.audio)+'"></audio>'+
         '<span class="au-len">🎤 '+esc(fmtDur(m.audioMs||0))+'</span></div>'
       : '';
     var bodyHtml = m.text ? '<div class="body">'+markMentions(linkify(esc(m.text)))+'</div>' : '';
+    var pollHtml = pollHTML(m);
     var delBtn = canDel ? '<button class="msg-tool msg-del" data-id="'+esc(m.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
     // Antworten und Reagieren kann jeder; Bearbeiten nur die eigene Nachricht (15 Min.)
     var canEdit = mine && (Date.now()-(m.ts||0) < EDIT_WINDOW_MS) && !!m.text;
@@ -4963,7 +5100,7 @@ function renderMessages(msgs){
     html+='<div class="msg'+(mine?' mine':'')+(iAmMentioned?' mentioned':'')+'" data-mid="'+esc(m.id)+'">'+
       '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+
       '<time>'+fmtTime(m.ts)+'</time>'+edited+tools+'</div>'+
-      fwd+quote+bodyHtml+audioHtml+imgHtml+reactionsHTML(m)+'</div>';
+      fwd+quote+bodyHtml+pollHtml+audioHtml+imgHtml+reactionsHTML(m)+'</div>';
   });
   box.innerHTML=html;
   renderPinBar();
@@ -4975,6 +5112,72 @@ function renderMessages(msgs){
   });
   bindMessageTools(box);
   if(atBottom) scrollBottom(); else updateFabCount();
+}
+
+/* ── Umfragen im Chat ──
+   Statt 30 Einzelantworten steht das Ergebnis in der Nachricht selbst.
+   Die Stimmen liegen als {Kennung: Nummer} an der Nachricht; wer schon
+   abgestimmt hat, kann seine Stimme durch Antippen ändern. Absichtlich
+   nicht anonym: im Team von 14 Studios geht es um "wer kann wann", nicht
+   um heikle Fragen – und ohne Namen müsste die Leitung doch wieder
+   nachfragen. */
+function pollHTML(m){
+  var p=m.poll;
+  if(!p || !Array.isArray(p.opts) || !p.opts.length) return '';
+  var votes=m.votes||{};
+  var zaehler=p.opts.map(function(){ return 0; });
+  var gesamt=0;
+  Object.keys(votes).forEach(function(uid){
+    var i=votes[uid];
+    if(typeof i==='number' && i>=0 && i<zaehler.length){ zaehler[i]++; gesamt++; }
+  });
+  var meine=votes[session.uid];
+  var opts=p.opts.map(function(o,i){
+    var n=zaehler[i];
+    var pct = gesamt ? Math.round(n*100/gesamt) : 0;
+    return '<button class="poll-opt'+(meine===i?' mine':'')+'" data-poll="'+esc(m.id)+'" data-po="'+i+'">'+
+      '<span class="poll-fill" style="width:'+pct+'%"></span>'+
+      '<span class="poll-lab"><span>'+esc(o)+'</span><span>'+n+(gesamt?' · '+pct+'%':'')+'</span></span></button>';
+  }).join('');
+  return '<div class="poll"><div class="poll-q">'+esc(p.q||'Umfrage')+'</div>'+opts+
+    '<div class="poll-foot">'+(gesamt?gesamt+(gesamt===1?' Stimme':' Stimmen'):'noch keine Stimme')+
+    (meine==null?' · tippe auf eine Antwort':' · Antippen ändert deine Stimme')+'</div></div>';
+}
+
+function votePoll(msgId, idx){
+  var feld={};
+  feld['votes.'+session.uid]=idx;
+  db.collection('channels').doc(currentChannel).collection('messages').doc(msgId)
+    .update(feld)
+    .then(function(){ tick(6); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+
+function openPoll(){
+  ['pollQ','pollO1','pollO2','pollO3','pollO4'].forEach(function(id){ var e=$(id); if(e) e.value=''; });
+  $('pollModal').classList.add('show');
+  setTimeout(function(){ var q=$('pollQ'); if(q) q.focus(); },80);
+}
+function closePoll(){ var m=$('pollModal'); if(m) m.classList.remove('show'); }
+
+function sendPoll(btn){
+  var q=$('pollQ').value.trim();
+  if(!q){ toast('Bitte eine Frage eingeben.',true); return; }
+  var opts=['pollO1','pollO2','pollO3','pollO4']
+    .map(function(id){ return $(id).value.trim(); })
+    .filter(function(x){ return !!x; });
+  if(opts.length<2){ toast('Bitte mindestens zwei Antworten angeben.',true); return; }
+  withBusy(btn,function(){
+    return db.collection('channels').doc(currentChannel).collection('messages').add({
+      uid:session.uid, name:session.name, role:session.role,
+      studio:channelStudioName(currentChannel),
+      text:'', ts:Date.now(),
+      poll:{ q:q, opts:opts }, votes:{}
+    }).then(function(){
+      closePoll();
+      toast('Umfrage gesendet ✓');
+    }).catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
+  });
 }
 
 /* Antwort- und Bearbeiten-Zustand der Chat-Eingabe */
@@ -5049,7 +5252,7 @@ function bindMessageTools(box){
   if(!box._toolsBound){
     box._toolsBound=true;
     box.addEventListener('click',function(e){
-      if(e.target.closest('.msg-tool,.react,.msg-quote,audio,img,a')) return;
+      if(e.target.closest('.msg-tool,.react,.msg-quote,.poll-opt,audio,img,a')) return;
       var m=e.target.closest && e.target.closest('.msg');
       var offen=m && m.classList.contains('tools-open');
       box.querySelectorAll('.msg.tools-open').forEach(function(x){ x.classList.remove('tools-open'); });
@@ -5060,6 +5263,12 @@ function bindMessageTools(box){
     b.addEventListener('click',function(){
       var m=(_curMsgs||[]).filter(function(x){ return x.id===b.getAttribute('data-reply'); })[0];
       if(m) startReply(m);
+    });
+  });
+  box.querySelectorAll('[data-poll]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      votePoll(b.getAttribute('data-poll'), parseInt(b.getAttribute('data-po'),10));
     });
   });
   box.querySelectorAll('[data-edit]').forEach(function(b){
@@ -5228,6 +5437,10 @@ function loadTeam(sk){
   if(!sk) return;
   _teamStudioKey=sk;
   [_shiftUnsub,_absUnsub,_hoUnsub].forEach(function(u){ if(u) try{ u(); }catch(e){} });
+  _shiftUnsub=_absUnsub=_hoUnsub=null;
+  // Erst leeren, damit nicht kurz die Schichten des vorigen Studios stehen
+  _shifts=[]; _absences=[]; _handovers=[];
+  renderShifts(); renderAbsences(); renderHandovers();
   var ref=db.collection('studios').doc(sk);
   _shiftUnsub=ref.collection('shifts').orderBy('date').onSnapshot(function(sn){
     _shifts=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
@@ -5919,7 +6132,7 @@ function todoHTML(t,sk,chefView){
     dueBadge='<span class="t-due'+(over?' over':'')+'">'+(over?'⚠ überfällig':'bis '+dd.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}))+'</span>';
   }
   var photoHtml = t.photo
-    ? '<img class="t-photo" data-zoom src="'+t.photo+'" alt="Foto zur Aufgabe" />'
+    ? '<img class="t-photo" data-zoom src="'+safeMedia(t.photo)+'" alt="Foto zur Aufgabe" />'
     : '<button class="t-photo-add" data-photoadd="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>Foto hinzufügen</button>';
   var isOver = !done && t.due && Date.now()>t.due;   // überfällig → roter Balken links
   // Zugewiesene Person anzeigen
@@ -5945,7 +6158,7 @@ function todoHTML(t,sk,chefView){
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+assign+stepCount+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     stepsHtml+
-    (t.docUrl?'<a class="t-doc" href="'+esc(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
+    (t.docUrl?'<a class="t-doc" href="'+safeUrl(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
     photoHtml+'</div>'+
     (chefView&&t.due&&!done?'<button class="t-snooze" data-snooze="1" title="Frist verschieben" aria-label="Frist verschieben">⏰</button>':'')+
@@ -6598,8 +6811,15 @@ function ensureMaterialLoaded(){
 }
 
 function loadMaterial(sk){
+  var wechsel = _matStudioKey && _matStudioKey!==sk;
   _matStudioKey=sk;
+  // Noch nicht gespeicherte Eingaben zuerst wegschreiben – zum alten Studio.
+  if(_matSaveTimer) saveMaterialNow();
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
+  // Beim Studio-Wechsel die alten Zahlen sofort wegnehmen. Sonst stehen kurz
+  // die Bestände des vorigen Studios da – und wer sofort tippt, würde sie
+  // versehentlich beim neuen Studio speichern.
+  if(wechsel){ _matItems=[]; renderMaterial(); }
   _matUnsub=db.collection('inventory').doc(sk).onSnapshot(function(doc){
     // Eigene Schreibvorgänge oder aktives Tippen nicht überschreiben
     if(doc.metadata.hasPendingWrites) return;
@@ -6836,15 +7056,49 @@ function exportShoppingList(){
   toast('Einkaufsliste gespeichert');
 }
 
+/* Bestellmail an den Lieferanten.
+   Bewusst über das Mailprogramm des Geräts (mailto) und nicht über den
+   eigenen Mailversand: so geht nichts ohne Kontrolle raus, die Mail liegt
+   im gesendeten Ordner des Absenders, und es kostet nichts. Wer sie später
+   automatisch verschicken will, hat die Vorlage damit schon fertig. */
+function shoppingMail(){
+  var rows=shoppingData();
+  if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
+  var betreff='Bestellung Körperformen · '+new Date().toLocaleDateString('de-DE');
+  var text='Guten Tag,\n\nwir möchten Folgendes bestellen:\n\n'
+    + rows.map(function(r){ return '· '+r.name+': '+r.total+' Stück'; }).join('\n')
+    + '\n\nAufteilung auf die Studios:\n'
+    + rows.map(function(r){
+        return '· '+r.name+' – '+r.studios.map(function(x){ return x.studio+': '+x.n; }).join(', ');
+      }).join('\n')
+    + '\n\nVielen Dank und freundliche Grüße\n'+(session.name||'')+'\nKörperformen';
+  var adresse=(PREFS.lieferantMail||'').trim();
+  // mailto verträgt keine beliebige Länge. Über 1800 Zeichen schneiden
+  // manche Mailprogramme still ab – dann lieber ohne Text öffnen und
+  // den Rest in die Zwischenablage legen.
+  var url='mailto:'+encodeURIComponent(adresse)
+    +'?subject='+encodeURIComponent(betreff)+'&body='+encodeURIComponent(text);
+  if(url.length>1800){
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function(){});
+    toast('Liste ist lang – sie liegt in der Zwischenablage, bitte einfügen.');
+    url='mailto:'+encodeURIComponent(adresse)+'?subject='+encodeURIComponent(betreff);
+  }
+  window.location.href=url;
+}
+
 function scheduleMaterialSave(){
   clearTimeout(_matSaveTimer);
+  // Studio jetzt schon merken: wer tippt und sofort das Studio wechselt,
+  // hätte die Zahlen sonst beim falschen Studio gespeichert.
+  _matSaveKey=_matStudioKey;
   var s=$('matSaved'); if(s){ s.textContent='Wird gespeichert …'; s.style.opacity='1'; }
-  _matSaveTimer=setTimeout(saveMaterialNow, 700);
+  _matSaveTimer=setTimeout(function(){ saveMaterialNow(); }, 700);
 }
 function saveMaterialNow(){
-  if(!_matStudioKey) return;
-  clearTimeout(_matSaveTimer);
-  var sk=_matStudioKey, items=_matItems.slice();
+  var sk=_matSaveKey||_matStudioKey;
+  if(!sk) return;
+  clearTimeout(_matSaveTimer); _matSaveTimer=null; _matSaveKey=null;
+  var items=_matItems.slice();
   db.collection('inventory').doc(sk).set({
     items:items, updatedAt:Date.now(), updatedBy:session.name
   }).then(function(){
@@ -6922,9 +7176,15 @@ function loadPutzplan(sk){
   var t=$('ppListTitle'); if(t) t.textContent='Putzplan · '+studioName(sk);
   if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
+  // Beim Wechsel erst leeren: sonst steht kurz der alte Putzplan unter dem
+  // neuen Studio-Namen – und bei schlechter Verbindung sogar länger.
+  _ppTasks=[]; _ppNotes=[]; renderPutzplan(); renderPutzNotes();
   _ppTaskUnsub=db.collection('studios').doc(sk).collection('cleaning').orderBy('ts')
     .onSnapshot(function(snap){
-      _ppTasks=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      // Direkt hier filtern und nicht erst beim Zeichnen: so stimmen Liste,
+      // Fortschritt, Ausdruck, Startseite und Suche ohne weiteres Zutun.
+      _ppTasks=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+        .filter(function(t){ return !ppAbgelaufen(t); });
       renderPutzplan();
     }, function(e){ console.error('Putzplan:',e.message); toast('Putzplan: '+errMsg(e),true); });
   _ppNoteUnsub=db.collection('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50)
@@ -7125,7 +7385,9 @@ function pushPutzplanToSheets(sk){
     studioRef.collection('cleaning').orderBy('ts').get(),
     studioRef.collection('cleaningNotes').orderBy('ts','desc').limit(50).get()
   ]).then(function(res){
-    var tasks=res[0].docs.map(function(d){ var t=d.data();
+    var tasks=res[0].docs.map(function(d){ return d.data(); })
+      .filter(function(t){ return !ppAbgelaufen(t); })
+      .map(function(t){
       return { title:t.title||'', wiederholung:repLabelFor(t)||'einmalig',
         status:isDone(t)?'erledigt':'offen',
         erledigtVon: isDone(t)?(t.doneBy||''):'',
@@ -7261,6 +7523,233 @@ function exportMaterialExcel(){
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
   }).catch(function(e){ toast('Export: '+errMsg(e),true); });
+}
+
+/* ============================================================
+   GERÄTE (Bestand und Schäden pro Studio)
+
+   Warum es das gibt: Ein defektes Gerät stand bisher im Chat und war nach
+   zwei Tagen nach oben gescrollt. Niemand konnte sagen, welches Gerät wie
+   oft ausfällt, und beim Anruf beim Techniker fehlte die Vorgeschichte.
+
+   Jede Meldung bleibt deshalb am Gerät hängen. Wer einen Defekt meldet,
+   legt damit automatisch eine Aufgabe für die Leitung an – so verschwindet
+   sie nicht zwischen den Nachrichten.
+   ============================================================ */
+var _devStudioKey=null, _devices=[], _devLog=[], _devUnsub=null, _devLogUnsub=null;
+var _devOpenId=null, _pendingDevPhoto=null;
+
+var DEV_STATUS={
+  ok:      {label:'in Ordnung', cls:'ok',      ico:'✓'},
+  wartung: {label:'Wartung',    cls:'wartung', ico:'🔧'},
+  defekt:  {label:'defekt',     cls:'defekt',  ico:'⚠'}
+};
+function devStatus(d){ return DEV_STATUS[(d&&d.status)||'ok'] || DEV_STATUS.ok; }
+
+function buildDeviceSelect(){
+  var sel=$('devStudio'); if(!sel) return;
+  var list = canManage() ? managedStudios()
+    : (session.studios||[]).slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
+  sel.innerHTML=list.map(function(s){ return '<option value="'+esc(studioKey(s))+'">'+esc(s)+'</option>'; }).join('');
+  sel.onchange=function(){ loadDevices(sel.value); };
+  var add=$('devAddCard'); if(add) add.style.display = canManage() ? 'block' : 'none';
+}
+
+function ensureDevicesLoaded(){
+  var sel=$('devStudio'); if(!sel) return;
+  if(!sel.options.length) buildDeviceSelect();
+  if(!_devStudioKey && sel.value) loadDevices(sel.value);
+}
+
+function loadDevices(sk){
+  if(!sk) return;
+  _devStudioKey=sk;
+  var t=$('devListTitle'); if(t) t.textContent='Geräte · '+studioName(sk);
+  if(_devUnsub){ _devUnsub(); _devUnsub=null; }
+  if(_devLogUnsub){ _devLogUnsub(); _devLogUnsub=null; }
+  // Erst leeren – sonst stehen kurz die Geräte des vorigen Studios da
+  _devices=[]; _devLog=[]; renderDevices();
+  var ref=db.collection('studios').doc(sk);
+  _devUnsub=ref.collection('devices').orderBy('name')
+    .onSnapshot(function(snap){
+      _devices=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderDevices();
+      if(_devOpenId) fillDeviceModal();
+    }, function(e){ console.warn('Geräte:',e.message); });
+  // Nur die letzten 60 Meldungen: der Verlauf soll etwas zeigen, nicht alles
+  _devLogUnsub=ref.collection('deviceLog').orderBy('ts','desc').limit(60)
+    .onSnapshot(function(snap){
+      _devLog=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderDevices();
+      if(_devOpenId) renderDeviceLog();
+    }, function(e){ console.warn('Geräte-Verlauf:',e.message); });
+}
+
+/* Wie oft war dieses Gerät in den letzten 90 Tagen defekt?
+   Zweimal ist Pech, dreimal ist ein Muster – und genau das soll auffallen. */
+function devDefektCount(id){
+  var grenze=Date.now()-90*86400000;
+  return _devLog.filter(function(l){
+    return l.devId===id && l.art==='defekt' && (l.ts||0)>=grenze;
+  }).length;
+}
+
+function renderDevices(){
+  var box=$('devList'); if(!box) return;
+  var cnt=$('devCount');
+  var kaputt=_devices.filter(function(d){ return d.status==='defekt'; }).length;
+  if(cnt) cnt.textContent = _devices.length
+    ? (kaputt ? kaputt+' von '+_devices.length+' defekt' : _devices.length+' Geräte, alles in Ordnung')
+    : '';
+
+  var al=$('devAlert');
+  if(al){
+    if(kaputt){
+      al.style.display='block';
+      al.innerHTML='⚠ <b>'+kaputt+' Gerät'+(kaputt===1?'':'e')+' defekt</b> – die Leitung hat dazu je eine Aufgabe bekommen.';
+    } else al.style.display='none';
+  }
+
+  if(!_devices.length){
+    box.innerHTML=emptyHTML('Noch keine Geräte',
+      canManage() ? 'Trage unten ein, was in diesem Studio steht.'
+                  : 'Die Leitung trägt hier die Geräte des Studios ein.');
+    return;
+  }
+  // Defekte nach oben – wer die Seite öffnet, soll sie zuerst sehen
+  var rang={defekt:0, wartung:1, ok:2};
+  var list=_devices.slice().sort(function(a,b){
+    return (rang[a.status||'ok']-rang[b.status||'ok']) || String(a.name||'').localeCompare(String(b.name||''),'de');
+  });
+  box.innerHTML=list.map(function(d){
+    var st=devStatus(d);
+    var oft=devDefektCount(d.id);
+    var meta = d.lastAt
+      ? esc(d.lastNote||st.label)+' · '+fmtDateTime(d.lastAt)+(d.lastBy?' · '+esc(d.lastBy):'')
+      : (d.place ? esc(d.place) : 'noch keine Meldung');
+    // Der Wiederholungstäter-Hinweis steht bewusst in der Zeile darunter und
+    // nicht neben dem Zustand: zwei Marken nebeneinander drücken den Namen
+    // auf schmalen Handys in zwei Zeilen.
+    var warn = oft>=3 ? '<span class="dev-warn">'+oft+'× defekt in 90 Tagen</span>' : '';
+    return '<div class="dev-item" data-dev="'+esc(d.id)+'">'+
+      '<div class="dev-body"><div class="dev-title">'+esc(d.name||'Gerät')+'</div>'+
+      '<div class="dev-meta">'+meta+warn+'</div></div>'+
+      '<span class="dev-st '+st.cls+'">'+st.ico+' '+esc(st.label)+'</span></div>';
+  }).join('');
+  box.querySelectorAll('[data-dev]').forEach(function(el){
+    el.addEventListener('click',function(){ openDeviceModal(el.getAttribute('data-dev')); });
+  });
+}
+
+function deviceById(id){
+  for(var i=0;i<_devices.length;i++){ if(_devices[i].id===id) return _devices[i]; }
+  return null;
+}
+
+function openDeviceModal(id){
+  var d=deviceById(id); if(!d) return;
+  _devOpenId=id; _pendingDevPhoto=null;
+  var t=$('devmText'); if(t) t.value='';
+  var pn=$('devmPhotoNote'); if(pn) pn.textContent='';
+  fillDeviceModal();
+  renderDeviceLog();
+  $('devModal').classList.add('show');
+  tick(8);
+}
+function fillDeviceModal(){
+  var d=deviceById(_devOpenId); if(!d){ closeDeviceModal(); return; }
+  var n=$('devmName'); if(n) n.textContent=d.name||'Gerät';
+  var p=$('devmPlace'); if(p) p.textContent = d.place ? ('Standort: '+d.place) : '';
+  // "Wieder in Ordnung" nur zeigen, wenn es auch etwas zu beheben gibt
+  var ok=$('devmOk'); if(ok) ok.style.display = (d.status && d.status!=='ok') ? 'inline-flex' : 'none';
+  var del=$('devmDel'); if(del) del.style.display = canManage() ? 'block' : 'none';
+}
+function closeDeviceModal(){
+  _devOpenId=null; _pendingDevPhoto=null;
+  var m=$('devModal'); if(m) m.classList.remove('show');
+}
+
+function renderDeviceLog(){
+  var box=$('devmLog'); if(!box) return;
+  var list=_devLog.filter(function(l){ return l.devId===_devOpenId; });
+  if(!list.length){
+    box.innerHTML='<p class="hint">Noch keine Meldung zu diesem Gerät.</p>';
+    return;
+  }
+  var ART={defekt:'⚠ Defekt', behoben:'✓ Behoben', wartung:'🔧 Wartung', notiz:'📝 Notiz'};
+  box.innerHTML=list.map(function(l){
+    var foto = l.photo ? '<img data-zoom src="'+safeMedia(l.photo)+'" alt="Foto zur Meldung" />' : '';
+    return '<div class="dev-log">'+
+      '<div class="dev-log-text"><b>'+esc(ART[l.art]||'Meldung')+'</b>'+
+      (l.text?' · '+esc(l.text):'')+'</div>'+foto+
+      '<div class="dev-log-foot">'+esc(l.by||'—')+' · '+fmtDateTime(l.ts)+'</div></div>';
+  }).join('');
+}
+
+/* Eine Meldung schreiben: Verlauf, Status am Gerät und – bei einem Defekt –
+   eine Aufgabe für die Leitung. Alles in einem Rutsch, damit nichts halb
+   passiert. */
+function reportDevice(art, btn){
+  var d=deviceById(_devOpenId); if(!d || !_devStudioKey) return;
+  var text=($('devmText')?$('devmText').value:'').trim();
+  if(art!=='behoben' && !text){ toast('Bitte kurz beschreiben, was los ist.',true); return; }
+  var status = art==='behoben' ? 'ok' : (art==='wartung' ? 'wartung' : 'defekt');
+  var ref=db.collection('studios').doc(_devStudioKey);
+  var eintrag={
+    devId:d.id, devName:d.name||'Gerät', art:art,
+    text:text, by:session.name, byUid:session.uid, ts:Date.now()
+  };
+  if(_pendingDevPhoto) eintrag.photo=_pendingDevPhoto;
+
+  withBusy(btn,function(){
+    var batch=db.batch();
+    batch.set(ref.collection('deviceLog').doc(), eintrag);
+    batch.update(ref.collection('devices').doc(d.id), {
+      status:status, lastNote:(text||DEV_STATUS[status].label),
+      lastBy:session.name, lastAt:Date.now()
+    });
+    // Nur bei einem echten Defekt eine Aufgabe – sonst wäre die
+    // Aufgabenliste nach einer Woche voll mit Kleinkram.
+    if(art==='defekt'){
+      batch.set(ref.collection('todos').doc(), {
+        title:'🔧 '+(d.name||'Gerät')+' defekt',
+        desc:text+'\n\nGemeldet von '+session.name+(d.place?' · Standort: '+d.place:''),
+        done:false, doneBy:null, doneAt:null,
+        createdBy:session.name, createdByUid:session.uid, ts:Date.now()
+      });
+    }
+    return batch.commit().then(function(){
+      $('devmText').value=''; _pendingDevPhoto=null;
+      var pn=$('devmPhotoNote'); if(pn) pn.textContent='';
+      toast(art==='behoben' ? 'Als in Ordnung vermerkt ✓'
+        : (art==='wartung' ? 'Wartung vermerkt ✓' : 'Defekt gemeldet – Aufgabe für die Leitung angelegt ✓'));
+      tick(12);
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
+function addDevice(btn){
+  if(!_devStudioKey) return;
+  var name=$('devName').value.trim();
+  if(!name){ toast('Bitte eine Bezeichnung eingeben.',true); return; }
+  var place=$('devPlace').value.trim();
+  withBusy(btn,function(){
+    return db.collection('studios').doc(_devStudioKey).collection('devices').add({
+      name:name, place:place, status:'ok',
+      createdBy:session.name, createdByUid:session.uid, ts:Date.now()
+    }).then(function(){
+      $('devName').value=''; $('devPlace').value='';
+      toast('Gerät aufgenommen ✓');
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
+function deleteDevice(){
+  var d=deviceById(_devOpenId); if(!d || !_devStudioKey) return;
+  if(!confirm('Gerät „'+(d.name||'')+'" entfernen?\n\nDer Verlauf dazu bleibt erhalten.')) return;
+  db.collection('studios').doc(_devStudioKey).collection('devices').doc(d.id).delete()
+    .then(function(){ closeDeviceModal(); toast('Gerät entfernt'); })
+    .catch(function(e){ toast(errMsg(e),true); });
 }
 
 /* ============================================================
@@ -7472,9 +7961,6 @@ function restoreDrafts(){
 }
 
 /* ============================================================
-   AKTIONEN
-   ============================================================ */
-/* ============================================================
    SUCHE (Aufgaben, Dokumente, Infos, offener Chat-Kanal)
    ============================================================ */
 var _allDocs=[], _curMsgs=[];
@@ -7591,9 +8077,9 @@ function avatarMarkup(u){
   var dot = isOnline(u) ? '<span class="online-dot" title="gerade online"></span>' : '';
   var inner;
   if(u.photo){
-    inner='<div class="avatar" style="background-image:url('+u.photo+');background-size:cover;background-position:center"></div>';
+    inner='<div class="avatar" style="background-image:url('+safeMedia(u.photo)+');background-size:cover;background-position:center"></div>';
   } else {
-    var bg=u.color?(' style="background:'+esc(u.color)+'"'):'';
+    var bg=(u.color && /^#[0-9a-f]{3,8}$/i.test(u.color))?(' style="background:'+u.color+'"'):'';
     var chef=(u.role==='chef' && !u.color)?' chef':'';
     var c=u.emoji?esc(u.emoji):esc(initials(u.name));
     inner='<div class="avatar'+chef+'"'+bg+'>'+c+'</div>';
@@ -7750,7 +8236,7 @@ function renderDmMessages(msgs){
       body = (m.fwdFrom ? '<div class="fwd-mark">↪ weitergeleitet von '+esc(m.fwdFrom)+'</div>' : '')
         + (m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '')
         + (m.audio
-            ? '<div class="msg-audio"><audio controls preload="none" src="'+m.audio+'"></audio>'+
+            ? '<div class="msg-audio"><audio controls preload="none" src="'+safeMedia(m.audio)+'"></audio>'+
               '<span class="au-len">🎤 '+esc(fmtDur(m.audioMs||0))+'</span></div>'
             : '');
     }
@@ -7958,7 +8444,7 @@ function applyAvatarEl(av, u){
   if(u.photo){
     av.textContent='';
     av.style.background='';
-    av.style.backgroundImage='url('+u.photo+')';
+    av.style.backgroundImage='url('+safeMedia(u.photo)+')';
     av.style.backgroundSize='cover'; av.style.backgroundPosition='center';
     av.classList.remove('chef');
   } else {
@@ -8206,7 +8692,18 @@ function birthdayCheck(){
   }
 }
 
+/* ============================================================
+   AKTIONEN – alle Klicks und Tastendrücke verdrahten
+   ============================================================ */
+/* Wird nur beim ersten Anmelden aufgerufen. Meldet sich jemand ab und ein
+   Kollege gleich danach an – in den Studios der Normalfall – lädt die Seite
+   neu (siehe „Abmelden"). Ohne das wären alle Klick-Handler doppelt gesetzt
+   und jede Nachricht ginge zweimal raus. Der Riegel hier ist die zweite
+   Sicherung, falls showApp() aus einem anderen Grund erneut läuft. */
+var _actionsBound=false;
 function bindActions(){
+  if(_actionsBound) return;
+  _actionsBound=true;
   // Profil bearbeiten
   var ua=$('uAvatar'); if(ua) ua.addEventListener('click',openProfile);
   var pmc=$('pmClose'); if(pmc) pmc.addEventListener('click',closeProfile);
@@ -8333,6 +8830,9 @@ function bindActions(){
     ta.focus();
   }
   $('chatSend').addEventListener('click',sendMsg);
+  var pc=$('pollClose'); if(pc) pc.addEventListener('click',closePoll);
+  var pmo=$('pollModal'); if(pmo) pmo.addEventListener('click',function(e){ if(e.target===pmo) closePoll(); });
+  var ps=$('pollSend'); if(ps) ps.addEventListener('click',function(){ sendPoll(this); });
   var cbx=$('cbCancel');
   if(cbx) cbx.addEventListener('click',function(){
     if(_editing){ var t=$('chatText'); if(t){ t.value=''; t.style.height='auto'; } }
@@ -8412,7 +8912,20 @@ function bindActions(){
   });
 
   // Foto an Chat anhängen
-  $('chatAttach').addEventListener('click',function(){ $('chatFile').click(); });
+  var am=$('attachMenu');
+  $('chatAttach').addEventListener('click',function(e){
+    e.stopPropagation();
+    if(am) am.classList.toggle('show');
+  });
+  if(am){
+    am.addEventListener('click',function(e){
+      var b=e.target.closest('[data-att]'); if(!b) return;
+      am.classList.remove('show');
+      if(b.getAttribute('data-att')==='foto') $('chatFile').click(); else openPoll();
+    });
+    // Antippen daneben schließt das Menü wieder
+    document.addEventListener('click',function(){ am.classList.remove('show'); });
+  }
   $('chatFile').addEventListener('change',function(){
     var f=this.files&&this.files[0]; this.value='';
     if(!f) return;
@@ -8471,6 +8984,14 @@ function bindActions(){
   // Einkaufsliste: drucken, als Excel, in die Zwischenablage
   var shP=$('shopPrint'); if(shP) shP.addEventListener('click', printShoppingList);
   var shX=$('shopXls');   if(shX) shX.addEventListener('click', exportShoppingList);
+  var shM=$('shopMail'); if(shM) shM.addEventListener('click', shoppingMail);
+  var shMT=$('shopMailTo');
+  if(shMT){
+    shMT.value=PREFS.lieferantMail||'';
+    shMT.addEventListener('change',function(){
+      PREFS.lieferantMail=shMT.value.trim(); savePrefs();
+    });
+  }
   var shC=$('shopCopy');
   if(shC) shC.addEventListener('click',function(){
     var t=shoppingText();
@@ -8615,11 +9136,37 @@ function bindActions(){
     });
   }
 
+  // ── Geräte ──
+  var devmC=$('devmClose'); if(devmC) devmC.addEventListener('click',closeDeviceModal);
+  var devM=$('devModal'); if(devM) devM.addEventListener('click',function(e){ if(e.target===devM) closeDeviceModal(); });
+  var devD=$('devmDefekt');  if(devD) devD.addEventListener('click',function(){ reportDevice('defekt',this); });
+  var devW=$('devmWartung'); if(devW) devW.addEventListener('click',function(){ reportDevice('wartung',this); });
+  var devO=$('devmOk');      if(devO) devO.addEventListener('click',function(){ reportDevice('behoben',this); });
+  var devDel=$('devmDel');   if(devDel) devDel.addEventListener('click',deleteDevice);
+  var devP=$('devmPhoto');   if(devP) devP.addEventListener('click',function(){ $('devFileShared').click(); });
+  var devF=$('devFileShared'); if(devF) devF.addEventListener('change',function(){
+    var f=this.files&&this.files[0]; this.value=''; if(!f) return;
+    var note=$('devmPhotoNote'); if(note) note.textContent='Bild wird vorbereitet …';
+    fileToCompressedDataURL(f).then(function(data){
+      _pendingDevPhoto=data;
+      if(note) note.textContent='Foto angehängt ✓';
+    }).catch(function(e){ _pendingDevPhoto=null; if(note) note.textContent=''; toast(e.message,true); });
+  });
+  if(canManage()){
+    var devA=$('devAdd'); if(devA) devA.addEventListener('click',function(){ addDevice(this); });
+  }
+
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){
     if(confirm('Abmelden?\n\nDeine Daten bleiben gespeichert – du kannst dich jederzeit wieder anmelden.')){
       stopListeners();
-      auth.signOut().then(function(){ session=null; cachedTodos={}; currentChannel='allgemein'; });
+      // Neu laden statt nur abmelden: so startet der nächste Kollege auf
+      // demselben Gerät garantiert sauber – ohne doppelte Klick-Handler und
+      // ohne Reste des Vorgängers.
+      auth.signOut().then(function(){
+        session=null; cachedTodos={}; currentChannel='allgemein';
+        location.reload();
+      });
     }
   });
 

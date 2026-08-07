@@ -41,10 +41,21 @@ Läuft Chromium woanders, den Pfad mitgeben:
 CHROME=/Pfad/zu/chrome node test-mitarbeiter.js
 ```
 
-Alle nacheinander:
+Liegt Playwright global statt im Projektordner, muss Node wissen wo:
 
 ```bash
-for f in test-*.js; do echo "== $f"; node "$f" | grep -i "^Fehler"; done
+export NODE_PATH=$(npm root -g)
+```
+
+Ohne das bricht der Durchlauf mit `Cannot find module 'playwright'` ab — und
+weil dann gar keine Zeile `Fehler:` erscheint, sieht die Schleife unten so
+aus, als wäre alles in Ordnung. Deshalb meldet sie einen Abbruch ausdrücklich:
+
+```bash
+for f in test-*.js; do
+  aus=$(node "$f" 2>&1)
+  echo "$f -> $(echo "$aus" | grep -i '^Fehler' || echo '!! ABBRUCH')"
+done
 ```
 
 Am Ende jedes Durchlaufs steht `Fehler: keine` — oder es steht dort, was
@@ -85,6 +96,9 @@ was sie sehen soll.
 | `test-block7.js` | Melde-Einstellungen |
 | `test-block8.js` | Anheften, Dokument-Kategorien, erweiterte Suche |
 | `test-bericht.js` | Testbericht-Knopf |
+| `test-geraete.js` | Geräte- und Schadensbuch, für Chef und Mitarbeiter |
+| `test-umfrage.js` | Umfragen im Chat, Anhängen-Menü, Breite des Schreibfelds |
+| `test-putzplan.js` | erledigte Einmal-Aufgaben verschwinden nach einem Tag |
 
 ---
 
