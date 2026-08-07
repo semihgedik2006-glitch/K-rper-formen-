@@ -25,7 +25,9 @@ const SP = process.env.SP || __dirname;
   await go('chat');
   await page.evaluate(() => document.querySelectorAll('.msg')[0].click());
   await page.waitForTimeout(400);
-  console.log('ANHEFTEN-KNOPF (Chef):', await page.evaluate(() => document.querySelectorAll('[data-pin]').length));
+  console.log('ANHEFTEN-EINTRAG (Chef):', await page.evaluate(() => document.querySelectorAll('[data-ma="pin"]').length));
+  await page.evaluate(() => document.getElementById('msSheetClose').click());
+  await page.waitForTimeout(250);
   console.log('Leiste vor Anheften sichtbar:', await page.evaluate(() => document.getElementById('pinBar').classList.contains('show')));
 
   // Angeheftete Nachricht simulieren (Stub schreibt nicht zurück)

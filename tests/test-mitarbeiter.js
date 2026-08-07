@@ -96,8 +96,8 @@ const SP = process.env.SP || __dirname;
   await page.waitForTimeout(400);
   console.log('CHAT:', JSON.stringify(await page.evaluate(() => ({
     kanaele: [...document.querySelectorAll('.chan')].map(c => c.textContent),
-    anheftenKnopf: document.querySelectorAll('[data-pin]').length,
-    weiterleiten: document.querySelectorAll('[data-fwd]').length,
+    anheftenKnopf: document.querySelectorAll('[data-ma="pin"]').length,
+    weiterleiten: document.querySelectorAll('[data-ma="fwd"]').length,
     mikrofon: !!document.getElementById('chatMic'),
     angeheftetSichtbar: document.getElementById('pinBar').classList.contains('show'),
     loesenKnopfSichtbar: document.getElementById('pinOff').style.display !== 'none',

@@ -34,14 +34,15 @@ const SP = process.env.SP || __dirname;
     erwaehnungen: document.querySelectorAll('.mention').length,
     hervorgehoben: document.querySelectorAll('.msg.mentioned').length,
     bearbeitetMarke: document.querySelectorAll('.edited').length,
-    antwortKnoepfe: document.querySelectorAll('[data-reply]').length,
-    bearbeitenKnoepfe: document.querySelectorAll('[data-edit]').length,
+    gruppiert: document.querySelectorAll('.msg.grp').length,
     kanalBadges: document.querySelectorAll('.chan-badge').length,
   }));
   console.log('Darstellung:', JSON.stringify(base, null, 1));
 
-  // Antworten starten
-  await page.evaluate(() => document.querySelector('[data-reply]').click());
+  // Antworten starten – über das Aktionsblatt
+  await page.evaluate(() => document.querySelectorAll('.msg')[0].click());
+  await page.waitForTimeout(350);
+  await page.evaluate(() => document.querySelector('[data-ma="reply"]').click());
   await page.waitForTimeout(350);
   const reply = await page.evaluate(() => ({
     leiste: getComputedStyle(document.getElementById('composeBar')).display,
@@ -55,11 +56,13 @@ const SP = process.env.SP || __dirname;
   console.log('Nach Abbrechen versteckt:',
     await page.evaluate(() => getComputedStyle(document.getElementById('composeBar')).display === 'none'));
 
-  // Reaktions-Auswahl öffnen
-  await page.evaluate(() => document.querySelector('[data-react]').click());
+  // Reaktionen liegen jetzt im Aktionsblatt
+  await page.evaluate(() => document.querySelectorAll('.msg')[0].click());
   await page.waitForTimeout(350);
-  console.log('Emoji-Auswahl offen:',
-    await page.evaluate(() => document.querySelectorAll('.react-pick button').length) + ' Emojis');
+  console.log('Emoji-Reihe im Blatt:',
+    await page.evaluate(() => document.querySelectorAll('#msSheetReact .ms-emoji').length) + ' Emojis');
+  await page.evaluate(() => document.getElementById('msSheetClose').click());
+  await page.waitForTimeout(250);
 
   await page.screenshot({ path: SP + '/chat-features.png' });
   console.log('Fehler:', errs.length ? errs.join('|') : 'keine');

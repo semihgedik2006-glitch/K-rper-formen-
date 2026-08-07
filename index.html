@@ -300,10 +300,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   align-self:flex-start;word-break:break-word}
 .msg.mine{align-self:flex-end;background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.22)}
 .msg .meta{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
+/* Folgenachricht derselben Person: rückt näher heran und wiederholt den Kopf nicht */
+.msg.grp{margin-top:-5px;border-top-left-radius:7px}
+.msg.grp.mine{border-top-left-radius:16px;border-top-right-radius:7px}
+.meta-min{margin-top:2px}
 .msg .meta .chat-author{white-space:nowrap}
 .msg .meta time{white-space:nowrap}
 .msg .edited{white-space:nowrap}
-.msg-tools{flex-shrink:0}
 .msg .meta b{font-family:var(--font-head);font-size:.9rem;letter-spacing:.2px}
 .tag{font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;border-radius:999px;font-weight:700}
 .tag.chef{background:rgba(251,191,36,.18);color:#ffb38c}
@@ -314,7 +317,24 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .chat-input{display:flex;gap:9px;
   padding:10px calc(clamp(14px,4vw,28px) + var(--sar)) calc(12px + var(--sab)) calc(clamp(14px,4vw,28px) + var(--sal));
   border-top:1px solid var(--line);background:var(--bg-soft);flex-shrink:0}
-.chat-input textarea{flex:1;min-height:46px;max-height:130px;resize:none}
+/* Höher als vier Zeilen darf das Feld nicht werden – sonst schiebt ein
+   langer Text den Verlauf auf zwei Nachrichten zusammen. */
+.chat-input textarea{flex:1;min-height:46px;max-height:104px;resize:none}
+
+/* ── Vorschläge beim Tippen von „@" ── */
+.at-list{display:none;flex-direction:column;gap:2px;flex-shrink:0;
+  margin:0 clamp(14px,4vw,28px) 6px;padding:5px;max-height:212px;overflow-y:auto;
+  background:var(--bg-2);border:1px solid var(--line-2);border-radius:14px;
+  box-shadow:0 -6px 22px rgba(0,0,0,.18)}
+.at-list.show{display:flex}
+.at-item{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:6px 10px;
+  background:none;border:none;border-radius:10px;cursor:pointer;text-align:left;color:var(--text)}
+.at-item.on{background:rgba(34,211,238,.12)}
+.at-av{width:28px;height:28px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--on-accent);
+  font-family:var(--font-head);font-weight:800;font-size:.82rem}
+.at-nm{flex:1;font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-ro{flex-shrink:0;font-size:.72rem;color:var(--text-3)}
 
 /* ── Todos ── */
 .scroll-area{flex:1;overflow-y:auto;padding:0 clamp(14px,4vw,28px) 28px}
@@ -624,11 +644,17 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.3rem;cursor:pointer}
 
 /* ── Benachrichtigungs-Banner ── */
-.notif-banner{display:none;align-items:center;gap:12px;margin:0 clamp(14px,4vw,28px) 10px;
-  padding:12px 16px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:14px}
+/* Einzeilig und schmal: Der Hinweis stand vorher fünf Zeilen hoch mitten im
+   Chat und nahm dem Verlauf 200 Pixel – für einen Satz, den man einmal liest. */
+.notif-banner{display:none;align-items:center;gap:10px;margin:6px clamp(14px,4vw,28px) 6px;
+  padding:7px 12px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:12px}
 .notif-banner.show{display:flex}
-.notif-banner svg{width:22px;height:22px;color:var(--accent-d);flex-shrink:0}
-.notif-banner .nb-txt{flex:1;font-size:.86rem;color:var(--text-2)}
+.notif-banner svg{width:18px;height:18px;color:var(--accent-d);flex-shrink:0}
+.notif-banner .nb-txt{flex:1;font-size:.8rem;color:var(--text-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Der zweite Satz nur, wenn er ganz hineinpasst – abgeschnittener Text
+   sieht nach Fehler aus. */
+@media(max-width:520px){ .nb-mehr{display:none} }
 .notif-banner .nb-txt b{color:var(--text);font-family:var(--font-head)}
 .notif-banner button{flex-shrink:0}
 
@@ -1020,27 +1046,41 @@ body.light .msg-quote{background:rgba(20,10,40,.05)}
 .msg-quote b{display:block;color:var(--accent);font-size:.76rem;margin-bottom:1px}
 .msg-quote span{color:var(--text-2);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* Werkzeuge an einer Nachricht */
-/* ── Werkzeuge an einer Nachricht ──
-   Vier Symbole an JEDER Blase machen den Chat unruhig. Sie erscheinen jetzt
-   erst, wenn man die Nachricht antippt (Handy) oder mit der Maus darüber
-   fährt (Rechner). Auf dem Handy gleiten sie dabei weich auf. */
-.msg-tools{display:flex;gap:3px;margin-left:auto;
-  max-width:0;overflow:hidden;opacity:0;
-  transition:max-width .34s var(--ease-ios),opacity .22s var(--ease-ios)}
-.msg.tools-open .msg-tools{max-width:150px;opacity:1}
-@media (hover:hover){
-  .msg:hover .msg-tools{max-width:150px;opacity:.85}
-  .msg:hover .msg-tools:hover{opacity:1}
-}
-/* Ein angetipptes Nachrichtenfeld hebt sich leicht ab */
-.msg.tools-open{border-color:var(--line-2)}
-.msg-tool{background:none;border:none;color:var(--text-3);cursor:pointer;padding:3px 5px;
-  border-radius:7px;font-size:.82rem;line-height:1;
-  transition:transform .3s var(--spring),color .2s,background .2s}
-.msg-tool:hover{color:var(--accent);background:rgba(255,255,255,.07)}
-.msg-tool:active{transform:scale(.85)}
-
+/* ── Aktionsblatt an einer Nachricht ──
+   Die fünf Symbolknöpfe in der Blase sind weg. Ein Tipp auf die Nachricht
+   öffnet stattdessen ein Blatt von unten – beschriftet und daumengroß. */
+.msg-sheet{position:fixed;inset:0;z-index:70;display:none;
+  align-items:flex-end;justify-content:center;background:rgba(4,6,14,.55);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.msg-sheet.show{display:flex;animation:msFade .18s var(--ease-out)}
+@keyframes msFade{from{opacity:0}to{opacity:1}}
+.ms-card{width:100%;max-width:520px;max-height:82vh;overflow-y:auto;
+  background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:22px 22px 0 0;padding:14px 16px calc(16px + var(--sab));
+  box-shadow:0 -14px 44px rgba(0,0,0,.4);animation:msUp .26s var(--ease-ios)}
+@keyframes msUp{from{transform:translateY(100%)}to{transform:none}}
+.ms-head{padding:2px 4px 10px;border-bottom:1px solid var(--line)}
+.ms-head b{font-family:var(--font-head);font-size:.98rem}
+.ms-head span{margin-left:8px;color:var(--text-3);font-size:.76rem}
+.ms-head p{margin:3px 0 0;color:var(--text-2);font-size:.84rem;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-react{display:flex;gap:6px;padding:11px 0;justify-content:space-between}
+.ms-emoji{flex:1;min-height:46px;font-size:1.35rem;background:rgba(255,255,255,.05);
+  border:1px solid var(--line);border-radius:13px;cursor:pointer;
+  transition:transform .25s var(--spring),background .2s,border-color .2s}
+body.light .ms-emoji{background:rgba(20,10,40,.04)}
+.ms-emoji.on{background:rgba(34,211,238,.16);border-color:var(--accent)}
+.ms-emoji:active{transform:scale(.88)}
+.ms-acts{display:flex;flex-direction:column;gap:2px;padding:4px 0 10px}
+/* 48 Pixel hoch und beschriftet – vorher waren es 21 × 19 Pixel ohne Wort. */
+.ms-act{display:flex;align-items:center;gap:13px;width:100%;min-height:48px;padding:0 8px;
+  background:none;border:none;border-radius:12px;cursor:pointer;text-align:left;
+  color:var(--text);font-size:.95rem;font-family:var(--font-body)}
+.ms-act:active{background:rgba(255,255,255,.06)}
+.ms-act.warn{color:var(--danger)}
+.ms-ico{width:26px;flex-shrink:0;text-align:center;font-size:1.05rem}
+@media (hover:hover){ .ms-act:hover{background:rgba(255,255,255,.06)} }
+body.light .ms-act:active,body.light .ms-act:hover{background:rgba(20,10,40,.05)}
 /* Reaktionen unter einer Nachricht */
 .reacts{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
 .react{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.07);
@@ -1050,14 +1090,6 @@ body.light .react{background:rgba(20,10,40,.05)}
 .react:active{transform:scale(.9)}
 .react.mine{background:rgba(34,211,238,.16);border-color:var(--accent);color:var(--accent)}
 .react b{font-weight:700;font-size:.74rem}
-/* Auswahl der Emojis */
-.react-pick{display:flex;gap:4px;background:var(--bg-2);border:1px solid var(--line-2);
-  border-radius:999px;padding:5px 8px;box-shadow:var(--shadow);
-  position:absolute;z-index:80;animation:sheetIn .3s var(--spring)}
-.react-pick button{background:none;border:none;font-size:1.15rem;cursor:pointer;padding:2px 4px;
-  border-radius:8px;transition:transform .3s var(--spring)}
-.react-pick button:hover{transform:scale(1.25)}
-
 /* Erwähnung im Text */
 .mention{color:var(--accent);font-weight:700;background:rgba(34,211,238,.12);
   padding:1px 5px;border-radius:6px}
@@ -1389,8 +1421,6 @@ html{font-size:var(--fs,100%)}
 .pin-x{flex-shrink:0;background:none;border:none;color:var(--text-3);cursor:pointer;
   font-size:.9rem;padding:4px 6px;border-radius:7px;transition:color .2s,background .2s}
 @media (hover:hover){ .pin-x:hover{color:var(--danger);background:rgba(251,78,109,.1)} }
-/* angehefteter Zustand am Werkzeug-Knopf */
-.msg-tool.on{opacity:1;filter:none}
 
 /* Chef-Zugänge */
 .chef-me{font-size:.76rem;color:var(--text-3);font-style:italic;white-space:nowrap}
@@ -1879,11 +1909,13 @@ html{font-size:var(--fs,100%)}
       <!-- ============================================================
            SEITE: CHAT – Gruppen-Chat je Kanal (Allgemein + pro Studio)
            ============================================================ -->
+      <!-- Kein Seitenkopf: In einem Messenger IST der Verlauf die Seite.
+           Überschrift und Untertitel kosteten 81 Pixel, die jeden Tag
+           dasselbe erzählten – der Verlauf bekam nur 37 % des Bildschirms. -->
       <section class="view" id="view-chat">
-        <div class="view-head"><h2>Team-Chat</h2><p>Schreibe mit allen oder nur mit deinem Studio.</p></div>
         <div class="notif-banner" id="notifBanner">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-          <div class="nb-txt"><b>Benachrichtigungen an?</b> Erhalte Töne &amp; Hinweise bei neuen Nachrichten und Aufgaben.</div>
+          <div class="nb-txt"><b>Meldungen an?</b><span class="nb-mehr"> Sonst bleibt Neues unbemerkt.</span></div>
           <button class="btn btn-primary btn-sm" id="notifEnable">Aktivieren</button>
         </div>
         <div class="chat-channels" id="chatChannels"></div>
@@ -1923,6 +1955,8 @@ html{font-size:var(--fs,100%)}
           <audio id="recAudio" controls preload="metadata"></audio>
           <button class="rec-x" id="recDiscard" aria-label="Verwerfen">Verwerfen</button>
         </div>
+        <!-- Vorschläge beim Tippen von „@" – erscheinen direkt über dem Feld -->
+        <div class="at-list" id="atList"></div>
         <div class="chat-input">
           <input type="file" accept="image/*" class="hidden-file" id="chatFile" />
           <div class="attach-wrap">
@@ -1939,7 +1973,10 @@ html{font-size:var(--fs,100%)}
           <button class="attach-btn" id="chatMic" aria-label="Sprachnachricht aufnehmen" title="Sprachnachricht aufnehmen">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/><path d="M8 22h8"/></svg>
           </button>
-          <textarea class="inp" id="chatText" rows="1" placeholder="Nachricht … (Enter = senden, Shift+Enter = Zeilenumbruch)" maxlength="2000"></textarea>
+          <!-- Kurzer Platzhalter: der lange Hinweis passte auf einem 390er-Handy
+               nicht ins Feld und wurde mitten im Wort abgeschnitten. -->
+          <textarea class="inp" id="chatText" rows="1" placeholder="Nachricht …"
+            title="Enter sendet, Shift+Enter macht eine neue Zeile. @ erwähnt jemanden." maxlength="2000"></textarea>
           <button class="btn btn-primary btn-sm" id="chatSend" aria-label="Senden">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
           </button>
@@ -2824,6 +2861,20 @@ html{font-size:var(--fs,100%)}
   </div>
 </div>
 
+<!-- Aktionen an einer Chat-Nachricht: gleitet von unten herein, dort wo der
+     Daumen ohnehin ist. Ersetzt fünf 21-Pixel-Symbole in der Blase. -->
+<div class="msg-sheet" id="msgSheet">
+  <div class="ms-card">
+    <div class="ms-head">
+      <b id="msSheetWho"></b><span id="msSheetWhen"></span>
+      <p id="msSheetPrev"></p>
+    </div>
+    <div class="ms-react" id="msSheetReact"></div>
+    <div class="ms-acts" id="msSheetActs"></div>
+    <button class="btn btn-ghost" id="msSheetClose" style="width:100%">Abbrechen</button>
+  </div>
+</div>
+
 <!-- Gerät: Verlauf ansehen und Defekt melden -->
 <div id="devModal">
   <div class="pm-box">
@@ -3301,6 +3352,8 @@ function applyRoleVisibility(){
 function studioKey(name){ return 'studio-'+STUDIOS.indexOf(name); }
 function studioName(key){ var i=parseInt(String(key).replace('studio-',''),10); return STUDIOS[i]||key; }
 function channelStudioName(ch){ return (ch && ch.indexOf('studio-')===0) ? studioName(ch) : null; }
+/* Anzeigename eines Kanals – für Suchtreffer, die aus einem anderen kommen */
+function channelLabel(ch){ return channelStudioName(ch) || 'Allgemein'; }
 /* Macht http(s)-Links in (bereits escaptem) Text klickbar */
 function linkify(escaped){
   return escaped.replace(/(https?:\/\/[^\s<]+)/g, function(u){
@@ -3681,11 +3734,11 @@ function typingSomewhere(){
   return tag==='input' || tag==='textarea' || tag==='select' || el.isContentEditable;
 }
 function anyModalOpen(){
-  return ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','searchOverlay','lightbox']
+  return ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','searchOverlay','lightbox','msgSheet']
     .some(function(id){ var e=$(id); return e && e.classList.contains('show'); });
 }
 function closeAllModals(){
-  ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal'].forEach(function(id){
+  ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','msgSheet'].forEach(function(id){
     var e=$(id); if(e) e.classList.remove('show');
   });
   closeSearch();
@@ -4677,6 +4730,7 @@ function showView(id, fromKey, ausVerlauf){
   updateNavMarkers();
   if(id==='chat'){
     markChannelRead(currentChannel);
+    kanalReihenfolge();
     setTimeout(scrollBottom,60);
     // Am Rechner springt der Schreibcursor ins Feld – aber nur, wenn man
     // per Maus hierherkam. Wer mit der Tastatur navigiert, will weiter
@@ -4726,12 +4780,49 @@ function buildChannels(){
       _chatLimit=CHAT_PAGE;   // neuer Kanal → wieder nur die neuesten Nachrichten
       listenChannel(c.id);
       cancelCompose();
+      kanalSichtbarMachen();
     });
     wrap.appendChild(b);
   });
   _chanList=chans.map(function(c){ return c.id; });
   watchChannelUnread();
   markChannelRead(currentChannel);
+}
+
+/* ── Reihenfolge der Kanäle ──
+   Ein Chef hat 15 Kanäle in einer Leiste, die waagerecht überläuft. Alphabetisch
+   sortiert heißt: „Seelscheid" liegt hinter sechs Wischbewegungen – auch dann,
+   wenn dort gerade als Einzigem etwas passiert. Deshalb wandern Kanäle mit
+   ungelesenen Nachrichten nach vorn, danach die zuletzt aktiven.
+   Bewusst NICHT bei jedem Eintreffen einer Nachricht: eine Leiste, die sich
+   unter dem Daumen umsortiert, trifft man nicht. Neu geordnet wird beim
+   Betreten des Chats. */
+function kanalReihenfolge(){
+  var wrap=$('chatChannels'); if(!wrap) return;
+  var knoepfe=[].slice.call(wrap.querySelectorAll('.chan'));
+  if(knoepfe.length<3) return;
+  function wert(b){
+    var ch=b.dataset.chan;
+    if(ch==='allgemein') return {rang:0, ts:0};              // bleibt immer vorn
+    var seit=chanLastRead(ch);
+    var msgs=_chanLast[ch]||[];
+    var neu=msgs.filter(function(m){ return m.uid!==session.uid && (m.ts||0)>seit; }).length;
+    var letzte=msgs.reduce(function(a,m){ return Math.max(a, m.ts||0); }, 0);
+    return {rang: (ch===currentChannel ? 1 : (neu ? 2 : 3)), ts: letzte};
+  }
+  knoepfe.sort(function(a,b){
+    var wa=wert(a), wb=wert(b);
+    if(wa.rang!==wb.rang) return wa.rang-wb.rang;
+    if(wa.ts!==wb.ts) return wb.ts-wa.ts;                    // zuletzt aktiv zuerst
+    return a.textContent.localeCompare(b.textContent,'de');
+  });
+  knoepfe.forEach(function(b){ wrap.appendChild(b); });
+  kanalSichtbarMachen();
+}
+/* Der offene Kanal muss sichtbar sein – sonst weiß man nicht, wo man ist. */
+function kanalSichtbarMachen(){
+  var a=document.querySelector('.chan.active');
+  if(a && a.scrollIntoView) a.scrollIntoView({block:'nearest', inline:'nearest'});
 }
 
 /* ── Ungelesen-Zähler je Kanal ──
@@ -4777,9 +4868,10 @@ function watchChannelUnread(){
     var un=db.collection('channels').doc(ch).collection('messages')
       .orderBy('ts').limitToLast(12)
       .onSnapshot(function(snap){
-        var arr=snap.docs.map(function(d){ return d.data(); })
-          .filter(function(m){ return m.uid!==session.uid; });
-        _chanLast[ch]=arr;
+        // Auch die eigenen Nachrichten merken: sie zählen zwar nicht als
+        // ungelesen, sagen aber, wann in diesem Kanal zuletzt etwas los war –
+        // und die Suche greift ebenfalls darauf zu.
+        _chanLast[ch]=snap.docs.map(function(d){ return Object.assign({id:d.id, kanal:ch}, d.data()); });
         renderChannelBadges();
       }, function(){});
     _chanUnsubs.push(un);
@@ -4791,7 +4883,9 @@ function renderChannelBadges(){
     var old=b.querySelector('.chan-badge'); if(old) old.remove();
     if(ch===currentChannel) return;                      // offener Kanal gilt als gelesen
     var since=chanLastRead(ch);
-    var n=(_chanLast[ch]||[]).filter(function(m){ return (m.ts||0)>since; }).length;
+    var n=(_chanLast[ch]||[]).filter(function(m){
+      return m.uid!==session.uid && (m.ts||0)>since;
+    }).length;
     if(!n) return;
     var s=document.createElement('span');
     s.className='chan-badge'; s.textContent = n>9 ? '9+' : n;
@@ -5460,20 +5554,27 @@ function renderMessages(msgs){
     return;
   }
   var atBottom = box.scrollHeight-box.scrollTop-box.clientHeight < 100;
-  var lastDay=null, sepDone=false;
+  var lastDay=null, sepDone=false, vorher=null;
   // Ganz oben: ältere Nachrichten nachladen (spart Ladezeit beim Start)
   var html = _chatMore
     ? '<button class="load-older" id="loadOlder">↑ Ältere Nachrichten laden</button>'
     : '';
   msgs.forEach(function(m){
     var dl=dayLabel(m.ts||Date.now());
-    if(dl!==lastDay){ html+='<div class="day-sep">'+esc(dl)+'</div>'; lastDay=dl; }
+    var neuerTag = dl!==lastDay;
+    if(neuerTag){ html+='<div class="day-sep">'+esc(dl)+'</div>'; lastDay=dl; }
     // Trenner „Neue Nachrichten": vor der ersten Nachricht, die man noch nicht gesehen hat
-    if(!sepDone && _chatSeenTs && (m.ts||0)>_chatSeenTs && m.uid!==session.uid){
+    var neuTrenner = !sepDone && _chatSeenTs && (m.ts||0)>_chatSeenTs && m.uid!==session.uid;
+    if(neuTrenner){
       html+='<div class="new-sep">Neue Nachrichten</div>'; sepDone=true;
     }
+    /* Folgt eine Nachricht derselben Person innerhalb von fünf Minuten, wird
+       Name, Rolle und Uhrzeit nicht noch einmal wiederholt. Vorher stand über
+       jedem Einzeiler dreimal dasselbe – eine Blase war 95 bis 128 Pixel hoch. */
+    var gruppiert = !!vorher && !neuerTag && !neuTrenner &&
+      vorher.uid===m.uid && Math.abs((m.ts||0)-(vorher.ts||0)) < 5*60000;
+    vorher=m;
     var mine=m.uid===session.uid;
-    var canDel = canManage() || (mine && (Date.now()-(m.ts||0) < 3600000));
     var tag=m.role==='chef'
       ?'<span class="tag chef">Chef</span>'
       :(m.role==='leiter'
@@ -5487,16 +5588,6 @@ function renderMessages(msgs){
       : '';
     var bodyHtml = m.text ? '<div class="body">'+markMentions(linkify(esc(m.text)))+'</div>' : '';
     var pollHtml = pollHTML(m);
-    var delBtn = canDel ? '<button class="msg-tool msg-del" data-id="'+esc(m.id)+'" title="Löschen" aria-label="Löschen">✕</button>' : '';
-    // Antworten und Reagieren kann jeder; Bearbeiten nur die eigene Nachricht (15 Min.)
-    var canEdit = mine && (Date.now()-(m.ts||0) < EDIT_WINDOW_MS) && !!m.text;
-    var tools='<span class="msg-tools">'+
-      '<button class="msg-tool" data-reply="'+esc(m.id)+'" title="Antworten" aria-label="Antworten">↩</button>'+
-      '<button class="msg-tool" data-react="'+esc(m.id)+'" title="Reagieren" aria-label="Reagieren">☺</button>'+
-      '<button class="msg-tool" data-fwd="'+esc(m.id)+'" title="Weiterleiten" aria-label="Weiterleiten">↪</button>'+
-      (canManage()?'<button class="msg-tool'+(m.pinned?' on':'')+'" data-pin="'+esc(m.id)+'" data-pinned="'+(m.pinned?'1':'')+'" title="'+(m.pinned?'Loslösen':'Oben anheften')+'" aria-label="Anheften">📌</button>':'')+
-      (canEdit?'<button class="msg-tool" data-edit="'+esc(m.id)+'" title="Bearbeiten" aria-label="Bearbeiten">✎</button>':'')+
-      delBtn+'</span>';
     // Zitat der Nachricht, auf die geantwortet wurde
     var quote = m.replyTo
       ? '<div class="msg-quote" data-goto="'+esc(m.replyTo)+'"><b>'+esc(m.replyName||'')+'</b>'+
@@ -5505,10 +5596,17 @@ function renderMessages(msgs){
     var edited = m.editedAt ? '<span class="edited">bearbeitet</span>' : '';
     var fwd = m.fwdFrom ? '<div class="fwd-mark">↪ weitergeleitet von '+esc(m.fwdFrom)+'</div>' : '';
     var iAmMentioned = Array.isArray(m.mentions) && m.mentions.indexOf(session.uid)>=0;
-    html+='<div class="msg'+(mine?' mine':'')+(iAmMentioned?' mentioned':'')+'" data-mid="'+esc(m.id)+'">'+
-      '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+
-      '<time>'+fmtTime(m.ts)+'</time>'+edited+tools+'</div>'+
-      fwd+quote+bodyHtml+pollHtml+audioHtml+imgHtml+reactionsHTML(m)+'</div>';
+    // Der Kopf entfällt bei gruppierten Nachrichten; „bearbeitet" muss aber
+    // sichtbar bleiben und wandert dann unter den Text.
+    var meta = gruppiert
+      ? (edited ? '<div class="meta-min">'+edited+'</div>' : '')
+      : '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+
+        '<time>'+fmtTime(m.ts)+'</time>'+edited+'</div>';
+    html+='<div class="msg'+(mine?' mine':'')+(iAmMentioned?' mentioned':'')+
+      (gruppiert?' grp':'')+'" data-mid="'+esc(m.id)+'">'+
+      (gruppiert ? '' : meta)+
+      fwd+quote+bodyHtml+pollHtml+audioHtml+imgHtml+
+      (gruppiert ? meta : '')+reactionsHTML(m)+'</div>';
   });
   box.innerHTML=html;
   renderPinBar();
@@ -5606,7 +5704,7 @@ function startEdit(m){
   $('cbText').textContent='Ändere den Text und sende erneut.';
   bar.style.display='flex';
   var t=$('chatText');
-  if(t){ t.value=m.text||''; t.focus(); t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,130)+'px'; }
+  if(t){ t.value=m.text||''; t.focus(); t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,104)+'px'; }
   tick(8);
 }
 function cancelCompose(){
@@ -5631,98 +5729,207 @@ function reactionsHTML(m){
   }).join('')+'</div>';
 }
 
+/* ── Erwähnungen ──
+   Vorher musste man „@AnnaMeier" schreiben – ohne Leerzeichen, exakt getroffen,
+   ohne jeden Hinweis, dass es das überhaupt gibt. Praktisch hat es niemand
+   benutzt. Dabei ist die Erwähnung die einzige Meldung, die auch bei offenem
+   Chat durchkommt: der Weg, jemanden wirklich zu erreichen.
+   Jetzt wird der volle Name mit Leerzeichen erkannt (die alte Schreibweise
+   weiterhin auch), und beim Tippen von „@" erscheint eine Vorschlagsliste. */
+function erwName(s){ return String(s||'').toLowerCase().replace(/\s+/g,''); }
+function erwaehnbar(){
+  return (_allUsers||[]).filter(function(u){ return u.name && !u.system; });
+}
+/* Ein einziger Ausdruck über alle Namen, längster zuerst: „Anna Meier" muss
+   vor „Anna" geprüft werden, sonst bliebe „ Meier" als loser Text stehen. */
+function erwRegex(escapen){
+  var namen=erwaehnbar().map(function(u){ return escapen ? esc(u.name) : u.name; })
+    .sort(function(a,b){ return b.length-a.length; });
+  if(!namen.length) return null;
+  var teile=namen.map(function(n){
+    return n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/ +/g,'\\s*');
+  });
+  return new RegExp('@(' + teile.join('|') + ')', 'gi');
+}
+
 /* @Namen im Text hervorheben (der Text ist bereits escapt) */
 function markMentions(html){
-  return html.replace(/@([\wÄÖÜäöüß.-]{2,40})/g, function(full, nm){
-    var hit=_allUsers.filter(function(u){
-      return (u.name||'').toLowerCase().replace(/\s+/g,'')===nm.toLowerCase();
-    })[0];
+  var re=erwRegex(true); if(!re) return html;
+  return html.replace(re, function(full, nm){
+    var hit=erwaehnbar().filter(function(u){ return erwName(esc(u.name))===erwName(nm); })[0];
     return hit ? '<span class="mention">@'+esc(hit.name)+'</span>' : full;
   });
 }
 
 /* Aus einem Text die erwähnten Personen heraussuchen (für Benachrichtigungen) */
 function findMentions(text){
+  var re=erwRegex(false); if(!re) return [];
   var out=[];
-  (text||'').replace(/@([\wÄÖÜäöüß.-]{2,40})/g, function(full, nm){
-    _allUsers.forEach(function(u){
-      if((u.name||'').toLowerCase().replace(/\s+/g,'')===nm.toLowerCase() && out.indexOf(u.uid)<0) out.push(u.uid);
+  String(text||'').replace(re, function(full, nm){
+    erwaehnbar().forEach(function(u){
+      if(erwName(u.name)===erwName(nm) && out.indexOf(u.uid)<0) out.push(u.uid);
     });
     return full;
   });
   return out;
 }
 
+/* ── Vorschlagsliste beim Tippen von „@" ── */
+var _atTreffer=[], _atWahl=0, _atStart=-1;
+function atSchliessen(){
+  var l=$('atList'); if(l){ l.classList.remove('show'); l.innerHTML=''; }
+  _atTreffer=[]; _atStart=-1;
+}
+function atOffen(){ var l=$('atList'); return !!(l && l.classList.contains('show')); }
+function atPruefen(){
+  var ta=$('chatText'), liste=$('atList');
+  if(!ta || !liste) return;
+  var bis=ta.value.slice(0, ta.selectionStart==null ? ta.value.length : ta.selectionStart);
+  // Höchstens zwei Wörter hinter dem @ – sonst würde die Liste den halben
+  // Satz als Suchbegriff nehmen und nie wieder zugehen.
+  var m=/@([^\s@]{0,24}(?:[ ][^\s@]{0,24})?)$/.exec(bis);
+  if(!m){ atSchliessen(); return; }
+  var q=erwName(m[1]);
+  _atStart=bis.length-m[0].length;
+  _atTreffer=erwaehnbar().filter(function(u){
+    return u.uid!==session.uid && (!q || erwName(u.name).indexOf(q)>=0);
+  }).sort(function(a,b){ return a.name.localeCompare(b.name,'de'); }).slice(0,6);
+  if(!_atTreffer.length){ atSchliessen(); return; }
+  _atWahl=0;
+  atZeichnen();
+}
+function atZeichnen(){
+  var liste=$('atList'); if(!liste) return;
+  liste.innerHTML=_atTreffer.map(function(u,i){
+    return '<button class="at-item'+(i===_atWahl?' on':'')+'" data-ati="'+i+'">'+
+      '<span class="at-av">'+esc((u.name||'?').charAt(0).toUpperCase())+'</span>'+
+      '<span class="at-nm">'+esc(u.name)+'</span>'+
+      '<span class="at-ro">'+esc(roleLabel(u.role))+'</span></button>';
+  }).join('');
+  liste.classList.add('show');
+  liste.querySelectorAll('[data-ati]').forEach(function(b){
+    // mousedown statt click: sonst verliert das Textfeld vorher den Fokus
+    b.addEventListener('mousedown',function(e){ e.preventDefault(); atUebernehmen(+b.dataset.ati); });
+  });
+}
+function atUebernehmen(i){
+  var u=_atTreffer[i], ta=$('chatText');
+  if(!u || !ta || _atStart<0){ atSchliessen(); return; }
+  var ende = ta.selectionStart==null ? ta.value.length : ta.selectionStart;
+  ta.value = ta.value.slice(0,_atStart) + '@' + u.name + ' ' + ta.value.slice(ende);
+  var pos=_atStart + u.name.length + 2;
+  atSchliessen();
+  ta.focus();
+  try{ ta.setSelectionRange(pos,pos); }catch(e){}
+  ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,104)+'px';
+  tick(6);
+}
+
+/* ── Aktionsblatt an einer Nachricht ──
+   Vorher hingen fünf Symbolknöpfe von 21 × 19 Pixeln in der Kopfzeile jeder
+   Blase – ohne Beschriftung („☺" für Reagieren, „↪" für Weiterleiten) und weit
+   unter der Größe, die ein Daumen sicher trifft. Jetzt öffnet ein Tipp auf die
+   Nachricht ein Blatt von unten: eine Reihe Reaktionen zum Sofort-Antippen und
+   darunter beschriftete Einträge mit voller Zeilenhöhe. */
+var _blattMsg=null;
+function msgBlattOeffnen(m){
+  if(!m) return;
+  _blattMsg=m;
+  var blatt=$('msgSheet'); if(!blatt) return;
+  var mine=m.uid===session.uid;
+  var canDel = canManage() || (mine && (Date.now()-(m.ts||0) < 3600000));
+  var canEdit = mine && (Date.now()-(m.ts||0) < EDIT_WINDOW_MS) && !!m.text;
+  var vorschau = m.text || (m.img?'📷 Foto':(m.audio?'🎤 Sprachnachricht':(m.poll?'📊 Umfrage':'')));
+  $('msSheetWho').textContent=m.name||'';
+  $('msSheetWhen').textContent=fmtTime(m.ts);
+  $('msSheetPrev').textContent=String(vorschau).slice(0,90);
+
+  $('msSheetReact').innerHTML=REACT_EMOJIS.map(function(e){
+    var meins=((m.reactions||{})[e]||[]).indexOf(session.uid)>=0;
+    return '<button class="ms-emoji'+(meins?' on':'')+'" data-e="'+esc(e)+'">'+e+'</button>';
+  }).join('');
+
+  var eintraege=[
+    {id:'reply', ico:'↩', txt:'Antworten'},
+    {id:'fwd',   ico:'↪', txt:'Weiterleiten'},
+    {id:'copy',  ico:'⧉', txt:'Text kopieren', aus:!m.text}
+  ];
+  if(canManage()) eintraege.push({id:'pin', ico:'📌', txt:m.pinned?'Loslösen':'Oben anheften'});
+  if(canEdit)     eintraege.push({id:'edit', ico:'✎', txt:'Bearbeiten'});
+  if(canDel)      eintraege.push({id:'del', ico:'🗑', txt:'Löschen', warn:true});
+
+  $('msSheetActs').innerHTML=eintraege.filter(function(e){ return !e.aus; }).map(function(e){
+    return '<button class="ms-act'+(e.warn?' warn':'')+'" data-ma="'+e.id+'">'+
+      '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
+  }).join('');
+  blatt.classList.add('show');
+  tick(8);
+}
+function msgBlattSchliessen(){ var b=$('msgSheet'); if(b) b.classList.remove('show'); _blattMsg=null; }
+
+function msgBlattAktion(was){
+  var m=_blattMsg; if(!m) return;
+  msgBlattSchliessen();
+  if(was==='reply') return startReply(m);
+  if(was==='fwd')   return openForward(m);
+  if(was==='edit')  return startEdit(m);
+  if(was==='pin')   return pinNachricht(m.id, !!m.pinned);
+  if(was==='copy'){
+    try{
+      navigator.clipboard.writeText(m.text||'').then(function(){ toast('Text kopiert ✓'); },
+        function(){ toast('Kopieren ging nicht',true); });
+    }catch(e){ toast('Kopieren ging nicht',true); }
+    return;
+  }
+  if(was==='del'){
+    if(!confirm('Nachricht löschen?')) return;
+    db.collection('channels').doc(currentChannel).collection('messages').doc(m.id).delete()
+      .catch(function(err){ toast('Löschen fehlgeschlagen: '+errMsg(err),true); });
+  }
+}
+
+/* Anheften: immer nur EINE Nachricht je Kanal. Zwei Pinnwände nebeneinander
+   wären wieder unübersichtlich.
+   Gefragt wird die DATENBANK, nicht nur der geladene Verlauf: eine ältere
+   angeheftete Nachricht kann längst aus dem Fenster gerutscht sein und bliebe
+   sonst still angeheftet. */
+function pinNachricht(id, war){
+  var col=db.collection('channels').doc(currentChannel).collection('messages');
+  if(war){
+    col.doc(id).update({ pinned:false })
+      .then(function(){ toast('Losgelöst'); })
+      .catch(function(err){ toast(errMsg(err),true); });
+    return;
+  }
+  col.where('pinned','==',true).get()
+    .then(function(snap){
+      var batch=db.batch();
+      snap.forEach(function(d){ if(d.id!==id) batch.update(d.ref, { pinned:false }); });
+      batch.update(col.doc(id), { pinned:true });
+      return batch.commit();
+    })
+    .then(function(){ toast('Oben angeheftet 📌'); })
+    .catch(function(err){ toast(errMsg(err),true); });
+}
+
 /* Antworten, Reagieren, Bearbeiten, Löschen an den Nachrichten verdrahten */
 function bindMessageTools(box){
-  // Antippen einer Nachricht zeigt ihre Werkzeuge; erneut antippen (oder
-  // eine andere Nachricht) blendet sie wieder aus. So bleibt der Chat ruhig.
+  // Ein Tipp auf die Nachricht öffnet das Aktionsblatt. Alles, was selbst
+  // anklickbar ist (Umfrage, Reaktion, Bild, Link), behält seinen eigenen Tipp.
   if(!box._toolsBound){
     box._toolsBound=true;
     box.addEventListener('click',function(e){
-      if(e.target.closest('.msg-tool,.react,.msg-quote,.poll-opt,audio,img,a')) return;
-      var m=e.target.closest && e.target.closest('.msg');
-      var offen=m && m.classList.contains('tools-open');
-      box.querySelectorAll('.msg.tools-open').forEach(function(x){ x.classList.remove('tools-open'); });
-      if(m && !offen){ m.classList.add('tools-open'); tick(6); }
+      if(e.target.closest('.react,.msg-quote,.poll-opt,audio,img,a,.chat-author,.load-older')) return;
+      var el=e.target.closest && e.target.closest('.msg');
+      if(!el) return;
+      var m=(_curMsgs||[]).filter(function(x){ return x.id===el.dataset.mid; })[0];
+      msgBlattOeffnen(m);
     });
   }
-  box.querySelectorAll('[data-reply]').forEach(function(b){
-    b.addEventListener('click',function(){
-      var m=(_curMsgs||[]).filter(function(x){ return x.id===b.getAttribute('data-reply'); })[0];
-      if(m) startReply(m);
-    });
-  });
   box.querySelectorAll('[data-poll]').forEach(function(b){
     b.addEventListener('click',function(e){
       e.stopPropagation();
       votePoll(b.getAttribute('data-poll'), parseInt(b.getAttribute('data-po'),10));
-    });
-  });
-  box.querySelectorAll('[data-edit]').forEach(function(b){
-    b.addEventListener('click',function(){
-      var m=(_curMsgs||[]).filter(function(x){ return x.id===b.getAttribute('data-edit'); })[0];
-      if(m) startEdit(m);
-    });
-  });
-  box.querySelectorAll('[data-react]').forEach(function(b){
-    b.addEventListener('click',function(e){ e.stopPropagation(); openReactPicker(b, b.getAttribute('data-react')); });
-  });
-  box.querySelectorAll('[data-pin]').forEach(function(b){
-    b.addEventListener('click',function(e){
-      e.stopPropagation();
-      var id=b.getAttribute('data-pin');
-      var war=b.getAttribute('data-pinned')==='1';
-      var col=db.collection('channels').doc(currentChannel).collection('messages');
-
-      if(war){ // nur loslösen
-        col.doc(id).update({ pinned:false })
-          .then(function(){ toast('Losgelöst'); })
-          .catch(function(err){ toast(errMsg(err),true); });
-        return;
-      }
-
-      // Immer nur EINE angeheftete Nachricht je Kanal. Zwei Pinnwände
-      // nebeneinander wären wieder unübersichtlich.
-      // Gefragt wird die DATENBANK, nicht nur der geladene Verlauf: eine
-      // ältere angeheftete Nachricht kann längst aus dem Fenster gerutscht
-      // sein und bliebe sonst still angeheftet.
-      col.where('pinned','==',true).get()
-        .then(function(snap){
-          var batch=db.batch();
-          snap.forEach(function(d){ if(d.id!==id) batch.update(d.ref, { pinned:false }); });
-          batch.update(col.doc(id), { pinned:true });
-          return batch.commit();
-        })
-        .then(function(){ toast('Oben angeheftet 📌'); })
-        .catch(function(err){ toast(errMsg(err),true); });
-    });
-  });
-  box.querySelectorAll('[data-fwd]').forEach(function(b){
-    b.addEventListener('click',function(e){
-      e.stopPropagation();
-      var m=(_curMsgs||[]).filter(function(x){ return x.id===b.getAttribute('data-fwd'); })[0];
-      if(m) openForward(m);
     });
   });
   box.querySelectorAll('[data-toggle]').forEach(function(b){
@@ -5738,24 +5945,6 @@ function bindMessageTools(box){
     });
   });
 }
-
-/* Auswahl der Reaktions-Emojis über der Nachricht einblenden */
-var _reactPick=null;
-function openReactPicker(anchor, mid){
-  closeReactPicker();
-  var p=document.createElement('div'); p.className='react-pick';
-  p.innerHTML=REACT_EMOJIS.map(function(e){ return '<button data-e="'+e+'">'+e+'</button>'; }).join('');
-  document.body.appendChild(p);
-  var r=anchor.getBoundingClientRect();
-  p.style.top=Math.max(8, r.top-46)+'px';
-  p.style.left=Math.min(window.innerWidth-p.offsetWidth-10, Math.max(8, r.left-60))+'px';
-  p.querySelectorAll('[data-e]').forEach(function(b){
-    b.addEventListener('click',function(){ toggleReaction(mid, b.getAttribute('data-e')); closeReactPicker(); });
-  });
-  _reactPick=p;
-  setTimeout(function(){ document.addEventListener('click', closeReactPicker, {once:true}); },0);
-}
-function closeReactPicker(){ if(_reactPick){ _reactPick.remove(); _reactPick=null; } }
 
 /* Reaktion setzen oder wieder entfernen */
 function toggleReaction(mid, emoji){
@@ -8632,7 +8821,7 @@ function verlaufStarten(){
   // Fenster melden sich selbst an, ohne dass jede Öffnen-Stelle das wissen
   // muss: wir beobachten einfach, wann eines sichtbar wird.
   var fenster=['profileModal','personModal','devModal','pollModal','todoEditModal',
-               'fwdModal','keysModal','searchOverlay','lightbox'];
+               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet'];
   fenster.forEach(function(id){
     var el=$(id); if(!el) return;
     new MutationObserver(function(){
@@ -9324,8 +9513,24 @@ function doSearch(q){
     var forMe = session.role==='chef'||!a.target||a.target==='all'||session.studioKeys.indexOf(a.target)>=0;
     if(forMe && hit((a.text||'')+' '+(a.from||''))) res.push({type:'Info',main:a.text,sub:a.from||'Leitung',view:'ann'});
   });
+  /* Chat: der offene Kanal vollständig (bis 120 Nachrichten) – und dazu das
+     Neueste aus allen anderen Kanälen. Die liegen für die Ungelesen-Zähler
+     ohnehin schon im Speicher, kosten also keine einzige zusätzliche Abfrage.
+     Vorher fand die Suche ausschließlich den offenen Kanal: „Wo stand das
+     nochmal mit den Handtüchern?" hieß in jedem Studio einzeln nachsehen. */
+  var gesehen={};
   _curMsgs.forEach(function(m){
-    if(hit((m.text||'')+' '+(m.name||''))) res.push({type:'Chat',main:m.text||'📷 Foto',sub:m.name,view:'chat'});
+    gesehen[m.id]=1;
+    if(hit((m.text||'')+' '+(m.name||'')))
+      res.push({type:'Chat',main:m.text||'📷 Foto',sub:m.name+' · '+channelLabel(currentChannel),view:'chat'});
+  });
+  Object.keys(_chanLast||{}).forEach(function(ch){
+    if(ch===currentChannel) return;
+    (_chanLast[ch]||[]).forEach(function(m){
+      if(gesehen[m.id] || !hit((m.text||'')+' '+(m.name||''))) return;
+      res.push({type:'Chat',main:m.text||'📷 Foto',sub:m.name+' · '+channelLabel(ch),
+        view:'chat', kanal:ch});
+    });
   });
   // Putzplan des gerade geöffneten Studios
   (_ppTasks||[]).forEach(function(t){
@@ -9387,11 +9592,21 @@ function doSearch(q){
 
   if(!res.length){ box.innerHTML='<div class="search-empty">Nichts gefunden.</div>'; return; }
   box.innerHTML=res.slice(0,40).map(function(r){
-    return '<div class="sr" data-view="'+r.view+'"><span class="sr-type">'+esc(r.type)+'</span>'+
+    return '<div class="sr" data-view="'+r.view+'"'+(r.kanal?' data-kanal="'+esc(r.kanal)+'"':'')+
+      '><span class="sr-type">'+esc(r.type)+'</span>'+
       '<div class="sr-main"><b>'+esc(r.main||'')+'</b><span>'+esc(r.sub||'')+'</span></div></div>';
   }).join('');
   box.querySelectorAll('.sr').forEach(function(el){
-    el.addEventListener('click',function(){ closeSearch(); showView(el.dataset.view); });
+    el.addEventListener('click',function(){
+      closeSearch();
+      // Treffer aus einem anderen Kanal: erst dorthin wechseln
+      var k=el.dataset.kanal;
+      if(k && k!==currentChannel){
+        var knopf=document.querySelector('.chan[data-chan="'+k+'"]');
+        if(knopf) knopf.click();
+      }
+      showView(el.dataset.view);
+    });
   });
 }
 
@@ -10128,7 +10343,7 @@ function bindActions(){
   var dmText=$('dmText');
   if(dmText){
     dmText.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendDm(); } });
-    dmText.addEventListener('input',function(){ dmText.style.height='auto'; dmText.style.height=Math.min(dmText.scrollHeight,130)+'px'; });
+    dmText.addEventListener('input',function(){ dmText.style.height='auto'; dmText.style.height=Math.min(dmText.scrollHeight,104)+'px'; });
   }
 
   // Chat senden (Text und/oder Foto)
@@ -10177,11 +10392,24 @@ function bindActions(){
     cancelCompose();
   });
   ta.addEventListener('keydown',function(e){
+    // Steht die @-Liste offen, gehören Pfeile und Enter ihr – nicht dem Senden
+    if(atOffen()){
+      if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+        e.preventDefault();
+        _atWahl=(_atWahl + (e.key==='ArrowDown'?1:_atTreffer.length-1)) % _atTreffer.length;
+        atZeichnen(); return;
+      }
+      if(e.key==='Enter'||e.key==='Tab'){ e.preventDefault(); atUebernehmen(_atWahl); return; }
+      if(e.key==='Escape'){ e.preventDefault(); atSchliessen(); return; }
+    }
     if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); }
   });
   ta.addEventListener('input',function(){
-    ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,130)+'px';
+    ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,104)+'px';
+    atPruefen();
   });
+  ta.addEventListener('click', atPruefen);
+  ta.addEventListener('blur', function(){ setTimeout(atSchliessen,120); });
 
   /* ── Sprachnachricht aufnehmen ──
      Zwei Wege, beide vertraut:
@@ -10277,15 +10505,23 @@ function bindActions(){
   });
   $('imgPreviewX').addEventListener('click',clearChatImg);
 
-  // Nachricht löschen (Chef: alle, Mitarbeiter: eigene < 1 Std.)
+  // Aktionsblatt an einer Nachricht
   var cs=$('chatScroll');
-  if(cs) cs.addEventListener('click',function(e){
-    var b=e.target.closest && e.target.closest('.msg-del'); if(!b) return;
-    var id=b.dataset.id; if(!id) return;
-    if(confirm('Nachricht löschen?'))
-      db.collection('channels').doc(currentChannel).collection('messages').doc(id).delete()
-        .catch(function(err){ toast('Löschen fehlgeschlagen: '+errMsg(err),true); });
-  });
+  var msh=$('msgSheet');
+  if(msh){
+    msh.addEventListener('click',function(e){ if(e.target===msh) msgBlattSchliessen(); });
+    $('msSheetClose').addEventListener('click', msgBlattSchliessen);
+    $('msSheetActs').addEventListener('click',function(e){
+      var b=e.target.closest && e.target.closest('[data-ma]');
+      if(b) msgBlattAktion(b.getAttribute('data-ma'));
+    });
+    $('msSheetReact').addEventListener('click',function(e){
+      var b=e.target.closest && e.target.closest('[data-e]');
+      if(!b || !_blattMsg) return;
+      toggleReaction(_blattMsg.id, b.getAttribute('data-e'));
+      msgBlattSchliessen();
+    });
+  }
 
   // „Nach unten"-Knopf im Chat (mit Zähler für ungelesene Nachrichten)
   var fab=$('scrollFab');
