@@ -1904,7 +1904,9 @@ var FIREBASE_CONFIG = {
           <!-- Chef: neue Putzaufgabe anlegen -->
           <div class="card" id="ppChefCard" style="display:none">
             <h3>🧽 Putzaufgabe hinzufügen</h3>
-            <p class="hint">Wird für die gewählten Studios angelegt und dort im Putzplan angezeigt.</p>
+            <p class="hint">Wird für die gewählten Studios angelegt und dort im Putzplan angezeigt.
+              Einmalige Aufgaben verschwinden einen Tag nach dem Abhaken von selbst –
+              auch aus der Tabelle. Nicht erledigte bleiben stehen.</p>
             <div class="field"><label for="ppTitle">Aufgabe</label>
               <input class="inp" id="ppTitle" type="text" placeholder="z. B. Böden wischen" maxlength="120" /></div>
             <div class="field"><label>Für welche Studios?</label>
@@ -1914,7 +1916,7 @@ var FIREBASE_CONFIG = {
               <select class="inp" id="ppRepeat">
                 <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
                 <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
-                <option value="">Einmalig</option>
+                <option value="">Einmalig (verschwindet einen Tag nach dem Abhaken)</option>
                 <option value="custom">🔁 Eigenes Intervall …</option>
               </select></div>
             <div class="field" id="ppCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
@@ -3136,6 +3138,18 @@ function isArchived(t){
   return !t.recurring
     && !!t.done && !!t.doneAt
     && (Date.now()-t.doneAt > ARCHIVE_AFTER_HOURS*3600000);
+}
+/* Dasselbe für den Putzplan, nur mit längerer Frist: eine einmalige
+   Putzaufgabe soll noch einen Tag stehen bleiben, damit die nächste Schicht
+   sieht, dass sie erledigt wurde – danach verschwindet sie.
+   Wiederkehrende Aufgaben sind davon nicht betroffen; die setzen sich
+   ohnehin von selbst zurück. Aufgaben, die NIEMAND erledigt hat, bleiben
+   ebenfalls stehen – sonst wäre die Arbeit einfach weg. */
+var PUTZ_WEG_NACH_STD = 24;
+function ppAbgelaufen(t){
+  return !t.recurring
+    && !!t.done && !!t.doneAt
+    && (Date.now()-t.doneAt > PUTZ_WEG_NACH_STD*3600000);
 }
 function fmtTime(ts){
   if(!ts) return '';
@@ -7167,7 +7181,10 @@ function loadPutzplan(sk){
   _ppTasks=[]; _ppNotes=[]; renderPutzplan(); renderPutzNotes();
   _ppTaskUnsub=db.collection('studios').doc(sk).collection('cleaning').orderBy('ts')
     .onSnapshot(function(snap){
-      _ppTasks=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      // Direkt hier filtern und nicht erst beim Zeichnen: so stimmen Liste,
+      // Fortschritt, Ausdruck, Startseite und Suche ohne weiteres Zutun.
+      _ppTasks=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+        .filter(function(t){ return !ppAbgelaufen(t); });
       renderPutzplan();
     }, function(e){ console.error('Putzplan:',e.message); toast('Putzplan: '+errMsg(e),true); });
   _ppNoteUnsub=db.collection('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50)
@@ -7368,7 +7385,9 @@ function pushPutzplanToSheets(sk){
     studioRef.collection('cleaning').orderBy('ts').get(),
     studioRef.collection('cleaningNotes').orderBy('ts','desc').limit(50).get()
   ]).then(function(res){
-    var tasks=res[0].docs.map(function(d){ var t=d.data();
+    var tasks=res[0].docs.map(function(d){ return d.data(); })
+      .filter(function(t){ return !ppAbgelaufen(t); })
+      .map(function(t){
       return { title:t.title||'', wiederholung:repLabelFor(t)||'einmalig',
         status:isDone(t)?'erledigt':'offen',
         erledigtVon: isDone(t)?(t.doneBy||''):'',

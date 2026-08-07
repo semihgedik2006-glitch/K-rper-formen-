@@ -821,6 +821,51 @@ exports.sendTestReport = region
     return { ok: true, empfaenger: empfaenger, tage: tage };
   });
 
+/* ── Erledigte einmalige Putzaufgaben wegräumen ──
+   Die App blendet sie schon einen Tag nach dem Abhaken aus (und laesst sie
+   auch aus der Google-Tabelle weg). Hier verschwinden sie zusaetzlich
+   wirklich aus der Datenbank - sonst waechst der Putzplan jedes Studios
+   endlos weiter, obwohl niemand die alten Eintraege je wieder sieht.
+
+   Wiederkehrende Aufgaben bleiben unberuehrt; die setzen sich von selbst
+   zurueck. Nicht erledigte bleiben ebenfalls stehen - die Arbeit einfach
+   verschwinden zu lassen waere schlimmer als eine lange Liste. */
+exports.purgeOneOffCleaning = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('15 3 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const grenze = Date.now() - 24 * 3600000;
+    let studios;
+    try { studios = await db.collection('studios').listDocuments(); }
+    catch (e) { console.error('Studios lesen:', e); return null; }
+
+    const refs = [];
+    for (const ref of studios) {
+      try {
+        // Nur ein where, damit kein zusaetzlicher Index noetig wird
+        const snap = await ref.collection('cleaning').where('done', '==', true).get();
+        snap.forEach(doc => {
+          const t = doc.data() || {};
+          if (t.recurring) return;                    // wiederkehrend: bleibt
+          if (!t.doneAt || t.doneAt > grenze) return; // noch keine 24 Stunden
+          refs.push(doc.ref);
+        });
+      } catch (e) { console.error('Putzplan ' + ref.id + ':', e); }
+    }
+    if (!refs.length) return null;
+
+    try {
+      for (let i = 0; i < refs.length; i += 400) {
+        const batch = db.batch();
+        refs.slice(i, i + 400).forEach(r => batch.delete(r));
+        await batch.commit();
+      }
+      console.log('Putzplan: ' + refs.length + ' erledigte Einmal-Aufgaben entfernt.');
+    } catch (e) { console.error('Putzplan aufraeumen:', e); }
+    return null;
+  });
+
 /* ── Papierkorb automatisch leeren ──
    Gelöschtes bleibt 30 Tage liegen und verschwindet dann von selbst.
    Ohne diesen Lauf würde der Papierkorb ewig wachsen: bei Aufgaben mit

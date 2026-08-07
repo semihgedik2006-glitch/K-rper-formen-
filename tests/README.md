@@ -98,6 +98,7 @@ was sie sehen soll.
 | `test-bericht.js` | Testbericht-Knopf |
 | `test-geraete.js` | Geräte- und Schadensbuch, für Chef und Mitarbeiter |
 | `test-umfrage.js` | Umfragen im Chat, Anhängen-Menü, Breite des Schreibfelds |
+| `test-putzplan.js` | erledigte Einmal-Aufgaben verschwinden nach einem Tag |
 
 ---
 

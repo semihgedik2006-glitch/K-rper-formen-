@@ -53,7 +53,13 @@
     'studio-6': [
       { id:'c1', title:'Böden wischen', recurring:'daily', done:true, doneBy:'Anna', doneAt:Date.now()-5400000, ts:Date.now()-90000000 },
       { id:'c2', title:'Spiegel putzen', recurring:'weekly', done:false, ts:Date.now()-80000000 },
-      { id:'c3', title:'Toiletten reinigen', recurring:'daily', done:false, ts:Date.now()-70000000 }
+      { id:'c3', title:'Toiletten reinigen', recurring:'daily', done:false, ts:Date.now()-70000000 },
+      // einmalig, vor 30 Stunden abgehakt -> muss verschwunden sein
+      { id:'c4', title:'Fenster putzen (alt)', done:true, doneBy:'Ben', doneAt:Date.now()-30*3600000, ts:Date.now()-60000000 },
+      // einmalig, vor 2 Stunden abgehakt -> muss noch stehen
+      { id:'c5', title:'Lager aufräumen', done:true, doneBy:'Anna', doneAt:Date.now()-2*3600000, ts:Date.now()-50000000 },
+      // einmalig, NICHT erledigt -> bleibt, egal wie alt
+      { id:'c6', title:'Vorhänge waschen', done:false, ts:Date.now()-200*3600000 }
     ]
   };
   var DEVICES = {
@@ -179,8 +185,21 @@
       limitToLast: function () { return this; },
       add: function () { return Promise.resolve({ id: 'neu' }); },
       get: function () {
+        // Dieselben Sammlungen wie bei onSnapshot bedienen. Sonst sieht ein
+        // Test, der einmalig liest (z. B. der Tabellen-Abgleich), nichts.
         var ms = /^studios\/(.+)\/shifts$/.exec(path);
-        var list = ms ? (SHIFTS[ms[1]] || []) : [];
+        var gc = /^studios\/(.+)\/cleaning$/.exec(path);
+        var gn = /^studios\/(.+)\/cleaningNotes$/.exec(path);
+        var gd = /^studios\/(.+)\/devices$/.exec(path);
+        var gl = /^studios\/(.+)\/deviceLog$/.exec(path);
+        var gt = /^studios\/(.+)\/todos$/.exec(path);
+        var list = ms ? (SHIFTS[ms[1]] || [])
+          : gc ? (CLEAN[gc[1]] || [])
+          : gn ? (CLEANNOTES[gn[1]] || [])
+          : gd ? (DEVICES[gd[1]] || [])
+          : gl ? (DEVLOG[gl[1]] || [])
+          : gt ? (TODOS[gt[1]] || [])
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []);
         return Promise.resolve(makeSnap(list.map(function (d) {
           return { id: d.id, data: function () { return d; } };
         })));
