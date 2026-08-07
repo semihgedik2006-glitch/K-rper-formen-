@@ -37,7 +37,10 @@
     { id:'m5', uid:'u3', name:'Ben Kraus', role:'leiter', studio:'Brühl',
       text:'', ts:Date.now()-120000,
       poll:{ q:'Wer kann Samstag früh?', opts:['Ich kann','Ich kann nicht','Nur ab 10 Uhr'] },
-      votes:{ u2:0, u3:2 } }
+      votes:{ u2:0, u3:2 } },
+    // Direkt hinterher, dieselbe Person: muss gruppiert werden (kein zweiter Kopf)
+    { id:'m6', uid:'u3', name:'Ben Kraus', role:'leiter', studio:'Brühl',
+      text:'Sagt bitte kurz Bescheid.', ts:Date.now()-60000 }
   ];
   var TODOS = {
     'studio-6': [

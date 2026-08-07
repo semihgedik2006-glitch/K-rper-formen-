@@ -14,7 +14,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 |---|---|---|---|
 | 1 | **Navigation** | 🟢 fertig | 1–2 |
 | 2 | **Startseite** | 🟢 fertig | 2–3 |
-| 3 | Chat | ⚪ offen | – |
+| 3 | **Chat** | 🟢 fertig | 4 |
 | 4 | Aufgaben | ⚪ offen | – |
 | 5 | Material | ⚪ offen | – |
 | 6 | Geräte | ⚪ offen | – |
@@ -215,6 +215,87 @@ zugeklappt. Wer es braucht, klappt es auf.
 | Kaufwahrscheinlichkeit | 7/10 | **8/10** | |
 | Innovationsgrad | 5/10 | **6/10** | Die gewichtete Dringlichkeit ist ein eigener Gedanke |
 | Aufwand | — | klein | rund 50 Zeilen |
+
+---
+
+## Sitzung 4 — 7. August 2026 · Bereich 3 · Chat
+
+Der Bildschirm, auf dem die meiste Zeit verbracht wird. Die Frage beim
+Durchleuchten war nicht „ist das schön", sondern: **warum sollte ein Studio
+dafür WhatsApp verlassen?**
+
+### Gefundene Probleme
+
+| # | Problem | Schwere | Stand |
+|---|---|---|---|
+| C1 | **Der Verlauf bekam 37 % der Ansicht.** Seitenkopf, Untertitel und ein fünfzeiliger Hinweisbalken fraßen den Rest — sichtbar waren zwei Nachrichten | 🔴 kritisch | ✅ behoben |
+| C2 | **Erwähnungen funktionierten praktisch nicht.** `@AnnaMeier` musste ohne Leerzeichen exakt getippt werden, ohne jeden Hinweis. Dabei ist die Erwähnung die einzige Meldung, die auch bei offenem Chat durchkommt | 🔴 hoch | ✅ behoben |
+| C3 | **Werkzeuge 21 × 19 Pixel**, unbeschriftet („☺" = Reagieren, „↪" = Weiterleiten). Weit unter dem, was ein Daumen trifft | 🟠 mittel | ✅ behoben |
+| C4 | **15 Kanäle alphabetisch** in einer waagerecht überlaufenden Leiste. „Seelscheid" lag hinter sechs Wischbewegungen — auch wenn dort als Einzigem etwas los war | 🟠 mittel | ✅ behoben |
+| C5 | **Die Suche fand nur den offenen Kanal.** „Wo stand das nochmal?" hieß: in jedem Studio einzeln nachsehen | 🟠 mittel | ✅ behoben |
+| C6 | **Ein langer Text drückte den Verlauf auf 166 Pixel** — zwei Nachrichten blieben übrig | 🟠 mittel | ✅ behoben |
+| C7 | **Jede Nachricht wiederholte Name, Rolle und Uhrzeit**, auch die dritte derselben Person in einer Minute | 🟡 klein | ✅ behoben |
+| C8 | Der Platzhalter im Schreibfeld war länger als das Feld und wurde mitten im Wort abgeschnitten | 🟡 klein | ✅ behoben |
+
+### Was gebaut wurde
+
+**C1 — der Verlauf bekommt die Seite zurück.** Überschrift „Team-Chat" und
+Untertitel sind weg: In einem Messenger *ist* der Verlauf die Seite, und der
+Untertitel erzählte jeden Tag dasselbe. Der Hinweisbalken für Meldungen ist
+von fünf Zeilen auf eine geschrumpft.
+Gemessen an einem 390er-Handy: **244 → 403 Pixel, 37 % → 61 %.**
+
+**C2 — Erwähnungen, die man findet.** `@` tippen öffnet eine Vorschlagsliste
+mit den Namen aus dem Team; Antippen oder Enter setzt den vollen Namen ein.
+Namen mit Leerzeichen werden erkannt (`@Anna Meier`), die alte Schreibweise
+ohne Leerzeichen weiterhin auch. Pfeiltasten wählen, Enter übernimmt — und
+sendet dabei nicht versehentlich die Nachricht.
+
+**C3 — Aktionsblatt statt Mini-Symbole.** Ein Tipp auf die Nachricht öffnet
+ein Blatt von unten: Absender und Uhrzeit im Kopf, eine Reihe Reaktionen zum
+Sofort-Antippen, darunter beschriftete Einträge à **48 Pixel** — Antworten,
+Weiterleiten, Text kopieren, Anheften, Bearbeiten, Löschen. Nebenbei fiel
+damit die Werkzeugleiste aus der Blase weg, was C7 erst möglich machte.
+
+**C4 — Kanäle nach Dringlichkeit.** „Allgemein" bleibt vorn, dann der offene
+Kanal, dann die mit ungelesenen Nachrichten, dann die zuletzt aktiven. Neu
+geordnet wird **beim Betreten** des Chats, nicht bei jeder eintreffenden
+Nachricht: eine Leiste, die sich unter dem Daumen umsortiert, trifft man
+nicht. Der offene Kanal wird immer ins Bild gescrollt.
+
+**C5 — Suche über alle Kanäle.** Für die Ungelesen-Zähler liegen die letzten
+zwölf Nachrichten jedes Kanals ohnehin schon im Speicher. Die Suche greift
+jetzt darauf zu: **keine einzige zusätzliche Abfrage**, aber Treffer aus
+allen Studios. Jeder Treffer nennt seinen Kanal, Antippen wechselt dorthin.
+
+**C7 — Gruppierung.** Folgt eine Nachricht derselben Person innerhalb von
+fünf Minuten, entfällt der Kopf.
+
+### Health Score · Chat
+
+| Kriterium | vorher | jetzt | Begründung |
+|---|---|---|---|
+| UX | 4/10 | **8/10** | Zwei sichtbare Nachrichten waren kein Messenger. Erwähnungen funktionieren jetzt überhaupt erst. |
+| UI | 6/10 | **8/10** | Ruhigere Blasen, beschriftete Aktionen, keine abgeschnittenen Texte. |
+| Performance | 7/10 | 7/10 | Unverändert: 15 gleichzeitige Kanal-Beobachter für einen Chef. Die Suche kostet nichts extra. |
+| Skalierbarkeit | 5/10 | 6/10 | Die Kanalleiste trägt 15 Einträge. Ab etwa 25 Studios braucht es eine Auswahl mit Suche statt einer Leiste. |
+| Wartbarkeit | 6/10 | **8/10** | Ein Aktionsblatt statt sechs einzeln verdrahteter Knopf-Sorten; Anheften und Löschen liegen jetzt in eigenen Funktionen. |
+| Konsistenz | 7/10 | 8/10 | Dasselbe Blatt-Muster wie in den anderen Bereichen. |
+| Investor | 5/10 | **8/10** | „Warum nicht WhatsApp?" ist beantwortbar: Kanäle je Studio, Umfragen, Anheften, Rollen, Erwähnungen — auf einem Bildschirm, der wie ein Messenger aussieht. |
+| Kaufwahrscheinlichkeit | 5/10 | **8/10** | Der Chat ist in jeder Vorführung der zweite Klick. |
+| Innovationsgrad | 4/10 | 6/10 | Die nach Dringlichkeit sortierte Kanalleiste und die Suche ohne Zusatzkosten sind eigene Gedanken. |
+| Aufwand | — | mittel | rund 260 Zeilen, davon 40 gelöscht |
+
+### Bewusst NICHT gebaut
+
+- **„Schreibt gerade …"** — kostet eine Schreiboperation pro Tastenanschlag
+  und pro Person. Bei 14 Studios ist das der teuerste Effekt der ganzen App,
+  für den geringsten Nutzen.
+- **Lesebestätigung im Chat** — bei Ankündigungen der Leitung ist sie
+  sinnvoll und vorhanden. Im Teamchat wäre sie eine Anwesenheitskontrolle;
+  das Handbuch verspricht ausdrücklich das Gegenteil.
+- **Volltextsuche über den gesamten Verlauf aller Kanäle** — dafür bräuchte
+  es einen Suchdienst. Für 14 Studios steht der Aufwand nicht dafür.
 
 ---
 

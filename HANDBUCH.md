@@ -121,6 +121,10 @@ dasselbe an zwei Stellen macht eine Startseite nicht übersichtlicher.
 
 ## 4. Chat
 
+Der Chat hat **keinen Seitenkopf**: In einem Messenger ist der Verlauf die
+Seite. Überschrift und Untertitel kosteten Platz und erzählten jeden Tag
+dasselbe. Der Verlauf bekommt jetzt rund zwei Drittel des Bildschirms.
+
 ### Kanäle
 - **Allgemein** – alle 14 Studios.
 - **Je ein Kanal pro Studio** – man sieht nur die eigenen Studios (**C**
@@ -128,6 +132,10 @@ dasselbe an zwei Stellen macht eine Startseite nicht übersichtlicher.
 - Ungelesen-Zähler je Kanal. Der Lesestand hängt an der **Person**, nicht am
   Gerät – auf einem geteilten Tablet sieht der Nächste seine eigenen
   Ungelesenen.
+- **Reihenfolge**: „Allgemein" bleibt vorn, danach der offene Kanal, danach
+  die mit ungelesenen Nachrichten, danach die zuletzt aktiven. Neu geordnet
+  wird beim Betreten des Chats – nicht während man liest, sonst würde sich
+  die Leiste unter dem Daumen verschieben.
 
 ### Schreiben
 - Text bis 2.000 Zeichen.
@@ -139,20 +147,32 @@ dasselbe an zwei Stellen macht eine Startseite nicht übersichtlicher.
 - **Sprachnachricht**: Mikrofon gedrückt halten, loslassen sendet.
   Zum Abbrechen den Finger weiter als 70 Pixel wegziehen. Kurzes Antippen
   startet nichts (verhindert versehentliche Aufnahmen).
-- **@Erwähnung**: `@Name` – die erwähnte Person bekommt eine Meldung und die
-  Nachricht wird bei ihr hervorgehoben.
+- **@Erwähnung**: `@` tippen öffnet eine **Vorschlagsliste** mit den Namen aus
+  dem Team; Antippen oder Enter setzt den vollen Namen ein. Der Name darf ein
+  Leerzeichen enthalten (`@Anna Meier`). Die erwähnte Person bekommt eine
+  Meldung – auch dann, wenn sie den Chat gerade offen hat – und die Nachricht
+  wird bei ihr hervorgehoben.
 - **Links** werden automatisch anklickbar.
 
 ### An einer Nachricht
+
+**Ein Tipp auf die Nachricht** öffnet ein Blatt von unten, mit Absender und
+Uhrzeit im Kopf. Oben eine Reihe Reaktionen zum Sofort-Antippen, darunter:
+
 - **Antworten** – zitiert die Nachricht; ein Tipp aufs Zitat springt zum
   Original.
-- **Reagieren** mit Emoji. Mehrere Personen je Emoji, mit Zähler.
 - **Weiterleiten** in einen anderen Kanal oder in eine Direktnachricht.
+- **Text kopieren**.
+- **Anheften** (**L C**) – bleibt oben als Leiste stehen. Immer nur eine
+  Nachricht je Kanal; „Ansehen" springt hin, „✕" löst sie wieder.
 - **Bearbeiten** – nur die eigene Nachricht, innerhalb von 15 Minuten.
   Danach steht „bearbeitet" daran.
 - **Löschen** – eigene innerhalb einer Stunde; **L C** jederzeit.
-- **Anheften** (**L C**) – bleibt oben als Leiste stehen. Immer nur eine
-  Nachricht je Kanal; „Ansehen" springt hin, „✕" löst sie wieder.
+
+Jeder Eintrag ist 48 Pixel hoch und beschriftet. Vorher hingen fünf Symbole
+von 21 × 19 Pixeln in der Blase – zu klein für einen Daumen und ohne Wort
+dazu („☺" für Reagieren, „↪" für Weiterleiten).
+
 - **Foto vergrößern** durch Antippen.
 - **Auf den Namen tippen** öffnet das Profil der Person.
 
@@ -165,6 +185,8 @@ dasselbe an zwei Stellen macht eine Startseite nicht übersichtlicher.
 - **Ältere laden** – der Verlauf lädt 120 Nachrichten und auf Knopfdruck mehr.
 - **Springen-Knopf** mit Zähler, wenn während des Lesens Neues kommt.
 - **Rolle als Marke** an jeder Nachricht: Chef · Leitung · Studioname.
+- **Mehrere Nachrichten hintereinander** von derselben Person innerhalb von
+  fünf Minuten wiederholen Name, Rolle und Uhrzeit nicht noch einmal.
 
 ---
 
@@ -349,7 +371,8 @@ Sucht gleichzeitig in:
 - Aufgaben (auch archivierte)
 - Dokumenten
 - Infos der Leitung
-- dem gerade geöffneten Chat-Kanal
+- dem Chat: der offene Kanal vollständig, dazu das Neueste aus allen
+  anderen Kanälen. Jeder Treffer nennt seinen Kanal, Antippen wechselt dorthin.
 - Material
 - Putzplan-Notizen, Abwesenheiten und Übergaben des geöffneten Studios
 

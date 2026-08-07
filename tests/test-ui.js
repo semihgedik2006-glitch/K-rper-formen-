@@ -63,20 +63,23 @@ const SP = process.env.SP || __dirname;
   console.log('→ Platzgewinn:', vorher.kopfHoehe - nachher.kopfHoehe, 'px');
   await page.screenshot({ path: SP + '/ui-todos-gescrollt.png' });
 
-  // ── Chat: Werkzeuge erst bei Antippen ──
+  // ── Chat: Aktionsblatt erst bei Antippen ──
   await go('chat');
-  const t0 = await page.evaluate(() => {
-    const t = document.querySelector('.msg .msg-tools');
-    return { breite: Math.round(t.getBoundingClientRect().width), sichtbar: getComputedStyle(t).opacity };
-  });
+  const t0 = await page.evaluate(() => ({ blattOffen: document.getElementById('msgSheet').classList.contains('show') }));
   await page.evaluate(() => document.querySelectorAll('.msg')[0].click());
   await page.waitForTimeout(500);
   const t1 = await page.evaluate(() => {
-    const t = document.querySelector('.msg .msg-tools');
-    return { breite: Math.round(t.getBoundingClientRect().width), sichtbar: getComputedStyle(t).opacity,
-             offeneNachrichten: document.querySelectorAll('.msg.tools-open').length };
+    const acts = [...document.querySelectorAll('.ms-act')];
+    return {
+      blattOffen: document.getElementById('msgSheet').classList.contains('show'),
+      eintraege: acts.map(a => a.textContent.trim()),
+      kleinsteHoehe: Math.min(...acts.map(a => Math.round(a.getBoundingClientRect().height))),
+    };
   });
-  console.log('CHAT-WERKZEUGE vorher:', JSON.stringify(t0), '→ nach Tippen:', JSON.stringify(t1));
+  console.log('AKTIONSBLATT vorher:', JSON.stringify(t0), '→ nach Tippen:', JSON.stringify(t1));
+  if (t1.kleinsteHoehe < 44) errs.push('Eintrag im Blatt nur ' + t1.kleinsteHoehe + ' px hoch');
+  await page.evaluate(() => document.getElementById('msSheetClose').click());
+  await page.waitForTimeout(300);
 
   // ── Sprachnachricht: Halten sendet automatisch ──
   const mic = await page.$('#chatMic');

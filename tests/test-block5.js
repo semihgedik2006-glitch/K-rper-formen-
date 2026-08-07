@@ -25,8 +25,9 @@ const SP = process.env.SP || __dirname;
   await go('chat');
   await page.evaluate(() => document.querySelectorAll('.msg')[0].click());
   await page.waitForTimeout(400);
-  console.log('WEITERLEITEN-KNOPF:', await page.evaluate(() => document.querySelectorAll('[data-fwd]').length));
-  await page.evaluate(() => document.querySelector('[data-fwd]').click());
+  console.log('AKTIONSBLATT offen:', await page.evaluate(() => document.getElementById('msgSheet').classList.contains('show')));
+  console.log('WEITERLEITEN-EINTRAG:', await page.evaluate(() => document.querySelectorAll('[data-ma="fwd"]').length));
+  await page.evaluate(() => document.querySelector('[data-ma="fwd"]').click());
   await page.waitForTimeout(600);
   console.log('AUSWAHL:', await page.evaluate(() => ({
     offen: document.getElementById('fwdModal').classList.contains('show'),
