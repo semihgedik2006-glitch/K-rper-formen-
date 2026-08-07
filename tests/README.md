@@ -100,6 +100,7 @@ was sie sehen soll.
 | `test-umfrage.js` | Umfragen im Chat, Anhängen-Menü, Breite des Schreibfelds |
 | `test-putzplan.js` | erledigte Einmal-Aufgaben verschwinden nach einem Tag |
 | `test-tausch.js` | Schichttausch in drei Schritten, Nachweise – für alle drei Rollen |
+| `test-oberflaeche.js` | aufklappbare Abschnitte, Sortierung, eigene Tastenkürzel |
 
 ---
 
