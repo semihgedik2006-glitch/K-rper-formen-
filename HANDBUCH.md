@@ -37,6 +37,7 @@ unterscheiden, steht es dabei:
 20. [Tastenkürzel](#20-tastenkürzel)
 21. [Sicherheit](#21-sicherheit)
 22. [Was die App bewusst nicht tut](#22-was-die-app-bewusst-nicht-tut)
+23. [Einrichtung für einen weiteren Betrieb](#23-einrichtung-für-einen-weiteren-betrieb)
 
 ---
 
@@ -88,9 +89,10 @@ Fünf Bereiche in der unteren Leiste:
 
 ## 3. Startseite
 
-Die Seite ist in drei benannte Blöcke geteilt: **was jetzt dran ist** (Hinweise
-und der eigene Dienst), **Überblick** (die Zahlen) und **Schnell hin** (die
-Sprünge).
+Die Seite ist in zwei benannte Blöcke geteilt: **was jetzt dran ist** (Hinweise
+und der eigene Dienst) und **Überblick** (die Zahlen). Sprungziele gibt es
+hier bewusst keine mehr – dafür ist die untere Leiste da, und zweimal
+dasselbe an zwei Stellen macht eine Startseite nicht übersichtlicher.
 
 - **Begrüßung** nach Tageszeit, mit Vorname und heutigem Datum.
 - **Dringende Hinweise** als Leisten, höchstens vier (darüber wird
@@ -99,17 +101,21 @@ Sprünge).
   - überfällige Aufgaben
   - fehlendes Material
   - neue Infos
+- **Mein Dienst** – die eigenen Schichten der nächsten 7 Tage über alle
+  Studios, in denen man arbeitet.
 - **Zahlen-Kacheln**: offene Aufgaben · überfällig · heute erledigt · für
   dich · im Putzplan offen · neue Nachrichten. Jede Kachel ist anklickbar
   und öffnet die passende Ansicht mit dem passenden Filter.
 - Kacheln mit einer **Null** rutschen nach hinten und werden blass. Ist
   wirklich alles auf null, steht dort **„Alles erledigt"** statt sechs Nullen.
-- **Heute-Leiste** mit Schnellsprüngen: offen, überfällig, für dich, im
-  Putzplan.
-- **Mein Dienst** – die eigenen Schichten der nächsten 7 Tage über alle
-  Studios, in denen man arbeitet.
+- **Wo etwas los ist** (**L C**, ab zwei Studios) – die höchstens vier
+  Studios, in denen gerade am meisten liegen bleibt. Gewichtet: überfällige
+  Aufgaben zählen am schwersten, dann fehlendes Material, dann offene
+  Aufgaben. Antippen wechselt direkt in das Studio.
 - **Zuletzt passiert** – die letzten Ereignisse im Überblick.
 - **Willkommen-Karte** beim ersten Start, mit Onboarding-Checkliste.
+- Beim Neustart innerhalb von zwei Stunden öffnet die App wieder die zuletzt
+  besuchte Ansicht. Ein Link mit Adresse gewinnt immer dagegen.
 
 ---
 
@@ -336,7 +342,8 @@ Wer ursprünglich eingeteilt war, bleibt am Eintrag vermerkt.
 
 ## 13. Suche
 
-Über die Lupe oben oder mit **Cmd/Strg + K**.
+Über die Lupe oben oder mit **Cmd/Strg + K**. Auf breiten Bildschirmen steht
+das Wort **Suchen** neben der Lupe – ein Symbol allein erkennt nicht jeder.
 
 Sucht gleichzeitig in:
 - Aufgaben (auch archivierte)
@@ -438,7 +445,10 @@ oben links oder die Zurück-Geste wieder heraus.
 - **Google-Tabellen abgleichen** – alle Studios auf Knopfdruck.
 - **Papierkorb** – Gelöschtes der letzten 30 Tage, einzeln zurückholen oder
   ganz leeren.
-- **Daten sichern** – Export.
+- **Daten sichern** – Export als Datei zum Mitnehmen.
+- **Jetzt zusätzlich sichern** (**C**) – legt sofort eine vollständige
+  Sicherung der Datenbank an, zusätzlich zur nächtlichen. Sinnvoll vor
+  größeren Umbauten.
 - **Über StudioChat** – Fassung und Stand.
 - **Tastenkürzel** – Übersicht.
 
@@ -479,6 +489,7 @@ Läuft im Hintergrund, ohne dass jemand etwas tun muss:
 | täglich 08:15 | Meldung bei Nachweisen, die in 60 oder 14 Tagen oder heute ablaufen |
 | täglich 03:15 | erledigte einmalige Putzaufgaben endgültig entfernen |
 | täglich 03:30 | Papierkorb-Einträge älter als 30 Tage endgültig löschen |
+| täglich 02:40 | vollständige Sicherung der Datenbank, 7 Tage aufbewahrt |
 | 1. des Monats, 08:00 | Monatsbericht per E-Mail an den Chef |
 | wöchentlich | Sicherung von Material und Putzplan ins Archiv |
 | bei Bedarf | Termin-Mails an Kunden |
@@ -551,6 +562,13 @@ zurücksetzen.
 - **Bilder und Sprachnachrichten** aus der Datenbank werden geprüft, bevor
   sie angezeigt werden.
 - **Gelöschtes** liegt 30 Tage im Papierkorb und lässt sich zurückholen.
+- **Nächtliche Sicherung** der kompletten Datenbank um 02:40, sieben Tage
+  lang aufbewahrt. Ein versehentliches „Archiv leeren" ist damit kein
+  endgültiger Verlust mehr. Zusätzlich kann der Chef jederzeit von Hand
+  sichern.
+- **Es gibt keinen Zugangscode**, mit dem man sich zum Chef machen könnte.
+  Rollen vergibt ausschließlich ein bestehender Chef, und der Server prüft
+  das mit.
 - **Serverstandort** Belgien (`europe-west1`).
 
 ---
@@ -577,3 +595,31 @@ Was erfasst wird, und warum:
 | wer eine Nachricht gelesen hat | nur bei Ankündigungen der Leitung |
 | Geburtstag | freiwillig, für den Geburtstagsgruß |
 | Nachweise | gesetzliche Nachweispflicht, nur Person und Chef |
+
+---
+
+## 23. Einrichtung für einen weiteren Betrieb
+
+Alles Betriebsspezifische steht in **einer** Datei: `konfig.js`. Für einen
+zweiten Kunden wird nur diese Datei ausgetauscht, `index.html` bleibt
+unverändert.
+
+| Eintrag | Was gemeint ist |
+|---|---|
+| `firma`, `appName` | Name im Kopf der App und in Meldungen |
+| `studios` | die Liste der Standorte |
+| `firebase` | Zugangsdaten des Firebase-Projekts |
+| `region` | Serverstandort, muss zur Datenbank passen |
+| `vapidKey` | Schlüssel für Push-Nachrichten |
+| `sheetsWebhook` | Adresse der Google-Tabellen-Anbindung |
+| `archivNachStunden` | wann erledigte Aufgaben ins Archiv rutschen |
+| `putzWegNachStunden` | wann erledigte einmalige Putzaufgaben ganz verschwinden |
+| `bildMaxKante` | auf welche Größe Fotos verkleinert werden |
+
+Zwei Regeln dazu:
+
+- **Die Studio-Liste wird nur hinten erweitert.** In der Datenbank steht der
+  Listenplatz, nicht der Name. Wer umsortiert oder löscht, ordnet allen
+  bisherigen Daten ein anderes Studio zu.
+- **`vapidKey` und `sheetsWebhook` dürfen leer bleiben.** Dann laufen Push
+  bzw. die Google-Tabelle nicht, alles andere schon.

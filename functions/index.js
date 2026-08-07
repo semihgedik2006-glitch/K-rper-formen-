@@ -892,6 +892,97 @@ exports.sendTestReport = region
     return { ok: true, empfaenger: empfaenger, tage: tage };
   });
 
+/* ── Tägliche Sicherung der Datenbank ──
+   Der schwerwiegendste offene Punkt: es gab keine. Wochen-Archiv,
+   Excel-Export und der 30-Tage-Papierkorb sind kein Ersatz - keiner davon
+   holt nach einem versehentlichen Loeschen alles zurueck.
+
+   Gesichert wird mit dem eingebauten Firestore-Export in den
+   Standard-Speicher des Projekts. Das ist der Weg, den Google selbst
+   vorsieht: konsistent ueber alle Sammlungen hinweg, und es laeuft
+   serverseitig - der Export belastet weder die App noch das Kontingent
+   fuer Lesezugriffe.
+
+   Aufbewahrt werden sieben Taege (Ordner nach Datum). Wer weiter zurueck
+   muss, holt sich den Ordner aus dem Speicher.
+
+   WICHTIG: Der Dienstaccount der Functions braucht dafuer die Rolle
+   "Cloud Datastore Import Export Admin". Fehlt sie, steht das im
+   Protokoll - siehe OFFEN.md. */
+const BACKUP_TAGE = 7;
+
+exports.dailyBackup = region
+  .runWith({ timeoutSeconds: 540, memory: '256MB' })
+  .pubsub.schedule('40 2 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const projekt = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
+    if (!projekt) { console.error('Sicherung: Projektkennung fehlt.'); return null; }
+
+    const heute = new Date().toISOString().slice(0, 10);      // 2026-08-07
+    const ziel = 'gs://' + projekt + '.appspot.com/sicherung/' + heute;
+
+    try {
+      const { FirestoreAdminClient } = require('@google-cloud/firestore').v1;
+      const client = new FirestoreAdminClient();
+      const [op] = await client.exportDocuments({
+        name: client.databasePath(projekt, '(default)'),
+        outputUriPrefix: ziel,
+        collectionIds: []            // leer = alles
+      });
+      console.log('Sicherung gestartet: ' + ziel + ' (' + op.name + ')');
+    } catch (e) {
+      // Haeufigster Grund: dem Dienstaccount fehlt die Export-Rolle.
+      console.error('Sicherung fehlgeschlagen: ' + e.message);
+      return null;
+    }
+
+    // Alte Ordner wegraeumen, damit der Speicher nicht endlos waechst
+    try {
+      const grenze = new Date(Date.now() - BACKUP_TAGE * 86400000)
+        .toISOString().slice(0, 10);
+      const bucket = admin.storage().bucket(projekt + '.appspot.com');
+      const [dateien] = await bucket.getFiles({ prefix: 'sicherung/' });
+      let weg = 0;
+      for (const f of dateien) {
+        const m = /^sicherung\/(\d{4}-\d{2}-\d{2})\//.exec(f.name);
+        if (m && m[1] < grenze) { await f.delete().catch(() => {}); weg++; }
+      }
+      if (weg) console.log('Sicherung: ' + weg + ' alte Dateien entfernt.');
+    } catch (e) {
+      console.error('Sicherung aufraeumen: ' + e.message);
+    }
+    return null;
+  });
+
+/* Zum Ausprobieren, ohne bis 2:40 Uhr zu warten. Nur fuer den Chef -
+   die Rolle wird hier auf dem Server geprueft. */
+exports.backupNow = region
+  .runWith({ timeoutSeconds: 540, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    requireAuth(context);
+    const uid = context.auth.uid;
+    const prof = await db.collection('users').doc(uid).get();
+    if (!prof.exists || (prof.data() || {}).role !== 'chef') {
+      throw new functions.https.HttpsError('permission-denied', 'Nur der Chef darf sichern.');
+    }
+    const projekt = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
+    const stempel = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    const ziel = 'gs://' + projekt + '.appspot.com/sicherung/manuell-' + stempel;
+    try {
+      const { FirestoreAdminClient } = require('@google-cloud/firestore').v1;
+      const client = new FirestoreAdminClient();
+      await client.exportDocuments({
+        name: client.databasePath(projekt, '(default)'),
+        outputUriPrefix: ziel,
+        collectionIds: []
+      });
+      return { ok: true, ziel: ziel };
+    } catch (e) {
+      throw new functions.https.HttpsError('internal', e.message);
+    }
+  });
+
 /* ── Erledigte einmalige Putzaufgaben wegräumen ──
    Die App blendet sie schon einen Tag nach dem Abhaken aus (und laesst sie
    auch aus der Google-Tabelle weg). Hier verschwinden sie zusaetzlich
