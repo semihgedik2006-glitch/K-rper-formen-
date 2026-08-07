@@ -1,0 +1,226 @@
+/* Minimaler Firebase-Ersatz, nur zum Ansehen der Oberfläche im Test.
+   Simuliert einen angemeldeten Chef und leere Sammlungen. */
+(function () {
+  function unsub() { return function () {}; }
+  function makeSnap(docs) {
+    docs = docs || [];
+    return {
+      docs: docs, empty: !docs.length, size: docs.length,
+      forEach: function (f) { docs.forEach(f); },
+      docChanges: function () { return []; }
+    };
+  }
+  var PROFILE = {
+    name: 'Lisa Wagner', role: 'mitarbeiter', studios: ['Hürth'],
+    studioKeys: ['studio-6'],
+    studio: 'Hürth', avatar: '🙂', color: '#38BDF8',
+    email: 'lisa@example.com'
+  };
+  var USERS = [
+    { id:'testuid', name:'Lisa Wagner', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'] },
+    { id:'u9', name:'Der Chef', role:'chef', studios:[], email:'chef@example.com' },
+    { id:'u2', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
+    { id:'u3', name:'Ben Kraus', role:'leiter', studios:['Brühl'], studioKeys:['studio-7'], lastSeen:Date.now()-3600000 },
+    { id:'u4', name:'Alt-Konto Test', role:'chef', email:'test1@example.com' },
+    { id:'u5', name:'', role:'chef', email:'test2@example.com' }
+  ];
+  var MESSAGES = [
+    { id:'m1', uid:'u2', name:'Anna Meier', role:'mitarbeiter', studio:'Hürth',
+      text:'Guten Morgen zusammen!', ts:Date.now()-7200000,
+      reactions:{'👍':['u3','testuid'],'🎉':['u3']} },
+    { id:'m2', uid:'u3', name:'Ben Kraus', role:'leiter', studio:'Brühl',
+      text:'@TestChef kannst du bitte die Handtücher nachbestellen?', ts:Date.now()-3600000,
+      mentions:['testuid'] },
+    { id:'m3', uid:'testuid', name:'Test Chef', role:'chef',
+      text:'Klar, mache ich heute.', ts:Date.now()-600000, editedAt:Date.now()-500000,
+      replyTo:'m2', replyName:'Ben Kraus', replyText:'kannst du bitte die Handtücher nachbestellen?', pinned:true },
+    { id:'m4', uid:'u2', name:'Anna Meier', role:'mitarbeiter', studio:'Hürth',
+      text:'', ts:Date.now()-300000,
+      audio:'data:audio/webm;codecs=opus;base64,GkXfo0AgQoaBAULygQ==', audioMs:14000 }
+  ];
+  var TODOS = {
+    'studio-6': [
+      { id: 't1', title: 'Geräte desinfizieren', desc: 'Nach jedem Training', done: false, createdBy: 'Chef', ts: Date.now() - 90000000, due: Date.now() - 86400000, steps:[{t:'Geräte abwischen',d:true},{t:'Gurte prüfen',d:false},{t:'Kabel aufrollen',d:false}] },
+      { id: 't2', title: 'Handtücher waschen', desc: '', done: true, doneBy: 'Anna', doneAt: Date.now() - 3000, createdBy: 'Chef', ts: Date.now() - 80000000 },
+      { id: 't3', title: 'Wasserspender auffüllen', desc: 'Beide Spender', done: false, createdBy: 'Chef', ts: Date.now() - 70000000, recurring: 'daily' }
+    ],
+    'studio-7': [
+      { id: 't4', title: 'Empfang aufräumen', desc: '', done: false, createdBy: 'Chef', ts: Date.now() - 60000000 }
+    ]
+  };
+  var CLEAN = {
+    'studio-6': [
+      { id:'c1', title:'Böden wischen', recurring:'daily', done:true, doneBy:'Anna', doneAt:Date.now()-5400000, ts:Date.now()-90000000 },
+      { id:'c2', title:'Spiegel putzen', recurring:'weekly', done:false, ts:Date.now()-80000000 },
+      { id:'c3', title:'Toiletten reinigen', recurring:'daily', done:false, ts:Date.now()-70000000 }
+    ]
+  };
+  var CLEANNOTES = {
+    'studio-6': [
+      { id:'n1', text:'Wischmopp ist kaputt, bitte neuen bestellen.', by:'Anna', byUid:'u2', ts:Date.now()-3600000 },
+      { id:'n2', text:'Reinigungsmittel fast leer.', by:'Ben', byUid:'u3', ts:Date.now()-7200000 }
+    ]
+  };
+  var ARCHIVES = [
+    { id:'2026-KW31', week:'2026-KW31', label:'27.07.–02.08.2026', updatedAt:Date.now()-7*86400000,
+      material:{'studio-6':[{name:'Handtücher',have:12,limit:20,need:8},{name:'Desinfektion',have:5,limit:5,need:0}]},
+      cleaning:{'studio-6':{tasks:[{title:'Böden wischen',rep:'täglich',status:'erledigt',by:'Anna',at:'01.08. 14:30 Uhr'}],notes:[{text:'Mopp kaputt',by:'Anna',at:'01.08. 09:00 Uhr'}]}} },
+    { id:'2026-KW32', week:'2026-KW32', label:'03.08.–09.08.2026', updatedAt:Date.now()-3600000,
+      material:{'studio-6':[{name:'Handtücher',have:20,limit:20,need:0}]},
+      cleaning:{'studio-6':{tasks:[{title:'Spiegel putzen',rep:'wöchentlich',status:'offen',by:'',at:''}],notes:[]}} }
+  ];
+  var INVENTORY = {
+    'studio-6': { items:[
+      {name:'Handtücher', have:12, limit:20, need:0},
+      {name:'Handschuhe', have:4, limit:10, need:0},
+      {name:'Desinfektionsmittel', have:2, limit:6, need:0},
+      {name:'Wasserflaschen', have:30, limit:24, need:0}
+    ]},
+    'studio-7': { items:[
+      {name:'Handtücher', have:5, limit:20, need:0},
+      {name:'Desinfektionsmittel', have:1, limit:6, need:0}
+    ]}
+  };
+  var ANNS = [
+    { id:'a1', uid:'testuid', from:'Test Chef', text:'Neue Öffnungszeiten ab Montag: 7–21 Uhr.',
+      target:'all', ts:Date.now()-4*86400000, pinned:true, readBy:['u2'] },
+    { id:'a2', uid:'testuid', from:'Test Chef', text:'Bitte die Gurte nach jedem Training desinfizieren.',
+      target:'studio-6', ts:Date.now()-2*3600000, readBy:[] }
+  ];
+  var ABSENCES = {
+    'studio-6': [
+      { id:'a1', from:'2026-08-20', to:'2026-08-28', type:'urlaub', uid:'u2', name:'Anna Meier',
+        status:'offen', note:'Sommerurlaub', ts:Date.now()-86400000 },
+      { id:'a2', from:'2026-08-10', to:'2026-08-11', type:'krank', uid:'u3', name:'Ben Kraus',
+        status:'genehmigt', ts:Date.now()-3600000 },
+      { id:'a3', from:'2026-09-01', to:'2026-09-05', type:'urlaub', uid:'u3', name:'Ben Kraus',
+        status:'genehmigt', decidedBy:'Test Chef', decidedAt:Date.now()-7200000, ts:Date.now()-172800000 }
+    ]
+  };
+  // Drei Wochen-Sicherungen mit sinkenden Beständen → Vorhersage rechenbar
+  var ARCH_HIST = [
+    { id:'2026-KW29', week:'2026-KW29', label:'13.07.–19.07.2026', updatedAt:Date.now()-21*86400000,
+      material:{'studio-6':[{name:'Handtücher',have:30,limit:20},{name:'Handschuhe',have:20,limit:10},{name:'Desinfektionsmittel',have:10,limit:6}]},
+      cleaning:{} },
+    { id:'2026-KW30', week:'2026-KW30', label:'20.07.–26.07.2026', updatedAt:Date.now()-14*86400000,
+      material:{'studio-6':[{name:'Handtücher',have:24,limit:20},{name:'Handschuhe',have:14,limit:10},{name:'Desinfektionsmittel',have:7,limit:6}]},
+      cleaning:{} },
+    { id:'2026-KW31b', week:'2026-KW31b', label:'27.07.–02.08.2026', updatedAt:Date.now()-7*86400000,
+      material:{'studio-6':[{name:'Handtücher',have:18,limit:20},{name:'Handschuhe',have:9,limit:10},{name:'Desinfektionsmittel',have:4,limit:6}]},
+      cleaning:{} }
+  ];
+  var DOCS = [
+    { id:'d1', name:'Hygieneplan 2026', kind:'file', size:120000, cat:'hygiene', studios:'all', ts:Date.now()-86400000, uploadedBy:'Chef' },
+    { id:'d2', name:'Gerätewartung Anleitung', kind:'link', url:'https://example.com', cat:'technik', studios:'all', ts:Date.now()-172800000, uploadedBy:'Chef' },
+    { id:'d3', name:'Arbeitsvertrag Muster', kind:'file', size:88000, cat:'personal', studios:'all', ts:Date.now()-259200000, uploadedBy:'Chef' }
+  ];
+  var SHIFTS = {
+    'studio-6': [
+      { id:'s1', date:'2026-08-06', from:'09:00', to:'14:00', uid:'testuid', name:'Lisa Wagner', note:'Einweisung neue Kundin' },
+      { id:'s2', date:'2026-08-07', from:'16:00', to:'21:00', uid:'u2', name:'Anna Meier' }
+    ],
+    'studio-7': [
+      { id:'s3', date:'2026-08-09', from:'10:00', to:'15:00', uid:'testuid', name:'Test Chef' }
+    ]
+  };
+  function collection(path) {
+    return {
+      _p: path,
+      doc: function (id) {
+        var docPath = path + '/' + id;
+        return {
+          collection: function (sub) { return collection(docPath + '/' + sub); },
+          get: function () {
+            var data = (path === 'users') ? PROFILE : {};
+            if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }
+            return Promise.resolve({ exists: true, id: id, data: function () { return data; } });
+          },
+          set: function () { return Promise.resolve(); },
+          update: function () { return Promise.resolve(); },
+          delete: function () { return Promise.resolve(); },
+          onSnapshot: function (cb) {
+            if (path === 'inventory') {
+              var inv = INVENTORY[id];
+              try { cb({ exists: !!inv, id:id, metadata:{hasPendingWrites:false}, data: function(){ return inv || {items:[]}; } }); } catch (e) { console.error(e); }
+              return unsub();
+            }
+            try { cb({ exists: false, metadata:{hasPendingWrites:false}, data: function () { return {}; } }); } catch (e) {}
+            return unsub();
+          }
+        };
+      },
+      where: function () { return this; },
+      orderBy: function () { return this; },
+      limit: function () { return this; },
+      limitToLast: function () { return this; },
+      add: function () { return Promise.resolve({ id: 'neu' }); },
+      get: function () {
+        var ms = /^studios\/(.+)\/shifts$/.exec(path);
+        var list = ms ? (SHIFTS[ms[1]] || []) : [];
+        return Promise.resolve(makeSnap(list.map(function (d) {
+          return { id: d.id, data: function () { return d; } };
+        })));
+      },
+      onSnapshot: function (cb) {
+        var m = /^studios\/(.+)\/todos$/.exec(path);
+        var mc = /^studios\/(.+)\/cleaning$/.exec(path);
+        var mn = /^studios\/(.+)\/cleaningNotes$/.exec(path);
+        var ma = /^studios\/(.+)\/absences$/.exec(path);
+        if (ma) {
+          var al = ABSENCES[ma[1]] || [];
+          try { cb(makeSnap(al.map(function (d) { return { id: d.id, data: function () { return d; } }; }))); } catch (e) { console.error(e); }
+          return unsub();
+        }
+        var mm = /^channels\/(.+)\/messages$/.exec(path);
+        var list = m ? (TODOS[m[1]] || []) : mc ? (CLEAN[mc[1]] || []) : mn ? (CLEANNOTES[mn[1]] || []) :
+                   mm ? (mm[1]==='allgemein' ? MESSAGES : []) :
+                   (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
+                   (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
+                   (path==='documents' ? DOCS : [])))));
+        var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
+        try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
+        return unsub();
+      }
+    };
+  }
+  var fs = {
+    settings: function () {},
+    enablePersistence: function () { return Promise.resolve(); },
+    collection: function (p) { return collection(p); },
+    batch: function () { return { set: function () {}, delete: function () {}, commit: function () { return Promise.resolve(); } }; }
+  };
+  window.firebase = {
+    initializeApp: function () { return { firestore: function () { return fs; } }; },
+    apps: [],
+    app: function () { return {
+      firestore: function () { return fs; },
+      functions: function () { return window.firebase.functions(); }
+    }; },
+    auth: function () {
+      return {
+        onAuthStateChanged: function (cb) { setTimeout(function () { cb({ uid: 'testuid', email: 'test@test.de' }); }, 60); return unsub(); },
+        signInWithEmailAndPassword: function () { return Promise.resolve({ user: { uid: 'testuid' } }); },
+        signOut: function () { return Promise.resolve(); },
+        setPersistence: function () { return Promise.resolve(); },
+        currentUser: { uid: 'testuid' }
+      };
+    },
+    firestore: function () { return fs; },
+    functions: function () {
+      return { httpsCallable: function (name) {
+        return function (data) {
+          window.__aufruf = { name: name, data: data };
+          return Promise.resolve({ data: { ok: true, empfaenger: 1, tage: (data && data.tage) || 30 } });
+        };
+      } };
+    },
+    messaging: function () { return { onMessage: function () {}, getToken: function () { return Promise.resolve(''); } }; },
+    storage: function () { return { ref: function () { return {}; } }; }
+  };
+  firebase.firestore.FieldValue = {
+    arrayUnion: function () { return {}; }, arrayRemove: function () { return {}; },
+    serverTimestamp: function () { return Date.now(); }
+  };
+  firebase.auth.Auth = { Persistence: { LOCAL: 'local', SESSION: 'session', NONE: 'none' } };
+  firebase.messaging.isSupported = function () { return false; };
+})();

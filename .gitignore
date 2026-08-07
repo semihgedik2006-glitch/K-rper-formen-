@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 functions/.env
 functions/node_modules/
+
+# Bildschirmfotos aus den Testlaeufen – entstehen bei jedem Lauf neu
+tests/*.png
