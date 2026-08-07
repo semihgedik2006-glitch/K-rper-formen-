@@ -21,18 +21,34 @@ const SP = process.env.SP || __dirname;
   const sub = await page.$('[data-subview="chef"]');
   if (sub) { await sub.click(); await page.waitForTimeout(600); }
 
-  console.log('LEITER im Chef-Bereich:', await page.evaluate(() => ({
+  // Der Verwaltungsbereich beginnt jetzt mit einer Übersicht. Erst von dort
+  // geht es in einen Reiter – die Reiterleiste ist vorher nicht sichtbar.
+  console.log('LEITER Verwaltungs-Übersicht:', await page.evaluate(() => ({
+    kacheln: [...document.querySelectorAll('.chef-card .cc-title')].map(t => t.textContent),
+    reiterleisteVersteckt: document.getElementById('chefBar').style.display === 'none',
+  })));
+
+  await page.evaluate(() => document.querySelector('[data-cgo="ueberblick"]').click());
+  await page.waitForTimeout(700);
+  console.log('LEITER im Überblick:', await page.evaluate(() => ({
     reiter: [...document.querySelectorAll('.chef-tab')].map(t => t.textContent.trim()),
     studios: [...document.querySelectorAll('#studioGrid .studio-tile b')].map(x => x.textContent),
     kacheln: document.querySelectorAll('#dashGrid .dash-tile').length,
+    zurueckDa: !!document.getElementById('chefBack'),
   })));
 
-  const rep = await page.$('.chef-tab:nth-child(3)');
-  if (rep) { await rep.click(); await page.waitForTimeout(600); }
+  await page.evaluate(() => document.querySelector('[data-ctab="report"]').click());
+  await page.waitForTimeout(700);
   console.log('LEITER Auswertung:', await page.evaluate(() => ({
     aktiv: (document.querySelector('.chef-tab.on') || {}).textContent,
     studiozeilen: [...document.querySelectorAll('#repStudios .rep-head b')].map(x => x.textContent),
   })));
+
+  // Zurück zur Übersicht
+  await page.evaluate(() => document.getElementById('chefBack').click());
+  await page.waitForTimeout(600);
+  console.log('LEITER nach Zurück:', await page.evaluate(() =>
+    document.getElementById('chefHome').style.display !== 'none' ? 'Übersicht' : 'FEHLER'));
 
   await page.screenshot({ path: SP + '/leiter-chef.png' });
   console.log('Fehler:', errs.length ? errs.join('\n  ') : 'keine');

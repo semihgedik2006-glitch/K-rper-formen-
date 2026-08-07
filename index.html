@@ -1177,6 +1177,19 @@ html{font-size:var(--fs,100%)}
 /* Die Sortier-Knöpfe federn kurz, wenn man wechselt */
 .sort-row .chip.on{animation:chipPop .34s var(--spring)}
 @keyframes chipPop{0%{transform:scale(1)}42%{transform:scale(1.09)}100%{transform:scale(1)}}
+/* Kachel mit einer Null: da, aber deutlich leiser */
+.home-tile.null{opacity:.5}
+.home-tile.null .hn{color:var(--text-3)}
+/* Wenn wirklich nichts offen ist – statt sechs Nullen eine Aussage */
+.home-ruhe{grid-column:1/-1;display:flex;align-items:center;gap:14px;
+  padding:20px 20px;background:rgba(0,224,110,.09);
+  border:1px solid rgba(0,224,110,.32);border-radius:var(--r-md)}
+.home-ruhe .hr-ico{flex-shrink:0;width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,224,110,.18);color:var(--accent-d);
+  font-size:1.25rem;font-weight:800}
+.home-ruhe b{display:block;font-family:var(--font-head);font-size:1.1rem;margin-bottom:2px}
+.home-ruhe span{font-size:.86rem;color:var(--text-2)}
 .sort-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 12px}
 .sort-lab{font-size:.74rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
   color:var(--text-3);margin-right:2px}
@@ -1204,7 +1217,38 @@ html{font-size:var(--fs,100%)}
 /* ── Chef-Bereich: Reiter ──
    Der Chef-Bereich war eine sehr lange Seite. Jetzt liegt jeder Themenblock
    auf einem eigenen Reiter – ein Klick mehr, dafür sofort auffindbar. */
-.chef-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:16px;
+/* Übersichtskacheln des Verwaltungsbereichs */
+.chef-home{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:11px;
+  margin-bottom:4px}
+.chef-card{display:flex;gap:13px;align-items:flex-start;text-align:left;width:100%;
+  padding:16px 17px;background:var(--bg-2);border:1px solid var(--line);
+  border-radius:var(--r-md);cursor:pointer;
+  transition:transform .28s var(--ease-out),border-color .25s,box-shadow .28s}
+.chef-card:hover{transform:translateY(-2px);border-color:var(--accent);
+  box-shadow:0 10px 26px rgba(0,0,0,.09)}
+.chef-card:active{transform:scale(.985)}
+.chef-card .cc-ico{font-size:1.5rem;flex-shrink:0;line-height:1.1}
+.chef-card .cc-body{flex:1;min-width:0;display:block}
+/* Die Zeilen sind <span> im Knopf – ohne block laufen sie ineinander */
+.chef-card .cc-title{display:block;font-family:var(--font-head);font-weight:700;
+  font-size:1.05rem;color:var(--text);margin-bottom:3px}
+.chef-card .cc-was{display:block;font-size:.82rem;color:var(--text-2);line-height:1.45}
+.chef-card .cc-num{display:inline-block;margin-top:7px;font-size:.74rem;font-weight:700;
+  padding:3px 9px;border-radius:999px;background:var(--bg-soft);
+  border:1px solid var(--line);color:var(--text-3)}
+.chef-card .cc-num.warn{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:var(--warm)}
+.chef-card .cc-num.dringend{background:rgba(251,78,109,.16);border-color:rgba(251,78,109,.4);color:var(--danger)}
+
+.chef-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;min-width:0}
+.chef-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;
+  background:none;border:1.5px solid var(--line-2);border-radius:999px;
+  padding:8px 14px 8px 11px;font-family:var(--font-body);font-weight:600;
+  font-size:.85rem;color:var(--text-2);cursor:pointer;white-space:nowrap;
+  transition:border-color .2s,color .2s,transform .25s var(--spring)}
+.chef-back:hover{border-color:var(--accent);color:var(--accent-d)}
+.chef-back:active{transform:scale(.95)}
+.chef-back svg{width:15px;height:15px}
+.chef-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;
   padding-bottom:2px}
 .chef-tabs::-webkit-scrollbar{display:none}
 .chef-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
@@ -1805,10 +1849,6 @@ var FIREBASE_CONFIG = {
           <div class="sec-head"><span>Überblick</span><i></i></div>
           <div class="home-grid" id="homeGrid"></div>
 
-          <!-- 3. Wo es weitergeht -->
-          <div class="sec-head"><span>Schnell hin</span><i></i></div>
-          <div class="quick-grid" id="quickGrid"></div>
-
           <div class="card" id="homeActivityCard" data-fold="aktivitaet">
             <h3>🕒 Zuletzt passiert</h3>
             <div id="homeActivity"></div>
@@ -2314,10 +2354,20 @@ var FIREBASE_CONFIG = {
       <section class="view" id="view-chef">
         <div class="view-head shrink"><h2 id="chefTitle">Chef-Bereich</h2><p id="chefSub">Hier verwaltest du alles. Nur du siehst diesen Bereich.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <!-- Reiter im Chef-Bereich: statt einer sehr langen Seite gibt es
-               jetzt fünf klar getrennte Bereiche. Gebaut wird die Leiste in
-               buildChefTabs(); die Inhalte stehen unten in .chef-pane. -->
-          <div class="chef-tabs" id="chefTabs"></div>
+          <!-- Der Verwaltungsbereich ist inzwischen eine eigene kleine App.
+               Deshalb beginnt er mit einer Übersicht: erst sehen, was es
+               gibt, dann hineingehen, mit Zurück wieder heraus. Die Reiter
+               oben bleiben zusätzlich, sobald man drin ist – wer sich
+               auskennt, springt damit direkt weiter. -->
+          <div class="chef-home" id="chefHome"></div>
+
+          <div class="chef-bar" id="chefBar" style="display:none">
+            <button class="chef-back" id="chefBack" aria-label="Zurück zur Übersicht">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              Übersicht
+            </button>
+            <div class="chef-tabs" id="chefTabs"></div>
+          </div>
 
           <!-- ── Reiter 1: Überblick ── -->
           <div class="chef-pane" data-cpane="ueberblick">
@@ -4486,11 +4536,11 @@ function maybeShowNotifBanner(){
 var NAVGROUPS = [
   {id:'g-start', label:'Start', views:['home'],
    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
-  {id:'g-komm', label:'Austausch', views:['chat','dm','ann'],
+  {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
-  {id:'g-arbeit', label:'Arbeit', views:['todos','putzplan','material','geraete'],
+  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','docs'],
    icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
-  {id:'g-team', label:'Team', views:['team','docs'],
+  {id:'g-team', label:'Team', views:['team'],
    icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
   {id:'g-chef', label:'Verwaltung', views:['chef','archive'], manageOnly:true,
    icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>'}
@@ -4621,7 +4671,7 @@ function showView(id, fromKey, ausVerlauf){
   }
   bindShrinkHeaders();
   foldAufbauen();
-  if(id==='chef') buildChefTabs();
+  if(id==='chef'){ _chefTab=CHEF_START; buildChefTabs(); }
   if(id==='material') ensureMaterialLoaded();
   if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='geraete') ensureDevicesLoaded();
@@ -6206,10 +6256,25 @@ function renderHome(){
     if(!canManage()) tiles.splice(3,0,{n:meine, l:'für dich', v:'todos', cls:meine?'':'muted', f:'meine'});
     if(canManage()) tiles.push({n:matStudios, l:'Studios mit Materialbedarf', v:'material', cls:matStudios?'warn':'ok'});
     tiles.push({n:dmUngelesen, l:'neue Nachrichten', v:'dm', cls:dmUngelesen?'':'muted'});
-    grid.innerHTML=tiles.map(function(t){
-      return '<div class="home-tile '+t.cls+'" data-go="'+t.v+'"'+(t.f?' data-f="'+t.f+'"':'')+'>'+
-        '<div class="hn">'+t.n+'</div><div class="hl">'+esc(t.l)+'</div></div>';
-    }).join('');
+    // Kacheln mit einer Null sind kein Überblick, sondern Platzverschwendung.
+    // Ein Mitarbeiter sah bisher drei von sechs Kacheln mit "0" – die halbe
+    // Seite ohne Aussage. Jetzt wandern sie nach hinten und werden blass;
+    // ist wirklich alles auf null, steht dort eine Zeile statt sechs Nullen.
+    var mitZahl=tiles.filter(function(t){ return t.n>0; });
+    var ohne=tiles.filter(function(t){ return !(t.n>0); });
+
+    if(!mitZahl.length){
+      grid.innerHTML='<div class="home-ruhe">'+
+        '<span class="hr-ico">✓</span>'+
+        '<div><b>Alles erledigt</b>'+
+        '<span>Keine offenen Aufgaben, nichts überfällig, nichts fehlt.</span></div></div>';
+    } else {
+      grid.innerHTML=mitZahl.concat(ohne).map(function(t){
+        return '<div class="home-tile '+t.cls+(t.n>0?'':' null')+'" data-go="'+t.v+'"'+
+          (t.f?' data-f="'+t.f+'"':'')+'>'+
+          '<div class="hn">'+t.n+'</div><div class="hl">'+esc(t.l)+'</div></div>';
+      }).join('');
+    }
     grid.querySelectorAll('[data-go]').forEach(function(el){
       el.addEventListener('click',function(){
         var f=el.getAttribute('data-f');
@@ -6222,21 +6287,15 @@ function renderHome(){
   // Mein Dienst (lädt höchstens alle fünf Minuten neu)
   loadMyShifts();
 
-  // Schnellzugriff
-  var q=$('quickGrid');
-  if(q){
-    var items=['chat','todos','putzplan','material','team','docs','dm','ann'];
-    if(canManage()) items.push('chef');
-    q.innerHTML=items.map(function(v){
-      var it=navItem(v); if(!it) return '';
-      return '<div class="quick" data-go="'+v+'">'+
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+it.icon+'</svg>'+
-        '<span>'+esc(it.label)+'</span></div>';
-    }).join('');
-    q.querySelectorAll('[data-go]').forEach(function(el){
-      el.addEventListener('click',function(){ tick(8); showView(el.getAttribute('data-go')); });
-    });
-  }
+  /* Der "Schnellzugriff" ist ersatzlos entfallen.
+
+     Er zeigte acht Kacheln mit genau denselben Namen und Symbolen wie die
+     Navigationsleiste darunter – dieselbe Funktion zweimal auf einem
+     Bildschirm. Das kostete rund ein Drittel der Startseite und beantwortete
+     keine Frage, die die Leiste nicht schon beantwortet.
+
+     Wer sich die Reihenfolge selbst legen will, hat dafür jetzt die frei
+     belegbaren Tastenkürzel (am Rechner) bzw. die Leiste (am Handy). */
 
   // Zuletzt passiert
   var act=$('homeActivity');
@@ -6955,31 +7014,126 @@ function renderDashboard(){
    dafür findet man alles sofort und verklickt sich nicht.
    ============================================================ */
 var CHEFTABS=[
-  {id:'ueberblick', label:'📊 Überblick'},
-  {id:'erstellen',  label:'✏️ Erstellen'},
-  {id:'team',       label:'👥 Team', chefOnly:true},
-  {id:'nachweise',  label:'📜 Nachweise', chefOnly:true},
-  {id:'report',     label:'📈 Auswertung'},
-  {id:'system',     label:'⚙️ System'}
+  {id:'ueberblick', label:'📊 Überblick',  ico:'📊',
+   was:'Zahlen aller Studios, was gerade hakt, Geburtstage'},
+  {id:'erstellen',  label:'✏️ Erstellen',  ico:'✏️',
+   was:'Aufgabe anlegen, Ankündigung senden, Vorlagen'},
+  {id:'team',       label:'👥 Team',       ico:'👥', chefOnly:true,
+   was:'Zugänge anlegen, Rollen ändern, Onboarding'},
+  {id:'nachweise',  label:'📜 Nachweise',  ico:'📜', chefOnly:true,
+   was:'Erste Hilfe, Lizenzen, Einweisungen – was demnächst abläuft'},
+  {id:'report',     label:'📈 Auswertung', ico:'📈',
+   was:'Bericht über einen Zeitraum, drucken, Excel, Monatsbericht'},
+  {id:'system',     label:'⚙️ System',     ico:'⚙️',
+   was:'Tabellen abgleichen, Papierkorb, Sicherung, Tastenkürzel'}
 ];
-var _chefTab='ueberblick';
+/* 'uebersicht' ist kein Reiter, sondern die Startseite des Bereichs. */
+var CHEF_START='uebersicht';
+var _chefTab=CHEF_START;
+
+function chefTabsFuerMich(){
+  return CHEFTABS.filter(function(t){ return !t.chefOnly || isChef(); });
+}
 
 function buildChefTabs(){
   var bar=$('chefTabs'); if(!bar) return;
-  var tabs=CHEFTABS.filter(function(t){ return !t.chefOnly || isChef(); });
-  // Falls der aktuelle Reiter für diese Rolle nicht existiert: zurück auf Start
-  if(!tabs.some(function(t){ return t.id===_chefTab; })) _chefTab=tabs[0].id;
+  var tabs=chefTabsFuerMich();
+  // Falls der aktuelle Reiter für diese Rolle nicht existiert: zur Übersicht
+  if(_chefTab!==CHEF_START && !tabs.some(function(t){ return t.id===_chefTab; })){
+    _chefTab=CHEF_START;
+  }
   bar.innerHTML=tabs.map(function(t){
     return '<button class="chef-tab'+(t.id===_chefTab?' on':'')+'" data-ctab="'+t.id+'">'+esc(t.label)+'</button>';
   }).join('');
   bar.querySelectorAll('[data-ctab]').forEach(function(b){
     b.addEventListener('click',function(){ showChefTab(b.getAttribute('data-ctab')); tick(8); });
   });
+  renderChefHome();
   showChefTab(_chefTab, true);
+}
+
+/* Die Übersichtsseite des Verwaltungsbereichs.
+
+   Warum: der Bereich hatte sechs Reiter mit je mehreren Formularen und
+   keinen Weg zurück. Wer ihn zum ersten Mal öffnete, sah sofort ein
+   Formular und musste raten, was in den anderen Reitern steckt. Für einen
+   fremden Studiobetreiber, der die App ohne Einweisung ausprobiert, ist das
+   die Stelle, an der er aufgibt.
+
+   Jetzt: erst sehen was es gibt, dann hineingehen, mit Zurück heraus. */
+function renderChefHome(){
+  var box=$('chefHome'); if(!box) return;
+  box.innerHTML=chefTabsFuerMich().map(function(t){
+    return '<button class="chef-card" data-cgo="'+esc(t.id)+'">'+
+      '<span class="cc-ico">'+t.ico+'</span>'+
+      '<span class="cc-body"><span class="cc-title">'+esc(t.label.replace(/^\S+\s/,''))+'</span>'+
+      '<span class="cc-was">'+esc(t.was||'')+'</span>'+
+      '<span class="cc-num" data-cnum="'+esc(t.id)+'" style="display:none"></span></span>'+
+      '</button>';
+  }).join('');
+  box.querySelectorAll('[data-cgo]').forEach(function(b){
+    b.addEventListener('click',function(){ showChefTab(b.getAttribute('data-cgo')); tick(9); });
+  });
+  chefHomeZahlen();
+}
+
+/* Zahlen auf den Kacheln: was dahinter liegt, ohne hineinzugehen. */
+function chefHomeZahlen(){
+  function setz(id, text, stufe){
+    var el=document.querySelector('[data-cnum="'+id+'"]');
+    if(!el) return;
+    if(!text){ el.style.display='none'; return; }
+    el.style.display='inline-block';
+    el.textContent=text;
+    el.className='cc-num'+(stufe?' '+stufe:'');
+  }
+  // Überblick: überfällige Aufgaben über alle verwalteten Studios
+  var ueber=0;
+  try{
+    managedKeys().forEach(function(sk){
+      (cachedTodos[sk]||[]).forEach(function(t){
+        if(!isDone(t) && !isArchived(t) && t.due && Date.now()>t.due) ueber++;
+      });
+    });
+  }catch(e){}
+  setz('ueberblick', ueber ? ueber+' überfällig' : '', ueber?'dringend':'');
+
+  // Nachweise: was in 60 Tagen oder früher abläuft
+  try{
+    var bald=_certs.filter(function(c){ var t=certTage(c); return t!==null && t<=60; }).length;
+    setz('nachweise', bald ? bald+' läuft bald ab' : '', bald?'warn':'');
+  }catch(e){}
+
+  // System: was im Papierkorb liegt
+  try{ setz('system', _trash.length ? _trash.length+' im Papierkorb' : '', ''); }catch(e){}
+
+  // Team: wie viele Zugänge es gibt
+  try{ setz('team', _employees.length ? _employees.length+' Zugänge' : '', ''); }catch(e){}
 }
 
 function showChefTab(id, keep){
   _chefTab=id;
+  var uebersicht = (id===CHEF_START);
+
+  // Übersicht oder ein Reiter – nie beides
+  var home=$('chefHome'); if(home) home.style.display = uebersicht ? 'grid' : 'none';
+  var bar=$('chefBar');   if(bar)  bar.style.display  = uebersicht ? 'none' : 'flex';
+  var t=$('chefTitle'), sub=$('chefSub');
+  if(uebersicht){
+    if(t) t.textContent = isChef() ? 'Verwaltung' : 'Studio-Verwaltung';
+    if(sub) sub.textContent = 'Wähle aus, was du tun möchtest.';
+  } else {
+    var meta=CHEFTABS.filter(function(x){ return x.id===id; })[0];
+    if(t && meta) t.textContent = meta.label.replace(/^\S+\s/,'');
+    if(sub && meta) sub.textContent = meta.was||'';
+  }
+  if(uebersicht){
+    chefHomeZahlen();
+    document.querySelectorAll('.chef-pane').forEach(function(p){ p.style.display='none'; });
+    if(!keep){ var sa0=document.querySelector('#view-chef .scroll-area'); if(sa0) sa0.scrollTop=0; }
+    return;
+  }
+
   document.querySelectorAll('[data-ctab]').forEach(function(b){
     var on = b.getAttribute('data-ctab')===id;
     b.classList.toggle('on', on);
@@ -8344,6 +8498,15 @@ function verlaufStarten(){
       _schliessenDurchZurueck=true;
       closeAllModals();
       setTimeout(function(){ _schliessenDurchZurueck=false; }, 60);
+      return;
+    }
+    // Im Verwaltungsbereich ist der Weg heraus zuerst die Übersicht.
+    // Sonst springt man aus einem Formular direkt in eine andere Ansicht
+    // und weiss nicht mehr, wo man war.
+    if(currentView==='chef' && _chefTab!==CHEF_START){
+      showChefTab(CHEF_START);
+      verlaufMerken('chef');
+      tick(6);
       return;
     }
     var z=(e.state && e.state.v) || 'home';
@@ -10217,6 +10380,10 @@ function bindActions(){
   if(canManage()){
     var devA=$('devAdd'); if(devA) devA.addEventListener('click',function(){ addDevice(this); });
   }
+
+  // ── Verwaltung: zurück zur Übersicht ──
+  var cb=$('chefBack');
+  if(cb) cb.addEventListener('click',function(){ showChefTab(CHEF_START); tick(8); });
 
   // ── Aufgabe bearbeiten ──
   var teC=$('teClose'); if(teC) teC.addEventListener('click',closeTodoEdit);

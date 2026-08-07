@@ -101,6 +101,7 @@ was sie sehen soll.
 | `test-putzplan.js` | erledigte Einmal-Aufgaben verschwinden nach einem Tag |
 | `test-tausch.js` | Schichttausch in drei Schritten, Nachweise – für alle drei Rollen |
 | `test-oberflaeche.js` | aufklappbare Abschnitte, Sortierung, eigene Tastenkürzel |
+| `test-navigation.js` | Zurück-Geste, Gruppen, Verwaltungs-Übersicht |
 
 ---
 
