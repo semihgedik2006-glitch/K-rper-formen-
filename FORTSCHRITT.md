@@ -15,7 +15,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | 1 | **Navigation** | 🟢 fertig | 1–2 |
 | 2 | **Startseite** | 🟢 fertig | 2–3 |
 | 3 | **Chat** | 🟢 fertig | 4 |
-| 4 | Aufgaben | ⚪ offen | – |
+| 4 | **Aufgaben** | 🟢 fertig | 5 |
 | 5 | Material | ⚪ offen | – |
 | 6 | Geräte | ⚪ offen | – |
 | 7 | Team | ⚪ offen | – |
@@ -296,6 +296,84 @@ fünf Minuten, entfällt der Kopf.
   das Handbuch verspricht ausdrücklich das Gegenteil.
 - **Volltextsuche über den gesamten Verlauf aller Kanäle** — dafür bräuchte
   es einen Suchdienst. Für 14 Studios steht der Aufwand nicht dafür.
+
+---
+
+## Sitzung 5 — 7. August 2026 · Bereich 4 · Aufgaben
+
+Der Bereich, für den die App überhaupt angeschafft wird: nachhalten, dass
+Dinge gemacht werden. Leitfrage: **wie lange dauert es, bis jemand sieht,
+was liegen geblieben ist?**
+
+### Gefundene Probleme
+
+| # | Problem | Schwere | Stand |
+|---|---|---|---|
+| A1 | **Ein Chef musste 571 Pixel scrollen**, bis die erste überfällige Aufgabe im Bild war. Studios waren alphabetisch sortiert — eine überfällige Aufgabe in Seelscheid lag hinter dreizehn Blöcken | 🔴 kritisch | ✅ behoben |
+| A2 | **Der leere Bereich log.** Filter „Für mich" ohne Treffer meldete „Noch keine Aufgaben. Erstelle welche im Chef-Bereich." — obwohl vier existierten | 🔴 hoch | ✅ behoben |
+| A3 | **Die Tagesübersicht duplizierte Startseite und Filterleiste.** „Guten Abend, Lisa 👋 · 2 offen · 1 überfällig" — und 100 Pixel darunter dieselben Filter noch einmal | 🟠 mittel | ✅ behoben |
+| A4 | **„Foto hinzufügen" als Knopf über die volle Breite an JEDER Aufgabe** — 46 Pixel auch an den vielen, die nie eines bekommen | 🟠 mittel | ✅ behoben |
+| A5 | **Werkzeuge 25 × 27 Pixel**, unbeschriftet (✎ ⏰ 🗑) | 🟠 mittel | ✅ behoben |
+| A6 | **„Frist verschieben" fragte per `prompt()`**: „1 = einen Tag später, 7 = eine Woche, 0 = entfernen" — eine Zahl eintippen für drei Möglichkeiten | 🟠 mittel | ✅ behoben |
+| A7 | **Kein Weg, eine Aufgabe anzulegen**, ohne die Liste zu verlassen: Verwaltung → Erstellen → Formular suchen | 🟠 mittel | ✅ behoben |
+| A8 | **Standard-Sortierung kannte keine Dringlichkeit** — allein das Erstellungsdatum entschied | 🟡 klein | ✅ behoben |
+
+### Was gebaut wurde
+
+**A1 — Dringlichkeit bestimmt die Reihenfolge.** Innerhalb eines Studios
+stehen überfällige Aufgaben oben (älteste Frist zuerst). Für die Verwaltung
+rutschen zusätzlich die Studios mit überfälligen Aufgaben nach vorn; alle
+übrigen bleiben alphabetisch, damit sich nur verschiebt, was sich verschieben
+muss.
+Gemessen: **Chef 571 → 225 Pixel, Mitarbeiter 295 → 183.** Auf einem 844er
+Bildschirm heißt das: sichtbar ohne zu scrollen.
+
+**A2 — der leere Bereich sagt die Wahrheit.** „Keine dir zugewiesenen
+Aufgaben — es gibt 4 Aufgaben, tippe auf ‚Alle', um sie zu sehen." Nennt den
+Grund und den Ausweg.
+
+**A3 — die Tagesübersicht ist weg, die Zahlen sind an die Filter gewandert.**
+„Nur offene 3", „Überfällig 1". Ein Ort statt drei, und 112 Pixel mehr für
+die Liste.
+
+**A4/A5 — schlankere Zeilen, Aktionsblatt wie im Chat.** Die Kamera sitzt als
+Symbol in der Fußzeile; Bearbeiten, Frist und Löschen liegen hinter „⋯" in
+einem Blatt mit 48 Pixel hohen, beschrifteten Einträgen. Ein Mitarbeiter
+ohne Foto an der Aufgabe bekommt gar kein „⋯" — dahinter stünde nur die
+Kamera, die eine Zeile darüber schon sichtbar ist.
+Aufgabenhöhen: **271 → 242, 169 → 140, 117 → 112 Pixel.**
+
+**A6 — Frist verschieben ohne Zahlen-Eingabe.** Drei Einträge im Blatt statt
+`prompt()`. Gerechnet wird weiterhin ab heute.
+
+**A7 — „+ Neu" auf der Aufgabenseite**, führt direkt ins Formular und setzt
+den Schreibcursor in den Titel.
+
+### Health Score · Aufgaben
+
+| Kriterium | vorher | jetzt | Begründung |
+|---|---|---|---|
+| UX | 5/10 | **9/10** | Was liegen geblieben ist, steht ohne Scrollen im Bild. Der leere Bereich schickt niemanden mehr in die Irre. |
+| UI | 6/10 | **8/10** | Kürzere Zeilen, beschriftete Aktionen, keine doppelten Filter. |
+| Performance | 7/10 | 7/10 | Unverändert: ein Listener je Studio, alles im Speicher sortiert. |
+| Skalierbarkeit | 5/10 | 6/10 | Die Sortierung nach Dringlichkeit hilft genau dann, wenn es viele Studios sind. Bei mehreren hundert Aufgaben je Studio bräuchte es serverseitige Filter. |
+| Wartbarkeit | 6/10 | **8/10** | Ein Aktionsblatt statt drei einzeln verdrahteter Knöpfe; Leertexte an einer Stelle. |
+| Konsistenz | 6/10 | **9/10** | Dasselbe Blatt-Muster wie im Chat, dieselbe Dringlichkeits-Logik wie auf der Startseite. |
+| Investor | 6/10 | **9/10** | „Zeig mir, was in meinen 14 Studios liegen bleibt" ist in einem Blick beantwortet. |
+| Kaufwahrscheinlichkeit | 6/10 | **9/10** | Das ist der Bereich, für den bezahlt wird. |
+| Innovationsgrad | 4/10 | 6/10 | Studios nach Dringlichkeit statt nach Alphabet ist ein eigener Gedanke. |
+| Aufwand | — | mittel | rund 220 Zeilen, davon 70 gelöscht |
+
+### Bewusst NICHT gebaut
+
+- **Aufgaben per Ziehen umsortieren** — die Reihenfolge ergibt sich aus Frist
+  und Dringlichkeit. Eine von Hand gesetzte Reihenfolge müsste gespeichert,
+  zwischen Personen abgeglichen und bei jeder neuen Aufgabe gepflegt werden.
+- **Unteraufgaben mit eigener Frist** — dafür gibt es Teilschritte. Eine
+  zweite Ebene mit eigenen Fristen macht aus einer To-do-Liste ein
+  Projektwerkzeug, das in einem Studio niemand pflegt.
+- **Kommentare an Aufgaben** — dafür ist der Chat da, und zwar der des
+  Studios. Eine zweite Kommentarspur würde nur seltener gelesen.
 
 ---
 

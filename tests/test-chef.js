@@ -42,7 +42,10 @@ const SP = process.env.SP || __dirname;
 
   // ── Rückgängig nach Löschen ──
   await page.evaluate(() => { window.confirm = () => true; });
-  await page.evaluate(() => document.querySelector('.todo .t-del').click());
+  // Löschen liegt jetzt im Aktionsblatt der Aufgabe
+  await page.evaluate(() => document.querySelector('.todo .t-mehr').click());
+  await page.waitForTimeout(400);
+  await page.evaluate(() => document.querySelector('[data-tba="loeschen"]').click());
   await page.waitForTimeout(700);
   const undo = await page.evaluate(() => ({
     sichtbar: document.getElementById('undoBar').classList.contains('show'),

@@ -223,17 +223,42 @@ dazu („☺" für Reagieren, „↪" für Weiterleiten).
 - **Rückgängig-Leiste** erscheint kurz nach jeder Änderung.
 - **Teilschritte** – bis zu 20 je Aufgabe, einzeln abhakbar, mit
   Fortschrittsbalken.
-- **Foto anhängen** als Nachweis.
+- **Foto anhängen** als Nachweis – die Kamera steht in der Fußzeile der
+  Aufgabe.
 - **Dokument öffnen**, wenn die Aufgabe aus einem Dokument entstanden ist.
 - Erledigte verschwinden nach etwa 3 Stunden ins Archiv.
 
+### Reihenfolge
+- **Überfälliges steht oben.** In der Standard-Sortierung kommen zuerst die
+  überfälligen Aufgaben (die mit der ältesten Frist zuerst), dann der Rest,
+  dann das Erledigte.
+- Für **L C**: **Studios mit überfälligen Aufgaben rutschen nach vorn**, alle
+  übrigen bleiben alphabetisch. Vorher lag eine überfällige Aufgabe in
+  Seelscheid hinter dreizehn Studio-Blöcken.
+
 ### Filtern und finden
-- **Filter**: Alle · Nur offene · Überfällig · Für mich.
+- **Filter**: Alle · Nur offene · Überfällig · Für mich. **An jedem Filter
+  steht die Zahl**, wie viele Aufgaben er zeigen würde.
 - **Suchfeld** innerhalb der Aufgaben.
-- **Sortierung**: nach Fälligkeit, nach Erstellung, nach Name.
-- **Heute-Karte** oben mit Schnellsprüngen.
+- **Sortierung**: Standard (Dringlichkeit), nach Fälligkeit, nach Name,
+  nach Erstellung.
+- Findet ein Filter nichts, sagt der Hinweis **warum** und wie man wieder
+  herauskommt – nicht „es gibt keine Aufgaben", wenn es welche gibt.
+
+### An einer Aufgabe (**L C**)
+
+Ein Tipp auf **⋯** öffnet ein Blatt von unten mit beschrifteten Einträgen:
+
+- **Bearbeiten** – Titel, Beschreibung, Frist, Zuweisung, Teilschritte.
+  Unveränderte Teilschritte behalten ihr Häkchen.
+- **Frist: einen Tag später** · **eine Woche später** · **Frist entfernen**.
+  Gerechnet wird ab heute, nicht ab der alten Frist – sonst bliebe sie
+  überfällig.
+- **Foto ersetzen**, wenn schon eines dranhängt.
+- **Löschen** – landet im Papierkorb.
 
 ### Anlegen (**L C**)
+- **„+ Neu"** oben rechts auf der Aufgabenseite führt direkt ins Formular.
 - Titel, Beschreibung, **mehrere Studios gleichzeitig** oder alle.
 - **Fällig bis** – Datum, danach gilt sie als überfällig.
 - **Zuweisen** an eine bestimmte Person.
@@ -242,8 +267,6 @@ dazu („☺" für Reagieren, „↪" für Weiterleiten).
 - **Teilschritte** – eine Zeile je Schritt.
 - **Foto** direkt beim Anlegen.
 - **Vorlagen** – häufige Aufgaben speichern und mit einem Tipp einsetzen.
-- **Frist verschieben** (⏰) an einer bestehenden Aufgabe.
-- **Löschen** – landet im Papierkorb.
 
 ---
 

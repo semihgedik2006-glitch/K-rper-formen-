@@ -45,7 +45,10 @@ const SP = process.env.SP || __dirname;
   await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
   await page.waitForTimeout(450);
   const st = await page.$('[data-subview="todos"]'); if (st) { await st.click(); await page.waitForTimeout(600); }
-  await page.evaluate(() => document.querySelector('.todo .t-del').click());
+  // Löschen liegt jetzt im Aktionsblatt der Aufgabe
+  await page.evaluate(() => document.querySelector('.todo .t-mehr').click());
+  await page.waitForTimeout(400);
+  await page.evaluate(() => document.querySelector('[data-tba="loeschen"]').click());
   await page.waitForTimeout(900);
   console.log('BEIM LÖSCHEN in den Papierkorb geschrieben:', await page.evaluate(() =>
     (window.__trashWrites || []).map(w => ({ col: w.col, sk: w.sk, titel: w.data && w.data.title, von: w.deletedBy }))));
