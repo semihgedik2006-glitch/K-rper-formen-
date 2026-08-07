@@ -1089,13 +1089,16 @@ html{font-size:var(--fs,100%)}
 .home-tile.ok .hn{color:#34D399}
 .home-tile.muted .hn{color:var(--text-3)}
 
-.alert-bar{display:flex;align-items:center;gap:11px;padding:13px 15px;border-radius:14px;
-  margin-bottom:11px;cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
+.alert-bar{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:14px;
+  margin-bottom:8px;cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
   background:rgba(251,78,109,.12);border:1px solid rgba(251,78,109,.4)}
 .alert-bar.warn{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.42)}
 .alert-bar.pin{background:rgba(56,189,248,.11);border-color:rgba(56,189,248,.4)}
 .alert-bar .ab-ico{font-size:1.2rem;flex-shrink:0}
-.alert-bar .ab-t{flex:1;min-width:0;font-size:.9rem;font-weight:600}
+.alert-bar .ab-t{flex:1;min-width:0;font-size:.9rem;font-weight:600;
+  /* Eine Zeile statt zwei: vier Hinweise haben vorher den ganzen ersten
+     Bildschirm gefüllt, die Zahlen darunter sah man erst nach dem Scrollen. */
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .alert-bar .ab-go{font-size:.8rem;color:var(--text-3);white-space:nowrap}
 
 .quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:9px}
@@ -1310,6 +1313,34 @@ html{font-size:var(--fs,100%)}
 .shift-day-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px}
 .shift-day-h b{font-family:var(--font-head);font-size:1rem}
 .shift-day-h span{font-size:.75rem;color:var(--text-3)}
+.cert-item{display:flex;gap:11px;align-items:center;padding:11px 13px;background:var(--bg-soft);
+  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:8px}
+.cert-ico{font-size:1.15rem;flex-shrink:0}
+.cert-body{flex:1;min-width:0}
+.cert-title{font-family:var(--font-head);font-weight:700;font-size:.98rem}
+.cert-who{font-weight:500;color:var(--text-2);font-size:.86rem}
+.cert-meta{margin-top:3px;font-size:.75rem;color:var(--text-3)}
+.cert-st{flex-shrink:0;font-size:.72rem;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.cert-st.ok{background:rgba(0,224,110,.14);color:var(--accent-d)}
+.cert-st.bald{background:rgba(251,191,36,.16);color:var(--warm)}
+.cert-st.weg{background:rgba(251,78,109,.16);color:var(--danger)}
+.cert-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:5px;border-radius:8px;flex-shrink:0}
+.cert-del:hover{color:var(--danger);background:rgba(251,78,109,.12)}
+.tausch-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin:-2px 0 7px 9px;padding:6px 9px;border-radius:9px;
+  background:var(--bg-soft);border:1px solid var(--line)}
+.tausch-row.offen{background:rgba(251,191,36,.11);border-color:rgba(251,191,36,.4)}
+.tausch-row.zugesagt{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.38)}
+/* Der Text bekommt eine eigene Zeile. Teilt er sie sich mit zwei Knöpfen,
+   bleiben auf einem 390-Pixel-Handy rund 100 Pixel übrig – dann steht dort
+   ein Wort pro Zeile. */
+.tausch-txt{flex:1 1 100%;min-width:0;font-size:.78rem;color:var(--text-2)}
+.tausch-btn{background:none;border:1.5px solid var(--line-2);border-radius:999px;
+  padding:4px 11px;font-size:.74rem;font-weight:700;color:var(--text);cursor:pointer;
+  white-space:nowrap;transition:border-color .2s,color .2s}
+.tausch-btn:hover{border-color:var(--accent);color:var(--accent-d)}
+.tausch-btn.ok{border-color:var(--accent);color:var(--accent-d)}
+.tausch-btn.ok:hover{background:var(--accent-glow)}
 .shift-entry{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;
   background:var(--bg-2);margin-bottom:5px;font-size:.9rem}
 .shift-time{font-weight:800;color:var(--accent);white-space:nowrap;font-size:.84rem}
@@ -1318,6 +1349,17 @@ html{font-size:var(--fs,100%)}
 .shift-x{background:none;border:none;color:var(--text-3);cursor:pointer;padding:2px 6px;border-radius:6px}
 .shift-x:hover{color:var(--danger)}
 .shift-empty{font-size:.84rem;color:var(--text-3);padding:3px 2px}
+/* Ein Tag ohne Einteilung braucht keine volle Karte. Vorher scrollte man an
+   fünf gleich grossen leeren Kästen vorbei, bevor heute kam. */
+.shift-day.leer{padding:7px 13px;opacity:.72}
+.shift-day.leer .shift-day-h{margin-bottom:0}
+.shift-day.leer .shift-day-h b{font-size:.88rem;font-weight:600}
+.shift-day.leer .shift-empty{display:none}
+.shift-day.leer .shift-day-h::after{content:'—';color:var(--text-3);font-size:.8rem}
+.shift-sum{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.shift-sum span{font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:999px;
+  background:var(--bg-soft);border:1px solid var(--line);color:var(--text-2)}
+.shift-sum span.tausch{background:rgba(251,191,36,.14);border-color:rgba(251,191,36,.4);color:var(--warm)}
 .abs-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
   font-size:.78rem;font-weight:700;background:rgba(251,191,36,.15);color:var(--warm);
   border:1px solid rgba(251,191,36,.35);margin:2px 4px 2px 0}
@@ -2329,6 +2371,38 @@ var FIREBASE_CONFIG = {
           </div>
 
           <!-- ── Reiter 4: Auswertung ── -->
+          <!-- Nachweise: Erste Hilfe, Trainerlizenz, EMS-Einweisung.
+               Nur der Chef sieht diesen Bereich; die Sicherheitsregeln lassen
+               sonst nur die betroffene Person an ihre eigenen Nachweise. -->
+          <div class="chef-pane" data-cpane="nachweise" style="display:none">
+            <div class="card">
+              <h3>⏳ Läuft demnächst ab</h3>
+              <p class="hint">60 und 14 Tage vorher bekommen die Person und du eine Meldung.
+                Abgelaufene stehen ganz oben.</p>
+              <div id="certSoon" style="margin-top:10px"></div>
+            </div>
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <h3>📜 Alle Nachweise</h3>
+                <span class="todo-count" id="certCount"></span>
+              </div>
+              <div id="certList" style="margin-top:8px"></div>
+            </div>
+            <div class="card">
+              <h3>➕ Nachweis eintragen</h3>
+              <p class="hint">Sieht nur die betroffene Person und du – nicht die Studio-Leitung.</p>
+              <div class="field"><label for="certPerson">Person</label>
+                <select class="inp" id="certPerson"></select></div>
+              <div class="field"><label for="certArt">Art</label>
+                <select class="inp" id="certArt"></select></div>
+              <div class="field" id="certOwnWrap" style="display:none"><label for="certOwn">Bezeichnung</label>
+                <input class="inp" id="certOwn" type="text" maxlength="80" placeholder="z. B. Ernährungsberater-Schein" /></div>
+              <div class="field"><label for="certBis">Gültig bis</label>
+                <input class="inp" id="certBis" type="date" /></div>
+              <button class="btn btn-primary btn-sm" id="certAdd">Nachweis speichern</button>
+            </div>
+          </div>
+
           <div class="chef-pane" data-cpane="report" style="display:none">
           <div class="card">
             <h3>📈 Bericht</h3>
@@ -2474,6 +2548,7 @@ var FIREBASE_CONFIG = {
       <button class="pm-tab on" data-pmtab="profil">👤 Profil</button>
       <button class="pm-tab" data-pmtab="aussehen">🎨 Aussehen</button>
       <button class="pm-tab" data-pmtab="melden">🔔 Meldungen</button>
+      <button class="pm-tab" data-pmtab="nachweise">📜 Nachweise</button>
     </div>
     <div id="pmPaneProfil">
     <div style="text-align:center;margin-bottom:14px">
@@ -2513,6 +2588,11 @@ var FIREBASE_CONFIG = {
 
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Hell / Dunkel</label>
       <div class="opt-grid" id="thOpts"></div>
+    </div>
+    <div id="pmPaneNachweise" style="display:none">
+      <p class="hint" style="margin:2px 0 14px">Deine Nachweise und wie lange sie noch gelten.
+        Eintragen kann sie nur der Chef – wenn etwas fehlt oder falsch ist, sag ihm Bescheid.</p>
+      <div id="pmCerts"></div>
     </div>
     <div id="pmPaneMelden" style="display:none">
       <p class="hint" style="margin:2px 0 14px">Gilt nur für dieses Gerät. Auf dem Handy
@@ -4045,6 +4125,7 @@ function showApp(){
   }
   listenInventoryAll();                  // jede Rolle: fuer den Material-Hinweis
   if(canManage()){ listenEmployees(); listenTrash(); }
+  if(isChef()) listenCerts();
   if(isChef()){
     listenChefs();
     buildEmpStudios();
@@ -4918,6 +4999,7 @@ function stopListeners(){
   if(_chefUnsub){ _chefUnsub(); _chefUnsub=null; }
   if(_trashUnsub){ _trashUnsub(); _trashUnsub=null; }
   if(_tplUnsub){ _tplUnsub(); _tplUnsub=null; }
+  if(_certUnsub){ _certUnsub(); _certUnsub=null; }
   if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
   if(_devUnsub){ _devUnsub(); _devUnsub=null; }
@@ -4941,7 +5023,7 @@ function stopListeners(){
   _ppTasks=[]; _ppNotes=[]; _matItems=[];
   _devices=[]; _devLog=[]; _devOpenId=null; _pendingDevPhoto=null;
   _chanLast={}; _chanList=[];
-  _allUsers=[]; _employees=[]; _invAll={};
+  _allUsers=[]; _employees=[]; _invAll={}; _certs=[];
 }
 
 /* Chat: wechselt bei Kanalwechsel */
@@ -5485,13 +5567,15 @@ function renderShifts(){
       .sort(function(a,b){ return (a.from||'').localeCompare(b.from||''); });
     // Abwesenheiten, die diesen Tag berühren
     var abw=_absences.filter(function(a){ return a.from<=key && a.to>=key; });
-    html+='<div class="shift-day'+(key===heute?' today':'')+'">'+
+    html+='<div class="shift-day'+(key===heute?' today':'')+(tages.length?'':' leer')+
+      '" data-tag="'+key+'">'+
       '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+d.toLocaleDateString('de-DE',o)+'</span></div>';
     if(tages.length){
       html+=tages.map(function(x){
         var del = canManage() ? '<button class="shift-x" data-shdel="'+esc(x.id)+'" aria-label="entfernen">✕</button>' : '';
         return '<div class="shift-entry"><span class="shift-time">'+esc(x.from||'')+'–'+esc(x.to||'')+'</span>'+
-          '<span class="shift-name">'+esc(x.name||'')+(x.note?' <span class="shift-note">· '+esc(x.note)+'</span>':'')+'</span>'+del+'</div>';
+          '<span class="shift-name">'+esc(x.name||'')+(x.note?' <span class="shift-note">· '+esc(x.note)+'</span>':'')+'</span>'+del+'</div>'+
+          tauschHTML(x, key);
       }).join('');
     } else {
       html+='<div class="shift-empty">Niemand eingeteilt</div>';
@@ -5504,12 +5588,139 @@ function renderShifts(){
     }
     html+='</div>';
   }
-  box.innerHTML=html;
+  // Kurze Zusammenfassung über der Woche – spart das Durchzählen
+  var wochenSchichten=_shifts.length;
+  var offeneTausche=_shifts.filter(function(x){ return x.tausch==='offen'; }).length;
+  var wartet=_shifts.filter(function(x){ return x.tausch==='zugesagt'; }).length;
+  var sum='<div class="shift-sum">'+
+    '<span>'+wochenSchichten+(wochenSchichten===1?' Schicht':' Schichten')+'</span>'+
+    (offeneTausche?'<span class="tausch">'+offeneTausche+'× wird abgegeben</span>':'')+
+    (wartet?'<span class="tausch">'+wartet+'× wartet auf Bestätigung</span>':'')+
+    '</div>';
+  box.innerHTML=sum+html;
+
+  // Zur heutigen Karte scrollen, wenn die aktuelle Woche gezeigt wird.
+  // Sonst steht man am Sonntagabend immer noch bei Montag.
+  var heuteKarte=box.querySelector('.shift-day.today');
+  if(heuteKarte && heuteKarte.scrollIntoView){
+    setTimeout(function(){
+      heuteKarte.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }, 120);
+  }
   box.querySelectorAll('[data-shdel]').forEach(function(b){
     b.addEventListener('click',function(){
       if(!confirm('Schicht entfernen?')) return;
       db.collection('studios').doc(_teamStudioKey).collection('shifts').doc(b.getAttribute('data-shdel'))
         .delete().catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  bindTauschClicks(box);
+}
+
+/* ── Schichttausch ──
+   Bisher lief das über WhatsApp, und im Dienstplan stand danach die falsche
+   Person. Jetzt in drei Schritten, die alle im Plan sichtbar bleiben:
+
+     1. "Ich kann nicht"  – schreibt die eigene Schicht im Studio aus
+     2. "Ich übernehme"   – ein Kollege sagt zu
+     3. "Bestätigen"      – erst die Leitung ändert wirklich den Plan
+
+   Schritt 3 ist Absicht: sonst stünde im Dienstplan etwas, das niemand
+   verantwortet. Die Sicherheitsregeln erzwingen das – in Schritt 1 und 2
+   dürfen ausschliesslich die Tausch-Felder angefasst werden, niemals wer
+   eingeteilt ist. */
+function tauschHTML(x, tagKey){
+  var meine = x.uid===session.uid;
+  var vergangen = tagKey < ymd(new Date());
+  // Kein Tausch läuft: nur die eigene, noch nicht vergangene Schicht anbieten
+  if(!x.tausch){
+    if(meine && !vergangen){
+      return '<div class="tausch-row"><button class="tausch-btn" data-tausch-ab="'+esc(x.id)+'">'+
+        '🔄 Ich kann nicht</button></div>';
+    }
+    return '';
+  }
+  if(x.tausch==='offen'){
+    var wer = meine
+      ? '<span class="tausch-txt">Von dir ausgeschrieben – wartet auf jemanden</span>'+
+        '<button class="tausch-btn" data-tausch-zurueck="'+esc(x.id)+'">Zurückziehen</button>'
+      : '<span class="tausch-txt">🔄 Wird abgegeben</span>'+
+        (vergangen ? '' : '<button class="tausch-btn ok" data-tausch-nehmen="'+esc(x.id)+'">Ich übernehme</button>');
+    return '<div class="tausch-row offen">'+wer+'</div>';
+  }
+  if(x.tausch==='zugesagt'){
+    var neu=(x.tauschNeu&&x.tauschNeu.name)||'jemand';
+    var txt='<span class="tausch-txt">🔄 '+esc(neu)+' übernimmt – wartet auf die Leitung</span>';
+    var knopf = canManage()
+      ? '<button class="tausch-btn ok" data-tausch-ja="'+esc(x.id)+'">Bestätigen</button>'+
+        '<button class="tausch-btn" data-tausch-nein="'+esc(x.id)+'">Ablehnen</button>'
+      : '';
+    return '<div class="tausch-row zugesagt">'+txt+knopf+'</div>';
+  }
+  return '';
+}
+
+function shiftById(id){
+  for(var i=0;i<_shifts.length;i++){ if(_shifts[i].id===id) return _shifts[i]; }
+  return null;
+}
+function shiftRef(id){
+  return db.collection('studios').doc(_teamStudioKey).collection('shifts').doc(id);
+}
+
+function bindTauschClicks(box){
+  box.querySelectorAll('[data-tausch-ab]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-tausch-ab');
+      if(!confirm('Schicht zum Tausch ausschreiben?\n\nDeine Kollegen im Studio sehen sie dann und können sie übernehmen. Der Plan ändert sich erst, wenn die Leitung bestätigt.')) return;
+      shiftRef(id).update({ tausch:'offen', tauschVon:session.uid, tauschTs:Date.now() })
+        .then(function(){ toast('Ausgeschrieben – die Kollegen sehen es jetzt ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  box.querySelectorAll('[data-tausch-zurueck]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var fv=firebase.firestore.FieldValue;
+      shiftRef(b.getAttribute('data-tausch-zurueck'))
+        .update({ tausch:fv.delete(), tauschVon:fv.delete(), tauschTs:Date.now() })
+        .then(function(){ toast('Zurückgezogen'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  box.querySelectorAll('[data-tausch-nehmen]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var x=shiftById(b.getAttribute('data-tausch-nehmen')); if(!x) return;
+      if(!confirm('Diese Schicht übernehmen?\n\n'+x.date+' · '+(x.from||'')+'–'+(x.to||'')+
+                  '\n\nDie Leitung muss noch bestätigen.')) return;
+      shiftRef(x.id).update({
+        tausch:'zugesagt',
+        tauschNeu:{ uid:session.uid, name:session.name },
+        tauschTs:Date.now()
+      }).then(function(){ toast('Zugesagt – die Leitung bestätigt noch ✓'); tick(12); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  box.querySelectorAll('[data-tausch-ja]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var x=shiftById(b.getAttribute('data-tausch-ja')); if(!x || !x.tauschNeu) return;
+      var fv=firebase.firestore.FieldValue;
+      shiftRef(x.id).update({
+        uid:x.tauschNeu.uid, name:x.tauschNeu.name,
+        // Wer ursprünglich eingeteilt war, bleibt sichtbar – sonst liesse
+        // sich später nicht mehr nachvollziehen, wer getauscht hat
+        getauschtVon:x.name||'', getauschtAm:Date.now(), getauschtDurch:session.name,
+        tausch:fv.delete(), tauschVon:fv.delete(), tauschNeu:fv.delete()
+      }).then(function(){ toast('Tausch bestätigt – der Plan ist geändert ✓'); tick(14); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  box.querySelectorAll('[data-tausch-nein]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var fv=firebase.firestore.FieldValue;
+      shiftRef(b.getAttribute('data-tausch-nein'))
+        .update({ tausch:fv.delete(), tauschVon:fv.delete(), tauschNeu:fv.delete() })
+        .then(function(){ toast('Abgelehnt – die Schicht bleibt wie sie war'); })
+        .catch(function(e){ toast(errMsg(e),true); });
     });
   });
 }
@@ -5704,6 +5915,12 @@ function renderHome(){
     if(ueber) alerts.push({k:'',i:'⚠️',t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
     if(matArtikel) alerts.push({k:' warn',i:'📦',t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),v:'material'});
     if(infoNeu) alerts.push({k:' warn',i:'📣',t:infoNeu+(infoNeu===1?' neue Info':' neue Infos')+' von der Leitung',v:'ann'});
+    // Höchstens drei Hinweise. Wer sieben sieht, liest keinen davon.
+    var rest=alerts.length-3;
+    if(rest>0){
+      alerts=alerts.slice(0,3);
+      alerts.push({k:'',i:'•',t:'und '+rest+' weitere'+(rest===1?'r Hinweis':' Hinweise'),v:'todos'});
+    }
     al.innerHTML=alerts.map(function(a){
       return '<div class="alert-bar'+a.k+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+'>'+
         '<span class="ab-ico">'+a.i+'</span><span class="ab-t">'+esc(a.t)+'</span>'+
@@ -6474,6 +6691,7 @@ var CHEFTABS=[
   {id:'ueberblick', label:'📊 Überblick'},
   {id:'erstellen',  label:'✏️ Erstellen'},
   {id:'team',       label:'👥 Team', chefOnly:true},
+  {id:'nachweise',  label:'📜 Nachweise', chefOnly:true},
   {id:'report',     label:'📈 Auswertung'},
   {id:'system',     label:'⚙️ System'}
 ];
@@ -6505,6 +6723,7 @@ function showChefTab(id, keep){
     p.style.display = (p.getAttribute('data-cpane')===id) ? '' : 'none';
   });
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
+  if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
   if(id==='system'){ renderSysInfo(); renderTrash(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
@@ -7758,6 +7977,172 @@ function deleteDevice(){
 }
 
 /* ============================================================
+   NACHWEISE (Erste Hilfe, Trainerlizenz, EMS-Einweisung)
+
+   Warum getrennt von allem anderen: das sind Qualifikationsdaten. Sie sind
+   heikler als ein Putzplan, deshalb sehen sie nur die betroffene Person und
+   der Chef – die Studio-Leitung ausdrücklich nicht. Erzwungen wird das in
+   den Sicherheitsregeln, nicht hier.
+
+   Der Nutzen: Erste-Hilfe-Kurs, Trainerlizenz und EMS-Einweisung nach
+   Strahlenschutzverordnung haben je ein eigenes Ablaufdatum. Ohne
+   Erinnerung fällt das erst auf, wenn es zu spät ist.
+   ============================================================ */
+var CERT_ARTEN=[
+  {id:'ersthelfer', name:'Erste-Hilfe-Kurs',       ico:'🚑', monate:24},
+  {id:'trainer',    name:'Trainerlizenz',          ico:'🏋️', monate:24},
+  {id:'ems',        name:'EMS-Einweisung',         ico:'⚡', monate:24},
+  {id:'hygiene',    name:'Hygieneschulung',        ico:'🧼', monate:12},
+  {id:'brandschutz',name:'Brandschutzhelfer',      ico:'🧯', monate:36},
+  {id:'sonstiges',  name:'Sonstiges',              ico:'📄', monate:0}
+];
+function certArt(id){
+  for(var i=0;i<CERT_ARTEN.length;i++){ if(CERT_ARTEN[i].id===id) return CERT_ARTEN[i]; }
+  return {id:id, name:id||'Nachweis', ico:'📄'};
+}
+/* Wie viele Tage sind es noch? Negativ = schon abgelaufen. */
+function certTage(c){
+  if(!c.bis) return null;
+  var heute=new Date(); heute.setHours(0,0,0,0);
+  return Math.round((new Date(c.bis+'T00:00:00').getTime()-heute.getTime())/86400000);
+}
+function certStufe(tage){
+  if(tage===null) return {cls:'', txt:'ohne Ablauf'};
+  if(tage<0)   return {cls:'weg',  txt:'abgelaufen seit '+Math.abs(tage)+' Tagen'};
+  if(tage<=14) return {cls:'weg',  txt:'nur noch '+tage+' Tage'};
+  if(tage<=60) return {cls:'bald', txt:'noch '+tage+' Tage'};
+  return {cls:'ok', txt:'noch '+tage+' Tage'};
+}
+
+var _certs=[], _certUnsub=null;
+function listenCerts(){
+  if(!isChef()) return;
+  if(_certUnsub){ _certUnsub(); _certUnsub=null; }
+  _certUnsub=db.collection('certificates').onSnapshot(function(snap){
+    _certs=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+    renderCerts();
+  }, function(e){ console.warn('Nachweise:',e.message); });
+}
+
+function buildCertSelects(){
+  var pers=$('certPerson');
+  if(pers){
+    var liste=_allUsers.slice().sort(function(a,b){
+      return String(a.name||'').localeCompare(String(b.name||''),'de');
+    });
+    pers.innerHTML=liste.map(function(u){
+      return '<option value="'+esc(u.uid)+'">'+esc(u.name||u.email||'?')+'</option>';
+    }).join('');
+  }
+  var art=$('certArt');
+  if(art && !art.options.length){
+    art.innerHTML=CERT_ARTEN.map(function(a){
+      return '<option value="'+esc(a.id)+'">'+a.ico+' '+esc(a.name)+'</option>';
+    }).join('');
+    art.addEventListener('change',function(){
+      var w=$('certOwnWrap'); if(w) w.style.display = art.value==='sonstiges' ? '' : 'none';
+      // Vorschlag fürs Ablaufdatum: spart Tippen und Rechnen
+      var m=certArt(art.value).monate;
+      var bis=$('certBis');
+      if(m && bis && !bis.value){
+        var d=new Date(); d.setMonth(d.getMonth()+m);
+        bis.value=ymd(d);
+      }
+    });
+  }
+}
+
+function certZeile(c, mitName){
+  var tage=certTage(c), st=certStufe(tage);
+  var a=certArt(c.art);
+  var titel=(c.art==='sonstiges' && c.bez) ? c.bez : a.name;
+  var loeschen = isChef()
+    ? '<button class="cert-del" data-certdel="'+esc(c.id)+'" aria-label="entfernen">✕</button>' : '';
+  return '<div class="cert-item">'+
+    '<span class="cert-ico">'+a.ico+'</span>'+
+    '<div class="cert-body"><div class="cert-title">'+esc(titel)+
+      (mitName?' <span class="cert-who">· '+esc(c.name||'')+'</span>':'')+'</div>'+
+    '<div class="cert-meta">'+(c.bis?('gültig bis '+new Date(c.bis+'T00:00:00').toLocaleDateString('de-DE')):'kein Ablaufdatum')+'</div></div>'+
+    '<span class="cert-st '+st.cls+'">'+esc(st.txt)+'</span>'+loeschen+'</div>';
+}
+
+function renderCerts(){
+  var soon=$('certSoon'), box=$('certList'), cnt=$('certCount');
+  if(!box) return;
+  buildCertSelects();
+
+  var sortiert=_certs.slice().sort(function(a,b){
+    var ta=certTage(a), tb=certTage(b);
+    if(ta===null) return 1; if(tb===null) return -1;
+    return ta-tb;
+  });
+  if(cnt) cnt.textContent = sortiert.length ? sortiert.length+(sortiert.length===1?' Nachweis':' Nachweise') : '';
+
+  if(soon){
+    var bald=sortiert.filter(function(c){ var t=certTage(c); return t!==null && t<=60; });
+    soon.innerHTML = bald.length
+      ? bald.map(function(c){ return certZeile(c, true); }).join('')
+      : emptyHTML('Alles gültig','Kein Nachweis läuft in den nächsten 60 Tagen ab.');
+  }
+  box.innerHTML = sortiert.length
+    ? sortiert.map(function(c){ return certZeile(c, true); }).join('')
+    : emptyHTML('Noch keine Nachweise','Trage unten den ersten ein.');
+  bindCertDelete(document.querySelector('[data-cpane="nachweise"]'));
+}
+
+function bindCertDelete(root){
+  if(!root) return;
+  root.querySelectorAll('[data-certdel]').forEach(function(b){
+    b.addEventListener('click',function(){
+      if(!confirm('Nachweis entfernen?')) return;
+      db.collection('certificates').doc(b.getAttribute('data-certdel')).delete()
+        .then(function(){ toast('Entfernt'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
+
+function addCert(btn){
+  var uid=$('certPerson').value;
+  if(!uid){ toast('Bitte eine Person wählen.',true); return; }
+  var art=$('certArt').value;
+  var bez=($('certOwn')?$('certOwn').value:'').trim();
+  if(art==='sonstiges' && !bez){ toast('Bitte eine Bezeichnung eingeben.',true); return; }
+  var bis=$('certBis').value;
+  if(!bis){ toast('Bitte ein Ablaufdatum angeben.',true); return; }
+  var u=_userById(uid)||{};
+  withBusy(btn,function(){
+    return db.collection('certificates').add({
+      uid:uid, name:u.name||'', art:art, bez:bez, bis:bis,
+      erfasstVon:session.name, ts:Date.now()
+    }).then(function(){
+      $('certOwn').value=''; $('certBis').value='';
+      toast('Nachweis gespeichert ✓');
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
+/* Die eigenen Nachweise im Profil-Fenster. Einmal laden, kein Dauer-Listener –
+   das ändert sich höchstens ein paarmal im Jahr. */
+function loadMyCerts(){
+  var box=$('pmCerts'); if(!box) return;
+  box.innerHTML='<p class="hint">Wird geladen …</p>';
+  db.collection('certificates').where('uid','==',session.uid).get()
+    .then(function(snap){
+      var list=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+        .sort(function(a,b){
+          var ta=certTage(a), tb=certTage(b);
+          if(ta===null) return 1; if(tb===null) return -1;
+          return ta-tb;
+        });
+      box.innerHTML = list.length
+        ? list.map(function(c){ return certZeile(c, false); }).join('')
+        : emptyHTML('Noch nichts eingetragen','Der Chef trägt hier Erste-Hilfe-Kurs, Trainerlizenz und Einweisungen ein.');
+    })
+    .catch(function(e){ box.innerHTML='<p class="hint">Konnte nicht geladen werden: '+esc(errMsg(e))+'</p>'; });
+}
+
+/* ============================================================
    WOCHEN-ARCHIV (nur Chef)
    Sichert einmal pro Kalenderwoche den Stand von Material und Putzplan
    aller Studios. Im Archiv kann man je Woche zwei Excel-Dateien laden.
@@ -8489,15 +8874,18 @@ function openProfile(){
 /* Zwischen den Reitern "Profil" und "Aussehen" umschalten */
 function switchPmTab(which){
   var p=$('pmPaneProfil'), a=$('pmPaneAussehen'),
-      save=$('pmSave'), err=$('pmErr'), note=$('pmAppearanceNote'), m=$('pmPaneMelden');
-  var isProfil = which==='profil' || (which!=='aussehen' && which!=='melden');
+      save=$('pmSave'), err=$('pmErr'), note=$('pmAppearanceNote'),
+      m=$('pmPaneMelden'), nw=$('pmPaneNachweise');
+  var isProfil = which==='profil' || (which!=='aussehen' && which!=='melden' && which!=='nachweise');
   if(p) p.style.display = isProfil?'':'none';
   if(a) a.style.display = which==='aussehen'?'':'none';
   if(m) m.style.display = which==='melden'?'':'none';
+  if(nw) nw.style.display = which==='nachweise'?'':'none';
   if(save) save.style.display = isProfil?'':'none';
   if(err) err.style.display = isProfil?'':'none';
   if(note) note.style.display = which==='aussehen'?'block':'none';
   if(which==='melden') buildNotifyOptions();
+  if(which==='nachweise') loadMyCerts();
   document.querySelectorAll('[data-pmtab]').forEach(function(b){
     b.classList.toggle('on', b.getAttribute('data-pmtab')===(isProfil?'profil':which));
   });
@@ -9160,6 +9548,9 @@ function bindActions(){
   if(canManage()){
     var devA=$('devAdd'); if(devA) devA.addEventListener('click',function(){ addDevice(this); });
   }
+
+  // ── Nachweise (nur Chef) ──
+  var cA=$('certAdd'); if(cA) cA.addEventListener('click',function(){ addCert(this); });
 
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){

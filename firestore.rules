@@ -198,6 +198,17 @@ service cloud.firestore {
       allow create, update, delete: if isChef() || isLeiter();
     }
 
+    // ── Nachweise (Erste Hilfe, Trainerlizenz, EMS-Einweisung) ──
+    // Qualifikationsdaten sind heikler als Putzplaene. Deshalb sehen sie
+    // NUR die betroffene Person und der Chef - die Studio-Leitung
+    // ausdruecklich nicht. Eintragen darf allein der Chef; er hat die
+    // Unterlagen und haftet dafuer, dass sie stimmen.
+    match /certificates/{certId} {
+      allow read: if isChef()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create, update, delete: if isChef();
+    }
+
     // ── Konfiguration (z. B. Onboarding-Checkliste) ──
     match /config/{doc} {
       allow read: if signedIn();
@@ -290,7 +301,24 @@ service cloud.firestore {
     match /studios/{studioKey}/shifts/{shiftId} {
       allow read: if signedIn();
       // Einteilen darf nur die Verwaltung (Chef bzw. zuständiger Leiter)
-      allow create, update, delete: if manages(studioKey);
+      allow create, delete: if manages(studioKey);
+      // Beim Tausch dürfen Mitarbeiter mitwirken – aber ausschliesslich an
+      // den Tausch-Feldern. WER eingeteilt ist (uid, name), ändert nur die
+      // Verwaltung beim Bestätigen. Sonst könnte sich jemand selbst aus dem
+      // Plan schreiben oder einen anderen hineinsetzen.
+      allow update: if manages(studioKey)
+        // 1. Die eigene Schicht ausschreiben oder wieder zurückziehen
+        || (signedIn()
+            && resource.data.uid == request.auth.uid
+            && request.resource.data.diff(resource.data)
+                 .affectedKeys().hasOnly(['tausch','tauschVon','tauschTs']))
+        // 2. Eine ausgeschriebene Schicht übernehmen – nur für sich selbst
+        || (signedIn()
+            && resource.data.get('tausch', '') == 'offen'
+            && request.resource.data.diff(resource.data)
+                 .affectedKeys().hasOnly(['tausch','tauschNeu','tauschTs'])
+            && request.resource.data.tausch == 'zugesagt'
+            && request.resource.data.tauschNeu.uid == request.auth.uid);
     }
 
     // ── Abwesenheiten (Urlaub / Krank / Frei) ──
