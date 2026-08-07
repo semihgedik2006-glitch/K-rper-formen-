@@ -293,19 +293,32 @@ Ein Tipp auf **⋯** öffnet ein Blatt von unten mit beschrifteten Einträgen:
 - **Bestand je Studio**, oben umschaltbar.
 - **19 Standardartikel** sind vorgegeben (Manschetten, Gurte, Westen, Kabel,
   Unterwäsche in fünf Größen …) und tauchen automatisch überall auf.
-- **Eigene Artikel** hinzufügen und entfernen.
+- **Eigene Artikel** hinzufügen (jeder) und entfernen (**L C**).
 - Drei Spalten: **Soll** (wie viel da sein sollte, nur **L C**), **Ist**
   (wie viel wirklich da ist, jeder) und **Fehlt** (rechnet die App).
+  Die Spaltenköpfe **bleiben beim Scrollen oben stehen** – bei 22 Artikeln
+  weiß man sonst nicht mehr, welche Spalte welche ist.
+- **Zeilen, in denen etwas fehlt, sind getönt** – beim Durchscrollen sieht
+  man von weitem, wo es hakt.
 - **Automatisches Speichern** kurz nach der Eingabe. Beim Studio-Wechsel
   wird vorher gespeichert – zum richtigen Studio.
 - **Suchfeld** und Zähler.
-- **Warnhinweis**, wenn etwas fehlt.
+- **Nachbestell-Hinweis** über der Liste: „⚠️ 3 Artikel fehlen" mit
+  **„nur diese zeigen"** – ein Tipp blendet alles Vollständige aus, ein
+  zweiter zeigt wieder alles.
+- **Die Reihenfolge der Artikel bleibt, wie sie ist.** Sie bildet den Weg
+  durchs Lager ab; wer zählt, geht die Liste von oben nach unten durch.
+  Deshalb wird hier – anders als bei den Aufgaben – nicht nach Dringlichkeit
+  umsortiert, sondern gefiltert.
 - **Einkaufsliste** (**L C**) – zählt über alle eigenen Studios zusammen,
   mit Aufteilung je Studio. Zum Drucken, als Excel, in die Zwischenablage
-  oder als fertige **Bestellmail** an den Lieferanten.
+  oder als fertige **Bestellmail** an den Lieferanten. Dort liegt auch der
+  **Excel-Export über alle Studios**.
 - **Verbrauchs-Vorhersage** (**C**) – „reicht noch etwa X Wochen", gerechnet
   aus den echten Wochen-Sicherungen, keine Schätzung.
-- **Excel-Export über alle Studios** (**L C**).
+- **Entfernen fragt nach** und lässt sich acht Sekunden lang rückgängig
+  machen – der Knopf sitzt neben den Zahlenfeldern, in die täglich getippt
+  wird.
 - **Google-Tabelle** wird bei jeder Änderung mitgeführt.
 
 ---
