@@ -486,6 +486,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pm-color{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .15s}
 .pm-color:hover{transform:scale(1.1)}
 .pm-color.sel{border-color:var(--text)}
+#todoEditModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#todoEditModal.show{display:flex}
+#todoEditModal .pm-box{max-height:88vh;overflow:auto}
 #pollModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 #pollModal.show{display:flex}
@@ -849,13 +853,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
 /* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
-#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
+#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
   animation:sheetIn .46s var(--spring)}
 @keyframes sheetIn{
   from{opacity:0;transform:scale(.94) translateY(12px)}
   to{opacity:1;transform:none}
 }
-#profileModal,#devModal,#pollModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
+#profileModal,#devModal,#pollModal,#todoEditModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
 @keyframes fadeBlur{from{opacity:0}to{opacity:1}}
 
 /* ── Menüs auf dem Handy: von unten hereinfahren ──
@@ -863,8 +867,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    der Daumen kommt nicht hin. Deshalb werden Menüs unter 620 px zu Blättern,
    die von unten hereinfahren; oben ein Griff, wie man es von iOS kennt. */
 @media (max-width:620px){
-  #profileModal,#personModal,#devModal,#pollModal{align-items:flex-end;padding:0}
-  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box{
+  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal{align-items:flex-end;padding:0}
+  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box{
     max-width:none;border-radius:22px 22px 0 0;border-bottom:none;
     padding:20px 20px calc(24px + var(--sab));max-height:90vh}
   #profileModal.show .pm-box,#personModal.show .pm-box{
@@ -2704,6 +2708,29 @@ var FIREBASE_CONFIG = {
 </div>
 
 <!-- Profil ansehen (andere) -->
+<!-- Aufgabe nachträglich ändern -->
+<div id="todoEditModal">
+  <div class="pm-box">
+    <button class="lb-close" id="teClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
+    <h3>✎ Aufgabe bearbeiten</h3>
+    <p class="hint" id="teWo"></p>
+    <div class="field"><label for="teTitle">Titel</label>
+      <input class="inp" id="teTitle" type="text" maxlength="120" /></div>
+    <div class="field"><label for="teDesc">Beschreibung</label>
+      <textarea class="inp" id="teDesc" rows="3" maxlength="600"></textarea></div>
+    <div class="row">
+      <div class="field"><label for="teDue">Fällig bis</label>
+        <input class="inp" id="teDue" type="date" /></div>
+      <div class="field"><label for="teAssign">Zuweisen an</label>
+        <select class="inp" id="teAssign"></select></div>
+    </div>
+    <div class="field"><label for="teSteps">Teilschritte (eine Zeile = ein Häkchen)</label>
+      <textarea class="inp" id="teSteps" rows="4" maxlength="1200" placeholder="Geräte abwischen&#10;Gurte prüfen"></textarea>
+      <p class="hint" id="teStepsNote" style="margin:6px 0 0"></p></div>
+    <button class="btn btn-primary btn-sm" id="teSave" style="width:100%">Änderung speichern</button>
+  </div>
+</div>
+
 <!-- Umfrage im Chat starten -->
 <div id="pollModal">
   <div class="pm-box">
@@ -3586,11 +3613,11 @@ function typingSomewhere(){
   return tag==='input' || tag==='textarea' || tag==='select' || el.isContentEditable;
 }
 function anyModalOpen(){
-  return ['profileModal','personModal','devModal','pollModal','fwdModal','keysModal','searchOverlay','lightbox']
+  return ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','searchOverlay','lightbox']
     .some(function(id){ var e=$(id); return e && e.classList.contains('show'); });
 }
 function closeAllModals(){
-  ['profileModal','personModal','devModal','pollModal','fwdModal','keysModal'].forEach(function(id){
+  ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal'].forEach(function(id){
     var e=$(id); if(e) e.classList.remove('show');
   });
   closeSearch();
@@ -4343,6 +4370,7 @@ function showApp(){
   applyRoleVisibility();                    // Chef-eigene Karten für Leiter ausblenden
   bindActions();
   foldAufbauen();
+  verlaufStarten();
   startListeners();
   listenAllUsers();
   listenDmThreads();
@@ -4570,8 +4598,9 @@ function bindShrinkHeaders(){
   });
 }
 
-function showView(id, fromKey){
+function showView(id, fromKey, ausVerlauf){
   currentView=id;
+  if(!ausVerlauf) verlaufMerken(id);
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
   // Untere Leiste: die Gruppe markieren, zu der die Ansicht gehört
   var g=groupOfView(id);
@@ -6613,6 +6642,7 @@ function todoHTML(t,sk,chefView){
     (t.docUrl?'<a class="t-doc" href="'+safeUrl(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+'</div>'+
     photoHtml+'</div>'+
+    (chefView?'<button class="t-snooze" data-tedit="1" title="Bearbeiten" aria-label="Bearbeiten">✎</button>':'')+
     (chefView&&t.due&&!done?'<button class="t-snooze" data-snooze="1" title="Frist verschieben" aria-label="Frist verschieben">⏰</button>':'')+
     (chefView?'<button class="t-del" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>':'')+
     '</div></div>';
@@ -6699,6 +6729,13 @@ function bindTodoClicks(area){
           if(backup){ toTrash('todos', sk, backup); offerUndoTodo(sk, backup); }
         })
         .catch(function(e){ toast(errMsg(e),true); });
+    });
+    // Bearbeiten: Titel, Beschreibung, Frist, Zuweisung, Teilschritte
+    var ed=node.querySelector('[data-tedit]');
+    if(ed) ed.addEventListener('click',function(e){
+      e.stopPropagation();
+      var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
+      if(t) openTodoEdit(t, sk);
     });
     // Frist verschieben: +1 Tag / +1 Woche / Frist entfernen
     var sn=node.querySelector('[data-snooze]');
@@ -8264,6 +8301,165 @@ function deleteDevice(){
   db.collection('studios').doc(_devStudioKey).collection('devices').doc(d.id).delete()
     .then(function(){ closeDeviceModal(); toast('Gerät entfernt'); })
     .catch(function(e){ toast(errMsg(e),true); });
+}
+
+/* ============================================================
+   ZURÜCK-GESTE / BROWSER-ZURÜCK
+
+   Das war der schwerste Fehler in der Navigation: die App hat nie einen
+   Verlaufseintrag angelegt. Wer auf einem Android-Handy die Zurück-Geste
+   benutzte – und das ist dort DIE Geste – landete nicht eine Ansicht
+   zurück, sondern flog aus der App. Bei einer installierten PWA gibt es
+   auch keine sichtbare Zurück-Schaltfläche, mit der man das auffangen
+   könnte.
+
+   Jetzt legt jeder Ansichtswechsel einen Eintrag an, und geöffnete Fenster
+   legen ihren eigenen an. Zurück schliesst deshalb zuerst das Fenster und
+   geht erst danach eine Ansicht zurück – genau so, wie man es von jeder
+   anderen App kennt.
+   ============================================================ */
+var _verlaufBereit=false;
+var _schliessenDurchZurueck=false;
+
+function verlaufMerken(id){
+  if(!_verlaufBereit) return;
+  // Kein zweiter Eintrag für dieselbe Ansicht: sonst muss man zweimal
+  // zurück, um einmal zurückzukommen.
+  var jetzt=history.state;
+  if(jetzt && jetzt.v===id && !jetzt.m) return;
+  try{ history.pushState({v:id}, '', '#'+id); }catch(e){}
+}
+
+function verlaufStarten(){
+  _verlaufBereit=true;
+  try{ history.replaceState({v:currentView||'home'}, '', '#'+(currentView||'home')); }catch(e){}
+
+  window.addEventListener('popstate', function(e){
+    // Ein offenes Fenster hat einen eigenen Eintrag – der wird zuerst
+    // abgeräumt, ohne die Ansicht zu wechseln.
+    if(anyModalOpen()){
+      // Der Eintrag ist mit dieser Geste schon verbraucht. Die Beobachter
+      // unten dürfen deshalb NICHT noch einmal zurückgehen, sonst
+      // überspringt eine Zurück-Geste zwei Schritte.
+      _schliessenDurchZurueck=true;
+      closeAllModals();
+      setTimeout(function(){ _schliessenDurchZurueck=false; }, 60);
+      return;
+    }
+    var z=(e.state && e.state.v) || 'home';
+    if(z===currentView) return;
+    showView(z, true, true);
+    tick(6);
+  });
+
+  // Fenster melden sich selbst an, ohne dass jede Öffnen-Stelle das wissen
+  // muss: wir beobachten einfach, wann eines sichtbar wird.
+  var fenster=['profileModal','personModal','devModal','pollModal','todoEditModal',
+               'fwdModal','keysModal','searchOverlay','lightbox'];
+  fenster.forEach(function(id){
+    var el=$(id); if(!el) return;
+    new MutationObserver(function(){
+      var offen=el.classList.contains('show');
+      if(offen && !el._imVerlauf){
+        el._imVerlauf=true;
+        try{ history.pushState({v:currentView, m:id}, '', location.hash); }catch(e){}
+      } else if(!offen && el._imVerlauf){
+        el._imVerlauf=false;
+        // Wurde von Hand geschlossen (✕ / Esc): den eigenen Eintrag wieder
+        // abräumen, sonst braucht die nächste Zurück-Geste einen Leerlauf.
+        if(!_schliessenDurchZurueck && history.state && history.state.m===id){
+          try{ history.back(); }catch(e){}
+        }
+      }
+    }).observe(el, { attributes:true, attributeFilter:['class'] });
+  });
+}
+
+/* ============================================================
+   AUFGABE NACHTRÄGLICH BEARBEITEN
+
+   Bisher musste man löschen und neu anlegen, wenn sich ein Titel, eine
+   Frist oder die zuständige Person änderte. Dabei ging der Verlauf verloren
+   (wer sie erstellt hat, ob schon Teilschritte abgehakt waren) – und im
+   Papierkorb lag eine Leiche, die niemand brauchte.
+
+   Abgehakte Teilschritte bleiben abgehakt, solange ihr Text gleich bleibt.
+   Wer eine Zeile umformuliert, bekommt sie neu – anders lässt sich nicht
+   sagen, ob es noch derselbe Schritt ist.
+   ============================================================ */
+var _teTodo=null, _teSk=null;
+
+function openTodoEdit(t, sk){
+  if(!canManage()) return;
+  _teTodo=t; _teSk=sk;
+  $('teWo').textContent='In '+studioName(sk)+' · erstellt von '+(t.createdBy||'—');
+  $('teTitle').value=t.title||'';
+  $('teDesc').value=t.desc||'';
+  $('teDue').value = t.due ? ymd(new Date(t.due)) : '';
+  var steps=Array.isArray(t.steps)?t.steps:[];
+  $('teSteps').value=steps.map(function(x){ return (x&&x.t)||''; }).join('\n');
+  var fertig=steps.filter(function(x){ return x&&x.d; }).length;
+  $('teStepsNote').textContent = fertig
+    ? 'Bereits abgehakt: '+fertig+' von '+steps.length+'. Unveränderte Zeilen bleiben abgehakt.'
+    : '';
+  // Zuweisung: dieselbe Auswahl wie beim Anlegen
+  var sel=$('teAssign');
+  sel.innerHTML='<option value="">Niemand fest zugewiesen</option>'+
+    (_employees||[]).slice()
+      .sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||''),'de'); })
+      .map(function(e){
+        return '<option value="'+esc(e.uid||e.id)+'">'+esc(e.name||'?')+'</option>';
+      }).join('');
+  sel.value=t.assignedTo||'';
+  $('todoEditModal').classList.add('show');
+  setTimeout(function(){ $('teTitle').focus(); }, 90);
+}
+
+function closeTodoEdit(){
+  _teTodo=null; _teSk=null;
+  var m=$('todoEditModal'); if(m) m.classList.remove('show');
+}
+
+function saveTodoEdit(btn){
+  var t=_teTodo, sk=_teSk;
+  if(!t || !sk) return;
+  var titel=$('teTitle').value.trim();
+  if(!titel){ toast('Der Titel darf nicht leer sein.',true); return; }
+
+  // Teilschritte abgleichen: gleicher Text -> Häkchen bleibt
+  var alt={};
+  (Array.isArray(t.steps)?t.steps:[]).forEach(function(x){
+    if(x && x.t) alt[x.t]=!!x.d;
+  });
+  var steps=$('teSteps').value.split('\n')
+    .map(function(x){ return x.trim(); })
+    .filter(function(x){ return !!x; })
+    .slice(0,20)
+    .map(function(x){ var k=x.slice(0,120); return { t:k, d:!!alt[k] }; });
+
+  var dueVal=$('teDue').value;
+  var neu={
+    title:titel,
+    desc:$('teDesc').value.trim(),
+    due: dueVal ? new Date(dueVal+'T23:59:59').getTime() : null,
+    steps: steps,
+    geaendertVon: session.name,
+    geaendertAm: Date.now()
+  };
+  var uid=$('teAssign').value;
+  if(uid){
+    var e=(_employees||[]).filter(function(x){ return (x.uid||x.id)===uid; })[0];
+    neu.assignedTo=uid;
+    neu.assignedName=(e&&e.name)||'';
+  } else {
+    neu.assignedTo=null; neu.assignedName=null;
+  }
+
+  withBusy(btn,function(){
+    return db.collection('studios').doc(sk).collection('todos').doc(t.id).update(neu)
+      .then(function(){ closeTodoEdit(); toast('Aufgabe geändert ✓'); tick(10); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  });
 }
 
 /* ============================================================
@@ -10021,6 +10217,11 @@ function bindActions(){
   if(canManage()){
     var devA=$('devAdd'); if(devA) devA.addEventListener('click',function(){ addDevice(this); });
   }
+
+  // ── Aufgabe bearbeiten ──
+  var teC=$('teClose'); if(teC) teC.addEventListener('click',closeTodoEdit);
+  var teM=$('todoEditModal'); if(teM) teM.addEventListener('click',function(e){ if(e.target===teM) closeTodoEdit(); });
+  var teS=$('teSave'); if(teS) teS.addEventListener('click',function(){ saveTodoEdit(this); });
 
   // ── Nachweise (nur Chef) ──
   var cA=$('certAdd'); if(cA) cA.addEventListener('click',function(){ addCert(this); });
