@@ -377,6 +377,38 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
   padding:clamp(16px,4vw,24px);margin-bottom:16px}
 .card h3{font-size:1.25rem;margin-bottom:3px}
+
+/* ── Aufklappbare Abschnitte ──
+   Der Grund: die Seiten waren eine einzige lange Kartenwand. Alles gleich
+   laut, nichts im Vordergrund. Jetzt steht oben das, wofür man die Seite
+   öffnet – der Rest ist zusammengeklappt und einen Tipp entfernt.
+   Was offen ist, merkt sich das Gerät. */
+.card.fold > .fold-head{display:flex;align-items:center;gap:11px;cursor:pointer;
+  user-select:none;-webkit-user-select:none;margin:0;
+  padding:2px 0;border-radius:10px;transition:color .2s}
+.card.fold > .fold-head:hover{color:var(--accent-d)}
+.card.fold > .fold-head > *{margin-bottom:0}
+.fold-head .fold-main{flex:1;min-width:0;display:flex;align-items:baseline;
+  gap:10px;flex-wrap:wrap}
+/* Steckt die Überschrift in einer eigenen Zeile (mit Zähler daneben),
+   muss die mitwachsen – sonst rutscht der Pfeil in die nächste Zeile. */
+.fold-head .fold-main > div{flex:1;min-width:0}
+.fold-head h3{font-size:1.08rem}
+.fold-chev{flex-shrink:0;width:22px;height:22px;display:flex;align-items:center;
+  justify-content:center;color:var(--text-3);transition:transform .34s var(--spring)}
+.fold-chev svg{width:15px;height:15px}
+.card.fold.zu > .fold-head .fold-chev{transform:rotate(-90deg)}
+.card.fold.zu{padding-bottom:clamp(14px,3vw,18px)}
+.fold-body{overflow:hidden;transition:height .34s var(--ease-out),opacity .26s var(--ease-out)}
+.card.fold.zu > .fold-body{height:0 !important;opacity:0}
+.card.fold:not(.zu) > .fold-body{opacity:1;padding-top:2px}
+/* Kleine Zahl neben der Überschrift, damit man auch zugeklappt sieht,
+   ob dort etwas ist */
+.fold-num{font-size:.76rem;font-weight:700;color:var(--text-3);
+  background:var(--bg-soft);border:1px solid var(--line);
+  padding:2px 9px;border-radius:999px;white-space:nowrap}
+.fold-num.warn{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:var(--warm)}
+.fold-num.dringend{background:rgba(251,78,109,.16);border-color:rgba(251,78,109,.4);color:var(--danger)}
 .card .hint{color:var(--text-2);font-size:.88rem;margin-bottom:14px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
 @media(max-width:560px){.row{grid-template-columns:1fr}}
@@ -895,6 +927,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .key-row{display:flex;align-items:center;gap:12px;padding:9px 0;
   border-top:1px solid var(--line);font-size:.89rem}
 .key-row:first-child{border-top:none}
+.key-row span{flex:1;min-width:0}
+.key-set{flex-shrink:0;background:none;border:1.5px solid var(--line-2);border-radius:999px;
+  padding:3px 11px;font-size:.72rem;font-weight:700;color:var(--text-2);cursor:pointer;
+  transition:border-color .2s,color .2s}
+.key-set:hover{border-color:var(--accent);color:var(--accent-d)}
+.key-row.aufnahme{background:var(--accent-glow);border-radius:9px;padding-left:8px;padding-right:8px}
+.key-row.aufnahme kbd{border-color:var(--accent);color:var(--accent-d)}
+.key-row.aufnahme .key-set{border-color:var(--accent);color:var(--accent-d)}
 .key-row kbd{flex:0 0 auto;min-width:26px;text-align:center;
   background:var(--bg-3);border:1px solid var(--line-2);border-bottom-width:2px;
   border-radius:7px;padding:3px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;
@@ -1094,6 +1134,8 @@ html{font-size:var(--fs,100%)}
   background:rgba(251,78,109,.12);border:1px solid rgba(251,78,109,.4)}
 .alert-bar.warn{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.42)}
 .alert-bar.pin{background:rgba(56,189,248,.11);border-color:rgba(56,189,248,.4)}
+/* Die Sammelzeile ist selbst keine Warnung – sie darf nicht rot sein */
+.alert-bar.mehr{background:var(--bg-soft);border-color:var(--line);color:var(--text-2)}
 .alert-bar .ab-ico{font-size:1.2rem;flex-shrink:0}
 .alert-bar .ab-t{flex:1;min-width:0;font-size:.9rem;font-weight:600;
   /* Eine Zeile statt zwei: vier Hinweise haben vorher den ganzen ersten
@@ -1101,7 +1143,45 @@ html{font-size:var(--fs,100%)}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .alert-bar .ab-go{font-size:.8rem;color:var(--text-3);white-space:nowrap}
 
-.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:9px}
+/* Kleine Zwischenüberschrift mit auslaufender Linie. Teilt lange Seiten in
+   benannte Blöcke, ohne so schwer zu wirken wie eine weitere Karte. */
+/* ── Bewegung ──
+   Gestaffeltes Einlaufen: die Einträge kommen kurz nacheinander statt alle
+   auf einmal. Das Auge folgt der Reihenfolge, statt eine fertige Wand zu
+   sehen. Bewusst nur die ersten zehn – danach wäre es Warten.
+   Wer im System "Bewegung reduzieren" eingestellt hat, bekommt nichts davon. */
+@media (prefers-reduced-motion: no-preference){
+  .dev-item,.cert-item,.pp-item,.doc,.trash-item{animation:listIn .34s var(--ease-out) both}
+  .dev-item:nth-child(1),.cert-item:nth-child(1),.pp-item:nth-child(1),.doc:nth-child(1){animation-delay:0ms}
+  .dev-item:nth-child(2),.cert-item:nth-child(2),.pp-item:nth-child(2),.doc:nth-child(2){animation-delay:26ms}
+  .dev-item:nth-child(3),.cert-item:nth-child(3),.pp-item:nth-child(3),.doc:nth-child(3){animation-delay:52ms}
+  .dev-item:nth-child(4),.cert-item:nth-child(4),.pp-item:nth-child(4),.doc:nth-child(4){animation-delay:78ms}
+  .dev-item:nth-child(5),.cert-item:nth-child(5),.pp-item:nth-child(5),.doc:nth-child(5){animation-delay:104ms}
+  .dev-item:nth-child(6),.cert-item:nth-child(6),.pp-item:nth-child(6),.doc:nth-child(6){animation-delay:126ms}
+  .dev-item:nth-child(7),.cert-item:nth-child(7),.pp-item:nth-child(7),.doc:nth-child(7){animation-delay:146ms}
+  .dev-item:nth-child(8),.cert-item:nth-child(8),.pp-item:nth-child(8),.doc:nth-child(8){animation-delay:164ms}
+  .dev-item:nth-child(9),.cert-item:nth-child(9),.pp-item:nth-child(9),.doc:nth-child(9){animation-delay:180ms}
+  .dev-item:nth-child(n+10),.cert-item:nth-child(n+10),.pp-item:nth-child(n+10),.doc:nth-child(n+10){animation-delay:194ms}
+  /* Zwischenüberschriften und Kacheln kommen mit */
+  .sec-head{animation:listIn .4s var(--ease-out) both}
+  .view.show .scroll-area > .sort-row{animation:listIn .3s var(--ease-out) both}
+}
+@keyframes listIn{
+  from{opacity:0;transform:translateY(9px)}
+  to{opacity:1;transform:none}
+}
+/* Die Sortier-Knöpfe federn kurz, wenn man wechselt */
+.sort-row .chip.on{animation:chipPop .34s var(--spring)}
+@keyframes chipPop{0%{transform:scale(1)}42%{transform:scale(1.09)}100%{transform:scale(1)}}
+.sort-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 12px}
+.sort-lab{font-size:.74rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--text-3);margin-right:2px}
+.sec-head{display:flex;align-items:center;gap:11px;margin:22px 0 11px}
+.sec-head span{font-family:var(--font-head);font-weight:700;font-size:.8rem;
+  letter-spacing:1.3px;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
+.sec-head i{flex:1;height:1px;background:var(--line);display:block}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:9px;
+  margin-bottom:16px}
 .quick{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 8px;
   background:var(--bg-soft);border:1px solid var(--line);border-radius:14px;cursor:pointer;
   font-size:.82rem;font-weight:600;color:var(--text-2);
@@ -1703,10 +1783,12 @@ var FIREBASE_CONFIG = {
       <section class="view" id="view-home">
         <div class="view-head shrink"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
         <div class="scroll-area" data-shrinks="1">
+          <!-- Die Startseite ist jetzt in drei benannte Blöcke geteilt.
+               Vorher war es eine Reihe gleich aussehender Kacheln und Karten;
+               man musste jedes Mal neu lesen, was wozu gehört. -->
+
+          <!-- 1. Was jetzt dran ist -->
           <div id="homeAlerts"></div>
-          <div class="home-grid" id="homeGrid"></div>
-          <!-- Mein Dienst: die eigene Woche auf einen Blick. Für Mitarbeiter
-               ist das die wichtigste Frage überhaupt – wann muss ich hin? -->
           <div class="card" id="myShiftCard" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3>📅 Mein Dienst</h3>
@@ -1714,12 +1796,16 @@ var FIREBASE_CONFIG = {
             </div>
             <div id="myShiftList"></div>
           </div>
-          <div class="card">
-            <h3>⚡ Schnellzugriff</h3>
-            <p class="hint">Die Bereiche, die du am häufigsten brauchst.</p>
-            <div class="quick-grid" id="quickGrid"></div>
-          </div>
-          <div class="card" id="homeActivityCard">
+
+          <!-- 2. Wie es steht -->
+          <div class="sec-head"><span>Überblick</span><i></i></div>
+          <div class="home-grid" id="homeGrid"></div>
+
+          <!-- 3. Wo es weitergeht -->
+          <div class="sec-head"><span>Schnell hin</span><i></i></div>
+          <div class="quick-grid" id="quickGrid"></div>
+
+          <div class="card" id="homeActivityCard" data-fold="aktivitaet">
             <h3>🕒 Zuletzt passiert</h3>
             <div id="homeActivity"></div>
           </div>
@@ -1868,13 +1954,13 @@ var FIREBASE_CONFIG = {
           <!-- Einkaufsliste: fasst zusammen, was über ALLE Studios fehlt.
                Sonst müsste der Chef 14 Studios einzeln durchklicken, um zu
                wissen, was er bestellen muss. -->
-          <div class="card" id="fcCard" style="display:none">
+          <div class="card" id="fcCard" style="display:none" data-fold="vorhersage">
             <h3 id="fcTitle">📉 Reicht noch</h3>
             <p class="hint">Aus den Wochen-Sicherungen im Archiv gerechnet – keine Schätzung,
               sondern der tatsächliche Rückgang der letzten Wochen.</p>
             <div id="fcList"></div>
           </div>
-          <div class="card" id="shopCard" style="display:none">
+          <div class="card" id="shopCard" style="display:none" data-fold="shop">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3>🛒 Einkaufsliste</h3>
               <span class="todo-count" id="shopCount"></span>
@@ -1925,7 +2011,7 @@ var FIREBASE_CONFIG = {
           </div>
 
           <!-- Liste der Putzaufgaben des gewählten Studios -->
-          <div class="card" id="ppCard">
+          <div class="card" id="ppCard" data-fold="ppliste" data-fold-offen="1">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3 id="ppListTitle">Putzplan</h3>
               <span class="todo-count" id="ppProgress"></span>
@@ -1934,7 +2020,7 @@ var FIREBASE_CONFIG = {
           </div>
 
           <!-- Notizen der Mitarbeiter -->
-          <div class="card">
+          <div class="card" data-fold="ppnotes">
             <h3>📝 Notizen</h3>
             <p class="hint">Platz für Hinweise vom Team, z. B. „Wischmopp ist kaputt".</p>
             <div class="mat-add">
@@ -1944,7 +2030,7 @@ var FIREBASE_CONFIG = {
             <div id="ppNotes" style="margin-top:12px"></div>
           </div>
           <!-- Chef: neue Putzaufgabe anlegen -->
-          <div class="card" id="ppChefCard" style="display:none">
+          <div class="card" id="ppChefCard" style="display:none" data-fold="ppneu">
             <h3>🧽 Putzaufgabe hinzufügen</h3>
             <p class="hint">Wird für die gewählten Studios angelegt und dort im Putzplan angezeigt.
               Einmalige Aufgaben verschwinden einen Tag nach dem Abhaken von selbst –
@@ -1990,16 +2076,17 @@ var FIREBASE_CONFIG = {
 
           <div class="mat-alert" id="devAlert" style="display:none"></div>
 
-          <div class="card" id="devCard">
+          <div class="card" id="devCard" data-fold="devliste" data-fold-offen="1">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3 id="devListTitle">Geräte</h3>
               <span class="todo-count" id="devCount"></span>
             </div>
-            <div id="devList" style="margin-top:8px"></div>
+            <div id="devSort"></div>
+            <div id="devList"></div>
           </div>
 
           <!-- Verwaltung: neues Gerät aufnehmen -->
-          <div class="card" id="devAddCard" style="display:none">
+          <div class="card" id="devAddCard" style="display:none" data-fold="devneu">
             <h3>➕ Gerät aufnehmen</h3>
             <p class="hint">Einmalig eintragen. Danach kann jeder im Team einen Defekt daran melden.</p>
             <div class="field"><label for="devName">Bezeichnung</label>
@@ -2120,7 +2207,7 @@ var FIREBASE_CONFIG = {
       <section class="view" id="view-docs">
         <div class="view-head shrink"><h2>Dokumente</h2><p>Wichtige Dateien und Links, die dein Chef für dich hinterlegt hat.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <div class="card" id="docUploadCard" style="display:none">
+          <div class="card" id="docUploadCard" style="display:none" data-fold="docneu">
             <h3>⬆️ Dokument hinzufügen</h3>
             <p class="hint">Kleine Datei (bis ~0,7 MB, z. B. PDF/Bild) direkt hochladen – oder für große Dateien unten einen Link (Google Drive/Dropbox) einfügen.</p>
             <input type="file" class="hidden-file" id="docFile" />
@@ -2139,6 +2226,7 @@ var FIREBASE_CONFIG = {
             <p class="em-saved" id="docNote"></p>
           </div>
           <div class="chip-row" id="docCatRow" style="margin-bottom:12px"></div>
+          <div id="docSort"></div>
           <div id="docList"></div>
         </div>
       </section>
@@ -2253,7 +2341,7 @@ var FIREBASE_CONFIG = {
             <button class="btn btn-primary btn-sm" id="bcSend">Ankündigung senden</button>
             <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
           </div>
-          <div class="card">
+          <div class="card" data-fold="vorlagen">
             <h3>📋 Vorlagen</h3>
             <p class="hint">Aufgaben, die immer wieder gleich sind, einmal speichern und
               danach mit zwei Klicks einsetzen.</p>
@@ -2264,7 +2352,7 @@ var FIREBASE_CONFIG = {
               <button class="btn btn-ghost btn-sm" id="tplDel" data-chef-only="1">Vorlage löschen</button>
             </div>
           </div>
-          <div class="card">
+          <div class="card" data-fold="neueaufgabe" data-fold-offen="1">
             <h3>✅ Neue Aufgabe erstellen</h3>
             <p class="hint">Einem oder allen Studios zuweisen.</p>
             <div class="field"><label for="ntTitle">Aufgabe</label>
@@ -2314,7 +2402,7 @@ var FIREBASE_CONFIG = {
 
           <!-- ── Reiter 3: Team ── -->
           <div class="chef-pane" data-cpane="team" style="display:none">
-          <div class="card" data-chef-only="1">
+          <div class="card" data-fold="zugang" data-chef-only="1">
             <h3>👤 Zugang anlegen</h3>
             <p class="hint">Erstellt ein Konto und ordnet Studios zu. Die Person meldet sich danach mit E-Mail + Passwort an.</p>
             <div class="field"><label for="emName">Name</label>
@@ -2342,7 +2430,7 @@ var FIREBASE_CONFIG = {
               <button type="button" class="btn btn-ghost btn-sm" id="emCopy">📋 Zugangsdaten kopieren</button>
             </div>
           </div>
-          <div class="card" data-chef-only="1">
+          <div class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
             <h3>👥 Team</h3>
             <p class="hint">Rolle und Studios anpassen oder Zugang entfernen.</p>
             <div id="empList"></div>
@@ -2350,13 +2438,13 @@ var FIREBASE_CONFIG = {
           <!-- Chef-Konten standen bisher in keiner Liste: die Team-Übersicht
                zeigt nur Mitarbeiter und Leiter. Man konnte also nicht sehen,
                wer alles Vollzugriff hat. -->
-          <div class="card" data-chef-only="1">
+          <div class="card" data-fold="chefzugaenge" data-chef-only="1">
             <h3>👑 Chef-Zugänge</h3>
             <p class="hint">Alle Konten mit vollem Zugriff auf alle Studios. Sie bekommen
               auch den Monatsbericht per E-Mail.</p>
             <div id="chefList"></div>
           </div>
-          <div class="card" data-chef-only="1">
+          <div class="card" data-fold="onboarding" data-chef-only="1">
             <h3>🧭 Onboarding-Checkliste</h3>
             <p class="hint">Schritte für neue Mitarbeiter. Sie sehen die Liste im Infos-Tab und haken sie ab.</p>
             <div id="obEditor"></div>
@@ -2386,7 +2474,8 @@ var FIREBASE_CONFIG = {
                 <h3>📜 Alle Nachweise</h3>
                 <span class="todo-count" id="certCount"></span>
               </div>
-              <div id="certList" style="margin-top:8px"></div>
+              <div id="certSort" style="margin-top:10px"></div>
+              <div id="certList"></div>
             </div>
             <div class="card">
               <h3>➕ Nachweis eintragen</h3>
@@ -2431,21 +2520,21 @@ var FIREBASE_CONFIG = {
 
           <!-- ── Reiter 5: System ── -->
           <div class="chef-pane" data-cpane="system" style="display:none">
-          <div class="card" data-chef-only="1">
+          <div class="card" data-fold="sheets" data-chef-only="1">
             <h3>🔄 Google-Tabellen abgleichen</h3>
             <p class="hint">Änderungen werden automatisch übertragen. Falls in der Tabelle
               einmal etwas fehlt, schreibt dieser Knopf alle Studios neu – gefahrlos, es
               wird nichts gelöscht, nur der aktuelle Stand geschrieben.</p>
             <button class="btn btn-ghost btn-sm" id="syncSheetsBtn">Jetzt alle Studios abgleichen</button>
           </div>
-          <div class="card" data-chef-only="1">
+          <div class="card" data-fold="sichern" data-chef-only="1">
             <h3>💾 Daten sichern</h3>
             <p class="hint">Lädt alle Aufgaben, Putzpläne, Material, Infos und das Team als
               Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
             <button class="btn btn-ghost btn-sm" id="expXls" style="width:100%">⬇️ Alles als Excel speichern</button>
             <button class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">⬇️ Alles als Daten-Datei (JSON)</button>
           </div>
-          <div class="card">
+          <div class="card" data-fold="trash" data-fold-offen="1">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3>🗑 Papierkorb</h3>
               <span class="todo-count" id="trashCount"></span>
@@ -2457,7 +2546,7 @@ var FIREBASE_CONFIG = {
             <button class="btn btn-ghost btn-sm" id="trashEmpty" data-chef-only="1"
               style="width:100%;margin-top:12px">Papierkorb endgültig leeren</button>
           </div>
-          <div class="card" data-chef-only="1">
+          <div class="card" data-fold="monatsbericht" data-chef-only="1">
             <h3>📧 Monatsbericht</h3>
             <p class="hint">Kommt automatisch am Ersten jedes Monats um 8 Uhr per E-Mail.
               Hier kannst du ihn sofort anfordern, um zu sehen, wie er aussieht.</p>
@@ -2470,7 +2559,7 @@ var FIREBASE_CONFIG = {
             <button class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%">📨 Testbericht jetzt senden</button>
             <p class="em-saved" id="repTestNote"></p>
           </div>
-          <div class="card" data-chef-only="1">
+          <div class="card" data-fold="pwreset" data-chef-only="1">
             <h3>🔑 Passwort zurücksetzen</h3>
             <p class="hint">Schickt der Person eine E-Mail, mit der sie sich ein neues
               Passwort setzen kann. Du musst kein Passwort kennen oder vergeben.</p>
@@ -2479,7 +2568,7 @@ var FIREBASE_CONFIG = {
             <button class="btn btn-ghost btn-sm" id="prSend">E-Mail zum Zurücksetzen senden</button>
             <p class="em-saved" id="prNote"></p>
           </div>
-          <div class="card">
+          <div class="card" data-fold="ueber">
             <h3>ℹ️ Über StudioChat</h3>
             <p class="hint" id="sysInfo">–</p>
           </div>
@@ -2588,6 +2677,12 @@ var FIREBASE_CONFIG = {
 
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Hell / Dunkel</label>
       <div class="opt-grid" id="thOpts"></div>
+
+      <!-- Nur am Rechner sinnvoll, deshalb auf schmalen Geräten ausgeblendet -->
+      <div id="pmKeysWrap" style="display:none;margin-top:20px">
+        <label style="display:block;font-size:.82rem;color:var(--text-2);margin:0 0 7px">Tastenkürzel</label>
+        <button class="btn btn-ghost btn-sm" id="pmKeysBtn" style="width:100%">⌨️ Tastenkürzel anpassen</button>
+      </div>
     </div>
     <div id="pmPaneNachweise" style="display:none">
       <p class="hint" style="margin:2px 0 14px">Deine Nachweise und wie lange sie noch gelten.
@@ -2650,7 +2745,17 @@ var FIREBASE_CONFIG = {
     <p class="hint" id="devmHint">Jede Meldung bleibt hier stehen – so sieht man, welches Gerät immer wieder ausfällt.</p>
     <div id="devmLog" style="margin-top:8px;max-height:38vh;overflow:auto"></div>
 
-    <button class="btn btn-ghost btn-sm" id="devmDel" style="width:100%;margin-top:14px;display:none">Gerät entfernen</button>
+    <div id="devmEditWrap" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)">
+      <p class="hint" style="margin:0 0 10px">Bezeichnung oder Standort ändern:</p>
+      <div class="row">
+        <div class="field" style="margin-bottom:8px"><label for="devmName2">Bezeichnung</label>
+          <input class="inp" id="devmName2" type="text" maxlength="80" /></div>
+        <div class="field" style="margin-bottom:8px"><label for="devmPlace2">Standort</label>
+          <input class="inp" id="devmPlace2" type="text" maxlength="80" /></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="devmSave" style="width:100%">Änderung speichern</button>
+    </div>
+    <button class="btn btn-danger btn-sm" id="devmDel" style="width:100%;margin-top:12px;display:none">Gerät entfernen</button>
   </div>
 </div>
 
@@ -2695,6 +2800,9 @@ var PREFS = {
   accent:'cyan',    // siehe ACCENTS
   fs:'100',         // Schriftgröße in Prozent
   lieferantMail:'', // Adresse für die Bestellmail (bleibt auf diesem Gerät)
+  folds:{},         // welche Abschnitte aufgeklappt sind (pro Gerät)
+  sort:{},          // gewählte Sortierung je Liste (pro Gerät)
+  keys:{},          // selbst belegte Tastenkürzel (pro Gerät)
   // Welche Meldungen dieses Gerät bekommen soll. Bewusst pro GERÄT und
   // nicht pro Person: der Push hängt am Gerät, und viele wollen am Handy
   // etwas anderes als am Rechner.
@@ -3350,25 +3458,126 @@ function doForward(kind, id, name){
    Am Handy nutzlos, am Schreibtisch spart es viele Klicks – gerade für
    den Chef, der die App vermutlich am Rechner offen hat.
    ============================================================ */
-var KEYMAP=[
-  {k:'⌘K', t:'Suche – geht immer, auch beim Schreiben'},
-  {k:'Esc', t:'Aus dem Schreibfeld heraus / Fenster schließen'},
-  {k:'1', t:'Start'},
-  {k:'2', t:'Austausch (Chat)'},
-  {k:'3', t:'Arbeit (Aufgaben)'},
-  {k:'4', t:'Team'},
-  {k:'5', t:'Verwaltung', manage:true},
-  {k:'S', t:'Suche öffnen'},
-  {k:'N', t:'Neue Aufgabe', manage:true},
-  {k:'A', t:'Neue Ankündigung', manage:true},
-  {k:'?', t:'Diese Übersicht'}
+/* Was sich ueberhaupt auf eine Taste legen laesst. Die Kennung bleibt
+   gleich, wenn jemand die Taste aendert – nur so ueberlebt eine eigene
+   Belegung spaetere Aenderungen an dieser Liste. */
+var AKTIONEN=[
+  {id:'home',   std:'1', t:'Start',                 tun:function(){ showView('home', true); }},
+  {id:'chat',   std:'2', t:'Austausch (Chat)',      tun:function(){ showView('chat', true); }},
+  {id:'arbeit', std:'3', t:'Arbeit (Aufgaben)',     tun:function(){ showView('todos', true); }},
+  {id:'team',   std:'4', t:'Team',                  tun:function(){ showView('team', true); }},
+  {id:'chef',   std:'5', t:'Verwaltung',  manage:true, tun:function(){ showView('chef', true); }},
+  {id:'suche',  std:'s', t:'Suche öffnen',          tun:function(){ openSearch(); }},
+  {id:'geraete',std:'g', t:'Geräte',                tun:function(){ showView('geraete', true); }},
+  {id:'putz',   std:'p', t:'Putzplan',              tun:function(){ showView('putzplan', true); }},
+  {id:'material',std:'m',t:'Material',              tun:function(){ showView('material', true); }},
+  {id:'direkt', std:'d', t:'Direktnachrichten',     tun:function(){ showView('dm', true); }},
+  {id:'infos',  std:'i', t:'Infos der Leitung',     tun:function(){ showView('ann', true); }},
+  {id:'neu',    std:'n', t:'Neue Aufgabe', manage:true, tun:function(){
+      showView('chef', true); showChefTab('erstellen');
+      setTimeout(function(){ var f=$('ntTitle'); if(f) f.focus(); },320); }},
+  {id:'ankuend',std:'a', t:'Neue Ankündigung', manage:true, tun:function(){
+      showView('chef', true); showChefTab('erstellen');
+      setTimeout(function(){ var f=$('bcText'); if(f) f.focus(); },320); }},
+  {id:'hilfe',  std:'?', t:'Diese Übersicht',       tun:function(){ oeffneKeysModal(); }}
 ];
+/* Fest verdrahtet und nicht änderbar – die brauchen wir, um überhaupt
+   wieder herauszukommen. */
+var KEYS_FEST=[
+  {k:'⌘K / Strg+K', t:'Suche – geht immer, auch beim Schreiben'},
+  {k:'Esc', t:'Aus dem Schreibfeld heraus / Fenster schließen'}
+];
+
+function aktionById(id){
+  for(var i=0;i<AKTIONEN.length;i++){ if(AKTIONEN[i].id===id) return AKTIONEN[i]; }
+  return null;
+}
+/* Die aktuell gültige Taste einer Aktion: eigene Belegung schlägt Standard. */
+function keyFor(a){
+  var eigen=(PREFS.keys||{})[a.id];
+  return (eigen!=null ? eigen : a.std);
+}
+function keyLabel(k){
+  if(!k) return '—';
+  return k.length===1 ? k.toUpperCase() : k;
+}
+/* Liegt diese Taste schon auf einer anderen Aktion? */
+function keyBelegtVon(k, ausser){
+  var low=String(k).toLowerCase();
+  for(var i=0;i<AKTIONEN.length;i++){
+    var a=AKTIONEN[i];
+    if(a.id===ausser) continue;
+    if(String(keyFor(a)).toLowerCase()===low) return a;
+  }
+  return null;
+}
+
+var _keyAufnahme=null;   // Kennung der Aktion, die gerade auf eine Taste wartet
+
+function oeffneKeysModal(){
+  renderKeysHelp();
+  $('keysModal').classList.add('show');
+}
+
 function renderKeysHelp(){
   var box=$('keysList'); if(!box) return;
-  box.innerHTML=KEYMAP.filter(function(x){ return !x.manage || canManage(); })
-    .map(function(x){ return '<div class="key-row"><kbd>'+esc(x.k)+'</kbd><span>'+esc(x.t)+'</span></div>'; })
-    .join('');
+  var fest=KEYS_FEST.map(function(x){
+    return '<div class="key-row"><kbd>'+esc(x.k)+'</kbd><span>'+esc(x.t)+'</span></div>';
+  }).join('');
+  var frei=AKTIONEN.filter(function(a){ return !a.manage || canManage(); })
+    .map(function(a){
+      var aufnahme=(_keyAufnahme===a.id);
+      return '<div class="key-row'+(aufnahme?' aufnahme':'')+'">'+
+        '<kbd>'+esc(aufnahme?'…':keyLabel(keyFor(a)))+'</kbd>'+
+        '<span>'+esc(a.t)+'</span>'+
+        '<button class="key-set" data-keyset="'+esc(a.id)+'">'+
+          (aufnahme?'Taste drücken':'ändern')+'</button></div>';
+    }).join('');
+  box.innerHTML=
+    '<p class="hint" style="margin:0 0 10px">Fest eingebaut:</p>'+fest+
+    '<p class="hint" style="margin:16px 0 10px">Frei belegbar – auf „ändern" tippen und die neue Taste drücken. '+
+      'Die Belegung gilt nur auf diesem Gerät.</p>'+frei+
+    '<button class="btn btn-ghost btn-sm" id="keysReset" style="width:100%;margin-top:14px">Auf Standard zurücksetzen</button>';
+
+  box.querySelectorAll('[data-keyset]').forEach(function(b){
+    b.addEventListener('click',function(){
+      _keyAufnahme = (_keyAufnahme===b.getAttribute('data-keyset')) ? null : b.getAttribute('data-keyset');
+      renderKeysHelp();
+    });
+  });
+  var r=$('keysReset');
+  if(r) r.addEventListener('click',function(){
+    PREFS.keys={}; savePrefs(); _keyAufnahme=null; renderKeysHelp();
+    toast('Tastenkürzel zurückgesetzt');
+  });
 }
+
+/* Nimmt die gedrueckte Taste entgegen, waehrend das Kuerzel-Fenster auf
+   eine Belegung wartet. Gibt true zurueck, wenn sie verbraucht wurde. */
+function keyAufnahmeVerarbeiten(e){
+  if(!_keyAufnahme) return false;
+  var k=e.key;
+  if(k==='Escape'){ _keyAufnahme=null; renderKeysHelp(); return true; }
+  // Nur Zeichen, keine Steuertasten – "Shift" als Kürzel ergibt keinen Sinn
+  if(!k || k.length!==1) return true;
+  e.preventDefault();
+  var a=aktionById(_keyAufnahme);
+  if(!a){ _keyAufnahme=null; return true; }
+  var kollision=keyBelegtVon(k, a.id);
+  if(kollision){
+    toast('„'+keyLabel(k)+'" liegt schon auf „'+kollision.t+'".', true);
+    return true;
+  }
+  PREFS.keys=PREFS.keys||{};
+  PREFS.keys[a.id]=k.toLowerCase();
+  savePrefs();
+  _keyAufnahme=null;
+  renderKeysHelp();
+  toast('„'+keyLabel(k)+'" ist jetzt „'+a.t+'" ✓');
+  tick(8);
+  return true;
+}
+
 /* Schreibt der Benutzer gerade irgendwo? Dann darf kein Kürzel greifen. */
 function typingSomewhere(){
   var el=document.activeElement;
@@ -3388,6 +3597,10 @@ function closeAllModals(){
 }
 function bindShortcuts(){
   document.addEventListener('keydown',function(e){
+    // Wartet das Kürzel-Fenster gerade auf eine Taste? Dann gehört sie dorthin.
+    if(_keyAufnahme && $('keysModal').classList.contains('show')){
+      if(keyAufnahmeVerarbeiten(e)) return;
+    }
     // Cmd+K bzw. Strg+K: Suche – funktioniert IMMER, auch beim Schreiben
     if((e.metaKey||e.ctrlKey) && (e.key==='k'||e.key==='K')){
       e.preventDefault();
@@ -3405,23 +3618,17 @@ function bindShortcuts(){
     }
     if(e.ctrlKey||e.metaKey||e.altKey) return;
     if(typingSomewhere() || anyModalOpen()) return;
-    var k=e.key;
-    var gruppen={'1':'home','2':'chat','3':'todos','4':'team','5':'chef'};
-    if(gruppen[k]){
-      if(k==='5' && !canManage()) return;
-      e.preventDefault(); showView(gruppen[k], true); tick(8); return;
+
+    var low=String(e.key||'').toLowerCase();
+    for(var i=0;i<AKTIONEN.length;i++){
+      var a=AKTIONEN[i];
+      if(a.manage && !canManage()) continue;
+      if(String(keyFor(a)).toLowerCase()!==low) continue;
+      e.preventDefault();
+      a.tun();
+      tick(8);
+      return;
     }
-    var low=(k||'').toLowerCase();
-    if(low==='s'){ e.preventDefault(); openSearch(); return; }
-    if(low==='n' && canManage()){
-      e.preventDefault(); showView('chef', true); showChefTab('erstellen');
-      setTimeout(function(){ var f=$('ntTitle'); if(f) f.focus(); },320); return;
-    }
-    if(low==='a' && canManage()){
-      e.preventDefault(); showView('chef', true); showChefTab('erstellen');
-      setTimeout(function(){ var f=$('bcText'); if(f) f.focus(); },320); return;
-    }
-    if(k==='?'){ e.preventDefault(); renderKeysHelp(); $('keysModal').classList.add('show'); }
   });
 }
 
@@ -3534,6 +3741,7 @@ function listenTrash(){
 
 function renderTrash(){
   var box=$('trashList'), cnt=$('trashCount'); if(!box) return;
+  foldZahlen();
   var grenze=Date.now()-TRASH_TAGE*86400000;
   var list=_trash.filter(function(t){ return (t.deletedAt||0)>grenze; });
   if(cnt) cnt.textContent = list.length ? list.length+(list.length===1?' Eintrag':' Einträge') : '';
@@ -4134,6 +4342,7 @@ function showApp(){
   }
   applyRoleVisibility();                    // Chef-eigene Karten für Leiter ausblenden
   bindActions();
+  foldAufbauen();
   startListeners();
   listenAllUsers();
   listenDmThreads();
@@ -4382,6 +4591,7 @@ function showView(id, fromKey){
     if(window.innerWidth>820 && !fromKey){ var t=$('chatText'); if(t) setTimeout(function(){ t.focus(); },80); }
   }
   bindShrinkHeaders();
+  foldAufbauen();
   if(id==='chef') buildChefTabs();
   if(id==='material') ensureMaterialLoaded();
   if(id==='putzplan') ensurePutzplanLoaded();
@@ -4906,6 +5116,24 @@ function renderDocs(docs){
   renderDocCatRow(sichtbar);
   var list = _docCat==='alle' ? sichtbar
     : sichtbar.filter(function(d){ return docCatOf(d)===_docCat; });
+
+  sortLeiste($('docSort'), 'doc', [
+    {id:'neu',   label:'neueste zuerst'},
+    {id:'name',  label:'Name'},
+    {id:'gross', label:'Größe'},
+    {id:'kat',   label:'Kategorie'}
+  ], 'neu', function(){ renderDocs(_allDocs); });
+
+  var wie=sortWahl('doc','neu');
+  var titel=function(d){ return String(d.name||d.fileName||''); };
+  list=list.slice().sort(function(a,b){
+    if(wie==='name')  return titel(a).localeCompare(titel(b),'de');
+    if(wie==='gross') return (b.size||0)-(a.size||0);
+    if(wie==='kat')   return String(docCatOf(a)).localeCompare(String(docCatOf(b)),'de')
+                          || titel(a).localeCompare(titel(b),'de');
+    return (b.ts||0)-(a.ts||0);
+  });
+
   if(!sichtbar.length){ box.innerHTML=emptyHTML('Keine Dokumente','Hier erscheinen Dateien von der Leitung.'); return; }
   if(!list.length){ box.innerHTML=emptyHTML('Nichts in dieser Kategorie','Wähle oben eine andere aus.'); return; }
   var chef=canManage();
@@ -5915,11 +6143,13 @@ function renderHome(){
     if(ueber) alerts.push({k:'',i:'⚠️',t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
     if(matArtikel) alerts.push({k:' warn',i:'📦',t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),v:'material'});
     if(infoNeu) alerts.push({k:' warn',i:'📣',t:infoNeu+(infoNeu===1?' neue Info':' neue Infos')+' von der Leitung',v:'ann'});
-    // Höchstens drei Hinweise. Wer sieben sieht, liest keinen davon.
-    var rest=alerts.length-3;
-    if(rest>0){
+    // Höchstens vier Hinweise. Wer sieben sieht, liest keinen davon.
+    // Erst ab zwei übrigen wird zusammengefasst – für einen einzelnen wäre
+    // die Sammelzeile genauso lang wie der Hinweis selbst.
+    if(alerts.length>4){
+      var rest=alerts.length-3;
       alerts=alerts.slice(0,3);
-      alerts.push({k:'',i:'•',t:'und '+rest+' weitere'+(rest===1?'r Hinweis':' Hinweise'),v:'todos'});
+      alerts.push({k:' mehr',i:'•',t:'und '+rest+' weitere Hinweise',v:'todos'});
     }
     al.innerHTML=alerts.map(function(a){
       return '<div class="alert-bar'+a.k+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+'>'+
@@ -7227,6 +7457,7 @@ function shoppingData(){
     .sort(function(a,b){ return b.total-a.total || a.name.localeCompare(b.name,'de'); });
 }
 function renderShoppingList(){
+  foldZahlen();
   var card=$('shopCard'); if(!card || !session) return;
   // Nur für die Verwaltung – ein Mitarbeiter bestellt nicht ein
   if(!canManage()){ card.style.display='none'; return; }
@@ -7415,6 +7646,7 @@ function loadPutzplan(sk){
     .onSnapshot(function(snap){
       _ppNotes=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       renderPutzNotes();
+      foldZahlen();
     }, function(e){ console.error('Putz-Notizen:',e.message); });
 }
 
@@ -7601,9 +7833,10 @@ function runPutzplanSheets(sk){
     if(_ppSheetPending[sk]) schedulePutzplanSheets(sk);   // zwischenzeitliche Änderung nachziehen
   });
 }
-function pushPutzplanToSheets(sk){
-  if(!SHEETS_WEBHOOK_URL || !sk) return Promise.resolve();
-  // immer den AKTUELLEN Stand frisch aus der Datenbank holen
+/* Den aktuellen Stand eines Studios aus der Datenbank holen und in die Form
+   bringen, die die Tabelle erwartet. Getrennt vom Senden, damit derselbe
+   Aufbau auch für die Sammelsendung aller Studios taugt. */
+function putzplanDatenHolen(sk){
   var studioRef=db.collection('studios').doc(sk);
   return Promise.all([
     studioRef.collection('cleaning').orderBy('ts').get(),
@@ -7612,17 +7845,26 @@ function pushPutzplanToSheets(sk){
     var tasks=res[0].docs.map(function(d){ return d.data(); })
       .filter(function(t){ return !ppAbgelaufen(t); })
       .map(function(t){
-      return { title:t.title||'', wiederholung:repLabelFor(t)||'einmalig',
-        status:isDone(t)?'erledigt':'offen',
-        erledigtVon: isDone(t)?(t.doneBy||''):'',
-        zeitpunkt: isDone(t)&&t.doneAt?fmtDateTime(t.doneAt):'' }; });
+        return { title:t.title||'', wiederholung:repLabelFor(t)||'einmalig',
+          status:isDone(t)?'erledigt':'offen',
+          erledigtVon: isDone(t)?(t.doneBy||''):'',
+          zeitpunkt: isDone(t)&&t.doneAt?fmtDateTime(t.doneAt):'' };
+      });
     var notes=res[1].docs.map(function(d){ var n=d.data();
       return { text:n.text||'', by:n.by||'', ts:n.ts||0, zeit:fmtDateTime(n.ts) }; });
+    return { studio:studioName(sk), studioKey:sk, tasks:tasks, notes:notes,
+             updatedBy:session.name, ts:Date.now() };
+  });
+}
+
+function pushPutzplanToSheets(sk){
+  if(!SHEETS_WEBHOOK_URL || !sk) return Promise.resolve();
+  return putzplanDatenHolen(sk).then(function(d){
+    d.type='putzplan';
     return fetch(SHEETS_WEBHOOK_URL, {
       method:'POST', mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({ type:'putzplan', studio:studioName(sk), studioKey:sk,
-        tasks:tasks, notes:notes, updatedBy:session.name, ts:Date.now() })
+      body:JSON.stringify(d)
     }).catch(function(){});
   }).catch(function(){});
 }
@@ -7631,30 +7873,45 @@ function pushPutzplanToSheets(sk){
    Nötig, weil sonst nur Studios in der Tabelle landen, in denen jemand
    gerade etwas geändert hat. Läuft nacheinander (nicht parallel), damit
    sich die Sendungen nicht überholen. */
+/* Ebenfalls eine einzige Sendung – siehe syncAllMaterialToSheets. Gelesen
+   wird trotzdem Studio für Studio, das sind kleine Abfragen. */
 function syncAllPutzplanToSheets(){
   if(!SHEETS_WEBHOOK_URL) return Promise.resolve();
-  var keys=STUDIOS.map(studioKey), i=0;
-  function next(){
-    if(i>=keys.length) return Promise.resolve();
-    var sk=keys[i++];
-    return pushPutzplanToSheets(sk)
-      .then(function(){ return new Promise(function(r){ setTimeout(r,150); }); })
-      .then(next);
-  }
-  return next();
+  var keys=STUDIOS.map(studioKey);
+  return Promise.all(keys.map(function(sk){
+    return putzplanDatenHolen(sk).catch(function(){ return null; });
+  })).then(function(res){
+    var studios=res.filter(function(x){ return !!x; });
+    if(!studios.length) return;
+    return fetch(SHEETS_WEBHOOK_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({ type:'putzplan-alle', studios:studios })
+    }).catch(function(){});
+  });
 }
+/* Alle Studios in EINER Sendung. Vorher waren es 14 einzelne, von denen
+   jede das komplette Tabellenblatt neu formatiert hat – bei wachsender
+   Tabelle lief das in die Zeitgrenze von Apps Script, und dann fehlten
+   einzelne Studios, ohne dass irgendwo eine Fehlermeldung stand. */
 function syncAllMaterialToSheets(){
   if(!SHEETS_WEBHOOK_URL) return Promise.resolve();
   return db.collection('inventory').get().then(function(snap){
-    var list=[]; snap.forEach(function(d){ list.push({sk:d.id, items:d.data().items||[]}); });
-    var i=0;
-    function next(){
-      if(i>=list.length) return Promise.resolve();
-      var d=list[i++];
-      pushToSheets(d.sk, d.items);
-      return new Promise(function(r){ setTimeout(r,150); }).then(next);
-    }
-    return next();
+    var studios=[];
+    snap.forEach(function(d){
+      var items=(d.data().items)||[];
+      studios.push({
+        studio:studioName(d.id), studioKey:d.id,
+        items:items.map(function(it){ return {name:it.name, have:it.have||0, need:itemNeed(it)}; }),
+        updatedBy:session.name, ts:Date.now()
+      });
+    });
+    if(!studios.length) return;
+    return fetch(SHEETS_WEBHOOK_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({ type:'material-alle', studios:studios })
+    }).catch(function(){});
   }).catch(function(){});
 }
 /* Beides – wird beim Chef-Login und über den Knopf im Chef-Bereich genutzt */
@@ -7840,10 +8097,23 @@ function renderDevices(){
                   : 'Die Leitung trägt hier die Geräte des Studios ein.');
     return;
   }
-  // Defekte nach oben – wer die Seite öffnet, soll sie zuerst sehen
+  sortLeiste($('devSort'), 'dev', [
+    {id:'zustand', label:'Zustand'},
+    {id:'name',    label:'Name'},
+    {id:'letzte',  label:'zuletzt gemeldet'},
+    {id:'oft',     label:'häufigste Ausfälle'}
+  ], 'zustand', renderDevices);
+
+  // Voreinstellung "Zustand": Defektes oben – wer die Seite öffnet, soll es
+  // zuerst sehen. Die anderen Reihenfolgen sind für die Wartungsplanung.
   var rang={defekt:0, wartung:1, ok:2};
+  var wie=sortWahl('dev','zustand');
+  var nachName=function(a,b){ return String(a.name||'').localeCompare(String(b.name||''),'de'); };
   var list=_devices.slice().sort(function(a,b){
-    return (rang[a.status||'ok']-rang[b.status||'ok']) || String(a.name||'').localeCompare(String(b.name||''),'de');
+    if(wie==='name')   return nachName(a,b);
+    if(wie==='letzte') return (b.lastAt||0)-(a.lastAt||0) || nachName(a,b);
+    if(wie==='oft')    return devDefektCount(b.id)-devDefektCount(a.id) || nachName(a,b);
+    return (rang[a.status||'ok']-rang[b.status||'ok']) || nachName(a,b);
   });
   box.innerHTML=list.map(function(d){
     var st=devStatus(d);
@@ -7887,6 +8157,26 @@ function fillDeviceModal(){
   // "Wieder in Ordnung" nur zeigen, wenn es auch etwas zu beheben gibt
   var ok=$('devmOk'); if(ok) ok.style.display = (d.status && d.status!=='ok') ? 'inline-flex' : 'none';
   var del=$('devmDel'); if(del) del.style.display = canManage() ? 'block' : 'none';
+  // Umbenennen ist Sache der Verwaltung – sonst heisst das Gerät morgen anders
+  var ed=$('devmEditWrap'); if(ed) ed.style.display = canManage() ? 'block' : 'none';
+  if(canManage()){
+    var n2=$('devmName2'), p2=$('devmPlace2');
+    // Nur setzen, wenn gerade niemand darin tippt
+    if(n2 && document.activeElement!==n2) n2.value=d.name||'';
+    if(p2 && document.activeElement!==p2) p2.value=d.place||'';
+  }
+}
+
+function saveDevice(btn){
+  var d=deviceById(_devOpenId); if(!d || !_devStudioKey) return;
+  var name=$('devmName2').value.trim();
+  if(!name){ toast('Die Bezeichnung darf nicht leer sein.',true); return; }
+  withBusy(btn,function(){
+    return db.collection('studios').doc(_devStudioKey).collection('devices').doc(d.id)
+      .update({ name:name, place:$('devmPlace2').value.trim() })
+      .then(function(){ toast('Gespeichert ✓'); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  });
 }
 function closeDeviceModal(){
   _devOpenId=null; _pendingDevPhoto=null;
@@ -7974,6 +8264,172 @@ function deleteDevice(){
   db.collection('studios').doc(_devStudioKey).collection('devices').doc(d.id).delete()
     .then(function(){ closeDeviceModal(); toast('Gerät entfernt'); })
     .catch(function(e){ toast(errMsg(e),true); });
+}
+
+/* ============================================================
+   SORTIER-LEISTEN
+
+   Bisher hatte nur die Aufgabenliste eine Sortierung, alles andere kam in
+   einer festen Reihenfolge. Bei 14 Studios, 40 Geräten und wachsenden
+   Dokumenten reicht das nicht.
+
+   Die gewählte Sortierung liegt in PREFS.sort und bleibt auf dem Gerät –
+   wer immer nach Datum sucht, muss das nicht jedes Mal neu einstellen.
+   ============================================================ */
+function sortWahl(kennung, standard){
+  var w=(PREFS.sort||{})[kennung];
+  return w || standard;
+}
+function sortSetzen(kennung, wert){
+  PREFS.sort=PREFS.sort||{};
+  PREFS.sort[kennung]=wert;
+  savePrefs();
+}
+/* Baut eine Reihe Sortier-Knöpfe in ein Element.
+   arten = [{id, label}], beiWechsel wird nach dem Klick aufgerufen. */
+function sortLeiste(el, kennung, arten, standard, beiWechsel){
+  if(!el) return;
+  var aktuell=sortWahl(kennung, standard);
+  el.className='sort-row';
+  el.innerHTML='<span class="sort-lab">Sortieren</span>'+
+    arten.map(function(a){
+      return '<button class="chip'+(a.id===aktuell?' on':'')+'" data-sortid="'+esc(a.id)+'">'+
+        esc(a.label)+'</button>';
+    }).join('');
+  el.querySelectorAll('[data-sortid]').forEach(function(b){
+    b.addEventListener('click',function(){
+      sortSetzen(kennung, b.getAttribute('data-sortid'));
+      tick(6);
+      beiWechsel();
+    });
+  });
+}
+
+/* ============================================================
+   AUFKLAPPBARE ABSCHNITTE
+
+   Die Seiten waren eine lange Kartenwand: Material zeigte Vorhersage,
+   Einkaufsliste und Bestand gleich laut untereinander, der Chef-Bereich
+   sechs Formulare am Stück. Man musste scrollen, um überhaupt zu sehen,
+   was es gibt.
+
+   Statt das HTML aller Seiten umzubauen, wird hier einmal beim Start jede
+   Karte mit data-fold umgebaut: Überschrift wird zum Schalter, der Rest
+   kommt in einen Körper, der auf- und zufährt. Was offen ist, liegt in
+   PREFS.folds und bleibt auf dem Gerät erhalten.
+   ============================================================ */
+var CHEV = '<span class="fold-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>';
+
+function foldAufbauen(){
+  document.querySelectorAll('.card[data-fold]').forEach(function(card){
+    if(card._foldFertig) return;
+    card._foldFertig=true;
+    card.classList.add('fold');
+
+    // Kopf ist das erste Kind, das eine Überschrift ist oder eine enthält
+    var kinder=Array.prototype.slice.call(card.children);
+    var kopf=null;
+    for(var i=0;i<kinder.length;i++){
+      if(kinder[i].tagName==='H3' || kinder[i].querySelector('h3')){ kopf=kinder[i]; break; }
+    }
+    if(!kopf) return;
+
+    var leiste=document.createElement('div');
+    leiste.className='fold-head';
+    var mitte=document.createElement('div');
+    mitte.className='fold-main';
+    card.insertBefore(leiste, kopf);
+    mitte.appendChild(kopf);
+    leiste.appendChild(mitte);
+    leiste.insertAdjacentHTML('beforeend', CHEV);
+
+    var body=document.createElement('div');
+    body.className='fold-body';
+    while(leiste.nextSibling) body.appendChild(leiste.nextSibling);
+    card.appendChild(body);
+
+    // Hat die Karte schon einen eigenen Zähler in der Überschrift, bekommt
+    // sie keine zweite Zahl – zweimal dieselbe Auskunft nebeneinander
+    // verwirrt mehr, als sie hilft.
+    card._hatZaehler = !!leiste.querySelector('.todo-count');
+
+    var id=card.getAttribute('data-fold');
+    // Standard: zu, ausser die Karte ist ausdrücklich als offen markiert
+    var offen = card.hasAttribute('data-fold-offen');
+    if(PREFS.folds && PREFS.folds[id]!=null) offen = !!PREFS.folds[id];
+    card.classList.toggle('zu', !offen);
+    if(offen) body.style.height='auto';
+
+    leiste.addEventListener('click', function(e){
+      if(e.target.closest('button,a,input,select')) return;
+      foldSchalten(card);
+    });
+  });
+  foldZahlen();
+}
+
+function foldSchalten(card){
+  var body=card.querySelector(':scope > .fold-body'); if(!body) return;
+  var zu=card.classList.contains('zu');
+  var id=card.getAttribute('data-fold');
+
+  if(zu){
+    card.classList.remove('zu');
+    body.style.height='0px';
+    // Doppelt gemessen: erst die echte Höhe, dann darauf animieren
+    var h=body.scrollHeight;
+    requestAnimationFrame(function(){
+      body.style.height=h+'px';
+      setTimeout(function(){ if(!card.classList.contains('zu')) body.style.height='auto'; }, 360);
+    });
+  } else {
+    body.style.height=body.scrollHeight+'px';
+    requestAnimationFrame(function(){
+      card.classList.add('zu');
+      body.style.height='0px';
+    });
+  }
+  PREFS.folds=PREFS.folds||{};
+  PREFS.folds[id]=zu;      // zu -> jetzt offen
+  savePrefs();
+  tick(6);
+}
+
+/* Karte aufklappen, ohne sie umzuschalten (z. B. wenn ein Sprung von der
+   Startseite genau dorthin führt) */
+function foldOeffnen(id){
+  var card=document.querySelector('.card[data-fold="'+id+'"]');
+  if(card && card.classList.contains('zu')) foldSchalten(card);
+  return card;
+}
+
+/* Zahl neben der Überschrift, damit man auch zugeklappt sieht, ob dort
+   etwas liegt. Die Quellen stehen hier an einer Stelle statt verstreut in
+   den einzelnen Render-Funktionen. */
+function foldZahl(id, text, stufe){
+  var card=document.querySelector('.card[data-fold="'+id+'"]');
+  if(!card || card._hatZaehler) return;
+  var mitte=card.querySelector('.fold-main'); if(!mitte) return;
+  var alt=mitte.querySelector('.fold-num');
+  if(!text){ if(alt) alt.remove(); return; }
+  if(!alt){ alt=document.createElement('span'); alt.className='fold-num'; mitte.appendChild(alt); }
+  alt.textContent=text;
+  alt.className='fold-num'+(stufe?' '+stufe:'');
+}
+
+function foldZahlen(){
+  // Material
+  var fehlt=0;
+  try{
+    managedStudios().forEach(function(st){
+      (_invAll[studioKey(st)]||[]).forEach(function(it){ if(itemNeed(it)>0) fehlt++; });
+    });
+  }catch(e){}
+  foldZahl('shop', fehlt? fehlt+' Artikel' : 'nichts fehlt', fehlt?'warn':'');
+  // Putzplan-Notizen
+  foldZahl('ppnotes', _ppNotes.length ? _ppNotes.length+'' : '', '');
+  // Papierkorb
+  foldZahl('trash', _trash.length ? _trash.length+'' : '', '');
 }
 
 /* ============================================================
@@ -8071,10 +8527,22 @@ function renderCerts(){
   if(!box) return;
   buildCertSelects();
 
-  var sortiert=_certs.slice().sort(function(a,b){
+  sortLeiste($('certSort'), 'cert', [
+    {id:'ablauf', label:'Ablauf'},
+    {id:'person', label:'Person'},
+    {id:'art',    label:'Art'}
+  ], 'ablauf', renderCerts);
+
+  var wie=sortWahl('cert','ablauf');
+  var nachAblauf=function(a,b){
     var ta=certTage(a), tb=certTage(b);
     if(ta===null) return 1; if(tb===null) return -1;
     return ta-tb;
+  };
+  var sortiert=_certs.slice().sort(function(a,b){
+    if(wie==='person') return String(a.name||'').localeCompare(String(b.name||''),'de') || nachAblauf(a,b);
+    if(wie==='art')    return String(certArt(a.art).name).localeCompare(String(certArt(b.art).name),'de') || nachAblauf(a,b);
+    return nachAblauf(a,b);
   });
   if(cnt) cnt.textContent = sortiert.length ? sortiert.length+(sortiert.length===1?' Nachweis':' Nachweise') : '';
 
@@ -8886,6 +9354,8 @@ function switchPmTab(which){
   if(note) note.style.display = which==='aussehen'?'block':'none';
   if(which==='melden') buildNotifyOptions();
   if(which==='nachweise') loadMyCerts();
+  var kw=$('pmKeysWrap');
+  if(kw) kw.style.display = (which==='aussehen' && window.innerWidth>820) ? 'block' : 'none';
   document.querySelectorAll('[data-pmtab]').forEach(function(b){
     b.classList.toggle('on', b.getAttribute('data-pmtab')===(isProfil?'profil':which));
   });
@@ -9155,6 +9625,8 @@ function bindActions(){
 
   // Tastenkürzel
   bindShortcuts();
+  var pmKB=$('pmKeysBtn');
+  if(pmKB) pmKB.addEventListener('click',function(){ closeProfile(); setTimeout(oeffneKeysModal,120); });
   var keyC=$('keysClose'); if(keyC) keyC.addEventListener('click',function(){ $('keysModal').classList.remove('show'); });
   var keyM=$('keysModal'); if(keyM) keyM.addEventListener('click',function(e){ if(e.target===keyM) keyM.classList.remove('show'); });
 
@@ -9536,6 +10008,7 @@ function bindActions(){
   var devW=$('devmWartung'); if(devW) devW.addEventListener('click',function(){ reportDevice('wartung',this); });
   var devO=$('devmOk');      if(devO) devO.addEventListener('click',function(){ reportDevice('behoben',this); });
   var devDel=$('devmDel');   if(devDel) devDel.addEventListener('click',deleteDevice);
+  var devSv=$('devmSave');   if(devSv) devSv.addEventListener('click',function(){ saveDevice(this); });
   var devP=$('devmPhoto');   if(devP) devP.addEventListener('click',function(){ $('devFileShared').click(); });
   var devF=$('devFileShared'); if(devF) devF.addEventListener('change',function(){
     var f=this.files&&this.files[0]; this.value=''; if(!f) return;

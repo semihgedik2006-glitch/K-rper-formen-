@@ -71,6 +71,10 @@ Fünf Bereiche in der unteren Leiste:
 | **Verwaltung** | Chef-Bereich · Archiv — nur **L C** |
 
 - Innerhalb eines Bereichs wechselt man oben über eine zweite Leiste.
+- **Aufklappbare Abschnitte**: auf jeder Seite steht oben das, wofür man sie
+  öffnet. Nebensachen sind zusammengeklappt und einen Tipp entfernt. Neben
+  der Überschrift steht eine Zahl, damit man auch zugeklappt sieht, ob dort
+  etwas liegt. Was offen ist, merkt sich das Gerät.
 - **Punkte und Zahlen** an den Symbolen zeigen Ungelesenes und Offenes.
 - **Schrumpfender Kopf**: beim Scrollen wird die Überschrift kleiner, damit
   mehr Inhalt sichtbar ist.
@@ -81,8 +85,12 @@ Fünf Bereiche in der unteren Leiste:
 
 ## 3. Startseite
 
+Die Seite ist in drei benannte Blöcke geteilt: **was jetzt dran ist** (Hinweise
+und der eigene Dienst), **Überblick** (die Zahlen) und **Schnell hin** (die
+Sprünge).
+
 - **Begrüßung** nach Tageszeit, mit Vorname und heutigem Datum.
-- **Dringende Hinweise** als Leisten, höchstens drei (der Rest wird
+- **Dringende Hinweise** als Leisten, höchstens vier (darüber wird
   zusammengefasst). Antippen springt direkt an die richtige Stelle:
   - angeheftete Infos der Leitung
   - überfällige Aufgaben
@@ -250,6 +258,7 @@ Fünf Bereiche in der unteren Leiste:
 ## 10. Geräte
 
 - **Liste je Studio**, Defektes steht oben.
+- **Sortieren** nach Zustand, Name, zuletzt gemeldet oder häufigsten Ausfällen.
 - Drei Zustände: **in Ordnung**, **Wartung**, **defekt**.
 - **Defekt melden** darf jeder – wer vor dem Gerät steht, hat nicht
   unbedingt Dienst. Mit kurzer Beschreibung und optionalem **Foto**.
@@ -260,7 +269,7 @@ Fünf Bereiche in der unteren Leiste:
 - **Verlauf je Gerät** – jede Meldung bleibt am Gerät stehen. Beim Anruf
   beim Techniker hat man die Vorgeschichte.
 - **Warnung bei Wiederholungstätern**: „3× defekt in 90 Tagen".
-- **Gerät aufnehmen und entfernen** (**L C**), mit Bezeichnung und Standort.
+- **Gerät aufnehmen, umbenennen, umziehen und entfernen** (**L C**).
   Der Verlauf bleibt auch nach dem Entfernen erhalten.
 
 ---
@@ -309,6 +318,7 @@ Wer ursprünglich eingeteilt war, bleibt am Eintrag vermerkt.
 ## 12. Dokumente
 
 - **Datei hochladen** oder **Link hinterlegen**.
+- **Sortieren** nach Datum, Name, Größe oder Kategorie.
 - **Sieben Kategorien**: ohne · Hygiene · Technik · Personal · Verträge ·
   Marketing · Sonstiges. Filterleiste mit Zähler je Kategorie.
 - **Für einzelne Studios oder alle** freigeben.
@@ -402,7 +412,7 @@ Nur **L C**. Für den Leiter beschränkt auf seine Studios.
 
 ### Nachweise (**C**)
 - **Läuft demnächst ab** – alles unter 60 Tagen, Abgelaufenes oben.
-- **Alle Nachweise** aller Personen.
+- **Alle Nachweise** aller Personen, sortierbar nach Ablauf, Person oder Art.
 - **Eintragen**: Person, Art (Erste-Hilfe-Kurs, Trainerlizenz,
   EMS-Einweisung, Hygieneschulung, Brandschutzhelfer, Sonstiges), gültig bis.
   Das Ablaufdatum wird je nach Art vorgeschlagen.
@@ -482,18 +492,34 @@ Läuft im Hintergrund, ohne dass jemand etwas tun muss:
 
 ## 20. Tastenkürzel
 
-Am Rechner. Übersicht mit **?**.
+Am Rechner. Übersicht mit **?** oder über *Profil → Aussehen → Tastenkürzel
+anpassen*.
+
+Fest eingebaut und nicht änderbar:
 
 | Taste | Wirkung |
 |---|---|
 | **Cmd/Strg + K** | Suche – funktioniert immer, auch beim Schreiben |
 | **Esc** | aus dem Schreibfeld heraus, danach Fenster schließen |
+
+Frei belegbar – auf „ändern" tippen und die neue Taste drücken. Ist die Taste
+schon vergeben, sagt die App welche Aktion sie belegt und ändert nichts. Die
+Belegung gilt nur auf dem jeweiligen Gerät und lässt sich mit einem Knopf
+zurücksetzen.
+
+| Standard | Aktion |
+|---|---|
 | **1** | Start |
 | **2** | Austausch |
 | **3** | Arbeit |
 | **4** | Team |
 | **5** | Verwaltung (**L C**) |
 | **S** | Suche öffnen |
+| **G** | Geräte |
+| **P** | Putzplan |
+| **M** | Material |
+| **D** | Direktnachrichten |
+| **I** | Infos der Leitung |
 | **N** | Neue Aufgabe (**L C**) |
 | **A** | Neue Ankündigung (**L C**) |
 | **?** | diese Übersicht |

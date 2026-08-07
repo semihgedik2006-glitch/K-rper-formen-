@@ -133,8 +133,9 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.name.size() <= 80;
       allow delete: if manages(studioKey);
-      // Nur der Zustand darf sich ändern, nicht Name oder Standort –
-      // sonst könnte eine Meldung nebenbei das Gerät umbenennen.
+      // Umbenennen und umziehen darf nur die Verwaltung. Alle anderen
+      // dürfen ausschliesslich den Zustand melden – sonst könnte eine
+      // Meldung nebenbei das Gerät umbenennen.
       allow update: if manages(studioKey)
         || (signedIn()
             && request.resource.data.diff(resource.data)
