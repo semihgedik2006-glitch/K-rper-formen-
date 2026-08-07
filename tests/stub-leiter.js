@@ -13,11 +13,34 @@
   var PROFILE = {
     name: 'Test Leiter', role: 'leiter', studios: ['Hürth', 'Brühl'],
     studioKeys: ['studio-6','studio-7'],
-    studio: 'Hürth', avatar: '💪', color: '#00E06E'
+    studio: 'Hürth', avatar: '🧭', color: '#A78BFA',
+    email: 'leiter@example.com'
   };
+  var USERS = [
+    { id:'testuid', name:'Test Leiter', role:'leiter', studios:['Hürth','Brühl'], studioKeys:['studio-6','studio-7'] },
+    { id:'u9', name:'Der Chef', role:'chef', studios:[], email:'chef@example.com' },
+    { id:'u2', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
+    { id:'u3', name:'Ben Kraus', role:'leiter', studios:['Brühl'], studioKeys:['studio-7'], lastSeen:Date.now()-3600000 },
+    { id:'u4', name:'Alt-Konto Test', role:'chef', email:'test1@example.com' },
+    { id:'u5', name:'', role:'chef', email:'test2@example.com' }
+  ];
+  var MESSAGES = [
+    { id:'m1', uid:'u2', name:'Anna Meier', role:'mitarbeiter', studio:'Hürth',
+      text:'Guten Morgen zusammen!', ts:Date.now()-7200000,
+      reactions:{'👍':['u3','testuid'],'🎉':['u3']} },
+    { id:'m2', uid:'u3', name:'Ben Kraus', role:'leiter', studio:'Brühl',
+      text:'@TestChef kannst du bitte die Handtücher nachbestellen?', ts:Date.now()-3600000,
+      mentions:['testuid'] },
+    { id:'m3', uid:'testuid', name:'Test Chef', role:'chef',
+      text:'Klar, mache ich heute.', ts:Date.now()-600000, editedAt:Date.now()-500000,
+      replyTo:'m2', replyName:'Ben Kraus', replyText:'kannst du bitte die Handtücher nachbestellen?', pinned:true },
+    { id:'m4', uid:'u2', name:'Anna Meier', role:'mitarbeiter', studio:'Hürth',
+      text:'', ts:Date.now()-300000,
+      audio:'data:audio/webm;codecs=opus;base64,GkXfo0AgQoaBAULygQ==', audioMs:14000 }
+  ];
   var TODOS = {
     'studio-6': [
-      { id: 't1', title: 'Geräte desinfizieren', desc: 'Nach jedem Training', done: false, createdBy: 'Chef', ts: Date.now() - 90000000, due: Date.now() - 86400000 },
+      { id: 't1', title: 'Geräte desinfizieren', desc: 'Nach jedem Training', done: false, createdBy: 'Chef', ts: Date.now() - 90000000, due: Date.now() - 86400000, steps:[{t:'Geräte abwischen',d:true},{t:'Gurte prüfen',d:false},{t:'Kabel aufrollen',d:false}] },
       { id: 't2', title: 'Handtücher waschen', desc: '', done: true, doneBy: 'Anna', doneAt: Date.now() - 3000, createdBy: 'Chef', ts: Date.now() - 80000000 },
       { id: 't3', title: 'Wasserspender auffüllen', desc: 'Beide Spender', done: false, createdBy: 'Chef', ts: Date.now() - 70000000, recurring: 'daily' }
     ],
@@ -46,6 +69,60 @@
       material:{'studio-6':[{name:'Handtücher',have:20,limit:20,need:0}]},
       cleaning:{'studio-6':{tasks:[{title:'Spiegel putzen',rep:'wöchentlich',status:'offen',by:'',at:''}],notes:[]}} }
   ];
+  var INVENTORY = {
+    'studio-6': { items:[
+      {name:'Handtücher', have:12, limit:20, need:0},
+      {name:'Handschuhe', have:4, limit:10, need:0},
+      {name:'Desinfektionsmittel', have:2, limit:6, need:0},
+      {name:'Wasserflaschen', have:30, limit:24, need:0}
+    ]},
+    'studio-7': { items:[
+      {name:'Handtücher', have:5, limit:20, need:0},
+      {name:'Desinfektionsmittel', have:1, limit:6, need:0}
+    ]}
+  };
+  var ANNS = [
+    { id:'a1', uid:'testuid', from:'Test Chef', text:'Neue Öffnungszeiten ab Montag: 7–21 Uhr.',
+      target:'all', ts:Date.now()-4*86400000, pinned:true, readBy:['u2'] },
+    { id:'a2', uid:'testuid', from:'Test Chef', text:'Bitte die Gurte nach jedem Training desinfizieren.',
+      target:'studio-6', ts:Date.now()-2*3600000, readBy:[] }
+  ];
+  var ABSENCES = {
+    'studio-6': [
+      { id:'a1', from:'2026-08-20', to:'2026-08-28', type:'urlaub', uid:'u2', name:'Anna Meier',
+        status:'offen', note:'Sommerurlaub', ts:Date.now()-86400000 },
+      { id:'a2', from:'2026-08-10', to:'2026-08-11', type:'krank', uid:'u3', name:'Ben Kraus',
+        status:'genehmigt', ts:Date.now()-3600000 },
+      { id:'a3', from:'2026-09-01', to:'2026-09-05', type:'urlaub', uid:'u3', name:'Ben Kraus',
+        status:'genehmigt', decidedBy:'Test Chef', decidedAt:Date.now()-7200000, ts:Date.now()-172800000 }
+    ]
+  };
+  // Drei Wochen-Sicherungen mit sinkenden Beständen → Vorhersage rechenbar
+  var ARCH_HIST = [
+    { id:'2026-KW29', week:'2026-KW29', label:'13.07.–19.07.2026', updatedAt:Date.now()-21*86400000,
+      material:{'studio-6':[{name:'Handtücher',have:30,limit:20},{name:'Handschuhe',have:20,limit:10},{name:'Desinfektionsmittel',have:10,limit:6}]},
+      cleaning:{} },
+    { id:'2026-KW30', week:'2026-KW30', label:'20.07.–26.07.2026', updatedAt:Date.now()-14*86400000,
+      material:{'studio-6':[{name:'Handtücher',have:24,limit:20},{name:'Handschuhe',have:14,limit:10},{name:'Desinfektionsmittel',have:7,limit:6}]},
+      cleaning:{} },
+    { id:'2026-KW31b', week:'2026-KW31b', label:'27.07.–02.08.2026', updatedAt:Date.now()-7*86400000,
+      material:{'studio-6':[{name:'Handtücher',have:18,limit:20},{name:'Handschuhe',have:9,limit:10},{name:'Desinfektionsmittel',have:4,limit:6}]},
+      cleaning:{} }
+  ];
+  var DOCS = [
+    { id:'d1', name:'Hygieneplan 2026', kind:'file', size:120000, cat:'hygiene', studios:'all', ts:Date.now()-86400000, uploadedBy:'Chef' },
+    { id:'d2', name:'Gerätewartung Anleitung', kind:'link', url:'https://example.com', cat:'technik', studios:'all', ts:Date.now()-172800000, uploadedBy:'Chef' },
+    { id:'d3', name:'Arbeitsvertrag Muster', kind:'file', size:88000, cat:'personal', studios:'all', ts:Date.now()-259200000, uploadedBy:'Chef' }
+  ];
+  var SHIFTS = {
+    'studio-6': [
+      { id:'s1', date:'2026-08-06', from:'09:00', to:'14:00', uid:'testuid', name:'Test Leiter', note:'Einweisung neue Kundin' },
+      { id:'s2', date:'2026-08-07', from:'16:00', to:'21:00', uid:'u2', name:'Anna Meier' }
+    ],
+    'studio-7': [
+      { id:'s3', date:'2026-08-09', from:'10:00', to:'15:00', uid:'testuid', name:'Test Chef' }
+    ]
+  };
   function collection(path) {
     return {
       _p: path,
@@ -61,7 +138,15 @@
           set: function () { return Promise.resolve(); },
           update: function () { return Promise.resolve(); },
           delete: function () { return Promise.resolve(); },
-          onSnapshot: function (cb) { try { cb({ exists: false, data: function () { return {}; } }); } catch (e) {} return unsub(); }
+          onSnapshot: function (cb) {
+            if (path === 'inventory') {
+              var inv = INVENTORY[id];
+              try { cb({ exists: !!inv, id:id, metadata:{hasPendingWrites:false}, data: function(){ return inv || {items:[]}; } }); } catch (e) { console.error(e); }
+              return unsub();
+            }
+            try { cb({ exists: false, metadata:{hasPendingWrites:false}, data: function () { return {}; } }); } catch (e) {}
+            return unsub();
+          }
         };
       },
       where: function () { return this; },
@@ -69,12 +154,29 @@
       limit: function () { return this; },
       limitToLast: function () { return this; },
       add: function () { return Promise.resolve({ id: 'neu' }); },
-      get: function () { return Promise.resolve(makeSnap([])); },
+      get: function () {
+        var ms = /^studios\/(.+)\/shifts$/.exec(path);
+        var list = ms ? (SHIFTS[ms[1]] || []) : [];
+        return Promise.resolve(makeSnap(list.map(function (d) {
+          return { id: d.id, data: function () { return d; } };
+        })));
+      },
       onSnapshot: function (cb) {
         var m = /^studios\/(.+)\/todos$/.exec(path);
         var mc = /^studios\/(.+)\/cleaning$/.exec(path);
         var mn = /^studios\/(.+)\/cleaningNotes$/.exec(path);
-        var list = m ? (TODOS[m[1]] || []) : mc ? (CLEAN[mc[1]] || []) : mn ? (CLEANNOTES[mn[1]] || []) : (path==='archives' ? ARCHIVES : []);
+        var ma = /^studios\/(.+)\/absences$/.exec(path);
+        if (ma) {
+          var al = ABSENCES[ma[1]] || [];
+          try { cb(makeSnap(al.map(function (d) { return { id: d.id, data: function () { return d; } }; }))); } catch (e) { console.error(e); }
+          return unsub();
+        }
+        var mm = /^channels\/(.+)\/messages$/.exec(path);
+        var list = m ? (TODOS[m[1]] || []) : mc ? (CLEAN[mc[1]] || []) : mn ? (CLEANNOTES[mn[1]] || []) :
+                   mm ? (mm[1]==='allgemein' ? MESSAGES : []) :
+                   (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
+                   (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
+                   (path==='documents' ? DOCS : [])))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();
@@ -90,7 +192,10 @@
   window.firebase = {
     initializeApp: function () { return { firestore: function () { return fs; } }; },
     apps: [],
-    app: function () { return { firestore: function () { return fs; } }; },
+    app: function () { return {
+      firestore: function () { return fs; },
+      functions: function () { return window.firebase.functions(); }
+    }; },
     auth: function () {
       return {
         onAuthStateChanged: function (cb) { setTimeout(function () { cb({ uid: 'testuid', email: 'test@test.de' }); }, 60); return unsub(); },
@@ -101,6 +206,14 @@
       };
     },
     firestore: function () { return fs; },
+    functions: function () {
+      return { httpsCallable: function (name) {
+        return function (data) {
+          window.__aufruf = { name: name, data: data };
+          return Promise.resolve({ data: { ok: true, empfaenger: 1, tage: (data && data.tage) || 30 } });
+        };
+      } };
+    },
     messaging: function () { return { onMessage: function () {}, getToken: function () { return Promise.resolve(''); } }; },
     storage: function () { return { ref: function () { return {}; } }; }
   };

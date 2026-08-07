@@ -3811,7 +3811,6 @@ var regRole = 'mitarbeiter';
     $('rolePick').style.display='none';
     $('rgStudioWrap').style.display='none';
     $('rgPinWrap').style.display='block';
-    $('loginSub') && ($('loginSub').textContent='Chef-Zugang');
     setAuthMode('register');
   } else {
     setAuthMode('login');
@@ -3940,10 +3939,11 @@ function showApp(){
   buildPutzplanSelect();
   buildTeamSelect();
   if(canManage()){
-    buildChefSelects(); listenInventoryAll(); restoreDrafts();
+    buildChefSelects(); restoreDrafts();
     $('docUploadCard').style.display='block'; buildDocStudios(); buildDocCatSelect();
     setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
+  listenInventoryAll();                  // jede Rolle: fuer den Material-Hinweis
   if(canManage()){ listenEmployees(); listenTrash(); }
   if(isChef()){
     listenChefs();
@@ -4784,6 +4784,7 @@ function stopListeners(){
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
   if(_invUnsub){ _invUnsub(); _invUnsub=null; }
+  _invUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _invUnsubs=[];
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
   if(_dmThreadsUnsub){ _dmThreadsUnsub(); _dmThreadsUnsub=null; }
@@ -5075,16 +5076,28 @@ function bindMessageTools(box){
       e.stopPropagation();
       var id=b.getAttribute('data-pin');
       var war=b.getAttribute('data-pinned')==='1';
+      var col=db.collection('channels').doc(currentChannel).collection('messages');
+
+      if(war){ // nur loslösen
+        col.doc(id).update({ pinned:false })
+          .then(function(){ toast('Losgelöst'); })
+          .catch(function(err){ toast(errMsg(err),true); });
+        return;
+      }
+
       // Immer nur EINE angeheftete Nachricht je Kanal. Zwei Pinnwände
       // nebeneinander wären wieder unübersichtlich.
-      var batch=db.batch();
-      var col=db.collection('channels').doc(currentChannel).collection('messages');
-      (_curMsgs||[]).forEach(function(m){
-        if(m.pinned && m.id!==id) batch.update(col.doc(m.id), { pinned:false });
-      });
-      batch.update(col.doc(id), { pinned: !war });
-      batch.commit()
-        .then(function(){ toast(war?'Losgelöst':'Oben angeheftet 📌'); })
+      // Gefragt wird die DATENBANK, nicht nur der geladene Verlauf: eine
+      // ältere angeheftete Nachricht kann längst aus dem Fenster gerutscht
+      // sein und bliebe sonst still angeheftet.
+      col.where('pinned','==',true).get()
+        .then(function(snap){
+          var batch=db.batch();
+          snap.forEach(function(d){ if(d.id!==id) batch.update(d.ref, { pinned:false }); });
+          batch.update(col.doc(id), { pinned:true });
+          return batch.commit();
+        })
+        .then(function(){ toast('Oben angeheftet 📌'); })
         .catch(function(err){ toast(errMsg(err),true); });
     });
   });
@@ -6140,14 +6153,43 @@ function renderStudioGrid(){
 
 /* ── Chef-Dashboard ── */
 var _invAll={}, _employees=[], _invUnsub=null;
+/* ── Materialbestände beobachten ──
+   Die Verwaltung braucht alle Studios (Einkaufsliste, Kennzahlen). Ein
+   Mitarbeiter braucht nur seine eigenen – und bekommt sie ab jetzt auch.
+   Vorher lief das nur fuer die Verwaltung; dadurch blieb der Hinweis
+   "X Artikel fehlen" auf der Startseite fuer Mitarbeiter immer aus.
+   Ausgerechnet die sind es, die das Material auffuellen.
+
+   Fuer einen Mitarbeiter sind das ein bis zwei zusaetzliche Dokumente –
+   nicht die ganze Sammlung. */
+var _invUnsubs=[];
 function listenInventoryAll(){
   if(_invUnsub){ _invUnsub(); _invUnsub=null; }
-  _invUnsub=db.collection('inventory').onSnapshot(function(snap){
-    _invAll={}; snap.forEach(function(d){ _invAll[d.id]=(d.data().items||[]); });
+  _invUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _invUnsubs=[];
+
+  function fertig(){
     renderDashboard();
     renderShoppingList();   // Einkaufsliste mitziehen, sobald sich Bestände ändern
     renderForecast();
-  }, function(e){ console.error('Inventar:',e.message); });
+    if(currentView==='home') renderHome();
+  }
+
+  if(canManage()){
+    _invUnsub=db.collection('inventory').onSnapshot(function(snap){
+      _invAll={}; snap.forEach(function(d){ _invAll[d.id]=(d.data().items||[]); });
+      fertig();
+    }, function(e){ console.error('Inventar:',e.message); });
+    return;
+  }
+
+  // Mitarbeiter: nur die eigenen Studios, je ein Dokument
+  (session.studioKeys||[]).forEach(function(sk){
+    var u=db.collection('inventory').doc(sk).onSnapshot(function(doc){
+      _invAll[sk]=(doc.exists && doc.data().items) || [];
+      fertig();
+    }, function(e){ console.warn('Inventar '+sk+':', e.message); });
+    _invUnsubs.push(u);
+  });
 }
 function renderDashboard(){
   // Auch der Studio-Leiter bekommt Kacheln – nur eben für seine Studios
@@ -6687,7 +6729,12 @@ function forecastFor(studioKeyWanted){
 function renderForecast(){
   var box=$('fcList'), card=$('fcCard');
   if(!box || !card || !session) return;
-  if(!canManage() || !_matStudioKey){ card.style.display='none'; return; }
+  // NUR fuer den Chef. Gerechnet wird aus den Wochen-Sicherungen, und die
+  // enthalten alle 14 Studios – deshalb darf sie laut firestore.rules nur
+  // der Chef lesen. Zeigte man die Karte auch dem Studio-Leiter, stuende
+  // dort dauerhaft "es gibt noch keine Sicherungen", obwohl es welche gibt.
+  // Er wuerde auf etwas warten, das nie kommt.
+  if(!isChef() || !_matStudioKey){ card.style.display='none'; return; }
   card.style.display='';
   var titel=$('fcTitle');
   if(titel) titel.textContent='📉 Reicht noch – '+studioName(_matStudioKey);
