@@ -13,7 +13,7 @@ const SP = process.env.SP || __dirname;
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1600); await page.mouse.click(215, 400).catch(() => {}); await page.waitForTimeout(2300);
 
-  const GROUP = { chat: 'g-komm', docs: 'g-team' };
+  const GROUP = { chat: 'g-komm', docs: 'g-arbeit' };
   async function go(view) {
     await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
     await page.waitForTimeout(450);

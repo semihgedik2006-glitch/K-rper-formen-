@@ -24,7 +24,7 @@ const SP = process.env.SP || __dirname;
 
   const GROUP = { home:'g-start', chat:'g-komm', dm:'g-komm', ann:'g-komm',
                   todos:'g-arbeit', putzplan:'g-arbeit', material:'g-arbeit',
-                  team:'g-team', docs:'g-team' };
+                  team:'g-team', docs:'g-arbeit' };
   async function go(view) {
     await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
     await page.waitForTimeout(420);
@@ -55,7 +55,6 @@ const SP = process.env.SP || __dirname;
     kacheln: [...document.querySelectorAll('#homeGrid .home-tile .hl')].map(x => x.textContent),
     meinDienst: document.getElementById('myShiftCard').style.display !== 'none',
     dienstInhalt: (document.getElementById('myShiftList') || {}).textContent.replace(/\s+/g,' ').slice(0, 70),
-    schnellzugriff: [...document.querySelectorAll('#quickGrid .quick span')].map(x => x.textContent),
   }))));
 
   // 4) Aufgaben: darf abhaken, aber nicht löschen oder Fristen verschieben

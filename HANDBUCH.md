@@ -65,9 +65,9 @@ Fünf Bereiche in der unteren Leiste:
 | Bereich | Enthält |
 |---|---|
 | **Start** | Startseite |
-| **Austausch** | Chat · Direkt · Infos |
-| **Arbeit** | Aufgaben · Putzplan · Material · Geräte |
-| **Team** | Team · Dokumente |
+| **Chat** | Chat · Direkt · Infos |
+| **Betrieb** | Aufgaben · Putzplan · Material · Geräte · Dokumente |
+| **Team** | Schichten, Abwesenheiten, Übergaben, Brett |
 | **Verwaltung** | Chef-Bereich · Archiv — nur **L C** |
 
 - Innerhalb eines Bereichs wechselt man oben über eine zweite Leiste.
@@ -78,6 +78,9 @@ Fünf Bereiche in der unteren Leiste:
 - **Punkte und Zahlen** an den Symbolen zeigen Ungelesenes und Offenes.
 - **Schrumpfender Kopf**: beim Scrollen wird die Überschrift kleiner, damit
   mehr Inhalt sichtbar ist.
+- **Zurück** (Geste am Handy, Pfeil am Rechner) geht eine Ansicht zurück.
+  Ist ein Fenster offen, schließt es zuerst. Jede Ansicht hat eine eigene
+  Adresse und lässt sich verlinken.
 - Am Rechner steht die Navigation seitlich statt unten.
 - **Offline-Hinweis** als Leiste ganz oben, sobald die Verbindung weg ist.
 
@@ -99,11 +102,12 @@ Sprünge).
 - **Zahlen-Kacheln**: offene Aufgaben · überfällig · heute erledigt · für
   dich · im Putzplan offen · neue Nachrichten. Jede Kachel ist anklickbar
   und öffnet die passende Ansicht mit dem passenden Filter.
+- Kacheln mit einer **Null** rutschen nach hinten und werden blass. Ist
+  wirklich alles auf null, steht dort **„Alles erledigt"** statt sechs Nullen.
 - **Heute-Leiste** mit Schnellsprüngen: offen, überfällig, für dich, im
   Putzplan.
 - **Mein Dienst** – die eigenen Schichten der nächsten 7 Tage über alle
   Studios, in denen man arbeitet.
-- **Schnellzugriff** – acht Kacheln zu den wichtigsten Ansichten.
 - **Zuletzt passiert** – die letzten Ereignisse im Überblick.
 - **Willkommen-Karte** beim ersten Start, mit Onboarding-Checkliste.
 
@@ -388,6 +392,11 @@ sein als am Rechner:
 ## 15. Verwaltungsbereich
 
 Nur **L C**. Für den Leiter beschränkt auf seine Studios.
+
+Der Bereich beginnt mit einer **Übersicht**: sechs Kacheln, jede mit einem
+Satz, was dahintersteckt, und einer Zahl (überfällige Aufgaben, ablaufende
+Nachweise, Einträge im Papierkorb). Antippen führt hinein, **Übersicht**
+oben links oder die Zurück-Geste wieder heraus.
 
 ### Überblick
 - **Zahlen über alle Studios** auf einen Blick.

@@ -19,7 +19,7 @@ const SP = process.env.SP || __dirname;
 
   const GROUP = { home:'g-start', chat:'g-komm', dm:'g-komm', ann:'g-komm',
                   todos:'g-arbeit', putzplan:'g-arbeit', material:'g-arbeit',
-                  team:'g-team', docs:'g-team', chef:'g-chef', archive:'g-chef' };
+                  team:'g-team', docs:'g-arbeit', chef:'g-chef', archive:'g-chef' };
   async function go(view) {
     await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
     await page.waitForTimeout(450);
