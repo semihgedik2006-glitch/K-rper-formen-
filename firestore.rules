@@ -74,6 +74,9 @@ service cloud.firestore {
       // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
       allow update: if signedIn() && (
            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+        // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
+        // Stimmenfeld anfassen, nicht Frage oder Antworten.
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
         || (resource.data.uid == request.auth.uid
             && request.time.toMillis() < resource.data.ts + 900000
             && request.resource.data.diff(resource.data)
@@ -118,6 +121,43 @@ service cloud.firestore {
             && resource.data.byUid == request.auth.uid
             && request.time.toMillis() < resource.data.ts + 3600000);
       allow update: if false;
+    }
+
+    // ── Geräte pro Studio ──
+    // Aufnehmen und entfernen ist Sache der Verwaltung. Den Status ändern
+    // darf jeder Eingeloggte: einen Defekt melden können muss die Person,
+    // die vor dem Gerät steht – nicht die, die gerade Dienst hat.
+    match /studios/{studioKey}/devices/{devId} {
+      allow read: if signedIn();
+      allow create: if manages(studioKey)
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 80;
+      allow delete: if manages(studioKey);
+      // Nur der Zustand darf sich ändern, nicht Name oder Standort –
+      // sonst könnte eine Meldung nebenbei das Gerät umbenennen.
+      allow update: if manages(studioKey)
+        || (signedIn()
+            && request.resource.data.diff(resource.data)
+                 .affectedKeys().hasOnly(['status','lastNote','lastBy','lastAt']));
+    }
+
+    // ── Verlauf zu den Geräten ──
+    // Bewusst nicht änderbar und nicht löschbar (ausser durch die
+    // Verwaltung): der Verlauf ist nur etwas wert, wenn er vollständig ist.
+    function devPhotoOk() {
+      return !('photo' in request.resource.data)
+        || (request.resource.data.photo is string
+            && request.resource.data.photo.size() <= 400000);
+    }
+    match /studios/{studioKey}/deviceLog/{logId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.byUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 300
+        && devPhotoOk();
+      allow update: if false;
+      allow delete: if manages(studioKey);
     }
 
     // ── Ankündigungen ──

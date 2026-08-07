@@ -55,6 +55,29 @@
       { id:'c3', title:'Toiletten reinigen', recurring:'daily', done:false, ts:Date.now()-70000000 }
     ]
   };
+  var DEVICES = {
+    'studio-6': [
+      { id:'d1', name:'EMS-Gerät 1', place:'Kabine links', status:'ok', ts:Date.now()-90000000 },
+      { id:'d2', name:'EMS-Gerät 2', place:'Kabine rechts', status:'defekt',
+        lastNote:'Weste links gibt keinen Impuls', lastBy:'Anna Meier', lastAt:Date.now()-7200000, ts:Date.now()-90000000 },
+      { id:'d3', name:'Waschmaschine', place:'Lager', status:'wartung',
+        lastNote:'Filter reinigen', lastBy:'Ben Kraus', lastAt:Date.now()-86400000, ts:Date.now()-90000000 }
+    ]
+  };
+  var DEVLOG = {
+    'studio-6': [
+      { id:'l1', devId:'d2', devName:'EMS-Gerät 2', art:'defekt', text:'Weste links gibt keinen Impuls',
+        by:'Anna Meier', byUid:'u2', ts:Date.now()-7200000 },
+      { id:'l2', devId:'d2', devName:'EMS-Gerät 2', art:'behoben', text:'Kabel getauscht',
+        by:'Ben Kraus', byUid:'u3', ts:Date.now()-30*86400000 },
+      { id:'l3', devId:'d2', devName:'EMS-Gerät 2', art:'defekt', text:'Gleiches Problem wieder',
+        by:'Anna Meier', byUid:'u2', ts:Date.now()-60*86400000 },
+      { id:'l4', devId:'d2', devName:'EMS-Gerät 2', art:'defekt', text:'Und nochmal',
+        by:'Anna Meier', byUid:'u2', ts:Date.now()-80*86400000 },
+      { id:'l5', devId:'d3', devName:'Waschmaschine', art:'wartung', text:'Filter reinigen',
+        by:'Ben Kraus', byUid:'u3', ts:Date.now()-86400000 }
+    ]
+  };
   var CLEANNOTES = {
     'studio-6': [
       { id:'n1', text:'Wischmopp ist kaputt, bitte neuen bestellen.', by:'Anna', byUid:'u2', ts:Date.now()-3600000 },
@@ -165,6 +188,8 @@
         var m = /^studios\/(.+)\/todos$/.exec(path);
         var mc = /^studios\/(.+)\/cleaning$/.exec(path);
         var mn = /^studios\/(.+)\/cleaningNotes$/.exec(path);
+        var md = /^studios\/(.+)\/devices$/.exec(path);
+        var ml = /^studios\/(.+)\/deviceLog$/.exec(path);
         var ma = /^studios\/(.+)\/absences$/.exec(path);
         if (ma) {
           var al = ABSENCES[ma[1]] || [];
@@ -173,6 +198,7 @@
         }
         var mm = /^channels\/(.+)\/messages$/.exec(path);
         var list = m ? (TODOS[m[1]] || []) : mc ? (CLEAN[mc[1]] || []) : mn ? (CLEANNOTES[mn[1]] || []) :
+                   md ? (DEVICES[md[1]] || []) : ml ? (DEVLOG[ml[1]] || []) :
                    mm ? (mm[1]==='allgemein' ? MESSAGES : []) :
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
@@ -187,7 +213,7 @@
     settings: function () {},
     enablePersistence: function () { return Promise.resolve(); },
     collection: function (p) { return collection(p); },
-    batch: function () { return { set: function () {}, delete: function () {}, commit: function () { return Promise.resolve(); } }; }
+    batch: function () { return { set: function () {}, update: function () {}, delete: function () {}, commit: function () { return Promise.resolve(); } }; }
   };
   window.firebase = {
     initializeApp: function () { return { firestore: function () { return fs; } }; },

@@ -96,6 +96,8 @@ was sie sehen soll.
 | `test-block7.js` | Melde-Einstellungen |
 | `test-block8.js` | Anheften, Dokument-Kategorien, erweiterte Suche |
 | `test-bericht.js` | Testbericht-Knopf |
+| `test-geraete.js` | Geräte- und Schadensbuch, für Chef und Mitarbeiter |
+| `test-umfrage.js` | Umfragen im Chat, Anhängen-Menü, Breite des Schreibfelds |
 
 ---
 
