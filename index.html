@@ -103,7 +103,10 @@ input,textarea,select{font-family:inherit;font-size:16px}
    Aktionen, die man nicht aus Versehen antippen soll. */
 .btn-danger{background:rgba(251,78,109,.14);color:var(--danger);border:1.5px solid rgba(251,78,109,.4)}
 .btn-danger:hover{background:rgba(251,78,109,.22);border-color:var(--danger)}
-.btn-sm{padding:8px 16px;min-height:36px;font-size:.8rem}
+/* 44 Pixel, nicht 36: der kleine Knopf ist trotzdem ein Fingerziel. Die
+   36 waren der letzte Rest aus der Zeit vor der Regel – sichtbar geworden
+   am Knopf „Jetzt zusätzlich sichern". */
+.btn-sm{padding:8px 16px;min-height:44px;font-size:.8rem}
 
 /* ── Inputs ── */
 .field{margin-bottom:15px}
@@ -1747,6 +1750,14 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
 .backup-fehler{line-height:1.45;margin-top:8px;padding:10px 12px;border-radius:11px;
   background:rgba(251,78,109,.10);border:1px solid rgba(251,78,109,.30);
   user-select:text;-webkit-user-select:text}
+/* Stand der letzten nächtlichen Sicherung. Grün = durchgekommen,
+   rot = seit dem letzten Versuch kaputt, grau = noch nie gelaufen. */
+.sich-stand{font-size:.82rem;line-height:1.45;margin:0 0 10px;padding:10px 12px;
+  border-radius:11px;background:var(--bg-soft);border:1px solid var(--line);
+  color:var(--text-2);user-select:text;-webkit-user-select:text}
+.sich-stand b{color:var(--text)}
+.sich-stand.gut{background:rgba(56,189,248,.10);border-color:rgba(56,189,248,.30)}
+.sich-stand.schlecht{background:rgba(251,78,109,.10);border-color:rgba(251,78,109,.30)}
 
 /* ── Dokumente ── */
 .doc{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--bg-2);
@@ -2750,6 +2761,9 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
               wird die komplette Datenbank gesichert. Die letzten sieben Tage bleiben liegen.
               Anders als die Dateien oben holt das nach einem versehentlichen Löschen wirklich
               alles zurück.</p>
+            <!-- Zeigt, ob die nächtliche Sicherung wirklich durchkommt. Ohne diese
+                 Zeile scheitert sie still und niemand merkt es. -->
+            <div class="sich-stand" id="sichStand" style="display:none"></div>
             <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-chef-only="1">🛡 Jetzt zusätzlich sichern</button>
             <p class="em-saved" id="backupNote"></p>
             <!-- Die Fehlermeldung nennt Dienstkonto und Rolle und ist deshalb
@@ -4632,6 +4646,7 @@ function showApp(){
     listenChefs();
     buildEmpStudios();
     listenArchives();                       // Wochen-Sicherungen anzeigen
+    sicherungStandLaden();                  // eine Abfrage: läuft die Nachtsicherung?
     setTimeout(function(){ maybeArchiveWeek(); }, 4000);
   }
   applyRoleVisibility();                    // Chef-eigene Karten für Leiter ausblenden
@@ -7703,7 +7718,7 @@ function showChefTab(id, keep){
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
-  if(id==='system'){ renderSysInfo(); renderTrash(); }
+  if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
 
@@ -7715,6 +7730,13 @@ function renderAttention(){
   var rows=[], now=Date.now();
   var mine=managedStudios();
 
+  // 0) Nachtsicherung kaputt – steht ganz oben, weil es sonst niemandem
+  //    auffällt und im Ernstfall alles daran hängt
+  if(isChef() && sicherungKaputt()){
+    rows.push({i:'🛡', t:'Die nächtliche Sicherung kommt nicht durch',
+      s:'zuletzt '+fmtDateTime(_sichStand.ts)+' · Grund steht unter System',
+      v:'chef', ctab:'system'});
+  }
   // 1) überfällige Aufgaben je Studio
   mine.forEach(function(s){
     var sk=studioKey(s);
@@ -7983,6 +8005,75 @@ function renderSysInfo(){
   el.innerHTML='Angemeldet als <b>'+esc(session.name)+'</b> ('+esc(roleLabel(session.role))+')<br>'+
     STUDIOS.length+' Studios · '+_employees.length+' Personen · '+n+' Aufgaben<br>'+
     (navigator.onLine?'Verbunden – Änderungen sind sofort bei allen sichtbar.':'Gerade offline – Änderungen werden nachgereicht.');
+}
+
+/* ── Stand der nächtlichen Sicherung ──
+   Die Server-Funktion schreibt nach jedem Versuch nach config/sicherung.
+   Ohne diese Anzeige scheitert die Sicherung im Verborgenen: der Fehler
+   steht nur im Protokoll, und dort schaut niemand hin. Genau so blieb hier
+   monatelang unbemerkt, dass der Speicher gar nicht eingerichtet war. */
+var _sichStand=null;          // zuletzt gelesener Stand, für die Verwaltung
+/* Gilt die Sicherung als kaputt? Entweder der letzte Versuch ist gescheitert
+   oder der letzte Erfolg liegt mehr als anderthalb Tage zurück – bei einem
+   nächtlichen Lauf heißt das: mindestens eine Nacht ist ausgefallen. */
+function sicherungKaputt(){
+  if(!_sichStand || !_sichStand.ts) return false;
+  return !_sichStand.ok || (Date.now()-_sichStand.ts > 36*3600000);
+}
+function sicherungStandLaden(){
+  return db.collection('config').doc('sicherung').get().then(function(doc){
+    _sichStand = doc.exists ? (doc.data()||{}) : {};
+    if(_chefTab==='ueberblick') renderAttention();
+    return _sichStand;
+  }).catch(function(){ _sichStand=null; });
+}
+
+function renderSicherungStand(){
+  var el=$('sichStand'); if(!el || !isChef()) return;
+  el.style.display='';
+  el.className='sich-stand';
+  el.textContent='Stand wird geladen …';
+  sicherungStandLaden().then(function(){
+    var d=_sichStand;
+    if(d===null){ el.style.display='none'; return; }   // nicht lesbar – kein Alarm
+    if(!d.ts){
+      el.innerHTML='<b>Noch keine Sicherung gelaufen.</b><br>'+
+        'Die erste läuft in der kommenden Nacht um 2:40 Uhr. Wer nicht warten '+
+        'will, drückt den Knopf darunter.';
+      return;
+    }
+    var alt = Date.now()-d.ts > 36*3600000;   // älter als anderthalb Tage
+    if(d.ok && !alt){
+      el.className='sich-stand gut';
+      el.innerHTML='<b>Letzte Sicherung: '+esc(fmtDateTime(d.ts))+' ✓</b>'+
+        (d.ziel?'<br>'+esc(d.ziel):'');
+    } else if(d.ok){
+      el.className='sich-stand schlecht';
+      el.innerHTML='<b>Letzte Sicherung: '+esc(fmtDateTime(d.ts))+'</b><br>'+
+        'Seitdem ist keine mehr durchgekommen – eigentlich läuft sie jede Nacht. '+
+        'Einmal den Knopf darunter drücken; scheitert er, steht der Grund dabei.';
+    } else {
+      el.className='sich-stand schlecht';
+      el.innerHTML='<b>Letzter Versuch ('+esc(fmtDateTime(d.ts))+') ist gescheitert.</b><br>'+
+        esc(d.fehler||'Kein Grund hinterlegt.');
+    }
+    /* Zugeklappt nützt der Grund niemandem: „Braucht Aufmerksamkeit"
+       verspricht, dass er hier steht. Also die Karte aufmachen – aber nur,
+       wenn wirklich etwas kaputt ist. */
+    foldZahl('sichern', sicherungKaputt() ? 'Sicherung hakt' : '', sicherungKaputt()?'warn':'');
+    if(sicherungKaputt()){
+      foldOeffnen('sichern');
+      // Nach dem Aufklappen liegt der Grund unter zwei Knöpfen. Also
+      // hinschieben – erst wenn die Klapp-Bewegung durch ist.
+      setTimeout(function(){
+        var sa=document.querySelector('#view-chef .scroll-area'); if(!sa) return;
+        var oben=el.getBoundingClientRect().top - sa.getBoundingClientRect().top;
+        sa.scrollTo({ top: Math.max(0, sa.scrollTop + oben - 90), behavior:'smooth' });
+      }, 420);
+    }
+  }).catch(function(){
+    el.style.display='none';    // kein Grund, deshalb Alarm zu schlagen
+  });
 }
 
 function emptyHTML(h,s){
@@ -11236,21 +11327,26 @@ function bindActions(){
     var note=$('backupNote');
     if(!confirm('Jetzt eine zusätzliche Sicherung anlegen?\n\nDas dauert je nach Datenmenge ein paar Minuten und läuft im Hintergrund.')) return;
     withBusy(bn,function(){
-      if(note){ note.style.color='var(--text-2)'; note.textContent='Sicherung läuft …'; }
+      /* Klasse zurücksetzen: nach einem gescheiterten Versuch stand sonst
+         auch die Erfolgsmeldung noch im roten Kasten. */
+      if(note){ note.className='em-saved'; note.style.color='var(--text-2)'; note.textContent='Sicherung läuft …'; }
       return firebase.app().functions(KONFIG.region).httpsCallable('backupNow')({})
         .then(function(r){
           var ok=r && r.data && r.data.ok;
           if(note){
+            note.className='em-saved';
             note.style.color='var(--accent-d)';
             note.textContent = ok ? ('✓ Sicherung angelegt: '+(r.data.ziel||'')) : 'Nichts gesichert';
           }
           toast(ok ? 'Sicherung angelegt ✓' : 'Nichts gesichert', !ok);
+          renderSicherungStand();
         })
         .catch(function(e){
           /* Die Meldung vom Server nennt Dienstkonto und Rollennamen – sie
              muss deshalb ganz zu lesen sein, nicht auf eine Zeile gekürzt. */
           if(note){ note.style.color='#ff8a8a'; note.className='em-saved backup-fehler'; note.textContent=errMsg(e); }
           toast('Sicherung fehlgeschlagen – Hinweis steht unter dem Knopf',true);
+          renderSicherungStand();
         });
     });
   });

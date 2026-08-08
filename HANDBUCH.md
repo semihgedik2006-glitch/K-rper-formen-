@@ -562,6 +562,10 @@ im Rest der App.
 - **Jetzt zusätzlich sichern** (**C**) – legt sofort eine vollständige
   Sicherung der Datenbank an, zusätzlich zur nächtlichen. Sinnvoll vor
   größeren Umbauten.
+- **Letzte Sicherung** (**C**) – darüber steht, ob die nächtliche Sicherung
+  durchgekommen ist. Grün mit Zeitpunkt, oder rot mit dem vollständigen
+  Grund. Fällt eine Nacht aus, taucht es zusätzlich ganz oben in *Überblick
+  → Braucht Aufmerksamkeit* auf.
 - **Über StudioChat** – Fassung und Stand.
 - **Tastenkürzel** – Übersicht.
 
@@ -678,7 +682,8 @@ zurücksetzen.
 - **Nächtliche Sicherung** der kompletten Datenbank um 02:40, sieben Tage
   lang aufbewahrt. Ein versehentliches „Archiv leeren" ist damit kein
   endgültiger Verlust mehr. Zusätzlich kann der Chef jederzeit von Hand
-  sichern.
+  sichern – und sieht unter *System*, ob die letzte Nacht geklappt hat.
+  Eine Sicherung, deren Scheitern niemand bemerkt, ist keine.
 - **Es gibt keinen Zugangscode**, mit dem man sich zum Chef machen könnte.
   Rollen vergibt ausschließlich ein bestehender Chef, und der Server prüft
   das mit.

@@ -24,7 +24,8 @@ mit Wiederholungstäter-Warnung, Schichttausch mit Freigabe, Urlaubsanträge
 
 Und auf jedem Bildschirm steht oben, **wo** gerade etwas hakt.
 
-Läuft im Browser, installiert sich wie eine App, kostet im Betrieb nichts.
+Läuft im Browser, installiert sich wie eine App, kostet im Betrieb ein paar
+Cent im Monat.
 
 ## In zwei Minuten (Vorführung)
 
@@ -52,7 +53,9 @@ Fünf Bildschirme, fünf Antworten, keine Schulung nötig.
 - **Der „Wo?"-Blick** – auf Startseite, bei Geräten und im Team dieselbe
   Form. Kein Messenger hat das, und kein allgemeines Aufgabenwerkzeug kennt
   „Studio".
-- **Betriebskosten null.** Firebase-Gratisstufe trägt 14 Studios mühelos.
+- **Betriebskosten im Cent-Bereich.** Firebase rechnet nach Verbrauch; 14
+  Studios bleiben bei fast allem im monatlichen Freikontingent. Bezahlt wird
+  nur der Speicher der nächtlichen Sicherungen.
 - **Vollständig auf Deutsch**, auch im Code – der Kunde kann mitlesen.
 - **Ein neuer Kunde = eine Datei.** `konfig.js` austauschen, fertig.
 - **29 automatische Durchläufe** – jede Änderung wird durchgeklickt, bevor
@@ -86,7 +89,7 @@ Fünf Bildschirme, fünf Antworten, keine Schulung nötig.
 - **Nachweispflichten wachsen.** Dokumentation ist ein Argument, das von
   selbst stärker wird.
 - **Der Preis ist konkurrenzlos.** Wettbewerber verlangen pro Kopf und
-  Monat; hier liegen die Betriebskosten bei null.
+  Monat; hier liegen die Betriebskosten im Cent-Bereich.
 
 ### Risiken
 
@@ -95,8 +98,11 @@ Fünf Bildschirme, fünf Antworten, keine Schulung nötig.
   mithalten – das war der Grund für Bereich 3.
 - **Ein einzelner schlechter Tag** (Push kommt nicht an, App lädt nicht)
   wirft das Team zurück in die Gruppe.
-- **Firebase-Kontingente.** Kostenlos, bis es das nicht mehr ist. Bei 14
-  Studios weit entfernt, aber es gibt keine Warnung, bevor es eng wird.
+- **Firebase-Kontingente.** Das Projekt läuft auf dem Bezahlplan Blaze –
+  anders gibt es keine Cloud Functions. Solange der Verbrauch im
+  Freikontingent bleibt, kostet es fast nichts, aber **von allein warnt
+  niemand**, bevor es teuer wird. Eine Budget-Warnung gehört zur
+  Einrichtung.
 - **Abhängigkeit von Google.** Auth, Datenbank, Push, Hosting, Functions,
   Tabellen – alles aus einem Haus.
 - **Als Produkt fehlt der Rahmen:** Vertrag, Auftragsverarbeitung,
@@ -109,7 +115,7 @@ Fünf Bildschirme, fünf Antworten, keine Schulung nötig.
 
 | Frage | Ehrliche Antwort |
 |---|---|
-| „Was kostet der Betrieb?" | Bei eurer Größe nichts. Firebase-Gratisstufe. |
+| „Was kostet der Betrieb?" | Bei eurer Größe ein paar Cent im Monat. Firebase rechnet nach Verbrauch, ihr bleibt fast überall im Freikontingent. |
 | „Was, wenn ihr wegfallt?" | Der Quelltext ist eine Datei, alles auf Deutsch kommentiert. Die Daten liegen in eurem eigenen Firebase-Projekt. |
 | „Können meine Leute mitgelesen werden?" | Direktnachrichten nein, auch vom Chef nicht. Steht im Handbuch. |
 | „Was ist mit Arbeitszeiterfassung?" | Gibt es bewusst nicht. |
@@ -121,7 +127,8 @@ Fünf Bildschirme, fünf Antworten, keine Schulung nötig.
 
 ## Preisidee (unverbindlich)
 
-Die Betriebskosten sind null; der Preis bildet Arbeit und Betreuung ab.
+Die Betriebskosten sind vernachlässigbar; der Preis bildet Arbeit und
+Betreuung ab.
 
 | Modell | Preis | Enthält |
 |---|---|---|

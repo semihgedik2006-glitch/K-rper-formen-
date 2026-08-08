@@ -2,14 +2,20 @@
 
 Stand 8. August 2026, nach Abschluss des Master-Audits.
 
-**Es sind zwei Handgriffe, beide bei dir, zusammen zehn Minuten.**
+**Es sind zwei Handgriffe, beide bei dir, zusammen fünfzehn Minuten.**
 Die Anleitung mit Klickwegen steht in `DEIN-TEIL.md`.
 
 | Was | Wer | Dauer |
 |---|---|---|
 | `MATERIAL-SHEETS.gs` in Apps Script einfügen und neu bereitstellen | **du** | 5 Min |
-| Rolle „Cloud Datastore Import Export Admin" fürs Dienstkonto setzen | **du** | 3 Min |
+| Speicher in `europe-west1` anlegen, dann die zwei Rollen fürs Dienstkonto setzen | **du** | 10 Min |
 | Wischen zum Abhaken im Putzplan am echten Gerät prüfen | du, nebenbei | 1 Min |
+
+> Der Speicher ist die eigentliche Ursache: Die nächtliche Sicherung läuft
+> seit dem Einbau ins Leere, weil im Projekt nie einer eingerichtet wurde.
+> Dabei kommt heraus, dass `formenchat` auf dem **Bezahlplan Blaze** liegt –
+> anders ließen sich die Cloud Functions gar nicht bereitstellen. Eine
+> Budget-Warnung ist deshalb ab jetzt sinnvoll.
 
 Alles Weitere ist **Ausbau, nicht Rückstand** – siehe `ROADMAP.md`.
 
@@ -49,10 +55,12 @@ sieben Tage, ältere Ordner räumt derselbe Lauf weg.
 Zusätzlich gibt es **Verwaltung → System → Daten sichern → „Jetzt zusätzlich
 sichern"** — nur für den Chef, die Rolle wird auf dem Server geprüft.
 
-> **Einmalig nötig:** der Dienstaccount der Cloud Functions braucht die Rolle
-> **Cloud Datastore Import Export Admin**. Ohne sie steht im Protokoll
-> „Sicherung fehlgeschlagen". In der Google-Cloud-Konsole unter *IAM* beim
-> Account `<projekt>@appspot.gserviceaccount.com` hinzufügen.
+> **Einmalig nötig:** ein Speicher im Projekt (Firebase-Konsole → Storage,
+> Region `europe-west1`) und zwei Rollen für den Dienstaccount –
+> **Cloud Datastore Import Export Admin** und **Storage Object Admin**.
+> Fehlt eines davon, scheitert die Sicherung. Seit dem 8. August steht der
+> Grund dafür in der App unter *Verwaltung → System*, nicht mehr nur im
+> Protokoll von Google.
 
 ### Konfiguration
 
@@ -78,12 +86,15 @@ Chef-Zugang entsteht bei der Einrichtung des Projekts, jeder weitere über
 | Was | Warum |
 |---|---|
 | **`MATERIAL-SHEETS.gs`** in Apps Script einfügen und neu bereitstellen | Die Datei im Projekt ist neu; ohne den Schritt läuft die alte Fassung weiter. Anleitung steht oben in der Datei. |
-| **Export-Rolle** für den Dienstaccount setzen | Sonst schlägt die nächtliche Sicherung fehl (siehe oben). |
+| **Speicher anlegen und Export-Rollen** setzen | Sonst schlägt die nächtliche Sicherung fehl (siehe oben). |
 | **Wischen zum Abhaken** einmal am Gerät prüfen | Berührungen lassen sich hier nicht nachstellen. |
 
-Budget-Warnung bei Firebase: **entfällt** — ohne hinterlegte Karte kann nichts
-abgebucht werden. Das Risiko ist dann nicht Kosten, sondern dass Functions
-bei Überschreitung des kostenlosen Kontingents stehenbleiben.
+Budget-Warnung bei Firebase: **doch nötig.** Die Annahme „keine Karte
+hinterlegt, also kann nichts abgebucht werden" hat sich nicht gehalten –
+das Projekt läuft auf Blaze, sonst gäbe es keine Cloud Functions. Der
+Verbrauch bleibt im Freikontingent, aber gewarnt wird von allein niemand.
+Fünf Minuten: Cloud-Konsole → Abrechnung → Budgets, 5 € mit Warnung bei
+50 % und 100 %.
 
 ---
 
