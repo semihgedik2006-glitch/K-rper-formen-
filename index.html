@@ -2497,42 +2497,32 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
           </div>
 
           <!-- ── Reiter 1: Überblick ── -->
+          <!-- „Braucht Aufmerksamkeit" stand vorher UNTER der Studio-Tabelle,
+               also 1.600 Pixel weiter unten. Wer den Überblick öffnet, will
+               zuerst wissen, was hakt – die Tabelle ist der Beleg dazu und
+               liegt jetzt darunter, zugeklappt. -->
           <div class="chef-pane" data-cpane="ueberblick">
           <div class="dash-grid" id="dashGrid"></div>
-          <div class="dash-bday" id="dashBday"></div>
-          <div class="card">
-            <h3>📊 Übersicht aller Studios</h3>
-            <p class="hint">Aufgaben-Fortschritt pro Studio. Tippe ein Studio an, um die Aufgaben zu öffnen.</p>
-            <div class="studio-grid" id="studioGrid"></div>
-          </div>
           <div class="card">
             <h3>🚨 Braucht Aufmerksamkeit</h3>
             <p class="hint">Alles, was gerade hakt – auf einen Blick, ohne Suchen.</p>
             <div id="chefAttention"></div>
           </div>
+          <div class="card" data-fold="studiotabelle">
+            <h3 id="studioGridTitle">📊 Übersicht aller Studios</h3>
+            <p class="hint">Aufgaben-Fortschritt pro Studio. Tippe ein Studio an, um die Aufgaben zu öffnen.</p>
+            <div class="studio-grid" id="studioGrid"></div>
+          </div>
+          <div class="dash-bday" id="dashBday"></div>
           </div>
 
           <!-- ── Reiter 2: Erstellen ── -->
           <div class="chef-pane" data-cpane="erstellen" style="display:none">
-          <div class="card">
-            <h3>📣 Ankündigung an alle</h3>
-            <p class="hint">Erscheint sofort bei jedem Mitarbeiter im Portal.</p>
-            <div class="field"><textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea></div>
-            <div class="field"><label for="bcTarget">Empfänger</label><select class="inp" id="bcTarget"></select></div>
-            <button class="btn btn-primary btn-sm" id="bcSend">Ankündigung senden</button>
-            <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
-          </div>
-          <div class="card" data-fold="vorlagen">
-            <h3>📋 Vorlagen</h3>
-            <p class="hint">Aufgaben, die immer wieder gleich sind, einmal speichern und
-              danach mit zwei Klicks einsetzen.</p>
-            <div class="field"><select class="inp" id="tplSelect"></select></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-ghost btn-sm" id="tplUse">Vorlage einsetzen</button>
-              <button class="btn btn-ghost btn-sm" id="tplSave" data-chef-only="1">Formular als Vorlage speichern</button>
-              <button class="btn btn-ghost btn-sm" id="tplDel" data-chef-only="1">Vorlage löschen</button>
-            </div>
-          </div>
+          <!-- Reihenfolge nach Häufigkeit: „Neue Aufgabe" ist der Grund,
+               aus dem dieser Reiter geöffnet wird – auch der Knopf „+ Neu"
+               auf der Aufgabenseite landet hier. Die Ankündigung stand
+               vorher davor und schob das Aufgabenformular 350 Pixel nach
+               unten. -->
           <div class="card" data-fold="neueaufgabe" data-fold-offen="1">
             <h3>✅ Neue Aufgabe erstellen</h3>
             <p class="hint">Einem oder allen Studios zuweisen.</p>
@@ -2578,6 +2568,25 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
             </div>
             <button class="btn btn-primary btn-sm" id="ntAdd">Aufgabe erstellen</button>
             <div class="draft-row"><p class="draft-note" id="ntDraftNote"></p></div>
+          </div>
+          <div class="card" data-fold="vorlagen">
+            <h3>📋 Vorlagen</h3>
+            <p class="hint">Aufgaben, die immer wieder gleich sind, einmal speichern und
+              danach mit zwei Klicks einsetzen.</p>
+            <div class="field"><select class="inp" id="tplSelect"></select></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" id="tplUse">Vorlage einsetzen</button>
+              <button class="btn btn-ghost btn-sm" id="tplSave" data-chef-only="1">Formular als Vorlage speichern</button>
+              <button class="btn btn-ghost btn-sm" id="tplDel" data-chef-only="1">Vorlage löschen</button>
+            </div>
+          </div>
+          <div class="card" data-fold="ankuendigung">
+            <h3>📣 Ankündigung an alle</h3>
+            <p class="hint">Erscheint sofort bei jedem Mitarbeiter im Portal.</p>
+            <div class="field"><textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea></div>
+            <div class="field"><label for="bcTarget">Empfänger</label><select class="inp" id="bcTarget"></select></div>
+            <button class="btn btn-primary btn-sm" id="bcSend">Ankündigung senden</button>
+            <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
           </div>
           </div>
 
@@ -2650,7 +2659,7 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
                 Abgelaufene stehen ganz oben.</p>
               <div id="certSoon" style="margin-top:10px"></div>
             </div>
-            <div class="card">
+            <div class="card" data-fold="allenachweise">
               <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
                 <h3>📜 Alle Nachweise</h3>
                 <span class="todo-count" id="certCount"></span>
@@ -2658,7 +2667,7 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
               <div id="certSort" style="margin-top:10px"></div>
               <div id="certList"></div>
             </div>
-            <div class="card">
+            <div class="card" data-fold="nachweisneu">
               <h3>➕ Nachweis eintragen</h3>
               <p class="hint">Sieht nur die betroffene Person und du – nicht die Studio-Leitung.</p>
               <div class="field"><label for="certPerson">Person</label>
@@ -2687,12 +2696,12 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
             <div class="dash-grid" id="repTiles"></div>
             <button class="btn btn-ghost btn-sm" id="repExport" style="width:100%;margin-top:6px">⬇️ Bericht als Excel speichern</button>
           </div>
-          <div class="card">
+          <div class="card" data-fold="repstudios">
             <h3>🏆 Studios im Vergleich</h3>
             <p class="hint">Wie viel Prozent der Aufgaben sind im Zeitraum erledigt worden?</p>
             <div id="repStudios"></div>
           </div>
-          <div class="card">
+          <div class="card" data-fold="reppersonen">
             <h3>💪 Wer hat wie viel erledigt?</h3>
             <p class="hint">Kein Ranking zum Vergleichen – nur damit du siehst, wo Unterstützung fehlt.</p>
             <div id="repPeople"></div>
@@ -7399,6 +7408,11 @@ function renderAnnouncements(anns){
 function renderStudioGrid(){
   // Leiter sieht nur seine Studios
   var grid=$('studioGrid'); if(!grid) return;
+  // …und dann darf die Überschrift auch nicht „alle Studios" behaupten.
+  var tt=$('studioGridTitle');
+  if(tt) tt.textContent = isChef()
+    ? '📊 Übersicht aller Studios'
+    : '📊 Übersicht deiner Studios';
   grid.innerHTML=managedStudios().map(function(s){
     var sk=studioKey(s), list=cachedTodos[sk]||[];
     var done=list.filter(isDone).length, total=list.length;

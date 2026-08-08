@@ -502,16 +502,23 @@ Satz, was dahintersteckt, und einer Zahl (überfällige Aufgaben, ablaufende
 Nachweise, Einträge im Papierkorb). Antippen führt hinein, **Übersicht**
 oben links oder die Zurück-Geste wieder heraus.
 
+**In jedem Reiter steht oben, weswegen man ihn öffnet.** Was seltener
+gebraucht wird, ist zugeklappt und einen Tipp entfernt – dasselbe Muster wie
+im Rest der App.
+
 ### Überblick
 - **Zahlen über alle Studios** auf einen Blick.
-- **Braucht Aufmerksamkeit** – was gerade hakt, mit Direktsprung.
-- **Studios im Vergleich** – Fortschrittsbalken je Studio.
-- **Geburtstage** der nächsten Tage.
+- **Braucht Aufmerksamkeit** – was gerade hakt, mit Direktsprung. Steht ganz
+  oben; vorher lag es hinter 1.600 Pixeln Studio-Tabelle.
+- **Übersicht deiner / aller Studios** – Fortschrittsbalken je Studio,
+  zugeklappt. Die Überschrift sagt beim Leiter „deiner", nicht „aller".
+- **Geburtstage** der nächsten 30 Tage.
 
 ### Erstellen
-- **Neue Aufgabe** (siehe Kapitel 7).
-- **Ankündigung an alle** oder an einzelne Studios.
-- **Aufgaben-Vorlagen** anlegen und verwalten.
+- **Neue Aufgabe** (siehe Kapitel 7) – steht oben, denn dafür kommt man
+  hierher; auch „+ Neu" auf der Aufgabenseite landet genau hier.
+- **Aufgaben-Vorlagen** anlegen und verwalten (zugeklappt).
+- **Ankündigung an alle** oder an einzelne Studios (zugeklappt).
 - **Entwürfe** werden automatisch zwischengespeichert.
 
 ### Team (**C**)
@@ -525,16 +532,18 @@ oben links oder die Zurück-Geste wieder heraus.
 
 ### Nachweise (**C**)
 - **Läuft demnächst ab** – alles unter 60 Tagen, Abgelaufenes oben.
-- **Alle Nachweise** aller Personen, sortierbar nach Ablauf, Person oder Art.
-- **Eintragen**: Person, Art (Erste-Hilfe-Kurs, Trainerlizenz,
+- **Alle Nachweise** aller Personen, sortierbar nach Ablauf, Person oder Art
+  (zugeklappt).
+- **Eintragen** (zugeklappt): Person, Art (Erste-Hilfe-Kurs, Trainerlizenz,
   EMS-Einweisung, Hygieneschulung, Brandschutzhelfer, Sonstiges), gültig bis.
   Das Ablaufdatum wird je nach Art vorgeschlagen.
 - **Entfernen**.
 
 ### Auswertung
-- **Bericht** über einen wählbaren Zeitraum.
-- **Wer hat wie viel erledigt** – je Person.
-- **Je Studio**: Fortschritt, Überfälliges.
+- **Bericht** über einen wählbaren Zeitraum, mit Excel-Export.
+- **Studios im Vergleich** – Fortschritt je Studio (zugeklappt).
+- **Wer hat wie viel erledigt** – je Person, ausdrücklich kein Ranking zum
+  Vergleichen (zugeklappt).
 - **Drucken** und **Excel-Export**.
 - **Monatsbericht** – Empfänger einsehen, **Testbericht sofort senden**.
 
