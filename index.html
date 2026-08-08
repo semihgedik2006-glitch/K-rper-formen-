@@ -285,10 +285,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* Filter in EINER Zeile, seitlich schiebbar – zwei Zeilen Knöpfe wirken
    erschlagend. Der Zähler wandert dafür neben das Suchfeld. */
-#view-todos .chip-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+#view-todos .chip-row,#docCatRow{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
   padding-bottom:10px;-webkit-overflow-scrolling:touch}
-#view-todos .chip-row::-webkit-scrollbar{display:none}
-#view-todos .chip-row .chip{flex:0 0 auto}
+#view-todos .chip-row::-webkit-scrollbar,#docCatRow::-webkit-scrollbar{display:none}
+#view-todos .chip-row .chip,#docCatRow .chip{flex:0 0 auto;white-space:nowrap}
 
 /* Filterleiste bleibt beim Scrollen oben kleben */
 .sticky-tools{position:sticky;top:0;z-index:6;
@@ -1732,9 +1732,18 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
   background:rgba(34,211,238,.12);color:var(--accent-2)}
 .doc .doc-ic svg{width:20px;height:20px}
 .doc-info{flex:1;min-width:0}
-.doc-info b{font-family:var(--font-head);font-size:1.02rem;display:block;word-break:break-word}
+/* Silbentrennung statt harter Umbruch: „Gerätewartung Anleitung" wurde
+   vorher mitten im Wort zerschnitten. */
+.doc-info b{font-family:var(--font-head);font-size:1.02rem;display:block;
+  overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
 .doc-info .doc-meta{color:var(--text-3);font-size:.78rem;margin-top:2px}
-.doc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:130px}
+/* Nur noch „⋯" und ein Pfeil – die Zeile selbst öffnet das Dokument */
+.doc-actions{display:flex;gap:2px;flex-shrink:0;align-items:center}
+.doc-go{color:var(--text-3);font-size:1.3rem;line-height:1;padding-left:2px}
+.doc{cursor:pointer;transition:background .2s,border-color .2s}
+.doc:active{background:rgba(255,255,255,.05)}
+@media (hover:hover){ .doc:hover{border-color:var(--line-2)} }
+.doc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .t-doc{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:.82rem;font-weight:600;
   color:var(--accent-2);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);
   padding:5px 11px;border-radius:999px}
@@ -2367,7 +2376,7 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
            SEITE: DOKUMENTE – Dateien und Links für das Team
            ============================================================ -->
       <section class="view" id="view-docs">
-        <div class="view-head shrink"><h2>Dokumente</h2><p>Wichtige Dateien und Links, die dein Chef für dich hinterlegt hat.</p></div>
+        <div class="view-head shrink"><h2>Dokumente</h2><p>Dateien und Links fürs Team.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <div class="card" id="docUploadCard" style="display:none" data-fold="docneu">
             <h3>⬆️ Dokument hinzufügen</h3>
@@ -2923,6 +2932,18 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
   </div>
 </div>
 
+<!-- Aktionen an einem Dokument – gleiches Muster wie im Chat -->
+<div class="msg-sheet" id="docSheet">
+  <div class="ms-card">
+    <div class="ms-head">
+      <b id="dbWho"></b>
+      <p id="dbWhere"></p>
+    </div>
+    <div class="ms-acts" id="dbActs"></div>
+    <button class="btn btn-ghost" id="dbClose" style="width:100%">Abbrechen</button>
+  </div>
+</div>
+
 <!-- Aktionen an einer Aufgabe – gleiches Muster wie im Chat -->
 <div class="msg-sheet" id="todoSheet">
   <div class="ms-card">
@@ -3384,6 +3405,13 @@ function safeUrl(v){
   v=String(v||'').trim();
   return /^(https?:\/\/|mailto:|tel:)/i.test(v) ? esc(v) : '';
 }
+/* Dieselbe Prüfung, aber OHNE HTML-Maskierung – für window.open, wo die
+   Adresse nicht in HTML landet und ein maskiertes „&amp;" den Link kaputt
+   machen würde. */
+function safeUrlRoh(v){
+  v=String(v||'').trim();
+  return /^(https?:\/\/)/i.test(v) ? v : '';
+}
 /* ============================================================
    ROLLEN
    Es gibt drei Rollen:
@@ -3819,11 +3847,11 @@ function typingSomewhere(){
   return tag==='input' || tag==='textarea' || tag==='select' || el.isContentEditable;
 }
 function anyModalOpen(){
-  return ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet']
+  return ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet','docSheet']
     .some(function(id){ var e=$(id); return e && e.classList.contains('show'); });
 }
 function closeAllModals(){
-  ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','msgSheet','todoSheet'].forEach(function(id){
+  ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','msgSheet','todoSheet','docSheet'].forEach(function(id){
     var e=$(id); if(e) e.classList.remove('show');
   });
   closeSearch();
@@ -5413,25 +5441,64 @@ function renderDocs(docs){
     var cm=docCatMeta(docCatOf(d));
   var meta=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+
     docStudiosLabel(d)+' · '+(d.kind==='link'?'Link':fmtSize(d.size))+' · '+fmtTime(d.ts);
-    var openBtn=(d.kind==='link')
-      ? '<a class="btn btn-ghost btn-sm" href="'+safeUrl(d.url)+'" target="_blank" rel="noopener">Öffnen</a>'
-      : '<button class="btn btn-ghost btn-sm doc-open">Öffnen</button>';
-    return '<div class="doc" data-id="'+esc(d.id)+'">'+
+    /* Drei Knöpfe nebeneinander (Öffnen · Als Aufgabe · ✕) drückten den
+       Namen auf eine schmale Spalte – „Gerätewartung Anleitung" brach mitten
+       im Wort um, die Zeile war 160 statt 94 Pixel hoch. „Öffnen" bleibt
+       sichtbar, der Rest zieht in dasselbe Aktionsblatt wie im Chat. */
+    /* Die ganze Zeile öffnet das Dokument – ein eigener „Öffnen"-Knopf nahm
+       96 Pixel vom Namen weg, und man tippt ohnehin auf den Eintrag. */
+    return '<div class="doc" data-id="'+esc(d.id)+'" role="button" tabindex="0">'+
       '<div class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>'+
       '<div class="doc-info"><b>'+esc(d.name||d.fileName)+'</b>'+
       '<div class="doc-meta">'+esc(meta)+'</div></div>'+
-      '<div class="doc-actions">'+ openBtn +
-      (chef?'<button class="btn btn-ghost btn-sm doc-task">Als Aufgabe</button><button class="btn btn-danger btn-sm doc-del" aria-label="löschen">✕</button>':'')+
-      '</div></div>';
+      '<div class="doc-actions">'+
+      (chef?'<button class="t-mehr doc-mehr" title="Mehr" aria-label="Mehr">⋯</button>':'')+
+      '<span class="doc-go" aria-hidden="true">›</span></div></div>';
   }).join('');
   box.querySelectorAll('.doc').forEach(function(node){
     var id=node.dataset.id, d=list.filter(function(x){ return x.id===id; })[0];
-    var op=node.querySelector('.doc-open'); if(op) op.addEventListener('click',function(){ openDocFile(d); });
-    if(chef){
-      var t=node.querySelector('.doc-task'); if(t) t.addEventListener('click',function(){ docToTodo(d); });
-      var del=node.querySelector('.doc-del'); if(del) del.addEventListener('click',function(){ deleteDoc(d); });
+    function oeffnen(){
+      if(!d) return;
+      if(d.kind==='link'){ window.open(safeUrlRoh(d.url), '_blank', 'noopener'); return; }
+      openDocFile(d);
     }
+    node.addEventListener('click',function(e){
+      if(e.target.closest('.doc-mehr')) return;
+      oeffnen();
+    });
+    node.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); oeffnen(); }
+    });
+    var mehr=node.querySelector('.doc-mehr');
+    if(mehr) mehr.addEventListener('click',function(e){ e.stopPropagation(); docBlattOeffnen(d); });
   });
+}
+
+/* ── Aktionsblatt an einem Dokument ── */
+var _dbDoc=null;
+function docBlattOeffnen(d){
+  if(!d) return;
+  _dbDoc=d;
+  var blatt=$('docSheet'); if(!blatt) return;
+  var cm=docCatMeta(docCatOf(d));
+  $('dbWho').textContent=d.name||d.fileName||'Dokument';
+  $('dbWhere').textContent=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+docStudiosLabel(d);
+  $('dbActs').innerHTML=[
+    {id:'aufgabe', ico:'✅', txt:'Als Aufgabe verteilen'},
+    {id:'loeschen', ico:'🗑', txt:'Löschen', warn:true}
+  ].map(function(e){
+    return '<button class="ms-act'+(e.warn?' warn':'')+'" data-dba="'+e.id+'">'+
+      '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
+  }).join('');
+  blatt.classList.add('show');
+  tick(8);
+}
+function docBlattSchliessen(){ var b=$('docSheet'); if(b) b.classList.remove('show'); _dbDoc=null; }
+function docBlattAktion(was){
+  var d=_dbDoc; if(!d) return;
+  docBlattSchliessen();
+  if(was==='aufgabe') return docToTodo(d);
+  if(was==='loeschen') return deleteDoc(d);
 }
 
 /* In der Datenbank gespeicherte Datei herunterladen/öffnen */
@@ -5447,6 +5514,11 @@ function openDocFile(d){
 
 function docToTodo(d){
   var studios=(d.studios==='all'||!d.studios)?STUDIOS.map(studioKey):d.studios;
+  /* Ein Fehlgriff hat vorher stillschweigend in ALLEN 14 Studios eine Aufgabe
+     angelegt – und die muss man dann einzeln wieder löschen. */
+  if(!confirm('„'+(d.name||d.fileName)+'" als Aufgabe an '+studios.length+
+     (studios.length===1?' Studio':' Studios')+' verteilen?\n\n'+
+     studios.map(studioName).join(', '))) return;
   var batch=db.batch();
   studios.forEach(function(sk){
     var ref=db.collection('studios').doc(sk).collection('todos').doc();
@@ -9103,7 +9175,7 @@ function verlaufStarten(){
   // Fenster melden sich selbst an, ohne dass jede Öffnen-Stelle das wissen
   // muss: wir beobachten einfach, wann eines sichtbar wird.
   var fenster=['profileModal','personModal','devModal','pollModal','todoEditModal',
-               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet'];
+               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet','docSheet'];
   fenster.forEach(function(id){
     var el=$(id); if(!el) return;
     new MutationObserver(function(){
@@ -10863,6 +10935,17 @@ function bindActions(){
       if(f){ f.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){ f.focus(); },250); }
     }, 120);
   });
+
+  // Aktionsblatt an einem Dokument
+  var dsh=$('docSheet');
+  if(dsh){
+    dsh.addEventListener('click',function(e){ if(e.target===dsh) docBlattSchliessen(); });
+    $('dbClose').addEventListener('click', docBlattSchliessen);
+    $('dbActs').addEventListener('click',function(e){
+      var b=e.target.closest && e.target.closest('[data-dba]');
+      if(b) docBlattAktion(b.getAttribute('data-dba'));
+    });
+  }
 
   // Aktionsblatt an einer Aufgabe
   var tsh=$('todoSheet');
