@@ -19,7 +19,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | 5 | **Material** | 🟢 fertig | 6 |
 | 6 | **Geräte** | 🟢 fertig | 7 |
 | 7 | **Team** | 🟢 fertig | 8 |
-| 8 | Dokumente | ⚪ offen | – |
+| 8 | **Dokumente** | 🟢 fertig | 9 |
 | 9 | Verwaltung | ⚪ offen | – |
 | 10 | Einstellungen | ⚪ offen | – |
 | — | *Abschluss: Spezifikation, Design-System, Roadmap, Pitch* | ⚪ offen | – |
@@ -597,6 +597,67 @@ Bildschirm.
   ist langsamer als selbst eintragen.
 - **Stempeluhr / Kommen-Gehen** — steht ausdrücklich im Handbuch unter „was
   die App bewusst nicht tut" und bleibt so.
+
+---
+
+## Sitzung 9 — 8. August 2026 · Bereich 8 · Dokumente
+
+Der kleinste Bereich – und trotzdem mit einem Knopf darin, der ohne Rückfrage
+14 Aufgaben anlegt. Leitfrage: **kann man den Namen des Dokuments lesen, und
+kann man sich hier teuer verklicken?**
+
+### Gefundene Probleme
+
+| # | Problem | Schwere | Stand |
+|---|---|---|---|
+| D1 | **„Als Aufgabe" verteilte ohne Rückfrage** eine Aufgabe an jedes betroffene Studio – bei „Alle Studios" sind das 14, die man einzeln wieder löschen muss. Der Knopf war 130 × 48 Pixel groß und lag direkt neben „Öffnen" | 🔴 hoch | ✅ behoben |
+| D2 | **Drei Knöpfe drückten den Namen auf eine schmale Spalte.** „Gerätewartung Anleitung" brach mitten im Wort um; die Zeile war 160 statt 94 Pixel hoch | 🟠 mittel | ✅ behoben |
+| D3 | **Kategorie-Leiste zweizeilig** (72 Pixel) über einer Liste mit drei Einträgen | 🟡 klein | ✅ behoben |
+| D4 | Der Untertitel („…die dein Chef für dich hinterlegt hat") war zwei Zeilen lang und las sich für den Chef selbst seltsam | 🟡 klein | ✅ behoben |
+
+### Was gebaut wurde
+
+**D1 — Rückfrage mit Namen.** „‚Hygieneplan 2026' als Aufgabe an 14 Studios
+verteilen? Longerich, Nippes, Ebertplatz …" — man sieht, was passiert,
+bevor es passiert.
+
+**D2 — die Zeile selbst öffnet das Dokument.** „Öffnen" als eigener Knopf ist
+weg (96 Pixel), Verteilen und Löschen ziehen ins Aktionsblatt hinter „⋯" —
+dasselbe Muster wie im Chat, bei Aufgaben und bei Geräten. Ein Pfeil rechts
+zeigt, dass die Zeile anklickbar ist; sie ist auch mit der Tastatur
+erreichbar (`role="button"`, Enter und Leertaste).
+Ergebnis: **Namensspalte 252 Pixel, alle Zeilen einzeilig, 160 → 94 Pixel
+Zeilenhöhe.** Beim Chef passen jetzt alle Dokumente auf einen Bildschirm.
+
+**D3 — Kategorien einzeilig zum Schieben**, wie die Sortierung und die
+Kanäle im Chat: 72 → 42 Pixel.
+
+### Health Score · Dokumente
+
+| Kriterium | vorher | jetzt | Begründung |
+|---|---|---|---|
+| UX | 6/10 | **8/10** | Namen lesbar, ein Tipp öffnet, kein Verklicken mit 14 Folgen. |
+| UI | 5/10 | **8/10** | Gleich hohe Zeilen, einzeilige Leisten, gleiche Sprache wie die übrigen Bereiche. |
+| Performance | 7/10 | 7/10 | Unverändert: ein Beobachter über 200 Dokumente, Dateiinhalte werden erst beim Öffnen geholt. |
+| Skalierbarkeit | 5/10 | 5/10 | Unverändert die Schwachstelle: Dateien liegen als Text in der Datenbank, Grenze rund 0,7 MB. Ab vielen großen Dateien führt kein Weg an echtem Speicher vorbei — kostet dann aber Geld. |
+| Wartbarkeit | 7/10 | 8/10 | Ein Blatt-Muster für vier Bereiche statt vier eigener Knopfreihen. |
+| Konsistenz | 6/10 | **9/10** | |
+| Investor | 5/10 | 7/10 | „Hygieneplan an alle 14 Studios als Aufgabe" ist eine Funktion, die man in einer Vorführung zeigt. |
+| Kaufwahrscheinlichkeit | 5/10 | 7/10 | |
+| Innovationsgrad | 5/10 | 6/10 | Dokument → Aufgabe in einem Zug ist ein eigener Gedanke. |
+| Aufwand | — | klein | rund 80 Zeilen |
+
+### Bewusst NICHT gebaut
+
+- **Eigenes Suchfeld** in den Dokumenten — die Suche oben findet sie bereits,
+  samt Kategorie und Studio. Ein zweites Feld an derselben Stelle wäre genau
+  die Doppelung, die auf der Startseite und bei den Aufgaben schon weg ist.
+- **Versionierung von Dokumenten** — wer den Hygieneplan aktualisiert, lädt
+  ihn neu hoch. Ein Versionsbaum will gepflegt werden, und niemand im Studio
+  wird das tun.
+- **Echter Dateispeicher statt Datenbank** — würde die 0,7-MB-Grenze
+  aufheben, kostet aber ab dem ersten Byte Geld. Bleibt bewusst offen, bis es
+  jemand braucht; der Link-Weg (Drive/Dropbox) trägt bis dahin.
 
 ---
 

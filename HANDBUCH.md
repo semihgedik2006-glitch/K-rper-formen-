@@ -414,16 +414,25 @@ Wer ursprünglich eingeteilt war, bleibt am Eintrag vermerkt.
 
 ## 12. Dokumente
 
-- **Datei hochladen** oder **Link hinterlegen**.
-- **Sortieren** nach Datum, Name, Größe oder Kategorie.
+- **Ein Tipp auf die Zeile öffnet das Dokument** – Datei oder Link. Ein
+  eigener „Öffnen"-Knopf nahm 96 Pixel vom Namen weg; „Gerätewartung
+  Anleitung" brach dadurch mitten im Wort um.
+- **Datei hochladen** oder **Link hinterlegen** (**L C**), über die Karte
+  oben, die zugeklappt startet.
+- **Sortieren** nach Datum, Name, Größe oder Kategorie – in einer Zeile zum
+  seitlichen Schieben.
 - **Sieben Kategorien**: ohne · Hygiene · Technik · Personal · Verträge ·
-  Marketing · Sonstiges. Filterleiste mit Zähler je Kategorie.
+  Marketing · Sonstiges. Filterleiste mit Zähler je Kategorie, ebenfalls in
+  einer Zeile.
 - **Für einzelne Studios oder alle** freigeben.
 - **Öffnen und herunterladen** durch alle.
-- **Als Aufgabe verteilen** (**L C**) – erzeugt in einem Zug eine Aufgabe in
-  jedem betroffenen Studio.
-- **Löschen** (**L C**) – landet im Papierkorb, samt Dateiinhalt.
-- Größe und Datum stehen an jedem Eintrag.
+- **⋯ am Eintrag** (**L C**) öffnet ein Blatt mit:
+  - **Als Aufgabe verteilen** – erzeugt in einem Zug eine Aufgabe in jedem
+    betroffenen Studio. **Fragt vorher nach** und nennt die Studios beim
+    Namen: ein Fehlgriff hat vorher stillschweigend 14 Aufgaben angelegt, die
+    man einzeln wieder löschen muss.
+  - **Löschen** – landet im Papierkorb, samt Dateiinhalt.
+- Kategorie, Studios, Größe und Datum stehen an jedem Eintrag.
 
 ---
 
