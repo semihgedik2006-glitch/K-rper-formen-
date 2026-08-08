@@ -1,0 +1,218 @@
+# StudioChat – Design-System
+
+Stand 8. August 2026. Die Werte hier sind **aus dem Code ausgelesen**, nicht
+erfunden. Wer etwas Neues baut, findet hier die Bausteine, damit es nicht
+nach einem Fremdkörper aussieht.
+
+---
+
+## 1. Farben
+
+Alle Farben liegen als CSS-Variablen in `:root` (dunkel) und `body.light`
+(hell). **Nie eine Farbe direkt schreiben** – sonst fehlt sie im anderen
+Modus.
+
+### Flächen
+
+| Marke | Dunkel | Hell | Wofür |
+|---|---|---|---|
+| `--bg` | `#12131C` | `#F4F6FA` | Seitengrund |
+| `--bg-2` | `#1C1E2A` | `#FFFFFF` | Karten, Fenster, Blasen |
+| `--bg-soft` | `#171925` | `#EDF0F6` | Eingabefelder, Reiterleisten |
+| `--bg-3` | `#252838` | `#E3E8F1` | betonte Flächen |
+| `--line` | weiß 9 % | schwarz 10 % | ruhige Trennlinie |
+| `--line-2` | weiß 17 % | schwarz 18 % | Rahmen von Bedienelementen |
+
+Das Dunkel ist ein **Schiefer-Blau**, kein Schwarz: sachlich und über lange
+Zeit angenehmer zu lesen als harter Neon-Kontrast.
+
+### Marke
+
+| Marke | Dunkel | Hell | Wofür |
+|---|---|---|---|
+| `--accent` | `#38BDF8` | `#0369A1` | primär, Cyan aus dem Logo |
+| `--accent-2` | `#A78BFA` | `#6D28D9` | Violett, zweite Ebene |
+| `--accent-3` | `#F472B6` | `#BE185D` | Pink, Akzent |
+| `--brand` | Verlauf Violett → Cyan → Pink, 135° |
+| `--on-accent` | `#0A1420` | `#FFFFFF` | Text auf Akzentflächen |
+
+Die hellen Töne sind bewusst **dunkler als die dunklen** – auf Weiß wäre
+`#38BDF8` nicht lesbar.
+
+### Bedeutung
+
+| Marke | Wert | Bedeutung |
+|---|---|---|
+| `--warm` | `#FBBF24` | Achtung: fehlt, läuft ab, wartet |
+| `--danger` | `#FB4E6D` | Fehler, defekt, überfällig, löschen |
+| `--accent-d` | `#38BDF8` / `#075985` | Erfolg, erledigt |
+
+**Regel:** Rot heißt „kaputt oder zu spät". Gelb heißt „bald oder wartet".
+Nie Rot für „wartet auf Entscheidung" – ein Urlaubsantrag ist kein Defekt.
+
+### Text
+
+`--text` (Hauptton) · `--text-2` (Nebentext) · `--text-3` (Metadaten).
+Drei Stufen, mehr nicht.
+
+---
+
+## 2. Schrift
+
+| Marke | Familie | Wofür |
+|---|---|---|
+| `--font-head` | Barlow Condensed, 500–800 | Überschriften, Zahlen, Marken |
+| `--font-body` | Barlow, 300–700 | alles andere |
+
+**Größen** (aus dem Code):
+
+| Element | Größe |
+|---|---|
+| Seitentitel `h2` | `clamp(1.4rem, 3.5vw, 1.9rem)` |
+| Kartentitel `h3` | ~1,05 rem |
+| Fließtext | 0,92–0,97 rem |
+| Nebentext | 0,84–0,90 rem |
+| Metadaten | 0,72–0,78 rem |
+| Marken/Abzeichen | 0,62–0,74 rem, Großbuchstaben, `letter-spacing:.5px` |
+
+Die Schriftgröße ist über die Einstellungen in drei Stufen skalierbar –
+neue Größen deshalb **relativ** (`rem`), nie in Pixeln.
+
+---
+
+## 3. Maße
+
+| Marke | Wert | Wofür |
+|---|---|---|
+| `--radius` | `18px` | Karten |
+| `--radius-lg` | `26px` | große Flächen |
+| — | `999px` | Chips, Marken, runde Knöpfe |
+| — | `9–14px` | Eingabefelder, kleine Knöpfe |
+
+**Seitenrand:** `clamp(14px, 4vw, 28px)` – auf dem Handy schmal, am Rechner
+großzügig. Dazu immer die Geräteränder addieren:
+`padding-left: calc(clamp(14px,4vw,28px) + var(--sal))`.
+Ohne `--sat/--sab/--sal/--sar` liegen Knöpfe am iPhone unter der
+Statusleiste und lassen sich nicht antippen.
+
+**Abstände:** 6 · 8 · 10 · 14 · 18 · 22 px. Keine Zwischenwerte erfinden.
+
+---
+
+## 4. Fingerziele — die harte Regel
+
+> **Alles, was man antippt, ist mindestens 44 Pixel hoch.**
+
+Das war der häufigste Fund im gesamten Audit. Gefunden und behoben:
+
+| Ort | vorher | jetzt |
+|---|---|---|
+| Werkzeuge an einer Chat-Nachricht | 21 × 19 | Blatt-Einträge 48 |
+| Werkzeuge an einer Aufgabe | 25 × 27 | Blatt-Einträge 48 |
+| Löschen am Nachweis | 21 × 25 | 36 × 44 |
+| Studio-Knöpfe „Wo etwas defekt ist" | – | 42 |
+
+Ausnahme: Symbole **innerhalb** einer Zeile, die selbst anklickbar ist
+(die Kamera in der Aufgaben-Fußzeile). Dort ist die ganze Zeile das Ziel.
+
+---
+
+## 5. Bewegung
+
+| Marke | Kurve | Wofür |
+|---|---|---|
+| `--ease-out` | `cubic-bezier(.16,1,.3,1)` | Einblenden, Ansichtswechsel |
+| `--ease-ios` | `cubic-bezier(.32,.72,0,1)` | Gleiten, Aufklappen |
+| `--spring` | `cubic-bezier(.34,1.42,.64,1)` | Druck-Rückmeldung, Pop |
+
+**Dauern:** 180 ms (Rückmeldung) · 260–350 ms (Blätter, Aufklappen) ·
+460–500 ms (Fenster von unten).
+
+`@media (prefers-reduced-motion: reduce)` schaltet alles auf 0,01 ms. Neue
+Animationen brauchen dort keine Sonderbehandlung, sie sind mit erfasst.
+
+---
+
+## 6. Bausteine
+
+### Karte `.card`
+Grundfläche für alles. Mit `data-fold="name"` wird sie aufklappbar; der
+Zustand merkt sich das Gerät in `PREFS.folds`. `data-fold-offen="1"` startet
+offen.
+**Wann zuklappen:** wenn die Karte ein Formular ist oder ein Beleg zu der
+Karte darüber. Nie die Karte, die die Frage der Seite beantwortet.
+
+### Aktionsblatt `.msg-sheet`
+Gleitet von unten, dunkler Grund dahinter. Kopf mit Bezug (wer/was/wann),
+optional eine Reaktionsreihe, dann `.ms-act`-Einträge à 48 Pixel mit Symbol
+**und Wort**, zuletzt „Abbrechen".
+Benutzt von: Chat-Nachricht, Aufgabe, Dokument.
+**Wann:** sobald es mehr als zwei Aktionen an einem Listeneintrag gibt.
+
+### Studio-Übersicht `.dev-wo`
+Reihe anzutippender Studios mit Zahl, darüber eine `.sec-head`-Überschrift
+und ein erklärender Satz. Rot = defekt, gelb = wartet.
+Benutzt von: „Wo etwas los ist" (Start), „Wo etwas defekt ist" (Geräte),
+„Wartet auf deine Entscheidung" (Team).
+**Wann:** immer, wenn eine Seite nur ein Studio zeigt, das Problem aber
+woanders liegen kann.
+
+### Chip-Reihe `.chip-row` / `.sort-row`
+Eine Zeile, seitlich schiebbar, nie umbrechend. Zahl am Chip über
+`.chip-num`.
+**Warum nicht umbrechen:** vier Filter in drei Zeilen sind 150 Pixel über
+einer Liste mit drei Einträgen.
+
+### Leerer Bereich `emptyHTML(titel, text)`
+Muss **den Grund und den Ausweg** nennen. Nicht „Keine Aufgaben", sondern
+„Keine dir zugewiesenen Aufgaben – es gibt 4, tippe auf ‚Alle'".
+
+### Rückgängig `offerUndo(text, fn)`
+Acht Sekunden. Für alles, was löscht. Zusätzlich `confirm()`, wenn die
+Wirkung über den eigenen Bildschirm hinausgeht (14 Studios, alle Kollegen).
+
+---
+
+## 7. Rollen in der Oberfläche
+
+| Attribut | Sichtbar für |
+|---|---|
+| `data-chef-only="1"` | nur Chef |
+| `data-manage-only="1"` | Chef und Leiter |
+| (nichts) | alle |
+
+Beides wird in `applyRoleVisibility()` gesetzt. **Verlass dich darauf nie
+allein** – die Sicherheitsregeln müssen dasselbe sagen.
+
+---
+
+## 8. Sprache
+
+- **Deutsch, ohne Fachwörter.** „Fehlt" statt „Differenz", „Wo etwas los
+  ist" statt „Priorisierung".
+- **Du**, nicht Sie.
+- **Knöpfe sagen, was passiert:** „Defekt melden", nicht „Absenden".
+- **Meldungen nennen das Ding beim Namen:** „EMS-Gerät 2 ist defekt", nicht
+  „1 Gerät defekt".
+- **Zahlen vor Adjektiven:** „3 Artikel fehlen", nicht „einige Artikel
+  fehlen".
+- Auch **Kommentare im Code sind auf Deutsch** und erklären das *Warum*,
+  nicht das *Was*.
+
+---
+
+## 9. Prüfliste für neue Oberfläche
+
+Vor dem Einchecken durchgehen:
+
+- [ ] Beantwortet die Seite ihre Frage im ersten Bildschirm?
+- [ ] Steht die Liste vor dem Formular?
+- [ ] Ist jedes Fingerziel ≥ 44 Pixel hoch und beschriftet?
+- [ ] Nur Farbvariablen benutzt, keine festen Werte?
+- [ ] Funktioniert es in hell **und** dunkel?
+- [ ] Sagt der leere Zustand Grund und Ausweg?
+- [ ] Hat alles Löschende eine Rückfrage oder Rückgängig?
+- [ ] Sind die Geräteränder (`--sa*`) berücksichtigt?
+- [ ] Bei 390 Pixeln Breite gemessen – nicht geschätzt?
+- [ ] Gibt es die Funktion woanders schon? Dann dort verlinken, nicht
+      nachbauen.

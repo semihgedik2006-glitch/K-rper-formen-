@@ -1,4 +1,25 @@
-# Stand der Dinge
+# Was noch offen ist
+
+Stand 8. August 2026, nach Abschluss des Master-Audits.
+
+**Es sind zwei Handgriffe, beide bei dir, zusammen zehn Minuten.**
+Die Anleitung mit Klickwegen steht in `DEIN-TEIL.md`.
+
+| Was | Wer | Dauer |
+|---|---|---|
+| `MATERIAL-SHEETS.gs` in Apps Script einfügen und neu bereitstellen | **du** | 5 Min |
+| Rolle „Cloud Datastore Import Export Admin" fürs Dienstkonto setzen | **du** | 3 Min |
+| Wischen zum Abhaken im Putzplan am echten Gerät prüfen | du, nebenbei | 1 Min |
+
+Alles Weitere ist **Ausbau, nicht Rückstand** – siehe `ROADMAP.md`.
+
+---
+
+## Alte Fassung dieser Liste
+
+Die folgenden Punkte stammen aus der Zeit vor dem Audit. Sie sind
+abgearbeitet und stehen hier nur noch als Verlauf.
+
 
 Stand: 7. August 2026, nach der Aufräum-Runde.
 

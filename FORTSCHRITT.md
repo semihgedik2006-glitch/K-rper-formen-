@@ -22,7 +22,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | 8 | **Dokumente** | 🟢 fertig | 9 |
 | 9 | **Verwaltung** | 🟢 fertig | 10 |
 | 10 | **Einstellungen** | 🟢 fertig | 11 |
-| — | *Abschluss: Spezifikation, Design-System, Roadmap, Pitch* | ⚪ offen | – |
+| — | **Abschluss: Spezifikation, Design-System, Roadmap, Pitch** | 🟢 fertig | 12 |
 
 ⚪ offen · 🟡 in Arbeit · 🟢 fertig
 
@@ -820,6 +820,64 @@ alles im Speicher und beobachtet je Studio. Bei 14 Studios ist das richtig und
 kostenlos. Ab etwa 40 Studios oder mehreren hundert Aufgaben je Studio müsste
 serverseitig gefiltert werden — und ab da kostet es Geld. Das ist keine
 Nachlässigkeit, sondern die Entscheidung, für die aktuelle Größe zu bauen.
+
+---
+
+## Sitzung 12 — 8. August 2026 · Abschluss
+
+Die vier Dokumente aus dem Master-Prompt. Alle im Projekt, zusätzlich als
+eine PDF-Mappe (15 Seiten).
+
+| Datei | Was drinsteht |
+|---|---|
+| `SPEZIFIKATION.md` | Was das Produkt ist, Rollen, Datenmodell, Sicherheit, technische Entscheidungen **mit ihrem Preis**, was es bewusst nicht tut |
+| `DESIGN-SYSTEM.md` | Farben, Schrift, Maße, Bewegung – **aus dem Code ausgelesen, nicht erfunden**. Dazu die fünf Bausteine, die überall tragen, und eine Prüfliste |
+| `ROADMAP.md` | Vier Phasen mit Kosten je Position. Und was bewusst nicht draufsteht |
+| `PITCH.md` | Pitch in einem Satz / 30 Sekunden / 2 Minuten, vollständige SWOT, die sieben Fragen eines Käufers mit ehrlichen Antworten, Preisidee |
+| `DEIN-TEIL.md` | Die zwei Handgriffe, die nur der Projekt-Eigentümer machen kann – mit Klickwegen und Prüfschritt |
+| `StudioChat-Produktmappe.pdf` | Die ersten vier als eine Mappe |
+
+### Drei Dinge, die beim Schreiben aufgefallen sind
+
+**1. Das Design-System war schon da, nur ungeschrieben.** Die Werte mussten
+nicht erfunden werden – sie standen in `:root`. Was fehlte, war die Regel
+dazu: *wann* nimmt man ein Aktionsblatt, *wann* klappt eine Karte zu, *wann*
+ist Rot falsch. Das ist jetzt aufgeschrieben, mit Beispielen aus dem Audit.
+
+**2. Die 44-Pixel-Regel war der häufigste Fund des ganzen Audits.** Chat
+(21 × 19), Aufgaben (25 × 27), Nachweise (21 × 25), Material, Dokumente.
+Fünf Bereiche, derselbe Fehler. Deshalb steht er im Design-System jetzt als
+harte Regel mit Tabelle.
+
+**3. Die ehrlichste Zeile der Spezifikation** ist die Tabelle „Technische
+Entscheidungen und ihr Preis". Eine Datei mit 11.474 Zeilen ist keine
+Nachlässigkeit, sondern eine Entscheidung – aber sie hat einen Preis, und
+der steht jetzt dort. Dasselbe für „alles im Speicher rechnen" und „Dateien
+als Text in der Datenbank".
+
+### Health Score · Produkt als Ganzes
+
+| Kriterium | Bewertung | Begründung |
+|---|---|---|
+| UX | **8/10** | Zehn Bereiche durchgemessen, jede Seite beantwortet ihre Frage im ersten Bildschirm. |
+| UI | **8/10** | Ein Design-System, das drei Muster überall gleich anwendet. |
+| Performance | 7/10 | Für 14 Studios mehr als schnell genug; die Grenzen sind bekannt und beschrieben. |
+| Skalierbarkeit | **5/10** | Die schwächste Zahl, und das bleibt so. Ab etwa 40 Studios Umbau nötig. Bewusst nicht vorgebaut. |
+| Wartbarkeit | 7/10 | Deutsch kommentiert, 29 Durchläufe – aber eine Datei und Bus-Faktor 1. |
+| Konsistenz | **9/10** | |
+| Investor | **8/10** | Klares Problem, klarer Unterschied zu WhatsApp, Betriebskosten null. |
+| Kaufwahrscheinlichkeit | **8/10** | Was fehlt, ist kein Feature, sondern der Rahmen: Vertrag, Auftragsverarbeitung, Einrichtungs-Assistent. |
+| Innovationsgrad | 6/10 | Der „Wo?"-Blick und die Verbrauchs-Vorhersage aus echten Wochen-Sicherungen sind eigen. Der Rest ist gutes Handwerk. |
+
+---
+
+## Das Audit ist abgeschlossen
+
+Zwölf Sitzungen, zehn Bereiche, 29 automatische Durchläufe, elf
+zusammengeführte Änderungssätze.
+
+**Was jetzt noch offen ist, steht in `DEIN-TEIL.md` – und es sind zwei
+Handgriffe von zusammen zehn Minuten.**
 
 ---
 
