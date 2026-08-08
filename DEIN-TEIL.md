@@ -58,45 +58,73 @@ Erledigtes. Vorher fehlten oft die letzten Studios.
 
 ---
 
-## 2. Export-Rolle fürs Dienstkonto (3 Minuten)
+## 2. Export-Rolle fürs Dienstkonto (5 Minuten)
 
 **Warum:** Seit dieser Runde sichert sich die Datenbank jede Nacht um 02:40
-selbst, sieben Tage lang. Dafür muss das Dienstkonto der Cloud Functions die
-Datenbank exportieren dürfen. **Diese Berechtigung fehlt noch** – bis dahin
-läuft die Sicherung jede Nacht ins Leere, ohne dass es jemand merkt.
+selbst, sieben Tage lang. Dafür braucht das Dienstkonto der Cloud Functions
+**zwei** Berechtigungen: die Datenbank exportieren zu dürfen **und** in den
+Speicher schreiben zu dürfen. Fehlt eine davon, kommt
+`7 PERMISSION_DENIED: The caller does not have permission`.
 
 Alles andere in der App ist davon nicht betroffen.
 
-### So geht's
+### Zuerst: welches Konto ist überhaupt gemeint?
 
-1. **IAM-Seite öffnen:**
-   `https://console.cloud.google.com/iam-admin/iam?project=formenchat`
-   (mit dem Google-Konto anmelden, dem das Projekt gehört)
+Die App sagt es dir jetzt selbst. In der App:
+**Verwaltung → System → „🛡 Jetzt zusätzlich sichern"**.
 
-2. In der Liste die Zeile suchen:
-   **`formenchat@appspot.gserviceaccount.com`**
-   *(Anzeigename meist „App Engine default service account")*
+Kommt es nicht durch, steht unter dem Knopf ab sofort **die vollständige
+Meldung mit dem Namen des Dienstkontos und den beiden Rollen** – rot
+umrandet und markierbar. Genau diesen Namen brauchst du in Schritt 2.
 
-   Falls sie nicht auftaucht: oben rechts **„Von Google bereitgestellte
-   Rollenzuweisungen einschließen"** anhaken.
+Meist ist es `formenchat@appspot.gserviceaccount.com`.
 
-3. Am Ende der Zeile auf das **Stift-Symbol** („Prinzipal bearbeiten").
+### Schritt 1 — Export-Rolle
 
-4. **„Weitere Rolle hinzufügen"** → im Suchfeld eintippen:
+1. Öffnen: `https://console.cloud.google.com/iam-admin/iam?project=formenchat`
+2. Oben rechts **„Von Google bereitgestellte Rollenzuweisungen einschließen"**
+   anhaken – sonst fehlt die Zeile in der Liste.
+3. Die Zeile mit dem Dienstkonto aus der Fehlermeldung suchen →
+   **Stift-Symbol** am Ende der Zeile.
+4. **„Weitere Rolle hinzufügen"** →
    **`Cloud Datastore Import Export Admin`**
-   *(auf Deutsch: „Cloud Datastore-Import/Export-Administrator")*
-   → auswählen → **Speichern**.
+   *(deutsch: „Cloud Datastore-Import/Export-Administrator")* → **Speichern**.
+
+### Schritt 2 — Schreibrecht auf den Speicher
+
+Das ist der Teil, der beim ersten Versuch gefehlt hat. Die Export-Rolle
+erlaubt das Exportieren, aber nicht das **Ablegen** der Dateien.
+
+1. Dieselbe Seite, dasselbe Dienstkonto, wieder **Stift-Symbol**.
+2. **„Weitere Rolle hinzufügen"** →
+   **`Storage Object Admin`**
+   *(deutsch: „Storage-Objekt-Administrator")* → **Speichern**.
+
+### Falls es dann immer noch klemmt
+
+Die neue Fehlermeldung nennt auch den **Speicherort**, in den gesichert
+werden soll – zum Beispiel `formenchat.firebasestorage.app`. Steht dort
+„wurde nicht gefunden", ist der Speicher im Projekt noch gar nicht
+eingerichtet:
+
+**Firebase-Konsole → Storage → „Jetzt starten"**, Region `europe-west1`
+wählen, fertig. Danach den Knopf noch einmal drücken.
+
+> Hintergrund: Früher hieß der Standard-Speicher immer
+> `<projekt>.appspot.com`. Firebase vergibt seit Ende 2024 Namen der Form
+> `<projekt>.firebasestorage.app`. Die App hatte den alten Namen fest
+> eingebaut und hätte selbst mit gesetzten Rollen ins Leere gesichert – das
+> ist jetzt behoben: sie nimmt den Speicher, der im Projekt wirklich
+> eingerichtet ist.
 
 ### Geprüft ist es, wenn …
 
-In der App: **Verwaltung → System → „🛡 Jetzt zusätzlich sichern"**.
-Unter dem Knopf muss eine Erfolgsmeldung erscheinen. Kommt stattdessen ein
-Fehler mit *permission* oder *PERMISSION_DENIED*, hat die Rolle noch nicht
-gegriffen – zwei Minuten warten und noch einmal drücken.
+„🛡 Jetzt zusätzlich sichern" meldet **✓ Sicherung angelegt** und nennt dabei
+den Zielordner. Die Sicherungen liegen dann unter `sicherung/JJJJ-MM-TT`;
+Ordner älter als sieben Tage räumt die App selbst weg.
 
-Die Sicherungen landen danach unter
-`gs://formenchat.appspot.com/sicherung/JJJJ-MM-TT`.
-Ordner, die älter als sieben Tage sind, räumt die App selbst weg.
+Nach dem Speichern einer Rolle können **ein bis zwei Minuten** vergehen, bis
+sie greift. Kommt der Fehler sofort wieder: kurz warten, noch einmal drücken.
 
 ---
 
@@ -106,6 +134,7 @@ Ordner, die älter als sieben Tage sind, räumt die App selbst weg.
 |---|---|
 | Apps Script eingefügt | ☐ |
 | Export-Rolle gesetzt | ☐ |
+| Storage-Objekt-Administrator gesetzt | ☐ |
 | „Google-Tabellen abgleichen" zeigt alle 14 Studios | ☐ |
 | „Jetzt zusätzlich sichern" meldet Erfolg | ☐ |
 

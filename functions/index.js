@@ -911,29 +911,73 @@ exports.sendTestReport = region
    Protokoll - siehe OFFEN.md. */
 const BACKUP_TAGE = 7;
 
+/* ── Wohin die Sicherung geht ──
+   Frueher stand hier fest "<projekt>.appspot.com". Firebase vergibt seit
+   Ende 2024 aber Namen der Form "<projekt>.firebasestorage.app" - in einem
+   neueren Projekt zeigte der feste Name deshalb ins Leere.
+   admin.storage().bucket() nimmt den Speicher, der im Projekt wirklich
+   eingerichtet ist. */
+function sicherungsBucket() {
+  try {
+    const b = admin.storage().bucket();
+    if (b && b.name) return b.name;
+  } catch (e) { /* faellt unten auf den alten Namen zurueck */ }
+  const projekt = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
+  return projekt + '.appspot.com';
+}
+
+/* Unter welchem Konto laeuft diese Funktion? Genau dieses Konto braucht die
+   Export-Rolle - und genau danach sucht man in der Google-Konsole. */
+function dienstkonto() {
+  return process.env.FUNCTION_IDENTITY ||
+    ((process.env.GCLOUD_PROJECT || '') + '@appspot.gserviceaccount.com');
+}
+
+/* Eine Fehlermeldung, mit der man etwas anfangen kann. „PERMISSION_DENIED"
+   allein sagt nicht, WEM was fehlt. */
+function sicherungsFehler(e) {
+  const roh = (e && e.message) || String(e);
+  const abgelehnt = /PERMISSION_DENIED|permission/i.test(roh);
+  if (abgelehnt) {
+    return 'Dem Dienstkonto ' + dienstkonto() + ' fehlt die Berechtigung. ' +
+      'In der Google-Konsole unter IAM diesem Konto die Rolle ' +
+      '„Cloud Datastore Import Export Admin" geben – und ' +
+      '„Storage-Objekt-Administrator" für den Speicher ' + sicherungsBucket() + '. ' +
+      'Nach dem Speichern ein bis zwei Minuten warten. (' + roh + ')';
+  }
+  if (/not found|does not exist|404/i.test(roh)) {
+    return 'Der Speicher ' + sicherungsBucket() + ' wurde nicht gefunden. ' +
+      'In der Firebase-Konsole unter „Storage" einmal einrichten. (' + roh + ')';
+  }
+  return roh;
+}
+
+async function exportieren(zielPfad) {
+  const projekt = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
+  if (!projekt) throw new Error('Projektkennung fehlt.');
+  const ziel = 'gs://' + sicherungsBucket() + '/' + zielPfad;
+  const { FirestoreAdminClient } = require('@google-cloud/firestore').v1;
+  const client = new FirestoreAdminClient();
+  const [op] = await client.exportDocuments({
+    name: client.databasePath(projekt, '(default)'),
+    outputUriPrefix: ziel,
+    collectionIds: []            // leer = alles
+  });
+  return { ziel: ziel, op: op && op.name };
+}
+
 exports.dailyBackup = region
   .runWith({ timeoutSeconds: 540, memory: '256MB' })
   .pubsub.schedule('40 2 * * *')
   .timeZone('Europe/Berlin')
   .onRun(async () => {
-    const projekt = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
-    if (!projekt) { console.error('Sicherung: Projektkennung fehlt.'); return null; }
-
     const heute = new Date().toISOString().slice(0, 10);      // 2026-08-07
-    const ziel = 'gs://' + projekt + '.appspot.com/sicherung/' + heute;
 
     try {
-      const { FirestoreAdminClient } = require('@google-cloud/firestore').v1;
-      const client = new FirestoreAdminClient();
-      const [op] = await client.exportDocuments({
-        name: client.databasePath(projekt, '(default)'),
-        outputUriPrefix: ziel,
-        collectionIds: []            // leer = alles
-      });
-      console.log('Sicherung gestartet: ' + ziel + ' (' + op.name + ')');
+      const r = await exportieren('sicherung/' + heute);
+      console.log('Sicherung gestartet: ' + r.ziel + ' (' + r.op + ')');
     } catch (e) {
-      // Haeufigster Grund: dem Dienstaccount fehlt die Export-Rolle.
-      console.error('Sicherung fehlgeschlagen: ' + e.message);
+      console.error('Sicherung fehlgeschlagen: ' + sicherungsFehler(e));
       return null;
     }
 
@@ -941,7 +985,7 @@ exports.dailyBackup = region
     try {
       const grenze = new Date(Date.now() - BACKUP_TAGE * 86400000)
         .toISOString().slice(0, 10);
-      const bucket = admin.storage().bucket(projekt + '.appspot.com');
+      const bucket = admin.storage().bucket(sicherungsBucket());
       const [dateien] = await bucket.getFiles({ prefix: 'sicherung/' });
       let weg = 0;
       for (const f of dateien) {
@@ -966,20 +1010,12 @@ exports.backupNow = region
     if (!prof.exists || (prof.data() || {}).role !== 'chef') {
       throw new functions.https.HttpsError('permission-denied', 'Nur der Chef darf sichern.');
     }
-    const projekt = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
     const stempel = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    const ziel = 'gs://' + projekt + '.appspot.com/sicherung/manuell-' + stempel;
     try {
-      const { FirestoreAdminClient } = require('@google-cloud/firestore').v1;
-      const client = new FirestoreAdminClient();
-      await client.exportDocuments({
-        name: client.databasePath(projekt, '(default)'),
-        outputUriPrefix: ziel,
-        collectionIds: []
-      });
-      return { ok: true, ziel: ziel };
+      const r = await exportieren('sicherung/manuell-' + stempel);
+      return { ok: true, ziel: r.ziel };
     } catch (e) {
-      throw new functions.https.HttpsError('internal', e.message);
+      throw new functions.https.HttpsError('internal', sicherungsFehler(e));
     }
   });
 
