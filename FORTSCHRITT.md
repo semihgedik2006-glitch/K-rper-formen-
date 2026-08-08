@@ -20,7 +20,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | 6 | **Geräte** | 🟢 fertig | 7 |
 | 7 | **Team** | 🟢 fertig | 8 |
 | 8 | **Dokumente** | 🟢 fertig | 9 |
-| 9 | Verwaltung | ⚪ offen | – |
+| 9 | **Verwaltung** | 🟢 fertig | 10 |
 | 10 | Einstellungen | ⚪ offen | – |
 | — | *Abschluss: Spezifikation, Design-System, Roadmap, Pitch* | ⚪ offen | – |
 
@@ -658,6 +658,65 @@ Kanäle im Chat: 72 → 42 Pixel.
 - **Echter Dateispeicher statt Datenbank** — würde die 0,7-MB-Grenze
   aufheben, kostet aber ab dem ersten Byte Geld. Bleibt bewusst offen, bis es
   jemand braucht; der Link-Weg (Drive/Dropbox) trägt bis dahin.
+
+---
+
+## Sitzung 10 — 8. August 2026 · Bereich 9 · Verwaltung
+
+Sechs Reiter, das größte Stück der App. Der Bereich hatte in Sitzung 1 schon
+eine Übersichtsseite bekommen — jetzt ging es um das, was **hinter** den
+Kacheln liegt. Leitfrage: **steht in jedem Reiter oben das, weswegen man ihn
+öffnet?**
+
+### Gefundene Probleme
+
+| # | Problem | Schwere | Stand |
+|---|---|---|---|
+| V1 | **„Überblick" war 4,76 Bildschirme lang, und „Braucht Aufmerksamkeit" stand ganz unten** — hinter 1.600 Pixeln Studio-Tabelle. Der Reiter, dessen ganzer Zweck „was hakt gerade" ist, zeigte das zuletzt | 🔴 hoch |  ✅ behoben |
+| V2 | **„Erstellen" begann mit der Ankündigung.** Das Aufgabenformular — der Grund, aus dem man den Reiter öffnet, und das Ziel des „+ Neu"-Knopfs von der Aufgabenseite — lag 350 Pixel tiefer | 🟠 mittel | ✅ behoben |
+| V3 | **„Nachweise" 3,16 und „Auswertung" 3,28 Bildschirme** — alles gleichzeitig offen, obwohl je eine Karte die eigentliche Antwort ist | 🟠 mittel | ✅ behoben |
+| V4 | **„Übersicht aller Studios" behauptete beim Leiter etwas Falsches** — er sieht nur seine eigenen | 🟡 klein | ✅ behoben |
+
+### Was gebaut wurde
+
+Kein neues Konzept, sondern das bestehende konsequent angewendet: **oben das,
+wofür man kommt; der Rest zugeklappt.** Genau so war der Reiter „System"
+schon gebaut — er war mit 1,3 Bildschirmen der kürzeste und übersichtlichste
+von allen. Die anderen fünf ziehen jetzt nach.
+
+| Reiter | vorher | jetzt | oben steht |
+|---|---|---|---|
+| Überblick | 4,76 | **1,99** | 🚨 Braucht Aufmerksamkeit |
+| Erstellen | 3,09 | **2,59** | ✅ Neue Aufgabe erstellen |
+| Nachweise | 3,16 | **1,33** | ⏳ Läuft demnächst ab |
+| Auswertung | 3,28 | **1,61** | 📈 Bericht |
+| Team | 1,69 | 1,69 | war schon richtig |
+| System | 1,30 | 1,30 | war das Vorbild |
+
+Beim Leiter heißt die Tabelle jetzt „Übersicht **deiner** Studios".
+
+### Health Score · Verwaltung
+
+| Kriterium | vorher | jetzt | Begründung |
+|---|---|---|---|
+| UX | 5/10 | **8/10** | Jeder Reiter beantwortet seine Frage im ersten Bildschirm. |
+| UI | 6/10 | **8/10** | Ein Faltmuster über alle sechs Reiter statt sechs Eigenheiten. |
+| Performance | 7/10 | 7/10 | Unverändert; zugeklappte Karten werden weiterhin gerechnet, nur nicht angezeigt. |
+| Skalierbarkeit | 6/10 | 6/10 | Die Studio-Tabelle wächst linear mit den Studios — zugeklappt stört das nicht mehr. |
+| Wartbarkeit | 7/10 | 8/10 | Reihenfolge und Faltung stecken im Markup, nicht in Sonderlogik. |
+| Konsistenz | 6/10 | **9/10** | |
+| Investor | 6/10 | **8/10** | „Zeig mir, was in meinen Studios hakt" ist zwei Tipps entfernt statt fünf Bildschirme. |
+| Kaufwahrscheinlichkeit | 6/10 | **8/10** | Dieser Bereich entscheidet, ob ein Betreiber die App für ein Werkzeug oder für ein Formular hält. |
+| Innovationsgrad | 5/10 | 5/10 | Hier war nichts zu erfinden, nur aufzuräumen. |
+| Aufwand | — | klein | rund 60 Zeilen, überwiegend verschoben |
+
+### Bewusst NICHT gebaut
+
+- **Reiter-Reihenfolge frei belegbar** — sechs Reiter, die jeder anders
+  sortiert, machen jede Anleitung wertlos.
+- **Zahlen auch auf „Erstellen" und „Auswertung"** — dort gibt es nichts zu
+  zählen, was auf eine Handlung wartet. Eine Zahl ohne Bedeutung ist
+  schlechter als keine.
 
 ---
 
