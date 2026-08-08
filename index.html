@@ -1742,6 +1742,11 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
 .emp-actions{display:flex;gap:6px;flex-shrink:0}
 .emp .studio-checks{margin-top:10px}
 .em-saved{font-size:.78rem;color:var(--accent-d);min-height:1em;word-break:break-word}
+/* Der Hinweis zur Sicherung nennt Dienstkonto und Rollennamen – der muss
+   vollständig lesbar sein und darf sich auch markieren lassen. */
+.backup-fehler{line-height:1.45;margin-top:8px;padding:10px 12px;border-radius:11px;
+  background:rgba(251,78,109,.10);border:1px solid rgba(251,78,109,.30);
+  user-select:text;-webkit-user-select:text}
 
 /* ── Dokumente ── */
 .doc{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--bg-2);
@@ -2747,6 +2752,8 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
               alles zurück.</p>
             <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-chef-only="1">🛡 Jetzt zusätzlich sichern</button>
             <p class="em-saved" id="backupNote"></p>
+            <!-- Die Fehlermeldung nennt Dienstkonto und Rolle und ist deshalb
+                 länger als eine Zeile. -->
           </div>
           <div class="card" data-fold="trash" data-fold-offen="1">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
@@ -11233,12 +11240,17 @@ function bindActions(){
       return firebase.app().functions(KONFIG.region).httpsCallable('backupNow')({})
         .then(function(r){
           var ok=r && r.data && r.data.ok;
-          if(note){ note.style.color='var(--accent-d)'; note.textContent = ok ? '✓ Sicherung angelegt' : 'Nichts gesichert'; }
+          if(note){
+            note.style.color='var(--accent-d)';
+            note.textContent = ok ? ('✓ Sicherung angelegt: '+(r.data.ziel||'')) : 'Nichts gesichert';
+          }
           toast(ok ? 'Sicherung angelegt ✓' : 'Nichts gesichert', !ok);
         })
         .catch(function(e){
-          if(note){ note.style.color='#ff8a8a'; note.textContent=errMsg(e); }
-          toast(errMsg(e),true);
+          /* Die Meldung vom Server nennt Dienstkonto und Rollennamen – sie
+             muss deshalb ganz zu lesen sein, nicht auf eine Zeile gekürzt. */
+          if(note){ note.style.color='#ff8a8a'; note.className='em-saved backup-fehler'; note.textContent=errMsg(e); }
+          toast('Sicherung fehlgeschlagen – Hinweis steht unter dem Knopf',true);
         });
     });
   });
