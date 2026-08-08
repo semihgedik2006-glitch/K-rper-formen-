@@ -457,7 +457,12 @@ Stelle.
 
 ## 14. Profil und Einstellungen
 
-Über das eigene Bild oben rechts. Vier Reiter.
+Über das eigene Bild oben rechts. Vier Reiter, die auch auf einem schmalen
+Handy nebeneinander passen (dort ohne Symbol).
+
+**„Speichern" klebt am unteren Rand** und bleibt beim Scrollen sichtbar.
+Vorher lag der Knopf ganz unten im Fenster: Namen ändern, dann noch einmal
+weiterscrollen, um zu speichern.
 
 ### Profil
 - **Name** ändern.
@@ -467,14 +472,16 @@ Stelle.
 - Live-Vorschau während des Änderns.
 
 ### Aussehen
-- **Chat-Hintergrund**: Schlicht · Farbverlauf · Punkte · Gitter · Streifen ·
-  Nachtlicht · **eigenes Foto**. Das eigene Foto bleibt auf dem Gerät und
-  wird nicht hochgeladen.
-- **Akzentfarbe**.
-- **Schriftgröße**.
-- **Hell / Dunkel / Automatisch**.
+Gilt nur auf diesem Gerät und wird **sofort übernommen** – hier gibt es
+keinen Speichern-Knopf. Sortiert nach Häufigkeit: was man einstellt, weil
+man etwas nicht lesen kann, steht oben.
 
-Alles wirkt sofort, ohne Speichern.
+- **Hell / Dunkel** – auch „automatisch" (folgt dem Gerät).
+- **Schriftgröße** in drei Stufen.
+- **Akzentfarbe**.
+- **Chat-Hintergrund** – Verlauf, Punkte, Gitter, Wellen, Nacht oder ein
+  eigenes Foto. Das Foto bleibt auf dem Gerät und wird nicht hochgeladen.
+- **Tastenkürzel anpassen** (nur am Rechner).
 
 ### Meldungen
 Fünf Schalter, jeweils **pro Gerät** – am Handy kann anderes eingestellt

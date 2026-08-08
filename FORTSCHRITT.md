@@ -21,7 +21,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | 7 | **Team** | 🟢 fertig | 8 |
 | 8 | **Dokumente** | 🟢 fertig | 9 |
 | 9 | **Verwaltung** | 🟢 fertig | 10 |
-| 10 | Einstellungen | ⚪ offen | – |
+| 10 | **Einstellungen** | 🟢 fertig | 11 |
 | — | *Abschluss: Spezifikation, Design-System, Roadmap, Pitch* | ⚪ offen | – |
 
 ⚪ offen · 🟡 in Arbeit · 🟢 fertig
@@ -717,6 +717,109 @@ Beim Leiter heißt die Tabelle jetzt „Übersicht **deiner** Studios".
 - **Zahlen auch auf „Erstellen" und „Auswertung"** — dort gibt es nichts zu
   zählen, was auf eine Handlung wartet. Eine Zahl ohne Bedeutung ist
   schlechter als keine.
+
+---
+
+## Sitzung 11 — 8. August 2026 · Bereich 10 · Einstellungen
+
+Der letzte Bereich. Vier Reiter in einem Fenster, das scrollt — und genau
+daraus entstand der Fehler. Leitfrage: **kann man eine Einstellung ändern
+und sie auch speichern, ohne zu suchen?**
+
+### Gefundene Probleme
+
+| # | Problem | Schwere | Stand |
+|---|---|---|---|
+| E1 | **„Speichern" lag unter dem sichtbaren Rand.** Das Fenster ist 760 Pixel hoch, der Inhalt 884 – Namen ändern, dann 124 Pixel weiterscrollen, um zu speichern. Auf kleineren Handys mehr | 🔴 hoch | ✅ behoben |
+| E2 | **Der vierte Reiter war abgeschnitten.** „Nachweise" ragte über den rechten Rand hinaus – wer ihn nicht kennt, findet ihn nicht | 🟠 mittel | ✅ behoben |
+| E3 | **„Aussehen" war nach Geschmack sortiert, nicht nach Bedarf.** Der Chat-Hintergrund stand oben, **Hell/Dunkel 700 Pixel weiter unten** – dabei stellt man das ein, weil man etwas nicht lesen kann | 🟠 mittel | ✅ behoben |
+| E4 | Der Löschknopf am eigenen Nachweis war 21 × 25 Pixel groß | 🟡 klein | ✅ behoben |
+
+### Was gebaut wurde
+
+**E1 — „Speichern" klebt am unteren Rand.** `position:sticky` mit einer
+mitlaufenden Fläche darunter, damit der Text nicht durchscheint. Gemessen:
+oben wie nach 400 Pixeln Scrollen immer vollständig im Bild.
+
+**E2 — die Reiter passen.** Unter 480 Pixeln Breite entfällt das Symbol; die
+vier Wörter allein passen nebeneinander. Zusätzlich ist die Leiste seitlich
+schiebbar, falls eine Übersetzung einmal länger ausfällt.
+Leistenhöhe nebenbei 59 → 42 Pixel.
+
+**E3 — Aussehen nach Häufigkeit:** Hell/Dunkel · Schriftgröße · Akzentfarbe ·
+Chat-Hintergrund. Hell/Dunkel ist jetzt ohne Scrollen erreichbar.
+
+**E4 — Löschknopf 36 × 44 Pixel**, wie überall sonst.
+
+### Gut so gelassen
+
+Nicht alles war kaputt. Diese drei Entscheidungen waren schon richtig und
+bleiben unverändert:
+
+- **Kein Speichern-Knopf im Aussehen-Reiter** — die Änderung greift sofort,
+  und ein Knopf, der nichts tut, verwirrt.
+- **Meldungen gelten je Gerät**, nicht je Person. Wer im Studio ein Tablet
+  teilt, will dort andere Töne als auf dem eigenen Handy.
+- **Nachweise sind für die betroffene Person nur lesbar.** Wer sein eigenes
+  Ablaufdatum verlängern könnte, macht die Nachweispflicht wertlos.
+
+### Health Score · Einstellungen
+
+| Kriterium | vorher | jetzt | Begründung |
+|---|---|---|---|
+| UX | 5/10 | **8/10** | Speichern immer erreichbar, alle vier Reiter sichtbar, Wichtiges oben. |
+| UI | 7/10 | 8/10 | Schmalere Reiterleiste, gleiche Knopfgrößen wie im Rest der App. |
+| Performance | 8/10 | 8/10 | Unverändert. |
+| Skalierbarkeit | 7/10 | 7/10 | Vier Reiter sind das Maximum für ein Fenster dieser Breite; ein fünfter bräuchte ein anderes Muster. |
+| Wartbarkeit | 7/10 | 7/10 | |
+| Konsistenz | 6/10 | **9/10** | Knopfgrößen und Faltverhalten wie überall. |
+| Investor | 5/10 | 7/10 | Hell/Dunkel und Schriftgröße sind das, was in einer Vorführung als Erstes ausprobiert wird. |
+| Kaufwahrscheinlichkeit | 5/10 | 7/10 | |
+| Innovationsgrad | 5/10 | 5/10 | Einstellungen sollen nicht originell sein. |
+| Aufwand | — | klein | rund 50 Zeilen |
+
+### Bewusst NICHT gebaut
+
+- **Einstellungen als eigene Seite statt Fenster** — vier Reiter passen in
+  ein Fenster, und der Weg zurück ist ein Tipp. Eine eigene Seite bräuchte
+  einen Platz in der Navigation, den sie nicht verdient.
+- **Aussehen für alle Geräte synchronisieren** — wer am Tablet im Studio
+  große Schrift braucht, will sie nicht auf dem eigenen Handy.
+- **Mehr Akzentfarben** — neun reichen, und jede weitere muss in hell und
+  dunkel geprüft werden.
+
+---
+
+## Alle zehn Bereiche sind durch
+
+| Bereich | UX vorher → jetzt | Kaufwahrscheinlichkeit vorher → jetzt |
+|---|---|---|
+| Navigation | 3 → 9 | 4 → 8 |
+| Startseite | 5 → 9 | 6 → 8 |
+| Chat | 4 → 8 | 5 → 8 |
+| Aufgaben | 5 → 9 | 6 → 9 |
+| Material | 4 → 8 | 6 → 8 |
+| Geräte | 5 → 9 | 6 → 9 |
+| Team | 4 → 8 | 5 → 8 |
+| Dokumente | 6 → 8 | 5 → 7 |
+| Verwaltung | 5 → 8 | 6 → 8 |
+| Einstellungen | 5 → 8 | 5 → 7 |
+
+**Drei Muster haben sich durchgesetzt und tragen jetzt überall:**
+
+1. **„Wo etwas los ist"** — dieselbe Form auf der Startseite, bei den
+   Geräten und im Team. Ein Betreiber mit 14 Standorten fragt immer dasselbe:
+   *wo?*
+2. **Das Aktionsblatt von unten** — Chat, Aufgaben, Dokumente. Beschriftete
+   Einträge à 48 Pixel statt Symbolen unter 30 Pixel.
+3. **Lesen vor Schreiben, Wichtiges vor Vollständigem** — jede Seite
+   beantwortet ihre Frage im ersten Bildschirm; der Rest ist zugeklappt.
+
+**Was offen bleibt und bewusst offen bleibt:** Skalierbarkeit. Die App rechnet
+alles im Speicher und beobachtet je Studio. Bei 14 Studios ist das richtig und
+kostenlos. Ab etwa 40 Studios oder mehreren hundert Aufgaben je Studio müsste
+serverseitig gefiltert werden — und ab da kostet es Geld. Das ist keine
+Nachlässigkeit, sondern die Entscheidung, für die aktuelle Größe zu bauen.
 
 ---
 

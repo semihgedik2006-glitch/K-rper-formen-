@@ -517,6 +517,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 #profileModal.show{display:flex}
 .pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:20px;padding:24px;box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
+/* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
+   dann 124 Pixel weiterscrollen, um zu speichern. Jetzt klebt der Knopf am
+   unteren Rand und ist immer erreichbar. */
+#profileModal #pmSave{position:sticky;bottom:-24px;z-index:3;margin-top:16px}
+#profileModal #pmSave::after{content:'';position:absolute;left:-24px;right:-24px;bottom:-24px;
+  height:24px;background:var(--bg-2);z-index:-1}
 .pm-colors{display:flex;gap:9px;flex-wrap:wrap}
 .pm-color{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .15s}
 .pm-color:hover{transform:scale(1.1)}
@@ -1125,10 +1131,19 @@ body.light .react{background:rgba(20,10,40,.05)}
   display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 
 /* Reiter im Einstellungs-Fenster */
-.pm-tabs{display:flex;gap:6px;background:var(--bg-soft);padding:4px;border-radius:12px;margin-bottom:16px}
-.pm-tab{flex:1;background:none;border:none;color:var(--text-2);font-family:var(--font-body);
-  font-weight:700;font-size:.9rem;padding:9px 6px;border-radius:9px;cursor:pointer;
+/* Vier Reiter passten auf einem 390er-Handy nicht nebeneinander –
+   „Nachweise" wurde am rechten Rand abgeschnitten. Auf schmalen Geräten
+   entfällt deshalb das Symbol; die Wörter allein passen. */
+.pm-tabs{display:flex;gap:6px;background:var(--bg-soft);padding:4px;border-radius:12px;margin-bottom:16px;
+  overflow-x:auto;scrollbar-width:none}
+.pm-tabs::-webkit-scrollbar{display:none}
+.pm-tab{flex:1 0 auto;background:none;border:none;color:var(--text-2);font-family:var(--font-body);
+  font-weight:700;font-size:.9rem;padding:9px 6px;border-radius:9px;cursor:pointer;white-space:nowrap;
   transition:background .28s var(--ease-ios),color .28s var(--ease-ios),transform .3s var(--spring)}
+@media(max-width:480px){
+  .pm-tabs .t-ico{display:none}
+  .pm-tab{font-size:.86rem;padding:9px 4px}
+}
 .pm-tab:active{transform:scale(.96)}
 .pm-tab.on{background:var(--bg-2);color:var(--accent);box-shadow:0 1px 6px rgba(0,0,0,.18)}
 
@@ -1516,7 +1531,10 @@ html{font-size:var(--fs,100%)}
 .cert-st.ok{background:rgba(0,224,110,.14);color:var(--accent-d)}
 .cert-st.bald{background:rgba(251,191,36,.16);color:var(--warm)}
 .cert-st.weg{background:rgba(251,78,109,.16);color:var(--danger)}
-.cert-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:5px;border-radius:8px;flex-shrink:0}
+/* 21 x 25 Pixel trifft kein Daumen – jetzt 44 hoch wie überall sonst */
+.cert-del{background:none;border:none;color:var(--text-3);cursor:pointer;flex-shrink:0;
+  width:36px;min-height:44px;padding:0;border-radius:9px;font-size:1rem;line-height:1}
+.cert-del:active{transform:scale(.88)}
 .cert-del:hover{color:var(--danger);background:rgba(251,78,109,.12)}
 .tausch-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   margin:-2px 0 7px 9px;padding:6px 9px;border-radius:9px;
@@ -2830,10 +2848,10 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
     <button class="lb-close" id="pmClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
     <h3 style="margin-bottom:14px">Einstellungen</h3>
     <div class="pm-tabs">
-      <button class="pm-tab on" data-pmtab="profil">👤 Profil</button>
-      <button class="pm-tab" data-pmtab="aussehen">🎨 Aussehen</button>
-      <button class="pm-tab" data-pmtab="melden">🔔 Meldungen</button>
-      <button class="pm-tab" data-pmtab="nachweise">📜 Nachweise</button>
+      <button class="pm-tab on" data-pmtab="profil"><span class="t-ico">👤</span> Profil</button>
+      <button class="pm-tab" data-pmtab="aussehen"><span class="t-ico">🎨</span> Aussehen</button>
+      <button class="pm-tab" data-pmtab="melden"><span class="t-ico">🔔</span> Meldungen</button>
+      <button class="pm-tab" data-pmtab="nachweise"><span class="t-ico">📜</span> Nachweise</button>
     </div>
     <div id="pmPaneProfil">
     <div style="text-align:center;margin-bottom:14px">
@@ -2855,7 +2873,20 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
     <div id="pmPaneAussehen" style="display:none">
       <p class="hint" style="margin:2px 0 14px">Gilt nur auf diesem Gerät – ändert nichts für die anderen.</p>
 
-      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:0 0 7px">Chat-Hintergrund</label>
+      <!-- Reihenfolge nach Häufigkeit: Hell/Dunkel und Schriftgröße stellt
+           man ein, weil man etwas nicht lesen kann – das ist dringend. Der
+           Chat-Hintergrund ist Geschmack und lag vorher ganz oben, während
+           Hell/Dunkel 700 Pixel weiter unten stand. -->
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:0 0 7px">Hell / Dunkel</label>
+      <div class="opt-grid" id="thOpts"></div>
+
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Schriftgröße</label>
+      <div class="opt-grid" id="fsOpts"></div>
+
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
+      <div class="opt-grid" id="accOpts"></div>
+
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Chat-Hintergrund</label>
       <div class="opt-grid" id="bgOpts"></div>
       <input type="file" accept="image/*" class="hidden-file" id="bgFile" />
       <div id="bgOwnRow" style="display:none;gap:8px;margin-top:9px">
@@ -2864,15 +2895,6 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
       </div>
       <p class="hint" id="bgOwnNote" style="display:none;margin:7px 0 0">
         Das Foto bleibt auf diesem Gerät. Es wird nicht hochgeladen und niemand sonst sieht es.</p>
-
-      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
-      <div class="opt-grid" id="accOpts"></div>
-
-      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Schriftgröße</label>
-      <div class="opt-grid" id="fsOpts"></div>
-
-      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Hell / Dunkel</label>
-      <div class="opt-grid" id="thOpts"></div>
 
       <!-- Nur am Rechner sinnvoll, deshalb auf schmalen Geräten ausgeblendet -->
       <div id="pmKeysWrap" style="display:none;margin-top:20px">
