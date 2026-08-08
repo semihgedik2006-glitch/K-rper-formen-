@@ -17,7 +17,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | 3 | **Chat** | 🟢 fertig | 4 |
 | 4 | **Aufgaben** | 🟢 fertig | 5 |
 | 5 | **Material** | 🟢 fertig | 6 |
-| 6 | Geräte | ⚪ offen | – |
+| 6 | **Geräte** | 🟢 fertig | 7 |
 | 7 | Team | ⚪ offen | – |
 | 8 | Dokumente | ⚪ offen | – |
 | 9 | Verwaltung | ⚪ offen | – |
@@ -448,6 +448,85 @@ Deshalb Filter statt Sortierung.
   Manschetten keine Strichcodes tragen.
 - **Automatische Bestellung beim Lieferanten** — die Bestellmail ist fertig
   vorbereitet; wer wirklich bestellt, soll ein Mensch bleiben.
+
+---
+
+## Sitzung 7 — 8. August 2026 · Bereich 6 · Geräte
+
+Der Bereich mit dem höchsten Geldwert dahinter: ein defektes EMS-Gerät heißt
+ausgefallene Termine. Leitfrage: **wie schnell weiß die Leitung, dass etwas
+kaputt ist — und wo?**
+
+### Gefundene Probleme
+
+| # | Problem | Schwere | Stand |
+|---|---|---|---|
+| G1 | **Die Seite öffnete beim ersten Studio nach dem Alphabet** und meldete dort „Noch keine Geräte" — während in einem anderen Studio ein Gerät defekt war. Um das zu finden, musste ein Chef 14 Studios einzeln durchklicken | 🔴 kritisch | ✅ behoben |
+| G2 | **Jede erneute Defektmeldung legte eine neue Aufgabe an.** Wer dasselbe Gerät dreimal meldete, weil sich nichts tat, erzeugte drei identische Aufgaben | 🔴 hoch | ✅ behoben |
+| G3 | **„Wieder in Ordnung" war der auffälligste Knopf im Fenster** — farbig hervorgehoben, während „Defekt melden" daneben unscheinbar war. Wer schnell etwas melden wollte, setzte damit ein defektes Gerät versehentlich auf „in Ordnung" | 🟠 mittel | ✅ behoben |
+| G4 | **Der Hinweis nannte das Gerät nicht.** „1 Gerät defekt – die Leitung hat dazu je eine Aufgabe bekommen" — welches, stand nirgends, und anklickbar war er auch nicht | 🟠 mittel | ✅ behoben |
+| G5 | **Die Sortierleiste nahm drei Zeilen** (rund 150 Pixel) über einer Liste mit drei Geräten | 🟡 klein | ✅ behoben |
+| G6 | Der Untertitel war zwei Zeilen lang und erklärte jeden Tag dasselbe | 🟡 klein | ✅ behoben |
+
+### Was gebaut wurde
+
+**G1 — „Wo etwas defekt ist".** Beim Öffnen der Seite eine kurze Abfrage über
+alle verwalteten Studios: welche haben ein defektes Gerät, und wie viele.
+Als Reihe anzutippender Studios ganz oben, in derselben Sprache wie „Wo etwas
+los ist" auf der Startseite.
+Bewusst **kein Live-Beobachter je Studio**: das wären 14 dauerhafte
+Verbindungen für eine Zahl, die sich selten ändert. Stattdessen ein
+Lesevorgang je Studio, fünf Minuten lang zwischengespeichert.
+
+**G2 — eine Aufgabe je Gerät.** Die erzeugte Aufgabe trägt jetzt die
+Geräte-Kennung. Eine zweite Meldung zu einem Gerät, das schon eine offene
+Aufgabe hat, landet nur noch im Verlauf — und sagt das auch: „Defekt vermerkt
+– es gibt schon eine offene Aufgabe dazu."
+
+**G3 — Knöpfe nach Häufigkeit gewichtet.** „⚠ Defekt melden" bekommt die
+volle Breite (348 Pixel), „Wartung fällig" und „Wieder in Ordnung" teilen
+sich die Zeile darunter (je 170).
+
+**G4 — der Hinweis nennt Ross und Reiter:** „⚠ **EMS-Gerät 2** ist defekt ·
+ansehen" — und öffnet das Gerät.
+
+**G5 — Sortierleiste einzeilig zum Schieben**, wie die Kanäle im Chat. Gilt
+auch für Dokumente und Nachweise, die dieselbe Leiste benutzen: 150 → 33
+Pixel.
+
+### Nebenbei repariert: die Testdaten hatten ein Verfallsdatum
+
+Beim Durchlauf fiel `test-tausch` aus — nicht wegen einer Änderung, sondern
+weil in den Testdaten feste Datumsangaben standen (`2026-08-07`). Über Nacht
+wurde daraus Vergangenheit, und „Ich kann nicht" erschien folgerichtig nicht
+mehr. Schichten, Abwesenheiten und Nachweise werden jetzt **relativ zu heute**
+erzeugt. Sonst wäre in ein paar Tagen die halbe Testreihe rot geworden, ohne
+dass jemand etwas kaputt gemacht hätte.
+
+### Health Score · Geräte
+
+| Kriterium | vorher | jetzt | Begründung |
+|---|---|---|---|
+| UX | 5/10 | **9/10** | Die Frage „wo ist etwas kaputt" wird auf dem ersten Bildschirm beantwortet, statt in 14 Studios versteckt. |
+| UI | 7/10 | **8/10** | Weniger Kopf, einzeilige Sortierung, klare Knopf-Hierarchie. |
+| Performance | 7/10 | 7/10 | Eine Abfrage je Studio beim Öffnen, fünf Minuten gepuffert. Live-Beobachter bleiben auf ein Studio beschränkt. |
+| Skalierbarkeit | 6/10 | 6/10 | Bei 50 Studios wären 50 Abfragen zu viel; dann gehörte die Zahl in ein Sammel-Dokument. |
+| Wartbarkeit | 7/10 | 8/10 | Die Verknüpfung Gerät ↔ Aufgabe läuft jetzt über eine Kennung statt über den Titel. |
+| Konsistenz | 6/10 | **9/10** | „Wo etwas defekt ist" spricht dieselbe Sprache wie „Wo etwas los ist". |
+| Investor | 6/10 | **9/10** | Verlauf je Gerät, Wiederholungstäter-Warnung und Studio-Übersicht sind zusammen ein Argument, das kein Messenger hat. |
+| Kaufwahrscheinlichkeit | 6/10 | **9/10** | Ein ausgefallenes EMS-Gerät kostet Termine — hier wird echtes Geld gespart. |
+| Innovationsgrad | 6/10 | 7/10 | „3× defekt in 90 Tagen" plus die Aufgaben-Kopplung ist ein eigener Gedanke. |
+| Aufwand | — | mittel | rund 140 Zeilen |
+
+### Bewusst NICHT gebaut
+
+- **Ein Live-Beobachter je Studio** für die Defekt-Übersicht — teuer für eine
+  Zahl, die sich selten ändert.
+- **QR-Codes am Gerät** zum Direkt-Melden — klingt gut, aber in einem Studio
+  mit vier Geräten findet man das richtige auch in der Liste. Bei einer Kette
+  mit 40 Geräten je Standort wäre es sinnvoll.
+- **Wartungsintervalle mit Erinnerung** — dafür gibt es wiederkehrende
+  Aufgaben. Ein zweites Fristensystem daneben würde nur auseinanderlaufen.
 
 ---
 
