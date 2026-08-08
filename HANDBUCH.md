@@ -1,6 +1,6 @@
 # StudioChat – was die App alles kann
 
-Vollständige Übersicht, Stand 7. August 2026.
+Vollständige Übersicht, Stand 8. August 2026.
 
 Alles, was in der App möglich ist, nach Bereichen sortiert. Wo sich Rollen
 unterscheiden, steht es dabei:
@@ -325,15 +325,29 @@ Ein Tipp auf **⋯** öffnet ein Blatt von unten mit beschrifteten Einträgen:
 
 ## 10. Geräte
 
+- **Wo etwas defekt ist** (**L C**, ganz oben) – welche Studios gerade ein
+  defektes Gerät haben, mit Anzahl. Ein Tipp wechselt dorthin. Vorher öffnete
+  die Seite beim ersten Studio nach dem Alphabet und meldete dort „Noch keine
+  Geräte", während anderswo etwas kaputt war; man musste 14 Studios einzeln
+  durchklicken.
 - **Liste je Studio**, Defektes steht oben.
-- **Sortieren** nach Zustand, Name, zuletzt gemeldet oder häufigsten Ausfällen.
+- **Sortieren** nach Zustand, Name, zuletzt gemeldet oder häufigsten Ausfällen
+  – in einer Zeile zum seitlichen Schieben.
 - Drei Zustände: **in Ordnung**, **Wartung**, **defekt**.
+- **Hinweis über der Liste nennt das Gerät beim Namen** und führt mit
+  „ansehen" direkt hin.
 - **Defekt melden** darf jeder – wer vor dem Gerät steht, hat nicht
   unbedingt Dienst. Mit kurzer Beschreibung und optionalem **Foto**.
+  Der Knopf hat die volle Breite: es ist der Grund, aus dem man dieses
+  Fenster öffnet.
 - Eine Meldung legt **automatisch eine Aufgabe für die Leitung** an, damit
-  sie nicht zwischen den Nachrichten untergeht.
+  sie nicht zwischen den Nachrichten untergeht. **Je Gerät nur eine**: Wer
+  dasselbe Gerät ein zweites Mal meldet, weil sich nichts tut, erzeugt keine
+  zweite Aufgabe – die Meldung landet im Verlauf, die Leitung sieht das
+  Problem weiterhin einmal.
 - **Wartung fällig** vermerken.
-- **Wieder in Ordnung** melden.
+- **Wieder in Ordnung** melden – bewusst der ruhigere Knopf, damit ihn
+  niemand aus Versehen statt „Defekt melden" trifft.
 - **Verlauf je Gerät** – jede Meldung bleibt am Gerät stehen. Beim Anruf
   beim Techniker hat man die Vorgeschichte.
 - **Warnung bei Wiederholungstätern**: „3× defekt in 90 Tagen".

@@ -10,6 +10,15 @@
       docChanges: function () { return []; }
     };
   }
+  /* Schichten und Abwesenheiten liegen relativ zu HEUTE. Mit festen Daten
+     lief der Test irgendwann ins Leere: am 8. August war die Schicht vom
+     7. August Vergangenheit, und „Ich kann nicht" erschien nicht mehr. */
+  function tag(n) {
+    var d = new Date(); d.setDate(d.getDate() + (n || 0));
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+      '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   var PROFILE = {
     name: 'Test Leiter', role: 'leiter', studios: ['Hürth', 'Brühl'],
     studioKeys: ['studio-6','studio-7'],
@@ -118,11 +127,11 @@
   ];
   var ABSENCES = {
     'studio-6': [
-      { id:'a1', from:'2026-08-20', to:'2026-08-28', type:'urlaub', uid:'u2', name:'Anna Meier',
+      { id:'a1', from:tag(13), to:tag(21), type:'urlaub', uid:'u2', name:'Anna Meier',
         status:'offen', note:'Sommerurlaub', ts:Date.now()-86400000 },
-      { id:'a2', from:'2026-08-10', to:'2026-08-11', type:'krank', uid:'u3', name:'Ben Kraus',
+      { id:'a2', from:tag(3), to:tag(4), type:'krank', uid:'u3', name:'Ben Kraus',
         status:'genehmigt', ts:Date.now()-3600000 },
-      { id:'a3', from:'2026-09-01', to:'2026-09-05', type:'urlaub', uid:'u3', name:'Ben Kraus',
+      { id:'a3', from:tag(25), to:tag(29), type:'urlaub', uid:'u3', name:'Ben Kraus',
         status:'genehmigt', decidedBy:'Test Chef', decidedAt:Date.now()-7200000, ts:Date.now()-172800000 }
     ]
   };
@@ -146,23 +155,23 @@
   var SHIFTS = {
     'studio-6': [
       // eigene Schicht -> "Ich kann nicht" muss erscheinen
-      { id:'s1', date:'2026-08-07', from:'09:00', to:'14:00', uid:'testuid', name:'Ich' },
+      { id:'s1', date:tag(0), from:'09:00', to:'14:00', uid:'testuid', name:'Ich' },
       // fremde, ausgeschriebene Schicht -> "Ich uebernehme"
-      { id:'s2', date:'2026-08-07', from:'16:00', to:'21:00', uid:'u2', name:'Anna Meier',
+      { id:'s2', date:tag(0), from:'16:00', to:'21:00', uid:'u2', name:'Anna Meier',
         tausch:'offen', tauschVon:'u2', tauschTs:Date.now()-3600000 },
       // jemand hat zugesagt -> wartet auf die Leitung
-      { id:'s3', date:'2026-08-07', from:'06:00', to:'09:00', uid:'u3', name:'Ben Kraus',
+      { id:'s3', date:tag(0), from:'06:00', to:'09:00', uid:'u3', name:'Ben Kraus',
         tausch:'zugesagt', tauschNeu:{ uid:'u2', name:'Anna Meier' }, tauschTs:Date.now()-1800000 }
     ],
     'studio-7': [
-      { id:'s4', date:'2026-08-07', from:'10:00', to:'15:00', uid:'testuid', name:'Ich' }
+      { id:'s4', date:tag(0), from:'10:00', to:'15:00', uid:'testuid', name:'Ich' }
     ]
   };
   var CERTS = [
-    { id:'z1', uid:'u2', name:'Anna Meier', art:'ersthelfer', bis:'2026-07-28', ts:Date.now() },
-    { id:'z2', uid:'u3', name:'Ben Kraus',  art:'ems',        bis:'2026-09-06', ts:Date.now() },
-    { id:'z3', uid:'testuid', name:'Ich',   art:'trainer',    bis:'2027-09-11', ts:Date.now() },
-    { id:'z4', uid:'u2', name:'Anna Meier', art:'sonstiges', bez:'Ernaehrungsberater', bis:'2026-12-05', ts:Date.now() }
+    { id:'z1', uid:'u2', name:'Anna Meier', art:'ersthelfer', bis:tag(-10), ts:Date.now() },
+    { id:'z2', uid:'u3', name:'Ben Kraus',  art:'ems',        bis:tag(29), ts:Date.now() },
+    { id:'z3', uid:'testuid', name:'Ich',   art:'trainer',    bis:tag(399), ts:Date.now() },
+    { id:'z4', uid:'u2', name:'Anna Meier', art:'sonstiges', bez:'Ernaehrungsberater', bis:tag(119), ts:Date.now() }
   ];
   function collection(path) {
     return {
@@ -190,7 +199,14 @@
           }
         };
       },
-      where: function () { return this; },
+      // Einfacher Gleichheits-Filter, damit Abfragen wie
+      // .where('status','==','defekt') im Test auch wirklich filtern.
+      where: function (feld, op, wert) {
+        var k = collection(path);
+        k._filter = (this._filter || []).concat(
+          op === '==' ? [{ f: feld, v: wert }] : []);
+        return k;
+      },
       orderBy: function () { return this; },
       limit: function () { return this; },
       limitToLast: function () { return this; },
@@ -212,6 +228,12 @@
           : gt ? (TODOS[gt[1]] || [])
           : (path === 'certificates' ? CERTS
           : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []));
+        var self = this;
+        if (self._filter && self._filter.length) {
+          list = list.filter(function (d) {
+            return self._filter.every(function (f) { return d[f.f] === f.v; });
+          });
+        }
         return Promise.resolve(makeSnap(list.map(function (d) {
           return { id: d.id, data: function () { return d; } };
         })));

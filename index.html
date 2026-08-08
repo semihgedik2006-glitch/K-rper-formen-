@@ -1251,7 +1251,13 @@ html{font-size:var(--fs,100%)}
   .suchknopf{width:auto;padding:0 14px;gap:8px}
   .suchknopf .sk-wort{display:inline;font-size:.86rem;font-weight:600}
 }
-.sort-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 12px}
+/* Eine Zeile zum Schieben statt drei Zeilen Knöpfe: bei vier Sortierungen
+   nahm die Leiste umbrechend 150 Pixel über einer Liste mit drei Einträgen. */
+.sort-row{display:flex;align-items:center;gap:7px;flex-wrap:nowrap;margin:0 0 12px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.sort-row::-webkit-scrollbar{height:0}
+.sort-row .chip{flex:0 0 auto;white-space:nowrap}
+.sort-lab{flex:0 0 auto}
 .sort-lab{font-size:.74rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
   color:var(--text-3);margin-right:2px}
 .sec-head{display:flex;align-items:center;gap:11px;margin:22px 0 11px}
@@ -1685,6 +1691,17 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .mat-add{display:flex;gap:8px;margin-top:14px}
 .mat-add input{flex:1}
 .mat-saved{font-size:.78rem;color:var(--accent-d);min-height:1.1em;margin-top:10px;transition:opacity .3s}
+/* „Wo etwas defekt ist" – dieselbe Sprache wie „Wo etwas los ist" auf der
+   Startseite: Studio, Zahl, ein Tipp führt hin. */
+.dev-wo-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.dev-wo{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;
+  border-radius:999px;cursor:pointer;font-family:var(--font-body);font-weight:600;font-size:.86rem;
+  border:1px solid rgba(251,78,109,.4);background:rgba(251,78,109,.1);color:var(--danger);
+  transition:transform .25s var(--spring),background .2s}
+.dev-wo b{font-family:var(--font-head);font-size:.95rem}
+.dev-wo:active{transform:scale(.94)}
+@media (hover:hover){ .dev-wo:hover{background:rgba(251,78,109,.18)} }
+
 .mat-alert-go{margin-left:auto;flex-shrink:0;background:none;border:none;cursor:pointer;
   color:inherit;font-family:var(--font-body);font-weight:800;font-size:.8rem;
   text-decoration:underline;padding:6px 2px;min-height:36px}
@@ -2195,8 +2212,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
            SEITE: GERÄTE – Bestand, Defekte melden, Verlauf je Gerät
            ============================================================ -->
       <section class="view" id="view-geraete">
-        <div class="view-head shrink"><h2>Geräte</h2><p>Defekt melden statt im Chat schreiben – so geht es nicht unter und der Verlauf bleibt am Gerät.</p></div>
+        <div class="view-head shrink"><h2>Geräte</h2><p>Defekt melden – der Verlauf bleibt am Gerät.</p></div>
         <div class="scroll-area" data-shrinks="1">
+          <!-- Nur für die Verwaltung ab zwei Studios: in welchem Studio
+               überhaupt etwas kaputt ist. -->
+          <div id="devWo" style="display:none"></div>
+
           <div class="mat-bar">
             <select class="inp" id="devStudio"></select>
           </div>
@@ -2927,10 +2948,17 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <button class="btn btn-ghost btn-sm" id="devmPhoto">📷 Foto</button>
       <span class="hint" id="devmPhotoNote" style="align-self:center"></span>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-      <button class="btn btn-danger btn-sm" id="devmDefekt">⚠ Defekt melden</button>
-      <button class="btn btn-ghost btn-sm" id="devmWartung">🔧 Wartung fällig</button>
-      <button class="btn btn-primary btn-sm" id="devmOk" style="display:none">✓ Wieder in Ordnung</button>
+    <!-- Reihenfolge und Gewicht nach Häufigkeit: „Defekt melden" ist der
+         Grund, warum jemand dieses Fenster öffnet, und bekommt die volle
+         Breite. „Wieder in Ordnung" war vorher der auffälligste Knopf im
+         Fenster – wer schnell etwas melden wollte, hat damit ein defektes
+         Gerät versehentlich als in Ordnung gesetzt. -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+      <button class="btn btn-danger btn-sm" id="devmDefekt" style="width:100%">⚠ Defekt melden</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" id="devmWartung" style="flex:1">🔧 Wartung fällig</button>
+        <button class="btn btn-ghost btn-sm" id="devmOk" style="flex:1;display:none">✓ Wieder in Ordnung</button>
+      </div>
     </div>
 
     <h3 style="margin-top:20px;font-size:1rem">Verlauf</h3>
@@ -8603,6 +8631,57 @@ function ensureDevicesLoaded(){
   var sel=$('devStudio'); if(!sel) return;
   if(!sel.options.length) buildDeviceSelect();
   if(!_devStudioKey && sel.value) loadDevices(sel.value);
+  devDefekteSuchen();
+}
+
+/* ── Wo ist etwas kaputt? ──
+   Die Seite öffnete beim ersten alphabetischen Studio. Ein Chef mit 14
+   Studios sah dort „Noch keine Geräte" – während in Hürth eines defekt war.
+   Um das zu finden, musste er 14 Studios einzeln durchklicken.
+
+   Deshalb einmal beim Öffnen der Seite eine kurze Abfrage über alle
+   verwalteten Studios: nur die Anzahl defekter Geräte, kein Live-Beobachter.
+   Das kostet einen Lesevorgang je Studio und wird fünf Minuten lang nicht
+   wiederholt. Ein Beobachter je Studio wäre der teure Weg für eine Zahl,
+   die sich selten ändert. */
+var _devDefekte=null, _devDefekteAt=0, _devDefekteLaeuft=false;
+function devDefekteSuchen(){
+  if(!canManage()) return;
+  if(_devDefekteLaeuft) return;
+  if(_devDefekte && Date.now()-_devDefekteAt < 5*60000){ renderDevDefekte(); return; }
+  _devDefekteLaeuft=true;
+  var keys=managedKeys();
+  Promise.all(keys.map(function(sk){
+    return db.collection('studios').doc(sk).collection('devices')
+      .where('status','==','defekt').get()
+      .then(function(s){ return {sk:sk, n:s.size}; })
+      .catch(function(){ return {sk:sk, n:0}; });
+  })).then(function(res){
+    _devDefekte=res.filter(function(r){ return r.n>0; });
+    _devDefekteAt=Date.now();
+    _devDefekteLaeuft=false;
+    renderDevDefekte();
+  });
+}
+function renderDevDefekte(){
+  var box=$('devWo'); if(!box) return;
+  if(!canManage() || !_devDefekte || !_devDefekte.length){ box.style.display='none'; return; }
+  var gesamt=_devDefekte.reduce(function(a,r){ return a+r.n; },0);
+  box.style.display='block';
+  box.innerHTML='<div class="sec-head"><span>Wo etwas defekt ist</span><i></i></div>'+
+    '<p class="hint" style="margin:0 0 9px">'+gesamt+(gesamt===1?' Gerät':' Geräte')+
+    ' in '+_devDefekte.length+(_devDefekte.length===1?' Studio':' Studios')+'. Antippen wechselt dorthin.</p>'+
+    '<div class="dev-wo-row">'+_devDefekte.map(function(r){
+      return '<button class="dev-wo" data-wo="'+esc(r.sk)+'">'+esc(studioName(r.sk))+
+        '<b>'+r.n+'</b></button>';
+    }).join('')+'</div>';
+  box.querySelectorAll('[data-wo]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var sk=b.getAttribute('data-wo');
+      var sel=$('devStudio'); if(sel) sel.value=sk;
+      tick(8); loadDevices(sk);
+    });
+  });
 }
 
 function loadDevices(sk){
@@ -8646,11 +8725,18 @@ function renderDevices(){
     ? (kaputt ? kaputt+' von '+_devices.length+' defekt' : _devices.length+' Geräte, alles in Ordnung')
     : '';
 
+  /* Vorher stand hier „1 Gerät defekt – die Leitung hat dazu je eine Aufgabe
+     bekommen." Das nannte weder das Gerät noch führte es irgendwohin. */
   var al=$('devAlert');
   if(al){
+    var kaputteListe=_devices.filter(function(d){ return d.status==='defekt'; });
     if(kaputt){
       al.style.display='block';
-      al.innerHTML='⚠ <b>'+kaputt+' Gerät'+(kaputt===1?'':'e')+' defekt</b> – die Leitung hat dazu je eine Aufgabe bekommen.';
+      al.innerHTML='<span>⚠ <b>'+esc(kaputteListe.map(function(d){ return d.name||'Gerät'; }).join(', '))+
+        '</b> '+(kaputt===1?'ist':'sind')+' defekt</span>'+
+        '<button class="mat-alert-go" data-devgo="'+esc(kaputteListe[0].id)+'">ansehen</button>';
+      var go=al.querySelector('[data-devgo]');
+      if(go) go.addEventListener('click',function(){ openDeviceModal(go.getAttribute('data-devgo')); });
     } else al.style.display='none';
   }
 
@@ -8718,7 +8804,7 @@ function fillDeviceModal(){
   var n=$('devmName'); if(n) n.textContent=d.name||'Gerät';
   var p=$('devmPlace'); if(p) p.textContent = d.place ? ('Standort: '+d.place) : '';
   // "Wieder in Ordnung" nur zeigen, wenn es auch etwas zu beheben gibt
-  var ok=$('devmOk'); if(ok) ok.style.display = (d.status && d.status!=='ok') ? 'inline-flex' : 'none';
+  var ok=$('devmOk'); if(ok) ok.style.display = (d.status && d.status!=='ok') ? 'flex' : 'none';
   var del=$('devmDel'); if(del) del.style.display = canManage() ? 'block' : 'none';
   // Umbenennen ist Sache der Verwaltung – sonst heisst das Gerät morgen anders
   var ed=$('devmEditWrap'); if(ed) ed.style.display = canManage() ? 'block' : 'none';
@@ -8785,12 +8871,19 @@ function reportDevice(art, btn){
       status:status, lastNote:(text||DEV_STATUS[status].label),
       lastBy:session.name, lastAt:Date.now()
     });
-    // Nur bei einem echten Defekt eine Aufgabe – sonst wäre die
-    // Aufgabenliste nach einer Woche voll mit Kleinkram.
-    if(art==='defekt'){
+    /* Nur bei einem echten Defekt eine Aufgabe – sonst wäre die
+       Aufgabenliste nach einer Woche voll mit Kleinkram.
+       Und nur EINE je Gerät: Vorher legte jede Meldung eine neue an. Wer ein
+       Gerät dreimal meldete, weil sich nichts tat, erzeugte drei identische
+       Aufgaben – und die Leitung sah dreimal dasselbe Problem. */
+    var schonOffen = art==='defekt' && (cachedTodos[_devStudioKey]||[]).some(function(t){
+      return t.devId===d.id && !isDone(t) && !isArchived(t);
+    });
+    if(art==='defekt' && !schonOffen){
       batch.set(ref.collection('todos').doc(), {
         title:'🔧 '+(d.name||'Gerät')+' defekt',
         desc:text+'\n\nGemeldet von '+session.name+(d.place?' · Standort: '+d.place:''),
+        devId:d.id,
         done:false, doneBy:null, doneAt:null,
         createdBy:session.name, createdByUid:session.uid, ts:Date.now()
       });
@@ -8799,7 +8892,9 @@ function reportDevice(art, btn){
       $('devmText').value=''; _pendingDevPhoto=null;
       var pn=$('devmPhotoNote'); if(pn) pn.textContent='';
       toast(art==='behoben' ? 'Als in Ordnung vermerkt ✓'
-        : (art==='wartung' ? 'Wartung vermerkt ✓' : 'Defekt gemeldet – Aufgabe für die Leitung angelegt ✓'));
+        : (art==='wartung' ? 'Wartung vermerkt ✓'
+          : (schonOffen ? 'Defekt vermerkt – es gibt schon eine offene Aufgabe dazu ✓'
+                        : 'Defekt gemeldet – Aufgabe für die Leitung angelegt ✓')));
       tick(12);
     }).catch(function(e){ toast(errMsg(e),true); });
   });
