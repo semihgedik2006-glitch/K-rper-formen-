@@ -1699,6 +1699,10 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
   border:1px solid rgba(251,78,109,.4);background:rgba(251,78,109,.1);color:var(--danger);
   transition:transform .25s var(--spring),background .2s}
 .dev-wo b{font-family:var(--font-head);font-size:.95rem}
+/* Wartende Anträge sind kein Defekt – gelb statt rot */
+.dev-wo.warten{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12);color:#c2761a}
+body:not(.light) .dev-wo.warten{color:#ffb38c}
+@media (hover:hover){ .dev-wo.warten:hover{background:rgba(251,191,36,.2)} }
 .dev-wo:active{transform:scale(.94)}
 @media (hover:hover){ .dev-wo:hover{background:rgba(251,78,109,.18)} }
 
@@ -2253,6 +2257,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <section class="view" id="view-team">
         <div class="view-head shrink"><h2>Team</h2><p>Schichtplan, Abwesenheiten, Übergaben und Aushänge.</p></div>
         <div class="scroll-area" data-shrinks="1">
+          <!-- Nur für die Verwaltung: Urlaubsanträge, die irgendwo warten -->
+          <div id="teamWartet" style="display:none"></div>
+
           <div class="mat-bar">
             <select class="inp" id="teamStudio"></select>
           </div>
@@ -2274,7 +2281,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
                   <button class="btn btn-ghost btn-sm" id="shiftNext">›</button>
                 </div>
               </div>
-              <p class="hint">Wer arbeitet wann? Abwesenheiten werden automatisch angezeigt.</p>
               <div id="shiftGrid" style="margin-top:10px"></div>
             </div>
             <div class="card" id="shiftAddCard" style="display:none">
@@ -2294,8 +2300,14 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
 
           <!-- Abwesenheiten -->
+          <!-- Wer diesen Reiter öffnet, will fast immer LESEN: „wer ist
+               nächste Woche im Urlaub?". Das Melde-Formular stand vorher
+               davor und war 536 Pixel hoch – die Liste begann erst bei
+               Pixel 403 (Mitarbeiter) bzw. 647 (Chef). Jetzt: Liste zuerst,
+               Formular darunter und zugeklappt. -->
           <div id="teamPaneAbwesend" style="display:none">
-            <div class="card">
+            <div class="card"><h3>Kommende Abwesenheiten</h3><div id="absList"></div></div>
+            <div class="card" data-fold="abwmelden">
               <h3>🌴 Abwesenheit melden</h3>
               <p class="hint">Urlaub, Krankheit oder frei – erscheint im Schichtplan.</p>
               <div class="row">
@@ -2312,19 +2324,18 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
                 <input class="inp" id="abNote" type="text" maxlength="80" /></div>
               <button class="btn btn-primary btn-sm" id="abAdd">Melden</button>
             </div>
-            <div class="card"><h3>Kommende Abwesenheiten</h3><div id="absList"></div></div>
           </div>
 
           <!-- Übergabe -->
           <div id="teamPaneUebergabe" style="display:none">
             <div class="card">
               <h3>🔁 Übergabe an die nächste Schicht</h3>
-              <p class="hint">Was muss die nächste Schicht wissen? Bleibt 7 Tage sichtbar.</p>
-              <div class="mat-add">
-                <input class="inp" id="hoNew" type="text" placeholder="z. B. Gerät 3 macht Geräusche …" maxlength="300" />
+              <div id="hoList" style="margin-top:4px"></div>
+              <div class="mat-add" style="margin-top:14px">
+                <input class="inp" id="hoNew" type="text" placeholder="Was muss die nächste Schicht wissen?" maxlength="300" />
                 <button class="btn btn-ghost btn-sm" id="hoAdd">+ Eintrag</button>
               </div>
-              <div id="hoList" style="margin-top:12px"></div>
+              <p class="hint" style="margin:8px 0 0">Bleibt 7 Tage sichtbar.</p>
             </div>
           </div>
 
@@ -2332,7 +2343,11 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div id="teamPaneBrett" style="display:none">
             <div class="card">
               <h3>📌 Schwarzes Brett</h3>
-              <p class="hint">Aushänge fürs ganze Team – Tausch, Mitfahrgelegenheit, Lob.</p>
+              <div id="bbList" style="margin-top:4px"></div>
+            </div>
+            <div class="card" data-fold="brettneu">
+              <h3>✏️ Aushang schreiben</h3>
+              <p class="hint">Für das ganze Team – Tausch, Mitfahrgelegenheit, Lob.</p>
               <div class="field"><textarea class="inp" id="bbText" maxlength="500" placeholder="Dein Aushang …"></textarea></div>
               <div class="field"><label for="bbType">Art</label>
                 <select class="inp" id="bbType">
@@ -2342,7 +2357,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
                   <option value="mitfahr">🚗 Mitfahrgelegenheit</option>
                 </select></div>
               <button class="btn btn-primary btn-sm" id="bbAdd">Anpinnen</button>
-              <div id="bbList" style="margin-top:14px"></div>
             </div>
           </div>
         </div>
@@ -6100,6 +6114,70 @@ function ensureTeamLoaded(){
   if(!sel.options.length) buildTeamSelect();
   if(!_shiftWeek) _shiftWeek=mondayOf(new Date());
   if(!_teamStudioKey && sel.value) loadTeam(sel.value);
+  antraegeSuchen();
+  // Der heutige Tag soll im Bild sein, ohne dass man ihn sucht.
+  setTimeout(heuteInsBild, 260);
+}
+
+/* Beim Öffnen steht der Montag oben; ist heute Samstag, liegt der heutige
+   Tag 460 Pixel weiter unten. Genau den will man aber sehen. */
+function heuteInsBild(){
+  if(currentView!=='team') return;
+  var h=document.querySelector('#shiftGrid .shift-day.today');
+  if(h && h.offsetParent) h.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+
+/* ── Anträge, die auf eine Entscheidung warten ──
+   Urlaub beantragen kann jeder, genehmigen nur die Verwaltung – aber die sah
+   Anträge ausschließlich im gerade geöffneten Studio. Wer in Seelscheid
+   Urlaub beantragt hat, wartete so lange, bis der Chef zufällig dieses Studio
+   aufmacht. Das ist kein Anzeigefehler, das ist ein hängengebliebener Vorgang.
+
+   Wie bei den Geräten: einmal beim Öffnen der Seite abfragen, kein
+   Dauer-Beobachter je Studio, fünf Minuten gepuffert. */
+var _antraege=null, _antraegeAt=0, _antraegeLaeuft=false;
+function antraegeSuchen(){
+  if(!canManage() || _antraegeLaeuft) return;
+  if(_antraege && Date.now()-_antraegeAt < 5*60000){ renderAntraege(); return; }
+  _antraegeLaeuft=true;
+  var heute=ymd(new Date());
+  Promise.all(managedKeys().map(function(sk){
+    return db.collection('studios').doc(sk).collection('absences')
+      .where('status','==','offen').get()
+      .then(function(s){
+        var n=0;
+        s.forEach(function(d){ if((d.data().to||'')>=heute) n++; });
+        return {sk:sk, n:n};
+      })
+      .catch(function(){ return {sk:sk, n:0}; });
+  })).then(function(res){
+    _antraege=res.filter(function(r){ return r.n>0; });
+    _antraegeAt=Date.now();
+    _antraegeLaeuft=false;
+    renderAntraege();
+  });
+}
+function renderAntraege(){
+  var box=$('teamWartet'); if(!box) return;
+  if(!canManage() || !_antraege || !_antraege.length){ box.style.display='none'; return; }
+  var gesamt=_antraege.reduce(function(a,r){ return a+r.n; },0);
+  box.style.display='block';
+  box.innerHTML='<div class="sec-head"><span>Wartet auf deine Entscheidung</span><i></i></div>'+
+    '<p class="hint" style="margin:0 0 9px">'+gesamt+(gesamt===1?' Antrag':' Anträge')+
+    ' in '+_antraege.length+(_antraege.length===1?' Studio':' Studios')+'. Antippen wechselt dorthin.</p>'+
+    '<div class="dev-wo-row">'+_antraege.map(function(r){
+      return '<button class="dev-wo warten" data-antrag="'+esc(r.sk)+'">'+esc(studioName(r.sk))+
+        '<b>'+r.n+'</b></button>';
+    }).join('')+'</div>';
+  box.querySelectorAll('[data-antrag]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var sk=b.getAttribute('data-antrag');
+      var sel=$('teamStudio'); if(sel) sel.value=sk;
+      tick(8); loadTeam(sk);
+      var reiter=document.querySelector('[data-teamtab="abwesend"]');
+      if(reiter) reiter.click();
+    });
+  });
 }
 function loadTeam(sk){
   if(!sk) return;
@@ -6180,13 +6258,21 @@ function renderShifts(){
     '</div>';
   box.innerHTML=sum+html;
 
-  // Zur heutigen Karte scrollen, wenn die aktuelle Woche gezeigt wird.
-  // Sonst steht man am Sonntagabend immer noch bei Montag.
+  /* Zur heutigen Karte scrollen, wenn die aktuelle Woche gezeigt wird.
+     Sonst steht man am Samstagabend immer noch bei Montag.
+     „block:nearest" reichte nicht: liegt die Karte nur zur Hälfte im Bild,
+     hält der Browser sie für sichtbar und rührt sich nicht. Deshalb wird
+     hier selbst gerechnet – und nur, wenn die Karte unten heraushängt. */
   var heuteKarte=box.querySelector('.shift-day.today');
-  if(heuteKarte && heuteKarte.scrollIntoView){
+  var flaeche=box.closest('.scroll-area');
+  if(heuteKarte && flaeche){
     setTimeout(function(){
-      heuteKarte.scrollIntoView({behavior:'smooth', block:'nearest'});
-    }, 120);
+      if(currentView!=='team' || !heuteKarte.offsetParent) return;
+      var k=heuteKarte.getBoundingClientRect(), f=flaeche.getBoundingClientRect();
+      if(k.bottom > f.bottom - 8){
+        flaeche.scrollTo({ top: flaeche.scrollTop + (k.bottom - f.bottom) + 16, behavior:'smooth' });
+      }
+    }, 140);
   }
   box.querySelectorAll('[data-shdel]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -10914,6 +11000,9 @@ function bindActions(){
        ['uebergabe','teamPaneUebergabe'],['brett','teamPaneBrett']].forEach(function(pair){
         var el=$(pair[1]); if(el) el.style.display = (pair[0]===t) ? '' : 'none';
       });
+      // Die aufklappbaren Karten der neu sichtbaren Seite herrichten
+      foldAufbauen();
+      if(t==='schicht') setTimeout(heuteInsBild, 120);
       tick(8);
     });
   });

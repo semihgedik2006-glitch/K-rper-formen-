@@ -360,6 +360,18 @@ Ein Tipp auf **⋯** öffnet ein Blatt von unten mit beschrifteten Einträgen:
 
 Vier Reiter, je Studio umschaltbar.
 
+**Auf allen Reitern steht die Liste vorn und das Eingabefeld dahinter.** Wer
+diese Seite öffnet, will fast immer lesen: wer arbeitet wann, wer ist im
+Urlaub, was hat die Frühschicht hinterlassen. Vorher stand bei den
+Abwesenheiten ein 536 Pixel hohes Formular davor, und die Liste begann erst
+weit unten.
+
+- **Wartet auf deine Entscheidung** (**L C**, ganz oben) – Urlaubsanträge, die
+  in irgendeinem Studio auf Genehmigung warten, mit Anzahl je Studio. Ein Tipp
+  wechselt dorthin und öffnet gleich den richtigen Reiter. Vorher sah die
+  Leitung Anträge nur im gerade geöffneten Studio: Wer in Seelscheid Urlaub
+  beantragt hatte, wartete, bis jemand zufällig dieses Studio aufmachte.
+
 ### Schichten
 - **Wochenansicht** Montag bis Sonntag, heute hervorgehoben. Die Ansicht
   springt automatisch zum heutigen Tag.
@@ -381,18 +393,21 @@ Vier Reiter, je Studio umschaltbar.
 Wer ursprünglich eingeteilt war, bleibt am Eintrag vermerkt.
 
 ### Abwesend
-- **Melden**: Urlaub, Krank oder Frei, von/bis, Notiz.
+- **Kommende Abwesenheiten zuerst**, offene Anträge ganz oben.
+- **Melden** über die Karte darunter (startet zugeklappt): Urlaub, Krank oder
+  Frei, von/bis, Notiz.
 - Urlaub und Frei gehen als **Antrag** an die Leitung; man kann sich nicht
   selbst genehmigen. Krankmeldungen gelten sofort.
 - **Genehmigen oder ablehnen** (**L C**).
-- Übersicht der kommenden Abwesenheiten.
 
 ### Übergabe
 - **Übergabe an die nächste Schicht** – kurze Notizen mit Name und Uhrzeit.
-- Die letzten 40 Einträge.
+- Die Liste steht oben, das Eingabefeld darunter.
+- Die letzten 40 Einträge, sichtbar bleiben 7 Tage.
 
 ### Brett
 - **Schwarzes Brett** für Aushänge, studioübergreifend.
+- Aushänge zuerst, das Schreib-Formular darunter (startet zugeklappt).
 - Jeder darf schreiben, **L C** löschen.
 
 ---

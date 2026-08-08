@@ -18,7 +18,7 @@ umgesetzt. Erst wenn er sitzt, geht es zum nächsten.
 | 4 | **Aufgaben** | 🟢 fertig | 5 |
 | 5 | **Material** | 🟢 fertig | 6 |
 | 6 | **Geräte** | 🟢 fertig | 7 |
-| 7 | Team | ⚪ offen | – |
+| 7 | **Team** | 🟢 fertig | 8 |
 | 8 | Dokumente | ⚪ offen | – |
 | 9 | Verwaltung | ⚪ offen | – |
 | 10 | Einstellungen | ⚪ offen | – |
@@ -527,6 +527,76 @@ dass jemand etwas kaputt gemacht hätte.
   mit 40 Geräten je Standort wäre es sinnvoll.
 - **Wartungsintervalle mit Erinnerung** — dafür gibt es wiederkehrende
   Aufgaben. Ein zweites Fristensystem daneben würde nur auseinanderlaufen.
+
+---
+
+## Sitzung 8 — 8. August 2026 · Bereich 7 · Team
+
+Vier Reiter in einem Bereich: Schichten, Abwesenheiten, Übergabe, Brett.
+Leitfrage: **wie viel muss man wegscrollen, bevor man das sieht, weswegen
+man hergekommen ist?**
+
+### Gefundene Probleme
+
+| # | Problem | Schwere | Stand |
+|---|---|---|---|
+| T1 | **Auf drei von vier Reitern stand das Eingabeformular VOR der Liste.** Bei den Abwesenheiten 536 Pixel hoch — die Liste begann bei Pixel 403 (Mitarbeiter) bzw. **647** (Chef). Wer nachsehen will, wer im Urlaub ist, bekommt zuerst ein leeres Antragsformular | 🔴 kritisch | ✅ behoben |
+| T2 | **Urlaubsanträge waren nur im geöffneten Studio sichtbar.** Wer in Seelscheid Urlaub beantragt hatte, wartete, bis jemand zufällig dieses Studio aufmacht. Das ist kein Anzeigefehler, das ist ein hängengebliebener Vorgang | 🔴 hoch | ✅ behoben |
+| T3 | **Der heutige Tag hing halb aus dem Bild.** Der Sprung dorthin benutzte `block:'nearest'` — liegt die Karte zur Hälfte im Bild, hält der Browser sie für sichtbar und rührt sich nicht | 🟠 mittel | ✅ behoben |
+| T4 | Eine Dauererklärung über dem Plan („Wer arbeitet wann? Abwesenheiten werden automatisch angezeigt.") kostete jeden Tag dieselben 40 Pixel | 🟡 klein | ✅ behoben |
+
+### Was gebaut wurde
+
+**T1 — lesen vor schreiben.** Auf allen Reitern steht jetzt die Liste vorn:
+
+| Reiter | Liste begann bei | jetzt |
+|---|---|---|
+| Abwesend (Mitarbeiter) | 403 px | **178 px** |
+| Abwesend (Chef) | 647 px | **180 px** |
+| Brett | hinter 383 px Formular | **181 px** |
+| Übergabe | hinter dem Eingabefeld | Feld unter der Liste |
+
+Die Formulare für Abwesenheit und Aushang starten **zugeklappt** (58 Pixel)
+und öffnen sich mit einem Tipp auf die Überschrift — dasselbe Muster wie
+überall sonst in der App.
+
+**T2 — „Wartet auf deine Entscheidung".** Beim Öffnen der Seite eine Abfrage
+über alle verwalteten Studios nach offenen Anträgen. Als Reihe anzutippender
+Studios ganz oben; ein Tipp wechselt ins Studio **und** öffnet den
+Abwesenheits-Reiter, sodass der Genehmigen-Knopf direkt im Bild ist.
+Gleiches Verfahren wie bei den Geräten: ein Lesevorgang je Studio, fünf
+Minuten gepuffert, kein Dauer-Beobachter.
+
+**T3 — heute wirklich im Bild.** Statt `scrollIntoView` wird gerechnet: hängt
+die heutige Karte unten heraus, wird genau so weit gescrollt, dass sie ganz
+sichtbar ist. Zusammen mit T4 passt die ganze Woche jetzt auf einen
+Bildschirm.
+
+### Health Score · Team
+
+| Kriterium | vorher | jetzt | Begründung |
+|---|---|---|---|
+| UX | 4/10 | **8/10** | Man sieht sofort, was los ist, statt an einem Formular vorbeizuscrollen. |
+| UI | 6/10 | **8/10** | Gleiche Faltlogik wie im Rest der App, ganze Woche auf einem Bildschirm. |
+| Performance | 7/10 | 7/10 | Vier Live-Beobachter je Studio wie bisher, dazu eine gepufferte Abfrage beim Öffnen. |
+| Skalierbarkeit | 5/10 | 6/10 | Bei 50 Studios wäre die Antrags-Abfrage zu teuer; dann gehörte sie in ein Sammel-Dokument. |
+| Wartbarkeit | 6/10 | 7/10 | Die Studio-Übersichten von Geräten und Team teilen sich Aussehen und Muster. |
+| Konsistenz | 5/10 | **9/10** | „Wartet auf deine Entscheidung" spricht dieselbe Sprache wie „Wo etwas defekt ist" und „Wo etwas los ist". |
+| Investor | 5/10 | **8/10** | Schichttausch mit Bestätigung und Urlaubsfreigabe über 14 Studios ist ein Argument, das kein Messenger hat. |
+| Kaufwahrscheinlichkeit | 5/10 | **8/10** | Urlaubsanträge, die liegen bleiben, sind ein Ärgernis mit Namen. |
+| Innovationsgrad | 5/10 | 6/10 | Der dreistufige Schichttausch war schon eigen; die studioübergreifende Freigabe kommt dazu. |
+| Aufwand | — | klein | rund 120 Zeilen, davon 40 nur verschoben |
+
+### Bewusst NICHT gebaut
+
+- **Urlaubskonto mit Resttagen** — dafür bräuchte es Vertragsdaten,
+  Übertrag aus dem Vorjahr und Teilzeitfaktoren. Das ist Lohnbuchhaltung,
+  nicht Studioalltag, und halb gebaut wäre es schlimmer als gar nicht.
+- **Automatische Schichtplanung** — wer wann kann, hängt an Absprachen, die
+  nicht in der App stehen. Ein Vorschlag, den man jedes Mal korrigieren muss,
+  ist langsamer als selbst eintragen.
+- **Stempeluhr / Kommen-Gehen** — steht ausdrücklich im Handbuch unter „was
+  die App bewusst nicht tut" und bleibt so.
 
 ---
 

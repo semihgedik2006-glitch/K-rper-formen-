@@ -228,7 +228,9 @@
         var gd = /^studios\/(.+)\/devices$/.exec(path);
         var gl = /^studios\/(.+)\/deviceLog$/.exec(path);
         var gt = /^studios\/(.+)\/todos$/.exec(path);
-        var list = ms ? (SHIFTS[ms[1]] || [])
+        var ga = /^studios\/(.+)\/absences$/.exec(path);
+        var list = ga ? (ABSENCES[ga[1]] || [])
+          : ms ? (SHIFTS[ms[1]] || [])
           : gc ? (CLEAN[gc[1]] || [])
           : gn ? (CLEANNOTES[gn[1]] || [])
           : gd ? (DEVICES[gd[1]] || [])
