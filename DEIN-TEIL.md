@@ -1,7 +1,7 @@
 # Was du machen musst
 
-Stand 8. August 2026. Zwei Handgriffe, beide einmalig, beide kostenlos.
-Zusammen rund zehn Minuten. Danach ist nichts mehr offen.
+Stand 8. August 2026. Zwei Handgriffe, zusammen rund fünfzehn Minuten.
+Danach ist nichts mehr offen.
 
 Beide brauchen **den Google-Account, der das Firebase-Projekt `formenchat`
 besitzt** – also deinen.
@@ -58,64 +58,93 @@ Erledigtes. Vorher fehlten oft die letzten Studios.
 
 ---
 
-## 2. Export-Rolle fürs Dienstkonto (5 Minuten)
+## 2. Nächtliche Sicherung zum Laufen bringen (10 Minuten)
 
-**Warum:** Seit dieser Runde sichert sich die Datenbank jede Nacht um 02:40
-selbst, sieben Tage lang. Dafür braucht das Dienstkonto der Cloud Functions
-**zwei** Berechtigungen: die Datenbank exportieren zu dürfen **und** in den
-Speicher schreiben zu dürfen. Fehlt eine davon, kommt
+**Warum:** Seit dieser Runde soll sich die Datenbank jede Nacht um 02:40
+selbst sichern, sieben Tage lang. Sie tut es nicht. Deine Fehlermeldung sagt
+warum – und das ist die eigentliche Ursache, nicht die Rolle:
+
+> `5 NOT_FOUND: Google Cloud Storage bucket does not exist:
+> formenchat.firebasestorage.app`
+
+**Im Projekt ist überhaupt kein Speicher eingerichtet.** Es gibt also gar
+keinen Ort, an den die Sicherung geschrieben werden könnte. Deshalb hilft
+auch keine weitere Rolle, solange das nicht steht.
+
+Alles andere in der App ist davon nicht betroffen und läuft normal.
+
+### Vorab, damit es keine Überraschung gibt: dein Projekt ist auf Blaze
+
+Ich hatte im Kopf, dass wir uns die ganze Zeit in der Gratisstufe bewegen –
+du hattest gesagt, es sei keine Karte hinterlegt. Das stimmt so nicht, und du
+solltest es wissen, bevor du weiterklickst:
+
+**Das Projekt `formenchat` läuft auf dem Bezahlplan „Blaze".** Der Beleg ist
+eindeutig: Cloud Functions lassen sich *nur* auf Blaze bereitstellen, und
+unsere 20 Funktionen sind heute um 16:07 Uhr fehlerfrei ausgerollt worden und
+laufen. Genau deshalb kam bei dir überhaupt eine Meldung aus der Funktion
+zurück. Auf der Gratisstufe wäre schon der Aufruf abgewiesen worden.
+
+Blaze heißt: irgendwo an diesem Google-Konto **hängt ein Zahlungsmittel**.
+Es heißt nicht, dass etwas abgebucht wird – der Verbrauch von 14 Studios
+liegt bei den meisten Diensten im monatlichen Freikontingent, und bisher ist
+offensichtlich nichts angefallen. Aber die Bremse „es geht ja gar nicht,
+abzubuchen" gibt es nicht.
+
+**Empfehlung, fünf Minuten:** ein Budget mit Warnung anlegen.
+`https://console.cloud.google.com/billing` → *Budgets & Benachrichtigungen* →
+Budget **5 €**, Warnung bei 50 % und 100 %. Dann bekommst du eine E-Mail,
+lange bevor irgendetwas spürbar wird. Du hattest gesagt, das brauchst du
+nicht – die Annahme dahinter war aber, dass keine Karte hinterlegt ist.
+
+### Schritt 1 — Speicher anlegen
+
+1. Öffnen: `https://console.firebase.google.com/project/formenchat/storage`
+2. **„Jetzt starten"**.
+3. Bei der Region **`europe-west1` (Belgien)** wählen.
+   > **Das muss europe-west1 sein.** Ein Firestore-Export kann nur in einen
+   > Speicher am *selben* Ort geschrieben werden, und die Datenbank liegt in
+   > europe-west1. Eine andere Region lehnt der Export ab.
+4. Regeln: die vorgeschlagenen („nur angemeldete Nutzer") übernehmen. Die App
+   liest und schreibt dort nichts – nur die Server-Funktion legt Sicherungen
+   ab, und die geht an den Regeln vorbei.
+
+**Was das kostet:** Die 5 GB, die Google umsonst gibt, gelten nur für
+US-Regionen – europe-west1 wird berechnet, mit etwa **2 Cent je Gigabyte und
+Monat**. Sieben Kopien dieser Datenbank sind weit unter einem Gigabyte. Das
+sind **Cent-Beträge im Monat**, keine Euro. Ich sage es trotzdem dazu, weil
+„kostet nichts" hier nicht mehr ganz stimmen würde.
+
+### Schritt 2 — Die beiden Rollen fürs Dienstkonto
+
+Erst wenn der Speicher steht, ist die Rolle überhaupt der nächste
+Stolperstein. Das Dienstkonto der Cloud Functions braucht **zwei**
+Berechtigungen: die Datenbank exportieren zu dürfen **und** in den Speicher
+schreiben zu dürfen. Fehlt eine, kommt
 `7 PERMISSION_DENIED: The caller does not have permission`.
 
-Alles andere in der App ist davon nicht betroffen.
-
-### Zuerst: welches Konto ist überhaupt gemeint?
-
-Die App sagt es dir jetzt selbst. In der App:
-**Verwaltung → System → „🛡 Jetzt zusätzlich sichern"**.
-
-Kommt es nicht durch, steht unter dem Knopf ab sofort **die vollständige
-Meldung mit dem Namen des Dienstkontos und den beiden Rollen** – rot
-umrandet und markierbar. Genau diesen Namen brauchst du in Schritt 2.
-
-Meist ist es `formenchat@appspot.gserviceaccount.com`.
-
-### Schritt 1 — Export-Rolle
+Welches Konto gemeint ist, sagt die App selbst: **Verwaltung → System →
+„🛡 Jetzt zusätzlich sichern"**. Kommt es nicht durch, steht unter dem Knopf
+die vollständige Meldung mit dem Namen des Dienstkontos – rot umrandet und
+markierbar. Meist ist es `formenchat@appspot.gserviceaccount.com`.
 
 1. Öffnen: `https://console.cloud.google.com/iam-admin/iam?project=formenchat`
 2. Oben rechts **„Von Google bereitgestellte Rollenzuweisungen einschließen"**
    anhaken – sonst fehlt die Zeile in der Liste.
-3. Die Zeile mit dem Dienstkonto aus der Fehlermeldung suchen →
-   **Stift-Symbol** am Ende der Zeile.
+3. Die Zeile mit dem Dienstkonto suchen → **Stift-Symbol** am Ende der Zeile.
 4. **„Weitere Rolle hinzufügen"** →
    **`Cloud Datastore Import Export Admin`**
-   *(deutsch: „Cloud Datastore-Import/Export-Administrator")* → **Speichern**.
-
-### Schritt 2 — Schreibrecht auf den Speicher
-
-Das ist der Teil, der beim ersten Versuch gefehlt hat. Die Export-Rolle
-erlaubt das Exportieren, aber nicht das **Ablegen** der Dateien.
-
-1. Dieselbe Seite, dasselbe Dienstkonto, wieder **Stift-Symbol**.
-2. **„Weitere Rolle hinzufügen"** →
+   *(deutsch: „Cloud Datastore-Import/Export-Administrator")*.
+5. Noch einmal **„Weitere Rolle hinzufügen"** →
    **`Storage Object Admin`**
    *(deutsch: „Storage-Objekt-Administrator")* → **Speichern**.
 
-### Falls es dann immer noch klemmt
+Beide Rollen zusammen in einem Rutsch – die erste erlaubt das Exportieren,
+die zweite das **Ablegen** der Dateien. Beim ersten Anlauf hatte ich dir nur
+die erste genannt; das war mein Fehler.
 
-Die neue Fehlermeldung nennt auch den **Speicherort**, in den gesichert
-werden soll – zum Beispiel `formenchat.firebasestorage.app`. Steht dort
-„wurde nicht gefunden", ist der Speicher im Projekt noch gar nicht
-eingerichtet:
-
-**Firebase-Konsole → Storage → „Jetzt starten"**, Region `europe-west1`
-wählen, fertig. Danach den Knopf noch einmal drücken.
-
-> Hintergrund: Früher hieß der Standard-Speicher immer
-> `<projekt>.appspot.com`. Firebase vergibt seit Ende 2024 Namen der Form
-> `<projekt>.firebasestorage.app`. Die App hatte den alten Namen fest
-> eingebaut und hätte selbst mit gesetzten Rollen ins Leere gesichert – das
-> ist jetzt behoben: sie nimmt den Speicher, der im Projekt wirklich
-> eingerichtet ist.
+Nach dem Speichern können **ein bis zwei Minuten** vergehen, bis eine Rolle
+greift. Kommt der Fehler sofort wieder: kurz warten, noch einmal drücken.
 
 ### Geprüft ist es, wenn …
 
@@ -123,8 +152,23 @@ wählen, fertig. Danach den Knopf noch einmal drücken.
 den Zielordner. Die Sicherungen liegen dann unter `sicherung/JJJJ-MM-TT`;
 Ordner älter als sieben Tage räumt die App selbst weg.
 
-Nach dem Speichern einer Rolle können **ein bis zwei Minuten** vergehen, bis
-sie greift. Kommt der Fehler sofort wieder: kurz warten, noch einmal drücken.
+**Und ab jetzt musst du nicht mehr danach suchen.** Die Server-Funktion
+schreibt nach jedem nächtlichen Versuch mit, ob er durchkam. Die App zeigt
+das an zwei Stellen:
+
+- in **Verwaltung → System → Daten sichern** als Zeile „Letzte Sicherung: …",
+  grün bei Erfolg, rot mit dem vollständigen Grund bei einem Fehlschlag
+- ganz oben in **Braucht Aufmerksamkeit**, sobald eine Nacht ausgefallen ist
+
+Genau das hat vorher gefehlt: Der Fehler stand nur im Protokoll von Google,
+und dort schaut niemand hin. Deshalb ist monatelang niemandem aufgefallen,
+dass gar nicht gesichert wurde.
+
+> Nebenbei behoben: Früher hieß der Standard-Speicher immer
+> `<projekt>.appspot.com`. Firebase vergibt seit Ende 2024 Namen der Form
+> `<projekt>.firebasestorage.app`. Die App hatte den alten Namen fest
+> eingebaut und hätte selbst mit Speicher und Rollen ins Leere gesichert.
+> Sie nimmt jetzt den Speicher, der im Projekt wirklich eingerichtet ist.
 
 ---
 
@@ -133,10 +177,12 @@ sie greift. Kommt der Fehler sofort wieder: kurz warten, noch einmal drücken.
 | | |
 |---|---|
 | Apps Script eingefügt | ☐ |
+| Speicher in `europe-west1` angelegt | ☐ |
 | Export-Rolle gesetzt | ☐ |
 | Storage-Objekt-Administrator gesetzt | ☐ |
 | „Google-Tabellen abgleichen" zeigt alle 14 Studios | ☐ |
 | „Jetzt zusätzlich sichern" meldet Erfolg | ☐ |
+| Budget-Warnung angelegt *(empfohlen, nicht nötig)* | ☐ |
 
 ---
 

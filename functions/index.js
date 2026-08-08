@@ -952,6 +952,24 @@ function sicherungsFehler(e) {
   return roh;
 }
 
+/* Was bei der letzten Sicherung herauskam - in die Datenbank, damit die App
+   es anzeigen kann.
+   Grund: Eine Sicherung, die nachts still scheitert, merkt monatelang
+   niemand. Genau das ist hier passiert: der Speicher war nie eingerichtet,
+   und im Protokoll stand es zwar, aber ins Protokoll schaut keiner. */
+async function sicherungStatus(ok, ziel, fehler) {
+  try {
+    await db.collection('config').doc('sicherung').set({
+      ts: Date.now(),
+      ok: !!ok,
+      ziel: ziel || '',
+      fehler: fehler || ''
+    }, { merge: false });
+  } catch (e) {
+    console.error('Sicherungsstand nicht geschrieben: ' + e.message);
+  }
+}
+
 async function exportieren(zielPfad) {
   const projekt = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
   if (!projekt) throw new Error('Projektkennung fehlt.');
@@ -976,8 +994,11 @@ exports.dailyBackup = region
     try {
       const r = await exportieren('sicherung/' + heute);
       console.log('Sicherung gestartet: ' + r.ziel + ' (' + r.op + ')');
+      await sicherungStatus(true, r.ziel, '');
     } catch (e) {
-      console.error('Sicherung fehlgeschlagen: ' + sicherungsFehler(e));
+      const text = sicherungsFehler(e);
+      console.error('Sicherung fehlgeschlagen: ' + text);
+      await sicherungStatus(false, '', text);
       return null;
     }
 
@@ -1013,9 +1034,12 @@ exports.backupNow = region
     const stempel = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     try {
       const r = await exportieren('sicherung/manuell-' + stempel);
+      await sicherungStatus(true, r.ziel, '');
       return { ok: true, ziel: r.ziel };
     } catch (e) {
-      throw new functions.https.HttpsError('internal', sicherungsFehler(e));
+      const text = sicherungsFehler(e);
+      await sicherungStatus(false, '', text);
+      throw new functions.https.HttpsError('internal', text);
     }
   });
 

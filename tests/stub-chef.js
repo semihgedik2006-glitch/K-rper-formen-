@@ -181,6 +181,15 @@
     { id:'z3', uid:'testuid', name:'Ich',   art:'trainer',    bis:tag(399), ts:Date.now() },
     { id:'z4', uid:'u2', name:'Anna Meier', art:'sonstiges', bez:'Ernaehrungsberater', bis:tag(119), ts:Date.now() }
   ];
+  // Stand der naechtlichen Sicherung: hier absichtlich GESCHEITERT, damit der
+  // Test sieht, dass die App den Grund nennt statt zu schweigen.
+  var SICHERUNG = {
+    ts: Date.now() - 9 * 3600000,
+    ok: false,
+    ziel: '',
+    fehler: 'Der Speicher formenchat.firebasestorage.app wurde nicht gefunden. ' +
+      'In der Firebase-Konsole unter „Storage" einmal einrichten.'
+  };
   function collection(path) {
     return {
       _p: path,
@@ -190,6 +199,9 @@
           collection: function (sub) { return collection(docPath + '/' + sub); },
           get: function () {
             var data = (path === 'users') ? PROFILE : {};
+            if (path === 'config' && id === 'sicherung') {
+              return Promise.resolve({ exists: true, id: id, data: function () { return SICHERUNG; } });
+            }
             if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }
             return Promise.resolve({ exists: true, id: id, data: function () { return data; } });
           },

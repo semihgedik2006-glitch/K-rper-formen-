@@ -10,12 +10,17 @@ nichts davon ist nötig, damit die App im Alltag funktioniert.
 
 ## Phase 0 — Was jetzt sofort ansteht (du)
 
-Zwei Handgriffe, beide einmalig, beide kostenlos. Anleitung in `DEIN-TEIL.md`.
+Zwei Handgriffe, beide einmalig. Anleitung in `DEIN-TEIL.md`.
 
 | Was | Warum | Dauer |
 |---|---|---|
 | `MATERIAL-SHEETS.gs` in Apps Script einfügen | die Google-Tabelle läuft sonst mit der alten, langsamen Fassung | 5 Min |
-| Export-Rolle fürs Dienstkonto setzen | ohne sie läuft die nächtliche Sicherung ins Leere | 3 Min |
+| Speicher in `europe-west1` anlegen, dann die zwei Rollen setzen | ohne Speicher gibt es keinen Ort für die nächtliche Sicherung – sie läuft seit dem Einbau ins Leere | 10 Min |
+
+> Dabei kommt heraus, was vorher niemandem klar war: **das Projekt liegt auf
+> dem Bezahlplan Blaze.** Anders ließen sich die 20 Cloud Functions gar nicht
+> bereitstellen. Der Verbrauch bleibt im Freikontingent, der Speicher kostet
+> Cent-Beträge – aber eine Budget-Warnung ist ab jetzt sinnvoll.
 
 ---
 
@@ -29,6 +34,7 @@ Alles kostenlos, alles ohne neue Abhängigkeit.
 | 1.2 | **Einrichtungs-Assistent beim ersten Start** | heute wird `konfig.js` von Hand bearbeitet. Ein geführter Ablauf (Firma, Studios, Firebase-Daten) macht aus „ich richte das ein" ein „der Kunde richtet das ein" | mittel |
 | 1.3 | **Wischen zum Abhaken auch im Putzplan prüfen** | funktioniert bei Aufgaben bestätigt; im Putzplan nur im Code gleich, nie am Gerät geprüft | klein |
 | 1.4 | **Fehlerbericht bei Abstürzen** | heute merkt niemand, wenn bei einem Mitarbeiter etwas nicht lädt | klein |
+| 1.5 | **Die Datei-Sicherung im Browser vervollständigen** | „Alles als Daten-Datei" umfasst heute Aufgaben, Material, Team und Infos – nicht Chat, Geräte, Schichten, Abwesenheiten, Dokumente, Nachweise. Als zweites Standbein neben der nächtlichen Sicherung wäre das ehrlicher | mittel |
 
 ---
 

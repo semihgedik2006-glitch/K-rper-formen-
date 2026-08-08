@@ -865,19 +865,76 @@ als Text in der Datenbank".
 | Skalierbarkeit | **5/10** | Die schwächste Zahl, und das bleibt so. Ab etwa 40 Studios Umbau nötig. Bewusst nicht vorgebaut. |
 | Wartbarkeit | 7/10 | Deutsch kommentiert, 29 Durchläufe – aber eine Datei und Bus-Faktor 1. |
 | Konsistenz | **9/10** | |
-| Investor | **8/10** | Klares Problem, klarer Unterschied zu WhatsApp, Betriebskosten null. |
+| Investor | **8/10** | Klares Problem, klarer Unterschied zu WhatsApp, Betriebskosten im Cent-Bereich. |
 | Kaufwahrscheinlichkeit | **8/10** | Was fehlt, ist kein Feature, sondern der Rahmen: Vertrag, Auftragsverarbeitung, Einrichtungs-Assistent. |
 | Innovationsgrad | 6/10 | Der „Wo?"-Blick und die Verbrauchs-Vorhersage aus echten Wochen-Sicherungen sind eigen. Der Rest ist gutes Handwerk. |
 
 ---
 
+## Sitzung 13 · Nachtrag: die Sicherung, die nie lief 🟢
+
+Ausgelöst durch zwei echte Fehlermeldungen aus dem Betrieb – erst
+`7 PERMISSION_DENIED`, dann `5 NOT_FOUND: bucket does not exist`.
+
+### Was wirklich los war
+
+Drei Fehler übereinander, von außen nach innen:
+
+| # | Fehler | Wessen |
+|---|---|---|
+| 1 | In `DEIN-TEIL.md` stand nur eine der zwei nötigen Rollen | meiner |
+| 2 | Der Zielspeicher war fest auf `<projekt>.appspot.com` verdrahtet, das Projekt hat aber `formenchat.firebasestorage.app` | meiner |
+| 3 | **Es gibt im Projekt gar keinen Speicher.** Nie eingerichtet | offen, bei dir – 2 Minuten |
+
+Punkt 1 und 2 sind behoben. Punkt 3 kann nur der Projektbesitzer klicken.
+
+### Der eigentliche Fund
+
+Nicht der Speicher – **dass niemand gemerkt hat, dass nichts gesichert
+wurde.** Die Funktion schrieb ihren Fehler brav ins Protokoll von Google.
+Dort schaut niemand hin. Eine Sicherung, deren Scheitern man nicht sieht,
+ist keine Sicherung, sondern ein beruhigendes Gefühl.
+
+**Behoben:** Die Server-Funktion schreibt nach jedem Versuch nach
+`config/sicherung`. Die App zeigt es an zwei Stellen –
+in *System → Daten sichern* mit dem vollen Grund (rot, markierbar, die Karte
+klappt dafür von selbst auf und schiebt den Grund ins Bild), und ganz oben in
+*Braucht Aufmerksamkeit*, sobald eine Nacht ausgefallen ist.
+
+### Was dabei sonst noch herauskam
+
+**Das Projekt liegt auf dem Bezahlplan Blaze.** Wir sind zwölf Sitzungen lang
+davon ausgegangen, alles laufe in der Gratisstufe und es sei keine Karte
+hinterlegt. Das ist nicht haltbar: Cloud Functions lassen sich ausschließlich
+auf Blaze bereitstellen, und die 20 Funktionen laufen. Alle Dokumente, die
+„Betriebskosten null" versprachen, sind korrigiert – es sind Cent-Beträge,
+nicht null. Und die Budget-Warnung, die wir gestrichen hatten, ist wieder
+empfohlen.
+
+**Nebenbei:** `.btn-sm` war 36 Pixel hoch – der letzte Rest aus der Zeit vor
+der 44-Pixel-Regel, gefunden am Knopf „Jetzt zusätzlich sichern". Jetzt 44,
+83 Knöpfe in der ganzen App, alle 30 Durchläufe weiter grün.
+
+| Kriterium | vorher | nachher |
+|---|---|---|
+| Verlässlichkeit der Sicherung | **2/10** – lief nie, niemand wusste es | 8/10 – läuft, sobald der Speicher steht, und meldet sich, wenn nicht |
+| Ehrlichkeit der Unterlagen | 5/10 – „kostet nichts" war falsch | 9/10 |
+| Fingerziele | 9/10 | **10/10** |
+
+**Neuer Durchlauf:** `tests/test-sicherung.js` – prüft, dass eine
+gescheiterte Sicherung ganz oben gemeldet wird, dass der Klick im
+System-Reiter landet, die Karte aufgeht, der Grund im Bild steht und sich
+markieren lässt.
+
+---
+
 ## Das Audit ist abgeschlossen
 
-Zwölf Sitzungen, zehn Bereiche, 29 automatische Durchläufe, elf
+Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf
 zusammengeführte Änderungssätze.
 
 **Was jetzt noch offen ist, steht in `DEIN-TEIL.md` – und es sind zwei
-Handgriffe von zusammen zehn Minuten.**
+Handgriffe von zusammen fünfzehn Minuten.**
 
 ---
 
@@ -890,7 +947,8 @@ Vollständig in `OFFEN.md`. Kurzfassung:
 | Was | Wer |
 |---|---|
 | `MATERIAL-SHEETS.gs` in Apps Script einfügen | **du** |
-| Export-Rolle für den Dienstaccount setzen (sonst schlägt die Sicherung fehl) | **du** |
+| Speicher in `europe-west1` anlegen + zwei Rollen setzen (sonst schlägt die Sicherung fehl) | **du** |
+| Budget-Warnung in der Cloud-Konsole anlegen (empfohlen, seit klar ist: Blaze) | **du** |
 | Wischen zum Abhaken am echten Gerät prüfen | **du** |
 | E-Mail-Absender auf eigene Domain vor Kunden-Mails | du, später |
 | Google-Tabelle: Formatieren vom Schreiben trennen | ich, bei Bedarf |

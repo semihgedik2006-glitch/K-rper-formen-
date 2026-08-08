@@ -133,7 +133,11 @@ Weiteres:
   `safeMedia()`, Links durch `safeUrl()`. Ohne diese Prüfung wäre ein
   gespeichertes `javascript:`-Feld ein Einfallstor.
 - **Gelöschtes** liegt 30 Tage im Papierkorb.
-- **Nächtliche Sicherung** um 02:40, sieben Tage Aufbewahrung.
+- **Nächtliche Sicherung** um 02:40, sieben Tage Aufbewahrung. Nach jedem
+  Versuch steht das Ergebnis in `config/sicherung`; die App zeigt es unter
+  System an und meldet einen Ausfall oben in „Braucht Aufmerksamkeit".
+  **Eine Sicherung, deren Scheitern man nicht sieht, ist keine Sicherung** –
+  genau das war hier monatelang der Fall.
 - **Es gibt keinen Zugangscode**, mit dem man sich zum Chef machen könnte.
 
 ---
@@ -166,7 +170,7 @@ Weiteres:
 | **Ein Beobachter je Studio** | Live-Aktualisierung überall | 14 Verbindungen beim Chef |
 | **Dateien als Text in der Datenbank** | kostenlos | Grenze bei ~0,7 MB je Datei |
 | **Alles auf Deutsch, auch im Code** | der Kunde kann mitlesen | keine internationale Weitergabe ohne Übersetzung |
-| **Firebase-Gratisstufe** | keine laufenden Kosten | Kontingente statt Skalierung |
+| **Firebase, Verbrauch im Freikontingent** | praktisch keine laufenden Kosten | das Projekt liegt auf dem Bezahlplan **Blaze** – Cloud Functions gibt es nicht anders. Bezahlt wird nur, was über die monatlichen Freimengen hinausgeht; das ist bei 14 Studios der Speicher der Sicherungen, im Cent-Bereich. Eine Budget-Warnung gehört dazu |
 
 ---
 
@@ -221,4 +225,4 @@ Diese fünf Sätze erklären neun von zehn Gestaltungsentscheidungen:
 | Sicherheitsregeln | 390 Zeilen |
 | Automatische Durchläufe | 29 Dateien |
 | Handbuch | 23 Kapitel, 15 Seiten als PDF |
-| Betriebskosten | 0 € (Firebase-Gratisstufe) |
+| Betriebskosten | wenige Cent im Monat (Blaze-Plan, Verbrauch im Freikontingent) |
