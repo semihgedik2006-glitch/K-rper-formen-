@@ -114,8 +114,19 @@ ist eine Regel der Oberfläche, keine des Servers. Bewusst so entschieden.
 ## 4. Sicherheit
 
 **Die Rechte werden auf dem Server geprüft, nicht in der App.** Die
-Sicherheitsregeln (390 Zeilen) sind die eigentliche Grenze; was in der
-Oberfläche versteckt ist, ist zusätzlich in der Datenbank gesperrt.
+Sicherheitsregeln sind die eigentliche Grenze; was in der Oberfläche
+versteckt ist, ist zusätzlich in der Datenbank gesperrt.
+
+**Und sie werden getestet, nicht nur gelesen.** `tests/rules/security.test.js`
+führt 32 Prüfungen im Firestore-Emulator aus und läuft in CI, bevor die
+Regeln ausgerollt werden. Ein Befund kam dabei erst durch den Test ans
+Licht: ein Studio-Leiter konnte den Inhalt eines fremden Dokuments
+überschreiben, obwohl er dessen Metadaten nicht anfassen durfte.
+
+**Der Speicher ist für Clients vollständig gesperrt.** Dort liegt der
+nächtliche Vollexport der Datenbank; die Sicherung schreibt ihn mit
+Admin-Rechten, kein Browser braucht dort etwas. Auch diese Regeldatei wird
+seit dem 9.8.2026 aus dem Repo ausgerollt – davor war sie nie in Kraft.
 
 Bekannte Ausnahmen, ehrlich benannt:
 
@@ -139,6 +150,16 @@ Weiteres:
   **Eine Sicherung, deren Scheitern man nicht sieht, ist keine Sicherung** –
   genau das war hier monatelang der Fall.
 - **Es gibt keinen Zugangscode**, mit dem man sich zum Chef machen könnte.
+- **KI-Funktionen sind Chefsache und gedeckelt** (200 Text-, 50 Bildaufrufe
+  je Tag). Vorher genügte „eingeloggt" – bei offener Selbstregistrierung war
+  das ein unbegrenzter Kostenkanal.
+
+**Die größte offene Frage:** Die Selbstregistrierung steht jedem offen, und
+fast alle Leseregeln lauten „eingeloggt". Wer die Adresse kennt, kann sich
+ein Konto anlegen und Teamchat, Personenliste, Aufgaben und Dokumente lesen.
+Für einen Betrieb, der die Adresse nur intern weitergibt, ist das tragbar –
+für einen fremden Kunden nicht. Lösungen: Registrierung mit Firmencode,
+oder neue Konten erst nach Freigabe durch den Chef aktiv.
 
 ---
 
