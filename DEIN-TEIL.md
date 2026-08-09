@@ -8,6 +8,119 @@ besitzt** – also deinen.
 
 ---
 
+# Schnellanleitung – Schritt für Schritt
+
+Der Reihe nach abarbeiten. Die Begründungen stehen weiter unten; hier steht
+nur, was du klickst. **Melde dich vorher mit dem Google-Account an, dem
+`formenchat` gehört.**
+
+## A · Speicher anlegen (2 Minuten)
+
+> Das ist die Ursache. Ohne diesen Schritt bringt alles andere nichts.
+
+1. Öffne
+   `https://console.firebase.google.com/project/formenchat/storage`
+2. Knopf **„Jetzt starten"** (je nach Fassung „Erste Schritte") anklicken.
+3. Es kommt ein Fenster zu den Sicherheitsregeln.
+   **„Im Produktionsmodus starten"** wählen → **Weiter**.
+   *(Die App liest dort nichts. Nur die Server-Funktion legt Sicherungen ab,
+   und die geht an den Regeln vorbei.)*
+4. Jetzt fragt er nach dem **Speicherort**. Dort muss **`europe-west1`**
+   stehen (Belgien).
+   - Steht es schon da und lässt sich nicht ändern: **gut so**, weiter.
+   - Kannst du wählen: **`europe-west1`** nehmen.
+   > ⚠️ Der Ort lässt sich später **nicht** mehr ändern. Und er muss
+   > derselbe sein wie der der Datenbank, sonst verweigert der Export.
+5. **Fertig** / **Erstellen** klicken. Nach ein paar Sekunden siehst du eine
+   leere Dateiliste. Das ist richtig so.
+
+**Geschafft, wenn:** oben auf der Seite ein Name wie
+`gs://formenchat.firebasestorage.app` steht.
+
+## B · Die zwei Rollen setzen (5 Minuten)
+
+1. Öffne
+   `https://console.cloud.google.com/iam-admin/iam?project=formenchat`
+2. Oben rechts über der Tabelle den Haken bei
+   **„Von Google bereitgestellte Rollenzuweisungen einschließen"** setzen.
+   Ohne den Haken fehlt die gesuchte Zeile in der Liste.
+3. In der Spalte *Hauptkonto* die Zeile
+   **`formenchat@appspot.gserviceaccount.com`** suchen.
+   *(Falls sie anders heißt: Der genaue Name steht in der App unter
+   Verwaltung → System, wenn du den Sicherungs-Knopf drückst.)*
+4. Ganz rechts in dieser Zeile auf das **Stift-Symbol** (Bearbeiten).
+5. **„+ Weitere Rolle hinzufügen"** → ins Suchfeld `Import` tippen →
+   **„Cloud Datastore-Import/Export-Administrator"** auswählen.
+6. Noch einmal **„+ Weitere Rolle hinzufügen"** → ins Suchfeld
+   `Storage-Objekt` tippen → **„Storage-Objekt-Administrator"** auswählen.
+7. **Speichern**.
+8. **Ein bis zwei Minuten warten.** Rollen greifen nicht sofort.
+
+**Geschafft, wenn:** in der Zeile des Dienstkontos beide Rollen stehen.
+
+## C · Prüfen (1 Minute)
+
+1. App öffnen → **Verwaltung** → Reiter **System**.
+2. Karte **„💾 Daten sichern"** aufklappen.
+3. **„🛡 Jetzt zusätzlich sichern"** drücken → Rückfrage mit **OK**
+   bestätigen.
+4. Warten, bis die Meldung kommt.
+
+- **✓ Sicherung angelegt** → fertig. Ab jetzt läuft sie jede Nacht um 2:40
+  von allein.
+- **Rot** → im Kasten steht der Grund im Klartext. Steht dort „fehlt die
+  Berechtigung": noch eine Minute warten und noch einmal drücken.
+
+Ab sofort steht in dieser Karte immer **„Letzte Sicherung: …"** – grün, wenn
+die Nacht geklappt hat, rot mit Grund, wenn nicht. Fällt eine Nacht aus,
+steht es zusätzlich ganz oben in *Überblick → Braucht Aufmerksamkeit*. Du
+musst also nicht mehr danach schauen.
+
+## D · Budget-Warnung (5 Minuten, empfohlen)
+
+> Nicht nötig, damit etwas läuft. Aber sinnvoll, seit klar ist, dass das
+> Projekt auf dem Bezahlplan Blaze liegt.
+
+1. Öffne `https://console.cloud.google.com/billing`
+2. Das Rechnungskonto anklicken, das zu `formenchat` gehört.
+3. Links im Menü **„Budgets & Benachrichtigungen"**.
+4. **„Budget erstellen"**.
+5. Name: `StudioChat`. Weiter.
+6. Bei *Betrag* **`5`** eintragen (5 € im Monat). Weiter.
+7. Bei den Schwellen **50 %** und **100 %** anhaken, E-Mail an dich. Weiter.
+8. **Fertigstellen**.
+
+Danach bekommst du eine E-Mail, lange bevor irgendetwas spürbar wird.
+
+## E · Google-Tabelle: neuen Code einfügen (5 Minuten)
+
+Unabhängig von allem oben. Ausführlich mit Begründung in Abschnitt 1 weiter
+unten – kurz:
+
+1. `https://github.com/semihgedik2006-glitch/K-rper-formen-/blob/main/MATERIAL-SHEETS.gs`
+   öffnen → **„Copy raw file"** (Symbol über dem Code rechts).
+2. Die Google-Tabelle öffnen → **Erweiterungen → Apps Script**.
+3. Im Editor **alles markieren** (Strg+A) → **einfügen** → **speichern**
+   (Strg+S).
+4. Oben rechts **„Bereitstellen" → „Bereitstellungen verwalten"** → am
+   **bestehenden** Eintrag das **Stift-Symbol** → bei *Version* **„Neue
+   Version"** → **„Bereitstellen"**.
+   > ⚠️ Nicht „Neue Bereitstellung" anlegen. Nur beim Bearbeiten der
+   > bestehenden bleibt die Adresse gleich – sie steht fest in `konfig.js`.
+
+**Geprüft, wenn:** App → Verwaltung → System →
+**„🔄 Google-Tabellen abgleichen"**, danach stehen in der Tabelle alle
+**14 Studios** in *Material* und *Putzplan*.
+
+## F · Nebenbei, wenn du im Studio bist
+
+Einmal im **Putzplan** über eine Zeile nach rechts wischen. Bei den Aufgaben
+hast du bestätigt, dass es geht; im Putzplan ist es derselbe Code, aber nie
+an einem echten Gerät ausprobiert – die automatischen Durchläufe können keine
+Berührungen nachstellen.
+
+---
+
 ## 1. Google-Tabelle: neuen Code einfügen (5 Minuten)
 
 **Warum:** Die Datei `MATERIAL-SHEETS.gs` im Projekt wurde neu geschrieben.
