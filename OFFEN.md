@@ -2,20 +2,19 @@
 
 Stand 8. August 2026, nach Abschluss des Master-Audits.
 
-**Es sind zwei Handgriffe, beide bei dir, zusammen fünfzehn Minuten.**
+**Es ist noch ein Handgriff, bei dir, fünf Minuten.**
 Die Anleitung mit Klickwegen steht in `DEIN-TEIL.md`.
 
 | Was | Wer | Dauer |
 |---|---|---|
 | `MATERIAL-SHEETS.gs` in Apps Script einfügen und neu bereitstellen | **du** | 5 Min |
-| Speicher in `europe-west1` anlegen, dann die zwei Rollen fürs Dienstkonto setzen | **du** | 10 Min |
 | Wischen zum Abhaken im Putzplan am echten Gerät prüfen | du, nebenbei | 1 Min |
 
-> Der Speicher ist die eigentliche Ursache: Die nächtliche Sicherung läuft
-> seit dem Einbau ins Leere, weil im Projekt nie einer eingerichtet wurde.
-> Dabei kommt heraus, dass `formenchat` auf dem **Bezahlplan Blaze** liegt –
-> anders ließen sich die Cloud Functions gar nicht bereitstellen. Eine
-> Budget-Warnung ist deshalb ab jetzt sinnvoll.
+> **Erledigt am 9. August:** Speicher in `europe-west1` angelegt, beide
+> Rollen gesetzt, erste Sicherung durchgelaufen
+> (`sicherung/manuell-2026-08-09-01-28-53`), Budget-Warnung angelegt.
+> Dabei kam heraus, dass `formenchat` auf dem **Bezahlplan Blaze** liegt –
+> anders ließen sich die Cloud Functions gar nicht bereitstellen.
 
 Alles Weitere ist **Ausbau, nicht Rückstand** – siehe `ROADMAP.md`.
 

@@ -15,12 +15,12 @@ Zwei Handgriffe, beide einmalig. Anleitung in `DEIN-TEIL.md`.
 | Was | Warum | Dauer |
 |---|---|---|
 | `MATERIAL-SHEETS.gs` in Apps Script einfügen | die Google-Tabelle läuft sonst mit der alten, langsamen Fassung | 5 Min |
-| Speicher in `europe-west1` anlegen, dann die zwei Rollen setzen | ohne Speicher gibt es keinen Ort für die nächtliche Sicherung – sie läuft seit dem Einbau ins Leere | 10 Min |
+| ~~Speicher anlegen, zwei Rollen setzen, Budget-Warnung~~ | ✅ am 9. August erledigt, erste Sicherung ist durchgelaufen | — |
 
-> Dabei kommt heraus, was vorher niemandem klar war: **das Projekt liegt auf
+> Dabei kam heraus, was vorher niemandem klar war: **das Projekt liegt auf
 > dem Bezahlplan Blaze.** Anders ließen sich die 20 Cloud Functions gar nicht
 > bereitstellen. Der Verbrauch bleibt im Freikontingent, der Speicher kostet
-> Cent-Beträge – aber eine Budget-Warnung ist ab jetzt sinnvoll.
+> Cent-Beträge. Budget-Warnung steht (0 €, meldet beim ersten Cent).
 
 ---
 

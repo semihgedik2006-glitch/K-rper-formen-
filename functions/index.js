@@ -1010,7 +1010,11 @@ exports.dailyBackup = region
       const [dateien] = await bucket.getFiles({ prefix: 'sicherung/' });
       let weg = 0;
       for (const f of dateien) {
-        const m = /^sicherung\/(\d{4}-\d{2}-\d{2})\//.exec(f.name);
+        // Zwei Formen: "sicherung/2026-08-09/..." aus dem naechtlichen Lauf
+        // und "sicherung/manuell-2026-08-09-01-28-53/..." vom Knopf. Die
+        // zweite fiel frueher durch das Raster und waere fuer immer liegen
+        // geblieben - bei jedem Druck auf den Knopf eine mehr.
+        const m = /^sicherung\/(?:manuell-)?(\d{4}-\d{2}-\d{2})/.exec(f.name);
         if (m && m[1] < grenze) { await f.delete().catch(() => {}); weg++; }
       }
       if (weg) console.log('Sicherung: ' + weg + ' alte Dateien entfernt.');
