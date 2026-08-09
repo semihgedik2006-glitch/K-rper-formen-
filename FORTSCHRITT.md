@@ -975,6 +975,36 @@ Sicherheitsdurchlauf. Siehe Abschlussbericht.
 
 ---
 
+## Sitzung 15 · Security-Durchlauf 🟢
+
+Bis hierher waren die Sicherheitsregeln **nur gelesen** worden. Jetzt gibt
+es `tests/rules/security.test.js`: 32 Prüfungen, die im Firestore-Emulator
+ausgeführt werden und in CI laufen, **bevor** die Regeln ausgerollt werden.
+Fällt eine um, wird nichts deployt.
+
+| # | Befund | Schwere |
+|---|---|---|
+| 1 | **`storage.rules` war nie in Kraft.** Kein `storage`-Abschnitt in `firebase.json`, kein Deploy im Workflow. Gültig war, was die Konsole beim Anlegen des Speichers gesetzt hat – außerhalb der Versionsverwaltung. Und seit dem 9.8. liegt in genau diesem Speicher der **nächtliche Vollexport der Datenbank** | **P1** |
+| 2 | **Leiter konnte fremde Dokumentinhalte überschreiben.** `documentData` prüfte kein Studio, die Metadaten desselben Dokuments schon | P2 |
+| 3 | **Offener Kostenkanal.** `marketingChat`/`marketingImage` prüften nur „eingeloggt" – und registrieren kann sich jeder selbst. Auf Blaze mit hinterlegtem Zahlungsmittel | **P1** |
+
+Befund 2 wurde **erst durch den Test entdeckt**, nicht durch Lesen.
+
+**Der Testschritt ist beim ersten CI-Lauf selbst durchgefallen** – ich hatte
+lokal mit einer Kopie der Regeldatei getestet statt mit dem echten Layout.
+Immerhin hat das Tor getan, wofür es da ist: der Rollout wurde übersprungen.
+
+Drei bewusst getragene Schwächen sind als `BEKANNT:`-Tests festgehalten,
+damit eine Änderung daran auffällt – in beide Richtungen.
+
+**Offen und ausdrücklich keine Codeänderung:** Die App erlaubt **offene
+Selbstregistrierung**, und fast alle Leseregeln lauten „eingeloggt". Wer die
+Adresse kennt, legt sich ein Konto an und liest Teamchat, Personenliste,
+Aufgaben und Dokumente. Das zu ändern ist eine Produktentscheidung – siehe
+Bericht.
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf
