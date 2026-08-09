@@ -5,6 +5,12 @@
   "firestore": {
     "rules": "firestore.rules"
   },
+  "//emulators": "Nur fuer lokale Regeltests (tests/rules). Beruehrt den Betrieb nicht.",
+  "emulators": {
+    "firestore": { "port": 8791 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  },
   "//storage": "Ohne diesen Abschnitt kennt firebase deploy die Datei storage.rules gar nicht. Sie lag seit ihrer Erstellung im Projekt und war nie in Kraft - in Kraft war, was die Konsole beim Anlegen des Speichers gesetzt hat.",
   "storage": {
     "rules": "storage.rules"

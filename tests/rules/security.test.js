@@ -8,6 +8,9 @@
    Ausfuehren:
      cd tests/rules && npm install && npm test
    (Braucht Java – der Firestore-Emulator ist ein Java-Programm.)
+   Der Emulator laeuft aus dem Wurzelverzeichnis: firebase-tools laesst
+   keine Regeldatei ausserhalb des Projektordners zu, und getestet werden
+   soll genau die Datei, die auch ausgerollt wird - keine Kopie.
 
    Jeder Test sagt im Namen, WAS er schuetzt. Faellt einer um, ist das
    keine Formalie: dann kommt jemand an Daten, an die er nicht soll.
@@ -19,7 +22,6 @@ const {
 } = require('@firebase/rules-unit-testing');
 
 const REGELN = path.join(__dirname, '..', '..', 'firestore.rules');
-const PORT = Number(process.env.FIRESTORE_EMULATOR_PORT || 8791);
 
 let env;
 let bestanden = 0, gefallen = 0;
@@ -43,7 +45,10 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
 (async () => {
   env = await initializeTestEnvironment({
     projectId: 'demo-regeltest',
-    firestore: { rules: fs.readFileSync(REGELN, 'utf8'), host: '127.0.0.1', port: PORT },
+    // Ohne host/port: die Verbindungsdaten kommen aus FIRESTORE_EMULATOR_HOST,
+    // das "firebase emulators:exec" setzt. Fest verdrahtete Ports gehen
+    // schief, sobald jemand den Emulator anders startet.
+    firestore: { rules: fs.readFileSync(REGELN, 'utf8') },
   });
   await env.clearFirestore();
 
