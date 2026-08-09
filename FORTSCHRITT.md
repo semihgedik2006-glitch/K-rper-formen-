@@ -940,23 +940,31 @@ markieren lässt.
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf
 zusammengeführte Änderungssätze.
 
-**Was jetzt noch offen ist, steht in `DEIN-TEIL.md` – und es ist noch ein
-Handgriff von fünf Minuten:** der neue Code für die Google-Tabelle. Speicher,
-Rollen, Sicherung und Budget-Warnung sind seit dem 9. August erledigt.
+**Und es ist nichts mehr offen.** Am 9. August sind auch die letzten
+Handgriffe aus `DEIN-TEIL.md` erledigt worden:
+
+| Was | Beleg |
+|---|---|
+| Speicher `europe-west1`, beide Rollen | erste Sicherung durchgelaufen: `sicherung/manuell-2026-08-09-01-28-53` |
+| Budget-Warnung | 0 €, meldet beim ersten Cent |
+| `MATERIAL-SHEETS.gs` neu bereitgestellt | bestehende Bereitstellung bearbeitet, Adresse unverändert |
+| Wischen zum Abhaken im Putzplan | am echten Gerät bestätigt |
+
+Damit ist auch der letzte Punkt geschlossen, der seit Monaten in `OFFEN.md`
+stand — und der einzige, den kein automatischer Durchlauf je hätte prüfen
+können: eine Berührung auf einem echten Bildschirm.
 
 ---
 
 ## Was aus früheren Runden noch offen ist
 
-Details in `OFFEN.md`.
-
 Vollständig in `OFFEN.md`. Kurzfassung:
 
 | Was | Wer |
 |---|---|
-| `MATERIAL-SHEETS.gs` in Apps Script einfügen | **du** |
 | ~~Speicher + zwei Rollen + Budget-Warnung~~ | ✅ 9.8. erledigt |
-| Wischen zum Abhaken am echten Gerät prüfen | **du** |
+| ~~`MATERIAL-SHEETS.gs` in Apps Script einfügen~~ | ✅ 9.8. erledigt |
+| ~~Wischen zum Abhaken am echten Gerät prüfen~~ | ✅ 9.8. bestätigt |
 | E-Mail-Absender auf eigene Domain vor Kunden-Mails | du, später |
 | Google-Tabelle: Formatieren vom Schreiben trennen | ich, bei Bedarf |
 | Suche über alle Studios | bewusst nicht gebaut |

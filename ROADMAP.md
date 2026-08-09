@@ -1,6 +1,6 @@
 # StudioChat – Roadmap
 
-Stand 8. August 2026. Was als Nächstes kommt, in der Reihenfolge, in der es
+Stand 9. August 2026. Was als Nächstes kommt, in der Reihenfolge, in der es
 sich lohnt – und was es kostet.
 
 Die zehn Bereiche des Master-Audits sind durch. Alles hier ist **Ausbau**,
@@ -8,19 +8,20 @@ nichts davon ist nötig, damit die App im Alltag funktioniert.
 
 ---
 
-## Phase 0 — Was jetzt sofort ansteht (du)
+## Phase 0 — erledigt ✅
 
-Zwei Handgriffe, beide einmalig. Anleitung in `DEIN-TEIL.md`.
-
-| Was | Warum | Dauer |
-|---|---|---|
-| `MATERIAL-SHEETS.gs` in Apps Script einfügen | die Google-Tabelle läuft sonst mit der alten, langsamen Fassung | 5 Min |
-| ~~Speicher anlegen, zwei Rollen setzen, Budget-Warnung~~ | ✅ am 9. August erledigt, erste Sicherung ist durchgelaufen | — |
+Am 9. August abgeschlossen: Speicher in `europe-west1`, beide Rollen fürs
+Dienstkonto, erste Sicherung durchgelaufen, Budget-Warnung, `MATERIAL-SHEETS.gs`
+neu bereitgestellt, Wischen im Putzplan am Gerät bestätigt. Belege in
+`DEIN-TEIL.md`.
 
 > Dabei kam heraus, was vorher niemandem klar war: **das Projekt liegt auf
 > dem Bezahlplan Blaze.** Anders ließen sich die 20 Cloud Functions gar nicht
 > bereitstellen. Der Verbrauch bleibt im Freikontingent, der Speicher kostet
 > Cent-Beträge. Budget-Warnung steht (0 €, meldet beim ersten Cent).
+
+**Ab hier ist alles Ausbau.** Nichts davon ist nötig, damit die App im
+Alltag funktioniert.
 
 ---
 
@@ -32,7 +33,6 @@ Alles kostenlos, alles ohne neue Abhängigkeit.
 |---|---|---|---|
 | 1.1 | **Eigene Absenderadresse für E-Mails** | Berichte kommen von einer Gmail-Adresse; bei einem fremden Kunden wirkt das nicht wie ein Produkt | klein, aber Domain nötig |
 | 1.2 | **Einrichtungs-Assistent beim ersten Start** | heute wird `konfig.js` von Hand bearbeitet. Ein geführter Ablauf (Firma, Studios, Firebase-Daten) macht aus „ich richte das ein" ein „der Kunde richtet das ein" | mittel |
-| 1.3 | **Wischen zum Abhaken auch im Putzplan prüfen** | funktioniert bei Aufgaben bestätigt; im Putzplan nur im Code gleich, nie am Gerät geprüft | klein |
 | 1.4 | **Fehlerbericht bei Abstürzen** | heute merkt niemand, wenn bei einem Mitarbeiter etwas nicht lädt | klein |
 | 1.5 | **Die Datei-Sicherung im Browser vervollständigen** | „Alles als Daten-Datei" umfasst heute Aufgaben, Material, Team und Infos – nicht Chat, Geräte, Schichten, Abwesenheiten, Dokumente, Nachweise. Als zweites Standbein neben der nächtlichen Sicherung wäre das ehrlicher | mittel |
 
@@ -84,9 +84,7 @@ ein Firebase-Projekt = eine `konfig.js`.**
 
 ## Reihenfolge, wenn Zeit knapp ist
 
-1. **Phase 0** – zwei Handgriffe, sonst laufen Sicherung und Tabelle nicht
-   richtig.
-2. **1.1 eigene Absenderadresse** – die einzige Stelle, an der die App
+1. **1.1 eigene Absenderadresse** – die einzige Stelle, an der die App
    heute noch nach Bastelei aussieht.
-3. **1.2 Einrichtungs-Assistent** – macht aus einem Projekt ein Produkt.
-4. Alles andere nach Bedarf.
+2. **1.2 Einrichtungs-Assistent** – macht aus einem Projekt ein Produkt.
+3. Alles andere nach Bedarf.
