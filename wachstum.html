@@ -7,8 +7,14 @@
 <title>KF Wachstum · Körperformen</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml"/>
 <link rel="apple-touch-icon" href="icon.png"/>
+<!-- Schrift nicht blockierend laden. Hier stand ein @import im <style>:
+     das ist der schlechteste Fall, weil der Browser erst dieses CSS lesen
+     und DANN die Schrift holen muss - zwei Wartezeiten nacheinander, und
+     die Seite bleibt bis dahin weiss. -->
+<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" /></noscript>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 /* ============================================================
    KF WACHSTUM – Design: Dark-OLED + Glassmorphism ("Mission Control")

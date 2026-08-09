@@ -26,7 +26,23 @@
 <title>StudioChat – Körperformen Team</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<!-- Die Schrift NICHT blockierend laden.
+     Vorher hing hier ein gewoehnliches Stylesheet von fonts.googleapis.com.
+     Ein Stylesheet im Kopf blockiert das Zeichnen der Seite: solange Google
+     nicht antwortet, sieht der Nutzer eine WEISSE SEITE - keinen Text,
+     nicht einmal den Ladebildschirm. Gemessen: 12,6 Sekunden bis zum
+     ersten Bild, und zwar unabhaengig von der Rechenleistung. Im Studio
+     mit schlechtem WLAN ist das derselbe Fall.
+     „display=swap" hilft dagegen nicht - das betrifft nur die Schriftdatei,
+     nicht diese Anfrage.
+     Mit media="print" gilt das Stylesheet zunaechst als druck-only und
+     blockiert nichts; sobald es da ist, wird es auf „all" umgestellt.
+     Bis dahin zeichnet die App mit system-ui, das in jedem Schriftstapel
+     als Rueckfall steht. -->
+<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
+<noscript><link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" /></noscript>
 <style>
 :root{
   /* Dunkel – ruhiges Schiefer-Blau statt harter Neon-Kontrast.
@@ -5216,14 +5232,8 @@ function createEmployee(){
    Monatsbericht an fünf Empfänger ging. Diese Liste macht es sichtbar. */
 var _chefs=[], _chefUnsub=null;
 function listenChefs(){
-  if(!isChef()) return;
-  if(_chefUnsub){ _chefUnsub(); _chefUnsub=null; }
-  _chefUnsub=db.collection('users').where('role','==','chef')
-    .onSnapshot(function(snap){
-      _chefs=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); })
-        .sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
-      renderChefs();
-    }, function(e){ console.error('Chef-Konten:',e.message); });
+  /* Kein eigener Beobachter mehr – die Chef-Liste faellt in
+     verteileUsers() mit ab. */
 }
 function renderChefs(){
   var box=$('chefList'); if(!box) return;
@@ -5254,23 +5264,37 @@ function renderChefs(){
   });
 }
 
+/* Aus der EINEN Nutzerliste die beiden Teillisten ableiten.
+   Vorher lagen auf der Sammlung users drei getrennte Beobachter:
+   listenAllUsers (alle), listenEmployees (Mitarbeiter+Leiter) und
+   listenChefs (Chefs). Die beiden letzten zusammen sind genau die erste –
+   jedes Nutzerdokument wurde also doppelt geliefert und doppelt
+   abgerechnet. Nebenbei konnten sich die drei widersprechen, weil sie zu
+   unterschiedlichen Zeiten eintrafen.
+   Gemessen mit tests/audit-leistung.js: 3 Beobachter auf users, jetzt 1. */
+function verteileUsers(){
+  var emps=_allUsers.filter(function(u){ return u.role==='mitarbeiter'||u.role==='leiter'; });
+  // Studio-Leiter sieht nur Personen aus seinen Studios
+  if(isLeiter()){
+    var mk=managedKeys();
+    emps=emps.filter(function(e){
+      var ek=(e.studioKeys&&e.studioKeys.length)?e.studioKeys:(e.studios||[]).map(studioKey);
+      return ek.some(function(k){ return mk.indexOf(k)>=0; });
+    });
+  }
+  emps.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+  _employees=emps;
+  renderDashboard(); renderOnboarding();
+  if(isChef()){
+    renderEmployees(emps);                 // Bearbeiten bleibt Chef-Sache
+    _chefs=_allUsers.filter(function(u){ return u.role==='chef'; })
+      .sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+    renderChefs();
+  }
+}
 function listenEmployees(){
-  if(_empUnsub){ _empUnsub(); _empUnsub=null; }
-  _empUnsub=db.collection('users').where('role','in',['mitarbeiter','leiter'])
-    .onSnapshot(function(snap){
-      var emps=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
-      // Studio-Leiter sieht nur Personen aus seinen Studios
-      if(isLeiter()){
-        var mk=managedKeys();
-        emps=emps.filter(function(e){
-          var ek=(e.studioKeys&&e.studioKeys.length)?e.studioKeys:(e.studios||[]).map(studioKey);
-          return ek.some(function(k){ return mk.indexOf(k)>=0; });
-        });
-      }
-      emps.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
-      _employees=emps; renderDashboard(); renderOnboarding();
-      if(isChef()) renderEmployees(emps);   // Bearbeiten bleibt Chef-Sache
-    }, function(e){ console.error('Mitarbeiter:',e.message); });
+  /* Kein eigener Beobachter mehr – siehe verteileUsers(). Die Funktion
+     bleibt stehen, damit die Aufrufstelle lesbar bleibt. */
 }
 
 function renderEmployees(emps){
@@ -10236,6 +10260,9 @@ function listenAllUsers(){
   _usersUnsub=db.collection('users').onSnapshot(function(snap){
     var first = !_allUsers.length;
     _allUsers=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
+    // Die Teillisten (Team, Chefs) fallen hier mit ab – ein Beobachter
+    // statt drei auf derselben Sammlung.
+    if(canManage()) verteileUsers();
     // Erwähnungen (@Name) brauchen die Nutzerliste – Chat einmal neu zeichnen,
     // sobald sie da ist, sonst bleiben die Namen unmarkiert
     if(first && _curMsgs && _curMsgs.length) renderMessages(_curMsgs);
