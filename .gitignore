@@ -7,6 +7,6 @@ functions/node_modules/
 tests/*.png
 
 # Abhaengigkeiten der Regeltests
-tests/rules/node_modules/
+tests/rules/node_modules
 tests/rules/package-lock.json
 firestore-debug.log
