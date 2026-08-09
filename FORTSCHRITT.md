@@ -1005,6 +1005,59 @@ Bericht.
 
 ---
 
+## Sitzung 16 · Leistungs-Durchlauf 🟢
+
+Neues Werkzeug `tests/audit-leistung.js`: zählt Datenbankzugriffe je Pfad,
+prüft Speicher und offene Beobachter über drei Runden durch alle Ansichten,
+misst die Ladephase mit gedrosselter CPU, lange Aufgaben und die Bildrate
+beim Scrollen.
+
+### Der Fund, der alles andere in den Schatten stellt
+
+**Die App zeigte bis zu 12,6 Sekunden eine weiße Seite.** Im Kopf hing ein
+gewöhnliches Stylesheet von `fonts.googleapis.com`. Ein Stylesheet blockiert
+das Zeichnen – solange Google nicht antwortet, sieht der Nutzer nichts.
+Keinen Text, nicht einmal den Ladebildschirm.
+
+Aufgefallen ist es nur, weil die **gedrosselte und die ungedrosselte Messung
+fast identisch** waren: 13,2 s gegen 12,6 s. Es war nie die Rechenleistung,
+es war Warten. Hätte ich nur einmal gemessen, wäre es als „die App ist halt
+groß" durchgegangen.
+
+| erste Farbe | vorher | nachher |
+|---|---|---|
+| ohne Drosselung | 12.648 ms | **80 ms** |
+| CPU 4-fach gedrosselt | 13.244 ms | **240 ms** |
+| lange Aufgaben (>50 ms) | 14, längste 664 ms | 12, längste 284 ms |
+
+Dieselbe Falle steckte in `marketing.html`, `werbung.html` und
+`wachstum.html` – dort sogar als `@import` im `<style>`, was zusätzlich
+serialisiert lädt.
+
+### Drei Beobachter auf derselben Sammlung
+
+`listenAllUsers`, `listenEmployees` und `listenChefs` lagen gleichzeitig auf
+`users`. Die letzten beiden zusammen sind genau die erste: jedes
+Nutzerdokument doppelt geliefert, doppelt abgerechnet – und die drei konnten
+sich widersprechen, weil sie zu verschiedenen Zeiten eintrafen.
+Beobachter beim Start: **42 → 40**, auf `users`: **3 → 1**.
+
+### Auch am Messwerkzeug war ein Fehler
+
+Der Stub gibt bei `orderBy()`/`limit()` dasselbe Objekt zurück – dadurch
+wurde `onSnapshot` mehrfach umhüllt und die **Länge der Abfragekette** statt
+der Beobachter gezählt. Aus 14 Studios wurden 28. Das ist in dieser Runde
+schon der zweite Fall: **ein Werkzeug, das man nicht selbst prüft, liefert
+Zahlen, die schlimmer sind als keine.**
+
+### Gut, ohne Zutun
+
+Scrollen im Chat 60 Bilder/s. Speicher (2,9 MB) und DOM-Knoten über drei
+Runden durch alle 12 Ansichten stabil – kein Leck durch Navigation, trotz
+258 `addEventListener` ohne ein einziges `removeEventListener`.
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf
