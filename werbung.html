@@ -8,7 +8,12 @@
 <meta name="description" content="Forme deinen Körper mit EMS-Training in Hürth. Nur 20 Minuten pro Woche – persönlich betreut. Jetzt kostenloses Probetraining sichern." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<!-- Schrift nicht blockierend laden: ein Stylesheet im Kopf blockiert das
+     Zeichnen der Seite. Antwortet fonts.googleapis.com nicht, sieht der
+     Nutzer eine weisse Seite. Mit media="print" gilt es zunaechst als
+     druck-only und blockiert nichts. -->
+<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" /></noscript>
 <style>
 /* ============================================================
    DESIGN-TOKENS  – hier zentral anpassen
