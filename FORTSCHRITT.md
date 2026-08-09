@@ -884,9 +884,16 @@ Drei Fehler übereinander, von außen nach innen:
 |---|---|---|
 | 1 | In `DEIN-TEIL.md` stand nur eine der zwei nötigen Rollen | meiner |
 | 2 | Der Zielspeicher war fest auf `<projekt>.appspot.com` verdrahtet, das Projekt hat aber `formenchat.firebasestorage.app` | meiner |
-| 3 | **Es gibt im Projekt gar keinen Speicher.** Nie eingerichtet | offen, bei dir – 2 Minuten |
+| 3 | **Es gab im Projekt gar keinen Speicher.** Nie eingerichtet | deiner – am 9.8. erledigt |
 
-Punkt 1 und 2 sind behoben. Punkt 3 kann nur der Projektbesitzer klicken.
+Alle drei sind erledigt. **Am 9. August um 03:28 Uhr lief die erste
+Sicherung durch:** `gs://formenchat.firebasestorage.app/sicherung/manuell-2026-08-09-01-28-53`.
+
+Beim Nachziehen fiel noch ein vierter auf: Das nächtliche Wegräumen alter
+Ordner erkannte nur `sicherung/JJJJ-MM-TT/`, nicht
+`sicherung/manuell-JJJJ-MM-TT-…/`. Jede Sicherung von Hand wäre für immer
+liegen geblieben – bei einem Blaze-Projekt heißt das: bezahlt für immer.
+Behoben, das Raster erkennt jetzt beide Formen.
 
 ### Der eigentliche Fund
 
@@ -917,7 +924,7 @@ der 44-Pixel-Regel, gefunden am Knopf „Jetzt zusätzlich sichern". Jetzt 44,
 
 | Kriterium | vorher | nachher |
 |---|---|---|
-| Verlässlichkeit der Sicherung | **2/10** – lief nie, niemand wusste es | 8/10 – läuft, sobald der Speicher steht, und meldet sich, wenn nicht |
+| Verlässlichkeit der Sicherung | **2/10** – lief nie, niemand wusste es | **9/10** – läuft nachweislich, räumt sich auf und meldet sich, wenn eine Nacht ausfällt |
 | Ehrlichkeit der Unterlagen | 5/10 – „kostet nichts" war falsch | 9/10 |
 | Fingerziele | 9/10 | **10/10** |
 
@@ -933,8 +940,9 @@ markieren lässt.
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf
 zusammengeführte Änderungssätze.
 
-**Was jetzt noch offen ist, steht in `DEIN-TEIL.md` – und es sind zwei
-Handgriffe von zusammen fünfzehn Minuten.**
+**Was jetzt noch offen ist, steht in `DEIN-TEIL.md` – und es ist noch ein
+Handgriff von fünf Minuten:** der neue Code für die Google-Tabelle. Speicher,
+Rollen, Sicherung und Budget-Warnung sind seit dem 9. August erledigt.
 
 ---
 
@@ -947,8 +955,7 @@ Vollständig in `OFFEN.md`. Kurzfassung:
 | Was | Wer |
 |---|---|
 | `MATERIAL-SHEETS.gs` in Apps Script einfügen | **du** |
-| Speicher in `europe-west1` anlegen + zwei Rollen setzen (sonst schlägt die Sicherung fehl) | **du** |
-| Budget-Warnung in der Cloud-Konsole anlegen (empfohlen, seit klar ist: Blaze) | **du** |
+| ~~Speicher + zwei Rollen + Budget-Warnung~~ | ✅ 9.8. erledigt |
 | Wischen zum Abhaken am echten Gerät prüfen | **du** |
 | E-Mail-Absender auf eigene Domain vor Kunden-Mails | du, später |
 | Google-Tabelle: Formatieren vom Schreiben trennen | ich, bei Bedarf |

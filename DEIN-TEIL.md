@@ -1,7 +1,7 @@
 # Was du machen musst
 
-Stand 8. August 2026. Zwei Handgriffe, zusammen rund fünfzehn Minuten.
-Danach ist nichts mehr offen.
+Stand 9. August 2026. Die Sicherung läuft seit heute Nacht – offen ist nur
+noch die Google-Tabelle (Abschnitt E bzw. 1) und ein Wisch im Putzplan.
 
 Beide brauchen **den Google-Account, der das Firebase-Projekt `formenchat`
 besitzt** – also deinen.
@@ -9,6 +9,13 @@ besitzt** – also deinen.
 ---
 
 # Schnellanleitung – Schritt für Schritt
+
+> **Stand 9. August 2026, 03:28 Uhr: A, B, C und D sind erledigt.**
+> Die Sicherung läuft – der erste Lauf von Hand hat geklappt:
+> `✓ gs://formenchat.firebasestorage.app/sicherung/manuell-2026-08-09-01-28-53`
+> Die nächtliche Sicherung meldet sich ab jetzt von allein, wenn sie einmal
+> nicht durchkommt. **Offen sind nur noch E (Google-Tabelle) und F
+> (Wischen im Putzplan).**
 
 Der Reihe nach abarbeiten. Die Begründungen stehen weiter unten; hier steht
 nur, was du klickst. **Melde dich vorher mit dem Google-Account an, dem
@@ -289,13 +296,18 @@ dass gar nicht gesichert wurde.
 
 | | |
 |---|---|
+| Speicher in `europe-west1` angelegt | ☑ 9.8. |
+| Export-Rolle gesetzt | ☑ 9.8. |
+| Storage-Objekt-Administrator gesetzt | ☑ 9.8. |
+| „Jetzt zusätzlich sichern" meldet Erfolg | ☑ 9.8. |
+| Budget-Warnung angelegt *(0 €, meldet beim ersten Cent)* | ☑ 9.8. |
 | Apps Script eingefügt | ☐ |
-| Speicher in `europe-west1` angelegt | ☐ |
-| Export-Rolle gesetzt | ☐ |
-| Storage-Objekt-Administrator gesetzt | ☐ |
 | „Google-Tabellen abgleichen" zeigt alle 14 Studios | ☐ |
-| „Jetzt zusätzlich sichern" meldet Erfolg | ☐ |
-| Budget-Warnung angelegt *(empfohlen, nicht nötig)* | ☐ |
+| Wischen im Putzplan am Gerät geprüft | ☐ |
+
+> **Zum Budget:** 0 € heißt, du bekommst die Mail beim allerersten Cent. Ein
+> Budget **stoppt nichts**, es meldet nur – Google rechnet weiter. Wenn die
+> Mails nerven, später auf 1 € stellen.
 
 ---
 
