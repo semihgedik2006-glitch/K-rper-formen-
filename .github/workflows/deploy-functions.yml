@@ -23,10 +23,43 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ── Sicherheitsregeln ──
+  # ── Regeln erst PRÜFEN, dann ausrollen ──
+  # Die Sicherheitsregeln sind die einzige echte Grenze dieser App. Sie
+  # wurden bisher ungeprüft ausgerollt. Diese Stufe fährt den Firestore-
+  # Emulator hoch und lässt tests/rules/security.test.js dagegen laufen –
+  # 32 Prüfungen, die ausdrücklich benennen, wer was NICHT darf.
+  # Fällt eine um, wird nichts deployt.
+  regeltest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node 20 einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Der Firestore-Emulator ist ein Java-Programm
+      - name: Java einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Abhängigkeiten installieren
+        working-directory: tests/rules
+        run: npm install --no-audit --no-fund
+
+      - name: Sicherheitsregeln prüfen
+        working-directory: tests/rules
+        run: npm test
+
+  # ── Sicherheitsregeln ausrollen ──
   # Läuft in Sekunden. Damit muss niemand mehr Regeln von Hand in die
   # Firebase-Konsole kopieren – die Datei im Repo ist die Wahrheit.
   rules:
+    needs: regeltest
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken
@@ -46,8 +79,13 @@ jobs:
       - name: Firebase CLI installieren
         run: npm install -g firebase-tools
 
-      - name: Sicherheitsregeln deployen
-        run: firebase deploy --only firestore:rules --project formenchat --non-interactive --force
+      # Auch die Speicher-Regeln. Sie lagen seit ihrer Erstellung im Projekt
+      # und wurden nie ausgerollt - in Kraft war, was die Konsole beim
+      # Anlegen des Speichers gesetzt hat. Im Speicher liegt der naechtliche
+      # Vollexport der Datenbank; das darf nicht ausserhalb der Versions-
+      # verwaltung geregelt sein.
+      - name: Sicherheitsregeln deployen (Firestore + Speicher)
+        run: firebase deploy --only firestore:rules,storage --project formenchat --non-interactive --force
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
 

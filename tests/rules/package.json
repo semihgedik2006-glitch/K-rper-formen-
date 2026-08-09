@@ -1,0 +1,12 @@
+{
+  "name": "studiochat-regeltests",
+  "private": true,
+  "description": "Sicherheitstests gegen firestore.rules, ausgefuehrt im Firestore-Emulator",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-regeltest \"node security.test.js\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase-tools": "^14.0.0"
+  }
+}

@@ -5,6 +5,10 @@
   "firestore": {
     "rules": "firestore.rules"
   },
+  "//storage": "Ohne diesen Abschnitt kennt firebase deploy die Datei storage.rules gar nicht. Sie lag seit ihrer Erstellung im Projekt und war nie in Kraft - in Kraft war, was die Konsole beim Anlegen des Speichers gesetzt hat.",
+  "storage": {
+    "rules": "storage.rules"
+  },
   "hosting": {
     "public": ".",
     "ignore": [

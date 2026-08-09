@@ -1,19 +1,32 @@
 rules_version = '2';
 
-// Firebase Storage – Regeln für den Dokumente-Ordner
+// ─────────────────────────────────────────────────────────────────────
+// Firebase Storage – Regeln für formenchat
+//
+// WICHTIG, bevor hier jemand etwas öffnet:
+// In diesem Speicher liegt seit dem 9.8.2026 unter  sicherung/JJJJ-MM-TT/
+// der NÄCHTLICHE VOLLEXPORT DER DATENBANK. Das ist alles auf einmal –
+// jeder Chatverlauf, jede Direktnachricht, das komplette Team mit
+// E-Mail-Adressen, alle Nachweise. Eine einzige zu weite Regel hier wiegt
+// schwerer als jede Lücke in den Firestore-Regeln, weil dort wenigstens
+// noch je Sammlung gefiltert wird.
+//
+// Deshalb: KEIN Client bekommt Zugriff. Kein Lesen, kein Schreiben.
+// Die Sicherung schreibt die Server-Funktion mit Admin-Rechten – die geht
+// an diesen Regeln vorbei und braucht sie nicht.
+//
+// Die App selbst benutzt Storage überhaupt nicht: Dokumente liegen als
+// Text in Firestore (documentData). Das Storage-SDK wird seit dem
+// Forensik-Durchlauf nicht einmal mehr geladen.
+//
+// Falls später doch echte Dateiablage kommt (Roadmap 2.1), gehört ein
+// eigener match-Block für genau diesen Pfad hierher – niemals ein
+// pauschales „allow read: if request.auth != null". Zur Erinnerung:
+// Registrieren kann sich in dieser App jeder selbst.
+// ─────────────────────────────────────────────────────────────────────
+
 service firebase.storage {
   match /b/{bucket}/o {
-
-    // Dokumente: alle Eingeloggten dürfen lesen/herunterladen,
-    // hochladen/löschen darf nur der Chef. Max. 20 MB pro Datei.
-    match /documents/{docId}/{fileName} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'chef'
-        && request.resource.size < 20 * 1024 * 1024;
-    }
-
-    // alles andere gesperrt
     match /{allPaths=**} {
       allow read, write: if false;
     }

@@ -575,14 +575,33 @@ auth.onAuthStateChanged(function(user){
   $('loadingWrap').style.display = 'none';
   if(user){
     me = { uid: user.uid, name: user.email || '' };
+    /* Die Rolle wird hier geprueft, damit man eine verstaendliche Meldung
+       bekommt statt eines rohen Serverfehlers. Verlassen darf man sich
+       darauf NICHT - die eigentliche Sperre sitzt in den Cloud Functions
+       (requireChef). Registrieren kann sich in dieser App jeder selbst;
+       ohne Serverpruefung koennte also jeder Fremde den Gemini-Schluessel
+       der Firma benutzen. */
     db.collection('users').doc(user.uid).get().then(function(snap){
       var d = snap.exists ? snap.data() : {};
       me.name = d.name || me.name;
       $('userName').textContent = me.name;
-    }).catch(function(){ $('userName').textContent = me.name; });
-    $('authWrap').classList.remove('show');
-    $('app').classList.add('show');
-    subscribeProjects();
+      if (d.role !== 'chef') {
+        $('app').classList.remove('show');
+        $('authWrap').classList.add('show');
+        var e = $('loginErr');
+        if (e) e.textContent = 'Dieser Bereich ist der Geschäftsführung vorbehalten.';
+        auth.signOut();
+        return;
+      }
+      $('authWrap').classList.remove('show');
+      $('app').classList.add('show');
+      subscribeProjects();
+    }).catch(function(){
+      $('userName').textContent = me.name;
+      $('authWrap').classList.remove('show');
+      $('app').classList.add('show');
+      subscribeProjects();
+    });
   } else {
     me = null;
     if(unsubProjects){ unsubProjects(); unsubProjects = null; }

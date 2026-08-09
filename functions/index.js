@@ -347,6 +347,46 @@ function requireAuth(context) {
   }
 }
 
+/* ── Nur der Chef ──
+   „Eingeloggt" ist bei dieser App KEINE Hürde: registrieren kann sich
+   jeder selbst (Rolle Mitarbeiter). Für alles, was Geld kostet oder
+   Betriebswissen preisgibt, reicht requireAuth deshalb nicht. */
+async function requireChef(context) {
+  requireAuth(context);
+  const snap = await db.collection('users').doc(context.auth.uid).get();
+  const rolle = snap.exists ? (snap.data() || {}).role : null;
+  if (rolle !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieser Bereich ist der Geschäftsführung vorbehalten.');
+  }
+  return snap.data() || {};
+}
+
+/* ── Tagesgrenze für kostenpflichtige Aufrufe ──
+   Das Projekt läuft auf dem Bezahlplan Blaze, und eine Budget-Warnung
+   warnt nur – sie stoppt nichts. Ein Fehler in einer Schleife oder ein
+   übermütiger Nachmittag am Bild-Generator wären sonst unbegrenzt.
+   Gezählt wird je Tag und je Art, in EINEM Dokument.
+   Bewusst kein Sekundengenauigkeit-Limit: die Grenze soll Unfälle
+   abfangen, nicht normale Arbeit behindern. */
+async function tagesGrenze(art, maximum) {
+  const tag = new Date().toISOString().slice(0, 10);
+  const ref = db.collection('config').doc('nutzung-' + tag);
+  const stand = await db.runTransaction(async (t) => {
+    const d = await t.get(ref);
+    const alt = (d.exists ? d.data() : {}) || {};
+    const neu = (alt[art] || 0) + 1;
+    t.set(ref, Object.assign({}, alt, { [art]: neu, tag: tag }), { merge: true });
+    return neu;
+  });
+  if (stand > maximum) {
+    throw new functions.https.HttpsError('resource-exhausted',
+      'Für heute ist die Grenze von ' + maximum + ' Aufrufen erreicht (' + art + '). ' +
+      'Das ist eine Kostenbremse, kein Fehler – morgen geht es weiter.');
+  }
+  return stand;
+}
+
 /* Nachrichten aus der App validieren/begrenzen (Text + optionale Bilder) */
 function sanitizeMessages(raw) {
   const msgs = Array.isArray(raw) ? raw.slice(-24) : [];
@@ -396,7 +436,10 @@ function toGeminiContents(messages) {
 exports.marketingChat = region
   .runWith({ timeoutSeconds: 300, memory: '512MB' })
   .https.onCall(async (data, context) => {
-    requireAuth(context);
+    // Vorher stand hier nur requireAuth: JEDER selbst registrierte Zugang
+    // konnte den Gemini-Schluessel der Firma benutzen.
+    await requireChef(context);
+    await tagesGrenze('marketingChat', 200);
     const apiKey = process.env.GEMINI_API_KEY || '';
     if (!apiKey) {
       throw new functions.https.HttpsError('failed-precondition',
@@ -463,7 +506,9 @@ const IMAGE_QUALITY_SUFFIX =
 exports.marketingImage = region
   .runWith({ timeoutSeconds: 300, memory: '512MB' })
   .https.onCall(async (data, context) => {
-    requireAuth(context);
+    // Bilder sind der teuerste Aufruf im Projekt - hier zuerst pruefen.
+    await requireChef(context);
+    await tagesGrenze('marketingImage', 50);
     const prompt = String((data && data.prompt) || '').slice(0, 4000).trim();
     if (!prompt) {
       throw new functions.https.HttpsError('invalid-argument', 'Bitte eine Bildbeschreibung eingeben.');
