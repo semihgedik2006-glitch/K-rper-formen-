@@ -1,0 +1,5 @@
+{
+  "//": "Nur fuer den Emulator. Der Pfad zeigt bewusst auf die echte Regeldatei des Projekts - getestet wird, was auch ausgerollt wird.",
+  "emulators": { "firestore": { "port": 8791 }, "ui": { "enabled": false } },
+  "firestore": { "rules": "../../firestore.rules" }
+}

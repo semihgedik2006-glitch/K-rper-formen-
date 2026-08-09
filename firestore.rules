@@ -194,9 +194,20 @@ service cloud.firestore {
         || (isLeiter() && resource.data.studios.hasOnly(myKeys()));
     }
     // ── Dokument-Inhalte (kleine Dateien direkt in der Datenbank, kostenlos) ──
+    // Hier stand "isChef() || isLeiter()" - ohne Studio-Bezug. Ein Leiter
+    // konnte die Metadaten eines fremden Dokuments nicht anfassen, den
+    // INHALT aber ueberschreiben. Belegt durch tests/rules/security.test.js.
+    // Jetzt gilt dieselbe Schranke wie fuer die Metadaten. Loeschen ist
+    // Chefsache: Dokumente landen ohne Studio-Kennung im Papierkorb, und
+    // den darf ohnehin nur der Chef endgueltig leeren.
     match /documentData/{docId} {
       allow read: if signedIn();
-      allow create, update, delete: if isChef() || isLeiter();
+      allow create, update: if isChef()
+        || (isLeiter()
+            && exists(/databases/$(database)/documents/documents/$(docId))
+            && get(/databases/$(database)/documents/documents/$(docId))
+                 .data.studios.hasOnly(myKeys()));
+      allow delete: if isChef();
     }
 
     // ── Nachweise (Erste Hilfe, Trainerlizenz, EMS-Einweisung) ──
