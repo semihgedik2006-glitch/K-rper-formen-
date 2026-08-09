@@ -935,6 +935,46 @@ markieren lässt.
 
 ---
 
+## Sitzung 14 · Forensik-Durchlauf 🟢
+
+Erst ein Messwerkzeug gebaut (`tests/audit-forensik.js`), dann damit
+12 Ansichten × 3 Rollen × 11 Breiten durchgemessen.
+
+**Bemerkenswert: vier Fehler steckten im Messwerkzeug selbst.** Halb­durch­
+sichtige Flächen wurden nicht übereinandergelegt; `showView()` und `PREFS`
+sind wegen der IIFE nicht global, weshalb der ganze Ansichten­durchlauf
+still ins Leere lief; Verläufe wurden als Weiß gelesen; Emoji tragen ihre
+Farbe selbst. Ein Werkzeug, das man nicht selbst prüft, liefert Zahlen, die
+schlimmer sind als keine.
+
+| Befund | vorher | nachher |
+|---|---|---|
+| Kontrast unter 4,5:1 | **43** (schlechteste 1,4:1) | **0** |
+| Fingerziele unter 44 px | **75** | **3** (im Anhang-Menü, während der Einblendung gemessen) |
+| Waagerechter Überlauf 320–1920 px | 0 | 0 |
+| Fokus unsichtbar beim Tabben | 0 | 0 |
+
+**Ursache der Farbfehler:** Fläche und Text verwechselt. `--warm`/`--danger`
+sind Flächen mit dunklem Text darauf – wurden aber auch als Textfarbe
+benutzt, und im Hellmodus gab es sie dort nie, weil `body.light` sie nicht
+neu definiert. Dazu 21 fest eingetragene Dunkelmodus-Hexwerte.
+
+**Der unauffälligste Fund:** Ein `<button>` erbt die Textfarbe nicht. Fünf
+Bauteile liefen mit Browser-Schwarz, darunter die Studiozeilen von „Wo etwas
+los ist" – Kontrast 1,3 auf der dunklen Karte. Ein Zeichen im Reset behebt
+die ganze Klasse.
+
+Außerdem: `.scroll-fab` hob sein eigenes `position:absolute` weiter unten
+wieder auf; „Desinfektionsmittel" schob die Materialzeile aus der Karte
+(fehlendes `min-width:0`); `firebase-storage-compat.js` wurde bei jedem
+Start geladen (40.329 Bytes) und nirgends benutzt.
+
+**Nicht gemessen** – und deshalb auch nicht behauptet: echte Ladezeit auf
+einem Gerät, Verhalten bei 500 Studios, Offline- und Mehrbenutzer-Abgleich,
+Sicherheitsdurchlauf. Siehe Abschlussbericht.
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf
