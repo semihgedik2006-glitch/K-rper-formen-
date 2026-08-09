@@ -39,16 +39,39 @@ Zeit angenehmer zu lesen als harter Neon-Kontrast.
 Die hellen Töne sind bewusst **dunkler als die dunklen** – auf Weiß wäre
 `#38BDF8` nicht lesbar.
 
-### Bedeutung
+### Bedeutung — Fläche und Text sind zwei verschiedene Dinge
 
-| Marke | Wert | Bedeutung |
-|---|---|---|
-| `--warm` | `#FBBF24` | Achtung: fehlt, läuft ab, wartet |
-| `--danger` | `#FB4E6D` | Fehler, defekt, überfällig, löschen |
-| `--accent-d` | `#38BDF8` / `#075985` | Erfolg, erledigt |
+Das ist die wichtigste Regel dieses Abschnitts, und sie wurde teuer gelernt:
+**dieselbe Farbe kann nicht zugleich eine gute Fläche und ein guter Text
+sein.** Deshalb gibt es je zwei Marken.
+
+| Marke | Dunkel | Hell | Wofür |
+|---|---|---|---|
+| `--warm` | `#FBBF24` | `#FBBF24` | **Fläche**: Punkte, Balken, Chips – trägt immer dunklen Text |
+| `--danger` | `#FB4E6D` | `#FB4E6D` | **Fläche**: dito |
+| `--ok` | `#34D399` | `#047857` | **Fläche** für Erfolg |
+| `--warm-tx` | `#FFB38C` | `#92400E` | **Text** auf warmer Tönung |
+| `--danger-tx` | `#FF8A8A` | `#B42318` | **Text** auf roter Tönung |
+| `--ok-tx` | `#34D399` | `#047857` | **Text** für Erfolg |
 
 **Regel:** Rot heißt „kaputt oder zu spät". Gelb heißt „bald oder wartet".
 Nie Rot für „wartet auf Entscheidung" – ein Urlaubsantrag ist kein Defekt.
+
+**Regel:** Für Text **nie** `--warm` oder `--danger` nehmen, sondern die
+`-tx`-Marke. Wer das verwechselt, baut Text mit Kontrast 1,7 auf Weiß – im
+Dunkelmodus fällt es niemandem auf, im Hellmodus ist er unlesbar.
+
+> Wie das gefunden wurde: ein Messdurchlauf über alle Ansichten, beide
+> Modi, mit übereinandergelegten halbtransparenten Flächen. 43 Stellen
+> unter 4,5:1, die schlechteste bei 1,4:1. Jeder Wert oben ist gegen Weiß,
+> gegen die Seitenfarbe und gegen die jeweilige Tönung nachgerechnet.
+> Nachprüfen: `node tests/audit-forensik.js chef`
+
+### Ein `<button>` erbt keine Textfarbe
+
+Ohne eigene Angabe nimmt er das Schwarz des Browsers. Auf einer dunklen
+Karte sind das 1,3:1. Deshalb steht im Reset `button{color:inherit}` –
+aber wer eine neue Farbe braucht, setzt sie ausdrücklich.
 
 ### Text
 
@@ -105,12 +128,36 @@ Statusleiste und lassen sich nicht antippen.
 
 Das war der häufigste Fund im gesamten Audit. Gefunden und behoben:
 
-| Ort | vorher | jetzt |
+Es gibt **zwei** Wege, sie einzuhalten:
+
+**1. Sichtbar größer machen** – wo Platz ist (Chips, Reiter, Knöpfe):
+`min-height:44px` plus `display:inline-flex;align-items:center`.
+
+**2. Nur die Trefferfläche vergrößern** – wo ein Symbol klein aussehen
+soll (Löschen, Anheften, Reaktion, Haken). Eine unsichtbare Fläche legt
+sich zentriert darüber:
+
+```css
+.mein-symbol{position:relative}
+.mein-symbol::after{content:'';position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
+```
+
+Auge und Finger bekommen so verschiedene Größen. Die Zeile bleibt schlank.
+
+Gemessen wird nicht die gemalte Höhe, sondern was der Finger trifft –
+`document.elementFromPoint` 21 Pixel über und unter der Mitte.
+
+| Bauteil | vorher | jetzt |
 |---|---|---|
-| Werkzeuge an einer Chat-Nachricht | 21 × 19 | Blatt-Einträge 48 |
-| Werkzeuge an einer Aufgabe | 25 × 27 | Blatt-Einträge 48 |
-| Löschen am Nachweis | 21 × 25 | 36 × 44 |
-| Studio-Knöpfe „Wo etwas defekt ist" | – | 42 |
+| Kanalauswahl `.chan` | 30 | 44 |
+| Filter-Chips `.chip` | 31 | 44 |
+| Reiter im Team `.pm-tab` | 35 | 44 |
+| Umfrage-Antwort `.poll-opt` | 36 | 44 |
+| „Ich kann nicht" `.tausch-btn` | 24 | 44 |
+| Zahlenfeld Material `.num` | 40 | 44 |
+| Wochenknöpfe `.wk-btns .btn` | 38 | 44 |
+| Reaktion, Anheften, Löschen, Haken | 19–34 | 44 (unsichtbar) |
 
 Ausnahme: Symbole **innerhalb** einer Zeile, die selbst anklickbar ist
 (die Kamera in der Aufgaben-Fußzeile). Dort ist die ganze Zeile das Ziel.

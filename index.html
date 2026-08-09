@@ -38,8 +38,16 @@
   --accent-glow:rgba(56,189,248,.28);
   --on-accent:#0A1420;            /* dunkler Text auf hellen Akzentflächen */
   --brand:linear-gradient(135deg,#7C6BF0 0%,#38BDF8 55%,#E879B9 100%);
-  --warm:#FBBF24;--danger:#FB4E6D;
-  --text:#F2F3F8;--text-2:#B4B8C8;--text-3:#848AA0;
+  /* Bedeutungsfarben. WICHTIG: --warm/--danger/--ok sind FLAECHEN
+     (Punkte, Balken, Chips) und tragen immer dunklen Text. Fuer TEXT auf
+     einer getoenten Flaeche gibt es eigene Marken mit -tx. Beides in
+     einen Topf zu werfen war der Grund, warum im Hellmodus Zahlen mit
+     Kontrast 1.7 auf Weiss standen: dieselbe Farbe kann nicht zugleich
+     eine gute Flaeche und ein guter Text sein. */
+  --warm:#FBBF24;--danger:#FB4E6D;--ok:#34D399;
+  --warm-tx:#FFB38C;--danger-tx:#FF8A8A;--ok-tx:#34D399;
+  /* text-3 war #848AA0 - auf getoenten Karten nur 3,4:1 */
+  --text:#F2F3F8;--text-2:#B4B8C8;--text-3:#A2A8BC;
   --font-head:'Barlow Condensed',system-ui,sans-serif;
   --font-body:'Barlow',system-ui,-apple-system,sans-serif;
   --radius:18px;--radius-lg:26px;
@@ -65,7 +73,14 @@ body.light{
   --accent-glow:rgba(3,105,161,.18);
   --on-accent:#ffffff;
   --brand:linear-gradient(135deg,#6D28D9 0%,#0369A1 55%,#BE185D 100%);
-  --text:#111726;--text-2:#48516B;--text-3:#6B7387;
+  /* Die Flaechen (--warm/--danger) bleiben gleich: sie tragen dunklen
+     Text und funktionieren auf Weiss genauso. Die TEXT-Marken brauchen
+     hier dunkle Werte - jeder Wert unten ist gegen Weiss, gegen die
+     Seitenfarbe und gegen die jeweilige Toenung auf mindestens 4,5:1
+     nachgerechnet. */
+  --ok:#047857;
+  --warm-tx:#92400E;--danger-tx:#B42318;--ok-tx:#047857;
+  --text:#111726;--text-2:#48516B;--text-3:#5A6274;
   --shadow:0 6px 18px rgba(20,30,55,.09);--shadow-lg:0 18px 40px rgba(20,30,55,.14);
 }
 body.light .topbar{background:rgba(255,255,255,.9)}
@@ -76,6 +91,25 @@ body.light .day-sep{background:rgba(0,0,0,.05)}
 body.light .inp option{background:#ffffff;color:var(--text)}
 body.light .msg{box-shadow:0 1px 2px rgba(30,20,60,.06)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* Ein <button> erbt die Textfarbe NICHT – ohne eigene Angabe nimmt der
+   Browser sein Standardschwarz. Im Dunkelmodus stand deshalb der
+   Studioname in „Wo etwas los ist" mit Kontrast 1,3 auf der Karte:
+   praktisch unsichtbar. Betraf fünf Bauteile, und jedes neue <button>
+   ohne Farbe wäre wieder betroffen gewesen. */
+button{color:inherit}
+/* ── Trefferfläche ohne Aussehen zu ändern ──
+   Kleine Symbole in einer Zeile (Löschen, Anheften, Reaktion, Haken) sollen
+   klein aussehen und trotzdem 44 Pixel treffen lassen. Sie größer zu malen
+   würde die Zeilen aufblähen; stattdessen legt sich eine unsichtbare Fläche
+   zentriert darüber. Das ist dieselbe Lösung, die Apple in den eigenen
+   Richtlinien empfiehlt: getrennte Größe für Auge und Finger. */
+.react,.pin-x,.pin-go,.ann-del,.ann-pin,.shift-x,.check,.t-cam,.mat-del,
+.msg-del,.pp-del,.cert-del,.mini-x{position:relative}
+.react::after,.pin-x::after,.pin-go::after,.ann-del::after,.ann-pin::after,
+.shift-x::after,.check::after,.t-cam::after,.mat-del::after,.msg-del::after,
+.pp-del::after,.cert-del::after,.mini-x::after{
+  content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:max(100%,44px);height:max(100%,44px)}
 html{-webkit-text-size-adjust:100%;height:100%}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);
   line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100svh;
@@ -101,7 +135,7 @@ input,textarea,select{font-family:inherit;font-size:16px}
 /* Löschen und Defekt-Meldung: rot, nicht grau. Bisher hatte .btn-danger gar
    keine eigene Gestaltung und sah aus wie ein normaler Knopf – bei genau den
    Aktionen, die man nicht aus Versehen antippen soll. */
-.btn-danger{background:rgba(251,78,109,.14);color:var(--danger);border:1.5px solid rgba(251,78,109,.4)}
+.btn-danger{background:rgba(251,78,109,.14);color:var(--danger-tx);border:1.5px solid rgba(251,78,109,.4)}
 .btn-danger:hover{background:rgba(251,78,109,.22);border-color:var(--danger)}
 /* 44 Pixel, nicht 36: der kleine Knopf ist trotzdem ein Fingerziel. Die
    36 waren der letzte Rest aus der Zeit vor der Regel – sichtbar geworden
@@ -161,7 +195,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   padding:24px;background:var(--bg)}
 .setup-card{max-width:560px;width:100%;background:var(--bg-2);border:1px solid rgba(251,191,36,.4);
   border-radius:var(--radius-lg);padding:clamp(24px,6vw,40px)}
-.setup-card h2{font-size:1.8rem;margin-bottom:10px;color:var(--warm)}
+.setup-card h2{font-size:1.8rem;margin-bottom:10px;color:var(--warm-tx)}
 .setup-card p{color:var(--text-2);margin-bottom:12px;line-height:1.65}
 .setup-card pre{background:rgba(0,0,0,.4);border:1px solid var(--line-2);border-radius:10px;
   padding:16px;font-size:.78rem;color:var(--accent-2);overflow-x:auto;margin-bottom:14px;
@@ -208,7 +242,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .role-opt .ico svg{width:19px;height:19px}
 .role-opt b{display:block;font-family:var(--font-head);font-size:1.02rem}
 .role-opt span{font-size:.75rem;color:var(--text-2)}
-.auth-err{color:#ff8a8a;font-size:.88rem;margin-bottom:10px;min-height:1.1em}
+.auth-err{color:var(--danger-tx);font-size:.88rem;margin-bottom:10px;min-height:1.1em}
 .auth-foot{text-align:center;margin-top:14px;font-size:.85rem;color:var(--text-3)}
 .auth-foot a{color:var(--accent-d);cursor:pointer}
 
@@ -305,7 +339,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   overflow-x:auto;flex-shrink:0;flex-wrap:nowrap;scrollbar-width:none}
 .chan{white-space:nowrap;flex:0 0 auto}
 .chat-channels::-webkit-scrollbar{height:0}
-.chan{padding:6px 14px;border-radius:999px;border:1px solid var(--line-2);background:rgba(255,255,255,.04);
+.chan{display:inline-flex;align-items:center;min-height:44px;padding:0 15px;border-radius:999px;border:1px solid var(--line-2);background:rgba(255,255,255,.04);
   color:var(--text-2);cursor:pointer;font-size:.85rem;font-weight:600;white-space:nowrap;
   transition:.2s;flex-shrink:0}
 .chan:hover{color:var(--text)}
@@ -324,7 +358,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .msg .edited{white-space:nowrap}
 .msg .meta b{font-family:var(--font-head);font-size:.9rem;letter-spacing:.2px}
 .tag{font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;border-radius:999px;font-weight:700}
-.tag.chef{background:rgba(251,191,36,.18);color:#ffb38c}
+.tag.chef{background:rgba(251,191,36,.18);color:var(--warm-tx)}
 .tag.studio{background:rgba(34,211,238,.14);color:var(--accent-2)}
 .msg .meta time{margin-left:auto;color:var(--text-3);font-size:.7rem;white-space:nowrap}
 .msg .body{font-size:.97rem;color:var(--text);white-space:pre-wrap}
@@ -394,7 +428,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-left:4px solid var(--warm);border-radius:14px;margin-bottom:11px}
 .ann-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .ann-head .pin{width:29px;height:29px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;
-  background:rgba(251,191,36,.14);color:var(--warm)}
+  background:rgba(251,191,36,.14);color:var(--warm-tx)}
 .ann-head .pin svg{width:15px;height:15px}
 .ann-head b{font-family:var(--font-head);font-size:1rem}
 .ann-head time{margin-left:auto;color:var(--text-3);font-size:.75rem}
@@ -445,8 +479,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .fold-num{font-size:.76rem;font-weight:700;color:var(--text-3);
   background:var(--bg-soft);border:1px solid var(--line);
   padding:2px 9px;border-radius:999px;white-space:nowrap}
-.fold-num.warn{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:var(--warm)}
-.fold-num.dringend{background:rgba(251,78,109,.16);border-color:rgba(251,78,109,.4);color:var(--danger)}
+.fold-num.warn{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:var(--warm-tx)}
+.fold-num.dringend{background:rgba(251,78,109,.16);border-color:rgba(251,78,109,.4);color:var(--danger-tx)}
 .card .hint{color:var(--text-2);font-size:.88rem;margin-bottom:14px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
 @media(max-width:560px){.row{grid-template-columns:1fr}}
@@ -462,7 +496,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .dash-tile .dn{font-family:var(--font-head);font-weight:800;font-size:1.7rem;line-height:1;
   background:linear-gradient(135deg,var(--accent-d),var(--accent-2));-webkit-background-clip:text;
   background-clip:text;-webkit-text-fill-color:transparent}
-.dash-tile .dn.warn{background:none;-webkit-text-fill-color:initial;color:#ff8a8a}
+.dash-tile .dn.warn{background:none;-webkit-text-fill-color:initial;color:var(--danger-tx)}
 .dash-tile .dl{color:var(--text-2);font-size:.8rem;margin-top:5px}
 .dash-bday{display:none;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:12px 15px;margin-bottom:16px}
 .dash-bday-h{font-family:var(--font-head);font-weight:700;font-size:1rem;margin-bottom:7px}
@@ -539,7 +573,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 #pollModal.show{display:flex}
 .poll{margin-top:8px;padding:12px 13px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md)}
 .poll-q{font-family:var(--font-head);font-weight:700;font-size:1rem;margin-bottom:9px}
-.poll-opt{position:relative;display:block;width:100%;text-align:left;background:none;border:1.5px solid var(--line-2);
+.poll-opt{position:relative;display:flex;align-items:center;min-height:44px;width:100%;text-align:left;background:none;border:1.5px solid var(--line-2);
   border-radius:var(--r-sm);padding:9px 12px;margin-bottom:7px;cursor:pointer;overflow:hidden;
   color:var(--text);font-size:.9rem;transition:border-color .2s}
 .poll-opt:hover{border-color:var(--accent)}
@@ -559,11 +593,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .dev-title{font-family:var(--font-head);font-weight:700;font-size:1.05rem;letter-spacing:.2px}
 .dev-meta{margin-top:4px;font-size:.76rem;color:var(--text-3);line-height:1.5}
 .dev-warn{display:inline-block;margin-top:5px;font-size:.72rem;font-weight:700;
-  padding:3px 8px;border-radius:999px;background:rgba(251,78,109,.16);color:var(--danger)}
+  padding:3px 8px;border-radius:999px;background:rgba(251,78,109,.16);color:var(--danger-tx)}
 .dev-st{flex-shrink:0;font-size:.72rem;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
 .dev-st.ok{background:rgba(0,224,110,.14);color:var(--accent-d)}
-.dev-st.defekt{background:rgba(251,78,109,.16);color:var(--danger)}
-.dev-st.wartung{background:rgba(251,191,36,.16);color:var(--warm)}
+.dev-st.defekt{background:rgba(251,78,109,.16);color:var(--danger-tx)}
+.dev-st.wartung{background:rgba(251,191,36,.16);color:var(--warm-tx)}
 .dev-log{padding:10px 12px;background:var(--bg-soft);border:1px solid var(--line);
   border-radius:var(--r-sm);margin-bottom:8px}
 .dev-log-text{font-size:.92rem;white-space:pre-wrap;word-break:break-word}
@@ -634,7 +668,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   transition:opacity .2s var(--ease-out),transform .26s var(--spring),visibility .2s}
 .attach-menu.show{opacity:1;visibility:visible;transform:none}
 .attach-menu button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;
-  color:var(--text);font-size:.94rem;text-align:left;padding:10px 12px;border-radius:var(--r-sm);cursor:pointer}
+  color:var(--text);font-size:.94rem;text-align:left;padding:0 12px;min-height:44px;
+  border-radius:var(--r-sm);cursor:pointer}
 .attach-menu button:hover{background:var(--bg-soft);color:var(--accent-d)}
 .attach-btn{width:46px;min-width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line-2);
   background:rgba(255,255,255,.04);color:var(--text-2);cursor:pointer;display:grid;place-items:center;
@@ -648,7 +683,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .img-preview.show{display:flex}
 .img-preview img{height:54px;width:54px;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)}
 .img-preview .pv-info{flex:1;min-width:0;font-size:.82rem;color:var(--text-2)}
-.img-preview .pv-x{background:rgba(239,68,68,.12);color:#ff8a8a;border:none;border-radius:9px;
+.img-preview .pv-x{background:rgba(239,68,68,.12);color:var(--danger-tx);border:none;border-radius:9px;
   width:34px;height:34px;cursor:pointer;flex-shrink:0;font-size:1.1rem}
 
 /* ── Foto bei Aufgaben ── */
@@ -730,7 +765,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* „Nach unten"-Knopf im Chat */
 #view-chat{position:relative}
-.scroll-fab{position:absolute;right:16px;bottom:78px;width:42px;height:42px;border-radius:50%;
+.scroll-fab{position:absolute;right:16px;bottom:78px;width:44px;height:44px;border-radius:50%;
   background:var(--bg-2);border:1px solid var(--line-2);color:var(--accent-2);cursor:pointer;
   display:grid;place-items:center;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;
   transform:translateY(10px) scale(.9);transition:.25s var(--ease-out);z-index:20}
@@ -757,12 +792,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Chat: Trenner „Neue Nachrichten" ── */
 .new-sep{display:flex;align-items:center;gap:10px;align-self:stretch;margin:10px 0 4px;
-  color:var(--warm);font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--warm-tx);font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
   animation:viewIn .3s var(--ease-out)}
 .new-sep::before,.new-sep::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--warm),transparent)}
 
 /* ── Chat: Zähler am „Nach unten"-Knopf ── */
-.scroll-fab{position:relative}
+/* Hier stand .scroll-fab{position:relative} – das ueberschrieb weiter oben
+   gesetztes position:absolute und hob damit die Verankerung rechts unten
+   auf. Noetig war es nie: absolute stellt den Bezugsrahmen fuer das
+   Abzeichen genauso her. */
 .fab-count{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;
   border-radius:999px;background:var(--warm);color:#20120A;font-size:.7rem;font-weight:800;
   display:none;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.4)}
@@ -851,7 +889,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pp-meta{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:4px;font-size:.76rem;color:var(--text-3)}
 .pp-meta .pp-doneby{color:var(--accent-d);font-weight:600}
 .pp-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:6px;border-radius:8px;flex-shrink:0;transition:.2s}
-.pp-del:hover{color:var(--danger);background:rgba(251,78,109,.12)}
+.pp-del:hover{color:var(--danger-tx);background:rgba(251,78,109,.12)}
 .pp-del svg{width:16px;height:16px}
 /* Notizen */
 .pp-note{padding:11px 14px;background:var(--bg-soft);border:1px solid var(--line);
@@ -859,7 +897,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pp-note-text{font-size:.94rem;white-space:pre-wrap;word-break:break-word}
 .pp-note-foot{display:flex;justify-content:space-between;gap:10px;margin-top:5px;font-size:.72rem;color:var(--text-3)}
 .pp-note-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.72rem;padding:0}
-.pp-note-del:hover{color:var(--danger)}
+.pp-note-del:hover{color:var(--danger-tx)}
 
 /* ============================================================
    BEWEGUNG IM APPLE-STIL
@@ -991,7 +1029,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   font-size:.8rem;color:var(--text)}
 
 /* Reiter im Profil-Menü: Auswahl gleitet mit, statt zu springen */
-.pm-tab{position:relative}
+.pm-tab{position:relative;min-height:44px}
 .pm-tab.on{animation:tabPop .4s var(--spring)}
 @keyframes tabPop{from{transform:scale(.94)}to{transform:none}}
 
@@ -1097,7 +1135,7 @@ body.light .ms-emoji{background:rgba(20,10,40,.04)}
   background:none;border:none;border-radius:12px;cursor:pointer;text-align:left;
   color:var(--text);font-size:.95rem;font-family:var(--font-body)}
 .ms-act:active{background:rgba(255,255,255,.06)}
-.ms-act.warn{color:var(--danger)}
+.ms-act.warn{color:var(--danger-tx)}
 .ms-ico{width:26px;flex-shrink:0;text-align:center;font-size:1.05rem}
 @media (hover:hover){ .ms-act:hover{background:rgba(255,255,255,.06)} }
 body.light .ms-act:active,body.light .ms-act:hover{background:rgba(20,10,40,.05)}
@@ -1124,7 +1162,7 @@ body.light .react{background:rgba(20,10,40,.05)}
   text-overflow:ellipsis;white-space:nowrap}
 .compose-bar .cb-x{background:none;border:none;color:var(--text-3);cursor:pointer;
   font-size:1.05rem;padding:4px 8px;border-radius:8px}
-.compose-bar .cb-x:hover{color:var(--danger)}
+.compose-bar .cb-x:hover{color:var(--danger-tx)}
 .msg .edited{font-size:.68rem;color:var(--text-3);margin-left:5px}
 
 /* Ungelesen-Zähler an den Kanal-Knöpfen */
@@ -1190,8 +1228,8 @@ html{font-size:var(--fs,100%)}
 @media (hover:hover){ .home-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2)} }
 .home-tile .hn{font-family:var(--font-head);font-weight:800;font-size:2rem;line-height:1;color:var(--accent)}
 .home-tile .hl{font-size:.86rem;color:var(--text-2);margin-top:5px}
-.home-tile.warn .hn{color:var(--danger)}
-.home-tile.ok .hn{color:#34D399}
+.home-tile.warn .hn{color:var(--danger-tx)}
+.home-tile.ok .hn{color:var(--ok-tx)}
 .home-tile.muted .hn{color:var(--text-3)}
 
 .alert-bar{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:14px;
@@ -1246,7 +1284,7 @@ html{font-size:var(--fs,100%)}
 .bp-row:active{transform:scale(.99)}
 .bp-name{flex:0 0 auto;font-family:var(--font-head);font-weight:700;font-size:1rem}
 .bp-was{flex:1;min-width:0;font-size:.8rem;color:var(--text-2);text-align:right}
-.bp-was .bp-warn{color:var(--danger)}
+.bp-was .bp-warn{color:var(--danger-tx)}
 .bp-pfeil{flex:0 0 auto;color:var(--text-3);font-size:1.1rem}
 
 /* Kachel mit einer Null: da, aber deutlich leiser */
@@ -1321,8 +1359,8 @@ html{font-size:var(--fs,100%)}
 .chef-card .cc-num{display:inline-block;margin-top:7px;font-size:.74rem;font-weight:700;
   padding:3px 9px;border-radius:999px;background:var(--bg-soft);
   border:1px solid var(--line);color:var(--text-3)}
-.chef-card .cc-num.warn{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:var(--warm)}
-.chef-card .cc-num.dringend{background:rgba(251,78,109,.16);border-color:rgba(251,78,109,.4);color:var(--danger)}
+.chef-card .cc-num.warn{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:var(--warm-tx)}
+.chef-card .cc-num.dringend{background:rgba(251,78,109,.16);border-color:rgba(251,78,109,.4);color:var(--danger-tx)}
 
 .chef-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;min-width:0}
 .chef-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;
@@ -1354,7 +1392,7 @@ html{font-size:var(--fs,100%)}
 .att-txt b{display:block;font-weight:600}
 .att-txt span{color:var(--text-3);font-size:.77rem}
 .att-go{color:var(--text-3);font-size:.8rem;white-space:nowrap}
-.att-ok{color:#34D399;font-size:.9rem;font-weight:600;padding:6px 0}
+.att-ok{color:var(--ok-tx);font-size:.9rem;font-weight:600;padding:6px 0}
 
 /* Balken im Bericht */
 .rep-row{padding:9px 0;border-top:1px solid var(--line)}
@@ -1365,7 +1403,7 @@ html{font-size:var(--fs,100%)}
 .rep-bar{height:8px;border-radius:999px;background:var(--bg-3);overflow:hidden}
 .rep-fill{height:100%;border-radius:999px;background:var(--accent);
   transition:width .6s var(--ease-ios)}
-.rep-fill.good{background:#34D399}
+.rep-fill.good{background:var(--ok)}
 .rep-fill.warn{background:var(--warm)}
 .rep-fill.bad{background:var(--danger)}
 
@@ -1411,7 +1449,7 @@ html{font-size:var(--fs,100%)}
 .rec-dot{width:9px;height:9px;border-radius:50%;background:var(--danger);flex-shrink:0;
   animation:recPulse 1.1s ease-in-out infinite}
 @keyframes recPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
-.rec-time{font-variant-numeric:tabular-nums;color:var(--danger);flex-shrink:0}
+.rec-time{font-variant-numeric:tabular-nums;color:var(--danger-tx);flex-shrink:0}
 .rec-hint{flex:1;min-width:0;color:var(--text-2);font-weight:500;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rec-x,.rec-stop{flex-shrink:0;border:none;font-family:var(--font-body);font-weight:700;
@@ -1425,7 +1463,7 @@ html{font-size:var(--fs,100%)}
 .rec-prev.show{display:flex}
 .rec-prev audio{flex:1;min-width:0;height:36px}
 /* Mikrofon-Knopf leuchtet, während aufgenommen wird */
-.attach-btn.rec-on{color:var(--danger)}
+.attach-btn.rec-on{color:var(--danger-tx)}
 /* Sprachnachricht in der Chat-Blase */
 .msg-audio{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
 .msg-audio audio{height:36px;max-width:240px}
@@ -1454,7 +1492,7 @@ html{font-size:var(--fs,100%)}
   font-family:var(--font-body);font-weight:700;font-size:.8rem;padding:4px 6px}
 .pin-x{flex-shrink:0;background:none;border:none;color:var(--text-3);cursor:pointer;
   font-size:.9rem;padding:4px 6px;border-radius:7px;transition:color .2s,background .2s}
-@media (hover:hover){ .pin-x:hover{color:var(--danger);background:rgba(251,78,109,.1)} }
+@media (hover:hover){ .pin-x:hover{color:var(--danger-tx);background:rgba(251,78,109,.1)} }
 
 /* Chef-Zugänge */
 .chef-me{font-size:.76rem;color:var(--text-3);font-style:italic;white-space:nowrap}
@@ -1478,9 +1516,9 @@ html{font-size:var(--fs,100%)}
 .abs-status{display:inline-block;margin-left:8px;font-size:.7rem;font-weight:700;
   padding:2px 9px;border-radius:999px;vertical-align:middle;
   background:rgba(148,163,184,.16);color:var(--text-2)}
-.abs-status.offen{background:rgba(251,191,36,.16);color:var(--warm)}
-.abs-status.genehmigt{background:rgba(52,211,153,.14);color:#34D399}
-.abs-status.abgelehnt{background:rgba(251,78,109,.14);color:var(--danger)}
+.abs-status.offen{background:rgba(251,191,36,.16);color:var(--warm-tx)}
+.abs-status.genehmigt{background:rgba(52,211,153,.14);color:var(--ok-tx)}
+.abs-status.abgelehnt{background:rgba(251,78,109,.14);color:var(--danger-tx)}
 .abs-row.offen{border-left:3px solid var(--warm);padding-left:10px}
 .abs-row.abgelehnt{opacity:.6}
 .abs-by{font-size:.76rem;color:var(--text-3);margin-top:3px}
@@ -1493,9 +1531,9 @@ html{font-size:var(--fs,100%)}
 .fc-head b{font-weight:600;font-size:.95rem}
 .fc-w{flex:0 0 auto;font-weight:700;font-size:.86rem;white-space:nowrap;
   padding:2px 10px;border-radius:999px}
-.fc-w.good{background:rgba(52,211,153,.14);color:#34D399}
-.fc-w.warn{background:rgba(251,191,36,.14);color:var(--warm)}
-.fc-w.bad{background:rgba(251,78,109,.14);color:var(--danger)}
+.fc-w.good{background:rgba(52,211,153,.14);color:var(--ok-tx)}
+.fc-w.warn{background:rgba(251,191,36,.14);color:var(--warm-tx)}
+.fc-w.bad{background:rgba(251,78,109,.14);color:var(--danger-tx)}
 .fc-sub{color:var(--text-3);font-size:.78rem;margin-top:3px}
 
 /* Einkaufsliste (Material) */
@@ -1503,7 +1541,7 @@ html{font-size:var(--fs,100%)}
 .shop-row:first-child{border-top:none}
 .shop-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .shop-h b{font-weight:600;font-size:.95rem}
-.shop-n{font-family:var(--font-head);font-weight:800;color:var(--warm);
+.shop-n{font-family:var(--font-head);font-weight:800;color:var(--warm-tx);
   font-size:1.05rem;white-space:nowrap}
 .shop-s{color:var(--text-3);font-size:.78rem;margin-top:3px}
 
@@ -1532,13 +1570,13 @@ html{font-size:var(--fs,100%)}
 .cert-meta{margin-top:3px;font-size:.75rem;color:var(--text-3)}
 .cert-st{flex-shrink:0;font-size:.72rem;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
 .cert-st.ok{background:rgba(0,224,110,.14);color:var(--accent-d)}
-.cert-st.bald{background:rgba(251,191,36,.16);color:var(--warm)}
-.cert-st.weg{background:rgba(251,78,109,.16);color:var(--danger)}
+.cert-st.bald{background:rgba(251,191,36,.16);color:var(--warm-tx)}
+.cert-st.weg{background:rgba(251,78,109,.16);color:var(--danger-tx)}
 /* 21 x 25 Pixel trifft kein Daumen – jetzt 44 hoch wie überall sonst */
 .cert-del{background:none;border:none;color:var(--text-3);cursor:pointer;flex-shrink:0;
   width:36px;min-height:44px;padding:0;border-radius:9px;font-size:1rem;line-height:1}
 .cert-del:active{transform:scale(.88)}
-.cert-del:hover{color:var(--danger);background:rgba(251,78,109,.12)}
+.cert-del:hover{color:var(--danger-tx);background:rgba(251,78,109,.12)}
 .tausch-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   margin:-2px 0 7px 9px;padding:6px 9px;border-radius:9px;
   background:var(--bg-soft);border:1px solid var(--line)}
@@ -1548,7 +1586,7 @@ html{font-size:var(--fs,100%)}
    bleiben auf einem 390-Pixel-Handy rund 100 Pixel übrig – dann steht dort
    ein Wort pro Zeile. */
 .tausch-txt{flex:1 1 100%;min-width:0;font-size:.78rem;color:var(--text-2)}
-.tausch-btn{background:none;border:1.5px solid var(--line-2);border-radius:999px;
+.tausch-btn{display:inline-flex;align-items:center;min-height:44px;background:none;border:1.5px solid var(--line-2);border-radius:999px;
   padding:4px 11px;font-size:.74rem;font-weight:700;color:var(--text);cursor:pointer;
   white-space:nowrap;transition:border-color .2s,color .2s}
 .tausch-btn:hover{border-color:var(--accent);color:var(--accent-d)}
@@ -1560,7 +1598,7 @@ html{font-size:var(--fs,100%)}
 .shift-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .shift-note{font-size:.76rem;color:var(--text-3)}
 .shift-x{background:none;border:none;color:var(--text-3);cursor:pointer;padding:2px 6px;border-radius:6px}
-.shift-x:hover{color:var(--danger)}
+.shift-x:hover{color:var(--danger-tx)}
 .shift-empty{font-size:.84rem;color:var(--text-3);padding:3px 2px}
 /* Ein Tag ohne Einteilung braucht keine volle Karte. Vorher scrollte man an
    fünf gleich grossen leeren Kästen vorbei, bevor heute kam. */
@@ -1572,11 +1610,11 @@ html{font-size:var(--fs,100%)}
 .shift-sum{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
 .shift-sum span{font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:999px;
   background:var(--bg-soft);border:1px solid var(--line);color:var(--text-2)}
-.shift-sum span.tausch{background:rgba(251,191,36,.14);border-color:rgba(251,191,36,.4);color:var(--warm)}
+.shift-sum span.tausch{background:rgba(251,191,36,.14);border-color:rgba(251,191,36,.4);color:var(--warm-tx)}
 .abs-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
-  font-size:.78rem;font-weight:700;background:rgba(251,191,36,.15);color:var(--warm);
+  font-size:.78rem;font-weight:700;background:rgba(251,191,36,.15);color:var(--warm-tx);
   border:1px solid rgba(251,191,36,.35);margin:2px 4px 2px 0}
-.abs-chip.krank{background:rgba(251,78,109,.14);color:var(--danger);border-color:rgba(251,78,109,.35)}
+.abs-chip.krank{background:rgba(251,78,109,.14);color:var(--danger-tx);border-color:rgba(251,78,109,.35)}
 
 /* ── Abwesenheiten & Brett ── */
 .abs-row,.bb-item,.ho-item{padding:11px 13px;background:var(--bg-soft);border:1px solid var(--line);
@@ -1589,20 +1627,20 @@ html{font-size:var(--fs,100%)}
   background:rgba(244,114,182,.15);color:var(--accent-3);margin-bottom:5px}
 .bb-text,.ho-text{font-size:.94rem;white-space:pre-wrap;word-break:break-word}
 .mini-x{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.72rem;padding:0}
-.mini-x:hover{color:var(--danger)}
+.mini-x:hover{color:var(--danger-tx)}
 
 /* ── Tagesüberblick ── */
 /* Zahl am Filter-Chip – ersetzt die frühere Tagesüberblick-Karte */
 .chip-num{margin-left:6px;padding:0 6px;border-radius:999px;font-size:.72rem;font-weight:800;
   background:rgba(255,255,255,.1);color:var(--text)}
 body.light .chip-num{background:rgba(20,10,40,.08)}
-.chip-num.warn{background:rgba(251,78,109,.18);color:var(--danger)}
+.chip-num.warn{background:rgba(251,78,109,.18);color:var(--danger-tx)}
 .chip.on .chip-num{background:rgba(255,255,255,.18)}
 
 /* ── Online-Punkt am Avatar ── */
 .av-wrap{position:relative;display:inline-block}
 .online-dot{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;
-  background:#34D399;border:2px solid var(--bg-2);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+  background:var(--ok);border:2px solid var(--bg-2);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 
 /* ── Zuweisung an eine Person ── */
 .t-assign{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
@@ -1623,8 +1661,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
 /* ── Schnellfilter-Chips (Aufgaben) ── */
 .chip-row{display:flex;gap:8px;flex-wrap:wrap}
-.chip{background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--text-2);
-  padding:7px 15px;border-radius:999px;font-family:var(--font-body);font-weight:600;
+.chip{display:inline-flex;align-items:center;min-height:44px;
+  background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--text-2);
+  padding:0 16px;border-radius:999px;font-family:var(--font-body);font-weight:600;
   font-size:.84rem;cursor:pointer;
   transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
 .chip:hover{color:var(--text);border-color:var(--accent)}
@@ -1636,7 +1675,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
   padding:2px 8px;border-radius:999px;vertical-align:middle;
   background:rgba(255,255,255,.08);color:var(--text-2);border:1px solid var(--line-2)}
 .role-badge.leiter{background:rgba(167,139,250,.16);color:var(--accent-2);border-color:rgba(167,139,250,.4)}
-.tag.leiter{background:rgba(167,139,250,.18);color:var(--accent-2)}
+.tag.leiter{background:rgba(167,139,250,.12);color:var(--accent-2)}
 
 /* ── Wochen-Sicherungen im Archiv ── */
 .wk-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;
@@ -1645,7 +1684,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .wk-info b{font-family:var(--font-head);font-size:1.02rem}
 .wk-info span{font-size:.76rem;color:var(--text-3)}
 .wk-btns{display:flex;gap:8px;flex-wrap:wrap}
-.wk-btns .btn{min-height:38px;padding:0 14px}
+.wk-btns .btn{min-height:44px;padding:0 14px}
 
 /* Wer Animationen im System abgeschaltet hat, bekommt keine */
 @media (prefers-reduced-motion:reduce){
@@ -1660,7 +1699,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .t-due{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
   letter-spacing:.3px;color:var(--text-2);background:rgba(255,255,255,.06);
   padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
-.t-due.over{background:rgba(239,68,68,.16);color:#ff8a8a}
+.t-due.over{background:rgba(239,68,68,.16);color:var(--danger-tx)}
 
 /* ── Auffälliger Unread-Marker auf Nav ── */
 .tab .ndot,.mobnav .ndot{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--warm);
@@ -1692,46 +1731,50 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .mat-head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mat-head span:nth-child(2),.mat-head span:nth-child(3),.mat-head span:nth-child(4){text-align:center}
 .mat-row{padding:9px 0;border-top:1px solid var(--line)}
-.mat-name{font-weight:600;font-size:.92rem;line-height:1.25;
+/* min-width:0 ist hier Pflicht: eine Grid-Spalte "1fr" ist von sich aus
+   mindestens so breit wie ihr laengstes Wort. "Desinfektionsmittel" hat
+   deshalb die Zahlenfelder und das Loeschkreuz aus der Karte geschoben.
+   overflow-wrap allein hilft nicht - es aendert die Mindestbreite nicht. */
+.mat-name{min-width:0;font-weight:600;font-size:.92rem;line-height:1.25;
   overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
 /* Fehlt etwas, wird die ganze Zeile leicht getönt – beim Scrollen durch
    22 Artikel sieht man so von weitem, wo etwas fehlt. */
 .mat-row.fehlt{background:rgba(251,191,36,.06)}
-.mat-row .num{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
+.mat-row .num{width:100%;min-height:44px;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
   border-radius:9px;padding:7px 3px;color:var(--text);text-align:center;min-height:40px;font-size:15px}
 .mat-row input.num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,184,92,.13)}
 .mat-row input.limit{border-style:dashed;color:var(--accent-2)}
 .mat-row input.limit[readonly]{opacity:.65;border-style:solid;color:var(--text-2);cursor:default}
 .mat-row .num.computed{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);
   border-color:transparent;font-weight:700}
-.mat-row .num[data-warn="1"]{border-color:var(--warm);color:#ffb38c}
+.mat-row .num[data-warn="1"]{border-color:var(--warm);color:var(--warm-tx)}
 .mat-row .num.computed[data-warn="1"]{background:rgba(251,191,36,.14);border-color:rgba(251,191,36,.35)}
 .mat-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:1.1rem;
   border-radius:8px;height:34px}
-.mat-del:hover{color:#ff8a8a;background:rgba(239,68,68,.1)}
+.mat-del:hover{color:var(--danger-tx);background:rgba(239,68,68,.1)}
 .mat-add{display:flex;gap:8px;margin-top:14px}
 .mat-add input{flex:1}
 .mat-saved{font-size:.78rem;color:var(--accent-d);min-height:1.1em;margin-top:10px;transition:opacity .3s}
 /* „Wo etwas defekt ist" – dieselbe Sprache wie „Wo etwas los ist" auf der
    Startseite: Studio, Zahl, ein Tipp führt hin. */
 .dev-wo-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.dev-wo{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;
+.dev-wo{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;
   border-radius:999px;cursor:pointer;font-family:var(--font-body);font-weight:600;font-size:.86rem;
-  border:1px solid rgba(251,78,109,.4);background:rgba(251,78,109,.1);color:var(--danger);
+  border:1px solid rgba(251,78,109,.4);background:rgba(251,78,109,.1);color:var(--danger-tx);
   transition:transform .25s var(--spring),background .2s}
 .dev-wo b{font-family:var(--font-head);font-size:.95rem}
 /* Wartende Anträge sind kein Defekt – gelb statt rot */
 .dev-wo.warten{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12);color:#c2761a}
-body:not(.light) .dev-wo.warten{color:#ffb38c}
+.dev-wo.warten{color:var(--warm-tx)}
 @media (hover:hover){ .dev-wo.warten:hover{background:rgba(251,191,36,.2)} }
 .dev-wo:active{transform:scale(.94)}
 @media (hover:hover){ .dev-wo:hover{background:rgba(251,78,109,.18)} }
 
-.mat-alert-go{margin-left:auto;flex-shrink:0;background:none;border:none;cursor:pointer;
+.mat-alert-go{margin-left:auto;flex-shrink:0;min-height:44px;background:none;border:none;cursor:pointer;
   color:inherit;font-family:var(--font-body);font-weight:800;font-size:.8rem;
   text-decoration:underline;padding:6px 2px;min-height:36px}
 .mat-alert{align-items:center;gap:10px;padding:11px 15px;margin-bottom:14px;border-radius:13px;
-  background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);color:#ffb38c;
+  background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);color:var(--warm-tx);
   font-size:.9rem;font-weight:600}
 .mat-alert.show{display:flex}
 
@@ -1785,10 +1828,10 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
 /* Löschen-Buttons (Chat & Ankündigungen) */
 .msg-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.78rem;line-height:1;
   padding:2px 5px;border-radius:6px;margin-left:2px;opacity:.55;flex-shrink:0}
-.msg-del:hover{color:#ff8a8a;background:rgba(239,68,68,.14);opacity:1}
+.msg-del:hover{color:var(--danger-tx);background:rgba(239,68,68,.14);opacity:1}
 .ann-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.92rem;line-height:1;
   padding:3px 7px;border-radius:7px;margin-left:6px;flex-shrink:0}
-.ann-del:hover{color:#ff8a8a;background:rgba(239,68,68,.12)}
+.ann-del:hover{color:var(--danger-tx);background:rgba(239,68,68,.12)}
 .chat-author{cursor:pointer}
 .chat-author:hover{text-decoration:underline}
 </style>
@@ -3092,7 +3135,6 @@ body:not(.light) .dev-wo.warten{color:#ffb38c}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 
 <script>
@@ -3345,7 +3387,7 @@ function loadingError(msg){
   var l = document.getElementById('loadingWrap');
   if(l) l.innerHTML =
     '<div style="max-width:420px;padding:24px;text-align:center">'+
-    '<p style="color:#ff8a8a;font-size:1.05rem;margin-bottom:14px">'+msg+'</p>'+
+    '<p style="color:var(--danger-tx);font-size:1.05rem;margin-bottom:14px">'+msg+'</p>'+
     '<button onclick="location.reload()" style="background:var(--brand);color:#fff;'+
     'border:none;border-radius:999px;padding:12px 26px;font-weight:700;cursor:pointer;font-size:.95rem">Neu laden</button>'+
     '</div>';
@@ -3392,7 +3434,7 @@ if(typeof firebase === 'undefined' || !firebase.initializeApp){
   return;
 }
 
-var auth, db, storage;
+var auth, db;
 try{
   firebase.initializeApp(FIREBASE_CONFIG);
   auth = firebase.auth();
@@ -3412,7 +3454,9 @@ try{
   });
   // Login auf dem Gerät merken (kein ständiges Neu-Anmelden auf dem Handy)
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
-  try{ storage = firebase.storage(); }catch(_){ storage=null; }
+  /* Kein firebase.storage(): Dokumente liegen als Text in der Datenbank.
+     Das SDK wurde trotzdem bei jedem Start mitgeladen - 40 KB und eine
+     zusaetzliche Anfrage, fuer nichts. */
   setLoadingStep('Schritt 3/3: Prüfe Anmeldung …');
 }catch(e){
   loadingError('Firebase-Fehler: '+e.message+'<br>Bitte Config prüfen.');
@@ -5132,7 +5176,7 @@ function createEmployee(){
   var email=$('emEmail').value.trim();
   var pw=$('emPw').value;
   var studios=Array.prototype.slice.call($('emStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; });
-  var note=$('emCreateNote'); note.style.color='#ff8a8a';
+  var note=$('emCreateNote'); note.style.color='var(--danger-tx)';
   if(!name||!email||!pw){ note.textContent='Bitte Name, E-Mail und Passwort ausfüllen.'; return; }
   if(pw.length<6){ note.textContent='Passwort muss mind. 6 Zeichen haben.'; return; }
   if(!studios.length){ note.textContent='Bitte mindestens ein Studio zuordnen.'; return; }
@@ -5333,7 +5377,7 @@ function buildDocStudios(){
 }
 
 function uploadDoc(){
-  var note=$('docNote'); note.style.color='#ff8a8a';
+  var note=$('docNote'); note.style.color='var(--danger-tx)';
   var all=$('docAll').checked;
   var studios=all?managedKeys():Array.prototype.slice.call($('docStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; });
   if(!studios.length){ note.textContent='Bitte mindestens ein Studio wählen.'; return; }
@@ -5356,7 +5400,7 @@ function uploadDoc(){
       name:name||link, kind:'link', url:link, cat:(($('docCat')||{}).value||''),
       studios:target, uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
     }).then(function(){ note.style.color='var(--accent-d)'; note.textContent='✓ Link hinzugefügt.'; resetForm(); btn.disabled=false; })
-      .catch(function(e){ note.style.color='#ff8a8a'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
+      .catch(function(e){ note.style.color='var(--danger-tx)'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
     return;
   }
 
@@ -5367,7 +5411,7 @@ function uploadDoc(){
 
   function store(dataUrl){
     if(dataUrl.length>950000){
-      note.style.color='#ff8a8a';
+      note.style.color='var(--danger-tx)';
       note.textContent='Datei zu groß für den kostenlosen Upload. Bitte als Link (Google Drive) einfügen.';
       btn.disabled=false; return;
     }
@@ -5381,19 +5425,19 @@ function uploadDoc(){
       return db.collection('documentData').doc(id).set({ data:dataUrl });
     }).then(function(){
       note.style.color='var(--accent-d)'; note.textContent='✓ Hinzugefügt.'; resetForm(); btn.disabled=false;
-    }).catch(function(e){ note.style.color='#ff8a8a'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
+    }).catch(function(e){ note.style.color='var(--danger-tx)'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
   }
 
   if(/^image\//.test(file.type)){
-    fileToCompressedDataURL(file).then(store).catch(function(e){ note.style.color='#ff8a8a'; note.textContent=e.message; btn.disabled=false; });
+    fileToCompressedDataURL(file).then(store).catch(function(e){ note.style.color='var(--danger-tx)'; note.textContent=e.message; btn.disabled=false; });
   } else {
     if(file.size>720000){
-      note.style.color='#ff8a8a';
+      note.style.color='var(--danger-tx)';
       note.textContent='Datei zu groß (max ~0,7 MB). Bitte als Link (Google Drive) einfügen.';
       btn.disabled=false; return;
     }
     var r=new FileReader();
-    r.onerror=function(){ note.style.color='#ff8a8a'; note.textContent='Datei konnte nicht gelesen werden.'; btn.disabled=false; };
+    r.onerror=function(){ note.style.color='var(--danger-tx)'; note.textContent='Datei konnte nicht gelesen werden.'; btn.disabled=false; };
     r.onload=function(){ store(r.result); };
     r.readAsDataURL(file);
   }
@@ -11344,7 +11388,7 @@ function bindActions(){
         .catch(function(e){
           /* Die Meldung vom Server nennt Dienstkonto und Rollennamen – sie
              muss deshalb ganz zu lesen sein, nicht auf eine Zeile gekürzt. */
-          if(note){ note.style.color='#ff8a8a'; note.className='em-saved backup-fehler'; note.textContent=errMsg(e); }
+          if(note){ note.style.color='var(--danger-tx)'; note.className='em-saved backup-fehler'; note.textContent=errMsg(e); }
           toast('Sicherung fehlgeschlagen – Hinweis steht unter dem Knopf',true);
           renderSicherungStand();
         });
@@ -11437,7 +11481,7 @@ function bindActions(){
             if(note){
               note.textContent='✓ Gesendet an '+n+(n===1?' Empfänger':' Empfänger')+
                 ' – schau in dein E-Mail-Postfach.';
-              note.style.color='#34D399';
+              note.style.color='var(--ok-tx)';
             }
             toast('Testbericht gesendet ✓');
           })
@@ -11458,7 +11502,7 @@ function bindActions(){
       if(!mail){ toast('Bitte E-Mail eingeben.',true); return; }
       withBusy(btn,function(){
         return auth.sendPasswordResetEmail(mail).then(function(){
-          if(note){ note.textContent='✓ E-Mail an '+mail+' gesendet.'; note.style.color='#34D399'; }
+          if(note){ note.textContent='✓ E-Mail an '+mail+' gesendet.'; note.style.color='var(--ok-tx)'; }
           $('prEmail').value='';
           toast('E-Mail zum Zurücksetzen gesendet ✓');
         }).catch(function(e){
