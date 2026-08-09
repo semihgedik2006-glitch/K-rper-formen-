@@ -2,21 +2,25 @@
 
 Stand 8. August 2026, nach Abschluss des Master-Audits.
 
-**Es ist noch ein Handgriff, bei dir, fünf Minuten.**
-Die Anleitung mit Klickwegen steht in `DEIN-TEIL.md`.
+## Es ist nichts mehr offen. ✅
 
-| Was | Wer | Dauer |
-|---|---|---|
-| `MATERIAL-SHEETS.gs` in Apps Script einfügen und neu bereitstellen | **du** | 5 Min |
-| Wischen zum Abhaken im Putzplan am echten Gerät prüfen | du, nebenbei | 1 Min |
+Stand 9. August 2026. Alle Handgriffe aus `DEIN-TEIL.md` sind erledigt:
 
-> **Erledigt am 9. August:** Speicher in `europe-west1` angelegt, beide
-> Rollen gesetzt, erste Sicherung durchgelaufen
-> (`sicherung/manuell-2026-08-09-01-28-53`), Budget-Warnung angelegt.
+| Was | Wann |
+|---|---|
+| Speicher in `europe-west1` angelegt | 9.8. |
+| Beide Rollen fürs Dienstkonto gesetzt | 9.8. |
+| Erste Sicherung durchgelaufen (`sicherung/manuell-2026-08-09-01-28-53`) | 9.8. |
+| Budget-Warnung angelegt | 9.8. |
+| `MATERIAL-SHEETS.gs` in Apps Script neu bereitgestellt | 9.8. |
+| Wischen zum Abhaken im Putzplan am Gerät bestätigt | 9.8. |
+
 > Dabei kam heraus, dass `formenchat` auf dem **Bezahlplan Blaze** liegt –
-> anders ließen sich die Cloud Functions gar nicht bereitstellen.
+> anders ließen sich die Cloud Functions gar nicht bereitstellen. Die
+> Annahme „keine Karte hinterlegt, also kann nichts abgebucht werden" war
+> falsch; deshalb steht jetzt eine Budget-Warnung.
 
-Alles Weitere ist **Ausbau, nicht Rückstand** – siehe `ROADMAP.md`.
+Was ab hier kommt, ist **Ausbau, kein Rückstand** – siehe `ROADMAP.md`.
 
 ---
 
