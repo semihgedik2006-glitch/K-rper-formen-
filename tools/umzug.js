@@ -13,8 +13,13 @@
    abbricht, startet einfach neu.
 
    Aufruf:
-     node tools/umzug.js --firma koerperformen --probe        (nur zählen)
-     node tools/umzug.js --firma koerperformen                (schreiben)
+     node tools/umzug.js --firma koerperformen --projekt formenchat-probe --probe
+     node tools/umzug.js --firma koerperformen --projekt formenchat-probe
+
+   In Google Cloud Shell laeuft das ohne jeden Schluessel: dort ist das
+   eigene Google-Konto schon angemeldet. Ein Dienstschluessel wird damit
+   gar nicht gebraucht - besser so, denn ein Schluessel, den es nicht
+   gibt, kann auch nicht verloren gehen.
 
    Gegen den Emulator:
      FIRESTORE_EMULATOR_HOST=127.0.0.1:8791 node tools/umzug.js …
@@ -157,13 +162,41 @@ if (require.main === module) {
   const firma = arg('--firma');
   const probe = process.argv.includes('--probe');
   if (!firma) {
-    console.error('Aufruf: node tools/umzug.js --firma <kennung> [--probe] [--name "Anzeigename"]');
+    console.error('Aufruf: node tools/umzug.js --firma <kennung> --projekt <projekt> [--probe]');
     process.exit(2);
   }
 
-  const admin = require('firebase-admin');
-  admin.initializeApp();
+  /* firebase-admin liegt unter functions/. Dort ist es ohnehin
+     installiert – ein zweites npm install nur für dieses Werkzeug wäre
+     Unsinn. */
+  const path = require('path');
+  let admin;
+  try {
+    admin = require('firebase-admin');
+  } catch (e) {
+    admin = require(path.join(__dirname, '..', 'functions', 'node_modules', 'firebase-admin'));
+  }
+  const projekt = arg('--projekt') || process.env.GOOGLE_CLOUD_PROJECT ||
+                  process.env.GCLOUD_PROJECT;
+  if (!projekt) {
+    console.error('Kein Projekt. Entweder --projekt <kennung> angeben oder\n' +
+                  'vorher: gcloud config set project <kennung>');
+    process.exit(2);
+  }
+  /* ── Die Sicherung gegen den teuersten Tippfehler ──
+     Ohne sie wäre ein "--projekt formenchat" statt "formenchat-probe"
+     ein Umzug auf den Live-Daten. Der wäre zwar auch nur eine Kopie und
+     würde nichts löschen – aber er soll bewusst passieren, nicht aus
+     Versehen. Deshalb muss man das Live-Projekt ausdrücklich benennen. */
+  if (!/-probe$/.test(projekt) && !process.argv.includes('--wirklich-live')) {
+    console.error('Projekt "' + projekt + '" sieht nicht nach einer Probe aus.\n' +
+      'Wenn das Absicht ist, hänge --wirklich-live an.\n' +
+      'Sonst: --projekt formenchat-probe');
+    process.exit(2);
+  }
+  admin.initializeApp({ projectId: projekt });
   const db = admin.firestore();
+  console.log('Projekt: ' + projekt);
 
   (async () => {
     console.log((probe ? '── PROBE (es wird nichts geschrieben) ──' : '── UMZUG ──') +
