@@ -13,7 +13,7 @@ prüfbar:
 
 | | Schritt | wer |
 |---|---|---|
-| 1 | Cloud Functions ins **Probe-Projekt** ausrollen und dort eine Nachricht schreiben: kommt Push an? | ich, mit deiner Cloud Shell |
+| 1 | Cloud Functions ins **Probe-Projekt** ausrollen und nachsehen, ob der Auslöser auf dem neuen Pfad anspringt — Anleitung: `2E-PRUEFEN.md` | du, 15 Min in Cloud Shell |
 | 2 | Nachtsicherung des Betriebs prüfen (Datum, Größe) | ich |
 | 3 | `tools/umzug.js --wirklich-live` — **Kopie**, die alten Daten bleiben liegen | ich, mit deiner Cloud Shell |
 | 4 | Regeln ausrollen **und im Protokoll „released" nachlesen** — genau das ist im Probelauf schiefgegangen | ich |
@@ -23,6 +23,16 @@ prüfbar:
 
 Der Rückweg bis Schritt 6 ist: die vorherige App-Fassung ausrollen. Sie
 liest die alten Pfade, die unberührt liegen.
+
+> **Was Schritt 1 nicht beweisen kann.** Ich hatte gesagt: „im
+> Probe-Projekt eine Nachricht schreiben und sehen, ob Push ausgelöst
+> wird." Das geht so nicht — in `konfig.js` steht für den Probelauf
+> ausdrücklich `vapidKey: ''`, also kann sich dort **kein Gerät für Push
+> anmelden**. Es gibt gar keine Empfänger. Geprüft wird deshalb, ob der
+> Auslöser auf dem neuen Pfad **anspringt** (im Protokoll ablesbar) —
+> genau das hat Stufe 2E geändert. Der Versand danach ist unveränderter
+> Code. Ob Push auf einem echten Handy ankommt, sieht man erst nach dem
+> Live-Umzug am eigenen Gerät.
 
 **Vier rechtliche Pflichtfelder in `konfig.js`** (Betreiber, Anschrift,
 Telefon, E-Mail) sind noch leer — solange steht in der App eine rote
