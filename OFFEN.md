@@ -99,7 +99,9 @@ Chef-Zugang entsteht bei der Einrichtung des Projekts, jeder weitere über
 
 | Was | Warum |
 |---|---|
-| **Firmencode setzen** in *Verwaltung → Team* | Solange er leer ist, kann sich jeder anmelden, der die Adresse kennt. |
+| **Vier Pflichtfelder** in `konfig.js` unter `recht:` eintragen | Ohne vollständiges Impressum darf die App nicht öffentlich genutzt werden. Fünf Minuten. Solange es fehlt, warnt die App selbst. Details in `RECHT.md`. |
+| **Firmencode setzen** in *Verwaltung → Team* | Solange er leer ist, kann sich jeder anmelden, der die Adresse kennt — und der Reiter „Konto anlegen" erscheint erst dann. |
+| **Datenschutztext durchsehen lassen** vor dem Einsatz im Team | Krankmeldungen sind Gesundheitsdaten, die Anwesenheitsanzeige liest sich als Kontrolle, Stimme ist biometrisch. Siehe `RECHT.md`. |
 | **„Google-Tabellen abgleichen"** einmal drücken und prüfen, ob alle 14 Studios erscheinen | Lässt sich hier nicht nachstellen, weil der Abgleich auf ein echtes Tabellenblatt schreibt. |
 
 ~~`MATERIAL-SHEETS.gs` einfügen~~ · ~~Speicher + Export-Rollen~~ ·
@@ -140,10 +142,21 @@ geöffneten Studio. **Das ist Absicht** — alle 14 Studios dauerhaft
 mitzuladen würde die Datenbank-Zugriffe vervielfachen. Falls nötig: als
 eigene Suche bauen, die nur auf Knopfdruck lädt.
 
-### Mehrere Firmen in einer App
+### Mehrere Firmen in einer App (4. Ebene: Admin)
 
-Erst ab dem fünften oder sechsten Kunden. Bis dahin ist ein Firebase-Projekt
-je Kunde günstiger und schneller — siehe `VERKAUF.md`.
+**Vollständig geplant, nichts gebaut** — siehe `MANDANT-PLAN.md`. Vier
+Ebenen: Mitarbeiter, Studio-Leiter, Chef (benennt seine Studios selbst),
+Admin über allen Firmen. Der Admin sieht Verwaltung, keine Inhalte.
+
+Aufwand nach Stufen: Studios in die Datenbank ~1 Sitzung ohne Risiko ·
+Firmen-Trennung ~2–3 Sitzungen **mit Eingriff in Live-Daten** ·
+Admin-Oberfläche ~1 Sitzung.
+
+Mein Vorschlag: **Stufe 1 jetzt** (nützt sofort, auch ohne zweiten Kunden),
+Stufe 2 und 3 erst, wenn ein Kunde konkret ist.
+
+Das frühere Kostenargument aus `VERKAUF.md` gilt nicht mehr — das
+Freikontingent ist nachgerechnet nur 0,83 € je Kunde und Monat wert.
 
 ### KI-Funktionen
 

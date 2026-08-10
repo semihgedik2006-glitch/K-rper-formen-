@@ -362,6 +362,37 @@ async function requireChef(context) {
   return snap.data() || {};
 }
 
+/* ── Ist diese E-Mail-Adresse bestätigt? ──
+   Der Chef soll vor der Freigabe sehen, ob eine Adresse echt ist. Die
+   Information liegt in Firebase Auth, nicht in Firestore, und ein Client
+   kann sie nur für sich selbst lesen. Hier steht sie deshalb über das
+   Admin-SDK zur Verfügung.
+
+   Warum nicht einfach der Client ein Feld "emailBestaetigt: true" ins
+   eigene Profil schreiben lässt: weil er lügen kann. Genau der Punkt,
+   an dem die Angabe etwas wert sein soll, wäre sie wertlos.
+
+   Zurück kommt nur ein Ja/Nein je Kennung - keine Adresse, kein Name,
+   kein Zeitpunkt. Mehr braucht die Freigabe-Karte nicht.               */
+exports.mailStatus = region
+  .https.onCall(async (data, context) => {
+    await requireChef(context);
+    const uids = Array.isArray(data && data.uids) ? data.uids.slice(0, 50) : [];
+    if (!uids.length) return { stand: {} };
+    const stand = {};
+    await Promise.all(uids.map(async (uid) => {
+      try {
+        const u = await admin.auth().getUser(String(uid));
+        stand[uid] = !!u.emailVerified;
+      } catch (e) {
+        // Konto gibt es nicht mehr oder Kennung ist Unsinn: kein Grund,
+        // den ganzen Aufruf scheitern zu lassen.
+        stand[uid] = null;
+      }
+    }));
+    return { stand: stand };
+  });
+
 /* ── Tagesgrenze für kostenpflichtige Aufrufe ──
    Das Projekt läuft auf dem Bezahlplan Blaze, und eine Budget-Warnung
    warnt nur – sie stoppt nichts. Ein Fehler in einer Schleife oder ein

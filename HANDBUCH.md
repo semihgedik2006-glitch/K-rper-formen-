@@ -57,6 +57,46 @@ unterscheiden, steht es dabei:
 - **Automatische Aktualisierung**: neue Fassungen kommen von selbst an, ohne
   App Store.
 
+### Passwort anzeigen
+
+In jedem Passwortfeld sitzt rechts ein Auge. Antippen zeigt das Passwort
+im Klartext, nochmal antippen verbirgt es wieder. Beim Wechsel zwischen
+*Anmelden* und *Konto anlegen* wird es automatisch wieder verborgen —
+auf einem Studio-Tablet schaut der Nächste mit.
+
+### E-Mail bestätigen
+
+Beim Anlegen eines Kontos geht eine Bestätigungsmail raus. Solange die
+Adresse unbestätigt ist, steht in der App oben eine Leiste mit
+*„Mail erneut senden"*. Wegklicken geht — sie kommt nach sieben Tagen
+wieder.
+
+**Die App sperrt niemanden aus, dessen Mail unbestätigt ist.** Eine
+Bestätigungsmail landet zu oft im Spam, und ein gesperrtes Studio-Team
+mitten in der Schicht ist der größere Schaden. Die Schranke, die
+schützt, ist die Freigabe: **der Chef sieht in der Freigabe-Karte, ob
+die Adresse bestätigt ist**, bevor er jemanden hereinlässt.
+
+### Impressum und Datenschutz
+
+Beide stehen unten auf dem Anmeldebildschirm — **ohne Anmeldung
+erreichbar** — und noch einmal im Profil-Fenster. Der Inhalt kommt aus
+`konfig.js`. Fehlt eine Pflichtangabe, sagt die App das deutlich, und der
+Chef sieht eine Warnkarte in *Verwaltung → System*. Was einzutragen ist
+und was ein Anwalt machen muss, steht in `RECHT.md`.
+
+### Konto selbst anlegen (**wenn der Chef es einschaltet**)
+
+Der Reiter *Konto anlegen* erscheint nur, wenn in *Verwaltung → Team*
+ein **Firmencode** gesetzt oder die **Freigabe** eingeschaltet ist. Ohne
+wenigstens eine dieser Schranken bleibt es beim Satz „Dein Chef legt dein
+Konto an" — ein Anmeldeformular anzubieten, das die Regeln danach
+abweisen, wäre schlimmer als keins.
+
+Ist die Freigabe eingeschaltet, landet ein neues Konto zuerst im
+Wartebildschirm. Der Chef sieht es ganz oben in *Verwaltung → Team* und
+drückt *Freigeben* — mehr muss er nicht tun.
+
 ---
 
 ## 2. Aufbau und Navigation
@@ -578,6 +618,35 @@ im Rest der App.
   → Braucht Aufmerksamkeit* auf.
 - **Über StudioChat** – Fassung und Stand.
 - **Tastenkürzel** – Übersicht.
+
+---
+
+## 15b. Studios verwalten (**C**)
+
+*Verwaltung → 🏢 Studios.* Hier stehen die Standorte, mit denen die App
+arbeitet. Bis August 2026 standen sie im Code — ein neues Studio hieß:
+Datei ändern und neu ausrollen.
+
+| Handgriff | was passiert |
+|---|---|
+| **Anlegen** | bekommt die nächste freie Kennung, nie eine wiederverwendete |
+| **Umbenennen** | nur der Name ändert sich, die Kennung bleibt |
+| **Schließen** | verschwindet aus allen Auswahllisten, die Daten bleiben |
+| **Wieder öffnen** | jederzeit, alles ist wieder da |
+| **Löschen** | **gibt es nicht** |
+
+### Warum es kein Löschen gibt
+
+Jedes Studio hat eine feste Kennung in der Datenbank (`studio-6`), und
+alle Aufgaben, Schichten, Putzpläne, Geräte und Chatnachrichten hängen
+daran. Würde man ein Studio aus der Liste entfernen, bekämen die
+folgenden die Kennung ihres Vorgängers — **und damit dessen Daten. Ohne
+Fehlermeldung.**
+
+Die Sicherheitsregel lässt eine kürzere Liste deshalb gar nicht erst zu:
+nicht einmal der Chef kann sie kürzen, und auch nicht an der App vorbei.
+
+Änderungen sehen alle **sofort**, ohne die App neu zu starten.
 
 ---
 

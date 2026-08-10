@@ -100,4 +100,5 @@ async function lauf(stub, wer) {
   const c = await lauf('stub-mitarbeiter.js', 'mitarbeiter');
   const alle = a.concat(c);
   console.log('\nFehler:', alle.length ? alle.join('\n  ') : 'keine');
+  process.exit(alle.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

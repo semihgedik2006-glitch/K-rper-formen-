@@ -109,6 +109,24 @@ was sie sehen soll.
 | `test-marker.js` | die vier gleitenden Marker sitzen und gleiten |
 | `test-startzahlen.js` | Putzplan zählt sofort und über alle Studios |
 | `test-startlesen.js` | Infos und schwarzes Brett stehen auf der Startseite |
+| `test-standorte.js` | Studios aus der Datenbank, Kennungen bleiben stabil |
+| `test-passwort.js` | Passwort anzeigen, Cursor, kein Klartext nach dem Wechsel |
+| `test-recht.js` | Impressum und Datenschutz ohne Login, Warnung bei Lücken |
+
+### Alle auf einmal
+
+```bash
+bash tests/alle.sh            # alle
+bash tests/alle.sh chat       # nur die passenden
+```
+
+> **Nicht mit einem Einzeiler laufen lassen.** Bis August 2026 lief die
+> Regression als `for f in tests/*.js; do node "$f" || echo kaputt; done`.
+> 29 der Durchläufe geben aber gar keinen Exit-Code — sie schreiben
+> „Fehler: …" und beenden sich mit 0. Der Einzeiler prüfte damit neun
+> Durchläufe und meldete das Ergebnis für achtunddreißig. `alle.sh` kennt
+> vier Fehlersignale und meldet zusätzlich jeden Durchlauf, der **gar
+> nichts** ausgibt — ein stummer Test ist verdächtig, nicht gut.
 
 ### Messläufe (kein Grün/Rot, sondern Zahlen)
 

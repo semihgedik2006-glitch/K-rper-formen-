@@ -58,4 +58,5 @@ const SP = process.env.SP || __dirname;
 
   console.log('Fehler:', errs.length ? errs.join('\n  ') : 'keine');
   await b.close();
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

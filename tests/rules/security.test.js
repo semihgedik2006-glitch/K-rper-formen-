@@ -226,6 +226,59 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Nach der Freigabe darf das Konto lesen', () =>
     assertSucceeds(wartet().doc('channels/allgemein/messages/m1').get()));
 
+  // ══ Studioliste: darf nur wachsen ══
+  //
+  // Die Datenbank-Kennung eines Studios haengt an seinem Platz in dieser
+  // Liste. Wird sie gekuerzt oder umsortiert, bekommen die folgenden
+  // Studios die Kennung ihres Vorgaengers - und damit dessen Aufgaben,
+  // Schichten und Nachrichten. Lautlos. Die Regel muss das verhindern,
+  // nicht die Oberflaeche: wer die Regeln umgeht, umgeht auch die Knoepfe.
+  const DREI = [
+    { id: 'studio-0', name: 'Longerich', aktiv: true },
+    { id: 'studio-1', name: 'Nippes', aktiv: true },
+    { id: 'studio-2', name: 'Rath', aktiv: true },
+  ];
+  await env.withSecurityRulesDisabled(async ctx => {
+    await ctx.firestore().doc('config/studios').set({ liste: DREI, naechste: 3 });
+  });
+
+  await pruefe('Studioliste ist OHNE Anmeldung lesbar (Registrierungsformular)', () =>
+    assertSucceeds(alsAnonym().doc('config/studios').get()));
+  await pruefe('Mitarbeiter kann die Studioliste lesen', () =>
+    assertSucceeds(alsMitarbeiter().doc('config/studios').get()));
+  await pruefe('Mitarbeiter kann die Studioliste NICHT aendern', () =>
+    assertFails(alsMitarbeiter().doc('config/studios')
+      .set({ liste: DREI.concat([{ id: 'studio-3', name: 'Fremd', aktiv: true }]), naechste: 4 })));
+  await pruefe('Leiter kann die Studioliste NICHT aendern', () =>
+    assertFails(alsLeiter().doc('config/studios')
+      .set({ liste: DREI.concat([{ id: 'studio-3', name: 'Fremd', aktiv: true }]), naechste: 4 })));
+  await pruefe('Chef kann ein Studio ANHAENGEN', () =>
+    assertSucceeds(alsChef().doc('config/studios')
+      .set({ liste: DREI.concat([{ id: 'studio-3', name: 'Porz', aktiv: true }]), naechste: 4 })));
+  await pruefe('Chef kann ein Studio UMBENENNEN (gleiche Laenge)', () =>
+    assertSucceeds(alsChef().doc('config/studios').set({
+      liste: [
+        { id: 'studio-0', name: 'Longerich Nord', aktiv: true },
+        { id: 'studio-1', name: 'Nippes', aktiv: true },
+        { id: 'studio-2', name: 'Rath', aktiv: true },
+        { id: 'studio-3', name: 'Porz', aktiv: true },
+      ], naechste: 4,
+    })));
+  await pruefe('Chef kann ein Studio SCHLIESSEN (aktiv:false, bleibt in der Liste)', () =>
+    assertSucceeds(alsChef().doc('config/studios').set({
+      liste: [
+        { id: 'studio-0', name: 'Longerich Nord', aktiv: true },
+        { id: 'studio-1', name: 'Nippes', aktiv: true },
+        { id: 'studio-2', name: 'Rath', aktiv: false },
+        { id: 'studio-3', name: 'Porz', aktiv: true },
+      ], naechste: 4,
+    })));
+  await pruefe('DER WICHTIGE: auch der Chef kann die Liste NICHT kuerzen', () =>
+    assertFails(alsChef().doc('config/studios')
+      .set({ liste: DREI.slice(0, 2), naechste: 4 })));
+  await pruefe('Niemand kann die Studioliste loeschen – auch der Chef nicht', () =>
+    assertFails(alsChef().doc('config/studios').delete()));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

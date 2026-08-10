@@ -162,4 +162,5 @@ async function start(stub, errs) {
   await page.screenshot({ path: SP + '/chat-bereich3.png' });
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
   await b.close();
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

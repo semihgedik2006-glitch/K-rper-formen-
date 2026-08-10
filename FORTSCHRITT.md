@@ -1378,6 +1378,214 @@ Das sagt nur der Betrieb nach einer Woche.
 
 ---
 
+## Sitzung 21 · Stufe 1: Studios gehören dem Chef 🟢
+
+Der erste Teil aus `MANDANT-PLAN.md`. Die Studioliste stand in
+`konfig.js`, also im Code — ein neues Studio hieß: Datei ändern und neu
+ausrollen. Jetzt liegt sie in `config/studios`, und der Chef pflegt sie
+selbst unter *Verwaltung → 🏢 Studios*.
+
+### Die eiserne Regel
+
+Die Datenbank-Kennung eines Studios hängt an seinem Platz in der Liste.
+`studio-6` ist Hürth, weil Hürth an sechster Stelle steht — und daran
+hängen alle Aufgaben, Schichten, Putzpläne, Geräte und Chats. Deshalb:
+
+| Handgriff | | |
+|---|---|---|
+| anlegen | nächste freie Nummer | nie eine wiederverwendete |
+| umbenennen | nur der Name | Kennung bleibt |
+| schließen | `aktiv:false` | Daten bleiben lesbar |
+| löschen | **gibt es nicht** | weder Knopf noch Regel |
+
+Und die Sicherung, damit ein bestehender Betrieb nichts merkt: **fehlt das
+Dokument, gilt weiterhin `konfig.js`.** Die Liste wird beim ersten
+Speichern genau so angelegt, wie sie heute ist — `studio-0` bis
+`studio-13` bleiben gültig, **keine einzige Datenwanderung.**
+
+### Der Fehler, den mein eigener Test gefunden hat
+
+Ich hatte die Wachstums-Sperre in eine eigene Regel geschrieben:
+
+```
+match /config/studios {
+  allow update: if isChef()
+    && request.resource.data.liste.size() >= resource.data.liste.size();
+}
+```
+
+Grün geprüft, gedacht: sitzt. Der Regeltest sagte: *„auch der Chef kann
+die Liste NICHT kürzen — Expected request to fail, but it succeeded."*
+
+Der Grund ist genau der, vor dem ich zwei Stunden vorher in
+`MANDANT-PLAN.md` gewarnt hatte: die allgemeine Regel `config/{doc}`
+erlaubt dem Chef `write`, und **in Firestore genügt eine zutreffende
+Regel, die erlaubt.** Meine Sperre hing in der Luft. Dieselbe Falle wie
+beim Firmencode in Sitzung 18, in derselben Datei, ein zweites Mal — und
+diesmal hätte sie im Ernstfall Daten dem falschen Studio zugeordnet.
+
+Behoben mit `allow write: if isChef() && doc != 'studios'`. **61
+Regeltests** (von 52), alle grün.
+
+### Passwort anzeigen
+
+Ein Auge in jedem der drei Passwortfelder. Zwei Kleinigkeiten, die es
+sonst kaputt machen: `type="button"`, sonst sendet der Knopf das Formular
+ab — und der Cursor springt nach dem Umschalten ans Ende zurück, sonst
+tippt man mitten ins eigene Passwort. Beim Wechsel zwischen den Reitern
+wird wieder verborgen; auf einem Studio-Tablet schaut der Nächste mit.
+
+### 🔴 Die Selbstregistrierung war nie erreichbar
+
+Beim Bauen des Passwort-Tests aufgefallen und deshalb hier festgehalten,
+weil es peinlich ist: **`setAuthMode('register')` wurde nirgends
+aufgerufen.** Das Formular stand auf `display:none`, es gab keine Reiter,
+und die CSS-Klasse `.auth-tab` existierte ohne ein einziges Element dazu.
+
+Der ganze Beitritts-Mechanismus aus Sitzung 18 — Firmencode, Freigabe,
+Wartebildschirm, Freigabe-Karte für den Chef — war gebaut, geprüft, mit
+52 Regeltests abgesichert **und für keinen Menschen erreichbar.** Zwei
+Tests haben es nicht gemerkt, weil sie `if (t) t.click()` schrieben: kein
+Element, kein Klick, kein Fehler.
+
+Jetzt gibt es die Reiter, und sie erscheinen **nur**, wenn der Chef einen
+Firmencode gesetzt oder die Freigabe eingeschaltet hat. Ohne wenigstens
+eine Schranke bleibt es beim Satz „Dein Chef legt dein Konto an" — ein
+Formular anzubieten, das die Regeln danach abweisen, wäre schlimmer als
+keins.
+
+### Geprüft
+
+**38 UI-Durchläufe** (von 36) und **61 Regeltests** — alle grün.
+
+`tests/test-standorte.js` prüft, was Daten kosten könnte: dass ohne
+Dokument weiter `konfig.js` gilt, dass ein umbenanntes Studio seine
+Kennung behält, dass ein neues die nächste freie bekommt, dass ein
+geschlossenes aus den Auswahllisten verschwindet aber in der Liste
+bleibt — und dass es keinen Löschen-Knopf gibt.
+
+`tests/test-passwort.js` drückt das Auge, prüft Cursorstellung,
+Knopftyp, 44 Pixel bei 320 px Breite und dass nach dem Reiterwechsel
+nichts im Klartext stehen bleibt.
+
+**Nicht gebaut und ausdrücklich offen:** E-Mail-Bestätigung, der
+ansprechendere Anmeldebildschirm, das Rechtliche — und der eigene Code je
+Chef, der Stufe 2 braucht.
+
+
+---
+
+## Sitzung 22 · Der Rest der Liste 🟢
+
+### Anmeldebildschirm
+
+Der gleitende Marker sitzt jetzt auch auf den Anmeldereitern — **fünf
+Stellen, eine Bewegung**: untere Leiste, Gruppenreiter, Kanalreihe,
+Verwaltung, Anmeldung. Dazu ein dritter Farbfleck im Hintergrund, die
+Felder laufen einzeln statt als Block ein, und das Feld, in dem man
+gerade schreibt, hebt sich leicht heraus — auf einem Handy mit
+aufgeklappter Tastatur oft der einzige Anhaltspunkt, wo man ist.
+
+### E-Mail-Bestätigung
+
+Beim Anlegen geht eine Bestätigungsmail raus. In der App steht eine
+Leiste, solange die Adresse unbestätigt ist, mit „Mail erneut senden".
+
+**Bewusst keine Sperre.** Eine Bestätigungsmail landet regelmäßig im Spam
+oder kommt bei Firmen-Postfächern gar nicht an. Wer die App darauf
+sperrt, sperrt im Zweifel ein ganzes Studio-Team aus, das gerade
+arbeitet. Die Schranke, die wirklich schützt, ist die Freigabe durch den
+Chef — **und der sieht jetzt in der Freigabe-Karte, ob die Adresse
+bestätigt ist**, bevor er entscheidet.
+
+Das musste über eine Cloud Function laufen (`mailStatus`). Der Grund
+steht im Code: `emailVerified` liegt in Firebase Auth, und ein Client
+kann es nur für sich selbst lesen. Ein Feld „bestätigt: ja" im eigenen
+Profil könnte man selbst hineinschreiben — genau da, wo die Angabe zählen
+soll, wäre sie wertlos.
+
+Die Leiste lässt sich wegklicken, das merkt sich das Gerät sieben Tage.
+Ein Hinweis, den man einmal wegwischt und nie wiedersieht, ist kein
+Hinweis.
+
+### Rechtliches
+
+Impressum und Datenschutz als Fenster, **auch ohne Anmeldung erreichbar**
+— ein Impressum hinter einem Login ist keins. Der Inhalt kommt aus
+`konfig.js` unter `recht:`, ist also je Kunde austauschbar wie Studios
+und Farben.
+
+**Fehlt eine Pflichtangabe, steht das rot über dem Text**, und der Chef
+sieht zusätzlich eine Warnkarte in *Verwaltung → System*. Eine App, die
+eine leere Seite „Impressum" nennt, sieht erledigt aus — das ist
+gefährlicher als gar keine Seite.
+
+Der Datenschutztext beschreibt, was die App **tatsächlich** tut, und ist
+am Programm nachprüfbar: welche Felder gespeichert werden, dass
+Sprachaufnahmen und Krankmeldungen dabei sind, Region europe-west1,
+Aufbewahrungsfristen, wer was sieht. Im Text steht ausdrücklich:
+*„Er ist keine anwaltlich geprüfte Datenschutzerklärung."*
+
+`RECHT.md` hält die Grenze fest. Kurzfassung: die vier Pflichtfelder sind
+fünf Minuten Arbeit. Die Texte durchsehen, die Absprache mit dem Team zu
+Anwesenheitszeiten und Krankmeldungen, das Verarbeitungsverzeichnis und —
+**sobald ein Kunde dazukommt** — die Auftragsverarbeitung gehören einem
+Anwalt. Drei Punkte hebe ich dort hervor, weil sie im Arbeitsverhältnis
+regelmäßig Rückfragen auslösen: Krankmeldungen sind Gesundheitsdaten,
+die Anwesenheitsanzeige liest sich als Kontrolle, und Stimme ist ein
+biometrisches Merkmal.
+
+### 🔴 Der Regressionslauf prüfte 9 von 38 Durchläufen
+
+Der schwerste Fund dieser Sitzung, und er betrifft mich.
+
+Nach dem Rebase gab `test-navigation.js` aus: *„Chef sieht 7 statt 6
+Kacheln"* — und mein Regressionslauf hatte kurz vorher „alles grün"
+gemeldet. Grund: der Läufer war ein Einzeiler, der nur den Exit-Code
+prüfte. **29 der 38 Durchläufe geben aber gar keinen.** Sie schreiben
+„Fehler: …" in die Ausgabe und beenden sich mit 0.
+
+Faktisch geprüft waren neun Durchläufe, gemeldet achtunddreißig.
+
+Der siebte kaputte Messfühler in diesem Audit — und der einzige, der
+nicht einen falschen Befund erzeugt, sondern eine **Zusage gedeckt hat,
+die es nicht gab.** Die „alle grün"-Meldungen aus Sitzung 19 bis 21 waren
+in dieser Form nicht belegt. Ob damals etwas stumm rot war, lässt sich
+rückwirkend nicht mehr sagen; der Lauf von heute deckt den aktuellen
+Stand ab, und der enthält alle Änderungen von damals.
+
+Behoben:
+
+| | |
+|---|---|
+| `tests/alle.sh` | kennt vier Fehlersignale statt einem — Exit-Code, `✗`, `Fehler:` mit Inhalt, `PAGEERROR` — und meldet Durchläufe, die **gar nichts** ausgeben |
+| alle 38 Durchläufe | setzen jetzt einen Exit-Code |
+| `test-navigation.js` | die feste Zahl 6 ist raus; geprüft wird, dass jeder erwartete Reiter genau eine Kachel hat und keine doppelt ist |
+
+Der Befund selbst war harmlos — durch den neuen Studios-Reiter sind es
+sieben Kacheln. Aber das wusste ich erst, nachdem ich hingesehen habe.
+
+### Geprüft
+
+`tests/test-recht.js` — Impressum und Datenschutz ohne Anmeldung
+erreichbar · Warnung bei fehlenden Pflichtangaben · Angaben stehen drin,
+wenn sie da sind · `role="dialog"` und Escape · E-Mail-Leiste erscheint
+und lässt sich wegklicken. **Nicht geprüft und deshalb nicht behauptet:
+ob die Texte rechtlich vollständig sind.** Das kann kein Test
+beantworten.
+
+Dabei kam noch ein Fund heraus: das Dialog-System lief erst **nach** dem
+Login. Der Anmeldebildschirm hatte also weder `role="dialog"` noch
+Escape — beim Rechtliches-Fenster fällt das auf, weil es dort steht.
+
+`tests/stub-ohne-login.js` ist neu: eine Firebase-Attrappe, die
+*niemanden* anmeldet. `stub-chef.js` meldet sofort einen Chef an, damit
+kommt man nie an den Anmeldebildschirm — und genau das hat verdeckt, dass
+die Selbstregistrierung nie erreichbar war.
+
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf

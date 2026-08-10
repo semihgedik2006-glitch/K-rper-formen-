@@ -105,7 +105,24 @@ const ansicht = page => page.evaluate(() => {
       reiterVersteckt: document.getElementById('chefBar').style.display === 'none',
     }));
     console.log('VERWALTUNG:', JSON.stringify(uebersicht, null, 1));
-    if (uebersicht.kacheln.length !== 6) errs.push('Chef sieht ' + uebersicht.kacheln.length + ' statt 6 Kacheln');
+    // Feste Zahl war ein schlechter Test: sie schlaegt bei jedem neuen
+    // Reiter fehl und sagt nichts darueber, ob die Uebersicht STIMMT.
+    // Geprueft wird jetzt, dass jeder Reiter aus CHEFTABS genau eine
+    // Kachel hat und keine doppelt ist.
+    const ERWARTET = ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise',
+                      'Auswertung', 'System'];
+    ERWARTET.forEach(function (w) {
+      if (!uebersicht.kacheln.some(function (k) { return k.indexOf(w) >= 0; })) {
+        errs.push('Kachel „' + w + '" fehlt in der Verwaltung');
+      }
+    });
+    if (uebersicht.kacheln.length !== ERWARTET.length) {
+      errs.push('Chef sieht ' + uebersicht.kacheln.length + ' Kacheln, erwartet ' +
+        ERWARTET.length + ': ' + uebersicht.kacheln.join(', '));
+    }
+    if (new Set(uebersicht.kacheln).size !== uebersicht.kacheln.length) {
+      errs.push('Eine Kachel steht doppelt: ' + uebersicht.kacheln.join(', '));
+    }
     if (!uebersicht.reiterVersteckt) errs.push('Reiterleiste ist auf der Uebersicht sichtbar');
     if (!uebersicht.zahlen.length) errs.push('Keine Kachel zeigt eine Zahl');
 
@@ -157,4 +174,5 @@ const ansicht = page => page.evaluate(() => {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

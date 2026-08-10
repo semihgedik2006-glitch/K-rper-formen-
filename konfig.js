@@ -76,7 +76,40 @@
     putzWegNachStunden: 24,
 
     /* Größte Kantenlänge für Fotos, die in der Datenbank landen. */
-    bildMaxKante: 1280
+    bildMaxKante: 1280,
+
+    /* ── Rechtliches ────────────────────────────────────────────────────
+       ACHTUNG: Solange hier etwas fehlt, zeigt die App im Rechtliches-
+       Fenster einen deutlichen Hinweis, und der Chef sieht in
+       Verwaltung → System eine Warnung. Das ist Absicht: eine App, die
+       ein leeres Impressum als fertiges anzeigt, ist schlimmer als eine
+       ohne.
+
+       WAS ICH NICHT LEISTEN KANN: die Texte selbst. Ein Impressum nach
+       § 5 DDG und eine Datenschutzerklärung nach Art. 13 DSGVO müssen zu
+       EUREM Betrieb passen und gehören vor den ersten fremden Nutzer
+       einmal anwaltlich durchgesehen. Was hier steht, ist ein Gerüst,
+       kein Rechtstext. Siehe RECHT.md.
+
+       Beim Verkauf an einen Kunden wird dieser Block ausgetauscht – wie
+       alles andere in dieser Datei auch. */
+    recht: {
+      /* Impressum – Pflichtangaben nach § 5 DDG */
+      betreiber: '',          // z. B. 'Körperformen Köln GmbH'
+      anschrift: '',          // Straße, PLZ, Ort – ein Postfach genügt NICHT
+      vertreten: '',          // Geschäftsführer / Inhaber
+      telefon: '',
+      email: '',              // muss existieren und gelesen werden
+      register: '',           // z. B. 'Amtsgericht Köln, HRB 12345'
+      ustId: '',              // falls vorhanden
+
+      /* Datenschutz */
+      datenschutzKontakt: '', // Ansprechpartner oder Datenschutzbeauftragter
+      /* Zusätzliche Absätze, die nur ihr kennt – etwa eine
+         Videoüberwachung im Studio oder ein Zeiterfassungssystem.
+         Jeder Eintrag wird als eigener Absatz angezeigt. */
+      zusatz: []
+    }
   };
 
   global.KONFIG = KONFIG;
