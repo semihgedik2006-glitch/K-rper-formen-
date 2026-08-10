@@ -5872,6 +5872,15 @@ function enterApp(uid, data){
   if(session || !data) return;
   if(wartetAufFreigabe(data)){ zeigeWarten(uid); return; }
   session = Object.assign({ uid:uid }, data);
+  /* ── Zu welcher Firma gehört dieses Konto? ──
+     Stufe 2B. Solange KONFIG.mandant false ist, bleibt _firma null und
+     S() liefert die flachen Pfade wie bisher — das ist der heutige
+     Zustand und ändert nichts.
+
+     Ein bestehendes Konto hat kein Feld "firma". Es gilt dann als zur
+     Firma aus konfig.js gehörig. Ohne diesen Rückfall stünde nach dem
+     Umschalten das ganze Team vor einer leeren App. */
+  _firma = KONFIG.mandant ? (session.firma || KONFIG.firma || null) : null;
   session.studios = (session.studios && session.studios.length)
     ? session.studios : (session.studio ? [session.studio] : []);
   session.studioKeys = session.studios.map(studioKey);
@@ -7191,6 +7200,10 @@ function stopListeners(){
   _allUsers=[]; _employees=[]; _invAll={}; _certs=[];
   // Sonst startet der nächste Anmelder die nachgeladenen Beobachter nie
   _certGeladen=false; _trashGeladen=false; _archGeladen=false;
+  /* In den Studios teilen sich mehrere Leute ein Gerät. Bliebe _firma
+     stehen, läse der Nächste die Daten der Firma seines Vorgängers —
+     bis sein eigenes Profil geladen ist. */
+  _firma = null;
 }
 
 /* Chat: wechselt bei Kanalwechsel */

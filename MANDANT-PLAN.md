@@ -136,6 +136,40 @@ users/{uid}                                 bleibt OBEN
 beitritt/{uid}                              bleibt OBEN
 ```
 
+### ⚠ Die Lücke, die beim Bauen aufgefallen ist
+
+**Vor dem Anmelden weiß die App nicht, zu welcher Firma sie gehört.**
+
+Das klingt banal, ist aber der Punkt, an dem der Entwurf oben nicht
+aufgeht. Drei Dinge braucht der Anmeldebildschirm, **bevor** jemand
+eingeloggt ist:
+
+| | wofür |
+|---|---|
+| `config/studios` | die Studios zum Ankreuzen bei der Selbstanmeldung |
+| `config/beitrittSchalter` | ob überhaupt ein Reiter „Konto anlegen" erscheint |
+| Firmenname und Farbe | damit Müller nicht „Körperformen" auf dem Anmeldebildschirm liest |
+
+Alle drei liegen künftig unter `firmen/{f}/…` — und `{f}` ist genau das,
+was noch niemand weiß.
+
+**Das ist keine Kleinigkeit.** Es ist die Frage, wie ein Kunde seine
+eigene App überhaupt erreicht. Drei Wege, und sie unterscheiden sich
+nicht nur technisch:
+
+| Weg | wie es aussieht | Aufwand | Haken |
+|---|---|---|---|
+| **Eigene Adresse je Kunde** | `mueller.studiochat.de` | Domain + Wildcard-Zertifikat | wirkt am professionellsten, kostet eine Domain |
+| **Kennung im Link** | `studiochat.de/?firma=mueller` | fast keiner | sieht nach Bastellösung aus, und wer die Kennung wegnimmt, sieht nichts |
+| **Firma wählen** | eine Liste auf dem Anmeldebildschirm | klein | **verrät jedem Besucher, wer deine Kunden sind** |
+
+Der dritte Weg fällt für mich aus: eure Kundenliste gehört nicht auf
+einen öffentlichen Anmeldebildschirm.
+
+**Das muss entschieden sein, bevor Stufe 2B fertig gebaut werden kann** —
+davon hängt ab, wie die Regeln für die drei Dokumente oben aussehen und
+ob sie überhaupt ohne Anmeldung lesbar sein dürfen.
+
 ### Warum `users` oben bleibt
 
 Beim Anmelden weiß die App noch nicht, zu welcher Firma jemand gehört —
@@ -474,7 +508,7 @@ ausgerollt werden kann:
 | | Was | Risiko |
 |---|---|---|
 | **A** ✅ | Alle Zugriffe laufen über **eine** Funktion `S()`, die vorerst die heutigen Pfade zurückgibt | keins — Verhalten identisch |
-| **B** | `firma` am Konto, `S()` schaltet um, Regeln, Kreuztests | mittel, noch ohne Live-Daten |
+| **B** | `firma` am Konto ✅, Schalter ✅, Regeln + Kreuztests ⏸ | mittel, noch ohne Live-Daten |
 | **C** | Umzugs-Function, Probelauf, Live-Umzug | **hoch** |
 | **D** | Admin-Oberfläche | keins |
 

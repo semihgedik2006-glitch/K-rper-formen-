@@ -78,6 +78,26 @@
     /* Größte Kantenlänge für Fotos, die in der Datenbank landen. */
     bildMaxKante: 1280,
 
+    /* ── Mehrere Firmen (Stufe 2 aus MANDANT-PLAN.md) ──────────────────
+       AUS lassen, bis der Umzug der Daten gelaufen ist.
+
+       Bei false liegen die Daten flach: studios/…, channels/…, config/…
+       Bei true liegen sie unter firmen/<kennung>/…
+
+       Der Schalter und der Umzug gehören ZUSAMMEN. Wer ihn umlegt, ohne
+       dass die Daten umgezogen sind, bekommt eine leere App — die Pfade
+       zeigen dann auf Sammlungen, die es noch nicht gibt. Das ist der
+       harmlose Fall. Der umgekehrte, Umzug ohne Schalter, lässt die App
+       weiter auf den alten Daten arbeiten, während die neuen veralten;
+       auch nicht gut. Deshalb: beides in einem Schritt, und vorher der
+       Probelauf (PROBELAUF-EINRICHTEN.md). */
+    mandant: false,
+
+    /* Kennung DIESER Firma. Zählt nur, wenn mandant:true ist.
+       Bestehende Konten ohne Feld "firma" gelten als zu dieser Firma
+       gehörig — sonst wäre nach dem Umschalten niemand mehr drin. */
+    firma: 'koerperformen',
+
     /* ── Rechtliches ────────────────────────────────────────────────────
        ACHTUNG: Solange hier etwas fehlt, zeigt die App im Rechtliches-
        Fenster einen deutlichen Hinweis, und der Chef sieht in
