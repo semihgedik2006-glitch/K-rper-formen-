@@ -1,139 +1,152 @@
 # Echte Daten ins Probe-Projekt holen
 
-Zweiter Teil der Vorbereitung für Stufe C. Das Projekt `formenchat-probe`
-steht — jetzt kommt eine Kopie eures Bestands hinein, damit der Umzug an
-echten Daten geprobt wird und nicht an erfundenen.
+Zweiter Teil der Vorbereitung für Stufe C. Eine Kopie eures Bestands
+kommt nach `formenchat-probe`, damit der Umzug an echten Daten geprobt
+wird und nicht an erfundenen.
 
 **Warum echte Daten:** euer Bestand hat Eigenheiten aus Monaten Betrieb,
 die ich nicht erfinden kann — Studios ohne Elterndokument, alte
-Datensätze aus früheren Fassungen, Nachrichten mit Anhängen. Genau die
-sollen gefunden werden. Ein selbstgebauter Testbestand prüft nur, ob mein
-Programm zu meiner Vorstellung passt.
+Datensätze aus früheren Fassungen. Genau die sollen gefunden werden.
 
-**Zeitbedarf:** 15 bis 25 Minuten, das meiste Wartezeit.
-**Kosten:** ein paar Cent für den Import.
+**Zeitbedarf:** 10 bis 20 Minuten, das meiste Wartezeit.
 **Risiko für `formenchat`:** keins. Es wird nur **gelesen**.
 
 ---
 
-## Schritt 0 — was ihr schon habt
+## Der Weg: Cloud Shell
 
-Ihr braucht **keinen neuen Export.** Die nächtliche Sicherung schreibt
-seit dem 9. August jede Nacht einen vollständigen Firestore-Export nach:
+Ich hatte dir vorher tiefe Links in die Cloud-Konsole gegeben. Die ändern
+sich ständig und funktionieren oft nicht — mein Fehler.
+
+Stattdessen **Cloud Shell**: ein Terminal, das im Browser läuft und schon
+bei deinem Google-Konto angemeldet ist. Nichts installieren, nichts
+suchen. Du kopierst vier Befehle hinein, fertig.
+
+### Cloud Shell öffnen
+
+1. **[console.cloud.google.com](https://console.cloud.google.com)** öffnen
+2. Oben rechts in der blauen Leiste auf das Symbol **`>_`**
+   *(Kurztipp: heißt beim Draufzeigen „Cloud Shell aktivieren")*
+3. Unten öffnet sich ein schwarzes Fenster. Beim ersten Mal fragt es
+   „Cloud Shell autorisieren" → **Autorisieren**
+
+Das war's. Alles Weitere ist Kopieren und Einfügen.
+
+> **Einfügen** geht mit `Strg + V`, auf dem Mac `Cmd + V`. Nach jedem
+> Block **Enter** drücken und warten, bis wieder ein Eingabezeichen
+> erscheint.
+
+---
+
+## Schritt 1 — welche Sicherungen gibt es?
+
+```bash
+gcloud storage ls gs://formenchat.firebasestorage.app/sicherung/
+```
+
+Es kommt eine Liste wie:
 
 ```
-gs://formenchat.firebasestorage.app/sicherung/JJJJ-MM-TT
+gs://formenchat.firebasestorage.app/sicherung/2026-08-10/
+gs://formenchat.firebasestorage.app/sicherung/2026-08-11/
 ```
 
-Genau dieses Format liest der Import. Ihr importiert also die Sicherung
-von letzter Nacht.
-
-**Nachsehen, welche da sind:**
-[console.cloud.google.com/storage/browser](https://console.cloud.google.com/storage/browser)
-→ Projekt `formenchat` → Bucket `formenchat.firebasestorage.app` →
-Ordner `sicherung/`
-
-Merk dir den Ordnernamen der neuesten, z. B. `2026-08-11`.
-
-> Wenn dort nichts liegt: in der App unter *Verwaltung → System →
-> Zusätzlich sichern* einmal von Hand auslösen. Das legt
-> `sicherung/manuell-<Zeitstempel>` an, das geht genauso.
+**Merk dir die neueste** (unten). Falls die Liste leer ist: in der App
+unter *Verwaltung → System → Zusätzlich sichern* einmal auslösen und
+diesen Schritt wiederholen.
 
 ---
 
-## Schritt 1 — das Probe-Projekt darf den Ordner lesen
+## Schritt 2 — das Probe-Projekt darf lesen
 
-Das ist die Stelle, an der es klemmt, wenn man sie überspringt. Der
-Import läuft **im Probe-Projekt**, die Datei liegt aber im Bucket von
-`formenchat`. Ohne Leserecht bricht er mit `PERMISSION_DENIED` ab —
-dieselbe Meldung wie damals bei der Sicherung.
+Der Import läuft **in `formenchat-probe`**, die Datei liegt aber im
+Bucket von **`formenchat`**. Ohne Leserecht bricht er ab.
 
-1. [console.cloud.google.com/storage/browser](https://console.cloud.google.com/storage/browser)
-   → Projekt **`formenchat`**
-2. Bei `formenchat.firebasestorage.app` rechts auf die **drei Punkte** →
-   **Zugriff bearbeiten** *(oder: Bucket öffnen → Reiter **BERECHTIGUNGEN**)*
-3. **Zugriff erteilen**
-4. Bei **Neue Hauptkonten** genau das hier einfügen:
+Beide Zeilen zusammen kopieren und einfügen:
 
-   ```
-   service-692000066621@gcp-sa-firestore.iam.gserviceaccount.com
-   ```
+```bash
+gcloud storage buckets add-iam-policy-binding gs://formenchat.firebasestorage.app \
+  --member=serviceAccount:service-692000066621@gcp-sa-firestore.iam.gserviceaccount.com \
+  --role=roles/storage.objectViewer --project=formenchat
 
-   > Das ist der Dienst-Vertreter, mit dem Firestore in **deinem
-   > Probe-Projekt** arbeitet. Die Nummer 692000066621 ist die
-   > Projektnummer von `formenchat-probe` — sie stand in der
-   > `firebaseConfig`, die du mir geschickt hast, als
-   > `messagingSenderId`.
+gcloud storage buckets add-iam-policy-binding gs://formenchat.firebasestorage.app \
+  --member=serviceAccount:service-692000066621@gcp-sa-firestore.iam.gserviceaccount.com \
+  --role=roles/storage.legacyBucketReader --project=formenchat
+```
 
-5. Zwei Rollen vergeben:
-   - **Storage-Objekt-Betrachter** (`Storage Object Viewer`)
-   - **Storage Legacy Bucket Reader**
+**Beide braucht es wirklich.** Die erste erlaubt, einzelne Dateien zu
+lesen. Die zweite, den Ordner aufzulisten. Fehlt die zweite, bricht der
+Import mit einer Meldung ab, die nach etwas ganz anderem klingt.
 
-   Die zweite wird gern vergessen. Ohne sie kann der Import die einzelnen
-   Dateien lesen, aber den Ordner nicht auflisten — und bricht mit einer
-   Meldung ab, die nach etwas anderem klingt.
+> Die Nummer `692000066621` ist die Projektnummer von `formenchat-probe`.
+> Sie stand in der `firebaseConfig`, die du mir geschickt hast, als
+> `messagingSenderId` — du musst sie nirgends nachschlagen.
 
-6. **Speichern**
-
-> **Bekommt das Probe-Projekt damit Zugriff auf eure Daten?** Ja — Lesezugriff
-> auf diesen einen Bucket. Das ist der Zweck. Rückgängig machen kannst du
-> es hinterher an derselben Stelle, und ich würde es auch empfehlen, sobald
-> der Probelauf durch ist.
+Erfolg sieht so aus: eine Ausgabe, die mit `bindings:` anfängt und
+mehrere Zeilen lang ist. Eine Warnung über „etag" ist normal.
 
 ---
 
-## Schritt 2 — importieren
+## Schritt 3 — importieren
 
-1. [console.cloud.google.com/firestore/import-export](https://console.cloud.google.com/firestore/import-export)
-2. Oben Projekt auf **`formenchat-probe`** umstellen — **bitte zweimal
-   hinsehen.** Ein Import in das falsche Projekt würde eure echten Daten
-   überschreiben. Es ist die einzige Stelle in dieser Anleitung, an der
-   etwas kaputtgehen kann.
-3. **Importieren**
-4. Bei **Dateiname** den Pfad zur Metadatendatei eintragen:
+**Das Datum anpassen** auf die neueste Sicherung aus Schritt 1:
 
-   ```
-   formenchat.firebasestorage.app/sicherung/2026-08-11/2026-08-11.overall_export_metadata
-   ```
+```bash
+gcloud firestore import gs://formenchat.firebasestorage.app/sicherung/2026-08-11 \
+  --project=formenchat-probe
+```
 
-   *(Datum anpassen. Über **Durchsuchen** kannst du die Datei auch
-   auswählen — dann stimmt der Name sicher.)*
+> ⚠ **Der einzige Schritt, bei dem etwas kaputtgehen kann.** Hinter
+> `--project=` muss **`formenchat-probe`** stehen. Stünde dort
+> `formenchat`, würde eure echte Datenbank überschrieben. Lies die Zeile
+> einmal, bevor du Enter drückst.
 
-5. **Importieren** → je nach Menge 5 bis 20 Minuten
+Die Antwort ist so etwas wie:
 
-Der Fortschritt steht auf derselben Seite unter **Aktuelle Vorgänge**.
+```
+Waiting for [projects/formenchat-probe/.../operations/...] to finish...
+```
+
+Je nach Menge 5 bis 20 Minuten. Das Fenster kann offen bleiben.
+
+**Wenn du nicht warten willst:** `Strg + C` bricht nur das *Warten* ab,
+nicht den Import. Nachsehen mit:
+
+```bash
+gcloud firestore operations list --project=formenchat-probe --limit=1
+```
+
+Steht dort `done: true`, ist er durch.
 
 ---
 
-## Schritt 3 — nachsehen, ob es angekommen ist
+## Schritt 4 — nachsehen
 
 [console.firebase.google.com](https://console.firebase.google.com) →
 `formenchat-probe` → **Firestore Database**
 
-Dort sollten jetzt die bekannten Sammlungen stehen: `users`, `channels`,
-`studios`, `documents`, `announcements` und die anderen. Wirf einen Blick
-in `studios` — dort müssten `studio-0` bis `studio-13` liegen, viele
-davon **grau dargestellt**. Grau heißt: das Dokument selbst existiert
-nicht, nur seine Untersammlungen.
+Dort sollten die bekannten Sammlungen stehen: `users`, `channels`,
+`studios`, `documents`, `announcements`.
 
-**Genau die sind der Grund für den Probelauf.** Sie sind die Stelle, an
-der ein Umzug lautlos die Hälfte verliert, und der Test dafür ist schon
-grün — aber an erfundenen Daten.
+Wirf einen Blick in **`studios`**. Dort müssten `studio-0` bis
+`studio-13` liegen, **viele davon grau**. Grau heißt: das Dokument
+selbst existiert nicht, nur seine Untersammlungen.
+
+**Genau die sind der Grund für den Probelauf.** Dort verliert ein Umzug
+lautlos die Hälfte, wenn er falsch gebaut ist. Mein Test dafür ist grün —
+aber an erfundenen Daten.
 
 ---
 
-## Schritt 4 — mir Bescheid geben
-
-Schick mir:
+## Schritt 5 — mir Bescheid geben
 
 | | |
 |---|---|
 | 1 | „Import durch" |
-| 2 | die Zahl, die in Firestore unter **Nutzung** als Dokumentenanzahl steht (grobe Angabe genügt) |
+| 2 | die Ausgabe von Schritt 1 (welche Sicherung du genommen hast) |
 
-Dann lasse ich den Umzug im Probe-Projekt laufen — erst mit `--probe`,
-das schreibt nichts und zählt nur, danach richtig, mit Zählprüfung
-hinterher.
+Dann lasse ich den Umzug laufen: erst mit `--probe`, das schreibt nichts
+und zählt nur, danach richtig mit Zählprüfung.
 
 ---
 
@@ -141,14 +154,33 @@ hinterher.
 
 | Meldung | was dahintersteckt |
 |---|---|
-| `PERMISSION_DENIED` beim Import | Schritt 1 fehlt oder eine der beiden Rollen |
-| „Bucket does not exist" | Bucketname vertippt — er heißt `formenchat.firebasestorage.app`, ohne `gs://` |
-| „not a valid export" | die `.overall_export_metadata` fehlt im Pfad; eine einzelne Sammlungsdatei genügt nicht |
-| Import läuft ewig | normal bei mehreren tausend Dokumenten; die Seite zeigt den Fortschritt |
+| `PERMISSION_DENIED` | Schritt 2 fehlt oder nur eine der beiden Rollen |
+| `NOT_FOUND` beim Bucket | Tippfehler — er heißt `formenchat.firebasestorage.app` |
+| `does not contain a valid export` | falscher Ordner. Der Pfad endet auf das **Datum**, nicht auf eine Datei darin |
+| `The caller does not have permission` bei Schritt 2 | dein Google-Konto ist bei `formenchat` nicht Inhaber. In der Cloud-Konsole unter *IAM* nachsehen |
+| Cloud Shell sagt „Projekt nicht gesetzt" | egal — bei jedem Befehl steht `--project` dabei |
 
-Melde dich auch **mittendrin**, wenn du unsicher bist. Der einzige Schritt
-mit echtem Schadenspotential ist Nummer 2 — dort wird in ein Projekt
-geschrieben, und es muss `formenchat-probe` sein.
+Melde dich auch **mittendrin**. Lieber eine Zwischenfrage als ein Import
+ins falsche Projekt.
+
+---
+
+## Wenn du lieber klickst
+
+Es geht auch ohne Terminal, aber mit mehr Suchen:
+
+1. Cloud-Konsole → oben links Projekt auf **`formenchat-probe`** stellen
+2. Im Suchfeld ganz oben **„Firestore"** eingeben → **Firestore** öffnen
+3. Links im Menü **Import/Export**
+4. **Importieren** → **Durchsuchen** → Bucket
+   `formenchat.firebasestorage.app` → Ordner `sicherung` → das Datum →
+   die Datei, die auf `.overall_export_metadata` endet
+5. **Importieren**
+
+Schritt 2 von oben (die Leserechte) brauchst du trotzdem — den kannst du
+über *Cloud Storage → Buckets → `formenchat.firebasestorage.app` →
+Berechtigungen → Zugriff erteilen* geben, mit derselben Adresse und
+denselben zwei Rollen.
 
 ---
 
@@ -157,8 +189,7 @@ geschrieben, und es muss `formenchat-probe` sein.
 1. Umzug im Probe-Projekt, erst `--probe`, dann richtig
 2. Zählprüfung: jede Sammlung vorher und nachher gleich viele Dokumente
 3. Die 40 UI-Durchläufe gegen die umgezogenen Daten
-4. Eine zweite Testfirma anlegen und die Kreuztests dort scharf laufen
-   lassen — bisher laufen sie gegen erfundene Firmen
-5. Erst dann der Live-Umzug bei euch. Und auch der ist eine **Kopie**:
-   die alten Daten bleiben 30 Tage liegen, der Rückweg ist die
-   vorherige App-Fassung.
+4. Eine zweite Testfirma anlegen, Kreuztests dort scharf laufen lassen
+5. Erst dann der Live-Umzug — und auch der ist eine **Kopie**: die alten
+   Daten bleiben 30 Tage liegen, der Rückweg ist die vorherige
+   App-Fassung
