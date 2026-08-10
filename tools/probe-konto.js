@@ -27,7 +27,7 @@ const arg = k => { const i = process.argv.indexOf(k); return i > 0 ? process.arg
 
 const projekt = arg('--projekt');
 const email = arg('--email');
-const uid = arg('--uid');
+let uid = arg('--uid');
 
 if (!projekt) {
   console.error('Aufruf: node tools/probe-konto.js --projekt <projekt> --email <adresse> [--uid <kennung>]');
@@ -95,12 +95,24 @@ const db = admin.firestore();
   console.log('Gefunden: ' + (alt.data().name || '(ohne Namen)') +
     ' · ' + (alt.data().role || '?') + ' · alte Kennung ' + alt.id);
 
-  if (!uid) {
-    console.log('\nOhne --uid wird nichts geschrieben.');
-    console.log('Die neue Kennung steht in der Firebase-Konsole unter');
-    console.log('Authentication → Nutzer → Spalte "Nutzer-UID".');
-    process.exit(0);
+  /* Die neue Kennung selbst holen, statt sie abtippen zu lassen.
+     Genau dabei ist es beim ersten Versuch schiefgegangen: eine
+     36-Zeichen-Kennung, die mit dem Platzhalter aus meinem Beispiel
+     anfing. Firebase weiss die Antwort — also fragen wir Firebase. */
+  let ziel = uid;
+  if (!ziel) {
+    try {
+      const konto = await admin.auth().getUserByEmail(email);
+      ziel = konto.uid;
+      console.log('Anmeldekonto in ' + projekt + ': ' + ziel);
+    } catch (e) {
+      console.error('\nKein Anmeldekonto für ' + email + ' in ' + projekt + '.');
+      console.error('Erst anlegen: Firebase-Konsole → Authentication → Nutzer hinzufügen.');
+      console.error('(Fehler: ' + (e && e.code ? e.code : e) + ')');
+      process.exit(1);
+    }
   }
+  uid = ziel;
   if (uid === alt.id) {
     console.log('\nDie Kennung stimmt bereits überein — nichts zu tun.');
     process.exit(0);
