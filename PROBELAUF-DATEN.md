@@ -38,6 +38,40 @@ Das war's. Alles Weitere ist Kopieren und Einfügen.
 
 ---
 
+## Schritt 0 — gibt es die Datenbank überhaupt?
+
+**Das muss zuerst stimmen, sonst scheitert alles Weitere** — und zwar mit
+Meldungen, die nach etwas anderem klingen.
+
+```bash
+gcloud firestore databases list --project=formenchat-probe
+```
+
+Kommt eine Zeile mit `(default)` und `europe-west1`: weiter mit Schritt 1.
+
+Kommt `NOT_FOUND` oder eine leere Liste, fehlt die Datenbank. Anlegen:
+
+```bash
+gcloud firestore databases create \
+  --location=europe-west1 \
+  --type=firestore-native \
+  --project=formenchat-probe
+```
+
+> ⚠ **`europe-west1` lässt sich nie wieder ändern** und muss dasselbe
+> sein wie bei `formenchat`. Sonst prüft der Probelauf eine andere Welt.
+
+### Warum das zuerst kommen muss
+
+Der Dienst-Vertreter, dem in Schritt 2 die Leserechte gegeben werden,
+`service-…@gcp-sa-firestore.iam.gserviceaccount.com`, **entsteht erst,
+wenn Firestore im Projekt zum ersten Mal benutzt wird.** Ohne Datenbank
+gibt es ihn nicht, und Schritt 2 antwortet mit
+`Service account … does not exist` — was klingt, als stimme die Adresse
+nicht, obwohl sie richtig ist.
+
+---
+
 ## Schritt 1 — welche Sicherungen gibt es?
 
 ```bash
@@ -48,7 +82,7 @@ Es kommt eine Liste wie:
 
 ```
 gs://formenchat.firebasestorage.app/sicherung/2026-08-10/
-gs://formenchat.firebasestorage.app/sicherung/2026-08-11/
+gs://formenchat.firebasestorage.app/sicherung/2026-08-10/
 ```
 
 **Merk dir die neueste** (unten). Falls die Liste leer ist: in der App
@@ -92,7 +126,7 @@ mehrere Zeilen lang ist. Eine Warnung über „etag" ist normal.
 **Das Datum anpassen** auf die neueste Sicherung aus Schritt 1:
 
 ```bash
-gcloud firestore import gs://formenchat.firebasestorage.app/sicherung/2026-08-11 \
+gcloud firestore import gs://formenchat.firebasestorage.app/sicherung/2026-08-10 \
   --project=formenchat-probe
 ```
 
@@ -158,6 +192,9 @@ und zählt nur, danach richtig mit Zählprüfung.
 | `NOT_FOUND` beim Bucket | Tippfehler — er heißt `formenchat.firebasestorage.app` |
 | `does not contain a valid export` | falscher Ordner. Der Pfad endet auf das **Datum**, nicht auf eine Datei darin |
 | `The caller does not have permission` bei Schritt 2 | dein Google-Konto ist bei `formenchat` nicht Inhaber. In der Cloud-Konsole unter *IAM* nachsehen |
+| `Service account service-…@gcp-sa-firestore… does not exist` | **Schritt 0 fehlt.** Die Datenbank ist noch nicht angelegt, deshalb gibt es den Dienst-Vertreter nicht. Nicht die Adresse ist falsch. |
+| `Project … or database '(default)' does not exist` | dasselbe: Schritt 0 fehlt. Das Projekt gibt es, die Datenbank nicht. |
+| Nach Schritt 0 kommt trotzdem noch „does not exist" | eine Minute warten und erneut. Google legt den Vertreter kurz nach der Datenbank an. |
 | Cloud Shell sagt „Projekt nicht gesetzt" | egal — bei jedem Befehl steht `--project` dabei |
 
 Melde dich auch **mittendrin**. Lieber eine Zwischenfrage als ein Import
