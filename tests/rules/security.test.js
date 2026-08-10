@@ -430,6 +430,18 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('ADMIN · aber NICHT deren Inhalte', () =>
     assertFails(adminX().doc('firmen/' + B + '/channels/allgemein/messages/m1').get()));
 
+  // ══ Die Firmen-Stammdaten schreibt nur der Betreiber ══
+  await pruefe('FIRMEN · Ein Chef kann seine eigene Firma NICHT freischalten', () =>
+    assertFails(chefA().doc('firmen/' + A).update({ aktiv: true })));
+  await pruefe('FIRMEN · Ein Chef kann keine neue Firma anlegen', () =>
+    assertFails(chefA().doc('firmen/neu-1234').set({ name: 'Meine zweite', aktiv: true })));
+  await pruefe('FIRMEN · Ein Chef kann eine fremde Firma nicht sperren', () =>
+    assertFails(chefA().doc('firmen/' + B).update({ aktiv: false })));
+  await pruefe('FIRMEN · Der Betreiber darf eine Firma sperren', () =>
+    assertSucceeds(adminX().doc('firmen/' + B).update({ aktiv: false })));
+  await pruefe('FIRMEN · Der Name ist ohne Anmeldung lesbar (Anmeldebildschirm)', () =>
+    assertSucceeds(alsAnonym().doc('firmen/' + A).get()));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

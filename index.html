@@ -636,6 +636,28 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ml-zu{flex-shrink:0;position:relative;background:none;border:none;cursor:pointer;
   color:var(--text-3);font-size:.9rem;padding:4px 2px}
 
+/* ── Firmen (Betreiber) ── */
+.fm-zeile{display:flex;align-items:center;gap:12px;padding:12px 0;
+  border-top:1px solid var(--line);min-width:0;flex-wrap:wrap}
+.fm-zeile:first-child{border-top:none}
+.fm-zeile.zu .fm-haupt b{color:var(--text-3);text-decoration:line-through}
+.fm-haupt{flex:1;min-width:140px}
+.fm-haupt b{display:block;font-size:1rem}
+.fm-du{font-size:.68rem;font-weight:700;color:var(--accent-d);
+  background:var(--accent-glow);padding:2px 7px;border-radius:999px;vertical-align:middle}
+.fm-sub{display:block;font-size:.74rem;color:var(--text-3);font-variant-numeric:tabular-nums}
+.fm-zahlen{display:flex;gap:14px;font-size:.78rem;color:var(--text-3);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.fm-zahlen b{color:var(--text);font-size:.92rem}
+.fn-ok{padding:14px 16px;border-radius:var(--r-sm);
+  background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.32)}
+.fn-ok p{font-size:.86rem;color:var(--text-2);margin:6px 0 12px}
+.fn-feld{display:flex;align-items:baseline;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+.fn-feld span{font-size:.74rem;color:var(--text-3);min-width:92px}
+.fn-feld code{font-family:ui-monospace,monospace;font-size:.86rem;
+  background:var(--bg-soft);padding:4px 9px;border-radius:8px;
+  word-break:break-all;user-select:all}
+
 /* ── Studios verwalten ── */
 .st-zeile{display:flex;align-items:center;gap:10px;padding:11px 0;
   border-top:1px solid var(--line);min-width:0}
@@ -3154,6 +3176,30 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               </p>
             </div>
           </div>
+          <div class="chef-pane" data-cpane="firmen" style="display:none">
+            <div class="card">
+              <h3>🏛 Firmen</h3>
+              <p class="hint">Alle Betriebe, die diese App benutzen.
+                Du siehst Namen und Zahlen — <b>keine Inhalte</b>: weder Chat
+                noch Aufgaben noch Personendaten. Das ist Absicht und der Satz,
+                den du im Verkaufsgespräch sagen kannst.</p>
+              <div id="firmenListe"></div>
+            </div>
+            <div class="card" data-fold="firmaneu">
+              <h3>➕ Firma anlegen</h3>
+              <p class="hint">Legt die Firma an, erzeugt den ersten Chef-Zugang
+                und gibt dir das Passwort — <b>einmal</b>. Es wird nirgends
+                gespeichert.</p>
+              <div class="field"><label for="fnName">Name des Betriebs</label>
+                <input class="inp" id="fnName" type="text" maxlength="60"
+                       placeholder="z. B. Studio Müller GmbH" /></div>
+              <div class="field"><label for="fnMail">E-Mail der Geschäftsführung</label>
+                <input class="inp" id="fnMail" type="email" maxlength="120"
+                       placeholder="chef@studio-mueller.de" /></div>
+              <button class="btn btn-primary" id="fnBtn">Firma anlegen</button>
+              <div id="fnErgebnis" style="display:none;margin-top:16px"></div>
+            </div>
+          </div>
           <div class="chef-pane" data-cpane="nachweise" style="display:none">
             <div class="card">
               <h3>⏳ Läuft demnächst ab</h3>
@@ -4410,6 +4456,120 @@ function mailHinweisBinden(){
   }); }
 }
 
+/* ── Firmen verwalten (nur Betreiber) ──
+   Stufe D. Was hier NICHT steht, ist so wichtig wie das, was drinsteht:
+   kein Weg in die Inhalte einer fremden Firma. Die Karte zeigt Name,
+   Studios, Konten und letzte Nutzung — Zahlen, die eine Cloud Function
+   zusammenzählt, weil der Admin users gar nicht lesen darf.
+
+   Ein Knopf „als Chef ansehen" fehlt bewusst. Er wäre bequem und würde
+   den Satz „ich komme an Ihre Daten nicht heran" zur Lüge machen. */
+var _firmen = [], _firmenUnsub = null, _firmenZahlen = {};
+
+function listenFirmen(){
+  if(_firmenUnsub || !istAdmin()) return;
+  _firmenUnsub = db.collection('firmen').onSnapshot(function(snap){
+    _firmen = snap.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()); })
+      .sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||''),'de'); });
+    renderFirmen();
+    firmenZahlenLaden();
+  }, function(e){ console.warn('Firmen:', e.message); });
+}
+
+function firmenZahlenLaden(){
+  if(!istAdmin()) return;
+  try{
+    firebase.app().functions(KONFIG.region).httpsCallable('firmenZahlen')({})
+      .then(function(r){
+        _firmenZahlen = (r && r.data && r.data.zahlen) || {};
+        renderFirmen();
+      })
+      .catch(function(e){ console.warn('firmenZahlen:', e && e.message); });
+  }catch(e){}
+}
+
+function renderFirmen(){
+  var box=$('firmenListe'); if(!box || !istAdmin()) return;
+  if(!_firmen.length){
+    box.innerHTML='<p class="lese-leer">Noch keine Firma angelegt. '+
+      'Solange der Umzug nicht gelaufen ist, ist das normal.</p>';
+    return;
+  }
+  box.innerHTML=_firmen.map(function(f){
+    var z=_firmenZahlen[f.id]||{};
+    var gesperrt = f.aktiv === false;
+    var eigene = session && session.firma === f.id;
+    return '<div class="fm-zeile'+(gesperrt?' zu':'')+'">'+
+      '<div class="fm-haupt">'+
+        '<b>'+esc(f.name||f.id)+(eigene?' <span class="fm-du">deine</span>':'')+'</b>'+
+        '<span class="fm-sub">'+esc(f.id)+
+          (gesperrt?' · gesperrt':'')+'</span>'+
+      '</div>'+
+      '<div class="fm-zahlen">'+
+        '<span><b>'+(z.studios!==undefined?z.studios:'–')+'</b> Studios</span>'+
+        '<span><b>'+(z.konten!==undefined?z.konten:'–')+'</b> Konten</span>'+
+        '<span>'+(z.letzte ? esc(fmtDate(z.letzte)) : 'nie benutzt')+'</span>'+
+      '</div>'+
+      (eigene
+        ? '<span class="chef-me">nicht sperrbar</span>'
+        : '<button class="mini-x" data-fsperr="'+esc(f.id)+'" data-fakt="'+(gesperrt?'1':'0')+'">'+
+          (gesperrt?'freigeben':'sperren')+'</button>')+
+    '</div>';
+  }).join('');
+
+  box.querySelectorAll('[data-fsperr]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-fsperr');
+      var frei=b.getAttribute('data-fakt')==='1';
+      var f=_firmen.filter(function(x){ return x.id===id; })[0];
+      if(!frei && !confirm('„'+((f&&f.name)||id)+'" sperren?\n\n'+
+        'Niemand aus diesem Betrieb kommt danach mehr hinein. Die Daten '+
+        'bleiben unangetastet und sind sofort wieder da, wenn du '+
+        'freigibst.')) return;
+      withBusy(b, function(){
+        return firebase.app().functions(KONFIG.region).httpsCallable('firmaSperren')(
+          { kennung:id, aktiv:frei })
+          .then(function(){ toast(frei ? 'Freigegeben ✓' : 'Gesperrt ✓'); })
+          .catch(function(e){ toast(errMsg(e), true); });
+      });
+    });
+  });
+}
+
+function firmaAnlegen(btn){
+  var name=($('fnName')||{}).value||'', mail=($('fnMail')||{}).value||'';
+  name=String(name).trim(); mail=String(mail).trim();
+  if(name.length<2){ toast('Bitte einen Firmennamen eingeben.',true); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){ toast('Bitte eine gültige E-Mail eingeben.',true); return; }
+
+  withBusy(btn, function(){
+    return firebase.app().functions(KONFIG.region).httpsCallable('firmaAnlegen')(
+      { name:name, email:mail })
+      .then(function(r){
+        var d=(r&&r.data)||{};
+        var box=$('fnErgebnis'); if(!box) return;
+        /* Das Passwort steht EINMAL hier. Es wird nirgends gespeichert –
+           auch nicht von uns. Deshalb der ausdrückliche Hinweis: wer es
+           jetzt nicht mitnimmt, muss es zurücksetzen lassen. */
+        box.style.display='';
+        box.innerHTML='<div class="fn-ok">'+
+          '<b>„'+esc(name)+'" ist angelegt.</b>'+
+          '<p>Diese Angaben brauchst du <b>jetzt</b> — das Passwort wird '+
+            'nirgends gespeichert und lässt sich nicht noch einmal anzeigen.</p>'+
+          '<div class="fn-feld"><span>Anmeldelink</span><code>'+
+            esc(location.origin)+'/?firma='+esc(d.kennung)+'</code></div>'+
+          '<div class="fn-feld"><span>E-Mail</span><code>'+esc(mail)+'</code></div>'+
+          '<div class="fn-feld"><span>Passwort</span><code>'+esc(d.passwort||'')+'</code></div>'+
+          '<p class="hint" style="margin:10px 0 0">Sag der Geschäftsführung, '+
+            'dass sie es nach der ersten Anmeldung ändert.</p>'+
+        '</div>';
+        $('fnName').value=''; $('fnMail').value='';
+        toast('Firma angelegt ✓');
+      })
+      .catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+
 /* ── Studios verwalten (nur Chef) ──
    Drei Handgriffe: anlegen, umbenennen, schließen. Löschen gibt es nicht,
    und der Grund steht als eigene Karte daneben, weil er nicht offensicht-
@@ -4566,6 +4726,12 @@ function studioAuswahlenNeu(){
    der sie in konfig.js stand, also ist studio-6 weiterhin Hürth.
    Beim Umbenennen bleibt die Kennung – und genau deshalb dürfen die
    Daten liegen bleiben. */
+/* Betreiber über allen Firmen. Ein eigenes FELD, keine Rolle — sonst
+   müsste man sich zwischen „Chef meiner Firma" und „Betreiber über
+   allen" entscheiden. Vergeben kann es nur ein Admin; das erzwingen die
+   Regeln, nicht diese Zeile. */
+function istAdmin(){ return !!(session && session.admin === true); }
+
 function studioKey(name){
   for(var i=0;i<_studioListe.length;i++){
     if(_studioListe[i] && _studioListe[i].name === name) return _studioListe[i].id;
@@ -7233,6 +7399,8 @@ function stopListeners(){
   if(_devLogUnsub){ _devLogUnsub(); _devLogUnsub=null; }
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
   if(_studiosUnsub){ _studiosUnsub(); _studiosUnsub=null; }
+  if(_firmenUnsub){ _firmenUnsub(); _firmenUnsub=null; }
+  _firmen=[]; _firmenZahlen={};
   if(_periodTimer){ clearInterval(_periodTimer); _periodTimer=null; }
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _chanUnsubs=[];
   _lastPing=0;
@@ -9348,6 +9516,8 @@ var CHEFTABS=[
    was:'Zugänge anlegen, Rollen ändern, Onboarding'},
   {id:'standorte',  label:'🏢 Studios',    ico:'🏢', chefOnly:true,
    was:'Studios anlegen, umbenennen, schließen'},
+  {id:'firmen',     label:'🏛 Firmen',     ico:'🏛', adminOnly:true,
+   was:'Firmen anlegen, sperren, Zahlen — nur für den Betreiber'},
   {id:'nachweise',  label:'📜 Nachweise',  ico:'📜', chefOnly:true,
    was:'Erste Hilfe, Lizenzen, Einweisungen – was demnächst abläuft'},
   {id:'report',     label:'📈 Auswertung', ico:'📈',
@@ -9360,7 +9530,10 @@ var CHEF_START='uebersicht';
 var _chefTab=CHEF_START;
 
 function chefTabsFuerMich(){
-  return CHEFTABS.filter(function(t){ return !t.chefOnly || isChef(); });
+  return CHEFTABS.filter(function(t){
+    if(t.adminOnly) return istAdmin();
+    return !t.chefOnly || isChef();
+  });
 }
 
 function buildChefTabs(){
@@ -9475,6 +9648,7 @@ function showChefTab(id, keep){
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
   if(id==='team'){ renderFreigaben(); beitrittLaden(); }
   if(id==='standorte') renderStandorte();
+  if(id==='firmen'){ listenFirmen(); renderFirmen(); firmenZahlenLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
@@ -13210,6 +13384,9 @@ function bindActions(){
       var btn=this;
       withBusy(btn,function(){ return syncAllToSheets(false); });
     });
+    var fnb=$('fnBtn');
+    if(fnb) fnb.addEventListener('click', function(){ firmaAnlegen(this); });
+
     var stn=$('stNeuBtn');
     if(stn) stn.addEventListener('click', function(){ studioAnlegen(this); });
     var stf=$('stNeuName');

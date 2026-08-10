@@ -621,7 +621,35 @@ ausgerollt werden kann:
 > hat zwei Profile, eins als Chef und eins als Mitarbeiter. Kein Schaden,
 > aber es zählt in Listen mit und bekommt Benachrichtigungen.
 
-### Stufe 3 — Admin-Oberfläche · ~1 Sitzung · kein Risiko
+### Stufe 3 — Admin-Oberfläche · ✅ **gebaut am 10. August 2026**
+
+> **Entscheidung: das bestehende Konto wird hochgestuft.** Damit ging der
+> ursprüngliche Entwurf nicht auf — `role` kann nur einen Wert haben, und
+> als `role:'admin'` wäre der Betreiber kein Chef mehr und käme an seine
+> eigene Firma nicht heran.
+>
+> Also ist **`admin` ein eigenes Feld** neben der Rolle. Vergeben kann es
+> nur ein Admin; es steht in derselben Sperrliste wie `role` und `firma`.
+> Sonst könnte sich jeder Chef zum Betreiber machen und die Trennung, die
+> 21 Kreuztests absichern, wäre von innen aufgemacht.
+>
+> **Gebaut:** Reiter *Verwaltung → 🏛 Firmen*, sichtbar nur mit
+> `admin:true`. Firmenliste mit Studios, Konten und letzter Nutzung.
+> Firma anlegen (legt Firma, Chef-Konto und Profil in einem Zug an und
+> zeigt das Passwort **einmal**). Firma sperren und freigeben.
+>
+> **Drei Cloud Functions**, weil die App das nicht darf:
+> `firmaAnlegen` (Anmeldekonten kann nur das Admin-SDK erzeugen),
+> `firmaSperren`, `firmenZahlen` (der Admin darf `users` nicht lesen —
+> also zählt eine Function für ihn und gibt **nur Zahlen** zurück).
+>
+> **Was bewusst fehlt:** ein Knopf „als Chef ansehen". Er wäre bequem und
+> würde den Satz „ich komme an Ihre Daten nicht heran" zur Lüge machen.
+>
+> Die eigene Firma kann der Betreiber nicht sperren — er säße sonst
+> selbst draußen, und niemand könnte ihn hereinlassen.
+
+### ~~Stufe 3 — Admin-Oberfläche~~ · Aufwandsschätzung von damals
 
 Firmenliste, Firma anlegen, Firma sperren, `firmaAnlegen`-Function,
 Zähler-Function.

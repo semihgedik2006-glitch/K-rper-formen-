@@ -362,6 +362,165 @@ async function requireChef(context) {
   return snap.data() || {};
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   BETREIBER-EBENE (Stufe D aus MANDANT-PLAN.md)
+
+   Nur fuer Konten mit admin:true. Das Feld ist bewusst KEIN Rollenwert:
+   der Betreiber bleibt Chef seiner eigenen Firma und ist zusaetzlich
+   Admin. Vergeben kann es nur ein Admin - erzwungen in firestore.rules.
+
+   WAS DER ADMIN HIER NICHT BEKOMMT: Zugriff auf Inhalte fremder Firmen.
+   Diese Funktionen legen an, sperren und zaehlen. Sie lesen keinen Chat,
+   keine Aufgaben und keine Personendaten. Das war die Entscheidung, die
+   im Verkaufsgespraech den Satz erlaubt: "Ich komme an Ihre Daten nicht
+   heran."
+   ══════════════════════════════════════════════════════════════════════ */
+async function requireAdmin(context) {
+  requireAuth(context);
+  const snap = await db.collection('users').doc(context.auth.uid).get();
+  if (!snap.exists || (snap.data() || {}).admin !== true) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieser Bereich ist dem Betreiber vorbehalten.');
+  }
+  return snap.data();
+}
+
+/* Kennung aus einem Firmennamen. Mit Zufallsendung, damit man Kunden
+   nicht durch Raten findet: die Kennung steht im Anmeldelink, und die
+   Kundenliste gehoert niemandem ausser dem Betreiber. */
+function firmaKennung(name) {
+  const rein = String(name || '').toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30);
+  const zufall = Math.random().toString(36).slice(2, 6);
+  return (rein || 'firma') + '-' + zufall;
+}
+
+/* ── Firma anlegen ──
+   Legt die Firma an, erzeugt das Anmeldekonto des ersten Chefs und
+   schreibt sein Profil. Alles drei zusammen, denn einzeln ist nichts
+   davon brauchbar: eine Firma ohne Chef kann niemand einrichten, und
+   ein Chef ohne Firma sieht nichts.
+
+   Das Passwort wird hier erzeugt und EINMAL zurueckgegeben. Es wird
+   nirgends gespeichert - weder in Firestore noch im Protokoll. */
+exports.firmaAnlegen = region
+  .https.onCall(async (data, context) => {
+    await requireAdmin(context);
+    const name = String((data && data.name) || '').trim();
+    const email = String((data && data.email) || '').trim().toLowerCase();
+    if (name.length < 2) {
+      throw new functions.https.HttpsError('invalid-argument', 'Bitte einen Firmennamen angeben.');
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Bitte eine gueltige E-Mail angeben.');
+    }
+
+    const kennung = firmaKennung(name);
+    // Kennung schon vergeben? Bei vier Zufallszeichen unwahrscheinlich,
+    // aber "unwahrscheinlich" ist kein Grund, es nicht zu pruefen.
+    if ((await db.collection('firmen').doc(kennung).get()).exists) {
+      throw new functions.https.HttpsError('already-exists',
+        'Kennung bereits vergeben. Bitte noch einmal versuchen.');
+    }
+
+    /* Gibt es die Adresse schon? Dann NICHT stillschweigend
+       weiterverwenden - das Konto gehoert bereits jemandem, womoeglich
+       in einer anderen Firma. */
+    let vorhanden = null;
+    try { vorhanden = await admin.auth().getUserByEmail(email); } catch (e) { /* gut so */ }
+    if (vorhanden) {
+      throw new functions.https.HttpsError('already-exists',
+        'Diese E-Mail hat bereits ein Konto. Bitte eine andere verwenden.');
+    }
+
+    // Passwort: lang genug, damit es nicht geraten wird, und aus einer
+    // Zeichenmenge ohne Verwechslungsgefahr (kein l/I/0/O).
+    const zeichen = 'abcdefghjkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let passwort = '';
+    for (let i = 0; i < 14; i++) {
+      passwort += zeichen[Math.floor(Math.random() * zeichen.length)];
+    }
+
+    const konto = await admin.auth().createUser({
+      email: email, password: passwort, displayName: 'Geschaeftsfuehrung',
+    });
+
+    await db.collection('firmen').doc(kennung).set({
+      name: name,
+      aktiv: true,
+      angelegtAm: Date.now(),
+      angelegtVon: context.auth.uid,
+      zahlKonten: 1,
+      zahlStudios: 0,
+    });
+
+    await db.collection('users').doc(konto.uid).set({
+      name: 'Geschaeftsfuehrung',
+      email: email,
+      role: 'chef',
+      firma: kennung,
+      studios: [],
+      studioKeys: [],
+      createdAt: Date.now(),
+    });
+
+    return { kennung: kennung, uid: konto.uid, passwort: passwort };
+  });
+
+/* ── Firma sperren oder wieder freigeben ──
+   aktiv:false laesst niemanden mehr hinein. Die Daten bleiben
+   unangetastet - fuer den Fall, dass eine Rechnung offen ist und
+   danach doch bezahlt wird. */
+exports.firmaSperren = region
+  .https.onCall(async (data, context) => {
+    const ich = await requireAdmin(context);
+    const kennung = String((data && data.kennung) || '');
+    const aktiv = (data && data.aktiv) === true;
+    if (!kennung) {
+      throw new functions.https.HttpsError('invalid-argument', 'Keine Firma angegeben.');
+    }
+    /* Die eigene Firma kann der Betreiber nicht sperren. Er saesse
+       sonst selbst draussen, und niemand koennte ihn hereinlassen. */
+    if (kennung === ich.firma) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Die eigene Firma kann nicht gesperrt werden.');
+    }
+    await db.collection('firmen').doc(kennung).set({ aktiv: aktiv }, { merge: true });
+    return { ok: true, aktiv: aktiv };
+  });
+
+/* ── Zahlen fuer die Firmenliste ──
+   Der Admin darf users nicht lesen - deshalb zaehlt diese Funktion fuer
+   ihn. Sie gibt NUR Zahlen zurueck, keine Namen und keine Adressen. */
+exports.firmenZahlen = region
+  .https.onCall(async (data, context) => {
+    await requireAdmin(context);
+    const firmen = await db.collection('firmen').get();
+    const nutzer = await db.collection('users').get();
+
+    const zahlen = {};
+    firmen.docs.forEach(f => { zahlen[f.id] = { konten: 0, letzte: 0 }; });
+    nutzer.docs.forEach(u => {
+      const d = u.data() || {};
+      const f = d.firma || 'koerperformen';
+      if (!zahlen[f]) return;
+      zahlen[f].konten++;
+      if ((d.lastSeen || 0) > zahlen[f].letzte) zahlen[f].letzte = d.lastSeen || 0;
+    });
+
+    // Studios je Firma
+    await Promise.all(firmen.docs.map(async f => {
+      try {
+        const st = await db.collection('firmen').doc(f.id)
+          .collection('config').doc('studios').get();
+        const liste = st.exists ? (st.data().liste || []) : [];
+        zahlen[f.id].studios = liste.filter(x => x && x.aktiv !== false).length;
+      } catch (e) { zahlen[f.id].studios = 0; }
+    }));
+    return { zahlen: zahlen };
+  });
+
 /* ── Ist diese E-Mail-Adresse bestätigt? ──
    Der Chef soll vor der Freigabe sehen, ob eine Adresse echt ist. Die
    Information liegt in Firebase Auth, nicht in Firestore, und ein Client
