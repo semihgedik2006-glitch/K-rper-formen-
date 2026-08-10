@@ -671,7 +671,20 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-radius:999px;cursor:pointer;transition:transform .25s var(--spring)}
 .undobar button:active{transform:scale(.94)}
 
-@media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation:none!important}}
+/* Wer „Bewegung reduzieren" eingestellt hat, meint es ernst – bei
+   Gleichgewichtsstoerungen loest Bewegung echte Uebelkeit aus.
+   Dauer und Animation allein reichen nicht:
+   - transition-delay/animation-delay bleiben sonst stehen. Das Element
+     bewegt sich dann zwar nicht mehr, erscheint aber trotzdem erst nach
+     einer Verzoegerung – das wirkt wie ein Hänger, nicht wie Ruhe.
+   - scroll-behavior muesste hart auf auto, sonst gleitet die Seite weiter.
+   Das JS-seitige scrollIntoView({behavior:'smooth'}) erreicht CSS gar
+   nicht – dafuer gibt es sanftScrollen() weiter unten. */
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important;transition-delay:0s!important;
+    animation:none!important;animation-delay:0s!important;
+    scroll-behavior:auto!important}
+}
 
 /* ── Foto-Anhänge im Chat ── */
 .msg .msg-img{margin-top:6px;border-radius:12px;max-width:240px;max-height:280px;width:auto;
@@ -3494,6 +3507,31 @@ window.addEventListener('unhandledrejection', function(ev){
    HILFSFUNKTIONEN
    ============================================================ */
 function $(id){ return document.getElementById(id); }
+/* ── Weich scrollen, aber nur wenn der Nutzer das will ──
+   prefers-reduced-motion erreicht CSS-Uebergaenge und Animationen, aber
+   NICHT scrollIntoView({behavior:'smooth'}) – das ist JavaScript und
+   laeuft unbeirrt weiter. Gerade unerwartetes Gleiten ist bei
+   Gleichgewichtsstoerungen der schlimmste Ausloeser, schlimmer als jedes
+   Einblenden. Deshalb laeuft jedes weiche Scrollen der App durch diese
+   beiden Helfer. */
+function willRuhe(){
+  try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  catch(e){ return false; }
+}
+function sanftInsBild(el, opt){
+  if(!el || !el.scrollIntoView) return;
+  var o = Object.assign({}, opt||{});
+  o.behavior = willRuhe() ? 'auto' : (o.behavior||'smooth');
+  el.scrollIntoView(o);
+}
+function sanftScrollen(flaeche, opt){
+  if(!flaeche) return;
+  var o = Object.assign({}, opt||{});
+  o.behavior = willRuhe() ? 'auto' : (o.behavior||'smooth');
+  if(flaeche.scrollTo) flaeche.scrollTo(o);
+  else if(typeof o.top==='number') flaeche.scrollTop=o.top;
+}
+
 function esc(s){
   return String(s==null?'':s).replace(/[&<>"']/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
@@ -4019,7 +4057,7 @@ function renderPinBar(){
   if(go) go.onclick=function(){
     var el=document.querySelector('[data-mid="'+m.id+'"]');
     if(el){
-      el.scrollIntoView({behavior:'smooth',block:'center'});
+      sanftInsBild(el,{behavior:'smooth',block:'center'});
       el.classList.add('just-done');
       setTimeout(function(){ el.classList.remove('just-done'); },900);
     } else toast('Die Nachricht ist nicht mehr im geladenen Verlauf.');
@@ -6217,7 +6255,7 @@ function bindMessageTools(box){
   box.querySelectorAll('[data-goto]').forEach(function(q){
     q.addEventListener('click',function(){
       var el=box.querySelector('[data-mid="'+q.getAttribute('data-goto')+'"]');
-      if(el){ el.scrollIntoView({behavior:'smooth',block:'center'});
+      if(el){ sanftInsBild(el,{behavior:'smooth',block:'center'});
         el.classList.add('just-done'); setTimeout(function(){ el.classList.remove('just-done'); },900); }
       else toast('Die Nachricht ist nicht mehr im geladenen Verlauf.');
     });
@@ -6317,7 +6355,7 @@ function ensureTeamLoaded(){
 function heuteInsBild(){
   if(currentView!=='team') return;
   var h=document.querySelector('#shiftGrid .shift-day.today');
-  if(h && h.offsetParent) h.scrollIntoView({block:'nearest', behavior:'smooth'});
+  if(h && h.offsetParent) sanftInsBild(h,{block:'nearest', behavior:'smooth'});
 }
 
 /* ── Anträge, die auf eine Entscheidung warten ──
@@ -6463,7 +6501,7 @@ function renderShifts(){
       if(currentView!=='team' || !heuteKarte.offsetParent) return;
       var k=heuteKarte.getBoundingClientRect(), f=flaeche.getBoundingClientRect();
       if(k.bottom > f.bottom - 8){
-        flaeche.scrollTo({ top: flaeche.scrollTop + (k.bottom - f.bottom) + 16, behavior:'smooth' });
+        sanftScrollen(flaeche,{ top: flaeche.scrollTop + (k.bottom - f.bottom) + 16, behavior:'smooth' });
       }
     }, 140);
   }
@@ -6894,7 +6932,7 @@ function renderHome(){
               var heads=document.querySelectorAll('#view-todos .studio-head');
               for(var i=0;i<heads.length;i++){
                 if(heads[i].textContent.indexOf(name)>=0){
-                  heads[i].scrollIntoView({behavior:'smooth',block:'start'}); break;
+                  sanftInsBild(heads[i],{behavior:'smooth',block:'start'}); break;
                 }
               }
             }, 320);
@@ -7545,7 +7583,7 @@ function renderStudioGrid(){
         var name=el.getAttribute('data-open-studio');
         var heads=document.querySelectorAll('#view-todos .studio-head');
         for(var i=0;i<heads.length;i++){
-          if(heads[i].textContent.indexOf(name)>=0){ heads[i].scrollIntoView({behavior:'smooth',block:'start'}); break; }
+          if(heads[i].textContent.indexOf(name)>=0){ sanftInsBild(heads[i],{behavior:'smooth',block:'start'}); break; }
         }
       },220);
     });
@@ -7778,7 +7816,7 @@ function showChefTab(id, keep){
     var on = b.getAttribute('data-ctab')===id;
     b.classList.toggle('on', on);
     // Aktiven Reiter in den sichtbaren Bereich schieben
-    if(on && b.scrollIntoView) b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    if(on && b.scrollIntoView) sanftInsBild(b,{behavior:'smooth',block:'nearest',inline:'center'});
   });
   document.querySelectorAll('.chef-pane').forEach(function(p){
     p.style.display = (p.getAttribute('data-cpane')===id) ? '' : 'none';
@@ -8136,7 +8174,7 @@ function renderSicherungStand(){
       setTimeout(function(){
         var sa=document.querySelector('#view-chef .scroll-area'); if(!sa) return;
         var oben=el.getBoundingClientRect().top - sa.getBoundingClientRect().top;
-        sa.scrollTo({ top: Math.max(0, sa.scrollTop + oben - 90), behavior:'smooth' });
+        sanftScrollen(sa,{ top: Math.max(0, sa.scrollTop + oben - 90), behavior:'smooth' });
       }, 420);
     }
   }).catch(function(){
@@ -10517,7 +10555,7 @@ function useTemplate(){
   }
   saveDraft();
   toast('Vorlage eingesetzt – jetzt Studios wählen');
-  var f=$('ntTitle'); if(f && f.scrollIntoView) f.scrollIntoView({behavior:'smooth',block:'center'});
+  var f=$('ntTitle'); if(f && f.scrollIntoView) sanftInsBild(f,{behavior:'smooth',block:'center'});
 }
 /* Das aktuelle Formular als Vorlage ablegen */
 function saveAsTemplate(){
@@ -11137,7 +11175,7 @@ function bindActions(){
     setTimeout(function(){
       showChefTab('erstellen');
       var f=$('ntTitle');
-      if(f){ f.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){ f.focus(); },250); }
+      if(f){ sanftInsBild(f,{behavior:'smooth',block:'center'}); setTimeout(function(){ f.focus(); },250); }
     }, 120);
   });
 

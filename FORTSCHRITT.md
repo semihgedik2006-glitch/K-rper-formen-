@@ -1058,6 +1058,49 @@ Runden durch alle 12 Ansichten stabil – kein Leck durch Navigation, trotz
 
 ---
 
+## Sitzung 17 · Motion-Durchlauf 🟢
+
+Der letzte ungemessene Bereich.
+
+### Der Befund, der zählt
+
+**Zehn JS-gesteuerte weiche Scrolls, die `prefers-reduced-motion` gar nicht
+erreicht.** Der CSS-Block schaltet Übergänge und Animationen ab —
+`scrollIntoView({behavior:'smooth'})` ist aber JavaScript und läuft
+unbeirrt weiter. Für Menschen mit Gleichgewichtsstörungen ist unerwartetes
+Gleiten der schlimmste Auslöser, schlimmer als jedes Einblenden.
+
+Behoben mit zwei Helfern (`sanftInsBild`, `sanftScrollen`), durch die jetzt
+**alle zehn** Aufrufstellen laufen.
+
+### Zweiter Befund: Verzögerungen blieben stehen
+
+Der Reduce-Block setzte nur die Dauer auf 0,01 ms. `transition-delay` und
+`animation-delay` (18 Stellen) blieben — das Element bewegt sich dann zwar
+nicht mehr, erscheint aber verspätet. Das wirkt wie ein Hänger, nicht wie
+Ruhe. Jetzt mit erfasst, dazu `scroll-behavior:auto`.
+
+| mit „Bewegung reduzieren" | vorher | nachher |
+|---|---|---|
+| Übergänge über 50 ms | — | **0** |
+| stehengebliebene Verzögerungen | 3 | **0** |
+| laufende Animationen | — | **0** |
+
+(Ohne die Einstellung: 29 Übergänge, 3 Verzögerungen, 17 Animationen —
+alles bleibt wie es war.)
+
+### Bestandsaufnahme
+
+38 `@keyframes`, drei Kurven-Marken konsequent verwendet (107 Stellen).
+Daneben aber 8× `ease-in-out`, 4× `ease`, 2× `linear` — kleine
+Unstimmigkeit, kein Fehler. Fünf Übergänge bewegen Eigenschaften, die
+Layout auslösen (`width` 4×, `height`, `max-height`, `padding`,
+`margin-top`). Zwei `@keyframes` sind doppelt definiert (`viewIn`,
+`checkPop`) — tote Regeln, die stillschweigend überschrieben werden.
+Alles notiert, nichts davon behoben: der Nutzen steht nicht dafür.
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf

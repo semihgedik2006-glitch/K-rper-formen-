@@ -175,8 +175,23 @@ Ausnahme: Symbole **innerhalb** einer Zeile, die selbst anklickbar ist
 **Dauern:** 180 ms (Rückmeldung) · 260–350 ms (Blätter, Aufklappen) ·
 460–500 ms (Fenster von unten).
 
-`@media (prefers-reduced-motion: reduce)` schaltet alles auf 0,01 ms. Neue
-Animationen brauchen dort keine Sonderbehandlung, sie sind mit erfasst.
+### „Bewegung reduzieren" ernst nehmen
+
+`@media (prefers-reduced-motion: reduce)` setzt Dauer **und Verzögerung**
+auf null und schaltet Animationen ab. Nachgemessen: 29 Übergänge, 3
+Verzögerungen und 17 laufende Animationen werden zu **0 / 0 / 0**.
+
+Die Verzögerung gehört ausdrücklich dazu. Nur die Dauer abzuschalten reicht
+nicht — das Element bewegt sich dann zwar nicht mehr, erscheint aber immer
+noch verspätet. Das wirkt wie ein Hänger, nicht wie Ruhe.
+
+> **CSS erreicht nicht alles.** `scrollIntoView({behavior:'smooth'})` ist
+> JavaScript und läuft unbeirrt weiter — und gerade unerwartetes Gleiten ist
+> bei Gleichgewichtsstörungen der schlimmste Auslöser, schlimmer als jedes
+> Einblenden. Deshalb **nie direkt** `scrollIntoView`/`scrollTo` mit
+> `behavior:'smooth'` aufrufen, sondern immer `sanftInsBild(el, opt)` bzw.
+> `sanftScrollen(flaeche, opt)`. Die fragen die Einstellung ab und schalten
+> auf `auto` um.
 
 ---
 
