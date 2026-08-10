@@ -13,7 +13,7 @@ prüfbar:
 
 | | Schritt | wer |
 |---|---|---|
-| 1 | Cloud Functions ins **Probe-Projekt** ausrollen und dort eine Nachricht schreiben: kommt Push an? | ich, mit deiner Cloud Shell |
+| ~~1~~ | ~~Nachsehen, ob der Auslöser auf dem neuen Pfad anspringt~~ | ✅ **10.8., 22:19 Uhr** — siehe `2E-PRUEFEN.md` |
 | 2 | Nachtsicherung des Betriebs prüfen (Datum, Größe) | ich |
 | 3 | `tools/umzug.js --wirklich-live` — **Kopie**, die alten Daten bleiben liegen | ich, mit deiner Cloud Shell |
 | 4 | Regeln ausrollen **und im Protokoll „released" nachlesen** — genau das ist im Probelauf schiefgegangen | ich |
@@ -23,6 +23,28 @@ prüfbar:
 
 Der Rückweg bis Schritt 6 ist: die vorherige App-Fassung ausrollen. Sie
 liest die alten Pfade, die unberührt liegen.
+
+> **Schritt 1 ist erledigt — und lief anders als geplant.** Ich hatte
+> gesagt: „im Probe-Projekt eine Nachricht schreiben und sehen, ob Push
+> ausgelöst wird." Das geht so nicht: in `konfig.js` steht für den
+> Probelauf ausdrücklich `vapidKey: ''`, dort kann sich **kein Gerät für
+> Push anmelden**. Es gibt gar keine Empfänger.
+>
+> Und der Deploy ins Probe-Projekt scheiterte zweimal an einem
+> Google-Problem (fehlendes Recht auf die frisch angelegte
+> Artefakt-Ablage), das mit diesem Code nichts zu tun hat.
+>
+> Geprüft wurde deshalb **direkt im Betrieb**, mit einer Testnachricht
+> unter `firmen/pruef-2e/…` — einer Firma, die es nicht gibt. Um 22:19
+> Uhr sprang `onNewMessageF` an, 604 ms, Status ok. Dass das die
+> Zeitpläne nicht durcheinanderbringt, wurde vorher im Emulator gemessen
+> und im Betrieb bestätigt (`Firmen vorher: 0`, `Firmen nachher: 0`).
+> Alles Weitere in `2E-PRUEFEN.md`.
+>
+> **Was weiterhin offen bleibt:** ob Push auf einem echten Handy
+> ankommt. Das sieht man erst nach dem Umzug am eigenen Gerät — der
+> Versand selbst ist allerdings unveränderter Code, der seit Monaten
+> läuft.
 
 **Vier rechtliche Pflichtfelder in `konfig.js`** (Betreiber, Anschrift,
 Telefon, E-Mail) sind noch leer — solange steht in der App eine rote

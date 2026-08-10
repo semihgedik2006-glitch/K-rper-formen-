@@ -79,7 +79,7 @@
     bildMaxKante: 1280,
 
     /* ── Mehrere Firmen (Stufe 2 aus MANDANT-PLAN.md) ──────────────────
-       AUS lassen, bis der Umzug der Daten gelaufen ist.
+       AN seit dem 10. August 2026, 22:40 Uhr — der Umzug ist gelaufen.
 
        Bei false liegen die Daten flach: studios/…, channels/…, config/…
        Bei true liegen sie unter firmen/<kennung>/…
@@ -87,11 +87,26 @@
        Der Schalter und der Umzug gehören ZUSAMMEN. Wer ihn umlegt, ohne
        dass die Daten umgezogen sind, bekommt eine leere App — die Pfade
        zeigen dann auf Sammlungen, die es noch nicht gibt. Das ist der
-       harmlose Fall. Der umgekehrte, Umzug ohne Schalter, lässt die App
-       weiter auf den alten Daten arbeiten, während die neuen veralten;
-       auch nicht gut. Deshalb: beides in einem Schritt, und vorher der
-       Probelauf (PROBELAUF-EINRICHTEN.md). */
-    mandant: false,
+       harmlose Fall.
+
+       Der umgekehrte Fall ist der unangenehme, und er ist heute Abend
+       eingetreten: zwischen Umzug und Umschalten lagen zwanzig Minuten,
+       und in dieser Zeit arbeiteten die ZEITPLÄNE schon auf den neuen
+       Pfaden (sie erkennen den Umzug am Dokument firmen/<kennung>),
+       während die App noch die alten las. Wäre das über Nacht so
+       geblieben, hätte die Aufgaben-Erinnerung an längst erledigte
+       Aufgaben erinnert und der Chef hätte „Sicherung hakt" gesehen,
+       obwohl sie lief.
+
+       Also: Umzug und Schalter gehören in EINEN Arbeitsgang. Wer hier
+       aufhören muss, löscht das Dokument firmen/<kennung> wieder — die
+       Kopie darunter bleibt liegen, und alleFirmen() findet nichts
+       mehr, weil .get() Dokumente ohne Elterneintrag nicht sieht.
+
+       RÜCKWEG: diesen Schalter zurück auf false und ausrollen. Die
+       flachen Daten liegen unangetastet an ihrem Platz — frühestens 30
+       Tage nach dem Umzug wird dort aufgeräumt, und von Hand. */
+    mandant: true,
 
     /* Kennung DIESER Firma. Zählt nur, wenn mandant:true ist.
        Bestehende Konten ohne Feld "firma" gelten als zu dieser Firma

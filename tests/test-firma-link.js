@@ -66,10 +66,17 @@ async function start(errs, opt) {
   await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   await page.addInitScript({ path: SP + '/' + (opt.stub || 'stub-ohne-login.js') });
   await page.addInitScript(SPUR);
-  if (opt.mandant) {
+  /* Beide Richtungen werden GESETZT, keine wird geerbt.
+     Vorher stand hier nur der An-Fall, und „Schalter aus" verliess sich
+     darauf, dass konfig.js false ausliefert. Seit dem Umzug am
+     10.8.2026 liefert sie true — und der Aus-Fall prüfte plötzlich das
+     Gegenteil von dem, was sein Name sagt. Ein Test, der seinen
+     Ausgangszustand erbt, misst irgendwann etwas anderes als gedacht. */
+  {
+    const wert = opt.mandant ? 'true' : 'false';
     await page.addInitScript(`
       var iv = setInterval(function(){
-        if (window.KONFIG) { window.KONFIG.mandant = true; clearInterval(iv); }
+        if (window.KONFIG) { window.KONFIG.mandant = ${wert}; clearInterval(iv); }
       }, 2);
       setTimeout(function(){ clearInterval(iv); }, 3000);`);
   }

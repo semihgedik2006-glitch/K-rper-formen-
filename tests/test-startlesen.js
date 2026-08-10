@@ -22,6 +22,10 @@ const brettStub = eintraege => `
   var fs = window.firebase.firestore(); var echt = fs.collection.bind(fs);
   var BRETT = ${JSON.stringify(eintraege)};
   fs.collection = function(pfad){
+    /* Seit dem Umzug schickt S() 'firmen/<kennung>/…'. Die Testdaten
+       liegen flach — Vorsatz abschneiden, sonst greift die Attrappe
+       unten nie. */
+    pfad = String(pfad).replace(new RegExp('^firmen/[^/]+/'), '');
     if (pfad === 'board') {
       var kette = { orderBy:function(){ return kette; }, limit:function(){ return kette; },
         where:function(){ return kette; },

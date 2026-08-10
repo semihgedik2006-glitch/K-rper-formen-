@@ -34,6 +34,7 @@ const SP = process.env.SP || __dirname;
     // Schreibvorgänge in "trash" mitschneiden
     const orig = window.firebase.firestore().collection;
     window.firebase.firestore().collection = function (p) {
+      p = String(p).replace(new RegExp('^firmen/[^/]+/'), '');   // seit dem Umzug
       const c = orig.call(this, p);
       if (p === 'trash') {
         const add = c.add;

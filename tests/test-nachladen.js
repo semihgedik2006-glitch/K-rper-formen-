@@ -20,6 +20,10 @@ const ZAEHLER = `
   window.__pfade = [];
   var fs = window.firebase.firestore(); var echt = fs.collection.bind(fs);
   fs.collection = function(p){
+    /* Seit dem Umzug schickt S() 'firmen/<kennung>/…'. Die Testdaten
+       liegen flach — Vorsatz abschneiden, sonst greift die Attrappe
+       unten nie. */
+    p = String(p).replace(new RegExp('^firmen/[^/]+/'), '');
     var k = echt(p);
     var s = k.onSnapshot;
     if (s) k.onSnapshot = function(){ window.__pfade.push(p); return s.apply(k, arguments); };
