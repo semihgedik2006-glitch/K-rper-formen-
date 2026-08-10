@@ -1669,7 +1669,7 @@ er lief** — das ist der einzige Grund, warum hier „gebaut" statt
 „repariert" steht.
 
 Gegen die Wiederholung stehen jetzt zwei Prüfer: einer, der die
-Functions wirklich **ausführt** (47 Prüfungen gegen den Emulator), und
+Functions wirklich **ausführt** (53 Prüfungen gegen den Emulator), und
 einer, der die Datei Zeile für Zeile liest und bei jedem flachen Zugriff
 anschlägt — auch bei einem, der erst morgen dazukommt. Denn mein Fehler
 war kein falscher Pfad, sondern eine **vergessene Datei**, und dagegen
@@ -1682,7 +1682,7 @@ hilft kein Verhaltenstest: der prüft nur, woran jemand gedacht hat.
 | UI-Durchläufe | 42 |
 | Regeltests | 105 |
 | Umzugs-Prüfungen | 12 |
-| Cloud-Function-Prüfungen | 47 |
+| Cloud-Function-Prüfungen | 53 |
 
 **Im Betrieb ist noch nichts umgestellt.** `KONFIG.mandant` steht auf
 `false`, die App läuft auf den flachen Pfaden wie immer. Der ganze Umbau

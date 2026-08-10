@@ -665,7 +665,7 @@ ausgerollt werden kann:
 > dauerhaft „Sicherung hakt" — die Warnung, die verstummen soll, wenn
 > alles läuft.
 >
-> **Womit das belegt ist — 47 Prüfungen, die den Code wirklich
+> **Womit das belegt ist — 53 Prüfungen, die den Code wirklich
 > ausführen** (`tests/rules/funktionen.test.js`): `functions/index.js`
 > wird geladen und über `.run()` ausgelöst, so wie Firebase es täte,
 > gegen den Emulator. Geprüft wird der Zustand **vor** dem Umzug (ohne

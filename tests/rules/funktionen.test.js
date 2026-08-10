@@ -23,9 +23,21 @@
      3. NACHHER: mit Firmen muss jede Funktion in JEDER Firma arbeiten —
         und in keiner fremden.
 
-   Was dieser Test NICHT prüft: ob Push wirklich ankommt (dafür bräuchte
-   es echte Geräte) und ob E-Mail rausgeht (SMTP). Die Pfadlogik davor
-   ist geprüft, der Versand danach nicht.
+   WAS DIESER TEST NICHT PRÜFT — bitte lesen, bevor „alles grün" jemanden
+   beruhigt:
+
+   Geprüft wird nur, was eine sichtbare Spur hinterlässt: geschriebene
+   und gelöschte Dokumente. Funktionen, deren einziges Ergebnis eine
+   Push-Nachricht oder eine E-Mail ist, hinterlassen hier keine —
+   `dueTaskReminder`, `certExpiry`, `appointmentMailScheduler` und der
+   Monatsbericht laufen also, aber ob sie das Richtige gefunden haben,
+   sieht man nicht. Für die steht nur fest, dass sie über `alleFirmen()`
+   und `W(firma)` gehen (`tests/test-funktionen-pfade.js`) — das ist
+   weniger, und es soll nicht mehr klingen.
+
+   Ob Push wirklich auf einem Gerät ankommt und ob eine Mail zugestellt
+   wird, lässt sich hier gar nicht feststellen. Das geht nur im
+   Probe-Projekt, an einem echten Gerät.
    ───────────────────────────────────────────────────────────────────── */
 const path = require('path');
 
@@ -236,6 +248,60 @@ const TAG = 86400000;
       !(await db.doc('dms/dm_' + ['system', 'u-ohne'].sort().join('_')).get()).exists);
     pruefe('Geburtstag: nichts landet flach',
       !(await db.doc('dms/dm_' + ['system', 'u-alpha'].sort().join('_')).get()).exists);
+  }
+
+  /* ── Die KI-Kostenbremse zählt bei der eigenen Firma ──
+     Der dritte Weg, auf dem eine Firma bestimmt wird: nicht aus dem Pfad
+     (Auslöser) und nicht aus der Schleife (Zeitplan), sondern aus dem
+     Profil des Anrufers — firmaVonProfil().
+
+     Der Aufruf scheitert hier absichtlich: ohne GEMINI_API_KEY bricht
+     marketingChat ab. Aber ERST danach — gezählt wird vorher. Genau das
+     macht ihn prüfbar, ohne je Gemini anzufassen: übrig bleibt der
+     Zählerstand, und der muss bei der richtigen Firma stehen.
+
+     Warum das zählt: ein gemeinsamer Zähler würde bedeuten, dass der
+     übermütige Nachmittag des einen Kunden den nächsten aussperrt. */
+  {
+    const heute = new Date().toISOString().slice(0, 10);
+    await db.doc('users/chef-alpha')
+      .set({ name: 'Chef A', role: 'chef', firma: 'alpha' });
+    await db.doc('users/chef-gesperrt')
+      .set({ name: 'Chef G', role: 'chef', firma: 'gesperrt' });
+
+    let fehler = null;
+    try {
+      await fns.marketingChat.run(
+        { messages: [{ role: 'user', content: 'Hallo' }] },
+        { auth: { uid: 'chef-alpha' } });
+    } catch (e) { fehler = e; }
+
+    const zaehler = await db.doc('firmen/alpha/config/nutzung-' + heute).get();
+    pruefe('KI-Grenze: zählt bei der eigenen Firma',
+      zaehler.exists && (zaehler.data() || {}).marketingChat === 1,
+      zaehler.exists ? JSON.stringify(zaehler.data()) : 'kein Zählerstand');
+    pruefe('KI-Grenze: zählt nicht flach',
+      !(await db.doc('config/nutzung-' + heute).get()).exists);
+    pruefe('KI-Grenze: zählt nicht bei beta',
+      !(await db.doc('firmen/beta/config/nutzung-' + heute).get()).exists);
+    pruefe('KI-Grenze: der Aufruf scheitert danach am fehlenden Schlüssel',
+      !!fehler, fehler ? '' : 'kein Fehler — läuft hier etwa gegen echtes Gemini?');
+
+    /* Eine gesperrte Firma darf nicht auf die flachen Pfade zurückfallen.
+       Ein stiller Rückfall wäre schlimmer als eine Fehlermeldung: dort
+       liegen die Daten der Voreinstellung. */
+    let fehler2 = null;
+    try {
+      await fns.marketingChat.run(
+        { messages: [{ role: 'user', content: 'Hallo' }] },
+        { auth: { uid: 'chef-gesperrt' } });
+    } catch (e) { fehler2 = e; }
+    pruefe('KI-Grenze: gesperrte Firma wird abgewiesen',
+      !!fehler2 && /stillgelegt/.test(String(fehler2.message || '')),
+      fehler2 ? String(fehler2.message) : 'kein Fehler');
+    pruefe('KI-Grenze: gesperrte Firma zählt nirgends',
+      !(await db.doc('firmen/gesperrt/config/nutzung-' + heute).get()).exists &&
+      !(await db.doc('config/nutzung-' + heute).get()).exists);
   }
 
   /* ══ 4. Der Test, der rot werden muss ══

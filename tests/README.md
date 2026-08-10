@@ -207,7 +207,7 @@ npm test                          # alle drei
 |---|---|---|
 | `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 105 |
 | `umzug.test.js` | `tools/umzug.js` an nachgebauten Daten — Zählung, Inhalte, Untersammlungen unter leeren Eltern | 12 |
-| `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede jede Firma, und keine fremde | 47 |
+| `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede Firma, und keine fremde | 53 |
 
 > **Zu `funktionen.test.js`:** er lädt `functions/index.js` und löst die
 > Funktionen über `.run()` aus, so wie Firebase es täte. Geprüft wird der
@@ -222,6 +222,15 @@ npm test                          # alle drei
 > anzunehmen. Beim ersten Lauf hinter `umzug.test.js` war er rot, weil
 > dort schon eine Firma lag. Ein Test, der von der Reihenfolge abhängt,
 > misst irgendwann das Falsche, und niemand merkt es.
+>
+> **Was er nicht abdeckt**, damit „alles grün" niemanden beruhigt, der es
+> nicht sollte: geprüft wird nur, was eine sichtbare Spur hinterlässt —
+> geschriebene und gelöschte Dokumente. `dueTaskReminder`, `certExpiry`,
+> `appointmentMailScheduler` und der Monatsbericht enden in einer
+> Push-Nachricht oder einer E-Mail und hinterlassen keine. Für die steht
+> nur fest, dass sie über `alleFirmen()` und `W(firma)` gehen. Ob Push
+> und Mail wirklich ankommen, lässt sich nur im Probe-Projekt an einem
+> echten Gerät feststellen.
 
 `test-funktionen-pfade.js` (oben in der Liste) braucht **keinen**
 Emulator: er liest `functions/index.js` als Text. Beide zusammen, weil
