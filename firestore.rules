@@ -112,8 +112,14 @@ service cloud.firestore {
         && resource.data.get('role', '') == 'chef'
         && request.auth.uid != uid;
     }
+    /* Admin ist ein EIGENES Feld, keine Rolle.
+       Waere es ein Rollenwert, muesste man sich zwischen "Chef meiner
+       Firma" und "Betreiber ueber allen" entscheiden — wer sein
+       bestehendes Konto hochstuft, verloere damit den Zugang zur eigenen
+       Firma. Als Zusatzfeld bleibt role:'chef' bestehen und admin:true
+       kommt daneben. */
     function istAdminKonto() {
-      return hasProfile() && myProfile().get('role', '') == 'admin';
+      return hasProfile() && myProfile().get('admin', false) == true;
     }
     function gleicheFirma() {
       return resource == null
@@ -150,11 +156,16 @@ service cloud.firestore {
       // eigenes Firmenfeld aendern koennte, wechselt damit in einen
       // fremden Betrieb und liest dort alles. Von den Kreuztests
       // gefunden, nicht beim Durchlesen.
+      // Das Feld 'admin' vergibt NUR ein Admin. Sonst koennte sich jeder
+      // Chef zum Betreiber ueber alle Firmen machen — und die Trennung,
+      // die 21 Kreuztests absichern, waere von innen aufgemacht.
       allow update: if istAdminKonto()
-        || (isChef() && gleicheFirma() && !fremderChef(uid))
+        || (isChef() && gleicheFirma() && !fremderChef(uid)
+            && !request.resource.data.diff(resource.data)
+                 .affectedKeys().hasAny(['admin']))
         || (request.auth.uid == uid
             && !request.resource.data.diff(resource.data)
-                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma']));
+                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma','admin']));
       // nur der Chef kann einen Zugang entfernen - und nur in der
       // eigenen Firma. Sonst koennte der Chef von A das Team von B
       // umschreiben oder loeschen; users liegt ja gemeinsam oben.
