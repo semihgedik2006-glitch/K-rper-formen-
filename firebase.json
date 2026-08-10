@@ -7,8 +7,12 @@
   },
   "//emulators": "Nur fuer lokale Regeltests (tests/rules). Beruehrt den Betrieb nicht.",
   "emulators": {
-    "firestore": { "port": 8791 },
-    "ui": { "enabled": false },
+    "firestore": {
+      "port": 8791
+    },
+    "ui": {
+      "enabled": false
+    },
     "singleProjectMode": true
   },
   "//storage": "Ohne diesen Abschnitt kennt firebase deploy die Datei storage.rules gar nicht. Sie lag seit ihrer Erstellung im Projekt und war nie in Kraft - in Kraft war, was die Konsole beim Anlegen des Speichers gesetzt hat.",
@@ -29,7 +33,9 @@
       "*.sh",
       "*.md",
       "*.txt",
-      "*.gs"
+      "*.gs",
+      "*.py",
+      "*.log"
     ],
     "cleanUrls": true,
     "headers": [
@@ -37,41 +43,59 @@
         "//": "Die App selbst NIE zwischenspeichern. GitHub Pages schickt max-age=600 mit, dadurch sahen Geräte bis zu zehn Minuten lang die alte Fassung. Hier bestimmen wir das selbst.",
         "source": "/index.html",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
         ]
       },
       {
         "//": "Der Service Worker muss ebenfalls immer frisch geholt werden, sonst bleibt eine alte Fassung dauerhaft aktiv.",
         "source": "/sw.js",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
         ]
       },
       {
         "//": "Die Konfiguration ebenso: sie enthaelt Studios und Firebase-Zugang. Eine alte Fassung im Zwischenspeicher waere schlimmer als eine langsame Ladezeit.",
         "source": "/konfig.js",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
         ]
       },
       {
         "source": "/manifest.json",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
         ]
       },
       {
         "//": "Die anderen Seiten genauso behandeln - es sind alles einzelne HTML-Dateien, die sich ändern.",
         "source": "**/*.html",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
         ]
       },
       {
         "//": "Bilder dürfen zwischengespeichert werden, die ändern sich praktisch nie.",
         "source": "**/*.@(png|svg|jpg|jpeg|webp|ico)",
         "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=604800" }
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=604800"
+          }
         ]
       }
     ]

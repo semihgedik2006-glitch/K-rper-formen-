@@ -18,7 +18,25 @@ on:
       - '.firebaserc'
       - '*.html'
       - 'sw.js'
+      # konfig.js hat hier zwei Monate lang GEFEHLT. Aufgefallen am
+      # 10.8.2026, als der Umzug auf die Firmen-Pfade gemerged wurde und
+      # kein Deploy ansprang: die Änderung lag in main und die App im
+      # Betrieb las weiter die alten Pfade.
+      #
+      # Ausgerechnet diese Datei. Sie entscheidet, WELCHE Datenbank die
+      # App anfasst — in firebase.json steht extra ein no-cache-Kopf
+      # dafür, weil eine alte Fassung schlimmer wäre als eine langsame
+      # Ladezeit. Genau die konnte man nicht ausrollen.
+      #
+      # Es gab keine Fehlermeldung. Es passierte einfach nichts, und
+      # "gemerged" sah aus wie "ausgeliefert".
+      - 'konfig.js'
       - 'manifest.json'
+      # Ebenfalls beim Prüfen aufgefallen: Handbuch, Produktmappe und
+      # die Symbole werden ausgeliefert, lösten aber nie einen Deploy aus.
+      - '*.pdf'
+      - 'icon.png'
+      - 'icon.svg'
       - '.github/workflows/deploy-functions.yml'
   workflow_dispatch:
 
