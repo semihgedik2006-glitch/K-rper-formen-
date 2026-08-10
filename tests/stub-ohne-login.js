@@ -36,27 +36,47 @@
     set: function(){ return Promise.resolve(); }, update: function(){ return Promise.resolve(); },
     add: function(){ return Promise.resolve({id:'x'}); }, delete: function(){ return Promise.resolve(); } };
     return k; }
+  /* Absichtlich eine eigene Funktion statt fs.collection: der Rücksprung
+     aus der Firmen-Kette ist Innenleben dieses Stubs. Ginge er durch
+     fs.collection, schriebe ihn der Pfad-Mitschnitt in
+     test-firma-link.js als zweiten, flachen Zugriff mit — und der Test
+     meldete „liest auch flach", obwohl die App das nie getan hat. */
+  function sammlung(pfad){
+    /* Auch VOR dem Anmelden läuft alles durch S(): _firma
+       kommt dann aus dem Link, mit KONFIG.firma als Rückfall.
+       Der Anmeldebildschirm fragt also nach
+       'firmen/koerperformen/config'. Vorsatz abschneiden,
+       die Testdaten bleiben flach. */
+    pfad = String(pfad).replace(new RegExp('^firmen/[^/]+/'), '');
+    var k = kette();
+    /* S() baut den Pfad NICHT als Zeichenkette, sondern als
+       Kette: collection('firmen').doc(k).collection('config').
+       kette() gibt für alles dasselbe Objekt zurück — die
+       Weiche unten wäre also nie erreicht worden, und der
+       Anmeldebildschirm hätte den Beitritts-Schalter nicht
+       gefunden. Hier zurück durch die Vordertür. */
+    if (pfad === 'firmen') {
+      k.doc = function(){
+        var o = kette();
+        o.collection = function(sub){ return sammlung(sub); };
+        return o;
+      };
+      return k;
+    }
+    if (pfad === 'config') {
+      k.doc = function(id){
+        var o = kette();
+        if (id === 'beitrittSchalter') {
+          o.get = function(){ return Promise.resolve({ exists:true, id:id,
+            data:function(){ return { codeNoetig:true, freigabe:true }; } }); };
+        }
+        return o;
+      };
+    }
+    return k;
+  }
   var fs = { settings:function(){}, enablePersistence:function(){ return Promise.resolve(); },
-             collection:function(pfad){
-               /* Auch VOR dem Anmelden läuft alles durch S(): _firma
-                  kommt dann aus dem Link, mit KONFIG.firma als Rückfall.
-                  Der Anmeldebildschirm fragt also nach
-                  'firmen/koerperformen/config'. Vorsatz abschneiden,
-                  die Testdaten bleiben flach. */
-               pfad = String(pfad).replace(/^firmen\/[^/]+\//, '');
-               var k = kette();
-               if (pfad === 'config') {
-                 k.doc = function(id){
-                   var o = kette();
-                   if (id === 'beitrittSchalter') {
-                     o.get = function(){ return Promise.resolve({ exists:true, id:id,
-                       data:function(){ return { codeNoetig:true, freigabe:true }; } }); };
-                   }
-                   return o;
-                 };
-               }
-               return k;
-             },
+             collection:function(pfad){ return sammlung(pfad); },
              batch:function(){ return { set:function(){}, update:function(){}, delete:function(){}, commit:function(){ return Promise.resolve(); } }; } };
   var f = { httpsCallable: function(){ return function(){ return Promise.resolve({data:{}}); }; } };
   firebase.firestore.FieldValue = { arrayUnion:function(){return{};}, arrayRemove:function(){return{};}, serverTimestamp:function(){return Date.now();} };
