@@ -159,6 +159,73 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('BEKANNT: jeder Eingeloggte darf alle Personendaten lesen', () =>
     assertSucceeds(alsFremder().doc('users/chef1').get()));
 
+  // ══ 9. Beitritt: Firmencode und Freigabe ══
+  //     Erst OHNE eingeschaltete Schranken – bestehende Konten und die
+  //     alte Selbstregistrierung muessen unveraendert laufen.
+  await pruefe('OHNE Schranken: Selbstregistrierung geht wie bisher', () =>
+    assertSucceeds(env.authenticatedContext('ohne1').firestore()
+      .doc('users/ohne1').set({ name: 'Ohne', role: 'mitarbeiter' })));
+  await pruefe('OHNE Schranken: bestehendes Profil ohne Feld aktiv darf lesen', () =>
+    assertSucceeds(alsMitarbeiter().doc('channels/allgemein/messages/m1').get()));
+
+  //     Jetzt Code UND Freigabe einschalten.
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc('config/registrierung')
+      .set({ code: 'KF-2026', freigabe: true });
+    await ctx.firestore().doc('config/beitrittSchalter')
+      .set({ codeNoetig: true, freigabe: true });
+    await ctx.firestore().doc('users/wartet1')
+      .set({ name: 'Wartet', role: 'mitarbeiter', aktiv: false });
+  });
+
+  await pruefe('Die Schalter sind auch OHNE Anmeldung lesbar (Formular braucht sie)', () =>
+    assertSucceeds(alsAnonym().doc('config/beitrittSchalter').get()));
+  await pruefe('Mitarbeiter kann die Schalter NICHT aendern', () =>
+    assertFails(alsMitarbeiter().doc('config/beitrittSchalter').set({ codeNoetig: false })));
+  await pruefe('Firmencode ist fuer Mitarbeiter NICHT lesbar', () =>
+    assertFails(alsMitarbeiter().doc('config/registrierung').get()));
+  await pruefe('Firmencode ist fuer einen Fremden NICHT lesbar', () =>
+    assertFails(alsFremder().doc('config/registrierung').get()));
+  await pruefe('Chef darf den Firmencode lesen', () =>
+    assertSucceeds(alsChef().doc('config/registrierung').get()));
+  await pruefe('Beitritts-Nachweis ist fuer niemanden lesbar', () =>
+    assertFails(alsChef().doc('beitritt/wartet1').get()));
+
+  await pruefe('OHNE Code: Konto anlegen wird abgelehnt', () =>
+    assertFails(env.authenticatedContext('neu3').firestore()
+      .doc('users/neu3').set({ name: 'Neu', role: 'mitarbeiter', aktiv: false })));
+
+  const mitFalschem = env.authenticatedContext('neu4').firestore();
+  await mitFalschem.doc('beitritt/neu4').set({ code: 'RATEN' }).catch(() => {});
+  await pruefe('MIT FALSCHEM Code: Konto anlegen wird abgelehnt', () =>
+    assertFails(mitFalschem.doc('users/neu4').set({ name: 'Neu', role: 'mitarbeiter', aktiv: false })));
+
+  const mitRichtigem = env.authenticatedContext('neu5').firestore();
+  await mitRichtigem.doc('beitritt/neu5').set({ code: 'KF-2026' });
+  await pruefe('MIT RICHTIGEM Code, aber gleich aktiv: abgelehnt', () =>
+    assertFails(mitRichtigem.doc('users/neu5').set({ name: 'Neu', role: 'mitarbeiter', aktiv: true })));
+  await pruefe('MIT RICHTIGEM Code und aktiv:false: angenommen', () =>
+    assertSucceeds(mitRichtigem.doc('users/neu5').set({ name: 'Neu', role: 'mitarbeiter', aktiv: false })));
+
+  const wartet = () => env.authenticatedContext('wartet1').firestore();
+  await pruefe('Wartendes Konto kann den Teamchat NICHT lesen', () =>
+    assertFails(wartet().doc('channels/allgemein/messages/m1').get()));
+  await pruefe('Wartendes Konto kann die Personenliste NICHT lesen', () =>
+    assertFails(wartet().doc('users/chef1').get()));
+  await pruefe('Wartendes Konto kann Dokumente NICHT lesen', () =>
+    assertFails(wartet().doc('documents/d1').get()));
+  await pruefe('Wartendes Konto kann NICHT in den Chat schreiben', () =>
+    assertFails(wartet().doc('channels/allgemein/messages/spam')
+      .set({ uid: 'wartet1', text: 'hi', ts: Date.now() })));
+  await pruefe('Wartendes Konto darf sein EIGENES Profil lesen (sonst keine Wartemeldung)', () =>
+    assertSucceeds(wartet().doc('users/wartet1').get()));
+  await pruefe('Wartendes Konto kann sich NICHT selbst freischalten', () =>
+    assertFails(wartet().doc('users/wartet1').update({ aktiv: true })));
+  await pruefe('Chef kann ein wartendes Konto freischalten', () =>
+    assertSucceeds(alsChef().doc('users/wartet1').update({ aktiv: true })));
+  await pruefe('Nach der Freigabe darf das Konto lesen', () =>
+    assertSucceeds(wartet().doc('channels/allgemein/messages/m1').get()));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

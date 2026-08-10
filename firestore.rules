@@ -29,9 +29,58 @@ service cloud.firestore {
       return isChef() || (isLeiter() && studioKey in myKeys());
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // BEITRITT: Firmencode + Freigabe durch den Chef
+    //
+    // Vorher genuegte "eingeloggt", und registrieren konnte sich jeder
+    // selbst. Wer die Adresse der App kannte, legte sich ein Konto an und
+    // las Teamchat, Personenliste, Aufgaben und Dokumente.
+    //
+    // Zwei Schranken, die getrennt wirken:
+    //   1. Der Firmencode haelt Fremde davon ab, ueberhaupt ein Konto
+    //      anzulegen. Er steht in config/registrierung – fuer Clients
+    //      NICHT lesbar. get() innerhalb einer Regel unterliegt den
+    //      Regeln nicht, der Vergleich funktioniert trotzdem.
+    //   2. Die Freigabe: ein selbst angelegtes Konto startet mit
+    //      aktiv:false und sieht nichts ausser dem eigenen Profil, bis
+    //      ein Chef es freischaltet. Das faengt auch den Fall ab, dass
+    //      der Code die Runde macht – etwa bei einem Ex-Mitarbeiter.
+    //
+    // SICHERUNG GEGEN AUSSPERREN: beide Schranken sind aus, solange sie
+    // nicht ausdruecklich eingeschaltet werden. Fehlt config/registrierung
+    // oder ist der Code leer, wird kein Code verlangt. Und ein Profil OHNE
+    // das Feld aktiv gilt als aktiv – alle bestehenden Konten laufen
+    // unveraendert weiter.
+    // ─────────────────────────────────────────────────────────────────
+    function beitrittConf() {
+      return get(/databases/$(database)/documents/config/registrierung).data;
+    }
+    function confDa() {
+      return exists(/databases/$(database)/documents/config/registrierung);
+    }
+    function codePflicht() {
+      return confDa() && beitrittConf().get('code', '') != '';
+    }
+    function codeStimmt(uid) {
+      return !codePflicht()
+        || (exists(/databases/$(database)/documents/beitritt/$(uid))
+            && get(/databases/$(database)/documents/beitritt/$(uid)).data.code
+               == beitrittConf().code);
+    }
+    function freigabePflicht() {
+      return confDa() && beitrittConf().get('freigabe', false) == true;
+    }
+    // Ein Konto ist aktiv, solange nicht ausdruecklich das Gegenteil
+    // dransteht. Bestehende Profile haben das Feld nicht.
+    function istAktiv() {
+      return hasProfile() && myProfile().get('aktiv', true) == true;
+    }
+
     // ── Benutzerprofile ──
     match /users/{uid} {
-      allow read: if signedIn();
+      // Das EIGENE Profil darf man immer lesen - sonst kann die App einem
+      // wartenden Konto nicht einmal sagen, dass es wartet.
+      allow read: if istAktiv() || (signedIn() && request.auth.uid == uid);
       // Wer sein EIGENES Profil anlegt, darf sich dabei nur "mitarbeiter"
       // geben. Vorher war jede Rolle erlaubt: der Chef-Code stand im
       // Quelltext der App, und die Regeln haben ihn nie geprüft – wer die
@@ -40,16 +89,52 @@ service cloud.firestore {
       allow create: if isChef()
         || (request.auth.uid == uid
             && (!('role' in request.resource.data)
-                || request.resource.data.role == 'mitarbeiter'));
+                || request.resource.data.role == 'mitarbeiter')
+            && codeStimmt(uid)
+            // Wenn die Freigabe eingeschaltet ist, startet das Konto
+            // inaktiv. Sich selbst aktiv zu setzen waere sonst trivial.
+            && (!freigabePflicht()
+                || request.resource.data.get('aktiv', true) == false));
       // Der Chef darf alles ändern. Alle anderen dürfen nur ihr eigenes Profil
       // bearbeiten und dabei NICHT Rolle oder Studio-Zuordnung anfassen –
       // sonst könnte sich jemand selbst zum Studio-Leiter machen.
       allow update: if isChef()
         || (request.auth.uid == uid
             && !request.resource.data.diff(resource.data)
-                 .affectedKeys().hasAny(['role','studios','studio','studioKeys']));
+                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv']));
       // nur der Chef kann einen Zugang entfernen
       allow delete: if isChef();
+    }
+
+    // ── Beitritts-Nachweis ──
+    // Hier legt ein neues Konto EINMAL den eingegebenen Firmencode ab.
+    // Warum nicht direkt ins Profil? users ist fuer alle Aktiven lesbar -
+    // der Code stuende dann in einem Dokument, das jeder Kollege oeffnen
+    // kann. Hier liest ihn niemand: nur die Regel oben vergleicht ihn,
+    // und get() in einer Regel unterliegt den Regeln nicht.
+    match /beitritt/{uid} {
+      allow read: if false;
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.code is string
+        && request.resource.data.code.size() <= 100;
+      allow update, delete: if isChef();
+    }
+
+    // ── Einstellungen zum Beitritt ──
+    // Der CODE. Nur der Chef sieht und aendert ihn. Die Regel fuer
+    // users/{uid} vergleicht ihn per get() - das unterliegt den Regeln
+    // nicht und funktioniert deshalb trotzdem.
+    match /config/registrierung {
+      allow read, write: if isChef();
+    }
+    // Die SCHALTER: "wird ein Code verlangt" und "muss freigegeben
+    // werden". Bewusst fuer jeden lesbar, auch ohne Anmeldung - das
+    // Registrierungsformular muss vor dem Login wissen, ob es das
+    // Codefeld zeigen soll. Zwei Ja/Nein-Angaben verraten nichts; der
+    // Code selbst steht hier nicht drin.
+    match /config/beitrittSchalter {
+      allow read: if true;
+      allow write: if isChef();
     }
 
     // Sprachnachrichten liegen als Datenblock in der Nachricht. Ein Dokument
@@ -63,16 +148,16 @@ service cloud.firestore {
 
     // ── Chat-Nachrichten ──
     match /channels/{channelId}/messages/{msgId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
-      allow create: if signedIn()
+      allow create: if istAktiv()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 2000
         && audioOk();
       // Reagieren darf jeder (nur das Feld reactions).
       // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
-      allow update: if signedIn() && (
+      allow update: if istAktiv() && (
            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
         // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
         // Stimmenfeld anfassen, nicht Frage oder Antworten.
@@ -88,36 +173,36 @@ service cloud.firestore {
       // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
       allow delete: if isChef()
         || manages(channelId)
-        || (signedIn()
+        || (istAktiv()
             && resource.data.uid == request.auth.uid
             && request.time.toMillis() < resource.data.ts + 3600000);
     }
 
     // ── Aufgaben pro Studio ──
     match /studios/{studioKey}/todos/{todoId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       allow create: if manages(studioKey);   // Chef überall, Leiter in seinen Studios
       allow delete: if manages(studioKey);
       // Mitarbeiter dürfen abhaken / Foto anhängen (update erlaubt für Eingeloggte)
-      allow update: if signedIn();
+      allow update: if istAktiv();
     }
 
     // ── Putzplan pro Studio (Reinigungsaufgaben) ──
     match /studios/{studioKey}/cleaning/{taskId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       allow create: if manages(studioKey);   // Chef überall, Leiter in seinen Studios
       allow delete: if manages(studioKey);
-      allow update: if signedIn();                     // Mitarbeiter dürfen abhaken
+      allow update: if istAktiv();                     // Mitarbeiter dürfen abhaken
     }
 
     // ── Putzplan-Notizen pro Studio (vom Team) ──
     match /studios/{studioKey}/cleaningNotes/{noteId} {
-      allow read: if signedIn();
-      allow create: if signedIn()
+      allow read: if istAktiv();
+      allow create: if istAktiv()
         && request.resource.data.byUid == request.auth.uid;
       // Chef darf jede Notiz löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
       allow delete: if manages(studioKey)
-        || (signedIn()
+        || (istAktiv()
             && resource.data.byUid == request.auth.uid
             && request.time.toMillis() < resource.data.ts + 3600000);
       allow update: if false;
@@ -128,7 +213,7 @@ service cloud.firestore {
     // darf jeder Eingeloggte: einen Defekt melden können muss die Person,
     // die vor dem Gerät steht – nicht die, die gerade Dienst hat.
     match /studios/{studioKey}/devices/{devId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       allow create: if manages(studioKey)
         && request.resource.data.name is string
         && request.resource.data.name.size() <= 80;
@@ -137,7 +222,7 @@ service cloud.firestore {
       // dürfen ausschliesslich den Zustand melden – sonst könnte eine
       // Meldung nebenbei das Gerät umbenennen.
       allow update: if manages(studioKey)
-        || (signedIn()
+        || (istAktiv()
             && request.resource.data.diff(resource.data)
                  .affectedKeys().hasOnly(['status','lastNote','lastBy','lastAt']));
     }
@@ -151,8 +236,8 @@ service cloud.firestore {
             && request.resource.data.photo.size() <= 400000);
     }
     match /studios/{studioKey}/deviceLog/{logId} {
-      allow read: if signedIn();
-      allow create: if signedIn()
+      allow read: if istAktiv();
+      allow create: if istAktiv()
         && request.resource.data.byUid == request.auth.uid
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 300
@@ -163,7 +248,7 @@ service cloud.firestore {
 
     // ── Ankündigungen ──
     match /announcements/{annId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       // Chef an alle oder einzelne Studios; Leiter nur an seine Studios
       allow create: if request.resource.data.uid == request.auth.uid
         && (isChef()
@@ -171,7 +256,7 @@ service cloud.firestore {
       // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
       allow update: if isChef()
         || (isLeiter() && resource.data.target in myKeys())
-        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']));
+        || (istAktiv() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']));
       allow delete: if isChef()
         || (isLeiter() && resource.data.target in myKeys());
     }
@@ -179,14 +264,14 @@ service cloud.firestore {
     // ── Materialbestand pro Studio ──
     // Jeder Eingeloggte darf den Bestand lesen und eintragen.
     match /inventory/{studioKey} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       // Eintragen dürfen alle Eingeloggten; das Soll-Limit setzt die Verwaltung
-      allow write: if signedIn();
+      allow write: if istAktiv();
     }
 
     // ── Dokumente (Metadaten) ──
     match /documents/{docId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       // Leiter darf nur Dokumente anlegen, die ausschließlich seine Studios betreffen
       allow create: if isChef()
         || (isLeiter() && request.resource.data.studios.hasOnly(myKeys()));
@@ -201,7 +286,7 @@ service cloud.firestore {
     // Chefsache: Dokumente landen ohne Studio-Kennung im Papierkorb, und
     // den darf ohnehin nur der Chef endgueltig leeren.
     match /documentData/{docId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       allow create, update: if isChef()
         || (isLeiter()
             && exists(/databases/$(database)/documents/documents/$(docId))
@@ -217,13 +302,18 @@ service cloud.firestore {
     // Unterlagen und haftet dafuer, dass sie stimmen.
     match /certificates/{certId} {
       allow read: if isChef()
-        || (signedIn() && resource.data.uid == request.auth.uid);
+        || (istAktiv() && resource.data.uid == request.auth.uid);
       allow create, update, delete: if isChef();
     }
 
     // ── Konfiguration (z. B. Onboarding-Checkliste) ──
     match /config/{doc} {
-      allow read: if signedIn();
+      // registrierung ist ausdruecklich ausgenommen: In Firestore gilt
+      // JEDE zutreffende Regel, nicht die speziellste. Ohne diese
+      // Ausnahme wuerde die allgemeine Regel hier den Firmencode fuer
+      // jeden Eingeloggten lesbar machen - und die Sperre waere
+      // Dekoration.
+      allow read: if istAktiv() && doc != 'registrierung' && doc != 'beitrittSchalter';
       allow write: if isChef();
     }
 
@@ -231,19 +321,19 @@ service cloud.firestore {
     // dmId hat die Form  dm_<uidA>_<uidB>
     match /dms/{dmId} {
       // Lesen/Abfragen über das participants-Feld (funktioniert auch für Listen-Abfragen)
-      allow read: if signedIn() && request.auth.uid in resource.data.participants;
-      allow create: if signedIn() && request.auth.uid in request.resource.data.participants;
-      allow update: if signedIn() && request.auth.uid in resource.data.participants;
+      allow read: if istAktiv() && request.auth.uid in resource.data.participants;
+      allow create: if istAktiv() && request.auth.uid in request.resource.data.participants;
+      allow update: if istAktiv() && request.auth.uid in resource.data.participants;
     }
     match /dms/{dmId}/messages/{msgId} {
-      allow read: if signedIn() && dmId.split('_').hasAny([request.auth.uid]);
-      allow create: if signedIn()
+      allow read: if istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
+      allow create: if istAktiv()
         && request.resource.data.uid == request.auth.uid
         && dmId.split('_').hasAny([request.auth.uid])
         && audioOk();
       // Update nur für Beteiligte (z. B. Checklisten-Häkchen)
-      allow update: if signedIn() && dmId.split('_').hasAny([request.auth.uid]);
-      allow delete: if signedIn() && dmId.split('_').hasAny([request.auth.uid])
+      allow update: if istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
+      allow delete: if istAktiv() && dmId.split('_').hasAny([request.auth.uid])
         && (isChef()
             || (resource.data.uid == request.auth.uid
                 && request.time.toMillis() < resource.data.ts + 3600000));
@@ -253,21 +343,21 @@ service cloud.firestore {
     // Jeder Eingeloggte darf lesen und Projekte anlegen/pflegen.
     // Löschen: nur Chef oder wer das Projekt bzw. die Version angelegt hat.
     match /mkProjects/{projectId} {
-      allow read: if signedIn();
-      allow create: if signedIn()
+      allow read: if istAktiv();
+      allow create: if istAktiv()
         && request.resource.data.createdBy == request.auth.uid;
-      allow update: if signedIn();
+      allow update: if istAktiv();
       allow delete: if isChef()
-        || (signedIn() && resource.data.createdBy == request.auth.uid);
+        || (istAktiv() && resource.data.createdBy == request.auth.uid);
 
       match /versions/{versionId} {
-        allow read: if signedIn();
-        allow create: if signedIn()
+        allow read: if istAktiv();
+        allow create: if istAktiv()
           && request.resource.data.createdBy == request.auth.uid;
         // Versionen sind unveränderlich (Historie bleibt echt)
         allow update: if false;
         allow delete: if isChef()
-          || (signedIn() && resource.data.createdBy == request.auth.uid);
+          || (istAktiv() && resource.data.createdBy == request.auth.uid);
       }
     }
 
@@ -277,15 +367,15 @@ service cloud.firestore {
     // wie Aufgaben; die Studio-Zuordnung filtert die App). Löschen: Chef
     // oder wer den Termin angelegt hat.
     match /appointments/{apptId} {
-      allow read: if signedIn();
-      allow create: if signedIn()
+      allow read: if istAktiv();
+      allow create: if istAktiv()
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.customerName is string
         && request.resource.data.customerName.size() <= 200
         && request.resource.data.startsAt is number;
-      allow update: if signedIn();
+      allow update: if istAktiv();
       allow delete: if isChef()
-        || (signedIn() && resource.data.createdBy == request.auth.uid);
+        || (istAktiv() && resource.data.createdBy == request.auth.uid);
     }
 
     // E-Mail-Vorlagen (Bestätigung/Erinnerung/Follow-up/Storno):
@@ -311,7 +401,7 @@ service cloud.firestore {
 
     // ── Schichtplan pro Studio ──
     match /studios/{studioKey}/shifts/{shiftId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       // Einteilen darf nur die Verwaltung (Chef bzw. zuständiger Leiter)
       allow create, delete: if manages(studioKey);
       // Beim Tausch dürfen Mitarbeiter mitwirken – aber ausschliesslich an
@@ -320,12 +410,12 @@ service cloud.firestore {
       // Plan schreiben oder einen anderen hineinsetzen.
       allow update: if manages(studioKey)
         // 1. Die eigene Schicht ausschreiben oder wieder zurückziehen
-        || (signedIn()
+        || (istAktiv()
             && resource.data.uid == request.auth.uid
             && request.resource.data.diff(resource.data)
                  .affectedKeys().hasOnly(['tausch','tauschVon','tauschTs']))
         // 2. Eine ausgeschriebene Schicht übernehmen – nur für sich selbst
-        || (signedIn()
+        || (istAktiv()
             && resource.data.get('tausch', '') == 'offen'
             && request.resource.data.diff(resource.data)
                  .affectedKeys().hasOnly(['tausch','tauschNeu','tauschTs'])
@@ -335,9 +425,9 @@ service cloud.firestore {
 
     // ── Abwesenheiten (Urlaub / Krank / Frei) ──
     match /studios/{studioKey}/absences/{absId} {
-      allow read: if signedIn();
+      allow read: if istAktiv();
       // Jeder meldet sich selbst; die Verwaltung darf auch für andere eintragen
-      allow create: if signedIn()
+      allow create: if istAktiv()
         && (request.resource.data.uid == request.auth.uid || manages(studioKey))
         // Wer für sich selbst einträgt, darf sich nicht gleich selbst
         // genehmigen. Krankmeldungen und Einträge der Verwaltung schon.
@@ -347,25 +437,25 @@ service cloud.firestore {
       // Genehmigen und Ablehnen ist Sache der Verwaltung
       allow update: if manages(studioKey);
       allow delete: if manages(studioKey)
-        || (signedIn() && resource.data.uid == request.auth.uid);
+        || (istAktiv() && resource.data.uid == request.auth.uid);
     }
 
     // ── Übergabe-Notizen zwischen Schichten ──
     match /studios/{studioKey}/handovers/{hoId} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow read: if istAktiv();
+      allow create: if istAktiv() && request.resource.data.uid == request.auth.uid;
       allow update: if false;
       allow delete: if manages(studioKey)
-        || (signedIn() && resource.data.uid == request.auth.uid);
+        || (istAktiv() && resource.data.uid == request.auth.uid);
     }
 
     // ── Schwarzes Brett (für alle Studios gemeinsam) ──
     match /board/{postId} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow read: if istAktiv();
+      allow create: if istAktiv() && request.resource.data.uid == request.auth.uid;
       allow update: if false;
       allow delete: if isChef()
-        || (signedIn() && resource.data.uid == request.auth.uid);
+        || (istAktiv() && resource.data.uid == request.auth.uid);
     }
 
     // ── Papierkorb ──
@@ -377,7 +467,7 @@ service cloud.firestore {
     match /trash/{trashId} {
       allow read: if isChef()
         || (isLeiter() && resource.data.sk != null && manages(resource.data.sk));
-      allow create: if signedIn()
+      allow create: if istAktiv()
         && request.resource.data.deletedByUid == request.auth.uid;
       allow update: if false;                    // Papierkorb wird nicht bearbeitet
       allow delete: if isChef()
@@ -393,9 +483,9 @@ service cloud.firestore {
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {
       allow read: if false;
-      allow create, update: if signedIn()
+      allow create, update: if istAktiv()
         && request.resource.data.uid == request.auth.uid;
-      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      allow delete: if istAktiv() && resource.data.uid == request.auth.uid;
     }
   }
 }

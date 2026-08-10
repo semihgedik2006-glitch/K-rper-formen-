@@ -2,7 +2,18 @@
 
 Stand 8. August 2026, nach Abschluss des Master-Audits.
 
-## Es ist nichts mehr offen. ✅
+## Ein Schritt offen: der Firmencode
+
+**Verwaltung → Team → „🔑 Wer darf sich anmelden"** — Code eintragen,
+Haken bei der Freigabe setzen, speichern. Zwei Minuten, in der App.
+
+Bis dahin kann sich jeder anmelden, der die Adresse kennt, und sieht
+Teamchat, Personenliste, Aufgaben und Dokumente. Für bestehende Konten
+ändert sich durch die Einstellung nichts.
+
+---
+
+## Alles andere ist erledigt ✅
 
 Stand 9. August 2026. Alle Handgriffe aus `DEIN-TEIL.md` sind erledigt:
 

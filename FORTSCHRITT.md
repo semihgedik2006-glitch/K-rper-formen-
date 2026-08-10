@@ -1101,6 +1101,45 @@ Alles notiert, nichts davon behoben: der Nutzen steht nicht dafür.
 
 ---
 
+## Sitzung 18 · Beitritt: Firmencode und Freigabe 🟢
+
+Die letzte offene Frage aus dem Security-Durchlauf – und die einzige, die
+eine Produktentscheidung brauchte.
+
+**Vorher:** Wer die Adresse der App kannte, legte sich ein Konto an und las
+Teamchat, Personenliste, Aufgaben und Dokumente.
+
+**Jetzt:** zwei getrennt schaltbare Schranken in *Verwaltung → Team*.
+
+| Schranke | Was sie verhindert |
+|---|---|
+| Firmencode | dass ein Fremder überhaupt ein Konto anlegt |
+| Freigabe durch den Chef | dass ein Konto etwas sieht, bevor jemand es bestätigt |
+
+### Die Stelle, an der es leicht falsch geworden wäre
+
+Der naheliegende Weg — den Code ins Profil schreiben — wäre eine Attrappe
+gewesen: `users` ist für alle Aktiven lesbar, jeder Kollege hätte ihn
+nachschlagen können. Er liegt jetzt in `beitritt/{uid}`, das **niemand**
+lesen darf; die Regel vergleicht ihn per `get()`, und das unterliegt den
+Regeln nicht.
+
+Zweiter Fallstrick, im Entwurf gefunden: In Firestore gilt **jede**
+zutreffende Regel, nicht die speziellste. Die allgemeine `config/{doc}`-
+Regel hätte den Code trotzdem für jeden Eingeloggten geöffnet. Jetzt
+ausdrücklich ausgenommen.
+
+### Sicherung gegen Aussperren
+
+Beide Schranken sind **aus**, solange sie nicht eingeschaltet werden, und
+ein Profil ohne das Feld `aktiv` gilt als aktiv. Ein bestehender Betrieb
+merkt von der Änderung nichts. Zwei Tests halten genau das fest.
+
+**52 Regeltests** (von 32), **31 UI-Durchläufe** (von 30) – alle grün.
+`signedIn()` ist an 56 Stellen zu `istAktiv()` geworden.
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf

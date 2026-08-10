@@ -1,26 +1,57 @@
 # Was du machen musst
 
-**Stand 9. August 2026: nichts mehr offen.** Alles hier ist erledigt. Die
-Datei bleibt als Nachschlagewerk stehen – für den nächsten Kunden, für ein
-neues Firebase-Projekt oder wenn einmal etwas nachjustiert werden muss.
+**Stand 9. August 2026: ein Schritt offen — Schritt 0, der Firmencode.**
+Zwei Minuten, direkt in der App, ohne Google-Konsole. Alles andere (A–F)
+ist erledigt und bleibt hier als Nachschlagewerk stehen – für den nächsten
+Kunden oder ein neues Firebase-Projekt.
 
-Beide brauchen **den Google-Account, der das Firebase-Projekt `formenchat`
-besitzt** – also deinen.
+Die Schritte A–D brauchen **den Google-Account, der das Firebase-Projekt
+`formenchat` besitzt** – also deinen. Schritt 0 nicht: den machst du als
+Chef in der App.
 
 ---
 
 # Schnellanleitung – Schritt für Schritt
 
-> **Stand 9. August 2026: A bis F sind alle erledigt.**
-> Die Sicherung läuft – der erste Lauf hat geklappt:
-> `✓ gs://formenchat.firebasestorage.app/sicherung/manuell-2026-08-09-01-28-53`
-> Sie meldet sich ab jetzt von allein, wenn eine Nacht einmal nicht
-> durchkommt. Apps Script ist neu bereitgestellt, Wischen im Putzplan am
-> Gerät bestätigt. **Es ist nichts mehr offen.**
+> **A bis F sind erledigt.** Die Sicherung läuft – der erste Lauf hat
+> geklappt: `sicherung/manuell-2026-08-09-01-28-53`. Sie meldet sich ab
+> jetzt von allein, wenn eine Nacht nicht durchkommt. Apps Script ist neu
+> bereitgestellt, Wischen im Putzplan am Gerät bestätigt.
+>
+> **Offen ist nur noch Schritt 0 direkt darunter.**
 
 Der Reihe nach abarbeiten. Die Begründungen stehen weiter unten; hier steht
 nur, was du klickst. **Melde dich vorher mit dem Google-Account an, dem
 `formenchat` gehört.**
+
+## 0 · Firmencode setzen (2 Minuten) — NEU, wichtig
+
+> **Bis du das machst, kann sich jeder anmelden, der die Adresse der App
+> kennt** – und sieht dann Teamchat, Personenliste, Aufgaben und
+> Dokumente. Nicht sichtbar bleiben nur Direktnachrichten, Nachweise und
+> der Papierkorb.
+
+In der App: **Verwaltung → Team → „🔑 Wer darf sich anmelden"**
+
+1. Bei **Firmencode** etwas eintragen, das man weitergeben kann –
+   z. B. `KF-Team-2026`. Keine Geheimniskrämerei nötig, es geht darum,
+   Fremde draußen zu halten.
+2. Haken bei **„Neue Konten erst nach meiner Freigabe aktiv"** setzen.
+   Empfohlen: Das fängt auch den Fall ab, dass der Code die Runde macht –
+   etwa bei jemandem, der gegangen ist.
+3. **Speichern**.
+4. Den Code einmal ins Team geben. WhatsApp-Gruppe, Aushang im Studio,
+   wie du magst.
+
+**Für alle, die schon da sind, ändert sich nichts.** Bestehende Konten
+laufen unverändert weiter — das ist in den Regeln ausdrücklich so gebaut
+und mit Tests abgesichert.
+
+Meldet sich danach jemand neu an, steht er in **Verwaltung → Team** ganz
+oben unter **„⏳ Wartet auf Freigabe"**, mit *Freigeben* und *Ablehnen*.
+Bis du freigibst, sieht die Person nur einen Wartebildschirm.
+
+---
 
 ## A · Speicher anlegen (2 Minuten)
 
@@ -302,6 +333,8 @@ dass gar nicht gesichert wurde.
 | Storage-Objekt-Administrator gesetzt | ☑ 9.8. |
 | „Jetzt zusätzlich sichern" meldet Erfolg | ☑ 9.8. |
 | Budget-Warnung angelegt *(0 €, meldet beim ersten Cent)* | ☑ 9.8. |
+| **Firmencode gesetzt + Freigabe eingeschaltet** | ☐ |
+| Code einmal ins Team gegeben | ☐ |
 | Apps Script eingefügt und neu bereitgestellt | ☑ 9.8. |
 | Wischen im Putzplan am Gerät geprüft | ☑ 9.8. |
 
