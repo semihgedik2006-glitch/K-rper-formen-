@@ -467,7 +467,30 @@ Weitere. Kein Umzug, keine Regeländerung an der Firmengrenze.
 Pfade verschachteln, Regeln umbauen, rund zwanzig Kreuztests schreiben,
 Migrations-Function bauen, Probelauf, Live-Umzug.
 
-Das ist der Brocken. Hier steckt das ganze Risiko.
+Das ist der Brocken. Hier steckt das ganze Risiko. Deshalb in vier
+Teilschritten, von denen jeder einzeln lauffähig ist und für sich
+ausgerollt werden kann:
+
+| | Was | Risiko |
+|---|---|---|
+| **A** ✅ | Alle Zugriffe laufen über **eine** Funktion `S()`, die vorerst die heutigen Pfade zurückgibt | keins — Verhalten identisch |
+| **B** | `firma` am Konto, `S()` schaltet um, Regeln, Kreuztests | mittel, noch ohne Live-Daten |
+| **C** | Umzugs-Function, Probelauf, Live-Umzug | **hoch** |
+| **D** | Admin-Oberfläche | keins |
+
+> **Stufe 2A erledigt am 11. August 2026.** 114 Aufrufe von
+> `db.collection('…')` laufen jetzt durch `S(name)`. Heute gibt sie
+> denselben Pfad zurück wie vorher; in Stufe B wird dort **eine** Zeile
+> ergänzt und die Trennung gilt überall.
+>
+> Drei Sammlungen laufen bewusst **nicht** durch `S()`:
+> `users` (beim Anmelden ist die Firma noch unbekannt — sie steht ja
+> dort), `beitritt` (wird vor dem Profil geschrieben) und `pushTokens`
+> (hängt am Gerät, nicht an der Firma).
+>
+> Der Wert dieses Schritts ist nicht, was er tut, sondern was er
+> verhindert: in Stufe B gibt es keine 114 Gelegenheiten mehr, das
+> Präfix zu vergessen. Es gibt genau eine.
 
 ### Stufe 3 — Admin-Oberfläche · ~1 Sitzung · kein Risiko
 

@@ -38,7 +38,9 @@ if ! curl -s -o /dev/null --max-time 3 http://127.0.0.1:8765/index.html; then
 fi
 
 gruen=0; rot=0; stumm=0
-declare -a ROTE
+# Leer vorbelegen: mit "set -u" ist ein unbenutztes Array am Ende ein
+# Fehler, und dann stirbt der Läufer genau dann, wenn ALLES grün war.
+ROTE=()
 
 for f in tests/test-*.js; do
   name=$(basename "$f" .js)
@@ -77,8 +79,12 @@ echo
 echo "══════════════════════════════════════════════"
 echo "  $gruen grün · $rot rot · $stumm ohne Ausgabe"
 echo "══════════════════════════════════════════════"
-if [ ${#ROTE[@]} -gt 0 ]; then
+if [ "${#ROTE[@]}" -gt 0 ]; then
   echo
   for z in "${ROTE[@]}"; do echo "  ✗ $z"; done
 fi
-[ $rot -eq 0 ] || exit 1
+# Nicht in eine Pipe schreiben lassen und dabei den Rückgabewert
+# verlieren: wer "bash tests/alle.sh | tail" aufruft, bekommt sonst den
+# Wert von tail. Deshalb steht das Ergebnis auch im Text.
+[ "$rot" -eq 0 ] || exit 1
+exit 0

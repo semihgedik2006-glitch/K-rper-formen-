@@ -3932,6 +3932,37 @@ if(typeof firebase === 'undefined' || !firebase.initializeApp){
 }
 
 var auth, db;
+
+/* ── Die eine Stelle, an der die Firma später eingebaut wird ──
+   Stufe A von MANDANT-PLAN.md.
+
+   Bis hierher stand an 114 Stellen im Code der Sammlungsname direkt
+   hinter db.collection(...). Für mehrere Firmen muss daraus
+   firmen/{f}/… werden – und ein EINZIGES vergessenes Präfix würde einem
+   Kunden die Daten eines anderen zeigen.
+
+   Deshalb läuft ab jetzt jeder Zugriff auf firmen-eigene Daten durch
+   S(name). Heute gibt sie genau denselben Pfad zurück wie vorher, das
+   Verhalten ändert sich also nicht um ein Byte. In Stufe B wird hier
+   EINE Zeile ergänzt, und die Trennung gilt überall.
+
+   NICHT durch S() laufen (bewusst, jeweils mit Grund):
+     users       – beim Anmelden weiss die App noch nicht, zu welcher
+                   Firma jemand gehoert; sie muss es dort erst nachsehen
+     beitritt    – wird vor dem Anlegen des Profils geschrieben
+     pushTokens  – haengt am Geraet, nicht an der Firma; die
+                   Server-Funktion findet es ueber die Kennung           */
+var _firma = null;          // wird in Stufe B aus dem Profil gesetzt
+function S(name){
+  return _firma
+    ? db.collection('firmen').doc(_firma).collection(name)
+    : db.collection(name);
+}
+/* Einzeldokumente der Firma selbst (Stufe B). Heute unbenutzt. */
+function FDoc(){
+  return _firma ? db.collection('firmen').doc(_firma) : null;
+}
+
 try{
   firebase.initializeApp(FIREBASE_CONFIG);
   auth = firebase.auth();
@@ -4395,7 +4426,7 @@ function renderStandorte(){
    damit „naechste" nie zurückgedreht wird und die Reihenfolge nie
    durcheinanderkommt. */
 function studiosSpeichern(liste, meldung){
-  return db.collection('config').doc('studios')
+  return S('config').doc('studios')
     .set({ liste: liste, naechste: _studioNaechste }, { merge:false })
     .then(function(){ if(meldung) toast(meldung); })
     .catch(function(e){ toast(errMsg(e), true); });
@@ -4442,7 +4473,7 @@ function studioListeSetzen(d){
 
 function listenStudios(){
   if(_studiosUnsub) return;
-  _studiosUnsub = db.collection('config').doc('studios').onSnapshot(function(doc){
+  _studiosUnsub = S('config').doc('studios').onSnapshot(function(doc){
     var vorher = STUDIOS.join('|');
     if(doc.exists) studioListeSetzen(doc.data());
     if(STUDIOS.join('|') !== vorher) studioAuswahlenNeu();
@@ -4453,7 +4484,7 @@ function listenStudios(){
    Ohne dieses eine Lesen stünden beim ersten Bild die Studios aus
    konfig.js – und wer eins umbenannt hat, sähe kurz den alten Namen. */
 function studiosLaden(){
-  return db.collection('config').doc('studios').get()
+  return S('config').doc('studios').get()
     .then(function(doc){ if(doc.exists) studioListeSetzen(doc.data()); })
     .catch(function(e){
       // Kein Grund zum Abbruch: dann gilt eben die Liste aus konfig.js.
@@ -4732,17 +4763,17 @@ function doForward(kind, id, name){
   if(kind==='chan'){
     doc.role=session.role;
     doc.studio=channelStudioName(id);
-    db.collection('channels').doc(id).collection('messages').add(doc)
+    S('channels').doc(id).collection('messages').add(doc)
       .then(function(){ toast('Weitergeleitet an '+name+' ✓'); })
       .catch(function(e){ toast(errMsg(e),true); });
   } else {
     var dmId='dm_'+[session.uid,id].sort().join('_');
     var now=Date.now();
-    db.collection('dms').doc(dmId).collection('messages').add(doc)
+    S('dms').doc(dmId).collection('messages').add(doc)
       .then(function(){
         var names={}; names[session.uid]=session.name; names[id]=name;
         var rt={}; rt[session.uid]=now;
-        return db.collection('dms').doc(dmId).set({
+        return S('dms').doc(dmId).set({
           participants:[session.uid,id], names:names,
           last:fwdSummary(m), lastTs:now, lastSender:session.uid, readTs:rt
         },{merge:true});
@@ -5064,7 +5095,7 @@ function renderPinBar(){
     // wegräumen, die für alle oben stehen soll
     off.style.display = canManage() ? '' : 'none';
     off.onclick=function(){
-      db.collection('channels').doc(currentChannel).collection('messages').doc(m.id)
+      S('channels').doc(currentChannel).collection('messages').doc(m.id)
         .update({ pinned:false })
         .then(function(){ toast('Losgelöst'); })
         .catch(function(e){ toast(errMsg(e),true); });
@@ -5113,7 +5144,7 @@ function toTrash(col, sk, item){
   if(!item || !session) return Promise.resolve();
   var data={};
   Object.keys(item).forEach(function(k){ if(k!=='id') data[k]=item[k]; });
-  return db.collection('trash').add({
+  return S('trash').add({
     col:col, sk:sk||null, orig:item.id, data:data,
     deletedBy:session.name, deletedByUid:session.uid, deletedAt:Date.now()
   }).catch(function(e){ console.warn('Papierkorb:', e.message); });
@@ -5132,11 +5163,11 @@ function listenTrash(){
   // bräuchte einen zusätzlichen Index. Sortiert wird hier in der App.
   var q;
   if(isChef()){
-    q=db.collection('trash').orderBy('deletedAt','desc').limit(100);
+    q=S('trash').orderBy('deletedAt','desc').limit(100);
   } else {
     var mk=(managedKeys()||[]).slice(0,30);   // "in" verträgt höchstens 30
     if(!mk.length){ _trash=[]; renderTrash(); return; }
-    q=db.collection('trash').where('sk','in',mk).limit(100);
+    q=S('trash').where('sk','in',mk).limit(100);
   }
 
   _trashUnsub=q.onSnapshot(function(snap){
@@ -5178,11 +5209,11 @@ function renderTrash(){
 function trashRef(t){
   if(t.col==='todos' || t.col==='cleaning'){
     if(!t.sk) return null;
-    return db.collection('studios').doc(t.sk).collection(t.col).doc(t.orig);
+    return S('studios').doc(t.sk).collection(t.col).doc(t.orig);
   }
-  if(t.col==='announcements') return db.collection('announcements').doc(t.orig);
-  if(t.col==='documents')     return db.collection('documents').doc(t.orig);
-  if(t.col==='board')         return db.collection('board').doc(t.orig);
+  if(t.col==='announcements') return S('announcements').doc(t.orig);
+  if(t.col==='documents')     return S('documents').doc(t.orig);
+  if(t.col==='board')         return S('board').doc(t.orig);
   return null;
 }
 
@@ -5195,7 +5226,7 @@ function restoreFromTrash(id){
     .then(function(){
       // Erst nach erfolgreichem Zurückschreiben aus dem Papierkorb nehmen –
       // sonst wäre der Eintrag bei einem Fehler ganz weg
-      return db.collection('trash').doc(id).delete();
+      return S('trash').doc(id).delete();
     })
     .then(function(){
       toast((TRASH_LABEL[t.col]||'Eintrag')+' zurückgeholt ✓');
@@ -5211,11 +5242,11 @@ function emptyTrash(){
               ' werden unwiderruflich gelöscht.')) return;
   var batch=db.batch();
   _trash.forEach(function(t){
-    batch.delete(db.collection('trash').doc(t.id));
+    batch.delete(S('trash').doc(t.id));
     // Jetzt darf auch der Dateiinhalt weg – vorher wäre das Zurückholen
     // nur eine leere Hülle gewesen
     if(t.col==='documents' && t.data && t.data.kind!=='link' && t.orig){
-      batch.delete(db.collection('documentData').doc(t.orig));
+      batch.delete(S('documentData').doc(t.orig));
     }
   });
   batch.commit()
@@ -5245,7 +5276,7 @@ function offerUndoDoc(ref, item, was, danach){
 }
 /* Eine gelöschte Aufgabe zurückholen. */
 function offerUndoTodo(sk, backup){
-  offerUndoDoc(db.collection('studios').doc(sk).collection('todos').doc(backup.id), backup, 'Aufgabe');
+  offerUndoDoc(S('studios').doc(sk).collection('todos').doc(backup.id), backup, 'Aufgabe');
 }
 /* Kopie eines Eintrags aus einer Liste ziehen (vor dem Löschen aufrufen). */
 function copyOf(list, id){
@@ -5553,7 +5584,7 @@ var _registering = false; // verhindert vorzeitiges Ausloggen während der Chef-
    Beide stehen auf „aus", solange nichts anderes eingetragen ist. */
 var _beitritt = { code:false, freigabe:false };
 function beitrittSchalterLaden(){
-  return db.collection('config').doc('beitrittSchalter').get().then(function(doc){
+  return S('config').doc('beitrittSchalter').get().then(function(doc){
     var d = doc.exists ? (doc.data()||{}) : {};
     _beitritt.code     = d.codeNoetig === true;
     _beitritt.freigabe = d.freigabe   === true;
@@ -6408,7 +6439,7 @@ function watchChannelUnread(){
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} });
   _chanUnsubs=[];
   _chanList.forEach(function(ch){
-    var un=db.collection('channels').doc(ch).collection('messages')
+    var un=S('channels').doc(ch).collection('messages')
       .orderBy('ts').limitToLast(12)
       .onSnapshot(function(snap){
         // Auch die eigenen Nachrichten merken: sie zählen zwar nicht als
@@ -6681,7 +6712,7 @@ function renderFreigaben(){
    lesbar, weil das Anmeldeformular sie vor dem Login braucht). */
 function beitrittLaden(){
   if(!isChef()) return;
-  db.collection('config').doc('registrierung').get().then(function(doc){
+  S('config').doc('registrierung').get().then(function(doc){
     var d=doc.exists?(doc.data()||{}):{};
     var c=$('btCode'); if(c) c.value=d.code||'';
     var f=$('btFreigabe'); if(f) f.checked = d.freigabe===true;
@@ -6693,9 +6724,9 @@ function beitrittSpeichern(btn){
   var note=$('btNote');
   withBusy(btn,function(){
     var b=db.batch();
-    b.set(db.collection('config').doc('registrierung'),
+    b.set(S('config').doc('registrierung'),
           { code:code, freigabe:frei, ts:Date.now() });
-    b.set(db.collection('config').doc('beitrittSchalter'),
+    b.set(S('config').doc('beitrittSchalter'),
           { codeNoetig: code!=='', freigabe:frei, ts:Date.now() });
     return b.commit().then(function(){
       _beitritt.code = code!==''; _beitritt.freigabe = frei;
@@ -6836,7 +6867,7 @@ function uploadDoc(){
   // 1) Link-Dokument (für große Dateien, unbegrenzt & kostenlos)
   if(link){
     btn.disabled=true; note.style.color='var(--text-2)'; note.textContent='Wird gespeichert …';
-    db.collection('documents').add({
+    S('documents').add({
       name:name||link, kind:'link', url:link, cat:(($('docCat')||{}).value||''),
       studios:target, uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
     }).then(function(){ note.style.color='var(--accent-d)'; note.textContent='✓ Link hinzugefügt.'; resetForm(); btn.disabled=false; })
@@ -6855,14 +6886,14 @@ function uploadDoc(){
       note.textContent='Datei zu groß für den kostenlosen Upload. Bitte als Link (Google Drive) einfügen.';
       btn.disabled=false; return;
     }
-    var ref=db.collection('documents').doc();
+    var ref=S('documents').doc();
     var id=ref.id;
     ref.set({
       name:name, fileName:file.name, kind:'file', size:file.size, type:file.type||'',
       cat:(($('docCat')||{}).value||''),
       studios:target, uploadedBy:session.name, uploadedByUid:session.uid, ts:Date.now()
     }).then(function(){
-      return db.collection('documentData').doc(id).set({ data:dataUrl });
+      return S('documentData').doc(id).set({ data:dataUrl });
     }).then(function(){
       note.style.color='var(--accent-d)'; note.textContent='✓ Hinzugefügt.'; resetForm(); btn.disabled=false;
     }).catch(function(e){ note.style.color='var(--danger-tx)'; note.textContent='Fehler: '+e.message; btn.disabled=false; });
@@ -6885,7 +6916,7 @@ function uploadDoc(){
 
 function listenDocs(){
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
-  _docsUnsub=db.collection('documents').orderBy('ts','desc').limit(200)
+  _docsUnsub=S('documents').orderBy('ts','desc').limit(200)
     .onSnapshot(function(snap){
       renderDocs(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
     }, function(e){ console.error('Dokumente:',e.message); });
@@ -7041,7 +7072,7 @@ function docBlattAktion(was){
 /* In der Datenbank gespeicherte Datei herunterladen/öffnen */
 function openDocFile(d){
   toast('Wird geöffnet …');
-  db.collection('documentData').doc(d.id).get().then(function(doc){
+  S('documentData').doc(d.id).get().then(function(doc){
     if(!doc.exists || !doc.data().data){ toast('Datei nicht gefunden.',true); return; }
     var a=document.createElement('a'); a.href=doc.data().data;
     a.download=d.fileName||d.name||'dokument';
@@ -7058,7 +7089,7 @@ function docToTodo(d){
      studios.map(studioName).join(', '))) return;
   var batch=db.batch();
   studios.forEach(function(sk){
-    var ref=db.collection('studios').doc(sk).collection('todos').doc();
+    var ref=S('studios').doc(sk).collection('todos').doc();
     batch.set(ref,{
       title:'📄 '+(d.name||d.fileName),
       desc:(d.kind==='link'?'Dokument öffnen und abarbeiten.':'Dokument im Tab „Dokumente" abarbeiten.'),
@@ -7073,7 +7104,7 @@ function docToTodo(d){
 function deleteDoc(d){
   if(!confirm('Dokument „'+(d.name||d.fileName)+'" löschen?\n\nEs verschwindet für alle Studios. Das lässt sich nicht rückgängig machen.')) return;
   var backup=JSON.parse(JSON.stringify(d));
-  db.collection('documents').doc(d.id).delete().then(function(){
+  S('documents').doc(d.id).delete().then(function(){
     // Die Metadaten wandern in den Papierkorb. Der Datei-Inhalt bleibt in
     // documentData liegen und wird beim Zurückholen wieder gefunden –
     // deshalb löschen wir ihn erst, wenn der Papierkorb geleert wird.
@@ -7108,7 +7139,7 @@ function listenBoard(voll){
   if(_bbUnsub && (_bbVoll || !voll)) return;
   if(_bbUnsub){ _bbUnsub(); _bbUnsub=null; }
   _bbVoll=!!voll;
-  _bbUnsub=db.collection('board').orderBy('ts','desc').limit(voll?50:12)
+  _bbUnsub=S('board').orderBy('ts','desc').limit(voll?50:12)
     .onSnapshot(function(sn){
       _board=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       renderBoard();
@@ -7169,7 +7200,7 @@ var _chatMore=false;        // gibt es überhaupt noch ältere?
 function listenChannel(channelId){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
   var first=true, startTs=Date.now();
-  _chatUnsub = db.collection('channels').doc(channelId).collection('messages')
+  _chatUnsub = S('channels').doc(channelId).collection('messages')
     .orderBy('ts').limitToLast(_chatLimit)
     .onSnapshot(function(snap){
       if(!first){
@@ -7213,7 +7244,7 @@ function listenClean(){
   cachedClean={};
   var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
   keys.forEach(function(sk){
-    var unsub=db.collection('studios').doc(sk).collection('cleaning').orderBy('ts')
+    var unsub=S('studios').doc(sk).collection('cleaning').orderBy('ts')
       .onSnapshot(function(snap){
         // Abgelaufene gleich hier weg, damit Startseite, Liste, Fortschritt
         // und Ausdruck ohne weiteres Zutun dieselbe Zahl zeigen.
@@ -7255,7 +7286,7 @@ function listenTodos(){
 
 function listenTodoStudio(sk, notify){
   var first=true, startTs=Date.now();
-  var unsub=db.collection('studios').doc(sk).collection('todos')
+  var unsub=S('studios').doc(sk).collection('todos')
     .orderBy('ts')
     .onSnapshot(function(snap){
       if(notify && !first){
@@ -7278,7 +7309,7 @@ function listenTodoStudio(sk, notify){
 function listenAnnouncements(){
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
   var first=true, startTs=Date.now();
-  _annUnsub=db.collection('announcements').orderBy('ts','desc').limit(60)
+  _annUnsub=S('announcements').orderBy('ts','desc').limit(60)
     .onSnapshot(function(snap){
       if(!first){
         snap.docChanges().forEach(function(ch){
@@ -7308,7 +7339,7 @@ function markAnnouncementsRead(){
   _allAnns.forEach(function(a){
     var forMe = !a.target||a.target==='all'||session.studioKeys.indexOf(a.target)>=0;
     if(forMe && (a.readBy||[]).indexOf(session.uid)<0){
-      db.collection('announcements').doc(a.id).update({ readBy: fv.arrayUnion(session.uid) }).catch(function(){});
+      S('announcements').doc(a.id).update({ readBy: fv.arrayUnion(session.uid) }).catch(function(){});
     }
   });
 }
@@ -7423,7 +7454,7 @@ function pollHTML(m){
 function votePoll(msgId, idx){
   var feld={};
   feld['votes.'+session.uid]=idx;
-  db.collection('channels').doc(currentChannel).collection('messages').doc(msgId)
+  S('channels').doc(currentChannel).collection('messages').doc(msgId)
     .update(feld)
     .then(function(){ tick(6); })
     .catch(function(e){ toast(errMsg(e),true); });
@@ -7444,7 +7475,7 @@ function sendPoll(btn){
     .filter(function(x){ return !!x; });
   if(opts.length<2){ toast('Bitte mindestens zwei Antworten angeben.',true); return; }
   withBusy(btn,function(){
-    return db.collection('channels').doc(currentChannel).collection('messages').add({
+    return S('channels').doc(currentChannel).collection('messages').add({
       uid:session.uid, name:session.name, role:session.role,
       studio:channelStudioName(currentChannel),
       text:'', ts:Date.now(),
@@ -7653,7 +7684,7 @@ function msgBlattAktion(was){
   }
   if(was==='del'){
     if(!confirm('Nachricht löschen?')) return;
-    db.collection('channels').doc(currentChannel).collection('messages').doc(m.id).delete()
+    S('channels').doc(currentChannel).collection('messages').doc(m.id).delete()
       .catch(function(err){ toast('Löschen fehlgeschlagen: '+errMsg(err),true); });
   }
 }
@@ -7664,7 +7695,7 @@ function msgBlattAktion(was){
    angeheftete Nachricht kann längst aus dem Fenster gerutscht sein und bliebe
    sonst still angeheftet. */
 function pinNachricht(id, war){
-  var col=db.collection('channels').doc(currentChannel).collection('messages');
+  var col=S('channels').doc(currentChannel).collection('messages');
   if(war){
     col.doc(id).update({ pinned:false })
       .then(function(){ toast('Losgelöst'); })
@@ -7725,7 +7756,7 @@ function toggleReaction(mid, emoji){
   if(i>=0) list.splice(i,1); else list.push(session.uid);
   if(list.length) r[emoji]=list; else delete r[emoji];
   tick(8);
-  db.collection('channels').doc(currentChannel).collection('messages').doc(mid)
+  S('channels').doc(currentChannel).collection('messages').doc(mid)
     .update({ reactions:r }).catch(function(e){ toast(errMsg(e),true); });
 }
 
@@ -7827,7 +7858,7 @@ function antraegeSuchen(){
   _antraegeLaeuft=true;
   var heute=ymd(new Date());
   Promise.all(managedKeys().map(function(sk){
-    return db.collection('studios').doc(sk).collection('absences')
+    return S('studios').doc(sk).collection('absences')
       .where('status','==','offen').get()
       .then(function(s){
         var n=0;
@@ -7872,7 +7903,7 @@ function loadTeam(sk){
   // Erst leeren, damit nicht kurz die Schichten des vorigen Studios stehen
   _shifts=[]; _absences=[]; _handovers=[];
   renderShifts(); renderAbsences(); renderHandovers();
-  var ref=db.collection('studios').doc(sk);
+  var ref=S('studios').doc(sk);
   _shiftUnsub=ref.collection('shifts').orderBy('date').onSnapshot(function(sn){
     _shifts=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
     renderShifts();
@@ -7957,7 +7988,7 @@ function renderShifts(){
   box.querySelectorAll('[data-shdel]').forEach(function(b){
     b.addEventListener('click',function(){
       if(!confirm('Schicht entfernen?')) return;
-      db.collection('studios').doc(_teamStudioKey).collection('shifts').doc(b.getAttribute('data-shdel'))
+      S('studios').doc(_teamStudioKey).collection('shifts').doc(b.getAttribute('data-shdel'))
         .delete().catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -8012,7 +8043,7 @@ function shiftById(id){
   return null;
 }
 function shiftRef(id){
-  return db.collection('studios').doc(_teamStudioKey).collection('shifts').doc(id);
+  return S('studios').doc(_teamStudioKey).collection('shifts').doc(id);
 }
 
 function bindTauschClicks(box){
@@ -8131,7 +8162,7 @@ function renderAbsences(){
   }).join('');
 
   function entscheide(id, neuerStatus){
-    db.collection('studios').doc(_teamStudioKey).collection('absences').doc(id)
+    S('studios').doc(_teamStudioKey).collection('absences').doc(id)
       .update({ status:neuerStatus, decidedBy:session.name, decidedByUid:session.uid, decidedAt:Date.now() })
       .then(function(){ toast(neuerStatus==='genehmigt'?'Genehmigt ✓':'Abgelehnt'); })
       .catch(function(e){ toast(errMsg(e),true); });
@@ -8148,10 +8179,10 @@ function renderAbsences(){
   box.querySelectorAll('[data-absdel]').forEach(function(b){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-absdel'), backup=copyOf(_absences, id);
-      db.collection('studios').doc(_teamStudioKey).collection('absences').doc(id)
+      S('studios').doc(_teamStudioKey).collection('absences').doc(id)
         .delete()
         .then(function(){
-          offerUndoDoc(db.collection('studios').doc(_teamStudioKey).collection('absences').doc(id),
+          offerUndoDoc(S('studios').doc(_teamStudioKey).collection('absences').doc(id),
             backup, 'Eintrag');
         })
         .catch(function(e){ toast(errMsg(e),true); });
@@ -8172,7 +8203,7 @@ function renderHandovers(){
   }).join('');
   box.querySelectorAll('[data-hodel]').forEach(function(b){
     b.addEventListener('click',function(){
-      db.collection('studios').doc(_teamStudioKey).collection('handovers').doc(b.getAttribute('data-hodel'))
+      S('studios').doc(_teamStudioKey).collection('handovers').doc(b.getAttribute('data-hodel'))
         .delete().catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -8192,10 +8223,10 @@ function renderBoard(){
   box.querySelectorAll('[data-bbdel]').forEach(function(x){
     x.addEventListener('click',function(){
       var id=x.getAttribute('data-bbdel'), backup=copyOf(_board, id);
-      db.collection('board').doc(id).delete()
+      S('board').doc(id).delete()
         .then(function(){
           toTrash('board', null, backup);
-          offerUndoDoc(db.collection('board').doc(id), backup, 'Beitrag');
+          offerUndoDoc(S('board').doc(id), backup, 'Beitrag');
         })
         .catch(function(e){ toast(errMsg(e),true); });
     });
@@ -8546,7 +8577,7 @@ function loadMyShifts(force){
   var heute=ymd(new Date());
   var bis=new Date(); bis.setDate(bis.getDate()+7); bis=ymd(bis);
   var jobs=keys.map(function(sk){
-    return db.collection('studios').doc(sk).collection('shifts')
+    return S('studios').doc(sk).collection('shifts')
       .where('date','>=',heute).where('date','<=',bis).get()
       .then(function(sn){
         return sn.docs.map(function(d){ return Object.assign({id:d.id, sk:sk}, d.data()); });
@@ -8899,7 +8930,7 @@ function clearArchive(){
   var chunks=[]; for(var i=0;i<refs.length;i+=400) chunks.push(refs.slice(i,i+400));
   Promise.all(chunks.map(function(ch){
     var b=db.batch();
-    ch.forEach(function(r){ b.delete(db.collection('studios').doc(r.sk).collection('todos').doc(r.id)); });
+    ch.forEach(function(r){ b.delete(S('studios').doc(r.sk).collection('todos').doc(r.id)); });
     return b.commit();
   })).then(function(){ toast('Archiv geleert ✓'); }).catch(function(e){ toast(errMsg(e),true); });
 }
@@ -9010,7 +9041,7 @@ function bindTodoClicks(area){
         if(openOthers===0 && list.length>0){ fireConfetti(); toast('Alle Aufgaben erledigt! 🎉'); }
         else toast(pickPraise());                  // kleines Lob beim Abhaken
       }
-      db.collection('studios').doc(sk).collection('todos').doc(id)
+      S('studios').doc(sk).collection('todos').doc(id)
         .update({done:done,doneBy:done?session.name:null,doneAt:done?Date.now():null})
         .catch(function(e){ toast(errMsg(e),true); });
     });
@@ -9025,7 +9056,7 @@ function bindTodoClicks(area){
           return { t:s.t, d: i===idx ? !s.d : !!s.d };
         });
         li.classList.toggle('done'); tick();       // sofortiges Gefühl, Server folgt
-        db.collection('studios').doc(sk).collection('todos').doc(id)
+        S('studios').doc(sk).collection('todos').doc(id)
           .update({ steps:steps })
           .catch(function(err){ li.classList.toggle('done'); toast(errMsg(err),true); });
       });
@@ -9082,7 +9113,7 @@ function renderAnnouncements(anns){
       b.addEventListener('click',function(){
         var on = b.getAttribute('data-on')==='1';
         tick(8);
-        db.collection('announcements').doc(b.dataset.pin).update({ pinned: !on })
+        S('announcements').doc(b.dataset.pin).update({ pinned: !on })
           .then(function(){ toast(on?'Nicht mehr angeheftet':'Oben angeheftet 📌'); })
           .catch(function(e){ toast(errMsg(e),true); });
       });
@@ -9091,10 +9122,10 @@ function renderAnnouncements(anns){
       b.addEventListener('click',function(){
         if(!confirm('Ankündigung löschen?\n\nSie verschwindet bei allen Mitarbeitern.')) return;
         var id=b.dataset.id, backup=copyOf(_allAnns, id);
-        db.collection('announcements').doc(id).delete()
+        S('announcements').doc(id).delete()
           .then(function(){
             toTrash('announcements', null, backup);
-            offerUndoDoc(db.collection('announcements').doc(id), backup, 'Ankündigung');
+            offerUndoDoc(S('announcements').doc(id), backup, 'Ankündigung');
           })
           .catch(function(e){ toast(errMsg(e),true); });
       });
@@ -9161,7 +9192,7 @@ function listenInventoryAll(){
   }
 
   if(canManage()){
-    _invUnsub=db.collection('inventory').onSnapshot(function(snap){
+    _invUnsub=S('inventory').onSnapshot(function(snap){
       _invAll={}; snap.forEach(function(d){ _invAll[d.id]=(d.data().items||[]); });
       fertig();
     }, function(e){ console.error('Inventar:',e.message); });
@@ -9170,7 +9201,7 @@ function listenInventoryAll(){
 
   // Mitarbeiter: nur die eigenen Studios, je ein Dokument
   (session.studioKeys||[]).forEach(function(sk){
-    var u=db.collection('inventory').doc(sk).onSnapshot(function(doc){
+    var u=S('inventory').doc(sk).onSnapshot(function(doc){
       _invAll[sk]=(doc.exists && doc.data().items) || [];
       fertig();
     }, function(e){ console.warn('Inventar '+sk+':', e.message); });
@@ -9679,7 +9710,7 @@ function sicherungKaputt(){
   return !_sichStand.ok || (Date.now()-_sichStand.ts > 36*3600000);
 }
 function sicherungStandLaden(){
-  return db.collection('config').doc('sicherung').get().then(function(doc){
+  return S('config').doc('sicherung').get().then(function(doc){
     _sichStand = doc.exists ? (doc.data()||{}) : {};
     if(_chefTab==='ueberblick') renderAttention();
     return _sichStand;
@@ -9771,7 +9802,7 @@ function loadMaterial(sk){
   // die Bestände des vorigen Studios da – und wer sofort tippt, würde sie
   // versehentlich beim neuen Studio speichern.
   if(wechsel){ _matItems=[]; renderMaterial(); }
-  _matUnsub=db.collection('inventory').doc(sk).onSnapshot(function(doc){
+  _matUnsub=S('inventory').doc(sk).onSnapshot(function(doc){
     // Eigene Schreibvorgänge oder aktives Tippen nicht überschreiben
     if(doc.metadata.hasPendingWrites) return;
     if(document.activeElement && document.activeElement.closest && document.activeElement.closest('#matTable')) return;
@@ -10095,7 +10126,7 @@ function saveMaterialNow(){
   if(!sk) return;
   clearTimeout(_matSaveTimer); _matSaveTimer=null; _matSaveKey=null;
   var items=_matItems.slice();
-  db.collection('inventory').doc(sk).set({
+  S('inventory').doc(sk).set({
     items:items, updatedAt:Date.now(), updatedBy:session.name
   }).then(function(){
     var s=$('matSaved'); if(s){ s.textContent='✓ Gespeichert'; setTimeout(function(){ s.style.opacity='0'; },1500); }
@@ -10179,7 +10210,7 @@ function loadPutzplan(sk){
   // doppelt bezahlt und würde bei jedem Studiowechsel neu aufgebaut.
   _ppTasks = cachedClean[sk] || [];
   renderPutzplan();
-  _ppNoteUnsub=db.collection('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50)
+  _ppNoteUnsub=S('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50)
     .onSnapshot(function(snap){
       _ppNotes=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       renderPutzNotes();
@@ -10252,7 +10283,7 @@ function bindPutzplanClicks(box){
         if(node){ node.classList.add('just-done'); setTimeout(function(){ node.classList.remove('just-done'); },720); }
         burstAt(chk); tick(); toast(pickPraise());
       }
-      db.collection('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
+      S('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
         .update({ done:willDone, doneBy:willDone?session.name:null, doneByUid:willDone?session.uid:null, doneAt:willDone?Date.now():null })
         .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
         .catch(function(e){ toast(errMsg(e),true); });
@@ -10267,11 +10298,11 @@ function bindPutzplanClicks(box){
       var id=b.getAttribute('data-del');
       if(!confirm('Putzaufgabe löschen?\n\nSie verschwindet aus dem Putzplan dieses Studios. Bereits gesicherte Wochen bleiben unverändert.')) return;
       var sk=_ppStudioKey, backup=copyOf(_ppTasks, id);
-      db.collection('studios').doc(sk).collection('cleaning').doc(id).delete()
+      S('studios').doc(sk).collection('cleaning').doc(id).delete()
         .then(function(){
           schedulePutzplanSheets(sk);
           toTrash('cleaning', sk, backup);
-          offerUndoDoc(db.collection('studios').doc(sk).collection('cleaning').doc(id),
+          offerUndoDoc(S('studios').doc(sk).collection('cleaning').doc(id),
             backup, 'Putzaufgabe', function(){ schedulePutzplanSheets(sk); });
         })
         .catch(function(e){ toast(errMsg(e),true); });
@@ -10296,7 +10327,7 @@ function addPutzTask(btn){
   withBusy(btn,function(){
     var batch=db.batch();
     targets.forEach(function(sk){
-      var ref=db.collection('studios').doc(sk).collection('cleaning').doc();
+      var ref=S('studios').doc(sk).collection('cleaning').doc();
       var data={ title:title, done:false, doneBy:null, doneAt:null,
         createdBy:session.name, createdByUid:session.uid, ts:Date.now() };
       if(recurring){ data.recurring=recurring;
@@ -10319,7 +10350,7 @@ function addPutzNote(){
   if(!text){ return; }
   if(!_ppStudioKey){ toast('Bitte zuerst ein Studio wählen.',true); return; }
   inp.value='';
-  db.collection('studios').doc(_ppStudioKey).collection('cleaningNotes').add({
+  S('studios').doc(_ppStudioKey).collection('cleaningNotes').add({
     text:text, by:session.name, byUid:session.uid, ts:Date.now()
   }).then(function(){ schedulePutzplanSheets(_ppStudioKey); })
     .catch(function(e){ toast(errMsg(e),true); });
@@ -10339,7 +10370,7 @@ function renderPutzNotes(){
   box.querySelectorAll('[data-notedel]').forEach(function(b){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-notedel');
-      db.collection('studios').doc(_ppStudioKey).collection('cleaningNotes').doc(id).delete()
+      S('studios').doc(_ppStudioKey).collection('cleaningNotes').doc(id).delete()
         .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
@@ -10374,7 +10405,7 @@ function runPutzplanSheets(sk){
    bringen, die die Tabelle erwartet. Getrennt vom Senden, damit derselbe
    Aufbau auch für die Sammelsendung aller Studios taugt. */
 function putzplanDatenHolen(sk){
-  var studioRef=db.collection('studios').doc(sk);
+  var studioRef=S('studios').doc(sk);
   return Promise.all([
     studioRef.collection('cleaning').orderBy('ts').get(),
     studioRef.collection('cleaningNotes').orderBy('ts','desc').limit(50).get()
@@ -10433,7 +10464,7 @@ function syncAllPutzplanToSheets(){
    einzelne Studios, ohne dass irgendwo eine Fehlermeldung stand. */
 function syncAllMaterialToSheets(){
   if(!SHEETS_WEBHOOK_URL) return Promise.resolve();
-  return db.collection('inventory').get().then(function(snap){
+  return S('inventory').get().then(function(snap){
     var studios=[];
     snap.forEach(function(d){
       var items=(d.data().items)||[];
@@ -10484,7 +10515,7 @@ function startPeriodWatcher(){
 /* Excel-Export aller Studios (öffnet sich direkt in Excel) */
 function exportMaterialExcel(){
   toast('Export wird erstellt …');
-  db.collection('inventory').get().then(function(snap){
+  S('inventory').get().then(function(snap){
     var byStudio={}; snap.forEach(function(d){ byStudio[d.id]=(d.data().items||[]); });
 
     // Materialnamen: Standardliste + alle eigenen Artikel
@@ -10598,7 +10629,7 @@ function devDefekteSuchen(){
   _devDefekteLaeuft=true;
   var keys=managedKeys();
   Promise.all(keys.map(function(sk){
-    return db.collection('studios').doc(sk).collection('devices')
+    return S('studios').doc(sk).collection('devices')
       .where('status','==','defekt').get()
       .then(function(s){ return {sk:sk, n:s.size}; })
       .catch(function(){ return {sk:sk, n:0}; });
@@ -10638,7 +10669,7 @@ function loadDevices(sk){
   if(_devLogUnsub){ _devLogUnsub(); _devLogUnsub=null; }
   // Erst leeren – sonst stehen kurz die Geräte des vorigen Studios da
   _devices=[]; _devLog=[]; renderDevices();
-  var ref=db.collection('studios').doc(sk);
+  var ref=S('studios').doc(sk);
   _devUnsub=ref.collection('devices').orderBy('name')
     .onSnapshot(function(snap){
       _devices=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
@@ -10767,7 +10798,7 @@ function saveDevice(btn){
   var name=$('devmName2').value.trim();
   if(!name){ toast('Die Bezeichnung darf nicht leer sein.',true); return; }
   withBusy(btn,function(){
-    return db.collection('studios').doc(_devStudioKey).collection('devices').doc(d.id)
+    return S('studios').doc(_devStudioKey).collection('devices').doc(d.id)
       .update({ name:name, place:$('devmPlace2').value.trim() })
       .then(function(){ toast('Gespeichert ✓'); })
       .catch(function(e){ toast(errMsg(e),true); });
@@ -10803,7 +10834,7 @@ function reportDevice(art, btn){
   var text=($('devmText')?$('devmText').value:'').trim();
   if(art!=='behoben' && !text){ toast('Bitte kurz beschreiben, was los ist.',true); return; }
   var status = art==='behoben' ? 'ok' : (art==='wartung' ? 'wartung' : 'defekt');
-  var ref=db.collection('studios').doc(_devStudioKey);
+  var ref=S('studios').doc(_devStudioKey);
   var eintrag={
     devId:d.id, devName:d.name||'Gerät', art:art,
     text:text, by:session.name, byUid:session.uid, ts:Date.now()
@@ -10852,7 +10883,7 @@ function addDevice(btn){
   if(!name){ toast('Bitte eine Bezeichnung eingeben.',true); return; }
   var place=$('devPlace').value.trim();
   withBusy(btn,function(){
-    return db.collection('studios').doc(_devStudioKey).collection('devices').add({
+    return S('studios').doc(_devStudioKey).collection('devices').add({
       name:name, place:place, status:'ok',
       createdBy:session.name, createdByUid:session.uid, ts:Date.now()
     }).then(function(){
@@ -10865,7 +10896,7 @@ function addDevice(btn){
 function deleteDevice(){
   var d=deviceById(_devOpenId); if(!d || !_devStudioKey) return;
   if(!confirm('Gerät „'+(d.name||'')+'" entfernen?\n\nDer Verlauf dazu bleibt erhalten.')) return;
-  db.collection('studios').doc(_devStudioKey).collection('devices').doc(d.id).delete()
+  S('studios').doc(_devStudioKey).collection('devices').doc(d.id).delete()
     .then(function(){ closeDeviceModal(); toast('Gerät entfernt'); })
     .catch(function(e){ toast(errMsg(e),true); });
 }
@@ -11033,7 +11064,7 @@ function todoBlattSchliessen(){ var b=$('todoSheet'); if(b) b.classList.remove('
 function todoBlattAktion(was){
   var t=_tbTodo, sk=_tbSk;
   if(!t || !sk) return;
-  var ref=db.collection('studios').doc(sk).collection('todos').doc(t.id);
+  var ref=S('studios').doc(sk).collection('todos').doc(t.id);
   todoBlattSchliessen();
 
   if(was==='foto'){ _todoPhotoTarget={ sk:sk, id:t.id }; $('todoFileShared').click(); return; }
@@ -11129,7 +11160,7 @@ function saveTodoEdit(btn){
   }
 
   withBusy(btn,function(){
-    return db.collection('studios').doc(sk).collection('todos').doc(t.id).update(neu)
+    return S('studios').doc(sk).collection('todos').doc(t.id).update(neu)
       .then(function(){ closeTodoEdit(); toast('Aufgabe geändert ✓'); tick(10); })
       .catch(function(e){ toast(errMsg(e),true); });
   });
@@ -11366,7 +11397,7 @@ var _certs=[], _certUnsub=null;
 function listenCerts(){
   if(!isChef()) return;
   if(_certUnsub){ _certUnsub(); _certUnsub=null; }
-  _certUnsub=db.collection('certificates').onSnapshot(function(snap){
+  _certUnsub=S('certificates').onSnapshot(function(snap){
     _certs=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
     renderCerts();
     // Die Kachel „läuft bald ab" steht schon da, wenn die Daten eintreffen
@@ -11457,7 +11488,7 @@ function bindCertDelete(root){
   root.querySelectorAll('[data-certdel]').forEach(function(b){
     b.addEventListener('click',function(){
       if(!confirm('Nachweis entfernen?')) return;
-      db.collection('certificates').doc(b.getAttribute('data-certdel')).delete()
+      S('certificates').doc(b.getAttribute('data-certdel')).delete()
         .then(function(){ toast('Entfernt'); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
@@ -11474,7 +11505,7 @@ function addCert(btn){
   if(!bis){ toast('Bitte ein Ablaufdatum angeben.',true); return; }
   var u=_userById(uid)||{};
   withBusy(btn,function(){
-    return db.collection('certificates').add({
+    return S('certificates').add({
       uid:uid, name:u.name||'', art:art, bez:bez, bis:bis,
       erfasstVon:session.name, ts:Date.now()
     }).then(function(){
@@ -11489,7 +11520,7 @@ function addCert(btn){
 function loadMyCerts(){
   var box=$('pmCerts'); if(!box) return;
   box.innerHTML='<p class="hint">Wird geladen …</p>';
-  db.collection('certificates').where('uid','==',session.uid).get()
+  S('certificates').where('uid','==',session.uid).get()
     .then(function(snap){
       var list=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
         .sort(function(a,b){
@@ -11553,11 +11584,11 @@ function maybeArchiveWeek(force){
     }catch(e){}
   }
   var r=weekRange(now);
-  var jobs=[ db.collection('inventory').get() ];
+  var jobs=[ S('inventory').get() ];
   STUDIOS.forEach(function(s){
     var sk=studioKey(s);
-    jobs.push(db.collection('studios').doc(sk).collection('cleaning').orderBy('ts').get());
-    jobs.push(db.collection('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50).get());
+    jobs.push(S('studios').doc(sk).collection('cleaning').orderBy('ts').get());
+    jobs.push(S('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50).get());
   });
   return Promise.all(jobs).then(function(res){
     var material={};
@@ -11576,7 +11607,7 @@ function maybeArchiveWeek(force){
           return { text:n.text||'', by:n.by||'', at:fmtDateTime(n.ts) }; })
       };
     });
-    return db.collection('archives').doc(key).set({
+    return S('archives').doc(key).set({
       week:key, label:weekLabel(now), from:r.from.getTime(), to:r.to.getTime(),
       updatedAt:Date.now(), updatedBy:session.name, material:material, cleaning:cleaning
     }, {merge:true});
@@ -11587,7 +11618,7 @@ function maybeArchiveWeek(force){
 
 /* Excel-Datei aus einer Wochen-Sicherung erzeugen und herunterladen */
 function downloadArchiveXls(kind, weekKey){
-  db.collection('archives').doc(weekKey).get().then(function(doc){
+  S('archives').doc(weekKey).get().then(function(doc){
     if(!doc.exists){ toast('Sicherung nicht gefunden.',true); return; }
     var a=doc.data();
     var html = kind==='material' ? archMaterialHtml(a) : archPutzplanHtml(a);
@@ -11672,7 +11703,7 @@ var _archRows=[];
 function listenArchives(){
   if(session.role!=='chef') return;
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
-  _archUnsub=db.collection('archives').orderBy('week','desc').limit(52)
+  _archUnsub=S('archives').orderBy('week','desc').limit(52)
     .onSnapshot(function(snap){
       var box=$('weekArchives'); if(!box) return;
       var rows=snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
@@ -11900,7 +11931,7 @@ function listenAllUsers(){
 function listenDmThreads(){
   if(_dmThreadsUnsub){ _dmThreadsUnsub(); _dmThreadsUnsub=null; }
   _dmThreadsFirst=true;
-  _dmThreadsUnsub=db.collection('dms').where('participants','array-contains',session.uid)
+  _dmThreadsUnsub=S('dms').where('participants','array-contains',session.uid)
     .onSnapshot(function(snap){
       _dmThreads=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       _dmThreads.sort(function(a,b){ return (b.lastTs||0)-(a.lastTs||0); });
@@ -11985,7 +12016,7 @@ function openDm(uid,name){
   $('dmListWrap').style.display='none';
   $('dmConvo').style.display='flex';
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
-  _dmUnsub=db.collection('dms').doc(_dmId).collection('messages').orderBy('ts').limitToLast(200)
+  _dmUnsub=S('dms').doc(_dmId).collection('messages').orderBy('ts').limitToLast(200)
     .onSnapshot(function(snap){ renderDmMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })); },
       function(e){ console.error('DM:',e.message); toast('Chat: '+errMsg(e),true); });
   markDmRead();
@@ -12002,7 +12033,7 @@ function closeDmConvo(){
 function markDmRead(){
   if(!_dmId) return;
   var u={}; u['readTs.'+session.uid]=Date.now();
-  db.collection('dms').doc(_dmId).update(u).catch(function(){});
+  S('dms').doc(_dmId).update(u).catch(function(){});
 }
 function renderDmMessages(msgs){
   var box=$('dmScroll'); if(!box) return;
@@ -12032,7 +12063,7 @@ function renderDmMessages(msgs){
   box.querySelectorAll('.msg-del').forEach(function(b){
     b.addEventListener('click',function(){
       if(confirm('Nachricht löschen?'))
-        db.collection('dms').doc(_dmId).collection('messages').doc(b.dataset.del).delete()
+        S('dms').doc(_dmId).collection('messages').doc(b.dataset.del).delete()
           .catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -12042,7 +12073,7 @@ function renderDmMessages(msgs){
       var msg=msgs.filter(function(x){ return x.id===mid; })[0]; if(!msg) return;
       var items=(msg.items||[]).map(function(i){ return {t:i.t, done:i.done}; });
       if(items[ix]) items[ix].done=cb.checked;
-      db.collection('dms').doc(_dmId).collection('messages').doc(mid).update({items:items})
+      S('dms').doc(_dmId).collection('messages').doc(mid).update({items:items})
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -12054,7 +12085,7 @@ function touchDmThread(preview){
   var now=Date.now();
   var names={}; names[session.uid]=session.name; names[_dmPeer.uid]=_dmPeer.name;
   var rt={}; rt[session.uid]=now;
-  db.collection('dms').doc(_dmId).set({
+  S('dms').doc(_dmId).set({
     participants:[session.uid,_dmPeer.uid], names:names,
     last:preview, lastTs:now, lastSender:session.uid, readTs:rt
   }, {merge:true}).catch(function(e){ toast('Verlauf: '+errMsg(e),true); });
@@ -12068,7 +12099,7 @@ function sendDm(){
   clearVoice();
   var doc={ uid:session.uid, name:session.name, text:text, ts:Date.now() };
   if(voice){ doc.audio=voice; doc.audioMs=voiceMs; }
-  db.collection('dms').doc(_dmId).collection('messages').add(doc)
+  S('dms').doc(_dmId).collection('messages').add(doc)
     .then(function(){ touchDmThread(text || '🎤 Sprachnachricht'); })
     .catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
   ta.focus();
@@ -12079,13 +12110,13 @@ function sendChecklistDM(peerUid, peerName, items){
   if(!items.length){ toast('Keine Schritte angegeben.',true); return; }
   var dmId='dm_'+[session.uid,peerUid].sort().join('_');
   var now=Date.now();
-  db.collection('dms').doc(dmId).collection('messages').add({
+  S('dms').doc(dmId).collection('messages').add({
     uid:session.uid, name:session.name, type:'checklist',
     items:items.map(function(t){ return {t:t, done:false}; }), ts:now
   }).then(function(){
     var names={}; names[session.uid]=session.name; names[peerUid]=peerName;
     var rt={}; rt[session.uid]=now;
-    return db.collection('dms').doc(dmId).set({ participants:[session.uid,peerUid], names:names, last:'📋 Checkliste', lastTs:now, lastSender:session.uid, readTs:rt }, {merge:true});
+    return S('dms').doc(dmId).set({ participants:[session.uid,peerUid], names:names, last:'📋 Checkliste', lastTs:now, lastSender:session.uid, readTs:rt }, {merge:true});
   }).then(function(){ toast('Checkliste an '+peerName+' gesendet ✓'); })
     .catch(function(e){ toast(errMsg(e),true); });
 }
@@ -12100,13 +12131,13 @@ function sendChecklistDM(peerUid, peerName, items){
 var _templates=[], _tplUnsub=null;
 function listenTemplates(){
   if(_tplUnsub){ _tplUnsub(); _tplUnsub=null; }
-  _tplUnsub=db.collection('config').doc('taskTemplates').onSnapshot(function(doc){
+  _tplUnsub=S('config').doc('taskTemplates').onSnapshot(function(doc){
     _templates=(doc.exists && doc.data().list)||[];
     renderTemplates();
   }, function(e){ console.error('Vorlagen:',e.message); });
 }
 function saveTemplates(){
-  return db.collection('config').doc('taskTemplates').set({ list:_templates }, {merge:true})
+  return S('config').doc('taskTemplates').set({ list:_templates }, {merge:true})
     .catch(function(e){ toast(errMsg(e),true); });
 }
 function renderTemplates(){
@@ -12173,13 +12204,13 @@ function deleteTemplate(){
 var _onboardSteps=[], _obUnsub=null;
 function listenOnboarding(){
   if(_obUnsub){ _obUnsub(); _obUnsub=null; }
-  _obUnsub=db.collection('config').doc('onboarding').onSnapshot(function(doc){
+  _obUnsub=S('config').doc('onboarding').onSnapshot(function(doc){
     _onboardSteps=(doc.exists && doc.data().steps)||[];
     renderOnboarding();
   }, function(e){ console.error('Onboarding:',e.message); });
 }
 function saveOnboardingSteps(){
-  return db.collection('config').doc('onboarding').set({ steps:_onboardSteps }, {merge:true})
+  return S('config').doc('onboarding').set({ steps:_onboardSteps }, {merge:true})
     .catch(function(e){ toast(errMsg(e),true); });
 }
 function renderOnboarding(){
@@ -12618,7 +12649,7 @@ function bindActions(){
     if(_editing){
       var id=_editing;
       ta.value=''; ta.style.height='auto'; cancelCompose();
-      db.collection('channels').doc(currentChannel).collection('messages').doc(id)
+      S('channels').doc(currentChannel).collection('messages').doc(id)
         .update({ text:text, editedAt:Date.now(), mentions:findMentions(text) })
         .then(function(){ toast('Nachricht bearbeitet ✓'); })
         .catch(function(e){ toast(errMsg(e),true); });
@@ -12639,7 +12670,7 @@ function bindActions(){
     cancelCompose();
     if(img) doc.img=img;
     if(voice){ doc.audio=voice; doc.audioMs=voiceMs; }
-    db.collection('channels').doc(currentChannel).collection('messages').add(doc)
+    S('channels').doc(currentChannel).collection('messages').add(doc)
       .catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
     ta.focus();
   }
@@ -12902,7 +12933,7 @@ function bindActions(){
     var tgt=_todoPhotoTarget; _todoPhotoTarget=null;
     toast('Foto wird hochgeladen …');
     fileToCompressedDataURL(f).then(function(data){
-      return db.collection('studios').doc(tgt.sk).collection('todos').doc(tgt.id)
+      return S('studios').doc(tgt.sk).collection('todos').doc(tgt.id)
         .update({ photo:data, photoBy:session.name, photoAt:Date.now() });
     }).then(function(){ toast('Foto hinzugefügt ✓'); })
       .catch(function(e){ toast(errMsg(e),true); });
@@ -12942,7 +12973,7 @@ function bindActions(){
     if(!d){ toast('Bitte einen Tag wählen.',true); return; }
     if(!p||!p.value){ toast('Bitte eine Person wählen.',true); return; }
     withBusy(btn,function(){
-      return db.collection('studios').doc(_teamStudioKey).collection('shifts').add({
+      return S('studios').doc(_teamStudioKey).collection('shifts').add({
         date:d, from:$('shFrom').value||'09:00', to:$('shTo').value||'17:00',
         uid:p.value, name:p.options[p.selectedIndex].text,
         note:$('shNote').value.trim()||null,
@@ -12961,7 +12992,7 @@ function bindActions(){
       // Krankmeldung gilt sofort; Urlaub und Frei brauchen eine Zusage.
       // Trägt die Verwaltung selbst etwas ein, ist es damit auch genehmigt.
       var status = (typ==='krank' || canManage()) ? 'genehmigt' : 'offen';
-      return db.collection('studios').doc(_teamStudioKey).collection('absences').add({
+      return S('studios').doc(_teamStudioKey).collection('absences').add({
         from:f, to:t, type:typ, note:$('abNote').value.trim()||null,
         status:status,
         uid:session.uid, name:session.name, ts:Date.now()
@@ -12977,7 +13008,7 @@ function bindActions(){
   function addHandover(){
     var t=(hoNew.value||'').trim(); if(!t) return;
     hoNew.value='';
-    db.collection('studios').doc(_teamStudioKey).collection('handovers').add({
+    S('studios').doc(_teamStudioKey).collection('handovers').add({
       text:t, uid:session.uid, name:session.name, ts:Date.now()
     }).catch(function(e){ toast(errMsg(e),true); });
   }
@@ -12988,7 +13019,7 @@ function bindActions(){
     var btn=this, t=$('bbText').value.trim();
     if(!t){ toast('Bitte einen Text eingeben.',true); return; }
     withBusy(btn,function(){
-      return db.collection('board').add({
+      return S('board').add({
         text:t, kind:$('bbType').value, uid:session.uid, name:session.name, ts:Date.now()
       }).then(function(){ $('bbText').value=''; toast('Angepinnt ✓'); })
         .catch(function(e){ toast(errMsg(e),true); });
@@ -13198,7 +13229,7 @@ function bindActions(){
       if(!text){ toast('Bitte Text eingeben.',true); return; }
       // withBusy sperrt den Knopf, bis gesendet ist → keine doppelte Ankündigung
       withBusy(btn,function(){
-        return db.collection('announcements').add({
+        return S('announcements').add({
           uid:session.uid, from:session.name, text:text,
           target:$('bcTarget').value, ts:Date.now()
         }).then(function(){ $('bcText').value=''; saveDraft(); toast('Ankündigung gesendet ✓'); })
@@ -13255,7 +13286,7 @@ function bindActions(){
       var photo=_pendingTaskImg;
       var batch=db.batch();
       targets.forEach(function(sk){
-        var ref=db.collection('studios').doc(sk).collection('todos').doc();
+        var ref=S('studios').doc(sk).collection('todos').doc();
         var data={
           title:title, desc:desc, done:false, doneBy:null, doneAt:null,
           createdBy:session.name, createdByUid:session.uid, ts:Date.now()
