@@ -76,6 +76,39 @@ service cloud.firestore {
       return hasProfile() && myProfile().get('aktiv', true) == true;
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // MEHRERE FIRMEN (Stufe 2B aus MANDANT-PLAN.md)
+    //
+    // Die Regeln unten gibt es ZWEIMAL: einmal flach, wie bisher, und
+    // einmal unter /firmen/{f}/. Das ist waehrend der Umstellung noetig -
+    // die Daten ziehen erst in Stufe C um, und bis dahin muessen beide
+    // Wege gelten. Danach faellt der flache Satz weg.
+    //
+    // DIE FALLE, die hier schon zweimal zugeschnappt ist: in Firestore
+    // gilt JEDE zutreffende Regel, und EINE die erlaubt genuegt. Eine
+    // breite Regel auf /firmen/{f}/{rest=**} wuerde deshalb alle
+    // feineren darunter aushebeln - der Mitarbeiter duerfte ploetzlich
+    // Rollen aendern. Die Firmen-Pruefung steht darum in JEDEM einzelnen
+    // allow, nicht einmal oben. Erzeugt wurde das maschinell, geprueft
+    // wird es von den Kreuztests in tests/rules/security.test.js.
+    function meineFirma() {
+      return hasProfile() ? myProfile().get('firma', '') : '';
+    }
+    // Gehoere ich zu DIESER Firma und ist mein Konto freigegeben?
+    // Ein Konto ohne Feld 'firma' gehoert zur Voreinstellung - sonst
+    // stuende der bestehende Betrieb nach dem Umschalten draussen.
+    // Gehoert das Konto, das hier bearbeitet wird, zu MEINER Firma?
+    // Solange es nur eine gibt, haben beide Seiten kein Feld 'firma' und
+    // die Antwort ist ja - der heutige Betrieb merkt nichts.
+    function gleicheFirma() {
+      return resource == null
+        || resource.data.get('firma', '') == meineFirma();
+    }
+    function inFirma(f) {
+      return istAktiv()
+        && (meineFirma() == f || (meineFirma() == '' && f == 'koerperformen'));
+    }
+
     // ── Benutzerprofile ──
     match /users/{uid} {
       // Das EIGENE Profil darf man immer lesen - sonst kann die App einem
@@ -98,12 +131,18 @@ service cloud.firestore {
       // Der Chef darf alles ändern. Alle anderen dürfen nur ihr eigenes Profil
       // bearbeiten und dabei NICHT Rolle oder Studio-Zuordnung anfassen –
       // sonst könnte sich jemand selbst zum Studio-Leiter machen.
-      allow update: if isChef()
+      // 'firma' gehoert in dieselbe Sperrliste wie 'role': wer sein
+      // eigenes Firmenfeld aendern koennte, wechselt damit in einen
+      // fremden Betrieb und liest dort alles. Von den Kreuztests
+      // gefunden, nicht beim Durchlesen.
+      allow update: if (isChef() && gleicheFirma())
         || (request.auth.uid == uid
             && !request.resource.data.diff(resource.data)
-                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv']));
-      // nur der Chef kann einen Zugang entfernen
-      allow delete: if isChef();
+                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma']));
+      // nur der Chef kann einen Zugang entfernen - und nur in der
+      // eigenen Firma. Sonst koennte der Chef von A das Team von B
+      // umschreiben oder loeschen; users liegt ja gemeinsam oben.
+      allow delete: if isChef() && gleicheFirma();
     }
 
     // ── Beitritts-Nachweis ──
@@ -513,5 +552,327 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid;
       allow delete: if istAktiv() && resource.data.uid == request.auth.uid;
     }
+
+    // ══════════════════════════════════════════════════════════════
+    //  DIESELBEN REGELN, ABER JE FIRMA
+    //  Maschinell aus dem flachen Satz oben erzeugt: jedes allow hat
+    //  ein inFirma(f) davor. Die beiden Ausnahmen sind Absicht und
+    //  stehen unten am jeweiligen Block.
+    // ══════════════════════════════════════════════════════════════
+    match /firmen/{f} {
+      // Die Stammdaten der Firma. Der Name steht auf dem
+      // Anmeldebildschirm, also vor jeder Anmeldung lesbar.
+      allow read: if true;
+      // Angelegt und gesperrt wird eine Firma nur vom Admin (Stufe D).
+      allow write: if hasProfile() && myProfile().get('role','') == 'admin';
+
+        match /config/registrierung {
+          allow read, write: if inFirma(f) && (isChef());
+        }
+
+        match /config/beitrittSchalter {
+          allow read: if true;
+          allow write: if inFirma(f) && (isChef());
+        }
+
+        match /config/studios {
+          allow read: if true;
+          allow create: if inFirma(f) && (isChef());
+          allow update: if inFirma(f) && (isChef()
+            && request.resource.data.liste.size() >= resource.data.liste.size());
+          allow delete: if false;
+        }
+
+        match /channels/{channelId}/messages/{msgId} {
+          allow read: if inFirma(f) && (istAktiv());
+          // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
+          allow create: if inFirma(f) && (istAktiv()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.text is string
+            && request.resource.data.text.size() <= 2000
+            && audioOk());
+          // Reagieren darf jeder (nur das Feld reactions).
+          // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
+          allow update: if inFirma(f) && (istAktiv() && (
+               request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+            // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
+            // Stimmenfeld anfassen, nicht Frage oder Antworten.
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+            || (resource.data.uid == request.auth.uid
+                && request.time.toMillis() < resource.data.ts + 900000
+                && request.resource.data.diff(resource.data)
+                     .affectedKeys().hasOnly(['text','editedAt','mentions']))
+            // Anheften ist Sache der Verwaltung: was oben steht, sehen alle
+            || (manages(channelId)
+                && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned']))
+          ));
+          // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
+          allow delete: if inFirma(f) && (isChef()
+            || manages(channelId)
+            || (istAktiv()
+                && resource.data.uid == request.auth.uid
+                && request.time.toMillis() < resource.data.ts + 3600000));
+        }
+
+        match /studios/{studioKey}/todos/{todoId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (manages(studioKey));   // Chef überall, Leiter in seinen Studios
+          allow delete: if inFirma(f) && (manages(studioKey));
+          // Mitarbeiter dürfen abhaken / Foto anhängen (update erlaubt für Eingeloggte)
+          allow update: if inFirma(f) && (istAktiv());
+        }
+
+        match /studios/{studioKey}/cleaning/{taskId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (manages(studioKey));   // Chef überall, Leiter in seinen Studios
+          allow delete: if inFirma(f) && (manages(studioKey));
+          allow update: if inFirma(f) && (istAktiv());                     // Mitarbeiter dürfen abhaken
+        }
+
+        match /studios/{studioKey}/cleaningNotes/{noteId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (istAktiv()
+            && request.resource.data.byUid == request.auth.uid);
+          // Chef darf jede Notiz löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
+          allow delete: if inFirma(f) && (manages(studioKey)
+            || (istAktiv()
+                && resource.data.byUid == request.auth.uid
+                && request.time.toMillis() < resource.data.ts + 3600000));
+          allow update: if false;
+        }
+
+        match /studios/{studioKey}/devices/{devId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (manages(studioKey)
+            && request.resource.data.name is string
+            && request.resource.data.name.size() <= 80);
+          allow delete: if inFirma(f) && (manages(studioKey));
+          // Umbenennen und umziehen darf nur die Verwaltung. Alle anderen
+          // dürfen ausschliesslich den Zustand melden – sonst könnte eine
+          // Meldung nebenbei das Gerät umbenennen.
+          allow update: if inFirma(f) && (manages(studioKey)
+            || (istAktiv()
+                && request.resource.data.diff(resource.data)
+                     .affectedKeys().hasOnly(['status','lastNote','lastBy','lastAt'])));
+        }
+
+        match /studios/{studioKey}/deviceLog/{logId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (istAktiv()
+            && request.resource.data.byUid == request.auth.uid
+            && request.resource.data.text is string
+            && request.resource.data.text.size() <= 300
+            && devPhotoOk());
+          allow update: if false;
+          allow delete: if inFirma(f) && (manages(studioKey));
+        }
+
+        match /announcements/{annId} {
+          allow read: if inFirma(f) && (istAktiv());
+          // Chef an alle oder einzelne Studios; Leiter nur an seine Studios
+          allow create: if inFirma(f) && (request.resource.data.uid == request.auth.uid
+            && (isChef()
+                || (isLeiter() && request.resource.data.target in myKeys())));
+          // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
+          allow update: if inFirma(f) && (isChef()
+            || (isLeiter() && resource.data.target in myKeys())
+            || (istAktiv() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])));
+          allow delete: if inFirma(f) && (isChef()
+            || (isLeiter() && resource.data.target in myKeys()));
+        }
+
+        match /inventory/{studioKey} {
+          allow read: if inFirma(f) && (istAktiv());
+          // Eintragen dürfen alle Eingeloggten; das Soll-Limit setzt die Verwaltung
+          allow write: if inFirma(f) && (istAktiv());
+        }
+
+        match /documents/{docId} {
+          allow read: if inFirma(f) && (istAktiv());
+          // Leiter darf nur Dokumente anlegen, die ausschließlich seine Studios betreffen
+          allow create: if inFirma(f) && (isChef()
+            || (isLeiter() && request.resource.data.studios.hasOnly(myKeys())));
+          allow update, delete: if inFirma(f) && (isChef()
+            || (isLeiter() && resource.data.studios.hasOnly(myKeys())));
+        }
+
+        match /documentData/{docId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create, update: if inFirma(f) && (isChef()
+            || (isLeiter()
+                && exists(/databases/$(database)/documents/documents/$(docId))
+                && get(/databases/$(database)/documents/documents/$(docId))
+                     .data.studios.hasOnly(myKeys())));
+          allow delete: if inFirma(f) && (isChef());
+        }
+
+        match /certificates/{certId} {
+          allow read: if inFirma(f) && (isChef()
+            || (istAktiv() && resource.data.uid == request.auth.uid));
+          allow create, update, delete: if inFirma(f) && (isChef());
+        }
+
+        match /config/{doc} {
+          // registrierung ist ausdruecklich ausgenommen: In Firestore gilt
+          // JEDE zutreffende Regel, nicht die speziellste. Ohne diese
+          // Ausnahme wuerde die allgemeine Regel hier den Firmencode fuer
+          // jeden Eingeloggten lesbar machen - und die Sperre waere
+          // Dekoration.
+          allow read: if inFirma(f) && (istAktiv() && doc != 'registrierung'
+                       && doc != 'beitrittSchalter' && doc != 'studios');
+          // 'studios' muss auch beim SCHREIBEN ausgenommen sein, nicht nur
+          // beim Lesen. Sonst haengt die Sperre "die Liste darf nur wachsen"
+          // in der Luft: diese Regel hier erlaubt dem Chef write, und in
+          // Firestore genuegt EINE zutreffende Regel, die erlaubt. Der
+          // Regeltest hat genau das gefunden - dieselbe Falle wie beim
+          // Firmencode, in derselben Datei, ein zweites Mal.
+          allow write: if inFirma(f) && (isChef() && doc != 'studios');
+        }
+
+        match /dms/{dmId} {
+          // Lesen/Abfragen über das participants-Feld (funktioniert auch für Listen-Abfragen)
+          allow read: if inFirma(f) && (istAktiv() && request.auth.uid in resource.data.participants);
+          allow create: if inFirma(f) && (istAktiv() && request.auth.uid in request.resource.data.participants);
+          allow update: if inFirma(f) && (istAktiv() && request.auth.uid in resource.data.participants);
+        }
+
+        match /dms/{dmId}/messages/{msgId} {
+          allow read: if inFirma(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid]));
+          allow create: if inFirma(f) && (istAktiv()
+            && request.resource.data.uid == request.auth.uid
+            && dmId.split('_').hasAny([request.auth.uid])
+            && audioOk());
+          // Update nur für Beteiligte (z. B. Checklisten-Häkchen)
+          allow update: if inFirma(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid]));
+          allow delete: if inFirma(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid])
+            && (isChef()
+                || (resource.data.uid == request.auth.uid
+                    && request.time.toMillis() < resource.data.ts + 3600000)));
+        }
+
+        match /mkProjects/{projectId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (istAktiv()
+            && request.resource.data.createdBy == request.auth.uid);
+          allow update: if inFirma(f) && (istAktiv());
+          allow delete: if inFirma(f) && (isChef()
+            || (istAktiv() && resource.data.createdBy == request.auth.uid));
+
+          match /versions/{versionId} {
+            allow read: if inFirma(f) && (istAktiv());
+            allow create: if inFirma(f) && (istAktiv()
+              && request.resource.data.createdBy == request.auth.uid);
+            // Versionen sind unveränderlich (Historie bleibt echt)
+            allow update: if false;
+            allow delete: if inFirma(f) && (isChef()
+              || (istAktiv() && resource.data.createdBy == request.auth.uid));
+          }
+        }
+
+        match /appointments/{apptId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (istAktiv()
+            && request.resource.data.createdBy == request.auth.uid
+            && request.resource.data.customerName is string
+            && request.resource.data.customerName.size() <= 200
+            && request.resource.data.startsAt is number);
+          allow update: if inFirma(f) && (istAktiv());
+          allow delete: if inFirma(f) && (isChef()
+            || (istAktiv() && resource.data.createdBy == request.auth.uid));
+        }
+
+        match /emailTemplates/{tplId} {
+          allow read, write: if inFirma(f) && (isChef());
+        }
+
+        match /studioMetrics/{studioKey} {
+          allow read, write: if inFirma(f) && (isChef());
+        }
+
+        match /competitors/{compId} {
+          allow read, write: if inFirma(f) && (isChef());
+        }
+
+        match /expansionLeads/{leadId} {
+          allow read, write: if inFirma(f) && (isChef());
+        }
+
+        match /studios/{studioKey}/shifts/{shiftId} {
+          allow read: if inFirma(f) && (istAktiv());
+          // Einteilen darf nur die Verwaltung (Chef bzw. zuständiger Leiter)
+          allow create, delete: if inFirma(f) && (manages(studioKey));
+          // Beim Tausch dürfen Mitarbeiter mitwirken – aber ausschliesslich an
+          // den Tausch-Feldern. WER eingeteilt ist (uid, name), ändert nur die
+          // Verwaltung beim Bestätigen. Sonst könnte sich jemand selbst aus dem
+          // Plan schreiben oder einen anderen hineinsetzen.
+          allow update: if inFirma(f) && (manages(studioKey)
+            // 1. Die eigene Schicht ausschreiben oder wieder zurückziehen
+            || (istAktiv()
+                && resource.data.uid == request.auth.uid
+                && request.resource.data.diff(resource.data)
+                     .affectedKeys().hasOnly(['tausch','tauschVon','tauschTs']))
+            // 2. Eine ausgeschriebene Schicht übernehmen – nur für sich selbst
+            || (istAktiv()
+                && resource.data.get('tausch', '') == 'offen'
+                && request.resource.data.diff(resource.data)
+                     .affectedKeys().hasOnly(['tausch','tauschNeu','tauschTs'])
+                && request.resource.data.tausch == 'zugesagt'
+                && request.resource.data.tauschNeu.uid == request.auth.uid));
+        }
+
+        match /studios/{studioKey}/absences/{absId} {
+          allow read: if inFirma(f) && (istAktiv());
+          // Jeder meldet sich selbst; die Verwaltung darf auch für andere eintragen
+          allow create: if inFirma(f) && (istAktiv()
+            && (request.resource.data.uid == request.auth.uid || manages(studioKey))
+            // Wer für sich selbst einträgt, darf sich nicht gleich selbst
+            // genehmigen. Krankmeldungen und Einträge der Verwaltung schon.
+            && (manages(studioKey)
+                || request.resource.data.type == 'krank'
+                || request.resource.data.status == 'offen'));
+          // Genehmigen und Ablehnen ist Sache der Verwaltung
+          allow update: if inFirma(f) && (manages(studioKey));
+          allow delete: if inFirma(f) && (manages(studioKey)
+            || (istAktiv() && resource.data.uid == request.auth.uid));
+        }
+
+        match /studios/{studioKey}/handovers/{hoId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
+          allow update: if false;
+          allow delete: if inFirma(f) && (manages(studioKey)
+            || (istAktiv() && resource.data.uid == request.auth.uid));
+        }
+
+        match /board/{postId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
+          allow update: if false;
+          allow delete: if inFirma(f) && (isChef()
+            || (istAktiv() && resource.data.uid == request.auth.uid));
+        }
+
+        match /trash/{trashId} {
+          allow read: if inFirma(f) && (isChef()
+            || (isLeiter() && resource.data.sk != null && manages(resource.data.sk)));
+          allow create: if inFirma(f) && (istAktiv()
+            && request.resource.data.deletedByUid == request.auth.uid);
+          allow update: if false;                    // Papierkorb wird nicht bearbeitet
+          allow delete: if inFirma(f) && (isChef()
+            || (isLeiter() && resource.data.sk != null && manages(resource.data.sk)));
+        }
+
+        match /archives/{weekId} {
+          allow read, write: if inFirma(f) && (isChef());
+        }
+
+        match /pushTokens/{token} {
+          allow read: if false;
+          allow create, update: if inFirma(f) && (istAktiv()
+            && request.resource.data.uid == request.auth.uid);
+          allow delete: if inFirma(f) && (istAktiv() && resource.data.uid == request.auth.uid);
+        }
+    }
+
   }
 }

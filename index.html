@@ -3952,7 +3952,55 @@ var auth, db;
      beitritt    – wird vor dem Anlegen des Profils geschrieben
      pushTokens  – haengt am Geraet, nicht an der Firma; die
                    Server-Funktion findet es ueber die Kennung           */
-var _firma = null;          // wird in Stufe B aus dem Profil gesetzt
+/* ── Welche Firma ist gemeint? ──
+   Stufe 2B. Entschieden: die Kennung steht im Link.
+
+       https://studiochat.de/?firma=mueller-7f3a
+
+   Sie wird beim ersten Öffnen gemerkt, damit der Kunde den langen Link
+   nur einmal braucht und danach ein normales Lesezeichen benutzen kann.
+
+   ⚠ DIE KENNUNG IST KEINE SICHERUNG. Jeder kann jede eintippen. Was ein
+   Fremder damit sieht, ist genau das, was auch ohne Anmeldung lesbar
+   ist: Studionamen und die Ja/Nein-Schalter zur Selbstanmeldung. An die
+   Daten kommt er nicht — das entscheiden die Sicherheitsregeln, und die
+   fragen das Profil, nicht den Link.
+
+   Trotzdem: Kennungen bekommen beim Anlegen eine Zufallsendung
+   ("mueller-7f3a" statt "mueller"). Sonst könnte man mit ein bisschen
+   Raten herausfinden, wer alles Kunde ist — und die Kundenliste gehört
+   niemandem außer dir. */
+var FIRMA_SPEICHER = 'kf_firma';
+function firmaAusLink(){
+  if(!KONFIG.mandant) return null;
+  var k = null;
+  try{
+    k = new URLSearchParams(location.search).get('firma');
+    if(k){
+      /* Prüfen statt zurechtstutzen. Aus "../../users/chef1" würde beim
+         Wegfiltern "userschef1" – eine Kennung, die niemandem gehört,
+         und die dann auch noch gemerkt wird. Wer Unsinn im Link hat,
+         soll bei der Voreinstellung landen, nicht bei einem Rest. */
+      k = String(k).trim();
+      if(/^[a-zA-Z0-9_-]{1,60}$/.test(k)){
+        localStorage.setItem(FIRMA_SPEICHER, k);
+      } else {
+        console.warn('Unbrauchbare Firmenkennung im Link – wird ignoriert.');
+        k = localStorage.getItem(FIRMA_SPEICHER);
+      }
+    } else {
+      k = localStorage.getItem(FIRMA_SPEICHER);
+    }
+    // Auch das Gemerkte prüfen: es könnte aus einer älteren Fassung stammen
+    if(k && !/^[a-zA-Z0-9_-]{1,60}$/.test(k)){
+      try{ localStorage.removeItem(FIRMA_SPEICHER); }catch(e){}
+      k = null;
+    }
+  }catch(e){}
+  return k || KONFIG.firma || null;
+}
+
+var _firma = null;          // in Stufe B aus Link und Profil gesetzt
 function S(name){
   return _firma
     ? db.collection('firmen').doc(_firma).collection(name)
@@ -5872,6 +5920,19 @@ function enterApp(uid, data){
   if(session || !data) return;
   if(wartetAufFreigabe(data)){ zeigeWarten(uid); return; }
   session = Object.assign({ uid:uid }, data);
+  /* ── Zu welcher Firma gehört dieses Konto? ──
+     Stufe 2B. Solange KONFIG.mandant false ist, bleibt _firma null und
+     S() liefert die flachen Pfade wie bisher — das ist der heutige
+     Zustand und ändert nichts.
+
+     Ein bestehendes Konto hat kein Feld "firma". Es gilt dann als zur
+     Firma aus konfig.js gehörig. Ohne diesen Rückfall stünde nach dem
+     Umschalten das ganze Team vor einer leeren App. */
+  _firma = KONFIG.mandant ? (session.firma || KONFIG.firma || null) : null;
+  /* Das Profil gewinnt gegen den Link. Wer über einen fremden oder
+     veralteten Link kam, arbeitet trotzdem in seiner eigenen Firma —
+     und das Lesezeichen wird gleich mitkorrigiert. */
+  if(_firma){ try{ localStorage.setItem(FIRMA_SPEICHER, _firma); }catch(e){} }
   session.studios = (session.studios && session.studios.length)
     ? session.studios : (session.studio ? [session.studio] : []);
   session.studioKeys = session.studios.map(studioKey);
@@ -5886,6 +5947,13 @@ auth.onAuthStateChanged(function(user){
   hideLoading();
   // Die Schalter zuerst holen: das Registrierungsformular braucht sie,
   // und doRegister muss wissen, ob das Konto inaktiv starten muss.
+  /* Vor dem Anmelden gilt die Kennung aus dem Link: der
+     Anmeldebildschirm braucht Studioliste und Beitritts-Schalter, und
+     zu diesem Zeitpunkt gibt es noch kein Profil, das die Firma nennen
+     könnte. Nach dem Anmelden gewinnt das Profil (siehe enterApp) —
+     wer einen falschen Link erwischt hat, landet trotzdem bei seiner
+     eigenen Firma. */
+  _firma = firmaAusLink();
   beitrittSchalterLaden();
   /* Die Studioliste MUSS vor enterApp stehen. Dort werden aus den
      Studionamen im Profil die Datenbank-Kennungen gerechnet. Läge dabei
@@ -7191,6 +7259,13 @@ function stopListeners(){
   _allUsers=[]; _employees=[]; _invAll={}; _certs=[];
   // Sonst startet der nächste Anmelder die nachgeladenen Beobachter nie
   _certGeladen=false; _trashGeladen=false; _archGeladen=false;
+  /* In den Studios teilen sich mehrere Leute ein Gerät. Bliebe _firma
+     stehen, läse der Nächste die Daten der Firma seines Vorgängers —
+     bis sein eigenes Profil geladen ist. */
+  /* Die gemerkte Kennung bleibt: sonst bräuchte der Nächste an diesem
+     Gerät wieder den vollständigen Link. _firma selbst wird beim
+     nächsten Anmelden aus Link und Profil neu bestimmt. */
+  _firma = KONFIG.mandant ? firmaAusLink() : null;
 }
 
 /* Chat: wechselt bei Kanalwechsel */

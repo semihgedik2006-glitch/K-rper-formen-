@@ -136,6 +136,58 @@ users/{uid}                                 bleibt OBEN
 beitritt/{uid}                              bleibt OBEN
 ```
 
+### ⚠ Die Lücke, die beim Bauen aufgefallen ist
+
+**Vor dem Anmelden weiß die App nicht, zu welcher Firma sie gehört.**
+
+Das klingt banal, ist aber der Punkt, an dem der Entwurf oben nicht
+aufgeht. Drei Dinge braucht der Anmeldebildschirm, **bevor** jemand
+eingeloggt ist:
+
+| | wofür |
+|---|---|
+| `config/studios` | die Studios zum Ankreuzen bei der Selbstanmeldung |
+| `config/beitrittSchalter` | ob überhaupt ein Reiter „Konto anlegen" erscheint |
+| Firmenname und Farbe | damit Müller nicht „Körperformen" auf dem Anmeldebildschirm liest |
+
+Alle drei liegen künftig unter `firmen/{f}/…` — und `{f}` ist genau das,
+was noch niemand weiß.
+
+**Das ist keine Kleinigkeit.** Es ist die Frage, wie ein Kunde seine
+eigene App überhaupt erreicht. Drei Wege, und sie unterscheiden sich
+nicht nur technisch:
+
+| Weg | wie es aussieht | Aufwand | Haken |
+|---|---|---|---|
+| **Eigene Adresse je Kunde** | `mueller.studiochat.de` | Domain + Wildcard-Zertifikat | wirkt am professionellsten, kostet eine Domain |
+| **Kennung im Link** | `studiochat.de/?firma=mueller` | fast keiner | sieht nach Bastellösung aus, und wer die Kennung wegnimmt, sieht nichts |
+| **Firma wählen** | eine Liste auf dem Anmeldebildschirm | klein | **verrät jedem Besucher, wer deine Kunden sind** |
+
+Der dritte Weg fällt für mich aus: eure Kundenliste gehört nicht auf
+einen öffentlichen Anmeldebildschirm.
+
+> **Entschieden am 11. August 2026: die Kennung steht im Link.**
+> `https://…/?firma=mueller-7f3a`. Sie wird beim ersten Öffnen gemerkt,
+> der Kunde braucht den langen Link also nur einmal. Der Wechsel auf
+> eigene Adressen bleibt später möglich, ohne dass sich an den Daten
+> etwas ändert.
+>
+> **Die Kennung ist keine Sicherung.** Jeder kann jede eintippen. Was ein
+> Fremder damit sieht, ist genau das, was ohnehin ohne Anmeldung lesbar
+> ist: Studionamen und zwei Ja/Nein-Schalter. An Daten kommt er nicht —
+> das entscheiden die Regeln, und die fragen das Profil, nicht den Link.
+>
+> Damit man Kunden aber nicht durch Raten findet, bekommen Kennungen beim
+> Anlegen eine **Zufallsendung**: `mueller-7f3a` statt `mueller`. Die
+> Kundenliste gehört niemandem außer dir.
+>
+> Zwei Regeln, die daraus folgen und beide gebaut sind:
+> **Prüfen statt zurechtstutzen** — aus `../../users/chef1` würde beim
+> Wegfiltern `userschef1`, eine Kennung, die niemandem gehört und dann
+> auch noch gemerkt wird. Unbrauchbares wird verworfen, nicht repariert.
+> **Das Profil gewinnt gegen den Link** — wer über einen fremden oder
+> veralteten Link kam, arbeitet trotzdem in seiner eigenen Firma.
+
 ### Warum `users` oben bleibt
 
 Beim Anmelden weiß die App noch nicht, zu welcher Firma jemand gehört —
@@ -286,6 +338,25 @@ match /users/{uid} {
 ```
 
 ### Die Tests, die es dafür braucht
+
+> **Gebaut am 11. August 2026: 21 Kreuztests, 86 Regeltests insgesamt,
+> alle grün.** Der verschachtelte Regelsatz wurde maschinell aus dem
+> flachen erzeugt — 30 Blöcke, und jedes einzelne `allow` hat ein
+> `inFirma(f)` davor. Geprüft wurde das nicht durch Lesen, sondern durch
+> die Kreuztests.
+>
+> **Sie haben zwei echte Lücken gefunden, beide in `users`** — der einen
+> Sammlung, die gemeinsam oben liegt und deshalb nicht vom Pfad geschützt
+> wird:
+>
+> 1. Jeder konnte sich selbst ein anderes `firma` ins Profil schreiben
+>    und damit in einen fremden Betrieb wechseln. `firma` steht jetzt in
+>    derselben Sperrliste wie `role`.
+> 2. Ein Chef durfte **jedes** Konto ändern und löschen, auch die einer
+>    fremden Firma. Jetzt nur noch die der eigenen.
+>
+> Beides hätte ich beim Durchlesen nicht gefunden — die Regeln sahen
+> richtig aus.
 
 Zu den bestehenden 52 Regeltests kommen **Kreuztests**: für jede Sammlung
 je einmal, dass ein Konto aus Firma A die Daten von Firma B
@@ -474,7 +545,7 @@ ausgerollt werden kann:
 | | Was | Risiko |
 |---|---|---|
 | **A** ✅ | Alle Zugriffe laufen über **eine** Funktion `S()`, die vorerst die heutigen Pfade zurückgibt | keins — Verhalten identisch |
-| **B** | `firma` am Konto, `S()` schaltet um, Regeln, Kreuztests | mittel, noch ohne Live-Daten |
+| **B** ✅ | `firma` am Konto, Kennung im Link, Regeln, 21 Kreuztests | mittel, noch ohne Live-Daten |
 | **C** | Umzugs-Function, Probelauf, Live-Umzug | **hoch** |
 | **D** | Admin-Oberfläche | keins |
 
