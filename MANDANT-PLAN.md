@@ -547,7 +547,8 @@ ausgerollt werden kann:
 | **A** ✅ | Alle Zugriffe laufen über **eine** Funktion `S()`, die vorerst die heutigen Pfade zurückgibt | keins — Verhalten identisch |
 | **B** ✅ | `firma` am Konto, Kennung im Link, Regeln, 21 Kreuztests | mittel, noch ohne Live-Daten |
 | **C** | Umzugs-Function, Probelauf, Live-Umzug | **hoch** |
-| **D** | Admin-Oberfläche | keins |
+| **D** ✅ | Admin-Oberfläche | keins |
+| **E** ✅ | Die **Cloud Functions** auf dieselben Pfade bringen | mittel — der lauteste Ausfall wäre lautlos |
 
 > **Stufe 2A erledigt am 11. August 2026.** 114 Aufrufe von
 > `db.collection('…')` laufen jetzt durch `S(name)`. Heute gibt sie
@@ -620,6 +621,75 @@ ausgerollt werden kann:
 > **Nebenbei ein Fund in den echten Daten:** `semihgedik2006@gmail.com`
 > hat zwei Profile, eins als Chef und eins als Mitarbeiter. Kein Schaden,
 > aber es zählt in Listen mit und bekommt Benachrichtigungen.
+
+> ### ✅ Stufe 2E am 10. August 2026 — die Stufe, die im Plan stand und die ich vergessen hatte
+>
+> **Was passiert wäre.** Vier Stufen lang habe ich `index.html`
+> umgestellt und in Stufe 2A stolz gezählt: „114 Zugriffe". Gezählt habe
+> ich nur eine Datei. `functions/index.js` stand im selben Plan
+> („jede Abfrage, jede Regel, **jede Cloud Function**") und blieb
+> vollständig auf den flachen Pfaden.
+>
+> Nach dem Umschalten hätte die App tadellos ausgesehen. Im Hintergrund
+> wäre nichts mehr passiert: keine Push-Nachricht, keine Erinnerung an
+> überfällige Aufgaben, keine Warnung vor ablaufenden Nachweisen, kein
+> Monatsbericht — und der Papierkorb hätte weiter die alten Daten
+> geleert statt der neuen, also ausgerechnet die Kopie angeknabbert, die
+> der Rückweg ist. Alles ohne eine einzige Fehlermeldung.
+>
+> Aufgefallen ist es, weil ich vor dem Live-Umzug noch einmal
+> nachgesehen habe, statt ihn zu starten.
+>
+> **Was gebaut wurde.**
+>
+> | | |
+> |---|---|
+> | `W(firma)` | das Gegenstück zu `S()` in der App: ohne Firma die Datenbank, mit Firma das Dokument darunter |
+> | `alleFirmen()` | für Zeitpläne. Ohne Firmen-Sammlung liefert sie `[null]` — dann läuft genau ein Durchgang flach, wie heute. Gesperrte Firmen fallen raus |
+> | `firmaVonProfil()` | für Aufrufe aus der App. Bei gesperrter Firma bricht sie ab, statt flach weiterzuschreiben |
+> | `beideWelten()` | jeder Auslöser wird **zweimal** registriert: alter Pfad und `firmen/{firma}/…`. Zwischen Umzug und Umschalten liegen Minuten; wer in dieser Zeit schreibt, soll trotzdem eine Meldung bekommen |
+>
+> Umgestellt: 6 Auslöser-Paare (Chat, Aufgabe, Aushang, Direktnachricht,
+> Termin angelegt, Termin geändert), 6 Zeitpläne, Monatsbericht,
+> Geburtstagsgruß, Tagesgrenze für die KI-Aufrufe, Sicherungsstand.
+>
+> **Zwei Entscheidungen, die nicht offensichtlich waren:**
+>
+> *Die KI-Tagesgrenze zählt je Firma, nicht gemeinsam.* Ein gemeinsamer
+> Zähler wäre einfacher, aber dann sperrt der Nachmittag des einen
+> Kunden den nächsten aus — und der bekommt eine Kostenbremse zu sehen,
+> die ihn nichts angeht.
+>
+> *Der Sicherungsstand wird an jede Firma verteilt*, obwohl der Export
+> die ganze Datenbank auf einmal umfasst. Sonst steht bei jedem Chef
+> dauerhaft „Sicherung hakt" — die Warnung, die verstummen soll, wenn
+> alles läuft.
+>
+> **Womit das belegt ist — 47 Prüfungen, die den Code wirklich
+> ausführen** (`tests/rules/funktionen.test.js`): `functions/index.js`
+> wird geladen und über `.run()` ausgelöst, so wie Firebase es täte,
+> gegen den Emulator. Geprüft wird der Zustand **vor** dem Umzug (ohne
+> Firmen muss alles flach laufen — das ist der Betrieb, heute Nacht),
+> die Auslöser-Paare, und **nach** dem Umzug: dass jede Funktion jede
+> Firma erreicht und **keine fremde**. Der Papierkorb-Test legt in zwei
+> Firmen absichtlich eine Datei mit **derselben Kennung** ab — verrutscht
+> der Pfad, löscht die eine Firma die Datei der anderen, und nichts
+> daran sähe nach einem Fehler aus.
+>
+> **Und ein zweiter Test, der nicht mitdenkt** (`tests/test-funktionen-pfade.js`):
+> er liest die Datei Zeile für Zeile und schlägt bei jedem flachen
+> Zugriff auf eine Firmen-Sammlung an — auch bei einem, der erst morgen
+> dazukommt. Denn mein Fehler war kein falscher Pfad, sondern eine
+> **vergessene Datei**, und dagegen hilft kein Verhaltenstest: der prüft
+> nur, woran jemand gedacht hat. Die Liste der Firmen-Sammlungen holt er
+> aus `tools/umzug.js`, damit die beiden nicht auseinanderlaufen können.
+>
+> Beim Bauen dieses Prüfers ist mir derselbe Fehler noch einmal
+> passiert: die erste Fassung prüfte „steht `W(` im Block, muss auch
+> `alleFirmen()` drin stehen" — und war grün, obwohl
+> `birthdayGreetings` und `monthlyReport` durchrutschten (sie fassen
+> Firmendaten in einer Hilfsfunktion an). Jetzt steht dort eine Liste
+> mit Namen: ein neuer Zeitplan wird rot, bis jemand entscheidet.
 
 ### Stufe 3 — Admin-Oberfläche · ✅ **gebaut am 10. August 2026**
 

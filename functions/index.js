@@ -11,14 +11,69 @@ admin.initializeApp();
 const db = admin.firestore();
 const region = functions.region('europe-west1');
 
+/* ══════════════════════════════════════════════════════════════════════
+   MEHRERE FIRMEN — der Zugriffspunkt (Stufe 2E aus MANDANT-PLAN.md)
+
+   In index.html laeuft jeder Datenzugriff durch S(). Hier fehlte das
+   Gegenstueck: die Functions arbeiteten weiter auf den flachen Pfaden.
+   Nach dem Umschalten haetten sie nichts mehr gefunden — die App haette
+   funktioniert, aber KEINE Push-Nachricht, keine Erinnerung an
+   ueberfaellige Aufgaben, keine Warnung vor ablaufenden Nachweisen.
+   Lautlos, ohne Fehlermeldung.
+
+   Aufgefallen ist das erst kurz vor dem Live-Umzug. Ich hatte in Stufe
+   2A nur index.html gezaehlt, obwohl der Plan "jede Cloud Function"
+   ausdruecklich nennt.
+
+   W(firma) ist die Wurzel: ohne Firma die Datenbank selbst (flach, wie
+   heute), mit Firma das Dokument darunter. Damit laeuft derselbe Code
+   vor UND nach dem Umzug — und spaeter fuer mehrere Kunden.
+   ══════════════════════════════════════════════════════════════════════ */
+function W(firma) {
+  return firma ? db.collection('firmen').doc(firma) : db;
+}
+
+/* Alle Firmen, ueber die eine geplante Funktion laufen muss.
+   Gibt es noch keine Firmen-Sammlung, liefert sie [null] — dann laeuft
+   genau ein Durchgang auf den flachen Pfaden. So braucht keine einzige
+   Funktion eine Fallunterscheidung. */
+async function alleFirmen() {
+  try {
+    const s = await db.collection('firmen').get();
+    if (s.empty) return [null];
+    return s.docs
+      .filter(d => (d.data() || {}).aktiv !== false)
+      .map(d => d.id);
+  } catch (e) {
+    console.warn('alleFirmen:', e.message);
+    return [null];
+  }
+}
+
+/* Konten einer Firma. users liegt weiterhin oben (die Firma steht IM
+   Profil), deshalb wird hier gefiltert statt verschachtelt.
+   Ein Profil ohne Feld 'firma' gehoert zur Voreinstellung — sonst
+   bekaeme nach dem Umschalten niemand mehr eine Meldung. */
+function gehoertZu(daten, firma) {
+  if (!firma) return true;
+  const f = (daten || {}).firma || 'koerperformen';
+  return f === firma;
+}
+
+
 /* Tokens aus pushTokens holen, die zu den Kriterien passen.
    filterFn(data) → true = an dieses Gerät senden. excludeUid = Absender nicht benachrichtigen. */
-async function collectTokens(filterFn, excludeUid) {
+async function collectTokens(filterFn, excludeUid, firma) {
   const snap = await db.collection('pushTokens').get();
   const tokens = [];
   snap.forEach(doc => {
     const d = doc.data() || {};
     if (excludeUid && d.uid === excludeUid) return;
+    /* Ein Gerätezeichen gehört zu einer Person, und die zu einer Firma.
+       Ohne diesen Filter bekäme nach dem Umschalten die halbe Kundschaft
+       die Nachrichten der anderen — der lauteste denkbare Bruch der
+       Trennung, die 21 Kreuztests absichern. */
+    if (firma && !gehoertZu(d, firma)) return;
     if (filterFn(d)) tokens.push(doc.id);
   });
   return tokens;
@@ -64,71 +119,115 @@ async function sendPush(tokens, title, body) {
 }
 
 /* ── Neue Chat-Nachricht ── */
-exports.onNewMessage = region.firestore
-  .document('channels/{channelId}/messages/{msgId}')
-  .onCreate(async (snap, ctx) => {
+/* ── Auslöser für beide Welten ──
+   Ein Firestore-Auslöser braucht einen festen Pfad; er kann nicht
+   „flach ODER verschachtelt" hören. Also wird jeder Handler ZWEIMAL
+   registriert: einmal auf dem alten Pfad, einmal auf firmen/{firma}/….
+
+   Warum nicht einfach umstellen: zwischen dem Umzug der Daten und dem
+   Umschalten der App liegt eine Lücke von Minuten. Wer in dieser Zeit
+   etwas schreibt, bekäme sonst keine Meldung. Der alte Auslöser fällt
+   weg, wenn die flachen Daten aufgeräumt werden — frühestens 30 Tage
+   nach dem Umzug. */
+function beideWelten(pfad, handler, art, opt) {
+  art = art || 'onCreate';
+  const r = opt ? region.runWith(opt) : region;
+  return {
+    flach: r.firestore.document(pfad)[art](handler),
+    firma: r.firestore.document('firmen/{firma}/' + pfad)[art](handler),
+  };
+}
+
+/* Die Firma zu EINEM Profil — für Aufrufe aus der App, wo genau eine
+   Person dahintersteht.
+
+   null heisst: es gibt noch keine Firmen-Sammlung, also flache Pfade wie
+   heute. Ist die Firma dagegen gesperrt oder unbekannt, wird abgebrochen
+   statt auf flach zurückzufallen: dort liegen die Daten der
+   Voreinstellung, und still in fremde Daten zu schreiben ist schlimmer
+   als eine Fehlermeldung. */
+async function firmaVonProfil(profil) {
+  const alle = await alleFirmen();
+  if (alle.length === 1 && alle[0] === null) return null;
+  const f = (profil || {}).firma || 'koerperformen';
+  if (alle.indexOf(f) < 0) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Diese Firma ist stillgelegt.');
+  }
+  return f;
+}
+
+const _neueNachricht = async (snap, ctx) => {
     const m = snap.data() || {};
     const channelId = ctx.params.channelId;
     const isGeneral = channelId === 'allgemein';
+    const firma = ctx.params.firma || null;
     const tokens = await collectTokens(d => {
       if (!willHaben(d, 'chat')) return false;
       if (isGeneral) return true;                 // Allgemein → alle
       return inStudio(d, channelId) || d.role === 'chef'; // Studio-Kanal → Studio + Chefs
-    }, m.uid);
+    }, m.uid, firma);
     const body = m.text ? m.text : (m.img ? '📷 Foto' : '');
     // Erwähnte Personen bekommen eine eigene, deutlichere Meldung ...
     const mentioned = Array.isArray(m.mentions) ? m.mentions : [];
     let mentionTokens = [];
     if (mentioned.length) {
       mentionTokens = await collectTokens(
-        d => mentioned.indexOf(d.uid) >= 0 && willHaben(d, 'mentions'), m.uid);
+        d => mentioned.indexOf(d.uid) >= 0 && willHaben(d, 'mentions'), m.uid, firma);
       await sendPush(mentionTokens, (m.name || 'Jemand') + ' hat dich erwähnt', body);
     }
     // ... und werden aus der normalen Meldung herausgenommen, damit sie
     // nicht zweimal benachrichtigt werden
     const rest = tokens.filter(t => mentionTokens.indexOf(t) < 0);
     await sendPush(rest, 'Neue Nachricht von ' + (m.name || 'Team'), body);
-  });
+};
+const _msg = beideWelten('channels/{channelId}/messages/{msgId}', _neueNachricht);
+exports.onNewMessage = _msg.flach;
+exports.onNewMessageF = _msg.firma;
 
 /* ── Neue Aufgabe ── */
-exports.onNewTodo = region.firestore
-  .document('studios/{studioKey}/todos/{todoId}')
-  .onCreate(async (snap, ctx) => {
+const _neueAufgabe = async (snap, ctx) => {
     const t = snap.data() || {};
     const studioKey = ctx.params.studioKey;
     const tokens = await collectTokens(
-      d => inStudio(d, studioKey) && willHaben(d, 'todos'), t.createdByUid);
+      d => inStudio(d, studioKey) && willHaben(d, 'todos'),
+      t.createdByUid, ctx.params.firma || null);
     await sendPush(tokens, 'Neue Aufgabe', t.title || '');
-  });
+};
+const _todo = beideWelten('studios/{studioKey}/todos/{todoId}', _neueAufgabe);
+exports.onNewTodo = _todo.flach;
+exports.onNewTodoF = _todo.firma;
 
 /* ── Neue Ankündigung ── */
-exports.onNewAnnouncement = region.firestore
-  .document('announcements/{annId}')
-  .onCreate(async (snap) => {
+const _neuerAushang = async (snap, ctx) => {
     const a = snap.data() || {};
     const target = a.target || 'all';
     const tokens = await collectTokens(d => {
       if (!willHaben(d, 'ann')) return false;
       if (target === 'all') return true;
       return inStudio(d, target) || d.role === 'chef';
-    }, a.uid);
+    }, a.uid, (ctx && ctx.params && ctx.params.firma) || null);
     await sendPush(tokens, '📣 ' + (a.from || 'Leitung'), a.text || '');
-  });
+};
+const _ann = beideWelten('announcements/{annId}', _neuerAushang);
+exports.onNewAnnouncement = _ann.flach;
+exports.onNewAnnouncementF = _ann.firma;
 
 /* ── Neue Direktnachricht → Push an den Empfänger ── */
-exports.onNewDm = region.firestore
-  .document('dms/{dmId}/messages/{msgId}')
-  .onCreate(async (snap, ctx) => {
+const _neueDm = async (snap, ctx) => {
     const m = snap.data() || {};
     const parts = String(ctx.params.dmId).split('_'); // ['dm', uidA, uidB]
     const peers = parts.slice(1);
     const recipient = peers.find(u => u !== m.uid);
     if (!recipient) return;
     const tokens = await collectTokens(
-      d => d.uid === recipient && willHaben(d, 'dm'), m.uid);
+      d => d.uid === recipient && willHaben(d, 'dm'), m.uid, ctx.params.firma || null);
     const body = m.type === 'checklist' ? '📋 Checkliste' : (m.text || '');
     await sendPush(tokens, m.name || 'Neue Nachricht', body);
-  });
+};
+const _dm = beideWelten('dms/{dmId}/messages/{msgId}', _neueDm);
+exports.onNewDm = _dm.flach;
+exports.onNewDmF = _dm.firma;
 
 /* ── Geburtstags-Logik (gemeinsam für den täglichen Lauf und den Test-Auslöser) ──
    Verschickt an alle, deren Geburtstag heute ist, einmal pro Jahr.
@@ -136,9 +235,16 @@ exports.onNewDm = region.firestore
 async function processBirthdays() {
   const now = new Date();
   const mm = now.getMonth() + 1, dd = now.getDate(), year = now.getFullYear();
-  // System-Account (Anzeige) sicherstellen
+  // System-Account (Anzeige) sicherstellen. users bleibt oben — die
+  // Firma steht IM Profil, nicht im Pfad.
   await db.collection('users').doc('system')
     .set({ name: 'Körperformen 🎂', role: 'chef', system: true }, { merge: true });
+
+  /* Der Glückwunsch landet im Chat DER Firma, zu der die Person gehört.
+     Deshalb einmal die Firmenliste holen und je Profil zuordnen, statt
+     über alle Firmen zu schleifen — das läse users sonst vierzehnmal. */
+  const alle = await alleFirmen();
+  const flach = alle.length === 1 && alle[0] === null;
 
   const snap = await db.collection('users').get();
   let sent = 0;
@@ -147,27 +253,32 @@ async function processBirthdays() {
     if (!u.bday) continue;
     const p = String(u.bday).split('-');
     if (p.length < 3) continue;
-    if (+p[1] === mm && +p[2] === dd && u.lastBdayDM !== year) {
-      const uid = doc.id;
-      const dmId = 'dm_' + ['system', uid].sort().join('_');
-      const ts = Date.now();
-      await db.collection('dms').doc(dmId).collection('messages').add({
-        uid: 'system', name: 'Körperformen 🎂',
-        text: '🎉 Alles Gute zum Geburtstag, ' + (u.name || '') + '! Hab einen tollen Tag. – dein Körperformen-Team',
-        ts: ts
-      });
-      const names = { system: 'Körperformen 🎂' }; names[uid] = u.name || '';
-      const readTs = { system: ts };
-      await db.collection('dms').doc(dmId).set({
-        participants: ['system', uid], names: names,
-        last: '🎉 Alles Gute zum Geburtstag!', lastTs: ts, lastSender: 'system', readTs: readTs
-      }, { merge: true });
-      // Push
-      const tokens = await collectTokens(d => d.uid === uid, 'system');
-      await sendPush(tokens, 'Körperformen 🎂', 'Alles Gute zum Geburtstag! 🎉');
-      await db.collection('users').doc(uid).update({ lastBdayDM: year });
-      sent++;
-    }
+    if (+p[1] !== mm || +p[2] !== dd || u.lastBdayDM === year) continue;
+
+    const firma = flach ? null : (u.firma || 'koerperformen');
+    /* Gesperrte oder unbekannte Firma: übergehen. Der flache Pfad wäre
+       hier die falsche Rettung — dort liegen die Daten einer anderen. */
+    if (!flach && alle.indexOf(firma) < 0) continue;
+
+    const uid = doc.id;
+    const dmId = 'dm_' + ['system', uid].sort().join('_');
+    const ts = Date.now();
+    await W(firma).collection('dms').doc(dmId).collection('messages').add({
+      uid: 'system', name: 'Körperformen 🎂',
+      text: '🎉 Alles Gute zum Geburtstag, ' + (u.name || '') + '! Hab einen tollen Tag. – dein Körperformen-Team',
+      ts: ts
+    });
+    const names = { system: 'Körperformen 🎂' }; names[uid] = u.name || '';
+    const readTs = { system: ts };
+    await W(firma).collection('dms').doc(dmId).set({
+      participants: ['system', uid], names: names,
+      last: '🎉 Alles Gute zum Geburtstag!', lastTs: ts, lastSender: 'system', readTs: readTs
+    }, { merge: true });
+    // Push
+    const tokens = await collectTokens(d => d.uid === uid, 'system', firma);
+    await sendPush(tokens, 'Körperformen 🎂', 'Alles Gute zum Geburtstag! 🎉');
+    await db.collection('users').doc(uid).update({ lastBdayDM: year });
+    sent++;
   }
   return sent;
 }
@@ -184,7 +295,8 @@ exports.dueTaskReminder = region.pubsub
     endOfDay.setHours(23, 59, 59, 999);
     const limit = endOfDay.getTime();
 
-    const studios = await db.collection('studios').listDocuments();
+    for (const firma of await alleFirmen()) {
+    const studios = await W(firma).collection('studios').listDocuments();
     for (const studioRef of studios) {
       const snap = await studioRef.collection('todos').get();
       const offen = [];
@@ -203,17 +315,18 @@ exports.dueTaskReminder = region.pubsub
 
       for (const t of zugewiesen) {
         const tk = await collectTokens(
-          d => d.uid === t.assignedTo && willHaben(d, 'todos'), null);
+          d => d.uid === t.assignedTo && willHaben(d, 'todos'), null, firma);
         await sendPush(tk, 'Aufgabe fällig', t.title || '');
       }
       if (offenFuerAlle.length) {
         const tk = await collectTokens(
-          d => inStudio(d, studioKey) && willHaben(d, 'todos'), null);
+          d => inStudio(d, studioKey) && willHaben(d, 'todos'), null, firma);
         const titel = offenFuerAlle.length === 1
           ? offenFuerAlle[0].title
           : offenFuerAlle.length + ' Aufgaben sind heute fällig';
         await sendPush(tk, 'Erinnerung', titel);
       }
+    }
     }
     return null;
   });
@@ -239,9 +352,10 @@ exports.certExpiry = region
     const heute = new Date();
     heute.setHours(0, 0, 0, 0);
 
+    for (const firma of await alleFirmen()) {
     let snap;
-    try { snap = await db.collection('certificates').get(); }
-    catch (e) { console.error('Nachweise lesen:', e); return null; }
+    try { snap = await W(firma).collection('certificates').get(); }
+    catch (e) { console.error('Nachweise lesen:', e); continue; }
 
     const faellig = [];
     snap.forEach(doc => {
@@ -253,7 +367,7 @@ exports.certExpiry = region
       if (CERT_WARN_TAGE.indexOf(tage) < 0) return;
       faellig.push({ uid: c.uid, name: c.name || '', art: c.art || '', bez: c.bez || '', tage: tage });
     });
-    if (!faellig.length) return null;
+    if (!faellig.length) continue;
 
     const NAMEN = {
       ersthelfer: 'Erste-Hilfe-Kurs', trainer: 'Trainerlizenz', ems: 'EMS-Einweisung',
@@ -266,7 +380,7 @@ exports.certExpiry = region
     for (const c of faellig) {
       if (!c.uid) continue;
       try {
-        const tk = await collectTokens(d => d.uid === c.uid, null);
+        const tk = await collectTokens(d => d.uid === c.uid, null, firma);
         await sendPush(tk, 'Nachweis ' + frist(c.tage), bezeichnung(c));
       } catch (e) { console.error('Nachweis-Push:', e); }
     }
@@ -275,9 +389,12 @@ exports.certExpiry = region
     try {
       const chefs = [];
       const users = await db.collection('users').get();
-      users.forEach(d => { if ((d.data() || {}).role === 'chef') chefs.push(d.id); });
+      users.forEach(d => {
+        const u = d.data() || {};
+        if (u.role === 'chef' && gehoertZu(u, firma)) chefs.push(d.id);
+      });
       if (chefs.length) {
-        const tk = await collectTokens(d => chefs.indexOf(d.uid) >= 0, null);
+        const tk = await collectTokens(d => chefs.indexOf(d.uid) >= 0, null, firma);
         const text = faellig.length === 1
           ? (faellig[0].name + ': ' + bezeichnung(faellig[0]) + ' ' + frist(faellig[0].tage))
           : (faellig.length + ' Nachweise laufen demnaechst ab');
@@ -285,7 +402,9 @@ exports.certExpiry = region
       }
     } catch (e) { console.error('Nachweis-Chefmeldung:', e); }
 
-    console.log('Nachweise: ' + faellig.length + ' Meldungen verschickt.');
+    console.log('Nachweise' + (firma ? ' (' + firma + ')' : '') + ': ' +
+      faellig.length + ' Meldungen verschickt.');
+    }
     return null;
   });
 
@@ -558,10 +677,16 @@ exports.mailStatus = region
    übermütiger Nachmittag am Bild-Generator wären sonst unbegrenzt.
    Gezählt wird je Tag und je Art, in EINEM Dokument.
    Bewusst kein Sekundengenauigkeit-Limit: die Grenze soll Unfälle
-   abfangen, nicht normale Arbeit behindern. */
-async function tagesGrenze(art, maximum) {
+   abfangen, nicht normale Arbeit behindern.
+
+   Gezählt wird JE FIRMA. Ein gemeinsamer Zähler wäre die bequemere
+   Variante, aber dann sperrt der übermütige Nachmittag des einen Kunden
+   den nächsten aus — und der bekommt eine Kostenbremse zu sehen, die
+   ihn nichts angeht. Das Gesamtrisiko (Kundenzahl × Grenze) steuert der
+   Betreiber darüber, wie viele Firmen er anlegt. */
+async function tagesGrenze(art, maximum, firma) {
   const tag = new Date().toISOString().slice(0, 10);
-  const ref = db.collection('config').doc('nutzung-' + tag);
+  const ref = W(firma).collection('config').doc('nutzung-' + tag);
   const stand = await db.runTransaction(async (t) => {
     const d = await t.get(ref);
     const alt = (d.exists ? d.data() : {}) || {};
@@ -628,8 +753,8 @@ exports.marketingChat = region
   .https.onCall(async (data, context) => {
     // Vorher stand hier nur requireAuth: JEDER selbst registrierte Zugang
     // konnte den Gemini-Schluessel der Firma benutzen.
-    await requireChef(context);
-    await tagesGrenze('marketingChat', 200);
+    const profil = await requireChef(context);
+    await tagesGrenze('marketingChat', 200, await firmaVonProfil(profil));
     const apiKey = process.env.GEMINI_API_KEY || '';
     if (!apiKey) {
       throw new functions.https.HttpsError('failed-precondition',
@@ -697,8 +822,8 @@ exports.marketingImage = region
   .runWith({ timeoutSeconds: 300, memory: '512MB' })
   .https.onCall(async (data, context) => {
     // Bilder sind der teuerste Aufruf im Projekt - hier zuerst pruefen.
-    await requireChef(context);
-    await tagesGrenze('marketingImage', 50);
+    const profil = await requireChef(context);
+    await tagesGrenze('marketingImage', 50, await firmaVonProfil(profil));
     const prompt = String((data && data.prompt) || '').slice(0, 4000).trim();
     if (!prompt) {
       throw new functions.https.HttpsError('invalid-argument', 'Bitte eine Bildbeschreibung eingeben.');
@@ -795,10 +920,10 @@ function getMailer() {
 }
 
 /* Vorlage laden (Firestore-Überschreibung → sonst Standard) und Platzhalter füllen */
-async function buildMail(tplId, appt) {
+async function buildMail(tplId, appt, firma) {
   let tpl = MAIL_DEFAULTS[tplId];
   try {
-    const snap = await db.collection('emailTemplates').doc(tplId).get();
+    const snap = await W(firma).collection('emailTemplates').doc(tplId).get();
     if (snap.exists) {
       const d = snap.data() || {};
       if (d.subject && d.body) tpl = { subject: String(d.subject), body: String(d.body) };
@@ -819,14 +944,14 @@ async function buildMail(tplId, appt) {
 
 /* E-Mail an die Kundin/den Kunden senden und den Versand am Termin vermerken.
    markField z. B. 'mailConfirmedAt' – verhindert Doppel-Versand. */
-async function sendApptMail(apptRef, appt, tplId, markField) {
+async function sendApptMail(apptRef, appt, tplId, markField, firma) {
   if (!appt.customerEmail) return false;
   const mailer = getMailer();
   if (!mailer) {
     console.log('E-Mail übersprungen (SMTP nicht konfiguriert):', tplId, apptRef.id);
     return false;
   }
-  const mail = await buildMail(tplId, appt);
+  const mail = await buildMail(tplId, appt, firma);
   const fromAddr = process.env.MAIL_FROM || process.env.SMTP_USER;
   await mailer.sendMail({
     from: '"Körperformen ' + (appt.studioName || '') + '" <' + fromAddr + '>',
@@ -840,27 +965,25 @@ async function sendApptMail(apptRef, appt, tplId, markField) {
 }
 
 /* ── Termin angelegt → Bestätigung ── */
-exports.onAppointmentCreated = region
-  .runWith({ timeoutSeconds: 60 })
-  .firestore.document('appointments/{apptId}')
-  .onCreate(async (snap) => {
+const _neuerTermin = async (snap, ctx) => {
     const a = snap.data() || {};
     if (a.status === 'storniert') return;
-    try { await sendApptMail(snap.ref, a, 'confirm', 'mailConfirmedAt'); }
+    try { await sendApptMail(snap.ref, a, 'confirm', 'mailConfirmedAt', ctx.params.firma || null); }
     catch (e) { console.error('Bestätigungs-Mail:', e); }
-  });
+};
+const _appt = beideWelten('appointments/{apptId}', _neuerTermin, 'onCreate', { timeoutSeconds: 60 });
+exports.onAppointmentCreated = _appt.flach;
+exports.onAppointmentCreatedF = _appt.firma;
 
 /* ── Termin geändert → Storno-Mail bzw. neue Bestätigung bei Verschiebung ── */
-exports.onAppointmentUpdated = region
-  .runWith({ timeoutSeconds: 60 })
-  .firestore.document('appointments/{apptId}')
-  .onUpdate(async (change) => {
+const _terminGeaendert = async (change, ctx) => {
     const before = change.before.data() || {};
     const after = change.after.data() || {};
+    const firma = ctx.params.firma || null;
     try {
       // Stornierung: einmalig Storno-Mail
       if (after.status === 'storniert' && before.status !== 'storniert' && !after.mailCancelledAt) {
-        await sendApptMail(change.after.ref, after, 'cancel', 'mailCancelledAt');
+        await sendApptMail(change.after.ref, after, 'cancel', 'mailCancelledAt', firma);
         return;
       }
       // Verschiebung eines aktiven Termins: Bestätigung mit neuer Zeit,
@@ -870,10 +993,13 @@ exports.onAppointmentUpdated = region
           mailRemindedAt: admin.firestore.FieldValue.delete(),
           mailFollowupAt: admin.firestore.FieldValue.delete()
         }).catch(() => {});
-        await sendApptMail(change.after.ref, after, 'confirm', 'mailConfirmedAt');
+        await sendApptMail(change.after.ref, after, 'confirm', 'mailConfirmedAt', firma);
       }
     } catch (e) { console.error('Termin-Update-Mail:', e); }
-  });
+};
+const _apptUp = beideWelten('appointments/{apptId}', _terminGeaendert, 'onUpdate', { timeoutSeconds: 60 });
+exports.onAppointmentUpdated = _apptUp.flach;
+exports.onAppointmentUpdatedF = _apptUp.firma;
 
 /* ── Zeitplan: Erinnerungen vorher + Follow-ups danach ──
    Läuft alle 30 Minuten und arbeitet ein Zeitfenster ab; Doppel-Versand
@@ -886,29 +1012,31 @@ exports.appointmentMailScheduler = region
     const now = Date.now();
     const H = 3600000;
 
+    for (const firma of await alleFirmen()) {
     // Erinnerungen: Termine innerhalb der nächsten REMINDER_HOURS Stunden
-    const remSnap = await db.collection('appointments')
+    const remSnap = await W(firma).collection('appointments')
       .where('startsAt', '>=', now)
       .where('startsAt', '<=', now + reminderHours() * H)
       .get();
     for (const doc of remSnap.docs) {
       const a = doc.data() || {};
       if (a.status === 'storniert' || a.mailRemindedAt || !a.customerEmail) continue;
-      try { await sendApptMail(doc.ref, a, 'reminder', 'mailRemindedAt'); }
+      try { await sendApptMail(doc.ref, a, 'reminder', 'mailRemindedAt', firma); }
       catch (e) { console.error('Erinnerungs-Mail ' + doc.id + ':', e); }
     }
 
     // Follow-ups: Termine, die vor mind. FOLLOWUP_HOURS Stunden waren
     // (Fenster: letzte 48 Stunden, damit Alt-Daten nicht angeschrieben werden)
-    const fuSnap = await db.collection('appointments')
+    const fuSnap = await W(firma).collection('appointments')
       .where('startsAt', '>=', now - 48 * H)
       .where('startsAt', '<=', now - followupHours() * H)
       .get();
     for (const doc of fuSnap.docs) {
       const a = doc.data() || {};
       if (a.status === 'storniert' || a.mailFollowupAt || !a.customerEmail) continue;
-      try { await sendApptMail(doc.ref, a, 'followup', 'mailFollowupAt'); }
+      try { await sendApptMail(doc.ref, a, 'followup', 'mailFollowupAt', firma); }
       catch (e) { console.error('Follow-up-Mail ' + doc.id + ':', e); }
+    }
     }
     return null;
   });
@@ -930,13 +1058,17 @@ exports.appointmentMailScheduler = region
      nicht doppelt pflegen müssen.
    ============================================================ */
 
-/* Kennung "studio-7" → lesbarer Name, soweit aus den Profilen bekannt */
-async function studioNameMap() {
+/* Kennung "studio-7" → lesbarer Name, soweit aus den Profilen bekannt.
+   users liegt weiterhin oben, deshalb wird nach Firma GEFILTERT, nicht
+   verschachtelt: sonst stünden im Bericht des einen Kunden die
+   Studionamen des anderen. */
+async function studioNameMap(firma) {
   const map = {};
   try {
     const snap = await db.collection('users').get();
     snap.forEach(doc => {
       const d = doc.data() || {};
+      if (!gehoertZu(d, firma)) return;
       const keys = Array.isArray(d.studioKeys) ? d.studioKeys : [];
       const names = Array.isArray(d.studios) ? d.studios : [];
       keys.forEach((k, i) => { if (names[i] && !map[k]) map[k] = names[i]; });
@@ -946,8 +1078,8 @@ async function studioNameMap() {
 }
 
 /* Zahlen für einen Zeitraum einsammeln */
-async function collectMonthly(vonMs, bisMs) {
-  const namen = await studioNameMap();
+async function collectMonthly(vonMs, bisMs, firma) {
+  const namen = await studioNameMap(firma);
   const keys = Object.keys(namen);
   const zeilen = [];
   let erledigt = 0, offen = 0, ueberfaellig = 0, fehlt = 0;
@@ -957,7 +1089,7 @@ async function collectMonthly(vonMs, bisMs) {
   for (const key of keys) {
     let sErledigt = 0, sOffen = 0, sUeber = 0;
     try {
-      const snap = await db.collection('studios').doc(key).collection('todos').get();
+      const snap = await W(firma).collection('studios').doc(key).collection('todos').get();
       snap.forEach(doc => {
         const t = doc.data() || {};
         if (t.doneAt && t.doneAt >= vonMs && t.doneAt <= bisMs) {
@@ -974,7 +1106,7 @@ async function collectMonthly(vonMs, bisMs) {
 
     let sFehlt = 0;
     try {
-      const inv = await db.collection('inventory').doc(key).get();
+      const inv = await W(firma).collection('inventory').doc(key).get();
       const items = (inv.exists && inv.data().items) || [];
       items.forEach(it => {
         const n = (it.limit > 0) ? Math.max(0, it.limit - (it.have || 0)) : (it.need || 0);
@@ -1023,7 +1155,7 @@ function monatsText(d, vonD, bisD) {
 }
 
 /* Bericht bauen und an alle Chef-Konten schicken */
-async function sendMonthlyReport(vonD, bisD) {
+async function sendMonthlyReport(vonD, bisD, firma) {
   const mailer = getMailer();
   if (!mailer) { console.log('Monatsbericht übersprungen: SMTP nicht eingerichtet.'); return 0; }
 
@@ -1032,12 +1164,13 @@ async function sendMonthlyReport(vonD, bisD) {
     const snap = await db.collection('users').where('role', '==', 'chef').get();
     snap.forEach(doc => {
       const d = doc.data() || {};
+      if (!gehoertZu(d, firma)) return;
       if (d.email) empfaenger.push(d.email);
     });
   } catch (e) { console.error('Chef-Konten:', e); }
   if (!empfaenger.length) { console.log('Monatsbericht: kein Chef mit E-Mail gefunden.'); return 0; }
 
-  const daten = await collectMonthly(vonD.getTime(), bisD.getTime());
+  const daten = await collectMonthly(vonD.getTime(), bisD.getTime(), firma);
   const text = monatsText(daten, vonD, bisD);
   const monat = vonD.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
   const fromAddr = process.env.MAIL_FROM || process.env.SMTP_USER;
@@ -1064,8 +1197,13 @@ exports.monthlyReport = region
     if (jetzt.getDate() !== 1) return null;      // nur am Monatsersten
     const von = new Date(jetzt.getFullYear(), jetzt.getMonth() - 1, 1, 0, 0, 0);
     const bis = new Date(jetzt.getFullYear(), jetzt.getMonth(), 0, 23, 59, 59);
-    try { await sendMonthlyReport(von, bis); }
-    catch (e) { console.error('Monatsbericht:', e); }
+    for (const firma of await alleFirmen()) {
+      /* Je Firma ein eigener Lauf und eine eigene Mail. Ein Fehler bei
+         einem Kunden darf die Berichte der anderen nicht verschlucken —
+         deshalb liegt das try INNERHALB der Schleife. */
+      try { await sendMonthlyReport(von, bis, firma); }
+      catch (e) { console.error('Monatsbericht (' + (firma || 'flach') + '):', e); }
+    }
     return null;
   });
 
@@ -1080,7 +1218,8 @@ exports.monthlyReportNow = region
     const bis = new Date();
     const von = new Date(Date.now() - tage * 86400000);
     try {
-      const n = await sendMonthlyReport(von, bis);
+      let n = 0;
+      for (const firma of await alleFirmen()) n += await sendMonthlyReport(von, bis, firma);
       res.status(200).send(n
         ? ('Bericht über ' + tage + ' Tage an ' + n + ' Empfänger gesendet.')
         : 'Nichts gesendet – siehe Protokoll (SMTP oder Chef-E-Mail fehlt).');
@@ -1116,7 +1255,7 @@ exports.sendTestReport = region
     const bis = new Date();
     const von = new Date(Date.now() - tage * 86400000);
 
-    const empfaenger = await sendMonthlyReport(von, bis);
+    const empfaenger = await sendMonthlyReport(von, bis, await firmaVonProfil(profil));
     if (!empfaenger) {
       // Ehrlich sagen, woran es liegt, statt "hat nicht geklappt"
       const mailer = getMailer();
@@ -1193,15 +1332,23 @@ function sicherungsFehler(e) {
    niemand. Genau das ist hier passiert: der Speicher war nie eingerichtet,
    und im Protokoll stand es zwar, aber ins Protokoll schaut keiner. */
 async function sicherungStatus(ok, ziel, fehler) {
-  try {
-    await db.collection('config').doc('sicherung').set({
-      ts: Date.now(),
-      ok: !!ok,
-      ziel: ziel || '',
-      fehler: fehler || ''
-    }, { merge: false });
-  } catch (e) {
-    console.error('Sicherungsstand nicht geschrieben: ' + e.message);
+  /* Der Export umfasst die GANZE Datenbank, also alle Firmen auf einmal.
+     Der Stand muss trotzdem bei jeder einzelnen landen: die App liest
+     ihn unter der eigenen Firma, und ein Chef, dem dort nichts steht,
+     sieht dauerhaft „Sicherung hakt" — die Warnung, die genau dann
+     verstummen soll, wenn alles läuft. */
+  const stand = {
+    ts: Date.now(),
+    ok: !!ok,
+    ziel: ziel || '',
+    fehler: fehler || ''
+  };
+  for (const firma of await alleFirmen()) {
+    try {
+      await W(firma).collection('config').doc('sicherung').set(stand, { merge: false });
+    } catch (e) {
+      console.error('Sicherungsstand (' + (firma || 'flach') + ') nicht geschrieben: ' + e.message);
+    }
   }
 }
 
@@ -1297,11 +1444,13 @@ exports.purgeOneOffCleaning = region
   .timeZone('Europe/Berlin')
   .onRun(async () => {
     const grenze = Date.now() - 24 * 3600000;
-    let studios;
-    try { studios = await db.collection('studios').listDocuments(); }
-    catch (e) { console.error('Studios lesen:', e); return null; }
-
     const refs = [];
+
+    for (const firma of await alleFirmen()) {
+    let studios;
+    try { studios = await W(firma).collection('studios').listDocuments(); }
+    catch (e) { console.error('Studios lesen (' + (firma || 'flach') + '):', e); continue; }
+
     for (const ref of studios) {
       try {
         // Nur ein where, damit kein zusaetzlicher Index noetig wird
@@ -1313,6 +1462,7 @@ exports.purgeOneOffCleaning = region
           refs.push(doc.ref);
         });
       } catch (e) { console.error('Putzplan ' + ref.id + ':', e); }
+    }
     }
     if (!refs.length) return null;
 
@@ -1341,11 +1491,6 @@ exports.purgeTrash = region
   .timeZone('Europe/Berlin')
   .onRun(async () => {
     const grenze = Date.now() - 30 * 86400000;
-    let snap;
-    try {
-      snap = await db.collection('trash').where('deletedAt', '<', grenze).limit(400).get();
-    } catch (e) { console.error('Papierkorb lesen:', e); return null; }
-    if (snap.empty) return null;
 
     // Alle zu loeschenden Verweise sammeln. Je Eintrag koennen es zwei sein
     // (der Papierkorb-Eintrag und der Dateiinhalt), darum kommen wir bei 400
@@ -1353,14 +1498,29 @@ exports.purgeTrash = region
     // nur 500. Deshalb in Haeppchen von 400 abarbeiten.
     const refs = [];
     let n = 0;
-    snap.forEach(doc => {
-      const t = doc.data() || {};
-      refs.push(doc.ref);
-      if (t.col === 'documents' && t.orig && t.data && t.data.kind !== 'link') {
-        refs.push(db.collection('documentData').doc(t.orig));
-      }
-      n++;
-    });
+
+    for (const firma of await alleFirmen()) {
+      let snap;
+      try {
+        snap = await W(firma).collection('trash')
+          .where('deletedAt', '<', grenze).limit(400).get();
+      } catch (e) { console.error('Papierkorb lesen (' + (firma || 'flach') + '):', e); continue; }
+      if (snap.empty) continue;
+
+      snap.forEach(doc => {
+        const t = doc.data() || {};
+        refs.push(doc.ref);
+        if (t.col === 'documents' && t.orig && t.data && t.data.kind !== 'link') {
+          /* Der Dateiinhalt liegt bei DERSELBEN Firma. Ohne W(firma)
+             wäre das ein Löschen im Nachbarhaus — und zwar an einem
+             Ort, an dem eine gleichnamige Kennung durchaus vorkommt. */
+          refs.push(W(firma).collection('documentData').doc(t.orig));
+        }
+        n++;
+      });
+    }
+    if (!refs.length) return null;
+
     try {
       for (let i = 0; i < refs.length; i += 400) {
         const batch = db.batch();

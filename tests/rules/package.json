@@ -3,8 +3,9 @@
   "private": true,
   "description": "Sicherheitstests gegen firestore.rules, ausgefuehrt im Firestore-Emulator",
   "scripts": {
-    "test": "cd ../.. && ./tests/rules/node_modules/.bin/firebase emulators:exec --only firestore --project demo-regeltest \"node tests/rules/security.test.js && node tests/rules/umzug.test.js\"",
-    "test:umzug": "cd ../.. && ./tests/rules/node_modules/.bin/firebase emulators:exec --only firestore --project demo-regeltest \"node tests/rules/umzug.test.js\""
+    "test": "cd ../.. && ./tests/rules/node_modules/.bin/firebase emulators:exec --only firestore --project demo-regeltest \"node tests/rules/security.test.js && node tests/rules/umzug.test.js && node tests/rules/funktionen.test.js\"",
+    "test:umzug": "cd ../.. && ./tests/rules/node_modules/.bin/firebase emulators:exec --only firestore --project demo-regeltest \"node tests/rules/umzug.test.js\"",
+    "test:funktionen": "cd ../.. && ./tests/rules/node_modules/.bin/firebase emulators:exec --only firestore --project demo-regeltest \"node tests/rules/funktionen.test.js\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",

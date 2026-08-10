@@ -112,6 +112,9 @@ was sie sehen soll.
 | `test-standorte.js` | Studios aus der Datenbank, Kennungen bleiben stabil |
 | `test-passwort.js` | Passwort anzeigen, Cursor, kein Klartext nach dem Wechsel |
 | `test-recht.js` | Impressum und Datenschutz ohne Login, Warnung bei Lücken |
+| `test-firma-link.js` | Firmenkennung aus dem Link, Unbrauchbares wird abgelehnt |
+| `test-probe-schalter.js` | der Probelauf-Schalter greift nur auf der Probe-Adresse |
+| `test-funktionen-pfade.js` | keine Cloud Function greift noch flach auf Firmendaten zu |
 
 ### Alle auf einmal
 
@@ -187,3 +190,42 @@ Und für die Cloud Functions:
 ```bash
 node --check functions/index.js
 ```
+
+---
+
+## Die Durchläufe mit Emulator
+
+Drei Prüfungen brauchen einen echten Firestore — nicht den Stub. Sie
+laufen im **Emulator**, also lokal und ohne jedes Risiko:
+
+```bash
+cd tests/rules && npm install     # einmalig
+npm test                          # alle drei
+```
+
+| Datei | prüft | Umfang |
+|---|---|---|
+| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 105 |
+| `umzug.test.js` | `tools/umzug.js` an nachgebauten Daten — Zählung, Inhalte, Untersammlungen unter leeren Eltern | 12 |
+| `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede jede Firma, und keine fremde | 47 |
+
+> **Zu `funktionen.test.js`:** er lädt `functions/index.js` und löst die
+> Funktionen über `.run()` aus, so wie Firebase es täte. Geprüft wird der
+> Zustand **vor** dem Umzug (ohne Firmen muss alles flach laufen — das ist
+> der Betrieb, heute Nacht), dass jeder Auslöser an **beiden** Pfaden
+> hängt, und **nach** dem Umzug die Trennung. Der Papierkorb-Test legt in
+> zwei Firmen absichtlich eine Datei mit derselben Kennung ab: verrutscht
+> der Pfad, löscht die eine Firma die Datei der anderen — und nichts daran
+> sähe nach einem Fehler aus.
+>
+> Er stellt seine Voraussetzung selbst her und prüft sie nach, statt sie
+> anzunehmen. Beim ersten Lauf hinter `umzug.test.js` war er rot, weil
+> dort schon eine Firma lag. Ein Test, der von der Reihenfolge abhängt,
+> misst irgendwann das Falsche, und niemand merkt es.
+
+`test-funktionen-pfade.js` (oben in der Liste) braucht **keinen**
+Emulator: er liest `functions/index.js` als Text. Beide zusammen, weil
+sie verschiedene Fehler fangen — der eine, dass eine Funktion falsch
+arbeitet, der andere, dass eine Funktion **vergessen** wurde. Gegen das
+Vergessen hilft kein Verhaltenstest: der prüft nur, woran jemand gedacht
+hat.
