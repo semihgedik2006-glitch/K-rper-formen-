@@ -64,6 +64,27 @@ im Klartext, nochmal antippen verbirgt es wieder. Beim Wechsel zwischen
 *Anmelden* und *Konto anlegen* wird es automatisch wieder verborgen —
 auf einem Studio-Tablet schaut der Nächste mit.
 
+### E-Mail bestätigen
+
+Beim Anlegen eines Kontos geht eine Bestätigungsmail raus. Solange die
+Adresse unbestätigt ist, steht in der App oben eine Leiste mit
+*„Mail erneut senden"*. Wegklicken geht — sie kommt nach sieben Tagen
+wieder.
+
+**Die App sperrt niemanden aus, dessen Mail unbestätigt ist.** Eine
+Bestätigungsmail landet zu oft im Spam, und ein gesperrtes Studio-Team
+mitten in der Schicht ist der größere Schaden. Die Schranke, die
+schützt, ist die Freigabe: **der Chef sieht in der Freigabe-Karte, ob
+die Adresse bestätigt ist**, bevor er jemanden hereinlässt.
+
+### Impressum und Datenschutz
+
+Beide stehen unten auf dem Anmeldebildschirm — **ohne Anmeldung
+erreichbar** — und noch einmal im Profil-Fenster. Der Inhalt kommt aus
+`konfig.js`. Fehlt eine Pflichtangabe, sagt die App das deutlich, und der
+Chef sieht eine Warnkarte in *Verwaltung → System*. Was einzutragen ist
+und was ein Anwalt machen muss, steht in `RECHT.md`.
+
 ### Konto selbst anlegen (**wenn der Chef es einschaltet**)
 
 Der Reiter *Konto anlegen* erscheint nur, wenn in *Verwaltung → Team*

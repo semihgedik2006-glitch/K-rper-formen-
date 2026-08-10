@@ -1475,6 +1475,117 @@ Chef, der Stufe 2 braucht.
 
 ---
 
+## Sitzung 22 · Der Rest der Liste 🟢
+
+### Anmeldebildschirm
+
+Der gleitende Marker sitzt jetzt auch auf den Anmeldereitern — **fünf
+Stellen, eine Bewegung**: untere Leiste, Gruppenreiter, Kanalreihe,
+Verwaltung, Anmeldung. Dazu ein dritter Farbfleck im Hintergrund, die
+Felder laufen einzeln statt als Block ein, und das Feld, in dem man
+gerade schreibt, hebt sich leicht heraus — auf einem Handy mit
+aufgeklappter Tastatur oft der einzige Anhaltspunkt, wo man ist.
+
+### E-Mail-Bestätigung
+
+Beim Anlegen geht eine Bestätigungsmail raus. In der App steht eine
+Leiste, solange die Adresse unbestätigt ist, mit „Mail erneut senden".
+
+**Bewusst keine Sperre.** Eine Bestätigungsmail landet regelmäßig im Spam
+oder kommt bei Firmen-Postfächern gar nicht an. Wer die App darauf
+sperrt, sperrt im Zweifel ein ganzes Studio-Team aus, das gerade
+arbeitet. Die Schranke, die wirklich schützt, ist die Freigabe durch den
+Chef — **und der sieht jetzt in der Freigabe-Karte, ob die Adresse
+bestätigt ist**, bevor er entscheidet.
+
+Das musste über eine Cloud Function laufen (`mailStatus`). Der Grund
+steht im Code: `emailVerified` liegt in Firebase Auth, und ein Client
+kann es nur für sich selbst lesen. Ein Feld „bestätigt: ja" im eigenen
+Profil könnte man selbst hineinschreiben — genau da, wo die Angabe zählen
+soll, wäre sie wertlos.
+
+Die Leiste lässt sich wegklicken, das merkt sich das Gerät sieben Tage.
+Ein Hinweis, den man einmal wegwischt und nie wiedersieht, ist kein
+Hinweis.
+
+### Rechtliches
+
+Impressum und Datenschutz als Fenster, **auch ohne Anmeldung erreichbar**
+— ein Impressum hinter einem Login ist keins. Der Inhalt kommt aus
+`konfig.js` unter `recht:`, ist also je Kunde austauschbar wie Studios
+und Farben.
+
+**Fehlt eine Pflichtangabe, steht das rot über dem Text**, und der Chef
+sieht zusätzlich eine Warnkarte in *Verwaltung → System*. Eine App, die
+eine leere Seite „Impressum" nennt, sieht erledigt aus — das ist
+gefährlicher als gar keine Seite.
+
+Der Datenschutztext beschreibt, was die App **tatsächlich** tut, und ist
+am Programm nachprüfbar: welche Felder gespeichert werden, dass
+Sprachaufnahmen und Krankmeldungen dabei sind, Region europe-west1,
+Aufbewahrungsfristen, wer was sieht. Im Text steht ausdrücklich:
+*„Er ist keine anwaltlich geprüfte Datenschutzerklärung."*
+
+`RECHT.md` hält die Grenze fest. Kurzfassung: die vier Pflichtfelder sind
+fünf Minuten Arbeit. Die Texte durchsehen, die Absprache mit dem Team zu
+Anwesenheitszeiten und Krankmeldungen, das Verarbeitungsverzeichnis und —
+**sobald ein Kunde dazukommt** — die Auftragsverarbeitung gehören einem
+Anwalt. Drei Punkte hebe ich dort hervor, weil sie im Arbeitsverhältnis
+regelmäßig Rückfragen auslösen: Krankmeldungen sind Gesundheitsdaten,
+die Anwesenheitsanzeige liest sich als Kontrolle, und Stimme ist ein
+biometrisches Merkmal.
+
+### 🔴 Der Regressionslauf prüfte 9 von 38 Durchläufen
+
+Der schwerste Fund dieser Sitzung, und er betrifft mich.
+
+Nach dem Rebase gab `test-navigation.js` aus: *„Chef sieht 7 statt 6
+Kacheln"* — und mein Regressionslauf hatte kurz vorher „alles grün"
+gemeldet. Grund: der Läufer war ein Einzeiler, der nur den Exit-Code
+prüfte. **29 der 38 Durchläufe geben aber gar keinen.** Sie schreiben
+„Fehler: …" in die Ausgabe und beenden sich mit 0.
+
+Faktisch geprüft waren neun Durchläufe, gemeldet achtunddreißig.
+
+Der siebte kaputte Messfühler in diesem Audit — und der einzige, der
+nicht einen falschen Befund erzeugt, sondern eine **Zusage gedeckt hat,
+die es nicht gab.** Die „alle grün"-Meldungen aus Sitzung 19 bis 21 waren
+in dieser Form nicht belegt. Ob damals etwas stumm rot war, lässt sich
+rückwirkend nicht mehr sagen; der Lauf von heute deckt den aktuellen
+Stand ab, und der enthält alle Änderungen von damals.
+
+Behoben:
+
+| | |
+|---|---|
+| `tests/alle.sh` | kennt vier Fehlersignale statt einem — Exit-Code, `✗`, `Fehler:` mit Inhalt, `PAGEERROR` — und meldet Durchläufe, die **gar nichts** ausgeben |
+| alle 38 Durchläufe | setzen jetzt einen Exit-Code |
+| `test-navigation.js` | die feste Zahl 6 ist raus; geprüft wird, dass jeder erwartete Reiter genau eine Kachel hat und keine doppelt ist |
+
+Der Befund selbst war harmlos — durch den neuen Studios-Reiter sind es
+sieben Kacheln. Aber das wusste ich erst, nachdem ich hingesehen habe.
+
+### Geprüft
+
+`tests/test-recht.js` — Impressum und Datenschutz ohne Anmeldung
+erreichbar · Warnung bei fehlenden Pflichtangaben · Angaben stehen drin,
+wenn sie da sind · `role="dialog"` und Escape · E-Mail-Leiste erscheint
+und lässt sich wegklicken. **Nicht geprüft und deshalb nicht behauptet:
+ob die Texte rechtlich vollständig sind.** Das kann kein Test
+beantworten.
+
+Dabei kam noch ein Fund heraus: das Dialog-System lief erst **nach** dem
+Login. Der Anmeldebildschirm hatte also weder `role="dialog"` noch
+Escape — beim Rechtliches-Fenster fällt das auf, weil es dort steht.
+
+`tests/stub-ohne-login.js` ist neu: eine Firebase-Attrappe, die
+*niemanden* anmeldet. `stub-chef.js` meldet sofort einen Chef an, damit
+kommt man nie an den Anmeldebildschirm — und genau das hat verdeckt, dass
+die Selbstregistrierung nie erreichbar war.
+
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf
