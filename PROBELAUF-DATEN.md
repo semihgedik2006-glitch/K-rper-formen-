@@ -82,10 +82,11 @@ Es kommt eine Liste wie:
 
 ```
 gs://formenchat.firebasestorage.app/sicherung/2026-08-10/
-gs://formenchat.firebasestorage.app/sicherung/2026-08-10/
+gs://formenchat.firebasestorage.app/sicherung/manuell-2026-08-09-01-28-53/
 ```
 
-**Merk dir die neueste** (unten). Falls die Liste leer ist: in der App
+**Merk dir die neueste** — hier `2026-08-10`. Das Datum in Schritt 3 ist
+nur ein Beispiel und muss angepasst werden. Falls die Liste leer ist: in der App
 unter *Verwaltung → System → Zusätzlich sichern* einmal auslösen und
 diesen Schritt wiederholen.
 
