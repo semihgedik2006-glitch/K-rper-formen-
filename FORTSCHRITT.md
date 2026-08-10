@@ -1456,7 +1456,7 @@ keins.
 
 ### Geprüft
 
-**39 UI-Durchläufe** (von 36) und **61 Regeltests**.
+**38 UI-Durchläufe** (von 36) und **61 Regeltests** — alle grün.
 
 `tests/test-standorte.js` prüft, was Daten kosten könnte: dass ohne
 Dokument weiter `konfig.js` gilt, dass ein umbenanntes Studio seine
