@@ -251,9 +251,39 @@ hinzufügen**. Nimm **dieselbe E-Mail wie im Betrieb**, ein beliebiges
 Passwort. Dann findet die App dein bestehendes Profil in `users` wieder,
 samt Chef-Rolle.
 
-> Klappt die Anmeldung, aber die App bleibt leer: dann stimmt etwas mit
-> `firma` nicht. Schick mir einen Bildschirmfoto, das ist genau die Art
-> Fund, für die der Probelauf da ist.
+### ⚠ „Profilfehler: Missing or insufficient permissions."
+
+**Das ist kein Rechteproblem**, auch wenn es so klingt.
+
+Ein Firestore-Export enthält die Daten, aber **nicht die Konten**. Die
+liegen in Firebase Authentication, und jedes Projekt vergibt **eigene
+Kennungen**. Dein neues Konto im Probe-Projekt hat also eine andere
+Kennung als im Betrieb — und die importierten Profile in `users` hängen
+an den alten. Die App sucht dein Profil und findet keins.
+
+*(Mein Fehler: ich hatte „dieselbe E-Mail nehmen" geschrieben. Dieselbe
+E-Mail heißt nicht dieselbe Kennung.)*
+
+**Behebung**, in Cloud Shell:
+
+```bash
+# 1. Welche Profile gibt es?
+node tools/probe-konto.js --projekt formenchat-probe
+
+# 2. Deine neue Kennung holen: Firebase-Konsole → formenchat-probe
+#    → Authentication → Nutzer → Spalte "Nutzer-UID"
+
+# 3. Profil übertragen
+node tools/probe-konto.js --projekt formenchat-probe \
+  --email deine@adresse.de --uid <neue Kennung>
+```
+
+Danach in der App neu laden. Das alte Profil bleibt liegen — es ist eine
+Kopie, kein Umzug.
+
+> Klappt die Anmeldung danach, die App bleibt aber leer: dann stimmt
+> etwas mit `firma` nicht. Schick mir ein Bildschirmfoto — das ist genau
+> die Art Fund, für die der Probelauf da ist.
 
 ### Worauf zu achten ist
 
