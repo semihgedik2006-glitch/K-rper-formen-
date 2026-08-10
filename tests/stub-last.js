@@ -316,14 +316,26 @@
     return [];
   }
 
+  /* ── Der Umzug auf firmen/<kennung>/… (10.8.2026) ──
+     Die App schickt seither jeden Zugriff durch S(), und das liefert
+     'firmen/koerperformen/studios' statt 'studios'. Dieser Stub bildet
+     die Daten weiterhin flach ab — die Lastdaten haben mit der
+     Mandantentrennung nichts zu tun. Also wird der Vorsatz hier an
+     EINER Stelle abgeschnitten. */
   function collection(path) {
+    path = String(path).replace(/^firmen\/[^/]+\//, '');
     var grenze = 0, vonHinten = false, filter = [];
     var k = {
       _p: path,
       doc: function (id) {
         var dp = path + '/' + id;
         return {
-          collection: function (sub) { return collection(dp + '/' + sub); },
+          /* Firmen-Vorsatz durch dieselbe Tür wie ein flacher Zugriff
+             — siehe stub-chef.js. */
+          collection: function (sub) {
+            if (/^firmen\/[^/]+$/.test(dp) && fs && fs.collection) return fs.collection(sub);
+            return collection(dp + '/' + sub);
+          },
           get: function () {
             if (path === 'users') return Promise.resolve({ exists: true, id: id, data: function () { return id === 'testuid' ? PROFILE : (USERS.filter(function (u) { return u.id === id; })[0] || {}); } });
             if (path === 'config' && id === 'sicherung') return Promise.resolve({ exists: true, id: id, data: function () { return SICHERUNG; } });

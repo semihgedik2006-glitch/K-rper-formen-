@@ -37,6 +37,10 @@ const ZWEI_STUDIOS = `
   };
   window.__erwartetOffen = 4;   // 2 + 2
   fs.collection = function(pfad){
+    /* Seit dem Umzug schickt S() 'firmen/<kennung>/…'. Die Testdaten
+       liegen flach — Vorsatz abschneiden, sonst greift die Attrappe
+       unten nie. */
+    pfad = String(pfad).replace(new RegExp('^firmen/[^/]+/'), '');
     var k = echt(pfad);
     if (pfad === 'studios') {
       var d = k.doc.bind(k);

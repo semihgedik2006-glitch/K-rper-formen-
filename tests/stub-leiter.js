@@ -173,13 +173,33 @@
     { id:'z3', uid:'testuid', name:'Ich',   art:'trainer',    bis:tag(399), ts:Date.now() },
     { id:'z4', uid:'u2', name:'Anna Meier', art:'sonstiges', bez:'Ernaehrungsberater', bis:tag(119), ts:Date.now() }
   ];
+  /* ── Der Umzug auf firmen/<kennung>/… (10.8.2026) ──
+     Die App schickt seither jeden Zugriff durch S(), und das liefert
+     'firmen/koerperformen/config' statt 'config'. Dieser Stub bildet
+     die Daten weiterhin flach ab — der Aufbau der Testdaten hat mit
+     der Mandantentrennung nichts zu tun.
+
+     Deshalb wird der Firmen-Vorsatz hier an EINER Stelle abgeschnitten,
+     statt jede Testdatei umzuschreiben. Als der Schalter umgelegt
+     wurde, sind 12 Durchläufe rot geworden — zu Recht: sie suchten
+     Daten, die der Stub unter dem alten Namen führte. */
   function collection(path) {
+    path = String(path).replace(/^firmen\/[^/]+\//, '');
     return {
       _p: path,
       doc: function (id) {
         var docPath = path + '/' + id;
         return {
-          collection: function (sub) { return collection(docPath + '/' + sub); },
+          /* Der Weg, den S() nimmt: db.collection('firmen').doc(k)
+             .collection('todos'). Der landet NICHT bei fs.collection —
+             und damit auch nicht bei den Attrappen, die einzelne Tests
+             dort einhängen. Deshalb geht es für den Firmen-Vorsatz
+             durch dieselbe Tür wie ein flacher Zugriff. Ohne das prüfen
+             sechs Tests still an sich selbst vorbei. */
+          collection: function (sub) {
+            if (/^firmen\/[^/]+$/.test(docPath) && fs && fs.collection) return fs.collection(sub);
+            return collection(docPath + '/' + sub);
+          },
           get: function () {
             var data = (path === 'users') ? PROFILE : {};
             if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }

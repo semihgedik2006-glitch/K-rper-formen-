@@ -39,6 +39,10 @@ const stubErweitern = (codeNoetig, freigabe, wartende) => `
   var SCHALTER = { codeNoetig: ${codeNoetig}, freigabe: ${freigabe} };
   var WARTEND = ${JSON.stringify(wartende)};
   fs.collection = function(pfad){
+    /* Seit dem Umzug schickt S() 'firmen/<kennung>/…'. Die Testdaten
+       liegen flach — Vorsatz abschneiden, sonst greift die Attrappe
+       unten nie. */
+    pfad = String(pfad).replace(new RegExp('^firmen/[^/]+/'), '');
     var k = echt(pfad);
     if (pfad === 'config') {
       var d = k.doc.bind(k);

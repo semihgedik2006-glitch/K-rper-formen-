@@ -38,6 +38,12 @@
     return k; }
   var fs = { settings:function(){}, enablePersistence:function(){ return Promise.resolve(); },
              collection:function(pfad){
+               /* Auch VOR dem Anmelden läuft alles durch S(): _firma
+                  kommt dann aus dem Link, mit KONFIG.firma als Rückfall.
+                  Der Anmeldebildschirm fragt also nach
+                  'firmen/koerperformen/config'. Vorsatz abschneiden,
+                  die Testdaten bleiben flach. */
+               pfad = String(pfad).replace(/^firmen\/[^/]+\//, '');
                var k = kette();
                if (pfad === 'config') {
                  k.doc = function(id){
