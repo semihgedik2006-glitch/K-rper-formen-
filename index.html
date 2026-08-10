@@ -4244,6 +4244,7 @@ function listenTrash(){
     _trash=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
       .sort(function(a,b){ return (b.deletedAt||0)-(a.deletedAt||0); });
     renderTrash();
+    if(_chefTab===CHEF_START) chefHomeZahlen();
   }, function(e){ console.warn('Papierkorb:', e.message); });
 }
 
@@ -4906,12 +4907,10 @@ function showApp(){
     setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
   listenInventoryAll();                  // jede Rolle: fuer den Material-Hinweis
-  if(canManage()){ listenEmployees(); listenTrash(); }
-  if(isChef()) listenCerts();
+  if(canManage()){ listenEmployees(); }
   if(isChef()){
     listenChefs();
     buildEmpStudios();
-    listenArchives();                       // Wochen-Sicherungen anzeigen
     sicherungStandLaden();                  // eine Abfrage: läuft die Nachtsicherung?
     setTimeout(function(){ maybeArchiveWeek(); }, 4000);
   }
@@ -5190,8 +5189,13 @@ function showView(id, fromKey, ausVerlauf){
   }
   bindShrinkHeaders();
   foldAufbauen();
-  if(id==='chef'){ _chefTab=CHEF_START; buildChefTabs(); }
-  if(id==='material') ensureMaterialLoaded();
+  if(id==='chef'){
+    _chefTab=CHEF_START; buildChefTabs();
+    // Zahlen auf den Verwaltungs-Kacheln: Nachweise und Papierkorb
+    ensureCertsLoaded(); ensureTrashLoaded();
+  }
+  if(id==='archive') ensureArchivesLoaded();
+  if(id==='material'){ ensureMaterialLoaded(); ensureArchivesLoaded(); }
   if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='geraete') ensureDevicesLoaded();
   if(id==='chat'){
@@ -6052,6 +6056,8 @@ function stopListeners(){
   _devices=[]; _devLog=[]; _devOpenId=null; _pendingDevPhoto=null;
   _chanLast={}; _chanList=[];
   _allUsers=[]; _employees=[]; _invAll={}; _certs=[];
+  // Sonst startet der nächste Anmelder die nachgeladenen Beobachter nie
+  _certGeladen=false; _trashGeladen=false; _archGeladen=false;
 }
 
 /* Chat: wechselt bei Kanalwechsel */
@@ -10089,6 +10095,29 @@ function certStufe(tage){
   return {cls:'ok', txt:'noch '+tage+' Tage'};
 }
 
+/* ── Erst laden, wenn es gebraucht wird ──
+   Nachweise, Papierkorb und die Wochen-Sicherungen hingen früher am
+   App-Start. Gemessen mit 14 Studios und einem Jahr Daten: der Chef las
+   dadurch 192 Dokumente mehr, bevor die Startseite überhaupt stand – für
+   drei Karten, die er an den meisten Tagen gar nicht öffnet. Die
+   Sicherungen sind die teuersten davon: 52 Wochen-Dokumente, in denen
+   jeweils alle 14 Studios stecken.
+   Jetzt startet jeder dieser Beobachter beim ersten Öffnen der Ansicht,
+   die ihn braucht – danach bleibt er offen wie vorher. */
+var _certGeladen=false, _trashGeladen=false, _archGeladen=false;
+function ensureCertsLoaded(){
+  if(_certGeladen || !isChef()) return;
+  _certGeladen=true; listenCerts();
+}
+function ensureTrashLoaded(){
+  if(_trashGeladen || !canManage()) return;
+  _trashGeladen=true; listenTrash();
+}
+function ensureArchivesLoaded(){
+  if(_archGeladen || !isChef()) return;
+  _archGeladen=true; listenArchives();
+}
+
 var _certs=[], _certUnsub=null;
 function listenCerts(){
   if(!isChef()) return;
@@ -10096,6 +10125,8 @@ function listenCerts(){
   _certUnsub=db.collection('certificates').onSnapshot(function(snap){
     _certs=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
     renderCerts();
+    // Die Kachel „läuft bald ab" steht schon da, wenn die Daten eintreffen
+    if(_chefTab===CHEF_START) chefHomeZahlen();
   }, function(e){ console.warn('Nachweise:',e.message); });
 }
 
@@ -10265,10 +10296,16 @@ function weekLabel(d){
 function maybeArchiveWeek(force){
   if(!session || session.role!=='chef') return Promise.resolve();
   var now=new Date(), key=isoWeekKey(now);
+  /* Einmal am Tag reicht.
+     Der Lauf liest das Material aller Studios plus Putzplan und Notizen –
+     gemessen 462 Dokumente. Bei der alten Sperre von zwei Stunden lief er
+     bis zu zwölfmal täglich auf dem Gerät des Chefs, also über 5.000
+     Lesevorgänge am Tag für eine WOCHEN-Sicherung. Wer sie sofort
+     braucht, drückt im Archiv „Diese Woche jetzt sichern" (force). */
   if(!force){
     try{
       var last=localStorage.getItem('kf_arch_'+key);
-      if(last && (Date.now()-(+last) < 2*3600000)) return Promise.resolve();
+      if(last && (Date.now()-(+last) < 20*3600000)) return Promise.resolve();
     }catch(e){}
   }
   var r=weekRange(now);
