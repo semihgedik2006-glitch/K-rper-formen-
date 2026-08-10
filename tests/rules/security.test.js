@@ -381,6 +381,39 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Chef von A kann das Konto von Chef B NICHT umschreiben', () =>
     assertFails(chefA().doc('users/chefB').update({ role: 'mitarbeiter' })));
 
+  // ══ Ein Chef setzt keinen anderen Chef ab ══
+  //
+  // Bisher konnte jeder Chef jedem anderen die Rechte entziehen. Bei
+  // einem Streit zwischen Geschaeftsfuehrern waere das ein Wettrennen
+  // gewesen — wer zuerst drueckt, gewinnt.
+  await env.withSecurityRulesDisabled(async ctx => {
+    const d = ctx.firestore();
+    await d.doc('users/chefA2').set({ name: 'Zweiter Chef A', role: 'chef', firma: A, aktiv: true });
+    await d.doc('users/adminX').set({ name: 'Betreiber', role: 'admin', aktiv: true });
+    await d.doc('users/mitA2').set({ name: 'Mit A2', role: 'mitarbeiter', firma: A, aktiv: true });
+  });
+  const chefA2 = () => env.authenticatedContext('chefA2').firestore();
+  const adminX = () => env.authenticatedContext('adminX').firestore();
+
+  await pruefe('CHEF-SCHUTZ · Chef kann einem anderen Chef NICHT die Rechte entziehen', () =>
+    assertFails(chefA().doc('users/chefA2').update({ role: 'mitarbeiter' })));
+  await pruefe('CHEF-SCHUTZ · Chef kann ein anderes Chef-Konto NICHT loeschen', () =>
+    assertFails(chefA().doc('users/chefA2').delete()));
+  await pruefe('CHEF-SCHUTZ · Chef kann einen anderen Chef auch nicht stilllegen', () =>
+    assertFails(chefA().doc('users/chefA2').update({ aktiv: false })));
+  await pruefe('CHEF-SCHUTZ · Chef kann einem anderen Chef nicht die Studios nehmen', () =>
+    assertFails(chefA().doc('users/chefA2').update({ studios: [], studioKeys: [] })));
+
+  // Was ERLAUBT bleiben muss, sonst ist der Schutz eine Fessel
+  await pruefe('Chef darf weiterhin einen Mitarbeiter verwalten', () =>
+    assertSucceeds(chefA().doc('users/mitA2').update({ studios: ['Hürth'] })));
+  await pruefe('Chef darf einen Mitarbeiter zum Chef machen', () =>
+    assertSucceeds(chefA().doc('users/mitA2').update({ role: 'chef' })));
+  await pruefe('Chef darf sein EIGENES Profil weiter aendern', () =>
+    assertSucceeds(chefA().doc('users/chefA').update({ name: 'Chef A neu' })));
+  await pruefe('Der Admin darf einen Chef herabstufen', () =>
+    assertSucceeds(adminX().doc('users/chefA2').update({ role: 'mitarbeiter' })));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

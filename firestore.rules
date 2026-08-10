@@ -100,6 +100,21 @@ service cloud.firestore {
     // Gehoert das Konto, das hier bearbeitet wird, zu MEINER Firma?
     // Solange es nur eine gibt, haben beide Seiten kein Feld 'firma' und
     // die Antwort ist ja - der heutige Betrieb merkt nichts.
+    // Ein Chef ist niemand, den ein anderer Chef mal eben absetzt.
+    // Bisher konnte jeder Chef jedem anderen die Rechte entziehen — bei
+    // einem Streit zwischen Geschaeftsfuehrern waere das ein Wettrennen,
+    // und der Schnellere gewinnt. Wer einen Chef herabstufen oder
+    // entfernen will, braucht die Ebene darueber (Admin).
+    // Das EIGENE Konto bleibt aendernbar, sonst kaeme man an sein
+    // Profilbild nicht mehr heran.
+    function fremderChef(uid) {
+      return resource != null
+        && resource.data.get('role', '') == 'chef'
+        && request.auth.uid != uid;
+    }
+    function istAdminKonto() {
+      return hasProfile() && myProfile().get('role', '') == 'admin';
+    }
     function gleicheFirma() {
       return resource == null
         || resource.data.get('firma', '') == meineFirma();
@@ -135,14 +150,16 @@ service cloud.firestore {
       // eigenes Firmenfeld aendern koennte, wechselt damit in einen
       // fremden Betrieb und liest dort alles. Von den Kreuztests
       // gefunden, nicht beim Durchlesen.
-      allow update: if (isChef() && gleicheFirma())
+      allow update: if istAdminKonto()
+        || (isChef() && gleicheFirma() && !fremderChef(uid))
         || (request.auth.uid == uid
             && !request.resource.data.diff(resource.data)
                  .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma']));
       // nur der Chef kann einen Zugang entfernen - und nur in der
       // eigenen Firma. Sonst koennte der Chef von A das Team von B
       // umschreiben oder loeschen; users liegt ja gemeinsam oben.
-      allow delete: if isChef() && gleicheFirma();
+      allow delete: if istAdminKonto()
+        || (isChef() && gleicheFirma() && !fremderChef(uid));
     }
 
     // ── Beitritts-Nachweis ──

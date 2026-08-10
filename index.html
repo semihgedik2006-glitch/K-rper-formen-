@@ -6661,28 +6661,23 @@ function renderChefs(){
   if(!_chefs.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Keine gefunden.</p>'; return; }
   box.innerHTML=_chefs.map(function(c){
     var ich = c.uid===session.uid;
-    // Sich selbst die Rechte zu entziehen wäre die schnellste Art, sich
-    // auszusperren – deshalb geht das hier nicht.
+    /* Ein Chef setzt keinen anderen Chef ab.
+       Bis hierher stand hier „zu Mitarbeiter machen" an JEDEM fremden
+       Chef-Konto. Bei einem Streit zwischen Geschäftsführern wäre das
+       ein Wettrennen gewesen — wer zuerst drückt, gewinnt, und der
+       andere steht als Mitarbeiter ohne Studio da.
+
+       Durchgesetzt wird das in firestore.rules, nicht hier: ein
+       fehlender Knopf hält niemanden auf, der die Entwicklerkonsole
+       öffnet. Der Hinweis erklärt nur, warum es ihn nicht gibt. */
     var btn = ich
       ? '<span class="chef-me">das bist du</span>'
-      : '<button class="mini-x" data-chefdown="'+esc(c.uid)+'">zu Mitarbeiter machen</button>';
+      : '<span class="chef-me" title="Chef-Rechte kann nur die Ebene darüber entziehen">geschützt</span>';
     return '<div class="emp"><div class="emp-main"><b>'+esc(c.name||'Ohne Namen')+'</b>'+
       '<span class="emp-sub">'+esc(c.email||'keine E-Mail hinterlegt')+'</span></div>'+
       btn+'</div>';
   }).join('');
-  box.querySelectorAll('[data-chefdown]').forEach(function(b){
-    b.addEventListener('click',function(){
-      var uid=b.getAttribute('data-chefdown');
-      var c=_chefs.filter(function(x){ return x.uid===uid; })[0];
-      if(!confirm('„'+((c&&c.name)||'Dieses Konto')+'" die Chef-Rechte entziehen?\n\n'+
-                  'Das Konto wird zum Mitarbeiter ohne Studio-Zuordnung und bekommt '+
-                  'keinen Monatsbericht mehr.')) return;
-      db.collection('users').doc(uid)
-        .update({ role:'mitarbeiter', studios:[], studioKeys:[] })
-        .then(function(){ toast('Rechte entzogen ✓'); })
-        .catch(function(e){ toast(errMsg(e),true); });
-    });
-  });
+  /* Der Herabstufen-Weg ist entfallen — siehe oben. */
 }
 
 /* Aus der EINEN Nutzerliste die beiden Teillisten ableiten.
