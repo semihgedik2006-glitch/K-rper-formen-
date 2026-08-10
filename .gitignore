@@ -5,6 +5,9 @@ functions/node_modules/
 
 # Bildschirmfotos aus den Testlaeufen – entstehen bei jedem Lauf neu
 tests/*.png
+# Bericht des Lasttests – ebenfalls bei jedem Lauf neu, sonst rauscht
+# jeder Durchlauf als Aenderung durch den Verlauf
+tests/last-bericht.txt
 
 # Abhaengigkeiten der Regeltests
 tests/rules/node_modules

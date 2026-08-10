@@ -48,7 +48,9 @@
   /* Dunkel – ruhiges Schiefer-Blau statt harter Neon-Kontrast.
      Wirkt sachlich und ist über lange Zeit angenehmer zu lesen. */
   --bg:#12131C;--bg-2:#1C1E2A;--bg-soft:#171925;--bg-3:#252838;
-  --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.17);
+  /* Deutlichere Kanten: Karten sollen nebeneinander liegen, nicht
+     ineinander verschwimmen. War .09/.17. */
+  --line:rgba(255,255,255,.14);--line-2:rgba(255,255,255,.26);
   /* Marken-Trio aus dem StudioChat-Logo: Cyan (primär), Violett, Pink */
   --accent:#38BDF8;--accent-2:#A78BFA;--accent-3:#F472B6;--accent-d:#38BDF8;
   --accent-glow:rgba(56,189,248,.28);
@@ -63,11 +65,29 @@
   --warm:#FBBF24;--danger:#FB4E6D;--ok:#34D399;
   --warm-tx:#FFB38C;--danger-tx:#FF8A8A;--ok-tx:#34D399;
   /* text-3 war #848AA0 - auf getoenten Karten nur 3,4:1 */
-  --text:#F2F3F8;--text-2:#B4B8C8;--text-3:#A2A8BC;
+  /* Mehr Kontrast: text-2 war #B4B8C8, text-3 #A2A8BC. Beide sind
+     jetzt heller – die Zweitzeile bleibt trotzdem klar zweite Zeile,
+     weil Größe und Gewicht den Unterschied tragen, nicht die
+     Blässe. */
+  --text:#F7F8FC;--text-2:#C6CAD8;--text-3:#B0B6C8;
   --font-head:'Barlow Condensed',system-ui,sans-serif;
   --font-body:'Barlow',system-ui,-apple-system,sans-serif;
-  --radius:18px;--radius-lg:26px;
-  --shadow:0 8px 24px rgba(0,0,0,.40);--shadow-lg:0 24px 56px rgba(0,0,0,.58);
+  /* ── Rundungen ──
+     --r-md und --r-sm wurden an zehn Stellen benutzt, waren aber nie
+     definiert. Eine undefinierte Variable macht die ganze Angabe
+     ungültig – Umfragen, Geräteliste, Anhang-Menü und die
+     Aufgaben-Vorlagen standen deshalb mit rechten Winkeln da, während
+     alles daneben rund war. Jetzt gibt es eine durchgehende Leiter. */
+  --r-xs:10px;--r-sm:14px;--r-md:18px;
+  --radius:22px;--radius-lg:30px;
+  /* Apples Symbole sind keine Kreisbögen, sondern Superellipsen: die
+     Rundung setzt früher an und läuft weicher aus. Browser, die das
+     kennen, bekommen es; alle anderen die Rundung oben. Kein Risiko. */
+  --ecke:superellipse(2.2);
+  /* Kanten und Schatten: näher an Apple. Eine haarscharfe Linie, die man
+     wirklich sieht, dazu ein flacherer und engerer Schatten. Vorher
+     verschwammen die Karten weich ineinander. */
+  --shadow:0 4px 14px rgba(0,0,0,.34);--shadow-lg:0 18px 44px rgba(0,0,0,.52);
   /* Hintergrund hinter einem offenen Fenster. Eine Stelle statt sieben. */
   --scrim:rgba(6,10,7,.7);
   --ease-out:cubic-bezier(.16,1,.3,1);
@@ -85,7 +105,7 @@
 /* ── Hell-Modus ── */
 body.light{
   --bg:#F4F6FA;--bg-2:#ffffff;--bg-soft:#EDF0F6;--bg-3:#E3E8F1;
-  --line:rgba(15,25,45,.10);--line-2:rgba(15,25,45,.18);
+  --line:rgba(15,25,45,.15);--line-2:rgba(15,25,45,.27);
   /* etwas dunklere Logo-Töne, damit sie auf Weiß gut lesbar sind */
   --accent:#0369A1;--accent-2:#6D28D9;--accent-3:#BE185D;--accent-d:#075985;
   --accent-glow:rgba(3,105,161,.18);
@@ -98,8 +118,8 @@ body.light{
      nachgerechnet. */
   --ok:#047857;
   --warm-tx:#92400E;--danger-tx:#B42318;--ok-tx:#047857;
-  --text:#111726;--text-2:#48516B;--text-3:#5A6274;
-  --shadow:0 6px 18px rgba(20,30,55,.09);--shadow-lg:0 18px 40px rgba(20,30,55,.14);
+  --text:#0B0F1A;--text-2:#3A4256;--text-3:#4A5265;
+  --shadow:0 3px 10px rgba(20,30,55,.10);--shadow-lg:0 14px 34px rgba(20,30,55,.16);
   --scrim:rgba(17,23,38,.52);
 }
 body.light .topbar{background:rgba(255,255,255,.9)}
@@ -134,7 +154,15 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);
   line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100svh;
   overscroll-behavior-y:none;-webkit-overflow-scrolling:touch}
 .chat-scroll,.scroll-area{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-h1,h2,h3,h4{font-family:var(--font-head);font-weight:800;line-height:1.05;letter-spacing:-.5px;text-transform:uppercase}
+/* Überschriften tragen die Gliederung, nicht die Farbe. Enger gesetzt
+   und eine Spur größer: so erfasst man beim Überfliegen sofort, was
+   Titel ist und was Erklärung – auch wenn beides denselben Ton hat. */
+h1,h2,h3,h4{font-family:var(--font-head);font-weight:800;line-height:1.02;
+  letter-spacing:-.7px;text-transform:uppercase}
+h2{font-size:clamp(1.45rem,3.6vw,1.95rem)}
+/* Zweitzeilen: kleiner und leichter statt blasser. Der Unterschied
+   kommt aus Größe und Gewicht, damit der Kontrast hoch bleiben kann. */
+.hint,.view-head p{font-weight:400;line-height:1.45}
 a{color:inherit;text-decoration:none}ul{list-style:none}button{font-family:inherit}
 input,textarea,select{font-family:inherit;font-size:16px}
 ::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}
@@ -329,9 +357,9 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
 .view.show{display:flex}
-.view-head{padding:20px clamp(14px,4vw,28px) 12px;flex-shrink:0;position:relative}
+.view-head{padding:15px clamp(14px,4vw,28px) 9px;flex-shrink:0;position:relative}
 .view-head h2{font-size:clamp(1.4rem,3.5vw,1.9rem)}
-.view-head p{color:var(--text-2);font-size:.9rem;margin-top:3px}
+.view-head p{color:var(--text-2);font-size:.88rem;margin-top:2px}
 /* Anlegen-Knopf im Seitenkopf, rechts neben der Überschrift.
    Als absolut gesetzter Knopf lag er über dem Titel „Aufgaben aller
    Studios" – deshalb eine echte Zeile mit zwei Feldern. */
@@ -386,12 +414,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* Der gleitende Marker. Eine einzige Fläche für die ganze Reihe: sie
    wandert zum angetippten Kanal, statt dass eine Fläche verschwindet und
    an anderer Stelle neu auftaucht. Bewegt wird nur transform. */
-.chat-channels::before{content:'';position:absolute;left:0;top:6px;height:38px;
-  width:var(--ind-w,0);transform:translateX(var(--ind-x,0));
+.chat-channels::before{content:'';position:absolute;left:0;top:0;
+  height:var(--ind-h,38px);
+  width:var(--ind-w,0);transform:translate(var(--ind-x,0),var(--ind-y,6px));
   border-radius:999px;background:var(--accent-glow);
   box-shadow:inset 0 0 0 1px var(--accent);
   opacity:var(--ind-o,0);pointer-events:none;
-  transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),opacity .2s}
+  transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
+             height .42s var(--ease-ios),opacity .2s}
 /* Beim ersten Aufbau soll der Marker DA sein, nicht hingleiten. */
 .chat-channels.sofort::before{transition:none}
 .chan{position:relative;z-index:1;display:inline-flex;align-items:center;
@@ -445,8 +475,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .at-ro{flex-shrink:0;font-size:.72rem;color:var(--text-3)}
 
 /* ── Todos ── */
-.scroll-area{flex:1;overflow-y:auto;padding:0 clamp(14px,4vw,28px) 28px}
-.todo-progress{display:flex;align-items:center;gap:13px;margin:4px 0 16px;padding:14px 16px;
+.scroll-area{flex:1;overflow-y:auto;padding:0 clamp(14px,4vw,28px) 24px}
+.todo-progress{display:flex;align-items:center;gap:12px;margin:3px 0 12px;padding:11px 14px;
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
 .pbar{flex:1;height:9px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
 .pbar i{display:block;height:100%;border-radius:999px;
@@ -506,8 +536,48 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Cards / Chef ── */
 .card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
-  padding:clamp(16px,4vw,24px);margin-bottom:16px}
-.card h3{font-size:1.25rem;margin-bottom:3px}
+  padding:clamp(13px,3.2vw,19px);margin-bottom:12px}
+.card h3{font-size:1.32rem;margin-bottom:2px;letter-spacing:.3px}
+
+/* ── Apple-Ecke ──
+   Wo der Browser Superellipsen kann, bekommt jede gerundete Fläche die
+   Form der iOS-Symbole: die Rundung setzt früher an und läuft weicher
+   aus als bei einem Kreisbogen. Wer sie nicht kann, sieht die normale
+   Rundung – deshalb steht hier @supports und kein Ersatzweg. Runde
+   Sachen (999px) bleiben rund, sonst würden aus Chips Kästen. */
+@supports (corner-shape: superellipse(2)){
+  .card,.pm-box,.ms-card,.inp,.poll,.dev-item,.dev-log,.attach-menu,
+  .msg,.chip,.tpl-row,.doc,.t-row,.mat-row,.wk-row,.att-row,.search-box,
+  .home-tile,.chef-go,.dm-thread,.cert-row,.sich-stand{
+    corner-shape:var(--ecke)}
+}
+
+/* ── Zum Lesen auf der Startseite ──
+   Aushänge und schwarzes Brett standen bisher nur als Hinweiszeile da
+   („2 neue Infos ›"). Wer wissen wollte, worum es geht, musste klicken.
+   Hier steht der Text – gekürzt, aber lesbar. */
+.karten-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  margin-bottom:8px}
+/* Ohne min-width:0 schiebt eine lange Überschrift den Link raus oder bricht
+   selbst um – „Schwarzes Brett" stand deshalb zweizeilig. */
+.karten-kopf h3{margin-bottom:0;min-width:0}
+.mini-link{flex-shrink:0;position:relative;background:none;border:none;cursor:pointer;
+  color:var(--accent-d);font-family:var(--font-body);font-weight:700;font-size:.8rem;
+  padding:4px 2px;white-space:nowrap;transition:opacity .2s}
+.mini-link:active{opacity:.55}
+/* Das Wort ist klein, die Trefferfläche darf es nicht sein. */
+.mini-link::after{content:'';position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
+.lese-eintrag{padding:9px 0;border-top:1px solid var(--line)}
+.lese-eintrag:first-child{border-top:none;padding-top:2px}
+.lese-text{font-size:.92rem;line-height:1.5;color:var(--text);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lese-fuss{margin-top:3px;font-size:.75rem;color:var(--text-3);
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+/* Ein Punkt statt des Wortes „neu": schmaler, und die Farbe sagt es schon. */
+.lese-neu{flex-shrink:0;width:7px;height:7px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow)}
+.lese-leer{font-size:.88rem;color:var(--text-3);padding:2px 0}
 
 /* ── Aufklappbare Abschnitte ──
    Der Grund: die Seiten waren eine einzige lange Kartenwand. Alles gleich
@@ -673,14 +743,27 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
     padding:5px calc(4px + var(--sar)) calc(5px + var(--sab)) calc(4px + var(--sal))}
   /* Bei 9 Bereichen wird es sonst zu eng: Leiste ist seitlich verschiebbar,
      die Einträge behalten dadurch lesbare Größe und große Tippflächen. */
-  .mobnav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .mobnav{position:fixed;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .mobnav::-webkit-scrollbar{display:none}
+  /* Die Füllung sprang bisher von Bereich zu Bereich. Jetzt gleitet sie –
+     dieselbe Bewegung wie in der Kanalreihe und bei den Reitern, damit
+     die App an allen drei Stellen dieselbe Sprache spricht. */
+  .mobnav::before{content:'';position:absolute;left:0;top:0;
+    height:var(--ind-h,52px);width:var(--ind-w,0);
+    transform:translate(var(--ind-x,0),var(--ind-y,5px));
+    border-radius:14px;background:var(--accent-glow);
+    box-shadow:inset 0 0 0 1px var(--accent);
+    opacity:var(--ind-o,0);pointer-events:none;z-index:0;
+    transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
+               height .42s var(--ease-ios),opacity .2s}
+  .mobnav.sofort::before{transition:none}
   .mobnav button{flex:0 0 auto;min-width:74px;background:none;border:none;color:var(--text-3);
     cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;
-    padding:8px 6px;border-radius:12px;font-size:.7rem;font-weight:600;position:relative;
-    transition:color .2s,background .2s}
+    padding:8px 6px;border-radius:14px;font-size:.7rem;font-weight:600;position:relative;
+    z-index:1;transition:color .2s,transform .3s var(--spring)}
+  .mobnav button:active{transform:scale(.9)}
   .mobnav button svg{width:22px;height:22px}
-  .mobnav button.active{color:var(--accent);background:rgba(34,211,238,.13)}
+  .mobnav button.active{color:var(--accent);font-weight:700}
   .mobnav .badge{position:absolute;top:1px;right:50%;transform:translateX(15px);
     background:var(--accent);color:var(--on-accent);font-size:.58rem;font-weight:700;min-width:15px;height:15px;
     border-radius:999px;display:none;place-items:center;padding:0 3px}
@@ -978,23 +1061,41 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   to{opacity:1;transform:none}
 }
 
-/* Karten erscheinen leicht versetzt – wirkt ruhig, nicht verspielt */
-.scroll-area > .card{animation:cardUp .55s var(--ease-ios) both}
-@keyframes cardUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.scroll-area > .card:nth-of-type(1){animation-delay:.03s}
-.scroll-area > .card:nth-of-type(2){animation-delay:.08s}
-.scroll-area > .card:nth-of-type(3){animation-delay:.13s}
-.scroll-area > .card:nth-of-type(4){animation-delay:.18s}
-.scroll-area > .card:nth-of-type(n+5){animation-delay:.22s}
+/* Karten laufen versetzt ein. Die Staffel geht jetzt über sieben Karten
+   statt vier und beginnt eine Spur tiefer – gewünscht war spürbare
+   Bewegung. Die Gesamtdauer bleibt unter einer halben Sekunde: länger
+   fühlt es sich nicht mehr lebendig an, sondern langsam. */
+.scroll-area > .card{animation:cardUp .5s var(--ease-ios) both}
+@keyframes cardUp{
+  from{opacity:0;transform:translateY(20px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+.scroll-area > .card:nth-of-type(1){animation-delay:.02s}
+.scroll-area > .card:nth-of-type(2){animation-delay:.06s}
+.scroll-area > .card:nth-of-type(3){animation-delay:.10s}
+.scroll-area > .card:nth-of-type(4){animation-delay:.14s}
+.scroll-area > .card:nth-of-type(5){animation-delay:.18s}
+.scroll-area > .card:nth-of-type(6){animation-delay:.22s}
+.scroll-area > .card:nth-of-type(n+7){animation-delay:.26s}
+/* Die Kacheln auf der Startseite gehören zur selben Bewegung */
+.home-grid > .home-tile:nth-child(1){animation-delay:.04s}
+.home-grid > .home-tile:nth-child(2){animation-delay:.09s}
+.home-grid > .home-tile:nth-child(3){animation-delay:.14s}
+.home-grid > .home-tile:nth-child(4){animation-delay:.19s}
+.home-grid > .home-tile:nth-child(n+5){animation-delay:.23s}
 
 /* Druck-Feedback: kurz eindrücken, weich zurückfedern */
 .btn,.icon-btn,.tab,.chan,.studio-check,.role-opt,.mobnav button,.wk-btns .btn{
   transition:transform .32s var(--spring),background .25s var(--ease-ios),
              color .25s var(--ease-ios),border-color .25s var(--ease-ios),
              box-shadow .32s var(--ease-ios)}
-.btn:active{transform:scale(.965)}
-.icon-btn:active,.chan:active,.tab:active,.mobnav button:active{transform:scale(.9)}
-.studio-check:active,.role-opt:active{transform:scale(.985)}
+/* Kräftiger als vorher: der Druck soll im Finger ankommen, nicht nur
+   angedeutet sein. Große Flächen dürfen weniger einsinken als kleine,
+   sonst wirkt es wackelig. */
+.btn:active{transform:scale(.94)}
+.icon-btn:active,.chan:active,.tab:active,.mobnav button:active{transform:scale(.88)}
+.studio-check:active,.role-opt:active,.card[data-go]:active,
+.home-tile:active,.chef-go:active,.doc:active,.dev-item:active{transform:scale(.965)}
 .btn-primary:hover{transform:translateY(-2px)}
 
 /* Häkchen federt beim Erledigen nach */
@@ -1270,18 +1371,29 @@ body.light .react{background:rgba(20,10,40,.05)}
 html{font-size:var(--fs,100%)}
 
 /* ── Reiter innerhalb einer Gruppe ── */
-.subnav{display:flex;gap:6px;padding:10px clamp(14px,4vw,28px) 0;flex-shrink:0;
-  overflow-x:auto;scrollbar-width:none}
+/* ── Reiter der Gruppe ──
+   Vorher sprang die Füllung von Reiter zu Reiter. Jetzt gleitet EIN
+   Marker dorthin – man sieht, wohin man gegangen ist, statt nur, wo man
+   angekommen ist. Gleiches Muster wie die Kanalreihe im Chat. */
+.subnav{position:relative;display:flex;gap:4px;padding:8px clamp(14px,4vw,28px) 0;
+  flex-shrink:0;overflow-x:auto;scrollbar-width:none}
 .subnav::-webkit-scrollbar{display:none}
+.subnav::before{content:'';position:absolute;left:0;top:0;
+  height:var(--ind-h,38px);width:var(--ind-w,0);
+  transform:translate(var(--ind-x,0),var(--ind-y,8px));
+  border-radius:999px;background:var(--accent);
+  opacity:var(--ind-o,0);pointer-events:none;z-index:0;
+  transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
+             height .42s var(--ease-ios),opacity .2s}
+.subnav.sofort::before{transition:none}
 .subtab{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
-  background:var(--bg-2);border:1.5px solid var(--line);color:var(--text-2);
+  background:none;border:1.5px solid transparent;color:var(--text-2);
   padding:9px 15px;border-radius:999px;font-family:var(--font-body);font-weight:600;
   font-size:.88rem;cursor:pointer;position:relative;z-index:1;
-  transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
-.subtab:active{transform:scale(.95)}
+  transition:transform .3s var(--spring),color .25s}
+.subtab:active{transform:scale(.93)}
 .subtab svg{width:16px;height:16px}
-.subtab:active{transform:scale(.95)}
-.subtab.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.subtab.on{color:var(--on-accent);font-weight:700}
 .sub-dot{position:absolute;top:5px;right:8px;width:7px;height:7px;border-radius:50%;
   background:var(--warm);display:none}
 .sub-dot.show{display:block}
@@ -1289,7 +1401,7 @@ html{font-size:var(--fs,100%)}
 /* ── Startseite ── */
 .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:11px;margin-bottom:16px}
 .home-tile{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
-  padding:16px 17px;cursor:pointer;animation:cardUp .5s var(--ease-ios) both;
+  padding:13px 15px;cursor:pointer;animation:cardUp .5s var(--ease-ios) both;
   transition:transform .35s var(--ease-ios),border-color .25s,box-shadow .35s}
 .home-tile:active{transform:scale(.97)}
 @media (hover:hover){ .home-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2)} }
@@ -1383,7 +1495,7 @@ html{font-size:var(--fs,100%)}
 .sort-lab{flex:0 0 auto}
 .sort-lab{font-size:.74rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
   color:var(--text-3);margin-right:2px}
-.sec-head{display:flex;align-items:center;gap:11px;margin:22px 0 11px}
+.sec-head{display:flex;align-items:center;gap:11px;margin:17px 0 9px}
 .sec-head span{font-family:var(--font-head);font-weight:700;font-size:.8rem;
   letter-spacing:1.3px;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
 .sec-head i{flex:1;height:1px;background:var(--line);display:block}
@@ -1438,16 +1550,24 @@ html{font-size:var(--fs,100%)}
 .chef-back:hover{border-color:var(--accent);color:var(--accent-d)}
 .chef-back:active{transform:scale(.95)}
 .chef-back svg{width:15px;height:15px}
-.chef-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;
-  padding-bottom:2px}
+.chef-tabs{position:relative;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;
+  min-width:0;padding-bottom:2px}
 .chef-tabs::-webkit-scrollbar{display:none}
+.chef-tabs::before{content:'';position:absolute;left:0;top:0;
+  height:var(--ind-h,38px);width:var(--ind-w,0);
+  transform:translate(var(--ind-x,0),var(--ind-y,0));
+  border-radius:999px;background:var(--accent);
+  opacity:var(--ind-o,0);pointer-events:none;z-index:0;
+  transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
+             height .42s var(--ease-ios),opacity .2s}
+.chef-tabs.sofort::before{transition:none}
 .chef-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
-  background:var(--bg-2);border:1.5px solid var(--line);color:var(--text-2);
+  background:none;border:1.5px solid transparent;color:var(--text-2);
   padding:9px 15px;border-radius:999px;font-family:var(--font-body);font-weight:600;
-  font-size:.87rem;cursor:pointer;
-  transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
-.chef-tab:active{transform:scale(.95)}
-.chef-tab.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  font-size:.87rem;cursor:pointer;position:relative;z-index:1;
+  transition:transform .3s var(--spring),color .25s}
+.chef-tab:active{transform:scale(.93)}
+.chef-tab.on{color:var(--on-accent);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
 
 /* Zeile "Braucht Aufmerksamkeit" */
@@ -1547,7 +1667,11 @@ html{font-size:var(--fs,100%)}
 .trash-row .btn{flex-shrink:0}
 
 /* Angeheftete Nachricht über dem Chat */
-.pin-bar{display:none;align-items:center;gap:9px;padding:9px 14px;flex-shrink:0;
+/* min-height ist hier kein Schönheitswert: die Leiste war 38 Pixel hoch,
+   die 44er-Trefferfläche von „ansehen" ragte oben und unten heraus und
+   wurde vom Chatverlauf darunter abgefangen. Gemessen kam der Finger nur
+   an 23 Pixel. */
+.pin-bar{display:none;align-items:center;gap:9px;padding:9px 14px;min-height:46px;flex-shrink:0;
   background:rgba(56,189,248,.1);border-bottom:1px solid rgba(56,189,248,.32);
   font-size:.85rem;animation:pinIn .35s var(--ease-ios)}
 .pin-bar.show{display:flex}
@@ -1797,7 +1921,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
   letter-spacing:.4px;font-weight:700;overflow:hidden}
 .mat-head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mat-head span:nth-child(2),.mat-head span:nth-child(3),.mat-head span:nth-child(4){text-align:center}
-.mat-row{padding:9px 0;border-top:1px solid var(--line)}
+.mat-row{padding:7px 0;border-top:1px solid var(--line)}
 /* min-width:0 ist hier Pflicht: eine Grid-Spalte "1fr" ist von sich aus
    mindestens so breit wie ihr laengstes Wort. "Desinfektionsmittel" hat
    deshalb die Zahlenfelder und das Loeschkreuz aus der Karte geschoben.
@@ -1870,8 +1994,8 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .sich-stand.schlecht{background:rgba(251,78,109,.10);border-color:rgba(251,78,109,.30)}
 
 /* ── Dokumente ── */
-.doc{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--bg-2);
-  border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
+.doc{display:flex;align-items:center;gap:11px;padding:10px 13px;background:var(--bg-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:8px}
 .doc .doc-ic{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:grid;place-items:center;
   background:rgba(34,211,238,.12);color:var(--accent-2)}
 .doc .doc-ic svg{width:20px;height:20px}
@@ -2088,13 +2212,37 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <div id="myShiftList"></div>
           </div>
 
-          <!-- 2. Wie es steht -->
+          <!-- 2. Was man wissen sollte, ohne es zu suchen ──
+               Aus dem Betrieb: „ich würde gerne mehr Infos auf der
+               Startseite haben, zum Beispiel das schwarze Brett, damit
+               man das nicht überall suchen muss."
+               Vorher stand hier nur „2 neue Infos von der Leitung ›" –
+               man musste also erst klicken, um zu erfahren, worum es
+               geht. Jetzt steht der Text da. -->
+          <div class="sec-head" id="homeLesenHead" style="display:none"><span>Zum Lesen</span><i></i></div>
+          <div class="card" id="homeAnnCard" data-fold="startinfos" data-fold-offen="1" style="display:none">
+            <div class="karten-kopf">
+              <h3>📣 Von der Leitung</h3>
+              <button class="mini-link" data-go="ann">Alle ›</button>
+            </div>
+            <div id="homeAnnList"></div>
+          </div>
+          <div class="card" id="homeBoardCard" data-fold="startbrett" data-fold-offen="1" style="display:none">
+            <div class="karten-kopf">
+              <h3>📌 Schwarzes Brett</h3>
+              <button class="mini-link" data-go="team">Alle ›</button>
+            </div>
+            <div id="homeBoardList"></div>
+          </div>
+
+          <!-- 3. Wie es steht -->
           <div class="sec-head"><span>Überblick</span><i></i></div>
           <div class="home-grid" id="homeGrid"></div>
 
           <!-- Nur für die Verwaltung ab zwei Studios: wo etwas los ist -->
           <div id="homeBrennpunkte" style="display:none"></div>
 
+          <!-- 4. Was gerade passiert ist -->
           <div class="card" id="homeActivityCard" data-fold="aktivitaet">
             <h3>🕒 Zuletzt passiert</h3>
             <div id="homeActivity"></div>
@@ -5181,16 +5329,70 @@ function buildNav(){
    Bewegt wird nur transform und width; kein Layout, keine Farbe.
    Der Marker liegt IM scrollbaren Behälter, deshalb offsetLeft: der Wert
    wandert beim seitlichen Scrollen korrekt mit. */
+/* Der gleitende Marker liegt hinter den Reitern und wandert zum aktiven.
+   Er misst sich am Reiter selbst – auch in der Höhe. Vorher stand die
+   Höhe fest im CSS; sobald ein Reiter zweizeilig wurde oder die Schrift
+   größer war, saß der Marker daneben. */
 function markerSetzen(behaelter, aktiv){
   if(!behaelter) return;
   if(!aktiv){ behaelter.style.setProperty('--ind-o','0'); return; }
   behaelter.style.setProperty('--ind-x', aktiv.offsetLeft+'px');
+  behaelter.style.setProperty('--ind-y', aktiv.offsetTop+'px');
   behaelter.style.setProperty('--ind-w', aktiv.offsetWidth+'px');
+  behaelter.style.setProperty('--ind-h', aktiv.offsetHeight+'px');
   behaelter.style.setProperty('--ind-o','1');
 }
 function kanalMarker(){
   var bar=document.querySelector('.chat-channels'); if(!bar) return;
   markerSetzen(bar, bar.querySelector('.chan.active'));
+}
+
+/* Beim ersten Aufbau soll der Marker DA sein, nicht von links hereinfahren.
+   Deshalb einmal ohne Übergang setzen und den erst danach zulassen. */
+function markerSofort(behaelter, aktiv){
+  if(!behaelter) return;
+  behaelter.classList.add('sofort');
+  markerSetzen(behaelter, aktiv);
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ behaelter.classList.remove('sofort'); });
+  });
+}
+function gruppenMarker(sofort){
+  var bar=document.querySelector('.mobnav'); if(!bar) return;
+  // Die Leiste ist nur auf dem Handy sichtbar; am Rechner gibt es sie nicht.
+  // NICHT über offsetParent prüfen: die Leiste ist position:fixed, und da
+  // ist offsetParent immer null – die Prüfung hätte den Marker überall
+  // abgeschaltet, auch auf dem Handy.
+  if(getComputedStyle(bar).display === 'none') return;
+  // Beim allerersten Mal soll der Marker stehen und nicht von links
+  // hereinfahren – das sähe aus, als würde die App noch laden.
+  if(!bar.dataset.markerDa){ bar.dataset.markerDa='1'; sofort=true; }
+  (sofort ? markerSofort : markerSetzen)(bar, bar.querySelector('button.active'));
+}
+
+/* Dreht jemand das Gerät oder klappt die Bildschirmtastatur auf, stimmen
+   die gemessenen Breiten nicht mehr. Alle drei Marker neu setzen – ohne
+   Übergang, denn hier bewegt sich nichts, hier ändert sich das Fenster. */
+var _markerTimer=null;
+function markerNeuMessen(){
+  clearTimeout(_markerTimer);
+  _markerTimer=setTimeout(function(){
+    gruppenMarker(true); subnavMarker(true); chefTabMarker(true);
+    var cb=document.querySelector('.chat-channels');
+    if(cb) markerSofort(cb, cb.querySelector('.chan.active'));
+  }, 120);
+}
+window.addEventListener('resize', markerNeuMessen);
+window.addEventListener('orientationchange', markerNeuMessen);
+function subnavMarker(sofort){
+  var bar=document.getElementById('subnav'); if(!bar) return;
+  var an=bar.querySelector('.subtab.on');
+  (sofort ? markerSofort : markerSetzen)(bar, an);
+}
+function chefTabMarker(sofort){
+  var bar=document.getElementById('chefTabs'); if(!bar) return;
+  var an=bar.querySelector('.chef-tab.on');
+  (sofort ? markerSofort : markerSetzen)(bar, an);
 }
 
 /* Reiter innerhalb der aktuellen Gruppe (oben unter der Kopfzeile) */
@@ -5214,6 +5416,8 @@ function buildSubNav(){
     b.addEventListener('click',function(){ showView(b.getAttribute('data-subview')); tick(8); });
   });
   updateNavMarkers();
+  // Frisch aufgebaut: der Marker soll stehen, nicht hereinfahren
+  subnavMarker(true);
 }
 
 /* ── Kopf beim Scrollen zusammenrücken ──
@@ -5257,6 +5461,7 @@ function showView(id, fromKey, ausVerlauf){
   // Untere Leiste: die Gruppe markieren, zu der die Ansicht gehört
   var g=groupOfView(id);
   document.querySelectorAll('[data-group]').forEach(function(t){ t.classList.toggle('active',t.dataset.group===g.id); });
+  gruppenMarker();
   buildSubNav();
   if(id==='home') renderHome();
   // Unread-Marker beim Öffnen der Ansicht löschen
@@ -6096,13 +6301,38 @@ function deleteDoc(d){
 function startListeners(){
   listenChannel(currentChannel);
   listenTodos();
+  listenClean();
   listenAnnouncements();
   listenDocs();
+  listenBoard();
+}
+
+/* ── Schwarzes Brett ──
+   Hing bisher an loadTeam(), lief also erst, wenn jemand die Team-Seite
+   öffnete. Für die Startseite braucht es das Brett aber sofort.
+
+   Nur eben nicht in voller Länge: die Startseite zeigt drei Einträge, die
+   Team-Seite alle. Deshalb zwei Stufen – beim Start zwölf, beim Öffnen
+   der Team-Seite die vollen fünfzig. Das spart 38 Lesevorgänge bei jedem
+   App-Start von jedem der 57 Konten, also gut 13.000 am Tag, für Einträge,
+   die auf der Startseite ohnehin niemand sieht. */
+var _bbVoll=false;
+function listenBoard(voll){
+  if(_bbUnsub && (_bbVoll || !voll)) return;
+  if(_bbUnsub){ _bbUnsub(); _bbUnsub=null; }
+  _bbVoll=!!voll;
+  _bbUnsub=db.collection('board').orderBy('ts','desc').limit(voll?50:12)
+    .onSnapshot(function(sn){
+      _board=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderBoard();
+      renderHomeLesen();
+    }, function(e){ console.warn('Brett:',e.message); });
 }
 
 function stopListeners(){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
   _todosUnsubs.forEach(function(u){ u(); }); _todosUnsubs=[];
+  _cleanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _cleanUnsubs=[];
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
@@ -6117,7 +6347,6 @@ function stopListeners(){
   if(_trashUnsub){ _trashUnsub(); _trashUnsub=null; }
   if(_tplUnsub){ _tplUnsub(); _tplUnsub=null; }
   if(_certUnsub){ _certUnsub(); _certUnsub=null; }
-  if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
   if(_devUnsub){ _devUnsub(); _devUnsub=null; }
   if(_devLogUnsub){ _devLogUnsub(); _devLogUnsub=null; }
@@ -6126,7 +6355,7 @@ function stopListeners(){
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _chanUnsubs=[];
   _lastPing=0;
   [_shiftUnsub,_absUnsub,_hoUnsub,_bbUnsub].forEach(function(u){ if(u) try{ u(); }catch(e){} });
-  _shiftUnsub=_absUnsub=_hoUnsub=_bbUnsub=null;
+  _shiftUnsub=_absUnsub=_hoUnsub=_bbUnsub=null; _bbVoll=false;
   _matStudioKey=null; _ppStudioKey=null; _teamStudioKey=null; _devStudioKey=null;
   // Zwischenstände wegräumen. In den Studios teilen sich mehrere Leute ein
   // Gerät – wer sich als Nächstes anmeldet, darf nichts vom Vorgänger sehen.
@@ -6176,6 +6405,54 @@ function listenChannel(channelId){
       _chatMore = snap.docs.length >= _chatLimit;   // evtl. gibt es noch ältere
       renderMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
     }, function(e){ console.error('Chat:',e.message); });
+}
+
+/* ── Putzplan über ALLE Studios ──
+   Vorher hing die Startseite an _ppTasks – und darin stand nur das
+   Studio, das man gerade im Putzplan geöffnet hatte. Beim App-Start war
+   die Liste leer, also meldete die Startseite „Alles erledigt", obwohl
+   offene Putzaufgaben da waren. Nach dem Öffnen zählte sie eins von
+   vierzehn Studios.
+
+   Jetzt läuft es wie bei den Aufgaben: ein Beobachter je Studio, das
+   Ergebnis in cachedClean. Die Putzplan-Seite liest aus demselben
+   Speicher und legt KEINEN eigenen Beobachter mehr an – dadurch kostet
+   die Korrektur ein Studio weniger als vorher, nicht mehr. */
+var cachedClean = {};            // studioKey -> [{...}]
+var _cleanUnsubs = [];
+function listenClean(){
+  _cleanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _cleanUnsubs=[];
+  cachedClean={};
+  var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
+  keys.forEach(function(sk){
+    var unsub=db.collection('studios').doc(sk).collection('cleaning').orderBy('ts')
+      .onSnapshot(function(snap){
+        // Abgelaufene gleich hier weg, damit Startseite, Liste, Fortschritt
+        // und Ausdruck ohne weiteres Zutun dieselbe Zahl zeigen.
+        cachedClean[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+          .filter(function(t){ return !ppAbgelaufen(t); });
+        if(_ppStudioKey===sk){ _ppTasks=cachedClean[sk]; renderPutzplan(); }
+        homeSpaeter();
+      }, function(e){ console.error('Putzplan '+sk+':',e.message); });
+    _cleanUnsubs.push(unsub);
+  });
+}
+
+/* Beim Start treffen vierzehn Antworten kurz hintereinander ein. Ohne
+   diese Bremse würde die Startseite vierzehnmal neu gezeichnet. */
+var _homeTimer=null;
+function homeSpaeter(){
+  if(_homeTimer) return;
+  _homeTimer=setTimeout(function(){ _homeTimer=null; renderHome(); }, 90);
+}
+
+/* Offene Putzaufgaben über alle Studios, die mich etwas angehen. */
+function putzOffenGesamt(keys){
+  var n=0;
+  (keys||[]).forEach(function(sk){
+    (cachedClean[sk]||[]).forEach(function(t){ if(!isDone(t)) n++; });
+  });
+  return n;
 }
 
 /* Todos: 15 separate Listener (kein Collection-Group-Index nötig) */
@@ -6230,6 +6507,7 @@ function listenAnnouncements(){
       first=false;
       _allAnns=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       renderAnnouncements(_allAnns);
+      renderHomeLesen();          // der Text steht auch auf der Startseite
       if(currentView==='ann') markAnnouncementsRead();
     }, function(e){ console.error('Ann:',e.message); });
 }
@@ -6819,12 +7097,7 @@ function loadTeam(sk){
     _handovers=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
     renderHandovers();
   }, function(e){ console.warn('Übergabe:',e.message); });
-  if(!_bbUnsub){
-    _bbUnsub=db.collection('board').orderBy('ts','desc').limit(50).onSnapshot(function(sn){
-      _board=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
-      renderBoard();
-    }, function(e){ console.warn('Brett:',e.message); });
-  }
+  listenBoard(true);   // auf der Team-Seite alle Einträge, nicht nur zwölf
   buildShiftPersonSelect();
 }
 
@@ -7170,12 +7443,8 @@ function renderHome(){
     var fehlt=items.filter(function(it){ return itemNeed(it)>0; });
     if(fehlt.length){ matStudios++; matArtikel+=fehlt.length; }
   });
-  var putzOffen=(_ppTasks||[]).filter(function(t){ return !isDone(t); }).length;
+  var putzOffen=putzOffenGesamt(keys);
   var dmUngelesen=dmUnreadCount();
-  var infoNeu=_allAnns.filter(function(a){
-    var forMe = isChef()||!a.target||a.target==='all'||(session.studioKeys||[]).indexOf(a.target)>=0;
-    return forMe && !(a.readBy||[]).some(function(u){ return u===session.uid; });
-  }).length;
 
   // Begrüßung
   var h=new Date().getHours();
@@ -7200,7 +7469,9 @@ function renderHome(){
     });
     if(ueber) alerts.push({k:'',i:'⚠️',t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
     if(matArtikel) alerts.push({k:' warn',i:'📦',t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),v:'material'});
-    if(infoNeu) alerts.push({k:' warn',i:'📣',t:infoNeu+(infoNeu===1?' neue Info':' neue Infos')+' von der Leitung',v:'ann'});
+    // Die Hinweiszeile entfällt: der Text der Aushänge steht ein Stück
+    // weiter unten unter „Zum Lesen". Zweimal dasselbe zu melden ist genau
+    // die Unruhe, die die Startseite unlesbar macht.
     // Höchstens vier Hinweise. Wer sieben sieht, liest keinen davon.
     // Erst ab zwei übrigen wird zusammengefasst – für einen einzelnen wäre
     // die Sammelzeile genauso lang wie der Hinweis selbst.
@@ -7251,9 +7522,12 @@ function renderHome(){
       grid.innerHTML=mitZahl.concat(ohne).map(function(t){
         return '<div class="home-tile '+t.cls+(t.n>0?'':' null')+'" data-go="'+t.v+'"'+
           (t.f?' data-f="'+t.f+'"':'')+'>'+
-          '<div class="hn">'+t.n+'</div><div class="hl">'+esc(t.l)+'</div></div>';
+          '<div class="hn" data-zahl="'+t.n+'">'+t.n+'</div>'+
+          '<div class="hl">'+esc(t.l)+'</div></div>';
       }).join('');
+      hochzaehlen(grid);
     }
+    renderHomeLesen();
     grid.querySelectorAll('[data-go]').forEach(function(el){
       el.addEventListener('click',function(){
         var f=el.getAttribute('data-f');
@@ -7368,6 +7642,103 @@ function renderHome(){
         }).join('')
       : '<p style="color:var(--text-3);font-size:.9rem">Noch nichts passiert.</p>';
   }
+}
+
+/* ── Zahlen zählen hoch ──
+   Eine Kachel mit „7 überfällig" springt sonst einfach ins Bild. Wer sie
+   hochzählen sieht, merkt sich die Zahl besser – und merkt vor allem,
+   DASS sie sich geändert hat. Nur beim Neuaufbau, nicht bei jedem
+   Neuzeichnen: sonst zählt der Bildschirm dauernd.
+
+   Zwei Grenzen, bewusst:
+     - über 60 wird nicht gezählt, das dauert zu lange
+     - „Bewegung reduzieren" schaltet es ganz ab. Zählende Ziffern sind
+       genau die Art Flackern, die dann stört.                          */
+function hochzaehlen(wurzel){
+  if(!wurzel || willRuhe()) return;
+  wurzel.querySelectorAll('[data-zahl]').forEach(function(el){
+    var ziel = parseInt(el.getAttribute('data-zahl'), 10);
+    if(!(ziel > 0) || ziel > 60){ return; }
+    var start = performance.now(), dauer = Math.min(140 + ziel*38, 900);
+    el.textContent = '0';
+    (function schritt(jetzt){
+      var t = Math.min(1, (jetzt - start) / dauer);
+      // Am Ende ausgleiten, damit die letzte Ziffer nicht überrascht
+      var weich = 1 - Math.pow(1 - t, 3);
+      el.textContent = String(Math.round(ziel * weich));
+      if(t < 1) requestAnimationFrame(schritt);
+      else el.textContent = String(ziel);
+    })(start);
+  });
+}
+
+/* ── „Zum Lesen" auf der Startseite ──
+   Gemeldet aus dem Betrieb: man muss die Infos überall suchen. Vorher
+   stand oben nur eine Hinweiszeile „2 neue Infos von der Leitung ›" –
+   worum es geht, erfuhr man erst nach dem Klicken.
+
+   Hier steht jetzt der Text selbst: die drei jüngsten Aushänge, die mich
+   betreffen, und die drei jüngsten Einträge vom schwarzen Brett. Auf drei
+   Zeilen gekürzt (per CSS, nicht im Text – wer das Ganze will, tippt auf
+   „Alle"). Ungelesenes bekommt einen Punkt.
+
+   Leere Karten verschwinden ganz. Eine Karte, in der „Noch nichts da"
+   steht, ist auf einer Startseite nur Platzverschwendung. */
+function renderHomeLesen(){
+  if(!session) return;
+  var kopf=$('homeLesenHead');
+  var annKarte=$('homeAnnCard'), annBox=$('homeAnnList');
+  var brettKarte=$('homeBoardCard'), brettBox=$('homeBoardList');
+  if(!annKarte || !brettKarte) return;
+
+  function fuss(wer, ts, neu){
+    return '<div class="lese-fuss">'+(neu?'<span class="lese-neu"></span>':'')+
+      '<span>'+esc(wer||'')+(ts?' · '+fmtDateTime(ts):'')+'</span></div>';
+  }
+
+  // Aushänge: nur die, die mich betreffen
+  // Angeheftetes steht schon ganz oben als Hinweiszeile. Es hier noch
+  // einmal zu zeigen wäre dasselbe zweimal auf einem Bildschirm.
+  var meine=(_allAnns||[]).filter(function(a){
+    if(a.pinned) return false;
+    return isChef() || !a.target || a.target==='all' ||
+      (session.studioKeys||[]).indexOf(a.target)>=0;
+  });
+  if(meine.length){
+    annBox.innerHTML=meine.slice(0,3).map(function(a){
+      var gelesen=(a.readBy||[]).some(function(u){ return u===session.uid; });
+      return '<div class="lese-eintrag">'+
+        '<div class="lese-text">'+linkify(esc(a.text||''))+'</div>'+
+        fuss(a.from||'Leitung', a.ts, !gelesen)+'</div>';
+    }).join('');
+    annKarte.style.display='';
+  } else {
+    annKarte.style.display='none';
+  }
+
+  if((_board||[]).length){
+    brettBox.innerHTML=_board.slice(0,3).map(function(b){
+      return '<div class="lese-eintrag">'+
+        '<div class="lese-text">'+linkify(esc(b.text||''))+'</div>'+
+        fuss(b.name, b.ts, false)+'</div>';
+    }).join('');
+    brettKarte.style.display='';
+  } else {
+    brettKarte.style.display='none';
+  }
+
+  if(kopf) kopf.style.display=(meine.length||(_board||[]).length)?'':'none';
+
+  // „Alle ›" / „Zum Brett ›"
+  [annKarte,brettKarte].forEach(function(k){
+    var l=k.querySelector('.mini-link[data-go]');
+    if(!l || l.dataset.gebunden) return;
+    l.dataset.gebunden='1';
+    l.addEventListener('click',function(e){
+      e.stopPropagation();          // nicht die Karte zuklappen
+      tick(8); showView(l.getAttribute('data-go'));
+    });
+  });
 }
 
 /* ── Mein Dienst ──
@@ -8206,6 +8577,7 @@ function showChefTab(id, keep){
     // Aktiven Reiter in den sichtbaren Bereich schieben
     if(on && b.scrollIntoView) sanftInsBild(b,{behavior:'smooth',block:'nearest',inline:'center'});
   });
+  chefTabMarker(keep);
   document.querySelectorAll('.chef-pane').forEach(function(p){
     p.style.display = (p.getAttribute('data-cpane')===id) ? '' : 'none';
   });
@@ -8968,7 +9340,7 @@ function addMaterial(){
      studios/{sk}/cleaning/{id}      = einzelne Putzaufgabe
      studios/{sk}/cleaningNotes/{id} = einzelne Notiz
    ============================================================ */
-var _ppStudioKey=null, _ppTasks=[], _ppNotes=[], _ppTaskUnsub=null, _ppNoteUnsub=null;
+var _ppStudioKey=null, _ppTasks=[], _ppNotes=[], _ppNoteUnsub=null;
 
 /* Studio-Dropdown füllen: Chef sieht alle, Mitarbeiter nur die eigenen */
 function buildPutzplanSelect(){
@@ -9007,19 +9379,15 @@ function loadPutzplan(sk){
   if(!sk) return;
   _ppStudioKey=sk;
   var t=$('ppListTitle'); if(t) t.textContent='Putzplan · '+studioName(sk);
-  if(_ppTaskUnsub){ _ppTaskUnsub(); _ppTaskUnsub=null; }
   if(_ppNoteUnsub){ _ppNoteUnsub(); _ppNoteUnsub=null; }
   // Beim Wechsel erst leeren: sonst steht kurz der alte Putzplan unter dem
   // neuen Studio-Namen – und bei schlechter Verbindung sogar länger.
-  _ppTasks=[]; _ppNotes=[]; renderPutzplan(); renderPutzNotes();
-  _ppTaskUnsub=db.collection('studios').doc(sk).collection('cleaning').orderBy('ts')
-    .onSnapshot(function(snap){
-      // Direkt hier filtern und nicht erst beim Zeichnen: so stimmen Liste,
-      // Fortschritt, Ausdruck, Startseite und Suche ohne weiteres Zutun.
-      _ppTasks=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
-        .filter(function(t){ return !ppAbgelaufen(t); });
-      renderPutzplan();
-    }, function(e){ console.error('Putzplan:',e.message); toast('Putzplan: '+errMsg(e),true); });
+  _ppNotes=[]; renderPutzNotes();
+  // Die Aufgaben kommen aus cachedClean – der Beobachter dafür läuft schon
+  // seit dem Start (listenClean). Ein zweiter für dasselbe Studio wäre
+  // doppelt bezahlt und würde bei jedem Studiowechsel neu aufgebaut.
+  _ppTasks = cachedClean[sk] || [];
+  renderPutzplan();
   _ppNoteUnsub=db.collection('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50)
     .onSnapshot(function(snap){
       _ppNotes=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });

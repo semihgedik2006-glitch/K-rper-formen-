@@ -1252,6 +1252,132 @@ Vorleseprogramm verhält. Dafür bräuchte es VoiceOver oder NVDA.
 
 ---
 
+## Sitzung 20 · Design nach deinen Antworten 🟢
+
+Diesmal nicht nach meinem Geschmack, sondern nach vier Fragen und deinen
+Antworten: **runder wie Apple-Symbole · deutlichere Kanten · kräftigere
+Schrift · mehr Farbkontrast · kräftige Bewegung · kompakter · Apple-Gefühl.**
+
+Zwei deiner Wünsche zogen gegeneinander. Beide sind auflösbar, nicht
+widersprüchlich:
+
+| Spannung | Auflösung |
+|---|---|
+| runder ↔ deutlichere Kanten | Genau das macht Apple: großzügige Rundung **plus** haarscharfe 1-px-Linie. Rundung hoch, Linie von 9 % auf 14 % Deckkraft, Schatten flacher und enger. |
+| kompakter ↔ 44-px-Fingerziele | Enger wird das Auge, nicht der Finger. Die unsichtbare `::after`-Trefferfläche gab es schon. |
+
+### Der Fund, mit dem ich nicht gerechnet hatte
+
+`--r-md` und `--r-sm` wurden an **zehn Stellen** benutzt und waren
+**nirgends definiert**. Eine undefinierte Variable macht die ganze Angabe
+ungültig – Umfragen, Geräteliste, Anhang-Menü und die Aufgaben-Vorlagen
+standen mit rechten Winkeln da, während alles daneben rund war. Kein Test
+hätte das je gemeldet: es sah nicht kaputt aus, nur anders.
+
+### Was jetzt anders ist
+
+| | vorher | jetzt |
+|---|---|---|
+| Karten-Rundung | 18 px | 22 px, plus echte Superellipse wo der Browser sie kann |
+| Linien | 9 % / 17 % | 14 % / 26 % |
+| Schatten | `0 8px 24px` | `0 4px 14px` – flacher, enger |
+| Zweitzeilen-Text (dunkel) | `#B4B8C8` | `#C6CAD8` |
+| Karten-Innenabstand | 16–24 px | 13–19 px |
+| Abstand zwischen Karten | 16 px | 12 px |
+
+Die Apple-Ecke steht hinter `@supports (corner-shape: …)`. Wer sie nicht
+kann, sieht die normale Rundung – kein Ersatzweg, kein Risiko. Nachgesehen:
+das Chromium hier (141) kann sie, die Bildschirmfotos zeigen sie also
+wirklich. **Ob Safari auf dem iPhone sie kann, weiß ich nicht** – dort
+greift dann die normale 22-px-Rundung, und der Unterschied fällt nur im
+direkten Vergleich auf.
+
+### Bewegung: der gleitende Marker, jetzt überall
+
+Die Kanalreihe im Chat hatte ihn seit Sitzung 18. Jetzt haben ihn alle
+vier Stellen: **untere Leiste, Reiter der Gruppe, Kanalreihe,
+Verwaltungs-Reiter.** Vorher sprang eine gefüllte Pille von Reiter zu
+Reiter – man sah, wo man ankam, aber nicht, woher.
+
+Dazu: Karten laufen über sieben statt vier Stufen ein, der Druck beim
+Antippen geht auf `scale(.88)` statt `.9`, und die Zahlen auf den Kacheln
+zählen hoch (`hochzaehlen`, aus bei „Bewegung reduzieren", nicht über 60).
+
+**Zwei Fehler beim Bauen, beide durch den Test gefunden:**
+
+- `offsetParent` taugt nicht als Sichtbarkeitsprüfung. Die untere Leiste
+  ist `position:fixed`, und dort ist `offsetParent` **immer** `null` –
+  mein Marker war damit überall abgeschaltet, auch auf dem Handy.
+- Mein eigener Test las `1e-05s` (das sind die `.01ms` aus der
+  Ruhe-Regel) als „gleitet trotzdem". Er rechnet jetzt, statt Ziffern zu
+  suchen.
+
+`tests/test-marker.js` misst die Marken `--ind-x/-y/-w/-h` gegen
+`offsetLeft/Top/Width/Height` des aktiven Reiters – auf zwei Pixel genau,
+an allen vier Stellen, nach Wechsel und nach Größenwechsel, und prüft, dass
+bei „Bewegung reduzieren" nichts gleitet.
+
+### „Alles erledigt", obwohl der Putzplan voll war 🔴 → 🟢
+
+Aus dem Betrieb gemeldet. Der Grund war schlimmer als die Meldung: die
+Startseite zählte `_ppTasks`, und darin stand **nur das Studio, das im
+Putzplan gerade geöffnet war**. Beim App-Start: nichts, also „Alles
+erledigt". Danach: eins von vierzehn.
+
+Jetzt läuft es wie bei den Aufgaben – ein Beobachter je Studio,
+`cachedClean`, und die Putzplan-Seite liest aus demselben Speicher statt
+einen eigenen anzulegen. `tests/test-startzahlen.js` legt Putzaufgaben in
+**zwei** Studios an, damit ein „zählt nur das erste" auffällt.
+
+### Startseite: „Zum Lesen"
+
+Auch aus dem Betrieb: *„mehr Infos auf der Startseite, zum Beispiel das
+schwarze Brett, damit man das nicht überall suchen muss."*
+
+Vorher stand oben nur `📣 2 neue Infos von der Leitung ›`. Worum es ging,
+erfuhr man erst nach dem Klicken. Das schwarze Brett lag im Team-Bereich
+und wurde überhaupt erst geladen, wenn man dorthin ging.
+
+Jetzt: zwei Karten mit dem **Text**, drei Einträge je Karte, auf drei
+Zeilen gekürzt (per CSS, nicht im Text). Und dabei **weniger** auf dem
+Bildschirm, nicht mehr: die alte Hinweiszeile ist weg, und ein
+angehefteter Aushang steht oben als Hinweis **oder** unten im Text, nie
+beides.
+
+### Was das kostet
+
+Ehrlich gerechnet, denn die Korrektur kostet Lesevorgänge:
+
+| | Mitarbeiter | Chef |
+|---|---|---|
+| vor dieser Sitzung | 356 | 930 |
+| Putzplan über alle Studios | +12 | +168 |
+| schwarzes Brett auf der Startseite | +12 | +12 |
+| **jetzt** | **380** | **1.110** |
+
+Von **1,32 € auf rund 1,55 € im Monat.** Das Brett lädt beim Start nur
+zwölf Einträge und erst auf der Team-Seite alle fünfzig – das allein spart
+über 13.000 Lesevorgänge am Tag.
+
+### Geprüft
+
+**37 UI-Durchläufe** (von 33), alle grün. Forensik über drei Rollen, zwölf
+Ansichten und elf Breiten: **0 Überlauf, 0 Fingerziel, 0 Kontrast,
+0 Fokus** – auch nach den neuen Farben.
+
+Dabei noch ein echter Fund: die Leiste mit der angehefteten Nachricht war
+38 Pixel hoch, die 44er-Trefferfläche von „ansehen" ragte oben und unten
+heraus und wurde vom Chatverlauf abgefangen. Gemessen kam der Finger an
+**23 Pixel**. Jetzt `min-height:46px`.
+
+**Nicht geprüft und deshalb nicht behauptet:** wie die neuen Rundungen auf
+einem echten iPhone aussehen (Superellipsen kann Chromium hier, Safari
+vielleicht anders), und ob „kräftige Bewegung" im Alltag angenehm bleibt.
+Das sagt nur der Betrieb nach einer Woche.
+
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf
