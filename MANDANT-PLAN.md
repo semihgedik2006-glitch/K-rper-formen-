@@ -433,7 +433,7 @@ Firebase-Konsole unter *Firestore → Nutzung*.
 
 Aufwand in Sitzungen, nicht in Stunden — Stunden könnte ich nur raten.
 
-### Stufe 1 — Studios in die Datenbank · ~1 Sitzung · kein Risiko
+### Stufe 1 — Studios in die Datenbank · ✅ **erledigt am 10. August 2026**
 
 Die Studioliste wandert aus `konfig.js` nach
 `firmen/…/config/studios`, nur anhängbar. Der Chef bekommt in der
@@ -442,6 +442,25 @@ die 34 Stellen benutzen die gespeicherte Kennung.
 
 **Nützt sofort, auch ohne zweiten Kunden**, und ist Voraussetzung für alles
 Weitere. Kein Umzug, keine Regeländerung an der Firmengrenze.
+
+> **Gebaut.** `config/studios` mit `{liste, naechste}`, nur anhängbar.
+> Oberfläche unter *Verwaltung → 🏢 Studios*. Fehlt das Dokument, gilt
+> weiter `konfig.js` — für Körperformen gab es deshalb keine
+> Datenwanderung.
+>
+> Beim Bauen ist die Falle aus Abschnitt 5 sofort zugeschnappt: die
+> Wachstums-Sperre stand in einer eigenen Regel, aber `config/{doc}`
+> erlaubte dem Chef weiterhin `write` — und in Firestore genügt eine
+> zutreffende Regel, die erlaubt. Der Regeltest hat es gefunden, nicht
+> mein Auge. Das ist der Beleg dafür, warum Abschnitt 5 keine Theorie
+> ist.
+
+> **Ebenfalls dabei entdeckt:** die Selbstregistrierung war nie
+> erreichbar. `setAuthMode('register')` wurde nirgends aufgerufen, es gab
+> keine Reiter. Der ganze Beitritts-Mechanismus aus Sitzung 18 war
+> gebaut, geprüft — und für keinen Menschen zugänglich. Behoben: die
+> Reiter erscheinen, sobald der Chef Firmencode oder Freigabe
+> einschaltet.
 
 ### Stufe 2 — Firmen-Trennung · ~2–3 Sitzungen · **Live-Daten**
 

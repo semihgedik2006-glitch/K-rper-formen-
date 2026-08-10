@@ -1378,6 +1378,103 @@ Das sagt nur der Betrieb nach einer Woche.
 
 ---
 
+## Sitzung 21 · Stufe 1: Studios gehören dem Chef 🟢
+
+Der erste Teil aus `MANDANT-PLAN.md`. Die Studioliste stand in
+`konfig.js`, also im Code — ein neues Studio hieß: Datei ändern und neu
+ausrollen. Jetzt liegt sie in `config/studios`, und der Chef pflegt sie
+selbst unter *Verwaltung → 🏢 Studios*.
+
+### Die eiserne Regel
+
+Die Datenbank-Kennung eines Studios hängt an seinem Platz in der Liste.
+`studio-6` ist Hürth, weil Hürth an sechster Stelle steht — und daran
+hängen alle Aufgaben, Schichten, Putzpläne, Geräte und Chats. Deshalb:
+
+| Handgriff | | |
+|---|---|---|
+| anlegen | nächste freie Nummer | nie eine wiederverwendete |
+| umbenennen | nur der Name | Kennung bleibt |
+| schließen | `aktiv:false` | Daten bleiben lesbar |
+| löschen | **gibt es nicht** | weder Knopf noch Regel |
+
+Und die Sicherung, damit ein bestehender Betrieb nichts merkt: **fehlt das
+Dokument, gilt weiterhin `konfig.js`.** Die Liste wird beim ersten
+Speichern genau so angelegt, wie sie heute ist — `studio-0` bis
+`studio-13` bleiben gültig, **keine einzige Datenwanderung.**
+
+### Der Fehler, den mein eigener Test gefunden hat
+
+Ich hatte die Wachstums-Sperre in eine eigene Regel geschrieben:
+
+```
+match /config/studios {
+  allow update: if isChef()
+    && request.resource.data.liste.size() >= resource.data.liste.size();
+}
+```
+
+Grün geprüft, gedacht: sitzt. Der Regeltest sagte: *„auch der Chef kann
+die Liste NICHT kürzen — Expected request to fail, but it succeeded."*
+
+Der Grund ist genau der, vor dem ich zwei Stunden vorher in
+`MANDANT-PLAN.md` gewarnt hatte: die allgemeine Regel `config/{doc}`
+erlaubt dem Chef `write`, und **in Firestore genügt eine zutreffende
+Regel, die erlaubt.** Meine Sperre hing in der Luft. Dieselbe Falle wie
+beim Firmencode in Sitzung 18, in derselben Datei, ein zweites Mal — und
+diesmal hätte sie im Ernstfall Daten dem falschen Studio zugeordnet.
+
+Behoben mit `allow write: if isChef() && doc != 'studios'`. **61
+Regeltests** (von 52), alle grün.
+
+### Passwort anzeigen
+
+Ein Auge in jedem der drei Passwortfelder. Zwei Kleinigkeiten, die es
+sonst kaputt machen: `type="button"`, sonst sendet der Knopf das Formular
+ab — und der Cursor springt nach dem Umschalten ans Ende zurück, sonst
+tippt man mitten ins eigene Passwort. Beim Wechsel zwischen den Reitern
+wird wieder verborgen; auf einem Studio-Tablet schaut der Nächste mit.
+
+### 🔴 Die Selbstregistrierung war nie erreichbar
+
+Beim Bauen des Passwort-Tests aufgefallen und deshalb hier festgehalten,
+weil es peinlich ist: **`setAuthMode('register')` wurde nirgends
+aufgerufen.** Das Formular stand auf `display:none`, es gab keine Reiter,
+und die CSS-Klasse `.auth-tab` existierte ohne ein einziges Element dazu.
+
+Der ganze Beitritts-Mechanismus aus Sitzung 18 — Firmencode, Freigabe,
+Wartebildschirm, Freigabe-Karte für den Chef — war gebaut, geprüft, mit
+52 Regeltests abgesichert **und für keinen Menschen erreichbar.** Zwei
+Tests haben es nicht gemerkt, weil sie `if (t) t.click()` schrieben: kein
+Element, kein Klick, kein Fehler.
+
+Jetzt gibt es die Reiter, und sie erscheinen **nur**, wenn der Chef einen
+Firmencode gesetzt oder die Freigabe eingeschaltet hat. Ohne wenigstens
+eine Schranke bleibt es beim Satz „Dein Chef legt dein Konto an" — ein
+Formular anzubieten, das die Regeln danach abweisen, wäre schlimmer als
+keins.
+
+### Geprüft
+
+**39 UI-Durchläufe** (von 36) und **61 Regeltests**.
+
+`tests/test-standorte.js` prüft, was Daten kosten könnte: dass ohne
+Dokument weiter `konfig.js` gilt, dass ein umbenanntes Studio seine
+Kennung behält, dass ein neues die nächste freie bekommt, dass ein
+geschlossenes aus den Auswahllisten verschwindet aber in der Liste
+bleibt — und dass es keinen Löschen-Knopf gibt.
+
+`tests/test-passwort.js` drückt das Auge, prüft Cursorstellung,
+Knopftyp, 44 Pixel bei 320 px Breite und dass nach dem Reiterwechsel
+nichts im Klartext stehen bleibt.
+
+**Nicht gebaut und ausdrücklich offen:** E-Mail-Bestätigung, der
+ansprechendere Anmeldebildschirm, das Rechtliche — und der eigene Code je
+Chef, der Stufe 2 braucht.
+
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf

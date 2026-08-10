@@ -552,6 +552,46 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
     corner-shape:var(--ecke)}
 }
 
+/* ── Passwort anzeigen ──
+   Auf einem Handy tippt man sich an einem Passwort mit Sonderzeichen die
+   Finger wund und sieht nie, was danebenging. Der Knopf zeigt es kurz.
+
+   Zwei Dinge sind hier Absicht:
+     - Er sitzt IM Feld, nicht daneben. Daneben verschiebt er das Feld
+       und bricht auf 320 px um.
+     - Er ist ein <button type="button">. Ohne type löst er in einem
+       Formular das Absenden aus – man tippt aufs Auge und ist angemeldet
+       oder eben nicht.                                                  */
+.pw-wrap{position:relative;display:block;min-width:0}
+.pw-wrap .inp{padding-right:52px}
+.pw-auge{position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  width:44px;height:44px;display:grid;place-items:center;
+  background:none;border:none;cursor:pointer;color:var(--text-3);
+  border-radius:999px;transition:color .2s,background .2s}
+.pw-auge::before{content:'';width:20px;height:20px;display:block;
+  background:currentColor;
+  /* Auge – offen */
+  -webkit-mask:var(--auge) center/contain no-repeat;
+          mask:var(--auge) center/contain no-repeat}
+.pw-auge[aria-pressed="true"]{color:var(--accent-d)}
+.pw-auge[aria-pressed="true"]::before{-webkit-mask-image:var(--auge-zu);mask-image:var(--auge-zu)}
+@media (hover:hover){ .pw-auge:hover{color:var(--text)} }
+.pw-auge:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+:root{
+  --auge:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z'/><circle cx='12' cy='12' r='3'/></svg>");
+  --auge-zu:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s3.5-7 10-7c2 0 3.7.7 5.1 1.6'/><path d='M21.5 9.5c.3.4.5.5.5.5s-3.5 7-10 7c-1 0-1.9-.2-2.7-.4'/><path d='m3 3 18 18'/></svg>");
+}
+
+/* ── Studios verwalten ── */
+.st-zeile{display:flex;align-items:center;gap:10px;padding:11px 0;
+  border-top:1px solid var(--line);min-width:0}
+.st-zeile:first-child{border-top:none}
+.st-zeile.zu .st-haupt b{color:var(--text-3);text-decoration:line-through}
+.st-haupt{flex:1;min-width:0}
+.st-haupt b{display:block;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-sub{display:block;font-size:.74rem;color:var(--text-3);
+  font-variant-numeric:tabular-nums}
+
 /* ── Zum Lesen auf der Startseite ──
    Aushänge und schwarzes Brett standen bisher nur als Hinweiszeile da
    („2 neue Infos ›"). Wer wissen wollte, worum es geht, musste klicken.
@@ -2109,16 +2149,27 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <div class="auth-brand">STUDIO<b>CHAT</b></div>
     <p class="auth-sub">Körperformen · Team-Portal</p>
 
+    <!-- Umschalter Anmelden / Konto anlegen.
+         Bewusst versteckt, solange der Chef die Selbstanmeldung nicht
+         eingeschaltet hat: dann bleibt der Bildschirm so kurz wie bisher
+         und niemand probiert einen Weg, der ohnehin abgewiesen würde.
+         Eingeschaltet wird das in Verwaltung → Team. -->
+    <div class="auth-tabs" id="authTabs" style="display:none">
+      <button class="auth-tab active" type="button" data-authmode="login">Anmelden</button>
+      <button class="auth-tab" type="button" data-authmode="register">Konto anlegen</button>
+    </div>
+
     <!-- LOGIN -->
     <div id="loginForm">
       <div class="field"><label for="lgEmail">E-Mail</label>
         <input class="inp" id="lgEmail" type="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" /></div>
       <div class="field"><label for="lgPw">Passwort</label>
-        <input class="inp" id="lgPw" type="password" placeholder="Dein Passwort" autocomplete="current-password" /></div>
+        <div class="pw-wrap"><input class="inp" id="lgPw" type="password" placeholder="Dein Passwort" autocomplete="current-password" />
+          <button type="button" class="pw-auge" data-pw="lgPw" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
       <p class="auth-err" id="loginErr"></p>
       <button class="btn btn-primary" id="loginBtn" style="width:100%">Anmelden</button>
       <div class="auth-foot"><a id="forgotLink">Passwort vergessen?</a></div>
-      <p class="auth-foot" style="margin-top:14px;line-height:1.5">Noch keinen Zugang?<br/>Dein <b style="color:var(--text-2)">Chef</b> legt dein Konto an.</p>
+      <p class="auth-foot" id="authKeinZugang" style="margin-top:14px;line-height:1.5">Noch keinen Zugang?<br/>Dein <b style="color:var(--text-2)">Chef</b> legt dein Konto an.</p>
     </div>
 
     <!-- REGISTER -->
@@ -2141,9 +2192,11 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
         <input class="inp" id="rgEmail" type="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" /></div>
       <div class="row">
         <div class="field"><label for="rgPw">Passwort</label>
-          <input class="inp" id="rgPw" type="password" placeholder="Min. 6 Zeichen" autocomplete="new-password" /></div>
+          <div class="pw-wrap"><input class="inp" id="rgPw" type="password" placeholder="Min. 6 Zeichen" autocomplete="new-password" />
+            <button type="button" class="pw-auge" data-pw="rgPw" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
         <div class="field"><label for="rgPw2">Wiederholen</label>
-          <input class="inp" id="rgPw2" type="password" placeholder="Passwort" autocomplete="new-password" /></div>
+          <div class="pw-wrap"><input class="inp" id="rgPw2" type="password" placeholder="Passwort" autocomplete="new-password" />
+            <button type="button" class="pw-auge" data-pw="rgPw2" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
       </div>
       <!-- Nur sichtbar, wenn im Projekt ein Firmencode gesetzt ist.
            Ohne Code bleibt das Feld weg – so bleibt die Anmeldung fuer
@@ -2982,6 +3035,35 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <!-- Nachweise: Erste Hilfe, Trainerlizenz, EMS-Einweisung.
                Nur der Chef sieht diesen Bereich; die Sicherheitsregeln lassen
                sonst nur die betroffene Person an ihre eigenen Nachweise. -->
+          <div class="chef-pane" data-cpane="standorte" style="display:none">
+            <div class="card">
+              <h3>🏢 Studios</h3>
+              <p class="hint">Hier stehen die Standorte, mit denen die App arbeitet.
+                Was du hier änderst, sehen alle sofort.</p>
+              <div id="standortListe"></div>
+            </div>
+            <div class="card" data-fold="studioneu">
+              <h3>➕ Studio anlegen</h3>
+              <p class="hint">Der Name lässt sich später jederzeit ändern.</p>
+              <div class="field"><label for="stNeuName">Name des Studios</label>
+                <input class="inp" id="stNeuName" type="text" maxlength="40"
+                       placeholder="z. B. Bergisch Gladbach" /></div>
+              <button class="btn btn-primary" id="stNeuBtn">Studio anlegen</button>
+            </div>
+            <div class="card">
+              <h3>⚠️ Warum es kein Löschen gibt</h3>
+              <p class="hint" style="margin-bottom:0">
+                Jedes Studio hat eine feste Kennung in der Datenbank, und alle
+                Aufgaben, Schichten, Putzpläne, Geräte und Chatnachrichten
+                hängen daran. Würde man ein Studio aus der Liste entfernen,
+                bekämen die folgenden Studios die Kennung ihres Vorgängers –
+                und damit dessen Daten. Ohne Fehlermeldung.<br/><br/>
+                Deshalb wird ein Studio <b>geschlossen</b>, nicht gelöscht:
+                es verschwindet aus allen Auswahllisten, aber seine Daten
+                bleiben lesbar. Wieder öffnen geht jederzeit.
+              </p>
+            </div>
+          </div>
           <div class="chef-pane" data-cpane="nachweise" style="display:none">
             <div class="card">
               <h3>⏳ Läuft demnächst ab</h3>
@@ -3593,12 +3675,47 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
 /* Alle kundenspezifischen Werte kommen aus konfig.js – siehe dort.
    Die Zwischenvariablen bleiben, damit der restliche Code unverändert
    weiterläuft. */
-var STUDIOS = KONFIG.studios;
+/* ── Die Studioliste ──
+   Sie stand bis hierher in konfig.js, also im Code. Ein neues Studio hieß:
+   Datei ändern, committen, deployen. Beim eigenen Betrieb geht das; ein
+   Kunde ruft dafür an.
 
-/* Alphabetisch sortierte Kopie – wird NUR für die Anzeige benutzt
-   (Auswahllisten, Kacheln, Tabellen), damit man bei 14 Standorten schnell findet.
-   Die Datenbank-Kennung kommt weiterhin aus studioKey(name) und bleibt unverändert. */
-var STUDIOS_ALPHA = STUDIOS.slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
+   Jetzt liegt sie in der Datenbank unter config/studios. Solange dieses
+   Dokument fehlt, gilt weiterhin die Liste aus konfig.js – ein bestehender
+   Betrieb merkt von der Umstellung nichts, und der erste Schreibvorgang
+   legt sie so an, wie sie heute ist.
+
+   DIE EISERNE REGEL: die Liste darf nur WACHSEN.
+   Die Datenbank-Kennung eines Studios ("studio-6") hängt an seinem Platz
+   in dieser Liste. Wer umsortiert oder löscht, ordnet alle bestehenden
+   Aufgaben, Schichten, Putzpläne, Geräte und Chats einem anderen Studio
+   zu – lautlos, ohne Fehlermeldung. Deshalb:
+     anlegen    → bekommt die nächste freie Nummer, nie eine wiederverwendete
+     umbenennen → nur der Name ändert sich, die Kennung bleibt
+     schließen  → aktiv:false, die Daten bleiben lesbar
+     löschen    → gibt es nicht.                                         */
+var _studioListe = (KONFIG.studios||[]).map(function(n,i){
+  return { id:'studio-'+i, name:n, aktiv:true };
+});
+var _studioNaechste = (KONFIG.studios||[]).length;
+
+/* Abgeleitete Sichten. Bewusst dieselben Feldnamen wie vorher, damit die
+   siebzehn Stellen im Code unverändert bleiben – aber als Inhalt, der neu
+   gerechnet wird, statt als einmal gesetzte Konstante.
+   Die Arrays behalten ihre Identität (length=0 statt Neuzuweisung), damit
+   niemand versehentlich auf einer alten Kopie sitzt. */
+var STUDIOS = [];
+var STUDIOS_ALPHA = [];
+function studiosNeuAufbauen(){
+  var aktiv = _studioListe.filter(function(s){ return s && s.aktiv !== false; });
+  STUDIOS.length = 0;
+  aktiv.forEach(function(s){ STUDIOS.push(s.name); });
+  STUDIOS_ALPHA.length = 0;
+  aktiv.slice()
+    .sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'de'); })
+    .forEach(function(s){ STUDIOS_ALPHA.push(s.name); });
+}
+studiosNeuAufbauen();
 
 
 /* VAPID-Schlüssel für Push-Benachrichtigungen (auch bei gesperrtem Handy).
@@ -3854,8 +3971,178 @@ function applyRoleVisibility(){
     ? 'Wochen-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.'
     : 'Erledigte Aufgaben deiner Studios.';
 }
-function studioKey(name){ return 'studio-'+STUDIOS.indexOf(name); }
-function studioName(key){ var i=parseInt(String(key).replace('studio-',''),10); return STUDIOS[i]||key; }
+/* ── Studios verwalten (nur Chef) ──
+   Drei Handgriffe: anlegen, umbenennen, schließen. Löschen gibt es nicht,
+   und der Grund steht als eigene Karte daneben, weil er nicht offensicht-
+   lich ist: die Kennung hängt am Listenplatz. */
+function renderStandorte(){
+  var box=$('standortListe'); if(!box) return;
+  if(!_studioListe.length){
+    box.innerHTML='<p class="lese-leer">Noch kein Studio angelegt.</p>';
+    return;
+  }
+  box.innerHTML=_studioListe.map(function(st){
+    var zu = st.aktiv === false;
+    return '<div class="st-zeile'+(zu?' zu':'')+'">'+
+      '<div class="st-haupt">'+
+        '<b>'+esc(st.name)+'</b>'+
+        '<span class="st-sub">'+esc(st.id)+(zu?' · geschlossen':'')+'</span>'+
+      '</div>'+
+      '<button class="mini-x" data-stum="'+esc(st.id)+'">umbenennen</button>'+
+      '<button class="mini-x" data-stzu="'+esc(st.id)+'">'+(zu?'öffnen':'schließen')+'</button>'+
+    '</div>';
+  }).join('');
+
+  box.querySelectorAll('[data-stum]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-stum');
+      var st=_studioListe.filter(function(x){ return x.id===id; })[0]; if(!st) return;
+      var neu=prompt('Neuer Name für „'+st.name+'":', st.name);
+      if(neu===null) return;
+      neu=String(neu).trim();
+      if(!neu){ toast('Der Name darf nicht leer sein.',true); return; }
+      if(neu===st.name) return;
+      if(_studioListe.some(function(x){ return x.id!==id && x.name===neu; })){
+        toast('Ein Studio mit diesem Namen gibt es schon.',true); return;
+      }
+      studiosSpeichern(_studioListe.map(function(x){
+        return x.id===id ? Object.assign({}, x, { name:neu }) : x;
+      }), 'Umbenannt ✓');
+    });
+  });
+
+  box.querySelectorAll('[data-stzu]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-stzu');
+      var st=_studioListe.filter(function(x){ return x.id===id; })[0]; if(!st) return;
+      var zu = st.aktiv === false;
+      if(!zu){
+        var offen=_studioListe.filter(function(x){ return x.aktiv !== false; }).length;
+        if(offen<=1){ toast('Das letzte offene Studio kann nicht geschlossen werden.',true); return; }
+        if(!confirm('„'+st.name+'" schließen?\n\n'+
+          'Es verschwindet aus allen Auswahllisten. Aufgaben, Schichten und '+
+          'Nachrichten bleiben erhalten und sind später wieder da, wenn du '+
+          'es erneut öffnest.')) return;
+      }
+      studiosSpeichern(_studioListe.map(function(x){
+        return x.id===id ? Object.assign({}, x, { aktiv: zu }) : x;
+      }), zu ? 'Wieder geöffnet ✓' : 'Geschlossen ✓');
+    });
+  });
+}
+
+/* Der einzige Weg, an die Liste zu schreiben. Alles geht hier durch,
+   damit „naechste" nie zurückgedreht wird und die Reihenfolge nie
+   durcheinanderkommt. */
+function studiosSpeichern(liste, meldung){
+  return db.collection('config').doc('studios')
+    .set({ liste: liste, naechste: _studioNaechste }, { merge:false })
+    .then(function(){ if(meldung) toast(meldung); })
+    .catch(function(e){ toast(errMsg(e), true); });
+}
+
+function studioAnlegen(btn){
+  var feld=$('stNeuName'); if(!feld) return;
+  var name=String(feld.value||'').trim();
+  if(!name){ toast('Bitte einen Namen eingeben.',true); return; }
+  if(_studioListe.some(function(x){ return x.name===name; })){
+    toast('Ein Studio mit diesem Namen gibt es schon.',true); return;
+  }
+  // Immer die nächste freie Nummer, nie eine wiederverwendete.
+  var id='studio-'+_studioNaechste;
+  _studioNaechste++;
+  var neu=_studioListe.concat([{ id:id, name:name, aktiv:true }]);
+  withBusy(btn, function(){
+    return studiosSpeichern(neu, 'Studio „'+name+'" angelegt ✓')
+      .then(function(){ feld.value=''; });
+  });
+}
+
+/* ── Studioliste laden und beobachten ──
+   Der Beobachter läuft für JEDE Rolle: benennt der Chef ein Studio um,
+   sollen es alle sofort sehen und nicht erst nach dem nächsten Start.
+   Ein Dokument, ein Beobachter – das ist die Sammlung, die am seltensten
+   wechselt und am meisten kostet, wenn sie veraltet ist. */
+var _studiosUnsub = null;
+function studioListeSetzen(d){
+  if(!d || !Array.isArray(d.liste) || !d.liste.length) return false;
+  _studioListe = d.liste.filter(function(x){ return x && x.id && x.name; });
+  // naechste darf nie kleiner werden, als die höchste vergebene Nummer +1.
+  // Sonst bekäme ein neues Studio die Kennung eines alten – und damit
+  // dessen Aufgaben, Schichten und Chats.
+  var hoechste = -1;
+  _studioListe.forEach(function(x){
+    var n = parseInt(String(x.id).replace('studio-',''), 10);
+    if(!isNaN(n) && n > hoechste) hoechste = n;
+  });
+  _studioNaechste = Math.max(d.naechste || 0, hoechste + 1);
+  studiosNeuAufbauen();
+  return true;
+}
+
+function listenStudios(){
+  if(_studiosUnsub) return;
+  _studiosUnsub = db.collection('config').doc('studios').onSnapshot(function(doc){
+    var vorher = STUDIOS.join('|');
+    if(doc.exists) studioListeSetzen(doc.data());
+    if(STUDIOS.join('|') !== vorher) studioAuswahlenNeu();
+  }, function(e){ console.warn('Studios:', e.message); });
+}
+
+/* Einmal lesen, bevor die App startet. Der Beobachter kommt danach.
+   Ohne dieses eine Lesen stünden beim ersten Bild die Studios aus
+   konfig.js – und wer eins umbenannt hat, sähe kurz den alten Namen. */
+function studiosLaden(){
+  return db.collection('config').doc('studios').get()
+    .then(function(doc){ if(doc.exists) studioListeSetzen(doc.data()); })
+    .catch(function(e){
+      // Kein Grund zum Abbruch: dann gilt eben die Liste aus konfig.js.
+      console.warn('Studios konnten nicht geladen werden:', e.message);
+    });
+}
+
+/* Alles neu aufbauen, was eine Studio-Auswahl enthält. Wird sowohl beim
+   Anmelden als auch bei jeder Änderung an der Liste gebraucht – deshalb
+   an einer Stelle und defensiv: fehlt ein Feld, wird es übersprungen. */
+function studioAuswahlenNeu(){
+  [buildMaterialSelect, buildPutzplanSelect, buildDeviceSelect, buildTeamSelect,
+   buildRegStudios].forEach(function(f){
+    try{ if(typeof f === 'function') f(); }catch(e){ console.warn('Auswahl:', e.message); }
+  });
+  if(typeof canManage === 'function' && session && canManage()){
+    [buildChefSelects, buildDocStudios].forEach(function(f){
+      try{ if(typeof f === 'function') f(); }catch(e){ console.warn('Auswahl:', e.message); }
+    });
+  }
+  if(typeof isChef === 'function' && session && isChef()){
+    try{ buildEmpStudios(); }catch(e){}
+    try{ renderStandorte(); }catch(e){}
+  }
+  try{ if(typeof renderHome === 'function' && session) renderHome(); }catch(e){}
+}
+
+/* Name → Datenbank-Kennung. Früher der Listenplatz (STUDIOS.indexOf),
+   jetzt die gespeicherte Kennung. Für einen bestehenden Betrieb kommt
+   dasselbe heraus: die Liste wird in genau der Reihenfolge angelegt, in
+   der sie in konfig.js stand, also ist studio-6 weiterhin Hürth.
+   Beim Umbenennen bleibt die Kennung – und genau deshalb dürfen die
+   Daten liegen bleiben. */
+function studioKey(name){
+  for(var i=0;i<_studioListe.length;i++){
+    if(_studioListe[i] && _studioListe[i].name === name) return _studioListe[i].id;
+  }
+  // Unbekannter Name. Früher kam hier 'studio--1' heraus – eine Kennung,
+  // die aussieht wie eine und auf nichts zeigt. Das Verhalten bleibt,
+  // damit sich nichts still ändert, aber jetzt steht es in der Konsole.
+  if(name) console.warn('studioKey: unbekanntes Studio', name);
+  return 'studio--1';
+}
+function studioName(key){
+  for(var i=0;i<_studioListe.length;i++){
+    if(_studioListe[i] && _studioListe[i].id === key) return _studioListe[i].name;
+  }
+  return key;
+}
 function channelStudioName(ch){ return (ch && ch.indexOf('studio-')===0) ? studioName(ch) : null; }
 /* Anzeigename eines Kanals – für Suchtreffer, die aus einem anderen kommen */
 function channelLabel(ch){ return channelStudioName(ch) || 'Allgemein'; }
@@ -4892,6 +5179,10 @@ function beitrittSchalterLaden(){
     _beitritt.code     = d.codeNoetig === true;
     _beitritt.freigabe = d.freigabe   === true;
     var w=$('rgCodeWrap'); if(w) w.style.display = _beitritt.code ? '' : 'none';
+    // Selbstanmeldung nur, wenn wenigstens eine Schranke steht. Ohne
+    // Code und ohne Freigabe wäre der Weg offen für jeden, der die
+    // Adresse kennt – dann bleibt der Reiter weg.
+    selbstAnmeldungZeigen(_beitritt.code || _beitritt.freigabe);
   }).catch(function(){ /* nicht erreichbar: dann eben ohne Code-Feld */ });
 }
 var currentChannel = 'allgemein';
@@ -4917,15 +5208,64 @@ var _matSaveKey = null;      // zu welchem Studio das Gespeicherte gehört
    ============================================================ */
 var regRole = 'mitarbeiter';
 
-(function initAuthScreen(){
-  // Studio-Checkboxen für Registrierung (Mehrfachauswahl)
-  var wrap = $('rgStudios');
+/* Studio-Auswahl im Anmeldeformular. Eigene Funktion, weil die Liste
+   jetzt aus der Datenbank kommt und sich ändern kann, während jemand
+   auf dem Anmeldebildschirm steht. Angekreuztes bleibt dabei stehen. */
+function buildRegStudios(){
+  var wrap = $('rgStudios'); if(!wrap) return;
+  var vorher = Array.prototype.slice.call(wrap.querySelectorAll('input:checked'))
+    .map(function(i){ return i.value; });
+  wrap.innerHTML='';
   STUDIOS_ALPHA.forEach(function(s){
     var lab=document.createElement('label'); lab.className='studio-check';
     var cb=document.createElement('input'); cb.type='checkbox'; cb.value=s;
+    if(vorher.indexOf(s)>=0){ cb.checked=true; lab.classList.add('on'); }
     cb.addEventListener('change',function(){ lab.classList.toggle('on', cb.checked); });
     var span=document.createElement('span'); span.textContent=s;
     lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
+  });
+}
+
+/* ── Passwort anzeigen ──
+   Der Zustand hängt am Knopf (aria-pressed), nicht an einer Variablen:
+   so stimmen Aussehen und Vorleseprogramm immer überein, auch wenn ein
+   Feld zwischendurch geleert wird.
+
+   Nach dem Umschalten springt der Cursor ans Ende zurück. Ohne das setzt
+   der Browser ihn beim Typwechsel an den Anfang – man tippt dann mitten
+   ins eigene Passwort hinein. */
+function pwAugeBinden(){
+  document.querySelectorAll('.pw-auge').forEach(function(k){
+    if(k._da) return; k._da=true;
+    k.addEventListener('click', function(){
+      var feld=$(k.getAttribute('data-pw')); if(!feld) return;
+      var zeigen = feld.type === 'password';
+      feld.type = zeigen ? 'text' : 'password';
+      k.setAttribute('aria-pressed', zeigen ? 'true' : 'false');
+      k.setAttribute('aria-label', zeigen ? 'Passwort verbergen' : 'Passwort anzeigen');
+      var n=feld.value.length;
+      try{ feld.focus(); feld.setSelectionRange(n,n); }catch(e){}
+    });
+  });
+}
+
+/* Beim Wechsel zwischen Anmelden und Registrieren wieder verbergen.
+   Sonst steht das Passwort noch offen da, wenn jemand anders auf das
+   Gerät schaut – auf einem Studio-Tablet ist das keine Kleinigkeit. */
+function pwWiederVerbergen(){
+  document.querySelectorAll('.pw-auge').forEach(function(k){
+    var feld=$(k.getAttribute('data-pw'));
+    if(feld) feld.type='password';
+    k.setAttribute('aria-pressed','false');
+    k.setAttribute('aria-label','Passwort anzeigen');
+  });
+}
+
+(function initAuthScreen(){
+  buildRegStudios();
+  pwAugeBinden();
+  document.querySelectorAll('[data-authmode]').forEach(function(t){
+    t.addEventListener('click', function(){ setAuthMode(t.getAttribute('data-authmode')); });
   });
 
   // Login
@@ -4966,6 +5306,30 @@ function setAuthMode(mode){
   $('registerForm').style.display = mode==='register' ? 'block' : 'none';
   $('loginErr').textContent = '';
   $('regErr').textContent = '';
+  document.querySelectorAll('[data-authmode]').forEach(function(t){
+    t.classList.toggle('active', t.getAttribute('data-authmode')===mode);
+  });
+  pwWiederVerbergen();
+}
+
+/* ── Darf man sich selbst anmelden? ──
+   Der Umschalter war nie eingebaut: setAuthMode('register') wurde nirgends
+   aufgerufen, das Formular stand auf display:none, und es gab keinen Weg
+   dorthin. Der ganze Beitritts-Mechanismus – Firmencode, Freigabe,
+   Wartebildschirm – war damit gebaut, aber unerreichbar.
+
+   Jetzt entscheidet der Chef: sobald er in Verwaltung → Team einen
+   Firmencode setzt ODER die Freigabe einschaltet, erscheint hier der
+   zweite Reiter. Vorher bleibt es beim alten Satz „Dein Chef legt dein
+   Konto an" – ein Formular anzubieten, das die Regeln abweisen, wäre
+   schlimmer als keins. */
+function selbstAnmeldungZeigen(an){
+  var t=$('authTabs'); if(t) t.style.display = an ? 'flex' : 'none';
+  var hinweis=$('authKeinZugang');
+  if(hinweis) hinweis.style.display = an ? 'none' : '';
+  if(!an && $('registerForm') && $('registerForm').style.display!=='none'){
+    setAuthMode('login');
+  }
 }
 
 function doLogin(){
@@ -5089,6 +5453,19 @@ auth.onAuthStateChanged(function(user){
   // Die Schalter zuerst holen: das Registrierungsformular braucht sie,
   // und doRegister muss wissen, ob das Konto inaktiv starten muss.
   beitrittSchalterLaden();
+  /* Die Studioliste MUSS vor enterApp stehen. Dort werden aus den
+     Studionamen im Profil die Datenbank-Kennungen gerechnet. Läge dabei
+     noch die alte Liste aus konfig.js zugrunde, bekäme ein umbenanntes
+     oder neu angelegtes Studio die falsche Kennung – und jemand sähe die
+     Aufgaben eines fremden Studios. Deshalb erst laden, dann eintreten.
+     Schlägt das Laden fehl, gilt konfig.js und die App startet trotzdem. */
+  studiosLaden().then(function(){
+    buildRegStudios();
+    weiterMitAnmeldung(user);
+  });
+});
+
+function weiterMitAnmeldung(user){
   if(user){
     db.collection('users').doc(user.uid).get()
       .then(function(doc){
@@ -5114,7 +5491,7 @@ auth.onAuthStateChanged(function(user){
     $('app').classList.remove('show');
     $('authWrap').classList.add('show');
   }
-});
+}
 
 /* ============================================================
    APP STARTEN
@@ -5139,6 +5516,7 @@ function showApp(){
     $('docUploadCard').style.display='block'; buildDocStudios(); buildDocCatSelect();
     setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
+  listenStudios();                       // jede Rolle: Umbenennen soll sofort ankommen
   listenInventoryAll();                  // jede Rolle: fuer den Material-Hinweis
   if(canManage()){ listenEmployees(); }
   if(isChef()){
@@ -6351,6 +6729,7 @@ function stopListeners(){
   if(_devUnsub){ _devUnsub(); _devUnsub=null; }
   if(_devLogUnsub){ _devLogUnsub(); _devLogUnsub=null; }
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
+  if(_studiosUnsub){ _studiosUnsub(); _studiosUnsub=null; }
   if(_periodTimer){ clearInterval(_periodTimer); _periodTimer=null; }
   _chanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _chanUnsubs=[];
   _lastPing=0;
@@ -8457,6 +8836,8 @@ var CHEFTABS=[
    was:'Aufgabe anlegen, Ankündigung senden, Vorlagen'},
   {id:'team',       label:'👥 Team',       ico:'👥', chefOnly:true,
    was:'Zugänge anlegen, Rollen ändern, Onboarding'},
+  {id:'standorte',  label:'🏢 Studios',    ico:'🏢', chefOnly:true,
+   was:'Studios anlegen, umbenennen, schließen'},
   {id:'nachweise',  label:'📜 Nachweise',  ico:'📜', chefOnly:true,
    was:'Erste Hilfe, Lizenzen, Einweisungen – was demnächst abläuft'},
   {id:'report',     label:'📈 Auswertung', ico:'📈',
@@ -8583,6 +8964,7 @@ function showChefTab(id, keep){
   });
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
   if(id==='team'){ renderFreigaben(); beitrittLaden(); }
+  if(id==='standorte') renderStandorte();
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); }
@@ -12298,6 +12680,13 @@ function bindActions(){
       var btn=this;
       withBusy(btn,function(){ return syncAllToSheets(false); });
     });
+    var stn=$('stNeuBtn');
+    if(stn) stn.addEventListener('click', function(){ studioAnlegen(this); });
+    var stf=$('stNeuName');
+    if(stf) stf.addEventListener('keydown', function(e){
+      if(e.key==='Enter'){ e.preventDefault(); studioAnlegen($('stNeuBtn')); }
+    });
+
     var asn=$('archSaveNow'); if(asn) asn.addEventListener('click',function(){
       var btn=this;
       withBusy(btn,function(){

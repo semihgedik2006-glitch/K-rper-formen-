@@ -137,6 +137,25 @@ service cloud.firestore {
       allow write: if isChef();
     }
 
+    // Die Studioliste. Ebenfalls fuer jeden lesbar, auch ohne Anmeldung:
+    // im Registrierungsformular kreuzt man seine Studios an, und das ist
+    // vor dem Login. Was hier drinsteht, sind die Standortnamen - die
+    // stehen auch auf der Webseite des Betriebs. Kein Personenbezug,
+    // keine Zahlen, keine Inhalte.
+    //
+    // Schreiben darf nur der Chef, und die Liste darf nur WACHSEN: die
+    // Datenbank-Kennung eines Studios haengt an seinem Platz in dieser
+    // Liste. Wer kuerzt oder umsortiert, ordnet alle bestehenden
+    // Aufgaben, Schichten und Nachrichten einem anderen Studio zu -
+    // lautlos. Die Regel laesst deshalb keine kuerzere Liste zu.
+    match /config/studios {
+      allow read: if true;
+      allow create: if isChef();
+      allow update: if isChef()
+        && request.resource.data.liste.size() >= resource.data.liste.size();
+      allow delete: if false;
+    }
+
     // Sprachnachrichten liegen als Datenblock in der Nachricht. Ein Dokument
     // darf 1 MB groß sein – wir begrenzen die Aufnahme auf 800 KB, damit
     // Text, Bild und Aufnahme zusammen sicher hineinpassen.
@@ -313,8 +332,15 @@ service cloud.firestore {
       // Ausnahme wuerde die allgemeine Regel hier den Firmencode fuer
       // jeden Eingeloggten lesbar machen - und die Sperre waere
       // Dekoration.
-      allow read: if istAktiv() && doc != 'registrierung' && doc != 'beitrittSchalter';
-      allow write: if isChef();
+      allow read: if istAktiv() && doc != 'registrierung'
+                   && doc != 'beitrittSchalter' && doc != 'studios';
+      // 'studios' muss auch beim SCHREIBEN ausgenommen sein, nicht nur
+      // beim Lesen. Sonst haengt die Sperre "die Liste darf nur wachsen"
+      // in der Luft: diese Regel hier erlaubt dem Chef write, und in
+      // Firestore genuegt EINE zutreffende Regel, die erlaubt. Der
+      // Regeltest hat genau das gefunden - dieselbe Falle wie beim
+      // Firmencode, in derselben Datei, ein zweites Mal.
+      allow write: if isChef() && doc != 'studios';
     }
 
     // ── Direktnachrichten (1:1) – nur die beiden Beteiligten ──
