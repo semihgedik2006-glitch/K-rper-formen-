@@ -154,12 +154,29 @@ Weiteres:
   je Tag). Vorher genügte „eingeloggt" – bei offener Selbstregistrierung war
   das ein unbegrenzter Kostenkanal.
 
-**Die größte offene Frage:** Die Selbstregistrierung steht jedem offen, und
-fast alle Leseregeln lauten „eingeloggt". Wer die Adresse kennt, kann sich
-ein Konto anlegen und Teamchat, Personenliste, Aufgaben und Dokumente lesen.
-Für einen Betrieb, der die Adresse nur intern weitergibt, ist das tragbar –
-für einen fremden Kunden nicht. Lösungen: Registrierung mit Firmencode,
-oder neue Konten erst nach Freigabe durch den Chef aktiv.
+### Wer überhaupt hereinkommt
+
+Zwei Schranken, getrennt schaltbar, beide in *Verwaltung → Team*:
+
+| Schranke | Was sie verhindert |
+|---|---|
+| **Firmencode** | dass ein Fremder überhaupt ein Konto anlegt |
+| **Freigabe durch den Chef** | dass ein Konto etwas sieht, bevor jemand es bestätigt hat |
+
+Der Code liegt in `config/registrierung` und ist **für keinen Client
+lesbar** – auch nicht für den, der sich gerade registriert. Beim Anmelden
+legt die App ihn einmalig in `beitritt/{uid}` ab; die Regel vergleicht ihn
+per `get()`, was den Regeln selbst nicht unterliegt. Er landet
+ausdrücklich **nicht** im Profil: `users` ist für alle Aktiven lesbar, dort
+stünde er für jeden Kollegen offen.
+
+Nur zwei Ja/Nein-Schalter (`config/beitrittSchalter`) sind öffentlich
+lesbar — das Anmeldeformular muss vor dem Login wissen, ob es das Codefeld
+zeigen soll.
+
+**Beide Schranken sind aus, solange sie nicht eingeschaltet werden**, und
+ein Profil ohne das Feld `aktiv` gilt als aktiv. Ein bestehender Betrieb
+merkt von der Änderung nichts — das ist Absicht und mit Tests abgesichert.
 
 ---
 

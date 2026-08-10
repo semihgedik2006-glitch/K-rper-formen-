@@ -1983,6 +1983,14 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
         <div class="field"><label for="rgPw2">Wiederholen</label>
           <input class="inp" id="rgPw2" type="password" placeholder="Passwort" autocomplete="new-password" /></div>
       </div>
+      <!-- Nur sichtbar, wenn im Projekt ein Firmencode gesetzt ist.
+           Ohne Code bleibt das Feld weg – so bleibt die Anmeldung fuer
+           Betriebe ohne Code genauso kurz wie vorher. -->
+      <div class="field" id="rgCodeWrap" style="display:none">
+        <label for="rgCode">Firmencode</label>
+        <input class="inp" id="rgCode" type="text" placeholder="Bekommst du von der Leitung"
+               autocomplete="off" maxlength="60" />
+      </div>
       <p class="auth-err" id="regErr"></p>
       <button class="btn btn-primary" id="registerBtn" style="width:100%">Konto erstellen</button>
     </div>
@@ -2698,6 +2706,36 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
           <!-- ── Reiter 3: Team ── -->
           <div class="chef-pane" data-cpane="team" style="display:none">
+          <!-- Wartende Konten stehen GANZ OBEN und ohne Zuklappen:
+               jemand sitzt da und kommt nicht rein. Die Karte
+               verschwindet komplett, wenn niemand wartet. -->
+          <div class="card" id="freigabeKarte" data-chef-only="1" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3>⏳ Wartet auf Freigabe</h3>
+              <span class="todo-count" id="freigabeZahl"></span>
+            </div>
+            <p class="hint">Diese Leute haben sich selbst angemeldet und sehen bis
+              zur Freigabe nichts von der App.</p>
+            <div id="freigabeListe"></div>
+          </div>
+          <div class="card" data-fold="beitritt" data-chef-only="1">
+            <h3>🔑 Wer darf sich anmelden</h3>
+            <p class="hint">Ohne Einstellung hier kann sich jeder anmelden, der die
+              Adresse der App kennt – und sieht dann Chat, Team und Aufgaben.</p>
+            <div class="field"><label for="btCode">Firmencode</label>
+              <input class="inp" id="btCode" type="text" maxlength="60"
+                     placeholder="leer = kein Code nötig" autocomplete="off" />
+              <p class="hint" style="margin-top:6px">Wer sich anmeldet, muss ihn eingeben.
+                Gib ihn im Team weiter. Leer lassen schaltet ihn ab.</p></div>
+            <label class="studio-check" style="margin-top:6px">
+              <input type="checkbox" id="btFreigabe" />
+              <span><b>Neue Konten erst nach meiner Freigabe aktiv</b></span>
+            </label>
+            <p class="hint" style="margin-top:6px">Empfohlen. Fängt auch den Fall ab,
+              dass der Code die Runde macht – etwa bei jemandem, der gegangen ist.</p>
+            <button class="btn btn-ghost btn-sm" id="btSave" style="width:100%;margin-top:12px">Speichern</button>
+            <p class="em-saved" id="btNote"></p>
+          </div>
           <div class="card" data-fold="zugang" data-chef-only="1">
             <h3>👤 Zugang anlegen</h3>
             <p class="hint">Erstellt ein Konto und ordnet Studios zu. Die Person meldet sich danach mit E-Mail + Passwort an.</p>
@@ -2888,6 +2926,24 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     </div>
   </div>
   <nav class="mobnav" id="mobnav"></nav>
+</div>
+
+<!-- Konto angelegt, aber noch nicht freigegeben.
+     Eigener Bildschirm statt einer Fehlermeldung: das Konto ist ja in
+     Ordnung, es fehlt nur die Bestaetigung. -->
+<div id="warteWrap" style="display:none;position:fixed;inset:0;z-index:900;
+     background:var(--bg);align-items:center;justify-content:center;
+     padding:calc(24px + var(--sat)) 24px calc(24px + var(--sab))">
+  <div class="pm-box" style="max-width:420px;text-align:center">
+    <div style="font-size:2.6rem;margin-bottom:10px">⏳</div>
+    <h3 style="margin-bottom:8px">Fast geschafft</h3>
+    <p class="hint" style="margin-bottom:6px">
+      Dein Konto ist angelegt. Die Leitung muss es einmal freigeben –
+      danach bist du drin.</p>
+    <p class="hint" id="warteWer" style="margin-bottom:18px"></p>
+    <button class="btn btn-ghost btn-sm" id="warteNeu" style="width:100%">Nachsehen, ob es freigegeben ist</button>
+    <button class="btn btn-ghost btn-sm" id="warteAus" style="width:100%;margin-top:8px">Abmelden</button>
+  </div>
 </div>
 
 <!-- Weiterleiten: Auswahl, wohin eine Nachricht kopiert werden soll -->
@@ -4546,6 +4602,23 @@ function clearVoice(){
    ============================================================ */
 var session = null; // { uid, name, role, studio, email }
 var _registering = false; // verhindert vorzeitiges Ausloggen während der Chef-Registrierung
+
+/* ── Beitritts-Schalter ──
+   Nur zwei Ja/Nein-Angaben: wird ein Firmencode verlangt, und muss ein
+   neues Konto freigegeben werden. Sie liegen in einem eigenen Dokument,
+   das jeder lesen darf – das Registrierungsformular muss VOR dem Login
+   wissen, ob es das Codefeld zeigen soll. Der Code selbst steht
+   woanders und ist fuer niemanden lesbar.
+   Beide stehen auf „aus", solange nichts anderes eingetragen ist. */
+var _beitritt = { code:false, freigabe:false };
+function beitrittSchalterLaden(){
+  return db.collection('config').doc('beitrittSchalter').get().then(function(doc){
+    var d = doc.exists ? (doc.data()||{}) : {};
+    _beitritt.code     = d.codeNoetig === true;
+    _beitritt.freigabe = d.freigabe   === true;
+    var w=$('rgCodeWrap'); if(w) w.style.display = _beitritt.code ? '' : 'none';
+  }).catch(function(){ /* nicht erreichbar: dann eben ohne Code-Feld */ });
+}
 var currentChannel = 'allgemein';
 var currentView = 'chat';
 var cachedTodos = {}; // studioKey -> [{...}]
@@ -4651,29 +4724,80 @@ function doRegister(){
 
   var btn=$('registerBtn'); btn.disabled=true; btn.textContent='…';
   _registering=true;
+  var code=(($('rgCode')||{}).value||'').trim();
   auth.createUserWithEmailAndPassword(email, pw)
     .then(function(cred){
       var uid=cred.user.uid;
-      return db.collection('users').doc(uid).set({
-        name:name, email:email, role:'mitarbeiter',
-        studios:studios, studio:studios[0]||null, createdAt:Date.now()
+      /* Den Firmencode zuerst ablegen – die Regel fuer users/{uid} liest
+         ihn dort nach. Er kommt bewusst NICHT ins Profil: users ist fuer
+         alle Aktiven lesbar, der Code stuende dann fuer jeden Kollegen
+         offen da. beitritt/{uid} kann niemand lesen. */
+      var vor = code
+        ? db.collection('beitritt').doc(uid).set({ code:code, ts:Date.now() })
+        : Promise.resolve();
+      return vor.then(function(){
+        var profil = {
+          name:name, email:email, role:'mitarbeiter',
+          studios:studios, studio:studios[0]||null, createdAt:Date.now()
+        };
+        /* Ist die Freigabe eingeschaltet, MUSS das Konto inaktiv starten –
+           die Regel laesst es sonst gar nicht zu. */
+        if(_beitritt.freigabe) profil.aktiv=false;
+        return db.collection('users').doc(uid).set(profil);
       }).then(function(){
+        _registering=false;
+        if(_beitritt.freigabe){ zeigeWarten(uid); return; }
         return db.collection('users').doc(uid).get().then(function(doc){
-          _registering=false;
           enterApp(uid, doc.data());
         });
       });
     })
     .catch(function(e){
       _registering=false;
-      $('regErr').textContent = authErrMsg(e.code);
+      /* Lehnt die Regel ab, liegt es fast immer am Firmencode – der
+         Rohtext "permission-denied" hilft niemandem weiter. */
+      var meldung = (e && e.code==='permission-denied')
+        ? (_beitritt.code
+            ? 'Der Firmencode stimmt nicht. Frag kurz bei der Leitung nach.'
+            : 'Anmeldung abgelehnt. Bitte bei der Leitung melden.')
+        : authErrMsg(e.code);
+      $('regErr').textContent = meldung;
       btn.disabled=false; btn.textContent='Konto erstellen';
     });
 }
 
 /* Gemeinsamer App-Einstieg (verhindert doppeltes Starten) */
+/* ── Wartet dieses Konto noch auf die Freigabe? ──
+   Ein Profil OHNE das Feld gilt als aktiv. Alle bestehenden Konten
+   laufen dadurch unveraendert weiter – dieselbe Sicherung wie in den
+   Regeln. */
+function wartetAufFreigabe(d){ return !!d && d.aktiv === false; }
+
+function zeigeWarten(uid){
+  var w=$('warteWrap'); if(!w) return;
+  $('authWrap').classList.remove('show');
+  w.style.display='flex';
+  var wer=$('warteWer');
+  if(wer) wer.textContent='Angemeldet als '+((auth.currentUser&&auth.currentUser.email)||'');
+  var neu=$('warteNeu');
+  if(neu && !neu._da){ neu._da=true; neu.addEventListener('click',function(){
+    withBusy(neu,function(){
+      return db.collection('users').doc(uid).get().then(function(doc){
+        var d=doc.exists?doc.data():null;
+        if(d && !wartetAufFreigabe(d)){ w.style.display='none'; enterApp(uid,d); }
+        else toast('Noch nicht freigegeben. Frag kurz bei der Leitung nach.');
+      });
+    });
+  }); }
+  var aus=$('warteAus');
+  if(aus && !aus._da){ aus._da=true; aus.addEventListener('click',function(){
+    w.style.display='none'; auth.signOut();
+  }); }
+}
+
 function enterApp(uid, data){
   if(session || !data) return;
+  if(wartetAufFreigabe(data)){ zeigeWarten(uid); return; }
   session = Object.assign({ uid:uid }, data);
   session.studios = (session.studios && session.studios.length)
     ? session.studios : (session.studio ? [session.studio] : []);
@@ -4687,6 +4811,9 @@ function enterApp(uid, data){
    ============================================================ */
 auth.onAuthStateChanged(function(user){
   hideLoading();
+  // Die Schalter zuerst holen: das Registrierungsformular braucht sie,
+  // und doRegister muss wissen, ob das Konto inaktiv starten muss.
+  beitrittSchalterLaden();
   if(user){
     db.collection('users').doc(user.uid).get()
       .then(function(doc){
@@ -5328,11 +5455,102 @@ function verteileUsers(){
     _chefs=_allUsers.filter(function(u){ return u.role==='chef'; })
       .sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
     renderChefs();
+    renderFreigaben();
   }
 }
 function listenEmployees(){
   /* Kein eigener Beobachter mehr – siehe verteileUsers(). Die Funktion
      bleibt stehen, damit die Aufrufstelle lesbar bleibt. */
+}
+
+/* ── Wartende Konten: anzeigen, freigeben, ablehnen ──
+   Speist sich aus _allUsers, also aus dem EINEN users-Beobachter – kein
+   zusaetzlicher Zugriff auf die Datenbank. */
+function renderFreigaben(){
+  var karte=$('freigabeKarte'); if(!karte || !isChef()) return;
+  var wartend=_allUsers.filter(function(u){ return u.aktiv===false; });
+  karte.style.display = wartend.length ? '' : 'none';
+  if(!wartend.length) return;
+  var z=$('freigabeZahl');
+  if(z) z.textContent = wartend.length===1 ? '1 Person' : wartend.length+' Personen';
+  var box=$('freigabeListe'); if(!box) return;
+  box.innerHTML = wartend.map(function(u){
+    var studios=(u.studios||[]).join(', ') || 'kein Studio angegeben';
+    return '<div class="emp" style="align-items:flex-start">'+
+      '<div style="flex:1;min-width:0">'+
+        '<b>'+esc(u.name||'Ohne Namen')+'</b>'+
+        '<div class="hint" style="margin-top:2px">'+esc(u.email||'')+'</div>'+
+        '<div class="hint">'+esc(studios)+'</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">'+
+        '<button class="btn btn-primary btn-sm" data-frei="'+esc(u.uid)+'">Freigeben</button>'+
+        '<button class="btn btn-danger btn-sm" data-ablehn="'+esc(u.uid)+'">Ablehnen</button>'+
+      '</div></div>';
+  }).join('');
+  box.querySelectorAll('[data-frei]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var uid=b.getAttribute('data-frei');
+      withBusy(b,function(){
+        return db.collection('users').doc(uid).update({ aktiv:true })
+          .then(function(){ toast('Freigegeben ✓'); })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
+    });
+  });
+  box.querySelectorAll('[data-ablehn]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var uid=b.getAttribute('data-ablehn');
+      var wer=(_allUsers.filter(function(u){return u.uid===uid;})[0]||{}).name||'dieses Konto';
+      /* Rueckfrage statt Rueckgaengig: das Profil ist danach weg, und der
+         Betroffene kann sich nicht mehr anmelden. Das ist nichts, was man
+         acht Sekunden lang zurueckholen koennen sollte. */
+      if(!confirm('Anmeldung von „'+wer+'" ablehnen?\n\nDas Profil wird gelöscht. '+
+                  'Die Person kann sich mit demselben Firmencode neu anmelden.')) return;
+      withBusy(b,function(){
+        return db.collection('users').doc(uid).delete()
+          .then(function(){ toast('Abgelehnt'); })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
+    });
+  });
+}
+
+/* ── Firmencode und Freigabepflicht einstellen ──
+   Zwei Dokumente in EINEM Schreibvorgang, damit sie nicht auseinander-
+   laufen: der Code (fuer niemanden lesbar) und die Schalter (fuer alle
+   lesbar, weil das Anmeldeformular sie vor dem Login braucht). */
+function beitrittLaden(){
+  if(!isChef()) return;
+  db.collection('config').doc('registrierung').get().then(function(doc){
+    var d=doc.exists?(doc.data()||{}):{};
+    var c=$('btCode'); if(c) c.value=d.code||'';
+    var f=$('btFreigabe'); if(f) f.checked = d.freigabe===true;
+  }).catch(function(){});
+}
+function beitrittSpeichern(btn){
+  var code=(($('btCode')||{}).value||'').trim();
+  var frei=!!(($('btFreigabe')||{}).checked);
+  var note=$('btNote');
+  withBusy(btn,function(){
+    var b=db.batch();
+    b.set(db.collection('config').doc('registrierung'),
+          { code:code, freigabe:frei, ts:Date.now() });
+    b.set(db.collection('config').doc('beitrittSchalter'),
+          { codeNoetig: code!=='', freigabe:frei, ts:Date.now() });
+    return b.commit().then(function(){
+      _beitritt.code = code!==''; _beitritt.freigabe = frei;
+      if(note){
+        note.style.color='var(--accent-d)';
+        note.textContent = code
+          ? (frei ? '✓ Code gesetzt, neue Konten warten auf dich.'
+                  : '✓ Code gesetzt. Neue Konten sind sofort aktiv.')
+          : (frei ? '✓ Kein Code – aber neue Konten warten auf dich.'
+                  : '✓ Kein Code, keine Freigabe. Jeder mit der Adresse kommt rein.');
+      }
+    }).catch(function(e){
+      if(note){ note.style.color='var(--danger-tx)'; note.textContent=errMsg(e); }
+    });
+  });
 }
 
 function renderEmployees(emps){
@@ -7822,6 +8040,7 @@ function showChefTab(id, keep){
     p.style.display = (p.getAttribute('data-cpane')===id) ? '' : 'none';
   });
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
+  if(id==='team'){ renderFreigaben(); beitrittLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); }
@@ -11461,6 +11680,9 @@ function bindActions(){
   });
 
   // ── Verwaltung: zurück zur Übersicht ──
+  var bts=$('btSave');
+  if(bts) bts.addEventListener('click',function(){ beitrittSpeichern(this); });
+
   var cb=$('chefBack');
   if(cb) cb.addEventListener('click',function(){ showChefTab(CHEF_START); tick(8); });
 
