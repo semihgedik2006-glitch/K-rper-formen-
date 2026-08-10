@@ -1,0 +1,161 @@
+/* Die Firmenkennung im Link.
+
+   Entschieden: der Kunde bekommt einen Link mit seiner Kennung darin,
+   https://…/?firma=mueller-7f3a. Der Anmeldebildschirm braucht sie, weil
+   er Studioliste und Beitritts-Schalter zeigt, bevor jemand angemeldet
+   ist — und zu dem Zeitpunkt gibt es kein Profil, das die Firma nennen
+   könnte.
+
+   Geprüft wird:
+     1. Solange der Schalter aus ist, passiert gar nichts. Das ist der
+        heutige Zustand und darf sich nicht ändern.
+     2. Mit Schalter: die Kennung aus dem Link landet in den Pfaden.
+     3. Sie wird gemerkt — der Kunde braucht den langen Link nur einmal.
+     4. Unsinn im Link wird gefiltert. Ein Pfadtrenner darin würde sonst
+        aus firmen/x/config etwas ganz anderes machen.
+     5. Ohne Link und ohne gemerkte Kennung gilt konfig.js. Sonst stünde
+        ein bestehender Betrieb nach dem Umschalten vor einer leeren App.
+     6. Nach dem Anmelden gewinnt das PROFIL gegen den Link — das
+        steht in enterApp und ist hier NICHT geprüft, weil die
+        Attrappe kein Profil mit Firma liefert. Kommt mit den
+        Kreuztests in tests/rules/security.test.js.
+
+   Was hier NICHT geprüft wird: dass ein Fremder mit geratener Kennung
+   nichts sieht. Das entscheiden die Sicherheitsregeln, nicht die App —
+   und es steht in tests/rules/security.test.js, sobald die Regeln für
+   die verschachtelten Pfade fertig sind.                               */
+const { chromium } = require('playwright');
+const SP = process.env.SP || __dirname;
+const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+
+// Schneidet mit, welche Pfade wirklich abgefragt werden.
+//
+// WICHTIG: eine frische Hülle je Ebene bauen, nicht das Stub-Objekt
+// verändern. Die Attrappen geben bei .doc() und .collection() DASSELBE
+// Objekt zurück – wer es markiert, sieht ab der zweiten Ebene nichts
+// mehr und misst dann "gar keine Abfrage" statt des Pfades. Genau
+// dieser Messfehler hat den ersten Lauf hier wertlos gemacht.
+const SPUR = `
+(function(){
+  window.__pfade = [];
+  var fs = window.firebase.firestore();
+  var echt = fs.collection.bind(fs);
+  function huelle(k, pfad){
+    if(!k) return k;
+    var h = Object.create(k);
+    h.get = function(){ window.__pfade.push(pfad); return k.get.apply(k, arguments); };
+    if(k.onSnapshot) h.onSnapshot = function(){ window.__pfade.push(pfad); return k.onSnapshot.apply(k, arguments); };
+    if(k.doc) h.doc = function(i){ return huelle(k.doc(i), pfad + '/' + i); };
+    if(k.collection) h.collection = function(sb){ return huelle(k.collection(sb), pfad + '/' + sb); };
+    return h;
+  }
+  fs.collection = function(p){ return huelle(echt(p), p); };
+})();`;
+
+async function start(errs, opt) {
+  opt = opt || {};
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const page = await b.newPage({ viewport: { width: 390, height: 844 } });
+  page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
+  page.on('console', m => {
+    if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) errs.push('CONSOLE: ' + m.text().slice(0, 160));
+  });
+  await page.route('**://www.gstatic.com/**', r => r.abort());
+  await page.route('**fonts.googleapis.com/**', r => r.abort());
+  await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
+  await page.addInitScript({ path: SP + '/' + (opt.stub || 'stub-ohne-login.js') });
+  await page.addInitScript(SPUR);
+  if (opt.mandant) {
+    await page.addInitScript(`
+      var iv = setInterval(function(){
+        if (window.KONFIG) { window.KONFIG.mandant = true; clearInterval(iv); }
+      }, 2);
+      setTimeout(function(){ clearInterval(iv); }, 3000);`);
+  }
+  await page.goto(APP + (opt.query || ''), { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(opt.stub ? 2800 : 1900);
+  return { b, page };
+}
+
+const konfigPfade = p => p.filter(x => /config\/(studios|beitrittSchalter)$/.test(x));
+
+(async () => {
+  const errs = [];
+
+  // ══ 1. Schalter aus: nichts ändert sich ══
+  {
+    const { b, page } = await start(errs, { query: '?firma=fremd-1234' });
+    const p = konfigPfade(await page.evaluate(() => window.__pfade));
+    console.log('Schalter AUS:', JSON.stringify(p));
+    if (p.some(x => x.indexOf('firmen/') === 0)) {
+      errs.push('GEFÄHRLICH: Schalter ist aus, aber es wird schon unter firmen/ gelesen');
+    }
+    if (!p.length) errs.push('FEHLT: gar keine Konfiguration gelesen');
+    await b.close();
+  }
+
+  // ══ 2.+3. Schalter an: Kennung aus dem Link, und gemerkt ══
+  {
+    const { b, page } = await start(errs, { mandant: true, query: '?firma=mueller-7f3a' });
+    const p = konfigPfade(await page.evaluate(() => window.__pfade));
+    console.log('Mit Link:', JSON.stringify(p));
+    if (!p.length) errs.push('FEHLT: keine Konfiguration gelesen');
+    p.forEach(x => {
+      if (x !== 'firmen/mueller-7f3a/config/studios' &&
+          x !== 'firmen/mueller-7f3a/config/beitrittSchalter') {
+        errs.push('FALSCHER PFAD: ' + x);
+      }
+    });
+    const gemerkt = await page.evaluate(() => localStorage.getItem('kf_firma'));
+    console.log('Gemerkt:', gemerkt);
+    if (gemerkt !== 'mueller-7f3a') errs.push('FEHLT: die Kennung wird nicht gemerkt (' + gemerkt + ')');
+
+    // Zweiter Aufruf OHNE Link muss dieselbe Firma treffen
+    await page.evaluate(() => { window.__pfade = []; });
+    await page.goto(APP, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1900);
+    const p2 = konfigPfade(await page.evaluate(() => window.__pfade));
+    console.log('Ohne Link, aber gemerkt:', JSON.stringify(p2));
+    if (!p2.length || !p2.every(x => x.indexOf('firmen/mueller-7f3a/') === 0)) {
+      errs.push('FEHLT: ohne Link greift die gemerkte Kennung nicht (' + p2.join(', ') + ')');
+    }
+    await b.close();
+  }
+
+  // ══ 4. Unsinn im Link ══
+  {
+    const { b, page } = await start(errs, {
+      mandant: true, query: '?firma=' + encodeURIComponent('../../users/chef1'),
+    });
+    const p = konfigPfade(await page.evaluate(() => window.__pfade));
+    console.log('Unsinn im Link:', JSON.stringify(p));
+    p.forEach(x => {
+      if (/\.\.|users/.test(x)) errs.push('GEFÄHRLICH: Pfadtrenner kam durch – ' + x);
+    });
+    const gemerkt = await page.evaluate(() => localStorage.getItem('kf_firma'));
+    console.log('Gemerkt nach Unsinn:', gemerkt);
+    if (gemerkt && /[^a-zA-Z0-9_-]/.test(gemerkt)) {
+      errs.push('GEFÄHRLICH: ungefilterte Kennung gemerkt – ' + gemerkt);
+    }
+    // Ein zerstückelter Rest ist genauso falsch wie das Original.
+    if (gemerkt && /users|chef/.test(gemerkt)) {
+      errs.push('FEHLT: aus dem Unsinn wurde ein Rest gemacht und gemerkt – ' + gemerkt);
+    }
+    await b.close();
+  }
+
+  // ══ 5. Ohne alles gilt konfig.js ══
+  {
+    const { b, page } = await start(errs, { mandant: true });
+    const p = konfigPfade(await page.evaluate(() => window.__pfade));
+    console.log('Ohne Link und ohne Gedächtnis:', JSON.stringify(p));
+    if (!p.length || !p.every(x => x.indexOf('firmen/koerperformen/') === 0)) {
+      errs.push('FEHLT: der Rückfall auf konfig.js greift nicht (' + p.join(', ') + ')');
+    }
+    await b.close();
+  }
+
+  console.log(errs.length ? '\n✗ ' + errs.join('\n✗ ') : '\n✓ Firmenkennung: aus dem Link, gemerkt, gefiltert, mit Rückfall');
+  process.exit(errs.length ? 1 : 0);
+})();

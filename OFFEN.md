@@ -103,6 +103,12 @@ Chef-Zugang entsteht bei der Einrichtung des Projekts, jeder weitere über
 | **Firmencode setzen** in *Verwaltung → Team* | Solange er leer ist, kann sich jeder anmelden, der die Adresse kennt — und der Reiter „Konto anlegen" erscheint erst dann. |
 | **Datenschutztext durchsehen lassen** vor dem Einsatz im Team | Krankmeldungen sind Gesundheitsdaten, die Anwesenheitsanzeige liest sich als Kontrolle, Stimme ist biometrisch. Siehe `RECHT.md`. |
 | **„Google-Tabellen abgleichen"** einmal drücken und prüfen, ob alle 14 Studios erscheinen | Lässt sich hier nicht nachstellen, weil der Abgleich auf ein echtes Tabellenblatt schreibt. |
+| **Probelauf-Projekt anlegen** — `PROBELAUF-EINRICHTEN.md` | Nur für Stufe C (Umzug auf mehrere Firmen). **Nicht dringend**, wird erst gebraucht, wenn der Umzug vorbereitet wird. 20–30 Minuten, keine Kosten. |
+
+**In der Firebase-Konsole selbst ist für die laufende App nichts offen.**
+Speicher, Export-Rollen, Budget-Warnung und Blaze stehen seit dem
+9. August. Das Probelauf-Projekt ist der einzige neue Punkt dort — und
+der gehört zur Zukunft, nicht zum Betrieb.
 
 ~~`MATERIAL-SHEETS.gs` einfügen~~ · ~~Speicher + Export-Rollen~~ ·
 ~~Wischen zum Abhaken~~ · ~~Budget-Warnung~~ — alle am 9. August erledigt.

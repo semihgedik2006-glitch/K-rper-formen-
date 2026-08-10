@@ -166,9 +166,27 @@ nicht nur technisch:
 Der dritte Weg fällt für mich aus: eure Kundenliste gehört nicht auf
 einen öffentlichen Anmeldebildschirm.
 
-**Das muss entschieden sein, bevor Stufe 2B fertig gebaut werden kann** —
-davon hängt ab, wie die Regeln für die drei Dokumente oben aussehen und
-ob sie überhaupt ohne Anmeldung lesbar sein dürfen.
+> **Entschieden am 11. August 2026: die Kennung steht im Link.**
+> `https://…/?firma=mueller-7f3a`. Sie wird beim ersten Öffnen gemerkt,
+> der Kunde braucht den langen Link also nur einmal. Der Wechsel auf
+> eigene Adressen bleibt später möglich, ohne dass sich an den Daten
+> etwas ändert.
+>
+> **Die Kennung ist keine Sicherung.** Jeder kann jede eintippen. Was ein
+> Fremder damit sieht, ist genau das, was ohnehin ohne Anmeldung lesbar
+> ist: Studionamen und zwei Ja/Nein-Schalter. An Daten kommt er nicht —
+> das entscheiden die Regeln, und die fragen das Profil, nicht den Link.
+>
+> Damit man Kunden aber nicht durch Raten findet, bekommen Kennungen beim
+> Anlegen eine **Zufallsendung**: `mueller-7f3a` statt `mueller`. Die
+> Kundenliste gehört niemandem außer dir.
+>
+> Zwei Regeln, die daraus folgen und beide gebaut sind:
+> **Prüfen statt zurechtstutzen** — aus `../../users/chef1` würde beim
+> Wegfiltern `userschef1`, eine Kennung, die niemandem gehört und dann
+> auch noch gemerkt wird. Unbrauchbares wird verworfen, nicht repariert.
+> **Das Profil gewinnt gegen den Link** — wer über einen fremden oder
+> veralteten Link kam, arbeitet trotzdem in seiner eigenen Firma.
 
 ### Warum `users` oben bleibt
 
