@@ -222,6 +222,54 @@ denselben zwei Rollen.
 
 ---
 
+## Die App gegen die umgezogenen Daten ansehen
+
+Die Zählprüfung sagt: die Dokumente liegen richtig. Sie sagt **nicht**,
+dass die App damit arbeiten kann. Das zeigt nur ein Blick.
+
+`konfig.js` schaltet dafür anhand der Adresse um: auf
+`formenchat-probe.web.app` gilt die Probe-Konfiguration und
+`mandant: true`, überall sonst der Betrieb. **Eine feste Liste, kein
+Muster** — auf der echten Adresse kann dieser Schalter nie greifen.
+
+In Cloud Shell, im geklonten Ordner:
+
+```bash
+cd ~/K-rper-formen-
+firebase deploy --only hosting,firestore:rules --project formenchat-probe
+```
+
+Danach **https://formenchat-probe.web.app** öffnen.
+
+### Ein Konto brauchst du dort noch
+
+Das Probe-Projekt hat die Daten, aber keine Anmeldung — Konten liegen in
+Firebase Authentication und sind in keinem Firestore-Export enthalten.
+
+Firebase-Konsole → `formenchat-probe` → **Authentication** → **Nutzer
+hinzufügen**. Nimm **dieselbe E-Mail wie im Betrieb**, ein beliebiges
+Passwort. Dann findet die App dein bestehendes Profil in `users` wieder,
+samt Chef-Rolle.
+
+> Klappt die Anmeldung, aber die App bleibt leer: dann stimmt etwas mit
+> `firma` nicht. Schick mir einen Bildschirmfoto, das ist genau die Art
+> Fund, für die der Probelauf da ist.
+
+### Worauf zu achten ist
+
+| | |
+|---|---|
+| Chat | sind die Nachrichten da? |
+| Aufgaben und Putzplan | alle 14 Studios in der Auswahl? |
+| Team → Schichtplan | Studio 7 hat zwei Schichten |
+| Verwaltung → Studios | die Liste vollständig? |
+| Nachrichten | Direktnachrichten vorhanden? |
+
+Findest du irgendwo eine leere Seite, wo Daten sein müssten: **melden,
+nicht ignorieren.** Genau dafür machen wir das.
+
+---
+
 ## Danach
 
 1. Umzug im Probe-Projekt, erst `--probe`, dann richtig
