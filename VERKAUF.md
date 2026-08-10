@@ -31,14 +31,28 @@ Bevor irgendetwas gebaut wird: **ein Firebase-Projekt je Kunde** oder
 **Meine Empfehlung: ein Projekt je Kunde**, bis der fünfte oder sechste
 Kunde da ist.
 
-Der Grund ist nicht nur der geringere Aufwand. Das kostenlose Kontingent
-von Firebase gilt **pro Projekt**. Bei getrennten Projekten hat jeder Kunde
-sein eigenes — die ersten Kunden kosten dich damit praktisch nichts. In
-einem gemeinsamen Projekt teilen sich alle ein Kontingent, und der dritte
-Kunde bringt dich in die Abrechnung.
+> ### ⚠️ Korrektur vom 10. August 2026
+>
+> Hier stand: *„Das kostenlose Kontingent gilt pro Projekt … der dritte
+> Kunde bringt dich in die Abrechnung."* Das war **vor** dem Lasttest
+> geschrieben, also ohne Messwerte.
+>
+> Jetzt gibt es welche: ein App-Start liest 380 Dokumente beim
+> Mitarbeiter und 1.110 beim Chef, eine Firma mit 57 Konten kommt auf
+> rund 153.000 Lesevorgänge am Tag. Das Freikontingent von 50.000
+> Lesevorgängen ist damit **0,83 € im Monat je Kunde** wert — bei zehn
+> Kunden macht der ganze Unterschied 7,50 € aus.
+>
+> **Das Kostenargument trägt die Entscheidung nicht.** Was bleibt, sind
+> Datentrennung und Umbauaufwand. Beides zugunsten getrennter Projekte,
+> aber aus anderen Gründen als hier ursprünglich behauptet.
+>
+> Der vollständige Plan für den anderen Weg steht in `MANDANT-PLAN.md`.
 
 Der Umbau auf Mandantenfähigkeit bleibt jederzeit möglich. Er wird durch
-diesen Weg nicht teurer.
+diesen Weg nicht teurer. Wie er im Einzelnen abliefe — vier Rollenebenen
+mit einem Admin über allen Firmen, Datenmodell, Regeln, Umzugsweg,
+Risiken — steht in **`MANDANT-PLAN.md`**.
 
 ---
 

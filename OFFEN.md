@@ -140,10 +140,21 @@ geöffneten Studio. **Das ist Absicht** — alle 14 Studios dauerhaft
 mitzuladen würde die Datenbank-Zugriffe vervielfachen. Falls nötig: als
 eigene Suche bauen, die nur auf Knopfdruck lädt.
 
-### Mehrere Firmen in einer App
+### Mehrere Firmen in einer App (4. Ebene: Admin)
 
-Erst ab dem fünften oder sechsten Kunden. Bis dahin ist ein Firebase-Projekt
-je Kunde günstiger und schneller — siehe `VERKAUF.md`.
+**Vollständig geplant, nichts gebaut** — siehe `MANDANT-PLAN.md`. Vier
+Ebenen: Mitarbeiter, Studio-Leiter, Chef (benennt seine Studios selbst),
+Admin über allen Firmen. Der Admin sieht Verwaltung, keine Inhalte.
+
+Aufwand nach Stufen: Studios in die Datenbank ~1 Sitzung ohne Risiko ·
+Firmen-Trennung ~2–3 Sitzungen **mit Eingriff in Live-Daten** ·
+Admin-Oberfläche ~1 Sitzung.
+
+Mein Vorschlag: **Stufe 1 jetzt** (nützt sofort, auch ohne zweiten Kunden),
+Stufe 2 und 3 erst, wenn ein Kunde konkret ist.
+
+Das frühere Kostenargument aus `VERKAUF.md` gilt nicht mehr — das
+Freikontingent ist nachgerechnet nur 0,83 € je Kunde und Monat wert.
 
 ### KI-Funktionen
 
