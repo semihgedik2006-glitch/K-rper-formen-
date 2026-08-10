@@ -164,7 +164,26 @@ input,textarea,select{font-family:inherit;font-size:16px}
   margin-bottom:7px;font-size:.9rem}
 .inp{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
   border-radius:12px;padding:13px 15px;color:var(--text);min-height:48px;
+  font:inherit;min-width:0;max-width:100%;
   transition:border-color .2s,box-shadow .2s}
+/* ── Datum und Uhrzeit auf dem iPhone ──
+   Diese beiden Feldarten bringen von iOS eine eigene Mindestbreite und
+   eine eigene Schrift mit. Beides ignoriert width:100%, und im
+   zweispaltigen .row schoben sie sich rechts aus der Karte heraus –
+   sichtbar bei „Schicht eintragen": Tag, Von und Bis standen ueber dem
+   Rand, Person und Notiz nicht.
+   In Chromium faellt das nicht auf, dort sind sie von Haus aus schmal.
+   Deshalb hat es keine der 31 automatischen Pruefungen gefunden, sondern
+   erst ein Screenshot vom echten Geraet. */
+input[type="date"].inp,input[type="time"].inp,input[type="datetime-local"].inp,
+input[type="month"].inp,input[type="week"].inp{
+  -webkit-appearance:none;appearance:none;
+  min-width:0;max-width:100%;text-align:left}
+/* Ein Rasterfeld ist von sich aus mindestens so breit wie sein Inhalt.
+   Ohne min-width:0 nuetzt max-width am Feld selbst nichts – die Spalte
+   waechst einfach mit. Derselbe Fehler wie frueher in der Materialzeile. */
+.field{min-width:0}
+.row>*{min-width:0}
 textarea.inp{resize:vertical;min-height:80px;line-height:1.5}
 .inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,184,92,.13)}
 .inp::placeholder{color:var(--text-3)}
