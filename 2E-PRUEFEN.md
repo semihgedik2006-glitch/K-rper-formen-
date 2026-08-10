@@ -1,11 +1,103 @@
-# Stufe 2E im Probe-Projekt prüfen — deine Klickanleitung
+# Stufe 2E prüfen — und wie es tatsächlich gelaufen ist
 
 **Was hier geprüft wird:** ob die Cloud Functions nach dem Umzug wirklich
 anspringen. Das ist die eine Sache, die 53 Prüfungen im Emulator *nicht*
 beweisen können — dort gibt es keine echten Auslöser, sondern nur einen
 Aufruf von Hand.
 
-**Dauer:** ungefähr 15 Minuten, alles in Google Cloud Shell.
+---
+
+## ✅ ERLEDIGT am 10. August 2026, 22:19 Uhr
+
+**Nicht im Probe-Projekt, sondern direkt im Betrieb** — und zwar sicher.
+Warum es anders kam, steht weiter unten; hier zuerst der Beleg.
+
+Eine Testnachricht nach `firmen/pruef-2e/channels/test/messages/…` im
+Projekt `formenchat`, geschrieben um 22:19:16. Zwei Sekunden später:
+
+```
+22:19:18  onNewMessageF: Function execution started
+22:19:19  onNewMessageF: Function execution took 604 ms, finished with status: 'ok'
+```
+
+Und der Pfad, den Google selbst zurückgibt:
+
+```
+resource: .../documents/firmen/{firma}/channels/{channelId}/messages/{msgId}
+state:    ACTIVE
+```
+
+Damit ist belegt, was Stufe 2E geändert hat: **Firestore liefert
+Ereignisse an den verschachtelten Pfad aus, im echten Projekt.**
+
+### Warum das im Betrieb gefahrlos war
+
+Der gefährliche Gedanke daran war: wenn dadurch `alleFirmen()` plötzlich
+eine Firma sieht, halten ab diesem Moment **alle Zeitpläne den Betrieb
+für umgezogen** und fassen die echten Daten nicht mehr an. Genau der
+Ausfall, den 2E verhindern soll — ausgelöst von der Prüfung selbst.
+
+Deshalb vorher im Emulator gemessen statt vermutet:
+
+```
+collection("firmen").get().empty     : true (size 0)
+collection("firmen").listDocuments() : 1  pruef-2e
+alleFirmen() ergäbe: [null] → flach, wie heute
+```
+
+Das Elterndokument `firmen/pruef-2e` wird nie geschrieben, und `.get()`
+sieht solche Phantom-Eltern nicht — nur `listDocuments()`. `alleFirmen()`
+benutzt `.get()`. Im Betrieb bestätigt: `Firmen vorher: 0`,
+`Firmen nachher: 0`.
+
+Push ging an niemanden: die Funktion filtert die Geräte nach Firma
+`pruef-2e`, und die hat kein Mensch. Die Testnachricht wurde danach
+wieder entfernt.
+
+### Warum nicht im Probe-Projekt
+
+Der Deploy dorthin ist **zweimal an derselben Stelle gescheitert**:
+
+```
+Unable to retrieve the repository metadata for .../repositories/gcf-artifacts.
+Ensure that the Cloud Functions service account has
+'artifactregistry.repositories.list' and 'artifactregistry.repositories.get'
+```
+
+Das Probe-Projekt bekam zum ersten Mal Cloud Functions; Google musste
+dafür vier Dienste erst einschalten, und dem Dienstkonto fehlt danach
+das Recht auf die neu angelegte Artefakt-Ablage. Ein Google-Problem in
+einem frischen Projekt, ohne Bezug zu diesem Code.
+
+Falls es später doch gebraucht wird — der Einzeiler dafür:
+
+```bash
+PN=$(gcloud projects describe formenchat-probe --format='value(projectNumber)') && \
+gcloud projects add-iam-policy-binding formenchat-probe \
+  --member="serviceAccount:service-$PN@gcf-admin-robot.iam.gserviceaccount.com" \
+  --role="roles/artifactregistry.reader"
+```
+
+### Eine Falle für die nächsten Befehle
+
+In einem `node -e "…"` mit **doppelten** Anführungszeichen frisst die
+Shell ein `!`:
+
+```
+-bash: !v.empty: event not found
+```
+
+Das kam bei der Prüfung vor. Hier ohne Folgen — die entscheidende
+Zahl stand ohnehin daneben — aber beim Umzug gehört so etwas nicht in
+eine Zeile, die etwas schreibt. Also: einfache Anführungszeichen oder
+gleich eine Datei.
+
+---
+
+## Die ursprüngliche Anleitung
+
+Steht unverändert hier, falls das Probe-Projekt später doch gebraucht
+wird. **Dauer:** ungefähr 15 Minuten, alles in Google Cloud Shell.
 
 ---
 
