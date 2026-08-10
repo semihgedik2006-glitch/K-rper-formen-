@@ -279,6 +279,108 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Niemand kann die Studioliste loeschen – auch der Chef nicht', () =>
     assertFails(alsChef().doc('config/studios').delete()));
 
+  // ══════════════════════════════════════════════════════════════
+  //  KREUZTESTS: sieht Firma A etwas von Firma B?
+  //
+  //  Das ist der Beweis, auf den Stufe 2 hinauslaeuft. Ohne ihn darf
+  //  die Mandantenfaehigkeit nicht live gehen — mein Auge ist an dieser
+  //  Stelle nachweislich kein gutes Pruefgeraet: die Firmen-Pruefung
+  //  steht in 30 Bloecken und ueber hundert allow-Zeilen, und in
+  //  Firestore genuegt EINE zutreffende Regel die erlaubt, um alles
+  //  darunter auszuhebeln.
+  //
+  //  Geprueft wird beides: dass A nicht bei B LIEST und nicht bei B
+  //  SCHREIBT. Nur Lesen zu pruefen waere die haeufigste Halbheit.
+  // ══════════════════════════════════════════════════════════════
+  const A = 'firma-a', B = 'firma-b';
+  await env.withSecurityRulesDisabled(async ctx => {
+    const d = ctx.firestore();
+    await d.doc('users/chefA').set({ name: 'Chef A', role: 'chef', firma: A, aktiv: true });
+    await d.doc('users/mitA').set({ name: 'Mit A', role: 'mitarbeiter', firma: A,
+                                    studioKeys: ['studio-0'], aktiv: true });
+    await d.doc('users/chefB').set({ name: 'Chef B', role: 'chef', firma: B, aktiv: true });
+    await d.doc('firmen/' + A).set({ name: 'Firma A', aktiv: true });
+    await d.doc('firmen/' + B).set({ name: 'Firma B', aktiv: true });
+    // Je ein Dokument in jeder Sammlung von Firma B
+    await d.doc('firmen/' + B + '/channels/allgemein/messages/m1')
+      .set({ uid: 'chefB', text: 'Interne Sache von B', ts: Date.now() });
+    await d.doc('firmen/' + B + '/studios/studio-0/todos/t1').set({ title: 'B-Aufgabe' });
+    await d.doc('firmen/' + B + '/studios/studio-0/shifts/s1').set({ date: '2026-08-12', uid: 'x' });
+    await d.doc('firmen/' + B + '/studios/studio-0/absences/a1')
+      .set({ uid: 'x', type: 'krank', from: '2026-08-12' });
+    await d.doc('firmen/' + B + '/documents/d1').set({ name: 'Vertrag B' });
+    await d.doc('firmen/' + B + '/certificates/z1').set({ uid: 'x', art: 'ems' });
+    await d.doc('firmen/' + B + '/announcements/an1').set({ text: 'Aushang B', ts: Date.now() });
+    await d.doc('firmen/' + B + '/inventory/studio-0').set({ items: [] });
+    await d.doc('firmen/' + B + '/board/b1').set({ text: 'Brett B', ts: Date.now() });
+    await d.doc('firmen/' + B + '/trash/tr1').set({ art: 'todo', sk: 'studio-0' });
+    await d.doc('firmen/' + B + '/archives/2026-KW32').set({ week: '2026-KW32' });
+    await d.doc('firmen/' + B + '/config/studios')
+      .set({ liste: [{ id: 'studio-0', name: 'B-Studio', aktiv: true }], naechste: 1 });
+    await d.doc('firmen/' + B + '/config/registrierung').set({ code: 'GEHEIM-B' });
+  });
+
+  const chefA = () => env.authenticatedContext('chefA').firestore();
+  const mitA  = () => env.authenticatedContext('mitA').firestore();
+  const chefB = () => env.authenticatedContext('chefB').firestore();
+
+  const B_ = p => 'firmen/' + B + '/' + p;
+
+  // ── Lesen ──
+  const leseZiele = [
+    ['Teamchat',            'channels/allgemein/messages/m1'],
+    ['Aufgaben',            'studios/studio-0/todos/t1'],
+    ['Schichtplan',         'studios/studio-0/shifts/s1'],
+    ['Krankmeldungen',      'studios/studio-0/absences/a1'],
+    ['Dokumente',           'documents/d1'],
+    ['Nachweise',           'certificates/z1'],
+    ['Aushaenge',           'announcements/an1'],
+    ['Material',            'inventory/studio-0'],
+    ['Schwarzes Brett',     'board/b1'],
+    ['Papierkorb',          'trash/tr1'],
+    ['Wochensicherungen',   'archives/2026-KW32'],
+  ];
+  for (const [was, pfad] of leseZiele) {
+    await pruefe('KREUZ · Chef von A kann ' + was + ' von B NICHT lesen', () =>
+      assertFails(chefA().doc(B_(pfad)).get()));
+  }
+  await pruefe('KREUZ · Mitarbeiter von A kann den Teamchat von B NICHT lesen', () =>
+    assertFails(mitA().doc(B_('channels/allgemein/messages/m1')).get()));
+  await pruefe('KREUZ · Chef von A kann den Firmencode von B NICHT lesen', () =>
+    assertFails(chefA().doc(B_('config/registrierung')).get()));
+  await pruefe('KREUZ · Anonym kann den Teamchat von B NICHT lesen', () =>
+    assertFails(alsAnonym().doc(B_('channels/allgemein/messages/m1')).get()));
+
+  // ── Schreiben ── (die haeufigste Halbheit: nur Lesen zu pruefen)
+  await pruefe('KREUZ · Chef von A kann bei B KEINE Nachricht schreiben', () =>
+    assertFails(chefA().doc(B_('channels/allgemein/messages/neu'))
+      .set({ uid: 'chefA', text: 'hallo', ts: Date.now() })));
+  await pruefe('KREUZ · Chef von A kann bei B KEINE Aufgabe anlegen', () =>
+    assertFails(chefA().doc(B_('studios/studio-0/todos/neu')).set({ title: 'fremd' })));
+  await pruefe('KREUZ · Chef von A kann eine Aufgabe von B NICHT loeschen', () =>
+    assertFails(chefA().doc(B_('studios/studio-0/todos/t1')).delete()));
+  await pruefe('KREUZ · Chef von A kann die Studioliste von B NICHT aendern', () =>
+    assertFails(chefA().doc(B_('config/studios'))
+      .set({ liste: [{ id: 'studio-0', name: 'gekapert', aktiv: true }], naechste: 1 })));
+  await pruefe('KREUZ · Chef von A kann ein Dokument von B NICHT ueberschreiben', () =>
+    assertFails(chefA().doc(B_('documents/d1')).set({ name: 'gekapert' })));
+
+  // ── Was ERLAUBT sein muss, sonst ist die Trennung nur eine Sperre ──
+  await pruefe('Chef von B kann seinen eigenen Teamchat lesen', () =>
+    assertSucceeds(chefB().doc(B_('channels/allgemein/messages/m1')).get()));
+  await pruefe('Chef von B kann bei sich eine Aufgabe anlegen', () =>
+    assertSucceeds(chefB().doc(B_('studios/studio-0/todos/neu2')).set({ title: 'eigene' })));
+  await pruefe('Studioliste von B ist ohne Anmeldung lesbar (Anmeldebildschirm)', () =>
+    assertSucceeds(alsAnonym().doc(B_('config/studios')).get()));
+  await pruefe('Firmenname von B ist ohne Anmeldung lesbar (Anmeldebildschirm)', () =>
+    assertSucceeds(alsAnonym().doc('firmen/' + B).get()));
+
+  // ── Die Firma am eigenen Profil ist kein Selbstbedienungsfeld ──
+  await pruefe('Niemand kann sich selbst in eine andere Firma schreiben', () =>
+    assertFails(mitA().doc('users/mitA').update({ firma: B })));
+  await pruefe('Chef von A kann das Konto von Chef B NICHT umschreiben', () =>
+    assertFails(chefA().doc('users/chefB').update({ role: 'mitarbeiter' })));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

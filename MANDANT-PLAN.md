@@ -339,6 +339,25 @@ match /users/{uid} {
 
 ### Die Tests, die es dafür braucht
 
+> **Gebaut am 11. August 2026: 21 Kreuztests, 86 Regeltests insgesamt,
+> alle grün.** Der verschachtelte Regelsatz wurde maschinell aus dem
+> flachen erzeugt — 30 Blöcke, und jedes einzelne `allow` hat ein
+> `inFirma(f)` davor. Geprüft wurde das nicht durch Lesen, sondern durch
+> die Kreuztests.
+>
+> **Sie haben zwei echte Lücken gefunden, beide in `users`** — der einen
+> Sammlung, die gemeinsam oben liegt und deshalb nicht vom Pfad geschützt
+> wird:
+>
+> 1. Jeder konnte sich selbst ein anderes `firma` ins Profil schreiben
+>    und damit in einen fremden Betrieb wechseln. `firma` steht jetzt in
+>    derselben Sperrliste wie `role`.
+> 2. Ein Chef durfte **jedes** Konto ändern und löschen, auch die einer
+>    fremden Firma. Jetzt nur noch die der eigenen.
+>
+> Beides hätte ich beim Durchlesen nicht gefunden — die Regeln sahen
+> richtig aus.
+
 Zu den bestehenden 52 Regeltests kommen **Kreuztests**: für jede Sammlung
 je einmal, dass ein Konto aus Firma A die Daten von Firma B
 
@@ -526,7 +545,7 @@ ausgerollt werden kann:
 | | Was | Risiko |
 |---|---|---|
 | **A** ✅ | Alle Zugriffe laufen über **eine** Funktion `S()`, die vorerst die heutigen Pfade zurückgibt | keins — Verhalten identisch |
-| **B** | `firma` am Konto ✅, Schalter ✅, Regeln + Kreuztests ⏸ | mittel, noch ohne Live-Daten |
+| **B** ✅ | `firma` am Konto, Kennung im Link, Regeln, 21 Kreuztests | mittel, noch ohne Live-Daten |
 | **C** | Umzugs-Function, Probelauf, Live-Umzug | **hoch** |
 | **D** | Admin-Oberfläche | keins |
 
