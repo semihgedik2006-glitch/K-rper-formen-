@@ -68,6 +68,8 @@
   --font-body:'Barlow',system-ui,-apple-system,sans-serif;
   --radius:18px;--radius-lg:26px;
   --shadow:0 8px 24px rgba(0,0,0,.40);--shadow-lg:0 24px 56px rgba(0,0,0,.58);
+  /* Hintergrund hinter einem offenen Fenster. Eine Stelle statt sieben. */
+  --scrim:rgba(6,10,7,.7);
   --ease-out:cubic-bezier(.16,1,.3,1);
   /* Sichere Ränder des Geräts (Notch, Dynamic Island, Home-Leiste).
      Ohne diese Abstände liegen Knöpfe unter der Statusleiste und
@@ -98,6 +100,7 @@ body.light{
   --warm-tx:#92400E;--danger-tx:#B42318;--ok-tx:#047857;
   --text:#111726;--text-2:#48516B;--text-3:#5A6274;
   --shadow:0 6px 18px rgba(20,30,55,.09);--shadow-lg:0 18px 40px rgba(20,30,55,.14);
+  --scrim:rgba(17,23,38,.52);
 }
 body.light .topbar{background:rgba(255,255,255,.9)}
 body.light .mobnav{background:rgba(255,255,255,.93)}
@@ -605,10 +608,17 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .dm-cl-item input{width:17px;height:17px;accent-color:var(--accent);flex-shrink:0}
 .dm-cl-item.done span{text-decoration:line-through;color:var(--text-2)}
 /* Profil-Editor */
-#profileModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
-  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show{display:flex}
-.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
+/* ── Fenster über der Seite ──
+   Fünf Fenster hatten bis hierher fünfmal dieselben acht Zeilen. Wer eins
+   davon änderte, änderte die anderen vier nicht mit – und keiner sah es.
+   Jetzt steht die Regel einmal da; die Fenster mit eigenem Verhalten
+   (fwdModal, keysModal) hängen sich weiter unten daran. */
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal{
+  position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
+  padding:20px;background:var(--scrim);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show{display:flex}
+#devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:20px;padding:24px;box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
    dann 124 Pixel weiterscrollen, um zu speichern. Jetzt klebt der Knopf am
@@ -620,13 +630,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pm-color{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .15s}
 .pm-color:hover{transform:scale(1.1)}
 .pm-color.sel{border-color:var(--text)}
-#todoEditModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
-  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#todoEditModal.show{display:flex}
 #todoEditModal .pm-box{max-height:88vh;overflow:auto}
-#pollModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
-  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#pollModal.show{display:flex}
 .poll{margin-top:8px;padding:12px 13px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md)}
 .poll-q{font-family:var(--font-head);font-weight:700;font-size:1rem;margin-bottom:9px}
 .poll-opt{position:relative;display:flex;align-items:center;min-height:44px;width:100%;text-align:left;background:none;border:1.5px solid var(--line-2);
@@ -637,10 +641,6 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .poll-fill{position:absolute;inset:0 auto 0 0;background:var(--accent-glow);z-index:0;transition:width .45s var(--ease-out)}
 .poll-lab{position:relative;z-index:1;display:flex;justify-content:space-between;gap:10px}
 .poll-foot{font-size:.74rem;color:var(--text-3);margin-top:2px}
-#devModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
-  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#devModal.show{display:flex}
-#devModal .pm-box{max-height:88vh;overflow:auto}
 .dev-item{display:flex;gap:10px;align-items:flex-start;padding:13px 14px;background:var(--bg-soft);
   border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:9px;cursor:pointer;
   transition:transform .2s var(--ease-out),border-color .2s}
@@ -659,9 +659,6 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .dev-log-text{font-size:.92rem;white-space:pre-wrap;word-break:break-word}
 .dev-log-foot{margin-top:5px;font-size:.72rem;color:var(--text-3)}
 .dev-log img{margin-top:8px;border-radius:10px;max-width:150px;max-height:150px;cursor:pointer}
-#personModal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
-  padding:20px;background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#personModal.show{display:flex}
 .pm-photo-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .pm-photo-row .avatar{width:56px;height:56px;font-size:1.3rem;flex-shrink:0}
 
@@ -1041,7 +1038,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* Weiterleiten und Tastenkürzel nutzen dasselbe Fenster-Aussehen */
 #fwdModal,#keysModal{position:fixed;inset:0;z-index:215;display:none;
   align-items:center;justify-content:center;padding:20px;
-  background:rgba(6,10,7,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   animation:fadeBlur .3s var(--ease-ios)}
 #fwdModal.show,#keysModal.show{display:flex}
 #fwdModal.show .pm-box,#keysModal.show .pm-box{animation:sheetIn .46s var(--spring)}
@@ -4103,7 +4100,95 @@ function closeAllModals(){
   });
   closeSearch();
 }
+/* ── Dialoge und die Tastatur ──
+   Escape schließt schon länger (closeAllModals oben). Was fehlte:
+
+     1. Solange ein Fenster offen ist, wandert der Tabulator weiter durch
+        die Seite DAHINTER. Wer den Fokusrahmen nicht sieht – mit
+        Vorleseprogramm oder auf einem Bildschirm, der den Rahmen
+        verschluckt – tippt dann in ein Formular, das gar nicht gemeint
+        ist.
+     2. Nach dem Schließen sprang der Fokus an den Seitenanfang statt
+        dorthin zurück, wo man war.
+     3. Ein Vorleseprogramm erfuhr überhaupt nicht, dass sich ein Fenster
+        geöffnet hat: es fehlten role und aria-modal.
+
+   Alles drei wird hier nachgeholt, ohne jede einzelne Öffnen-Stelle
+   anzufassen: ein Beobachter merkt, wenn die Klasse „show" kommt oder
+   geht. Die Liste ist dieselbe wie in closeAllModals – bewusst, damit
+   nicht zwei Listen auseinanderlaufen. */
+var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModal',
+               'fwdModal','keysModal','searchOverlay','msgSheet','todoSheet','docSheet'];
+var _fokusVorher = null;
+
+function fokusFelder(box){
+  var q = 'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),' +
+          'select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  return [].slice.call(box.querySelectorAll(q)).filter(function(el){
+    return el.offsetParent !== null;
+  });
+}
+
+/* Das oberste offene Fenster. Es kann mehr als eins offen sein:
+   aus dem Aufgaben-Blatt heraus öffnet sich der Aufgaben-Editor. */
+function offenerDialog(){
+  var treffer = null;
+  DIALOGE.forEach(function(id){
+    var b = document.getElementById(id);
+    if(b && b.classList.contains('show')) treffer = b;
+  });
+  return treffer;
+}
+
+function dialogeVorbereiten(){
+  DIALOGE.forEach(function(id){
+    var wrap = document.getElementById(id); if(!wrap) return;
+    var box = wrap.querySelector('.pm-box, .ms-card, .search-box') || wrap;
+    box.setAttribute('role','dialog');
+    box.setAttribute('aria-modal','true');
+    var titel = box.querySelector('h3, h4, .ms-head b');
+    if(titel){
+      if(!titel.id) titel.id = id + 'Titel';
+      box.setAttribute('aria-labelledby', titel.id);
+    } else if(!box.getAttribute('aria-label')){
+      box.setAttribute('aria-label','Fenster');
+    }
+    wrap.dataset.auf = wrap.classList.contains('show') ? '1' : '';
+    new MutationObserver(function(){
+      var auf = wrap.classList.contains('show');
+      if(auf && !wrap.dataset.auf){
+        wrap.dataset.auf = '1';
+        _fokusVorher = document.activeElement;
+        // Nicht auf das Kreuz: auf das erste Feld, mit dem man etwas tut
+        setTimeout(function(){
+          var f = fokusFelder(wrap); if(!f.length) return;
+          var ziel = f.filter(function(el){ return !/lb-close/.test(el.className||''); })[0] || f[0];
+          try{ ziel.focus(); }catch(e){}
+        }, 60);
+      } else if(!auf && wrap.dataset.auf){
+        wrap.dataset.auf = '';
+        // Nur zurückgeben, wenn nicht schon das nächste Fenster offen ist
+        if(!offenerDialog() && _fokusVorher && document.contains(_fokusVorher)){
+          try{ _fokusVorher.focus(); }catch(e){}
+        }
+        _fokusVorher = null;
+      }
+    }).observe(wrap, { attributes:true, attributeFilter:['class'] });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Tab') return;
+    var wrap = offenerDialog(); if(!wrap) return;
+    var f = fokusFelder(wrap); if(!f.length) return;
+    var erst = f[0], letzt = f[f.length-1], hier = document.activeElement;
+    if(!wrap.contains(hier)){ e.preventDefault(); erst.focus(); return; }
+    if(e.shiftKey && hier === erst){ e.preventDefault(); letzt.focus(); }
+    else if(!e.shiftKey && hier === letzt){ e.preventDefault(); erst.focus(); }
+  });
+}
+
 function bindShortcuts(){
+  dialogeVorbereiten();
   document.addEventListener('keydown',function(e){
     // Wartet das Kürzel-Fenster gerade auf eine Taste? Dann gehört sie dorthin.
     if(_keyAufnahme && $('keysModal').classList.contains('show')){

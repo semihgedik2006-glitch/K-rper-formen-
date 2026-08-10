@@ -22,6 +22,7 @@ Modus.
 | `--bg-3` | `#252838` | `#E3E8F1` | betonte Flächen |
 | `--line` | weiß 9 % | schwarz 10 % | ruhige Trennlinie |
 | `--line-2` | weiß 17 % | schwarz 18 % | Rahmen von Bedienelementen |
+| `--scrim` | `rgba(6,10,7,.7)` | `rgba(17,23,38,.52)` | hinter offenen Fenstern |
 
 Das Dunkel ist ein **Schiefer-Blau**, kein Schwarz: sachlich und über lange
 Zeit angenehmer zu lesen als harter Neon-Kontrast.
@@ -228,6 +229,28 @@ einer Liste mit drei Einträgen.
 ### Leerer Bereich `emptyHTML(titel, text)`
 Muss **den Grund und den Ausweg** nennen. Nicht „Keine Aufgaben", sondern
 „Keine dir zugewiesenen Aufgaben – es gibt 4, tippe auf ‚Alle'".
+
+### Fenster über der Seite (Dialog)
+Fünf Fenster (`profileModal`, `personModal`, `devModal`, `pollModal`,
+`todoEditModal`) teilen sich **eine** CSS-Regel; `fwdModal` und `keysModal`
+hängen mit eigener z-Ebene daran. Der Grund dahinter ist das Token
+`--scrim` — nicht direkt `rgba(...)` schreiben, sonst hat der helle Modus
+wieder einen fast schwarzen Schleier.
+
+Ein neues Fenster braucht **nur zwei Dinge**: das Kürzel in die Liste
+`DIALOGE` in `index.html` und in `closeAllModals()`. Alles Weitere kommt
+von allein:
+
+| | woher |
+|---|---|
+| `role="dialog"`, `aria-modal`, Name | `dialogeVorbereiten()` setzt sie beim Start |
+| Fokus springt beim Öffnen hinein | Beobachter auf der Klasse `show` |
+| Tabulator bleibt drin | ein globaler Tab-Fänger, oberstes offenes Fenster gewinnt |
+| Escape schließt | `bindShortcuts()` → `closeAllModals()` |
+| Fokus kehrt zum Auslöser zurück | derselbe Beobachter |
+
+**Die beiden Listen dürfen nicht auseinanderlaufen.** Steht ein Fenster nur
+in einer, fehlt ihm entweder der Fokus-Käfig oder Escape.
 
 ### Rückgängig `offerUndo(text, fn)`
 Acht Sekunden. Für alles, was löscht. Zusätzlich `confirm()`, wenn die

@@ -1140,6 +1140,118 @@ merkt von der Änderung nichts. Zwei Tests halten genau das fest.
 
 ---
 
+## Sitzung 19 · Lasttest in echter Größe 🟢
+
+Bis hierher war alles über das Verhalten bei echten Datenmengen
+**geschätzt**. Der Skalierbarkeits-Wert von 5/10 aus dem Motion-Durchlauf
+war eine Vermutung, kein Messwert. Jetzt ist er einer.
+
+`tests/stub-last.js` erzeugt den Bestand, der nach ungefähr einem Jahr
+Betrieb wirklich in der Datenbank liegt: 14 Studios, 57 Konten, 5.675
+Dokumente, 120 Nachrichten je Kanal, 52 Wochensicherungen.
+`tests/stress-echt.js` zählt, was ein einziger App-Start davon liest —
+**getrennt nach Rolle**, denn 56 von 57 Konten sind kein Chef.
+
+### Gemessen
+
+| Rolle | vorher | nachher |
+|---|---|---|
+| Mitarbeiter (42×) | 356 | 356 |
+| Leitung (14×) | 417 | 413 |
+| Chef (1×) | **1.122** | **930** |
+
+Dazu: „bis alles ruhig ist" beim Chef von 2,95 s auf 1,70 s.
+
+Startseite gefüllt: 433 ms · mit vierfach gedrosselter CPU 2,3 s ·
+60 Bilder/s beim Scrollen durch 120 Nachrichten · 5 MB Speicher nach drei
+Runden durch alle Ansichten · keine Konsolenfehler.
+
+**Die Geschwindigkeit war nie das Problem.** Was auffiel, war zweierlei:
+
+**1. Drei Beobachter hingen am App-Start, die dort nicht hingehören.**
+Nachweise, Papierkorb und die 52 Wochensicherungen — zusammen 192
+Dokumente, für Karten, die der Chef an den meisten Tagen nicht öffnet. Die
+Sicherungen sind die teuersten: jedes Wochen-Dokument enthält alle 14
+Studios. Sie laden jetzt beim ersten Öffnen der Ansicht, die sie braucht,
+nach dem schon vorhandenen `ensure…Loaded`-Muster.
+
+**2. `maybeArchiveWeek()` lief bis zu zwölfmal am Tag.**
+Der Lauf liest Material, Putzplan und Notizen aller 14 Studios: 462
+Dokumente. Die Sperre stand auf zwei Stunden — also über 5.000
+Lesevorgänge täglich auf dem Gerät des Chefs, für eine *Wochen*-Sicherung.
+Jetzt einmal am Tag. Der Knopf „Diese Woche jetzt sichern" geht weiterhin
+sofort.
+
+### Was das kostet
+
+| | |
+|---|---|
+| Lesevorgänge je Tag (57 Konten, 6 Starts) | 129.984 |
+| davon frei | 50.000 |
+| **Firestore-Lesen je Monat** | **rund 1,32 €** |
+| bei fünffacher Datenmenge | 2,69 € |
+| Freikontingent reicht für | etwa 21 Konten |
+
+Nicht darin: Speicherplatz, Cloud Functions, KI-Aufrufe, Push und die
+nächtliche Sicherung. Die Preise stammen aus der Liste, nicht aus einer
+Live-Abfrage — **die verbindliche Zahl steht in der Firebase-Konsole unter
+Firestore → Nutzung.** Firestore kann beim Neustart außerdem auf den
+lokalen Zwischenspeicher zurückgreifen und nur Änderungen nachladen; wie
+oft das greift, lässt sich hier nicht messen.
+
+### Und wieder war mein Messgerät kaputt
+
+Zum sechsten Mal in diesem Audit. Diesmal gleich zweifach:
+
+- Der Stub verstand nur `==`, keine Bereichsfilter. `loadMyShifts()`
+  grenzt auf sieben Tage ein — der Stub lieferte trotzdem alles. Aus 224
+  Schichten wurden gemessene 1.176, und ein sauberer Code sah nach dem
+  größten Kostenposten aus.
+- Eine Ansicht schien beim Öffnen 462 Dokumente zu lesen. Das war
+  `maybeArchiveWeek()`, das vier Sekunden nach dem Start losläuft und
+  zufällig in diesen Messschritt fiel. Der Zähler wartet jetzt, bis er
+  stillsteht, bevor er abliest.
+
+Die eigentliche Erkenntnis der Sitzung ist dieselbe wie in Sitzung 14:
+**Ein Messwert ist erst dann ein Messwert, wenn das Messgerät geprüft
+wurde.** Beide Male hätte ich sonst am falschen Ende optimiert.
+
+### Fingerziele: der Befund war auch falsch
+
+Aus dem Forensik-Durchlauf standen noch „3 Fingerziele unter 44 px" offen.
+Alle drei sind Scheintreffer: der Prüfer maß den *eingeklappten* Zustand,
+in dem ein `transform:scale(.9)` aus 44 Pixeln 40 macht. Der Prüfer
+überspringt jetzt, was gerade gar nicht antippbar ist — und sagt dazu, wie
+viel er übersprungen hat, damit der Filter nicht heimlich zu viel
+wegnimmt. Ergebnis über alle Ansichten, Rollen und elf Breiten:
+**0 Überlauf, 0 Fingerziel, 0 Kontrast, 0 Fokus.**
+
+### Dialoge: die Tastatur kommt jetzt heraus
+
+Sieben Fenster hatten kein `role="dialog"`, keinen Fokus-Käfig und gaben
+den Fokus beim Schließen nicht zurück. Escape funktionierte schon. Der
+Tabulator wanderte aber weiter durch die Seite *dahinter* — wer den
+Fokusrahmen nicht sieht, tippt dann in ein Formular, das gar nicht gemeint
+ist.
+
+Nachgeholt an *einer* Stelle statt an sieben: ein Beobachter merkt, wenn
+die Klasse `show` kommt oder geht. Dieselbe Liste wie `closeAllModals()`,
+damit nicht zwei Listen auseinanderlaufen. Fünf gleichlautende CSS-Blöcke
+sind dabei zu einer Regel geworden, der Hintergrund hinter offenen
+Fenstern liegt jetzt im Token `--scrim` — im hellen Modus war er vorher
+derselbe fast schwarze Wert wie im dunklen.
+
+`tests/test-dialoge.js` drückt zwölfmal Tab und zwölfmal Shift+Tab und
+prüft, dass der Fokus jedes Mal noch im Fenster steht, dass Escape
+schließt und dass der Fokus danach wieder auf dem Knopf sitzt, der das
+Fenster geöffnet hat. Was **nicht** geprüft ist: wie sich ein echtes
+Vorleseprogramm verhält. Dafür bräuchte es VoiceOver oder NVDA.
+
+**33 UI-Durchläufe** (von 31), **52 Regeltests** — alle grün.
+
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf

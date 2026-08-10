@@ -92,7 +92,7 @@ const parse = s => (s.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
   }));
 
   // ── Durchlauf: jede Ansicht bei jeder Breite ──
-  const erreicht = [], gesehenZiel = new Set();
+  const erreicht = [], gesehenZiel = new Set(), uebersprungen = new Set();
   for (const [v, g] of VIEWS) {
     for (const w of BREITEN) {
       await page.setViewportSize({ width: w, height: w < 700 ? 844 : 900 });
@@ -102,7 +102,7 @@ const parse = s => (s.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
       await page.waitForTimeout(160);
 
       const r = await page.evaluate(({ view, breite }) => {
-        const out = { ueberlauf: null, ziele: [], verdeckt: [] };
+        const out = { ueberlauf: null, ziele: [], verdeckt: [], uebersprungen: [] };
         const de = document.documentElement;
         if (de.scrollWidth > breite + 1) {
           // Wer ist schuld?
@@ -124,6 +124,28 @@ const parse = s => (s.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
           const rc = el.getBoundingClientRect();
           if (rc.width < 2 || rc.height < 2) return;      // unsichtbar
           if (el.offsetParent === null) return;
+          // Was man gerade gar nicht antippen KANN, ist auch kein zu kleines
+          // Fingerziel. Eingeklappte Menues und der Sprung-Knopf im Chat
+          // liegen im Ruhezustand unter transform:scale(.9) - dann misst
+          // getBoundingClientRect 40 statt der 44 Pixel, die dort stehen,
+          // sobald das Ding wirklich da ist. Genau diese drei Scheintreffer
+          // hat der Pruefer vorher gemeldet.
+          const nichtTippbar = (() => {
+            const c = getComputedStyle(el);
+            if (c.pointerEvents === 'none' || c.visibility === 'hidden' || parseFloat(c.opacity) < 0.05) return true;
+            for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+              const ca = getComputedStyle(a);
+              if (ca.visibility === 'hidden' || parseFloat(ca.opacity) < 0.05 || ca.pointerEvents === 'none') return true;
+            }
+            return false;
+          })();
+          if (nichtTippbar) {
+            // Nicht stillschweigend schlucken: die Zahl wird ausgegeben,
+            // damit man merkt, wenn der Filter zu viel wegnimmt.
+            out.uebersprungen.push((el.textContent || el.getAttribute('aria-label') || el.className || el.tagName)
+              .toString().replace(/\s+/g, ' ').trim().slice(0, 30));
+            return;
+          }
           // Zeile selbst anklickbar? Dann ist das Symbol kein eigenes Ziel.
           const zeile = el.closest('[data-go],.doc,.att-row,.ms-act,.t-row');
           const inZeile = zeile && zeile !== el && zeile.getBoundingClientRect().height >= 44;
@@ -178,6 +200,7 @@ const parse = s => (s.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
       }, { view: v, breite: w });
 
       if (r.ueberlauf) funde.push({ art: 'UEBERLAUF', view: v, breite: w, ...r.ueberlauf });
+      if (w === 390) (r.uebersprungen || []).forEach(x => uebersprungen.add(v + ': ' + x));
       if (r.verdeckt && r.verdeckt.length && w === 390) {
         r.verdeckt.forEach(z => {
           const key = 'V' + v + '|' + z.was + '|' + z.durch;
@@ -317,6 +340,8 @@ const parse = s => (s.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
   console.log('Ladezeit bis bedienbar: ' + ladezeit + ' ms');
   console.log('DOM-Knoten: ' + zahlen.knoten + ' · CSS-Regeln: ' + zahlen.stylesheetRegeln);
   console.log('Erreichte Ansichten: ' + erreicht.join(', '));
+  console.log('Nicht antippbar, deshalb nicht auf Fingerziel geprüft: ' + uebersprungen.size +
+    (uebersprungen.size ? '  (' + [...uebersprungen].slice(0, 8).join(' · ') + ')' : ''));
   console.log('Konsole: ' + (konsole.length ? konsole.join(' | ') : 'sauber'));
   for (const art of ['UNERREICHBAR', 'UEBERLAUF', 'VERDECKT', 'FINGERZIEL', 'KONTRAST', 'FOKUS']) {
     const l = nachArt[art] || [];
