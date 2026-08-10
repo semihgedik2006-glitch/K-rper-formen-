@@ -12,10 +12,10 @@
 const path = require('path');
 const KONFIG_DATEI = path.join(__dirname, '..', 'konfig.js');
 
-function laden(hostname) {
+function laden(hostname, suche) {
   // Jedes Mal frisch: konfig.js liest location beim Laden aus.
   delete require.cache[require.resolve(KONFIG_DATEI)];
-  const raum = { location: { hostname: hostname } };
+  const raum = { location: { hostname: hostname, search: suche || '' } };
   raum.self = raum;
   const vm = require('vm');
   const fs = require('fs');
@@ -79,6 +79,29 @@ console.log('\n── Ohne Adresse ──');
   vm.runInContext(fs.readFileSync(KONFIG_DATEI, 'utf8'), raum, { filename: 'konfig.js' });
   pruefe('fällt auf den Betrieb zurück, nicht auf die Probe',
     raum.KONFIG.firebase.projectId === 'formenchat' && raum.KONFIG.mandant === false);
+}
+
+// ══ Der Zusatz ?probe=1 ══
+console.log('\n── ?probe=1 ──');
+{
+  const a = laden('8080-cs-1-2-3.cloudshell.dev', '?probe=1');
+  pruefe('greift auf einer fremden Adresse (Cloud Shell, localhost)',
+    a.firebase.projectId === 'formenchat-probe' && a.mandant === true);
+
+  const b = laden('formenchat.web.app', '?probe=1');
+  pruefe('wird auf der BETRIEBS-Adresse ignoriert',
+    b.firebase.projectId === 'formenchat' && b.mandant === false,
+    'projectId=' + b.firebase.projectId + ' mandant=' + b.mandant);
+
+  const c = laden('formenchat.firebaseapp.com', '?x=1&probe=1&y=2');
+  pruefe('auch mitten in anderen Parametern ignoriert',
+    c.firebase.projectId === 'formenchat' && c.mandant === false);
+
+  const d = laden('localhost', '?probe=11');
+  pruefe('probe=11 ist nicht probe=1', d.mandant === false, 'mandant=' + d.mandant);
+
+  const e = laden('localhost', '');
+  pruefe('ohne Zusatz bleibt localhost beim Betrieb', e.mandant === false);
 }
 
 console.log(errs.length

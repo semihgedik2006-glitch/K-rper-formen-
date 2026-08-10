@@ -155,10 +155,29 @@
     'formenchat-probe.web.app',
     'formenchat-probe.firebaseapp.com'
   ];
+  /* Die Adressen des BETRIEBS. Hier darf der Probelauf unter keinen
+     Umständen greifen — auch nicht, wenn jemand ?probe=1 anhängt. */
+  var LIVE_ADRESSEN = [
+    'formenchat.web.app',
+    'formenchat.firebaseapp.com'
+  ];
+
   var aufProbe = false;
   try {
-    aufProbe = typeof location !== 'undefined' &&
-      PROBE_ADRESSEN.indexOf(String(location.hostname).toLowerCase()) >= 0;
+    if (typeof location !== 'undefined') {
+      var wirt = String(location.hostname).toLowerCase();
+      var imBetrieb = LIVE_ADRESSEN.indexOf(wirt) >= 0;
+      /* Zweiter Weg: ?probe=1 anhängen. Gebraucht, weil sich das Hosting
+         des Probe-Projekts aus Cloud Shell heraus nicht ausrollen liess
+         (Upload-Fehler) — die App lässt sich dort aber direkt anzeigen,
+         und die läuft dann unter einer cloudshell.dev-Adresse.
+
+         Auf den Adressen des Betriebs wird der Zusatz IGNORIERT. Sonst
+         wäre ein Link mit ?probe=1 genug, um jemandem eine leere App zu
+         zeigen — die Pfade der Probe gibt es dort nicht. */
+      var gewuenscht = /(^|[?&])probe=1(&|$)/.test(String(location.search || ''));
+      aufProbe = !imBetrieb && (PROBE_ADRESSEN.indexOf(wirt) >= 0 || gewuenscht);
+    }
   } catch (e) {}
 
   if (aufProbe) {
