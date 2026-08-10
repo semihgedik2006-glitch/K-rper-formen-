@@ -593,6 +593,34 @@ ausgerollt werden kann:
 > nicht existieren. Für die Prüfung egal (Quelle und Ziel werden gleich
 > gezählt), aber nicht vergleichbar mit der Zahl in der Firebase-Konsole.
 
+> ### Der Blick in die App — 10. August 2026
+>
+> Die App lief in der Cloud-Shell-Webvorschau mit `?probe=1` gegen die
+> umgezogenen Daten. `KONFIG.mandant` = true, Projekt
+> `formenchat-probe`, Anmeldung erfolgreich, Oberfläche vollständig.
+>
+> **Zwei Fehler standen dazwischen, beide lehrreich:**
+>
+> *Die Regeln waren nie freigegeben.* Der erste Deploy zeigte
+> „uploading rules", aber nie „released" — er scheiterte am Hosting und
+> riss die Regeln mit. Im Projekt galten weiter die Standardregeln aus
+> `databases create`: `allow read, write: if false`. Jeder Zugriff
+> verboten.
+>
+> *Anmeldekonten überleben keinen Firestore-Export.* Sie liegen in
+> Authentication, und jedes Projekt vergibt eigene Kennungen. Dieselbe
+> E-Mail heisst nicht dieselbe Kennung. `tools/probe-konto.js` überträgt
+> ein Profil.
+>
+> **Beide Meldungen lauteten „Missing or insufficient permissions".** Ich
+> habe daraus zuerst auf ein fehlendes Profil geschlossen, statt die
+> Meldung wörtlich zu nehmen — sie sagt: keine Berechtigung. Der Beleg
+> stand im Deploy-Protokoll, das ich nicht gelesen hatte.
+>
+> **Nebenbei ein Fund in den echten Daten:** `semihgedik2006@gmail.com`
+> hat zwei Profile, eins als Chef und eins als Mitarbeiter. Kein Schaden,
+> aber es zählt in Listen mit und bekommt Benachrichtigungen.
+
 ### Stufe 3 — Admin-Oberfläche · ~1 Sitzung · kein Risiko
 
 Firmenliste, Firma anlegen, Firma sperren, `firmaAnlegen`-Function,
