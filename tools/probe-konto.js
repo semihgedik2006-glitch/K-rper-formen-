@@ -70,13 +70,28 @@ const db = admin.firestore();
     console.error('Ohne --email listet dieses Werkzeug alle auf.');
     process.exit(1);
   }
+  /* Mehrere Profile mit derselben E-Mail sind keine Seltenheit: ein
+     Konto als Chef, eins als Mitarbeiter, aus verschiedenen Zeiten. Das
+     Werkzeug entscheidet das NICHT selbst — welches gemeint ist, weiss
+     nur der Mensch, und die falsche Wahl gibt jemandem eine Rolle, die
+     er nicht haben soll. */
+  let alt = treffer[0];
   if (treffer.length > 1) {
-    console.error('Mehrere Profile mit dieser E-Mail: ' +
-      treffer.map(d => d.id).join(', ') + '. Bitte von Hand entscheiden.');
-    process.exit(1);
+    const von = arg('--von');
+    const gewaehlt = von ? treffer.filter(d => d.id === von) : [];
+    if (!gewaehlt.length) {
+      console.error('\nMehrere Profile mit dieser E-Mail:');
+      treffer.forEach(d => {
+        const u = d.data() || {};
+        console.error('  ' + String(u.role || '?').padEnd(12) +
+          String(u.name || '(ohne Namen)').padEnd(24) + d.id);
+      });
+      console.error('\nWelches gemeint ist, entscheidest du:');
+      console.error('  … --von ' + treffer[treffer.length - 1].id);
+      process.exit(1);
+    }
+    alt = gewaehlt[0];
   }
-
-  const alt = treffer[0];
   console.log('Gefunden: ' + (alt.data().name || '(ohne Namen)') +
     ' · ' + (alt.data().role || '?') + ' · alte Kennung ' + alt.id);
 
@@ -89,6 +104,17 @@ const db = admin.firestore();
   if (uid === alt.id) {
     console.log('\nDie Kennung stimmt bereits überein — nichts zu tun.');
     process.exit(0);
+  }
+
+  /* Firebase-Kennungen sind 28 Zeichen. Weicht die Länge ab, ist es
+     fast immer ein Kopierfehler — und ein Profil unter einer falschen
+     Kennung ist stiller Müll: die Anmeldung findet es nie. */
+  if (uid.length !== 28) {
+    console.error('\n⚠ "' + uid + '" ist ' + uid.length + ' Zeichen lang.');
+    console.error('  Firebase-Kennungen haben 28. Sieht nach einem Kopierfehler aus.');
+    console.error('  Firebase-Konsole → Authentication → Nutzer → Spalte "Nutzer-UID".');
+    console.error('  Wenn es doch stimmt: --trotzdem anhängen.');
+    if (!process.argv.includes('--trotzdem')) process.exit(1);
   }
 
   await db.collection('users').doc(uid).set(alt.data(), { merge: false });
