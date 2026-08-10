@@ -99,16 +99,20 @@ Chef-Zugang entsteht bei der Einrichtung des Projekts, jeder weitere über
 
 | Was | Warum |
 |---|---|
-| **`MATERIAL-SHEETS.gs`** in Apps Script einfügen und neu bereitstellen | Die Datei im Projekt ist neu; ohne den Schritt läuft die alte Fassung weiter. Anleitung steht oben in der Datei. |
-| **Speicher anlegen und Export-Rollen** setzen | Sonst schlägt die nächtliche Sicherung fehl (siehe oben). |
-| **Wischen zum Abhaken** einmal am Gerät prüfen | Berührungen lassen sich hier nicht nachstellen. |
+| **Firmencode setzen** in *Verwaltung → Team* | Solange er leer ist, kann sich jeder anmelden, der die Adresse kennt. |
+| **„Google-Tabellen abgleichen"** einmal drücken und prüfen, ob alle 14 Studios erscheinen | Lässt sich hier nicht nachstellen, weil der Abgleich auf ein echtes Tabellenblatt schreibt. |
 
-Budget-Warnung bei Firebase: **doch nötig.** Die Annahme „keine Karte
-hinterlegt, also kann nichts abgebucht werden" hat sich nicht gehalten –
-das Projekt läuft auf Blaze, sonst gäbe es keine Cloud Functions. Der
-Verbrauch bleibt im Freikontingent, aber gewarnt wird von allein niemand.
-Fünf Minuten: Cloud-Konsole → Abrechnung → Budgets, 5 € mit Warnung bei
-50 % und 100 %.
+~~`MATERIAL-SHEETS.gs` einfügen~~ · ~~Speicher + Export-Rollen~~ ·
+~~Wischen zum Abhaken~~ · ~~Budget-Warnung~~ — alle am 9. August erledigt.
+
+### Die verbindliche Kostenzahl steht nur bei dir
+
+Der Lasttest rechnet mit **rund 1,32 € im Monat** für die Datenbank
+(14 Studios, 57 Konten, 6 App-Starts je Person und Tag). Das ist eine
+Rechnung aus gemessenen Lesevorgängen und einer Preisliste — **nicht** aus
+deinem Konto. Die echte Zahl steht in der Firebase-Konsole unter
+*Firestore → Nutzung*. Ein Blick dorthin nach einer normalen Arbeitswoche
+sagt mehr als jede Schätzung von hier.
 
 ---
 

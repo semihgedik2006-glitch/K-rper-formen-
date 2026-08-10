@@ -1140,6 +1140,244 @@ merkt von der Änderung nichts. Zwei Tests halten genau das fest.
 
 ---
 
+## Sitzung 19 · Lasttest in echter Größe 🟢
+
+Bis hierher war alles über das Verhalten bei echten Datenmengen
+**geschätzt**. Der Skalierbarkeits-Wert von 5/10 aus dem Motion-Durchlauf
+war eine Vermutung, kein Messwert. Jetzt ist er einer.
+
+`tests/stub-last.js` erzeugt den Bestand, der nach ungefähr einem Jahr
+Betrieb wirklich in der Datenbank liegt: 14 Studios, 57 Konten, 5.675
+Dokumente, 120 Nachrichten je Kanal, 52 Wochensicherungen.
+`tests/stress-echt.js` zählt, was ein einziger App-Start davon liest —
+**getrennt nach Rolle**, denn 56 von 57 Konten sind kein Chef.
+
+### Gemessen
+
+| Rolle | vorher | nachher |
+|---|---|---|
+| Mitarbeiter (42×) | 356 | 356 |
+| Leitung (14×) | 417 | 413 |
+| Chef (1×) | **1.122** | **930** |
+
+Dazu: „bis alles ruhig ist" beim Chef von 2,95 s auf 1,70 s.
+
+Startseite gefüllt: 433 ms · mit vierfach gedrosselter CPU 2,3 s ·
+60 Bilder/s beim Scrollen durch 120 Nachrichten · 5 MB Speicher nach drei
+Runden durch alle Ansichten · keine Konsolenfehler.
+
+**Die Geschwindigkeit war nie das Problem.** Was auffiel, war zweierlei:
+
+**1. Drei Beobachter hingen am App-Start, die dort nicht hingehören.**
+Nachweise, Papierkorb und die 52 Wochensicherungen — zusammen 192
+Dokumente, für Karten, die der Chef an den meisten Tagen nicht öffnet. Die
+Sicherungen sind die teuersten: jedes Wochen-Dokument enthält alle 14
+Studios. Sie laden jetzt beim ersten Öffnen der Ansicht, die sie braucht,
+nach dem schon vorhandenen `ensure…Loaded`-Muster.
+
+**2. `maybeArchiveWeek()` lief bis zu zwölfmal am Tag.**
+Der Lauf liest Material, Putzplan und Notizen aller 14 Studios: 462
+Dokumente. Die Sperre stand auf zwei Stunden — also über 5.000
+Lesevorgänge täglich auf dem Gerät des Chefs, für eine *Wochen*-Sicherung.
+Jetzt einmal am Tag. Der Knopf „Diese Woche jetzt sichern" geht weiterhin
+sofort.
+
+### Was das kostet
+
+| | |
+|---|---|
+| Lesevorgänge je Tag (57 Konten, 6 Starts) | 129.984 |
+| davon frei | 50.000 |
+| **Firestore-Lesen je Monat** | **rund 1,32 €** |
+| bei fünffacher Datenmenge | 2,69 € |
+| Freikontingent reicht für | etwa 21 Konten |
+
+Nicht darin: Speicherplatz, Cloud Functions, KI-Aufrufe, Push und die
+nächtliche Sicherung. Die Preise stammen aus der Liste, nicht aus einer
+Live-Abfrage — **die verbindliche Zahl steht in der Firebase-Konsole unter
+Firestore → Nutzung.** Firestore kann beim Neustart außerdem auf den
+lokalen Zwischenspeicher zurückgreifen und nur Änderungen nachladen; wie
+oft das greift, lässt sich hier nicht messen.
+
+### Und wieder war mein Messgerät kaputt
+
+Zum sechsten Mal in diesem Audit. Diesmal gleich zweifach:
+
+- Der Stub verstand nur `==`, keine Bereichsfilter. `loadMyShifts()`
+  grenzt auf sieben Tage ein — der Stub lieferte trotzdem alles. Aus 224
+  Schichten wurden gemessene 1.176, und ein sauberer Code sah nach dem
+  größten Kostenposten aus.
+- Eine Ansicht schien beim Öffnen 462 Dokumente zu lesen. Das war
+  `maybeArchiveWeek()`, das vier Sekunden nach dem Start losläuft und
+  zufällig in diesen Messschritt fiel. Der Zähler wartet jetzt, bis er
+  stillsteht, bevor er abliest.
+
+Die eigentliche Erkenntnis der Sitzung ist dieselbe wie in Sitzung 14:
+**Ein Messwert ist erst dann ein Messwert, wenn das Messgerät geprüft
+wurde.** Beide Male hätte ich sonst am falschen Ende optimiert.
+
+### Fingerziele: der Befund war auch falsch
+
+Aus dem Forensik-Durchlauf standen noch „3 Fingerziele unter 44 px" offen.
+Alle drei sind Scheintreffer: der Prüfer maß den *eingeklappten* Zustand,
+in dem ein `transform:scale(.9)` aus 44 Pixeln 40 macht. Der Prüfer
+überspringt jetzt, was gerade gar nicht antippbar ist — und sagt dazu, wie
+viel er übersprungen hat, damit der Filter nicht heimlich zu viel
+wegnimmt. Ergebnis über alle Ansichten, Rollen und elf Breiten:
+**0 Überlauf, 0 Fingerziel, 0 Kontrast, 0 Fokus.**
+
+### Dialoge: die Tastatur kommt jetzt heraus
+
+Sieben Fenster hatten kein `role="dialog"`, keinen Fokus-Käfig und gaben
+den Fokus beim Schließen nicht zurück. Escape funktionierte schon. Der
+Tabulator wanderte aber weiter durch die Seite *dahinter* — wer den
+Fokusrahmen nicht sieht, tippt dann in ein Formular, das gar nicht gemeint
+ist.
+
+Nachgeholt an *einer* Stelle statt an sieben: ein Beobachter merkt, wenn
+die Klasse `show` kommt oder geht. Dieselbe Liste wie `closeAllModals()`,
+damit nicht zwei Listen auseinanderlaufen. Fünf gleichlautende CSS-Blöcke
+sind dabei zu einer Regel geworden, der Hintergrund hinter offenen
+Fenstern liegt jetzt im Token `--scrim` — im hellen Modus war er vorher
+derselbe fast schwarze Wert wie im dunklen.
+
+`tests/test-dialoge.js` drückt zwölfmal Tab und zwölfmal Shift+Tab und
+prüft, dass der Fokus jedes Mal noch im Fenster steht, dass Escape
+schließt und dass der Fokus danach wieder auf dem Knopf sitzt, der das
+Fenster geöffnet hat. Was **nicht** geprüft ist: wie sich ein echtes
+Vorleseprogramm verhält. Dafür bräuchte es VoiceOver oder NVDA.
+
+**33 UI-Durchläufe** (von 31), **52 Regeltests** — alle grün.
+
+
+---
+
+## Sitzung 20 · Design nach deinen Antworten 🟢
+
+Diesmal nicht nach meinem Geschmack, sondern nach vier Fragen und deinen
+Antworten: **runder wie Apple-Symbole · deutlichere Kanten · kräftigere
+Schrift · mehr Farbkontrast · kräftige Bewegung · kompakter · Apple-Gefühl.**
+
+Zwei deiner Wünsche zogen gegeneinander. Beide sind auflösbar, nicht
+widersprüchlich:
+
+| Spannung | Auflösung |
+|---|---|
+| runder ↔ deutlichere Kanten | Genau das macht Apple: großzügige Rundung **plus** haarscharfe 1-px-Linie. Rundung hoch, Linie von 9 % auf 14 % Deckkraft, Schatten flacher und enger. |
+| kompakter ↔ 44-px-Fingerziele | Enger wird das Auge, nicht der Finger. Die unsichtbare `::after`-Trefferfläche gab es schon. |
+
+### Der Fund, mit dem ich nicht gerechnet hatte
+
+`--r-md` und `--r-sm` wurden an **zehn Stellen** benutzt und waren
+**nirgends definiert**. Eine undefinierte Variable macht die ganze Angabe
+ungültig – Umfragen, Geräteliste, Anhang-Menü und die Aufgaben-Vorlagen
+standen mit rechten Winkeln da, während alles daneben rund war. Kein Test
+hätte das je gemeldet: es sah nicht kaputt aus, nur anders.
+
+### Was jetzt anders ist
+
+| | vorher | jetzt |
+|---|---|---|
+| Karten-Rundung | 18 px | 22 px, plus echte Superellipse wo der Browser sie kann |
+| Linien | 9 % / 17 % | 14 % / 26 % |
+| Schatten | `0 8px 24px` | `0 4px 14px` – flacher, enger |
+| Zweitzeilen-Text (dunkel) | `#B4B8C8` | `#C6CAD8` |
+| Karten-Innenabstand | 16–24 px | 13–19 px |
+| Abstand zwischen Karten | 16 px | 12 px |
+
+Die Apple-Ecke steht hinter `@supports (corner-shape: …)`. Wer sie nicht
+kann, sieht die normale Rundung – kein Ersatzweg, kein Risiko. Nachgesehen:
+das Chromium hier (141) kann sie, die Bildschirmfotos zeigen sie also
+wirklich. **Ob Safari auf dem iPhone sie kann, weiß ich nicht** – dort
+greift dann die normale 22-px-Rundung, und der Unterschied fällt nur im
+direkten Vergleich auf.
+
+### Bewegung: der gleitende Marker, jetzt überall
+
+Die Kanalreihe im Chat hatte ihn seit Sitzung 18. Jetzt haben ihn alle
+vier Stellen: **untere Leiste, Reiter der Gruppe, Kanalreihe,
+Verwaltungs-Reiter.** Vorher sprang eine gefüllte Pille von Reiter zu
+Reiter – man sah, wo man ankam, aber nicht, woher.
+
+Dazu: Karten laufen über sieben statt vier Stufen ein, der Druck beim
+Antippen geht auf `scale(.88)` statt `.9`, und die Zahlen auf den Kacheln
+zählen hoch (`hochzaehlen`, aus bei „Bewegung reduzieren", nicht über 60).
+
+**Zwei Fehler beim Bauen, beide durch den Test gefunden:**
+
+- `offsetParent` taugt nicht als Sichtbarkeitsprüfung. Die untere Leiste
+  ist `position:fixed`, und dort ist `offsetParent` **immer** `null` –
+  mein Marker war damit überall abgeschaltet, auch auf dem Handy.
+- Mein eigener Test las `1e-05s` (das sind die `.01ms` aus der
+  Ruhe-Regel) als „gleitet trotzdem". Er rechnet jetzt, statt Ziffern zu
+  suchen.
+
+`tests/test-marker.js` misst die Marken `--ind-x/-y/-w/-h` gegen
+`offsetLeft/Top/Width/Height` des aktiven Reiters – auf zwei Pixel genau,
+an allen vier Stellen, nach Wechsel und nach Größenwechsel, und prüft, dass
+bei „Bewegung reduzieren" nichts gleitet.
+
+### „Alles erledigt", obwohl der Putzplan voll war 🔴 → 🟢
+
+Aus dem Betrieb gemeldet. Der Grund war schlimmer als die Meldung: die
+Startseite zählte `_ppTasks`, und darin stand **nur das Studio, das im
+Putzplan gerade geöffnet war**. Beim App-Start: nichts, also „Alles
+erledigt". Danach: eins von vierzehn.
+
+Jetzt läuft es wie bei den Aufgaben – ein Beobachter je Studio,
+`cachedClean`, und die Putzplan-Seite liest aus demselben Speicher statt
+einen eigenen anzulegen. `tests/test-startzahlen.js` legt Putzaufgaben in
+**zwei** Studios an, damit ein „zählt nur das erste" auffällt.
+
+### Startseite: „Zum Lesen"
+
+Auch aus dem Betrieb: *„mehr Infos auf der Startseite, zum Beispiel das
+schwarze Brett, damit man das nicht überall suchen muss."*
+
+Vorher stand oben nur `📣 2 neue Infos von der Leitung ›`. Worum es ging,
+erfuhr man erst nach dem Klicken. Das schwarze Brett lag im Team-Bereich
+und wurde überhaupt erst geladen, wenn man dorthin ging.
+
+Jetzt: zwei Karten mit dem **Text**, drei Einträge je Karte, auf drei
+Zeilen gekürzt (per CSS, nicht im Text). Und dabei **weniger** auf dem
+Bildschirm, nicht mehr: die alte Hinweiszeile ist weg, und ein
+angehefteter Aushang steht oben als Hinweis **oder** unten im Text, nie
+beides.
+
+### Was das kostet
+
+Ehrlich gerechnet, denn die Korrektur kostet Lesevorgänge:
+
+| | Mitarbeiter | Chef |
+|---|---|---|
+| vor dieser Sitzung | 356 | 930 |
+| Putzplan über alle Studios | +12 | +168 |
+| schwarzes Brett auf der Startseite | +12 | +12 |
+| **jetzt** | **380** | **1.110** |
+
+Von **1,32 € auf rund 1,55 € im Monat.** Das Brett lädt beim Start nur
+zwölf Einträge und erst auf der Team-Seite alle fünfzig – das allein spart
+über 13.000 Lesevorgänge am Tag.
+
+### Geprüft
+
+**37 UI-Durchläufe** (von 33), alle grün. Forensik über drei Rollen, zwölf
+Ansichten und elf Breiten: **0 Überlauf, 0 Fingerziel, 0 Kontrast,
+0 Fokus** – auch nach den neuen Farben.
+
+Dabei noch ein echter Fund: die Leiste mit der angehefteten Nachricht war
+38 Pixel hoch, die 44er-Trefferfläche von „ansehen" ragte oben und unten
+heraus und wurde vom Chatverlauf abgefangen. Gemessen kam der Finger an
+**23 Pixel**. Jetzt `min-height:46px`.
+
+**Nicht geprüft und deshalb nicht behauptet:** wie die neuen Rundungen auf
+einem echten iPhone aussehen (Superellipsen kann Chromium hier, Safari
+vielleicht anders), und ob „kräftige Bewegung" im Alltag angenehm bleibt.
+Das sagt nur der Betrieb nach einer Woche.
+
+
+---
+
 ## Das Audit ist abgeschlossen
 
 Dreizehn Sitzungen, zehn Bereiche, 30 automatische Durchläufe, zwölf

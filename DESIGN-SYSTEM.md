@@ -22,6 +22,7 @@ Modus.
 | `--bg-3` | `#252838` | `#E3E8F1` | betonte Flächen |
 | `--line` | weiß 9 % | schwarz 10 % | ruhige Trennlinie |
 | `--line-2` | weiß 17 % | schwarz 18 % | Rahmen von Bedienelementen |
+| `--scrim` | `rgba(6,10,7,.7)` | `rgba(17,23,38,.52)` | hinter offenen Fenstern |
 
 Das Dunkel ist ein **Schiefer-Blau**, kein Schwarz: sachlich und über lange
 Zeit angenehmer zu lesen als harter Neon-Kontrast.
@@ -107,10 +108,30 @@ neue Größen deshalb **relativ** (`rem`), nie in Pixeln.
 
 | Marke | Wert | Wofür |
 |---|---|---|
-| `--radius` | `18px` | Karten |
-| `--radius-lg` | `26px` | große Flächen |
+| `--r-xs` | `10px` | Eingabefelder, kleine Knöpfe |
+| `--r-sm` | `14px` | Listenzeilen, Dokumente |
+| `--r-md` | `18px` | Umfragen, Geräte, Menüs |
+| `--radius` | `22px` | Karten |
+| `--radius-lg` | `30px` | große Flächen |
 | — | `999px` | Chips, Marken, runde Knöpfe |
-| — | `9–14px` | Eingabefelder, kleine Knöpfe |
+
+> `--r-md` und `--r-sm` wurden an zehn Stellen benutzt, ohne je definiert
+> zu sein. Eine undefinierte Variable macht die **ganze** Angabe ungültig
+> – Umfragen, Geräteliste, Anhang-Menü und Aufgaben-Vorlagen standen
+> deshalb mit rechten Winkeln da, während alles daneben rund war.
+> Niemandem aufgefallen, weil nichts kaputt aussah, nur anders.
+
+### Die Apple-Ecke
+
+Apples Symbole sind keine Kreisbögen, sondern **Superellipsen**: die
+Rundung setzt früher an und läuft weicher aus. Wo der Browser das kann,
+bekommt jede gerundete Fläche `corner-shape: var(--ecke)` – hinter
+`@supports`, also ohne Risiko für ältere Geräte. Runde Sachen (`999px`)
+bleiben außen vor, sonst würden aus Chips Kästen.
+
+Chromium ab 139 kann es (hier geprüft mit 141). Für Safari auf dem iPhone
+ist es **nicht** nachgesehen – dort greift dann `--radius`, und der
+Unterschied fällt nur im direkten Vergleich auf.
 
 **Seitenrand:** `clamp(14px, 4vw, 28px)` – auf dem Handy schmal, am Rechner
 großzügig. Dazu immer die Geräteränder addieren:
@@ -119,6 +140,13 @@ Ohne `--sat/--sab/--sal/--sar` liegen Knöpfe am iPhone unter der
 Statusleiste und lassen sich nicht antippen.
 
 **Abstände:** 6 · 8 · 10 · 14 · 18 · 22 px. Keine Zwischenwerte erfinden.
+
+**Dichte:** rund 15 % enger als in den ersten Fassungen (Karten
+`13–19px` statt `16–24px`, Abstand zwischen Karten 12 statt 16). Auf einem
+390er-Handy passt dadurch etwa eine Karte mehr aufs Bild. **Die 44 Pixel
+für den Finger sind davon ausgenommen** – enger wird das Auge, nicht die
+Trefferfläche. Wo beides kollidiert, gewinnt der Finger über die
+unsichtbare `::after`-Fläche.
 
 ---
 
@@ -175,6 +203,50 @@ Ausnahme: Symbole **innerhalb** einer Zeile, die selbst anklickbar ist
 **Dauern:** 180 ms (Rückmeldung) · 260–350 ms (Blätter, Aufklappen) ·
 460–500 ms (Fenster von unten).
 
+### Der gleitende Marker
+
+An **vier** Stellen dieselbe Bewegung: untere Leiste, Reiter der Gruppe,
+Kanalreihe im Chat, Verwaltungs-Reiter. Vorher sprang eine gefüllte Pille
+von Reiter zu Reiter – man sah, wo man ankam, aber nicht, woher.
+
+Ein `::before` am Behälter, gesteuert über vier Marken, die JavaScript am
+aktiven Reiter **misst** (nicht schätzt):
+
+```css
+.leiste{position:relative}
+.leiste::before{content:'';position:absolute;left:0;top:0;
+  height:var(--ind-h,38px);width:var(--ind-w,0);
+  transform:translate(var(--ind-x,0),var(--ind-y,0));
+  opacity:var(--ind-o,0);
+  transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
+             height .42s var(--ease-ios),opacity .2s}
+.leiste.sofort::before{transition:none}
+```
+
+| Funktion | wofür |
+|---|---|
+| `markerSetzen(behälter, aktiv)` | gleitet hin |
+| `markerSofort(behälter, aktiv)` | steht sofort da – beim ersten Aufbau |
+| `gruppenMarker() subnavMarker() chefTabMarker() kanalMarker()` | die vier Stellen |
+| `markerNeuMessen()` | nach Drehen oder Größenwechsel |
+
+Zwei Fallen, beide schon hineingetreten:
+
+- **`offsetParent` taugt nicht als Sichtbarkeitsprüfung.** Die untere
+  Leiste ist `position:fixed`, und dort ist `offsetParent` immer `null` –
+  die Prüfung hätte den Marker überall abgeschaltet. Richtig ist
+  `getComputedStyle(bar).display === 'none'`.
+- **Die Höhe gehört gemessen, nicht ins CSS geschrieben.** Sobald ein
+  Reiter zweizeilig wird oder jemand die Schrift vergrößert, sitzt ein
+  fester Wert daneben.
+
+### Zahlen zählen hoch
+
+`hochzaehlen(wurzel)` zählt jede `[data-zahl]` von 0 hoch. Nur beim
+Neuaufbau, nicht bei jedem Neuzeichnen. Grenzen bewusst: über **60** wird
+nicht gezählt (dauert zu lange), und bei „Bewegung reduzieren" gar nicht –
+zählende Ziffern sind genau die Art Flackern, die dann stört.
+
 ### „Bewegung reduzieren" ernst nehmen
 
 `@media (prefers-reduced-motion: reduce)` setzt Dauer **und Verzögerung**
@@ -228,6 +300,47 @@ einer Liste mit drei Einträgen.
 ### Leerer Bereich `emptyHTML(titel, text)`
 Muss **den Grund und den Ausweg** nennen. Nicht „Keine Aufgaben", sondern
 „Keine dir zugewiesenen Aufgaben – es gibt 4, tippe auf ‚Alle'".
+
+### Startseite: „Zum Lesen"
+Zwischen „Mein Dienst" und „Überblick". Zwei Karten, beide klappbar und
+beide **von selbst weg**, wenn nichts drinsteht:
+
+| Karte | Inhalt | Link |
+|---|---|---|
+| 📣 Von der Leitung | die drei jüngsten Aushänge, die mich betreffen | Alle › |
+| 📌 Schwarzes Brett | die drei jüngsten Einträge | Alle › |
+
+Der Text wird per CSS auf drei Zeilen gekürzt (`-webkit-line-clamp`),
+**nicht** im Text abgeschnitten – wer alles will, tippt auf „Alle".
+Ungelesenes bekommt einen Punkt, kein Wort.
+
+**Die Regel dahinter: nichts zweimal auf einem Bildschirm.** Die alte
+Hinweiszeile „2 neue Infos von der Leitung ›" ist weggefallen, weil der
+Text jetzt darunter steht. Angeheftete Aushänge erscheinen oben als
+Hinweis **oder** unten im Text, nie beides. Eine Karte, in der „noch
+nichts da" steht, ist auf einer Startseite nur Platzverschwendung.
+
+### Fenster über der Seite (Dialog)
+Fünf Fenster (`profileModal`, `personModal`, `devModal`, `pollModal`,
+`todoEditModal`) teilen sich **eine** CSS-Regel; `fwdModal` und `keysModal`
+hängen mit eigener z-Ebene daran. Der Grund dahinter ist das Token
+`--scrim` — nicht direkt `rgba(...)` schreiben, sonst hat der helle Modus
+wieder einen fast schwarzen Schleier.
+
+Ein neues Fenster braucht **nur zwei Dinge**: das Kürzel in die Liste
+`DIALOGE` in `index.html` und in `closeAllModals()`. Alles Weitere kommt
+von allein:
+
+| | woher |
+|---|---|
+| `role="dialog"`, `aria-modal`, Name | `dialogeVorbereiten()` setzt sie beim Start |
+| Fokus springt beim Öffnen hinein | Beobachter auf der Klasse `show` |
+| Tabulator bleibt drin | ein globaler Tab-Fänger, oberstes offenes Fenster gewinnt |
+| Escape schließt | `bindShortcuts()` → `closeAllModals()` |
+| Fokus kehrt zum Auslöser zurück | derselbe Beobachter |
+
+**Die beiden Listen dürfen nicht auseinanderlaufen.** Steht ein Fenster nur
+in einer, fehlt ihm entweder der Fokus-Käfig oder Escape.
 
 ### Rückgängig `offerUndo(text, fn)`
 Acht Sekunden. Für alles, was löscht. Zusätzlich `confirm()`, wenn die

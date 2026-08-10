@@ -89,9 +89,10 @@ Fünf Bereiche in der unteren Leiste:
 
 ## 3. Startseite
 
-Die Seite ist in zwei benannte Blöcke geteilt: **was jetzt dran ist** (Hinweise
-und der eigene Dienst) und **Überblick** (die Zahlen). Sprungziele gibt es
-hier bewusst keine mehr – dafür ist die untere Leiste da, und zweimal
+Die Seite ist in vier benannte Blöcke geteilt: **was jetzt dran ist**
+(Hinweise und der eigene Dienst), **Zum Lesen** (Infos und schwarzes
+Brett), **Überblick** (die Zahlen) und **Zuletzt passiert**. Sprungziele
+gibt es hier bewusst keine – dafür ist die untere Leiste da, und zweimal
 dasselbe an zwei Stellen macht eine Startseite nicht übersichtlicher.
 
 - **Begrüßung** nach Tageszeit, mit Vorname und heutigem Datum.
@@ -100,12 +101,21 @@ dasselbe an zwei Stellen macht eine Startseite nicht übersichtlicher.
   - angeheftete Infos der Leitung
   - überfällige Aufgaben
   - fehlendes Material
-  - neue Infos
 - **Mein Dienst** – die eigenen Schichten der nächsten 7 Tage über alle
   Studios, in denen man arbeitet.
+- **Zum Lesen** – zwei Karten mit dem **Text**, nicht nur einem Hinweis:
+  - **📣 Von der Leitung** – die drei jüngsten Aushänge, die dich
+    betreffen. Ungelesenes hat einen Punkt. „Alle ›" öffnet den Bereich.
+  - **📌 Schwarzes Brett** – die drei jüngsten Einträge des Teams.
+  Beide Karten sind zuklappbar und verschwinden ganz, wenn nichts
+  drinsteht. Lange Texte werden auf drei Zeilen gekürzt – der volle Text
+  steht hinter „Alle ›".
 - **Zahlen-Kacheln**: offene Aufgaben · überfällig · heute erledigt · für
   dich · im Putzplan offen · neue Nachrichten. Jede Kachel ist anklickbar
-  und öffnet die passende Ansicht mit dem passenden Filter.
+  und öffnet die passende Ansicht mit dem passenden Filter. Die Zahlen
+  zählen beim Aufbauen hoch (nicht bei „Bewegung reduzieren").
+  **Der Putzplan zählt alle Studios**, die dich etwas angehen – nicht nur
+  das zuletzt geöffnete.
 - Kacheln mit einer **Null** rutschen nach hinten und werden blass. Ist
   wirklich alles auf null, steht dort **„Alles erledigt"** statt sechs Nullen.
 - **Wo etwas los ist** (**L C**, ab zwei Studios) – die höchstens vier

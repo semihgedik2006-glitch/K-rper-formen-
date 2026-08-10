@@ -102,6 +102,31 @@ was sie sehen soll.
 | `test-tausch.js` | Schichttausch in drei Schritten, Nachweise – für alle drei Rollen |
 | `test-oberflaeche.js` | aufklappbare Abschnitte, Sortierung, eigene Tastenkürzel |
 | `test-navigation.js` | Zurück-Geste, Gruppen, Verwaltungs-Übersicht |
+| `test-sicherung.js` | Stand der Nachtsicherung wird sichtbar gemeldet |
+| `test-beitritt.js` | Firmencode und Freigabe in der Oberfläche |
+| `test-nachladen.js` | Nachweise, Papierkorb und Sicherungen hängen nicht am App-Start |
+| `test-dialoge.js` | Fenster: Fokus rein, Tabulator drin, Escape, Fokus zurück |
+| `test-marker.js` | die vier gleitenden Marker sitzen und gleiten |
+| `test-startzahlen.js` | Putzplan zählt sofort und über alle Studios |
+| `test-startlesen.js` | Infos und schwarzes Brett stehen auf der Startseite |
+
+### Messläufe (kein Grün/Rot, sondern Zahlen)
+
+| Datei | misst |
+|---|---|
+| `audit-forensik.js` | Überlauf, Fingerziele, Kontrast, Fokus — 12 Ansichten × 3 Rollen × 11 Breiten |
+| `audit-leistung.js` | Datenbankzugriffe, Speicher, Ladephase, lange Aufgaben, Bilder/s |
+| `stress-echt.js` | ein App-Start bei echter Datenmenge — Lesevorgänge je Rolle und was das im Monat kostet |
+
+`stress-echt.js` benutzt `stub-last.js` statt der kleinen Beispieldaten:
+14 Studios, 57 Konten, 5.675 Dokumente. Mit `FAKTOR=5` lässt sich die
+fünffache Menge durchspielen.
+
+> **Die wichtigste Regel aus diesem Audit:** Ein Messwert ist erst dann ein
+> Messwert, wenn das Messgerät geprüft wurde. Sechsmal war nicht die App
+> kaputt, sondern der Prüfer — Farben ohne Alpha-Rechnung, ein Stub ohne
+> Bereichsfilter, Elemente im eingeklappten Zustand gemessen. Wer hier
+> etwas findet, prüft zuerst, ob er richtig misst.
 
 ---
 
