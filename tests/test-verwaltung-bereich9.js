@@ -56,7 +56,17 @@ const reiter = page => page.evaluate(() => {
         .filter(n => n.style.display !== 'none').map(n => n.textContent),
     }));
     console.log('ÜBERSICHT:', JSON.stringify(uebersicht));
-    if (uebersicht.kacheln.length !== 6) errs.push('Chef sieht ' + uebersicht.kacheln.length + ' statt 6 Kacheln');
+    // Keine feste Zahl: die schlaegt bei jedem neuen Reiter fehl und sagt
+    // nichts darueber, ob die Uebersicht stimmt.
+    ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise', 'Auswertung', 'System']
+      .forEach(function (w) {
+        if (!uebersicht.kacheln.some(function (k) { return k.indexOf(w) >= 0; })) {
+          errs.push('Kachel „' + w + '" fehlt in der Verwaltung');
+        }
+      });
+    if (new Set(uebersicht.kacheln).size !== uebersicht.kacheln.length) {
+      errs.push('Eine Kachel steht doppelt: ' + uebersicht.kacheln.join(', '));
+    }
 
     // ── Überblick: was hakt, steht oben ──
     await page.evaluate(() => document.querySelector('[data-cgo="ueberblick"]').click());

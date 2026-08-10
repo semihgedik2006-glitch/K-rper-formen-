@@ -12556,7 +12556,13 @@ function bindActions(){
   bindShortcuts();
   var pmR=document.querySelector('#profileModal .pm-recht');
   if(!pmR){
-    var box=document.querySelector('#profileModal .pm-box');
+    /* NICHT an .pm-box hängen, sondern in den Profil-Reiter.
+       Die Reiter sind display:none, also wächst nur der eine.
+       An .pm-box angehängt hat es das ganze Fenster über 88vh gedrückt –
+       damit wurde es scrollbar und der Hell/Dunkel-Schalter, der bewusst
+       ohne Scrollen erreichbar sein soll, rutschte unter den Rand.
+       Vom Testlauf gefunden, nicht von mir. */
+    var box=document.getElementById('pmPaneProfil');
     if(box){
       var p=document.createElement('p');
       p.className='auth-foot pm-recht';
