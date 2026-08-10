@@ -71,4 +71,5 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
   await b.close();
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

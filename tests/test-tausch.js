@@ -121,4 +121,5 @@ async function lauf(stub, wer) {
     alle = alle.concat(await lauf(stub, wer));
   }
   console.log('\nFehler:', alle.length ? alle.join('\n  ') : 'keine');
+  process.exit(alle.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

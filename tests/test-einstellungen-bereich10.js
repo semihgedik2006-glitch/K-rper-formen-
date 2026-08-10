@@ -130,4 +130,5 @@ const speichernImBild = page => page.evaluate(() => {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
+  process.exit((errs || fehler).length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
