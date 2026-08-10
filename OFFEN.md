@@ -1,6 +1,35 @@
 # Was noch offen ist
 
-Stand 8. August 2026, nach Abschluss des Master-Audits.
+Stand 10. August 2026.
+
+## Der Live-Umzug auf die Firmen-Pfade
+
+Der ganze Umbau für mehrere Firmen ist **gebaut und geprüft, aber noch
+nicht scharfgeschaltet**: `KONFIG.mandant` steht auf `false`, im Betrieb
+läuft alles wie immer.
+
+Was dafür noch fehlt — in dieser Reihenfolge, jeder Schritt einzeln
+prüfbar:
+
+| | Schritt | wer |
+|---|---|---|
+| 1 | Cloud Functions ins **Probe-Projekt** ausrollen und dort eine Nachricht schreiben: kommt Push an? | ich, mit deiner Cloud Shell |
+| 2 | Nachtsicherung des Betriebs prüfen (Datum, Größe) | ich |
+| 3 | `tools/umzug.js --wirklich-live` — **Kopie**, die alten Daten bleiben liegen | ich, mit deiner Cloud Shell |
+| 4 | Regeln ausrollen **und im Protokoll „released" nachlesen** — genau das ist im Probelauf schiefgegangen | ich |
+| 5 | `admin: true` an dein Konto | ich |
+| 6 | `KONFIG.mandant` auf `true`, App ausrollen | ich |
+| 7 | 30 Tage ruhiger Betrieb, dann die flachen Alt-Daten aufräumen | später, von Hand |
+
+Der Rückweg bis Schritt 6 ist: die vorherige App-Fassung ausrollen. Sie
+liest die alten Pfade, die unberührt liegen.
+
+**Vier rechtliche Pflichtfelder in `konfig.js`** (Betreiber, Anschrift,
+Telefon, E-Mail) sind noch leer — solange steht in der App eine rote
+Warnung. Der Datenschutztext gehört vor dem ersten fremden Kunden einmal
+über einen Anwaltstisch; siehe `RECHT.md`.
+
+---
 
 ## Ein Schritt offen: der Firmencode
 

@@ -381,6 +381,67 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Chef von A kann das Konto von Chef B NICHT umschreiben', () =>
     assertFails(chefA().doc('users/chefB').update({ role: 'mitarbeiter' })));
 
+  // ══ Ein Chef setzt keinen anderen Chef ab ══
+  //
+  // Bisher konnte jeder Chef jedem anderen die Rechte entziehen. Bei
+  // einem Streit zwischen Geschaeftsfuehrern waere das ein Wettrennen
+  // gewesen — wer zuerst drueckt, gewinnt.
+  await env.withSecurityRulesDisabled(async ctx => {
+    const d = ctx.firestore();
+    await d.doc('users/chefA2').set({ name: 'Zweiter Chef A', role: 'chef', firma: A, aktiv: true });
+    // Admin ist ein Zusatzfeld, keine Rolle: der Betreiber bleibt Chef
+    // seiner eigenen Firma und ist zusaetzlich Admin.
+    await d.doc('users/adminX').set({ name: 'Betreiber', role: 'chef', firma: A, admin: true, aktiv: true });
+    await d.doc('users/mitA2').set({ name: 'Mit A2', role: 'mitarbeiter', firma: A, aktiv: true });
+  });
+  const chefA2 = () => env.authenticatedContext('chefA2').firestore();
+  const adminX = () => env.authenticatedContext('adminX').firestore();
+
+  await pruefe('CHEF-SCHUTZ · Chef kann einem anderen Chef NICHT die Rechte entziehen', () =>
+    assertFails(chefA().doc('users/chefA2').update({ role: 'mitarbeiter' })));
+  await pruefe('CHEF-SCHUTZ · Chef kann ein anderes Chef-Konto NICHT loeschen', () =>
+    assertFails(chefA().doc('users/chefA2').delete()));
+  await pruefe('CHEF-SCHUTZ · Chef kann einen anderen Chef auch nicht stilllegen', () =>
+    assertFails(chefA().doc('users/chefA2').update({ aktiv: false })));
+  await pruefe('CHEF-SCHUTZ · Chef kann einem anderen Chef nicht die Studios nehmen', () =>
+    assertFails(chefA().doc('users/chefA2').update({ studios: [], studioKeys: [] })));
+
+  // Was ERLAUBT bleiben muss, sonst ist der Schutz eine Fessel
+  await pruefe('Chef darf weiterhin einen Mitarbeiter verwalten', () =>
+    assertSucceeds(chefA().doc('users/mitA2').update({ studios: ['Hürth'] })));
+  await pruefe('Chef darf einen Mitarbeiter zum Chef machen', () =>
+    assertSucceeds(chefA().doc('users/mitA2').update({ role: 'chef' })));
+  await pruefe('Chef darf sein EIGENES Profil weiter aendern', () =>
+    assertSucceeds(chefA().doc('users/chefA').update({ name: 'Chef A neu' })));
+  await pruefe('Der Admin darf einen Chef herabstufen', () =>
+    assertSucceeds(adminX().doc('users/chefA2').update({ role: 'mitarbeiter' })));
+
+  // ══ Das Feld 'admin' ist kein Selbstbedienungsfeld ══
+  await pruefe('ADMIN · Ein Chef kann sich NICHT selbst zum Betreiber machen', () =>
+    assertFails(chefA().doc('users/chefA').update({ admin: true })));
+  await pruefe('ADMIN · Ein Chef kann auch keinen anderen zum Betreiber machen', () =>
+    assertFails(chefA().doc('users/mitA').update({ admin: true })));
+  await pruefe('ADMIN · Ein Mitarbeiter erst recht nicht', () =>
+    assertFails(mitA().doc('users/mitA').update({ admin: true })));
+  await pruefe('ADMIN · Der Betreiber bleibt Chef seiner eigenen Firma', () =>
+    assertSucceeds(adminX().doc('firmen/' + A + '/documents/neu').set({ name: 'eigenes' })));
+  await pruefe('ADMIN · und sieht die Stammdaten einer FREMDEN Firma', () =>
+    assertSucceeds(adminX().doc('firmen/' + B).get()));
+  await pruefe('ADMIN · aber NICHT deren Inhalte', () =>
+    assertFails(adminX().doc('firmen/' + B + '/channels/allgemein/messages/m1').get()));
+
+  // ══ Die Firmen-Stammdaten schreibt nur der Betreiber ══
+  await pruefe('FIRMEN · Ein Chef kann seine eigene Firma NICHT freischalten', () =>
+    assertFails(chefA().doc('firmen/' + A).update({ aktiv: true })));
+  await pruefe('FIRMEN · Ein Chef kann keine neue Firma anlegen', () =>
+    assertFails(chefA().doc('firmen/neu-1234').set({ name: 'Meine zweite', aktiv: true })));
+  await pruefe('FIRMEN · Ein Chef kann eine fremde Firma nicht sperren', () =>
+    assertFails(chefA().doc('firmen/' + B).update({ aktiv: false })));
+  await pruefe('FIRMEN · Der Betreiber darf eine Firma sperren', () =>
+    assertSucceeds(adminX().doc('firmen/' + B).update({ aktiv: false })));
+  await pruefe('FIRMEN · Der Name ist ohne Anmeldung lesbar (Anmeldebildschirm)', () =>
+    assertSucceeds(alsAnonym().doc('firmen/' + A).get()));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

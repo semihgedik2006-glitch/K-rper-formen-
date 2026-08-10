@@ -132,6 +132,71 @@
     }
   };
 
+  /* ── Probelauf-Umgebung ────────────────────────────────────────────
+     Dieselbe Datei läuft in beiden Projekten. Welches gemeint ist,
+     entscheidet die Adresse, unter der die App gerade liegt.
+
+     WARUM SO und nicht mit zwei Dateien: eine zweite konfig.js müsste
+     man beim Ausrollen tauschen — und genau dabei erwischt man
+     irgendwann das falsche Projekt. Hier kann das nicht passieren. Auf
+     formenchat.web.app greift dieser Block nie, egal was jemand tippt.
+
+     Der Probelauf ist zugleich der einzige Ort, an dem mandant:true
+     schon an ist. So lässt sich die Mandantenfähigkeit an echten
+     (kopierten) Daten ansehen, ohne dass im Betrieb irgendetwas
+     umgestellt wird. */
+  /* Feste Liste statt Muster. Mein erstes Muster prüfte nur den Anfang,
+     nicht das Ende — damit galt auch
+     "formenchat-probe.example.com.irgendwo.de" als Probelauf. Vom Test
+     gefunden. Bei einer Weiche, die entscheidet, WELCHE Datenbank die
+     App anfasst, gehört keine Mustererkennung hin, sondern eine
+     Aufzählung: was nicht draufsteht, ist Betrieb. */
+  var PROBE_ADRESSEN = [
+    'formenchat-probe.web.app',
+    'formenchat-probe.firebaseapp.com'
+  ];
+  /* Die Adressen des BETRIEBS. Hier darf der Probelauf unter keinen
+     Umständen greifen — auch nicht, wenn jemand ?probe=1 anhängt. */
+  var LIVE_ADRESSEN = [
+    'formenchat.web.app',
+    'formenchat.firebaseapp.com'
+  ];
+
+  var aufProbe = false;
+  try {
+    if (typeof location !== 'undefined') {
+      var wirt = String(location.hostname).toLowerCase();
+      var imBetrieb = LIVE_ADRESSEN.indexOf(wirt) >= 0;
+      /* Zweiter Weg: ?probe=1 anhängen. Gebraucht, weil sich das Hosting
+         des Probe-Projekts aus Cloud Shell heraus nicht ausrollen liess
+         (Upload-Fehler) — die App lässt sich dort aber direkt anzeigen,
+         und die läuft dann unter einer cloudshell.dev-Adresse.
+
+         Auf den Adressen des Betriebs wird der Zusatz IGNORIERT. Sonst
+         wäre ein Link mit ?probe=1 genug, um jemandem eine leere App zu
+         zeigen — die Pfade der Probe gibt es dort nicht. */
+      var gewuenscht = /(^|[?&])probe=1(&|$)/.test(String(location.search || ''));
+      aufProbe = !imBetrieb && (PROBE_ADRESSEN.indexOf(wirt) >= 0 || gewuenscht);
+    }
+  } catch (e) {}
+
+  if (aufProbe) {
+    KONFIG.firebase = {
+      apiKey: 'AIzaSyCTmUm4aEgra6AJQGcgBtL4aJR6lHu6aQ4',
+      authDomain: 'formenchat-probe.firebaseapp.com',
+      databaseURL: 'https://formenchat-probe-default-rtdb.europe-west1.firebasedatabase.app',
+      projectId: 'formenchat-probe',
+      storageBucket: 'formenchat-probe.firebasestorage.app',
+      messagingSenderId: '692000066621',
+      appId: '1:692000066621:web:23fca1cf7b3ec335d56e54'
+    };
+    KONFIG.mandant = true;          // hier wird die Trennung geprobt
+    KONFIG.firma   = 'koerperformen';
+    KONFIG.vapidKey = '';           // kein Push in der Probe
+    KONFIG.sheetsWebhook = '';      // keine echte Tabelle beschreiben
+    KONFIG.firma_anzeige = 'PROBELAUF';
+  }
+
   global.KONFIG = KONFIG;
 
 })(typeof self !== 'undefined' ? self : this);

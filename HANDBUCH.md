@@ -621,6 +621,24 @@ im Rest der App.
 
 ---
 
+### Chef-Zugänge sind geschützt
+
+In *Verwaltung → Team* stehen alle Chef-Konten, aber **du kannst einem
+anderen Chef die Rechte nicht entziehen.** Neben fremden Chef-Konten
+steht „geschützt".
+
+Der Grund: bei einer Meinungsverschiedenheit zwischen Geschäftsführern
+wäre das sonst ein Wettrennen — wer zuerst drückt, gewinnt, und der
+andere steht als Mitarbeiter ohne Studio da. Das soll keine Frage von
+Sekunden sein.
+
+Was weiterhin geht: Mitarbeiter und Leitung verwalten, jemanden **zum**
+Chef machen, und das eigene Profil ändern.
+
+Wer einen Chef herabstufen muss, braucht die Ebene darüber (Admin).
+
+---
+
 ## 15b. Studios verwalten (**C**)
 
 *Verwaltung → 🏢 Studios.* Hier stehen die Standorte, mit denen die App

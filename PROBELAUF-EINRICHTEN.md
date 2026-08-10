@@ -163,6 +163,11 @@ falschen Region.
 
 ---
 
+> ✅ **Am 11. August erledigt.** Projekt `formenchat-probe` steht,
+> Blaze ist an, der Schlüssel liegt als GitHub-Secret `PROBE_SA_KEY`.
+> Weiter geht es mit **`PROBELAUF-DATEN.md`**: eine Kopie eurer echten
+> Daten hineinholen.
+
 ## Was danach passiert (damit du weißt, worauf es hinausläuft)
 
 1. Ich spiele eure Datenstruktur als Kopie ins Probe-Projekt.

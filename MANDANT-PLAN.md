@@ -394,7 +394,7 @@ einer Sicherung, kein Datenverlust, kein Zeitdruck.
 | 2 | Den nächtlichen Vollexport von `formenchat` dort einspielen |
 | 3 | Migrations-Function laufen lassen: kopiert flach → `firmen/koerperformen/…` |
 | 4 | **Zählprüfung:** jede Sammlung vorher und nachher gleich viele Dokumente |
-| 5 | Die 36 automatischen Durchläufe gegen das Probe-Projekt |
+| 5 | ~~Die automatischen Durchläufe gegen das Probe-Projekt~~ — **geht nicht.** Sie arbeiten mit Attrappen und fassen kein echtes Firebase an. Ersatz: die App mit `mandant:true` gegen das Probe-Projekt und von Hand durchsehen. |
 | 6 | Von Hand durchsehen: Chatverlauf vollständig? Schichten am richtigen Studio? Archive lesbar? |
 | 7 | Kreuztests: eine zweite Testfirma anlegen und prüfen, dass sie nichts sieht |
 
@@ -547,7 +547,8 @@ ausgerollt werden kann:
 | **A** ✅ | Alle Zugriffe laufen über **eine** Funktion `S()`, die vorerst die heutigen Pfade zurückgibt | keins — Verhalten identisch |
 | **B** ✅ | `firma` am Konto, Kennung im Link, Regeln, 21 Kreuztests | mittel, noch ohne Live-Daten |
 | **C** | Umzugs-Function, Probelauf, Live-Umzug | **hoch** |
-| **D** | Admin-Oberfläche | keins |
+| **D** ✅ | Admin-Oberfläche | keins |
+| **E** ✅ | Die **Cloud Functions** auf dieselben Pfade bringen | mittel — der lauteste Ausfall wäre lautlos |
 
 > **Stufe 2A erledigt am 11. August 2026.** 114 Aufrufe von
 > `db.collection('…')` laufen jetzt durch `S(name)`. Heute gibt sie
@@ -563,7 +564,162 @@ ausgerollt werden kann:
 > verhindert: in Stufe B gibt es keine 114 Gelegenheiten mehr, das
 > Präfix zu vergessen. Es gibt genau eine.
 
-### Stufe 3 — Admin-Oberfläche · ~1 Sitzung · kein Risiko
+> ### ✅ Stufe 2C am 10. August 2026 im Probe-Projekt gelaufen
+>
+> An **echten Daten**, aus der Nachtsicherung vom 10. August ins Projekt
+> `formenchat-probe` importiert (146 Dokumente).
+>
+> ```
+> ── UMZUG ──  Firma: koerperformen
+>      149  GESAMT   (8 s)
+> ── ZÄHLPRÜFUNG (frisch am Ziel gelesen) ──
+>   ✓ Jede Sammlung hat am Ziel genauso viele Dokumente wie in der Quelle.
+> ```
+>
+> **Alle 14 Studios sind mitgekommen**, obwohl ihre Elterndokumente nicht
+> existieren — die Stelle, an der ein falsch gebauter Umzug lautlos die
+> Hälfte verliert.
+>
+> **Kein Dienstschlüssel nötig.** Der Umzug lief in Google Cloud Shell
+> unter dem Konto des Betreibers. Ein Schlüssel, den es nicht gibt, kann
+> nicht verloren gehen — besser als der Weg, den ich ursprünglich
+> vorgeschlagen hatte.
+>
+> **Zwei Zahlen zur Einordnung:** die echte Datenbank hat 146 Dokumente,
+> nicht 5.675. Der Lasttest rechnete mit einem Jahr Betrieb, also einer
+> Vorhersage. Heute liegt ihr weit unter den 1,55 €/Monat.
+>
+> **Und eine Ungenauigkeit im Werkzeug:** es zählt Pfade, nicht
+> Dokumente — `studios` erscheint als 14, obwohl diese Elterndokumente
+> nicht existieren. Für die Prüfung egal (Quelle und Ziel werden gleich
+> gezählt), aber nicht vergleichbar mit der Zahl in der Firebase-Konsole.
+
+> ### Der Blick in die App — 10. August 2026
+>
+> Die App lief in der Cloud-Shell-Webvorschau mit `?probe=1` gegen die
+> umgezogenen Daten. `KONFIG.mandant` = true, Projekt
+> `formenchat-probe`, Anmeldung erfolgreich, Oberfläche vollständig.
+>
+> **Zwei Fehler standen dazwischen, beide lehrreich:**
+>
+> *Die Regeln waren nie freigegeben.* Der erste Deploy zeigte
+> „uploading rules", aber nie „released" — er scheiterte am Hosting und
+> riss die Regeln mit. Im Projekt galten weiter die Standardregeln aus
+> `databases create`: `allow read, write: if false`. Jeder Zugriff
+> verboten.
+>
+> *Anmeldekonten überleben keinen Firestore-Export.* Sie liegen in
+> Authentication, und jedes Projekt vergibt eigene Kennungen. Dieselbe
+> E-Mail heisst nicht dieselbe Kennung. `tools/probe-konto.js` überträgt
+> ein Profil.
+>
+> **Beide Meldungen lauteten „Missing or insufficient permissions".** Ich
+> habe daraus zuerst auf ein fehlendes Profil geschlossen, statt die
+> Meldung wörtlich zu nehmen — sie sagt: keine Berechtigung. Der Beleg
+> stand im Deploy-Protokoll, das ich nicht gelesen hatte.
+>
+> **Nebenbei ein Fund in den echten Daten:** `semihgedik2006@gmail.com`
+> hat zwei Profile, eins als Chef und eins als Mitarbeiter. Kein Schaden,
+> aber es zählt in Listen mit und bekommt Benachrichtigungen.
+
+> ### ✅ Stufe 2E am 10. August 2026 — die Stufe, die im Plan stand und die ich vergessen hatte
+>
+> **Was passiert wäre.** Vier Stufen lang habe ich `index.html`
+> umgestellt und in Stufe 2A stolz gezählt: „114 Zugriffe". Gezählt habe
+> ich nur eine Datei. `functions/index.js` stand im selben Plan
+> („jede Abfrage, jede Regel, **jede Cloud Function**") und blieb
+> vollständig auf den flachen Pfaden.
+>
+> Nach dem Umschalten hätte die App tadellos ausgesehen. Im Hintergrund
+> wäre nichts mehr passiert: keine Push-Nachricht, keine Erinnerung an
+> überfällige Aufgaben, keine Warnung vor ablaufenden Nachweisen, kein
+> Monatsbericht — und der Papierkorb hätte weiter die alten Daten
+> geleert statt der neuen, also ausgerechnet die Kopie angeknabbert, die
+> der Rückweg ist. Alles ohne eine einzige Fehlermeldung.
+>
+> Aufgefallen ist es, weil ich vor dem Live-Umzug noch einmal
+> nachgesehen habe, statt ihn zu starten.
+>
+> **Was gebaut wurde.**
+>
+> | | |
+> |---|---|
+> | `W(firma)` | das Gegenstück zu `S()` in der App: ohne Firma die Datenbank, mit Firma das Dokument darunter |
+> | `alleFirmen()` | für Zeitpläne. Ohne Firmen-Sammlung liefert sie `[null]` — dann läuft genau ein Durchgang flach, wie heute. Gesperrte Firmen fallen raus |
+> | `firmaVonProfil()` | für Aufrufe aus der App. Bei gesperrter Firma bricht sie ab, statt flach weiterzuschreiben |
+> | `beideWelten()` | jeder Auslöser wird **zweimal** registriert: alter Pfad und `firmen/{firma}/…`. Zwischen Umzug und Umschalten liegen Minuten; wer in dieser Zeit schreibt, soll trotzdem eine Meldung bekommen |
+>
+> Umgestellt: 6 Auslöser-Paare (Chat, Aufgabe, Aushang, Direktnachricht,
+> Termin angelegt, Termin geändert), 6 Zeitpläne, Monatsbericht,
+> Geburtstagsgruß, Tagesgrenze für die KI-Aufrufe, Sicherungsstand.
+>
+> **Zwei Entscheidungen, die nicht offensichtlich waren:**
+>
+> *Die KI-Tagesgrenze zählt je Firma, nicht gemeinsam.* Ein gemeinsamer
+> Zähler wäre einfacher, aber dann sperrt der Nachmittag des einen
+> Kunden den nächsten aus — und der bekommt eine Kostenbremse zu sehen,
+> die ihn nichts angeht.
+>
+> *Der Sicherungsstand wird an jede Firma verteilt*, obwohl der Export
+> die ganze Datenbank auf einmal umfasst. Sonst steht bei jedem Chef
+> dauerhaft „Sicherung hakt" — die Warnung, die verstummen soll, wenn
+> alles läuft.
+>
+> **Womit das belegt ist — 53 Prüfungen, die den Code wirklich
+> ausführen** (`tests/rules/funktionen.test.js`): `functions/index.js`
+> wird geladen und über `.run()` ausgelöst, so wie Firebase es täte,
+> gegen den Emulator. Geprüft wird der Zustand **vor** dem Umzug (ohne
+> Firmen muss alles flach laufen — das ist der Betrieb, heute Nacht),
+> die Auslöser-Paare, und **nach** dem Umzug: dass jede Funktion jede
+> Firma erreicht und **keine fremde**. Der Papierkorb-Test legt in zwei
+> Firmen absichtlich eine Datei mit **derselben Kennung** ab — verrutscht
+> der Pfad, löscht die eine Firma die Datei der anderen, und nichts
+> daran sähe nach einem Fehler aus.
+>
+> **Und ein zweiter Test, der nicht mitdenkt** (`tests/test-funktionen-pfade.js`):
+> er liest die Datei Zeile für Zeile und schlägt bei jedem flachen
+> Zugriff auf eine Firmen-Sammlung an — auch bei einem, der erst morgen
+> dazukommt. Denn mein Fehler war kein falscher Pfad, sondern eine
+> **vergessene Datei**, und dagegen hilft kein Verhaltenstest: der prüft
+> nur, woran jemand gedacht hat. Die Liste der Firmen-Sammlungen holt er
+> aus `tools/umzug.js`, damit die beiden nicht auseinanderlaufen können.
+>
+> Beim Bauen dieses Prüfers ist mir derselbe Fehler noch einmal
+> passiert: die erste Fassung prüfte „steht `W(` im Block, muss auch
+> `alleFirmen()` drin stehen" — und war grün, obwohl
+> `birthdayGreetings` und `monthlyReport` durchrutschten (sie fassen
+> Firmendaten in einer Hilfsfunktion an). Jetzt steht dort eine Liste
+> mit Namen: ein neuer Zeitplan wird rot, bis jemand entscheidet.
+
+### Stufe 3 — Admin-Oberfläche · ✅ **gebaut am 10. August 2026**
+
+> **Entscheidung: das bestehende Konto wird hochgestuft.** Damit ging der
+> ursprüngliche Entwurf nicht auf — `role` kann nur einen Wert haben, und
+> als `role:'admin'` wäre der Betreiber kein Chef mehr und käme an seine
+> eigene Firma nicht heran.
+>
+> Also ist **`admin` ein eigenes Feld** neben der Rolle. Vergeben kann es
+> nur ein Admin; es steht in derselben Sperrliste wie `role` und `firma`.
+> Sonst könnte sich jeder Chef zum Betreiber machen und die Trennung, die
+> 21 Kreuztests absichern, wäre von innen aufgemacht.
+>
+> **Gebaut:** Reiter *Verwaltung → 🏛 Firmen*, sichtbar nur mit
+> `admin:true`. Firmenliste mit Studios, Konten und letzter Nutzung.
+> Firma anlegen (legt Firma, Chef-Konto und Profil in einem Zug an und
+> zeigt das Passwort **einmal**). Firma sperren und freigeben.
+>
+> **Drei Cloud Functions**, weil die App das nicht darf:
+> `firmaAnlegen` (Anmeldekonten kann nur das Admin-SDK erzeugen),
+> `firmaSperren`, `firmenZahlen` (der Admin darf `users` nicht lesen —
+> also zählt eine Function für ihn und gibt **nur Zahlen** zurück).
+>
+> **Was bewusst fehlt:** ein Knopf „als Chef ansehen". Er wäre bequem und
+> würde den Satz „ich komme an Ihre Daten nicht heran" zur Lüge machen.
+>
+> Die eigene Firma kann der Betreiber nicht sperren — er säße sonst
+> selbst draußen, und niemand könnte ihn hereinlassen.
+
+### ~~Stufe 3 — Admin-Oberfläche~~ · Aufwandsschätzung von damals
 
 Firmenliste, Firma anlegen, Firma sperren, `firmaAnlegen`-Function,
 Zähler-Function.

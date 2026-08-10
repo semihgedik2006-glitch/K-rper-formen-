@@ -100,6 +100,27 @@ service cloud.firestore {
     // Gehoert das Konto, das hier bearbeitet wird, zu MEINER Firma?
     // Solange es nur eine gibt, haben beide Seiten kein Feld 'firma' und
     // die Antwort ist ja - der heutige Betrieb merkt nichts.
+    // Ein Chef ist niemand, den ein anderer Chef mal eben absetzt.
+    // Bisher konnte jeder Chef jedem anderen die Rechte entziehen — bei
+    // einem Streit zwischen Geschaeftsfuehrern waere das ein Wettrennen,
+    // und der Schnellere gewinnt. Wer einen Chef herabstufen oder
+    // entfernen will, braucht die Ebene darueber (Admin).
+    // Das EIGENE Konto bleibt aendernbar, sonst kaeme man an sein
+    // Profilbild nicht mehr heran.
+    function fremderChef(uid) {
+      return resource != null
+        && resource.data.get('role', '') == 'chef'
+        && request.auth.uid != uid;
+    }
+    /* Admin ist ein EIGENES Feld, keine Rolle.
+       Waere es ein Rollenwert, muesste man sich zwischen "Chef meiner
+       Firma" und "Betreiber ueber allen" entscheiden — wer sein
+       bestehendes Konto hochstuft, verloere damit den Zugang zur eigenen
+       Firma. Als Zusatzfeld bleibt role:'chef' bestehen und admin:true
+       kommt daneben. */
+    function istAdminKonto() {
+      return hasProfile() && myProfile().get('admin', false) == true;
+    }
     function gleicheFirma() {
       return resource == null
         || resource.data.get('firma', '') == meineFirma();
@@ -135,14 +156,21 @@ service cloud.firestore {
       // eigenes Firmenfeld aendern koennte, wechselt damit in einen
       // fremden Betrieb und liest dort alles. Von den Kreuztests
       // gefunden, nicht beim Durchlesen.
-      allow update: if (isChef() && gleicheFirma())
+      // Das Feld 'admin' vergibt NUR ein Admin. Sonst koennte sich jeder
+      // Chef zum Betreiber ueber alle Firmen machen — und die Trennung,
+      // die 21 Kreuztests absichern, waere von innen aufgemacht.
+      allow update: if istAdminKonto()
+        || (isChef() && gleicheFirma() && !fremderChef(uid)
+            && !request.resource.data.diff(resource.data)
+                 .affectedKeys().hasAny(['admin']))
         || (request.auth.uid == uid
             && !request.resource.data.diff(resource.data)
-                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma']));
+                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma','admin']));
       // nur der Chef kann einen Zugang entfernen - und nur in der
       // eigenen Firma. Sonst koennte der Chef von A das Team von B
       // umschreiben oder loeschen; users liegt ja gemeinsam oben.
-      allow delete: if isChef() && gleicheFirma();
+      allow delete: if istAdminKonto()
+        || (isChef() && gleicheFirma() && !fremderChef(uid));
     }
 
     // ── Beitritts-Nachweis ──
@@ -563,8 +591,10 @@ service cloud.firestore {
       // Die Stammdaten der Firma. Der Name steht auf dem
       // Anmeldebildschirm, also vor jeder Anmeldung lesbar.
       allow read: if true;
-      // Angelegt und gesperrt wird eine Firma nur vom Admin (Stufe D).
-      allow write: if hasProfile() && myProfile().get('role','') == 'admin';
+      // Angelegt und gesperrt wird eine Firma nur vom Betreiber.
+      // istAdminKonto() prüft das FELD admin, nicht die Rolle — hier
+      // stand noch die alte Fassung, und der Regeltest hat es gefunden.
+      allow write: if istAdminKonto();
 
         match /config/registrierung {
           allow read, write: if inFirma(f) && (isChef());

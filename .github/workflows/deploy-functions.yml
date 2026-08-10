@@ -23,12 +23,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ── Regeln erst PRÜFEN, dann ausrollen ──
+  # ── Erst PRÜFEN, dann ausrollen ──
   # Die Sicherheitsregeln sind die einzige echte Grenze dieser App. Sie
   # wurden bisher ungeprüft ausgerollt. Diese Stufe fährt den Firestore-
-  # Emulator hoch und lässt tests/rules/security.test.js dagegen laufen –
-  # 32 Prüfungen, die ausdrücklich benennen, wer was NICHT darf.
-  # Fällt eine um, wird nichts deployt.
+  # Emulator hoch und lässt drei Durchläufe dagegen laufen:
+  #   security.test.js    wer darf was – und vor allem: wer darf NICHTS
+  #   umzug.test.js       das Umzugswerkzeug an nachgebauten Daten
+  #   funktionen.test.js  die Cloud Functions, wirklich ausgeführt
+  #
+  # Fällt eine Prüfung um, werden weder Regeln noch Functions ausgerollt.
+  # Das Hosting läuft bewusst unabhängig weiter: die App ist die eine
+  # Sache, die man notfalls schnell zurücknehmen können muss, und sie
+  # hängt nicht an diesen Durchläufen.
   regeltest:
     runs-on: ubuntu-latest
     steps:
@@ -51,9 +57,23 @@ jobs:
         working-directory: tests/rules
         run: npm install --no-audit --no-fund
 
-      - name: Sicherheitsregeln prüfen
+      # umzug.test.js und funktionen.test.js benutzen das ECHTE Admin-SDK
+      # und laden functions/index.js selbst. Beides liegt unter functions/.
+      # Ohne diesen Schritt brechen sie mit "Cannot find module" ab – und
+      # zwar sofort, nicht still: aber deployt würde trotzdem nichts.
+      - name: Functions-Abhängigkeiten installieren
+        working-directory: functions
+        run: npm install --no-audit --no-fund
+
+      - name: Regeln, Umzug und Cloud Functions prüfen
         working-directory: tests/rules
         run: npm test
+
+      # Braucht keinen Emulator: liest functions/index.js als Text und
+      # schlägt bei jedem flachen Zugriff auf eine Firmen-Sammlung an –
+      # auch bei einem, der erst morgen dazukommt.
+      - name: Keine flachen Zugriffe in den Cloud Functions
+        run: node tests/test-funktionen-pfade.js
 
   # ── Sicherheitsregeln ausrollen ──
   # Läuft in Sekunden. Damit muss niemand mehr Regeln von Hand in die
@@ -121,7 +141,11 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
 
   # ── Cloud Functions ──
+  # Hängt an regeltest. Vorher stand über der Prüfstufe „fällt eine um,
+  # wird nichts deployt" – das galt nur für die Regeln. Die Functions
+  # gingen ungeprüft raus, obwohl funktionen.test.js genau sie prüft.
   deploy:
+    needs: regeltest
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken

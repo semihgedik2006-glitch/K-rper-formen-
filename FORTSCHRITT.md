@@ -1607,6 +1607,90 @@ können: eine Berührung auf einem echten Bildschirm.
 
 ---
 
+## Sitzung 23 · Mehrere Firmen in einer App 🟢
+
+Die Frage, die diese Sitzung ausgelöst hat: *„Wie läuft das ab, wenn ich
+es einem Kunden verkaufe? Der sieht ja nur meine Studios."* Antwort: gar
+nicht — bis jetzt. Gebaut wurde eine **vierte Ebene über allem**, damit
+jeder Kunde seine eigenen Studios benennt und keiner die Daten des
+anderen sieht.
+
+### Was der Reihe nach entstanden ist
+
+| | Was | Zustand |
+|---|---|---|
+| **1** | Studios kommen aus der Datenbank statt aus dem Code — der Chef benennt sie selbst | ✅ |
+| **2A** | Jeder Datenzugriff der App läuft durch **eine** Funktion `S()` | ✅ 114 Stellen |
+| **2B** | `firma` am Konto, Kennung im Link, Regeln, 21 Kreuztests | ✅ |
+| **2C** | Umzugs-Werkzeug, Probelauf an echten Daten | ✅ im Probe-Projekt |
+| **2D** | Admin-Oberfläche: Firmen anlegen, sperren, zählen | ✅ |
+| **2E** | Die **Cloud Functions** auf dieselben Pfade bringen | ✅ |
+| **Live** | Der Umzug der echten Daten | **steht noch aus** |
+
+Alles Weitere dazu steht in `MANDANT-PLAN.md`. Hier nur, was man wissen
+sollte, ohne es zu lesen.
+
+### Die Entscheidung, die den Verkauf trägt
+
+Der Admin sieht **Firmennamen und Zahlen — keine Inhalte.** Keinen Chat,
+keine Aufgabe, keinen Namen eines Mitarbeiters. Es gibt bewusst keinen
+Knopf „als Chef ansehen", obwohl er leicht zu bauen wäre. Der Grund ist
+ein Satz, der im Verkaufsgespräch stimmen muss: *„Ich komme an Ihre Daten
+nicht heran."* Ein Knopf, der das Gegenteil kann, macht diesen Satz zur
+Lüge — auch wenn ihn nie jemand drückt.
+
+Das Passwort einer neu angelegten Firma wird **einmal** angezeigt und
+nirgends gespeichert.
+
+### Zwei Dinge nebenbei, die du direkt merkst
+
+**Ein Chef kann einem anderen Chef die Rechte nicht mehr entziehen.** Der
+Knopf ist weg, und die Regel dahinter auch — nicht nur die Anzeige. Wer
+sein eigenes Konto verwaltet, sieht dort jetzt „geschützt".
+
+**Das Passwort lässt sich beim Anmelden ansehen**, und beim Anlegen eines
+Kontos geht eine Bestätigungsmail raus.
+
+### Der Fehler dieser Sitzung
+
+Ich habe in Stufe 2A gezählt: „114 Zugriffe in `index.html`" — und
+`functions/index.js` nie mitgezählt, obwohl mein eigener Plan sie
+ausdrücklich nennt. **Vier Stufen lang habe ich an meinem Plan
+vorbeigearbeitet.**
+
+Was das bedeutet hätte: nach dem Umschalten wäre die App tadellos
+gewesen, und im Hintergrund nichts mehr passiert. Keine Push-Nachricht,
+keine Erinnerung an überfällige Aufgaben, keine Warnung vor ablaufenden
+Nachweisen, kein Monatsbericht. Ohne eine einzige Fehlermeldung.
+
+Aufgefallen ist es, weil ich vor dem Live-Umzug noch einmal nachgesehen
+habe, statt ihn zu starten. Der Umzug wurde deshalb **abgebrochen, bevor
+er lief** — das ist der einzige Grund, warum hier „gebaut" statt
+„repariert" steht.
+
+Gegen die Wiederholung stehen jetzt zwei Prüfer: einer, der die
+Functions wirklich **ausführt** (53 Prüfungen gegen den Emulator), und
+einer, der die Datei Zeile für Zeile liest und bei jedem flachen Zugriff
+anschlägt — auch bei einem, der erst morgen dazukommt. Denn mein Fehler
+war kein falscher Pfad, sondern eine **vergessene Datei**, und dagegen
+hilft kein Verhaltenstest: der prüft nur, woran jemand gedacht hat.
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| UI-Durchläufe | 42 |
+| Regeltests | 105 |
+| Umzugs-Prüfungen | 12 |
+| Cloud-Function-Prüfungen | 53 |
+
+**Im Betrieb ist noch nichts umgestellt.** `KONFIG.mandant` steht auf
+`false`, die App läuft auf den flachen Pfaden wie immer. Der ganze Umbau
+ist gebaut und geprüft, aber noch nicht scharfgeschaltet — das ist der
+nächste Schritt, und er ist der einzige mit echtem Risiko.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
