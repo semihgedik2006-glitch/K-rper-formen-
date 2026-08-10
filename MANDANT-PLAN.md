@@ -394,7 +394,7 @@ einer Sicherung, kein Datenverlust, kein Zeitdruck.
 | 2 | Den nächtlichen Vollexport von `formenchat` dort einspielen |
 | 3 | Migrations-Function laufen lassen: kopiert flach → `firmen/koerperformen/…` |
 | 4 | **Zählprüfung:** jede Sammlung vorher und nachher gleich viele Dokumente |
-| 5 | Die 36 automatischen Durchläufe gegen das Probe-Projekt |
+| 5 | ~~Die automatischen Durchläufe gegen das Probe-Projekt~~ — **geht nicht.** Sie arbeiten mit Attrappen und fassen kein echtes Firebase an. Ersatz: die App mit `mandant:true` gegen das Probe-Projekt und von Hand durchsehen. |
 | 6 | Von Hand durchsehen: Chatverlauf vollständig? Schichten am richtigen Studio? Archive lesbar? |
 | 7 | Kreuztests: eine zweite Testfirma anlegen und prüfen, dass sie nichts sieht |
 
@@ -562,6 +562,36 @@ ausgerollt werden kann:
 > Der Wert dieses Schritts ist nicht, was er tut, sondern was er
 > verhindert: in Stufe B gibt es keine 114 Gelegenheiten mehr, das
 > Präfix zu vergessen. Es gibt genau eine.
+
+> ### ✅ Stufe 2C am 10. August 2026 im Probe-Projekt gelaufen
+>
+> An **echten Daten**, aus der Nachtsicherung vom 10. August ins Projekt
+> `formenchat-probe` importiert (146 Dokumente).
+>
+> ```
+> ── UMZUG ──  Firma: koerperformen
+>      149  GESAMT   (8 s)
+> ── ZÄHLPRÜFUNG (frisch am Ziel gelesen) ──
+>   ✓ Jede Sammlung hat am Ziel genauso viele Dokumente wie in der Quelle.
+> ```
+>
+> **Alle 14 Studios sind mitgekommen**, obwohl ihre Elterndokumente nicht
+> existieren — die Stelle, an der ein falsch gebauter Umzug lautlos die
+> Hälfte verliert.
+>
+> **Kein Dienstschlüssel nötig.** Der Umzug lief in Google Cloud Shell
+> unter dem Konto des Betreibers. Ein Schlüssel, den es nicht gibt, kann
+> nicht verloren gehen — besser als der Weg, den ich ursprünglich
+> vorgeschlagen hatte.
+>
+> **Zwei Zahlen zur Einordnung:** die echte Datenbank hat 146 Dokumente,
+> nicht 5.675. Der Lasttest rechnete mit einem Jahr Betrieb, also einer
+> Vorhersage. Heute liegt ihr weit unter den 1,55 €/Monat.
+>
+> **Und eine Ungenauigkeit im Werkzeug:** es zählt Pfade, nicht
+> Dokumente — `studios` erscheint als 14, obwohl diese Elterndokumente
+> nicht existieren. Für die Prüfung egal (Quelle und Ziel werden gleich
+> gezählt), aber nicht vergleichbar mit der Zahl in der Firebase-Konsole.
 
 ### Stufe 3 — Admin-Oberfläche · ~1 Sitzung · kein Risiko
 
