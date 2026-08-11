@@ -39,9 +39,18 @@ wird von Hand, nicht von einem Zeitplan.
   unveränderter Code, der seit Monaten läuft, und der Auslöser ist im
   Betrieb belegt. Aber zwischen „die Funktion lief" und „es hat
   gebrummt" liegt ein Gerät, das ich nicht habe.
-- **Ein Abo-Modell.** Geplant, nicht gebaut — siehe `ABO-PLAN.md`. Der
-  erste Schritt dort ist ein Gespräch mit dem Steuerberater, nicht
+- **Das Abo-Modell.** Stufe A und B stehen (Abo je Firma von Hand
+  setzen, Gratis-Abo, Basic grenzt Nachweise und Monatsbericht ab).
+  Stufe C bis E — Stripe, automatische Mahnungen, Selbstbedienung —
+  sind geplant und bewusst nicht gebaut; siehe `ABO-PLAN.md`. Vor dem
+  ersten echten Geld steht ein Gespräch mit dem Steuerberater, nicht
   Code.
+- **Was „die sheets liste" heissen sollte.** Die tägliche Sicherung
+  läuft seit dem 11.8. **in der App** (`dailyArchive`, 23:45) — das
+  erzeugt die Excel-Dateien und die Sicherungsliste für den Chef. Die
+  Google-Tabelle selbst (`MATERIAL-SHEETS.gs`) ist unverändert. Falls
+  dort ein eigenes Tagesblatt entstehen soll, ist das eine separate
+  Änderung auf der Apps-Script-Seite. **Ungeklärt, bis du es sagst.**
 
 **Vier rechtliche Pflichtfelder in `konfig.js`** (Betreiber, Anschrift,
 Telefon, E-Mail) sind noch leer — solange steht in der App eine rote
