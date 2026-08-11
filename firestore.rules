@@ -607,6 +607,28 @@ service cloud.firestore {
       allow read, write: if isChef();
     }
 
+    /* ── Fehlerberichte ───────────────────────────────────────────────
+       Wenn bei einem Mitarbeiter etwas nicht laedt, erfaehrt es heute
+       niemand. Er sagt es vielleicht — vielleicht auch nicht, und bei
+       einem Zugang je Studio weiss hinterher ohnehin keiner mehr, wer
+       davorstand.
+
+       SCHREIBEN darf jeder Angemeldete: sonst wuerde ausgerechnet der
+       Fehler nicht gemeldet, der einen Mitarbeiter trifft.
+       LESEN darf nur der Chef. In einer Fehlermeldung steht, wer sie
+       ausgeloest hat und was er gerade tat — das ist nichts, was das
+       ganze Team ueber jeden einsehen soll.
+
+       update ist noetig, weil derselbe Fehler auf EINEM Dokument
+       mitgezaehlt wird. Ohne das entstuenden aus einem kaputten
+       Bildschirm hunderte Eintraege, und die Liste waere unlesbar. */
+    match /fehler/{sig} {
+      allow read, delete: if isChef();
+      allow create, update: if istAktiv()
+        && request.resource.data.text is string
+        && request.resource.data.text.size() < 400;
+    }
+
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {
@@ -976,6 +998,14 @@ service cloud.firestore {
 
         match /archives/{weekId} {
           allow read, write: if inFirma(f) && (isChef());
+        }
+
+        // Siehe oben: schreiben darf jeder Angemeldete, lesen nur der Chef.
+        match /fehler/{sig} {
+          allow read, delete: if inFirma(f) && (isChef());
+          allow create, update: if inFirma(f) && istAktiv()
+            && request.resource.data.text is string
+            && request.resource.data.text.size() < 400;
         }
 
         match /pushTokens/{token} {

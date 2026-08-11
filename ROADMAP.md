@@ -33,7 +33,7 @@ Alles kostenlos, alles ohne neue Abhängigkeit.
 |---|---|---|---|
 | 1.1 | **Eigene Absenderadresse für E-Mails** | Berichte kommen von einer Gmail-Adresse; bei einem fremden Kunden wirkt das nicht wie ein Produkt | klein, aber Domain nötig |
 | 1.2 | **Einrichtungs-Assistent beim ersten Start** | heute wird `konfig.js` von Hand bearbeitet. Ein geführter Ablauf (Firma, Studios, Firebase-Daten) macht aus „ich richte das ein" ein „der Kunde richtet das ein" | mittel |
-| 1.4 | **Fehlerbericht bei Abstürzen** | heute merkt niemand, wenn bei einem Mitarbeiter etwas nicht lädt | klein |
+| ~~1.4~~ | ~~**Fehlerbericht bei Abstürzen**~~ | ✅ **11.8.2026 erledigt.** Verwaltung → System → 🐞 Fehler im Betrieb. Gleiche Fehler werden gezählt, Rauschen und Netzfehler bleiben draussen, melden darf jeder und lesen nur der Chef | – |
 | 1.5 | **Die Datei-Sicherung im Browser vervollständigen** | „Alles als Daten-Datei" umfasst heute Aufgaben, Material, Team und Infos – nicht Chat, Geräte, Schichten, Abwesenheiten, Dokumente, Nachweise. Als zweites Standbein neben der nächtlichen Sicherung wäre das ehrlicher | mittel |
 
 ---
@@ -53,20 +53,24 @@ den Preis.
 
 ---
 
-## Phase 3 — Mehrere Kunden in einer App
+## Phase 3 — Mehrere Kunden in einer App · weitgehend erledigt ✅
 
-Erst ab dem fünften bis sechsten Kunden sinnvoll. Vorher ist ein eigenes
-Firebase-Projekt je Kunde einfacher, sicherer und billiger.
+> Diese Phase stand hier bis zum 11. August 2026 als ferne Zukunft, mit
+> der Warnung „erst ab dem fünften bis sechsten Kunden". Gekommen ist es
+> anders: der Umzug lief am 10. August, seit dem 11. arbeitet der
+> Betrieb auf den Firmen-Pfaden. Die Warnung war trotzdem richtig — es
+> war ein Umbau, kein Ausbau, und er hat mehrere Sitzungen gekostet.
 
-| # | Was | Warum |
+| # | Was | Stand |
 |---|---|---|
-| 3.1 | **Mandantenfähigkeit** | eine Datenbank für alle Kunden, getrennt über eine Firmen-Kennung. Betrifft jede Abfrage und jede Sicherheitsregel |
-| 3.2 | **Abrechnung** | Pläne, Rechnungen, Zahlungsanbieter |
-| 3.3 | **Verwaltungsoberfläche für dich** | Kunden anlegen, Kontingente sehen |
+| 3.1 | **Mandantenfähigkeit** | ✅ 10./11.8. — 156 Dokumente umgezogen, `mandant: true` live, jede Abfrage, jede Regel und jede Cloud Function auf Firmen-Pfaden. Belege in `MANDANT-PLAN.md` und `2E-PRUEFEN.md` |
+| 3.2 | **Abrechnung** | 🟡 halb. Abo je Firma von Hand setzen samt Gratis-Abo steht (Stufe A und B). Stripe, automatische Mahnungen und Selbstbedienung sind geplant und bewusst nicht gebaut — siehe `ABO-PLAN.md` |
+| 3.3 | **Verwaltungsoberfläche** | ✅ 11.8. — Firmen anlegen, sperren, löschen mit Archiv, zurückholen, Zahlen, Abo setzen |
 
-**Warnung:** Phase 3 ist kein Ausbau, sondern ein Umbau. Wer sie zu früh
-beginnt, verlangsamt jede weitere Änderung. Bis dahin gilt: **ein Kunde =
-ein Firebase-Projekt = eine `konfig.js`.**
+**Was von der Warnung bleibt:** ein neuer Kunde bekommt weiterhin eine
+eigene Firmen-Kennung in derselben Datenbank, nicht ein eigenes Projekt.
+Der Rückweg auf die flachen Pfade steht noch — die Alt-Daten werden
+frühestens Mitte September aufgeräumt, siehe `OFFEN.md`.
 
 ---
 

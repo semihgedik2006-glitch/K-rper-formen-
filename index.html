@@ -3379,6 +3379,16 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               keine Zugriffssperre. Wer sich auskennt, kommt an die Daten dahinter
               weiterhin heran — für echte Grenzen sind die Rollen da.</p>
           </div>
+          <!-- Fehler, die im Betrieb aufgetreten sind. Zugeklappt, aber
+               mit Zahl an der Überschrift — dieselbe Lehre wie beim
+               Firmen-Archiv: zugeklappt sieht aus wie leer. -->
+          <div class="card" data-fold="fehler" data-chef-only="1">
+            <h3>🐞 Fehler im Betrieb</h3>
+            <p class="hint">Wenn bei jemandem etwas nicht lädt, steht es hier — auch
+              wenn er es dir nicht sagt. Gleiche Fehler werden zusammengezählt,
+              nicht aneinandergereiht.</p>
+            <div id="fehlerListe"></div>
+          </div>
           <div class="card" data-fold="sheets" data-chef-only="1">
             <h3>🔄 Google-Tabellen abgleichen</h3>
             <p class="hint">Änderungen werden automatisch übertragen. Falls in der Tabelle
@@ -4278,10 +4288,101 @@ try{
    „Script error." (kommen auf iOS oft harmlos von Firebase/Fonts und verwirren nur). */
 window.addEventListener('error', function(ev){
   if(ev && ev.message) console.warn('Fehler:', ev.message);
+  fehlerMelden(ev && ev.message, ev && ev.filename, ev && ev.lineno,
+               ev && ev.error && ev.error.stack);
 });
 window.addEventListener('unhandledrejection', function(ev){
-  console.warn('Promise:', (ev && ev.reason && (ev.reason.message||ev.reason.code))||ev.reason);
+  var r = ev && ev.reason;
+  console.warn('Promise:', (r && (r.message||r.code))||r);
+  fehlerMelden((r && (r.message||r.code)) || String(r), '', 0, r && r.stack);
 });
+
+/* ── Fehler melden ───────────────────────────────────────────────────
+   WARUM ES DAS GIBT
+   Wenn bei einem Mitarbeiter etwas nicht lädt, erfährt es heute niemand.
+   Er sagt es vielleicht, vielleicht auch nicht — und bei einem Zugang je
+   Studio weiss hinterher ohnehin keiner mehr, wer davorstand. Der Chef
+   sieht die Fehler jetzt unter Verwaltung → System.
+
+   WAS BEWUSST NICHT PASSIERT
+   - Kein Toast, kein Hinweis, nichts Rotes. Wer arbeitet, soll arbeiten;
+     eine Fehlermeldung, die niemand versteht, macht nur Angst.
+   - Nichts vor der Anmeldung. Vorher fehlt die Berechtigung, und ein
+     Schreibversuch würde nur einen zweiten Fehler erzeugen.
+
+   DIE FALLE, DIE HIER LAUERT
+   Ein Fehler im Melden erzeugt einen Fehler, der gemeldet wird, der
+   einen Fehler erzeugt … Deshalb die Sperre `_meldeGerade` und ein
+   try/catch um alles. Diese Funktion darf unter keinen Umständen
+   selbst etwas werfen. */
+var FEHLER_MAX_JE_SITZUNG = 5;
+var _fehlerGesehen = {}, _fehlerZahl = 0, _meldeGerade = false;
+
+/* Herkunftsfremde und harmlose Meldungen fliegen raus. „Script error."
+   kommt auf iOS ständig von Firebase und den Schriftarten und sagt
+   nichts; die ResizeObserver-Schleife ist ein bekannter Browser-Hinweis
+   ohne Wirkung. Wer solches Rauschen mitsammelt, hat nach einer Woche
+   eine Liste, die niemand mehr aufmacht. */
+function fehlerRauschen(text){
+  if(!text) return true;
+  return /^Script error\.?$/i.test(text)
+      || /ResizeObserver loop/i.test(text)
+      || /Failed to fetch|NetworkError|Load failed|network error/i.test(text);
+}
+
+function fehlerMelden(text, datei, zeile, stapel){
+  try{
+    if(_meldeGerade) return;
+    text = String(text || '').slice(0, 300);
+    if(fehlerRauschen(text)) return;
+    if(!navigator.onLine) return;      // offline ist kein Fehler, das ist ein Zug
+    if(typeof session === 'undefined' || !session || !session.uid) return;
+    if(_fehlerZahl >= FEHLER_MAX_JE_SITZUNG) return;
+
+    /* Ein Schlüssel je Fehlerart, nicht je Vorkommen. Ein kaputter
+       Bildschirm feuert sonst hundertmal, und die Liste ist unlesbar. */
+    var quelle = (datei ? String(datei).split('/').pop() : '') + (zeile ? ':'+zeile : '');
+    var sig = (text + '|' + quelle).replace(new RegExp('[^a-zA-Z0-9]+','g'), '_').slice(0, 90);
+    if(_fehlerGesehen[sig]) return;    // in dieser Sitzung schon gemeldet
+    _fehlerGesehen[sig] = true;
+    _fehlerZahl++;
+
+    _meldeGerade = true;
+    var fv = firebase.firestore.FieldValue;
+    S('fehler').doc(sig).set({
+      text: text,
+      quelle: quelle,
+      stapel: String(stapel || '').slice(0, 600),
+      ansicht: (typeof currentView !== 'undefined' ? currentView : ''),
+      name: session.name || '',
+      uid: session.uid,
+      rolle: session.role || '',
+      geraet: String(navigator.userAgent || '').slice(0, 160),
+      zuletzt: Date.now(),
+      anzahl: fv.increment(1)
+    }, { merge: true }).then(function(){
+      /* „zuerst" nur einmal setzen. Stünde es im Rumpf oben, hiesse es
+         bei jedem Vorkommen „zuerst gesehen: gerade eben" — und genau
+         die Frage, seit wann etwas auftritt, wäre nicht mehr zu
+         beantworten. */
+      return S('fehler').doc(sig).get().then(function(d){
+        if(d.exists && !(d.data()||{}).zuerst){
+          return S('fehler').doc(sig).set({ zuerst: Date.now() }, { merge: true });
+        }
+      });
+    }).catch(function(){ /* still bleiben */ });
+  }catch(e){
+    /* Geschluckt, aber nicht verschwiegen. Beim Bauen hat genau dieses
+       catch einen echten Programmierfehler unsichtbar gemacht
+       (fv.increment war im Testaufbau nicht da), und der Durchlauf
+       meldete „wird gar nicht gemeldet" — richtig, aber aus dem
+       falschen Grund. Eine Zeile in der Konsole kostet nichts und
+       spart beim nächsten Mal eine halbe Stunde. */
+    try{ console.warn('Fehler-Melder selbst gestolpert:', e && e.message); }catch(_){}
+  }finally{
+    _meldeGerade = false;
+  }
+}
 
 /* Manifest wird jetzt statisch über manifest.json eingebunden (siehe <head>). */
 
@@ -5284,6 +5385,57 @@ function featuresAnwenden(){
   if(!ansichtAn(currentView)) showView('home');
   else if(currentView==='home') renderHome();
   if(currentView==='team') teamReiterPruefen();
+}
+
+/* ── Fehler im Betrieb: die Liste für den Chef ────────────────────────
+   Bewusst KEIN Dauer-Beobachter. Fehler sind selten und keine Nachricht,
+   auf die jemand wartet; ein Listener rund um die Uhr wäre Aufwand für
+   nichts. Geholt wird beim Öffnen des System-Reiters. */
+var _fehler = [];
+function fehlerLaden(){
+  if(!isChef()) return Promise.resolve();
+  return S('fehler').orderBy('zuletzt','desc').limit(30).get()
+    .then(function(sn){
+      _fehler = sn.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderFehlerListe();
+    })
+    .catch(function(e){ console.warn('Fehlerliste:', e.message); });
+}
+
+function renderFehlerListe(){
+  var box=$('fehlerListe'); if(!box || !isChef()) return;
+  // Zahl auch bei zugeklappter Karte — siehe renderFirmenArchiv
+  foldZahl('fehler', _fehler.length ? String(_fehler.length) : '');
+  if(!_fehler.length){
+    box.innerHTML='<p class="lese-leer">Nichts aufgetreten. So soll es sein.</p>';
+    return;
+  }
+  box.innerHTML=_fehler.map(function(f){
+    var wie = (f.anzahl>1) ? f.anzahl+'×' : '1×';
+    return '<div class="fm-zeile zu">'+
+      '<div class="fm-haupt">'+
+        '<b>'+esc(String(f.text||'').slice(0,120))+'</b>'+
+        '<span class="fm-sub">'+esc(wie)+
+          (f.ansicht ? ' · in „'+esc(f.ansicht)+'"' : '')+
+          (f.name ? ' · bei '+esc(f.name) : '')+
+          (f.quelle ? ' · '+esc(f.quelle) : '')+
+          (f.zuletzt ? ' · zuletzt '+esc(fmtDateTime(f.zuletzt)) : '')+'</span>'+
+      '</div>'+
+      '<button class="mini-x" data-fehlerweg="'+esc(f.id)+'">erledigt</button>'+
+    '</div>';
+  }).join('');
+  box.querySelectorAll('[data-fehlerweg]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-fehlerweg');
+      withBusy(b,function(){
+        return S('fehler').doc(id).delete().then(function(){
+          _fehler=_fehler.filter(function(x){ return x.id!==id; });
+          renderFehlerListe();
+          toast('Erledigt ✓');
+        });
+      });
+    });
+  });
 }
 
 /* ── Die Schalter selbst (Verwaltung → System) ── */
@@ -10391,7 +10543,7 @@ function showChefTab(id, keep){
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
-  if(id==='system') renderFeatureListe();
+  if(id==='system'){ renderFeatureListe(); fehlerLaden(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }

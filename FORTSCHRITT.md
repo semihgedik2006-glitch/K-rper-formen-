@@ -1984,6 +1984,71 @@ ist der Aufruf im Code, nicht das Ausbleiben auf einem Gerät.
 
 ---
 
+## Sitzung 27 · Fehler im Betrieb werden sichtbar 🟢
+
+Bisher galt: wenn bei einem Mitarbeiter etwas nicht lädt, erfährt es
+niemand. Er sagt es vielleicht — vielleicht auch nicht. Und bei **einem
+Zugang je Studio** weiss hinterher ohnehin keiner mehr, wer davorstand.
+
+Jetzt landet so etwas still in der Datenbank, und der Chef sieht es
+unter **Verwaltung → System → 🐞 Fehler im Betrieb**: Text, Ansicht,
+Person, Stelle im Quelltext und wie oft. Ein Knopf „erledigt" räumt den
+Eintrag weg.
+
+### Vier Entscheidungen
+
+- **Kein Toast, nichts Rotes für den Mitarbeiter.** Wer arbeitet, soll
+  arbeiten. Eine technische Meldung, die niemand versteht, macht nur
+  Angst und ändert nichts.
+- **Gleiche Fehler werden gezählt, nicht aneinandergereiht.** Ein
+  kaputter Bildschirm feuert sonst hundertmal, und die Liste ist nach
+  einer Minute wertlos. Dazu höchstens fünf verschiedene je Sitzung.
+- **Rauschen bleibt draussen.** „Script error." und die
+  ResizeObserver-Schleife sagen nichts; Netzfehler sind kein Fehler,
+  sondern ein Zug. Wer das mitsammelt, hat nach einer Woche eine Liste,
+  die niemand mehr aufmacht.
+- **Melden darf jeder, lesen nur der Chef.** Sonst würde ausgerechnet
+  der Fehler nicht gemeldet, der einen Mitarbeiter trifft. Und in einer
+  Meldung steht, wer sie ausgelöst hat und was er gerade tat — das ist
+  nichts fürs ganze Team.
+
+### Zwei eigene Fehler, beide erwähnenswert
+
+**Mein `try/catch` hat einen echten Programmierfehler still
+verschluckt.** Im Testaufbau fehlte `FieldValue.increment`, die Meldung
+stolperte darüber, und das `catch` schluckte es lautlos. Der Durchlauf
+meldete „wird gar nicht gemeldet" — richtig, aber aus dem falschen
+Grund. Ausgerechnet bei einer Fehlermelde-Funktion Fehler zu
+verschlucken ist der passendste Fehler dieser Runde. Jetzt schreibt das
+`catch` eine Zeile in die Konsole.
+
+**Und mein Testaufbau hat einen Fehler gemeldet, den es nicht gab:** er
+wickelte denselben Schreibaufruf doppelt ein und zählte damit jeden
+Vorgang zweimal. Ich war schon dabei, in der App nach der Ursache zu
+suchen. Gefunden hat es eine Gegenprobe über die Konsole: der Auslöser
+feuert genau einmal, geschrieben wurde zweimal — also lag es am
+Messgerät, nicht am Gemessenen.
+
+Dieselbe Verwechslung ein zweites Mal: die Prüfung der Obergrenze zählte
+Schreib**vorgänge** statt Mel**dungen** und meldete „ohne Bremse", wo
+die Bremse sauber griff.
+
+### Gegenprobe
+
+Mit entfernten Wächtern (Rauschfilter, Bremse, Sammeln) meldet der
+Durchlauf drei Fehler statt keinem.
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| UI-Durchläufe | 50 |
+| Regeltests | 143 |
+| Umzugs-Prüfungen | 12 |
+| Cloud-Function-Prüfungen | 79 |
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

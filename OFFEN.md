@@ -34,6 +34,7 @@ wird von Hand, nicht von einem Zeitplan.
 | Stillgelegte Firma: der Chef kam in eine leere App statt einer Meldung | ✅ 11.8. |
 | Kürzel in der Google-Tabelle (Putzplan und Notizen) | ✅ 11.8., Skript neu bereitgestellt und bestätigt |
 | Funktionen abschaltbar (Schichtplan, Abwesenheiten und neun weitere) | ✅ 11.8., mit Gegenprobe |
+| Fehler bei Mitarbeitern blieben unbemerkt | ✅ 11.8., Verwaltung → System → 🐞 |
 
 ## Offen, weil noch niemand hingeschaut hat
 

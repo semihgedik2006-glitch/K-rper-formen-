@@ -122,6 +122,7 @@ was sie sehen soll.
 | `test-kuerzel-grund.js` | Kürzel im Putzplan, Grund an offenen Aufgaben |
 | `test-sheets-kuerzel.js` | Google-Tabelle: neue Spalte „Kürzel", alte Zeilen ziehen richtig mit um |
 | `test-funktionen-schalter.js` | abgeschaltete Funktionen: weg aus Leiste, Startseite, Team-Reitern und Verwaltung |
+| `test-fehlerbericht.js` | Fehler im Betrieb: echte landen, Rauschen nicht, keine Endlosschleife |
 
 ### Alle auf einmal
 
