@@ -160,18 +160,38 @@ async function zumFirmenReiter(page) {
     }
     if (!zeile.knopf) errs.push('FEHLT: kein Knopf zum Ändern des Abos');
 
-    // Das Fenster öffnen und nachsehen, ob das Preisfeld verschwindet
+    /* ── Das Fenster: auf, zu, und VORHER zu ──
+       Hier stand zuerst `classList.contains('show')`. Der Test war grün,
+       während das Fenster im Betrieb dauerhaft mitten in der Seite
+       stand und sich nicht schliessen liess: #aboModal fehlte in den
+       CSS-Regeln der Fenster und hatte damit kein display:none. Die
+       Klasse sass völlig richtig — sie hatte nur keine Wirkung.
+
+       Also wird jetzt die SICHTBARKEIT gemessen, nicht die Klasse. Und
+       zwar in drei Zuständen, weil der erste der eigentliche Fehler
+       war: vor dem Klick muss es ZU sein. */
+    const vorher = await page.evaluate(() =>
+      getComputedStyle(document.getElementById('aboModal')).display);
+    console.log('Abo-Fenster vor dem Klick:', vorher);
+    if (vorher !== 'none') {
+      errs.push('DER FEHLER AUS DEM BETRIEB: das Abo-Fenster steht schon offen, ' +
+                'bevor jemand darauf geklickt hat (display: ' + vorher + ')');
+    }
+
     const dialog = await page.evaluate(() => {
       const b = document.querySelector('[data-abo]');
       if (!b) return null;
       b.click();
-      const auf = document.getElementById('aboModal').classList.contains('show');
-      const preisWeg = getComputedStyle(document.getElementById('aboPreisFeld')).display === 'none';
-      return { auf: auf, status: document.getElementById('aboStatus').value,
-               stufe: document.getElementById('aboStufe').value, preisWeg: preisWeg };
+      const el = document.getElementById('aboModal');
+      return {
+        sichtbar: getComputedStyle(el).display !== 'none',
+        status: document.getElementById('aboStatus').value,
+        stufe: document.getElementById('aboStufe').value,
+        preisWeg: getComputedStyle(document.getElementById('aboPreisFeld')).display === 'none'
+      };
     });
-    console.log('Abo-Fenster:', JSON.stringify(dialog));
-    if (!dialog || !dialog.auf) errs.push('FEHLT: das Abo-Fenster geht nicht auf');
+    console.log('Abo-Fenster offen:', JSON.stringify(dialog));
+    if (!dialog || !dialog.sichtbar) errs.push('FEHLT: das Abo-Fenster geht nicht auf');
     else {
       if (dialog.status !== 'gratis') errs.push('FALSCH: das Fenster zeigt nicht den gespeicherten Zustand');
       if (dialog.stufe !== 'premium') errs.push('FALSCH: das Fenster zeigt nicht die gespeicherte Stufe');
@@ -179,6 +199,15 @@ async function zumFirmenReiter(page) {
          der nie berechnet wird, und wundert sich später. */
       if (!dialog.preisWeg) errs.push('FALSCH: bei „gratis" steht trotzdem ein Preisfeld da');
     }
+
+    // Und wieder zu — der Teil, über den die Rückmeldung kam
+    const zu = await page.evaluate(() => {
+      const x = document.getElementById('aboClose');
+      if (x) x.click();
+      return getComputedStyle(document.getElementById('aboModal')).display;
+    });
+    console.log('Abo-Fenster nach ✕:', zu);
+    if (zu !== 'none') errs.push('DER FEHLER AUS DEM BETRIEB: das Fenster geht nicht wieder zu');
 
     // Und die Gegenprobe: bei „aktiv" MUSS das Preisfeld wieder da sein
     const zurueck = await page.evaluate(() => {
