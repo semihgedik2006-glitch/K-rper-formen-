@@ -1656,6 +1656,109 @@ exports.purgeOneOffCleaning = region
     return null;
   });
 
+/* ── Tages-Sicherung: was war heute los? ─────────────────────────────
+   Es gab bisher nur eine WOCHEN-Sicherung, und die wurde innerhalb der
+   Woche immer wieder ueberschrieben. Damit war der Montag am Dienstag
+   weg. Putzplan und Aufgaben setzen sich aber taeglich zurueck — wer
+   nachvollziehen will, was an einem bestimmten Tag erledigt wurde,
+   hatte keine Chance.
+
+   ZWEI ENTSCHEIDUNGEN, die das Ergebnis bestimmen:
+
+   1. ABENDS, nicht morgens. Eine Sicherung um 8 Uhr zeigt einen leeren
+      Putzplan — sie haelt fest, dass noch nichts getan wurde. Nuetzlich
+      ist der Stand um 23:45.
+
+   2. AUF DEM SERVER, nicht in der App. Der Wochenlauf im Browser des
+      Chefs las 462 Dokumente, und zwar auf seinem Geraet und seinem
+      Datenvolumen. Taeglich waere das schlimmer. Hier laeuft es einmal,
+      fuer alle, und niemand muss dafuer die App offen haben.        */
+exports.dailyArchive = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('45 23 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = new Date();
+    /* Der Tag in Berliner Zeit — nicht in UTC. Um 23:45 Ortszeit ist es
+       in UTC schon der naechste Tag, und die Sicherung landete unter
+       dem falschen Datum. */
+    const tag = jetzt.toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+
+    for (const firma of await alleFirmen()) {
+      try {
+        const studios = await W(firma).collection('studios').listDocuments();
+        const material = {};
+        const invSnap = await W(firma).collection('inventory').get();
+        invSnap.forEach(d => {
+          material[d.id] = ((d.data() || {}).items || []).map(it => ({
+            name: it.name || '', have: it.have || 0, limit: it.limit || 0,
+            need: (it.limit > 0) ? Math.max(0, it.limit - (it.have || 0)) : (it.need || 0),
+          }));
+        });
+
+        const cleaning = {}, aufgaben = {};
+        for (const ref of studios) {
+          const [cSnap, nSnap, tSnap] = await Promise.all([
+            ref.collection('cleaning').get(),
+            ref.collection('cleaningNotes').orderBy('ts', 'desc').limit(50).get(),
+            ref.collection('todos').get(),
+          ]);
+          cleaning[ref.id] = {
+            tasks: cSnap.docs.map(d => {
+              const t = d.data() || {};
+              return {
+                title: t.title || '',
+                rep: t.recurring || 'einmalig',
+                status: t.done ? 'erledigt' : 'offen',
+                /* Das Kuerzel steht vorn: bei einem Zugang je Studio ist
+                   der Kontoname immer derselbe und sagt nichts. */
+                by: t.done ? (t.doneKuerzel || t.doneBy || '') : '',
+                konto: t.done ? (t.doneBy || '') : '',
+                at: t.doneAt || null,
+              };
+            }),
+            notes: nSnap.docs.map(d => {
+              const n = d.data() || {};
+              return { text: n.text || '', by: n.by || '', at: n.ts || null };
+            }),
+          };
+          /* Aufgaben gehoerten bisher gar nicht in die Sicherung. Genau
+             sie sind aber der Grund fuer die taegliche: "man kann die
+             taeglichen Aufgaben nicht verfolgen". */
+          aufgaben[ref.id] = tSnap.docs.map(d => {
+            const t = d.data() || {};
+            return {
+              title: t.title || '',
+              status: t.done ? 'erledigt' : 'offen',
+              by: t.done ? (t.doneBy || '') : '',
+              at: t.doneAt || null,
+              due: t.due || null,
+              /* Der Grund, warum etwas NICHT erledigt wurde. Ohne ihn
+                 sieht der Chef im Rueckblick nur eine offene Zeile. */
+              grund: t.grund || '',
+              grundVon: t.grundVon || '',
+            };
+          });
+        }
+
+        await W(firma).collection('archives').doc(tag).set({
+          tag: tag,
+          label: jetzt.toLocaleDateString('de-DE',
+            { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric',
+              timeZone: 'Europe/Berlin' }),
+          updatedAt: Date.now(),
+          updatedBy: 'Automatische Tages-Sicherung',
+          material: material,
+          cleaning: cleaning,
+          aufgaben: aufgaben,
+        }, { merge: true });
+      } catch (e) {
+        console.error('Tages-Sicherung (' + (firma || 'flach') + '):', e.message);
+      }
+    }
+    return null;
+  });
+
 /* ── Papierkorb automatisch leeren ──
    Gelöschtes bleibt 30 Tage liegen und verschwindet dann von selbst.
    Ohne diesen Lauf würde der Papierkorb ewig wachsen: bei Aufgaben mit
