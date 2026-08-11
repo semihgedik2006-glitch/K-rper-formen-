@@ -116,7 +116,7 @@ was sie sehen soll.
 | `test-probe-schalter.js` | der Probelauf-Schalter greift nur auf der Probe-Adresse |
 | `test-funktionen-pfade.js` | keine Cloud Function greift noch flach auf Firmendaten zu |
 | `test-ausliefern.js` | jede gehostete Datei löst auch wirklich einen Deploy aus |
-| `test-admin-firmen.js` | Betreiber-Bereich: Studiozahl, Firmen-Archiv, für andere unsichtbar |
+| `test-admin-firmen.js` | Betreiber-Bereich: Studiozahl, Firmen-Archiv, Abo und Gratis-Abo |
 | `test-firma-stillgelegt.js` | gesperrte/gelöschte Firma: klare Meldung statt leerer App |
 
 ### Alle auf einmal
@@ -208,9 +208,9 @@ npm test                          # alle drei
 
 | Datei | prüft | Umfang |
 |---|---|---|
-| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 115 |
+| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 125 |
 | `umzug.test.js` | `tools/umzug.js` an nachgebauten Daten — Zählung, Inhalte, Untersammlungen unter leeren Eltern | 12 |
-| `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede Firma, und keine fremde | 69 |
+| `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede Firma, und keine fremde | 79 |
 
 > **Zu `funktionen.test.js`:** er lädt `functions/index.js` und löst die
 > Funktionen über `.run()` aus, so wie Firebase es täte. Geprüft wird der

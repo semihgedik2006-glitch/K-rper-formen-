@@ -44,7 +44,8 @@ async function start(opt) {
     await page.addInitScript(`
       window.__admin = true;
       window.__firmenArchiv = ${JSON.stringify(opt.archiv || [])};
-      window.__firmen = ${JSON.stringify(opt.firmen || [])};`);
+      window.__firmen = ${JSON.stringify(opt.firmen || [])};
+      window.__abos = ${JSON.stringify(opt.abos || {})};`);
   }
   await page.addInitScript({ path: path.join(SP, 'stub-chef.js') });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -125,6 +126,71 @@ async function zumFirmenReiter(page) {
     });
     console.log('Ohne Archiv, Zahl:', JSON.stringify(zahl));
     if (zahl) errs.push('FALSCH: leeres Archiv zeigt trotzdem eine Zahl (' + zahl + ')');
+    await b.close();
+  }
+
+  /* ══ 2b. Das Abo — und das Gratis-Abo im Besonderen ══
+     „Gib mir die Möglichkeit, Gratis-Abos zu vergeben, für meinen Chef
+     natürlich." Genau das wird hier geklickt. */
+  {
+    const { b, page } = await start({
+      admin: true,
+      firmen: [{ id:'mueller-7f3a', name:'Studio Müller GmbH', aktiv:true }],
+      abos:  { 'mueller-7f3a': { stufe:'premium', status:'gratis', netto:0,
+                                 bisAm:null, gesetztAm: Date.now() } }
+    });
+    await zumFirmenReiter(page);
+    await page.waitForTimeout(900);
+
+    const zeile = await page.evaluate(() => {
+      const box = document.getElementById('firmenListe');
+      return {
+        text: box ? box.textContent : '',
+        knopf: !!(box && box.querySelector('[data-abo]'))
+      };
+    });
+    console.log('Abo-Zeile:', JSON.stringify(zeile.text.slice(0, 160)));
+    if (!/gratis/i.test(zeile.text)) {
+      errs.push('FEHLT: das Gratis-Abo steht nicht in der Firmenliste');
+    }
+    /* Ein Gratis-Abo darf keinen Betrag zeigen. Ein „0,00 €/Monat"
+       daneben klingt nach Rechnung, und genau das soll es nicht sein. */
+    if (/0,00\s*€/.test(zeile.text)) {
+      errs.push('FALSCH: beim Gratis-Abo steht ein Betrag daneben');
+    }
+    if (!zeile.knopf) errs.push('FEHLT: kein Knopf zum Ändern des Abos');
+
+    // Das Fenster öffnen und nachsehen, ob das Preisfeld verschwindet
+    const dialog = await page.evaluate(() => {
+      const b = document.querySelector('[data-abo]');
+      if (!b) return null;
+      b.click();
+      const auf = document.getElementById('aboModal').classList.contains('show');
+      const preisWeg = getComputedStyle(document.getElementById('aboPreisFeld')).display === 'none';
+      return { auf: auf, status: document.getElementById('aboStatus').value,
+               stufe: document.getElementById('aboStufe').value, preisWeg: preisWeg };
+    });
+    console.log('Abo-Fenster:', JSON.stringify(dialog));
+    if (!dialog || !dialog.auf) errs.push('FEHLT: das Abo-Fenster geht nicht auf');
+    else {
+      if (dialog.status !== 'gratis') errs.push('FALSCH: das Fenster zeigt nicht den gespeicherten Zustand');
+      if (dialog.stufe !== 'premium') errs.push('FALSCH: das Fenster zeigt nicht die gespeicherte Stufe');
+      /* Kein Preisfeld bei gratis — sonst trägt jemand einen Betrag ein,
+         der nie berechnet wird, und wundert sich später. */
+      if (!dialog.preisWeg) errs.push('FALSCH: bei „gratis" steht trotzdem ein Preisfeld da');
+    }
+
+    // Und die Gegenprobe: bei „aktiv" MUSS das Preisfeld wieder da sein
+    const zurueck = await page.evaluate(() => {
+      const s = document.getElementById('aboStatus');
+      s.value = 'aktiv';
+      s.dispatchEvent(new Event('change'));
+      return getComputedStyle(document.getElementById('aboPreisFeld')).display !== 'none';
+    });
+    if (!zurueck) {
+      errs.push('GEGENPROBE: bei „läuft" fehlt das Preisfeld auch — ' +
+                'dann prüft die Zeile darüber nichts');
+    }
     await b.close();
   }
 

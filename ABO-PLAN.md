@@ -265,15 +265,12 @@ nichts mit dem Finanzamt zu tun haben:
 - **Gewerbeanmeldung.** Software gegen wiederkehrendes Entgelt zu
   verkaufen, ist in aller Regel ein Gewerbe. Das ist eine Anmeldung beim
   Amt, keine große Sache — aber sie steht **vor** der ersten Rechnung.
-- **Und der wichtigste:** wem gehört die App eigentlich? Du hast sie für
-  einen Betrieb gebaut, in dem du arbeitest. Ob du sie an Dritte
-  verkaufen darfst, ist eine Frage an deinen Arbeitgeber und
-  gegebenenfalls an deinen Arbeitsvertrag — **bevor** du den ersten
-  Kunden ansprichst.
-
-> Der letzte Punkt ist kein Steuerthema, und ich bringe ihn trotzdem
-> hier: er kann das ganze Vorhaben beenden, und er kostet nichts außer
-> einem Gespräch. Erst klären, dann rechnen.
+> **Die Eigentumsfrage ist geklärt (11.8.2026).** Ich hatte sie hier als
+> Risiko notiert: wem gehört eine App, die für einen Betrieb gebaut
+> wurde, in dem man selbst arbeitet? Antwort: sie gehört dir, sie ist
+> für deinen Chef entstanden, und er trägt den gemeinsamen Gewinn mit.
+> Damit ist der Punkt erledigt und steht hier nur noch als Verlauf —
+> nicht mehr als offene Frage.
 
 ### Was das für den Bau heißt
 
@@ -321,15 +318,58 @@ Der Umbau in Stufen, so wie beim Umzug:
 
 | | Was | Risiko |
 |---|---|---|
-| **A** | Abo-Zustand am Firmen-Dokument (`abo: {stufe, status, studios, netto, bisAm}`), von Hand gesetzt. Die App liest ihn, sperrt aber noch nichts | keins |
+| **A** ✅ | Abo-Zustand unter `firmen/<kennung>/abo/aktuell`, von Hand gesetzt. Die App liest und zeigt ihn, sperrt aber nichts | keins |
 | **B** | Die Stufen greifen: Premium-Funktionen sichtbar/unsichtbar, in der App **und in den Regeln** | gering |
 | **C** | Stripe anbinden: Bezahlseite, Rückmeldung per Webhook, Zustand wird automatisch gesetzt | **hoch** — echtes Geld |
 | **D** | Der Zustand `nurlesen` in den Regeln, dazu die Uhr, die die Mahnstufen aus Abschnitt 3 weiterstellt | mittel |
 | **E** | Selbstbedienung: Kunde ändert Stufe, sieht Rechnungen, kündigt | gering |
 
-**Stufe A allein ist schon nützlich** und kostet fast nichts: du kannst
-Kunden von Hand auf „Premium bis 31.12." setzen und alles ausprobieren,
-lange bevor Geld fließt. Genau das würde ich zuerst bauen.
+### ✅ Stufe A ist gebaut — 11. August 2026
+
+Unter **Verwaltung → 🏛 Firmen** hat jede Firma jetzt eine Abo-Zeile und
+einen Knopf „ändern": Stufe (Basic/Premium), Zustand, Preis **netto**,
+Laufzeit, Notiz.
+
+**Vier Zustände**, und `gratis` ist einer davon — nicht ein Preis von 0
+mit Beigeschmack:
+
+| | |
+|---|---|
+| `aktiv` | läuft, wird bezahlt |
+| `gratis` | kostenlos, dauerhaft oder befristet |
+| `test` | Testphase |
+| `gekuendigt` | gekündigt |
+
+Der Unterschied zwischen `gratis` und „0 €" zählt: ein Gratis-Abo ist
+eine **Entscheidung**, kein Zahlungsausfall — es darf nie in die
+Mahnstufen aus Abschnitt 3 geraten.
+
+**Wo der Zustand liegt und warum:** `firmen/<kennung>/abo/aktuell`,
+nicht im Firmen-Dokument. Letzteres ist öffentlich lesbar, weil der
+Anmeldebildschirm den Firmennamen braucht. Was ein Kunde zahlt, geht
+niemanden etwas an — am wenigsten einen Wettbewerber, der die Kennung
+errät. Lesen darf es der Betreiber und der Chef der eigenen Firma;
+schreiben nur der Betreiber.
+
+**Was schon erzwungen wird, obwohl noch nichts abrechnet:**
+
+- `gratis` setzt den Betrag **auf dem Server** auf 0. Die Oberfläche
+  blendet das Feld zwar aus, aber die Oberfläche ist keine Grenze. Ein
+  Gratis-Abo mit hinterlegtem Betrag wäre eine Zeitbombe: sobald später
+  etwas abrechnet, was den Betrag liest, bekommt der Chef eine Rechnung,
+  die ihm nie jemand angekündigt hat.
+- Negative Beträge werden zu 0. Kein Angriff — ein Tippfehler, der
+  später eine Gutschrift auslösen könnte.
+- Erfundene Stufen und Zustände werden abgewiesen.
+- Es steht drin, **wer** es wann gesetzt hat.
+
+**Belegt durch 20 Prüfungen**: 10 gegen die Regeln (wer darf lesen, wer
+darf schreiben, und ob eine breitere Regel darüberliegt), 10 gegen die
+ausgeführte Funktion.
+
+**Was Stufe A ausdrücklich nicht tut:** sperren. Premium-Funktionen sind
+für Basic-Kunden weiterhin sichtbar. Das ist Stufe B — und die Grenze
+gehört dann in `firestore.rules`, nicht in die App.
 
 > **Die Regel-Falle, die hier wieder lauert.** Wenn Premium-Funktionen
 > nur in der App ausgeblendet werden, sind sie nicht abgeschaltet — wer

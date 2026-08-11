@@ -612,6 +612,73 @@ exports.firmaAnlegen = region
     return { kennung: kennung, uid: konto.uid, passwort: passwort, studios: anzahl };
   });
 
+/* ── Abo-Zustand setzen (Stufe A aus ABO-PLAN.md) ────────────────────
+   Von Hand, durch den Betreiber. Es fliesst kein Geld, es sperrt noch
+   nichts — die App LIEST den Zustand und zeigt ihn an, mehr nicht.
+
+   Warum trotzdem eine Cloud Function und nicht nur eine Regel: hier
+   gehoert Pruefung hin, die eine Regel schlecht kann (Stufennamen,
+   Betraege, Datum), und ein Vermerk, WER es gesetzt hat. Bei allem, was
+   spaeter Geld bedeutet, will man das nachlesen koennen.
+
+   'gratis' ist ein eigener Zustand, kein Preis von 0 mit Beigeschmack.
+   Der Unterschied zaehlt: ein Gratis-Abo ist eine Entscheidung, kein
+   Zahlungsausfall — und es darf nie in die Mahnstufen geraten.        */
+const ABO_STUFEN = ['basic', 'premium'];
+const ABO_STATUS = ['aktiv', 'gratis', 'test', 'gekuendigt'];
+
+exports.aboSetzen = region
+  .https.onCall(async (data, context) => {
+    const ich = await requireAdmin(context);
+    const kennung = String((data && data.kennung) || '');
+    const stufe = String((data && data.stufe) || '');
+    const status = String((data && data.status) || '');
+    if (!kennung) {
+      throw new functions.https.HttpsError('invalid-argument', 'Keine Firma angegeben.');
+    }
+    if (ABO_STUFEN.indexOf(stufe) < 0) {
+      throw new functions.https.HttpsError('invalid-argument',
+        'Unbekannte Stufe. Moeglich: ' + ABO_STUFEN.join(', '));
+    }
+    if (ABO_STATUS.indexOf(status) < 0) {
+      throw new functions.https.HttpsError('invalid-argument',
+        'Unbekannter Zustand. Moeglich: ' + ABO_STATUS.join(', '));
+    }
+    if (!(await db.collection('firmen').doc(kennung).get()).exists) {
+      throw new functions.https.HttpsError('not-found', 'Diese Firma gibt es nicht (mehr).');
+    }
+
+    /* Preise werden NETTO gefuehrt, die Steuer separat — auch solange
+       sie 0 % ist. Wer Bruttopreise festschreibt, baut den Umstieg von
+       Kleinunternehmer auf Regelbesteuerung spaeter muehsam nach.
+       Begruendung in ABO-PLAN.md, Abschnitt 5. */
+    let netto = Number((data && data.netto) || 0);
+    if (!isFinite(netto) || netto < 0) netto = 0;
+    netto = Math.round(netto * 100) / 100;
+    /* Gratis heisst gratis. Ein Gratis-Abo mit hinterlegtem Betrag
+       waere eine Zeitbombe: sobald spaeter etwas abrechnet, was den
+       Betrag liest, bekommt der Chef eine Rechnung, die ihm nie jemand
+       angekuendigt hat. */
+    if (status === 'gratis') netto = 0;
+
+    let bisAm = (data && data.bisAm) ? Number(data.bisAm) : null;
+    if (!bisAm || !isFinite(bisAm) || bisAm <= 0) bisAm = null;
+
+    const eintrag = {
+      stufe: stufe,
+      status: status,
+      netto: netto,
+      bisAm: bisAm,                                  // null = unbefristet
+      notiz: String((data && data.notiz) || '').slice(0, 300),
+      gesetztVon: context.auth.uid,
+      gesetztVonName: ich.name || '',
+      gesetztAm: Date.now(),
+    };
+    await db.collection('firmen').doc(kennung)
+      .collection('abo').doc('aktuell').set(eintrag);
+    return Object.assign({ ok: true, kennung: kennung }, eintrag);
+  });
+
 /* ── Eine Firma löschen — in den Papierkorb, nicht in den Ofen ────────
    Was hier NICHT passiert: die Daten werden nicht angefasst. Sie
    bleiben unter firmen/<kennung>/… liegen, nur ihr Elterndokument
