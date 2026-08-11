@@ -34,7 +34,7 @@ Alles kostenlos, alles ohne neue Abhängigkeit.
 | 1.1 | **Eigene Absenderadresse für E-Mails** | Berichte kommen von einer Gmail-Adresse; bei einem fremden Kunden wirkt das nicht wie ein Produkt | klein, aber Domain nötig |
 | 1.2 | **Einrichtungs-Assistent beim ersten Start** | heute wird `konfig.js` von Hand bearbeitet. Ein geführter Ablauf (Firma, Studios, Firebase-Daten) macht aus „ich richte das ein" ein „der Kunde richtet das ein" | mittel |
 | ~~1.4~~ | ~~**Fehlerbericht bei Abstürzen**~~ | ✅ **11.8.2026 erledigt.** Verwaltung → System → 🐞 Fehler im Betrieb. Gleiche Fehler werden gezählt, Rauschen und Netzfehler bleiben draussen, melden darf jeder und lesen nur der Chef | – |
-| 1.5 | **Die Datei-Sicherung im Browser vervollständigen** | „Alles als Daten-Datei" umfasst heute Aufgaben, Material, Team und Infos – nicht Chat, Geräte, Schichten, Abwesenheiten, Dokumente, Nachweise. Als zweites Standbein neben der nächtlichen Sicherung wäre das ehrlicher | mittel |
+| ~~1.5~~ | ~~**Die Datei-Sicherung im Browser vervollständigen**~~ | ✅ **11.8.2026 erledigt.** Jetzt sind Chat, Putzplan mit Kürzeln, Geräte mit Verlauf, Schichten, Abwesenheiten, Übergaben, Brett, Dokument-Angaben und Nachweise dabei. Was fehlt (Direktnachrichten, Dateiinhalte), steht in der Datei selbst | – |
 
 ---
 

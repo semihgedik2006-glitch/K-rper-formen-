@@ -123,6 +123,7 @@ was sie sehen soll.
 | `test-sheets-kuerzel.js` | Google-Tabelle: neue Spalte „Kürzel", alte Zeilen ziehen richtig mit um |
 | `test-funktionen-schalter.js` | abgeschaltete Funktionen: weg aus Leiste, Startseite, Team-Reitern und Verwaltung |
 | `test-fehlerbericht.js` | Fehler im Betrieb: echte landen, Rauschen nicht, keine Endlosschleife |
+| `test-sicherung-inhalt.js` | die Sicherung enthält wirklich alles Versprochene — und sagt, was nicht |
 
 ### Alle auf einmal
 
