@@ -80,10 +80,11 @@ die Adresse bestätigt ist**, bevor er jemanden hereinlässt.
 ### Impressum und Datenschutz
 
 Beide stehen unten auf dem Anmeldebildschirm — **ohne Anmeldung
-erreichbar** — und noch einmal im Profil-Fenster. Der Inhalt kommt aus
-`konfig.js`. Fehlt eine Pflichtangabe, sagt die App das deutlich, und der
-Chef sieht eine Warnkarte in *Verwaltung → System*. Was einzutragen ist
-und was ein Anwalt machen muss, steht in `RECHT.md`.
+erreichbar** — und noch einmal im Profil-Fenster. Den Inhalt pflegt der
+Chef selbst in *Verwaltung → System → **⚖️ Rechtliche Angaben***; er liegt
+je Firma in der Datenbank. Fehlt eine Pflichtangabe, sagt die App das
+deutlich, und der Chef sieht zusätzlich eine Warnkarte im selben Bereich.
+Was einzutragen ist und was ein Anwalt machen muss, steht in `RECHT.md`.
 
 ### Konto selbst anlegen (**wenn der Chef es einschaltet**)
 

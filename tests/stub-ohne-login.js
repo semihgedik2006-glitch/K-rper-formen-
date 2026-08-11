@@ -70,6 +70,18 @@
           o.get = function(){ return Promise.resolve({ exists:true, id:id,
             data:function(){ return { codeNoetig:true, freigabe:true }; } }); };
         }
+        /* Das Impressum aus der Datenbank – ausdruecklich auch hier, VOR
+           dem Anmelden. Ohne diesen Zweig kaeme der Durchlauf nie an den
+           Fall, um den es geht: eine fremde Firma, deren Angaben nur in
+           der Datenbank stehen und nicht in konfig.js. Fuer die eigene
+           Firma faellt das nicht auf, weil dort der Rueckfall greift. */
+        if (id === 'recht') {
+          o.get = function(){
+            var r = window.__recht;
+            return Promise.resolve({ exists: !!r, id:id,
+              data:function(){ return r || {}; } });
+          };
+        }
         return o;
       };
     }

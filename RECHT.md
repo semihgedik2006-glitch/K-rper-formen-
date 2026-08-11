@@ -15,7 +15,8 @@ kann ich nicht beurteilen — und wer das anders behauptet, sollte es nicht.
 | | |
 |---|---|
 | **Impressum und Datenschutz** | ein Fenster in der App, **auch ohne Anmeldung** erreichbar |
-| **Inhalt kommt aus `konfig.js`** | unter `recht:` — je Kunde austauschbar, wie Studios und Farben |
+| **Inhalt liegt je Firma in der Datenbank** | `config/recht`, gepflegt in *Verwaltung → System → ⚖️ Rechtliche Angaben* |
+| **`konfig.js` ist nur noch der Rückfall** | und zwar **ausschließlich für den eigenen Betrieb** — siehe unten |
 | **Warnung bei Lücken** | fehlt eine Pflichtangabe, steht das rot über dem Text |
 | **Warnung für den Chef** | zusätzlich als Karte in *Verwaltung → System* |
 | **E-Mail-Bestätigung** | wird beim Anlegen verschickt, Leiste in der App, erneut sendbar |
@@ -30,7 +31,23 @@ aus. Das ist gefährlicher als gar keine Seite.
 
 ---
 
-## Was du eintragen musst — `konfig.js`, Block `recht`
+## Was du eintragen musst — in der App
+
+*Verwaltung → System → **⚖️ Rechtliche Angaben***. Nur der Chef sieht diese
+Karte, gespeichert wird nach `config/recht` — **je Firma getrennt**.
+
+**Warum nicht mehr in `konfig.js`:** diese Datei gilt für das ganze
+Firebase-Projekt. Solange jeder Kunde ein eigenes Projekt bekam, war das
+richtig. Seit mehrere Firmen in EINER Datenbank liegen, ist es falsch: der
+zweite Kunde sähe entweder das Impressum von Körperformen oder eine
+Warnung, die ihn an eine Datei schickt, an die er gar nicht herankommt.
+Und impressumspflichtig ist jeder Betreiber selbst.
+
+**Der Rückfall:** steht in `config/recht` nichts, gilt weiterhin der Block
+`recht` aus `konfig.js` — aber **nur für den eigenen Betrieb**. Eine fremde
+Firma ohne eigene Angaben bekommt die Warnung, nicht die Angaben von
+Körperformen. Genau dieser Fehler ist bei der Studioliste schon einmal
+passiert.
 
 ### Pflicht (§ 5 DDG)
 
@@ -171,7 +188,7 @@ echten Kunden jemanden von außen auf die Datentrennung schauen zu lassen.
 
 | Wann | Was |
 |---|---|
-| **jetzt** | die vier Pflichtfelder in `konfig.js` eintragen — dauert fünf Minuten und die Warnung ist weg |
+| **jetzt** | die vier Pflichtfelder in *Verwaltung → System → ⚖️ Rechtliche Angaben* eintragen — dauert fünf Minuten und die Warnung ist weg |
 | **vor dem Einsatz im Team** | Datenschutztext einmal anwaltlich durchsehen lassen; Absprache mit dem Team zu Anwesenheit und Krankmeldungen |
 | **vor dem ersten Kunden** | Auftragsverarbeitung, Verzeichnis, Blick von außen auf die Datentrennung |
 

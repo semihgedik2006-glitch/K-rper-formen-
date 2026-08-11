@@ -3379,6 +3379,62 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               keine Zugriffssperre. Wer sich auskennt, kommt an die Daten dahinter
               weiterhin heran — für echte Grenzen sind die Rollen da.</p>
           </div>
+          <!-- Impressum und Datenschutz gehören dem BETREIBER, nicht dem
+               Programm. Bis zum 11.8.2026 standen sie in konfig.js — einer
+               Datei, die für das ganze Firebase-Projekt gilt und an die ein
+               Kunde gar nicht herankommt. Seit mehrere Firmen in einer
+               Datenbank liegen, ist das falsch: jeder trägt seine eigenen
+               Angaben ein, und zwar hier. -->
+          <div class="card" data-fold="rechtform" data-chef-only="1">
+            <h3>⚖️ Rechtliche Angaben</h3>
+            <p class="hint">Impressum und Datenschutz. Das sieht jeder — auch vor dem
+              Anmelden. <b>Pflicht sind Betreiber, Anschrift, vertretungsberechtigte
+              Person und E-Mail.</b> Solange eine davon fehlt, steht oben in diesem
+              Bereich eine Warnung und im Rechtliches-Fenster ein roter Hinweis.</p>
+            <div class="field"><label for="rfBetreiber">Betreiber</label>
+              <input class="inp" id="rfBetreiber" type="text" maxlength="120"
+                     placeholder="z. B. Musterstudio Köln GmbH" autocomplete="off" /></div>
+            <div class="field"><label for="rfAnschrift">Anschrift</label>
+              <textarea class="inp" id="rfAnschrift" rows="2" maxlength="200"
+                     placeholder="Straße und Hausnummer&#10;PLZ und Ort"></textarea>
+              <p class="hint" style="margin-top:6px">Ein Postfach genügt nicht — es muss
+                eine ladungsfähige Anschrift sein.</p></div>
+            <div class="field"><label for="rfVertreten">Vertreten durch</label>
+              <input class="inp" id="rfVertreten" type="text" maxlength="120"
+                     placeholder="Geschäftsführer oder Inhaber" autocomplete="off" /></div>
+            <div class="field"><label for="rfTelefon">Telefon</label>
+              <input class="inp" id="rfTelefon" type="tel" maxlength="60"
+                     placeholder="0221 1234567" autocomplete="off" /></div>
+            <div class="field"><label for="rfEmail">E-Mail</label>
+              <input class="inp" id="rfEmail" type="email" maxlength="120"
+                     placeholder="info@beispiel.de" inputmode="email" autocomplete="off" />
+              <p class="hint" style="margin-top:6px">Muss es wirklich geben und muss
+                gelesen werden.</p></div>
+            <div class="field"><label for="rfRegister">Registereintrag</label>
+              <input class="inp" id="rfRegister" type="text" maxlength="120"
+                     placeholder="z. B. Amtsgericht Köln, HRB 12345" autocomplete="off" />
+              <p class="hint" style="margin-top:6px">Leer lassen, wenn es keinen
+                gibt — etwa bei einem Einzelunternehmen.</p></div>
+            <div class="field"><label for="rfUstId">Umsatzsteuer-ID</label>
+              <input class="inp" id="rfUstId" type="text" maxlength="60"
+                     placeholder="z. B. DE123456789" autocomplete="off" /></div>
+            <div class="field"><label for="rfDsKontakt">Ansprechpartner für Datenschutz</label>
+              <input class="inp" id="rfDsKontakt" type="text" maxlength="120"
+                     placeholder="Name oder E-Mail" autocomplete="off" />
+              <p class="hint" style="margin-top:6px">Leer lassen: dann steht die
+                E-Mail-Adresse von oben im Datenschutztext.</p></div>
+            <div class="field"><label for="rfZusatz">Ergänzungen zum Datenschutz</label>
+              <textarea class="inp" id="rfZusatz" rows="3" maxlength="2000"
+                     placeholder="Eine Zeile = ein Absatz, z. B.&#10;Im Eingangsbereich hängt eine Kamera.&#10;Die Arbeitszeit wird mit einem Terminal erfasst."></textarea>
+              <p class="hint" style="margin-top:6px">Alles, was nur ihr wisst und was
+                die App nicht sehen kann.</p></div>
+            <button class="btn btn-primary btn-sm" id="rfSave" style="width:100%;margin-top:4px">Speichern</button>
+            <p class="em-saved" id="rfNote"></p>
+            <p class="hint" style="margin-top:12px">Der Datenschutztext selbst beschreibt,
+              was die App tatsächlich tut — den schreibt niemand hier. <b>Anwaltlich
+              geprüft ist er damit nicht.</b> Vor dem Einsatz mit Beschäftigten gehört
+              er einmal fachlich durchgesehen.</p>
+          </div>
           <!-- Fehler, die im Betrieb aufgetreten sind. Zugeklappt, aber
                mit Zahl an der Überschrift — dieselbe Lehre wie beim
                Firmen-Archiv: zugeklappt sieht aus wie leer. -->
@@ -4539,10 +4595,25 @@ function mailMarkenLaden(uids){
 }
 
 /* ── Rechtliches ──
-   Impressum und Datenschutz kommen aus konfig.js, weil sie sich je Kunde
-   unterscheiden – wie Studios, Firmenname und Farben auch.
+   Impressum und Datenschutz stehen JE FIRMA in der Datenbank
+   (config/recht) und werden vom Chef in der App gepflegt:
+   Verwaltung → System → „⚖️ Rechtliche Angaben".
 
-   Zwei Dinge sind hier Absicht:
+   WARUM NICHT MEHR NUR konfig.js: die Datei gilt für das ganze
+   Firebase-Projekt. Solange ein Kunde ein eigenes Projekt bekam, war das
+   richtig. Seit mehrere Firmen in EINER Datenbank liegen, sah der zweite
+   Kunde entweder das Impressum von Körperformen oder eine rote Warnung,
+   die ihn an eine Datei schickte, an die er gar nicht herankommt. Und
+   impressumspflichtig ist jeder Betreiber selbst — das kann ihm niemand
+   abnehmen.
+
+   Der Rückfall auf konfig.js bleibt trotzdem stehen, sonst stünde der
+   eigene Betrieb am Tag der Umstellung ohne Impressum da. Er gilt aber
+   NUR für die eigene Firma. Genau dieser Fehler ist bei der Studioliste
+   schon passiert: eine fremde Firma bekam die vierzehn Standorte von
+   Körperformen zu sehen. Siehe eigeneFirma().
+
+   Zwei Dinge sind hier weiterhin Absicht:
 
    1. Das Fenster ist OHNE Anmeldung erreichbar. Ein Impressum hinter
       einem Login ist keins.
@@ -4555,9 +4626,62 @@ function mailMarkenLaden(uids){
    aufschreiben. Ob sie damit vollständig ist, kann ich nicht beurteilen.
    Das steht auch so im Text. */
 var _rechtTeil = 'impressum';
+var _recht = null;      // aus config/recht; null = nichts gelesen/hinterlegt
+
+/* Feldname in der Datenbank ↔ Eingabefeld im Formular. Eine Liste statt
+   acht einzeln abgeschriebener Zeilen: beim Speichern und beim Anzeigen
+   darf sich das nicht auseinanderentwickeln. */
+var RECHT_FELDER = [
+  ['betreiber','rfBetreiber'], ['anschrift','rfAnschrift'],
+  ['vertreten','rfVertreten'], ['telefon','rfTelefon'],
+  ['email','rfEmail'], ['register','rfRegister'],
+  ['ustId','rfUstId'], ['datenschutzKontakt','rfDsKontakt']
+];
+
+function rechtLeer(o){
+  if(!o) return true;
+  var text = RECHT_FELDER.some(function(p){ return String(o[p[0]]||'').trim(); });
+  var zus  = Array.isArray(o.zusatz) &&
+             o.zusatz.some(function(z){ return String(z||'').trim(); });
+  return !text && !zus;
+}
+
+/* Was gerade GILT. Erst die Datenbank, dann — nur für die eigene Firma —
+   konfig.js.
+
+   Das Dokument gilt als Ganzes oder gar nicht: einzelne leere Felder
+   werden NICHT aus konfig.js nachgefüllt. Sonst entstünde aus zwei
+   Betrieben ein drittes Impressum, das es nirgends gibt — mit der
+   Anschrift des einen und der Telefonnummer des anderen.
+
+   Für eine fremde Firma ohne Eintrag kommt bewusst NICHTS heraus. Dann
+   steht die Warnung da, und das ist die ehrliche Auskunft; die Angaben
+   von Körperformen wären eine falsche. */
+function rechtDaten(){
+  if(!rechtLeer(_recht)) return _recht;
+  return eigeneFirma() ? ((KONFIG && KONFIG.recht) || {}) : {};
+}
+
+/* Einmal lesen, sobald feststeht, wer angemeldet ist. Kein Dauer-
+   Beobachter: ein Impressum ändert sich einmal im Jahr, dafür rund um
+   die Uhr zu horchen wäre Aufwand für nichts — dieselbe Überlegung wie
+   bei der Fehlerliste. Wer es gerade ändert, sieht seine Änderung
+   ohnehin sofort (siehe rechtSpeichern). */
+function rechtLaden(){
+  return S('config').doc('recht').get()
+    .then(function(doc){ _recht = doc.exists ? (doc.data()||{}) : null; })
+    .catch(function(e){
+      /* Nicht lesbar heisst: es gilt der Rückfall. Für die eigene Firma
+         ist das konfig.js, für eine fremde nichts. Kein Grund, den Start
+         abzubrechen — ein Netzfehler darf nicht die halbe App kosten. */
+      console.warn('Rechtsangaben nicht lesbar:', e.message);
+      _recht = null;
+    })
+    .then(function(){ renderRechtWarnung(); renderRechtForm(); renderRecht(); });
+}
 
 function rechtFehlend(){
-  var r = (KONFIG && KONFIG.recht) || {};
+  var r = rechtDaten();
   var pflicht = [
     ['betreiber','Name des Betreibers'],
     ['anschrift','Anschrift (ein Postfach genügt nicht)'],
@@ -4570,12 +4694,22 @@ function rechtFehlend(){
 
 function renderRecht(){
   var box=$('rechtInhalt'); if(!box) return;
-  var r = (KONFIG && KONFIG.recht) || {};
+  var r = rechtDaten();
   var fehlt = rechtFehlend();
+  /* Der Hinweis nennt den WEG DORTHIN — aber nur dem, der ihn gehen
+     kann. „Einzutragen in konfig.js" stand hier bis zum 11.8.2026 für
+     jeden: für den Kunden eine Datei, die er nicht hat, und für den
+     Mitarbeiter eine Aufforderung, die ihn nichts angeht. Vor dem
+     Anmelden ist session leer, isChef() also false — dort steht damit
+     ebenfalls der schlichte Hinweis, und das ist richtig so. */
   var kopf = fehlt.length
     ? '<div class="recht-fehlt">⚠ Noch nicht vollständig hinterlegt. Es fehlt: '+
-      esc(fehlt.join(' · '))+'.<br/>Einzutragen in <b>konfig.js</b> unter <b>recht</b>. '+
-      'Bis dahin darf die App nicht öffentlich genutzt werden.</div>'
+      esc(fehlt.join(' · '))+'.'+
+      (isChef()
+        ? '<br/>Einzutragen in der Verwaltung unter <b>System → ⚖️ Rechtliche Angaben</b>. '+
+          'Bis dahin darf die App nicht öffentlich genutzt werden.'
+        : '<br/>Die Angaben trägt die Geschäftsführung ein.')+
+      '</div>'
     : '';
 
   function zeile(titel, wert){
@@ -4669,10 +4803,65 @@ function renderRechtWarnung(){
   k.style.display = fehlt.length ? '' : 'none';
   if(!fehlt.length) return;
   var t=$('rechtFehltText');
-  if(t) t.textContent = 'Es fehlt: '+fehlt.join(' · ')+'. Einzutragen in konfig.js '+
-    'unter „recht". Ohne vollständiges Impressum darf die App nicht öffentlich '+
-    'genutzt werden.';
+  /* Den System-Bereich sieht auch ein Studio-Leiter. Für ihn ist das
+     eine Auskunft, keine Aufgabe — die Karte weiter unten bekommt er
+     gar nicht zu sehen (data-chef-only). */
+  if(t) t.textContent = 'Es fehlt: '+fehlt.join(' · ')+'. '+
+    (isChef()
+      ? 'Einzutragen weiter unten unter „⚖️ Rechtliche Angaben". '
+      : 'Eintragen kann das nur die Geschäftsführung. ')+
+    'Ohne vollständiges Impressum darf die App nicht öffentlich genutzt werden.';
   rechtBinden();
+}
+
+/* ── Das Formular (Verwaltung → System) ──
+   Vorbelegt wird mit dem, was gerade GILT — also samt Rückfall auf
+   konfig.js, solange es die eigene Firma ist. Wer einmal speichert, hat
+   die Angaben danach in der Datenbank und ist vom Rückfall unabhängig.
+   Bei einer fremden Firma ist der Rückfall leer, dort bleibt auch das
+   Formular leer: es darf ihm nichts vorschlagen, was einem anderen
+   Betrieb gehört. */
+function renderRechtForm(){
+  if(!isChef() || !$('rfBetreiber')) return;
+  var r = rechtDaten();
+  RECHT_FELDER.forEach(function(p){
+    var el=$(p[1]); if(el) el.value = String(r[p[0]]||'');
+  });
+  var z=$('rfZusatz');
+  if(z) z.value = (Array.isArray(r.zusatz)?r.zusatz:[]).join('\n');
+}
+
+function rechtSpeichern(btn){
+  var note=$('rfNote'), d={};
+  RECHT_FELDER.forEach(function(p){ d[p[0]] = String((($(p[1])||{}).value)||'').trim(); });
+  /* Eine Zeile = ein Absatz. Leerzeilen fliegen raus, sonst stehen im
+     Datenschutztext Absätze ohne Inhalt. */
+  d.zusatz = String((($('rfZusatz')||{}).value)||'').split('\n')
+    .map(function(z){ return z.trim(); })
+    .filter(function(z){ return z; });
+  d.ts = Date.now();
+  withBusy(btn, function(){
+    return S('config').doc('recht').set(d, {merge:true})
+      .then(function(){
+        /* Erst nach der Bestätigung des Servers übernehmen. Ein Impressum,
+           das auf dem Bildschirm steht und in der Datenbank nicht, wäre
+           genau die Sorte Fehler, die erst dem Nächsten auffällt. */
+        _recht = d;
+        renderRechtWarnung(); renderRecht();
+        var fehlt = rechtFehlend();
+        if(note){
+          note.style.color = fehlt.length ? 'var(--danger-tx)' : 'var(--accent-d)';
+          note.textContent = fehlt.length
+            ? 'Gespeichert – es fehlt aber weiterhin: '+fehlt.join(' · ')
+            : '✓ Gespeichert. Impressum und Datenschutz sind vollständig.';
+        }
+        toast('Rechtliche Angaben gespeichert ✓');
+      })
+      .catch(function(e){
+        if(note){ note.style.color='var(--danger-tx)'; note.textContent=errMsg(e); }
+        toast(errMsg(e), true);
+      });
+  });
 }
 
 function rechtOeffnen(teil){
@@ -6892,6 +7081,13 @@ auth.onAuthStateChanged(function(user){
      eigenen Firma. */
   _firma = firmaAusLink();
   beitrittSchalterLaden();
+  /* Das Impressum AUCH schon hier, nicht erst nach dem Anmelden. Sonst
+     wäre die Regel „ohne Anmeldung lesbar" wirkungslos: der fremde Kunde
+     bekäme auf dem Anmeldebildschirm die Warnung statt seiner Angaben,
+     weil sie schlicht nie geholt wurden. Für die eigene Firma fiel das
+     nicht auf — dort fängt der Rückfall auf konfig.js es auf, und genau
+     so bleibt ein Fehler unentdeckt, bis der erste fremde Kunde da ist. */
+  rechtLaden();
   /* Die Studioliste MUSS vor enterApp stehen. Dort werden aus den
      Studionamen im Profil die Datenbank-Kennungen gerechnet. Läge dabei
      noch die alte Liste aus konfig.js zugrunde, bekäme ein umbenanntes
@@ -6998,6 +7194,9 @@ function showApp(){
   mailHinweisBinden(); mailHinweisPruefen();
   listenStudios();                       // jede Rolle: Umbenennen soll sofort ankommen
   listenFeatures();                      // schaltet der Chef etwas um, ist es überall weg
+  /* Jede Rolle: das Impressum steht in jedem Bildschirm unten und muss
+     die Angaben DIESER Firma zeigen, nicht die aus konfig.js. */
+  rechtLaden();
   listenInventoryAll();                  // jede Rolle: fuer den Material-Hinweis
   if(canManage()){ listenEmployees(); }
   if(isChef()){
@@ -10551,7 +10750,7 @@ function showChefTab(id, keep){
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
-  if(id==='system'){ renderFeatureListe(); fehlerLaden(); }
+  if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
@@ -14568,6 +14767,10 @@ function bindActions(){
   // ── Verwaltung: zurück zur Übersicht ──
   var bts=$('btSave');
   if(bts) bts.addEventListener('click',function(){ beitrittSpeichern(this); });
+
+  // ── Rechtliche Angaben (Impressum/Datenschutz je Firma) ──
+  var rfs=$('rfSave');
+  if(rfs) rfs.addEventListener('click',function(){ rechtSpeichern(this); });
 
   var cb=$('chefBack');
   if(cb) cb.addEventListener('click',function(){ showChefTab(CHEF_START); tick(8); });

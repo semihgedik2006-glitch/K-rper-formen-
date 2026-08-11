@@ -258,6 +258,43 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ── Impressum und Datenschutz (config/recht) ──
+    //
+    // Standen bis zum 11.8.2026 in konfig.js und galten damit fuer das
+    // ganze Projekt. Seit mehrere Firmen in EINER Datenbank liegen, ist
+    // das falsch: impressumspflichtig ist jeder Betreiber selbst.
+    //
+    // Lesen: jeder Angemeldete. Ausdruecklich auch, wer noch auf seine
+    // Freigabe wartet (aktiv:false) - der sieht sonst als Einziger kein
+    // Impressum. Was hier drinsteht, ist ohnehin fuer die Oeffentlichkeit
+    // bestimmt: Name, Anschrift, Telefon, E-Mail des Betriebs.
+    // Schreiben: nur der Chef. Wer das Impressum aendern kann, aendert,
+    // wer fuer diese App haftet.
+    //
+    // WAS DURCH DIE ALLGEMEINE REGEL /config/{doc} SCHON GILT und was
+    // diese hier daran aendert - denn in Firestore gilt JEDE zutreffende
+    // Regel, und EINE die erlaubt genuegt:
+    //   read   dort: istAktiv()  →  hier: true. Diese Regel WEITET
+    //          also, sie schraenkt nicht ein. Genau deshalb ist sie
+    //          ueberhaupt noetig; eine engere Regel waere Dekoration, die
+    //          allgemeine wuerde sie ueberstimmen.
+    //   write  dort: isChef()    →  hier: isChef(). Identisch, also kein
+    //          Loch - aber auch keine zusaetzliche Sperre. Wer 'recht'
+    //          jemals enger schuetzen will als den Rest von config, muss
+    //          es DORT ausnehmen (wie bei 'studios' und 'registrierung'
+    //          geschehen), nicht hier.
+    //
+    // WARUM OHNE ANMELDUNG LESBAR: ein Impressum hinter einem Login ist
+    // keins - so steht es seit jeher im Quelltext der App, und § 5 DDG
+    // verlangt "leicht erkennbar, unmittelbar erreichbar". Der Inhalt
+    // ist per Definition fuer die Oeffentlichkeit bestimmt: Name,
+    // Anschrift, Vertretung, Telefon, E-Mail. Genau dieselbe Ueberlegung
+    // wie bei config/studios und config/beitrittSchalter weiter oben.
+    match /config/recht {
+      allow read: if true;
+      allow write: if isChef();
+    }
+
     // Sprachnachrichten liegen als Datenblock in der Nachricht. Ein Dokument
     // darf 1 MB groß sein – wir begrenzen die Aufnahme auf 800 KB, damit
     // Text, Bild und Aufnahme zusammen sicher hineinpassen.
@@ -701,6 +738,31 @@ service cloud.firestore {
           allow update: if inFirma(f) && (isChef()
             && request.resource.data.liste.size() >= resource.data.liste.size());
           allow delete: if false;
+        }
+
+        // ── Impressum und Datenschutz dieser Firma ──
+        // Erklaerung siehe beim flachen /config/recht weiter oben. Hier
+        // kommt die Firmengrenze dazu, und die ist der eigentliche Punkt:
+        //
+        //   read   OHNE Anmeldung. Ein Impressum hinter einem Login ist
+        //          keins, und ein Kunde, der seinen Link herumgibt, muss
+        //          sein Impressum zeigen koennen - genau dafuer steht die
+        //          Firmenkennung im Link. Der Inhalt ist per Definition
+        //          oeffentlich: Name, Anschrift, Vertretung, Telefon,
+        //          E-Mail. Dieselbe Ueberlegung wie bei config/studios.
+        //   write  ohne inFirma(f) duerfte der Chef von A das Impressum
+        //          von B UEBERSCHREIBEN. Das ist kein Schoenheitsfehler:
+        //          es steht dann fremde Haftung in der App eines anderen.
+        //          Genau diese Sorte fehlender Firmenpruefung ist hier
+        //          schon dreimal passiert.
+        //
+        // Gegenueber der allgemeinen Regel /firmen/{f}/config/{doc}
+        // (read: inFirma(f) && istAktiv(), write: inFirma(f) && isChef())
+        // weitet diese Regel nur das LESEN. Beim Schreiben ist sie
+        // deckungsgleich, kann dort also weder oeffnen noch sperren.
+        match /config/recht {
+          allow read: if true;
+          allow write: if inFirma(f) && isChef();
         }
 
         match /channels/{channelId}/messages/{msgId} {

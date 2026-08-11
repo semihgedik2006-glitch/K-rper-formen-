@@ -29,6 +29,11 @@
     firma: 'koerperformen'
   };
   if (window.__admin) PROFILE.admin = true;
+  /* window.__firma macht daraus das Konto einer FREMDEN Firma. Gebraucht
+     wird das dort, wo eigeneFirma() den Unterschied macht — bei der
+     Studioliste und beim Impressum darf ein anderer Betrieb nichts von
+     Körperformen zu sehen bekommen. */
+  if (window.__firma) PROFILE.firma = window.__firma;
   var USERS = [
     { id:'testuid', name:'Test Chef', role:'chef', studios:['Hürth','Brühl'] },
     { id:'u2', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
@@ -259,10 +264,25 @@
               return Promise.resolve({ exists: !!f, id: id,
                 data: function () { return f || {}; } });
             }
+            /* Impressum/Datenschutz je Firma. Ohne __recht gibt es das
+               Dokument NICHT — das ist der Normalfall, auf dem jeder
+               andere Durchlauf steht: dann gilt der Rückfall auf
+               konfig.js, und zwar nur für die eigene Firma. */
+            if (path === 'config' && id === 'recht') {
+              var rr = window.__recht;
+              return Promise.resolve({ exists: !!rr, id: id,
+                data: function () { return rr || {}; } });
+            }
             if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }
             return Promise.resolve({ exists: true, id: id, data: function () { return data; } });
           },
-          set: function () { return Promise.resolve(); },
+          /* Geschriebenes merken. Ohne das kann ein Durchlauf nur pruefen,
+             dass ein Knopf klickbar war — nicht, WAS in der Datenbank
+             landet. Beim Impressum ist genau das die Frage. */
+          set: function (d) {
+            (window.__schreib = window.__schreib || []).push({ pfad: docPath, daten: d });
+            return Promise.resolve();
+          },
           update: function () { return Promise.resolve(); },
           delete: function () { return Promise.resolve(); },
           onSnapshot: function (cb) {

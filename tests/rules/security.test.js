@@ -209,6 +209,54 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Chef darf Funktionen umschalten', () =>
     assertSucceeds(alsChef().doc('config/features').set({ schicht: false })));
 
+  /* ── Impressum und Datenschutz (config/recht) ──
+     Standen bis zum 11.8.2026 in konfig.js und galten damit fuer das
+     ganze Projekt. Jetzt liegen sie je Firma in der Datenbank, und der
+     Chef pflegt sie in der App.
+
+     Lesen darf JEDER, auch ohne Anmeldung. Ein Impressum hinter einem
+     Login ist keins - so steht es seit jeher im Quelltext der App, und
+     § 5 DDG verlangt "leicht erkennbar, unmittelbar erreichbar". Der
+     Inhalt ist per Definition oeffentlich: Name, Anschrift, Vertretung,
+     Telefon, E-Mail. Dieselbe Ueberlegung wie bei config/studios.
+
+     Das war zuerst enger gefasst (nur Angemeldete). Aufgefallen ist es,
+     weil es fuer die EIGENE Firma nicht auffiel: dort faengt der
+     Rueckfall auf konfig.js den Anmeldebildschirm ab. Ein fremder Kunde
+     haette dort statt seines Impressums eine Warnung gesehen.
+
+     Schreiben darf nur der Chef. Wer das Impressum aendert, aendert,
+     wer fuer diese App haftet.
+
+     ACHTUNG bei jeder Aenderung hier: die allgemeine Regel
+     /config/{doc} greift zusaetzlich, und in Firestore genuegt EINE
+     zutreffende Regel die erlaubt. Eine ENGERE Regel an dieser Stelle
+     waere wirkungslos - sie muesste dort ausgenommen werden. */
+  const alsWartend = () => env.authenticatedContext('wartet1').firestore();
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc('config/recht')
+      .set({ betreiber: 'Koerperformen Koeln GmbH', email: 'info@example.de' });
+  });
+  await pruefe('Mitarbeiter darf das Impressum LESEN (steht in jedem Bildschirm unten)', () =>
+    assertSucceeds(alsMitarbeiter().doc('config/recht').get()));
+  await pruefe('Wer auf Freigabe wartet, darf das Impressum trotzdem lesen', () =>
+    assertSucceeds(alsWartend().doc('config/recht').get()));
+  /* Der eigentliche Punkt: OHNE Anmeldung. Faellt dieser Test um, ist
+     das Impressum wieder hinter dem Login verschwunden - und damit
+     keins mehr. */
+  await pruefe('Das Impressum ist auch OHNE Anmeldung lesbar', () =>
+    assertSucceeds(alsAnonym().doc('config/recht').get()));
+  await pruefe('Ohne Anmeldung kann das Impressum NICHT geaendert werden', () =>
+    assertFails(alsAnonym().doc('config/recht').set({ betreiber: 'gekapert' })));
+  await pruefe('Mitarbeiter kann das Impressum NICHT aendern', () =>
+    assertFails(alsMitarbeiter().doc('config/recht').set({ betreiber: 'gekapert' })));
+  await pruefe('Studio-Leiter kann das Impressum NICHT aendern', () =>
+    assertFails(alsLeiter().doc('config/recht').set({ betreiber: 'gekapert' })));
+  await pruefe('Chef darf das Impressum pflegen', () =>
+    assertSucceeds(alsChef().doc('config/recht')
+      .set({ betreiber: 'Koerperformen Koeln GmbH', anschrift: 'Musterstr. 1',
+             vertreten: 'Max Mustermann', email: 'info@example.de' })));
+
   /* ── Fehlerberichte ──
      Schreiben muss JEDER Angemeldete duerfen — sonst wuerde ausgerechnet
      der Fehler nicht gemeldet, der einen Mitarbeiter trifft.
@@ -417,6 +465,43 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
     assertSucceeds(alsAnonym().doc(B_('config/studios')).get()));
   await pruefe('Firmenname von B ist ohne Anmeldung lesbar (Anmeldebildschirm)', () =>
     assertSucceeds(alsAnonym().doc('firmen/' + B).get()));
+
+  /* ── Impressum je Firma, ueber die Firmengrenze ──
+     Der Punkt, an dem eine fehlende Firmenpruefung richtig teuer wird:
+     wer das Impressum eines fremden Betriebs ueberschreiben kann, setzt
+     dort fremde Haftungsangaben hinein. Geprueft wird beides - Lesen
+     UND Schreiben; nur Lesen zu pruefen waere die haeufigste Halbheit. */
+  await env.withSecurityRulesDisabled(async ctx => {
+    const d = ctx.firestore();
+    await d.doc('firmen/' + B + '/config/recht')
+      .set({ betreiber: 'Studio Mueller GmbH', email: 'kontakt@b.example' });
+    await d.doc('users/wartetB').set({ name: 'Wartet B', role: 'mitarbeiter',
+                                       firma: B, aktiv: false });
+  });
+  const wartetB = () => env.authenticatedContext('wartetB').firestore();
+
+  /* LESEN ist hier ausdruecklich erlaubt, auch ueber die Firmengrenze
+     und sogar ohne Anmeldung: ein Impressum ist eine oeffentliche
+     Pflichtangabe. Es zu verstecken waere kein Datenschutz, sondern ein
+     Rechtsverstoss. Beim SCHREIBEN endet die Nachbarschaft. */
+  await pruefe('Das Impressum von B ist auch fuer Fremde lesbar (Pflichtangabe)', () =>
+    assertSucceeds(chefA().doc(B_('config/recht')).get()));
+  await pruefe('Das Impressum von B ist ohne Anmeldung lesbar', () =>
+    assertSucceeds(alsAnonym().doc(B_('config/recht')).get()));
+  await pruefe('KREUZ · Chef von A kann das Impressum von B NICHT ueberschreiben', () =>
+    assertFails(chefA().doc(B_('config/recht')).set({ betreiber: 'gekapert' })));
+  await pruefe('KREUZ · Ohne Anmeldung kann das Impressum von B NICHT geaendert werden', () =>
+    assertFails(alsAnonym().doc(B_('config/recht')).set({ betreiber: 'gekapert' })));
+  await pruefe('Chef von B darf sein eigenes Impressum lesen', () =>
+    assertSucceeds(chefB().doc(B_('config/recht')).get()));
+  await pruefe('Chef von B darf sein eigenes Impressum pflegen', () =>
+    assertSucceeds(chefB().doc(B_('config/recht'))
+      .set({ betreiber: 'Studio Mueller GmbH', anschrift: 'Bahnhofstr. 9',
+             vertreten: 'Petra Mueller', email: 'kontakt@b.example' })));
+  await pruefe('Wer bei B auf Freigabe wartet, darf das Impressum von B lesen', () =>
+    assertSucceeds(wartetB().doc(B_('config/recht')).get()));
+  await pruefe('Wer bei B auf Freigabe wartet, kann es NICHT aendern', () =>
+    assertFails(wartetB().doc(B_('config/recht')).set({ betreiber: 'gekapert' })));
 
   // ── Die Firma am eigenen Profil ist kein Selbstbedienungsfeld ──
   await pruefe('Niemand kann sich selbst in eine andere Firma schreiben', () =>

@@ -2107,6 +2107,78 @@ NICHT drin ist — genau das war der alte Fehler."*
 
 ---
 
+## Sitzung 29 · Das Impressum gehört dem Betreiber 🟢
+
+`KONFIG.recht` galt für das **ganze Firebase-Projekt**. Das war richtig,
+solange ein Kunde ein eigenes Projekt bekam. Seit mehrere Firmen in
+einer Datenbank liegen, ist es falsch: der zweite Kunde sähe entweder
+das Impressum von Körperformen oder eine rote Warnung, die ihn an eine
+Datei schickt, an die er gar nicht herankommt. Und impressumspflichtig
+ist jeder Betreiber selbst — das kann ihm niemand abnehmen.
+
+Jetzt liegen die Angaben je Firma unter `config/recht`, und der Chef
+pflegt sie unter **Verwaltung → System → ⚖️ Rechtliche Angaben**.
+
+### Zwei Entscheidungen
+
+- **Der Rückfall auf `konfig.js` bleibt — aber nur für die eigene
+  Firma.** Sonst stünde der eigene Betrieb am Tag der Umstellung ohne
+  Impressum da. Für eine fremde Firma kommt bewusst nichts heraus:
+  lieber die ehrliche Warnung als die Angaben eines anderen Betriebs.
+  Genau dieser Fehler ist bei der Studioliste schon passiert.
+- **Das Dokument gilt als Ganzes oder gar nicht.** Einzelne leere Felder
+  werden nicht aus `konfig.js` nachgefüllt — sonst entstünde aus zwei
+  Betrieben ein drittes Impressum, das es nirgends gibt.
+
+### Diese Runde hat ein Agent gebaut
+
+Beauftragt mit dem vollen Kontext: die Fallen dieses Projekts (jede
+zutreffende Regel gilt; beide Regelzweige pflegen; Rückfall nur für die
+eigene Firma), Gegenprobe als Pflicht, nichts erfinden, nicht committen.
+
+**Er hat sauber gearbeitet und an der richtigen Stelle Halt gemacht.**
+Statt eine Sicherheitsregel eigenmächtig weiter aufzumachen, hat er den
+Punkt als Frage vorgelegt: er hatte das Lesen auf Angemeldete
+beschränkt, wie beauftragt — und selbst angemerkt, dass das dem Satz
+widerspricht, der im Quelltext steht: *„Ein Impressum hinter einem Login
+ist keins."*
+
+### Was ich daraufhin ergänzt habe
+
+**1. Öffentlich lesbar**, wie es `config/studios` und
+`config/beitrittSchalter` aus demselben Grund schon halten. § 5 DDG
+verlangt „leicht erkennbar, unmittelbar erreichbar", und der Inhalt ist
+per Definition öffentlich: Name, Anschrift, Vertretung, Telefon, E-Mail.
+Beim **Schreiben** endet die Nachbarschaft — Chef A darf das Impressum
+von B nicht überschreiben.
+
+**2. Das Stück, ohne das die Regel nichts genützt hätte:** die Angaben
+wurden **vor dem Anmelden gar nicht geladen**. `rechtLaden()` lief erst
+in `showApp()`. Bei der eigenen Firma wäre das nie aufgefallen, weil
+dort `konfig.js` einspringt — dieselbe Blindstelle wie beim
+Standort-Leck: ein Fehler, den nur der erste fremde Kunde bemerkt hätte.
+
+Gegenprobe dafür:
+
+```
+✗ DAS IMPRESSUM HINTER DEM LOGIN: eine fremde Firma zeigt ihre Angaben
+  vor dem Anmelden nicht — genau dann, wenn sie gebraucht werden
+```
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| UI-Durchläufe | 52 |
+| Regeltests | 158 |
+| Umzugs-Prüfungen | 12 |
+| Cloud-Function-Prüfungen | 79 |
+
+Alle Zahlen selbst nachgemessen, nicht aus dem Bericht des Agenten
+übernommen.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

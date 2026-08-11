@@ -124,6 +124,7 @@ was sie sehen soll.
 | `test-funktionen-schalter.js` | abgeschaltete Funktionen: weg aus Leiste, Startseite, Team-Reitern und Verwaltung |
 | `test-fehlerbericht.js` | Fehler im Betrieb: echte landen, Rauschen nicht, keine Endlosschleife |
 | `test-sicherung-inhalt.js` | die Sicherung enthält wirklich alles Versprochene — und sagt, was nicht |
+| `test-recht-firma.js` | Impressum je Firma aus der Datenbank, Rückfall auf konfig.js nur beim eigenen Betrieb |
 
 ### Alle auf einmal
 
