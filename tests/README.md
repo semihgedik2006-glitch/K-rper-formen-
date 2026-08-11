@@ -117,6 +117,7 @@ was sie sehen soll.
 | `test-funktionen-pfade.js` | keine Cloud Function greift noch flach auf Firmendaten zu |
 | `test-ausliefern.js` | jede gehostete Datei löst auch wirklich einen Deploy aus |
 | `test-admin-firmen.js` | Betreiber-Bereich: Studiozahl, Firmen-Archiv, für andere unsichtbar |
+| `test-firma-stillgelegt.js` | gesperrte/gelöschte Firma: klare Meldung statt leerer App |
 
 ### Alle auf einmal
 

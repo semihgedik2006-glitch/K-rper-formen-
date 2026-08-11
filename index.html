@@ -6291,12 +6291,51 @@ auth.onAuthStateChanged(function(user){
   });
 });
 
+/* ── Läuft die Firma dieses Kontos überhaupt noch? ──
+   Ohne diese Prüfung kommt jemand, dessen Firma gesperrt oder gelöscht
+   ist, ganz normal HINEIN — und steht dann vor einer leeren App: kein
+   Chat, keine Aufgaben, nichts. Die Regeln sperren korrekt, aber sie
+   erklären nichts. Genau diese Sorte Auskunft hat beim Probelauf eine
+   halbe Stunde gekostet („Missing or insufficient permissions" klang
+   nach fehlendem Profil und war ein nie freigegebener Regelsatz).
+
+   WICHTIG: das hier ist eine MELDUNG, keine Grenze. Die Grenze steht in
+   firestore.rules und ist dort geprüft. Schlägt diese Abfrage fehl —
+   Funkloch, Zeitüberschreitung —, wird deshalb DURCHGELASSEN. Wer
+   niemanden hereinlässt, sobald das Netz zuckt, hat kein Sicherheits-
+   merkmal gebaut, sondern eine Störung. */
+function firmaLaeuftNoch(profil){
+  if(!KONFIG.mandant) return Promise.resolve(true);
+  var f = (profil && profil.firma) || KONFIG.firma;
+  if(!f) return Promise.resolve(true);
+  return db.collection('firmen').doc(f).get()
+    .then(function(d){
+      if(!d.exists) return false;                       // gelöscht/archiviert
+      return (d.data()||{}).aktiv !== false;            // gesperrt
+    })
+    .catch(function(e){
+      console.warn('Firmenstand nicht lesbar:', e.message);
+      return true;                                      // im Zweifel hinein
+    });
+}
+
 function weiterMitAnmeldung(user){
   if(user){
     db.collection('users').doc(user.uid).get()
       .then(function(doc){
         if(doc.exists){
-          enterApp(user.uid, doc.data());
+          return firmaLaeuftNoch(doc.data()).then(function(ok){
+            if(ok){ enterApp(user.uid, doc.data()); return; }
+            auth.signOut();
+            $('authWrap').classList.add('show');
+            setAuthMode('login');
+            /* Bewusst ohne Unterscheidung zwischen „gesperrt" und
+               „gelöscht": beides geht die Person am Bildschirm nichts
+               an, und beides ändert nichts daran, was sie tun kann —
+               nämlich sich melden. */
+            $('loginErr').textContent = 'Dieser Zugang ist stillgelegt. '+
+              'Bitte an die Geschäftsführung wenden.';
+          });
         } else if(_registering){
           // Profil wird gerade angelegt – nicht ausloggen, doRegister übernimmt
           return;
