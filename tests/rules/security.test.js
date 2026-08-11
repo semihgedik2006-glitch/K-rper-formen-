@@ -508,6 +508,50 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('ARCHIV · Ein Chef kann sich auch nicht selbst hineinschreiben', () =>
     assertFails(chefA().doc('firmenArchiv/erfunden').set({ name: 'Meins' })));
 
+  /* ══ Der Abo-Zustand (Stufe A) ══
+     Er liegt bewusst NICHT im Firmen-Dokument: das ist oeffentlich
+     lesbar, weil der Anmeldebildschirm den Firmennamen braucht. Was ein
+     Kunde zahlt, geht aber niemanden etwas an — am wenigsten einen
+     Wettbewerber, der die Kennung errät.
+
+     Die wichtigste Pruefung ist die dritte: dass KEINE breitere Regel
+     darueber liegt. In Firestore gilt jede zutreffende Regel, und eine
+     die erlaubt genuegt. Genau diese Falle ist in diesem Projekt schon
+     dreimal zugeschnappt. */
+  await env.withSecurityRulesDisabled(async ctx => {
+    await ctx.firestore().doc('firmen/' + B + '/abo/aktuell')
+      .set({ stufe: 'premium', status: 'aktiv', netto: 224 });
+    await ctx.firestore().doc('firmen/' + A + '/abo/aktuell')
+      .set({ stufe: 'basic', status: 'gratis', netto: 0 });
+  });
+
+  await pruefe('ABO · Der Betreiber sieht das Abo einer fremden Firma', () =>
+    assertSucceeds(adminX().doc('firmen/' + B + '/abo/aktuell').get()));
+  await pruefe('ABO · Ein Chef sieht das Abo SEINER Firma', () =>
+    assertSucceeds(chefA().doc('firmen/' + A + '/abo/aktuell').get()));
+  await pruefe('ABO · Ein Chef sieht NICHT, was eine andere Firma zahlt', () =>
+    assertFails(chefA().doc('firmen/' + B + '/abo/aktuell').get()));
+  await pruefe('ABO · Ein Mitarbeiter sieht das Abo gar nicht', () =>
+    assertFails(mitA().doc('firmen/' + A + '/abo/aktuell').get()));
+  await pruefe('ABO · Ohne Anmeldung erst recht nicht', () =>
+    assertFails(alsAnonym().doc('firmen/' + A + '/abo/aktuell').get()));
+
+  await pruefe('ABO · Ein Chef kann sich NICHT selbst auf gratis setzen', () =>
+    assertFails(chefA().doc('firmen/' + A + '/abo/aktuell')
+      .set({ stufe: 'premium', status: 'gratis', netto: 0 })));
+  await pruefe('ABO · … und auch nicht den Preis druecken', () =>
+    assertFails(chefA().doc('firmen/' + A + '/abo/aktuell').update({ netto: 1 })));
+  await pruefe('ABO · Ein Mitarbeiter schon gar nicht', () =>
+    assertFails(mitA().doc('firmen/' + A + '/abo/aktuell').update({ netto: 0 })));
+  await pruefe('ABO · Der Betreiber darf setzen', () =>
+    assertSucceeds(adminX().doc('firmen/' + B + '/abo/aktuell')
+      .set({ stufe: 'basic', status: 'gratis', netto: 0 })));
+
+  /* Und die Gegenrichtung zur breiten Regel: ein erfundener Name unter
+     abo/ darf nicht plötzlich jedem offenstehen. */
+  await pruefe('ABO · auch ein anderer Name unter abo/ ist geschuetzt', () =>
+    assertFails(mitA().doc('firmen/' + A + '/abo/irgendwas').get()));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

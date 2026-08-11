@@ -220,7 +220,30 @@
              durch dieselbe Tür wie ein flacher Zugriff. Ohne das prüfen
              sechs Tests still an sich selbst vorbei. */
           collection: function (sub) {
-            if (/^firmen\/[^/]+$/.test(docPath) && fs && fs.collection) return fs.collection(sub);
+            var mf = /^firmen\/([^/]+)$/.exec(docPath);
+            /* abo MUSS je Firma antworten. Die Weiche darunter wirft den
+               Firmen-Vorsatz weg — richtig für die Testdaten, die flach
+               liegen, aber hier würden sich zwei Kunden ein Abo teilen.
+               Also vorher abfangen. */
+            if (mf && sub === 'abo') {
+              var kennung = mf[1];
+              return {
+                doc: function () {
+                  return {
+                    get: function () {
+                      var a = (window.__abos || {})[kennung];
+                      return Promise.resolve({
+                        exists: !!a, id: 'aktuell',
+                        data: function () { return a || {}; }
+                      });
+                    },
+                    set: function () { return Promise.resolve(); },
+                    onSnapshot: function () { return unsub(); }
+                  };
+                }
+              };
+            }
+            if (mf && fs && fs.collection) return fs.collection(sub);
             return collection(docPath + '/' + sub);
           },
           get: function () {

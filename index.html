@@ -655,6 +655,17 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .fm-knoepfe{display:flex;gap:14px;align-items:center}
 .fm-knoepfe .mini-x{min-height:44px;display:inline-flex;align-items:center}
 .mini-x.weg{color:var(--danger-tx)}
+/* Die Abo-Zeile steht auf ganzer Breite unter den Zahlen: sie ist das,
+   was der Betreiber am häufigsten sucht, und darf nicht zwischen den
+   Knöpfen untergehen. */
+.fm-abo{flex-basis:100%;display:flex;align-items:center;gap:12px;
+  font-size:.8rem;padding-top:2px}
+.fm-abo .mini-x{min-height:44px;display:inline-flex;align-items:center}
+.abo-leer{color:var(--text-3);font-style:italic}
+.abo-wert{font-weight:600}
+.abo-gratis{color:var(--accent-d)}
+.abo-test{color:var(--warm-tx)}
+.abo-gekuendigt{color:var(--danger-tx)}
 .fn-ok{padding:14px 16px;border-radius:var(--r-sm);
   background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.32)}
 .fn-ok p{font-size:.86rem;color:var(--text-2);margin:6px 0 12px}
@@ -3597,6 +3608,47 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 </div>
 
 <!-- Gerät: Verlauf ansehen und Defekt melden -->
+<!-- ── Abo einer Firma setzen (Stufe A) ──
+     Von Hand durch den Betreiber. Sperrt nichts, kostet nichts, fasst
+     kein Geld an — es hält fest, was vereinbart ist. -->
+<div id="aboModal">
+  <div class="pm-box">
+    <button class="lb-close" id="aboClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
+    <h3>Abo festlegen</h3>
+    <p id="aboFirma" style="color:var(--text-3);font-size:.85rem;margin:4px 0 16px"></p>
+
+    <div class="field"><label for="aboStufe">Stufe</label>
+      <select class="inp" id="aboStufe">
+        <option value="basic">Basic</option>
+        <option value="premium">Premium</option>
+      </select></div>
+
+    <div class="field"><label for="aboStatus">Zustand</label>
+      <select class="inp" id="aboStatus">
+        <option value="aktiv">läuft — wird bezahlt</option>
+        <option value="gratis">gratis — kostenlos, dauerhaft</option>
+        <option value="test">Testphase</option>
+        <option value="gekuendigt">gekündigt</option>
+      </select></div>
+
+    <div class="field" id="aboPreisFeld"><label for="aboNetto">Preis netto je Monat (€)</label>
+      <input class="inp" id="aboNetto" type="number" min="0" step="1" inputmode="decimal" />
+      <p class="hint" style="margin:6px 0 0">Netto, ohne Umsatzsteuer — auch
+        wenn die zurzeit 0 % beträgt. Warum, steht in <code>ABO-PLAN.md</code>.</p></div>
+
+    <div class="field"><label for="aboBis">Läuft bis</label>
+      <input class="inp" id="aboBis" type="date" />
+      <p class="hint" style="margin:6px 0 0">Leer lassen = unbefristet.</p></div>
+
+    <div class="field"><label for="aboNotiz">Notiz (nur für dich)</label>
+      <input class="inp" id="aboNotiz" type="text" maxlength="300"
+             placeholder="z. B. Absprache vom 11.8." /></div>
+
+    <div id="aboHerkunft" class="hint" style="margin:0 0 14px"></div>
+    <button class="btn btn-primary" id="aboSpeichern">Speichern</button>
+  </div>
+</div>
+
 <div id="devModal">
   <div class="pm-box">
     <button class="lb-close" id="devmClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px">✕</button>
@@ -4508,6 +4560,40 @@ function mailHinweisBinden(){
 var _firmen = [], _firmenUnsub = null, _firmenZahlen = {};
 var _firmenArchiv = [], _archivUnsub = null;
 
+/* ── Abo-Zustand je Firma (Stufe A aus ABO-PLAN.md) ──
+   Wird EINMAL beim Öffnen des Reiters geholt, nicht als Dauerabfrage:
+   der Zustand ändert sich selten, und ein Listener je Firma wäre bei
+   zwanzig Kunden zwanzig offene Verbindungen für nichts. */
+var _abos = {};
+var ABO_STUFEN = { basic:'Basic', premium:'Premium' };
+var ABO_STATUS = { aktiv:'läuft', gratis:'gratis', test:'Testphase', gekuendigt:'gekündigt' };
+
+function abosLaden(){
+  if(!istAdmin() || !_firmen.length) return;
+  Promise.all(_firmen.map(function(f){
+    return db.collection('firmen').doc(f.id).collection('abo').doc('aktuell').get()
+      .then(function(d){ if(d.exists) _abos[f.id] = d.data(); else delete _abos[f.id]; })
+      .catch(function(e){ console.warn('Abo '+f.id+':', e.message); });
+  })).then(renderFirmen);
+}
+
+/* „Premium · gratis · bis 31.12.2026" — oder ein ehrliches „kein Abo".
+   Kein Abo ist der Normalfall, solange nichts eingetragen ist, und soll
+   nicht wie ein Fehler aussehen. */
+function aboText(id){
+  var a = _abos[id];
+  if(!a) return '<span class="abo-leer">kein Abo hinterlegt</span>';
+  var t = (ABO_STUFEN[a.stufe] || a.stufe) + ' · ' + (ABO_STATUS[a.status] || a.status);
+  if(a.status !== 'gratis' && a.netto) t += ' · ' + fmtEuro(a.netto) + '/Monat';
+  if(a.bisAm) t += ' · bis ' + new Date(a.bisAm).toLocaleDateString('de-DE');
+  return '<span class="abo-wert abo-'+esc(a.status)+'">'+esc(t)+'</span>';
+}
+
+function fmtEuro(n){
+  return Number(n||0).toLocaleString('de-DE',
+    { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' €';
+}
+
 function listenFirmen(){
   if(_firmenUnsub || !istAdmin()) return;
   _firmenUnsub = db.collection('firmen').onSnapshot(function(snap){
@@ -4557,6 +4643,9 @@ function renderFirmen(){
         '<span><b>'+(z.konten!==undefined?z.konten:'–')+'</b> Konten</span>'+
         '<span>'+(z.letzte ? esc(fmtDateTime(z.letzte)) : 'nie benutzt')+'</span>'+
       '</div>'+
+      '<div class="fm-abo">'+aboText(f.id)+
+        '<button class="mini-x" data-abo="'+esc(f.id)+'">ändern</button>'+
+      '</div>'+
       (eigene
         ? '<span class="chef-me">geschützt</span>'
         : '<div class="fm-knoepfe">'+
@@ -4566,6 +4655,10 @@ function renderFirmen(){
         '</div>')+
     '</div>';
   }).join('');
+
+  box.querySelectorAll('[data-abo]').forEach(function(b){
+    b.addEventListener('click',function(){ aboFormular(b.getAttribute('data-abo')); });
+  });
 
   box.querySelectorAll('[data-fweg]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -4661,6 +4754,61 @@ function renderFirmenArchiv(){
           .catch(function(e){ toast(errMsg(e), true); });
       });
     });
+  });
+}
+
+/* ── Abo festlegen ──
+   Stufe A: von Hand, kein Geld im Spiel. Der Zustand landet unter
+   firmen/<kennung>/abo/aktuell — bewusst NICHT im Firmen-Dokument, das
+   ist öffentlich lesbar (der Anmeldebildschirm braucht den Namen).
+   Was ein Kunde zahlt, geht niemanden etwas an. */
+var _aboFirma = null;
+function aboFormular(id){
+  if(!istAdmin()) return;
+  _aboFirma = id;
+  var f = _firmen.filter(function(x){ return x.id===id; })[0] || {};
+  var a = _abos[id] || {};
+  $('aboFirma').textContent = (f.name||id) + ' · ' + id;
+  $('aboStufe').value  = a.stufe  || 'basic';
+  $('aboStatus').value = a.status || 'aktiv';
+  $('aboNetto').value  = (a.netto !== undefined && a.netto !== null) ? a.netto : '';
+  $('aboBis').value    = a.bisAm ? new Date(a.bisAm).toISOString().slice(0,10) : '';
+  $('aboNotiz').value  = a.notiz || '';
+  $('aboHerkunft').textContent = a.gesetztAm
+    ? 'Zuletzt gesetzt am ' + fmtDateTime(a.gesetztAm) +
+      (a.gesetztVonName ? ' von ' + a.gesetztVonName : '')
+    : '';
+  aboPreisfeldZeigen();
+  $('aboModal').classList.add('show');
+}
+
+/* Bei „gratis" verschwindet das Preisfeld. Nicht aus Schönheit: ein
+   Gratis-Abo mit einem Betrag daneben ist eine Zeitbombe — sobald
+   später etwas abrechnet, was den Betrag liest, bekommt der Chef eine
+   Rechnung, die ihm nie jemand angekündigt hat. Der Server erzwingt
+   dieselbe Regel noch einmal. */
+function aboPreisfeldZeigen(){
+  var gratis = $('aboStatus').value === 'gratis';
+  $('aboPreisFeld').style.display = gratis ? 'none' : '';
+}
+
+function aboSpeichern(btn){
+  if(!_aboFirma) return;
+  var bis = $('aboBis').value;
+  withBusy(btn, function(){
+    return firebase.app().functions(KONFIG.region).httpsCallable('aboSetzen')({
+      kennung: _aboFirma,
+      stufe:   $('aboStufe').value,
+      status:  $('aboStatus').value,
+      netto:   parseFloat($('aboNetto').value) || 0,
+      bisAm:   bis ? new Date(bis + 'T23:59:59').getTime() : null,
+      notiz:   $('aboNotiz').value
+    }).then(function(r){
+      _abos[_aboFirma] = (r && r.data) || {};
+      renderFirmen();
+      $('aboModal').classList.remove('show');
+      toast('Abo gespeichert ✓');
+    }).catch(function(e){ toast(errMsg(e), true); });
   });
 }
 
@@ -5316,6 +5464,7 @@ function closeAllModals(){
    geht. Die Liste ist dieselbe wie in closeAllModals – bewusst, damit
    nicht zwei Listen auseinanderlaufen. */
 var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModal',
+               'aboModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet'];
 var _fokusVorher = null;
@@ -9845,7 +9994,7 @@ function showChefTab(id, keep){
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
   if(id==='team'){ renderFreigaben(); beitrittLaden(); }
   if(id==='standorte') renderStandorte();
-  if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); }
+  if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
@@ -13583,6 +13732,13 @@ function bindActions(){
     });
     var fnb=$('fnBtn');
     if(fnb) fnb.addEventListener('click', function(){ firmaAnlegen(this); });
+
+    var abs=$('aboSpeichern');
+    if(abs) abs.addEventListener('click', function(){ aboSpeichern(this); });
+    var abc=$('aboClose');
+    if(abc) abc.addEventListener('click', function(){ $('aboModal').classList.remove('show'); });
+    var abst=$('aboStatus');
+    if(abst) abst.addEventListener('change', aboPreisfeldZeigen);
 
     var stn=$('stNeuBtn');
     if(stn) stn.addEventListener('click', function(){ studioAnlegen(this); });

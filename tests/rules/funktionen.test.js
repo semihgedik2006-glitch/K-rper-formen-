@@ -396,6 +396,66 @@ const TAG = 86400000;
     pruefe('Löschen: ein Chef ohne admin darf nicht', !!fremd);
   }
 
+  /* ── Abo festlegen (Stufe A) ──
+     Kein Geld im Spiel, es sperrt nichts. Trotzdem geprüft, weil hier
+     Zahlen stehen, die später Rechnungen werden. */
+  {
+    const holen = () => db.doc('firmen/beta/abo/aktuell').get();
+
+    await fns.aboSetzen.run(
+      { kennung:'beta', stufe:'premium', status:'aktiv', netto:224, notiz:'Absprache' },
+      { auth:{ uid:'betreiber' } });
+    let a = (await holen()).data() || {};
+    pruefe('Abo: Stufe und Preis kommen an',
+      a.stufe === 'premium' && a.netto === 224, JSON.stringify(a));
+    pruefe('Abo: unbefristet, wenn kein Datum gesetzt ist', a.bisAm === null, String(a.bisAm));
+    pruefe('Abo: es steht drin, wer es gesetzt hat', a.gesetztVon === 'betreiber');
+
+    /* Der Punkt, an dem später jemand Geld verlieren könnte: ein
+       Gratis-Abo mit hinterlegtem Betrag. Sobald etwas abrechnet, was
+       den Betrag liest, bekommt der Chef eine Rechnung, die ihm nie
+       jemand angekündigt hat. Der Server muss das erzwingen — die
+       Oberfläche blendet das Feld zwar aus, aber die Oberfläche ist
+       keine Grenze. */
+    await fns.aboSetzen.run(
+      { kennung:'beta', stufe:'premium', status:'gratis', netto:224 },
+      { auth:{ uid:'betreiber' } });
+    a = (await holen()).data() || {};
+    pruefe('Abo: gratis heisst wirklich 0 €, auch wenn ein Betrag mitkommt',
+      a.status === 'gratis' && a.netto === 0, JSON.stringify(a));
+
+    /* Ein befristetes Gratis-Abo — der Fall „mein Chef bekommt es
+       kostenlos, aber ich will es einmal im Jahr ansehen". */
+    const bis = Date.now() + 200 * 86400000;
+    await fns.aboSetzen.run(
+      { kennung:'beta', stufe:'premium', status:'gratis', bisAm:bis },
+      { auth:{ uid:'betreiber' } });
+    a = (await holen()).data() || {};
+    pruefe('Abo: Befristung wird übernommen', a.bisAm === bis, String(a.bisAm));
+
+    // ── Was NICHT gehen darf ──
+    const faellt = async (daten, uid) => {
+      try { await fns.aboSetzen.run(daten, { auth:{ uid: uid || 'betreiber' } }); return false; }
+      catch (e) { return true; }
+    };
+    pruefe('Abo: erfundene Stufe wird abgewiesen',
+      await faellt({ kennung:'beta', stufe:'unbegrenzt', status:'aktiv' }));
+    pruefe('Abo: erfundener Zustand wird abgewiesen',
+      await faellt({ kennung:'beta', stufe:'basic', status:'geschenkt' }));
+    pruefe('Abo: unbekannte Firma wird abgewiesen',
+      await faellt({ kennung:'gibtesnicht', stufe:'basic', status:'aktiv' }));
+    pruefe('Abo: ein Chef ohne admin darf nicht',
+      await faellt({ kennung:'beta', stufe:'basic', status:'gratis' }, 'nurchef'));
+
+    /* Negative Preise: kein Angriff, aber ein Tippfehler, der später
+       eine Gutschrift auslösen könnte. */
+    await fns.aboSetzen.run(
+      { kennung:'beta', stufe:'basic', status:'aktiv', netto:-50 },
+      { auth:{ uid:'betreiber' } });
+    a = (await holen()).data() || {};
+    pruefe('Abo: negativer Preis wird zu 0, nicht zu -50', a.netto === 0, String(a.netto));
+  }
+
   /* ══ 4. Der Test, der rot werden muss ══
      Ein Prüfer, der nie anschlägt, prüft nichts. Also wird hier
      absichtlich eine Firma vorgetäuscht, die es nicht gibt, und
