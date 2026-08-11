@@ -2049,6 +2049,64 @@ Durchlauf drei Fehler statt keinem.
 
 ---
 
+## Sitzung 28 · Die Sicherung sagt jetzt die Wahrheit 🟢
+
+Der Knopf hiess **„⬇️ Alles als Daten-Datei"** und lud die Hälfte:
+Aufgaben, Material, Team und Infos. Nicht dabei waren Chat, Putzplan,
+Geräte, Schichten, Abwesenheiten, Übergaben, Brett, Dokumente und
+Nachweise.
+
+An einer **Sicherungs**funktion ist das die unangenehmste Stelle für
+eine Halbwahrheit: sie fällt erst an dem Tag auf, an dem man die Datei
+braucht — also wenn ohnehin schon etwas schiefgegangen ist.
+
+### Was jetzt drin ist
+
+Alles, was der Chef lesen darf: Aufgaben **mit Grund**, Material,
+Putzplan **mit Kürzeln**, Putz-Notizen, Chat aller öffentlichen Kanäle,
+Geräte mit Verlauf, Schichten, Abwesenheiten, Übergaben, Schwarzes
+Brett, Team, Infos, Dokument-Angaben und Nachweise.
+
+### Was bewusst fehlt — und das steht in der Datei
+
+| Nicht enthalten | Warum |
+|---|---|
+| **Direktnachrichten** | Die gehören zwei Personen, nicht dem Betrieb. Der Chef darf sie nach den Regeln gar nicht lesen. Keine Lücke, sondern der Sinn |
+| **Inhalt hochgeladener Dateien** | Liegt als Base64 in der Datenbank und würde die Datei vervielfachen. Dafür ist die nächtliche Datenbank-Sicherung da |
+| **Fehlerberichte, Push-Kennungen** | Technik, keine Betriebsdaten |
+
+Der eigentliche Punkt: **eine Sicherung mit einer bekannten Lücke ist
+brauchbar, eine mit einer unbekannten ist gefährlich.** Deshalb steht in
+jeder Datei ein Verzeichnis — im JSON ganz oben, im Excel als erste
+Tabelle. War beim Zusammenstellen etwas nicht lesbar, wird auch das dort
+vermerkt statt still weggelassen. Der Chat ist auf die neuesten 1000
+Nachrichten je Kanal begrenzt; auch das steht dort.
+
+### Eine Lücke im Testaufbau, keine in der App
+
+Der Chat war beim **einmaligen Lesen** leer, obwohl er beim Mitlauschen
+da ist — im Testaufbau fehlte der Zweig für `channels/…/messages` in
+`get()`. Hätte ich das nicht nachgesehen, hätte ich in der App nach
+einer Ursache gesucht, die es nicht gibt. Dritte Verwechslung dieser
+Art an einem Abend; alle drei sind in den Prüfern vermerkt.
+
+### Gegenprobe
+
+Mit der alten, halben Sicherung meldet der neue Durchlauf vier Fehler
+statt keinem — darunter der wichtigste: *„die Datei sagt nicht, was
+NICHT drin ist — genau das war der alte Fehler."*
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| UI-Durchläufe | 51 |
+| Regeltests | 143 |
+| Umzugs-Prüfungen | 12 |
+| Cloud-Function-Prüfungen | 79 |
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

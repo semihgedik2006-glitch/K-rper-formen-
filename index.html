@@ -3402,6 +3402,14 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
             <button class="btn btn-ghost btn-sm" id="expXls" style="width:100%">⬇️ Alles als Excel speichern</button>
             <button class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">⬇️ Alles als Daten-Datei (JSON)</button>
+            <!-- Bis zum 11.8.2026 stand hier nur „Alles" und es war die
+                 Hälfte. Jetzt steht in der Datei selbst ein Verzeichnis,
+                 und hier daneben die Kurzfassung. -->
+            <p class="hint" style="margin-top:8px"><b>Was drin ist:</b> Aufgaben, Material,
+              Putzplan, Chat, Geräte, Schichten, Abwesenheiten, Übergaben, Brett, Team,
+              Infos, Dokument-Angaben und Nachweise. <b>Was nicht:</b> Direktnachrichten
+              (die gehören zwei Personen) und der Inhalt hochgeladener Dateien (dafür ist
+              die nächtliche Sicherung da). Beides steht auch in der Datei.</p>
             <p class="hint" style="margin:16px 0 8px"><b>Automatische Sicherung:</b> jede Nacht um 2:40 Uhr
               wird die komplette Datenbank gesichert. Die letzten sieben Tage bleiben liegen.
               Anders als die Dateien oben holt das nach einem versehentlichen Löschen wirklich
@@ -10764,71 +10772,274 @@ function exportReport(){
   toast('Bericht gespeichert');
 }
 
-/* ── Komplette Sicherung ── */
+/* ══ Komplette Sicherung ══════════════════════════════════════════════
+   Bis zum 11. August 2026 hiess der Knopf „Alles" und lud die Hälfte:
+   Aufgaben, Material, Team und Infos. Nicht dabei waren Chat, Putzplan,
+   Geräte, Schichten, Abwesenheiten, Übergaben, Brett, Dokumente und
+   Nachweise.
+
+   An einer SICHERUNGSfunktion ist das die unangenehmste Stelle für eine
+   Halbwahrheit: man merkt sie erst, wenn man die Datei braucht — also
+   an dem Tag, an dem alles andere schon schiefgegangen ist.
+
+   Jetzt ist alles drin, was der Chef lesen darf. Und was NICHT drin
+   ist, steht in der Datei selbst (siehe HINWEISE unten). Eine Sicherung
+   mit einer bekannten Lücke ist brauchbar; eine mit einer unbekannten
+   ist gefährlich.
+
+   WAS BEWUSST FEHLT
+   - Direktnachrichten. Die gehören zwei Personen, nicht dem Betrieb.
+     Der Chef darf sie nach den Regeln gar nicht lesen — ein Versuch
+     würde nur scheitern. Das ist keine Lücke, das ist der Sinn.
+   - Der Inhalt hochgeladener Dateien. Die Namen und Angaben sind dabei,
+     die Dateien selbst nicht: sie liegen als Base64 in der Datenbank
+     und würden die Datei um ein Vielfaches aufblähen. Für sie ist die
+     nächtliche Datenbank-Sicherung da.
+   - Fehlerberichte und Push-Kennungen. Technik, keine Betriebsdaten. */
+
+var SICHERUNG_CHAT_MAX = 1000;   // je Kanal, siehe Hinweis in der Datei
+
+/* Holt alles aus der Datenbank, was in der Sicherung landen soll.
+   Einzelne Fehlschläge sollen die ganze Sicherung nicht verhindern —
+   lieber eine Datei mit einem vermerkten Loch als gar keine. */
+function backupSammeln(){
+  var kanaele=['allgemein'].concat(STUDIOS.map(studioKey));
+  var luecken=[];
+  function weich(p, was){
+    return p.catch(function(e){
+      luecken.push(was+': '+(e && e.message ? e.message : 'nicht lesbar'));
+      return null;
+    });
+  }
+  var jobs=[
+    weich(S('board').orderBy('ts','desc').limit(500).get(), 'Schwarzes Brett'),
+    weich(S('documents').orderBy('ts','desc').limit(500).get(), 'Dokumente'),
+    weich(S('certificates').get(), 'Nachweise')
+  ];
+  kanaele.forEach(function(ch){
+    jobs.push(weich(S('channels').doc(ch).collection('messages')
+      .orderBy('ts','desc').limit(SICHERUNG_CHAT_MAX).get(), 'Chat '+ch));
+  });
+  STUDIOS.forEach(function(s){
+    var sk=studioKey(s);
+    ['cleaning','cleaningNotes','devices','deviceLog','shifts','absences','handovers']
+      .forEach(function(c){
+        jobs.push(weich(S('studios').doc(sk).collection(c).get(), s+' '+c));
+      });
+  });
+  return Promise.all(jobs).then(function(r){
+    var i=0;
+    var daten={ brett:r[i++], dokumente:r[i++], nachweise:r[i++], chat:{}, studios:{} };
+    kanaele.forEach(function(ch){ daten.chat[ch]=r[i++]; });
+    STUDIOS.forEach(function(s){
+      daten.studios[s]={};
+      ['cleaning','cleaningNotes','devices','deviceLog','shifts','absences','handovers']
+        .forEach(function(c){ daten.studios[s][c]=r[i++]; });
+    });
+    daten.luecken=luecken;
+    return daten;
+  });
+}
+
+function docsZuListe(snap){
+  return snap ? snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); }) : [];
+}
+
 function backupData(){
-  var out={ erzeugt:new Date().toISOString(), studios:{}, team:[], infos:[] };
-  STUDIOS.forEach(function(s){
-    var sk=studioKey(s);
-    out.studios[s]={
-      aufgaben:(cachedTodos[sk]||[]).map(function(t){
-        return { titel:t.title, beschreibung:t.desc||'', erledigt:!!isDone(t),
-                 erledigtVon:t.doneBy||'', erledigtAm:t.doneAt?new Date(t.doneAt).toISOString():'',
-                 faellig:t.due?new Date(t.due).toISOString():'', wiederholung:t.recurring||'',
-                 erstellt:t.ts?new Date(t.ts).toISOString():'' };
-      }),
-      material:(_invAll[sk]||[]).map(function(it){
-        return { artikel:it.name, soll:it.limit||0, ist:it.have||0, fehlt:itemNeed(it) };
-      })
+  return backupSammeln().then(function(g){
+    var out={
+      erzeugt:new Date().toISOString(),
+      /* Das Verzeichnis steht GANZ OBEN in der Datei, nicht als Fussnote.
+         Wer eine Sicherung öffnet, sucht zuerst, ob das Gesuchte drin
+         ist — und soll die Antwort nicht erraten müssen. */
+      hinweise:{
+        enthalten:['Aufgaben','Material','Putzplan mit Notizen','Team','Infos',
+                   'Chat (öffentliche Kanäle)','Geräte mit Verlauf','Schichten',
+                   'Abwesenheiten','Übergaben','Schwarzes Brett',
+                   'Dokumente (Angaben, ohne Dateiinhalt)','Nachweise'],
+        nichtEnthalten:[
+          'Direktnachrichten — gehören zwei Personen, nicht dem Betrieb',
+          'Inhalt hochgeladener Dateien — dafür ist die nächtliche Datenbank-Sicherung da',
+          'Fehlerberichte und Push-Kennungen — Technik, keine Betriebsdaten'],
+        chatGrenze:'je Kanal die neuesten '+SICHERUNG_CHAT_MAX+' Nachrichten',
+        luecken: g.luecken.length ? g.luecken : 'keine'
+      },
+      studios:{}, team:[], infos:[], brett:[], dokumente:[], nachweise:[], chat:{}
     };
+    STUDIOS.forEach(function(s){
+      var sk=studioKey(s), q=g.studios[s]||{};
+      out.studios[s]={
+        aufgaben:(cachedTodos[sk]||[]).map(function(t){
+          return { titel:t.title, beschreibung:t.desc||'', erledigt:!!isDone(t),
+                   erledigtVon:t.doneBy||'', erledigtAm:t.doneAt?new Date(t.doneAt).toISOString():'',
+                   faellig:t.due?new Date(t.due).toISOString():'', wiederholung:t.recurring||'',
+                   grund:t.grund||'', grundVon:t.grundVon||'',
+                   erstellt:t.ts?new Date(t.ts).toISOString():'' };
+        }),
+        material:(_invAll[sk]||[]).map(function(it){
+          return { artikel:it.name, soll:it.limit||0, ist:it.have||0, fehlt:itemNeed(it) };
+        }),
+        putzplan:docsZuListe(q.cleaning).map(function(t){
+          return { titel:t.title||'', wiederholung:t.recurring||'', erledigt:!!t.done,
+                   kuerzel:t.doneKuerzel||'', konto:t.doneBy||'',
+                   erledigtAm:t.doneAt?new Date(t.doneAt).toISOString():'' };
+        }),
+        putzNotizen:docsZuListe(q.cleaningNotes).map(function(n){
+          return { text:n.text||'', kuerzel:n.kuerzel||'', konto:n.by||'',
+                   datum:n.ts?new Date(n.ts).toISOString():'' };
+        }),
+        geraete:docsZuListe(q.devices).map(function(d){
+          return { name:d.name||'', ort:d.place||'', status:d.status||'',
+                   letzteMeldung:d.lastNote||'', von:d.lastBy||'' };
+        }),
+        geraeteVerlauf:docsZuListe(q.deviceLog).map(function(l){
+          return { geraet:l.devName||'', art:l.art||'', text:l.text||'',
+                   von:l.by||'', datum:l.ts?new Date(l.ts).toISOString():'' };
+        }),
+        schichten:docsZuListe(q.shifts).map(function(x){
+          return { datum:x.date||'', von:x.from||'', bis:x.to||'',
+                   person:x.name||'', notiz:x.note||'' };
+        }),
+        abwesenheiten:docsZuListe(q.absences).map(function(a){
+          return { person:a.name||'', art:a.kind||'', von:a.from||'', bis:a.to||'',
+                   status:a.status||'', grund:a.note||'' };
+        }),
+        uebergaben:docsZuListe(q.handovers).map(function(h){
+          return { text:h.text||'', von:h.name||'', erledigt:!!h.done,
+                   datum:h.ts?new Date(h.ts).toISOString():'' };
+        })
+      };
+    });
+    out.team=_employees.map(function(e){
+      return { name:e.name, email:e.email||'', rolle:e.role||'mitarbeiter',
+               studios:(e.studios||[]).join(', ') };
+    });
+    out.infos=_allAnns.map(function(a){
+      return { von:a.from||'', text:a.text||'', ziel:a.target||'all',
+               datum:a.ts?new Date(a.ts).toISOString():'' };
+    });
+    out.brett=docsZuListe(g.brett).map(function(b){
+      return { text:b.text||'', von:b.name||'', art:b.kind||'',
+               datum:b.ts?new Date(b.ts).toISOString():'' };
+    });
+    out.dokumente=docsZuListe(g.dokumente).map(function(d){
+      return { name:d.name||'', art:d.kind||'', kategorie:d.cat||'',
+               groesse:d.size||0, studios:d.studios||'all',
+               hochgeladenVon:d.uploadedBy||'',
+               datum:d.ts?new Date(d.ts).toISOString():'',
+               hinweis:'Dateiinhalt nicht enthalten' };
+    });
+    out.nachweise=docsZuListe(g.nachweise).map(function(c){
+      return { person:c.name||'', art:c.kind||c.title||'',
+               laeuftAb:c.expires||c.until||'', notiz:c.note||'' };
+    });
+    Object.keys(g.chat).forEach(function(ch){
+      out.chat[ch==='allgemein'?'Allgemein':studioName(ch)]=
+        docsZuListe(g.chat[ch]).reverse().map(function(m){
+          return { von:m.name||'', text:m.text||'',
+                   datum:m.ts?new Date(m.ts).toISOString():'',
+                   sprachnachricht:!!m.audio, umfrage:m.poll?m.poll.q:'' };
+        });
+    });
+    return out;
   });
-  out.team=_employees.map(function(e){
-    return { name:e.name, email:e.email||'', rolle:e.role||'mitarbeiter',
-             studios:(e.studios||[]).join(', ') };
-  });
-  out.infos=_allAnns.map(function(a){
-    return { von:a.from||'', text:a.text||'', ziel:a.target||'all',
-             datum:a.ts?new Date(a.ts).toISOString():'' };
-  });
-  return out;
 }
+
 function exportAllJson(){
-  var blob=new Blob([JSON.stringify(backupData(),null,2)],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a'); a.href=url;
-  a.download='StudioChat_Sicherung_'+ymd(new Date())+'.json';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
-  toast('Sicherung gespeichert');
+  toast('Sicherung wird zusammengestellt …');
+  return backupData().then(function(daten){
+    var blob=new Blob([JSON.stringify(daten,null,2)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url;
+    a.download='StudioChat_Sicherung_'+ymd(new Date())+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+    toast(daten.hinweise.luecken==='keine'
+      ? 'Sicherung gespeichert ✓'
+      : 'Sicherung gespeichert — mit Lücken, siehe „hinweise" in der Datei');
+  }).catch(function(e){ toast(errMsg(e), true); });
 }
+
 function exportAllXls(){
-  var html='<h2>StudioChat – Vollständige Sicherung</h2><p>Stand '+
-    esc(new Date().toLocaleString('de-DE'))+'</p>';
-  html+=xlsTable('Team',['Name','E-Mail','Rolle','Studios'],
-    _employees.map(function(e){
-      return [e.name, e.email||'', roleLabel(e.role), (e.studios||[]).join(', ')];
-    }));
-  html+=xlsTable('Infos',['Datum','Von','Empfänger','Text'],
-    _allAnns.map(function(a){
-      return [a.ts?new Date(a.ts).toLocaleString('de-DE'):'', a.from||'',
-              (!a.target||a.target==='all')?'Alle':studioName(a.target), a.text||''];
-    }));
-  STUDIOS.forEach(function(s){
-    var sk=studioKey(s);
-    var todos=cachedTodos[sk]||[], mat=_invAll[sk]||[];
-    if(!todos.length && !mat.length) return;
-    if(todos.length) html+=xlsTable(s+' – Aufgaben',
-      ['Aufgabe','Status','Erledigt von','Erledigt am','Fällig','Wiederholung'],
-      todos.map(function(t){
-        return [t.title||'', isDone(t)?'erledigt':'offen', t.doneBy||'',
-                t.doneAt?new Date(t.doneAt).toLocaleString('de-DE'):'',
-                t.due?new Date(t.due).toLocaleDateString('de-DE'):'',
-                t.recurring?repLabelFor(t):''];
+  toast('Sicherung wird zusammengestellt …');
+  return backupData().then(function(d){
+    var html='<h2>StudioChat – Vollständige Sicherung</h2><p>Stand '+
+      esc(new Date().toLocaleString('de-DE'))+'</p>';
+    /* Dasselbe Verzeichnis wie in der JSON-Datei, und zwar als ERSTE
+       Tabelle. Wer die Datei in zwei Jahren öffnet, soll nicht raten. */
+    html+=xlsTable('Was in dieser Datei steht',['','Inhalt'],
+      [['Enthalten', d.hinweise.enthalten.join(' · ')],
+       ['Nicht enthalten', d.hinweise.nichtEnthalten.join(' · ')],
+       ['Chat', d.hinweise.chatGrenze],
+       ['Lücken beim Lesen', d.hinweise.luecken==='keine' ? 'keine'
+          : (Array.isArray(d.hinweise.luecken)?d.hinweise.luecken.join(' · '):String(d.hinweise.luecken))]]);
+    html+=xlsTable('Team',['Name','E-Mail','Rolle','Studios'],
+      _employees.map(function(e){
+        return [e.name, e.email||'', roleLabel(e.role), (e.studios||[]).join(', ')];
       }));
-    if(mat.length) html+=xlsTable(s+' – Material',['Artikel','Soll','Ist','Fehlt'],
-      mat.map(function(it){ return [it.name, it.limit||0, it.have||0, itemNeed(it)]; }));
-  });
-  downloadXls('StudioChat_Sicherung_'+ymd(new Date())+'.xls', html);
-  toast('Sicherung gespeichert');
+    html+=xlsTable('Infos',['Datum','Von','Empfänger','Text'],
+      _allAnns.map(function(a){
+        return [a.ts?new Date(a.ts).toLocaleString('de-DE'):'', a.from||'',
+                (!a.target||a.target==='all')?'Alle':studioName(a.target), a.text||''];
+      }));
+    if(d.brett.length) html+=xlsTable('Schwarzes Brett',['Datum','Von','Art','Text'],
+      d.brett.map(function(b){ return [b.datum, b.von, b.art, b.text]; }));
+    if(d.dokumente.length) html+=xlsTable('Dokumente (ohne Dateiinhalt)',
+      ['Name','Art','Kategorie','Größe','Hochgeladen von','Datum'],
+      d.dokumente.map(function(x){
+        return [x.name, x.art, x.kategorie, x.groesse, x.hochgeladenVon, x.datum]; }));
+    if(d.nachweise.length) html+=xlsTable('Nachweise',['Person','Art','Läuft ab','Notiz'],
+      d.nachweise.map(function(c){ return [c.person, c.art, c.laeuftAb, c.notiz]; }));
+    Object.keys(d.chat).forEach(function(name){
+      var m=d.chat[name]; if(!m.length) return;
+      html+=xlsTable('Chat – '+name,['Datum','Von','Text','Sprachnachricht','Umfrage'],
+        m.map(function(x){
+          return [x.datum, x.von, x.text, x.sprachnachricht?'ja':'', x.umfrage]; }));
+    });
+    STUDIOS.forEach(function(s){
+      var q=d.studios[s]; if(!q) return;
+      if(q.aufgaben.length) html+=xlsTable(s+' – Aufgaben',
+        ['Aufgabe','Status','Erledigt von','Erledigt am','Fällig','Wiederholung','Grund','Grund von'],
+        q.aufgaben.map(function(t){
+          return [t.titel||'', t.erledigt?'erledigt':'offen', t.erledigtVon||'',
+                  t.erledigtAm||'', t.faellig||'', t.wiederholung||'',
+                  t.grund||'', t.grundVon||'']; }));
+      if(q.material.length) html+=xlsTable(s+' – Material',['Artikel','Soll','Ist','Fehlt'],
+        q.material.map(function(it){ return [it.artikel, it.soll, it.ist, it.fehlt]; }));
+      if(q.putzplan.length) html+=xlsTable(s+' – Putzplan',
+        ['Aufgabe','Wiederholung','Status','Kürzel','Konto','Erledigt am'],
+        q.putzplan.map(function(t){
+          return [t.titel, t.wiederholung, t.erledigt?'erledigt':'offen',
+                  t.kuerzel, t.konto, t.erledigtAm]; }));
+      if(q.putzNotizen.length) html+=xlsTable(s+' – Putzplan-Notizen',
+        ['Datum','Kürzel','Konto','Text'],
+        q.putzNotizen.map(function(n){ return [n.datum, n.kuerzel, n.konto, n.text]; }));
+      if(q.geraete.length) html+=xlsTable(s+' – Geräte',
+        ['Gerät','Ort','Status','Letzte Meldung','Von'],
+        q.geraete.map(function(g2){
+          return [g2.name, g2.ort, g2.status, g2.letzteMeldung, g2.von]; }));
+      if(q.geraeteVerlauf.length) html+=xlsTable(s+' – Geräte-Verlauf',
+        ['Datum','Gerät','Art','Text','Von'],
+        q.geraeteVerlauf.map(function(l){
+          return [l.datum, l.geraet, l.art, l.text, l.von]; }));
+      if(q.schichten.length) html+=xlsTable(s+' – Schichten',
+        ['Datum','Von','Bis','Person','Notiz'],
+        q.schichten.map(function(x){
+          return [x.datum, x.von, x.bis, x.person, x.notiz]; }));
+      if(q.abwesenheiten.length) html+=xlsTable(s+' – Abwesenheiten',
+        ['Person','Art','Von','Bis','Status','Grund'],
+        q.abwesenheiten.map(function(a){
+          return [a.person, a.art, a.von, a.bis, a.status, a.grund]; }));
+      if(q.uebergaben.length) html+=xlsTable(s+' – Übergaben',
+        ['Datum','Von','Text','Erledigt'],
+        q.uebergaben.map(function(h){
+          return [h.datum, h.von, h.text, h.erledigt?'ja':'']; }));
+    });
+    downloadXls('StudioChat_Sicherung_'+ymd(new Date())+'.xls', html);
+    toast(d.hinweise.luecken==='keine'
+      ? 'Sicherung gespeichert ✓'
+      : 'Sicherung gespeichert — mit Lücken, siehe erste Tabelle');
+  }).catch(function(e){ toast(errMsg(e), true); });
 }
 
 function renderSysInfo(){

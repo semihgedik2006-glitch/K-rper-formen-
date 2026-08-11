@@ -304,7 +304,17 @@
         var gl = /^studios\/(.+)\/deviceLog$/.exec(path);
         var gt = /^studios\/(.+)\/todos$/.exec(path);
         var ga = /^studios\/(.+)\/absences$/.exec(path);
-        var list = ga ? (ABSENCES[ga[1]] || [])
+        /* Chat und Brett fehlten hier, obwohl onSnapshot sie kennt. Wer
+           EINMALIG liest — die vollstaendige Sicherung tut genau das —
+           bekam eine leere Antwort und haette daraus geschlossen, in der
+           App fehle etwas. Der Durchlauf test-sicherung-inhalt.js ist
+           genau darauf gestossen. */
+        var gm = /^channels\/(.+)\/messages$/.exec(path);
+        var gh = /^studios\/(.+)\/handovers$/.exec(path);
+        var list = gm ? (gm[1] === 'allgemein' ? MESSAGES : [])
+          : gh ? (typeof HANDOVERS !== 'undefined' ? (HANDOVERS[gh[1]] || []) : [])
+          : path === 'board' ? (typeof BOARD !== 'undefined' ? BOARD : [])
+          : ga ? (ABSENCES[ga[1]] || [])
           : ms ? (SHIFTS[ms[1]] || [])
           : gc ? (CLEAN[gc[1]] || [])
           : gn ? (CLEANNOTES[gn[1]] || [])
