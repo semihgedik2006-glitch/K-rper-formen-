@@ -1,7 +1,7 @@
 # Abo-Modell für StudioChat — Planung
 
-**Stand:** 11. August 2026 · **Nichts davon ist gebaut.** Dieses Blatt ist
-zum Entscheiden da, nicht zum Ausrollen.
+**Stand:** 11. August 2026 · **Stufe A und B sind gebaut** (Abo eintragen,
+Stufen greifen). Alles ab Stufe C — Zahlung, Mahnungen — ist Planung.
 
 ---
 
@@ -10,7 +10,7 @@ zum Entscheiden da, nicht zum Ausrollen.
 | | Frage | Entscheidung |
 |---|---|---|
 | **1** | Wofür wird bezahlt? | **Je Studio.** Mitarbeiter unbegrenzt |
-| **2** | Basic gegen Premium? | nach Funktionen getrennt, Vorschlag in Abschnitt 2 — noch offen im Detail |
+| **2** | Basic gegen Premium? | **Nachweise + Auswertung** sind Premium — gebaut. Mein Rat bleibt: erst ein Preis, Stufen wenn es etwas Premium gibt (Abschnitt 2) |
 | **3** | Wenn nicht gezahlt wird? | **Mahnungen → nichts mehr bearbeiten → gar kein Zugriff.** Ausgeführt in Abschnitt 3 |
 | **4** | Steuern | **beide Fälle vorbereiten** (Kleinunternehmer und Regelbesteuerung) — Abschnitt 5 |
 
@@ -57,44 +57,82 @@ sich in einem Satz sagen lässt: *„Alle Ihre Leute, ohne Aufpreis."*
 
 ## 2. Was Basic von Premium unterscheiden sollte
 
-Die Versuchung ist, dem Basic-Kunden willkürlich etwas wegzunehmen. Das
-merkt er und ärgert sich. Besser sind zwei Sorten von Grenzen:
+**Zuerst eine Korrektur an mir selbst.** Hier stand eine Tabelle mit
+sechs Premium-Funktionen. Beim Nachsehen in der App war sie in zwei
+Punkten falsch:
 
-**a) Was dich echtes Geld kostet.** Die KI-Funktionen rufen Google an,
-und das wird abgerechnet. Es gibt dafür seit gestern schon eine
-Tagesgrenze je Firma — die Aufhängung ist also gebaut.
+- **Geräte- und Schadensbuch** stand als Premium drin. Es liegt in der
+  Gruppe *Betrieb*, direkt neben Aufgaben und Putzplan — es ist eine
+  **Team-Ansicht**. Wer sie wegnimmt, sorgt dafür, dass defekte Geräte
+  nicht mehr gemeldet werden. Das ist keine Preisstufe, das ist ein
+  Betriebsrisiko.
+- **KI für Werbetexte und Bilder** stand als Premium drin. Die
+  Cloud Functions gibt es, eine **Oberfläche dafür nicht** (siehe
+  `KI-PLAN.md`, bewusst nicht gebaut). Man kann nichts abgrenzen, was es
+  noch nicht gibt.
 
-**b) Was Fachwissen oder Haftung mitbringt.** Nachweise (Erste Hilfe,
-Trainerlizenzen) mit Ablaufwarnung sind Compliance. Wer das braucht,
-zahlt dafür.
+Ich hatte die Tabelle aus dem Kopf geschrieben statt aus der App.
 
-Ein Vorschlag als Ausgangspunkt — **das ist eine Liste zum Streichen,
-nicht mein letztes Wort:**
+### Was tatsächlich übrig bleibt
 
-| Funktion | Basic | Premium |
+Die App hat sechs Bereiche, die nur der Chef sieht: Überblick, Team,
+Studios, Nachweise, Auswertung, System. Davon sind vier
+**Verwaltungsarbeit** — ohne Team, Studios und System kann der Chef den
+Betrieb nicht führen, und ohne Überblick ist seine Startseite leer. Die
+kann man nicht verkaufen, ohne das Produkt zu beschädigen.
+
+Es bleiben **zwei**:
+
+| | |
+|---|---|
+| **Nachweise** mit Ablaufwarnung | Erste Hilfe, Trainerlizenzen, EMS-Einweisung. Compliance, und jemand haftet dafür |
+| **Auswertung** samt Excel-Export und Monatsbericht | der Überblick über einen Zeitraum |
+
+**Das ist dünn für zwanzig Euro Unterschied**, und ich sage es lieber
+jetzt als nachdem du es einem Kunden erklären musstest.
+
+### Und einer der beiden Riegel ist gar keiner
+
+**Die Auswertung lässt sich nicht wirklich abschalten.** Sie rechnet aus
+Daten, die das Team ohnehin sieht — Aufgaben, Putzplan, Material. Man
+kann die Ansicht ausblenden, aber die Zahlen liegen offen. Wer technisch
+ist, kommt daran.
+
+**Nachweise dagegen sind eine eigene Sammlung.** Da lässt sich die
+Grenze in die Regeln legen, und dann ist sie eine.
+
+Diesen Unterschied muss man kennen, bevor man ihn verkauft. „Premium"
+ist bei der Auswertung eine Bequemlichkeit, kein Schloss.
+
+### Mein Rat
+
+**Für den Anfang: ein Preis, alles drin.** Je Studio, ohne Stufen. Das
+verkauft sich in einem Satz, du musst nichts erklären, und kein Kunde
+fragt, warum er für eine Excel-Datei zahlen soll.
+
+**Premium einführen, wenn es etwas Premium gibt.** Die erste ehrliche
+Kandidatin ist die **KI-Werbung**: sie kostet dich bei jedem Aufruf
+echtes Geld (Google rechnet ab), es gibt bereits eine Tagesgrenze je
+Firma, und der Kunde versteht sofort, warum das extra ist. Sobald die
+Oberfläche dafür steht, hast du eine Premium-Stufe, die sich von selbst
+erklärt.
+
+**Falls du trotzdem sofort zwei Stufen willst** — das ist eine
+vertretbare Entscheidung, nicht falsch:
+
+| | Basic | Premium |
 |---|---|---|
-| Chat, Direktnachrichten, Umfragen | ✅ | ✅ |
-| Aufgaben, Putzplan, Wochenarchiv | ✅ | ✅ |
-| Schichtplan, Urlaub, Schichttausch | ✅ | ✅ |
-| Material und Bestellvorschlag | ✅ | ✅ |
-| Dokumente, Schwarzes Brett | ✅ | ✅ |
-| Push-Benachrichtigungen | ✅ | ✅ |
+| Das ganze Tagesgeschäft, alle Studios, alle Leute | ✅ | ✅ |
+| Chat, Aufgaben, Putzplan, Schichten, Material, Geräte, Dokumente | ✅ | ✅ |
+| Team, Studios, System, Überblick | ✅ | ✅ |
 | **Nachweise mit Ablaufwarnung** | — | ✅ |
-| **Geräte- und Schadensbuch** | — | ✅ |
-| **Monatsbericht per E-Mail** | — | ✅ |
-| **Auswertung / Statistik** | — | ✅ |
-| **Export nach Excel / Google-Tabelle** | — | ✅ |
-| **KI für Werbetexte und Bilder** | — | ✅ |
+| **Auswertung, Excel-Export, Monatsbericht** | — | ✅ |
+| *(später)* **KI-Werbung** | — | ✅ |
 
-**Warum die Trennung so liegt:** alles, was das Team *täglich* braucht,
-ist in Basic. Sonst funktioniert die App nicht, und ein Kunde, dessen
-Team nicht arbeiten kann, kündigt. Premium ist, was der **Chef** will:
-Überblick, Nachweise, Auswertung, Marketing.
-
-> **Achtung, eine Falle:** eine Funktion wegnehmen, die der Kunde schon
-> benutzt hat, geht nicht gut aus. Wenn du Stufen einführst, dann
-> **bevor** jemand Kunde wird — oder Bestandskunden behalten dauerhaft,
-> was sie hatten. Das ist keine Nettigkeit, das ist Rechtsfrieden.
+> **Eine Falle bleibt so oder so:** eine Funktion wegnehmen, die der
+> Kunde schon benutzt hat, geht nicht gut aus. Stufen einführen, **bevor**
+> jemand Kunde wird — oder Bestandskunden behalten dauerhaft, was sie
+> hatten. Das ist keine Nettigkeit, das ist Rechtsfrieden.
 
 ---
 
@@ -319,10 +357,46 @@ Der Umbau in Stufen, so wie beim Umzug:
 | | Was | Risiko |
 |---|---|---|
 | **A** ✅ | Abo-Zustand unter `firmen/<kennung>/abo/aktuell`, von Hand gesetzt. Die App liest und zeigt ihn, sperrt aber nichts | keins |
-| **B** | Die Stufen greifen: Premium-Funktionen sichtbar/unsichtbar, in der App **und in den Regeln** | gering |
+| **B** ✅ | Die Stufen greifen: in der App sichtbar gesperrt, bei den Nachweisen auch in den Regeln | gering |
 | **C** | Stripe anbinden: Bezahlseite, Rückmeldung per Webhook, Zustand wird automatisch gesetzt | **hoch** — echtes Geld |
 | **D** | Der Zustand `nurlesen` in den Regeln, dazu die Uhr, die die Mahnstufen aus Abschnitt 3 weiterstellt | mittel |
 | **E** | Selbstbedienung: Kunde ändert Stufe, sieht Rechnungen, kündigt | gering |
+
+### ✅ Stufe B ist gebaut — 11. August 2026
+
+Die Trennung steht an **einer** Stelle (`PREMIUM_TABS` in
+`index.html`). Eine Funktion die Stufe wechseln zu lassen ist eine
+Zeile, keine Suche durch die Datei.
+
+**Drei Entscheidungen, die wichtiger sind als das Sperren selbst:**
+
+*Ohne Abo ist alles offen.* Der heutige Zustand für euren eigenen
+Betrieb und für jeden Kunden, bei dem noch nichts eingetragen ist. Ein
+Kunde, dem die Hälfte fehlt, weil jemand ein Feld nicht ausgefüllt hat,
+wäre der schlechtere Fehler — und er fällt erst auf, wenn er anruft.
+
+*Gesperrtes wird gezeigt, nicht versteckt.* Die Kachel bleibt stehen,
+mit einem Schloss und der Aufschrift „Premium". Wer nicht weiß, dass es
+etwas gibt, fragt nicht danach — und Verstecken wäre unehrlich, die
+Ansicht ist ja da.
+
+*Lesen bleibt offen, auch auf Basic.* Wer Nachweise hinterlegt hat und
+auf Basic wechselt, kann sie weiter sehen und herausholen. Weggenommen
+wird das **Anlegen**. Eine Preisstufe, die vorhandene Daten unerreichbar
+macht, ist keine Preisstufe, sondern ein Verlust.
+
+**Was ein Riegel ist und was nicht** — der Satz, der beim Verkaufen
+zählt:
+
+| | |
+|---|---|
+| **Nachweise** | eigene Sammlung → Grenze steht in `firestore.rules`. **Echt.** |
+| **Auswertung** | rechnet aus Aufgaben, Putzplan, Material — Daten, die das Team ohnehin sieht. Nur ausgeblendet. **Kein Schloss.** |
+
+Belegt durch 7 Regelprüfungen und 4 Durchläufe durch die Oberfläche,
+darunter die Gegenprobe, dass Basic **Chat, Aufgaben und Team nicht
+anfasst**. Wer eine Preisstufe einbaut und dabei das Tagesgeschäft
+erwischt, hat den Kunden verloren, bevor er ihn hatte.
 
 ### ✅ Stufe A ist gebaut — 11. August 2026
 

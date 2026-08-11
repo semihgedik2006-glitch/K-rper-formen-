@@ -552,6 +552,65 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('ABO · auch ein anderer Name unter abo/ ist geschuetzt', () =>
     assertFails(mitA().doc('firmen/' + A + '/abo/irgendwas').get()));
 
+  /* ══ Stufe B: die Abo-Stufe grenzt wirklich ab ══
+     Nachweise sind der eine Riegel, der einer ist — eigene Sammlung,
+     also in den Regeln durchsetzbar. Bei der Auswertung ginge das
+     nicht: die rechnet aus Daten, die das Team ohnehin sieht.
+
+     Zwei Dinge sind hier wichtiger als das Sperren selbst:
+       1. OHNE Abo ist alles offen. Ein Kunde, dem die Haelfte fehlt,
+          weil jemand ein Feld nicht ausgefuellt hat, waere der
+          schlechtere Fehler.
+       2. LESEN bleibt offen, auch auf Basic. Wer auf Basic wechselt,
+          soll seine Nachweise noch herausholen koennen. Weggenommen
+          wird das Anlegen. */
+  const D = 'firma-d';
+  await env.withSecurityRulesDisabled(async ctx => {
+    const d = ctx.firestore();
+    await d.doc('firmen/' + D).set({ name: 'Firma D', aktiv: true });
+    await d.doc('users/chefD').set({ name: 'Chef D', role: 'chef', firma: D, aktiv: true });
+    await d.doc('firmen/' + D + '/certificates/alt')
+      .set({ uid: 'chefD', art: 'ems', bis: '2027-01-01' });
+  });
+  const chefD = () => env.authenticatedContext('chefD').firestore();
+
+  await pruefe('STUFE · ohne Abo ist alles offen (Nachweis anlegen geht)', () =>
+    assertSucceeds(chefD().doc('firmen/' + D + '/certificates/n1')
+      .set({ uid: 'chefD', art: 'ersthelfer', bis: '2027-06-01' })));
+
+  await env.withSecurityRulesDisabled(async ctx => {
+    await ctx.firestore().doc('firmen/' + D + '/abo/aktuell')
+      .set({ stufe: 'basic', status: 'aktiv', netto: 29 });
+  });
+  await pruefe('STUFE · auf Basic kann er KEINEN Nachweis mehr anlegen', () =>
+    assertFails(chefD().doc('firmen/' + D + '/certificates/n2')
+      .set({ uid: 'chefD', art: 'trainer', bis: '2027-06-01' })));
+  await pruefe('STUFE · … und auch keinen ändern', () =>
+    assertFails(chefD().doc('firmen/' + D + '/certificates/alt').update({ bis: '2028-01-01' })));
+  /* Der Punkt, an dem eine Preisstufe zum Datenverlust würde. */
+  await pruefe('STUFE · aber die vorhandenen LESEN darf er weiterhin', () =>
+    assertSucceeds(chefD().doc('firmen/' + D + '/certificates/alt').get()));
+
+  await env.withSecurityRulesDisabled(async ctx => {
+    await ctx.firestore().doc('firmen/' + D + '/abo/aktuell').update({ stufe: 'premium' });
+  });
+  await pruefe('STUFE · mit Premium geht es wieder', () =>
+    assertSucceeds(chefD().doc('firmen/' + D + '/certificates/n3')
+      .set({ uid: 'chefD', art: 'hygiene', bis: '2027-06-01' })));
+
+  /* Gegenprobe: die Stufe darf nicht plötzlich ANDERE Sammlungen
+     sperren. Wer eine Preisstufe einbaut und dabei das Tagesgeschäft
+     erwischt, hat einen Kunden verloren, bevor er ihn hatte. */
+  await env.withSecurityRulesDisabled(async ctx => {
+    await ctx.firestore().doc('firmen/' + D + '/abo/aktuell').update({ stufe: 'basic' });
+  });
+  await pruefe('STUFE · Basic fasst das Tagesgeschäft NICHT an (Aufgabe anlegen)', () =>
+    assertSucceeds(chefD().doc('firmen/' + D + '/studios/studio-0/todos/t9')
+      .set({ title: 'Geht auch auf Basic' })));
+  await pruefe('STUFE · Basic fasst den Chat NICHT an', () =>
+    assertSucceeds(chefD().doc('firmen/' + D + '/channels/allgemein/messages/m9')
+      .set({ uid: 'chefD', text: 'Hallo', ts: Date.now() })));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

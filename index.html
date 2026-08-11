@@ -655,6 +655,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .fm-knoepfe{display:flex;gap:14px;align-items:center}
 .fm-knoepfe .mini-x{min-height:44px;display:inline-flex;align-items:center}
 .mini-x.weg{color:var(--danger-tx)}
+/* Gesperrte Reiter: sichtbar, aber sichtbar zu. Verstecken wäre
+   unehrlich (die Ansicht ist ja da) und verkauft nichts. */
+.chef-tab.abo-zu{opacity:.55}
+.abo-schloss{font-size:.62rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--warm-tx);background:rgba(251,191,36,.14);
+  padding:2px 7px;border-radius:999px;vertical-align:middle;margin-left:6px}
 /* Die Abo-Zeile steht auf ganzer Breite unter den Zahlen: sie ist das,
    was der Betreiber am häufigsten sucht, und darf nicht zwischen den
    Knöpfen untergehen. */
@@ -5038,6 +5044,43 @@ function studioAuswahlenNeu(){
    Regeln, nicht diese Zeile. */
 function istAdmin(){ return !!(session && session.admin === true); }
 
+/* ══ Abo-Stufe der EIGENEN Firma (Stufe B aus ABO-PLAN.md) ══════════
+   AN EINER STELLE, absichtlich. Wenn eine Funktion die Stufe wechselt,
+   ist das hier eine Zeile — und nicht eine Suche durch die ganze Datei.
+
+   WAS HIER EIN SCHLOSS IST UND WAS NICHT:
+   'nachweise' liegt in einer eigenen Sammlung (certificates), da steht
+   die Grenze auch in firestore.rules. 'report' rechnet dagegen aus
+   Daten, die das Team ohnehin sieht — Aufgaben, Putzplan, Material.
+   Diese Ansicht lässt sich nur AUSBLENDEN, nicht abschalten. Wer
+   technisch ist, kommt an die Zahlen.
+
+   Das ist kein Versehen, sondern die Natur der Sache, und es gehört
+   gesagt, bevor jemand es verkauft: bei der Auswertung ist Premium
+   eine Bequemlichkeit, kein Riegel. */
+var PREMIUM_TABS = ['nachweise', 'report'];
+var _abo = null;
+
+function aboStufe(){
+  /* Kein Abo hinterlegt = alles offen. Das ist der heutige Zustand für
+     euren eigenen Betrieb und für jeden Kunden, bei dem noch nichts
+     eingetragen ist. Ein Kunde, dem die Hälfte fehlt, weil jemand ein
+     Feld nicht ausgefüllt hat, wäre der schlechtere Fehler. */
+  if(!_abo || !_abo.stufe) return 'premium';
+  return _abo.stufe === 'basic' ? 'basic' : 'premium';
+}
+function hatPremium(){ return aboStufe() === 'premium'; }
+
+/* Wird beim Eintreten geholt — nur für den Chef, denn nur er darf es
+   lesen (siehe firestore.rules) und nur seine Ansichten sind betroffen.
+   Schlägt es fehl, bleibt alles offen: siehe oben. */
+function aboLaden(){
+  if(!KONFIG.mandant || !_firma || !isChef()) return Promise.resolve();
+  return S('abo').doc('aktuell').get()
+    .then(function(d){ _abo = d.exists ? d.data() : null; })
+    .catch(function(e){ console.warn('Abo nicht lesbar:', e.message); });
+}
+
 function studioKey(name){
   for(var i=0;i<_studioListe.length;i++){
     if(_studioListe[i] && _studioListe[i].name === name) return _studioListe[i].id;
@@ -6410,7 +6453,10 @@ function enterApp(uid, data){
     ? session.studios : (session.studio ? [session.studio] : []);
   session.studioKeys = session.studios.map(studioKey);
   $('authWrap').classList.remove('show');
-  showApp();
+  /* Die Abo-Stufe VOR showApp holen, sonst baut sich der
+     Verwaltungsbereich einmal ohne Schlösser auf und flackert dann.
+     Schlägt es fehl, bleibt alles offen — siehe aboStufe(). */
+  aboLaden().then(showApp, showApp);
 }
 
 /* ============================================================
@@ -9890,7 +9936,13 @@ function buildChefTabs(){
     _chefTab=CHEF_START;
   }
   bar.innerHTML=tabs.map(function(t){
-    return '<button class="chef-tab'+(t.id===_chefTab?' on':'')+'" data-ctab="'+t.id+'">'+esc(t.label)+'</button>';
+    /* Gesperrte Reiter werden GEZEIGT, nicht versteckt. Wer nicht weiss,
+       dass es etwas gibt, fragt auch nicht danach — und der Kunde soll
+       den Unterschied sehen, für den er zahlen würde. Verstecken wäre
+       ausserdem unehrlich: die Ansicht ist ja da. */
+    var zu = PREMIUM_TABS.indexOf(t.id)>=0 && !hatPremium();
+    return '<button class="chef-tab'+(t.id===_chefTab?' on':'')+(zu?' abo-zu':'')+
+      '" data-ctab="'+t.id+'">'+esc(t.label)+(zu?' 🔒':'')+'</button>';
   }).join('');
   bar.querySelectorAll('[data-ctab]').forEach(function(b){
     b.addEventListener('click',function(){ showChefTab(b.getAttribute('data-ctab')); tick(8); });
@@ -9913,7 +9965,8 @@ function renderChefHome(){
   box.innerHTML=chefTabsFuerMich().map(function(t){
     return '<button class="chef-card" data-cgo="'+esc(t.id)+'">'+
       '<span class="cc-ico">'+t.ico+'</span>'+
-      '<span class="cc-body"><span class="cc-title">'+esc(t.label.replace(/^\S+\s/,''))+'</span>'+
+      '<span class="cc-body"><span class="cc-title">'+esc(t.label.replace(/^\S+\s/,''))+
+        (PREMIUM_TABS.indexOf(t.id)>=0 && !hatPremium() ? ' <span class="abo-schloss">Premium</span>' : '')+'</span>'+
       '<span class="cc-was">'+esc(t.was||'')+'</span>'+
       '<span class="cc-num" data-cnum="'+esc(t.id)+'" style="display:none"></span></span>'+
       '</button>';
@@ -9959,6 +10012,15 @@ function chefHomeZahlen(){
 }
 
 function showChefTab(id, keep){
+  /* Gesperrt: Meldung statt Ansicht, und zwar BEVOR irgendetwas
+     geladen wird. Sonst laufen im Hintergrund Abfragen für eine
+     Ansicht, die niemand sehen darf — und in der Auswertung wären das
+     Zahlen, die genau der Punkt sind. */
+  if(PREMIUM_TABS.indexOf(id)>=0 && !hatPremium()){
+    toast('„'+((CHEFTABS.filter(function(x){ return x.id===id; })[0]||{}).label||id)+
+      '" gehört zu Premium.', true);
+    return;
+  }
   _chefTab=id;
   var uebersicht = (id===CHEF_START);
 
