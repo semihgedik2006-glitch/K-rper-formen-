@@ -1719,7 +1719,13 @@ exports.dailyArchive = region
             }),
             notes: nSnap.docs.map(d => {
               const n = d.data() || {};
-              return { text: n.text || '', by: n.by || '', at: n.ts || null };
+              /* Wie bei den Putzpunkten: Kuerzel vorn, Konto daneben. */
+              return {
+                text: n.text || '',
+                by: n.kuerzel || n.by || '',
+                konto: n.by || '',
+                at: n.ts || null,
+              };
             }),
           };
           /* Aufgaben gehoerten bisher gar nicht in die Sicherung. Genau

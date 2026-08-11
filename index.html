@@ -11111,7 +11111,10 @@ function addPutzNote(){
   if(!_ppStudioKey){ toast('Bitte zuerst ein Studio wählen.',true); return; }
   inp.value='';
   S('studios').doc(_ppStudioKey).collection('cleaningNotes').add({
-    text:text, by:session.name, byUid:session.uid, ts:Date.now()
+    text:text, by:session.name, byUid:session.uid,
+    /* Dieselbe Frage wie beim Abhaken: unter der Notiz steht sonst der
+       Studio-Zugang, und niemand weiss, wer sie geschrieben hat. */
+    kuerzel:putzKuerzel()||null, ts:Date.now()
   }).then(function(){ schedulePutzplanSheets(_ppStudioKey); })
     .catch(function(e){ toast(errMsg(e),true); });
 }
@@ -11124,8 +11127,12 @@ function renderPutzNotes(){
     var mine=n.byUid===session.uid;
     var canDel = chef || (mine && (Date.now()-(n.ts||0) < 3600000));
     var del = canDel ? '<button class="pp-note-del" data-notedel="'+esc(n.id)+'">löschen</button>' : '';
+    // Gleiche Darstellung wie beim Abhaken: Kürzel vorne, Konto in Klammern
+    var wer = n.kuerzel
+      ? esc(n.kuerzel)+' <span class="pp-konto">('+esc(n.by||'')+')</span>'
+      : esc(n.by||'—');
     return '<div class="pp-note"><div class="pp-note-text">'+linkify(esc(n.text))+'</div>'+
-      '<div class="pp-note-foot"><span>'+esc(n.by||'—')+' · '+fmtDateTime(n.ts)+'</span>'+del+'</div></div>';
+      '<div class="pp-note-foot"><span>'+wer+' · '+fmtDateTime(n.ts)+'</span>'+del+'</div></div>';
   }).join('');
   box.querySelectorAll('[data-notedel]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -11176,10 +11183,15 @@ function putzplanDatenHolen(sk){
         return { title:t.title||'', wiederholung:repLabelFor(t)||'einmalig',
           status:isDone(t)?'erledigt':'offen',
           erledigtVon: isDone(t)?(t.doneBy||''):'',
+          /* Eigenes Feld, nicht in den Kontonamen hineingeschrieben:
+             in der Tabelle soll der Chef nach dem Kürzel filtern und
+             sortieren können. In einer gemischten Spalte ginge das nicht. */
+          kuerzel: isDone(t)?(t.doneKuerzel||''):'',
           zeitpunkt: isDone(t)&&t.doneAt?fmtDateTime(t.doneAt):'' };
       });
     var notes=res[1].docs.map(function(d){ var n=d.data();
-      return { text:n.text||'', by:n.by||'', ts:n.ts||0, zeit:fmtDateTime(n.ts) }; });
+      return { text:n.text||'', by:n.by||'', kuerzel:n.kuerzel||'',
+               ts:n.ts||0, zeit:fmtDateTime(n.ts) }; });
     return { studio:studioName(sk), studioKey:sk, tasks:tasks, notes:notes,
              updatedBy:session.name, ts:Date.now() };
   });
@@ -12415,7 +12427,8 @@ function archivSchreiben(key, now, force){
             konto:isDone(t)?(t.doneBy||''):'',
             at:(isDone(t)&&t.doneAt)?fmtDateTime(t.doneAt):'' }; }),
         notes: nSnap.docs.map(function(d){ var n=d.data();
-          return { text:n.text||'', by:n.by||'', at:fmtDateTime(n.ts) }; })
+          return { text:n.text||'', by:n.kuerzel||n.by||'', konto:n.by||'',
+                   at:fmtDateTime(n.ts) }; })
       };
     });
     return S('archives').doc(key).set({

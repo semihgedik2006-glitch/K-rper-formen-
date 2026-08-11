@@ -1852,7 +1852,7 @@ samt Grund. Zwei Entscheidungen dahinter:
 
 | | |
 |---|---|
-| UI-Durchläufe | 47 |
+| UI-Durchläufe | 48 |
 | Regeltests | 132 |
 | Umzugs-Prüfungen | 12 |
 | Cloud-Function-Prüfungen | 79 |
@@ -1861,13 +1861,40 @@ Ausgerollt am 11.8. um 16:14 Uhr. `dailyArchive` steht im Deploy-
 Protokoll als *Successful create* — die geplante Aufgabe existiert also
 wirklich, sie wurde nicht nur hochgeladen.
 
-### Eine Sache, die noch zu klären ist
+### Nachgereicht: das Kürzel in der Google-Tabelle
 
-Die Rückmeldung sprach von „die **sheets** liste". Geändert wurde das
-**App-interne Tagesarchiv** — das erzeugt die Excel-Dateien und die
-Sicherungsliste. Die Google-Tabelle selbst (`MATERIAL-SHEETS.gs`) ist
-unverändert. Falls dort ein tägliches Blatt entstehen soll, ist das eine
-eigene Änderung auf der Apps-Script-Seite.
+Meine Rückfrage war berechtigt und die Antwort eindeutig: „das da auch
+die kürzel sind". Gemeint war die **Google-Tabelle**, und die hatte ich
+nicht angefasst.
+
+Jetzt hat sie eine eigene Spalte **„Kürzel"** — im Putzplan zwischen
+„Erledigt von" und „Zeitpunkt", bei den Notizen zwischen „von" und
+„Zeitpunkt". Eine eigene Spalte statt „AB (Studio Hürth)" in einer
+gemischten Zelle, weil man nur so danach **filtern und sortieren** kann.
+Genau dafür ist sie da: einmal alles sehen, was eine Person gemacht hat.
+
+Notizen hatten bisher gar kein Kürzel. Das ist mitgezogen — unter einer
+Notiz stand sonst derselbe Studio-Zugang wie überall.
+
+**Der heikle Teil war der Umbau der schon gefüllten Tabelle.** Eine
+Spalte mitten hinein zu setzen und die alten Zeilen stehen zu lassen,
+hätte den Zeitpunkt unter „Kürzel" geschoben. Falsch — aber plausibel
+aussehend, und deshalb schlimmer als ein sichtbarer Fehler. Zugeordnet
+wird darum über den Spalten**namen**, nicht über die Position.
+
+Die Gegenprobe steht: mit absichtlich positionsbasierter Zuordnung
+meldet der Durchlauf genau das.
+
+```
+✗ DER FEHLER, UM DEN ES GEHT: bei einer alten Zeile steht etwas
+  unter „Kürzel", das keins ist (04.08.2026, 18:00)
+```
+
+**Was ich hier nicht prüfen kann:** `tests/test-sheets-kuerzel.js` führt
+den Code in einer nachgebauten Tabelle aus, nicht in Google Apps Script.
+Er belegt die Logik, nicht das Zusammenspiel mit Google. Und die Tabelle
+ändert sich erst, wenn das Skript **neu bereitgestellt** wird — das ist
+ein Handgriff, der nur bei dir möglich ist.
 
 ---
 

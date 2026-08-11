@@ -12,6 +12,21 @@
  *    Version: "Neue Version" → "Bereitstellen". Die URL bleibt gleich.
  *
  * ---------------------------------------------------------------------
+ * NEU AM 11. AUGUST 2026: die Spalte "Kürzel"
+ *
+ * Im Putzplan steht sie zwischen "Erledigt von" und "Zeitpunkt", bei den
+ * Notizen zwischen "von" und "Zeitpunkt". Grund: am Anfang bekommt nicht
+ * jede Person einen Zugang, sondern jedes Studio einen — der Kontoname
+ * ist dann bei jeder Zeile derselbe und sagt nichts darüber, wer
+ * tatsächlich davorstand.
+ *
+ * Die vorhandenen Zeilen ziehen beim ersten Lauf nach dem Bereitstellen
+ * von selbst um (kopfAngleichen). Zugeordnet wird über den Spalten-
+ * NAMEN, nicht über die Position; sonst stünde der Zeitpunkt danach
+ * unter "Kürzel". Es ist nichts von Hand zu tun, und es geht nichts
+ * verloren.
+ *
+ * ---------------------------------------------------------------------
  * WAS SICH GEGENÜBER DER ALTEN FASSUNG GEÄNDERT HAT
  *
  * 1. Zeilen werden nicht mehr einzeln gelöscht.
@@ -64,8 +79,73 @@ function doGet() {
 function blattHolen(name, kopf) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(name) || ss.insertSheet(name);
-  if (sh.getLastRow() === 0) sh.appendRow(kopf);
+  if (sh.getLastRow() === 0) { sh.appendRow(kopf); return sh; }
+  kopfAngleichen(sh, kopf);
   return sh;
+}
+
+/**
+ * Für jede Spalte der NEUEN Kopfzeile: an welcher Stelle stand sie in der
+ * alten? -1 heisst "gab es noch nicht".
+ *
+ * Zugeordnet wird über den NAMEN, nicht über die Position. Genau darauf
+ * kommt es an: kommt eine Spalte in der Mitte dazu, wandert alles
+ * dahinter eine Stelle nach rechts. Ohne diese Zuordnung stünde in einer
+ * gewachsenen Tabelle danach der Zeitpunkt unter "Kürzel" — und niemand
+ * würde es merken, weil beides irgendwie plausibel aussieht.
+ */
+function spaltenAbbildung(alt, neu) {
+  return neu.map(function (name) {
+    for (var i = 0; i < alt.length; i++) {
+      if (String(alt[i]).trim() === String(name).trim()) return i;
+    }
+    return -1;
+  });
+}
+
+/**
+ * Kopfzeile auf den heutigen Stand bringen und die vorhandenen Zeilen
+ * mit umziehen. Passiert genau einmal, beim ersten Lauf nach einer
+ * Änderung; danach ist die Kopfzeile gleich und die Funktion tut nichts.
+ *
+ * Eine Spalte, die es nicht mehr gibt, fällt dabei weg — mitsamt ihrem
+ * Inhalt. Das ist gewollt, aber es ist der Grund, warum hier nur
+ * Kopfzeilen stehen sollten, die wirklich gebraucht werden.
+ */
+function kopfAngleichen(sh, kopf) {
+  var breite = Math.max(sh.getLastColumn(), kopf.length);
+  var alt = sh.getRange(1, 1, 1, breite).getValues()[0];
+
+  var gleich = true;
+  for (var k = 0; k < breite; k++) {
+    var soll = k < kopf.length ? String(kopf[k]) : '';
+    if (String(alt[k] === undefined || alt[k] === null ? '' : alt[k]).trim() !== soll) {
+      gleich = false; break;
+    }
+  }
+  if (gleich) return;
+
+  var abb = spaltenAbbildung(alt, kopf);
+  var alle = sh.getDataRange().getValues();
+  var umgezogen = [];
+  for (var i = 1; i < alle.length; i++) {
+    var z = alle[i];
+    if (!z[0] && !z[1]) continue;                       // Leerzeile
+    umgezogen.push(abb.map(function (q) {
+      return (q < 0 || z[q] === undefined || z[q] === null) ? '' : z[q];
+    }));
+  }
+
+  if (sh.getMaxRows() > 1) {
+    sh.getRange(2, 1, sh.getMaxRows() - 1, breite).clearContent().clearFormat();
+  }
+  sh.getRange(1, 1, 1, kopf.length).setValues([kopf]);
+  if (umgezogen.length) {
+    if (sh.getMaxRows() < umgezogen.length + 1) {
+      sh.insertRowsAfter(sh.getMaxRows(), umgezogen.length + 1 - sh.getMaxRows());
+    }
+    sh.getRange(2, 1, umgezogen.length, kopf.length).setValues(umgezogen);
+  }
 }
 
 /**
@@ -88,7 +168,13 @@ function zeilenErsetzen(sh, spalten, ersetzen, neu) {
     // Leerzeilen und Zeilen der zu ersetzenden Studios fallen weg
     if (!zeile[0] && !zeile[1]) continue;
     if (weg[zeile[0]]) continue;
-    behalten.push(zeile.slice(0, spalten));
+    /* Auf die volle Breite bringen. getValues() liefert nur so viele
+       Spalten, wie tatsächlich beschrieben sind — eine Zeile ohne
+       Kürzel käme sonst kürzer zurück, und setValues() lehnt ein
+       Rechteck mit unterschiedlich langen Zeilen ab. */
+    var z = zeile.slice(0, spalten);
+    while (z.length < spalten) z.push('');
+    behalten.push(z);
   }
 
   var daten = behalten.concat(neu);
@@ -197,11 +283,17 @@ function handleMaterial(sendungen) {
  * PUTZPLAN (Aufgaben + Notizen)
  * ===================================================================== */
 function handlePutzplan(sendungen) {
-  var SP = 7, SN = 4;
+  var SP = 8, SN = 5;
 
+  /* "Kürzel" steht neben "Erledigt von", nicht an dessen Stelle.
+     Der Kontoname sagt, an welchem Gerät gearbeitet wurde — am Anfang
+     hat jedes Studio einen Zugang, nicht jede Person. Das Kürzel sagt,
+     wer davorstand. Erst beides zusammen beantwortet die Frage. */
   var sh = blattHolen('Putzplan',
-    ['Studio', 'Aufgabe', 'Wiederholung', 'Status', 'Erledigt von', 'Zeitpunkt', 'Aktualisiert']);
-  var shN = blattHolen('Putzplan-Notizen', ['Studio', 'Notiz', 'von', 'Zeitpunkt']);
+    ['Studio', 'Aufgabe', 'Wiederholung', 'Status',
+     'Erledigt von', 'Kürzel', 'Zeitpunkt', 'Aktualisiert']);
+  var shN = blattHolen('Putzplan-Notizen',
+    ['Studio', 'Notiz', 'von', 'Kürzel', 'Zeitpunkt']);
 
   var studios = [], neu = [], neuN = [];
   sendungen.forEach(function (d) {
@@ -211,10 +303,10 @@ function handlePutzplan(sendungen) {
     var wann = new Date(d.ts || Date.now());
     (d.tasks || []).forEach(function (t) {
       neu.push([studio, t.title || '', t.wiederholung || '', t.status || '',
-                t.erledigtVon || '', t.zeitpunkt || '', wann]);
+                t.erledigtVon || '', t.kuerzel || '', t.zeitpunkt || '', wann]);
     });
     (d.notes || []).forEach(function (n) {
-      neuN.push([studio, n.text || '', n.by || '', n.zeit || '']);
+      neuN.push([studio, n.text || '', n.by || '', n.kuerzel || '', n.zeit || '']);
     });
   });
 
@@ -230,6 +322,12 @@ function handlePutzplan(sendungen) {
       else                                          { stBg.push(['#fef9c3']); stFc.push(['#854d0e']); }
     });
     sh.getRange(2, 4, daten.length, 1).setBackgrounds(stBg).setFontColors(stFc)
+      .setFontWeights(daten.map(function () { return ['bold']; }))
+      .setHorizontalAlignment('center');
+
+    /* Das Kürzel ist die Spalte, nach der der Chef filtert. Deshalb
+       mittig und fett — sonst geht sie zwischen zwei Textspalten unter. */
+    sh.getRange(2, 6, daten.length, 1)
       .setFontWeights(daten.map(function () { return ['bold']; }))
       .setHorizontalAlignment('center');
 
