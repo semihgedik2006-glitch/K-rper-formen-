@@ -13,7 +13,10 @@
     "ui": {
       "enabled": false
     },
-    "singleProjectMode": true
+    "singleProjectMode": true,
+    "auth": {
+      "port": 9099
+    }
   },
   "//storage": "Ohne diesen Abschnitt kennt firebase deploy die Datei storage.rules gar nicht. Sie lag seit ihrer Erstellung im Projekt und war nie in Kraft - in Kraft war, was die Konsole beim Anlegen des Speichers gesetzt hat.",
   "storage": {
@@ -99,5 +102,6 @@
         ]
       }
     ]
-  }
+  },
+  "//emulators-auth": "Der Auth-Emulator kam am 11.8.2026 dazu: firmaAnlegen legt ein echtes Anmeldekonto an, und ohne ihn versucht der Test das gegen die echte Google-API — die er zu Recht nicht erreicht."
 }

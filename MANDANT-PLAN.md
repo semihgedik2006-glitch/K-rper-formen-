@@ -691,6 +691,77 @@ ausgerollt werden kann:
 > Firmendaten in einer Hilfsfunktion an). Jetzt steht dort eine Liste
 > mit Namen: ein neuer Zeitplan wird rot, bis jemand entscheidet.
 
+> ### ✅ Stufe 2F am 11. August 2026 — was der erste echte Kunde sofort gebraucht hätte
+>
+> Nach dem Umzug kamen drei Fragen aus der Praxis, und zwei davon
+> deckten Fehler auf, die im Verkaufsgespräch teuer geworden wären.
+>
+> **1. „Nicht jeder hat vierzehn Studios."** Stimmt. `firmaAnlegen`
+> nimmt jetzt eine Anzahl entgegen (1–50, Voreinstellung 1) und legt die
+> Studioliste gleich mit an.
+>
+> **2. „Sonst weiß ja jede Firma, was meine Firma hat."** Das war der
+> eigentliche Fund. Eine neu angelegte Firma hatte kein
+> `config/studios` — und die App fiel dann auf `KONFIG.studios` zurück.
+> Das sind die **vierzehn Standorte von Körperformen**. Der neue Kunde
+> hätte beim allerersten Anmelden die Standortliste eines fremden
+> Betriebs vor sich gehabt.
+>
+> Kein Datenleck im engeren Sinn — die Namen stehen auch auf der
+> Webseite. Aber es sagt dem Kunden das Gegenteil von dem, was der
+> Betreiber ihm verspricht.
+>
+> Zwei Schranken dagegen, weil eine zu wenig ist: `firmaAnlegen`
+> schreibt die Liste sofort mit (neutral: „Studio 1", „Studio 2" — die
+> richtigen Namen trägt der Kunde selbst ein), und `studiosLaden()`
+> räumt die Rückfall-Liste weg, sobald feststeht, dass es eine fremde
+> Firma ist.
+>
+> **3. „Firma löschen, aber die Daten nicht sofort weg."** Gebaut als
+> Papierkorb: `firmaLoeschen` verschiebt das Firmendokument nach
+> `firmenArchiv`, die Daten darunter bleiben liegen. Dadurch findet
+> `.get()` die Firma nicht mehr — die Zeitpläne übergehen sie, die
+> Regeln lassen niemanden mehr hinein, sie verschwindet aus der Liste.
+> `firmaZurueckholen` macht es rückgängig. Endgültig entfernt wird von
+> Hand; dafür gibt es bewusst keinen Knopf.
+>
+> ### Und der unangenehmste Fund: die Sperre war Deko
+>
+> Beim Bauen des Löschens fiel auf, dass **„sperren" nie etwas gesperrt
+> hat.** `firmaSperren` setzte `aktiv:false` auf das Firmendokument, und
+> ausser den Zeitplänen hat nie jemand hineingesehen — weder die Regeln
+> noch die App. Der gesperrte Kunde konnte weiter lesen und schreiben
+> wie vorher.
+>
+> Im Bestätigungsfenster stand dabei wörtlich: *„Niemand aus diesem
+> Betrieb kommt danach mehr hinein."* Das war schlicht unwahr.
+>
+> Der Grund, warum es niemandem auffiel: **es gab keinen Test dafür.**
+> Jetzt gibt es zehn, und die Regel `firmaLaeuft(f)` steht in `inFirma`,
+> also vor jedem einzelnen Zugriff. Die Gegenprobe ist gelaufen: nimmt
+> man sie wieder heraus, fallen genau die vier Zugriffsprüfungen um —
+> vorher kam der gesperrte Chef also wirklich überall hin.
+>
+> Der Preis: ein `get()` je Auswertung, also ein Lesevorgang. Das ist
+> der Preis dafür, dass die Grenze wirklich eine ist.
+>
+> ### Ein Prüfer, der sich selbst überführt hat
+>
+> Der Test gegen das Standort-Leck war beim ersten Anlauf **grün — und
+> wertlos**: er las `document.body.innerText`, und die Standortliste des
+> Anmeldebildschirms ist ausgeblendet, bis man auf „Konto anlegen" geht.
+> `innerText` überspringt Ausgeblendetes. Er hat also nichts gesehen und
+> das für „nichts da" gehalten.
+>
+> Aufgefallen ist es nur durch die Gegenprobe daneben: die eigene Firma
+> *muss* ihre Standorte sehen. Als die auch leer war, stand fest, dass
+> die Messung nicht taugt.
+>
+> Dieselbe Gegenprobe deckte danach auf, dass die Reparatur gar nicht
+> wirkte: `studioListeSetzen({liste:[]})` weist leere Listen ab, damit
+> ein kaputtes Dokument nicht die Standorte wegräumt. „Keine Studios" war
+> damit nicht ausdrückbar. Dafür gibt es jetzt `studioListeLeeren()`.
+
 ### Stufe 3 — Admin-Oberfläche · ✅ **gebaut am 10. August 2026**
 
 > **Entscheidung: das bestehende Konto wird hochgestuft.** Damit ging der

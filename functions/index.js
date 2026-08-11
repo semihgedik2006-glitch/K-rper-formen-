@@ -528,6 +528,11 @@ exports.firmaAnlegen = region
     await requireAdmin(context);
     const name = String((data && data.name) || '').trim();
     const email = String((data && data.email) || '').trim().toLowerCase();
+    /* Wie viele Studios hat der Betrieb? Nicht jeder hat vierzehn.
+       Voreinstellung 1: der haeufigste Fall ist ein einzelnes Studio,
+       und anhaengen kann der Chef selbst jederzeit. */
+    const anzahl = Math.min(50, Math.max(1, Math.floor(Number(
+      (data && data.studios) || 1)) || 1));
     if (name.length < 2) {
       throw new functions.https.HttpsError('invalid-argument', 'Bitte einen Firmennamen angeben.');
     }
@@ -571,8 +576,28 @@ exports.firmaAnlegen = region
       angelegtAm: Date.now(),
       angelegtVon: context.auth.uid,
       zahlKonten: 1,
-      zahlStudios: 0,
+      zahlStudios: anzahl,
     });
+
+    /* ── Die Studioliste MUSS hier entstehen ──
+       Ohne dieses Dokument faellt die App auf KONFIG.studios zurueck —
+       und das sind die vierzehn Standorte von Koerperformen. Ein neuer
+       Kunde haette beim ersten Anmelden die Standortliste eines
+       fremden Betriebs vor sich gehabt. Kein Datenleck im engeren
+       Sinn, aber eines, das jedes Verkaufsgespraech beendet.
+
+       Die Namen sind bewusst neutral: "Studio 1", "Studio 2". Wie die
+       Standorte wirklich heissen, weiss nur der Kunde, und er benennt
+       sie unter Verwaltung → Standorte selbst um. Die Kennungen
+       (studio-0, studio-1, …) bleiben dabei stehen — daran haengen
+       spaeter Aufgaben und Putzplaene. */
+    const liste = [];
+    for (let i = 0; i < anzahl; i++) {
+      liste.push({ id: 'studio-' + i, name: 'Studio ' + (i + 1), aktiv: true });
+    }
+    await db.collection('firmen').doc(kennung)
+      .collection('config').doc('studios')
+      .set({ liste: liste, naechste: anzahl });
 
     await db.collection('users').doc(konto.uid).set({
       name: 'Geschaeftsfuehrung',
@@ -584,7 +609,94 @@ exports.firmaAnlegen = region
       createdAt: Date.now(),
     });
 
-    return { kennung: kennung, uid: konto.uid, passwort: passwort };
+    return { kennung: kennung, uid: konto.uid, passwort: passwort, studios: anzahl };
+  });
+
+/* ── Eine Firma löschen — in den Papierkorb, nicht in den Ofen ────────
+   Was hier NICHT passiert: die Daten werden nicht angefasst. Sie
+   bleiben unter firmen/<kennung>/… liegen, nur ihr Elterndokument
+   wandert nach firmenArchiv. Dadurch findet .get() die Firma nicht
+   mehr — alleFirmen() übergeht sie, die Regeln lassen niemanden mehr
+   hinein, sie verschwindet aus der Liste.
+
+   Dass genau das funktioniert, ist keine Vermutung: dieselbe
+   Eigenschaft (.get() sieht Dokumente ohne Elterneintrag nicht,
+   listDocuments() schon) wurde am 10.8.2026 im Emulator gemessen und
+   im Betrieb bestätigt.
+
+   Warum kein echtes Löschen: ein Kunde, der kündigt, ruft erfahrungs-
+   gemäss zwei Wochen später an und braucht noch eine Auswertung. Wer
+   dann "ist weg" sagen muss, hat nichts gewonnen. Endgültig entfernt
+   wird von Hand, bewusst, mit einem Werkzeug — nicht mit einem Knopf
+   in einer Oberfläche.                                              */
+exports.firmaLoeschen = region
+  .https.onCall(async (data, context) => {
+    const ich = await requireAdmin(context);
+    const kennung = String((data && data.kennung) || '');
+    if (!kennung) {
+      throw new functions.https.HttpsError('invalid-argument', 'Keine Firma angegeben.');
+    }
+    /* Dieselbe Sperre wie beim Sperren: die eigene Firma nicht. Sonst
+       loescht sich der Betreiber selbst heraus, und es gibt niemanden
+       mehr, der ihn zurueckholt. */
+    if (kennung === ich.firma) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Die eigene Firma kann nicht geloescht werden.');
+    }
+    const ref = db.collection('firmen').doc(kennung);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      throw new functions.https.HttpsError('not-found', 'Diese Firma gibt es nicht (mehr).');
+    }
+    const daten = snap.data() || {};
+
+    /* Zaehlen, BEVOR die Firma verschwindet — danach sieht man es nicht
+       mehr, und im Archiv soll stehen, was da lag. */
+    let konten = 0;
+    try {
+      const alle = await db.collection('users').get();
+      konten = alle.docs.filter(d => (d.data() || {}).firma === kennung).length;
+    } catch (e) { console.warn('Konten zaehlen:', e.message); }
+
+    await db.collection('firmenArchiv').doc(kennung).set(Object.assign({}, daten, {
+      geloeschtAm: Date.now(),
+      geloeschtVon: context.auth.uid,
+      zahlKontenBeimLoeschen: konten,
+    }));
+    await ref.delete();
+    return { ok: true, kennung: kennung, konten: konten };
+  });
+
+/* ── … und zurückholen ──
+   Der Gegenknopf. Ohne ihn waere der Papierkorb keiner. */
+exports.firmaZurueckholen = region
+  .https.onCall(async (data, context) => {
+    await requireAdmin(context);
+    const kennung = String((data && data.kennung) || '');
+    if (!kennung) {
+      throw new functions.https.HttpsError('invalid-argument', 'Keine Firma angegeben.');
+    }
+    const aRef = db.collection('firmenArchiv').doc(kennung);
+    const snap = await aRef.get();
+    if (!snap.exists) {
+      throw new functions.https.HttpsError('not-found', 'Nichts im Archiv unter dieser Kennung.');
+    }
+    /* Nicht ueber eine laufende Firma druebersetzen. Kaeme es je dazu,
+       waere die Kennung doppelt vergeben - und zwei Betriebe teilten
+       sich einen Datenbestand. */
+    if ((await db.collection('firmen').doc(kennung).get()).exists) {
+      throw new functions.https.HttpsError('already-exists',
+        'Unter dieser Kennung laeuft schon wieder eine Firma.');
+    }
+    const daten = snap.data() || {};
+    delete daten.geloeschtAm;
+    delete daten.geloeschtVon;
+    delete daten.zahlKontenBeimLoeschen;
+    daten.aktiv = true;
+    daten.zurueckgeholtAm = Date.now();
+    await db.collection('firmen').doc(kennung).set(daten);
+    await aRef.delete();
+    return { ok: true, kennung: kennung };
   });
 
 /* ── Firma sperren oder wieder freigeben ──

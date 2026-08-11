@@ -163,6 +163,70 @@ const konfigPfade = p => p.filter(x => /config\/(studios|beitrittSchalter)$/.tes
     await b.close();
   }
 
-  console.log(errs.length ? '\n✗ ' + errs.join('\n✗ ') : '\n✓ Firmenkennung: aus dem Link, gemerkt, gefiltert, mit Rückfall');
+  /* ══ 6. Eine FREMDE Firma sieht niemals unsere Standorte ══
+     Der Fehler, den das verhindert: eine frisch angelegte Firma hat
+     noch kein config/studios. Die App fiel dann auf KONFIG.studios
+     zurück — und das sind die vierzehn Standorte von Körperformen. Der
+     neue Kunde hätte beim allerersten Anmelden die Standortliste eines
+     fremden Betriebs vor sich gehabt.
+
+     Kein Datenleck im engeren Sinn, die Namen stehen auch auf der
+     Webseite. Aber es beendet jedes Verkaufsgespräch, und es sagt dem
+     Kunden das Gegenteil von dem, was der Betreiber ihm verspricht.
+
+     Der Stub liefert für config/studios NICHTS — genau die Lage einer
+     neuen Firma, bevor jemand etwas eingetragen hat.
+
+     Gemessen wird am DOM, nicht an innerText: die Standortliste des
+     Anmeldebildschirms (#rgStudios) ist ausgeblendet, solange man nicht
+     auf „Konto anlegen" geht — und innerText überspringt Ausgeblendetes.
+     Der erste Anlauf las innerText und war grün, weil er NICHTS gesehen
+     hat. Erst die Gegenprobe unten hat das aufgedeckt. */
+  const studioNamen = page => page.evaluate(() => {
+    const w = document.getElementById('rgStudios');
+    return {
+      liste: w ? Array.from(w.querySelectorAll('span')).map(s => s.textContent.trim()) : null,
+      seite: document.body.textContent || ''
+    };
+  });
+  const UNSERE = ['Longerich', 'Nippes', 'Ebertplatz', 'Hürth', 'Brühl', 'Rösrath'];
+  {
+    const { b, page } = await start(errs, { mandant: true, query: '?firma=fremd-9x2a' });
+    const n = await studioNamen(page);
+    console.log('Fremde Firma, Standortliste:', JSON.stringify(n.liste));
+    if (n.liste === null) {
+      errs.push('AUFBAU: #rgStudios gibt es nicht mehr — dieser Test misst nichts');
+    }
+    const verraten = UNSERE.filter(x => (n.liste || []).indexOf(x) >= 0);
+    if (verraten.length) {
+      errs.push('GEFÄHRLICH: fremde Firma sieht unsere Standorte – ' + verraten.join(', '));
+    }
+    await b.close();
+  }
+
+  /* ══ 7. Gegenprobe ══
+     Ein Test, der nie anschlägt, prüft nichts. Bei der EIGENEN Firma
+     muss die Liste aus konfig.js sehr wohl greifen — sonst hätte ich
+     das Leck gestopft, indem ich die Standortliste ganz abgeschaltet
+     habe, und niemand hätte es gemerkt.
+
+     Genau das ist beim ersten Anlauf passiert: Nummer 6 war grün, weil
+     die Messung an der falschen Stelle ansetzte. Diese Gegenprobe hat
+     es gefunden. */
+  {
+    const { b, page } = await start(errs, { mandant: true, query: '?firma=koerperformen' });
+    const n = await studioNamen(page);
+    console.log('Eigene Firma, Standortliste:', JSON.stringify((n.liste || []).slice(0, 3)));
+    if (!(n.liste || []).length) {
+      errs.push('GEGENPROBE: die EIGENE Firma hat gar keine Standortliste — ' +
+                'dann prüft Nummer 6 nichts');
+    } else if (!UNSERE.some(x => n.liste.indexOf(x) >= 0)) {
+      errs.push('GEGENPROBE: die EIGENE Firma sieht ihre Standorte nicht mehr (' +
+                n.liste.slice(0, 3).join(', ') + ')');
+    }
+    await b.close();
+  }
+
+  console.log(errs.length ? '\n✗ ' + errs.join('\n✗ ') : '\n✓ Firmenkennung: aus dem Link, gemerkt, gefiltert, mit Rückfall, keine fremden Standorte');
   process.exit(errs.length ? 1 : 0);
 })();

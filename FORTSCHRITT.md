@@ -1691,6 +1691,78 @@ nächste Schritt, und er ist der einzige mit echtem Risiko.
 
 ---
 
+## Sitzung 24 · Der Umzug — und was der erste echte Kunde gebraucht hätte 🟢
+
+Der Umzug auf die Firmen-Pfade ist gelaufen: **156 Dokumente**,
+Zählprüfung sauber, die App liest sie seit dem 10.8. um 23:15 Uhr.
+Danach kamen drei Fragen aus der Praxis, und zwei davon deckten Fehler
+auf, die im Verkaufsgespräch teuer geworden wären.
+
+### Was jetzt geht
+
+| | |
+|---|---|
+| **Studiozahl beim Anlegen** | 1 bis 50, Voreinstellung 1. Nicht jeder hat vierzehn. |
+| **Neutrale Namen** | „Studio 1", „Studio 2" … — die richtigen trägt der Kunde selbst ein |
+| **Firma löschen** | wandert ins Archiv, Daten bleiben liegen, ein Klick holt sie zurück |
+
+### Der Fund, den du gemacht hast
+
+„Sonst weiß ja jede Firma, was meine Firma hat" — **genau so war es.**
+Eine neu angelegte Firma hatte keine eigene Standortliste, und die App
+fiel dann auf die Liste aus `konfig.js` zurück. Das sind die vierzehn
+Standorte von Körperformen. Der neue Kunde hätte beim allerersten
+Anmelden die Standortliste eines fremden Betriebs vor sich gehabt.
+
+Kein Datenleck im engeren Sinn — die Namen stehen auch auf eurer
+Webseite. Aber es sagt dem Kunden das Gegenteil von dem, was du ihm
+verkaufst.
+
+### Der Fund, den ich dabei gemacht habe
+
+**„Sperren" hat nie etwas gesperrt.** Der Knopf setzte ein Häkchen am
+Firmeneintrag, und ausser den nächtlichen Abläufen hat nie jemand
+hineingesehen — weder die Sicherheitsregeln noch die App. Der gesperrte
+Kunde konnte weiterarbeiten wie vorher.
+
+Im Bestätigungsfenster stand dabei wörtlich: *„Niemand aus diesem
+Betrieb kommt danach mehr hinein."* Das war schlicht unwahr.
+
+Warum es niemandem auffiel: **es gab keinen Test dafür.** Jetzt gibt es
+zehn. Und die Gegenprobe ist gelaufen — nimmt man die neue Regel wieder
+heraus, fallen genau die vier Zugriffsprüfungen um. Vorher kam der
+gesperrte Chef also wirklich überall hin.
+
+### Und ein Prüfer, der sich selbst überführt hat
+
+Der Test gegen das Standort-Leck war beim ersten Anlauf **grün — und
+wertlos.** Er schaute auf den sichtbaren Text des Anmeldebildschirms,
+und die Standortliste ist dort ausgeblendet, bis man auf „Konto anlegen"
+geht. Er hat also nichts gesehen und das für „nichts da" gehalten.
+
+Aufgefallen ist es nur durch die Gegenprobe daneben: die eigene Firma
+*muss* ihre Standorte sehen. Als die auch leer war, stand fest, dass die
+Messung nichts taugt.
+
+Dieselbe Gegenprobe deckte danach auf, dass meine Reparatur gar nicht
+wirkte — die Funktion, die die Liste setzt, weist leere Listen ab (damit
+ein kaputtes Dokument nicht die Standorte wegräumt). „Keine Studios" war
+damit gar nicht ausdrückbar.
+
+**Zwei Fehler, beide gefunden von einer Zeile, deren einzige Aufgabe es
+ist, zu prüfen, ob der Test überhaupt etwas prüft.**
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| UI-Durchläufe | 43 |
+| Regeltests | 115 |
+| Umzugs-Prüfungen | 12 |
+| Cloud-Function-Prüfungen | 69 |
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

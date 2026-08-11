@@ -125,8 +125,25 @@ service cloud.firestore {
       return resource == null
         || resource.data.get('firma', '') == meineFirma();
     }
+    // Laeuft diese Firma noch? Der Betreiber kann sie sperren, und
+    // beim Loeschen verschwindet ihr Dokument ganz (die Daten darunter
+    // bleiben liegen - siehe firmaLoeschen in functions/index.js).
+    //
+    // WARUM DAS HIER STEHEN MUSS: bis zum 11.8.2026 sah die Sperre
+    // niemand ausser den Zeitplaenen. Weder Regeln noch App haben je in
+    // dieses Dokument geschaut. Im Bestaetigungsfenster stand
+    // "Niemand aus diesem Betrieb kommt danach mehr hinein" - und das
+    // war schlicht nicht wahr. Der Knopf war Deko.
+    //
+    // Ein get() je Auswertung kostet einen Lesevorgang. Das ist der
+    // Preis dafuer, dass die Grenze wirklich eine ist.
+    function firmaLaeuft(f) {
+      return exists(/databases/$(database)/documents/firmen/$(f))
+        && get(/databases/$(database)/documents/firmen/$(f)).data.get('aktiv', true) == true;
+    }
     function inFirma(f) {
       return istAktiv()
+        && firmaLaeuft(f)
         && (meineFirma() == f || (meineFirma() == '' && f == 'koerperformen'));
     }
 
@@ -587,6 +604,19 @@ service cloud.firestore {
     //  ein inFirma(f) davor. Die beiden Ausnahmen sind Absicht und
     //  stehen unten am jeweiligen Block.
     // ══════════════════════════════════════════════════════════════
+    // ── Papierkorb für gelöschte Firmen ──
+    // Eine gelöschte Firma verschwindet aus /firmen und liegt hier.
+    // Ihre DATEN bleiben unter firmen/<kennung>/… liegen (das
+    // Elterndokument fehlt dann, .get() sieht sie nicht mehr) — genau
+    // wie beim Umzug: erst weg, wenn es jemand ausdrücklich wegräumt.
+    //
+    // Anders als /firmen ist das hier NICHT öffentlich lesbar. Der
+    // Anmeldebildschirm braucht den Namen einer laufenden Firma; wer
+    // gekündigt hat, geht niemanden mehr etwas an.
+    match /firmenArchiv/{f} {
+      allow read, write: if istAdminKonto();
+    }
+
     match /firmen/{f} {
       // Die Stammdaten der Firma. Der Name steht auf dem
       // Anmeldebildschirm, also vor jeder Anmeldung lesbar.

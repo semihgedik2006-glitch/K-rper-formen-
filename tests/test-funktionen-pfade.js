@@ -39,11 +39,18 @@ const FIRMEN_SAMMLUNGEN = new Set([
   'appointments', 'emailTemplates',
 ]);
 
-/* Absichtlich oben, jede mit Grund. */
+/* Absichtlich oben, jede mit Grund.
+
+   Die Liste ist zugleich die Ausnahmeliste: JEDER flache Zugriff, der
+   hier nicht steht, wird rot — auch auf eine Sammlung, die es gestern
+   noch nicht gab. Das ist strenger als nötig und mit Absicht so. Beim
+   Bauen des Firmen-Papierkorbs hat es prompt angeschlagen und eine
+   Entscheidung erzwungen, statt sie durchrutschen zu lassen. */
 const OBEN = {
   users: 'Die Firma steht IM Profil. Ein Konto muss vor der Anmeldung findbar sein.',
   pushTokens: 'Gehört zum Gerät, nicht zur Firma; gefiltert wird über das Profil.',
   firmen: 'Die Liste der Firmen selbst — sie kann nicht in einer Firma liegen.',
+  firmenArchiv: 'Gelöschte Firmen. Läge das IN der Firma, wäre es mit ihr weg.',
 };
 
 const errs = [];

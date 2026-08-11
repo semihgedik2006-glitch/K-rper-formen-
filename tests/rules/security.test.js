@@ -442,6 +442,72 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('FIRMEN · Der Name ist ohne Anmeldung lesbar (Anmeldebildschirm)', () =>
     assertSucceeds(alsAnonym().doc('firmen/' + A).get()));
 
+  /* ══ Eine gesperrte Firma ist wirklich gesperrt ══
+     Bis zum 11.8.2026 war sie das NICHT. firmaSperren setzte aktiv:false
+     auf das Firmendokument, und ausser den Zeitplaenen hat nie jemand
+     hineingesehen — weder diese Regeln noch die App. Im
+     Bestaetigungsfenster stand „Niemand aus diesem Betrieb kommt danach
+     mehr hinein", und das war schlicht unwahr: der Kunde konnte weiter
+     lesen und schreiben wie vorher.
+
+     Aufgefallen beim Bauen des Loeschens, und es ist die unangenehmste
+     Sorte Fehler: ein Knopf, der aussieht, als taete er etwas. Wer nach
+     einer Kuendigung sperrt und dann nicht mehr hinsieht, glaubt der
+     Oberflaeche.
+
+     Der eigentliche Grund, warum es niemandem auffiel: es gab keinen
+     Test dafuer. Jetzt gibt es vier.                                 */
+  const C = 'firma-c';
+  await env.withSecurityRulesDisabled(async ctx => {
+    const d = ctx.firestore();
+    await d.doc('firmen/' + C).set({ name: 'Firma C', aktiv: true });
+    await d.doc('users/chefC').set({ name: 'Chef C', role: 'chef', firma: C, aktiv: true });
+    await d.doc('firmen/' + C + '/documents/d1').set({ name: 'Unterlage C' });
+  });
+  const chefC = () => env.authenticatedContext('chefC').firestore();
+
+  await pruefe('GESPERRT · solange die Firma laeuft, kommt ihr Chef hinein', () =>
+    assertSucceeds(chefC().doc('firmen/' + C + '/documents/d1').get()));
+
+  await env.withSecurityRulesDisabled(async ctx => {
+    await ctx.firestore().doc('firmen/' + C).update({ aktiv: false });
+  });
+  await pruefe('GESPERRT · danach kommt er NICHT mehr an seine Unterlagen', () =>
+    assertFails(chefC().doc('firmen/' + C + '/documents/d1').get()));
+  await pruefe('GESPERRT · und kann auch nichts mehr schreiben', () =>
+    assertFails(chefC().doc('firmen/' + C + '/documents/d2').set({ name: 'neu' })));
+  await pruefe('GESPERRT · eine ANDERE Firma merkt davon nichts', () =>
+    assertSucceeds(chefA().doc('firmen/' + A + '/documents/pruef').set({ name: 'A laeuft' })));
+
+  /* ══ Geloescht heisst: das Firmendokument ist weg ══
+     Die Daten darunter bleiben liegen (Elterndokument fehlt, .get()
+     sieht sie nicht mehr). Niemand kommt mehr heran — auch nicht der,
+     der bis eben Chef war. */
+  await env.withSecurityRulesDisabled(async ctx => {
+    await ctx.firestore().doc('firmen/' + C).delete();
+  });
+  await pruefe('GELOESCHT · der bisherige Chef kommt nicht mehr hinein', () =>
+    assertFails(chefC().doc('firmen/' + C + '/documents/d1').get()));
+  await pruefe('GELOESCHT · und kann auch nichts anlegen', () =>
+    assertFails(chefC().doc('firmen/' + C + '/documents/d3').set({ name: 'neu' })));
+
+  /* ══ Das Archiv gehoert dem Betreiber allein ══
+     Anders als /firmen ist es NICHT oeffentlich lesbar. Der
+     Anmeldebildschirm braucht den Namen einer laufenden Firma; wer
+     gekuendigt hat, geht niemanden mehr etwas an. */
+  await env.withSecurityRulesDisabled(async ctx => {
+    await ctx.firestore().doc('firmenArchiv/' + C)
+      .set({ name: 'Firma C', geloeschtAm: Date.now(), zahlKontenBeimLoeschen: 1 });
+  });
+  await pruefe('ARCHIV · Der Betreiber sieht geloeschte Firmen', () =>
+    assertSucceeds(adminX().doc('firmenArchiv/' + C).get()));
+  await pruefe('ARCHIV · Ein Chef sieht sie NICHT', () =>
+    assertFails(chefA().doc('firmenArchiv/' + C).get()));
+  await pruefe('ARCHIV · Ohne Anmeldung erst recht nicht', () =>
+    assertFails(alsAnonym().doc('firmenArchiv/' + C).get()));
+  await pruefe('ARCHIV · Ein Chef kann sich auch nicht selbst hineinschreiben', () =>
+    assertFails(chefA().doc('firmenArchiv/erfunden').set({ name: 'Meins' })));
+
   console.log('\n════ SICHERHEITSREGELN – ausgefuehrt gegen den Emulator ════');
   protokoll.forEach(z => console.log(z));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
