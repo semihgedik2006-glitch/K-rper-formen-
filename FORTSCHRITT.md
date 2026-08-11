@@ -1898,6 +1898,92 @@ ein Handgriff, der nur bei dir möglich ist.
 
 ---
 
+## Sitzung 26 · Funktionen an- und abschalten 🟢
+
+„Der Schichtplan und der Abwesenheitsplan sind für unser Studio unnötig,
+andere würden es brauchen."
+
+Das ist etwas anderes als das Abo. Das Abo sagt, wofür bezahlt wurde;
+diese Schalter sagen, was ein Betrieb überhaupt benutzt. Eine App, die
+zur Hälfte aus ungenutzten Seiten besteht, wirkt nicht reichhaltig,
+sondern unaufgeräumt — und beim ersten fremden Kunden ist genau das der
+Moment, in dem er aufgibt.
+
+### Zwölf Schalter, Verwaltung → System → 🧩 Funktionen
+
+| | |
+|---|---|
+| Ganze Seiten | Teamchat, Direktnachrichten, Infos, Aufgaben, Putzplan, Material, Geräte, Dokumente |
+| Im Team-Bereich | Schichtplan, Abwesenheiten, Übergabe, Schwarzes Brett |
+
+**Abgeschaltet heisst überall weg**, nicht nur in der Navigation: aus der
+unteren Leiste, von den Kacheln und Hinweisen der Startseite, aus dem
+Chef-Überblick, aus den Team-Reitern samt der Seite dahinter — und aus
+dem Verwaltungsbereich.
+
+Der letzte Punkt war ein echtes Loch. „Neue Aufgabe erstellen" liegt
+beim Chef, nicht in der Aufgabenansicht. Ohne diese Zeile hätte er
+weiter Aufgaben angelegt, während für das Team die ganze Ansicht
+abgeschaltet ist — sie wären in der Datenbank gelandet und niemand hätte
+sie je gesehen.
+
+### Vier Entscheidungen
+
+- **Voreinstellung ist alles an.** Ein Kunde, dem die Hälfte fehlt, weil
+  irgendwo ein Feld leer ist, wäre der schlechtere Fehler. Dieselbe
+  Überlegung wie beim Abo.
+- **Es wird nichts gelöscht.** Wieder einschalten bringt alles
+  unverändert zurück. Ein Schalter, den man nicht gefahrlos drücken
+  kann, wird nie gedrückt.
+- **Die Team-Seite hat keinen eigenen Schalter.** Sie verschwindet, wenn
+  kein Reiter mehr übrig ist. Ein zusätzlicher Schalter hätte einen
+  Zustand erlaubt, den niemand erklären kann: Team an, alles darin aus.
+- **Die Erinnerung um 7:30 Uhr prüft mit.** Ein Handy, das wegen einer
+  Aufgabe brummt, die es in der App gar nicht mehr gibt, macht den
+  Schalter zur Lüge.
+
+### Was diese Schalter ausdrücklich NICHT sind
+
+Sie räumen auf, sie sperren nicht. Wer sich auskennt, kommt an die Daten
+dahinter weiterhin heran — `config/features` ist für jeden Eingeloggten
+lesbar, weil die App es beim Start braucht. Für echte Grenzen sind die
+Rollen und die Regeln da.
+
+Das steht so in der App unter den Schaltern, im Quelltext und hier.
+Dieselbe Ehrlichkeit wie bei der Auswertung unter Basic: eine
+Bequemlichkeit, kein Riegel.
+
+### Der Fehler, den die Gegenprobe gefunden hat — meiner
+
+Mein erster Prüfer für die „Hintertür" war **grün, ohne etwas zu
+prüfen.** Er setzte den gemerkten letzten Stand auf eine abgeschaltete
+Ansicht und stellte fest, dass die App die Startseite zeigt. Nur: dieser
+Weg greift im Testaufbau überhaupt nicht — nachgemessen an der Fassung
+von **vor** dieser Runde, wo es den Wächter noch gar nicht gab. Das
+Ergebnis war dasselbe.
+
+Aufgefallen ist es nur, weil ich den Wächter versuchsweise entfernt habe
+und der Durchlauf trotzdem grün blieb. Jetzt läuft die Prüfung über die
+**Zurück-Taste**, die wirklich auslöst.
+
+Mit entfernten Wächtern meldet der Durchlauf **zwölf** Fehler statt
+keinem.
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| UI-Durchläufe | 49 |
+| Regeltests | 136 |
+| Umzugs-Prüfungen | 12 |
+| Cloud-Function-Prüfungen | 79 |
+
+Nicht geprüft: ob auf dem Server wirklich keine Erinnerung hinausgeht.
+Im Emulator gibt es keine Empfänger, an die etwas gehen könnte — belegt
+ist der Aufruf im Code, nicht das Ausbleiben auf einem Gerät.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

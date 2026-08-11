@@ -1033,6 +1033,17 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-radius:11px;cursor:pointer;font-size:.9rem;background:rgba(255,255,255,.02);transition:.15s;
   user-select:none}
 .studio-check.on{border-color:var(--accent);background:rgba(34,211,238,.1);color:var(--accent-2)}
+/* Funktionen an/aus – eine Zeile je Funktion, mit dem Was darunter.
+   Ohne die zweite Zeile müsste der Chef raten, was „Übergabe" ist. */
+.feat-row{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;margin-bottom:7px;
+  border:1.5px solid var(--line-2);border-radius:12px;cursor:pointer;
+  transition:border-color .16s,background .16s,opacity .16s;opacity:.55}
+.feat-row.on{border-color:var(--accent);background:rgba(34,211,238,.08);opacity:1}
+.feat-row input{accent-color:var(--accent);width:18px;height:18px;flex-shrink:0;margin:2px 0 0}
+.feat-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.feat-txt b{font-size:.95rem;font-weight:650}
+.feat-txt b em{font-style:normal;font-weight:500;font-size:.78rem;color:var(--text-3)}
+.feat-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.35}
 .studio-check input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin:0}
 @media(max-width:340px){.studio-checks{grid-template-columns:1fr}}
 
@@ -2801,7 +2812,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div class="mat-bar">
             <select class="inp" id="teamStudio"></select>
           </div>
-          <div class="pm-tabs" style="margin:0 0 14px">
+          <div class="pm-tabs" id="teamTabs" style="margin:0 0 14px">
             <button class="pm-tab on" data-teamtab="schicht">📅 Schichten</button>
             <button class="pm-tab" data-teamtab="abwesend">🌴 Abwesend</button>
             <button class="pm-tab" data-teamtab="uebergabe">🔁 Übergabe</button>
@@ -3052,7 +3063,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
                auf der Aufgabenseite landet hier. Die Ankündigung stand
                vorher davor und schob das Aufgabenformular 350 Pixel nach
                unten. -->
-          <div class="card" data-fold="neueaufgabe" data-fold-offen="1">
+          <div class="card" data-fold="neueaufgabe" data-fold-offen="1" data-nurwenn="todos">
             <h3>✅ Neue Aufgabe erstellen</h3>
             <p class="hint">Einem oder allen Studios zuweisen.</p>
             <div class="field"><label for="ntTitle">Aufgabe</label>
@@ -3098,7 +3109,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <button class="btn btn-primary btn-sm" id="ntAdd">Aufgabe erstellen</button>
             <div class="draft-row"><p class="draft-note" id="ntDraftNote"></p></div>
           </div>
-          <div class="card" data-fold="vorlagen">
+          <div class="card" data-fold="vorlagen" data-nurwenn="todos">
             <h3>📋 Vorlagen</h3>
             <p class="hint">Aufgaben, die immer wieder gleich sind, einmal speichern und
               danach mit zwei Klicks einsetzen.</p>
@@ -3109,7 +3120,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <button class="btn btn-ghost btn-sm" id="tplDel" data-chef-only="1">Vorlage löschen</button>
             </div>
           </div>
-          <div class="card" data-fold="ankuendigung">
+          <div class="card" data-fold="ankuendigung" data-nurwenn="ann">
             <h3>📣 Ankündigung an alle</h3>
             <p class="hint">Erscheint sofort bei jedem Mitarbeiter im Portal.</p>
             <div class="field"><textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea></div>
@@ -3344,6 +3355,21 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <p class="hint" id="rechtFehltText"></p>
               <button class="btn btn-ghost btn-sm" data-rechtauf="impressum">Ansehen</button>
             </div>
+          <!-- Was dieser Betrieb überhaupt benutzt. Steht bewusst GANZ
+               OBEN im System-Reiter: es ist die Einstellung, die ein
+               neuer Kunde als erstes sucht, wenn ihm die Hälfte der App
+               fremd vorkommt. -->
+          <div class="card" data-fold="funktionen" data-chef-only="1">
+            <h3>🧩 Funktionen</h3>
+            <p class="hint">Was dieser Betrieb nicht braucht, muss auch niemand sehen.
+              Abgeschaltetes verschwindet aus der Navigation — bei allen, sofort.
+              <b>Es wird nichts gelöscht:</b> wer etwas wieder einschaltet, findet
+              alles unverändert vor.</p>
+            <div id="featureListe"></div>
+            <p class="hint" style="margin-top:12px">Das ist eine Aufräum-Einstellung,
+              keine Zugriffssperre. Wer sich auskennt, kommt an die Daten dahinter
+              weiterhin heran — für echte Grenzen sind die Rollen da.</p>
+          </div>
           <div class="card" data-fold="sheets" data-chef-only="1">
             <h3>🔄 Google-Tabellen abgleichen</h3>
             <p class="hint">Änderungen werden automatisch übertragen. Falls in der Tabelle
@@ -5136,6 +5162,169 @@ function aboLaden(){
     .catch(function(e){ console.warn('Abo nicht lesbar:', e.message); });
 }
 
+/* ══ Funktionen an- und abschalten ═══════════════════════════════════
+   „Der Schichtplan ist für unser Studio unnötig, andere brauchen ihn."
+
+   Das ist etwas anderes als das Abo. Das Abo sagt, wofür bezahlt wurde;
+   diese Schalter sagen, was dieser Betrieb überhaupt benutzt. Ein
+   Personal-Training-Studio mit drei Leuten braucht keinen Schichtplan,
+   und eine App, die zur Hälfte aus ungenutzten Seiten besteht, wirkt
+   nicht reichhaltig, sondern unaufgeräumt.
+
+   WAS DIESE SCHALTER SIND UND WAS NICHT
+   Sie räumen auf. Sie sperren nicht. Wer eine abgeschaltete Ansicht
+   nicht sieht, kommt nicht hinein — aber die Daten liegen weiter da und
+   sind über die Sicherheitsregeln nach wie vor lesbar. Das ist
+   Absicht: Abschalten darf nichts löschen und nichts unerreichbar
+   machen, sonst traut sich niemand, es je zu drücken.
+
+   Wer eine echte Grenze braucht (Gehälter, Krankmeldungen), zieht sie
+   in den Regeln, nicht hier. Steht so auch im Bestätigungstext.
+
+   Voreinstellung: ALLES AN. Ein Kunde, dem die Hälfte fehlt, weil
+   irgendwo ein Feld leer ist, wäre der schlechtere Fehler — dieselbe
+   Überlegung wie beim Abo. */
+var FEATURES = [
+  {id:'chat',      label:'Teamchat',         was:'Kanäle für das ganze Team'},
+  {id:'dm',        label:'Direktnachrichten', was:'Zwei Personen unter sich'},
+  {id:'ann',       label:'Infos',            was:'Aushänge von der Leitung'},
+  {id:'todos',     label:'Aufgaben',         was:'Aufgaben mit Frist und Erinnerung'},
+  {id:'putzplan',  label:'Putzplan',         was:'Putzpunkte zum Abhaken'},
+  {id:'material',  label:'Material',         was:'Bestand und was fehlt'},
+  {id:'geraete',   label:'Geräte',           was:'Geräte- und Schadensbuch'},
+  {id:'docs',      label:'Dokumente',        was:'Dateien für das Team'},
+  {id:'schicht',   label:'Schichtplan',      was:'Wer wann arbeitet', team:true},
+  {id:'abwesend',  label:'Abwesenheiten',    was:'Urlaub, Krankheit, frei', team:true},
+  {id:'uebergabe', label:'Übergabe',         was:'Was die nächste Schicht wissen muss', team:true},
+  {id:'brett',     label:'Schwarzes Brett',  was:'Aushänge und Schichttausch', team:true}
+];
+var _features = {};
+var _featuresUnsub = null;
+
+function featureAn(id){ return _features[id] !== false; }
+function featureInfo(id){
+  for(var i=0;i<FEATURES.length;i++){ if(FEATURES[i].id===id) return FEATURES[i]; }
+  return null;
+}
+/* Die Team-Seite hat keinen eigenen Schalter. Sie besteht vollständig
+   aus ihren vier Reitern — steht kein einziger mehr, wäre die Seite
+   eine Überschrift über nichts. Ein zusätzlicher Schalter „Team" hätte
+   dagegen einen Zustand erlaubt, den niemand erklären kann: Team an,
+   aber alles darin aus. */
+function teamFeatures(){ return FEATURES.filter(function(f){ return f.team; }); }
+function teamAn(){ return teamFeatures().some(function(f){ return featureAn(f.id); }); }
+
+/* Gilt für Ansichten der unteren Leiste UND für die Team-Reiter. */
+function ansichtAn(v){
+  if(v==='team') return teamAn();
+  return featureInfo(v) ? featureAn(v) : true;   // home, chef, archive: immer
+}
+
+function featuresSetzen(d){
+  var neu = {};
+  FEATURES.forEach(function(f){
+    if(d && d[f.id] === false) neu[f.id] = false;
+  });
+  var geaendert = JSON.stringify(neu) !== JSON.stringify(_features);
+  _features = neu;
+  return geaendert;
+}
+
+/* Einmal lesen, bevor die App startet — sonst baut sich die Navigation
+   mit allen Einträgen auf und die abgeschalteten verschwinden erst eine
+   Sekunde später wieder. Genau dieses Flackern gibt es beim Abo schon
+   und war der Grund, es dort vorzuziehen. */
+function featuresLaden(){
+  return S('config').doc('features').get()
+    .then(function(doc){ if(doc.exists) featuresSetzen(doc.data()); })
+    .catch(function(e){
+      // Nicht lesbar heisst: alles bleibt an. Eine App, die wegen eines
+      // Netzfehlers halb leer startet, wäre der schlechtere Fehler.
+      console.warn('Funktionen nicht lesbar:', e.message);
+    });
+}
+
+/* Danach beobachten. Der Chef schaltet etwas um, und auf den Tablets im
+   Studio verschwindet es, ohne dass jemand die App neu lädt. */
+function listenFeatures(){
+  if(_featuresUnsub) return;
+  _featuresUnsub = S('config').doc('features').onSnapshot(function(doc){
+    if(!featuresSetzen(doc.exists ? doc.data() : {})) return;
+    featuresAnwenden();
+  }, function(e){ console.warn('Funktionen:', e.message); });
+}
+
+/* Nach jeder Änderung: Navigation neu, und wer gerade in einer eben
+   abgeschalteten Ansicht steht, wird herausgeholt. */
+/* Einzelne Karten, die zu einer Funktion gehören, aber woanders stehen.
+   Der Fall, um den es geht: „Neue Aufgabe erstellen" liegt im
+   Verwaltungsbereich. Ohne diese Zeile könnte der Chef weiter Aufgaben
+   anlegen, während für das Team die ganze Ansicht abgeschaltet ist —
+   die Aufgaben landen in der Datenbank und niemand sieht sie je. */
+function featureKartenAnwenden(){
+  document.querySelectorAll('[data-nurwenn]').forEach(function(el){
+    el.style.display = featureAn(el.getAttribute('data-nurwenn')) ? '' : 'none';
+  });
+}
+
+function featuresAnwenden(){
+  buildNav();
+  buildTeamTabs();
+  featureKartenAnwenden();
+  renderFeatureListe();
+  if(!ansichtAn(currentView)) showView('home');
+  else if(currentView==='home') renderHome();
+  if(currentView==='team') teamReiterPruefen();
+}
+
+/* ── Die Schalter selbst (Verwaltung → System) ── */
+function renderFeatureListe(){
+  var box=$('featureListe'); if(!box) return;
+  if(!isChef()){ box.innerHTML=''; return; }
+  box.innerHTML=FEATURES.map(function(f){
+    var an=featureAn(f.id);
+    return '<label class="feat-row'+(an?' on':'')+'" data-feat="'+esc(f.id)+'">'+
+      '<input type="checkbox"'+(an?' checked':'')+' aria-label="'+esc(f.label)+'">'+
+      '<span class="feat-txt"><b>'+esc(f.label)+(f.team?' <em>im Team-Bereich</em>':'')+'</b>'+
+      '<i>'+esc(f.was)+'</i></span></label>';
+  }).join('');
+  box.querySelectorAll('[data-feat]').forEach(function(lab){
+    var cb=lab.querySelector('input');
+    cb.addEventListener('change',function(){
+      featureSchalten(lab.getAttribute('data-feat'), cb.checked, lab);
+    });
+  });
+}
+
+function featureSchalten(id, an, lab){
+  var f=featureInfo(id); if(!f) return;
+  var vorher=featureAn(id);
+  function setzen(wert){
+    if(wert) delete _features[id]; else _features[id]=false;
+  }
+  /* Erst umschalten, dann speichern. Wer auf die Bestätigung des Servers
+     wartet, sieht bei schlechtem Netz einen Schalter, der eine Sekunde
+     lang nicht reagiert — und drückt noch einmal. */
+  setzen(an);
+  if(lab) lab.classList.toggle('on', an);
+  featuresAnwenden();
+
+  var d={}; d[id]=!!an;
+  S('config').doc('features').set(d, {merge:true})
+    .then(function(){
+      toast(an ? (f.label+' ist wieder da ✓')
+               : (f.label+' ist ausgeblendet — die Daten bleiben erhalten'));
+    })
+    .catch(function(e){
+      // Nicht gespeichert heisst: auch nicht umgeschaltet. Ein Schalter,
+      // der auf dem Bildschirm steht und in der Datenbank nicht, ist die
+      // schlimmste Sorte Fehler — er fällt erst dem Nächsten auf.
+      setzen(vorher);
+      featuresAnwenden();
+      toast(errMsg(e), true);
+    });
+}
+
 function studioKey(name){
   for(var i=0;i<_studioListe.length;i++){
     if(_studioListe[i] && _studioListe[i].name === name) return _studioListe[i].id;
@@ -6511,7 +6700,12 @@ function enterApp(uid, data){
   /* Die Abo-Stufe VOR showApp holen, sonst baut sich der
      Verwaltungsbereich einmal ohne Schlösser auf und flackert dann.
      Schlägt es fehl, bleibt alles offen — siehe aboStufe(). */
-  aboLaden().then(showApp, showApp);
+  /* Die Funktionen gehören in dieselbe Runde wie das Abo: sonst baut
+     sich die Navigation einmal vollständig auf und die abgeschalteten
+     Einträge verschwinden erst danach. Das sieht aus wie ein Fehler.
+     Beides scheitert nach aussen hin folgenlos — dann ist eben alles
+     da, und das ist die harmlosere Richtung. */
+  Promise.all([aboLaden(), featuresLaden()]).then(showApp, showApp);
 }
 
 /* ============================================================
@@ -6621,6 +6815,7 @@ function showApp(){
   applyOwnAvatar();
 
   buildNav();
+  featureKartenAnwenden();   // Karten, die woanders stehen (siehe dort)
   buildChannels();
   buildMaterialSelect();
   buildPutzplanSelect();
@@ -6633,6 +6828,7 @@ function showApp(){
   }
   mailHinweisBinden(); mailHinweisPruefen();
   listenStudios();                       // jede Rolle: Umbenennen soll sofort ankommen
+  listenFeatures();                      // schaltet der Chef etwas um, ist es überall weg
   listenInventoryAll();                  // jede Rolle: fuer den Material-Hinweis
   if(canManage()){ listenEmployees(); }
   if(isChef()){
@@ -6795,10 +6991,24 @@ function navItem(id){
   return null;
 }
 
+/* Welche Ansichten einer Gruppe bleiben für mich übrig? Rolle UND
+   abgeschaltete Funktionen zusammen — sonst zeigt die untere Leiste
+   eine Gruppe an, hinter der nichts mehr liegt. */
+function sichtbareViews(g){
+  return g.views.filter(function(v){
+    if(v==='archive' || v==='chef') return canManage();
+    return ansichtAn(v);
+  });
+}
+
 function buildNav(){
   var side=$('side'), mob=$('mobnav'); side.innerHTML=''; mob.innerHTML='';
   NAVGROUPS.forEach(function(g){
     if(g.manageOnly && !canManage()) return;
+    /* Eine Gruppe ohne Inhalt kommt gar nicht erst in die Leiste. Ein
+       Knopf, der ins Leere führt, ist schlimmer als ein fehlender. */
+    var drin=sichtbareViews(g);
+    if(!drin.length) return;
     var svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+g.icon+'</svg>';
     function makeBtn(isMob){
       var b=document.createElement('button');
@@ -6895,10 +7105,7 @@ function chefTabMarker(sofort){
 function buildSubNav(){
   var bar=$('subnav'); if(!bar) return;
   var g=groupOfView(currentView);
-  var views=g.views.filter(function(v){
-    if(v==='archive' || v==='chef') return canManage();
-    return true;
-  });
+  var views=sichtbareViews(g);
   if(views.length<2){ bar.innerHTML=''; bar.style.display='none'; return; }
   bar.style.display='flex';
   bar.innerHTML=views.map(function(v){
@@ -6950,6 +7157,12 @@ function bindShrinkHeaders(){
 }
 
 function showView(id, fromKey, ausVerlauf){
+  /* Abgeschaltet heisst: gar nicht erst hin. Wichtig ist der Weg über
+     die Hintertür — ein gemerkter letzter Stand, ein Verlaufseintrag,
+     ein Hinweis auf der Startseite. Ohne diese Zeile landet jemand nach
+     dem Neuladen auf einer Seite, die es für ihn nicht mehr gibt, und
+     die untere Leiste zeigt nirgendwo hin. */
+  if(!ansichtAn(id) && id!=='home'){ id='home'; ausVerlauf=true; }
   currentView=id;
   if(!ausVerlauf) verlaufMerken(id);
   letzteAnsichtMerken(id);
@@ -6992,7 +7205,7 @@ function showView(id, fromKey, ausVerlauf){
       requestAnimationFrame(function(){ if(cb) cb.classList.remove('sofort'); });
     });
   }
-  if(id==='team') ensureTeamLoaded();
+  if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); }
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
 
@@ -8558,8 +8771,42 @@ function antraegeSuchen(){
     renderAntraege();
   });
 }
+/* ── Team-Reiter: was abgeschaltet ist, kommt weg ──
+   Der Reiter UND seine Seite. Nur den Knopf zu verstecken hiesse: wer
+   zuletzt dort stand, sieht die Seite weiter. */
+var TEAMPANES = { schicht:'teamPaneSchicht', abwesend:'teamPaneAbwesend',
+                  uebergabe:'teamPaneUebergabe', brett:'teamPaneBrett' };
+function buildTeamTabs(){
+  var leiste=$('teamTabs'); if(!leiste) return;
+  var sichtbar=0;
+  document.querySelectorAll('[data-teamtab]').forEach(function(b){
+    var id=b.getAttribute('data-teamtab');
+    var an=featureAn(id);
+    b.style.display = an ? '' : 'none';
+    if(an){ sichtbar++; return; }
+    b.classList.remove('on');
+    var p=$(TEAMPANES[id]); if(p) p.style.display='none';
+  });
+  /* Ein einzelner Reiter ist kein Reiter. Dieselbe Regel wie bei der
+     oberen Leiste (buildSubNav): unter zwei Einträgen ist die Leiste
+     nur noch Zierrat und nimmt Platz weg. */
+  leiste.style.display = sichtbar>1 ? '' : 'none';
+  teamReiterPruefen();
+}
+/* Steht die offene Seite nicht mehr zur Verfügung, auf die erste übrige
+   wechseln — sonst bleibt der Bereich leer und sieht kaputt aus. */
+function teamReiterPruefen(){
+  var alle=[].slice.call(document.querySelectorAll('[data-teamtab]'));
+  var offen=alle.filter(function(b){ return b.style.display!=='none'; });
+  if(!offen.length) return;
+  if(offen.some(function(b){ return b.classList.contains('on'); })) return;
+  offen[0].click();
+}
+
 function renderAntraege(){
   var box=$('teamWartet'); if(!box) return;
+  // Ohne Abwesenheiten gibt es auch keine Anträge, die warten könnten
+  if(!featureAn('abwesend')){ box.style.display='none'; return; }
   if(!canManage() || !_antraege || !_antraege.length){ box.style.display='none'; return; }
   var gesamt=_antraege.reduce(function(a,r){ return a+r.n; },0);
   box.style.display='block';
@@ -8979,6 +9226,10 @@ function renderHome(){
     // Höchstens vier Hinweise. Wer sieben sieht, liest keinen davon.
     // Erst ab zwei übrigen wird zusammengefasst – für einen einzelnen wäre
     // die Sammelzeile genauso lang wie der Hinweis selbst.
+    /* Hinweise auf abgeschaltete Seiten fliegen raus. Ein „3 Artikel
+       fehlen › ansehen", das nirgendwohin führt, ist schlimmer als kein
+       Hinweis — und es steht ausgerechnet ganz oben. */
+    alerts=alerts.filter(function(a){ return ansichtAn(a.v); });
     if(alerts.length>4){
       var rest=alerts.length-3;
       alerts=alerts.slice(0,3);
@@ -9014,6 +9265,7 @@ function renderHome(){
     // Ein Mitarbeiter sah bisher drei von sechs Kacheln mit "0" – die halbe
     // Seite ohne Aussage. Jetzt wandern sie nach hinten und werden blass;
     // ist wirklich alles auf null, steht dort eine Zeile statt sechs Nullen.
+    tiles=tiles.filter(function(t){ return ansichtAn(t.v); });
     var mitZahl=tiles.filter(function(t){ return t.n>0; });
     var ohne=tiles.filter(function(t){ return !(t.n>0); });
 
@@ -9203,7 +9455,10 @@ function renderHomeLesen(){
   // Aushänge: nur die, die mich betreffen
   // Angeheftetes steht schon ganz oben als Hinweiszeile. Es hier noch
   // einmal zu zeigen wäre dasselbe zweimal auf einem Bildschirm.
-  var meine=(_allAnns||[]).filter(function(a){
+  /* Abgeschaltet: die Karte bleibt weg, auch wenn noch alte Aushänge in
+     der Datenbank liegen. Sie werden nicht gelöscht — sie stehen nur
+     nicht mehr im Weg. */
+  var meine=!featureAn('ann') ? [] : (_allAnns||[]).filter(function(a){
     if(a.pinned) return false;
     return isChef() || !a.target || a.target==='all' ||
       (session.studioKeys||[]).indexOf(a.target)>=0;
@@ -9220,8 +9475,9 @@ function renderHomeLesen(){
     annKarte.style.display='none';
   }
 
-  if((_board||[]).length){
-    brettBox.innerHTML=_board.slice(0,3).map(function(b){
+  var brett=!featureAn('brett') ? [] : (_board||[]);
+  if(brett.length){
+    brettBox.innerHTML=brett.slice(0,3).map(function(b){
       return '<div class="lese-eintrag">'+
         '<div class="lese-text">'+linkify(esc(b.text||''))+'</div>'+
         fuss(b.name, b.ts, false)+'</div>';
@@ -9231,7 +9487,7 @@ function renderHomeLesen(){
     brettKarte.style.display='none';
   }
 
-  if(kopf) kopf.style.display=(meine.length||(_board||[]).length)?'':'none';
+  if(kopf) kopf.style.display=(meine.length||brett.length)?'':'none';
 
   // „Alle ›" / „Zum Brett ›"
   [annKarte,brettKarte].forEach(function(k){
@@ -9255,6 +9511,9 @@ var MYSHIFT_TTL = 5*60*1000;
 
 function loadMyShifts(force){
   if(!session || _myShiftsLoading) return;
+  /* Ohne Schichtplan gibt es keinen eigenen Dienst — und vor allem
+     keinen Grund, dafür Abfragen zu schicken. */
+  if(!featureAn('schicht')){ _myShifts=[]; renderMyShifts(); return; }
   if(!force && Date.now()-_myShiftsAt < MYSHIFT_TTL){ renderMyShifts(); return; }
   var keys=session.studioKeys||[];
   if(!keys.length){ renderMyShifts(); return; }
@@ -9979,7 +10238,7 @@ var CHEFTABS=[
   {id:'report',     label:'📈 Auswertung', ico:'📈',
    was:'Bericht über einen Zeitraum, drucken, Excel, Monatsbericht'},
   {id:'system',     label:'⚙️ System',     ico:'⚙️',
-   was:'Tabellen abgleichen, Papierkorb, Sicherung, Tastenkürzel'}
+   was:'Funktionen an- und abschalten, Tabellen, Papierkorb, Sicherung'}
 ];
 /* 'uebersicht' ist kein Reiter, sondern die Startseite des Bereichs. */
 var CHEF_START='uebersicht';
@@ -10123,6 +10382,7 @@ function showChefTab(id, keep){
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
+  if(id==='system') renderFeatureListe();
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
@@ -10181,6 +10441,12 @@ function renderAttention(){
     if(alt.length) rows.push({i:'👁', t:alt.length+(alt.length===1?' Info wurde nicht von allen gelesen':' Infos wurden nicht von allen gelesen'),
       s:'älter als 2 Tage', v:'ann'});
   }
+
+  /* Dasselbe wie auf der Startseite: eine Zeile „3 Artikel fehlen ›",
+     die in eine abgeschaltete Ansicht führt, ist schlimmer als keine.
+     Und sie meldet etwas, um das sich dieser Betrieb bewusst nicht
+     kümmert — der Chef hat Material ja gerade ausgeschaltet. */
+  rows=rows.filter(function(r){ return ansichtAn(r.v); });
 
   if(!rows.length){
     box.innerHTML='<p class="att-ok">✓ Alles im grünen Bereich – nichts Offenes.</p>';

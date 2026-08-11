@@ -50,6 +50,26 @@ async function alleFirmen() {
   }
 }
 
+/* ── Abgeschaltete Funktionen ────────────────────────────────────────
+   Der Chef kann Bereiche ausblenden (config/features). Der Bildschirm
+   ist damit aufgeraeumt — die naechtlichen Erinnerungen aber liefen
+   weiter. Ein Handy, das um 7:30 Uhr wegen einer Aufgabe brummt, die
+   es in der App gar nicht mehr gibt, macht den Schalter zur Luege.
+
+   Deshalb pruefen die Zeitplaene das mit. Fehlt das Dokument oder ist
+   es nicht lesbar, gilt "an" — dieselbe Richtung wie in der App: im
+   Zweifel lieber eine Meldung zu viel als eine verschluckte. */
+async function featureAn(firma, id) {
+  try {
+    const d = await W(firma).collection('config').doc('features').get();
+    if (!d.exists) return true;
+    return (d.data() || {})[id] !== false;
+  } catch (e) {
+    console.warn('features (' + (firma || 'flach') + '):', e.message);
+    return true;
+  }
+}
+
 /* Konten einer Firma. users liegt weiterhin oben (die Firma steht IM
    Profil), deshalb wird hier gefiltert statt verschachtelt.
    Ein Profil ohne Feld 'firma' gehoert zur Voreinstellung — sonst
@@ -296,6 +316,8 @@ exports.dueTaskReminder = region.pubsub
     const limit = endOfDay.getTime();
 
     for (const firma of await alleFirmen()) {
+    // Aufgaben abgeschaltet: dann auch keine Erinnerung an Aufgaben.
+    if (!(await featureAn(firma, 'todos'))) continue;
     const studios = await W(firma).collection('studios').listDocuments();
     for (const studioRef of studios) {
       const snap = await studioRef.collection('todos').get();

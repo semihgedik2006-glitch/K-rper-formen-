@@ -32,6 +32,8 @@ wird von Hand, nicht von einem Zeitplan.
 | `konfig.js` löste keinen Deploy aus — zwei Monate lang | ✅ 11.8., plus `test-ausliefern.js` |
 | `renderFirmenArchiv` stürzte an `fmtDate()` ab | ✅ 11.8., plus erster Test für den Admin-Bereich |
 | Stillgelegte Firma: der Chef kam in eine leere App statt einer Meldung | ✅ 11.8. |
+| Kürzel in der Google-Tabelle (Putzplan und Notizen) | ✅ 11.8., Skript neu bereitgestellt und bestätigt |
+| Funktionen abschaltbar (Schichtplan, Abwesenheiten und neun weitere) | ✅ 11.8., mit Gegenprobe |
 
 ## Offen, weil noch niemand hingeschaut hat
 
@@ -45,15 +47,12 @@ wird von Hand, nicht von einem Zeitplan.
   sind geplant und bewusst nicht gebaut; siehe `ABO-PLAN.md`. Vor dem
   ersten echten Geld steht ein Gespräch mit dem Steuerberater, nicht
   Code.
-- **Das Google-Skript neu bereitstellen.** Die Tabelle hat eine neue
-  Spalte „Kürzel" bekommen (Putzplan und Notizen) — aber nur im Code
-  hier. In deiner Tabelle ändert sich nichts, solange die alte Fassung
-  bereitgestellt ist. Handgriff: Apps Script öffnen, Inhalt von
-  `MATERIAL-SHEETS.gs` komplett ersetzen, speichern, dann
-  *Bereitstellen → Bereitstellungen verwalten → Stift → Version „Neue
-  Version" → Bereitstellen*. Die Adresse bleibt gleich. Die vorhandenen
-  Zeilen ziehen beim ersten Lauf von selbst um; von Hand ist nichts zu
-  tun. **Nur du kannst das — ich habe keinen Zugang zu Apps Script.**
+- **Ob auf dem Server wirklich keine Erinnerung mehr hinausgeht**, wenn
+  eine Funktion abgeschaltet ist. Der Code prüft es (`featureAn` in
+  `functions/index.js`), aber im Emulator gibt es keine Empfänger — das
+  Ausbleiben lässt sich dort nicht messen. Fällt frühestens auf, wenn
+  jemand Aufgaben abschaltet und am nächsten Morgen um 7:30 Uhr nichts
+  brummt.
 
 **Vier rechtliche Pflichtfelder in `konfig.js`** (Betreiber, Anschrift,
 Telefon, E-Mail) sind noch leer — solange steht in der App eine rote

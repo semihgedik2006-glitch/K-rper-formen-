@@ -251,6 +251,14 @@
             if (path === 'config' && id === 'sicherung') {
               return Promise.resolve({ exists: true, id: id, data: function () { return SICHERUNG; } });
             }
+            /* Abgeschaltete Funktionen. Ohne __features gibt es das
+               Dokument NICHT — und genau das ist der Normalfall, den
+               jeder andere Durchlauf voraussetzt: alles an. */
+            if (path === 'config' && id === 'features') {
+              var f = window.__features;
+              return Promise.resolve({ exists: !!f, id: id,
+                data: function () { return f || {}; } });
+            }
             if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }
             return Promise.resolve({ exists: true, id: id, data: function () { return data; } });
           },
@@ -261,6 +269,12 @@
             if (path === 'inventory') {
               var inv = INVENTORY[id];
               try { cb({ exists: !!inv, id:id, metadata:{hasPendingWrites:false}, data: function(){ return inv || {items:[]}; } }); } catch (e) { console.error(e); }
+              return unsub();
+            }
+            if (path === 'config' && id === 'features') {
+              var ff = window.__features;
+              try { cb({ exists: !!ff, id:id, metadata:{hasPendingWrites:false},
+                         data: function(){ return ff || {}; } }); } catch (e) {}
               return unsub();
             }
             try { cb({ exists: false, metadata:{hasPendingWrites:false}, data: function () { return {}; } }); } catch (e) {}
