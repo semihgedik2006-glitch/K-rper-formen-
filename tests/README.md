@@ -121,6 +121,7 @@ was sie sehen soll.
 | `test-abo-stufe.js` | Abo-Stufe: ohne Abo alles offen, Basic zeigt was fehlt |
 | `test-kuerzel-grund.js` | Kürzel im Putzplan, Grund an offenen Aufgaben |
 | `test-sheets-kuerzel.js` | Google-Tabelle: neue Spalte „Kürzel", alte Zeilen ziehen richtig mit um |
+| `test-funktionen-schalter.js` | abgeschaltete Funktionen: weg aus Leiste, Startseite, Team-Reitern und Verwaltung |
 
 ### Alle auf einmal
 

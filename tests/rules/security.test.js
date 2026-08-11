@@ -191,6 +191,24 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Beitritts-Nachweis ist fuer niemanden lesbar', () =>
     assertFails(alsChef().doc('beitritt/wartet1').get()));
 
+  /* ── Abgeschaltete Funktionen (config/features) ──
+     Der Chef entscheidet, was dieser Betrieb benutzt. Wenn ein
+     Mitarbeiter das umschreiben koennte, waere die Einstellung wertlos:
+     er blendet sich zurueck ein, was ihm fehlt.
+
+     Lesen muss dagegen JEDER duerfen — die App braucht es beim Start,
+     um die Navigation richtig aufzubauen. Das ist auch der Grund, warum
+     die Schalter ausdruecklich KEINE Zugriffsgrenze sind: was hier
+     steht, kann jeder Eingeloggte sehen. Steht so auch in der App. */
+  await pruefe('Mitarbeiter darf die Funktionen LESEN (die App braucht es beim Start)', () =>
+    assertSucceeds(alsMitarbeiter().doc('config/features').get()));
+  await pruefe('Mitarbeiter kann Funktionen NICHT umschalten', () =>
+    assertFails(alsMitarbeiter().doc('config/features').set({ schicht: true })));
+  await pruefe('Studio-Leiter kann Funktionen NICHT umschalten', () =>
+    assertFails(alsLeiter().doc('config/features').set({ schicht: true })));
+  await pruefe('Chef darf Funktionen umschalten', () =>
+    assertSucceeds(alsChef().doc('config/features').set({ schicht: false })));
+
   await pruefe('OHNE Code: Konto anlegen wird abgelehnt', () =>
     assertFails(env.authenticatedContext('neu3').firestore()
       .doc('users/neu3').set({ name: 'Neu', role: 'mitarbeiter', aktiv: false })));
