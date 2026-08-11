@@ -120,6 +120,7 @@ was sie sehen soll.
 | `test-firma-stillgelegt.js` | gesperrte/gelöschte Firma: klare Meldung statt leerer App |
 | `test-abo-stufe.js` | Abo-Stufe: ohne Abo alles offen, Basic zeigt was fehlt |
 | `test-kuerzel-grund.js` | Kürzel im Putzplan, Grund an offenen Aufgaben |
+| `test-sheets-kuerzel.js` | Google-Tabelle: neue Spalte „Kürzel", alte Zeilen ziehen richtig mit um |
 
 ### Alle auf einmal
 

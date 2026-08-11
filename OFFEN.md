@@ -45,12 +45,15 @@ wird von Hand, nicht von einem Zeitplan.
   sind geplant und bewusst nicht gebaut; siehe `ABO-PLAN.md`. Vor dem
   ersten echten Geld steht ein Gespräch mit dem Steuerberater, nicht
   Code.
-- **Was „die sheets liste" heissen sollte.** Die tägliche Sicherung
-  läuft seit dem 11.8. **in der App** (`dailyArchive`, 23:45) — das
-  erzeugt die Excel-Dateien und die Sicherungsliste für den Chef. Die
-  Google-Tabelle selbst (`MATERIAL-SHEETS.gs`) ist unverändert. Falls
-  dort ein eigenes Tagesblatt entstehen soll, ist das eine separate
-  Änderung auf der Apps-Script-Seite. **Ungeklärt, bis du es sagst.**
+- **Das Google-Skript neu bereitstellen.** Die Tabelle hat eine neue
+  Spalte „Kürzel" bekommen (Putzplan und Notizen) — aber nur im Code
+  hier. In deiner Tabelle ändert sich nichts, solange die alte Fassung
+  bereitgestellt ist. Handgriff: Apps Script öffnen, Inhalt von
+  `MATERIAL-SHEETS.gs` komplett ersetzen, speichern, dann
+  *Bereitstellen → Bereitstellungen verwalten → Stift → Version „Neue
+  Version" → Bereitstellen*. Die Adresse bleibt gleich. Die vorhandenen
+  Zeilen ziehen beim ersten Lauf von selbst um; von Hand ist nichts zu
+  tun. **Nur du kannst das — ich habe keinen Zugang zu Apps Script.**
 
 **Vier rechtliche Pflichtfelder in `konfig.js`** (Betreiber, Anschrift,
 Telefon, E-Mail) sind noch leer — solange steht in der App eine rote
