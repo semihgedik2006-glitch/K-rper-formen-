@@ -2992,7 +2992,11 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
            SEITE: ARCHIV – erledigte Aufgaben (nur Chef)
            ============================================================ -->
       <section class="view" id="view-archive">
-        <div class="view-head shrink"><h2>Archiv</h2><p id="archSubtitle">Wochen-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.</p></div>
+        <!-- Der Text wird gleich von applyRoleVisibility ersetzt (Chef
+             sieht mehr als ein Leiter). Er steht hier trotzdem richtig:
+             beim ersten Bild ist er kurz sichtbar, und ein Satz, der nur
+             eine Zehntelsekunde lang falsch ist, ist trotzdem falsch. -->
+        <div class="view-head shrink"><h2>Archiv</h2><p id="archSubtitle">Tages-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <!-- Tages-Sicherungen von Material, Putzplan und Aufgaben.
                Bis zum 11.8.2026 lief das wöchentlich und im Browser des
