@@ -209,6 +209,31 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Chef darf Funktionen umschalten', () =>
     assertSucceeds(alsChef().doc('config/features').set({ schicht: false })));
 
+  /* ── Fehlerberichte ──
+     Schreiben muss JEDER Angemeldete duerfen — sonst wuerde ausgerechnet
+     der Fehler nicht gemeldet, der einen Mitarbeiter trifft.
+     Lesen darf nur der Chef: in einer Meldung steht, wer sie ausgeloest
+     hat und was er gerade tat. Das ist nichts fuers ganze Team. */
+  await pruefe('Mitarbeiter darf einen Fehler melden', () =>
+    assertSucceeds(alsMitarbeiter().doc('fehler/abc_1')
+      .set({ text: 'x is not a function', uid: 'mitarbeiter' })));
+  await pruefe('Mitarbeiter darf Fehler NICHT lesen', () =>
+    assertFails(alsMitarbeiter().doc('fehler/abc_1').get()));
+  await pruefe('Studio-Leiter darf Fehler NICHT lesen', () =>
+    assertFails(alsLeiter().doc('fehler/abc_1').get()));
+  await pruefe('Mitarbeiter darf Fehler NICHT loeschen', () =>
+    assertFails(alsMitarbeiter().doc('fehler/abc_1').delete()));
+  await pruefe('Chef darf Fehler lesen', () =>
+    assertSucceeds(alsChef().doc('fehler/abc_1').get()));
+  await pruefe('Chef darf Fehler erledigen (loeschen)', () =>
+    assertSucceeds(alsChef().doc('fehler/abc_1').delete()));
+  /* Die Groessengrenze ist kein Schoenheitsfehler: ohne sie kann jeder
+     Angemeldete beliebig grosse Dokumente in die Datenbank schreiben,
+     und zwar in eine Sammlung, die er selbst nie zu Gesicht bekommt. */
+  await pruefe('Ein riesiger Fehlertext wird abgelehnt', () =>
+    assertFails(alsMitarbeiter().doc('fehler/gross')
+      .set({ text: 'x'.repeat(500) })));
+
   await pruefe('OHNE Code: Konto anlegen wird abgelehnt', () =>
     assertFails(env.authenticatedContext('neu3').firestore()
       .doc('users/neu3').set({ name: 'Neu', role: 'mitarbeiter', aktiv: false })));

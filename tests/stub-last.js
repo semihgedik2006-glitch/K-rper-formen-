@@ -431,7 +431,13 @@
   };
   firebase.firestore.FieldValue = {
     arrayUnion: function () { return {}; }, arrayRemove: function () { return {}; },
-    serverTimestamp: function () { return Date.now(); }
+    serverTimestamp: function () { return Date.now(); },
+    /* increment fehlte hier, und das kostete eine halbe Stunde: die
+       Fehlermeldung der App rief fv.increment(1), bekam "is not a
+       function" und wurde vom eigenen try/catch still geschluckt. Der
+       Durchlauf meldete daraufhin "wird gar nicht gemeldet" — richtig,
+       aber aus dem falschen Grund. */
+    increment: function (n) { return { __increment: n }; }
   };
   firebase.auth.Auth = { Persistence: { LOCAL: 'local', SESSION: 'session', NONE: 'none' } };
   firebase.messaging.isSupported = function () { return false; };
