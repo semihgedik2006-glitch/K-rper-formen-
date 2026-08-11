@@ -822,11 +822,16 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    davon änderte, änderte die anderen vier nicht mit – und keiner sah es.
    Jetzt steht die Regel einmal da; die Fenster mit eigenem Verhalten
    (fwdModal, keysModal) hängen sich weiter unten daran. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal{
+/* aboModal fehlte hier — und damit hatte es KEIN display:none. Das
+   Fenster stand dauerhaft mitten in der Seite, und „schliessen" tat
+   sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
+   Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
+   richtig, sie hatte nur keine Wirkung. */
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:20px;background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:20px;padding:24px;box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -1263,13 +1268,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
 /* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
-#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
+#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
   animation:sheetIn .46s var(--spring)}
 @keyframes sheetIn{
   from{opacity:0;transform:scale(.94) translateY(12px)}
   to{opacity:1;transform:none}
 }
-#profileModal,#devModal,#pollModal,#todoEditModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
+#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
 @keyframes fadeBlur{from{opacity:0}to{opacity:1}}
 
 /* ── Menüs auf dem Handy: von unten hereinfahren ──
@@ -1277,8 +1282,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    der Daumen kommt nicht hin. Deshalb werden Menüs unter 620 px zu Blättern,
    die von unten hereinfahren; oben ein Griff, wie man es von iOS kennt. */
 @media (max-width:620px){
-  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal{align-items:flex-end;padding:0}
-  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box{
+  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal{align-items:flex-end;padding:0}
+  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box{
     max-width:none;border-radius:22px 22px 0 0;border-bottom:none;
     padding:20px 20px calc(24px + var(--sab));max-height:90vh}
   #profileModal.show .pm-box,#personModal.show .pm-box{
