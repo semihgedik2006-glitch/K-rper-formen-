@@ -119,6 +119,7 @@ was sie sehen soll.
 | `test-admin-firmen.js` | Betreiber-Bereich: Studiozahl, Firmen-Archiv, Abo und Gratis-Abo |
 | `test-firma-stillgelegt.js` | gesperrte/gelöschte Firma: klare Meldung statt leerer App |
 | `test-abo-stufe.js` | Abo-Stufe: ohne Abo alles offen, Basic zeigt was fehlt |
+| `test-kuerzel-grund.js` | Kürzel im Putzplan, Grund an offenen Aufgaben |
 
 ### Alle auf einmal
 

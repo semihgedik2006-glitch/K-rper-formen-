@@ -655,6 +655,26 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .fm-knoepfe{display:flex;gap:14px;align-items:center}
 .fm-knoepfe .mini-x{min-height:44px;display:inline-flex;align-items:center}
 .mini-x.weg{color:var(--danger-tx)}
+/* „Wer hakt ab?" — sitzt über der Liste, nicht in jedem Eintrag.
+   44px hoch, weil das an einem Studio-Tablet mit nassen Händen
+   getroffen werden muss. */
+.pp-wer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:10px 0 4px;padding:10px 12px;border-radius:var(--r-sm);
+  background:var(--bg-3, rgba(255,255,255,.04));border:1px solid var(--line)}
+.pp-wer label{font-size:.78rem;color:var(--text-3);white-space:nowrap;margin:0}
+.pp-wer .inp{flex:1;min-width:120px;min-height:44px}
+.pp-wer .hint{flex-basis:100%;margin:0;font-size:.74rem}
+.pp-wer-leer{color:var(--warm-tx)}
+.pp-konto{color:var(--text-3);font-weight:400}
+/* Der Grund an einer offenen Aufgabe: warm, nicht rot. Es ist eine
+   Erklärung, kein Fehler — wer „Mittel war leer" schreibt, hat das
+   Richtige getan. */
+.t-grund{margin:6px 0 0;padding:7px 10px;border-radius:var(--r-xs);
+  background:rgba(251,191,36,.10);border-left:3px solid var(--warm);
+  font-size:.82rem;color:var(--text-2);line-height:1.4}
+.t-grund-wer{color:var(--text-3);font-size:.74rem}
+.wk-art{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-3);background:rgba(255,255,255,.07);padding:2px 6px;border-radius:999px}
 /* Gesperrte Reiter: sichtbar, aber sichtbar zu. Verstecken wäre
    unehrlich (die Ansicht ist ja da) und verkauft nichts. */
 .chef-tab.abo-zu{opacity:.55}
@@ -2666,6 +2686,22 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <h3 id="ppListTitle">Putzplan</h3>
               <span class="todo-count" id="ppProgress"></span>
             </div>
+            <!-- ── Wer hakt gerade ab? ──
+                 Am Anfang bekommt nicht jede Person einen eigenen Zugang,
+                 sondern jedes Studio einen. Ohne dieses Feld steht bei
+                 allem derselbe Name, und der Chef weiss nicht, wer was
+                 gemacht hat.
+
+                 Bewusst EINMAL oben statt bei jedem Haken: zwölf
+                 Putzpunkte × einmal tippen wäre der sichere Weg, dass es
+                 niemand ausfüllt. Das Kürzel bleibt auf dem Gerät, bis
+                 es jemand ändert — wie ein Namensschild zum Schichtbeginn. -->
+            <div class="pp-wer" id="ppWerZeile">
+              <label for="ppKuerzel">Wer hakt ab?</label>
+              <input class="inp" id="ppKuerzel" type="text" maxlength="20"
+                     autocomplete="off" placeholder="z. B. AB oder Anna" />
+              <span class="hint" id="ppWerHint"></span>
+            </div>
             <div id="ppList" style="margin-top:8px"></div>
           </div>
 
@@ -3598,6 +3634,20 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <div class="ms-head">
       <b id="tbWho"></b>
       <p id="tbWhere"></p>
+    </div>
+    <!-- ── Warum ist das nicht erledigt? ──
+         Optional, und nur solange die Aufgabe offen ist. Der Grund ist
+         oft wichtiger als das Häkchen: „Mittel war leer" ist eine
+         Bestellung, „keine Zeit" ist eine Personalfrage, und beides
+         sieht der Chef sonst nie — er sieht nur eine rote Zahl. -->
+    <div id="tbGrundBox" style="display:none">
+      <label for="tbGrund">Warum nicht erledigt? <span class="hint" style="display:inline">optional</span></label>
+      <input class="inp" id="tbGrund" type="text" maxlength="200"
+             placeholder="z. B. Reinigungsmittel war leer" />
+      <div style="display:flex;gap:8px;margin:8px 0 14px">
+        <button class="btn btn-primary btn-sm" id="tbGrundSpeichern" style="flex:1">Grund speichern</button>
+        <button class="btn btn-ghost btn-sm" id="tbGrundWeg">Löschen</button>
+      </div>
     </div>
     <div class="ms-acts" id="tbActs"></div>
     <button class="btn btn-ghost" id="tbClose" style="width:100%">Abbrechen</button>
@@ -9576,6 +9626,14 @@ function todoHTML(t,sk,chefView){
   if(done&&t.doneBy) foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
   var rep=t.recurring
     ? '<span class="t-rep">🔁 '+esc(repLabelFor(t))+'</span>' : '';
+  /* Der Grund steht IN der Liste, nicht nur im Blatt dahinter. Der Chef
+     öffnet nicht jede offene Aufgabe einzeln — er scrollt. Was er nicht
+     im Vorbeigehen sieht, sieht er nie. */
+  var grundHtml = (!done && t.grund)
+    ? '<div class="t-grund">⚠ '+esc(t.grund)+
+      (t.grundVon ? ' <span class="t-grund-wer">— '+esc(t.grundVon)+
+        (t.grundAm ? ', '+fmtDateTime(t.grundAm) : '')+'</span>' : '')+'</div>'
+    : '';
   var dueBadge='';
   if(t.due){
     var over=!done && Date.now()>t.due;
@@ -9616,6 +9674,7 @@ function todoHTML(t,sk,chefView){
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+assign+stepCount+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     stepsHtml+
+    grundHtml+
     (t.docUrl?'<a class="t-doc" href="'+safeUrl(t.docUrl)+'" target="_blank" rel="noopener">📄 Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+photoBtn+'</div>'+
     photoHtml+'</div>'+
@@ -10903,6 +10962,7 @@ function printPutzplan(){
 
 function renderPutzplan(){
   var box=$('ppList'); if(!box) return;
+  putzKuerzelBinden();
   // offene zuerst, dann erledigte; innerhalb nach Erstellzeit
   var list=_ppTasks.slice().sort(function(a,b){ return (isDone(a)-isDone(b))||((a.ts||0)-(b.ts||0)); });
   var chef=canManage();
@@ -10915,8 +10975,14 @@ function renderPutzplan(){
   box.innerHTML=list.map(function(t){
     var d=isDone(t);
     var rep=t.recurring?'<span class="t-rep">🔁 '+esc(repLabelFor(t))+'</span>':'';
-    var doneInfo = d && t.doneBy
-      ? '<span class="pp-doneby">✓ '+esc(t.doneBy)+' · '+fmtDateTime(t.doneAt)+'</span>'
+    /* Das Kürzel steht VORNE und der Kontoname dahinter in Klammern:
+       den Chef interessiert die Person, nicht das Tablet. Ohne Kürzel
+       bleibt es wie vorher. */
+    var wer = d ? (t.doneKuerzel
+      ? esc(t.doneKuerzel)+' <span class="pp-konto">('+esc(t.doneBy||'')+')</span>'
+      : esc(t.doneBy||'')) : '';
+    var doneInfo = d && (t.doneBy || t.doneKuerzel)
+      ? '<span class="pp-doneby">✓ '+wer+' · '+fmtDateTime(t.doneAt)+'</span>'
       : '';
     var del = chef ? '<button class="pp-del" data-del="'+esc(t.id)+'" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
     return '<div class="pp-item'+(d?' done':'')+'" data-id="'+esc(t.id)+'">'+
@@ -10927,6 +10993,38 @@ function renderPutzplan(){
       del+'</div></div>';
   }).join('');
   bindPutzplanClicks(box);
+}
+
+/* ── Das Kürzel am geteilten Studio-Gerät ──
+   Bleibt auf dem GERÄT, nicht am Konto: das Konto gehört dem Studio,
+   das Kürzel der Person, die gerade da ist. Beim Abmelden bleibt es
+   deshalb absichtlich stehen — die nächste Schicht übernimmt dasselbe
+   Tablet, und wer es nicht ändert, hat es auch vorher nicht getan. */
+var PP_KUERZEL = 'kf_pp_kuerzel';
+function putzKuerzel(){
+  try{ return (localStorage.getItem(PP_KUERZEL)||'').trim().slice(0,20); }
+  catch(e){ return ''; }
+}
+function putzKuerzelBinden(){
+  var f=$('ppKuerzel'); if(!f || f._da) return;
+  f._da=true;
+  f.value = putzKuerzel();
+  var speichern = function(){
+    var v = f.value.trim().slice(0,20);
+    try{ localStorage.setItem(PP_KUERZEL, v); }catch(e){}
+    putzWerHinweis();
+  };
+  f.addEventListener('input', speichern);
+  f.addEventListener('change', speichern);
+  putzWerHinweis();
+}
+function putzWerHinweis(){
+  var h=$('ppWerHint'); if(!h) return;
+  var k=putzKuerzel();
+  h.textContent = k
+    ? 'Wird bei jedem Haken mitgeschrieben.'
+    : 'Ohne Kürzel steht später nur der Studio-Zugang da.';
+  h.classList.toggle('pp-wer-leer', !k);
 }
 
 function bindPutzplanClicks(box){
@@ -10940,8 +11038,13 @@ function bindPutzplanClicks(box){
         if(node){ node.classList.add('just-done'); setTimeout(function(){ node.classList.remove('just-done'); },720); }
         burstAt(chk); tick(); toast(pickPraise());
       }
+      /* Das Kürzel wird MITGESCHRIEBEN, nicht statt des Kontonamens.
+         Beides zusammen beantwortet die Frage, die der Chef wirklich
+         hat: an welchem Gerät wurde abgehakt, und wer stand davor. */
+      var kuerzel = willDone ? putzKuerzel() : null;
       S('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
-        .update({ done:willDone, doneBy:willDone?session.name:null, doneByUid:willDone?session.uid:null, doneAt:willDone?Date.now():null })
+        .update({ done:willDone, doneBy:willDone?session.name:null, doneByUid:willDone?session.uid:null,
+                  doneKuerzel:kuerzel||null, doneAt:willDone?Date.now():null })
         .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
@@ -11690,6 +11793,25 @@ var _teTodo=null, _teSk=null;
    Einträge sind beschriftet und 48 Pixel hoch. Vorher hingen drei Symbole
    von 25 × 27 Pixeln am Rand der Zeile – „✎", „⏰" und ein Mülleimer. */
 var _tbTodo=null, _tbSk=null;
+/* Grund speichern. Wer und wann steht dabei — sonst fragt der Chef
+   nach einer Woche, von wann die Notiz ist, und niemand weiss es. */
+function todoGrundSetzen(text, btn){
+  if(!_tbTodo || !_tbSk) return;
+  var g = String(text||'').trim().slice(0,200);
+  var daten = g
+    ? { grund:g, grundVon:(putzKuerzel() || session.name), grundAm:Date.now() }
+    : { grund:null, grundVon:null, grundAm:null };
+  withBusy(btn, function(){
+    return S('studios').doc(_tbSk).collection('todos').doc(_tbTodo.id).update(daten)
+      .then(function(){
+        _tbTodo.grund = daten.grund;
+        $('todoSheet').classList.remove('show');
+        toast(g ? 'Grund gespeichert ✓' : 'Grund entfernt ✓');
+      })
+      .catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
 function todoBlattOeffnen(t, sk){
   _tbTodo=t; _tbSk=sk;
   var blatt=$('todoSheet'); if(!blatt) return;
@@ -11713,6 +11835,18 @@ function todoBlattOeffnen(t, sk){
     return '<button class="ms-act'+(e.warn?' warn':'')+'" data-tba="'+e.id+'">'+
       '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
   }).join('');
+  /* Nur bei OFFENEN Aufgaben. An einer erledigten wäre das Feld Unsinn,
+     und ein stehengebliebener Grund würde den Chef in die Irre führen.
+
+     Dieser Block stand zuerst im DOKUMENT-Blatt: der Anker
+     "blatt.classList.add('show')" kommt in dieser Datei mehrfach vor,
+     und ich habe das erste Vorkommen erwischt. Gefunden vom Test, der
+     das Feld an einer offenen Aufgabe nicht fand. */
+  var gb=$('tbGrundBox');
+  if(gb){
+    gb.style.display = done ? 'none' : '';
+    var gf=$('tbGrund'); if(gf) gf.value = t.grund || '';
+  }
   blatt.classList.add('show');
   tick(8);
 }
@@ -12240,6 +12374,24 @@ function maybeArchiveWeek(force){
       if(last && (Date.now()-(+last) < 20*3600000)) return Promise.resolve();
     }catch(e){}
   }
+  /* Seit dem 11.8.2026 sichert dailyArchive jede Nacht um 23:45 auf dem
+     SERVER — mit dem Stand am Ende des Tages, was der einzig nützliche
+     ist. Dieser Lauf hier ist nur noch das Netz darunter: er springt
+     ein, wenn die nächtliche Sicherung ausgefallen ist.
+
+     Der Unterschied in Zahlen: vorher 462 Lesevorgänge auf dem Gerät
+     des Chefs, jetzt EINER, um nachzusehen ob es schon eine gibt. */
+  if(!force){
+    var heute = new Date().toLocaleDateString('sv-SE');
+    return S('archives').doc(heute).get().then(function(d){
+      if(d.exists) return;                       // die Nacht hat es erledigt
+      return archivSchreiben(key, now, force);
+    }).catch(function(){ return archivSchreiben(key, now, force); });
+  }
+  return archivSchreiben(key, now, force);
+}
+
+function archivSchreiben(key, now, force){
   var r=weekRange(now);
   var jobs=[ S('inventory').get() ];
   STUDIOS.forEach(function(s){
@@ -12259,7 +12411,9 @@ function maybeArchiveWeek(force){
         tasks: tSnap.docs.map(function(d){ var t=d.data();
           return { title:t.title||'', rep:repLabelFor(t)||'einmalig',
             status:isDone(t)?'erledigt':'offen',
-            by:isDone(t)?(t.doneBy||''):'', at:(isDone(t)&&t.doneAt)?fmtDateTime(t.doneAt):'' }; }),
+            by:isDone(t)?(t.doneKuerzel||t.doneBy||''):'',
+            konto:isDone(t)?(t.doneBy||''):'',
+            at:(isDone(t)&&t.doneAt)?fmtDateTime(t.doneAt):'' }; }),
         notes: nSnap.docs.map(function(d){ var n=d.data();
           return { text:n.text||'', by:n.by||'', at:fmtDateTime(n.ts) }; })
       };
@@ -12360,19 +12514,28 @@ var _archRows=[];
 function listenArchives(){
   if(session.role!=='chef') return;
   if(_archUnsub){ _archUnsub(); _archUnsub=null; }
-  _archUnsub=S('archives').orderBy('week','desc').limit(52)
+  /* Nach updatedAt statt nach 'week': seit der Tages-Sicherung liegen
+     hier zwei Sorten Schlüssel nebeneinander (2026-08-11 und
+     2026-KW32). Nach Namen sortiert stünden die alten Wochen für immer
+     obenauf. updatedAt haben beide. */
+  _archUnsub=S('archives').orderBy('updatedAt','desc').limit(60)
     .onSnapshot(function(snap){
       var box=$('weekArchives'); if(!box) return;
       var rows=snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       _archRows=rows;          // für die Verbrauchs-Vorhersage
       renderForecast();
       if(!rows.length){
-        box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Noch keine Sicherung. Sie wird automatisch angelegt, sobald du als Chef die App öffnest.</p>';
+        box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Noch keine Sicherung. '+
+          'Sie wird jede Nacht um 23:45 automatisch angelegt — mit dem Stand am Ende des Tages.</p>';
         return;
       }
       box.innerHTML=rows.map(function(a){
         return '<div class="wk-row">'+
-          '<div class="wk-info"><b>'+esc((a.week||'').replace('-',' · '))+'</b>'+
+          '<div class="wk-info"><b>'+esc(a.tag
+              ? new Date(a.tag+'T12:00:00').toLocaleDateString('de-DE',
+                  {weekday:'short', day:'2-digit', month:'2-digit'})
+              : (a.week||'').replace('-',' · '))+
+            (a.tag ? '' : ' <span class="wk-art">Woche</span>')+'</b>'+
           '<span>'+esc(a.label||'')+' · Stand '+fmtDateTime(a.updatedAt)+'</span></div>'+
           '<div class="wk-btns">'+
             '<button class="btn btn-ghost btn-sm" data-arch="material" data-week="'+esc(a.id)+'">Material</button>'+
@@ -13482,6 +13645,10 @@ function bindActions(){
   if(tsh){
     tsh.addEventListener('click',function(e){ if(e.target===tsh) todoBlattSchliessen(); });
     $('tbClose').addEventListener('click', todoBlattSchliessen);
+    var gs=$('tbGrundSpeichern');
+    if(gs) gs.addEventListener('click', function(){ todoGrundSetzen($('tbGrund').value, this); });
+    var gw=$('tbGrundWeg');
+    if(gw) gw.addEventListener('click', function(){ todoGrundSetzen('', this); });
     $('tbActs').addEventListener('click',function(e){
       var b=e.target.closest && e.target.closest('[data-tba]');
       if(b) todoBlattAktion(b.getAttribute('data-tba'));
