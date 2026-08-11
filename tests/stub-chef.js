@@ -19,10 +19,16 @@
       '-' + String(d.getDate()).padStart(2, '0');
   }
 
+  /* window.__admin (vor dem Laden gesetzt) macht daraus den Betreiber.
+     Der Reiter „🏛 Firmen" haengt an diesem einen Feld — admin ist
+     bewusst KEIN Rollenwert, sondern ein Zusatz: der Betreiber bleibt
+     Chef seiner eigenen Firma. */
   var PROFILE = {
     name: 'Test Chef', role: 'chef', studios: ['Hürth', 'Brühl'],
-    studio: 'Hürth', avatar: '💪', color: '#00E06E'
+    studio: 'Hürth', avatar: '💪', color: '#00E06E',
+    firma: 'koerperformen'
   };
+  if (window.__admin) PROFILE.admin = true;
   var USERS = [
     { id:'testuid', name:'Test Chef', role:'chef', studios:['Hürth','Brühl'] },
     { id:'u2', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
@@ -301,7 +307,12 @@
                    (path==='certificates' ? CERTS :
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
-                   (path==='documents' ? DOCS : []))))));
+                   (path==='documents' ? DOCS :
+                   /* Firmen und Archiv: leer, ausser ein Test legt vorher
+                      window.__firmen / window.__firmenArchiv hin. So merkt
+                      keiner der anderen Durchlaeufe etwas davon. */
+                   (path==='firmen' ? (window.__firmen||[]) :
+                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();

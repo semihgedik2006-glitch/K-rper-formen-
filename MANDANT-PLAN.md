@@ -761,6 +761,38 @@ ausgerollt werden kann:
 > wirkte: `studioListeSetzen({liste:[]})` weist leere Listen ab, damit
 > ein kaputtes Dokument nicht die Standorte wegräumt. „Keine Studios" war
 > damit nicht ausdrückbar. Dafür gibt es jetzt `studioListeLeeren()`.
+>
+> ### Nachtrag: das erste echte Löschen — „die ist komplett weg"
+>
+> So kam die Rückmeldung aus dem Betrieb, und sie war berechtigt.
+> **`renderFirmenArchiv` rief `fmtDate()` auf — eine Funktion, die es
+> nicht gibt** (sie heisst `fmtDateTime`). Die Liste stürzte beim
+> Aufbauen ab und blieb leer. Die Firma lag im Archiv; die App konnte
+> sie nur nicht zeichnen.
+>
+> Dieselbe kaputte Zeile stand in der **Firmenliste selbst**, bei
+> „zuletzt benutzt". Die wäre umgefallen, sobald `firmenZahlen` für
+> irgendeine Firma ein Datum geliefert hätte — und stand seit Stufe 2D
+> im Betrieb.
+>
+> **Warum das durchkam: der Admin-Bereich hatte keinen einzigen
+> Oberflächen-Test.** Ausgerechnet der Teil, der verkauft wird. Die
+> Regeln dafür waren geprüft, die Cloud Functions auch — nur die
+> Anzeige nie. Ein Tippfehler in einem Funktionsnamen fällt in
+> JavaScript erst zur Laufzeit auf, und zwar genau dann, wenn jemand
+> die Stelle benutzt.
+>
+> `tests/test-admin-firmen.js` schliesst das: der Betreiber sieht den
+> Bereich mit Studiozahl und Archiv, die zugeklappte Karte sagt per
+> Zahl, dass etwas drinliegt, ein leeres Archiv zeigt keine Zahl — und
+> ein Chef ohne `admin` sieht nichts davon. Er hat den Fehler beim
+> ersten Lauf gefunden.
+>
+> Dazu zwei Änderungen an der Auskunft, denn der Schrecken war echt,
+> auch ohne den Absturz: die Karte trägt jetzt eine Zahl neben der
+> Überschrift (man sieht zugeklappt, dass dort etwas liegt), und nach
+> dem Löschen klappt sie sich von selbst auf. Bei einer Löschfunktion
+> ist „sieht aus wie weg" derselbe Schrecken wie „ist weg".
 
 ### Stufe 3 — Admin-Oberfläche · ✅ **gebaut am 10. August 2026**
 
