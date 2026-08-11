@@ -2994,11 +2994,16 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <section class="view" id="view-archive">
         <div class="view-head shrink"><h2>Archiv</h2><p id="archSubtitle">Wochen-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <!-- Wöchentliche Excel-Sicherungen von Material & Putzplan -->
+          <!-- Tages-Sicherungen von Material, Putzplan und Aufgaben.
+               Bis zum 11.8.2026 lief das wöchentlich und im Browser des
+               Chefs. Ältere Einträge tragen deshalb ein „Woche"-Abzeichen
+               — sie bleiben liegen, sie sind ja echte Stände. -->
           <div class="card" id="weekArchiveCard">
-            <h3>📦 Wochen-Sicherungen</h3>
-            <p class="hint">Für jede Kalenderwoche wird der Stand von Material und Putzplan gesichert.
-              Klicke auf einen Knopf, um die Excel-Datei dieser Woche zu laden.</p>
+            <h3>📦 Sicherungen</h3>
+            <p class="hint">Jede Nacht um 23:45 wird der Stand des Tages gesichert:
+              Material, Putzplan mit Kürzeln und die Aufgaben mit dem Grund, warum
+              etwas liegen blieb. Klicke auf einen Eintrag, um ihn als Excel-Datei
+              zu laden. Einträge mit „Woche" stammen aus der Zeit davor.</p>
             <div id="weekArchives"></div>
             <button class="btn btn-ghost btn-sm" id="archSaveNow" style="margin-top:12px">Diese Woche jetzt sichern</button>
           </div>
@@ -4379,10 +4384,10 @@ function applyRoleVisibility(){
   if(sub) sub.textContent = chef
     ? 'Hier verwaltest du alles. Nur du siehst diesen Bereich.'
     : 'Hier verwaltest du deine Studios: '+((session&&session.studios)||[]).join(', ');
-  // Archiv: Wochen-Sicherungen sind Chef-Sache
+  // Archiv: die Sicherungen sind Chef-Sache
   var wk=$('weekArchiveCard'); if(wk) wk.style.display = chef ? '' : 'none';
   var ah=$('archSubtitle'); if(ah) ah.textContent = chef
-    ? 'Wochen-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.'
+    ? 'Tages-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.'
     : 'Erledigte Aufgaben deiner Studios.';
 }
 /* ── Ist die Adresse eines Wartenden bestätigt? ──
