@@ -147,6 +147,24 @@ service cloud.firestore {
         && (meineFirma() == f || (meineFirma() == '' && f == 'koerperformen'));
     }
 
+    // Hat diese Firma Premium? (Stufe B aus ABO-PLAN.md)
+    //
+    // KEIN Abo hinterlegt = alles offen. Das ist der heutige Zustand
+    // fuer den eigenen Betrieb und fuer jeden Kunden, bei dem noch
+    // nichts eingetragen ist. Ein Kunde, dem die Haelfte fehlt, weil
+    // jemand ein Feld nicht ausgefuellt hat, waere der schlechtere
+    // Fehler — und er faellt erst auf, wenn er anruft.
+    //
+    // Diese Funktion steht ABSICHTLICH nicht in inFirma(): sie wird nur
+    // dort gebraucht, wo eine Stufe wirklich etwas abgrenzt. In jedem
+    // allow zu stehen hiesse ein get() bei jedem Zugriff, fuer eine
+    // Grenze, die nur zwei Sammlungen betrifft.
+    function hatPremium(f) {
+      return !exists(/databases/$(database)/documents/firmen/$(f)/abo/aktuell)
+        || get(/databases/$(database)/documents/firmen/$(f)/abo/aktuell)
+             .data.get('stufe', 'premium') != 'basic';
+    }
+
     // ── Benutzerprofile ──
     match /users/{uid} {
       // Das EIGENE Profil darf man immer lesen - sonst kann die App einem
@@ -786,10 +804,24 @@ service cloud.firestore {
           allow delete: if inFirma(f) && (isChef());
         }
 
+        /* ── Nachweise: der eine Riegel, der wirklich einer ist ──
+           Stufe B aus ABO-PLAN.md. Certificates sind eine eigene
+           Sammlung, deshalb laesst sich die Stufe hier durchsetzen.
+
+           Bei der Auswertung geht das NICHT: die rechnet aus Aufgaben,
+           Putzplan und Material — Daten, die das Team ohnehin sieht.
+           Dort ist Premium eine Bequemlichkeit, kein Schloss. Das steht
+           so auch in ABO-PLAN.md, damit es niemand anders verkauft.
+
+           Lesen bleibt fuer alle Stufen offen: wer schon Nachweise
+           hinterlegt hat und auf Basic wechselt, soll sie noch sehen
+           und herausholen koennen. Weggenommen wird das ANLEGEN. Eine
+           Funktion, die vorhandene Daten unerreichbar macht, ist keine
+           Preisstufe, sondern ein Verlust. */
         match /certificates/{certId} {
           allow read: if inFirma(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
-          allow create, update, delete: if inFirma(f) && (isChef());
+          allow create, update, delete: if inFirma(f) && (isChef()) && hatPremium(f);
         }
 
         match /config/{doc} {

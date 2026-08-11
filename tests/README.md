@@ -118,6 +118,7 @@ was sie sehen soll.
 | `test-ausliefern.js` | jede gehostete Datei löst auch wirklich einen Deploy aus |
 | `test-admin-firmen.js` | Betreiber-Bereich: Studiozahl, Firmen-Archiv, Abo und Gratis-Abo |
 | `test-firma-stillgelegt.js` | gesperrte/gelöschte Firma: klare Meldung statt leerer App |
+| `test-abo-stufe.js` | Abo-Stufe: ohne Abo alles offen, Basic zeigt was fehlt |
 
 ### Alle auf einmal
 
@@ -208,7 +209,7 @@ npm test                          # alle drei
 
 | Datei | prüft | Umfang |
 |---|---|---|
-| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 125 |
+| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 132 |
 | `umzug.test.js` | `tools/umzug.js` an nachgebauten Daten — Zählung, Inhalte, Untersammlungen unter leeren Eltern | 12 |
 | `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede Firma, und keine fremde | 79 |
 
