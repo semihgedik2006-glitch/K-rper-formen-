@@ -4555,7 +4555,7 @@ function renderFirmen(){
       '<div class="fm-zahlen">'+
         '<span><b>'+(z.studios!==undefined?z.studios:'–')+'</b> Studios</span>'+
         '<span><b>'+(z.konten!==undefined?z.konten:'–')+'</b> Konten</span>'+
-        '<span>'+(z.letzte ? esc(fmtDate(z.letzte)) : 'nie benutzt')+'</span>'+
+        '<span>'+(z.letzte ? esc(fmtDateTime(z.letzte)) : 'nie benutzt')+'</span>'+
       '</div>'+
       (eigene
         ? '<span class="chef-me">geschützt</span>'
@@ -4584,7 +4584,14 @@ function renderFirmen(){
       withBusy(b, function(){
         return firebase.app().functions(KONFIG.region).httpsCallable('firmaLoeschen')(
           { kennung:id })
-          .then(function(){ toast('Gelöscht – liegt im Archiv ✓'); })
+          .then(function(){
+            toast('Gelöscht – liegt im Archiv ✓');
+            /* Genau JETZT will man sehen, wo sie hin ist. Die Karte ist
+               standardmässig zugeklappt, und zugeklappt sieht aus wie
+               leer — beim ersten Löschen im Betrieb war der Eindruck
+               prompt „die ist komplett weg". */
+            try{ foldOeffnen('firmaarchiv'); }catch(e){}
+          })
           .catch(function(e){ toast(errMsg(e), true); });
       });
     });
@@ -4617,6 +4624,14 @@ function renderFirmen(){
    Werkzeug — nicht mit einem Knopf, den man aus Versehen trifft. */
 function renderFirmenArchiv(){
   var box=$('firmenArchivListe'); if(!box || !istAdmin()) return;
+  /* Die Zahl neben der Überschrift, damit man auch ZUGEKLAPPT sieht,
+     dass dort etwas liegt.
+
+     Ohne sie sah eine gelöschte Firma aus wie eine verlorene: der Knopf
+     hatte funktioniert, das Archiv war gefüllt — aber die Karte ist
+     standardmässig zu, und zu sieht aus wie leer. Beim ersten Löschen
+     im Betrieb war genau das der Eindruck: „die ist komplett weg". */
+  foldZahl('firmaarchiv', _firmenArchiv.length ? String(_firmenArchiv.length) : '');
   if(!_firmenArchiv.length){
     box.innerHTML='<p class="lese-leer">Nichts gelöscht.</p>';
     return;
@@ -4626,7 +4641,7 @@ function renderFirmenArchiv(){
       '<div class="fm-haupt">'+
         '<b>'+esc(f.name||f.id)+'</b>'+
         '<span class="fm-sub">'+esc(f.id)+
-          (f.geloeschtAm ? ' · gelöscht '+esc(fmtDate(f.geloeschtAm)) : '')+'</span>'+
+          (f.geloeschtAm ? ' · gelöscht '+esc(fmtDateTime(f.geloeschtAm)) : '')+'</span>'+
       '</div>'+
       '<div class="fm-zahlen">'+
         '<span><b>'+(f.zahlStudios!==undefined?f.zahlStudios:'–')+'</b> Studios</span>'+
@@ -9791,7 +9806,7 @@ function showChefTab(id, keep){
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
   if(id==='team'){ renderFreigaben(); beitrittLaden(); }
   if(id==='standorte') renderStandorte();
-  if(id==='firmen'){ listenFirmen(); renderFirmen(); firmenZahlenLaden(); }
+  if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
