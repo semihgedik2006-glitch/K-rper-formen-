@@ -1,50 +1,47 @@
 # Was noch offen ist
 
-Stand 10. August 2026.
+Stand 11. August 2026.
 
-## Der Live-Umzug auf die Firmen-Pfade
+## ✅ Der Umzug auf die Firmen-Pfade ist durch
 
-Der ganze Umbau für mehrere Firmen ist **gebaut und geprüft, aber noch
-nicht scharfgeschaltet**: `KONFIG.mandant` steht auf `false`, im Betrieb
-läuft alles wie immer.
+Am 10. August gelaufen und am 11. abgeschlossen. Alle sieben Schritte,
+die hier standen, sind erledigt — die Belege stehen in
+`MANDANT-PLAN.md` und `2E-PRUEFEN.md`.
 
-Was dafür noch fehlt — in dieser Reihenfolge, jeder Schritt einzeln
-prüfbar:
-
-| | Schritt | wer |
+| | Schritt | |
 |---|---|---|
-| ~~1~~ | ~~Nachsehen, ob der Auslöser auf dem neuen Pfad anspringt~~ | ✅ **10.8., 22:19 Uhr** — siehe `2E-PRUEFEN.md` |
-| 2 | Nachtsicherung des Betriebs prüfen (Datum, Größe) | ich |
-| 3 | `tools/umzug.js --wirklich-live` — **Kopie**, die alten Daten bleiben liegen | ich, mit deiner Cloud Shell |
-| 4 | Regeln ausrollen **und im Protokoll „released" nachlesen** — genau das ist im Probelauf schiefgegangen | ich |
-| 5 | `admin: true` an dein Konto | ich |
-| 6 | `KONFIG.mandant` auf `true`, App ausrollen | ich |
-| 7 | 30 Tage ruhiger Betrieb, dann die flachen Alt-Daten aufräumen | später, von Hand |
+| 1 | Auslöser auf dem neuen Pfad springt an | ✅ 10.8., 22:19 Uhr |
+| 2 | Nachtsicherung geprüft | ✅ 10.8., 00:40, erfolgreich |
+| 3 | Umzug der Daten | ✅ 156 Dokumente, Zählprüfung sauber |
+| 4 | Regeln ausgerollt, „released" im Protokoll nachgelesen | ✅ |
+| 5 | `admin: true` am Betreiber-Konto | ✅ |
+| 6 | `KONFIG.mandant` auf `true`, App ausgerollt | ✅ 10.8., 23:15 Uhr |
+| 7 | flache Alt-Daten aufräumen | **frühestens Mitte September** |
 
-Der Rückweg bis Schritt 6 ist: die vorherige App-Fassung ausrollen. Sie
-liest die alten Pfade, die unberührt liegen.
+**Schritt 7 ist bewusst offen.** Die flachen Daten sind der Rückweg:
+`mandant` zurück auf `false` und ausrollen, dann liest die App wieder
+sie. Wer sie vorher wegräumt, nimmt sich diese Möglichkeit. Aufgeräumt
+wird von Hand, nicht von einem Zeitplan.
 
-> **Schritt 1 ist erledigt — und lief anders als geplant.** Ich hatte
-> gesagt: „im Probe-Projekt eine Nachricht schreiben und sehen, ob Push
-> ausgelöst wird." Das geht so nicht: in `konfig.js` steht für den
-> Probelauf ausdrücklich `vapidKey: ''`, dort kann sich **kein Gerät für
-> Push anmelden**. Es gibt gar keine Empfänger.
->
-> Und der Deploy ins Probe-Projekt scheiterte zweimal an einem
-> Google-Problem (fehlendes Recht auf die frisch angelegte
-> Artefakt-Ablage), das mit diesem Code nichts zu tun hat.
->
-> Geprüft wurde deshalb **direkt im Betrieb**, mit einer Testnachricht
-> unter `firmen/pruef-2e/…` — einer Firma, die es nicht gibt. Um 22:19
-> Uhr sprang `onNewMessageF` an, 604 ms, Status ok. Dass das die
-> Zeitpläne nicht durcheinanderbringt, wurde vorher im Emulator gemessen
-> und im Betrieb bestätigt (`Firmen vorher: 0`, `Firmen nachher: 0`).
-> Alles Weitere in `2E-PRUEFEN.md`.
->
-> **Was weiterhin offen bleibt:** ob Push auf einem echten Handy
-> ankommt. Das sieht man erst nach dem Umzug am eigenen Gerät — der
-> Versand selbst ist allerdings unveränderter Code, der seit Monaten
-> läuft.
+## Was danach noch aufgefallen ist — alles erledigt
+
+| Fund | |
+|---|---|
+| „Sperren" hat nie etwas gesperrt (Regeln und App sahen nie ins Firmendokument) | ✅ 11.8., mit Gegenprobe |
+| Eine neue Firma sah die 14 Standorte von Körperformen | ✅ 11.8. |
+| `konfig.js` löste keinen Deploy aus — zwei Monate lang | ✅ 11.8., plus `test-ausliefern.js` |
+| `renderFirmenArchiv` stürzte an `fmtDate()` ab | ✅ 11.8., plus erster Test für den Admin-Bereich |
+| Stillgelegte Firma: der Chef kam in eine leere App statt einer Meldung | ✅ 11.8. |
+
+## Offen, weil noch niemand hingeschaut hat
+
+- **Ob Push auf einem echten Handy ankommt.** Der Versand ist
+  unveränderter Code, der seit Monaten läuft, und der Auslöser ist im
+  Betrieb belegt. Aber zwischen „die Funktion lief" und „es hat
+  gebrummt" liegt ein Gerät, das ich nicht habe.
+- **Ein Abo-Modell.** Geplant, nicht gebaut — siehe `ABO-PLAN.md`. Der
+  erste Schritt dort ist ein Gespräch mit dem Steuerberater, nicht
+  Code.
 
 **Vier rechtliche Pflichtfelder in `konfig.js`** (Betreiber, Anschrift,
 Telefon, E-Mail) sind noch leer — solange steht in der App eine rote
