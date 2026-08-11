@@ -42,6 +42,11 @@
 const path = require('path');
 
 process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8791';
+/* firmaAnlegen legt ein echtes Anmeldekonto an. Ohne diese Zeile
+   versucht das Admin-SDK das gegen die echte Google-API — und
+   scheitert an fehlenden Zugangsdaten, was wie ein Fehler in der
+   Funktion aussieht und keiner ist. */
+process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOST || '127.0.0.1:9099';
 process.env.GCLOUD_PROJECT = 'demo-funktionen';
 process.env.GOOGLE_CLOUD_PROJECT = 'demo-funktionen';
 
@@ -302,6 +307,93 @@ const TAG = 86400000;
     pruefe('KI-Grenze: gesperrte Firma zählt nirgends',
       !(await db.doc('firmen/gesperrt/config/nutzung-' + heute).get()).exists &&
       !(await db.doc('config/nutzung-' + heute).get()).exists);
+  }
+
+  /* ── Firma anlegen: die Studioliste MUSS dabei entstehen ──
+     Ohne sie fällt die App auf KONFIG.studios zurück, und ein neuer
+     Kunde sähe beim ersten Anmelden die vierzehn Standorte von
+     Körperformen. Kein Datenleck im engeren Sinn — aber es beendet
+     jedes Verkaufsgespräch. */
+  {
+    await db.doc('users/betreiber').set({ name: 'Betreiber', role: 'chef',
+      firma: 'alpha', admin: true });
+
+    let kennung = null, fehler = null;
+    try {
+      const r = await fns.firmaAnlegen.run(
+        { name: 'Studio Müller GmbH', email: 'chef-' + Date.now() + '@mueller.example',
+          studios: 3 },
+        { auth: { uid: 'betreiber' } });
+      kennung = r && r.kennung;
+    } catch (e) { fehler = e; }
+
+    pruefe('Firma anlegen: geht durch', !!kennung,
+      fehler ? String(fehler.message) : 'keine Kennung zurückbekommen');
+
+    if (kennung) {
+      const st = await db.doc('firmen/' + kennung + '/config/studios').get();
+      const liste = st.exists ? (st.data().liste || []) : [];
+      pruefe('Firma anlegen: die Studioliste liegt gleich mit da', st.exists);
+      pruefe('Firma anlegen: genau so viele Studios wie bestellt', liste.length === 3,
+        liste.length + ' statt 3');
+      pruefe('Firma anlegen: neutrale Namen, keine fremden Standorte',
+        liste.every(s => /^Studio \d+$/.test(s.name || '')),
+        JSON.stringify(liste.map(s => s.name)));
+      pruefe('Firma anlegen: Kennungen ab studio-0 durchgezählt',
+        liste.map(s => s.id).join(',') === 'studio-0,studio-1,studio-2',
+        liste.map(s => s.id).join(','));
+
+      /* ── Löschen: der Papierkorb, nicht der Ofen ── */
+      await fns.firmaLoeschen.run({ kennung: kennung }, { auth: { uid: 'betreiber' } });
+      pruefe('Löschen: die Firma ist aus der Liste verschwunden',
+        !(await db.doc('firmen/' + kennung).get()).exists);
+      pruefe('Löschen: sie steht im Archiv',
+        (await db.doc('firmenArchiv/' + kennung).get()).exists);
+      /* Der eigentliche Punkt: die DATEN sind noch da. Sonst wäre es
+         kein Papierkorb, sondern eine Löschtaste mit Zwischenschritt. */
+      pruefe('Löschen: die Daten liegen unangetastet darunter',
+        (await db.doc('firmen/' + kennung + '/config/studios').get()).exists);
+      /* Und die Zeitpläne lassen sie in Ruhe — genau die Eigenschaft,
+         die am 10.8. im Emulator gemessen wurde: .get() sieht
+         Dokumente ohne Elterneintrag nicht. */
+      const nachLoeschen = await db.collection('firmen').get();
+      pruefe('Löschen: die Zeitpläne übergehen sie',
+        !nachLoeschen.docs.some(d => d.id === kennung),
+        nachLoeschen.docs.map(d => d.id).join(','));
+
+      /* ── Zurückholen ── */
+      await fns.firmaZurueckholen.run({ kennung: kennung }, { auth: { uid: 'betreiber' } });
+      const zurueck = await db.doc('firmen/' + kennung).get();
+      pruefe('Zurückholen: die Firma ist wieder da', zurueck.exists);
+      pruefe('Zurückholen: und läuft wieder',
+        zurueck.exists && (zurueck.data() || {}).aktiv === true);
+      pruefe('Zurückholen: das Archiv ist leer',
+        !(await db.doc('firmenArchiv/' + kennung).get()).exists);
+      pruefe('Zurückholen: die Studioliste steht noch',
+        (await db.doc('firmen/' + kennung + '/config/studios').get()).exists);
+
+      // aufräumen, damit die Gegenprobe unten sauber zählt
+      await db.doc('firmen/' + kennung).delete();
+    }
+
+    /* ── Die eigene Firma bleibt tabu ──
+       Sonst löscht sich der Betreiber selbst heraus, und es gibt
+       niemanden mehr, der ihn zurückholt. */
+    let selbst = null;
+    try {
+      await fns.firmaLoeschen.run({ kennung: 'alpha' }, { auth: { uid: 'betreiber' } });
+    } catch (e) { selbst = e; }
+    pruefe('Löschen: die EIGENE Firma geht nicht', !!selbst,
+      'sie wurde gelöscht — der Betreiber hätte sich selbst ausgesperrt');
+    pruefe('Löschen: alpha steht noch', (await db.doc('firmen/alpha').get()).exists);
+
+    /* ── Und niemand ausser dem Betreiber ── */
+    await db.doc('users/nurchef').set({ name: 'Nur Chef', role: 'chef', firma: 'beta' });
+    let fremd = null;
+    try {
+      await fns.firmaLoeschen.run({ kennung: 'alpha' }, { auth: { uid: 'nurchef' } });
+    } catch (e) { fremd = e; }
+    pruefe('Löschen: ein Chef ohne admin darf nicht', !!fremd);
   }
 
   /* ══ 4. Der Test, der rot werden muss ══

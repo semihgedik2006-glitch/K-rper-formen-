@@ -206,9 +206,9 @@ npm test                          # alle drei
 
 | Datei | prüft | Umfang |
 |---|---|---|
-| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 105 |
+| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 115 |
 | `umzug.test.js` | `tools/umzug.js` an nachgebauten Daten — Zählung, Inhalte, Untersammlungen unter leeren Eltern | 12 |
-| `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede Firma, und keine fremde | 53 |
+| `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede Firma, und keine fremde | 69 |
 
 > **Zu `funktionen.test.js`:** er lädt `functions/index.js` und löst die
 > Funktionen über `.run()` aus, so wie Firebase es täte. Geprüft wird der

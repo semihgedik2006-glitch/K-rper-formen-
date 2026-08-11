@@ -649,6 +649,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .fm-zahlen{display:flex;gap:14px;font-size:.78rem;color:var(--text-3);
   font-variant-numeric:tabular-nums;white-space:nowrap}
 .fm-zahlen b{color:var(--text);font-size:.92rem}
+/* Zwei Knöpfe nebeneinander. 44px Höhe, weil ein Fingerziel darunter
+   auf einem Handy nicht zuverlässig zu treffen ist — und „löschen"
+   daneben zu treffen wäre besonders ärgerlich. */
+.fm-knoepfe{display:flex;gap:14px;align-items:center}
+.fm-knoepfe .mini-x{min-height:44px;display:inline-flex;align-items:center}
+.mini-x.weg{color:var(--danger-tx)}
 .fn-ok{padding:14px 16px;border-radius:var(--r-sm);
   background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.32)}
 .fn-ok p{font-size:.86rem;color:var(--text-2);margin:6px 0 12px}
@@ -3196,8 +3202,25 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <div class="field"><label for="fnMail">E-Mail der Geschäftsführung</label>
                 <input class="inp" id="fnMail" type="email" maxlength="120"
                        placeholder="chef@studio-mueller.de" /></div>
+              <div class="field"><label for="fnStudios">Wie viele Studios?</label>
+                <input class="inp" id="fnStudios" type="number" min="1" max="50"
+                       inputmode="numeric" value="1" />
+                <p class="hint" style="margin:6px 0 0">Sie heißen erstmal
+                  „Studio 1", „Studio 2" … — die richtigen Namen trägt die
+                  Geschäftsführung selbst ein, unter Verwaltung → Standorte.
+                  Anhängen geht dort jederzeit, nur die Reihenfolge bleibt
+                  stehen.</p></div>
               <button class="btn btn-primary" id="fnBtn">Firma anlegen</button>
               <div id="fnErgebnis" style="display:none;margin-top:16px"></div>
+            </div>
+            <div class="card" data-fold="firmaarchiv">
+              <h3>🗄 Gelöschte Firmen</h3>
+              <p class="hint">Eine gelöschte Firma kommt hierher, ihre Daten
+                bleiben liegen. Niemand aus dem Betrieb kommt mehr hinein, und
+                die Zeitpläne lassen sie in Ruhe. Zurückholen geht mit einem
+                Klick. Endgültig entfernt wird nur von Hand — dafür gibt es
+                bewusst keinen Knopf.</p>
+              <div id="firmenArchivListe"></div>
             </div>
           </div>
           <div class="chef-pane" data-cpane="nachweise" style="display:none">
@@ -3849,6 +3872,24 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
      umbenennen → nur der Name ändert sich, die Kennung bleibt
      schließen  → aktiv:false, die Daten bleiben lesbar
      löschen    → gibt es nicht.                                         */
+/* Die Rückfall-Liste aus konfig.js gilt NUR für die eigene Firma.
+   Vorher galt sie für jede: eine neu angelegte Firma hat noch kein
+   config/studios, und die App zeigte dem neuen Kunden beim ersten
+   Anmelden die vierzehn Standorte von Körperformen. Kein Datenleck im
+   engeren Sinn — die Namen stehen auch auf der Webseite — aber es
+   beendet jedes Verkaufsgespräch, wenn der Kunde in SEINER App die
+   Standortliste eines fremden Betriebs sieht.
+
+   Zwei Schranken davor, weil eine zu wenig ist: firmaAnlegen schreibt
+   die Liste gleich mit (neutrale Namen), und studiosLaden() räumt sie
+   weg, sobald feststeht, dass es eine fremde Firma ist.
+
+   Diese Zeilen laufen beim Laden der Datei, da steht _firma noch nicht
+   fest — deshalb kann die Entscheidung hier nicht fallen. Sie fällt in
+   studiosLaden(). */
+function eigeneFirma(){
+  return !KONFIG.mandant || !_firma || _firma === KONFIG.firma;
+}
 var _studioListe = (KONFIG.studios||[]).map(function(n,i){
   return { id:'studio-'+i, name:n, aktiv:true };
 });
@@ -4465,6 +4506,7 @@ function mailHinweisBinden(){
    Ein Knopf „als Chef ansehen" fehlt bewusst. Er wäre bequem und würde
    den Satz „ich komme an Ihre Daten nicht heran" zur Lüge machen. */
 var _firmen = [], _firmenUnsub = null, _firmenZahlen = {};
+var _firmenArchiv = [], _archivUnsub = null;
 
 function listenFirmen(){
   if(_firmenUnsub || !istAdmin()) return;
@@ -4474,6 +4516,11 @@ function listenFirmen(){
     renderFirmen();
     firmenZahlenLaden();
   }, function(e){ console.warn('Firmen:', e.message); });
+  _archivUnsub = db.collection('firmenArchiv').onSnapshot(function(snap){
+    _firmenArchiv = snap.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()); })
+      .sort(function(a,b){ return (b.geloeschtAm||0) - (a.geloeschtAm||0); });
+    renderFirmenArchiv();
+  }, function(e){ console.warn('Firmen-Archiv:', e.message); });
 }
 
 function firmenZahlenLaden(){
@@ -4511,11 +4558,37 @@ function renderFirmen(){
         '<span>'+(z.letzte ? esc(fmtDate(z.letzte)) : 'nie benutzt')+'</span>'+
       '</div>'+
       (eigene
-        ? '<span class="chef-me">nicht sperrbar</span>'
-        : '<button class="mini-x" data-fsperr="'+esc(f.id)+'" data-fakt="'+(gesperrt?'1':'0')+'">'+
-          (gesperrt?'freigeben':'sperren')+'</button>')+
+        ? '<span class="chef-me">geschützt</span>'
+        : '<div class="fm-knoepfe">'+
+          '<button class="mini-x" data-fsperr="'+esc(f.id)+'" data-fakt="'+(gesperrt?'1':'0')+'">'+
+            (gesperrt?'freigeben':'sperren')+'</button>'+
+          '<button class="mini-x weg" data-fweg="'+esc(f.id)+'">löschen</button>'+
+        '</div>')+
     '</div>';
   }).join('');
+
+  box.querySelectorAll('[data-fweg]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-fweg');
+      var f=_firmen.filter(function(x){ return x.id===id; })[0];
+      var z=_firmenZahlen[id]||{};
+      /* Die Zahlen stehen IM Fenster, nicht nur in der Liste dahinter.
+         Wer löscht, soll sehen, wie viel daran hängt — und dass es
+         nicht weg ist. */
+      if(!confirm('„'+((f&&f.name)||id)+'" löschen?\n\n'+
+        (z.studios!==undefined ? z.studios+' Studios, ' : '')+
+        (z.konten!==undefined ? z.konten+' Konten\n\n' : '\n')+
+        'Niemand aus diesem Betrieb kommt danach mehr hinein.\n\n'+
+        'Die Daten bleiben liegen und stehen unter „Gelöschte Firmen".\n'+
+        'Von dort holst du sie mit einem Klick zurück.')) return;
+      withBusy(b, function(){
+        return firebase.app().functions(KONFIG.region).httpsCallable('firmaLoeschen')(
+          { kennung:id })
+          .then(function(){ toast('Gelöscht – liegt im Archiv ✓'); })
+          .catch(function(e){ toast(errMsg(e), true); });
+      });
+    });
+  });
 
   box.querySelectorAll('[data-fsperr]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -4536,15 +4609,57 @@ function renderFirmen(){
   });
 }
 
+/* ── Gelöschte Firmen ──
+   Der Papierkorb der Betreiber-Ebene. Bewusst ohne „endgültig löschen":
+   ein Kunde, der kündigt, ruft erfahrungsgemäss zwei Wochen später an
+   und braucht noch eine Auswertung. Wer dann „ist weg" sagen muss, hat
+   nichts gewonnen. Endgültig entfernt wird von Hand, mit einem
+   Werkzeug — nicht mit einem Knopf, den man aus Versehen trifft. */
+function renderFirmenArchiv(){
+  var box=$('firmenArchivListe'); if(!box || !istAdmin()) return;
+  if(!_firmenArchiv.length){
+    box.innerHTML='<p class="lese-leer">Nichts gelöscht.</p>';
+    return;
+  }
+  box.innerHTML=_firmenArchiv.map(function(f){
+    return '<div class="fm-zeile zu">'+
+      '<div class="fm-haupt">'+
+        '<b>'+esc(f.name||f.id)+'</b>'+
+        '<span class="fm-sub">'+esc(f.id)+
+          (f.geloeschtAm ? ' · gelöscht '+esc(fmtDate(f.geloeschtAm)) : '')+'</span>'+
+      '</div>'+
+      '<div class="fm-zahlen">'+
+        '<span><b>'+(f.zahlStudios!==undefined?f.zahlStudios:'–')+'</b> Studios</span>'+
+        '<span><b>'+(f.zahlKontenBeimLoeschen!==undefined?f.zahlKontenBeimLoeschen:'–')+'</b> Konten</span>'+
+      '</div>'+
+      '<button class="mini-x" data-fzurueck="'+esc(f.id)+'">zurückholen</button>'+
+    '</div>';
+  }).join('');
+
+  box.querySelectorAll('[data-fzurueck]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-fzurueck');
+      withBusy(b, function(){
+        return firebase.app().functions(KONFIG.region).httpsCallable('firmaZurueckholen')(
+          { kennung:id })
+          .then(function(){ toast('Zurückgeholt ✓'); })
+          .catch(function(e){ toast(errMsg(e), true); });
+      });
+    });
+  });
+}
+
 function firmaAnlegen(btn){
   var name=($('fnName')||{}).value||'', mail=($('fnMail')||{}).value||'';
+  var zahl=parseInt(($('fnStudios')||{}).value,10);
   name=String(name).trim(); mail=String(mail).trim();
   if(name.length<2){ toast('Bitte einen Firmennamen eingeben.',true); return; }
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){ toast('Bitte eine gültige E-Mail eingeben.',true); return; }
+  if(!(zahl>=1 && zahl<=50)){ toast('Studios: eine Zahl von 1 bis 50.',true); return; }
 
   withBusy(btn, function(){
     return firebase.app().functions(KONFIG.region).httpsCallable('firmaAnlegen')(
-      { name:name, email:mail })
+      { name:name, email:mail, studios:zahl })
       .then(function(r){
         var d=(r&&r.data)||{};
         var box=$('fnErgebnis'); if(!box) return;
@@ -4560,10 +4675,12 @@ function firmaAnlegen(btn){
             esc(location.origin)+'/?firma='+esc(d.kennung)+'</code></div>'+
           '<div class="fn-feld"><span>E-Mail</span><code>'+esc(mail)+'</code></div>'+
           '<div class="fn-feld"><span>Passwort</span><code>'+esc(d.passwort||'')+'</code></div>'+
-          '<p class="hint" style="margin:10px 0 0">Sag der Geschäftsführung, '+
-            'dass sie es nach der ersten Anmeldung ändert.</p>'+
+          '<p class="hint" style="margin:10px 0 0">'+
+            (d.studios||zahl)+' Studios sind angelegt („Studio 1" … ) — '+
+            'umbenennen kann die Geschäftsführung selbst. Und sag ihr, '+
+            'dass sie das Passwort nach der ersten Anmeldung ändert.</p>'+
         '</div>';
-        $('fnName').value=''; $('fnMail').value='';
+        $('fnName').value=''; $('fnMail').value=''; $('fnStudios').value='1';
         toast('Firma angelegt ✓');
       })
       .catch(function(e){ toast(errMsg(e), true); });
@@ -4663,6 +4780,22 @@ function studioAnlegen(btn){
    Ein Dokument, ein Beobachter – das ist die Sammlung, die am seltensten
    wechselt und am meisten kostet, wenn sie veraltet ist. */
 var _studiosUnsub = null;
+/* Ausdrücklich LEEREN. Nicht dasselbe wie studioListeSetzen mit einer
+   leeren Liste: die weist das unten ab, damit ein kaputtes Dokument
+   nicht die Standorte wegräumt. „Es gibt hier keine Studios" ist aber
+   eine gültige Aussage — bei einer fremden Firma ohne eigene Liste ist
+   sie sogar die einzig richtige, denn die Rückfall-Liste aus konfig.js
+   gehört Körperformen.
+
+   Mein erster Versuch ging durch studioListeSetzen({liste:[]}) und
+   bewirkte deshalb GAR NICHTS. Aufgefallen ist es nur, weil der Test
+   danach am DOM gemessen hat statt an innerText. */
+function studioListeLeeren(){
+  _studioListe = [];
+  _studioNaechste = 0;
+  studiosNeuAufbauen();
+  try{ buildRegStudios(); }catch(e){}
+}
 function studioListeSetzen(d){
   if(!d || !Array.isArray(d.liste) || !d.liste.length) return false;
   _studioListe = d.liste.filter(function(x){ return x && x.id && x.name; });
@@ -4693,10 +4826,20 @@ function listenStudios(){
    konfig.js – und wer eins umbenannt hat, sähe kurz den alten Namen. */
 function studiosLaden(){
   return S('config').doc('studios').get()
-    .then(function(doc){ if(doc.exists) studioListeSetzen(doc.data()); })
+    .then(function(doc){
+      if(doc.exists){ studioListeSetzen(doc.data()); return; }
+      /* Kein Dokument. Für die eigene Firma gilt dann die Liste aus
+         konfig.js — die stimmt ja. Für eine FREMDE Firma wäre das die
+         Standortliste von Körperformen, und die hat dort nichts zu
+         suchen. Lieber leer und ein Hinweis „noch keine Standorte" als
+         vierzehn falsche Namen. */
+      if(!eigeneFirma()) studioListeLeeren();
+    })
     .catch(function(e){
-      // Kein Grund zum Abbruch: dann gilt eben die Liste aus konfig.js.
+      // Kein Grund zum Abbruch: dann gilt eben die Liste aus konfig.js —
+      // ausser bei einer fremden Firma, siehe oben.
       console.warn('Studios konnten nicht geladen werden:', e.message);
+      if(!eigeneFirma()) studioListeLeeren();
     });
 }
 
