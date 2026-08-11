@@ -1763,6 +1763,114 @@ ist, zu prüfen, ob der Test überhaupt etwas prüft.**
 
 ---
 
+## Sitzung 25 · Das Abo — und drei Punkte aus dem Betrieb 🟢
+
+Zwei Stränge in einer Runde. Der erste beantwortet die Frage, wie aus
+der App ein Geschäft wird. Der zweite kommt aus dem Alltag im Studio
+und ist der kleinere, aber der dringendere.
+
+### Das Abo-Modell
+
+Entschieden ist: **je Studio**, nicht je Mitarbeiter. Ein Studio mit
+vier Teilzeitkräften zahlt sonst mehr als eines mit zwei Vollzeitkräften,
+obwohl es dieselbe App benutzt — und der Chef fängt an, Zugänge zu
+sparen. Genau das Verhalten, das die App unbrauchbar macht.
+
+Gebaut ist bisher **Stufe A und B**:
+
+| | |
+|---|---|
+| **Stufe A** | Abo je Firma von Hand setzen: Stufe, Zustand, Betrag, Laufzeit |
+| **Gratis-Abo** | eigener Zustand, kein Betrag daneben — für deinen Chef |
+| **Stufe B** | Basic grenzt zwei Bereiche ab: Nachweise und Monatsbericht |
+
+Nicht gebaut, bewusst: Stripe, automatische Mahnungen, Selbstbedienung.
+Das steht als Stufe C bis E in `ABO-PLAN.md`. Es soll noch nicht live
+gehen, und deshalb geht es das auch nicht.
+
+Der Abo-Zustand liegt unter `firmen/<kennung>/abo/aktuell` und **nicht**
+am Firmeneintrag selbst. Der ist öffentlich lesbar, damit der Name auf
+dem Anmeldebildschirm stehen kann — Preise gehören dort nicht hin.
+
+### Der Fehler, den du gefunden hast
+
+„Wenn ich da am Abo was ändere, wird ein Fenster geöffnet, was auch
+nicht verschwindet." **Das Fenster stand dauerhaft mitten in der Seite.**
+
+`#aboModal` fehlte in allen sechs CSS-Regeln der Fenster und hatte damit
+nie ein `display: none`. Die Klasse `show` sass völlig richtig — sie
+hatte nur keine Wirkung.
+
+Und mein Test war grün, weil er `classList.contains('show')` geprüft
+hat. **Ich habe den Schalter gemessen statt das Licht.** Er misst jetzt
+die Sichtbarkeit, und zwar in drei Zuständen — der wichtigste ist der
+erste: *vor* dem Klick muss es zu sein. Genau das war der Fehler.
+
+### Drei Punkte aus dem Studio-Alltag
+
+Alle drei haben denselben Ursprung: am Anfang bekommt nicht jede Person
+einen Zugang, sondern **jedes Studio einen**. Damit steht unter jedem
+Haken derselbe Name.
+
+**1. Kürzel im Putzplan.** Ein Feld „Wer hakt ab?" über der Liste —
+einmal oben, nicht bei jedem Haken einzeln. Zwölf Punkte einzeln tippen
+wäre der sichere Weg, dass es niemand ausfüllt. Das Kürzel bleibt auf
+dem **Gerät**, wie ein Namensschild zum Schichtbeginn: das Konto gehört
+dem Studio, das Kürzel der Person, die gerade da ist. Es **ergänzt** den
+Kontonamen, ersetzt ihn nicht.
+
+**2. Grund an offenen Aufgaben.** Optional, mit Wer und Wann. Er steht
+**in der Liste**, nicht nur im Blatt dahinter — der Chef öffnet nicht
+jede offene Aufgabe einzeln, er scrollt. An einer erledigten Aufgabe
+gibt es kein Grundfeld; ein stehengebliebener Grund führt in die Irre.
+
+**3. Tägliche statt wöchentliche Sicherung.** `dailyArchive`, 23:45,
+je Firma, mit Material, Putzplan (inkl. Kürzel) und neu den Aufgaben
+samt Grund. Zwei Entscheidungen dahinter:
+
+- **Abends, nicht morgens.** Eine Aufnahme am Morgen hält korrekt fest,
+  dass noch nichts getan wurde.
+- **Auf dem Server, nicht im Browser.** Der wöchentliche Lauf kostete
+  **462 Lesezugriffe auf dem Gerät des Chefs**. Jetzt ist es eine
+  Existenzprüfung; geschrieben wird im Gerät nur noch, wenn der Server
+  nichts abgelegt hat.
+
+### Meine eigenen Fehler in dieser Runde
+
+- Der Grund-Block landete zuerst im **Dokument**-Blatt statt im
+  Aufgaben-Blatt. Der Anker `blatt.classList.add('show')` kommt mehrfach
+  vor, und ich hatte das erste Vorkommen erwischt.
+- Meine Tabelle „Premium gegen Basic" war **zweimal falsch** — aus dem
+  Kopf geschrieben statt aus der App gelesen. Das Geräte- und
+  Schadensbuch ist eine Team-Ansicht, und die KI-Funktionen haben gar
+  keine Oberfläche.
+- Der neue Test landete auf Brühl, wo die Testdaten keinen Putzplan
+  haben, und meldete „kein Putzpunkt da" — das sah nach einem Fehler in
+  der App aus und war einer im Testaufbau.
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| UI-Durchläufe | 47 |
+| Regeltests | 132 |
+| Umzugs-Prüfungen | 12 |
+| Cloud-Function-Prüfungen | 79 |
+
+Ausgerollt am 11.8. um 16:14 Uhr. `dailyArchive` steht im Deploy-
+Protokoll als *Successful create* — die geplante Aufgabe existiert also
+wirklich, sie wurde nicht nur hochgeladen.
+
+### Eine Sache, die noch zu klären ist
+
+Die Rückmeldung sprach von „die **sheets** liste". Geändert wurde das
+**App-interne Tagesarchiv** — das erzeugt die Excel-Dateien und die
+Sicherungsliste. Die Google-Tabelle selbst (`MATERIAL-SHEETS.gs`) ist
+unverändert. Falls dort ein tägliches Blatt entstehen soll, ist das eine
+eigene Änderung auf der Apps-Script-Seite.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
