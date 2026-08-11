@@ -5,16 +5,17 @@ zum Entscheiden da, nicht zum Ausrollen.
 
 ---
 
-## Das Wichtigste zuerst: die drei Entscheidungen
+## ✅ Entschieden am 11. August 2026
 
-Alles andere hängt daran. Sie sind deine, nicht meine — aber ich sage
-dir zu jeder, was ich für richtig halte und warum.
-
-| | Frage | Mein Rat |
+| | Frage | Entscheidung |
 |---|---|---|
-| **1** | Wofür wird bezahlt: je Studio oder je Person? | **Je Studio** — Begründung unten, sie ist der wichtigste Abschnitt hier |
-| **2** | Was unterscheidet Basic von Premium? | Nach Funktionen trennen, die **dich** Geld kosten oder Fachwissen brauchen |
-| **3** | Was passiert, wenn nicht gezahlt wird? | Stufenweise, nie sofort aussperren — Begründung unten |
+| **1** | Wofür wird bezahlt? | **Je Studio.** Mitarbeiter unbegrenzt |
+| **2** | Basic gegen Premium? | nach Funktionen getrennt, Vorschlag in Abschnitt 2 — noch offen im Detail |
+| **3** | Wenn nicht gezahlt wird? | **Mahnungen → nichts mehr bearbeiten → gar kein Zugriff.** Ausgeführt in Abschnitt 3 |
+| **4** | Steuern | **beide Fälle vorbereiten** (Kleinunternehmer und Regelbesteuerung) — Abschnitt 5 |
+
+Die Begründungen zu 1 und 3 stehen unverändert unten. Sie sind jetzt
+Beleg, nicht mehr Vorschlag.
 
 ---
 
@@ -48,11 +49,9 @@ genau das an.
 **Mitarbeiter unbegrenzt.** Das ist obendrein ein Verkaufsargument, das
 sich in einem Satz sagen lässt: *„Alle Ihre Leute, ohne Aufpreis."*
 
-### Wenn du trotzdem je Person willst
-
-Dann bitte mit **Staffel statt Stückpreis**: bis 10 Personen im
-Grundpreis, 11–25 ein Aufschlag, ab 26 der nächste. Das nimmt der
-Rechnung das Schwanken. Sag Bescheid, dann rechne ich das durch.
+> **Entschieden: je Studio.** Der Rechner kann weiterhin beide Modelle
+> nebeneinander zeigen — nicht, weil die Entscheidung wackelt, sondern
+> weil sie sich damit in einem Verkaufsgespräch begründen lässt.
 
 ---
 
@@ -109,21 +108,55 @@ Kreditkarte des Chefs ist vor drei Tagen abgelaufen. Wenn die App dann
 zu ist, steht ein Team ohne Putzplan, ohne Schichten, ohne Chat da. Der
 Kunde kündigt — **wegen der Sperre, nicht wegen des Preises.**
 
-Mein Vorschlag, vier Stufen:
+**✅ Entschieden:** Mahnungen → nichts mehr bearbeiten → gar kein
+Zugriff. Ausbuchstabiert sieht das so aus:
 
-| Wann | Was |
+| Tag | Zustand | Was der **Chef** sieht | Was das **Team** merkt |
+|---|---|---|---|
+| 0 | `faellig` | Leiste im Chef-Bereich, dazu eine E-Mail | **nichts** |
+| 7 | `mahnung1` | deutlichere Leiste, zweite E-Mail | **nichts** |
+| 14 | `mahnung2` | Leiste rot, dritte E-Mail mit Datum der Sperre | **nichts** |
+| 21 | `nurlesen` | Hinweis oben in der App | alles sichtbar, **nichts mehr anlegen oder ändern** |
+| 35 | `zu` | kein Zugang mehr, Meldung „stillgelegt" | dasselbe |
+| 65 | *Archiv* | Firma wandert ins Archiv des Betreibers | — |
+
+**Warum das Team drei Wochen lang gar nichts merkt.** Nicht aus
+Nettigkeit: eine Aushilfe kann die Rechnung nicht bezahlen. Wer sie
+aussperrt, bestraft die Falsche und verliert den Kunden **wegen der
+Sperre, nicht wegen des Preises**. Drei Wochen sind genug, dass ein
+Chef eine abgelaufene Karte bemerkt, und kurz genug, dass es nicht
+folgenlos bleibt.
+
+**Warum „nur lesen" vor „gar nichts".** Der Putzplan von letzter Woche,
+die Nachweise, die Dienstpläne — das sind Betriebsunterlagen. Sie von
+einem Tag auf den anderen unerreichbar zu machen, ist etwas anderes als
+eine Software abzuschalten. Zwei Wochen Nur-Lesen sind die Frist, in der
+sich jemand die Sachen herausholen kann, die er braucht.
+
+**Warum 30 Tage zwischen „zu" und Archiv.** Weil das Archiv der Punkt
+ist, ab dem nichts mehr in der App sichtbar ist — auch nicht für den
+Betreiber. Wer nach vier Wochen doch noch zahlt, soll einen Klick
+entfernt sein.
+
+### Was davon schon gebaut ist
+
+| | |
 |---|---|
-| Zahlung schlägt fehl | Freundliche Leiste im Chef-Bereich. **Nur der Chef sieht sie.** Das Team merkt nichts |
-| nach 7 Tagen | Leiste wird deutlicher, dazu eine E-Mail |
-| nach 14 Tagen | **Nur-Lesen**: alles sichtbar, nichts Neues anlegen. Das Team kann arbeiten, aber es tut weh |
-| nach 30 Tagen | Firma wandert ins **Archiv** — das gibt es seit gestern, samt Zurückholen |
+| Ins Archiv legen, ohne Daten anzufassen | `firmaLoeschen` ✅ |
+| Mit einem Klick zurückholen | `firmaZurueckholen` ✅ |
+| Kein Zugang mehr, mit klarer Meldung | `aktiv:false` + `firmaLaeuft(f)` in den Regeln ✅ |
+| Nur-Lesen | **fehlt** — neuer Zustand in den Regeln |
+| Die Uhr, die die Stufen weiterstellt | **fehlt** — ein Zeitplan, ähnlich `purgeTrash` |
 
-**Nie eine Sperre mitten am Tag, nie ohne Vorwarnung, und niemals so,
-dass ein Mitarbeiter den Fehler des Chefs ausbaden muss.**
+**Der Zustand `nurlesen` ist die einzige neue Grenze**, und er gehört in
+`firestore.rules`, nicht in die App. Sonst schreibt jeder weiter, der
+die Adresse kennt. Genau dieser Fehler ist beim Sperren zwei Tage lang
+unbemerkt geblieben — die Lehre daraus steht in Abschnitt 6.
 
-Der Weg dorthin ist schon gebaut: `firmaLoeschen` legt die Firma ins
-Archiv, ohne Daten anzufassen, `firmaZurueckholen` holt sie mit einem
-Klick zurück. Das Abo müsste diese Knöpfe nur automatisch drücken.
+> **Eine Warnung zu den Fristen.** Ob eine Sperre nach 35 Tagen zulässig
+> ist, hängt am Vertrag (AGB, Laufzeit, Zahlungsverzug) — nicht an
+> meinem Vorschlag. Die Zahlen sind ein Entwurf für das Gespräch mit dem
+> Anwalt, kein Ergebnis davon.
 
 ---
 
@@ -172,27 +205,96 @@ Kostenfaktor — deine Zeit für Support ist es.
 
 ---
 
-## 5. Was du dabei nicht vergessen darfst — Steuern und Recht
+## 5. Steuern — beide Fälle vorbereiten
 
-**Hier höre ich auf, und zwar nicht aus Bequemlichkeit.** Ich bin weder
-Steuerberater noch Anwalt, und beides ist an dieser Stelle kein Beiwerk,
-sondern die Hauptsache.
+**Vorweg, und das ist keine Floskel:** ich bin kein Steuerberater. Was
+hier steht, ist eine **Orientierung, damit du weißt, wonach du fragst**
+— keine Auskunft, auf die du dich verlassen darfst. Beträge und Grenzen
+ändern sich, und mein Wissensstand ist nicht der Gesetzestext von heute.
 
-Was ich dir nennen kann, damit du weißt, wonach du fragst:
+### Die beiden Fälle
 
-- **Umsatzsteuer.** Sobald du regelmäßig verkaufst, wird es relevant.
-  Es gibt die Kleinunternehmerregelung, es gibt Grenzen, und es gibt
-  Sonderregeln für Kunden im EU-Ausland (Reverse Charge). Das gehört zu
-  deinem Steuerberater, **bevor** die erste Rechnung rausgeht.
-- **Pflichtangaben auf der Rechnung.** Es gibt eine feste Liste, was
-  draufstehen muss. Stripe kann Rechnungen erzeugen — ob sie deinen
-  Anforderungen genügen, muss jemand prüfen, der das darf.
-- **AGB und Preisangaben.** Was ist die Laufzeit, wie wird gekündigt,
-  was passiert mit den Daten danach. Bei Geschäftskunden gelten andere
-  Regeln als bei Verbrauchern.
-- **Auftragsverarbeitung.** Steht schon in `VERKAUF.md` und gilt hier
-  genauso: sobald fremde Betriebe Personendaten in deinem System haben,
-  braucht es Verträge.
+| | **Kleinunternehmer** (§ 19 UStG) | **Regelbesteuerung** |
+|---|---|---|
+| Umsatzsteuer auf der Rechnung | **keine** | ja, mit Satz und Betrag |
+| Hinweis auf der Rechnung | Pflicht: Grund für die fehlende USt | — |
+| Vorsteuer (z. B. Firebase, Werkzeuge) | **nicht abziehbar** | abziehbar |
+| Voranmeldungen ans Finanzamt | keine | regelmäßig |
+| Aufwand | klein | spürbar, ohne Software kaum machbar |
+
+**Der Punkt, der bei B2B oft übersehen wird:** deine Kunden sind
+Studios, also Unternehmen. Für die ist die Umsatzsteuer **durchlaufend**
+— sie holen sie sich zurück. Ein Preis „59 € netto" tut einem Studio
+genauso weh wie „59 € ohne USt". Regelbesteuerung ist im B2B-Geschäft
+also **kein Preisnachteil**, anders als bei Privatkunden.
+
+Umgekehrt: als Kleinunternehmer kannst du dir die Umsatzsteuer auf deine
+eigenen Kosten (Firebase, Domain, Werkzeuge) **nicht** zurückholen.
+
+### Was ich zu deiner Lage vermute
+
+Du hast gefragt, ob ich raten kann. Kann ich — **als Vermutung, die du
+prüfen lässt**, nicht als Auskunft:
+
+- **Am Anfang fast sicher Kleinunternehmer.** Mit ein bis fünf Kunden
+  liegst du deutlich unter jeder Umsatzgrenze. Der Aufwand der
+  Regelbesteuerung stünde in keinem Verhältnis.
+- **Der Umstieg kommt schneller, als man denkt.** Bei je Studio und den
+  Beträgen aus Abschnitt 4 reichen schon wenige mittlere Ketten. Die
+  Grenze gilt außerdem **rückwirkend fürs Folgejahr** — man rutscht
+  hinein, ohne etwas zu tun. Deshalb: von Anfang an so bauen, dass die
+  Umstellung ein Schalter ist und kein Umbau.
+- **Man kann freiwillig verzichten**, um Vorsteuer zu ziehen. Ob sich
+  das lohnt, hängt an deinen Ausgaben — genau die Rechnung, die ein
+  Steuerberater in zehn Minuten macht.
+
+### Was bei dir als Student obendrauf kommt — und wichtiger ist
+
+**Das ist der Teil, den ich für dringender halte als die Umsatzsteuer.**
+Regelmäßige Einnahmen neben dem Studium können Dinge berühren, die
+nichts mit dem Finanzamt zu tun haben:
+
+- **Familienversicherung.** Wer über die Eltern krankenversichert ist,
+  hat eine Einkommensgrenze. Wird sie überschritten, wird die eigene
+  Versicherung fällig — und die kostet mehr, als das Abo am Anfang
+  einbringt.
+- **Werkstudentenstatus.** Der hängt an Arbeitszeit und Art der
+  Tätigkeit. Selbständige Einnahmen daneben sind nicht automatisch ein
+  Problem, aber auch nicht automatisch keins.
+- **BAföG**, falls relevant: eigene Einkommensgrenzen, eigene Fristen.
+- **Gewerbeanmeldung.** Software gegen wiederkehrendes Entgelt zu
+  verkaufen, ist in aller Regel ein Gewerbe. Das ist eine Anmeldung beim
+  Amt, keine große Sache — aber sie steht **vor** der ersten Rechnung.
+- **Und der wichtigste:** wem gehört die App eigentlich? Du hast sie für
+  einen Betrieb gebaut, in dem du arbeitest. Ob du sie an Dritte
+  verkaufen darfst, ist eine Frage an deinen Arbeitgeber und
+  gegebenenfalls an deinen Arbeitsvertrag — **bevor** du den ersten
+  Kunden ansprichst.
+
+> Der letzte Punkt ist kein Steuerthema, und ich bringe ihn trotzdem
+> hier: er kann das ganze Vorhaben beenden, und er kostet nichts außer
+> einem Gespräch. Erst klären, dann rechnen.
+
+### Was das für den Bau heißt
+
+Damit beide Fälle vorbereitet sind, muss genau **eine** Sache stimmen:
+Preise werden **netto** geführt und die Steuer separat, auch wenn sie
+zunächst 0 % beträgt. Wer Bruttopreise fest verdrahtet, baut den Umstieg
+später mühsam nach.
+
+Bei Stripe ist das ein Schalter, kein Umbau — es kennt Kleinunternehmer,
+Steuersätze und Reverse Charge. **Dass es das kennt, heißt nicht, dass
+es für dich richtig eingestellt ist.** Das prüft jemand, der es darf.
+
+### Der Rest, der ebenfalls kein Code ist
+
+- **Pflichtangaben auf der Rechnung.** Feste Liste. Stripe kann
+  Rechnungen erzeugen — ob sie genügen, muss jemand prüfen, der das darf.
+- **AGB und Preisangaben.** Laufzeit, Kündigung, was mit den Daten
+  danach passiert. Bei Geschäftskunden gelten andere Regeln als bei
+  Verbrauchern.
+- **Auftragsverarbeitung.** Steht schon in `VERKAUF.md`: sobald fremde
+  Betriebe Personendaten in deinem System haben, braucht es Verträge.
 
 **Der Satz, den ich dir mitgebe:** ein Abo-Modell ist zu 20 % Software
 und zu 80 % Buchhaltung, Steuern und Verträge. Der Teil, den ich bauen
@@ -219,10 +321,10 @@ Der Umbau in Stufen, so wie beim Umzug:
 
 | | Was | Risiko |
 |---|---|---|
-| **A** | Abo-Zustand am Firmen-Dokument (`abo: {stufe, status, studios, bisAm}`), von Hand gesetzt. Die App liest ihn, sperrt aber noch nichts | keins |
+| **A** | Abo-Zustand am Firmen-Dokument (`abo: {stufe, status, studios, netto, bisAm}`), von Hand gesetzt. Die App liest ihn, sperrt aber noch nichts | keins |
 | **B** | Die Stufen greifen: Premium-Funktionen sichtbar/unsichtbar, in der App **und in den Regeln** | gering |
 | **C** | Stripe anbinden: Bezahlseite, Rückmeldung per Webhook, Zustand wird automatisch gesetzt | **hoch** — echtes Geld |
-| **D** | Mahnstufen automatisch (die vier Stufen aus Abschnitt 3) | mittel |
+| **D** | Der Zustand `nurlesen` in den Regeln, dazu die Uhr, die die Mahnstufen aus Abschnitt 3 weiterstellt | mittel |
 | **E** | Selbstbedienung: Kunde ändert Stufe, sieht Rechnungen, kündigt | gering |
 
 **Stufe A allein ist schon nützlich** und kostet fast nichts: du kannst
