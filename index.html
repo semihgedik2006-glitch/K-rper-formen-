@@ -3354,6 +3354,22 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <button class="btn btn-primary" id="fnBtn">Firma anlegen</button>
               <div id="fnErgebnis" style="display:none;margin-top:16px"></div>
             </div>
+            <!-- Wartungsschritt, den es nur EINMAL braucht. Steht hier
+                 und nicht in einem Skript, weil ein Schritt, der einen
+                 Rechner mit Google-Zugang voraussetzt, irgendwann nicht
+                 stattfindet. -->
+            <div class="card" data-fold="kontenfirma">
+              <h3>🧾 Konten ohne Firma</h3>
+              <p class="hint">Konten aus der Zeit vor der Mandantenfähigkeit haben
+                kein Feld <b>firma</b> — für sie galt stillschweigend „koerperformen".
+                Damit die Personenliste je Firma getrennt werden kann, muss der Wert
+                wirklich dranstehen. <b>Für sich genommen folgenlos:</b> es wird genau
+                das eingetragen, was ohnehin gilt. Konten einer anderen Firma bleiben
+                unangetastet.</p>
+              <div id="knStand" class="lese-leer">Noch nicht nachgesehen.</div>
+              <button class="btn btn-ghost btn-sm" id="knPruefen" style="width:100%;margin-top:10px">Nachsehen</button>
+              <button class="btn btn-primary btn-sm" id="knSchreiben" style="width:100%;margin-top:8px;display:none">Jetzt nachtragen</button>
+            </div>
             <div class="card" data-fold="firmaarchiv">
               <h3>🗄 Gelöschte Firmen</h3>
               <p class="hint">Eine gelöschte Firma kommt hierher, ihre Daten
@@ -5690,6 +5706,22 @@ function featuresAnwenden(){
   if(!ansichtAn(currentView)) showView('home');
   else if(currentView==='home') renderHome();
   if(currentView==='team') teamReiterPruefen();
+}
+
+/* Zeigt, was die Funktion zurueckgemeldet hat — Zahlen, keine Zusagen. */
+function kontenStandZeigen(r){
+  var box=$('knStand'); if(!box) return;
+  if(!r){ box.textContent='Keine Antwort erhalten.'; return; }
+  var fertig = !r.ohne;
+  box.innerHTML =
+    '<b>'+r.gesamt+'</b> Konten · <b>'+r.mit+'</b> mit „'+esc(r.firma)+'" · '+
+    '<b>'+r.andere+'</b> andere Firma · <b>'+r.ohne+'</b> ohne Feld'+
+    (r.geschrieben ? ' · gerade ergänzt: <b>'+r.geschrieben+'</b>' : '')+
+    '<br>'+(fertig
+      ? '✓ Alles gesetzt. Die strenge Regel kann ausgerollt werden.'
+      : '⚠ Solange hier etwas offen ist, darf die strenge Regel NICHT ausgerollt werden.');
+  var s2=$('knSchreiben');
+  if(s2) s2.style.display = r.ohne ? '' : 'none';
 }
 
 /* ── Fehler im Betrieb: die Liste für den Chef ────────────────────────
@@ -14042,17 +14074,13 @@ function avatarMarkup(u){
 function listenAllUsers(){
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   var redrawTimer=null;
-  /* ── Der Filter ist hier keine Bequemlichkeit, sondern die Grenze ──
-     users ist die einzige Sammlung, die nicht unter firmen/<kennung>/
-     liegt. Bis zum 12.8.2026 stand hier collection('users') OHNE Filter
-     — und die Regeln liessen es zu. Damit lud jedes Handy jedes Kontos
-     jeder Firma: Namen, E-Mail-Adressen, Rollen, Geburtstage.
-
-     Firestore prueft Abfragen im VORAUS, nicht Dokument fuer Dokument:
-     ohne diesen where-Teil lehnt die neue Regel die ganze Abfrage ab,
-     und die Personenliste bliebe leer. Beides gehoert zusammen. */
-  var meine = _firma || KONFIG.firma || 'koerperformen';
-  _usersUnsub=db.collection('users').where('firma','==',meine).onSnapshot(function(snap){
+  /* ⚠ UNGEFILTERT — bekannt, siehe firestore.rules bei match /users.
+     Damit laedt jedes Geraet jedes Konto JEDER Firma. Der Filter
+     where('firma','==',…) steht bereit und gehoert hierher, sobald an
+     jedem Konto das Feld nachgetragen ist (Betreiber-Bereich →
+     "Konten ohne Firma"). Vorher wuerde die Personenliste leer
+     bleiben. */
+  _usersUnsub=db.collection('users').onSnapshot(function(snap){
     var first = !_allUsers.length;
     _allUsers=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
     // Die Teillisten (Team, Chefs) fallen hier mit ab – ein Beobachter
@@ -15249,6 +15277,30 @@ function bindActions(){
   var rfs=$('rfSave');
   if(rfs) rfs.addEventListener('click',function(){ rechtSpeichern(this); });
 
+  /* Konten nachtragen — zweistufig: erst ansehen, dann schreiben. Ein
+     Wartungsknopf, der sofort schreibt, wird einmal aus Versehen
+     gedrueckt und dann nie wieder freiwillig. */
+  var knP=$('knPruefen');
+  if(knP) knP.addEventListener('click',function(){
+    var btn=this;
+    withBusy(btn,function(){
+      return firebase.app().functions(KONFIG.region).httpsCallable('kontenNachtragen')({})
+        .then(function(r){ kontenStandZeigen(r && r.data); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  var knS=$('knSchreiben');
+  if(knS) knS.addEventListener('click',function(){
+    var btn=this;
+    withBusy(btn,function(){
+      return firebase.app().functions(KONFIG.region).httpsCallable('kontenNachtragen')({ wirklich:true })
+        .then(function(r){
+          kontenStandZeigen(r && r.data);
+          toast('Nachgetragen ✓');
+        })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
   var cb=$('chefBack');
   if(cb) cb.addEventListener('click',function(){ showChefTab(CHEF_START); tick(8); });
 

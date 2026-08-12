@@ -853,6 +853,69 @@ exports.firmenZahlen = region
 
    Zurück kommt nur ein Ja/Nein je Kennung - keine Adresse, kein Name,
    kein Zeitpunkt. Mehr braucht die Freigabe-Karte nicht.               */
+/* ══ Konten ohne Feld "firma" nachtragen ═══════════════════════════════
+   WOZU
+   users ist die einzige Sammlung, die nicht unter firmen/<kennung>/
+   liegt. Die Firmengrenze beim LESEN verlangt deshalb, dass Leser und
+   Konto dieselbe Firma tragen — und dass die App gefiltert abfragt
+   (Firestore prueft Abfragen im Voraus, nicht Dokument fuer Dokument).
+
+   Konten aus der Zeit vor der Mandantenfaehigkeit haben das Feld nicht:
+   fuer sie galt die stille Annahme "kein Feld = koerperformen". Diese
+   Funktion schreibt genau diese Annahme hin.
+
+   WARUM ALS FUNKTION UND NICHT NUR ALS SKRIPT
+   tools/firma-nachtragen.js tut dasselbe, braucht aber die Cloud Shell.
+   Ein Wartungsschritt, der einen Rechner mit Google-Zugang voraussetzt,
+   findet irgendwann nicht statt. Hier genuegt der Betreiber-Bereich.
+
+   Voreinstellung ist ANSEHEN. Geschrieben wird nur mit wirklich:true.
+   Konten einer ANDEREN Firma werden nie angefasst — ein Werkzeug, das
+   hier pauschal ueberschreibt, verschiebt Kunden in fremde Betriebe. */
+exports.kontenNachtragen = region
+  .runWith({ timeoutSeconds: 300 })
+  .https.onCall(async (data, context) => {
+    await requireAdmin(context);
+    const firma = String((data && data.firma) || 'koerperformen').trim() || 'koerperformen';
+    const wirklich = !!(data && data.wirklich);
+
+    const snap = await db.collection('users').get();
+    const ohne = [];
+    let mit = 0, andere = 0;
+    snap.forEach((d) => {
+      const f = (d.data() || {}).firma;
+      if (f === undefined || f === null || String(f).trim() === '') ohne.push(d.id);
+      else if (f === firma) mit++;
+      else andere++;
+    });
+
+    if (!wirklich || !ohne.length) {
+      return { gesamt: snap.size, mit: mit, andere: andere,
+               ohne: ohne.length, geschrieben: 0, firma: firma };
+    }
+
+    let geschrieben = 0;
+    for (let i = 0; i < ohne.length; i += 400) {
+      const stapel = db.batch();
+      ohne.slice(i, i + 400).forEach((id) => {
+        stapel.set(db.collection('users').doc(id), { firma: firma }, { merge: true });
+      });
+      await stapel.commit();
+      geschrieben += Math.min(400, ohne.length - i);
+    }
+
+    /* Nachzaehlen statt behaupten. Bleibt etwas uebrig, sagt die Antwort
+       das — und der naechste Schritt (strenge Regel) darf nicht kommen. */
+    const nach = await db.collection('users').get();
+    let restOhne = 0;
+    nach.forEach((d) => {
+      const f = (d.data() || {}).firma;
+      if (f === undefined || f === null || String(f).trim() === '') restOhne++;
+    });
+    return { gesamt: nach.size, mit: mit + geschrieben, andere: andere,
+             ohne: restOhne, geschrieben: geschrieben, firma: firma };
+  });
+
 exports.mailStatus = region
   .https.onCall(async (data, context) => {
     const ich = await requireChef(context);

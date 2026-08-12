@@ -167,31 +167,32 @@ service cloud.firestore {
 
     // ── Benutzerprofile ──
     match /users/{uid} {
-      /* ── DAS LOCH VOM 12.8.2026 ──
-         Hier stand: allow read: if istAktiv() || (eigenes Profil).
-         OHNE FIRMENPRUEFUNG. users ist die einzige Sammlung, die NICHT
-         unter /firmen/{f}/ liegt — und beim Schreiben stand die Pruefung
-         (gleicheFirma), beim Lesen nicht.
+      /* ⚠ HIER FEHLT DIE FIRMENPRUEFUNG — und das ist bekannt.
+         Gemessen am 12.8.2026 im Emulator: ein Mitarbeiter von Firma A
+         liest das Konto des Chefs von Firma B samt E-Mail und
+         Geburtsdatum, und kann die GANZE Sammlung auflisten. users ist
+         die einzige Sammlung, die nicht unter firmen/<kennung>/ liegt;
+         beim Schreiben steht die Pruefung, beim Lesen nicht.
 
-         Gemessen im Emulator: ein Mitarbeiter von Alpha las das Konto
-         des Chefs von Beta samt E-Mail-Adresse und Geburtsdatum, und
-         konnte die GANZE Sammlung auflisten — jedes Konto jedes Kunden.
-         Die App tat das sogar von selbst: listenAllUsers() horchte auf
-         db.collection('users') ohne Filter.
+         Die Reparatur ist fertig und geprueft (siehe kreuz.test.js),
+         steht aber noch nicht hier. Grund: sie verlangt an JEDEM Konto
+         das Feld 'firma'. Firestore prueft Abfragen im Voraus — mit der
+         strengen Regel wird eine ungefilterte Abfrage abgelehnt, und
+         die App muesste where('firma','==',…) mitgeben. Konten aus der
+         Zeit vor der Mandantenfaehigkeit haben das Feld nicht und
+         faenden sich dann nicht mehr: das ganze Team stuende vor einer
+         leeren Personenliste.
 
-         Das EIGENE Profil bleibt immer lesbar, sonst kann die App einem
-         wartenden Konto nicht einmal sagen, dass es wartet.
+         REIHENFOLGE:
+           1. Betreiber-Bereich → "Konten ohne Firma" → nachtragen
+              (Cloud Function kontenNachtragen, oder
+               tools/firma-nachtragen.js in der Cloud Shell)
+           2. DANN diese Regel scharf stellen und die App mit dem
+              Filter ausrollen.
 
-         ACHTUNG BEIM AUSROLLEN: mit dieser Regel wird eine UNGEFILTERTE
-         Abfrage auf users abgelehnt — Firestore prueft Abfragen im
-         Voraus, nicht Dokument fuer Dokument. Die App muss deshalb
-         where('firma','==',…) mitgeben, und JEDES bestehende Konto
-         braucht das Feld. Reihenfolge: erst nachtragen (tools/
-         firma-nachtragen.js), dann diese Regel ausrollen. Andersherum
-         steht das ganze Team vor einer leeren Personenliste. */
-      allow read: if istAdminKonto()
-        || (signedIn() && request.auth.uid == uid)
-        || (istAktiv() && gleicheFirma());
+         Solange es nur eine Firma gibt, ist das Loch folgenlos. Es darf
+         nicht offen sein, wenn der zweite Kunde dazukommt. */
+      allow read: if istAktiv() || (signedIn() && request.auth.uid == uid);
       // Wer sein EIGENES Profil anlegt, darf sich dabei nur "mitarbeiter"
       // geben. Vorher war jede Rolle erlaubt: der Chef-Code stand im
       // Quelltext der App, und die Regeln haben ihn nie geprüft – wer die
