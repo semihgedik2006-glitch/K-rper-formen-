@@ -2315,6 +2315,70 @@ ausserhalb dessen, was hier messbar ist.
 
 ---
 
+## Sitzung 30 · Bewegung — und zwei Kurven, die es zweimal gab 🟢
+
+Auftrag: *„baue eventuell noch paar smoothere animationen ein und so."*
+
+Der erste Griff wäre gewesen, neue Bewegung dazuzubauen. Vorher
+nachgezählt, was schon da ist:
+
+```
+Keyframes gesamt: 38
+DOPPELT definiert: viewIn, checkPop
+```
+
+**Zwei von 38 waren doppelt vergeben.** Das ist dieselbe Sorte Fehler
+wie der doppelte Schlüssel `firma` in `konfig.js`: in CSS gewinnt die
+spätere Definition, die frühere ist lautlos weg. Der Unterschied zu
+einem Schönheitsfehler:
+
+- `.view.show` stand mit `.32s var(--ease-out)` und weiter unten mit
+  `.5s var(--ease-ios)`. Wer oben an der Dauer drehte, änderte nichts.
+  Ein Ansichtswechsel ist die häufigste Bewegung der App — und die
+  Stelle, an der man beim Nachbessern zuerst nachsieht.
+- Bei `checkPop` war es heikler. `.fab-count.show` benutzt denselben
+  Namen und bekam dadurch eine Kurve, für die es nie geschrieben wurde:
+  gemeint war `.32s ease-out`, wirksam ist `45% scale(1.3)` mit
+  Feder-Kurve. Kein Absturz, keine Meldung — die Bedeutung verschiebt
+  sich einfach an einer Stelle, die niemand mehr im Blick hat.
+
+Beide toten Fassungen sind raus, an ihrer Stelle steht jeweils ein
+Kommentar mit dem Grund. So findet der nächste Durchlauf sie nicht
+wieder als „fehlende Animation".
+
+### Was neu dazukam
+
+Nichts Erfundenes. Die drei Listen, die in den letzten Sitzungen
+entstanden sind — Einrichtungs-Schritte, Firmenfarbe, Nachweise —
+erschienen hart, während daneben alles gleitet. Sie benutzen jetzt
+`rowIn` mit derselben Staffelung wie `.todo`, und der Haken beim
+Bestätigen eines Nachweises federt wie jeder andere Haken:
+
+```
+.setup-zeile,.marke-chip,.cert-item{animation:rowIn .3s var(--ease-ios) both}
+.cert-bestaetigt{animation:checkPop .45s var(--spring)}
+```
+
+Eine neue Kurve für dasselbe Gefühl wäre der Anfang des nächsten
+Doppel-Eintrags gewesen.
+
+Nachgezählt danach: **39 Keyframes, keiner doppelt.**
+
+### Damit es nicht wiederkommt
+
+Von Hand weggeräumt heißt: kommt beim nächsten Mal wieder. Deshalb
+`tests/test-bewegung-doppelt.js` — ohne Browser, liest nur die Datei:
+
+1. kein `@keyframes`-Name zweimal,
+2. jede benutzte Animation ist auch definiert (ein Tippfehler im Namen
+   bewegt gar nichts und fällt sonst niemandem auf),
+3. Gegenprobe: es gibt überhaupt Bewegung — sonst wäre eine
+   `index.html` ganz ohne Animation der grünste Durchlauf von allen.
+
+Regression danach: **57 grün, 0 rot.** (56 vorher, plus der neue.)
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

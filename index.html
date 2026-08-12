@@ -1046,6 +1046,21 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .feat-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.35}
 /* Einrichtungs-Schritte. Erledigtes bleibt STEHEN, nur blasser: wer
    sieht, was schon geschafft ist, macht den Rest eher fertig. */
+/* Die heute gebauten Listen bewegen sich wie die uebrigen: dieselbe
+   Kurve, dieselbe Staffelung. Ein Block, der ohne Uebergang erscheint,
+   waehrend daneben alles gleitet, wirkt nicht schlicht, sondern
+   unfertig. Wiederverwendet wird rowIn — keine neue Kurve fuer
+   dasselbe Gefuehl. */
+.setup-zeile,.marke-chip,.cert-item{animation:rowIn .3s var(--ease-ios) both}
+.setup-zeile:nth-child(2),.marke-chip:nth-child(2){animation-delay:.03s}
+.setup-zeile:nth-child(3),.marke-chip:nth-child(3){animation-delay:.06s}
+.setup-zeile:nth-child(4),.marke-chip:nth-child(4){animation-delay:.09s}
+.setup-zeile:nth-child(5),.marke-chip:nth-child(5){animation-delay:.12s}
+.marke-chip:nth-child(6){animation-delay:.15s}
+/* Der Haken beim Bestaetigen eines Nachweises federt wie jeder andere
+   Haken in der App. */
+.cert-bestaetigt{animation:checkPop .45s var(--spring)}
+
 .setup-zeile{display:flex;align-items:flex-start;gap:10px;padding:9px 0;
   border-bottom:1px solid var(--line-2)}
 .setup-zeile:last-child{border-bottom:none}
@@ -1093,9 +1108,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ============================================================
    ANIMATIONEN & QUALITY-OF-LIFE
    ============================================================ */
-/* Sanftes Einblenden beim Ansicht-/Tab-Wechsel */
-.view.show{animation:viewIn .32s var(--ease-out)}
-@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* Der Ansichtswechsel steht weiter unten im Abschnitt „Bewegung im
+   Apple-Stil". Hier stand bis zum 12.8.2026 eine ZWEITE Fassung
+   (.32s ease-out) — sie wurde von der spaeteren stillschweigend
+   ueberschrieben und war toter Code. Wer hier an der Dauer drehte,
+   aenderte nichts. */
 
 /* Auth-Karte gleitet herein, Mesh-Blobs leben */
 .auth-card{animation:cardIn .5s var(--ease-out);margin-top:var(--sat)}
@@ -1137,8 +1154,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .studio-tile:hover{border-color:rgba(34,211,238,.3);transform:translateY(-2px)}
 
 /* Häkchen „ploppt" beim Erledigen, Bilder blenden ein */
-.todo.done .check{animation:checkPop .32s var(--ease-out)}
-@keyframes checkPop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+/* checkPop steht ebenfalls weiter unten. Auch hier gab es zwei
+   Fassungen, und das war heikler als beim Ansichtswechsel: .fab-count
+   benutzt denselben Namen und bekam dadurch eine Kurve, fuer die es nie
+   geschrieben wurde. Zwei @keyframes mit gleichem Namen sind kein
+   Schoenheitsfehler — sie verschieben die Bedeutung an Stellen, die
+   niemand mehr im Blick hat. */
 .msg-img,.t-photo{animation:imgIn .35s var(--ease-out)}
 @keyframes imgIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 
