@@ -167,8 +167,31 @@ service cloud.firestore {
 
     // ── Benutzerprofile ──
     match /users/{uid} {
-      // Das EIGENE Profil darf man immer lesen - sonst kann die App einem
-      // wartenden Konto nicht einmal sagen, dass es wartet.
+      /* ⚠ HIER FEHLT DIE FIRMENPRUEFUNG — und das ist bekannt.
+         Gemessen am 12.8.2026 im Emulator: ein Mitarbeiter von Firma A
+         liest das Konto des Chefs von Firma B samt E-Mail und
+         Geburtsdatum, und kann die GANZE Sammlung auflisten. users ist
+         die einzige Sammlung, die nicht unter firmen/<kennung>/ liegt;
+         beim Schreiben steht die Pruefung, beim Lesen nicht.
+
+         Die Reparatur ist fertig und geprueft (siehe kreuz.test.js),
+         steht aber noch nicht hier. Grund: sie verlangt an JEDEM Konto
+         das Feld 'firma'. Firestore prueft Abfragen im Voraus — mit der
+         strengen Regel wird eine ungefilterte Abfrage abgelehnt, und
+         die App muesste where('firma','==',…) mitgeben. Konten aus der
+         Zeit vor der Mandantenfaehigkeit haben das Feld nicht und
+         faenden sich dann nicht mehr: das ganze Team stuende vor einer
+         leeren Personenliste.
+
+         REIHENFOLGE:
+           1. Betreiber-Bereich → "Konten ohne Firma" → nachtragen
+              (Cloud Function kontenNachtragen, oder
+               tools/firma-nachtragen.js in der Cloud Shell)
+           2. DANN diese Regel scharf stellen und die App mit dem
+              Filter ausrollen.
+
+         Solange es nur eine Firma gibt, ist das Loch folgenlos. Es darf
+         nicht offen sein, wenn der zweite Kunde dazukommt. */
       allow read: if istAktiv() || (signedIn() && request.auth.uid == uid);
       // Wer sein EIGENES Profil anlegt, darf sich dabei nur "mitarbeiter"
       // geben. Vorher war jede Rolle erlaubt: der Chef-Code stand im
@@ -256,6 +279,43 @@ service cloud.firestore {
       allow update: if isChef()
         && request.resource.data.liste.size() >= resource.data.liste.size();
       allow delete: if false;
+    }
+
+    // ── Impressum und Datenschutz (config/recht) ──
+    //
+    // Standen bis zum 11.8.2026 in konfig.js und galten damit fuer das
+    // ganze Projekt. Seit mehrere Firmen in EINER Datenbank liegen, ist
+    // das falsch: impressumspflichtig ist jeder Betreiber selbst.
+    //
+    // Lesen: jeder Angemeldete. Ausdruecklich auch, wer noch auf seine
+    // Freigabe wartet (aktiv:false) - der sieht sonst als Einziger kein
+    // Impressum. Was hier drinsteht, ist ohnehin fuer die Oeffentlichkeit
+    // bestimmt: Name, Anschrift, Telefon, E-Mail des Betriebs.
+    // Schreiben: nur der Chef. Wer das Impressum aendern kann, aendert,
+    // wer fuer diese App haftet.
+    //
+    // WAS DURCH DIE ALLGEMEINE REGEL /config/{doc} SCHON GILT und was
+    // diese hier daran aendert - denn in Firestore gilt JEDE zutreffende
+    // Regel, und EINE die erlaubt genuegt:
+    //   read   dort: istAktiv()  →  hier: true. Diese Regel WEITET
+    //          also, sie schraenkt nicht ein. Genau deshalb ist sie
+    //          ueberhaupt noetig; eine engere Regel waere Dekoration, die
+    //          allgemeine wuerde sie ueberstimmen.
+    //   write  dort: isChef()    →  hier: isChef(). Identisch, also kein
+    //          Loch - aber auch keine zusaetzliche Sperre. Wer 'recht'
+    //          jemals enger schuetzen will als den Rest von config, muss
+    //          es DORT ausnehmen (wie bei 'studios' und 'registrierung'
+    //          geschehen), nicht hier.
+    //
+    // WARUM OHNE ANMELDUNG LESBAR: ein Impressum hinter einem Login ist
+    // keins - so steht es seit jeher im Quelltext der App, und § 5 DDG
+    // verlangt "leicht erkennbar, unmittelbar erreichbar". Der Inhalt
+    // ist per Definition fuer die Oeffentlichkeit bestimmt: Name,
+    // Anschrift, Vertretung, Telefon, E-Mail. Genau dieselbe Ueberlegung
+    // wie bei config/studios und config/beitrittSchalter weiter oben.
+    match /config/recht {
+      allow read: if true;
+      allow write: if isChef();
     }
 
     // Sprachnachrichten liegen als Datenblock in der Nachricht. Ein Dokument
@@ -421,10 +481,56 @@ service cloud.firestore {
     // NUR die betroffene Person und der Chef - die Studio-Leitung
     // ausdruecklich nicht. Eintragen darf allein der Chef; er hat die
     // Unterlagen und haftet dafuer, dass sie stimmen.
+    /* ── Nachweise ───────────────────────────────────────────────────
+       Bis zum 12.8.2026 durfte sie nur der Chef eintragen. Bei 57 Leuten
+       ist das Abtippen von Erste-Hilfe-Scheinen und Lizenzen sein
+       Problem, nicht ihres — also wird es nicht gemacht, und die Liste
+       ist nach einem halben Jahr wertlos.
+
+       Jetzt trägt jeder seine eigenen ein. Drei Grenzen, die dabei
+       wichtig sind, weil ein Erste-Hilfe-Nachweis rechtlich zählt:
+
+         1. NUR DIE EIGENEN. uid muss die eigene sein — beim Anlegen und
+            beim Ändern. Ohne die zweite Prüfung könnte man einen
+            fremden Nachweis auf sich selbst umschreiben.
+         2. LÖSCHEN DARF NUR DER CHEF. Wer seinen abgelaufenen Nachweis
+            selbst entfernen kann, lässt ihn aus der Liste „läuft bald
+            ab" verschwinden — und genau die ist der Zweck der Sache.
+         3. „BESTÄTIGT" SETZT NUR DER CHEF. Selbst eingetragen heisst
+            behauptet, nicht belegt. Der Unterschied muss sichtbar
+            bleiben, sonst ist die Selbsteintragung ein Freibrief.
+
+       erfasstVonUid muss beim MITARBEITER der eigene sein. Damit kann er
+       einen selbst eingetragenen Nachweis nicht als vom Chef erfasst
+       ausgeben — „selbst eingetragen" ist dadurch eine Tatsache und
+       keine Behauptung des Clients.
+
+       Vom Chef wird das Feld NICHT verlangt. Ein Pflichtfeld beim
+       Schreiben bricht jede aeltere Fassung der App, die noch im
+       Zwischenspeicher eines Geraets liegt — und die App ist eine PWA,
+       da liegt immer eine. Fehlt das Feld, gilt der Eintrag als vom
+       Chef erfasst, und genau das ist er dann auch. */
     match /certificates/{certId} {
       allow read: if isChef()
         || (istAktiv() && resource.data.uid == request.auth.uid);
-      allow create, update, delete: if isChef();
+      allow create: if isChef()
+        || (istAktiv()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.erfasstVonUid == request.auth.uid
+            && request.resource.data.get('bestaetigt', false) == false);
+      /* Bis zur Bestaetigung darf man den eigenen Eintrag korrigieren —
+         ein Zahlendreher im Datum soll kein Fall fuer den Chef sein.
+         DANACH NICHT MEHR: sonst laesst sich ein bestaetigter
+         Erste-Hilfe-Schein still um zwei Jahre verlaengern, und die
+         Bestaetigung waere wertlos. Genau dieses Loch stand hier im
+         ersten Entwurf. */
+      allow update: if isChef()
+        || (istAktiv()
+            && resource.data.uid == request.auth.uid
+            && request.resource.data.uid == request.auth.uid
+            && resource.data.get('bestaetigt', false) == false
+            && request.resource.data.get('bestaetigt', false) == false);
+      allow delete: if isChef();
     }
 
     // ── Konfiguration (z. B. Onboarding-Checkliste) ──
@@ -703,6 +809,31 @@ service cloud.firestore {
           allow delete: if false;
         }
 
+        // ── Impressum und Datenschutz dieser Firma ──
+        // Erklaerung siehe beim flachen /config/recht weiter oben. Hier
+        // kommt die Firmengrenze dazu, und die ist der eigentliche Punkt:
+        //
+        //   read   OHNE Anmeldung. Ein Impressum hinter einem Login ist
+        //          keins, und ein Kunde, der seinen Link herumgibt, muss
+        //          sein Impressum zeigen koennen - genau dafuer steht die
+        //          Firmenkennung im Link. Der Inhalt ist per Definition
+        //          oeffentlich: Name, Anschrift, Vertretung, Telefon,
+        //          E-Mail. Dieselbe Ueberlegung wie bei config/studios.
+        //   write  ohne inFirma(f) duerfte der Chef von A das Impressum
+        //          von B UEBERSCHREIBEN. Das ist kein Schoenheitsfehler:
+        //          es steht dann fremde Haftung in der App eines anderen.
+        //          Genau diese Sorte fehlender Firmenpruefung ist hier
+        //          schon dreimal passiert.
+        //
+        // Gegenueber der allgemeinen Regel /firmen/{f}/config/{doc}
+        // (read: inFirma(f) && istAktiv(), write: inFirma(f) && isChef())
+        // weitet diese Regel nur das LESEN. Beim Schreiben ist sie
+        // deckungsgleich, kann dort also weder oeffnen noch sperren.
+        match /config/recht {
+          allow read: if true;
+          allow write: if inFirma(f) && isChef();
+        }
+
         match /channels/{channelId}/messages/{msgId} {
           allow read: if inFirma(f) && (istAktiv());
           // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
@@ -840,10 +971,28 @@ service cloud.firestore {
            und herausholen koennen. Weggenommen wird das ANLEGEN. Eine
            Funktion, die vorhandene Daten unerreichbar macht, ist keine
            Preisstufe, sondern ein Verlust. */
+        // Begruendung siehe beim flachen /certificates weiter oben.
+        // Hier kommt die Firmengrenze dazu und die Abo-Stufe: Nachweise
+        // sind Premium, und das gilt fuer die Selbsteintragung genauso —
+        // sonst waere die Stufe ueber einen Umweg ausgehebelt.
         match /certificates/{certId} {
           allow read: if inFirma(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
-          allow create, update, delete: if inFirma(f) && (isChef()) && hatPremium(f);
+          allow create: if inFirma(f) && hatPremium(f)
+            && (isChef()
+                || (istAktiv()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.erfasstVonUid == request.auth.uid
+                    && request.resource.data.get('bestaetigt', false) == false));
+          // Nach der Bestaetigung nur noch der Chef — siehe oben.
+          allow update: if inFirma(f) && hatPremium(f)
+            && (isChef()
+                || (istAktiv()
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == request.auth.uid
+                    && resource.data.get('bestaetigt', false) == false
+                    && request.resource.data.get('bestaetigt', false) == false));
+          allow delete: if inFirma(f) && isChef() && hatPremium(f);
         }
 
         match /config/{doc} {

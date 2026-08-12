@@ -1044,6 +1044,49 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .feat-txt b{font-size:.95rem;font-weight:650}
 .feat-txt b em{font-style:normal;font-weight:500;font-size:.78rem;color:var(--text-3)}
 .feat-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.35}
+/* Einrichtungs-Schritte. Erledigtes bleibt STEHEN, nur blasser: wer
+   sieht, was schon geschafft ist, macht den Rest eher fertig. */
+.setup-zeile{display:flex;align-items:flex-start;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--line-2)}
+.setup-zeile:last-child{border-bottom:none}
+.setup-zeile.fertig{opacity:.5}
+.setup-hak{flex-shrink:0;width:20px;text-align:center;font-weight:700;color:var(--text-3)}
+.setup-zeile.fertig .setup-hak{color:var(--accent)}
+.setup-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.setup-txt b{font-size:.93rem;font-weight:650}
+.setup-zeile.fertig .setup-txt b{font-weight:500;text-decoration:line-through}
+.setup-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.4}
+.setup-txt i em{font-style:normal;color:var(--accent-2);white-space:nowrap}
+/* Farbauswahl der Firma */
+.marke-wahl{display:flex;flex-wrap:wrap;gap:8px}
+.marke-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;
+  border:1px solid var(--line);background:none;color:var(--text-2);font-size:.85rem;cursor:pointer}
+.marke-chip .marke-punkt{width:13px;height:13px;border-radius:50%;background:var(--mc)}
+.marke-chip.an{border-color:var(--mc);color:var(--text);font-weight:650}
+.marke-chip:active{transform:scale(.94)}
+/* Pausierter Putzpunkt: sichtbar, aber erkennbar nicht dran */
+.pp-item.pausiert{opacity:.55}
+.pp-item.pausiert .pp-title{text-decoration:none;font-style:italic}
+.pp-pauseico{flex-shrink:0;width:34px;text-align:center;font-size:1.05rem;color:var(--text-3)}
+.pp-pausetxt{color:var(--warm-tx,var(--text-3));font-size:.8rem}
+.pp-pause{margin-left:10px;padding:1px 9px;border-radius:999px;font-size:.72rem;
+  border:1px solid var(--line);background:none;color:var(--text-3);cursor:pointer}
+.pp-pause:active{transform:scale(.92)}
+/* „Ich übernehme das" sieht aus wie die Zuweisungs-Marke daneben —
+   es wird ja gleich eine. */
+.t-nimm{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;
+  font-size:.66rem;font-weight:700;border:1px dashed var(--line-2);background:none;
+  color:var(--text-3);cursor:pointer;letter-spacing:.01em}
+.t-nimm:hover{color:var(--accent);border-color:var(--accent)}
+.t-nimm:active{transform:scale(.92)}
+/* Woher ein Nachweis kommt. „selbst eingetragen" ist bewusst dezent und
+   nicht rot: es ist kein Vorwurf, sondern eine Auskunft. */
+.cert-selbst{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;
+  font-size:.72rem;background:rgba(167,139,250,.14);color:var(--accent-2)}
+.cert-bestaetigt{display:inline-block;margin-left:8px;font-size:.72rem;color:var(--accent)}
+.cert-ok{margin-left:8px;padding:1px 8px;border-radius:999px;font-size:.72rem;
+  border:1px solid var(--line);background:none;color:var(--text-2);cursor:pointer}
+.cert-ok:active{transform:scale(.92)}
 .studio-check input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin:0}
 @media(max-width:340px){.studio-checks{grid-template-columns:1fr}}
 
@@ -2426,6 +2469,26 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
                Vorher war es eine Reihe gleich aussehender Kacheln und Karten;
                man musste jedes Mal neu lesen, was wozu gehört. -->
 
+          <!-- 0. Einrichtung — nur beim Chef, nur solange etwas fehlt.
+               Ein neuer Kunde meldet sich zum ersten Mal an und sieht
+               eine leere App. Er weiss nicht, was zuerst dran ist, und
+               fragt entweder nach oder hört auf. Diese Karte beantwortet
+               genau eine Frage: was jetzt.
+
+               Sie hakt sich SELBST ab. Es gibt keine Kästchen zum
+               Ankreuzen — jeder Schritt liest nach, ob er wirklich getan
+               ist. Eine Liste, die man abhaken kann, ohne etwas zu tun,
+               ist nach zwei Tagen eine Lüge. -->
+          <div class="card" id="setupCard" style="display:none">
+            <div class="karten-kopf">
+              <h3>🚀 Einrichtung</h3>
+              <span class="todo-count" id="setupZahl"></span>
+            </div>
+            <p class="hint">Was noch fehlt, damit die App für dein Team bereit ist.
+              Verschwindet von selbst, sobald alles steht.</p>
+            <div id="setupListe"></div>
+          </div>
+
           <!-- 1. Was jetzt dran ist -->
           <div id="homeAlerts"></div>
           <div class="card" id="myShiftCard" style="display:none">
@@ -3291,6 +3354,22 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <button class="btn btn-primary" id="fnBtn">Firma anlegen</button>
               <div id="fnErgebnis" style="display:none;margin-top:16px"></div>
             </div>
+            <!-- Wartungsschritt, den es nur EINMAL braucht. Steht hier
+                 und nicht in einem Skript, weil ein Schritt, der einen
+                 Rechner mit Google-Zugang voraussetzt, irgendwann nicht
+                 stattfindet. -->
+            <div class="card" data-fold="kontenfirma">
+              <h3>🧾 Konten ohne Firma</h3>
+              <p class="hint">Konten aus der Zeit vor der Mandantenfähigkeit haben
+                kein Feld <b>firma</b> — für sie galt stillschweigend „koerperformen".
+                Damit die Personenliste je Firma getrennt werden kann, muss der Wert
+                wirklich dranstehen. <b>Für sich genommen folgenlos:</b> es wird genau
+                das eingetragen, was ohnehin gilt. Konten einer anderen Firma bleiben
+                unangetastet.</p>
+              <div id="knStand" class="lese-leer">Noch nicht nachgesehen.</div>
+              <button class="btn btn-ghost btn-sm" id="knPruefen" style="width:100%;margin-top:10px">Nachsehen</button>
+              <button class="btn btn-primary btn-sm" id="knSchreiben" style="width:100%;margin-top:8px;display:none">Jetzt nachtragen</button>
+            </div>
             <div class="card" data-fold="firmaarchiv">
               <h3>🗄 Gelöschte Firmen</h3>
               <p class="hint">Eine gelöschte Firma kommt hierher, ihre Daten
@@ -3379,6 +3458,70 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               keine Zugriffssperre. Wer sich auskennt, kommt an die Daten dahinter
               weiterhin heran — für echte Grenzen sind die Rollen da.</p>
           </div>
+          <!-- Die Farbe der Firma. Ein Kunde soll SEINE App sehen. -->
+          <div class="card" data-fold="marke" data-chef-only="1">
+            <h3>🎨 Farbe der App</h3>
+            <p class="hint">Gilt für alle im Betrieb. Sechs geprüfte Möglichkeiten statt
+              eines freien Farbwählers — damit die Schrift auf farbigen Flächen in beiden
+              Modi lesbar bleibt.</p>
+            <div id="markeWahl" class="marke-wahl"></div>
+          </div>
+          <!-- Impressum und Datenschutz gehören dem BETREIBER, nicht dem
+               Programm. Bis zum 11.8.2026 standen sie in konfig.js — einer
+               Datei, die für das ganze Firebase-Projekt gilt und an die ein
+               Kunde gar nicht herankommt. Seit mehrere Firmen in einer
+               Datenbank liegen, ist das falsch: jeder trägt seine eigenen
+               Angaben ein, und zwar hier. -->
+          <div class="card" data-fold="rechtform" data-chef-only="1">
+            <h3>⚖️ Rechtliche Angaben</h3>
+            <p class="hint">Impressum und Datenschutz. Das sieht jeder — auch vor dem
+              Anmelden. <b>Pflicht sind Betreiber, Anschrift, vertretungsberechtigte
+              Person und E-Mail.</b> Solange eine davon fehlt, steht oben in diesem
+              Bereich eine Warnung und im Rechtliches-Fenster ein roter Hinweis.</p>
+            <div class="field"><label for="rfBetreiber">Betreiber</label>
+              <input class="inp" id="rfBetreiber" type="text" maxlength="120"
+                     placeholder="z. B. Musterstudio Köln GmbH" autocomplete="off" /></div>
+            <div class="field"><label for="rfAnschrift">Anschrift</label>
+              <textarea class="inp" id="rfAnschrift" rows="2" maxlength="200"
+                     placeholder="Straße und Hausnummer&#10;PLZ und Ort"></textarea>
+              <p class="hint" style="margin-top:6px">Ein Postfach genügt nicht — es muss
+                eine ladungsfähige Anschrift sein.</p></div>
+            <div class="field"><label for="rfVertreten">Vertreten durch</label>
+              <input class="inp" id="rfVertreten" type="text" maxlength="120"
+                     placeholder="Geschäftsführer oder Inhaber" autocomplete="off" /></div>
+            <div class="field"><label for="rfTelefon">Telefon</label>
+              <input class="inp" id="rfTelefon" type="tel" maxlength="60"
+                     placeholder="0221 1234567" autocomplete="off" /></div>
+            <div class="field"><label for="rfEmail">E-Mail</label>
+              <input class="inp" id="rfEmail" type="email" maxlength="120"
+                     placeholder="info@beispiel.de" inputmode="email" autocomplete="off" />
+              <p class="hint" style="margin-top:6px">Muss es wirklich geben und muss
+                gelesen werden.</p></div>
+            <div class="field"><label for="rfRegister">Registereintrag</label>
+              <input class="inp" id="rfRegister" type="text" maxlength="120"
+                     placeholder="z. B. Amtsgericht Köln, HRB 12345" autocomplete="off" />
+              <p class="hint" style="margin-top:6px">Leer lassen, wenn es keinen
+                gibt — etwa bei einem Einzelunternehmen.</p></div>
+            <div class="field"><label for="rfUstId">Umsatzsteuer-ID</label>
+              <input class="inp" id="rfUstId" type="text" maxlength="60"
+                     placeholder="z. B. DE123456789" autocomplete="off" /></div>
+            <div class="field"><label for="rfDsKontakt">Ansprechpartner für Datenschutz</label>
+              <input class="inp" id="rfDsKontakt" type="text" maxlength="120"
+                     placeholder="Name oder E-Mail" autocomplete="off" />
+              <p class="hint" style="margin-top:6px">Leer lassen: dann steht die
+                E-Mail-Adresse von oben im Datenschutztext.</p></div>
+            <div class="field"><label for="rfZusatz">Ergänzungen zum Datenschutz</label>
+              <textarea class="inp" id="rfZusatz" rows="3" maxlength="2000"
+                     placeholder="Eine Zeile = ein Absatz, z. B.&#10;Im Eingangsbereich hängt eine Kamera.&#10;Die Arbeitszeit wird mit einem Terminal erfasst."></textarea>
+              <p class="hint" style="margin-top:6px">Alles, was nur ihr wisst und was
+                die App nicht sehen kann.</p></div>
+            <button class="btn btn-primary btn-sm" id="rfSave" style="width:100%;margin-top:4px">Speichern</button>
+            <p class="em-saved" id="rfNote"></p>
+            <p class="hint" style="margin-top:12px">Der Datenschutztext selbst beschreibt,
+              was die App tatsächlich tut — den schreibt niemand hier. <b>Anwaltlich
+              geprüft ist er damit nicht.</b> Vor dem Einsatz mit Beschäftigten gehört
+              er einmal fachlich durchgesehen.</p>
+          </div>
           <!-- Fehler, die im Betrieb aufgetreten sind. Zugeklappt, aber
                mit Zahl an der Überschrift — dieselbe Lehre wie beim
                Firmen-Archiv: zugeklappt sieht aus wie leer. -->
@@ -3417,7 +3560,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <!-- Zeigt, ob die nächtliche Sicherung wirklich durchkommt. Ohne diese
                  Zeile scheitert sie still und niemand merkt es. -->
             <div class="sich-stand" id="sichStand" style="display:none"></div>
-            <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-chef-only="1">🛡 Jetzt zusätzlich sichern</button>
+            <!-- Nur fuer den Betreiber: der Export umfasst die GANZE
+                 Datenbank, also alle Kunden auf einmal. Fuer den Chef
+                 eines einzelnen Betriebs waere das kein Knopf, sondern
+                 ein Missverstaendnis. Die naechtliche Sicherung laeuft
+                 fuer alle weiter. -->
+            <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-admin-only="1">🛡 Jetzt zusätzlich sichern</button>
             <p class="em-saved" id="backupNote"></p>
             <!-- Die Fehlermeldung nennt Dienstkonto und Rolle und ist deshalb
                  länger als eine Zeile. -->
@@ -3610,8 +3758,26 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     </div>
     <div id="pmPaneNachweise" style="display:none">
       <p class="hint" style="margin:2px 0 14px">Deine Nachweise und wie lange sie noch gelten.
-        Eintragen kann sie nur der Chef – wenn etwas fehlt oder falsch ist, sag ihm Bescheid.</p>
+        Du kannst sie selbst eintragen – die Geschäftsführung sieht, dass sie von dir
+        kommen, und bestätigt sie, wenn ihr den Schein vorgelegt habt.</p>
       <div id="pmCerts"></div>
+      <!-- Eintragen darf jeder für SICH. Entfernen nicht: ein eigener
+           abgelaufener Nachweis, der lautlos verschwindet, ist genau das,
+           was die Liste „läuft bald ab" wertlos machen würde. -->
+      <div class="card" id="pmCertNeu" style="margin-top:14px">
+        <h3 style="font-size:.95rem">➕ Nachweis eintragen</h3>
+        <div class="field"><label for="myCertArt">Art</label>
+          <select class="inp" id="myCertArt"></select></div>
+        <div class="field" id="myCertOwnWrap" style="display:none">
+          <label for="myCertOwn">Bezeichnung</label>
+          <input class="inp" id="myCertOwn" type="text" maxlength="80"
+                 placeholder="z. B. Trainer-B-Lizenz" autocomplete="off" /></div>
+        <div class="field"><label for="myCertBis">Gültig bis</label>
+          <input class="inp" id="myCertBis" type="date" /></div>
+        <button class="btn btn-primary btn-sm" id="myCertAdd" style="width:100%">Speichern</button>
+        <p class="hint" style="margin-top:10px">Entfernen kann nur die Geschäftsführung –
+          damit nichts unbemerkt aus der Übersicht verschwindet.</p>
+      </div>
     </div>
     <div id="pmPaneMelden" style="display:none">
       <p class="hint" style="margin:2px 0 14px">Gilt nur für dieses Gerät. Auf dem Handy
@@ -3936,6 +4102,11 @@ function systemPrefersLight(){
 function applyPrefs(){
   var light = PREFS.theme==='light' || (PREFS.theme==='auto' && systemPrefersLight());
   document.body.classList.toggle('light', light);
+  /* Die Firmenfarbe hat je Modus einen eigenen Wert — sonst wäre sie im
+     hellen Modus zu grell oder im dunklen zu dumpf. Deshalb hier, direkt
+     nachdem der Modus feststeht, und nicht nur einmal beim Start.
+     markeAnwenden gibt es evtl. noch nicht (applyPrefs läuft sehr früh). */
+  if(typeof markeAnwenden==='function') markeAnwenden();
   document.body.setAttribute('data-chatbg', PREFS.chatbg||'keiner');
   // Eigenes Foto als Hintergrund einsetzen (nur auf diesem Gerät gespeichert)
   var eigen = (PREFS.chatbg==='eigenes') ? (_chatBgImg||loadChatBgImg()) : null;
@@ -4488,6 +4659,15 @@ function applyRoleVisibility(){
   document.querySelectorAll('[data-chef-only]').forEach(function(el){
     el.style.display = chef ? '' : 'none';
   });
+  /* Nur fuer den Betreiber. Bisher gab es diese Stufe in der Oberflaeche
+     nicht — der Betreiber-Bereich haengt an eigenen Reitern. Gebraucht
+     seit dem Sicherheits-Durchlauf: die Vollsicherung umfasst ALLE
+     Kunden und ist deshalb keine Chef-Handlung mehr. Das ist eine
+     Anzeige, keine Grenze — die steht in der Cloud Function
+     (requireAdmin). */
+  document.querySelectorAll('[data-admin-only]').forEach(function(el){
+    el.style.display = istAdmin() ? '' : 'none';
+  });
   // Für Leiter UND Chef sichtbar, für Mitarbeiter nicht
   document.querySelectorAll('[data-manage-only]').forEach(function(el){
     el.style.display = canManage() ? '' : 'none';
@@ -4539,10 +4719,25 @@ function mailMarkenLaden(uids){
 }
 
 /* ── Rechtliches ──
-   Impressum und Datenschutz kommen aus konfig.js, weil sie sich je Kunde
-   unterscheiden – wie Studios, Firmenname und Farben auch.
+   Impressum und Datenschutz stehen JE FIRMA in der Datenbank
+   (config/recht) und werden vom Chef in der App gepflegt:
+   Verwaltung → System → „⚖️ Rechtliche Angaben".
 
-   Zwei Dinge sind hier Absicht:
+   WARUM NICHT MEHR NUR konfig.js: die Datei gilt für das ganze
+   Firebase-Projekt. Solange ein Kunde ein eigenes Projekt bekam, war das
+   richtig. Seit mehrere Firmen in EINER Datenbank liegen, sah der zweite
+   Kunde entweder das Impressum von Körperformen oder eine rote Warnung,
+   die ihn an eine Datei schickte, an die er gar nicht herankommt. Und
+   impressumspflichtig ist jeder Betreiber selbst — das kann ihm niemand
+   abnehmen.
+
+   Der Rückfall auf konfig.js bleibt trotzdem stehen, sonst stünde der
+   eigene Betrieb am Tag der Umstellung ohne Impressum da. Er gilt aber
+   NUR für die eigene Firma. Genau dieser Fehler ist bei der Studioliste
+   schon passiert: eine fremde Firma bekam die vierzehn Standorte von
+   Körperformen zu sehen. Siehe eigeneFirma().
+
+   Zwei Dinge sind hier weiterhin Absicht:
 
    1. Das Fenster ist OHNE Anmeldung erreichbar. Ein Impressum hinter
       einem Login ist keins.
@@ -4555,9 +4750,62 @@ function mailMarkenLaden(uids){
    aufschreiben. Ob sie damit vollständig ist, kann ich nicht beurteilen.
    Das steht auch so im Text. */
 var _rechtTeil = 'impressum';
+var _recht = null;      // aus config/recht; null = nichts gelesen/hinterlegt
+
+/* Feldname in der Datenbank ↔ Eingabefeld im Formular. Eine Liste statt
+   acht einzeln abgeschriebener Zeilen: beim Speichern und beim Anzeigen
+   darf sich das nicht auseinanderentwickeln. */
+var RECHT_FELDER = [
+  ['betreiber','rfBetreiber'], ['anschrift','rfAnschrift'],
+  ['vertreten','rfVertreten'], ['telefon','rfTelefon'],
+  ['email','rfEmail'], ['register','rfRegister'],
+  ['ustId','rfUstId'], ['datenschutzKontakt','rfDsKontakt']
+];
+
+function rechtLeer(o){
+  if(!o) return true;
+  var text = RECHT_FELDER.some(function(p){ return String(o[p[0]]||'').trim(); });
+  var zus  = Array.isArray(o.zusatz) &&
+             o.zusatz.some(function(z){ return String(z||'').trim(); });
+  return !text && !zus;
+}
+
+/* Was gerade GILT. Erst die Datenbank, dann — nur für die eigene Firma —
+   konfig.js.
+
+   Das Dokument gilt als Ganzes oder gar nicht: einzelne leere Felder
+   werden NICHT aus konfig.js nachgefüllt. Sonst entstünde aus zwei
+   Betrieben ein drittes Impressum, das es nirgends gibt — mit der
+   Anschrift des einen und der Telefonnummer des anderen.
+
+   Für eine fremde Firma ohne Eintrag kommt bewusst NICHTS heraus. Dann
+   steht die Warnung da, und das ist die ehrliche Auskunft; die Angaben
+   von Körperformen wären eine falsche. */
+function rechtDaten(){
+  if(!rechtLeer(_recht)) return _recht;
+  return eigeneFirma() ? ((KONFIG && KONFIG.recht) || {}) : {};
+}
+
+/* Einmal lesen, sobald feststeht, wer angemeldet ist. Kein Dauer-
+   Beobachter: ein Impressum ändert sich einmal im Jahr, dafür rund um
+   die Uhr zu horchen wäre Aufwand für nichts — dieselbe Überlegung wie
+   bei der Fehlerliste. Wer es gerade ändert, sieht seine Änderung
+   ohnehin sofort (siehe rechtSpeichern). */
+function rechtLaden(){
+  return S('config').doc('recht').get()
+    .then(function(doc){ _recht = doc.exists ? (doc.data()||{}) : null; })
+    .catch(function(e){
+      /* Nicht lesbar heisst: es gilt der Rückfall. Für die eigene Firma
+         ist das konfig.js, für eine fremde nichts. Kein Grund, den Start
+         abzubrechen — ein Netzfehler darf nicht die halbe App kosten. */
+      console.warn('Rechtsangaben nicht lesbar:', e.message);
+      _recht = null;
+    })
+    .then(function(){ renderRechtWarnung(); renderRechtForm(); renderRecht(); });
+}
 
 function rechtFehlend(){
-  var r = (KONFIG && KONFIG.recht) || {};
+  var r = rechtDaten();
   var pflicht = [
     ['betreiber','Name des Betreibers'],
     ['anschrift','Anschrift (ein Postfach genügt nicht)'],
@@ -4570,12 +4818,22 @@ function rechtFehlend(){
 
 function renderRecht(){
   var box=$('rechtInhalt'); if(!box) return;
-  var r = (KONFIG && KONFIG.recht) || {};
+  var r = rechtDaten();
   var fehlt = rechtFehlend();
+  /* Der Hinweis nennt den WEG DORTHIN — aber nur dem, der ihn gehen
+     kann. „Einzutragen in konfig.js" stand hier bis zum 11.8.2026 für
+     jeden: für den Kunden eine Datei, die er nicht hat, und für den
+     Mitarbeiter eine Aufforderung, die ihn nichts angeht. Vor dem
+     Anmelden ist session leer, isChef() also false — dort steht damit
+     ebenfalls der schlichte Hinweis, und das ist richtig so. */
   var kopf = fehlt.length
     ? '<div class="recht-fehlt">⚠ Noch nicht vollständig hinterlegt. Es fehlt: '+
-      esc(fehlt.join(' · '))+'.<br/>Einzutragen in <b>konfig.js</b> unter <b>recht</b>. '+
-      'Bis dahin darf die App nicht öffentlich genutzt werden.</div>'
+      esc(fehlt.join(' · '))+'.'+
+      (isChef()
+        ? '<br/>Einzutragen in der Verwaltung unter <b>System → ⚖️ Rechtliche Angaben</b>. '+
+          'Bis dahin darf die App nicht öffentlich genutzt werden.'
+        : '<br/>Die Angaben trägt die Geschäftsführung ein.')+
+      '</div>'
     : '';
 
   function zeile(titel, wert){
@@ -4669,10 +4927,65 @@ function renderRechtWarnung(){
   k.style.display = fehlt.length ? '' : 'none';
   if(!fehlt.length) return;
   var t=$('rechtFehltText');
-  if(t) t.textContent = 'Es fehlt: '+fehlt.join(' · ')+'. Einzutragen in konfig.js '+
-    'unter „recht". Ohne vollständiges Impressum darf die App nicht öffentlich '+
-    'genutzt werden.';
+  /* Den System-Bereich sieht auch ein Studio-Leiter. Für ihn ist das
+     eine Auskunft, keine Aufgabe — die Karte weiter unten bekommt er
+     gar nicht zu sehen (data-chef-only). */
+  if(t) t.textContent = 'Es fehlt: '+fehlt.join(' · ')+'. '+
+    (isChef()
+      ? 'Einzutragen weiter unten unter „⚖️ Rechtliche Angaben". '
+      : 'Eintragen kann das nur die Geschäftsführung. ')+
+    'Ohne vollständiges Impressum darf die App nicht öffentlich genutzt werden.';
   rechtBinden();
+}
+
+/* ── Das Formular (Verwaltung → System) ──
+   Vorbelegt wird mit dem, was gerade GILT — also samt Rückfall auf
+   konfig.js, solange es die eigene Firma ist. Wer einmal speichert, hat
+   die Angaben danach in der Datenbank und ist vom Rückfall unabhängig.
+   Bei einer fremden Firma ist der Rückfall leer, dort bleibt auch das
+   Formular leer: es darf ihm nichts vorschlagen, was einem anderen
+   Betrieb gehört. */
+function renderRechtForm(){
+  if(!isChef() || !$('rfBetreiber')) return;
+  var r = rechtDaten();
+  RECHT_FELDER.forEach(function(p){
+    var el=$(p[1]); if(el) el.value = String(r[p[0]]||'');
+  });
+  var z=$('rfZusatz');
+  if(z) z.value = (Array.isArray(r.zusatz)?r.zusatz:[]).join('\n');
+}
+
+function rechtSpeichern(btn){
+  var note=$('rfNote'), d={};
+  RECHT_FELDER.forEach(function(p){ d[p[0]] = String((($(p[1])||{}).value)||'').trim(); });
+  /* Eine Zeile = ein Absatz. Leerzeilen fliegen raus, sonst stehen im
+     Datenschutztext Absätze ohne Inhalt. */
+  d.zusatz = String((($('rfZusatz')||{}).value)||'').split('\n')
+    .map(function(z){ return z.trim(); })
+    .filter(function(z){ return z; });
+  d.ts = Date.now();
+  withBusy(btn, function(){
+    return S('config').doc('recht').set(d, {merge:true})
+      .then(function(){
+        /* Erst nach der Bestätigung des Servers übernehmen. Ein Impressum,
+           das auf dem Bildschirm steht und in der Datenbank nicht, wäre
+           genau die Sorte Fehler, die erst dem Nächsten auffällt. */
+        _recht = d;
+        renderRechtWarnung(); renderRecht();
+        var fehlt = rechtFehlend();
+        if(note){
+          note.style.color = fehlt.length ? 'var(--danger-tx)' : 'var(--accent-d)';
+          note.textContent = fehlt.length
+            ? 'Gespeichert – es fehlt aber weiterhin: '+fehlt.join(' · ')
+            : '✓ Gespeichert. Impressum und Datenschutz sind vollständig.';
+        }
+        toast('Rechtliche Angaben gespeichert ✓');
+      })
+      .catch(function(e){
+        if(note){ note.style.color='var(--danger-tx)'; note.textContent=errMsg(e); }
+        toast(errMsg(e), true);
+      });
+  });
 }
 
 function rechtOeffnen(teil){
@@ -5395,6 +5708,22 @@ function featuresAnwenden(){
   if(currentView==='team') teamReiterPruefen();
 }
 
+/* Zeigt, was die Funktion zurueckgemeldet hat — Zahlen, keine Zusagen. */
+function kontenStandZeigen(r){
+  var box=$('knStand'); if(!box) return;
+  if(!r){ box.textContent='Keine Antwort erhalten.'; return; }
+  var fertig = !r.ohne;
+  box.innerHTML =
+    '<b>'+r.gesamt+'</b> Konten · <b>'+r.mit+'</b> mit „'+esc(r.firma)+'" · '+
+    '<b>'+r.andere+'</b> andere Firma · <b>'+r.ohne+'</b> ohne Feld'+
+    (r.geschrieben ? ' · gerade ergänzt: <b>'+r.geschrieben+'</b>' : '')+
+    '<br>'+(fertig
+      ? '✓ Alles gesetzt. Die strenge Regel kann ausgerollt werden.'
+      : '⚠ Solange hier etwas offen ist, darf die strenge Regel NICHT ausgerollt werden.');
+  var s2=$('knSchreiben');
+  if(s2) s2.style.display = r.ohne ? '' : 'none';
+}
+
 /* ── Fehler im Betrieb: die Liste für den Chef ────────────────────────
    Bewusst KEIN Dauer-Beobachter. Fehler sind selten und keine Nachricht,
    auf die jemand wartet; ein Listener rund um die Uhr wäre Aufwand für
@@ -5442,6 +5771,180 @@ function renderFehlerListe(){
           toast('Erledigt ✓');
         });
       });
+    });
+  });
+}
+
+/* ══ Einrichtung: was fehlt noch? ═══════════════════════════════════
+   Ein neuer Kunde meldet sich zum ersten Mal an und sieht eine leere
+   App. Bisher stand dort nichts, was ihm sagt, was zuerst dran ist —
+   und der häufigste Grund, warum jemand ein Werkzeug wieder weglegt,
+   ist nicht, dass es schlecht wäre, sondern dass er nicht weiss, wo er
+   anfangen soll.
+
+   JEDER SCHRITT LIEST NACH, OB ER GETAN IST.
+   Es gibt bewusst keine Kästchen zum Ankreuzen. Eine Liste, die man
+   abhaken kann, ohne etwas zu tun, ist nach zwei Tagen eine Lüge — und
+   ausgerechnet bei „Impressum vollständig" wäre das eine teure. Was
+   hier grün ist, ist wirklich da.
+
+   Sichtbar nur für den Chef und nur, solange etwas offen ist. Danach
+   verschwindet die Karte ganz: eine Einrichtungshilfe, die nach einem
+   Jahr noch dasteht, ist Möbel. */
+var _setupCode = null;      // config/registrierung, nur der Chef darf es lesen
+
+function setupSchritte(){
+  /* Studios: heissen sie noch „Studio 1", „Studio 2"? So legt
+     firmaAnlegen sie an — absichtlich neutral, damit kein Kunde die
+     Standortnamen eines anderen sieht. Solange sie so heissen, hat sie
+     niemand angefasst. */
+  var eigeneNamen = (_studioListe||[]).some(function(s){
+    return s && s.name && !new RegExp('^Studio\\s*\\d+$').test(String(s.name).trim());
+  });
+  var fehltRecht = rechtFehlend();
+  return [
+    { id:'studios', titel:'Studios benennen',
+      was:'Aus „Studio 1" wird der Name, den dein Team kennt.',
+      wo:'Verwaltung → Studios', fertig: eigeneNamen },
+    { id:'recht', titel:'Rechtliche Angaben eintragen',
+      was: fehltRecht.length ? ('Es fehlt: '+fehltRecht.join(' · ')+'.')
+                             : 'Impressum und Datenschutz sind vollständig.',
+      wo:'Verwaltung → System → ⚖️ Rechtliche Angaben', fertig: !fehltRecht.length },
+    { id:'code', titel:'Firmencode setzen',
+      was:'Ohne ihn kann sich jeder anmelden, der die Adresse kennt.',
+      wo:'Verwaltung → Team → 🔑 Wer darf sich anmelden',
+      /* _setupCode === null heisst „konnte ich nicht lesen", nicht „ist
+         nicht gesetzt". Dann gilt der Schritt als erledigt: eine
+         Aufforderung, etwas zu tun, das längst getan ist, kostet mehr
+         Vertrauen als ein fehlender Hinweis. */
+      fertig: _setupCode === null
+        || !!String((_setupCode||{}).code||'').trim() },
+    { id:'team', titel:'Das Team anlegen',
+      was:'Zugänge für die Personen, die mitarbeiten sollen.',
+      wo:'Verwaltung → Team → Zugang anlegen',
+      fertig: (_employees||[]).length > 1 },
+    { id:'inhalt', titel:'Erste Aufgaben oder Putzpunkte anlegen',
+      was:'Eine leere App sieht kaputt aus, auch wenn sie es nicht ist.',
+      wo:'Verwaltung → Erstellen',
+      fertig: Object.keys(cachedTodos||{}).some(function(k){
+        return (cachedTodos[k]||[]).length; }) }
+  ];
+}
+
+/* Der Code ist absichtlich für niemanden ausser dem Chef lesbar. Ein
+   Fehlschlag heisst deshalb nicht „kein Code", sondern „weiss ich
+   nicht" — und dann darf der Schritt NICHT als offen dastehen, sonst
+   schickt die Karte jemanden auf eine Aufgabe, die längst erledigt ist. */
+function setupCodeLaden(){
+  if(!isChef()) return Promise.resolve();
+  return S('config').doc('registrierung').get()
+    .then(function(d){ _setupCode = d.exists ? (d.data()||{}) : {}; })
+    .catch(function(e){
+      console.warn('Firmencode nicht lesbar:', e.message);
+      _setupCode = null;
+    });
+}
+
+function renderSetup(){
+  var karte=$('setupCard'); if(!karte) return;
+  if(!isChef()){ karte.style.display='none'; return; }
+  var schritte=setupSchritte();
+  var offen=schritte.filter(function(s){ return !s.fertig; });
+  if(!offen.length){ karte.style.display='none'; return; }
+  karte.style.display='';
+  var z=$('setupZahl');
+  if(z) z.textContent = offen.length + ' von ' + schritte.length + ' offen';
+  var box=$('setupListe'); if(!box) return;
+  box.innerHTML=schritte.map(function(s){
+    return '<div class="setup-zeile'+(s.fertig?' fertig':'')+'">'+
+      '<span class="setup-hak">'+(s.fertig?'✓':'○')+'</span>'+
+      '<span class="setup-txt"><b>'+esc(s.titel)+'</b>'+
+      '<i>'+esc(s.was)+(s.fertig?'':' <em>'+esc(s.wo)+'</em>')+'</i></span></div>';
+  }).join('');
+}
+
+/* ══ Die Farbe der Firma ═════════════════════════════════════════════
+   Ein Kunde soll SEINE App sehen, nicht deine. Das ist der sichtbarste
+   Unterschied zwischen „Software gemietet" und „unsere App" — und der
+   billigste: eine Zeile in der Datenbank.
+
+   WARUM EINE AUSWAHL UND KEIN FARBWÄHLER
+   Ein freier Farbwähler endet damit, dass jemand Gelb nimmt und die
+   Schrift auf den Akzentflächen nicht mehr lesbar ist. Jeder Eintrag
+   hier hat deshalb DREI Werte, die zusammen geprüft sind: einen für den
+   dunklen Modus, einen für den hellen, und die Textfarbe, die darauf
+   liegt. Sechs Möglichkeiten sind genug, um sich wiederzuerkennen, und
+   wenig genug, um sie alle gut aussehen zu lassen. */
+var MARKEN = [
+  { id:'himmel',  name:'Himmelblau', dunkel:'#38BDF8', hell:'#0369A1', auf:'#0A1420' },
+  { id:'gruen',   name:'Grün',       dunkel:'#34D399', hell:'#047857', auf:'#052018' },
+  { id:'violett', name:'Violett',    dunkel:'#A78BFA', hell:'#6D28D9', auf:'#140A24' },
+  { id:'orange',  name:'Orange',     dunkel:'#FB923C', hell:'#C2410C', auf:'#1F0F04' },
+  { id:'rot',     name:'Rot',        dunkel:'#F87171', hell:'#B91C1C', auf:'#200808' },
+  { id:'anthra',  name:'Anthrazit',  dunkel:'#CBD5E1', hell:'#334155', auf:'#0B1220' }
+];
+var _marke = null;
+
+function markeVon(id){
+  /* MARKEN ist ein var: der NAME steht durch Hochziehen schon zu Beginn
+     bereit, der WERT aber erst, wenn diese Stelle im Skript erreicht
+     ist. applyPrefs() läuft frueher und ruft markeAnwenden() — ohne
+     diese Zeile wirft es dort „Cannot read properties of undefined",
+     und zwar so frueh, dass die halbe App nicht mehr aufbaut.
+     Genau so ist es beim ersten Anlauf passiert. */
+  if(!id || !MARKEN) return null;
+  for(var i=0;i<MARKEN.length;i++){ if(MARKEN[i].id===id) return MARKEN[i]; }
+  return null;
+}
+
+/* Setzt die Farbe. Ohne Eintrag passiert NICHTS — dann gelten die Werte
+   aus dem Stylesheet, und das ist der heutige Zustand jedes Betriebs. */
+function markeAnwenden(){
+  var m = markeVon(_marke);
+  var w = document.documentElement.style;
+  if(!m){
+    ['--accent','--accent-d','--accent-glow','--on-accent'].forEach(function(v){
+      w.removeProperty(v);
+    });
+    return;
+  }
+  /* Hell oder dunkel entscheidet sich am body, nicht hier — deshalb
+     wird bei jedem Moduswechsel neu gesetzt (siehe modusAnwenden). */
+  var hell = document.body && document.body.classList.contains('light');
+  var f = hell ? m.hell : m.dunkel;
+  w.setProperty('--accent', f);
+  w.setProperty('--accent-d', f);
+  w.setProperty('--accent-glow', hell ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.22)');
+  w.setProperty('--on-accent', hell ? '#ffffff' : m.auf);
+}
+
+function markeLaden(){
+  return S('config').doc('marke').get()
+    .then(function(d){ _marke = d.exists ? ((d.data()||{}).farbe || null) : null; })
+    .catch(function(e){ console.warn('Farbe nicht lesbar:', e.message); _marke = null; })
+    .then(markeAnwenden);
+}
+
+function renderMarkeWahl(){
+  var box=$('markeWahl'); if(!box || !isChef()) return;
+  box.innerHTML=MARKEN.map(function(m){
+    var an = (_marke||'himmel')===m.id;
+    return '<button class="marke-chip'+(an?' an':'')+'" data-marke="'+esc(m.id)+'" '+
+      'style="--mc:'+m.dunkel+'" title="'+esc(m.name)+'">'+
+      '<span class="marke-punkt"></span>'+esc(m.name)+'</button>';
+  }).join('');
+  box.querySelectorAll('[data-marke]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-marke');
+      var vorher=_marke;
+      _marke=id; markeAnwenden(); renderMarkeWahl();   // sofort sehen, was man wählt
+      S('config').doc('marke').set({ farbe:id, gesetztVon:session.name,
+                                     gesetztAm:Date.now() }, {merge:true})
+        .then(function(){ toast('Farbe gespeichert ✓'); })
+        .catch(function(e){
+          _marke=vorher; markeAnwenden(); renderMarkeWahl();
+          toast(errMsg(e),true);
+        });
     });
   });
 }
@@ -5645,6 +6148,25 @@ function ppAbgelaufen(t){
   return !t.recurring
     && !!t.done && !!t.doneAt
     && (Date.now()-t.doneAt > PUTZ_WEG_NACH_STD*3600000);
+}
+/* ── Pausierte Putzpunkte ──
+   Studio im Umbau, Gerät ausgebaut, Raum vermietet: eine wiederkehrende
+   Aufgabe haeuft sich sonst jeden Tag unerledigt an, bis niemand mehr
+   hinsieht — und dann faellt auch das nicht mehr auf, was wirklich
+   liegen bleibt. Eine Pause ist ehrlicher als ein taeglich ignorierter
+   Punkt.
+
+   GELOESCHT WIRD NICHTS. Nach dem Datum ist die Aufgabe von selbst
+   wieder da; wer sie dauerhaft loswerden will, loescht sie. */
+function ppPausiert(t){
+  if(!t || !t.pausiertBis) return false;
+  // Vergleich auf Tagesebene: bis einschliesslich dieses Tages pausiert
+  return String(t.pausiertBis) >= new Date().toLocaleDateString('sv-SE');
+}
+function ppPauseText(t){
+  if(!ppPausiert(t)) return '';
+  var d=new Date(t.pausiertBis+'T00:00:00');
+  return 'pausiert bis '+d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
 }
 function fmtTime(ts){
   if(!ts) return '';
@@ -6874,7 +7396,9 @@ function enterApp(uid, data){
      Einträge verschwinden erst danach. Das sieht aus wie ein Fehler.
      Beides scheitert nach aussen hin folgenlos — dann ist eben alles
      da, und das ist die harmlosere Richtung. */
-  Promise.all([aboLaden(), featuresLaden()]).then(showApp, showApp);
+  /* Farbe mit VOR showApp: sonst baut sich die App einmal in
+     Himmelblau auf und springt dann um. */
+  Promise.all([aboLaden(), featuresLaden(), markeLaden()]).then(showApp, showApp);
 }
 
 /* ============================================================
@@ -6892,6 +7416,15 @@ auth.onAuthStateChanged(function(user){
      eigenen Firma. */
   _firma = firmaAusLink();
   beitrittSchalterLaden();
+  /* Das Impressum AUCH schon hier, nicht erst nach dem Anmelden. Sonst
+     wäre die Regel „ohne Anmeldung lesbar" wirkungslos: der fremde Kunde
+     bekäme auf dem Anmeldebildschirm die Warnung statt seiner Angaben,
+     weil sie schlicht nie geholt wurden. Für die eigene Firma fiel das
+     nicht auf — dort fängt der Rückfall auf konfig.js es auf, und genau
+     so bleibt ein Fehler unentdeckt, bis der erste fremde Kunde da ist. */
+  rechtLaden();
+  /* Auch der Anmeldebildschirm gehört dem Kunden. */
+  markeLaden();
   /* Die Studioliste MUSS vor enterApp stehen. Dort werden aus den
      Studionamen im Profil die Datenbank-Kennungen gerechnet. Läge dabei
      noch die alte Liste aus konfig.js zugrunde, bekäme ein umbenanntes
@@ -6998,6 +7531,12 @@ function showApp(){
   mailHinweisBinden(); mailHinweisPruefen();
   listenStudios();                       // jede Rolle: Umbenennen soll sofort ankommen
   listenFeatures();                      // schaltet der Chef etwas um, ist es überall weg
+  /* Jede Rolle: das Impressum steht in jedem Bildschirm unten und muss
+     die Angaben DIESER Firma zeigen, nicht die aus konfig.js. */
+  rechtLaden();
+  /* Nur der Chef: der Firmencode ist für alle anderen nicht lesbar, und
+     nur er kann die Einrichtungsschritte überhaupt erledigen. */
+  if(isChef()) setupCodeLaden().then(renderSetup);
   listenInventoryAll();                  // jede Rolle: fuer den Material-Hinweis
   if(canManage()){ listenEmployees(); }
   if(isChef()){
@@ -9342,6 +9881,10 @@ function renderBoard(){
    ============================================================ */
 function renderHome(){
   if(!session) return;
+  /* Steht ganz oben, wird deshalb auch zuerst gebaut. Sie liest nur aus
+     dem, was ohnehin schon geladen ist — keine eigene Abfrage ausser dem
+     Firmencode, und der wird einmal beim Start geholt. */
+  renderSetup();
   var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
   var jetzt=Date.now();
   var startToday=new Date(); startToday.setHours(0,0,0,0); startToday=startToday.getTime();
@@ -10084,6 +10627,17 @@ function todoHTML(t,sk,chefView){
   if(t.assignedTo){
     var mineTask = t.assignedTo===session.uid;
     assign='<span class="t-assign'+(mineTask?' me':'')+'">'+(mineTask?'für dich':'für '+esc(t.assignedName||'?'))+'</span>';
+  } else if(!done){
+    /* „Ich übernehme das" — nur an OFFENEN Aufgaben, die noch niemandem
+       gehören. Zwei Leute, die dasselbe machen, sind im Studio kein
+       theoretischer Fall: der Putzplan haengt an der Tuer, die Aufgaben
+       stehen im Handy, und wer gerade Zeit hat, faengt an.
+
+       Es ist ausdruecklich KEINE Zuweisung durch den Chef, sondern eine
+       Meldung. Deshalb kann man sie auch wieder loesen (siehe unten):
+       wer sich vertut oder doch nicht dazu kommt, soll die Aufgabe nicht
+       blockieren. */
+    assign='<button class="t-nimm" data-tnimm="'+esc(t.id)+'">Ich übernehme das</button>';
   }
   // Teilschritte: kleine Checkliste innerhalb der Aufgabe
   var steps=Array.isArray(t.steps)?t.steps:[];
@@ -10181,6 +10735,22 @@ function bindTodoClicks(area){
         S('studios').doc(sk).collection('todos').doc(id)
           .update({ steps:steps })
           .catch(function(err){ li.classList.toggle('done'); toast(errMsg(err),true); });
+      });
+    });
+    /* „Ich übernehme das". Ein Klick, keine Rueckfrage — und wer schon
+       drinsteht, loest sich damit wieder. Die Regeln erlauben jedem
+       Angemeldeten update auf Aufgaben (Abhaken laeuft denselben Weg),
+       eine neue Regel braucht es dafuer nicht. */
+    var nimm=node.querySelector('[data-tnimm]');
+    if(nimm) nimm.addEventListener('click',function(e){
+      e.stopPropagation();
+      var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
+      if(t && t.assignedTo) return;              // gehoert schon jemandem
+      withBusy(nimm,function(){
+        return S('studios').doc(sk).collection('todos').doc(id)
+          .update({ assignedTo:session.uid, assignedName:session.name||'' })
+          .then(function(){ toast('Du hast das übernommen ✓'); tick(8); })
+          .catch(function(err){ toast(errMsg(err),true); });
       });
     });
     var mehr=node.querySelector('[data-tmehr]');
@@ -10551,7 +11121,7 @@ function showChefTab(id, keep){
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
-  if(id==='system'){ renderFeatureListe(); fehlerLaden(); }
+  if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
@@ -11604,8 +12174,16 @@ function renderPutzplan(){
   // offene zuerst, dann erledigte; innerhalb nach Erstellzeit
   var list=_ppTasks.slice().sort(function(a,b){ return (isDone(a)-isDone(b))||((a.ts||0)-(b.ts||0)); });
   var chef=canManage();
-  var done=list.filter(isDone).length, total=list.length;
-  var prog=$('ppProgress'); if(prog) prog.textContent = total ? (done+' von '+total+' erledigt') : '';
+  /* Pausierte zaehlen NICHT mit. Sonst stuende dort dauerhaft
+     "3 von 12 erledigt", obwohl neun davon gar nicht dran sind — und
+     die Zahl waere wertlos. */
+  var zaehlbar=list.filter(function(t){ return !ppPausiert(t); });
+  var done=zaehlbar.filter(isDone).length, total=zaehlbar.length;
+  var pausiert=list.length-zaehlbar.length;
+  var prog=$('ppProgress');
+  if(prog) prog.textContent = total
+    ? (done+' von '+total+' erledigt'+(pausiert?(' · '+pausiert+' pausiert'):''))
+    : (pausiert ? (pausiert+' pausiert') : '');
   if(!list.length){
     box.innerHTML=emptyHTML('Kein Putzplan','Der Chef legt hier Reinigungsaufgaben an.');
     return;
@@ -11623,11 +12201,22 @@ function renderPutzplan(){
       ? '<span class="pp-doneby">✓ '+wer+' · '+fmtDateTime(t.doneAt)+'</span>'
       : '';
     var del = chef ? '<button class="pp-del" data-del="'+esc(t.id)+'" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
-    return '<div class="pp-item'+(d?' done':'')+'" data-id="'+esc(t.id)+'">'+
+    /* Pausiert: die Aufgabe bleibt sichtbar, aber blass und ohne Haken.
+       Verstecken waere schlechter — dann sucht in vier Wochen jemand
+       einen Punkt, den es scheinbar nicht mehr gibt. */
+    var pause = ppPausiert(t);
+    var pauseKnopf = chef
+      ? '<button class="pp-pause" data-pause="'+esc(t.id)+'">'+(pause?'fortsetzen':'pausieren')+'</button>'
+      : '';
+    return '<div class="pp-item'+(d?' done':'')+(pause?' pausiert':'')+'" data-id="'+esc(t.id)+'">'+
       '<div class="swipe-hint">✓</div><div class="swipe-body">'+
-      '<button class="check" data-check="'+esc(t.id)+'" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
+      (pause
+        ? '<span class="pp-pauseico" aria-hidden="true">⏸</span>'
+        : '<button class="check" data-check="'+esc(t.id)+'" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>')+
       '<div class="pp-body"><div class="pp-title">'+esc(t.title)+rep+'</div>'+
-      '<div class="pp-meta">'+(doneInfo||'<span>noch offen</span>')+'</div></div>'+
+      '<div class="pp-meta">'+(pause
+        ? '<span class="pp-pausetxt">'+esc(ppPauseText(t))+'</span>'
+        : (doneInfo||'<span>noch offen</span>'))+pauseKnopf+'</div></div>'+
       del+'</div></div>';
   }).join('');
   bindPutzplanClicks(box);
@@ -11689,7 +12278,37 @@ function bindPutzplanClicks(box){
   });
   box.querySelectorAll('.pp-item').forEach(function(node){
     var chk=node.querySelector('[data-check]');
+    /* Pausierte nicht per Wischen abhaken: der Haken ist dort gar nicht
+       da, und eine Geste, die nichts tut, fuehlt sich kaputt an. */
+    if(node.classList.contains('pausiert')) return;
     bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
+  });
+  /* Pausieren und fortsetzen. Vier Wochen ist die Spanne, die im Studio
+     wirklich vorkommt (Umbau, Geraet in Reparatur); wer laenger braucht,
+     drueckt noch einmal. Ein Datumsfeld waere hier ein Formular fuer
+     eine Entscheidung, die drei Sekunden dauern soll. */
+  box.querySelectorAll('[data-pause]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-pause');
+      var t=null;
+      _ppTasks.forEach(function(x){ if(x.id===id) t=x; });
+      var an=ppPausiert(t);
+      var bis=null;
+      if(!an){
+        var d=new Date(); d.setDate(d.getDate()+28);
+        bis=d.toLocaleDateString('sv-SE');
+      }
+      withBusy(b,function(){
+        return S('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
+          .update({ pausiertBis:bis, pausiertVon:bis?session.name:null })
+          .then(function(){
+            toast(bis ? 'Pausiert bis '+new Date(bis+'T00:00:00').toLocaleDateString('de-DE')
+                      : 'Wieder aktiv ✓');
+            schedulePutzplanSheets(_ppStudioKey);
+          })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
+    });
   });
   box.querySelectorAll('[data-del]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -12874,17 +13493,37 @@ function buildCertSelects(){
   }
 }
 
+/* Selbst eingetragen? Das steht NICHT in einem Feld, das der Client
+   setzt, sondern ergibt sich aus zwei Feldern, die die Regeln erzwingen:
+   erfasstVonUid muss der Schreibende sein, uid die betroffene Person.
+   Sind beide gleich, hat sich jemand selbst eingetragen — und das ist
+   eine Tatsache, keine Behauptung. */
+function certSelbst(c){
+  return !!(c && c.erfasstVonUid && c.erfasstVonUid === c.uid);
+}
+
 function certZeile(c, mitName){
   var tage=certTage(c), st=certStufe(tage);
   var a=certArt(c.art);
   var titel=(c.art==='sonstiges' && c.bez) ? c.bez : a.name;
   var loeschen = isChef()
     ? '<button class="cert-del" data-certdel="'+esc(c.id)+'" aria-label="entfernen">✕</button>' : '';
+  /* Der Unterschied zwischen „behauptet" und „belegt". Ohne ihn wäre die
+     Selbsteintragung ein Freibrief: bei einem Erste-Hilfe-Schein zählt,
+     ob jemand ihn wirklich vorgelegt hat. */
+  var herkunft = '';
+  if(certSelbst(c) && !c.bestaetigt){
+    herkunft = '<span class="cert-selbst">selbst eingetragen</span>' +
+      (isChef() ? '<button class="cert-ok" data-certok="'+esc(c.id)+'">bestätigen</button>' : '');
+  } else if(c.bestaetigt){
+    herkunft = '<span class="cert-bestaetigt">✓ bestätigt</span>';
+  }
   return '<div class="cert-item">'+
     '<span class="cert-ico">'+a.ico+'</span>'+
     '<div class="cert-body"><div class="cert-title">'+esc(titel)+
       (mitName?' <span class="cert-who">· '+esc(c.name||'')+'</span>':'')+'</div>'+
-    '<div class="cert-meta">'+(c.bis?('gültig bis '+new Date(c.bis+'T00:00:00').toLocaleDateString('de-DE')):'kein Ablaufdatum')+'</div></div>'+
+    '<div class="cert-meta">'+(c.bis?('gültig bis '+new Date(c.bis+'T00:00:00').toLocaleDateString('de-DE')):'kein Ablaufdatum')+
+      herkunft+'</div></div>'+
     '<span class="cert-st '+st.cls+'">'+esc(st.txt)+'</span>'+loeschen+'</div>';
 }
 
@@ -12934,6 +13573,61 @@ function bindCertDelete(root){
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
+  // Bestätigen: nur der Chef, und die Regeln lassen es auch nur ihm zu
+  root.querySelectorAll('[data-certok]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-certok');
+      withBusy(b,function(){
+        return S('certificates').doc(id)
+          .set({ bestaetigt:true, bestaetigtVon:session.name,
+                 bestaetigtAm:Date.now() }, {merge:true})
+          .then(function(){ toast('Bestätigt ✓'); })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
+    });
+  });
+}
+
+/* ── Den eigenen Nachweis eintragen ──
+   Dieselbe Auswahl wie beim Chef, aber ohne Personenfeld: es geht immer
+   um einen selbst. Die Regeln erzwingen das ohnehin — hier steht es nur
+   nicht zur Wahl, damit niemand es versucht und eine Fehlermeldung
+   bekommt, die er nicht versteht. */
+function buildMyCertSelect(){
+  var art=$('myCertArt'); if(!art || art.options.length) return;
+  art.innerHTML=CERT_ARTEN.map(function(a){
+    return '<option value="'+esc(a.id)+'">'+a.ico+' '+esc(a.name)+'</option>';
+  }).join('');
+  art.addEventListener('change',function(){
+    var w=$('myCertOwnWrap'); if(w) w.style.display = art.value==='sonstiges' ? '' : 'none';
+    var m=certArt(art.value).monate, bis=$('myCertBis');
+    if(m && bis && !bis.value){
+      var d=new Date(); d.setMonth(d.getMonth()+m); bis.value=ymd(d);
+    }
+  });
+}
+
+function addMyCert(btn){
+  var art=($('myCertArt')||{}).value;
+  if(!art){ toast('Bitte eine Art wählen.',true); return; }
+  var bez=(($('myCertOwn')||{}).value||'').trim();
+  if(art==='sonstiges' && !bez){ toast('Bitte eine Bezeichnung eingeben.',true); return; }
+  var bis=(($('myCertBis')||{}).value||'');
+  if(!bis){ toast('Bitte ein Ablaufdatum angeben.',true); return; }
+  withBusy(btn,function(){
+    return S('certificates').add({
+      uid:session.uid, name:session.name||'', art:art, bez:bez, bis:bis,
+      /* Beide Felder erzwingen die Regeln. erfasstVonUid ist das, woran
+         die Oberfläche später „selbst eingetragen" erkennt. */
+      erfasstVon:session.name, erfasstVonUid:session.uid,
+      bestaetigt:false, ts:Date.now()
+    }).then(function(){
+      if($('myCertOwn')) $('myCertOwn').value='';
+      if($('myCertBis')) $('myCertBis').value='';
+      toast('Nachweis eingetragen ✓');
+      loadMyCerts();
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
 }
 
 function addCert(btn){
@@ -12948,7 +13642,10 @@ function addCert(btn){
   withBusy(btn,function(){
     return S('certificates').add({
       uid:uid, name:u.name||'', art:art, bez:bez, bis:bis,
-      erfasstVon:session.name, ts:Date.now()
+      /* erfasstVonUid verlangen die Regeln von JEDEM — auch vom Chef.
+         Nur so ist „selbst eingetragen“ eine Tatsache: es steht dann
+         dieselbe Kennung in uid und erfasstVonUid. */
+      erfasstVon:session.name, erfasstVonUid:session.uid, ts:Date.now()
     }).then(function(){
       $('certOwn').value=''; $('certBis').value='';
       toast('Nachweis gespeichert ✓');
@@ -12960,6 +13657,7 @@ function addCert(btn){
    das ändert sich höchstens ein paarmal im Jahr. */
 function loadMyCerts(){
   var box=$('pmCerts'); if(!box) return;
+  buildMyCertSelect();
   box.innerHTML='<p class="hint">Wird geladen …</p>';
   S('certificates').where('uid','==',session.uid).get()
     .then(function(snap){
@@ -13376,6 +14074,12 @@ function avatarMarkup(u){
 function listenAllUsers(){
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   var redrawTimer=null;
+  /* ⚠ UNGEFILTERT — bekannt, siehe firestore.rules bei match /users.
+     Damit laedt jedes Geraet jedes Konto JEDER Firma. Der Filter
+     where('firma','==',…) steht bereit und gehoert hierher, sobald an
+     jedem Konto das Feld nachgetragen ist (Betreiber-Bereich →
+     "Konten ohne Firma"). Vorher wuerde die Personenliste leer
+     bleiben. */
   _usersUnsub=db.collection('users').onSnapshot(function(snap){
     var first = !_allUsers.length;
     _allUsers=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
@@ -14569,6 +15273,34 @@ function bindActions(){
   var bts=$('btSave');
   if(bts) bts.addEventListener('click',function(){ beitrittSpeichern(this); });
 
+  // ── Rechtliche Angaben (Impressum/Datenschutz je Firma) ──
+  var rfs=$('rfSave');
+  if(rfs) rfs.addEventListener('click',function(){ rechtSpeichern(this); });
+
+  /* Konten nachtragen — zweistufig: erst ansehen, dann schreiben. Ein
+     Wartungsknopf, der sofort schreibt, wird einmal aus Versehen
+     gedrueckt und dann nie wieder freiwillig. */
+  var knP=$('knPruefen');
+  if(knP) knP.addEventListener('click',function(){
+    var btn=this;
+    withBusy(btn,function(){
+      return firebase.app().functions(KONFIG.region).httpsCallable('kontenNachtragen')({})
+        .then(function(r){ kontenStandZeigen(r && r.data); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  var knS=$('knSchreiben');
+  if(knS) knS.addEventListener('click',function(){
+    var btn=this;
+    withBusy(btn,function(){
+      return firebase.app().functions(KONFIG.region).httpsCallable('kontenNachtragen')({ wirklich:true })
+        .then(function(r){
+          kontenStandZeigen(r && r.data);
+          toast('Nachgetragen ✓');
+        })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
   var cb=$('chefBack');
   if(cb) cb.addEventListener('click',function(){ showChefTab(CHEF_START); tick(8); });
 
@@ -14579,6 +15311,7 @@ function bindActions(){
 
   // ── Nachweise (nur Chef) ──
   var cA=$('certAdd'); if(cA) cA.addEventListener('click',function(){ addCert(this); });
+  var mcA=$('myCertAdd'); if(mcA) mcA.addEventListener('click',function(){ addMyCert(this); });
 
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){

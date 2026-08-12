@@ -29,12 +29,23 @@
     firma: 'koerperformen'
   };
   if (window.__admin) PROFILE.admin = true;
-  var USERS = [
-    { id:'testuid', name:'Test Chef', role:'chef', studios:['Hürth','Brühl'] },
-    { id:'u2', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
-    { id:'u3', name:'Ben Kraus', role:'leiter', studios:['Brühl'], studioKeys:['studio-7'], lastSeen:Date.now()-3600000 },
-    { id:'u4', name:'Alt-Konto Test', role:'chef', email:'test1@example.com' },
-    { id:'u5', name:'', role:'chef', email:'test2@example.com' }
+  /* window.__firma macht daraus das Konto einer FREMDEN Firma. Gebraucht
+     wird das dort, wo eigeneFirma() den Unterschied macht — bei der
+     Studioliste und beim Impressum darf ein anderer Betrieb nichts von
+     Körperformen zu sehen bekommen. */
+  if (window.__firma) PROFILE.firma = window.__firma;
+    /* firma an JEDEM Konto — so sieht es nach tools/firma-nachtragen.js
+     aus. Ohne das Feld findet die gefilterte Abfrage in
+     listenAllUsers() nichts, und die Personenliste bleibt leer.
+     Genau das hat test-beitritt am 12.8.2026 sofort gemeldet —
+     und genau deshalb muss das Nachtragen VOR dem Ausrollen
+     laufen. */
+var USERS = [
+    { id:'testuid', firma:'koerperformen', name:'Test Chef', role:'chef', studios:['Hürth','Brühl'] },
+    { id:'u2', firma:'koerperformen', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
+    { id:'u3', firma:'koerperformen', name:'Ben Kraus', role:'leiter', studios:['Brühl'], studioKeys:['studio-7'], lastSeen:Date.now()-3600000 },
+    { id:'u4', firma:'koerperformen', name:'Alt-Konto Test', role:'chef', email:'test1@example.com' },
+    { id:'u5', firma:'koerperformen', name:'', role:'chef', email:'test2@example.com' }
   ];
   var MESSAGES = [
     { id:'m1', uid:'u2', name:'Anna Meier', role:'mitarbeiter', studio:'Hürth',
@@ -74,7 +85,10 @@
   var CLEAN = {
     'studio-6': [
       { id:'c1', title:'Böden wischen', recurring:'daily', done:true, doneBy:'Anna', doneAt:Date.now()-5400000, ts:Date.now()-90000000 },
-      { id:'c2', title:'Spiegel putzen', recurring:'weekly', done:false, ts:Date.now()-80000000 },
+      /* c2 laesst sich ueber window.__ppPause pausieren — so kann ein
+         Durchlauf den Zustand pruefen, ohne erst zu klicken. */
+      { id:'c2', title:'Spiegel putzen', recurring:'weekly', done:false, ts:Date.now()-80000000,
+        pausiertBis: (window.__ppPause && window.__ppPause.id==='c2') ? window.__ppPause.bis : null },
       { id:'c3', title:'Toiletten reinigen', recurring:'daily', done:false, ts:Date.now()-70000000 },
       // einmalig, vor 30 Stunden abgehakt -> muss verschwunden sein
       { id:'c4', title:'Fenster putzen (alt)', done:true, doneBy:'Ben', doneAt:Date.now()-30*3600000, ts:Date.now()-60000000 },
@@ -251,6 +265,24 @@
             if (path === 'config' && id === 'sicherung') {
               return Promise.resolve({ exists: true, id: id, data: function () { return SICHERUNG; } });
             }
+            /* Studioliste und Firmencode. Beides gab es hier bisher
+               nicht — die Durchläufe kamen mit der Liste aus konfig.js
+               aus. Die Einrichtungs-Karte fragt aber genau danach: sind
+               die Studios noch „Studio 1"? Ist ein Code gesetzt? */
+            if (path === 'config' && id === 'studios' && window.__studios) {
+              var st = window.__studios;
+              return Promise.resolve({ exists: true, id: id,
+                data: function () { return st; } });
+            }
+            if (path === 'config' && id === 'registrierung') {
+              /* __regKaputt bildet den Normalfall im Betrieb nach: das
+                 Dokument ist fuer niemanden lesbar ausser dem Chef, und
+                 ein Fehlschlag muss anders behandelt werden als „leer". */
+              if (window.__regKaputt) return Promise.reject(new Error('permission-denied'));
+              var rc = window.__regCode;
+              return Promise.resolve({ exists: rc !== null && rc !== undefined, id: id,
+                data: function () { return { code: rc || '', freigabe: !!rc }; } });
+            }
             /* Abgeschaltete Funktionen. Ohne __features gibt es das
                Dokument NICHT — und genau das ist der Normalfall, den
                jeder andere Durchlauf voraussetzt: alles an. */
@@ -259,10 +291,33 @@
               return Promise.resolve({ exists: !!f, id: id,
                 data: function () { return f || {}; } });
             }
+            /* Farbe der Firma. Ohne __marke gibt es das Dokument NICHT —
+               und das ist der Normalfall: heute hat kein Betrieb einen
+               Eintrag, und die App darf dann nichts umfaerben. */
+            if (path === 'config' && id === 'marke') {
+              var mk = window.__marke;
+              return Promise.resolve({ exists: !!mk, id: id,
+                data: function () { return mk || {}; } });
+            }
+            /* Impressum/Datenschutz je Firma. Ohne __recht gibt es das
+               Dokument NICHT — das ist der Normalfall, auf dem jeder
+               andere Durchlauf steht: dann gilt der Rückfall auf
+               konfig.js, und zwar nur für die eigene Firma. */
+            if (path === 'config' && id === 'recht') {
+              var rr = window.__recht;
+              return Promise.resolve({ exists: !!rr, id: id,
+                data: function () { return rr || {}; } });
+            }
             if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }
             return Promise.resolve({ exists: true, id: id, data: function () { return data; } });
           },
-          set: function () { return Promise.resolve(); },
+          /* Geschriebenes merken. Ohne das kann ein Durchlauf nur pruefen,
+             dass ein Knopf klickbar war — nicht, WAS in der Datenbank
+             landet. Beim Impressum ist genau das die Frage. */
+          set: function (d) {
+            (window.__schreib = window.__schreib || []).push({ pfad: docPath, daten: d });
+            return Promise.resolve();
+          },
           update: function () { return Promise.resolve(); },
           delete: function () { return Promise.resolve(); },
           onSnapshot: function (cb) {
