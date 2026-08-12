@@ -294,6 +294,15 @@ var USERS = [
             /* Farbe der Firma. Ohne __marke gibt es das Dokument NICHT —
                und das ist der Normalfall: heute hat kein Betrieb einen
                Eintrag, und die App darf dann nichts umfaerben. */
+            /* Das Firmendokument selbst — daraus kommt der ANZEIGENAME.
+               Bis zum 12.8.2026 brauchte ihn niemand; seit der Name auf
+               dem Anmeldebildschirm, im Fenstertitel, auf Ausdrucken und
+               in der Bestellmail steht, schon. */
+            if (path === 'firmen') {
+              return Promise.resolve({ exists: true, id: id, data: function () {
+                return { name: window.__firmaName || 'Körperformen', aktiv: true };
+              } });
+            }
             if (path === 'config' && id === 'marke') {
               var mk = window.__marke;
               return Promise.resolve({ exists: !!mk, id: id,
