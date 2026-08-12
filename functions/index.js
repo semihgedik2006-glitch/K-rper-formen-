@@ -258,7 +258,7 @@ async function processBirthdays() {
   // System-Account (Anzeige) sicherstellen. users bleibt oben — die
   // Firma steht IM Profil, nicht im Pfad.
   await db.collection('users').doc('system')
-    .set({ name: 'Körperformen 🎂', role: 'chef', system: true }, { merge: true });
+    .set({ name: 'Geburtstagsgruß 🎂', role: 'chef', system: true }, { merge: true });
 
   /* Der Glückwunsch landet im Chat DER Firma, zu der die Person gehört.
      Deshalb einmal die Firmenliste holen und je Profil zuordnen, statt
@@ -279,16 +279,21 @@ async function processBirthdays() {
     /* Gesperrte oder unbekannte Firma: übergehen. Der flache Pfad wäre
        hier die falsche Rettung — dort liegen die Daten einer anderen. */
     if (!flach && alle.indexOf(firma) < 0) continue;
+    const fName = await firmaAnzeigeName(firma);
+    const gruss = fName + ' 🎂';
 
     const uid = doc.id;
     const dmId = 'dm_' + ['system', uid].sort().join('_');
     const ts = Date.now();
     await W(firma).collection('dms').doc(dmId).collection('messages').add({
-      uid: 'system', name: 'Körperformen 🎂',
-      text: '🎉 Alles Gute zum Geburtstag, ' + (u.name || '') + '! Hab einen tollen Tag. – dein Körperformen-Team',
+      uid: 'system', name: gruss,
+      /* Der Name der Firma statt eines festen: der Gruss kommt vom
+         eigenen Betrieb, nicht von dem, fuer den die App gebaut wurde. */
+      text: '🎉 Alles Gute zum Geburtstag, ' + (u.name || '') +
+            '! Hab einen tollen Tag. – dein Team von ' + fName,
       ts: ts
     });
-    const names = { system: 'Körperformen 🎂' }; names[uid] = u.name || '';
+    const names = { system: gruss }; names[uid] = u.name || '';
     const readTs = { system: ts };
     await W(firma).collection('dms').doc(dmId).set({
       participants: ['system', uid], names: names,
@@ -296,7 +301,7 @@ async function processBirthdays() {
     }, { merge: true });
     // Push
     const tokens = await collectTokens(d => d.uid === uid, 'system', firma);
-    await sendPush(tokens, 'Körperformen 🎂', 'Alles Gute zum Geburtstag! 🎉');
+    await sendPush(tokens, gruss, 'Alles Gute zum Geburtstag! 🎉');
     await db.collection('users').doc(uid).update({ lastBdayDM: year });
     sent++;
   }
@@ -468,9 +473,19 @@ exports.runBirthdayCheckNow = region.https.onRequest(async (req, res) => {
    - marketingImage → Bild-Modell (Bild-Generierung)
    ============================================================ */
 
+/* Der Auftrag an das Modell. Bis zum 12.8.2026 stand hier fest
+   "Körperformen" samt Standorten im Raum Köln/Hürth — ein Kunde haette
+   sich Werbetexte fuer einen FREMDEN Betrieb schreiben lassen, mit
+   dessen Namen und dessen Region. Das faellt beim Lesen sofort auf und
+   ist trotzdem der Fehler, der am laengsten unbemerkt geblieben waere:
+   niemand prueft, ob der Werbetext den richtigen Namen traegt, wenn er
+   ihn selbst angefordert hat.
+
+   {firma} wird beim Aufruf ersetzt. Die Ortsangabe ist raus: welche
+   Standorte ein Betrieb hat, steht in seiner Studioliste, nicht hier. */
 const MARKETING_SYSTEM_PROMPT =
-  'Du bist der Marketing-Assistent des EMS-Studios "Körperformen" (Body-Shaping, ' +
-  '20-Minuten-EMS-Training, persönliche Betreuung, mehrere Standorte im Raum Köln/Hürth). ' +
+  'Du bist der Marketing-Assistent des EMS-Studios "{firma}" (Body-Shaping, ' +
+  '20-Minuten-EMS-Training, persönliche Betreuung, mehrere Standorte). ' +
   'Du hilfst dem Team bei Marketing-Kampagnen: Ideen, Konzepte, Post-Texte (Instagram, ' +
   'Facebook, Google), Flyer- und Plakat-Texte, Hashtags, Zielgruppen-Ansprache und ' +
   'Verbesserung bestehender Entwürfe. ' +
@@ -1056,7 +1071,13 @@ exports.marketingChat = region
     // Vorher stand hier nur requireAuth: JEDER selbst registrierte Zugang
     // konnte den Gemini-Schluessel der Firma benutzen.
     const profil = await requireChef(context);
-    await tagesGrenze('marketingChat', 200, await firmaVonProfil(profil));
+    /* Einmal ermitteln und wiederverwenden: die Firma wird gleich
+       zweimal gebraucht (Tagesgrenze und Auftrag ans Modell), und
+       firmaVonProfil() prueft dabei auch, ob die Firma stillgelegt
+       ist. Zweimal aufrufen hiesse zweimal lesen fuer dieselbe
+       Antwort. */
+    const firma = await firmaVonProfil(profil);
+    await tagesGrenze('marketingChat', 200, firma);
     const apiKey = process.env.GEMINI_API_KEY || '';
     if (!apiKey) {
       throw new functions.https.HttpsError('failed-precondition',
@@ -1067,7 +1088,7 @@ exports.marketingChat = region
       throw new functions.https.HttpsError('invalid-argument', 'Keine Nachricht übergeben.');
     }
     const body = {
-      systemInstruction: { parts: [{ text: MARKETING_SYSTEM_PROMPT }] },
+      systemInstruction: { parts: [{ text: MARKETING_SYSTEM_PROMPT.replace(/\{firma\}/g, await firmaAnzeigeName(firma)) }] },
       contents: toGeminiContents(messages)
     };
     try {
@@ -1180,26 +1201,57 @@ const nodemailer = require('nodemailer');
 function reminderHours() { return +(process.env.REMINDER_HOURS || 24) || 24; }
 function followupHours() { return +(process.env.FOLLOWUP_HOURS || 3) || 3; }
 
+/* ══ Anzeigename einer Firma ══════════════════════════════════════════
+   Nicht die Kennung (die steht in den Pfaden), sondern der Name, den ein
+   Mensch liest. Gebraucht in allem, was das Haus verlaesst.
+
+   WARUM DAS NOETIG WURDE: bis zum 12.8.2026 stand in den Terminmails,
+   im Absender, im Geburtstagsgruss und sogar im Auftrag an das
+   KI-Modell fest "Körperformen". Die Terminmails gehen an ENDKUNDEN des
+   Studios — automatisch, ohne dass jemand sie vorher liest. Ein Kunde
+   haette seinen Trainierenden Bestaetigungen im Namen eines fremden
+   Betriebs geschickt.
+
+   Zwischengespeichert je Aufruf der Funktion: ein Zeitplan verschickt
+   Dutzende Mails, und der Name aendert sich einmal im Jahr. */
+const _firmaNamen = {};
+async function firmaAnzeigeName(firma) {
+  const key = firma || '_flach';
+  if (_firmaNamen[key] !== undefined) return _firmaNamen[key];
+  let name = '';
+  if (firma) {
+    try {
+      const d = await db.collection('firmen').doc(firma).get();
+      if (d.exists) name = String((d.data() || {}).name || '');
+    } catch (e) { console.warn('Firmenname (' + firma + '):', e.message); }
+  }
+  /* Ohne Firma (flacher Betrieb vor dem Umzug) oder ohne Namen im
+     Dokument bleibt es beim bisherigen Wert — sonst stuenden ploetzlich
+     namenlose Mails im Postfach von Kundinnen. */
+  _firmaNamen[key] = name || 'Körperformen';
+  return _firmaNamen[key];
+}
+
 /* Standard-Vorlagen. Der Chef kann sie in wachstum.html (Tab "E-Mails")
    überschreiben – die überschriebenen Fassungen liegen in Firestore unter
    emailTemplates/<id> und gewinnen gegen diese Standards.
-   Platzhalter: {name} {studio} {datum} {uhrzeit} {notiz} */
+   Platzhalter: {name} {firma} {studio} {datum} {uhrzeit} {notiz} */
 const MAIL_DEFAULTS = {
   confirm: {
-    subject: 'Terminbestätigung – Körperformen {studio}',
-    body: 'Hallo {name},\n\nhiermit bestätigen wir deinen Termin im Körperformen-Studio {studio}:\n\nDatum: {datum}\nUhrzeit: {uhrzeit} Uhr\n{notiz}\nBitte komm ein paar Minuten früher und bring bequeme Kleidung mit.\nFalls du den Termin nicht wahrnehmen kannst, gib uns bitte rechtzeitig Bescheid.\n\nBis bald!\nDein Körperformen-Team {studio}'
+    subject: 'Terminbestätigung – {firma} {studio}',
+    body: 'Hallo {name},\n\nhiermit bestätigen wir deinen Termin im Studio {studio} von {firma}:\n\nDatum: {datum}\nUhrzeit: {uhrzeit} Uhr\n{notiz}\nBitte komm ein paar Minuten früher und bring bequeme Kleidung mit.\nFalls du den Termin nicht wahrnehmen kannst, gib uns bitte rechtzeitig Bescheid.\n\nBis bald!\nDein Team von {firma} · {studio}'
   },
   reminder: {
-    subject: 'Erinnerung: dein Termin morgen – Körperformen {studio}',
-    body: 'Hallo {name},\n\nkleine Erinnerung an deinen Termin im Körperformen-Studio {studio}:\n\nDatum: {datum}\nUhrzeit: {uhrzeit} Uhr\n\nWir freuen uns auf dich!\nDein Körperformen-Team {studio}'
+    subject: 'Erinnerung: dein Termin morgen – {firma} {studio}',
+    body: 'Hallo {name},\n\nkleine Erinnerung an deinen Termin im Studio {studio} von {firma}:\n\nDatum: {datum}\nUhrzeit: {uhrzeit} Uhr\n\nWir freuen uns auf dich!\nDein Team von {firma} · {studio}'
   },
   followup: {
-    subject: 'Danke für deinen Besuch – Körperformen {studio}',
-    body: 'Hallo {name},\n\ndanke, dass du heute bei uns im Studio {studio} warst – stark gemacht!\nDenk daran, ausreichend zu trinken. Muskelkater in den nächsten Tagen ist völlig normal.\n\nWenn dir das Training gefallen hat, empfiehl uns gern weiter.\nBis zum nächsten Mal!\n\nDein Körperformen-Team {studio}'
+    subject: 'Danke für deinen Besuch – {firma} {studio}',
+    body: 'Hallo {name},\n\ndanke, dass du heute bei uns im Studio {studio} warst – stark gemacht!\nDenk daran, ausreichend zu trinken. Muskelkater in den nächsten Tagen ist völlig normal.\n\nWenn dir das Training gefallen hat, empfiehl uns gern weiter.\nBis zum nächsten Mal!\n\nDein Team von {firma} · {studio}'
   },
   cancel: {
-    subject: 'Termin storniert – Körperformen {studio}',
-    body: 'Hallo {name},\n\ndein Termin am {datum} um {uhrzeit} Uhr im Studio {studio} wurde storniert.\nWenn das ein Versehen war oder du einen neuen Termin möchtest, melde dich gern bei uns.\n\nDein Körperformen-Team {studio}'
+    subject: 'Termin storniert – {firma} {studio}',
+    body: 'Hallo {name},\n\ndein Termin am {datum} um {uhrzeit} Uhr im Studio {studio} wurde storniert.\nWenn das ein Versehen war oder du einen neuen Termin möchtest, melde dich gern bei uns.\n\nDein Team von {firma} · {studio}'
   }
 };
 
@@ -1235,12 +1287,13 @@ async function buildMail(tplId, appt, firma) {
   const fmt = (opt) => when.toLocaleString('de-DE', Object.assign({ timeZone: 'Europe/Berlin' }, opt));
   const vals = {
     name: appt.customerName || '',
+    firma: await firmaAnzeigeName(firma),
     studio: appt.studioName || '',
     datum: fmt({ weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
     uhrzeit: fmt({ hour: '2-digit', minute: '2-digit' }),
     notiz: appt.note ? ('Hinweis: ' + appt.note + '\n') : ''
   };
-  const fill = (s) => String(s).replace(/\{(name|studio|datum|uhrzeit|notiz)\}/g, (m, k) => vals[k]);
+  const fill = (s) => String(s).replace(/\{(name|firma|studio|datum|uhrzeit|notiz)\}/g, (m, k) => vals[k]);
   return { subject: fill(tpl.subject), text: fill(tpl.body) };
 }
 
@@ -1256,7 +1309,9 @@ async function sendApptMail(apptRef, appt, tplId, markField, firma) {
   const mail = await buildMail(tplId, appt, firma);
   const fromAddr = process.env.MAIL_FROM || process.env.SMTP_USER;
   await mailer.sendMail({
-    from: '"Körperformen ' + (appt.studioName || '') + '" <' + fromAddr + '>',
+    /* Der Absendername steht im Postfach der Kundin — die auffaelligste
+       Stelle ueberhaupt. */
+    from: '"' + (await firmaAnzeigeName(firma)) + ' ' + (appt.studioName || '') + '" <' + fromAddr + '>',
     to: appt.customerEmail,
     subject: mail.subject,
     text: mail.text

@@ -243,6 +243,27 @@ const TAG = 86400000;
       !(await db.doc(dm('beta', 'u-alpha')).get()).exists);
     pruefe('Geburtstag: Beas Gruß NICHT bei alpha',
       !(await db.doc(dm('alpha', 'u-beta')).get()).exists);
+
+    /* ── Der NAME im Gruß ──
+       Bis zum 12.8.2026 stand dort fest "Körperformen 🎂" und
+       "dein Körperformen-Team" — bei JEDEM Kunden. Der Gruß ging also
+       an die Mitarbeiter eines fremden Betriebs im Namen eines
+       anderen. Geprüft wird der Text selbst, nicht nur, dass er da ist:
+       "liegt am richtigen Ort" und "trägt den richtigen Namen" sind
+       zwei verschiedene Aussagen. */
+    const grussText = async (f, uid) => {
+      const q = await db.collection(dm(f, uid) + '/messages').get();
+      return q.empty ? '' : String((q.docs[0].data() || {}).text || '');
+    };
+    const tA = await grussText('alpha', 'u-alpha');
+    const tB = await grussText('beta', 'u-beta');
+    pruefe('Geburtstag: Annas Gruß nennt Alpha', tA.indexOf('Alpha') >= 0);
+    pruefe('Geburtstag: Beas Gruß nennt Beta', tB.indexOf('Beta') >= 0);
+    /* Die Gegenrichtung — ohne sie wäre auch ein Gruß grün, der beide
+       Namen nennt oder gar keinen. */
+    pruefe('Geburtstag: Annas Gruß nennt NICHT Beta', tA.indexOf('Beta') < 0);
+    pruefe('Geburtstag: kein fester Firmenname mehr im Gruß',
+      tA.indexOf('Körperformen') < 0 && tB.indexOf('Körperformen') < 0);
     /* Ein Profil ohne Feld "firma" gehört zur Voreinstellung. Nach dem
        Umzug gibt es die als Firma koerperformen — hier im Test nicht,
        also darf für diese Person NICHTS geschrieben werden statt
