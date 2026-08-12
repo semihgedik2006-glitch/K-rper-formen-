@@ -36,6 +36,23 @@ wird von Hand, nicht von einem Zeitplan.
 | Funktionen abschaltbar (Schichtplan, Abwesenheiten und neun weitere) | ✅ 11.8., mit Gegenprobe |
 | Fehler bei Mitarbeitern blieben unbemerkt | ✅ 11.8., Verwaltung → System → 🐞 |
 
+## Nach dem Sicherheits-Durchlauf (12. August 2026)
+
+| Fund | Stand |
+|---|---|
+| Neue Konten landeten in der falschen Firma (`createEmployee`/`doRegister` ohne `firma`) | ✅ 12.8. |
+| Vollsicherung von jedem Chef auslösbar — exportiert ALLE Kunden | ✅ nur noch Betreiber |
+| `mailStatus` prüfte die Rolle, nicht die Firma | ✅ 12.8. |
+| `users` ohne Firmenprüfung beim Lesen | ⏳ **wartet auf das Nachtragen** |
+| `appointments` mit Kundennamen für alle lesbar und änderbar | ✅ bewusst so — im Studio machen alle Termine |
+
+**Der offene Punkt:** Die strenge `users`-Regel kommt erst, wenn an jedem
+Konto das Feld `firma` steht (Verwaltung → Firmen → „Konten ohne Firma").
+Solange es nur einen Betrieb gibt, ist das Leck folgenlos — es muss aber
+zu sein, **bevor der erste fremde Kunde dazukommt.** Damit es nicht
+vergessen wird, steht es in `firestore.rules` bei `match /users`, in
+`index.html` bei `listenAllUsers()` und im Kreuztest (`OFFENES_LOCH`).
+
 ## Offen, weil noch niemand hingeschaut hat
 
 - **Ob Push auf einem echten Handy ankommt.** Der Versand ist

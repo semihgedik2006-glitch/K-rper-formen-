@@ -600,6 +600,16 @@ service cloud.firestore {
     // Termine: jeder Eingeloggte darf lesen/anlegen/pflegen (gleiches Muster
     // wie Aufgaben; die Studio-Zuordnung filtert die App). Löschen: Chef
     // oder wer den Termin angelegt hat.
+    /* Termine enthalten KUNDENNAMEN, und jeder aktive Mitarbeiter darf
+       sie lesen und aendern. Im Sicherheits-Durchlauf am 12.8.2026
+       vorgelegt, vom Betreiber bewusst so entschieden: im Studio machen
+       alle Termine, eine Einschraenkung auf den Ersteller waere eine
+       Huerde ohne Nutzen.
+
+       Bleibt richtig, solange das gilt. Wer das aendert — etwa weil ein
+       Kunde nur die Leitung an Kundendaten lassen will — engt hier ein,
+       nicht in der Oberflaeche. Erinnerung: personenbezogene Daten
+       Dritter, nicht nur Betriebsdaten. */
     match /appointments/{apptId} {
       allow read: if istAktiv();
       allow create: if istAktiv()
