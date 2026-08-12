@@ -127,6 +127,7 @@ was sie sehen soll.
 | `test-recht-firma.js` | Impressum je Firma aus der Datenbank, Rückfall auf konfig.js nur beim eigenen Betrieb |
 | `test-einrichtung.js` | die Einrichtungs-Karte hakt sich selbst ab und verschwindet, wenn alles steht |
 | `test-alltag.js` | pausierte Putzpunkte, „Ich übernehme das", Farbe der Firma |
+| `test-konfig.js` | `konfig.js`: kein Schlüssel doppelt, Kennung und Anzeigename getrennt |
 
 ### Alle auf einmal
 
