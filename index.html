@@ -5713,13 +5713,25 @@ function kontenStandZeigen(r){
   var box=$('knStand'); if(!box) return;
   if(!r){ box.textContent='Keine Antwort erhalten.'; return; }
   var fertig = !r.ohne;
+  /* Die Namen der betroffenen Konten mit ausgeben. Wer nur „7 Stueck"
+     liest und drückt, ordnet blind zu — und beim Zuordnen von Konten zu
+     Firmen ist das der teuerste denkbare Fehler. */
+  var namen = (r.liste && r.liste.length)
+    ? '<div style="margin-top:10px">'+r.liste.map(function(x){
+        return '<div class="setup-zeile"><span class="setup-hak">•</span>'+
+          '<span class="setup-txt"><b>'+esc(x.name||'(ohne Namen)')+'</b>'+
+          '<i>'+esc(x.email||'')+(x.rolle?' · '+esc(x.rolle):'')+'</i></span></div>';
+      }).join('')+'</div>'
+    : '';
   box.innerHTML =
     '<b>'+r.gesamt+'</b> Konten · <b>'+r.mit+'</b> mit „'+esc(r.firma)+'" · '+
     '<b>'+r.andere+'</b> andere Firma · <b>'+r.ohne+'</b> ohne Feld'+
     (r.geschrieben ? ' · gerade ergänzt: <b>'+r.geschrieben+'</b>' : '')+
     '<br>'+(fertig
       ? '✓ Alles gesetzt. Die strenge Regel kann ausgerollt werden.'
-      : '⚠ Solange hier etwas offen ist, darf die strenge Regel NICHT ausgerollt werden.');
+      : '⚠ Prüfe die Namen unten: nur drücken, wenn ALLE zu „'+esc(r.firma)+
+        '" gehören. Konten eines Kunden würden sonst deinem Betrieb zugeschlagen.')+
+    namen;
   var s2=$('knSchreiben');
   if(s2) s2.style.display = r.ohne ? '' : 'none';
 }
@@ -7300,6 +7312,10 @@ function doRegister(){
       return vor.then(function(){
         var profil = {
           name:name, email:email, role:'mitarbeiter',
+          /* Siehe createEmployee: ohne firma landet das Konto in der
+             Voreinstellungs-Firma statt in der, ueber deren Link es
+             sich angemeldet hat. */
+          firma: _firma || KONFIG.firma || 'koerperformen',
           studios:studios, studio:studios[0]||null, createdAt:Date.now()
         };
         /* Ist die Freigabe eingeschaltet, MUSS das Konto inaktiv starten –
@@ -8158,6 +8174,12 @@ function createEmployee(){
     .then(function(cred){
       return db.collection('users').doc(cred.user.uid).set({
         name:name, email:email, role:role,
+        /* OHNE DIESES FELD landet der neue Mitarbeiter in der falschen
+           Firma. meineFirma() liefert bei fehlendem Feld '' , und das
+           gilt als koerperformen — ein Kunden-Chef haette also Konten
+           angelegt, die in FREMDE Daten zeigen. Gefunden am 12.8.2026,
+           beim Nachsehen vor dem Nachtragen. */
+        firma: _firma || KONFIG.firma || 'koerperformen',
         studios:studios, studio:studios[0]||null,
         // studioKeys wird mitgespeichert, damit die Datenbank-Regeln prüfen
         // können, welche Studios ein Studio-Leiter verwalten darf

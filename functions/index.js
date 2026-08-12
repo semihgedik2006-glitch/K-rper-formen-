@@ -881,17 +881,34 @@ exports.kontenNachtragen = region
 
     const snap = await db.collection('users').get();
     const ohne = [];
+    const liste = [];
     let mit = 0, andere = 0;
     snap.forEach((d) => {
-      const f = (d.data() || {}).firma;
-      if (f === undefined || f === null || String(f).trim() === '') ohne.push(d.id);
-      else if (f === firma) mit++;
+      const v = d.data() || {};
+      const f = v.firma;
+      if (f === undefined || f === null || String(f).trim() === '') {
+        ohne.push(d.id);
+        /* MIT NAMEN. Ein Werkzeug, das Konten einer Firma zuordnet, darf
+           nicht nur "7 Stueck" melden: wer das druckt, ordnet blind zu.
+           Aufgefallen am 12.8.2026 — weder "Zugang anlegen" noch die
+           Selbstregistrierung schrieben das Feld, es koennten also auch
+           Konten eines Kunden darunter sein. Hoechstens 50, damit die
+           Antwort nicht ausufert. */
+        if (liste.length < 50) {
+          liste.push({
+            name: String(v.name || '').slice(0, 60),
+            email: String(v.email || '').slice(0, 80),
+            rolle: String(v.role || '').slice(0, 20),
+            angelegt: v.createdAt || null,
+          });
+        }
+      } else if (f === firma) mit++;
       else andere++;
     });
 
     if (!wirklich || !ohne.length) {
       return { gesamt: snap.size, mit: mit, andere: andere,
-               ohne: ohne.length, geschrieben: 0, firma: firma };
+               ohne: ohne.length, liste: liste, geschrieben: 0, firma: firma };
     }
 
     let geschrieben = 0;
