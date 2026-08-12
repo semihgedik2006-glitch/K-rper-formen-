@@ -53,6 +53,22 @@ zu sein, **bevor der erste fremde Kunde dazukommt.** Damit es nicht
 vergessen wird, steht es in `firestore.rules` bei `match /users`, in
 `index.html` bei `listenAllUsers()` und im Kreuztest (`OFFENES_LOCH`).
 
+## Aufräumen: was noch aussteht (Stand 12. August 2026)
+
+Das Verzeichnis ist sortiert, `README.md` steht, und `konfig.js`,
+`firestore.rules`, `functions/index.js`, `firebase.json`, `sw.js` und der
+Deploy-Workflow sind durchgegangen. Offen ist der grössere Teil:
+
+| Was | Umfang | Warum es zählt |
+|---|---|---|
+| **Kommentare in `index.html`** | 656 Blöcke, 252 KB | Der grösste verbliebene Posten. Ein Drittel der Datei ist Fliesstext. |
+| **Kommentare in `tests/*.js`** | 142 KB | Jeder Durchlauf beginnt mit einem Aufsatz „WARUM ES DIESEN DURCHLAUF GIBT". |
+| **467 Emoji als Symbole** | 148 im Markup, 319 im JS | Daneben stehen echte Inline-SVG. Die Mischung sieht ein Betrachter sofort. |
+| **Zwölf Eckenradien** | 6–14 px, 22 px, 50 %, 999 px | Ein gepflegtes System hat drei bis vier, als Variablen. |
+| **85 doppelt definierte Selektoren** | von 1.182 | `.todo` und `.check` je viermal. Wer den ersten ändert, ändert nichts. |
+
+Die letzten drei sind die, die man **ohne Quelltext** bemerkt.
+
 ## Offen, weil noch niemand hingeschaut hat
 
 - **Ob Push auf einem echten Handy ankommt.** Der Versand ist

@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <!--
-  StudioChat – internes Team-Portal für Körperformen.
-  Alles in einer Datei: STYLE (Aussehen), BODY (Aufbau), SCRIPT (Logik).
-  Abschnitte haben Überschriften in Großbuchstaben – mit Strg+F / Cmd+F
-  danach suchen, z. B. "KONFIGURATION" für Studios, Chef-PIN und Firebase.
+  StudioChat – die gesamte App in einer Datei. Warum eine Datei und keine
+  zwanzig, steht in README.md unter „Warum es so gebaut ist".
+
+  Die Datei hat drei Teile:
+
+    STYLE     Aussehen. Beginnt mit den Gestaltungsgroessen (:root), danach
+              die Bausteine in der Reihenfolge, in der sie entstanden sind.
+    BODY      Aufbau. Ein Abschnitt mit class="view" je Seite, dazu die
+              Fenster (Modals) am Ende.
+    SCRIPT    Ablauf. Gliederung siehe Inhaltsverzeichnis am Anfang.
+
+  Abschnitte tragen Ueberschriften in Grossbuchstaben. Mit Strg+F danach
+  suchen, z. B. KONFIGURATION, ROLLEN, FIRESTORE-LISTENER, AKTIONEN.
 -->
 <html lang="de">
 <head>
@@ -26,30 +35,42 @@
 <title>StudioChat – Körperformen Team</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<!-- Die Schrift NICHT blockierend laden.
-     Vorher hing hier ein gewoehnliches Stylesheet von fonts.googleapis.com.
-     Ein Stylesheet im Kopf blockiert das Zeichnen der Seite: solange Google
-     nicht antwortet, sieht der Nutzer eine WEISSE SEITE - keinen Text,
-     nicht einmal den Ladebildschirm. Gemessen: 12,6 Sekunden bis zum
-     ersten Bild, und zwar unabhaengig von der Rechenleistung. Im Studio
-     mit schlechtem WLAN ist das derselbe Fall.
-     „display=swap" hilft dagegen nicht - das betrifft nur die Schriftdatei,
-     nicht diese Anfrage.
-     Mit media="print" gilt das Stylesheet zunaechst als druck-only und
-     blockiert nichts; sobald es da ist, wird es auf „all" umgestellt.
-     Bis dahin zeichnet die App mit system-ui, das in jedem Schriftstapel
-     als Rueckfall steht. -->
+<!-- Die Schrift darf das Zeichnen der Seite nicht blockieren. Als normales
+     Stylesheet im Kopf hielt sie die App bei langsamer Verbindung 12,6 s vor
+     einer weissen Seite fest — auch den Ladebildschirm. media="print" laesst
+     es zunaechst als druck-only gelten und blockiert nichts; onload stellt
+     auf "all" um. Bis dahin zeichnet die App mit system-ui.
+     display=swap hilft hier nicht: das betrifft nur die Schriftdatei. -->
 <link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
 <noscript><link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" /></noscript>
 <style>
+/* ══ AUFBAU DIESES STYLE-BLOCKS ══════════════════════════════════════════
+   1. :root            alle Gestaltungsgroessen als Variablen. Farben,
+                       Rundungen, Schatten, Kurven. Nichts weiter unten
+                       setzt eine Farbe direkt — immer ueber eine Variable.
+   2. body.light       nur die Variablen, die im Hellmodus anders sind.
+   3. Grundelemente    Knoepfe, Eingabefelder, Karten, Fenster.
+   4. Bausteine        je Seite und Baustein, mit ── Ueberschrift ──.
+   5. Bewegung         Uebergaenge und @keyframes.
+   6. Drucken          @media print.
+
+   Ab Punkt 4 stehen die Bloecke in der Reihenfolge, in der sie entstanden
+   sind, nicht thematisch sortiert. Ein Thema kann deshalb an mehreren
+   Stellen vorkommen (z. B. Chat). Mit Strg+F nach der Klasse suchen, nicht
+   nach dem Thema — und beim Aendern pruefen, ob dieselbe Klasse weiter
+   unten noch einmal auftaucht.
+
+   tests/test-bewegung-doppelt.js schlaegt an, wenn ein @keyframes-Name
+   zweimal vergeben wird.
+   ═══════════════════════════════════════════════════════════════════════ */
 :root{
-  /* Dunkel – ruhiges Schiefer-Blau statt harter Neon-Kontrast.
-     Wirkt sachlich und ist über lange Zeit angenehmer zu lesen. */
+  /* Ruhiges Schiefer-Blau statt harter Neon-Kontrast: ueber lange Zeit
+     angenehmer zu lesen. */
   --bg:#12131C;--bg-2:#1C1E2A;--bg-soft:#171925;--bg-3:#252838;
-  /* Deutlichere Kanten: Karten sollen nebeneinander liegen, nicht
-     ineinander verschwimmen. War .09/.17. */
+  /* Deutliche Kanten, damit Karten nebeneinander liegen statt ineinander
+     zu verschwimmen. */
   --line:rgba(255,255,255,.14);--line-2:rgba(255,255,255,.26);
   /* Marken-Trio aus dem StudioChat-Logo: Cyan (primär), Violett, Pink */
   --accent:#38BDF8;--accent-2:#A78BFA;--accent-3:#F472B6;--accent-d:#38BDF8;
@@ -3940,7 +3961,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <div class="field" id="aboPreisFeld"><label for="aboNetto">Preis netto je Monat (€)</label>
       <input class="inp" id="aboNetto" type="number" min="0" step="1" inputmode="decimal" />
       <p class="hint" style="margin:6px 0 0">Netto, ohne Umsatzsteuer — auch
-        wenn die zurzeit 0 % beträgt. Warum, steht in <code>ABO-PLAN.md</code>.</p></div>
+        wenn die zurzeit 0 % beträgt. Warum, steht in <code>docs/ABO-PLAN.md</code>.</p></div>
 
     <div class="field"><label for="aboBis">Läuft bis</label>
       <input class="inp" id="aboBis" type="date" />
@@ -4029,6 +4050,42 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 <script>
 (function(){
 'use strict';
+
+/* ══ INHALT ══════════════════════════════════════════════════════════════
+   Die Abschnitte stehen in der Reihenfolge, in der sie hier vorkommen.
+   Mit Strg+F auf die Ueberschrift springen.
+
+   GRUNDLAGEN
+     AUSSEHEN                Einstellungen je Geraet (Hell/Dunkel, Akzent)
+     KONFIGURATION           uebernimmt KONFIG aus konfig.js
+     INITIALISIERUNG         Firebase, Service Worker, Pfad-Praefix S()
+     HILFSFUNKTIONEN         $(), esc(), Datum, Toast
+     ROLLEN                  wer was sehen und tun darf
+     STATE                   die zentralen Datenhalter (session, listen, …)
+
+   ANMELDEN UND STARTEN
+     AUTH-SCREEN             Anmelden, Registrieren, Firmencode
+     AUTH STATE OBSERVER     reagiert auf An- und Abmelden
+     APP STARTEN             Reihenfolge beim Hochfahren
+     BENACHRICHTIGUNGEN      Push ueber Firebase Cloud Messaging
+
+   DATEN
+     FIRESTORE-LISTENER      alle onSnapshot-Abos an einer Stelle
+     RENDER                  aus den Daten wird Oberflaeche
+
+   SEITEN
+     STARTSEITE · TEAM-BEREICH · MATERIAL-SEITE · PUTZPLAN · GERÄTE
+     DOKUMENTE · NACHWEISE · SUCHE · DIREKTNACHRICHTEN · WOCHEN-ARCHIV
+     CHEF-BEREICH            Reiter, Aufmerksamkeit, Bericht, Sicherung
+     MITARBEITERVERWALTUNG   nur Chef
+
+   BEDIENUNG
+     ZURÜCK-GESTE            Verlauf und Fenster
+     SORTIER-LEISTEN · AUFKLAPPBARE ABSCHNITTE · ENTWÜRFE
+     NACHRICHT WEITERLEITEN · SPRACHNACHRICHTEN · PAPIERKORB
+     TASTENKÜRZEL · ONBOARDING-CHECKLISTE · PROFIL-EDITOR
+     AKTIONEN                alle Klicks und Tastendruecke, ganz am Ende
+   ═══════════════════════════════════════════════════════════════════════ */
 
 /* ============================================================
    AUSSEHEN (Hell/Dunkel, Chat-Hintergrund, Akzentfarbe, Schriftgröße)
@@ -4217,39 +4274,29 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
    Die Zwischenvariablen bleiben, damit der restliche Code unverändert
    weiterläuft. */
 /* ── Die Studioliste ──
-   Sie stand bis hierher in konfig.js, also im Code. Ein neues Studio hieß:
-   Datei ändern, committen, deployen. Beim eigenen Betrieb geht das; ein
-   Kunde ruft dafür an.
+   Liegt in der Datenbank unter config/studios. Fehlt das Dokument, gilt
+   die Liste aus konfig.js; der erste Schreibvorgang legt sie so an, wie
+   sie heute ist.
 
-   Jetzt liegt sie in der Datenbank unter config/studios. Solange dieses
-   Dokument fehlt, gilt weiterhin die Liste aus konfig.js – ein bestehender
-   Betrieb merkt von der Umstellung nichts, und der erste Schreibvorgang
-   legt sie so an, wie sie heute ist.
+   DIE EISERNE REGEL: die Liste darf nur WACHSEN. Die Datenbank-Kennung
+   eines Studios ("studio-6") ist sein Platz in dieser Liste. Umsortieren
+   oder Loeschen ordnet alle bestehenden Aufgaben, Schichten, Putzplaene,
+   Geraete und Chats einem anderen Studio zu — lautlos.
+     anlegen    → naechste freie Nummer, nie eine wiederverwendete
+     umbenennen → nur der Name, die Kennung bleibt
+     schliessen → aktiv:false, die Daten bleiben lesbar
+     loeschen   → gibt es nicht. */
+/* Die Rueckfall-Liste aus konfig.js gilt NUR fuer die eigene Firma. Fuer
+   jede zu gelten hiesse: eine neu angelegte Firma hat noch kein
+   config/studios, und der neue Kunde saehe beim ersten Anmelden die
+   vierzehn Standorte von Koerperformen.
 
-   DIE EISERNE REGEL: die Liste darf nur WACHSEN.
-   Die Datenbank-Kennung eines Studios ("studio-6") hängt an seinem Platz
-   in dieser Liste. Wer umsortiert oder löscht, ordnet alle bestehenden
-   Aufgaben, Schichten, Putzpläne, Geräte und Chats einem anderen Studio
-   zu – lautlos, ohne Fehlermeldung. Deshalb:
-     anlegen    → bekommt die nächste freie Nummer, nie eine wiederverwendete
-     umbenennen → nur der Name ändert sich, die Kennung bleibt
-     schließen  → aktiv:false, die Daten bleiben lesbar
-     löschen    → gibt es nicht.                                         */
-/* Die Rückfall-Liste aus konfig.js gilt NUR für die eigene Firma.
-   Vorher galt sie für jede: eine neu angelegte Firma hat noch kein
-   config/studios, und die App zeigte dem neuen Kunden beim ersten
-   Anmelden die vierzehn Standorte von Körperformen. Kein Datenleck im
-   engeren Sinn — die Namen stehen auch auf der Webseite — aber es
-   beendet jedes Verkaufsgespräch, wenn der Kunde in SEINER App die
-   Standortliste eines fremden Betriebs sieht.
+   Zwei Schranken, weil eine zu wenig ist: firmaAnlegen schreibt die Liste
+   gleich mit (neutrale Namen), und studiosLaden() raeumt sie weg, sobald
+   feststeht, dass es eine fremde Firma ist.
 
-   Zwei Schranken davor, weil eine zu wenig ist: firmaAnlegen schreibt
-   die Liste gleich mit (neutrale Namen), und studiosLaden() räumt sie
-   weg, sobald feststeht, dass es eine fremde Firma ist.
-
-   Diese Zeilen laufen beim Laden der Datei, da steht _firma noch nicht
-   fest — deshalb kann die Entscheidung hier nicht fallen. Sie fällt in
-   studiosLaden(). */
+   Hier kann die Entscheidung nicht fallen — diese Zeilen laufen beim
+   Laden der Datei, da steht _firma noch nicht fest. */
 function eigeneFirma(){
   return !KONFIG.mandant || !_firma || _firma === KONFIG.firma;
 }
@@ -4304,7 +4351,7 @@ var DEFAULT_MATERIALS = [
   "Unterwäsche S","Unterwäsche M","Unterwäsche L","Unterwäsche XL","Unterwäsche XXL"
 ];
 
-/* Google-Sheets-Live-Sync: URL der Apps-Script-Web-App (siehe MATERIAL-SHEETS.gs + Anleitung).
+/* Google-Sheets-Live-Sync: URL der Apps-Script-Web-App (siehe tools/MATERIAL-SHEETS.gs + Anleitung).
    Solange leer: Material läuft normal, nur ohne automatische Google-Tabelle. */
 var SHEETS_WEBHOOK_URL = KONFIG.sheetsWebhook;
 
@@ -4383,43 +4430,30 @@ if(typeof firebase === 'undefined' || !firebase.initializeApp){
 
 var auth, db;
 
-/* ── Die eine Stelle, an der die Firma später eingebaut wird ──
-   Stufe A von MANDANT-PLAN.md.
+/* ── Der eine Zugriffspunkt auf Firmendaten ──
+   Stufe A von docs/MANDANT-PLAN.md. Jeder Zugriff auf firmen-eigene
+   Daten laeuft durch S(name); dort haengt das Praefix firmen/<kennung>/
+   davor. Ein einziges vergessenes Praefix zeigt einem Kunden die Daten
+   eines anderen.
 
-   Bis hierher stand an 114 Stellen im Code der Sammlungsname direkt
-   hinter db.collection(...). Für mehrere Firmen muss daraus
-   firmen/{f}/… werden – und ein EINZIGES vergessenes Präfix würde einem
-   Kunden die Daten eines anderen zeigen.
-
-   Deshalb läuft ab jetzt jeder Zugriff auf firmen-eigene Daten durch
-   S(name). Heute gibt sie genau denselben Pfad zurück wie vorher, das
-   Verhalten ändert sich also nicht um ein Byte. In Stufe B wird hier
-   EINE Zeile ergänzt, und die Trennung gilt überall.
-
-   NICHT durch S() laufen (bewusst, jeweils mit Grund):
-     users       – beim Anmelden weiss die App noch nicht, zu welcher
-                   Firma jemand gehoert; sie muss es dort erst nachsehen
-     beitritt    – wird vor dem Anlegen des Profils geschrieben
-     pushTokens  – haengt am Geraet, nicht an der Firma; die
-                   Server-Funktion findet es ueber die Kennung           */
+   Nicht durch S(), jeweils mit Grund:
+     users       beim Anmelden weiss die App noch nicht, zu welcher Firma
+                 jemand gehoert — sie muss es dort erst nachsehen
+     beitritt    wird vor dem Anlegen des Profils geschrieben
+     pushTokens  haengt am Geraet, nicht an der Firma */
 /* ── Welche Firma ist gemeint? ──
-   Stufe 2B. Entschieden: die Kennung steht im Link.
+   Die Kennung steht im Link:  ?firma=mueller-7f3a
+   Sie wird beim ersten Oeffnen gemerkt, damit der Kunde danach ein
+   normales Lesezeichen benutzen kann.
 
-       https://studiochat.de/?firma=mueller-7f3a
+   ⚠ Die Kennung ist KEINE Sicherung. Jeder kann jede eintippen. Sichtbar
+   wird damit nur, was auch ohne Anmeldung lesbar ist: Studionamen und die
+   Schalter zur Selbstanmeldung. An die Daten entscheiden die
+   Sicherheitsregeln, und die fragen das Profil, nicht den Link.
 
-   Sie wird beim ersten Öffnen gemerkt, damit der Kunde den langen Link
-   nur einmal braucht und danach ein normales Lesezeichen benutzen kann.
-
-   ⚠ DIE KENNUNG IST KEINE SICHERUNG. Jeder kann jede eintippen. Was ein
-   Fremder damit sieht, ist genau das, was auch ohne Anmeldung lesbar
-   ist: Studionamen und die Ja/Nein-Schalter zur Selbstanmeldung. An die
-   Daten kommt er nicht — das entscheiden die Sicherheitsregeln, und die
-   fragen das Profil, nicht den Link.
-
-   Trotzdem: Kennungen bekommen beim Anlegen eine Zufallsendung
-   ("mueller-7f3a" statt "mueller"). Sonst könnte man mit ein bisschen
-   Raten herausfinden, wer alles Kunde ist — und die Kundenliste gehört
-   niemandem außer dir. */
+   Kennungen bekommen beim Anlegen trotzdem eine Zufallsendung
+   ("mueller-7f3a" statt "mueller"): sonst laesst sich die Kundenliste
+   erraten. */
 var FIRMA_SPEICHER = 'kf_firma';
 function firmaAusLink(){
   if(!KONFIG.mandant) return null;
@@ -4503,23 +4537,17 @@ window.addEventListener('unhandledrejection', function(ev){
 });
 
 /* ── Fehler melden ───────────────────────────────────────────────────
-   WARUM ES DAS GIBT
-   Wenn bei einem Mitarbeiter etwas nicht lädt, erfährt es heute niemand.
-   Er sagt es vielleicht, vielleicht auch nicht — und bei einem Zugang je
-   Studio weiss hinterher ohnehin keiner mehr, wer davorstand. Der Chef
-   sieht die Fehler jetzt unter Verwaltung → System.
+   Faellt bei einem Mitarbeiter etwas aus, erfaehrt es sonst niemand: bei
+   einem Zugang je Studio weiss hinterher keiner, wer davorstand. Der Chef
+   sieht die Fehler unter Verwaltung → System.
 
-   WAS BEWUSST NICHT PASSIERT
-   - Kein Toast, kein Hinweis, nichts Rotes. Wer arbeitet, soll arbeiten;
-     eine Fehlermeldung, die niemand versteht, macht nur Angst.
-   - Nichts vor der Anmeldung. Vorher fehlt die Berechtigung, und ein
-     Schreibversuch würde nur einen zweiten Fehler erzeugen.
+   Bewusst ohne Toast und ohne Hinweis: wer arbeitet, soll arbeiten. Und
+   nichts vor der Anmeldung — dort fehlt die Berechtigung, der Versuch
+   erzeugte nur einen zweiten Fehler.
 
-   DIE FALLE, DIE HIER LAUERT
-   Ein Fehler im Melden erzeugt einen Fehler, der gemeldet wird, der
-   einen Fehler erzeugt … Deshalb die Sperre `_meldeGerade` und ein
-   try/catch um alles. Diese Funktion darf unter keinen Umständen
-   selbst etwas werfen. */
+   DIE FALLE: ein Fehler im Melden erzeugt einen Fehler, der gemeldet
+   wird. Deshalb die Sperre _meldeGerade und try/catch um alles. Diese
+   Funktion darf unter keinen Umstaenden selbst etwas werfen. */
 var FEHLER_MAX_JE_SITZUNG = 5;
 var _fehlerGesehen = {}, _fehlerZahl = 0, _meldeGerade = false;
 
@@ -4745,36 +4773,21 @@ function mailMarkenLaden(uids){
 }
 
 /* ── Rechtliches ──
-   Impressum und Datenschutz stehen JE FIRMA in der Datenbank
+   Impressum und Datenschutz stehen je Firma in der Datenbank
    (config/recht) und werden vom Chef in der App gepflegt:
-   Verwaltung → System → „⚖️ Rechtliche Angaben".
+   Verwaltung → System → Rechtliche Angaben.
 
-   WARUM NICHT MEHR NUR konfig.js: die Datei gilt für das ganze
-   Firebase-Projekt. Solange ein Kunde ein eigenes Projekt bekam, war das
-   richtig. Seit mehrere Firmen in EINER Datenbank liegen, sah der zweite
-   Kunde entweder das Impressum von Körperformen oder eine rote Warnung,
-   die ihn an eine Datei schickte, an die er gar nicht herankommt. Und
-   impressumspflichtig ist jeder Betreiber selbst — das kann ihm niemand
-   abnehmen.
+   Der Rueckfall auf konfig.js gilt NUR fuer die eigene Firma — siehe
+   eigeneFirma(). Sonst saehe ein fremder Kunde das Impressum von
+   Koerperformen; bei der Studioliste ist genau das schon passiert.
 
-   Der Rückfall auf konfig.js bleibt trotzdem stehen, sonst stünde der
-   eigene Betrieb am Tag der Umstellung ohne Impressum da. Er gilt aber
-   NUR für die eigene Firma. Genau dieser Fehler ist bei der Studioliste
-   schon passiert: eine fremde Firma bekam die vierzehn Standorte von
-   Körperformen zu sehen. Siehe eigeneFirma().
+   Zwei Dinge sind Absicht:
+   1. Das Fenster ist ohne Anmeldung erreichbar (§ 5 DDG).
+   2. Fehlt eine Pflichtangabe, steht das rot darueber. Ein leeres
+      Impressum als fertiges anzuzeigen waere schlimmer als keines.
 
-   Zwei Dinge sind hier weiterhin Absicht:
-
-   1. Das Fenster ist OHNE Anmeldung erreichbar. Ein Impressum hinter
-      einem Login ist keins.
-   2. Fehlt eine Pflichtangabe, steht das in roter Schrift oben drüber.
-      Eine App, die ein leeres Impressum als fertiges anzeigt, ist
-      schlimmer als eine ohne: sie sieht erledigt aus.
-
-   Was hier NICHT passiert: Rechtsberatung. Die Datenschutzerklärung
-   beschreibt, was die App tatsächlich tut – das kann ich wahrheitsgemäß
-   aufschreiben. Ob sie damit vollständig ist, kann ich nicht beurteilen.
-   Das steht auch so im Text. */
+   Der Datenschutztext beschreibt, was die App tut. Ob er vollstaendig
+   ist, entscheidet ein Anwalt — siehe docs/RECHT.md. */
 var _rechtTeil = 'impressum';
 var _recht = null;      // aus config/recht; null = nichts gelesen/hinterlegt
 
@@ -5104,7 +5117,7 @@ function mailHinweisBinden(){
 var _firmen = [], _firmenUnsub = null, _firmenZahlen = {};
 var _firmenArchiv = [], _archivUnsub = null;
 
-/* ── Abo-Zustand je Firma (Stufe A aus ABO-PLAN.md) ──
+/* ── Abo-Zustand je Firma (Stufe A aus docs/ABO-PLAN.md) ──
    Wird EINMAL beim Öffnen des Reiters geholt, nicht als Dauerabfrage:
    der Zustand ändert sich selten, und ein Listener je Firma wäre bei
    zwanzig Kunden zwanzig offene Verbindungen für nichts. */
@@ -5582,7 +5595,7 @@ function studioAuswahlenNeu(){
    Regeln, nicht diese Zeile. */
 function istAdmin(){ return !!(session && session.admin === true); }
 
-/* ══ Abo-Stufe der EIGENEN Firma (Stufe B aus ABO-PLAN.md) ══════════
+/* ══ Abo-Stufe der EIGENEN Firma (Stufe B aus docs/ABO-PLAN.md) ══════════
    AN EINER STELLE, absichtlich. Wenn eine Funktion die Stufe wechselt,
    ist das hier eine Zeile — und nicht eine Suche durch die ganze Datei.
 
@@ -5620,27 +5633,17 @@ function aboLaden(){
 }
 
 /* ══ Funktionen an- und abschalten ═══════════════════════════════════
-   „Der Schichtplan ist für unser Studio unnötig, andere brauchen ihn."
+   Was dieser Betrieb ueberhaupt benutzt — nicht zu verwechseln mit dem
+   Abo, das sagt, wofuer bezahlt wurde.
 
-   Das ist etwas anderes als das Abo. Das Abo sagt, wofür bezahlt wurde;
-   diese Schalter sagen, was dieser Betrieb überhaupt benutzt. Ein
-   Personal-Training-Studio mit drei Leuten braucht keinen Schichtplan,
-   und eine App, die zur Hälfte aus ungenutzten Seiten besteht, wirkt
-   nicht reichhaltig, sondern unaufgeräumt.
+   Die Schalter raeumen auf, sie sperren nicht. Eine abgeschaltete
+   Ansicht ist nicht erreichbar, die Daten liegen aber weiter da und sind
+   ueber die Regeln nach wie vor lesbar. Wer eine echte Grenze braucht
+   (Gehaelter, Krankmeldungen), zieht sie in firestore.rules. So steht es
+   auch im Bestaetigungstext.
 
-   WAS DIESE SCHALTER SIND UND WAS NICHT
-   Sie räumen auf. Sie sperren nicht. Wer eine abgeschaltete Ansicht
-   nicht sieht, kommt nicht hinein — aber die Daten liegen weiter da und
-   sind über die Sicherheitsregeln nach wie vor lesbar. Das ist
-   Absicht: Abschalten darf nichts löschen und nichts unerreichbar
-   machen, sonst traut sich niemand, es je zu drücken.
-
-   Wer eine echte Grenze braucht (Gehälter, Krankmeldungen), zieht sie
-   in den Regeln, nicht hier. Steht so auch im Bestätigungstext.
-
-   Voreinstellung: ALLES AN. Ein Kunde, dem die Hälfte fehlt, weil
-   irgendwo ein Feld leer ist, wäre der schlechtere Fehler — dieselbe
-   Überlegung wie beim Abo. */
+   Voreinstellung: alles an. Ein Kunde, dem die Haelfte fehlt, weil ein
+   Feld leer blieb, waere der schlechtere Fehler. */
 var FEATURES = [
   {id:'chat',      label:'Teamchat',         was:'Kanäle für das ganze Team'},
   {id:'dm',        label:'Direktnachrichten', was:'Zwei Personen unter sich'},
@@ -5814,21 +5817,15 @@ function renderFehlerListe(){
 }
 
 /* ══ Einrichtung: was fehlt noch? ═══════════════════════════════════
-   Ein neuer Kunde meldet sich zum ersten Mal an und sieht eine leere
-   App. Bisher stand dort nichts, was ihm sagt, was zuerst dran ist —
-   und der häufigste Grund, warum jemand ein Werkzeug wieder weglegt,
-   ist nicht, dass es schlecht wäre, sondern dass er nicht weiss, wo er
-   anfangen soll.
+   Ein neuer Kunde meldet sich zum ersten Mal an und sieht eine leere App.
+   Diese Karte sagt, was zuerst dran ist.
 
-   JEDER SCHRITT LIEST NACH, OB ER GETAN IST.
-   Es gibt bewusst keine Kästchen zum Ankreuzen. Eine Liste, die man
-   abhaken kann, ohne etwas zu tun, ist nach zwei Tagen eine Lüge — und
-   ausgerechnet bei „Impressum vollständig" wäre das eine teure. Was
-   hier grün ist, ist wirklich da.
+   Jeder Schritt liest nach, ob er getan ist — es gibt bewusst keine
+   Kaestchen zum Ankreuzen. Eine Liste, die man abhaken kann, ohne etwas
+   zu tun, ist nach zwei Tagen eine Luege, und bei "Impressum
+   vollstaendig" eine teure.
 
-   Sichtbar nur für den Chef und nur, solange etwas offen ist. Danach
-   verschwindet die Karte ganz: eine Einrichtungshilfe, die nach einem
-   Jahr noch dasteht, ist Möbel. */
+   Sichtbar nur fuer den Chef und nur, solange etwas offen ist. */
 var _setupCode = null;      // config/registrierung, nur der Chef darf es lesen
 
 function setupSchritte(){
@@ -6463,22 +6460,19 @@ function closeAllModals(){
   closeSearch();
 }
 /* ── Dialoge und die Tastatur ──
-   Escape schließt schon länger (closeAllModals oben). Was fehlte:
+   Escape schliesst ueber closeAllModals. Drei Dinge kommen hier dazu,
+   ohne jede einzelne Oeffnen-Stelle anzufassen — ein Beobachter merkt,
+   wenn die Klasse "show" kommt oder geht:
 
-     1. Solange ein Fenster offen ist, wandert der Tabulator weiter durch
-        die Seite DAHINTER. Wer den Fokusrahmen nicht sieht – mit
-        Vorleseprogramm oder auf einem Bildschirm, der den Rahmen
-        verschluckt – tippt dann in ein Formular, das gar nicht gemeint
-        ist.
-     2. Nach dem Schließen sprang der Fokus an den Seitenanfang statt
-        dorthin zurück, wo man war.
-     3. Ein Vorleseprogramm erfuhr überhaupt nicht, dass sich ein Fenster
-        geöffnet hat: es fehlten role und aria-modal.
+     1. Fokusfalle. Sonst wandert der Tabulator durch die Seite dahinter,
+        und wer den Fokusrahmen nicht sieht, tippt in ein Formular, das
+        gar nicht gemeint ist.
+     2. Fokus zurueck an die Stelle, von der aus geoeffnet wurde.
+     3. role und aria-modal, damit ein Vorleseprogramm ueberhaupt
+        erfaehrt, dass sich ein Fenster geoeffnet hat.
 
-   Alles drei wird hier nachgeholt, ohne jede einzelne Öffnen-Stelle
-   anzufassen: ein Beobachter merkt, wenn die Klasse „show" kommt oder
-   geht. Die Liste ist dieselbe wie in closeAllModals – bewusst, damit
-   nicht zwei Listen auseinanderlaufen. */
+   Die Liste ist dieselbe wie in closeAllModals — bewusst, damit nicht
+   zwei Listen auseinanderlaufen. */
 var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModal',
                'aboModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
@@ -6929,18 +6923,14 @@ function clearChatImg(){
 
 /* ============================================================
    SPRACHNACHRICHTEN
-   ------------------------------------------------------------
-   Aufgenommen wird mit dem eingebauten Recorder des Browsers. Die fertige
-   Aufnahme wandern als Datenblock direkt in die Nachricht – genau wie die
-   Fotos schon jetzt. Das kostet keinen Speicher-Dienst und funktioniert
-   offline-freundlich.
+   Aufgenommen mit dem eingebauten Recorder des Browsers, die Aufnahme
+   wandert als Datenblock in die Nachricht — wie die Fotos. Kein
+   Speicher-Dienst noetig.
 
-   Grenzen mit Absicht:
-   - höchstens 60 Sekunden. Ein Firestore-Dokument darf 1 MB groß sein;
-     60 Sekunden bei niedriger Bitrate landen bei rund 250 KB. Damit ist
-     immer Luft, auch wenn ein Gerät großzügiger kodiert.
-   - wird die Aufnahme trotzdem zu groß, lehnen wir sie freundlich ab,
-     statt beim Senden auf einen Fehler zu laufen.
+   Hoechstens 60 Sekunden: ein Firestore-Dokument darf 1 MB gross sein,
+   60 Sekunden bei niedriger Bitrate landen bei rund 250 KB. Wird eine
+   Aufnahme trotzdem zu gross, wird sie abgelehnt, statt beim Senden auf
+   einen Fehler zu laufen.
    ============================================================ */
 var VOICE_MAX_MS = 60000;       // eine Minute
 // Gemessen wird die LÄNGE DES TEXTES, der wirklich in der Datenbank landet
@@ -7480,19 +7470,15 @@ auth.onAuthStateChanged(function(user){
   });
 });
 
-/* ── Läuft die Firma dieses Kontos überhaupt noch? ──
-   Ohne diese Prüfung kommt jemand, dessen Firma gesperrt oder gelöscht
-   ist, ganz normal HINEIN — und steht dann vor einer leeren App: kein
-   Chat, keine Aufgaben, nichts. Die Regeln sperren korrekt, aber sie
-   erklären nichts. Genau diese Sorte Auskunft hat beim Probelauf eine
-   halbe Stunde gekostet („Missing or insufficient permissions" klang
-   nach fehlendem Profil und war ein nie freigegebener Regelsatz).
+/* ── Laeuft die Firma dieses Kontos noch? ──
+   Ohne diese Pruefung kommt jemand, dessen Firma gesperrt oder geloescht
+   ist, normal hinein und steht vor einer leeren App. Die Regeln sperren
+   korrekt, aber sie erklaeren nichts.
 
-   WICHTIG: das hier ist eine MELDUNG, keine Grenze. Die Grenze steht in
-   firestore.rules und ist dort geprüft. Schlägt diese Abfrage fehl —
-   Funkloch, Zeitüberschreitung —, wird deshalb DURCHGELASSEN. Wer
-   niemanden hereinlässt, sobald das Netz zuckt, hat kein Sicherheits-
-   merkmal gebaut, sondern eine Störung. */
+   Das hier ist eine MELDUNG, keine Grenze — die steht in
+   firestore.rules. Schlaegt die Abfrage fehl (Funkloch,
+   Zeitueberschreitung), wird deshalb durchgelassen: wer niemanden
+   hereinlaesst, sobald das Netz zuckt, hat eine Stoerung gebaut. */
 /* Der ANZEIGENAME der Firma — fuer Ausdrucke und alles, was jemand
    liest. Nicht zu verwechseln mit der Kennung (KONFIG.firma), die in
    den Datenbankpfaden steht.
@@ -11438,28 +11424,15 @@ function exportReport(){
 }
 
 /* ══ Komplette Sicherung ══════════════════════════════════════════════
-   Bis zum 11. August 2026 hiess der Knopf „Alles" und lud die Hälfte:
-   Aufgaben, Material, Team und Infos. Nicht dabei waren Chat, Putzplan,
-   Geräte, Schichten, Abwesenheiten, Übergaben, Brett, Dokumente und
-   Nachweise.
+   Enthaelt alle Sammlungen, die der Chef lesen darf. Was fehlt, steht in
+   der Datei selbst (Feld "hinweise") — eine Sicherung mit bekannter
+   Luecke ist brauchbar, eine mit unbekannter gefaehrlich.
 
-   An einer SICHERUNGSfunktion ist das die unangenehmste Stelle für eine
-   Halbwahrheit: man merkt sie erst, wenn man die Datei braucht — also
-   an dem Tag, an dem alles andere schon schiefgegangen ist.
-
-   Jetzt ist alles drin, was der Chef lesen darf. Und was NICHT drin
-   ist, steht in der Datei selbst (siehe HINWEISE unten). Eine Sicherung
-   mit einer bekannten Lücke ist brauchbar; eine mit einer unbekannten
-   ist gefährlich.
-
-   WAS BEWUSST FEHLT
-   - Direktnachrichten. Die gehören zwei Personen, nicht dem Betrieb.
-     Der Chef darf sie nach den Regeln gar nicht lesen — ein Versuch
-     würde nur scheitern. Das ist keine Lücke, das ist der Sinn.
-   - Der Inhalt hochgeladener Dateien. Die Namen und Angaben sind dabei,
-     die Dateien selbst nicht: sie liegen als Base64 in der Datenbank
-     und würden die Datei um ein Vielfaches aufblähen. Für sie ist die
-     nächtliche Datenbank-Sicherung da.
+   Bewusst nicht dabei:
+   - Direktnachrichten. Der Chef darf sie nach den Regeln nicht lesen.
+   - Der Inhalt hochgeladener Dateien. Namen und Angaben sind dabei, die
+     Dateien selbst liegen als Base64 in der Datenbank und wuerden die
+     Ausgabe vervielfachen. Dafuer ist die naechtliche Sicherung da.
    - Fehlerberichte und Push-Kennungen. Technik, keine Betriebsdaten. */
 
 var SICHERUNG_CHAT_MAX = 1000;   // je Kanal, siehe Hinweis in der Datei
@@ -11937,19 +11910,18 @@ function renderMaterial(){
 }
 
 /* ── Verbrauchs-Vorhersage ──
-   "Wie lange reichen die Handtücher noch?" – berechnet aus den
-   Wochen-Sicherungen im Archiv. Bewusst OHNE künstliche Intelligenz: ein
-   Mittelwert über die letzten Wochen leistet hier dasselbe, ist
+   "Wie lange reichen die Handtuecher noch?", berechnet aus den
+   Wochen-Sicherungen im Archiv. Ein Mittelwert genuegt hier, ist
    nachvollziehbar und kostet nichts.
 
-   Rechenweg, damit man ihn nachprüfen kann:
-   - Für jede Woche wird der Bestand mit dem der Vorwoche verglichen.
-   - Nur SINKENDE Bestände zählen als Verbrauch. Steigt der Bestand,
-     wurde nachgeliefert – das ist kein Verbrauch und wird übersprungen.
-   - Aus den Verbrauchswerten wird der Schnitt pro Woche gebildet.
-   - Aktueller Bestand geteilt durch Wochenverbrauch = Reichweite.
-   Weniger als zwei Vergleichswochen ergeben keine sinnvolle Aussage –
-   dann sagen wir das offen, statt eine Zahl zu erfinden. */
+   Rechenweg:
+   - je Woche den Bestand mit dem der Vorwoche vergleichen
+   - nur SINKENDE Bestaende zaehlen als Verbrauch; ein Anstieg ist eine
+     Lieferung und wird uebersprungen
+   - Schnitt je Woche bilden, aktueller Bestand geteilt durch diesen
+     Schnitt = Reichweite
+
+   Unter zwei Vergleichswochen wird keine Zahl ausgegeben. */
 var FORECAST_MIN_WOCHEN = 2;
 
 function forecastFor(studioKeyWanted){

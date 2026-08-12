@@ -18,7 +18,7 @@
    Er führt den Code in einer nachgebauten Tabelle aus, nicht in Google
    Apps Script. Er beweist die Logik, nicht das Zusammenspiel mit Google.
    Ob die neue Fassung dort läuft, zeigt sich erst nach dem erneuten
-   Bereitstellen — das steht oben in MATERIAL-SHEETS.gs.
+   Bereitstellen — das steht oben in tools/MATERIAL-SHEETS.gs.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');
@@ -28,7 +28,7 @@ const errs = [];
 /* Über GS lässt sich eine andere Fassung einhängen. Gebraucht für die
    Gegenprobe: eine absichtlich kaputte Fassung MUSS hier durchfallen,
    sonst misst der Durchlauf nichts. */
-const QUELLE = process.env.GS || path.join(__dirname, '..', 'MATERIAL-SHEETS.gs');
+const QUELLE = process.env.GS || path.join(__dirname, '..', 'tools', 'MATERIAL-SHEETS.gs');
 
 /* ── Eine Tabelle, die sich wie eine Tabelle verhält ──
    Wichtig ist vor allem setValues: es nimmt nur ein Rechteck an. Genau

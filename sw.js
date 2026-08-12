@@ -9,9 +9,9 @@ const PRECACHE = ['./index.html', './konfig.js', './icon.svg'];
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
-// Zugangsdaten kommen aus konfig.js – dieselbe Datei, die auch die App
-// lädt. Vorher standen sie hier ein zweites Mal; beim nächsten Kunden wäre
-// garantiert eine der beiden Stellen vergessen worden.
+// Zugangsdaten aus konfig.js – dieselbe Datei, die auch die App lädt. Sie
+// dürfen hier kein zweites Mal stehen, sonst pflegt man beim nächsten Kunden
+// nur eine der beiden Stellen.
 importScripts('./konfig.js');
 firebase.initializeApp(KONFIG.firebase);
 const messaging = firebase.messaging();
@@ -52,10 +52,10 @@ self.addEventListener('fetch', function (e) {
       h.indexOf('google-analytics') >= 0 || h.indexOf('analytics.google') >= 0 ||
       h.indexOf('script.google') >= 0 || h.indexOf('script.googleusercontent') >= 0) return;
 
-  // HTML/Navigation: immer zuerst Netz (kein „alte Version"-Problem), offline aus Cache.
-  // WICHTIG: cache:'no-store'. GitHub Pages schickt "max-age=600" mit, sonst würde
-  // der Browser bis zu 10 Minuten lang seine eigene alte Kopie liefern – dann sieht
-  // man trotz "Netz zuerst" die alte App.
+  // HTML/Navigation: erst Netz, offline aus dem Cache.
+  // cache:'no-store' ist Pflicht — sonst liefert der Browser trotz „Netz
+  // zuerst" bis zu zehn Minuten lang seine eigene Kopie (max-age aus der
+  // Antwort des Hosters).
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request, { cache: 'no-store' }).then(function (r) {

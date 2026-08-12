@@ -12,22 +12,17 @@ const db = admin.firestore();
 const region = functions.region('europe-west1');
 
 /* ══════════════════════════════════════════════════════════════════════
-   MEHRERE FIRMEN — der Zugriffspunkt (Stufe 2E aus MANDANT-PLAN.md)
+   MEHRERE FIRMEN — der Zugriffspunkt (Stufe 2E aus docs/MANDANT-PLAN.md)
 
-   In index.html laeuft jeder Datenzugriff durch S(). Hier fehlte das
-   Gegenstueck: die Functions arbeiteten weiter auf den flachen Pfaden.
-   Nach dem Umschalten haetten sie nichts mehr gefunden — die App haette
-   funktioniert, aber KEINE Push-Nachricht, keine Erinnerung an
-   ueberfaellige Aufgaben, keine Warnung vor ablaufenden Nachweisen.
-   Lautlos, ohne Fehlermeldung.
+   W(firma) ist die Wurzel jedes Datenzugriffs, das Gegenstueck zu S() in
+   index.html: ohne Firma die Datenbank selbst (flache Pfade), mit Firma das
+   Dokument firmen/<kennung> darunter. Derselbe Code laeuft damit vor und
+   nach dem Umzug.
 
-   Aufgefallen ist das erst kurz vor dem Live-Umzug. Ich hatte in Stufe
-   2A nur index.html gezaehlt, obwohl der Plan "jede Cloud Function"
-   ausdruecklich nennt.
-
-   W(firma) ist die Wurzel: ohne Firma die Datenbank selbst (flach, wie
-   heute), mit Firma das Dokument darunter. Damit laeuft derselbe Code
-   vor UND nach dem Umzug — und spaeter fuer mehrere Kunden.
+   Jeder neue Zugriff muss hier durch. Eine Function, die den flachen Pfad
+   direkt benutzt, findet nach dem Umschalten nichts mehr — ohne
+   Fehlermeldung, es kommt nur keine Push-Nachricht an.
+   tests/test-funktionen-pfade.js prueft das.
    ══════════════════════════════════════════════════════════════════════ */
 function W(firma) {
   return firma ? db.collection('firmen').doc(firma) : db;
@@ -51,14 +46,12 @@ async function alleFirmen() {
 }
 
 /* ── Abgeschaltete Funktionen ────────────────────────────────────────
-   Der Chef kann Bereiche ausblenden (config/features). Der Bildschirm
-   ist damit aufgeraeumt — die naechtlichen Erinnerungen aber liefen
-   weiter. Ein Handy, das um 7:30 Uhr wegen einer Aufgabe brummt, die
-   es in der App gar nicht mehr gibt, macht den Schalter zur Luege.
+   Der Chef kann Bereiche ausblenden (config/features). Die Zeitplaene
+   muessen das mitpruefen, sonst brummt das Handy um 7:30 Uhr wegen einer
+   Aufgabe, die es in der App nicht mehr gibt.
 
-   Deshalb pruefen die Zeitplaene das mit. Fehlt das Dokument oder ist
-   es nicht lesbar, gilt "an" — dieselbe Richtung wie in der App: im
-   Zweifel lieber eine Meldung zu viel als eine verschluckte. */
+   Fehlt das Dokument oder ist es nicht lesbar, gilt "an" — dieselbe
+   Richtung wie in der App: im Zweifel eine Meldung zu viel. */
 async function featureAn(firma, id) {
   try {
     const d = await W(firma).collection('config').doc('features').get();
@@ -140,15 +133,13 @@ async function sendPush(tokens, title, body) {
 
 /* ── Neue Chat-Nachricht ── */
 /* ── Auslöser für beide Welten ──
-   Ein Firestore-Auslöser braucht einen festen Pfad; er kann nicht
-   „flach ODER verschachtelt" hören. Also wird jeder Handler ZWEIMAL
-   registriert: einmal auf dem alten Pfad, einmal auf firmen/{firma}/….
+   Ein Firestore-Auslöser braucht einen festen Pfad und kann nicht „flach
+   ODER verschachtelt" hören. Jeder Handler wird deshalb zweimal
+   registriert: auf dem alten Pfad und auf firmen/{firma}/….
 
-   Warum nicht einfach umstellen: zwischen dem Umzug der Daten und dem
-   Umschalten der App liegt eine Lücke von Minuten. Wer in dieser Zeit
-   etwas schreibt, bekäme sonst keine Meldung. Der alte Auslöser fällt
-   weg, wenn die flachen Daten aufgeräumt werden — frühestens 30 Tage
-   nach dem Umzug. */
+   Der alte Auslöser fällt weg, sobald die flachen Daten aufgeräumt sind.
+   Bis dahin deckt er die Lücke zwischen Datenumzug und App-Umschaltung ab —
+   wer in dieser Zeit schreibt, bekäme sonst keine Meldung. */
 function beideWelten(pfad, handler, art, opt) {
   art = art || 'onCreate';
   const r = opt ? region.runWith(opt) : region;
@@ -158,14 +149,13 @@ function beideWelten(pfad, handler, art, opt) {
   };
 }
 
-/* Die Firma zu EINEM Profil — für Aufrufe aus der App, wo genau eine
-   Person dahintersteht.
+/* Die Firma zu EINEM Profil — für Aufrufe aus der App, wo genau eine Person
+   dahintersteht.
 
-   null heisst: es gibt noch keine Firmen-Sammlung, also flache Pfade wie
-   heute. Ist die Firma dagegen gesperrt oder unbekannt, wird abgebrochen
-   statt auf flach zurückzufallen: dort liegen die Daten der
-   Voreinstellung, und still in fremde Daten zu schreiben ist schlimmer
-   als eine Fehlermeldung. */
+   null heisst: es gibt noch keine Firmen-Sammlung, also flache Pfade. Bei
+   gesperrter oder unbekannter Firma wird abgebrochen statt auf flach
+   zurueckzufallen — dort liegen die Daten der Voreinstellung, und still in
+   fremde Daten zu schreiben ist schlimmer als eine Fehlermeldung. */
 async function firmaVonProfil(profil) {
   const alle = await alleFirmen();
   if (alle.length === 1 && alle[0] === null) return null;
@@ -359,16 +349,16 @@ exports.dueTaskReminder = region.pubsub
   });
 
 /* ── Ablaufende Nachweise ──
-   Erste-Hilfe-Kurs, Trainerlizenz, EMS-Einweisung: jedes mit eigenem
-   Ablaufdatum. Ohne Erinnerung faellt das erst auf, wenn es zu spaet ist.
+   Erste-Hilfe-Kurs, Trainerlizenz, EMS-Einweisung, jedes mit eigenem
+   Ablaufdatum.
 
-   Gemeldet wird an GENAU zwei Tagen: 60 und 14 Tage vorher, dazu einmal am
-   Tag des Ablaufs. Absichtlich nicht taeglich ab Tag 60 - eine Meldung, die
-   46-mal kommt, liest nach der dritten niemand mehr.
+   Gemeldet wird an genau drei Tagen: 60 und 14 Tage vorher und am Tag des
+   Ablaufs. Nicht taeglich ab Tag 60 — eine Meldung, die 46-mal kommt, liest
+   nach der dritten niemand mehr.
 
-   Die Person bekommt ihre eigene Meldung, der Chef eine Sammelmeldung.
-   Die Studio-Leitung bekommt nichts: Qualifikationsdaten gehen sie nichts
-   an (siehe firestore.rules). */
+   Die Person bekommt ihre eigene Meldung, der Chef eine Sammelmeldung. Die
+   Studio-Leitung bekommt nichts: Qualifikationsdaten gehen sie nichts an,
+   so steht es auch in firestore.rules. */
 const CERT_WARN_TAGE = [60, 14, 0];
 
 exports.certExpiry = region
@@ -466,23 +456,19 @@ exports.runBirthdayCheckNow = region.https.onRequest(async (req, res) => {
 
 /* ============================================================
    MARKETING-APP (marketing.html)
-   Zwei geschützte KI-Funktionen, beide über die Gemini-API
-   (kostenloses Kontingent, keine Kreditkarte nötig). Der API-Schlüssel
-   liegt NUR hier auf dem Server (functions/.env), nie im Browser.
-   - marketingChat  → Text-Modell (Ideen, Texte, Foto-Analyse)
-   - marketingImage → Bild-Modell (Bild-Generierung)
+   Zwei geschützte KI-Funktionen über die Gemini-API. Der API-Schlüssel liegt
+   nur auf dem Server (functions/.env), nie im Browser.
+     marketingChat   Text-Modell (Ideen, Texte, Foto-Analyse)
+     marketingImage  Bild-Modell
    ============================================================ */
 
-/* Der Auftrag an das Modell. Bis zum 12.8.2026 stand hier fest
-   "Körperformen" samt Standorten im Raum Köln/Hürth — ein Kunde haette
-   sich Werbetexte fuer einen FREMDEN Betrieb schreiben lassen, mit
-   dessen Namen und dessen Region. Das faellt beim Lesen sofort auf und
-   ist trotzdem der Fehler, der am laengsten unbemerkt geblieben waere:
-   niemand prueft, ob der Werbetext den richtigen Namen traegt, wenn er
-   ihn selbst angefordert hat.
+/* Der Auftrag an das Modell. {firma} wird beim Aufruf ersetzt — hier darf
+   kein Firmenname fest stehen, sonst laesst sich ein Kunde Werbetexte fuer
+   einen fremden Betrieb schreiben und merkt es nicht: niemand prueft einen
+   Text, den er selbst angefordert hat.
 
-   {firma} wird beim Aufruf ersetzt. Die Ortsangabe ist raus: welche
-   Standorte ein Betrieb hat, steht in seiner Studioliste, nicht hier. */
+   Keine Ortsangabe: welche Standorte ein Betrieb hat, steht in seiner
+   Studioliste. */
 const MARKETING_SYSTEM_PROMPT =
   'Du bist der Marketing-Assistent des EMS-Studios "{firma}" (Body-Shaping, ' +
   '20-Minuten-EMS-Training, persönliche Betreuung, mehrere Standorte). ' +
@@ -519,17 +505,14 @@ async function requireChef(context) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   BETREIBER-EBENE (Stufe D aus MANDANT-PLAN.md)
+   BETREIBER-EBENE (Stufe D aus docs/MANDANT-PLAN.md)
 
-   Nur fuer Konten mit admin:true. Das Feld ist bewusst KEIN Rollenwert:
-   der Betreiber bleibt Chef seiner eigenen Firma und ist zusaetzlich
-   Admin. Vergeben kann es nur ein Admin - erzwungen in firestore.rules.
+   Nur fuer Konten mit admin:true. Das Feld ist bewusst kein Rollenwert: der
+   Betreiber bleibt Chef seiner eigenen Firma und ist zusaetzlich Admin.
+   Vergeben kann es nur ein Admin, erzwungen in firestore.rules.
 
-   WAS DER ADMIN HIER NICHT BEKOMMT: Zugriff auf Inhalte fremder Firmen.
    Diese Funktionen legen an, sperren und zaehlen. Sie lesen keinen Chat,
-   keine Aufgaben und keine Personendaten. Das war die Entscheidung, die
-   im Verkaufsgespraech den Satz erlaubt: "Ich komme an Ihre Daten nicht
-   heran."
+   keine Aufgaben und keine Personendaten fremder Firmen — dabei bleibt es.
    ══════════════════════════════════════════════════════════════════════ */
 async function requireAdmin(context) {
   requireAuth(context);
@@ -553,13 +536,11 @@ function firmaKennung(name) {
 }
 
 /* ── Firma anlegen ──
-   Legt die Firma an, erzeugt das Anmeldekonto des ersten Chefs und
-   schreibt sein Profil. Alles drei zusammen, denn einzeln ist nichts
-   davon brauchbar: eine Firma ohne Chef kann niemand einrichten, und
-   ein Chef ohne Firma sieht nichts.
+   Firma, Anmeldekonto des ersten Chefs und dessen Profil in einem Zug:
+   einzeln ist nichts davon brauchbar.
 
-   Das Passwort wird hier erzeugt und EINMAL zurueckgegeben. Es wird
-   nirgends gespeichert - weder in Firestore noch im Protokoll. */
+   Das Passwort wird hier erzeugt und einmal zurueckgegeben. Es wird nirgends
+   gespeichert, weder in Firestore noch im Protokoll. */
 exports.firmaAnlegen = region
   .https.onCall(async (data, context) => {
     await requireAdmin(context);
@@ -617,17 +598,13 @@ exports.firmaAnlegen = region
     });
 
     /* ── Die Studioliste MUSS hier entstehen ──
-       Ohne dieses Dokument faellt die App auf KONFIG.studios zurueck —
-       und das sind die vierzehn Standorte von Koerperformen. Ein neuer
-       Kunde haette beim ersten Anmelden die Standortliste eines
-       fremden Betriebs vor sich gehabt. Kein Datenleck im engeren
-       Sinn, aber eines, das jedes Verkaufsgespraech beendet.
-
-       Die Namen sind bewusst neutral: "Studio 1", "Studio 2". Wie die
-       Standorte wirklich heissen, weiss nur der Kunde, und er benennt
-       sie unter Verwaltung → Standorte selbst um. Die Kennungen
-       (studio-0, studio-1, …) bleiben dabei stehen — daran haengen
-       spaeter Aufgaben und Putzplaene. */
+           Ohne dieses Dokument faellt die App auf KONFIG.studios zurueck, und
+           das sind die vierzehn Standorte von Koerperformen. Ein neuer Kunde
+           saehe beim ersten Anmelden die Standortliste eines fremden Betriebs.
+    
+           Die Namen sind neutral ("Studio 1"), umbenannt wird unter
+           Verwaltung → Standorte. Die Kennungen (studio-0, studio-1, …) bleiben
+           dabei stehen — daran haengen spaeter Aufgaben und Putzplaene. */
     const liste = [];
     for (let i = 0; i < anzahl; i++) {
       liste.push({ id: 'studio-' + i, name: 'Studio ' + (i + 1), aktiv: true });
@@ -649,18 +626,15 @@ exports.firmaAnlegen = region
     return { kennung: kennung, uid: konto.uid, passwort: passwort, studios: anzahl };
   });
 
-/* ── Abo-Zustand setzen (Stufe A aus ABO-PLAN.md) ────────────────────
-   Von Hand, durch den Betreiber. Es fliesst kein Geld, es sperrt noch
-   nichts — die App LIEST den Zustand und zeigt ihn an, mehr nicht.
+/* ── Abo-Zustand setzen (Stufe A aus docs/ABO-PLAN.md) ────────────────
+   Von Hand durch den Betreiber. Es fliesst kein Geld und es sperrt nichts —
+   die App liest den Zustand und zeigt ihn an.
 
-   Warum trotzdem eine Cloud Function und nicht nur eine Regel: hier
-   gehoert Pruefung hin, die eine Regel schlecht kann (Stufennamen,
-   Betraege, Datum), und ein Vermerk, WER es gesetzt hat. Bei allem, was
-   spaeter Geld bedeutet, will man das nachlesen koennen.
+   Als Function statt als Regel, weil hier gepruefte Werte (Stufennamen,
+   Betraege, Datum) und ein Vermerk hingehoeren, wer es gesetzt hat.
 
-   'gratis' ist ein eigener Zustand, kein Preis von 0 mit Beigeschmack.
-   Der Unterschied zaehlt: ein Gratis-Abo ist eine Entscheidung, kein
-   Zahlungsausfall — und es darf nie in die Mahnstufen geraten.        */
+   'gratis' ist ein eigener Zustand, kein Preis von 0: eine Entscheidung,
+   kein Zahlungsausfall — und darf nie in die Mahnstufen geraten. */
 const ABO_STUFEN = ['basic', 'premium'];
 const ABO_STATUS = ['aktiv', 'gratis', 'test', 'gekuendigt'];
 
@@ -688,7 +662,7 @@ exports.aboSetzen = region
     /* Preise werden NETTO gefuehrt, die Steuer separat — auch solange
        sie 0 % ist. Wer Bruttopreise festschreibt, baut den Umstieg von
        Kleinunternehmer auf Regelbesteuerung spaeter muehsam nach.
-       Begruendung in ABO-PLAN.md, Abschnitt 5. */
+       Begruendung in docs/ABO-PLAN.md, Abschnitt 5. */
     let netto = Number((data && data.netto) || 0);
     if (!isFinite(netto) || netto < 0) netto = 0;
     netto = Math.round(netto * 100) / 100;
@@ -716,23 +690,17 @@ exports.aboSetzen = region
     return Object.assign({ ok: true, kennung: kennung }, eintrag);
   });
 
-/* ── Eine Firma löschen — in den Papierkorb, nicht in den Ofen ────────
-   Was hier NICHT passiert: die Daten werden nicht angefasst. Sie
-   bleiben unter firmen/<kennung>/… liegen, nur ihr Elterndokument
-   wandert nach firmenArchiv. Dadurch findet .get() die Firma nicht
-   mehr — alleFirmen() übergeht sie, die Regeln lassen niemanden mehr
-   hinein, sie verschwindet aus der Liste.
+/* ── Eine Firma löschen ───────────────────────────────────────────────
+   Die Daten werden nicht angefasst. Sie bleiben unter firmen/<kennung>/…
+   liegen, nur das Elterndokument wandert nach firmenArchiv. Danach findet
+   .get() die Firma nicht mehr: alleFirmen() übergeht sie, die Regeln lassen
+   niemanden hinein, sie verschwindet aus der Liste. (.get() sieht Dokumente
+   ohne Elterneintrag nicht, listDocuments() schon — im Emulator gemessen
+   und im Betrieb bestätigt.)
 
-   Dass genau das funktioniert, ist keine Vermutung: dieselbe
-   Eigenschaft (.get() sieht Dokumente ohne Elterneintrag nicht,
-   listDocuments() schon) wurde am 10.8.2026 im Emulator gemessen und
-   im Betrieb bestätigt.
-
-   Warum kein echtes Löschen: ein Kunde, der kündigt, ruft erfahrungs-
-   gemäss zwei Wochen später an und braucht noch eine Auswertung. Wer
-   dann "ist weg" sagen muss, hat nichts gewonnen. Endgültig entfernt
-   wird von Hand, bewusst, mit einem Werkzeug — nicht mit einem Knopf
-   in einer Oberfläche.                                              */
+   Kein echtes Löschen, weil ein gekündigter Kunde zwei Wochen später anruft
+   und noch eine Auswertung braucht. Endgültig entfernt wird von Hand mit
+   einem Werkzeug, nicht mit einem Knopf in einer Oberfläche. */
 exports.firmaLoeschen = region
   .https.onCall(async (data, context) => {
     const ich = await requireAdmin(context);
@@ -859,34 +827,29 @@ exports.firmenZahlen = region
 /* ── Ist diese E-Mail-Adresse bestätigt? ──
    Der Chef soll vor der Freigabe sehen, ob eine Adresse echt ist. Die
    Information liegt in Firebase Auth, nicht in Firestore, und ein Client
-   kann sie nur für sich selbst lesen. Hier steht sie deshalb über das
-   Admin-SDK zur Verfügung.
+   kann sie nur für sich selbst lesen — deshalb hier über das Admin-SDK.
 
-   Warum nicht einfach der Client ein Feld "emailBestaetigt: true" ins
-   eigene Profil schreiben lässt: weil er lügen kann. Genau der Punkt,
-   an dem die Angabe etwas wert sein soll, wäre sie wertlos.
+   Der Client darf sich das Feld nicht selbst ins Profil schreiben: genau an
+   der Stelle, an der die Angabe etwas wert sein soll, könnte er lügen.
 
-   Zurück kommt nur ein Ja/Nein je Kennung - keine Adresse, kein Name,
-   kein Zeitpunkt. Mehr braucht die Freigabe-Karte nicht.               */
+   Zurück kommt nur ein Ja/Nein je Kennung. */
 /* ══ Konten ohne Feld "firma" nachtragen ═══════════════════════════════
-   WOZU
-   users ist die einzige Sammlung, die nicht unter firmen/<kennung>/
-   liegt. Die Firmengrenze beim LESEN verlangt deshalb, dass Leser und
-   Konto dieselbe Firma tragen — und dass die App gefiltert abfragt
-   (Firestore prueft Abfragen im Voraus, nicht Dokument fuer Dokument).
+   users ist die einzige Sammlung ausserhalb von firmen/<kennung>/. Die
+   Firmengrenze beim Lesen verlangt deshalb, dass Leser und Konto dieselbe
+   Firma tragen — und dass die App gefiltert abfragt, weil Firestore Abfragen
+   im Voraus prueft und nicht Dokument fuer Dokument.
 
-   Konten aus der Zeit vor der Mandantenfaehigkeit haben das Feld nicht:
-   fuer sie galt die stille Annahme "kein Feld = koerperformen". Diese
-   Funktion schreibt genau diese Annahme hin.
+   Konten aus der Zeit vor der Mandantenfaehigkeit haben das Feld nicht; fuer
+   sie galt die stille Annahme "kein Feld = koerperformen". Diese Funktion
+   schreibt sie hin.
 
-   WARUM ALS FUNKTION UND NICHT NUR ALS SKRIPT
-   tools/firma-nachtragen.js tut dasselbe, braucht aber die Cloud Shell.
-   Ein Wartungsschritt, der einen Rechner mit Google-Zugang voraussetzt,
-   findet irgendwann nicht statt. Hier genuegt der Betreiber-Bereich.
+   tools/firma-nachtragen.js tut dasselbe, braucht aber die Cloud Shell. Ein
+   Wartungsschritt, der einen Rechner mit Google-Zugang voraussetzt, findet
+   irgendwann nicht statt.
 
-   Voreinstellung ist ANSEHEN. Geschrieben wird nur mit wirklich:true.
-   Konten einer ANDEREN Firma werden nie angefasst — ein Werkzeug, das
-   hier pauschal ueberschreibt, verschiebt Kunden in fremde Betriebe. */
+   Voreinstellung ist Ansehen; geschrieben wird nur mit wirklich:true. Konten
+   einer anderen Firma werden nie angefasst — ein Werkzeug, das hier pauschal
+   ueberschreibt, verschiebt Kunden in fremde Betriebe. */
 exports.kontenNachtragen = region
   .runWith({ timeoutSeconds: 300 })
   .https.onCall(async (data, context) => {
@@ -954,16 +917,10 @@ exports.mailStatus = region
     const uids = Array.isArray(data && data.uids) ? data.uids.slice(0, 50) : [];
     if (!uids.length) return { stand: {} };
 
-    /* ── Gefunden im Sicherheits-Durchlauf am 12.8.2026 ──
-       Hier stand nur requireChef. Die Rolle wurde geprueft, die FIRMA
-       nicht: ein Chef konnte beliebige Kennungen uebergeben und erfuhr,
-       ob es dieses Konto gibt und ob dessen E-Mail bestaetigt ist —
-       auch bei einem anderen Kunden.
-
-       Praktisch schwer auszunutzen (Firebase-Kennungen sind zufaellig
-       und nicht zu erraten), aber es ist die Firmengrenze, und die ist
-       in dieser App die teuerste Linie. Jetzt wird jede Kennung erst
-       gegen das eigene Team geprueft. */
+    /* Firma pruefen, nicht nur die Rolle: mit requireChef allein konnte ein Chef
+           beliebige Kennungen uebergeben und erfuhr, ob es das Konto gibt und ob
+           dessen E-Mail bestaetigt ist — auch bei einem anderen Kunden. Jede
+           Kennung wird deshalb erst gegen das eigene Team geprueft. */
     const meine = (ich || {}).firma || 'koerperformen';
     const profile = await db.getAll(
       ...uids.map((u) => db.collection('users').doc(String(u))));
@@ -989,18 +946,14 @@ exports.mailStatus = region
   });
 
 /* ── Tagesgrenze für kostenpflichtige Aufrufe ──
-   Das Projekt läuft auf dem Bezahlplan Blaze, und eine Budget-Warnung
-   warnt nur – sie stoppt nichts. Ein Fehler in einer Schleife oder ein
-   übermütiger Nachmittag am Bild-Generator wären sonst unbegrenzt.
-   Gezählt wird je Tag und je Art, in EINEM Dokument.
-   Bewusst kein Sekundengenauigkeit-Limit: die Grenze soll Unfälle
-   abfangen, nicht normale Arbeit behindern.
+   Das Projekt läuft auf Blaze, und eine Budget-Warnung warnt nur, sie stoppt
+   nichts. Gezählt wird je Tag und je Art in einem Dokument. Die Grenze soll
+   Unfälle abfangen (Fehler in einer Schleife, ein Nachmittag am
+   Bild-Generator), nicht normale Arbeit behindern.
 
-   Gezählt wird JE FIRMA. Ein gemeinsamer Zähler wäre die bequemere
-   Variante, aber dann sperrt der übermütige Nachmittag des einen Kunden
-   den nächsten aus — und der bekommt eine Kostenbremse zu sehen, die
-   ihn nichts angeht. Das Gesamtrisiko (Kundenzahl × Grenze) steuert der
-   Betreiber darüber, wie viele Firmen er anlegt. */
+   Gezählt wird je Firma. Ein gemeinsamer Zähler wäre einfacher, würde aber
+   den einen Kunden für den Übermut des anderen sperren. Das Gesamtrisiko
+   (Kundenzahl × Grenze) steuert der Betreiber über die Zahl der Firmen. */
 async function tagesGrenze(art, maximum, firma) {
   const tag = new Date().toISOString().slice(0, 10);
   const ref = W(firma).collection('config').doc('nutzung-' + tag);
@@ -1183,15 +1136,11 @@ exports.marketingImage = region
 
 /* ============================================================
    WACHSTUM & BETRIEB (wachstum.html) – Termin-E-Mails
-   Automatischer Versand an Kundinnen/Kunden:
-   - Bestätigung beim Anlegen (bzw. bei Terminverschiebung erneut)
-   - Storno-Nachricht, wenn ein Termin storniert wird
-   - Erinnerung X Stunden vorher + Follow-up danach (Zeitplan-Funktion)
-   Versand über einen normalen SMTP-Zugang (Nodemailer). Zugangsdaten
-   liegen NUR in functions/.env (aus GitHub-Secrets), nie im Browser.
-   Empfohlen: Brevo Free (300 Mails/Tag, keine Kreditkarte). Alternativ
-   funktioniert jeder SMTP-Zugang, z. B. Gmail mit App-Passwort.
-   Details in ANLEITUNG.txt, Abschnitt 10.
+   Bestätigung beim Anlegen und beim Verschieben, Storno-Nachricht,
+   Erinnerung X Stunden vorher und Follow-up danach.
+
+   Versand über SMTP (Nodemailer); Zugangsdaten nur in functions/.env aus
+   den GitHub-Secrets, nie im Browser. Einrichtung: docs/MAIL-SETUP.md.
    ============================================================ */
 
 const nodemailer = require('nodemailer');
@@ -1203,17 +1152,14 @@ function followupHours() { return +(process.env.FOLLOWUP_HOURS || 3) || 3; }
 
 /* ══ Anzeigename einer Firma ══════════════════════════════════════════
    Nicht die Kennung (die steht in den Pfaden), sondern der Name, den ein
-   Mensch liest. Gebraucht in allem, was das Haus verlaesst.
+   Mensch liest. Gebraucht in allem, was das Haus verlaesst: Terminmails,
+   Absender, Geburtstagsgruss, Auftrag an das KI-Modell.
 
-   WARUM DAS NOETIG WURDE: bis zum 12.8.2026 stand in den Terminmails,
-   im Absender, im Geburtstagsgruss und sogar im Auftrag an das
-   KI-Modell fest "Körperformen". Die Terminmails gehen an ENDKUNDEN des
-   Studios — automatisch, ohne dass jemand sie vorher liest. Ein Kunde
-   haette seinen Trainierenden Bestaetigungen im Namen eines fremden
-   Betriebs geschickt.
+   Nirgends davon darf ein Name fest stehen. Terminmails gehen automatisch
+   an die Endkunden des Studios, ohne dass jemand sie vorher liest.
 
-   Zwischengespeichert je Aufruf der Funktion: ein Zeitplan verschickt
-   Dutzende Mails, und der Name aendert sich einmal im Jahr. */
+   Zwischengespeichert je Aufruf: ein Zeitplan verschickt Dutzende Mails,
+   und der Name aendert sich einmal im Jahr. */
 const _firmaNamen = {};
 async function firmaAnzeigeName(firma) {
   const key = firma || '_flach';
@@ -1400,19 +1346,13 @@ exports.appointmentMailScheduler = region
 
 /* ============================================================
    MONATSBERICHT PER E-MAIL
-   ------------------------------------------------------------
-   Am ersten Werktag des Monats um 08:00 Uhr geht eine Zusammenfassung des
-   vergangenen Monats an den Chef. Gedacht als Ersatz für "mal eben durch
-   alle 14 Studios klicken".
+   Am ersten Werktag des Monats um 08:00 Uhr an den Chef.
 
-   Bewusste Entscheidungen:
-   - Nur an Konten mit der Rolle "chef". Studio-Leiter bekommen ihn nicht,
-     weil er alle Studios enthält.
-   - Fehlt die SMTP-Einrichtung, passiert nichts (und es wird protokolliert)
-     statt dass die Funktion mit einem Fehler abbricht.
-   - Die Studio-Namen kommen aus den Benutzerprofilen. Die Funktion kennt
-     die Reihenfolge der Studio-Liste in der App nicht und soll sie auch
-     nicht doppelt pflegen müssen.
+   Nur an Rolle "chef" — der Bericht enthält alle Studios, Studio-Leiter
+   bekommen ihn deshalb nicht. Fehlt die SMTP-Einrichtung, passiert nichts
+   und es wird protokolliert, statt dass die Funktion abbricht. Die
+   Studio-Namen kommen aus den Benutzerprofilen, damit die Liste nicht ein
+   zweites Mal gepflegt werden muss.
    ============================================================ */
 
 /* Kennung "studio-7" → lesbarer Name, soweit aus den Profilen bekannt.
@@ -1587,14 +1527,10 @@ exports.monthlyReportNow = region
   });
 
 /* ── Testbericht auf Knopfdruck ──
-   Der HTTPS-Auslöser oben braucht einen Geheim-Schlüssel. Der liegt als
-   GitHub-Secret und lässt sich dort nicht mehr auslesen – man muss ihn also
-   irgendwo notiert haben. Das ist unnötig umständlich.
-
-   Diese Fassung prüft stattdessen die Anmeldung: nur wer in der App als Chef
-   eingeloggt ist, darf sie auslösen. Kein Schlüssel, kein Notizzettel.
-   Die Rolle wird HIER auf dem Server geprüft, nicht in der App – sonst
-   könnte sie jemand umgehen. */
+   Der HTTPS-Auslöser oben braucht einen Geheim-Schlüssel, der als
+   GitHub-Secret nicht mehr auslesbar ist. Diese Fassung prüft stattdessen
+   die Anmeldung: nur ein angemeldeter Chef darf sie auslösen. Die Rolle wird
+   hier auf dem Server geprüft, nicht in der App. */
 exports.sendTestReport = region
   .runWith({ timeoutSeconds: 300, memory: '256MB' })
   .https.onCall(async (data, context) => {
@@ -1624,22 +1560,16 @@ exports.sendTestReport = region
   });
 
 /* ── Tägliche Sicherung der Datenbank ──
-   Der schwerwiegendste offene Punkt: es gab keine. Wochen-Archiv,
-   Excel-Export und der 30-Tage-Papierkorb sind kein Ersatz - keiner davon
-   holt nach einem versehentlichen Loeschen alles zurueck.
+   Firestore-Export in den Standard-Speicher des Projekts: konsistent über
+   alle Sammlungen und serverseitig, belastet also weder App noch
+   Lese-Kontingent. Wochen-Archiv, Excel-Export und Papierkorb sind kein
+   Ersatz — keiner davon holt nach einem versehentlichen Löschen alles
+   zurück.
 
-   Gesichert wird mit dem eingebauten Firestore-Export in den
-   Standard-Speicher des Projekts. Das ist der Weg, den Google selbst
-   vorsieht: konsistent ueber alle Sammlungen hinweg, und es laeuft
-   serverseitig - der Export belastet weder die App noch das Kontingent
-   fuer Lesezugriffe.
+   Aufbewahrt werden sieben Tage, Ordner nach Datum.
 
-   Aufbewahrt werden sieben Taege (Ordner nach Datum). Wer weiter zurueck
-   muss, holt sich den Ordner aus dem Speicher.
-
-   WICHTIG: Der Dienstaccount der Functions braucht dafuer die Rolle
-   "Cloud Datastore Import Export Admin". Fehlt sie, steht das im
-   Protokoll - siehe OFFEN.md. */
+   Der Dienstaccount der Functions braucht dafür die Rolle "Cloud Datastore
+   Import Export Admin". Fehlt sie, steht das im Protokoll. */
 const BACKUP_TAGE = 7;
 
 /* ── Wohin die Sicherung geht ──
@@ -1768,22 +1698,16 @@ exports.dailyBackup = region
 exports.backupNow = region
   .runWith({ timeoutSeconds: 540, memory: '256MB' })
   .https.onCall(async (data, context) => {
-    /* ── Gefunden im Sicherheits-Durchlauf am 12.8.2026 ──
-       Hier stand "nur der Chef". Das war richtig, solange ein Kunde ein
-       eigenes Firebase-Projekt hatte. Seit mehrere Firmen in EINER
-       Datenbank liegen, ist es falsch: exportieren() zieht die
-       KOMPLETTE Datenbank (collectionIds: [] = alles). Ein Kunde haette
-       damit einen Vollexport aller anderen Kunden ausgeloest — und
-       nebenbei ueber sicherungStatus() den Sicherungsstand JEDER Firma
-       ueberschrieben.
-
-       Die Daten selbst waren nie in Gefahr: der Speicher ist fuer jeden
-       Client gesperrt (storage.rules: allow read, write: if false), und
-       der Betreiber hat die Daten ohnehin. Es ging um die Kosten, den
-       fremden Anstoss und die falsche Anzeige.
-
-       Ein Export ueber ALLE Kunden ist eine Betreiber-Handlung. Die
-       naechtliche Sicherung laeuft fuer alle weiter, unveraendert. */
+    /* Betreiber, nicht Chef: exportieren() zieht die komplette Datenbank
+           (collectionIds: [] = alles). Als Chef-Funktion konnte ein Kunde einen
+           Vollexport aller anderen Kunden ausloesen und ueber sicherungStatus()
+           den Sicherungsstand jeder Firma ueberschreiben.
+    
+           Die Daten waren dabei nie erreichbar — der Speicher ist fuer jeden
+           Client gesperrt (storage.rules). Es ging um Kosten, den fremden
+           Anstoss und die falsche Anzeige.
+    
+           Die naechtliche Sicherung laeuft fuer alle weiter. */
     await requireAdmin(context);
     const stempel = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     try {
@@ -1798,14 +1722,13 @@ exports.backupNow = region
   });
 
 /* ── Erledigte einmalige Putzaufgaben wegräumen ──
-   Die App blendet sie schon einen Tag nach dem Abhaken aus (und laesst sie
-   auch aus der Google-Tabelle weg). Hier verschwinden sie zusaetzlich
-   wirklich aus der Datenbank - sonst waechst der Putzplan jedes Studios
-   endlos weiter, obwohl niemand die alten Eintraege je wieder sieht.
+   Die App blendet sie schon einen Tag nach dem Abhaken aus. Hier
+   verschwinden sie wirklich aus der Datenbank, sonst waechst der Putzplan
+   jedes Studios endlos.
 
-   Wiederkehrende Aufgaben bleiben unberuehrt; die setzen sich von selbst
-   zurueck. Nicht erledigte bleiben ebenfalls stehen - die Arbeit einfach
-   verschwinden zu lassen waere schlimmer als eine lange Liste. */
+   Wiederkehrende bleiben unberuehrt, die setzen sich von selbst zurueck.
+   Nicht erledigte bleiben ebenfalls stehen — offene Arbeit verschwinden zu
+   lassen waere schlimmer als eine lange Liste. */
 exports.purgeOneOffCleaning = region
   .runWith({ timeoutSeconds: 300, memory: '256MB' })
   .pubsub.schedule('15 3 * * *')
@@ -1845,23 +1768,16 @@ exports.purgeOneOffCleaning = region
     return null;
   });
 
-/* ── Tages-Sicherung: was war heute los? ─────────────────────────────
-   Es gab bisher nur eine WOCHEN-Sicherung, und die wurde innerhalb der
-   Woche immer wieder ueberschrieben. Damit war der Montag am Dienstag
-   weg. Putzplan und Aufgaben setzen sich aber taeglich zurueck — wer
-   nachvollziehen will, was an einem bestimmten Tag erledigt wurde,
-   hatte keine Chance.
+/* ── Tages-Sicherung ─────────────────────────────────────────────────
+   Die Wochen-Sicherung wird innerhalb der Woche ueberschrieben; damit war
+   der Montag am Dienstag weg. Putzplan und Aufgaben setzen sich taeglich
+   zurueck, also braucht es einen Stand je Tag.
 
-   ZWEI ENTSCHEIDUNGEN, die das Ergebnis bestimmen:
+   Abends um 23:45, nicht morgens: eine Sicherung um 8 Uhr haelt fest, dass
+   noch nichts getan wurde.
 
-   1. ABENDS, nicht morgens. Eine Sicherung um 8 Uhr zeigt einen leeren
-      Putzplan — sie haelt fest, dass noch nichts getan wurde. Nuetzlich
-      ist der Stand um 23:45.
-
-   2. AUF DEM SERVER, nicht in der App. Der Wochenlauf im Browser des
-      Chefs las 462 Dokumente, und zwar auf seinem Geraet und seinem
-      Datenvolumen. Taeglich waere das schlimmer. Hier laeuft es einmal,
-      fuer alle, und niemand muss dafuer die App offen haben.        */
+   Auf dem Server, nicht in der App: der Wochenlauf im Browser des Chefs las
+   462 Dokumente auf dessen Geraet und Datenvolumen. */
 exports.dailyArchive = region
   .runWith({ timeoutSeconds: 300, memory: '256MB' })
   .pubsub.schedule('45 23 * * *')
@@ -1955,13 +1871,12 @@ exports.dailyArchive = region
   });
 
 /* ── Papierkorb automatisch leeren ──
-   Gelöschtes bleibt 30 Tage liegen und verschwindet dann von selbst.
-   Ohne diesen Lauf würde der Papierkorb ewig wachsen: bei Aufgaben mit
-   Foto sind das schnell hunderte Kilobyte je Eintrag.
+   Gelöschtes bleibt 30 Tage liegen. Ohne diesen Lauf wächst der Papierkorb
+   ewig: bei Aufgaben mit Foto sind das schnell hunderte Kilobyte je Eintrag.
 
-   Wichtig: Bei gelöschten Dokumenten liegt der Dateiinhalt weiterhin in
-   documentData. Der wird hier mit entfernt – sonst bliebe der Platz
-   dauerhaft belegt, obwohl niemand mehr an die Datei herankommt. */
+   Bei gelöschten Dokumenten liegt der Dateiinhalt weiterhin in
+   documentData; der wird hier mit entfernt, sonst bleibt der Platz belegt,
+   obwohl niemand mehr an die Datei herankommt. */
 exports.purgeTrash = region
   .runWith({ timeoutSeconds: 300, memory: '256MB' })
   .pubsub.schedule('30 3 * * *')
