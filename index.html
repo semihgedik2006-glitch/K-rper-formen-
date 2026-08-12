@@ -14096,13 +14096,18 @@ function avatarMarkup(u){
 function listenAllUsers(){
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   var redrawTimer=null;
-  /* ⚠ UNGEFILTERT — bekannt, siehe firestore.rules bei match /users.
-     Damit laedt jedes Geraet jedes Konto JEDER Firma. Der Filter
-     where('firma','==',…) steht bereit und gehoert hierher, sobald an
-     jedem Konto das Feld nachgetragen ist (Betreiber-Bereich →
-     "Konten ohne Firma"). Vorher wuerde die Personenliste leer
-     bleiben. */
-  _usersUnsub=db.collection('users').onSnapshot(function(snap){
+  /* ── Der Filter ist hier keine Bequemlichkeit, sondern die Grenze ──
+     users ist die einzige Sammlung, die nicht unter firmen/<kennung>/
+     liegt. Bis zum 12.8.2026 stand hier collection('users') OHNE Filter,
+     und die Regeln liessen es zu: jedes Handy lud jedes Konto JEDER
+     Firma — Namen, E-Mail-Adressen, Rollen, Geburtstage.
+
+     Firestore prueft Abfragen im VORAUS, nicht Dokument fuer Dokument:
+     ohne diesen where-Teil lehnt die Regel die ganze Abfrage ab, und die
+     Personenliste bliebe leer. Regel und Filter gehoeren zusammen, und
+     beide setzen voraus, dass jedes Konto das Feld hat. */
+  var meine = _firma || KONFIG.firma || 'koerperformen';
+  _usersUnsub=db.collection('users').where('firma','==',meine).onSnapshot(function(snap){
     var first = !_allUsers.length;
     _allUsers=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
     // Die Teillisten (Team, Chefs) fallen hier mit ab – ein Beobachter
