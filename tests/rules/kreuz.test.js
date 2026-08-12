@@ -174,34 +174,19 @@ const NIEMAND_LIEST = ['pushTokens/tok-b'];
     const mitA = () => env.authenticatedContext('mitA').firestore();
     const betreiber = () => env.authenticatedContext('betreiber').firestore();
 
-    /* ⚠ NOCH OFFEN, und zwar mit Ansage.
-       Diese drei Pruefungen beschreiben den Zustand NACH der Reparatur.
-       Sie stehen hier absichtlich schon drin und melden bis dahin, dass
-       das Loch offen ist — ein Sicherheitsloch, das man wegkommentiert,
-       ist eines, das man vergisst.
+    /* GESCHLOSSEN am 12.8.2026. Bis dahin standen hier dieselben drei
+       Pruefungen mit umgekehrter Erwartung — ein Sicherheitsloch, das
+       man wegkommentiert, ist eines, das man vergisst.
 
-       Warum es noch offen ist: die strenge Regel verlangt an JEDEM
-       Konto das Feld 'firma'. Vorher muss der Betreiber einmal
-       nachtragen (Betreiber-Bereich → "Konten ohne Firma"), sonst
-       steht das ganze Team vor einer leeren Personenliste.
-
-       SOBALD DAS GESCHEHEN IST: OFFENES_LOCH auf false setzen, die
-       Regel bei match /users scharf stellen und in listenAllUsers()
-       den Filter where('firma','==',…) wieder einsetzen. Dieser
-       Durchlauf ist dann der Beleg. */
-    const OFFENES_LOCH = true;
-    await pruefe((OFFENES_LOCH ? 'NOCH OFFEN · ' : '') +
-      'users · Mitarbeiter von A liest KEIN Konto aus B', () =>
-      OFFENES_LOCH ? assertSucceeds(mitA().doc('users/chefB').get())
-                   : assertFails(mitA().doc('users/chefB').get()));
-    await pruefe((OFFENES_LOCH ? 'NOCH OFFEN · ' : '') +
-      'users · Chef von A liest KEIN Konto aus B', () =>
-      OFFENES_LOCH ? assertSucceeds(chefA().doc('users/chefB').get())
-                   : assertFails(chefA().doc('users/chefB').get()));
-    await pruefe((OFFENES_LOCH ? 'NOCH OFFEN · ' : '') +
-      'users · die ganze Sammlung laesst sich NICHT auflisten', () =>
-      OFFENES_LOCH ? assertSucceeds(mitA().collection('users').get())
-                   : assertFails(mitA().collection('users').get()));
+       Faellt eine davon um, ist das Loch wieder offen. */
+    await pruefe('users · Mitarbeiter von A liest KEIN Konto aus B', () =>
+      assertFails(mitA().doc('users/chefB').get()));
+    await pruefe('users · Chef von A liest KEIN Konto aus B', () =>
+      assertFails(chefA().doc('users/chefB').get()));
+    /* Die ganze Sammlung auflisten war der eigentliche Schaden: EIN
+       Zugriff, und man hat jedes Konto jedes Kunden. */
+    await pruefe('users · die ganze Sammlung laesst sich NICHT auflisten', () =>
+      assertFails(mitA().collection('users').get()));
     // Gegenrichtung — ohne sie prueft das oben nichts
     await pruefe('GEGENPROBE · users · das eigene Team ist lesbar', () =>
       assertSucceeds(mitA().collection('users').where('firma', '==', A).get()));
