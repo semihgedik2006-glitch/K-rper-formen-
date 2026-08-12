@@ -1057,6 +1057,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .setup-zeile.fertig .setup-txt b{font-weight:500;text-decoration:line-through}
 .setup-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.4}
 .setup-txt i em{font-style:normal;color:var(--accent-2);white-space:nowrap}
+/* Woher ein Nachweis kommt. „selbst eingetragen" ist bewusst dezent und
+   nicht rot: es ist kein Vorwurf, sondern eine Auskunft. */
+.cert-selbst{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;
+  font-size:.72rem;background:rgba(167,139,250,.14);color:var(--accent-2)}
+.cert-bestaetigt{display:inline-block;margin-left:8px;font-size:.72rem;color:var(--accent)}
+.cert-ok{margin-left:8px;padding:1px 8px;border-radius:999px;font-size:.72rem;
+  border:1px solid var(--line);background:none;color:var(--text-2);cursor:pointer}
+.cert-ok:active{transform:scale(.92)}
 .studio-check input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin:0}
 @media(max-width:340px){.studio-checks{grid-template-columns:1fr}}
 
@@ -3699,8 +3707,26 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     </div>
     <div id="pmPaneNachweise" style="display:none">
       <p class="hint" style="margin:2px 0 14px">Deine Nachweise und wie lange sie noch gelten.
-        Eintragen kann sie nur der Chef – wenn etwas fehlt oder falsch ist, sag ihm Bescheid.</p>
+        Du kannst sie selbst eintragen – die Geschäftsführung sieht, dass sie von dir
+        kommen, und bestätigt sie, wenn ihr den Schein vorgelegt habt.</p>
       <div id="pmCerts"></div>
+      <!-- Eintragen darf jeder für SICH. Entfernen nicht: ein eigener
+           abgelaufener Nachweis, der lautlos verschwindet, ist genau das,
+           was die Liste „läuft bald ab" wertlos machen würde. -->
+      <div class="card" id="pmCertNeu" style="margin-top:14px">
+        <h3 style="font-size:.95rem">➕ Nachweis eintragen</h3>
+        <div class="field"><label for="myCertArt">Art</label>
+          <select class="inp" id="myCertArt"></select></div>
+        <div class="field" id="myCertOwnWrap" style="display:none">
+          <label for="myCertOwn">Bezeichnung</label>
+          <input class="inp" id="myCertOwn" type="text" maxlength="80"
+                 placeholder="z. B. Trainer-B-Lizenz" autocomplete="off" /></div>
+        <div class="field"><label for="myCertBis">Gültig bis</label>
+          <input class="inp" id="myCertBis" type="date" /></div>
+        <button class="btn btn-primary btn-sm" id="myCertAdd" style="width:100%">Speichern</button>
+        <p class="hint" style="margin-top:10px">Entfernen kann nur die Geschäftsführung –
+          damit nichts unbemerkt aus der Übersicht verschwindet.</p>
+      </div>
     </div>
     <div id="pmPaneMelden" style="display:none">
       <p class="hint" style="margin:2px 0 14px">Gilt nur für dieses Gerät. Auf dem Handy
@@ -13201,17 +13227,37 @@ function buildCertSelects(){
   }
 }
 
+/* Selbst eingetragen? Das steht NICHT in einem Feld, das der Client
+   setzt, sondern ergibt sich aus zwei Feldern, die die Regeln erzwingen:
+   erfasstVonUid muss der Schreibende sein, uid die betroffene Person.
+   Sind beide gleich, hat sich jemand selbst eingetragen — und das ist
+   eine Tatsache, keine Behauptung. */
+function certSelbst(c){
+  return !!(c && c.erfasstVonUid && c.erfasstVonUid === c.uid);
+}
+
 function certZeile(c, mitName){
   var tage=certTage(c), st=certStufe(tage);
   var a=certArt(c.art);
   var titel=(c.art==='sonstiges' && c.bez) ? c.bez : a.name;
   var loeschen = isChef()
     ? '<button class="cert-del" data-certdel="'+esc(c.id)+'" aria-label="entfernen">✕</button>' : '';
+  /* Der Unterschied zwischen „behauptet" und „belegt". Ohne ihn wäre die
+     Selbsteintragung ein Freibrief: bei einem Erste-Hilfe-Schein zählt,
+     ob jemand ihn wirklich vorgelegt hat. */
+  var herkunft = '';
+  if(certSelbst(c) && !c.bestaetigt){
+    herkunft = '<span class="cert-selbst">selbst eingetragen</span>' +
+      (isChef() ? '<button class="cert-ok" data-certok="'+esc(c.id)+'">bestätigen</button>' : '');
+  } else if(c.bestaetigt){
+    herkunft = '<span class="cert-bestaetigt">✓ bestätigt</span>';
+  }
   return '<div class="cert-item">'+
     '<span class="cert-ico">'+a.ico+'</span>'+
     '<div class="cert-body"><div class="cert-title">'+esc(titel)+
       (mitName?' <span class="cert-who">· '+esc(c.name||'')+'</span>':'')+'</div>'+
-    '<div class="cert-meta">'+(c.bis?('gültig bis '+new Date(c.bis+'T00:00:00').toLocaleDateString('de-DE')):'kein Ablaufdatum')+'</div></div>'+
+    '<div class="cert-meta">'+(c.bis?('gültig bis '+new Date(c.bis+'T00:00:00').toLocaleDateString('de-DE')):'kein Ablaufdatum')+
+      herkunft+'</div></div>'+
     '<span class="cert-st '+st.cls+'">'+esc(st.txt)+'</span>'+loeschen+'</div>';
 }
 
@@ -13261,6 +13307,61 @@ function bindCertDelete(root){
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
+  // Bestätigen: nur der Chef, und die Regeln lassen es auch nur ihm zu
+  root.querySelectorAll('[data-certok]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-certok');
+      withBusy(b,function(){
+        return S('certificates').doc(id)
+          .set({ bestaetigt:true, bestaetigtVon:session.name,
+                 bestaetigtAm:Date.now() }, {merge:true})
+          .then(function(){ toast('Bestätigt ✓'); })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
+    });
+  });
+}
+
+/* ── Den eigenen Nachweis eintragen ──
+   Dieselbe Auswahl wie beim Chef, aber ohne Personenfeld: es geht immer
+   um einen selbst. Die Regeln erzwingen das ohnehin — hier steht es nur
+   nicht zur Wahl, damit niemand es versucht und eine Fehlermeldung
+   bekommt, die er nicht versteht. */
+function buildMyCertSelect(){
+  var art=$('myCertArt'); if(!art || art.options.length) return;
+  art.innerHTML=CERT_ARTEN.map(function(a){
+    return '<option value="'+esc(a.id)+'">'+a.ico+' '+esc(a.name)+'</option>';
+  }).join('');
+  art.addEventListener('change',function(){
+    var w=$('myCertOwnWrap'); if(w) w.style.display = art.value==='sonstiges' ? '' : 'none';
+    var m=certArt(art.value).monate, bis=$('myCertBis');
+    if(m && bis && !bis.value){
+      var d=new Date(); d.setMonth(d.getMonth()+m); bis.value=ymd(d);
+    }
+  });
+}
+
+function addMyCert(btn){
+  var art=($('myCertArt')||{}).value;
+  if(!art){ toast('Bitte eine Art wählen.',true); return; }
+  var bez=(($('myCertOwn')||{}).value||'').trim();
+  if(art==='sonstiges' && !bez){ toast('Bitte eine Bezeichnung eingeben.',true); return; }
+  var bis=(($('myCertBis')||{}).value||'');
+  if(!bis){ toast('Bitte ein Ablaufdatum angeben.',true); return; }
+  withBusy(btn,function(){
+    return S('certificates').add({
+      uid:session.uid, name:session.name||'', art:art, bez:bez, bis:bis,
+      /* Beide Felder erzwingen die Regeln. erfasstVonUid ist das, woran
+         die Oberfläche später „selbst eingetragen" erkennt. */
+      erfasstVon:session.name, erfasstVonUid:session.uid,
+      bestaetigt:false, ts:Date.now()
+    }).then(function(){
+      if($('myCertOwn')) $('myCertOwn').value='';
+      if($('myCertBis')) $('myCertBis').value='';
+      toast('Nachweis eingetragen ✓');
+      loadMyCerts();
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
 }
 
 function addCert(btn){
@@ -13275,7 +13376,10 @@ function addCert(btn){
   withBusy(btn,function(){
     return S('certificates').add({
       uid:uid, name:u.name||'', art:art, bez:bez, bis:bis,
-      erfasstVon:session.name, ts:Date.now()
+      /* erfasstVonUid verlangen die Regeln von JEDEM — auch vom Chef.
+         Nur so ist „selbst eingetragen“ eine Tatsache: es steht dann
+         dieselbe Kennung in uid und erfasstVonUid. */
+      erfasstVon:session.name, erfasstVonUid:session.uid, ts:Date.now()
     }).then(function(){
       $('certOwn').value=''; $('certBis').value='';
       toast('Nachweis gespeichert ✓');
@@ -13287,6 +13391,7 @@ function addCert(btn){
    das ändert sich höchstens ein paarmal im Jahr. */
 function loadMyCerts(){
   var box=$('pmCerts'); if(!box) return;
+  buildMyCertSelect();
   box.innerHTML='<p class="hint">Wird geladen …</p>';
   S('certificates').where('uid','==',session.uid).get()
     .then(function(snap){
@@ -14910,6 +15015,7 @@ function bindActions(){
 
   // ── Nachweise (nur Chef) ──
   var cA=$('certAdd'); if(cA) cA.addEventListener('click',function(){ addCert(this); });
+  var mcA=$('myCertAdd'); if(mcA) mcA.addEventListener('click',function(){ addMyCert(this); });
 
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){

@@ -116,8 +116,51 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
     assertSucceeds(alsMitarbeiter().doc('certificates/z1').get()));
   await pruefe('Chef kann Nachweise lesen', () =>
     assertSucceeds(alsChef().doc('certificates/z1').get()));
-  await pruefe('Mitarbeiter kann seinen Nachweis NICHT selbst verlaengern', () =>
-    assertFails(alsMitarbeiter().doc('certificates/z1').update({ bis: '2099-01-01' })));
+  /* ── Nachweise selbst eintragen (seit 12.8.2026) ──
+     Vorher durfte das nur der Chef. Bei 57 Leuten ist das Abtippen von
+     Erste-Hilfe-Scheinen sein Problem, nicht ihres — also passiert es
+     nicht, und die Liste ist nach einem halben Jahr wertlos.
+
+     Die alte Regel "Mitarbeiter kann seinen Nachweis NICHT selbst
+     verlaengern" ist damit bewusst aufgehoben. Sie haette ohnehin nichts
+     geschuetzt, sobald man einen NEUEN Eintrag anlegen darf. Was jetzt
+     stattdessen schuetzt, steht in den drei Tests darunter: fremde
+     Eintraege bleiben tabu, geloescht wird nur vom Chef, und ein
+     BESTAETIGTER Eintrag ist fuer den Betroffenen zu. */
+  await pruefe('Mitarbeiter darf einen EIGENEN Nachweis eintragen', () =>
+    assertSucceeds(alsMitarbeiter().doc('certificates/selbst1').set({
+      uid: 'mit1', name: 'Mitarbeiter', art: 'ersthelfer', bis: '2028-01-01',
+      erfasstVonUid: 'mit1', bestaetigt: false })));
+  await pruefe('Mitarbeiter kann seinen eigenen Eintrag noch korrigieren', () =>
+    assertSucceeds(alsMitarbeiter().doc('certificates/selbst1')
+      .update({ bis: '2028-06-30' })));
+  /* Der Kern: er darf sich nicht selbst bestaetigen. Sonst waere die
+     Unterscheidung zwischen "behauptet" und "belegt" Dekoration. */
+  await pruefe('Mitarbeiter kann sich NICHT selbst bestaetigen', () =>
+    assertFails(alsMitarbeiter().doc('certificates/selbst1')
+      .update({ bestaetigt: true })));
+  await pruefe('Mitarbeiter kann seinen Nachweis NICHT selbst loeschen', () =>
+    assertFails(alsMitarbeiter().doc('certificates/selbst1').delete()));
+  /* Fremdes bleibt fremd — in beide Richtungen: weder auf einen anderen
+     ausstellen noch einen fremden auf sich umschreiben. */
+  await pruefe('Mitarbeiter kann KEINEN Nachweis fuer jemand anderen anlegen', () =>
+    assertFails(alsMitarbeiter().doc('certificates/fremd1').set({
+      uid: 'chef1', art: 'ersthelfer', bis: '2028-01-01',
+      erfasstVonUid: 'mit1', bestaetigt: false })));
+  await pruefe('Mitarbeiter kann einen Eintrag NICHT als jemand anderes ausgeben', () =>
+    assertFails(alsMitarbeiter().doc('certificates/luegner').set({
+      uid: 'mit1', art: 'ersthelfer', bis: '2028-01-01',
+      erfasstVonUid: 'chef1', bestaetigt: false })));
+  /* Und der Fall, der im ersten Entwurf offen stand: ein BESTAETIGTER
+     Nachweis liess sich nachtraeglich verlaengern. Damit waere die
+     Bestaetigung wertlos gewesen. */
+  await pruefe('Chef bestaetigt den Nachweis', () =>
+    assertSucceeds(alsChef().doc('certificates/selbst1')
+      .set({ bestaetigt: true }, { merge: true })));
+  await pruefe('DAS LOCH VON VORHIN: ein bestaetigter Nachweis laesst sich ' +
+               'nicht mehr selbst verlaengern', () =>
+    assertFails(alsMitarbeiter().doc('certificates/selbst1')
+      .update({ bis: '2099-01-01' })));
 
   // ══ 5. Direktnachrichten liest niemand mit – auch der Chef nicht ══
   await pruefe('Unbeteiligter kann fremde Direktnachricht NICHT lesen', () =>

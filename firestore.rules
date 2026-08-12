@@ -458,10 +458,56 @@ service cloud.firestore {
     // NUR die betroffene Person und der Chef - die Studio-Leitung
     // ausdruecklich nicht. Eintragen darf allein der Chef; er hat die
     // Unterlagen und haftet dafuer, dass sie stimmen.
+    /* ── Nachweise ───────────────────────────────────────────────────
+       Bis zum 12.8.2026 durfte sie nur der Chef eintragen. Bei 57 Leuten
+       ist das Abtippen von Erste-Hilfe-Scheinen und Lizenzen sein
+       Problem, nicht ihres — also wird es nicht gemacht, und die Liste
+       ist nach einem halben Jahr wertlos.
+
+       Jetzt trägt jeder seine eigenen ein. Drei Grenzen, die dabei
+       wichtig sind, weil ein Erste-Hilfe-Nachweis rechtlich zählt:
+
+         1. NUR DIE EIGENEN. uid muss die eigene sein — beim Anlegen und
+            beim Ändern. Ohne die zweite Prüfung könnte man einen
+            fremden Nachweis auf sich selbst umschreiben.
+         2. LÖSCHEN DARF NUR DER CHEF. Wer seinen abgelaufenen Nachweis
+            selbst entfernen kann, lässt ihn aus der Liste „läuft bald
+            ab" verschwinden — und genau die ist der Zweck der Sache.
+         3. „BESTÄTIGT" SETZT NUR DER CHEF. Selbst eingetragen heisst
+            behauptet, nicht belegt. Der Unterschied muss sichtbar
+            bleiben, sonst ist die Selbsteintragung ein Freibrief.
+
+       erfasstVonUid muss beim MITARBEITER der eigene sein. Damit kann er
+       einen selbst eingetragenen Nachweis nicht als vom Chef erfasst
+       ausgeben — „selbst eingetragen" ist dadurch eine Tatsache und
+       keine Behauptung des Clients.
+
+       Vom Chef wird das Feld NICHT verlangt. Ein Pflichtfeld beim
+       Schreiben bricht jede aeltere Fassung der App, die noch im
+       Zwischenspeicher eines Geraets liegt — und die App ist eine PWA,
+       da liegt immer eine. Fehlt das Feld, gilt der Eintrag als vom
+       Chef erfasst, und genau das ist er dann auch. */
     match /certificates/{certId} {
       allow read: if isChef()
         || (istAktiv() && resource.data.uid == request.auth.uid);
-      allow create, update, delete: if isChef();
+      allow create: if isChef()
+        || (istAktiv()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.erfasstVonUid == request.auth.uid
+            && request.resource.data.get('bestaetigt', false) == false);
+      /* Bis zur Bestaetigung darf man den eigenen Eintrag korrigieren —
+         ein Zahlendreher im Datum soll kein Fall fuer den Chef sein.
+         DANACH NICHT MEHR: sonst laesst sich ein bestaetigter
+         Erste-Hilfe-Schein still um zwei Jahre verlaengern, und die
+         Bestaetigung waere wertlos. Genau dieses Loch stand hier im
+         ersten Entwurf. */
+      allow update: if isChef()
+        || (istAktiv()
+            && resource.data.uid == request.auth.uid
+            && request.resource.data.uid == request.auth.uid
+            && resource.data.get('bestaetigt', false) == false
+            && request.resource.data.get('bestaetigt', false) == false);
+      allow delete: if isChef();
     }
 
     // ── Konfiguration (z. B. Onboarding-Checkliste) ──
@@ -902,10 +948,28 @@ service cloud.firestore {
            und herausholen koennen. Weggenommen wird das ANLEGEN. Eine
            Funktion, die vorhandene Daten unerreichbar macht, ist keine
            Preisstufe, sondern ein Verlust. */
+        // Begruendung siehe beim flachen /certificates weiter oben.
+        // Hier kommt die Firmengrenze dazu und die Abo-Stufe: Nachweise
+        // sind Premium, und das gilt fuer die Selbsteintragung genauso —
+        // sonst waere die Stufe ueber einen Umweg ausgehebelt.
         match /certificates/{certId} {
           allow read: if inFirma(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
-          allow create, update, delete: if inFirma(f) && (isChef()) && hatPremium(f);
+          allow create: if inFirma(f) && hatPremium(f)
+            && (isChef()
+                || (istAktiv()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.erfasstVonUid == request.auth.uid
+                    && request.resource.data.get('bestaetigt', false) == false));
+          // Nach der Bestaetigung nur noch der Chef — siehe oben.
+          allow update: if inFirma(f) && hatPremium(f)
+            && (isChef()
+                || (istAktiv()
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == request.auth.uid
+                    && resource.data.get('bestaetigt', false) == false
+                    && request.resource.data.get('bestaetigt', false) == false));
+          allow delete: if inFirma(f) && isChef() && hatPremium(f);
         }
 
         match /config/{doc} {
