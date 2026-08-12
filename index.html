@@ -1044,6 +1044,19 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .feat-txt b{font-size:.95rem;font-weight:650}
 .feat-txt b em{font-style:normal;font-weight:500;font-size:.78rem;color:var(--text-3)}
 .feat-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.35}
+/* Einrichtungs-Schritte. Erledigtes bleibt STEHEN, nur blasser: wer
+   sieht, was schon geschafft ist, macht den Rest eher fertig. */
+.setup-zeile{display:flex;align-items:flex-start;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--line-2)}
+.setup-zeile:last-child{border-bottom:none}
+.setup-zeile.fertig{opacity:.5}
+.setup-hak{flex-shrink:0;width:20px;text-align:center;font-weight:700;color:var(--text-3)}
+.setup-zeile.fertig .setup-hak{color:var(--accent)}
+.setup-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.setup-txt b{font-size:.93rem;font-weight:650}
+.setup-zeile.fertig .setup-txt b{font-weight:500;text-decoration:line-through}
+.setup-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.4}
+.setup-txt i em{font-style:normal;color:var(--accent-2);white-space:nowrap}
 .studio-check input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin:0}
 @media(max-width:340px){.studio-checks{grid-template-columns:1fr}}
 
@@ -2425,6 +2438,26 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <!-- Die Startseite ist jetzt in drei benannte Blöcke geteilt.
                Vorher war es eine Reihe gleich aussehender Kacheln und Karten;
                man musste jedes Mal neu lesen, was wozu gehört. -->
+
+          <!-- 0. Einrichtung — nur beim Chef, nur solange etwas fehlt.
+               Ein neuer Kunde meldet sich zum ersten Mal an und sieht
+               eine leere App. Er weiss nicht, was zuerst dran ist, und
+               fragt entweder nach oder hört auf. Diese Karte beantwortet
+               genau eine Frage: was jetzt.
+
+               Sie hakt sich SELBST ab. Es gibt keine Kästchen zum
+               Ankreuzen — jeder Schritt liest nach, ob er wirklich getan
+               ist. Eine Liste, die man abhaken kann, ohne etwas zu tun,
+               ist nach zwei Tagen eine Lüge. -->
+          <div class="card" id="setupCard" style="display:none">
+            <div class="karten-kopf">
+              <h3>🚀 Einrichtung</h3>
+              <span class="todo-count" id="setupZahl"></span>
+            </div>
+            <p class="hint">Was noch fehlt, damit die App für dein Team bereit ist.
+              Verschwindet von selbst, sobald alles steht.</p>
+            <div id="setupListe"></div>
+          </div>
 
           <!-- 1. Was jetzt dran ist -->
           <div id="homeAlerts"></div>
@@ -5635,6 +5668,94 @@ function renderFehlerListe(){
   });
 }
 
+/* ══ Einrichtung: was fehlt noch? ═══════════════════════════════════
+   Ein neuer Kunde meldet sich zum ersten Mal an und sieht eine leere
+   App. Bisher stand dort nichts, was ihm sagt, was zuerst dran ist —
+   und der häufigste Grund, warum jemand ein Werkzeug wieder weglegt,
+   ist nicht, dass es schlecht wäre, sondern dass er nicht weiss, wo er
+   anfangen soll.
+
+   JEDER SCHRITT LIEST NACH, OB ER GETAN IST.
+   Es gibt bewusst keine Kästchen zum Ankreuzen. Eine Liste, die man
+   abhaken kann, ohne etwas zu tun, ist nach zwei Tagen eine Lüge — und
+   ausgerechnet bei „Impressum vollständig" wäre das eine teure. Was
+   hier grün ist, ist wirklich da.
+
+   Sichtbar nur für den Chef und nur, solange etwas offen ist. Danach
+   verschwindet die Karte ganz: eine Einrichtungshilfe, die nach einem
+   Jahr noch dasteht, ist Möbel. */
+var _setupCode = null;      // config/registrierung, nur der Chef darf es lesen
+
+function setupSchritte(){
+  /* Studios: heissen sie noch „Studio 1", „Studio 2"? So legt
+     firmaAnlegen sie an — absichtlich neutral, damit kein Kunde die
+     Standortnamen eines anderen sieht. Solange sie so heissen, hat sie
+     niemand angefasst. */
+  var eigeneNamen = (_studioListe||[]).some(function(s){
+    return s && s.name && !new RegExp('^Studio\\s*\\d+$').test(String(s.name).trim());
+  });
+  var fehltRecht = rechtFehlend();
+  return [
+    { id:'studios', titel:'Studios benennen',
+      was:'Aus „Studio 1" wird der Name, den dein Team kennt.',
+      wo:'Verwaltung → Studios', fertig: eigeneNamen },
+    { id:'recht', titel:'Rechtliche Angaben eintragen',
+      was: fehltRecht.length ? ('Es fehlt: '+fehltRecht.join(' · ')+'.')
+                             : 'Impressum und Datenschutz sind vollständig.',
+      wo:'Verwaltung → System → ⚖️ Rechtliche Angaben', fertig: !fehltRecht.length },
+    { id:'code', titel:'Firmencode setzen',
+      was:'Ohne ihn kann sich jeder anmelden, der die Adresse kennt.',
+      wo:'Verwaltung → Team → 🔑 Wer darf sich anmelden',
+      /* _setupCode === null heisst „konnte ich nicht lesen", nicht „ist
+         nicht gesetzt". Dann gilt der Schritt als erledigt: eine
+         Aufforderung, etwas zu tun, das längst getan ist, kostet mehr
+         Vertrauen als ein fehlender Hinweis. */
+      fertig: _setupCode === null
+        || !!String((_setupCode||{}).code||'').trim() },
+    { id:'team', titel:'Das Team anlegen',
+      was:'Zugänge für die Personen, die mitarbeiten sollen.',
+      wo:'Verwaltung → Team → Zugang anlegen',
+      fertig: (_employees||[]).length > 1 },
+    { id:'inhalt', titel:'Erste Aufgaben oder Putzpunkte anlegen',
+      was:'Eine leere App sieht kaputt aus, auch wenn sie es nicht ist.',
+      wo:'Verwaltung → Erstellen',
+      fertig: Object.keys(cachedTodos||{}).some(function(k){
+        return (cachedTodos[k]||[]).length; }) }
+  ];
+}
+
+/* Der Code ist absichtlich für niemanden ausser dem Chef lesbar. Ein
+   Fehlschlag heisst deshalb nicht „kein Code", sondern „weiss ich
+   nicht" — und dann darf der Schritt NICHT als offen dastehen, sonst
+   schickt die Karte jemanden auf eine Aufgabe, die längst erledigt ist. */
+function setupCodeLaden(){
+  if(!isChef()) return Promise.resolve();
+  return S('config').doc('registrierung').get()
+    .then(function(d){ _setupCode = d.exists ? (d.data()||{}) : {}; })
+    .catch(function(e){
+      console.warn('Firmencode nicht lesbar:', e.message);
+      _setupCode = null;
+    });
+}
+
+function renderSetup(){
+  var karte=$('setupCard'); if(!karte) return;
+  if(!isChef()){ karte.style.display='none'; return; }
+  var schritte=setupSchritte();
+  var offen=schritte.filter(function(s){ return !s.fertig; });
+  if(!offen.length){ karte.style.display='none'; return; }
+  karte.style.display='';
+  var z=$('setupZahl');
+  if(z) z.textContent = offen.length + ' von ' + schritte.length + ' offen';
+  var box=$('setupListe'); if(!box) return;
+  box.innerHTML=schritte.map(function(s){
+    return '<div class="setup-zeile'+(s.fertig?' fertig':'')+'">'+
+      '<span class="setup-hak">'+(s.fertig?'✓':'○')+'</span>'+
+      '<span class="setup-txt"><b>'+esc(s.titel)+'</b>'+
+      '<i>'+esc(s.was)+(s.fertig?'':' <em>'+esc(s.wo)+'</em>')+'</i></span></div>';
+  }).join('');
+}
+
 /* ── Die Schalter selbst (Verwaltung → System) ── */
 function renderFeatureListe(){
   var box=$('featureListe'); if(!box) return;
@@ -7197,6 +7318,9 @@ function showApp(){
   /* Jede Rolle: das Impressum steht in jedem Bildschirm unten und muss
      die Angaben DIESER Firma zeigen, nicht die aus konfig.js. */
   rechtLaden();
+  /* Nur der Chef: der Firmencode ist für alle anderen nicht lesbar, und
+     nur er kann die Einrichtungsschritte überhaupt erledigen. */
+  if(isChef()) setupCodeLaden().then(renderSetup);
   listenInventoryAll();                  // jede Rolle: fuer den Material-Hinweis
   if(canManage()){ listenEmployees(); }
   if(isChef()){
@@ -9541,6 +9665,10 @@ function renderBoard(){
    ============================================================ */
 function renderHome(){
   if(!session) return;
+  /* Steht ganz oben, wird deshalb auch zuerst gebaut. Sie liest nur aus
+     dem, was ohnehin schon geladen ist — keine eigene Abfrage ausser dem
+     Firmencode, und der wird einmal beim Start geholt. */
+  renderSetup();
   var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
   var jetzt=Date.now();
   var startToday=new Date(); startToday.setHours(0,0,0,0); startToday=startToday.getTime();

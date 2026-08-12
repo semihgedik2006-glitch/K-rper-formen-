@@ -256,6 +256,24 @@
             if (path === 'config' && id === 'sicherung') {
               return Promise.resolve({ exists: true, id: id, data: function () { return SICHERUNG; } });
             }
+            /* Studioliste und Firmencode. Beides gab es hier bisher
+               nicht — die Durchläufe kamen mit der Liste aus konfig.js
+               aus. Die Einrichtungs-Karte fragt aber genau danach: sind
+               die Studios noch „Studio 1"? Ist ein Code gesetzt? */
+            if (path === 'config' && id === 'studios' && window.__studios) {
+              var st = window.__studios;
+              return Promise.resolve({ exists: true, id: id,
+                data: function () { return st; } });
+            }
+            if (path === 'config' && id === 'registrierung') {
+              /* __regKaputt bildet den Normalfall im Betrieb nach: das
+                 Dokument ist fuer niemanden lesbar ausser dem Chef, und
+                 ein Fehlschlag muss anders behandelt werden als „leer". */
+              if (window.__regKaputt) return Promise.reject(new Error('permission-denied'));
+              var rc = window.__regCode;
+              return Promise.resolve({ exists: rc !== null && rc !== undefined, id: id,
+                data: function () { return { code: rc || '', freigabe: !!rc }; } });
+            }
             /* Abgeschaltete Funktionen. Ohne __features gibt es das
                Dokument NICHT — und genau das ist der Normalfall, den
                jeder andere Durchlauf voraussetzt: alles an. */
