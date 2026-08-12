@@ -56,9 +56,20 @@
        Anmeldebildschirm hätte den Beitritts-Schalter nicht
        gefunden. Hier zurück durch die Vordertür. */
     if (pfad === 'firmen') {
-      k.doc = function(){
+      k.doc = function(id){
         var o = kette();
         o.collection = function(sub){ return sammlung(sub); };
+        /* Das Firmendokument SELBST: daraus kommt der Anzeigename fuer
+           den Anmeldebildschirm. Es ist absichtlich auch ohne Anmeldung
+           lesbar (firestore.rules) — genau dafuer.
+
+           Wichtig: das gehoert HIER hinein und nicht in einen zweiten
+           firmen-Zweig weiter unten. Dieser hier springt zurueck, ein
+           zweiter waere toter Code — und der Durchlauf meldete dann
+           einen Fehler in der App, den es nicht gibt. Genau so beim
+           ersten Anlauf passiert. */
+        o.get = function(){ return Promise.resolve({ exists:true, id:id,
+          data:function(){ return { name: window.__firmaName || 'Körperformen', aktiv:true }; } }); };
         return o;
       };
       return k;

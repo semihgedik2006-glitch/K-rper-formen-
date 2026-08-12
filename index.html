@@ -2345,7 +2345,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </svg>
     </div>
     <div class="auth-brand">STUDIO<b>CHAT</b></div>
-    <p class="auth-sub">Körperformen · Team-Portal</p>
+    <!-- Der Firmenname wird zur Laufzeit gesetzt (firmaNameAnwenden).
+         Fest verdrahtet stand hier bis zum 12.8.2026 "Körperformen" —
+         ein Kunde haette beim Oeffnen SEINES Links den Namen eines
+         fremden Betriebs gesehen, noch vor dem Anmelden. Der Text hier
+         ist nur die Anzeige, bis die Firma geladen ist. -->
+    <p class="auth-sub" id="authSub">Team-Portal</p>
 
     <!-- Umschalter Anmelden / Konto anlegen.
          Bewusst versteckt, solange der Chef die Selbstanmeldung nicht
@@ -7439,8 +7444,9 @@ auth.onAuthStateChanged(function(user){
      nicht auf — dort fängt der Rückfall auf konfig.js es auf, und genau
      so bleibt ein Fehler unentdeckt, bis der erste fremde Kunde da ist. */
   rechtLaden();
-  /* Auch der Anmeldebildschirm gehört dem Kunden. */
+  /* Auch der Anmeldebildschirm gehört dem Kunden — Farbe UND Name. */
   markeLaden();
+  firmaNameLaden();
   /* Die Studioliste MUSS vor enterApp stehen. Dort werden aus den
      Studionamen im Profil die Datenbank-Kennungen gerechnet. Läge dabei
      noch die alte Liste aus konfig.js zugrunde, bekäme ein umbenanntes
@@ -7475,6 +7481,33 @@ auth.onAuthStateChanged(function(user){
    gehaengt — dieselbe Sorte Fehler wie beim Standort-Leck, nur auf
    Papier und damit noch schwerer zurueckzuholen. */
 var _firmaName = null;
+
+/* Setzt den Firmennamen ueberall dort ein, wo ihn jemand LIEST. Wird
+   mehrfach gerufen: einmal frueh mit dem Wert aus konfig.js, und noch
+   einmal, sobald das Firmendokument da ist. */
+function firmaNameAnwenden(){
+  var n = firmaAnzeige();
+  var sub = document.getElementById('authSub');
+  if(sub) sub.textContent = n ? (n + ' · Team-Portal') : 'Team-Portal';
+  try{
+    document.title = (KONFIG.appName || 'StudioChat') + (n ? (' – ' + n) : '');
+  }catch(e){}
+}
+
+/* Holt den Namen VOR dem Anmelden. Das Firmendokument ist absichtlich
+   fuer jeden lesbar (siehe firestore.rules) — genau dafuer. Ein
+   Lesevorgang, einmal je Start. */
+function firmaNameLaden(){
+  if(!_firma) { firmaNameAnwenden(); return Promise.resolve(); }
+  return db.collection('firmen').doc(_firma).get()
+    .then(function(d){
+      var n = d.exists ? (d.data()||{}).name : null;
+      if(n) _firmaName = String(n);
+    })
+    .catch(function(e){ console.warn('Firmenname nicht lesbar:', e.message); })
+    .then(firmaNameAnwenden);
+}
+
 function firmaAnzeige(){
   return _firmaName
     || (KONFIG && (KONFIG.firma_anzeige || KONFIG.firma))
@@ -7491,7 +7524,7 @@ function firmaLaeuftNoch(profil){
       /* Den Namen gleich mitnehmen: das Dokument ist ohnehin geholt,
          ein zweiter Lesevorgang waere Verschwendung. */
       var n=(d.data()||{}).name;
-      if(n) _firmaName=String(n);
+      if(n){ _firmaName=String(n); firmaNameAnwenden(); }
       return (d.data()||{}).aktiv !== false;            // gesperrt
     })
     .catch(function(e){
@@ -12056,14 +12089,17 @@ function exportShoppingList(){
 function shoppingMail(){
   var rows=shoppingData();
   if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
-  var betreff='Bestellung Körperformen · '+new Date().toLocaleDateString('de-DE');
+  /* Diese Mail verlaesst das Haus. Ein Kunde haette seinem Lieferanten
+     eine Bestellung im Namen eines fremden Betriebs geschickt — von
+     allen Stellen mit festem Firmennamen die unangenehmste. */
+  var betreff='Bestellung '+firmaAnzeige()+' · '+new Date().toLocaleDateString('de-DE');
   var text='Guten Tag,\n\nwir möchten Folgendes bestellen:\n\n'
     + rows.map(function(r){ return '· '+r.name+': '+r.total+' Stück'; }).join('\n')
     + '\n\nAufteilung auf die Studios:\n'
     + rows.map(function(r){
         return '· '+r.name+' – '+r.studios.map(function(x){ return x.studio+': '+x.n; }).join(', ');
       }).join('\n')
-    + '\n\nVielen Dank und freundliche Grüße\n'+(session.name||'')+'\nKörperformen';
+    + '\n\nVielen Dank und freundliche Grüße\n'+(session.name||'')+'\n'+firmaAnzeige();
   var adresse=(PREFS.lieferantMail||'').trim();
   // mailto verträgt keine beliebige Länge. Über 1800 Zeichen schneiden
   // manche Mailprogramme still ab – dann lieber ohne Text öffnen und
