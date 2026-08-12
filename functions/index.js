@@ -855,11 +855,32 @@ exports.firmenZahlen = region
    kein Zeitpunkt. Mehr braucht die Freigabe-Karte nicht.               */
 exports.mailStatus = region
   .https.onCall(async (data, context) => {
-    await requireChef(context);
+    const ich = await requireChef(context);
     const uids = Array.isArray(data && data.uids) ? data.uids.slice(0, 50) : [];
     if (!uids.length) return { stand: {} };
+
+    /* ── Gefunden im Sicherheits-Durchlauf am 12.8.2026 ──
+       Hier stand nur requireChef. Die Rolle wurde geprueft, die FIRMA
+       nicht: ein Chef konnte beliebige Kennungen uebergeben und erfuhr,
+       ob es dieses Konto gibt und ob dessen E-Mail bestaetigt ist —
+       auch bei einem anderen Kunden.
+
+       Praktisch schwer auszunutzen (Firebase-Kennungen sind zufaellig
+       und nicht zu erraten), aber es ist die Firmengrenze, und die ist
+       in dieser App die teuerste Linie. Jetzt wird jede Kennung erst
+       gegen das eigene Team geprueft. */
+    const meine = (ich || {}).firma || 'koerperformen';
+    const profile = await db.getAll(
+      ...uids.map((u) => db.collection('users').doc(String(u))));
+    const erlaubt = {};
+    profile.forEach((p) => {
+      if (!p.exists) return;
+      const f = (p.data() || {}).firma || 'koerperformen';
+      if (f === meine) erlaubt[p.id] = true;
+    });
+
     const stand = {};
-    await Promise.all(uids.map(async (uid) => {
+    await Promise.all(uids.filter((u) => erlaubt[String(u)]).map(async (uid) => {
       try {
         const u = await admin.auth().getUser(String(uid));
         stand[uid] = !!u.emailVerified;
@@ -1612,12 +1633,23 @@ exports.dailyBackup = region
 exports.backupNow = region
   .runWith({ timeoutSeconds: 540, memory: '256MB' })
   .https.onCall(async (data, context) => {
-    requireAuth(context);
-    const uid = context.auth.uid;
-    const prof = await db.collection('users').doc(uid).get();
-    if (!prof.exists || (prof.data() || {}).role !== 'chef') {
-      throw new functions.https.HttpsError('permission-denied', 'Nur der Chef darf sichern.');
-    }
+    /* ── Gefunden im Sicherheits-Durchlauf am 12.8.2026 ──
+       Hier stand "nur der Chef". Das war richtig, solange ein Kunde ein
+       eigenes Firebase-Projekt hatte. Seit mehrere Firmen in EINER
+       Datenbank liegen, ist es falsch: exportieren() zieht die
+       KOMPLETTE Datenbank (collectionIds: [] = alles). Ein Kunde haette
+       damit einen Vollexport aller anderen Kunden ausgeloest — und
+       nebenbei ueber sicherungStatus() den Sicherungsstand JEDER Firma
+       ueberschrieben.
+
+       Die Daten selbst waren nie in Gefahr: der Speicher ist fuer jeden
+       Client gesperrt (storage.rules: allow read, write: if false), und
+       der Betreiber hat die Daten ohnehin. Es ging um die Kosten, den
+       fremden Anstoss und die falsche Anzeige.
+
+       Ein Export ueber ALLE Kunden ist eine Betreiber-Handlung. Die
+       naechtliche Sicherung laeuft fuer alle weiter, unveraendert. */
+    await requireAdmin(context);
     const stempel = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     try {
       const r = await exportieren('sicherung/manuell-' + stempel);

@@ -167,9 +167,31 @@ service cloud.firestore {
 
     // ── Benutzerprofile ──
     match /users/{uid} {
-      // Das EIGENE Profil darf man immer lesen - sonst kann die App einem
-      // wartenden Konto nicht einmal sagen, dass es wartet.
-      allow read: if istAktiv() || (signedIn() && request.auth.uid == uid);
+      /* ── DAS LOCH VOM 12.8.2026 ──
+         Hier stand: allow read: if istAktiv() || (eigenes Profil).
+         OHNE FIRMENPRUEFUNG. users ist die einzige Sammlung, die NICHT
+         unter /firmen/{f}/ liegt — und beim Schreiben stand die Pruefung
+         (gleicheFirma), beim Lesen nicht.
+
+         Gemessen im Emulator: ein Mitarbeiter von Alpha las das Konto
+         des Chefs von Beta samt E-Mail-Adresse und Geburtsdatum, und
+         konnte die GANZE Sammlung auflisten — jedes Konto jedes Kunden.
+         Die App tat das sogar von selbst: listenAllUsers() horchte auf
+         db.collection('users') ohne Filter.
+
+         Das EIGENE Profil bleibt immer lesbar, sonst kann die App einem
+         wartenden Konto nicht einmal sagen, dass es wartet.
+
+         ACHTUNG BEIM AUSROLLEN: mit dieser Regel wird eine UNGEFILTERTE
+         Abfrage auf users abgelehnt — Firestore prueft Abfragen im
+         Voraus, nicht Dokument fuer Dokument. Die App muss deshalb
+         where('firma','==',…) mitgeben, und JEDES bestehende Konto
+         braucht das Feld. Reihenfolge: erst nachtragen (tools/
+         firma-nachtragen.js), dann diese Regel ausrollen. Andersherum
+         steht das ganze Team vor einer leeren Personenliste. */
+      allow read: if istAdminKonto()
+        || (signedIn() && request.auth.uid == uid)
+        || (istAktiv() && gleicheFirma());
       // Wer sein EIGENES Profil anlegt, darf sich dabei nur "mitarbeiter"
       // geben. Vorher war jede Rolle erlaubt: der Chef-Code stand im
       // Quelltext der App, und die Regeln haben ihn nie geprüft – wer die

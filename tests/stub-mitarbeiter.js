@@ -25,13 +25,19 @@
     studio: 'Hürth', avatar: '🙂', color: '#38BDF8',
     email: 'lisa@example.com'
   };
-  var USERS = [
-    { id:'testuid', name:'Lisa Wagner', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'] },
-    { id:'u9', name:'Der Chef', role:'chef', studios:[], email:'chef@example.com' },
-    { id:'u2', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
-    { id:'u3', name:'Ben Kraus', role:'leiter', studios:['Brühl'], studioKeys:['studio-7'], lastSeen:Date.now()-3600000 },
-    { id:'u4', name:'Alt-Konto Test', role:'chef', email:'test1@example.com' },
-    { id:'u5', name:'', role:'chef', email:'test2@example.com' }
+    /* firma an JEDEM Konto — so sieht es nach tools/firma-nachtragen.js
+     aus. Ohne das Feld findet die gefilterte Abfrage in
+     listenAllUsers() nichts, und die Personenliste bleibt leer.
+     Genau das hat test-beitritt am 12.8.2026 sofort gemeldet —
+     und genau deshalb muss das Nachtragen VOR dem Ausrollen
+     laufen. */
+var USERS = [
+    { id:'testuid', firma:'koerperformen', name:'Lisa Wagner', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'] },
+    { id:'u9', firma:'koerperformen', name:'Der Chef', role:'chef', studios:[], email:'chef@example.com' },
+    { id:'u2', firma:'koerperformen', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
+    { id:'u3', firma:'koerperformen', name:'Ben Kraus', role:'leiter', studios:['Brühl'], studioKeys:['studio-7'], lastSeen:Date.now()-3600000 },
+    { id:'u4', firma:'koerperformen', name:'Alt-Konto Test', role:'chef', email:'test1@example.com' },
+    { id:'u5', firma:'koerperformen', name:'', role:'chef', email:'test2@example.com' }
   ];
   var MESSAGES = [
     { id:'m1', uid:'u2', name:'Anna Meier', role:'mitarbeiter', studio:'Hürth',

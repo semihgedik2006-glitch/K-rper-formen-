@@ -58,8 +58,6 @@ const stubErweitern = (codeNoetig, freigabe, wartende) => `
       };
     }
     if (pfad === 'users') {
-      var s = k.onSnapshot ? k.onSnapshot.bind(k) : null;
-      var g = k.get ? k.get.bind(k) : null;
       // Die wartenden Konten zusaetzlich in die Nutzerliste geben
       function erweitern(snap){
         var extra = WARTEND.map(function(w){
@@ -68,8 +66,23 @@ const stubErweitern = (codeNoetig, freigabe, wartende) => `
         return { docs: (snap && snap.docs ? snap.docs : []).concat(extra),
                  forEach:function(f){ this.docs.forEach(f); } };
       }
-      if (s) k.onSnapshot = function(cb, err){ return s(function(sn){ cb(erweitern(sn)); }, err); };
-      if (g) k.get = function(){ return g().then(erweitern); };
+      /* AUCH auf dem Ergebnis von .where() aufsetzen.
+         Seit dem 12.8.2026 fragt listenAllUsers() gefiltert ab
+         (where('firma','==',…)) — die Firmengrenze auf users. Damit
+         landet onSnapshot nicht mehr auf der Sammlung, sondern auf der
+         ABFRAGE, und ein Aufsatz nur auf k.onSnapshot greift ins Leere.
+         Der Durchlauf meldete daraufhin "keine wartenden Konten", und
+         das sah nach einem Fehler in der App aus. */
+      function aufsetzen(q){
+        var s = q.onSnapshot ? q.onSnapshot.bind(q) : null;
+        var g = q.get ? q.get.bind(q) : null;
+        if (s) q.onSnapshot = function(cb, err){ return s(function(sn){ cb(erweitern(sn)); }, err); };
+        if (g) q.get = function(){ return g().then(erweitern); };
+        var w = q.where ? q.where.bind(q) : null;
+        if (w) q.where = function(){ return aufsetzen(w.apply(q, arguments)); };
+        return q;
+      }
+      aufsetzen(k);
     }
     return k;
   };

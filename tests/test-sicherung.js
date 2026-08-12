@@ -90,20 +90,63 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
   if (stand && !stand.imBild) errs.push('FEHLT: Der Grund steht nicht im sichtbaren Bereich');
   if (stand && stand.markierbar !== 'text') errs.push('FEHLT: Meldung laesst sich nicht markieren');
 
-  // ── 3. Der Knopf darunter ist noch da und gross genug ──
+  /* ── 3. Der Knopf darunter ──
+     Seit dem Sicherheits-Durchlauf am 12.8.2026 ist die Vollsicherung
+     BETREIBER-Sache: exportieren() zieht die komplette Datenbank, also
+     alle Kunden auf einmal. Fuer den Chef eines einzelnen Betriebs war
+     das kein Knopf, sondern ein Missverstaendnis.
+
+     Der Durchlauf prueft deshalb jetzt BEIDES: dem Chef bleibt er
+     verborgen, und beim Betreiber ist er gross genug zum Antippen.
+     Nur „ist weg" zu pruefen waere die halbe Miete — ein Knopf, den
+     auch der Betreiber nicht mehr sieht, waere kein Fortschritt. */
   const knopf = await page.evaluate(() => {
     const b = document.getElementById('backupNow');
     if (!b) return null;
     const r = b.getBoundingClientRect();
     return { hoehe: Math.round(r.height), text: b.textContent.trim() };
   });
-  console.log('Knopf:', JSON.stringify(knopf));
-  if (!knopf) errs.push('FEHLT: Knopf "Jetzt zusaetzlich sichern" verschwunden');
-  if (knopf && knopf.hoehe < 44) errs.push('FINGERZIEL: Sicherungs-Knopf nur ' + knopf.hoehe + 'px hoch');
+  console.log('Knopf beim Chef:', JSON.stringify(knopf));
+  if (!knopf) errs.push('FEHLT: Knopf "Jetzt zusaetzlich sichern" gibt es gar nicht mehr');
+  if (knopf && knopf.hoehe > 0) {
+    errs.push('ZU VIEL: der Chef eines Betriebs sieht die Vollsicherung ueber ALLE Kunden');
+  }
 
   await page.screenshot({ path: SP + '/sicherung-stand.png' });
-
-  console.log(errs.length ? '\n✗ ' + errs.join('\n✗ ') : '\n✓ Sicherung: Stand wird sichtbar gemeldet');
   await b.close();
+
+  /* Die Gegenrichtung, im eigenen Fenster: beim BETREIBER muss der Knopf
+     da und antippbar sein. Ohne diesen Teil wuerde die Pruefung oben
+     auch dann gruen bleiben, wenn der Knopf fuer alle verschwunden
+     waere — und die Vollsicherung von Hand gaebe es gar nicht mehr. */
+  {
+    const b2 = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+    const p2 = await b2.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+    p2.on('pageerror', e => errs.push('PAGEERROR (Betreiber): ' + e.message.slice(0, 200)));
+    await p2.route('**://www.gstatic.com/**', r => r.abort());
+    await p2.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
+    await p2.addInitScript('window.__admin = true;');
+    await p2.addInitScript({ path: SP + '/stub-chef.js' });
+    await p2.goto(APP, { waitUntil: 'domcontentloaded' });
+    await p2.waitForTimeout(2800);
+    const alsAdmin = await p2.evaluate(async () => {
+      const g = document.querySelector('.mobnav [data-group="g-chef"]');
+      if (g) g.click();
+      await new Promise(r => setTimeout(r, 400));
+      const t = document.querySelector('#chefHome [data-cgo="system"]');
+      if (t) t.click();
+      await new Promise(r => setTimeout(r, 800));
+      const el = document.getElementById('backupNow');
+      if (!el) return null;
+      const r2 = el.getBoundingClientRect();
+      return Math.round(r2.height);
+    });
+    console.log('Knopf beim Betreiber, Hoehe:', alsAdmin);
+    if (!alsAdmin) errs.push('FEHLT: auch der Betreiber sieht die Vollsicherung nicht mehr');
+    else if (alsAdmin < 44) errs.push('FINGERZIEL: Sicherungs-Knopf nur ' + alsAdmin + 'px hoch');
+    await b2.close();
+  }
+
+  console.log(errs.length ? '\n✗ ' + errs.join('\n✗ ') : '\n✓ Sicherung: Stand wird sichtbar gemeldet, Vollsicherung nur beim Betreiber');
   process.exit(errs.length ? 1 : 0);
 })();

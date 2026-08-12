@@ -3544,7 +3544,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <!-- Zeigt, ob die nächtliche Sicherung wirklich durchkommt. Ohne diese
                  Zeile scheitert sie still und niemand merkt es. -->
             <div class="sich-stand" id="sichStand" style="display:none"></div>
-            <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-chef-only="1">🛡 Jetzt zusätzlich sichern</button>
+            <!-- Nur fuer den Betreiber: der Export umfasst die GANZE
+                 Datenbank, also alle Kunden auf einmal. Fuer den Chef
+                 eines einzelnen Betriebs waere das kein Knopf, sondern
+                 ein Missverstaendnis. Die naechtliche Sicherung laeuft
+                 fuer alle weiter. -->
+            <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-admin-only="1">🛡 Jetzt zusätzlich sichern</button>
             <p class="em-saved" id="backupNote"></p>
             <!-- Die Fehlermeldung nennt Dienstkonto und Rolle und ist deshalb
                  länger als eine Zeile. -->
@@ -4637,6 +4642,15 @@ function applyRoleVisibility(){
   var chef=isChef();
   document.querySelectorAll('[data-chef-only]').forEach(function(el){
     el.style.display = chef ? '' : 'none';
+  });
+  /* Nur fuer den Betreiber. Bisher gab es diese Stufe in der Oberflaeche
+     nicht — der Betreiber-Bereich haengt an eigenen Reitern. Gebraucht
+     seit dem Sicherheits-Durchlauf: die Vollsicherung umfasst ALLE
+     Kunden und ist deshalb keine Chef-Handlung mehr. Das ist eine
+     Anzeige, keine Grenze — die steht in der Cloud Function
+     (requireAdmin). */
+  document.querySelectorAll('[data-admin-only]').forEach(function(el){
+    el.style.display = istAdmin() ? '' : 'none';
   });
   // Für Leiter UND Chef sichtbar, für Mitarbeiter nicht
   document.querySelectorAll('[data-manage-only]').forEach(function(el){
@@ -14028,7 +14042,17 @@ function avatarMarkup(u){
 function listenAllUsers(){
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   var redrawTimer=null;
-  _usersUnsub=db.collection('users').onSnapshot(function(snap){
+  /* ── Der Filter ist hier keine Bequemlichkeit, sondern die Grenze ──
+     users ist die einzige Sammlung, die nicht unter firmen/<kennung>/
+     liegt. Bis zum 12.8.2026 stand hier collection('users') OHNE Filter
+     — und die Regeln liessen es zu. Damit lud jedes Handy jedes Kontos
+     jeder Firma: Namen, E-Mail-Adressen, Rollen, Geburtstage.
+
+     Firestore prueft Abfragen im VORAUS, nicht Dokument fuer Dokument:
+     ohne diesen where-Teil lehnt die neue Regel die ganze Abfrage ab,
+     und die Personenliste bliebe leer. Beides gehoert zusammen. */
+  var meine = _firma || KONFIG.firma || 'koerperformen';
+  _usersUnsub=db.collection('users').where('firma','==',meine).onSnapshot(function(snap){
     var first = !_allUsers.length;
     _allUsers=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
     // Die Teillisten (Team, Chefs) fallen hier mit ab – ein Beobachter
