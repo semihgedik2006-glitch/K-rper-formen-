@@ -10,7 +10,7 @@ jederzeit wieder ausführen.
 
 ## Wozu das gut ist
 
-Die App ist eine einzige HTML-Datei mit über 8.000 Zeilen. Eine kleine Änderung
+Die App ist eine einzige HTML-Datei mit über 15.000 Zeilen. Eine kleine Änderung
 an einer Stelle kann etwas an ganz anderer Stelle kaputtmachen, ohne dass es
 auffällt. Diese Durchläufe klicken die App nach jeder Änderung einmal komplett
 durch und melden sich, wenn etwas nicht mehr stimmt.
@@ -139,7 +139,8 @@ bash tests/alle.sh chat       # nur die passenden
 > Regression als `for f in tests/*.js; do node "$f" || echo kaputt; done`.
 > 29 der Durchläufe geben aber gar keinen Exit-Code — sie schreiben
 > „Fehler: …" und beenden sich mit 0. Der Einzeiler prüfte damit neun
-> Durchläufe und meldete das Ergebnis für achtunddreißig. `alle.sh` kennt
+> Durchläufe und meldete das Ergebnis für achtunddreißig — heute wären es
+> vierundfünfzig. `alle.sh` kennt
 > vier Fehlersignale und meldet zusätzlich jeden Durchlauf, der **gar
 > nichts** ausgibt — ein stummer Test ist verdächtig, nicht gut.
 
@@ -212,14 +213,32 @@ laufen im **Emulator**, also lokal und ohne jedes Risiko:
 
 ```bash
 cd tests/rules && npm install     # einmalig
-npm test                          # alle drei
+npm test                          # alle vier
 ```
 
 | Datei | prüft | Umfang |
 |---|---|---|
-| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 132 |
+| `security.test.js` | `firestore.rules`: wer darf was, und vor allem: wer darf **nichts** | 165 |
+| `kreuz.test.js` | die **Firmengrenze über alle 32 Sammlungen** — nicht nur die, an die man denkt | 162 |
 | `umzug.test.js` | `tools/umzug.js` an nachgebauten Daten — Zählung, Inhalte, Untersammlungen unter leeren Eltern | 12 |
 | `funktionen.test.js` | die **Cloud Functions**, wirklich ausgeführt: erreicht jede Firma, und keine fremde | 79 |
+
+> **Zu `kreuz.test.js`:** entstanden im Sicherheits-Durchlauf am
+> 12.8.2026. Vorher war die Firmengrenze an **sieben** Sammlungen
+> nachgewiesen, im Firmen-Zweig der Regeln stehen aber
+> **zweiunddreissig**. Die restlichen fünfundzwanzig waren nicht falsch
+> — sie waren nie geprüft.
+>
+> Je Sammlung vier Punkte, und der vierte ist der wichtigste: **die
+> Gegenrichtung.** Ein Kreuztest auf einem falsch geschriebenen Pfad ist
+> immer grün, weil niemand an ein Dokument kommt, das nirgends liegt.
+> Ohne sie misst der Durchlauf nichts.
+>
+> Wer eine Sammlung hinzufügt, trägt sie oben in `SAMMLUNGEN` ein — mit
+> einem Beispieldokument, das die Regeln beim Schreiben akzeptieren
+> würden. Sonst schlägt der Kreuztest aus dem falschen Grund fehl
+> (Formfehler statt Firmengrenze), und man hat einen Beweis, der keiner
+> ist. Ausnahmen gehören nach `OFFEN` — jede mit Begründung.
 
 > **Zu `funktionen.test.js`:** er lädt `functions/index.js` und löst die
 > Funktionen über `.run()` aus, so wie Firebase es täte. Geprüft wird der
