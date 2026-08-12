@@ -20,7 +20,22 @@
   var KONFIG = {
 
     /* ── Firma ──────────────────────────────────────────────────────── */
-    firma: 'Körperformen',
+    /* ACHTUNG, hier lag ein stiller Fehler bis zum 12.8.2026:
+       Dieser Schlüssel hiess ebenfalls "firma" — genau wie die
+       Firmenkennung weiter unten. In einem Objekt gewinnt der LETZTE,
+       also war der Anzeigename lautlos weg, und KONFIG.firma lieferte
+       die Kennung. Aufgefallen ist es niemandem, weil die Kennung
+       zufaellig an allen benutzten Stellen die richtige war.
+
+       Gefaehrlich war die Gegenrichtung: wer fuer einen neuen Kunden
+       diese Zeile aendert, glaubt den Anzeigenamen zu setzen — und
+       aendert nichts. Wer die untere loescht, macht aus dem
+       Anzeigenamen versehentlich die Datenbank-Kennung, und die App
+       liest ploetzlich unter firmen/Körperformen/ statt
+       firmen/koerperformen/.
+
+       tests/test-konfig.js prueft seitdem auf doppelte Schluessel. */
+    firma_anzeige: 'Körperformen',
     appName: 'StudioChat',
 
     /* ── Studios ────────────────────────────────────────────────────────

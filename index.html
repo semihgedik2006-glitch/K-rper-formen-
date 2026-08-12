@@ -7466,6 +7466,21 @@ auth.onAuthStateChanged(function(user){
    Funkloch, Zeitüberschreitung —, wird deshalb DURCHGELASSEN. Wer
    niemanden hereinlässt, sobald das Netz zuckt, hat kein Sicherheits-
    merkmal gebaut, sondern eine Störung. */
+/* Der ANZEIGENAME der Firma — fuer Ausdrucke und alles, was jemand
+   liest. Nicht zu verwechseln mit der Kennung (KONFIG.firma), die in
+   den Datenbankpfaden steht.
+
+   Bis zum 12.8.2026 stand in beiden Druckausgaben fest "Körperformen".
+   Ein Kunde haette also den Namen eines fremden Betriebs an seine Wand
+   gehaengt — dieselbe Sorte Fehler wie beim Standort-Leck, nur auf
+   Papier und damit noch schwerer zurueckzuholen. */
+var _firmaName = null;
+function firmaAnzeige(){
+  return _firmaName
+    || (KONFIG && (KONFIG.firma_anzeige || KONFIG.firma))
+    || '';
+}
+
 function firmaLaeuftNoch(profil){
   if(!KONFIG.mandant) return Promise.resolve(true);
   var f = (profil && profil.firma) || KONFIG.firma;
@@ -7473,6 +7488,10 @@ function firmaLaeuftNoch(profil){
   return db.collection('firmen').doc(f).get()
     .then(function(d){
       if(!d.exists) return false;                       // gelöscht/archiviert
+      /* Den Namen gleich mitnehmen: das Dokument ist ohnehin geholt,
+         ein zweiter Lesevorgang waere Verschwendung. */
+      var n=(d.data()||{}).name;
+      if(n) _firmaName=String(n);
       return (d.data()||{}).aktiv !== false;            // gesperrt
     })
     .catch(function(e){
@@ -12014,7 +12033,7 @@ function printShoppingList(){
         esc(r.studios.map(function(x){ return x.studio+' ('+x.n+')'; }).join(', '))+
         '</td><td class="p-box"></td></tr>';
     }).join('')+'</table>'+
-    '<p class="p-foot">StudioChat · Körperformen</p>';
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' · '+esc(firmaAnzeige())+'</p>';
   window.print();
 }
 function exportShoppingList(){
@@ -12186,7 +12205,8 @@ function printPutzplan(){
     '<p class="p-sub">Stand: '+esc(heute)+'</p>'+
     '<table><tr><th>Aufgabe</th><th>Rhythmus</th><th>Erledigt</th><th>Kürzel</th></tr>'+rows+'</table>'+
     (notizen?'<div class="p-note"><b>Notizen vom Team:</b>'+notizen+'</div>':'')+
-    '<p class="p-foot">StudioChat · Körperformen — abgehakte Zettel bitte am Wochenende in die App übertragen.</p>';
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' · '+esc(firmaAnzeige())+
+      ' — abgehakte Zettel bitte am Wochenende in die App übertragen.</p>';
   window.print();
 }
 

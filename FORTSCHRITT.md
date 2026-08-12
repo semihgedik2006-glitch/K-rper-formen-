@@ -2179,6 +2179,142 @@ Alle Zahlen selbst nachgemessen, nicht aus dem Bericht des Agenten
 
 ---
 
+## Sitzung 28 · Der Sicherheits-Durchlauf 🔴🟢
+
+Auftrag: *„schauen wie man sich theoretisch rein hacken könnte und diese
+Lücken dann schliessen."* Geprüft wurde gegen Emulator und Quelltext —
+nichts Echtes wurde angegriffen, und was nicht messbar war, steht unten
+als solches.
+
+**Vier Funde. Alle vier waren Firmengrenzen.** Genau die Linie, die
+diese App am teuersten überschreiten kann — und alle vier wären erst
+beim ersten fremden Kunden sichtbar geworden. Das ist der schlechteste
+denkbare Zeitpunkt.
+
+### 🔴 Neue Konten landeten in der falschen Firma
+
+Der ernsteste Fund, und er kam nicht aus der Prüfliste, sondern aus
+einer Zahl im Betrieb. Die Karte „Konten ohne Firma" meldete *7 ohne
+Feld*. Die Frage dahinter — **warum haben sieben kein Feld, wenn die
+Umstellung längst durch ist?** — führte direkt darauf:
+
+Weder „Zugang anlegen" noch die Selbstregistrierung schrieben `firma`.
+Und ein fehlendes Feld gilt überall als *koerperformen*:
+
+```
+inFirma(f) := meineFirma() == f || (meineFirma() == '' && f == 'koerperformen')
+```
+
+Ein Kunden-Chef hätte damit Mitarbeiter angelegt, **die in fremde Daten
+zeigen**. Kein Leseleck — ein Schreibweg in die falsche Firma.
+
+### 🔴 Jeder sah jedes Konto jeder Firma
+
+`users` ist die einzige Sammlung, die nicht unter `firmen/<kennung>/`
+liegt. Beim Schreiben stand die Firmenprüfung, beim Lesen nicht. Und die
+App horchte von selbst ungefiltert auf die ganze Sammlung.
+
+Gemessen, bevor es repariert wurde:
+
+```
+Mitarbeiter von Alpha liest das Konto des Chefs von Beta: true
+  gelesen: {"name":"Chef B","role":"chef","firma":"beta",
+            "email":"chef@beta-kunde.de","bday":"1985-03-04"}
+Ganze users-Sammlung lesbar? Dokumente: 2
+```
+
+Die Reparatur brauchte drei Teile, die nur zusammen funktionieren:
+strenge Regel, gefilterte Abfrage, und das Feld an **jedem** Konto.
+Firestore prüft Abfragen im Voraus, nicht Dokument für Dokument — ohne
+den Filter hätte die Regel die ganze Abfrage abgelehnt und das Team
+stünde vor einer leeren Personenliste.
+
+### 🟠 Jeder Chef konnte die ganze Datenbank exportieren
+
+`backupNow` prüfte „ist Chef". `exportieren()` zieht aber alles
+(`collectionIds: []`), also alle Kunden auf einmal — und überschrieb
+über `sicherungStatus()` den Sicherungsstand *jeder* Firma. Die Daten
+waren nie in Gefahr: der Speicher ist für jeden Client gesperrt. Es ging
+um Kosten, den fremden Anstoss und eine falsche Anzeige.
+
+### 🟡 `mailStatus` prüfte die Rolle, nicht die Firma
+
+Ein Chef konnte beliebige Kennungen übergeben und erfuhr, ob es das
+Konto gibt und ob dessen E-Mail bestätigt ist. Schwer auszunutzen —
+aber es ist die Firmengrenze.
+
+### ⚪ Bewusst so belassen
+
+`appointments` enthält Kundennamen und ist für jeden aktiven
+Mitarbeiter lesbar und änderbar. Vorgelegt, vom Betreiber entschieden:
+im Studio machen alle Termine. Steht jetzt mit Begründung in den Regeln,
+damit es beim nächsten Durchlauf nicht wieder als „ungeklärt" hochkommt.
+
+### Der eigentliche Ertrag: `tests/rules/kreuz.test.js`
+
+Der bisherige Sicherheits-Durchlauf prüfte die Firmengrenze an **sieben**
+Sammlungen. Im Firmen-Zweig der Regeln stehen **zweiunddreissig**. Die
+restlichen fünfundzwanzig waren nicht falsch — sie waren **nie
+nachgewiesen**. Das ist ein Unterschied, den man erst merkt, wenn es zu
+spät ist.
+
+Jetzt läuft eine Schleife über alle, viermal je Sammlung. Der vierte
+Punkt ist der wichtigste: **die Gegenrichtung.** Ein Kreuztest auf einem
+falsch geschriebenen Pfad ist immer grün — niemand kommt an ein
+Dokument, das nirgends liegt.
+
+### Die Reihenfolge, die nicht verhandelbar war
+
+Der Betreiber hatte keinen Zugang zur Cloud Shell. Ein Wartungsschritt,
+der einen Rechner mit Google-Zugang voraussetzt, findet irgendwann nicht
+statt — also wurde daraus ein Knopf (`kontenNachtragen`, Verwaltung →
+Firmen). Damit verschob sich die Reihenfolge, und die `users`-Reparatur
+musste **wieder aus dem PR heraus**:
+
+1. Knopf ausrollen → 2. nachtragen → 3. Regel scharf stellen.
+
+In der Zwischenzeit stand das Loch offen, und zwar **mit Ansage**: an
+drei Stellen im Quelltext und im Kreuztest, dessen drei `users`-Zeilen
+den offenen Zustand ausdrücklich prüften. Ein Sicherheitsloch, das man
+wegkommentiert, ist eines, das man vergisst.
+
+Belegt geschlossen am 12.8. nach dem Nachtragen im Betrieb:
+*8 Konten · 7 mit koerperformen · 1 andere Firma · 0 ohne Feld.*
+
+### Was die Regression dabei geleistet hat
+
+Zwei Durchläufe wurden rot, **beide zu Recht**:
+
+- `test-beitritt` fand keine wartenden Konten mehr, weil die Testdaten
+  kein Feld `firma` hatten. **Genau das wäre im Betrieb passiert** — die
+  Regression hat das Risiko vorgeführt, bevor es jemanden traf.
+- `test-sicherung` hielt fest, dass der Chef den Vollsicherungs-Knopf
+  sieht. Prüft jetzt beide Richtungen: beim Chef weg, beim Betreiber da
+  und gross genug.
+
+Und einmal meldete sie **49 rote** — ein Testserver lief im falschen
+Ordner und lieferte für alles 404. Kein Fehler in der App. Dass
+`alle.sh` das als 49 rote meldet und nicht als „alles grün", ist genau
+richtig.
+
+### Was ich nicht geprüft habe
+
+Firebase Auth selbst, die Google-Infrastruktur, das Google-Konto des
+Betreibers, und ob jemand ein Passwort weitergibt. Alles davon liegt
+ausserhalb dessen, was hier messbar ist.
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| UI-Durchläufe | 54 |
+| Regeltests | 165 |
+| **Kreuztests (neu)** | **162** |
+| Umzugs-Prüfungen | 12 |
+| Cloud-Function-Prüfungen | 79 |
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
