@@ -60,7 +60,10 @@
   var CLEAN = {
     'studio-6': [
       { id:'c1', title:'Böden wischen', recurring:'daily', done:true, doneBy:'Anna', doneAt:Date.now()-5400000, ts:Date.now()-90000000 },
-      { id:'c2', title:'Spiegel putzen', recurring:'weekly', done:false, ts:Date.now()-80000000 },
+      /* c2 laesst sich ueber window.__ppPause pausieren — so kann ein
+         Durchlauf den Zustand pruefen, ohne erst zu klicken. */
+      { id:'c2', title:'Spiegel putzen', recurring:'weekly', done:false, ts:Date.now()-80000000,
+        pausiertBis: (window.__ppPause && window.__ppPause.id==='c2') ? window.__ppPause.bis : null },
       { id:'c3', title:'Toiletten reinigen', recurring:'daily', done:false, ts:Date.now()-70000000 },
       // einmalig, vor 30 Stunden abgehakt -> muss verschwunden sein
       { id:'c4', title:'Fenster putzen (alt)', done:true, doneBy:'Ben', doneAt:Date.now()-30*3600000, ts:Date.now()-60000000 },

@@ -1057,6 +1057,28 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .setup-zeile.fertig .setup-txt b{font-weight:500;text-decoration:line-through}
 .setup-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.4}
 .setup-txt i em{font-style:normal;color:var(--accent-2);white-space:nowrap}
+/* Farbauswahl der Firma */
+.marke-wahl{display:flex;flex-wrap:wrap;gap:8px}
+.marke-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;
+  border:1px solid var(--line);background:none;color:var(--text-2);font-size:.85rem;cursor:pointer}
+.marke-chip .marke-punkt{width:13px;height:13px;border-radius:50%;background:var(--mc)}
+.marke-chip.an{border-color:var(--mc);color:var(--text);font-weight:650}
+.marke-chip:active{transform:scale(.94)}
+/* Pausierter Putzpunkt: sichtbar, aber erkennbar nicht dran */
+.pp-item.pausiert{opacity:.55}
+.pp-item.pausiert .pp-title{text-decoration:none;font-style:italic}
+.pp-pauseico{flex-shrink:0;width:34px;text-align:center;font-size:1.05rem;color:var(--text-3)}
+.pp-pausetxt{color:var(--warm-tx,var(--text-3));font-size:.8rem}
+.pp-pause{margin-left:10px;padding:1px 9px;border-radius:999px;font-size:.72rem;
+  border:1px solid var(--line);background:none;color:var(--text-3);cursor:pointer}
+.pp-pause:active{transform:scale(.92)}
+/* „Ich übernehme das" sieht aus wie die Zuweisungs-Marke daneben —
+   es wird ja gleich eine. */
+.t-nimm{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;
+  font-size:.66rem;font-weight:700;border:1px dashed var(--line-2);background:none;
+  color:var(--text-3);cursor:pointer;letter-spacing:.01em}
+.t-nimm:hover{color:var(--accent);border-color:var(--accent)}
+.t-nimm:active{transform:scale(.92)}
 /* Woher ein Nachweis kommt. „selbst eingetragen" ist bewusst dezent und
    nicht rot: es ist kein Vorwurf, sondern eine Auskunft. */
 .cert-selbst{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;
@@ -3420,6 +3442,14 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               keine Zugriffssperre. Wer sich auskennt, kommt an die Daten dahinter
               weiterhin heran — für echte Grenzen sind die Rollen da.</p>
           </div>
+          <!-- Die Farbe der Firma. Ein Kunde soll SEINE App sehen. -->
+          <div class="card" data-fold="marke" data-chef-only="1">
+            <h3>🎨 Farbe der App</h3>
+            <p class="hint">Gilt für alle im Betrieb. Sechs geprüfte Möglichkeiten statt
+              eines freien Farbwählers — damit die Schrift auf farbigen Flächen in beiden
+              Modi lesbar bleibt.</p>
+            <div id="markeWahl" class="marke-wahl"></div>
+          </div>
           <!-- Impressum und Datenschutz gehören dem BETREIBER, nicht dem
                Programm. Bis zum 11.8.2026 standen sie in konfig.js — einer
                Datei, die für das ganze Firebase-Projekt gilt und an die ein
@@ -4051,6 +4081,11 @@ function systemPrefersLight(){
 function applyPrefs(){
   var light = PREFS.theme==='light' || (PREFS.theme==='auto' && systemPrefersLight());
   document.body.classList.toggle('light', light);
+  /* Die Firmenfarbe hat je Modus einen eigenen Wert — sonst wäre sie im
+     hellen Modus zu grell oder im dunklen zu dumpf. Deshalb hier, direkt
+     nachdem der Modus feststeht, und nicht nur einmal beim Start.
+     markeAnwenden gibt es evtl. noch nicht (applyPrefs läuft sehr früh). */
+  if(typeof markeAnwenden==='function') markeAnwenden();
   document.body.setAttribute('data-chatbg', PREFS.chatbg||'keiner');
   // Eigenes Foto als Hintergrund einsetzen (nur auf diesem Gerät gespeichert)
   var eigen = (PREFS.chatbg==='eigenes') ? (_chatBgImg||loadChatBgImg()) : null;
@@ -5782,6 +5817,92 @@ function renderSetup(){
   }).join('');
 }
 
+/* ══ Die Farbe der Firma ═════════════════════════════════════════════
+   Ein Kunde soll SEINE App sehen, nicht deine. Das ist der sichtbarste
+   Unterschied zwischen „Software gemietet" und „unsere App" — und der
+   billigste: eine Zeile in der Datenbank.
+
+   WARUM EINE AUSWAHL UND KEIN FARBWÄHLER
+   Ein freier Farbwähler endet damit, dass jemand Gelb nimmt und die
+   Schrift auf den Akzentflächen nicht mehr lesbar ist. Jeder Eintrag
+   hier hat deshalb DREI Werte, die zusammen geprüft sind: einen für den
+   dunklen Modus, einen für den hellen, und die Textfarbe, die darauf
+   liegt. Sechs Möglichkeiten sind genug, um sich wiederzuerkennen, und
+   wenig genug, um sie alle gut aussehen zu lassen. */
+var MARKEN = [
+  { id:'himmel',  name:'Himmelblau', dunkel:'#38BDF8', hell:'#0369A1', auf:'#0A1420' },
+  { id:'gruen',   name:'Grün',       dunkel:'#34D399', hell:'#047857', auf:'#052018' },
+  { id:'violett', name:'Violett',    dunkel:'#A78BFA', hell:'#6D28D9', auf:'#140A24' },
+  { id:'orange',  name:'Orange',     dunkel:'#FB923C', hell:'#C2410C', auf:'#1F0F04' },
+  { id:'rot',     name:'Rot',        dunkel:'#F87171', hell:'#B91C1C', auf:'#200808' },
+  { id:'anthra',  name:'Anthrazit',  dunkel:'#CBD5E1', hell:'#334155', auf:'#0B1220' }
+];
+var _marke = null;
+
+function markeVon(id){
+  /* MARKEN ist ein var: der NAME steht durch Hochziehen schon zu Beginn
+     bereit, der WERT aber erst, wenn diese Stelle im Skript erreicht
+     ist. applyPrefs() läuft frueher und ruft markeAnwenden() — ohne
+     diese Zeile wirft es dort „Cannot read properties of undefined",
+     und zwar so frueh, dass die halbe App nicht mehr aufbaut.
+     Genau so ist es beim ersten Anlauf passiert. */
+  if(!id || !MARKEN) return null;
+  for(var i=0;i<MARKEN.length;i++){ if(MARKEN[i].id===id) return MARKEN[i]; }
+  return null;
+}
+
+/* Setzt die Farbe. Ohne Eintrag passiert NICHTS — dann gelten die Werte
+   aus dem Stylesheet, und das ist der heutige Zustand jedes Betriebs. */
+function markeAnwenden(){
+  var m = markeVon(_marke);
+  var w = document.documentElement.style;
+  if(!m){
+    ['--accent','--accent-d','--accent-glow','--on-accent'].forEach(function(v){
+      w.removeProperty(v);
+    });
+    return;
+  }
+  /* Hell oder dunkel entscheidet sich am body, nicht hier — deshalb
+     wird bei jedem Moduswechsel neu gesetzt (siehe modusAnwenden). */
+  var hell = document.body && document.body.classList.contains('light');
+  var f = hell ? m.hell : m.dunkel;
+  w.setProperty('--accent', f);
+  w.setProperty('--accent-d', f);
+  w.setProperty('--accent-glow', hell ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.22)');
+  w.setProperty('--on-accent', hell ? '#ffffff' : m.auf);
+}
+
+function markeLaden(){
+  return S('config').doc('marke').get()
+    .then(function(d){ _marke = d.exists ? ((d.data()||{}).farbe || null) : null; })
+    .catch(function(e){ console.warn('Farbe nicht lesbar:', e.message); _marke = null; })
+    .then(markeAnwenden);
+}
+
+function renderMarkeWahl(){
+  var box=$('markeWahl'); if(!box || !isChef()) return;
+  box.innerHTML=MARKEN.map(function(m){
+    var an = (_marke||'himmel')===m.id;
+    return '<button class="marke-chip'+(an?' an':'')+'" data-marke="'+esc(m.id)+'" '+
+      'style="--mc:'+m.dunkel+'" title="'+esc(m.name)+'">'+
+      '<span class="marke-punkt"></span>'+esc(m.name)+'</button>';
+  }).join('');
+  box.querySelectorAll('[data-marke]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-marke');
+      var vorher=_marke;
+      _marke=id; markeAnwenden(); renderMarkeWahl();   // sofort sehen, was man wählt
+      S('config').doc('marke').set({ farbe:id, gesetztVon:session.name,
+                                     gesetztAm:Date.now() }, {merge:true})
+        .then(function(){ toast('Farbe gespeichert ✓'); })
+        .catch(function(e){
+          _marke=vorher; markeAnwenden(); renderMarkeWahl();
+          toast(errMsg(e),true);
+        });
+    });
+  });
+}
+
 /* ── Die Schalter selbst (Verwaltung → System) ── */
 function renderFeatureListe(){
   var box=$('featureListe'); if(!box) return;
@@ -5981,6 +6102,25 @@ function ppAbgelaufen(t){
   return !t.recurring
     && !!t.done && !!t.doneAt
     && (Date.now()-t.doneAt > PUTZ_WEG_NACH_STD*3600000);
+}
+/* ── Pausierte Putzpunkte ──
+   Studio im Umbau, Gerät ausgebaut, Raum vermietet: eine wiederkehrende
+   Aufgabe haeuft sich sonst jeden Tag unerledigt an, bis niemand mehr
+   hinsieht — und dann faellt auch das nicht mehr auf, was wirklich
+   liegen bleibt. Eine Pause ist ehrlicher als ein taeglich ignorierter
+   Punkt.
+
+   GELOESCHT WIRD NICHTS. Nach dem Datum ist die Aufgabe von selbst
+   wieder da; wer sie dauerhaft loswerden will, loescht sie. */
+function ppPausiert(t){
+  if(!t || !t.pausiertBis) return false;
+  // Vergleich auf Tagesebene: bis einschliesslich dieses Tages pausiert
+  return String(t.pausiertBis) >= new Date().toLocaleDateString('sv-SE');
+}
+function ppPauseText(t){
+  if(!ppPausiert(t)) return '';
+  var d=new Date(t.pausiertBis+'T00:00:00');
+  return 'pausiert bis '+d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
 }
 function fmtTime(ts){
   if(!ts) return '';
@@ -7210,7 +7350,9 @@ function enterApp(uid, data){
      Einträge verschwinden erst danach. Das sieht aus wie ein Fehler.
      Beides scheitert nach aussen hin folgenlos — dann ist eben alles
      da, und das ist die harmlosere Richtung. */
-  Promise.all([aboLaden(), featuresLaden()]).then(showApp, showApp);
+  /* Farbe mit VOR showApp: sonst baut sich die App einmal in
+     Himmelblau auf und springt dann um. */
+  Promise.all([aboLaden(), featuresLaden(), markeLaden()]).then(showApp, showApp);
 }
 
 /* ============================================================
@@ -7235,6 +7377,8 @@ auth.onAuthStateChanged(function(user){
      nicht auf — dort fängt der Rückfall auf konfig.js es auf, und genau
      so bleibt ein Fehler unentdeckt, bis der erste fremde Kunde da ist. */
   rechtLaden();
+  /* Auch der Anmeldebildschirm gehört dem Kunden. */
+  markeLaden();
   /* Die Studioliste MUSS vor enterApp stehen. Dort werden aus den
      Studionamen im Profil die Datenbank-Kennungen gerechnet. Läge dabei
      noch die alte Liste aus konfig.js zugrunde, bekäme ein umbenanntes
@@ -10437,6 +10581,17 @@ function todoHTML(t,sk,chefView){
   if(t.assignedTo){
     var mineTask = t.assignedTo===session.uid;
     assign='<span class="t-assign'+(mineTask?' me':'')+'">'+(mineTask?'für dich':'für '+esc(t.assignedName||'?'))+'</span>';
+  } else if(!done){
+    /* „Ich übernehme das" — nur an OFFENEN Aufgaben, die noch niemandem
+       gehören. Zwei Leute, die dasselbe machen, sind im Studio kein
+       theoretischer Fall: der Putzplan haengt an der Tuer, die Aufgaben
+       stehen im Handy, und wer gerade Zeit hat, faengt an.
+
+       Es ist ausdruecklich KEINE Zuweisung durch den Chef, sondern eine
+       Meldung. Deshalb kann man sie auch wieder loesen (siehe unten):
+       wer sich vertut oder doch nicht dazu kommt, soll die Aufgabe nicht
+       blockieren. */
+    assign='<button class="t-nimm" data-tnimm="'+esc(t.id)+'">Ich übernehme das</button>';
   }
   // Teilschritte: kleine Checkliste innerhalb der Aufgabe
   var steps=Array.isArray(t.steps)?t.steps:[];
@@ -10534,6 +10689,22 @@ function bindTodoClicks(area){
         S('studios').doc(sk).collection('todos').doc(id)
           .update({ steps:steps })
           .catch(function(err){ li.classList.toggle('done'); toast(errMsg(err),true); });
+      });
+    });
+    /* „Ich übernehme das". Ein Klick, keine Rueckfrage — und wer schon
+       drinsteht, loest sich damit wieder. Die Regeln erlauben jedem
+       Angemeldeten update auf Aufgaben (Abhaken laeuft denselben Weg),
+       eine neue Regel braucht es dafuer nicht. */
+    var nimm=node.querySelector('[data-tnimm]');
+    if(nimm) nimm.addEventListener('click',function(e){
+      e.stopPropagation();
+      var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
+      if(t && t.assignedTo) return;              // gehoert schon jemandem
+      withBusy(nimm,function(){
+        return S('studios').doc(sk).collection('todos').doc(id)
+          .update({ assignedTo:session.uid, assignedName:session.name||'' })
+          .then(function(){ toast('Du hast das übernommen ✓'); tick(8); })
+          .catch(function(err){ toast(errMsg(err),true); });
       });
     });
     var mehr=node.querySelector('[data-tmehr]');
@@ -10904,7 +11075,7 @@ function showChefTab(id, keep){
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='report') renderReport();
-  if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); }
+  if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
@@ -11957,8 +12128,16 @@ function renderPutzplan(){
   // offene zuerst, dann erledigte; innerhalb nach Erstellzeit
   var list=_ppTasks.slice().sort(function(a,b){ return (isDone(a)-isDone(b))||((a.ts||0)-(b.ts||0)); });
   var chef=canManage();
-  var done=list.filter(isDone).length, total=list.length;
-  var prog=$('ppProgress'); if(prog) prog.textContent = total ? (done+' von '+total+' erledigt') : '';
+  /* Pausierte zaehlen NICHT mit. Sonst stuende dort dauerhaft
+     "3 von 12 erledigt", obwohl neun davon gar nicht dran sind — und
+     die Zahl waere wertlos. */
+  var zaehlbar=list.filter(function(t){ return !ppPausiert(t); });
+  var done=zaehlbar.filter(isDone).length, total=zaehlbar.length;
+  var pausiert=list.length-zaehlbar.length;
+  var prog=$('ppProgress');
+  if(prog) prog.textContent = total
+    ? (done+' von '+total+' erledigt'+(pausiert?(' · '+pausiert+' pausiert'):''))
+    : (pausiert ? (pausiert+' pausiert') : '');
   if(!list.length){
     box.innerHTML=emptyHTML('Kein Putzplan','Der Chef legt hier Reinigungsaufgaben an.');
     return;
@@ -11976,11 +12155,22 @@ function renderPutzplan(){
       ? '<span class="pp-doneby">✓ '+wer+' · '+fmtDateTime(t.doneAt)+'</span>'
       : '';
     var del = chef ? '<button class="pp-del" data-del="'+esc(t.id)+'" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
-    return '<div class="pp-item'+(d?' done':'')+'" data-id="'+esc(t.id)+'">'+
+    /* Pausiert: die Aufgabe bleibt sichtbar, aber blass und ohne Haken.
+       Verstecken waere schlechter — dann sucht in vier Wochen jemand
+       einen Punkt, den es scheinbar nicht mehr gibt. */
+    var pause = ppPausiert(t);
+    var pauseKnopf = chef
+      ? '<button class="pp-pause" data-pause="'+esc(t.id)+'">'+(pause?'fortsetzen':'pausieren')+'</button>'
+      : '';
+    return '<div class="pp-item'+(d?' done':'')+(pause?' pausiert':'')+'" data-id="'+esc(t.id)+'">'+
       '<div class="swipe-hint">✓</div><div class="swipe-body">'+
-      '<button class="check" data-check="'+esc(t.id)+'" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
+      (pause
+        ? '<span class="pp-pauseico" aria-hidden="true">⏸</span>'
+        : '<button class="check" data-check="'+esc(t.id)+'" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>')+
       '<div class="pp-body"><div class="pp-title">'+esc(t.title)+rep+'</div>'+
-      '<div class="pp-meta">'+(doneInfo||'<span>noch offen</span>')+'</div></div>'+
+      '<div class="pp-meta">'+(pause
+        ? '<span class="pp-pausetxt">'+esc(ppPauseText(t))+'</span>'
+        : (doneInfo||'<span>noch offen</span>'))+pauseKnopf+'</div></div>'+
       del+'</div></div>';
   }).join('');
   bindPutzplanClicks(box);
@@ -12042,7 +12232,37 @@ function bindPutzplanClicks(box){
   });
   box.querySelectorAll('.pp-item').forEach(function(node){
     var chk=node.querySelector('[data-check]');
+    /* Pausierte nicht per Wischen abhaken: der Haken ist dort gar nicht
+       da, und eine Geste, die nichts tut, fuehlt sich kaputt an. */
+    if(node.classList.contains('pausiert')) return;
     bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
+  });
+  /* Pausieren und fortsetzen. Vier Wochen ist die Spanne, die im Studio
+     wirklich vorkommt (Umbau, Geraet in Reparatur); wer laenger braucht,
+     drueckt noch einmal. Ein Datumsfeld waere hier ein Formular fuer
+     eine Entscheidung, die drei Sekunden dauern soll. */
+  box.querySelectorAll('[data-pause]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-pause');
+      var t=null;
+      _ppTasks.forEach(function(x){ if(x.id===id) t=x; });
+      var an=ppPausiert(t);
+      var bis=null;
+      if(!an){
+        var d=new Date(); d.setDate(d.getDate()+28);
+        bis=d.toLocaleDateString('sv-SE');
+      }
+      withBusy(b,function(){
+        return S('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
+          .update({ pausiertBis:bis, pausiertVon:bis?session.name:null })
+          .then(function(){
+            toast(bis ? 'Pausiert bis '+new Date(bis+'T00:00:00').toLocaleDateString('de-DE')
+                      : 'Wieder aktiv ✓');
+            schedulePutzplanSheets(_ppStudioKey);
+          })
+          .catch(function(e){ toast(errMsg(e),true); });
+      });
+    });
   });
   box.querySelectorAll('[data-del]').forEach(function(b){
     b.addEventListener('click',function(){
