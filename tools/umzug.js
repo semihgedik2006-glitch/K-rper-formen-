@@ -1,5 +1,5 @@
 /* ── Umzug: flache Daten → firmen/{kennung}/… ──────────────────────────
-   Stufe C aus MANDANT-PLAN.md.
+   Stufe C aus docs/MANDANT-PLAN.md.
 
    DER WICHTIGSTE SATZ IN DIESER DATEI:
    Das hier ist eine KOPIE, kein Verschieben. Die alten Daten bleiben

@@ -32,25 +32,19 @@ service cloud.firestore {
     // ─────────────────────────────────────────────────────────────────
     // BEITRITT: Firmencode + Freigabe durch den Chef
     //
-    // Vorher genuegte "eingeloggt", und registrieren konnte sich jeder
-    // selbst. Wer die Adresse der App kannte, legte sich ein Konto an und
-    // las Teamchat, Personenliste, Aufgaben und Dokumente.
-    //
     // Zwei Schranken, die getrennt wirken:
     //   1. Der Firmencode haelt Fremde davon ab, ueberhaupt ein Konto
-    //      anzulegen. Er steht in config/registrierung – fuer Clients
-    //      NICHT lesbar. get() innerhalb einer Regel unterliegt den
-    //      Regeln nicht, der Vergleich funktioniert trotzdem.
-    //   2. Die Freigabe: ein selbst angelegtes Konto startet mit
-    //      aktiv:false und sieht nichts ausser dem eigenen Profil, bis
-    //      ein Chef es freischaltet. Das faengt auch den Fall ab, dass
-    //      der Code die Runde macht – etwa bei einem Ex-Mitarbeiter.
+    //      anzulegen. Er steht in config/registrierung und ist fuer Clients
+    //      nicht lesbar; get() innerhalb einer Regel unterliegt den Regeln
+    //      nicht, der Vergleich funktioniert trotzdem.
+    //   2. Die Freigabe: ein selbst angelegtes Konto startet mit aktiv:false
+    //      und sieht nichts ausser dem eigenen Profil. Das faengt auch den
+    //      Fall ab, dass der Code die Runde macht.
     //
-    // SICHERUNG GEGEN AUSSPERREN: beide Schranken sind aus, solange sie
-    // nicht ausdruecklich eingeschaltet werden. Fehlt config/registrierung
-    // oder ist der Code leer, wird kein Code verlangt. Und ein Profil OHNE
-    // das Feld aktiv gilt als aktiv – alle bestehenden Konten laufen
-    // unveraendert weiter.
+    // Beide Schranken sind AUS, solange sie nicht ausdruecklich
+    // eingeschaltet werden: fehlt config/registrierung oder ist der Code
+    // leer, wird kein Code verlangt, und ein Profil ohne Feld 'aktiv' gilt
+    // als aktiv. Sonst sperrt eine Neuerung den laufenden Betrieb aus.
     // ─────────────────────────────────────────────────────────────────
     function beitrittConf() {
       return get(/databases/$(database)/documents/config/registrierung).data;
@@ -77,20 +71,19 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // MEHRERE FIRMEN (Stufe 2B aus MANDANT-PLAN.md)
+    // MEHRERE FIRMEN (Stufe 2B aus docs/MANDANT-PLAN.md)
     //
-    // Die Regeln unten gibt es ZWEIMAL: einmal flach, wie bisher, und
-    // einmal unter /firmen/{f}/. Das ist waehrend der Umstellung noetig -
-    // die Daten ziehen erst in Stufe C um, und bis dahin muessen beide
-    // Wege gelten. Danach faellt der flache Satz weg.
+    // Die Regeln unten gibt es zweimal: flach wie bisher und unter
+    // /firmen/{f}/. Beide Wege gelten, bis die flachen Daten aufgeraeumt
+    // sind; danach faellt der flache Satz weg.
     //
-    // DIE FALLE, die hier schon zweimal zugeschnappt ist: in Firestore
-    // gilt JEDE zutreffende Regel, und EINE die erlaubt genuegt. Eine
-    // breite Regel auf /firmen/{f}/{rest=**} wuerde deshalb alle
-    // feineren darunter aushebeln - der Mitarbeiter duerfte ploetzlich
-    // Rollen aendern. Die Firmen-Pruefung steht darum in JEDEM einzelnen
-    // allow, nicht einmal oben. Erzeugt wurde das maschinell, geprueft
-    // wird es von den Kreuztests in tests/rules/security.test.js.
+    // DIE FALLE: in Firestore gilt jede zutreffende Regel, und eine die
+    // erlaubt genuegt. Eine breite Regel auf /firmen/{f}/{rest=**} hebelt
+    // deshalb alle feineren darunter aus — der Mitarbeiter duerfte ploetzlich
+    // Rollen aendern. Die Firmenpruefung steht darum in JEDEM einzelnen
+    // allow, nicht einmal oben. Geprueft von tests/rules/security.test.js
+    // und tests/rules/kreuz.test.js.
+    // ─────────────────────────────────────────────────────────────────
     function meineFirma() {
       return hasProfile() ? myProfile().get('firma', '') : '';
     }
@@ -147,7 +140,7 @@ service cloud.firestore {
         && (meineFirma() == f || (meineFirma() == '' && f == 'koerperformen'));
     }
 
-    // Hat diese Firma Premium? (Stufe B aus ABO-PLAN.md)
+    // Hat diese Firma Premium? (Stufe B aus docs/ABO-PLAN.md)
     //
     // KEIN Abo hinterlegt = alles offen. Das ist der heutige Zustand
     // fuer den eigenen Betrieb und fuer jeden Kunden, bei dem noch
@@ -284,36 +277,22 @@ service cloud.firestore {
 
     // ── Impressum und Datenschutz (config/recht) ──
     //
-    // Standen bis zum 11.8.2026 in konfig.js und galten damit fuer das
-    // ganze Projekt. Seit mehrere Firmen in EINER Datenbank liegen, ist
-    // das falsch: impressumspflichtig ist jeder Betreiber selbst.
+    // Lesen: ohne Anmeldung. Ein Impressum hinter einem Login ist keins, und
+    // § 5 DDG verlangt "leicht erkennbar, unmittelbar erreichbar". Der Inhalt
+    // ist per Definition oeffentlich: Name, Anschrift, Vertretung, Telefon,
+    // E-Mail. Dieselbe Ueberlegung wie bei config/studios und
+    // config/beitrittSchalter.
+    // Schreiben: nur der Chef — wer das Impressum aendert, aendert, wer fuer
+    // diese App haftet.
     //
-    // Lesen: jeder Angemeldete. Ausdruecklich auch, wer noch auf seine
-    // Freigabe wartet (aktiv:false) - der sieht sonst als Einziger kein
-    // Impressum. Was hier drinsteht, ist ohnehin fuer die Oeffentlichkeit
-    // bestimmt: Name, Anschrift, Telefon, E-Mail des Betriebs.
-    // Schreiben: nur der Chef. Wer das Impressum aendern kann, aendert,
-    // wer fuer diese App haftet.
-    //
-    // WAS DURCH DIE ALLGEMEINE REGEL /config/{doc} SCHON GILT und was
-    // diese hier daran aendert - denn in Firestore gilt JEDE zutreffende
-    // Regel, und EINE die erlaubt genuegt:
-    //   read   dort: istAktiv()  →  hier: true. Diese Regel WEITET
-    //          also, sie schraenkt nicht ein. Genau deshalb ist sie
-    //          ueberhaupt noetig; eine engere Regel waere Dekoration, die
-    //          allgemeine wuerde sie ueberstimmen.
-    //   write  dort: isChef()    →  hier: isChef(). Identisch, also kein
-    //          Loch - aber auch keine zusaetzliche Sperre. Wer 'recht'
-    //          jemals enger schuetzen will als den Rest von config, muss
-    //          es DORT ausnehmen (wie bei 'studios' und 'registrierung'
-    //          geschehen), nicht hier.
-    //
-    // WARUM OHNE ANMELDUNG LESBAR: ein Impressum hinter einem Login ist
-    // keins - so steht es seit jeher im Quelltext der App, und § 5 DDG
-    // verlangt "leicht erkennbar, unmittelbar erreichbar". Der Inhalt
-    // ist per Definition fuer die Oeffentlichkeit bestimmt: Name,
-    // Anschrift, Vertretung, Telefon, E-Mail. Genau dieselbe Ueberlegung
-    // wie bei config/studios und config/beitrittSchalter weiter oben.
+    // Verhaeltnis zur allgemeinen Regel /config/{doc}: in Firestore gilt jede
+    // zutreffende Regel, und eine die erlaubt genuegt.
+    //   read   dort istAktiv(), hier true — diese Regel WEITET. Genau deshalb
+    //          ist sie noetig; eine engere waere Dekoration, die allgemeine
+    //          wuerde sie ueberstimmen.
+    //   write  beidesmal isChef(), also deckungsgleich. Wer 'recht' enger
+    //          schuetzen will als den Rest von config, muss es DORT ausnehmen
+    //          (wie bei 'studios' und 'registrierung'), nicht hier.
     match /config/recht {
       allow read: if true;
       allow write: if isChef();
@@ -779,7 +758,7 @@ service cloud.firestore {
       // Anmeldebildschirm, also vor jeder Anmeldung lesbar.
       allow read: if true;
 
-      /* ── Der Abo-Zustand (Stufe A aus ABO-PLAN.md) ──
+      /* ── Der Abo-Zustand (Stufe A aus docs/ABO-PLAN.md) ──
          Liegt bewusst NICHT im Firmen-Dokument, obwohl das bequemer
          waere: das ist oeffentlich lesbar, weil der Anmeldebildschirm
          den Firmennamen braucht. Was ein Kunde zahlt, geht aber
@@ -821,25 +800,19 @@ service cloud.firestore {
         }
 
         // ── Impressum und Datenschutz dieser Firma ──
-        // Erklaerung siehe beim flachen /config/recht weiter oben. Hier
-        // kommt die Firmengrenze dazu, und die ist der eigentliche Punkt:
+        // read OHNE Anmeldung: ein Impressum hinter einem Login ist keins,
+        // und § 5 DDG verlangt "leicht erkennbar, unmittelbar erreichbar".
+        // Der Inhalt ist per Definition oeffentlich — Name, Anschrift,
+        // Vertretung, Telefon, E-Mail. Dieselbe Ueberlegung wie bei
+        // config/studios.
         //
-        //   read   OHNE Anmeldung. Ein Impressum hinter einem Login ist
-        //          keins, und ein Kunde, der seinen Link herumgibt, muss
-        //          sein Impressum zeigen koennen - genau dafuer steht die
-        //          Firmenkennung im Link. Der Inhalt ist per Definition
-        //          oeffentlich: Name, Anschrift, Vertretung, Telefon,
-        //          E-Mail. Dieselbe Ueberlegung wie bei config/studios.
-        //   write  ohne inFirma(f) duerfte der Chef von A das Impressum
-        //          von B UEBERSCHREIBEN. Das ist kein Schoenheitsfehler:
-        //          es steht dann fremde Haftung in der App eines anderen.
-        //          Genau diese Sorte fehlender Firmenpruefung ist hier
-        //          schon dreimal passiert.
+        // write braucht inFirma(f): ohne die Pruefung ueberschreibt der Chef
+        // von A das Impressum von B, und dann steht fremde Haftung in einer
+        // fremden App.
         //
-        // Gegenueber der allgemeinen Regel /firmen/{f}/config/{doc}
-        // (read: inFirma(f) && istAktiv(), write: inFirma(f) && isChef())
-        // weitet diese Regel nur das LESEN. Beim Schreiben ist sie
-        // deckungsgleich, kann dort also weder oeffnen noch sperren.
+        // Gegenueber /firmen/{f}/config/{doc} (read: inFirma(f) &&
+        // istAktiv(), write: inFirma(f) && isChef()) weitet diese Regel nur
+        // das Lesen. Beim Schreiben ist sie deckungsgleich.
         match /config/recht {
           allow read: if true;
           allow write: if inFirma(f) && isChef();
@@ -969,13 +942,13 @@ service cloud.firestore {
         }
 
         /* ── Nachweise: der eine Riegel, der wirklich einer ist ──
-           Stufe B aus ABO-PLAN.md. Certificates sind eine eigene
+           Stufe B aus docs/ABO-PLAN.md. Certificates sind eine eigene
            Sammlung, deshalb laesst sich die Stufe hier durchsetzen.
 
            Bei der Auswertung geht das NICHT: die rechnet aus Aufgaben,
            Putzplan und Material — Daten, die das Team ohnehin sieht.
            Dort ist Premium eine Bequemlichkeit, kein Schloss. Das steht
-           so auch in ABO-PLAN.md, damit es niemand anders verkauft.
+           so auch in docs/ABO-PLAN.md, damit es niemand anders verkauft.
 
            Lesen bleibt fuer alle Stufen offen: wer schon Nachweise
            hinterlegt hat und auf Basic wechselt, soll sie noch sehen

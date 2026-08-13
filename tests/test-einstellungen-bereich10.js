@@ -49,14 +49,19 @@ const speichernImBild = page => page.evaluate(() => {
       letzterGanzImBild: t.length
         ? t[t.length - 1].getBoundingClientRect().right <= bar.getBoundingClientRect().right + 1
         : false,
-      symboleAus: getComputedStyle(bar.querySelector('.t-ico')).display === 'none',
+      /* Frueher trug jeder Reiter ein Emoji, das auf schmalen Geraeten per
+         CSS ausgeblendet wurde, damit die vier nebeneinander passen. Die
+         Emoji sind weg — geprueft wird jetzt, dass keins zurueckkommt und
+         die Reiter trotzdem passen. */
+      symbole: bar.querySelectorAll('.t-ico, .sym').length,
     };
   });
   console.log('REITER:', JSON.stringify(reiter));
   if (reiter.anzahl !== 4) errs.push('Es gibt ' + reiter.anzahl + ' statt 4 Reiter');
   if (reiter.ueberlauf) errs.push('Die Reiterleiste laeuft ueber');
   if (!reiter.letzterGanzImBild) errs.push('Der letzte Reiter ist abgeschnitten');
-  if (!reiter.symboleAus) errs.push('Die Symbole werden auf schmalen Geraeten nicht ausgeblendet');
+  if (reiter.symbole) errs.push('Die Reiter tragen wieder ' + reiter.symbole +
+    ' Symbol(e) — auf 390 Pixeln passen dann keine vier mehr nebeneinander');
 
   // ── Speichern bleibt erreichbar, egal wie weit man scrollt ──
   console.log('SPEICHERN oben:', await speichernImBild(page));

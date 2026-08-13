@@ -108,18 +108,50 @@ neue Größen deshalb **relativ** (`rem`), nie in Pixeln.
 
 | Marke | Wert | Wofür |
 |---|---|---|
-| `--r-xs` | `10px` | Eingabefelder, kleine Knöpfe |
-| `--r-sm` | `14px` | Listenzeilen, Dokumente |
-| `--r-md` | `18px` | Umfragen, Geräte, Menüs |
+| `--r-xs` | `8px` | Eingabefelder, kleine Knöpfe, Kästchen |
+| `--r-sm` | `11px` | Listenzeilen, Dokumente, Chips |
+| `--r-md` | `14px` | Umfragen, Geräte, Menüs |
+| `--r-lg` | `18px` | größere Blöcke |
 | `--radius` | `22px` | Karten |
 | `--radius-lg` | `30px` | große Flächen |
-| — | `999px` | Chips, Marken, runde Knöpfe |
+| `--r-pille` | `999px` | Knöpfe und Marken |
+| `--r-rund` | `50%` | Avatare, runde Knöpfe |
 
-> `--r-md` und `--r-sm` wurden an zehn Stellen benutzt, ohne je definiert
-> zu sein. Eine undefinierte Variable macht die **ganze** Angabe ungültig
-> – Umfragen, Geräteliste, Anhang-Menü und Aufgaben-Vorlagen standen
-> deshalb mit rechten Winkeln da, während alles daneben rund war.
-> Niemandem aufgefallen, weil nichts kaputt aussah, nur anders.
+> **Feste Werte gehören nicht ins Stylesheet.** Die Leiter gab es schon
+> länger, benutzt wurde sie vierzehnmal — daneben standen über neunzig
+> feste Werte zwischen 2 und 30 px, zwölf verschiedene für dieselbe Sache.
+> Seit dem 13.8.2026 liegt jede Rundung auf einer Stufe (179 Stellen).
+> Zwei Ausnahmen bleiben, beide einmalig und begründet: das
+> Konfetti-Teilchen (2 px) und das Kästchen eines Teilschritts (5 px).
+> `tests/test-gestaltung.js` schlägt an, wenn ein fester Wert dazukommt.
+
+> Eine **undefinierte** Variable macht die ganze Angabe ungültig — als
+> `--r-md` und `--r-sm` einmal fehlten, standen Umfragen, Geräteliste,
+> Anhang-Menü und Aufgaben-Vorlagen mit rechten Winkeln da, während alles
+> daneben rund war. Aufgefallen ist es niemandem: es sah nicht kaputt aus,
+> nur anders.
+
+### Symbole
+
+Ein Satz, ein Stil: 24er Raster, Kontur, `stroke-width:2`, `currentColor`.
+Definiert in `IKONEN`, ausgegeben von `ikon('name')`, gestylt über `.sym`
+(1,05 em, erbt Farbe und Größe vom umgebenden Element).
+
+Im festen Markup steht dasselbe SVG ausgeschrieben — dort kann keine
+Funktion laufen. Beide Fassungen müssen dieselben Pfade zeichnen; geprüft
+wird das im selben Durchlauf.
+
+**Kein Emoji als Bedienelement.** Ein Emoji bringt eigene Farben mit,
+ignoriert Hell und Dunkel und sieht auf jedem Betriebssystem anders aus.
+Bis zum 13.8.2026 standen 467 davon in der App, neben echten Inline-SVG —
+diese Mischung ist das Erste, was jemandem auffällt, der die App zum
+ersten Mal sieht.
+
+Erlaubt bleiben Emoji nur, wo sie **Inhalt** sind: die sechs
+Chat-Reaktionen, Avatare, der Geburtstagsgruß.
+
+**Vor einer Überschrift steht kein Symbol.** „📅 Mein Dienst" war keine
+Information, sondern Dekoration.
 
 ### Die Apple-Ecke
 

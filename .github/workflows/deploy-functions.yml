@@ -1,12 +1,19 @@
 name: Cloud Functions deployen
 
-# Deployt automatisch nach Firebase:
-#  - Sicherheitsregeln (firestore.rules), sobald sich die Datei ändert
-#  - Cloud Functions, sobald sich functions/ ändert
-#  - oder beides manuell über den "Run workflow"-Knopf im Actions-Tab
+# Rollt nach Firebase aus, sobald sich in main etwas Ausgeliefertes ändert:
+#   regeltest → rules     Sicherheitsregeln (Firestore + Speicher)
+#   regeltest → deploy    Cloud Functions
+#   hosting               die App selbst, unabhängig von den Prüfungen
 #
-# Beide Aufgaben laufen als getrennte Jobs. Wenn eine scheitert, kommt die
-# andere trotzdem durch – man sieht im Actions-Tab sofort, welche es war.
+# hosting hängt bewusst NICHT an regeltest: die App ist das eine, was man
+# notfalls schnell zurücknehmen können muss. Folge davon ist, dass sie vor
+# den Regeln draußen sein kann — gemessen rund 80 Sekunden früher.
+#
+# Die paths-Liste ist die Liste der ausgelieferten Dateien. Wer eine neue
+# hinzufügt und sie hier vergisst, merkt nichts: es gibt keine Fehlermeldung,
+# es passiert einfach kein Deploy. Genau so blieb konfig.js zwei Monate lang
+# unausrollbar. tests/test-ausliefern.js prüft die Liste deshalb gegen die
+# ignore-Liste aus firebase.json.
 on:
   push:
     branches: [main]
@@ -18,41 +25,17 @@ on:
       - '.firebaserc'
       - '*.html'
       - 'sw.js'
-      # konfig.js hat hier zwei Monate lang GEFEHLT. Aufgefallen am
-      # 10.8.2026, als der Umzug auf die Firmen-Pfade gemerged wurde und
-      # kein Deploy ansprang: die Änderung lag in main und die App im
-      # Betrieb las weiter die alten Pfade.
-      #
-      # Ausgerechnet diese Datei. Sie entscheidet, WELCHE Datenbank die
-      # App anfasst — in firebase.json steht extra ein no-cache-Kopf
-      # dafür, weil eine alte Fassung schlimmer wäre als eine langsame
-      # Ladezeit. Genau die konnte man nicht ausrollen.
-      #
-      # Es gab keine Fehlermeldung. Es passierte einfach nichts, und
-      # "gemerged" sah aus wie "ausgeliefert".
       - 'konfig.js'
       - 'manifest.json'
-      # Ebenfalls beim Prüfen aufgefallen: Handbuch, Produktmappe und
-      # die Symbole werden ausgeliefert, lösten aber nie einen Deploy aus.
-      - '*.pdf'
       - 'icon.png'
       - 'icon.svg'
       - '.github/workflows/deploy-functions.yml'
   workflow_dispatch:
 
 jobs:
-  # ── Erst PRÜFEN, dann ausrollen ──
-  # Die Sicherheitsregeln sind die einzige echte Grenze dieser App. Sie
-  # wurden bisher ungeprüft ausgerollt. Diese Stufe fährt den Firestore-
-  # Emulator hoch und lässt drei Durchläufe dagegen laufen:
-  #   security.test.js    wer darf was – und vor allem: wer darf NICHTS
-  #   umzug.test.js       das Umzugswerkzeug an nachgebauten Daten
-  #   funktionen.test.js  die Cloud Functions, wirklich ausgeführt
-  #
-  # Fällt eine Prüfung um, werden weder Regeln noch Functions ausgerollt.
-  # Das Hosting läuft bewusst unabhängig weiter: die App ist die eine
-  # Sache, die man notfalls schnell zurücknehmen können muss, und sie
-  # hängt nicht an diesen Durchläufen.
+  # Erst prüfen, dann ausrollen. Die Sicherheitsregeln sind die einzige echte
+  # Grenze dieser App; fällt hier etwas um, gehen weder Regeln noch Functions
+  # raus.
   regeltest:
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +47,7 @@ jobs:
         with:
           node-version: 20
 
-      # Der Firestore-Emulator ist ein Java-Programm
+      # Der Firestore-Emulator ist ein Java-Programm.
       - name: Java einrichten
         uses: actions/setup-java@v4
         with:
@@ -75,27 +58,28 @@ jobs:
         working-directory: tests/rules
         run: npm install --no-audit --no-fund
 
-      # umzug.test.js und funktionen.test.js benutzen das ECHTE Admin-SDK
-      # und laden functions/index.js selbst. Beides liegt unter functions/.
-      # Ohne diesen Schritt brechen sie mit "Cannot find module" ab – und
-      # zwar sofort, nicht still: aber deployt würde trotzdem nichts.
+      # umzug.test.js und funktionen.test.js laden functions/index.js samt
+      # Admin-SDK. Ohne diesen Schritt brechen sie mit "Cannot find module" ab.
       - name: Functions-Abhängigkeiten installieren
         working-directory: functions
         run: npm install --no-audit --no-fund
 
+      # security.test.js  wer darf was — und vor allem: wer darf nichts
+      # kreuz.test.js     dieselbe Frage über alle Firmen hinweg
+      # umzug.test.js     das Umzugswerkzeug an nachgebauten Daten
+      # funktionen.test.js die Cloud Functions, wirklich ausgeführt
       - name: Regeln, Umzug und Cloud Functions prüfen
         working-directory: tests/rules
         run: npm test
 
-      # Braucht keinen Emulator: liest functions/index.js als Text und
-      # schlägt bei jedem flachen Zugriff auf eine Firmen-Sammlung an –
-      # auch bei einem, der erst morgen dazukommt.
+      # Ohne Emulator: liest functions/index.js als Text und schlägt bei jedem
+      # flachen Zugriff auf eine Firmen-Sammlung an.
       - name: Keine flachen Zugriffe in den Cloud Functions
         run: node tests/test-funktionen-pfade.js
 
-  # ── Sicherheitsregeln ausrollen ──
-  # Läuft in Sekunden. Damit muss niemand mehr Regeln von Hand in die
-  # Firebase-Konsole kopieren – die Datei im Repo ist die Wahrheit.
+  # Die Datei im Repo ist die Wahrheit — Regeln werden nicht mehr von Hand in
+  # die Firebase-Konsole kopiert. storage.rules gehört dazu: im Speicher liegt
+  # der nächtliche Vollexport der Datenbank.
   rules:
     needs: regeltest
     runs-on: ubuntu-latest
@@ -117,22 +101,15 @@ jobs:
       - name: Firebase CLI installieren
         run: npm install -g firebase-tools
 
-      # Auch die Speicher-Regeln. Sie lagen seit ihrer Erstellung im Projekt
-      # und wurden nie ausgerollt - in Kraft war, was die Konsole beim
-      # Anlegen des Speichers gesetzt hat. Im Speicher liegt der naechtliche
-      # Vollexport der Datenbank; das darf nicht ausserhalb der Versions-
-      # verwaltung geregelt sein.
       - name: Sicherheitsregeln deployen (Firestore + Speicher)
         run: firebase deploy --only firestore:rules,storage --project formenchat --non-interactive --force
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
 
-  # ── Die App selbst (Firebase Hosting) ──
-  # Zweiter Auslieferungsweg neben GitHub Pages. Grund: die Pages-Warteschlange
-  # war mehrfach über eine Stunde blockiert, und dann kam gar nichts mehr an.
-  # Firebase Hosting setzt ausserdem die Zwischenspeicher-Regeln selbst
-  # (siehe firebase.json) - GitHub Pages schickt fest max-age=600 mit, wodurch
-  # Geräte bis zu zehn Minuten lang die alte Fassung sahen.
+  # Firebase Hosting statt GitHub Pages: die Pages-Warteschlange war mehrfach
+  # über eine Stunde blockiert, und Pages schickt fest max-age=600 mit — damit
+  # sahen Geräte bis zu zehn Minuten lang die alte Fassung. Die Cache-Regeln
+  # stehen jetzt in firebase.json.
   hosting:
     runs-on: ubuntu-latest
     steps:
@@ -158,10 +135,6 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
 
-  # ── Cloud Functions ──
-  # Hängt an regeltest. Vorher stand über der Prüfstufe „fällt eine um,
-  # wird nichts deployt" – das galt nur für die Regeln. Die Functions
-  # gingen ungeprüft raus, obwohl funktionen.test.js genau sie prüft.
   deploy:
     needs: regeltest
     runs-on: ubuntu-latest
@@ -178,15 +151,13 @@ jobs:
         working-directory: functions
         run: npm install
 
+      # Werte in Anführungszeichen: ein App-Passwort kann Leerzeichen
+      # enthalten (Google zeigt sie in Vierergruppen an).
       - name: .env für Functions schreiben (Geheim-Schlüssel)
-        # Werte in Anführungszeichen: ein Passwort kann Leerzeichen oder
-        # Sonderzeichen enthalten (Google zeigt App-Passwörter z. B. in
-        # Vierergruppen an). Ohne Anführungszeichen bräche die Datei dann.
         run: |
           {
             echo "BDAY_TEST_KEY="${{ secrets.BDAY_TEST_KEY }}""
             echo "GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}""
-            # E-Mail-Versand: Monatsbericht und Termin-Mails (siehe MAIL-SETUP.md)
             echo "SMTP_HOST="${{ secrets.SMTP_HOST }}""
             echo "SMTP_PORT="${{ secrets.SMTP_PORT }}""
             echo "SMTP_USER="${{ secrets.SMTP_USER }}""
@@ -194,12 +165,12 @@ jobs:
             echo "MAIL_FROM="${{ secrets.MAIL_FROM }}""
           } > functions/.env
 
+      # Nur ein Hinweis im Protokoll, kein Abbruch — sonst fällt fehlender
+      # E-Mail-Versand erst beim ersten ausbleibenden Bericht auf.
       - name: Prüfen, ob der E-Mail-Versand eingerichtet ist
-        # Nur ein Hinweis im Protokoll – kein Abbruch. Ohne diese Zeile merkt
-        # man erst beim ersten fehlenden Bericht, dass etwas fehlt.
         run: |
           if [ -z "${{ secrets.SMTP_HOST }}" ] || [ -z "${{ secrets.SMTP_USER }}" ] || [ -z "${{ secrets.SMTP_PASS }}" ]; then
-            echo "::warning::SMTP ist nicht eingerichtet – Monatsbericht und Termin-Mails werden nicht versendet. Siehe MAIL-SETUP.md"
+            echo "::warning::SMTP ist nicht eingerichtet – Monatsbericht und Termin-Mails werden nicht versendet. Siehe docs/MAIL-SETUP.md"
           else
             echo "SMTP-Zugangsdaten sind hinterlegt."
           fi

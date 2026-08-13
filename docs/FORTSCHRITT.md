@@ -2379,6 +2379,197 @@ Regression danach: **57 grün, 0 rot.** (56 vorher, plus der neue.)
 
 ---
 
+## Sitzung 31 · Aufräumen: Struktur und Kommentare 🟢
+
+Auftrag: *„die ganze App soll null wirken wie ein Vibe Code"* und *„organisiere
+den Code so, dass man versteht, warum was wo liegt — aber lass diese komischen
+Erklärungen weg, die wirken wie von KI."*
+
+### Erst gemessen
+
+| Datei | Zeichen | davon Kommentar |
+|---|---|---|
+| `index.html` | 776.207 | 32,5 % |
+| `functions/index.js` | 87.719 | 35,5 % |
+| `firestore.rules` | 57.742 | 49,5 % |
+| `konfig.js` | 11.000 | **71,1 %** |
+| `tests/*.js` | 638.041 | 22,3 % |
+| **gesamt** | **1.589.175** | **29,5 %** |
+
+Fast ein Drittel des Projekts war Fliesstext. Nicht Kommentare im üblichen
+Sinn, sondern Aufsätze mit Datum, Vorgeschichte und Schlussfolgerung — genau
+das, was der Auftraggeber als „wirkt wie von KI" beschrieben hat. Zwei
+Beispiele: ein Block von 25 Zeilen über die Vollsicherung, von denen fünf
+Zeilen den nötigen Inhalt trugen; ein Block von 13 Zeilen über das
+Schriften-Laden, dessen Kern in vier Zeilen passt.
+
+**Die Regel, nach der jetzt gekürzt wird** (steht in `README.md`): in den
+Kommentar gehört, was man beim Ändern wissen muss und aus dem Code nicht
+sieht — eine Bedingung aus den Regeln, eine Reihenfolge, die nicht vertauscht
+werden darf, ein naheliegender Weg, der nicht funktioniert. Kein Verlauf,
+keine Daten, keine Begründung in Aufsatzform.
+
+### Das Verzeichnis
+
+Im Wurzelverzeichnis lagen 19 Markdown-Dateien, zwei `.txt`, zwei PDF, ein
+Apps-Script und ein Python-Werkzeug — zusammen mit vier HTML-Anwendungen.
+Wer das Projekt zum ersten Mal öffnet, findet dort keinen Einstieg, sondern
+eine Ablage. Es gab **kein README**.
+
+| vorher | jetzt |
+|---|---|
+| 19 `.md` + 2 `.txt` + 2 PDF im Wurzelverzeichnis | alles unter `docs/` |
+| `MATERIAL-SHEETS.gs`, `tools-md2pdf.py` im Wurzelverzeichnis | unter `tools/` |
+| kein Einstiegspunkt | `README.md` |
+
+`README.md` beantwortet die Frage aus dem Auftrag direkt: eine Tabelle je
+Verzeichnis, dazu ein Abschnitt „Warum es so gebaut ist" mit den fünf
+Entscheidungen, die sonst niemand nachvollziehen kann (eine Datei statt
+Bundler, compat-SDK, kein Framework, Firmenpfade, durchgehend Deutsch).
+
+Dazu ein Abschnitt über die drei Anwendungen, die kein StudioChat sind:
+`marketing.html`, `wachstum.html`, `werbung.html`. Sie liegen im selben
+Auslieferungsverzeichnis und benutzen dasselbe Firebase-Projekt. Das ist
+vertretbar, aber es muss irgendwo stehen.
+
+### Zwei Funde nebenbei
+
+**Handbuch und Produktmappe waren öffentlich abrufbar.** Beide PDF lagen im
+Auslieferungsverzeichnis, und `*.pdf` stand in keiner `ignore`-Liste — sie
+waren unter `formenchat.web.app/StudioChat-Produktmappe.pdf` für jeden
+herunterladbar. Mit `docs/**` in `firebase.json` ist das zu.
+
+**Die `ignore`-Muster griffen nur im Wurzelverzeichnis.** `"*.md"` deckt
+`docs/HANDBUCH.md` nicht ab; ohne die Umstellung auf `**/*.md` wäre beim
+Verschieben die gesamte Dokumentation online gegangen. Aufgefallen beim
+Nachrechnen, nicht beim Ausrollen.
+
+### Was in dieser Runde gekürzt wurde
+
+Gezielt die Aufsätze, nicht flächendeckend. Blöcke über 800 Zeichen:
+
+| Datei | vorher | nachher |
+|---|---|---|
+| `index.html` | 13 | 2 |
+| `functions/index.js` | 7 | 1 |
+| `konfig.js` | 4 | 1 |
+
+Die beiden verbliebenen in `index.html` sind das neue Inhaltsverzeichnis und
+die Aufbaubeschreibung des Style-Blocks — Wegweiser, keine Aufsätze.
+
+Dazu überarbeitet: `firestore.rules` (die vier längsten Blöcke), `sw.js`,
+`firebase.json` und der Deploy-Workflow.
+
+**Nachgewiesen, dass nur Kommentare fielen:** die Nicht-Kommentar-Zeilen sind
+vorher und nachher identisch — 1.386 in `functions/index.js`, 745 in
+`firestore.rules`, 11.409 in `index.html`. Dazu Syntaxprüfung von JavaScript
+und HTML.
+
+Ehrlich zur Gesamtzahl: der Kommentaranteil über das ganze Projekt ist von
+29,5 % auf 28,9 % gefallen. Die Aufsätze sind weg, die vielen mittellangen
+Blöcke nicht — `index.html` hat weiterhin 658 Kommentarblöcke, `tests/*.js`
+zusammen 142 KB. Das ist Arbeit für mehrere Runden.
+
+### Was gemessen, aber noch nicht angefasst ist
+
+- **467 Emoji als Symbole** in Oberfläche und Code (148 im Markup, 319 im
+  JavaScript). Daneben stehen echte Inline-SVG. Diese Mischung ist der
+  auffälligste Hinweis auf schnell zusammengesetzten Code, den ein Betrachter
+  sofort sieht.
+- **Zwölf verschiedene Eckenradien** (6, 7, 8, 9, 10, 11, 12, 13, 14, 22 px,
+  50 %, 999 px). Ein gepflegtes System hat drei bis vier, als Variablen.
+- **85 Selektoren doppelt definiert** (von 1.182), darunter `.todo` und
+  `.check` je viermal. Dieselbe Bauart wie die doppelten `@keyframes` aus
+  Sitzung 30: gewachsen durch Anhängen, und beim Ändern greift man ins Leere.
+
+Regression: **57 grün, 0 rot**, dazu die Emulator-Durchläufe für Regeln und
+Cloud Functions.
+
+---
+
+## Sitzung 32 · Ein Symbolsatz und eine Rundungs-Leiter 🟢
+
+Die beiden Punkte, die man **ohne Quelltext** sieht — der Rest der Liste aus
+Sitzung 31 bleibt offen.
+
+### 467 Emoji → ein Satz Konturzeichen
+
+Ein Emoji bringt eigene Farben mit, ignoriert Hell- und Dunkelmodus und sieht
+auf jedem Betriebssystem anders aus. Daneben standen in derselben App schon
+echte Inline-SVG. Diese Mischung ist der auffälligste Hinweis auf schnell
+zusammengesetzten Code, und sie fällt jedem auf, der die App zum ersten Mal
+öffnet.
+
+Entschieden wurde: **raus, und ein Symbol nur dort, wo es etwas tut.**
+
+| | vorher | nachher |
+|---|---|---|
+| Markup | 190 | 0 |
+| Skript | 173 | 8 |
+
+Die verbliebenen acht sind Inhalt, kein Bedienelement: die sechs
+Chat-Reaktionen, das Befehlstasten-Zeichen in der Tastenkürzel-Liste und der
+Geburtstagsgruss.
+
+`IKONEN` enthält 24 Zeichen im 24er Raster, Kontur, `currentColor` — dadurch
+erbt jedes Symbol Farbe und Grösse von seinem Knopf. `ikon('name')` gibt das
+fertige SVG zurück, ein unbekannter Name eine leere Zeichenkette statt eines
+Platzhalters.
+
+Vor einer Überschrift steht jetzt gar nichts mehr. „📅 Mein Dienst" war keine
+Information, sondern Dekoration; die Überschrift liest sich ohne besser.
+
+### Zwölf Eckenradien → sechs Stufen
+
+Es gab bereits eine Leiter in `:root` — benutzt wurde sie **vierzehnmal**,
+daneben standen über neunzig feste Werte zwischen 2 und 30 px. Ein
+Gestaltungssystem, das auf dem Papier existiert und im Stylesheet nicht.
+
+```
+--r-xs:8px  --r-sm:11px  --r-md:14px  --r-lg:18px
+--radius:22px  --radius-lg:30px
+--r-pille:999px   Knöpfe und Chips
+--r-rund:50%      Avatare und runde Knöpfe
+```
+
+Jeder feste Wert liegt jetzt auf einer Stufe — 179 Verwendungen. Zwei bleiben
+mit Grund: das Konfetti-Teilchen (2 px) und das Kästchen eines Teilschritts
+(5 px), beide einmalig, für beide gibt es keine Stufe.
+
+Einzelne Ecken haben sich dabei um ein bis zwei Pixel geändert. Das war die
+bewusste Entscheidung: eine Leiter, die man einhält, ist mehr wert als
+neunzig Werte, die zufällig entstanden sind.
+
+### `tests/test-gestaltung.js`
+
+Ohne Browser, liest die Datei:
+
+1. kein Emoji ausserhalb der Inhalts-Liste,
+2. jedes `ikon('name')` gibt es auch im Satz — ein Tippfehler liefert sonst
+   eine leere Zeichenkette und der Knopf bleibt stumm,
+3. jedes fest ausgeschriebene SVG im Markup zeichnet **dieselben Pfade** wie
+   der Satz (im Markup kann keine Funktion laufen, also gibt es beide
+   Fassungen — sie dürfen nicht auseinanderdriften),
+4. kein toter Symbol-Ballast,
+5. keine festen Rundungen ausser den zwei begründeten,
+6. Gegenproben: der Satz wird wirklich benutzt, die Leiter auch.
+
+### Zwischenfall: die Arbeitskopie ist zweimal zurückgesprungen
+
+Mitten in der Sitzung stand das Verzeichnis plötzlich wieder auf dem Stand
+vom 11. August — samt `.git`. Beim ersten Mal fiel es auf, weil `konfig.js`
+den längst behobenen doppelten Schlüssel wieder hatte; beim zweiten Mal,
+weil `test-bewegung-doppelt.js` fehlte und die doppelten `@keyframes` zurück
+waren.
+
+Verloren ging nichts: alles hing an gepushten Commits. Die Lehre steht hier,
+weil sie sich wiederholen kann — **nach jedem abgeschlossenen Schritt
+committen und pushen**, nicht erst am Ende einer Sitzung. Beim zweiten Mal
+lagen zwei Stunden Arbeit nur auf der Platte und mussten aus den Skripten im
+Kritzelordner neu aufgebaut werden.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

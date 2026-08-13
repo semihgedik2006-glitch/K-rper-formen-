@@ -5,103 +5,78 @@
   "firestore": {
     "rules": "firestore.rules"
   },
-  "//emulators": "Nur fuer lokale Regeltests (tests/rules). Beruehrt den Betrieb nicht.",
-  "emulators": {
-    "firestore": {
-      "port": 8791
-    },
-    "ui": {
-      "enabled": false
-    },
-    "singleProjectMode": true,
-    "auth": {
-      "port": 9099
-    }
-  },
-  "//storage": "Ohne diesen Abschnitt kennt firebase deploy die Datei storage.rules gar nicht. Sie lag seit ihrer Erstellung im Projekt und war nie in Kraft - in Kraft war, was die Konsole beim Anlegen des Speichers gesetzt hat.",
   "storage": {
     "rules": "storage.rules"
   },
+
+  "//emulators": "Nur für die Regeltests unter tests/rules. Der Auth-Emulator wird gebraucht, weil firmaAnlegen ein echtes Anmeldekonto anlegt.",
+  "emulators": {
+    "firestore": { "port": 8791 },
+    "auth": { "port": 9099 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  },
+
+  "//hosting": "Ausgeliefert wird das Projektverzeichnis abzüglich der ignore-Liste. Alles, was nicht in den Browser gehört, muss dort stehen — sonst ist es öffentlich abrufbar.",
   "hosting": {
     "public": ".",
     "ignore": [
+      "**/.*",
+      "**/node_modules/**",
       "firebase.json",
       "firestore.rules",
       "storage.rules",
-      "**/.*",
-      "**/node_modules/**",
       "functions/**",
       "tests/**",
       "tools/**",
-      "*.sh",
-      "*.md",
-      "*.txt",
-      "*.gs",
-      "*.py",
-      "*.log"
+      "docs/**",
+      "**/*.md",
+      "**/*.txt",
+      "**/*.sh",
+      "**/*.gs",
+      "**/*.py",
+      "**/*.log"
     ],
     "cleanUrls": true,
     "headers": [
       {
-        "//": "Die App selbst NIE zwischenspeichern. GitHub Pages schickt max-age=600 mit, dadurch sahen Geräte bis zu zehn Minuten lang die alte Fassung. Hier bestimmen wir das selbst.",
+        "//": "index.html, sw.js und konfig.js nie zwischenspeichern. konfig.js entscheidet, welche Datenbank die App anfasst; eine alte Fassung im Zwischenspeicher ist schlimmer als eine langsame Ladezeit. Drei getrennte Einträge statt eines Musters — an dieser Stelle ist Wörtlichkeit mehr wert als Kürze.",
         "source": "/index.html",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
         ]
       },
       {
-        "//": "Der Service Worker muss ebenfalls immer frisch geholt werden, sonst bleibt eine alte Fassung dauerhaft aktiv.",
         "source": "/sw.js",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
         ]
       },
       {
-        "//": "Die Konfiguration ebenso: sie enthaelt Studios und Firebase-Zugang. Eine alte Fassung im Zwischenspeicher waere schlimmer als eine langsame Ladezeit.",
         "source": "/konfig.js",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        ]
+      },
+      {
+        "source": "**/*.html",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
         ]
       },
       {
         "source": "/manifest.json",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache"
-          }
+          { "key": "Cache-Control", "value": "no-cache" }
         ]
       },
       {
-        "//": "Die anderen Seiten genauso behandeln - es sind alles einzelne HTML-Dateien, die sich ändern.",
-        "source": "**/*.html",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
-        ]
-      },
-      {
-        "//": "Bilder dürfen zwischengespeichert werden, die ändern sich praktisch nie.",
+        "//": "Symbole ändern sich praktisch nie.",
         "source": "**/*.@(png|svg|jpg|jpeg|webp|ico)",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=604800"
-          }
+          { "key": "Cache-Control", "value": "public, max-age=604800" }
         ]
       }
     ]
-  },
-  "//emulators-auth": "Der Auth-Emulator kam am 11.8.2026 dazu: firmaAnlegen legt ein echtes Anmeldekonto an, und ohne ihn versucht der Test das gegen die echte Google-API — die er zu Recht nicht erreicht."
+  }
 }

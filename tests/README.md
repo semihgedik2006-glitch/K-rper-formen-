@@ -2,10 +2,6 @@
 
 Automatische Durchläufe durch die App — ohne echtes Firebase, ohne echte Daten.
 
-Bisher lagen diese Dateien nur in einem temporären Ordner und wären beim
-nächsten Neustart verschwunden. Jetzt liegen sie im Projekt und lassen sich
-jederzeit wieder ausführen.
-
 ---
 
 ## Wozu das gut ist
@@ -18,6 +14,19 @@ durch und melden sich, wenn etwas nicht mehr stimmt.
 Sie ersetzen **kein** Ausprobieren auf einem echten Gerät. Was sie nicht können:
 Berührungen (also das Wischen zum Abhaken), echte Push-Nachrichten und alles,
 was tatsächlich in die Datenbank schreibt.
+
+## Wie die Dateien heißen
+
+| Muster | Was es ist |
+|---|---|
+| `test-<thema>.js` | ein Thema, z. B. `test-putzplan.js` |
+| `test-<bereich>-bereichN.js` | die zehn Bereiche aus dem Audit, in ihrer Reihenfolge |
+| `test-blockN.js` | ältere Sammeldurchläufe ohne eigenes Thema |
+| `stub-*.js` | Firebase-Attrappe, meldet eine bestimmte Rolle an |
+| `audit-*.js`, `stress-*.js` | Messläufe, kein Grün/Rot sondern Zahlen |
+
+`blockN` und `bereichN` sind historische Namen. Wonach ein Durchlauf sucht,
+steht in der Tabelle weiter unten und im Kopf der jeweiligen Datei.
 
 ---
 
@@ -129,6 +138,8 @@ was sie sehen soll.
 | `test-alltag.js` | pausierte Putzpunkte, „Ich übernehme das", Farbe der Firma |
 | `test-konfig.js` | `konfig.js`: kein Schlüssel doppelt, Kennung und Anzeigename getrennt |
 | `test-firmenname.js` | jede Firma sieht ihren eigenen Namen — auch vor dem Anmelden und in der Bestellmail |
+| `test-bewegung-doppelt.js` | kein `@keyframes`-Name zweimal vergeben, keine benutzte Animation ohne Definition |
+| `test-gestaltung.js` | Symbole nur aus `IKONEN` (kein Emoji als Bedienelement), Rundungen nur von der Leiter in `:root` |
 
 ### Alle auf einmal
 
@@ -137,14 +148,13 @@ bash tests/alle.sh            # alle
 bash tests/alle.sh chat       # nur die passenden
 ```
 
-> **Nicht mit einem Einzeiler laufen lassen.** Bis August 2026 lief die
-> Regression als `for f in tests/*.js; do node "$f" || echo kaputt; done`.
-> 29 der Durchläufe geben aber gar keinen Exit-Code — sie schreiben
-> „Fehler: …" und beenden sich mit 0. Der Einzeiler prüfte damit neun
-> Durchläufe und meldete das Ergebnis für achtunddreißig — heute wären es
-> vierundfünfzig. `alle.sh` kennt
-> vier Fehlersignale und meldet zusätzlich jeden Durchlauf, der **gar
-> nichts** ausgibt — ein stummer Test ist verdächtig, nicht gut.
+> **Nicht mit einem Einzeiler laufen lassen.** `for f in tests/*.js; do node
+> "$f" || echo kaputt; done` prüft nur den Exit-Code. Ein grosser Teil der
+> Durchläufe gibt gar keinen: sie schreiben „Fehler: …" und beenden sich mit
+> 0. Der Einzeiler meldete deshalb „alles grün", während ein Durchlauf gerade
+> einen Fund ausgab. `alle.sh` kennt vier Fehlersignale und meldet zusätzlich
+> jeden Durchlauf, der **gar nichts** ausgibt — ein stummer Test ist
+> verdächtig, nicht gut.
 
 ### Messläufe (kein Grün/Rot, sondern Zahlen)
 
