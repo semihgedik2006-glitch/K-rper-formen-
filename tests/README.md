@@ -139,6 +139,7 @@ was sie sehen soll.
 | `test-konfig.js` | `konfig.js`: kein Schlüssel doppelt, Kennung und Anzeigename getrennt |
 | `test-firmenname.js` | jede Firma sieht ihren eigenen Namen — auch vor dem Anmelden und in der Bestellmail |
 | `test-bewegung-doppelt.js` | kein `@keyframes`-Name zweimal vergeben, keine benutzte Animation ohne Definition |
+| `test-xss.js` | acht Angriffsmuster in Chat, Namen, Aufgaben, Notizen, Umfragen und Dokumenten — nichts davon wird zu Code |
 | `test-gestaltung.js` | Symbole nur aus `IKONEN` (kein Emoji als Bedienelement), Rundungen und Abstände nur von der Leiter in `:root`, keine Eigenschaft zweimal am selben Selektor |
 
 ### Alle auf einmal

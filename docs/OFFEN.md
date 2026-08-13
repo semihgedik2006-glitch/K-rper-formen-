@@ -82,6 +82,15 @@ Suchzeit. Ein Umsortieren wäre eine eigene Runde mit eigenem Risiko
 (Reihenfolge entscheidet bei gleicher Spezifität), und der Nutzen ist
 geringer als bei allem oben.
 
+## Aus dem Sicherheits-Durchlauf vom 13. August
+
+Vollständig in `docs/SICHERHEIT.md`. Zwei Punkte bleiben:
+
+| Was | Wer | Aufwand |
+|---|---|---|
+| **Google-Tabelle nimmt Daten von jedem an.** Die Apps-Script-Adresse steht in `konfig.js` und ist damit öffentlich; `doPost` prüft nichts. Ein Token im Browser hilft nicht — es stünde dort genauso. Der Abgleich muss vom Browser auf eine Cloud Function wandern, das Geheimnis nach `functions/.env`. Schaden bis dahin: auf die Tabelle begrenzt und reversibel, kein Zugang zu Firestore. | ich | eine Sitzung, dazu einmal Apps Script neu bereitstellen (du) |
+| **Keine Content-Security-Policy.** Heute ist alles maskiert (8 Muster geprüft), eine CSP wäre die zweite Reihe. Einbauen heisst `script-src` einschränken, und die App lädt SDK und Schriften von Google — eine zu enge CSP legt die App still. | ich | eine Runde mit Nachmessen |
+
 ## Offen, weil noch niemand hingeschaut hat
 
 - **Ob Push auf einem echten Handy ankommt.** Der Versand ist

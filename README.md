@@ -187,6 +187,9 @@ Alles unter `docs/`.
 `DESIGN-SYSTEM.md` Farben, Abstände, Bausteine · `ROADMAP.md` ·
 `IDEEN.md`
 
+**Sicherheit**
+`SICHERHEIT.md` was geprüft wurde, was gefunden wurde, was offen ist
+
 **Betrieb**
 `OFFEN.md` was noch aussteht · `DEIN-TEIL.md` Handgriffe für den Betreiber ·
 `DEPLOY.md` · `MAIL-SETUP.md` E-Mail-Absender · `RECHT.md` Impressum und
