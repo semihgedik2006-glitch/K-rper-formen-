@@ -1019,8 +1019,8 @@ function toGeminiContents(messages) {
 exports.marketingChat = region
   .runWith({ timeoutSeconds: 300, memory: '512MB' })
   .https.onCall(async (data, context) => {
-    // Vorher stand hier nur requireAuth: JEDER selbst registrierte Zugang
-    // konnte den Gemini-Schluessel der Firma benutzen.
+    // requireChef, nicht requireAuth: sonst benutzt jeder selbst
+    // registrierte Zugang den Gemini-Schluessel der Firma.
     const profil = await requireChef(context);
     /* Einmal ermitteln und wiederverwenden: die Firma wird gleich
        zweimal gebraucht (Tagesgrenze und Auftrag ans Modell), und

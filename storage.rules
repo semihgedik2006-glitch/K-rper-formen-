@@ -4,7 +4,7 @@ rules_version = '2';
 // Firebase Storage – Regeln für formenchat
 //
 // WICHTIG, bevor hier jemand etwas öffnet:
-// In diesem Speicher liegt seit dem 9.8.2026 unter  sicherung/JJJJ-MM-TT/
+// In diesem Speicher liegt unter  sicherung/JJJJ-MM-TT/
 // der NÄCHTLICHE VOLLEXPORT DER DATENBANK. Das ist alles auf einmal –
 // jeder Chatverlauf, jede Direktnachricht, das komplette Team mit
 // E-Mail-Adressen, alle Nachweise. Eine einzige zu weite Regel hier wiegt

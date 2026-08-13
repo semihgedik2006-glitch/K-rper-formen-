@@ -1,7 +1,7 @@
 /* ── Ein Profil auf eine neue Anmelde-Kennung übertragen ───────────────
    Nur für die Probe-Umgebung.
 
-   WARUM ES DAS BRAUCHT
+   WOZU
    Ein Firestore-Export enthält die Daten, aber NICHT die Konten. Die
    liegen in Firebase Authentication, und jedes Projekt vergibt eigene
    Kennungen. Wer sich im Probe-Projekt mit derselben E-Mail anmeldet,

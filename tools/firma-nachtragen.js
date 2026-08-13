@@ -2,17 +2,16 @@
 /* ─────────────────────────────────────────────────────────────────────
    FELD "firma" AN BESTEHENDEN KONTEN NACHTRAGEN
 
-   WARUM
-   users ist die einzige Sammlung, die nicht unter firmen/<kennung>/
-   liegt. Bis zum 12.8.2026 durfte deshalb JEDER Angemeldete JEDES Konto
-   lesen — auch die einer anderen Firma. Die neue Regel verlangt, dass
-   Leser und Konto zur selben Firma gehoeren.
+   WOZU
+   users ist die einzige Sammlung ausserhalb von firmen/<kennung>/. Die
+   Firmengrenze dort verlangt, dass Leser und Konto dieselbe Firma
+   tragen — und das funktioniert nur, wenn jedes Konto das Feld hat.
 
-   Das funktioniert nur, wenn jedes Konto das Feld auch HAT. Konten aus
-   der Zeit vor der Mandantenfaehigkeit haben es nicht: fuer sie galt
-   die stille Annahme "kein Feld = koerperformen". Diese Annahme traegt
-   die Regel noch, eine Firestore-ABFRAGE aber nicht — where('firma',
-   '==','koerperformen') findet ein Dokument ohne das Feld nicht.
+   Konten aus der Zeit vor der Mandantenfaehigkeit haben es nicht; fuer
+   sie galt die stille Annahme "kein Feld = koerperformen". Diese Annahme
+   traegt die Regel noch, eine Firestore-ABFRAGE aber nicht:
+   where('firma','==','koerperformen') findet ein Dokument ohne das Feld
+   nicht.
 
    REIHENFOLGE, und sie ist wichtig:
      1. Dieses Werkzeug laufen lassen (aendert nur, was fehlt).
