@@ -747,8 +747,21 @@ service cloud.firestore {
 
     match /firmen/{f} {
       // Die Stammdaten der Firma. Der Name steht auf dem
-      // Anmeldebildschirm, also vor jeder Anmeldung lesbar.
-      allow read: if true;
+      // Anmeldebildschirm, also muss EIN Dokument vor jeder Anmeldung
+      // lesbar sein.
+      //
+      // get und list getrennt, und das ist der Punkt: "read" erlaubt in
+      // Firestore beides. Mit read:true kann jeder — auch ohne Anmeldung —
+      // die ganze Sammlung abrufen und bekommt die vollstaendige
+      // Kundenliste mit Namen, Konten- und Studiozahl. Die Zufallsendung
+      // in der Kennung ("mueller-7f3a") soll genau das verhindern und
+      // nuetzt dann nichts.
+      //
+      // Wer die Kennung kennt, sieht weiterhin Name und Zustand seiner
+      // Firma — das braucht der Anmeldebildschirm. Aufzaehlen darf nur
+      // der Betreiber (listenFirmen() in index.html laeuft nur fuer ihn).
+      allow get: if true;
+      allow list: if istAdminKonto();
 
       /* ── Der Abo-Zustand (Stufe A aus docs/ABO-PLAN.md) ──
          Liegt bewusst NICHT im Firmen-Dokument, obwohl das bequemer

@@ -18,6 +18,16 @@ die Emulator-Datei herunter.
 Läuft außerdem bei jedem Push in GitHub Actions – **bevor** die Regeln
 ausgerollt werden. Fällt ein Test um, wird nichts deployt.
 
+## Die Dateien
+
+| Datei | prüft |
+|---|---|
+| `security.test.js` | wer was lesen und schreiben darf — und vor allem, wer nichts darf |
+| `kreuz.test.js` | dieselbe Frage über alle 32 Sammlungen hinweg, in beide Richtungen |
+| `rechte.test.js` | Rechteausweitung (`admin`, `role`, `aktiv`, `firma`) und Aufzählbarkeit von Firmen und Konten |
+| `umzug.test.js` | das Umzugswerkzeug an nachgebauten Daten |
+| `funktionen.test.js` | die Cloud Functions, wirklich ausgeführt |
+
 ## Was hier drinsteht
 
 Jeder Test sagt im Namen, was er schützt. Drei Tests beginnen mit
