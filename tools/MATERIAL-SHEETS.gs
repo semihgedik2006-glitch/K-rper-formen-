@@ -10,6 +10,8 @@
  * 1. Diesen Code komplett einfügen (alten ersetzen) und speichern (💾).
  * 2. "Bereitstellen" → "Bereitstellungen verwalten" → Stift-Symbol →
  *    Version: "Neue Version" → "Bereitstellen". Die URL bleibt gleich.
+ * 3. Danach das Token setzen, sonst nimmt die Web-App weiterhin Sendungen
+ *    von jedem an: docs/SHEETS-TOKEN.md.
  *
  * ---------------------------------------------------------------------
  * DIE SPALTE "Kürzel"

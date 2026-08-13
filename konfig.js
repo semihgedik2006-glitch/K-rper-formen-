@@ -158,11 +158,11 @@
       messagingSenderId: '692000066621',
       appId: '1:692000066621:web:23fca1cf7b3ec335d56e54'
     };
-    KONFIG.mandant       = true;
-    KONFIG.firma         = 'koerperformen';
-    KONFIG.vapidKey       = '';     // kein Push in der Probe
-    KONFIG.sheetsAbgleich = false;  // keine echte Tabelle beschreiben
-    KONFIG.firma_anzeige = 'PROBELAUF';
+    KONFIG.mandant        = true;
+    KONFIG.firma          = 'koerperformen';
+    KONFIG.vapidKey       = '';      // kein Push in der Probe
+    KONFIG.sheetsAbgleich = false;   // keine echte Tabelle beschreiben
+    KONFIG.firma_anzeige  = 'PROBELAUF';
   }
 
   global.KONFIG = KONFIG;
