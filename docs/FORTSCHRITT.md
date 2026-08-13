@@ -2487,6 +2487,89 @@ Cloud Functions.
 
 ---
 
+## Sitzung 32 · Ein Symbolsatz und eine Rundungs-Leiter 🟢
+
+Die beiden Punkte, die man **ohne Quelltext** sieht — der Rest der Liste aus
+Sitzung 31 bleibt offen.
+
+### 467 Emoji → ein Satz Konturzeichen
+
+Ein Emoji bringt eigene Farben mit, ignoriert Hell- und Dunkelmodus und sieht
+auf jedem Betriebssystem anders aus. Daneben standen in derselben App schon
+echte Inline-SVG. Diese Mischung ist der auffälligste Hinweis auf schnell
+zusammengesetzten Code, und sie fällt jedem auf, der die App zum ersten Mal
+öffnet.
+
+Entschieden wurde: **raus, und ein Symbol nur dort, wo es etwas tut.**
+
+| | vorher | nachher |
+|---|---|---|
+| Markup | 190 | 0 |
+| Skript | 173 | 8 |
+
+Die verbliebenen acht sind Inhalt, kein Bedienelement: die sechs
+Chat-Reaktionen, das Befehlstasten-Zeichen in der Tastenkürzel-Liste und der
+Geburtstagsgruss.
+
+`IKONEN` enthält 24 Zeichen im 24er Raster, Kontur, `currentColor` — dadurch
+erbt jedes Symbol Farbe und Grösse von seinem Knopf. `ikon('name')` gibt das
+fertige SVG zurück, ein unbekannter Name eine leere Zeichenkette statt eines
+Platzhalters.
+
+Vor einer Überschrift steht jetzt gar nichts mehr. „📅 Mein Dienst" war keine
+Information, sondern Dekoration; die Überschrift liest sich ohne besser.
+
+### Zwölf Eckenradien → sechs Stufen
+
+Es gab bereits eine Leiter in `:root` — benutzt wurde sie **vierzehnmal**,
+daneben standen über neunzig feste Werte zwischen 2 und 30 px. Ein
+Gestaltungssystem, das auf dem Papier existiert und im Stylesheet nicht.
+
+```
+--r-xs:8px  --r-sm:11px  --r-md:14px  --r-lg:18px
+--radius:22px  --radius-lg:30px
+--r-pille:999px   Knöpfe und Chips
+--r-rund:50%      Avatare und runde Knöpfe
+```
+
+Jeder feste Wert liegt jetzt auf einer Stufe — 179 Verwendungen. Zwei bleiben
+mit Grund: das Konfetti-Teilchen (2 px) und das Kästchen eines Teilschritts
+(5 px), beide einmalig, für beide gibt es keine Stufe.
+
+Einzelne Ecken haben sich dabei um ein bis zwei Pixel geändert. Das war die
+bewusste Entscheidung: eine Leiter, die man einhält, ist mehr wert als
+neunzig Werte, die zufällig entstanden sind.
+
+### `tests/test-gestaltung.js`
+
+Ohne Browser, liest die Datei:
+
+1. kein Emoji ausserhalb der Inhalts-Liste,
+2. jedes `ikon('name')` gibt es auch im Satz — ein Tippfehler liefert sonst
+   eine leere Zeichenkette und der Knopf bleibt stumm,
+3. jedes fest ausgeschriebene SVG im Markup zeichnet **dieselben Pfade** wie
+   der Satz (im Markup kann keine Funktion laufen, also gibt es beide
+   Fassungen — sie dürfen nicht auseinanderdriften),
+4. kein toter Symbol-Ballast,
+5. keine festen Rundungen ausser den zwei begründeten,
+6. Gegenproben: der Satz wird wirklich benutzt, die Leiter auch.
+
+### Zwischenfall: die Arbeitskopie ist zweimal zurückgesprungen
+
+Mitten in der Sitzung stand das Verzeichnis plötzlich wieder auf dem Stand
+vom 11. August — samt `.git`. Beim ersten Mal fiel es auf, weil `konfig.js`
+den längst behobenen doppelten Schlüssel wieder hatte; beim zweiten Mal,
+weil `test-bewegung-doppelt.js` fehlte und die doppelten `@keyframes` zurück
+waren.
+
+Verloren ging nichts: alles hing an gepushten Commits. Die Lehre steht hier,
+weil sie sich wiederholen kann — **nach jedem abgeschlossenen Schritt
+committen und pushen**, nicht erst am Ende einer Sitzung. Beim zweiten Mal
+lagen zwei Stunden Arbeit nur auf der Platte und mussten aus den Skripten im
+Kritzelordner neu aufgebaut werden.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

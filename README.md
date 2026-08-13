@@ -149,6 +149,19 @@ wieder. Jeder Test prüft beide Richtungen — dass der Fehler weg ist *und*
 dass die richtige Seite noch funktioniert. Ein Test, der nur eine Richtung
 kennt, wäre auch dann grün, wenn die Funktion ganz fehlt.
 
+**Gestaltungsgrößen kommen aus `:root`, nie aus der Zeile.** Farben, Abstände,
+Rundungen und Kurven stehen als Variablen ganz oben im `<style>`-Block. Eine
+feste Zahl mitten im Stylesheet ist der Anfang der nächsten Sammlung aus
+zwölf Werten, die dasselbe meinen.
+
+**Symbole kommen aus `IKONEN`, nicht aus der Emoji-Tastatur.** `ikon('name')`
+gibt ein SVG in `currentColor` zurück; es erbt Farbe und Größe von seinem
+Knopf. Ein Emoji kann das nicht — es bringt eigene Farben mit, ignoriert
+Hell und Dunkel und sieht auf jedem Gerät anders aus. Emoji bleiben nur, wo
+sie Inhalt sind: Chat-Reaktionen, Avatare, Geburtstagsgruß.
+
+Beides prüft `tests/test-gestaltung.js`.
+
 ---
 
 ## Dokumentation

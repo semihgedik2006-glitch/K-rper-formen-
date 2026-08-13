@@ -53,21 +53,22 @@ zu sein, **bevor der erste fremde Kunde dazukommt.** Damit es nicht
 vergessen wird, steht es in `firestore.rules` bei `match /users`, in
 `index.html` bei `listenAllUsers()` und im Kreuztest (`OFFENES_LOCH`).
 
-## Aufräumen: was noch aussteht (Stand 12. August 2026)
+## Aufräumen: was noch aussteht
 
-Das Verzeichnis ist sortiert, `README.md` steht, und `konfig.js`,
+Erledigt: Verzeichnis sortiert, `README.md` steht, `konfig.js`,
 `firestore.rules`, `functions/index.js`, `firebase.json`, `sw.js` und der
-Deploy-Workflow sind durchgegangen. Offen ist der grössere Teil:
+Deploy-Workflow sind durchgegangen. Emoji und Eckenradien sind weg
+beziehungsweise auf einer Leiter, beides mit `tests/test-gestaltung.js`
+abgesichert.
+
+Offen:
 
 | Was | Umfang | Warum es zählt |
 |---|---|---|
-| **Kommentare in `index.html`** | 656 Blöcke, 252 KB | Der grösste verbliebene Posten. Ein Drittel der Datei ist Fliesstext. |
-| **Kommentare in `tests/*.js`** | 142 KB | Jeder Durchlauf beginnt mit einem Aufsatz „WARUM ES DIESEN DURCHLAUF GIBT". |
-| **467 Emoji als Symbole** | 148 im Markup, 319 im JS | Daneben stehen echte Inline-SVG. Die Mischung sieht ein Betrachter sofort. |
-| **Zwölf Eckenradien** | 6–14 px, 22 px, 50 %, 999 px | Ein gepflegtes System hat drei bis vier, als Variablen. |
-| **85 doppelt definierte Selektoren** | von 1.182 | `.todo` und `.check` je viermal. Wer den ersten ändert, ändert nichts. |
-
-Die letzten drei sind die, die man **ohne Quelltext** bemerkt.
+| **Kommentare in `index.html`** | 645 Blöcke | Der grösste verbliebene Posten. Rund ein Drittel der Datei ist Fliesstext. Die Aufsätze über 800 Zeichen sind weg, die mittellangen nicht. |
+| **Kommentare in `tests/*.js`** | 142 KB | Jeder Durchlauf beginnt mit „WARUM ES DIESEN DURCHLAUF GIBT". |
+| **25 echte Selektor-Kollisionen** | von 1.182 Selektoren | Dieselbe Eigenschaft zweimal für denselben Selektor, z. B. `transition` bei `.todo`. Zum Teil Absicht (der Bewegungs-Abschnitt überschreibt bewusst), zum Teil nicht — jede Stelle muss einzeln angesehen werden. |
+| **Abstände** | noch nicht gemessen | Nach Farben, Symbolen und Rundungen der letzte Bereich ohne Leiter. |
 
 ## Offen, weil noch niemand hingeschaut hat
 
