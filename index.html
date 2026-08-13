@@ -103,6 +103,16 @@
   --radius:22px;--radius-lg:30px;
   --r-pille:999px;      /* Knoepfe und Chips */
   --r-rund:50%;         /* Avatare und runde Knoepfe */
+
+  /* ── Abstaende ──
+     Eine Leiter statt zweiundfuenfzig Einzelwerten. Der Name nennt den
+     Wert, damit beim Lesen niemand nachschlagen muss. Feste Pixelangaben
+     bei padding, margin und gap gehoeren nicht ins Stylesheet —
+     tests/test-gestaltung.js schlaegt an, wenn wieder eine auftaucht.
+     Ausgenommen bleiben clamp(), calc(), negative Werte und mm (Druck). */
+  --s1:1px;--s2:2px;--s4:4px;--s6:6px;--s8:8px;--s10:10px;--s12:12px;
+  --s16:16px;--s20:20px;--s24:24px;--s32:32px;--s40:40px;--s48:48px;
+  --s56:56px;--s72:72px;
   /* Apples Symbole sind keine Kreisbögen, sondern Superellipsen: die
      Rundung setzt früher an und läuft weicher aus. Browser, die das
      kennen, bekommen es; alle anderen die Rundung oben. Kein Risiko. */
@@ -200,14 +210,14 @@ input,textarea,select{font-family:inherit;font-size:16px}
 .sym-gross{width:1.35em;height:1.35em}
 
 /* ── Buttons ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s8);
   font-family:var(--font-head);font-weight:700;letter-spacing:.5px;text-transform:uppercase;
-  font-size:.95rem;padding:13px 24px;border-radius:var(--r-pille);cursor:pointer;border:none;
-  min-height:46px;transition:transform .35s var(--ease-out),box-shadow .35s var(--ease-out),opacity .2s}
+  font-size:.95rem;padding:var(--s12) var(--s24);border-radius:var(--r-pille);cursor:pointer;border:none;
+  min-height:46px}
 .btn:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px}
 .btn-primary{background:var(--brand);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.22);
   box-shadow:0 10px 26px var(--accent-glow)}
-.btn-primary:hover{transform:translateY(-3px);box-shadow:0 18px 40px var(--accent-glow)}
+.btn-primary:hover{box-shadow:0 18px 40px var(--accent-glow)}
 .btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 .btn-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1.5px solid var(--line-2)}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent-d)}
@@ -219,14 +229,14 @@ input,textarea,select{font-family:inherit;font-size:16px}
 /* 44 Pixel, nicht 36: der kleine Knopf ist trotzdem ein Fingerziel. Die
    36 waren der letzte Rest aus der Zeit vor der Regel – sichtbar geworden
    am Knopf „Jetzt zusätzlich sichern". */
-.btn-sm{padding:8px 16px;min-height:44px;font-size:.8rem}
+.btn-sm{padding:var(--s8) var(--s16);min-height:44px;font-size:.8rem}
 
 /* ── Inputs ── */
-.field{margin-bottom:15px}
+.field{margin-bottom:var(--s16)}
 .field label{display:block;font-family:var(--font-head);font-weight:600;letter-spacing:.4px;
-  margin-bottom:7px;font-size:.9rem}
+  margin-bottom:var(--s6);font-size:.9rem}
 .inp{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
-  border-radius:var(--r-sm);padding:13px 15px;color:var(--text);min-height:48px;
+  border-radius:var(--r-sm);padding:var(--s12) var(--s16);color:var(--text);min-height:48px;
   font:inherit;min-width:0;max-width:100%;
   transition:border-color .2s,box-shadow .2s}
 /* ── Datum und Uhrzeit auf dem iPhone ──
@@ -251,13 +261,13 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.5}
 .inp::placeholder{color:var(--text-3)}
 select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238BADA0' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:var(--s40)}
 /* Dropdown-Einträge lesbar (sonst weiß auf weiß) */
 .inp option{background:var(--bg-2);color:var(--text)}
 
 /* ── Loading ── */
 #loadingWrap{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;
-  background:var(--bg);flex-direction:column;gap:18px}
+  background:var(--bg);flex-direction:column;gap:var(--s16)}
 .spinner{width:44px;height:44px;border:3px solid var(--line-2);border-top-color:var(--accent);
   border-radius:var(--r-rund);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -265,7 +275,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Splash-Screen ── */
 #splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:18px;
+  justify-content:center;gap:var(--s16);
   background:radial-gradient(circle at 50% 38%, #2a1252 0%, #120a26 55%, #0b0a1c 100%);
   animation:spFade .5s ease 2s forwards}
 #splash.hide{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s ease,visibility .45s}
@@ -284,24 +294,26 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @keyframes spWord{to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){
   #splash{animation:spFade .3s ease .8s forwards}
-  .sp-logo,.sp-ring,.sp-tail,.sp-sc,.sp-word{animation:none;opacity:1;stroke-dashoffset:0;transform:none}
+  /* stroke-dashoffset setzt die Regel mit !important weiter unten —
+     hier stuende es ein zweites Mal und ohne Wirkung. */
+  .sp-logo,.sp-ring,.sp-tail,.sp-sc,.sp-word{animation:none;opacity:1;transform:none}
 }
 
 /* ── Setup Notice ── */
 #setupNotice{position:fixed;inset:0;z-index:998;display:none;align-items:center;justify-content:center;
-  padding:24px;background:var(--bg)}
+  padding:var(--s24);background:var(--bg)}
 .setup-card{max-width:560px;width:100%;background:var(--bg-2);border:1px solid rgba(251,191,36,.4);
   border-radius:var(--radius-lg);padding:clamp(24px,6vw,40px)}
-.setup-card h2{font-size:1.8rem;margin-bottom:10px;color:var(--warm-tx)}
-.setup-card p{color:var(--text-2);margin-bottom:12px;line-height:1.65}
+.setup-card h2{font-size:1.8rem;margin-bottom:var(--s10);color:var(--warm-tx)}
+.setup-card p{color:var(--text-2);margin-bottom:var(--s12);line-height:1.65}
 .setup-card pre{background:rgba(0,0,0,.4);border:1px solid var(--line-2);border-radius:var(--r-sm);
-  padding:16px;font-size:.78rem;color:var(--accent-2);overflow-x:auto;margin-bottom:14px;
+  padding:var(--s16);font-size:.78rem;color:var(--accent-2);overflow-x:auto;margin-bottom:var(--s12);
   white-space:pre;line-height:1.7}
 .setup-card a{color:var(--accent-d);font-weight:600}
 
 /* ── Auth Screen ── */
 .auth-wrap{min-height:100vh;min-height:100svh;display:none;align-items:center;justify-content:center;
-  padding:24px;position:relative;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  padding:var(--s24);position:relative;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .auth-wrap.show{display:flex}
 .auth-mesh{position:fixed;inset:-20%;z-index:0;filter:blur(70px);opacity:.7;pointer-events:none}
 .auth-mesh i{position:absolute;display:block;border-radius:var(--r-rund)}
@@ -311,11 +323,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .auth-card{position:relative;z-index:1;width:100%;max-width:450px;margin:auto;background:var(--bg-2);
   border:1px solid var(--line-2);border-radius:var(--radius-lg);padding:clamp(24px,6vw,40px);
   box-shadow:var(--shadow-lg)}
-.auth-brand{font-family:var(--font-head);font-weight:800;font-size:1.5rem;letter-spacing:.5px;margin-bottom:4px}
+.auth-brand{font-family:var(--font-head);font-weight:800;font-size:1.5rem;letter-spacing:.5px;margin-bottom:var(--s4)}
 .auth-brand b{color:var(--accent-d)}
-.auth-sub{color:var(--text-2);margin-bottom:22px;font-size:.95rem;text-align:center}
+.auth-sub{color:var(--text-2);margin-bottom:var(--s20);font-size:.95rem;text-align:center}
 .auth-brand{text-align:center}
-.auth-logo{display:flex;justify-content:center;margin-bottom:8px}
+.auth-logo{display:flex;justify-content:center;margin-bottom:var(--s8)}
 .auth-logo svg{width:74px;height:74px;animation:scGlow 2.6s ease-in-out infinite}
 .auth-logo .al-ring{stroke-dasharray:252;stroke-dashoffset:252;animation:scDraw 1.1s var(--ease-out) .2s forwards}
 @keyframes scDraw{to{stroke-dashoffset:0}}
@@ -328,7 +340,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Kanalreihe und der Verwaltung: EIN Marker, der hingleitet. Fünf Stellen,
    eine Sprache – sonst lernt man die App an jeder Stelle neu. */
 .auth-tabs{position:relative;display:flex;gap:0;border:1px solid var(--line-2);
-  border-radius:var(--r-pille);padding:3px;margin-bottom:20px;background:rgba(0,0,0,.2)}
+  border-radius:var(--r-pille);padding:var(--s2);margin-bottom:var(--s20);background:rgba(0,0,0,.2)}
 .auth-tabs::before{content:'';position:absolute;left:0;top:0;
   height:var(--ind-h,38px);width:var(--ind-w,0);
   transform:translate(var(--ind-x,0),var(--ind-y,3px));
@@ -337,7 +349,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
              height .42s var(--ease-ios),opacity .2s}
 .auth-tabs.sofort::before{transition:none}
-.auth-tab{position:relative;z-index:1;flex:1;min-height:44px;padding:9px;
+.auth-tab{position:relative;z-index:1;flex:1;min-height:44px;padding:var(--s8);
   border-radius:var(--r-pille);border:none;background:none;cursor:pointer;
   font-family:var(--font-head);font-weight:700;font-size:.92rem;letter-spacing:.4px;
   text-transform:uppercase;color:var(--text-3);
@@ -345,35 +357,35 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .auth-tab:active{transform:scale(.96)}
 .auth-tab.active{color:var(--text)}
 /* Role picker */
-.role-pick{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
-.role-opt{border:1.5px solid var(--line-2);border-radius:var(--r-md);padding:14px 10px;text-align:center;
-  cursor:pointer;transition:border-color .2s,background .2s;background:rgba(255,255,255,.02)}
+.role-pick{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);margin-bottom:var(--s16)}
+.role-opt{border:1.5px solid var(--line-2);border-radius:var(--r-md);padding:var(--s12) var(--s10);text-align:center;
+  cursor:pointer;background:rgba(255,255,255,.02)}
 .role-opt:hover{border-color:rgba(34,211,238,.35)}
 .role-opt.active{border-color:var(--accent);background:rgba(34,211,238,.1)}
-.role-opt .ico{width:36px;height:36px;margin:0 auto 7px;border-radius:var(--r-sm);display:grid;place-items:center;
+.role-opt .ico{width:36px;height:36px;margin:0 auto var(--s6);border-radius:var(--r-sm);display:grid;place-items:center;
   background:rgba(0,184,92,.14);color:var(--accent-d)}
 .role-opt .ico svg{width:19px;height:19px}
 .role-opt b{display:block;font-family:var(--font-head);font-size:1.02rem}
 .role-opt span{font-size:.75rem;color:var(--text-2)}
-.auth-err{color:var(--danger-tx);font-size:.88rem;margin-bottom:10px;min-height:1.1em}
-.auth-foot{text-align:center;margin-top:14px;font-size:.85rem;color:var(--text-3)}
+.auth-err{color:var(--danger-tx);font-size:.88rem;margin-bottom:var(--s10);min-height:1.1em}
+.auth-foot{text-align:center;margin-top:var(--s12);font-size:.85rem;color:var(--text-3)}
 .auth-foot a{color:var(--accent-d);cursor:pointer}
 
 /* ── App Shell ── */
 .app{display:none;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 .app.show{display:flex}
 .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
-  gap:14px;
+  gap:var(--s12);
   padding:calc(11px + var(--sat)) calc(clamp(14px,4vw,26px) + var(--sar))
           11px calc(clamp(14px,4vw,26px) + var(--sal));
   background:rgba(18,19,28,.93);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--line)}
-.tb-brand{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-weight:800;
+.tb-brand{display:flex;align-items:center;gap:var(--s8);font-family:var(--font-head);font-weight:800;
   font-size:1.15rem;letter-spacing:.5px}
 .tb-brand b{color:var(--accent-d)}
-.tb-live{font-size:.62rem;text-transform:uppercase;letter-spacing:1px;padding:3px 9px;border-radius:var(--r-pille);
+.tb-live{font-size:.62rem;text-transform:uppercase;letter-spacing:1px;padding:var(--s2) var(--s8);border-radius:var(--r-pille);
   background:var(--brand);border:none;color:#fff;font-weight:700;box-shadow:0 2px 10px var(--accent-glow)}
-.tb-user{display:flex;align-items:center;gap:10px}
+.tb-user{display:flex;align-items:center;gap:var(--s10)}
 .tb-who{text-align:right;line-height:1.2;display:none}
 @media(min-width:600px){.tb-who{display:block}}
 .tb-who b{font-family:var(--font-head);font-size:.98rem;display:block}
@@ -383,37 +395,36 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background:var(--brand)}
 .avatar.chef{background:linear-gradient(135deg,var(--warm),#ffa06b);color:#2a0e00}
 .icon-btn{width:40px;height:40px;border-radius:var(--r-sm);border:1px solid var(--line-2);
-  background:rgba(255,255,255,.04);color:var(--text-2);cursor:pointer;display:grid;place-items:center;
-  transition:background .2s,color .2s}
+  background:rgba(255,255,255,.04);color:var(--text-2);cursor:pointer;display:grid;place-items:center}
 .icon-btn:hover{background:rgba(255,255,255,.1);color:var(--text)}
 .icon-btn svg{width:18px;height:18px}
 
 .shell{flex:1;display:flex;min-height:0}
-.side{width:210px;flex-shrink:0;padding:18px 12px;border-right:1px solid var(--line);
-  display:flex;flex-direction:column;gap:3px}
-.tab{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:var(--r-md);cursor:pointer;
+.side{width:210px;flex-shrink:0;padding:var(--s16) var(--s12);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:var(--s2)}
+.tab{display:flex;align-items:center;gap:var(--s10);padding:var(--s12) var(--s12);border-radius:var(--r-md);cursor:pointer;
   color:var(--text-2);font-family:var(--font-head);font-weight:600;font-size:1.02rem;letter-spacing:.3px;
-  background:none;border:none;width:100%;text-align:left;transition:background .2s,color .2s;position:relative}
+  background:none;border:none;width:100%;text-align:left;position:relative}
 .tab svg{width:19px;height:19px;flex-shrink:0}
 .tab:hover{background:rgba(255,255,255,.05);color:var(--text)}
 .tab.active{background:rgba(34,211,238,.12);color:var(--accent-2)}
 .tab .badge{margin-left:auto;background:var(--accent);color:var(--on-accent);font-family:var(--font-body);
   font-weight:700;font-size:.7rem;min-width:19px;height:19px;border-radius:var(--r-pille);display:none;
-  place-items:center;padding:0 5px}
+  place-items:center;padding:0 var(--s4)}
 
 .main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
 .view.show{display:flex}
 .view-head{padding:15px clamp(14px,4vw,28px) 9px;flex-shrink:0;position:relative}
 .view-head h2{font-size:clamp(1.4rem,3.5vw,1.9rem)}
-.view-head p{color:var(--text-2);font-size:.88rem;margin-top:2px}
+.view-head p{color:var(--text-2);font-size:.88rem;margin-top:var(--s2)}
 /* Anlegen-Knopf im Seitenkopf, rechts neben der Überschrift.
    Als absolut gesetzter Knopf lag er über dem Titel „Aufgaben aller
    Studios" – deshalb eine echte Zeile mit zwei Feldern. */
-.vh-line{display:flex;align-items:flex-start;gap:12px}
+.vh-line{display:flex;align-items:flex-start;gap:var(--s12)}
 .vh-text{flex:1;min-width:0}
-.kopf-plus{flex-shrink:0;margin-top:3px;
-  min-height:40px;padding:0 15px;border-radius:var(--r-pille);cursor:pointer;
+.kopf-plus{flex-shrink:0;margin-top:var(--s2);
+  min-height:40px;padding:0 var(--s16);border-radius:var(--r-pille);cursor:pointer;
   border:1px solid var(--accent);background:rgba(34,211,238,.12);color:var(--accent);
   font-family:var(--font-body);font-weight:700;font-size:.84rem;white-space:nowrap;
   transition:transform .25s var(--spring),background .2s}
@@ -429,20 +440,20 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .view-head.shrink p{overflow:hidden;
   transition:opacity .25s var(--ease-ios),max-height .35s var(--ease-ios),margin-top .35s var(--ease-ios);
   max-height:3em;opacity:1}
-.view-head.shrink.tight{padding-top:11px;padding-bottom:7px}
+.view-head.shrink.tight{padding-top:var(--s10);padding-bottom:var(--s6)}
 .view-head.shrink.tight h2{font-size:1.12rem}
 .view-head.shrink.tight p{opacity:0;max-height:0;margin-top:0}
 
 /* Filter in EINER Zeile, seitlich schiebbar – zwei Zeilen Knöpfe wirken
    erschlagend. Der Zähler wandert dafür neben das Suchfeld. */
 #view-todos .chip-row,#docCatRow{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
-  padding-bottom:10px;-webkit-overflow-scrolling:touch}
+  padding-bottom:var(--s10);-webkit-overflow-scrolling:touch}
 #view-todos .chip-row::-webkit-scrollbar,#docCatRow::-webkit-scrollbar{display:none}
 #view-todos .chip-row .chip,#docCatRow .chip{flex:0 0 auto;white-space:nowrap}
 
 /* Filterleiste bleibt beim Scrollen oben kleben */
 .sticky-tools{position:sticky;top:0;z-index:6;
-  padding-top:6px;margin:0 calc(clamp(14px,4vw,28px) * -1);
+  padding-top:var(--s6);margin:0 calc(clamp(14px,4vw,28px) * -1);
   padding-left:clamp(14px,4vw,28px);padding-right:clamp(14px,4vw,28px);
   background:var(--bg);transition:box-shadow .3s var(--ease-ios)}
 .sticky-tools.stuck{box-shadow:0 6px 18px -10px rgba(0,0,0,.45)}
@@ -454,7 +465,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Kanal stünden drei fast gleiche Pillenreihen übereinander.
 
    Die 44 Pixel Fingerziel bleiben — sie sind nur unsichtbar. */
-.chat-channels{position:relative;display:flex;gap:2px;
+.chat-channels{position:relative;display:flex;gap:var(--s2);
   padding:6px clamp(14px,4vw,28px) 10px;
   overflow-x:auto;flex-shrink:0;flex-wrap:nowrap;scrollbar-width:none}
 .chat-channels::-webkit-scrollbar{height:0}
@@ -472,34 +483,31 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* Beim ersten Aufbau soll der Marker DA sein, nicht hingleiten. */
 .chat-channels.sofort::before{transition:none}
 .chan{position:relative;z-index:1;display:inline-flex;align-items:center;
-  min-height:44px;padding:0 14px;border-radius:var(--r-pille);border:none;background:none;
+  min-height:44px;padding:0 var(--s12);border-radius:var(--r-pille);border:none;background:none;
   color:var(--text-3);cursor:pointer;font-size:.86rem;font-weight:600;
-  white-space:nowrap;flex:0 0 auto;
-  transition:color .25s var(--ease-out),transform .3s var(--spring)}
+  white-space:nowrap;flex:0 0 auto}
 .chan:hover{color:var(--text-2)}
-.chan:active{transform:scale(.94)}
 /* Aktiv: nur die Schrift. Die Fläche liefert der gleitende Marker. */
 .chan.active{background:none;color:var(--accent-d);font-weight:700}
-.chat-scroll{flex:1;overflow-y:auto;padding:8px clamp(14px,4vw,28px);display:flex;flex-direction:column;gap:9px}
-.msg{max-width:80%;padding:10px 14px;border-radius:var(--r-md);background:var(--bg-2);border:1px solid var(--line);
+.chat-scroll{flex:1;overflow-y:auto;padding:8px clamp(14px,4vw,28px);display:flex;flex-direction:column;gap:var(--s8)}
+.msg{max-width:80%;padding:var(--s10) var(--s12);border-radius:var(--r-md);background:var(--bg-2);border:1px solid var(--line);
   align-self:flex-start;word-break:break-word}
 .msg.mine{align-self:flex-end;background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.22)}
-.msg .meta{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
+.msg .meta{display:flex;align-items:center;gap:var(--s6);margin-bottom:var(--s2);flex-wrap:wrap}
 /* Folgenachricht derselben Person: rückt näher heran und wiederholt den Kopf nicht */
 .msg.grp{margin-top:-5px;border-top-left-radius:7px}
 .msg.grp.mine{border-top-left-radius:16px;border-top-right-radius:7px}
-.meta-min{margin-top:2px}
+.meta-min{margin-top:var(--s2)}
 .msg .meta .chat-author{white-space:nowrap}
-.msg .meta time{white-space:nowrap}
 .msg .edited{white-space:nowrap}
 .msg .meta b{font-family:var(--font-head);font-size:.9rem;letter-spacing:.2px}
-.tag{font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;border-radius:var(--r-pille);font-weight:700}
+.tag{font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;padding:var(--s2) var(--s6);border-radius:var(--r-pille);font-weight:700}
 .tag.chef{background:rgba(251,191,36,.18);color:var(--warm-tx)}
 .tag.studio{background:rgba(34,211,238,.14);color:var(--accent-2)}
 .msg .meta time{margin-left:auto;color:var(--text-3);font-size:.7rem;white-space:nowrap}
 .msg .body{font-size:.97rem;color:var(--text);white-space:pre-wrap}
-.chat-empty{margin:auto;text-align:center;color:var(--text-3);padding:40px}
-.chat-input{display:flex;gap:9px;
+.chat-empty{margin:auto;text-align:center;color:var(--text-3);padding:var(--s40)}
+.chat-input{display:flex;gap:var(--s8);
   padding:10px calc(clamp(14px,4vw,28px) + var(--sar)) calc(12px + var(--sab)) calc(clamp(14px,4vw,28px) + var(--sal));
   border-top:1px solid var(--line);background:var(--bg-soft);flex-shrink:0}
 /* Höher als vier Zeilen darf das Feld nicht werden – sonst schiebt ein
@@ -507,12 +515,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .chat-input textarea{flex:1;min-height:46px;max-height:104px;resize:none}
 
 /* ── Vorschläge beim Tippen von „@" ── */
-.at-list{display:none;flex-direction:column;gap:2px;flex-shrink:0;
-  margin:0 clamp(14px,4vw,28px) 6px;padding:5px;max-height:212px;overflow-y:auto;
+.at-list{display:none;flex-direction:column;gap:var(--s2);flex-shrink:0;
+  margin:0 clamp(14px,4vw,28px) 6px;padding:var(--s4);max-height:212px;overflow-y:auto;
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-md);
   box-shadow:0 -6px 22px rgba(0,0,0,.18)}
 .at-list.show{display:flex}
-.at-item{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:6px 10px;
+.at-item{display:flex;align-items:center;gap:var(--s10);width:100%;min-height:44px;padding:var(--s6) var(--s10);
   background:none;border:none;border-radius:var(--r-sm);cursor:pointer;text-align:left;color:var(--text)}
 .at-item.on{background:rgba(34,211,238,.12)}
 .at-av{width:28px;height:28px;flex-shrink:0;border-radius:var(--r-rund);display:grid;place-items:center;
@@ -523,25 +531,25 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Todos ── */
 .scroll-area{flex:1;overflow-y:auto;padding:0 clamp(14px,4vw,28px) 24px}
-.todo-progress{display:flex;align-items:center;gap:12px;margin:3px 0 12px;padding:11px 14px;
+.todo-progress{display:flex;align-items:center;gap:var(--s12);margin:var(--s2) 0 var(--s12);padding:var(--s10) var(--s12);
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
 .pbar{flex:1;height:9px;border-radius:var(--r-pille);background:rgba(255,255,255,.07);overflow:hidden}
 .pbar i{display:block;height:100%;border-radius:var(--r-pille);
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0;transition:width .5s var(--ease-out)}
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0}
 .pcount{font-family:var(--font-head);font-weight:800;font-size:1.05rem;white-space:nowrap}
-.todo{display:flex;gap:12px;align-items:flex-start;padding:14px 15px;background:var(--bg-2);
-  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:9px;transition:opacity .2s}
+.todo{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s12) var(--s16);background:var(--bg-2);
+  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8)}
 .todo.done{opacity:.58}
 .todo.done .t-title{text-decoration:line-through;color:var(--text-2)}
 .check{width:26px;height:26px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid var(--line-2);
-  background:none;cursor:pointer;display:grid;place-items:center;margin-top:1px;transition:.2s}
+  background:none;cursor:pointer;display:grid;place-items:center;margin-top:var(--s1)}
 .check svg{width:15px;height:15px;color:var(--on-accent);opacity:0;transform:scale(.5);transition:.2s}
 .todo.done .check{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent}
 .todo.done .check svg{opacity:1;transform:scale(1)}
 .t-body{flex:1;min-width:0}
 .t-title{font-family:var(--font-head);font-weight:700;font-size:1.08rem;letter-spacing:.2px}
-.t-desc{color:var(--text-2);font-size:.9rem;margin-top:2px;white-space:pre-wrap}
-.t-foot{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:6px;font-size:.74rem;color:var(--text-3)}
+.t-desc{color:var(--text-2);font-size:.9rem;margin-top:var(--s2);white-space:pre-wrap}
+.t-foot{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s10);margin-top:var(--s6);font-size:.74rem;color:var(--text-3)}
 .t-foot .done-by{color:var(--accent-d);font-weight:600}
 /* Kamera in der Fußzeile statt eines Knopfes über die volle Breite */
 .t-cam{margin-left:auto;background:none;border:none;color:var(--text-3);cursor:pointer;
@@ -556,26 +564,26 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   transition:transform .25s var(--spring),color .2s,background .2s}
 .t-mehr:active{transform:scale(.88)}
 @media (hover:hover){ .t-mehr:hover{color:var(--accent);background:rgba(255,255,255,.07)} }
-.empty{text-align:center;color:var(--text-3);padding:48px 20px}
-.empty svg{width:42px;height:42px;margin:0 auto 12px;display:block;opacity:.45}
+.empty{text-align:center;color:var(--text-3);padding:var(--s48) var(--s20)}
+.empty svg{width:42px;height:42px;margin:0 auto var(--s12);display:block;opacity:.45}
 
 /* ── Announcements ── */
-.ann{padding:16px 18px;background:var(--bg-2);border:1px solid var(--line);
-  border-left:4px solid var(--warm);border-radius:var(--r-md);margin-bottom:11px}
-.ann-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.ann{padding:var(--s16) var(--s16);background:var(--bg-2);border:1px solid var(--line);
+  border-left:4px solid var(--warm);border-radius:var(--r-md);margin-bottom:var(--s10)}
+.ann-head{display:flex;align-items:center;gap:var(--s8);margin-bottom:var(--s6)}
 .ann-head .pin{width:29px;height:29px;border-radius:var(--r-xs);display:grid;place-items:center;flex-shrink:0;
   background:rgba(251,191,36,.14);color:var(--warm-tx)}
 .ann-head .pin svg{width:15px;height:15px}
 .ann-head b{font-family:var(--font-head);font-size:1rem}
 .ann-head time{margin-left:auto;color:var(--text-3);font-size:.75rem}
 .ann-body{color:var(--text);white-space:pre-wrap;font-size:.97rem}
-.ann-target{display:inline-block;margin-top:8px;font-size:.72rem;color:var(--accent-d);font-weight:600;
-  background:rgba(34,211,238,.1);padding:3px 9px;border-radius:var(--r-pille)}
-.ann-read{display:inline-block;margin-top:8px;margin-left:6px;font-size:.72rem;color:var(--text-2);
-  font-weight:600;background:rgba(255,255,255,.06);padding:3px 9px;border-radius:var(--r-pille)}
+.ann-target{display:inline-block;margin-top:var(--s8);font-size:.72rem;color:var(--accent-d);font-weight:600;
+  background:rgba(34,211,238,.1);padding:var(--s2) var(--s8);border-radius:var(--r-pille)}
+.ann-read{display:inline-block;margin-top:var(--s8);margin-left:var(--s6);font-size:.72rem;color:var(--text-2);
+  font-weight:600;background:rgba(255,255,255,.06);padding:var(--s2) var(--s8);border-radius:var(--r-pille)}
 /* Angeheftete Info: bleibt oben und ist deutlich hervorgehoben */
 .ann.pinned{border-left-color:var(--accent);background:linear-gradient(180deg,rgba(56,189,248,.07),transparent)}
-.ann-pin{background:none;border:none;cursor:pointer;font-size:.95rem;opacity:.35;padding:2px 4px;
+.ann-pin{background:none;border:none;cursor:pointer;font-size:.95rem;opacity:.35;padding:var(--s2) var(--s4);
   transition:opacity .2s,transform .25s var(--spring)}
 .ann-pin.on{opacity:1}
 .ann-pin:active{transform:scale(.88)}
@@ -583,8 +591,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Cards / Chef ── */
 .card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
-  padding:clamp(13px,3.2vw,19px);margin-bottom:12px}
-.card h3{font-size:1.32rem;margin-bottom:2px;letter-spacing:.3px}
+  padding:clamp(13px,3.2vw,19px);margin-bottom:var(--s12)}
+.card h3{font-size:1.32rem;margin-bottom:var(--s2);letter-spacing:.3px}
 
 /* ── Apple-Ecke ──
    Wo der Browser Superellipsen kann, bekommt jede gerundete Fläche die
@@ -610,7 +618,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
        Formular das Absenden aus – man tippt aufs Auge und ist angemeldet
        oder eben nicht.                                                  */
 .pw-wrap{position:relative;display:block;min-width:0}
-.pw-wrap .inp{padding-right:52px}
+.pw-wrap .inp{padding-right:var(--s48)}
 .pw-auge{position:absolute;right:4px;top:50%;transform:translateY(-50%);
   width:44px;height:44px;display:grid;place-items:center;
   background:none;border:none;cursor:pointer;color:var(--text-3);
@@ -635,25 +643,25 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Rechtliches ── */
 #rechtModal{position:fixed;inset:0;z-index:220;display:none;align-items:center;
-  justify-content:center;padding:20px;background:var(--scrim);
+  justify-content:center;padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 #rechtModal.show{display:flex}
 #rechtModal .pm-box{max-width:560px;max-height:88vh;overflow:auto}
 .recht-link{position:relative;display:inline-block;color:var(--accent-d);
-  cursor:pointer;font-weight:600;padding:6px 2px;text-decoration:underline}
+  cursor:pointer;font-weight:600;padding:var(--s6) var(--s2);text-decoration:underline}
 .recht-link::after{content:'';position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
 .recht-block{font-size:.92rem;line-height:1.6}
-.recht-block h4{font-size:1rem;margin:18px 0 6px;text-transform:none;letter-spacing:0}
+.recht-block h4{font-size:1rem;margin:var(--s16) 0 var(--s6);text-transform:none;letter-spacing:0}
 .recht-block h4:first-child{margin-top:0}
-.recht-block p{margin-bottom:9px;color:var(--text-2)}
+.recht-block p{margin-bottom:var(--s8);color:var(--text-2)}
 .recht-block b{color:var(--text)}
-.recht-fehlt{padding:13px 15px;border-radius:var(--r-sm);
+.recht-fehlt{padding:var(--s12) var(--s16);border-radius:var(--r-sm);
   background:rgba(251,78,109,.12);border:1px solid rgba(251,78,109,.3);
-  color:var(--danger-tx);font-weight:600;font-size:.9rem;margin-bottom:14px}
+  color:var(--danger-tx);font-weight:600;font-size:.9rem;margin-bottom:var(--s12)}
 
 /* ── Hinweis: E-Mail bestätigen ── */
-.mail-leiste{display:flex;align-items:center;gap:10px;flex-shrink:0;
+.mail-leiste{display:flex;align-items:center;gap:var(--s10);flex-shrink:0;
   padding:9px clamp(14px,4vw,28px);padding-top:calc(9px + var(--sat));
   background:rgba(251,191,36,.14);border-bottom:1px solid rgba(251,191,36,.34);
   font-size:.86rem;min-height:48px;animation:pinIn .35s var(--ease-ios)}
@@ -661,36 +669,36 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ml-text{flex:1;min-width:0;font-weight:600;color:var(--warm-tx)}
 .ml-btn{flex-shrink:0;position:relative;background:none;border:none;cursor:pointer;
   color:var(--accent-d);font-family:var(--font-body);font-weight:700;
-  font-size:.82rem;padding:4px 2px;white-space:nowrap}
+  font-size:.82rem;padding:var(--s4) var(--s2);white-space:nowrap}
 .ml-btn::after,.ml-zu::after{content:'';position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
 .ml-zu{flex-shrink:0;position:relative;background:none;border:none;cursor:pointer;
-  color:var(--text-3);font-size:.9rem;padding:4px 2px}
+  color:var(--text-3);font-size:.9rem;padding:var(--s4) var(--s2)}
 
 /* ── Firmen (Betreiber) ── */
-.fm-zeile{display:flex;align-items:center;gap:12px;padding:12px 0;
+.fm-zeile{display:flex;align-items:center;gap:var(--s12);padding:var(--s12) 0;
   border-top:1px solid var(--line);min-width:0;flex-wrap:wrap}
 .fm-zeile:first-child{border-top:none}
 .fm-zeile.zu .fm-haupt b{color:var(--text-3);text-decoration:line-through}
 .fm-haupt{flex:1;min-width:140px}
 .fm-haupt b{display:block;font-size:1rem}
 .fm-du{font-size:.68rem;font-weight:700;color:var(--accent-d);
-  background:var(--accent-glow);padding:2px 7px;border-radius:var(--r-pille);vertical-align:middle}
+  background:var(--accent-glow);padding:var(--s2) var(--s6);border-radius:var(--r-pille);vertical-align:middle}
 .fm-sub{display:block;font-size:.74rem;color:var(--text-3);font-variant-numeric:tabular-nums}
-.fm-zahlen{display:flex;gap:14px;font-size:.78rem;color:var(--text-3);
+.fm-zahlen{display:flex;gap:var(--s12);font-size:.78rem;color:var(--text-3);
   font-variant-numeric:tabular-nums;white-space:nowrap}
 .fm-zahlen b{color:var(--text);font-size:.92rem}
 /* Zwei Knöpfe nebeneinander. 44px Höhe, weil ein Fingerziel darunter
    auf einem Handy nicht zuverlässig zu treffen ist — und „löschen"
    daneben zu treffen wäre besonders ärgerlich. */
-.fm-knoepfe{display:flex;gap:14px;align-items:center}
+.fm-knoepfe{display:flex;gap:var(--s12);align-items:center}
 .fm-knoepfe .mini-x{min-height:44px;display:inline-flex;align-items:center}
 .mini-x.weg{color:var(--danger-tx)}
 /* „Wer hakt ab?" — sitzt über der Liste, nicht in jedem Eintrag.
    44px hoch, weil das an einem Studio-Tablet mit nassen Händen
    getroffen werden muss. */
-.pp-wer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  margin:10px 0 4px;padding:10px 12px;border-radius:var(--r-sm);
+.pp-wer{display:flex;align-items:center;gap:var(--s10);flex-wrap:wrap;
+  margin:var(--s10) 0 var(--s4);padding:var(--s10) var(--s12);border-radius:var(--r-sm);
   background:var(--bg-3, rgba(255,255,255,.04));border:1px solid var(--line)}
 .pp-wer label{font-size:.78rem;color:var(--text-3);white-space:nowrap;margin:0}
 .pp-wer .inp{flex:1;min-width:120px;min-height:44px}
@@ -700,40 +708,40 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* Der Grund an einer offenen Aufgabe: warm, nicht rot. Es ist eine
    Erklärung, kein Fehler — wer „Mittel war leer" schreibt, hat das
    Richtige getan. */
-.t-grund{margin:6px 0 0;padding:7px 10px;border-radius:var(--r-xs);
+.t-grund{margin:var(--s6) 0 0;padding:var(--s6) var(--s10);border-radius:var(--r-xs);
   background:rgba(251,191,36,.10);border-left:3px solid var(--warm);
   font-size:.82rem;color:var(--text-2);line-height:1.4}
 .t-grund-wer{color:var(--text-3);font-size:.74rem}
 .wk-art{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--text-3);background:rgba(255,255,255,.07);padding:2px 6px;border-radius:var(--r-pille)}
+  color:var(--text-3);background:rgba(255,255,255,.07);padding:var(--s2) var(--s6);border-radius:var(--r-pille)}
 /* Gesperrte Reiter: sichtbar, aber sichtbar zu. Verstecken wäre
    unehrlich (die Ansicht ist ja da) und verkauft nichts. */
 .chef-tab.abo-zu{opacity:.55}
 .abo-schloss{font-size:.62rem;font-weight:700;letter-spacing:.06em;
   text-transform:uppercase;color:var(--warm-tx);background:rgba(251,191,36,.14);
-  padding:2px 7px;border-radius:var(--r-pille);vertical-align:middle;margin-left:6px}
+  padding:var(--s2) var(--s6);border-radius:var(--r-pille);vertical-align:middle;margin-left:var(--s6)}
 /* Die Abo-Zeile steht auf ganzer Breite unter den Zahlen: sie ist das,
    was der Betreiber am häufigsten sucht, und darf nicht zwischen den
    Knöpfen untergehen. */
-.fm-abo{flex-basis:100%;display:flex;align-items:center;gap:12px;
-  font-size:.8rem;padding-top:2px}
+.fm-abo{flex-basis:100%;display:flex;align-items:center;gap:var(--s12);
+  font-size:.8rem;padding-top:var(--s2)}
 .fm-abo .mini-x{min-height:44px;display:inline-flex;align-items:center}
 .abo-leer{color:var(--text-3);font-style:italic}
 .abo-wert{font-weight:600}
 .abo-gratis{color:var(--accent-d)}
 .abo-test{color:var(--warm-tx)}
 .abo-gekuendigt{color:var(--danger-tx)}
-.fn-ok{padding:14px 16px;border-radius:var(--r-sm);
+.fn-ok{padding:var(--s12) var(--s16);border-radius:var(--r-sm);
   background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.32)}
-.fn-ok p{font-size:.86rem;color:var(--text-2);margin:6px 0 12px}
-.fn-feld{display:flex;align-items:baseline;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+.fn-ok p{font-size:.86rem;color:var(--text-2);margin:var(--s6) 0 var(--s12)}
+.fn-feld{display:flex;align-items:baseline;gap:var(--s10);margin-bottom:var(--s6);flex-wrap:wrap}
 .fn-feld span{font-size:.74rem;color:var(--text-3);min-width:92px}
 .fn-feld code{font-family:ui-monospace,monospace;font-size:.86rem;
-  background:var(--bg-soft);padding:4px 9px;border-radius:var(--r-xs);
+  background:var(--bg-soft);padding:var(--s4) var(--s8);border-radius:var(--r-xs);
   word-break:break-all;user-select:all}
 
 /* ── Studios verwalten ── */
-.st-zeile{display:flex;align-items:center;gap:10px;padding:11px 0;
+.st-zeile{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) 0;
   border-top:1px solid var(--line);min-width:0}
 .st-zeile:first-child{border-top:none}
 .st-zeile.zu .st-haupt b{color:var(--text-3);text-decoration:line-through}
@@ -746,41 +754,41 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Aushänge und schwarzes Brett standen bisher nur als Hinweiszeile da
    („2 neue Infos ›"). Wer wissen wollte, worum es geht, musste klicken.
    Hier steht der Text – gekürzt, aber lesbar. */
-.karten-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
-  margin-bottom:8px}
+.karten-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s10);
+  margin-bottom:var(--s8)}
 /* Ohne min-width:0 schiebt eine lange Überschrift den Link raus oder bricht
    selbst um – „Schwarzes Brett" stand deshalb zweizeilig. */
 .karten-kopf h3{margin-bottom:0;min-width:0}
 .mini-link{flex-shrink:0;position:relative;background:none;border:none;cursor:pointer;
   color:var(--accent-d);font-family:var(--font-body);font-weight:700;font-size:.8rem;
-  padding:4px 2px;white-space:nowrap;transition:opacity .2s}
+  padding:var(--s4) var(--s2);white-space:nowrap;transition:opacity .2s}
 .mini-link:active{opacity:.55}
 /* Das Wort ist klein, die Trefferfläche darf es nicht sein. */
 .mini-link::after{content:'';position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
-.lese-eintrag{padding:9px 0;border-top:1px solid var(--line)}
-.lese-eintrag:first-child{border-top:none;padding-top:2px}
+.lese-eintrag{padding:var(--s8) 0;border-top:1px solid var(--line)}
+.lese-eintrag:first-child{border-top:none;padding-top:var(--s2)}
 .lese-text{font-size:.92rem;line-height:1.5;color:var(--text);
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.lese-fuss{margin-top:3px;font-size:.75rem;color:var(--text-3);
-  display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.lese-fuss{margin-top:var(--s2);font-size:.75rem;color:var(--text-3);
+  display:flex;align-items:center;gap:var(--s6);flex-wrap:wrap}
 /* Ein Punkt statt des Wortes „neu": schmaler, und die Farbe sagt es schon. */
 .lese-neu{flex-shrink:0;width:7px;height:7px;border-radius:var(--r-rund);background:var(--accent);
   box-shadow:0 0 0 3px var(--accent-glow)}
-.lese-leer{font-size:.88rem;color:var(--text-3);padding:2px 0}
+.lese-leer{font-size:.88rem;color:var(--text-3);padding:var(--s2) 0}
 
 /* ── Aufklappbare Abschnitte ──
    Der Grund: die Seiten waren eine einzige lange Kartenwand. Alles gleich
    laut, nichts im Vordergrund. Jetzt steht oben das, wofür man die Seite
    öffnet – der Rest ist zusammengeklappt und einen Tipp entfernt.
    Was offen ist, merkt sich das Gerät. */
-.card.fold > .fold-head{display:flex;align-items:center;gap:11px;cursor:pointer;
+.card.fold > .fold-head{display:flex;align-items:center;gap:var(--s10);cursor:pointer;
   user-select:none;-webkit-user-select:none;margin:0;
-  padding:2px 0;border-radius:var(--r-sm);transition:color .2s}
+  padding:var(--s2) 0;border-radius:var(--r-sm);transition:color .2s}
 .card.fold > .fold-head:hover{color:var(--accent-d)}
 .card.fold > .fold-head > *{margin-bottom:0}
 .fold-head .fold-main{flex:1;min-width:0;display:flex;align-items:baseline;
-  gap:10px;flex-wrap:wrap}
+  gap:var(--s10);flex-wrap:wrap}
 /* Steckt die Überschrift in einer eigenen Zeile (mit Zähler daneben),
    muss die mitwachsen – sonst rutscht der Pfeil in die nächste Zeile. */
 .fold-head .fold-main > div{flex:1;min-width:0}
@@ -792,79 +800,79 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .card.fold.zu{padding-bottom:clamp(14px,3vw,18px)}
 .fold-body{overflow:hidden;transition:height .34s var(--ease-out),opacity .26s var(--ease-out)}
 .card.fold.zu > .fold-body{height:0 !important;opacity:0}
-.card.fold:not(.zu) > .fold-body{opacity:1;padding-top:2px}
+.card.fold:not(.zu) > .fold-body{opacity:1;padding-top:var(--s2)}
 /* Kleine Zahl neben der Überschrift, damit man auch zugeklappt sieht,
    ob dort etwas ist */
 .fold-num{font-size:.76rem;font-weight:700;color:var(--text-3);
   background:var(--bg-soft);border:1px solid var(--line);
-  padding:2px 9px;border-radius:var(--r-pille);white-space:nowrap}
+  padding:var(--s2) var(--s8);border-radius:var(--r-pille);white-space:nowrap}
 .fold-num.warn{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:var(--warm-tx)}
 .fold-num.dringend{background:rgba(251,78,109,.16);border-color:rgba(251,78,109,.4);color:var(--danger-tx)}
-.card .hint{color:var(--text-2);font-size:.88rem;margin-bottom:14px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.card .hint{color:var(--text-2);font-size:.88rem;margin-bottom:var(--s12)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s12)}
 @media(max-width:560px){.row{grid-template-columns:1fr}}
-.studio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
-.studio-tile{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md);padding:13px 14px}
-.studio-tile b{font-family:var(--font-head);font-size:1rem;display:block;margin-bottom:7px}
-.studio-tile .mini{height:7px;border-radius:var(--r-pille);background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:5px}
+.studio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--s10)}
+.studio-tile{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md);padding:var(--s12) var(--s12)}
+.studio-tile b{font-family:var(--font-head);font-size:1rem;display:block;margin-bottom:var(--s6)}
+.studio-tile .mini{height:7px;border-radius:var(--r-pille);background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:var(--s4)}
 .studio-tile .mini i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0}
 .studio-tile small{color:var(--text-2);font-size:.76rem}
 /* Chef-Dashboard */
-.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px}
-.dash-tile{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 15px}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s10);margin-bottom:var(--s16)}
+.dash-tile{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r-md);padding:var(--s12) var(--s16)}
 .dash-tile .dn{font-family:var(--font-head);font-weight:800;font-size:1.7rem;line-height:1;
   background:linear-gradient(135deg,var(--accent-d),var(--accent-2));-webkit-background-clip:text;
   background-clip:text;-webkit-text-fill-color:transparent}
 .dash-tile .dn.warn{background:none;-webkit-text-fill-color:initial;color:var(--danger-tx)}
-.dash-tile .dl{color:var(--text-2);font-size:.8rem;margin-top:5px}
-.dash-bday{display:none;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 15px;margin-bottom:16px}
-.dash-bday-h{font-family:var(--font-head);font-weight:700;font-size:1rem;margin-bottom:7px}
-.dash-bday-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-size:.9rem}
+.dash-tile .dl{color:var(--text-2);font-size:.8rem;margin-top:var(--s4)}
+.dash-bday{display:none;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r-md);padding:var(--s12) var(--s16);margin-bottom:var(--s16)}
+.dash-bday-h{font-family:var(--font-head);font-weight:700;font-size:1rem;margin-bottom:var(--s6)}
+.dash-bday-row{display:flex;justify-content:space-between;gap:var(--s10);padding:var(--s4) 0;font-size:.9rem}
 .dash-bday-row span{color:var(--text-2);font-size:.84rem;white-space:nowrap}
 /* Suche */
 #searchOverlay{position:fixed;inset:0;z-index:200;display:none;justify-content:center;align-items:flex-start;
-  padding:56px 16px;background:rgba(6,10,7,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  padding:var(--s56) var(--s16);background:rgba(6,10,7,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 #searchOverlay.show{display:flex}
 .search-box{width:100%;max-width:560px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-lg);
   box-shadow:var(--shadow-lg);overflow:hidden;max-height:78vh;display:flex;flex-direction:column}
-.search-bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.search-bar{display:flex;align-items:center;gap:var(--s10);padding:var(--s12) var(--s12);border-bottom:1px solid var(--line)}
 .search-bar svg{width:20px;height:20px;color:var(--text-3);flex-shrink:0}
 .search-bar input{flex:1;background:none;border:none;color:var(--text);font-size:1rem;outline:none}
-.search-bar button{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:1.15rem;padding:4px}
-#searchResults{overflow-y:auto;padding:6px}
-.sr{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r-sm);cursor:pointer}
+.search-bar button{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:1.15rem;padding:var(--s4)}
+#searchResults{overflow-y:auto;padding:var(--s6)}
+.sr{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-sm);cursor:pointer}
 .sr:hover{background:rgba(255,255,255,.05)}
 .sr-type{font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:var(--accent-d);
-  background:rgba(34,211,238,.1);padding:3px 7px;border-radius:var(--r-pille);flex-shrink:0}
+  background:rgba(34,211,238,.1);padding:var(--s2) var(--s6);border-radius:var(--r-pille);flex-shrink:0}
 .sr-main{flex:1;min-width:0}
 .sr-main b{display:block;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-body);font-weight:600}
 .sr-main span{font-size:.78rem;color:var(--text-2)}
-.search-empty{padding:24px;text-align:center;color:var(--text-3);font-size:.9rem}
+.search-empty{padding:var(--s24);text-align:center;color:var(--text-3);font-size:.9rem}
 /* Direktnachrichten */
 #dmConvo{flex:1;min-height:0;flex-direction:column}
-.dm-head{display:flex;align-items:center;gap:10px;padding:9px clamp(14px,4vw,28px);
+.dm-head{display:flex;align-items:center;gap:var(--s10);padding:9px clamp(14px,4vw,28px);
   border-bottom:1px solid var(--line);flex-shrink:0}
 .dm-head b{font-family:var(--font-head);font-size:1.1rem}
-.dm-person{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--r-sm);cursor:pointer}
+.dm-person{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-sm);cursor:pointer}
 .dm-person:hover{background:rgba(255,255,255,.05)}
 .dm-person .who2{flex:1;min-width:0}
 .dm-person .who2 b{display:block;font-size:.98rem}
 .dm-person .who2 span{font-size:.78rem;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 /* Onboarding */
-.ob-item{display:flex;align-items:center;gap:9px;padding:9px 2px;font-size:.96rem;cursor:pointer}
+.ob-item{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s2);font-size:.96rem;cursor:pointer}
 .ob-item input{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0}
 .ob-item.done span{text-decoration:line-through;color:var(--text-2)}
-.ob-erow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.ob-erow{display:flex;align-items:center;gap:var(--s10);padding:var(--s8) 0;border-top:1px solid var(--line)}
 .ob-erow:first-child{border-top:none}
 .ob-erow span{flex:1;font-size:.94rem}
 /* DM-Verlauf & Checklisten */
 .dm-section{font-size:.68rem;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);
-  font-weight:700;padding:10px 4px 4px}
+  font-weight:700;padding:var(--s10) var(--s4) var(--s4)}
 .dm-unread{width:11px;height:11px;border-radius:var(--r-rund);background:var(--warm);flex-shrink:0}
 .dm-time{font-size:.72rem;color:var(--text-3);white-space:nowrap;flex-shrink:0}
-.dm-checklist{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.22);border-radius:var(--r-sm);padding:10px 12px;margin-top:4px}
-.dm-cl-h{font-family:var(--font-head);font-weight:700;font-size:.92rem;margin-bottom:6px;color:var(--accent-2)}
-.dm-cl-item{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:.95rem;cursor:pointer}
+.dm-checklist{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.22);border-radius:var(--r-sm);padding:var(--s10) var(--s12);margin-top:var(--s4)}
+.dm-cl-h{font-family:var(--font-head);font-weight:700;font-size:.92rem;margin-bottom:var(--s6);color:var(--accent-2)}
+.dm-cl-item{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) var(--s2);font-size:.95rem;cursor:pointer}
 .dm-cl-item input{width:17px;height:17px;accent-color:var(--accent);flex-shrink:0}
 .dm-cl-item.done span{text-decoration:line-through;color:var(--text-2)}
 /* Profil-Editor */
@@ -880,65 +888,65 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    richtig, sie hatte nur keine Wirkung. */
 #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
-  padding:20px;background:var(--scrim);
+  padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 #profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
-  border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
+  border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
    dann 124 Pixel weiterscrollen, um zu speichern. Jetzt klebt der Knopf am
    unteren Rand und ist immer erreichbar. */
-#profileModal #pmSave{position:sticky;bottom:-24px;z-index:3;margin-top:16px}
+#profileModal #pmSave{position:sticky;bottom:-24px;z-index:3;margin-top:var(--s16)}
 #profileModal #pmSave::after{content:'';position:absolute;left:-24px;right:-24px;bottom:-24px;
   height:24px;background:var(--bg-2);z-index:-1}
-.pm-colors{display:flex;gap:9px;flex-wrap:wrap}
+.pm-colors{display:flex;gap:var(--s8);flex-wrap:wrap}
 .pm-color{width:34px;height:34px;border-radius:var(--r-rund);cursor:pointer;border:3px solid transparent;transition:transform .15s}
 .pm-color:hover{transform:scale(1.1)}
 .pm-color.sel{border-color:var(--text)}
 #todoEditModal .pm-box{max-height:88vh;overflow:auto}
-.poll{margin-top:8px;padding:12px 13px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md)}
-.poll-q{font-family:var(--font-head);font-weight:700;font-size:1rem;margin-bottom:9px}
+.poll{margin-top:var(--s8);padding:var(--s12) var(--s12);background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md)}
+.poll-q{font-family:var(--font-head);font-weight:700;font-size:1rem;margin-bottom:var(--s8)}
 .poll-opt{position:relative;display:flex;align-items:center;min-height:44px;width:100%;text-align:left;background:none;border:1.5px solid var(--line-2);
-  border-radius:var(--r-sm);padding:9px 12px;margin-bottom:7px;cursor:pointer;overflow:hidden;
+  border-radius:var(--r-sm);padding:var(--s8) var(--s12);margin-bottom:var(--s6);cursor:pointer;overflow:hidden;
   color:var(--text);font-size:.9rem;transition:border-color .2s}
 .poll-opt:hover{border-color:var(--accent)}
 .poll-opt.mine{border-color:var(--accent);font-weight:700}
 .poll-fill{position:absolute;inset:0 auto 0 0;background:var(--accent-glow);z-index:0;transition:width .45s var(--ease-out)}
-.poll-lab{position:relative;z-index:1;display:flex;justify-content:space-between;gap:10px}
-.poll-foot{font-size:.74rem;color:var(--text-3);margin-top:2px}
-.dev-item{display:flex;gap:10px;align-items:flex-start;padding:13px 14px;background:var(--bg-soft);
-  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:9px;cursor:pointer;
+.poll-lab{position:relative;z-index:1;display:flex;justify-content:space-between;gap:var(--s10)}
+.poll-foot{font-size:.74rem;color:var(--text-3);margin-top:var(--s2)}
+.dev-item{display:flex;gap:var(--s10);align-items:flex-start;padding:var(--s12) var(--s12);background:var(--bg-soft);
+  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8);cursor:pointer;
   transition:transform .2s var(--ease-out),border-color .2s}
 .dev-item:hover{transform:translateY(-1px);border-color:var(--line-2)}
 .dev-body{flex:1;min-width:0}
 .dev-title{font-family:var(--font-head);font-weight:700;font-size:1.05rem;letter-spacing:.2px}
-.dev-meta{margin-top:4px;font-size:.76rem;color:var(--text-3);line-height:1.5}
-.dev-warn{display:inline-block;margin-top:5px;font-size:.72rem;font-weight:700;
-  padding:3px 8px;border-radius:var(--r-pille);background:rgba(251,78,109,.16);color:var(--danger-tx)}
-.dev-st{flex-shrink:0;font-size:.72rem;font-weight:700;padding:4px 9px;border-radius:var(--r-pille);white-space:nowrap}
+.dev-meta{margin-top:var(--s4);font-size:.76rem;color:var(--text-3);line-height:1.5}
+.dev-warn{display:inline-block;margin-top:var(--s4);font-size:.72rem;font-weight:700;
+  padding:var(--s2) var(--s8);border-radius:var(--r-pille);background:rgba(251,78,109,.16);color:var(--danger-tx)}
+.dev-st{flex-shrink:0;font-size:.72rem;font-weight:700;padding:var(--s4) var(--s8);border-radius:var(--r-pille);white-space:nowrap}
 .dev-st.ok{background:rgba(0,224,110,.14);color:var(--accent-d)}
 .dev-st.defekt{background:rgba(251,78,109,.16);color:var(--danger-tx)}
 .dev-st.wartung{background:rgba(251,191,36,.16);color:var(--warm-tx)}
-.dev-log{padding:10px 12px;background:var(--bg-soft);border:1px solid var(--line);
-  border-radius:var(--r-sm);margin-bottom:8px}
+.dev-log{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
+  border-radius:var(--r-sm);margin-bottom:var(--s8)}
 .dev-log-text{font-size:.92rem;white-space:pre-wrap;word-break:break-word}
-.dev-log-foot{margin-top:5px;font-size:.72rem;color:var(--text-3)}
-.dev-log img{margin-top:8px;border-radius:var(--r-sm);max-width:150px;max-height:150px;cursor:pointer}
-.pm-photo-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.dev-log-foot{margin-top:var(--s4);font-size:.72rem;color:var(--text-3)}
+.dev-log img{margin-top:var(--s8);border-radius:var(--r-sm);max-width:150px;max-height:150px;cursor:pointer}
+.pm-photo-row{display:flex;align-items:center;gap:var(--s12);margin-bottom:var(--s6)}
 .pm-photo-row .avatar{width:56px;height:56px;font-size:1.3rem;flex-shrink:0}
 
 /* ── Mobile nav ── */
 .mobnav{display:none}
 @media(max-width:820px){
   .side{display:none}
-  .main{padding-bottom:72px}
+  .main{padding-bottom:var(--s72)}
   .mobnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
     background:rgba(18,19,28,.96);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
     border-top:1px solid var(--line);
     padding:5px calc(4px + var(--sar)) calc(5px + var(--sab)) calc(4px + var(--sal))}
   /* Bei 9 Bereichen wird es sonst zu eng: Leiste ist seitlich verschiebbar,
      die Einträge behalten dadurch lesbare Größe und große Tippflächen. */
-  .mobnav{position:fixed;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .mobnav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .mobnav::-webkit-scrollbar{display:none}
   /* Die Füllung sprang bisher von Bereich zu Bereich. Jetzt gleitet sie –
      dieselbe Bewegung wie in der Kanalreihe und bei den Reitern, damit
@@ -953,36 +961,36 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
                height .42s var(--ease-ios),opacity .2s}
   .mobnav.sofort::before{transition:none}
   .mobnav button{flex:0 0 auto;min-width:74px;background:none;border:none;color:var(--text-3);
-    cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;
-    padding:8px 6px;border-radius:var(--r-md);font-size:.7rem;font-weight:600;position:relative;
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:var(--s4);
+    padding:var(--s8) var(--s6);border-radius:var(--r-md);font-size:.7rem;font-weight:600;position:relative;
     z-index:1;transition:color .2s,transform .3s var(--spring)}
   .mobnav button:active{transform:scale(.9)}
   .mobnav button svg{width:22px;height:22px}
   .mobnav button.active{color:var(--accent);font-weight:700}
   .mobnav .badge{position:absolute;top:1px;right:50%;transform:translateX(15px);
     background:var(--accent);color:var(--on-accent);font-size:.58rem;font-weight:700;min-width:15px;height:15px;
-    border-radius:var(--r-pille);display:none;place-items:center;padding:0 3px}
+    border-radius:var(--r-pille);display:none;place-items:center;padding:0 var(--s2)}
 }
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);z-index:90;
-  background:var(--bg-2);border:1px solid var(--accent-d);color:var(--text);padding:11px 20px;
+  background:var(--bg-2);border:1px solid var(--accent-d);color:var(--text);padding:var(--s10) var(--s20);
   border-radius:var(--r-pille);box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;
-  transition:.3s var(--ease-out);font-weight:600;font-size:.9rem;white-space:nowrap}
+  font-weight:600;font-size:.9rem;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* Rückgängig-Leiste (Löschen ist damit nicht mehr endgültig) */
 .undobar{position:fixed;bottom:calc(80px + var(--sab));left:50%;
   transform:translateX(-50%) translateY(16px);z-index:95;display:none;
-  align-items:center;gap:14px;background:var(--bg-2);border:1px solid var(--line-2);
-  color:var(--text);padding:10px 12px 10px 18px;border-radius:var(--r-pille);
+  align-items:center;gap:var(--s12);background:var(--bg-2);border:1px solid var(--line-2);
+  color:var(--text);padding:var(--s10) var(--s12) var(--s10) var(--s16);border-radius:var(--r-pille);
   box-shadow:var(--shadow-lg);opacity:0;font-size:.88rem;font-weight:600;
   max-width:calc(100vw - 32px);
   transition:opacity .3s var(--ease-out),transform .44s var(--spring)}
 .undobar.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
 .undobar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .undobar button{flex-shrink:0;background:var(--accent);border:none;color:var(--on-accent);
-  font-family:var(--font-body);font-weight:700;font-size:.84rem;padding:7px 15px;
+  font-family:var(--font-body);font-weight:700;font-size:.84rem;padding:var(--s6) var(--s16);
   border-radius:var(--r-pille);cursor:pointer;transition:transform .25s var(--spring)}
 .undobar button:active{transform:scale(.94)}
 
@@ -1004,17 +1012,17 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 }
 
 /* ── Foto-Anhänge im Chat ── */
-.msg .msg-img{margin-top:6px;border-radius:var(--r-sm);max-width:240px;max-height:280px;width:auto;
+.msg .msg-img{margin-top:var(--s6);border-radius:var(--r-sm);max-width:240px;max-height:280px;width:auto;
   display:block;cursor:pointer;border:1px solid var(--line)}
 .attach-wrap{position:relative;flex-shrink:0}
 .attach-menu{position:absolute;bottom:calc(100% + 8px);left:0;z-index:60;min-width:168px;
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-md);
-  padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.28);
+  padding:var(--s6);box-shadow:0 18px 40px rgba(0,0,0,.28);
   opacity:0;visibility:hidden;transform:translateY(8px) scale(.96);
   transition:opacity .2s var(--ease-out),transform .26s var(--spring),visibility .2s}
 .attach-menu.show{opacity:1;visibility:visible;transform:none}
-.attach-menu button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;
-  color:var(--text);font-size:.94rem;text-align:left;padding:0 12px;min-height:44px;
+.attach-menu button{display:flex;align-items:center;gap:var(--s10);width:100%;background:none;border:none;
+  color:var(--text);font-size:.94rem;text-align:left;padding:0 var(--s12);min-height:44px;
   border-radius:var(--r-sm);cursor:pointer}
 .attach-menu button:hover{background:var(--bg-soft);color:var(--accent-d)}
 .attach-btn{width:46px;min-width:46px;height:46px;border-radius:var(--r-sm);border:1.5px solid var(--line-2);
@@ -1024,7 +1032,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .attach-btn svg{width:20px;height:20px}
 .hidden-file{display:none}
 /* Vorschau eines ausgewählten Bildes vor dem Senden */
-.img-preview{display:none;align-items:center;gap:10px;padding:8px clamp(14px,4vw,28px);
+.img-preview{display:none;align-items:center;gap:var(--s10);padding:8px clamp(14px,4vw,28px);
   background:var(--bg-soft);border-top:1px solid var(--line)}
 .img-preview.show{display:flex}
 .img-preview img{height:54px;width:54px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line-2)}
@@ -1033,12 +1041,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   width:34px;height:34px;cursor:pointer;flex-shrink:0;font-size:1.1rem}
 
 /* ── Foto bei Aufgaben ── */
-.t-photo{margin-top:8px;border-radius:var(--r-sm);max-width:160px;max-height:160px;cursor:pointer;
+.t-photo{margin-top:var(--s8);border-radius:var(--r-sm);max-width:160px;max-height:160px;cursor:pointer;
   border:1px solid var(--line);display:block}
 
 /* ── Bild-Lightbox (Vollbild) ── */
 #lightbox{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.9);padding:20px;cursor:zoom-out}
+  background:rgba(0,0,0,.9);padding:var(--s20);cursor:zoom-out}
 #lightbox.show{display:flex}
 #lightbox img{max-width:100%;max-height:100%;border-radius:var(--r-xs)}
 #lightbox .lb-close{position:absolute;top:16px;right:18px;width:42px;height:42px;border-radius:var(--r-rund);
@@ -1047,8 +1055,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ── Benachrichtigungs-Banner ── */
 /* Einzeilig und schmal: Der Hinweis stand vorher fünf Zeilen hoch mitten im
    Chat und nahm dem Verlauf 200 Pixel – für einen Satz, den man einmal liest. */
-.notif-banner{display:none;align-items:center;gap:10px;margin:6px clamp(14px,4vw,28px) 6px;
-  padding:7px 12px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:var(--r-sm)}
+.notif-banner{display:none;align-items:center;gap:var(--s10);margin:6px clamp(14px,4vw,28px) 6px;
+  padding:var(--s6) var(--s12);background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:var(--r-sm)}
 .notif-banner.show{display:flex}
 .notif-banner svg{width:18px;height:18px;color:var(--accent-d);flex-shrink:0}
 .notif-banner .nb-txt{flex:1;font-size:.8rem;color:var(--text-2);
@@ -1060,20 +1068,20 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .notif-banner button{flex-shrink:0}
 
 /* ── Studio-Mehrfachauswahl (Registrierung) ── */
-.studio-checks{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:220px;overflow-y:auto;
-  padding:4px;margin-bottom:4px}
-.studio-check{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1.5px solid var(--line-2);
-  border-radius:var(--r-sm);cursor:pointer;font-size:.9rem;background:rgba(255,255,255,.02);transition:.15s;
+.studio-checks{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);max-height:220px;overflow-y:auto;
+  padding:var(--s4);margin-bottom:var(--s4)}
+.studio-check{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s10);border:1.5px solid var(--line-2);
+  border-radius:var(--r-sm);cursor:pointer;font-size:.9rem;background:rgba(255,255,255,.02);
   user-select:none}
 .studio-check.on{border-color:var(--accent);background:rgba(34,211,238,.1);color:var(--accent-2)}
 /* Funktionen an/aus – eine Zeile je Funktion, mit dem Was darunter.
    Ohne die zweite Zeile müsste der Chef raten, was „Übergabe" ist. */
-.feat-row{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;margin-bottom:7px;
+.feat-row{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s10) var(--s12);margin-bottom:var(--s6);
   border:1.5px solid var(--line-2);border-radius:var(--r-sm);cursor:pointer;
   transition:border-color .16s,background .16s,opacity .16s;opacity:.55}
 .feat-row.on{border-color:var(--accent);background:rgba(34,211,238,.08);opacity:1}
-.feat-row input{accent-color:var(--accent);width:18px;height:18px;flex-shrink:0;margin:2px 0 0}
-.feat-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.feat-row input{accent-color:var(--accent);width:18px;height:18px;flex-shrink:0;margin:var(--s2) 0 0}
+.feat-txt{display:flex;flex-direction:column;gap:var(--s2);min-width:0}
 .feat-txt b{font-size:.95rem;font-weight:650}
 .feat-txt b em{font-style:normal;font-weight:500;font-size:.78rem;color:var(--text-3)}
 .feat-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.35}
@@ -1094,20 +1102,20 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Haken in der App. */
 .cert-bestaetigt{animation:checkPop .45s var(--spring)}
 
-.setup-zeile{display:flex;align-items:flex-start;gap:10px;padding:9px 0;
+.setup-zeile{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s8) 0;
   border-bottom:1px solid var(--line-2)}
 .setup-zeile:last-child{border-bottom:none}
 .setup-zeile.fertig{opacity:.5}
 .setup-hak{flex-shrink:0;width:20px;text-align:center;font-weight:700;color:var(--text-3)}
 .setup-zeile.fertig .setup-hak{color:var(--accent)}
-.setup-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.setup-txt{display:flex;flex-direction:column;gap:var(--s2);min-width:0}
 .setup-txt b{font-size:.93rem;font-weight:650}
 .setup-zeile.fertig .setup-txt b{font-weight:500;text-decoration:line-through}
 .setup-txt i{font-style:normal;font-size:.82rem;color:var(--text-3);line-height:1.4}
 .setup-txt i em{font-style:normal;color:var(--accent-2);white-space:nowrap}
 /* Farbauswahl der Firma */
-.marke-wahl{display:flex;flex-wrap:wrap;gap:8px}
-.marke-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:var(--r-pille);
+.marke-wahl{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.marke-chip{display:inline-flex;align-items:center;gap:var(--s6);padding:var(--s6) var(--s12);border-radius:var(--r-pille);
   border:1px solid var(--line);background:none;color:var(--text-2);font-size:.85rem;cursor:pointer}
 .marke-chip .marke-punkt{width:13px;height:13px;border-radius:var(--r-rund);background:var(--mc)}
 .marke-chip.an{border-color:var(--mc);color:var(--text);font-weight:650}
@@ -1117,22 +1125,22 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pp-item.pausiert .pp-title{text-decoration:none;font-style:italic}
 .pp-pauseico{flex-shrink:0;width:34px;text-align:center;font-size:1.05rem;color:var(--text-3)}
 .pp-pausetxt{color:var(--warm-tx,var(--text-3));font-size:.8rem}
-.pp-pause{margin-left:10px;padding:1px 9px;border-radius:var(--r-pille);font-size:.72rem;
+.pp-pause{margin-left:var(--s10);padding:var(--s1) var(--s8);border-radius:var(--r-pille);font-size:.72rem;
   border:1px solid var(--line);background:none;color:var(--text-3);cursor:pointer}
 .pp-pause:active{transform:scale(.92)}
 /* „Ich übernehme das" sieht aus wie die Zuweisungs-Marke daneben —
    es wird ja gleich eine. */
-.t-nimm{display:inline-flex;align-items:center;padding:2px 9px;border-radius:var(--r-pille);
+.t-nimm{display:inline-flex;align-items:center;padding:var(--s2) var(--s8);border-radius:var(--r-pille);
   font-size:.66rem;font-weight:700;border:1px dashed var(--line-2);background:none;
   color:var(--text-3);cursor:pointer;letter-spacing:.01em}
 .t-nimm:hover{color:var(--accent);border-color:var(--accent)}
 .t-nimm:active{transform:scale(.92)}
 /* Woher ein Nachweis kommt. „selbst eingetragen" ist bewusst dezent und
    nicht rot: es ist kein Vorwurf, sondern eine Auskunft. */
-.cert-selbst{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:var(--r-pille);
+.cert-selbst{display:inline-block;margin-left:var(--s8);padding:var(--s1) var(--s6);border-radius:var(--r-pille);
   font-size:.72rem;background:rgba(167,139,250,.14);color:var(--accent-2)}
-.cert-bestaetigt{display:inline-block;margin-left:8px;font-size:.72rem;color:var(--accent)}
-.cert-ok{margin-left:8px;padding:1px 8px;border-radius:var(--r-pille);font-size:.72rem;
+.cert-bestaetigt{display:inline-block;margin-left:var(--s8);font-size:.72rem;color:var(--accent)}
+.cert-ok{margin-left:var(--s8);padding:var(--s1) var(--s8);border-radius:var(--r-pille);font-size:.72rem;
   border:1px solid var(--line);background:none;color:var(--text-2);cursor:pointer}
 .cert-ok:active{transform:scale(.92)}
 .studio-check input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin:0}
@@ -1179,10 +1187,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .tb-live{animation:liveGlow 2.6s ease-in-out infinite}
 @keyframes liveGlow{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}50%{box-shadow:0 0 0 4px rgba(34,211,238,.12)}}
 
-/* Micro-Interaktionen: Druck-Feedback */
-.btn:active{transform:scale(.96)}
-.icon-btn:active,.attach-btn:active,.chan:active,.tab:active{transform:scale(.92)}
-.role-opt:active,.studio-check:active,.studio-tile:active{transform:scale(.98)}
+/* Druck-Feedback fuer alles Uebrige steht weiter unten im Abschnitt
+   „Bewegung im Apple-Stil" — hier nur, was dort nicht vorkommt. */
+.attach-btn:active{transform:scale(.92)}
+.studio-tile:active{transform:scale(.98)}
 .studio-tile{transition:transform .2s var(--ease-out),border-color .2s}
 .studio-tile:hover{border-color:rgba(34,211,238,.3);transform:translateY(-2px)}
 
@@ -1200,7 +1208,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .msg .body a{color:var(--accent-2);text-decoration:underline;word-break:break-all}
 
 /* Tag-Trenner im Chat (Heute / Gestern / Datum) */
-.day-sep{align-self:center;margin:8px 0 4px;padding:3px 13px;border-radius:var(--r-pille);
+.day-sep{align-self:center;margin:var(--s8) 0 var(--s4);padding:var(--s2) var(--s12);border-radius:var(--r-pille);
   background:rgba(255,255,255,.05);color:var(--text-3);font-size:.72rem;font-weight:600;
   border:1px solid var(--line)}
 
@@ -1226,13 +1234,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ── Offline-Hinweis (Leiste ganz oben, wenn keine Verbindung) ── */
 .offline-bar{position:fixed;top:0;left:0;right:0;z-index:400;
   background:linear-gradient(90deg,var(--warm),#ff8f5e);color:#20120A;
-  font-weight:700;font-size:.84rem;text-align:center;padding:7px 12px;
+  font-weight:700;font-size:.84rem;text-align:center;padding:var(--s6) var(--s12);
   transform:translateY(-100%);transition:transform .3s var(--ease-out);
   padding-top:calc(7px + var(--sat))}
 .offline-bar.show{transform:none}
 
 /* ── Chat: Trenner „Neue Nachrichten" ── */
-.new-sep{display:flex;align-items:center;gap:10px;align-self:stretch;margin:10px 0 4px;
+.new-sep{display:flex;align-items:center;gap:var(--s10);align-self:stretch;margin:var(--s10) 0 var(--s4);
   color:var(--warm-tx);font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
   animation:viewIn .3s var(--ease-out)}
 .new-sep::before,.new-sep::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--warm),transparent)}
@@ -1242,15 +1250,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    gesetztes position:absolute und hob damit die Verankerung rechts unten
    auf. Noetig war es nie: absolute stellt den Bezugsrahmen fuer das
    Abzeichen genauso her. */
-.fab-count{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;
+.fab-count{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 var(--s4);
   border-radius:var(--r-pille);background:var(--warm);color:#20120A;font-size:.7rem;font-weight:800;
   display:none;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .fab-count.show{display:grid;animation:checkPop .3s var(--ease-out)}
 
 /* ── Aufgaben: Suchfeld ── */
-.todo-tools{display:flex;gap:9px;align-items:center;margin:2px 0 14px}
+.todo-tools{display:flex;gap:var(--s8);align-items:center;margin:var(--s2) 0 var(--s12)}
 .todo-search{flex:1;position:relative}
-.todo-search input{width:100%;padding:11px 14px 11px 38px;border-radius:var(--r-sm);
+.todo-search input{width:100%;padding:var(--s10) var(--s12) var(--s10) var(--s40);border-radius:var(--r-sm);
   background:var(--bg-2);border:1.5px solid var(--line);color:var(--text);
   font-family:var(--font-body);font-size:.94rem;transition:border-color .2s,box-shadow .2s}
 .todo-search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
@@ -1292,7 +1300,6 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* Karten heben sich beim Überfahren dezent an */
 .todo{transition:opacity .2s,transform .2s var(--ease-out),border-color .2s,background .3s}
 .todo:hover{transform:translateY(-1px);border-color:var(--line-2)}
-.check{position:relative}
 .check:hover{border-color:var(--accent);transform:scale(1.08)}
 
 /* ── Überfällige Aufgaben deutlicher markieren ── */
@@ -1305,10 +1312,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    alle Knöpfe erreichbar bleiben — sonst läuft die Zeile über und der
    Abmelde-Knopf ist rechts abgeschnitten. */
 @media(max-width:520px){
-  .topbar{gap:8px;padding-left:12px;padding-right:12px}
-  .tb-brand{font-size:.98rem;gap:6px;min-width:0;overflow:hidden}
+  .topbar{gap:var(--s8);padding-left:var(--s12);padding-right:var(--s12)}
+  .tb-brand{font-size:.98rem;gap:var(--s6);min-width:0;overflow:hidden}
   .tb-live{display:none}
-  .tb-user{gap:7px;flex-shrink:0}
+  .tb-user{gap:var(--s6);flex-shrink:0}
   .icon-btn{width:36px;height:36px;border-radius:var(--r-sm)}
   .icon-btn svg{width:17px;height:17px}
 }
@@ -1317,8 +1324,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 }
 
 /* ── Putzplan ── */
-.pp-item{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;background:var(--bg-soft);
-  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:8px;
+.pp-item{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s12) var(--s12);background:var(--bg-soft);
+  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8);
   transition:background .3s,border-color .2s,transform .2s var(--ease-out);
   animation:rowIn .3s var(--ease-out) both}
 .pp-item:hover{transform:translateY(-1px);border-color:var(--line-2)}
@@ -1327,16 +1334,16 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pp-item.just-done{animation:doneFlash .7s var(--ease-out)}
 .pp-body{flex:1;min-width:0}
 .pp-title{font-family:var(--font-head);font-weight:700;font-size:1.05rem;letter-spacing:.2px}
-.pp-meta{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:4px;font-size:.76rem;color:var(--text-3)}
+.pp-meta{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s10);margin-top:var(--s4);font-size:.76rem;color:var(--text-3)}
 .pp-meta .pp-doneby{color:var(--accent-d);font-weight:600}
-.pp-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:6px;border-radius:var(--r-xs);flex-shrink:0;transition:.2s}
+.pp-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:var(--s6);border-radius:var(--r-xs);flex-shrink:0;transition:.2s}
 .pp-del:hover{color:var(--danger-tx);background:rgba(251,78,109,.12)}
 .pp-del svg{width:16px;height:16px}
 /* Notizen */
-.pp-note{padding:11px 14px;background:var(--bg-soft);border:1px solid var(--line);
-  border-left:3px solid var(--accent-3);border-radius:var(--r-sm);margin-bottom:8px;animation:rowIn .3s var(--ease-out) both}
+.pp-note{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
+  border-left:3px solid var(--accent-3);border-radius:var(--r-sm);margin-bottom:var(--s8);animation:rowIn .3s var(--ease-out) both}
 .pp-note-text{font-size:.94rem;white-space:pre-wrap;word-break:break-word}
-.pp-note-foot{display:flex;justify-content:space-between;gap:10px;margin-top:5px;font-size:.72rem;color:var(--text-3)}
+.pp-note-foot{display:flex;justify-content:space-between;gap:var(--s10);margin-top:var(--s4);font-size:.72rem;color:var(--text-3)}
 .pp-note-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.72rem;padding:0}
 .pp-note-del:hover{color:var(--danger-tx)}
 
@@ -1380,14 +1387,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .btn,.icon-btn,.tab,.chan,.studio-check,.role-opt,.mobnav button,.wk-btns .btn{
   transition:transform .32s var(--spring),background .25s var(--ease-ios),
              color .25s var(--ease-ios),border-color .25s var(--ease-ios),
-             box-shadow .32s var(--ease-ios)}
+             box-shadow .32s var(--ease-ios),opacity .2s}
 /* Kräftiger als vorher: der Druck soll im Finger ankommen, nicht nur
    angedeutet sein. Große Flächen dürfen weniger einsinken als kleine,
    sonst wirkt es wackelig. */
 .btn:active{transform:scale(.94)}
 .icon-btn:active,.chan:active,.tab:active,.mobnav button:active{transform:scale(.88)}
 .studio-check:active,.role-opt:active,.card[data-go]:active,
-.home-tile:active,.chef-go:active,.doc:active,.dev-item:active{transform:scale(.965)}
+.chef-go:active,.doc:active,.dev-item:active{transform:scale(.965)}
 .btn-primary:hover{transform:translateY(-2px)}
 
 /* Häkchen federt beim Erledigen nach */
@@ -1419,7 +1426,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   /* Griff oben – zeigt ohne Worte, dass sich das Blatt schließen lässt */
   #profileModal .pm-box::before,#personModal .pm-box::before{
     content:'';display:block;width:38px;height:4px;border-radius:var(--r-pille);
-    background:var(--line-2);margin:-6px auto 14px}
+    background:var(--line-2);margin:-6px auto var(--s12)}
 }
 @keyframes sheetUp{
   from{opacity:.4;transform:translateY(100%)}
@@ -1430,7 +1437,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* Weiterleiten und Tastenkürzel nutzen dasselbe Fenster-Aussehen */
 #fwdModal,#keysModal{position:fixed;inset:0;z-index:215;display:none;
-  align-items:center;justify-content:center;padding:20px;
+  align-items:center;justify-content:center;padding:var(--s20);
   background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   animation:fadeBlur .3s var(--ease-ios)}
 #fwdModal.show,#keysModal.show{display:flex}
@@ -1443,10 +1450,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   #fwdModal.show .pm-box,#keysModal.show .pm-box{animation:sheetUp .5s var(--ease-ios)}
   #fwdModal .pm-box::before,#keysModal .pm-box::before{
     content:'';display:block;width:38px;height:4px;border-radius:var(--r-pille);
-    background:var(--line-2);margin:-6px auto 14px}
+    background:var(--line-2);margin:-6px auto var(--s12)}
 }
 /* Ziel-Liste beim Weiterleiten */
-.fwd-item{display:flex;align-items:center;gap:11px;padding:11px 4px;cursor:pointer;
+.fwd-item{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s4);cursor:pointer;
   border-top:1px solid var(--line);transition:background .2s}
 .fwd-item:first-child{border-top:none}
 .fwd-item:active{background:var(--bg-soft)}
@@ -1457,7 +1464,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fwd-kind{color:var(--text-3);font-size:.76rem;white-space:nowrap}
 /* Mein Dienst (Startseite) */
-.mysh-row{display:flex;align-items:baseline;gap:10px;padding:9px 0;flex-wrap:wrap;
+.mysh-row{display:flex;align-items:baseline;gap:var(--s10);padding:var(--s8) 0;flex-wrap:wrap;
   border-top:1px solid var(--line);font-size:.9rem}
 .mysh-row:first-child{border-top:none}
 .mysh-row.today{font-weight:600}
@@ -1469,22 +1476,22 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .mysh-note{flex:0 0 100%;color:var(--text-3);font-size:.78rem}
 
 /* Hinweis über einer weitergeleiteten Nachricht */
-.fwd-mark{font-size:.74rem;color:var(--text-3);font-style:italic;margin-bottom:3px}
+.fwd-mark{font-size:.74rem;color:var(--text-3);font-style:italic;margin-bottom:var(--s2)}
 /* Tastenkürzel-Liste */
-.key-row{display:flex;align-items:center;gap:12px;padding:9px 0;
+.key-row{display:flex;align-items:center;gap:var(--s12);padding:var(--s8) 0;
   border-top:1px solid var(--line);font-size:.89rem}
 .key-row:first-child{border-top:none}
 .key-row span{flex:1;min-width:0}
 .key-set{flex-shrink:0;background:none;border:1.5px solid var(--line-2);border-radius:var(--r-pille);
-  padding:3px 11px;font-size:.72rem;font-weight:700;color:var(--text-2);cursor:pointer;
+  padding:var(--s2) var(--s10);font-size:.72rem;font-weight:700;color:var(--text-2);cursor:pointer;
   transition:border-color .2s,color .2s}
 .key-set:hover{border-color:var(--accent);color:var(--accent-d)}
-.key-row.aufnahme{background:var(--accent-glow);border-radius:var(--r-xs);padding-left:8px;padding-right:8px}
+.key-row.aufnahme{background:var(--accent-glow);border-radius:var(--r-xs);padding-left:var(--s8);padding-right:var(--s8)}
 .key-row.aufnahme kbd{border-color:var(--accent);color:var(--accent-d)}
 .key-row.aufnahme .key-set{border-color:var(--accent);color:var(--accent-d)}
 .key-row kbd{flex:0 0 auto;min-width:26px;text-align:center;
   background:var(--bg-3);border:1px solid var(--line-2);border-bottom-width:2px;
-  border-radius:var(--r-xs);padding:3px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;
+  border-radius:var(--r-xs);padding:var(--s2) var(--s8);font-family:ui-monospace,Menlo,Consolas,monospace;
   font-size:.8rem;color:var(--text)}
 
 /* Reiter im Profil-Menü: Auswahl gleitet mit, statt zu springen */
@@ -1558,9 +1565,9 @@ body.light{--dot:rgba(20,10,40,.06)}
    ============================================================ */
 /* Zitat über einer Antwort */
 .msg-quote{border-left:3px solid var(--accent);background:rgba(255,255,255,.05);
-  border-radius:var(--r-xs);padding:5px 9px;margin-bottom:6px;font-size:.82rem;cursor:pointer}
+  border-radius:var(--r-xs);padding:var(--s4) var(--s8);margin-bottom:var(--s6);font-size:.82rem;cursor:pointer}
 body.light .msg-quote{background:rgba(20,10,40,.05)}
-.msg-quote b{display:block;color:var(--accent);font-size:.76rem;margin-bottom:1px}
+.msg-quote b{display:block;color:var(--accent);font-size:.76rem;margin-bottom:var(--s1)}
 .msg-quote span{color:var(--text-2);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── Aktionsblatt an einer Nachricht ──
@@ -1576,21 +1583,21 @@ body.light .msg-quote{background:rgba(20,10,40,.05)}
   border-radius:var(--radius) var(--radius) 0 0;padding:14px 16px calc(16px + var(--sab));
   box-shadow:0 -14px 44px rgba(0,0,0,.4);animation:msUp .26s var(--ease-ios)}
 @keyframes msUp{from{transform:translateY(100%)}to{transform:none}}
-.ms-head{padding:2px 4px 10px;border-bottom:1px solid var(--line)}
+.ms-head{padding:var(--s2) var(--s4) var(--s10);border-bottom:1px solid var(--line)}
 .ms-head b{font-family:var(--font-head);font-size:.98rem}
-.ms-head span{margin-left:8px;color:var(--text-3);font-size:.76rem}
-.ms-head p{margin:3px 0 0;color:var(--text-2);font-size:.84rem;
+.ms-head span{margin-left:var(--s8);color:var(--text-3);font-size:.76rem}
+.ms-head p{margin:var(--s2) 0 0;color:var(--text-2);font-size:.84rem;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ms-react{display:flex;gap:6px;padding:11px 0;justify-content:space-between}
+.ms-react{display:flex;gap:var(--s6);padding:var(--s10) 0;justify-content:space-between}
 .ms-emoji{flex:1;min-height:46px;font-size:1.35rem;background:rgba(255,255,255,.05);
   border:1px solid var(--line);border-radius:var(--r-md);cursor:pointer;
   transition:transform .25s var(--spring),background .2s,border-color .2s}
 body.light .ms-emoji{background:rgba(20,10,40,.04)}
 .ms-emoji.on{background:rgba(34,211,238,.16);border-color:var(--accent)}
 .ms-emoji:active{transform:scale(.88)}
-.ms-acts{display:flex;flex-direction:column;gap:2px;padding:4px 0 10px}
+.ms-acts{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s4) 0 var(--s10)}
 /* 48 Pixel hoch und beschriftet – vorher waren es 21 × 19 Pixel ohne Wort. */
-.ms-act{display:flex;align-items:center;gap:13px;width:100%;min-height:48px;padding:0 8px;
+.ms-act{display:flex;align-items:center;gap:var(--s12);width:100%;min-height:48px;padding:0 var(--s8);
   background:none;border:none;border-radius:var(--r-sm);cursor:pointer;text-align:left;
   color:var(--text);font-size:.95rem;font-family:var(--font-body)}
 .ms-act:active{background:rgba(255,255,255,.06)}
@@ -1599,9 +1606,9 @@ body.light .ms-emoji{background:rgba(20,10,40,.04)}
 @media (hover:hover){ .ms-act:hover{background:rgba(255,255,255,.06)} }
 body.light .ms-act:active,body.light .ms-act:hover{background:rgba(20,10,40,.05)}
 /* Reaktionen unter einer Nachricht */
-.reacts{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
-.react{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.07);
-  border:1px solid var(--line-2);border-radius:var(--r-pille);padding:2px 9px;font-size:.8rem;
+.reacts{display:flex;gap:var(--s4);flex-wrap:wrap;margin-top:var(--s6)}
+.react{display:inline-flex;align-items:center;gap:var(--s4);background:rgba(255,255,255,.07);
+  border:1px solid var(--line-2);border-radius:var(--r-pille);padding:var(--s2) var(--s8);font-size:.8rem;
   cursor:pointer;transition:transform .3s var(--spring),background .2s,border-color .2s}
 body.light .react{background:rgba(20,10,40,.05)}
 .react:active{transform:scale(.9)}
@@ -1609,24 +1616,24 @@ body.light .react{background:rgba(20,10,40,.05)}
 .react b{font-weight:700;font-size:.74rem}
 /* Erwähnung im Text */
 .mention{color:var(--accent);font-weight:700;background:rgba(34,211,238,.12);
-  padding:1px 5px;border-radius:var(--r-xs)}
+  padding:var(--s1) var(--s4);border-radius:var(--r-xs)}
 .msg.mentioned{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 
 /* Antwort-/Bearbeiten-Leiste über dem Eingabefeld */
-.compose-bar{display:flex;align-items:center;gap:9px;padding:8px clamp(14px,4vw,28px);
+.compose-bar{display:flex;align-items:center;gap:var(--s8);padding:8px clamp(14px,4vw,28px);
   background:var(--bg-soft);border-top:1px solid var(--line);animation:cardUp .3s var(--ease-ios)}
 .compose-bar .cb-info{flex:1;min-width:0;font-size:.82rem}
 .compose-bar .cb-info b{display:block;color:var(--accent);font-size:.74rem}
 .compose-bar .cb-info span{color:var(--text-2);display:block;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 .compose-bar .cb-x{background:none;border:none;color:var(--text-3);cursor:pointer;
-  font-size:1.05rem;padding:4px 8px;border-radius:var(--r-xs)}
+  font-size:1.05rem;padding:var(--s4) var(--s8);border-radius:var(--r-xs)}
 .compose-bar .cb-x:hover{color:var(--danger-tx)}
-.msg .edited{font-size:.68rem;color:var(--text-3);margin-left:5px}
+.msg .edited{font-size:.68rem;color:var(--text-3);margin-left:var(--s4)}
 
-/* Ungelesen-Zähler an den Kanal-Knöpfen */
-.chan{position:relative}
-.chan-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;
+/* Ungelesen-Zähler an den Kanal-Knöpfen. position:relative steht bereits
+   an der Grundregel von .chan. */
+.chan-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 var(--s4);
   border-radius:var(--r-pille);background:var(--warm);color:#20120A;font-size:.66rem;font-weight:800;
   display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 
@@ -1634,22 +1641,22 @@ body.light .react{background:rgba(20,10,40,.05)}
 /* Vier Reiter passten auf einem 390er-Handy nicht nebeneinander –
    „Nachweise" wurde am rechten Rand abgeschnitten. Auf schmalen Geräten
    entfällt deshalb das Symbol; die Wörter allein passen. */
-.pm-tabs{display:flex;gap:6px;background:var(--bg-soft);padding:4px;border-radius:var(--r-sm);margin-bottom:16px;
+.pm-tabs{display:flex;gap:var(--s6);background:var(--bg-soft);padding:var(--s4);border-radius:var(--r-sm);margin-bottom:var(--s16);
   overflow-x:auto;scrollbar-width:none}
 .pm-tabs::-webkit-scrollbar{display:none}
 .pm-tab{flex:1 0 auto;background:none;border:none;color:var(--text-2);font-family:var(--font-body);
-  font-weight:700;font-size:.9rem;padding:9px 6px;border-radius:var(--r-xs);cursor:pointer;white-space:nowrap;
+  font-weight:700;font-size:.9rem;padding:var(--s8) var(--s6);border-radius:var(--r-xs);cursor:pointer;white-space:nowrap;
   transition:background .28s var(--ease-ios),color .28s var(--ease-ios),transform .3s var(--spring)}
 @media(max-width:480px){
-  .pm-tab{font-size:.86rem;padding:9px 4px}
+  .pm-tab{font-size:.86rem;padding:var(--s8) var(--s4)}
 }
 .pm-tab:active{transform:scale(.96)}
 .pm-tab.on{background:var(--bg-2);color:var(--accent);box-shadow:0 1px 6px rgba(0,0,0,.18)}
 
 /* Auswahlfelder im Design-Menü */
-.opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:9px}
-.opt{border:2px solid var(--line-2);border-radius:var(--r-md);padding:9px;cursor:pointer;background:var(--bg-soft);
-  display:flex;flex-direction:column;gap:7px;align-items:center;
+.opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:var(--s8)}
+.opt{border:2px solid var(--line-2);border-radius:var(--r-md);padding:var(--s8);cursor:pointer;background:var(--bg-soft);
+  display:flex;flex-direction:column;gap:var(--s6);align-items:center;
   transition:transform .3s var(--spring),border-color .25s,background .25s}
 .opt:active{transform:scale(.96)}
 .opt.on{border-color:var(--accent);background:rgba(34,211,238,.10)}
@@ -1666,7 +1673,7 @@ html{font-size:var(--fs,100%)}
    Ein Marker gleitet zum aktiven Reiter, statt dass die Füllung
    springt: man sieht, wohin man gegangen ist, nicht nur, wo man
    angekommen ist. Gleiches Muster wie die Kanalreihe im Chat. */
-.subnav{position:relative;display:flex;gap:4px;padding:8px clamp(14px,4vw,28px) 0;
+.subnav{position:relative;display:flex;gap:var(--s4);padding:8px clamp(14px,4vw,28px) 0;
   flex-shrink:0;overflow-x:auto;scrollbar-width:none}
 .subnav::-webkit-scrollbar{display:none}
 .subnav::before{content:'';position:absolute;left:0;top:0;
@@ -1677,9 +1684,9 @@ html{font-size:var(--fs,100%)}
   transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
              height .42s var(--ease-ios),opacity .2s}
 .subnav.sofort::before{transition:none}
-.subtab{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+.subtab{flex:0 0 auto;display:inline-flex;align-items:center;gap:var(--s6);white-space:nowrap;
   background:none;border:1.5px solid transparent;color:var(--text-2);
-  padding:9px 15px;border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
+  padding:var(--s8) var(--s16);border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
   font-size:.88rem;cursor:pointer;position:relative;z-index:1;
   transition:transform .3s var(--spring),color .25s}
 .subtab:active{transform:scale(.93)}
@@ -1690,20 +1697,20 @@ html{font-size:var(--fs,100%)}
 .sub-dot.show{display:block}
 
 /* ── Startseite ── */
-.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:11px;margin-bottom:16px}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:var(--s10);margin-bottom:var(--s16)}
 .home-tile{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
-  padding:13px 15px;cursor:pointer;animation:cardUp .5s var(--ease-ios) both;
+  padding:var(--s12) var(--s16);cursor:pointer;animation:cardUp .5s var(--ease-ios) both;
   transition:transform .35s var(--ease-ios),border-color .25s,box-shadow .35s}
 .home-tile:active{transform:scale(.97)}
 @media (hover:hover){ .home-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2)} }
 .home-tile .hn{font-family:var(--font-head);font-weight:800;font-size:2rem;line-height:1;color:var(--accent)}
-.home-tile .hl{font-size:.86rem;color:var(--text-2);margin-top:5px}
+.home-tile .hl{font-size:.86rem;color:var(--text-2);margin-top:var(--s4)}
 .home-tile.warn .hn{color:var(--danger-tx)}
 .home-tile.ok .hn{color:var(--ok-tx)}
 .home-tile.muted .hn{color:var(--text-3)}
 
-.alert-bar{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--r-md);
-  margin-bottom:8px;cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
+.alert-bar{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-md);
+  margin-bottom:var(--s8);cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
   background:rgba(251,78,109,.12);border:1px solid rgba(251,78,109,.4)}
 .alert-bar.warn{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.42)}
 .alert-bar.pin{background:rgba(56,189,248,.11);border-color:rgba(56,189,248,.4)}
@@ -1746,9 +1753,9 @@ html{font-size:var(--fs,100%)}
 /* Die Sortier-Knöpfe federn kurz, wenn man wechselt */
 .sort-row .chip.on{animation:chipPop .34s var(--spring)}
 @keyframes chipPop{0%{transform:scale(1)}42%{transform:scale(1.09)}100%{transform:scale(1)}}
-.bp-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
-  padding:13px 15px;background:var(--bg-2);border:1px solid var(--line);
-  border-radius:var(--r-md);margin-bottom:8px;cursor:pointer;
+.bp-row{display:flex;align-items:center;gap:var(--s10);width:100%;text-align:left;
+  padding:var(--s12) var(--s16);background:var(--bg-2);border:1px solid var(--line);
+  border-radius:var(--r-md);margin-bottom:var(--s8);cursor:pointer;
   transition:transform .25s var(--ease-out),border-color .22s}
 .bp-row:hover{transform:translateY(-1px);border-color:var(--accent)}
 .bp-row:active{transform:scale(.99)}
@@ -1761,38 +1768,38 @@ html{font-size:var(--fs,100%)}
 .home-tile.null{opacity:.5}
 .home-tile.null .hn{color:var(--text-3)}
 /* Wenn wirklich nichts offen ist – statt sechs Nullen eine Aussage */
-.home-ruhe{grid-column:1/-1;display:flex;align-items:center;gap:14px;
-  padding:20px 20px;background:rgba(0,224,110,.09);
+.home-ruhe{grid-column:1/-1;display:flex;align-items:center;gap:var(--s12);
+  padding:var(--s20) var(--s20);background:rgba(0,224,110,.09);
   border:1px solid rgba(0,224,110,.32);border-radius:var(--r-md)}
 .home-ruhe .hr-ico{flex-shrink:0;width:38px;height:38px;border-radius:var(--r-rund);
   display:flex;align-items:center;justify-content:center;
   background:rgba(0,224,110,.18);color:var(--accent-d);
   font-size:1.25rem;font-weight:800}
-.home-ruhe b{display:block;font-family:var(--font-head);font-size:1.1rem;margin-bottom:2px}
+.home-ruhe b{display:block;font-family:var(--font-head);font-size:1.1rem;margin-bottom:var(--s2)}
 .home-ruhe span{font-size:.86rem;color:var(--text-2)}
 /* Eine Lupe allein sagt nichts. Ab Tablet-Breite steht das Wort daneben –
    am Handy fehlt der Platz, dort ist die Lupe aber auch geläufig. */
 .suchknopf .sk-wort{display:none}
 @media (min-width:700px){
-  .suchknopf{width:auto;padding:0 14px;gap:8px}
+  .suchknopf{width:auto;padding:0 var(--s12);gap:var(--s8)}
   .suchknopf .sk-wort{display:inline;font-size:.86rem;font-weight:600}
 }
 /* Eine Zeile zum Schieben statt drei Zeilen Knöpfe: bei vier Sortierungen
    nahm die Leiste umbrechend 150 Pixel über einer Liste mit drei Einträgen. */
-.sort-row{display:flex;align-items:center;gap:7px;flex-wrap:nowrap;margin:0 0 12px;
-  overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.sort-row{display:flex;align-items:center;gap:var(--s6);flex-wrap:nowrap;margin:0 0 var(--s12);
+  overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:var(--s2)}
 .sort-row::-webkit-scrollbar{height:0}
 .sort-row .chip{flex:0 0 auto;white-space:nowrap}
 .sort-lab{flex:0 0 auto}
 .sort-lab{font-size:.74rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
-  color:var(--text-3);margin-right:2px}
-.sec-head{display:flex;align-items:center;gap:11px;margin:17px 0 9px}
+  color:var(--text-3);margin-right:var(--s2)}
+.sec-head{display:flex;align-items:center;gap:var(--s10);margin:var(--s16) 0 var(--s8)}
 .sec-head span{font-family:var(--font-head);font-weight:700;font-size:.8rem;
   letter-spacing:1.3px;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
 .sec-head i{flex:1;height:1px;background:var(--line);display:block}
-.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:9px;
-  margin-bottom:16px}
-.quick{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 8px;
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:var(--s8);
+  margin-bottom:var(--s16)}
+.quick{display:flex;flex-direction:column;align-items:center;gap:var(--s6);padding:var(--s12) var(--s8);
   background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md);cursor:pointer;
   font-size:.82rem;font-weight:600;color:var(--text-2);
   transition:transform .3s var(--spring),border-color .25s,color .25s,background .25s}
@@ -1800,7 +1807,7 @@ html{font-size:var(--fs,100%)}
 .quick svg{width:22px;height:22px;color:var(--accent)}
 @media (hover:hover){ .quick:hover{color:var(--text);border-color:var(--accent)} }
 
-.act-row{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:.87rem}
+.act-row{display:flex;gap:var(--s10);padding:var(--s8) 0;border-top:1px solid var(--line);font-size:.87rem}
 .act-row:first-child{border-top:none}
 .act-ico{flex-shrink:0}
 .act-txt{flex:1;min-width:0}
@@ -1811,10 +1818,10 @@ html{font-size:var(--fs,100%)}
    Der Chef-Bereich war eine sehr lange Seite. Jetzt liegt jeder Themenblock
    auf einem eigenen Reiter – ein Klick mehr, dafür sofort auffindbar. */
 /* Übersichtskacheln des Verwaltungsbereichs */
-.chef-home{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:11px;
-  margin-bottom:4px}
-.chef-card{display:flex;gap:13px;align-items:flex-start;text-align:left;width:100%;
-  padding:16px 17px;background:var(--bg-2);border:1px solid var(--line);
+.chef-home{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:var(--s10);
+  margin-bottom:var(--s4)}
+.chef-card{display:flex;gap:var(--s12);align-items:flex-start;text-align:left;width:100%;
+  padding:var(--s16) var(--s16);background:var(--bg-2);border:1px solid var(--line);
   border-radius:var(--r-md);cursor:pointer;
   transition:transform .28s var(--ease-out),border-color .25s,box-shadow .28s}
 .chef-card:hover{transform:translateY(-2px);border-color:var(--accent);
@@ -1824,25 +1831,25 @@ html{font-size:var(--fs,100%)}
 .chef-card .cc-body{flex:1;min-width:0;display:block}
 /* Die Zeilen sind <span> im Knopf – ohne block laufen sie ineinander */
 .chef-card .cc-title{display:block;font-family:var(--font-head);font-weight:700;
-  font-size:1.05rem;color:var(--text);margin-bottom:3px}
+  font-size:1.05rem;color:var(--text);margin-bottom:var(--s2)}
 .chef-card .cc-was{display:block;font-size:.82rem;color:var(--text-2);line-height:1.45}
-.chef-card .cc-num{display:inline-block;margin-top:7px;font-size:.74rem;font-weight:700;
-  padding:3px 9px;border-radius:var(--r-pille);background:var(--bg-soft);
+.chef-card .cc-num{display:inline-block;margin-top:var(--s6);font-size:.74rem;font-weight:700;
+  padding:var(--s2) var(--s8);border-radius:var(--r-pille);background:var(--bg-soft);
   border:1px solid var(--line);color:var(--text-3)}
 .chef-card .cc-num.warn{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.4);color:var(--warm-tx)}
 .chef-card .cc-num.dringend{background:rgba(251,78,109,.16);border-color:rgba(251,78,109,.4);color:var(--danger-tx)}
 
-.chef-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;min-width:0}
-.chef-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;
+.chef-bar{display:flex;align-items:center;gap:var(--s10);margin-bottom:var(--s16);min-width:0}
+.chef-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:var(--s4);
   background:none;border:1.5px solid var(--line-2);border-radius:var(--r-pille);
-  padding:8px 14px 8px 11px;font-family:var(--font-body);font-weight:600;
+  padding:var(--s8) var(--s12) var(--s8) var(--s10);font-family:var(--font-body);font-weight:600;
   font-size:.85rem;color:var(--text-2);cursor:pointer;white-space:nowrap;
   transition:border-color .2s,color .2s,transform .25s var(--spring)}
 .chef-back:hover{border-color:var(--accent);color:var(--accent-d)}
 .chef-back:active{transform:scale(.95)}
 .chef-back svg{width:15px;height:15px}
-.chef-tabs{position:relative;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;
-  min-width:0;padding-bottom:2px}
+.chef-tabs{position:relative;display:flex;gap:var(--s4);overflow-x:auto;scrollbar-width:none;
+  min-width:0;padding-bottom:var(--s2)}
 .chef-tabs::-webkit-scrollbar{display:none}
 .chef-tabs::before{content:'';position:absolute;left:0;top:0;
   height:var(--ind-h,38px);width:var(--ind-w,0);
@@ -1852,9 +1859,9 @@ html{font-size:var(--fs,100%)}
   transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
              height .42s var(--ease-ios),opacity .2s}
 .chef-tabs.sofort::before{transition:none}
-.chef-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+.chef-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:var(--s6);white-space:nowrap;
   background:none;border:1.5px solid transparent;color:var(--text-2);
-  padding:9px 15px;border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
+  padding:var(--s8) var(--s16);border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
   font-size:.87rem;cursor:pointer;position:relative;z-index:1;
   transition:transform .3s var(--spring),color .25s}
 .chef-tab:active{transform:scale(.93)}
@@ -1862,7 +1869,7 @@ html{font-size:var(--fs,100%)}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
 
 /* Zeile "Braucht Aufmerksamkeit" */
-.att-row{display:flex;align-items:center;gap:11px;padding:11px 0;
+.att-row{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) 0;
   border-top:1px solid var(--line);cursor:pointer}
 .att-row:first-child{border-top:none}
 .att-ico{flex-shrink:0;font-size:1.05rem}
@@ -1870,12 +1877,12 @@ html{font-size:var(--fs,100%)}
 .att-txt b{display:block;font-weight:600}
 .att-txt span{color:var(--text-3);font-size:.77rem}
 .att-go{color:var(--text-3);font-size:.8rem;white-space:nowrap}
-.att-ok{color:var(--ok-tx);font-size:.9rem;font-weight:600;padding:6px 0}
+.att-ok{color:var(--ok-tx);font-size:.9rem;font-weight:600;padding:var(--s6) 0}
 
 /* Balken im Bericht */
-.rep-row{padding:9px 0;border-top:1px solid var(--line)}
+.rep-row{padding:var(--s8) 0;border-top:1px solid var(--line)}
 .rep-row:first-child{border-top:none}
-.rep-head{display:flex;justify-content:space-between;gap:10px;font-size:.87rem;margin-bottom:6px}
+.rep-head{display:flex;justify-content:space-between;gap:var(--s10);font-size:.87rem;margin-bottom:var(--s6)}
 .rep-head b{font-weight:600}
 .rep-head span{color:var(--text-3);font-size:.8rem;white-space:nowrap}
 .rep-bar{height:8px;border-radius:var(--r-pille);background:var(--bg-3);overflow:hidden}
@@ -1886,15 +1893,15 @@ html{font-size:var(--fs,100%)}
 .rep-fill.bad{background:var(--danger)}
 
 /* Teilschritte einer Aufgabe */
-.sub-list{margin:8px 0 0;padding:0;list-style:none}
-.sub-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:.86rem;
+.sub-list{margin:var(--s8) 0 0;padding:0;list-style:none}
+.sub-item{display:flex;align-items:flex-start;gap:var(--s8);padding:var(--s4) 0;font-size:.86rem;
   color:var(--text-2);cursor:pointer}
-.sub-item .sbox{flex:0 0 17px;width:17px;height:17px;margin-top:1px;border-radius:5px;
+.sub-item .sbox{flex:0 0 17px;width:17px;height:17px;margin-top:var(--s1);border-radius:5px;
   border:1.5px solid var(--line-2);display:flex;align-items:center;justify-content:center;
   font-size:.7rem;color:transparent;transition:background .2s,border-color .2s,color .2s}
 .sub-item.done .sbox{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .sub-item.done .stxt{text-decoration:line-through;color:var(--text-3)}
-.sub-count{font-size:.76rem;color:var(--text-3);margin-left:6px}
+.sub-count{font-size:.76rem;color:var(--text-3);margin-left:var(--s6)}
 
 /* ── Drucken ──
    Der Putzplan hängt in vielen Studios als Zettel an der Wand. Beim Drucken
@@ -1920,7 +1927,7 @@ html{font-size:var(--fs,100%)}
 /* Der Tagesüberblick scrollt jetzt mit, statt oben zu kleben */
 
 /* ── Sprachnachrichten ── */
-.rec-bar{display:none;align-items:center;gap:10px;padding:10px 14px;
+.rec-bar{display:none;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);
   background:rgba(251,78,109,.1);border-top:1px solid rgba(251,78,109,.35);
   font-size:.86rem;font-weight:600}
 .rec-bar.show{display:flex}
@@ -1931,24 +1938,24 @@ html{font-size:var(--fs,100%)}
 .rec-hint{flex:1;min-width:0;color:var(--text-2);font-weight:500;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rec-x,.rec-stop{flex-shrink:0;border:none;font-family:var(--font-body);font-weight:700;
-  font-size:.8rem;padding:7px 13px;border-radius:var(--r-pille);cursor:pointer;
+  font-size:.8rem;padding:var(--s6) var(--s12);border-radius:var(--r-pille);cursor:pointer;
   transition:transform .25s var(--spring)}
 .rec-x{background:var(--bg-3);color:var(--text-2)}
 .rec-stop{background:var(--accent);color:var(--on-accent)}
 .rec-x:active,.rec-stop:active{transform:scale(.94)}
-.rec-prev{display:none;align-items:center;gap:10px;padding:10px 14px;
+.rec-prev{display:none;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);
   background:var(--bg-soft);border-top:1px solid var(--line)}
 .rec-prev.show{display:flex}
 .rec-prev audio{flex:1;min-width:0;height:36px}
 /* Mikrofon-Knopf leuchtet, während aufgenommen wird */
 .attach-btn.rec-on{color:var(--danger-tx)}
 /* Sprachnachricht in der Chat-Blase */
-.msg-audio{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.msg-audio{display:flex;align-items:center;gap:var(--s8);margin-top:var(--s6);flex-wrap:wrap}
 .msg-audio audio{height:36px;max-width:240px}
 .au-len{font-size:.74rem;color:var(--text-3);white-space:nowrap}
 
 /* Papierkorb */
-.trash-row{display:flex;align-items:center;gap:11px;padding:11px 0;
+.trash-row{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) 0;
   border-top:1px solid var(--line)}
 .trash-row:first-child{border-top:none}
 .trash-main{flex:1;min-width:0}
@@ -1962,7 +1969,7 @@ html{font-size:var(--fs,100%)}
    die 44er-Trefferfläche von „ansehen" ragte oben und unten heraus und
    wurde vom Chatverlauf darunter abgefangen. Gemessen kam der Finger nur
    an 23 Pixel. */
-.pin-bar{display:none;align-items:center;gap:9px;padding:9px 14px;min-height:46px;flex-shrink:0;
+.pin-bar{display:none;align-items:center;gap:var(--s8);padding:var(--s8) var(--s12);min-height:46px;flex-shrink:0;
   background:rgba(56,189,248,.1);border-bottom:1px solid rgba(56,189,248,.32);
   font-size:.85rem;animation:pinIn .35s var(--ease-ios)}
 .pin-bar.show{display:flex}
@@ -1971,16 +1978,16 @@ html{font-size:var(--fs,100%)}
 .pin-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   font-weight:600}
 .pin-go{flex-shrink:0;background:none;border:none;color:var(--accent);cursor:pointer;
-  font-family:var(--font-body);font-weight:700;font-size:.8rem;padding:4px 6px}
+  font-family:var(--font-body);font-weight:700;font-size:.8rem;padding:var(--s4) var(--s6)}
 .pin-x{flex-shrink:0;background:none;border:none;color:var(--text-3);cursor:pointer;
-  font-size:.9rem;padding:4px 6px;border-radius:var(--r-xs);transition:color .2s,background .2s}
+  font-size:.9rem;padding:var(--s4) var(--s6);border-radius:var(--r-xs);transition:color .2s,background .2s}
 @media (hover:hover){ .pin-x:hover{color:var(--danger-tx);background:rgba(251,78,109,.1)} }
 
 /* Chef-Zugänge */
 .chef-me{font-size:.76rem;color:var(--text-3);font-style:italic;white-space:nowrap}
 
 /* Schalter (Melde-Einstellungen) */
-.sw-row{display:flex;align-items:center;gap:14px;padding:12px 0;cursor:pointer;
+.sw-row{display:flex;align-items:center;gap:var(--s12);padding:var(--s12) 0;cursor:pointer;
   border-top:1px solid var(--line)}
 .sw-row:first-child{border-top:none}
 .sw-txt{flex:1;min-width:0}
@@ -1995,62 +2002,62 @@ html{font-size:var(--fs,100%)}
 .sw.on i{transform:translateX(19px);background:var(--on-accent)}
 
 /* Abwesenheiten mit Genehmigung */
-.abs-status{display:inline-block;margin-left:8px;font-size:.7rem;font-weight:700;
-  padding:2px 9px;border-radius:var(--r-pille);vertical-align:middle;
+.abs-status{display:inline-block;margin-left:var(--s8);font-size:.7rem;font-weight:700;
+  padding:var(--s2) var(--s8);border-radius:var(--r-pille);vertical-align:middle;
   background:rgba(148,163,184,.16);color:var(--text-2)}
 .abs-status.offen{background:rgba(251,191,36,.16);color:var(--warm-tx)}
 .abs-status.genehmigt{background:rgba(52,211,153,.14);color:var(--ok-tx)}
 .abs-status.abgelehnt{background:rgba(251,78,109,.14);color:var(--danger-tx)}
-.abs-row.offen{border-left:3px solid var(--warm);padding-left:10px}
+.abs-row.offen{border-left:3px solid var(--warm);padding-left:var(--s10)}
 .abs-row.abgelehnt{opacity:.6}
-.abs-by{font-size:.76rem;color:var(--text-3);margin-top:3px}
-.abs-actions{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.abs-by{font-size:.76rem;color:var(--text-3);margin-top:var(--s2)}
+.abs-actions{display:flex;gap:var(--s8);margin-top:var(--s8);flex-wrap:wrap}
 
 /* Verbrauchs-Vorhersage */
-.fc-row{padding:10px 0;border-top:1px solid var(--line)}
+.fc-row{padding:var(--s10) 0;border-top:1px solid var(--line)}
 .fc-row:first-child{border-top:none}
-.fc-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.fc-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s10)}
 .fc-head b{font-weight:600;font-size:.95rem}
 .fc-w{flex:0 0 auto;font-weight:700;font-size:.86rem;white-space:nowrap;
-  padding:2px 10px;border-radius:var(--r-pille)}
+  padding:var(--s2) var(--s10);border-radius:var(--r-pille)}
 .fc-w.good{background:rgba(52,211,153,.14);color:var(--ok-tx)}
 .fc-w.warn{background:rgba(251,191,36,.14);color:var(--warm-tx)}
 .fc-w.bad{background:rgba(251,78,109,.14);color:var(--danger-tx)}
-.fc-sub{color:var(--text-3);font-size:.78rem;margin-top:3px}
+.fc-sub{color:var(--text-3);font-size:.78rem;margin-top:var(--s2)}
 
 /* Einkaufsliste (Material) */
-.shop-row{padding:10px 0;border-top:1px solid var(--line)}
+.shop-row{padding:var(--s10) 0;border-top:1px solid var(--line)}
 .shop-row:first-child{border-top:none}
-.shop-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.shop-h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s10)}
 .shop-h b{font-weight:600;font-size:.95rem}
 .shop-n{font-family:var(--font-head);font-weight:800;color:var(--warm-tx);
   font-size:1.05rem;white-space:nowrap}
-.shop-s{color:var(--text-3);font-size:.78rem;margin-top:3px}
+.shop-s{color:var(--text-3);font-size:.78rem;margin-top:var(--s2)}
 
 /* "Ältere Nachrichten laden" ganz oben im Chat */
-.load-older{display:block;margin:4px auto 12px;background:var(--bg-2);
+.load-older{display:block;margin:var(--s4) auto var(--s12);background:var(--bg-2);
   border:1px solid var(--line-2);color:var(--text-2);font-family:var(--font-body);
-  font-weight:600;font-size:.82rem;padding:7px 16px;border-radius:var(--r-pille);cursor:pointer;
+  font-weight:600;font-size:.82rem;padding:var(--s6) var(--s16);border-radius:var(--r-pille);cursor:pointer;
   transition:transform .25s var(--spring),color .2s,border-color .2s}
 .load-older:active{transform:scale(.95)}
 .load-older:disabled{opacity:.6;cursor:default}
 @media (hover:hover){ .load-older:hover{color:var(--text);border-color:var(--accent)} }
 
 /* ── Schichtplan ── */
-.shift-day{border:1px solid var(--line);border-radius:var(--r-md);padding:11px 13px;margin-bottom:8px;
+.shift-day{border:1px solid var(--line);border-radius:var(--r-md);padding:var(--s10) var(--s12);margin-bottom:var(--s8);
   background:var(--bg-soft);animation:cardUp .4s var(--ease-ios) both}
 .shift-day.today{border-color:var(--accent);background:rgba(34,211,238,.08)}
-.shift-day-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px}
+.shift-day-h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s8);margin-bottom:var(--s6)}
 .shift-day-h b{font-family:var(--font-head);font-size:1rem}
 .shift-day-h span{font-size:.75rem;color:var(--text-3)}
-.cert-item{display:flex;gap:11px;align-items:center;padding:11px 13px;background:var(--bg-soft);
-  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:8px}
+.cert-item{display:flex;gap:var(--s10);align-items:center;padding:var(--s10) var(--s12);background:var(--bg-soft);
+  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8)}
 .cert-ico{font-size:1.15rem;flex-shrink:0}
 .cert-body{flex:1;min-width:0}
 .cert-title{font-family:var(--font-head);font-weight:700;font-size:.98rem}
 .cert-who{font-weight:500;color:var(--text-2);font-size:.86rem}
-.cert-meta{margin-top:3px;font-size:.75rem;color:var(--text-3)}
-.cert-st{flex-shrink:0;font-size:.72rem;font-weight:700;padding:4px 9px;border-radius:var(--r-pille);white-space:nowrap}
+.cert-meta{margin-top:var(--s2);font-size:.75rem;color:var(--text-3)}
+.cert-st{flex-shrink:0;font-size:.72rem;font-weight:700;padding:var(--s4) var(--s8);border-radius:var(--r-pille);white-space:nowrap}
 .cert-st.ok{background:rgba(0,224,110,.14);color:var(--accent-d)}
 .cert-st.bald{background:rgba(251,191,36,.16);color:var(--warm-tx)}
 .cert-st.weg{background:rgba(251,78,109,.16);color:var(--danger-tx)}
@@ -2059,8 +2066,8 @@ html{font-size:var(--fs,100%)}
   width:36px;min-height:44px;padding:0;border-radius:var(--r-xs);font-size:1rem;line-height:1}
 .cert-del:active{transform:scale(.88)}
 .cert-del:hover{color:var(--danger-tx);background:rgba(251,78,109,.12)}
-.tausch-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  margin:-2px 0 7px 9px;padding:6px 9px;border-radius:var(--r-xs);
+.tausch-row{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;
+  margin:-2px 0 var(--s6) var(--s8);padding:var(--s6) var(--s8);border-radius:var(--r-xs);
   background:var(--bg-soft);border:1px solid var(--line)}
 .tausch-row.offen{background:rgba(251,191,36,.11);border-color:rgba(251,191,36,.4)}
 .tausch-row.zugesagt{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.38)}
@@ -2069,51 +2076,51 @@ html{font-size:var(--fs,100%)}
    ein Wort pro Zeile. */
 .tausch-txt{flex:1 1 100%;min-width:0;font-size:.78rem;color:var(--text-2)}
 .tausch-btn{display:inline-flex;align-items:center;min-height:44px;background:none;border:1.5px solid var(--line-2);border-radius:var(--r-pille);
-  padding:4px 11px;font-size:.74rem;font-weight:700;color:var(--text);cursor:pointer;
+  padding:var(--s4) var(--s10);font-size:.74rem;font-weight:700;color:var(--text);cursor:pointer;
   white-space:nowrap;transition:border-color .2s,color .2s}
 .tausch-btn:hover{border-color:var(--accent);color:var(--accent-d)}
 .tausch-btn.ok{border-color:var(--accent);color:var(--accent-d)}
 .tausch-btn.ok:hover{background:var(--accent-glow)}
-.shift-entry{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--r-sm);
-  background:var(--bg-2);margin-bottom:5px;font-size:.9rem}
+.shift-entry{display:flex;align-items:center;gap:var(--s8);padding:var(--s6) var(--s8);border-radius:var(--r-sm);
+  background:var(--bg-2);margin-bottom:var(--s4);font-size:.9rem}
 .shift-time{font-weight:800;color:var(--accent);white-space:nowrap;font-size:.84rem}
 .shift-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .shift-note{font-size:.76rem;color:var(--text-3)}
-.shift-x{background:none;border:none;color:var(--text-3);cursor:pointer;padding:2px 6px;border-radius:var(--r-xs)}
+.shift-x{background:none;border:none;color:var(--text-3);cursor:pointer;padding:var(--s2) var(--s6);border-radius:var(--r-xs)}
 .shift-x:hover{color:var(--danger-tx)}
-.shift-empty{font-size:.84rem;color:var(--text-3);padding:3px 2px}
+.shift-empty{font-size:.84rem;color:var(--text-3);padding:var(--s2) var(--s2)}
 /* Ein Tag ohne Einteilung braucht keine volle Karte — sonst scrollt man
    an fünf gleich grossen leeren Kästen vorbei, bevor heute kommt. */
-.shift-day.leer{padding:7px 13px;opacity:.72}
+.shift-day.leer{padding:var(--s6) var(--s12);opacity:.72}
 .shift-day.leer .shift-day-h{margin-bottom:0}
 .shift-day.leer .shift-day-h b{font-size:.88rem;font-weight:600}
 .shift-day.leer .shift-empty{display:none}
 .shift-day.leer .shift-day-h::after{content:'—';color:var(--text-3);font-size:.8rem}
-.shift-sum{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
-.shift-sum span{font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:var(--r-pille);
+.shift-sum{display:flex;flex-wrap:wrap;gap:var(--s6);margin:0 0 var(--s10)}
+.shift-sum span{font-size:.75rem;font-weight:700;padding:var(--s4) var(--s10);border-radius:var(--r-pille);
   background:var(--bg-soft);border:1px solid var(--line);color:var(--text-2)}
 .shift-sum span.tausch{background:rgba(251,191,36,.14);border-color:rgba(251,191,36,.4);color:var(--warm-tx)}
-.abs-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--r-pille);
+.abs-chip{display:inline-flex;align-items:center;gap:var(--s4);padding:var(--s4) var(--s10);border-radius:var(--r-pille);
   font-size:.78rem;font-weight:700;background:rgba(251,191,36,.15);color:var(--warm-tx);
-  border:1px solid rgba(251,191,36,.35);margin:2px 4px 2px 0}
+  border:1px solid rgba(251,191,36,.35);margin:var(--s2) var(--s4) var(--s2) 0}
 .abs-chip.krank{background:rgba(251,78,109,.14);color:var(--danger-tx);border-color:rgba(251,78,109,.35)}
 
 /* ── Abwesenheiten & Brett ── */
-.abs-row,.bb-item,.ho-item{padding:11px 13px;background:var(--bg-soft);border:1px solid var(--line);
-  border-radius:var(--r-sm);margin-bottom:8px;animation:cardUp .4s var(--ease-ios) both}
+.abs-row,.bb-item,.ho-item{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
+  border-radius:var(--r-sm);margin-bottom:var(--s8);animation:cardUp .4s var(--ease-ios) both}
 .bb-item{border-left:3px solid var(--accent-3)}
 .ho-item{border-left:3px solid var(--warm)}
-.bb-head,.ho-head{display:flex;justify-content:space-between;gap:9px;font-size:.74rem;
-  color:var(--text-3);margin-top:6px}
-.bb-kind{display:inline-block;font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:var(--r-pille);
-  background:rgba(244,114,182,.15);color:var(--accent-3);margin-bottom:5px}
+.bb-head,.ho-head{display:flex;justify-content:space-between;gap:var(--s8);font-size:.74rem;
+  color:var(--text-3);margin-top:var(--s6)}
+.bb-kind{display:inline-block;font-size:.7rem;font-weight:800;padding:var(--s2) var(--s8);border-radius:var(--r-pille);
+  background:rgba(244,114,182,.15);color:var(--accent-3);margin-bottom:var(--s4)}
 .bb-text,.ho-text{font-size:.94rem;white-space:pre-wrap;word-break:break-word}
 .mini-x{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.72rem;padding:0}
 .mini-x:hover{color:var(--danger-tx)}
 
 /* ── Tagesüberblick ── */
 /* Zahl am Filter-Chip – ersetzt die frühere Tagesüberblick-Karte */
-.chip-num{margin-left:6px;padding:0 6px;border-radius:var(--r-pille);font-size:.72rem;font-weight:800;
+.chip-num{margin-left:var(--s6);padding:0 var(--s6);border-radius:var(--r-pille);font-size:.72rem;font-weight:800;
   background:rgba(255,255,255,.1);color:var(--text)}
 body.light .chip-num{background:rgba(20,10,40,.08)}
 .chip-num.warn{background:rgba(251,78,109,.18);color:var(--danger-tx)}
@@ -2125,27 +2132,27 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
   background:var(--ok);border:2px solid var(--bg-2);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 
 /* ── Zuweisung an eine Person ── */
-.t-assign{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
-  color:var(--accent-2);background:rgba(167,139,250,.15);padding:2px 8px;border-radius:var(--r-pille);
-  margin-left:6px;vertical-align:middle;white-space:nowrap}
+.t-assign{display:inline-flex;align-items:center;gap:var(--s4);font-size:.66rem;font-weight:700;
+  color:var(--accent-2);background:rgba(167,139,250,.15);padding:var(--s2) var(--s8);border-radius:var(--r-pille);
+  margin-left:var(--s6);vertical-align:middle;white-space:nowrap}
 .t-assign.me{color:var(--accent);background:rgba(34,211,238,.18)}
 
 /* ── Wischen zum Abhaken ──
    Die Karte lässt sich nach rechts ziehen; dahinter erscheint ein Haken. */
 .todo,.pp-item{position:relative;overflow:hidden;touch-action:pan-y}
-.swipe-hint{position:absolute;inset:0;display:flex;align-items:center;padding-left:18px;
+.swipe-hint{position:absolute;inset:0;display:flex;align-items:center;padding-left:var(--s16);
   background:linear-gradient(90deg, rgba(34,211,238,.35), transparent 60%);
   opacity:0;pointer-events:none;font-size:1.3rem}
 .swiping .swipe-hint{opacity:1}
-.swipe-body{position:relative;display:flex;gap:12px;align-items:flex-start;width:100%;
+.swipe-body{position:relative;display:flex;gap:var(--s12);align-items:flex-start;width:100%;
   transition:transform .38s var(--spring)}
 .swiping .swipe-body{transition:none}
 
 /* ── Schnellfilter-Chips (Aufgaben) ── */
-.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip-row{display:flex;gap:var(--s8);flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;min-height:44px;
   background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--text-2);
-  padding:0 16px;border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
+  padding:0 var(--s16);border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
   font-size:.84rem;cursor:pointer;
   transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
 .chip:hover{color:var(--text);border-color:var(--accent)}
@@ -2154,19 +2161,19 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
 /* ── Rollen-Kennzeichen ── */
 .role-badge{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.4px;
-  padding:2px 8px;border-radius:var(--r-pille);vertical-align:middle;
+  padding:var(--s2) var(--s8);border-radius:var(--r-pille);vertical-align:middle;
   background:rgba(255,255,255,.08);color:var(--text-2);border:1px solid var(--line-2)}
 .role-badge.leiter{background:rgba(167,139,250,.16);color:var(--accent-2);border-color:rgba(167,139,250,.4)}
 .tag.leiter{background:rgba(167,139,250,.12);color:var(--accent-2)}
 
 /* ── Wochen-Sicherungen im Archiv ── */
-.wk-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;
-  background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:8px}
-.wk-info{flex:1;min-width:150px;display:flex;flex-direction:column;gap:2px}
+.wk-row{display:flex;align-items:center;gap:var(--s12);flex-wrap:wrap;padding:var(--s12) var(--s12);
+  background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:var(--s8)}
+.wk-info{flex:1;min-width:150px;display:flex;flex-direction:column;gap:var(--s2)}
 .wk-info b{font-family:var(--font-head);font-size:1.02rem}
 .wk-info span{font-size:.76rem;color:var(--text-3)}
-.wk-btns{display:flex;gap:8px;flex-wrap:wrap}
-.wk-btns .btn{min-height:44px;padding:0 14px}
+.wk-btns{display:flex;gap:var(--s8);flex-wrap:wrap}
+.wk-btns .btn{min-height:44px;padding:0 var(--s12)}
 
 /* Wer Animationen im System abgeschaltet hat, bekommt keine */
 @media (prefers-reduced-motion:reduce){
@@ -2175,12 +2182,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 }
 
 /* ── Wiederhol-Badge bei Aufgaben ── */
-.t-rep{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
+.t-rep{display:inline-flex;align-items:center;gap:var(--s4);font-size:.66rem;font-weight:700;
   text-transform:uppercase;letter-spacing:.4px;color:var(--accent-2);
-  background:rgba(34,211,238,.12);padding:2px 7px;border-radius:var(--r-pille);margin-left:6px;vertical-align:middle}
-.t-due{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;
+  background:rgba(34,211,238,.12);padding:var(--s2) var(--s6);border-radius:var(--r-pille);margin-left:var(--s6);vertical-align:middle}
+.t-due{display:inline-flex;align-items:center;gap:var(--s4);font-size:.66rem;font-weight:700;
   letter-spacing:.3px;color:var(--text-2);background:rgba(255,255,255,.06);
-  padding:2px 7px;border-radius:var(--r-pille);margin-left:6px;vertical-align:middle}
+  padding:var(--s2) var(--s6);border-radius:var(--r-pille);margin-left:var(--s6);vertical-align:middle}
 .t-due.over{background:rgba(239,68,68,.16);color:var(--danger-tx)}
 
 /* ── Auffälliger Unread-Marker auf Nav ── */
@@ -2192,27 +2199,27 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 @keyframes ndotPulse{0%{box-shadow:0 0 0 0 rgba(251,191,36,.55)}70%{box-shadow:0 0 0 7px rgba(251,191,36,0)}100%{box-shadow:0 0 0 0 rgba(251,191,36,0)}}
 
 /* ── Entwurf zwischenspeichern ── */
-.draft-row{display:flex;gap:8px;align-items:center;margin-top:4px}
+.draft-row{display:flex;gap:var(--s8);align-items:center;margin-top:var(--s4)}
 .draft-note{font-size:.76rem;color:var(--text-3);flex:1}
 .draft-note b{color:var(--accent-d)}
 
 /* ── Material-Seite ── */
-.mat-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 16px}
+.mat-bar{display:flex;gap:var(--s10);align-items:center;flex-wrap:wrap;margin:var(--s2) 0 var(--s16)}
 .mat-bar select{flex:1;min-width:160px}
-.mat-table{margin-top:4px}
+.mat-table{margin-top:var(--s4)}
 /* Schmalere Felder und der Löschknopf nur für die Verwaltung: der Name
    bekommt dadurch statt 103 rund 190 Pixel. Enger bricht
    „Bein-Manschetten Größe 2 (Paare)" auf fünf Zeilen um. */
-.mat-head,.mat-row{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:5px;align-items:center}
+.mat-head,.mat-row{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:var(--s4);align-items:center}
 .mat-head.chef,.mat-row.chef{grid-template-columns:1fr 50px 50px 50px 30px}
 /* Die Kopfzeile klebt: bei 22 Artikeln weiß man sonst nach dem Scrollen
    nicht mehr, welche Spalte „Soll" und welche „Ist" ist. */
-.mat-head{position:sticky;top:0;z-index:2;padding:6px 0 8px;background:var(--bg-2);
+.mat-head{position:sticky;top:0;z-index:2;padding:var(--s6) 0 var(--s8);background:var(--bg-2);
   color:var(--text-3);font-size:.66rem;text-transform:uppercase;
   letter-spacing:.4px;font-weight:700;overflow:hidden}
 .mat-head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mat-head span:nth-child(2),.mat-head span:nth-child(3),.mat-head span:nth-child(4){text-align:center}
-.mat-row{padding:7px 0;border-top:1px solid var(--line)}
+.mat-row{padding:var(--s6) 0;border-top:1px solid var(--line)}
 /* min-width:0 ist hier Pflicht: eine Grid-Spalte "1fr" ist von sich aus
    mindestens so breit wie ihr laengstes Wort. "Desinfektionsmittel" hat
    deshalb die Zahlenfelder und das Loeschkreuz aus der Karte geschoben.
@@ -2223,7 +2230,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
    22 Artikel sieht man so von weitem, wo etwas fehlt. */
 .mat-row.fehlt{background:rgba(251,191,36,.06)}
 .mat-row .num{width:100%;min-height:44px;background:rgba(255,255,255,.05);border:1.5px solid var(--line-2);
-  border-radius:var(--r-xs);padding:7px 3px;color:var(--text);text-align:center;min-height:40px;font-size:15px}
+  border-radius:var(--r-xs);padding:var(--s6) var(--s2);color:var(--text);text-align:center;min-height:40px;font-size:15px}
 .mat-row input.num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,184,92,.13)}
 .mat-row input.limit{border-style:dashed;color:var(--accent-2)}
 .mat-row input.limit[readonly]{opacity:.65;border-style:solid;color:var(--text-2);cursor:default}
@@ -2234,50 +2241,50 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .mat-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:1.1rem;
   border-radius:var(--r-xs);height:34px}
 .mat-del:hover{color:var(--danger-tx);background:rgba(239,68,68,.1)}
-.mat-add{display:flex;gap:8px;margin-top:14px}
+.mat-add{display:flex;gap:var(--s8);margin-top:var(--s12)}
 .mat-add input{flex:1}
-.mat-saved{font-size:.78rem;color:var(--accent-d);min-height:1.1em;margin-top:10px;transition:opacity .3s}
+.mat-saved{font-size:.78rem;color:var(--accent-d);min-height:1.1em;margin-top:var(--s10);transition:opacity .3s}
 /* „Wo etwas defekt ist" – dieselbe Sprache wie „Wo etwas los ist" auf der
    Startseite: Studio, Zahl, ein Tipp führt hin. */
-.dev-wo-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.dev-wo{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;
+.dev-wo-row{display:flex;gap:var(--s8);flex-wrap:wrap;margin-bottom:var(--s12)}
+.dev-wo{display:inline-flex;align-items:center;gap:var(--s8);min-height:44px;padding:0 var(--s12);
   border-radius:var(--r-pille);cursor:pointer;font-family:var(--font-body);font-weight:600;font-size:.86rem;
   border:1px solid rgba(251,78,109,.4);background:rgba(251,78,109,.1);color:var(--danger-tx);
   transition:transform .25s var(--spring),background .2s}
 .dev-wo b{font-family:var(--font-head);font-size:.95rem}
 /* Wartende Anträge sind kein Defekt – gelb statt rot */
-.dev-wo.warten{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12);color:#c2761a}
-.dev-wo.warten{color:var(--warm-tx)}
+.dev-wo.warten{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.12);
+  color:var(--warm-tx)}
 @media (hover:hover){ .dev-wo.warten:hover{background:rgba(251,191,36,.2)} }
 .dev-wo:active{transform:scale(.94)}
 @media (hover:hover){ .dev-wo:hover{background:rgba(251,78,109,.18)} }
 
 .mat-alert-go{margin-left:auto;flex-shrink:0;min-height:44px;background:none;border:none;cursor:pointer;
   color:inherit;font-family:var(--font-body);font-weight:800;font-size:.8rem;
-  text-decoration:underline;padding:6px 2px;min-height:36px}
-.mat-alert{align-items:center;gap:10px;padding:11px 15px;margin-bottom:14px;border-radius:var(--r-md);
+  text-decoration:underline;padding:var(--s6) var(--s2);min-height:36px}
+.mat-alert{align-items:center;gap:var(--s10);padding:var(--s10) var(--s16);margin-bottom:var(--s12);border-radius:var(--r-md);
   background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);color:var(--warm-tx);
   font-size:.9rem;font-weight:600}
 .mat-alert.show{display:flex}
 
 /* ── Mitarbeiterverwaltung (Chef) ── */
-.emp{display:flex;align-items:flex-start;gap:10px;padding:13px 0;border-top:1px solid var(--line)}
+.emp{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s12) 0;border-top:1px solid var(--line)}
 .emp:first-child{border-top:none}
 .emp-info{flex:1;min-width:0}
 .emp-info b{font-family:var(--font-head);font-size:1.05rem;display:block}
 .emp-info .em-mail{color:var(--text-3);font-size:.8rem;word-break:break-all}
-.emp-info .em-studios{color:var(--accent-d);font-size:.82rem;margin-top:3px}
-.emp-actions{display:flex;gap:6px;flex-shrink:0}
-.emp .studio-checks{margin-top:10px}
+.emp-info .em-studios{color:var(--accent-d);font-size:.82rem;margin-top:var(--s2)}
+.emp-actions{display:flex;gap:var(--s6);flex-shrink:0}
+.emp .studio-checks{margin-top:var(--s10)}
 .em-saved{font-size:.78rem;color:var(--accent-d);min-height:1em;word-break:break-word}
 /* Der Hinweis zur Sicherung nennt Dienstkonto und Rollennamen – der muss
    vollständig lesbar sein und darf sich auch markieren lassen. */
-.backup-fehler{line-height:1.45;margin-top:8px;padding:10px 12px;border-radius:var(--r-sm);
+.backup-fehler{line-height:1.45;margin-top:var(--s8);padding:var(--s10) var(--s12);border-radius:var(--r-sm);
   background:rgba(251,78,109,.10);border:1px solid rgba(251,78,109,.30);
   user-select:text;-webkit-user-select:text}
 /* Stand der letzten nächtlichen Sicherung. Grün = durchgekommen,
    rot = seit dem letzten Versuch kaputt, grau = noch nie gelaufen. */
-.sich-stand{font-size:.82rem;line-height:1.45;margin:0 0 10px;padding:10px 12px;
+.sich-stand{font-size:.82rem;line-height:1.45;margin:0 0 var(--s10);padding:var(--s10) var(--s12);
   border-radius:var(--r-sm);background:var(--bg-soft);border:1px solid var(--line);
   color:var(--text-2);user-select:text;-webkit-user-select:text}
 .sich-stand b{color:var(--text)}
@@ -2285,8 +2292,8 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .sich-stand.schlecht{background:rgba(251,78,109,.10);border-color:rgba(251,78,109,.30)}
 
 /* ── Dokumente ── */
-.doc{display:flex;align-items:center;gap:11px;padding:10px 13px;background:var(--bg-2);
-  border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:8px}
+.doc{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);background:var(--bg-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:var(--s8)}
 .doc .doc-ic{width:42px;height:42px;border-radius:var(--r-sm);flex-shrink:0;display:grid;place-items:center;
   background:rgba(34,211,238,.12);color:var(--accent-2)}
 .doc .doc-ic svg{width:20px;height:20px}
@@ -2295,24 +2302,24 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
    vorher mitten im Wort zerschnitten. */
 .doc-info b{font-family:var(--font-head);font-size:1.02rem;display:block;
   overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
-.doc-info .doc-meta{color:var(--text-3);font-size:.78rem;margin-top:2px}
+.doc-info .doc-meta{color:var(--text-3);font-size:.78rem;margin-top:var(--s2)}
 /* Nur noch „⋯" und ein Pfeil – die Zeile selbst öffnet das Dokument */
-.doc-actions{display:flex;gap:2px;flex-shrink:0;align-items:center}
-.doc-go{color:var(--text-3);font-size:1.3rem;line-height:1;padding-left:2px}
+.doc-actions{display:flex;gap:var(--s2);flex-shrink:0;align-items:center}
+.doc-go{color:var(--text-3);font-size:1.3rem;line-height:1;padding-left:var(--s2)}
 .doc{cursor:pointer;transition:background .2s,border-color .2s}
 .doc:active{background:rgba(255,255,255,.05)}
 @media (hover:hover){ .doc:hover{border-color:var(--line-2)} }
 .doc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.t-doc{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:.82rem;font-weight:600;
+.t-doc{display:inline-flex;align-items:center;gap:var(--s4);margin-top:var(--s6);font-size:.82rem;font-weight:600;
   color:var(--accent-2);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);
-  padding:5px 11px;border-radius:var(--r-pille)}
+  padding:var(--s4) var(--s10);border-radius:var(--r-pille)}
 
 /* Löschen-Buttons (Chat & Ankündigungen) */
 .msg-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.78rem;line-height:1;
-  padding:2px 5px;border-radius:var(--r-xs);margin-left:2px;opacity:.55;flex-shrink:0}
+  padding:var(--s2) var(--s4);border-radius:var(--r-xs);margin-left:var(--s2);opacity:.55;flex-shrink:0}
 .msg-del:hover{color:var(--danger-tx);background:rgba(239,68,68,.14);opacity:1}
 .ann-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.92rem;line-height:1;
-  padding:3px 7px;border-radius:var(--r-xs);margin-left:6px;flex-shrink:0}
+  padding:var(--s2) var(--s6);border-radius:var(--r-xs);margin-left:var(--s6);flex-shrink:0}
 .ann-del:hover{color:var(--danger-tx);background:rgba(239,68,68,.12)}
 .chat-author{cursor:pointer}
 .chat-author:hover{text-decoration:underline}
