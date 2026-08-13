@@ -20,12 +20,6 @@
 <title>StudioChat – Körperformen Team</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<!-- Die Schrift darf das Zeichnen der Seite nicht blockieren. Als normales
-     Stylesheet im Kopf hielt sie die App bei langsamer Verbindung 12,6 s vor
-     einer weissen Seite fest — auch den Ladebildschirm. media="print" laesst
-     es zunaechst als druck-only gelten und blockiert nichts; onload stellt
-     auf "all" um. Bis dahin zeichnet die App mit system-ui.
-     display=swap hilft hier nicht: das betrifft nur die Schriftdatei. -->
 <link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
 <noscript><link rel="stylesheet"
@@ -2357,18 +2351,8 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </svg>
     </div>
     <div class="auth-brand">STUDIO<b>CHAT</b></div>
-    <!-- Der Firmenname wird zur Laufzeit gesetzt (firmaNameAnwenden).
-         Fest verdrahtet stand hier bis zum 12.8.2026 "Körperformen" —
-         ein Kunde haette beim Oeffnen SEINES Links den Namen eines
-         fremden Betriebs gesehen, noch vor dem Anmelden. Der Text hier
-         ist nur die Anzeige, bis die Firma geladen ist. -->
     <p class="auth-sub" id="authSub">Team-Portal</p>
 
-    <!-- Umschalter Anmelden / Konto anlegen.
-         Bewusst versteckt, solange der Chef die Selbstanmeldung nicht
-         eingeschaltet hat: dann bleibt der Bildschirm so kurz wie bisher
-         und niemand probiert einen Weg, der ohnehin abgewiesen würde.
-         Eingeschaltet wird das in Verwaltung → Team. -->
     <div class="auth-tabs" id="authTabs" style="display:none">
       <button class="auth-tab active" type="button" data-authmode="login">Anmelden</button>
       <button class="auth-tab" type="button" data-authmode="register">Konto anlegen</button>
@@ -2418,9 +2402,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div class="pw-wrap"><input class="inp" id="rgPw2" type="password" placeholder="Passwort" autocomplete="new-password" />
             <button type="button" class="pw-auge" data-pw="rgPw2" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
       </div>
-      <!-- Nur sichtbar, wenn im Projekt ein Firmencode gesetzt ist.
-           Ohne Code bleibt das Feld weg – so bleibt die Anmeldung fuer
-           Betriebe ohne Code genauso kurz wie vorher. -->
       <div class="field" id="rgCodeWrap" style="display:none">
         <label for="rgCode">Firmencode</label>
         <input class="inp" id="rgCode" type="text" placeholder="Bekommst du von der Leitung"
@@ -2434,11 +2415,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
 <!-- ── App ── -->
 <div class="app" id="app">
-  <!-- Bestätige deine E-Mail.
-       Bewusst eine Leiste und keine Sperre: wer die App aussperrt, weil
-       eine Mail im Spam liegt, sperrt ein ganzes Studio-Team aus. Die
-       echte Schranke ist die Freigabe durch den Chef – und der sieht in
-       Verwaltung → Team, ob die Adresse bestätigt ist. -->
   <div class="mail-leiste" id="mailLeiste" style="display:none">
     <span class="ml-ico" aria-hidden="true"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
     <span class="ml-text" id="mailText">Bitte bestätige deine E-Mail-Adresse.</span>
@@ -2476,26 +2452,11 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <!-- Reiter innerhalb der gewählten Gruppe -->
       <nav class="subnav" id="subnav"></nav>
 
-      <!-- ============================================================
-           SEITE: START – Überblick über alles Wichtige
-           ============================================================ -->
+      <!-- START -->
       <section class="view" id="view-home">
         <div class="view-head shrink"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <!-- Die Startseite ist jetzt in drei benannte Blöcke geteilt.
-               Vorher war es eine Reihe gleich aussehender Kacheln und Karten;
-               man musste jedes Mal neu lesen, was wozu gehört. -->
 
-          <!-- 0. Einrichtung — nur beim Chef, nur solange etwas fehlt.
-               Ein neuer Kunde meldet sich zum ersten Mal an und sieht
-               eine leere App. Er weiss nicht, was zuerst dran ist, und
-               fragt entweder nach oder hört auf. Diese Karte beantwortet
-               genau eine Frage: was jetzt.
-
-               Sie hakt sich SELBST ab. Es gibt keine Kästchen zum
-               Ankreuzen — jeder Schritt liest nach, ob er wirklich getan
-               ist. Eine Liste, die man abhaken kann, ohne etwas zu tun,
-               ist nach zwei Tagen eine Lüge. -->
           <div class="card" id="setupCard" style="display:none">
             <div class="karten-kopf">
               <h3>Einrichtung</h3>
@@ -2516,13 +2477,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <div id="myShiftList"></div>
           </div>
 
-          <!-- 2. Was man wissen sollte, ohne es zu suchen ──
-               Aus dem Betrieb: „ich würde gerne mehr Infos auf der
-               Startseite haben, zum Beispiel das schwarze Brett, damit
-               man das nicht überall suchen muss."
-               Vorher stand hier nur „2 neue Infos von der Leitung ›" –
-               man musste also erst klicken, um zu erfahren, worum es
-               geht. Jetzt steht der Text da. -->
           <div class="sec-head" id="homeLesenHead" style="display:none"><span>Zum Lesen</span><i></i></div>
           <div class="card" id="homeAnnCard" data-fold="startinfos" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
@@ -2555,12 +2509,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- CHAT -->
-      <!-- ============================================================
-           SEITE: CHAT – Gruppen-Chat je Kanal (Allgemein + pro Studio)
-           ============================================================ -->
-      <!-- Kein Seitenkopf: In einem Messenger IST der Verlauf die Seite.
-           Überschrift und Untertitel kosteten 81 Pixel, die jeden Tag
-           dasselbe erzählten – der Verlauf bekam nur 37 % des Bildschirms. -->
       <section class="view" id="view-chat">
         <div class="notif-banner" id="notifBanner">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
@@ -2568,8 +2516,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <button class="btn btn-primary btn-sm" id="notifEnable">Aktivieren</button>
         </div>
         <div class="chat-channels" id="chatChannels"></div>
-        <!-- Angeheftete Nachricht: bleibt oben stehen, damit Wichtiges nicht
-             im Verlauf verschwindet -->
         <div class="pin-bar" id="pinBar">
           <span class="pin-ico"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M5 12h14l-2-3V4H7v5z"/></svg></span>
           <span class="pin-txt" id="pinText"></span>
@@ -2612,8 +2558,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <button class="attach-btn" id="chatAttach" aria-label="Anhängen" title="Foto oder Umfrage">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             </button>
-            <!-- Menü statt einer dritten Schaltfläche: auf einem 360-Pixel-Handy
-                 blieben für das Schreibfeld sonst nur 108 Pixel übrig. -->
             <div class="attach-menu" id="attachMenu">
               <button data-att="foto"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto</button>
               <button data-att="umfrage"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Umfrage</button>
@@ -2622,8 +2566,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <button class="attach-btn" id="chatMic" aria-label="Sprachnachricht aufnehmen" title="Sprachnachricht aufnehmen">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/><path d="M8 22h8"/></svg>
           </button>
-          <!-- Kurzer Platzhalter: der lange Hinweis passte auf einem 390er-Handy
-               nicht ins Feld und wurde mitten im Wort abgeschnitten. -->
           <textarea class="inp" id="chatText" rows="1" placeholder="Nachricht …"
             title="Enter sendet, Shift+Enter macht eine neue Zeile. @ erwähnt jemanden." maxlength="2000"></textarea>
           <button class="btn btn-primary btn-sm" id="chatSend" aria-label="Senden">
@@ -2633,21 +2575,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- TODOS -->
-      <!-- ============================================================
-           SEITE: AUFGABEN – To-do-Liste mit Suche, Fortschritt und Foto
-           ============================================================ -->
-      <!-- Der Kopf schrumpft beim Scrollen (Klasse "tight"). Nur die
-           Filterleiste bleibt oben kleben – sie ist das Einzige, was man auch
-           weiter unten noch braucht. -->
       <section class="view" id="view-todos">
         <div class="view-head shrink">
           <div class="vh-line">
             <div class="vh-text">
               <h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p>
             </div>
-            <!-- Neue Aufgaben ließen sich nur über Verwaltung → Erstellen
-                 anlegen: drei Wechsel weg von der Liste, auf die man dabei
-                 schaut. -->
             <button class="kopf-plus" id="todoNew" data-manage-only="1"
               title="Neue Aufgabe erstellen" aria-label="Neue Aufgabe erstellen">+ Neu</button>
           </div>
@@ -2679,9 +2612,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- ANNOUNCEMENTS -->
-      <!-- ============================================================
-           SEITE: INFOS – Ankündigungen der Leitung mit Lesebestätigung
-           ============================================================ -->
       <section class="view" id="view-ann">
         <div class="view-head shrink"><h2>Ankündigungen</h2><p>Neuigkeiten von der Leitung. Gelesenes wird automatisch bestätigt.</p></div>
         <div class="scroll-area" data-shrinks="1">
@@ -2691,9 +2621,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- MATERIAL -->
-      <!-- ============================================================
-           SEITE: MATERIAL – Bestand pro Studio, Nachbestell-Alarm, Export
-           ============================================================ -->
       <section class="view" id="view-material">
         <div class="view-head shrink"><h2>Material</h2><p>Trage ein, was da ist. Was fehlt, rechnet die App selbst aus.</p></div>
         <div class="scroll-area" data-shrinks="1">
@@ -2709,9 +2636,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
           <div class="mat-alert" id="matAlert" style="display:none"></div>
 
-          <!-- Einkaufsliste: fasst zusammen, was über ALLE Studios fehlt.
-               Sonst müsste der Chef 14 Studios einzeln durchklicken, um zu
-               wissen, was er bestellen muss. -->
           <div class="card" id="fcCard" style="display:none" data-fold="vorhersage">
             <h3 id="fcTitle">Reicht noch</h3>
             <p class="hint">Aus den Wochen-Sicherungen im Archiv gerechnet – keine Schätzung,
@@ -2730,8 +2654,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <button class="btn btn-ghost btn-sm" id="shopXls"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Als Excel</button>
               <button class="btn btn-ghost btn-sm" id="shopCopy"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopieren</button>
               <button class="btn btn-ghost btn-sm" id="shopMail"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Bestellmail</button>
-              <!-- Der Gesamt-Export gehört hierher, nicht über die Liste, in
-                   die täglich Zahlen eingetragen werden. -->
               <button class="btn btn-ghost btn-sm" id="matExport" style="display:none"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alle Studios</button>
             </div>
             <div class="field" style="margin-top:10px;margin-bottom:0">
@@ -2741,9 +2663,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
 
           <div class="card" style="margin-bottom:14px">
-            <!-- Der dreizeilige Erklärsatz stand hier dauerhaft. „Soll" und
-                 „Ist" erklären sich über der Spalte; „Fehlt" wird gerechnet
-                 und erscheint als Abzeichen am Artikel. -->
             <div class="mat-head" id="matHead"><span>Material</span><span>Soll</span><span>Ist</span><span>Fehlt</span><span></span></div>
             <div class="mat-table" id="matTable"></div>
             <div class="mat-add">
@@ -2756,13 +2675,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- PUTZPLAN -->
-      <!-- ============================================================
-           SEITE: PUTZPLAN – Reinigungsaufgaben pro Studio
-             - Chef legt Aufgaben mit Wiederholung an
-             - Mitarbeiter haken ab (mit Name + Uhrzeit)
-             - Notizen-Bereich für Mitarbeiter
-             - wird wie Material live in Google Sheets gespiegelt
-           ============================================================ -->
       <section class="view" id="view-putzplan">
         <div class="view-head shrink"><h2>Putzplan</h2><p>Aufgabe erledigt? Einfach antippen – Name und Uhrzeit werden automatisch vermerkt.</p></div>
         <div class="scroll-area" data-shrinks="1">
@@ -2777,16 +2689,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <h3 id="ppListTitle">Putzplan</h3>
               <span class="todo-count" id="ppProgress"></span>
             </div>
-            <!-- ── Wer hakt gerade ab? ──
-                 Am Anfang bekommt nicht jede Person einen eigenen Zugang,
-                 sondern jedes Studio einen. Ohne dieses Feld steht bei
-                 allem derselbe Name, und der Chef weiss nicht, wer was
-                 gemacht hat.
-
-                 Bewusst EINMAL oben statt bei jedem Haken: zwölf
-                 Putzpunkte × einmal tippen wäre der sichere Weg, dass es
-                 niemand ausfüllt. Das Kürzel bleibt auf dem Gerät, bis
-                 es jemand ändert — wie ein Namensschild zum Schichtbeginn. -->
             <div class="pp-wer" id="ppWerZeile">
               <label for="ppKuerzel">Wer hakt ab?</label>
               <input class="inp" id="ppKuerzel" type="text" maxlength="20"
@@ -2841,14 +2743,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- GERÄTE -->
-      <!-- ============================================================
-           SEITE: GERÄTE – Bestand, Defekte melden, Verlauf je Gerät
-           ============================================================ -->
       <section class="view" id="view-geraete">
         <div class="view-head shrink"><h2>Geräte</h2><p>Defekt melden – der Verlauf bleibt am Gerät.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <!-- Nur für die Verwaltung ab zwei Studios: in welchem Studio
-               überhaupt etwas kaputt ist. -->
           <div id="devWo" style="display:none"></div>
 
           <div class="mat-bar">
@@ -2880,9 +2777,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- TEAM -->
-      <!-- ============================================================
-           SEITE: TEAM – Schichtplan, Abwesenheiten, Übergabe, Schwarzes Brett
-           ============================================================ -->
       <section class="view" id="view-team">
         <div class="view-head shrink"><h2>Team</h2><p>Schichtplan, Abwesenheiten, Übergaben und Aushänge.</p></div>
         <div class="scroll-area" data-shrinks="1">
@@ -2929,11 +2823,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
 
           <!-- Abwesenheiten -->
-          <!-- Wer diesen Reiter öffnet, will fast immer LESEN: „wer ist
-               nächste Woche im Urlaub?". Das Melde-Formular stand vorher
-               davor und war 536 Pixel hoch – die Liste begann erst bei
-               Pixel 403 (Mitarbeiter) bzw. 647 (Chef). Jetzt: Liste zuerst,
-               Formular darunter und zugeklappt. -->
           <div id="teamPaneAbwesend" style="display:none">
             <div class="card"><h3>Kommende Abwesenheiten</h3><div id="absList"></div></div>
             <div class="card" data-fold="abwmelden">
@@ -2992,9 +2881,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- DOKUMENTE -->
-      <!-- ============================================================
-           SEITE: DOKUMENTE – Dateien und Links für das Team
-           ============================================================ -->
       <section class="view" id="view-docs">
         <div class="view-head shrink"><h2>Dokumente</h2><p>Dateien und Links fürs Team.</p></div>
         <div class="scroll-area" data-shrinks="1">
@@ -3023,9 +2909,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- DIREKTNACHRICHTEN -->
-      <!-- ============================================================
-           SEITE: DIREKT – private 1:1-Nachrichten (wie WhatsApp)
-           ============================================================ -->
       <section class="view" id="view-dm">
         <div class="view-head"><h2 id="dmTitle">Direkt</h2><p>Private Nachrichten an einzelne Personen. Niemand sonst liest mit.</p></div>
         <div class="scroll-area" id="dmListWrap">
@@ -3068,20 +2951,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- ARCHIV (nur Chef) -->
-      <!-- ============================================================
-           SEITE: ARCHIV – erledigte Aufgaben (nur Chef)
-           ============================================================ -->
       <section class="view" id="view-archive">
-        <!-- Der Text wird gleich von applyRoleVisibility ersetzt (Chef
-             sieht mehr als ein Leiter). Er steht hier trotzdem richtig:
-             beim ersten Bild ist er kurz sichtbar, und ein Satz, der nur
-             eine Zehntelsekunde lang falsch ist, ist trotzdem falsch. -->
         <div class="view-head shrink"><h2>Archiv</h2><p id="archSubtitle">Tages-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <!-- Tages-Sicherungen von Material, Putzplan und Aufgaben.
-               Bis zum 11.8.2026 lief das wöchentlich und im Browser des
-               Chefs. Ältere Einträge tragen deshalb ein „Woche"-Abzeichen
-               — sie bleiben liegen, sie sind ja echte Stände. -->
           <div class="card" id="weekArchiveCard">
             <h3>Sicherungen</h3>
             <p class="hint">Jede Nacht um 23:45 wird der Stand des Tages gesichert:
@@ -3104,17 +2976,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       </section>
 
       <!-- CHEF -->
-      <!-- ============================================================
-           SEITE: CHEF-BEREICH – Dashboard, Aufgaben erteilen, Mitarbeiter
-           ============================================================ -->
       <section class="view" id="view-chef">
         <div class="view-head shrink"><h2 id="chefTitle">Chef-Bereich</h2><p id="chefSub">Hier verwaltest du alles. Nur du siehst diesen Bereich.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <!-- Der Verwaltungsbereich ist inzwischen eine eigene kleine App.
-               Deshalb beginnt er mit einer Übersicht: erst sehen, was es
-               gibt, dann hineingehen, mit Zurück wieder heraus. Die Reiter
-               oben bleiben zusätzlich, sobald man drin ist – wer sich
-               auskennt, springt damit direkt weiter. -->
           <div class="chef-home" id="chefHome"></div>
 
           <div class="chef-bar" id="chefBar" style="display:none">
@@ -3126,10 +2990,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
 
           <!-- ── Reiter 1: Überblick ── -->
-          <!-- „Braucht Aufmerksamkeit" stand vorher UNTER der Studio-Tabelle,
-               also 1.600 Pixel weiter unten. Wer den Überblick öffnet, will
-               zuerst wissen, was hakt – die Tabelle ist der Beleg dazu und
-               liegt jetzt darunter, zugeklappt. -->
           <div class="chef-pane" data-cpane="ueberblick">
           <div class="dash-grid" id="dashGrid"></div>
           <div class="card">
@@ -3147,11 +3007,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
           <!-- ── Reiter 2: Erstellen ── -->
           <div class="chef-pane" data-cpane="erstellen" style="display:none">
-          <!-- Reihenfolge nach Häufigkeit: „Neue Aufgabe" ist der Grund,
-               aus dem dieser Reiter geöffnet wird – auch der Knopf „+ Neu"
-               auf der Aufgabenseite landet hier. Die Ankündigung stand
-               vorher davor und schob das Aufgabenformular 350 Pixel nach
-               unten. -->
           <div class="card" data-fold="neueaufgabe" data-fold-offen="1" data-nurwenn="todos">
             <h3>Neue Aufgabe erstellen</h3>
             <p class="hint">Einem oder allen Studios zuweisen.</p>
@@ -3221,9 +3076,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
           <!-- ── Reiter 3: Team ── -->
           <div class="chef-pane" data-cpane="team" style="display:none">
-          <!-- Wartende Konten stehen GANZ OBEN und ohne Zuklappen:
-               jemand sitzt da und kommt nicht rein. Die Karte
-               verschwindet komplett, wenn niemand wartet. -->
           <div class="card" id="freigabeKarte" data-chef-only="1" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3>Wartet auf Freigabe</h3>
@@ -3284,9 +3136,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <p class="hint">Rolle und Studios anpassen oder Zugang entfernen.</p>
             <div id="empList"></div>
           </div>
-          <!-- Chef-Konten standen bisher in keiner Liste: die Team-Übersicht
-               zeigt nur Mitarbeiter und Leiter. Man konnte also nicht sehen,
-               wer alles Vollzugriff hat. -->
           <div class="card" data-fold="chefzugaenge" data-chef-only="1">
             <h3>Chef-Zugänge</h3>
             <p class="hint">Alle Konten mit vollem Zugriff auf alle Studios. Sie bekommen
@@ -3308,9 +3157,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
 
           <!-- ── Reiter 4: Auswertung ── -->
-          <!-- Nachweise: Erste Hilfe, Trainerlizenz, EMS-Einweisung.
-               Nur der Chef sieht diesen Bereich; die Sicherheitsregeln lassen
-               sonst nur die betroffene Person an ihre eigenen Nachweise. -->
           <div class="chef-pane" data-cpane="standorte" style="display:none">
             <div class="card">
               <h3>Studios</h3>
@@ -3371,10 +3217,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <button class="btn btn-primary" id="fnBtn">Firma anlegen</button>
               <div id="fnErgebnis" style="display:none;margin-top:16px"></div>
             </div>
-            <!-- Wartungsschritt, den es nur EINMAL braucht. Steht hier
-                 und nicht in einem Skript, weil ein Schritt, der einen
-                 Rechner mit Google-Zugang voraussetzt, irgendwann nicht
-                 stattfindet. -->
             <div class="card" data-fold="kontenfirma">
               <h3>Konten ohne Firma</h3>
               <p class="hint">Konten aus der Zeit vor der Mandantenfähigkeit haben
@@ -3460,10 +3302,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <p class="hint" id="rechtFehltText"></p>
               <button class="btn btn-ghost btn-sm" data-rechtauf="impressum">Ansehen</button>
             </div>
-          <!-- Was dieser Betrieb überhaupt benutzt. Steht bewusst GANZ
-               OBEN im System-Reiter: es ist die Einstellung, die ein
-               neuer Kunde als erstes sucht, wenn ihm die Hälfte der App
-               fremd vorkommt. -->
           <div class="card" data-fold="funktionen" data-chef-only="1">
             <h3>Funktionen</h3>
             <p class="hint">Was dieser Betrieb nicht braucht, muss auch niemand sehen.
@@ -3483,12 +3321,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               Modi lesbar bleibt.</p>
             <div id="markeWahl" class="marke-wahl"></div>
           </div>
-          <!-- Impressum und Datenschutz gehören dem BETREIBER, nicht dem
-               Programm. Bis zum 11.8.2026 standen sie in konfig.js — einer
-               Datei, die für das ganze Firebase-Projekt gilt und an die ein
-               Kunde gar nicht herankommt. Seit mehrere Firmen in einer
-               Datenbank liegen, ist das falsch: jeder trägt seine eigenen
-               Angaben ein, und zwar hier. -->
           <div class="card" data-fold="rechtform" data-chef-only="1">
             <h3>Rechtliche Angaben</h3>
             <p class="hint">Impressum und Datenschutz. Das sieht jeder — auch vor dem
@@ -3539,9 +3371,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               geprüft ist er damit nicht.</b> Vor dem Einsatz mit Beschäftigten gehört
               er einmal fachlich durchgesehen.</p>
           </div>
-          <!-- Fehler, die im Betrieb aufgetreten sind. Zugeklappt, aber
-               mit Zahl an der Überschrift — dieselbe Lehre wie beim
-               Firmen-Archiv: zugeklappt sieht aus wie leer. -->
           <div class="card" data-fold="fehler" data-chef-only="1">
             <h3>Fehler im Betrieb</h3>
             <p class="hint">Wenn bei jemandem etwas nicht lädt, steht es hier — auch
@@ -3562,9 +3391,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
             <button class="btn btn-ghost btn-sm" id="expXls" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alles als Excel speichern</button>
             <button class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alles als Daten-Datei (JSON)</button>
-            <!-- Bis zum 11.8.2026 stand hier nur „Alles" und es war die
-                 Hälfte. Jetzt steht in der Datei selbst ein Verzeichnis,
-                 und hier daneben die Kurzfassung. -->
             <p class="hint" style="margin-top:8px"><b>Was drin ist:</b> Aufgaben, Material,
               Putzplan, Chat, Geräte, Schichten, Abwesenheiten, Übergaben, Brett, Team,
               Infos, Dokument-Angaben und Nachweise. <b>Was nicht:</b> Direktnachrichten
@@ -3574,18 +3400,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               wird die komplette Datenbank gesichert. Die letzten sieben Tage bleiben liegen.
               Anders als die Dateien oben holt das nach einem versehentlichen Löschen wirklich
               alles zurück.</p>
-            <!-- Zeigt, ob die nächtliche Sicherung wirklich durchkommt. Ohne diese
-                 Zeile scheitert sie still und niemand merkt es. -->
             <div class="sich-stand" id="sichStand" style="display:none"></div>
-            <!-- Nur fuer den Betreiber: der Export umfasst die GANZE
-                 Datenbank, also alle Kunden auf einmal. Fuer den Chef
-                 eines einzelnen Betriebs waere das kein Knopf, sondern
-                 ein Missverstaendnis. Die naechtliche Sicherung laeuft
-                 fuer alle weiter. -->
             <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-admin-only="1">Jetzt zusätzlich sichern</button>
             <p class="em-saved" id="backupNote"></p>
-            <!-- Die Fehlermeldung nennt Dienstkonto und Rolle und ist deshalb
-                 länger als eine Zeile. -->
           </div>
           <div class="card" data-fold="trash" data-fold-offen="1">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
@@ -3636,9 +3453,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
   <nav class="mobnav" id="mobnav"></nav>
 </div>
 
-<!-- Konto angelegt, aber noch nicht freigegeben.
-     Eigener Bildschirm statt einer Fehlermeldung: das Konto ist ja in
-     Ordnung, es fehlt nur die Bestaetigung. -->
 <div id="warteWrap" style="display:none;position:fixed;inset:0;z-index:900;
      background:var(--bg);align-items:center;justify-content:center;
      padding:calc(24px + var(--sat)) 24px calc(24px + var(--sab))">
@@ -3669,8 +3483,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 </div>
 
 <!-- Tastenkürzel-Übersicht (nur am Rechner sinnvoll) -->
-<!-- Rechtliches. Muss auch OHNE Anmeldung erreichbar sein – ein
-     Impressum hinter einem Login ist keins. -->
 <div id="rechtModal">
   <div class="pm-box">
     <button class="lb-close" id="rechtClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -3692,8 +3504,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
   </div>
 </div>
 
-<!-- Druck-Bereich: normalerweise unsichtbar. Beim Drucken wird NUR dieser
-     Kasten gedruckt – schwarz auf weiß, ohne Menü und ohne Knöpfe. -->
 <div id="printArea"></div>
 
 <div class="toast" id="toast"></div>
@@ -3747,10 +3557,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <div id="pmPaneAussehen" style="display:none">
       <p class="hint" style="margin:2px 0 14px">Gilt nur auf diesem Gerät – ändert nichts für die anderen.</p>
 
-      <!-- Reihenfolge nach Häufigkeit: Hell/Dunkel und Schriftgröße stellt
-           man ein, weil man etwas nicht lesen kann – das ist dringend. Der
-           Chat-Hintergrund ist Geschmack und lag vorher ganz oben, während
-           Hell/Dunkel 700 Pixel weiter unten stand. -->
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:0 0 7px">Hell / Dunkel</label>
       <div class="opt-grid" id="thOpts"></div>
 
@@ -3781,9 +3587,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
         Du kannst sie selbst eintragen – die Geschäftsführung sieht, dass sie von dir
         kommen, und bestätigt sie, wenn ihr den Schein vorgelegt habt.</p>
       <div id="pmCerts"></div>
-      <!-- Eintragen darf jeder für SICH. Entfernen nicht: ein eigener
-           abgelaufener Nachweis, der lautlos verschwindet, ist genau das,
-           was die Liste „läuft bald ab" wertlos machen würde. -->
       <div class="card" id="pmCertNeu" style="margin-top:14px">
         <h3 style="font-size:.95rem">Nachweis eintragen</h3>
         <div class="field"><label for="myCertArt">Art</label>
@@ -3874,11 +3677,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <b id="tbWho"></b>
       <p id="tbWhere"></p>
     </div>
-    <!-- ── Warum ist das nicht erledigt? ──
-         Optional, und nur solange die Aufgabe offen ist. Der Grund ist
-         oft wichtiger als das Häkchen: „Mittel war leer" ist eine
-         Bestellung, „keine Zeit" ist eine Personalfrage, und beides
-         sieht der Chef sonst nie — er sieht nur eine rote Zahl. -->
     <div id="tbGrundBox" style="display:none">
       <label for="tbGrund">Warum nicht erledigt? <span class="hint" style="display:inline">optional</span></label>
       <input class="inp" id="tbGrund" type="text" maxlength="200"
@@ -3893,8 +3691,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
   </div>
 </div>
 
-<!-- Aktionen an einer Chat-Nachricht: gleitet von unten herein, dort wo der
-     Daumen ohnehin ist. Ersetzt fünf 21-Pixel-Symbole in der Blase. -->
 <div class="msg-sheet" id="msgSheet">
   <div class="ms-card">
     <div class="ms-head">
@@ -3908,9 +3704,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 </div>
 
 <!-- Gerät: Verlauf ansehen und Defekt melden -->
-<!-- ── Abo einer Firma setzen (Stufe A) ──
-     Von Hand durch den Betreiber. Sperrt nichts, kostet nichts, fasst
-     kein Geld an — es hält fest, was vereinbart ist. -->
 <div id="aboModal">
   <div class="pm-box">
     <button class="lb-close" id="aboClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -3961,11 +3754,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <button class="btn btn-ghost btn-sm" id="devmPhoto"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto</button>
       <span class="hint" id="devmPhotoNote" style="align-self:center"></span>
     </div>
-    <!-- Reihenfolge und Gewicht nach Häufigkeit: „Defekt melden" ist der
-         Grund, warum jemand dieses Fenster öffnet, und bekommt die volle
-         Breite. „Wieder in Ordnung" war vorher der auffälligste Knopf im
-         Fenster – wer schnell etwas melden wollte, hat damit ein defektes
-         Gerät versehentlich als in Ordnung gesetzt. -->
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
       <button class="btn btn-danger btn-sm" id="devmDefekt" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Defekt melden</button>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -4259,7 +4047,6 @@ function studiosNeuAufbauen(){
     .forEach(function(s){ STUDIOS_ALPHA.push(s.name); });
 }
 studiosNeuAufbauen();
-
 
 /* VAPID-Schlüssel für Push-Benachrichtigungen (auch bei gesperrtem Handy).
    Holen: Firebase Console → Projekteinstellungen → Cloud Messaging →

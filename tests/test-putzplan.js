@@ -39,13 +39,22 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
   if (!hat('Vorhänge waschen'))    errs.push('Nicht erledigte Einmal-Aufgabe fehlt – die darf nie verschwinden');
   if (!hat('Böden wischen'))       errs.push('Wiederkehrende Aufgabe fehlt');
 
-  // Was ginge in die Google-Tabelle?
+  /* Was ginge in die Google-Tabelle?
+     Seit dem 13.8. nicht mehr per fetch an script.google.com, sondern
+     ueber die Cloud Function sheetsPush — abgefangen wird deshalb der
+     Aufruf, nicht die Anfrage. */
   const tab = await page.evaluate(() => {
     const raus = [];
-    const echt = window.fetch;
-    window.fetch = function (u, o) {
-      try { if (/script\.google\.com/.test(String(u))) raus.push(JSON.parse(o.body)); } catch (e) {}
-      return Promise.resolve({ ok: true });
+    const echt = window.firebase.functions;
+    window.firebase.functions = function () {
+      const f = echt.apply(window.firebase, arguments);
+      return { httpsCallable: function (name) {
+        const w = f.httpsCallable(name);
+        return function (daten) {
+          if (name === 'sheetsPush') raus.push(daten);
+          return w(daten);
+        };
+      } };
     };
     return new Promise(resolve => {
       // Über den echten Weg: eine Notiz anlegen loest den Tabellen-Abgleich aus
@@ -53,9 +62,10 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
       inp.value = 'Test';
       document.getElementById('ppNoteAdd').click();
       setTimeout(() => {
-        window.fetch = echt;
-        const p = raus.filter(x => x && x.type === 'putzplan')[0];
-        resolve(p ? p.tasks.map(t => t.title) : null);
+        window.firebase.functions = echt;
+        const p = raus.filter(x => x && x.art === 'putzplan')[0];
+        const s = p && p.studios && p.studios[0];
+        resolve(s ? s.tasks.map(t => t.title) : null);
       }, 1400);
     });
   });
