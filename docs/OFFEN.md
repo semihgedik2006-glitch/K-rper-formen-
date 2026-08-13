@@ -1,6 +1,56 @@
 # Was noch offen ist
 
-Stand 11. August 2026.
+Stand 13. August 2026.
+
+## Auf einen Blick
+
+Das Ausführliche steht weiter unten und in `SICHERHEIT.md`. Hier nur die
+Liste, sortiert nach dem, was zuerst dran wäre.
+
+### Bei dir
+
+| Was | Wo | Dauer |
+|---|---|---|
+| **Firmencode setzen** | App → Verwaltung → Team | 2 Min |
+| **Vier rechtliche Pflichtfelder** | App → Verwaltung → System | 5 Min |
+| **`STUDIOCHAT_TOKEN` im Apps Script** | `SHEETS-TOKEN.md` | 10 Min |
+| Datenschutztext über einen Anwalt | vor dem ersten fremden Kunden | – |
+| Eigene Absenderadresse (Domain) | vor dem ersten fremden Kunden | – |
+| Steuerberater | vor dem ersten echten Geld (Abo C–E) | – |
+
+### Bei mir · Sicherheit
+
+| Was | Dringlichkeit | Aufwand |
+|---|---|---|
+| **Nachbarseiten auf Firmen-Pfade** — sonst liest Kunde A die Termine von Kunde B | vor dem zweiten Kunden | 1 Sitzung + Datenumzug |
+| **Termine sind für jeden im Betrieb lesbar** — Daten Dritter | deine Entscheidung | ½ Sitzung |
+| **CSP für `marketing.html` und `wachstum.html`** — 101 Ereignisse im Attribut | wenn Zeit ist | 1 Sitzung |
+| **Angriffsdurchlauf durch die drei Nachbarseiten** (wie `test-xss.js`) | wenn Zeit ist | ½ Sitzung |
+| **Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen | wenn Zeit ist | klein |
+| Flache Alt-Daten aufräumen | ab Mitte September | ½ Sitzung |
+
+### Bei mir · Ausbau
+
+| Was | Warum | Aufwand |
+|---|---|---|
+| Einrichtungs-Assistent | macht aus dem Projekt ein Produkt | mittel |
+| Echter Dateispeicher | hebt die 0,7-MB-Grenze | mittel, ab ~0,03 €/GB |
+| Serverseitige Filter | Grenze liegt bei ~40 Studios | mittel |
+| Sammel-Dokument für Studio-Zahlen | drei Übersichten fragen je Studio einzeln | mittel |
+| Kanalauswahl mit Suchfeld | ab ~25 Studios trägt die Leiste nicht mehr | klein |
+| Volltextsuche über den ganzen Verlauf | heute nur der offene Kanal vollständig | ab ~20 €/Monat |
+| Abo Stufe C–E (Stripe, Mahnungen) | erst nach dem Steuerberater | gross |
+
+### Was sich hier nicht beweisen lässt
+
+* Ob Push auf einem echten Handy ankommt.
+* Ob der Server wirklich keine Erinnerung schickt, wenn eine Funktion
+  abgeschaltet ist.
+* Ob die Sicherheitsregel im echten Browser mit dem echten Firebase-SDK
+  hält — Chromium kommt aus der Entwicklungsumgebung nicht ins Netz.
+  Verstösse melden sich in der App unter Verwaltung → System.
+
+---
 
 ## ✅ Der Umzug auf die Firmen-Pfade ist durch
 
