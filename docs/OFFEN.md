@@ -49,6 +49,11 @@ Die Cloud Functions bleiben unangetastet: sie arbeiten mit Admin-Rechten
 und unterliegen den Regeln nicht. `marketingChat` und `marketingImage`
 sind weiter erreichbar, aber nur für den Chef und ohne Oberfläche.
 
+> **Probetraining:** in der App stehen nur Zahlen und die Namen des
+> eigenen Teams — keine Kundennamen, keine Kontaktdaten. Das ist der
+> Grund, warum dafür kein eigener Absatz im Datenschutztext nötig ist.
+> `tests/test-probetraining.js` prüft es bei jedem Durchlauf mit.
+
 ### Bei mir · Ausbau
 
 | Was | Warum | Aufwand |

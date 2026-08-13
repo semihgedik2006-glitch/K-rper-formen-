@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-BF8vTYKd8L+snQZjIljK5ct0YuBM2RUw8Re6sWCVuUE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-ZNXfvx7YOWrjHHljjuDVxaXjYyOPdhlqbPP507ouGCg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1839,6 +1839,13 @@ html{font-size:var(--fs,100%)}
 .chef-tab:active{transform:scale(.93)}
 .chef-tab.on{color:var(--on-accent);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
+
+/* Probetraining: eine Person aufgeklappt zeigt ihre Studios */
+.pb-person .pb-detail{padding-left:var(--s12);opacity:.92}
+.pb-person .pb-detail .pb-zeile{border-top:1px dashed var(--line-2)}
+.pb-person .pb-detail .pb-name{font-weight:500;font-size:.86rem;color:var(--text-2)}
+.pb-person.auf > .pb-zeile .pb-name::after{content:' ▾';color:var(--text-3)}
+.pb-person:not(.auf) > .pb-zeile .pb-name::after{content:' ▸';color:var(--text-3)}
 
 /* Probetraining: Quote je Studio und je Person */
 .pb-zeile{display:flex;align-items:center;gap:var(--s10);padding:var(--s8) 0;border-top:1px solid var(--line)}
@@ -3766,6 +3773,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <button class="lb-close" id="pbClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"></button>
     <h3 data-ikon="hantel">Probetraining eintragen</h3>
     <p class="hint">Kein Name, keine Kontaktdaten – nur, was für die Quote zählt.</p>
+    <div class="field"><label for="pbWer">Wer hat es gemacht?</label>
+      <select class="inp" id="pbWer"></select></div>
+    <div class="field" id="pbWerFreiFeld" style="display:none">
+      <label for="pbWerFrei">Name</label>
+      <input class="inp" id="pbWerFrei" type="text" maxlength="60" placeholder="Vorname genügt" />
+      <p class="hint" style="margin:var(--s6) 0 0">Schreib den Namen jedes Mal gleich – sonst zählt die App zwei Personen.</p></div>
     <div class="row">
       <div class="field"><label for="pbStudio">Studio</label>
         <select class="inp" id="pbStudio"></select></div>
@@ -13361,6 +13374,16 @@ function probeMeine(){
   });
 }
 
+/* Wessen Quote ist das? Wer ein Konto hat, wird darüber gezählt — dann
+   zerfällt die Quote nicht, wenn sich jemand umbenennt. Für Namen ohne
+   Konto bleibt der Name selbst, kleingeschrieben und ohne Leerraum:
+   „Marcel" und „marcel " sollen dieselbe Person sein. */
+function personSchluessel(p){
+  if(p.vonUid) return 'uid:'+p.vonUid;
+  var n=String(p.vonName||'').trim().toLowerCase();
+  return n ? 'name:'+n : '';
+}
+
 function probeImZeitraum(list){
   if(!_pbZeitraum) return list;
   var ab=Date.now()-_pbZeitraum*86400000;
@@ -13414,19 +13437,67 @@ function renderProbe(){
 
   var proStudio=gruppiere(function(p){ return p.studioKey; }, function(k){ return studioName(k); });
   if(proStudio) html+='<p class="hint" style="margin:var(--s12) 0 var(--s4)">Je Studio</p>'+proStudio;
-  var proPerson=gruppiere(function(p){ return p.vonUid; }, function(uid){
-    var e=_probe.filter(function(p){ return p.vonUid===uid; })[0];
-    return (e&&e.vonName)||'Unbekannt';
+
+  /* ── Je Person, und darunter je Studio ──
+     „Marcel hat 70 %" ist die halbe Antwort. Interessant wird es erst
+     daneben: 90 % in Hürth, 40 % in Brühl. Das eine ist eine Person,
+     das andere ein Standort — und man sieht erst zusammen, welches von
+     beidem gemeint ist.
+
+     Aufklappbar statt untereinander: bei acht Personen mal vierzehn
+     Studios wäre die Liste unlesbar. */
+  var proPerson={};
+  alle.forEach(function(p){
+    var k=personSchluessel(p); if(!k) return;
+    proPerson[k]=proPerson[k]||{name:p.vonName||'Unbekannt', ja:0, n:0, studios:{}};
+    proPerson[k].n++; if(p.abschluss) proPerson[k].ja++;
+    var st=proPerson[k].studios[p.studioKey]=proPerson[k].studios[p.studioKey]||{ja:0,n:0};
+    st.n++; if(p.abschluss) st.ja++;
   });
-  if(proPerson) html+='<p class="hint" style="margin:var(--s12) 0 var(--s4)">Je Person</p>'+proPerson;
+  var namen=Object.keys(proPerson).sort(function(a,b){
+    var A=proPerson[a], B=proPerson[b];
+    return (B.ja/B.n)-(A.ja/A.n) || B.n-A.n;
+  });
+  if(namen.length){
+    html+='<p class="hint" style="margin:var(--s12) 0 var(--s4)">Je Person <span style="opacity:.7">· antippen für die Studios</span></p>';
+    html+=namen.map(function(k){
+      var P=proPerson[k];
+      var studios=Object.keys(P.studios).sort(function(a,b){
+        var A=P.studios[a], B=P.studios[b];
+        return (B.ja/B.n)-(A.ja/A.n);
+      });
+      return '<div class="pb-person" data-pbperson="'+esc(k)+'">'+
+        quotenZeile(P.name, P.ja, P.n)+
+        '<div class="pb-detail" hidden>'+
+          studios.map(function(sk){
+            return quotenZeile('↳ '+studioName(sk), P.studios[sk].ja, P.studios[sk].n);
+          }).join('')+
+        '</div></div>';
+    }).join('');
+  }
   qBox.innerHTML=html;
 
+  qBox.querySelectorAll('[data-pbperson]').forEach(function(el){
+    var kopf=el.querySelector('.pb-zeile'), det=el.querySelector('.pb-detail');
+    if(!kopf||!det) return;
+    kopf.style.cursor='pointer';
+    kopf.addEventListener('click',function(){
+      det.hidden=!det.hidden;
+      el.classList.toggle('auf', !det.hidden);
+    });
+  });
+
   lBox.innerHTML=alle.slice(0,60).map(function(p){
-    var darfWeg = isChef() || p.vonUid===session.uid;
+    var darfWeg = isChef() || p.vonUid===session.uid || p.erfasstVon===session.uid;
     return '<div class="pb-eintrag">'+
       '<span class="pb-e '+(p.abschluss?'ja':'nein')+'">'+(p.abschluss?'Abschluss':'kein Abschluss')+'</span>'+
       '<span class="pb-txt"><b>'+esc(studioName(p.studioKey))+'</b>'+
         '<span>'+esc(dayLabel(p.datum))+' · '+esc(p.vonName||'—')+
+        /* Wer es eingetragen hat, steht nur dabei, wenn es jemand
+           anderes war — sonst wäre es bei jedem Eintrag dieselbe
+           doppelte Information. */
+        (p.erfasstVon && p.erfasstVon!==p.vonUid && p.erfasstVonName
+          ? ' · eingetragen von '+esc(p.erfasstVonName) : '')+
         (p.notiz?' · '+esc(p.notiz):'')+'</span></span>'+
       (darfWeg?'<button class="pb-weg" data-pbweg="'+esc(p.id)+'" title="Löschen" aria-label="Löschen">'+ikon('papierkorb')+'</button>':'')+
       '</div>';
@@ -13449,6 +13520,22 @@ function oeffneProbe(){
   sel.innerHTML=meine.map(function(n){
     return '<option value="'+esc(studioKey(n))+'">'+esc(n)+'</option>';
   }).join('');
+
+  /* Wer es gemacht hat, ist nicht zwangsläufig, wer es einträgt: am
+     Empfang tippt oft jemand anderes. Voreingestellt bin ich selbst —
+     das ist der häufige Fall und spart einen Griff. */
+  var wer=$('pbWer');
+  var team=(_employees||[]).slice()
+    .sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||''),'de'); });
+  var ichDrin=team.some(function(e){ return e.uid===session.uid; });
+  wer.innerHTML='<option value="'+esc(session.uid)+'">'+esc(session.name||'Ich')+'</option>'+
+    team.filter(function(e){ return e.uid!==session.uid; })
+        .map(function(e){ return '<option value="'+esc(e.uid)+'">'+esc(e.name||'?')+'</option>'; }).join('')+
+    '<option value="__frei">anderer Name …</option>';
+  wer.value=session.uid;
+  $('pbWerFreiFeld').style.display='none';
+  $('pbWerFrei').value='';
+
   $('pbDatum').value=ymd(new Date());
   $('pbNotiz').value='';
   _pbErgebnis=1;
@@ -13466,14 +13553,34 @@ function speichereProbe(btn){
   if(isNaN(d.getTime())){ toast('Datum stimmt nicht.',true); return; }
   /* Mittags statt Mitternacht: sonst rutscht der Eintrag je nach
      Zeitzone auf den Vortag. */
+  /* Auf wen läuft der Eintrag? Ein Konto, wenn eins gewählt wurde —
+     sonst der eingetippte Name. Ohne Namen kein Eintrag: eine Quote
+     ohne Person ist keine. */
+  var werSel=$('pbWer').value;
+  var vonUid=null, vonName='';
+  if(werSel==='__frei'){
+    vonName=($('pbWerFrei').value||'').trim();
+    if(!vonName){ toast('Bitte einen Namen eintragen.',true); $('pbWerFrei').focus(); return; }
+  }else{
+    vonUid=werSel;
+    var pers=(_employees||[]).filter(function(e){ return e.uid===werSel; })[0];
+    vonName = werSel===session.uid ? (session.name||'') : ((pers&&pers.name)||'');
+    if(!vonName) vonName='Unbekannt';
+  }
+
   withBusy(btn,function(){
     return S('probetrainings').add({
       studioKey: sk,
       datum: d.getTime(),
       abschluss: _pbErgebnis===1,
       notiz: ($('pbNotiz').value||'').trim(),
-      vonUid: session.uid,
-      vonName: session.name||'',
+      vonUid: vonUid,
+      vonName: vonName,
+      /* Wer eingetragen hat — nicht dasselbe wie vonUid. Die Regel
+         bindet genau dieses Feld an den Anrufer; damit steht in jedem
+         Eintrag, wer ihn gesetzt hat. */
+      erfasstVon: session.uid,
+      erfasstVonName: session.name||'',
       ts: Date.now()
     }).then(function(){
       schliesseProbe();
@@ -15386,6 +15493,12 @@ function bindActions(){
   var pbM=$('probeModal');
   if(pbM) pbM.addEventListener('click',function(e){ if(e.target===pbM) schliesseProbe(); });
   var pbS=$('pbSave'); if(pbS) pbS.addEventListener('click',function(){ speichereProbe(this); });
+  var pbW=$('pbWer');
+  if(pbW) pbW.addEventListener('change',function(){
+    var frei=pbW.value==='__frei';
+    $('pbWerFreiFeld').style.display=frei?'':'none';
+    if(frei) setTimeout(function(){ $('pbWerFrei').focus(); },60);
+  });
   document.querySelectorAll('#pbErgebnis [data-pbe]').forEach(function(c){
     c.addEventListener('click',function(){
       _pbErgebnis=+c.getAttribute('data-pbe');
