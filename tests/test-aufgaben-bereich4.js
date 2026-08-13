@@ -139,13 +139,20 @@ async function start(stub, errs) {
       return {
         bildschirme: +(sa.scrollHeight / sa.clientHeight).toFixed(2),
         ersteAufgabe: Math.round(first.getBoundingClientRect().top - sa.getBoundingClientRect().top),
-        anlegenVersteckt: document.getElementById('todoNew').style.display === 'none',
+        /* Seit dem 13.8. darf auch ein Mitarbeiter anlegen — einmalige
+           Aufgaben im eigenen Studio. Der Knopf ist also DA und fuehrt
+           in ein kleines Fenster statt in die Verwaltung. Geprueft wird
+           das in tests/test-eigene-aufgabe.js; hier steht nur noch, dass
+           er nicht ins Chef-Formular fuehrt. */
+        anlegenDa: document.getElementById('todoNew').style.display !== 'none',
+        kleinesFenster: !!document.getElementById('ownTodoModal'),
         kamera: document.querySelectorAll('.t-cam').length,
         mehr: document.querySelectorAll('.t-mehr').length,
       };
     });
     console.log('MITARBEITER:', JSON.stringify(ma));
-    if (!ma.anlegenVersteckt) errs.push('Mitarbeiter sieht den Anlegen-Knopf');
+    if (!ma.anlegenDa) errs.push('Mitarbeiter sieht keinen Anlegen-Knopf mehr');
+    if (!ma.kleinesFenster) errs.push('Das kleine Fenster fuer eigene Aufgaben fehlt');
     if (ma.ersteAufgabe > 260) errs.push('Erste Aufgabe erst bei y=' + ma.ersteAufgabe);
     if (!ma.kamera) errs.push('Kein Foto-Knopf an der Aufgabe');
 

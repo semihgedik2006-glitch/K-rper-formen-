@@ -84,8 +84,12 @@ async function zumTeam(page) {
   // ══ 2.+3. Abgeschaltet: Eintrag weg, leere Gruppe ganz weg ══
   {
     // Der ganze Betrieb-Bereich aus — die Gruppe darf nicht stehen bleiben
+    /* probe (Probetraining) gehoert seit dem 13.8. auch dazu — ohne
+       diese Zeile bleibt die Gruppe stehen, weil noch etwas darin ist,
+       und der Test meldet einen Fehler, der keiner ist. */
     const { b, page } = await start({
-      todos: false, putzplan: false, material: false, geraete: false, docs: false
+      todos: false, putzplan: false, material: false, geraete: false,
+      docs: false, probe: false
     });
     const g = await leiste(page);
     console.log('Betrieb komplett aus, Gruppen:', JSON.stringify(g));
@@ -273,7 +277,8 @@ async function zumTeam(page) {
     });
     console.log('Schalterliste:', JSON.stringify(liste));
     if (!liste.da) errs.push('FEHLT: die Schalterliste gibt es nicht');
-    if (liste.zahl !== 12) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 12');
+    // 13 seit dem 13.8.: Probetraining ist dazugekommen.
+    if (liste.zahl !== 13) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 13');
     await b.close();
   }
 
