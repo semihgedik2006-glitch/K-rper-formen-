@@ -1,6 +1,76 @@
 # Was noch offen ist
 
-Stand 11. August 2026.
+Stand 13. August 2026.
+
+## Auf einen Blick
+
+Das Ausführliche steht weiter unten und in `SICHERHEIT.md`. Hier nur die
+Liste, sortiert nach dem, was zuerst dran wäre.
+
+### Bei dir
+
+| Was | Wo | Dauer |
+|---|---|---|
+| **Firmencode setzen** | App → Verwaltung → Team | 2 Min |
+| **Vier rechtliche Pflichtfelder** | App → Verwaltung → System | 5 Min |
+| **`STUDIOCHAT_TOKEN` im Apps Script** | `SHEETS-TOKEN.md` | 10 Min |
+| Datenschutztext über einen Anwalt | vor dem ersten fremden Kunden | – |
+| Eigene Absenderadresse (Domain) | vor dem ersten fremden Kunden | – |
+| Steuerberater | vor dem ersten echten Geld (Abo C–E) | – |
+
+### Bei mir · Sicherheit
+
+| Was | Dringlichkeit | Aufwand |
+|---|---|---|
+| **Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen | wenn Zeit ist | klein |
+| **Angriffsdurchlauf durch `werbung.html`** (wie `test-xss.js`) | wenn Zeit ist | klein |
+| Flache Alt-Daten aufräumen | ab Mitte September | ½ Sitzung |
+
+> **Drei Punkte sind am 13.8. weggefallen, nicht erledigt worden:**
+> `marketing.html` und `wachstum.html` sind stillgelegt. Damit sind die
+> Nachbarseiten auf den Firmen-Pfaden, ihre fehlende CSP und die für jeden
+> lesbaren Termine keine Fragen mehr — es kommt kein Browser mehr an diese
+> Sammlungen. Siehe unten.
+
+### Stillgelegt am 13. August
+
+`marketing.html` und `wachstum.html` werden nicht mehr ausgeliefert
+(`firebase.json`), und ihre Sammlungen stehen in `firestore.rules` auf
+`false`: `mkProjects`, `appointments`, `emailTemplates`, `studioMetrics`,
+`competitors`, `expansionLeads`.
+
+Die Dateien bleiben im Repo. **Zurückholen** heisst: die zwei Zeilen aus
+`firebase.json` streichen und die Regeln aus dem Verlauf zurückholen
+(`git show 6253c61 -- firestore.rules`). Vorher muss aber der Umbau auf
+die Firmen-Pfade nachgeholt werden — sonst ist die Lücke wieder da, die
+das Stilllegen geschlossen hat.
+
+Die Cloud Functions bleiben unangetastet: sie arbeiten mit Admin-Rechten
+und unterliegen den Regeln nicht. `marketingChat` und `marketingImage`
+sind weiter erreichbar, aber nur für den Chef und ohne Oberfläche.
+
+### Bei mir · Ausbau
+
+| Was | Warum | Aufwand |
+|---|---|---|
+| Einrichtungs-Assistent | macht aus dem Projekt ein Produkt | mittel |
+| Echter Dateispeicher | hebt die 0,7-MB-Grenze | mittel, ab ~0,03 €/GB |
+| Serverseitige Filter | Grenze liegt bei ~40 Studios | mittel |
+| Sammel-Dokument für Studio-Zahlen | drei Übersichten fragen je Studio einzeln | mittel |
+| Kanalauswahl mit Suchfeld | ab ~25 Studios trägt die Leiste nicht mehr | klein |
+| Volltextsuche über den ganzen Verlauf | heute nur der offene Kanal vollständig | ab ~20 €/Monat |
+| Abo Stufe C–E (Stripe, Mahnungen) | erst nach dem Steuerberater | gross |
+
+### Was sich hier nicht beweisen lässt
+
+* Ob Push auf einem echten Handy ankommt.
+* Ob der Server wirklich keine Erinnerung schickt, wenn eine Funktion
+  abgeschaltet ist.
+* Ob die Sicherheitsregel im echten Browser mit dem echten Firebase-SDK
+  hält — Chromium kommt aus der Entwicklungsumgebung nicht ins Netz.
+  Verstösse melden sich in der App unter Verwaltung → System.
+
+---
 
 ## ✅ Der Umzug auf die Firmen-Pfade ist durch
 

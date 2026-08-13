@@ -46,7 +46,8 @@ const ansicht = page => page.evaluate(() => {
     const unter = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('BETRIEB:', JSON.stringify(unter));
     if (!unter.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt nicht unter Betrieb');
-    if (unter.length !== 5) errs.push('Betrieb hat ' + unter.length + ' statt 5 Unterseiten');
+    /* Sechs seit dem 13.8.: Probetraining ist dazugekommen. */
+    if (unter.length !== 6) errs.push('Betrieb hat ' + unter.length + ' statt 6 Unterseiten');
     await b.close();
   }
 

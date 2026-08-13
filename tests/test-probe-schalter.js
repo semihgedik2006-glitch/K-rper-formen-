@@ -137,7 +137,10 @@ console.log('\n── Der Firmen-Schalter im Betrieb ──');
 console.log('\n── Jede Seite holt die Zugangsdaten aus konfig.js ──');
 {
   const fs = require('fs');
-  const SEITEN = ['index.html', 'marketing.html', 'wachstum.html'];
+  /* marketing.html und wachstum.html sind am 13.8. stillgelegt worden
+     und werden nicht mehr ausgeliefert — was in ihnen steht, erreicht
+     keinen Browser mehr. Sie stehen unten in der Sperr-Prüfung. */
+  const SEITEN = ['index.html'];
   SEITEN.forEach((datei) => {
     const roh = fs.readFileSync(path.join(__dirname, '..', datei), 'utf8');
     pruefe(datei + ': lädt konfig.js',
@@ -157,6 +160,47 @@ console.log('\n── Jede Seite holt die Zugangsdaten aus konfig.js ──');
   const werbung = fs.readFileSync(path.join(__dirname, '..', 'werbung.html'), 'utf8');
   pruefe('GEGENPROBE werbung.html braucht kein Firebase',
     !/firebase/i.test(werbung));
+}
+
+/* ══ Die stillgelegten Seiten bleiben stillgelegt ══
+   Sie liegen weiter im Repo — mit Absicht, damit man sie auf Ansage
+   zurückholen kann. Ausgeliefert werden sie nicht, und ihre Sammlungen
+   stehen in den Regeln auf false. Beides gehört geprüft: eine
+   ignore-Zeile ist schnell versehentlich entfernt. */
+console.log('\n── marketing.html und wachstum.html sind stillgelegt ──');
+{
+  const fs = require('fs');
+  const fb = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'firebase.json'), 'utf8'));
+  const ignoriert = fb.hosting.ignore || [];
+  ['marketing.html', 'wachstum.html'].forEach((datei) => {
+    pruefe(datei + ': wird nicht ausgeliefert', ignoriert.indexOf(datei) >= 0,
+      'steht nicht in hosting.ignore — dann ist die Seite wieder im Netz');
+    pruefe(datei + ': liegt weiterhin im Repo',
+      fs.existsSync(path.join(__dirname, '..', datei)),
+      'geloescht statt stillgelegt — zurueckholen geht dann nur ueber den Verlauf');
+  });
+
+  const regeln = fs.readFileSync(path.join(__dirname, '..', 'firestore.rules'), 'utf8');
+  ['mkProjects', 'appointments', 'emailTemplates', 'studioMetrics',
+   'competitors', 'expansionLeads'].forEach((sammlung) => {
+    /* Beide Bloecke, flach und je Firma. Der flache ist der wichtigere:
+       dort fragten die Regeln nur istAktiv(), nicht nach der Firma. */
+    const treffer = regeln.split('\n')
+      .map((z, i) => ({ z, i }))
+      .filter(x => x.z.indexOf('match /' + sammlung + '/') >= 0);
+    const offen = treffer.filter(x => {
+      const block = regeln.split('\n').slice(x.i, x.i + 4).join(' ');
+      return block.indexOf('if false') < 0;
+    });
+    pruefe(sammlung + ': in beiden Bloecken gesperrt',
+      treffer.length >= 2 && offen.length === 0,
+      treffer.length + ' Stelle(n), davon ' + offen.length + ' offen');
+  });
+
+  /* Gegenprobe: die Sperre gilt diesen Sammlungen, nicht allen. */
+  pruefe('GEGENPROBE die App selbst ist nicht mitgesperrt',
+    /match \/todos\/\{[^}]+\} \{[\s\S]{0,200}?allow read/.test(regeln) ||
+    regeln.indexOf("match /studios/{studioKey}/todos/{todoId}") >= 0);
 }
 
 console.log(errs.length

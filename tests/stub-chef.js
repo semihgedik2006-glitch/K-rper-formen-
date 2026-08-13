@@ -151,6 +151,18 @@ var USERS = [
     { id:'a2', uid:'testuid', from:'Test Chef', text:'Bitte die Gurte nach jedem Training desinfizieren.',
       target:'studio-6', ts:Date.now()-2*3600000, readBy:[] }
   ];
+  /* Probetrainings: bewusst mit unterschiedlichen Quoten je Studio und
+     je Person, damit ein Durchlauf die Rechnung wirklich pruefen kann
+     und nicht nur, dass ueberhaupt etwas dasteht. */
+  var PROBE = [
+    { id:'p1', studioKey:'studio-6', datum:Date.now()-2*86400000, abschluss:true,  vonUid:'u2', vonName:'Anna Meier' },
+    { id:'p2', studioKey:'studio-6', datum:Date.now()-3*86400000, abschluss:true,  vonUid:'u2', vonName:'Anna Meier' },
+    { id:'p3', studioKey:'studio-6', datum:Date.now()-4*86400000, abschluss:false, vonUid:'u2', vonName:'Anna Meier' },
+    { id:'p4', studioKey:'studio-6', datum:Date.now()-5*86400000, abschluss:false, vonUid:'u3', vonName:'Ben Kraus' },
+    { id:'p5', studioKey:'studio-7', datum:Date.now()-6*86400000, abschluss:true,  vonUid:'u3', vonName:'Ben Kraus' },
+    /* Aelter als 30 Tage: faellt aus dem Standard-Zeitraum heraus. */
+    { id:'p6', studioKey:'studio-7', datum:Date.now()-60*86400000, abschluss:false, vonUid:'u3', vonName:'Ben Kraus' }
+  ];
   var ABSENCES = {
     'studio-6': [
       { id:'a1', from:tag(13), to:tag(21), type:'urlaub', uid:'u2', name:'Anna Meier',
@@ -352,7 +364,14 @@ var USERS = [
       orderBy: function () { return this; },
       limit: function () { return this; },
       limitToLast: function () { return this; },
-      add: function () { return Promise.resolve({ id: 'neu' }); },
+      /* Auch add() festhalten, nicht nur set(): sonst kann ein
+         Durchlauf nur pruefen, dass ein Knopf klickbar war — nicht, WAS
+         angelegt wird. Bei der eigenen Aufgabe des Mitarbeiters ist
+         genau das die Frage (createdByUid fehlt -> Regel weist ab). */
+      add: function (d) {
+        (window.__schreib = window.__schreib || []).push({ pfad: path + '/(neu)', daten: d });
+        return Promise.resolve({ id: 'neu' });
+      },
       get: function () {
         // Dieselben Sammlungen wie bei onSnapshot bedienen. Sonst sieht ein
         // Test, der einmalig liest (z. B. der Tabellen-Abgleich), nichts.
@@ -413,12 +432,13 @@ var USERS = [
                    (path==='certificates' ? CERTS :
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
+                   (path==='probetrainings' ? PROBE :
                    (path==='documents' ? DOCS :
                    /* Firmen und Archiv: leer, ausser ein Test legt vorher
                       window.__firmen / window.__firmenArchiv hin. So merkt
                       keiner der anderen Durchlaeufe etwas davon. */
                    (path==='firmen' ? (window.__firmen||[]) :
-                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))));
+                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : [])))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();

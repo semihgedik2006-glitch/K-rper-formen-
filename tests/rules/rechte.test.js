@@ -129,46 +129,129 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('Ein Mitarbeiter kann NICHT alle Firmen auflisten', () =>
     assertFails(mitA().collection('firmen').get()));
 
-  /* ══ 5. Die Nachbaranwendungen ══
-     marketing.html meldet jeden ohne Chefrolle wieder ab. Bis zum 13.8.
-     durfte trotzdem jeder aktive Zugang die Kampagnen lesen und
-     schreiben — die Oberflaeche versprach eine Grenze, die es nicht gab.
+  /* ══ 5. Die stillgelegten Nachbaranwendungen ══
+     marketing.html und wachstum.html werden seit dem 13.8.2026 nicht
+     mehr ausgeliefert. Ihre Sammlungen stehen auf false — kein Browser
+     kommt mehr heran, auch der Chef nicht.
 
-     Was in wachstum.html liegt (Kennzahlen, Wettbewerb, Expansion), war
-     schon vorher beim Chef; hier steht es mit, damit ein spaeteres
-     Aufweichen auffaellt. */
+     Das ist die Sperre selbst, und sie gehoert geprueft: eine Regel, die
+     versehentlich wieder aufgeht, faellt sonst niemandem auf. Vorher
+     stand hier das Gegenteil (Chef darf, Mitarbeiter nicht); wer die
+     Seiten zurueckholt, findet die alten Pruefungen im Verlauf.
+
+     Der Termin-Mailversand laeuft weiter: die Cloud Functions arbeiten
+     mit Admin-Rechten und unterliegen diesen Regeln nicht. */
   await env.withSecurityRulesDisabled(async (ctx) => {
     const d = ctx.firestore();
     await d.doc(`firmen/${A}/mkProjects/p1`).set({ name: 'Kampagne', createdBy: 'chefA' });
     await d.doc(`firmen/${A}/mkProjects/p1/versions/v1`).set({ text: 'Entwurf', createdBy: 'chefA' });
+    await d.doc(`firmen/${A}/appointments/t1`).set({ customerName: 'Kundin', startsAt: 1 });
+    await d.doc(`firmen/${A}/emailTemplates/v1`).set({ subject: 'x', body: 'y' });
     await d.doc(`firmen/${A}/studioMetrics/studio-0`).set({ mitglieder: 210, miete: 4200 });
     await d.doc(`firmen/${A}/competitors/c1`).set({ name: 'Mitbewerber', preis: 79 });
     await d.doc(`firmen/${A}/expansionLeads/l1`).set({ ort: 'Bonn', miete: 3100 });
+    await d.doc('appointments/flach1').set({ customerName: 'Kundin', startsAt: 1 });
+    await d.doc('mkProjects/flach1').set({ name: 'Kampagne' });
   });
 
-  await pruefe('Mitarbeiter kann Marketing-Projekte NICHT lesen', () =>
-    assertFails(mitA().doc(`firmen/${A}/mkProjects/p1`).get()));
-  await pruefe('Mitarbeiter kann Marketing-Projekte NICHT anlegen', () =>
-    assertFails(mitA().collection(`firmen/${A}/mkProjects`).doc('p2')
-      .set({ name: 'Eigene', createdBy: 'mitA' })));
-  await pruefe('Mitarbeiter kann die Versionen NICHT lesen', () =>
-    assertFails(mitA().doc(`firmen/${A}/mkProjects/p1/versions/v1`).get()));
-  await pruefe('GEGENPROBE Chef kann sie lesen', () =>
-    assertSucceeds(chefA().doc(`firmen/${A}/mkProjects/p1`).get()));
-  await pruefe('GEGENPROBE Chef kann eine Version anlegen', () =>
-    assertSucceeds(chefA().collection(`firmen/${A}/mkProjects/p1/versions`).doc('v2')
-      .set({ text: 'Zweiter Entwurf', createdBy: 'chefA' })));
-  await pruefe('Version bleibt unveraenderlich, auch fuer den Chef', () =>
-    assertFails(chefA().doc(`firmen/${A}/mkProjects/p1/versions/v1`).update({ text: 'anders' })));
+  const gesperrt = [
+    ['Marketing-Projekte', `firmen/${A}/mkProjects/p1`],
+    ['die Versionen darunter', `firmen/${A}/mkProjects/p1/versions/v1`],
+    ['Termine mit Kundendaten', `firmen/${A}/appointments/t1`],
+    ['E-Mail-Vorlagen', `firmen/${A}/emailTemplates/v1`],
+    ['Studio-Kennzahlen', `firmen/${A}/studioMetrics/studio-0`],
+    ['die Wettbewerbsliste', `firmen/${A}/competitors/c1`],
+    ['die Expansionsplanung', `firmen/${A}/expansionLeads/l1`],
+    /* Die flachen Pfade sind der eigentliche Punkt: dort fragten die
+       Regeln nur istAktiv(), nicht nach der Firma. */
+    ['Termine auf dem flachen Pfad', 'appointments/flach1'],
+    ['Marketing-Projekte flach', 'mkProjects/flach1'],
+  ];
+  for (const [name, pfad] of gesperrt) {
+    await pruefe('Chef kommt NICHT an ' + name, () =>
+      assertFails(chefA().doc(pfad).get()));
+    await pruefe('Mitarbeiter kommt NICHT an ' + name, () =>
+      assertFails(mitA().doc(pfad).get()));
+  }
+  await pruefe('auch der Betreiber kommt nicht heran', () =>
+    assertFails(admin().doc(`firmen/${A}/appointments/t1`).get()));
+  await pruefe('und schreiben geht auch nicht', () =>
+    assertFails(chefA().doc(`firmen/${A}/appointments/t2`)
+      .set({ customerName: 'Neu', startsAt: 2, createdBy: 'chefA' })));
 
-  await pruefe('Mitarbeiter kann Studio-Kennzahlen NICHT lesen', () =>
-    assertFails(mitA().doc(`firmen/${A}/studioMetrics/studio-0`).get()));
-  await pruefe('Mitarbeiter kann die Wettbewerbsliste NICHT lesen', () =>
-    assertFails(mitA().doc(`firmen/${A}/competitors/c1`).get()));
-  await pruefe('Mitarbeiter kann die Expansionsplanung NICHT lesen', () =>
-    assertFails(mitA().doc(`firmen/${A}/expansionLeads/l1`).get()));
-  await pruefe('GEGENPROBE Chef sieht seine Kennzahlen', () =>
-    assertSucceeds(chefA().doc(`firmen/${A}/studioMetrics/studio-0`).get()));
+  /* Gegenprobe: die Sperre gilt genau diesen Sammlungen und nicht der
+     ganzen Firma — sonst waere die App mit gesperrt. */
+  await pruefe('GEGENPROBE der Chef arbeitet sonst normal weiter', () =>
+    assertSucceeds(chefA().doc(`firmen/${A}/abo/aktuell`).get()));
+
+  /* ══ Mitarbeiter legen eigene Aufgaben an — aber nur einmalige ══
+     Neu am 13.8. Die Grenze steht in den Regeln und nicht nur in der
+     Oberflaeche: ein Feld, das die App weglaesst, laesst sich in der
+     Konsole trotzdem mitschicken. */
+  const auf = (sk, id) => mitA().doc(`firmen/${A}/studios/${sk}/todos/${id}`);
+  await pruefe('Mitarbeiter darf eine einmalige Aufgabe im eigenen Studio anlegen', () =>
+    assertSucceeds(auf('studio-0', 'neu1').set({
+      title: 'Handtücher nachlegen', createdByUid: 'mitA', createdBy: 'Mit A', ts: Date.now(),
+    })));
+  await pruefe('Mitarbeiter darf KEINE wiederkehrende Aufgabe anlegen', () =>
+    assertFails(auf('studio-0', 'neu2').set({
+      title: 'Jeden Tag', recurring: 'daily', createdByUid: 'mitA', ts: Date.now(),
+    })));
+  await pruefe('auch nicht woechentlich', () =>
+    assertFails(auf('studio-0', 'neu3').set({
+      title: 'Jede Woche', recurring: 'weekly', createdByUid: 'mitA', ts: Date.now(),
+    })));
+  await pruefe('Mitarbeiter darf NICHT in einem fremden Studio anlegen', () =>
+    assertFails(auf('studio-5', 'neu4').set({
+      title: 'Woanders', createdByUid: 'mitA', ts: Date.now(),
+    })));
+  /* Ohne diese Zeile koennte jemand Aufgaben im Namen des Chefs
+     anlegen — in der Liste stuende dann dessen Name. */
+  await pruefe('Mitarbeiter darf sich NICHT als jemand anderes ausgeben', () =>
+    assertFails(auf('studio-0', 'neu5').set({
+      title: 'Angeblich vom Chef', createdByUid: 'chefA', createdBy: 'Chef A', ts: Date.now(),
+    })));
+  await pruefe('GEGENPROBE der Chef darf weiterhin wiederkehrende anlegen', () =>
+    assertSucceeds(chefA().doc(`firmen/${A}/studios/studio-5/todos/chef1`).set({
+      title: 'Jeden Tag', recurring: 'daily', createdByUid: 'chefA', ts: Date.now(),
+    })));
+  await pruefe('GEGENPROBE loeschen bleibt der Verwaltung vorbehalten', () =>
+    assertFails(auf('studio-0', 'neu1').delete()));
+
+  /* ══ Probetraining ══
+     Neu am 13.8. Der Punkt hier ist nicht das Lesen, sondern das
+     Aendern: eine nachtraeglich gedrehte Quote waere schlimmer als ein
+     falscher Eintrag, den man loescht und neu setzt. Deshalb steht
+     update auf false — fuer alle. */
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`firmen/${A}/probetrainings/pb1`).set({
+      studioKey: 'studio-0', datum: Date.now(), abschluss: true,
+      vonUid: 'mitA', vonName: 'Mit A',
+    });
+  });
+  const pb = (wer, id) => wer.doc(`firmen/${A}/probetrainings/${id}`);
+  await pruefe('Mitarbeiter darf ein Probetraining eintragen', () =>
+    assertSucceeds(pb(mitA(), 'pb2').set({
+      studioKey: 'studio-0', datum: Date.now(), abschluss: false, vonUid: 'mitA',
+    })));
+  await pruefe('Mitarbeiter darf es NICHT auf jemand anderen buchen', () =>
+    assertFails(pb(mitA(), 'pb3').set({
+      studioKey: 'studio-0', datum: Date.now(), abschluss: true, vonUid: 'chefA',
+    })));
+  await pruefe('abschluss muss ein Ja/Nein sein, kein Text', () =>
+    assertFails(pb(mitA(), 'pb4').set({
+      studioKey: 'studio-0', datum: Date.now(), abschluss: 'vielleicht', vonUid: 'mitA',
+    })));
+  await pruefe('NIEMAND darf einen Eintrag nachträglich drehen', () =>
+    assertFails(pb(chefA(), 'pb1').update({ abschluss: false })));
+  await pruefe('auch der Eintragende nicht', () =>
+    assertFails(pb(mitA(), 'pb1').update({ abschluss: false })));
+  await pruefe('GEGENPROBE der eigene Eintrag lässt sich löschen', () =>
+    assertSucceeds(pb(mitA(), 'pb2').delete()));
+  await pruefe('GEGENPROBE der Chef darf jeden Eintrag löschen', () =>
+    assertSucceeds(pb(chefA(), 'pb1').delete()));
+  await pruefe('GEGENPROBE lesen darf das ganze Team', () =>
+    assertSucceeds(mitA().collection(`firmen/${A}/probetrainings`).get()));
 
   // ══ 6. Aufzaehlen von Konten ══
   await pruefe('Anonym kann users NICHT auflisten', () =>
