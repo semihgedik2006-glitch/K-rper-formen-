@@ -3143,6 +3143,77 @@ Zeile.
 
 ---
 
+## Sitzung 39 · „Irgendwie sieht alles gleich aus" 🔴🟢
+
+Rückmeldung des Betreibers nach dem Merge von #80. Berechtigt — und der
+Fehler war meiner.
+
+### Erst geprüft, ob es überhaupt draußen ist
+
+Zwei Verdächtige, beide ausgeschlossen:
+
+| Verdacht | Befund |
+|---|---|
+| nicht ausgeliefert | `formenchat.web.app/index.html` enthält 37× `nachfrage` und 22× `--auf-1` — die neue Fassung liegt live |
+| Zwischenspeicher | der Service Worker holt HTML mit `cache:'no-store'`, Netz zuerst. Er kann gar keine alte Seite zeigen, solange man online ist |
+
+Also stimmte die Beobachtung: es **sah** aus wie vorher.
+
+### Warum
+
+Die ganze Sitzung 38 lief auf der **Marken**-Ebene. 52 Schriftgrößen auf
+sieben, 40 Statustönungen auf zwölf — richtig, notwendig und per
+Definition unsichtbar. Zwei Dinge, die ich als „weniger Rahmen, bessere
+Karten" verbucht hatte, taten schlicht nichts:
+
+**1. Der Karten-Schatten ist im Dunkeln unsichtbar.** Nachgerechnet:
+
+```
+Grund   --bg   #12131C
+e1 darauf      rgb(15,16,24)   → Unterschied zum Grund: 4 von 255
+```
+
+Ein schwarzer Schatten auf fast schwarzem Grund. Ich hatte „Höhe statt
+Rahmen" gebaut — und dann den Rahmen drangelassen. Beides zugleich ist
+keins von beidem.
+
+**2. `--line` von 14 % auf 8 %** ist ein leiserer Strich, aber immer noch
+ein Strich. Jede Karte blieb ein Kasten.
+
+### Was jetzt anders ist
+
+| | |
+|---|---|
+| Karten | **kein Rahmen mehr.** `--bg-2` liegt sichtbar über `--bg`, das trägt |
+| Hinweisbalken | Farbkante links (3 px) statt Vollrahmen, Fläche von `--f-*` auf `--f-*-leise` |
+| Karteninnenabstand | `clamp(17,3.8vw,23)` → `clamp(18,4.2vw,26)` |
+| Abstand zwischen Karten | `--s12` → `--s20` |
+| Chef-Karte | `--r-md` → `--r-lg`, Innenabstand oben/unten auf `--s20` |
+| Aufgaben- und Dokumentzeile | Rahmen weg, Innenabstand auf `--s16` bzw. `--s12` |
+
+Drei gleich laute Umrandungen nebeneinander sind kein Hinweis, sondern
+Krach. Die Kante links sagt dasselbe und lässt die Zeile ruhig.
+
+### Gegenprobe, die zu dieser Änderung gehört
+
+Ein Rahmen kann eine Fläche tragen, die sonst im Grund verschwindet.
+Deshalb ein eigener Durchlauf im Browser: für jede Karte die erste
+nicht-durchsichtige Fläche darüber suchen und mit der eigenen
+vergleichen. **In beiden Modi verschwindet keine.**
+
+```
+Gestaltung ✓ · Forensik 0 Funde (hell und dunkel) · Regression 65 grün
+```
+
+### Die Lehre
+
+Aufräumen ist keine Gestaltung. Eine Leiter macht die nächste Änderung
+billig — sie ist nicht selbst die Änderung. Wer beides in einem Zug
+liefert, muss am Ende hinsehen und fragen: *sieht man es?* Diese Frage
+hat der Betreiber gestellt, nicht ich.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
