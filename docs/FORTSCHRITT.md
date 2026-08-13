@@ -2989,6 +2989,160 @@ brauchen keine Firmen-Trennung mehr, wenn niemand sie lesen darf.
 
 ---
 
+## Sitzung 38 · Gestaltung: sechs Leitern und die Regel „erst kurz" 🟢
+
+Ansage: elf Punkte, systematisch statt drauflos — weniger sichtbare
+Rahmen, mehr Whitespace, klarere Typografie, stärkere Hierarchie, weniger
+Text, bessere Karten, klarere Statusindikatoren, konsistentere Knöpfe,
+bessere leere Zustände, bessere Microinteractions. Und nachgereicht:
+„Standardmäßig kurz. Details auf Nachfrage."
+
+### Was gemessen wurde, bevor etwas angefasst wurde
+
+| | vorher | nachher |
+|---|---|---|
+| `font-size` — verschiedene Werte | **52** | 7 (+ 3 begründete Ausnahmen) |
+| `line-height` | 13 | 4 |
+| `letter-spacing` | 12 | 4 |
+| `box-shadow` | **28** | 5 |
+| Statustönungen für 3 Aussagen | **40** | 12 |
+| feste Pixel bei Abstand/Rundung | 17 versteckte | 0 |
+| Flächen, die im Hellmodus verschwanden | **32** | 0 |
+| Hinweis-Absätze über 95 Zeichen | 31 | 16 |
+| längster Hinweis-Absatz | 443 Zeichen | 150 |
+| sichtbarer Hinweistext gesamt | 8.495 Zeichen | 5.655 |
+
+### Die Leitern
+
+**Schrift.** Zwischen `.72` und `.78` lagen sechs verschiedene Größen —
+Unterschiede, die niemand sieht, kosten genau das, wofür sie gedacht
+waren. Sieben Stufen `--t-2xs … --t-2xl`, dazu vier Zeilenabstände und
+vier Laufweiten. 289 Angaben liegen darauf. Fest bleiben nur `pt`
+(Druck), `clamp()` (der mitschrumpfende Seitentitel) und die `16px` an
+Eingabefeldern — darunter zoomt iOS beim Antippen hinein.
+
+**Höhe statt Rahmen.** Drei Stufen `--e1/2/3` plus zwei für Leisten am
+unteren Rand, die nach oben werfen. Dazu ist `--line` von 14 % auf 8 %
+heruntergegangen: der Rahmen ist die feine Kante obendrauf, nicht das,
+was die Karte trägt. Karten bekommen dafür `--e1` und eine Stufe mehr
+Innenabstand.
+
+**Status.** 40 Tönungen für drei Aussagen — `.10`, `.11`, `.12`, `.14`,
+`.15`, `.16`, `.18` nebeneinander, dazu zwei verschiedene Rot und zwei
+verschiedene Grün. Zwei Plaketten mit derselben Bedeutung sahen dadurch
+unterschiedlich aus. Jetzt zwölf Marken: je Aussage leise / normal /
+stark / Kante.
+
+### Der Seitentitel war so groß wie der Kartentitel
+
+Gemessen bei 430 Pixeln Breite: `h2` kam aus `clamp(1.4rem,3.5vw,1.9rem)`
+auf **22,4 px**, der Kartentitel `h3` stand fest auf `--t-xl` = **21,8
+px**. Ein halber Pixel Unterschied zwischen „wo bin ich" und „was steht
+in dieser Karte" — das ist keine Hierarchie, das ist Zufall.
+
+Seitentitel jetzt `--t-2xl` (28 px), Kartentitel `--t-lg` (18 px). Beide
+liegen damit auf der Leiter statt auf einer Rechnung, die zufällig
+dasselbe Ergebnis lieferte. Das Zusammenschrumpfen beim Scrollen macht
+ohnehin `.view-head.shrink.tight h2` — dafür war die Rechnung nie
+zuständig. `.fold-head h3` fiel dabei weg: die Regel setzte genau den
+Wert, den `.card h3` jetzt schon hat.
+
+### Weniger Text
+
+Zwölf Aufklapper `<details class="nachfrage">`. Der Fall, den der
+Betreiber genannt hat, steht jetzt so da:
+
+> **Studios werden geschlossen, nicht gelöscht**
+> Geschlossene Studios verschwinden aus allen Auswahllisten, ihre Daten
+> bleiben lesbar. Wieder öffnen geht jederzeit.
+> › Warum kann ich Studios nicht löschen?
+
+`<details>` statt eines eigenen Schalters: kennt „offen" von sich aus,
+tastaturbedienbar, wird von Vorlesehilfen angesagt, braucht keine Zeile
+Skript — was mit der CSP ohnehin besser zusammenpasst.
+
+Die Einrichtungs-Karte auf der Startseite zeigt jetzt nur noch das
+Offene; die erledigten Schritte liegen hinter „3 Schritte schon
+erledigt". Die Karte ist damit von fünf auf zwei Zeilen geschrumpft —
+„Mein Dienst" steht wieder ohne Scrollen da.
+
+### Der Hellmodus war an 32 Stellen halb blind
+
+Beim Durchsehen der Bilder fiel eine Plakette auf: „kein Abschluss" beim
+Probetraining stand im Hellmodus ohne Fläche da, während „Abschluss"
+daneben eine grüne trug. Die Regel dahinter:
+`background:rgba(255,255,255,.07)`.
+
+Im Dunkeln genau richtig. Auf einer **weißen** Karte ist Weiß auf Weiß
+nichts. Die Suche danach fand **32 solcher Stellen** — Eingabefelder,
+`.btn-ghost`, `.icon-btn`, Fortschrittsschienen, Chips. Im Browser
+nachgemessen: `.inp`, `.btn-ghost`, `.icon-btn` und `.pbar` lieferten in
+**beiden** Modi denselben Wert. Getragen wurden sie im Hellmodus nur noch
+von ihrem Rahmen; wer keinen hatte, war weg.
+
+Jetzt drei Marken `--auf-1/2/3`, die den Modus kennen: im Dunkeln heller,
+im Hellen dunkler. Sechs eigene `body.light`-Regeln, die genau dieses Loch
+einzeln geflickt hatten, sind damit überflüssig und gelöscht. Zwei
+Ausnahmen bleiben weiß, beide mit Grund: der Schließen-Knopf im
+Bildbetrachter liegt in beiden Modi auf schwarzem Grund, und der
+Rollbalken hat seine eigene Hell-Regel.
+
+### Drei Fehler, die dabei aufgefallen sind
+
+**1. Der Abstands-Prüfer hatte ein Loch.** Er übersprang jede Angabe, in
+der ein `clamp()` oder `calc()` vorkam — *die ganze Angabe*. Bei
+`padding:15px clamp(14px,4vw,28px) 9px` standen die 15 und die 9
+jahrelang unbemerkt fest drin. Jetzt wird nur die Rechnung selbst
+herausgenommen, der Rest geprüft: 17 versteckte Festwerte kamen zum
+Vorschein, alle liegen jetzt auf der Leiter.
+
+**2. Namenskollision.** Die Aufklapper hießen zuerst `.mehr` — es gibt
+aber schon `.alert-bar.mehr`. Die Regel `.mehr{margin-top:…}` hätte den
+Hinweisbalken auf der Startseite stillschweigend mitverschoben. Umbenannt
+in `.nachfrage`, bevor es jemand sieht.
+
+**3. Ein Knopf ohne Trefferfläche.** Die Lese-Plakette an einer
+Ankündigung war 17 Pixel hoch. Sie bekommt dieselbe unsichtbare
+`::after`-Fläche wie `.mini-link` und `.recht-link` — 44 Pixel, ohne dass
+sich am Aussehen etwas ändert.
+
+### Knöpfe und leere Zustände
+
+Drei Knöpfe im Ladebildschirm trugen ihre Gestalt im `style`-Attribut,
+inklusive eigener Markenfarbe. Sie sind jetzt `.btn .btn-primary` /
+`.btn-ghost` wie alle anderen.
+
+`emptyHTML()` nimmt zwei Angaben mehr: ein eigenes Symbol und Markup für
+den nächsten Schritt. Vorher trug jeder leere Bereich dasselbe
+Klemmbrett. Fünfzehn handgemalte `<p style="color:…">Keine …</p>` sind zu
+`emptyMini()` geworden.
+
+Die Chef-Karten bekommen einen Winkel am Rand: sie **sind** Knöpfe, sahen
+aber aus wie Kästen, die man anschaut.
+
+### Was der Prüfer jetzt kann
+
+`tests/test-gestaltung.js` hat drei neue Abschnitte — feste Schriftmaße,
+feste Schatten, feste Statustönungen — je mit Gegenprobe, dass die Leiter
+auch wirklich benutzt wird. Nachgewiesen, dass sie greifen: mit
+absichtlich eingebauten Verstößen (`.83rem`, `1.42`, ein fremder
+Schatten, `rgba(251,78,109,.19)`) schlagen alle vier an.
+
+```
+Forensik: UNERREICHBAR 0 · UEBERLAUF 0 · VERDECKT 0 ·
+          FINGERZIEL 0 · KONTRAST 0 · FOKUS 0
+```
+
+### Was bewusst nicht angefasst wurde
+
+Die Quotenbalken beim Probetraining sind unabhängig vom Wert grün. Ab
+welcher Abschlussquote ein Balken „gut" ist, ist eine Frage des Betriebs,
+keine des Designs — das erfinde ich nicht. Wenn der Chef eine Schwelle
+nennt (oder „gegen den eigenen Schnitt" als Regel will), ist es eine
+Zeile.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
