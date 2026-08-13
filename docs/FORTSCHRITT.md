@@ -2884,6 +2884,66 @@ CSP 33 Prüfungen (2 Seiten) · Mailversand 8 · npm audit 0       neu
 
 ---
 
+## Sitzung 36 · Die Symbole kommen zurück 🟢
+
+Rückmeldung nach dem Aufräumen: *„das sieht jetzt alles so leer aus."*
+Berechtigt. Nachgezählt, was beim Emoji-Ausbau in Sitzung 32 wirklich
+passiert ist:
+
+| | |
+|---|---|
+| Stellen, die ein Symbol verloren | 244 |
+| davon Überschriften | 55 |
+| davon Knöpfe und Reiter | 55 |
+| davon Auswahl-Einträge | 13 |
+| Symbole, die zurückkamen | 40 |
+
+Der Rest stand nackt da. Am deutlichsten in der Verwaltung: die acht
+Kacheln hatten `ico:''` — leer geräumt und nie wieder gefüllt. Dasselbe
+bei Dokument-Kategorien, Nachweis-Arten und Gerätezuständen, zusammen 24
+leere Felder.
+
+### Was jetzt anders ist
+
+**`data-ikon="name"` statt ausgeschriebenem SVG.** Vorher stand jedes
+Symbol zweimal in der Datei — einmal im Satz, einmal als SVG im Markup.
+Zwei Fassungen desselben Bildes laufen auseinander. Jetzt nennt das
+Markup nur den Namen, `ikonenEinsetzen()` hängt das SVG beim Start ein.
+Eine Quelle, und eine Überschrift ohne Symbol ist eine Entscheidung
+statt eines Versehens.
+
+**Der Satz ist von 24 auf 57 Symbole gewachsen.** Alle im selben
+24er-Raster, Kontur, `currentColor`. Nachgesehen wurde nicht im Code,
+sondern auf einem Kontaktabzug — `zahnrad` sah aus wie `sonne` und ist
+jetzt ein Regler.
+
+**Emoji bleiben in `<option>`.** Eine Auswahlliste zeigt nur Text, dort
+ist kein SVG möglich: entweder ein Emoji oder gar keine Marke, und
+„Urlaub / Krank / Frei" ohne Unterscheidung ist schlechter. Steht als
+begründete Ausnahme im Prüfer, nicht in der Zeichenliste — sonst wären
+dieselben Emoji überall wieder erlaubt.
+
+**Keine Symbole in den Team-Reitern.** Vier Reiter mit Symbol passen auf
+390 Pixeln nicht nebeneinander; der vierte war abgeschnitten. Derselbe
+Grund wie im Profil.
+
+### Zwei Funde beim Bauen
+
+**Der Prüfer war halb blind.** `tests/test-gestaltung.js` schnitt
+Kommentare mit einem Muster über die ganze Datei heraus — und im Markup
+steht `accept="image/*"`. Das öffnete einen Kommentar, der erst 84 KB
+später im Skript wieder zuging: **der halbe Body war für jede Prüfung
+unsichtbar.** Ein Emoji dort wäre nie gefunden worden, und der Durchlauf
+meldete trotzdem grün. Jetzt wird je Bereich geschnitten.
+
+**Textprüfung allein reicht nicht.** `textContent` wirft das eingehängte
+SVG wieder hinaus — genau so standen „Reicht noch" und „Übersicht aller
+Studios" wieder nackt da, während die Datei behauptete, sie hätten ein
+Symbol. Der Prüfer öffnet jetzt fünf Ansichten im Browser und sieht
+nach, ob jede Marke ihr Symbol trägt.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

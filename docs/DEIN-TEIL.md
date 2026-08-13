@@ -360,7 +360,8 @@ dass gar nicht gesichert wurde.
 | Code einmal ins Team gegeben | ☐ |
 | Apps Script eingefügt und neu bereitgestellt | ☑ 9.8. |
 | Wischen im Putzplan am Gerät geprüft | ☑ 9.8. |
-| **Token für die Google-Tabelle gesetzt** *(Schritt G)* | ☐ |
+| Google-Tabellen-Abgleich läuft über den Server | ☑ 13.8. bestätigt |
+| **`STUDIOCHAT_TOKEN` in den Skripteigenschaften** *(Schritt G)* | ☐ |
 
 > **Zum Budget:** 0 € heißt, du bekommst die Mail beim allerersten Cent. Ein
 > Budget **stoppt nichts**, es meldet nur – Google rechnet weiter. Wenn die

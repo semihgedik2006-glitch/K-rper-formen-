@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-PWC1HuWEWogexqbbVycF5Ju7v2ndFVDDKYyyggDxp8A='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-z0oAu0aRH8GK8K1QNqo+QrHKUC6YpF9OBK9L9IR9rGU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -166,6 +166,21 @@ input,textarea,select{font-family:inherit;font-size:16px}
    den Hell- und Dunkelmodus. */
 .sym{width:1.05em;height:1.05em;flex:0 0 auto;vertical-align:-.14em}
 .sym-gross{width:1.35em;height:1.35em}
+/* Ueberschriften mit Symbol: die Zeile wird zur Reihe, damit das Symbol
+   an der Schrift ausgerichtet steht und nicht auf der Grundlinie klebt.
+   Nur fuer [data-ikon] — eine Ueberschrift ohne Symbol bleibt Text und
+   darf weiter umbrechen wie bisher. */
+/* Kein display:flex an der Ueberschrift: sie steckt in Koepfen, die beim
+   Scrollen zusammenschrumpfen, und dort haengt die Hoehe an der Zeile.
+   Ein Abstand am Symbol reicht — ausgerichtet ist es ueber
+   vertical-align an .sym. */
+h2[data-ikon] .sym,h3[data-ikon] .sym{margin-right:var(--s8)}
+/* --brand ist ein Verlauf und taugt nicht als color. Der Akzent ist die
+   Volltonfarbe daneben; in Hell und Dunkel jeweils eine eigene. */
+h2[data-ikon] .sym,h3[data-ikon] .sym{color:var(--accent)}
+.cc-ico .sym{color:var(--accent)}
+button[data-ikon]{gap:var(--s8)}
+button[data-ikon]:not(.btn){display:inline-flex;align-items:center;gap:var(--s6)}
 
 /* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s8);
@@ -2321,7 +2336,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 <!-- ── Setup Notice (wenn Firebase Config fehlt) ── -->
 <div id="setupNotice">
   <div class="setup-card">
-    <h2>Noch nicht eingerichtet</h2>
+    <h2 data-ikon="regler">Noch nicht eingerichtet</h2>
     <p>In <code>konfig.js</code> stehen die Firebase-Zugangsdaten – dort sind
       sie noch nicht ausgefüllt. Alles Kundenspezifische liegt in dieser einen
       Datei; <code>index.html</code> muss dafür nicht angefasst werden.</p>
@@ -2463,7 +2478,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
           <div class="card" id="setupCard" style="display:none">
             <div class="karten-kopf">
-              <h3>Einrichtung</h3>
+              <h3 data-ikon="rakete">Einrichtung</h3>
               <span class="todo-count" id="setupZahl"></span>
             </div>
             <p class="hint">Was noch fehlt, damit die App für dein Team bereit ist.
@@ -2475,7 +2490,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div id="homeAlerts"></div>
           <div class="card" id="myShiftCard" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-              <h3>Mein Dienst</h3>
+              <h3 data-ikon="kalender">Mein Dienst</h3>
               <span class="todo-count" id="myShiftSub"></span>
             </div>
             <div id="myShiftList"></div>
@@ -2484,14 +2499,14 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div class="sec-head" id="homeLesenHead" style="display:none"><span>Zum Lesen</span><i></i></div>
           <div class="card" id="homeAnnCard" data-fold="startinfos" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
-              <h3>Von der Leitung</h3>
+              <h3 data-ikon="megafon">Von der Leitung</h3>
               <button class="mini-link" data-go="ann">Alle ›</button>
             </div>
             <div id="homeAnnList"></div>
           </div>
           <div class="card" id="homeBoardCard" data-fold="startbrett" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
-              <h3>Schwarzes Brett</h3>
+              <h3 data-ikon="anheften">Schwarzes Brett</h3>
               <button class="mini-link" data-go="team">Alle ›</button>
             </div>
             <div id="homeBoardList"></div>
@@ -2506,7 +2521,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
           <!-- 4. Was gerade passiert ist -->
           <div class="card" id="homeActivityCard" data-fold="aktivitaet">
-            <h3>Zuletzt passiert</h3>
+            <h3 data-ikon="uhr">Zuletzt passiert</h3>
             <div id="homeActivity"></div>
           </div>
         </div>
@@ -2514,8 +2529,10 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
       <!-- CHAT -->
       <section class="view" id="view-chat">
-        <div class="notif-banner" id="notifBanner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <!-- Die Glocke stand hier als eigenes SVG, obwohl es sie im Satz
+             gibt: zwei Fassungen desselben Bildes. data-ikon holt sie
+             von dort. -->
+        <div class="notif-banner" id="notifBanner" data-ikon="glocke">
           <div class="nb-txt"><b>Meldungen an?</b><span class="nb-mehr"> Sonst bleibt Neues unbemerkt.</span></div>
           <button class="btn btn-primary btn-sm" id="notifEnable">Aktivieren</button>
         </div>
@@ -2563,8 +2580,8 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             </button>
             <div class="attach-menu" id="attachMenu">
-              <button data-att="foto"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto</button>
-              <button data-att="umfrage"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Umfrage</button>
+              <button data-ikon="foto" data-att="foto"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto</button>
+              <button data-ikon="umfrage" data-att="umfrage"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Umfrage</button>
             </div>
           </div>
           <button class="attach-btn" id="chatMic" aria-label="Sprachnachricht aufnehmen" title="Sprachnachricht aufnehmen">
@@ -2641,24 +2658,24 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div class="mat-alert" id="matAlert" style="display:none"></div>
 
           <div class="card" id="fcCard" style="display:none" data-fold="vorhersage">
-            <h3 id="fcTitle">Reicht noch</h3>
+            <h3 data-ikon="trendAb" id="fcTitle">Reicht noch</h3>
             <p class="hint">Aus den Wochen-Sicherungen im Archiv gerechnet – keine Schätzung,
               sondern der tatsächliche Rückgang der letzten Wochen.</p>
             <div id="fcList"></div>
           </div>
           <div class="card" id="shopCard" style="display:none" data-fold="shop">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-              <h3>Einkaufsliste</h3>
+              <h3 data-ikon="wagen">Einkaufsliste</h3>
               <span class="todo-count" id="shopCount"></span>
             </div>
             <p class="hint">Was insgesamt fehlt – zusammengezählt über alle deine Studios.</p>
             <div id="shopList"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <button class="btn btn-ghost btn-sm" id="shopPrint"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> Drucken</button>
-              <button class="btn btn-ghost btn-sm" id="shopXls"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Als Excel</button>
-              <button class="btn btn-ghost btn-sm" id="shopCopy"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopieren</button>
-              <button class="btn btn-ghost btn-sm" id="shopMail"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Bestellmail</button>
-              <button class="btn btn-ghost btn-sm" id="matExport" style="display:none"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alle Studios</button>
+              <button data-ikon="drucken" class="btn btn-ghost btn-sm" id="shopPrint"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> Drucken</button>
+              <button data-ikon="laden" class="btn btn-ghost btn-sm" id="shopXls"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Als Excel</button>
+              <button data-ikon="kopieren" class="btn btn-ghost btn-sm" id="shopCopy"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopieren</button>
+              <button data-ikon="mail" class="btn btn-ghost btn-sm" id="shopMail"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Bestellmail</button>
+              <button data-ikon="laden" class="btn btn-ghost btn-sm" id="matExport" style="display:none"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alle Studios</button>
             </div>
             <div class="field" style="margin-top:10px;margin-bottom:0">
               <label for="shopMailTo">Adresse des Lieferanten (nur auf diesem Gerät gespeichert)</label>
@@ -2684,7 +2701,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
         <div class="scroll-area" data-shrinks="1">
           <div class="mat-bar">
             <select class="inp" id="ppStudio"></select>
-            <button class="btn btn-ghost btn-sm no-print" id="ppPrint" title="Putzplan ausdrucken"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> Drucken</button>
+            <button data-ikon="drucken" class="btn btn-ghost btn-sm no-print" id="ppPrint" title="Putzplan ausdrucken"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> Drucken</button>
           </div>
 
           <!-- Liste der Putzaufgaben des gewählten Studios -->
@@ -2704,7 +2721,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
           <!-- Notizen der Mitarbeiter -->
           <div class="card" data-fold="ppnotes">
-            <h3>Notizen</h3>
+            <h3 data-ikon="blatt">Notizen</h3>
             <p class="hint">Platz für Hinweise vom Team, z. B. „Wischmopp ist kaputt".</p>
             <div class="mat-add">
               <input class="inp" id="ppNoteInput" type="text" placeholder="Notiz schreiben …" maxlength="300" />
@@ -2714,7 +2731,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
           <!-- Chef: neue Putzaufgabe anlegen -->
           <div class="card" id="ppChefCard" style="display:none" data-fold="ppneu">
-            <h3>Putzaufgabe hinzufügen</h3>
+            <h3 data-ikon="tropfen">Putzaufgabe hinzufügen</h3>
             <p class="hint">Wird für die gewählten Studios angelegt und dort im Putzplan angezeigt.
               Einmalige Aufgaben verschwinden einen Tag nach dem Abhaken von selbst –
               auch aus der Tabelle. Nicht erledigte bleiben stehen.</p>
@@ -2725,10 +2742,10 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <div class="studio-checks" id="ppStudios"></div></div>
             <div class="field"><label for="ppRepeat">Wiederholung</label>
               <select class="inp" id="ppRepeat">
-                <option value="daily">Täglich (Reset jeden Tag)</option>
-                <option value="weekly">Wöchentlich (Reset jede Woche)</option>
+                <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
+                <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
                 <option value="">Einmalig (verschwindet einen Tag nach dem Abhaken)</option>
-                <option value="custom">Eigenes Intervall …</option>
+                <option value="custom">🔁 Eigenes Intervall …</option>
               </select></div>
             <div class="field" id="ppCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
               <div style="display:flex;gap:8px">
@@ -2769,20 +2786,20 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
           <!-- Verwaltung: neues Gerät aufnehmen -->
           <div class="card" id="devAddCard" style="display:none" data-fold="devneu">
-            <h3>Gerät aufnehmen</h3>
+            <h3 data-ikon="plus">Gerät aufnehmen</h3>
             <p class="hint">Einmalig eintragen. Danach kann jeder im Team einen Defekt daran melden.</p>
             <div class="field"><label for="devName">Bezeichnung</label>
               <input class="inp" id="devName" type="text" placeholder="z. B. EMS-Gerät 2" maxlength="80" /></div>
             <div class="field"><label for="devPlace">Wo steht es?</label>
               <input class="inp" id="devPlace" type="text" placeholder="z. B. Kabine links" maxlength="80" /></div>
-            <button class="btn btn-primary btn-sm" id="devAdd">Gerät aufnehmen</button>
+            <button data-ikon="plus" class="btn btn-primary btn-sm" id="devAdd">Gerät aufnehmen</button>
           </div>
         </div>
       </section>
 
       <!-- TEAM -->
       <section class="view" id="view-team">
-        <div class="view-head shrink"><h2>Team</h2><p>Schichtplan, Abwesenheiten, Übergaben und Aushänge.</p></div>
+        <div class="view-head shrink"><h2 data-ikon="leute">Team</h2><p>Schichtplan, Abwesenheiten, Übergaben und Aushänge.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <!-- Nur für die Verwaltung: Urlaubsanträge, die irgendwo warten -->
           <div id="teamWartet" style="display:none"></div>
@@ -2791,6 +2808,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <select class="inp" id="teamStudio"></select>
           </div>
           <div class="pm-tabs" id="teamTabs" style="margin:0 0 14px">
+            <!-- Kein data-ikon an diesen vier: mit Symbol passt der vierte
+                 Reiter auf 390 Pixeln nicht mehr in die Zeile. Derselbe
+                 Grund wie bei den Reitern im Profil. -->
             <button class="pm-tab on" data-teamtab="schicht">Schichten</button>
             <button class="pm-tab" data-teamtab="abwesend">Abwesend</button>
             <button class="pm-tab" data-teamtab="uebergabe">Übergabe</button>
@@ -2811,7 +2831,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <div id="shiftGrid" style="margin-top:10px"></div>
             </div>
             <div class="card" id="shiftAddCard" style="display:none">
-              <h3>Schicht eintragen</h3>
+              <h3 data-ikon="plus">Schicht eintragen</h3>
               <div class="row">
                 <div class="field"><label for="shDate">Tag</label><input class="inp" id="shDate" type="date" /></div>
                 <div class="field"><label for="shPerson">Person</label><select class="inp" id="shPerson"></select></div>
@@ -2830,7 +2850,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div id="teamPaneAbwesend" style="display:none">
             <div class="card"><h3>Kommende Abwesenheiten</h3><div id="absList"></div></div>
             <div class="card" data-fold="abwmelden">
-              <h3>Abwesenheit melden</h3>
+              <h3 data-ikon="sonne">Abwesenheit melden</h3>
               <p class="hint">Urlaub, Krankheit oder frei – erscheint im Schichtplan.</p>
               <div class="row">
                 <div class="field"><label for="abFrom">Von</label><input class="inp" id="abFrom" type="date" /></div>
@@ -2838,9 +2858,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               </div>
               <div class="field"><label for="abType">Art</label>
                 <select class="inp" id="abType">
-                  <option value="urlaub">Urlaub</option>
-                  <option value="krank">Krank</option>
-                  <option value="frei">Frei</option>
+                  <option value="urlaub">🌴 Urlaub</option>
+                  <option value="krank">🤒 Krank</option>
+                  <option value="frei">🏠 Frei</option>
                 </select></div>
               <div class="field"><label for="abNote">Notiz (optional)</label>
                 <input class="inp" id="abNote" type="text" maxlength="80" /></div>
@@ -2851,7 +2871,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <!-- Übergabe -->
           <div id="teamPaneUebergabe" style="display:none">
             <div class="card">
-              <h3>Übergabe an die nächste Schicht</h3>
+              <h3 data-ikon="wiederholen">Übergabe an die nächste Schicht</h3>
               <div id="hoList" style="margin-top:4px"></div>
               <div class="mat-add" style="margin-top:14px">
                 <input class="inp" id="hoNew" type="text" placeholder="Was muss die nächste Schicht wissen?" maxlength="300" />
@@ -2864,19 +2884,19 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <!-- Schwarzes Brett -->
           <div id="teamPaneBrett" style="display:none">
             <div class="card">
-              <h3>Schwarzes Brett</h3>
+              <h3 data-ikon="anheften">Schwarzes Brett</h3>
               <div id="bbList" style="margin-top:4px"></div>
             </div>
             <div class="card" data-fold="brettneu">
-              <h3>Aushang schreiben</h3>
+              <h3 data-ikon="stift">Aushang schreiben</h3>
               <p class="hint">Für das ganze Team – Tausch, Mitfahrgelegenheit, Lob.</p>
               <div class="field"><textarea class="inp" id="bbText" maxlength="500" placeholder="Dein Aushang …"></textarea></div>
               <div class="field"><label for="bbType">Art</label>
                 <select class="inp" id="bbType">
-                  <option value="info">Info</option>
-                  <option value="tausch">Schichttausch gesucht</option>
-                  <option value="lob">Lob / Danke</option>
-                  <option value="mitfahr">Mitfahrgelegenheit</option>
+                  <option value="info">💬 Info</option>
+                  <option value="tausch">🔄 Schichttausch gesucht</option>
+                  <option value="lob">👏 Lob / Danke</option>
+                  <option value="mitfahr">🚗 Mitfahrgelegenheit</option>
                 </select></div>
               <button class="btn btn-primary btn-sm" id="bbAdd">Anpinnen</button>
             </div>
@@ -2889,10 +2909,10 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
         <div class="view-head shrink"><h2>Dokumente</h2><p>Dateien und Links fürs Team.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <div class="card" id="docUploadCard" style="display:none" data-fold="docneu">
-            <h3>Dokument hinzufügen</h3>
+            <h3 data-ikon="hochladen">Dokument hinzufügen</h3>
             <p class="hint">Kleine Datei (bis ~0,7 MB, z. B. PDF/Bild) direkt hochladen – oder für große Dateien unten einen Link (Google Drive/Dropbox) einfügen.</p>
             <input type="file" class="hidden-file" id="docFile" />
-            <button class="btn btn-ghost btn-sm" id="docPick" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Datei wählen</button>
+            <button data-ikon="klammer" class="btn btn-ghost btn-sm" id="docPick" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Datei wählen</button>
             <p id="docPicked" style="font-size:.84rem;color:var(--text-2);margin:8px 0 0"></p>
             <div class="field" style="margin-top:12px"><label for="docName">Titel (optional)</label>
               <input class="inp" id="docName" type="text" placeholder="z. B. Hygieneplan 2026" maxlength="80" /></div>
@@ -2959,7 +2979,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
         <div class="view-head shrink"><h2>Archiv</h2><p id="archSubtitle">Tages-Sicherungen und erledigte Aufgaben. Nur für dich sichtbar.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <div class="card" id="weekArchiveCard">
-            <h3>Sicherungen</h3>
+            <h3 data-ikon="paket">Sicherungen</h3>
             <p class="hint">Jede Nacht um 23:45 wird der Stand des Tages gesichert:
               Material, Putzplan mit Kürzeln und die Aufgaben mit dem Grund, warum
               etwas liegen blieb. Klicke auf einen Eintrag, um ihn als Excel-Datei
@@ -2997,12 +3017,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div class="chef-pane" data-cpane="ueberblick">
           <div class="dash-grid" id="dashGrid"></div>
           <div class="card">
-            <h3>Braucht Aufmerksamkeit</h3>
+            <h3 data-ikon="warnung">Braucht Aufmerksamkeit</h3>
             <p class="hint">Alles, was gerade hakt – auf einen Blick, ohne Suchen.</p>
             <div id="chefAttention"></div>
           </div>
           <div class="card" data-fold="studiotabelle">
-            <h3 id="studioGridTitle">Übersicht aller Studios</h3>
+            <h3 data-ikon="umfrage" id="studioGridTitle">Übersicht aller Studios</h3>
             <p class="hint">Aufgaben-Fortschritt pro Studio. Tippe ein Studio an, um die Aufgaben zu öffnen.</p>
             <div class="studio-grid" id="studioGrid"></div>
           </div>
@@ -3012,7 +3032,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <!-- ── Reiter 2: Erstellen ── -->
           <div class="chef-pane" data-cpane="erstellen" style="display:none">
           <div class="card" data-fold="neueaufgabe" data-fold-offen="1" data-nurwenn="todos">
-            <h3>Neue Aufgabe erstellen</h3>
+            <h3 data-ikon="hakenKreis">Neue Aufgabe erstellen</h3>
             <p class="hint">Einem oder allen Studios zuweisen.</p>
             <div class="field"><label for="ntTitle">Aufgabe</label>
               <input class="inp" id="ntTitle" type="text" placeholder="z. B. Geräte desinfizieren" maxlength="120" /></div>
@@ -3027,9 +3047,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <div class="field"><label for="ntRepeat">Wiederholung</label>
               <select class="inp" id="ntRepeat">
                 <option value="">Keine (einmalig)</option>
-                <option value="daily">Täglich (Reset jeden Tag)</option>
-                <option value="weekly">Wöchentlich (Reset jede Woche)</option>
-                <option value="custom">Eigenes Intervall …</option>
+                <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
+                <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
+                <option value="custom">🔁 Eigenes Intervall …</option>
               </select></div>
             <div class="field" id="ntCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
               <div style="display:flex;gap:8px">
@@ -3048,7 +3068,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <div class="field">
               <label>Foto (optional)</label>
               <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
-              <button type="button" class="btn btn-ghost btn-sm" id="ntAttach" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto hinzufügen</button>
+              <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="ntAttach" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto hinzufügen</button>
               <div id="ntPreviewWrap" style="display:none;margin-top:10px;align-items:center;gap:10px">
                 <img id="ntPreviewImg" alt="Vorschau" style="height:60px;width:60px;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)" />
                 <button type="button" class="pv-x" id="ntPreviewX" aria-label="Foto entfernen" style="display:inline-block"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -3058,7 +3078,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <div class="draft-row"><p class="draft-note" id="ntDraftNote"></p></div>
           </div>
           <div class="card" data-fold="vorlagen" data-nurwenn="todos">
-            <h3>Vorlagen</h3>
+            <h3 data-ikon="kopieren">Vorlagen</h3>
             <p class="hint">Aufgaben, die immer wieder gleich sind, einmal speichern und
               danach mit zwei Klicks einsetzen.</p>
             <div class="field"><select class="inp" id="tplSelect"></select></div>
@@ -3069,7 +3089,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             </div>
           </div>
           <div class="card" data-fold="ankuendigung" data-nurwenn="ann">
-            <h3>Ankündigung an alle</h3>
+            <h3 data-ikon="megafon">Ankündigung an alle</h3>
             <p class="hint">Erscheint sofort bei jedem Mitarbeiter im Portal.</p>
             <div class="field"><textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea></div>
             <div class="field"><label for="bcTarget">Empfänger</label><select class="inp" id="bcTarget"></select></div>
@@ -3082,7 +3102,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <div class="chef-pane" data-cpane="team" style="display:none">
           <div class="card" id="freigabeKarte" data-chef-only="1" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-              <h3>Wartet auf Freigabe</h3>
+              <h3 data-ikon="uhr">Wartet auf Freigabe</h3>
               <span class="todo-count" id="freigabeZahl"></span>
             </div>
             <p class="hint">Diese Leute haben sich selbst angemeldet und sehen bis
@@ -3090,7 +3110,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <div id="freigabeListe"></div>
           </div>
           <div class="card" data-fold="beitritt" data-chef-only="1">
-            <h3>Wer darf sich anmelden</h3>
+            <h3 data-ikon="schluessel">Wer darf sich anmelden</h3>
             <p class="hint">Ohne Einstellung hier kann sich jeder anmelden, der die
               Adresse der App kennt – und sieht dann Chat, Team und Aufgaben.</p>
             <div class="field"><label for="btCode">Firmencode</label>
@@ -3108,7 +3128,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <p class="em-saved" id="btNote"></p>
           </div>
           <div class="card" data-fold="zugang" data-chef-only="1">
-            <h3>Zugang anlegen</h3>
+            <h3 data-ikon="person">Zugang anlegen</h3>
             <p class="hint">Erstellt ein Konto und ordnet Studios zu. Die Person meldet sich danach mit E-Mail + Passwort an.</p>
             <div class="field"><label for="emName">Name</label>
               <input class="inp" id="emName" type="text" placeholder="Vor- und Nachname" maxlength="50" /></div>
@@ -3129,25 +3149,25 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <p class="hint" id="emRoleHint" style="margin:6px 0 0">Ein Studio-Leiter darf in seinen Studios Aufgaben und Putzpläne erstellen, Material pflegen und Infos posten – aber keine Zugänge anlegen.</p></div>
             <div class="field"><label>Studios zuordnen</label>
               <div class="studio-checks" id="emStudios"></div></div>
-            <button class="btn btn-primary btn-sm" id="emCreate">Zugang anlegen</button>
+            <button data-ikon="person" class="btn btn-primary btn-sm" id="emCreate">Zugang anlegen</button>
             <p class="em-saved" id="emCreateNote"></p>
             <div id="emCopyWrap" style="display:none;gap:8px;margin-top:8px">
-              <button type="button" class="btn btn-ghost btn-sm" id="emCopy"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Zugangsdaten kopieren</button>
+              <button data-ikon="kopieren" type="button" class="btn btn-ghost btn-sm" id="emCopy"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Zugangsdaten kopieren</button>
             </div>
           </div>
           <div class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
-            <h3>Team</h3>
+            <h3 data-ikon="leute">Team</h3>
             <p class="hint">Rolle und Studios anpassen oder Zugang entfernen.</p>
             <div id="empList"></div>
           </div>
           <div class="card" data-fold="chefzugaenge" data-chef-only="1">
-            <h3>Chef-Zugänge</h3>
+            <h3 data-ikon="krone">Chef-Zugänge</h3>
             <p class="hint">Alle Konten mit vollem Zugriff auf alle Studios. Sie bekommen
               auch den Monatsbericht per E-Mail.</p>
             <div id="chefList"></div>
           </div>
           <div class="card" data-fold="onboarding" data-chef-only="1">
-            <h3>Onboarding-Checkliste</h3>
+            <h3 data-ikon="kompass">Onboarding-Checkliste</h3>
             <p class="hint">Schritte für neue Mitarbeiter. Sie sehen die Liste im Infos-Tab und haken sie ab.</p>
             <div id="obEditor"></div>
             <div class="mat-add">
@@ -3156,28 +3176,28 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             </div>
             <div class="field" style="margin-top:14px"><label for="obSendTo">Als To-do-Checkliste per DM senden an …</label>
               <select class="inp" id="obSendTo"></select></div>
-            <button class="btn btn-primary btn-sm" id="obSend"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Checkliste per DM senden</button>
+            <button data-ikon="kopieren" class="btn btn-primary btn-sm" id="obSend"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Checkliste per DM senden</button>
           </div>
           </div>
 
           <!-- ── Reiter 4: Auswertung ── -->
           <div class="chef-pane" data-cpane="standorte" style="display:none">
             <div class="card">
-              <h3>Studios</h3>
+              <h3 data-ikon="gebaeude">Studios</h3>
               <p class="hint">Hier stehen die Standorte, mit denen die App arbeitet.
                 Was du hier änderst, sehen alle sofort.</p>
               <div id="standortListe"></div>
             </div>
             <div class="card" data-fold="studioneu">
-              <h3>Studio anlegen</h3>
+              <h3 data-ikon="plus">Studio anlegen</h3>
               <p class="hint">Der Name lässt sich später jederzeit ändern.</p>
               <div class="field"><label for="stNeuName">Name des Studios</label>
                 <input class="inp" id="stNeuName" type="text" maxlength="40"
                        placeholder="z. B. Bergisch Gladbach" /></div>
-              <button class="btn btn-primary" id="stNeuBtn">Studio anlegen</button>
+              <button data-ikon="plus" class="btn btn-primary" id="stNeuBtn">Studio anlegen</button>
             </div>
             <div class="card">
-              <h3>Warum es kein Löschen gibt</h3>
+              <h3 data-ikon="warnung">Warum es kein Löschen gibt</h3>
               <p class="hint" style="margin-bottom:0">
                 Jedes Studio hat eine feste Kennung in der Datenbank, und alle
                 Aufgaben, Schichten, Putzpläne, Geräte und Chatnachrichten
@@ -3192,7 +3212,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
           <div class="chef-pane" data-cpane="firmen" style="display:none">
             <div class="card">
-              <h3>Firmen</h3>
+              <h3 data-ikon="gebaeude">Firmen</h3>
               <p class="hint">Alle Betriebe, die diese App benutzen.
                 Du siehst Namen und Zahlen — <b>keine Inhalte</b>: weder Chat
                 noch Aufgaben noch Personendaten. Das ist Absicht und der Satz,
@@ -3200,7 +3220,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <div id="firmenListe"></div>
             </div>
             <div class="card" data-fold="firmaneu">
-              <h3>Firma anlegen</h3>
+              <h3 data-ikon="plus">Firma anlegen</h3>
               <p class="hint">Legt die Firma an, erzeugt den ersten Chef-Zugang
                 und gibt dir das Passwort — <b>einmal</b>. Es wird nirgends
                 gespeichert.</p>
@@ -3218,11 +3238,11 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
                   Geschäftsführung selbst ein, unter Verwaltung → Standorte.
                   Anhängen geht dort jederzeit, nur die Reihenfolge bleibt
                   stehen.</p></div>
-              <button class="btn btn-primary" id="fnBtn">Firma anlegen</button>
+              <button data-ikon="plus" class="btn btn-primary" id="fnBtn">Firma anlegen</button>
               <div id="fnErgebnis" style="display:none;margin-top:16px"></div>
             </div>
             <div class="card" data-fold="kontenfirma">
-              <h3>Konten ohne Firma</h3>
+              <h3 data-ikon="beleg">Konten ohne Firma</h3>
               <p class="hint">Konten aus der Zeit vor der Mandantenfähigkeit haben
                 kein Feld <b>firma</b> — für sie galt stillschweigend „koerperformen".
                 Damit die Personenliste je Firma getrennt werden kann, muss der Wert
@@ -3234,7 +3254,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               <button class="btn btn-primary btn-sm" id="knSchreiben" style="width:100%;margin-top:8px;display:none">Jetzt nachtragen</button>
             </div>
             <div class="card" data-fold="firmaarchiv">
-              <h3>Gelöschte Firmen</h3>
+              <h3 data-ikon="archiv">Gelöschte Firmen</h3>
               <p class="hint">Eine gelöschte Firma kommt hierher, ihre Daten
                 bleiben liegen. Niemand aus dem Betrieb kommt mehr hinein, und
                 die Zeitpläne lassen sie in Ruhe. Zurückholen geht mit einem
@@ -3245,21 +3265,21 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
           <div class="chef-pane" data-cpane="nachweise" style="display:none">
             <div class="card">
-              <h3>Läuft demnächst ab</h3>
+              <h3 data-ikon="uhr">Läuft demnächst ab</h3>
               <p class="hint">60 und 14 Tage vorher bekommen die Person und du eine Meldung.
                 Abgelaufene stehen ganz oben.</p>
               <div id="certSoon" style="margin-top:10px"></div>
             </div>
             <div class="card" data-fold="allenachweise">
               <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-                <h3>Alle Nachweise</h3>
+                <h3 data-ikon="blatt">Alle Nachweise</h3>
                 <span class="todo-count" id="certCount"></span>
               </div>
               <div id="certSort" style="margin-top:10px"></div>
               <div id="certList"></div>
             </div>
             <div class="card" data-fold="nachweisneu">
-              <h3>Nachweis eintragen</h3>
+              <h3 data-ikon="plus">Nachweis eintragen</h3>
               <p class="hint">Sieht nur die betroffene Person und du – nicht die Studio-Leitung.</p>
               <div class="field"><label for="certPerson">Person</label>
                 <select class="inp" id="certPerson"></select></div>
@@ -3275,7 +3295,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
           <div class="chef-pane" data-cpane="report" style="display:none">
           <div class="card">
-            <h3>Bericht</h3>
+            <h3 data-ikon="trendAuf">Bericht</h3>
             <p class="hint">Zeitraum wählen – die Zahlen rechnen sich sofort neu.</p>
             <div class="field"><label for="repRange">Zeitraum</label>
               <select class="inp" id="repRange">
@@ -3285,15 +3305,15 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
                 <option value="0">Alles</option>
               </select></div>
             <div class="dash-grid" id="repTiles"></div>
-            <button class="btn btn-ghost btn-sm" id="repExport" style="width:100%;margin-top:6px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Bericht als Excel speichern</button>
+            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="repExport" style="width:100%;margin-top:6px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Bericht als Excel speichern</button>
           </div>
           <div class="card" data-fold="repstudios">
-            <h3>Studios im Vergleich</h3>
+            <h3 data-ikon="pokal">Studios im Vergleich</h3>
             <p class="hint">Wie viel Prozent der Aufgaben sind im Zeitraum erledigt worden?</p>
             <div id="repStudios"></div>
           </div>
           <div class="card" data-fold="reppersonen">
-            <h3>Wer hat wie viel erledigt?</h3>
+            <h3 data-ikon="daumen">Wer hat wie viel erledigt?</h3>
             <p class="hint">Kein Ranking zum Vergleichen – nur damit du siehst, wo Unterstützung fehlt.</p>
             <div id="repPeople"></div>
           </div>
@@ -3302,12 +3322,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           <!-- ── Reiter 5: System ── -->
           <div class="chef-pane" data-cpane="system" style="display:none">
             <div class="card" id="rechtKarte" style="display:none">
-              <h3>Rechtliches ist unvollständig</h3>
+              <h3 data-ikon="waage">Rechtliches ist unvollständig</h3>
               <p class="hint" id="rechtFehltText"></p>
               <button class="btn btn-ghost btn-sm" data-rechtauf="impressum">Ansehen</button>
             </div>
           <div class="card" data-fold="funktionen" data-chef-only="1">
-            <h3>Funktionen</h3>
+            <h3 data-ikon="raster">Funktionen</h3>
             <p class="hint">Was dieser Betrieb nicht braucht, muss auch niemand sehen.
               Abgeschaltetes verschwindet aus der Navigation — bei allen, sofort.
               <b>Es wird nichts gelöscht:</b> wer etwas wieder einschaltet, findet
@@ -3319,14 +3339,14 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
           </div>
           <!-- Die Farbe der Firma. Ein Kunde soll SEINE App sehen. -->
           <div class="card" data-fold="marke" data-chef-only="1">
-            <h3>Farbe der App</h3>
+            <h3 data-ikon="kontrast">Farbe der App</h3>
             <p class="hint">Gilt für alle im Betrieb. Sechs geprüfte Möglichkeiten statt
               eines freien Farbwählers — damit die Schrift auf farbigen Flächen in beiden
               Modi lesbar bleibt.</p>
             <div id="markeWahl" class="marke-wahl"></div>
           </div>
           <div class="card" data-fold="rechtform" data-chef-only="1">
-            <h3>Rechtliche Angaben</h3>
+            <h3 data-ikon="waage">Rechtliche Angaben</h3>
             <p class="hint">Impressum und Datenschutz. Das sieht jeder — auch vor dem
               Anmelden. <b>Pflicht sind Betreiber, Anschrift, vertretungsberechtigte
               Person und E-Mail.</b> Solange eine davon fehlt, steht oben in diesem
@@ -3376,25 +3396,25 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               er einmal fachlich durchgesehen.</p>
           </div>
           <div class="card" data-fold="fehler" data-chef-only="1">
-            <h3>Fehler im Betrieb</h3>
+            <h3 data-ikon="kaefer">Fehler im Betrieb</h3>
             <p class="hint">Wenn bei jemandem etwas nicht lädt, steht es hier — auch
               wenn er es dir nicht sagt. Gleiche Fehler werden zusammengezählt,
               nicht aneinandergereiht.</p>
             <div id="fehlerListe"></div>
           </div>
           <div class="card" data-fold="sheets" data-chef-only="1">
-            <h3>Google-Tabellen abgleichen</h3>
+            <h3 data-ikon="wiederholen">Google-Tabellen abgleichen</h3>
             <p class="hint">Änderungen werden automatisch übertragen. Falls in der Tabelle
               einmal etwas fehlt, schreibt dieser Knopf alle Studios neu – gefahrlos, es
               wird nichts gelöscht, nur der aktuelle Stand geschrieben.</p>
             <button class="btn btn-ghost btn-sm" id="syncSheetsBtn">Jetzt alle Studios abgleichen</button>
           </div>
           <div class="card" data-fold="sichern" data-chef-only="1">
-            <h3>Daten sichern</h3>
+            <h3 data-ikon="speichern">Daten sichern</h3>
             <p class="hint">Lädt alle Aufgaben, Putzpläne, Material, Infos und das Team als
               Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
-            <button class="btn btn-ghost btn-sm" id="expXls" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alles als Excel speichern</button>
-            <button class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alles als Daten-Datei (JSON)</button>
+            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expXls" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alles als Excel speichern</button>
+            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alles als Daten-Datei (JSON)</button>
             <p class="hint" style="margin-top:8px"><b>Was drin ist:</b> Aufgaben, Material,
               Putzplan, Chat, Geräte, Schichten, Abwesenheiten, Übergaben, Brett, Team,
               Infos, Dokument-Angaben und Nachweise. <b>Was nicht:</b> Direktnachrichten
@@ -3405,12 +3425,12 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               Anders als die Dateien oben holt das nach einem versehentlichen Löschen wirklich
               alles zurück.</p>
             <div class="sich-stand" id="sichStand" style="display:none"></div>
-            <button class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-admin-only="1">Jetzt zusätzlich sichern</button>
+            <button data-ikon="schild" class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-admin-only="1">Jetzt zusätzlich sichern</button>
             <p class="em-saved" id="backupNote"></p>
           </div>
           <div class="card" data-fold="trash" data-fold-offen="1">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-              <h3>Papierkorb</h3>
+              <h3 data-ikon="papierkorb">Papierkorb</h3>
               <span class="todo-count" id="trashCount"></span>
             </div>
             <p class="hint">Gelöschte Aufgaben, Putzaufgaben, Infos, Dokumente und
@@ -3421,7 +3441,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
               style="width:100%;margin-top:12px">Papierkorb endgültig leeren</button>
           </div>
           <div class="card" data-fold="monatsbericht" data-chef-only="1">
-            <h3>Monatsbericht</h3>
+            <h3 data-ikon="mail">Monatsbericht</h3>
             <p class="hint">Kommt automatisch am Ersten jedes Monats um 8 Uhr per E-Mail.
               Hier kannst du ihn sofort anfordern, um zu sehen, wie er aussieht.</p>
             <div class="field"><label for="repTestTage">Zeitraum</label>
@@ -3430,11 +3450,11 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
                 <option value="30" selected>Letzte 30 Tage</option>
                 <option value="90">Letzte 90 Tage</option>
               </select></div>
-            <button class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Testbericht jetzt senden</button>
+            <button data-ikon="mail" class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Testbericht jetzt senden</button>
             <p class="em-saved" id="repTestNote"></p>
           </div>
           <div class="card" data-fold="pwreset" data-chef-only="1">
-            <h3>Passwort zurücksetzen</h3>
+            <h3 data-ikon="schluessel">Passwort zurücksetzen</h3>
             <p class="hint">Schickt der Person eine E-Mail, mit der sie sich ein neues
               Passwort setzen kann. Du musst kein Passwort kennen oder vergeben.</p>
             <div class="field"><label for="prEmail">E-Mail der Person</label>
@@ -3502,7 +3522,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 <div id="keysModal">
   <div class="pm-box">
     <button class="lb-close" id="keysClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    <h3 style="margin-bottom:14px">Tastenkürzel</h3>
+    <h3 data-ikon="tastatur" style="margin-bottom:14px">Tastenkürzel</h3>
     <div id="keysList"></div>
     <p class="hint" style="margin-top:14px">Kürzel wirken nicht, während du in ein Feld schreibst.</p>
   </div>
@@ -3536,6 +3556,9 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <button class="lb-close" id="pmClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <h3 style="margin-bottom:14px">Einstellungen</h3>
     <div class="pm-tabs">
+      <!-- Kein data-ikon an diesen vier: mit Symbol passen sie auf 390 Pixeln
+           nicht mehr nebeneinander, der letzte wird abgeschnitten.
+           tests/test-einstellungen-bereich10.js prueft genau das. -->
       <button class="pm-tab on" data-pmtab="profil">Profil</button>
       <button class="pm-tab" data-pmtab="aussehen">Aussehen</button>
       <button class="pm-tab" data-pmtab="melden">Meldungen</button>
@@ -3546,7 +3569,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <div class="avatar" id="pmPreview" style="width:74px;height:74px;font-size:1.6rem;margin:0 auto">?</div>
       <input type="file" accept="image/*" class="hidden-file" id="pmPhotoFile" />
       <div style="margin-top:10px;display:flex;gap:8px;justify-content:center">
-        <button type="button" class="btn btn-ghost btn-sm" id="pmPhotoBtn"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Bild wählen</button>
+        <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="pmPhotoBtn"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Bild wählen</button>
         <button type="button" class="btn btn-ghost btn-sm" id="pmPhotoRemove" style="display:none">Entfernen</button>
       </div>
     </div>
@@ -3574,7 +3597,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <div class="opt-grid" id="bgOpts"></div>
       <input type="file" accept="image/*" class="hidden-file" id="bgFile" />
       <div id="bgOwnRow" style="display:none;gap:8px;margin-top:9px">
-        <button type="button" class="btn btn-ghost btn-sm" id="bgPick" style="flex:1"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto wählen</button>
+        <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="bgPick" style="flex:1"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto wählen</button>
         <button type="button" class="btn btn-ghost btn-sm" id="bgRemove" style="display:none">Entfernen</button>
       </div>
       <p class="hint" id="bgOwnNote" style="display:none;margin:7px 0 0">
@@ -3583,7 +3606,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <!-- Nur am Rechner sinnvoll, deshalb auf schmalen Geräten ausgeblendet -->
       <div id="pmKeysWrap" style="display:none;margin-top:20px">
         <label style="display:block;font-size:.82rem;color:var(--text-2);margin:0 0 7px">Tastenkürzel</label>
-        <button class="btn btn-ghost btn-sm" id="pmKeysBtn" style="width:100%">Tastenkürzel anpassen</button>
+        <button data-ikon="tastatur" class="btn btn-ghost btn-sm" id="pmKeysBtn" style="width:100%">Tastenkürzel anpassen</button>
       </div>
     </div>
     <div id="pmPaneNachweise" style="display:none">
@@ -3592,7 +3615,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
         kommen, und bestätigt sie, wenn ihr den Schein vorgelegt habt.</p>
       <div id="pmCerts"></div>
       <div class="card" id="pmCertNeu" style="margin-top:14px">
-        <h3 style="font-size:.95rem">Nachweis eintragen</h3>
+        <h3 data-ikon="plus" style="font-size:.95rem">Nachweis eintragen</h3>
         <div class="field"><label for="myCertArt">Art</label>
           <select class="inp" id="myCertArt"></select></div>
         <div class="field" id="myCertOwnWrap" style="display:none">
@@ -3625,7 +3648,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 <div id="todoEditModal">
   <div class="pm-box">
     <button class="lb-close" id="teClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    <h3>Aufgabe bearbeiten</h3>
+    <h3 data-ikon="stift">Aufgabe bearbeiten</h3>
     <p class="hint" id="teWo"></p>
     <div class="field"><label for="teTitle">Titel</label>
       <input class="inp" id="teTitle" type="text" maxlength="120" /></div>
@@ -3648,7 +3671,7 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 <div id="pollModal">
   <div class="pm-box">
     <button class="lb-close" id="pollClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    <h3>Umfrage</h3>
+    <h3 data-ikon="umfrage">Umfrage</h3>
     <p class="hint">Spart die 30 Einzelantworten im Chat. Jeder sieht sofort, wie es steht.</p>
     <div class="field"><label for="pollQ">Frage</label>
       <input class="inp" id="pollQ" type="text" placeholder="z. B. Wer kann Samstag früh?" maxlength="140" /></div>
@@ -3755,13 +3778,13 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <div class="field"><label for="devmText">Was ist los?</label>
       <input class="inp" id="devmText" type="text" placeholder="z. B. Weste links gibt keinen Impuls" maxlength="300" /></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-      <button class="btn btn-ghost btn-sm" id="devmPhoto"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto</button>
+      <button data-ikon="foto" class="btn btn-ghost btn-sm" id="devmPhoto"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto</button>
       <span class="hint" id="devmPhotoNote" style="align-self:center"></span>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
-      <button class="btn btn-danger btn-sm" id="devmDefekt" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Defekt melden</button>
+      <button data-ikon="warnung" class="btn btn-danger btn-sm" id="devmDefekt" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Defekt melden</button>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-sm" id="devmWartung" style="flex:1">Wartung fällig</button>
+        <button data-ikon="werkzeug" class="btn btn-ghost btn-sm" id="devmWartung" style="flex:1">Wartung fällig</button>
         <button class="btn btn-ghost btn-sm" id="devmOk" style="flex:1;display:none">✓ Wieder in Ordnung</button>
       </div>
     </div>
@@ -3791,8 +3814,8 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <h3 id="pmpName">Name</h3>
     <p id="pmpStatus" style="color:var(--text-2);margin:8px 0 4px;min-height:1em"></p>
     <p id="pmpRole" style="color:var(--text-3);font-size:.85rem;margin-bottom:18px"></p>
-    <button class="btn btn-primary" id="pmpDm" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Direktnachricht</button>
-    <button class="btn btn-ghost btn-sm" id="pmpChecklist" style="width:100%;margin-top:8px;display:none"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Checkliste senden</button>
+    <button data-ikon="mail" class="btn btn-primary" id="pmpDm" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Direktnachricht</button>
+    <button data-ikon="kopieren" class="btn btn-ghost btn-sm" id="pmpChecklist" style="width:100%;margin-top:8px;display:none"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Checkliste senden</button>
   </div>
 </div>
 
@@ -4435,8 +4458,87 @@ var IKONEN = {
   mikrofon:    '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/>' +
                '<path d="M12 17v5"/><path d="M8 22h8"/>',
   schloss:     '<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
-  pause:       '<path d="M9 4v16M15 4v16"/>'
+  pause:       '<path d="M9 4v16M15 4v16"/>',
+  plus:        '<path d="M12 5v14M5 12h14"/>',
+  kalender:    '<rect x="3" y="4" width="18" height="18" rx="2"/>' +
+               '<path d="M16 2v4M8 2v4M3 10h18"/>',
+  megafon:     '<path d="m3 11 18-5v12L3 14z"/>' +
+               '<path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  wagen:       '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>' +
+               '<path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>',
+  trendAb:     '<path d="m23 18-9.5-9.5-5 5L1 6"/><path d="M17 18h6v-6"/>',
+  trendAuf:    '<path d="m23 6-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/>',
+  tropfen:     '<path d="M12 2.7 17.7 8.4a8 8 0 1 1-11.4 0z"/>',
+  sonne:       '<circle cx="12" cy="12" r="5"/>' +
+               '<path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2"/>' +
+               '<path d="M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>',
+  regler:      '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/>' +
+               '<path d="M1 14h6M9 8h6M17 16h6"/>',
+  rakete:      '<path d="M12 15c5.2-3.5 6-8.3 6-11a12.9 12.9 0 0 0-8 6.1A22 22 0 0 0 9 12z"/>' +
+               '<path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0"/>' +
+               '<path d="M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5"/>' +
+               '<path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2"/>',
+  klammer:     '<path d="M21.4 11 12.3 20.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.9l8.5-8.4"/>',
+  glocke:      '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>' +
+               '<path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  leute:       '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>' +
+               '<path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
+  krone:       '<path d="M3 7l4 4 5-7 5 7 4-4-2 12H5z"/><path d="M4 21h16"/>',
+  kompass:     '<circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.1 6.4-6.3 2.1 2.1-6.4z"/>',
+  gebaeude:    '<path d="M3 21h18"/><path d="M6 21V8l6-4 6 4v13"/>' +
+               '<path d="M10 21v-5h4v5"/><path d="M10 10h.01M14 10h.01M10 13h.01M14 13h.01"/>',
+  beleg:       '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1z"/>' +
+               '<path d="M8 8h8M8 12h8M8 16h5"/>',
+  archiv:      '<path d="M2 3h20v5H2z"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/>' +
+               '<path d="M10 12h4"/>',
+  pokal:       '<path d="M6 4h12v5a6 6 0 0 1-12 0z"/>' +
+               '<path d="M6 5H3v1a4 4 0 0 0 4 4M18 5h3v1a4 4 0 0 1-4 4"/>' +
+               '<path d="M12 15v5M8 21h8"/>',
+  raster:      '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>' +
+               '<rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+  kaefer:      '<rect x="8" y="6" width="8" height="14" rx="4"/>' +
+               '<path d="M12 6V4M9.5 3 11 4.5M14.5 3 13 4.5"/>' +
+               '<path d="M8 10H4M8 14H3M8 18l-3 2M16 10h4M16 14h5M16 18l3 2"/>',
+  speichern:   '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>' +
+               '<path d="M17 21v-8H7v8M7 3v5h8"/>',
+  waage:       '<path d="M12 3v18M8 21h8M3 7h18"/>' +
+               '<path d="m6 7-3 7h6zM18 7l-3 7h6z"/>',
+  kontrast:    '<circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"/>',
+  tastatur:    '<rect x="2" y="6" width="20" height="12" rx="2"/>' +
+               '<path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
+  schluessel:  '<circle cx="7.5" cy="15.5" r="4.5"/>' +
+               '<path d="m10.7 12.3 8.3-8.3M17 6l3 3M14.5 8.5l3 3"/>',
+  werkzeug:    '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
+  hochladen:   '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><path d="M12 3v12"/>',
+  herz:        '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/>',
+  hantel:      '<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>',
+  blitz:       '<path d="M13 2 3 14h8l-1 8 10-12h-8z"/>',
+  feuer:       '<path d="M12 2s5 5 5 9a5 5 0 0 1-10 0c0-1.5.8-3 1.6-4 .3 1 .9 1.8 1.7 2 0-2.5.9-5 1.7-7z"/>' +
+               '<path d="M12 22a7 7 0 0 0 7-7c0-1.2-.3-2.4-.8-3.5"/>',
+  daumen:      '<path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>' +
+               '<path d="M7 11l4-9a3 3 0 0 1 3 3v5h5a2 2 0 0 1 2 2.4l-1.6 7A2 2 0 0 1 17.4 22H7z"/>'
 };
+/* Symbole im festen Markup: data-ikon="name" statt ausgeschriebenem SVG.
+
+   Vorher stand jedes Symbol zweimal in der Datei — einmal hier im Satz,
+   einmal als SVG im Markup. Zwei Fassungen desselben Bildes laufen
+   auseinander, und beim Aufraeumen sind ueber hundert Stellen ganz
+   verschwunden: Ueberschriften, Reiter und Knoepfe standen danach nackt
+   da. Mit dem Attribut gibt es nur noch eine Quelle, und eine
+   Ueberschrift ohne Symbol ist eine Entscheidung, kein Versehen.
+
+   Laeuft einmal beim Start und nach jedem Nachladen von Markup. */
+function ikonenEinsetzen(wurzel){
+  var w = wurzel || document;
+  var liste = w.querySelectorAll('[data-ikon]:not([data-ikon-fertig])');
+  for(var i=0;i<liste.length;i++){
+    var el = liste[i];
+    var svg = ikon(el.getAttribute('data-ikon'));
+    el.setAttribute('data-ikon-fertig','1');
+    if(svg) el.insertAdjacentHTML('afterbegin', svg);
+  }
+}
+
 /* Unbekannter Name gibt eine leere Zeichenkette zurueck, keinen
    Platzhalter: ein fehlendes Symbol soll auffallen, ohne die Zeile zu
    zerschiessen. */
@@ -4447,6 +4549,10 @@ function ikon(name, klasse){
          'fill="none" stroke="currentColor" stroke-width="2" ' +
          'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
 }
+/* Das feste Markup steht vollstaendig ueber diesem Block — der
+   Skriptblock sitzt am Ende des <body>. Deshalb reicht ein Durchgang
+   hier; was spaeter entsteht, ruft ikon() ohnehin selbst auf. */
+ikonenEinsetzen();
 /* ── Weich scrollen, aber nur wenn der Nutzer das will ──
    prefers-reduced-motion erreicht CSS-Uebergaenge und Animationen, aber
    NICHT scrollIntoView({behavior:'smooth'}) – das ist JavaScript und
@@ -8414,13 +8520,13 @@ function docStudiosLabel(d){
    erfahrungsgemäß "Hygiene", "hygiene" und "Hygieneplan" nebeneinander,
    und dann findet niemand mehr etwas. */
 var DOC_CATS = [
-  {id:'',          name:'Ohne Kategorie', ico:''},
-  {id:'hygiene',   name:'Hygiene',        ico:''},
-  {id:'technik',   name:'Technik',        ico:''},
-  {id:'personal',  name:'Personal',       ico:''},
-  {id:'vertrag',   name:'Verträge',       ico:''},
-  {id:'marketing', name:'Marketing',      ico:''},
-  {id:'sonstiges', name:'Sonstiges',      ico:''}
+  {id:'',          name:'Ohne Kategorie', ico:ikon('blatt')},
+  {id:'hygiene',   name:'Hygiene',        ico:ikon('tropfen')},
+  {id:'technik',   name:'Technik',        ico:ikon('werkzeug')},
+  {id:'personal',  name:'Personal',       ico:ikon('leute')},
+  {id:'vertrag',   name:'Verträge',       ico:ikon('beleg')},
+  {id:'marketing', name:'Marketing',      ico:ikon('megafon')},
+  {id:'sonstiges', name:'Sonstiges',      ico:ikon('paket')}
 ];
 var _docCat='alle';
 function docCatOf(d){ return d.cat||''; }
@@ -8431,7 +8537,9 @@ function docCatMeta(id){
 function buildDocCatSelect(){
   var sel=$('docCat'); if(!sel) return;
   sel.innerHTML=DOC_CATS.map(function(c){
-    return '<option value="'+c.id+'">'+c.ico+' '+esc(c.name)+'</option>';
+    /* Kein c.ico: eine Auswahlliste zeigt nur Text, ein SVG käme dort
+       gar nicht an. Das Symbol steht an den Filter-Knöpfen darunter. */
+    return '<option value="'+c.id+'">'+esc(c.name)+'</option>';
   }).join('');
 }
 /* Filterleiste: zeigt nur Kategorien, in denen wirklich etwas liegt */
@@ -8484,7 +8592,12 @@ function renderDocs(docs){
   var chef=canManage();
   box.innerHTML=list.map(function(d){
     var cm=docCatMeta(docCatOf(d));
-  var meta=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+
+  /* Nur der Name, kein Symbol: die Zeile ist dicht gesetzter Kleintext
+     („Hygiene · Alle Studios · 12 KB · heute"), und ein Symbol darin
+     macht aus 185 Pixel Zeilenhöhe 243. Gemessen in
+     tests/test-dokumente-bereich8.js. Das Symbol steht an den
+     Filter-Knöpfen. */
+  var meta=(docCatOf(d)?cm.name+' · ':'')+
     docStudiosLabel(d)+' · '+(d.kind==='link'?'Link':fmtSize(d.size))+' · '+fmtTime(d.ts);
     /* Drei Knöpfe nebeneinander (Öffnen · Als Aufgabe · ✕) drückten den
        Namen auf eine schmale Spalte – „Gerätewartung Anleitung" brach mitten
@@ -8527,7 +8640,7 @@ function docBlattOeffnen(d){
   var blatt=$('docSheet'); if(!blatt) return;
   var cm=docCatMeta(docCatOf(d));
   $('dbWho').textContent=d.name||d.fileName||'Dokument';
-  $('dbWhere').textContent=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+docStudiosLabel(d);
+  $('dbWhere').textContent=(docCatOf(d)?cm.name+' · ':'')+docStudiosLabel(d);
   $('dbActs').innerHTML=[
     {id:'aufgabe', ico:ikon('hakenKreis'), txt:'Als Aufgabe verteilen'},
     {id:'loeschen', ico:ikon('papierkorb'), txt:'Löschen', warn:true}
@@ -10697,10 +10810,12 @@ function renderStudioGrid(){
   // Leiter sieht nur seine Studios
   var grid=$('studioGrid'); if(!grid) return;
   // …und dann darf die Überschrift auch nicht „alle Studios" behaupten.
+  /* innerHTML statt textContent: textContent wirft das Symbol mit hinaus,
+     das ikonenEinsetzen() beim Start eingehaengt hat. Danach stand die
+     Ueberschrift nackt da, waehrend alle anderen eines trugen. */
   var tt=$('studioGridTitle');
-  if(tt) tt.textContent = isChef()
-    ? 'Übersicht aller Studios'
-    : 'Übersicht deiner Studios';
+  if(tt) tt.innerHTML = ikon(tt.getAttribute('data-ikon')) +
+    esc(isChef() ? 'Übersicht aller Studios' : 'Übersicht deiner Studios');
   grid.innerHTML=managedStudios().map(function(s){
     var sk=studioKey(s), list=cachedTodos[sk]||[];
     var done=list.filter(isDone).length, total=list.length;
@@ -10827,21 +10942,21 @@ function renderDashboard(){
    Seite. Ein Klick mehr, dafür findet man alles sofort.
    ============================================================ */
 var CHEFTABS=[
-  {id:'ueberblick', label:'Überblick',  ico:'',
+  {id:'ueberblick', label:'Überblick',  ico:ikon('umfrage'),
    was:'Zahlen aller Studios, was gerade hakt, Geburtstage'},
-  {id:'erstellen',  label:'Erstellen',  ico:'',
+  {id:'erstellen',  label:'Erstellen',  ico:ikon('plus'),
    was:'Aufgabe anlegen, Ankündigung senden, Vorlagen'},
-  {id:'team',       label:'Team',       ico:'', chefOnly:true,
+  {id:'team',       label:'Team',       ico:ikon('leute'), chefOnly:true,
    was:'Zugänge anlegen, Rollen ändern, Onboarding'},
-  {id:'standorte',  label:'Studios',    ico:'', chefOnly:true,
+  {id:'standorte',  label:'Studios',    ico:ikon('gebaeude'), chefOnly:true,
    was:'Studios anlegen, umbenennen, schließen'},
-  {id:'firmen',     label:'Firmen',     ico:'', adminOnly:true,
+  {id:'firmen',     label:'Firmen',     ico:ikon('krone'), adminOnly:true,
    was:'Firmen anlegen, sperren, Zahlen — nur für den Betreiber'},
-  {id:'nachweise',  label:'Nachweise',  ico:'', chefOnly:true,
+  {id:'nachweise',  label:'Nachweise',  ico:ikon('blatt'), chefOnly:true,
    was:'Erste Hilfe, Lizenzen, Einweisungen – was demnächst abläuft'},
-  {id:'report',     label:'Auswertung', ico:'',
+  {id:'report',     label:'Auswertung', ico:ikon('trendAuf'),
    was:'Bericht über einen Zeitraum, drucken, Excel, Monatsbericht'},
-  {id:'system',     label:'System',     ico:'',
+  {id:'system',     label:'System',     ico:ikon('regler'),
    was:'Funktionen an- und abschalten, Tabellen, Papierkorb, Sicherung'}
 ];
 /* 'uebersicht' ist kein Reiter, sondern die Startseite des Bereichs. */
@@ -10892,7 +11007,7 @@ function renderChefHome(){
   box.innerHTML=chefTabsFuerMich().map(function(t){
     return '<button class="chef-card" data-cgo="'+esc(t.id)+'">'+
       '<span class="cc-ico">'+t.ico+'</span>'+
-      '<span class="cc-body"><span class="cc-title">'+esc(t.label.replace(/^\S+\s/,''))+
+      '<span class="cc-body"><span class="cc-title">'+esc(t.label)+
         (PREMIUM_TABS.indexOf(t.id)>=0 && !hatPremium() ? ' <span class="abo-schloss">Premium</span>' : '')+'</span>'+
       '<span class="cc-was">'+esc(t.was||'')+'</span>'+
       '<span class="cc-num" data-cnum="'+esc(t.id)+'" style="display:none"></span></span>'+
@@ -11758,7 +11873,9 @@ function renderForecast(){
   if(!isChef() || !_matStudioKey){ card.style.display='none'; return; }
   card.style.display='';
   var titel=$('fcTitle');
-  if(titel) titel.textContent='Reicht noch – '+studioName(_matStudioKey);
+  // innerHTML: sonst faellt das Symbol aus der Ueberschrift (siehe studioGridTitle)
+  if(titel) titel.innerHTML = ikon(titel.getAttribute('data-ikon')) +
+    esc('Reicht noch – '+studioName(_matStudioKey));
 
   var f=forecastFor(_matStudioKey);
   if(f.zuWenig){
@@ -11850,7 +11967,7 @@ function exportShoppingList(){
   var rows=shoppingData();
   if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
   downloadXls('StudioChat_Einkaufsliste_'+ymd(new Date())+'.xls',
-    '<h2>Einkaufsliste</h2><p>Stand '+esc(new Date().toLocaleString('de-DE'))+'</p>'+
+    '<h2 data-ikon="wagen">Einkaufsliste</h2><p>Stand '+esc(new Date().toLocaleString('de-DE'))+'</p>'+
     xlsTable('Zu bestellen',['Artikel','Menge gesamt','Aufteilung'],
       rows.map(function(r){
         return [r.name, r.total, r.studios.map(function(x){ return x.studio+': '+x.n; }).join(', ')];
@@ -12470,8 +12587,8 @@ var _devOpenId=null, _pendingDevPhoto=null;
 
 var DEV_STATUS={
   ok:      {label:'in Ordnung', cls:'ok',      ico:'✓'},
-  wartung: {label:'Wartung',    cls:'wartung', ico:''},
-  defekt:  {label:'defekt',     cls:'defekt',  ico:''}
+  wartung: {label:'Wartung',    cls:'wartung', ico:ikon('werkzeug')},
+  defekt:  {label:'defekt',     cls:'defekt',  ico:ikon('warnung')}
 };
 function devStatus(d){ return DEV_STATUS[(d&&d.status)||'ok'] || DEV_STATUS.ok; }
 
@@ -13242,16 +13359,16 @@ function foldZahlen(){
    serverseitig (checkCertificates in functions/index.js).
    ============================================================ */
 var CERT_ARTEN=[
-  {id:'ersthelfer', name:'Erste-Hilfe-Kurs',       ico:'', monate:24},
-  {id:'trainer',    name:'Trainerlizenz',          ico:'', monate:24},
-  {id:'ems',        name:'EMS-Einweisung',         ico:'', monate:24},
-  {id:'hygiene',    name:'Hygieneschulung',        ico:'', monate:12},
-  {id:'brandschutz',name:'Brandschutzhelfer',      ico:'', monate:36},
-  {id:'sonstiges',  name:'Sonstiges',              ico:'', monate:0}
+  {id:'ersthelfer', name:'Erste-Hilfe-Kurs',       ico:ikon('herz'), monate:24},
+  {id:'trainer',    name:'Trainerlizenz',          ico:ikon('hantel'), monate:24},
+  {id:'ems',        name:'EMS-Einweisung',         ico:ikon('blitz'), monate:24},
+  {id:'hygiene',    name:'Hygieneschulung',        ico:ikon('tropfen'), monate:12},
+  {id:'brandschutz',name:'Brandschutzhelfer',      ico:ikon('feuer'), monate:36},
+  {id:'sonstiges',  name:'Sonstiges',              ico:ikon('blatt'), monate:0}
 ];
 function certArt(id){
   for(var i=0;i<CERT_ARTEN.length;i++){ if(CERT_ARTEN[i].id===id) return CERT_ARTEN[i]; }
-  return {id:id, name:id||'Nachweis', ico:''};
+  return {id:id, name:id||'Nachweis', ico:ikon('blatt')};
 }
 /* Wie viele Tage sind es noch? Negativ = schon abgelaufen. */
 function certTage(c){

@@ -108,12 +108,14 @@ Dann sähe der eine Kunde die Termine des anderen, mitsamt Namen und
 E-Mail-Adressen der Endkundinnen. **Das muss vor dem zweiten Kunden
 erledigt sein**, zusammen mit dem Aufräumen der flachen Daten.
 
-**Die Google-Tabelle ist am 13.8. umgebaut** — der Browser kennt die
-Adresse der Web-App nicht mehr, gesendet wird über die Cloud Function
-`sheetsPush`. Zugenagelt ist es aber erst, wenn das Token an beiden
-Stellen liegt: zwei Handgriffe, die nur du machen kannst, Schritt für
-Schritt in `docs/SHEETS-TOKEN.md`. Bis dahin nimmt die Tabelle weiter
-alles an — genau wie vorher, also kein Rückschritt.
+**Die Google-Tabelle ist umgebaut und läuft** ✅ — am 13.8. bestätigt. Der
+Browser kennt die Adresse der Web-App nicht mehr; gesendet wird über die
+Cloud Function `sheetsPush`.
+
+Ob die Web-App fremde Sendungen auch wirklich abweist, hängt allein an
+der Skripteigenschaft `STUDIOCHAT_TOKEN`: ist sie gesetzt, ist die
+Tabelle zu; fehlt sie, nimmt die Web-App weiter alles an — wie vorher,
+also kein Rückschritt. Schritt für Schritt in `docs/SHEETS-TOKEN.md`.
 
 ## Offen, weil noch niemand hingeschaut hat
 
@@ -243,8 +245,7 @@ Chef-Zugang entsteht bei der Einrichtung des Projekts, jeder weitere über
 | **Vier Pflichtfelder** in *Verwaltung → System → ⚖️ Rechtliche Angaben* eintragen | Ohne vollständiges Impressum darf die App nicht öffentlich genutzt werden. Fünf Minuten. Solange es fehlt, warnt die App selbst. Details in `RECHT.md`. |
 | **Firmencode setzen** in *Verwaltung → Team* | Solange er leer ist, kann sich jeder anmelden, der die Adresse kennt — und der Reiter „Konto anlegen" erscheint erst dann. |
 | **Datenschutztext durchsehen lassen** vor dem Einsatz im Team | Krankmeldungen sind Gesundheitsdaten, die Anwesenheitsanzeige liest sich als Kontrolle, Stimme ist biometrisch. Siehe `RECHT.md`. |
-| **Token für die Google-Tabelle setzen** — `docs/SHEETS-TOKEN.md` | Zwei Handgriffe: GitHub-Secret `SHEETS_TOKEN` und dieselbe Zeichenkette als Skripteigenschaft `STUDIOCHAT_TOKEN`. Erst danach weist die Web-App fremde Sendungen ab. Zehn Minuten. |
-| **„Google-Tabellen abgleichen"** einmal drücken und prüfen, ob alle 14 Studios erscheinen | Lässt sich hier nicht nachstellen, weil der Abgleich auf ein echtes Tabellenblatt schreibt. |
+| **`STUDIOCHAT_TOKEN` in den Skripteigenschaften setzen** — `docs/SHEETS-TOKEN.md` | Der Abgleich läuft (13.8. bestätigt). Ohne diese Eigenschaft nimmt die Web-App aber weiterhin Sendungen von jedem an, der ihre Adresse kennt. Zehn Minuten. |
 | **Probelauf-Projekt anlegen** — `PROBELAUF-EINRICHTEN.md` | Nur für Stufe C (Umzug auf mehrere Firmen). **Nicht dringend**, wird erst gebraucht, wenn der Umzug vorbereitet wird. 20–30 Minuten, keine Kosten. |
 
 **In der Firebase-Konsole selbst ist für die laufende App nichts offen.**

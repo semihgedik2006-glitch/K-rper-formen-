@@ -170,8 +170,16 @@ Abstände zwischen 1 und 72 px, sieben davon einen Pixel auseinander.
 **Symbole kommen aus `IKONEN`, nicht aus der Emoji-Tastatur.** `ikon('name')`
 gibt ein SVG in `currentColor` zurück; es erbt Farbe und Größe von seinem
 Knopf. Ein Emoji kann das nicht — es bringt eigene Farben mit, ignoriert
-Hell und Dunkel und sieht auf jedem Gerät anders aus. Emoji bleiben nur, wo
-sie Inhalt sind: Chat-Reaktionen, Avatare, Geburtstagsgruß.
+Hell und Dunkel und sieht auf jedem Gerät anders aus.
+
+Im festen Markup steht **`data-ikon="name"`**; das SVG hängt
+`ikonenEinsetzen()` beim Start ein. Wer danach `textContent` setzt, wirft es
+wieder hinaus — dort `innerHTML` mit `ikon()` benutzen. `tests/test-gestaltung.js`
+prüft im Browser nach, dass jede Marke ihr Symbol trägt.
+
+Zwei Ausnahmen, beide mit Grund: **Emoji bleiben, wo sie Inhalt sind**
+(Chat-Reaktionen, Avatare, Geburtstagsgruß) und **in `<option>`** — eine
+Auswahlliste zeigt nur Text, dort ist kein SVG möglich.
 
 **Dieselbe Eigenschaft nicht zweimal am selben Selektor.** Der `<style>`-Block
 ist durch Anhängen gewachsen; steht `transition` einmal bei `.btn` oben und
