@@ -142,7 +142,15 @@ var USERS = [
     { id:'p4', studioKey:'studio-6', datum:Date.now()-5*86400000, abschluss:false, vonUid:'u3', vonName:'Ben Kraus' },
     { id:'p5', studioKey:'studio-7', datum:Date.now()-6*86400000, abschluss:true,  vonUid:'u3', vonName:'Ben Kraus' },
     /* Aelter als 30 Tage: faellt aus dem Standard-Zeitraum heraus. */
-    { id:'p6', studioKey:'studio-7', datum:Date.now()-60*86400000, abschluss:false, vonUid:'u3', vonName:'Ben Kraus' }
+    { id:'p6', studioKey:'studio-7', datum:Date.now()-60*86400000, abschluss:false, vonUid:'u3', vonName:'Ben Kraus' },
+    /* Vom Empfang eingetragen, auf eine andere Person gebucht. */
+    { id:'p7', studioKey:'studio-6', datum:Date.now()-1*86400000, abschluss:true, vonUid:'u3', vonName:'Ben Kraus',
+      erfasstVon:'testuid', erfasstVonName:'Test Chef' },
+    /* Ohne Konto: nur ein Name. Zaehlt trotzdem als eigene Person. */
+    { id:'p8', studioKey:'studio-6', datum:Date.now()-2*86400000, abschluss:true, vonUid:null, vonName:'Marcel',
+      erfasstVon:'testuid', erfasstVonName:'Test Chef' },
+    { id:'p9', studioKey:'studio-7', datum:Date.now()-3*86400000, abschluss:false, vonUid:null, vonName:'marcel ',
+      erfasstVon:'testuid', erfasstVonName:'Test Chef' }
   ];
   var ABSENCES = {
     'studio-6': [

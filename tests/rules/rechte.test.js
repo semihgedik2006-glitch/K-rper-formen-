@@ -230,24 +230,39 @@ const anonym  = () => env.unauthenticatedContext().firestore();
     });
   });
   const pb = (wer, id) => wer.doc(`firmen/${A}/probetrainings/${id}`);
+  const eintrag = (mehr) => Object.assign({
+    studioKey: 'studio-0', datum: Date.now(), abschluss: false,
+    vonName: 'Mit A', erfasstVon: 'mitA',
+  }, mehr || {});
+
   await pruefe('Mitarbeiter darf ein Probetraining eintragen', () =>
-    assertSucceeds(pb(mitA(), 'pb2').set({
-      studioKey: 'studio-0', datum: Date.now(), abschluss: false, vonUid: 'mitA',
-    })));
-  await pruefe('Mitarbeiter darf es NICHT auf jemand anderen buchen', () =>
-    assertFails(pb(mitA(), 'pb3').set({
-      studioKey: 'studio-0', datum: Date.now(), abschluss: true, vonUid: 'chefA',
-    })));
+    assertSucceeds(pb(mitA(), 'pb2').set(eintrag({ vonUid: 'mitA' }))));
+  /* Seit 14.8.: eintragen AUF eine andere Person ist erlaubt — am
+     Empfang tippt oft jemand anderes. Was nicht geht: sich beim
+     Eintragen als jemand anderes ausgeben. Deshalb haengt die Regel an
+     erfasstVon, nicht an vonUid. */
+  await pruefe('er darf es auf eine andere Person buchen', () =>
+    assertSucceeds(pb(mitA(), 'pb3').set(eintrag({ vonUid: 'chefA', vonName: 'Chef A' }))));
+  await pruefe('aber NICHT so tun, als haette es jemand anderes eingetragen', () =>
+    assertFails(pb(mitA(), 'pb3b').set(eintrag({ erfasstVon: 'chefA' }))));
+  await pruefe('ohne Namen kein Eintrag — eine Quote ohne Person ist keine', () =>
+    assertFails(pb(mitA(), 'pb3c').set(eintrag({ vonName: '' }))));
+  await pruefe('und kein Roman als Name', () =>
+    assertFails(pb(mitA(), 'pb3d').set(eintrag({ vonName: 'x'.repeat(61) }))));
+  await pruefe('ein freier Name ohne Konto geht', () =>
+    assertSucceeds(pb(mitA(), 'pb3e').set(eintrag({ vonUid: null, vonName: 'Marcel' }))));
   await pruefe('abschluss muss ein Ja/Nein sein, kein Text', () =>
-    assertFails(pb(mitA(), 'pb4').set({
-      studioKey: 'studio-0', datum: Date.now(), abschluss: 'vielleicht', vonUid: 'mitA',
-    })));
+    assertFails(pb(mitA(), 'pb4').set(eintrag({ abschluss: 'vielleicht' }))));
   await pruefe('NIEMAND darf einen Eintrag nachträglich drehen', () =>
     assertFails(pb(chefA(), 'pb1').update({ abschluss: false })));
   await pruefe('auch der Eintragende nicht', () =>
     assertFails(pb(mitA(), 'pb1').update({ abschluss: false })));
   await pruefe('GEGENPROBE der eigene Eintrag lässt sich löschen', () =>
     assertSucceeds(pb(mitA(), 'pb2').delete()));
+  /* Wer eingetragen hat, muss es auch zuruecknehmen koennen —
+     sonst bleibt ein Vertipper fuer immer in der Quote eines anderen. */
+  await pruefe('GEGENPROBE wer eingetragen hat, darf es auch löschen', () =>
+    assertSucceeds(pb(mitA(), 'pb3').delete()));
   await pruefe('GEGENPROBE der Chef darf jeden Eintrag löschen', () =>
     assertSucceeds(pb(chefA(), 'pb1').delete()));
   await pruefe('GEGENPROBE lesen darf das ganze Team', () =>

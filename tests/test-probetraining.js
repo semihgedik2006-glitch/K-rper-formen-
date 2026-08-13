@@ -72,29 +72,93 @@ const zeilen = (page) => page.evaluate(() =>
   console.log('QUOTEN:', JSON.stringify(q));
   const finde = (n) => q.find(z => z.name.indexOf(n) === 0);
 
-  /* Die Attrappe: 6 Einträge, einer davon 60 Tage alt. Im Standard-
-     Zeitraum (30 Tage) bleiben 5, davon 3 mit Abschluss. */
-  pruefe('Gesamt: 3 von 5 = 60 %',
-    !!finde('Gesamt') && finde('Gesamt').quote === '60%' && finde('Gesamt').von === '3/5',
+  /* Die Attrappe: 9 Einträge, einer davon 60 Tage alt. Im Standard-
+     Zeitraum (30 Tage) bleiben 8, davon 5 mit Abschluss. */
+  pruefe('Gesamt: 5 von 8 = 63 %',
+    !!finde('Gesamt') && finde('Gesamt').quote === '63%' && finde('Gesamt').von === '5/8',
     JSON.stringify(finde('Gesamt')));
-  pruefe('je Studio: Hürth 2 von 4 = 50 %',
-    !!finde('Hürth') && finde('Hürth').quote === '50%' && finde('Hürth').von === '2/4',
+  pruefe('je Studio: Hürth 4 von 6 = 67 %',
+    !!finde('Hürth') && finde('Hürth').quote === '67%' && finde('Hürth').von === '4/6',
     JSON.stringify(finde('Hürth')));
-  pruefe('je Studio: Brühl 1 von 1 = 100 %',
-    !!finde('Brühl') && finde('Brühl').quote === '100%', JSON.stringify(finde('Brühl')));
+  pruefe('je Studio: Brühl 1 von 2 = 50 %',
+    !!finde('Brühl') && finde('Brühl').quote === '50%', JSON.stringify(finde('Brühl')));
   pruefe('je Person: Anna 2 von 3 = 67 %',
     !!finde('Anna') && finde('Anna').quote === '67%' && finde('Anna').von === '2/3',
     JSON.stringify(finde('Anna')));
-  pruefe('je Person: Ben 1 von 2 = 50 %',
-    !!finde('Ben') && finde('Ben').quote === '50%', JSON.stringify(finde('Ben')));
+  pruefe('je Person: Ben 2 von 3 = 67 %',
+    !!finde('Ben') && finde('Ben').quote === '67%', JSON.stringify(finde('Ben')));
   pruefe('der Balken folgt der Zahl',
-    !!finde('Hürth') && finde('Hürth').balken === '50%', finde('Hürth') ? finde('Hürth').balken : '');
+    !!finde('Hürth') && finde('Hürth').balken === '67%', finde('Hürth') ? finde('Hürth').balken : '');
+
+  /* ══ Der eigentliche Punkt: eine Person über mehrere Studios ══
+     „Marcel hat 70 %" ist die halbe Antwort. Interessant wird es
+     daneben: in dem einen Studio 100 %, im anderen 0 %. Ohne diese
+     Aufschlüsselung sagt die Zahl nicht, ob es an der Person oder am
+     Standort liegt. */
+  const marcel = await page.evaluate(() => {
+    const alle = [...document.querySelectorAll('[data-pbperson]')];
+    const el = alle.find(e => /Marcel/i.test(e.querySelector('.pb-name').textContent));
+    if (!el) return null;
+    const kopf = el.querySelector('.pb-zeile');
+    const zu = el.querySelector('.pb-detail').hidden;
+    kopf.click();
+    const auf = !el.querySelector('.pb-detail').hidden;
+    return {
+      vorherZu: zu, jetztAuf: auf,
+      gesamt: kopf.querySelector('.pb-quote').textContent.trim(),
+      von: kopf.querySelector('.pb-von').textContent.trim(),
+      studios: [...el.querySelectorAll('.pb-detail .pb-zeile')].map(z => ({
+        name: z.querySelector('.pb-name').textContent.replace(/[↳\s]+/g, ' ').trim(),
+        quote: z.querySelector('.pb-quote').textContent.trim(),
+      })),
+    };
+  });
+  console.log('MARCEL:', JSON.stringify(marcel));
+  pruefe('eine Person ohne Konto zählt trotzdem als Person', !!marcel);
+  /* Die Attrappe schreibt ihn einmal als „Marcel" und einmal als
+     „marcel " — mit Leerzeichen. Zwei Schreibweisen duerfen nicht zwei
+     Personen ergeben, sonst zerfaellt jede Quote. */
+  pruefe('„Marcel" und „marcel " sind eine Person: 1 von 2',
+    !!marcel && marcel.von === '1/2', marcel ? marcel.von : '');
+  pruefe('die Studios sind erst zugeklappt', !!marcel && marcel.vorherZu);
+  pruefe('antippen klappt sie auf', !!marcel && marcel.jetztAuf);
+  pruefe('und darunter steht die Quote je Studio',
+    !!marcel && marcel.studios.length === 2, JSON.stringify(marcel && marcel.studios));
+  pruefe('in einem Studio 100 %, im anderen 0 %',
+    !!marcel && marcel.studios.some(x => x.quote === '100%') &&
+    marcel.studios.some(x => x.quote === '0%'), JSON.stringify(marcel && marcel.studios));
+  /* Gegenprobe: die Summe der Studios muss die Gesamtzahl ergeben —
+     sonst zaehlt die Aufschluesselung etwas anderes als die Zeile
+     darueber, und beide sehen richtig aus. */
+  const summe = await page.evaluate(() => {
+    const el = [...document.querySelectorAll('[data-pbperson]')]
+      .find(e => /Ben/.test(e.querySelector('.pb-name').textContent));
+    if (!el) return null;
+    const teil = [...el.querySelectorAll('.pb-detail .pb-zeile')]
+      .map(z => z.querySelector('.pb-von').textContent.trim().split('/').map(Number));
+    const kopf = el.querySelector('.pb-zeile .pb-von').textContent.trim().split('/').map(Number);
+    return { kopf: kopf, summeJa: teil.reduce((s, x) => s + x[0], 0),
+             summeN: teil.reduce((s, x) => s + x[1], 0) };
+  });
+  pruefe('GEGENPROBE die Studios summieren sich zur Gesamtquote der Person',
+    !!summe && summe.kopf[0] === summe.summeJa && summe.kopf[1] === summe.summeN,
+    JSON.stringify(summe));
   /* Sortierung: die beste Quote oben. Eine Liste in Zufallsreihenfolge
-     beantwortet die Frage „wer ist gut" nicht. */
-  const studios = q.slice(q.findIndex(z => z.name === 'Brühl'));
+     beantwortet die Frage „wer ist gut" nicht.
+
+     Nur die Studio-Zeilen vergleichen: darunter stehen Personen, und
+     die haben ihre eigene Reihenfolge. Beim ersten Anlauf lief der
+     Vergleich über die Grenze hinweg und meldete einen Fehler, den es
+     nicht gab. */
+  const nurStudios = q.filter(z => /^(Hürth|Brühl)$/.test(z.name));
   pruefe('die beste Quote steht oben',
-    studios.length > 1 && parseInt(studios[0].quote) >= parseInt(studios[1].quote),
-    JSON.stringify(studios.slice(0, 2)));
+    nurStudios.length > 1 && parseInt(nurStudios[0].quote) >= parseInt(nurStudios[1].quote),
+    JSON.stringify(nurStudios));
+  const nurPersonen = q.filter(z => /^(Anna|Ben|Marcel)/.test(z.name));
+  pruefe('auch bei den Personen steht die beste oben',
+    nurPersonen.length > 1 &&
+    nurPersonen.every((z, i) => i === 0 || parseInt(nurPersonen[i - 1].quote) >= parseInt(z.quote)),
+    JSON.stringify(nurPersonen.map(z => z.name + ' ' + z.quote)));
 
   // ── Zeitraum wechseln ──
   await page.evaluate(() => document.querySelector('#pbZeitraum [data-pbz="0"]').click());
@@ -102,10 +166,10 @@ const zeilen = (page) => page.evaluate(() =>
   const alles = await zeilen(page);
   const gAlles = alles.find(z => z.name === 'Gesamt');
   console.log('ALLES:', JSON.stringify(gAlles));
-  /* Der alte Eintrag zählt jetzt mit: 3 von 6 = 50 %. Ohne diesen
-     Wechsel wäre nicht bewiesen, dass der Zeitraum überhaupt filtert. */
-  pruefe('„Alles" nimmt den 60 Tage alten Eintrag mit: 3 von 6',
-    !!gAlles && gAlles.von === '3/6' && gAlles.quote === '50%', JSON.stringify(gAlles));
+  /* Der alte Eintrag zählt jetzt mit: 5 von 9. Ohne diesen Wechsel
+     wäre nicht bewiesen, dass der Zeitraum überhaupt filtert. */
+  pruefe('„Alles" nimmt den 60 Tage alten Eintrag mit: 5 von 9',
+    !!gAlles && gAlles.von === '5/9', JSON.stringify(gAlles));
 
   await page.evaluate(() => document.querySelector('#pbZeitraum [data-pbz="30"]').click());
   await page.waitForTimeout(400);
@@ -128,9 +192,44 @@ const zeilen = (page) => page.evaluate(() =>
   /* DER Punkt: kein Feld für einen Kundennamen, keins für Kontakt.
      Kommt hier je eines dazu, sind es personenbezogene Daten Dritter —
      dann braucht es Löschfristen und einen Absatz im Datenschutztext. */
+  /* Namen ja — aber die des Teams, nicht die der Kundschaft. pbWer und
+     pbWerFrei sind der Trainer; ein Feld fuer Kunde, Mail oder Telefon
+     darf es weiterhin nicht geben. */
   pruefe('kein Feld für einen Kundennamen',
-    !!fenster && !fenster.felder.some(f => /name|kunde|vorname|mail|telefon|phone/i.test(f)),
+    !!fenster && !fenster.felder.some(f => /kunde|customer|mail|telefon|phone/i.test(f)),
     fenster ? fenster.felder.join(',') : '');
+  pruefe('dafür ein Feld, WER es gemacht hat',
+    !!fenster && fenster.felder.indexOf('pbWer') >= 0, fenster ? fenster.felder.join(',') : '');
+
+  const werAuswahl = await page.evaluate(() => {
+    const sel = document.getElementById('pbWer');
+    return {
+      erste: sel.options[0].textContent,
+      hatFrei: [...sel.options].some(o => o.value === '__frei'),
+      anzahl: sel.options.length,
+      freiSichtbar: document.getElementById('pbWerFreiFeld').style.display !== 'none',
+    };
+  });
+  console.log('WER:', JSON.stringify(werAuswahl));
+  pruefe('voreingestellt bin ich selbst — der häufige Fall',
+    /Test Chef/.test(werAuswahl.erste), werAuswahl.erste);
+  pruefe('das Team steht zur Auswahl', werAuswahl.anzahl >= 3, String(werAuswahl.anzahl));
+  pruefe('und ein freier Name für Leute ohne Konto', werAuswahl.hatFrei);
+  pruefe('das Namensfeld bleibt weg, solange es niemand braucht',
+    !werAuswahl.freiSichtbar);
+
+  const freiAuf = await page.evaluate(() => {
+    const sel = document.getElementById('pbWer');
+    sel.value = '__frei';
+    sel.dispatchEvent(new Event('change'));
+    return document.getElementById('pbWerFreiFeld').style.display !== 'none';
+  });
+  pruefe('„anderer Name" blendet das Feld ein', freiAuf);
+  await page.evaluate(() => {
+    const sel = document.getElementById('pbWer');
+    sel.value = sel.options[0].value;
+    sel.dispatchEvent(new Event('change'));
+  });
   pruefe('es steht auch dabei, dass keiner erfasst wird',
     !!fenster && /Kein Name|keine Kontaktdaten/i.test(fenster.text));
   pruefe('der Chef kann jedes Studio wählen',
@@ -151,8 +250,14 @@ const zeilen = (page) => page.evaluate(() =>
   pruefe('der Eintrag landet in der Datenbank', !!d);
   pruefe('mit Ja/Nein statt Text — die Regel verlangt es',
     !!d && d.abschluss === false, d ? JSON.stringify(d.abschluss) : '');
-  pruefe('mit vonUid — sonst weist die Regel es ab',
+  pruefe('mit vonUid — auf wessen Quote es läuft',
     !!d && d.vonUid === 'testuid', d ? String(d.vonUid) : '');
+  /* Die Regel haengt an erfasstVon, nicht an vonUid: eintragen darf man
+     auf andere, sich ausgeben als jemand anderes nicht. */
+  pruefe('und mit erfasstVon — sonst weist die Regel es ab',
+    !!d && d.erfasstVon === 'testuid', d ? String(d.erfasstVon) : '');
+  pruefe('mit Namen für die Anzeige',
+    !!d && typeof d.vonName === 'string' && d.vonName.length > 0, d ? d.vonName : '');
   pruefe('mit Studio und Datum',
     !!d && typeof d.studioKey === 'string' && typeof d.datum === 'number');
   /* Gegenprobe zur Gegenprobe: dass wirklich kein Name mitgeht, auch
