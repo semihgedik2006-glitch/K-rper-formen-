@@ -68,6 +68,34 @@ Dunkelmodus fällt es niemandem auf, im Hellmodus ist er unlesbar.
 > gegen die Seitenfarbe und gegen die jeweilige Tönung nachgerechnet.
 > Nachprüfen: `node tests/audit-forensik.js chef`
 
+### Die getönte Fläche dazu
+
+Eine Plakette braucht nicht nur die Textfarbe, sondern auch den Grund,
+auf dem sie sitzt. Dafür gibt es eine eigene Leiter — **eine Stufe je
+Zweck**, nicht je Bauteil:
+
+| | leise | normal | stark | Kante |
+|---|---|---|---|---|
+| gut | `--f-ok-leise` | `--f-ok` | `--f-ok-stark` | `--k-ok` |
+| Achtung | `--f-warn-leise` | `--f-warn` | `--f-warn-stark` | `--k-warn` |
+| kaputt | `--f-bad-leise` | `--f-bad` | `--f-bad-stark` | `--k-bad` |
+
+* **leise** — große Flächen: eine ganze Tabellenzeile, eine ganze Karte
+* **normal** — Plaketten, Chips, Hinweisbalken
+* **stark** — Finger drauf (`:hover`, `:active`)
+* **`--k-*`** — die Kante zur Fläche
+
+> Vorher standen hier **40 verschiedene Tönungen für drei Aussagen**:
+> `.10`, `.11`, `.12`, `.14`, `.15`, `.16`, `.18` nebeneinander, dazu
+> zwei verschiedene Rot (`251,78,109` und `239,68,68`) und zwei
+> verschiedene Grün. Zwei Plaketten mit derselben Bedeutung sahen
+> dadurch unterschiedlich aus — und niemand konnte sagen, welche die
+> richtige war. Seit dem 13.8.2026 sind es 80 Stellen auf zwölf Marken.
+>
+> Einzige Ausnahme: `@keyframes`. Ein Puls, der von `.55` nach `0`
+> läuft, ist Bewegung, keine Statusfläche — auf eine Sprosse gezogen
+> wäre die Bewegung weg.
+
 ### Ein `<button>` erbt keine Textfarbe
 
 Ohne eigene Angabe nimmt er das Schwarz des Browsers. Auf einer dunklen
@@ -88,19 +116,98 @@ Drei Stufen, mehr nicht.
 | `--font-head` | Barlow Condensed, 500–800 | Überschriften, Zahlen, Marken |
 | `--font-body` | Barlow, 300–700 | alles andere |
 
-**Größen** (aus dem Code):
+**Größen — sieben Stufen, jede mit einer Aufgabe:**
 
-| Element | Größe |
-|---|---|
-| Seitentitel `h2` | `clamp(1.4rem, 3.5vw, 1.9rem)` |
-| Kartentitel `h3` | ~1,05 rem |
-| Fließtext | 0,92–0,97 rem |
-| Nebentext | 0,84–0,90 rem |
-| Metadaten | 0,72–0,78 rem |
-| Marken/Abzeichen | 0,62–0,74 rem, Großbuchstaben, `letter-spacing:.5px` |
+| Marke | Wert | Wofür |
+|---|---|---|
+| `--t-2xs` | `.70rem` | Abzeichen, Zähler |
+| `--t-xs` | `.78rem` | Hinweise, Meta, Zeitangaben |
+| `--t-sm` | `.86rem` | Zweitzeile, Sekundärtext |
+| `--t-md` | `.95rem` | Fließtext |
+| `--t-lg` | `1.12rem` | Kartentitel |
+| `--t-xl` | `1.36rem` | Abschnittstitel |
+| `--t-2xl` | `1.75rem` | Seitentitel |
+
+> **Vorher waren es 52 verschiedene Werte** zwischen `.58` und `2rem` —
+> zwischen `.72` und `.78` allein sechs. Unterschiede, die niemand sieht,
+> kosten genau das, wofür sie gedacht waren: Hierarchie. Wenn sich nichts
+> unterscheidet, ist auch nichts wichtiger. Seit dem 13.8.2026 liegen
+> 289 Angaben auf diesen sieben Stufen.
+>
+> Drei Ausnahmen, alle begründet: `pt` in der Druckausgabe (dort ist
+> Millimeter das Maß), `clamp()` beim Seitentitel (er schrumpft beim
+> Scrollen mit) und die `16px` an Eingabefeldern — darunter zoomt iOS
+> beim Antippen in die Seite hinein.
+
+**Zeilenabstand und Laufweite** haben ihre eigenen Leitern:
+
+| Marke | Wert | Wofür |
+|---|---|---|
+| `--lh-1` | `1` | bewusster Reset, z. B. große Zahlen |
+| `--lh-eng` | `1.25` | Überschriften |
+| `--lh` | `1.5` | Fließtext (auch der Grundwert am `body`) |
+| `--lh-weit` | `1.65` | längere Absätze, aufgeklappte Erklärungen |
+| `--ls-eng` | `-.02em` | nur große Überschriften |
+| `--ls-s` | `.02em` | Knöpfe |
+| `--ls-m` | `.05em` | kleine Versalien |
+| `--ls-l` | `.12em` | Abschnittsmarken |
+
+Negative Laufweite nur bei großen Überschriften, weite nur bei Versalien —
+dort braucht das Auge die Luft wirklich.
 
 Die Schriftgröße ist über die Einstellungen in drei Stufen skalierbar –
 neue Größen deshalb **relativ** (`rem`), nie in Pixeln.
+
+---
+
+## 2b. Höhe statt Rahmen
+
+Eine Karte hebt sich ab, indem sie **über** dem Grund liegt, nicht indem
+man sie umrandet.
+
+| Marke | Wofür |
+|---|---|
+| `--e1` | Karten, Plaketten, alles, was nur eine Stufe über dem Grund liegt |
+| `--e2` | angehoben: Karte unter dem Finger, klebende Werkzeugleiste |
+| `--e3` | Fenster über der Seite, Aktionsblatt |
+| `--e1-oben` | Leiste am unteren Rand — wirft nach **oben** |
+| `--e3-oben` | Blatt, das von unten hochfährt |
+
+> Vorher standen **28 verschiedene** `box-shadow`-Angaben im Stylesheet.
+> Nicht geprüft werden Ringe (`0 0 0 Npx`): ein Fokusring und ein Puls
+> sind keine Höhe, sondern eine Umrandung.
+
+Dazu ist `--line` bewusst **leise** (weiß 8 % / schwarz 9 %): der Rahmen
+ist die feine Kante obendrauf, nicht das, was die Karte trägt.
+`--line-2` bleibt kräftig — dort, wo die Kante eine Aufgabe hat:
+Eingabefelder, aktive Zustände, Trennung im Formular.
+
+### Eine Stufe über der Fläche: `--auf-1/2/3`
+
+Für alles, was **auf** einer Karte liegt und sich von ihr abheben soll,
+ohne eine eigene Farbe zu haben: Eingabefeld, stiller Knopf,
+Fortschrittsschiene, neutrale Plakette.
+
+| Marke | Wofür |
+|---|---|
+| `--auf-1` | Grundzustand: Eingabefeld, `.btn-ghost`, `.icon-btn` |
+| `--auf-2` | Finger drauf, Schiene eines Balkens, Plakette |
+| `--auf-3` | betont, z. B. der Zähler in einem aktiven Chip |
+
+> **Warum das eine Marke sein muss.** Vorher stand an 32 Stellen fest
+> „Weiß 5 %". Im Dunkeln ist das genau richtig. Auf einer **weißen**
+> Karte ist Weiß auf Weiß nichts — diese Bauteile wurden im Hellmodus
+> nur noch von ihrem Rahmen getragen, und wer keinen hatte (die
+> Plakette „kein Abschluss", die Schiene eines Quotenbalkens), war
+> unsichtbar. Nachgemessen im Browser: `.inp`, `.btn-ghost`,
+> `.icon-btn` und `.pbar` lieferten in **beiden** Modi denselben Wert.
+>
+> „Eine Stufe höher" heißt im Dunkeln heller und im Hellen dunkler.
+> Das kann nur eine Marke wissen, kein fester Wert.
+
+Zwei Ausnahmen bleiben weiß: der Schließen-Knopf im Bildbetrachter (er
+liegt in beiden Modi auf schwarzem Grund) und der Rollbalken (der hat
+eine eigene Hell-Regel).
 
 ---
 
@@ -342,9 +449,40 @@ Eine Zeile, seitlich schiebbar, nie umbrechend. Zahl am Chip über
 **Warum nicht umbrechen:** vier Filter in drei Zeilen sind 150 Pixel über
 einer Liste mit drei Einträgen.
 
-### Leerer Bereich `emptyHTML(titel, text)`
+### Leerer Bereich `emptyHTML(titel, text, symbol, tat)`
 Muss **den Grund und den Ausweg** nennen. Nicht „Keine Aufgaben", sondern
 „Keine dir zugewiesenen Aufgaben – es gibt 4, tippe auf ‚Alle'".
+
+`symbol` ist ein Name aus `IKONEN`. Vorher trug jeder leere Bereich
+dasselbe Klemmbrett; jetzt trägt er seines — beim Wischen erkennt man
+dadurch, **welcher** Bereich gerade leer ist. `tat` nimmt fertiges
+Markup für den nächsten Schritt auf, meist einen `.btn`.
+
+### Kurze Zeile statt leerer Karte: `emptyMini(text)`
+Für Stellen, an denen ein ganzer leerer Bereich zu groß wäre — eine Zeile
+in einer Karte, eine Spalte in einer Tabelle. Vorher stand an fünfzehn
+solchen Stellen dieselbe Angabe im `style`-Attribut.
+
+### Details auf Nachfrage: `<details class="nachfrage">`
+```html
+<p class="hint">Ein Satz.</p>
+<details class="nachfrage">
+  <summary>Warum ist das so?</summary>
+  <div class="nachfrage-text"><p>Der lange Grund.</p></div>
+</details>
+```
+**Die Regel im ganzen Haus: standardmäßig kurz, Details auf Nachfrage.**
+Eine vollständige Begründung ist beim ersten Mal hilfreich und ab dem
+zweiten Mal eine Wand, die man überliest.
+
+`<details>` statt eines eigenen Schalters: es kennt „offen" von sich aus,
+lässt sich mit der Tastatur bedienen, wird von Vorlesehilfen angesagt und
+braucht keine Zeile Skript — was mit der Sicherheitsregel der Seite (CSP)
+ohnehin besser zusammenpasst.
+
+> Der Name ist `nachfrage`, nicht `mehr`: `.alert-bar.mehr` gibt es
+> bereits. Eine Regel `.mehr{margin-top:…}` hätte den Hinweisbalken
+> stillschweigend mitverschoben.
 
 ### Startseite: „Zum Lesen"
 Zwischen „Mein Dienst" und „Überblick". Zwei Karten, beide klappbar und
@@ -428,9 +566,14 @@ Vor dem Einchecken durchgehen:
 - [ ] Beantwortet die Seite ihre Frage im ersten Bildschirm?
 - [ ] Steht die Liste vor dem Formular?
 - [ ] Ist jedes Fingerziel ≥ 44 Pixel hoch und beschriftet?
-- [ ] Nur Farbvariablen benutzt, keine festen Werte?
+- [ ] Nur Marken benutzt, keine festen Werte? Das gilt für **alle** sechs
+      Leitern: Farbe, Rundung, Abstand, Schrift, Höhe, Status.
+      `node tests/test-gestaltung.js` schlägt an, wenn eine dazukommt.
 - [ ] Funktioniert es in hell **und** dunkel?
-- [ ] Sagt der leere Zustand Grund und Ausweg?
+- [ ] Sagt der leere Zustand Grund und Ausweg — und trägt er sein eigenes
+      Symbol?
+- [ ] Steht die Begründung **hinter** einer Nachfrage statt davor?
+      Standardmäßig kurz.
 - [ ] Hat alles Löschende eine Rückfrage oder Rückgängig?
 - [ ] Sind die Geräteränder (`--sa*`) berücksichtigt?
 - [ ] Bei 390 Pixeln Breite gemessen – nicht geschätzt?

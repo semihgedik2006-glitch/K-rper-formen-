@@ -217,8 +217,11 @@ const ohneKommentar = (() => {
   const fest = {};
   let m;
   while ((m = EIGENSCHAFT.exec(cssOhne))) {
-    const wert = m[2];
-    if (/clamp\(|calc\(/.test(wert)) continue;
+    /* Nur die Rechnung selbst herausnehmen, nicht die ganze Angabe.
+       Vorher wurde bei „padding:15px clamp(14px,4vw,28px) 9px" alles
+       übersprungen — die 15 und die 9 standen jahrelang unbemerkt fest
+       drin, weil ein clamp() daneben stand. */
+    const wert = m[2].replace(/(?:clamp|calc|min|max)\([^()]*(?:\([^()]*\)[^()]*)*\)/g, 'RECHNUNG');
     wert.trim().split(/\s+/).forEach(w => {
       if (/^\d+px$/.test(w)) fest[w] = (fest[w] || 0) + 1;
     });
@@ -235,6 +238,115 @@ const ohneKommentar = (() => {
   console.log('Abstands-Stufen:', stufen, '· Verwendungen:', benutzt);
   if (stufen < 10) errs.push('GEGENPROBE: die Abstands-Leiter ist unvollständig (' + stufen + ' Stufen)');
   if (benutzt < 300) errs.push('GEGENPROBE: die Abstands-Leiter wird kaum benutzt (' + benutzt + '×)');
+}
+
+/* ══ 4b. Keine festen Schriftgrößen, Zeilen- und Laufweiten ══
+   Es standen 52 verschiedene font-size-Werte zwischen .58 und 2rem im
+   Stylesheet — zwischen .72 und .78 allein sechs. Unterschiede, die
+   niemand sieht, kosten genau das, wofür sie gedacht waren: Hierarchie.
+   Sieben Stufen (--t-2xs … --t-2xl), vier Zeilenabstände, vier
+   Laufweiten.
+
+   Bewusst nicht geprüft:
+     pt      Druckausgabe, dort ist Millimeter das Maß
+     clamp() eine Rechnung, keine Sprosse
+     16px    an Eingabefeldern: darunter zoomt iOS beim Antippen hinein */
+{
+  const cssOhne = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const funde = { 'font-size': {}, 'line-height': {}, 'letter-spacing': {} };
+  Object.keys(funde).forEach(prop => {
+    const re = new RegExp(prop + '\\s*:\\s*([^;}]+)', 'g');
+    let m;
+    while ((m = re.exec(cssOhne))) {
+      const w = m[1].trim();
+      if (w.startsWith('var(') || /clamp\(|calc\(/.test(w)) continue;
+      if (w === 'normal' || w === 'inherit' || w === '0') continue;
+      if (prop === 'font-size' && (w.endsWith('pt') || w === '16px')) continue;
+      if (prop === 'line-height' && /em$/.test(w)) continue;   // min-height:1.1em u. ä.
+      funde[prop][w] = (funde[prop][w] || 0) + 1;
+    }
+  });
+  Object.keys(funde).forEach(prop => {
+    const liste = Object.keys(funde[prop]);
+    console.log('feste ' + prop + '-Werte:',
+      liste.length ? liste.map(k => k + '×' + funde[prop][k]).join(' ') : 'keine');
+    if (liste.length) {
+      errs.push('FESTE SCHRIFTANGABE (' + prop + '): ' +
+        liste.map(k => k + ' (' + funde[prop][k] + '×)').join(', ') +
+        ' — gehört auf die Leiter in :root');
+    }
+  });
+
+  /* Gegenprobe: die Leitern existieren und tragen wirklich. */
+  const stufen = (css.match(/--t-(?:2xs|xs|sm|md|lg|xl|2xl):/g) || []).length;
+  const benutzt = (css.match(/font-size:\s*var\(--t-/g) || []).length;
+  console.log('Schrift-Stufen:', stufen, '· Verwendungen:', benutzt);
+  if (stufen < 7) errs.push('GEGENPROBE: die Schrift-Leiter ist unvollständig (' + stufen + ' Stufen)');
+  if (benutzt < 200) errs.push('GEGENPROBE: die Schrift-Leiter wird kaum benutzt (' + benutzt + '×)');
+}
+
+/* ══ 4c. Höhe und Status kommen aus einer Hand ══
+   Zwei Aufräumaktionen, die beide von selbst zurückrollen:
+
+   a) SCHATTEN. 28 verschiedene box-shadow-Angaben für vier Zwecke. Eine
+      Karte hebt sich durch Höhe ab, und Höhe hat drei Stufen (--e1..3),
+      dazu zwei für Leisten, die von unten hochwerfen.
+
+   b) STATUSFARBEN. 40 verschiedene Tönungen für drei Aussagen — .10,
+      .11, .12, .14, .15, .16, .18 nebeneinander, dazu zwei verschiedene
+      Rot und zwei verschiedene Grün. Zwei Plaketten mit derselben
+      Bedeutung sahen dadurch verschieden aus. */
+{
+  const cssOhne = css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  /* a) Schatten. Ein Ring (0 0 0 Npx) ist kein Höhenschatten, sondern
+     eine Umrandung — Fokus, Puls, Trennlinie. Der bleibt fest. */
+  const schatten = {};
+  (cssOhne.match(/box-shadow:\s*[^;}]+/g) || []).forEach(a => {
+    const w = a.replace('box-shadow:', '').trim();
+    if (w === 'none' || w.includes('var(') || w.includes('inset')) return;
+    if (/^0 0 0 /.test(w)) return;
+    schatten[w] = (schatten[w] || 0) + 1;
+  });
+  const sl = Object.keys(schatten);
+  console.log('feste Schatten:', sl.length ? sl.join(' · ') : 'keine');
+  if (sl.length) {
+    errs.push('FESTER SCHATTEN: ' + sl.join(', ') +
+      ' — gehört auf die Höhen-Leiter (--e1, --e2, --e3, --e1-oben, --e3-oben)');
+  }
+
+  /* b) Statusfarben. Nur innerhalb der Regeln suchen: die Marken selbst
+     stehen in :root und sind genau die eine erlaubte Stelle. */
+  const wurzelEnde = cssOhne.indexOf('}', cssOhne.indexOf(':root{'));
+  const hellA = cssOhne.indexOf('body.light{');
+  const hellE = cssOhne.indexOf('}', hellA);
+  /* @keyframes bleiben ebenfalls draußen: ein Puls ist Bewegung, keine
+     Statusfläche. Seine Stufen (.55 → 0) tragen den Verlauf; auf eine
+     Sprosse gezogen wäre die Bewegung weg. */
+  const ohneMarken = (cssOhne.slice(0, cssOhne.indexOf(':root{')) +
+    cssOhne.slice(wurzelEnde, hellA) + cssOhne.slice(hellE))
+    .replace(/@keyframes[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, '');
+  const TOENE = /rgba\((?:52,211,153|251,191,36|251,78,109|239,68,68|255,179,140|0,224,110),\s*([\d.]+)\)/g;
+  const toene = {};
+  let t;
+  while ((t = TOENE.exec(ohneMarken))) {
+    if (parseFloat(t[1]) === 0) continue;        // Puls-Bild: 0 heißt „weg"
+    toene[t[0]] = (toene[t[0]] || 0) + 1;
+  }
+  const tl = Object.keys(toene);
+  console.log('feste Statustönungen:', tl.length ? tl.join(' · ') : 'keine');
+  if (tl.length) {
+    errs.push('FESTE STATUSFARBE: ' + tl.join(', ') +
+      ' — gehört auf die Status-Leiter (--f-ok/-warn/-bad, jeweils leise/normal/stark, --k-*)');
+  }
+
+  const marken = (css.match(/--(?:f|k)-(?:ok|warn|bad)(?:-(?:leise|stark))?:/g) || []).length;
+  const eGenutzt = (css.match(/var\(--e\d(?:-oben)?\)/g) || []).length;
+  const fGenutzt = (css.match(/var\(--[fk]-(?:ok|warn|bad)/g) || []).length;
+  console.log('Status-Marken:', marken, '· Höhe benutzt:', eGenutzt, '· Status benutzt:', fGenutzt);
+  if (marken < 12) errs.push('GEGENPROBE: die Status-Leiter ist unvollständig (' + marken + ' Marken)');
+  if (eGenutzt < 10) errs.push('GEGENPROBE: die Höhen-Leiter wird kaum benutzt (' + eGenutzt + '×)');
+  if (fGenutzt < 40) errs.push('GEGENPROBE: die Status-Leiter wird kaum benutzt (' + fGenutzt + '×)');
 }
 
 /* ══ 5. Dieselbe Eigenschaft nicht zweimal am selben Selektor ══
