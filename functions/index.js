@@ -219,15 +219,143 @@ exports.onNewMessageF = _msg.firma;
 const _neueAufgabe = async (snap, ctx) => {
     const t = snap.data() || {};
     const studioKey = ctx.params.studioKey;
+    const firma = ctx.params.firma || null;
     const tokens = await collectTokens(
       d => inStudio(d, studioKey) && willHaben(d, 'todos'),
-      t.createdByUid, ctx.params.firma || null);
+      t.createdByUid, firma);
     await sendPush(tokens, 'Neue Aufgabe', t.title || '');
+
+    /* Zusaetzlich per Mail. Push erreicht nur, wer die App installiert
+       und Meldungen erlaubt hat; die Mail erreicht alle.
+
+       Wer sie bekommt: ist die Aufgabe jemandem zugewiesen, nur diese
+       Person. Sonst alle im betroffenen Studio. Der Ersteller nicht — er
+       weiss es. */
+    const empfaenger = t.assignedTo
+      ? [t.assignedTo]
+      : await kontenImStudio(firma, studioKey);
+    const ohneErsteller = empfaenger.filter(uid => uid !== t.createdByUid);
+    if (!ohneErsteller.length) return;
+
+    const wo = await studioName(firma, studioKey);
+    const frist = t.due ? '\nFällig: ' + new Date(t.due).toLocaleDateString('de-DE',
+      { weekday: 'long', day: '2-digit', month: '2-digit', timeZone: 'Europe/Berlin' }) : '';
+    await teamMail(firma, ohneErsteller,
+      'Neue Aufgabe: ' + (t.title || 'ohne Titel'),
+      'Für ' + wo + ' gibt es eine neue Aufgabe.\n\n' +
+      (t.title || '') + '\n' +
+      (t.desc ? t.desc + '\n' : '') + frist + '\n\n' +
+      'Angelegt von ' + (t.createdBy || 'der Leitung') + '.\n' +
+      'Abhaken in der App.');
 };
 const _todo = beideWelten('studios/{studioKey}/todos/{todoId}', _neueAufgabe);
 exports.onNewTodo = _todo.flach;
 exports.onNewTodoF = _todo.firma;
 
+
+/* ══ „Das Studio ist durch" ══════════════════════════════════════════
+   Der Chef bekommt eine Mail, sobald in einem Studio nichts mehr offen
+   ist — Aufgaben und Putzplan zusammen.
+
+   GENAU EINMAL JE ÜBERGANG, nicht einmal am Tag: gemerkt wird der
+   Zustand (fertig ja/nein) in config/fertig-<studio>. Kommt danach eine
+   neue Aufgabe dazu, steht das Studio wieder auf „offen" — und wenn sie
+   abgehakt ist, darf die Meldung erneut kommen. Ohne dieses Gedächtnis
+   käme bei jedem einzelnen Haken eine Mail, weil jeder Haken den
+   Auslöser feuert.
+
+   Was als offen zählt, ist bewusst dieselbe Rechnung wie in der App:
+   eine wiederkehrende Aufgabe gilt nur in ihrer Periode als erledigt
+   (isDone in index.html). Wer das hier ändert, ohne es dort zu ändern,
+   verschickt Mails über einen Zustand, den niemand auf dem Bildschirm
+   sieht.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Beginn der laufenden Periode — Gegenstück zu periodStart() in der App.
+   Deutsche Zeitzone, weil der Tag dort umspringt, wo die Studios stehen. */
+function periodenStart(rep) {
+  const jetzt = new Date();
+  const berlin = new Date(jetzt.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+  const tag = new Date(berlin.getFullYear(), berlin.getMonth(), berlin.getDate());
+  if (rep === 'weekly') {
+    const wt = (tag.getDay() + 6) % 7;          // Montag = 0
+    tag.setDate(tag.getDate() - wt);
+  }
+  /* Zurück in echte Millisekunden: der Umweg oben rechnet in Ortszeit,
+     der Vergleich unten läuft gegen doneAt in UTC-Millisekunden. */
+  return tag.getTime() - (berlin.getTime() - jetzt.getTime());
+}
+
+function erledigt(t) {
+  if (t.recurring === 'daily' || t.recurring === 'weekly') {
+    return !!t.done && (t.doneAt || 0) >= periodenStart(t.recurring);
+  }
+  if (t.recurring === 'custom' && t.intervalMs) {
+    return !!t.done && !!t.doneAt && (Date.now() < (t.doneAt + t.intervalMs));
+  }
+  return !!t.done;
+}
+
+async function offenImStudio(firma, studioKey) {
+  const ref = W(firma).collection('studios').doc(studioKey);
+  let aufgaben = 0, putz = 0, dokumente = 0;
+  if (await featureAn(firma, 'todos')) {
+    const s1 = await ref.collection('todos').get();
+    dokumente += s1.size;
+    s1.forEach(d => { if (!erledigt(d.data() || {})) aufgaben++; });
+  }
+  if (await featureAn(firma, 'putzplan')) {
+    const s2 = await ref.collection('cleaning').get();
+    dokumente += s2.size;
+    s2.forEach(d => { if (!erledigt(d.data() || {})) putz++; });
+  }
+  return { aufgaben, putz, gesamt: aufgaben + putz, dokumente };
+}
+
+const _fertigPruefen = async (change, ctx) => {
+  const firma = ctx.params.firma || null;
+  const studioKey = ctx.params.studioKey;
+  if (!studioKey) return;
+
+  const stand = await offenImStudio(firma, studioKey);
+  const merker = W(firma).collection('config').doc('fertig-' + studioKey);
+  const alt = await merker.get();
+  /* null heisst „noch nie festgehalten". Wichtig, dass das NICHT wie
+     „war offen" behandelt wird: sonst bliebe die allererste Meldung
+     stumm, weil der Merker erst beim zweiten Mal existiert. Genau das
+     ist beim ersten Anlauf passiert. */
+  const warFertig = alt.exists ? ((alt.data() || {}).fertig === true) : null;
+  const istFertig = stand.gesamt === 0;
+
+  if (istFertig === warFertig) return;          // nichts hat sich geändert
+  await merker.set({ fertig: istFertig, ts: Date.now() }, { merge: true });
+  if (!istFertig) return;                       // wieder etwas offen: nur merken
+
+  /* Ein Studio ganz ohne Aufgaben und ohne Putzplan ist nicht „fertig",
+     es ist leer. Dafür bekommt niemand eine Mail. */
+  if (!stand.dokumente) return;
+
+  const chefs = await kontenImStudio(firma, null, 'chef');
+  if (!chefs.length) return;
+  const wo = await studioName(firma, studioKey);
+  const zeit = new Date().toLocaleString('de-DE',
+    { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  await teamMail(firma, chefs,
+    wo + ': alles erledigt',
+    'In ' + wo + ' ist gerade nichts mehr offen — weder Aufgaben noch Putzplan.\n\n' +
+    'Stand: ' + zeit + ' Uhr.\n\n' +
+    'Diese Meldung kommt einmal, wenn der letzte Punkt abgehakt ist. Kommt ' +
+    'später etwas dazu und wird auch das erledigt, meldet sie sich erneut.');
+};
+
+const _fertigTodo = beideWelten('studios/{studioKey}/todos/{todoId}',
+  _fertigPruefen, 'onWrite', { timeoutSeconds: 60 });
+const _fertigPutz = beideWelten('studios/{studioKey}/cleaning/{putzId}',
+  _fertigPruefen, 'onWrite', { timeoutSeconds: 60 });
+exports.onTodoFertig = _fertigTodo.flach;
+exports.onTodoFertigF = _fertigTodo.firma;
+exports.onPutzFertig = _fertigPutz.flach;
+exports.onPutzFertigF = _fertigPutz.firma;
 /* ── Neue Ankündigung ── */
 const _neuerAushang = async (snap, ctx) => {
     const a = snap.data() || {};
@@ -1342,6 +1470,70 @@ const nodemailer = require('nodemailer');
 function reminderHours() { return +(process.env.REMINDER_HOURS || 24) || 24; }
 function followupHours() { return +(process.env.FOLLOWUP_HOURS || 3) || 3; }
 
+/* ── Mail an Konten dieser App ────────────────────────────────────────
+   Nicht an Endkunden (das macht sendApptMail), sondern an das eigene
+   Team: neue Aufgabe, Studio fertig.
+
+   Die Adresse kommt aus Firebase Auth, nicht aus dem Profil: im Profil
+   steht sie nur, wenn sie beim Anlegen mitgegeben wurde, und sie kann
+   veraltet sein. Auth ist die Stelle, an der man sich wirklich anmeldet.
+
+   Ohne SMTP-Zugang passiert nichts und es wird auch nichts behauptet —
+   die Funktion sagt, wie viele Mails wirklich rausgingen. */
+async function adressenVon(uids) {
+  const raus = [];
+  for (const uid of [...new Set(uids)].slice(0, 60)) {
+    try {
+      const u = await admin.auth().getUser(String(uid));
+      if (u && u.email) raus.push(u.email);
+    } catch (e) { /* Konto geloescht: dann eben keine Mail */ }
+  }
+  return raus;
+}
+
+async function teamMail(firma, uids, betreff, text) {
+  const mailer = getMailer();
+  if (!mailer) return 0;
+  const adressen = await adressenVon(uids);
+  if (!adressen.length) return 0;
+  const von = process.env.MAIL_FROM || process.env.SMTP_USER;
+  const name = await firmaAnzeigeName(firma);
+  let gesendet = 0;
+  for (const an of adressen) {
+    try {
+      await mailer.sendMail({
+        from: '"' + name + '" <' + von + '>',
+        to: an,
+        subject: betreff,
+        text: text,
+      });
+      gesendet++;
+    } catch (e) {
+      console.error('teamMail an ' + an + ':', e.message);
+    }
+  }
+  return gesendet;
+}
+
+/* Konten eines Studios: aktiv, gehoert zur Firma, ist dem Studio
+   zugeteilt. Der Chef zaehlt nicht mit — er bekommt eigene Meldungen. */
+async function kontenImStudio(firma, studioKey, nurRolle) {
+  const snap = await db.collection('users').get();
+  const raus = [];
+  snap.forEach((doc) => {
+    const d = doc.data() || {};
+    if (d.aktiv === false) return;
+    if (!gehoertZu(d, firma)) return;
+    if (nurRolle && d.role !== nurRolle) return;
+    if (studioKey) {
+      const keys = Array.isArray(d.studioKeys) ? d.studioKeys : [];
+      if (keys.indexOf(studioKey) < 0) return;
+    }
+    raus.push(doc.id);
+  });
+  return raus;
+}
+
 /* ══ Anzeigename einer Firma ══════════════════════════════════════════
    Nicht die Kennung (die steht in den Pfaden), sondern der Name, den ein
    Mensch liest. Gebraucht in allem, was das Haus verlaesst: Terminmails,
@@ -1548,6 +1740,22 @@ exports.appointmentMailScheduler = region
    Studio-Namen kommen aus den Benutzerprofilen, damit die Liste nicht ein
    zweites Mal gepflegt werden muss.
    ============================================================ */
+
+/* Der Name EINES Studios, für Meldungen. Die Studioliste steht seit dem
+   Umzug in der Datenbank (firmen/<kennung>/studios); die Profile sind
+   nur der Rückfall, falls dort noch nichts steht. */
+async function studioName(firma, key) {
+  try {
+    const d = await W(firma).collection('studios').doc(String(key)).get();
+    const n = d.exists ? (d.data() || {}).name : null;
+    if (n) return n;
+  } catch (e) { /* Rueckfall unten */ }
+  try {
+    const map = await studioNameMap(firma);
+    if (map[key]) return map[key];
+  } catch (e) { /* dann eben die Kennung */ }
+  return String(key);
+}
 
 /* Kennung "studio-7" → lesbarer Name, soweit aus den Profilen bekannt.
    users liegt weiterhin oben, deshalb wird nach Firma GEFILTERT, nicht

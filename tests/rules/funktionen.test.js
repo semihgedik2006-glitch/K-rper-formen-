@@ -571,6 +571,97 @@ const TAG = 86400000;
     delete process.env.SHEETS_FIRMA;
   }
 
+  /* ── „Das Studio ist durch" ──
+     Der Auslöser feuert bei JEDEM Haken. Ohne Gedächtnis käme bei jedem
+     eine Mail. Geprüft wird deshalb der Merker, nicht die Mail: ob eine
+     Mail wirklich zugestellt wird, lässt sich hier ohnehin nicht sehen
+     (kein SMTP im Durchlauf).
+
+     Der Merker ist die eigentliche Logik — er entscheidet, ob überhaupt
+     gesendet wird. */
+  {
+    /* Eigenes Studio, nicht studio-0: dort liegen Reste aus den
+       Abschnitten davor (Papierkorb, Einmal-Putzaufgaben). Das Studio
+       wäre nie leer, und der Merker käme nie auf fertig — beim ersten
+       Anlauf sah das nach einem Fehler in der Function aus und war
+       einer im Testaufbau. */
+    const sk = 'studio-fertig';
+    const merker = () => db.doc('firmen/alpha/config/fertig-' + sk).get();
+    const todo = (id) => db.doc('firmen/alpha/studios/' + sk + '/todos/' + id);
+    const putz = (id) => db.doc('firmen/alpha/studios/' + sk + '/cleaning/' + id);
+    /* Der Auslöser bekommt Pfad-Parameter mit; .run() erwartet sie so,
+       wie Firebase sie liefert. */
+    const lauf = async (art) => {
+      await fns.onTodoFertigF.run({
+        before: { exists: art !== 'neu' }, after: { exists: art !== 'weg' },
+      }, { params: { firma: 'alpha', studioKey: sk, todoId: 'x' } });
+    };
+
+    await db.doc('firmen/alpha/config/features').set({ todos: true, putzplan: true });
+    await todo('a1').set({ title: 'Offen', done: false });
+    await putz('p1').set({ title: 'Wischen', done: false });
+    await lauf('neu');
+    let m = await merker();
+    pruefe('fertig: mit offenen Punkten steht der Merker auf nicht fertig',
+      m.exists && (m.data() || {}).fertig === false,
+      m.exists ? JSON.stringify(m.data()) : 'kein Merker');
+
+    await todo('a1').update({ done: true, doneAt: Date.now() });
+    await lauf('haken');
+    m = await merker();
+    pruefe('fertig: ein offener Putzpunkt reicht, dass es NICHT fertig ist',
+      (m.data() || {}).fertig === false, JSON.stringify(m.data()));
+
+    await putz('p1').update({ done: true, doneAt: Date.now() });
+    await lauf('haken');
+    m = await merker();
+    pruefe('fertig: mit dem letzten Haken kippt der Merker auf fertig',
+      (m.data() || {}).fertig === true, JSON.stringify(m.data()));
+
+    /* Der Punkt, um den es geht: derselbe Zustand meldet sich nicht
+       zweimal. Der Merker darf nicht zurückspringen. */
+    await lauf('haken');
+    m = await merker();
+    pruefe('fertig: ein weiterer Lauf ändert nichts (keine zweite Mail)',
+      (m.data() || {}).fertig === true, JSON.stringify(m.data()));
+
+    await todo('a2').set({ title: 'Noch was', done: false });
+    await lauf('neu');
+    m = await merker();
+    pruefe('fertig: eine neue Aufgabe stellt zurück auf offen',
+      (m.data() || {}).fertig === false, JSON.stringify(m.data()));
+
+    /* Wiederkehrende Aufgaben: „erledigt" gilt nur in ihrer Periode.
+       Eine gestern abgehakte Tagesaufgabe ist heute wieder offen — sonst
+       meldete das Studio sich morgens als fertig, ohne dass jemand da
+       war. */
+    await todo('a2').delete();
+    await todo('a3').set({
+      title: 'Täglich', recurring: 'daily', done: true,
+      doneAt: Date.now() - 40 * 3600000,
+    });
+    await lauf('haken');
+    m = await merker();
+    pruefe('fertig: gestern erledigte Tagesaufgabe zählt heute als offen',
+      (m.data() || {}).fertig === false, JSON.stringify(m.data()));
+
+    await todo('a3').update({ doneAt: Date.now() });
+    await lauf('haken');
+    m = await merker();
+    pruefe('GEGENPROBE heute erledigt zählt als erledigt',
+      (m.data() || {}).fertig === true, JSON.stringify(m.data()));
+
+    /* Abgeschaltete Bereiche zählen nicht mit: wer den Putzplan
+       ausblendet, soll nicht auf ewig „nicht fertig" sein. */
+    await db.doc('firmen/alpha/config/features').set({ todos: true, putzplan: false });
+    await putz('p2').set({ title: 'Ausgeblendet', done: false });
+    await lauf('neu');
+    m = await merker();
+    pruefe('fertig: ein abgeschalteter Bereich hält das Studio nicht auf',
+      (m.data() || {}).fertig === true, JSON.stringify(m.data()));
+    await db.doc('firmen/alpha/config/features').set({ todos: true, putzplan: true });
+  }
+
   /* ══ 4. Der Test, der rot werden muss ══
      Ein Prüfer, der nie anschlägt, prüft nichts. Also wird hier
      absichtlich eine Firma vorgetäuscht, die es nicht gibt, und
