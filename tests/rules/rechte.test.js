@@ -129,7 +129,48 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('Ein Mitarbeiter kann NICHT alle Firmen auflisten', () =>
     assertFails(mitA().collection('firmen').get()));
 
-  // ══ 5. Aufzaehlen von Konten ══
+  /* ══ 5. Die Nachbaranwendungen ══
+     marketing.html meldet jeden ohne Chefrolle wieder ab. Bis zum 13.8.
+     durfte trotzdem jeder aktive Zugang die Kampagnen lesen und
+     schreiben — die Oberflaeche versprach eine Grenze, die es nicht gab.
+
+     Was in wachstum.html liegt (Kennzahlen, Wettbewerb, Expansion), war
+     schon vorher beim Chef; hier steht es mit, damit ein spaeteres
+     Aufweichen auffaellt. */
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const d = ctx.firestore();
+    await d.doc(`firmen/${A}/mkProjects/p1`).set({ name: 'Kampagne', createdBy: 'chefA' });
+    await d.doc(`firmen/${A}/mkProjects/p1/versions/v1`).set({ text: 'Entwurf', createdBy: 'chefA' });
+    await d.doc(`firmen/${A}/studioMetrics/studio-0`).set({ mitglieder: 210, miete: 4200 });
+    await d.doc(`firmen/${A}/competitors/c1`).set({ name: 'Mitbewerber', preis: 79 });
+    await d.doc(`firmen/${A}/expansionLeads/l1`).set({ ort: 'Bonn', miete: 3100 });
+  });
+
+  await pruefe('Mitarbeiter kann Marketing-Projekte NICHT lesen', () =>
+    assertFails(mitA().doc(`firmen/${A}/mkProjects/p1`).get()));
+  await pruefe('Mitarbeiter kann Marketing-Projekte NICHT anlegen', () =>
+    assertFails(mitA().collection(`firmen/${A}/mkProjects`).doc('p2')
+      .set({ name: 'Eigene', createdBy: 'mitA' })));
+  await pruefe('Mitarbeiter kann die Versionen NICHT lesen', () =>
+    assertFails(mitA().doc(`firmen/${A}/mkProjects/p1/versions/v1`).get()));
+  await pruefe('GEGENPROBE Chef kann sie lesen', () =>
+    assertSucceeds(chefA().doc(`firmen/${A}/mkProjects/p1`).get()));
+  await pruefe('GEGENPROBE Chef kann eine Version anlegen', () =>
+    assertSucceeds(chefA().collection(`firmen/${A}/mkProjects/p1/versions`).doc('v2')
+      .set({ text: 'Zweiter Entwurf', createdBy: 'chefA' })));
+  await pruefe('Version bleibt unveraenderlich, auch fuer den Chef', () =>
+    assertFails(chefA().doc(`firmen/${A}/mkProjects/p1/versions/v1`).update({ text: 'anders' })));
+
+  await pruefe('Mitarbeiter kann Studio-Kennzahlen NICHT lesen', () =>
+    assertFails(mitA().doc(`firmen/${A}/studioMetrics/studio-0`).get()));
+  await pruefe('Mitarbeiter kann die Wettbewerbsliste NICHT lesen', () =>
+    assertFails(mitA().doc(`firmen/${A}/competitors/c1`).get()));
+  await pruefe('Mitarbeiter kann die Expansionsplanung NICHT lesen', () =>
+    assertFails(mitA().doc(`firmen/${A}/expansionLeads/l1`).get()));
+  await pruefe('GEGENPROBE Chef sieht seine Kennzahlen', () =>
+    assertSucceeds(chefA().doc(`firmen/${A}/studioMetrics/studio-0`).get()));
+
+  // ══ 6. Aufzaehlen von Konten ══
   await pruefe('Anonym kann users NICHT auflisten', () =>
     assertFails(anonym().collection('users').get()));
   await pruefe('Mitarbeiter kann users NICHT ungefiltert auflisten', () =>

@@ -142,6 +142,8 @@ was sie sehen soll.
 | `test-xss.js` | acht Angriffsmuster in Chat, Namen, Aufgaben, Notizen, Umfragen und Dokumenten — nichts davon wird zu Code |
 | `test-gestaltung.js` | Symbole nur aus `IKONEN` (kein Emoji als Bedienelement), Rundungen und Abstände nur von der Leiter in `:root`, keine Eigenschaft zweimal am selben Selektor |
 | `test-sheets.js` | die Google-Tabelle wird über `sheetsPush` beschrieben; der Browser ruft `script.google.com` nicht mehr auf |
+| `test-csp.js` | die Sicherheitsregel der Seite: passt sie zu den Skriptblöcken, verbietet sie `unsafe-inline`, bricht sie nichts — und stoppt sie eingeschleusten Code |
+| `test-mail-versand.js` | Nodemailer 9 baut unsere Nachrichten unverändert: Empfänger, Absender, Anzeigename, Umlaute |
 
 ### Alle auf einmal
 

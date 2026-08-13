@@ -182,6 +182,12 @@ früheren dreht man vergeblich. Ein Selektor darf mehrfach vorkommen
 Alles drei prüft `tests/test-gestaltung.js`, die `@keyframes`
 `tests/test-bewegung-doppelt.js`.
 
+**Die Sicherheitsregel der Seite (CSP) kennt genau zwei Skriptblöcke.** Sie
+stehen mit ihrer Prüfsumme in `index.html`. Wer am Skript etwas ändert, muss
+`node tools/csp.js --setzen` laufen lassen — sonst führt der Browser den Block
+nicht mehr aus und die App bleibt weiss. `tests/test-csp.js` schlägt vorher an.
+Kein `onclick="…"` im Markup: für die Regel ist das fremder Code.
+
 **Kein Geheimnis im Repo.** Das Repository ist öffentlich, und der Verlauf
 bleibt auch nach einem Löschen lesbar. Zugangsdaten liegen deshalb in
 GitHub-Secrets und landen erst beim Ausrollen in `functions/.env` — das steht

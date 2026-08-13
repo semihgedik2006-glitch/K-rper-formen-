@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#12131C" />
 <meta name="robots" content="noindex, nofollow" />
+<!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
+     fehlt, führt der Browser nichts aus, was nicht hier steht.
+     Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-PWC1HuWEWogexqbbVycF5Ju7v2ndFVDDKYyyggDxp8A='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -20,7 +24,7 @@
 <title>StudioChat – Körperformen Team</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
+<link id="schriftLink" rel="stylesheet" media="print"
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
 <noscript><link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" /></noscript>
@@ -2305,11 +2309,11 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
   <div class="spinner"></div>
   <p id="loadingStatus">Verbindung wird hergestellt …</p>
   <p id="loadingStep" style="color:var(--text-3);font-size:.78rem;margin-top:-6px">Schritt 1/3: Lade Code …</p>
-  <button id="loadingForce" onclick="document.getElementById('loadingWrap').style.display='none';document.getElementById('authWrap').classList.add('show');"
+  <button id="loadingForce"
     style="display:none;margin-top:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#F0F7F3;padding:10px 18px;border-radius:999px;font-family:inherit;font-size:.85rem;cursor:pointer">
     Login trotzdem anzeigen
   </button>
-  <button id="loadingReload" onclick="location.reload(true)" style="display:none;margin-top:8px;background:var(--brand);color:#fff;border:none;padding:11px 22px;border-radius:999px;font-weight:700;font-family:inherit;font-size:.9rem;cursor:pointer">
+  <button id="loadingReload" style="display:none;margin-top:8px;background:var(--brand);color:#fff;border:none;padding:11px 22px;border-radius:999px;font-weight:700;font-family:inherit;font-size:.9rem;cursor:pointer">
     Seite neu laden
   </button>
 </div>
@@ -3799,6 +3803,35 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 <input type="file" accept="image/*" class="hidden-file" id="devFileShared" />
 
 <!-- Konfiguration: alles Kundenspezifische an einer Stelle -->
+<script>
+/* Eigener Block, mit Absicht getrennt vom Rest.
+
+   Die zwei Knöpfe im Ladebildschirm sind der Ausweg, wenn die App nicht
+   hochkommt. Stünden sie im grossen Skriptblock, wären sie genau dann
+   tot, wenn man sie braucht — ein Fehler dort, und keine Zeile davon
+   läuft. Vorher lag der Aufruf im onclick-Attribut; das erlaubt die
+   Sicherheitsregel der Seite (CSP) nicht mehr.
+
+   Die Schrift hängt am selben Block: das Stylesheet kommt mit
+   media="print" herein, damit es das Zeichnen nicht aufhält, und wird
+   hier auf "all" gestellt. */
+(function () {
+  var s = document.getElementById('schriftLink');
+  if (s) s.media = 'all';
+
+  var f = document.getElementById('loadingForce');
+  if (f) f.addEventListener('click', function () {
+    var l = document.getElementById('loadingWrap');
+    if (l) l.style.display = 'none';
+    var a = document.getElementById('authWrap');
+    if (a) a.classList.add('show');
+  });
+
+  var r = document.getElementById('loadingReload');
+  if (r) r.addEventListener('click', function () { location.reload(); });
+})();
+</script>
+
 <script src="konfig.js"></script>
 
 <!-- Firebase SDKs (compat) -->
@@ -4105,12 +4138,18 @@ function loadingError(msg){
   _loadingDone = true;
   if(_loadTimeout) clearTimeout(_loadTimeout);
   var l = document.getElementById('loadingWrap');
-  if(l) l.innerHTML =
+  if(!l) return;
+  l.innerHTML =
     '<div style="max-width:420px;padding:24px;text-align:center">'+
     '<p style="color:var(--danger-tx);font-size:1.05rem;margin-bottom:14px">'+msg+'</p>'+
-    '<button onclick="location.reload()" style="background:var(--brand);color:#fff;'+
+    '<button id="ladeNeu" style="background:var(--brand);color:#fff;'+
     'border:none;border-radius:999px;padding:12px 26px;font-weight:700;cursor:pointer;font-size:.95rem">Neu laden</button>'+
     '</div>';
+  /* Kein onclick im Markup: die Sicherheitsregel der Seite (CSP) laesst
+     nur den einen Skriptblock zu, den sie kennt. Ein Ereignis im
+     Attribut ist fuer sie fremder Code und wird nicht ausgefuehrt. */
+  var k = document.getElementById('ladeNeu');
+  if(k) k.addEventListener('click', function(){ location.reload(); });
 }
 
 function setLoadingStep(text){
@@ -4260,6 +4299,20 @@ window.addEventListener('unhandledrejection', function(ev){
   var r = ev && ev.reason;
   console.warn('Promise:', (r && (r.message||r.code))||r);
   fehlerMelden((r && (r.message||r.code)) || String(r), '', 0, r && r.stack);
+});
+
+/* Die Sicherheitsregel (CSP) blockt, was nicht in ihr steht. Das ist der
+   Zweck — aber wenn sie etwas Echtes blockt, sieht man es sonst nur in
+   der Konsole eines fremden Handys. Hier geht es denselben Weg wie ein
+   Fehler: Verwaltung → System.
+
+   Erweiterungen im Browser lösen das ständig aus, ohne dass es die App
+   betrifft. Die bleiben draussen. */
+window.addEventListener('securitypolicyviolation', function(ev){
+  var q = String((ev && ev.blockedURI) || '');
+  if(/^(chrome|moz|safari|webkit)-extension:/.test(q)) return;
+  fehlerMelden('CSP blockt ' + ((ev && ev.violatedDirective) || '?') + ': ' + q.slice(0, 120),
+               String((ev && ev.sourceFile) || ''), (ev && ev.lineNumber) || 0, '');
 });
 
 /* ── Fehler melden ───────────────────────────────────────────────────

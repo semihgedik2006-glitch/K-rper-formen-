@@ -40,6 +40,17 @@
     "cleanUrls": true,
     "headers": [
       {
+        "//": "Kopfzeilen, die es als <meta> nicht gibt. frame-ancestors verhindert, dass jemand die App in seine Seite einbettet und Klicks abfängt — das geht nur über die Kopfzeile. Die eigentliche Sicherheitsregel steht in index.html, erzeugt von tools/csp.js; hier steht bewusst nur, was dort nicht stehen kann.",
+        "source": "**",
+        "headers": [
+          { "key": "Content-Security-Policy", "value": "frame-ancestors 'none'" },
+          { "key": "X-Frame-Options", "value": "DENY" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+          { "key": "Permissions-Policy", "value": "geolocation=(), camera=(), payment=(), usb=(), microphone=(self)" }
+        ]
+      },
+      {
         "//": "index.html, sw.js und konfig.js nie zwischenspeichern. konfig.js entscheidet, welche Datenbank die App anfasst; eine alte Fassung im Zwischenspeicher ist schlimmer als eine langsame Ladezeit. Drei getrennte Einträge statt eines Musters — an dieser Stelle ist Wörtlichkeit mehr wert als Kürze.",
         "source": "/index.html",
         "headers": [

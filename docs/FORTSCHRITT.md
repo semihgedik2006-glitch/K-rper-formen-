@@ -2770,6 +2770,83 @@ Neu: `tests/rules/rechte.test.js`, `tests/test-xss.js`,
 
 ---
 
+## Sitzung 35 · Sicherheitsrunde drei 🔴🟢
+
+Die drei Punkte, die am Ende von Runde zwei als „nicht geprüft"
+dastanden. Voll in `docs/SICHERHEIT.md`.
+
+### 🔴 Elf gemeldete Lücken in den Fremdbibliotheken
+
+Nie nachgeschlagen — stand so als Lücke im Bericht. `npm audit` meldete
+elf, davon zwei hoch.
+
+| | |
+|---|---|
+| nodemailer 6.9.14 → 9.0.5 | acht Meldungen; zwei treffen unseren Fall, weil die Empfängeradresse aus einem Formular kommt und ohne Zwischenschritt an Endkundinnen geht |
+| fast-xml-parser · protobufjs · gaxios | ohne Bruch nachgezogen |
+| `overrides: uuid ^11.1.1` | sieben Meldungen hängen an einer alten `uuid` tief in den Google-Bibliotheken; ein Weiterreichen von oben gibt es nicht |
+
+**firebase-admin 14 bleibt draussen, und das ist der Fund im Fund.** Die
+Version entfernt `admin.firestore()` — die Schreibweise, auf der der
+ganze Backend-Code steht. `umzug.test.js` fiel beim Versuch sofort um.
+Ausgerollt hätte es Push, Mails und die Nachtsicherung stillgelegt, und
+in der App hätte man nichts davon gesehen. Sicherheitlich bringt der
+Sprung nichts: mit dem uuid-Override steht der Zähler auch auf 12 auf
+null.
+
+```
+npm audit --omit=dev   11 (9 mittel, 2 hoch)  →  0
+```
+
+### ✅ Die Content-Security-Policy
+
+`script-src` **ohne** `'unsafe-inline'`: die beiden Skriptblöcke sind
+einzeln über ihre Prüfsumme erlaubt, jeder andere nicht. Ein `<script>`
+aus einem Chattext wird nicht ausgeführt, selbst wenn er als Markup
+ankäme. `default-src 'none'` als Ausgangspunkt, dazu `frame-src`,
+`object-src`, `base-uri` und `form-action` auf `'none'`.
+
+Dafür umgebaut: vier Ereignisse im Attribut. Die zwei Notschalter im
+Ladebildschirm liegen jetzt in einem eigenen kleinen Block — getrennt vom
+grossen, damit sie auch dann funktionieren, wenn die App nicht hochkommt.
+
+Der Preis ist Pflege: ein geändertes Zeichen im Skript, und die
+Prüfsumme passt nicht mehr. `tools/csp.js` rechnet sie neu,
+`tests/test-csp.js` schlägt an, sobald Regel und Datei auseinanderlaufen
+— beim Einbau hat das prompt funktioniert.
+
+Gemessen: zwölf Ansichten, **0 Verletzungen**, App läuft, und die
+Gegenprobe (eingeschleustes `<img onerror>`, ein `<script>`-Element, ein
+per JS erzeugtes Skript) wird geblockt. Die Regel steht als `<meta>` in
+der Datei — seitdem läuft die ganze Oberflächen-Prüfung unter ihr, nicht
+nur der Betrieb. Blockt sie im Betrieb etwas Echtes, geht die Meldung
+denselben Weg wie ein Fehler: Verwaltung → System.
+
+Dazu Kopfzeilen in `firebase.json`, die es als `<meta>` nicht gibt:
+kein Einbetten in fremde Seiten, `nosniff`, `Referrer-Policy`,
+`Permissions-Policy` ohne Ort, Kamera, Zahlung und USB.
+
+### 🟠 Eine Grenze in der Marketing-App war nur Anzeige
+
+`marketing.html` meldet jeden ohne Chefrolle wieder ab. In den Regeln
+stand für `mkProjects` trotzdem `istAktiv()` — jeder aktive Zugang durfte
+lesen und schreiben, an der Oberfläche vorbei. Kein Leck im engeren Sinn
+(dort liegen Kampagnentexte), aber die schlechteste Sorte Grenze: eine,
+an die alle glauben. Jetzt `isChef()`, in beiden Regelblöcken.
+
+Mitgeprüft: Kennzahlen, Wettbewerb, Expansion aus `wachstum.html`. Die
+standen schon richtig — nur eben ungeprüft.
+
+### Prüfung
+
+```
+Regeln 165 · Kreuz 162 · Rechte 33 · Umzug 12 · Functions 99   Emulator
+CSP 20 Prüfungen · Mailversand 8 · npm audit 0                 neu
+61 Durchläufe im Browser, alle unter der neuen Regel
+```
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

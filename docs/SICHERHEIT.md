@@ -1,7 +1,10 @@
 # Sicherheits-Durchlauf
 
-Stand 13. August 2026. Der erste Durchlauf (12. August) ging ausschliesslich
-um Firmengrenzen; dieser hier nimmt die Bereiche, die damals offen blieben.
+Stand 13. August 2026, drei Runden. Der erste Durchlauf (12. August) ging
+ausschliesslich um Firmengrenzen; die zweite Runde nahm die Bereiche, die
+damals offen blieben — und die dritte das, was am Ende der zweiten noch
+als „nicht nachgeschlagen" dastand: die Sicherheitsregel im Browser, die
+Fremdbibliotheken und die drei Nachbaranwendungen.
 
 Geprüft wurde gegen den Emulator, gegen eine echte Browserinstanz und gegen
 den Quelltext. Nichts Echtes wurde angegriffen. Was nicht messbar war, steht
@@ -22,7 +25,9 @@ unten als solches.
 | Speicher (Storage) | ✅ für jeden Client gesperrt |
 | Geheimnisse im Quelltext | ✅ nur öffentliche Web-Schlüssel |
 | Kommentare in der ausgelieferten Datei | 🟡 Hinweis, siehe unten |
-| Content-Security-Policy | 🟡 fehlt, siehe unten |
+| Content-Security-Policy | ✅ **eingebaut**, siehe unten |
+| Bekannte Lücken in Fremdbibliotheken | 🔴 **11 gemeldet — jetzt 0** |
+| Die drei Nachbaranwendungen | 🟠 **eine Grenze war nur Anzeige — geschlossen** |
 
 ---
 
@@ -139,17 +144,155 @@ die Google-Tabelle geht denselben Weg.
 
 ---
 
-## 🟡 Hinweis: keine Content-Security-Policy
+## ✅ Eingebaut: die Content-Security-Policy
 
-Die App baut ihre Oberfläche mit `innerHTML`. Heute ist alles maskiert —
-nachgewiesen mit acht Angriffsmustern in `tests/test-xss.js`. Eine CSP
-wäre die zweite Reihe: sie würde eingeschleusten Code auch dann nicht
-ausführen, wenn eine Maskierung irgendwann vergessen wird.
+Die App baut ihre Oberfläche mit `innerHTML`. Alles ist maskiert — acht
+Angriffsmuster, keins wird zu Code. Die CSP ist die zweite Reihe: sie
+führt eingeschleusten Code auch dann nicht aus, wenn eine Maskierung
+irgendwann vergessen wird.
 
-Sie fehlt. Einbauen hiesse `script-src` einschränken — und die App lädt
-das Firebase-SDK von `gstatic.com` und Schriften von Google. Machbar, aber
-eine eigene Runde mit sorgfältigem Nachmessen: eine zu enge CSP legt die
-App still.
+```
+default-src 'none'
+script-src  'self' https://www.gstatic.com 'sha256-…' 'sha256-…'
+style-src   'self' 'unsafe-inline' https://fonts.googleapis.com
+img-src     'self' data: blob:
+connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net …
+frame-src 'none' · object-src 'none' · base-uri 'none' · form-action 'none'
+```
+
+**`script-src` ohne `'unsafe-inline'`** — das ist der Punkt. Die beiden
+Skriptblöcke der Datei sind einzeln über ihre Prüfsumme erlaubt, jeder
+andere nicht. Ein `<script>` aus einem Chattext wird nicht ausgeführt,
+selbst wenn er als Markup ankäme.
+
+Der Preis dafür ist Pflege: ändert sich ein Zeichen im Skript, passt die
+Prüfsumme nicht mehr und die App bliebe weiss. Deshalb gibt es
+`tools/csp.js` (rechnet sie neu) und `tests/test-csp.js` (schlägt an,
+sobald Regel und Datei auseinanderlaufen). Beim Einbau hat genau das
+einmal angeschlagen, wie vorgesehen.
+
+**Was dafür umgebaut wurde:** vier Ereignisse im Attribut
+(`onclick="…"`, `onload="…"`). Die sind für die Regel fremder Code. Die
+beiden Notschalter im Ladebildschirm liegen jetzt in einem eigenen
+kleinen Block — getrennt vom grossen, damit sie auch dann funktionieren,
+wenn die App selbst nicht hochkommt.
+
+**`style-src` behält `'unsafe-inline'`.** Die Oberfläche setzt Farben und
+Grössen an `style="…"` einzelner Elemente; dafür gibt es keine
+Prüfsumme. Ein Stil führt keinen Code aus — die Regel verliert dadurch
+nichts von dem, wofür sie hier steht.
+
+**Gemessen statt gehofft:** zwölf Ansichten geöffnet, **0 Verletzungen**,
+App läuft, und die Gegenprobe (eingeschleustes `<img onerror>`, ein
+`<script>`-Element und ein per JS erzeugtes Skript) wird geblockt. Dazu
+läuft die gesamte Oberflächen-Prüfung seitdem unter der Regel — sie steht
+als `<meta>` in der Datei und gilt damit auch im Durchlauf, nicht nur im
+Betrieb.
+
+**Was im Betrieb auffällt, wird gemeldet:** blockt die Regel etwas
+Echtes, geht es denselben Weg wie ein Fehler (Verwaltung → System). Ohne
+das sähe man es nur in der Konsole eines fremden Handys.
+
+**Kopfzeilen zusätzlich** (in `firebase.json`, weil es sie als `<meta>`
+nicht gibt): `frame-ancestors 'none'` und `X-Frame-Options: DENY` gegen
+Einbetten in eine fremde Seite, dazu `nosniff`, `Referrer-Policy` und
+eine `Permissions-Policy`, die Ort, Kamera, Zahlung und USB abschaltet —
+das Mikrofon bleibt, dort hängen die Sprachnachrichten.
+
+---
+
+## 🔴 Behoben: elf gemeldete Lücken in den Fremdbibliotheken
+
+Im ersten Durchlauf stand hier „wurde nicht nachgeschlagen". Nachgeholt:
+`npm audit` meldete **elf**, davon zwei hoch.
+
+**Nodemailer 6.9.14 → 9.0.5.** Acht Meldungen. Zwei treffen genau
+unseren Fall, denn die Empfängeradresse kommt aus einem Formular und geht
+ohne Zwischenschritt an Endkundinnen:
+
+* die Adress-Zerlegung lässt sich mit einer gebauten Adresse in eine
+  Endlosrekursion treiben (hoch),
+* eine Adresse kann in einer anderen Domain landen als der, die dasteht.
+
+**fast-xml-parser, protobufjs, gaxios** ohne Bruch nachgezogen.
+
+**`overrides: { uuid: ^11.1.1 }`.** Sieben Meldungen hängen an einer
+alten `uuid` tief in den Google-Bibliotheken. Ein Weiterreichen von oben
+gibt es nicht; npm schlug als „Reparatur" einen Rücksprung auf
+firebase-admin 10 vor. Also von Hand hochgezogen.
+
+**firebase-admin 14 bleibt aussen vor** — und das ist der interessante
+Teil. Die Version entfernt die Schreibweise `admin.firestore()`, auf der
+der gesamte Backend-Code steht. `umzug.test.js` ist beim Versuch sofort
+umgefallen; ausgerollt hätte es Push, Mails und die Nachtsicherung
+stillgelegt, ohne dass in der App etwas anders aussieht. Sicherheitlich
+bringt der Sprung nichts: mit dem uuid-Override steht der Zähler auch
+auf 12 auf null.
+
+```
+npm audit --omit=dev   11 (9 mittel, 2 hoch)  →  0
+```
+
+Dass Nodemailer 9 unsere Nachrichten unverändert baut — Empfänger,
+Absender, Anzeigename, Umlaute — prüft `tests/test-mail-versand.js`.
+Ob ein echter SMTP-Server sie annimmt, lässt sich hier nicht feststellen.
+
+---
+
+## 🟠 Behoben: eine Grenze in der Marketing-App war nur Anzeige
+
+`marketing.html` meldet jeden ohne Chefrolle wieder ab: *„Dieser Bereich
+ist der Geschäftsführung vorbehalten."* In den Regeln stand für
+`mkProjects` und die Versionen darunter aber `istAktiv()` — **jeder
+aktive Zugang** durfte lesen, anlegen und ändern, an der Oberfläche
+vorbei.
+
+Kein Datenleck im engeren Sinn: dort liegen Kampagnentexte, keine
+Personendaten. Aber es ist die schlechteste Sorte Grenze — eine, an die
+alle glauben. Und sie passt nicht zu ihrem Gegenstück: die teuren
+KI-Aufrufe (`marketingChat`, `marketingImage`) sitzen serverseitig hinter
+`requireChef`. Was dabei herauskommt, gehört demselben Kreis.
+
+Jetzt `isChef()`, in beiden Regelblöcken (flach und je Firma).
+Nachgewiesen in `tests/rules/rechte.test.js`, in beide Richtungen.
+
+Mitgeprüft, weil es dieselbe Anwendungsfamilie ist: Kennzahlen je Studio,
+Wettbewerbsliste und Expansionsplanung aus `wachstum.html`. Die standen
+schon vorher richtig — nur eben ungeprüft.
+
+---
+
+## 🟡 Bleibt: Termine enthalten Kundendaten, und jeder im Betrieb sieht sie
+
+`appointments` trägt Name, E-Mail, Telefon und Notizen der Endkundinnen.
+Lesen und ändern darf das jeder aktive Zugang der Firma, über alle
+Studios hinweg. Das steht so in den Regeln, mit Begründung: im Studio
+machen alle Termine.
+
+Das ist eine Entscheidung, keine Lücke — aber es sind personenbezogene
+Daten Dritter, und deshalb steht sie hier. Wer sie ändern will, engt in
+`firestore.rules` ein, nicht in der Oberfläche.
+
+**Der Haken dabei:** `wachstum.html` lädt heute alle Termine und filtert
+erst im Browser nach Studio. Firestore prüft eine Abfrage im Voraus —
+eine Regel „nur die eigenen Studios" würde diese Abfrage sofort
+abweisen. Die Einschränkung ist also kein Einzeiler in den Regeln,
+sondern Regel **und** Abfrage zusammen, mit Nachmessen. Rund eine halbe
+Sitzung.
+
+---
+
+## 🟡 Bleibt: `marketing.html` und `wachstum.html` ohne eigene CSP
+
+`index.html` hat sie. Die beiden anderen nicht: dort stehen zusammen
+**101 Ereignisse im Attribut** (`onclick="…"`), und die verbietet genau
+die Regel, um die es geht. Erst müssten sie auf `addEventListener`
+umgestellt werden.
+
+Beide verlangen eine Anmeldung, beide sind interne Werkzeuge, und die
+Kopfzeilen aus `firebase.json` (kein Einbetten, `nosniff`,
+`Referrer-Policy`) gelten für sie mit. `werbung.html` — die öffentliche
+Seite — hat nur drei solche Attribute und wäre schnell so weit.
 
 ---
 
@@ -199,13 +342,14 @@ sollen: sie identifizieren das Projekt, sie berechtigen zu nichts.
   Sitzungsdauer. Das ist Googles Seite.
 * **Ob jemand ein Passwort weitergibt.** Die häufigste Art, wie so eine
   App wirklich aufgemacht wird, und keine technische Frage.
-* **Bekannte Lücken in Fremdbibliotheken.** Im Einsatz sind
-  Firebase JS SDK 10.12.2, firebase-admin 12.x, firebase-functions 7.x.
-  Ob dafür etwas gemeldet ist, wurde hier nicht nachgeschlagen.
-* **Die drei Nachbaranwendungen** (`marketing.html`, `wachstum.html`,
-  `werbung.html`) sind nur oberflächlich angesehen worden: sie verlangen
-  eine Anmeldung, und die serverseitigen Grenzen der KI-Funktionen liegen
-  in den Cloud Functions. Ein eigener Durchlauf steht dafür aus.
+* **Das Firebase-SDK im Browser** (10.12.2). Es kommt von `gstatic.com`
+  und steht in keiner `package.json`; `npm audit` sieht es deshalb nicht.
+  Die Server-Bibliotheken sind nachgeschlagen und stehen auf null.
+* **Die drei Nachbaranwendungen** sind diesmal angesehen worden — auf
+  Anmeldung, Rollenprüfung und die Regeln hinter ihren Sammlungen (ein
+  Fund, oben). Was weiterhin fehlt: ein Angriffsdurchlauf mit
+  eingeschleustem Text durch ihre Oberflächen, so wie `test-xss.js` ihn
+  für die Hauptanwendung fährt.
 
 ---
 
@@ -220,4 +364,8 @@ tests/rules/security.test.js   165
 tests/rules/kreuz.test.js      162
 tests/rules/umzug.test.js      12
 tests/rules/funktionen.test.js 99
+tests/rules/rechte.test.js     33 (mit den Nachbaranwendungen)
+tests/test-csp.js              20 Prüfungen · 12 Ansichten · 0 Verletzungen
+tests/test-mail-versand.js     8
+npm audit --omit=dev           0
 ```
