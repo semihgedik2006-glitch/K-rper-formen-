@@ -592,6 +592,29 @@ service cloud.firestore {
     match /competitors/{compId}      { allow read, write: if false; }
     match /expansionLeads/{leadId}   { allow read, write: if false; }
 
+    /* ── Probetraining (seit 13.8.2026) ──
+       Was gelaufen ist und was daraus wurde. KEIN Kundenname und keine
+       Kontaktdaten — die Regel erzwingt das nicht, aber die App traegt
+       es nicht ein, und die Notiz ist auf 200 Zeichen begrenzt.
+
+       Eintragen darf jeder Aktive fuer sein eigenes Konto; loeschen der
+       Chef oder wer den Eintrag gemacht hat. Aendern niemand: eine
+       nachtraeglich gedrehte Quote waere schlimmer als ein falscher
+       Eintrag, den man loescht und neu setzt. */
+    match /probetrainings/{pbId} {
+      allow read: if istAktiv();
+      allow create: if istAktiv()
+        && request.resource.data.vonUid == request.auth.uid
+        && request.resource.data.studioKey is string
+        && request.resource.data.abschluss is bool
+        && request.resource.data.datum is number
+        && (!('notiz' in request.resource.data)
+            || request.resource.data.notiz.size() <= 200);
+      allow update: if false;
+      allow delete: if isChef()
+        || (istAktiv() && resource.data.vonUid == request.auth.uid);
+    }
+
     // ── Schichtplan pro Studio ──
     match /studios/{studioKey}/shifts/{shiftId} {
       allow read: if istAktiv();
@@ -1018,6 +1041,21 @@ service cloud.firestore {
         match /studioMetrics/{studioKey} { allow read, write: if false; }
         match /competitors/{compId}      { allow read, write: if false; }
         match /expansionLeads/{leadId}   { allow read, write: if false; }
+
+        /* Probetraining — siehe den flachen Block weiter oben. */
+        match /probetrainings/{pbId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if inFirma(f) && (istAktiv()
+            && request.resource.data.vonUid == request.auth.uid
+            && request.resource.data.studioKey is string
+            && request.resource.data.abschluss is bool
+            && request.resource.data.datum is number
+            && (!('notiz' in request.resource.data)
+                || request.resource.data.notiz.size() <= 200));
+          allow update: if false;
+          allow delete: if inFirma(f) && (isChef()
+            || (istAktiv() && resource.data.vonUid == request.auth.uid));
+        }
 
         match /studios/{studioKey}/shifts/{shiftId} {
           allow read: if inFirma(f) && (istAktiv());

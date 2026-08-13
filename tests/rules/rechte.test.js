@@ -218,6 +218,41 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('GEGENPROBE loeschen bleibt der Verwaltung vorbehalten', () =>
     assertFails(auf('studio-0', 'neu1').delete()));
 
+  /* ══ Probetraining ══
+     Neu am 13.8. Der Punkt hier ist nicht das Lesen, sondern das
+     Aendern: eine nachtraeglich gedrehte Quote waere schlimmer als ein
+     falscher Eintrag, den man loescht und neu setzt. Deshalb steht
+     update auf false — fuer alle. */
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`firmen/${A}/probetrainings/pb1`).set({
+      studioKey: 'studio-0', datum: Date.now(), abschluss: true,
+      vonUid: 'mitA', vonName: 'Mit A',
+    });
+  });
+  const pb = (wer, id) => wer.doc(`firmen/${A}/probetrainings/${id}`);
+  await pruefe('Mitarbeiter darf ein Probetraining eintragen', () =>
+    assertSucceeds(pb(mitA(), 'pb2').set({
+      studioKey: 'studio-0', datum: Date.now(), abschluss: false, vonUid: 'mitA',
+    })));
+  await pruefe('Mitarbeiter darf es NICHT auf jemand anderen buchen', () =>
+    assertFails(pb(mitA(), 'pb3').set({
+      studioKey: 'studio-0', datum: Date.now(), abschluss: true, vonUid: 'chefA',
+    })));
+  await pruefe('abschluss muss ein Ja/Nein sein, kein Text', () =>
+    assertFails(pb(mitA(), 'pb4').set({
+      studioKey: 'studio-0', datum: Date.now(), abschluss: 'vielleicht', vonUid: 'mitA',
+    })));
+  await pruefe('NIEMAND darf einen Eintrag nachträglich drehen', () =>
+    assertFails(pb(chefA(), 'pb1').update({ abschluss: false })));
+  await pruefe('auch der Eintragende nicht', () =>
+    assertFails(pb(mitA(), 'pb1').update({ abschluss: false })));
+  await pruefe('GEGENPROBE der eigene Eintrag lässt sich löschen', () =>
+    assertSucceeds(pb(mitA(), 'pb2').delete()));
+  await pruefe('GEGENPROBE der Chef darf jeden Eintrag löschen', () =>
+    assertSucceeds(pb(chefA(), 'pb1').delete()));
+  await pruefe('GEGENPROBE lesen darf das ganze Team', () =>
+    assertSucceeds(mitA().collection(`firmen/${A}/probetrainings`).get()));
+
   // ══ 6. Aufzaehlen von Konten ══
   await pruefe('Anonym kann users NICHT auflisten', () =>
     assertFails(anonym().collection('users').get()));

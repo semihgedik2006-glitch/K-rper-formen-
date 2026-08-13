@@ -146,6 +146,7 @@ was sie sehen soll.
 | `test-mail-versand.js` | Nodemailer 9 baut unsere Nachrichten unverändert: Empfänger, Absender, Anzeigename, Umlaute |
 | `test-eigene-aufgabe.js` | Mitarbeiter legen einmalige Aufgaben im eigenen Studio an; die Verwaltung behält ihr volles Formular |
 | `test-ueberblick.js` | der Aushang nennt die Namen derer, die nicht gelesen haben; die Studio-Tafel zeigt jeden Rückstand und sortiert danach |
+| `test-probetraining.js` | Abschlussquote je Studio und je Person, Zeitraum-Filter — und kein Kundenname in der App |
 
 ### Alle auf einmal
 

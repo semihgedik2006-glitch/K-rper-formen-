@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-AUhKeS9qL3tn2eQ9UY+1AlgDQnu8biOq+nI496d6hhA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-BF8vTYKd8L+snQZjIljK5ct0YuBM2RUw8Re6sWCVuUE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -866,11 +866,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -1375,13 +1375,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
 /* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
-#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#ownTodoModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
+#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#ownTodoModal.show .pm-box,#probeModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
   animation:sheetIn .46s var(--spring)}
 @keyframes sheetIn{
   from{opacity:0;transform:scale(.94) translateY(12px)}
   to{opacity:1;transform:none}
 }
-#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
+#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
 @keyframes fadeBlur{from{opacity:0}to{opacity:1}}
 
 /* ── Menüs auf dem Handy: von unten hereinfahren ──
@@ -1389,8 +1389,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    der Daumen kommt nicht hin. Deshalb werden Menüs unter 620 px zu Blättern,
    die von unten hereinfahren; oben ein Griff, wie man es von iOS kennt. */
 @media (max-width:620px){
-  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal{align-items:flex-end;padding:0}
-  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box,#ownTodoModal .pm-box{
+  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal{align-items:flex-end;padding:0}
+  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box,#ownTodoModal .pm-box,#probeModal .pm-box{
     max-width:none;border-radius:var(--radius) var(--radius) 0 0;border-bottom:none;
     padding:20px 20px calc(24px + var(--sab));max-height:90vh}
   #profileModal.show .pm-box,#personModal.show .pm-box{
@@ -1839,6 +1839,25 @@ html{font-size:var(--fs,100%)}
 .chef-tab:active{transform:scale(.93)}
 .chef-tab.on{color:var(--on-accent);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
+
+/* Probetraining: Quote je Studio und je Person */
+.pb-zeile{display:flex;align-items:center;gap:var(--s10);padding:var(--s8) 0;border-top:1px solid var(--line)}
+.pb-zeile:first-child{border-top:none}
+.pb-name{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb-balken{flex:0 0 84px;height:8px;border-radius:var(--r-pille);background:rgba(255,255,255,.09);overflow:hidden}
+.pb-balken i{display:block;height:100%;background:var(--ok-tx)}
+.pb-quote{flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:700;font-size:.86rem}
+.pb-von{flex:0 0 auto;font-size:.72rem;color:var(--text-3);font-variant-numeric:tabular-nums}
+.pb-e{display:inline-block;font-size:.66rem;font-weight:700;padding:var(--s2) var(--s6);
+  border-radius:var(--r-pille)}
+.pb-e.ja{background:rgba(52,211,153,.14);color:var(--ok-tx)}
+.pb-e.nein{background:rgba(255,255,255,.07);color:var(--text-2)}
+.pb-eintrag{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) 0;border-top:1px solid var(--line)}
+.pb-eintrag:first-child{border-top:none}
+.pb-eintrag .pb-txt{flex:1;min-width:0}
+.pb-eintrag .pb-txt b{display:block;font-size:.86rem}
+.pb-eintrag .pb-txt span{font-size:.74rem;color:var(--text-3)}
+.pb-weg{background:none;border:none;color:var(--text-3);cursor:pointer;padding:var(--s6)}
 
 /* Marken auf der Studio-Kachel: was dort offen ist, in einem Blick */
 .sm-marken{display:flex;flex-wrap:wrap;gap:var(--s4);margin-top:var(--s6)}
@@ -2648,6 +2667,36 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             </div>
           </div>
           <div id="todoArea"></div>
+        </div>
+      </section>
+
+      <!-- PROBETRAINING -->
+      <section class="view" id="view-probe">
+        <div class="view-head shrink">
+          <div class="vh-line">
+            <div class="vh-text">
+              <h2>Probetraining</h2><p>Eintragen, was gelaufen ist – die Quote rechnet die App.</p>
+            </div>
+            <button class="kopf-plus" id="pbNew" title="Probetraining eintragen"
+              aria-label="Probetraining eintragen">+ Neu</button>
+          </div>
+        </div>
+        <div class="scroll-area" data-shrinks="1">
+          <div class="card fold" id="pbQuotenCard">
+            <h3 data-ikon="trendAuf">Quote</h3>
+            <div class="fold-body">
+              <div class="chip-row" id="pbZeitraum">
+                <button class="chip on" data-pbz="30">30 Tage</button>
+                <button class="chip" data-pbz="90">3 Monate</button>
+                <button class="chip" data-pbz="0">Alles</button>
+              </div>
+              <div id="pbQuoten"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 data-ikon="blatt">Eingetragen</h3>
+            <div id="pbListe"></div>
+          </div>
         </div>
       </section>
 
@@ -3706,6 +3755,33 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     </div>
     <p class="hint">Einmalige Aufgabe. Wiederkehrende legt die Leitung an.</p>
     <button class="btn btn-primary btn-sm" id="otSave" style="width:100%">Aufgabe anlegen</button>
+  </div>
+</div>
+
+<!-- Probetraining eintragen. Bewusst ohne Kundennamen: fuer die Quote
+     zaehlen Zahlen, und ein Name waeren personenbezogene Daten Dritter
+     in einer App, in der sie nichts zu suchen haben. -->
+<div id="probeModal">
+  <div class="pm-box">
+    <button class="lb-close" id="pbClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"></button>
+    <h3 data-ikon="hantel">Probetraining eintragen</h3>
+    <p class="hint">Kein Name, keine Kontaktdaten – nur, was für die Quote zählt.</p>
+    <div class="row">
+      <div class="field"><label for="pbStudio">Studio</label>
+        <select class="inp" id="pbStudio"></select></div>
+      <div class="field"><label for="pbDatum">Wann</label>
+        <input class="inp" id="pbDatum" type="date" /></div>
+    </div>
+    <div class="field">
+      <label>Ergebnis</label>
+      <div class="chip-row" id="pbErgebnis">
+        <button class="chip on" data-pbe="1">Abschluss</button>
+        <button class="chip" data-pbe="0">Kein Abschluss</button>
+      </div>
+    </div>
+    <div class="field"><label for="pbNotiz">Notiz (optional)</label>
+      <input class="inp" id="pbNotiz" type="text" maxlength="120" placeholder="z. B. kommt nächste Woche nochmal" /></div>
+    <button class="btn btn-primary btn-sm" id="pbSave" style="width:100%">Eintragen</button>
   </div>
 </div>
 
@@ -5615,6 +5691,7 @@ var FEATURES = [
   {id:'material',  label:'Material',         was:'Bestand und was fehlt'},
   {id:'geraete',   label:'Geräte',           was:'Geräte- und Schadensbuch'},
   {id:'docs',      label:'Dokumente',        was:'Dateien für das Team'},
+  {id:'probe',     label:'Probetraining',    was:'Durchgeführt und abgeschlossen, mit Quote'},
   {id:'schicht',   label:'Schichtplan',      was:'Wer wann arbeitet', team:true},
   {id:'abwesend',  label:'Abwesenheiten',    was:'Urlaub, Krankheit, frei', team:true},
   {id:'uebergabe', label:'Übergabe',         was:'Was die nächste Schicht wissen muss', team:true},
@@ -7693,7 +7770,7 @@ var NAVGROUPS = [
    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
   {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
-  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','docs'],
+  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','probe','docs'],
    icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'g-team', label:'Team', views:['team'],
    icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
@@ -7708,6 +7785,7 @@ var NAV = [
   {id:'material', label:'Material', icon:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>'},
   {id:'putzplan', label:'Putzplan', icon:'<path d="M3 21h18"/><path d="M9 21V9l6-4v16"/><path d="M15 9l4-2v14"/><path d="M9 13h.01M9 17h.01"/>'},
   {id:'geraete', label:'Geräte', icon:'<rect x="2" y="7" width="20" height="12" rx="2"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M12 11v4M10 13h4"/>'},
+  {id:'probe', label:'Probetraining', icon:'<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>'},
   {id:'team', label:'Team', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
   {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
@@ -7932,6 +8010,7 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='material'){ ensureMaterialLoaded(); ensureArchivesLoaded(); }
   if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='geraete') ensureDevicesLoaded();
+  if(id==='probe'){ if(!_probeUnsub) listenProbe(); renderProbe(); }
   if(id==='chat'){
     var cb=document.querySelector('.chat-channels');
     if(cb){ cb.classList.add('sofort'); }
@@ -13247,6 +13326,162 @@ function todoBlattAktion(was){
   }
 }
 
+/* ══ PROBETRAINING ═══════════════════════════════════════════════════
+   Was gelaufen ist und was daraus wurde — mehr nicht. Kein Kundenname,
+   keine Kontaktdaten: fuer die Quote zaehlen Zahlen, und Namen Dritter
+   waeren personenbezogene Daten in einer App, die dafuer weder
+   Loeschfristen noch einen Datenschutztext hat. Bewusste Entscheidung
+   des Betreibers, siehe docs/OFFEN.md.
+
+   Datenmodell: firmen/<kennung>/probetrainings/{id}
+     studioKey, datum (Tag, ms), abschluss (bool), notiz, vonUid, vonName
+
+   Die Quote ist Abschluesse geteilt durch Probetrainings — je Studio und
+   je Person. Wer die Zahlen sehen darf, entscheidet die Rolle: der Chef
+   alle, alle anderen nur ihr eigenes Studio.
+   ═══════════════════════════════════════════════════════════════════ */
+var _probe=[], _probeUnsub=null, _pbZeitraum=30, _pbErgebnis=1;
+
+function listenProbe(){
+  if(_probeUnsub){ _probeUnsub(); _probeUnsub=null; }
+  if(!ansichtAn('probe')) return;
+  _probeUnsub=S('probetrainings').orderBy('datum','desc').limit(400)
+    .onSnapshot(function(snap){
+      _probe=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      if(currentView==='probe') renderProbe();
+    }, function(e){ console.warn('Probetraining:', e && e.message); });
+}
+
+/* Wen die Zahlen etwas angehen: der Chef sieht alle Studios, alle
+   anderen ihre eigenen. Dieselbe Grenze wie ueberall sonst. */
+function probeMeine(){
+  var keys=managedKeys().length ? managedKeys() : ((session&&session.studioKeys)||[]);
+  return _probe.filter(function(p){
+    return isChef() ? true : keys.indexOf(p.studioKey)>=0;
+  });
+}
+
+function probeImZeitraum(list){
+  if(!_pbZeitraum) return list;
+  var ab=Date.now()-_pbZeitraum*86400000;
+  return list.filter(function(p){ return (p.datum||0)>=ab; });
+}
+
+function quotenZeile(name, ja, gesamt){
+  var pct=gesamt?Math.round(ja/gesamt*100):0;
+  return '<div class="pb-zeile">'+
+    '<span class="pb-name">'+esc(name)+'</span>'+
+    '<span class="pb-balken"><i style="width:'+pct+'%"></i></span>'+
+    '<span class="pb-quote">'+pct+'%</span>'+
+    '<span class="pb-von">'+ja+'/'+gesamt+'</span></div>';
+}
+
+function renderProbe(){
+  var qBox=$('pbQuoten'), lBox=$('pbListe');
+  if(!qBox||!lBox) return;
+  var alle=probeImZeitraum(probeMeine());
+
+  if(!alle.length){
+    qBox.innerHTML='<p class="hint">Noch nichts eingetragen in diesem Zeitraum.</p>';
+    lBox.innerHTML=emptyHTML('Noch kein Probetraining',
+      'Trag oben rechts ein, was gelaufen ist – die Quote rechnet sich von selbst.');
+    return;
+  }
+
+  /* Gesamt zuerst: die eine Zahl, nach der gefragt wird. */
+  var jaGes=alle.filter(function(p){ return p.abschluss; }).length;
+  var html='<div class="pb-zeile" style="border-top:none">'+
+    '<span class="pb-name"><b>Gesamt</b></span>'+
+    '<span class="pb-balken"><i style="width:'+(Math.round(jaGes/alle.length*100))+'%"></i></span>'+
+    '<span class="pb-quote">'+Math.round(jaGes/alle.length*100)+'%</span>'+
+    '<span class="pb-von">'+jaGes+'/'+alle.length+'</span></div>';
+
+  function gruppiere(schluessel, beschriftung){
+    var map={};
+    alle.forEach(function(p){
+      var k=schluessel(p); if(!k) return;
+      map[k]=map[k]||{ja:0,n:0};
+      map[k].n++; if(p.abschluss) map[k].ja++;
+    });
+    return Object.keys(map)
+      .sort(function(a,b){
+        var qa=map[a].ja/map[a].n, qb=map[b].ja/map[b].n;
+        return qb-qa || map[b].n-map[a].n;
+      })
+      .map(function(k){ return quotenZeile(beschriftung(k), map[k].ja, map[k].n); })
+      .join('');
+  }
+
+  var proStudio=gruppiere(function(p){ return p.studioKey; }, function(k){ return studioName(k); });
+  if(proStudio) html+='<p class="hint" style="margin:var(--s12) 0 var(--s4)">Je Studio</p>'+proStudio;
+  var proPerson=gruppiere(function(p){ return p.vonUid; }, function(uid){
+    var e=_probe.filter(function(p){ return p.vonUid===uid; })[0];
+    return (e&&e.vonName)||'Unbekannt';
+  });
+  if(proPerson) html+='<p class="hint" style="margin:var(--s12) 0 var(--s4)">Je Person</p>'+proPerson;
+  qBox.innerHTML=html;
+
+  lBox.innerHTML=alle.slice(0,60).map(function(p){
+    var darfWeg = isChef() || p.vonUid===session.uid;
+    return '<div class="pb-eintrag">'+
+      '<span class="pb-e '+(p.abschluss?'ja':'nein')+'">'+(p.abschluss?'Abschluss':'kein Abschluss')+'</span>'+
+      '<span class="pb-txt"><b>'+esc(studioName(p.studioKey))+'</b>'+
+        '<span>'+esc(dayLabel(p.datum))+' · '+esc(p.vonName||'—')+
+        (p.notiz?' · '+esc(p.notiz):'')+'</span></span>'+
+      (darfWeg?'<button class="pb-weg" data-pbweg="'+esc(p.id)+'" title="Löschen" aria-label="Löschen">'+ikon('papierkorb')+'</button>':'')+
+      '</div>';
+  }).join('');
+
+  lBox.querySelectorAll('[data-pbweg]').forEach(function(b){
+    b.addEventListener('click',function(){
+      if(!confirm('Diesen Eintrag löschen?')) return;
+      S('probetrainings').doc(b.getAttribute('data-pbweg')).delete()
+        .then(function(){ toast('Gelöscht'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+}
+
+function oeffneProbe(){
+  var sel=$('pbStudio'); if(!sel) return;
+  var meine=isChef()? STUDIOS.slice() : (((session&&session.studios)||[]).slice());
+  if(!meine.length){ toast('Dir ist kein Studio zugeteilt.',true); return; }
+  sel.innerHTML=meine.map(function(n){
+    return '<option value="'+esc(studioKey(n))+'">'+esc(n)+'</option>';
+  }).join('');
+  $('pbDatum').value=ymd(new Date());
+  $('pbNotiz').value='';
+  _pbErgebnis=1;
+  document.querySelectorAll('#pbErgebnis [data-pbe]').forEach(function(c){
+    c.classList.toggle('on', c.getAttribute('data-pbe')==='1');
+  });
+  $('probeModal').classList.add('show');
+}
+function schliesseProbe(){ var m=$('probeModal'); if(m) m.classList.remove('show'); }
+
+function speichereProbe(btn){
+  var sk=$('pbStudio').value;
+  if(!sk){ toast('Kein Studio gewählt.',true); return; }
+  var d=new Date(($('pbDatum').value||ymd(new Date()))+'T12:00:00');
+  if(isNaN(d.getTime())){ toast('Datum stimmt nicht.',true); return; }
+  /* Mittags statt Mitternacht: sonst rutscht der Eintrag je nach
+     Zeitzone auf den Vortag. */
+  withBusy(btn,function(){
+    return S('probetrainings').add({
+      studioKey: sk,
+      datum: d.getTime(),
+      abschluss: _pbErgebnis===1,
+      notiz: ($('pbNotiz').value||'').trim(),
+      vonUid: session.uid,
+      vonName: session.name||'',
+      ts: Date.now()
+    }).then(function(){
+      schliesseProbe();
+      toast(_pbErgebnis===1?'Abschluss eingetragen ✓':'Eingetragen ✓');
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
 /* ── Eigene Aufgabe eines Mitarbeiters ────────────────────────────────
    Seit dem 13.8. darf jeder anlegen — aber nur einmalige Aufgaben und
    nur im eigenen Studio. Beides erzwingen die Regeln (firestore.rules,
@@ -15144,6 +15379,25 @@ function bindActions(){
       var f=$('ntTitle');
       if(f){ sanftInsBild(f,{behavior:'smooth',block:'center'}); setTimeout(function(){ f.focus(); },250); }
     }, 120);
+  });
+
+  var pbN=$('pbNew'); if(pbN) pbN.addEventListener('click', oeffneProbe);
+  var pbC=$('pbClose'); if(pbC) pbC.addEventListener('click', schliesseProbe);
+  var pbM=$('probeModal');
+  if(pbM) pbM.addEventListener('click',function(e){ if(e.target===pbM) schliesseProbe(); });
+  var pbS=$('pbSave'); if(pbS) pbS.addEventListener('click',function(){ speichereProbe(this); });
+  document.querySelectorAll('#pbErgebnis [data-pbe]').forEach(function(c){
+    c.addEventListener('click',function(){
+      _pbErgebnis=+c.getAttribute('data-pbe');
+      document.querySelectorAll('#pbErgebnis [data-pbe]').forEach(function(x){ x.classList.toggle('on',x===c); });
+    });
+  });
+  document.querySelectorAll('#pbZeitraum [data-pbz]').forEach(function(c){
+    c.addEventListener('click',function(){
+      _pbZeitraum=+c.getAttribute('data-pbz');
+      document.querySelectorAll('#pbZeitraum [data-pbz]').forEach(function(x){ x.classList.toggle('on',x===c); });
+      renderProbe();
+    });
   });
 
   var otC=$('otClose'); if(otC) otC.addEventListener('click', schliesseEigeneAufgabe);
