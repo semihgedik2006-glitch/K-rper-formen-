@@ -91,7 +91,14 @@ const ANSICHTEN = [
       /* Elemente, die es nur geben kann, wenn die Maskierung versagt hat */
       eingeschleust: {
         img: document.querySelectorAll('img[src="x"]').length,
-        script: document.querySelectorAll('body script:not([src])').length - 1,
+        /* Nur eingeschleuste Blöcke zählen, nicht die eigenen. Hier stand
+           „alle minus eins" — die Eins war der Skriptblock der App. Seit
+           es zwei gibt (der Notschalter im Ladebildschirm ist bewusst
+           getrennt), meldete die Zeile einen Treffer, den es nicht gab.
+           Eine Konstante, die von der Struktur der Datei abhängt, hält
+           genau bis zur nächsten Änderung. */
+        script: [].slice.call(document.querySelectorAll('body script:not([src])'))
+          .filter(function (s) { return /__xss|xss-out/.test(s.textContent || ''); }).length,
         svgOnload: document.querySelectorAll('svg[onload]').length,
         raus: document.querySelectorAll('.xss-out, .xss-out2').length,
         iframe: document.querySelectorAll('iframe').length,
