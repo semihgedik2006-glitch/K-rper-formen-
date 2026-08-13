@@ -160,30 +160,24 @@ service cloud.firestore {
 
     // ── Benutzerprofile ──
     match /users/{uid} {
-      /* ── DAS LOCH VOM 12.8.2026, geschlossen am selben Tag ──
-         Hier stand: allow read: if istAktiv() || (eigenes Profil).
-         OHNE FIRMENPRUEFUNG. users ist die einzige Sammlung, die NICHT
-         unter /firmen/{f}/ liegt — und beim Schreiben stand die Pruefung
-         (gleicheFirma), beim Lesen nicht.
+      /* ── Die Firmengrenze auf users ──
+         users ist die einzige Sammlung, die NICHT unter /firmen/{f}/
+         liegt. Fehlt die Firmenpruefung beim LESEN, liest ein
+         Mitarbeiter von Alpha das Konto des Chefs von Beta samt
+         E-Mail-Adresse und Geburtsdatum und kann die ganze Sammlung
+         auflisten.
 
-         Gemessen im Emulator, bevor es repariert wurde: ein Mitarbeiter
-         von Alpha las das Konto des Chefs von Beta samt E-Mail-Adresse
-         und Geburtsdatum, und konnte die GANZE Sammlung auflisten. Die
-         App tat das sogar von selbst: listenAllUsers() horchte auf
-         db.collection('users') ohne Filter.
-
-         Das EIGENE Profil bleibt immer lesbar, sonst kann die App einem
+         Das EIGENE Profil bleibt immer lesbar — sonst kann die App einem
          wartenden Konto nicht einmal sagen, dass es wartet. Der
          Betreiber steht darueber, sonst kaeme er an seine eigene
-         Kundenverwaltung nicht mehr heran.
+         Kundenverwaltung nicht heran.
 
          WER HIER ETWAS AENDERT, muss wissen: Firestore prueft Abfragen
          im VORAUS, nicht Dokument fuer Dokument. Eine ungefilterte
-         Abfrage auf users wird deshalb abgelehnt — die App MUSS
-         where('firma','==',…) mitgeben (listenAllUsers), und jedes
-         Konto braucht das Feld. Nachgetragen wurde es am 12.8.2026
-         ueber Verwaltung → Firmen → "Konten ohne Firma":
-         8 Konten, 7 mit koerperformen, 1 andere Firma, 0 ohne Feld. */
+         Abfrage auf users wird abgelehnt — die App MUSS
+         where('firma','==',…) mitgeben (listenAllUsers), und jedes Konto
+         braucht das Feld. Fehlt es an einem einzigen, sieht dessen
+         Besitzer eine leere Personenliste. */
       allow read: if istAdminKonto()
         || (signedIn() && request.auth.uid == uid)
         || (istAktiv() && gleicheFirma());
@@ -462,13 +456,13 @@ service cloud.firestore {
     // ausdruecklich nicht. Eintragen darf allein der Chef; er hat die
     // Unterlagen und haftet dafuer, dass sie stimmen.
     /* ── Nachweise ───────────────────────────────────────────────────
-       Bis zum 12.8.2026 durfte sie nur der Chef eintragen. Bei 57 Leuten
-       ist das Abtippen von Erste-Hilfe-Scheinen und Lizenzen sein
-       Problem, nicht ihres — also wird es nicht gemacht, und die Liste
+       Jeder trägt seine eigenen ein; nur der Chef einzutragen skaliert
+       nicht — bei 57 Leuten ist das Abtippen von Erste-Hilfe-Scheinen
+       sein Problem, nicht ihres, also passiert es nicht und die Liste
        ist nach einem halben Jahr wertlos.
 
-       Jetzt trägt jeder seine eigenen ein. Drei Grenzen, die dabei
-       wichtig sind, weil ein Erste-Hilfe-Nachweis rechtlich zählt:
+       Drei Grenzen sind dabei wichtig, weil ein Erste-Hilfe-Nachweis
+       rechtlich zählt:
 
          1. NUR DIE EIGENEN. uid muss die eigene sein — beim Anlegen und
             beim Ändern. Ohne die zweite Prüfung könnte man einen
@@ -502,8 +496,7 @@ service cloud.firestore {
          ein Zahlendreher im Datum soll kein Fall fuer den Chef sein.
          DANACH NICHT MEHR: sonst laesst sich ein bestaetigter
          Erste-Hilfe-Schein still um zwei Jahre verlaengern, und die
-         Bestaetigung waere wertlos. Genau dieses Loch stand hier im
-         ersten Entwurf. */
+         Bestaetigung waere wertlos. */
       allow update: if isChef()
         || (istAktiv()
             && resource.data.uid == request.auth.uid
@@ -581,15 +574,14 @@ service cloud.firestore {
     // wie Aufgaben; die Studio-Zuordnung filtert die App). Löschen: Chef
     // oder wer den Termin angelegt hat.
     /* Termine enthalten KUNDENNAMEN, und jeder aktive Mitarbeiter darf
-       sie lesen und aendern. Im Sicherheits-Durchlauf am 12.8.2026
-       vorgelegt, vom Betreiber bewusst so entschieden: im Studio machen
-       alle Termine, eine Einschraenkung auf den Ersteller waere eine
-       Huerde ohne Nutzen.
+       sie lesen und aendern. Bewusste Entscheidung des Betreibers: im
+       Studio machen alle Termine, eine Einschraenkung auf den Ersteller
+       waere eine Huerde ohne Nutzen.
 
-       Bleibt richtig, solange das gilt. Wer das aendert — etwa weil ein
-       Kunde nur die Leitung an Kundendaten lassen will — engt hier ein,
-       nicht in der Oberflaeche. Erinnerung: personenbezogene Daten
-       Dritter, nicht nur Betriebsdaten. */
+       Wer das aendert — etwa weil ein Kunde nur die Leitung an
+       Kundendaten lassen will — engt HIER ein, nicht in der
+       Oberflaeche. Es sind personenbezogene Daten Dritter, nicht nur
+       Betriebsdaten. */
     match /appointments/{apptId} {
       allow read: if istAktiv();
       allow create: if istAktiv()

@@ -1,8 +1,8 @@
 /* Bereich 6 – Geräte: wo ist etwas kaputt, welcher Knopf ist der auffälligste,
    und legt eine zweite Meldung eine zweite Aufgabe an?
 
-   Vorher öffnete die Seite beim ersten alphabetischen Studio und meldete
-   „Noch keine Geräte" – während in einem anderen Studio eines defekt war. */
+   Öffnet die Seite beim ersten alphabetischen Studio, meldet sie „Noch
+   keine Geräte", während anderswo eines defekt ist. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -146,5 +146,5 @@ async function start(stub, errs) {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
-  process.exit((errs || fehler).length ? 1 : 0);
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

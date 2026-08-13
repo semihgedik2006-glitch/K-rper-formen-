@@ -1,27 +1,25 @@
 /* ── Der Umzug, ausgeführt statt behauptet ────────────────────────────
-   Stufe C. Hier läuft GENAU der Code, der später die echten Daten
-   anfasst — tools/umzug.js, nicht eine Nachbildung davon.
+   Stufe C. Hier läuft genau der Code, der später die echten Daten
+   anfasst — tools/umzug.js, keine Nachbildung. Gegen den Emulator, also
+   ohne Risiko. Grün heisst noch nicht „im Ernstfall gelaufen" (die echte
+   Datenbank ist grösser und langsamer), aber es ist der Unterschied
+   zwischen „sollte gehen" und „ist gelaufen".
 
-   Gegen den Emulator, also ohne jedes Risiko. Was hier grün ist, ist
-   noch kein Beweis für den Ernstfall (die echte Datenbank ist größer
-   und langsamer), aber es ist der Unterschied zwischen „sollte gehen"
-   und „ist gelaufen".
+   Geprüft werden die Stellen, an denen ein Umzug wirklich scheitert:
 
-   Geprüft werden die Stellen, an denen so ein Umzug wirklich scheitert:
-
-     1. Kommt überhaupt alles an? Zählprüfung je Sammlung.
-     2. Bleiben die INHALTE gleich? Eine Kopie, die zählt aber verfälscht,
-        wäre schlimmer als gar keine.
+     1. Kommt alles an? Zählprüfung je Sammlung.
+     2. Bleiben die INHALTE gleich? Eine Kopie, die zählt aber
+        verfälscht, wäre schlimmer als gar keine.
      3. Untersammlungen unter LEEREN Elterndokumenten. In Firestore kann
-        studios/studio-6 als Dokument gar nicht existieren und trotzdem
-        Aufgaben enthalten. Wer mit .get() über die Eltern geht, verliert
-        sie lautlos — das ist die klassische Falle.
+        studios/studio-6 als Dokument fehlen und trotzdem Aufgaben
+        enthalten; wer mit .get() über die Eltern geht, verliert sie
+        lautlos.
      4. Bleiben die alten Daten liegen? Es soll eine Kopie sein.
-     5. Ist ein zweiter Lauf harmlos? Wer mittendrin abbricht, muss neu
-        starten können.
-     6. Merkt die Zählprüfung eine Abweichung überhaupt? Ein Prüfer, der
-        nie rot wird, prüft nichts — also wird hier absichtlich etwas
-        kaputtgemacht.
+     5. Ist ein zweiter Lauf harmlos? Wer abbricht, muss neu starten
+        können.
+     6. Merkt die Zählprüfung eine Abweichung überhaupt? Dafür wird
+        absichtlich etwas kaputtgemacht — ein Prüfer, der nie rot wird,
+        prüft nichts.
    ───────────────────────────────────────────────────────────────────── */
 const path = require('path');
 /* Das ECHTE Admin-SDK, gegen den Emulator gerichtet — dasselbe, das

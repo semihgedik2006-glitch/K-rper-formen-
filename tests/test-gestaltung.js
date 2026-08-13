@@ -152,7 +152,112 @@ const ohneKommentar = quelle
   if (benutzt < 50) errs.push('GEGENPROBE: die Leiter wird kaum benutzt (' + benutzt + '×)');
 }
 
+/* ══ 4. Keine festen Abstände ══
+   padding, margin und gap standen einmal mit 52 verschiedenen Werten
+   zwischen 1 und 72 px im Stylesheet — sieben davon lagen einen Pixel
+   auseinander. Jetzt gibt es eine Leiter (--s1 … --s72).
+
+   Nicht geprüft werden clamp() und calc(): dort steht bewusst eine
+   Rechnung, keine Sprosse. Negative Werte und mm (Druck) ebenfalls
+   nicht. */
+{
+  const cssOhne = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const EIGENSCHAFT = /\b((?:padding|margin|gap|row-gap|column-gap|inset)(?:-(?:top|right|bottom|left|inline|block)(?:-(?:start|end))?)?)\s*:\s*([^;}]+)/g;
+  const fest = {};
+  let m;
+  while ((m = EIGENSCHAFT.exec(cssOhne))) {
+    const wert = m[2];
+    if (/clamp\(|calc\(/.test(wert)) continue;
+    wert.trim().split(/\s+/).forEach(w => {
+      if (/^\d+px$/.test(w)) fest[w] = (fest[w] || 0) + 1;
+    });
+  }
+  const liste = Object.keys(fest);
+  console.log('feste Abstandswerte:', liste.length ? liste.map(k => k + '×' + fest[k]).join(' ') : 'keine');
+  if (liste.length) {
+    errs.push('FESTER ABSTAND: ' + liste.map(k => k + ' (' + fest[k] + '×)').join(', ') +
+      ' — gehört auf die Leiter in :root (--s1 … --s72)');
+  }
+
+  const stufen = (css.match(/--s\d+:/g) || []).length;
+  const benutzt = (css.match(/var\(--s\d+\)/g) || []).length;
+  console.log('Abstands-Stufen:', stufen, '· Verwendungen:', benutzt);
+  if (stufen < 10) errs.push('GEGENPROBE: die Abstands-Leiter ist unvollständig (' + stufen + ' Stufen)');
+  if (benutzt < 300) errs.push('GEGENPROBE: die Abstands-Leiter wird kaum benutzt (' + benutzt + '×)');
+}
+
+/* ══ 5. Dieselbe Eigenschaft nicht zweimal am selben Selektor ══
+   Der Stylesheet ist durch Anhängen gewachsen. Steht `transition` einmal
+   bei `.btn` oben und noch einmal im Bewegungsabschnitt unten, gewinnt die
+   spätere — an der früheren dreht man vergeblich. Genau dieselbe Falle wie
+   bei den doppelten @keyframes.
+
+   Ein Selektor darf durchaus mehrfach vorkommen (Grundregel oben, Zustand
+   unten). Gezählt wird nur, wenn dieselbe EIGENSCHAFT doppelt gesetzt
+   wird. */
+{
+  /* url(...) herausnehmen: in einer data-URI stehen Doppelpunkte und
+     Semikolons, die sonst als Eigenschaften gelesen würden. */
+  const rein = css.replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' '))
+                  .replace(/url\([^)]*\)/g, 'url()');
+
+  function regeln(txt, praefix) {
+    const raus = [];
+    let i = 0, tiefe = 0, anfang = 0, sel = null;
+    while (i < txt.length) {
+      const c = txt[i];
+      if (c === '{') { if (!tiefe) sel = txt.slice(anfang, i).trim(); tiefe++; }
+      else if (c === '}') {
+        tiefe--;
+        if (!tiefe) {
+          const oeff = txt.indexOf('{', anfang);
+          const koerper = txt.slice(oeff + 1, i);
+          if (/^@(media|supports)/.test(sel)) {
+            raus.push(...regeln(koerper, praefix + sel + ' '));
+          } else if (sel[0] !== '@') {
+            const props = koerper.split(';')
+              .filter(p => p.includes(':'))
+              .map(p => p.split(':')[0].trim())
+              .filter(p => p && !p.startsWith('--'));
+            sel.split(',').forEach(t =>
+              raus.push({ sel: praefix + t.trim(), props }));
+          }
+          anfang = i + 1;
+        }
+      }
+      i++;
+    }
+    return raus;
+  }
+
+  const nach = {};
+  regeln(rein, '').forEach(r => { (nach[r.sel] = nach[r.sel] || []).push(r.props); });
+
+  const koll = [];
+  Object.keys(nach).forEach(sel => {
+    if (nach[sel].length < 2) return;
+    const zaehler = {};
+    nach[sel].forEach(ps => ps.forEach(p => { zaehler[p] = (zaehler[p] || 0) + 1; }));
+    const doppelt = Object.keys(zaehler).filter(p => zaehler[p] > 1);
+    if (doppelt.length) koll.push(sel + ' (' + doppelt.join(', ') + ')');
+  });
+
+  console.log('Selektoren gesamt:', Object.keys(nach).length,
+    '· Eigenschaft doppelt gesetzt:', koll.length);
+  koll.slice(0, 8).forEach(k => console.log('   ' + k));
+  if (koll.length) {
+    errs.push('DIESELBE EIGENSCHAFT ZWEIMAL: ' + koll.length + ' Selektor(en), ' +
+      'z. B. ' + koll[0] + ' — die spätere Angabe gewinnt, an der früheren ' +
+      'dreht man vergeblich');
+  }
+  if (Object.keys(nach).length < 500) {
+    errs.push('GEGENPROBE: nur ' + Object.keys(nach).length + ' Selektoren gefunden — ' +
+      'der Zerleger misst am falschen Ort');
+  }
+}
+
 console.log(errs.length
   ? '\n✗ ' + errs.join('\n✗ ')
-  : '\n✓ Gestaltung: Symbole aus einem Satz, Rundungen von einer Leiter');
+  : '\n✓ Gestaltung: ein Symbolsatz, Leitern für Rundung und Abstand, ' +
+    'keine Eigenschaft doppelt');
 process.exit(errs.length ? 1 : 0);

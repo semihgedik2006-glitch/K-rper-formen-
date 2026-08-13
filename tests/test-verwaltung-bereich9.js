@@ -1,9 +1,9 @@
 /* Bereich 9 – Verwaltung: was hakt zuerst, wofür man kommt zuerst,
    und keine Wand aus Formularen.
 
-   Vorher war „Überblick" 4,76 Bildschirme lang und „Braucht Aufmerksamkeit"
-   stand ganz unten – hinter 1.600 Pixeln Studio-Tabelle. Und „Erstellen"
-   begann mit der Ankündigung, obwohl man wegen der Aufgabe kommt. */
+   „Braucht Aufmerksamkeit" gehört nach oben, nicht hinter 1.600 Pixel
+   Studio-Tabelle. Und „Erstellen" beginnt mit der Aufgabe, nicht mit der
+   Ankündigung — deswegen kommt man dorthin. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -153,5 +153,5 @@ const reiter = page => page.evaluate(() => {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
-  process.exit((errs || fehler).length ? 1 : 0);
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

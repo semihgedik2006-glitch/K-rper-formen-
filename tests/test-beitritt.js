@@ -67,12 +67,12 @@ const stubErweitern = (codeNoetig, freigabe, wartende) => `
                  forEach:function(f){ this.docs.forEach(f); } };
       }
       /* AUCH auf dem Ergebnis von .where() aufsetzen.
-         Seit dem 12.8.2026 fragt listenAllUsers() gefiltert ab
-         (where('firma','==',…)) — die Firmengrenze auf users. Damit
-         landet onSnapshot nicht mehr auf der Sammlung, sondern auf der
-         ABFRAGE, und ein Aufsatz nur auf k.onSnapshot greift ins Leere.
-         Der Durchlauf meldete daraufhin "keine wartenden Konten", und
-         das sah nach einem Fehler in der App aus. */
+         listenAllUsers() fragt gefiltert ab (where('firma','==',…)) —
+         die Firmengrenze auf users. Damit landet onSnapshot nicht auf
+         der Sammlung, sondern auf der ABFRAGE. Eine Attrappe, die nur
+         k.onSnapshot kennt, greift ins Leere und meldet „keine
+         wartenden Konten" — das sieht nach einem Fehler in der App aus
+         und ist keiner. */
       function aufsetzen(q){
         var s = q.onSnapshot ? q.onSnapshot.bind(q) : null;
         var g = q.get ? q.get.bind(q) : null;

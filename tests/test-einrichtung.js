@@ -1,31 +1,22 @@
 /* ── Die Einrichtungs-Karte ───────────────────────────────────────────
-   WARUM ES SIE GIBT
-   Ein neuer Kunde meldet sich zum ersten Mal an und sieht eine leere
-   App. Der häufigste Grund, warum jemand ein Werkzeug wieder weglegt,
-   ist nicht, dass es schlecht wäre, sondern dass er nicht weiss, wo er
-   anfangen soll.
-
-   DIE EIGENSCHAFT, AUF DIE ES ANKOMMT
-   Die Liste hakt sich SELBST ab. Es gibt keine Kästchen. Was hier grün
-   steht, ist wirklich erledigt — geprüft an den Daten, nicht am
-   Gedächtnis. Eine Liste, die man abhaken kann, ohne etwas zu tun, ist
-   nach zwei Tagen eine Lüge, und ausgerechnet bei „Impressum
-   vollständig" wäre das eine teure.
+   Die Liste hakt sich SELBST ab; es gibt keine Kästchen. Was grün steht,
+   ist an den Daten geprüft. Eine Liste, die man abhaken kann, ohne etwas
+   zu tun, ist nach zwei Tagen eine Lüge — bei „Impressum vollständig"
+   eine teure.
 
      1. Frischer Betrieb: die Karte steht da und nennt, was fehlt.
-     2. Erledigtes wird als erledigt erkannt — an den echten Daten.
-     3. Ist alles fertig, verschwindet die Karte ganz. Eine
-        Einrichtungshilfe, die nach einem Jahr noch dasteht, ist Möbel.
-     4. Ein Mitarbeiter sieht sie nie. Er kann keinen der Schritte tun.
-     5. Der Firmencode ist für niemanden ausser dem Chef lesbar. Schlägt
-        das Lesen fehl, heisst das „weiss ich nicht" — und dann darf der
-        Schritt NICHT als offen dastehen, sonst schickt die Karte
-        jemanden auf eine Aufgabe, die längst erledigt ist.
-   ANMERKUNG ZUM AUFBAU: die Liste in config/studios besteht aus
-   OBJEKTEN {id, name}, nicht aus Namen. Mit Zeichenketten filtert
-   studioListeSetzen() alles weg, und der Durchlauf meldet dann Fehler
-   in der App, die es nicht gibt. Genau darauf ist er beim ersten Anlauf
-   hereingefallen.
+     2. Erledigtes wird als erledigt erkannt, an den echten Daten.
+     3. Ist alles fertig, verschwindet die Karte ganz.
+     4. Ein Mitarbeiter sieht sie nie — er kann keinen der Schritte tun.
+     5. Der Firmencode ist nur für den Chef lesbar. Schlägt das Lesen
+        fehl, heisst das „weiss ich nicht", und der Schritt darf dann
+        NICHT als offen dastehen: sonst schickt die Karte jemanden auf
+        eine Aufgabe, die längst erledigt ist.
+
+   Zum Aufbau: die Liste in config/studios besteht aus Objekten
+   {id, name}, nicht aus Namen. Mit Zeichenketten filtert
+   studioListeSetzen() alles weg, und der Durchlauf meldet dann Fehler in
+   der App, die es nicht gibt.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');

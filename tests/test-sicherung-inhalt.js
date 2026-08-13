@@ -1,24 +1,17 @@
 /* ── Was wirklich in der Sicherung steht ──────────────────────────────
-   WARUM ES DIESEN DURCHLAUF GIBT
-   Der Knopf hiess „Alles als Daten-Datei" und lud die Hälfte: Aufgaben,
-   Material, Team und Infos. Chat, Putzplan, Geräte, Schichten,
-   Abwesenheiten, Übergaben, Brett, Dokumente und Nachweise fehlten.
-
-   An einer SICHERUNGSfunktion ist das die unangenehmste Stelle für eine
-   Halbwahrheit: sie fällt erst an dem Tag auf, an dem man die Datei
-   braucht — also wenn ohnehin schon etwas schiefgegangen ist.
-
-   Geprüft wird deshalb der INHALT der Datei, nicht ob ein Knopf reagiert:
+   An einer Sicherungsfunktion ist eine Halbwahrheit besonders teuer: sie
+   fällt erst an dem Tag auf, an dem man die Datei braucht — also wenn
+   ohnehin schon etwas schiefgegangen ist. Geprüft wird deshalb der
+   INHALT der Datei, nicht ob ein Knopf reagiert:
 
      1. Alle versprochenen Bereiche sind da und nicht leer.
      2. Der Putzplan trägt das Kürzel mit.
      3. Die Aufgabe trägt den Grund mit.
-     4. Es gibt ein Verzeichnis, das sagt, was NICHT enthalten ist.
-        Eine Sicherung mit bekannter Lücke ist brauchbar, eine mit
-        unbekannter ist gefährlich.
-     5. Direktnachrichten sind NICHT enthalten. Die gehören zwei
-        Personen, nicht dem Betrieb — das ist keine Lücke, das ist
-        der Sinn.
+     4. Es gibt ein Verzeichnis, das sagt, was NICHT enthalten ist. Eine
+        Sicherung mit bekannter Lücke ist brauchbar, eine mit unbekannter
+        gefährlich.
+     5. Direktnachrichten sind NICHT enthalten — die gehören zwei
+        Personen, nicht dem Betrieb.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');

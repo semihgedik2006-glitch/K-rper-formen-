@@ -1,32 +1,15 @@
-/* Der Probelauf-Schalter in konfig.js.
-
+/* ── Der Probelauf-Schalter in konfig.js ──────────────────────────────
    Dieselbe Datei läuft in beiden Projekten; die Adresse entscheidet.
-   Das ist bequem — und genau deshalb muss es festgenagelt sein: wenn
-   dieser Schalter je auf der Live-Adresse greift, stellt er den Betrieb
-   auf Datenpfade um, die dort nicht existieren. Das Ergebnis wäre eine
-   leere App für vierzehn Studios.
+   Greift dieser Schalter je auf der Live-Adresse, stellt er den Betrieb
+   auf Datenpfade um, die dort nicht existieren — eine leere App für
+   vierzehn Studios.
 
-   Geprüft wird deshalb vor allem die FALSCH-Richtung: alles, was
+   Geprüft wird deshalb vor allem die Falsch-Richtung: alles, was
    irgendwie nach der echten Adresse aussieht, muss beim Betrieb
-   bleiben.
-
-   ── Geändert am 10. August 2026, nach dem Umzug ──
-   Vorher stand hier überall zusätzlich `mandant === false` als Merkmal
-   des Betriebs. Seit dem Umzug ist mandant AUCH im Betrieb true, und
-   die Prüfungen wurden rot.
-
-   Wichtig ist, WAS ich daraufhin geändert habe: nicht das Ergebnis,
-   sondern die Behauptung. `mandant` war ohnehin nur ein schwacher
-   Stellvertreter. Woran wirklich alles hängt, ist die `projectId` —
-   sie entscheidet, WELCHE Datenbank die App anfasst. Genau die wird
-   weiter in jeder Richtung geprüft, und der gefährliche Fall
-   („?probe=1 auf der Betriebsadresse") ebenfalls.
-
-   Beim Umschreiben hatte hier zuerst gestanden: „dass der Schalter im
-   Betrieb an ist, sichert test-firma-link.js ab." Das war falsch — der
-   setzt mandant in seinem eigenen Aufbau auf true und sieht die
-   ausgelieferte Datei nie an. Die Prüfung hätte also niemand gemacht.
-   Sie steht jetzt unten als eigener Abschnitt.                        */
+   bleiben. Entscheidend ist die projectId — sie bestimmt, welche
+   Datenbank die App anfasst. Der gefährliche Fall „?probe=1 auf der
+   Betriebsadresse" hat einen eigenen Abschnitt.
+   ───────────────────────────────────────────────────────────────────── */
 const path = require('path');
 const KONFIG_DATEI = path.join(__dirname, '..', 'konfig.js');
 
@@ -125,11 +108,11 @@ console.log('\n── ?probe=1 ──');
 }
 
 /* ══ Der Firmen-Schalter selbst ══
-   Seit dem Umzug am 10.8.2026 liegen die Daten unter firmen/koerperformen/…
-   Stünde mandant wieder auf false, läse die App die FLACHEN Daten — die
-   gibt es noch, sie stehen aber seit dem Umzug still. Kein Fehler, keine
-   leere App: eine App mit dem Stand von damals. Das ist die Sorte
-   Ausfall, die tagelang niemandem auffällt.
+   Die Daten liegen unter firmen/koerperformen/… Stünde mandant wieder auf
+   false, läse die App die FLACHEN Daten — die gibt es noch, sie stehen
+   aber seit dem Umzug still. Kein Fehler, keine leere App: eine App mit
+   dem Stand von damals. Das ist die Sorte Ausfall, die tagelang
+   niemandem auffällt.
 
    Wenn dieser Abschnitt jemals rot wird, ist das entweder ein Versehen
    oder ein bewusster Rückweg. In beiden Fällen soll es jemand SEHEN und

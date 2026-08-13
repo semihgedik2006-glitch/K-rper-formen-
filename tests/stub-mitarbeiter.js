@@ -27,10 +27,8 @@
   };
     /* firma an JEDEM Konto — so sieht es nach tools/firma-nachtragen.js
      aus. Ohne das Feld findet die gefilterte Abfrage in
-     listenAllUsers() nichts, und die Personenliste bleibt leer.
-     Genau das hat test-beitritt am 12.8.2026 sofort gemeldet —
-     und genau deshalb muss das Nachtragen VOR dem Ausrollen
-     laufen. */
+     listenAllUsers() nichts und die Personenliste bleibt leer; deshalb
+     muss das Nachtragen vor dem Ausrollen laufen. */
 var USERS = [
     { id:'testuid', firma:'koerperformen', name:'Lisa Wagner', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'] },
     { id:'u9', firma:'koerperformen', name:'Der Chef', role:'chef', studios:[], email:'chef@example.com' },
@@ -182,16 +180,14 @@ var USERS = [
     { id:'z3', uid:'testuid', name:'Ich',   art:'trainer',    bis:tag(399), ts:Date.now() },
     { id:'z4', uid:'u2', name:'Anna Meier', art:'sonstiges', bez:'Ernaehrungsberater', bis:tag(119), ts:Date.now() }
   ];
-  /* ── Der Umzug auf firmen/<kennung>/… (10.8.2026) ──
-     Die App schickt seither jeden Zugriff durch S(), und das liefert
-     'firmen/koerperformen/config' statt 'config'. Dieser Stub bildet
-     die Daten weiterhin flach ab — der Aufbau der Testdaten hat mit
-     der Mandantentrennung nichts zu tun.
+  /* ── Der Firmen-Vorsatz ──
+     Die App schickt jeden Zugriff durch S(), und das liefert
+     'firmen/koerperformen/config' statt 'config'. Diese Attrappe bildet
+     die Daten flach ab — der Aufbau der Testdaten hat mit der
+     Mandantentrennung nichts zu tun.
 
-     Deshalb wird der Firmen-Vorsatz hier an EINER Stelle abgeschnitten,
-     statt jede Testdatei umzuschreiben. Als der Schalter umgelegt
-     wurde, sind 12 Durchläufe rot geworden — zu Recht: sie suchten
-     Daten, die der Stub unter dem alten Namen führte. */
+     Der Vorsatz wird deshalb hier an EINER Stelle abgeschnitten, statt
+     in jeder Testdatei. */
   function collection(path) {
     path = String(path).replace(/^firmen\/[^/]+\//, '');
     return {

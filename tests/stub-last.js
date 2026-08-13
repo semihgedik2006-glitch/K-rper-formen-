@@ -316,12 +316,11 @@
     return [];
   }
 
-  /* ── Der Umzug auf firmen/<kennung>/… (10.8.2026) ──
-     Die App schickt seither jeden Zugriff durch S(), und das liefert
-     'firmen/koerperformen/studios' statt 'studios'. Dieser Stub bildet
-     die Daten weiterhin flach ab — die Lastdaten haben mit der
-     Mandantentrennung nichts zu tun. Also wird der Vorsatz hier an
-     EINER Stelle abgeschnitten. */
+  /* ── Der Firmen-Vorsatz ──
+     S() liefert 'firmen/koerperformen/studios' statt 'studios'. Diese
+     Attrappe bildet die Daten flach ab — die Lastdaten haben mit der
+     Mandantentrennung nichts zu tun. Der Vorsatz wird an EINER Stelle
+     abgeschnitten. */
   function collection(path) {
     path = String(path).replace(/^firmen\/[^/]+\//, '');
     var grenze = 0, vonHinten = false, filter = [];

@@ -1,26 +1,18 @@
 /* ── Anmelden, während die eigene Firma stillgelegt ist ───────────────
-   WARUM ES DIESEN DURCHLAUF GIBT
-   Am 11. August 2026 stand im Abschlussbericht: „Was weiterhin niemand
-   geprüft hat: was passiert, wenn ein Chef sich anzumelden versucht,
-   während seine Firma im Archiv liegt." Das war ehrlich — aber ein
-   bekannter blinder Fleck ist immer noch ein blinder Fleck.
+   Ohne Prüfung kommt der Chef ganz normal hinein und steht vor einer
+   leeren App: kein Chat, keine Aufgaben, keine Erklärung, dafür Fehler
+   in der Konsole. Die Regeln sperren korrekt — sie erklären nur nichts,
+   und „Missing or insufficient permissions" liest sich wie ein
+   fehlendes Profil.
 
-   Nachgesehen: er kam ganz normal HINEIN und stand vor einer leeren
-   App. Kein Chat, keine Aufgaben, keine Erklärung, dafür Fehler in der
-   Konsole. Die Regeln sperren korrekt — sie erklären nur nichts.
-
-   Genau diese Sorte Auskunft hat beim Probelauf im August eine halbe
-   Stunde gekostet: „Missing or insufficient permissions" klang nach
-   einem fehlenden Profil und war ein nie freigegebener Regelsatz.
-
-   DREI DINGE WERDEN GEPRÜFT, UND DAS DRITTE IST DAS WICHTIGSTE:
      1. gelöschte Firma  → klare Meldung statt leerer App
      2. gesperrte Firma  → dasselbe
      3. Abfrage schlägt fehl → DURCHLASSEN
-   Nummer 3 ist der Punkt: das hier ist eine Meldung, keine Grenze. Die
-   Grenze steht in firestore.rules und ist dort geprüft. Wer niemanden
-   mehr hereinlässt, sobald das Netz zuckt, hat kein Sicherheitsmerkmal
-   gebaut, sondern eine Störung.
+
+   Punkt 3 ist der wichtigste: das hier ist eine Meldung, keine Grenze.
+   Die Grenze steht in firestore.rules. Wer niemanden mehr hereinlässt,
+   sobald das Netz zuckt, hat kein Sicherheitsmerkmal gebaut, sondern
+   eine Störung.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');

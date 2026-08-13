@@ -171,7 +171,20 @@ großzügig. Dazu immer die Geräteränder addieren:
 Ohne `--sat/--sab/--sal/--sar` liegen Knöpfe am iPhone unter der
 Statusleiste und lassen sich nicht antippen.
 
-**Abstände:** 6 · 8 · 10 · 14 · 18 · 22 px. Keine Zwischenwerte erfinden.
+**Abstände:** eine Leiter in `:root`, der Name nennt den Wert.
+
+| | |
+|---|---|
+| fein | `--s1` 1 · `--s2` 2 · `--s4` 4 · `--s6` 6 · `--s8` 8 |
+| normal | `--s10` 10 · `--s12` 12 · `--s16` 16 · `--s20` 20 · `--s24` 24 |
+| grob | `--s32` 32 · `--s40` 40 · `--s48` 48 · `--s56` 56 · `--s72` 72 |
+
+> **Keine festen Pixelangaben bei `padding`, `margin` und `gap`.** Vor der
+> Leiter standen dort 52 verschiedene Werte zwischen 1 und 72 px — sieben
+> davon einen Pixel auseinander, weil jeder einzeln so lange geschoben
+> wurde, bis er passte. `tests/test-gestaltung.js` schlägt an, wenn wieder
+> einer auftaucht. Ausgenommen sind `clamp()`, `calc()`, negative Werte und
+> mm (Druck): dort steht bewusst eine Rechnung, keine Sprosse.
 
 **Dichte:** rund 15 % enger als in den ersten Fassungen (Karten
 `13–19px` statt `16–24px`, Abstand zwischen Karten 12 statt 16). Auf einem

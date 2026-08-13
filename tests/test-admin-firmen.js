@@ -1,21 +1,14 @@
 /* ── Der Betreiber-Bereich ────────────────────────────────────────────
-   WARUM ES DIESEN DURCHLAUF GIBT
-   Der Admin-Bereich ist der Teil, der verkauft wird — und er hatte bis
-   zum 11. August 2026 keinen einzigen Oberflächen-Test. Aufgefallen,
-   als beim ersten echten Löschen im Betrieb der Eindruck entstand: „die
-   Firma ist komplett weg."
+   Der Teil, der verkauft wird. Geprüft wird, dass er für den Betreiber
+   da ist — und dass er auch ZUGEKLAPPT sagt, dass etwas drinliegt.
 
-   Sie war es nicht. Der Knopf hatte funktioniert, das Archiv war
-   gefüllt — aber die Karte „🗄 Gelöschte Firmen" ist standardmässig
-   zugeklappt, und zugeklappt sieht aus wie leer. Kein Fehler in der
-   Sache, ein Fehler in der Auskunft. Bei einer Löschfunktion ist das
-   derselbe Schrecken.
+   Der Grund für den zweiten Punkt: die Karte „Gelöschte Firmen" ist
+   standardmässig zugeklappt, und zugeklappt sieht aus wie leer. Bei
+   einer Löschfunktion ist das derselbe Schrecken wie ein echter
+   Datenverlust, auch wenn nichts verloren ist.
 
-   Geprüft wird deshalb beides: dass der Bereich für den Betreiber da
-   ist, und dass er auch ZUGEKLAPPT sagt, dass etwas drinliegt.
-
-   Und die Gegenrichtung, die hier am meisten zählt: ein Chef ohne
-   admin-Feld darf den Bereich gar nicht sehen.
+   Die Gegenrichtung zählt hier am meisten: ein Chef ohne admin-Feld darf
+   den Bereich gar nicht sehen.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');

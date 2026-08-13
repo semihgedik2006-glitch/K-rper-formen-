@@ -1,9 +1,9 @@
 /* Bereich 5 – Material: Platz für den Namen, sichtbarer Nachbestell-Hinweis,
    Filter „nur fehlende", Löschen mit Rückfrage.
 
-   Vorher war die Namensspalte 103 Pixel breit – „Bein-Manschetten Größe 2
-   (Paare)" brach auf fünf Zeilen um. Und der Hinweis „X Artikel fehlen" war
-   durch ein Inline-display:none im Markup überhaupt nie zu sehen. */
+   Die Namensspalte muss breit genug bleiben — bei 103 Pixeln bricht
+   „Bein-Manschetten Größe 2 (Paare)" auf fünf Zeilen um. Und der Hinweis
+   „X Artikel fehlen" muss wirklich sichtbar sein. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -156,5 +156,5 @@ async function start(stub, errs) {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
-  process.exit((errs || fehler).length ? 1 : 0);
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

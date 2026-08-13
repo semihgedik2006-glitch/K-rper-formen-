@@ -1,19 +1,14 @@
-/* „Alles erledigt", obwohl der Putzplan voll ist.
+/* ── „Alles erledigt", obwohl der Putzplan voll ist ───────────────────
+   Die Startseite darf ihre Zahl nicht aus dem gerade geöffneten Studio
+   ziehen: beim App-Start ist keins geöffnet, danach ist es eins von
+   vierzehn.
 
-   Gemeldet aus dem Betrieb: die Startseite zeigte beim Öffnen der App
-   „Alles erledigt" – die offenen Putzaufgaben tauchten erst auf, nachdem
-   man einmal auf den Putzplan gegangen war.
-
-   Grund: die Startseite zählte _ppTasks, und darin stand nur das Studio,
-   das im Putzplan gerade geöffnet war. Beim Start: nichts. Danach: eins
-   von vierzehn.
-
-   Dieser Durchlauf prüft beides:
      1. Die Zahl steht SOFORT, ohne den Putzplan je geöffnet zu haben.
-     2. Sie zählt ALLE Studios, die mich etwas angehen – nicht nur eins.
+     2. Sie zählt ALLE Studios, die mich etwas angehen.
 
-   Der Stub liefert Putzaufgaben in zwei Studios (studio-6 und studio-7),
-   damit ein Fehler „zählt nur das erste" auffällt.                     */
+   Die Attrappe liefert Putzaufgaben in zwei Studios (studio-6 und
+   studio-7), damit ein „zählt nur das erste" auffällt.
+   ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';

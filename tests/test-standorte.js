@@ -1,23 +1,21 @@
-/* Studios in der Datenbank statt im Code.
+/* ── Studios in der Datenbank statt im Code ───────────────────────────
+   Der Chef legt seine Standorte selbst an. Geprüft wird das, wovon Daten
+   abhängen:
 
-   Bis hierher stand die Studioliste in konfig.js. Ein neues Studio hieß:
-   Datei ändern und deployen. Jetzt legt der Chef sie selbst an.
-
-   Geprüft wird das, wovon Daten abhängen:
-
-     1. Fehlt das Dokument in der Datenbank, gilt weiter konfig.js.
-        Ein bestehender Betrieb darf von der Umstellung nichts merken.
-     2. Steht es da, gewinnt es – auch mit anderen Namen.
-     3. Ein umbenanntes Studio behält seine KENNUNG. Das ist der Kern:
-        an der Kennung hängen Aufgaben, Schichten und Nachrichten.
+     1. Fehlt das Dokument, gilt weiter konfig.js — ein bestehender
+        Betrieb darf von der Umstellung nichts merken.
+     2. Steht es da, gewinnt es, auch mit anderen Namen.
+     3. Ein umbenanntes Studio behält seine KENNUNG. Das ist der Kern: an
+        der Kennung hängen Aufgaben, Schichten und Nachrichten.
      4. Ein neues Studio bekommt die nächste freie Nummer, nie eine
         wiederverwendete.
-     5. Ein geschlossenes Studio verschwindet aus den Auswahllisten,
-        bleibt aber in der Liste stehen.
+     5. Ein geschlossenes verschwindet aus den Auswahllisten, bleibt aber
+        in der Liste stehen.
      6. Es gibt keinen Löschen-Knopf.
 
-   Die Regeln sind getrennt geprüft (tests/rules/security.test.js, sieben
-   Stück) – dass auch der Chef die Liste nicht kürzen kann, steht dort.  */
+   Dass auch der Chef die Liste nicht kürzen kann, steht in
+   tests/rules/security.test.js.
+   ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
