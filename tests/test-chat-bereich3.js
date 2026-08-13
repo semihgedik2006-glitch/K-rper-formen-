@@ -1,9 +1,9 @@
 /* Bereich 3 – Chat: Platz, Kanalordnung, Erwähnungen, Aktionsblatt.
 
-   Der Chat ist der Bildschirm, auf dem am meisten Zeit verbracht wird. Vorher
-   bekam der Verlauf 37 % der Ansicht, die Werkzeuge waren 21 × 19 Pixel groß
-   und Erwähnungen mussten ohne Leerzeichen exakt getippt werden. Genau das
-   wird hier nachgemessen. */
+   Der Chat ist der Bildschirm, auf dem am meisten Zeit verbracht wird.
+   Nachgemessen wird, wie viel Platz der Verlauf bekommt, wie gross die
+   Werkzeuge sind und ob eine Erwähnung mit Leerzeichen im Namen
+   erkannt wird. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';

@@ -1,7 +1,7 @@
 /* Gleitende Marker in Navigation, Reitern und Verwaltung.
 
-   Vorher sprang eine gefüllte Pille von Reiter zu Reiter. Jetzt gleitet
-   EIN Marker dorthin. Geprüft wird, dass er
+   Ein Marker gleitet zum aktiven Reiter, statt dass eine gefüllte Pille
+   springt. Geprüft wird, dass er
 
      1. beim ersten Bild schon steht (nicht von links hereinfährt),
      2. beim Wechsel wirklich die Stelle wechselt,

@@ -1,19 +1,19 @@
 /* ─────────────────────────────────────────────────────────────────────
-   Sicherheitstests gegen firestore.rules – ausgefuehrt, nicht gelesen.
+   Sicherheitstests gegen firestore.rules — ausgefuehrt, nicht gelesen.
 
-   Die Regeln sind die EINZIGE echte Grenze dieser App: was in der
+   Die Regeln sind die einzige echte Grenze dieser App: was in der
    Oberflaeche versteckt ist, kann jeder mit der Entwicklerkonsole
-   aufrufen. Bis zu diesem Durchlauf wurden sie nur durchgesehen.
+   aufrufen.
 
    Ausfuehren:
      cd tests/rules && npm install && npm test
-   (Braucht Java – der Firestore-Emulator ist ein Java-Programm.)
-   Der Emulator laeuft aus dem Wurzelverzeichnis: firebase-tools laesst
-   keine Regeldatei ausserhalb des Projektordners zu, und getestet werden
-   soll genau die Datei, die auch ausgerollt wird - keine Kopie.
+   Braucht Java — der Firestore-Emulator ist ein Java-Programm. Er laeuft
+   aus dem Wurzelverzeichnis, weil firebase-tools keine Regeldatei
+   ausserhalb des Projektordners zulaesst und genau die Datei geprueft
+   werden soll, die auch ausgerollt wird.
 
-   Jeder Test sagt im Namen, WAS er schuetzt. Faellt einer um, ist das
-   keine Formalie: dann kommt jemand an Daten, an die er nicht soll.
+   Jeder Test sagt im Namen, WAS er schuetzt. Faellt einer um, kommt
+   jemand an Daten, an die er nicht soll.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');
@@ -116,17 +116,18 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
     assertSucceeds(alsMitarbeiter().doc('certificates/z1').get()));
   await pruefe('Chef kann Nachweise lesen', () =>
     assertSucceeds(alsChef().doc('certificates/z1').get()));
-  /* ── Nachweise selbst eintragen (seit 12.8.2026) ──
-     Vorher durfte das nur der Chef. Bei 57 Leuten ist das Abtippen von
-     Erste-Hilfe-Scheinen sein Problem, nicht ihres — also passiert es
-     nicht, und die Liste ist nach einem halben Jahr wertlos.
+  /* ── Nachweise selbst eintragen ──
+       Der Chef darf bestaetigen, eintragen darf jeder seine eigenen. Bei
+       57 Leuten waere das Abtippen von Erste-Hilfe-Scheinen sonst Sache
+       des Chefs — also passiert es nicht, und die Liste ist nach einem
+       halben Jahr wertlos.
 
-     Die alte Regel "Mitarbeiter kann seinen Nachweis NICHT selbst
-     verlaengern" ist damit bewusst aufgehoben. Sie haette ohnehin nichts
-     geschuetzt, sobald man einen NEUEN Eintrag anlegen darf. Was jetzt
-     stattdessen schuetzt, steht in den drei Tests darunter: fremde
-     Eintraege bleiben tabu, geloescht wird nur vom Chef, und ein
-     BESTAETIGTER Eintrag ist fuer den Betroffenen zu. */
+       „Mitarbeiter kann seinen Nachweis nicht selbst verlaengern" ist
+       damit aufgehoben; die Regel haette ohnehin nichts geschuetzt,
+       sobald man einen NEUEN Eintrag anlegen darf. Was stattdessen
+       schuetzt, steht in den drei Tests darunter: fremde Eintraege
+       bleiben tabu, geloescht wird nur vom Chef, und ein bestaetigter
+       Eintrag ist fuer den Betroffenen zu. */
   await pruefe('Mitarbeiter darf einen EIGENEN Nachweis eintragen', () =>
     assertSucceeds(alsMitarbeiter().doc('certificates/selbst1').set({
       uid: 'mit1', name: 'Mitarbeiter', art: 'ersthelfer', bis: '2028-01-01',
@@ -253,28 +254,22 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
     assertSucceeds(alsChef().doc('config/features').set({ schicht: false })));
 
   /* ── Impressum und Datenschutz (config/recht) ──
-     Standen bis zum 11.8.2026 in konfig.js und galten damit fuer das
-     ganze Projekt. Jetzt liegen sie je Firma in der Datenbank, und der
-     Chef pflegt sie in der App.
+       Lesen darf jeder, auch ohne Anmeldung: ein Impressum hinter einem
+       Login ist keins, und § 5 DDG verlangt „leicht erkennbar, unmittelbar
+       erreichbar". Der Inhalt ist per Definition oeffentlich — Name,
+       Anschrift, Vertretung, Telefon, E-Mail.
 
-     Lesen darf JEDER, auch ohne Anmeldung. Ein Impressum hinter einem
-     Login ist keins - so steht es seit jeher im Quelltext der App, und
-     § 5 DDG verlangt "leicht erkennbar, unmittelbar erreichbar". Der
-     Inhalt ist per Definition oeffentlich: Name, Anschrift, Vertretung,
-     Telefon, E-Mail. Dieselbe Ueberlegung wie bei config/studios.
+       Enger gefasst faellt der Fehler bei der EIGENEN Firma nicht auf:
+       dort faengt der Rueckfall auf konfig.js den Anmeldebildschirm ab.
+       Ein fremder Kunde saehe statt seines Impressums eine Warnung.
 
-     Das war zuerst enger gefasst (nur Angemeldete). Aufgefallen ist es,
-     weil es fuer die EIGENE Firma nicht auffiel: dort faengt der
-     Rueckfall auf konfig.js den Anmeldebildschirm ab. Ein fremder Kunde
-     haette dort statt seines Impressums eine Warnung gesehen.
+       Schreiben darf nur der Chef. Wer das Impressum aendert, aendert,
+       wer fuer diese App haftet.
 
-     Schreiben darf nur der Chef. Wer das Impressum aendert, aendert,
-     wer fuer diese App haftet.
-
-     ACHTUNG bei jeder Aenderung hier: die allgemeine Regel
-     /config/{doc} greift zusaetzlich, und in Firestore genuegt EINE
-     zutreffende Regel die erlaubt. Eine ENGERE Regel an dieser Stelle
-     waere wirkungslos - sie muesste dort ausgenommen werden. */
+       ACHTUNG bei jeder Aenderung: die allgemeine Regel /config/{doc}
+       greift zusaetzlich, und in Firestore genuegt eine zutreffende Regel,
+       die erlaubt. Eine engere Regel an dieser Stelle waere wirkungslos —
+       sie muesste dort ausgenommen werden. */
   const alsWartend = () => env.authenticatedContext('wartet1').firestore();
   await env.withSecurityRulesDisabled(async (ctx) => {
     await ctx.firestore().doc('config/recht')
@@ -614,20 +609,14 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
     assertSucceeds(alsAnonym().doc('firmen/' + A).get()));
 
   /* ══ Eine gesperrte Firma ist wirklich gesperrt ══
-     Bis zum 11.8.2026 war sie das NICHT. firmaSperren setzte aktiv:false
-     auf das Firmendokument, und ausser den Zeitplaenen hat nie jemand
-     hineingesehen — weder diese Regeln noch die App. Im
-     Bestaetigungsfenster stand „Niemand aus diesem Betrieb kommt danach
-     mehr hinein", und das war schlicht unwahr: der Kunde konnte weiter
-     lesen und schreiben wie vorher.
+       firmaSperren setzt aktiv:false auf das Firmendokument. Sehen Regeln
+       und App nicht hinein, ist der Knopf Deko: im Bestaetigungsfenster
+       steht „Niemand aus diesem Betrieb kommt danach mehr hinein", und der
+       Kunde liest und schreibt weiter wie vorher.
 
-     Aufgefallen beim Bauen des Loeschens, und es ist die unangenehmste
-     Sorte Fehler: ein Knopf, der aussieht, als taete er etwas. Wer nach
-     einer Kuendigung sperrt und dann nicht mehr hinsieht, glaubt der
-     Oberflaeche.
-
-     Der eigentliche Grund, warum es niemandem auffiel: es gab keinen
-     Test dafuer. Jetzt gibt es vier.                                 */
+       Ein Knopf, der aussieht, als taete er etwas, ist die unangenehmste
+       Sorte Fehler — wer nach einer Kuendigung sperrt, sieht nicht noch
+       einmal nach. Deshalb vier Tests. */
   const C = 'firma-c';
   await env.withSecurityRulesDisabled(async ctx => {
     const d = ctx.firestore();

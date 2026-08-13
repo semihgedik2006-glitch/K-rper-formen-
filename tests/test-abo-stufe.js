@@ -1,23 +1,19 @@
 /* ── Die Abo-Stufe in der Oberfläche (Stufe B) ────────────────────────
-   Was hier geprüft wird, ist weniger das Sperren als die drei Fälle
-   daneben, in denen ein Preisstufen-Einbau schiefgeht:
+   Geprüft wird weniger das Sperren als die drei Fälle daneben, in denen
+   ein Preisstufen-Einbau schiefgeht:
 
-     1. OHNE Abo ist alles offen. Der heutige Zustand für euren eigenen
-        Betrieb und für jeden Kunden, bei dem noch nichts eingetragen
-        ist. Ein Kunde, dem die Hälfte fehlt, weil jemand ein Feld nicht
-        ausgefüllt hat, wäre der schlechtere Fehler — und er fällt erst
-        auf, wenn er anruft.
+     1. OHNE Abo ist alles offen — der Zustand bei jedem Kunden, bei dem
+        noch nichts eingetragen ist. Wem die Hälfte fehlt, weil ein Feld
+        leer blieb, merkt das erst beim Anruf.
      2. Gesperrtes wird GEZEIGT, nicht versteckt. Wer nicht weiss, dass
-        es etwas gibt, fragt nicht danach. Verstecken wäre ausserdem
-        unehrlich: die Ansicht ist ja da.
-     3. Das Tagesgeschäft bleibt unangetastet. Wer eine Preisstufe
-        einbaut und dabei Aufgaben oder Chat erwischt, hat den Kunden
-        verloren, bevor er ihn hatte.
+        es etwas gibt, fragt nicht danach.
+     3. Das Tagesgeschäft bleibt unangetastet. Eine Preisstufe, die
+        Aufgaben oder Chat erwischt, kostet den Kunden.
 
-   Was dieser Durchlauf NICHT beweist: dass die Auswertung wirklich zu
-   ist. Sie ist es nicht — sie rechnet aus Daten, die das Team ohnehin
-   sieht, und lässt sich nur ausblenden. Der einzige echte Riegel steht
-   in firestore.rules bei den Nachweisen und wird dort geprüft.
+   Nicht geprüft: dass die Auswertung wirklich zu ist. Sie ist es nicht —
+   sie rechnet aus Daten, die das Team ohnehin sieht, und lässt sich nur
+   ausblenden. Der einzige echte Riegel steht in firestore.rules bei den
+   Nachweisen und wird dort geprüft.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');

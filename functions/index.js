@@ -868,10 +868,8 @@ exports.kontenNachtragen = region
         ohne.push(d.id);
         /* MIT NAMEN. Ein Werkzeug, das Konten einer Firma zuordnet, darf
            nicht nur "7 Stueck" melden: wer das druckt, ordnet blind zu.
-           Aufgefallen am 12.8.2026 — weder "Zugang anlegen" noch die
-           Selbstregistrierung schrieben das Feld, es koennten also auch
-           Konten eines Kunden darunter sein. Hoechstens 50, damit die
-           Antwort nicht ausufert. */
+           Unter den Konten ohne Feld koennen auch die eines Kunden
+           sein. Hoechstens 50, damit die Antwort nicht ausufert. */
         if (liste.length < 50) {
           liste.push({
             name: String(v.name || '').slice(0, 60),
@@ -1573,11 +1571,10 @@ exports.sendTestReport = region
 const BACKUP_TAGE = 7;
 
 /* ── Wohin die Sicherung geht ──
-   Frueher stand hier fest "<projekt>.appspot.com". Firebase vergibt seit
-   Ende 2024 aber Namen der Form "<projekt>.firebasestorage.app" - in einem
-   neueren Projekt zeigte der feste Name deshalb ins Leere.
-   admin.storage().bucket() nimmt den Speicher, der im Projekt wirklich
-   eingerichtet ist. */
+   Kein fester Bucket-Name: Firebase vergibt je nach Alter des Projekts
+   "<projekt>.appspot.com" oder "<projekt>.firebasestorage.app", ein fest
+   eingetragener Name zeigt im falschen Projekt ins Leere.
+   admin.storage().bucket() nimmt den, der wirklich eingerichtet ist. */
 function sicherungsBucket() {
   try {
     const b = admin.storage().bucket();

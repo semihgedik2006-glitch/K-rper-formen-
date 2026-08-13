@@ -1,9 +1,9 @@
 /* Bereich 4 – Aufgaben: Platz bis zur ersten Aufgabe, Dringlichkeit zuerst,
    Aktionsblatt, ehrlicher Leerzustand, Anlegen ohne Umweg.
 
-   Vorher musste ein Chef 571 Pixel scrollen, bis die erste überfällige Aufgabe
-   im Bild war, und der leere Bereich behauptete bei aktivem Filter, es gäbe
-   überhaupt keine Aufgaben. */
+   Gemessen wird der Platz bis zur ersten Aufgabe, die Reihenfolge (was
+   überfällig ist, steht oben) und dass der leere Bereich den aktiven
+   Filter kennt, statt „gar keine Aufgaben" zu behaupten. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -158,5 +158,5 @@ async function start(stub, errs) {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
-  process.exit((errs || fehler).length ? 1 : 0);
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

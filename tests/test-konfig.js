@@ -1,25 +1,17 @@
 /* ── konfig.js: die Datei, die jeder Kunde bearbeitet ─────────────────
-   WARUM ES DIESEN DURCHLAUF GIBT
-   Am 12.8.2026 stand in KONFIG der Schlüssel `firma` ZWEIMAL: oben als
-   Anzeigename („Körperformen"), unten als Datenbank-Kennung
-   („koerperformen"). In einem Objekt gewinnt der letzte — der
-   Anzeigename war also lautlos weg.
+   Anzeigename und Firmenkennung dürfen nie denselben Schlüssel tragen:
+   in einem Objekt gewinnt der letzte.
 
-   Aufgefallen ist es niemandem, weil die Kennung zufällig an allen
-   benutzten Stellen die richtige war. Gefährlich war die Gegenrichtung:
-
-     · Wer für einen neuen Kunden die obere Zeile ändert, glaubt den
+     · Wer für einen neuen Kunden den oberen ändert, glaubt den
        Anzeigenamen zu setzen — und ändert nichts.
-     · Wer die untere löscht, macht aus dem Anzeigenamen versehentlich
+     · Wer den unteren löscht, macht aus dem Anzeigenamen versehentlich
        die Datenbank-Kennung. Die App liest dann unter
-       firmen/Körperformen/ statt firmen/koerperformen/ — und findet
-       nichts. Kein Fehler, keine Meldung, nur eine leere App.
+       firmen/Körperformen/ und findet nichts. Keine Meldung, nur eine
+       leere App.
 
    Diese Datei ist die einzige, die bei jedem Kunden von Hand angefasst
-   wird. Ein stiller Fehler darin trifft genau den, der am wenigsten
-   nachsehen kann.
-
-   Geprüft wird ohne Browser — reines Lesen und Auswerten der Datei.
+   wird — ein stiller Fehler darin trifft den, der am wenigsten
+   nachsehen kann. Geprüft wird ohne Browser: Datei lesen und ausführen.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');

@@ -1,28 +1,24 @@
 /* ─────────────────────────────────────────────────────────────────────
    DIE FIRMENGRENZE — jede Sammlung, nicht nur die, an die man denkt
 
-   WARUM ES DIESEN DURCHLAUF GIBT
-   Der Sicherheits-Durchlauf in security.test.js prueft die Firmengrenze
-   an SIEBEN Sammlungen. Im Firmen-Zweig der Regeln stehen ZWEIUNDDREISSIG.
-   Die restlichen fuenfundzwanzig waren nicht falsch — sie waren nur nie
-   nachgewiesen. Das ist ein Unterschied, den man erst merkt, wenn es zu
-   spaet ist.
+   security.test.js prueft die Firmengrenze an sieben Sammlungen. Im
+   Firmen-Zweig der Regeln stehen zweiunddreissig. Die restlichen
+   fuenfundzwanzig waren nicht falsch — sie waren nie nachgewiesen.
 
-   Diese Datei geht sie alle durch, maschinell und in einer Schleife:
+   Diese Datei geht sie alle durch, in einer Schleife. Fuer jede
+   Sammlung, mit einem Dokument, das Firma B gehoert:
 
-     Fuer JEDE Sammlung, mit einem Dokument, das der Firma B gehoert:
        1. Der Chef von A darf es NICHT lesen.
        2. Der Chef von A darf es NICHT ueberschreiben.
        3. Ohne Anmeldung ist es NICHT lesbar.
-       4. Der Chef von B darf es lesen (sonst prueft 1 nichts —
-          vielleicht ist der Pfad einfach falsch geschrieben).
+       4. Der Chef von B darf es lesen.
 
    Punkt 4 ist der wichtigste. Ein Kreuztest auf einem Pfad, den es gar
    nicht gibt, ist immer gruen: niemand kommt an ein Dokument, das
    nirgends liegt. Ohne die Gegenrichtung misst dieser Durchlauf nichts.
 
-   AUSNAHMEN, die ausdruecklich oeffentlich sind, stehen unten in OFFEN
-   — mit Begruendung. Wer eine hinzufuegt, muss sie begruenden koennen.
+   Ausnahmen, die ausdruecklich oeffentlich sind, stehen unten in OFFEN —
+   mit Begruendung. Wer eine hinzufuegt, muss sie begruenden koennen.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');
@@ -157,10 +153,9 @@ const NIEMAND_LIEST = ['pushTokens/tok-b'];
   }
 
   /* ══ users — die Sammlung, die NICHT unter firmen/ liegt ══
-     Und genau deshalb das Loch vom 12.8.2026: beim Schreiben stand die
-     Firmenpruefung, beim Lesen nicht. Gemessen im Emulator las ein
-     Mitarbeiter von Alpha das Konto des Chefs von Beta samt E-Mail und
-     Geburtsdatum — und konnte die ganze Sammlung auflisten.
+     Steht die Firmenpruefung nur beim Schreiben und nicht beim Lesen,
+     liest ein Mitarbeiter von Alpha das Konto des Chefs von Beta samt
+     E-Mail und Geburtsdatum und kann die ganze Sammlung auflisten.
 
      Diese vier Prüfungen sind der Beleg, dass es zu ist. Faellt eine
      davon um, ist das Loch wieder offen. */
@@ -174,11 +169,8 @@ const NIEMAND_LIEST = ['pushTokens/tok-b'];
     const mitA = () => env.authenticatedContext('mitA').firestore();
     const betreiber = () => env.authenticatedContext('betreiber').firestore();
 
-    /* GESCHLOSSEN am 12.8.2026. Bis dahin standen hier dieselben drei
-       Pruefungen mit umgekehrter Erwartung — ein Sicherheitsloch, das
-       man wegkommentiert, ist eines, das man vergisst.
-
-       Faellt eine davon um, ist das Loch wieder offen. */
+    /* Faellt eine dieser drei um, ist die Firmengrenze auf users
+       wieder offen. */
     await pruefe('users · Mitarbeiter von A liest KEIN Konto aus B', () =>
       assertFails(mitA().doc('users/chefB').get()));
     await pruefe('users · Chef von A liest KEIN Konto aus B', () =>

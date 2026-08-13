@@ -1,24 +1,16 @@
 /* ── Das Kürzel in der Google-Tabelle ─────────────────────────────────
-   WARUM ES DIESEN DURCHLAUF GIBT
+   Die neue Spalte sitzt MITTEN im Blatt: „Kürzel" zwischen „Erledigt
+   von" und „Zeitpunkt". In der Tabelle des Betriebs stehen schon Zeilen
+   — wer eine Spalte in der Mitte einfügt und die alten stehen lässt, hat
+   danach den Zeitpunkt unter „Kürzel" stehen. Beides sieht plausibel
+   aus, und deshalb fällt es niemandem auf.
 
-   Die Tabelle bekommt eine neue Spalte, und zwar MITTEN im Blatt:
-   „Kürzel" zwischen „Erledigt von" und „Zeitpunkt". Das ist der
-   gefährlichste Ort dafür.
+   Der Umbau ordnet über den SPALTENNAMEN zu, nicht über die Position.
+   Genau das wird hier gemessen.
 
-   In der Tabelle des Betriebs stehen schon Zeilen. Wer eine Spalte in
-   der Mitte einfügt und die alten Zeilen einfach stehen lässt, hat
-   danach den Zeitpunkt unter „Kürzel" stehen — und es fällt niemandem
-   auf, weil beides irgendwie plausibel aussieht. Eine falsche Auskunft,
-   die wie eine richtige aussieht, ist schlimmer als gar keine.
-
-   Der Umbau ordnet deshalb über den SPALTENNAMEN zu, nicht über die
-   Position. Genau das wird hier gemessen.
-
-   WAS DIESER DURCHLAUF NICHT KANN
-   Er führt den Code in einer nachgebauten Tabelle aus, nicht in Google
-   Apps Script. Er beweist die Logik, nicht das Zusammenspiel mit Google.
-   Ob die neue Fassung dort läuft, zeigt sich erst nach dem erneuten
-   Bereitstellen — das steht oben in tools/MATERIAL-SHEETS.gs.
+   Nicht geprüft: das Zusammenspiel mit Google. Der Code läuft hier in
+   einer nachgebauten Tabelle — ob die neue Fassung in Apps Script
+   ankommt, zeigt sich erst nach dem erneuten Bereitstellen.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');
@@ -202,8 +194,8 @@ const SENDUNG = {
   if (!brühl) errs.push('VERLOREN: die Zeile eines fremden Studios ist beim Umbau verschwunden');
   else {
     if (brühl[4] !== 'Studio Brühl') errs.push('VERSCHOBEN: „Erledigt von" bei Brühl stimmt nicht (' + brühl[4] + ')');
-    /* Das ist der Fehler, um den es hier geht: ohne Zuordnung über den
-       Namen stünde jetzt „04.08.2026, 18:00" unter „Kürzel". */
+    /* Der Fehler, um den es geht: ohne Zuordnung über den Spaltennamen
+       stünde jetzt der Zeitpunkt unter „Kürzel". */
     if (brühl[5] !== '') {
       errs.push('DER FEHLER, UM DEN ES GEHT: bei einer alten Zeile steht etwas ' +
                 'unter „Kürzel", das keins ist (' + brühl[5] + ')');

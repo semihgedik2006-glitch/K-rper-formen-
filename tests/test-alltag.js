@@ -1,15 +1,12 @@
 /* ── Drei Kleinigkeiten aus dem Alltag ────────────────────────────────
    Pausierte Putzpunkte, „Ich übernehme das", und die Farbe der Firma.
+   Zusammen in einem Durchlauf, weil für einen einzelnen Knopf sonst
+   niemand einen schreibt — und Wochen später merkt jemand, dass er
+   nichts tut.
 
-   WARUM SIE ZUSAMMEN GEPRÜFT WERDEN
-   Alle drei sind klein, und genau deshalb rutschen sie durch: niemand
-   schreibt für einen Knopf einen eigenen Durchlauf, und dann merkt
-   Wochen später jemand, dass er nichts tut.
-
-     1. Ein pausierter Punkt bleibt SICHTBAR, aber ohne Haken. Verstecken
-        wäre schlechter — dann sucht in vier Wochen jemand einen Punkt,
-        den es scheinbar nicht mehr gibt.
-     2. Pausierte zählen NICHT in „x von y erledigt". Sonst stünde dort
+     1. Ein pausierter Punkt bleibt SICHTBAR, aber ohne Haken. Versteckt
+        sucht ihn in vier Wochen jemand vergeblich.
+     2. Pausierte zählen NICHT in „x von y erledigt". Sonst steht dort
         dauerhaft eine Zahl, die niemand erreichen kann.
      3. Der Knopf schreibt ein Enddatum — die Aufgabe kommt von selbst
         zurück, gelöscht wird nichts.
@@ -17,9 +14,8 @@
         und schreibt die eigene Kennung.
      5. An einer Aufgabe, die schon jemandem gehört, steht der Knopf
         nicht — sonst nimmt man sie einem anderen lautlos weg.
-     6. Die Firmenfarbe kommt aus der Datenbank und setzt --accent.
-        Ohne Eintrag bleibt alles wie vorher: kein Kunde soll eine
-        Änderung sehen, die er nicht bestellt hat.
+     6. Die Firmenfarbe kommt aus der Datenbank und setzt --accent. Ohne
+        Eintrag bleibt alles wie vorher.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');

@@ -2570,6 +2570,100 @@ Kritzelordner neu aufgebaut werden.
 
 ---
 
+## Sitzung 33 · Die Aufräum-Liste abgearbeitet 🟢
+
+Alle vier verbliebenen Punkte aus Sitzung 31/32.
+
+### 1. Die Erzähl-Kommentare
+
+Gemessen wurde nicht die Menge, sondern die **Form**. Ein Kommentar mit
+Datum, Vorgeschichte und Schlussfolgerung ist das, was der Auftraggeber als
+„wirkt wie von KI" beschrieben hat.
+
+| | vorher | nachher |
+|---|---|---|
+| Blöcke mit Erzähl-Merkmal (Datum, „Vorher…", „Aufgefallen…", Ich-Form) | 79 | **0** |
+| Blöcke über 800 Zeichen | 34 | 26 |
+
+Belegt, dass dabei nur Kommentare fielen: Nicht-Kommentar-Zeilen vorher und
+nachher identisch — 11.454 in `index.html`, 640 in `firestore.rules`. Dazu
+Syntaxprüfung von JavaScript, HTML und allen Testdateien.
+
+Angefasst: `index.html` (58 Blöcke), `firestore.rules` (4),
+`functions/index.js` (2), 25 Testdateien, alle drei Attrappen.
+
+**Die Menge ist bewusst nicht das Ziel gewesen.** Der Kommentaranteil liegt
+weiter bei rund 28 % — was bleibt, ist der Teil, der beim Ändern gebraucht
+wird: die Bedingung aus den Regeln, die Reihenfolge, die nicht vertauscht
+werden darf, der naheliegende Weg, der nicht funktioniert.
+
+### 2. Die Abstands-Leiter
+
+`padding`, `margin` und `gap` standen mit **52 verschiedenen Werten**
+zwischen 1 und 72 px im Stylesheet — sieben davon lagen einen Pixel
+auseinander.
+
+```
+--s1:1px  --s2:2px  --s4:4px  --s6:6px  --s8:8px  --s10:10px  --s12:12px
+--s16:16px  --s20:20px  --s24:24px  --s32:32px  --s40:40px  --s48:48px
+--s56:56px  --s72:72px
+```
+
+623 Angaben liegen jetzt auf einer Sprosse, **keine einzige feste Pixelzahl
+bleibt übrig**. Grösste Verschiebung 2 px, bei den häufigen Werten 1 px.
+`clamp()`, `calc()`, negative Werte und mm (Druck) bleiben unangetastet.
+
+Der Name nennt den Wert (`--s12` = 12 px). Semantische Namen (xs/sm/md)
+hätten hier nur eine zweite Übersetzungsebene eingezogen — bei einem
+2-px-Raster ist die Zahl die ehrlichere Auskunft.
+
+**Nachgewiesen, dass sich nichts verzogen hat:** `audit-forensik.js` vorher
+und nachher, 12 Ansichten × 11 Breiten:
+
+```
+UNERREICHBAR 0 · UEBERLAUF 0 · VERDECKT 0 · FINGERZIEL 0 · KONTRAST 0 · FOKUS 0
+```
+
+Beide Läufe zeichenweise identisch.
+
+### 3. Die Selektor-Kollisionen
+
+23 Selektoren setzten **dieselbe Eigenschaft an zwei Stellen**. Die spätere
+gewinnt, die frühere ist toter Code — dieselbe Falle wie bei den doppelten
+`@keyframes`.
+
+Die Hauptursache war ein dreifach gestapeltes Druck-Feedback: Grundregeln,
+ein Block „Micro-Interaktionen" und ganz unten der Abschnitt „Bewegung im
+Apple-Stil". Der unterste gewinnt; die beiden darüber waren bis auf zwei
+Selektoren wirkungslos. Wer `.btn{transition:…}` oben änderte, änderte
+nichts.
+
+Alle 23 aufgelöst: die Bewegungsschicht besitzt jetzt `transition` und
+`:active transform`, die Grundregeln setzen sie nicht mehr. **0 Kollisionen.**
+
+### 4. `tests/test-gestaltung.js` deckt jetzt alles ab
+
+| | |
+|---|---|
+| kein Emoji ausserhalb der Inhalts-Liste | ✓ |
+| jedes `ikon('name')` gibt es im Satz | ✓ |
+| jedes feste SVG im Markup zeichnet dieselben Pfade wie der Satz | ✓ |
+| kein toter Symbol-Ballast | ✓ |
+| keine festen Rundungen | ✓ |
+| keine festen Abstände | ✓ |
+| keine Eigenschaft zweimal am selben Selektor | ✓ |
+| dazu sechs Gegenproben, damit ein leerer Stylesheet nicht grün wird | ✓ |
+
+### Prüfung
+
+```
+58 grün · 0 rot · 0 ohne Ausgabe          Oberfläche
+Regeln 165 · Kreuztests 162 · Umzug 12 · Functions 83   Emulator
+Forensik: 0 Funde in allen sechs Kategorien
+```
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

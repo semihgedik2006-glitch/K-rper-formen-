@@ -1,9 +1,9 @@
 /* Bereich 10 – Einstellungen: Speichern erreichbar, Reiter lesbar,
    Aussehen nach Häufigkeit geordnet.
 
-   Vorher lag „Speichern" ganz unten in einem Fenster, das scrollt: Namen
-   ändern, dann 124 Pixel weiterscrollen, um zu speichern. Und der vierte
-   Reiter („Nachweise") wurde am rechten Rand abgeschnitten. */
+   „Speichern" muss ohne Scrollen erreichbar bleiben — in einem Fenster,
+   das scrollt, rutscht es sonst unter den Rand. Und alle vier Reiter
+   müssen auf 390 Pixel nebeneinander passen. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -135,5 +135,5 @@ const speichernImBild = page => page.evaluate(() => {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
-  process.exit((errs || fehler).length ? 1 : 0);
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

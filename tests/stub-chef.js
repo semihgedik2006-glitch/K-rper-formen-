@@ -36,10 +36,8 @@
   if (window.__firma) PROFILE.firma = window.__firma;
     /* firma an JEDEM Konto — so sieht es nach tools/firma-nachtragen.js
      aus. Ohne das Feld findet die gefilterte Abfrage in
-     listenAllUsers() nichts, und die Personenliste bleibt leer.
-     Genau das hat test-beitritt am 12.8.2026 sofort gemeldet —
-     und genau deshalb muss das Nachtragen VOR dem Ausrollen
-     laufen. */
+     listenAllUsers() nichts und die Personenliste bleibt leer; deshalb
+     muss das Nachtragen vor dem Ausrollen laufen. */
 var USERS = [
     { id:'testuid', firma:'koerperformen', name:'Test Chef', role:'chef', studios:['Hürth','Brühl'] },
     { id:'u2', firma:'koerperformen', name:'Anna Meier', role:'mitarbeiter', studios:['Hürth'], studioKeys:['studio-6'], lastSeen:Date.now()-60000 },
@@ -210,16 +208,14 @@ var USERS = [
     fehler: 'Der Speicher formenchat.firebasestorage.app wurde nicht gefunden. ' +
       'In der Firebase-Konsole unter „Storage" einmal einrichten.'
   };
-  /* ── Der Umzug auf firmen/<kennung>/… (10.8.2026) ──
-     Die App schickt seither jeden Zugriff durch S(), und das liefert
-     'firmen/koerperformen/config' statt 'config'. Dieser Stub bildet
-     die Daten weiterhin flach ab — der Aufbau der Testdaten hat mit
-     der Mandantentrennung nichts zu tun.
+  /* ── Der Firmen-Vorsatz ──
+     Die App schickt jeden Zugriff durch S(), und das liefert
+     'firmen/koerperformen/config' statt 'config'. Diese Attrappe bildet
+     die Daten flach ab — der Aufbau der Testdaten hat mit der
+     Mandantentrennung nichts zu tun.
 
-     Deshalb wird der Firmen-Vorsatz hier an EINER Stelle abgeschnitten,
-     statt jede Testdatei umzuschreiben. Als der Schalter umgelegt
-     wurde, sind 12 Durchläufe rot geworden — zu Recht: sie suchten
-     Daten, die der Stub unter dem alten Namen führte. */
+     Der Vorsatz wird deshalb hier an EINER Stelle abgeschnitten, statt
+     in jeder Testdatei. */
   function collection(path) {
     path = String(path).replace(/^firmen\/[^/]+\//, '');
     return {
@@ -294,10 +290,9 @@ var USERS = [
             /* Farbe der Firma. Ohne __marke gibt es das Dokument NICHT —
                und das ist der Normalfall: heute hat kein Betrieb einen
                Eintrag, und die App darf dann nichts umfaerben. */
-            /* Das Firmendokument selbst — daraus kommt der ANZEIGENAME.
-               Bis zum 12.8.2026 brauchte ihn niemand; seit der Name auf
-               dem Anmeldebildschirm, im Fenstertitel, auf Ausdrucken und
-               in der Bestellmail steht, schon. */
+            /* Das Firmendokument selbst — daraus kommt der ANZEIGENAME
+               fuer Anmeldebildschirm, Fenstertitel, Ausdrucke und
+               Bestellmail. */
             if (path === 'firmen') {
               return Promise.resolve({ exists: true, id: id, data: function () {
                 return { name: window.__firmaName || 'Körperformen', aktiv: true };

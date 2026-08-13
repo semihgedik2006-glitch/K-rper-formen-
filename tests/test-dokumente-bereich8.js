@@ -1,9 +1,9 @@
 /* Bereich 8 – Dokumente: Platz für den Namen, ganze Zeile öffnet,
    Verwaltungs-Aktionen im Blatt, „Als Aufgabe" fragt nach.
 
-   Vorher drückten drei Knöpfe (Öffnen · Als Aufgabe · ✕) den Namen auf eine
-   schmale Spalte – „Gerätewartung Anleitung" brach mitten im Wort um. Und
-   „Als Aufgabe" verteilte ohne Rückfrage eine Aufgabe an alle 14 Studios. */
+   Drei Knöpfe nebeneinander drücken den Namen auf eine schmale Spalte,
+   und „Gerätewartung Anleitung" bricht mitten im Wort um. „Als Aufgabe"
+   verteilt an alle 14 Studios und muss deshalb nachfragen. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -121,5 +121,5 @@ async function start(stub, errs) {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
-  process.exit((errs || fehler).length ? 1 : 0);
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

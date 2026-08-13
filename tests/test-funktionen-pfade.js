@@ -1,26 +1,21 @@
 /* ── Kein flacher Zugriff mehr in den Cloud Functions ─────────────────
-   Stufe 2E.
+   Stufe 2E. Ein Text-Test neben funktionen.test.js, der die Functions
+   wirklich ausführt: der bessere Beweis prüft nur, woran beim Schreiben
+   jemand gedacht hat. Eine ganze Datei zu vergessen fängt er nicht.
 
-   WARUM AUSGERECHNET EIN TEXT-TEST
-   funktionen.test.js führt die Functions wirklich aus — das ist der
-   bessere Beweis, aber er prüft nur, woran ich beim Schreiben gedacht
-   habe. Mein Fehler war ein anderer: ich habe eine ganze DATEI
-   vergessen. Vier Stufen lang. Kein noch so guter Verhaltenstest fängt
-   eine Funktion, die niemand testet, weil niemand an sie denkt.
-
-   Dieser Test denkt nicht mit. Er liest functions/index.js Zeile für
-   Zeile und schlägt bei JEDEM db.collection('…') an, das einer Firma
+   Dieser hier denkt nicht mit. Er liest functions/index.js Zeile für
+   Zeile und schlägt bei jedem db.collection('…') an, das einer Firma
    gehört — auch bei einem, das erst morgen dazukommt.
 
-   Die Liste der Firmen-Sammlungen wird NICHT abgeschrieben, sondern aus
+   Die Liste der Firmen-Sammlungen wird nicht abgeschrieben, sondern aus
    tools/umzug.js geholt. Zwei Listen, die auseinanderlaufen können,
    laufen irgendwann auseinander: der Umzug nähme eine Sammlung mit, die
-   die Functions flach weiterlesen — und dann steht die neue Aufgabe im
-   verschachtelten Pfad, während die Erinnerung daran im alten sucht.
+   die Functions flach weiterlesen — die neue Aufgabe stünde dann im
+   verschachtelten Pfad, während die Erinnerung im alten sucht.
 
-   Erlaubt bleiben genau drei: users, pushTokens, firmen. Die liegen
-   bewusst oben (Begründung in index.html bei S()). Sie stehen unten mit
-   Namen, damit „erlaubt" eine Entscheidung ist und kein Vergessen.
+   Erlaubt bleiben genau drei: users, pushTokens, firmen. Sie stehen
+   unten mit Namen, damit „erlaubt" eine Entscheidung ist und kein
+   Vergessen.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');

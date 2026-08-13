@@ -1,30 +1,17 @@
 /* ── Keine Bewegung zweimal definiert ─────────────────────────────────
-   WARUM ES DIESEN DURCHLAUF GIBT
-   Am 12.8.2026 waren zwei von 38 @keyframes doppelt vergeben: `viewIn`
-   und `checkPop`. In CSS gewinnt die spätere Definition, die frühere
-   ist lautlos weg — dieselbe Falle wie der doppelte Schlüssel `firma`
-   in konfig.js.
+   In CSS gewinnt die spätere Definition; die frühere ist lautlos toter
+   Code. Bei @keyframes hat das zwei Folgen, die man nicht sieht: wer an
+   der früheren Dauer dreht, ändert nichts, und ein Element, das den
+   Namen mitbenutzt, bekommt eine Kurve, für die es nie geschrieben
+   wurde.
 
-   Es ist kein Schönheitsfehler:
-
-     · `.view.show` stand mit .32s ease-out und weiter unten mit .5s
-       ease-ios. Wer oben an der Dauer drehte, änderte nichts. Der
-       Ansichtswechsel ist die häufigste Bewegung der App.
-     · `.fab-count.show` benutzt `checkPop` und bekam dadurch eine
-       Kurve, für die es nie geschrieben wurde.
-
-   Kein Absturz, keine Meldung, kein roter Durchlauf — die Bedeutung
-   verschiebt sich einfach an einer Stelle, die niemand mehr im Blick
-   hat. Genau die Sorte Fehler, die von selbst wiederkommt, wenn man
-   sie nur einmal von Hand wegräumt.
-
-   Geprüft wird ohne Browser: die Datei lesen und zählen.
+   Ohne Browser, liest nur die Datei:
 
      1. Kein @keyframes-Name zweimal.
-     2. Jede benutzte Animation ist auch definiert (ein Tippfehler im
-        Namen bewegt gar nichts und fällt sonst niemandem auf).
-     3. Gegenprobe: es gibt überhaupt Bewegung — sonst wäre auch eine
-        Datei ohne jede Animation grün.
+     2. Jede benutzte Animation ist auch definiert — ein Tippfehler im
+        Namen bewegt gar nichts und fällt sonst niemandem auf.
+     3. Gegenprobe: es gibt überhaupt Bewegung. Sonst wäre eine Datei
+        ganz ohne Animation der grünste Durchlauf von allen.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');

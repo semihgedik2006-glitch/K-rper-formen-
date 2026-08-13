@@ -150,9 +150,16 @@ dass die richtige Seite noch funktioniert. Ein Test, der nur eine Richtung
 kennt, wäre auch dann grün, wenn die Funktion ganz fehlt.
 
 **Gestaltungsgrößen kommen aus `:root`, nie aus der Zeile.** Farben, Abstände,
-Rundungen und Kurven stehen als Variablen ganz oben im `<style>`-Block. Eine
-feste Zahl mitten im Stylesheet ist der Anfang der nächsten Sammlung aus
-zwölf Werten, die dasselbe meinen.
+Rundungen und Kurven stehen als Variablen ganz oben im `<style>`-Block.
+
+| | Leiter |
+|---|---|
+| Rundung | `--r-xs` 8 · `--r-sm` 11 · `--r-md` 14 · `--r-lg` 18 · `--radius` 22 · `--radius-lg` 30 · `--r-pille` · `--r-rund` |
+| Abstand | `--s1 --s2 --s4 --s6 --s8 --s10 --s12 --s16 --s20 --s24 --s32 --s40 --s48 --s56 --s72` |
+
+Eine feste Zahl mitten im Stylesheet ist der Anfang der nächsten Sammlung aus
+zwölf Werten, die dasselbe meinen. Vor dieser Regel gab es 52 verschiedene
+Abstände zwischen 1 und 72 px, sieben davon einen Pixel auseinander.
 
 **Symbole kommen aus `IKONEN`, nicht aus der Emoji-Tastatur.** `ikon('name')`
 gibt ein SVG in `currentColor` zurück; es erbt Farbe und Größe von seinem
@@ -160,7 +167,14 @@ Knopf. Ein Emoji kann das nicht — es bringt eigene Farben mit, ignoriert
 Hell und Dunkel und sieht auf jedem Gerät anders aus. Emoji bleiben nur, wo
 sie Inhalt sind: Chat-Reaktionen, Avatare, Geburtstagsgruß.
 
-Beides prüft `tests/test-gestaltung.js`.
+**Dieselbe Eigenschaft nicht zweimal am selben Selektor.** Der `<style>`-Block
+ist durch Anhängen gewachsen; steht `transition` einmal bei `.btn` oben und
+noch einmal im Bewegungsabschnitt unten, gewinnt die spätere und an der
+früheren dreht man vergeblich. Ein Selektor darf mehrfach vorkommen
+(Grundregel oben, Zustand unten) — dieselbe Eigenschaft nicht.
+
+Alles drei prüft `tests/test-gestaltung.js`, die `@keyframes`
+`tests/test-bewegung-doppelt.js`.
 
 ---
 

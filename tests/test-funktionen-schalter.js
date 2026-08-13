@@ -1,29 +1,24 @@
 /* ── Funktionen an- und abschalten ───────────────────────────────────
-   „Der Schichtplan ist für unser Studio unnötig, andere brauchen ihn."
-
    Geprüft wird nicht, ob ein Knopf da ist, sondern ob das Abschalten
-   auch WIRKLICH überall ankommt. Eine halb abgeschaltete Funktion ist
-   schlimmer als eine eingeschaltete: sie steht noch in der Navigation,
-   auf der Startseite oder im Verwaltungsbereich und führt ins Leere.
+   überall ankommt. Eine halb abgeschaltete Funktion ist schlimmer als
+   eine eingeschaltete: sie steht noch in der Navigation, auf der
+   Startseite oder im Verwaltungsbereich und führt ins Leere.
 
-     1. Ohne Eintrag ist alles an. Ein Kunde, dem die Hälfte fehlt, weil
-        irgendwo ein Feld leer ist, wäre der schlechtere Fehler.
+     1. Ohne Eintrag ist alles an.
      2. Abgeschaltet: der Eintrag verschwindet aus der unteren Leiste.
-     3. Eine Gruppe, in der nichts mehr übrig ist, verschwindet ganz.
+     3. Eine Gruppe, in der nichts übrig ist, verschwindet ganz.
      4. Die Startseite zeigt keine Kachel und keinen Hinweis mehr, der
         auf eine abgeschaltete Seite führt.
      5. Der Team-Reiter verschwindet — und die Seite dahinter auch.
      6. Sind ALLE Team-Reiter aus, ist die Team-Seite selbst weg.
-     7. „Neue Aufgabe erstellen" im Verwaltungsbereich verschwindet mit.
-        Sonst legt der Chef Aufgaben an, die niemand je sieht.
-     8. Der Weg über die Hintertür: wer eine abgeschaltete Ansicht
-        direkt aufruft, landet auf der Startseite statt im Nichts.
+     7. „Neue Aufgabe erstellen" verschwindet mit. Sonst legt der Chef
+        Aufgaben an, die niemand je sieht.
+     8. Wer eine abgeschaltete Ansicht direkt aufruft, landet auf der
+        Startseite statt im Nichts.
 
-   WAS HIER NICHT GEPRÜFT IST
-   Die Erinnerung um 7:30 Uhr prüft auf dem Server ebenfalls mit
-   (functions/index.js, featureAn). Ob dabei wirklich keine Meldung
-   verschickt wird, lässt sich im Emulator nicht messen: dort gibt es
-   keine Empfänger, an die etwas gehen könnte. Belegt ist der Aufruf im
+   Nicht geprüft: ob am nächsten Morgen wirklich keine Erinnerung
+   hinausgeht. Der Server prüft es mit (functions/index.js, featureAn),
+   aber im Emulator gibt es keine Empfänger — belegt ist der Aufruf im
    Code, nicht das Ausbleiben der Meldung auf einem Gerät.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');

@@ -1,9 +1,9 @@
 /* Bereich 7 – Team: lesen vor schreiben, heute im Bild, wartende Anträge.
 
-   Vorher stand auf drei von vier Reitern das Eingabeformular VOR der Liste –
-   bei den Abwesenheiten 536 Pixel hoch, die Liste begann erst bei Pixel 647.
-   Und offene Urlaubsanträge sah die Verwaltung nur im gerade geöffneten
-   Studio. */
+   Steht das Eingabeformular vor der Liste, beginnt die Liste bei den
+   Abwesenheiten erst nach 647 Pixeln. Und offene Urlaubsanträge dürfen
+   nicht nur im gerade geöffneten Studio sichtbar sein — sonst wartet
+   der Antrag, bis jemand zufällig dieses Studio aufmacht. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -143,5 +143,5 @@ const reiterMessen = (page, listeId) => page.evaluate(id => {
   }
 
   console.log('\nFehler:', errs.length ? errs.join('\n  ') : 'keine');
-  process.exit((errs || fehler).length ? 1 : 0);
+  process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

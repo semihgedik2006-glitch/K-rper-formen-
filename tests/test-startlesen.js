@@ -1,17 +1,14 @@
-/* „Zum Lesen" auf der Startseite.
+/* ── „Zum Lesen" auf der Startseite ───────────────────────────────────
+   Aushänge und schwarzes Brett stehen mit Text auf der Startseite, nicht
+   nur als Zähler und nicht erst nach einem Klick.
 
-   Gemeldet aus dem Betrieb: man muss die Infos überall suchen. Vorher
-   stand oben nur „2 neue Infos von der Leitung ›" – worum es ging, erfuhr
-   man erst nach dem Klicken. Das schwarze Brett lag ganz woanders, im
-   Team-Bereich, und wurde überhaupt erst geladen, wenn man dort hinging.
-
-   Geprüft wird:
-     1. Der Text der Aushänge steht auf der Startseite – ohne Klick.
-     2. Das schwarze Brett auch, und zwar ohne den Team-Bereich zu öffnen.
-     3. Nichts steht doppelt: die alte Hinweiszeile ist weg, und ein
-        angehefteter Aushang erscheint oben ODER unten, nicht beides.
+     1. Der Text der Aushänge steht da — ohne Klick.
+     2. Das schwarze Brett auch, ohne den Team-Bereich zu öffnen.
+     3. Nichts steht doppelt: ein angehefteter Aushang erscheint oben
+        ODER unten, nicht beides.
      4. Ungelesenes ist erkennbar.
-     5. Leere Karten verschwinden ganz, statt „noch nichts da" zu sagen.  */
+     5. Leere Karten verschwinden ganz, statt „noch nichts da" zu sagen.
+   ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';

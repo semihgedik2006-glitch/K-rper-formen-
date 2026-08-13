@@ -1,25 +1,14 @@
 /* ── Wird alles ausgeliefert, was ausgeliefert werden soll? ────────────
-   Am 10. August 2026 wurde der Umzug auf die Firmen-Pfade nach main
-   gemerged — und es passierte nichts. Kein Deploy, keine Fehlermeldung.
-   `konfig.js` stand nicht in der Auslöser-Liste des Ablaufs, also sprang
-   er nicht an. In main lag der neue Stand, im Betrieb der alte.
-
-   Ausgerechnet diese Datei: sie entscheidet, WELCHE Datenbank die App
-   anfasst. In firebase.json steht extra ein no-cache-Kopf dafür, weil
-   eine alte Fassung schlimmer wäre als eine langsame Ladezeit. Genau
-   die liess sich nicht ausrollen.
-
-   Gefunden nur, weil ich nach dem Merge nachgesehen habe, statt
-   „gemerged" für „ausgeliefert" zu halten. Beim nächsten Mal soll das
-   nicht vom Nachsehen abhängen.
-
-   Dieser Durchlauf vergleicht zwei Listen, die auseinanderlaufen können:
+   Zwei Listen, die auseinanderlaufen können:
 
      firebase.json   → was Firebase Hosting ausliefert
-     der Ablauf      → was einen Deploy auslöst
+     der Workflow    → was einen Deploy auslöst
 
-   Jede Datei in der ersten muss in der zweiten vorkommen. Sonst kann
-   man sie ändern, mergen — und nichts geschieht.
+   Jede Datei in der ersten muss in der zweiten vorkommen. Fehlt eine,
+   kann man sie ändern und mergen, und es geschieht nichts: kein Deploy,
+   keine Fehlermeldung. Genau so war konfig.js zwei Monate lang nicht
+   ausrollbar — ausgerechnet die Datei, die entscheidet, welche Datenbank
+   die App anfasst.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');

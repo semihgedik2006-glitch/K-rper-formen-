@@ -53,22 +53,34 @@ zu sein, **bevor der erste fremde Kunde dazukommt.** Damit es nicht
 vergessen wird, steht es in `firestore.rules` bei `match /users`, in
 `index.html` bei `listenAllUsers()` und im Kreuztest (`OFFENES_LOCH`).
 
-## Aufräumen: was noch aussteht
+## Aufräumen: abgeschlossen
 
-Erledigt: Verzeichnis sortiert, `README.md` steht, `konfig.js`,
-`firestore.rules`, `functions/index.js`, `firebase.json`, `sw.js` und der
-Deploy-Workflow sind durchgegangen. Emoji und Eckenradien sind weg
-beziehungsweise auf einer Leiter, beides mit `tests/test-gestaltung.js`
-abgesichert.
+Die Liste aus dem August ist abgearbeitet:
 
-Offen:
+| Was | Stand |
+|---|---|
+| Verzeichnis sortiert, `README.md` als Einstieg | ✅ |
+| Erzähl-Kommentare (Datum, Vorgeschichte, Ich-Form) | ✅ 79 → 0 |
+| 467 Emoji als Symbole | ✅ ein Satz aus 24 Konturzeichen |
+| Zwölf Eckenradien | ✅ eine Leiter, 179 Verwendungen |
+| 52 Abstandswerte | ✅ eine Leiter, 623 Verwendungen |
+| 23 Selektor-Kollisionen | ✅ 0 |
 
-| Was | Umfang | Warum es zählt |
-|---|---|---|
-| **Kommentare in `index.html`** | 645 Blöcke | Der grösste verbliebene Posten. Rund ein Drittel der Datei ist Fliesstext. Die Aufsätze über 800 Zeichen sind weg, die mittellangen nicht. |
-| **Kommentare in `tests/*.js`** | 142 KB | Jeder Durchlauf beginnt mit „WARUM ES DIESEN DURCHLAUF GIBT". |
-| **25 echte Selektor-Kollisionen** | von 1.182 Selektoren | Dieselbe Eigenschaft zweimal für denselben Selektor, z. B. `transition` bei `.todo`. Zum Teil Absicht (der Bewegungs-Abschnitt überschreibt bewusst), zum Teil nicht — jede Stelle muss einzeln angesehen werden. |
-| **Abstände** | noch nicht gemessen | Nach Farben, Symbolen und Rundungen der letzte Bereich ohne Leiter. |
+Abgesichert durch `tests/test-gestaltung.js` und
+`tests/test-bewegung-doppelt.js` — beide ohne Browser, beide mit
+Gegenproben, damit ein leerer Stylesheet nicht als grün durchgeht.
+
+**Was bewusst bleibt:** rund 28 % Kommentaranteil. Was noch dasteht, wird
+beim Ändern gebraucht — die Bedingung aus den Regeln, die Reihenfolge, die
+nicht vertauscht werden darf, der naheliegende Weg, der nicht funktioniert.
+Die Menge war nie das Ziel, die Form schon.
+
+**Was als Nächstes anstünde**, wenn jemand weiter aufräumen will: der
+`<style>`-Block ist thematisch nicht sortiert — Chat-Regeln stehen an neun
+Stellen. Das ist kein Fehler und ändert nichts am Verhalten; es kostet nur
+Suchzeit. Ein Umsortieren wäre eine eigene Runde mit eigenem Risiko
+(Reihenfolge entscheidet bei gleicher Spezifität), und der Nutzen ist
+geringer als bei allem oben.
 
 ## Offen, weil noch niemand hingeschaut hat
 

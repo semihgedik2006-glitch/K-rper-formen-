@@ -1,25 +1,18 @@
 /* ── Fehler im Betrieb melden ─────────────────────────────────────────
-   WARUM ES DAS GIBT
-   Wenn bei einem Mitarbeiter etwas nicht lädt, erfährt es heute niemand.
-   Er sagt es vielleicht — vielleicht auch nicht, und bei einem Zugang je
-   Studio weiss hinterher ohnehin keiner mehr, wer davorstand.
-
-   Diese Sorte Funktion hat eine Eigenart: sie darf selbst NICHT kaputt
-   gehen. Ein Fehler im Melden erzeugt einen Fehler, der gemeldet wird,
-   der einen Fehler erzeugt. Deshalb steht das hier ganz oben.
+   Diese Sorte Funktion darf selbst nicht kaputtgehen: ein Fehler im
+   Melden erzeugt einen Fehler, der gemeldet wird, der einen Fehler
+   erzeugt. Deshalb steht der Kreis-Test hier mit drin.
 
      1. Ein echter Fehler wird geschrieben — mit Ansicht, Person, Stelle.
-     2. Derselbe Fehler zweimal ergibt EINEN Eintrag, nicht zwei.
-        Ein kaputter Bildschirm feuert sonst hundertmal.
+     2. Derselbe Fehler zweimal ergibt EINEN Eintrag. Ein kaputter
+        Bildschirm feuert sonst hundertmal.
      3. Rauschen wird nicht gemeldet: „Script error." und die
         ResizeObserver-Schleife sagen nichts und verstopfen die Liste.
      4. Netzfehler werden nicht gemeldet. Ein Zug ist kein Fehler.
      5. Es gibt eine Obergrenze je Sitzung.
-     6. Die Meldung dreht sich nicht im Kreis: schlägt das Schreiben
-        selbst fehl, passiert nichts weiter.
+     6. Schlägt das Schreiben selbst fehl, passiert nichts weiter.
      7. Der Chef sieht die Liste — und die Zahl auch bei zugeklappter
-        Karte. Zugeklappt sieht sonst aus wie leer (dieselbe Lehre wie
-        beim Firmen-Archiv).
+        Karte. Zugeklappt sieht sonst aus wie leer.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');

@@ -1,43 +1,31 @@
 /* ── Impressum und Datenschutz je Firma ──────────────────────────────
-   Bis zum 11.8.2026 standen die Rechtsangaben in konfig.js. Diese Datei
-   gilt für das ganze Firebase-Projekt — und seit mehrere Firmen in EINER
-   Datenbank liegen, bekam der zweite Kunde damit entweder das Impressum
-   von Körperformen zu sehen oder eine rote Warnung, die ihn an eine
-   Datei schickte, an die er gar nicht herankommt. Impressumspflichtig
-   ist aber jeder Betreiber selbst.
-
-   Geprüft wird nicht, ob ein Formular da ist, sondern ob die richtigen
-   Angaben beim richtigen Betrieb landen:
+   Impressumspflichtig ist jeder Betreiber selbst. Geprüft wird nicht, ob
+   ein Formular da ist, sondern ob die richtigen Angaben beim richtigen
+   Betrieb landen:
 
      1. Nichts in der Datenbank, EIGENE Firma: konfig.js gilt weiter.
-        Ohne diesen Rückfall stünde der eigene Betrieb am Tag der
+        Ohne diesen Rückfall steht der eigene Betrieb am Tag der
         Umstellung ohne Impressum da.
      2. Nichts in der Datenbank, FREMDE Firma: kein einziges Wort aus
-        konfig.js. Genau dieser Fehler ist bei der Studioliste schon
-        passiert — eine fremde Firma sah die vierzehn Standorte von
-        Körperformen.
+        konfig.js. Bei der Studioliste ist genau dieser Fehler schon
+        einmal passiert.
      3. Steht etwas in der Datenbank, gewinnt es gegen konfig.js —
         Impressum und Datenschutz, samt Ergänzungen.
      4. Auch eine fremde Firma sieht IHRE Angaben. Der Riegel aus 2. darf
         nicht so weit gehen, dass er den Kunden aussperrt.
-     5. „konfig.js" kommt nirgends mehr im Text vor. Der Chef bekommt
-        stattdessen den Weg in der App genannt, alle anderen einen
-        reinen Hinweis ohne Handlungsaufforderung.
+     5. „konfig.js" kommt nirgends mehr im Text vor. Der Chef bekommt den
+        Weg in der App genannt, alle anderen einen reinen Hinweis.
      6. Das Formular steht in Verwaltung → System und gehört dem Chef.
         Ein Studio-Leiter sieht den Bereich, aber nicht diese Karte.
-     7. Gespeichert wird wirklich nach config/recht, mit allen Feldern,
-        und die Ergänzungen werden zeilenweise zerlegt. Danach ist die
-        Warnung weg.
+     7. Gespeichert wird nach config/recht, mit allen Feldern; die
+        Ergänzungen werden zeilenweise zerlegt, danach ist die Warnung
+        weg.
      8. Bei einer fremden Firma ist das Formular LEER vorbelegt. Ein
-        Vorschlag mit fremden Firmendaten wäre schlimmer als gar keiner.
+        Vorschlag mit fremden Firmendaten wäre schlimmer als keiner.
 
-   WAS HIER NICHT GEPRÜFT IST
-   Ob die Sicherheitsregel greift — dass ein Mitarbeiter das Impressum
-   lesen, aber nicht schreiben kann. Das misst der Emulator in
-   tests/rules/security.test.js; hier läuft eine Attrappe, und die sagt
-   über Regeln nichts aus.
-   Ebenso wenig, ob die Texte rechtlich vollständig sind. Das kann kein
-   Test beantworten.
+   Nicht geprüft: ob die Sicherheitsregel greift (das misst
+   tests/rules/security.test.js — hier läuft eine Attrappe), und ob die
+   Texte rechtlich vollständig sind.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');

@@ -1,43 +1,30 @@
 /* ── Die Cloud Functions, ausgeführt statt behauptet ──────────────────
-   Stufe 2E.
+   Stufe 2E. functions/index.js wird geladen und über .run() ausgelöst,
+   so wie Firebase es täte — gegen den Emulator, also ohne Risiko.
 
-   WARUM ES DIESEN TEST GIBT
-   Vier Stufen lang habe ich index.html umgestellt und die Functions
-   vergessen. Der Fehler wäre nicht aufgefallen: die App hätte nach dem
-   Umschalten tadellos ausgesehen, während im Hintergrund KEINE
-   Push-Nachricht mehr rausging, KEINE Erinnerung an überfällige
-   Aufgaben, KEINE Warnung vor ablaufenden Nachweisen — und der
-   Papierkorb hätte weiter die alten, flachen Daten geleert statt der
-   neuen. Alles lautlos.
+   Ein Test, der eine vergessene Umstellung fängt, muss den echten Code
+   ausführen: eine Function auf dem alten Pfad sieht man nicht, die App
+   läuft weiter, es kommt nur keine Push-Nachricht mehr an.
 
-   Ein Test, der so etwas fängt, muss den echten Code AUSFÜHREN. Deshalb
-   wird hier functions/index.js geladen und über .run() ausgelöst, so wie
-   Firebase es täte — gegen den Emulator, also ohne jedes Risiko.
+   Drei Schichten:
 
-   Geprüft wird in drei Schichten:
+     1. VORHER: ohne Firmen-Sammlung läuft alles wie bisher.
+     2. AUSLÖSER: jeder Handler hängt an ZWEI Pfaden. Fehlt der zweite,
+        merkt es niemand, bis eine Nachricht stumm bleibt.
+     3. NACHHER: mit Firmen arbeitet jede Funktion in JEDER Firma — und
+        in keiner fremden.
 
-     1. VORHER: ohne Firmen-Sammlung muss alles laufen wie heute. Das ist
-        der Zustand im Betrieb, heute Nacht, vor dem Umzug.
-     2. AUSLÖSER: jeder Handler hängt an ZWEI Pfaden. Wenn der zweite
-        fehlt, merkt es niemand, bis eine Nachricht stumm bleibt.
-     3. NACHHER: mit Firmen muss jede Funktion in JEDER Firma arbeiten —
-        und in keiner fremden.
+   NICHT GEPRÜFT — bevor „alles grün" jemanden beruhigt:
+   Geprüft wird nur, was eine Spur hinterlässt, also geschriebene und
+   gelöschte Dokumente. Funktionen, deren einziges Ergebnis eine
+   Push-Nachricht oder eine E-Mail ist, hinterlassen keine:
+   dueTaskReminder, certExpiry, appointmentMailScheduler und der
+   Monatsbericht laufen zwar, aber ob sie das Richtige gefunden haben,
+   sieht man hier nicht. Für sie steht nur fest, dass sie über
+   alleFirmen() und W(firma) gehen (tests/test-funktionen-pfade.js).
 
-   WAS DIESER TEST NICHT PRÜFT — bitte lesen, bevor „alles grün" jemanden
-   beruhigt:
-
-   Geprüft wird nur, was eine sichtbare Spur hinterlässt: geschriebene
-   und gelöschte Dokumente. Funktionen, deren einziges Ergebnis eine
-   Push-Nachricht oder eine E-Mail ist, hinterlassen hier keine —
-   `dueTaskReminder`, `certExpiry`, `appointmentMailScheduler` und der
-   Monatsbericht laufen also, aber ob sie das Richtige gefunden haben,
-   sieht man nicht. Für die steht nur fest, dass sie über `alleFirmen()`
-   und `W(firma)` gehen (`tests/test-funktionen-pfade.js`) — das ist
-   weniger, und es soll nicht mehr klingen.
-
-   Ob Push wirklich auf einem Gerät ankommt und ob eine Mail zugestellt
-   wird, lässt sich hier gar nicht feststellen. Das geht nur im
-   Probe-Projekt, an einem echten Gerät.
+   Ob Push auf einem Gerät ankommt und ob eine Mail zugestellt wird,
+   lässt sich hier gar nicht feststellen.
    ───────────────────────────────────────────────────────────────────── */
 const path = require('path');
 
@@ -245,12 +232,11 @@ const TAG = 86400000;
       !(await db.doc(dm('alpha', 'u-beta')).get()).exists);
 
     /* ── Der NAME im Gruß ──
-       Bis zum 12.8.2026 stand dort fest "Körperformen 🎂" und
-       "dein Körperformen-Team" — bei JEDEM Kunden. Der Gruß ging also
-       an die Mitarbeiter eines fremden Betriebs im Namen eines
-       anderen. Geprüft wird der Text selbst, nicht nur, dass er da ist:
-       "liegt am richtigen Ort" und "trägt den richtigen Namen" sind
-       zwei verschiedene Aussagen. */
+       Steht der Firmenname fest im Code, geht der Gruß an die
+       Mitarbeiter eines Kunden im Namen eines fremden Betriebs.
+       Geprüft wird deshalb der Text selbst: „liegt am richtigen Ort"
+       und „trägt den richtigen Namen" sind zwei verschiedene
+       Aussagen. */
     const grussText = async (f, uid) => {
       const q = await db.collection(dm(f, uid) + '/messages').get();
       return q.empty ? '' : String((q.docs[0].data() || {}).text || '');

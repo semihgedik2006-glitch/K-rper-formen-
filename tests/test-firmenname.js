@@ -1,20 +1,12 @@
 /* ── Wo der Firmenname steht ──────────────────────────────────────────
-   WARUM ES DIESEN DURCHLAUF GIBT
-   Am 12.8.2026 stand „Körperformen" an fünf Stellen fest im Quelltext.
-   Vier davon sieht ein Kunde, und eine verlässt sogar das Haus:
+   Vier Stellen sieht ein Kunde, eine verlässt das Haus: Anmeldebild-
+   schirm, Fenstertitel, beide Druckausgaben — und die Bestellmail an den
+   Lieferanten. Ein Ausdruck lässt sich wegwerfen, eine verschickte Mail
+   nicht.
 
-     · der Anmeldebildschirm — noch bevor sich jemand anmeldet
-     · der Fenstertitel
-     · beide Druckausgaben (Einkaufsliste, Putzplan)
-     · die Bestellmail an den Lieferanten
-
-   Die letzte ist die unangenehmste: ein Kunde hätte seinem Lieferanten
-   eine Bestellung im Namen eines fremden Betriebs geschickt. Ein
-   Ausdruck lässt sich wegwerfen, eine verschickte Mail nicht.
-
-   Es ist dieselbe Sorte Fehler wie beim Standort-Leck — nur sichtbarer.
-   Und wie damals fällt sie beim EIGENEN Betrieb nicht auf: dort steht ja
-   der richtige Name.
+   Beim EIGENEN Betrieb fällt ein fest eingetragener Name nie auf, dort
+   steht ja der richtige. Deshalb prüft dieser Durchlauf beide
+   Richtungen:
 
      1. Eine fremde Firma sieht ihren Namen, nicht „Körperformen".
      2. Auch VOR dem Anmelden — dort schaut ein neuer Kunde zuerst hin.

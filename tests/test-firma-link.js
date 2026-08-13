@@ -1,29 +1,22 @@
-/* Die Firmenkennung im Link.
+/* ── Die Firmenkennung im Link ────────────────────────────────────────
+   Der Kunde bekommt einen Link mit seiner Kennung darin,
+   https://…/?firma=mueller-7f3a. Der Anmeldebildschirm braucht sie: er
+   zeigt Studioliste und Beitritts-Schalter, bevor jemand angemeldet ist,
+   und bis dahin gibt es kein Profil, das die Firma nennen könnte.
 
-   Entschieden: der Kunde bekommt einen Link mit seiner Kennung darin,
-   https://…/?firma=mueller-7f3a. Der Anmeldebildschirm braucht sie, weil
-   er Studioliste und Beitritts-Schalter zeigt, bevor jemand angemeldet
-   ist — und zu dem Zeitpunkt gibt es kein Profil, das die Firma nennen
-   könnte.
-
-   Geprüft wird:
-     1. Solange der Schalter aus ist, passiert gar nichts. Das ist der
-        heutige Zustand und darf sich nicht ändern.
+     1. Solange der Schalter aus ist, passiert gar nichts.
      2. Mit Schalter: die Kennung aus dem Link landet in den Pfaden.
-     3. Sie wird gemerkt — der Kunde braucht den langen Link nur einmal.
-     4. Unsinn im Link wird gefiltert. Ein Pfadtrenner darin würde sonst
-        aus firmen/x/config etwas ganz anderes machen.
-     5. Ohne Link und ohne gemerkte Kennung gilt konfig.js. Sonst stünde
+     3. Sie wird gemerkt — der lange Link wird nur einmal gebraucht.
+     4. Unsinn im Link wird gefiltert. Ein Pfadtrenner darin würde aus
+        firmen/x/config etwas ganz anderes machen.
+     5. Ohne Link und ohne gemerkte Kennung gilt konfig.js. Sonst steht
         ein bestehender Betrieb nach dem Umschalten vor einer leeren App.
-     6. Nach dem Anmelden gewinnt das PROFIL gegen den Link — das
-        steht in enterApp und ist hier NICHT geprüft, weil die
-        Attrappe kein Profil mit Firma liefert. Kommt mit den
-        Kreuztests in tests/rules/security.test.js.
 
-   Was hier NICHT geprüft wird: dass ein Fremder mit geratener Kennung
-   nichts sieht. Das entscheiden die Sicherheitsregeln, nicht die App —
-   und es steht in tests/rules/security.test.js, sobald die Regeln für
-   die verschachtelten Pfade fertig sind.                               */
+   Nicht geprüft: dass nach dem Anmelden das Profil gegen den Link
+   gewinnt (die Attrappe liefert kein Profil mit Firma), und dass ein
+   Fremder mit geratener Kennung nichts sieht. Beides entscheiden die
+   Regeln — siehe tests/rules/security.test.js.
+   ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
