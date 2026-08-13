@@ -17,8 +17,8 @@ unten als solches.
 | Rechteausweitung über `users` | ✅ 10 Wege geprüft, alle zu |
 | Firmencode und Abo lesbar? | ✅ nein |
 | Kundenliste aufzählbar | 🔴 **war offen — behoben** |
-| Google-Tabelle: offener Schreibweg | 🟠 **offen, siehe unten** |
-| Cloud Functions: Berechtigung je Endpunkt | ✅ 14 von 14 |
+| Google-Tabelle: offener Schreibweg | 🟠 **war offen — umgebaut, zwei Handgriffe fehlen** |
+| Cloud Functions: Berechtigung je Endpunkt | ✅ 15 von 15, jetzt bei jedem Durchlauf nachgezählt |
 | Speicher (Storage) | ✅ für jeden Client gesperrt |
 | Geheimnisse im Quelltext | ✅ nur öffentliche Web-Schlüssel |
 | Kommentare in der ausgelieferten Datei | 🟡 Hinweis, siehe unten |
@@ -56,37 +56,51 @@ Nachgewiesen in `tests/rules/rechte.test.js`, in beide Richtungen.
 
 ---
 
-## 🟠 Offen: die Google-Tabelle nimmt Daten von jedem an
+## 🟠 Umgebaut: die Google-Tabelle nahm Daten von jedem an
 
-Die App schiebt Material und Putzplan in eine Google-Tabelle. Das läuft
-über eine Apps-Script-Web-App, deren Adresse in `konfig.js` steht — und
-`konfig.js` wird an jeden Besucher ausgeliefert.
-
-`doPost` in `tools/MATERIAL-SHEETS.gs` prüft **nichts**. Wer die Adresse
-aus dem Quelltext liest, kann:
+Die App schiebt Material und Putzplan in eine Google-Tabelle. Das lief
+über eine Apps-Script-Web-App, deren Adresse in `konfig.js` stand — und
+`konfig.js` wird an jeden Besucher ausgeliefert. `doPost` prüfte
+**nichts**. Wer die Adresse aus dem Quelltext las, konnte:
 
 * beliebige Studios und Artikel in die Tabelle schreiben,
 * freien Text in das Notizblatt setzen,
 * durch wiederholte Aufrufe das Tageskontingent von Apps Script
   (rund 90 Minuten) aufbrauchen und damit den echten Abgleich lahmlegen.
 
-**Was NICHT geht:** lesen. `doGet` gibt eine feste Zeile zurück, keine
+**Was nie ging:** lesen. `doGet` gibt eine feste Zeile zurück, keine
 Daten. Und an Firestore kommt darüber niemand — die Tabelle ist eine
 Kopie, kein Zugang.
 
-**Warum es sich nicht schnell zunageln lässt:** der Browser sendet mit
-`mode:'no-cors'` direkt an die Web-App. Jedes Geheimnis, das der Browser
-mitschicken könnte, stünde in `konfig.js` und wäre damit genauso öffentlich
-wie die Adresse. Ein Token im Client ist hier Theater.
+**Warum ein Token im Browser nichts gebracht hätte:** es stünde neben
+der Adresse in derselben ausgelieferten Datei.
 
-**Der richtige Weg** ist, den Abgleich vom Browser auf den Server zu
-verlegen: eine Cloud Function schickt die Daten, das Geheimnis liegt in
-`functions/.env`, und `doPost` weist alles ohne dieses Geheimnis ab.
-Aufwand rund eine Sitzung, dazu einmal Apps Script neu bereitstellen.
+**Der Umbau** verlegt den Abgleich auf den Server:
 
-**Bis dahin gilt:** der Schaden ist auf die Tabelle begrenzt und
-reversibel — der nächste echte Abgleich überschreibt die betroffenen
-Studios wieder.
+| vorher | jetzt |
+|---|---|
+| Browser → Web-App, `mode:'no-cors'` | Browser → Cloud Function `sheetsPush` → Web-App |
+| Adresse in `konfig.js` | Adresse in `functions/.env` (`SHEETS_URL`) |
+| kein Token | Token aus `functions/.env`, geprüft in `doPost` |
+| Nutzlast wird durchgereicht | Nutzlast wird auf dem Server neu gebaut |
+| Absender kommt aus dem Browser | Absender kommt aus dem Profil |
+| keine Grenze | Anmeldung, Freigabe, Firma, Tagesgrenze (3000) |
+
+Die Function nimmt nur `art: material|putzplan` und eine Studioliste an.
+Alles andere fällt weg: Feldnamen, Längen und Typen stehen fest, ein
+zusätzliches Feld aus dem Browser erreicht die Tabelle nicht.
+
+**Zwei Handgriffe fehlen noch**, und sie kann nur der Betreiber machen:
+das Token als GitHub-Secret hinterlegen und dieselbe Zeichenkette als
+Skripteigenschaft `STUDIOCHAT_TOKEN` setzen. Solange die Eigenschaft
+fehlt, nimmt die Web-App weiter alles an — bewusst so, damit zwischen
+den Schritten nichts stehenbleibt. Anleitung: `docs/SHEETS-TOKEN.md`.
+
+Nachgewiesen in `tests/rules/funktionen.test.js` (16 Prüfungen: keine
+Anmeldung, keine Freigabe, fremde Firma, Token liegt bei, Absender aus
+dem Profil, erfundene Felder fallen weg) und in `tests/test-sheets.js`
+(der Browser ruft `script.google.com` kein einziges Mal mehr auf, mit
+Gegenprobe).
 
 ---
 
@@ -108,6 +122,20 @@ technische Notizen am Code.
 **Wer das ganz zumachen will**, braucht einen Schritt beim Ausliefern, der
 die Kommentare entfernt — und damit einen Build, den es bewusst nicht gibt
 (siehe `README.md`). Das ist eine Abwägung, keine offene Baustelle.
+
+**Nachtrag vom 13.8.:** die Frage erübrigt sich weitgehend, denn **das
+Repository steht auf öffentlich**. Der komplette Quelltext ist ohnehin
+für jeden lesbar, mitsamt Verlauf. Für die Sicherheit ändert das nichts
+an den Grenzen — die stehen in `firestore.rules` und werden auf dem
+Server durchgesetzt. Es hat aber eine harte Folge:
+
+> **Kein Geheimnis darf jemals eingecheckt werden.** Kein Token, kein
+> Passwort, kein Dienstkonto-Schlüssel — auch nicht kurz, auch nicht in
+> einem gelöschten Commit. Der Verlauf bleibt lesbar.
+
+Deshalb liegen die Zugangsdaten in GitHub-Secrets und landen erst beim
+Ausrollen in `functions/.env` (das in `.gitignore` steht). Das Token für
+die Google-Tabelle geht denselben Weg.
 
 ---
 
@@ -150,9 +178,11 @@ selbst nicht.
 **Abo.** Ein Mitarbeiter kommt nicht heran; ein Chef sieht seines, kann es
 aber nicht auf `premium` setzen.
 
-**Cloud Functions.** Alle 14 Endpunkte prüfen die Berechtigung:
-sieben `requireAdmin`, drei `requireChef`, zwei `requireAuth`, zwei
-HTTPS-Auslöser mit Geheim-Schlüssel.
+**Cloud Functions.** Alle Endpunkte prüfen die Berechtigung: dreizehn
+Aufrufe aus der App über `requireAdmin`/`requireChef`/`requireAuth`,
+zwei HTTPS-Auslöser über einen Geheim-Schlüssel. Nachgezählt wird das
+jetzt bei jedem Durchlauf (`tests/test-funktionen-pfade.js`) — von Hand
+sieht man den fünfzehnten nicht mehr.
 
 **Speicher.** `allow read, write: if false` — für jeden Client gesperrt.
 Dort liegt der nächtliche Vollexport der Datenbank.
@@ -183,9 +213,11 @@ sollen: sie identifizieren das Projekt, sie berechtigen zu nichts.
 
 ```
 tests/test-xss.js              8 Muster · 12 Ansichten · 0 ausgeführt
+tests/test-sheets.js           8 Prüfungen, davon 1 Gegenprobe
+tests/test-funktionen-pfade.js 15 Endpunkte, jeder mit Berechtigungsprüfung
 tests/rules/rechte.test.js     23 Prüfungen, davon 4 Gegenproben
 tests/rules/security.test.js   165
 tests/rules/kreuz.test.js      162
 tests/rules/umzug.test.js      12
-tests/rules/funktionen.test.js 83
+tests/rules/funktionen.test.js 99
 ```

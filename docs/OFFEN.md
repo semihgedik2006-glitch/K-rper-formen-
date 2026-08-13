@@ -84,12 +84,18 @@ geringer als bei allem oben.
 
 ## Aus dem Sicherheits-Durchlauf vom 13. August
 
-Vollständig in `docs/SICHERHEIT.md`. Zwei Punkte bleiben:
+Vollständig in `docs/SICHERHEIT.md`. Ein Punkt bleibt:
 
 | Was | Wer | Aufwand |
 |---|---|---|
-| **Google-Tabelle nimmt Daten von jedem an.** Die Apps-Script-Adresse steht in `konfig.js` und ist damit öffentlich; `doPost` prüft nichts. Ein Token im Browser hilft nicht — es stünde dort genauso. Der Abgleich muss vom Browser auf eine Cloud Function wandern, das Geheimnis nach `functions/.env`. Schaden bis dahin: auf die Tabelle begrenzt und reversibel, kein Zugang zu Firestore. | ich | eine Sitzung, dazu einmal Apps Script neu bereitstellen (du) |
 | **Keine Content-Security-Policy.** Heute ist alles maskiert (8 Muster geprüft), eine CSP wäre die zweite Reihe. Einbauen heisst `script-src` einschränken, und die App lädt SDK und Schriften von Google — eine zu enge CSP legt die App still. | ich | eine Runde mit Nachmessen |
+
+**Die Google-Tabelle ist am 13.8. umgebaut** — der Browser kennt die
+Adresse der Web-App nicht mehr, gesendet wird über die Cloud Function
+`sheetsPush`. Zugenagelt ist es aber erst, wenn das Token an beiden
+Stellen liegt: zwei Handgriffe, die nur du machen kannst, Schritt für
+Schritt in `docs/SHEETS-TOKEN.md`. Bis dahin nimmt die Tabelle weiter
+alles an — genau wie vorher, also kein Rückschritt.
 
 ## Offen, weil noch niemand hingeschaut hat
 
@@ -196,7 +202,7 @@ sichern"** — nur für den Chef, die Rolle wird auf dem Server geprüft.
 ### Konfiguration
 
 Alles Kundenspezifische steht jetzt in **`konfig.js`**: Firma, Studios,
-Firebase-Zugang, Push-Schlüssel, Tabellen-Adresse, Fristen. `index.html` lädt
+Firebase-Zugang, Push-Schlüssel, Schalter für die Tabelle, Fristen. `index.html` lädt
 sie per `<script src>`, `sw.js` per `importScripts` — dieselbe Datei für
 beide. Vorher standen die Firebase-Daten an zwei Stellen; beim zweiten Kunden
 wäre garantiert eine vergessen worden.
@@ -219,6 +225,7 @@ Chef-Zugang entsteht bei der Einrichtung des Projekts, jeder weitere über
 | **Vier Pflichtfelder** in *Verwaltung → System → ⚖️ Rechtliche Angaben* eintragen | Ohne vollständiges Impressum darf die App nicht öffentlich genutzt werden. Fünf Minuten. Solange es fehlt, warnt die App selbst. Details in `RECHT.md`. |
 | **Firmencode setzen** in *Verwaltung → Team* | Solange er leer ist, kann sich jeder anmelden, der die Adresse kennt — und der Reiter „Konto anlegen" erscheint erst dann. |
 | **Datenschutztext durchsehen lassen** vor dem Einsatz im Team | Krankmeldungen sind Gesundheitsdaten, die Anwesenheitsanzeige liest sich als Kontrolle, Stimme ist biometrisch. Siehe `RECHT.md`. |
+| **Token für die Google-Tabelle setzen** — `docs/SHEETS-TOKEN.md` | Zwei Handgriffe: GitHub-Secret `SHEETS_TOKEN` und dieselbe Zeichenkette als Skripteigenschaft `STUDIOCHAT_TOKEN`. Erst danach weist die Web-App fremde Sendungen ab. Zehn Minuten. |
 | **„Google-Tabellen abgleichen"** einmal drücken und prüfen, ob alle 14 Studios erscheinen | Lässt sich hier nicht nachstellen, weil der Abgleich auf ein echtes Tabellenblatt schreibt. |
 | **Probelauf-Projekt anlegen** — `PROBELAUF-EINRICHTEN.md` | Nur für Stufe C (Umzug auf mehrere Firmen). **Nicht dringend**, wird erst gebraucht, wenn der Umzug vorbereitet wird. 20–30 Minuten, keine Kosten. |
 

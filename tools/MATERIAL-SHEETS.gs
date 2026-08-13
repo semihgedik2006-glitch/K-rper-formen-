@@ -44,11 +44,39 @@
  * ---------------------------------------------------------------------
  */
 
+/**
+ * Token aus den Skript-Eigenschaften.
+ * Projekteinstellungen → Skripteigenschaften → STUDIOCHAT_TOKEN.
+ *
+ * Ist nichts hinterlegt, nimmt die Web-App jede Sendung an — so wie
+ * vorher. Das ist Absicht: der neue Code kann bereitgestellt werden,
+ * bevor die Cloud Function das Token mitschickt, ohne dass der Abgleich
+ * dazwischen ausfällt. Zugenagelt ist es erst, wenn die Eigenschaft
+ * gesetzt ist. Reihenfolge in docs/SHEETS-TOKEN.md.
+ */
+function tokenErwartet() {
+  try {
+    return String(PropertiesService.getScriptProperties()
+      .getProperty('STUDIOCHAT_TOKEN') || '').trim();
+  } catch (err) {
+    return '';
+  }
+}
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     var data = JSON.parse(e.postData.contents);
+
+    /* Die Adresse dieser Web-App ist nicht geheim — sie stand jahrelang
+       im Quelltext der App. Das Token ist die Grenze: es kennt nur die
+       Cloud Function (functions/.env), nicht der Browser. */
+    var soll = tokenErwartet();
+    if (soll && String(data.token || '') !== soll) {
+      console.warn('doPost: Sendung ohne gueltiges Token abgewiesen');
+      return ContentService.createTextOutput('Fehler: Token');
+    }
 
     if (data.type === 'putzplan')       return handlePutzplan([data]);
     if (data.type === 'putzplan-alle')  return handlePutzplan(data.studios || []);

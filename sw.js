@@ -49,8 +49,7 @@ self.addEventListener('fetch', function (e) {
   // Live-Verbindungen von Firebase/Google NIE cachen
   if (h.indexOf('googleapis.com') >= 0 || h.indexOf('firebaseio') >= 0 ||
       h.indexOf('identitytoolkit') >= 0 || h.indexOf('securetoken') >= 0 ||
-      h.indexOf('google-analytics') >= 0 || h.indexOf('analytics.google') >= 0 ||
-      h.indexOf('script.google') >= 0 || h.indexOf('script.googleusercontent') >= 0) return;
+      h.indexOf('google-analytics') >= 0 || h.indexOf('analytics.google') >= 0) return;
 
   // HTML/Navigation: erst Netz, offline aus dem Cache.
   // cache:'no-store' ist Pflicht — sonst liefert der Browser trotz „Netz

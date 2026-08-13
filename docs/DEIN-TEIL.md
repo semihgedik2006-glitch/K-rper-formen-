@@ -1,6 +1,7 @@
 # Was du machen musst
 
-**Stand 9. August 2026: ein Schritt offen — Schritt 0, der Firmencode.**
+**Stand 13. August 2026: zwei Schritte offen — Schritt 0 (Firmencode) und
+Schritt G (Token für die Google-Tabelle).**
 Zwei Minuten, direkt in der App, ohne Google-Konsole. Alles andere (A–F)
 ist erledigt und bleibt hier als Nachschlagewerk stehen – für den nächsten
 Kunden oder ein neues Firebase-Projekt.
@@ -18,7 +19,8 @@ Chef in der App.
 > jetzt von allein, wenn eine Nacht nicht durchkommt. Apps Script ist neu
 > bereitgestellt, Wischen im Putzplan am Gerät bestätigt.
 >
-> **Offen ist nur noch Schritt 0 direkt darunter.**
+> **Offen sind Schritt 0 direkt darunter und Schritt G (Token für die
+> Google-Tabelle, neu am 13.8.).**
 
 Der Reihe nach abarbeiten. Die Begründungen stehen weiter unten; hier steht
 nur, was du klickst. **Melde dich vorher mit dem Google-Account an, dem
@@ -157,6 +159,27 @@ Einmal im **Putzplan** über eine Zeile nach rechts wischen. Bei den Aufgaben
 hast du bestätigt, dass es geht; im Putzplan ist es derselbe Code, aber nie
 an einem echten Gerät ausprobiert – die automatischen Durchläufe können keine
 Berührungen nachstellen.
+
+## G · Google-Tabelle: Token setzen (10 Minuten) — NEU, 13.8.
+
+Bis jetzt nimmt die Web-App der Tabelle Sendungen von jedem an, der ihre
+Adresse kennt — und die stand bis heute im Quelltext der App. Der Weg
+dorthin läuft jetzt über den Server; damit die Web-App fremde Sendungen
+auch wirklich abweist, fehlt ein gemeinsames Token an zwei Stellen.
+
+Schritt für Schritt, mit den Klickwegen: **`docs/SHEETS-TOKEN.md`**.
+
+Kurz: eine lange Zufallszeichenkette ausdenken → bei GitHub als Secret
+`SHEETS_TOKEN` hinterlegen und die Functions ausrollen → dann in der
+Tabelle unter *Apps Script → Projekteinstellungen → Skripteigenschaften*
+dieselbe Zeichenkette als `STUDIOCHAT_TOKEN` eintragen.
+
+> **Die Reihenfolge zählt.** Erst der Server, dann das Skript. Andersherum
+> pausiert der Abgleich, bis beides steht.
+
+**Geprüft, wenn:** App → Verwaltung → System →
+**„🔄 Google-Tabellen abgleichen"** läuft durch und die Studios stehen in
+der Tabelle.
 
 ---
 
@@ -337,6 +360,7 @@ dass gar nicht gesichert wurde.
 | Code einmal ins Team gegeben | ☐ |
 | Apps Script eingefügt und neu bereitgestellt | ☑ 9.8. |
 | Wischen im Putzplan am Gerät geprüft | ☑ 9.8. |
+| **Token für die Google-Tabelle gesetzt** *(Schritt G)* | ☐ |
 
 > **Zum Budget:** 0 € heißt, du bekommst die Mail beim allerersten Cent. Ein
 > Budget **stoppt nichts**, es meldet nur – Google rechnet weiter. Wenn die

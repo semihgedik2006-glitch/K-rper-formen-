@@ -65,7 +65,7 @@ console.log('\n── Der Probelauf fasst nichts Echtes an ──');
 {
   const k = laden('formenchat-probe.web.app');
   pruefe('keine Push-Nachrichten', !k.vapidKey);
-  pruefe('keine echte Google-Tabelle', !k.sheetsWebhook);
+  pruefe('keine echte Google-Tabelle', k.sheetsAbgleich === false);
   pruefe('Speicher zeigt auf das Probe-Projekt',
     /formenchat-probe/.test(k.firebase.storageBucket), k.firebase.storageBucket);
 }

@@ -48,9 +48,12 @@
        Leer: die App laeuft normal, nur ohne Meldungen bei geschlossener App. */
     vapidKey: 'BG-Ibkh7PLobYuR7_q2HC63kh7krkKYDi7zUzIAjoiCddfGr1vwq0Kaq1yDNvP27twUprl4H8o8y-9TC58hn_yI',
 
-    /* Adresse der Apps-Script-Web-App, siehe tools/MATERIAL-SHEETS.gs.
-       Leer: Material und Putzplan laufen normal, nur ohne Tabelle. */
-    sheetsWebhook: 'https://script.google.com/macros/s/AKfycbygK9l443-M3GBhVDYTZQ0tNkGRvSRWYMgeOn6ksNdBDLMb6uc21Vm_20XfyUeibXu_aw/exec',
+    /* Material und Putzplan in eine Google-Tabelle spiegeln.
+       Gesendet wird von der Cloud Function sheetsPush; Adresse und Token
+       der Apps-Script-Web-App liegen in functions/.env, nicht hier —
+       diese Datei bekommt jeder Besucher.
+       false: Material und Putzplan laufen normal, nur ohne Tabelle. */
+    sheetsAbgleich: true,
 
     /* Erledigte einmalige Aufgaben wandern nach so vielen Stunden ins Archiv.
        Wiederkehrende bleiben unberuehrt. */
@@ -157,8 +160,8 @@
     };
     KONFIG.mandant       = true;
     KONFIG.firma         = 'koerperformen';
-    KONFIG.vapidKey      = '';   // kein Push in der Probe
-    KONFIG.sheetsWebhook = '';   // keine echte Tabelle beschreiben
+    KONFIG.vapidKey       = '';     // kein Push in der Probe
+    KONFIG.sheetsAbgleich = false;  // keine echte Tabelle beschreiben
     KONFIG.firma_anzeige = 'PROBELAUF';
   }
 

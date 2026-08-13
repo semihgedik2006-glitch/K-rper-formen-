@@ -4288,9 +4288,11 @@ var DEFAULT_MATERIALS = [
   "Unterwäsche S","Unterwäsche M","Unterwäsche L","Unterwäsche XL","Unterwäsche XXL"
 ];
 
-/* Google-Sheets-Live-Sync: URL der Apps-Script-Web-App (siehe tools/MATERIAL-SHEETS.gs + Anleitung).
-   Solange leer: Material läuft normal, nur ohne automatische Google-Tabelle. */
-var SHEETS_WEBHOOK_URL = KONFIG.sheetsWebhook;
+/* Abgleich mit der Google-Tabelle. Gesendet wird über die Cloud Function
+   sheetsPush, nicht aus dem Browser: die Adresse der Apps-Script-Web-App
+   stand früher hier und damit im Quelltext jedes Besuchers.
+   false: Material und Putzplan laufen normal, nur ohne Tabelle. */
+var SHEETS_ABGLEICH = KONFIG.sheetsAbgleich !== false;
 
 /* Erledigte (einmalige) Aufgaben verschwinden nach so vielen Stunden aus der
    aktiven Liste und landen im Chef-Archiv. Wiederkehrende bleiben davon unberührt. */
@@ -12070,17 +12072,28 @@ function saveMaterialNow(){
   }).catch(function(e){ toast(errMsg(e),true); });
 }
 
-/* Material live in eine Google-Tabelle pushen (Apps-Script-Web-App) */
-function pushToSheets(sk, items){
-  if(!SHEETS_WEBHOOK_URL) return;
+/* ── Der einzige Weg in die Google-Tabelle ──
+   Der Browser kennt die Adresse der Apps-Script-Web-App nicht mehr. Er
+   ruft sheetsPush auf; die Function prüft Anmeldung und Firma, baut die
+   Nutzlast neu auf und legt das Token dazu, das nur dort liegt.
+
+   Weiterhin ohne Rückmeldung an den Benutzer: die Tabelle ist eine
+   Kopie. Steht sie still, fehlt in der App nichts, und ein Fehler dort
+   soll niemanden beim Zählen unterbrechen. Der Chef gleicht mit dem
+   Knopf im Verwaltungsbereich komplett ab. */
+function sheetsSenden(art, studios){
+  if(!SHEETS_ABGLEICH || !studios || !studios.length) return Promise.resolve();
   try{
-    var out=items.map(function(it){ return {name:it.name, have:it.have||0, need:itemNeed(it)}; });
-    fetch(SHEETS_WEBHOOK_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({ studio:studioName(sk), studioKey:sk, items:out, updatedBy:session.name, ts:Date.now() })
-    }).catch(function(){});
-  }catch(e){}
+    return firebase.app().functions(KONFIG.region).httpsCallable('sheetsPush')({
+      art:art, studios:studios
+    }).catch(function(e){ console.warn('Tabelle:', e && e.message); });
+  }catch(e){ return Promise.resolve(); }
+}
+
+/* Material eines Studios in die Tabelle spiegeln */
+function pushToSheets(sk, items){
+  var out=items.map(function(it){ return {name:it.name, have:it.have||0, need:itemNeed(it)}; });
+  sheetsSenden('material', [{ studio:studioName(sk), studioKey:sk, items:out }]);
 }
 function addMaterial(){
   var name=$('matNewName').value.trim(); if(!name) return;
@@ -12426,7 +12439,7 @@ var _ppSheetTimers={}, _ppSheetBusy={}, _ppSheetPending={};
    (z. B. 3 Aufgaben hintereinander) zu einer Sendung zusammen. */
 var SHEET_DELAY_MS = 250;
 function schedulePutzplanSheets(sk){
-  if(!SHEETS_WEBHOOK_URL || !sk) return;
+  if(!SHEETS_ABGLEICH || !sk) return;
   if(_ppSheetBusy[sk]){ _ppSheetPending[sk]=true; return; }
   clearTimeout(_ppSheetTimers[sk]);
   _ppSheetTimers[sk]=setTimeout(function(){ runPutzplanSheets(sk); }, SHEET_DELAY_MS);
@@ -12462,21 +12475,18 @@ function putzplanDatenHolen(sk){
     var notes=res[1].docs.map(function(d){ var n=d.data();
       return { text:n.text||'', by:n.by||'', kuerzel:n.kuerzel||'',
                ts:n.ts||0, zeit:fmtDateTime(n.ts) }; });
-    return { studio:studioName(sk), studioKey:sk, tasks:tasks, notes:notes,
-             updatedBy:session.name, ts:Date.now() };
+    /* Kein updatedBy: wer gesendet hat, steht im Profil und wird in der
+       Function eingesetzt. Ein Name aus dem Browser wäre ein Feld, das
+       jeder frei wählen kann. */
+    return { studio:studioName(sk), studioKey:sk, tasks:tasks, notes:notes };
   });
 }
 
 function pushPutzplanToSheets(sk){
-  if(!SHEETS_WEBHOOK_URL || !sk) return Promise.resolve();
-  return putzplanDatenHolen(sk).then(function(d){
-    d.type='putzplan';
-    return fetch(SHEETS_WEBHOOK_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(d)
-    }).catch(function(){});
-  }).catch(function(){});
+  if(!SHEETS_ABGLEICH || !sk) return Promise.resolve();
+  return putzplanDatenHolen(sk)
+    .then(function(d){ return sheetsSenden('putzplan', [d]); })
+    .catch(function(){});
 }
 
 /* ── Komplett-Abgleich: ALLE Studios in die Tabelle schreiben ──
@@ -12486,18 +12496,12 @@ function pushPutzplanToSheets(sk){
 /* Ebenfalls eine einzige Sendung – siehe syncAllMaterialToSheets. Gelesen
    wird trotzdem Studio für Studio, das sind kleine Abfragen. */
 function syncAllPutzplanToSheets(){
-  if(!SHEETS_WEBHOOK_URL) return Promise.resolve();
+  if(!SHEETS_ABGLEICH) return Promise.resolve();
   var keys=STUDIOS.map(studioKey);
   return Promise.all(keys.map(function(sk){
     return putzplanDatenHolen(sk).catch(function(){ return null; });
   })).then(function(res){
-    var studios=res.filter(function(x){ return !!x; });
-    if(!studios.length) return;
-    return fetch(SHEETS_WEBHOOK_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({ type:'putzplan-alle', studios:studios })
-    }).catch(function(){});
+    return sheetsSenden('putzplan', res.filter(function(x){ return !!x; }));
   });
 }
 /* Alle Studios in EINER Sendung. Vierzehn einzelne formatieren jedes Mal
@@ -12505,28 +12509,22 @@ function syncAllPutzplanToSheets(){
    Zeitgrenze von Apps Script, und dann fehlen einzelne Studios, ohne dass
    irgendwo eine Fehlermeldung steht. */
 function syncAllMaterialToSheets(){
-  if(!SHEETS_WEBHOOK_URL) return Promise.resolve();
+  if(!SHEETS_ABGLEICH) return Promise.resolve();
   return S('inventory').get().then(function(snap){
     var studios=[];
     snap.forEach(function(d){
       var items=(d.data().items)||[];
       studios.push({
         studio:studioName(d.id), studioKey:d.id,
-        items:items.map(function(it){ return {name:it.name, have:it.have||0, need:itemNeed(it)}; }),
-        updatedBy:session.name, ts:Date.now()
+        items:items.map(function(it){ return {name:it.name, have:it.have||0, need:itemNeed(it)}; })
       });
     });
-    if(!studios.length) return;
-    return fetch(SHEETS_WEBHOOK_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({ type:'material-alle', studios:studios })
-    }).catch(function(){});
+    return sheetsSenden('material', studios);
   }).catch(function(){});
 }
 /* Beides – wird beim Chef-Login und über den Knopf im Chef-Bereich genutzt */
 function syncAllToSheets(silent){
-  if(!SHEETS_WEBHOOK_URL){ if(!silent) toast('Keine Tabellen-Verbindung eingerichtet.',true); return Promise.resolve(); }
+  if(!SHEETS_ABGLEICH){ if(!silent) toast('Der Tabellen-Abgleich ist abgeschaltet.',true); return Promise.resolve(); }
   if(!silent) toast('Tabellen werden abgeglichen …');
   return syncAllMaterialToSheets()
     .then(syncAllPutzplanToSheets)

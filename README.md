@@ -176,6 +176,13 @@ früheren dreht man vergeblich. Ein Selektor darf mehrfach vorkommen
 Alles drei prüft `tests/test-gestaltung.js`, die `@keyframes`
 `tests/test-bewegung-doppelt.js`.
 
+**Kein Geheimnis im Repo.** Das Repository ist öffentlich, und der Verlauf
+bleibt auch nach einem Löschen lesbar. Zugangsdaten liegen deshalb in
+GitHub-Secrets und landen erst beim Ausrollen in `functions/.env` — das steht
+in `.gitignore` und wird nie eingecheckt. Was im Quelltext stehen darf: die
+Firebase-Web-Schlüssel (sie identifizieren das Projekt und berechtigen zu
+nichts) und Adressen, die ohnehin öffentlich sind.
+
 ---
 
 ## Dokumentation
@@ -188,7 +195,8 @@ Alles unter `docs/`.
 `IDEEN.md`
 
 **Sicherheit**
-`SICHERHEIT.md` was geprüft wurde, was gefunden wurde, was offen ist
+`SICHERHEIT.md` was geprüft wurde, was gefunden wurde, was offen ist ·
+`SHEETS-TOKEN.md` die Google-Tabelle gegen fremde Sendungen sperren
 
 **Betrieb**
 `OFFEN.md` was noch aussteht · `DEIN-TEIL.md` Handgriffe für den Betreiber ·

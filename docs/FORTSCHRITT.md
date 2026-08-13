@@ -2664,6 +2664,89 @@ Forensik: 0 Funde in allen sechs Kategorien
 
 ---
 
+## Sitzung 34 · Sicherheits-Durchlauf und die Google-Tabelle 🔴🟢
+
+Der zweite Durchlauf (der erste, 12.8., ging nur um Firmengrenzen). Voll
+in `docs/SICHERHEIT.md`; hier nur, was gefunden und was gebaut wurde.
+
+### 🔴 Die vollständige Kundenliste war öffentlich abrufbar
+
+`match /firmen/{f}` stand auf `allow read: if true`. In Firestore erlaubt
+`read` **beides**: ein Dokument holen (`get`) und die Sammlung auflisten
+(`list`). Ohne Anmeldung waren damit Firmenname, Kontenzahl, Studiozahl
+und Anlegedatum aller Kunden abrufbar.
+
+Das hebelte genau die Massnahme aus, die es verhindern sollte: Kennungen
+bekommen eine Zufallsendung (`mueller-7f3a`), damit man Kunden nicht
+durch Raten findet. Raten war nicht nötig.
+
+```
+allow get:  if true;               // der Anmeldebildschirm braucht den Namen
+allow list: if istAdminKonto();    // die Kundenliste gehoert dem Betreiber
+```
+
+### 🟠 Die Google-Tabelle nahm Daten von jedem an
+
+Die Adresse der Apps-Script-Web-App stand in `konfig.js` — also im
+Quelltext jedes Besuchers — und `doPost` prüfte nichts. Ein Token im
+Browser hätte daran nichts geändert: es stünde daneben.
+
+| | vorher | jetzt |
+|---|---|---|
+| Weg | Browser → Web-App | Browser → `sheetsPush` → Web-App |
+| Adresse | `konfig.js` | `functions/.env` |
+| Token | keins | nur auf dem Server, geprüft in `doPost` |
+| Nutzlast | durchgereicht | auf dem Server neu gebaut |
+| Absender | aus dem Browser | aus dem Profil |
+| Grenze | keine | Anmeldung, Freigabe, Firma, 3000/Tag |
+
+`konfig.js` hat statt der Adresse nur noch den Schalter
+`sheetsAbgleich`. Die Web-App weist ohne Token ab — **sobald das Token
+gesetzt ist**; solange die Skripteigenschaft fehlt, nimmt sie weiter
+alles an. Das ist Absicht, damit zwischen den beiden Handgriffen nichts
+stehenbleibt. Anleitung: `docs/SHEETS-TOKEN.md`, Schritt G in
+`DEIN-TEIL.md`.
+
+### Was geprüft wurde und hielt
+
+| | |
+|---|---|
+| Eingeschleuster Code | 8 Muster · 12 Ansichten · **0 ausgeführt**, 31 Fundstellen bleiben Text |
+| Rechteausweitung | 10 Wege (`admin:true`, `role:'chef'`, Firma wechseln, sich selbst freischalten) — alle zu |
+| Firmencode, Abo | für Mitarbeiter und ohne Anmeldung nicht lesbar |
+| Cloud Functions | 15 von 15 Endpunkten prüfen die Berechtigung |
+| Speicher | für jeden Client gesperrt |
+| Geheimnisse im Repo | keine, nur öffentliche Web-Schlüssel |
+
+### Zwei Dinge, die dabei nebenbei klar wurden
+
+**Das Repository ist öffentlich.** Der Quelltext ist ohnehin für jeden
+lesbar, mitsamt Verlauf. An den Grenzen ändert das nichts — die stehen
+in `firestore.rules`. Es macht aber eine Regel unumgänglich: kein Token,
+kein Passwort, kein Dienstkonto-Schlüssel darf jemals eingecheckt
+werden, auch nicht kurz. Steht jetzt in `README.md`.
+
+**Zwei Tests hätten fast Falsches behauptet.** Eine Gegenprobe setzte
+`admin:true` auf dasselbe Konto, mit dem danach weitergeprüft wurde —
+drei „Funde" waren in Wahrheit der Testaufbau. Und die XSS-Gegenprobe
+las `innerText`, der nur Sichtbares liefert; von zwölf Ansichten ist
+immer nur eine im Bild, also meldete sie „nichts geprüft". Beides
+korrigiert, beides am Fundort kommentiert.
+
+### Prüfung
+
+```
+Regeln 165 · Kreuz 162 · Rechte 23 · Umzug 12 · Functions 99   Emulator
+XSS 8 Muster · Tabelle 8 Prüfungen · Endpunkte 15              Browser/Text
+```
+
+Neu: `tests/rules/rechte.test.js`, `tests/test-xss.js`,
+`tests/test-sheets.js`, `tests/stub-xss.js`; erweitert:
+`tests/rules/funktionen.test.js` (+16), `tests/test-funktionen-pfade.js`
+(jeder Endpunkt).
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
