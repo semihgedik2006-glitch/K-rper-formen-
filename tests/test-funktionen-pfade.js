@@ -123,7 +123,10 @@ const AUSNAHME = {
 };
 plaene.forEach(b => {
   const t = b.text.join('\n');
-  if (t.indexOf('alleFirmen()') >= 0) {
+  /* alleFirmenUndFlach() zählt mit: dieselbe Schleife, zusätzlich die
+     flachen Pfade. Gebraucht, solange eine Anwendung noch flach
+     schreibt — bei den Terminen tut wachstum.html das. */
+  if (t.indexOf('alleFirmen()') >= 0 || t.indexOf('alleFirmenUndFlach()') >= 0) {
     pruefe(b.name + ': läuft über alleFirmen()', true);
     return;
   }
@@ -180,6 +183,29 @@ anfragen.forEach(b => {
     '    return { alles: "frei" };', '  });'] };
   pruefe('Gegenprobe: ein Endpunkt ohne Prüfung wird erkannt',
     !PRUEFUNG.test(rumpf(erfunden)));
+}
+
+/* ── Termine: der Zeitplan muss beide Welten sehen ──
+   wachstum.html schreibt nach appointments/, nicht nach
+   firmen/<kennung>/appointments. Der Auslöser hängt an beiden Pfaden,
+   der Zeitplan lief bis 13.8. nur über die Firmen — Erinnerung und
+   Nachfassen blieben still aus. Ein Ausfall ohne Fehlermeldung. */
+console.log('\n── Termine erreichen beide Welten ──');
+{
+  const plan = bloecke.find(b => b.name === 'appointmentMailScheduler');
+  const t = plan ? plan.text.join('\n') : '';
+  pruefe('appointmentMailScheduler gefunden', !!plan);
+  pruefe('er läuft über alleFirmenUndFlach(), nicht nur über alleFirmen()',
+    t.indexOf('alleFirmenUndFlach()') >= 0,
+    'sonst bekommt niemand mehr eine Erinnerung, der über wachstum.html gebucht wurde');
+  pruefe('die Hilfsfunktion gibt es auch',
+    quelle.indexOf('async function alleFirmenUndFlach') >= 0);
+  /* Gegenprobe: nur die Termine brauchen das. Nähme jeder Zeitplan die
+     flachen Pfade mit, wäre die Trennung der Firmen wieder aufgeweicht. */
+  const andere = plaene.filter(b => b.name !== 'appointmentMailScheduler'
+    && b.text.join('\n').indexOf('alleFirmenUndFlach()') >= 0);
+  pruefe('GEGENPROBE kein anderer Zeitplan nimmt die flachen Pfade mit',
+    andere.length === 0, andere.map(b => b.name).join(', '));
 }
 
 console.log(errs.length

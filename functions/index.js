@@ -149,6 +149,26 @@ function beideWelten(pfad, handler, art, opt) {
   };
 }
 
+/* ── Die beiden Welten für einen Zeitplan ─────────────────────────────
+   Ein Auslöser hängt an beiden Pfaden (beideWelten). Ein Zeitplan nicht:
+   der läuft über alleFirmen() und sieht damit nur firmen/<kennung>/….
+
+   Für Sammlungen, in die noch flach geschrieben wird, ist das ein
+   stiller Ausfall. Genau das war bei den Terminen der Fall:
+   wachstum.html schreibt nach appointments/, der Zeitplan suchte ab dem
+   Umzug am 10.8. nur noch unter firmen/koerperformen/appointments — die
+   Bestätigungsmail kam weiter (die hängt am Auslöser, und der hängt an
+   beiden Pfaden), Erinnerung und Nachfassen nicht mehr. Ohne Fehler,
+   ohne Eintrag, ohne dass in der App etwas anders aussieht.
+
+   Kostet zwei leere Abfragen je Lauf, solange es flach nichts gibt.
+   Fällt weg, wenn die flachen Daten aufgeräumt sind (docs/OFFEN.md). */
+async function alleFirmenUndFlach() {
+  const alle = await alleFirmen();
+  if (alle.length === 1 && alle[0] === null) return alle;
+  return alle.concat([null]);
+}
+
 /* Die Firma zu EINEM Profil — für Aufrufe aus der App, wo genau eine Person
    dahintersteht.
 
@@ -1487,7 +1507,9 @@ exports.appointmentMailScheduler = region
     const now = Date.now();
     const H = 3600000;
 
-    for (const firma of await alleFirmen()) {
+    /* Beide Welten, nicht nur die Firmen-Pfade: wachstum.html schreibt
+       Termine weiterhin flach. Siehe alleFirmenUndFlach(). */
+    for (const firma of await alleFirmenUndFlach()) {
     // Erinnerungen: Termine innerhalb der nächsten REMINDER_HOURS Stunden
     const remSnap = await W(firma).collection('appointments')
       .where('startsAt', '>=', now)

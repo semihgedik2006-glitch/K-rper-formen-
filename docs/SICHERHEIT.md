@@ -27,7 +27,7 @@ unten als solches.
 | Kommentare in der ausgelieferten Datei | 🟡 Hinweis, siehe unten |
 | Content-Security-Policy | ✅ **eingebaut**, siehe unten |
 | Bekannte Lücken in Fremdbibliotheken | 🔴 **11 gemeldet — jetzt 0** |
-| Die drei Nachbaranwendungen | 🟠 **eine Grenze war nur Anzeige — geschlossen** |
+| Die drei Nachbaranwendungen | 🔴 **drei Funde — alle behoben** |
 
 ---
 
@@ -262,6 +262,59 @@ schon vorher richtig — nur eben ungeprüft.
 
 ---
 
+## 🔴 Behoben: Erinnerungs- und Nachfass-Mails gingen seit dem Umzug nicht mehr raus
+
+Kein Sicherheitsfund, sondern einer aus dem Blick auf die
+Nachbaranwendungen — und der stillste Ausfall, den das Projekt bisher
+hatte.
+
+`wachstum.html` schreibt Termine flach nach `appointments/`. Die
+Hauptanwendung ist am 10. August auf `firmen/<kennung>/…` umgezogen; die
+Nachbaranwendungen sind dabei nicht mitgekommen. Für die Cloud Functions
+gilt seitdem:
+
+| | Weg | Stand |
+|---|---|---|
+| Bestätigung, Änderung, Storno | Auslöser, hängt an **beiden** Pfaden | lief weiter ✅ |
+| Erinnerung X Stunden vorher | Zeitplan über `alleFirmen()` | **fand nichts mehr** ❌ |
+| Nachfassen danach | dito | **fand nichts mehr** ❌ |
+
+Kein Fehler im Protokoll, kein Eintrag, in der App sieht alles normal
+aus: die Abfrage lief, sie lief nur am falschen Ort und kam leer zurück.
+Genau das Muster, vor dem `docs/MANDANT-PLAN.md` warnt — nur eben in der
+Anwendung, an die beim Umzug niemand gedacht hat.
+
+Der Zeitplan läuft jetzt über `alleFirmenUndFlach()`: dieselbe Schleife,
+zusätzlich die flachen Pfade — dieselbe Antwort, die `beideWelten()` bei
+den Auslösern schon gibt. Kostet zwei leere Abfragen je Lauf und fällt
+weg, wenn die flachen Daten aufgeräumt sind.
+
+**Was hier nicht messbar war:** ob eine Mail wirklich ankommt. Ohne
+SMTP-Zugang im Durchlauf hinterlässt der Versand keine Spur. Nachgewiesen
+ist der Weg, nicht die Zustellung (`tests/test-funktionen-pfade.js`, mit
+Gegenprobe, dass kein anderer Zeitplan die flachen Pfade mitnimmt).
+
+---
+
+## 🟠 Behoben: die Nachbarseiten arbeiteten im Probelauf in der echten Datenbank
+
+`marketing.html` und `wachstum.html` trugen die Firebase-Zugangsdaten
+fest im Quelltext — die des **Betriebs**. Die Weiche in `konfig.js`, die
+auf der Probe-Adresse auf das Probe-Projekt umstellt, erreichte sie nie.
+
+Wer also unter `formenchat-probe.web.app` eine dieser Seiten öffnete,
+arbeitete in der echten Datenbank: echte Termine ändern, echte Mails an
+Endkundinnen auslösen, echtes KI-Kontingent verbrauchen. Ein Probelauf,
+der in den Betrieb schreibt, ist schlimmer als keiner — und man sieht es
+der Seite nicht an.
+
+Beide holen die Zugangsdaten jetzt aus `konfig.js`, wie die App.
+`tests/test-probe-schalter.js` prüft für jede ausgelieferte Seite, dass
+keine `projectId` mehr im Quelltext steht — mit Gegenprobe für
+`werbung.html`, die gar kein Firebase hat und keins bekommen soll.
+
+---
+
 ## 🟡 Bleibt: Termine enthalten Kundendaten, und jeder im Betrieb sieht sie
 
 `appointments` trägt Name, E-Mail, Telefon und Notizen der Endkundinnen.
@@ -279,6 +332,29 @@ eine Regel „nur die eigenen Studios" würde diese Abfrage sofort
 abweisen. Die Einschränkung ist also kein Einzeiler in den Regeln,
 sondern Regel **und** Abfrage zusammen, mit Nachmessen. Rund eine halbe
 Sitzung.
+
+---
+
+## 🟡 Bleibt, und wird beim zweiten Kunden scharf: die Nachbarseiten kennen keine Firmen
+
+`marketing.html` und `wachstum.html` benutzen durchgehend die flachen
+Pfade — `appointments/`, `emailTemplates/`, `studioMetrics/` — nicht
+`firmen/<kennung>/…`. Die Hauptanwendung ist am 10.8. umgezogen, sie
+nicht.
+
+Heute ist das folgenlos: es gibt eine Firma. Bei zwei Kunden in
+derselben Datenbank landen beide in denselben Sammlungen, und die Regeln
+für die flachen Pfade fragen nur `istAktiv()` — **nicht, zu welcher
+Firma jemand gehört**. Dann liest Kunde A die Termine von Kunde B,
+mitsamt Namen und E-Mail-Adressen von deren Endkundinnen.
+
+Das ist heute keine offene Tür, sondern eine, die beim zweiten Kunden
+aufgeht. Die 162 Kreuztests decken sie nicht ab, weil sie die
+Firmen-Pfade prüfen — dort, wo die Hauptanwendung arbeitet.
+
+**Vor dem zweiten Kunden muss das umgestellt sein.** Zusammen mit dem
+Aufräumen der flachen Daten (`docs/OFFEN.md`), nicht davor und nicht
+danach: die Daten müssen mit umziehen.
 
 ---
 

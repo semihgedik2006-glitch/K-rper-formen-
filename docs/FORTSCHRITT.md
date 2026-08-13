@@ -2849,6 +2849,31 @@ an die alle glauben. Jetzt `isChef()`, in beiden Regelblöcken.
 Mitgeprüft: Kennzahlen, Wettbewerb, Expansion aus `wachstum.html`. Die
 standen schon richtig — nur eben ungeprüft.
 
+### 🔴 Und ein Fund, der nichts mit Sicherheit zu tun hat
+
+Beim Blick auf die Nachbaranwendungen: `wachstum.html` schreibt Termine
+flach nach `appointments/`, die Hauptanwendung ist am 10.8. auf
+`firmen/<kennung>/…` umgezogen. Die Nachbaranwendungen sind nicht
+mitgekommen.
+
+| | Weg | Stand seit 10.8. |
+|---|---|---|
+| Bestätigung, Änderung, Storno | Auslöser, hängt an beiden Pfaden | lief weiter |
+| Erinnerung vorher · Nachfassen danach | Zeitplan über `alleFirmen()` | **fand nichts mehr** |
+
+Kein Fehler, kein Eintrag, in der App sieht alles normal aus: die
+Abfrage lief, nur am falschen Ort, und kam leer zurück. Genau das
+Muster, vor dem `MANDANT-PLAN.md` warnt — in der Anwendung, an die beim
+Umzug niemand gedacht hat.
+
+Der Zeitplan läuft jetzt über `alleFirmenUndFlach()`. Dazu ein zweiter
+Fund derselben Herkunft: beide Nachbarseiten trugen die Zugangsdaten des
+**Betriebs** fest im Quelltext. Auf der Probe-Adresse arbeiteten sie
+damit in der echten Datenbank — echte Termine, echte Mails an
+Endkundinnen. Jetzt holen sie `konfig.js` wie die App, und
+`test-probe-schalter.js` prüft für jede ausgelieferte Seite, dass keine
+`projectId` mehr im Quelltext steht.
+
 ### Prüfung
 
 ```

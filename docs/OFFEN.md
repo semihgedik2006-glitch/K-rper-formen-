@@ -92,6 +92,22 @@ im Browser, Fremdbibliotheken, Nachbaranwendungen) bleiben zwei Punkte:
 | **Termine sind für jeden im Betrieb lesbar.** `appointments` trägt Name, E-Mail, Telefon und Notizen der Endkundinnen; lesen darf das jeder aktive Zugang, über alle Studios. Das steht so in den Regeln und war eine Entscheidung — aber es sind Daten Dritter. Einengen heisst Regel **und** Abfrage in `wachstum.html` zusammen ändern, weil Firestore Abfragen im Voraus prüft. | du entscheidest, ich baue | eine halbe Sitzung |
 | **`marketing.html` und `wachstum.html` ohne eigene CSP.** Zusammen 101 Ereignisse im Attribut (`onclick="…"`) — genau das, was die Regel verbietet. Erst umstellen auf `addEventListener`, dann die Regel. Beide verlangen eine Anmeldung; die Kopfzeilen aus `firebase.json` gelten für sie mit. `werbung.html` ist seit dem 13.8. mit dabei. | ich | eine Sitzung |
 
+**Zwei Funde aus dem Blick auf die Nachbaranwendungen sind behoben:**
+Erinnerungs- und Nachfass-Mails gingen seit dem Umzug am 10.8. nicht mehr
+raus (`wachstum.html` schreibt Termine flach, der Zeitplan suchte nur
+noch unter `firmen/…`), und beide Nachbarseiten arbeiteten auf der
+Probe-Adresse in der echten Datenbank, weil sie die Zugangsdaten fest im
+Quelltext trugen. Beides in `SICHERHEIT.md`.
+
+**Die eigentliche Aufräumarbeit steht aus:** `marketing.html` und
+`wachstum.html` benutzen durchgehend die flachen Pfade, nicht
+`firmen/<kennung>/…`. Bei einem Kunden ist das folgenlos. Beim zweiten
+landen beide in denselben Sammlungen — und die Regeln für die flachen
+Pfade fragen nur, ob jemand aktiv ist, nicht zu welcher Firma er gehört.
+Dann sähe der eine Kunde die Termine des anderen, mitsamt Namen und
+E-Mail-Adressen der Endkundinnen. **Das muss vor dem zweiten Kunden
+erledigt sein**, zusammen mit dem Aufräumen der flachen Daten.
+
 **Die Google-Tabelle ist am 13.8. umgebaut** — der Browser kennt die
 Adresse der Web-App nicht mehr, gesendet wird über die Cloud Function
 `sheetsPush`. Zugenagelt ist es aber erst, wenn das Token an beiden
