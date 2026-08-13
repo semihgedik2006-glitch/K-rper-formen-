@@ -546,79 +546,35 @@ service cloud.firestore {
                 && request.time.toMillis() < resource.data.ts + 3600000));
     }
 
-    /* ── Marketing-App (marketing.html): Kampagnen-Projekte ──
-       Nur der Chef. marketing.html meldet jeden anderen mit den Worten
-       "Dieser Bereich ist der Geschaeftsfuehrung vorbehalten" wieder ab —
-       waehrend hier bis zum 13.8. jeder aktive Zugang lesen und schreiben
-       durfte. Eine Oberflaeche, die mehr verspricht als die Regel haelt,
-       ist die schlechteste Sorte Grenze: alle glauben, sie stehe.
+    /* ══ STILLGELEGT am 13.8.2026 ══════════════════════════════════════
+       marketing.html und wachstum.html werden nicht mehr ausgeliefert
+       (firebase.json). Damit braucht kein Browser mehr Zugriff auf ihre
+       Sammlungen — und ohne Zugriff gibt es hier auch nichts mehr zu
+       verwechseln.
 
-       Passend dazu sitzt die Sperre der teuren KI-Aufrufe (marketingChat,
-       marketingImage) auf requireChef. Was dabei herauskommt, gehoert
-       demselben Kreis. */
+       Das schliesst zugleich den Punkt, der beim zweiten Kunden scharf
+       geworden waere: die Regeln fuer die flachen Pfade fragten nur
+       istAktiv(), nicht nach der Firma. Zwei Kunden haetten sich
+       gegenseitig in die Termine gesehen, mitsamt Namen und
+       E-Mail-Adressen ihrer Endkundinnen.
+
+       Die Cloud Functions arbeiten mit Admin-Rechten und unterliegen
+       diesen Regeln nicht; der Termin-Mailversand laeuft also weiter,
+       falls doch noch Daten liegen.
+
+       Zurueckholen: dieses false durch die Regeln ersetzen, die im
+       Verlauf stehen (git show 6253c61 -- firestore.rules), und die
+       beiden Zeilen aus firebase.json streichen.
+       ═════════════════════════════════════════════════════════════════ */
     match /mkProjects/{projectId} {
-      allow read: if isChef();
-      allow create: if isChef()
-        && request.resource.data.createdBy == request.auth.uid;
-      allow update: if isChef();
-      allow delete: if isChef();
-
-      match /versions/{versionId} {
-        allow read: if isChef();
-        allow create: if isChef()
-          && request.resource.data.createdBy == request.auth.uid;
-        // Versionen sind unveränderlich (Historie bleibt echt)
-        allow update: if false;
-        allow delete: if isChef();
-      }
+      allow read, write: if false;
+      match /versions/{versionId} { allow read, write: if false; }
     }
-
-    // ── Wachstum & Betrieb (wachstum.html) ──
-
-    // Termine: jeder Eingeloggte darf lesen/anlegen/pflegen (gleiches Muster
-    // wie Aufgaben; die Studio-Zuordnung filtert die App). Löschen: Chef
-    // oder wer den Termin angelegt hat.
-    /* Termine enthalten KUNDENNAMEN, und jeder aktive Mitarbeiter darf
-       sie lesen und aendern. Bewusste Entscheidung des Betreibers: im
-       Studio machen alle Termine, eine Einschraenkung auf den Ersteller
-       waere eine Huerde ohne Nutzen.
-
-       Wer das aendert — etwa weil ein Kunde nur die Leitung an
-       Kundendaten lassen will — engt HIER ein, nicht in der
-       Oberflaeche. Es sind personenbezogene Daten Dritter, nicht nur
-       Betriebsdaten. */
-    match /appointments/{apptId} {
-      allow read: if istAktiv();
-      allow create: if istAktiv()
-        && request.resource.data.createdBy == request.auth.uid
-        && request.resource.data.customerName is string
-        && request.resource.data.customerName.size() <= 200
-        && request.resource.data.startsAt is number;
-      allow update: if istAktiv();
-      allow delete: if isChef()
-        || (istAktiv() && resource.data.createdBy == request.auth.uid);
-    }
-
-    // E-Mail-Vorlagen (Bestätigung/Erinnerung/Follow-up/Storno):
-    // nur der Chef pflegt sie; die Server-Funktion liest per Admin-Rechten.
-    match /emailTemplates/{tplId} {
-      allow read, write: if isChef();
-    }
-
-    // Kennzahlen je Studio (Mitglieder, Auslastung, Miete …): nur Chef.
-    match /studioMetrics/{studioKey} {
-      allow read, write: if isChef();
-    }
-
-    // Wettbewerbsbeobachtung: nur Chef.
-    match /competitors/{compId} {
-      allow read, write: if isChef();
-    }
-
-    // Expansionsplanung (mögliche neue Standorte): nur Chef.
-    match /expansionLeads/{leadId} {
-      allow read, write: if isChef();
-    }
+    match /appointments/{apptId}     { allow read, write: if false; }
+    match /emailTemplates/{tplId}    { allow read, write: if false; }
+    match /studioMetrics/{studioKey} { allow read, write: if false; }
+    match /competitors/{compId}      { allow read, write: if false; }
+    match /expansionLeads/{leadId}   { allow read, write: if false; }
 
     // ── Schichtplan pro Studio ──
     match /studios/{studioKey}/shifts/{shiftId} {
@@ -1027,50 +983,16 @@ service cloud.firestore {
                     && request.time.toMillis() < resource.data.ts + 3600000)));
         }
 
+        /* Stillgelegt, siehe den Block weiter oben. */
         match /mkProjects/{projectId} {
-          allow read: if inFirma(f) && (isChef());
-          allow create: if inFirma(f) && (isChef()
-            && request.resource.data.createdBy == request.auth.uid);
-          allow update: if inFirma(f) && (isChef());
-          allow delete: if inFirma(f) && (isChef());
-
-          match /versions/{versionId} {
-            allow read: if inFirma(f) && (isChef());
-            allow create: if inFirma(f) && (isChef()
-              && request.resource.data.createdBy == request.auth.uid);
-            // Versionen sind unveränderlich (Historie bleibt echt)
-            allow update: if false;
-            allow delete: if inFirma(f) && (isChef());
-          }
+          allow read, write: if false;
+          match /versions/{versionId} { allow read, write: if false; }
         }
-
-        match /appointments/{apptId} {
-          allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (istAktiv()
-            && request.resource.data.createdBy == request.auth.uid
-            && request.resource.data.customerName is string
-            && request.resource.data.customerName.size() <= 200
-            && request.resource.data.startsAt is number);
-          allow update: if inFirma(f) && (istAktiv());
-          allow delete: if inFirma(f) && (isChef()
-            || (istAktiv() && resource.data.createdBy == request.auth.uid));
-        }
-
-        match /emailTemplates/{tplId} {
-          allow read, write: if inFirma(f) && (isChef());
-        }
-
-        match /studioMetrics/{studioKey} {
-          allow read, write: if inFirma(f) && (isChef());
-        }
-
-        match /competitors/{compId} {
-          allow read, write: if inFirma(f) && (isChef());
-        }
-
-        match /expansionLeads/{leadId} {
-          allow read, write: if inFirma(f) && (isChef());
-        }
+        match /appointments/{apptId}     { allow read, write: if false; }
+        match /emailTemplates/{tplId}    { allow read, write: if false; }
+        match /studioMetrics/{studioKey} { allow read, write: if false; }
+        match /competitors/{compId}      { allow read, write: if false; }
+        match /expansionLeads/{leadId}   { allow read, write: if false; }
 
         match /studios/{studioKey}/shifts/{shiftId} {
           allow read: if inFirma(f) && (istAktiv());

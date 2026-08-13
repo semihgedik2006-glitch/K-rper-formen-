@@ -2944,6 +2944,51 @@ nach, ob jede Marke ihr Symbol trägt.
 
 ---
 
+## Sitzung 37 · Zwei Seiten stillgelegt 🟢
+
+Ansage des Betreibers: `marketing.html` und `wachstum.html` werden nicht
+mehr gebraucht, nicht ausgebessert, nur zugesperrt — bei Bedarf
+zurückholbar.
+
+Das ist die bessere Antwort als jede Reparatur gewesen. Drei Punkte der
+Sicherheitsliste sind damit nicht abgearbeitet, sondern **weggefallen**:
+
+| Was offen war | Warum es entfällt |
+|---|---|
+| Termine für jeden im Betrieb lesbar (Daten Dritter) | kein Browser kommt mehr an `appointments` |
+| Nachbarseiten kennen keine Firmen — beim zweiten Kunden ein Datenleck | die flachen Pfade sind für alle Clients zu |
+| Beide ohne eigene CSP (101 Ereignisse im Attribut) | sie werden nicht mehr ausgeliefert |
+
+**Zwei Schlösser statt einem.** Nicht ausliefern allein reicht nicht: die
+Sammlungen wären über die Datenbank weiter erreichbar, und die Adresse
+einer HTML-Datei ist kein Geheimnis. Deshalb beides — `firebase.json`
+liefert sie nicht mehr aus, und `firestore.rules` stellt `mkProjects`,
+`appointments`, `emailTemplates`, `studioMetrics`, `competitors` und
+`expansionLeads` in **beiden** Blöcken auf `false`.
+
+**Die Dateien bleiben liegen.** Gelöscht wäre schneller, aber
+„zurückholen auf Ansage" hiesse dann Archäologie im Verlauf. So sind es
+zwei Zeilen.
+
+**Was die Tests jetzt prüfen:** nicht mehr „der Chef darf, der
+Mitarbeiter nicht", sondern dass **niemand** herankommt — 18 Sperren in
+`rechte.test.js`, dazu die Gegenprobe, dass die App selbst nicht
+mitgesperrt ist. Und in `test-probe-schalter.js`, dass beide Seiten
+weiterhin im Repo liegen, aber nicht ausgeliefert werden: eine
+ignore-Zeile ist schnell versehentlich entfernt.
+
+Die Cloud Functions bleiben unangetastet — sie arbeiten mit
+Admin-Rechten und unterliegen den Regeln nicht.
+
+```
+Regeln 165 · Kreuz 132 · Rechte 44 · Umzug 12 · Functions 99
+```
+
+Kreuz verliert 30 Prüfungen, Rechte gewinnt 11: die sechs Sammlungen
+brauchen keine Firmen-Trennung mehr, wenn niemand sie lesen darf.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

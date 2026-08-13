@@ -67,12 +67,12 @@ const SAMMLUNGEN = [
   ['certificates/z1',                         { uid: 'mitB', art: 'ersthelfer', bis: '2028-01-01' }],
   ['dms/dm_chefB_mitB',                       { participants: ['chefB', 'mitB'] }],
   ['dms/dm_chefB_mitB/messages/x1',           { uid: 'chefB', text: 'vertraulich', ts: 1 }],
-  ['mkProjects/p1',                           { name: 'Kampagne', ts: 1 }],
-  ['appointments/t1',                         { customerName: 'Kundin', startsAt: 1, createdBy: 'chefB' }],
-  ['emailTemplates/v1',                       { name: 'Vorlage', text: 'x' }],
-  ['studioMetrics/studio-0',                  { mitglieder: 120 }],
-  ['competitors/k1',                          { name: 'Wettbewerber' }],
-  ['expansionLeads/e1',                       { ort: 'Koeln' }],
+  /* mkProjects, appointments, emailTemplates, studioMetrics, competitors
+     und expansionLeads stehen hier nicht mehr: die beiden Anwendungen
+     dahinter sind am 13.8.2026 stillgelegt worden, ihre Regeln stehen
+     auf false. Die Gegenprobe dieser Datei ("der eigene Chef kommt an
+     seine Daten") gilt fuer sie nicht mehr — dass NIEMAND herankommt,
+     prueft rechte.test.js. */
   ['board/b1',                                { uid: 'chefB', text: 'Aushang', ts: 1 }],
   ['trash/tr1',                               { col: 'todos', deletedByUid: 'chefB' }],
   ['archives/2026-08-12',                     { tag: '2026-08-12' }],

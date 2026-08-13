@@ -18,9 +18,12 @@
   },
 
   "//hosting": "Ausgeliefert wird das Projektverzeichnis abzüglich der ignore-Liste. Alles, was nicht in den Browser gehört, muss dort stehen — sonst ist es öffentlich abrufbar.",
+  "//stillgelegt": "marketing.html und wachstum.html werden seit dem 13.8.2026 auf Ansage nicht mehr ausgeliefert. Sie bleiben im Repo; die beiden Zeilen unten streichen und ausrollen holt sie zurück. Die Sammlungen dahinter stehen in firestore.rules auf false.",
   "hosting": {
     "public": ".",
     "ignore": [
+      "marketing.html",
+      "wachstum.html",
       "**/.*",
       "**/node_modules/**",
       "firebase.json",

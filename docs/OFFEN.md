@@ -22,12 +22,32 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 
 | Was | Dringlichkeit | Aufwand |
 |---|---|---|
-| **Nachbarseiten auf Firmen-Pfade** — sonst liest Kunde A die Termine von Kunde B | vor dem zweiten Kunden | 1 Sitzung + Datenumzug |
-| **Termine sind für jeden im Betrieb lesbar** — Daten Dritter | deine Entscheidung | ½ Sitzung |
-| **CSP für `marketing.html` und `wachstum.html`** — 101 Ereignisse im Attribut | wenn Zeit ist | 1 Sitzung |
-| **Angriffsdurchlauf durch die drei Nachbarseiten** (wie `test-xss.js`) | wenn Zeit ist | ½ Sitzung |
 | **Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen | wenn Zeit ist | klein |
+| **Angriffsdurchlauf durch `werbung.html`** (wie `test-xss.js`) | wenn Zeit ist | klein |
 | Flache Alt-Daten aufräumen | ab Mitte September | ½ Sitzung |
+
+> **Drei Punkte sind am 13.8. weggefallen, nicht erledigt worden:**
+> `marketing.html` und `wachstum.html` sind stillgelegt. Damit sind die
+> Nachbarseiten auf den Firmen-Pfaden, ihre fehlende CSP und die für jeden
+> lesbaren Termine keine Fragen mehr — es kommt kein Browser mehr an diese
+> Sammlungen. Siehe unten.
+
+### Stillgelegt am 13. August
+
+`marketing.html` und `wachstum.html` werden nicht mehr ausgeliefert
+(`firebase.json`), und ihre Sammlungen stehen in `firestore.rules` auf
+`false`: `mkProjects`, `appointments`, `emailTemplates`, `studioMetrics`,
+`competitors`, `expansionLeads`.
+
+Die Dateien bleiben im Repo. **Zurückholen** heisst: die zwei Zeilen aus
+`firebase.json` streichen und die Regeln aus dem Verlauf zurückholen
+(`git show 6253c61 -- firestore.rules`). Vorher muss aber der Umbau auf
+die Firmen-Pfade nachgeholt werden — sonst ist die Lücke wieder da, die
+das Stilllegen geschlossen hat.
+
+Die Cloud Functions bleiben unangetastet: sie arbeiten mit Admin-Rechten
+und unterliegen den Regeln nicht. `marketingChat` und `marketingImage`
+sind weiter erreichbar, aber nur für den Chef und ohne Oberfläche.
 
 ### Bei mir · Ausbau
 

@@ -27,7 +27,7 @@ unten als solches.
 | Kommentare in der ausgelieferten Datei | 🟡 Hinweis, siehe unten |
 | Content-Security-Policy | ✅ **eingebaut**, siehe unten |
 | Bekannte Lücken in Fremdbibliotheken | 🔴 **11 gemeldet — jetzt 0** |
-| Die drei Nachbaranwendungen | 🔴 **drei Funde — alle behoben** |
+| Die drei Nachbaranwendungen | 🔴 **drei Funde behoben — zwei Seiten am 13.8. stillgelegt** |
 
 ---
 
@@ -315,68 +315,37 @@ keine `projectId` mehr im Quelltext steht — mit Gegenprobe für
 
 ---
 
-## 🟡 Bleibt: Termine enthalten Kundendaten, und jeder im Betrieb sieht sie
+## ✅ Erledigt durch Stilllegung: die beiden Nachbarseiten
 
-`appointments` trägt Name, E-Mail, Telefon und Notizen der Endkundinnen.
-Lesen und ändern darf das jeder aktive Zugang der Firma, über alle
-Studios hinweg. Das steht so in den Regeln, mit Begründung: im Studio
-machen alle Termine.
+Am 13. August auf Ansage des Betreibers: `marketing.html` und
+`wachstum.html` werden **nicht mehr ausgeliefert**, ihre Sammlungen
+stehen auf `false`. Damit sind drei Punkte, die hier als offen standen,
+keine Fragen mehr:
 
-Das ist eine Entscheidung, keine Lücke — aber es sind personenbezogene
-Daten Dritter, und deshalb steht sie hier. Wer sie ändern will, engt in
-`firestore.rules` ein, nicht in der Oberfläche.
+| Was hier stand | Warum es entfällt |
+|---|---|
+| Termine sind für jeden im Betrieb lesbar | kein Browser kommt mehr an `appointments` |
+| Die Nachbarseiten kennen keine Firmen | die flachen Pfade sind für alle Clients zu |
+| Beide ohne eigene CSP | sie werden nicht mehr ausgeliefert |
 
-**Der Haken dabei:** `wachstum.html` lädt heute alle Termine und filtert
-erst im Browser nach Studio. Firestore prüft eine Abfrage im Voraus —
-eine Regel „nur die eigenen Studios" würde diese Abfrage sofort
-abweisen. Die Einschränkung ist also kein Einzeiler in den Regeln,
-sondern Regel **und** Abfrage zusammen, mit Nachmessen. Rund eine halbe
-Sitzung.
+Der letzte Punkt war der gefährlichste: die Regeln für die flachen Pfade
+fragten nur `istAktiv()`, nicht nach der Firma. Beim zweiten Kunden
+hätten sich zwei Betriebe gegenseitig in die Termine gesehen, mitsamt
+Namen und E-Mail-Adressen ihrer Endkundinnen. Jetzt kommt niemand mehr
+heran — auch der Betreiber nicht.
 
----
+**Was das nicht ist:** eine Reparatur. Wer die Seiten zurückholt, holt
+die Lücke mit zurück. Der Umbau auf die Firmen-Pfade steht weiterhin in
+`OFFEN.md`, als Bedingung für das Zurückholen statt als eigener Punkt.
 
-## 🟡 Bleibt, und wird beim zweiten Kunden scharf: die Nachbarseiten kennen keine Firmen
+**Die Cloud Functions bleiben.** Sie arbeiten mit Admin-Rechten und
+unterliegen diesen Regeln nicht; der Termin-Mailversand liefe weiter,
+falls noch Daten liegen. `marketingChat` und `marketingImage` sind
+weiterhin erreichbar — hinter `requireChef`, aber ohne Oberfläche.
 
-`marketing.html` und `wachstum.html` benutzen durchgehend die flachen
-Pfade — `appointments/`, `emailTemplates/`, `studioMetrics/` — nicht
-`firmen/<kennung>/…`. Die Hauptanwendung ist am 10.8. umgezogen, sie
-nicht.
-
-Heute ist das folgenlos: es gibt eine Firma. Bei zwei Kunden in
-derselben Datenbank landen beide in denselben Sammlungen, und die Regeln
-für die flachen Pfade fragen nur `istAktiv()` — **nicht, zu welcher
-Firma jemand gehört**. Dann liest Kunde A die Termine von Kunde B,
-mitsamt Namen und E-Mail-Adressen von deren Endkundinnen.
-
-Das ist heute keine offene Tür, sondern eine, die beim zweiten Kunden
-aufgeht. Die 162 Kreuztests decken sie nicht ab, weil sie die
-Firmen-Pfade prüfen — dort, wo die Hauptanwendung arbeitet.
-
-**Vor dem zweiten Kunden muss das umgestellt sein.** Zusammen mit dem
-Aufräumen der flachen Daten (`docs/OFFEN.md`), nicht davor und nicht
-danach: die Daten müssen mit umziehen.
-
----
-
-## 🟡 Bleibt: `marketing.html` und `wachstum.html` ohne eigene CSP
-
-`index.html` hat sie, `werbung.html` inzwischen auch. Die beiden anderen
-nicht: dort stehen zusammen **101 Ereignisse im Attribut**
-(`onclick="…"`), und die verbietet genau die Regel, um die es geht. Erst
-müssten sie auf `addEventListener` umgestellt werden — und für beide gibt
-es bis heute keinen einzigen automatischen Durchlauf, der so einen Umbau
-absichern würde. Das ist die eigentliche Vorarbeit.
-
-Beide verlangen eine Anmeldung, beide sind interne Werkzeuge, und die
-Kopfzeilen aus `firebase.json` (kein Einbetten, `nosniff`,
-`Referrer-Policy`) gelten für sie mit.
-
-**`werbung.html` ist seit dem 13.8. mit dabei** — die öffentliche Seite,
-die jeder ohne Anmeldung aufruft. Sie hatte drei Ereignisse im Attribut;
-die sind umgestellt. Ihre Regel ist enger als die der App, weil sie
-weniger braucht: `connect-src 'none'`, `media-src 'none'`,
-`worker-src 'none'`, und Bilder nur von der eigenen Hauptseite. Kein
-Firebase, keine Datenbank, kein Weg nach draussen.
+Geprüft in `tests/rules/rechte.test.js` (18 Sperren, mit Gegenprobe, dass
+die App selbst nicht mitgesperrt ist) und in `tests/test-probe-schalter.js`
+(ausgeliefert wird sie nicht, im Repo liegt sie noch).
 
 ---
 
