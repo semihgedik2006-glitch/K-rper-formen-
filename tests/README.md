@@ -145,6 +145,7 @@ was sie sehen soll.
 | `test-csp.js` | die Sicherheitsregel der Seite: passt sie zu den Skriptblöcken, verbietet sie `unsafe-inline`, bricht sie nichts — und stoppt sie eingeschleusten Code |
 | `test-mail-versand.js` | Nodemailer 9 baut unsere Nachrichten unverändert: Empfänger, Absender, Anzeigename, Umlaute |
 | `test-eigene-aufgabe.js` | Mitarbeiter legen einmalige Aufgaben im eigenen Studio an; die Verwaltung behält ihr volles Formular |
+| `test-ueberblick.js` | der Aushang nennt die Namen derer, die nicht gelesen haben; die Studio-Tafel zeigt jeden Rückstand und sortiert danach |
 
 ### Alle auf einmal
 

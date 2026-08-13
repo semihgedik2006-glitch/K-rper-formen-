@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-f/F46R7OnfacOMhQ7hI1zMpWZ32btPLvpMLAAnIfVf8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-AUhKeS9qL3tn2eQ9UY+1AlgDQnu8biOq+nI496d6hhA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -552,8 +552,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ann-body{color:var(--text);white-space:pre-wrap;font-size:.97rem}
 .ann-target{display:inline-block;margin-top:var(--s8);font-size:.72rem;color:var(--accent-d);font-weight:600;
   background:rgba(34,211,238,.1);padding:var(--s2) var(--s8);border-radius:var(--r-pille)}
-.ann-read{display:inline-block;margin-top:var(--s8);margin-left:var(--s6);font-size:.72rem;color:var(--text-2);
+.ann-read{display:inline-flex;align-items:center;gap:var(--s4);margin-top:var(--s8);margin-left:var(--s6);
+  font-size:.72rem;color:var(--text-2);font-family:inherit;border:none;cursor:pointer;
   font-weight:600;background:rgba(255,255,255,.06);padding:var(--s2) var(--s8);border-radius:var(--r-pille)}
+/* Steht etwas aus, ist die Zahl kein Hinweis mehr, sondern eine Aufgabe. */
+.ann-read.offen{color:var(--warm-tx);background:rgba(255,179,140,.12)}
+.ann-read.auf{outline:1px solid var(--line-2)}
+.ann-wer{margin-top:var(--s6);font-size:.78rem;line-height:1.5;color:var(--text-2);
+  background:rgba(255,255,255,.04);border-radius:var(--r-sm);padding:var(--s8) var(--s10)}
+.ann-wer b{color:var(--text);font-weight:700}
 /* Angeheftete Info: bleibt oben und ist deutlich hervorgehoben */
 .ann.pinned{border-left-color:var(--accent);background:linear-gradient(180deg,rgba(56,189,248,.07),transparent)}
 .ann-pin{background:none;border:none;cursor:pointer;font-size:.95rem;opacity:.35;padding:var(--s2) var(--s4);
@@ -1832,6 +1839,14 @@ html{font-size:var(--fs,100%)}
 .chef-tab:active{transform:scale(.93)}
 .chef-tab.on{color:var(--on-accent);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
+
+/* Marken auf der Studio-Kachel: was dort offen ist, in einem Blick */
+.sm-marken{display:flex;flex-wrap:wrap;gap:var(--s4);margin-top:var(--s6)}
+.sm-marke{font-size:.66rem;font-weight:700;padding:var(--s2) var(--s6);border-radius:var(--r-pille);
+  background:rgba(255,255,255,.07);color:var(--text-2);white-space:nowrap}
+.sm-marke.warn{background:rgba(255,179,140,.14);color:var(--warm-tx)}
+.sm-marke.ok{background:rgba(52,211,153,.12);color:var(--ok-tx)}
+.studio-tile.sauber{opacity:.72}
 
 /* Zeile "Braucht Aufmerksamkeit" */
 .att-row{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) 0;
@@ -10799,16 +10814,57 @@ function renderAnnouncements(anns){
       : '';
     var readHtml='';
     if(chef){
-      var n=(a.readBy||[]).filter(function(uid){ return empUids[uid]; }).length;
-      readHtml='<span class="ann-read">'+ikon('auge')+' '+n+(totalEmp?'/'+totalEmp:'')+' gelesen</span>';
+      /* Nicht nur „7 von 12 gelesen", sondern WER fehlt. Die Zahl sagt,
+         dass etwas offen ist; der Name sagt, wen man ansprechen muss —
+         und nur das ist eine Handlung.
+
+         Zielgruppe beachten: eine Info „nur Hürth" ist für den Rest des
+         Teams nicht ungelesen, sondern nicht gemeint. */
+      var zielKey=(!a.target||a.target==='all')?null:a.target;
+      var betroffen=_employees.filter(function(e){
+        if(!zielKey) return true;
+        var keys=(e.studioKeys&&e.studioKeys.length)?e.studioKeys:(e.studios||[]).map(studioKey);
+        return keys.indexOf(zielKey)>=0;
+      });
+      var gelesenVon={}; (a.readBy||[]).forEach(function(u){ gelesenVon[u]=1; });
+      var fehlen=betroffen.filter(function(e){ return !gelesenVon[e.uid]; });
+      var n=betroffen.length-fehlen.length;
+      /* Solange die Personenliste noch nicht da ist (sie kommt aus einem
+         eigenen Beobachter), waere „0/0 gelesen" schlicht falsch. Dann
+         lieber die nackte Zahl wie frueher. */
+      if(!betroffen.length){
+        readHtml='<span class="ann-read">'+ikon('auge')+' '+(a.readBy||[]).length+' gelesen</span>';
+        return '<div class="ann'+(a.pinned?' pinned':'')+'"><div class="ann-head">'+
+          '<span class="pin">'+ikon('megafon')+'</span>'+
+          '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
+          '<div class="ann-body">'+esc(a.text)+'</div>'+
+          '<span class="ann-target">'+esc(label)+'</span>'+readHtml+'</div>';
+      }
+      readHtml='<button class="ann-read'+(fehlen.length?' offen':'')+'" data-wer="'+esc(a.id)+'">'+
+        ikon('auge')+' '+n+'/'+betroffen.length+' gelesen'+
+        (fehlen.length?' · '+fehlen.length+' offen':'')+'</button>'+
+        '<div class="ann-wer" data-werliste="'+esc(a.id)+'" hidden>'+
+          (fehlen.length
+            ? '<b>Hat es noch nicht gesehen:</b> '+
+              fehlen.map(function(e){ return esc(e.name||'?'); }).join(' · ')
+            : '<b>Alle haben es gesehen.</b>')+
+        '</div>';
     }
     return '<div class="ann'+(a.pinned?' pinned':'')+'"><div class="ann-head">'+
-      '<span class="pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>'+
+      '<span class="pin">'+ikon('megafon')+'</span>'+
       '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
       '<div class="ann-body">'+esc(a.text)+'</div>'+
       '<span class="ann-target">'+esc(label)+'</span>'+readHtml+'</div>';
   }).join('');
   if(chef){
+    area.querySelectorAll('[data-wer]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var liste=area.querySelector('[data-werliste="'+b.getAttribute('data-wer')+'"]');
+        if(!liste) return;
+        liste.hidden=!liste.hidden;
+        b.classList.toggle('auf', !liste.hidden);
+      });
+    });
     area.querySelectorAll('.ann-pin').forEach(function(b){
       b.addEventListener('click',function(){
         var on = b.getAttribute('data-on')==='1';
@@ -10843,13 +10899,63 @@ function renderStudioGrid(){
   var tt=$('studioGridTitle');
   if(tt) tt.innerHTML = ikon(tt.getAttribute('data-ikon')) +
     esc(isChef() ? 'Übersicht aller Studios' : 'Übersicht deiner Studios');
-  grid.innerHTML=managedStudios().map(function(s){
-    var sk=studioKey(s), list=cachedTodos[sk]||[];
+  /* ── Was ist in diesem Studio offen? ──
+     Vorher stand hier nur „x von y erledigt" — der Fortschritt bei den
+     Aufgaben. Wer wissen wollte, ob der Putzplan haengt oder Material
+     fehlt, musste jede Ansicht einzeln durchgehen, und das bei vierzehn
+     Studios.
+
+     Jetzt steht alles Offene in einer Kachel, und die Studios mit dem
+     meisten Rueckstand stehen oben. Nicht sortiert nach Namen: eine
+     Liste, in der man suchen muss, ist kein Ueberblick.
+
+     Abgeschaltete Bereiche zaehlen nicht mit (ansichtAn) — sonst meldet
+     die Uebersicht Rueckstand in etwas, das dieser Betrieb bewusst
+     nicht benutzt. */
+  var now=Date.now();
+  var tafel=managedStudios().map(function(s){
+    var sk=studioKey(s);
+    var list=ansichtAn('todos') ? (cachedTodos[sk]||[]) : [];
+    var offen=list.filter(function(t){ return !isDone(t) && !isArchived(t); });
+    var faellig=offen.filter(function(t){ return t.due && now>t.due; });
+    var putz=ansichtAn('putzplan')
+      ? (cachedClean[sk]||[]).filter(function(t){ return !isDone(t) && !ppAbgelaufen(t); })
+      : [];
+    var fehlt=ansichtAn('material')
+      ? (_invAll[sk]||[]).filter(function(it){ return itemNeed(it)>0; })
+      : [];
+    var defekt=0;
+    if(ansichtAn('geraete') && _devDefekte){
+      (_devDefekte||[]).forEach(function(r){ if(r.sk===sk) defekt=r.n; });
+    }
     var done=list.filter(isDone).length, total=list.length;
-    var pct=total?Math.round(done/total*100):0;
-    return '<div class="studio-tile" data-open-studio="'+esc(s)+'" style="cursor:pointer"><b>'+esc(s)+'</b>'+
-      '<div class="mini"><i style="width:'+pct+'%"></i></div>'+
-      '<small>'+(total?done+' / '+total+' erledigt':'keine Aufgaben')+'</small></div>';
+    return {
+      name:s, sk:sk, offen:offen.length, faellig:faellig.length,
+      putz:putz.length, fehlt:fehlt.length, defekt:defekt,
+      done:done, total:total, pct: total?Math.round(done/total*100):0,
+      /* Ueberfaellig und Defekt wiegen schwerer: das eine ist eine
+         gerissene Zusage, das andere kostet Umsatz. */
+      last: faellig.length*3 + defekt*3 + offen.length + putz.length + fehlt.length
+    };
+  }).sort(function(a,b){ return b.last-a.last || a.name.localeCompare(b.name,'de'); });
+
+  function marke(zahl, wort, art){
+    if(!zahl) return '';
+    return '<span class="sm-marke'+(art?' '+art:'')+'">'+zahl+' '+esc(wort)+'</span>';
+  }
+  grid.innerHTML=tafel.map(function(r){
+    var marken=marke(r.faellig,'überfällig','warn')+
+               marke(r.offen-r.faellig,'offen')+
+               marke(r.putz,'Putzpunkte')+
+               marke(r.fehlt,'Material fehlt','warn')+
+               marke(r.defekt,'defekt','warn');
+    return '<div class="studio-tile'+(r.last?'':' sauber')+'" data-open-studio="'+esc(r.name)+'" style="cursor:pointer">'+
+      '<b>'+esc(r.name)+'</b>'+
+      '<div class="mini"><i style="width:'+r.pct+'%"></i></div>'+
+      '<small>'+(r.total?r.done+' / '+r.total+' Aufgaben erledigt':'keine Aufgaben')+'</small>'+
+      (marken ? '<div class="sm-marken">'+marken+'</div>'
+              : '<div class="sm-marken"><span class="sm-marke ok">nichts offen</span></div>')+
+      '</div>';
   }).join('');
   // Kachel antippen → direkt zu den Aufgaben dieses Studios
   grid.querySelectorAll('[data-open-studio]').forEach(function(el){
@@ -14133,6 +14239,14 @@ function listenAllUsers(){
     // Die Teillisten (Team, Chefs) fallen hier mit ab – ein Beobachter
     // statt drei auf derselben Sammlung.
     if(canManage()) verteileUsers();
+    /* Und die Ankündigungen einmal nachziehen. Dort steht seit dem
+       13.8., WER eine Info noch nicht gesehen hat — das braucht die
+       Personenliste. Die beiden Beobachter kommen in beliebiger
+       Reihenfolge an; traf die Personenliste später ein, stand am
+       Aushang dauerhaft „0 gelesen", weil niemand ihn neu zeichnete.
+       Nur beim ersten Eintreffen: sonst zeichnet jede Namensänderung
+       die ganze Liste neu. */
+    if(first && canManage() && _allAnns && _allAnns.length) renderAnnouncements(_allAnns);
     // Erwähnungen (@Name) brauchen die Nutzerliste – Chat einmal neu zeichnen,
     // sobald sie da ist, sonst bleiben die Namen unmarkiert
     if(first && _curMsgs && _curMsgs.length) renderMessages(_curMsgs);
