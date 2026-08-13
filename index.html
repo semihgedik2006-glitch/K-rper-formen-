@@ -107,9 +107,9 @@
      Rundung setzt früher an und läuft weicher aus. Browser, die das
      kennen, bekommen es; alle anderen die Rundung oben. Kein Risiko. */
   --ecke:superellipse(2.2);
-  /* Kanten und Schatten: näher an Apple. Eine haarscharfe Linie, die man
-     wirklich sieht, dazu ein flacherer und engerer Schatten. Vorher
-     verschwammen die Karten weich ineinander. */
+  /* Kanten und Schatten: eine haarscharfe Linie, die man wirklich sieht,
+       dazu ein flacher und enger Schatten. Weiche Kanten lassen Karten
+       ineinander verschwimmen. */
   --shadow:0 4px 14px rgba(0,0,0,.34);--shadow-lg:0 18px 44px rgba(0,0,0,.52);
   /* Hintergrund hinter einem offenen Fenster. Eine Stelle statt sieben. */
   --scrim:rgba(6,10,7,.7);
@@ -211,9 +211,9 @@ input,textarea,select{font-family:inherit;font-size:16px}
 .btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 .btn-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1.5px solid var(--line-2)}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent-d)}
-/* Löschen und Defekt-Meldung: rot, nicht grau. Bisher hatte .btn-danger gar
-   keine eigene Gestaltung und sah aus wie ein normaler Knopf – bei genau den
-   Aktionen, die man nicht aus Versehen antippen soll. */
+/* Löschen und Defekt-Meldung: rot, nicht grau. Ohne eigene Gestaltung
+   sieht .btn-danger aus wie ein normaler Knopf — bei genau den Aktionen,
+   die man nicht aus Versehen antippen soll. */
 .btn-danger{background:rgba(251,78,109,.14);color:var(--danger-tx);border:1.5px solid rgba(251,78,109,.4)}
 .btn-danger:hover{background:rgba(251,78,109,.22);border-color:var(--danger)}
 /* 44 Pixel, nicht 36: der kleine Knopf ist trotzdem ein Fingerziel. Die
@@ -232,12 +232,11 @@ input,textarea,select{font-family:inherit;font-size:16px}
 /* ── Datum und Uhrzeit auf dem iPhone ──
    Diese beiden Feldarten bringen von iOS eine eigene Mindestbreite und
    eine eigene Schrift mit. Beides ignoriert width:100%, und im
-   zweispaltigen .row schoben sie sich rechts aus der Karte heraus –
-   sichtbar bei „Schicht eintragen": Tag, Von und Bis standen ueber dem
-   Rand, Person und Notiz nicht.
-   In Chromium faellt das nicht auf, dort sind sie von Haus aus schmal.
-   Deshalb hat es keine der 31 automatischen Pruefungen gefunden, sondern
-   erst ein Screenshot vom echten Geraet. */
+   zweispaltigen .row schieben sie sich rechts aus der Karte heraus.
+
+   In Chromium faellt das nicht auf — dort sind sie von Haus aus schmal.
+   Keine der automatischen Pruefungen findet es deshalb; gesehen hat es
+   ein Screenshot vom echten Geraet. */
 input[type="date"].inp,input[type="time"].inp,input[type="datetime-local"].inp,
 input[type="month"].inp,input[type="week"].inp{
   -webkit-appearance:none;appearance:none;
@@ -450,11 +449,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Chat ── */
 /* Die Kanalreihe ist ein FILTER innerhalb des Chats, keine zweite
-   Navigation. Vorher trug jeder Kanal Rahmen und Fläche und war 44 Pixel
-   hoch – damit sah die Reihe genauso aus wie die Reiter darüber, und drei
-   fast gleiche Pillenreihen standen übereinander. Jetzt tragen die Kanäle
-   nur Text; die Fläche gehört allein dem aktiven, und die gleitet.
-   Die 44 Pixel Fingerziel bleiben – sie sind jetzt nur unsichtbar. */
+   Navigation. Deshalb tragen die Kanäle nur Text; die Fläche gehört
+   allein dem aktiven, und die gleitet. Mit Rahmen und Fläche an jedem
+   Kanal stünden drei fast gleiche Pillenreihen übereinander.
+
+   Die 44 Pixel Fingerziel bleiben — sie sind nur unsichtbar. */
 .chat-channels{position:relative;display:flex;gap:2px;
   padding:6px clamp(14px,4vw,28px) 10px;
   overflow-x:auto;flex-shrink:0;flex-wrap:nowrap;scrollbar-width:none}
@@ -987,15 +986,17 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-radius:var(--r-pille);cursor:pointer;transition:transform .25s var(--spring)}
 .undobar button:active{transform:scale(.94)}
 
-/* Wer „Bewegung reduzieren" eingestellt hat, meint es ernst – bei
+/* Wer „Bewegung reduzieren" eingestellt hat, meint es ernst — bei
    Gleichgewichtsstoerungen loest Bewegung echte Uebelkeit aus.
-   Dauer und Animation allein reichen nicht:
-   - transition-delay/animation-delay bleiben sonst stehen. Das Element
-     bewegt sich dann zwar nicht mehr, erscheint aber trotzdem erst nach
-     einer Verzoegerung – das wirkt wie ein Hänger, nicht wie Ruhe.
-   - scroll-behavior muesste hart auf auto, sonst gleitet die Seite weiter.
-   Das JS-seitige scrollIntoView({behavior:'smooth'}) erreicht CSS gar
-   nicht – dafuer gibt es sanftScrollen() weiter unten. */
+
+   Dauer und Animation allein genuegen nicht:
+   - transition-delay und animation-delay bleiben sonst stehen. Das
+     Element bewegt sich zwar nicht mehr, erscheint aber verzoegert; das
+     wirkt wie ein Haenger, nicht wie Ruhe.
+   - scroll-behavior muss hart auf auto, sonst gleitet die Seite weiter.
+
+   scrollIntoView({behavior:'smooth'}) erreicht CSS gar nicht — dafuer
+   gibt es sanftInsBild() im Skript. */
 @media(prefers-reduced-motion:reduce){
   *{transition-duration:.01ms!important;transition-delay:0s!important;
     animation:none!important;animation-delay:0s!important;
@@ -1141,10 +1142,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    ANIMATIONEN & QUALITY-OF-LIFE
    ============================================================ */
 /* Der Ansichtswechsel steht weiter unten im Abschnitt „Bewegung im
-   Apple-Stil". Hier stand bis zum 12.8.2026 eine ZWEITE Fassung
-   (.32s ease-out) — sie wurde von der spaeteren stillschweigend
-   ueberschrieben und war toter Code. Wer hier an der Dauer drehte,
-   aenderte nichts. */
+   Apple-Stil". Hier stand einmal eine zweite Fassung, die von der
+   späteren stillschweigend überschrieben wurde: wer hier an der Dauer
+   drehte, änderte nichts. tests/test-bewegung-doppelt.js schlägt an,
+   wenn ein Keyframe-Name wieder zweimal vergeben wird. */
 
 /* Auth-Karte gleitet herein, Mesh-Blobs leben */
 .auth-card{animation:cardIn .5s var(--ease-out);margin-top:var(--sat)}
@@ -1300,9 +1301,9 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @keyframes duePulse{0%,100%{opacity:1}50%{opacity:.55}}
 
 /* ── Kopfzeile auf schmalen Handys ──
-   Vorher lief der Inhalt über und der Abmelde-Knopf war rechts abgeschnitten.
-   Auf kleinen Displays wird der Schriftzug kleiner und das "Live"-Abzeichen
-   ausgeblendet, damit alle Knöpfe erreichbar bleiben. */
+   Der Schriftzug wird kleiner und das „Live"-Abzeichen fällt weg, damit
+   alle Knöpfe erreichbar bleiben — sonst läuft die Zeile über und der
+   Abmelde-Knopf ist rechts abgeschnitten. */
 @media(max-width:520px){
   .topbar{gap:8px;padding-left:12px;padding-right:12px}
   .tb-brand{font-size:.98rem;gap:6px;min-width:0;overflow:hidden}
@@ -1662,8 +1663,8 @@ html{font-size:var(--fs,100%)}
 
 /* ── Reiter innerhalb einer Gruppe ── */
 /* ── Reiter der Gruppe ──
-   Vorher sprang die Füllung von Reiter zu Reiter. Jetzt gleitet EIN
-   Marker dorthin – man sieht, wohin man gegangen ist, statt nur, wo man
+   Ein Marker gleitet zum aktiven Reiter, statt dass die Füllung
+   springt: man sieht, wohin man gegangen ist, nicht nur, wo man
    angekommen ist. Gleiches Muster wie die Kanalreihe im Chat. */
 .subnav{position:relative;display:flex;gap:4px;padding:8px clamp(14px,4vw,28px) 0;
   flex-shrink:0;overflow-x:auto;scrollbar-width:none}
@@ -2081,8 +2082,8 @@ html{font-size:var(--fs,100%)}
 .shift-x{background:none;border:none;color:var(--text-3);cursor:pointer;padding:2px 6px;border-radius:var(--r-xs)}
 .shift-x:hover{color:var(--danger-tx)}
 .shift-empty{font-size:.84rem;color:var(--text-3);padding:3px 2px}
-/* Ein Tag ohne Einteilung braucht keine volle Karte. Vorher scrollte man an
-   fünf gleich grossen leeren Kästen vorbei, bevor heute kam. */
+/* Ein Tag ohne Einteilung braucht keine volle Karte — sonst scrollt man
+   an fünf gleich grossen leeren Kästen vorbei, bevor heute kommt. */
 .shift-day.leer{padding:7px 13px;opacity:.72}
 .shift-day.leer .shift-day-h{margin-bottom:0}
 .shift-day.leer .shift-day-h b{font-size:.88rem;font-weight:600}
@@ -2200,8 +2201,8 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 .mat-bar select{flex:1;min-width:160px}
 .mat-table{margin-top:4px}
 /* Schmalere Felder und der Löschknopf nur für die Verwaltung: der Name
-   bekommt dadurch statt 103 rund 190 Pixel. Vorher brach
-   „Bein-Manschetten Größe 2 (Paare)" auf FÜNF Zeilen um. */
+   bekommt dadurch statt 103 rund 190 Pixel. Enger bricht
+   „Bein-Manschetten Größe 2 (Paare)" auf fünf Zeilen um. */
 .mat-head,.mat-row{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:5px;align-items:center}
 .mat-head.chef,.mat-row.chef{grid-template-columns:1fr 50px 50px 50px 30px}
 /* Die Kopfzeile klebt: bei 22 Artikeln weiß man sonst nach dem Scrollen
@@ -4783,12 +4784,9 @@ function applyRoleVisibility(){
   document.querySelectorAll('[data-chef-only]').forEach(function(el){
     el.style.display = chef ? '' : 'none';
   });
-  /* Nur fuer den Betreiber. Bisher gab es diese Stufe in der Oberflaeche
-     nicht — der Betreiber-Bereich haengt an eigenen Reitern. Gebraucht
-     seit dem Sicherheits-Durchlauf: die Vollsicherung umfasst ALLE
-     Kunden und ist deshalb keine Chef-Handlung mehr. Das ist eine
-     Anzeige, keine Grenze — die steht in der Cloud Function
-     (requireAdmin). */
+  /* Nur fuer den Betreiber: die Vollsicherung umfasst ALLE Kunden und ist
+       deshalb keine Chef-Handlung. Das hier ist eine Anzeige, keine Grenze
+       — die steht in der Cloud Function (requireAdmin). */
   document.querySelectorAll('[data-admin-only]').forEach(function(el){
     el.style.display = istAdmin() ? '' : 'none';
   });
@@ -4808,15 +4806,15 @@ function applyRoleVisibility(){
     : 'Erledigte Aufgaben deiner Studios.';
 }
 /* ── Ist die Adresse eines Wartenden bestätigt? ──
-   Fragt die Cloud Function mailStatus. Sie muss es sein und nicht der
-   Client: ob eine Adresse bestätigt ist, steht in Firebase Auth, und ein
-   Client kann das nur für sich selbst lesen. Ein Feld im eigenen Profil
-   könnte man selbst hineinschreiben – genau da, wo die Angabe zählt,
-   wäre sie nichts wert.
+   Fragt die Cloud Function mailStatus. Muss serverseitig laufen: der
+   Zustand steht in Firebase Auth, und ein Client kann ihn nur für sich
+   selbst lesen. Ein Feld im eigenen Profil könnte man selbst
+   hineinschreiben — genau dort, wo die Angabe zählt, wäre sie nichts
+   wert.
 
    Kommt keine Antwort (Function nicht ausgerollt, offline), bleibt die
-   Marke leer. Lieber gar keine Angabe als eine erfundene: der Chef soll
-   nicht auf ein grünes Häkchen vertrauen, das nur ein Platzhalter war. */
+   Marke leer. Lieber gar keine Angabe als ein grünes Häkchen, das nur
+   ein Platzhalter war. */
 var _mailStand = {};
 function mailMarkenZeichnen(){
   document.querySelectorAll('[data-mail]').forEach(function(el){
@@ -4929,12 +4927,10 @@ function renderRecht(){
   var box=$('rechtInhalt'); if(!box) return;
   var r = rechtDaten();
   var fehlt = rechtFehlend();
-  /* Der Hinweis nennt den WEG DORTHIN — aber nur dem, der ihn gehen
-     kann. „Einzutragen in konfig.js" stand hier bis zum 11.8.2026 für
-     jeden: für den Kunden eine Datei, die er nicht hat, und für den
-     Mitarbeiter eine Aufforderung, die ihn nichts angeht. Vor dem
-     Anmelden ist session leer, isChef() also false — dort steht damit
-     ebenfalls der schlichte Hinweis, und das ist richtig so. */
+  /* Der Hinweis nennt den Weg dorthin — aber nur dem, der ihn gehen
+       kann. Fuer einen Mitarbeiter ist es eine Aufforderung, die ihn
+       nichts angeht. Vor dem Anmelden ist session leer, isChef() also
+       false; dort steht deshalb ebenfalls der schlichte Hinweis. */
   var kopf = fehlt.length
     ? '<div class="recht-fehlt">'+ikon('warnung')+' Noch nicht vollständig hinterlegt. Es fehlt: '+
       esc(fehlt.join(' · '))+'.'+
@@ -5123,19 +5119,18 @@ function rechtBinden(){
 }
 
 /* ── E-Mail bestätigen ──
-   Firebase weiß, ob eine Adresse bestätigt ist (user.emailVerified). Was
-   es NICHT weiß: ob der Mensch die Mail je gesehen hat. Deshalb eine
-   Leiste, die man wegklicken kann, und kein Zwang.
+   Firebase weiss, ob eine Adresse bestätigt ist (user.emailVerified), aber
+   nicht, ob der Mensch die Mail je gesehen hat. Deshalb eine Leiste zum
+   Wegklicken und kein Zwang.
 
-   Warum keine Sperre: eine Bestätigungsmail landet regelmäßig im Spam
-   oder kommt bei Firmen-Postfächern gar nicht an. Wer die App darauf
-   sperrt, sperrt im Zweifel ein ganzes Studio-Team aus, das gerade
-   arbeitet. Die Schranke, die wirklich schützt, ist die Freigabe durch
-   den Chef – und der sieht dort, ob die Adresse bestätigt ist.
+   Keine Sperre: Bestätigungsmails landen im Spam oder kommen bei
+   Firmen-Postfächern gar nicht an. Wer die App darauf sperrt, sperrt im
+   Zweifel ein ganzes Team aus, das gerade arbeitet. Die Schranke, die
+   wirklich schützt, ist die Freigabe durch den Chef — und dort steht, ob
+   die Adresse bestätigt ist.
 
-   Das Wegklicken merkt sich das Gerät für sieben Tage. Danach kommt die
-   Leiste wieder; ein Hinweis, den man einmal wegwischt und nie
-   wiedersieht, ist kein Hinweis. */
+   Weggeklickt gilt sieben Tage. Ein Hinweis, den man einmal wegwischt und
+   nie wiedersieht, ist keiner. */
 var MAIL_RUHE = 7*24*3600000;
 function mailHinweisPruefen(){
   var leiste=$('mailLeiste'); if(!leiste) return;
@@ -5570,16 +5565,13 @@ function studioAnlegen(btn){
    Ein Dokument, ein Beobachter – das ist die Sammlung, die am seltensten
    wechselt und am meisten kostet, wenn sie veraltet ist. */
 var _studiosUnsub = null;
-/* Ausdrücklich LEEREN. Nicht dasselbe wie studioListeSetzen mit einer
-   leeren Liste: die weist das unten ab, damit ein kaputtes Dokument
-   nicht die Standorte wegräumt. „Es gibt hier keine Studios" ist aber
-   eine gültige Aussage — bei einer fremden Firma ohne eigene Liste ist
-   sie sogar die einzig richtige, denn die Rückfall-Liste aus konfig.js
-   gehört Körperformen.
+/* Ausdrücklich LEEREN — nicht dasselbe wie studioListeSetzen mit einer
+   leeren Liste: die weist das ab, damit ein kaputtes Dokument nicht die
+   Standorte wegräumt.
 
-   Mein erster Versuch ging durch studioListeSetzen({liste:[]}) und
-   bewirkte deshalb GAR NICHTS. Aufgefallen ist es nur, weil der Test
-   danach am DOM gemessen hat statt an innerText. */
+   „Es gibt hier keine Studios" ist aber eine gültige Aussage. Bei einer
+   fremden Firma ohne eigene Liste ist sie sogar die einzig richtige: die
+   Rückfall-Liste aus konfig.js gehört Körperformen. */
 function studioListeLeeren(){
   _studioListe = [];
   _studioNaechste = 0;
@@ -5653,12 +5645,13 @@ function studioAuswahlenNeu(){
   try{ if(typeof renderHome === 'function' && session) renderHome(); }catch(e){}
 }
 
-/* Name → Datenbank-Kennung. Früher der Listenplatz (STUDIOS.indexOf),
-   jetzt die gespeicherte Kennung. Für einen bestehenden Betrieb kommt
-   dasselbe heraus: die Liste wird in genau der Reihenfolge angelegt, in
-   der sie in konfig.js stand, also ist studio-6 weiterhin Hürth.
-   Beim Umbenennen bleibt die Kennung – und genau deshalb dürfen die
-   Daten liegen bleiben. */
+/* Name → Datenbank-Kennung, aus der gespeicherten Liste statt aus dem
+   Listenplatz. Fuer einen bestehenden Betrieb kommt dasselbe heraus: die
+   Liste wird in genau der Reihenfolge angelegt, in der sie in konfig.js
+   stand, also ist studio-6 weiterhin Huerth.
+
+   Beim Umbenennen bleibt die Kennung — genau deshalb duerfen die Daten
+   liegen bleiben. */
 /* Betreiber über allen Firmen. Ein eigenes FELD, keine Rolle — sonst
    müsste man sich zwischen „Chef meiner Firma" und „Betreiber über
    allen" entscheiden. Vergeben kann es nur ein Admin; das erzwingen die
@@ -5666,19 +5659,17 @@ function studioAuswahlenNeu(){
 function istAdmin(){ return !!(session && session.admin === true); }
 
 /* ══ Abo-Stufe der EIGENEN Firma (Stufe B aus docs/ABO-PLAN.md) ══════════
-   AN EINER STELLE, absichtlich. Wenn eine Funktion die Stufe wechselt,
-   ist das hier eine Zeile — und nicht eine Suche durch die ganze Datei.
+   An einer Stelle: wechselt eine Funktion die Stufe, ist das hier eine
+   Zeile statt einer Suche durch die ganze Datei.
 
-   WAS HIER EIN SCHLOSS IST UND WAS NICHT:
-   'nachweise' liegt in einer eigenen Sammlung (certificates), da steht
-   die Grenze auch in firestore.rules. 'report' rechnet dagegen aus
-   Daten, die das Team ohnehin sieht — Aufgaben, Putzplan, Material.
-   Diese Ansicht lässt sich nur AUSBLENDEN, nicht abschalten. Wer
-   technisch ist, kommt an die Zahlen.
+   Was ein Schloss ist und was nicht: 'nachweise' liegt in einer eigenen
+   Sammlung (certificates), die Grenze steht auch in firestore.rules.
+   'report' rechnet dagegen aus Daten, die das Team ohnehin sieht —
+   Aufgaben, Putzplan, Material. Diese Ansicht lässt sich nur ausblenden,
+   nicht abschalten; wer technisch ist, kommt an die Zahlen.
 
-   Das ist kein Versehen, sondern die Natur der Sache, und es gehört
-   gesagt, bevor jemand es verkauft: bei der Auswertung ist Premium
-   eine Bequemlichkeit, kein Riegel. */
+   Das gehört gesagt, bevor jemand es verkauft: bei der Auswertung ist
+   Premium eine Bequemlichkeit, kein Riegel. */
 var PREMIUM_TABS = ['nachweise', 'report'];
 var _abo = null;
 
@@ -5969,17 +5960,13 @@ function renderSetup(){
 }
 
 /* ══ Die Farbe der Firma ═════════════════════════════════════════════
-   Ein Kunde soll SEINE App sehen, nicht deine. Das ist der sichtbarste
-   Unterschied zwischen „Software gemietet" und „unsere App" — und der
-   billigste: eine Zeile in der Datenbank.
+   Ein Kunde soll seine App sehen, nicht die des Anbieters. Kostet eine
+   Zeile in der Datenbank.
 
-   WARUM EINE AUSWAHL UND KEIN FARBWÄHLER
-   Ein freier Farbwähler endet damit, dass jemand Gelb nimmt und die
-   Schrift auf den Akzentflächen nicht mehr lesbar ist. Jeder Eintrag
-   hier hat deshalb DREI Werte, die zusammen geprüft sind: einen für den
-   dunklen Modus, einen für den hellen, und die Textfarbe, die darauf
-   liegt. Sechs Möglichkeiten sind genug, um sich wiederzuerkennen, und
-   wenig genug, um sie alle gut aussehen zu lassen. */
+   Auswahl statt Farbwähler: frei gewählt nimmt irgendwann jemand Gelb,
+   und die Schrift auf den Akzentflächen ist nicht mehr lesbar. Jeder
+   Eintrag hat deshalb drei zusammen geprüfte Werte — einen für dunkel,
+   einen für hell, und die Textfarbe, die darauf liegt. */
 var MARKEN = [
   { id:'himmel',  name:'Himmelblau', dunkel:'#38BDF8', hell:'#0369A1', auf:'#0A1420' },
   { id:'gruen',   name:'Grün',       dunkel:'#34D399', hell:'#047857', auf:'#052018' },
@@ -6723,14 +6710,13 @@ function hideUndo(){
 }
 /* ============================================================
    PAPIERKORB
-   ------------------------------------------------------------
-   Die Rückgängig-Leiste hilft nur acht Sekunden lang. Wer erst am
-   nächsten Tag merkt, dass etwas fehlt, hatte bisher Pech. Gelöschtes
-   wandert deshalb zusätzlich in einen Papierkorb und bleibt dort 30 Tage.
+   Gelöschtes bleibt 30 Tage liegen. Die Rückgängig-Leiste hilft nur acht
+   Sekunden; wer erst am nächsten Tag merkt, dass etwas fehlt, braucht
+   diesen Weg.
 
-   Bewusst NICHT für Chat- und Direktnachrichten: die werden oft und
-   absichtlich gelöscht, und ein Papierkorb voller Nachrichten wäre eher
-   ein Datenschutzproblem als eine Hilfe.
+   Bewusst nicht für Chat- und Direktnachrichten: die werden oft und
+   absichtlich gelöscht, ein Papierkorb voller Nachrichten wäre eher ein
+   Datenschutzproblem als eine Hilfe.
    ============================================================ */
 var TRASH_TAGE = 30;
 var TRASH_LABEL = {
@@ -7333,15 +7319,11 @@ function authMarker(){
 }
 
 /* ── Darf man sich selbst anmelden? ──
-   Der Umschalter war nie eingebaut: setAuthMode('register') wurde nirgends
-   aufgerufen, das Formular stand auf display:none, und es gab keinen Weg
-   dorthin. Der ganze Beitritts-Mechanismus – Firmencode, Freigabe,
-   Wartebildschirm – war damit gebaut, aber unerreichbar.
+   Der zweite Reiter erscheint erst, wenn der Chef in Verwaltung → Team
+   einen Firmencode setzt oder die Freigabe einschaltet. Sonst bleibt es
+   bei „Dein Chef legt dein Konto an".
 
-   Jetzt entscheidet der Chef: sobald er in Verwaltung → Team einen
-   Firmencode setzt ODER die Freigabe einschaltet, erscheint hier der
-   zweite Reiter. Vorher bleibt es beim alten Satz „Dein Chef legt dein
-   Konto an" – ein Formular anzubieten, das die Regeln abweisen, wäre
+   Ein Formular anzubieten, das die Regeln anschliessend abweisen, wäre
    schlimmer als keins. */
 function selbstAnmeldungZeigen(an){
   var t=$('authTabs'); if(t) t.style.display = an ? 'flex' : 'none';
@@ -7550,13 +7532,12 @@ auth.onAuthStateChanged(function(user){
    Zeitueberschreitung), wird deshalb durchgelassen: wer niemanden
    hereinlaesst, sobald das Netz zuckt, hat eine Stoerung gebaut. */
 /* Der ANZEIGENAME der Firma — fuer Ausdrucke und alles, was jemand
-   liest. Nicht zu verwechseln mit der Kennung (KONFIG.firma), die in
-   den Datenbankpfaden steht.
+   liest. Nicht zu verwechseln mit der Kennung (KONFIG.firma), die in den
+   Datenbankpfaden steht.
 
-   Bis zum 12.8.2026 stand in beiden Druckausgaben fest "Körperformen".
-   Ein Kunde haette also den Namen eines fremden Betriebs an seine Wand
-   gehaengt — dieselbe Sorte Fehler wie beim Standort-Leck, nur auf
-   Papier und damit noch schwerer zurueckzuholen. */
+   Hier darf kein Name fest stehen: ein Kunde haengt sich sonst den Namen
+   eines fremden Betriebs an die Wand, und einen Ausdruck holt man nicht
+   zurueck. */
 var _firmaName = null;
 
 /* Setzt den Firmennamen ueberall dort ein, wo ihn jemand LIEST. Wird
@@ -7887,9 +7868,9 @@ function buildNav(){
    Der Marker liegt IM scrollbaren Behälter, deshalb offsetLeft: der Wert
    wandert beim seitlichen Scrollen korrekt mit. */
 /* Der gleitende Marker liegt hinter den Reitern und wandert zum aktiven.
-   Er misst sich am Reiter selbst – auch in der Höhe. Vorher stand die
-   Höhe fest im CSS; sobald ein Reiter zweizeilig wurde oder die Schrift
-   größer war, saß der Marker daneben. */
+   Er misst sich am Reiter selbst, auch in der Höhe — mit fester Höhe im
+   CSS sitzt er daneben, sobald ein Reiter zweizeilig wird oder die
+   Schrift größer ist. */
 function markerSetzen(behaelter, aktiv){
   if(!behaelter) return;
   if(!aktiv){ behaelter.style.setProperty('--ind-o','0'); return; }
@@ -8111,13 +8092,14 @@ function buildChannels(){
 }
 
 /* ── Reihenfolge der Kanäle ──
-   Ein Chef hat 15 Kanäle in einer Leiste, die waagerecht überläuft. Alphabetisch
-   sortiert heißt: „Seelscheid" liegt hinter sechs Wischbewegungen – auch dann,
-   wenn dort gerade als Einzigem etwas passiert. Deshalb wandern Kanäle mit
-   ungelesenen Nachrichten nach vorn, danach die zuletzt aktiven.
-   Bewusst NICHT bei jedem Eintreffen einer Nachricht: eine Leiste, die sich
-   unter dem Daumen umsortiert, trifft man nicht. Neu geordnet wird beim
-   Betreten des Chats. */
+   Kanäle mit ungelesenen Nachrichten zuerst, danach die zuletzt aktiven.
+   Bei fünfzehn Kanälen in einer waagerecht überlaufenden Leiste liegt
+   „Seelscheid" alphabetisch hinter sechs Wischbewegungen — auch dann,
+   wenn dort als Einzigem etwas passiert.
+
+   Neu geordnet wird beim Betreten des Chats, nicht bei jeder eintreffenden
+   Nachricht: eine Leiste, die sich unter dem Daumen umsortiert, trifft
+   man nicht. */
 function kanalReihenfolge(){
   var wrap=$('chatChannels'); if(!wrap) return;
   var knoepfe=[].slice.call(wrap.querySelectorAll('.chan'));
@@ -8304,10 +8286,9 @@ function createEmployee(){
       return db.collection('users').doc(cred.user.uid).set({
         name:name, email:email, role:role,
         /* OHNE DIESES FELD landet der neue Mitarbeiter in der falschen
-           Firma. meineFirma() liefert bei fehlendem Feld '' , und das
-           gilt als koerperformen — ein Kunden-Chef haette also Konten
-           angelegt, die in FREMDE Daten zeigen. Gefunden am 12.8.2026,
-           beim Nachsehen vor dem Nachtragen. */
+                   Firma: meineFirma() liefert bei fehlendem Feld '', und das gilt
+                   als koerperformen. Ein Kunden-Chef legte damit Konten an, die
+                   in fremde Daten zeigen. */
         firma: _firma || KONFIG.firma || 'koerperformen',
         studios:studios, studio:studios[0]||null,
         // studioKeys wird mitgespeichert, damit die Datenbank-Regeln prüfen
@@ -8346,15 +8327,13 @@ function renderChefs(){
   if(!_chefs.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.9rem">Keine gefunden.</p>'; return; }
   box.innerHTML=_chefs.map(function(c){
     var ich = c.uid===session.uid;
-    /* Ein Chef setzt keinen anderen Chef ab.
-       Bis hierher stand hier „zu Mitarbeiter machen" an JEDEM fremden
-       Chef-Konto. Bei einem Streit zwischen Geschäftsführern wäre das
-       ein Wettrennen gewesen — wer zuerst drückt, gewinnt, und der
-       andere steht als Mitarbeiter ohne Studio da.
+    /* Ein Chef setzt keinen anderen Chef ab. Bei einem Streit zwischen
+           Geschäftsführern wäre „zu Mitarbeiter machen" ein Wettrennen — wer
+           zuerst drückt, gewinnt, und der andere steht ohne Studio da.
 
-       Durchgesetzt wird das in firestore.rules, nicht hier: ein
-       fehlender Knopf hält niemanden auf, der die Entwicklerkonsole
-       öffnet. Der Hinweis erklärt nur, warum es ihn nicht gibt. */
+           Durchgesetzt wird das in firestore.rules, nicht hier: ein fehlender
+           Knopf hält niemanden auf, der die Entwicklerkonsole öffnet. Der
+           Hinweis erklärt nur, warum es ihn nicht gibt. */
     var btn = ich
       ? '<span class="chef-me">das bist du</span>'
       : '<span class="chef-me" title="Chef-Rechte kann nur die Ebene darüber entziehen">geschützt</span>';
@@ -8366,13 +8345,10 @@ function renderChefs(){
 }
 
 /* Aus der EINEN Nutzerliste die beiden Teillisten ableiten.
-   Vorher lagen auf der Sammlung users drei getrennte Beobachter:
-   listenAllUsers (alle), listenEmployees (Mitarbeiter+Leiter) und
-   listenChefs (Chefs). Die beiden letzten zusammen sind genau die erste –
-   jedes Nutzerdokument wurde also doppelt geliefert und doppelt
-   abgerechnet. Nebenbei konnten sich die drei widersprechen, weil sie zu
-   unterschiedlichen Zeiten eintrafen.
-   Gemessen mit tests/audit-leistung.js: 3 Beobachter auf users, jetzt 1. */
+   Drei getrennte Beobachter auf users (alle / Mitarbeiter+Leiter / Chefs)
+   liefern jedes Dokument doppelt und rechnen es doppelt ab — und sie
+   koennen sich widersprechen, weil sie zu verschiedenen Zeiten eintreffen.
+   Mit tests/audit-leistung.js nachzaehlbar: ein Beobachter, nicht drei. */
 function verteileUsers(){
   var emps=_allUsers.filter(function(u){ return u.role==='mitarbeiter'||u.role==='leiter'; });
   // Studio-Leiter sieht nur Personen aus seinen Studios
@@ -8874,14 +8850,12 @@ function startListeners(){
 }
 
 /* ── Schwarzes Brett ──
-   Hing bisher an loadTeam(), lief also erst, wenn jemand die Team-Seite
-   öffnete. Für die Startseite braucht es das Brett aber sofort.
+   Zwei Stufen: beim Start zwölf Einträge, beim Öffnen der Team-Seite die
+   vollen fünfzig. Die Startseite zeigt ohnehin nur drei.
 
-   Nur eben nicht in voller Länge: die Startseite zeigt drei Einträge, die
-   Team-Seite alle. Deshalb zwei Stufen – beim Start zwölf, beim Öffnen
-   der Team-Seite die vollen fünfzig. Das spart 38 Lesevorgänge bei jedem
-   App-Start von jedem der 57 Konten, also gut 13.000 am Tag, für Einträge,
-   die auf der Startseite ohnehin niemand sieht. */
+   Das spart 38 Lesevorgänge je App-Start — bei 57 Konten gut 13.000 am
+   Tag für Einträge, die niemand sieht. An loadTeam() zu hängen ginge
+   nicht: die Startseite braucht das Brett sofort. */
 var _bbVoll=false;
 function listenBoard(voll){
   if(_bbUnsub && (_bbVoll || !voll)) return;
@@ -8984,16 +8958,12 @@ function listenChannel(channelId){
 }
 
 /* ── Putzplan über ALLE Studios ──
-   Vorher hing die Startseite an _ppTasks – und darin stand nur das
-   Studio, das man gerade im Putzplan geöffnet hatte. Beim App-Start war
-   die Liste leer, also meldete die Startseite „Alles erledigt", obwohl
-   offene Putzaufgaben da waren. Nach dem Öffnen zählte sie eins von
-   vierzehn Studios.
+   Ein Beobachter je Studio, Ergebnis in cachedClean. Die Putzplan-Seite
+   liest aus demselben Speicher und legt keinen eigenen Beobachter an.
 
-   Jetzt läuft es wie bei den Aufgaben: ein Beobachter je Studio, das
-   Ergebnis in cachedClean. Die Putzplan-Seite liest aus demselben
-   Speicher und legt KEINEN eigenen Beobachter mehr an – dadurch kostet
-   die Korrektur ein Studio weniger als vorher, nicht mehr. */
+   Am einzelnen geöffneten Studio zu hängen genügt nicht: beim App-Start
+   ist noch keins geöffnet, dann meldet die Startseite „Alles erledigt",
+   obwohl offene Punkte da sind. */
 var cachedClean = {};            // studioKey -> [{...}]
 var _cleanUnsubs = [];
 function listenClean(){
@@ -9127,8 +9097,9 @@ function renderMessages(msgs){
       html+='<div class="new-sep">Neue Nachrichten</div>'; sepDone=true;
     }
     /* Folgt eine Nachricht derselben Person innerhalb von fünf Minuten, wird
-       Name, Rolle und Uhrzeit nicht noch einmal wiederholt. Vorher stand über
-       jedem Einzeiler dreimal dasselbe – eine Blase war 95 bis 128 Pixel hoch. */
+           Name, Rolle und Uhrzeit nicht wiederholt. Sonst steht über jedem
+           Einzeiler dreimal dasselbe und eine Blase wird 95 bis 128 Pixel
+           hoch. */
     var gruppiert = !!vorher && !neuerTag && !neuTrenner &&
       vorher.uid===m.uid && Math.abs((m.ts||0)-(vorher.ts||0)) < 5*60000;
     vorher=m;
@@ -9288,12 +9259,13 @@ function reactionsHTML(m){
 }
 
 /* ── Erwähnungen ──
-   Vorher musste man „@AnnaMeier" schreiben – ohne Leerzeichen, exakt getroffen,
-   ohne jeden Hinweis, dass es das überhaupt gibt. Praktisch hat es niemand
-   benutzt. Dabei ist die Erwähnung die einzige Meldung, die auch bei offenem
-   Chat durchkommt: der Weg, jemanden wirklich zu erreichen.
-   Jetzt wird der volle Name mit Leerzeichen erkannt (die alte Schreibweise
-   weiterhin auch), und beim Tippen von „@" erscheint eine Vorschlagsliste. */
+   Erkannt wird der volle Name mit Leerzeichen, die alte Schreibweise ohne
+   („@AnnaMeier") weiterhin auch. Beim Tippen von „@" erscheint eine
+   Vorschlagsliste.
+
+   Das ist wichtiger, als es aussieht: die Erwähnung ist die einzige
+   Meldung, die auch bei offenem Chat durchkommt — der Weg, jemanden
+   wirklich zu erreichen. Ohne Vorschlagsliste benutzt sie niemand. */
 function erwName(s){ return String(s||'').toLowerCase().replace(/\s+/g,''); }
 function erwaehnbar(){
   return (_allUsers||[]).filter(function(u){ return u.name && !u.system; });
@@ -9384,11 +9356,12 @@ function atUebernehmen(i){
 }
 
 /* ── Aktionsblatt an einer Nachricht ──
-   Vorher hingen fünf Symbolknöpfe von 21 × 19 Pixeln in der Kopfzeile jeder
-   Blase – ohne Beschriftung („☺" für Reagieren, „↪" für Weiterleiten) und weit
-   unter der Größe, die ein Daumen sicher trifft. Jetzt öffnet ein Tipp auf die
-   Nachricht ein Blatt von unten: eine Reihe Reaktionen zum Sofort-Antippen und
-   darunter beschriftete Einträge mit voller Zeilenhöhe. */
+   Ein Tipp auf die Nachricht öffnet ein Blatt von unten: eine Reihe
+   Reaktionen zum Sofort-Antippen, darunter beschriftete Einträge mit
+   voller Zeilenhöhe.
+
+   Symbolknöpfe in der Kopfzeile der Blase wären 21 × 19 Pixel gross und
+   unbeschriftet — weit unter dem, was ein Daumen sicher trifft. */
 var _blattMsg=null;
 function msgBlattOeffnen(m){
   if(!m) return;
@@ -9787,17 +9760,16 @@ function renderShifts(){
 }
 
 /* ── Schichttausch ──
-   Bisher lief das über WhatsApp, und im Dienstplan stand danach die falsche
-   Person. Jetzt in drei Schritten, die alle im Plan sichtbar bleiben:
+   Drei Schritte, alle im Plan sichtbar:
 
-     1. "Ich kann nicht"  – schreibt die eigene Schicht im Studio aus
-     2. "Ich übernehme"   – ein Kollege sagt zu
-     3. "Bestätigen"      – erst die Leitung ändert wirklich den Plan
+     1. „Ich kann nicht"  schreibt die eigene Schicht im Studio aus
+     2. „Ich übernehme"   ein Kollege sagt zu
+     3. „Bestätigen"      erst die Leitung ändert wirklich den Plan
 
-   Schritt 3 ist Absicht: sonst stünde im Dienstplan etwas, das niemand
-   verantwortet. Die Sicherheitsregeln erzwingen das – in Schritt 1 und 2
-   dürfen ausschliesslich die Tausch-Felder angefasst werden, niemals wer
-   eingeteilt ist. */
+   Schritt 3 ist Absicht, sonst stünde im Dienstplan etwas, das niemand
+   verantwortet. Die Sicherheitsregeln erzwingen es: in Schritt 1 und 2
+   dürfen ausschliesslich die Tausch-Felder angefasst werden, nie das
+   Feld, wer eingeteilt ist. */
 function tauschHTML(x, tagKey){
   var meine = x.uid===session.uid;
   var vergangen = tagKey < ymd(new Date());
@@ -10264,15 +10236,12 @@ function renderHome(){
 }
 
 /* ── Zahlen zählen hoch ──
-   Eine Kachel mit „7 überfällig" springt sonst einfach ins Bild. Wer sie
-   hochzählen sieht, merkt sich die Zahl besser – und merkt vor allem,
-   DASS sie sich geändert hat. Nur beim Neuaufbau, nicht bei jedem
-   Neuzeichnen: sonst zählt der Bildschirm dauernd.
+   Nur beim Neuaufbau, nicht bei jedem Neuzeichnen — sonst zählt der
+   Bildschirm dauernd.
 
-   Zwei Grenzen, bewusst:
-     - über 60 wird nicht gezählt, das dauert zu lange
-     - „Bewegung reduzieren" schaltet es ganz ab. Zählende Ziffern sind
-       genau die Art Flackern, die dann stört.                          */
+   Zwei Grenzen: über 60 wird nicht gezählt (dauert zu lange), und
+   „Bewegung reduzieren" schaltet es ganz ab. Zählende Ziffern sind genau
+   die Art Flackern, die dann stört. */
 function hochzaehlen(wurzel){
   if(!wurzel || willRuhe()) return;
   wurzel.querySelectorAll('[data-zahl]').forEach(function(el){
@@ -10292,17 +10261,13 @@ function hochzaehlen(wurzel){
 }
 
 /* ── „Zum Lesen" auf der Startseite ──
-   Gemeldet aus dem Betrieb: man muss die Infos überall suchen. Vorher
-   stand oben nur eine Hinweiszeile „2 neue Infos von der Leitung ›" –
-   worum es geht, erfuhr man erst nach dem Klicken.
+   Die drei jüngsten Aushänge, die mich betreffen, und die drei jüngsten
+   Einträge vom schwarzen Brett — mit Text, nicht nur als Zähler.
+   Gekürzt wird per CSS, nicht im Text: wer das Ganze will, tippt auf
+   „Alle". Ungelesenes bekommt einen Punkt.
 
-   Hier steht jetzt der Text selbst: die drei jüngsten Aushänge, die mich
-   betreffen, und die drei jüngsten Einträge vom schwarzen Brett. Auf drei
-   Zeilen gekürzt (per CSS, nicht im Text – wer das Ganze will, tippt auf
-   „Alle"). Ungelesenes bekommt einen Punkt.
-
-   Leere Karten verschwinden ganz. Eine Karte, in der „Noch nichts da"
-   steht, ist auf einer Startseite nur Platzverschwendung. */
+   Leere Karten verschwinden ganz. „Noch nichts da" ist auf einer
+   Startseite nur Platzverschwendung. */
 function renderHomeLesen(){
   if(!session) return;
   var kopf=$('homeLesenHead');
@@ -10438,12 +10403,10 @@ function renderMyShifts(){
    Kurze Zusammenfassung ganz oben: Was ist heute zu tun? Jede Kachel ist
    anklickbar und setzt den passenden Filter. */
 /* ── Zahlen an den Filtern ──
-   Vorher stand über der Liste eine Karte „Guten Abend, Lisa 👋 · 2 offen ·
-   1 überfällig" mit Sprungknöpfen – und 100 Pixel darunter dieselben Filter
-   noch einmal als Chips. Zweimal dasselbe, und der Gruß gehört auf die
-   Startseite. Die Karte ist weg; die Zahlen stehen jetzt dort, wo man
-   ohnehin hinfasst: an den Filtern selbst. Das spart 112 Pixel über der
-   ersten Aufgabe. */
+   Die Zahlen stehen dort, wo man ohnehin hinfasst: an den Filtern selbst.
+   Eine eigene Kopfkarte mit denselben Zahlen und Sprungknöpfen wäre
+   zweimal dasselbe und kostet 112 Pixel über der ersten Aufgabe. Der
+   Gruss gehört auf die Startseite. */
 function renderToday(){
   if(!session) return;
   var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
@@ -10472,12 +10435,13 @@ function renderToday(){
    Jede App meldet alle 2 Minuten "ich bin online". Wer sich in den letzten
    5 Minuten gemeldet hat, bekommt einen grünen Punkt am Bild. */
 /* WICHTIG – Kostenbremse:
-   Früher meldete jedes Gerät alle 2 Minuten "ich bin online". Da alle Geräte
-   gleichzeitig auf die Nutzerliste horchen, löste JEDE Meldung bei ALLEN eine
-   Abfrage aus. Bei 30 Personen waren das über 200.000 Abfragen am Tag – das
-   kostenlose Firebase-Kontingent liegt bei 50.000.
-   Jetzt: nur melden, wenn die App wirklich geöffnet/in den Vordergrund geholt
-   wird, und höchstens alle 15 Minuten. */
+   Gemeldet wird nur, wenn die App wirklich geöffnet oder in den
+   Vordergrund geholt wird, und höchstens alle 15 Minuten.
+
+   Ein fester Takt geht hier nicht: alle Geräte horchen gleichzeitig auf
+   die Nutzerliste, jede Meldung löst also bei allen eine Abfrage aus. Bei
+   30 Personen und zwei Minuten Takt sind das über 200.000 Abfragen am
+   Tag — das kostenlose Kontingent liegt bei 50.000. */
 var PRESENCE_MIN_GAP = 15*60*1000;
 var _lastPing = 0;
 function pingPresence(){
@@ -10560,9 +10524,9 @@ function sortTodos(list){
   } else if(_todoSort==='neu'){
     a.sort(function(x,y){ return (y.ts||0)-(x.ts||0); });
   } else {
-    /* Standard heißt jetzt: was brennt, steht oben. Vorher entschied allein
-       das Erstellungsdatum – eine überfällige Aufgabe von gestern landete
-       hinter zehn entspannten von vorletzter Woche. */
+    /* Standard: was brennt, steht oben. Nach Erstellungsdatum allein landet
+           eine überfällige Aufgabe von gestern hinter zehn entspannten von
+           vorletzter Woche. */
     a.sort(function(x,y){
       var ux = (!isDone(x) && x.due && Date.now()>x.due) ? 0 : 1;
       var uy = (!isDone(y) && y.due && Date.now()>y.due) ? 0 : 1;
@@ -10575,9 +10539,9 @@ function sortTodos(list){
 }
 
 /* ── Leerer Bereich, der die Wahrheit sagt ──
-   Vorher stand bei aktivem Filter „Für mich" immer „Noch keine Aufgaben.
-   Erstelle welche im Chef-Bereich." – obwohl es Aufgaben gab, nur eben keine
-   für einen selbst. Man sucht dann an der falschen Stelle. */
+   Der Text muss den aktiven Filter kennen. „Noch keine Aufgaben, erstelle
+   welche im Chef-Bereich" ist falsch, wenn es Aufgaben gibt und nur keine
+   für einen selbst — man sucht dann an der falschen Stelle. */
 function leerText(gesamt){
   var FILTERWORT={ offen:'offenen', faellig:'überfälligen', meine:'dir zugewiesenen' };
   if(_todoFilter){
@@ -11014,13 +10978,12 @@ function renderStudioGrid(){
 /* ── Chef-Dashboard ── */
 var _invAll={}, _employees=[], _invUnsub=null;
 /* ── Materialbestände beobachten ──
-   Die Verwaltung braucht alle Studios (Einkaufsliste, Kennzahlen). Ein
-   Mitarbeiter braucht nur seine eigenen – und bekommt sie ab jetzt auch.
-   Vorher lief das nur fuer die Verwaltung; dadurch blieb der Hinweis
-   "X Artikel fehlen" auf der Startseite fuer Mitarbeiter immer aus.
-   Ausgerechnet die sind es, die das Material auffuellen.
+   Die Verwaltung braucht alle Studios (Einkaufsliste, Kennzahlen), ein
+   Mitarbeiter nur seine eigenen — und braucht sie auch: sonst bleibt der
+   Hinweis „X Artikel fehlen" auf seiner Startseite immer aus, und
+   ausgerechnet er füllt das Material auf.
 
-   Fuer einen Mitarbeiter sind das ein bis zwei zusaetzliche Dokumente –
+   Für einen Mitarbeiter sind das ein bis zwei zusätzliche Dokumente,
    nicht die ganze Sammlung. */
 var _invUnsubs=[];
 function listenInventoryAll(){
@@ -11107,10 +11070,8 @@ function renderDashboard(){
 
 /* ============================================================
    CHEF-BEREICH: REITER, AUFMERKSAMKEIT, BERICHT, SICHERUNG
-   ------------------------------------------------------------
-   Früher war der Chef-Bereich eine einzige, sehr lange Seite. Jetzt liegt
-   jeder Themenblock auf einem eigenen Reiter. Das ist ein Klick mehr,
-   dafür findet man alles sofort und verklickt sich nicht.
+   Jeder Themenblock auf einem eigenen Reiter statt einer sehr langen
+   Seite. Ein Klick mehr, dafür findet man alles sofort.
    ============================================================ */
 var CHEFTABS=[
   {id:'ueberblick', label:'Überblick',  ico:'',
@@ -12628,10 +12589,10 @@ function syncAllPutzplanToSheets(){
     }).catch(function(){});
   });
 }
-/* Alle Studios in EINER Sendung. Vorher waren es 14 einzelne, von denen
-   jede das komplette Tabellenblatt neu formatiert hat – bei wachsender
-   Tabelle lief das in die Zeitgrenze von Apps Script, und dann fehlten
-   einzelne Studios, ohne dass irgendwo eine Fehlermeldung stand. */
+/* Alle Studios in EINER Sendung. Vierzehn einzelne formatieren jedes Mal
+   das komplette Tabellenblatt neu; bei wachsender Tabelle läuft das in die
+   Zeitgrenze von Apps Script, und dann fehlen einzelne Studios, ohne dass
+   irgendwo eine Fehlermeldung steht. */
 function syncAllMaterialToSheets(){
   if(!SHEETS_WEBHOOK_URL) return Promise.resolve();
   return S('inventory').get().then(function(snap){
@@ -12747,13 +12708,13 @@ function exportMaterialExcel(){
 /* ============================================================
    GERÄTE (Bestand und Schäden pro Studio)
 
-   Warum es das gibt: Ein defektes Gerät stand bisher im Chat und war nach
-   zwei Tagen nach oben gescrollt. Niemand konnte sagen, welches Gerät wie
-   oft ausfällt, und beim Anruf beim Techniker fehlte die Vorgeschichte.
+   Jede Meldung bleibt am Gerät hängen, damit sich beim Anruf beim
+   Techniker die Vorgeschichte nachlesen lässt und sichtbar wird, welches
+   Gerät wie oft ausfällt. Im Chat wäre beides nach zwei Tagen
+   weggescrollt.
 
-   Jede Meldung bleibt deshalb am Gerät hängen. Wer einen Defekt meldet,
-   legt damit automatisch eine Aufgabe für die Leitung an – so verschwindet
-   sie nicht zwischen den Nachrichten.
+   Wer einen Defekt meldet, legt damit automatisch eine Aufgabe für die
+   Leitung an.
    ============================================================ */
 var _devStudioKey=null, _devices=[], _devLog=[], _devUnsub=null, _devLogUnsub=null;
 var _devOpenId=null, _pendingDevPhoto=null;
@@ -12782,15 +12743,15 @@ function ensureDevicesLoaded(){
 }
 
 /* ── Wo ist etwas kaputt? ──
-   Die Seite öffnete beim ersten alphabetischen Studio. Ein Chef mit 14
-   Studios sah dort „Noch keine Geräte" – während in Hürth eines defekt war.
-   Um das zu finden, musste er 14 Studios einzeln durchklicken.
+   Einmal beim Öffnen der Seite eine kurze Abfrage über alle verwalteten
+   Studios: nur die Anzahl defekter Geräte, kein Live-Beobachter. Kostet
+   einen Lesevorgang je Studio und wird fünf Minuten lang nicht
+   wiederholt.
 
-   Deshalb einmal beim Öffnen der Seite eine kurze Abfrage über alle
-   verwalteten Studios: nur die Anzahl defekter Geräte, kein Live-Beobachter.
-   Das kostet einen Lesevorgang je Studio und wird fünf Minuten lang nicht
-   wiederholt. Ein Beobachter je Studio wäre der teure Weg für eine Zahl,
-   die sich selten ändert. */
+   Ohne das öffnet die Seite beim ersten alphabetischen Studio, und ein
+   Chef mit vierzehn Studios muss sie einzeln durchklicken, um den
+   Defekt zu finden. Ein Beobachter je Studio wäre der teure Weg für eine
+   Zahl, die sich selten ändert. */
 var _devDefekte=null, _devDefekteAt=0, _devDefekteLaeuft=false;
 function devDefekteSuchen(){
   if(!canManage()) return;
@@ -12872,8 +12833,8 @@ function renderDevices(){
     ? (kaputt ? kaputt+' von '+_devices.length+' defekt' : _devices.length+' Geräte, alles in Ordnung')
     : '';
 
-  /* Vorher stand hier „1 Gerät defekt – die Leitung hat dazu je eine Aufgabe
-     bekommen." Das nannte weder das Gerät noch führte es irgendwohin. */
+  /* Nennt Gerät und Studio und führt dorthin. „1 Gerät defekt" allein sagt
+       nicht, welches, und man kommt von dort nirgendwo hin. */
   var al=$('devAlert');
   if(al){
     var kaputteListe=_devices.filter(function(d){ return d.status==='defekt'; });
@@ -13018,11 +12979,12 @@ function reportDevice(art, btn){
       status:status, lastNote:(text||DEV_STATUS[status].label),
       lastBy:session.name, lastAt:Date.now()
     });
-    /* Nur bei einem echten Defekt eine Aufgabe – sonst wäre die
-       Aufgabenliste nach einer Woche voll mit Kleinkram.
-       Und nur EINE je Gerät: Vorher legte jede Meldung eine neue an. Wer ein
-       Gerät dreimal meldete, weil sich nichts tat, erzeugte drei identische
-       Aufgaben – und die Leitung sah dreimal dasselbe Problem. */
+    /* Nur bei einem echten Defekt eine Aufgabe — sonst ist die
+           Aufgabenliste nach einer Woche voll mit Kleinkram.
+
+           Und nur EINE je Gerät: wer ein Gerät dreimal meldet, weil sich
+           nichts tut, erzeugt sonst drei identische Aufgaben, und die Leitung
+           sieht dreimal dasselbe Problem. */
     var schonOffen = art==='defekt' && (cachedTodos[_devStudioKey]||[]).some(function(t){
       return t.devId===d.id && !isDone(t) && !isArchived(t);
     });
@@ -13074,17 +13036,13 @@ function deleteDevice(){
 /* ============================================================
    ZURÜCK-GESTE / BROWSER-ZURÜCK
 
-   Das war der schwerste Fehler in der Navigation: die App hat nie einen
-   Verlaufseintrag angelegt. Wer auf einem Android-Handy die Zurück-Geste
-   benutzte – und das ist dort DIE Geste – landete nicht eine Ansicht
-   zurück, sondern flog aus der App. Bei einer installierten PWA gibt es
-   auch keine sichtbare Zurück-Schaltfläche, mit der man das auffangen
-   könnte.
+   Jeder Ansichtswechsel legt einen Verlaufseintrag an, jedes geöffnete
+   Fenster einen eigenen. Zurück schliesst deshalb erst das Fenster und
+   geht danach eine Ansicht zurück.
 
-   Jetzt legt jeder Ansichtswechsel einen Eintrag an, und geöffnete Fenster
-   legen ihren eigenen an. Zurück schliesst deshalb zuerst das Fenster und
-   geht erst danach eine Ansicht zurück – genau so, wie man es von jeder
-   anderen App kennt.
+   Ohne das verlässt die Zurück-Geste die App — auf einem installierten
+   Android-PWA gibt es keine sichtbare Schaltfläche, mit der man das
+   auffangen könnte.
    ============================================================ */
 var _verlaufBereit=false;
 var _schliessenDurchZurueck=false;
@@ -13187,21 +13145,20 @@ function verlaufStarten(){
 /* ============================================================
    AUFGABE NACHTRÄGLICH BEARBEITEN
 
-   Bisher musste man löschen und neu anlegen, wenn sich ein Titel, eine
-   Frist oder die zuständige Person änderte. Dabei ging der Verlauf verloren
-   (wer sie erstellt hat, ob schon Teilschritte abgehakt waren) – und im
-   Papierkorb lag eine Leiche, die niemand brauchte.
+   Ohne das müsste man löschen und neu anlegen — dabei geht der Verlauf
+   verloren (wer sie erstellt hat, welche Teilschritte schon abgehakt
+   waren) und im Papierkorb liegt eine Leiche.
 
-   Abgehakte Teilschritte bleiben abgehakt, solange ihr Text gleich bleibt.
-   Wer eine Zeile umformuliert, bekommt sie neu – anders lässt sich nicht
-   sagen, ob es noch derselbe Schritt ist.
+   Abgehakte Teilschritte bleiben abgehakt, solange ihr Text gleich
+   bleibt. Wer eine Zeile umformuliert, bekommt sie neu: anders lässt
+   sich nicht entscheiden, ob es noch derselbe Schritt ist.
    ============================================================ */
 var _teTodo=null, _teSk=null;
 
 /* ── Aktionsblatt an einer Aufgabe ──
    Dasselbe Muster wie im Chat: ein Tipp öffnet ein Blatt von unten, die
-   Einträge sind beschriftet und 48 Pixel hoch. Vorher hingen drei Symbole
-   von 25 × 27 Pixeln am Rand der Zeile – „✎", „⏰" und ein Mülleimer. */
+   Einträge sind beschriftet und 48 Pixel hoch. Symbole von 25 × 27 Pixeln
+   am Rand der Zeile trifft ein Daumen nicht. */
 var _tbTodo=null, _tbSk=null;
 /* Grund speichern. Wer und wann steht dabei — sonst fragt der Chef
    nach einer Woche, von wann die Notiz ist, und niemand weiss es. */
@@ -13370,12 +13327,10 @@ function saveTodoEdit(btn){
 /* ============================================================
    SORTIER-LEISTEN
 
-   Bisher hatte nur die Aufgabenliste eine Sortierung, alles andere kam in
-   einer festen Reihenfolge. Bei 14 Studios, 40 Geräten und wachsenden
-   Dokumenten reicht das nicht.
-
-   Die gewählte Sortierung liegt in PREFS.sort und bleibt auf dem Gerät –
-   wer immer nach Datum sucht, muss das nicht jedes Mal neu einstellen.
+   Bei 14 Studios, 40 Geräten und wachsenden Dokumenten genügt eine feste
+   Reihenfolge nicht mehr. Die gewählte Sortierung liegt in PREFS.sort und
+   bleibt auf dem Gerät — wer immer nach Datum sucht, stellt das nicht
+   jedes Mal neu ein.
    ============================================================ */
 function sortWahl(kennung, standard){
   var w=(PREFS.sort||{})[kennung];
@@ -13409,15 +13364,12 @@ function sortLeiste(el, kennung, arten, standard, beiWechsel){
 /* ============================================================
    AUFKLAPPBARE ABSCHNITTE
 
-   Die Seiten waren eine lange Kartenwand: Material zeigte Vorhersage,
-   Einkaufsliste und Bestand gleich laut untereinander, der Chef-Bereich
-   sechs Formulare am Stück. Man musste scrollen, um überhaupt zu sehen,
-   was es gibt.
+   Beim Start wird jede Karte mit data-fold umgebaut: die Überschrift wird
+   zum Schalter, der Rest kommt in einen Körper, der auf- und zufährt. Was
+   offen ist, steht in PREFS.folds und bleibt auf dem Gerät.
 
-   Statt das HTML aller Seiten umzubauen, wird hier einmal beim Start jede
-   Karte mit data-fold umgebaut: Überschrift wird zum Schalter, der Rest
-   kommt in einen Körper, der auf- und zufährt. Was offen ist, liegt in
-   PREFS.folds und bleibt auf dem Gerät erhalten.
+   Hier zentral statt im HTML jeder Seite — sonst müsste man den Umbau
+   zwölfmal pflegen.
    ============================================================ */
 var CHEV = '<span class="fold-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>';
 
@@ -13536,14 +13488,12 @@ function foldZahlen(){
 /* ============================================================
    NACHWEISE (Erste Hilfe, Trainerlizenz, EMS-Einweisung)
 
-   Warum getrennt von allem anderen: das sind Qualifikationsdaten. Sie sind
-   heikler als ein Putzplan, deshalb sehen sie nur die betroffene Person und
-   der Chef – die Studio-Leitung ausdrücklich nicht. Erzwungen wird das in
-   den Sicherheitsregeln, nicht hier.
+   Qualifikationsdaten, deshalb getrennt von allem anderen: sichtbar nur
+   für die betroffene Person und den Chef, die Studio-Leitung ausdrücklich
+   nicht. Erzwungen wird das in firestore.rules, nicht hier.
 
-   Der Nutzen: Erste-Hilfe-Kurs, Trainerlizenz und EMS-Einweisung nach
-   Strahlenschutzverordnung haben je ein eigenes Ablaufdatum. Ohne
-   Erinnerung fällt das erst auf, wenn es zu spät ist.
+   Jeder Nachweis hat ein eigenes Ablaufdatum; die Erinnerung dazu läuft
+   serverseitig (checkCertificates in functions/index.js).
    ============================================================ */
 var CERT_ARTEN=[
   {id:'ersthelfer', name:'Erste-Hilfe-Kurs',       ico:'', monate:24},
@@ -13572,14 +13522,14 @@ function certStufe(tage){
 }
 
 /* ── Erst laden, wenn es gebraucht wird ──
-   Nachweise, Papierkorb und die Wochen-Sicherungen hingen früher am
-   App-Start. Gemessen mit 14 Studios und einem Jahr Daten: der Chef las
-   dadurch 192 Dokumente mehr, bevor die Startseite überhaupt stand – für
-   drei Karten, die er an den meisten Tagen gar nicht öffnet. Die
-   Sicherungen sind die teuersten davon: 52 Wochen-Dokumente, in denen
-   jeweils alle 14 Studios stecken.
-   Jetzt startet jeder dieser Beobachter beim ersten Öffnen der Ansicht,
-   die ihn braucht – danach bleibt er offen wie vorher. */
+   Nachweise, Papierkorb und die Wochen-Sicherungen starten ihren
+   Beobachter beim ersten Öffnen der jeweiligen Ansicht, nicht beim
+   App-Start.
+
+   Am Start gemessen (14 Studios, ein Jahr Daten): 192 Dokumente mehr,
+   bevor die Startseite überhaupt stand — für drei Karten, die der Chef an
+   den meisten Tagen nicht öffnet. Die Sicherungen sind die teuersten:
+   52 Wochen-Dokumente mit je vierzehn Studios darin. */
 var _certGeladen=false, _trashGeladen=false, _archGeladen=false;
 function ensureCertsLoaded(){
   if(_certGeladen || !isChef()) return;
@@ -13863,13 +13813,13 @@ function maybeArchiveWeek(force){
       if(last && (Date.now()-(+last) < 20*3600000)) return Promise.resolve();
     }catch(e){}
   }
-  /* Seit dem 11.8.2026 sichert dailyArchive jede Nacht um 23:45 auf dem
-     SERVER — mit dem Stand am Ende des Tages, was der einzig nützliche
-     ist. Dieser Lauf hier ist nur noch das Netz darunter: er springt
-     ein, wenn die nächtliche Sicherung ausgefallen ist.
+  /* Gesichert wird auf dem SERVER (dailyArchive, 23:45) — mit dem Stand am
+       Ende des Tages, dem einzig nützlichen. Dieser Lauf hier ist das Netz
+       darunter: er springt ein, wenn die nächtliche Sicherung ausgefallen
+       ist.
 
-     Der Unterschied in Zahlen: vorher 462 Lesevorgänge auf dem Gerät
-     des Chefs, jetzt EINER, um nachzusehen ob es schon eine gibt. */
+       Deshalb kostet er auf dem Gerät des Chefs einen Lesevorgang zum
+       Nachsehen statt 462 zum Sichern. */
   if(!force){
     var heute = new Date().toLocaleDateString('sv-SE');
     return S('archives').doc(heute).get().then(function(d){
@@ -14092,11 +14042,13 @@ function doSearch(q){
     var forMe = session.role==='chef'||!a.target||a.target==='all'||session.studioKeys.indexOf(a.target)>=0;
     if(forMe && hit((a.text||'')+' '+(a.from||''))) res.push({type:'Info',main:a.text,sub:a.from||'Leitung',view:'ann'});
   });
-  /* Chat: der offene Kanal vollständig (bis 120 Nachrichten) – und dazu das
-     Neueste aus allen anderen Kanälen. Die liegen für die Ungelesen-Zähler
-     ohnehin schon im Speicher, kosten also keine einzige zusätzliche Abfrage.
-     Vorher fand die Suche ausschließlich den offenen Kanal: „Wo stand das
-     nochmal mit den Handtüchern?" hieß in jedem Studio einzeln nachsehen. */
+  /* Chat: der offene Kanal vollständig (bis 120 Nachrichten), dazu das
+       Neueste aus allen anderen Kanälen. Die liegen für die
+       Ungelesen-Zähler ohnehin im Speicher und kosten keine zusätzliche
+       Abfrage.
+
+       Nur im offenen Kanal zu suchen hiesse: „Wo stand das nochmal mit den
+       Handtüchern?" in jedem Studio einzeln nachsehen. */
   var gesehen={};
   _curMsgs.forEach(function(m){
     gesehen[m.id]=1;
@@ -14216,15 +14168,14 @@ function listenAllUsers(){
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
   var redrawTimer=null;
   /* ── Der Filter ist hier keine Bequemlichkeit, sondern die Grenze ──
-     users ist die einzige Sammlung, die nicht unter firmen/<kennung>/
-     liegt. Bis zum 12.8.2026 stand hier collection('users') OHNE Filter,
-     und die Regeln liessen es zu: jedes Handy lud jedes Konto JEDER
-     Firma — Namen, E-Mail-Adressen, Rollen, Geburtstage.
+       users ist die einzige Sammlung ausserhalb von firmen/<kennung>/. Ohne
+       den where-Teil lädt jedes Handy jedes Konto jeder Firma: Namen,
+       E-Mail-Adressen, Rollen, Geburtstage.
 
-     Firestore prueft Abfragen im VORAUS, nicht Dokument fuer Dokument:
-     ohne diesen where-Teil lehnt die Regel die ganze Abfrage ab, und die
-     Personenliste bliebe leer. Regel und Filter gehoeren zusammen, und
-     beide setzen voraus, dass jedes Konto das Feld hat. */
+       Firestore prüft Abfragen im Voraus, nicht Dokument für Dokument —
+       ohne Filter lehnt die Regel die ganze Abfrage ab und die
+       Personenliste bleibt leer. Regel und Filter gehören zusammen, und
+       beide setzen voraus, dass jedes Konto das Feld „firma" trägt. */
   var meine = _firma || KONFIG.firma || 'koerperformen';
   _usersUnsub=db.collection('users').where('firma','==',meine).onSnapshot(function(snap){
     var first = !_allUsers.length;
