@@ -60,7 +60,7 @@ Die Liste aus dem August ist abgearbeitet:
 | Was | Stand |
 |---|---|
 | Verzeichnis sortiert, `README.md` als Einstieg | ✅ |
-| Erzähl-Kommentare (Datum, Vorgeschichte, Ich-Form) | ✅ 79 → 0 |
+| Erzähl-Kommentare (Datum, Vorgeschichte, Ich-Form) | ✅ 79 → 0, auch in `tools/` und `storage.rules` |
 | 467 Emoji als Symbole | ✅ ein Satz aus 24 Konturzeichen |
 | Zwölf Eckenradien | ✅ eine Leiter, 179 Verwendungen |
 | 52 Abstandswerte | ✅ eine Leiter, 623 Verwendungen |

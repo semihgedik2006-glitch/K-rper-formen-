@@ -12,36 +12,33 @@
  *    Version: "Neue Version" → "Bereitstellen". Die URL bleibt gleich.
  *
  * ---------------------------------------------------------------------
- * NEU AM 11. AUGUST 2026: die Spalte "Kürzel"
+ * DIE SPALTE "Kürzel"
  *
- * Im Putzplan steht sie zwischen "Erledigt von" und "Zeitpunkt", bei den
- * Notizen zwischen "von" und "Zeitpunkt". Grund: am Anfang bekommt nicht
- * jede Person einen Zugang, sondern jedes Studio einen — der Kontoname
- * ist dann bei jeder Zeile derselbe und sagt nichts darüber, wer
- * tatsächlich davorstand.
+ * Im Putzplan zwischen "Erledigt von" und "Zeitpunkt", bei den Notizen
+ * zwischen "von" und "Zeitpunkt". Am Anfang bekommt nicht jede Person
+ * einen Zugang, sondern jedes Studio einen — der Kontoname ist dann bei
+ * jeder Zeile derselbe und sagt nichts darüber, wer davorstand.
  *
- * Die vorhandenen Zeilen ziehen beim ersten Lauf nach dem Bereitstellen
- * von selbst um (kopfAngleichen). Zugeordnet wird über den Spalten-
- * NAMEN, nicht über die Position; sonst stünde der Zeitpunkt danach
- * unter "Kürzel". Es ist nichts von Hand zu tun, und es geht nichts
- * verloren.
+ * Vorhandene Zeilen ziehen beim ersten Lauf nach dem Bereitstellen von
+ * selbst um (kopfAngleichen). Zugeordnet wird über den Spalten-NAMEN,
+ * nicht über die Position; sonst stünde der Zeitpunkt danach unter
+ * "Kürzel". Von Hand ist nichts zu tun, und es geht nichts verloren.
  *
  * ---------------------------------------------------------------------
- * WAS SICH GEGENÜBER DER ALTEN FASSUNG GEÄNDERT HAT
+ * ZWEI DINGE, DIE MAN NICHT ZURÜCKDREHEN SOLLTE
  *
- * 1. Zeilen werden nicht mehr einzeln gelöscht.
- *    Vorher lief für jede zu ersetzende Zeile ein eigener deleteRow().
- *    Bei 14 Studios à 20 Artikeln waren das hunderte Einzelaufrufe – der
- *    mit Abstand teuerste Teil. Jetzt wird das Blatt einmal gelesen, im
- *    Speicher zusammengebaut und mit EINEM setValues() zurückgeschrieben.
+ * 1. Zeilen werden nicht einzeln gelöscht.
+ *    Ein deleteRow() je Zeile sind bei 14 Studios à 20 Artikeln hunderte
+ *    Einzelaufrufe — der mit Abstand teuerste Teil. Stattdessen wird das
+ *    Blatt einmal gelesen, im Speicher zusammengebaut und mit EINEM
+ *    setValues() zurückgeschrieben.
  *
- * 2. Alle Studios auf einmal.
- *    Die App kann jetzt "alle 14 Studios" in einer einzigen Sendung
- *    schicken (type: 'material-alle' bzw. 'putzplan-alle'). Vorher waren
- *    das 14 Sendungen, von denen jede das komplette Blatt neu formatiert
- *    hat. Apps Script erlaubt 6 Minuten je Ausführung und rund 90 Minuten
- *    am Tag – das wurde mit wachsender Tabelle eng, und dann fehlten
- *    einzelne Studios, ohne dass irgendwo eine Fehlermeldung stand.
+ * 2. Alle Studios in einer Sendung.
+ *    (type: 'material-alle' bzw. 'putzplan-alle'.) Vierzehn einzelne
+ *    Sendungen formatieren jedes Mal das komplette Blatt neu; Apps Script
+ *    erlaubt 6 Minuten je Ausführung und rund 90 Minuten am Tag. Mit
+ *    wachsender Tabelle fehlen dann einzelne Studios, ohne dass irgendwo
+ *    eine Fehlermeldung steht.
  *
  * 3. Formatiert wird einmal am Ende, nicht je Studio.
  * ---------------------------------------------------------------------

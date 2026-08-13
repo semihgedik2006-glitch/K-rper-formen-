@@ -182,10 +182,10 @@ service cloud.firestore {
         || (signedIn() && request.auth.uid == uid)
         || (istAktiv() && gleicheFirma());
       // Wer sein EIGENES Profil anlegt, darf sich dabei nur "mitarbeiter"
-      // geben. Vorher war jede Rolle erlaubt: der Chef-Code stand im
-      // Quelltext der App, und die Regeln haben ihn nie geprüft – wer die
-      // Seite ansah, konnte sich Vollzugriff auf alle 14 Studios geben.
-      // Chef- und Leiter-Konten legt ab jetzt ausschliesslich ein Chef an.
+      // geben. Waere jede Rolle erlaubt, koennte sich jeder, der die
+      // Seite ansieht, Vollzugriff auf alle Studios verschaffen — eine
+      // Pruefung in der App haelt niemanden auf, der die Konsole oeffnet.
+      // Chef- und Leiter-Konten legt ausschliesslich ein Chef an.
       allow create: if isChef()
         || (request.auth.uid == uid
             && (!('role' in request.resource.data)

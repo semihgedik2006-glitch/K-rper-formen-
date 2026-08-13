@@ -549,9 +549,9 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
 
   // ══ Ein Chef setzt keinen anderen Chef ab ══
   //
-  // Bisher konnte jeder Chef jedem anderen die Rechte entziehen. Bei
-  // einem Streit zwischen Geschaeftsfuehrern waere das ein Wettrennen
-  // gewesen — wer zuerst drueckt, gewinnt.
+  // Duerfte jeder Chef jedem anderen die Rechte entziehen, waere ein
+  // Streit zwischen Geschaeftsfuehrern ein Wettrennen — wer zuerst
+  // drueckt, gewinnt.
   await env.withSecurityRulesDisabled(async ctx => {
     const d = ctx.firestore();
     await d.doc('users/chefA2').set({ name: 'Zweiter Chef A', role: 'chef', firma: A, aktiv: true });

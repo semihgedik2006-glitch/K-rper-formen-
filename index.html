@@ -6097,9 +6097,9 @@ function studioKey(name){
   for(var i=0;i<_studioListe.length;i++){
     if(_studioListe[i] && _studioListe[i].name === name) return _studioListe[i].id;
   }
-  // Unbekannter Name. Früher kam hier 'studio--1' heraus – eine Kennung,
-  // die aussieht wie eine und auf nichts zeigt. Das Verhalten bleibt,
-  // damit sich nichts still ändert, aber jetzt steht es in der Konsole.
+  // Unbekannter Name: 'studio--1' sieht aus wie eine Kennung und zeigt
+  // auf nichts. Der Rückgabewert bleibt so, damit sich nichts still
+  // ändert — die Warnung macht den Fall sichtbar.
   if(name) console.warn('studioKey: unbekanntes Studio', name);
   return 'studio--1';
 }

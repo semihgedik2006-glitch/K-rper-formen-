@@ -52,7 +52,8 @@ async function start(stub, errs) {
       };
     });
     console.log('ZEILEN:', JSON.stringify(zeilen));
-    // Vorher: 103 px. Alles unter 150 hieße, das Raster ist wieder gekippt.
+    // Unter 150 px kippt das Raster: bei 103 px brach der Name auf fünf
+    // Zeilen um.
     if (zeilen.namensBreite < 150) errs.push('Namensspalte nur ' + zeilen.namensBreite + ' px breit');
     if (zeilen.maxZeilenImNamen > 2) errs.push('Ein Name braucht ' + zeilen.maxZeilenImNamen + ' Zeilen');
     if (!zeilen.alleGleichHoch) errs.push('Die Zeilen sind unterschiedlich hoch – bricht das Raster um?');
