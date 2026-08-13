@@ -65,7 +65,7 @@ console.log('\n── Der Probelauf fasst nichts Echtes an ──');
 {
   const k = laden('formenchat-probe.web.app');
   pruefe('keine Push-Nachrichten', !k.vapidKey);
-  pruefe('keine echte Google-Tabelle', !k.sheetsWebhook);
+  pruefe('keine echte Google-Tabelle', k.sheetsAbgleich === false);
   pruefe('Speicher zeigt auf das Probe-Projekt',
     /formenchat-probe/.test(k.firebase.storageBucket), k.firebase.storageBucket);
 }
@@ -126,6 +126,37 @@ console.log('\n── Der Firmen-Schalter im Betrieb ──');
   }
   const k = laden('formenchat.web.app');
   pruefe('Firmenkennung gesetzt', k.firma === 'koerperformen', 'firma=' + k.firma);
+}
+
+/* ══ Der Schalter muss jede ausgelieferte Seite erreichen ══
+   marketing.html und wachstum.html trugen die Zugangsdaten fest im
+   Quelltext. Auf der Probe-Adresse arbeiteten sie damit in der ECHTEN
+   Datenbank — der Schalter oben lief ins Leere, weil ihn dort niemand
+   las. Ein Probelauf, der in den Betrieb schreibt, ist schlimmer als
+   keiner, und man sieht es der Seite nicht an. */
+console.log('\n── Jede Seite holt die Zugangsdaten aus konfig.js ──');
+{
+  const fs = require('fs');
+  const SEITEN = ['index.html', 'marketing.html', 'wachstum.html'];
+  SEITEN.forEach((datei) => {
+    const roh = fs.readFileSync(path.join(__dirname, '..', datei), 'utf8');
+    pruefe(datei + ': lädt konfig.js',
+      /<script src="konfig\.js"><\/script>/.test(roh));
+    /* Eine projectId im Quelltext heisst: diese Seite entscheidet selbst,
+       welche Datenbank sie anfasst. Genau das darf keine tun. */
+    const fest = roh.match(/projectId\s*:\s*["'][^"']+["']/g) || [];
+    pruefe(datei + ': keine projectId fest im Quelltext', fest.length === 0,
+      fest.join(' '));
+    pruefe(datei + ': benutzt KONFIG.firebase',
+      /KONFIG\.firebase/.test(roh));
+  });
+
+  /* werbung.html ist die öffentliche Seite ohne Firebase — die darf und
+     soll gar nichts davon haben. Gegenprobe, damit die Liste oben nicht
+     stillschweigend zur Liste aller HTML-Dateien wird. */
+  const werbung = fs.readFileSync(path.join(__dirname, '..', 'werbung.html'), 'utf8');
+  pruefe('GEGENPROBE werbung.html braucht kein Firebase',
+    !/firebase/i.test(werbung));
 }
 
 console.log(errs.length

@@ -463,6 +463,114 @@ const TAG = 86400000;
     pruefe('Abo: negativer Preis wird zu 0, nicht zu -50', a.netto === 0, String(a.netto));
   }
 
+  /* ── Google-Tabelle: was den Browser verlässt und was ankommt ──
+     Bis 13.8. hat der Browser direkt an die Apps-Script-Web-App
+     gesendet, deren Adresse in konfig.js stand. Jetzt geht der Weg über
+     sheetsPush. Geprüft wird deshalb genau das, was diese Function
+     ausmacht: sie lässt niemanden durch, der nicht angemeldet und
+     freigeschaltet ist, sie legt das Token dazu, und sie übernimmt die
+     Nutzlast nicht, sondern baut sie neu auf.
+
+     Die Web-App wird dabei nicht angefasst: fetch wird ersetzt und die
+     Sendung abgefangen. */
+  {
+    const echterFetch = global.fetch;
+    let gesendet = null;
+    global.fetch = async (url, opt) => {
+      gesendet = { url: url, body: JSON.parse((opt && opt.body) || '{}') };
+      return { ok: true, status: 200, text: async () => 'ok 1 Studio(s), 2 Zeilen' };
+    };
+    process.env.SHEETS_URL = 'https://beispiel.invalid/exec';
+    process.env.SHEETS_TOKEN = 'token-nur-auf-dem-server';
+    process.env.SHEETS_FIRMA = 'alpha';
+
+    await db.doc('users/mit-alpha')
+      .set({ name: 'Mit A', role: 'mitarbeiter', firma: 'alpha', aktiv: true });
+    await db.doc('users/wart-alpha')
+      .set({ name: 'Wartend', role: 'mitarbeiter', firma: 'alpha', aktiv: false });
+    await db.doc('users/chef-beta')
+      .set({ name: 'Chef B', role: 'chef', firma: 'beta', aktiv: true });
+
+    const faellt = async (daten, ctx) => {
+      try { await fns.sheetsPush.run(daten, ctx); return false; }
+      catch (e) { return true; }
+    };
+    const material = {
+      art: 'material',
+      studios: [{
+        studio: 'Longerich', studioKey: 'studio-0',
+        /* Was ein Angreifer mitschicken würde: einen fremden Absender,
+           einen Zeitstempel und ein Feld, das es gar nicht gibt. */
+        updatedBy: 'Der Chef', ts: 1,
+        items: [
+          { name: 'Handtücher', have: '4', need: 2, geheim: 'x' },
+          { name: 'Kabel', have: -5, need: 'viele' }
+        ]
+      }]
+    };
+
+    pruefe('Tabelle: ohne Anmeldung geht nichts',
+      await faellt(material, {}));
+    pruefe('Tabelle: ein Konto ohne Freigabe darf nicht senden',
+      await faellt(material, { auth: { uid: 'wart-alpha' } }));
+    pruefe('Tabelle: unbekannte Art wird abgewiesen',
+      await faellt({ art: 'rechnungen', studios: [{ studio: 'X' }] },
+        { auth: { uid: 'mit-alpha' } }));
+    pruefe('Tabelle: bis hierher wurde nichts gesendet', gesendet === null);
+
+    const r = await fns.sheetsPush.run(material, { auth: { uid: 'mit-alpha' } });
+    pruefe('Tabelle: der Abgleich läuft durch', !!(r && r.ok), JSON.stringify(r));
+    pruefe('Tabelle: die Sendung geht an die Adresse aus der Umgebung',
+      gesendet && gesendet.url === 'https://beispiel.invalid/exec',
+      gesendet ? gesendet.url : 'nichts gesendet');
+    pruefe('Tabelle: das Token liegt bei',
+      gesendet && gesendet.body.token === 'token-nur-auf-dem-server');
+    pruefe('Tabelle: als Sammelform (ersetzt nur die genannten Studios)',
+      gesendet && gesendet.body.type === 'material-alle',
+      gesendet ? String(gesendet.body.type) : '');
+
+    const s0 = gesendet && gesendet.body.studios && gesendet.body.studios[0];
+    pruefe('Tabelle: der Absender kommt aus dem Profil, nicht aus der Sendung',
+      s0 && s0.updatedBy === 'Mit A', s0 ? String(s0.updatedBy) : '');
+    pruefe('Tabelle: der Zeitstempel wird auf dem Server gesetzt',
+      s0 && s0.ts > 1600000000000, s0 ? String(s0.ts) : '');
+    pruefe('Tabelle: Zahlen kommen als Zahlen an, negative als 0',
+      s0 && s0.items[0].have === 4 && s0.items[1].have === 0 && s0.items[1].need === 0,
+      s0 ? JSON.stringify(s0.items) : '');
+    pruefe('Tabelle: erfundene Felder fallen weg',
+      s0 && s0.items[0].geheim === undefined);
+
+    /* Zwei Kunden, eine Tabelle: ohne diese Grenze schriebe der zweite
+       Kunde seine Studios in die Tabelle des ersten. */
+    gesendet = null;
+    const fremd = await fns.sheetsPush.run(
+      { art: 'material', studios: [{ studio: 'Fremd', studioKey: 'studio-0', items: [] }] },
+      { auth: { uid: 'chef-beta' } });
+    pruefe('Tabelle: eine fremde Firma bekommt keine Verbindung',
+      fremd && fremd.ok === false && fremd.grund === 'keine-tabelle',
+      JSON.stringify(fremd));
+    pruefe('Tabelle: und es wird auch nichts gesendet', gesendet === null);
+
+    /* Wie bei den KI-Aufrufen: die Kostenbremse zählt je Firma. Hier
+       geht es um das Tageskontingent von Apps Script. */
+    const heute = new Date().toISOString().slice(0, 10);
+    const z = (await db.doc('firmen/alpha/config/nutzung-' + heute).get()).data() || {};
+    pruefe('Tabelle: der Abgleich wird bei der eigenen Firma gezählt',
+      z.sheetsPush === 1, JSON.stringify(z));
+
+    /* Antwortet die Web-App mit einer Fehlerzeile, ist der Aufruf
+       fehlgeschlagen — auch wenn HTTP 200 danebensteht. Apps Script
+       schickt eigene Fehler mit 200. */
+    global.fetch = async () => ({ ok: true, status: 200, text: async () => 'Fehler: Token' });
+    pruefe('Tabelle: „Fehler: Token" gilt als Fehlschlag, nicht als Erfolg',
+      await faellt(material, { auth: { uid: 'mit-alpha' } }));
+
+    global.fetch = echterFetch;
+    delete process.env.SHEETS_URL;
+    delete process.env.SHEETS_TOKEN;
+    delete process.env.SHEETS_FIRMA;
+  }
+
   /* ══ 4. Der Test, der rot werden muss ══
      Ein Prüfer, der nie anschlägt, prüft nichts. Also wird hier
      absichtlich eine Firma vorgetäuscht, die es nicht gibt, und

@@ -1,7 +1,10 @@
 # Sicherheits-Durchlauf
 
-Stand 13. August 2026. Der erste Durchlauf (12. August) ging ausschliesslich
-um Firmengrenzen; dieser hier nimmt die Bereiche, die damals offen blieben.
+Stand 13. August 2026, drei Runden. Der erste Durchlauf (12. August) ging
+ausschliesslich um Firmengrenzen; die zweite Runde nahm die Bereiche, die
+damals offen blieben — und die dritte das, was am Ende der zweiten noch
+als „nicht nachgeschlagen" dastand: die Sicherheitsregel im Browser, die
+Fremdbibliotheken und die drei Nachbaranwendungen.
 
 Geprüft wurde gegen den Emulator, gegen eine echte Browserinstanz und gegen
 den Quelltext. Nichts Echtes wurde angegriffen. Was nicht messbar war, steht
@@ -17,12 +20,14 @@ unten als solches.
 | Rechteausweitung über `users` | ✅ 10 Wege geprüft, alle zu |
 | Firmencode und Abo lesbar? | ✅ nein |
 | Kundenliste aufzählbar | 🔴 **war offen — behoben** |
-| Google-Tabelle: offener Schreibweg | 🟠 **offen, siehe unten** |
-| Cloud Functions: Berechtigung je Endpunkt | ✅ 14 von 14 |
+| Google-Tabelle: offener Schreibweg | 🟠 **war offen — umgebaut, zwei Handgriffe fehlen** |
+| Cloud Functions: Berechtigung je Endpunkt | ✅ 15 von 15, jetzt bei jedem Durchlauf nachgezählt |
 | Speicher (Storage) | ✅ für jeden Client gesperrt |
 | Geheimnisse im Quelltext | ✅ nur öffentliche Web-Schlüssel |
 | Kommentare in der ausgelieferten Datei | 🟡 Hinweis, siehe unten |
-| Content-Security-Policy | 🟡 fehlt, siehe unten |
+| Content-Security-Policy | ✅ **eingebaut**, siehe unten |
+| Bekannte Lücken in Fremdbibliotheken | 🔴 **11 gemeldet — jetzt 0** |
+| Die drei Nachbaranwendungen | 🔴 **drei Funde — alle behoben** |
 
 ---
 
@@ -56,37 +61,51 @@ Nachgewiesen in `tests/rules/rechte.test.js`, in beide Richtungen.
 
 ---
 
-## 🟠 Offen: die Google-Tabelle nimmt Daten von jedem an
+## 🟠 Umgebaut: die Google-Tabelle nahm Daten von jedem an
 
-Die App schiebt Material und Putzplan in eine Google-Tabelle. Das läuft
-über eine Apps-Script-Web-App, deren Adresse in `konfig.js` steht — und
-`konfig.js` wird an jeden Besucher ausgeliefert.
-
-`doPost` in `tools/MATERIAL-SHEETS.gs` prüft **nichts**. Wer die Adresse
-aus dem Quelltext liest, kann:
+Die App schiebt Material und Putzplan in eine Google-Tabelle. Das lief
+über eine Apps-Script-Web-App, deren Adresse in `konfig.js` stand — und
+`konfig.js` wird an jeden Besucher ausgeliefert. `doPost` prüfte
+**nichts**. Wer die Adresse aus dem Quelltext las, konnte:
 
 * beliebige Studios und Artikel in die Tabelle schreiben,
 * freien Text in das Notizblatt setzen,
 * durch wiederholte Aufrufe das Tageskontingent von Apps Script
   (rund 90 Minuten) aufbrauchen und damit den echten Abgleich lahmlegen.
 
-**Was NICHT geht:** lesen. `doGet` gibt eine feste Zeile zurück, keine
+**Was nie ging:** lesen. `doGet` gibt eine feste Zeile zurück, keine
 Daten. Und an Firestore kommt darüber niemand — die Tabelle ist eine
 Kopie, kein Zugang.
 
-**Warum es sich nicht schnell zunageln lässt:** der Browser sendet mit
-`mode:'no-cors'` direkt an die Web-App. Jedes Geheimnis, das der Browser
-mitschicken könnte, stünde in `konfig.js` und wäre damit genauso öffentlich
-wie die Adresse. Ein Token im Client ist hier Theater.
+**Warum ein Token im Browser nichts gebracht hätte:** es stünde neben
+der Adresse in derselben ausgelieferten Datei.
 
-**Der richtige Weg** ist, den Abgleich vom Browser auf den Server zu
-verlegen: eine Cloud Function schickt die Daten, das Geheimnis liegt in
-`functions/.env`, und `doPost` weist alles ohne dieses Geheimnis ab.
-Aufwand rund eine Sitzung, dazu einmal Apps Script neu bereitstellen.
+**Der Umbau** verlegt den Abgleich auf den Server:
 
-**Bis dahin gilt:** der Schaden ist auf die Tabelle begrenzt und
-reversibel — der nächste echte Abgleich überschreibt die betroffenen
-Studios wieder.
+| vorher | jetzt |
+|---|---|
+| Browser → Web-App, `mode:'no-cors'` | Browser → Cloud Function `sheetsPush` → Web-App |
+| Adresse in `konfig.js` | Adresse in `functions/.env` (`SHEETS_URL`) |
+| kein Token | Token aus `functions/.env`, geprüft in `doPost` |
+| Nutzlast wird durchgereicht | Nutzlast wird auf dem Server neu gebaut |
+| Absender kommt aus dem Browser | Absender kommt aus dem Profil |
+| keine Grenze | Anmeldung, Freigabe, Firma, Tagesgrenze (3000) |
+
+Die Function nimmt nur `art: material|putzplan` und eine Studioliste an.
+Alles andere fällt weg: Feldnamen, Längen und Typen stehen fest, ein
+zusätzliches Feld aus dem Browser erreicht die Tabelle nicht.
+
+**Zwei Handgriffe fehlen noch**, und sie kann nur der Betreiber machen:
+das Token als GitHub-Secret hinterlegen und dieselbe Zeichenkette als
+Skripteigenschaft `STUDIOCHAT_TOKEN` setzen. Solange die Eigenschaft
+fehlt, nimmt die Web-App weiter alles an — bewusst so, damit zwischen
+den Schritten nichts stehenbleibt. Anleitung: `docs/SHEETS-TOKEN.md`.
+
+Nachgewiesen in `tests/rules/funktionen.test.js` (16 Prüfungen: keine
+Anmeldung, keine Freigabe, fremde Firma, Token liegt bei, Absender aus
+dem Profil, erfundene Felder fallen weg) und in `tests/test-sheets.js`
+(der Browser ruft `script.google.com` kein einziges Mal mehr auf, mit
+Gegenprobe).
 
 ---
 
@@ -109,19 +128,255 @@ technische Notizen am Code.
 die Kommentare entfernt — und damit einen Build, den es bewusst nicht gibt
 (siehe `README.md`). Das ist eine Abwägung, keine offene Baustelle.
 
+**Nachtrag vom 13.8.:** die Frage erübrigt sich weitgehend, denn **das
+Repository steht auf öffentlich**. Der komplette Quelltext ist ohnehin
+für jeden lesbar, mitsamt Verlauf. Für die Sicherheit ändert das nichts
+an den Grenzen — die stehen in `firestore.rules` und werden auf dem
+Server durchgesetzt. Es hat aber eine harte Folge:
+
+> **Kein Geheimnis darf jemals eingecheckt werden.** Kein Token, kein
+> Passwort, kein Dienstkonto-Schlüssel — auch nicht kurz, auch nicht in
+> einem gelöschten Commit. Der Verlauf bleibt lesbar.
+
+Deshalb liegen die Zugangsdaten in GitHub-Secrets und landen erst beim
+Ausrollen in `functions/.env` (das in `.gitignore` steht). Das Token für
+die Google-Tabelle geht denselben Weg.
+
 ---
 
-## 🟡 Hinweis: keine Content-Security-Policy
+## ✅ Eingebaut: die Content-Security-Policy
 
-Die App baut ihre Oberfläche mit `innerHTML`. Heute ist alles maskiert —
-nachgewiesen mit acht Angriffsmustern in `tests/test-xss.js`. Eine CSP
-wäre die zweite Reihe: sie würde eingeschleusten Code auch dann nicht
-ausführen, wenn eine Maskierung irgendwann vergessen wird.
+Die App baut ihre Oberfläche mit `innerHTML`. Alles ist maskiert — acht
+Angriffsmuster, keins wird zu Code. Die CSP ist die zweite Reihe: sie
+führt eingeschleusten Code auch dann nicht aus, wenn eine Maskierung
+irgendwann vergessen wird.
 
-Sie fehlt. Einbauen hiesse `script-src` einschränken — und die App lädt
-das Firebase-SDK von `gstatic.com` und Schriften von Google. Machbar, aber
-eine eigene Runde mit sorgfältigem Nachmessen: eine zu enge CSP legt die
-App still.
+```
+default-src 'none'
+script-src  'self' https://www.gstatic.com 'sha256-…' 'sha256-…'
+style-src   'self' 'unsafe-inline' https://fonts.googleapis.com
+img-src     'self' data: blob:
+connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net …
+frame-src 'none' · object-src 'none' · base-uri 'none' · form-action 'none'
+```
+
+**`script-src` ohne `'unsafe-inline'`** — das ist der Punkt. Die beiden
+Skriptblöcke der Datei sind einzeln über ihre Prüfsumme erlaubt, jeder
+andere nicht. Ein `<script>` aus einem Chattext wird nicht ausgeführt,
+selbst wenn er als Markup ankäme.
+
+Der Preis dafür ist Pflege: ändert sich ein Zeichen im Skript, passt die
+Prüfsumme nicht mehr und die App bliebe weiss. Deshalb gibt es
+`tools/csp.js` (rechnet sie neu) und `tests/test-csp.js` (schlägt an,
+sobald Regel und Datei auseinanderlaufen). Beim Einbau hat genau das
+einmal angeschlagen, wie vorgesehen.
+
+**Was dafür umgebaut wurde:** vier Ereignisse im Attribut
+(`onclick="…"`, `onload="…"`). Die sind für die Regel fremder Code. Die
+beiden Notschalter im Ladebildschirm liegen jetzt in einem eigenen
+kleinen Block — getrennt vom grossen, damit sie auch dann funktionieren,
+wenn die App selbst nicht hochkommt.
+
+**`style-src` behält `'unsafe-inline'`.** Die Oberfläche setzt Farben und
+Grössen an `style="…"` einzelner Elemente; dafür gibt es keine
+Prüfsumme. Ein Stil führt keinen Code aus — die Regel verliert dadurch
+nichts von dem, wofür sie hier steht.
+
+**Gemessen statt gehofft:** zwölf Ansichten geöffnet, **0 Verletzungen**,
+App läuft, und die Gegenprobe (eingeschleustes `<img onerror>`, ein
+`<script>`-Element und ein per JS erzeugtes Skript) wird geblockt. Dazu
+läuft die gesamte Oberflächen-Prüfung seitdem unter der Regel — sie steht
+als `<meta>` in der Datei und gilt damit auch im Durchlauf, nicht nur im
+Betrieb.
+
+**Was im Betrieb auffällt, wird gemeldet:** blockt die Regel etwas
+Echtes, geht es denselben Weg wie ein Fehler (Verwaltung → System). Ohne
+das sähe man es nur in der Konsole eines fremden Handys.
+
+**Kopfzeilen zusätzlich** (in `firebase.json`, weil es sie als `<meta>`
+nicht gibt): `frame-ancestors 'none'` und `X-Frame-Options: DENY` gegen
+Einbetten in eine fremde Seite, dazu `nosniff`, `Referrer-Policy` und
+eine `Permissions-Policy`, die Ort, Kamera, Zahlung und USB abschaltet —
+das Mikrofon bleibt, dort hängen die Sprachnachrichten.
+
+---
+
+## 🔴 Behoben: elf gemeldete Lücken in den Fremdbibliotheken
+
+Im ersten Durchlauf stand hier „wurde nicht nachgeschlagen". Nachgeholt:
+`npm audit` meldete **elf**, davon zwei hoch.
+
+**Nodemailer 6.9.14 → 9.0.5.** Acht Meldungen. Zwei treffen genau
+unseren Fall, denn die Empfängeradresse kommt aus einem Formular und geht
+ohne Zwischenschritt an Endkundinnen:
+
+* die Adress-Zerlegung lässt sich mit einer gebauten Adresse in eine
+  Endlosrekursion treiben (hoch),
+* eine Adresse kann in einer anderen Domain landen als der, die dasteht.
+
+**fast-xml-parser, protobufjs, gaxios** ohne Bruch nachgezogen.
+
+**`overrides: { uuid: ^11.1.1 }`.** Sieben Meldungen hängen an einer
+alten `uuid` tief in den Google-Bibliotheken. Ein Weiterreichen von oben
+gibt es nicht; npm schlug als „Reparatur" einen Rücksprung auf
+firebase-admin 10 vor. Also von Hand hochgezogen.
+
+**firebase-admin 14 bleibt aussen vor** — und das ist der interessante
+Teil. Die Version entfernt die Schreibweise `admin.firestore()`, auf der
+der gesamte Backend-Code steht. `umzug.test.js` ist beim Versuch sofort
+umgefallen; ausgerollt hätte es Push, Mails und die Nachtsicherung
+stillgelegt, ohne dass in der App etwas anders aussieht. Sicherheitlich
+bringt der Sprung nichts: mit dem uuid-Override steht der Zähler auch
+auf 12 auf null.
+
+```
+npm audit --omit=dev   11 (9 mittel, 2 hoch)  →  0
+```
+
+Dass Nodemailer 9 unsere Nachrichten unverändert baut — Empfänger,
+Absender, Anzeigename, Umlaute — prüft `tests/test-mail-versand.js`.
+Ob ein echter SMTP-Server sie annimmt, lässt sich hier nicht feststellen.
+
+---
+
+## 🟠 Behoben: eine Grenze in der Marketing-App war nur Anzeige
+
+`marketing.html` meldet jeden ohne Chefrolle wieder ab: *„Dieser Bereich
+ist der Geschäftsführung vorbehalten."* In den Regeln stand für
+`mkProjects` und die Versionen darunter aber `istAktiv()` — **jeder
+aktive Zugang** durfte lesen, anlegen und ändern, an der Oberfläche
+vorbei.
+
+Kein Datenleck im engeren Sinn: dort liegen Kampagnentexte, keine
+Personendaten. Aber es ist die schlechteste Sorte Grenze — eine, an die
+alle glauben. Und sie passt nicht zu ihrem Gegenstück: die teuren
+KI-Aufrufe (`marketingChat`, `marketingImage`) sitzen serverseitig hinter
+`requireChef`. Was dabei herauskommt, gehört demselben Kreis.
+
+Jetzt `isChef()`, in beiden Regelblöcken (flach und je Firma).
+Nachgewiesen in `tests/rules/rechte.test.js`, in beide Richtungen.
+
+Mitgeprüft, weil es dieselbe Anwendungsfamilie ist: Kennzahlen je Studio,
+Wettbewerbsliste und Expansionsplanung aus `wachstum.html`. Die standen
+schon vorher richtig — nur eben ungeprüft.
+
+---
+
+## 🔴 Behoben: Erinnerungs- und Nachfass-Mails gingen seit dem Umzug nicht mehr raus
+
+Kein Sicherheitsfund, sondern einer aus dem Blick auf die
+Nachbaranwendungen — und der stillste Ausfall, den das Projekt bisher
+hatte.
+
+`wachstum.html` schreibt Termine flach nach `appointments/`. Die
+Hauptanwendung ist am 10. August auf `firmen/<kennung>/…` umgezogen; die
+Nachbaranwendungen sind dabei nicht mitgekommen. Für die Cloud Functions
+gilt seitdem:
+
+| | Weg | Stand |
+|---|---|---|
+| Bestätigung, Änderung, Storno | Auslöser, hängt an **beiden** Pfaden | lief weiter ✅ |
+| Erinnerung X Stunden vorher | Zeitplan über `alleFirmen()` | **fand nichts mehr** ❌ |
+| Nachfassen danach | dito | **fand nichts mehr** ❌ |
+
+Kein Fehler im Protokoll, kein Eintrag, in der App sieht alles normal
+aus: die Abfrage lief, sie lief nur am falschen Ort und kam leer zurück.
+Genau das Muster, vor dem `docs/MANDANT-PLAN.md` warnt — nur eben in der
+Anwendung, an die beim Umzug niemand gedacht hat.
+
+Der Zeitplan läuft jetzt über `alleFirmenUndFlach()`: dieselbe Schleife,
+zusätzlich die flachen Pfade — dieselbe Antwort, die `beideWelten()` bei
+den Auslösern schon gibt. Kostet zwei leere Abfragen je Lauf und fällt
+weg, wenn die flachen Daten aufgeräumt sind.
+
+**Was hier nicht messbar war:** ob eine Mail wirklich ankommt. Ohne
+SMTP-Zugang im Durchlauf hinterlässt der Versand keine Spur. Nachgewiesen
+ist der Weg, nicht die Zustellung (`tests/test-funktionen-pfade.js`, mit
+Gegenprobe, dass kein anderer Zeitplan die flachen Pfade mitnimmt).
+
+---
+
+## 🟠 Behoben: die Nachbarseiten arbeiteten im Probelauf in der echten Datenbank
+
+`marketing.html` und `wachstum.html` trugen die Firebase-Zugangsdaten
+fest im Quelltext — die des **Betriebs**. Die Weiche in `konfig.js`, die
+auf der Probe-Adresse auf das Probe-Projekt umstellt, erreichte sie nie.
+
+Wer also unter `formenchat-probe.web.app` eine dieser Seiten öffnete,
+arbeitete in der echten Datenbank: echte Termine ändern, echte Mails an
+Endkundinnen auslösen, echtes KI-Kontingent verbrauchen. Ein Probelauf,
+der in den Betrieb schreibt, ist schlimmer als keiner — und man sieht es
+der Seite nicht an.
+
+Beide holen die Zugangsdaten jetzt aus `konfig.js`, wie die App.
+`tests/test-probe-schalter.js` prüft für jede ausgelieferte Seite, dass
+keine `projectId` mehr im Quelltext steht — mit Gegenprobe für
+`werbung.html`, die gar kein Firebase hat und keins bekommen soll.
+
+---
+
+## 🟡 Bleibt: Termine enthalten Kundendaten, und jeder im Betrieb sieht sie
+
+`appointments` trägt Name, E-Mail, Telefon und Notizen der Endkundinnen.
+Lesen und ändern darf das jeder aktive Zugang der Firma, über alle
+Studios hinweg. Das steht so in den Regeln, mit Begründung: im Studio
+machen alle Termine.
+
+Das ist eine Entscheidung, keine Lücke — aber es sind personenbezogene
+Daten Dritter, und deshalb steht sie hier. Wer sie ändern will, engt in
+`firestore.rules` ein, nicht in der Oberfläche.
+
+**Der Haken dabei:** `wachstum.html` lädt heute alle Termine und filtert
+erst im Browser nach Studio. Firestore prüft eine Abfrage im Voraus —
+eine Regel „nur die eigenen Studios" würde diese Abfrage sofort
+abweisen. Die Einschränkung ist also kein Einzeiler in den Regeln,
+sondern Regel **und** Abfrage zusammen, mit Nachmessen. Rund eine halbe
+Sitzung.
+
+---
+
+## 🟡 Bleibt, und wird beim zweiten Kunden scharf: die Nachbarseiten kennen keine Firmen
+
+`marketing.html` und `wachstum.html` benutzen durchgehend die flachen
+Pfade — `appointments/`, `emailTemplates/`, `studioMetrics/` — nicht
+`firmen/<kennung>/…`. Die Hauptanwendung ist am 10.8. umgezogen, sie
+nicht.
+
+Heute ist das folgenlos: es gibt eine Firma. Bei zwei Kunden in
+derselben Datenbank landen beide in denselben Sammlungen, und die Regeln
+für die flachen Pfade fragen nur `istAktiv()` — **nicht, zu welcher
+Firma jemand gehört**. Dann liest Kunde A die Termine von Kunde B,
+mitsamt Namen und E-Mail-Adressen von deren Endkundinnen.
+
+Das ist heute keine offene Tür, sondern eine, die beim zweiten Kunden
+aufgeht. Die 162 Kreuztests decken sie nicht ab, weil sie die
+Firmen-Pfade prüfen — dort, wo die Hauptanwendung arbeitet.
+
+**Vor dem zweiten Kunden muss das umgestellt sein.** Zusammen mit dem
+Aufräumen der flachen Daten (`docs/OFFEN.md`), nicht davor und nicht
+danach: die Daten müssen mit umziehen.
+
+---
+
+## 🟡 Bleibt: `marketing.html` und `wachstum.html` ohne eigene CSP
+
+`index.html` hat sie, `werbung.html` inzwischen auch. Die beiden anderen
+nicht: dort stehen zusammen **101 Ereignisse im Attribut**
+(`onclick="…"`), und die verbietet genau die Regel, um die es geht. Erst
+müssten sie auf `addEventListener` umgestellt werden — und für beide gibt
+es bis heute keinen einzigen automatischen Durchlauf, der so einen Umbau
+absichern würde. Das ist die eigentliche Vorarbeit.
+
+Beide verlangen eine Anmeldung, beide sind interne Werkzeuge, und die
+Kopfzeilen aus `firebase.json` (kein Einbetten, `nosniff`,
+`Referrer-Policy`) gelten für sie mit.
+
+**`werbung.html` ist seit dem 13.8. mit dabei** — die öffentliche Seite,
+die jeder ohne Anmeldung aufruft. Sie hatte drei Ereignisse im Attribut;
+die sind umgestellt. Ihre Regel ist enger als die der App, weil sie
+weniger braucht: `connect-src 'none'`, `media-src 'none'`,
+`worker-src 'none'`, und Bilder nur von der eigenen Hauptseite. Kein
+Firebase, keine Datenbank, kein Weg nach draussen.
 
 ---
 
@@ -150,9 +405,11 @@ selbst nicht.
 **Abo.** Ein Mitarbeiter kommt nicht heran; ein Chef sieht seines, kann es
 aber nicht auf `premium` setzen.
 
-**Cloud Functions.** Alle 14 Endpunkte prüfen die Berechtigung:
-sieben `requireAdmin`, drei `requireChef`, zwei `requireAuth`, zwei
-HTTPS-Auslöser mit Geheim-Schlüssel.
+**Cloud Functions.** Alle Endpunkte prüfen die Berechtigung: dreizehn
+Aufrufe aus der App über `requireAdmin`/`requireChef`/`requireAuth`,
+zwei HTTPS-Auslöser über einen Geheim-Schlüssel. Nachgezählt wird das
+jetzt bei jedem Durchlauf (`tests/test-funktionen-pfade.js`) — von Hand
+sieht man den fünfzehnten nicht mehr.
 
 **Speicher.** `allow read, write: if false` — für jeden Client gesperrt.
 Dort liegt der nächtliche Vollexport der Datenbank.
@@ -169,13 +426,14 @@ sollen: sie identifizieren das Projekt, sie berechtigen zu nichts.
   Sitzungsdauer. Das ist Googles Seite.
 * **Ob jemand ein Passwort weitergibt.** Die häufigste Art, wie so eine
   App wirklich aufgemacht wird, und keine technische Frage.
-* **Bekannte Lücken in Fremdbibliotheken.** Im Einsatz sind
-  Firebase JS SDK 10.12.2, firebase-admin 12.x, firebase-functions 7.x.
-  Ob dafür etwas gemeldet ist, wurde hier nicht nachgeschlagen.
-* **Die drei Nachbaranwendungen** (`marketing.html`, `wachstum.html`,
-  `werbung.html`) sind nur oberflächlich angesehen worden: sie verlangen
-  eine Anmeldung, und die serverseitigen Grenzen der KI-Funktionen liegen
-  in den Cloud Functions. Ein eigener Durchlauf steht dafür aus.
+* **Das Firebase-SDK im Browser** (10.12.2). Es kommt von `gstatic.com`
+  und steht in keiner `package.json`; `npm audit` sieht es deshalb nicht.
+  Die Server-Bibliotheken sind nachgeschlagen und stehen auf null.
+* **Die drei Nachbaranwendungen** sind diesmal angesehen worden — auf
+  Anmeldung, Rollenprüfung und die Regeln hinter ihren Sammlungen (ein
+  Fund, oben). Was weiterhin fehlt: ein Angriffsdurchlauf mit
+  eingeschleustem Text durch ihre Oberflächen, so wie `test-xss.js` ihn
+  für die Hauptanwendung fährt.
 
 ---
 
@@ -183,9 +441,15 @@ sollen: sie identifizieren das Projekt, sie berechtigen zu nichts.
 
 ```
 tests/test-xss.js              8 Muster · 12 Ansichten · 0 ausgeführt
+tests/test-sheets.js           8 Prüfungen, davon 1 Gegenprobe
+tests/test-funktionen-pfade.js 15 Endpunkte, jeder mit Berechtigungsprüfung
 tests/rules/rechte.test.js     23 Prüfungen, davon 4 Gegenproben
 tests/rules/security.test.js   165
 tests/rules/kreuz.test.js      162
 tests/rules/umzug.test.js      12
-tests/rules/funktionen.test.js 83
+tests/rules/funktionen.test.js 99
+tests/rules/rechte.test.js     33 (mit den Nachbaranwendungen)
+tests/test-csp.js              33 Prüfungen · 2 Seiten · 0 Verletzungen
+tests/test-mail-versand.js     8
+npm audit --omit=dev           0
 ```

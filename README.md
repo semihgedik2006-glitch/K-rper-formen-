@@ -144,6 +144,12 @@ Code nicht sieht: eine Bedingung aus den Sicherheitsregeln, eine Reihenfolge,
 die nicht vertauscht werden darf, ein naheliegender Weg, der nicht
 funktioniert. Kein Verlauf, keine Daten, keine Begründungen in Aufsatzform.
 
+**Im Markup steht höchstens eine kurze Marke je Abschnitt.** `<!-- CHAT -->`,
+`<!-- Schichtplan -->` — der Name, sonst nichts. Kein Banner aus
+Gleichheitszeichen, keine Beschreibung, wie die Seite aufgebaut ist. Wer den
+Abschnitt sucht, findet ihn an der Marke; wie er funktioniert, steht im Code
+darunter.
+
 **Jeder Fund bekommt einen Durchlauf.** Von Hand weggeräumt heißt: kommt
 wieder. Jeder Test prüft beide Richtungen — dass der Fehler weg ist *und*
 dass die richtige Seite noch funktioniert. Ein Test, der nur eine Richtung
@@ -176,6 +182,19 @@ früheren dreht man vergeblich. Ein Selektor darf mehrfach vorkommen
 Alles drei prüft `tests/test-gestaltung.js`, die `@keyframes`
 `tests/test-bewegung-doppelt.js`.
 
+**Die Sicherheitsregel der Seite (CSP) kennt genau zwei Skriptblöcke.** Sie
+stehen mit ihrer Prüfsumme in `index.html`. Wer am Skript etwas ändert, muss
+`node tools/csp.js --setzen` laufen lassen — sonst führt der Browser den Block
+nicht mehr aus und die App bleibt weiss. `tests/test-csp.js` schlägt vorher an.
+Kein `onclick="…"` im Markup: für die Regel ist das fremder Code.
+
+**Kein Geheimnis im Repo.** Das Repository ist öffentlich, und der Verlauf
+bleibt auch nach einem Löschen lesbar. Zugangsdaten liegen deshalb in
+GitHub-Secrets und landen erst beim Ausrollen in `functions/.env` — das steht
+in `.gitignore` und wird nie eingecheckt. Was im Quelltext stehen darf: die
+Firebase-Web-Schlüssel (sie identifizieren das Projekt und berechtigen zu
+nichts) und Adressen, die ohnehin öffentlich sind.
+
 ---
 
 ## Dokumentation
@@ -188,7 +207,8 @@ Alles unter `docs/`.
 `IDEEN.md`
 
 **Sicherheit**
-`SICHERHEIT.md` was geprüft wurde, was gefunden wurde, was offen ist
+`SICHERHEIT.md` was geprüft wurde, was gefunden wurde, was offen ist ·
+`SHEETS-TOKEN.md` die Google-Tabelle gegen fremde Sendungen sperren
 
 **Betrieb**
 `OFFEN.md` was noch aussteht · `DEIN-TEIL.md` Handgriffe für den Betreiber ·

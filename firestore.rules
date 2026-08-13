@@ -546,25 +546,30 @@ service cloud.firestore {
                 && request.time.toMillis() < resource.data.ts + 3600000));
     }
 
-    // ── Marketing-App (marketing.html): Kampagnen-Projekte mit Versionen ──
-    // Jeder Eingeloggte darf lesen und Projekte anlegen/pflegen.
-    // Löschen: nur Chef oder wer das Projekt bzw. die Version angelegt hat.
+    /* ── Marketing-App (marketing.html): Kampagnen-Projekte ──
+       Nur der Chef. marketing.html meldet jeden anderen mit den Worten
+       "Dieser Bereich ist der Geschaeftsfuehrung vorbehalten" wieder ab —
+       waehrend hier bis zum 13.8. jeder aktive Zugang lesen und schreiben
+       durfte. Eine Oberflaeche, die mehr verspricht als die Regel haelt,
+       ist die schlechteste Sorte Grenze: alle glauben, sie stehe.
+
+       Passend dazu sitzt die Sperre der teuren KI-Aufrufe (marketingChat,
+       marketingImage) auf requireChef. Was dabei herauskommt, gehoert
+       demselben Kreis. */
     match /mkProjects/{projectId} {
-      allow read: if istAktiv();
-      allow create: if istAktiv()
+      allow read: if isChef();
+      allow create: if isChef()
         && request.resource.data.createdBy == request.auth.uid;
-      allow update: if istAktiv();
-      allow delete: if isChef()
-        || (istAktiv() && resource.data.createdBy == request.auth.uid);
+      allow update: if isChef();
+      allow delete: if isChef();
 
       match /versions/{versionId} {
-        allow read: if istAktiv();
-        allow create: if istAktiv()
+        allow read: if isChef();
+        allow create: if isChef()
           && request.resource.data.createdBy == request.auth.uid;
         // Versionen sind unveränderlich (Historie bleibt echt)
         allow update: if false;
-        allow delete: if isChef()
-          || (istAktiv() && resource.data.createdBy == request.auth.uid);
+        allow delete: if isChef();
       }
     }
 
@@ -1023,21 +1028,19 @@ service cloud.firestore {
         }
 
         match /mkProjects/{projectId} {
-          allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (istAktiv()
+          allow read: if inFirma(f) && (isChef());
+          allow create: if inFirma(f) && (isChef()
             && request.resource.data.createdBy == request.auth.uid);
-          allow update: if inFirma(f) && (istAktiv());
-          allow delete: if inFirma(f) && (isChef()
-            || (istAktiv() && resource.data.createdBy == request.auth.uid));
+          allow update: if inFirma(f) && (isChef());
+          allow delete: if inFirma(f) && (isChef());
 
           match /versions/{versionId} {
-            allow read: if inFirma(f) && (istAktiv());
-            allow create: if inFirma(f) && (istAktiv()
+            allow read: if inFirma(f) && (isChef());
+            allow create: if inFirma(f) && (isChef()
               && request.resource.data.createdBy == request.auth.uid);
             // Versionen sind unveränderlich (Historie bleibt echt)
             allow update: if false;
-            allow delete: if inFirma(f) && (isChef()
-              || (istAktiv() && resource.data.createdBy == request.auth.uid));
+            allow delete: if inFirma(f) && (isChef());
           }
         }
 

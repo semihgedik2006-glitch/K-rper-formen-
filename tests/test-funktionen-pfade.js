@@ -123,7 +123,10 @@ const AUSNAHME = {
 };
 plaene.forEach(b => {
   const t = b.text.join('\n');
-  if (t.indexOf('alleFirmen()') >= 0) {
+  /* alleFirmenUndFlach() zählt mit: dieselbe Schleife, zusätzlich die
+     flachen Pfade. Gebraucht, solange eine Anwendung noch flach
+     schreibt — bei den Terminen tut wachstum.html das. */
+  if (t.indexOf('alleFirmen()') >= 0 || t.indexOf('alleFirmenUndFlach()') >= 0) {
     pruefe(b.name + ': läuft über alleFirmen()', true);
     return;
   }
@@ -134,6 +137,76 @@ plaene.forEach(b => {
   pruefe(b.name + ': läuft über alleFirmen()', false,
     'weder alleFirmen() im Block noch als Ausnahme begründet');
 });
+
+/* ── Jeder Aufruf aus der App prüft, wer ruft ──
+   Ein onCall-Endpunkt ist von jedem Rechner der Welt erreichbar, sobald
+   sein Name bekannt ist — und der Name steht im Quelltext der App. Die
+   Grenze ist deshalb nicht die Oberfläche, sondern die erste Zeile im
+   Rumpf.
+
+   Beim Sicherheits-Durchlauf am 13.8. wurden die vierzehn Endpunkte von
+   Hand durchgesehen. Von Hand heisst: beim fünfzehnten nicht mehr.
+   Deshalb hier gezählt. */
+console.log('\n── Jeder Endpunkt prüft die Berechtigung ──');
+
+/* Blockende: die schliessende Zeile auf zwei Leerzeichen Einrückung.
+   Ohne diese Grenze reichte ein Block bis zum nächsten export — und
+   ein requireAuth() in einer Hilfsfunktion dahinter machte ihn grün. */
+function rumpf(b) {
+  const bis = b.text.findIndex((z, i) => i > 0 && z === '  });');
+  return b.text.slice(0, bis < 0 ? b.text.length : bis + 1).join('\n');
+}
+const PRUEFUNG = /require(Admin|Chef|Auth)\s*\(\s*context\s*\)/;
+
+/* Zwei Endpunkte hängen nicht an einer Anmeldung, sondern an einem
+   Geheim-Schlüssel: sie werden von aussen aufgerufen (Cron, Test). */
+const SCHLUESSEL = /process\.env\.\w*(KEY|SECRET|TOKEN)/;
+
+const aufrufe = bloecke.filter(b => rumpf(b).indexOf('.https.onCall') >= 0);
+const anfragen = bloecke.filter(b => rumpf(b).indexOf('.https.onRequest') >= 0);
+pruefe('Endpunkte überhaupt gefunden', aufrufe.length >= 12,
+  aufrufe.length + ' onCall, ' + anfragen.length + ' onRequest');
+
+aufrufe.forEach(b => {
+  pruefe(b.name + ': prüft requireAuth/Chef/Admin', PRUEFUNG.test(rumpf(b)),
+    'ein onCall ohne Prüfung ist für jeden im Internet offen');
+});
+anfragen.forEach(b => {
+  pruefe(b.name + ': prüft einen Geheim-Schlüssel', SCHLUESSEL.test(rumpf(b)),
+    'ein onRequest ohne Schlüssel ist eine offene Adresse');
+});
+
+/* Gegenprobe: würde eine fehlende Prüfung überhaupt auffallen? */
+{
+  const erfunden = { name: '(Gegenprobe)', text: [
+    'exports.offen = region', '  .https.onCall(async (data, context) => {',
+    '    return { alles: "frei" };', '  });'] };
+  pruefe('Gegenprobe: ein Endpunkt ohne Prüfung wird erkannt',
+    !PRUEFUNG.test(rumpf(erfunden)));
+}
+
+/* ── Termine: der Zeitplan muss beide Welten sehen ──
+   wachstum.html schreibt nach appointments/, nicht nach
+   firmen/<kennung>/appointments. Der Auslöser hängt an beiden Pfaden,
+   der Zeitplan lief bis 13.8. nur über die Firmen — Erinnerung und
+   Nachfassen blieben still aus. Ein Ausfall ohne Fehlermeldung. */
+console.log('\n── Termine erreichen beide Welten ──');
+{
+  const plan = bloecke.find(b => b.name === 'appointmentMailScheduler');
+  const t = plan ? plan.text.join('\n') : '';
+  pruefe('appointmentMailScheduler gefunden', !!plan);
+  pruefe('er läuft über alleFirmenUndFlach(), nicht nur über alleFirmen()',
+    t.indexOf('alleFirmenUndFlach()') >= 0,
+    'sonst bekommt niemand mehr eine Erinnerung, der über wachstum.html gebucht wurde');
+  pruefe('die Hilfsfunktion gibt es auch',
+    quelle.indexOf('async function alleFirmenUndFlach') >= 0);
+  /* Gegenprobe: nur die Termine brauchen das. Nähme jeder Zeitplan die
+     flachen Pfade mit, wäre die Trennung der Firmen wieder aufgeweicht. */
+  const andere = plaene.filter(b => b.name !== 'appointmentMailScheduler'
+    && b.text.join('\n').indexOf('alleFirmenUndFlach()') >= 0);
+  pruefe('GEGENPROBE kein anderer Zeitplan nimmt die flachen Pfade mit',
+    andere.length === 0, andere.map(b => b.name).join(', '));
+}
 
 console.log(errs.length
   ? '\n✗ ' + errs.length + ' Fehler — die Functions arbeiten nicht überall auf den Firmen-Pfaden'

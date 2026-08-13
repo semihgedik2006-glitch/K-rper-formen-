@@ -149,6 +149,26 @@ function beideWelten(pfad, handler, art, opt) {
   };
 }
 
+/* ── Die beiden Welten für einen Zeitplan ─────────────────────────────
+   Ein Auslöser hängt an beiden Pfaden (beideWelten). Ein Zeitplan nicht:
+   der läuft über alleFirmen() und sieht damit nur firmen/<kennung>/….
+
+   Für Sammlungen, in die noch flach geschrieben wird, ist das ein
+   stiller Ausfall. Genau das war bei den Terminen der Fall:
+   wachstum.html schreibt nach appointments/, der Zeitplan suchte ab dem
+   Umzug am 10.8. nur noch unter firmen/koerperformen/appointments — die
+   Bestätigungsmail kam weiter (die hängt am Auslöser, und der hängt an
+   beiden Pfaden), Erinnerung und Nachfassen nicht mehr. Ohne Fehler,
+   ohne Eintrag, ohne dass in der App etwas anders aussieht.
+
+   Kostet zwei leere Abfragen je Lauf, solange es flach nichts gibt.
+   Fällt weg, wenn die flachen Daten aufgeräumt sind (docs/OFFEN.md). */
+async function alleFirmenUndFlach() {
+  const alle = await alleFirmen();
+  if (alle.length === 1 && alle[0] === null) return alle;
+  return alle.concat([null]);
+}
+
 /* Die Firma zu EINEM Profil — für Aufrufe aus der App, wo genau eine Person
    dahintersteht.
 
@@ -1133,6 +1153,180 @@ exports.marketingImage = region
   });
 
 /* ============================================================
+   GOOGLE-TABELLE (Material und Putzplan)
+
+   Bis 13.8.2026 hat der Browser direkt an die Apps-Script-Web-App
+   gesendet. Deren Adresse stand dafür in konfig.js, also im Quelltext,
+   den jeder Besucher bekommt — und doPost hat nichts geprüft. Wer die
+   Adresse las, konnte in die Tabelle schreiben.
+
+   Ein Token im Browser hätte daran nichts geändert: es stünde neben der
+   Adresse. Deshalb geht der Abgleich jetzt über diese Function. Sie
+   prüft Anmeldung und Firma, baut die Nutzlast neu auf und legt das
+   Token dazu, das nur hier liegt (functions/.env aus GitHub-Secrets).
+
+   Die Adresse selbst ist kein Geheimnis und war nie eines; sie steht
+   unten als Rückfall, damit der Abgleich nicht stehenbleibt, solange
+   SHEETS_URL nicht gesetzt ist. Geschützt wird über das Token.
+   ============================================================ */
+
+const SHEETS_ADRESSE_RUECKFALL =
+  'https://script.google.com/macros/s/AKfycbygK9l443-M3GBhVDYTZQ0tNkGRvSRWYMgeOn6ksNdBDLMb6uc21Vm_20XfyUeibXu_aw/exec';
+
+/* SHEETS_FIRMA: welcher Kundschaft die Tabelle gehört. Ohne diese Grenze
+   würde ein zweiter Kunde auf derselben Installation seine Studios in
+   die Tabelle von Körperformen schreiben. */
+function sheetsZiel() {
+  return {
+    url: (process.env.SHEETS_URL || SHEETS_ADRESSE_RUECKFALL).trim(),
+    token: (process.env.SHEETS_TOKEN || '').trim(),
+    firma: (process.env.SHEETS_FIRMA || 'koerperformen').trim(),
+  };
+}
+
+/* Steuerzeichen raus und harte Obergrenze: was hier durchgeht, landet in
+   einer Tabellenzelle. */
+function sheetsText(wert, maxLaenge) {
+  return String(wert === undefined || wert === null ? '' : wert)
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .slice(0, maxLaenge);
+}
+function sheetsZahl(wert) {
+  const n = Number(wert);
+  return Number.isFinite(n) ? Math.max(0, Math.min(999999, Math.round(n))) : 0;
+}
+
+const SHEETS_MAX_STUDIOS = 60;
+const SHEETS_MAX_ZEILEN = 500;
+
+/* Die Nutzlast wird neu gebaut, nicht durchgereicht: nur diese Felder
+   erreichen die Tabelle, in dieser Länge, mit diesen Typen. Ein
+   zusätzliches Feld aus dem Browser fällt dabei weg. */
+function sheetsMaterialStudio(roh, wer, wann) {
+  return {
+    studio: sheetsText(roh.studio, 80),
+    studioKey: sheetsText(roh.studioKey, 80),
+    items: (Array.isArray(roh.items) ? roh.items : [])
+      .slice(0, SHEETS_MAX_ZEILEN)
+      .map(it => ({
+        name: sheetsText(it && it.name, 200),
+        have: sheetsZahl(it && it.have),
+        need: sheetsZahl(it && it.need),
+      })),
+    updatedBy: wer,
+    ts: wann,
+  };
+}
+
+function sheetsPutzStudio(roh, wer, wann) {
+  return {
+    studio: sheetsText(roh.studio, 80),
+    studioKey: sheetsText(roh.studioKey, 80),
+    tasks: (Array.isArray(roh.tasks) ? roh.tasks : [])
+      .slice(0, SHEETS_MAX_ZEILEN)
+      .map(t => ({
+        title: sheetsText(t && t.title, 300),
+        wiederholung: sheetsText(t && t.wiederholung, 60),
+        status: sheetsText(t && t.status, 20),
+        erledigtVon: sheetsText(t && t.erledigtVon, 80),
+        kuerzel: sheetsText(t && t.kuerzel, 20),
+        zeitpunkt: sheetsText(t && t.zeitpunkt, 40),
+      })),
+    notes: (Array.isArray(roh.notes) ? roh.notes : [])
+      .slice(0, SHEETS_MAX_ZEILEN)
+      .map(n => ({
+        text: sheetsText(n && n.text, 1000),
+        by: sheetsText(n && n.by, 80),
+        kuerzel: sheetsText(n && n.kuerzel, 20),
+        zeit: sheetsText(n && n.zeit, 40),
+      })),
+    updatedBy: wer,
+    ts: wann,
+  };
+}
+
+/* ── Abgleich anstoßen ──
+   Die App schickt { art: 'material' | 'putzplan', studios: [...] } — ein
+   Studio oder alle, dieselbe Form. Weitergegeben wird immer die
+   Sammelform der Web-App; sie ersetzt die Zeilen der genannten Studios
+   und lässt alle anderen stehen. */
+exports.sheetsPush = region
+  .runWith({ timeoutSeconds: 120 })
+  .https.onCall(async (data, context) => {
+    requireAuth(context);
+    const snap = await db.collection('users').doc(context.auth.uid).get();
+    const profil = snap.exists ? (snap.data() || {}) : null;
+    /* aktiv:false heisst: wartet auf die Freigabe des Chefs. Ein solches
+       Konto sieht in der App nichts und schreibt hier auch nichts. */
+    if (!profil || profil.aktiv === false) {
+      throw new functions.https.HttpsError('permission-denied',
+        'Dieses Konto ist nicht freigeschaltet.');
+    }
+    const firma = await firmaVonProfil(profil);
+    const ziel = sheetsZiel();
+    if (!ziel.url) return { ok: false, grund: 'nicht-eingerichtet' };
+    if ((firma || 'koerperformen') !== ziel.firma) {
+      return { ok: false, grund: 'keine-tabelle' };
+    }
+
+    const art = String((data && data.art) || '');
+    if (art !== 'material' && art !== 'putzplan') {
+      throw new functions.https.HttpsError('invalid-argument',
+        'Unbekannte Art: ' + art.slice(0, 40));
+    }
+    const roh = Array.isArray(data && data.studios) ? data.studios : [];
+    if (!roh.length) return { ok: false, grund: 'nichts-zu-senden' };
+
+    /* Kostenbremse wie bei den KI-Aufrufen, hier gegen das Tageskontingent
+       von Apps Script (rund 90 Minuten). Ein Fehler in einer Schleife
+       würde sonst den echten Abgleich für den Rest des Tages lahmlegen. */
+    await tagesGrenze('sheetsPush', 3000, firma);
+
+    const wer = sheetsText(profil.name, 80);
+    const wann = Date.now();
+    const studios = roh.slice(0, SHEETS_MAX_STUDIOS)
+      .filter(s => s && typeof s === 'object')
+      .map(s => art === 'material'
+        ? sheetsMaterialStudio(s, wer, wann)
+        : sheetsPutzStudio(s, wer, wann))
+      .filter(s => s.studio || s.studioKey);
+    if (!studios.length) return { ok: false, grund: 'nichts-zu-senden' };
+
+    const nutzlast = {
+      type: art === 'material' ? 'material-alle' : 'putzplan-alle',
+      token: ziel.token,
+      studios: studios,
+    };
+
+    try {
+      const antwort = await fetch(ziel.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(nutzlast),
+      });
+      const text = (await antwort.text().catch(() => '')).slice(0, 300);
+      if (!antwort.ok) {
+        console.error('sheetsPush HTTP ' + antwort.status + ': ' + text);
+        throw new functions.https.HttpsError('internal',
+          'Die Tabelle hat abgelehnt (' + antwort.status + ').');
+      }
+      /* Apps Script antwortet auch bei eigenen Fehlern mit 200 — deshalb
+         wird der Text angesehen. "Token" heisst: das Geheimnis in
+         functions/.env passt nicht zu dem im Skript. */
+      if (/^Fehler/i.test(text)) {
+        console.error('sheetsPush: ' + text);
+        throw new functions.https.HttpsError('internal', text);
+      }
+      return { ok: true, studios: studios.length, antwort: text };
+    } catch (e) {
+      if (e instanceof functions.https.HttpsError) throw e;
+      console.error('sheetsPush:', e);
+      throw new functions.https.HttpsError('internal',
+        'Abgleich fehlgeschlagen: ' + ((e && e.message) || 'Unbekannter Fehler'));
+    }
+  });
+
+/* ============================================================
    WACHSTUM & BETRIEB (wachstum.html) – Termin-E-Mails
    Bestätigung beim Anlegen und beim Verschieben, Storno-Nachricht,
    Erinnerung X Stunden vorher und Follow-up danach.
@@ -1313,7 +1507,9 @@ exports.appointmentMailScheduler = region
     const now = Date.now();
     const H = 3600000;
 
-    for (const firma of await alleFirmen()) {
+    /* Beide Welten, nicht nur die Firmen-Pfade: wachstum.html schreibt
+       Termine weiterhin flach. Siehe alleFirmenUndFlach(). */
+    for (const firma of await alleFirmenUndFlach()) {
     // Erinnerungen: Termine innerhalb der nächsten REMINDER_HOURS Stunden
     const remSnap = await W(firma).collection('appointments')
       .where('startsAt', '>=', now)

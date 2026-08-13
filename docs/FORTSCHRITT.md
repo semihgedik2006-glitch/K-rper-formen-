@@ -2664,6 +2664,226 @@ Forensik: 0 Funde in allen sechs Kategorien
 
 ---
 
+## Sitzung 34 · Sicherheits-Durchlauf und die Google-Tabelle 🔴🟢
+
+Der zweite Durchlauf (der erste, 12.8., ging nur um Firmengrenzen). Voll
+in `docs/SICHERHEIT.md`; hier nur, was gefunden und was gebaut wurde.
+
+### 🔴 Die vollständige Kundenliste war öffentlich abrufbar
+
+`match /firmen/{f}` stand auf `allow read: if true`. In Firestore erlaubt
+`read` **beides**: ein Dokument holen (`get`) und die Sammlung auflisten
+(`list`). Ohne Anmeldung waren damit Firmenname, Kontenzahl, Studiozahl
+und Anlegedatum aller Kunden abrufbar.
+
+Das hebelte genau die Massnahme aus, die es verhindern sollte: Kennungen
+bekommen eine Zufallsendung (`mueller-7f3a`), damit man Kunden nicht
+durch Raten findet. Raten war nicht nötig.
+
+```
+allow get:  if true;               // der Anmeldebildschirm braucht den Namen
+allow list: if istAdminKonto();    // die Kundenliste gehoert dem Betreiber
+```
+
+### 🟠 Die Google-Tabelle nahm Daten von jedem an
+
+Die Adresse der Apps-Script-Web-App stand in `konfig.js` — also im
+Quelltext jedes Besuchers — und `doPost` prüfte nichts. Ein Token im
+Browser hätte daran nichts geändert: es stünde daneben.
+
+| | vorher | jetzt |
+|---|---|---|
+| Weg | Browser → Web-App | Browser → `sheetsPush` → Web-App |
+| Adresse | `konfig.js` | `functions/.env` |
+| Token | keins | nur auf dem Server, geprüft in `doPost` |
+| Nutzlast | durchgereicht | auf dem Server neu gebaut |
+| Absender | aus dem Browser | aus dem Profil |
+| Grenze | keine | Anmeldung, Freigabe, Firma, 3000/Tag |
+
+`konfig.js` hat statt der Adresse nur noch den Schalter
+`sheetsAbgleich`. Die Web-App weist ohne Token ab — **sobald das Token
+gesetzt ist**; solange die Skripteigenschaft fehlt, nimmt sie weiter
+alles an. Das ist Absicht, damit zwischen den beiden Handgriffen nichts
+stehenbleibt. Anleitung: `docs/SHEETS-TOKEN.md`, Schritt G in
+`DEIN-TEIL.md`.
+
+### Was geprüft wurde und hielt
+
+| | |
+|---|---|
+| Eingeschleuster Code | 8 Muster · 12 Ansichten · **0 ausgeführt**, 31 Fundstellen bleiben Text |
+| Rechteausweitung | 10 Wege (`admin:true`, `role:'chef'`, Firma wechseln, sich selbst freischalten) — alle zu |
+| Firmencode, Abo | für Mitarbeiter und ohne Anmeldung nicht lesbar |
+| Cloud Functions | 15 von 15 Endpunkten prüfen die Berechtigung |
+| Speicher | für jeden Client gesperrt |
+| Geheimnisse im Repo | keine, nur öffentliche Web-Schlüssel |
+
+### Zwei Dinge, die dabei nebenbei klar wurden
+
+**Das Repository ist öffentlich.** Der Quelltext ist ohnehin für jeden
+lesbar, mitsamt Verlauf. An den Grenzen ändert das nichts — die stehen
+in `firestore.rules`. Es macht aber eine Regel unumgänglich: kein Token,
+kein Passwort, kein Dienstkonto-Schlüssel darf jemals eingecheckt
+werden, auch nicht kurz. Steht jetzt in `README.md`.
+
+**Zwei Tests hätten fast Falsches behauptet.** Eine Gegenprobe setzte
+`admin:true` auf dasselbe Konto, mit dem danach weitergeprüft wurde —
+drei „Funde" waren in Wahrheit der Testaufbau. Und die XSS-Gegenprobe
+las `innerText`, der nur Sichtbares liefert; von zwölf Ansichten ist
+immer nur eine im Bild, also meldete sie „nichts geprüft". Beides
+korrigiert, beides am Fundort kommentiert.
+
+### Nachgezogen: die Kommentare im Markup
+
+Beim Aufräumen in Sitzung 33 war nur der `<script>`-Teil dran. Im Markup
+standen weiter Banner aus Gleichheitszeichen und mehrzeilige Absätze, die
+den Aufbau der Seite erzählen — genau die Sorte, die als „wirkt wie von
+KI" beanstandet wurde.
+
+| | vorher | nachher |
+|---|---|---|
+| `index.html` | 122 | 66 |
+| `werbung.html` | 25 | 24, alle Banner auf den Namen gekürzt |
+| `marketing.html` · `wachstum.html` | je 12 | je 11 |
+
+Was bleibt, benennt einen Abschnitt (`<!-- CHAT -->`) und erklärt nichts.
+Belegt, dass nur Kommentare fielen: `index.html` ohne Kommentare vorher
+und nachher zeichenweise identisch, 14.414 Zeilen.
+
+### Prüfung
+
+```
+Regeln 165 · Kreuz 162 · Rechte 23 · Umzug 12 · Functions 99   Emulator
+XSS 8 Muster · Tabelle 8 Prüfungen · Endpunkte 15              Browser/Text
+60 Durchläufe im Browser
+```
+
+Ein echter Fund dabei: `test-putzplan.js` hing an einer `fetch`-Anfrage
+an `script.google.com`. Die gibt es seit dem Umbau nicht mehr — der Test
+war rot, und zwar zu Recht. Er fängt jetzt den Aufruf von `sheetsPush`
+ab.
+
+Neu: `tests/rules/rechte.test.js`, `tests/test-xss.js`,
+`tests/test-sheets.js`, `tests/stub-xss.js`; erweitert:
+`tests/rules/funktionen.test.js` (+16), `tests/test-funktionen-pfade.js`
+(jeder Endpunkt).
+
+---
+
+## Sitzung 35 · Sicherheitsrunde drei 🔴🟢
+
+Die drei Punkte, die am Ende von Runde zwei als „nicht geprüft"
+dastanden. Voll in `docs/SICHERHEIT.md`.
+
+### 🔴 Elf gemeldete Lücken in den Fremdbibliotheken
+
+Nie nachgeschlagen — stand so als Lücke im Bericht. `npm audit` meldete
+elf, davon zwei hoch.
+
+| | |
+|---|---|
+| nodemailer 6.9.14 → 9.0.5 | acht Meldungen; zwei treffen unseren Fall, weil die Empfängeradresse aus einem Formular kommt und ohne Zwischenschritt an Endkundinnen geht |
+| fast-xml-parser · protobufjs · gaxios | ohne Bruch nachgezogen |
+| `overrides: uuid ^11.1.1` | sieben Meldungen hängen an einer alten `uuid` tief in den Google-Bibliotheken; ein Weiterreichen von oben gibt es nicht |
+
+**firebase-admin 14 bleibt draussen, und das ist der Fund im Fund.** Die
+Version entfernt `admin.firestore()` — die Schreibweise, auf der der
+ganze Backend-Code steht. `umzug.test.js` fiel beim Versuch sofort um.
+Ausgerollt hätte es Push, Mails und die Nachtsicherung stillgelegt, und
+in der App hätte man nichts davon gesehen. Sicherheitlich bringt der
+Sprung nichts: mit dem uuid-Override steht der Zähler auch auf 12 auf
+null.
+
+```
+npm audit --omit=dev   11 (9 mittel, 2 hoch)  →  0
+```
+
+### ✅ Die Content-Security-Policy
+
+`script-src` **ohne** `'unsafe-inline'`: die beiden Skriptblöcke sind
+einzeln über ihre Prüfsumme erlaubt, jeder andere nicht. Ein `<script>`
+aus einem Chattext wird nicht ausgeführt, selbst wenn er als Markup
+ankäme. `default-src 'none'` als Ausgangspunkt, dazu `frame-src`,
+`object-src`, `base-uri` und `form-action` auf `'none'`.
+
+Dafür umgebaut: vier Ereignisse im Attribut. Die zwei Notschalter im
+Ladebildschirm liegen jetzt in einem eigenen kleinen Block — getrennt vom
+grossen, damit sie auch dann funktionieren, wenn die App nicht hochkommt.
+
+Der Preis ist Pflege: ein geändertes Zeichen im Skript, und die
+Prüfsumme passt nicht mehr. `tools/csp.js` rechnet sie neu,
+`tests/test-csp.js` schlägt an, sobald Regel und Datei auseinanderlaufen
+— beim Einbau hat das prompt funktioniert.
+
+Gemessen: zwölf Ansichten, **0 Verletzungen**, App läuft, und die
+Gegenprobe (eingeschleustes `<img onerror>`, ein `<script>`-Element, ein
+per JS erzeugtes Skript) wird geblockt. Die Regel steht als `<meta>` in
+der Datei — seitdem läuft die ganze Oberflächen-Prüfung unter ihr, nicht
+nur der Betrieb. Blockt sie im Betrieb etwas Echtes, geht die Meldung
+denselben Weg wie ein Fehler: Verwaltung → System.
+
+Dazu Kopfzeilen in `firebase.json`, die es als `<meta>` nicht gibt:
+kein Einbetten in fremde Seiten, `nosniff`, `Referrer-Policy`,
+`Permissions-Policy` ohne Ort, Kamera, Zahlung und USB.
+
+**`werbung.html` hat ihre eigene, engere Regel bekommen** — die
+öffentliche Seite, die jeder ohne Anmeldung aufruft. Sie braucht weniger
+und bekommt weniger: `connect-src 'none'`, `media-src 'none'`,
+`worker-src 'none'`, Bilder nur von der eigenen Hauptseite. Drei
+Ereignisse im Attribut sind dafür umgezogen, darunter das `onerror`, das
+das Logo ausblendet, wenn die Hauptseite es nicht liefert — der Ersatz
+wird im Durchlauf mitgeprüft, indem das Logo absichtlich abgewiesen wird.
+
+`marketing.html` und `wachstum.html` bleiben vorerst ohne: dort stehen
+zusammen 101 solche Attribute, und für beide gibt es bis heute keinen
+einzigen automatischen Durchlauf, der einen Umbau absichern würde.
+
+### 🟠 Eine Grenze in der Marketing-App war nur Anzeige
+
+`marketing.html` meldet jeden ohne Chefrolle wieder ab. In den Regeln
+stand für `mkProjects` trotzdem `istAktiv()` — jeder aktive Zugang durfte
+lesen und schreiben, an der Oberfläche vorbei. Kein Leck im engeren Sinn
+(dort liegen Kampagnentexte), aber die schlechteste Sorte Grenze: eine,
+an die alle glauben. Jetzt `isChef()`, in beiden Regelblöcken.
+
+Mitgeprüft: Kennzahlen, Wettbewerb, Expansion aus `wachstum.html`. Die
+standen schon richtig — nur eben ungeprüft.
+
+### 🔴 Und ein Fund, der nichts mit Sicherheit zu tun hat
+
+Beim Blick auf die Nachbaranwendungen: `wachstum.html` schreibt Termine
+flach nach `appointments/`, die Hauptanwendung ist am 10.8. auf
+`firmen/<kennung>/…` umgezogen. Die Nachbaranwendungen sind nicht
+mitgekommen.
+
+| | Weg | Stand seit 10.8. |
+|---|---|---|
+| Bestätigung, Änderung, Storno | Auslöser, hängt an beiden Pfaden | lief weiter |
+| Erinnerung vorher · Nachfassen danach | Zeitplan über `alleFirmen()` | **fand nichts mehr** |
+
+Kein Fehler, kein Eintrag, in der App sieht alles normal aus: die
+Abfrage lief, nur am falschen Ort, und kam leer zurück. Genau das
+Muster, vor dem `MANDANT-PLAN.md` warnt — in der Anwendung, an die beim
+Umzug niemand gedacht hat.
+
+Der Zeitplan läuft jetzt über `alleFirmenUndFlach()`. Dazu ein zweiter
+Fund derselben Herkunft: beide Nachbarseiten trugen die Zugangsdaten des
+**Betriebs** fest im Quelltext. Auf der Probe-Adresse arbeiteten sie
+damit in der echten Datenbank — echte Termine, echte Mails an
+Endkundinnen. Jetzt holen sie `konfig.js` wie die App, und
+`test-probe-schalter.js` prüft für jede ausgelieferte Seite, dass keine
+`projectId` mehr im Quelltext steht.
+
+### Prüfung
+
+```
+Regeln 165 · Kreuz 162 · Rechte 33 · Umzug 12 · Functions 99   Emulator
+CSP 33 Prüfungen (2 Seiten) · Mailversand 8 · npm audit 0       neu
+61 Durchläufe im Browser, alle unter der neuen Regel
+```
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

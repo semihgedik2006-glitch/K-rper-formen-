@@ -827,7 +827,7 @@ unverändert.
 | `firebase` | Zugangsdaten des Firebase-Projekts |
 | `region` | Serverstandort, muss zur Datenbank passen |
 | `vapidKey` | Schlüssel für Push-Nachrichten |
-| `sheetsWebhook` | Adresse der Google-Tabellen-Anbindung |
+| `sheetsAbgleich` | Material und Putzplan in eine Google-Tabelle spiegeln (Adresse und Token liegen in `functions/.env`, siehe `docs/SHEETS-TOKEN.md`) |
 | `archivNachStunden` | wann erledigte Aufgaben ins Archiv rutschen |
 | `putzWegNachStunden` | wann erledigte einmalige Putzaufgaben ganz verschwinden |
 | `bildMaxKante` | auf welche Größe Fotos verkleinert werden |
@@ -837,5 +837,5 @@ Zwei Regeln dazu:
 - **Die Studio-Liste wird nur hinten erweitert.** In der Datenbank steht der
   Listenplatz, nicht der Name. Wer umsortiert oder löscht, ordnet allen
   bisherigen Daten ein anderes Studio zu.
-- **`vapidKey` und `sheetsWebhook` dürfen leer bleiben.** Dann laufen Push
-  bzw. die Google-Tabelle nicht, alles andere schon.
+- **`vapidKey` darf leer und `sheetsAbgleich` darf `false` sein.** Dann laufen
+  Push bzw. die Google-Tabelle nicht, alles andere schon.

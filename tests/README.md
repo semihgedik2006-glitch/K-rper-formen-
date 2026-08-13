@@ -123,7 +123,7 @@ was sie sehen soll.
 | `test-recht.js` | Impressum und Datenschutz ohne Login, Warnung bei Lücken |
 | `test-firma-link.js` | Firmenkennung aus dem Link, Unbrauchbares wird abgelehnt |
 | `test-probe-schalter.js` | der Probelauf-Schalter greift nur auf der Probe-Adresse |
-| `test-funktionen-pfade.js` | keine Cloud Function greift noch flach auf Firmendaten zu |
+| `test-funktionen-pfade.js` | keine Cloud Function greift noch flach auf Firmendaten zu; jeder Endpunkt prüft die Berechtigung |
 | `test-ausliefern.js` | jede gehostete Datei löst auch wirklich einen Deploy aus |
 | `test-admin-firmen.js` | Betreiber-Bereich: Studiozahl, Firmen-Archiv, Abo und Gratis-Abo |
 | `test-firma-stillgelegt.js` | gesperrte/gelöschte Firma: klare Meldung statt leerer App |
@@ -141,6 +141,9 @@ was sie sehen soll.
 | `test-bewegung-doppelt.js` | kein `@keyframes`-Name zweimal vergeben, keine benutzte Animation ohne Definition |
 | `test-xss.js` | acht Angriffsmuster in Chat, Namen, Aufgaben, Notizen, Umfragen und Dokumenten — nichts davon wird zu Code |
 | `test-gestaltung.js` | Symbole nur aus `IKONEN` (kein Emoji als Bedienelement), Rundungen und Abstände nur von der Leiter in `:root`, keine Eigenschaft zweimal am selben Selektor |
+| `test-sheets.js` | die Google-Tabelle wird über `sheetsPush` beschrieben; der Browser ruft `script.google.com` nicht mehr auf |
+| `test-csp.js` | die Sicherheitsregel der Seite: passt sie zu den Skriptblöcken, verbietet sie `unsafe-inline`, bricht sie nichts — und stoppt sie eingeschleusten Code |
+| `test-mail-versand.js` | Nodemailer 9 baut unsere Nachrichten unverändert: Empfänger, Absender, Anzeigename, Umlaute |
 
 ### Alle auf einmal
 

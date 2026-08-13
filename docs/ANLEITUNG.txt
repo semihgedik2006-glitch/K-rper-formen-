@@ -112,10 +112,11 @@ Firebase Storage und die Datei storage.rules werden NICHT gebraucht.
    - Ausfuehren als: Ich
    - Zugriff: Jeder (Anyone)
    - "Bereitstellen" -> Web-App-URL KOPIEREN
-5. In intern.html oben eintragen:
-      var SHEETS_WEBHOOK_URL = "HIER_DIE_URL";
-   (oder die URL an Claude schicken, er traegt sie ein)
-6. Ab jetzt landet jede Material-Aenderung automatisch im Blatt "Material".
+5. Web-App-URL und ein selbst gewaehltes Token hinterlegen -- NICHT in der
+   App, sondern bei den Cloud Functions und im Skript selbst.
+   Schritt fuer Schritt: docs/SHEETS-TOKEN.md
+6. In konfig.js muss sheetsAbgleich auf true stehen.
+7. Ab jetzt landet jede Material-Aenderung automatisch im Blatt "Material".
 
 
 ----------------------------------------------------------------
@@ -229,7 +230,8 @@ F) KURZ-CHECKLISTE WACHSTUM
 - var STUDIOS = [ ... ]        die 12 Standorte
 - var CHEF_PIN = "..."         Code zum Anlegen eines Chef-Kontos
 - var VAPID_KEY = "..."        Push-Schluessel
-- var SHEETS_WEBHOOK_URL = ""  Google-Tabellen-URL
+- sheetsAbgleich (konfig.js)   Google-Tabelle an/aus; Adresse und Token
+                               liegen in functions/.env
 - var DEFAULT_MATERIALS = [..] Standard-Materialliste
 
 

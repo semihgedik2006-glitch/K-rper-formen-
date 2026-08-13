@@ -7,10 +7,6 @@
 <title>KF Wachstum · Körperformen</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml"/>
 <link rel="apple-touch-icon" href="icon.png"/>
-<!-- Schrift nicht blockierend laden. Hier stand ein @import im <style>:
-     das ist der schlechteste Fall, weil der Browser erst dieses CSS lesen
-     und DANN die Schrift holen muss - zwei Wartezeiten nacheinander, und
-     die Seite bleibt bis dahin weiss. -->
 <link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" />
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" /></noscript>
@@ -659,6 +655,7 @@ textarea.in{min-height:90px;resize:vertical}
 
 <div id="toast" role="status"></div>
 
+<script src="konfig.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -669,16 +666,13 @@ textarea.in{min-height:90px;resize:vertical}
    Modul 1: Termine · Modul 2: E-Mail-Automatik (Server) · Modul 3: Franchise
    ============================================================ */
 
-var FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAvYVUzTbT86jeH6bsCAS0PyK9ArNb6pRw",
-  authDomain: "formenchat.firebaseapp.com",
-  databaseURL: "https://formenchat-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "formenchat",
-  storageBucket: "formenchat.firebasestorage.app",
-  messagingSenderId: "873830492257",
-  appId: "1:873830492257:web:07fb34b80fd47c1873e220",
-  measurementId: "G-H0WMHW25QT"
-};
+/* Zugangsdaten aus konfig.js — dieselbe Datei wie die App.
+
+   Hier stand das Projekt fest verdrahtet. Folge: auf der Probe-Adresse
+   arbeitete diese Seite trotzdem in der ECHTEN Datenbank, weil die
+   Weiche in konfig.js sie nie erreichte. Ein Probelauf, der in den
+   Betrieb schreibt, ist schlimmer als keiner. */
+var FIREBASE_CONFIG = KONFIG.firebase;
 
 firebase.initializeApp(FIREBASE_CONFIG);
 var auth = firebase.auth();
