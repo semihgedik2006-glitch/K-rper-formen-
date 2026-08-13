@@ -1194,13 +1194,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .studio-tile{transition:transform .2s var(--ease-out),border-color .2s}
 .studio-tile:hover{border-color:rgba(34,211,238,.3);transform:translateY(-2px)}
 
-/* Häkchen „ploppt" beim Erledigen, Bilder blenden ein */
-/* checkPop steht ebenfalls weiter unten. Auch hier gab es zwei
-   Fassungen, und das war heikler als beim Ansichtswechsel: .fab-count
-   benutzt denselben Namen und bekam dadurch eine Kurve, fuer die es nie
-   geschrieben wurde. Zwei @keyframes mit gleichem Namen sind kein
-   Schoenheitsfehler — sie verschieben die Bedeutung an Stellen, die
-   niemand mehr im Blick hat. */
+/* Bilder blenden ein. Das Haekchen (checkPop) steht weiter unten im
+   Abschnitt „Bewegung im Apple-Stil" — den Namen benutzt auch
+   .fab-count, eine zweite Fassung hier wuerde dort die Kurve
+   mitverschieben. */
 .msg-img,.t-photo{animation:imgIn .35s var(--ease-out)}
 @keyframes imgIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 
