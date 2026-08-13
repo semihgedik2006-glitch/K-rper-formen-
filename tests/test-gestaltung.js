@@ -51,7 +51,12 @@ const ohneKommentar = (() => {
   const ERLAUBT = new Set([
     '👍', '❤️', '❤', '😂', '🎉', '👏', '😮',  // Chat-Reaktionen
     '⌘',                                      // Befehlstaste auf dem Mac
-    '✓', '✗', '○', '→', '↔', '↑', '←'         // Textzeichen, keine Bildchen
+    '✓', '✗', '○', '→', '↔', '↑', '←',        // Textzeichen, keine Bildchen
+    /* Auf/Zu an einer aufklappbaren Zeile. Stehen in CSS als content:
+       — dort ist kein SVG moeglich, genau wie in einem <option>. Es
+       sind einfarbige Textzeichen: sie erben Farbe und Groesse wie ein
+       Buchstabe, anders als ein Emoji. */
+    '▾', '▸'
   ]);
   const EMOJI = /[\u{1F000}-\u{1FAFF}]|[\u{2300}-\u{27BF}]|[\u{2B00}-\u{2BFF}]|[\u{FE0F}]/gu;
   const KASTEN = /[─═╔╗╚╝║│┌┐└┘]/u;
