@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-z0oAu0aRH8GK8K1QNqo+QrHKUC6YpF9OBK9L9IR9rGU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-f/F46R7OnfacOMhQ7hI1zMpWZ32btPLvpMLAAnIfVf8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -859,11 +859,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -1368,13 +1368,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
 /* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
-#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
+#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#ownTodoModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
   animation:sheetIn .46s var(--spring)}
 @keyframes sheetIn{
   from{opacity:0;transform:scale(.94) translateY(12px)}
   to{opacity:1;transform:none}
 }
-#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
+#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
 @keyframes fadeBlur{from{opacity:0}to{opacity:1}}
 
 /* ── Menüs auf dem Handy: von unten hereinfahren ──
@@ -1382,8 +1382,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    der Daumen kommt nicht hin. Deshalb werden Menüs unter 620 px zu Blättern,
    die von unten hereinfahren; oben ein Griff, wie man es von iOS kennt. */
 @media (max-width:620px){
-  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal{align-items:flex-end;padding:0}
-  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box{
+  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal{align-items:flex-end;padding:0}
+  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box,#ownTodoModal .pm-box{
     max-width:none;border-radius:var(--radius) var(--radius) 0 0;border-bottom:none;
     padding:20px 20px calc(24px + var(--sab));max-height:90vh}
   #profileModal.show .pm-box,#personModal.show .pm-box{
@@ -2602,7 +2602,11 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
             <div class="vh-text">
               <h2 id="todoTitle">Aufgaben</h2><p id="todoSub">Deine To-dos – einfach abhaken.</p>
             </div>
-            <button class="kopf-plus" id="todoNew" data-manage-only="1"
+            <!-- Kein data-manage-only mehr: seit dem 13.8. dürfen auch
+                 Mitarbeiter anlegen. Wohin der Knopf führt, entscheidet
+                 die Rolle — Verwaltung ins volle Formular, alle anderen
+                 ins kleine Fenster. -->
+            <button class="kopf-plus" id="todoNew"
               title="Neue Aufgabe erstellen" aria-label="Neue Aufgabe erstellen">+ Neu</button>
           </div>
         </div>
@@ -3664,6 +3668,29 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
       <textarea class="inp" id="teSteps" rows="4" maxlength="1200" placeholder="Geräte abwischen&#10;Gurte prüfen"></textarea>
       <p class="hint" id="teStepsNote" style="margin:6px 0 0"></p></div>
     <button class="btn btn-primary btn-sm" id="teSave" style="width:100%">Änderung speichern</button>
+  </div>
+</div>
+
+<!-- Eigene Aufgabe (Mitarbeiter). Bewusst klein: Titel, Notiz, Frist.
+     Keine Wiederholung, keine Zuweisung an andere, kein zweites Studio —
+     das ist Sache der Verwaltung, und die Regeln erzwingen es. -->
+<div id="ownTodoModal">
+  <div class="pm-box">
+    <button class="lb-close" id="otClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"></button>
+    <h3 data-ikon="plus">Eigene Aufgabe</h3>
+    <p class="hint" id="otWo"></p>
+    <div class="field"><label for="otTitle">Was ist zu tun?</label>
+      <input class="inp" id="otTitle" type="text" maxlength="120" placeholder="z. B. Handtücher nachlegen" /></div>
+    <div class="field"><label for="otDesc">Notiz (optional)</label>
+      <textarea class="inp" id="otDesc" rows="2" maxlength="600"></textarea></div>
+    <div class="row">
+      <div class="field"><label for="otStudio">Studio</label>
+        <select class="inp" id="otStudio"></select></div>
+      <div class="field"><label for="otDue">Bis wann (optional)</label>
+        <input class="inp" id="otDue" type="date" /></div>
+    </div>
+    <p class="hint">Einmalige Aufgabe. Wiederkehrende legt die Leitung an.</p>
+    <button class="btn btn-primary btn-sm" id="otSave" style="width:100%">Aufgabe anlegen</button>
   </div>
 </div>
 
@@ -13114,6 +13141,66 @@ function todoBlattAktion(was){
   }
 }
 
+/* ── Eigene Aufgabe eines Mitarbeiters ────────────────────────────────
+   Seit dem 13.8. darf jeder anlegen — aber nur einmalige Aufgaben und
+   nur im eigenen Studio. Beides erzwingen die Regeln (firestore.rules,
+   match todos), nicht dieses Fenster: was hier fehlt, liesse sich in
+   der Entwicklerkonsole trotzdem mitschicken.
+
+   Das Fenster ist deshalb absichtlich klein. Alles, was mehr kann —
+   Wiederholung, Zuweisung, mehrere Studios, Teilschritte, Foto —
+   bleibt im Formular der Verwaltung. */
+function oeffneEigeneAufgabe(){
+  var sel=$('otStudio'); if(!sel) return;
+  var meine=(session&&session.studios)||[];
+  if(!meine.length){ toast('Dir ist kein Studio zugeteilt.',true); return; }
+  sel.innerHTML=meine.map(function(n){
+    return '<option value="'+esc(studioKey(n))+'">'+esc(n)+'</option>';
+  }).join('');
+  /* Bei einem einzigen Studio ist die Auswahl nur Ballast. */
+  sel.parentElement.style.display = meine.length>1 ? '' : 'none';
+  $('otWo').textContent = meine.length>1
+    ? 'Die Aufgabe erscheint bei allen im gewählten Studio.'
+    : 'Die Aufgabe erscheint bei allen in ' + meine[0] + '.';
+  $('otTitle').value=''; $('otDesc').value=''; $('otDue').value='';
+  $('ownTodoModal').classList.add('show');
+  setTimeout(function(){ $('otTitle').focus(); }, 90);
+}
+function schliesseEigeneAufgabe(){
+  var m=$('ownTodoModal'); if(m) m.classList.remove('show');
+}
+function speichereEigeneAufgabe(btn){
+  var titel=($('otTitle').value||'').trim();
+  if(!titel){ toast('Bitte schreib, was zu tun ist.',true); $('otTitle').focus(); return; }
+  var sk=$('otStudio').value || studioKey(((session&&session.studios)||[])[0]||'');
+  if(!sk){ toast('Kein Studio gewählt.',true); return; }
+  var dat=$('otDue').value;
+  var daten={
+    title: titel,
+    desc: ($('otDesc').value||'').trim(),
+    done: false,
+    ts: Date.now(),
+    createdBy: session.name || '',
+    /* Muss der Anrufer selbst sein — die Regel prüft genau das, damit
+       niemand Aufgaben im Namen des Chefs anlegt. */
+    createdByUid: session.uid
+  };
+  if(dat){
+    /* Fällig am Ende des Tages, nicht um 00:00 — sonst ist eine Aufgabe
+       „für heute" den ganzen Tag überfällig. */
+    var d=new Date(dat+'T23:59:59');
+    if(!isNaN(d.getTime())) daten.due=d.getTime();
+  }
+  withBusy(btn,function(){
+    return S('studios').doc(sk).collection('todos').add(daten)
+      .then(function(){
+        schliesseEigeneAufgabe();
+        toast('Aufgabe angelegt ✓');
+      })
+      .catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
 function openTodoEdit(t, sk){
   if(!canManage()) return;
   _teTodo=t; _teSk=sk;
@@ -14936,6 +15023,7 @@ function bindActions(){
   // statt drei Wechsel über die Verwaltung zu verlangen.
   var tn=$('todoNew');
   if(tn) tn.addEventListener('click',function(){
+    if(!canManage()){ oeffneEigeneAufgabe(); return; }
     showView('chef');
     setTimeout(function(){
       showChefTab('erstellen');
@@ -14943,6 +15031,11 @@ function bindActions(){
       if(f){ sanftInsBild(f,{behavior:'smooth',block:'center'}); setTimeout(function(){ f.focus(); },250); }
     }, 120);
   });
+
+  var otC=$('otClose'); if(otC) otC.addEventListener('click', schliesseEigeneAufgabe);
+  var otM=$('ownTodoModal');
+  if(otM) otM.addEventListener('click',function(e){ if(e.target===otM) schliesseEigeneAufgabe(); });
+  var otS=$('otSave'); if(otS) otS.addEventListener('click',function(){ speichereEigeneAufgabe(this); });
 
   // Aktionsblatt an einem Dokument
   var dsh=$('docSheet');

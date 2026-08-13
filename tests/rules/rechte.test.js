@@ -184,6 +184,40 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('GEGENPROBE der Chef arbeitet sonst normal weiter', () =>
     assertSucceeds(chefA().doc(`firmen/${A}/abo/aktuell`).get()));
 
+  /* ══ Mitarbeiter legen eigene Aufgaben an — aber nur einmalige ══
+     Neu am 13.8. Die Grenze steht in den Regeln und nicht nur in der
+     Oberflaeche: ein Feld, das die App weglaesst, laesst sich in der
+     Konsole trotzdem mitschicken. */
+  const auf = (sk, id) => mitA().doc(`firmen/${A}/studios/${sk}/todos/${id}`);
+  await pruefe('Mitarbeiter darf eine einmalige Aufgabe im eigenen Studio anlegen', () =>
+    assertSucceeds(auf('studio-0', 'neu1').set({
+      title: 'Handtücher nachlegen', createdByUid: 'mitA', createdBy: 'Mit A', ts: Date.now(),
+    })));
+  await pruefe('Mitarbeiter darf KEINE wiederkehrende Aufgabe anlegen', () =>
+    assertFails(auf('studio-0', 'neu2').set({
+      title: 'Jeden Tag', recurring: 'daily', createdByUid: 'mitA', ts: Date.now(),
+    })));
+  await pruefe('auch nicht woechentlich', () =>
+    assertFails(auf('studio-0', 'neu3').set({
+      title: 'Jede Woche', recurring: 'weekly', createdByUid: 'mitA', ts: Date.now(),
+    })));
+  await pruefe('Mitarbeiter darf NICHT in einem fremden Studio anlegen', () =>
+    assertFails(auf('studio-5', 'neu4').set({
+      title: 'Woanders', createdByUid: 'mitA', ts: Date.now(),
+    })));
+  /* Ohne diese Zeile koennte jemand Aufgaben im Namen des Chefs
+     anlegen — in der Liste stuende dann dessen Name. */
+  await pruefe('Mitarbeiter darf sich NICHT als jemand anderes ausgeben', () =>
+    assertFails(auf('studio-0', 'neu5').set({
+      title: 'Angeblich vom Chef', createdByUid: 'chefA', createdBy: 'Chef A', ts: Date.now(),
+    })));
+  await pruefe('GEGENPROBE der Chef darf weiterhin wiederkehrende anlegen', () =>
+    assertSucceeds(chefA().doc(`firmen/${A}/studios/studio-5/todos/chef1`).set({
+      title: 'Jeden Tag', recurring: 'daily', createdByUid: 'chefA', ts: Date.now(),
+    })));
+  await pruefe('GEGENPROBE loeschen bleibt der Verwaltung vorbehalten', () =>
+    assertFails(auf('studio-0', 'neu1').delete()));
+
   // ══ 6. Aufzaehlen von Konten ══
   await pruefe('Anonym kann users NICHT auflisten', () =>
     assertFails(anonym().collection('users').get()));

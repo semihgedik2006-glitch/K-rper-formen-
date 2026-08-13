@@ -235,7 +235,14 @@ var USERS = [
       orderBy: function () { return this; },
       limit: function () { return this; },
       limitToLast: function () { return this; },
-      add: function () { return Promise.resolve({ id: 'neu' }); },
+      /* Auch add() festhalten, nicht nur set(): sonst kann ein
+         Durchlauf nur pruefen, dass ein Knopf klickbar war — nicht, WAS
+         angelegt wird. Bei der eigenen Aufgabe des Mitarbeiters ist
+         genau das die Frage (createdByUid fehlt -> Regel weist ab). */
+      add: function (d) {
+        (window.__schreib = window.__schreib || []).push({ pfad: path + '/(neu)', daten: d });
+        return Promise.resolve({ id: 'neu' });
+      },
       get: function () {
         // Dieselben Sammlungen wie bei onSnapshot bedienen. Sonst sieht ein
         // Test, der einmalig liest (z. B. der Tabellen-Abgleich), nichts.

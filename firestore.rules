@@ -334,9 +334,25 @@ service cloud.firestore {
     }
 
     // ── Aufgaben pro Studio ──
+    /* ── Aufgaben je Studio ──
+       Anlegen darf die Verwaltung ueberall in ihrem Bereich. Seit dem
+       13.8. duerfen auch Mitarbeiter anlegen — aber nur EINMALIGE
+       Aufgaben und nur im eigenen Studio.
+
+       Die Bedingung steht hier und nicht nur in der Oberflaeche: ein
+       Feld, das die App weglaesst, laesst sich in der Konsole trotzdem
+       mitschicken. recurring muss fehlen oder leer sein, und der
+       Ersteller muss der Anrufer selbst sein — sonst legt jemand
+       Aufgaben im Namen des Chefs an. */
     match /studios/{studioKey}/todos/{todoId} {
       allow read: if istAktiv();
-      allow create: if manages(studioKey);   // Chef überall, Leiter in seinen Studios
+      allow create: if manages(studioKey)
+        || (istAktiv()
+            && studioKey in myKeys()
+            && request.resource.data.createdByUid == request.auth.uid
+            && (!('recurring' in request.resource.data)
+                || request.resource.data.recurring == null
+                || request.resource.data.recurring == ''));
       allow delete: if manages(studioKey);
       // Mitarbeiter dürfen abhaken / Foto anhängen (update erlaubt für Eingeloggte)
       allow update: if istAktiv();
@@ -815,9 +831,18 @@ service cloud.firestore {
                 && request.time.toMillis() < resource.data.ts + 3600000));
         }
 
+        /* Mitarbeiter duerfen einmalige Aufgaben im eigenen Studio
+           anlegen — siehe die ausfuehrliche Begruendung im flachen
+           Block weiter oben. */
         match /studios/{studioKey}/todos/{todoId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (manages(studioKey));   // Chef überall, Leiter in seinen Studios
+          allow create: if inFirma(f) && (manages(studioKey)
+            || (istAktiv()
+                && studioKey in myKeys()
+                && request.resource.data.createdByUid == request.auth.uid
+                && (!('recurring' in request.resource.data)
+                    || request.resource.data.recurring == null
+                    || request.resource.data.recurring == '')));
           allow delete: if inFirma(f) && (manages(studioKey));
           // Mitarbeiter dürfen abhaken / Foto anhängen (update erlaubt für Eingeloggte)
           allow update: if inFirma(f) && (istAktiv());
