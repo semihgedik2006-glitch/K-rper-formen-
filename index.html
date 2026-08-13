@@ -1,19 +1,4 @@
 <!DOCTYPE html>
-<!--
-  StudioChat – die gesamte App in einer Datei. Warum eine Datei und keine
-  zwanzig, steht in README.md unter „Warum es so gebaut ist".
-
-  Die Datei hat drei Teile:
-
-    STYLE     Aussehen. Beginnt mit den Gestaltungsgroessen (:root), danach
-              die Bausteine in der Reihenfolge, in der sie entstanden sind.
-    BODY      Aufbau. Ein Abschnitt mit class="view" je Seite, dazu die
-              Fenster (Modals) am Ende.
-    SCRIPT    Ablauf. Gliederung siehe Inhaltsverzeichnis am Anfang.
-
-  Abschnitte tragen Ueberschriften in Grossbuchstaben. Mit Strg+F danach
-  suchen, z. B. KONFIGURATION, ROLLEN, FIRESTORE-LISTENER, AKTIONEN.
--->
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
@@ -46,25 +31,6 @@
 <noscript><link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" /></noscript>
 <style>
-/* ══ AUFBAU DIESES STYLE-BLOCKS ══════════════════════════════════════════
-   1. :root            alle Gestaltungsgroessen als Variablen. Farben,
-                       Rundungen, Schatten, Kurven. Nichts weiter unten
-                       setzt eine Farbe direkt — immer ueber eine Variable.
-   2. body.light       nur die Variablen, die im Hellmodus anders sind.
-   3. Grundelemente    Knoepfe, Eingabefelder, Karten, Fenster.
-   4. Bausteine        je Seite und Baustein, mit ── Ueberschrift ──.
-   5. Bewegung         Uebergaenge und @keyframes.
-   6. Drucken          @media print.
-
-   Ab Punkt 4 stehen die Bloecke in der Reihenfolge, in der sie entstanden
-   sind, nicht thematisch sortiert. Ein Thema kann deshalb an mehreren
-   Stellen vorkommen (z. B. Chat). Mit Strg+F nach der Klasse suchen, nicht
-   nach dem Thema — und beim Aendern pruefen, ob dieselbe Klasse weiter
-   unten noch einmal auftaucht.
-
-   tests/test-bewegung-doppelt.js schlaegt an, wenn ein @keyframes-Name
-   zweimal vergeben wird.
-   ═══════════════════════════════════════════════════════════════════════ */
 :root{
   /* Ruhiges Schiefer-Blau statt harter Neon-Kontrast: ueber lange Zeit
      angenehmer zu lesen. */
@@ -93,23 +59,17 @@
   --text:#F7F8FC;--text-2:#C6CAD8;--text-3:#B0B6C8;
   --font-head:'Barlow Condensed',system-ui,sans-serif;
   --font-body:'Barlow',system-ui,-apple-system,sans-serif;
-  /* ── Rundungen ──
-     Sechs Stufen und zwei Sonderfaelle. Feste Pixelwerte gehoeren nicht
-     ins Stylesheet: tests/test-gestaltung.js schlaegt an, wenn wieder
-     einer auftaucht. Eine undefinierte Variable macht die ganze Angabe
-     ungueltig — genau daran standen Umfragen, Geraeteliste und
-     Anhang-Menue einmal mit rechten Winkeln da. */
+  /* Rundungen. Feste Pixelwerte gehoeren nicht ins Stylesheet.
+     Achtung: eine undefinierte Variable macht die ganze Angabe
+     ungueltig — die Ecke ist dann rechtwinklig. */
   --r-xs:8px;--r-sm:11px;--r-md:14px;--r-lg:18px;
   --radius:22px;--radius-lg:30px;
   --r-pille:999px;      /* Knoepfe und Chips */
   --r-rund:50%;         /* Avatare und runde Knoepfe */
 
-  /* ── Abstaende ──
-     Eine Leiter statt zweiundfuenfzig Einzelwerten. Der Name nennt den
-     Wert, damit beim Lesen niemand nachschlagen muss. Feste Pixelangaben
-     bei padding, margin und gap gehoeren nicht ins Stylesheet —
-     tests/test-gestaltung.js schlaegt an, wenn wieder eine auftaucht.
-     Ausgenommen bleiben clamp(), calc(), negative Werte und mm (Druck). */
+  /* Abstaende. Der Name nennt den Wert. Feste Pixelangaben bei padding,
+     margin und gap gehoeren nicht ins Stylesheet; ausgenommen sind
+     clamp(), calc(), negative Werte und mm (Druck). */
   --s1:1px;--s2:2px;--s4:4px;--s6:6px;--s8:8px;--s10:10px;--s12:12px;
   --s16:16px;--s20:20px;--s24:24px;--s32:32px;--s40:40px;--s48:48px;
   --s56:56px;--s72:72px;
@@ -1149,11 +1109,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ============================================================
    ANIMATIONEN & QUALITY-OF-LIFE
    ============================================================ */
-/* Der Ansichtswechsel steht weiter unten im Abschnitt „Bewegung im
-   Apple-Stil". Hier stand einmal eine zweite Fassung, die von der
-   späteren stillschweigend überschrieben wurde: wer hier an der Dauer
-   drehte, änderte nichts. tests/test-bewegung-doppelt.js schlägt an,
-   wenn ein Keyframe-Name wieder zweimal vergeben wird. */
+/* viewIn wird unten bei „Bewegung im Apple-Stil" gesetzt. Kein
+   zweites Mal hier: die spätere Angabe gewinnt lautlos. */
 
 /* Auth-Karte gleitet herein, Mesh-Blobs leben */
 .auth-card{animation:cardIn .5s var(--ease-out);margin-top:var(--sat)}
@@ -1187,17 +1144,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .tb-live{animation:liveGlow 2.6s ease-in-out infinite}
 @keyframes liveGlow{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}50%{box-shadow:0 0 0 4px rgba(34,211,238,.12)}}
 
-/* Druck-Feedback fuer alles Uebrige steht weiter unten im Abschnitt
-   „Bewegung im Apple-Stil" — hier nur, was dort nicht vorkommt. */
+/* Druck-Feedback steht unten bei „Bewegung im Apple-Stil" — hier nur,
+   was dort fehlt. */
 .attach-btn:active{transform:scale(.92)}
 .studio-tile:active{transform:scale(.98)}
 .studio-tile{transition:transform .2s var(--ease-out),border-color .2s}
 .studio-tile:hover{border-color:rgba(34,211,238,.3);transform:translateY(-2px)}
 
-/* Bilder blenden ein. Das Haekchen (checkPop) steht weiter unten im
-   Abschnitt „Bewegung im Apple-Stil" — den Namen benutzt auch
-   .fab-count, eine zweite Fassung hier wuerde dort die Kurve
-   mitverschieben. */
+/* Bilder blenden ein. checkPop steht unten; den Namen benutzt auch
+   .fab-count, eine zweite Fassung wuerde dort mitwirken. */
 .msg-img,.t-photo{animation:imgIn .35s var(--ease-out)}
 @keyframes imgIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 
@@ -4069,42 +4024,6 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 (function(){
 'use strict';
 
-/* ══ INHALT ══════════════════════════════════════════════════════════════
-   Die Abschnitte stehen in der Reihenfolge, in der sie hier vorkommen.
-   Mit Strg+F auf die Ueberschrift springen.
-
-   GRUNDLAGEN
-     AUSSEHEN                Einstellungen je Geraet (Hell/Dunkel, Akzent)
-     KONFIGURATION           uebernimmt KONFIG aus konfig.js
-     INITIALISIERUNG         Firebase, Service Worker, Pfad-Praefix S()
-     HILFSFUNKTIONEN         $(), esc(), Datum, Toast
-     ROLLEN                  wer was sehen und tun darf
-     STATE                   die zentralen Datenhalter (session, listen, …)
-
-   ANMELDEN UND STARTEN
-     AUTH-SCREEN             Anmelden, Registrieren, Firmencode
-     AUTH STATE OBSERVER     reagiert auf An- und Abmelden
-     APP STARTEN             Reihenfolge beim Hochfahren
-     BENACHRICHTIGUNGEN      Push ueber Firebase Cloud Messaging
-
-   DATEN
-     FIRESTORE-LISTENER      alle onSnapshot-Abos an einer Stelle
-     RENDER                  aus den Daten wird Oberflaeche
-
-   SEITEN
-     STARTSEITE · TEAM-BEREICH · MATERIAL-SEITE · PUTZPLAN · GERÄTE
-     DOKUMENTE · NACHWEISE · SUCHE · DIREKTNACHRICHTEN · WOCHEN-ARCHIV
-     CHEF-BEREICH            Reiter, Aufmerksamkeit, Bericht, Sicherung
-     MITARBEITERVERWALTUNG   nur Chef
-
-   BEDIENUNG
-     ZURÜCK-GESTE            Verlauf und Fenster
-     SORTIER-LEISTEN · AUFKLAPPBARE ABSCHNITTE · ENTWÜRFE
-     NACHRICHT WEITERLEITEN · SPRACHNACHRICHTEN · PAPIERKORB
-     TASTENKÜRZEL · ONBOARDING-CHECKLISTE · PROFIL-EDITOR
-     AKTIONEN                alle Klicks und Tastendruecke, ganz am Ende
-   ═══════════════════════════════════════════════════════════════════════ */
-
 /* ============================================================
    AUSSEHEN (Hell/Dunkel, Chat-Hintergrund, Akzentfarbe, Schriftgröße)
    Alles wird lokal im Gerät gespeichert – jeder stellt sich seine
@@ -4623,12 +4542,8 @@ function fehlerMelden(text, datei, zeile, stapel){
       });
     }).catch(function(){ /* still bleiben */ });
   }catch(e){
-    /* Geschluckt, aber nicht verschwiegen. Beim Bauen hat genau dieses
-       catch einen echten Programmierfehler unsichtbar gemacht
-       (fv.increment war im Testaufbau nicht da), und der Durchlauf
-       meldete „wird gar nicht gemeldet" — richtig, aber aus dem
-       falschen Grund. Eine Zeile in der Konsole kostet nichts und
-       spart beim nächsten Mal eine halbe Stunde. */
+    /* Geschluckt, aber nicht verschwiegen: ohne die Konsolenzeile
+       verbirgt dieses catch auch echte Programmierfehler. */
     try{ console.warn('Fehler-Melder selbst gestolpert:', e && e.message); }catch(_){}
   }finally{
     _meldeGerade = false;
@@ -4642,17 +4557,9 @@ function fehlerMelden(text, datei, zeile, stapel){
    ============================================================ */
 function $(id){ return document.getElementById(id); }
 
-/* ── Symbole ─────────────────────────────────────────────────────────
-   Ein Satz, ein Stil: 24er Raster, Kontur, currentColor. Damit erbt jedes
-   Symbol Farbe und Groesse von seinem Knopf und sieht im Hell- wie im
-   Dunkelmodus richtig aus — das kann ein Emoji nicht.
-
-   Symbole gibt es nur dort, wo sie etwas tun: Knoepfe ohne Beschriftung
-   und Werkzeugleisten. Vor einer Ueberschrift steht keins.
-
-   Im festen Markup steht dasselbe SVG ausgeschrieben, weil dort keine
-   Funktion laufen kann. tests/test-gestaltung.js prueft, dass beide
-   Fassungen dieselben Pfade zeichnen. */
+/* Symbole: 24er Raster, Kontur, currentColor — Groesse und Farbe erbt
+   das Symbol vom Knopf. Im festen Markup steht dasselbe SVG
+   ausgeschrieben; beide Fassungen muessen dieselben Pfade zeichnen. */
 var IKONEN = {
   schliessen:  '<path d="M18 6 6 18M6 6l12 12"/>',
   drucken:     '<path d="M6 9V3h12v6"/>' +
@@ -13206,13 +13113,10 @@ function todoBlattOeffnen(t, sk){
     return '<button class="ms-act'+(e.warn?' warn':'')+'" data-tba="'+e.id+'">'+
       '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
   }).join('');
-  /* Nur bei OFFENEN Aufgaben. An einer erledigten wäre das Feld Unsinn,
-     und ein stehengebliebener Grund würde den Chef in die Irre führen.
-
-     Dieser Block stand zuerst im DOKUMENT-Blatt: der Anker
-     "blatt.classList.add('show')" kommt in dieser Datei mehrfach vor,
-     und ich habe das erste Vorkommen erwischt. Gefunden vom Test, der
-     das Feld an einer offenen Aufgabe nicht fand. */
+  /* Nur bei OFFENEN Aufgaben — an einer erledigten führt ein
+     stehengebliebener Grund in die Irre.
+     Achtung beim Aendern: "blatt.classList.add('show')" kommt mehrfach
+     vor, das erste Vorkommen gehoert zum Dokument-Blatt. */
   var gb=$('tbGrundBox');
   if(gb){
     gb.style.display = done ? 'none' : '';
