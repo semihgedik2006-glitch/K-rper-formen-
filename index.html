@@ -2529,8 +2529,10 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
 
       <!-- CHAT -->
       <section class="view" id="view-chat">
-        <div class="notif-banner" id="notifBanner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <!-- Die Glocke stand hier als eigenes SVG, obwohl es sie im Satz
+             gibt: zwei Fassungen desselben Bildes. data-ikon holt sie
+             von dort. -->
+        <div class="notif-banner" id="notifBanner" data-ikon="glocke">
           <div class="nb-txt"><b>Meldungen an?</b><span class="nb-mehr"> Sonst bleibt Neues unbemerkt.</span></div>
           <button class="btn btn-primary btn-sm" id="notifEnable">Aktivieren</button>
         </div>
