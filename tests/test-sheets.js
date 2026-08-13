@@ -45,18 +45,22 @@ const MITSCHRIFT = `
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 390, height: 900 } });
-  page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
+  /* Die Aufzeichnung haengt am Kontext, nicht an der einen Seite: die
+     Gegenprobe unten braucht dieselbe. */
+  const ktx = await b.newContext({ viewport: { width: 390, height: 900 } });
 
   /* Jede Anfrage an die Web-App wird festgehalten statt geblockt: ein
      abgewiesener Aufruf sähe im Protokoll aus wie keiner. */
   const anAppsScript = [];
-  await page.route('**://www.gstatic.com/**', r => r.abort());
-  await page.route('**fonts.googleapis.com/**', r => r.abort());
-  await page.route('**script.google*.com/**', r => {
+  await ktx.route('**://www.gstatic.com/**', r => r.abort());
+  await ktx.route('**fonts.googleapis.com/**', r => r.abort());
+  await ktx.route('**script.google*.com/**', r => {
     anAppsScript.push(r.request().url());
     return r.fulfill({ status: 200, body: 'ok' });
   });
+
+  const page = await ktx.newPage();
+  page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
 
   await page.addInitScript({ path: path.join(SP, 'stub-chef.js') });
   await page.addInitScript(MITSCHRIFT);
@@ -125,12 +129,35 @@ const MITSCHRIFT = `
     anAppsScript.length === 0, anAppsScript.join(' '));
 
   /* Gegenprobe. Ohne sie wäre auch ein Durchlauf grün, in dem die
-     Aufzeichnung gar nicht greift — und der hätte nichts geprüft. */
-  await page.evaluate(() =>
-    fetch('https://script.google.com/macros/s/gegenprobe/exec', { method: 'GET' }).catch(() => {}));
-  await page.waitForTimeout(500);
+     Aufzeichnung gar nicht greift — und der hätte nichts geprüft.
+
+     Sie läuft auf einer leeren Seite, nicht in der App: seit dem 13.8.
+     verbietet die Sicherheitsregel der App jede Verbindung nach
+     script.google.com. Die Gegenprobe wäre also grün geblieben, ohne
+     dass die Aufzeichnung je funktioniert hätte — der Test hätte sich
+     selbst bestätigt. */
+  {
+    const leer = await ktx.newPage();
+    await leer.setContent('<p>Gegenprobe</p>');
+    await leer.evaluate(() =>
+      fetch('https://script.google.com/macros/s/gegenprobe/exec').catch(() => {}));
+    await leer.waitForTimeout(500);
+    await leer.close();
+  }
   pruefe('Gegenprobe: eine Anfrage dorthin würde auffallen',
     anAppsScript.length === 1, String(anAppsScript.length));
+
+  /* Und der Nachweis, dass es nicht nur am Verzicht liegt: die Regel der
+     App lässt eine solche Verbindung gar nicht erst zu. */
+  const geblockt = await page.evaluate(() => new Promise(resolve => {
+    let gesehen = false;
+    document.addEventListener('securitypolicyviolation', function (e) {
+      if (/script\.google/.test(String(e.blockedURI || ''))) gesehen = true;
+    });
+    fetch('https://script.google.com/macros/s/gegenprobe/exec').catch(() => {});
+    setTimeout(() => resolve(gesehen), 600);
+  }));
+  pruefe('die Sicherheitsregel verbietet den alten Weg zusätzlich', geblockt === true);
 
   await page.screenshot({ path: path.join(SP, 'sheets.png') });
   await b.close();
