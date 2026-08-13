@@ -2826,6 +2826,18 @@ Dazu Kopfzeilen in `firebase.json`, die es als `<meta>` nicht gibt:
 kein Einbetten in fremde Seiten, `nosniff`, `Referrer-Policy`,
 `Permissions-Policy` ohne Ort, Kamera, Zahlung und USB.
 
+**`werbung.html` hat ihre eigene, engere Regel bekommen** — die
+öffentliche Seite, die jeder ohne Anmeldung aufruft. Sie braucht weniger
+und bekommt weniger: `connect-src 'none'`, `media-src 'none'`,
+`worker-src 'none'`, Bilder nur von der eigenen Hauptseite. Drei
+Ereignisse im Attribut sind dafür umgezogen, darunter das `onerror`, das
+das Logo ausblendet, wenn die Hauptseite es nicht liefert — der Ersatz
+wird im Durchlauf mitgeprüft, indem das Logo absichtlich abgewiesen wird.
+
+`marketing.html` und `wachstum.html` bleiben vorerst ohne: dort stehen
+zusammen 101 solche Attribute, und für beide gibt es bis heute keinen
+einzigen automatischen Durchlauf, der einen Umbau absichern würde.
+
 ### 🟠 Eine Grenze in der Marketing-App war nur Anzeige
 
 `marketing.html` meldet jeden ohne Chefrolle wieder ab. In den Regeln
@@ -2841,7 +2853,7 @@ standen schon richtig — nur eben ungeprüft.
 
 ```
 Regeln 165 · Kreuz 162 · Rechte 33 · Umzug 12 · Functions 99   Emulator
-CSP 20 Prüfungen · Mailversand 8 · npm audit 0                 neu
+CSP 33 Prüfungen (2 Seiten) · Mailversand 8 · npm audit 0       neu
 61 Durchläufe im Browser, alle unter der neuen Regel
 ```
 

@@ -90,7 +90,7 @@ im Browser, Fremdbibliotheken, Nachbaranwendungen) bleiben zwei Punkte:
 | Was | Wer | Aufwand |
 |---|---|---|
 | **Termine sind für jeden im Betrieb lesbar.** `appointments` trägt Name, E-Mail, Telefon und Notizen der Endkundinnen; lesen darf das jeder aktive Zugang, über alle Studios. Das steht so in den Regeln und war eine Entscheidung — aber es sind Daten Dritter. Einengen heisst Regel **und** Abfrage in `wachstum.html` zusammen ändern, weil Firestore Abfragen im Voraus prüft. | du entscheidest, ich baue | eine halbe Sitzung |
-| **`marketing.html` und `wachstum.html` ohne eigene CSP.** Zusammen 101 Ereignisse im Attribut (`onclick="…"`) — genau das, was die Regel verbietet. Erst umstellen auf `addEventListener`, dann die Regel. Beide verlangen eine Anmeldung; die Kopfzeilen aus `firebase.json` gelten für sie mit. `werbung.html` hätte nur drei und wäre schnell so weit. | ich | eine Sitzung |
+| **`marketing.html` und `wachstum.html` ohne eigene CSP.** Zusammen 101 Ereignisse im Attribut (`onclick="…"`) — genau das, was die Regel verbietet. Erst umstellen auf `addEventListener`, dann die Regel. Beide verlangen eine Anmeldung; die Kopfzeilen aus `firebase.json` gelten für sie mit. `werbung.html` ist seit dem 13.8. mit dabei. | ich | eine Sitzung |
 
 **Die Google-Tabelle ist am 13.8. umgebaut** — der Browser kennt die
 Adresse der Web-App nicht mehr, gesendet wird über die Cloud Function

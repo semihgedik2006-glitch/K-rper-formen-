@@ -19,7 +19,35 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const DATEI = path.join(__dirname, '..', 'index.html');
+const WURZEL = path.join(__dirname, '..');
+const DATEI = path.join(WURZEL, 'index.html');
+
+/* Jede Seite bekommt genau das, was sie braucht — und sonst nichts.
+   Eine gemeinsame Regel waere die Summe aller Ausnahmen und damit die
+   schwaechste von allen. */
+const SEITEN = {
+  'index.html': {
+    script: "'self' https://www.gstatic.com",
+    img: "'self' data: blob:",
+    medien: "'self' data: blob:",
+    verbinden: "'self' https://*.googleapis.com https://*.cloudfunctions.net " +
+      "https://*.firebaseio.com wss://*.firebaseio.com " +
+      "https://*.firebasedatabase.app wss://*.firebasedatabase.app",
+    worker: "'self'",
+    manifest: "'self'",
+  },
+  /* Die oeffentliche Seite. Kein Firebase, keine Anmeldung, keine
+     Datenbank — sie schickt nichts und holt nichts ausser Bildern von
+     der Hauptseite. connect-src bleibt deshalb zu. */
+  'werbung.html': {
+    script: "'self'",
+    img: "'self' data: https://www.xn--krperformen-rfb.com",
+    medien: "'none'",
+    verbinden: "'none'",
+    worker: "'none'",
+    manifest: "'none'",
+  },
+};
 
 /* Jeder <script>-Block ohne src. Der Inhalt geht Zeichen für Zeichen in
    die Prüfsumme, einschliesslich Zeilenumbrüchen. */
@@ -37,11 +65,12 @@ function pruefsumme(text) {
 
 /* Die Regel selbst. Alles, was nicht dasteht, ist verboten —
    default-src 'none' ist der Ausgangspunkt, nicht das Feigenblatt. */
-function regel(hashes) {
+function regel(hashes, seite) {
+  const k = SEITEN[seite] || SEITEN['index.html'];
   return [
     "default-src 'none'",
-    // Der eigene Code und das Firebase-SDK. Kein 'unsafe-inline'.
-    "script-src 'self' https://www.gstatic.com " + hashes.map(h => "'" + h + "'").join(' '),
+    // Der eigene Code, sonst nichts. Kein 'unsafe-inline'.
+    "script-src " + k.script + ' ' + hashes.map(h => "'" + h + "'").join(' '),
     /* Stile: 'unsafe-inline' bleibt nötig. Die Oberfläche setzt Farben und
        Grössen an style="…" der einzelnen Elemente, und dafür gibt es keine
        Prüfsumme. Ein Stil kann keinen Code ausführen; die Regel verliert
@@ -49,14 +78,12 @@ function regel(hashes) {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src https://fonts.gstatic.com data:",
     // Bilder und Ton kommen aus der Datenbank als data:-Adressen (safeMedia).
-    "img-src 'self' data: blob:",
-    "media-src 'self' data: blob:",
+    "img-src " + k.img,
+    "media-src " + k.medien,
     // Firebase: Datenbank, Anmeldung, Meldungen, Cloud Functions.
-    "connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net " +
-      "https://*.firebaseio.com wss://*.firebaseio.com " +
-      "https://*.firebasedatabase.app wss://*.firebasedatabase.app",
-    "worker-src 'self'",
-    "manifest-src 'self'",
+    "connect-src " + k.verbinden,
+    "worker-src " + k.worker,
+    "manifest-src " + k.manifest,
     // Nichts davon braucht die App, und jedes davon ist ein Weg nach draussen.
     "frame-src 'none'",
     "object-src 'none'",
@@ -75,29 +102,38 @@ function vorhandene(html) {
   return html.slice(i + MARKE_AUF.length, j);
 }
 
-function neue(html) {
-  return regel(bloecke(html).map(pruefsumme));
+function neue(html, seite) {
+  return regel(bloecke(html).map(pruefsumme), seite || 'index.html');
 }
 
 if (require.main === module) {
-  const html = fs.readFileSync(DATEI, 'utf8');
-  const soll = neue(html);
-  const ist = vorhandene(html);
+  const setzen = process.argv.indexOf('--setzen') >= 0;
+  let schief = 0;
 
-  if (process.argv.indexOf('--setzen') < 0) {
-    console.log(soll.split('; ').join(';\n  '));
-    console.log('\nSkriptblöcke: ' + bloecke(html).length);
-    console.log(ist === soll ? '\n✓ index.html trägt genau diese Regel'
-      : '\n✗ index.html trägt eine andere Regel — node tools/csp.js --setzen');
-    process.exit(ist === soll ? 0 : 1);
-  }
+  Object.keys(SEITEN).forEach((seite) => {
+    const datei = path.join(WURZEL, seite);
+    const html = fs.readFileSync(datei, 'utf8');
+    const soll = neue(html, seite);
+    const ist = vorhandene(html);
 
-  if (ist === null) {
-    console.error('Kein CSP-Meta-Element in index.html gefunden.');
-    process.exit(1);
-  }
-  fs.writeFileSync(DATEI, html.replace(MARKE_AUF + ist + MARKE_ZU, MARKE_AUF + soll + MARKE_ZU));
-  console.log(ist === soll ? 'Unverändert.' : 'Regel neu gesetzt.');
+    if (!setzen) {
+      console.log('── ' + seite + ' (' + bloecke(html).length + ' Skriptblöcke)');
+      console.log('   ' + soll.split('; ').join(';\n   '));
+      console.log(ist === soll ? '   ✓ trägt genau diese Regel'
+        : '   ✗ trägt eine andere — node tools/csp.js --setzen');
+      if (ist !== soll) schief++;
+      return;
+    }
+    if (ist === null) {
+      console.error(seite + ': kein CSP-Meta-Element gefunden.');
+      schief++;
+      return;
+    }
+    fs.writeFileSync(datei, html.replace(MARKE_AUF + ist + MARKE_ZU, MARKE_AUF + soll + MARKE_ZU));
+    console.log(seite + ': ' + (ist === soll ? 'unverändert' : 'Regel neu gesetzt'));
+  });
+
+  process.exit(schief ? 1 : 0);
 }
 
-module.exports = { bloecke, pruefsumme, regel, vorhandene, neue, DATEI };
+module.exports = { bloecke, pruefsumme, regel, vorhandene, neue, DATEI, WURZEL, SEITEN };

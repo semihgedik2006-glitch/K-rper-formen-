@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0E1712" />
 <title>Körperformen Hürth – EMS-Training & Body-Shaping</title>
+<!-- Zweite Reihe hinter der Maskierung. Erzeugt und geprüft von
+     tools/csp.js, siehe tests/test-csp.js. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-UUb8U0X/q4JVSBV2axycuUfjoUeJcAnQ1fCuHQlAA8Q='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: https://www.xn--krperformen-rfb.com; media-src 'none'; connect-src 'none'; worker-src 'none'; manifest-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <meta name="description" content="Forme deinen Körper mit EMS-Training in Hürth. Nur 20 Minuten pro Woche – persönlich betreut. Jetzt kostenloses Probetraining sichern." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
+<link id="schriftLink" rel="stylesheet" media="print" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" /></noscript>
 <style>
 /* ============================================================
@@ -460,7 +463,7 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
     <a href="#hero" class="brand" aria-label="Körperformen Startseite">
       <img class="brand-logo"
         src="https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg"
-        alt="Körperformen Logo" onerror="this.style.display='none'" />
+        alt="Körperformen Logo" />
       <span>KÖRPER<b>FORMEN</b></span>
     </a>
     <ul class="nav-links" id="navLinks">
@@ -755,7 +758,7 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
     <div class="foot-grid">
       <div class="brand"><img class="brand-logo"
         src="https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg"
-        alt="Körperformen Logo" onerror="this.style.display='none'" />
+        alt="Körperformen Logo" />
         <span>KÖRPER<b>FORMEN</b> HÜRTH</span></div>
       <ul class="foot-links">
         <li><a href="#vorteile">Vorteile</a></li>
@@ -844,6 +847,23 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
 <script>
 (function(){
 "use strict";
+
+/* Kein onload und kein onerror mehr im Markup: die Sicherheitsregel der
+   Seite (CSP) laesst nur diesen einen Skriptblock zu, ueber seine
+   Pruefsumme. Ein Ereignis im Attribut ist fuer sie fremder Code. */
+var schrift=document.getElementById("schriftLink");
+if(schrift) schrift.media="all";
+
+/* Das Logo kommt von der Hauptseite. Ist es nicht da, soll die Luecke
+   verschwinden statt als kaputtes Bild dazustehen. complete wird
+   mitgeprueft, weil das Ereignis schon durch sein kann, wenn dieser
+   Block laeuft. */
+Array.prototype.forEach.call(document.querySelectorAll(".brand-logo"),function(b){
+  function weg(){ b.style.display="none"; }
+  b.addEventListener("error",weg);
+  if(b.complete && b.naturalWidth===0) weg();
+});
+
 var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 var isTouch=window.matchMedia("(hover: none)").matches;
 

@@ -39,31 +39,33 @@ const ANSICHTEN = [
 
 (async () => {
   // ══ 1. Regel und Datei passen zusammen ══
-  console.log('── Die Regel in index.html ──');
   const html = fs.readFileSync(csp.DATEI, 'utf8');
-  const ist = csp.vorhandene(html);
-  pruefe('index.html trägt eine CSP', !!ist);
-  pruefe('sie passt zu den Skriptblöcken der Datei', ist === csp.neue(html),
-    'node tools/csp.js --setzen');
 
-  const teile = String(ist || '').split(/;\s*/);
-  const script = teile.find(t => t.indexOf('script-src') === 0) || '';
-  pruefe('script-src erlaubt KEIN unsafe-inline', !/unsafe-inline/.test(script), script);
-  pruefe('script-src erlaubt KEIN unsafe-eval', !/unsafe-eval/.test(script), script);
-  pruefe('script-src erlaubt kein https: pauschal', !/\shttps:(\s|$)/.test(script), script);
-  pruefe('default-src steht auf none', teile.indexOf("default-src 'none'") === 0, teile[0]);
-  ['object-src \'none\'', 'base-uri \'none\'', 'form-action \'none\'', 'frame-src \'none\'']
-    .forEach(d => pruefe('gesetzt: ' + d, teile.indexOf(d) >= 0));
-  pruefe('beide Skriptblöcke sind über ihre Prüfsumme erlaubt',
-    (script.match(/'sha256-/g) || []).length === csp.bloecke(html).length,
-    script);
+  Object.keys(csp.SEITEN).forEach((seite) => {
+    console.log('── ' + seite + ' ──');
+    const roh = fs.readFileSync(path.join(csp.WURZEL, seite), 'utf8');
+    const ist = csp.vorhandene(roh);
+    pruefe(seite + ' trägt eine CSP', !!ist);
+    pruefe(seite + ': sie passt zu den Skriptblöcken der Datei',
+      ist === csp.neue(roh, seite), 'node tools/csp.js --setzen');
 
-  // ══ 2. Kein Ereignis-Attribut mehr im Markup ══
-  /* Ein onclick="…" ist fuer die Regel fremder Code. Solche Attribute
-     fielen frueher nicht auf, weil sie funktionierten. */
-  const attribute = (html.match(/\son(click|load|error|change|input|submit)="/g) || []);
-  pruefe('kein Ereignis im Attribut (onclick und Verwandte)',
-    attribute.length === 0, attribute.join(' '));
+    const teile = String(ist || '').split(/;\s*/);
+    const script = teile.find(t => t.indexOf('script-src') === 0) || '';
+    pruefe(seite + ': script-src ohne unsafe-inline', !/unsafe-inline/.test(script), script);
+    pruefe(seite + ': script-src ohne unsafe-eval', !/unsafe-eval/.test(script), script);
+    pruefe(seite + ': script-src ohne pauschales https:', !/\shttps:(\s|$)/.test(script), script);
+    pruefe(seite + ': default-src steht auf none',
+      teile.indexOf("default-src 'none'") === 0, teile[0]);
+    ["object-src 'none'", "base-uri 'none'", "form-action 'none'", "frame-src 'none'"]
+      .forEach(d => pruefe(seite + ': gesetzt ' + d, teile.indexOf(d) >= 0));
+    pruefe(seite + ': jeder Skriptblock hat seine Prüfsumme',
+      (script.match(/'sha256-/g) || []).length === csp.bloecke(roh).length, script);
+
+    /* Ein onclick="…" ist fuer die Regel fremder Code. Solche Attribute
+       fielen frueher nicht auf, weil sie funktionierten. */
+    const attribute = (roh.match(/\son(click|load|error|change|input|submit)="/g) || []);
+    pruefe(seite + ': kein Ereignis im Attribut', attribute.length === 0, attribute.join(' '));
+  });
 
   // ══ 3. Der Browser: bricht die Regel etwas? ══
   console.log('\n── Zwölf Ansichten unter der Regel ──');
@@ -154,6 +156,56 @@ const ANSICHTEN = [
   pruefe('GEGENPROBE eingeschleuster Code wird von der Regel gestoppt', angriff === false);
 
   await page.screenshot({ path: path.join(SP, 'csp.png') });
+  await page.close();
+
+  // ══ 5. Die öffentliche Seite unter ihrer eigenen Regel ══
+  console.log('\n── werbung.html unter der Regel ──');
+  {
+    const w = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const wv = [];
+    const wf = [];
+    w.on('pageerror', e => wf.push(e.message.slice(0, 160)));
+    await w.exposeFunction('__cspFund2', (d) => wv.push(d));
+    await w.addInitScript(`
+      document.addEventListener('securitypolicyviolation', function (e) {
+        window.__cspFund2({ richtlinie: e.violatedDirective,
+                            quelle: String(e.blockedURI || '').slice(0, 90) });
+      });
+    `);
+    /* Wie überall: was von aussen kommt, wird abgewiesen. Eine
+       abgewiesene Anfrage ist keine Verletzung der Regel. */
+    await w.route('**fonts.googleapis.com/**', r => r.abort());
+    await w.route('**fonts.gstatic.com/**', r => r.abort());
+    await w.route('**krperformen-rfb.com/**', r => r.abort());
+    await w.goto(APP.replace('index.html', 'werbung.html'), { waitUntil: 'domcontentloaded' });
+    await w.waitForTimeout(1500);
+    await w.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+    await w.waitForTimeout(900);
+
+    const zustand = await w.evaluate(() => ({
+      text: document.body.textContent.replace(/\s+/g, ' ').trim().length,
+      schrift: (document.getElementById('schriftLink') || {}).media,
+      logosWeg: [...document.querySelectorAll('.brand-logo')]
+        .filter(x => x.style.display === 'none').length,
+      logos: document.querySelectorAll('.brand-logo').length
+    }));
+    console.log('  Zustand:', JSON.stringify(zustand));
+    const echteW = wv.filter(v => !/fonts\.|krperformen-rfb/.test(v.quelle));
+    console.log('  Verletzungen:', wv.length, '· davon echte:', echteW.length);
+    pruefe('werbung.html: keine Verletzung', echteW.length === 0,
+      echteW.map(v => v.richtlinie + ' ' + v.quelle).join(' | '));
+    pruefe('werbung.html: die Seite steht', zustand.text > 1500, String(zustand.text));
+    pruefe('werbung.html: der Skriptblock läuft (Schrift auf all)',
+      zustand.schrift === 'all', String(zustand.schrift));
+    /* Das Logo kommt hier nicht durch (abgewiesen). Genau dann muss der
+       Ersatz greifen — frueher stand er im onerror-Attribut. */
+    pruefe('werbung.html: fehlendes Logo wird ausgeblendet (war ein onerror)',
+      zustand.logos > 0 && zustand.logosWeg === zustand.logos,
+      zustand.logosWeg + ' von ' + zustand.logos);
+    pruefe('werbung.html: keine Skriptfehler', wf.length === 0, wf.join(' | '));
+    await w.close();
+  }
+
   await b.close();
 
   console.log(errs.length

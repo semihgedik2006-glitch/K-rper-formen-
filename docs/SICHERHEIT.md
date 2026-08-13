@@ -284,15 +284,23 @@ Sitzung.
 
 ## 🟡 Bleibt: `marketing.html` und `wachstum.html` ohne eigene CSP
 
-`index.html` hat sie. Die beiden anderen nicht: dort stehen zusammen
-**101 Ereignisse im Attribut** (`onclick="…"`), und die verbietet genau
-die Regel, um die es geht. Erst müssten sie auf `addEventListener`
-umgestellt werden.
+`index.html` hat sie, `werbung.html` inzwischen auch. Die beiden anderen
+nicht: dort stehen zusammen **101 Ereignisse im Attribut**
+(`onclick="…"`), und die verbietet genau die Regel, um die es geht. Erst
+müssten sie auf `addEventListener` umgestellt werden — und für beide gibt
+es bis heute keinen einzigen automatischen Durchlauf, der so einen Umbau
+absichern würde. Das ist die eigentliche Vorarbeit.
 
 Beide verlangen eine Anmeldung, beide sind interne Werkzeuge, und die
 Kopfzeilen aus `firebase.json` (kein Einbetten, `nosniff`,
-`Referrer-Policy`) gelten für sie mit. `werbung.html` — die öffentliche
-Seite — hat nur drei solche Attribute und wäre schnell so weit.
+`Referrer-Policy`) gelten für sie mit.
+
+**`werbung.html` ist seit dem 13.8. mit dabei** — die öffentliche Seite,
+die jeder ohne Anmeldung aufruft. Sie hatte drei Ereignisse im Attribut;
+die sind umgestellt. Ihre Regel ist enger als die der App, weil sie
+weniger braucht: `connect-src 'none'`, `media-src 'none'`,
+`worker-src 'none'`, und Bilder nur von der eigenen Hauptseite. Kein
+Firebase, keine Datenbank, kein Weg nach draussen.
 
 ---
 
@@ -365,7 +373,7 @@ tests/rules/kreuz.test.js      162
 tests/rules/umzug.test.js      12
 tests/rules/funktionen.test.js 99
 tests/rules/rechte.test.js     33 (mit den Nachbaranwendungen)
-tests/test-csp.js              20 Prüfungen · 12 Ansichten · 0 Verletzungen
+tests/test-csp.js              33 Prüfungen · 2 Seiten · 0 Verletzungen
 tests/test-mail-versand.js     8
 npm audit --omit=dev           0
 ```
