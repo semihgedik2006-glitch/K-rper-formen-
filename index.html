@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-ih206tiy2ZhelosUYeTrJwFigpYuM0VRwR6MwH3ztyU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-z0oAu0aRH8GK8K1QNqo+QrHKUC6YpF9OBK9L9IR9rGU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3554,10 +3554,13 @@ body.light .chip-num{background:rgba(20,10,40,.08)}
     <button class="lb-close" id="pmClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <h3 style="margin-bottom:14px">Einstellungen</h3>
     <div class="pm-tabs">
-      <button data-ikon="person" class="pm-tab on" data-pmtab="profil">Profil</button>
-      <button data-ikon="kontrast" class="pm-tab" data-pmtab="aussehen">Aussehen</button>
-      <button data-ikon="glocke" class="pm-tab" data-pmtab="melden">Meldungen</button>
-      <button data-ikon="blatt" class="pm-tab" data-pmtab="nachweise">Nachweise</button>
+      <!-- Kein data-ikon an diesen vier: mit Symbol passen sie auf 390 Pixeln
+           nicht mehr nebeneinander, der letzte wird abgeschnitten.
+           tests/test-einstellungen-bereich10.js prueft genau das. -->
+      <button class="pm-tab on" data-pmtab="profil">Profil</button>
+      <button class="pm-tab" data-pmtab="aussehen">Aussehen</button>
+      <button class="pm-tab" data-pmtab="melden">Meldungen</button>
+      <button class="pm-tab" data-pmtab="nachweise">Nachweise</button>
     </div>
     <div id="pmPaneProfil">
     <div style="text-align:center;margin-bottom:14px">
@@ -8532,7 +8535,9 @@ function docCatMeta(id){
 function buildDocCatSelect(){
   var sel=$('docCat'); if(!sel) return;
   sel.innerHTML=DOC_CATS.map(function(c){
-    return '<option value="'+c.id+'">'+c.ico+' '+esc(c.name)+'</option>';
+    /* Kein c.ico: eine Auswahlliste zeigt nur Text, ein SVG käme dort
+       gar nicht an. Das Symbol steht an den Filter-Knöpfen darunter. */
+    return '<option value="'+c.id+'">'+esc(c.name)+'</option>';
   }).join('');
 }
 /* Filterleiste: zeigt nur Kategorien, in denen wirklich etwas liegt */
@@ -8585,7 +8590,12 @@ function renderDocs(docs){
   var chef=canManage();
   box.innerHTML=list.map(function(d){
     var cm=docCatMeta(docCatOf(d));
-  var meta=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+
+  /* Nur der Name, kein Symbol: die Zeile ist dicht gesetzter Kleintext
+     („Hygiene · Alle Studios · 12 KB · heute"), und ein Symbol darin
+     macht aus 185 Pixel Zeilenhöhe 243. Gemessen in
+     tests/test-dokumente-bereich8.js. Das Symbol steht an den
+     Filter-Knöpfen. */
+  var meta=(docCatOf(d)?cm.name+' · ':'')+
     docStudiosLabel(d)+' · '+(d.kind==='link'?'Link':fmtSize(d.size))+' · '+fmtTime(d.ts);
     /* Drei Knöpfe nebeneinander (Öffnen · Als Aufgabe · ✕) drückten den
        Namen auf eine schmale Spalte – „Gerätewartung Anleitung" brach mitten
@@ -8628,7 +8638,7 @@ function docBlattOeffnen(d){
   var blatt=$('docSheet'); if(!blatt) return;
   var cm=docCatMeta(docCatOf(d));
   $('dbWho').textContent=d.name||d.fileName||'Dokument';
-  $('dbWhere').textContent=(docCatOf(d)?cm.ico+' '+cm.name+' · ':'')+docStudiosLabel(d);
+  $('dbWhere').textContent=(docCatOf(d)?cm.name+' · ':'')+docStudiosLabel(d);
   $('dbActs').innerHTML=[
     {id:'aufgabe', ico:ikon('hakenKreis'), txt:'Als Aufgabe verteilen'},
     {id:'loeschen', ico:ikon('papierkorb'), txt:'Löschen', warn:true}
