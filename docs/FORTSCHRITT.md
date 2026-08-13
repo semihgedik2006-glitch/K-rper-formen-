@@ -2733,12 +2733,35 @@ las `innerText`, der nur Sichtbares liefert; von zwölf Ansichten ist
 immer nur eine im Bild, also meldete sie „nichts geprüft". Beides
 korrigiert, beides am Fundort kommentiert.
 
+### Nachgezogen: die Kommentare im Markup
+
+Beim Aufräumen in Sitzung 33 war nur der `<script>`-Teil dran. Im Markup
+standen weiter Banner aus Gleichheitszeichen und mehrzeilige Absätze, die
+den Aufbau der Seite erzählen — genau die Sorte, die als „wirkt wie von
+KI" beanstandet wurde.
+
+| | vorher | nachher |
+|---|---|---|
+| `index.html` | 122 | 66 |
+| `werbung.html` | 25 | 24, alle Banner auf den Namen gekürzt |
+| `marketing.html` · `wachstum.html` | je 12 | je 11 |
+
+Was bleibt, benennt einen Abschnitt (`<!-- CHAT -->`) und erklärt nichts.
+Belegt, dass nur Kommentare fielen: `index.html` ohne Kommentare vorher
+und nachher zeichenweise identisch, 14.414 Zeilen.
+
 ### Prüfung
 
 ```
 Regeln 165 · Kreuz 162 · Rechte 23 · Umzug 12 · Functions 99   Emulator
 XSS 8 Muster · Tabelle 8 Prüfungen · Endpunkte 15              Browser/Text
+60 Durchläufe im Browser
 ```
+
+Ein echter Fund dabei: `test-putzplan.js` hing an einer `fetch`-Anfrage
+an `script.google.com`. Die gibt es seit dem Umbau nicht mehr — der Test
+war rot, und zwar zu Recht. Er fängt jetzt den Aufruf von `sheetsPush`
+ab.
 
 Neu: `tests/rules/rechte.test.js`, `tests/test-xss.js`,
 `tests/test-sheets.js`, `tests/stub-xss.js`; erweitert:

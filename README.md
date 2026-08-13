@@ -144,6 +144,12 @@ Code nicht sieht: eine Bedingung aus den Sicherheitsregeln, eine Reihenfolge,
 die nicht vertauscht werden darf, ein naheliegender Weg, der nicht
 funktioniert. Kein Verlauf, keine Daten, keine Begründungen in Aufsatzform.
 
+**Im Markup steht höchstens eine kurze Marke je Abschnitt.** `<!-- CHAT -->`,
+`<!-- Schichtplan -->` — der Name, sonst nichts. Kein Banner aus
+Gleichheitszeichen, keine Beschreibung, wie die Seite aufgebaut ist. Wer den
+Abschnitt sucht, findet ihn an der Marke; wie er funktioniert, steht im Code
+darunter.
+
 **Jeder Fund bekommt einen Durchlauf.** Von Hand weggeräumt heißt: kommt
 wieder. Jeder Test prüft beide Richtungen — dass der Fehler weg ist *und*
 dass die richtige Seite noch funktioniert. Ein Test, der nur eine Richtung
