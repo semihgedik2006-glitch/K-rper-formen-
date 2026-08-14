@@ -610,8 +610,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pbar i{display:block;height:100%;border-radius:var(--r-pille);
   background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0}
 .pcount{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);white-space:nowrap}
-.todo{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s12) var(--s16);background:var(--bg-2);
-  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8)}
+.todo{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s16);background:var(--bg-2);
+  border:none;border-radius:var(--r-md);margin-bottom:var(--s8)}
 .todo.done{opacity:.58}
 .todo.done .t-title{text-decoration:line-through;color:var(--text-2)}
 .check{width:26px;height:26px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid var(--line-2);
@@ -644,8 +644,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .empty .btn{margin-top:var(--s20)}
 
 /* ── Announcements ── */
-.ann{padding:var(--s16) var(--s16);background:var(--bg-2);border:1px solid var(--line);
-  box-shadow:var(--e1);border-left:4px solid var(--warm);border-radius:var(--r-md);margin-bottom:var(--s12)}
+.ann{padding:var(--s16) var(--s16);background:var(--bg-2);border:none;
+  box-shadow:var(--e1);border-left:3px solid var(--warm);border-radius:var(--r-md);margin-bottom:var(--s12)}
 .ann-head{display:flex;align-items:center;gap:var(--s8);margin-bottom:var(--s6)}
 .ann-head .pin{width:29px;height:29px;border-radius:var(--r-xs);display:grid;place-items:center;flex-shrink:0;
   background:var(--f-warn);color:var(--warm-tx)}
@@ -676,8 +676,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @media (hover:hover){ .ann-pin:hover{opacity:.85} }
 
 /* ── Cards / Chef ── */
-.card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--e1);padding:clamp(17px,3.8vw,23px);margin-bottom:var(--s16)}
+.card{background:var(--bg-2);border:none;border-radius:var(--radius);
+  box-shadow:var(--e1);padding:clamp(18px,4.2vw,26px);margin-bottom:var(--s20)}
 .card h3{font-size:var(--t-lg);margin-bottom:var(--s2);letter-spacing:var(--ls-s)}
 
 /* ── Apple-Ecke ──
@@ -904,7 +904,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .studio-tile small{color:var(--text-2);font-size:var(--t-xs)}
 /* Chef-Dashboard */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s10);margin-bottom:var(--s16)}
-.dash-tile{background:var(--bg-2);border:1px solid var(--line);box-shadow:var(--e1);
+.dash-tile{background:var(--bg-2);border:none;box-shadow:var(--e1);
   border-radius:var(--r-md);padding:var(--s16) var(--s16)}
 .dash-tile .dn{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);line-height:var(--lh-1);
   background:linear-gradient(135deg,var(--accent-d),var(--accent-2));-webkit-background-clip:text;
@@ -1772,8 +1772,8 @@ html{font-size:var(--fs,100%)}
 
 /* ── Startseite ── */
 .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:var(--s10);margin-bottom:var(--s16)}
-.home-tile{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--e1);padding:var(--s16) var(--s20);cursor:pointer;animation:cardUp .5s var(--ease-ios) both;
+.home-tile{background:var(--bg-2);border:none;border-radius:var(--radius);
+  box-shadow:var(--e1);padding:var(--s20) var(--s20);cursor:pointer;animation:cardUp .5s var(--ease-ios) both;
   transition:transform .35s var(--ease-ios),border-color .25s,box-shadow .35s}
 .home-tile:active{transform:scale(.97)}
 @media (hover:hover){ .home-tile:hover{transform:translateY(-2px);box-shadow:var(--e2);border-color:var(--line-2)} }
@@ -1785,11 +1785,11 @@ html{font-size:var(--fs,100%)}
 
 .alert-bar{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-md);
   margin-bottom:var(--s8);cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
-  background:var(--f-bad);border:1px solid var(--k-bad)}
-.alert-bar.warn{background:var(--f-warn);border-color:var(--k-warn)}
-.alert-bar.pin{background:rgba(56,189,248,.11);border-color:rgba(56,189,248,.4)}
+  background:var(--f-bad-leise);border:none;border-left:3px solid var(--danger)}
+.alert-bar.warn{background:var(--f-warn-leise);border-left-color:var(--warm)}
+.alert-bar.pin{background:rgba(56,189,248,.07);border-left-color:var(--accent)}
 /* Die Sammelzeile ist selbst keine Warnung – sie darf nicht rot sein */
-.alert-bar.mehr{background:var(--bg-soft);border-color:var(--line);color:var(--text-2)}
+.alert-bar.mehr{background:var(--bg-soft);border-left-color:var(--line-2);color:var(--text-2)}
 .alert-bar .ab-ico{font-size:var(--t-lg);flex-shrink:0}
 .alert-bar .ab-t{flex:1;min-width:0;font-size:var(--t-sm);font-weight:600;
   /* Eine Zeile statt zwei: vier Hinweise haben vorher den ganzen ersten
@@ -1895,8 +1895,8 @@ html{font-size:var(--fs,100%)}
 .chef-home{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:var(--s10);
   margin-bottom:var(--s4)}
 .chef-card{display:flex;gap:var(--s12);align-items:flex-start;text-align:left;width:100%;
-  padding:var(--s16) var(--s16);background:var(--bg-2);border:1px solid var(--line);
-  box-shadow:var(--e1);border-radius:var(--r-md);cursor:pointer;
+  padding:var(--s20) var(--s16);background:var(--bg-2);border:none;
+  box-shadow:var(--e1);border-radius:var(--r-lg);cursor:pointer;
   transition:transform .28s var(--ease-out),border-color .25s,box-shadow .28s}
 .chef-card:hover{transform:translateY(-2px);border-color:var(--accent);
   box-shadow:var(--e2)}
@@ -2406,8 +2406,8 @@ html{font-size:var(--fs,100%)}
 .sich-stand.schlecht{background:var(--f-bad);border-color:var(--k-bad)}
 
 /* ── Dokumente ── */
-.doc{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);background:var(--bg-2);
-  border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:var(--s8)}
+.doc{display:flex;align-items:center;gap:var(--s10);padding:var(--s12);background:var(--bg-2);
+  border:none;border-radius:var(--r-sm);margin-bottom:var(--s8)}
 .doc .doc-ic{width:42px;height:42px;border-radius:var(--r-sm);flex-shrink:0;display:grid;place-items:center;
   background:rgba(34,211,238,.12);color:var(--accent-2)}
 .doc .doc-ic svg{width:20px;height:20px}
