@@ -29,6 +29,28 @@ service cloud.firestore {
       return isChef() || (isLeiter() && studioKey in myKeys());
     }
 
+    /* ── Gruppenkanaele im Chat ──
+       Zwei Kanaele gehoeren nicht allen:
+
+         gruppe-chefs     nur Chefs
+         gruppe-leitung   Chefs UND Studio-Leiter
+
+       Das steht hier und nicht nur in der Oberflaeche. buildChannels()
+       zeigt einem Mitarbeiter diese Knoepfe gar nicht — aber wer die
+       Konsole oeffnet, ruft den Pfad direkt auf. Eine Liste, die man
+       nicht sieht, ist keine Sperre.
+
+       Alle anderen Kanaele (allgemein, studio-N) bleiben wie bisher fuer
+       jeden Aktiven lesbar. Das ist eine alte Entscheidung und wird hier
+       NICHT nebenbei geaendert: eine Verschaerfung dort braucht eine
+       eigene Runde, sonst faellt sie beim ersten Kunden auf, dessen
+       Leute quer ueber Studios arbeiten. */
+    function kanalErlaubt(kanal) {
+      return kanal == 'gruppe-chefs'
+               ? isChef()
+               : (kanal == 'gruppe-leitung' ? (isChef() || isLeiter()) : true);
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // BEITRITT: Firmencode + Freigabe durch den Chef
     //
@@ -303,16 +325,16 @@ service cloud.firestore {
 
     // ── Chat-Nachrichten ──
     match /channels/{channelId}/messages/{msgId} {
-      allow read: if istAktiv();
+      allow read: if istAktiv() && kanalErlaubt(channelId);
       // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
-      allow create: if istAktiv()
+      allow create: if istAktiv() && kanalErlaubt(channelId)
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 2000
         && audioOk();
       // Reagieren darf jeder (nur das Feld reactions).
       // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
-      allow update: if istAktiv() && (
+      allow update: if istAktiv() && kanalErlaubt(channelId) && (
            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
         // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
         // Stimmenfeld anfassen, nicht Frage oder Antworten.
@@ -326,11 +348,11 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned']))
       );
       // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
-      allow delete: if isChef()
+      allow delete: if kanalErlaubt(channelId) && (isChef()
         || manages(channelId)
         || (istAktiv()
             && resource.data.uid == request.auth.uid
-            && request.time.toMillis() < resource.data.ts + 3600000);
+            && request.time.toMillis() < resource.data.ts + 3600000));
     }
 
     // ── Aufgaben pro Studio ──
@@ -838,16 +860,16 @@ service cloud.firestore {
         }
 
         match /channels/{channelId}/messages/{msgId} {
-          allow read: if inFirma(f) && (istAktiv());
+          allow read: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId));
           // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
-          allow create: if inFirma(f) && (istAktiv()
+          allow create: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId)
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.text is string
             && request.resource.data.text.size() <= 2000
             && audioOk());
           // Reagieren darf jeder (nur das Feld reactions).
           // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
-          allow update: if inFirma(f) && (istAktiv() && (
+          allow update: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId) && (
                request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
             // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
             // Stimmenfeld anfassen, nicht Frage oder Antworten.
@@ -861,7 +883,7 @@ service cloud.firestore {
                 && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned']))
           ));
           // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
-          allow delete: if inFirma(f) && (isChef()
+          allow delete: if inFirma(f) && kanalErlaubt(channelId) && (isChef()
             || manages(channelId)
             || (istAktiv()
                 && resource.data.uid == request.auth.uid

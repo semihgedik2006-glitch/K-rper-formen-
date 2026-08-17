@@ -37,6 +37,7 @@ async function pruefe(name, fn) {
 
 const chefA   = () => env.authenticatedContext('chefA').firestore();
 const mitA    = () => env.authenticatedContext('mitA').firestore();
+const leiterA = () => env.authenticatedContext('leiterA').firestore();
 const wartend = () => env.authenticatedContext('wartA').firestore();
 const admin   = () => env.authenticatedContext('betreiber').firestore();
 const anonym  = () => env.unauthenticatedContext().firestore();
@@ -58,6 +59,7 @@ const anonym  = () => env.unauthenticatedContext().firestore();
 
     await d.doc('users/chefA').set({ name: 'Chef A', role: 'chef', firma: A, aktiv: true });
     await d.doc('users/mitA').set({ name: 'Mit A', role: 'mitarbeiter', firma: A, aktiv: true, studioKeys: ['studio-0'] });
+    await d.doc('users/leiterA').set({ name: 'Leiter A', role: 'leiter', firma: A, aktiv: true, studioKeys: ['studio-0'] });
     await d.doc('users/wartA').set({ name: 'Wartend', role: 'mitarbeiter', firma: A, aktiv: false });
     await d.doc('users/betreiber').set({ name: 'Betreiber', role: 'chef', firma: A, aktiv: true, admin: true });
     await d.doc('users/zweitA').set({ name: 'Zweiter', role: 'mitarbeiter', firma: A, aktiv: true });
@@ -102,6 +104,52 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('BEKANNT OFFEN Chef kann ein Konto in eine fremde Firma schreiben', () =>
     assertSucceeds(chefA().doc('users/fremderChef').set({
       name: 'Fremd', role: 'chef', firma: B, aktiv: true })));
+
+  /* ══ Gruppenkanäle im Chat ══
+     Zwei Runden, die nicht jeder mitliest. Die Oberfläche zeigt einem
+     Mitarbeiter diese Knöpfe gar nicht — aber wer die Konsole öffnet,
+     ruft den Pfad direkt auf. Eine Liste, die man nicht sieht, ist keine
+     Sperre; deshalb steht sie hier. */
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const d = ctx.firestore();
+    await d.doc('channels/gruppe-chefs/messages/c1').set({ uid: 'chefA', text: 'intern', ts: Date.now() });
+    await d.doc('channels/gruppe-leitung/messages/l1').set({ uid: 'chefA', text: 'an die Leitung', ts: Date.now() });
+    await d.doc('channels/allgemein/messages/a1').set({ uid: 'chefA', text: 'an alle', ts: Date.now() });
+  });
+
+  await pruefe('Chefrunde: der Chef liest mit', () =>
+    assertSucceeds(chefA().doc('channels/gruppe-chefs/messages/c1').get()));
+  await pruefe('Chefrunde: der Chef schreibt', () =>
+    assertSucceeds(chefA().doc('channels/gruppe-chefs/messages/neu1')
+      .set({ uid: 'chefA', text: 'hallo', ts: Date.now() })));
+  await pruefe('Chefrunde: ein Studio-Leiter kommt NICHT hinein', () =>
+    assertFails(leiterA().doc('channels/gruppe-chefs/messages/c1').get()));
+  await pruefe('Chefrunde: ein Mitarbeiter kommt NICHT hinein', () =>
+    assertFails(mitA().doc('channels/gruppe-chefs/messages/c1').get()));
+  await pruefe('Chefrunde: ein Mitarbeiter schreibt auch nicht hinein', () =>
+    assertFails(mitA().doc('channels/gruppe-chefs/messages/schmuggel')
+      .set({ uid: 'mitA', text: 'hallo', ts: Date.now() })));
+
+  await pruefe('Leitungsrunde: der Studio-Leiter liest mit', () =>
+    assertSucceeds(leiterA().doc('channels/gruppe-leitung/messages/l1').get()));
+  await pruefe('Leitungsrunde: der Studio-Leiter schreibt', () =>
+    assertSucceeds(leiterA().doc('channels/gruppe-leitung/messages/neu2')
+      .set({ uid: 'leiterA', text: 'hallo', ts: Date.now() })));
+  await pruefe('Leitungsrunde: der Chef ist auch drin', () =>
+    assertSucceeds(chefA().doc('channels/gruppe-leitung/messages/l1').get()));
+  await pruefe('Leitungsrunde: ein Mitarbeiter bleibt draussen', () =>
+    assertFails(mitA().doc('channels/gruppe-leitung/messages/l1').get()));
+
+  /* GEGENPROBE. Ohne sie waere „die Gruppen sind dicht" auch dann gruen,
+     wenn der ganze Chat zu waere — und niemand koennte mehr schreiben. */
+  await pruefe('GEGENPROBE der normale Teamchat bleibt fuer alle offen', () =>
+    assertSucceeds(mitA().doc('channels/allgemein/messages/a1').get()));
+  await pruefe('GEGENPROBE ein Mitarbeiter schreibt weiterhin im Teamchat', () =>
+    assertSucceeds(mitA().doc('channels/allgemein/messages/neu3')
+      .set({ uid: 'mitA', text: 'hallo', ts: Date.now() })));
+  await pruefe('GEGENPROBE ein Mitarbeiter liest weiterhin seinen Studiokanal', () =>
+    assertSucceeds(mitA().doc('channels/studio-0/messages/x1')
+      .set({ uid: 'mitA', text: 'hallo', ts: Date.now() })));
 
   /* Der gefährlichste Einzelfall: ein Konto, das auf die Freigabe des
      Chefs wartet, schaltet sich selbst frei. Danach sieht es Teamchat,
