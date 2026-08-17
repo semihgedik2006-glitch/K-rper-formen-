@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-SuxFQzqSKyXdYSAp7U4NCptxAW9NneJW56TYq79qjso='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-WrmdCf48rao+hFZ7I3ox85E7X2NGWS3ifqMdLwrWa5U='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1930,8 +1930,17 @@ html{font-size:var(--fs,100%)}
    am Handy fehlt der Platz, dort ist die Lupe aber auch geläufig. */
 .suchknopf .sk-wort{display:none}
 @media (min-width:700px){
-  .suchknopf{width:auto;padding:0 var(--s12);gap:var(--s8)}
-  .suchknopf .sk-wort{display:inline;font-size:var(--t-sm);font-weight:600}
+  /* display:inline-flex ist hier Pflicht, nicht Geschmack. .icon-btn ist
+     ein GRID mit place-items:center — gedacht fuer genau EIN Kind. Kommt
+     ab dieser Breite das Wort dazu, legt das Grid es in eine zweite
+     ZEILE unter das Zeichen, und die feste Hoehe von 36 px schneidet es
+     ab: gemessen sass das Zeichen bei y=13, das Wort bei y=39, und
+     dessen Unterkante (55) lag unter dem Knopfrand (52).
+     Dazu height:auto — sonst bleibt die Hoehe stehen und das Wort ragt
+     weiter hinaus. */
+  .suchknopf{display:inline-flex;align-items:center;justify-content:center;
+    width:auto;height:auto;min-height:36px;padding:0 var(--s12);gap:var(--s8)}
+  .suchknopf .sk-wort{display:inline;font-size:var(--t-sm);font-weight:600;white-space:nowrap}
 }
 /* Eine Zeile zum Schieben statt drei Zeilen Knöpfe: bei vier Sortierungen
    nahm die Leiste umbrechend 150 Pixel über einer Liste mit drei Einträgen. */
@@ -2662,7 +2671,7 @@ html{font-size:var(--fs,100%)}
         <input class="inp" id="rgEmail" type="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" /></div>
       <div class="row">
         <div class="field"><label for="rgPw">Passwort</label>
-          <div class="pw-wrap"><input class="inp" id="rgPw" type="password" placeholder="Min. 6 Zeichen" autocomplete="new-password" />
+          <div class="pw-wrap"><input class="inp" id="rgPw" type="password" placeholder="6+ Zeichen" autocomplete="new-password" />
             <button type="button" class="pw-auge" data-pw="rgPw" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
         <div class="field"><label for="rgPw2">Wiederholen</label>
           <div class="pw-wrap"><input class="inp" id="rgPw2" type="password" placeholder="Passwort" autocomplete="new-password" />
@@ -3430,7 +3439,7 @@ html{font-size:var(--fs,100%)}
               <input class="inp" id="emEmail" type="email" placeholder="mitarbeiter@email.de" inputmode="email" autocomplete="off" /></div>
             <div class="field"><label for="emPw">Passwort (vergibst du, gib es der Person)</label>
               <div style="display:flex;gap:8px">
-                <input class="inp" id="emPw" type="text" placeholder="Min. 6 Zeichen" autocomplete="off" style="flex:1" />
+                <input class="inp" id="emPw" type="text" placeholder="6+ Zeichen" autocomplete="off" style="flex:1" />
                 <button type="button" class="btn btn-ghost btn-sm" id="emPwGen" title="Sicheres Passwort vorschlagen">Vorschlag</button>
               </div></div>
             <p class="hint" style="margin:-4px 0 12px">Geburtstag & Profilbild trägt der Mitarbeiter selbst im Profil ein.</p>
@@ -8732,9 +8741,37 @@ function createEmployee(){
       btn.disabled=false; btn.textContent='Zugang anlegen';
     })
     .catch(function(e){
-      note.textContent=authErrMsg(e.code)||e.message;
       btn.disabled=false; btn.textContent='Zugang anlegen';
       try{ sec.auth().signOut(); }catch(_){}
+      /* „Diese E-Mail wird bereits verwendet" ist hier fast immer die
+         Adresse einer Person, die man selbst schon entfernt hat: bis zu
+         dieser Runde loeschte „Zugang entfernen" nur das Profil, nicht
+         das Anmeldekonto. Die Person steht dann in keiner Liste mehr —
+         man kann also gar nichts tun und liest nur eine Meldung, die
+         nach dem eigenen Fehler klingt. Deshalb hier ein Weg heraus
+         statt einer Sackgasse. */
+      if(e && e.code === 'auth/email-already-in-use'){
+        note.textContent = '';
+        var p1 = document.createElement('p');
+        p1.textContent = 'Diese Adresse ist noch belegt — meist von einem '+
+          'Zugang, der schon entfernt wurde.';
+        var frei = document.createElement('button');
+        frei.className = 'btn btn-ghost btn-sm';
+        frei.style.marginTop = 'var(--s8)';
+        frei.textContent = 'Adresse freigeben und erneut anlegen';
+        frei.addEventListener('click', function(){
+          frei.disabled = true; frei.textContent = '…';
+          firebase.app().functions(KONFIG.region).httpsCallable('adresseFreigeben')({ email: email })
+            .then(function(){ createEmployee(); })
+            .catch(function(f){
+              note.style.color='var(--danger-tx)';
+              note.textContent = errMsg(f);
+            });
+        });
+        note.appendChild(p1); note.appendChild(frei);
+        return;
+      }
+      note.textContent=authErrMsg(e.code)||e.message;
     });
 }
 
@@ -8970,10 +9007,26 @@ function renderEmployees(emps){
         .catch(function(e){ toast(errMsg(e),true); });
     });
     node.querySelector('.em-del').addEventListener('click',function(){
-      if(!confirm('Zugang von '+(emp.name||'')+' entfernen?\n\nDie Person kann sich danach nicht mehr anmelden. Geschriebene Nachrichten bleiben erhalten.\nDas lässt sich nicht rückgängig machen.')) return;
-      db.collection('users').doc(uid).delete()
-        .then(function(){ toast('Zugang entfernt ✓'); })
-        .catch(function(e){ toast(errMsg(e),true); });
+      /* Der Text sagte „kann sich danach nicht mehr anmelden". Das stimmte
+         nicht: geloescht wurde nur das Profil, das Anmeldekonto blieb
+         stehen. Anmelden ging weiter (nur ohne Profil), und die
+         E-Mail-Adresse blieb belegt — beim naechsten Anlegen kam
+         auth/email-already-in-use. Beides erledigt jetzt die Funktion
+         zugangEntfernen auf dem Server; nur der darf Anmeldekonten
+         loeschen. */
+      if(!confirm('Zugang von '+(emp.name||'')+' entfernen?\n\n'+
+                  'Das Anmeldekonto wird gelöscht — die E-Mail-Adresse ist '+
+                  'danach wieder frei. Geschriebene Nachrichten bleiben stehen.\n'+
+                  'Das lässt sich nicht rückgängig machen.')) return;
+      var knopf=node.querySelector('.em-del'); knopf.disabled=true;
+      firebase.app().functions(KONFIG.region).httpsCallable('zugangEntfernen')({ uid: uid })
+        .then(function(r){
+          var d=(r&&r.data)||{};
+          toast(d.konto===false
+            ? 'Zugang entfernt ✓ (ein Anmeldekonto gab es nicht mehr)'
+            : 'Zugang entfernt ✓ — die Adresse ist wieder frei');
+        })
+        .catch(function(e){ knopf.disabled=false; toast(errMsg(e),true); });
     });
   });
 }

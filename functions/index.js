@@ -1091,6 +1091,121 @@ exports.mailStatus = region
     return { stand: stand };
   });
 
+/* ── Zugang wirklich entfernen ──
+   Gemeldet aus dem Betrieb: „ich kann eine E-Mail, die ich schon benutzt
+   und wieder geloescht habe, nicht noch einmal verwenden."
+
+   Der Grund: „Zugang entfernen" loeschte nur das Profil in Firestore
+   (users/<uid>). Das ANMELDEKONTO in Firebase Auth blieb stehen — und
+   damit blieb die Adresse belegt. Beim naechsten Anlegen kam
+   auth/email-already-in-use, und im Fenster stand eine Meldung, die man
+   nicht deuten kann.
+
+   Zweite, schlimmere Seite derselben Sache: der Bestaetigungstext sagte
+   „Die Person kann sich danach nicht mehr anmelden." Das stimmte nicht.
+   Anmelden ging weiter, es fehlte nur das Profil.
+
+   Ein Profil zu loeschen kann der Chef selbst (firestore.rules). Ein
+   Anmeldekonto zu loeschen kann nur der Server — deshalb diese Funktion.
+
+   Drei Absicherungen, jede gegen einen konkreten Missbrauch:
+     1. requireChef            kein Mitarbeiter loescht Zugaenge
+     2. gleiche Firma          sonst loescht der Chef von A Konten bei B.
+                               requireChef allein prueft nur die Rolle.
+     3. nicht sich selbst      wer sich selbst entfernt, sperrt sich aus
+                               und hinterlaesst eine Firma ohne Chef. */
+exports.zugangEntfernen = region
+  .https.onCall(async (data, context) => {
+    const ich = await requireChef(context);
+    const uid = String((data && data.uid) || '').trim();
+    if (!uid) {
+      throw new functions.https.HttpsError('invalid-argument', 'Keine Kennung angegeben.');
+    }
+    if (uid === context.auth.uid) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Den eigenen Zugang kann man hier nicht entfernen.');
+    }
+
+    const snap = await db.collection('users').doc(uid).get();
+    if (!snap.exists) {
+      /* Kein Profil mehr, aber vielleicht noch ein Anmeldekonto — genau
+         der Zustand, den die alte Fassung hinterlassen hat. Aufraeumen
+         ist hier richtig, sonst bleibt die Adresse fuer immer belegt. */
+      let weg = false;
+      try { await admin.auth().deleteUser(uid); weg = true; } catch (e) { /* gab es nicht */ }
+      return { profil: false, konto: weg };
+    }
+
+    const seine = (snap.data() || {}).firma || 'koerperformen';
+    const meine = (ich || {}).firma || 'koerperformen';
+    if (seine !== meine) {
+      throw new functions.https.HttpsError('permission-denied',
+        'Dieser Zugang gehört zu einem anderen Betrieb.');
+    }
+
+    /* Reihenfolge mit Absicht: erst das Anmeldekonto, dann das Profil.
+       Andersherum bliebe bei einem Fehler in der Mitte genau der Zustand
+       zurueck, den wir gerade abschaffen — Konto ohne Profil, Adresse
+       belegt, niemand sieht es. */
+    let konto = false;
+    try { await admin.auth().deleteUser(uid); konto = true; }
+    catch (e) {
+      if (e && e.code !== 'auth/user-not-found') {
+        console.error('zugangEntfernen, Auth:', e);
+        throw new functions.https.HttpsError('internal',
+          'Das Anmeldekonto liess sich nicht entfernen.');
+      }
+    }
+    await db.collection('users').doc(uid).delete();
+    return { profil: true, konto: konto };
+  });
+
+/* ── Eine belegte Adresse wieder freigeben ──
+   Die Funktion oben verhindert neue Fälle. Die ALTEN bleiben: wer schon
+   vor dieser Änderung jemanden entfernt hat, hat ein Anmeldekonto ohne
+   Profil zurückgelassen — und dessen Adresse ist bis heute belegt. Beim
+   Anlegen kommt auth/email-already-in-use, und niemand kann etwas dagegen
+   tun, weil die Person in keiner Liste mehr steht.
+
+   Freigegeben wird nur, was wirklich verwaist ist. Gibt es die Person
+   noch, ist „freigeben" der falsche Weg — sie steht in der Team-Liste
+   und wird dort entfernt, mit Rückfrage. Hier waere es ein Loeschen ohne
+   Warnung. Und ein Konto einer anderen Firma bleibt tabu, sonst koennte
+   ein Chef fremde Leute aussperren. */
+exports.adresseFreigeben = region
+  .https.onCall(async (data, context) => {
+    const ich = await requireChef(context);
+    const email = String((data && data.email) || '').trim().toLowerCase();
+    if (!email || email.indexOf('@') < 1) {
+      throw new functions.https.HttpsError('invalid-argument', 'Keine E-Mail-Adresse angegeben.');
+    }
+
+    let konto = null;
+    try { konto = await admin.auth().getUserByEmail(email); }
+    catch (e) { return { frei: true, nichtsZuTun: true }; }
+
+    if (konto.uid === context.auth.uid) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Das ist die eigene Adresse.');
+    }
+
+    const snap = await db.collection('users').doc(konto.uid).get();
+    if (snap.exists) {
+      const seine = (snap.data() || {}).firma || 'koerperformen';
+      const meine = (ich || {}).firma || 'koerperformen';
+      if (seine !== meine) {
+        throw new functions.https.HttpsError('permission-denied',
+          'Diese Adresse gehört zu einem anderen Betrieb.');
+      }
+      throw new functions.https.HttpsError('failed-precondition',
+        'Zu dieser Adresse gibt es noch einen Zugang im Team. ' +
+        'Dort entfernen, dann ist sie frei.');
+    }
+
+    await admin.auth().deleteUser(konto.uid);
+    return { frei: true, entfernt: konto.uid };
+  });
+
 /* ── Tagesgrenze für kostenpflichtige Aufrufe ──
    Das Projekt läuft auf Blaze, und eine Budget-Warnung warnt nur, sie stoppt
    nichts. Gezählt wird je Tag und je Art in einem Dokument. Die Grenze soll

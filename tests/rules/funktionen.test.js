@@ -325,6 +325,102 @@ const TAG = 86400000;
     await db.doc('users/betreiber').set({ name: 'Betreiber', role: 'chef',
       firma: 'alpha', admin: true });
 
+    /* ══ Zugang entfernen ══
+       Gemeldet: „eine schon benutzte und wieder geloeschte E-Mail laesst
+       sich nicht noch einmal verwenden." Grund war, dass „Zugang
+       entfernen" nur das Profil loeschte und das ANMELDEKONTO stehen
+       liess — damit blieb die Adresse belegt.
+
+       Geprueft wird deshalb genau das, worauf es ankommt: ist die
+       Adresse hinterher wieder frei? */
+    {
+      const auth = admin.auth();
+      const mail = 'weg-' + Date.now() + '@beispiel.test';
+      await db.doc('users/chefAlpha').set({ name: 'Chef', role: 'chef', firma: 'alpha' });
+
+      const konto = await auth.createUser({ email: mail, password: 'geheim123' });
+      await db.doc('users/' + konto.uid).set({ name: 'Geht wieder', role: 'mitarbeiter',
+        firma: 'alpha', email: mail });
+
+      await fns.zugangEntfernen.run({ uid: konto.uid }, { auth: { uid: 'chefAlpha' } });
+
+      pruefe('Zugang entfernen: das Profil ist weg',
+        !(await db.doc('users/' + konto.uid).get()).exists);
+
+      let nochDa = true;
+      try { await auth.getUserByEmail(mail); } catch (e) { nochDa = false; }
+      pruefe('Zugang entfernen: das ANMELDEKONTO ist auch weg — das war der Fehler',
+        nochDa === false, 'die Adresse waere weiter belegt');
+
+      /* Der eigentliche Beweis: dieselbe Adresse noch einmal benutzen. */
+      let wieder = null;
+      try { wieder = await auth.createUser({ email: mail, password: 'geheim456' }); }
+      catch (e) { wieder = null; }
+      pruefe('Zugang entfernen: dieselbe E-Mail laesst sich wieder verwenden', !!wieder);
+      if (wieder) await auth.deleteUser(wieder.uid);
+
+      /* ── Gegenproben. Ohne sie waere „loescht Konten" auch dann gruen,
+         wenn es JEDES Konto loescht, egal von wem und aus welcher Firma. ── */
+      const fremd = await auth.createUser({
+        email: 'fremd-' + Date.now() + '@beispiel.test', password: 'geheim123' });
+      await db.doc('users/' + fremd.uid).set({ name: 'Bei Beta', role: 'mitarbeiter',
+        firma: 'beta' });
+      let abgewiesen = false;
+      try { await fns.zugangEntfernen.run({ uid: fremd.uid }, { auth: { uid: 'chefAlpha' } }); }
+      catch (e) { abgewiesen = true; }
+      pruefe('GEGENPROBE Chef von Alpha entfernt KEINEN Zugang bei Beta', abgewiesen);
+      pruefe('GEGENPROBE dessen Profil steht noch',
+        (await db.doc('users/' + fremd.uid).get()).exists);
+      await auth.deleteUser(fremd.uid);
+
+      await db.doc('users/mitAlpha').set({ name: 'Mitarbeiter', role: 'mitarbeiter',
+        firma: 'alpha' });
+      let alsMit = false;
+      try { await fns.zugangEntfernen.run({ uid: 'chefAlpha' }, { auth: { uid: 'mitAlpha' } }); }
+      catch (e) { alsMit = true; }
+      pruefe('GEGENPROBE ein Mitarbeiter entfernt gar nichts', alsMit);
+
+      let selbst = false;
+      try { await fns.zugangEntfernen.run({ uid: 'chefAlpha' }, { auth: { uid: 'chefAlpha' } }); }
+      catch (e) { selbst = true; }
+      pruefe('GEGENPROBE der Chef entfernt sich nicht selbst', selbst);
+
+      /* ══ Der ALTE Fall: ein Konto ohne Profil ══
+         Genau das hat die frühere Fassung hinterlassen. Diese Adressen
+         sind bis heute belegt, und die Person steht in keiner Liste —
+         es gab also keinen Weg, sie freizubekommen. */
+      const alt = 'verwaist-' + Date.now() + '@beispiel.test';
+      const waise = await auth.createUser({ email: alt, password: 'geheim123' });
+      // kein Profil: genau der zurueckgebliebene Zustand
+      await fns.adresseFreigeben.run({ email: alt }, { auth: { uid: 'chefAlpha' } });
+      let nochWaise = true;
+      try { await auth.getUserByEmail(alt); } catch (e) { nochWaise = false; }
+      pruefe('Adresse freigeben: das verwaiste Konto ist weg', nochWaise === false);
+
+      let neuMoeglich = null;
+      try { neuMoeglich = await auth.createUser({ email: alt, password: 'geheim456' }); }
+      catch (e) { neuMoeglich = null; }
+      pruefe('Adresse freigeben: die Adresse ist wieder benutzbar', !!neuMoeglich);
+      if (neuMoeglich) await auth.deleteUser(neuMoeglich.uid);
+
+      /* Gegenprobe: eine Adresse, hinter der noch eine AKTIVE Person
+         steht, darf so nicht verschwinden — dafuer gibt es die
+         Team-Liste mit Rückfrage. */
+      const aktivMail = 'aktiv-' + Date.now() + '@beispiel.test';
+      const aktiv = await auth.createUser({ email: aktivMail, password: 'geheim123' });
+      await db.doc('users/' + aktiv.uid).set({ name: 'Arbeitet noch',
+        role: 'mitarbeiter', firma: 'alpha' });
+      let geschuetzt = false;
+      try { await fns.adresseFreigeben.run({ email: aktivMail }, { auth: { uid: 'chefAlpha' } }); }
+      catch (e) { geschuetzt = true; }
+      pruefe('GEGENPROBE eine Adresse mit aktivem Zugang wird NICHT freigegeben', geschuetzt);
+      let stehtNoch = true;
+      try { await auth.getUserByEmail(aktivMail); } catch (e) { stehtNoch = false; }
+      pruefe('GEGENPROBE deren Anmeldekonto steht noch', stehtNoch);
+      await auth.deleteUser(aktiv.uid);
+      if (waise && waise.uid) { try { await auth.deleteUser(waise.uid); } catch (e) {} }
+    }
+
     let kennung = null, fehler = null;
     try {
       const r = await fns.firmaAnlegen.run(
