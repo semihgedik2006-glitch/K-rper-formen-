@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-olplvLKxdCqqR0aCW+4EreCP9yEshQTHdBxepLn+XMs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-0dLiVrrNuFg4WhaAVI15iAEqWD5r9CG+iTLrj3i4PIk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -136,6 +136,11 @@
   --s1:1px;--s2:2px;--s4:4px;--s6:6px;--s8:8px;--s10:10px;--s12:12px;
   --s16:16px;--s20:20px;--s24:24px;--s32:32px;--s40:40px;--s48:48px;
   --s56:56px;--s72:72px;
+  /* Der Seitenrand. EIN Wert — vorher gab es zwei, die sich um zwei
+     Pixel unterschieden (26 gegen 28). Genau daran sieht man, dass
+     etwas „verschoben" ist: die Leiste oben lag auf einem anderen
+     Raster als die Karten darunter. */
+  --rand:clamp(14px,4vw,28px);
   /* Apples Symbole sind keine Kreisbögen, sondern Superellipsen: die
      Rundung setzt früher an und läuft weicher aus. Browser, die das
      kennen, bekommen es; alle anderen die Rundung oben. Kein Risiko. */
@@ -424,33 +429,75 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .auth-tabs.sofort::before{transition:none}
 .auth-tab{position:relative;z-index:1;flex:1;min-height:44px;padding:var(--s8);
   border-radius:var(--r-pille);border:none;background:none;cursor:pointer;
-  font-family:var(--font-head);font-weight:700;font-size:var(--t-md);letter-spacing:var(--ls-s);
-  text-transform:uppercase;color:var(--text-3);
+  font-family:var(--font-head);font-weight:700;font-size:var(--t-sm);letter-spacing:var(--ls-s);
+  text-transform:uppercase;color:var(--text-3);white-space:nowrap;
   transition:color .25s,transform .3s var(--spring)}
 .auth-tab:active{transform:scale(.96)}
 .auth-tab.active{color:var(--text)}
-/* Role picker */
-.role-pick{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);margin-bottom:var(--s16)}
-.role-opt{border:1.5px solid var(--line-2);border-radius:var(--r-md);padding:var(--s12) var(--s10);text-align:center;
-  cursor:pointer;background:var(--auf-1)}
-.role-opt:hover{border-color:rgba(34,211,238,.35)}
-.role-opt.active{border-color:var(--accent);background:rgba(34,211,238,.1)}
-.role-opt .ico{width:36px;height:36px;margin:0 auto var(--s6);border-radius:var(--r-sm);display:grid;place-items:center;
-  background:rgba(0,184,92,.14);color:var(--accent-d)}
-.role-opt .ico svg{width:19px;height:19px}
-.role-opt b{display:block;font-family:var(--font-head);font-size:var(--t-md)}
-.role-opt span{font-size:var(--t-xs);color:var(--text-2)}
+/* Eine Ansage, kein Bedienelement: sie sieht bewusst nicht anklickbar aus. */
+.auth-notiz{display:flex;align-items:flex-start;gap:var(--s8);margin-bottom:var(--s16);
+  padding:var(--s10) var(--s12);border-radius:var(--r-sm);background:var(--auf-1);
+  font-size:var(--t-xs);line-height:var(--lh);color:var(--text-2)}
+.auth-notiz b{color:var(--text)}
+.auth-notiz svg{width:16px;height:16px;flex-shrink:0;margin-top:var(--s2);color:var(--accent-d)}
 .auth-err{color:var(--danger-tx);font-size:var(--t-sm);margin-bottom:var(--s10);min-height:1.1em}
 .auth-foot{text-align:center;margin-top:var(--s12);font-size:var(--t-sm);color:var(--text-3)}
 .auth-foot a{color:var(--accent-d);cursor:pointer}
+
+/* ── „Noch kein Zugang?" ──
+   Zwei Wege statt einer Sackgasse. Der obere ist eine Auskunft, der
+   untere ein Knopf — und man sieht den Unterschied, ohne zu tippen:
+   nur der Knopf hat einen Winkel, hebt sich beim Zeigen und liegt auf
+   einer Farbfläche. */
+.zugang{margin-top:var(--s20);padding-top:var(--s20);border-top:1px solid var(--line)}
+.zugang-frage{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+  text-transform:uppercase;letter-spacing:var(--ls-eng);margin-bottom:var(--s12)}
+.zugang-weg{display:flex;align-items:flex-start;gap:var(--s10);width:100%;text-align:left;
+  padding:var(--s12);border-radius:var(--r-md);border:none;background:var(--auf-1);
+  font-family:inherit;color:inherit}
+.zugang-weg + .zugang-weg{margin-top:var(--s8)}
+.zugang-weg b{display:block;font-size:var(--t-sm);color:var(--text);margin-bottom:var(--s2)}
+.zugang-weg span:not(.zugang-ico):not(.zugang-pfeil){display:block;font-size:var(--t-xs);
+  line-height:var(--lh);color:var(--text-2)}
+.zugang-ico{flex-shrink:0;width:28px;height:28px;border-radius:var(--r-xs);display:grid;
+  place-items:center;background:var(--auf-2);color:var(--text-2)}
+.zugang-ico svg{width:15px;height:15px}
+/* Der zweite Weg ist ein Angebot, kein Hinweis. Er darf werben. */
+.zugang-cta{cursor:pointer;background:linear-gradient(135deg,var(--f-ok),var(--auf-1));
+  align-items:center;transition:transform .28s var(--ease-out),box-shadow .28s var(--ease-out)}
+.zugang-cta .zugang-ico{background:var(--accent);color:var(--on-accent)}
+.zugang-cta:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+.zugang-cta:active{transform:scale(.985)}
+.zugang-cta:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px}
+.zugang-pfeil{flex-shrink:0;width:7px;height:7px;margin-left:auto;
+  border-top:2px solid var(--accent-d);border-right:2px solid var(--accent-d);
+  transform:rotate(45deg)}
+
+/* Das Angebot-Fenster. Einziger Ort in der App, der wirbt — deshalb darf
+   er als Einziger einen grossen Titel und einen Farbverlauf tragen. */
+.zm-auge{font-size:var(--t-2xs);font-weight:800;text-transform:uppercase;
+  letter-spacing:var(--ls-l);color:var(--accent-d);margin-bottom:var(--s6)}
+.zm-titel{font-size:var(--t-2xl);line-height:var(--lh-eng);letter-spacing:var(--ls-eng);
+  text-transform:none;margin-bottom:var(--s10)}
+.zm-sub{font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2);margin-bottom:var(--s20)}
+.zm-liste{display:flex;flex-direction:column;gap:var(--s12);margin-bottom:var(--s20)}
+.zm-liste li{display:grid;grid-template-columns:26px 1fr;gap:var(--s10);align-items:start}
+.zm-liste svg{width:17px;height:17px;color:var(--accent-d);margin-top:var(--s2)}
+.zm-liste b{font-size:var(--t-sm);display:block}
+.zm-liste span{grid-column:2;font-size:var(--t-xs);line-height:var(--lh);color:var(--text-2)}
+.zm-beweis{padding:var(--s12);border-radius:var(--r-sm);background:var(--f-ok);
+  font-size:var(--t-sm);line-height:var(--lh);color:var(--text);margin-bottom:var(--s16)}
+.zm-klein{margin-top:var(--s12);font-size:var(--t-2xs);line-height:var(--lh);color:var(--text-3)}
+.zm-fehlt{padding:var(--s12);border-radius:var(--r-sm);background:var(--f-warn);
+  font-size:var(--t-xs);line-height:var(--lh);color:var(--warm-tx)}
 
 /* ── App Shell ── */
 .app{display:none;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 .app.show{display:flex}
 .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
   gap:var(--s12);
-  padding:calc(var(--s12) + var(--sat)) calc(clamp(14px,4vw,26px) + var(--sar))
-          var(--s12) calc(clamp(14px,4vw,26px) + var(--sal));
+  padding:calc(var(--s12) + var(--sat)) calc(var(--rand) + var(--sar))
+          var(--s12) calc(var(--rand) + var(--sal));
   background:rgba(18,19,28,.93);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--line)}
 .tb-brand{display:flex;align-items:center;gap:var(--s8);font-family:var(--font-head);font-weight:800;
@@ -488,7 +535,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
 .view.show{display:flex}
-.view-head{padding:var(--s16) clamp(14px,4vw,28px) var(--s10);flex-shrink:0;position:relative}
+.view-head{padding:var(--s16) var(--rand) var(--s10);flex-shrink:0;position:relative}
 .view-head h2{font-size:var(--t-2xl)}
 .view-head p{color:var(--text-2);font-size:var(--t-sm);margin-top:var(--s2)}
 /* Anlegen-Knopf im Seitenkopf, rechts neben der Überschrift.
@@ -526,8 +573,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* Filterleiste bleibt beim Scrollen oben kleben */
 .sticky-tools{position:sticky;top:0;z-index:6;
-  padding-top:var(--s6);margin:0 calc(clamp(14px,4vw,28px) * -1);
-  padding-left:clamp(14px,4vw,28px);padding-right:clamp(14px,4vw,28px);
+  padding-top:var(--s6);margin:0 calc(var(--rand) * -1);
+  padding-left:var(--rand);padding-right:var(--rand);
   background:var(--bg);transition:box-shadow .3s var(--ease-ios)}
 .sticky-tools.stuck{box-shadow:var(--e2)}
 
@@ -539,7 +586,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
    Die 44 Pixel Fingerziel bleiben — sie sind nur unsichtbar. */
 .chat-channels{position:relative;display:flex;gap:var(--s2);
-  padding:var(--s6) clamp(14px,4vw,28px) var(--s10);
+  padding:var(--s6) var(--rand) var(--s10);
   overflow-x:auto;flex-shrink:0;flex-wrap:nowrap;scrollbar-width:none}
 .chat-channels::-webkit-scrollbar{height:0}
 /* Der gleitende Marker. Eine einzige Fläche für die ganze Reihe: sie
@@ -562,7 +609,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .chan:hover{color:var(--text-2)}
 /* Aktiv: nur die Schrift. Die Fläche liefert der gleitende Marker. */
 .chan.active{background:none;color:var(--accent-d);font-weight:700}
-.chat-scroll{flex:1;overflow-y:auto;padding:var(--s8) clamp(14px,4vw,28px);display:flex;flex-direction:column;gap:var(--s8)}
+.chat-scroll{flex:1;overflow-y:auto;padding:var(--s8) var(--rand);display:flex;flex-direction:column;gap:var(--s8)}
 .msg{max-width:80%;padding:var(--s10) var(--s12);border-radius:var(--r-md);background:var(--bg-2);border:1px solid var(--line);
   align-self:flex-start;word-break:break-word}
 .msg.mine{align-self:flex-end;background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.22)}
@@ -581,7 +628,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .msg .body{font-size:var(--t-md);color:var(--text);white-space:pre-wrap}
 .chat-empty{margin:auto;text-align:center;color:var(--text-3);padding:var(--s40)}
 .chat-input{display:flex;gap:var(--s8);
-  padding:var(--s10) calc(clamp(14px,4vw,28px) + var(--sar)) calc(var(--s12) + var(--sab)) calc(clamp(14px,4vw,28px) + var(--sal));
+  padding:var(--s10) calc(var(--rand) + var(--sar)) calc(var(--s12) + var(--sab)) calc(var(--rand) + var(--sal));
   border-top:1px solid var(--line);background:var(--bg-soft);flex-shrink:0}
 /* Höher als vier Zeilen darf das Feld nicht werden – sonst schiebt ein
    langer Text den Verlauf auf zwei Nachrichten zusammen. */
@@ -589,7 +636,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Vorschläge beim Tippen von „@" ── */
 .at-list{display:none;flex-direction:column;gap:var(--s2);flex-shrink:0;
-  margin:0 clamp(14px,4vw,28px) var(--s6);padding:var(--s4);max-height:212px;overflow-y:auto;
+  margin:0 var(--rand) var(--s6);padding:var(--s4);max-height:212px;overflow-y:auto;
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-md);
   box-shadow:var(--e1-oben)}
 .at-list.show{display:flex}
@@ -603,7 +650,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .at-ro{flex-shrink:0;font-size:var(--t-2xs);color:var(--text-3)}
 
 /* ── Todos ── */
-.scroll-area{flex:1;overflow-y:auto;padding:0 clamp(14px,4vw,28px) var(--s24)}
+.scroll-area{flex:1;overflow-y:auto;padding:0 var(--rand) var(--s24)}
 .todo-progress{display:flex;align-items:center;gap:var(--s12);margin:var(--s2) 0 var(--s12);padding:var(--s10) var(--s12);
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
 .pbar{flex:1;height:9px;border-radius:var(--r-pille);background:var(--auf-2);overflow:hidden}
@@ -748,7 +795,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Hinweis: E-Mail bestätigen ── */
 .mail-leiste{display:flex;align-items:center;gap:var(--s10);flex-shrink:0;
-  padding:var(--s10) clamp(14px,4vw,28px);padding-top:calc(9px + var(--sat));
+  padding:var(--s10) var(--rand);padding-top:calc(9px + var(--sat));
   background:var(--f-warn);border-bottom:1px solid var(--k-warn);
   font-size:var(--t-sm);min-height:48px;animation:pinIn .35s var(--ease-ios)}
 .ml-ico{flex-shrink:0}
@@ -916,8 +963,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .dash-bday-row{display:flex;justify-content:space-between;gap:var(--s10);padding:var(--s4) 0;font-size:var(--t-sm)}
 .dash-bday-row span{color:var(--text-2);font-size:var(--t-sm);white-space:nowrap}
 /* Suche */
+/* Oben so viel Luft, dass das Feld UNTER der Leiste steht statt sieben
+   Pixel in sie hinein — sonst verdeckt es genau den Knopf, mit dem man
+   es aufgemacht hat. Seitlich derselbe Rand wie die Karten darunter. */
 #searchOverlay{position:fixed;inset:0;z-index:200;display:none;justify-content:center;align-items:flex-start;
-  padding:var(--s56) var(--s16);background:rgba(6,10,7,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  padding:calc(var(--s72) + var(--sat)) var(--rand) var(--s24);
+  background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 #searchOverlay.show{display:flex}
 .search-box{width:100%;max-width:560px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-lg);
   box-shadow:var(--e3);overflow:hidden;max-height:78vh;display:flex;flex-direction:column}
@@ -936,7 +987,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .search-empty{padding:var(--s24);text-align:center;color:var(--text-3);font-size:var(--t-sm)}
 /* Direktnachrichten */
 #dmConvo{flex:1;min-height:0;flex-direction:column}
-.dm-head{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) clamp(14px,4vw,28px);
+.dm-head{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--rand);
   border-bottom:1px solid var(--line);flex-shrink:0}
 .dm-head b{font-family:var(--font-head);font-size:var(--t-lg)}
 .dm-person{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-sm);cursor:pointer}
@@ -972,11 +1023,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -1118,7 +1169,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .attach-btn svg{width:20px;height:20px}
 .hidden-file{display:none}
 /* Vorschau eines ausgewählten Bildes vor dem Senden */
-.img-preview{display:none;align-items:center;gap:var(--s10);padding:var(--s8) clamp(14px,4vw,28px);
+.img-preview{display:none;align-items:center;gap:var(--s10);padding:var(--s8) var(--rand);
   background:var(--bg-soft);border-top:1px solid var(--line)}
 .img-preview.show{display:flex}
 .img-preview img{height:54px;width:54px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line-2)}
@@ -1135,13 +1186,32 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background:rgba(0,0,0,.9);padding:var(--s20);cursor:zoom-out}
 #lightbox.show{display:flex}
 #lightbox img{max-width:100%;max-height:100%;border-radius:var(--r-xs)}
-#lightbox .lb-close{position:absolute;top:16px;right:18px;width:42px;height:42px;border-radius:var(--r-rund);
-  background:rgba(255,255,255,.12);border:none;color:#fff;font-size:var(--t-xl);cursor:pointer}
+/* Der Schliessen-Knopf jedes Fensters.
+   Die Regel hiess frueher `#lightbox .lb-close` — gestylt war damit nur
+   der eine im Bildbetrachter. Die NEUN anderen Fenster trugen dieselbe
+   Klasse und bekamen den Standardknopf des Browsers: grau, mit
+   schwarzem Rahmen, gemessene 18×20 Pixel. Das ist nicht nur haesslich,
+   das ist unter jedem Daumen. */
+.lb-close{width:40px;height:40px;border-radius:var(--r-sm);display:grid;place-items:center;
+  background:var(--auf-1);border:none;color:var(--text-2);cursor:pointer;
+  transition:background .2s,color .2s,transform .25s var(--ease-out)}
+.lb-close svg{width:18px;height:18px}
+.lb-close:hover{background:var(--auf-2);color:var(--text)}
+.lb-close:active{transform:scale(.9)}
+.lb-close:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px}
+/* 40 statt 44 Pixel, weil ein Fenster oben rechts nicht mehr hergibt —
+   die fehlenden vier holt eine unsichtbare Flaeche, wie bei .mini-link. */
+.lb-close{position:relative}
+.lb-close::after{content:'';position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);width:44px;height:44px}
+#lightbox .lb-close{position:absolute;top:16px;right:18px;width:42px;height:42px;
+  border-radius:var(--r-rund);background:rgba(255,255,255,.14);color:#fff}
+#lightbox .lb-close:hover{background:rgba(255,255,255,.24)}
 
 /* ── Benachrichtigungs-Banner ── */
 /* Einzeilig und schmal: Der Hinweis stand vorher fünf Zeilen hoch mitten im
    Chat und nahm dem Verlauf 200 Pixel – für einen Satz, den man einmal liest. */
-.notif-banner{display:none;align-items:center;gap:var(--s10);margin:var(--s6) clamp(14px,4vw,28px) var(--s6);
+.notif-banner{display:none;align-items:center;gap:var(--s10);margin:var(--s6) var(--rand) var(--s6);
   padding:var(--s6) var(--s12);background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:var(--r-sm)}
 .notif-banner.show{display:flex}
 .notif-banner svg{width:18px;height:18px;color:var(--accent-d);flex-shrink:0}
@@ -1155,7 +1225,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* ── Studio-Mehrfachauswahl (Registrierung) ── */
 .studio-checks{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);max-height:220px;overflow-y:auto;
-  padding:var(--s4);margin-bottom:var(--s4)}
+  padding:var(--s4);margin-bottom:var(--s4);
+  /* Weicher Auslauf statt Schnittkante. Vorher endete die letzte Reihe
+     waagerecht mittendrin und sah kaputt aus statt scrollbar. */
+  -webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 28px),transparent);
+  mask-image:linear-gradient(180deg,#000 calc(100% - 28px),transparent)}
+.studio-checks:not(.mehr-da){-webkit-mask-image:none;mask-image:none}
 .studio-check{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s10);border:1.5px solid var(--line-2);
   border-radius:var(--r-sm);cursor:pointer;font-size:var(--t-sm);background:var(--auf-1);
   user-select:none}
@@ -1462,7 +1537,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .home-grid > .home-tile:nth-child(n+5){animation-delay:.23s}
 
 /* Druck-Feedback: kurz eindrücken, weich zurückfedern */
-.btn,.icon-btn,.tab,.chan,.studio-check,.role-opt,.mobnav button,.wk-btns .btn{
+.btn,.icon-btn,.tab,.chan,.studio-check,.mobnav button,.wk-btns .btn{
   transition:transform .32s var(--spring),background .25s var(--ease-ios),
              color .25s var(--ease-ios),border-color .25s var(--ease-ios),
              box-shadow .32s var(--ease-ios),opacity .2s}
@@ -1471,7 +1546,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    sonst wirkt es wackelig. */
 .btn:active{transform:scale(.94)}
 .icon-btn:active,.chan:active,.tab:active,.mobnav button:active{transform:scale(.88)}
-.studio-check:active,.role-opt:active,.card[data-go]:active,
+.studio-check:active,.card[data-go]:active,
 .chef-go:active,.doc:active,.dev-item:active{transform:scale(.965)}
 .btn-primary:hover{transform:translateY(-2px)}
 
@@ -1481,13 +1556,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
 /* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
-#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#ownTodoModal.show .pm-box,#probeModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
+#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#ownTodoModal.show .pm-box,#probeModal.show .pm-box,#zugangModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
   animation:sheetIn .46s var(--spring)}
 @keyframes sheetIn{
   from{opacity:0;transform:scale(.94) translateY(12px)}
   to{opacity:1;transform:none}
 }
-#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
+#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
 @keyframes fadeBlur{from{opacity:0}to{opacity:1}}
 
 /* ── Menüs auf dem Handy: von unten hereinfahren ──
@@ -1495,8 +1570,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    der Daumen kommt nicht hin. Deshalb werden Menüs unter 620 px zu Blättern,
    die von unten hereinfahren; oben ein Griff, wie man es von iOS kennt. */
 @media (max-width:620px){
-  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal{align-items:flex-end;padding:0}
-  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box,#ownTodoModal .pm-box,#probeModal .pm-box{
+  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal{align-items:flex-end;padding:0}
+  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box,#ownTodoModal .pm-box,#probeModal .pm-box,#zugangModal .pm-box{
     max-width:none;border-radius:var(--radius) var(--radius) 0 0;border-bottom:none;
     padding:var(--s20) var(--s20) calc(var(--s24) + var(--sab));max-height:90vh}
   #profileModal.show .pm-box,#personModal.show .pm-box{
@@ -1694,7 +1769,7 @@ body.light{--dot:rgba(20,10,40,.06)}
 .msg.mentioned{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 
 /* Antwort-/Bearbeiten-Leiste über dem Eingabefeld */
-.compose-bar{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) clamp(14px,4vw,28px);
+.compose-bar{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--rand);
   background:var(--bg-soft);border-top:1px solid var(--line);animation:cardUp .3s var(--ease-ios)}
 .compose-bar .cb-info{flex:1;min-width:0;font-size:var(--t-xs)}
 .compose-bar .cb-info b{display:block;color:var(--accent);font-size:var(--t-2xs)}
@@ -1747,7 +1822,7 @@ html{font-size:var(--fs,100%)}
    Ein Marker gleitet zum aktiven Reiter, statt dass die Füllung
    springt: man sieht, wohin man gegangen ist, nicht nur, wo man
    angekommen ist. Gleiches Muster wie die Kanalreihe im Chat. */
-.subnav{position:relative;display:flex;gap:var(--s4);padding:var(--s8) clamp(14px,4vw,28px) 0;
+.subnav{position:relative;display:flex;gap:var(--s4);padding:var(--s8) var(--rand) 0;
   flex-shrink:0;overflow-x:auto;scrollbar-width:none}
 .subnav::-webkit-scrollbar{display:none}
 .subnav::before{content:'';position:absolute;left:0;top:0;
@@ -2355,8 +2430,13 @@ html{font-size:var(--fs,100%)}
 .mat-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:var(--t-lg);
   border-radius:var(--r-xs);height:34px}
 .mat-del:hover{color:var(--danger-tx);background:var(--f-bad)}
-.mat-add{display:flex;gap:var(--s8);margin-top:var(--s12)}
-.mat-add input{flex:1}
+/* Der Knopf ist breit („+ Hinzufügen"), das Feld daneben blieb bei
+   320 px Bildschirm 70 Pixel schmal — der Platzhalter passte nie.
+   Unter 380 px rutscht der Knopf deshalb in die zweite Zeile. */
+.mat-add{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s12)}
+.mat-add input{flex:1 1 200px;min-width:0}
+.mat-add .btn{flex:0 0 auto}
+@media(max-width:380px){.mat-add .btn{flex:1 1 100%}}
 .mat-saved{font-size:var(--t-xs);color:var(--accent-d);min-height:1.1em;margin-top:var(--s10);transition:opacity .3s}
 /* „Wo etwas defekt ist" – dieselbe Sprache wie „Wo etwas los ist" auf der
    Startseite: Studio, Zahl, ein Tipp führt hin. */
@@ -2531,7 +2611,30 @@ html{font-size:var(--fs,100%)}
       <p class="auth-err" id="loginErr"></p>
       <button class="btn btn-primary" id="loginBtn" style="width:100%">Anmelden</button>
       <div class="auth-foot"><a id="forgotLink">Passwort vergessen?</a></div>
-      <p class="auth-foot" id="authKeinZugang" style="margin-top:14px;line-height:1.5">Noch keinen Zugang?<br/>Dein <b style="color:var(--text-2)">Chef</b> legt dein Konto an.</p>
+      <!-- Der erste Bildschirm, den jeder sieht — auch jemand, der noch
+           gar nicht dazugehört. Vorher stand hier eine Sackgasse:
+           „Dein Chef legt dein Konto an", mit „Chef" fett und in
+           Textfarbe, also aussehend wie ein Knopf, der keiner war.
+           Jetzt zwei Wege, und beide führen wirklich irgendwohin. -->
+      <div class="zugang" id="authKeinZugang">
+        <p class="zugang-frage">Noch kein Zugang?</p>
+        <div class="zugang-weg" id="zugangTeam">
+          <span class="zugang-ico" data-ikon="leute"></span>
+          <div>
+            <b>Ich arbeite in einem Studio</b>
+            <span>Deine Leitung legt den Zugang an — frag kurz nach,
+              es dauert eine Minute.</span>
+          </div>
+        </div>
+        <button type="button" class="zugang-weg zugang-cta" id="zugangChef">
+          <span class="zugang-ico" data-ikon="gebaeude"></span>
+          <div>
+            <b>Ich führe ein Studio</b>
+            <span>StudioChat für deinen Betrieb — ansehen und vormerken.</span>
+          </div>
+          <span class="zugang-pfeil" aria-hidden="true"></span>
+        </button>
+      </div>
       <p class="auth-foot" style="margin-top:18px">
         <a class="recht-link" data-rechtauf="impressum">Impressum</a>
         <span aria-hidden="true"> · </span>
@@ -2541,16 +2644,16 @@ html{font-size:var(--fs,100%)}
 
     <!-- REGISTER -->
     <div id="registerForm" style="display:none">
-      <div class="role-pick" id="rolePick">
-        <div class="role-opt active" data-role="mitarbeiter">
-          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
-          <b>Mitarbeiter</b><span>Studio-Team</span>
-        </div>
-        <div class="role-opt" data-role="chef">
-          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/></svg></div>
-          <b>Chef</b><span>Leitung</span>
-        </div>
-      </div>
+      <!-- Hier stand eine Wahl zwischen „Mitarbeiter" und „Chef". Sie war
+           keine: doRegister legt IMMER einen Mitarbeiter an, und
+           firestore.rules erzwingt das — sonst könnte sich jeder mit dem
+           Firmencode selbst zum Chef machen. Der Kasten war anklickbar,
+           hatte aber nie einen Zuhörer; er sah aus wie ein Knopf und war
+           keiner. Eine Wahl anzubieten, die es nicht gibt, ist schlimmer
+           als gar keine. -->
+      <p class="auth-notiz" data-ikon="person">Du legst einen
+        <b>Mitarbeiter-Zugang</b> an. Zugänge für die Leitung vergibt der
+        Chef in der App.</p>
       <div class="field"><label for="rgName">Dein Name</label>
         <input class="inp" id="rgName" type="text" placeholder="Vor- und Nachname" autocomplete="name" maxlength="50" /></div>
       <div class="field" id="rgStudioWrap"><label>Deine Studios (mehrere möglich)</label>
@@ -2567,7 +2670,7 @@ html{font-size:var(--fs,100%)}
       </div>
       <div class="field" id="rgCodeWrap" style="display:none">
         <label for="rgCode">Firmencode</label>
-        <input class="inp" id="rgCode" type="text" placeholder="Bekommst du von der Leitung"
+        <input class="inp" id="rgCode" type="text" placeholder="Von der Leitung"
                autocomplete="off" maxlength="60" />
       </div>
       <p class="auth-err" id="regErr"></p>
@@ -2730,7 +2833,7 @@ html{font-size:var(--fs,100%)}
           <button class="attach-btn" id="chatMic" aria-label="Sprachnachricht aufnehmen" title="Sprachnachricht aufnehmen">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/><path d="M8 22h8"/></svg>
           </button>
-          <textarea class="inp" id="chatText" rows="1" placeholder="Nachricht …"
+          <textarea class="inp" id="chatText" rows="1" placeholder="Nachricht"
             title="Enter sendet, Shift+Enter macht eine neue Zeile. @ erwähnt jemanden." maxlength="2000"></textarea>
           <button class="btn btn-primary btn-sm" id="chatSend" aria-label="Senden">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
@@ -2758,7 +2861,7 @@ html{font-size:var(--fs,100%)}
             <div class="todo-tools">
               <div class="todo-search">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input id="todoSearch" type="search" placeholder="Aufgabe suchen …" autocomplete="off" />
+                <input id="todoSearch" type="search" placeholder="Suchen …" autocomplete="off" />
               </div>
               <span class="todo-count" id="todoCount"></span>
             </div>
@@ -2864,7 +2967,7 @@ html{font-size:var(--fs,100%)}
             <div class="mat-head" id="matHead"><span>Material</span><span>Soll</span><span>Ist</span><span>Fehlt</span><span></span></div>
             <div class="mat-table" id="matTable"></div>
             <div class="mat-add">
-              <input class="inp" id="matNewName" type="text" placeholder="Eigenes Material hinzufügen …" maxlength="60" />
+              <input class="inp" id="matNewName" type="text" placeholder="Eigenes Material …" maxlength="60" />
               <button class="btn btn-ghost btn-sm" id="matAdd">+ Hinzufügen</button>
             </div>
             <p class="mat-saved" id="matSaved"></p>
@@ -2874,7 +2977,7 @@ html{font-size:var(--fs,100%)}
 
       <!-- PUTZPLAN -->
       <section class="view" id="view-putzplan">
-        <div class="view-head shrink"><h2>Putzplan</h2><p>Aufgabe erledigt? Einfach antippen – Name und Uhrzeit werden automatisch vermerkt.</p></div>
+        <div class="view-head shrink"><h2>Putzplan</h2><p>Antippen hakt ab — mit Name und Uhrzeit.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <div class="mat-bar">
             <select class="inp" id="ppStudio"></select>
@@ -2890,7 +2993,7 @@ html{font-size:var(--fs,100%)}
             <div class="pp-wer" id="ppWerZeile">
               <label for="ppKuerzel">Wer hakt ab?</label>
               <input class="inp" id="ppKuerzel" type="text" maxlength="20"
-                     autocomplete="off" placeholder="z. B. AB oder Anna" />
+                     autocomplete="off" placeholder="z. B. AB" />
               <span class="hint" id="ppWerHint"></span>
             </div>
             <div id="ppList" style="margin-top:8px"></div>
@@ -2901,7 +3004,7 @@ html{font-size:var(--fs,100%)}
             <h3 data-ikon="blatt">Notizen</h3>
             <p class="hint">Platz für Hinweise vom Team, z. B. „Wischmopp ist kaputt".</p>
             <div class="mat-add">
-              <input class="inp" id="ppNoteInput" type="text" placeholder="Notiz schreiben …" maxlength="300" />
+              <input class="inp" id="ppNoteInput" type="text" placeholder="Notiz …" maxlength="300" />
               <button class="btn btn-ghost btn-sm" id="ppNoteAdd">+ Notiz</button>
             </div>
             <div id="ppNotes" style="margin-top:12px"></div>
@@ -3024,7 +3127,7 @@ html{font-size:var(--fs,100%)}
                 <div class="field"><label for="shTo">Bis</label><input class="inp" id="shTo" type="time" value="17:00" /></div>
               </div>
               <div class="field"><label for="shNote">Notiz (optional)</label>
-                <input class="inp" id="shNote" type="text" maxlength="80" placeholder="z. B. Einweisung neuer Kunde" /></div>
+                <input class="inp" id="shNote" type="text" maxlength="80" placeholder="z. B. Einweisung" /></div>
               <button class="btn btn-primary btn-sm" id="shAdd">Schicht speichern</button>
             </div>
           </div>
@@ -3150,7 +3253,7 @@ html{font-size:var(--fs,100%)}
             <button class="attach-btn" id="dmMic" aria-label="Sprachnachricht aufnehmen" title="Sprachnachricht aufnehmen">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/><path d="M8 22h8"/></svg>
             </button>
-            <textarea class="inp" id="dmText" rows="1" placeholder="Nachricht …" maxlength="2000"></textarea>
+            <textarea class="inp" id="dmText" rows="1" placeholder="Nachricht" maxlength="2000"></textarea>
             <button class="btn btn-primary btn-sm" id="dmSend" aria-label="Senden">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
             </button>
@@ -3788,7 +3891,7 @@ html{font-size:var(--fs,100%)}
   <div class="search-box">
     <div class="search-bar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="searchInput" type="search" placeholder="Suchen: Aufgaben, Dokumente, Infos, Chat …" autocomplete="off" />
+      <input id="searchInput" type="search" placeholder="Suchen …" autocomplete="off" />
       <button id="searchClose" aria-label="Schließen"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div id="searchResults"></div>
@@ -3917,7 +4020,7 @@ html{font-size:var(--fs,100%)}
      das ist Sache der Verwaltung, und die Regeln erzwingen es. -->
 <div id="ownTodoModal">
   <div class="pm-box">
-    <button class="lb-close" id="otClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"></button>
+    <button class="lb-close" id="otClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <h3 data-ikon="plus">Eigene Aufgabe</h3>
     <p class="hint" id="otWo"></p>
     <div class="field"><label for="otTitle">Was ist zu tun?</label>
@@ -3940,7 +4043,7 @@ html{font-size:var(--fs,100%)}
      in einer App, in der sie nichts zu suchen haben. -->
 <div id="probeModal">
   <div class="pm-box">
-    <button class="lb-close" id="pbClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"></button>
+    <button class="lb-close" id="pbClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <h3 data-ikon="hantel">Probetraining eintragen</h3>
     <p class="hint">Kein Name, keine Kontaktdaten – nur, was für die Quote zählt.</p>
     <div class="field"><label for="pbWer">Wer hat es gemacht?</label>
@@ -4032,6 +4135,46 @@ html{font-size:var(--fs,100%)}
 </div>
 
 <!-- Gerät: Verlauf ansehen und Defekt melden -->
+<!-- ── „Ich führe ein Studio" ──
+     Das hier ist Werbung, und zwar auf dem Bildschirm, den jeder als
+     Erstes sieht. Zwei Regeln dafür:
+     1. Keine Preise. Die Zahlen in docs/ABO-PLAN.md sind ausdrücklich
+        Platzhalter („Ich kenne euren Markt nicht"). Eine Zahl hier wäre
+        eine Zusage, die der Betrieb nie gemacht hat.
+     2. Kein Kaufknopf, solange es keine Kasse gibt. Stripe steht in
+        ABO-PLAN.md als Stufe C und wartet auf den Steuerberater. Ein
+        Knopf, der nach Bezahlen aussieht und keins ist, kostet mehr
+        Vertrauen als er einbringt. -->
+<div id="zugangModal">
+  <div class="pm-box">
+    <button class="lb-close" id="zugangClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+
+    <p class="zm-auge">Für Studio-Betreiber</p>
+    <h3 class="zm-titel">Schluss mit WhatsApp<br/>und Zetteln am Tresen</h3>
+    <p class="zm-sub">StudioChat ist das Team-Portal für EMS-Studios.
+      Alles, was im Betrieb täglich anfällt — an einem Ort, auf jedem Handy.</p>
+
+    <ul class="zm-liste">
+      <li data-ikon="hakenKreis"><b>Aufgaben und Putzplan</b>
+        <span>Wer hat was gemacht, und was blieb liegen — je Studio, mit Grund.</span></li>
+      <li data-ikon="paket"><b>Material und Geräte</b>
+        <span>Was fehlt, rechnet die App selbst aus. Defekte melden statt zurufen.</span></li>
+      <li data-ikon="leute"><b>Schichten, Abwesenheiten, Nachweise</b>
+        <span>Erste Hilfe und Lizenzen melden sich, bevor sie ablaufen.</span></li>
+      <li data-ikon="trendAuf"><b>Der Chef sieht alle Studios auf einem Blatt</b>
+        <span>Und bekommt eine Mail, sobald ein Studio fertig ist.</span></li>
+    </ul>
+
+    <p class="zm-beweis"><b>Wir benutzen es selbst</b> — jeden Tag, in
+      vierzehn Studios.</p>
+
+    <div id="zugangAktion"></div>
+
+    <p class="zm-klein">Neue Betriebe richten wir zurzeit persönlich ein.
+      Die Selbstbedienung mit Abrechnung kommt danach.</p>
+  </div>
+</div>
+
 <div id="aboModal">
   <div class="pm-box">
     <button class="lb-close" id="aboClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -6687,12 +6830,36 @@ function typingSomewhere(){
   var tag=(el.tagName||'').toLowerCase();
   return tag==='input' || tag==='textarea' || tag==='select' || el.isContentEditable;
 }
+/* Auch diese Frage stellt sich aus DIALOGE, nicht aus einer eigenen
+   Liste. Sie war die dritte — und die, an der es haengen blieb: Escape
+   und die Zurueck-Geste fragen zuerst hier nach, ob ueberhaupt ein
+   Fenster offen ist. Stand es nicht in dieser Liste, war es fuer beide
+   gar nicht da. Der Bildbetrachter kommt dazu; er ist kein Dialog, aber
+   er faengt die Zurueck-Geste genauso ab. */
 function anyModalOpen(){
-  return ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','rechtModal','searchOverlay','lightbox','msgSheet','todoSheet','docSheet']
+  return DIALOGE.concat(['lightbox'])
     .some(function(id){ var e=$(id); return e && e.classList.contains('show'); });
 }
+/* ── Welche Fenster es gibt ──
+   EINE Liste. Es waren zwei, und der Kommentar bei DIALOGE versprach,
+   sie seien dieselbe — sie waren es nicht mehr:
+
+     aboModal      fehlte in closeAllModals
+     ownTodoModal  fehlte in beiden
+     probeModal    fehlte in beiden
+
+   Folge: Escape schloss diese Fenster nicht, und die Zurück-Geste am
+   Handy auch nicht. Man kam nur ueber das Kreuz wieder heraus. Zwei
+   Listen laufen immer auseinander; deshalb steht sie jetzt einmal da
+   und beide holen sie sich von hier. */
+var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModal',
+               'aboModal','zugangModal','ownTodoModal','probeModal',
+               'fwdModal','keysModal','rechtModal','searchOverlay',
+               'msgSheet','todoSheet','docSheet'];
+
 function closeAllModals(){
-  ['profileModal','personModal','devModal','pollModal','todoEditModal','fwdModal','keysModal','rechtModal','msgSheet','todoSheet','docSheet'].forEach(function(id){
+  DIALOGE.forEach(function(id){
+    if(id==='searchOverlay') return;      // die hat ihr eigenes Aufraeumen
     var e=$(id); if(e) e.classList.remove('show');
   });
   closeSearch();
@@ -6709,12 +6876,7 @@ function closeAllModals(){
      3. role und aria-modal, damit ein Vorleseprogramm ueberhaupt
         erfaehrt, dass sich ein Fenster geoeffnet hat.
 
-   Die Liste ist dieselbe wie in closeAllModals — bewusst, damit nicht
-   zwei Listen auseinanderlaufen. */
-var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModal',
-               'aboModal',
-               'fwdModal','keysModal','rechtModal','searchOverlay',
-               'msgSheet','todoSheet','docSheet'];
+   Die Liste steht bei closeAllModals — eine fuer beide. */
 var _fokusVorher = null;
 
 function fokusFelder(box){
@@ -7380,7 +7542,17 @@ var _matSaveKey = null;      // zu welchem Studio das Gespeicherte gehört
 /* ============================================================
    AUTH-SCREEN
    ============================================================ */
-var regRole = 'mitarbeiter';
+
+/* Der weiche Auslauf am unteren Rand einer scrollbaren Liste gehoert nur
+   dorthin, wo wirklich mehr kommt — sonst blasst die letzte Reihe aus,
+   obwohl sie die letzte ist. Drei Stellen bauen solche Listen; deshalb
+   steht das hier einmal. */
+function auslaufPruefen(wrap){
+  if(!wrap) return;
+  requestAnimationFrame(function(){
+    wrap.classList.toggle('mehr-da', wrap.scrollHeight > wrap.clientHeight + 1);
+  });
+}
 
 /* Studio-Auswahl im Anmeldeformular. Eigene Funktion, weil die Liste
    jetzt aus der Datenbank kommt und sich ändern kann, während jemand
@@ -7398,6 +7570,7 @@ function buildRegStudios(){
     var span=document.createElement('span'); span.textContent=s;
     lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
   });
+  auslaufPruefen(wrap);
 }
 
 /* ── Passwort anzeigen ──
@@ -7435,6 +7608,42 @@ function pwWiederVerbergen(){
   });
 }
 
+/* ── „Ich führe ein Studio" ──
+   Der Knopf öffnet das Angebot-Fenster. Was darin als Handlung steht,
+   hängt daran, ob eine Vertriebsadresse hinterlegt ist:
+
+     hinterlegt  → ein fertig ausgefüllter E-Mail-Entwurf
+     leer        → ein ehrlicher Hinweis statt eines toten Knopfes
+
+   Warum kein Formular in die Datenbank: dafür müsste `firestore.rules`
+   eine Sammlung für JEDEN Nicht-Angemeldeten zum Schreiben öffnen. Das
+   ist ein Briefkasten ohne Schloss — und Firestore-Regeln können nicht
+   bremsen, wie oft jemand hineinwirft. Ein mailto: braucht keine Zeile
+   Serverseite und keine einzige neue Erlaubnis. */
+function zugangFensterFuellen(){
+  var box = $('zugangAktion'); if(!box) return;
+  var adresse = String((typeof KONFIG!=='undefined' && KONFIG.vertriebMail) || '').trim();
+  if(!adresse){
+    box.innerHTML = '<p class="zm-fehlt">Für Anfragen fehlt noch die '+
+      'Kontaktadresse. Sie steht in <b>konfig.js</b> unter '+
+      '<b>vertriebMail</b> — sobald sie dort eingetragen ist, steht hier '+
+      'ein Knopf.</p>';
+    return;
+  }
+  var betreff = 'StudioChat für mein Studio';
+  var text = 'Hallo,\n\nich führe ein Studio und würde StudioChat gern nutzen.\n\n'+
+    'Name:\nStudio(s):\nAnzahl Standorte:\nTelefon:\n\nViele Grüße\n';
+  var a = document.createElement('a');
+  a.className = 'btn btn-primary';
+  a.style.width = '100%';
+  a.href = 'mailto:' + encodeURIComponent(adresse) +
+           '?subject=' + encodeURIComponent(betreff) +
+           '&body=' + encodeURIComponent(text);
+  a.textContent = 'Zugang anfragen';
+  box.innerHTML = '';
+  box.appendChild(a);
+}
+
 (function initAuthScreen(){
   buildRegStudios();
   pwAugeBinden();
@@ -7442,6 +7651,17 @@ function pwWiederVerbergen(){
   dialogeVorbereiten();
   document.querySelectorAll('[data-authmode]').forEach(function(t){
     t.addEventListener('click', function(){ setAuthMode(t.getAttribute('data-authmode')); });
+  });
+
+  var zc = $('zugangChef');
+  if(zc) zc.addEventListener('click', function(){
+    zugangFensterFuellen();
+    ikonenEinsetzen($('zugangModal'));
+    $('zugangModal').classList.add('show');
+  });
+  var zx = $('zugangClose');
+  if(zx) zx.addEventListener('click', function(){
+    $('zugangModal').classList.remove('show');
   });
 
   // Login
@@ -7509,8 +7729,14 @@ function authMarker(){
 function selbstAnmeldungZeigen(an){
   var t=$('authTabs'); if(t) t.style.display = an ? 'flex' : 'none';
   if(an) setTimeout(authMarker, 30);   // erst messen, wenn sie stehen
-  var hinweis=$('authKeinZugang');
-  if(hinweis) hinweis.style.display = an ? 'none' : '';
+  /* Nur die Auskunft für Mitarbeiter haengt an dieser Einstellung: wer
+     sich selbst anmelden darf, braucht nicht zu hoeren, dass die Leitung
+     seinen Zugang anlegt. Das Angebot fuer Studio-Betreiber bleibt
+     stehen — es ist der einzige Weg herein fuer jemanden, der noch gar
+     nicht dazugehoert, und das ist unabhaengig davon, ob dieser Betrieb
+     die Selbstanmeldung offen hat. */
+  var team=$('zugangTeam');
+  if(team) team.style.display = an ? 'none' : '';
   if(!an && $('registerForm') && $('registerForm').style.display!=='none'){
     setAuthMode('login');
   }
@@ -8444,6 +8670,7 @@ function buildEmpStudios(){
     var span=document.createElement('span'); span.textContent=s;
     lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
   });
+  auslaufPruefen(wrap);
 }
 
 /* Sekundäre Firebase-App: legt den neuen Nutzer an, ohne den Chef auszuloggen */
@@ -8574,7 +8801,7 @@ function renderFreigaben(){
     return '<div class="emp" style="align-items:flex-start">'+
       '<div style="flex:1;min-width:0">'+
         '<b>'+esc(u.name||'Ohne Namen')+'</b>'+
-        '<div class="hint" style="margin-top:2px">'+esc(u.email||'')+
+        '<div class="hint" style="margin-top:var(--s2)">'+esc(u.email||'')+
           '<span class="mail-marke" data-mail="'+esc(u.uid)+'"></span></div>'+
         '<div class="hint">'+esc(studios)+'</div>'+
       '</div>'+
@@ -8736,6 +8963,7 @@ function buildDocStudios(){
     var span=document.createElement('span'); span.textContent=s;
     lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
   });
+  auslaufPruefen(wrap);
   // Die Studio-Kästchen werden bei jedem Aufruf neu gebaut, die Knöpfe
   // darunter gibt es dagegen nur einmal – die dürfen auch nur einmal
   // verdrahtet werden, sonst lädt eine Datei doppelt hoch.
@@ -10109,7 +10337,7 @@ function renderAbsences(){
       : '';
     return '<div class="abs-row'+(st==='offen'?' offen':'')+(st==='abgelehnt'?' abgelehnt':'')+'">'+
       '<b>'+ico+' '+esc(a.name||'')+'</b>'+chip+
-      '<div style="font-size:.86rem;color:var(--text-2);margin-top:2px">'+f+' bis '+t+
+      '<div style="font-size:.86rem;color:var(--text-2);margin-top:var(--s2)">'+f+' bis '+t+
       (a.note?' · '+esc(a.note):'')+'</div>'+wer+aktion+
       (del?'<div class="bb-head"><span></span>'+del+'</div>':'')+'</div>';
   }).join('');
@@ -14628,7 +14856,8 @@ var _allDocs=[], _curMsgs=[];
 function openSearch(){
   $('searchOverlay').classList.add('show');
   var i=$('searchInput'); i.value='';
-  $('searchResults').innerHTML='<div class="search-empty">Tippe, um zu suchen …</div>';
+  $('searchResults').innerHTML='<div class="search-empty">Durchsucht Aufgaben, '+
+    'Dokumente, Infos und den Chat.</div>';
   setTimeout(function(){ i.focus(); }, 50);
 }
 function closeSearch(){ $('searchOverlay').classList.remove('show'); }

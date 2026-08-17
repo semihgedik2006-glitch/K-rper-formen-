@@ -3280,6 +3280,131 @@ CSP ✓ · Fehlerbericht ✓ · Regression 65 grün
 
 ---
 
+## Sitzung 41 · „Verschoben und abgeschnitten" — und was dahinter lag 🔴🟢
+
+Drei Beobachtungen aus dem Betrieb: der Suchen-Knopf sitze schief, manches
+sei abgeschnitten, und auf dem Startbildschirm funktioniere „der
+Chef-Knopf nicht ganz". Alle drei stimmten. Hinter jeder lag etwas
+Grösseres.
+
+### 1. „Verschoben" — die App hatte drei Seitenränder
+
+Der Knopf selbst stand richtig (Zeichen exakt mittig, 9,5 px auf jeder
+Seite). Verschoben war das Suchfeld, das er öffnet:
+
+| | war | ist |
+|---|---|---|
+| seitlicher Rand | `var(--s16)` = 16 px | derselbe wie die Karten |
+| Oberkante | 56 px — die Leiste ist 63 hoch, das Feld lag **7 px in ihr drin** und verdeckte den Knopf, mit dem man es aufgemacht hatte | unter der Leiste |
+
+Die Ursache war allgemeiner: es gab **drei** Seitenränder —
+`clamp(14px,4vw,26px)` in der Kopfleiste, `clamp(14px,4vw,28px)` im
+Inhalt, `16px` im Suchfeld. Jetzt eine Marke `--rand`, 18 Stellen.
+
+### 2. „Abgeschnitten" — acht Stellen, keine davon sichtbar für die Forensik
+
+Der Platzhalter der Suche brauchte **348 px** und hatte je nach Gerät
+195 bis 304. Also auf **jedem** Bildschirm abgeschnitten, seit es ihn gibt.
+
+Die Forensik prüft Überlauf der *Seite* und fand null — das ist eine
+andere Sorte: der Kasten steht richtig, nur der Inhalt passt nicht hinein
+und wird stillschweigend weggeschnitten. Nichts ragt heraus, nichts
+scrollt, es fehlt einfach. Dafür gibt es jetzt
+`tests/test-abgeschnitten.js`: Platzhalter werden mit `canvas.measureText`
+in derselben Schrift nachgemessen, dazu `scrollWidth/scrollHeight` gegen
+`clientWidth/clientHeight` bei `overflow:hidden`. Drei Bildschirmbreiten,
+elf Ansichten, Suche und Anmeldung.
+
+Gefunden und behoben: 8 Stellen. Die schlimmste war `#matNewName` —
+„Eigenes Material hinzufügen …" (248 px) in einem **70 px** breiten Feld,
+weil der Knopf daneben 144 px nimmt. Unter 380 px rutscht er jetzt in die
+zweite Zeile.
+
+> **Der Prüfer hat sich zuerst selbst belogen.** Der erste Durchlauf
+> meldete „0 abgeschnitten" — er hatte im abgemeldeten Zustand den
+> *Ladebildschirm* gemessen, weil die App ohne echtes Firebase dort
+> stehen bleibt. Ein Prüfer, der nichts sieht, meldet grün. Jetzt prüft
+> er nach, ob er überhaupt angekommen ist, und meldet sonst
+> „MESSUNG LEER".
+
+### 3. „Der Chef-Knopf" — er war nie einer
+
+Auf dem Anmeldebildschirm stand: *„Noch keinen Zugang? Dein **Chef** legt
+dein Konto an."* — „Chef" fett und in Textfarbe, also aussehend wie ein
+Knopf. Er war keiner.
+
+Dahinter lag ein zweiter, schlimmerer Fall. Unter „Konto anlegen" gab es
+eine Wahl zwischen **Mitarbeiter** und **Chef**, mit `cursor:pointer`,
+Umrandung und Hover. Diese Kacheln hatten **keinen einzigen Zuhörer** —
+und `doRegister` legt ohnehin immer einen Mitarbeiter an, erzwungen in
+`firestore.rules`, damit sich niemand mit dem Firmencode selbst zum Chef
+macht. Die Oberfläche bot also eine Wahl an, die es nicht gibt und nie
+geben wird. Entfernt, dazu die tote Variable `regRole` und 11 Zeilen CSS.
+
+### 4. Neun Fenster mit dem Standardknopf des Browsers
+
+Beim Bauen des neuen Fensters fiel auf, dass sein Schliessen-Kreuz als
+grauer Kasten erschien. Die Regel hiess `#lightbox .lb-close` — gestylt
+war damit **nur** der Bildbetrachter. Nachgemessen am Profil-Fenster:
+
+```
+pmClose: Hintergrund rgb(239,239,239) · Rahmen 2px schwarz · 18×20 px
+```
+
+Neun Fenster, alle mit einem 18×20-Knopf zum Schliessen — bei einer
+Hausregel von 44. Zwei davon (`ownTodoModal`, `probeModal`, beide aus
+Sitzung 38) hatten **gar kein Zeichen darin**, nur ein `aria-label`.
+
+Warum es nie auffiel: die Forensik läuft über Ansichten und öffnet keinen
+Dialog. Der neue Durchlauf macht jetzt jedes Fenster einmal auf.
+
+### 5. Drei Listen, die dieselbe sein sollten
+
+Beim Nachprüfen des Kreuzes kam heraus, dass `aboModal`, `ownTodoModal`
+und `probeModal` sich **weder mit Escape noch mit der Zurück-Geste**
+schliessen liessen. Grund: drei Listen von Fenstern —
+
+| Liste | fehlten |
+|---|---|
+| `DIALOGE` (Fokusfalle, aria) | `ownTodoModal`, `probeModal` |
+| `closeAllModals` | `aboModal`, `ownTodoModal`, `probeModal` |
+| `anyModalOpen` | dieselben drei |
+
+Der Kommentar bei `DIALOGE` versprach seit Sitzung 31: *„Die Liste ist
+dieselbe wie in closeAllModals — bewusst, damit nicht zwei Listen
+auseinanderlaufen."* Sie waren längst auseinander, und es war eine dritte
+dazugekommen. Jetzt eine, aus der sich die beiden anderen bedienen. An
+`anyModalOpen` hing es wirklich: Escape fragt zuerst dort nach, ob
+überhaupt etwas offen ist.
+
+### 6. Was jetzt auf dem ersten Bildschirm steht
+
+Statt der Sackgasse zwei Wege, und beide führen irgendwohin:
+
+* **„Ich arbeite in einem Studio"** — eine Auskunft. Verschwindet, wenn
+  die Selbstanmeldung offen ist; dann gibt es ja den Reiter.
+* **„Ich führe ein Studio"** — ein Knopf. Öffnet ein Angebot-Fenster:
+  *„Schluss mit WhatsApp und Zetteln am Tresen"*, vier konkrete Punkte,
+  und der stärkste Satz, den dieses Produkt hat: **„Wir benutzen es
+  selbst — jeden Tag, in vierzehn Studios."**
+
+**Ohne Preise und ohne Kaufknopf**, und beides mit Grund: die Zahlen in
+`ABO-PLAN.md` sind ausdrücklich als Platzhalter markiert („Ich kenne
+euren Markt nicht"), und Stripe ist Stufe C und wartet auf den
+Steuerberater. Eine Zahl dort wäre eine Zusage, die der Betrieb nie
+gemacht hat; ein Knopf, der nach Bezahlen aussieht und keins ist, kostet
+mehr Vertrauen als er einbringt.
+
+Die Anfrage geht per `mailto` an `KONFIG.vertriebMail`. Ist das Feld leer
+— und im Auslieferungsstand ist es das, das Repo ist öffentlich —, steht
+dort ein Hinweis statt eines toten Knopfes.
+
+```
+Abgeschnitten 0 · Fenster 11, alle Kreuze gross genug · Regression 65 grün
+```
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
