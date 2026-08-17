@@ -28,7 +28,18 @@ const DATEI = path.join(WURZEL, 'index.html');
 const SEITEN = {
   'index.html': {
     script: "'self' https://www.gstatic.com",
-    img: "'self' data: blob:",
+    /* Der eine fremde Pfad, und zwar genau dieser eine.
+       Firestore prueft ueber diese 1×1-Grafik, ob ueberhaupt Netz da ist
+       — nachgelesen im SDK:
+         tn(e,t){ ... 2==t ? new Xe(i||"//www.google.com/images/cleardot.gif")
+                            ... TestLoadImage ... }
+       Sie wird NUR bei Fehlercode 2 des Kanals geladen. Blockiert man
+       sie, feuert onerror, und Firestore schliesst daraus „kein Netz" —
+       nach jeder kurzen Stoerung im Studio-WLAN also faelschlich offline
+       und mit traegerem Wiederverbinden.
+       CSP vergleicht den Pfad genau (die Anhaengsel ?zx=… zaehlen nicht
+       mit): erlaubt ist dieses eine Bild, nicht google.com. */
+    img: "'self' data: blob: https://www.google.com/images/cleardot.gif",
     medien: "'self' data: blob:",
     verbinden: "'self' https://*.googleapis.com https://*.cloudfunctions.net " +
       "https://*.firebaseio.com wss://*.firebaseio.com " +
@@ -41,7 +52,15 @@ const SEITEN = {
      der Hauptseite. connect-src bleibt deshalb zu. */
   'werbung.html': {
     script: "'self'",
-    img: "'self' data: https://www.xn--krperformen-rfb.com",
+    /* Zwei Bilder von der Firmenseite, und genau diese zwei. Vorher
+       stand hier der ganze Host — dann ist jede Adresse dort ein
+       erlaubtes Ziel, und die Adresse einer Bildanfrage kann selbst die
+       Nachricht sein. Hier ist nichts zu verraten (die Seite kennt
+       weder Anmeldung noch Datenbank), aber eine Ausnahme soll so eng
+       sein wie ihr Anlass. */
+    img: "'self' data: " +
+      "https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg " +
+      "https://www.xn--krperformen-rfb.com/wp-content/uploads/2020/03/emstesmal_simone.png",
     medien: "'none'",
     verbinden: "'none'",
     worker: "'none'",

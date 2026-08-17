@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-qA3/fQvFn/mhXQ47506oQ36L+Dlx77dsidzlMl0SYq4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-olplvLKxdCqqR0aCW+4EreCP9yEshQTHdBxepLn+XMs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4636,7 +4636,16 @@ window.addEventListener('unhandledrejection', function(ev){
 window.addEventListener('securitypolicyviolation', function(ev){
   var q = String((ev && ev.blockedURI) || '');
   if(/^(chrome|moz|safari|webkit)-extension:/.test(q)) return;
-  fehlerMelden('CSP blockt ' + ((ev && ev.violatedDirective) || '?') + ': ' + q.slice(0, 120),
+  /* Quelltext-Karten (.js.map) holt nur die Entwicklerkonsole, nie ein
+     Handy im Studio. Sie im Betrieb als Fehler zu melden heisst: der Chef
+     sieht fuenf rote Zeilen, weil jemand F12 gedrueckt hat. */
+  if(/\.map(\?|$)/.test(q)) return;
+  /* Ohne den Fragezeichen-Teil. Die Netzpruefung von Firestore haengt
+     jedes Mal ein anderes ?zx=… an — mit Anhaengsel wird aus EINEM
+     Befund je Aufruf ein neuer Eintrag, und die Liste des Chefs
+     besteht aus sechs Zeilen derselben Sache. */
+  fehlerMelden('CSP blockt ' + ((ev && ev.violatedDirective) || '?') + ': ' +
+               q.split('?')[0].slice(0, 120),
                String((ev && ev.sourceFile) || ''), (ev && ev.lineNumber) || 0, '');
 });
 

@@ -1,6 +1,6 @@
 # Was noch offen ist
 
-Stand 13. August 2026.
+Stand 17. August 2026.
 
 ## Auf einen Blick
 
@@ -18,13 +18,41 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 | Eigene Absenderadresse (Domain) | vor dem ersten fremden Kunden | – |
 | Steuerberater | vor dem ersten echten Geld (Abo C–E) | – |
 
+> Die drei oberen stehen seit dem 11.8. hier. Sie sind der Grund für die
+> Einrichtungs-Karte auf der Startseite — solange sie offen sind, steht
+> sie dort.
+
 ### Bei mir · Sicherheit
 
 | Was | Dringlichkeit | Aufwand |
 |---|---|---|
+| **`users`-Regel scharf stellen** — geht erst, wenn an jedem Konto `firma` steht (Verwaltung → Firmen → „Konten ohne Firma") | **vor dem zweiten Kunden** | klein |
 | **Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen | wenn Zeit ist | klein |
 | **Angriffsdurchlauf durch `werbung.html`** (wie `test-xss.js`) | wenn Zeit ist | klein |
 | Flache Alt-Daten aufräumen | ab Mitte September | ½ Sitzung |
+
+### Erledigt am 17. August: die Fehlerliste des Chefs
+
+Aus dem Betrieb gemeldet — elf rote Zeilen unter Verwaltung → System, alle
+harmlos, aber sie verdeckten alles Echte. Zwei Ursachen, beide belegt statt
+vermutet:
+
+| Meldung | Ursache | Behandlung |
+|---|---|---|
+| `img-src: …/cleardot.gif?zx=…`, sechsmal | Firestore prüft bei einer Kanalstörung über diese 1×1-Grafik, ob überhaupt Netz da ist. Im SDK nachgelesen: `2==t ? new Xe(i\|\|"//www.google.com/images/cleardot.gif") … TestLoadImage`. Blockiert man sie, feuert `onerror` — und Firestore schliesst daraus **„kein Netz"**. Nach jeder kurzen WLAN-Störung also fälschlich offline. | genau dieser **Pfad** in `img-src` erlaubt, nicht der Host |
+| `connect-src: …firebase-*.js.map`, fünfmal | Quelltext-Karten. Die holt nur die Entwicklerkonsole, nie ein Handy im Studio. | nicht mehr gemeldet |
+
+Dazu die eigentliche Ursache der **Menge**: das Anhängsel `?zx=…` ist bei
+jeder Prüfung anders, und der Meldeschlüssel enthielt es. Aus einer Sache
+wurden so sechs Einträge. Jetzt wird der Fragezeichen-Teil abgeschnitten:
+eine Zeile mit einem Zähler.
+
+Belegt statt behauptet — im Browser gemessen, dass CSP beim Pfadvergleich
+das `?…` ignoriert: `cleardot.gif?zx=abc` lädt, `anderes.gif` **auf
+demselben Host** bleibt blockiert. Steht als Gegenprobe in
+`tests/test-csp.js`. Dabei fiel auf, dass `werbung.html` den ganzen Host
+`xn--krperformen-rfb.com` für Bilder offen hatte — jetzt sind es die zwei
+Bilder, die sie wirklich lädt.
 
 > **Drei Punkte sind am 13.8. weggefallen, nicht erledigt worden:**
 > `marketing.html` und `wachstum.html` sind stillgelegt. Damit sind die
