@@ -3743,6 +3743,100 @@ Regeln 165 · Kreuz 132 · Rechte 84 · Umzug 12 · Functions 118
 
 ---
 
+# 46 · „Mein Bereich" — ein Ort für das, was einen selbst betrifft
+
+**17. August 2026**
+
+Gewünscht als „ein ganz neuer Bereich, der für jeden selber ist". Der
+Anlass dafür stand schon vorher in der App, nur verteilt. Wer wissen
+wollte, wann er arbeitet, was er zu tun hat und wann sein Schein
+abläuft, besuchte drei Seiten und ein Fenster:
+
+| Was | Wo es steckte |
+|---|---|
+| Mein Dienst | Karte auf Start |
+| Meine Aufgaben | Betrieb → Aufgaben, gefiltert |
+| Urlaub / Krank | Team → Abwesend |
+| Meine Nachweise | Einstellungs-Fenster hinter dem Avatar |
+
+## Was der Bereich ist — und was er nicht ist
+
+Vier Reiter: **Woche · Kalender · Notizen · Ich**.
+
+Er legt dabei **nichts doppelt an**. Schichten, Abwesenheiten,
+Aufgaben, Nachweise und Probetrainings werden dort gelesen, wo sie
+ohnehin liegen — die Seite ist eine zweite Brille auf vorhandene Daten,
+keine zweite Ablage. Neu ist nur, was es vorher nirgends gab: eigene
+Termine und Notizen.
+
+In der Wochenliste steht neben jeder Zeile, woher sie stammt. Ohne das
+steht „Zahnarzt" neben „Dienst Hürth" und niemand weiß mehr, was die
+Verwaltung sieht und was nicht.
+
+## Die Stelle in der Leiste war eine Entscheidung
+
+Zweite Stelle, nicht letzte. Hinten anzuhängen wäre bequemer gewesen
+und hätte den Bereich beim Chef auf Platz sechs geschoben — also hinter
+den Rand der Leiste. Etwas, das man wegwischen muss, um es zu finden,
+ist für einen neuen Bereich dasselbe wie nicht vorhanden. Chat rutscht
+dafür auf drei und bleibt auch auf 320 Pixel im Bild.
+
+## Privat heißt privat — und die Grenze steht daneben
+
+Termine und Notizen liegen unter `firmen/<f>/privat/<uid>/`. Das ist
+die einzige Sammlung dieser App, die der Chef **nicht** lesen darf. In
+der Regel steht bewusst kein `isChef()` und kein Admin: ein Notizblock,
+bei dem man überlegen muss, was man hineinschreibt, ist keiner.
+
+Die `uid` steckt im **Pfad**, nicht im Dokument. Damit entscheidet die
+Regel ohne einen einzigen `get()`, und eine Abfrage über fremde
+Einträge ist gar nicht erst formulierbar.
+
+Was **nicht** stimmt und deshalb direkt am Notizblock steht: das ist
+eine Regel für Clients, keine Verschlüsselung. Wer Zugang zur
+Firebase-Konsole hat, liest mit. Der Hinweis nennt beides — „kein
+anderes Konto kommt hier heran, auch die Verwaltung nicht" **und**
+„verschlüsselt ist es aber nicht". Ein Versprechen, das die Technik
+nicht hält, wäre schlimmer als gar kein Notizblock, und der Durchlauf
+prüft genau diesen zweiten Halbsatz mit.
+
+## Zwei Fehler, die beim Bauen aufgefallen sind
+
+**Abwesenheiten mit `where('from', …)` im Fenster.** Eine Woche Urlaub
+hat `from` vor dem Zeitraum und `to` danach — mit einer Abfrage auf
+`from` fällt ausgerechnet die durch, die man am dringendsten sehen
+will. Jetzt `where('to','>=',von)` und das andere Ende beim Filtern.
+
+**`--f-*` als Textfarbe.** Die Statusfarben sind Flächen, keine
+Schriftfarben: halbdurchsichtig auf halbdurchsichtig ist nicht lesbar.
+Für Schrift gibt es `--ok-tx`, `--warm-tx`, `--danger-tx`, und die sind
+in beiden Modi gesetzt.
+
+## Nachgemessen
+
+```
+Regeln 165 · Kreuz 132 · Rechte 100 · Umzug 12 · Functions 118
+                                ↑ 16 neue, alle zu „privat"
+```
+
+Die 16 behaupten etwas: mit einer auf `isChef()` aufgeweiteten Regel
+werden genau **sieben** davon rot, der Betreiber eingeschlossen.
+Gemessen, dann zurückgesetzt.
+
+`tests/test-mein-bereich.js`, neu. Prüft nicht „der Reiter ist da",
+sondern die drei Stellen, an denen ein Fehler teuer wäre: **was**
+geschrieben wird und **wohin** (`privat/<uid>/termine`, nicht in eine
+geteilte Sammlung), dass der Hinweis beide Hälften sagt, und dass keine
+Fläche leer bleibt. Dazu der Kalender gegen eine Behauptung, die
+stimmen muss — der Februar hat nie 31 Tage; über 13 Monatswechsel
+gemessen: `30,31,30,31,31,28,31,30,31,30,31,31,30`.
+
+Gegenproben überall: ein leerer Titel schreibt nichts, ein erfundener
+Reiter schaltet nichts, und ein echter `console.error` kommt trotz der
+Konsolen-Sperre an — sonst wäre die Prüfung ab dem ersten Tag Zierrat.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

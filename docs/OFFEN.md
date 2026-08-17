@@ -22,16 +22,19 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 
 | Was | Wo | Dauer |
 |---|---|---|
-| **Firmencode setzen** | App → Verwaltung → Team | 2 Min |
+| ~~Firmencode setzen~~ | ✅ **17.8. erledigt** (von dir gemeldet) | – |
+| ~~`STUDIOCHAT_TOKEN` im Apps Script~~ | ✅ **17.8. erledigt** (von dir gemeldet) | – |
 | **Vier rechtliche Pflichtfelder** | App → Verwaltung → System | 5 Min |
-| **`STUDIOCHAT_TOKEN` im Apps Script** | `SHEETS-TOKEN.md` | 10 Min |
+| `KONFIG.vertriebMail` | `konfig.js` | 1 Min |
 | Datenschutztext über einen Anwalt | vor dem ersten fremden Kunden | – |
 | Eigene Absenderadresse (Domain) | vor dem ersten fremden Kunden | – |
 | Steuerberater | vor dem ersten echten Geld (Abo C–E) | – |
 
-> Die drei oberen stehen seit dem 11.8. hier. Sie sind der Grund für die
-> Einrichtungs-Karte auf der Startseite — solange sie offen sind, steht
-> sie dort.
+> Der Firmencode war die wichtigste der drei: seit dem Regel-Deploy vom
+> 17.8. hängt an ihm, dass sich niemand ohne ihn eurem Betrieb zuordnen
+> kann. Übrig ist von der ursprünglichen Dreierliste nur noch das
+> Rechtliche — und das ist der letzte Grund, aus dem die
+> Einrichtungs-Karte auf der Startseite noch steht.
 
 ### Bei mir · Sicherheit
 
