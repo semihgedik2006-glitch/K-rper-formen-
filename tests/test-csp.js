@@ -65,7 +65,54 @@ const ANSICHTEN = [
        fielen frueher nicht auf, weil sie funktionierten. */
     const attribute = (roh.match(/\son(click|load|error|change|input|submit)="/g) || []);
     pruefe(seite + ': kein Ereignis im Attribut', attribute.length === 0, attribute.join(' '));
+
+    /* Eine Ausnahme darf einem PFAD gelten, nicht einem Haus. Stuende
+       dort „https://www.google.com", waere jedes Bild von dort erlaubt —
+       und ein fremdes Bild ist ein Kanal nach draussen (die Adresse
+       traegt die Nachricht). */
+    const img = teile.find(t => t.indexOf('img-src') === 0) || '';
+    const pauschal = img.split(/\s+/).filter(w =>
+      /^https:\/\//.test(w) && w.split('/').length < 4);
+    pruefe(seite + ': img-src erlaubt keinen fremden Host pauschal',
+      pauschal.length === 0, pauschal.join(' '));
   });
+
+  // ══ 2. Die eine fremde Ausnahme: gilt sie wirklich nur dem Pfad? ══
+  /* Behauptung, auf der die Ausnahme steht: CSP vergleicht den Pfad und
+     ignoriert dabei das ?…-Anhaengsel. Stimmt das nicht, ist entweder
+     die Netzpruefung von Firestore weiter blockiert (dann war die
+     Aenderung sinnlos) — oder google.com ist ganz offen (dann ist sie
+     gefaehrlich). Also nachmessen statt glauben. */
+  {
+    const b0 = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+    const s0 = await b0.newPage();
+    const gif = Buffer.from(
+      'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+    await s0.route('**www.google.com/**', r =>
+      r.fulfill({ status: 200, contentType: 'image/gif', body: gif }));
+    await s0.setContent(
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; ' +
+      'img-src https://www.google.com/images/cleardot.gif">');
+    const pfad = await s0.evaluate(() => {
+      function laden(u) {
+        return new Promise(f => {
+          const i = new Image();
+          i.onload = () => f(true);
+          i.onerror = () => f(false);
+          setTimeout(() => f(false), 4000);
+          i.src = u;
+        });
+      }
+      return Promise.all([
+        laden('https://www.google.com/images/cleardot.gif?zx=abc123'),
+        laden('https://www.google.com/images/anderes.gif')
+      ]);
+    });
+    await b0.close();
+    console.log('\n── Die Ausnahme für Firestores Netzprüfung ──');
+    pruefe('cleardot.gif lädt trotz ?zx=… (sonst bliebe sie blockiert)', pfad[0] === true);
+    pruefe('ein anderes Bild von google.com bleibt blockiert', pfad[1] === false);
+  }
 
   // ══ 3. Der Browser: bricht die Regel etwas? ══
   console.log('\n── Zwölf Ansichten unter der Regel ──');

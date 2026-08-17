@@ -3214,6 +3214,72 @@ hat der Betreiber gestellt, nicht ich.
 
 ---
 
+## Sitzung 40 · Elf rote Zeilen, die keine waren 🔴🟢
+
+Aus dem Betrieb gemeldet: unter Verwaltung → System standen elf Fehler.
+Alle harmlos — und genau deshalb schlimm, denn sie verdeckten alles Echte.
+
+### Zwei Ursachen, beide nachgelesen statt vermutet
+
+**1. `cleardot.gif`, sechsmal.** Kommt aus dem Firestore-SDK. Im
+heruntergeladenen `firebase-firestore-compat.js` nachgesehen:
+
+```js
+function tn(e,t){ e.j.info("Error code "+t),
+  2==t ? ( i=new Xe(i||"//www.google.com/images/cleardot.gif") … TestLoadImage … ) }
+```
+
+Firestore lädt diese 1×1-Grafik **nur bei Fehlercode 2 des Kanals**, um zu
+prüfen, ob überhaupt Netz da ist. Blockiert man sie, feuert `onerror`, und
+die Antwort lautet „kein Netz". Nach jeder kurzen Störung im Studio-WLAN
+hält sich die App also für offline und verbindet träger wieder.
+
+Das ist kein Rauschen, das war ein echter Nachteil. Erlaubt ist jetzt
+**dieser eine Pfad** — nicht google.com.
+
+**2. `*.js.map`, fünfmal.** Quelltext-Karten. Die holt nur die
+Entwicklerkonsole. Der Chef sah fünf rote Zeilen, weil jemand F12
+gedrückt hatte. Werden nicht mehr gemeldet.
+
+### Die eigentliche Ursache der Menge
+
+Das Anhängsel `?zx=…` ist bei jeder Prüfung anders, und der
+Meldeschlüssel enthielt es. Aus **einer** Sache wurden so sechs Einträge —
+und weil `fehlerMelden` je Sitzung bei fünf Meldungen dichtmacht,
+verdrängt eine einzige Netzstörung alles andere. Jetzt wird der
+Fragezeichen-Teil abgeschnitten: eine Zeile mit einem Zähler.
+
+### Was daran belegt ist
+
+Die Ausnahme steht auf der Behauptung, CSP vergleiche den **Pfad** und
+ignoriere dabei das `?…`. Stimmt das nicht, ist entweder die Netzprüfung
+weiter blockiert (dann war die Änderung sinnlos) oder google.com ist ganz
+offen (dann ist sie gefährlich). Also gemessen:
+
+```
+GELADEN   cleardot.gif?zx=abc123
+BLOCKIERT https://www.google.com/images/anderes.gif
+```
+
+Beides steht als Gegenprobe in `tests/test-csp.js`, dazu vier Prüfungen in
+`tests/test-fehlerbericht.js` — darunter die wichtigste: eine **echte**
+Verletzung (`boeser-server.example`) muss weiterhin gemeldet werden, sonst
+ist der Filter zu grob und die Regel blind.
+
+### Ein Altfall fiel dabei mit auf
+
+Der neue Prüfer „img-src erlaubt keinen fremden Host pauschal" schlug
+sofort bei `werbung.html` an: dort stand der ganze Host
+`xn--krperformen-rfb.com`. Dort ist nichts zu verraten — die Seite kennt
+weder Anmeldung noch Datenbank —, aber eine Ausnahme soll so eng sein wie
+ihr Anlass. Jetzt sind es die zwei Bilder, die sie wirklich lädt.
+
+```
+CSP ✓ · Fehlerbericht ✓ · Regression 65 grün
+```
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

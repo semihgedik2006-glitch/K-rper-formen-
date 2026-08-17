@@ -194,8 +194,58 @@ async function ausloesen(page, text) {
     await b.close();
   }
 
+  /* ══ 8. CSP-Meldungen: EINE Sache ist EIN Eintrag ══
+     Aus dem Betrieb gemeldet: der Chef sah sechs rote Zeilen, die alle
+     dasselbe sagten. Firestore prüft bei einer Kanalstörung über
+     cleardot.gif, ob überhaupt Netz da ist, und hängt jedes Mal ein
+     anderes ?zx=… an. Mit Anhängsel ist jede Prüfung ein neuer Eintrag.
+     Dazu fünf Zeilen für .js.map — die holt nur die Entwicklerkonsole. */
+  {
+    const { b, page } = await start();
+    await page.evaluate(async () => {
+      function melde(uri, richtung) {
+        const e = new Event('securitypolicyviolation');
+        e.blockedURI = uri;
+        e.violatedDirective = richtung;
+        e.sourceFile = 'https://beispiel.de/index.html';
+        e.lineNumber = 1;
+        window.dispatchEvent(e);
+      }
+      melde('https://www.google.com/images/cleardot.gif?zx=aaa111', 'img-src');
+      melde('https://www.google.com/images/cleardot.gif?zx=bbb222', 'img-src');
+      melde('https://www.google.com/images/cleardot.gif?zx=ccc333', 'img-src');
+      melde('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js.map', 'connect-src');
+      melde('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js.map', 'connect-src');
+      melde('https://boeser-server.example/klau', 'connect-src');
+      await new Promise(r => setTimeout(r, 400));
+    });
+    const w = await page.evaluate(() => window.__fehlerSchreib);
+    const texte = w.map(x => (x.daten && x.daten.text) || '');
+    console.log('CSP-Meldungen geschrieben:', JSON.stringify(texte));
+
+    const cleardot = texte.filter(t => /cleardot/.test(t));
+    if (cleardot.length !== 1) {
+      errs.push('FALSCH: drei Netzprüfungen ergeben ' + cleardot.length +
+                ' Einträge statt einen — das ?zx=… wird nicht abgeschnitten');
+    }
+    if (cleardot.length && /\?/.test(cleardot[0])) {
+      errs.push('FALSCH: das Anhängsel steht noch im Text (' + cleardot[0] + ')');
+    }
+    if (texte.some(t => /\.js\.map/.test(t))) {
+      errs.push('FALSCH: Quelltext-Karten (.js.map) werden gemeldet — die holt nur F12');
+    }
+    /* Gegenprobe: der Filter darf nicht ALLES verschlucken. Eine echte
+       Verbindung nach draussen ist genau das, wofür die Regel dasteht. */
+    if (!texte.some(t => /boeser-server/.test(t))) {
+      errs.push('GEGENPROBE: eine echte CSP-Verletzung wird nicht mehr gemeldet — ' +
+                'dann ist der Filter zu grob und die Regel blind');
+    }
+    await b.close();
+  }
+
   console.log(errs.length
     ? '\n✗ ' + errs.join('\n✗ ')
-    : '\n✓ Fehlerbericht: echte Fehler landen, Rauschen nicht, kein Kreis, Liste für den Chef');
+    : '\n✓ Fehlerbericht: echte Fehler landen, Rauschen nicht, kein Kreis, ' +
+      'CSP-Meldungen einmal statt sechsmal, Liste für den Chef');
   process.exit(errs.length ? 1 : 0);
 })();
