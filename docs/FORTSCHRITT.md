@@ -3622,6 +3622,108 @@ durchgeht und mit dem falschen nicht.
 
 ---
 
+# 45 · „Merge hat nicht geklappt" — der Merge schon, die Prüfung nicht
+
+**17. August 2026**
+
+Gemeldet mit vier Worten. Der Merge selbst war nachweislich durch:
+`main` stand auf `385dd69`, der Pull Request auf `merged: true`. Rot war
+etwas anderes — der Lauf danach.
+
+```
+Cloud Functions deployen · 385dd69
+  hosting     ✅ grün      die App ging raus
+  regeltest   ❌ rot       162 bestanden, 3 gefallen
+  rules       ⏭️ übersprungen
+  deploy      ⏭️ übersprungen
+```
+
+Die App war also draußen, die neuen **Regeln nicht**. Genau die aus
+Runde 44, die gerade erst scharf gestellt wurden. Sichtbar kaputt war
+nichts — deshalb hätte es lange so bleiben können.
+
+## Die drei gefallenen Prüfungen
+
+```
+✗ Neuanmeldung als Mitarbeiter ist erlaubt
+✗ OHNE Schranken: Selbstregistrierung geht wie bisher
+✗ MIT RICHTIGEM Code und aktiv:false: angenommen
+```
+
+Alle drei legen ein Profil **ohne Feld `firma`** an. Dieselben drei
+Prüfungen liefen hier auf dem Rechner grün. Fünfmal.
+
+## Warum hier grün und dort rot
+
+Nicht der Code war anders, sondern das Werkzeug:
+
+| | Version |
+|---|---|
+| `tests/rules/package.json` | `^14.0.0` |
+| `tests/rules/node_modules` (hier) | **15.26.0** |
+| `npm install` in der Auslieferung | **14.27.0** |
+
+Ohne Sperrdatei holt sich die Auslieferung bei jedem Lauf die neueste
+14er. Hier lag seit irgendwann eine 15er. Die beiden Emulatoren sind
+sich bei einer Sache uneinig:
+
+```
+codeDerFirma(f)  →  firmen/$(f)/config/registrierung
+```
+
+Ist `f` leer — und das ist es bei jedem Profil ohne Firma — entsteht
+`firmen//config/registrierung`, ein Pfad mit leerem Segment. Der
+Emulator aus 15 nimmt das hin und antwortet „gibt es nicht". Der aus 14
+bricht die Auswertung ab. Abbruch heißt in Firestore: verboten.
+
+Nachgemessen, nicht vermutet: dieselbe Datei, derselbe Commit, nur die
+Version getauscht.
+
+```
+firebase-tools 15.26.0 → 165 bestanden, 0 gefallen
+firebase-tools 14.27.0 → 162 bestanden, 3 gefallen
+```
+
+## Der Fix
+
+Der Pfad darf gar nicht erst gebaut werden. Der nicht genommene Zweig
+eines `?:` wird nicht ausgewertet:
+
+```
+function codeDerFirma(f) {
+  return f == ''
+    ? flacherCode()
+    : (exists(…firmen/$(f)/config/registrierung)
+        ? get(…).data.get('code', '')
+        : flacherCode());
+}
+```
+
+Für den Betrieb ändert sich damit nichts: ein Konto ohne Firmenfeld
+wird wie vorher am flachen `config/registrierung` gemessen.
+
+## Die eigentliche Lehre
+
+Der Regelfehler ist die kleinere Hälfte. Die größere: **eine Prüfung,
+die woanders läuft als die Auslieferung, prüft nichts.** Sie ist
+schlimmer als keine, weil sie Sicherheit vortäuscht. Fünf grüne
+Durchläufe in Runde 44 haben genau nichts bewiesen.
+
+Zwei Dinge dagegen:
+
+1. Feste Versionen in `tests/rules/package.json` — kein `^`, kein `~`.
+2. `tests/test-regelumgebung.js`, neu. Prüft keine Regel, sondern das
+   Werkzeug: sind die Versionen fest, liegt genau das installiert, und
+   installiert die Werkbank aus derselben Liste. Mit Gegenprobe — mit
+   `^14.0.0` und mit einer falschen Zahl wird sie rot, beides gemessen.
+
+```
+Regeln 165 · Kreuz 132 · Rechte 84 · Umzug 12 · Functions 118
+        alles unter firebase-tools 14.27.0, der Version der Auslieferung
+```
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

@@ -99,10 +99,28 @@ service cloud.firestore {
        Hat sie keinen, bleibt sie offen: das ist die Entscheidung des
        jeweiligen Betriebs (Verwaltung → Team → Wer darf sich anmelden)
        und nicht die der Regel. */
+    /* Ohne Feld firma ist f leer. Dann DARF der Pfad nicht gebaut werden:
+       firmen//config/registrierung hat ein leeres Segment. Der Emulator
+       aus firebase-tools 15 nimmt das hin und meldet „gibt es nicht";
+       der aus 14 — und der ist es, der in der Auslieferung prueft —
+       bricht die Auswertung ab, und Abbruch heisst: verboten.
+
+       Gemessen, nicht vermutet: mit 14.27.0 fielen genau die drei
+       Pruefungen, die ein Profil OHNE firma anlegen; mit 15.26.0 fiel
+       keine. Zwei Wochen lang konnte sich deshalb niemand mehr selbst
+       anmelden, waehrend hier alles gruen war.
+
+       Die Verzweigung loest das: der nicht genommene Zweig eines ?:
+       wird nicht ausgewertet, der Pfad entsteht also gar nicht erst. */
+    function flacherCode() {
+      return confDa() ? beitrittConf().get('code', '') : '';
+    }
     function codeDerFirma(f) {
-      return exists(/databases/$(database)/documents/firmen/$(f)/config/registrierung)
-        ? get(/databases/$(database)/documents/firmen/$(f)/config/registrierung).data.get('code', '')
-        : (confDa() ? beitrittConf().get('code', '') : '');
+      return f == ''
+        ? flacherCode()
+        : (exists(/databases/$(database)/documents/firmen/$(f)/config/registrierung)
+            ? get(/databases/$(database)/documents/firmen/$(f)/config/registrierung).data.get('code', '')
+            : flacherCode());
     }
     function codeStimmtFuer(uid, f) {
       return codeDerFirma(f) == ''

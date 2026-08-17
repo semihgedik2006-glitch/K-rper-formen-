@@ -18,6 +18,24 @@ die Emulator-Datei herunter.
 Läuft außerdem bei jedem Push in GitHub Actions – **bevor** die Regeln
 ausgerollt werden. Fällt ein Test um, wird nichts deployt.
 
+## Die Versionen stehen fest, und zwar mit Absicht
+
+In `package.json` steht kein `^` und kein `~`, und es gibt keine
+Sperrdatei. Der Grund steht am 17.8. in `FORTSCHRITT.md`: hier lag
+`firebase-tools` 15.26.0, die Auslieferung holte sich 14.27.0, und die
+beiden Emulatoren waren sich über einen Regelpfad uneinig. Ergebnis:
+hier 165 grün, dort 3 rot — und die Regeln gingen nicht raus.
+
+Eine Prüfung, die woanders läuft als die Auslieferung, prüft nichts.
+`tests/test-regelumgebung.js` wacht darüber und wird rot, sobald die
+beiden Seiten auseinanderlaufen. Wer hochzieht, zieht beide hoch:
+
+```bash
+cd tests/rules && npm install firebase-tools@<neu>   # package.json anpassen
+node tests/test-regelumgebung.js                     # muss grün sein
+npm test                                             # und das auch
+```
+
 ## Die Dateien
 
 | Datei | prüft |

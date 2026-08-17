@@ -38,6 +38,7 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 | Was | Dringlichkeit | Aufwand |
 |---|---|---|
 | ~~`users`-Regel scharf stellen~~ · ~~`allow create` ohne Firmenprüfung~~ | ✅ **17.8. erledigt** — die Vorbedingung war erfüllt: 12 von 12 Konten tragen `firma` |
+| ~~Regel ging beim ersten Anlauf gar nicht raus~~ | ✅ **17.8. nachgezogen** — siehe Kasten unten |
 | **Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen | wenn Zeit ist | klein |
 | **Angriffsdurchlauf durch `werbung.html`** (wie `test-xss.js`) | wenn Zeit ist | klein |
 | Flache Alt-Daten aufräumen | ab Mitte September | ½ Sitzung |
@@ -53,6 +54,21 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 > (Verwaltung → Team, zwei Minuten), ist auch dieser Weg zu.** Vorher
 > nicht. Die Zeile stand schon länger auf deiner Liste; seit heute
 > schliesst sie zusätzlich diese Tür.
+
+> **Nachtrag vom selben Tag: die Regel war erst gar nicht draußen.** Der
+> Merge lief durch, der Lauf danach nicht. `hosting` war grün — die App
+> ging raus —, aber die Prüfung vor dem Regel-Deploy fiel um, und damit
+> wurden `rules` und `deploy` übersprungen. Sichtbar kaputt war nichts,
+> deshalb wäre es sonst lange so geblieben.
+>
+> Ursache war nicht die Regel, sondern die Prüfumgebung: hier lag
+> `firebase-tools` **15.26.0**, die Auslieferung holte sich **14.27.0**.
+> Der neuere Emulator verzieh einen Regelpfad mit leerem Segment, der
+> ältere nicht. Beides nachgemessen, gleicher Commit.
+>
+> Behoben: der Pfad wird bei leerer Firma nicht mehr gebaut, die
+> Versionen stehen jetzt fest, und `tests/test-regelumgebung.js` prüft,
+> dass Rechner und Auslieferung dasselbe Werkzeug benutzen.
 
 ### Erledigt am 17. August: die Fehlerliste des Chefs
 

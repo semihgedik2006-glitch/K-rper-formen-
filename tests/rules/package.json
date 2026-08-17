@@ -7,8 +7,9 @@
     "test:umzug": "cd ../.. && ./tests/rules/node_modules/.bin/firebase emulators:exec --only firestore --project demo-regeltest \"node tests/rules/umzug.test.js\"",
     "test:funktionen": "cd ../.. && ./tests/rules/node_modules/.bin/firebase emulators:exec --only firestore,auth --project demo-regeltest \"node tests/rules/funktionen.test.js\""
   },
+  "_warum_feste_versionen": "Ohne ^ und ohne Sperrdatei. Hier stand ^14.0.0, oertlich lag 15.26.0 — die Auslieferung prueft also mit einem anderen Emulator als der Entwickler. Der aus 15 verzieh einen Regelpfad mit leerem Segment, der aus 14 nicht: oertlich 165 gruen, in der Auslieferung 3 rot, und die Regeln gingen nicht raus. Wer hochzieht, zieht beide Seiten hoch und laesst tests/test-regelumgebung.js darueber laufen.",
   "devDependencies": {
-    "@firebase/rules-unit-testing": "^4.0.1",
-    "firebase-tools": "^14.0.0"
+    "@firebase/rules-unit-testing": "4.0.1",
+    "firebase-tools": "14.27.0"
   }
 }
