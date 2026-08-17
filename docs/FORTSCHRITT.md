@@ -3717,6 +3717,25 @@ Zwei Dinge dagegen:
    installiert die Werkbank aus derselben Liste. Mit Gegenprobe — mit
    `^14.0.0` und mit einer falschen Zahl wird sie rot, beides gemessen.
 
+## Und eine dritte Sache, die dabei auffiel
+
+Der Pull Request selbst hatte **gar keine Prüfung**: `total_count: 0`.
+Die Werkbank lief nur beim Push auf `main`. Ein Regelfehler fiel also
+grundsätzlich erst auf, wenn `main` ihn schon hatte — und weil `hosting`
+absichtlich nicht an `regeltest` hängt, war die App dann trotzdem
+draußen. Genau diese Kombination hat die vier Worte erzeugt.
+
+`regeltest` läuft jetzt auch bei `pull_request`, bewusst ohne
+`paths`-Filter: die Liste oben ist die der *ausgelieferten* Dateien,
+nicht die der Dinge, die eine Regel umwerfen können. Eine Änderung an
+`tests/rules/**` liefert nichts aus und gehört trotzdem geprüft.
+
+Das Gegenstück dazu ist wichtiger als der Auslöser selbst: `rules`,
+`hosting` und `deploy` tragen jetzt `if: github.event_name !=
+'pull_request'`. Ohne das wäre jeder offene Zweig ein Deploy in die
+Produktion gewesen — die Absicherung wäre schlimmer als die Lücke.
+Beides steht in derselben Prüfung, beides mit Gegenprobe gemessen.
+
 ```
 Regeln 165 · Kreuz 132 · Rechte 84 · Umzug 12 · Functions 118
         alles unter firebase-tools 14.27.0, der Version der Auslieferung

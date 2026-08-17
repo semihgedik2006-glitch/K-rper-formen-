@@ -88,6 +88,31 @@ if (fs.existsSync(WERK)) {
   if (!/working-directory:\s*tests\/rules/.test(w)) {
     errs.push('VORBEI: die Werkbank installiert nicht aus tests/rules');
   }
+
+  /* 5. Und sie muss VOR dem Merge laufen.
+        Am 17.8. lief sie erst danach. Der Merge war durch, main stand
+        auf einem Stand, dessen Regeln nicht ausgerollt werden konnten,
+        und weil hosting nicht an regeltest haengt, war die App ganz
+        normal draussen. Gemeldet wurde es als „merge hat nicht
+        geklappt" — vier Worte, und niemand haette sie sagen muessen. */
+  if (!/^\s{2}pull_request:/m.test(w)) {
+    errs.push('ERST NACH DEM MERGE: die Werkbank hat keinen ' +
+      'pull_request-Ausloeser — ein Regelfehler faellt dann erst auf, ' +
+      'wenn main ihn schon hat');
+  }
+
+  /* 6. Gegenstueck dazu: die ausrollenden Jobs duerfen dann NICHT
+        mitlaufen. Sonst waere jeder Zweig ein Deploy in die Produktion,
+        und die Absicherung waere schlimmer als die Luecke. */
+  const bloecke = w.split(/\n(?=  [a-z][a-z0-9_-]*:\n)/);
+  for (const job of ['rules', 'hosting', 'deploy']) {
+    const b = bloecke.find(s => s.startsWith('  ' + job + ':\n'));
+    if (!b) { errs.push('FEHLT: der Job „' + job + '" in der Werkbank'); continue; }
+    if (!/if:\s*github\.event_name\s*!=\s*'pull_request'/.test(b)) {
+      errs.push('DEPLOY AUS DEM ZWEIG: „' + job + '" laeuft auch bei ' +
+        'pull_request — damit rollt jeder offene Zweig in die Produktion aus');
+    }
+  }
 } else {
   errs.push('FEHLT: .github/workflows/deploy-functions.yml');
 }
