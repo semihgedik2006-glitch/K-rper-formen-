@@ -37,11 +37,22 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 
 | Was | Dringlichkeit | Aufwand |
 |---|---|---|
-| **`users`-Regel scharf stellen** — geht erst, wenn an jedem Konto `firma` steht (Verwaltung → Firmen → „Konten ohne Firma") | **vor dem zweiten Kunden** | klein |
-| **`allow create` auf `users` fragt nicht nach der Firma** — ein Chef von A kann ein Konto anlegen, das auf Firma B zeigt. Hängt an derselben Voraussetzung wie die Zeile darüber und ist in `tests/rules/rechte.test.js` als `BEKANNT OFFEN` festgehalten | **vor dem zweiten Kunden** | klein |
+| ~~`users`-Regel scharf stellen~~ · ~~`allow create` ohne Firmenprüfung~~ | ✅ **17.8. erledigt** — die Vorbedingung war erfüllt: 12 von 12 Konten tragen `firma` |
 | **Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen | wenn Zeit ist | klein |
 | **Angriffsdurchlauf durch `werbung.html`** (wie `test-xss.js`) | wenn Zeit ist | klein |
 | Flache Alt-Daten aufräumen | ab Mitte September | ½ Sitzung |
+
+> **Was am 17.8. NICHT mit zugegangen ist, und warum.** Ein Betrieb ohne
+> hinterlegten Firmencode bleibt offen: wer sich anmeldet, kann sich ihm
+> zuordnen. Das ist eine bewusste Entscheidung — zwei Prüfungen halten
+> sie ausdrücklich fest („OHNE Schranken: Selbstregistrierung geht wie
+> bisher"), und sie gehört dem Betreiber, nicht der Regel.
+>
+> Neu ist: wer eine Firma beansprucht, **die einen Code hat**, muss ihn
+> kennen. Bei euch heisst das — **sobald der Firmencode gesetzt ist
+> (Verwaltung → Team, zwei Minuten), ist auch dieser Weg zu.** Vorher
+> nicht. Die Zeile stand schon länger auf deiner Liste; seit heute
+> schliesst sie zusätzlich diese Tür.
 
 ### Erledigt am 17. August: die Fehlerliste des Chefs
 

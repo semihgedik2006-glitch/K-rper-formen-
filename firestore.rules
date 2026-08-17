@@ -83,6 +83,33 @@ service cloud.firestore {
             && get(/databases/$(database)/documents/beitritt/$(uid)).data.code
                == beitrittConf().code);
     }
+
+    /* ── Der Beitrittscode DER Firma, der jemand beitreten will ──
+       codeStimmt() oben liest immer den flachen config/registrierung.
+       Seit dem Umzug liegt der Code aber unter
+       firmen/<kennung>/config/registrierung — die Pruefung ging also am
+       richtigen Dokument vorbei.
+
+       Gemessen im Emulator, bevor das hier stand: ein beliebiges
+       angemeldetes Konto konnte sich selbst mit firma:'beta' anlegen und
+       danach die Konten von Beta lesen. Nicht als Chef, nicht mit einem
+       Code — einfach so.
+
+       Jetzt muss der Code passen, der bei DIESER Firma hinterlegt ist.
+       Hat sie keinen, bleibt sie offen: das ist die Entscheidung des
+       jeweiligen Betriebs (Verwaltung → Team → Wer darf sich anmelden)
+       und nicht die der Regel. */
+    function codeDerFirma(f) {
+      return exists(/databases/$(database)/documents/firmen/$(f)/config/registrierung)
+        ? get(/databases/$(database)/documents/firmen/$(f)/config/registrierung).data.get('code', '')
+        : (confDa() ? beitrittConf().get('code', '') : '');
+    }
+    function codeStimmtFuer(uid, f) {
+      return codeDerFirma(f) == ''
+        || (exists(/databases/$(database)/documents/beitritt/$(uid))
+            && get(/databases/$(database)/documents/beitritt/$(uid)).data.code
+               == codeDerFirma(f));
+    }
     function freigabePflicht() {
       return confDa() && beitrittConf().get('freigabe', false) == true;
     }
@@ -208,13 +235,48 @@ service cloud.firestore {
       // Seite ansieht, Vollzugriff auf alle Studios verschaffen — eine
       // Pruefung in der App haelt niemanden auf, der die Konsole oeffnet.
       // Chef- und Leiter-Konten legt ausschliesslich ein Chef an.
-      allow create: if isChef()
+      /* ── Beide Wege brauchen eine Firma, und zwar die richtige ──
+         Bis zum 17.8.2026 stand hier nur `isChef()`. Im Emulator
+         nachgemessen war damit zweierlei moeglich:
+
+           1. Ein Chef von Alpha legte ein Konto mit firma:'beta' an.
+           2. Ein beliebiges angemeldetes Konto legte SICH SELBST mit
+              firma:'beta' an — und las danach die Konten von Beta.
+
+         Der zweite Weg ist der leichtere und war der gefaehrlichere: er
+         braucht keinen Chef-Zugang, nur eine Anmeldung.
+
+         Moeglich wurde das erst, seit `firma` an jedem Konto steht
+         (12 von 12, geprueft ueber Verwaltung → Firmen → „Konten ohne
+         Firma"). Vorher haette diese Bedingung den Chef ausgesperrt:
+         meineFirma() liefert bei einem Konto ohne Feld einen leeren
+         Wert, und dann haette er GAR KEINE Zugaenge mehr anlegen
+         koennen. */
+      allow create: if
+        // Der Chef legt an — aber nur in der eigenen Firma.
+        (isChef() && request.resource.data.get('firma', '') == meineFirma())
         || (request.auth.uid == uid
             && (!('role' in request.resource.data)
                 || request.resource.data.role == 'mitarbeiter')
-            && codeStimmt(uid)
-            // Wenn die Freigabe eingeschaltet ist, startet das Konto
-            // inaktiv. Sich selbst aktiv zu setzen waere sonst trivial.
+            // Die Firma, die man sich gibt, muss ihren eigenen Code
+            // haben — nicht den einer beliebigen anderen.
+            && codeStimmtFuer(uid, request.resource.data.get('firma', ''))
+            /* Wenn die Freigabe eingeschaltet ist, startet das Konto
+               inaktiv. Sich selbst aktiv zu setzen waere sonst trivial.
+
+               HIER STAND KURZ MEHR: „sofort aktiv nur mit vorgezeigtem
+               Code". Das hat zwei bestehende Pruefungen umgeworfen —
+               „Neuanmeldung als Mitarbeiter ist erlaubt" und „OHNE
+               Schranken: Selbstregistrierung geht wie bisher". Beide
+               legen ein Profil OHNE Feld firma an, also in der alten
+               Form, und beide halten eine bewusste Entscheidung fest:
+               ein Betrieb ohne hinterlegten Code ist offen.
+
+               Diese Entscheidung gehoert dem Betreiber, nicht dieser
+               Regel. Was hier bleibt, ist die engere Aussage: wer eine
+               Firma beansprucht, die einen Code hat, muss ihn kennen.
+               Ein Betrieb ohne Code bleibt offen — und wird zu, sobald
+               der Chef unter Verwaltung → Team einen setzt. */
             && (!freigabePflicht()
                 || request.resource.data.get('aktiv', true) == false));
       // Der Chef darf alles ändern. Alle anderen dürfen nur ihr eigenes Profil

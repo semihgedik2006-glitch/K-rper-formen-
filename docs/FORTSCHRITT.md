@@ -3550,6 +3550,78 @@ bei `kanalErlaubt`.
 
 ---
 
+## Sitzung 44 · Die strenge Regel ausgerollt — und ein zweites Loch gefunden 🔴🟢
+
+Der Betreiber hat die Vorbedingung geprüft und gemeldet:
+
+```
+12 Konten · 11 mit „koerperformen" · 1 andere Firma · 0 ohne Feld
+✓ Alles gesetzt. Die strenge Regel kann ausgerollt werden.
+```
+
+Damit war der Weg frei für den Punkt, der seit dem 17.8. als `BEKANNT
+OFFEN` festgehalten war: `allow create: if isChef()` fragte nicht nach
+der Firma.
+
+### Erst gemessen, dann geschrieben
+
+Statt die eine bekannte Zeile zu ändern, erst im Emulator nachgesehen,
+**was heute wirklich möglich ist**:
+
+```
+MÖGLICH  Chef A legt ein Konto mit firma:beta an
+MÖGLICH  Neuling legt sich SELBST mit firma:beta an
+MÖGLICH  Neuling liest danach ein Konto von Beta
+```
+
+Der zweite Weg stand nirgends. Er ist der **leichtere und
+gefährlichere**: er braucht keinen Chef-Zugang, nur eine Anmeldung. Der
+Grund lag daneben — `codeStimmt()` liest seit jeher den **flachen**
+`config/registrierung`, während der Code seit dem Umzug unter
+`firmen/<kennung>/config/registrierung` liegt. Die Prüfung ging am
+richtigen Dokument vorbei.
+
+### Was jetzt gilt
+
+| | |
+|---|---|
+| Chef legt an | nur in der **eigenen** Firma (`firma == meineFirma()`) |
+| Selbst anlegen | die beanspruchte Firma muss **ihren eigenen** Code haben — `codeStimmtFuer(uid, firma)` |
+
+```
+gesperrt Chef A legt ein Konto mit firma:beta an
+gesperrt Neuling legt sich SELBST mit firma:beta an
+gesperrt Neuling liest ein Konto von Beta
+```
+
+### Eine Verschärfung wieder zurückgenommen
+
+Zwischendurch stand hier zusätzlich: „sofort aktiv nur mit vorgezeigtem
+Code". Das hat **zwei bestehende Prüfungen umgeworfen** — „Neuanmeldung
+als Mitarbeiter ist erlaubt" und „OHNE Schranken: Selbstregistrierung
+geht wie bisher". Beide legen ein Profil ohne Feld `firma` an, in der
+alten Form, und beide halten eine bewusste Entscheidung fest: **ein
+Betrieb ohne hinterlegten Code ist offen.**
+
+Diese Entscheidung gehört dem Betreiber, nicht der Regel. Also
+zurückgenommen und im Kommentar festgehalten, warum. Was bleibt, ist die
+engere und richtige Aussage: wer eine Firma beansprucht, **die** einen
+Code hat, muss ihn kennen.
+
+**Für den Betrieb heisst das:** der Firmencode (Verwaltung → Team, zwei
+Minuten) schliesst jetzt zusätzlich diese Tür. Die Zeile stand schon
+länger auf der Liste; seit heute hängt mehr daran.
+
+```
+Regeln 165 · Kreuz 132 · Rechte 84 · Umzug 12 · Functions 118
+```
+
+Sechs neue Prüfungen, drei davon Gegenproben — dass der Chef in der
+eigenen Firma weiterhin anlegt, dass die Anmeldung mit dem richtigen Code
+durchgeht und mit dem falschen nicht.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

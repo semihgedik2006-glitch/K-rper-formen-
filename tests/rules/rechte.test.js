@@ -86,24 +86,49 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('GEGENPROBE Mitarbeiter darf KEINEN Chef anlegen', () =>
     assertFails(mitA().doc('users/nochEinChef').set({
       name: 'Geschmuggelt', role: 'chef', firma: A, aktiv: true })));
-  /* BEKANNTES LOCH, hier festgehalten statt versteckt.
-     `allow create: if isChef()` fragt NICHT nach der Firma. Ein Chef von
-     A kann damit ein Konto anlegen, das auf Firma B zeigt — und sich
-     darüber in fremde Daten setzen. Bei einem Kunden folgenlos, vor dem
-     zweiten muss es zu sein.
+  /* ── Zugemacht am 17.8.2026 ──
+     Vorher stand hier `allow create: if isChef()` ohne Firmenpruefung.
+     Im Emulator nachgemessen war zweierlei moeglich, und der zweite Weg
+     war der leichtere:
 
-     Warum nicht sofort: die Bedingung müsste `request.resource.data.firma
-     == meineFirma()` lauten, und `meineFirma()` liefert bei Konten ohne
-     Feld `firma` einen leeren Wert. Dann könnte der Chef GAR KEINE
-     Zugänge mehr anlegen — genau die Funktion, die gerade gebraucht
-     wird. Erst müssen alle Konten das Feld tragen
-     (Verwaltung → Firmen → „Konten ohne Firma"), dann diese Zeile.
+       1. Ein Chef von Alpha legte ein Konto mit firma:'beta' an.
+       2. Ein beliebiges angemeldetes Konto legte SICH SELBST mit
+          firma:'beta' an — ohne Chef-Zugang, ohne Code — und las
+          danach die Konten von Beta.
 
-     Der Durchlauf hält den Zustand fest: schlägt er um, ist das Loch zu
-     und diese Erwartung gehört umgedreht. */
-  await pruefe('BEKANNT OFFEN Chef kann ein Konto in eine fremde Firma schreiben', () =>
-    assertSucceeds(chefA().doc('users/fremderChef').set({
-      name: 'Fremd', role: 'chef', firma: B, aktiv: true })));
+     Moeglich wurde die Verschaerfung erst, seit `firma` an jedem Konto
+     steht (12 von 12). Vorher haette sie den Chef ausgesperrt. */
+  await pruefe('Chef legt KEIN Konto in einer fremden Firma an', () =>
+    assertFails(chefA().doc('users/eingeschleust')
+      .set({ name: 'Fremd', role: 'mitarbeiter', firma: B, aktiv: true })));
+  await pruefe('GEGENPROBE in der EIGENEN Firma legt er weiterhin an', () =>
+    assertSucceeds(chefA().doc('users/ganzNormal')
+      .set({ name: 'Normal', role: 'mitarbeiter', firma: A, aktiv: true })));
+
+  /* Der zweite Weg: sich selbst anlegen und dabei eine Firma
+     beanspruchen. Firma A hat einen Code (GEHEIM-2026), also muss man
+     ihn kennen — auch fuer ein Konto, das inaktiv startet. */
+  await pruefe('Niemand haengt sich ohne Code an eine Firma mit Code', () =>
+    assertFails(env.authenticatedContext('neuling').firestore()
+      .doc('users/neuling')
+      .set({ name: 'Ich', role: 'mitarbeiter', firma: A, aktiv: false })));
+
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc('beitritt/neuling2').set({ code: 'GEHEIM-2026', ts: Date.now() });
+    await ctx.firestore().doc('beitritt/neuling4').set({ code: 'FALSCH', ts: Date.now() });
+  });
+  await pruefe('GEGENPROBE mit dem richtigen Code geht die Anmeldung', () =>
+    assertSucceeds(env.authenticatedContext('neuling2').firestore()
+      .doc('users/neuling2')
+      .set({ name: 'Ich', role: 'mitarbeiter', firma: A, aktiv: false })));
+  await pruefe('Mit dem falschen Code nicht', () =>
+    assertFails(env.authenticatedContext('neuling4').firestore()
+      .doc('users/neuling4')
+      .set({ name: 'Ich', role: 'mitarbeiter', firma: A, aktiv: false })));
+  await pruefe('Und eine Rolle gibt man sich dabei weiterhin nicht', () =>
+    assertFails(env.authenticatedContext('neuling3').firestore()
+      .doc('users/neuling3')
+      .set({ name: 'Ich', role: 'chef', firma: A, aktiv: false })));
 
   /* ══ Gruppenkanäle im Chat ══
      Zwei Runden, die nicht jeder mitliest. Die Oberfläche zeigt einem
