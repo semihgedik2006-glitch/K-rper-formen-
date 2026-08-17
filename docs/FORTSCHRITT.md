@@ -3483,6 +3483,73 @@ Regel-Durchlauf hält den Zustand als `BEKANNT OFFEN` fest.
 
 ---
 
+## Sitzung 43 · Zwei Runden, die nicht jeder mitliest 🟢
+
+Auftrag: ein eigener Chat für die Chefs und einer für die Studio-Leiter,
+in dem die Chefs mit drin sind. Nachgereicht: als eigener Reiter, nicht
+in dieselbe Leiste.
+
+| Kanal | wer |
+|---|---|
+| `gruppe-chefs` | nur Chefs |
+| `gruppe-leitung` | Chefs **und** Studio-Leiter |
+
+### Die Sperre steht in den Regeln, nicht in der Oberfläche
+
+`buildChannels()` zeigt einem Mitarbeiter diese Knöpfe gar nicht — aber
+wer die Konsole öffnet, ruft den Pfad direkt auf. Eine Liste, die man
+nicht sieht, ist keine Sperre. Deshalb `kanalErlaubt(kanal)` in
+`firestore.rules`, angewandt auf **read, create, update und delete**, und
+in **beiden** Blöcken (flach und Firmen-Pfad).
+
+Zwölf Prüfungen im Emulator, darunter drei Gegenproben — ohne sie wäre
+„die Gruppen sind dicht" auch dann grün, wenn der ganze Chat zu wäre:
+
+```
+✓ Chefrunde: ein Studio-Leiter kommt NICHT hinein
+✓ Chefrunde: ein Mitarbeiter schreibt auch nicht hinein
+✓ Leitungsrunde: der Chef ist auch drin
+✓ GEGENPROBE der normale Teamchat bleibt fuer alle offen
+✓ GEGENPROBE ein Mitarbeiter liest weiterhin seinen Studiokanal
+```
+
+### Ein eigener Reiter, kein sechzehnter Kanal
+
+Bei vierzehn Studios stünde „Chefs" hinter sechs Wischbewegungen. Über
+der Kanalleiste sitzt jetzt eine schmale Umschaltung **Studios |
+Gruppen** — bewusst anders aussehend als die Kanäle selbst (kleiner, in
+einer Wanne), damit niemand denkt, „Gruppen" sei auch nur ein Kanal.
+
+Sie erscheint **nur, wenn es etwas dahinter gibt**: ein Mitarbeiter
+bekommt sie nicht zu sehen. Ein Reiter, hinter dem nichts liegt, ist
+schlimmer als keiner.
+
+| Rolle | Reiter | Gruppen |
+|---|---|---|
+| Chef | ja | Chefs · Leitung |
+| Studio-Leiter | ja | Leitung |
+| Mitarbeiter | **nein** | — |
+
+### Zwei Kleinigkeiten, die sonst später weh getan hätten
+
+* **Ungelesenes** wird für *alle* eigenen Kanäle gezählt, nicht nur für
+  die gerade gezeigten — sonst merkt ein Chef nichts von der Chefrunde,
+  solange er auf „Studios" steht.
+* **Der offene Kanal** wird beim Umschalten mitgezogen. Ohne das stünde
+  man vor einer Leiste ohne Markierung und läse einen Kanal, den man
+  nicht sieht.
+
+### Was bewusst NICHT mitgeändert wurde
+
+`allow read: if istAktiv()` gilt für `allgemein` und die Studiokanäle
+weiterhin für jeden Aktiven — auch für Studios, in denen er nicht
+arbeitet. Das ist eine alte Entscheidung, und sie hier nebenbei zu
+verschärfen wäre falsch: es braucht eine eigene Runde mit einem Blick
+darauf, wer im Betrieb quer über Studios arbeitet. Steht als Kommentar
+bei `kanalErlaubt`.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-wwgCUZhDzAv8hNtD8AACq2U6Ywie1kd/Ss7CRNo1ZGA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-qmGhz1XtD5SywJM7+83X/UMfmQ0cZRAtFpoqsrE9nKc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -585,6 +585,26 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Kanal stünden drei fast gleiche Pillenreihen übereinander.
 
    Die 44 Pixel Fingerziel bleiben — sie sind nur unsichtbar. */
+/* ── Studios | Gruppen ──
+   Eine schmale Umschaltung ueber der Kanalleiste. Bewusst anders
+   aussehend als die Kanaele selbst (kleiner, in einer Wanne), damit man
+   nicht denkt, „Gruppen" sei auch nur ein Kanal. */
+.chat-arten{display:flex;gap:var(--s2);margin:var(--s8) var(--rand) 0;
+  padding:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
+  align-self:flex-start;flex-shrink:0}
+.chat-arten[hidden]{display:none}
+.chat-art{border:none;background:none;cursor:pointer;font-family:var(--font-head);
+  font-weight:700;font-size:var(--t-xs);letter-spacing:var(--ls-s);
+  text-transform:uppercase;color:var(--text-3);padding:var(--s6) var(--s16);
+  min-height:36px;border-radius:var(--r-pille);
+  transition:background .25s var(--ease-ios),color .25s var(--ease-ios)}
+.chat-art.active{background:var(--bg-2);color:var(--text);box-shadow:var(--e1)}
+.chat-art:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+/* Die Leiste ist 36 hoch, der Daumen braucht 44. */
+.chat-art{position:relative}
+.chat-art::after{content:'';position:absolute;left:0;right:0;top:50%;
+  transform:translateY(-50%);height:44px}
+
 .chat-channels{position:relative;display:flex;gap:var(--s2);
   padding:var(--s6) var(--rand) var(--s10);
   overflow-x:auto;flex-shrink:0;flex-wrap:nowrap;scrollbar-width:none}
@@ -2790,6 +2810,15 @@ html{font-size:var(--fs,100%)}
         <div class="notif-banner" id="notifBanner" data-ikon="glocke">
           <div class="nb-txt"><b>Meldungen an?</b><span class="nb-mehr"> Sonst bleibt Neues unbemerkt.</span></div>
           <button class="btn btn-primary btn-sm" id="notifEnable">Aktivieren</button>
+        </div>
+        <!-- Studios und Gruppen sind zwei verschiedene Dinge und gehören
+             nicht in dieselbe Leiste: bei vierzehn Studios stünde „Chefs"
+             hinter sechs Wischbewegungen. Die Reiter erscheinen nur, wenn
+             es überhaupt eine Gruppe zu sehen gibt — ein Mitarbeiter
+             bekommt sie nicht. -->
+        <div class="chat-arten" id="chatArten" hidden>
+          <button type="button" class="chat-art active" data-chatart="studios">Studios</button>
+          <button type="button" class="chat-art" data-chatart="gruppen">Gruppen</button>
         </div>
         <div class="chat-channels" id="chatChannels"></div>
         <div class="pin-bar" id="pinBar">
@@ -6440,7 +6469,11 @@ function studioName(key){
 }
 function channelStudioName(ch){ return (ch && ch.indexOf('studio-')===0) ? studioName(ch) : null; }
 /* Anzeigename eines Kanals – für Suchtreffer, die aus einem anderen kommen */
-function channelLabel(ch){ return channelStudioName(ch) || 'Allgemein'; }
+function channelLabel(ch){
+  if(ch==='gruppe-chefs')   return 'Chefs';
+  if(ch==='gruppe-leitung') return 'Leitung';
+  return channelStudioName(ch) || 'Allgemein';
+}
 /* Macht http(s)-Links in (bereits escaptem) Text klickbar */
 function linkify(escaped){
   return escaped.replace(/(https?:\/\/[^\s<]+)/g, function(u){
@@ -8074,6 +8107,7 @@ function showApp(){
 
   buildNav();
   featureKartenAnwenden();   // Karten, die woanders stehen (siehe dort)
+  chatArtBinden();
   buildChannels();
   buildMaterialSelect();
   buildPutzplanSelect();
@@ -8489,13 +8523,59 @@ function updateNavMarkers(){
 }
 
 /* ── Chat Channels ── */
-function buildChannels(){
-  var wrap=$('chatChannels'); wrap.innerHTML='';
+/* Die Gruppenkanäle. Zwei Runden, die nicht jeder mitliest:
+
+     gruppe-chefs     nur Chefs
+     gruppe-leitung   Chefs UND Studio-Leiter
+
+   Wer welche sieht, steht hier — und noch einmal in firestore.rules
+   (kanalErlaubt). Die Liste hier bestimmt, was auf dem Bildschirm
+   erscheint; die Regel bestimmt, was gelesen werden KANN. Eine Liste,
+   die man nicht sieht, ist keine Sperre. */
+function gruppenKanaele(){
+  if(!session) return [];
+  if(session.role==='chef'){
+    return [{ id:'gruppe-chefs',   label:'Chefs' },
+            { id:'gruppe-leitung', label:'Leitung' }];
+  }
+  if(session.role==='leiter'){
+    return [{ id:'gruppe-leitung', label:'Leitung' }];
+  }
+  return [];
+}
+var _chatArt = 'studios';
+
+function studioKanaele(){
   var chans=[{id:'allgemein',label:'Allgemein (alle)'}];
   if(canManage()){
     managedStudios().forEach(function(s){ chans.push({id:studioKey(s),label:s}); });
   } else {
     session.studios.forEach(function(s){ chans.push({id:studioKey(s),label:s}); });
+  }
+  return chans;
+}
+
+function buildChannels(){
+  var wrap=$('chatChannels'); wrap.innerHTML='';
+  var gruppen=gruppenKanaele();
+  var arten=$('chatArten');
+  /* Ohne Gruppe keine Umschaltung. Ein Reiter, hinter dem nichts liegt,
+     ist schlimmer als keiner. */
+  if(arten){
+    arten.hidden = !gruppen.length;
+    if(!gruppen.length) _chatArt='studios';
+    arten.querySelectorAll('[data-chatart]').forEach(function(t){
+      t.classList.toggle('active', t.dataset.chatart===_chatArt);
+    });
+  }
+  var chans = _chatArt==='gruppen' ? gruppen : studioKanaele();
+  /* Der offene Kanal muss in der gezeigten Liste liegen — sonst steht
+     man vor einer Leiste ohne Markierung und liest einen Kanal, den
+     man nicht sieht. */
+  if(chans.every(function(c){ return c.id!==currentChannel; }) && chans.length){
+    currentChannel = chans[0].id;
+    _chatLimit = CHAT_PAGE;
+    listenChannel(currentChannel);
   }
   chans.forEach(function(c){
     var b=document.createElement('button');
@@ -8518,9 +8598,25 @@ function buildChannels(){
   wrap.classList.add('sofort');
   kanalMarker();
   requestAnimationFrame(function(){ wrap.classList.remove('sofort'); });
-  _chanList=chans.map(function(c){ return c.id; });
+  /* Ungelesenes wird fuer ALLE eigenen Kanaele gezaehlt, nicht nur fuer
+     die gerade gezeigten — sonst merkt ein Chef nichts von der
+     Chefrunde, solange er auf „Studios" steht. */
+  _chanList=studioKanaele().concat(gruppen).map(function(c){ return c.id; });
   watchChannelUnread();
   markChannelRead(currentChannel);
+}
+
+/* Umschalten zwischen Studios und Gruppen. */
+function chatArtBinden(){
+  var arten=$('chatArten'); if(!arten || arten._gebunden) return;
+  arten._gebunden = true;
+  arten.addEventListener('click', function(e){
+    var t=e.target.closest('[data-chatart]'); if(!t) return;
+    if(_chatArt===t.dataset.chatart) return;
+    _chatArt = t.dataset.chatart;
+    buildChannels();
+    kanalSichtbarMachen();
+  });
 }
 
 /* ── Reihenfolge der Kanäle ──
