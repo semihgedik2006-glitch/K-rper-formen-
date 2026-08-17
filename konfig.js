@@ -18,6 +18,16 @@
     firma_anzeige: 'Körperformen',
     appName: 'StudioChat',
 
+    /* Wohin eine Anfrage von „Ich führe ein Studio" geht (Anmeldebildschirm,
+       Knopf „Zugang anfragen").
+
+       Leer lassen ist in Ordnung: dann steht im Fenster ein Hinweis statt
+       eines Knopfes, der ins Leere führt. Hier bewusst KEINE Adresse im
+       Auslieferungsstand — das Repo ist oeffentlich, und eine Adresse in
+       einer oeffentlichen Datei wird eingesammelt und zugespammt. Wer sie
+       einträgt, sollte eine nehmen, die dafür gedacht ist. */
+    vertriebMail: '',
+
     /* Nur hinten anhaengen, nie umsortieren, nie loeschen: die Kennung in der
        Datenbank ist der Listenplatz ("studio-6"). Eine andere Reihenfolge
        ordnet allen bestehenden Daten ein anderes Studio zu. */

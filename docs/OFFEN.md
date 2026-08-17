@@ -2,6 +2,17 @@
 
 Stand 17. August 2026.
 
+> **Neu bei dir seit dem 17.8.:** `KONFIG.vertriebMail` in `konfig.js`.
+> Auf dem Anmeldebildschirm gibt es jetzt „Ich führe ein Studio" mit
+> einem Angebot-Fenster. Solange das Feld leer ist, steht dort ein
+> Hinweis statt eines Knopfes — eine Adresse gehört nicht in ein
+> öffentliches Repo, die trägst du selbst ein.
+>
+> **Und eine Entscheidung, die ich nicht treffen kann:** das Fenster
+> nennt bewusst **keinen Preis**. Die Zahlen in `ABO-PLAN.md` sind dort
+> selbst als Platzhalter markiert. Sobald du einen echten Preis hast,
+> ist er eine Zeile.
+
 ## Auf einen Blick
 
 Das Ausführliche steht weiter unten und in `SICHERHEIT.md`. Hier nur die
