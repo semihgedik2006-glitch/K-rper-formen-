@@ -26,13 +26,18 @@ Sperrdatei. Der Grund steht am 17.8. in `FORTSCHRITT.md`: hier lag
 beiden Emulatoren waren sich über einen Regelpfad uneinig. Ergebnis:
 hier 165 grün, dort 3 rot — und die Regeln gingen nicht raus.
 
+Damit die Sperre hält, steht `save-exact=true` in `.npmrc` daneben.
+Ohne sie schreibt `npm install firebase-tools@14.27.0` den Eintrag als
+`^14.27.0` zurück und hebt genau das wieder auf — beim ersten
+Nachziehen am selben Tag prompt passiert.
+
 Eine Prüfung, die woanders läuft als die Auslieferung, prüft nichts.
 `tests/test-regelumgebung.js` wacht darüber und wird rot, sobald die
 beiden Seiten auseinanderlaufen. Wer hochzieht, zieht beide hoch:
 
 ```bash
-cd tests/rules && npm install firebase-tools@<neu>   # package.json anpassen
-node tests/test-regelumgebung.js                     # muss grün sein
+cd tests/rules && npm install firebase-tools@<neu>   # .npmrc hält die Zahl fest
+node ../test-regelumgebung.js                        # muss grün sein
 npm test                                             # und das auch
 ```
 
