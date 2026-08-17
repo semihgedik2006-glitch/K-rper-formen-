@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-WrmdCf48rao+hFZ7I3ox85E7X2NGWS3ifqMdLwrWa5U='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-wwgCUZhDzAv8hNtD8AACq2U6Ywie1kd/Ss7CRNo1ZGA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -7251,6 +7251,20 @@ var DB_ERRORS = {
   'cancelled':'Vorgang abgebrochen.',
   'invalid-argument':'Eingabe ungültig.'
 };
+/* ── Fehler aus unseren eigenen Cloud Functions ──
+   errMsg() ordnet nach CODE, und das ist bei Firestore richtig: dessen
+   Meldungen sind englisch und technisch. Unsere Functions schicken aber
+   einen fertigen deutschen Satz mit, der genau sagt, was zu tun ist —
+   „Zu dieser Adresse gibt es noch einen Zugang im Team. Dort entfernen,
+   dann ist sie frei." Der Code dazu ist failed-precondition, und errMsg
+   haette daraus „Aktion gerade nicht möglich" gemacht: dieselbe Sackgasse
+   wie vorher, nur mit anderem Text. */
+function fnFehler(e){
+  if(!navigator.onLine) return 'Keine Internetverbindung.';
+  var t = e && e.message;
+  return (t && String(t).trim()) || errMsg(e);
+}
+
 function errMsg(e){
   if(!e) return 'Unbekannter Fehler.';
   if(!navigator.onLine) return 'Keine Internetverbindung.';
@@ -8765,7 +8779,7 @@ function createEmployee(){
             .then(function(){ createEmployee(); })
             .catch(function(f){
               note.style.color='var(--danger-tx)';
-              note.textContent = errMsg(f);
+              note.textContent = fnFehler(f);
             });
         });
         note.appendChild(p1); note.appendChild(frei);
@@ -9026,7 +9040,7 @@ function renderEmployees(emps){
             ? 'Zugang entfernt ✓ (ein Anmeldekonto gab es nicht mehr)'
             : 'Zugang entfernt ✓ — die Adresse ist wieder frei');
         })
-        .catch(function(e){ knopf.disabled=false; toast(errMsg(e),true); });
+        .catch(function(e){ knopf.disabled=false; toast(fnFehler(e),true); });
     });
   });
 }
