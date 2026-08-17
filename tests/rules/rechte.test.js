@@ -371,6 +371,68 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('GEGENPROBE lesen darf das ganze Team', () =>
     assertSucceeds(mitA().collection(`firmen/${A}/probetrainings`).get()));
 
+  /* ══ 5b. „Mein Bereich" — was nur mir gehoert ══
+     Die einzige Sammlung dieser App, die der Chef nicht lesen darf. Wenn
+     diese Runde je gruen wird, obwohl jemand Fremdes hineinsieht, ist die
+     Zusage in der Oberflaeche („Das sieht niemand ausser dir") eine Luege
+     — und eine Luege ueber Privates ist schlimmer als gar kein Notizblock.
+
+     Deshalb pruefen die ersten Runden das Verbot und erst danach die
+     Erlaubnis: eine Regel, die alles verbietet, waere sonst auch gruen. */
+  const privatMit = (db, was, id) =>
+    db.doc(`firmen/${A}/privat/mitA/${was}/${id}`);
+
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`firmen/${A}/privat/mitA/notizen/n1`)
+      .set({ text: 'Gehaltsgespraech vorbereiten', ts: 1 });
+    await ctx.firestore().doc(`firmen/${A}/privat/mitA/termine/t1`)
+      .set({ datum: '2026-09-01', titel: 'Zahnarzt', ts: 1 });
+  });
+
+  await pruefe('PRIVAT · der Chef liest meine Notiz NICHT', () =>
+    assertFails(privatMit(chefA(), 'notizen', 'n1').get()));
+  await pruefe('PRIVAT · der Chef liest meinen Kalendereintrag NICHT', () =>
+    assertFails(privatMit(chefA(), 'termine', 't1').get()));
+  await pruefe('PRIVAT · der Chef kann sie auch nicht auflisten', () =>
+    assertFails(chefA().collection(`firmen/${A}/privat/mitA/notizen`).get()));
+  await pruefe('PRIVAT · der Chef kann nichts hineinschreiben', () =>
+    assertFails(privatMit(chefA(), 'notizen', 'neu').set({ text: 'x', ts: 2 })));
+  await pruefe('PRIVAT · der Chef kann sie auch nicht loeschen', () =>
+    assertFails(privatMit(chefA(), 'notizen', 'n1').delete()));
+  /* Der Betreiber sieht sonst ueber alle Firmen hinweg die Stammdaten.
+     Hier ausdruecklich nicht — sonst haette „nur ich" eine Ausnahme,
+     von der niemand weiss. */
+  await pruefe('PRIVAT · auch der Betreiber kommt nicht heran', () =>
+    assertFails(privatMit(admin(), 'notizen', 'n1').get()));
+  await pruefe('PRIVAT · ein Kollege erst recht nicht', () =>
+    assertFails(privatMit(leiterA(), 'notizen', 'n1').get()));
+  await pruefe('PRIVAT · ohne Anmeldung schon gar nicht', () =>
+    assertFails(privatMit(anonym(), 'notizen', 'n1').get()));
+  /* Der Ordner selbst ist auch ein Dokument. Ohne die Regel darauf
+     koennte man am Inhaltsverzeichnis ablesen, dass es etwas gibt. */
+  await pruefe('PRIVAT · der Chef liest nicht einmal den Ordner', () =>
+    assertFails(chefA().doc(`firmen/${A}/privat/mitA`).get()));
+
+  // ── und jetzt die Erlaubnis, sonst prueft das Obige nur „alles zu" ──
+  await pruefe('GEGENPROBE ich lese meine eigene Notiz', () =>
+    assertSucceeds(privatMit(mitA(), 'notizen', 'n1').get()));
+  await pruefe('GEGENPROBE ich lege eine neue an', () =>
+    assertSucceeds(privatMit(mitA(), 'notizen', 'n2').set({ text: 'Idee', ts: 3 })));
+  await pruefe('GEGENPROBE ich aendere sie', () =>
+    assertSucceeds(privatMit(mitA(), 'notizen', 'n2').update({ text: 'Bessere Idee' })));
+  await pruefe('GEGENPROBE ich loesche sie', () =>
+    assertSucceeds(privatMit(mitA(), 'notizen', 'n2').delete()));
+  await pruefe('GEGENPROBE ich liste meine eigenen auf', () =>
+    assertSucceeds(mitA().collection(`firmen/${A}/privat/mitA/notizen`).get()));
+  await pruefe('GEGENPROBE mein Kalendereintrag geht auch', () =>
+    assertSucceeds(privatMit(mitA(), 'termine', 't2')
+      .set({ datum: '2026-09-02', titel: 'Sport', ts: 4 })));
+  /* Und andersherum: in einen FREMDEN privaten Ordner schreibt auch ein
+     Mitarbeiter nicht — sonst waere „privat" nur eine Ansichtssache. */
+  await pruefe('PRIVAT · ich schreibe nicht in den Ordner eines Kollegen', () =>
+    assertFails(mitA().doc(`firmen/${A}/privat/leiterA/notizen/x`)
+      .set({ text: 'untergeschoben', ts: 5 })));
+
   // ══ 6. Aufzaehlen von Konten ══
   await pruefe('Anonym kann users NICHT auflisten', () =>
     assertFails(anonym().collection('users').get()));

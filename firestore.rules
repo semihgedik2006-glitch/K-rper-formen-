@@ -833,6 +833,31 @@ service cloud.firestore {
         && request.resource.data.text.size() < 400;
     }
 
+    // ── Was nur mir gehoert (Mein Bereich) ──
+    //
+    // Eigene Kalendereintraege und Notizen. Die einzige Sammlung dieser
+    // App, die der Chef NICHT lesen darf — und das ist der ganze Punkt:
+    // ein Notizblock, bei dem man ueberlegen muss, was man hineinschreibt,
+    // ist keiner.
+    //
+    // Deshalb steht hier bewusst KEIN isChef() und kein Admin. Wer das
+    // spaeter aufweicht, nimmt der Sammlung ihre Existenzberechtigung.
+    //
+    // Ehrlich dazugesagt: das ist eine Regel der App, keine
+    // Verschluesselung. Wer Zugang zur Firebase-Konsole hat, sieht die
+    // Daten trotzdem — Regeln gelten fuer Clients, nicht fuer den
+    // Betreiber der Datenbank. Steht auch so in der App.
+    //
+    // uid steckt im Pfad, nicht im Dokument. Damit kann die Regel ohne
+    // einen einzigen get() entscheiden, und eine Abfrage ueber fremde
+    // Eintraege ist gar nicht formulierbar.
+    match /privat/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      match /{rest=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
     match /pushTokens/{token} {
@@ -1253,6 +1278,17 @@ service cloud.firestore {
           allow create, update: if inFirma(f) && istAktiv()
             && request.resource.data.text is string
             && request.resource.data.text.size() < 400;
+        }
+
+        // Siehe die Begruendung beim flachen Gegenstueck weiter oben.
+        // inFirma(f) kommt hier dazu, damit eine stillgelegte Firma auch
+        // hier zu ist — sonst waere ausgerechnet die private Sammlung die
+        // einzige, die eine Sperre ueberlebt.
+        match /privat/{uid} {
+          allow read, write: if inFirma(f) && request.auth.uid == uid;
+          match /{rest=**} {
+            allow read, write: if inFirma(f) && request.auth.uid == uid;
+          }
         }
 
         match /pushTokens/{token} {
