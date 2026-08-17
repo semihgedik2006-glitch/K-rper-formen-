@@ -73,6 +73,36 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('Mitarbeiter kann sich NICHT selbst Studios geben', () =>
     assertFails(mitA().doc('users/mitA').update({ studioKeys: ['studio-0', 'studio-5'] })));
 
+  /* Aus dem Betrieb gemeldet: „ich kann keinen Chef anlegen". Die App
+     hatte die Auswahl weggeworfen — die Regel erlaubt es. Beides muss
+     stimmen, sonst scheitert es beim Schreiben statt beim Klicken.
+     Die Gegenprobe darunter ist die wichtigere Haelfte. */
+  await pruefe('Chef darf einen ZWEITEN Chef anlegen', () =>
+    assertSucceeds(chefA().doc('users/neuerChef').set({
+      name: 'Zweiter Chef', role: 'chef', firma: A, aktiv: true,
+      studioKeys: ['studio-0', 'studio-1'] })));
+  await pruefe('GEGENPROBE Mitarbeiter darf KEINEN Chef anlegen', () =>
+    assertFails(mitA().doc('users/nochEinChef').set({
+      name: 'Geschmuggelt', role: 'chef', firma: A, aktiv: true })));
+  /* BEKANNTES LOCH, hier festgehalten statt versteckt.
+     `allow create: if isChef()` fragt NICHT nach der Firma. Ein Chef von
+     A kann damit ein Konto anlegen, das auf Firma B zeigt — und sich
+     darüber in fremde Daten setzen. Bei einem Kunden folgenlos, vor dem
+     zweiten muss es zu sein.
+
+     Warum nicht sofort: die Bedingung müsste `request.resource.data.firma
+     == meineFirma()` lauten, und `meineFirma()` liefert bei Konten ohne
+     Feld `firma` einen leeren Wert. Dann könnte der Chef GAR KEINE
+     Zugänge mehr anlegen — genau die Funktion, die gerade gebraucht
+     wird. Erst müssen alle Konten das Feld tragen
+     (Verwaltung → Firmen → „Konten ohne Firma"), dann diese Zeile.
+
+     Der Durchlauf hält den Zustand fest: schlägt er um, ist das Loch zu
+     und diese Erwartung gehört umgedreht. */
+  await pruefe('BEKANNT OFFEN Chef kann ein Konto in eine fremde Firma schreiben', () =>
+    assertSucceeds(chefA().doc('users/fremderChef').set({
+      name: 'Fremd', role: 'chef', firma: B, aktiv: true })));
+
   /* Der gefährlichste Einzelfall: ein Konto, das auf die Freigabe des
      Chefs wartet, schaltet sich selbst frei. Danach sieht es Teamchat,
      Personenliste, Aufgaben und Dokumente. */

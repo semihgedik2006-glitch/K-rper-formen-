@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-0dLiVrrNuFg4WhaAVI15iAEqWD5r9CG+iTLrj3i4PIk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-SuxFQzqSKyXdYSAp7U4NCptxAW9NneJW56TYq79qjso='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3440,8 +3440,8 @@ html{font-size:var(--fs,100%)}
                 <option value="leiter">Studio-Leiter – verwaltet seine Studios wie ein Chef</option>
                 <option value="chef">Chef – voller Zugriff auf alles</option>
               </select>
-              <p class="hint" id="emRoleHint" style="margin:6px 0 0">Ein Studio-Leiter darf in seinen Studios Aufgaben und Putzpläne erstellen, Material pflegen und Infos posten – aber keine Zugänge anlegen.</p></div>
-            <div class="field"><label>Studios zuordnen</label>
+              <p class="hint" id="emRoleHint" style="margin:6px 0 0"></p></div>
+            <div class="field"><label id="emStudioLabel">Studios zuordnen</label>
               <div class="studio-checks" id="emStudios"></div></div>
             <button data-ikon="person" class="btn btn-primary btn-sm" id="emCreate">Zugang anlegen</button>
             <p class="em-saved" id="emCreateNote"></p>
@@ -8687,8 +8687,23 @@ function createEmployee(){
   var note=$('emCreateNote'); note.style.color='var(--danger-tx)';
   if(!name||!email||!pw){ note.textContent='Bitte Name, E-Mail und Passwort ausfüllen.'; return; }
   if(pw.length<6){ note.textContent='Passwort muss mind. 6 Zeichen haben.'; return; }
+  /* Die Auswahl bot DREI Rollen an, diese Zeile kannte zwei: „Chef"
+     wurde stillschweigend zu „Mitarbeiter". Wer einen Chef anlegen
+     wollte, bekam einen Mitarbeiter und keine Fehlermeldung — es sah aus,
+     als ginge es gar nicht. Die Datenbankregeln erlauben es seit jeher
+     (`allow create: if isChef()`); nur hier kam die Wahl nicht an. */
+  var gewaehlt = ($('emRole') && $('emRole').value) || 'mitarbeiter';
+  var role = (gewaehlt==='chef' || gewaehlt==='leiter') ? gewaehlt : 'mitarbeiter';
+
+  /* Ein Chef hat ohnehin Zugriff auf alle Studios — ihn eines auswaehlen
+     zu lassen, ist eine Huerde ohne Sinn. Ohne Auswahl bekommt er alle:
+     ein paar Stellen lesen studioKeys direkt (etwa der Empfaengerkreis
+     einer Ankuendigung), und eine leere Liste liesse ihn dort ins Leere
+     laufen. */
+  if(role==='chef' && !studios.length){
+    studios = STUDIOS_ALPHA.slice();
+  }
   if(!studios.length){ note.textContent='Bitte mindestens ein Studio zuordnen.'; return; }
-  var role=($('emRole')&&$('emRole').value)==='leiter' ? 'leiter' : 'mitarbeiter';
   var btn=$('emCreate'); btn.disabled=true; btn.textContent='…';
   var sec=secondaryApp();
   sec.auth().createUserWithEmailAndPassword(email,pw)
@@ -8721,6 +8736,28 @@ function createEmployee(){
       btn.disabled=false; btn.textContent='Zugang anlegen';
       try{ sec.auth().signOut(); }catch(_){}
     });
+}
+
+/* Was die gewaehlte Rolle bedeutet — in einem Satz, und der wechselt
+   mit der Auswahl. */
+function rolleErklaeren(){
+  var w=$('emRole'), h=$('emRoleHint'); if(!w||!h) return;
+  var texte = {
+    mitarbeiter: 'Arbeitet in seinen Studios mit: Aufgaben abhaken, '+
+      'Material eintragen, Chat und Dokumente lesen.',
+    leiter: 'Verwaltet seine Studios wie ein Chef — Aufgaben und '+
+      'Putzpläne anlegen, Material pflegen, Infos posten. Aber keine '+
+      'Zugänge anlegen.',
+    chef: 'Voller Zugriff auf alles, inklusive Verwaltung, Auswertung '+
+      'und Zugängen. Studios muss man nicht zuordnen — er bekommt alle.'
+  };
+  h.textContent = texte[w.value] || texte.mitarbeiter;
+  /* Beim Chef ist die Studio-Auswahl kein Pflichtfeld mehr. Sie bleibt
+     sichtbar: wer will, darf trotzdem eine Teilmenge setzen. */
+  var lab=$('emStudioLabel');
+  if(lab) lab.textContent = w.value==='chef'
+    ? 'Studios zuordnen (nicht nötig — ein Chef bekommt alle)'
+    : 'Studios zuordnen';
 }
 
 /* ── Chef-Zugänge ──
@@ -16307,6 +16344,11 @@ function bindActions(){
   if(session.role==='chef'){
     // Mitarbeiter anlegen
     $('emCreate').addEventListener('click', createEmployee);
+    /* Der Hinweis unter der Rollenauswahl stand fest auf „Studio-Leiter"
+       — egal, was gewaehlt war. Und beim Chef stand „Studios zuordnen"
+       da, obwohl er alle bekommt. */
+    var rw = $('emRole');
+    if(rw){ rw.addEventListener('change', rolleErklaeren); rolleErklaeren(); }
 
     // Onboarding-Schritt hinzufügen
     var obAdd=$('obAdd'), obNew=$('obNew');
