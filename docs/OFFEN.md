@@ -38,6 +38,7 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 | Was | Dringlichkeit | Aufwand |
 |---|---|---|
 | **`users`-Regel scharf stellen** — geht erst, wenn an jedem Konto `firma` steht (Verwaltung → Firmen → „Konten ohne Firma") | **vor dem zweiten Kunden** | klein |
+| **`allow create` auf `users` fragt nicht nach der Firma** — ein Chef von A kann ein Konto anlegen, das auf Firma B zeigt. Hängt an derselben Voraussetzung wie die Zeile darüber und ist in `tests/rules/rechte.test.js` als `BEKANNT OFFEN` festgehalten | **vor dem zweiten Kunden** | klein |
 | **Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen | wenn Zeit ist | klein |
 | **Angriffsdurchlauf durch `werbung.html`** (wie `test-xss.js`) | wenn Zeit ist | klein |
 | Flache Alt-Daten aufräumen | ab Mitte September | ½ Sitzung |

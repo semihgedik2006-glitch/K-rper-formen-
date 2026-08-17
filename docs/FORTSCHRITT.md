@@ -3405,6 +3405,84 @@ Abgeschnitten 0 · Fenster 11, alle Kreuze gross genug · Regression 65 grün
 
 ---
 
+## Sitzung 42 · Drei Meldungen aus dem Betrieb, drei echte Fehler 🔴🟢
+
+### 1. „Ich kann keinen Chef anlegen"
+
+```js
+<select id="emRole">   bot drei Rollen an
+createEmployee()       kannte zwei:
+    var role = value==='leiter' ? 'leiter' : 'mitarbeiter';
+```
+
+„Chef" fiel auf „Mitarbeiter" — **ohne Fehlermeldung, mit grüner
+Bestätigung**. Die Datenbankregeln erlauben es seit jeher
+(`allow create: if isChef()`), es kam nur nie dort an.
+
+Dazu zwei Dinge am selben Feld: der Hinweis darunter stand fest auf
+„Studio-Leiter", egal was gewählt war, und „mindestens ein Studio" galt
+auch für den Chef, der ohnehin alle hat. Ohne Auswahl bekommt er jetzt
+alle eingetragen — nicht aus Bequemlichkeit: ein paar Stellen lesen
+`studioKeys` direkt (Empfängerkreis einer Ankündigung), eine leere Liste
+liesse ihn dort ins Leere laufen.
+
+### 2. Der Suchen-Knopf, mit Bild belegt
+
+Ab 700 px schaltet eine Regel das Wort „Suchen" neben die Lupe. `.icon-btn`
+ist aber ein **Grid mit `place-items:center`**, gedacht für genau ein Kind.
+Das zweite legte das Grid in eine zweite **Zeile**, und die feste Höhe von
+36 px liess es unten herausstehen:
+
+```
+Zeichen y=13 · Wort y=39 · Wortunterkante 55 · Knopfrand 52
+```
+
+Warum es keine Prüfung fand: die Forensik misst bei 390 px, dort ist das
+Wort `display:none`. **Niemand hat je oberhalb von 430 px gemessen.**
+`test-abgeschnitten.js` prüft jetzt auch 820 px und kennt eine vierte Art
+— Inhalt, der aus seinem eigenen Knopf herausragt, ohne dass irgendwo
+`overflow:hidden` steht.
+
+### 3. „Gelöschte E-Mails lassen sich nicht wieder verwenden"
+
+„Zugang entfernen" löschte nur `users/<uid>`. Das **Anmeldekonto in
+Firebase Auth blieb stehen** — die Adresse damit für immer belegt, und
+beim nächsten Anlegen kam `auth/email-already-in-use`.
+
+Der Bestätigungstext behauptete dabei: *„Die Person kann sich danach nicht
+mehr anmelden."* Das stimmte nicht. Anmelden ging weiter, es fehlte nur
+das Profil.
+
+| neu | was sie tut |
+|---|---|
+| `zugangEntfernen` | löscht Anmeldekonto **und** Profil. Erst das Konto, dann das Profil — andersherum bliebe bei einem Fehler genau der Zustand zurück, den wir abschaffen |
+| `adresseFreigeben` | für die **alten** Fälle: ein Konto ohne Profil, dessen Adresse bis heute belegt ist. Steht noch eine aktive Person dahinter, wird abgelehnt — dafür gibt es die Team-Liste mit Rückfrage |
+
+In der App erscheint bei „E-Mail bereits verwendet" jetzt ein Knopf
+*„Adresse freigeben und erneut anlegen"* statt einer Meldung, gegen die
+man nichts tun kann.
+
+```
+Regeln 165 · Kreuz 132 · Rechte 67 · Umzug 12 · Functions 118 — alle grün
+```
+
+Jede neue Funktion mit Gegenproben, und die sind hier die wichtigere
+Hälfte: ein Chef von Alpha entfernt keinen Zugang bei Beta, ein
+Mitarbeiter entfernt gar nichts, der Chef entfernt sich nicht selbst, und
+eine Adresse mit aktivem Zugang wird nicht freigegeben.
+
+### Nebenbei: ein bekanntes Loch festgehalten
+
+`allow create: if isChef()` fragt nicht nach der Firma — ein Chef von A
+kann ein Konto anlegen, das auf Firma B zeigt. **Nicht** in diesem Zug
+behoben: die Bedingung bräuchte `request.resource.data.firma ==
+meineFirma()`, und das liefert bei Konten ohne Feld `firma` leer. Dann
+könnte der Chef gar keine Zugänge mehr anlegen — genau die Funktion, um
+die es hier ging. Erst müssen alle Konten das Feld tragen. Der
+Regel-Durchlauf hält den Zustand als `BEKANNT OFFEN` fest.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

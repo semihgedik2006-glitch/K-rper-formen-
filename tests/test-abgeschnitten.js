@@ -92,6 +92,31 @@ const MESSEN = `(() => {
     }
   });
 
+  // 4. Inhalt, der aus seinem eigenen Knopf herausragt
+  /* Anderer Fall als oben: hier schneidet nichts, der Inhalt steht
+     einfach ausserhalb. So sah es beim Suchen-Knopf aus — .icon-btn ist
+     ein Grid fuer EIN Kind; kam das Wort dazu, legte es das Grid in eine
+     zweite Zeile unter das Zeichen, und die feste Hoehe liess es unten
+     herausstehen. Nichts war „overflow:hidden", also fiel es keiner
+     Ueberlauf-Pruefung auf — man sah es nur. */
+  document.querySelectorAll('button,a[role="button"]').forEach(e => {
+    if (!sichtbar(e)) return;
+    const r = e.getBoundingClientRect();
+    [...e.children].forEach(k => {
+      const s2 = getComputedStyle(k);
+      if (s2.position === 'absolute' || s2.position === 'fixed') return;   // Trefferflaechen
+      const rk = k.getBoundingClientRect();
+      if (rk.width < 1 || rk.height < 1) return;
+      const raus = Math.max(rk.bottom - r.bottom, r.top - rk.top,
+                            rk.right - r.right, r.left - rk.left);
+      if (raus > 1.5) {
+        funde.push({ art: 'RAGT HERAUS', wo: wer(e),
+          text: (e.textContent || '').trim().slice(0, 40),
+          detail: Math.round(raus) + ' px ueber den Knopfrand hinaus' });
+      }
+    });
+  });
+
   // Doppelte zusammenfassen: derselbe Kasten in zwei Ansichten ist eine Sache.
   const gesehen = {};
   return funde.filter(f => {
@@ -236,7 +261,11 @@ async function durchlauf(b, stub, breite, angemeldet) {
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  for (const breite of [320, 390, 430]) {
+  /* 820 px gehoert dazu, auch wenn niemand die App am Tablet benutzt:
+     ab 700 px schaltet eine Regel das Wort „Suchen" neben die Lupe, und
+     GENAU DIESE Regel war kaputt. Wer nur Handybreiten misst, sieht
+     Fehler nicht, die es nur oberhalb gibt. */
+  for (const breite of [320, 390, 430, 820]) {
     await durchlauf(b, 'stub-chef.js', breite, true);
     await durchlauf(b, 'stub-ohne-login.js', breite, false);
   }
@@ -253,6 +282,19 @@ async function durchlauf(b, stub, breite, angemeldet) {
   /* Zweite Gegenprobe, fuer die Fenster-Kreuze: ein absichtlich winziger
      Knopf ohne Trefferflaeche muss durchfallen. Ohne diese Zeile hiesse
      „11 von 11 gross genug" nur, dass die Regel nie zugeschlagen hat. */
+  const ragtGegen = await probe.evaluate(() => {
+    const b = document.createElement('button');
+    b.style.cssText = 'position:fixed;left:10px;top:200px;width:40px;height:36px;' +
+      'display:grid;place-items:center;overflow:visible';
+    b.innerHTML = '<span style="width:20px;height:20px;display:block"></span>' +
+                  '<span style="font:14px system-ui">Suchen</span>';
+    document.body.appendChild(b);
+    const r = b.getBoundingClientRect();
+    const k = b.lastElementChild.getBoundingClientRect();
+    const raus = k.bottom - r.bottom;
+    b.remove();
+    return raus > 1.5;
+  });
   const kreuzGegen = await probe.evaluate(() => {
     const b = document.createElement('button');
     b.style.cssText = 'position:fixed;left:100px;top:100px;width:18px;height:20px';
@@ -269,7 +311,7 @@ async function durchlauf(b, stub, breite, angemeldet) {
   await probe.close();
   await b.close();
 
-  console.log('Gemessen: 3 Breiten × (11 Ansichten + Suche + Anmeldung)\n');
+  console.log('Gemessen: 4 Breiten (320/390/430/820) × (11 Ansichten + Suche + Anmeldung + 11 Fenster)\n');
   const nach = {};
   alle.forEach(f => {
     const k = f.art + '|' + f.wo + '|' + f.text;
@@ -300,6 +342,10 @@ async function durchlauf(b, stub, breite, angemeldet) {
     errs.push('GEGENPROBE: absichtlich zu enge Felder fallen nicht auf — ' +
       'dann sagt ein leeres Ergebnis nichts (' +
       gegen.map(f => f.art).join(',') + ')');
+  }
+  if (ragtGegen !== true) {
+    errs.push('GEGENPROBE: ein Wort, das unten aus seinem Knopf ragt, faellt ' +
+      'nicht auf — genau der Fehler am Suchen-Knopf bliebe unbemerkt');
   }
   if (kreuzGegen !== false) {
     errs.push('GEGENPROBE: ein 18×20-Knopf gilt der Prüfung als gross genug — ' +
