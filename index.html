@@ -1662,8 +1662,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-zeit{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--text-2)}
 /* Woher die Zeile stammt. Ohne das steht „Zahnarzt" neben „Dienst Hürth"
    und man weiss nicht, was davon der Betrieb sieht und was nicht. */
-.ich-quelle{flex:0 0 auto;font-size:var(--t-2xs);padding:1px var(--s6);
-  border-radius:999px;background:var(--auf-2);color:var(--text-3)}
+.ich-quelle{flex:0 0 auto;font-size:var(--t-2xs);padding:var(--s1) var(--s6);
+  border-radius:var(--r-pille);background:var(--auf-2);color:var(--text-3)}
 /* --f-* und --k-* sind Flaechen, keine Textfarben. Als color: waeren sie
    halbdurchsichtig auf halbdurchsichtig — lesbar ist das nicht. Fuer
    Schrift gibt es --*-tx, und die sind in beiden Modi gesetzt. */
@@ -1679,18 +1679,20 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-tagfeld{position:relative;min-height:44px;border:none;background:var(--auf-1);
   border-radius:var(--r-8);color:var(--text);font-size:var(--t-sm);cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  gap:2px;padding:var(--s4) 0;font-variant-numeric:tabular-nums}
+  gap:var(--s2);padding:var(--s4) 0;font-variant-numeric:tabular-nums}
 .ich-tagfeld:hover{background:var(--auf-2)}
 .ich-tagfeld.leer{background:none;cursor:default;pointer-events:none}
 .ich-tagfeld.heute{outline:2px solid var(--accent);outline-offset:-2px;font-weight:700}
 .ich-tagfeld.gewaehlt{background:var(--accent-glow)}
 /* Punkte statt Zahlen: bei vier Terminen an einem Tag bleibt die Zelle
    sonst nicht mehr lesbar, und die genaue Zahl steht ohnehin darunter. */
-.ich-punkte{display:flex;gap:2px;height:5px}
-.ich-punkt{width:5px;height:5px;border-radius:50%;background:var(--text-3)}
-.ich-punkt.privat{background:var(--f-ok)}
+.ich-punkte{display:flex;gap:var(--s2);height:var(--s6)}
+.ich-punkt{width:var(--s6);height:var(--s6);border-radius:var(--r-rund);background:var(--text-3)}
+/* Volltoene, keine Fuellungen: ein 6px-Punkt aus einer 14-%-Flaeche
+   ist auf dem Kartengrund nicht mehr zu sehen. */
+.ich-punkt.privat{background:var(--ok-tx)}
 .ich-punkt.dienst{background:var(--accent)}
-.ich-punkt.frei{background:var(--f-warn)}
+.ich-punkt.frei{background:var(--warm-tx)}
 
 .ich-notiz{padding:var(--s12) var(--s14);background:var(--auf-1);
   border-radius:var(--r-12);margin-bottom:var(--s8)}
