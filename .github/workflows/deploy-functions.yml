@@ -30,6 +30,21 @@ on:
       - 'icon.png'
       - 'icon.svg'
       - '.github/workflows/deploy-functions.yml'
+
+  # Und dieselbe Pruefung schon VOR dem Merge.
+  #
+  # Am 17.8. lief regeltest erst nach dem Merge — und fiel um. Der Merge
+  # war da schon durch, main stand auf einem Stand, dessen Regeln nicht
+  # ausgerollt werden konnten. Gemerkt hat es niemand, weil die App
+  # (hosting haengt nicht an regeltest) ganz normal draussen war.
+  #
+  # Hier ohne paths-Filter, mit Absicht: die Liste oben ist die Liste der
+  # ausgelieferten Dateien, nicht die der Dinge, die eine Regel umwerfen
+  # koennen. Eine Aenderung an tests/rules/** liefert nichts aus und
+  # gehoert trotzdem geprueft. Der Lauf dauert rund eine Minute.
+  pull_request:
+    branches: [main]
+
   workflow_dispatch:
 
 jobs:
@@ -80,7 +95,11 @@ jobs:
   # Die Datei im Repo ist die Wahrheit — Regeln werden nicht mehr von Hand in
   # die Firebase-Konsole kopiert. storage.rules gehört dazu: im Speicher liegt
   # der nächtliche Vollexport der Datenbank.
+  # Die drei folgenden Jobs rollen wirklich aus und brauchen den
+  # Service-Account. Aus einem Pull Request heraus duerfen sie NICHT
+  # laufen — sonst waere jeder Zweig ein Deploy in die Produktion.
   rules:
+    if: github.event_name != 'pull_request'
     needs: regeltest
     runs-on: ubuntu-latest
     steps:
@@ -111,6 +130,7 @@ jobs:
   # sahen Geräte bis zu zehn Minuten lang die alte Fassung. Die Cache-Regeln
   # stehen jetzt in firebase.json.
   hosting:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken
@@ -136,6 +156,7 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: regeltest
     runs-on: ubuntu-latest
     steps:
