@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-Dlydj9g/G/KWHs8TP8ln2lGSvmMKrS1whvMeL0sSeQA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-C5UM4Tqp4+on+pZ1IptP7M+oDsIlPTvDuu3frY16cC4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1825,6 +1825,26 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   word-break:break-word}
 .ich-tdo.fertig .ich-tdo-txt{color:var(--text-3);text-decoration:line-through}
 .ich-tdo-frist{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
+.ich-tdo-notiz{display:block;font-size:var(--t-2xs);color:var(--text-3);
+  margin-top:var(--s2);line-height:var(--lh-eng)}
+/* Der Griff ist die EINZIGE Stelle, an der das Ziehen anfaengt.
+   touch-action:none nur hier — sonst laesst sich die Liste auf dem Handy
+   nicht mehr scrollen. */
+.ich-griff{flex:0 0 auto;align-self:center;width:24px;text-align:center;
+  color:var(--text-3);font-size:var(--t-md);cursor:grab;touch-action:none;
+  user-select:none;line-height:1}
+.ich-griff:active{cursor:grabbing}
+.ich-tdo.zieht{opacity:.6;background:var(--auf-1);border-radius:var(--r-xs)}
+.ich-tdo.wichtig .ich-tdo-txt{font-weight:650}
+.ich-stern{flex:0 0 auto;align-self:center;border:none;background:none;
+  color:var(--line-2);font-size:var(--t-md);line-height:1;cursor:pointer;
+  min-width:32px;min-height:32px;padding:0;
+  transition:color .2s var(--ease-ios),transform .2s var(--spring)}
+.ich-stern:hover{color:var(--text-3)}
+.ich-stern.an{color:var(--warm-tx);transform:scale(1.1)}
+.ich-tdo-felder{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s8)}
+.ich-tdo.ich-tdo-form{background:var(--auf-1);border-radius:var(--r-md);
+  padding:var(--s12);border-top:none}
 .ich-tdo-frist.faellig{color:var(--danger-tx)}
 .ich-tdo .mini-link{flex:0 0 auto}
 
@@ -11860,25 +11880,52 @@ var HAKEN_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
   'stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">'+
   '<path d="M5 13l4 4L19 7"/></svg>';
 
-function ichTodoZeile(t){
+function ichTodoZeile(t, ziehbar){
   var heute=ymd(new Date());
-  var frist='';
+  var zusatz='';
   if(t.frist){
     var spaet = !t.erledigt && t.frist<heute;
     var txt = t.frist===heute ? 'heute fällig'
       : new Date(t.frist+'T12:00:00').toLocaleDateString('de-DE',
           {weekday:'short',day:'2-digit',month:'2-digit'});
-    frist='<span class="ich-tdo-frist'+(spaet?' faellig':'')+'">'+
+    zusatz+='<span class="ich-tdo-frist'+(spaet?' faellig':'')+'">'+
       esc(spaet?'überfällig · '+txt:txt)+'</span>';
   }
-  return '<div class="ich-tdo'+(t.erledigt?' fertig':'')+'">'+
+  if(t.notiz) zusatz+='<span class="ich-tdo-notiz">'+esc(t.notiz)+'</span>';
+  /* Der Griff ist ein eigenes Element mit touch-action:none. Nur DORT
+     faengt das Ziehen an — sonst kann man die Liste nicht mehr
+     scrollen, ohne versehentlich etwas zu verschieben. */
+  var griff = ziehbar
+    ? '<span class="ich-griff" data-ichgriff="'+esc(t.id)+'" aria-hidden="true">⠿</span>'
+    : '';
+  return '<div class="ich-tdo'+(t.erledigt?' fertig':'')+(t.wichtig?' wichtig':'')+
+      '" data-ichtdoid="'+esc(t.id)+'">'+
+    griff+
     '<button class="ich-hak'+(t.erledigt?' an':'')+'" data-ichtdo="'+esc(t.id)+'" '+
       'role="checkbox" aria-checked="'+(t.erledigt?'true':'false')+'" '+
       'aria-label="'+esc((t.erledigt?'Wieder öffnen: ':'Abhaken: ')+(t.text||''))+'">'+
       HAKEN_SVG+'</button>'+
-    '<span class="ich-tdo-txt">'+esc(t.text||'')+frist+'</span>'+
+    '<span class="ich-tdo-txt">'+esc(t.text||'')+zusatz+'</span>'+
+    '<button class="ich-stern'+(t.wichtig?' an':'')+'" data-ichtdostern="'+esc(t.id)+'" '+
+      'aria-pressed="'+(t.wichtig?'true':'false')+'" '+
+      'aria-label="'+esc((t.wichtig?'Nicht mehr wichtig: ':'Als wichtig markieren: ')+
+        (t.text||''))+'" title="Wichtig">★</button>'+
+    '<button class="mini-link" data-ichtdobearb="'+esc(t.id)+'">Ändern</button>'+
     '<button class="mini-link" data-ichtdoweg="'+esc(t.id)+'">Löschen</button>'+
     '</div>';
+}
+
+/* ── Reihenfolge ──
+   Wer von Hand verschiebt, will genau diese Reihenfolge sehen. Deshalb
+   gewinnt sort vor allem anderen; die Frist steht daneben und wird
+   ueberfaellig rot, sortiert aber nicht mehr um. Zwei Ordnungen
+   gleichzeitig waeren nicht erklaerbar: man zieht etwas nach oben und
+   es rutscht wieder weg.
+
+   Altbestand hat kein sort. Der faellt auf ts zurueck — negativ, damit
+   Neueres oben bleibt wie bisher. */
+function todoSort(t){
+  return (typeof t.sort === 'number') ? t.sort : -(t.ts || 0) / 1000;
 }
 
 function renderIchTodos(){
@@ -11889,22 +11936,125 @@ function renderIchTodos(){
      danach, neueste oben — sonst versinkt der frisch getippte Punkt
      unter zwanzig alten. */
   var offen=_ichTodos.filter(function(t){ return !t.erledigt; })
-    .sort(function(a,b){
-      if(!!a.frist !== !!b.frist) return a.frist ? -1 : 1;
-      if(a.frist && b.frist) return a.frist.localeCompare(b.frist);
-      return (b.ts||0)-(a.ts||0);
-    });
+    .sort(function(a,b){ return todoSort(a)-todoSort(b); });
   var fertig=_ichTodos.filter(function(t){ return t.erledigt; })
     .sort(function(a,b){ return (b.erledigtAm||b.ts||0)-(a.erledigtAm||a.ts||0); });
 
-  if(zahl) zahl.textContent = offen.length
-    ? (offen.length===1?'1 offen':offen.length+' offen') : '';
-  box.innerHTML = offen.length ? offen.map(ichTodoZeile).join('')
+  if(zahl){
+    var faellig=offen.filter(function(t){
+      return t.frist && t.frist < ymd(new Date()); }).length;
+    zahl.textContent = offen.length
+      ? (offen.length===1?'1 offen':offen.length+' offen') +
+        (faellig?' · '+faellig+' überfällig':'')
+      : '';
+  }
+  // Ziehen nur bei den offenen: Erledigtes zu sortieren hat keinen Sinn.
+  box.innerHTML = offen.length
+    ? offen.map(function(t){ return ichTodoZeile(t, true); }).join('')
     : emptyHTML('Nichts offen', 'Trag oben ein, was du dir vornimmst.', 'hakenKreis');
 
   if(fWrap) fWrap.style.display = fertig.length ? '' : 'none';
   if(fTxt) fTxt.textContent = fertig.length===1 ? '1 erledigt' : fertig.length+' erledigt';
-  if(fBox) fBox.innerHTML = fertig.map(ichTodoZeile).join('');
+  if(fBox) fBox.innerHTML = fertig.map(function(t){ return ichTodoZeile(t, false); }).join('');
+}
+
+/* ── Verschieben per Griff ──
+   Mit Zeigerereignissen statt HTML5-Drag: das funktioniert auf dem Handy
+   genauso wie mit der Maus, und die App wird zu 90 % auf dem Handy
+   benutzt. Verschoben wird die Zeile im DOM waehrend des Ziehens;
+   geschrieben wird erst beim Loslassen, und dann alle Positionen auf
+   einmal — sonst wandern bei jedem Pixel Schreibvorgaenge zur Datenbank. */
+function ichZiehenBinden(){
+  var box=$('ichTodoListe'); if(!box || box._ziehen) return;
+  box._ziehen=true;
+  var zeile=null, startY=0, zeiger=null;
+
+  box.addEventListener('pointerdown', function(e){
+    var griff=e.target.closest('[data-ichgriff]'); if(!griff) return;
+    zeile=griff.closest('.ich-tdo'); if(!zeile) return;
+    zeiger=e.pointerId; startY=e.clientY;
+    zeile.classList.add('zieht');
+    griff.setPointerCapture(zeiger);
+    e.preventDefault();
+  });
+
+  box.addEventListener('pointermove', function(e){
+    if(!zeile || e.pointerId!==zeiger) return;
+    var y=e.clientY;
+    var geschwister=[].slice.call(box.querySelectorAll('.ich-tdo'));
+    for(var i=0;i<geschwister.length;i++){
+      var g=geschwister[i]; if(g===zeile) continue;
+      var r=g.getBoundingClientRect();
+      var mitte=r.top+r.height/2;
+      if(y<mitte && g.compareDocumentPosition(zeile) & Node.DOCUMENT_POSITION_FOLLOWING){
+        box.insertBefore(zeile, g); break;
+      }
+      if(y>mitte && g.compareDocumentPosition(zeile) & Node.DOCUMENT_POSITION_PRECEDING){
+        box.insertBefore(zeile, g.nextSibling); break;
+      }
+    }
+  });
+
+  function loslassen(e){
+    if(!zeile || (e && e.pointerId!==zeiger)) return;
+    zeile.classList.remove('zieht');
+    zeile=null; zeiger=null;
+    var ref=privatRef(); if(!ref) return;
+    var ids=[].slice.call(box.querySelectorAll('.ich-tdo'))
+      .map(function(z){ return z.getAttribute('data-ichtdoid'); });
+    /* Positionen neu durchnummerieren und nur schreiben, was sich
+       wirklich geaendert hat. Ohne diesen Vergleich schickt jedes
+       Loslassen so viele Schreibvorgaenge, wie die Liste lang ist. */
+    ids.forEach(function(id, i){
+      var t=_ichTodos.filter(function(x){ return x.id===id; })[0];
+      if(!t || t.sort===i) return;
+      t.sort=i;
+      ref.collection('aufgaben').doc(id).update({ sort:i })
+        .catch(function(err){ toast(errMsg(err),true); });
+    });
+  }
+  box.addEventListener('pointerup', loslassen);
+  box.addEventListener('pointercancel', loslassen);
+}
+
+/* Ein To-do aendern: die Zeile wird zum kleinen Formular und wieder
+   zurueck. Kein Fenster, kein zweiter Ort. */
+function ichTodoBearbeiten(id){
+  var t=_ichTodos.filter(function(x){ return x.id===id; })[0]; if(!t) return;
+  var zeile=document.querySelector('[data-ichtdoid="'+id+'"]'); if(!zeile) return;
+  zeile.classList.add('ich-tdo-form');
+  zeile.innerHTML =
+    '<div class="ich-tdo-felder">'+
+      '<input class="inp" data-tdf="text" maxlength="140" value="'+esc(t.text||'')+'" />'+
+      '<div class="row" style="margin:0">'+
+        '<div class="field" style="flex:1 1 140px;margin:0"><label>Bis wann</label>'+
+          '<input class="inp" data-tdf="frist" type="date" value="'+esc(t.frist||'')+'" /></div>'+
+      '</div>'+
+      '<input class="inp" data-tdf="notiz" maxlength="300" placeholder="Notiz (optional)" '+
+        'value="'+esc(t.notiz||'')+'" />'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+        '<button class="btn btn-primary btn-sm" data-tdspeichern="'+esc(id)+'">Speichern</button>'+
+        '<button class="btn btn-ghost btn-sm" data-tdabbruch="1">Abbrechen</button>'+
+      '</div>'+
+    '</div>';
+  var f=zeile.querySelector('[data-tdf="text"]'); if(f){ f.focus(); f.select(); }
+
+  zeile.addEventListener('click', function(e){
+    var ab=e.target.closest('[data-tdabbruch]');
+    if(ab){ renderIchTodos(); return; }
+    var sp=e.target.closest('[data-tdspeichern]'); if(!sp) return;
+    var ref=privatRef(); if(!ref) return;
+    var text=(zeile.querySelector('[data-tdf="text"]').value||'').trim();
+    if(!text){ toast('Da steht nichts mehr drin.',true); return; }
+    withBusy(sp, function(){
+      return ref.collection('aufgaben').doc(id).update({
+        text:text,
+        frist:(zeile.querySelector('[data-tdf="frist"]').value||'')||null,
+        notiz:(zeile.querySelector('[data-tdf="notiz"]').value||'').trim()||null
+      }).then(function(){ toast('Geändert ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
 }
 
 function renderIchNotizen(){
@@ -12111,7 +12261,7 @@ function ichReiterZeigen(t){
     ichZeitraumLaden().then(renderIchKalender);
     renderIchKalender();
   }
-  if(t==='todo') renderIchTodos();
+  if(t==='todo'){ renderIchTodos(); ichZiehenBinden(); }
   if(t==='notizen') renderIchNotizen();
   if(t==='daten') renderIchDaten();
   foldAufbauen();
@@ -17613,8 +17763,13 @@ function bindActions(){
     if(!text){ toast('Da steht noch nichts.',true); tdFeld.focus(); return; }
     var frist=($('ichTodoDatum').value||'').trim();
     withBusy(tdAdd,function(){
+      /* Neues kommt nach oben. Wer gerade etwas eintippt, will es
+         sehen — nicht unter zwanzig alten suchen. */
+      var kleinste=_ichTodos.filter(function(x){ return !x.erledigt; })
+        .reduce(function(m,x){ return Math.min(m, todoSort(x)); }, 0);
       return ref.collection('aufgaben').add({
-        text:text, erledigt:false, frist:frist||null, ts:Date.now()
+        text:text, erledigt:false, frist:frist||null,
+        wichtig:false, notiz:null, sort:kleinste-1, ts:Date.now()
       }).then(function(){
         tdFeld.value=''; $('ichTodoDatum').value='';
         tdFeld.focus();   // wer eines eintraegt, traegt meist zwei ein
@@ -17646,6 +17801,21 @@ function bindActions(){
           .catch(function(e){ hak.classList.toggle('an', !neu); toast(errMsg(e),true); });
         return;
       }
+      var stern=e.target.closest('[data-ichtdostern]');
+      if(stern){
+        var sid=stern.getAttribute('data-ichtdostern');
+        var st=_ichTodos.filter(function(x){ return x.id===sid; })[0]; if(!st) return;
+        var neuW=!st.wichtig;
+        stern.classList.toggle('an', neuW);
+        ref.collection('aufgaben').doc(sid).update({ wichtig:neuW })
+          .catch(function(e){ stern.classList.toggle('an', !neuW); toast(errMsg(e),true); });
+        return;
+      }
+      /* Ändern öffnet keinen zweiten Bildschirm. Ein To-do hat drei
+         Angaben — Text, Frist, Notiz —; die passen in die Zeile, die
+         ohnehin schon dasteht. */
+      var bearb=e.target.closest('[data-ichtdobearb]');
+      if(bearb){ ichTodoBearbeiten(bearb.getAttribute('data-ichtdobearb')); return; }
       var weg=e.target.closest('[data-ichtdoweg]');
       if(weg){
         ref.collection('aufgaben').doc(weg.getAttribute('data-ichtdoweg')).delete()
