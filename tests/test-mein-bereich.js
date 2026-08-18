@@ -31,6 +31,13 @@ const CHROME = process.env.CHROME ||
 const errs = [];
 const fehler = [];
 
+/* Derselbe Tag wie im eingespielten Termin — hier in Node berechnet,
+   weil die Behauptungen unten ausserhalb von p.evaluate laufen und dort
+   kein window existiert. */
+const HEUTE = new Date();
+const PRIVAT_TAG = HEUTE.getFullYear() + '-' +
+  String(HEUTE.getMonth() + 1).padStart(2, '0') + '-15';
+
 function pruefe(bedingung, meldung) {
   if (!bedingung) errs.push(meldung);
 }
@@ -60,12 +67,16 @@ function pruefe(bedingung, meldung) {
   await p.addInitScript({ path: path.join(SP, 'stub-chef.js') });
   /* Ein vorhandener Eintrag, damit „Ändern" etwas zu ändern hat. Am
      ersten des laufenden Monats, damit er im Raster sicher auftaucht. */
+  /* Der Eintrag liegt bewusst NICHT am Monatsersten: Abschnitt 4 klickt
+     die erste Zelle an, und läge der Termin dort, könnte man „bleibt an
+     seinem Tag" nicht von „nimmt den angeklickten Tag" unterscheiden. */
   await p.addInitScript(() => {
     const d = new Date();
-    const erster = d.getFullYear() + '-' +
-      String(d.getMonth() + 1).padStart(2, '0') + '-01';
+    const tag = d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-15';
+    window.__PRIVAT_TAG = tag;
     window.__privat = { termine: [{
-      id: 't1', datum: erster, titel: 'Zahnarzt', zeit: '09:30', bis: '10:15',
+      id: 't1', datum: tag, titel: 'Zahnarzt', zeit: '09:30', bis: '10:15',
       ort: 'Köln', notiz: 'Karte mitnehmen', kategorie: 'wichtig', ts: 1
     }] };
   });
@@ -453,10 +464,15 @@ function pruefe(bedingung, meldung) {
           'FALSCHES ZIEL: geändert wurde „' + w.pfad + '"');
         pruefe(w.daten && w.daten.titel === 'Zahnarzt Kontrolle',
           'INHALT: geschrieben wurde ' + JSON.stringify(w.daten && w.daten.titel));
-        pruefe(w.daten && w.daten.datum === undefined,
+        /* Seit dem 18.8. kommt das Datum aus dem Formularfeld — so
+           verschiebt man einen Eintrag. Die Behauptung ist deshalb nicht
+           mehr „kein datum", sondern: eine Änderung, bei der niemand das
+           Datumsfeld anfasst, lässt den Eintrag an SEINEM Tag. Sonst
+           wäre ein Tippfehler-Fix ein Verschieben. */
+        pruefe(w.daten && w.daten.datum === PRIVAT_TAG,
           'DATUM VERSCHOBEN: die Änderung schreibt datum=' +
-          JSON.stringify(w.daten && w.daten.datum) + ' mit — ein Tippfehler-Fix ' +
-          'wäre damit ein Verschieben auf den gerade angeklickten Tag');
+          JSON.stringify(w.daten && w.daten.datum) + ' statt ' +
+          JSON.stringify(PRIVAT_TAG) + ' — obwohl niemand das Feld angefasst hat');
         pruefe(w.daten && w.daten.notiz === 'Karte mitnehmen',
           'NOTIZ WEG: die Änderung schreibt notiz=' +
           JSON.stringify(w.daten && w.daten.notiz));
