@@ -213,6 +213,11 @@ var USERS = [
       { id:'s4', date:tag(0), from:'10:00', to:'15:00', uid:'testuid', name:'Ich' }
     ]
   };
+  /* Ein Durchlauf kann die Nachweise ersetzen, indem er vorher
+     window.__certs hinlegt — sonst gilt diese Liste. Ohne das liesse sich
+     nicht pruefen, was mit „selbst eingetragen", „bestaetigt" und den
+     freiwilligen Angaben passiert: die stehen hier absichtlich nicht
+     drin, damit die uebrigen Durchlaeufe den alten Zustand sehen. */
   var CERTS = [
     { id:'z1', uid:'u2', name:'Anna Meier', art:'ersthelfer', bis:tag(-10), ts:Date.now() },
     { id:'z2', uid:'u3', name:'Ben Kraus',  art:'ems',        bis:tag(29), ts:Date.now() },
@@ -432,7 +437,7 @@ var USERS = [
           : gd ? (DEVICES[gd[1]] || [])
           : gl ? (DEVLOG[gl[1]] || [])
           : gt ? (TODOS[gt[1]] || [])
-          : (path === 'certificates' ? CERTS
+          : (path === 'certificates' ? (window.__certs || CERTS)
           : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []));
         var self = this;
         if (self._filter && self._filter.length) {
@@ -470,7 +475,7 @@ var USERS = [
                    msh ? (SHIFTS[msh[1]] || []) :
                    md ? (DEVICES[md[1]] || []) : ml ? (DEVLOG[ml[1]] || []) :
                    mm ? (mm[1]==='allgemein' ? MESSAGES : []) :
-                   (path==='certificates' ? CERTS :
+                   (path==='certificates' ? (window.__certs || CERTS) :
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
                    (path==='probetrainings' ? PROBE :

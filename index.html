@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-0bmxDmzPHZInSir62cCAJq+rcLCN2YEuRVuKpg6hoNs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-IYGekHV4FHFbWO1uiptOEWZZvktaonZpxRuDKFqXTp4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1324,6 +1324,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .cert-selbst{display:inline-block;margin-left:var(--s8);padding:var(--s1) var(--s6);border-radius:var(--r-pille);
   font-size:var(--t-2xs);background:rgba(167,139,250,.14);color:var(--accent-2)}
 .cert-bestaetigt{display:inline-block;margin-left:var(--s8);font-size:var(--t-2xs);color:var(--accent)}
+.cert-mehr{font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2);
+  line-height:var(--lh-eng)}
 .cert-ok{margin-left:var(--s8);padding:var(--s1) var(--s8);border-radius:var(--r-pille);font-size:var(--t-2xs);
   border:1px solid var(--line);background:none;color:var(--text-2);cursor:pointer}
 .cert-ok:active{transform:scale(.92)}
@@ -1900,6 +1902,17 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-notiz-add{margin-top:var(--s10)}
 .ich-kats-filter .ich-kat{min-height:32px;padding:var(--s4) var(--s10);
   font-size:var(--t-2xs)}
+
+/* Nachweise im Ich-Bereich. Dieselbe Auskunft wie in der Verwaltung,
+   nur an der Stelle, an der man sie sucht: bei den eigenen Daten. */
+.ich-cert{padding:var(--s2) 0}
+.ich-cert-mark{display:inline-block;margin-left:var(--s6);padding:var(--s1) var(--s6);
+  border-radius:var(--r-pille);font-size:var(--t-2xs);font-weight:600;
+  background:var(--auf-2);color:var(--text-3)}
+.ich-cert-mark.ok{background:var(--f-ok);color:var(--ok-tx)}
+.ich-cert-mehr{font-size:var(--t-2xs);color:var(--text-3);
+  padding:0 0 var(--s8);line-height:var(--lh-eng)}
+.ich-cert-neu{margin-top:var(--s10)}
 
 .ich-stamm{display:flex;justify-content:space-between;gap:var(--s10);
   padding:var(--s10) 0;border-top:1px solid var(--line);font-size:var(--t-sm)}
@@ -3279,6 +3292,7 @@ html{font-size:var(--fs,100%)}
                 <span class="ich-zahl-klein" id="ichCertZahl"></span>
               </div>
               <div id="ichCerts"></div>
+              <button class="mini-link ich-cert-neu" id="ichCertNeu">Nachweis eintragen</button>
             </div>
             <div class="ich-blatt" id="ichZahlenKarte">
               <div class="ich-kopf">
@@ -4499,6 +4513,22 @@ html{font-size:var(--fs,100%)}
                  placeholder="z. B. Trainer-B-Lizenz" autocomplete="off" /></div>
         <div class="field"><label for="myCertBis">Gültig bis</label>
           <input class="inp" id="myCertBis" type="date" /></div>
+        <!-- Die drei Felder, nach denen man beim Verlaengern sucht: wo
+             war der Kurs, wann war er, welche Nummer steht auf dem
+             Schein. Eingeklappt, damit der schnelle Weg zwei Felder
+             bleibt — wer sie braucht, findet sie; wer nicht, sieht sie
+             gar nicht erst. -->
+        <details class="nachfrage" id="myCertMehrBox">
+          <summary class="nachfrage-text">Mehr Angaben (freiwillig)</summary>
+          <div class="field"><label for="myCertAussteller">Ausgestellt von</label>
+            <input class="inp" id="myCertAussteller" type="text" maxlength="80"
+                   placeholder="z. B. DRK Kreisverband" autocomplete="off" /></div>
+          <div class="field"><label for="myCertVon">Ausgestellt am</label>
+            <input class="inp" id="myCertVon" type="date" /></div>
+          <div class="field"><label for="myCertNummer">Nummer auf dem Nachweis</label>
+            <input class="inp" id="myCertNummer" type="text" maxlength="60"
+                   autocomplete="off" /></div>
+        </details>
         <button class="btn btn-primary btn-sm" id="myCertAdd" style="width:100%">Speichern</button>
         <p class="hint" style="margin-top:10px">Entfernen kann nur die Geschäftsführung –
           damit nichts unbemerkt aus der Übersicht verschwindet.</p>
@@ -12364,11 +12394,17 @@ function renderIchDaten(){
 /* Nachweise: dieselbe Abfrage wie im Einstellungs-Fenster, nur an einer
    Stelle, an der man sie auch findet. */
 function ichCertsLaden(){
-  var box=$('ichCerts'), zahl=$('ichCertZahl'); if(!box || !session) return;
+  var box=$('ichCerts'), zahl=$('ichCertZahl'), neu=$('ichCertNeu');
+  if(!box || !session) return;
   if(!featureAn('nachweise')){
     box.innerHTML=emptyMini('Nachweise sind für diesen Betrieb abgeschaltet.');
-    if(zahl) zahl.textContent=''; return;
+    if(zahl) zahl.textContent='';
+    /* Kein Knopf zu etwas, das abgeschaltet ist. Gesperrt statt weg
+       wuerde nur die Frage aufwerfen, warum. */
+    if(neu) neu.style.display='none';
+    return;
   }
+  if(neu) neu.style.display='';
   S('certificates').where('uid','==',session.uid).get().then(function(sn){
     var rows=sn.docs.map(function(d){ return d.data(); })
       .sort(function(a,b){ return (a.bis||'~').localeCompare(b.bis||'~'); });
@@ -12386,10 +12422,29 @@ function ichCertsLaden(){
       var datum=c.bis
         ? new Date(c.bis+'T12:00:00').toLocaleDateString('de-DE')
         : 'ohne Ablauf';
-      return '<div class="ich-zeile">'+
-        '<span class="ich-was">'+esc(c.art||c.name||'Nachweis')+'</span>'+
-        '<span class="ich-zeit">'+esc(datum)+'</span>'+
-        (zustand?'<span class="ich-quelle'+klasse+'">'+esc(zustand)+'</span>':'')+
+      /* Hier stand die rohe Kennung: „ersthelfer" statt
+         „Erste-Hilfe-Kurs", und bei „Sonstiges" gar nicht das, was
+         jemand selbst hineingeschrieben hat. Es gibt einen Namen dafuer
+         — an derselben Stelle wie ueberall sonst. */
+      var titel=(c.art==='sonstiges' && c.bez) ? c.bez : certArt(c.art).name;
+      /* Behauptet oder belegt. Ohne diesen Unterschied sieht ein selbst
+         eingetragener Erste-Hilfe-Schein aus wie ein vorgelegter. */
+      var herkunft = c.bestaetigt
+        ? '<span class="ich-cert-mark ok">bestätigt</span>'
+        : (certSelbst(c) ? '<span class="ich-cert-mark">selbst eingetragen</span>' : '');
+      /* Die freiwilligen Angaben nur, wenn sie da sind. Eine Zeile
+         „Ausgestellt von: —" beantwortet nichts. */
+      var mehr=[];
+      if(c.aussteller) mehr.push(esc(c.aussteller));
+      if(c.von) mehr.push('seit '+esc(new Date(c.von+'T12:00:00').toLocaleDateString('de-DE')));
+      if(c.nummer) mehr.push('Nr. '+esc(c.nummer));
+      return '<div class="ich-cert">'+
+        '<div class="ich-zeile">'+
+          '<span class="ich-was">'+esc(titel)+herkunft+'</span>'+
+          '<span class="ich-zeit">'+esc(datum)+'</span>'+
+          (zustand?'<span class="ich-quelle'+klasse+'">'+esc(zustand)+'</span>':'')+
+        '</div>'+
+        (mehr.length?'<div class="ich-cert-mehr">'+mehr.join(' · ')+'</div>':'')+
         '</div>';
     }).join('');
   }).catch(function(){
@@ -16203,12 +16258,22 @@ function certZeile(c, mitName){
   } else if(c.bestaetigt){
     herkunft = '<span class="cert-bestaetigt">✓ bestätigt</span>';
   }
+  /* Was jemand freiwillig dazugeschrieben hat, steht hier — und zwar
+     gerade fuer den Chef. „Bestaetigen" heisst, den Nachweis gesehen zu
+     haben; wer dabei nicht sieht, von wem er ist und welche Nummer
+     draufsteht, bestaetigt eine Zeile statt eines Nachweises. */
+  var mehr=[];
+  if(c.aussteller) mehr.push(esc(c.aussteller));
+  if(c.von) mehr.push('ausgestellt '+esc(new Date(c.von+'T12:00:00').toLocaleDateString('de-DE')));
+  if(c.nummer) mehr.push('Nr. '+esc(c.nummer));
   return '<div class="cert-item">'+
     '<span class="cert-ico">'+a.ico+'</span>'+
     '<div class="cert-body"><div class="cert-title">'+esc(titel)+
       (mitName?' <span class="cert-who">· '+esc(c.name||'')+'</span>':'')+'</div>'+
     '<div class="cert-meta">'+(c.bis?('gültig bis '+new Date(c.bis+'T00:00:00').toLocaleDateString('de-DE')):'kein Ablaufdatum')+
-      herkunft+'</div></div>'+
+      herkunft+'</div>'+
+    (mehr.length?'<div class="cert-mehr">'+mehr.join(' · ')+'</div>':'')+
+    '</div>'+
     '<span class="cert-st '+st.cls+'">'+esc(st.txt)+'</span>'+loeschen+'</div>';
 }
 
@@ -16299,18 +16364,35 @@ function addMyCert(btn){
   if(art==='sonstiges' && !bez){ toast('Bitte eine Bezeichnung eingeben.',true); return; }
   var bis=(($('myCertBis')||{}).value||'');
   if(!bis){ toast('Bitte ein Ablaufdatum angeben.',true); return; }
+  var von=(($('myCertVon')||{}).value||'');
+  /* Ausgestellt NACH dem Ablauf ist immer ein Tippfehler. Ihn erst beim
+     naechsten Blick auf die Liste zu bemerken hiesse, ihn nie zu
+     bemerken — korrigieren darf man nur bis zur Bestaetigung. */
+  if(von && von>bis){
+    toast('Das Ausstellungsdatum liegt nach dem Ablauf.',true);
+    if($('myCertMehrBox')) $('myCertMehrBox').open=true;
+    if($('myCertVon')) $('myCertVon').focus();
+    return;
+  }
+  var aussteller=(($('myCertAussteller')||{}).value||'').trim();
+  var nummer=(($('myCertNummer')||{}).value||'').trim();
   withBusy(btn,function(){
     return S('certificates').add({
       uid:session.uid, name:session.name||'', art:art, bez:bez, bis:bis,
+      aussteller:aussteller, von:von, nummer:nummer,
       /* Beide Felder erzwingen die Regeln. erfasstVonUid ist das, woran
          die Oberfläche später „selbst eingetragen" erkennt. */
       erfasstVon:session.name, erfasstVonUid:session.uid,
       bestaetigt:false, ts:Date.now()
     }).then(function(){
-      if($('myCertOwn')) $('myCertOwn').value='';
-      if($('myCertBis')) $('myCertBis').value='';
+      ['myCertOwn','myCertBis','myCertAussteller','myCertVon','myCertNummer']
+        .forEach(function(f){ if($(f)) $(f).value=''; });
+      if($('myCertMehrBox')) $('myCertMehrBox').open=false;
       toast('Nachweis eingetragen ✓');
       loadMyCerts();
+      /* Der Ich-Bereich zeigt dieselben Nachweise. Ohne das hier stuende
+         der neue Eintrag erst nach einem Reiterwechsel da. */
+      if(typeof ichCertsLaden==='function') ichCertsLaden();
     }).catch(function(e){ toast(errMsg(e),true); });
   });
 }
@@ -17153,7 +17235,7 @@ function pmPreview(){
   var name=$('pmName').value||session.name, emoji=$('pmEmoji').value.trim();
   applyAvatarEl(av, { photo:_pmPhoto||'', emoji:emoji, color:_pmColor, name:name, role:session.role });
 }
-function openProfile(){
+function openProfile(reiter){
   $('pmName').value=session.name||'';
   $('pmStatus').value=session.status||'';
   $('pmEmoji').value=session.emoji||'';
@@ -17169,7 +17251,11 @@ function openProfile(){
     el.classList.add('sel'); pmPreview();
   }); });
   buildAppearanceOptions();
-  switchPmTab('profil');
+  /* Mit Reiter aufrufbar, damit „Mein Bereich" beim Nachweis direkt dort
+     landet. Das Formular gibt es weiterhin nur EINMAL — ein zweites im
+     Ich-Bereich waere die zweite Stelle, an der ein neues Feld vergessen
+     wird. */
+  switchPmTab(reiter || 'profil');
   $('pmErr').textContent=''; pmPreview();
   $('profileModal').classList.add('show');
 }
@@ -18262,6 +18348,11 @@ function bindActions(){
      und eine davon vergisst man beim naechsten Mal. */
   var ichProfil=$('ichProfilBtn');
   if(ichProfil) ichProfil.addEventListener('click',function(){ openProfile(); });
+  /* Dasselbe Formular, nur direkt aufgeschlagen. Ein zweites im
+     Ich-Bereich waere die zweite Stelle, an der ein neues Feld vergessen
+     wird — und eine davon vergisst man. */
+  var ichCertBtn=$('ichCertNeu');
+  if(ichCertBtn) ichCertBtn.addEventListener('click',function(){ openProfile('nachweise'); });
 
   // ── Team: Reiter, Schichten, Abwesenheiten, Übergabe, Brett ──
   document.querySelectorAll('[data-teamtab]').forEach(function(b){
