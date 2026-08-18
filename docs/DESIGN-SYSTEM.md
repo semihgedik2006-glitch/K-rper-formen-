@@ -417,6 +417,47 @@ noch verspätet. Das wirkt wie ein Hänger, nicht wie Ruhe.
 > `sanftScrollen(flaeche, opt)`. Die fragen die Einstellung ab und schalten
 > auf `auto` um.
 
+### Was sich neu zeichnet, darf sich nicht bewegen
+
+Die härteste Regel in diesem Abschnitt, und die am leichtesten zu
+übersehene: **eine Einlauf-Animation gehört nur an Elemente, die sich auf
+einen Klick hin ändern — nie an solche, die bei jedem Tastendruck neu
+gezeichnet werden.**
+
+Die Notizliste in „Mein Bereich" wird bei jedem Buchstaben im Suchfeld
+neu aufgebaut. Ein `listIn` je Zeile wäre dort kein Einlaufen mehr,
+sondern ein Flackern bei jedem Buchstaben. Bewegt wird deshalb nur der
+Reiterwechsel und das Blättern im Kalender.
+
+Wenn die Bewegung etwas **sagen** kann, soll sie es. Vor und zurück
+laufen im Kalender in verschiedene Richtungen — man sieht, wohin man
+geblättert hat, ohne die Beschriftung zu lesen. „Heute" springt bewusst
+ohne Richtung: es geht weder vor noch zurück.
+
+### Eine Animation neu starten
+
+Eine Klasse ein zweites Mal hinzuzufügen, die schon dran ist, tut
+**nichts**. Wer zweimal schnell auf „vor" klickt, sieht ab dem zweiten
+Klick keine Bewegung mehr. Der Neustart braucht drei Schritte, und der
+mittlere ist der, den man weglässt:
+
+```js
+el.classList.remove(klasse);
+el.offsetHeight;          // Messung erzwingen — ohne die fasst der
+el.classList.add(klasse); // Browser beides zu nichts zusammen
+```
+
+Dazu gehört das Abräumen nach `animationend`: mit
+`animation-fill-mode:both` bleibt die Klasse sonst für immer am Element
+und legt ihr Ergebnis weiter über den normalen Zustand.
+
+> **Ein Durchlauf, der prüft, ob „eine Animation läuft", prüft zu wenig.**
+> Beim zweiten Klick lief ja schon eine. Geprüft gehört die **verstrichene
+> Zeit**: bei 0 fängt sie von vorn an, bei 83 ms lief die alte weiter. Und
+> die Klicks müssen dicht genug beieinander liegen, dass der Aufräumer
+> noch nicht dran war — sonst ist die Behauptung auch ohne Neustart grün.
+> Genau so ist sie hier beim ersten Anlauf durchgerutscht.
+
 ---
 
 ## 6. Bausteine
@@ -702,3 +743,17 @@ Vor dem Einchecken durchgehen:
 - [ ] Bei 390 Pixeln Breite gemessen – nicht geschätzt?
 - [ ] Gibt es die Funktion woanders schon? Dann dort verlinken, nicht
       nachbauen.
+- [ ] Erscheint Suchen/Filtern erst, wenn es etwas zu suchen gibt?
+      Bei vier Einträgen sind es zwei Bedienelemente ohne Aufgabe. Die
+      Schwelle gehört mitgeprüft — sonst weiß niemand, ob sie stimmt oder
+      ob die Zeile einfach immer da ist.
+- [ ] Bewegt sich nichts, was bei jedem Tastendruck neu gezeichnet wird?
+      (siehe Abschnitt 5)
+- [ ] Überlebt halb Getipptes ein Neuzeichnen? Ein Horcher feuert auch,
+      **während** jemand schreibt — und ein verlorener Satz meldet sich
+      nicht.
+- [ ] Wird beim Ändern `update()` benutzt, nicht `set()`? `set()` löscht
+      jedes Feld mit, das im Formular gerade nicht steht.
+- [ ] Werden Zustand und Suchbegriff beim Abmelden geleert? Auf einem
+      geteilten Gerät steht sonst der Name einer Kundin im Suchfeld,
+      deren Eintrag dem vorigen Konto gehört.

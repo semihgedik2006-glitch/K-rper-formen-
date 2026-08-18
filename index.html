@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-IYGekHV4FHFbWO1uiptOEWZZvktaonZpxRuDKFqXTp4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-Dxwfb/xSvd7iaV03oVqM/a1Jl0rY4KSYH6iwJ665ZDk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2189,12 +2189,40 @@ html{font-size:var(--fs,100%)}
   .dev-item:nth-child(8),.cert-item:nth-child(8),.pp-item:nth-child(8),.doc:nth-child(8){animation-delay:164ms}
   .dev-item:nth-child(9),.cert-item:nth-child(9),.pp-item:nth-child(9),.doc:nth-child(9){animation-delay:180ms}
   .dev-item:nth-child(n+10),.cert-item:nth-child(n+10),.pp-item:nth-child(n+10),.doc:nth-child(n+10){animation-delay:194ms}
+  /* ── Mein Bereich ──
+     Bewusst NICHT die einzelnen Zeilen. Notizliste und Kalender werden
+     bei jedem Tastendruck im Suchfeld neu gezeichnet; eine Animation je
+     Zeile waere dann kein Einlaufen mehr, sondern ein Flackern. Bewegt
+     wird deshalb nur, was sich auf einen Klick hin aendert: der Reiter
+     und der Zeitraum. */
+  .ich-pane-ein{animation:ichPaneEin .26s var(--ease-out) both}
+  /* Vor und zurueck laufen in die jeweilige Richtung. Das ist die
+     einzige Stelle hier, an der die Bewegung etwas SAGT: man sieht, ob
+     man vor- oder zurueckgeblaettert hat, ohne die Beschriftung zu
+     lesen. */
+  .ich-kal-vor{animation:ichKalVor .24s var(--ease-out) both}
+  .ich-kal-zurueck{animation:ichKalZurueck .24s var(--ease-out) both}
   /* Zwischenüberschriften und Kacheln kommen mit */
   .sec-head{animation:listIn .4s var(--ease-out) both}
   .view.show .scroll-area > .sort-row{animation:listIn .3s var(--ease-out) both}
 }
 @keyframes listIn{
   from{opacity:0;transform:translateY(9px)}
+  to{opacity:1;transform:none}
+}
+/* Kuerzer und flacher als listIn: hier bewegt sich eine ganze Seite,
+   nicht eine Zeile. Derselbe Weg wie bei einer Zeile faende man bei
+   einer Flaeche dieser Groesse traege. */
+@keyframes ichPaneEin{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:none}
+}
+@keyframes ichKalVor{
+  from{opacity:0;transform:translateX(14px)}
+  to{opacity:1;transform:none}
+}
+@keyframes ichKalZurueck{
+  from{opacity:0;transform:translateX(-14px)}
   to{opacity:1;transform:none}
 }
 /* Die Sortier-Knöpfe federn kurz, wenn man wechselt */
@@ -12569,6 +12597,37 @@ function ichOeffnen(){
   ichReiterZeigen(_ichTab);
 }
 
+/* Eine laufende Animation noch einmal starten heisst: Klasse weg,
+   Messung erzwingen, Klasse wieder dran. Ohne die Messung dazwischen
+   fasst der Browser beides zu nichts zusammen, und der zweite Klick auf
+   „vor" bewegt gar nichts mehr.
+
+   willRuhe() steht davor, obwohl die CSS-Regel ohnehin in einer
+   prefers-reduced-motion-Abfrage haengt: die Klasse bliebe sonst am
+   Element kleben und wuerde bei einem spaeteren Umschalten der
+   Systemeinstellung mitten im Betrieb losspringen. */
+var ICH_BEWEGUNGEN=['ich-pane-ein','ich-kal-vor','ich-kal-zurueck'];
+function ichBewegen(el, klasse){
+  if(!el || willRuhe()) return;
+  ICH_BEWEGUNGEN.forEach(function(k){ el.classList.remove(k); });
+  el.offsetHeight;
+  el.classList.add(klasse);
+  /* Danach wieder abraeumen. Eine Klasse mit animation-fill-mode:both
+     bleibt sonst fuer immer am Element haengen: die Animation ist zwar
+     durch, ihr Ergebnis wird aber weiter ueber den normalen Zustand
+     gelegt. Beim Blaettern haette das zwei sichtbare Folgen — „Heute"
+     traege noch die Richtung des letzten Klicks, und beim Tippen im
+     Suchfeld haetten die Reiter dauerhaft eine Animation an sich. */
+  if(!el._bewegtFertig){
+    el._bewegtFertig=function(e){
+      if(e.target!==el) return;
+      ICH_BEWEGUNGEN.forEach(function(k){ el.classList.remove(k); });
+    };
+    el.addEventListener('animationend', el._bewegtFertig);
+    el.addEventListener('animationcancel', el._bewegtFertig);
+  }
+}
+
 function ichReiterZeigen(t){
   _ichTab=t;
   document.querySelectorAll('[data-ichtab]').forEach(function(x){
@@ -12577,6 +12636,7 @@ function ichReiterZeigen(t){
   Object.keys(ICHPANES).forEach(function(k){
     var el=$(ICHPANES[k]); if(el) el.style.display = (k===t) ? '' : 'none';
   });
+  ichBewegen($(ICHPANES[t]), 'ich-pane-ein');
   if(t==='woche'){
     var mo=mondayOf(new Date()), so=new Date(mo); so.setDate(mo.getDate()+6);
     ichBetriebLaden(ymd(mo), ymd(so)).then(renderIchWoche);
@@ -18046,6 +18106,11 @@ function bindActions(){
     if(_ichTerminId) ichTerminFormLeeren();
     ichZeitraumLaden().then(renderIchKalender);
     renderIchKalender();
+    /* Nach dem Zeichnen, nicht davor: renderIchKalender schreibt das
+       Raster neu, und eine vorher gesetzte Klasse haenge am alten
+       Inhalt. „Heute" (delta 0) springt bewusst ohne Richtung — es geht
+       weder vor noch zurueck. */
+    if(delta) ichBewegen($('ichKalender'), delta>0 ? 'ich-kal-vor' : 'ich-kal-zurueck');
   }
   if(imP) imP.addEventListener('click',function(){ monatWechseln(-1); tick(8); });
   if(imN) imN.addEventListener('click',function(){ monatWechseln(1); tick(8); });
