@@ -77,7 +77,16 @@ async function start(errs, brett) {
       brettTexte: [...document.querySelectorAll('#homeBoardList .lese-text')].map(x => x.textContent.trim()),
       ungelesen: document.querySelectorAll('#homeAnnList .lese-neu').length,
       hinweise: [...document.querySelectorAll('#homeAlerts *')].map(x => x.textContent).join(' | '),
-      linkZiele: [...document.querySelectorAll('.karten-kopf .mini-link')].map(x => x.dataset.go),
+      /* Auf die Startseite eingegrenzt. Vorher stand hier ein
+         dokumentweiter Griff — der fand ab dem 17.8. auch den
+         Schliessen-Knopf in „Mein Bereich" und meldete einen Link ohne
+         Ziel. Das war kein Fehler in der App, sondern eine Behauptung,
+         die weiter reichte als ihr eigener Durchlauf: dieser hier heisst
+         „Startlesen" und geht die Startseite an. So gebaut faellt er
+         kuenftig auch nicht mehr um, nur weil woanders eine Karte
+         dazukommt. */
+      linkZiele: [...document.querySelectorAll('#view-home .karten-kopf .mini-link')]
+        .map(x => x.dataset.go),
     }));
     console.log('Aushänge:', JSON.stringify(stand.annTexte));
     console.log('Brett:', JSON.stringify(stand.brettTexte));

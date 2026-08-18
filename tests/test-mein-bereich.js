@@ -1,0 +1,353 @@
+/* ── „Mein Bereich" ─────────────────────────────────────────────────
+   Aus dem Betrieb gewuenscht: ein Bereich, der fuer jeden selber ist.
+
+   Vier Reiter, zwei Sorten Daten. Aus dem Betrieb gelesen (Schichten,
+   Abwesenheiten, Aufgaben, Nachweise, Probetrainings) und nur meins
+   (Termine, Notizen unter privat/<uid>/).
+
+   Was dieser Durchlauf wirklich pruefen muss, ist nicht „der Reiter ist
+   da". Es sind drei Dinge, bei denen ein Fehler teuer waere:
+
+     1. Was beim Anlegen WIRKLICH geschrieben wird — und wohin. Landet
+        eine Notiz versehentlich in einer geteilten Sammlung, ist die
+        Zusage „das sieht niemand ausser dir" gebrochen, und zwar
+        unbemerkt.
+     2. Dass der Hinweis am Notizblock beides sagt. „Niemand sonst" ohne
+        „nicht verschluesselt" waere ein Versprechen, das die Technik
+        nicht haelt.
+     3. Dass keine Flaeche leer bleibt. Ein Reiter, hinter dem nichts
+        steht, sieht kaputt aus — auch wenn er nur nichts zu zeigen hat.
+
+   Jede Behauptung hat eine Gegenprobe. Ohne die waere ein Durchlauf,
+   der gar nichts findet, genauso gruen.
+   ───────────────────────────────────────────────────────────────────── */
+const { chromium } = require('playwright');
+const path = require('path');
+
+const SP = __dirname;
+const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
+const CHROME = process.env.CHROME ||
+  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+
+const errs = [];
+const fehler = [];
+
+function pruefe(bedingung, meldung) {
+  if (!bedingung) errs.push(meldung);
+}
+
+(async () => {
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  p.on('pageerror', e => fehler.push('PAGEERROR: ' + e.message.slice(0, 200)));
+  /* Die abgebrochenen Anfragen sind unsere eigenen: p.route(...abort())
+     weiter unten kappt gstatic und die Schriften, damit der Durchlauf
+     ohne Netz laeuft. Chromium meldet das als Konsolenfehler. Wer das
+     nicht herausnimmt, hat einen Durchlauf, der immer rot ist — und
+     einen roten Durchlauf liest nach zwei Tagen niemand mehr.
+
+     Herausgenommen wird deshalb genau diese eine Form, nicht „alles mit
+     Fehler". Ob die Sperre zu weit greift, prueft Runde 7 mit einem
+     echten Fehler nach. */
+  const EIGENES_ABBRECHEN = /Failed to load resource|net::ERR_FAILED|ERR_BLOCKED_BY/;
+  p.on('console', m => {
+    if (m.type() !== 'error') return;
+    const t = m.text();
+    if (EIGENES_ABBRECHEN.test(t)) return;
+    fehler.push('KONSOLE: ' + t.slice(0, 160));
+  });
+  await p.route('**://www.gstatic.com/**', r => r.abort());
+  await p.route('**fonts.googleapis.com/**', r => r.abort());
+  await p.addInitScript({ path: path.join(SP, 'stub-chef.js') });
+  await p.goto(APP, { waitUntil: 'domcontentloaded' });
+  await p.waitForTimeout(2600);
+
+  // ══ 1. Gibt es den Bereich ueberhaupt, und kommt man hin? ══
+  const ankunft = await p.evaluate(async () => {
+    const g = document.querySelector('.mobnav [data-group="g-ich"]');
+    if (!g) return { keinReiter: true };
+    const beschriftung = (g.textContent || '').trim();
+    g.click();
+    await new Promise(r => setTimeout(r, 500));
+    const v = document.getElementById('view-ich');
+    return {
+      beschriftung,
+      sichtbar: !!(v && v.classList.contains('show')),
+      reiter: [...document.querySelectorAll('[data-ichtab]')]
+        .map(x => x.getAttribute('data-ichtab')),
+      // Der Reiter muss VOR dem Chat stehen, sonst war die Entscheidung
+      // aus dem Kommentar in NAVGROUPS nur Absicht.
+      stelle: [...document.querySelectorAll('.mobnav [data-group]')]
+        .map(x => x.getAttribute('data-group')).indexOf('g-ich')
+    };
+  });
+
+  if (ankunft.keinReiter) {
+    errs.push('FEHLT: die untere Leiste hat keinen Eintrag „g-ich"');
+  } else {
+    console.log('Beschriftung:', JSON.stringify(ankunft.beschriftung),
+      '· Stelle:', ankunft.stelle, '· Reiter:', ankunft.reiter.join(', '));
+    pruefe(ankunft.sichtbar, 'NICHT SICHTBAR: der Klick öffnet #view-ich nicht');
+    pruefe(ankunft.stelle === 1,
+      'STELLE: „Mein Bereich" steht an Position ' + ankunft.stelle +
+      ' statt an zweiter — bei sechs Einträgen rutscht er sonst aus dem Bild');
+    ['woche', 'kalender', 'notizen', 'daten'].forEach(t => {
+      pruefe(ankunft.reiter.indexOf(t) >= 0, 'FEHLT: der Reiter „' + t + '"');
+    });
+  }
+
+  // ══ 2. Jeder Reiter zeigt etwas — keiner bleibt leer ══
+  for (const t of ['woche', 'kalender', 'notizen', 'daten']) {
+    const r = await p.evaluate(async (tab) => {
+      const b = document.querySelector('[data-ichtab="' + tab + '"]');
+      if (!b) return { fehlt: true };
+      b.click();
+      await new Promise(r => setTimeout(r, 450));
+      const pane = { woche: 'ichPaneWoche', kalender: 'ichPaneKalender',
+                     notizen: 'ichPaneNotizen', daten: 'ichPaneDaten' }[tab];
+      const el = document.getElementById(pane);
+      if (!el) return { keineFlaeche: true };
+      const sichtbar = getComputedStyle(el).display !== 'none';
+      const text = (el.innerText || '').trim();
+      // Sind die ANDEREN Flaechen auch wirklich weg?
+      const andere = ['ichPaneWoche', 'ichPaneKalender', 'ichPaneNotizen', 'ichPaneDaten']
+        .filter(id => id !== pane)
+        .filter(id => {
+          const x = document.getElementById(id);
+          return x && getComputedStyle(x).display !== 'none';
+        });
+      return { sichtbar, laenge: text.length, probe: text.slice(0, 45), andere };
+    }, t);
+
+    if (r.fehlt || r.keineFlaeche) { errs.push('FEHLT: Fläche zum Reiter „' + t + '"'); continue; }
+    console.log('  ' + t.padEnd(9), r.laenge + ' Zeichen ·', JSON.stringify(r.probe));
+    pruefe(r.sichtbar, 'UNSICHTBAR: „' + t + '" bleibt auf display:none');
+    pruefe(r.laenge > 20, 'LEER: „' + t + '" zeigt nur ' + r.laenge +
+      ' Zeichen — eine leere Fläche sieht kaputt aus, auch wenn es nichts zu zeigen gibt');
+    pruefe(!r.andere.length, 'DOPPELT SICHTBAR: bei „' + t + '" steht auch noch ' +
+      r.andere.join(', ') + ' offen');
+  }
+
+  /* ══ 2b. GEGENPROBE ══
+     Ein erfundener Reiter darf nichts umschalten. Ohne diese Runde waere
+     Punkt 2 auch dann gruen, wenn schlicht alles immer sichtbar ist. */
+  {
+    const r = await p.evaluate(async () => {
+      const vorher = ['ichPaneWoche', 'ichPaneKalender', 'ichPaneNotizen', 'ichPaneDaten']
+        .filter(id => getComputedStyle(document.getElementById(id)).display !== 'none');
+      const b = document.querySelector('[data-ichtab="gibtesnicht"]');
+      return { vorher, erfundenDa: !!b };
+    });
+    pruefe(!r.erfundenDa, 'GEGENPROBE: es gibt einen Reiter „gibtesnicht"');
+    pruefe(r.vorher.length === 1,
+      'GEGENPROBE: es stehen ' + r.vorher.length + ' Flächen gleichzeitig offen — ' +
+      'dann prüft der Reiterwechsel nichts');
+  }
+
+  // ══ 3. Der Kalender: stimmt die Anzahl der Tagesfelder? ══
+  {
+    const r = await p.evaluate(async () => {
+      document.querySelector('[data-ichtab="kalender"]').click();
+      await new Promise(r => setTimeout(r, 450));
+      const koepfe = document.querySelectorAll('#ichKalender .kal-kopf').length;
+      const echte = document.querySelectorAll('#ichKalender [data-ichtag]').length;
+      const leere = document.querySelectorAll('#ichKalender .ich-tagfeld.leer').length;
+      const label = (document.getElementById('ichMonatLabel') || {}).textContent || '';
+      const jetzt = new Date();
+      const soll = new Date(jetzt.getFullYear(), jetzt.getMonth() + 1, 0).getDate();
+      // Erster Tag des Monats, Montag = 0
+      const vorlauf = (new Date(jetzt.getFullYear(), jetzt.getMonth(), 1).getDay() + 6) % 7;
+      const heute = document.querySelectorAll('#ichKalender .ich-tagfeld.heute').length;
+      return { koepfe, echte, leere, soll, vorlauf, label: label.trim(), heute };
+    });
+    console.log('Kalender:', r.label, '·', r.echte + '/' + r.soll, 'Tage ·',
+      r.leere + '/' + r.vorlauf, 'Vorlauf');
+    pruefe(r.koepfe === 7, 'KALENDER: ' + r.koepfe + ' Spaltenköpfe statt 7');
+    pruefe(r.echte === r.soll,
+      'KALENDER: ' + r.echte + ' Tagesfelder, der Monat hat aber ' + r.soll);
+    pruefe(r.leere === r.vorlauf,
+      'KALENDER: ' + r.leere + ' Leerfelder als Vorlauf, richtig wären ' + r.vorlauf +
+      ' — sonst steht der Monatsanfang unter dem falschen Wochentag');
+    pruefe(r.heute === 1,
+      'KALENDER: heute ist ' + r.heute + '-mal markiert, genau einmal wäre richtig');
+  }
+
+  /* ══ 3b. Monatswechsel ══
+     Und zwar mit einer Behauptung, die stimmen MUSS: der Februar hat
+     nie 31 Tage. Ein Raster, das immer 31 Felder malt, faellt hier auf. */
+  {
+    const r = await p.evaluate(async () => {
+      const mess = [];
+      for (let i = 0; i < 13; i++) {
+        document.getElementById('ichMonatNext').click();
+        await new Promise(r => setTimeout(r, 90));
+        const label = document.getElementById('ichMonatLabel').textContent.trim();
+        mess.push({ label, tage: document.querySelectorAll('#ichKalender [data-ichtag]').length });
+      }
+      document.getElementById('ichMonatHeute').click();
+      await new Promise(r => setTimeout(r, 150));
+      return { mess, zurueck: document.getElementById('ichMonatLabel').textContent.trim() };
+    });
+    const feb = r.mess.filter(m => /Februar/.test(m.label));
+    const lang = r.mess.filter(m => m.tage > 31 || m.tage < 28);
+    console.log('Monatswechsel:', r.mess.map(m => m.tage).join(','),
+      '· Februar:', feb.map(m => m.tage).join(','), '· zurück:', r.zurueck);
+    pruefe(feb.length > 0, 'MONATSWECHSEL: in 13 Schritten kam kein Februar vor');
+    pruefe(feb.every(m => m.tage === 28 || m.tage === 29),
+      'MONATSWECHSEL: Februar hat ' + feb.map(m => m.tage).join('/') + ' Tage');
+    pruefe(!lang.length, 'MONATSWECHSEL: ein Monat mit ' +
+      lang.map(m => m.tage).join('/') + ' Tagen');
+    const jetzt = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    pruefe(r.zurueck === jetzt,
+      'MONATSWECHSEL: „Heute" landet auf „' + r.zurueck + '" statt „' + jetzt + '"');
+  }
+
+  // ══ 4. Ein eigener Termin: WAS wird geschrieben, und WOHIN? ══
+  {
+    const r = await p.evaluate(async () => {
+      window.__schreib = [];
+      // Ohne gewaehlten Tag ist die Tageskarte zu
+      const zuVorher = getComputedStyle(document.getElementById('ichTagKarte')).display;
+      const feld = document.querySelector('#ichKalender [data-ichtag]');
+      const key = feld.getAttribute('data-ichtag');
+      feld.click();
+      await new Promise(r => setTimeout(r, 250));
+      const offen = getComputedStyle(document.getElementById('ichTagKarte')).display !== 'none';
+
+      // GEGENPROBE: ohne Titel darf nichts geschrieben werden
+      document.getElementById('ichTerminTitel').value = '';
+      document.getElementById('ichTerminAdd').click();
+      await new Promise(r => setTimeout(r, 300));
+      const nachLeer = window.__schreib.length;
+
+      document.getElementById('ichTerminTitel').value = 'Zahnarzt';
+      document.getElementById('ichTerminZeit').value = '09:30';
+      document.getElementById('ichTerminAdd').click();
+      await new Promise(r => setTimeout(r, 400));
+      return { key, offen, zuVorher, nachLeer, schreib: window.__schreib };
+    });
+    console.log('Termin geschrieben:', JSON.stringify(r.schreib));
+    pruefe(r.zuVorher === 'none', 'TAGESKARTE: steht offen, bevor ein Tag gewählt wurde');
+    pruefe(r.offen, 'TAGESKARTE: öffnet sich beim Klick auf einen Tag nicht');
+    pruefe(r.nachLeer === 0,
+      'GEGENPROBE: ein leerer Titel wurde geschrieben (' + r.nachLeer + ' Schreibvorgänge)');
+    const t = r.schreib[0];
+    if (!t) {
+      errs.push('NICHTS GESCHRIEBEN: „Eintragen" legt keinen Termin an');
+    } else {
+      pruefe(/^privat\/[^/]+\/termine\//.test(t.pfad),
+        'FALSCHER PFAD: der Termin landet unter „' + t.pfad +
+        '" statt unter privat/<uid>/termine/ — dort sähe ihn das ganze Team');
+      pruefe(t.daten && t.daten.titel === 'Zahnarzt',
+        'INHALT: geschrieben wurde titel=' + JSON.stringify(t.daten && t.daten.titel));
+      pruefe(t.daten && t.daten.datum === r.key,
+        'DATUM: geschrieben wurde ' + JSON.stringify(t.daten && t.daten.datum) +
+        ', angeklickt war ' + r.key);
+      pruefe(t.daten && t.daten.zeit === '09:30',
+        'ZEIT: geschrieben wurde ' + JSON.stringify(t.daten && t.daten.zeit));
+    }
+  }
+
+  // ══ 5. Eine Notiz: derselbe Test, und der Hinweis daneben ══
+  {
+    const r = await p.evaluate(async () => {
+      document.querySelector('[data-ichtab="notizen"]').click();
+      await new Promise(r => setTimeout(r, 350));
+      window.__schreib = [];
+
+      document.getElementById('ichNotizNeu').value = '   ';
+      document.getElementById('ichNotizAdd').click();
+      await new Promise(r => setTimeout(r, 300));
+      const nachLeer = window.__schreib.length;
+
+      document.getElementById('ichNotizNeu').value = 'Gehaltsgespräch vorbereiten';
+      document.getElementById('ichNotizAdd').click();
+      await new Promise(r => setTimeout(r, 400));
+      return {
+        nachLeer, schreib: window.__schreib,
+        hinweis: (document.getElementById('ichPaneNotizen').innerText || '')
+      };
+    });
+    console.log('Notiz geschrieben:', JSON.stringify(r.schreib));
+    pruefe(r.nachLeer === 0,
+      'GEGENPROBE: eine leere Notiz wurde geschrieben (' + r.nachLeer + ')');
+    const n = r.schreib[0];
+    if (!n) {
+      errs.push('NICHTS GESCHRIEBEN: „Speichern" legt keine Notiz an');
+    } else {
+      pruefe(/^privat\/[^/]+\/notizen\//.test(n.pfad),
+        'FALSCHER PFAD: die Notiz landet unter „' + n.pfad + '"');
+      pruefe(n.daten && n.daten.text === 'Gehaltsgespräch vorbereiten',
+        'INHALT: geschrieben wurde ' + JSON.stringify(n.daten && n.daten.text));
+    }
+    /* Der Hinweis muss BEIDES sagen. Nur „niemand sonst" waere ein
+       Versprechen, das die Technik nicht haelt — wer an die Datenbank
+       kommt, liest mit. */
+    const sagtGeschuetzt = /niemand|kein anderes|nur du|auch die Verwaltung nicht/i.test(r.hinweis);
+    const sagtGrenze = /nicht verschlüsselt|Verschlüsselt ist es aber nicht|Zugang zur Datenbank/i.test(r.hinweis);
+    console.log('Hinweis · geschützt:', sagtGeschuetzt, '· Grenze genannt:', sagtGrenze);
+    pruefe(sagtGeschuetzt, 'HINWEIS: am Notizblock steht nicht, dass niemand sonst hineinsieht');
+    pruefe(sagtGrenze,
+      'HINWEIS: der Notizblock verspricht Schutz, sagt aber nicht, wo der aufhört — ' +
+      'wer an die Datenbank kommt, liest mit, und das gehört dazu');
+  }
+
+  // ══ 6. „Ich": Stammdaten wirklich gefüllt ══
+  {
+    const r = await p.evaluate(async () => {
+      document.querySelector('[data-ichtab="daten"]').click();
+      await new Promise(r => setTimeout(r, 600));
+      const zeilen = [...document.querySelectorAll('#ichStamm .ich-stamm')]
+        .map(z => [...z.querySelectorAll('span')].map(s => s.textContent.trim()));
+      return {
+        zeilen,
+        certs: (document.getElementById('ichCerts').innerText || '').trim().length,
+        zahlen: (document.getElementById('ichZahlen').innerText || '').trim().length,
+        profilKnopf: !!document.getElementById('ichProfilBtn')
+      };
+    });
+    console.log('Stammdaten:', JSON.stringify(r.zeilen));
+    pruefe(r.zeilen.length >= 4, 'STAMMDATEN: nur ' + r.zeilen.length + ' Zeilen');
+    const name = r.zeilen.filter(z => z[0] === 'Name')[0];
+    pruefe(name && name[1] && name[1] !== '–',
+      'STAMMDATEN: der Name ist leer — dann liest die Seite die Sitzung nicht');
+    const rolle = r.zeilen.filter(z => z[0] === 'Rolle')[0];
+    pruefe(rolle && rolle[1] === 'Verwaltung',
+      'STAMMDATEN: die Rolle steht als ' + JSON.stringify(rolle && rolle[1]) +
+      ', die Attrappe ist aber ein Chef');
+    pruefe(r.certs > 5, 'NACHWEISE: die Fläche bleibt leer (' + r.certs + ' Zeichen)');
+    pruefe(r.zahlen > 5, 'ZAHLEN: die Fläche bleibt leer (' + r.zahlen + ' Zeichen)');
+    pruefe(r.profilKnopf, 'FEHLT: der Knopf zum Profil');
+  }
+
+  // ══ 7. Nichts in der Konsole ══
+  if (fehler.length) errs.push(fehler.slice(0, 4).join(' | '));
+  console.log('Konsole:', fehler.length ? fehler.length + ' Meldungen' : 'sauber');
+
+  /* ══ 7b. GEGENPROBE zur Konsolen-Sperre ══
+     Die Sperre oben nimmt eine Form von Meldung heraus. Greift sie zu
+     weit, meldet dieser Durchlauf nie wieder einen echten Fehler — und
+     waere ab dann Zierrat. Also einen echten ausloesen und nachsehen,
+     ob er ankommt. */
+  {
+    const vorher = fehler.length;
+    await p.evaluate(() => { console.error('ABSICHTLICH: kaputte Stelle'); });
+    await p.waitForTimeout(200);
+    const angekommen = fehler.length > vorher;
+    console.log('Gegenprobe Konsole: echter Fehler', angekommen ? 'kommt an ✓' : 'VERSCHLUCKT');
+    if (!angekommen) {
+      errs.push('GEGENPROBE: ein echter console.error wird verschluckt — ' +
+        'dann ist die Konsolenprüfung wertlos');
+    } else {
+      // Den absichtlichen wieder herausnehmen, sonst meldet er sich selbst
+      fehler.length = vorher;
+    }
+  }
+
+  await b.close();
+  console.log(errs.length
+    ? '\n✗ ' + errs.join('\n✗ ')
+    : '\n✓ Mein Bereich: vier Reiter, der Kalender zählt richtig, und was ' +
+      'angelegt wird, landet unter privat/<uid>/ — mit Gegenproben');
+  process.exit(errs.length ? 1 : 0);
+})();

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-qmGhz1XtD5SywJM7+83X/UMfmQ0cZRAtFpoqsrE9nKc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-GizvXH6+oPBS5z5I3ILnR8X03JXmowmAeJco7P+LvdQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1648,6 +1648,72 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mysh-note{flex:0 0 100%;color:var(--text-3);font-size:var(--t-xs)}
 
+/* ── Mein Bereich ──
+   Die Wochenliste borgt sich bewusst das Aussehen von .mysh-row: es ist
+   dieselbe Sorte Zeile (Tag, Zeit, Sache), nur aus mehreren Quellen. Ein
+   zweites Aussehen fuer dasselbe waere nur eine zweite Sprache. */
+.ich-zeile{display:flex;align-items:baseline;gap:var(--s10);padding:var(--s8) 0;
+  flex-wrap:wrap;border-top:1px solid var(--line);font-size:var(--t-sm)}
+.ich-zeile:first-child{border-top:none}
+.ich-zeile.heute{font-weight:600}
+.ich-tag{flex:0 0 auto;min-width:88px;color:var(--text-2)}
+.ich-zeile.heute .ich-tag{color:var(--accent)}
+.ich-was{flex:1;min-width:0}
+.ich-zeit{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--text-2)}
+/* Woher die Zeile stammt. Ohne das steht „Zahnarzt" neben „Dienst Hürth"
+   und man weiss nicht, was davon der Betrieb sieht und was nicht. */
+.ich-quelle{flex:0 0 auto;font-size:var(--t-2xs);padding:var(--s1) var(--s6);
+  border-radius:var(--r-pille);background:var(--auf-2);color:var(--text-3)}
+/* --f-* und --k-* sind Flaechen, keine Textfarben. Als color: waeren sie
+   halbdurchsichtig auf halbdurchsichtig — lesbar ist das nicht. Fuer
+   Schrift gibt es --*-tx, und die sind in beiden Modi gesetzt. */
+.ich-quelle.privat{background:var(--f-ok);color:var(--ok-tx)}
+.ich-quelle.warn{background:var(--f-warn);color:var(--warm-tx)}
+.ich-quelle.bad{background:var(--f-bad);color:var(--danger-tx)}
+
+/* Monatsraster. Sieben Spalten, feste Zellenhoehe — sonst springt die
+   Hoehe je nach Monat und der Rest der Seite wandert mit. */
+.ich-kal{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--s2)}
+.ich-kal .kal-kopf{text-align:center;font-size:var(--t-2xs);color:var(--text-3);
+  padding:var(--s4) 0;letter-spacing:var(--ls-weit)}
+.ich-tagfeld{position:relative;min-height:44px;border:none;background:var(--auf-1);
+  border-radius:var(--r-8);color:var(--text);font-size:var(--t-sm);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  gap:var(--s2);padding:var(--s4) 0;font-variant-numeric:tabular-nums}
+.ich-tagfeld:hover{background:var(--auf-2)}
+.ich-tagfeld.leer{background:none;cursor:default;pointer-events:none}
+.ich-tagfeld.heute{outline:2px solid var(--accent);outline-offset:-2px;font-weight:700}
+.ich-tagfeld.gewaehlt{background:var(--accent-glow)}
+/* Punkte statt Zahlen: bei vier Terminen an einem Tag bleibt die Zelle
+   sonst nicht mehr lesbar, und die genaue Zahl steht ohnehin darunter. */
+.ich-punkte{display:flex;gap:var(--s2);height:var(--s6)}
+.ich-punkt{width:var(--s6);height:var(--s6);border-radius:var(--r-rund);background:var(--text-3)}
+/* Volltoene, keine Fuellungen: ein 6px-Punkt aus einer 14-%-Flaeche
+   ist auf dem Kartengrund nicht mehr zu sehen. */
+.ich-punkt.privat{background:var(--ok-tx)}
+.ich-punkt.dienst{background:var(--accent)}
+.ich-punkt.frei{background:var(--warm-tx)}
+
+.ich-notiz{padding:var(--s12) var(--s14);background:var(--auf-1);
+  border-radius:var(--r-12);margin-bottom:var(--s8)}
+.ich-notiz p{white-space:pre-wrap;word-break:break-word;margin:0 0 var(--s6);
+  font-size:var(--t-sm);line-height:var(--lh-normal)}
+.ich-notiz-fuss{display:flex;align-items:center;gap:var(--s10);
+  font-size:var(--t-2xs);color:var(--text-3)}
+.ich-notiz-fuss button{margin-left:auto}
+
+.ich-stamm{display:flex;justify-content:space-between;gap:var(--s10);
+  padding:var(--s8) 0;border-top:1px solid var(--line);font-size:var(--t-sm)}
+.ich-stamm:first-child{border-top:none}
+.ich-stamm span:first-child{color:var(--text-2)}
+.ich-stamm span:last-child{text-align:right;font-weight:600}
+
+.ich-zahl{display:flex;justify-content:space-between;align-items:baseline;
+  gap:var(--s10);padding:var(--s8) 0;border-top:1px solid var(--line)}
+.ich-zahl:first-child{border-top:none}
+.ich-zahl b{font-size:var(--t-xl);font-variant-numeric:tabular-nums}
+.ich-zahl span{font-size:var(--t-sm);color:var(--text-2)}
+
 /* Hinweis über einer weitergeleiteten Nachricht */
 .fwd-mark{font-size:var(--t-2xs);color:var(--text-3);font-style:italic;margin-bottom:var(--s2)}
 /* Tastenkürzel-Liste */
@@ -2798,6 +2864,133 @@ html{font-size:var(--fs,100%)}
           <div class="card" id="homeActivityCard" data-fold="aktivitaet">
             <h3 data-ikon="uhr">Zuletzt passiert</h3>
             <div id="homeActivity"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SEITE: MEIN BEREICH – Woche, Kalender, Notizen, Ich
+           ============================================================
+           Aus dem Betrieb gewuenscht: „ein Bereich der fuer jeden selber
+           ist". Der Anlass dafuer stand schon vorher in der App, nur
+           verteilt — wer wissen wollte, wann er arbeitet, was er zu tun
+           hat und wann sein Schein ablaeuft, besuchte drei Seiten und
+           ein Fenster:
+
+             Mein Dienst        Karte auf Start
+             Meine Aufgaben     Betrieb → Aufgaben, gefiltert
+             Urlaub / Krank     Team → Abwesend
+             Meine Nachweise    Einstellungs-Fenster hinter dem Avatar
+
+           Diese Seite fasst das zusammen. Sie legt dabei nichts doppelt
+           an: Schichten, Aufgaben und Abwesenheiten werden dort gelesen,
+           wo sie ohnehin liegen. Neu ist nur, was es vorher nirgends
+           gab — eigene Termine und Notizen, und die liegen unter
+           firmen/<f>/privat/<uid>/ und gehen niemanden sonst etwas an.
+           ============================================================ -->
+      <section class="view" id="view-ich">
+        <div class="view-head shrink"><h2 id="ichGreet">Mein Bereich</h2>
+          <p id="ichSub">Was dich betrifft – und was nur dir gehört.</p></div>
+        <div class="scroll-area" data-shrinks="1">
+          <div class="pm-tabs" id="ichTabs" style="margin:0 0 14px">
+            <button class="pm-tab on" data-ichtab="woche">Woche</button>
+            <button class="pm-tab" data-ichtab="kalender">Kalender</button>
+            <button class="pm-tab" data-ichtab="notizen">Notizen</button>
+            <button class="pm-tab" data-ichtab="daten">Ich</button>
+          </div>
+
+          <!-- ── WOCHE ── -->
+          <div id="ichPaneWoche">
+            <div class="card">
+              <div class="karten-kopf">
+                <h3 data-ikon="kalender">Diese Woche</h3>
+                <span class="todo-count" id="ichWocheZahl"></span>
+              </div>
+              <div id="ichWocheListe"></div>
+            </div>
+          </div>
+
+          <!-- ── KALENDER ── -->
+          <div id="ichPaneKalender" style="display:none">
+            <div class="card">
+              <div class="karten-kopf">
+                <h3 id="ichMonatLabel">Monat</h3>
+                <div style="display:flex;gap:7px">
+                  <button class="btn btn-ghost btn-sm" id="ichMonatPrev" aria-label="Voriger Monat">‹</button>
+                  <button class="btn btn-ghost btn-sm" id="ichMonatHeute">Heute</button>
+                  <button class="btn btn-ghost btn-sm" id="ichMonatNext" aria-label="Nächster Monat">›</button>
+                </div>
+              </div>
+              <div class="ich-kal" id="ichKalender"></div>
+              <p class="hint" style="margin:10px 0 0">Tippe auf einen Tag, um etwas einzutragen.
+                Deine Einträge sieht nur du – Schichten und Abwesenheiten kommen aus dem Betrieb.</p>
+            </div>
+            <div class="card" id="ichTagKarte" style="display:none">
+              <div class="karten-kopf">
+                <h3 id="ichTagLabel">Tag</h3>
+                <button class="mini-link" id="ichTagZu">Schließen</button>
+              </div>
+              <div id="ichTagListe"></div>
+              <div class="row" style="margin-top:10px">
+                <div class="field" style="flex:2 1 160px"><label for="ichTerminTitel">Was?</label>
+                  <input class="inp" id="ichTerminTitel" maxlength="80" placeholder="z. B. Zahnarzt" /></div>
+                <div class="field" style="flex:1 1 90px"><label for="ichTerminZeit">Uhrzeit (optional)</label>
+                  <input class="inp" id="ichTerminZeit" type="time" /></div>
+              </div>
+              <button class="btn btn-primary btn-sm" id="ichTerminAdd">Eintragen</button>
+            </div>
+          </div>
+
+          <!-- ── NOTIZEN ── -->
+          <div id="ichPaneNotizen" style="display:none">
+            <div class="card">
+              <div class="karten-kopf">
+                <h3 data-ikon="stift">Notizblock</h3>
+                <span class="todo-count" id="ichNotizZahl"></span>
+              </div>
+              <!-- Der Hinweis steht bewusst DA, wo man schreibt, nicht in
+                   einer Fussnote. Und er sagt beides: was die Regel kann
+                   und was sie nicht kann. Ein Versprechen, das die Technik
+                   nicht haelt, waere schlimmer als gar kein Notizblock. -->
+              <p class="hint" style="margin:2px 0 12px">Kein anderes Konto kommt hier heran –
+                auch die Verwaltung nicht. Verschlüsselt ist es aber nicht:
+                wer Zugang zur Datenbank selbst hat, kann es lesen.</p>
+              <div class="field">
+                <label for="ichNotizNeu">Neue Notiz</label>
+                <textarea class="inp" id="ichNotizNeu" rows="3" maxlength="2000"
+                  placeholder="Was du dir merken willst …"></textarea>
+              </div>
+              <button class="btn btn-primary btn-sm" id="ichNotizAdd">Speichern</button>
+            </div>
+            <div id="ichNotizListe"></div>
+          </div>
+
+          <!-- ── ICH: Nachweise, Stammdaten, eigene Zahlen ── -->
+          <div id="ichPaneDaten" style="display:none">
+            <div class="card">
+              <h3 data-ikon="person">Meine Daten</h3>
+              <div id="ichStamm"></div>
+              <button class="btn btn-ghost btn-sm" id="ichProfilBtn" style="margin-top:10px">Profil bearbeiten</button>
+            </div>
+            <div class="card">
+              <div class="karten-kopf">
+                <h3 data-ikon="blatt">Meine Nachweise</h3>
+                <span class="todo-count" id="ichCertZahl"></span>
+              </div>
+              <p class="hint" style="margin:2px 0 12px">Eintragen kann sie nur die Verwaltung.
+                Fehlt etwas oder stimmt ein Datum nicht, sag Bescheid.</p>
+              <div id="ichCerts"></div>
+            </div>
+            <div class="card" id="ichZahlenKarte">
+              <div class="karten-kopf">
+                <h3 data-ikon="trendAuf">Meine Zahlen</h3>
+                <span class="todo-count">letzte 90 Tage</span>
+              </div>
+              <!-- Nur die eigenen. Eine Rangliste waere schnell gebaut und
+                   macht aus einem persoenlichen Bereich einen Pranger. -->
+              <p class="hint" style="margin:2px 0 12px">Nur deine eigenen – niemand wird hier verglichen.</p>
+              <div id="ichZahlen"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -8254,6 +8447,17 @@ function maybeShowNotifBanner(){
 var NAVGROUPS = [
   {id:'g-start', label:'Start', views:['home'],
    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
+  /* Zweite Stelle, nicht letzte. „Mein Bereich" beantwortet dieselbe
+     Frage wie Start — was betrifft MICH heute —, nur ausfuehrlicher.
+     Die beiden gehoeren nebeneinander.
+
+     Hinten anzuhaengen waere bequemer gewesen und haette den Bereich
+     beim Chef auf Platz sechs geschoben, also hinter den Rand der
+     Leiste. Etwas, das man wegwischen muss, um es zu finden, ist fuer
+     einen neuen Bereich dasselbe wie nicht vorhanden. Chat rutscht
+     dafuer auf drei — noch im Bild, auch auf 320 Pixel. */
+  {id:'g-ich', label:'Ich', views:['ich'],
+   icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
   {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
   {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','probe','docs'],
@@ -8265,6 +8469,7 @@ var NAVGROUPS = [
 ];
 var NAV = [
   {id:'home',  label:'Start',    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
+  {id:'ich',   label:'Mein Bereich', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
   {id:'chat',  label:'Chat',     icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
   {id:'todos', label:'Aufgaben', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
@@ -8505,6 +8710,7 @@ function showView(id, fromKey, ausVerlauf){
       requestAnimationFrame(function(){ if(cb) cb.classList.remove('sofort'); });
     });
   }
+  if(id==='ich') ichOeffnen();
   if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); }
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
@@ -9526,6 +9732,11 @@ function stopListeners(){
   if(_matSaveTimer){ clearTimeout(_matSaveTimer); _matSaveTimer=null; }
   _matSaveKey=null;
   _myShifts=[]; _myShiftsAt=0; _myShiftsLoading=false;
+  /* In den Studios teilen sich mehrere Leute ein Geraet. Bliebe der
+     Horcher auf privat/<uid> stehen, saehe der Naechste beim Anmelden
+     kurz die Notizen seines Vorgaengers aufblitzen — bei genau der
+     Sammlung, der wir zugesagt haben, dass sie niemand sonst sieht. */
+  ichAufraeumen();
   _shifts=[]; _absences=[]; _handovers=[]; _board=[];
   _ppTasks=[]; _ppNotes=[]; _matItems=[];
   _devices=[]; _devLog=[]; _devOpenId=null; _pendingDevPhoto=null;
@@ -11015,6 +11226,367 @@ function renderMyShifts(){
       (x.note?'<span class="mysh-note">'+esc(x.note)+'</span>':'')+
       '</div>';
   }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MEIN BEREICH
+   ══════════════════════════════════════════════════════════════════════
+   Vier Reiter, zwei Sorten Daten:
+
+     aus dem Betrieb   Schichten, Abwesenheiten, Aufgaben, Nachweise,
+                       Probetrainings — werden gelesen, nie hier
+                       geschrieben. Diese Seite ist eine zweite Brille
+                       auf vorhandene Daten, keine zweite Ablage.
+
+     nur meins         Termine und Notizen unter privat/<uid>/. Die
+                       einzigen, die hier entstehen — und die einzigen,
+                       die sonst niemand sieht.
+
+   Warum die Trennung sichtbar bleibt: In der Wochenliste steht neben
+   jeder Zeile, woher sie kommt. Ohne das steht „Zahnarzt" neben „Dienst
+   Hürth" und niemand weiss mehr, was die Verwaltung sieht und was nicht.
+   ══════════════════════════════════════════════════════════════════════ */
+var ICHPANES = { woche:'ichPaneWoche', kalender:'ichPaneKalender',
+                 notizen:'ichPaneNotizen', daten:'ichPaneDaten' };
+var _ichTab='woche';
+var _ichMonat=null;              // erster Tag des gezeigten Monats
+var _ichTagGewaehlt=null;        // 'YYYY-MM-DD' oder null
+var _ichTermine=[], _ichNotizen=[];
+var _ichTerminUnsub=null, _ichNotizUnsub=null;
+var _ichBetrieb={ schichten:[], abwesend:[] };
+var _ichBetriebFuer='';          // fuer welchen Zeitraum das gilt
+var _ichZahlen=null;
+
+function privatRef(){
+  return (session && session.uid) ? S('privat').doc(session.uid) : null;
+}
+
+/* ── Zuhoeren auf das Eigene ──
+   Nur einmal einhaengen. Beim Abmelden raeumt ichAufraeumen() auf; sonst
+   liefe der Horcher des vorigen Kontos weiter, und der naechste Nutzer
+   auf demselben Geraet saehe fremde Notizen aufblitzen. */
+function ichHorchen(){
+  var ref=privatRef(); if(!ref) return;
+  if(!_ichTerminUnsub){
+    _ichTerminUnsub=ref.collection('termine').onSnapshot(function(sn){
+      _ichTermine=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      if(currentView==='ich'){ renderIchWoche(); renderIchKalender(); }
+    }, function(e){ console.warn('Termine:', e && e.code); });
+  }
+  if(!_ichNotizUnsub){
+    _ichNotizUnsub=ref.collection('notizen').orderBy('ts','desc').limit(200)
+      .onSnapshot(function(sn){
+        _ichNotizen=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+        if(currentView==='ich') renderIchNotizen();
+      }, function(e){ console.warn('Notizen:', e && e.code); });
+  }
+}
+function ichAufraeumen(){
+  if(_ichTerminUnsub){ _ichTerminUnsub(); _ichTerminUnsub=null; }
+  if(_ichNotizUnsub){ _ichNotizUnsub(); _ichNotizUnsub=null; }
+  _ichTermine=[]; _ichNotizen=[]; _ichBetrieb={ schichten:[], abwesend:[] };
+  _ichBetriebFuer=''; _ichZahlen=null; _ichTagGewaehlt=null; _ichMonat=null;
+}
+
+/* Schichten und Abwesenheiten fuer einen Zeitraum, ueber alle eigenen
+   Studios. Bewusst nicht dauerhaft horchen: das waere ein Horcher je
+   Studio, fuer eine Seite, die man selten offen hat. */
+function ichBetriebLaden(von, bis){
+  var keys=(session && session.studioKeys)||[];
+  var marke=von+'|'+bis;
+  if(!keys.length || _ichBetriebFuer===marke){ return Promise.resolve(); }
+  var jobs=[];
+  keys.forEach(function(sk){
+    if(featureAn('schicht')){
+      jobs.push(S('studios').doc(sk).collection('shifts')
+        .where('date','>=',von).where('date','<=',bis).get()
+        .then(function(sn){
+          return { art:'schicht', rows:sn.docs.map(function(d){
+            return Object.assign({id:d.id, sk:sk}, d.data()); }) };
+        }).catch(function(){ return { art:'schicht', rows:[] }; }));
+    }
+    if(featureAn('abwesend')){
+      /* Abwesenheiten laufen ueber einen Zeitraum, nicht ueber einen Tag.
+         Eine Woche Urlaub hat from vor dem Fenster und to danach — mit
+         einem where auf 'from' im Fenster faellt genau die durch, die man
+         am dringendsten sehen will. Deshalb hier alles ab von und das
+         Ende erst beim Filtern. */
+      jobs.push(S('studios').doc(sk).collection('absences')
+        .where('to','>=',von).get()
+        .then(function(sn){
+          return { art:'abwesend', rows:sn.docs.map(function(d){
+            return Object.assign({id:d.id, sk:sk}, d.data()); }) };
+        }).catch(function(){ return { art:'abwesend', rows:[] }; }));
+    }
+  });
+  if(!jobs.length){ _ichBetriebFuer=marke; return Promise.resolve(); }
+  return Promise.all(jobs).then(function(res){
+    var s=[], a=[];
+    res.forEach(function(r){
+      r.rows.forEach(function(x){
+        if(x.uid!==session.uid) return;
+        if(r.art==='schicht') s.push(x);
+        else if((x.from||'')<=bis) a.push(x);
+      });
+    });
+    _ichBetrieb={ schichten:s, abwesend:a };
+    _ichBetriebFuer=marke;
+  });
+}
+
+function ichTagName(key){
+  var heute=ymd(new Date());
+  var m=new Date(); m.setDate(m.getDate()+1);
+  if(key===heute) return 'Heute';
+  if(key===ymd(m)) return 'Morgen';
+  return new Date(key+'T12:00:00')
+    .toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+}
+var ABW_NAME={ urlaub:'Urlaub', krank:'Krank', frei:'Frei' };
+
+/* Alles, was an einem Tag fuer mich ansteht — aus beiden Welten. */
+function ichEintraegeFuer(key){
+  var raus=[];
+  _ichBetrieb.schichten.forEach(function(x){
+    if(x.date!==key) return;
+    raus.push({ art:'dienst', zeit:(x.from||''),
+      text:'Dienst · '+studioName(x.sk),
+      zusatz:(x.from||'')+'–'+(x.to||''), notiz:x.note||'' });
+  });
+  _ichBetrieb.abwesend.forEach(function(x){
+    if((x.from||'')>key || (x.to||'')<key) return;
+    raus.push({ art:'frei', zeit:'',
+      text:(ABW_NAME[x.type]||'Abwesend')+(x.status==='offen'?' (beantragt)':''),
+      zusatz:'', notiz:x.note||'' });
+  });
+  _ichTermine.forEach(function(t){
+    if(t.datum!==key) return;
+    raus.push({ art:'privat', zeit:t.zeit||'', text:t.titel||'Eintrag',
+      zusatz:t.zeit||'', notiz:'', id:t.id });
+  });
+  (session && session.studioKeys || []).forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(t.assignedTo!==session.uid || isDone(t) || isArchived(t)) return;
+      if(!t.due || ymd(new Date(t.due))!==key) return;
+      raus.push({ art:'aufgabe', zeit:'', text:t.title||'Aufgabe', zusatz:'', notiz:'' });
+    });
+  });
+  return raus.sort(function(a,b){ return (a.zeit||'~').localeCompare(b.zeit||'~'); });
+}
+
+var ICH_QUELLE={ dienst:'Dienst', frei:'Frei', privat:'nur du', aufgabe:'Aufgabe' };
+
+function renderIchWoche(){
+  var box=$('ichWocheListe'), zahl=$('ichWocheZahl'); if(!box) return;
+  var mo=mondayOf(new Date()), tage=[], n=0;
+  for(var i=0;i<7;i++){
+    var d=new Date(mo); d.setDate(mo.getDate()+i); tage.push(ymd(d));
+  }
+  var heute=ymd(new Date());
+  var html=tage.map(function(key){
+    var e=ichEintraegeFuer(key); n+=e.length;
+    if(!e.length) return '';
+    return e.map(function(x, idx){
+      return '<div class="ich-zeile'+(key===heute?' heute':'')+'">'+
+        '<span class="ich-tag">'+esc(idx===0?ichTagName(key):'')+'</span>'+
+        '<span class="ich-was">'+esc(x.text)+
+          (x.notiz?' <span style="color:var(--text-3)">· '+esc(x.notiz)+'</span>':'')+'</span>'+
+        (x.zusatz?'<span class="ich-zeit">'+esc(x.zusatz)+'</span>':'')+
+        '<span class="ich-quelle'+(x.art==='privat'?' privat':'')+'">'+
+          esc(ICH_QUELLE[x.art]||'')+'</span>'+
+        '</div>';
+    }).join('');
+  }).join('');
+  if(zahl) zahl.textContent = n ? (n===1?'1 Eintrag':n+' Einträge') : '';
+  box.innerHTML = html || emptyHTML('Diese Woche ist nichts eingetragen',
+    'Weder Dienst noch Termine. Über den Kalender trägst du dir selbst etwas ein.', 'kalender');
+}
+
+/* ── Monatsraster ── */
+function renderIchKalender(){
+  var box=$('ichKalender'), label=$('ichMonatLabel'); if(!box) return;
+  if(!_ichMonat){ var t=new Date(); _ichMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
+  if(label) label.textContent=_ichMonat
+    .toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+  var jahr=_ichMonat.getFullYear(), monat=_ichMonat.getMonth();
+  var erster=new Date(jahr, monat, 1);
+  /* getDay(): Sonntag ist 0. Hier faengt die Woche am Montag an, sonst
+     steht der Monatsanfang eine Spalte daneben. */
+  var vorlauf=(erster.getDay()+6)%7;
+  var tageImMonat=new Date(jahr, monat+1, 0).getDate();
+  var heute=ymd(new Date());
+  var html=['Mo','Di','Mi','Do','Fr','Sa','So'].map(function(t){
+    return '<div class="kal-kopf">'+t+'</div>'; }).join('');
+  for(var v=0; v<vorlauf; v++) html+='<button class="ich-tagfeld leer" tabindex="-1"></button>';
+  for(var d=1; d<=tageImMonat; d++){
+    var key=jahr+'-'+String(monat+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var e=ichEintraegeFuer(key);
+    var arten={}; e.forEach(function(x){ arten[x.art]=true; });
+    var punkte=['dienst','privat','frei'].filter(function(a){ return arten[a]; })
+      .map(function(a){ return '<i class="ich-punkt '+a+'"></i>'; }).join('');
+    html+='<button class="ich-tagfeld'+(key===heute?' heute':'')+
+      (key===_ichTagGewaehlt?' gewaehlt':'')+'" data-ichtag="'+key+'" '+
+      'aria-label="'+esc(d+'. '+_ichMonat.toLocaleDateString('de-DE',{month:'long'})+
+        (e.length?', '+e.length+' Einträge':''))+'">'+
+      '<span>'+d+'</span><span class="ich-punkte">'+punkte+'</span></button>';
+  }
+  box.innerHTML=html;
+  renderIchTag();
+}
+
+function renderIchTag(){
+  var karte=$('ichTagKarte'), liste=$('ichTagListe'), label=$('ichTagLabel');
+  if(!karte) return;
+  if(!_ichTagGewaehlt){ karte.style.display='none'; return; }
+  karte.style.display='';
+  if(label) label.textContent=new Date(_ichTagGewaehlt+'T12:00:00')
+    .toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'});
+  var e=ichEintraegeFuer(_ichTagGewaehlt);
+  liste.innerHTML = e.length ? e.map(function(x){
+    return '<div class="ich-zeile">'+
+      '<span class="ich-was">'+esc(x.text)+'</span>'+
+      (x.zusatz?'<span class="ich-zeit">'+esc(x.zusatz)+'</span>':'')+
+      '<span class="ich-quelle'+(x.art==='privat'?' privat':'')+'">'+
+        esc(ICH_QUELLE[x.art]||'')+'</span>'+
+      (x.art==='privat'
+        ? '<button class="mini-link" data-ichtermweg="'+esc(x.id)+'">Löschen</button>'
+        : '')+
+      '</div>';
+  }).join('') : emptyMini('Für diesen Tag ist nichts eingetragen.');
+}
+
+function renderIchNotizen(){
+  var box=$('ichNotizListe'), zahl=$('ichNotizZahl'); if(!box) return;
+  if(zahl) zahl.textContent=_ichNotizen.length
+    ? (_ichNotizen.length===1?'1 Notiz':_ichNotizen.length+' Notizen') : '';
+  box.innerHTML = _ichNotizen.length ? _ichNotizen.map(function(n){
+    return '<div class="ich-notiz">'+
+      '<p>'+esc(n.text||'')+'</p>'+
+      '<div class="ich-notiz-fuss"><span>'+esc(fmtDateTime(n.ts))+'</span>'+
+      '<button class="mini-link" data-ichnotizweg="'+esc(n.id)+'">Löschen</button></div>'+
+      '</div>';
+  }).join('') : emptyHTML('Noch keine Notiz',
+    'Was du hier schreibst, bleibt bei dir.', 'stift');
+}
+
+function renderIchDaten(){
+  var stamm=$('ichStamm');
+  if(stamm && session){
+    var rolle={ chef:'Verwaltung', leiter:'Studio-Leitung' }[session.role] || 'Mitarbeiter';
+    var studios=(session.studioKeys||[]).map(studioName).filter(Boolean);
+    var zeilen=[
+      ['Name', session.name||'–'],
+      ['Rolle', rolle],
+      ['Studios', studios.length ? studios.join(', ') : '–'],
+      ['E-Mail', session.email||'–']
+    ];
+    stamm.innerHTML=zeilen.map(function(z){
+      return '<div class="ich-stamm"><span>'+esc(z[0])+'</span><span>'+esc(z[1])+'</span></div>';
+    }).join('');
+  }
+  ichCertsLaden();
+  ichZahlenLaden();
+}
+
+/* Nachweise: dieselbe Abfrage wie im Einstellungs-Fenster, nur an einer
+   Stelle, an der man sie auch findet. */
+function ichCertsLaden(){
+  var box=$('ichCerts'), zahl=$('ichCertZahl'); if(!box || !session) return;
+  if(!featureAn('nachweise')){
+    box.innerHTML=emptyMini('Nachweise sind für diesen Betrieb abgeschaltet.');
+    if(zahl) zahl.textContent=''; return;
+  }
+  S('certificates').where('uid','==',session.uid).get().then(function(sn){
+    var rows=sn.docs.map(function(d){ return d.data(); })
+      .sort(function(a,b){ return (a.bis||'~').localeCompare(b.bis||'~'); });
+    if(zahl) zahl.textContent=rows.length?String(rows.length):'';
+    if(!rows.length){
+      box.innerHTML=emptyMini('Für dich ist noch kein Nachweis hinterlegt.');
+      return;
+    }
+    var heute=ymd(new Date());
+    var bald=new Date(); bald.setDate(bald.getDate()+60); bald=ymd(bald);
+    box.innerHTML=rows.map(function(c){
+      var zustand='', klasse='';
+      if(c.bis && c.bis<heute){ zustand='abgelaufen'; klasse=' bad'; }
+      else if(c.bis && c.bis<bald){ zustand='läuft bald ab'; klasse=' warn'; }
+      var datum=c.bis
+        ? new Date(c.bis+'T12:00:00').toLocaleDateString('de-DE')
+        : 'ohne Ablauf';
+      return '<div class="ich-zeile">'+
+        '<span class="ich-was">'+esc(c.art||c.name||'Nachweis')+'</span>'+
+        '<span class="ich-zeit">'+esc(datum)+'</span>'+
+        (zustand?'<span class="ich-quelle'+klasse+'">'+esc(zustand)+'</span>':'')+
+        '</div>';
+    }).join('');
+  }).catch(function(){
+    box.innerHTML=emptyMini('Die Nachweise lassen sich gerade nicht laden.');
+  });
+}
+
+/* Eigene Zahlen. Bewusst ohne Vergleich mit anderen: eine Rangliste ist
+   schnell gebaut und macht aus einem persoenlichen Bereich einen Pranger. */
+function ichZahlenLaden(){
+  var box=$('ichZahlen'), karte=$('ichZahlenKarte'); if(!box || !session) return;
+  if(!featureAn('probe')){ if(karte) karte.style.display='none'; return; }
+  if(karte) karte.style.display='';
+  var seit=new Date(); seit.setDate(seit.getDate()-90); seit=seit.getTime();
+  S('probetrainings').where('vonUid','==',session.uid).get().then(function(sn){
+    var rows=sn.docs.map(function(d){ return d.data(); })
+      .filter(function(r){ return (r.datum||0)>=seit; });
+    var ab=rows.filter(function(r){ return r.abschluss===true; }).length;
+    var quote=rows.length ? Math.round(ab/rows.length*100) : 0;
+    var meine=0;
+    (session.studioKeys||[]).forEach(function(sk){
+      (cachedTodos[sk]||[]).forEach(function(t){
+        if(t.assignedTo===session.uid && isDone(t)) meine++;
+      });
+    });
+    box.innerHTML=
+      '<div class="ich-zahl"><span>Probetrainings</span><b>'+rows.length+'</b></div>'+
+      '<div class="ich-zahl"><span>davon abgeschlossen</span><b>'+ab+'</b></div>'+
+      (rows.length
+        ? '<div class="ich-zahl"><span>Quote</span><b>'+quote+' %</b></div>'
+        : '')+
+      '<div class="ich-zahl"><span>erledigte Aufgaben</span><b>'+meine+'</b></div>';
+  }).catch(function(){
+    box.innerHTML=emptyMini('Die Zahlen lassen sich gerade nicht laden.');
+  });
+}
+
+/* Beim Öffnen der Seite: den Reiter herrichten und nur das laden, was
+   der offene Reiter wirklich braucht. */
+function ichOeffnen(){
+  ichHorchen();
+  if(!_ichMonat){ var t=new Date(); _ichMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
+  var g=$('ichGreet');
+  if(g && session) g.textContent = (session.name||'').split(' ')[0]
+    ? 'Hallo, '+(session.name||'').split(' ')[0] : 'Mein Bereich';
+  ichReiterZeigen(_ichTab);
+}
+
+function ichReiterZeigen(t){
+  _ichTab=t;
+  document.querySelectorAll('[data-ichtab]').forEach(function(x){
+    x.classList.toggle('on', x.getAttribute('data-ichtab')===t);
+  });
+  Object.keys(ICHPANES).forEach(function(k){
+    var el=$(ICHPANES[k]); if(el) el.style.display = (k===t) ? '' : 'none';
+  });
+  if(t==='woche'){
+    var mo=mondayOf(new Date()), so=new Date(mo); so.setDate(mo.getDate()+6);
+    ichBetriebLaden(ymd(mo), ymd(so)).then(renderIchWoche);
+    renderIchWoche();
+  }
+  if(t==='kalender'){
+    var a=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth(), 1);
+    var b=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth()+1, 0);
+    ichBetriebLaden(ymd(a), ymd(b)).then(renderIchKalender);
+    renderIchKalender();
+  }
+  if(t==='notizen') renderIchNotizen();
+  if(t==='daten') renderIchDaten();
+  foldAufbauen();
 }
 
 /* ── Tagesüberblick ──
@@ -16302,6 +16874,96 @@ function bindActions(){
   // Material: eigenes Item hinzufügen
   var matAdd=$('matAdd'); if(matAdd) matAdd.addEventListener('click',addMaterial);
   var matNew=$('matNewName'); if(matNew) matNew.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addMaterial(); } });
+
+  // ── Mein Bereich ──
+  document.querySelectorAll('[data-ichtab]').forEach(function(b){
+    b.addEventListener('click',function(){
+      ichReiterZeigen(b.getAttribute('data-ichtab'));
+      tick(8);
+    });
+  });
+  var imP=$('ichMonatPrev'), imN=$('ichMonatNext'), imH=$('ichMonatHeute');
+  function monatWechseln(delta){
+    if(!_ichMonat) _ichMonat=new Date();
+    if(delta===0){ var t=new Date(); _ichMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
+    else _ichMonat=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth()+delta, 1);
+    /* Der gewaehlte Tag gehoert zum alten Monat. Bliebe er stehen, zeigte
+       die Tageskarte weiter etwas an, das im Raster gar nicht mehr zu
+       sehen ist. */
+    _ichTagGewaehlt=null;
+    var a=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth(), 1);
+    var b=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth()+1, 0);
+    ichBetriebLaden(ymd(a), ymd(b)).then(renderIchKalender);
+    renderIchKalender();
+  }
+  if(imP) imP.addEventListener('click',function(){ monatWechseln(-1); tick(8); });
+  if(imN) imN.addEventListener('click',function(){ monatWechseln(1); tick(8); });
+  if(imH) imH.addEventListener('click',function(){ monatWechseln(0); tick(8); });
+
+  var kal=$('ichKalender');
+  if(kal) kal.addEventListener('click',function(e){
+    var b=e.target.closest('[data-ichtag]'); if(!b) return;
+    var key=b.getAttribute('data-ichtag');
+    // Noch einmal auf denselben Tag schliesst ihn wieder.
+    _ichTagGewaehlt = (_ichTagGewaehlt===key) ? null : key;
+    renderIchKalender();
+    tick(8);
+  });
+  var tagZu=$('ichTagZu');
+  if(tagZu) tagZu.addEventListener('click',function(){
+    _ichTagGewaehlt=null; renderIchKalender(); tick(8);
+  });
+
+  var termAdd=$('ichTerminAdd');
+  if(termAdd) termAdd.addEventListener('click',function(){
+    var ref=privatRef(); if(!ref) return;
+    if(!_ichTagGewaehlt){ toast('Bitte zuerst einen Tag wählen.',true); return; }
+    var titel=($('ichTerminTitel').value||'').trim();
+    if(!titel){ toast('Bitte eintragen, worum es geht.',true); $('ichTerminTitel').focus(); return; }
+    var zeit=($('ichTerminZeit').value||'').trim();
+    withBusy(termAdd,function(){
+      return ref.collection('termine').add({
+        datum:_ichTagGewaehlt, titel:titel, zeit:zeit||null, ts:Date.now()
+      }).then(function(){
+        $('ichTerminTitel').value=''; $('ichTerminZeit').value='';
+        toast('Eingetragen ✓');
+      }).catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  var tagListe=$('ichTagListe');
+  if(tagListe) tagListe.addEventListener('click',function(e){
+    var b=e.target.closest('[data-ichtermweg]'); if(!b) return;
+    var ref=privatRef(); if(!ref) return;
+    ref.collection('termine').doc(b.getAttribute('data-ichtermweg')).delete()
+      .then(function(){ toast('Gelöscht ✓'); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  });
+
+  var nAdd=$('ichNotizAdd');
+  if(nAdd) nAdd.addEventListener('click',function(){
+    var ref=privatRef(); if(!ref) return;
+    var feld=$('ichNotizNeu'), text=(feld.value||'').trim();
+    if(!text){ toast('Die Notiz ist leer.',true); feld.focus(); return; }
+    withBusy(nAdd,function(){
+      return ref.collection('notizen').add({ text:text, ts:Date.now() })
+        .then(function(){ feld.value=''; toast('Gespeichert ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    });
+  });
+  var nListe=$('ichNotizListe');
+  if(nListe) nListe.addEventListener('click',function(e){
+    var b=e.target.closest('[data-ichnotizweg]'); if(!b) return;
+    var ref=privatRef(); if(!ref) return;
+    ref.collection('notizen').doc(b.getAttribute('data-ichnotizweg')).delete()
+      .then(function(){ toast('Gelöscht ✓'); })
+      .catch(function(e){ toast(errMsg(e),true); });
+  });
+
+  /* Das Profil bleibt im bestehenden Fenster. Es hier ein zweites Mal zu
+     bauen hiesse zwei Stellen, an denen dasselbe Feld gepflegt wird —
+     und eine davon vergisst man beim naechsten Mal. */
+  var ichProfil=$('ichProfilBtn');
+  if(ichProfil) ichProfil.addEventListener('click',function(){ openProfile(); });
 
   // ── Team: Reiter, Schichten, Abwesenheiten, Übergabe, Brett ──
   document.querySelectorAll('[data-teamtab]').forEach(function(b){

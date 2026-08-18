@@ -529,6 +529,35 @@ in einer, fehlt ihm entweder der Fokus-Käfig oder Escape.
 Acht Sekunden. Für alles, was löscht. Zusätzlich `confirm()`, wenn die
 Wirkung über den eigenen Bildschirm hinausgeht (14 Studios, alle Kollegen).
 
+### Herkunftsmarke `.ich-quelle`
+Eine kleine Plakette am Ende einer Zeile, die sagt, **woher** die Zeile
+kommt. Gebaut für „Mein Bereich", wo Betriebsdaten und Privates
+untereinanderstehen: ohne sie steht „Zahnarzt" neben „Dienst Hürth" und
+niemand weiß mehr, was die Verwaltung sieht.
+
+```
+.ich-quelle          neutral   Dienst, Aufgabe
+.ich-quelle.privat   grün      nur du
+.ich-quelle.warn     gelb      läuft bald ab
+.ich-quelle.bad      rot       abgelaufen
+```
+
+**Regel dahinter, und die gilt überall:** Mischt eine Liste Daten aus
+mehreren Quellen, muss die Quelle an der Zeile stehen — nicht in der
+Überschrift darüber. Überschriften scrollen weg.
+
+### Statusfarben sind Flächen, keine Schriftfarben
+`--f-*` und `--k-*` sind halbdurchsichtige Füllungen und Kanten. Als
+`color:` gesetzt ergeben sie halbdurchsichtige Schrift auf
+halbdurchsichtigem Grund — messbar unlesbar. Für Schrift gibt es
+`--ok-tx`, `--warm-tx`, `--danger-tx`, und die sind in **beiden** Modi
+gesetzt.
+
+```
+richtig   background:var(--f-warn); color:var(--warm-tx)
+falsch    background:var(--k-warn); color:var(--f-warn-stark)
+```
+
 ---
 
 ## 7. Rollen in der Oberfläche

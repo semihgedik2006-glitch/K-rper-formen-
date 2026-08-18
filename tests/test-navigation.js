@@ -36,9 +36,15 @@ const ansicht = page => page.evaluate(() => {
     const gruppen = await page.evaluate(() =>
       [...document.querySelectorAll('.mobnav button span:not(.badge):not(.ndot)')].map(s => s.textContent));
     console.log('GRUPPEN:', JSON.stringify(gruppen));
-    const soll = ['Start', 'Chat', 'Betrieb', 'Team', 'Verwaltung'];
+    /* „Ich" seit dem 17.8., und zwar an zweiter Stelle. Die Reihenfolge
+       ist hier bewusst mitgeprueft und nicht nur die Menge: hinten
+       angehaengt laege der Bereich beim Chef auf Platz sechs, also
+       hinter dem Rand der verschiebbaren Leiste. Wer ihn spaeter
+       verschiebt, soll das hier merken. */
+    const soll = ['Start', 'Ich', 'Chat', 'Betrieb', 'Team', 'Verwaltung'];
     if (JSON.stringify(gruppen) !== JSON.stringify(soll)) {
-      errs.push('Gruppen stimmen nicht: ' + JSON.stringify(gruppen));
+      errs.push('Gruppen stimmen nicht: ' + JSON.stringify(gruppen) +
+        ' — erwartet ' + JSON.stringify(soll));
     }
 
     await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
