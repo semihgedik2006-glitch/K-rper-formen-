@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-9oPnWq1Y5R+xDe301n0CBlrPrN9cWEqdieifolR/820='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-3K3snfu+DKEwzkxs+23mS+RZjnMV5lNHt4wxh0L7Z2c='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2431,6 +2431,13 @@ html{font-size:var(--fs,100%)}
 .chef-me{font-size:var(--t-xs);color:var(--text-3);font-style:italic;white-space:nowrap}
 
 /* Schalter (Melde-Einstellungen) */
+/* Zwischenüberschrift in den Einstellungen: „Auf diesem Gerät" gegen
+   „Per E-Mail". Ohne die Trennung hält man den Push-Schalter für den
+   Mail-Schalter — es sind aber zwei verschiedene Dinge, eines je Gerät
+   und eines je Konto. */
+.mail-kopf{margin:0 0 var(--s6)}
+.mail-kopf h4{font-size:var(--t-xs);font-weight:700;letter-spacing:var(--ls-l);
+  text-transform:uppercase;color:var(--text-3);margin:0}
 .sw-row{display:flex;align-items:center;gap:var(--s12);padding:var(--s12) 0;cursor:pointer;
   border-top:1px solid var(--line)}
 .sw-row:first-child{border-top:none}
@@ -4443,10 +4450,20 @@ html{font-size:var(--fs,100%)}
       </div>
     </div>
     <div id="pmPaneMelden" style="display:none">
-      <p class="hint" style="margin:2px 0 14px">Gilt nur für dieses Gerät. Auf dem Handy
-        kannst du also anderes einstellen als am Rechner.</p>
+      <div class="mail-kopf"><h4>Auf diesem Gerät</h4></div>
+      <p class="hint" style="margin:2px 0 14px">Auf dem Handy kannst du anderes
+        einstellen als am Rechner.</p>
       <div id="notifyOpts"></div>
       <p class="hint" id="notifyState" style="margin:14px 0 0"></p>
+
+      <!-- E-Mail hängt am Konto, nicht am Gerät: eine Mail geht an eine
+           Adresse, nicht an ein Handy. Deshalb zwei getrennte Blöcke mit
+           je eigener Überschrift — sonst hält man den Push-Schalter für
+           den Mail-Schalter. -->
+      <div class="mail-kopf" style="margin-top:22px"><h4>Per E-Mail</h4></div>
+      <p class="hint" style="margin:2px 0 14px">Gilt für dein Konto, überall.</p>
+      <div id="mailOpts"></div>
+      <p class="hint" id="mailState" style="margin:12px 0 0"></p>
     </div>
 
     <p class="auth-err" id="pmErr"></p>
@@ -16928,7 +16945,7 @@ function switchPmTab(which){
   if(save) save.style.display = isProfil?'':'none';
   if(err) err.style.display = isProfil?'':'none';
   if(note) note.style.display = which==='aussehen'?'block':'none';
-  if(which==='melden') buildNotifyOptions();
+  if(which==='melden'){ buildNotifyOptions(); buildMailOptions(); mailAusLaden(); }
   if(which==='nachweise') loadMyCerts();
   var kw=$('pmKeysWrap');
   if(kw) kw.style.display = (which==='aussehen' && window.innerWidth>820) ? 'block' : 'none';
@@ -16972,6 +16989,84 @@ function buildNotifyOptions(){
       st.textContent='Meldungen sind erlaubt. Änderungen hier wirken sofort.';
     }
   }
+}
+
+/* ── Welche Mails will ich? ──
+   Aus dem Betrieb: „nicht JEDER Chef soll jede Mail zu jedem Thema
+   bekommen." Bei 14 Studios heisst „Studio fertig" bis zu 14 Mails am
+   Tag — an jeden Chef.
+
+   Gespeichert wird die Liste der ABGESCHALTETEN Themen (users/<uid>
+   .mailAus), nicht der eingeschalteten. Ein Konto ohne das Feld bekommt
+   damit weiter alles: kein Nachpflegen, kein stilles Verstummen nach
+   dem Ausrollen. Die Sperre haengt am Konto, nicht am Geraet — eine
+   Mail geht an eine Adresse.
+
+   „Neue Aufgabe" steht auch fuer Mitarbeiter hier; die anderen beiden
+   erreichen ohnehin nur Chefs und werden deshalb nur denen gezeigt. */
+var MAIL_OPTS = [
+  { id:'aufgabe', name:'Neue Aufgabe',
+    hint:'Wenn dir eine Aufgabe zugewiesen wird oder in deinem Studio eine dazukommt.' },
+  { id:'fertig',  name:'Studio fertig', chef:true,
+    hint:'Wenn in einem Studio nichts mehr offen ist. Bei 14 Studios wird das viel.' },
+  { id:'bericht', name:'Monatsbericht', chef:true,
+    hint:'Einmal im Monat die Zahlen aller Studios.' }
+];
+var _mailAus = [];
+
+function buildMailOptions(){
+  var box=$('mailOpts'); if(!box || !session) return;
+  var zeigen=MAIL_OPTS.filter(function(o){ return !o.chef || canManage(); });
+  box.innerHTML=zeigen.map(function(o){
+    var an = _mailAus.indexOf(o.id) < 0;
+    return '<label class="sw-row" data-mk="'+o.id+'">'+
+      '<span class="sw-txt"><b>'+esc(o.name)+'</b><span>'+esc(o.hint)+'</span></span>'+
+      '<span class="sw'+(an?' on':'')+'"><i></i></span></label>';
+  }).join('');
+  box.querySelectorAll('[data-mk]').forEach(function(el){
+    el.addEventListener('click',function(e){
+      e.preventDefault();
+      var k=el.getAttribute('data-mk');
+      var i=_mailAus.indexOf(k);
+      if(i<0) _mailAus.push(k); else _mailAus.splice(i,1);
+      el.querySelector('.sw').classList.toggle('on', _mailAus.indexOf(k)<0);
+      mailStandZeigen(zeigen);
+      mailAusSpeichern();
+      tick(8);
+    });
+  });
+  mailStandZeigen(zeigen);
+}
+
+/* Die Zeile unter den Schaltern. Eigene Funktion, weil sie nach JEDEM
+   Umschalten stimmen muss — nicht nur beim Aufbau. Stand vorher im
+   Aufbau und blieb deshalb bei „Du bekommst alle diese Mails" stehen,
+   waehrend daneben schon ein Schalter aus war. */
+function mailStandZeigen(zeigen){
+  var st=$('mailState'); if(!st) return;
+  var aus=(zeigen||MAIL_OPTS).filter(function(o){
+    return _mailAus.indexOf(o.id)>=0; }).length;
+  st.textContent = aus
+    ? aus+(aus===1?' Sorte':' Sorten')+' abgeschaltet. Die anderen kommen weiter.'
+    : 'Du bekommst alle diese Mails.';
+}
+
+function mailAusSpeichern(){
+  if(!session || !session.uid) return;
+  db.collection('users').doc(session.uid).update({ mailAus:_mailAus.slice() })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+
+/* Beim Öffnen den echten Stand holen — nicht den vom letzten Mal.
+   Sonst schaltet jemand am Handy etwas ab und sieht am Rechner noch
+   den alten Zustand, schaltet dort um und macht es damit rueckgaengig. */
+function mailAusLaden(){
+  if(!session || !session.uid) return;
+  db.collection('users').doc(session.uid).get().then(function(d){
+    var v=(d.exists && d.data() && d.data().mailAus) || [];
+    _mailAus = Array.isArray(v) ? v.slice() : [];
+    buildMailOptions();
+  }).catch(function(){ buildMailOptions(); });
 }
 
 /* Zeigt "Foto wählen"/"Entfernen" nur, wenn "Eigenes Foto" ausgewählt ist */

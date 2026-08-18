@@ -773,6 +773,67 @@ const TAG = 86400000;
       hatAngeschlagen);
   }
 
+  /* ══ Wer bekommt welche Mail? ══
+     Aus dem Betrieb: „nicht JEDER Chef soll jede Mail zu jedem Thema
+     bekommen." Bei 14 Studios heisst „Studio fertig" bis zu 14 Mails am
+     Tag — an jeden Chef.
+
+     Der Punkt, an dem das teuer wird, ist nicht das Abschalten, sondern
+     die Vorgabe: die Liste nennt die ABGESCHALTETEN Themen. Waere es
+     andersherum, bekaeme nach dem Ausrollen niemand mehr etwas, bis
+     alle zwoelf Konten von Hand nachgepflegt sind — und gemerkt haette
+     es erst, wer eine Mail vermisst. Genau das prueft die erste Runde. */
+  {
+    const willHaben = fns.__intern && fns.__intern.mailWillHaben;
+    if (!willHaben) {
+      pruefe('Mail-Filter überhaupt erreichbar', false);
+    } else {
+      await db.collection('users').doc('mailAlles').set({ name: 'Alles', role: 'chef' });
+      await db.collection('users').doc('mailOhneFertig')
+        .set({ name: 'Ohne Fertig', role: 'chef', mailAus: ['fertig'] });
+      await db.collection('users').doc('mailOhneAlles')
+        .set({ name: 'Stille', role: 'chef', mailAus: ['fertig', 'bericht', 'aufgabe'] });
+      await db.collection('users').doc('mailKaputt')
+        .set({ name: 'Kaputt', role: 'chef', mailAus: 'keine-liste' });
+
+      const alle = ['mailAlles', 'mailOhneFertig', 'mailOhneAlles', 'mailKaputt'];
+      const fertig  = await willHaben(alle, 'fertig');
+      const bericht = await willHaben(alle, 'bericht');
+      const aufgabe = await willHaben(alle, 'aufgabe');
+      const ohneThema = await willHaben(alle, null);
+      const unbekannt = await willHaben(['gibtEsNicht'], 'fertig');
+
+      pruefe('MAIL · ohne Feld bekommt weiterhin alles',
+        fertig.includes('mailAlles') && bericht.includes('mailAlles') &&
+        aufgabe.includes('mailAlles'));
+      pruefe('MAIL · wer „fertig" abschaltet, fällt dort raus',
+        !fertig.includes('mailOhneFertig'));
+      /* Und NUR dort. Ein Schalter, der gleich alles mit abschaltet,
+         waere schlimmer als keiner. */
+      pruefe('MAIL · bekommt Bericht und Aufgabe aber weiter',
+        bericht.includes('mailOhneFertig') && aufgabe.includes('mailOhneFertig'));
+      pruefe('MAIL · wer alles abschaltet, bekommt nichts',
+        !fertig.includes('mailOhneAlles') && !bericht.includes('mailOhneAlles') &&
+        !aufgabe.includes('mailOhneAlles'));
+      /* Kein Thema angegeben heisst: alter Aufruf, niemand faellt raus.
+         Damit bleibt jede Mail, die noch kein Thema traegt, unveraendert. */
+      pruefe('MAIL · ohne Thema wird nicht gefiltert',
+        ohneThema.length === alle.length);
+      /* Ein kaputtes Feld darf nicht dazu fuehren, dass jemand still
+         keine Mails mehr bekommt. Lieber eine zu viel — die merkt man. */
+      pruefe('MAIL · ein kaputtes Feld sperrt niemanden aus',
+        fertig.includes('mailKaputt'));
+      pruefe('MAIL · ein unbekanntes Konto wird nicht verschluckt',
+        unbekannt.length === 1);
+
+      /* GEGENPROBE zur Runde selbst: wenn der Filter einfach alles
+         durchliesse, waere oben fast alles gruen. Diese Zeile faellt
+         dann um. */
+      pruefe('GEGENPROBE der Filter lässt NICHT einfach alles durch',
+        fertig.length < alle.length);
+    }
+  }
+
   console.log('\n══ Cloud Functions gegen den Emulator ══');
   protokoll.forEach(z => console.log(z));
   console.log('\n  ' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
