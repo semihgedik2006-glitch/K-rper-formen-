@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-3K3snfu+DKEwzkxs+23mS+RZjnMV5lNHt4wxh0L7Z2c='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-0bmxDmzPHZInSir62cCAJq+rcLCN2YEuRVuKpg6hoNs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1796,6 +1796,16 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-quelle.kat-privat{background:var(--f-ok);color:var(--ok-tx)}
 .ich-quelle.kat-arbeit{background:var(--accent-glow);color:var(--accent-d)}
 .ich-quelle.kat-wichtig{background:var(--f-bad);color:var(--danger-tx)}
+/* Notizen haben eigene Namen, aber dieselben vier Toene. Zwei
+   Farbvokabulare in einem Bereich koennte niemand auseinanderhalten. */
+.ich-kat.nk-kunde{color:var(--accent)}
+.ich-kat.nk-training{color:var(--ok-tx)}
+.ich-kat.nk-nachfassen{color:var(--danger-tx)}
+.ich-kat.nk-sonst.an{color:var(--text)}
+.ich-quelle.nk-sonst{background:var(--auf-2);color:var(--text-3)}
+.ich-quelle.nk-kunde{background:var(--accent-glow);color:var(--accent-d)}
+.ich-quelle.nk-training{background:var(--f-ok);color:var(--ok-tx)}
+.ich-quelle.nk-nachfassen{background:var(--f-bad);color:var(--danger-tx)}
 
 /* Ganztaegig: ein Haken mit Text daneben, tastbar in voller Breite. */
 .ich-schalter{display:inline-flex;align-items:center;gap:var(--s10);
@@ -1853,13 +1863,43 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-tdo-frist.faellig{color:var(--danger-tx)}
 .ich-tdo .mini-link{flex:0 0 auto}
 
-.ich-notiz{padding:var(--s16) var(--s16);background:var(--auf-1);
+.ich-notiz{position:relative;padding:var(--s16) var(--s16);background:var(--auf-1);
   border-radius:var(--r-md);margin-bottom:var(--s8)}
 .ich-notiz p{white-space:pre-wrap;word-break:break-word;margin:0 0 var(--s8);
   font-size:var(--t-sm);line-height:var(--lh-weit)}
 .ich-notiz-fuss{display:flex;align-items:center;gap:var(--s10);
   font-size:var(--t-2xs);color:var(--text-3)}
-.ich-notiz-fuss button{margin-left:auto}
+.ich-notiz-fuss .mini-link:first-of-type{margin-left:auto}
+
+/* Die Art als schmaler Streifen links, nicht als eingefaerbte Kachel.
+   Vier getoente Kaesten untereinander sind ein Farbkasten, kein
+   Notizblock — man liest dann die Farbe statt des Textes. */
+.ich-notiz::before{content:"";position:absolute;left:0;top:var(--s10);
+  bottom:var(--s10);width:3px;border-radius:var(--r-pille);background:transparent}
+.ich-notiz.nk-kunde::before{background:var(--accent)}
+.ich-notiz.nk-training::before{background:var(--ok-tx)}
+.ich-notiz.nk-nachfassen::before{background:var(--danger-tx)}
+/* Angeheftetes hebt sich ab, ohne zu schreien: ein Rand, kein zweiter Ton. */
+.ich-notiz.fest{box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.ich-notiz-kopf{display:flex;align-items:center;gap:var(--s8);margin-bottom:var(--s6)}
+.ich-notiz-kopf .ich-quelle{margin:0}
+.ich-nadel{margin-left:auto;flex:0 0 auto;width:32px;height:32px;padding:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:none;background:none;cursor:pointer;color:var(--text-3);
+  border-radius:var(--r-sm);transition:color .2s var(--ease-ios)}
+.ich-nadel svg{width:16px;height:16px}
+.ich-nadel.an{color:var(--accent)}
+.ich-nadel:hover{color:var(--text-2)}
+
+/* Suchen und Filtern stehen als eine Zeile zusammen — sie schneiden
+   dieselbe Liste, nur auf zwei Arten. */
+.ich-suchzeile{display:flex;flex-direction:column;gap:var(--s8);
+  margin:0 0 var(--s16)}
+.ich-suchzeile .inp{margin:0}
+.ich-notiz-kats{margin-top:var(--s10)}
+.ich-notiz-add{margin-top:var(--s10)}
+.ich-kats-filter .ich-kat{min-height:32px;padding:var(--s4) var(--s10);
+  font-size:var(--t-2xs)}
 
 .ich-stamm{display:flex;justify-content:space-between;gap:var(--s10);
   padding:var(--s10) 0;border-top:1px solid var(--line);font-size:var(--t-sm)}
@@ -3195,14 +3235,29 @@ html{font-size:var(--fs,100%)}
             </details>
           </div>
 
-          <!-- ── NOTIZEN ── -->
+          <!-- ── NOTIZEN ──
+               Was sich ein Trainer notiert, ist selten „eine Notiz". Es ist
+               entweder etwas ueber eine Kundin (Knie, Ziel, Vorliebe), etwas
+               ueber eine Einheit, oder etwas, das er noch angehen muss. Eine
+               einzige lange Liste zwingt ihn, das jedes Mal neu aus dem Text
+               herauszulesen. Vier Arten, ein Suchfeld und Angeheftetes oben
+               nehmen ihm genau diese Arbeit ab. -->
           <div id="ichPaneNotizen" style="display:none">
             <div class="ich-blatt">
               <div class="field" style="margin:0">
                 <textarea class="inp" id="ichNotizNeu" rows="3" maxlength="2000"
                   placeholder="Was du dir merken willst …"></textarea>
               </div>
-              <button class="btn btn-primary btn-sm" id="ichNotizAdd" style="margin-top:10px">Speichern</button>
+              <div class="ich-kats ich-notiz-kats" id="ichNotizKats"></div>
+              <button class="btn btn-primary btn-sm ich-notiz-add" id="ichNotizAdd">Speichern</button>
+            </div>
+            <!-- Suchen und Filtern erscheinen erst, wenn es etwas zu suchen
+                 gibt. Bei drei Notizen sind sie zwei Bedienelemente, die
+                 nichts tun ausser Platz wegzunehmen. -->
+            <div class="ich-suchzeile" id="ichNotizSuchen" style="display:none">
+              <input class="inp" id="ichNotizSuche" type="search" maxlength="60"
+                placeholder="In den Notizen suchen …">
+              <div class="ich-kats ich-kats-filter" id="ichNotizFilter"></div>
             </div>
             <div class="ich-kopf" id="ichNotizKopf" style="display:none">
               <h3>Gespeichert</h3>
@@ -11581,6 +11636,30 @@ function katGueltig(id){
   return 'sonst';
 }
 
+/* Notizen haben eigene Arten. Es sind bewusst NICHT dieselben wie im
+   Kalender: was ein Trainer sich notiert, ist selten „privat" oder
+   „Arbeit" — es geht um eine Kundin, um eine Einheit, oder es ist etwas,
+   das er noch angehen muss. Wieder vier, und 'sonst' ist die Vorgabe:
+   wer nur schnell etwas festhalten will, soll nichts auswaehlen muessen. */
+var NOTIZ_KATS = [
+  { id:'sonst',      name:'Allgemein'    },
+  { id:'kunde',      name:'Kundin/Kunde' },
+  { id:'training',   name:'Training'     },
+  { id:'nachfassen', name:'Nachfassen'   }
+];
+function notizKatName(id){
+  for(var i=0;i<NOTIZ_KATS.length;i++){ if(NOTIZ_KATS[i].id===id) return NOTIZ_KATS[i].name; }
+  return NOTIZ_KATS[0].name;
+}
+function notizKatGueltig(id){
+  for(var i=0;i<NOTIZ_KATS.length;i++){ if(NOTIZ_KATS[i].id===id) return id; }
+  return 'sonst';
+}
+var _notizKat='sonst';    // Art fuer die naechste neue Notiz
+var _notizFilter='';      // '' = alle Arten
+var _notizSuche='';
+var _notizBearb=null;     // welche Notiz steht gerade offen zum Aendern?
+
 function privatRef(){
   return (session && session.uid) ? S('privat').doc(session.uid) : null;
 }
@@ -11618,6 +11697,11 @@ function ichAufraeumen(){
   _ichTermine=[]; _ichNotizen=[]; _ichTodos=[];
   _ichBetrieb={ schichten:[], abwesend:[] };
   _ichBetriebFuer=''; _ichTagGewaehlt=null; _ichMonat=null;
+  /* Auch der Suchbegriff geht mit. Auf einem geteilten Geraet stuende
+     sonst nach dem naechsten Anmelden noch der Name einer Kundin im
+     Suchfeld, deren Notiz dem vorigen Konto gehoert. */
+  _notizKat='sonst'; _notizFilter=''; _notizSuche=''; _notizBearb=null;
+  var sf=$('ichNotizSuche'); if(sf) sf.value='';
 }
 
 /* Schichten und Abwesenheiten fuer einen Zeitraum, ueber alle eigenen
@@ -12085,19 +12169,177 @@ function ichTodoBearbeiten(id){
   });
 }
 
+/* Die Art fuer die naechste neue Notiz — und, darunter, dieselben Arten
+   noch einmal als Filter. Zwei Leisten, die gleich aussehen, aber
+   Verschiedenes tun: die obere steht im Eingabeblatt und gehoert zum
+   Text darueber, die untere steht ueber der Liste, die sie schneidet. */
+function notizKatsBauen(){
+  var box=$('ichNotizKats');
+  if(box && !box._da){
+    box._da=true;
+    box.innerHTML=NOTIZ_KATS.map(function(k){
+      var an = k.id===_notizKat;
+      return '<button type="button" class="ich-kat nk-'+k.id+(an?' an':'')+'" '+
+        'data-nkat="'+k.id+'" aria-pressed="'+(an?'true':'false')+'">'+
+        esc(k.name)+'</button>';
+    }).join('');
+    box.addEventListener('click',function(e){
+      var b=e.target.closest('[data-nkat]'); if(!b) return;
+      notizKatSetzen(b.getAttribute('data-nkat'));
+    });
+  }
+  var f=$('ichNotizFilter');
+  if(f && !f._da){
+    f._da=true;
+    /* „Alle" steht vorn und ist die Vorgabe. Ohne diesen Knopf waere ein
+       gesetzter Filter nur ueber einen zweiten Klick auf dieselbe Art
+       wieder loszuwerden — das findet niemand. */
+    f.innerHTML='<button type="button" class="ich-kat nk-sonst an" data-nfilter="" '+
+      'aria-pressed="true">Alle</button>'+
+      NOTIZ_KATS.filter(function(k){ return k.id!=='sonst'; }).map(function(k){
+        return '<button type="button" class="ich-kat nk-'+k.id+'" data-nfilter="'+k.id+'" '+
+          'aria-pressed="false">'+esc(k.name)+'</button>';
+      }).join('');
+    f.addEventListener('click',function(e){
+      var b=e.target.closest('[data-nfilter]'); if(!b) return;
+      _notizFilter=b.getAttribute('data-nfilter');
+      f.querySelectorAll('[data-nfilter]').forEach(function(x){
+        var an = x===b;
+        x.classList.toggle('an', an);
+        x.setAttribute('aria-pressed', an?'true':'false');
+      });
+      renderIchNotizen();
+    });
+  }
+}
+function notizKatSetzen(id){
+  _notizKat=notizKatGueltig(id);
+  document.querySelectorAll('#ichNotizKats [data-nkat]').forEach(function(x){
+    var an = x.getAttribute('data-nkat')===_notizKat;
+    x.classList.toggle('an', an);
+    x.setAttribute('aria-pressed', an?'true':'false');
+  });
+}
+
+/* Angeheftetes zuerst, sonst das Neueste. Eine Notiz, die man extra
+   nach oben geholt hat, wieder nach unten rutschen zu lassen, sobald man
+   etwas anderes schreibt, macht das Anheften wertlos. */
+function notizSortiert(liste){
+  return liste.slice().sort(function(a,b){
+    var fa=a.fest?1:0, fb=b.fest?1:0;
+    if(fa!==fb) return fb-fa;
+    return (b.ts||0)-(a.ts||0);
+  });
+}
+function notizPasst(n){
+  if(_notizFilter && notizKatGueltig(n.kategorie)!==_notizFilter) return false;
+  if(_notizSuche && (n.text||'').toLowerCase().indexOf(_notizSuche)<0) return false;
+  return true;
+}
+
 function renderIchNotizen(){
   var box=$('ichNotizListe'), zahl=$('ichNotizZahl'), kopf=$('ichNotizKopf');
   if(!box) return;
-  if(zahl) zahl.textContent=_ichNotizen.length
-    ? (_ichNotizen.length===1?'1 Notiz':_ichNotizen.length+' Notizen') : '';
+  notizKatsBauen();
+  /* Die Leisten werden nur einmal gebaut, der Zustand aendert sich aber
+     auch ohne Klick — beim Abmelden etwa. Hier gleichen sie sich an,
+     damit kein Knopf etwas anzeigt, was nicht mehr gilt. */
+  notizKatSetzen(_notizKat);
+  document.querySelectorAll('#ichNotizFilter [data-nfilter]').forEach(function(x){
+    var an = x.getAttribute('data-nfilter')===_notizFilter;
+    x.classList.toggle('an', an);
+    x.setAttribute('aria-pressed', an?'true':'false');
+  });
+
+  /* Suchen und Filtern erst, wenn die Liste laenger ist als der
+     Bildschirm. Darunter loesen sie ein Problem, das es nicht gibt. */
+  var suchzeile=$('ichNotizSuchen');
+  if(suchzeile) suchzeile.style.display=_ichNotizen.length>4 ? '' : 'none';
+  if(_ichNotizen.length<=4 && (_notizFilter || _notizSuche)){
+    _notizFilter=''; _notizSuche='';
+    var sf=$('ichNotizSuche'); if(sf) sf.value='';
+  }
+
+  /* Was gerade im offenen Aenderungsfeld steht, ueberlebt ein Neuzeichnen.
+     Der Horcher feuert auch, waehrend jemand tippt — ohne das hier waere
+     der halbe Satz weg, und zwar ohne jede Meldung. */
+  var offenText=null, offenKat=null, warSchonDa=false;
+  if(_notizBearb){
+    var altFeld=box.querySelector('[data-nfeld]');
+    if(altFeld && altFeld.getAttribute('data-nfeld')===_notizBearb){
+      offenText=altFeld.value; warSchonDa=true;
+      var altAn=box.querySelector('[data-nkatwahl] .ich-kat.an');
+      if(altAn) offenKat=altAn.getAttribute('data-nsetz');
+    }
+  }
+
+  var alle=notizSortiert(_ichNotizen);
+  var zeigen=alle.filter(notizPasst);
+
+  if(zahl){
+    zahl.textContent = !_ichNotizen.length ? ''
+      : (zeigen.length===alle.length
+          ? (alle.length===1 ? '1 Notiz' : alle.length+' Notizen')
+          : zeigen.length+' von '+alle.length);
+  }
   if(kopf) kopf.style.display=_ichNotizen.length ? '' : 'none';
-  box.innerHTML = _ichNotizen.length ? _ichNotizen.map(function(n){
-    return '<div class="ich-notiz">'+
+
+  if(!_ichNotizen.length){
+    box.innerHTML=emptyHTML('Noch keine Notiz',
+      'Was du hier schreibst, bleibt bei dir.', 'stift');
+    ikonenEinsetzen(box);
+    return;
+  }
+  if(!zeigen.length){
+    box.innerHTML=emptyHTML('Nichts gefunden',
+      'Andere Art oder anderes Wort probieren.', 'stift');
+    ikonenEinsetzen(box);
+    return;
+  }
+
+  box.innerHTML=zeigen.map(function(n){
+    var kat=notizKatGueltig(n.kategorie), id=esc(n.id);
+    if(_notizBearb===n.id){
+      /* Aendern passiert an Ort und Stelle. Ein Fenster dafuer wuerde die
+         Notiz verdecken, die man gerade korrigiert. */
+      var offen=offenKat||kat;
+      return '<div class="ich-notiz nk-'+kat+(n.fest?' fest':'')+'">'+
+        '<textarea class="inp" data-nfeld="'+id+'" rows="4" maxlength="2000">'+
+          esc(offenText!=null?offenText:(n.text||''))+'</textarea>'+
+        '<div class="ich-kats ich-kats-filter" data-nkatwahl="'+id+'">'+
+          NOTIZ_KATS.map(function(k){
+            return '<button type="button" class="ich-kat nk-'+k.id+
+              (k.id===offen?' an':'')+'" data-nsetz="'+k.id+'">'+esc(k.name)+'</button>';
+          }).join('')+
+        '</div>'+
+        '<div class="ich-notiz-fuss">'+
+          '<button class="mini-link" data-nspeichern="'+id+'">Speichern</button>'+
+          '<button class="mini-link" data-nabbruch="1">Abbrechen</button>'+
+        '</div></div>';
+    }
+    return '<div class="ich-notiz nk-'+kat+(n.fest?' fest':'')+'">'+
+      '<div class="ich-notiz-kopf">'+
+        '<span class="ich-quelle nk-'+kat+'">'+esc(notizKatName(kat))+'</span>'+
+        '<button class="ich-nadel'+(n.fest?' an':'')+'" data-nfest="'+id+'" '+
+          'aria-pressed="'+(n.fest?'true':'false')+'" '+
+          'title="'+(n.fest?'Nicht mehr anheften':'Nach oben anheften')+'" '+
+          'aria-label="'+(n.fest?'Nicht mehr anheften':'Nach oben anheften')+'">'+
+          ikon('anheften')+'</button>'+
+      '</div>'+
       '<p>'+esc(n.text||'')+'</p>'+
       '<div class="ich-notiz-fuss"><span>'+esc(fmtDateTime(n.ts))+'</span>'+
-      '<button class="mini-link" data-ichnotizweg="'+esc(n.id)+'">Löschen</button></div>'+
+      '<button class="mini-link" data-nbearb="'+id+'">Ändern</button>'+
+      '<button class="mini-link" data-ichnotizweg="'+id+'">Löschen</button></div>'+
       '</div>';
-  }).join('') : emptyHTML('Noch keine Notiz', 'Was du hier schreibst, bleibt bei dir.', 'stift');
+  }).join('');
+  ikonenEinsetzen(box);
+  /* Nur beim OEFFNEN in das Feld springen. Bei jedem Neuzeichnen zu
+     fokussieren wuerde den Schreibstrich mitten im Tippen ans Ende
+     ziehen. */
+  if(_notizBearb && !warSchonDa){
+    var feld=box.querySelector('[data-nfeld]');
+    if(feld){ feld.focus(); feld.setSelectionRange(feld.value.length, feld.value.length); }
+  }
 }
 
 function renderIchDaten(){
@@ -17937,19 +18179,82 @@ function bindActions(){
     var ref=privatRef(); if(!ref) return;
     var feld=$('ichNotizNeu'), text=(feld.value||'').trim();
     if(!text){ toast('Die Notiz ist leer.',true); feld.focus(); return; }
+    var kat=_notizKat;
     withBusy(nAdd,function(){
-      return ref.collection('notizen').add({ text:text, ts:Date.now() })
-        .then(function(){ feld.value=''; toast('Gespeichert ✓'); })
+      return ref.collection('notizen')
+        .add({ text:text, kategorie:kat, fest:false, ts:Date.now() })
+        .then(function(){
+          feld.value='';
+          /* Die Art bleibt stehen. Wer eine Reihe Kundennotizen
+             hintereinander schreibt, waehlt sie sonst jedes Mal neu. */
+          toast('Gespeichert ✓');
+        })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
+
+  var nSuche=$('ichNotizSuche');
+  if(nSuche) nSuche.addEventListener('input',function(){
+    _notizSuche=(nSuche.value||'').trim().toLowerCase();
+    renderIchNotizen();
+  });
+
   var nListe=$('ichNotizListe');
   if(nListe) nListe.addEventListener('click',function(e){
-    var b=e.target.closest('[data-ichnotizweg]'); if(!b) return;
-    var ref=privatRef(); if(!ref) return;
-    ref.collection('notizen').doc(b.getAttribute('data-ichnotizweg')).delete()
-      .then(function(){ toast('Gelöscht ✓'); })
-      .catch(function(e){ toast(errMsg(e),true); });
+    var ref=privatRef();
+    var b;
+
+    /* Art im offenen Aenderungsfeld umstellen — nur die Auswahl, noch
+       nicht gespeichert. Erst „Speichern" schreibt. */
+    if((b=e.target.closest('[data-nsetz]'))){
+      var wahl=b.closest('[data-nkatwahl]'); if(!wahl) return;
+      wahl.querySelectorAll('[data-nsetz]').forEach(function(x){
+        x.classList.toggle('an', x===b);
+      });
+      return;
+    }
+    if((b=e.target.closest('[data-nbearb]'))){
+      _notizBearb=b.getAttribute('data-nbearb');
+      renderIchNotizen();
+      return;
+    }
+    if(e.target.closest('[data-nabbruch]')){
+      _notizBearb=null; renderIchNotizen(); return;
+    }
+    if((b=e.target.closest('[data-nspeichern]'))){
+      if(!ref) return;
+      var id=b.getAttribute('data-nspeichern');
+      var karte=b.closest('.ich-notiz');
+      var feld=karte && karte.querySelector('[data-nfeld]');
+      var text=feld ? (feld.value||'').trim() : '';
+      if(!text){ toast('Die Notiz ist leer.',true); if(feld) feld.focus(); return; }
+      var an=karte.querySelector('[data-nkatwahl] .ich-kat.an');
+      var kat=notizKatGueltig(an ? an.getAttribute('data-nsetz') : 'sonst');
+      _notizBearb=null;
+      ref.collection('notizen').doc(id).update({ text:text, kategorie:kat })
+        .then(function(){ toast('Geändert ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+      renderIchNotizen();
+      return;
+    }
+    /* Anheften schreibt sofort. Ein Haken, der erst nach einem zweiten
+       Knopf gilt, wird auf halbem Weg vergessen. */
+    if((b=e.target.closest('[data-nfest]'))){
+      if(!ref) return;
+      var fid=b.getAttribute('data-nfest');
+      var alt=null;
+      _ichNotizen.forEach(function(n){ if(n.id===fid) alt=n; });
+      if(!alt) return;
+      ref.collection('notizen').doc(fid).update({ fest: !alt.fest })
+        .catch(function(e){ toast(errMsg(e),true); });
+      return;
+    }
+    if((b=e.target.closest('[data-ichnotizweg]'))){
+      if(!ref) return;
+      ref.collection('notizen').doc(b.getAttribute('data-ichnotizweg')).delete()
+        .then(function(){ toast('Gelöscht ✓'); })
+        .catch(function(e){ toast(errMsg(e),true); });
+    }
   });
 
   /* Das Profil bleibt im bestehenden Fenster. Es hier ein zweites Mal zu
