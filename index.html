@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-KOL/t8PMnfhb9u7B4rzhkhYhiUNnEArbbBD3VVvpDlc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-Dlydj9g/G/KWHs8TP8ln2lGSvmMKrS1whvMeL0sSeQA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1725,6 +1725,43 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-punkt.dienst{background:var(--accent)}
 .ich-punkt.frei{background:var(--warm-tx)}
 
+/* ── Ansichtsumschalter Monat / Woche ── */
+.ich-sicht{display:inline-flex;gap:var(--s2);background:var(--auf-1);
+  border-radius:var(--r-pille);padding:var(--s2);margin:0 0 var(--s12)}
+.ich-sicht-knopf{border:none;background:none;color:var(--text-2);
+  font-family:var(--font-body);font-size:var(--t-xs);font-weight:600;
+  padding:var(--s6) var(--s12);border-radius:var(--r-pille);cursor:pointer;
+  min-height:32px;transition:background .2s var(--ease-ios),color .2s var(--ease-ios)}
+.ich-sicht-knopf.an{background:var(--bg-2);color:var(--text)}
+.ich-fuss{margin:var(--s10) 0 0;font-size:var(--t-2xs);color:var(--text-3)}
+
+/* Wochenzellen: hoch statt quadratisch, mit Platz fuer den ersten Titel. */
+.ich-tagfeld.gross{aspect-ratio:auto;min-height:96px;justify-content:flex-start;
+  padding:var(--s8) var(--s4);gap:var(--s6)}
+.ich-zell-tag{font-weight:600}
+.ich-tagfeld.heute .ich-zell-tag{font-weight:700}
+.ich-zell-txt{font-size:var(--t-2xs);line-height:var(--lh-eng);color:var(--text-3);
+  text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;padding:0 var(--s2);word-break:break-word}
+.ich-tagfeld.heute .ich-zell-txt{color:rgba(255,255,255,.9)}
+
+/* ── Am Rechner passt der Monat auf eine Seite ──
+   Auf dem Handy ist ein quadratisches Feld richtig: der Daumen braucht
+   die Flaeche. Am Rechner klickt eine Maus, und ein Monat, fuer den man
+   scrollen muss, ist als Uebersicht wertlos — dann kann man auch die
+   Liste lesen. Deshalb ab 820 Pixeln flachere Zellen und ein Deckel auf
+   der Hoehe. */
+@media(min-width:821px){
+  .ich-tagfeld{aspect-ratio:auto;min-height:52px}
+  .ich-tagfeld.gross{min-height:104px}
+  .ich-kal{max-width:640px}
+  /* Raster und Tageskarte nebeneinander statt untereinander — sonst
+     liegt die Karte unterhalb des Bildschirms, obwohl rechts alles
+     leer ist. */
+  #ichPaneKalender{display:grid;grid-template-columns:minmax(0,640px) minmax(280px,1fr);
+    gap:var(--s24);align-items:start}
+}
+
 /* ── Kategorien ──
    Vier Farben, damit man einen Monat ueberfliegen kann. Mehr waeren
    keine Hilfe mehr: ab etwa fuenf Toenen unterscheidet man sie in einem
@@ -3027,12 +3064,18 @@ html{font-size:var(--fs,100%)}
               <div class="ich-kopf">
                 <h3 id="ichMonatLabel">Monat</h3>
                 <div class="ich-monat-nav">
-                  <button class="ich-pfeil" id="ichMonatPrev" aria-label="Voriger Monat">‹</button>
+                  <button class="ich-pfeil" id="ichMonatPrev" aria-label="Zurück">‹</button>
                   <button class="ich-pfeil" id="ichMonatHeute">Heute</button>
-                  <button class="ich-pfeil" id="ichMonatNext" aria-label="Nächster Monat">›</button>
+                  <button class="ich-pfeil" id="ichMonatNext" aria-label="Weiter">›</button>
                 </div>
               </div>
+              <!-- Monat zeigt, DASS etwas ist. Woche zeigt, WANN. -->
+              <div class="ich-sicht" id="ichSicht">
+                <button class="ich-sicht-knopf an" data-ichsicht="monat">Monat</button>
+                <button class="ich-sicht-knopf" data-ichsicht="woche">Woche</button>
+              </div>
               <div class="ich-kal" id="ichKalender"></div>
+              <p class="ich-fuss">Tippe einen Tag an. Doppelklick legt sofort etwas an.</p>
             </div>
             <div class="ich-blatt" id="ichTagKarte" style="display:none">
               <div class="ich-kopf">
@@ -3051,6 +3094,20 @@ html{font-size:var(--fs,100%)}
                 <div class="field" style="margin-top:10px">
                   <label>Art</label>
                   <div class="ich-kats" id="ichTerminKats"></div>
+                </div>
+                <div class="row">
+                  <!-- Das Datum steht IM Formular, nicht nur im Raster.
+                       Verschieben heisst damit: Datum ändern — kein
+                       Ziehen, das auf dem Handy ohnehin schwer trifft. -->
+                  <div class="field" style="flex:1 1 150px"><label for="ichTerminDatum">Wann?</label>
+                    <input class="inp" id="ichTerminDatum" type="date" /></div>
+                  <div class="field" style="flex:1 1 150px"><label for="ichTerminWdh">Wiederholt sich</label>
+                    <select class="inp" id="ichTerminWdh">
+                      <option value="">einmalig</option>
+                      <option value="woche">jede Woche</option>
+                      <option value="2wochen">alle zwei Wochen</option>
+                      <option value="monat">jeden Monat</option>
+                    </select></div>
                 </div>
                 <div class="row">
                   <div class="field" style="flex:2 1 170px"><label for="ichTerminTitel">Was?</label>
@@ -11455,6 +11512,8 @@ var _ichTerminUnsub=null, _ichNotizUnsub=null, _ichTodoUnsub=null;
 var _ichBetrieb={ schichten:[], abwesend:[] };
 var _ichBetriebFuer='';          // fuer welchen Zeitraum das gilt
 var _ichTerminId=null;           // wird gerade ein Eintrag bearbeitet?
+var _ichSicht='monat';           // 'monat' oder 'woche'
+var _ichWoche=null;              // Montag der gezeigten Woche
 
 /* Vier Arten, nicht zwoelf. Eine Liste, aus der man waehlen MUSS, ist
    ab einer gewissen Laenge eine Huerde vor dem eigentlichen Eintrag —
@@ -11577,6 +11636,48 @@ function ichSpanne(von, bis){
   return von || bis || '';
 }
 
+/* Zeigt _ichMonat auf denselben Monat wie d? */
+function istDerMonat(a, b){
+  return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth();
+}
+/* Betriebsdaten fuer den gerade gezeigten Zeitraum — Monat oder Woche.
+   Eine Stelle, damit Blaettern, Umschalten und Oeffnen nicht dreimal
+   dieselbe Rechnung mit je eigenem Fehler machen. */
+function ichZeitraumLaden(){
+  if(_ichSicht==='woche'){
+    if(!_ichWoche) _ichWoche=mondayOf(new Date());
+    var so=new Date(_ichWoche); so.setDate(_ichWoche.getDate()+6);
+    return ichBetriebLaden(ymd(_ichWoche), ymd(so));
+  }
+  if(!_ichMonat){ var t=new Date(); _ichMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
+  var a=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth(), 1);
+  var b=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth()+1, 0);
+  return ichBetriebLaden(ymd(a), ymd(b));
+}
+
+/* ── Wiederholung ──
+   Ein wiederkehrender Eintrag wird NICHT vervielfacht in die Datenbank
+   geschrieben. Es bleibt ein Dokument; gerechnet wird beim Anzeigen.
+   Sonst haette „jede Woche" nach einem Jahr 52 Zeilen, und eine
+   Aenderung muesste 52-mal nachgezogen werden.
+
+   Preis davon: eine einzelne Ausnahme („diese eine Woche faellt aus")
+   gibt es nicht. Das waere ein eigenes Feld mit Ausnahmelisten — mehr
+   Maschinerie, als ein Notizkalender verdient. */
+function ichFaelltAuf(t, key){
+  if(!t.datum) return false;
+  if(t.datum===key) return true;
+  if(!t.wdh) return false;
+  if(key < t.datum) return false;          // vor dem ersten Termin nicht
+  var a=new Date(t.datum+'T12:00:00'), b=new Date(key+'T12:00:00');
+  var tage=Math.round((b-a)/86400000);
+  if(t.wdh==='woche')   return tage%7===0;
+  if(t.wdh==='2wochen') return tage%14===0;
+  if(t.wdh==='monat')   return a.getDate()===b.getDate();
+  return false;
+}
+var WDH_NAME={ woche:'wöchentlich', '2wochen':'alle 2 Wochen', monat:'monatlich' };
+
 /* Alles, was an einem Tag fuer mich ansteht — aus beiden Welten. */
 function ichEintraegeFuer(key){
   var raus=[];
@@ -11593,7 +11694,7 @@ function ichEintraegeFuer(key){
       zusatz:'', dazu:x.note||'' });
   });
   _ichTermine.forEach(function(t){
-    if(t.datum!==key) return;
+    if(!ichFaelltAuf(t, key)) return;
     var dazu=[];
     if(t.ort) dazu.push(t.ort);
     if(t.notiz) dazu.push(t.notiz);
@@ -11603,7 +11704,8 @@ function ichEintraegeFuer(key){
     raus.push({ art:'privat', zeit:t.ganztags?'':(t.zeit||''),
       text:t.titel||'Eintrag',
       zusatz:t.ganztags?'ganztägig':ichSpanne(t.zeit, t.bis),
-      dazu:dazu.join(' · '), id:t.id, kat:katGueltig(t.kategorie) });
+      dazu:dazu.join(' · '), id:t.id, kat:katGueltig(t.kategorie),
+      wdh:t.wdh||'' });
   });
   // Eigene To-dos mit Frist stehen an ihrem Tag mit drin.
   _ichTodos.forEach(function(t){
@@ -11653,9 +11755,54 @@ function renderIchWoche(){
     'Über den Kalender trägst du dir selbst etwas ein.', 'kalender');
 }
 
+/* ── Raster ──
+   Monat und Woche teilen sich dieselbe Zelle und dieselben Punkte. Zwei
+   Bauarten fuer dasselbe waeren zwei Stellen, an denen man eine neue
+   Sorte Eintrag vergisst. */
+function ichZelle(key, heute, gross){
+  var e=ichEintraegeFuer(key);
+  var arten={};
+  e.forEach(function(x){
+    arten[x.art==='privat' ? ('kat-'+(x.kat||'sonst')) : x.art]=true;
+  });
+  var reihenfolge=['dienst','frei','kat-wichtig','kat-arbeit','kat-privat','kat-sonst','todo'];
+  var punkte=reihenfolge.filter(function(a){ return arten[a]; })
+    .map(function(a){ return '<i class="ich-punkt '+a+'"></i>'; }).join('');
+  var d=new Date(key+'T12:00:00');
+  /* In der Wochenansicht ist Platz fuer den ersten Titel. Genau einer:
+     zwei Zeilen Text in einer Zelle liest ohnehin niemand im Vorbeigehen. */
+  var titel = (gross && e.length)
+    ? '<span class="ich-zell-txt">'+esc(e[0].text)+'</span>' : '';
+  return '<button class="ich-tagfeld'+(gross?' gross':'')+(key===heute?' heute':'')+
+    (key===_ichTagGewaehlt?' gewaehlt':'')+'" data-ichtag="'+key+'" '+
+    'aria-label="'+esc(d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})+
+      (e.length?', '+e.length+' Einträge':', nichts eingetragen'))+'">'+
+    '<span class="ich-zell-tag">'+d.getDate()+'</span>'+
+    '<span class="ich-punkte">'+punkte+'</span>'+titel+'</button>';
+}
+
+function renderIchWocheRaster(){
+  var box=$('ichKalender'), label=$('ichMonatLabel');
+  if(!_ichWoche) _ichWoche=mondayOf(new Date());
+  var heute=ymd(new Date());
+  var ende=new Date(_ichWoche); ende.setDate(_ichWoche.getDate()+6);
+  if(label) label.textContent =
+    _ichWoche.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' – '+
+    ende.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  var html=['Mo','Di','Mi','Do','Fr','Sa','So'].map(function(t){
+    return '<div class="kal-kopf">'+t+'</div>'; }).join('');
+  for(var i=0;i<7;i++){
+    var d=new Date(_ichWoche); d.setDate(_ichWoche.getDate()+i);
+    html+=ichZelle(ymd(d), heute, true);
+  }
+  box.innerHTML=html;
+  renderIchTag();
+}
+
 /* ── Monatsraster ── */
 function renderIchKalender(){
   var box=$('ichKalender'), label=$('ichMonatLabel'); if(!box) return;
+  if(_ichSicht==='woche'){ renderIchWocheRaster(); return; }
   if(!_ichMonat){ var t=new Date(); _ichMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
   if(label) label.textContent=_ichMonat
     .toLocaleDateString('de-DE',{month:'long',year:'numeric'});
@@ -11671,23 +11818,7 @@ function renderIchKalender(){
   for(var v=0; v<vorlauf; v++) html+='<button class="ich-tagfeld leer" tabindex="-1"></button>';
   for(var d=1; d<=tageImMonat; d++){
     var key=jahr+'-'+String(monat+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    var e=ichEintraegeFuer(key);
-    /* Ein Punkt je Sorte, nicht je Eintrag: bei fuenf Terminen an einem
-       Tag waere die Zelle sonst eine Punktwolke. Eigene Eintraege
-       bekommen die Farbe ihrer Art — das ist der Sinn der Kategorien,
-       man soll den Monat ueberfliegen koennen. */
-    var arten={};
-    e.forEach(function(x){
-      arten[x.art==='privat' ? ('kat-'+(x.kat||'sonst')) : x.art]=true;
-    });
-    var reihenfolge=['dienst','frei','kat-wichtig','kat-arbeit','kat-privat','kat-sonst','todo'];
-    var punkte=reihenfolge.filter(function(a){ return arten[a]; })
-      .map(function(a){ return '<i class="ich-punkt '+a+'"></i>'; }).join('');
-    html+='<button class="ich-tagfeld'+(key===heute?' heute':'')+
-      (key===_ichTagGewaehlt?' gewaehlt':'')+'" data-ichtag="'+key+'" '+
-      'aria-label="'+esc(d+'. '+_ichMonat.toLocaleDateString('de-DE',{month:'long'})+
-        (e.length?', '+e.length+' Einträge':''))+'">'+
-      '<span>'+d+'</span><span class="ich-punkte">'+punkte+'</span></button>';
+    html+=ichZelle(key, heute, false);
   }
   box.innerHTML=html;
   renderIchTag();
@@ -11712,7 +11843,11 @@ function renderIchTag(){
         ? '<button class="mini-link" data-ichtermbearb="'+esc(x.id)+'">Ändern</button>'+
           '<button class="mini-link" data-ichtermweg="'+esc(x.id)+'">Löschen</button>'
         : '')+
-      (x.dazu?'<div class="ich-dazu">'+esc(x.dazu)+'</div>':'')+
+      (x.dazu||x.wdh
+        ? '<div class="ich-dazu">'+
+          (x.wdh?'↻ '+esc(WDH_NAME[x.wdh]||'')+(x.dazu?' · ':''):'')+
+          esc(x.dazu||'')+'</div>'
+        : '')+
       '</div>';
   }).join('') : emptyMini('Für diesen Tag ist nichts eingetragen.');
 }
@@ -11918,6 +12053,8 @@ function ichTerminFormLeeren(){
   _ichTerminId=null;
   ['ichTerminTitel','ichTerminZeit','ichTerminBis','ichTerminOrt','ichTerminNotiz']
     .forEach(function(id){ var f=$(id); if(f) f.value=''; });
+  var dat=$('ichTerminDatum'); if(dat) dat.value=_ichTagGewaehlt||'';
+  var wdh=$('ichTerminWdh'); if(wdh) wdh.value='';
   var g=$('ichTerminGanz'); if(g) g.checked=false;
   ichKatSetzen('sonst'); ichGanztagsZeigen();
   var s=$('ichTerminSummary'); if(s) s.textContent='Etwas eintragen';
@@ -11935,6 +12072,8 @@ function ichTerminBearbeiten(id){
   $('ichTerminBis').value   = t.bis||'';
   $('ichTerminNotiz').value = t.notiz||'';
   $('ichTerminGanz').checked = !!t.ganztags;
+  $('ichTerminDatum').value = t.datum||'';
+  $('ichTerminWdh').value   = t.wdh||'';
   ichKatSetzen(t.kategorie);
   ichGanztagsZeigen();
   var s=$('ichTerminSummary'); if(s) s.textContent='Eintrag ändern';
@@ -11969,9 +12108,7 @@ function ichReiterZeigen(t){
     renderIchWoche();
   }
   if(t==='kalender'){
-    var a=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth(), 1);
-    var b=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth()+1, 0);
-    ichBetriebLaden(ymd(a), ymd(b)).then(renderIchKalender);
+    ichZeitraumLaden().then(renderIchKalender);
     renderIchKalender();
   }
   if(t==='todo') renderIchTodos();
@@ -17309,23 +17446,64 @@ function bindActions(){
   });
   var imP=$('ichMonatPrev'), imN=$('ichMonatNext'), imH=$('ichMonatHeute');
   function monatWechseln(delta){
-    if(!_ichMonat) _ichMonat=new Date();
-    if(delta===0){ var t=new Date(); _ichMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
-    else _ichMonat=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth()+delta, 1);
-    /* Der gewaehlte Tag gehoert zum alten Monat. Bliebe er stehen, zeigte
-       die Tageskarte weiter etwas an, das im Raster gar nicht mehr zu
-       sehen ist. */
+    if(_ichSicht==='woche'){
+      if(!_ichWoche) _ichWoche=mondayOf(new Date());
+      if(delta===0) _ichWoche=mondayOf(new Date());
+      else { var w=new Date(_ichWoche); w.setDate(w.getDate()+delta*7); _ichWoche=w; }
+    } else {
+      if(!_ichMonat) _ichMonat=new Date();
+      if(delta===0){ var t=new Date(); _ichMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
+      else _ichMonat=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth()+delta, 1);
+    }
+    /* Der gewaehlte Tag gehoert zum alten Zeitraum. Bliebe er stehen,
+       zeigte die Tageskarte weiter etwas an, das im Raster gar nicht
+       mehr zu sehen ist. */
     _ichTagGewaehlt=null;
-    var a=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth(), 1);
-    var b=new Date(_ichMonat.getFullYear(), _ichMonat.getMonth()+1, 0);
-    ichBetriebLaden(ymd(a), ymd(b)).then(renderIchKalender);
+    if(_ichTerminId) ichTerminFormLeeren();
+    ichZeitraumLaden().then(renderIchKalender);
     renderIchKalender();
   }
   if(imP) imP.addEventListener('click',function(){ monatWechseln(-1); tick(8); });
   if(imN) imN.addEventListener('click',function(){ monatWechseln(1); tick(8); });
   if(imH) imH.addEventListener('click',function(){ monatWechseln(0); tick(8); });
 
+  var sicht=$('ichSicht');
+  if(sicht) sicht.addEventListener('click',function(e){
+    var b=e.target.closest('[data-ichsicht]'); if(!b) return;
+    _ichSicht=b.getAttribute('data-ichsicht');
+    sicht.querySelectorAll('[data-ichsicht]').forEach(function(x){
+      x.classList.toggle('an', x===b);
+    });
+    /* Zeitraum nachziehen, damit der Wechsel dort landet, wo man gerade
+       war — nicht bei „heute". Wer im November blaettert und auf Woche
+       umschaltet, will die Woche im November. */
+    if(_ichSicht==='woche'){
+      var bezug = _ichTagGewaehlt ? new Date(_ichTagGewaehlt+'T12:00:00')
+        : (_ichMonat && !istDerMonat(_ichMonat, new Date()) ? _ichMonat : new Date());
+      _ichWoche=mondayOf(bezug);
+    } else if(_ichWoche){
+      _ichMonat=new Date(_ichWoche.getFullYear(), _ichWoche.getMonth(), 1);
+    }
+    ichZeitraumLaden().then(renderIchKalender);
+    renderIchKalender();
+    tick(8);
+  });
+
   var kal=$('ichKalender');
+  /* Doppelklick legt sofort an: Tag waehlen, Formular auf, Cursor im
+     Titel. Auf dem Handy gibt es keinen Doppelklick — dort bleibt der
+     Weg ueber die Tageskarte, und der ist einen Tipp laenger. */
+  if(kal) kal.addEventListener('dblclick',function(e){
+    var b=e.target.closest('[data-ichtag]'); if(!b) return;
+    var key=b.getAttribute('data-ichtag');
+    _ichTagGewaehlt=key;
+    ichTerminFormLeeren();
+    var dat=$('ichTerminDatum'); if(dat) dat.value=key;
+    renderIchKalender();
+    var box=$('ichTerminBox'); if(box) box.open=true;
+    var f=$('ichTerminTitel'); if(f) f.focus();
+    tick(8);
+  });
   if(kal) kal.addEventListener('click',function(e){
     var b=e.target.closest('[data-ichtag]'); if(!b) return;
     var key=b.getAttribute('data-ichtag');
@@ -17370,25 +17548,38 @@ function bindActions(){
     if(von && bis && bis<von){
       toast('Das Ende liegt vor dem Anfang.',true); $('ichTerminBis').focus(); return;
     }
+    /* Das Datum kommt aus dem FELD, nicht mehr aus dem angeklickten Tag.
+       Damit ist Verschieben dasselbe wie Ändern — und man sieht beim
+       Bearbeiten, auf welchen Tag der Eintrag geht, statt es zu raten. */
+    var datum=($('ichTerminDatum').value||'').trim() || _ichTagGewaehlt;
+    if(!datum){ toast('Bitte einen Tag wählen.',true); return; }
     var daten={
       titel:titel,
+      datum:datum,
       ganztags:ganztags,
       kategorie:ichKatGewaehlt(),
+      wdh:($('ichTerminWdh').value||'')||null,
       zeit:von||null, bis:bis||null,
       ort:($('ichTerminOrt').value||'').trim()||null,
       notiz:($('ichTerminNotiz').value||'').trim()||null
     };
     var aendern=_ichTerminId;
     withBusy(termAdd,function(){
-      /* Beim Aendern bleibt das Datum, wie es war — man bearbeitet den
-         Eintrag von SEINEM Tag aus, nicht vom gerade angeklickten. Ohne
-         diese Unterscheidung waere ein Tippfehler-Fix ein Verschieben. */
       var p = aendern
         ? ref.collection('termine').doc(aendern).update(daten)
         : ref.collection('termine').add(
-            Object.assign({ datum:_ichTagGewaehlt, ts:Date.now() }, daten));
+            Object.assign({ ts:Date.now() }, daten));
       return p.then(function(){
         var box=$('ichTerminBox'); if(box) box.open=false;
+        /* Auf einen anderen Tag verschoben? Dann dorthin mitgehen —
+           sonst sucht man den Eintrag im gerade offenen Tag vergeblich
+           und haelt das Verschieben fuer ein Loeschen. */
+        if(datum!==_ichTagGewaehlt){
+          _ichTagGewaehlt=datum;
+          _ichMonat=new Date(+datum.slice(0,4), +datum.slice(5,7)-1, 1);
+          _ichWoche=mondayOf(new Date(datum+'T12:00:00'));
+          renderIchKalender();
+        }
         toast(aendern?'Geändert ✓':'Eingetragen ✓');
         /* Erst im naechsten Durchlauf zuruecksetzen. withBusy() merkt
            sich den Knopftext beim Klick und stellt ihn in seinem
