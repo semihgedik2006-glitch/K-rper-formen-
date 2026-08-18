@@ -75,6 +75,49 @@ if (!gewollt['firebase-tools']) {
     'devDependencies — genau das Werkzeug, um das es hier geht');
 }
 
+/* 3b. Dasselbe für functions/, aber mit anderem Maßstab.
+       Dort stehen bewusst offene Spannen (^9.0.5) — die Auslieferung
+       installiert selbst neu, für sie ist das richtig. Was hier schief
+       gehen kann, ist das andere Ende: ein node_modules, das ÄLTER ist
+       als die Spanne erlaubt. Dann prüft dieser Rechner eine Fassung,
+       die so nirgends läuft.
+
+       Genau das ist am 18.8. passiert: nodemailer lag als 6.10.1 da,
+       verlangt war ^9.0.5. `test-mail-versand.js` hat es gefunden — aber
+       erst nach zwanzig Minuten Regression und nur, weil dieser eine
+       Durchlauf zufällig die Hauptversion mitprüft. Für die übrigen drei
+       Abhängigkeiten gäbe es gar keinen solchen Zufall. */
+const FPAKET = path.join(WURZEL, 'functions', 'package.json');
+if (fs.existsSync(FPAKET)) {
+  const fp = JSON.parse(fs.readFileSync(FPAKET, 'utf8')).dependencies || {};
+  if (!Object.keys(fp).length) {
+    errs.push('MESSUNG LEER: functions/package.json führt keine dependencies');
+  }
+  for (const [name, wunsch] of Object.entries(fp)) {
+    const p = path.join(WURZEL, 'functions', 'node_modules', name, 'package.json');
+    if (!fs.existsSync(p)) {
+      errs.push('NICHT INSTALLIERT: ' + name + ' in functions/ — ' +
+        '„cd functions && npm install". Bis dahin prüfen die Durchläufe, ' +
+        'die functions/ anfassen, nichts Belastbares');
+      continue;
+    }
+    const da = JSON.parse(fs.readFileSync(p, 'utf8')).version;
+    /* Nur die Hauptversion vergleichen. ^9.0.5 und 9.1.0 sind in Ordnung,
+       6.10.1 ist es nicht — und der Sprung über die Hauptversion ist
+       genau der, bei dem sich Verhalten ändert. */
+    const sollHaupt = parseInt(String(wunsch).replace(/^[\^~]/, ''), 10);
+    const istHaupt = parseInt(da, 10);
+    console.log('  functions/' + name + ': verlangt ' + wunsch + ', liegt ' + da);
+    if (Number.isFinite(sollHaupt) && Number.isFinite(istHaupt) && istHaupt < sollHaupt) {
+      errs.push('ZU ALT: functions/' + name + ' — package.json verlangt „' +
+        wunsch + '", installiert ist „' + da + '". Abhilfe: ' +
+        'cd functions && npm install');
+    }
+  }
+} else {
+  errs.push('FEHLT: functions/package.json');
+}
+
 /* 4. Und die Auslieferung muss wirklich dieselbe Datei benutzen.
       Steht in der Werkbank ein eigenes npm install mit fester Version,
       läuft die Sperre hier ins Leere. */
