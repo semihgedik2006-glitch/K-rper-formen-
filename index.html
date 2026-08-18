@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-b/6uv4fnLadrDRXnI7uiLMEDiscIRakiJcZJuf0W7PA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-yc4uWj03c6DHZzBs5tlZ2HJUBXIxFOqLCJ8+QWRLZRI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -555,6 +555,9 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Auf dem Handy nahm der feste Kopf den halben Bildschirm ein. Sobald man
    scrollt, rückt er zusammen: Untertitel blendet aus, Titel wird kleiner.
    Scrollt man zurück nach oben, kommt er weich wieder. */
+/* Nur zum Messen: kopfGibtHer() schaltet die Uebergaenge kurz ab, sonst
+   misst es mitten in der Animation. */
+.view-head.ohne-uebergang,.view-head.ohne-uebergang *{transition:none !important}
 .view-head.shrink{transition:padding .35s var(--ease-ios)}
 .view-head.shrink h2{transition:font-size .35s var(--ease-ios)}
 .view-head.shrink p{overflow:hidden;
@@ -2567,6 +2570,17 @@ html{font-size:var(--fs,100%)}
 /* Fehlt etwas, wird die ganze Zeile leicht getönt – beim Scrollen durch
    22 Artikel sieht man so von weitem, wo etwas fehlt. */
 .mat-row.fehlt{background:var(--f-warn-leise)}
+/* Sieht aus wie Text, bis man hineintippt. Ein sichtbarer Rahmen an
+   jeder Zeile haette aus der Liste ein Formular gemacht — man liest sie
+   dreimal so oft, wie man sie aendert. */
+.mat-name-inp{width:100%;background:none;border:1.5px solid transparent;
+  border-radius:var(--r-xs);padding:var(--s6) var(--s6);margin-left:calc(var(--s6) * -1);
+  color:var(--text);font-family:var(--font-body);font-weight:600;
+  font-size:var(--t-md);line-height:var(--lh-eng);min-height:40px;
+  transition:background .2s var(--ease-ios),border-color .2s var(--ease-ios)}
+.mat-name-inp:hover{background:var(--auf-1)}
+.mat-name-inp:focus{outline:none;background:var(--auf-1);border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,184,92,.13)}
 .mat-row .num{width:100%;min-height:44px;background:var(--auf-1);border:1.5px solid var(--line-2);
   border-radius:var(--r-xs);padding:var(--s6) var(--s2);color:var(--text);text-align:center;min-height:40px;font-size:var(--t-md)}
 .mat-row input.num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,184,92,.13)}
@@ -8715,6 +8729,30 @@ function buildSubNav(){
    ein Stück scrollt, rückt er zusammen; oben angekommen klappt er wieder
    auf. Mit einem Totbereich zwischen den Schwellen, damit er nicht flackert,
    wenn man genau an der Grenze steht. */
+/* ── Wie viel Höhe gibt die Kopfzeile beim Schrumpfen her? ──
+   Gebraucht, um eine Rückkopplung zu verhindern (siehe unten). Gemessen
+   statt geschätzt, weil die Schriftgrößen-Einstellung den Wert
+   verschiebt: bei „gross" gibt derselbe Kopf deutlich mehr her als bei
+   „normal", und ein fester Zahlenwert wäre dann bei einer der beiden
+   Einstellungen falsch.
+
+   Einmal je Kopfzeile, mit abgeschalteten Übergängen — sonst misst man
+   mitten in der Animation und bekommt einen zufälligen Zwischenwert. */
+function kopfGibtHer(head){
+  if(head._gibtHer != null) return head._gibtHer;
+  var warTight = head.classList.contains('tight');
+  head.classList.add('ohne-uebergang');
+  head.classList.remove('tight');
+  var offen = head.offsetHeight;
+  head.classList.add('tight');
+  var eng = head.offsetHeight;
+  head.classList.toggle('tight', warTight);
+  head.offsetHeight;                       // Layout festschreiben
+  head.classList.remove('ohne-uebergang');
+  head._gibtHer = Math.max(0, offen - eng);
+  return head._gibtHer;
+}
+
 function bindShrinkHeaders(){
   document.querySelectorAll('.scroll-area[data-shrinks]').forEach(function(area){
     if(area._shrinkBound) return;
@@ -8730,7 +8768,30 @@ function bindShrinkHeaders(){
         ticking=false;
         var y=area.scrollTop;
         if(head){
-          if(y>28) head.classList.add('tight');
+          /* ── Die Rückkopplung, die hier lange drin war ──
+             Der Kopf liegt AUSSERHALB des Scroll-Bereichs. Schrumpft er,
+             wird der Bereich höher, und damit sinkt der grösste mögliche
+             scrollTop. Bei knapp scrollbarem Inhalt fiel er dadurch unter
+             10 — die Marke ging wieder weg, der Kopf wuchs, scrollTop
+             stieg über 28, und von vorn.
+
+             Gemessen am 18.8. auf der Startseite: der Kopf gibt 43 Pixel
+             her; bei 20 Pixeln Überhang sprang die Marke 21-mal in gut
+             einer Sekunde. Aus dem Betrieb gemeldet als „beim Scrollen
+             kommt so eine buggy Animation".
+
+             Die Bremse: schrumpfen nur, wenn danach noch genug Weg übrig
+             bleibt, dass die Schleife sich nicht schliessen kann. Auf
+             einer Seite, die ohnehin kaum scrollt, bringt das Schrumpfen
+             auch nichts — es ist also keine Einschränkung, sondern das
+             Weglassen einer Bewegung ohne Nutzen. */
+          var gibtHer = kopfGibtHer(head);
+          var ueberhang = area.scrollHeight - area.clientHeight
+            + (head.classList.contains('tight') ? gibtHer : 0);
+          if(ueberhang <= gibtHer + 28){
+            head.classList.remove('tight');
+          }
+          else if(y>28) head.classList.add('tight');
           else if(y<10) head.classList.remove('tight');
         }
         if(tools){
@@ -13347,8 +13408,21 @@ function renderMaterial(){
     var fehltZelle = lim>0
       ? '<div class="num computed" data-fehlt="'+idx+'"'+warn+'>'+fehlt+'</div>'
       : '<input class="num need" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="need" value="'+(it.need||0)+'"'+warn+' title="Wie viele fehlen?" />';
+    /* Der Name war bis zum 18.8. reiner Text. Wer sich vertippt hatte,
+       musste die Zeile loeschen und neu anlegen — und verlor dabei Soll
+       und Ist. Aus dem Betrieb gemeldet: „es ist voll der Film, wenn man
+       sich verschrieben hat."
+
+       Jetzt ein Feld, das wie Text aussieht, bis man hineintippt. Kein
+       Bearbeiten-Knopf, kein Modus: die Zeile ist an derselben Stelle
+       dieselbe Sache. Aendern darf, wer auch loeschen darf — ein
+       umbenannter Artikel betrifft alle im Studio. */
+    var nameZelle = chef
+      ? '<input class="mat-name mat-name-inp" data-idx="'+idx+'" maxlength="60" '+
+        'value="'+esc(it.name||'')+'" aria-label="Name des Artikels" />'
+      : '<div class="mat-name">'+esc(it.name)+'</div>';
     return '<div class="mat-row'+(chef?' chef':'')+(fehlt>0?' fehlt':'')+'">'+
-      '<div class="mat-name">'+esc(it.name)+'</div>'+
+      nameZelle+
       soll+have+fehltZelle+
       (chef?'<button class="mat-del" data-del="'+idx+'" title="Entfernen" aria-label="Entfernen">'+ikon('schliessen')+'</button>':'')+
     '</div>';
@@ -13378,6 +13452,27 @@ function renderMaterial(){
       scheduleMaterialSave();
     });
     if(inp.dataset.f==='limit') inp.addEventListener('change',function(){ renderMaterial(); });
+  });
+  /* Namen aendern. Gespeichert wird beim Verlassen des Feldes, nicht bei
+     jedem Tastendruck: sonst stuende nach „Handtuc" eine Sekunde lang
+     genau das in der Datenbank, und wer gleichzeitig zaehlt, sieht es. */
+  tbl.querySelectorAll('input.mat-name-inp').forEach(function(inp){
+    var vorher = inp.value;
+    function uebernehmen(){
+      var idx=+inp.dataset.idx, it=_matItems[idx]; if(!it) return;
+      var neu=(inp.value||'').trim();
+      if(!neu){
+        // Ein Artikel ohne Namen ist keiner. Zurueck auf den alten Stand.
+        inp.value=vorher; toast('Der Name darf nicht leer sein.',true); return;
+      }
+      if(neu===it.name){ return; }
+      it.name=neu; vorher=neu; saveMaterialNow();
+    }
+    inp.addEventListener('blur', uebernehmen);
+    inp.addEventListener('keydown', function(e){
+      if(e.key==='Enter'){ e.preventDefault(); inp.blur(); }
+      if(e.key==='Escape'){ inp.value=vorher; inp.blur(); }
+    });
   });
   /* Löschen lag als 30 Pixel breiter Knopf direkt neben dem Zahlenfeld, das
      man beim Zählen antippt – ein Fehlgriff hat den Artikel sofort und
