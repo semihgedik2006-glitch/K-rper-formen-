@@ -3837,6 +3837,116 @@ Konsolen-Sperre an — sonst wäre die Prüfung ab dem ersten Tag Zierrat.
 
 ---
 
+# 47 · Leichter, eine To-do-Liste, und weniger Erklärung
+
+**18. August 2026**
+
+Rückmeldung nach einem Tag Betrieb: der Bereich soll ansprechender und
+leichter aussehen, eine To-do-Liste bekommen, mehr im Kalender
+zulassen — und die Erklärungstexte sollen weg.
+
+## Die Erklärungstexte
+
+Am Notizblock stand: „Kein anderes Konto kommt hier heran – auch die
+Verwaltung nicht. Verschlüsselt ist es aber nicht: wer Zugang zur
+Datenbank selbst hat, kann es lesen."
+
+Gestrichen, auf Wunsch aus dem Betrieb, mit einer Begründung, die
+trägt: es ist kein Tagebuch, und wer die App benutzt, muss die
+Datenbank dahinter nicht kennen. Ich hatte den Satz eingebaut, weil ich
+kein Versprechen geben wollte, das die Technik nicht hält. Das bleibt
+richtig für die Regel — der Kommentar in `firestore.rules` sagt es
+weiterhin —, aber es gehört nicht in die Oberfläche eines
+Notizblocks für Arbeitsnotizen.
+
+Mitgegangen sind die anderen drei Absätze (Kalender, Nachweise,
+Zahlen). Zusammen 4 Hinweisabsätze, jetzt **null**.
+
+Was die Prüfung STATT der alten Behauptung festhält, ist das, was der
+Wunsch eigentlich meinte:
+
+```
+✗ ZU VIEL TEXT: im Bereich stehen Erklärungsabsätze (…)
+✗ WIEDER DA: die Erklärung über Datenbank und Verschlüsselung …
+```
+
+Eine Erklärung schleicht sich sonst zurück — drei Sätze später steht
+wieder ein Absatz über der Eingabe.
+
+## Leichter: Blätter statt Karten
+
+Die anderen Seiten sind Werkzeug für den Betrieb. Diese hier sieht man
+morgens einmal an. Deshalb `.ich-blatt` statt `.card`: Abstand statt
+Kasten, eine Trennlinie nur da, wo wirklich zwei Dinge nebeneinander
+stehen.
+
+Der Kalender hat den größten Sprung gemacht:
+
+| vorher | jetzt |
+|---|---|
+| `min-height:44px` | `aspect-ratio:1` — quadratisch auf jeder Breite |
+| heute mit Ring | heute **gefüllt**, gewählt mit Ring |
+| `gap:2px` | `gap:4px`, größere Radien |
+| drei `btn-ghost` | eigene, ruhigere `.ich-pfeil` |
+
+Die feste Höhe war der eigentliche Fehler: auf einem breiten Bildschirm
+wuchs das Raster in die Breite und blieb 44 Pixel hoch — sieben
+Briefkastenschlitze. Und zwei Ringe nebeneinander (heute, gewählt)
+lesen sich als zwei gleichrangige Zustände; jetzt ist einer gefüllt.
+
+## To-do-Liste
+
+Eigener Reiter, eigene Sammlung `privat/<uid>/aufgaben`. **Getrennt von
+den Studio-Aufgaben** unter Betrieb: die kommen von der Leitung und
+gehören einem Studio. Was man sich selbst vornimmt, geht niemanden
+sonst etwas an — und soll auch niemanden sonst erreichen.
+
+Mit Frist stehen die Punkte am jeweiligen Tag in Woche und Kalender.
+Kästchen 24 Pixel sichtbar, 44 tastbar (`::after`-Fläche): das ist das,
+was man am häufigsten trifft, und Daumen sind ungenau. Erledigtes
+klappt hinter eine `.nachfrage` weg.
+
+Enter im Textfeld legt an, und der Fokus bleibt stehen — wer einen
+Punkt einträgt, trägt meistens zwei ein.
+
+## Mehr im Kalender
+
+Aus Titel + Uhrzeit wurden **Titel, Von, Bis, Ort, Notiz**. Das
+Formular liegt hinter einer Aufklappzeile: wer nur nachsehen will, was
+ansteht, soll nicht durch sechs leere Felder scrollen.
+
+Ein Ende vor dem Anfang wird abgewiesen statt still gespeichert — sonst
+stünde später „14:00–09:00" im Kalender und niemand wüsste, was gemeint
+war. Ort und Notiz stehen unter der Zeile, nicht daneben: auf 320 Pixel
+wäre sonst der Titel das erste, was abgeschnitten wird.
+
+## Der Fehler, den ich fast wieder gemacht hätte
+
+Beim Umbau des CSS habe ich fünf Token benutzt, die es nicht gibt:
+`--r-8`, `--r-12`, `--s14`, `--lh-locker`, `--ls-weit`. Genau die
+Sorte, die keine Fehlermeldung erzeugt — eine undefinierte Variable
+macht die Eigenschaft ungültig, und die Zelle sieht dann eben anders
+aus.
+
+Gefunden, weil ich diesmal **vor** dem Testlauf jedes `var(--…)` im
+neuen Block gegen die Definitionen geprüft habe. Das ist jetzt der
+Handgriff: nach jedem CSS-Block einmal gegenlesen, welche Variablen es
+wirklich gibt.
+
+## Nachgemessen
+
+```
+Rechte 103 · davon 19 zu „privat"
+```
+
+Drei neue darunter halten fest, dass die Platzhalter-Zeile `{rest=**}`
+auch Sammlungen abdeckt, die es beim Schreiben der Regel noch nicht
+gab — `aufgaben` kam einen Tag später dazu. Wer die Zeile später durch
+eine Liste einzelner Sammlungen ersetzt, macht jede neue lautlos
+öffentlich; ab jetzt fällt das auf.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

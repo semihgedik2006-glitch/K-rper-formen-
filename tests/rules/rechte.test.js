@@ -433,6 +433,21 @@ const anonym  = () => env.unauthenticatedContext().firestore();
     assertFails(mitA().doc(`firmen/${A}/privat/leiterA/notizen/x`)
       .set({ text: 'untergeschoben', ts: 5 })));
 
+  /* Die Regel deckt privat/<uid> mit {rest=**} ab, also auch Sammlungen,
+     die es beim Schreiben der Regel noch gar nicht gab. „aufgaben" kam
+     am 18.8. dazu. Das ist bequem und genau deshalb gefaehrlich: wer
+     spaeter die Platzhalter-Zeile durch eine Liste einzelner Sammlungen
+     ersetzt, macht jede neue lautlos oeffentlich. Diese beiden Runden
+     halten das fest. */
+  await pruefe('PRIVAT · auch eine SPÄTER dazugekommene Sammlung ist zu (aufgaben)', () =>
+    assertFails(privatMit(chefA(), 'aufgaben', 'a1').get()));
+  await pruefe('GEGENPROBE meine eigenen To-dos darf ich anlegen', () =>
+    assertSucceeds(privatMit(mitA(), 'aufgaben', 'a1')
+      .set({ text: 'Steuer sortieren', erledigt: false, ts: 6 })));
+  await pruefe('GEGENPROBE und abhaken', () =>
+    assertSucceeds(privatMit(mitA(), 'aufgaben', 'a1')
+      .update({ erledigt: true, erledigtAm: 7 })));
+
   // ══ 6. Aufzaehlen von Konten ══
   await pruefe('Anonym kann users NICHT auflisten', () =>
     assertFails(anonym().collection('users').get()));
