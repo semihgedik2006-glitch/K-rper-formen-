@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-C5UM4Tqp4+on+pZ1IptP7M+oDsIlPTvDuu3frY16cC4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-9oPnWq1Y5R+xDe301n0CBlrPrN9cWEqdieifolR/820='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1831,17 +1831,22 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    touch-action:none nur hier — sonst laesst sich die Liste auf dem Handy
    nicht mehr scrollen. */
 .ich-griff{flex:0 0 auto;align-self:center;width:24px;text-align:center;
-  color:var(--text-3);font-size:var(--t-md);cursor:grab;touch-action:none;
-  user-select:none;line-height:1}
+  color:var(--text-3);cursor:grab;touch-action:none;
+  user-select:none;line-height:var(--lh-1);display:flex;
+  align-items:center;justify-content:center}
+.ich-griff svg{width:18px;height:18px}
 .ich-griff:active{cursor:grabbing}
 .ich-tdo.zieht{opacity:.6;background:var(--auf-1);border-radius:var(--r-xs)}
 .ich-tdo.wichtig .ich-tdo-txt{font-weight:650}
 .ich-stern{flex:0 0 auto;align-self:center;border:none;background:none;
-  color:var(--line-2);font-size:var(--t-md);line-height:1;cursor:pointer;
-  min-width:32px;min-height:32px;padding:0;
+  color:var(--line-2);line-height:var(--lh-1);cursor:pointer;
+  min-width:32px;min-height:32px;padding:0;display:inline-flex;
+  align-items:center;justify-content:center;
   transition:color .2s var(--ease-ios),transform .2s var(--spring)}
 .ich-stern:hover{color:var(--text-3)}
+.ich-stern svg{width:18px;height:18px}
 .ich-stern.an{color:var(--warm-tx);transform:scale(1.1)}
+.ich-stern.an svg{fill:currentColor}
 .ich-tdo-felder{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s8)}
 .ich-tdo.ich-tdo-form{background:var(--auf-1);border-radius:var(--r-md);
   padding:var(--s12);border-top:none}
@@ -5341,6 +5346,11 @@ function $(id){ return document.getElementById(id); }
    ausgeschrieben; beide Fassungen muessen dieselben Pfade zeichnen. */
 var IKONEN = {
   schliessen:  '<path d="M18 6 6 18M6 6l12 12"/>',
+  /* Stern fuer „wichtig" und der Griff zum Verschieben. Beide waren
+     zuerst Zeichen (★ und ⠿) — die ignorieren Hell/Dunkel und sehen auf
+     jedem Geraet anders aus. Der Gestaltungs-Durchlauf hat es gefunden. */
+  stern:       '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9Z"/>',
+  griff:       '<path d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01"/>',
   drucken:     '<path d="M6 9V3h12v6"/>' +
                '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>' +
                '<path d="M6 14h12v8H6z"/>',
@@ -11896,7 +11906,8 @@ function ichTodoZeile(t, ziehbar){
      faengt das Ziehen an — sonst kann man die Liste nicht mehr
      scrollen, ohne versehentlich etwas zu verschieben. */
   var griff = ziehbar
-    ? '<span class="ich-griff" data-ichgriff="'+esc(t.id)+'" aria-hidden="true">⠿</span>'
+    ? '<span class="ich-griff" data-ichgriff="'+esc(t.id)+'" aria-hidden="true">'+
+      ikon('griff')+'</span>'
     : '';
   return '<div class="ich-tdo'+(t.erledigt?' fertig':'')+(t.wichtig?' wichtig':'')+
       '" data-ichtdoid="'+esc(t.id)+'">'+
@@ -11909,7 +11920,7 @@ function ichTodoZeile(t, ziehbar){
     '<button class="ich-stern'+(t.wichtig?' an':'')+'" data-ichtdostern="'+esc(t.id)+'" '+
       'aria-pressed="'+(t.wichtig?'true':'false')+'" '+
       'aria-label="'+esc((t.wichtig?'Nicht mehr wichtig: ':'Als wichtig markieren: ')+
-        (t.text||''))+'" title="Wichtig">★</button>'+
+        (t.text||''))+'" title="Wichtig">'+ikon('stern')+'</button>'+
     '<button class="mini-link" data-ichtdobearb="'+esc(t.id)+'">Ändern</button>'+
     '<button class="mini-link" data-ichtdoweg="'+esc(t.id)+'">Löschen</button>'+
     '</div>';
