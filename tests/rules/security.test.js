@@ -135,6 +135,24 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Mitarbeiter kann seinen eigenen Eintrag noch korrigieren', () =>
     assertSucceeds(alsMitarbeiter().doc('certificates/selbst1')
       .update({ bis: '2028-06-30' })));
+  /* Die freiwilligen Angaben aus dem Formular (ausgestellt von,
+     ausgestellt am, Nummer) muessen mitgehen duerfen. Die Regel schreibt
+     heute keine Feldliste vor — wer spaeter eine einfuehrt, um "nur
+     erlaubte Felder" durchzulassen, schaltet damit still das halbe
+     Formular ab: die App bekaeme ein PERMISSION_DENIED und der Nutzer
+     eine Fehlermeldung, ohne dass irgendwo stuende, warum. */
+  await pruefe('Die freiwilligen Zusatzangaben duerfen mitgeschrieben werden', () =>
+    assertSucceeds(alsMitarbeiter().doc('certificates/selbst2').set({
+      uid: 'mit1', name: 'Mitarbeiter', art: 'brandschutz', bis: '2028-06-30',
+      aussteller: 'Feuerwehr Musterstadt', von: '2025-06-30', nummer: 'BS-77/25',
+      erfasstVon: 'Mitarbeiter', erfasstVonUid: 'mit1', bestaetigt: false })));
+  /* Gegenprobe: die Zusatzangaben heben die Grenze NICHT auf. Sonst
+     waere oben nur bewiesen, dass die Regel ueberhaupt etwas durchlaesst. */
+  await pruefe('Zusatzangaben machen einen fremden Eintrag NICHT erlaubt', () =>
+    assertFails(alsMitarbeiter().doc('certificates/selbst3').set({
+      uid: 'chef1', art: 'brandschutz', bis: '2028-06-30',
+      aussteller: 'Feuerwehr Musterstadt', von: '2025-06-30', nummer: 'BS-77/25',
+      erfasstVonUid: 'mit1', bestaetigt: false })));
   /* Der Kern: er darf sich nicht selbst bestaetigen. Sonst waere die
      Unterscheidung zwischen "behauptet" und "belegt" Dekoration. */
   await pruefe('Mitarbeiter kann sich NICHT selbst bestaetigen', () =>

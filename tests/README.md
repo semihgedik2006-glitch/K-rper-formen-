@@ -147,6 +147,9 @@ was sie sehen soll.
 | `test-eigene-aufgabe.js` | Mitarbeiter legen einmalige Aufgaben im eigenen Studio an; die Verwaltung behält ihr volles Formular |
 | `test-ueberblick.js` | der Aushang nennt die Namen derer, die nicht gelesen haben; die Studio-Tafel zeigt jeden Rückstand und sortiert danach |
 | `test-probetraining.js` | Abschlussquote je Studio und je Person, Zeitraum-Filter — und kein Kundenname in der App |
+| `test-notizen.js` | Notizen mit vier Arten: Ändern schreibt ein `update` samt Art, Angeheftetes steht oben, Filter und Suche schneiden wirklich |
+| `test-lizenzen.js` | Nachweise: Arten beim Namen statt roher Kennung, „selbst eingetragen" vs. „bestätigt", drei freiwillige Angaben landen in der Datenbank |
+| `test-bewegung-ich.js` | wo sich in „Mein Bereich" etwas bewegen darf — und wo nicht: die Notizliste beim Tippen nicht, bei „Bewegung reduzieren" gar nichts |
 
 ### Alle auf einmal
 

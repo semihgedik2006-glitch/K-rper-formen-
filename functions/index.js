@@ -246,7 +246,7 @@ const _neueAufgabe = async (snap, ctx) => {
       (t.title || '') + '\n' +
       (t.desc ? t.desc + '\n' : '') + frist + '\n\n' +
       'Angelegt von ' + (t.createdBy || 'der Leitung') + '.\n' +
-      'Abhaken in der App.');
+      'Abhaken in der App.', 'aufgabe');
 };
 const _todo = beideWelten('studios/{studioKey}/todos/{todoId}', _neueAufgabe);
 exports.onNewTodo = _todo.flach;
@@ -345,7 +345,9 @@ const _fertigPruefen = async (change, ctx) => {
     'In ' + wo + ' ist gerade nichts mehr offen — weder Aufgaben noch Putzplan.\n\n' +
     'Stand: ' + zeit + ' Uhr.\n\n' +
     'Diese Meldung kommt einmal, wenn der letzte Punkt abgehakt ist. Kommt ' +
-    'später etwas dazu und wird auch das erledigt, meldet sie sich erneut.');
+    'später etwas dazu und wird auch das erledigt, meldet sie sich erneut.\n\n' +
+    'Zu viele dieser Mails? Unter Einstellungen → Meldungen lässt sich ' +
+    'jede Sorte einzeln abschalten.', 'fertig');
 };
 
 const _fertigTodo = beideWelten('studios/{studioKey}/todos/{todoId}',
@@ -1606,10 +1608,44 @@ async function adressenVon(uids) {
   return raus;
 }
 
-async function teamMail(firma, uids, betreff, text) {
+/* ── Wer will diese Sorte Mail ueberhaupt? ──
+   Aus dem Betrieb: „nicht JEDER Chef soll jede Mail zu jedem Thema
+   bekommen." Bei 14 Studios heisst „Studio fertig" bis zu 14 Mails am
+   Tag — an jeden Chef.
+
+   Umgesetzt als LISTE DER ABGESCHALTETEN Themen, nicht der
+   eingeschalteten. Der Unterschied ist wichtig: ein fehlendes Feld
+   bedeutet damit „alles an", und der Bestand verhaelt sich unveraendert.
+   Waere es andersherum, bekaeme nach dem Ausrollen niemand mehr etwas,
+   bis alle zwoelf Konten von Hand nachgepflegt sind — und gemerkt haette
+   es erst, wer eine Mail vermisst.
+
+   Die Sperre liegt am Profil, nicht am Geraet: eine Mail geht an eine
+   Adresse, nicht an ein Handy. Der Push-Schalter unter „Meldungen"
+   bleibt davon unberuehrt und gilt weiter je Geraet. */
+async function mailWillHaben(uids, thema) {
+  if (!thema) return uids;
+  const raus = [];
+  for (const uid of [...new Set(uids)]) {
+    try {
+      const d = await db.collection('users').doc(String(uid)).get();
+      const aus = (d.exists && d.data() && d.data().mailAus) || [];
+      if (!Array.isArray(aus) || aus.indexOf(thema) < 0) raus.push(uid);
+    } catch (e) {
+      /* Profil nicht lesbar: dann lieber senden als stillschweigend
+         verschlucken. Eine Mail zu viel merkt man, eine zu wenig nicht. */
+      raus.push(uid);
+    }
+  }
+  return raus;
+}
+
+async function teamMail(firma, uids, betreff, text, thema) {
   const mailer = getMailer();
   if (!mailer) return 0;
-  const adressen = await adressenVon(uids);
+  const gewollt = await mailWillHaben(uids, thema);
+  if (!gewollt.length) return 0;
+  const adressen = await adressenVon(gewollt);
   if (!adressen.length) return 0;
   const von = process.env.MAIL_FROM || process.env.SMTP_USER;
   const name = await firmaAnzeigeName(firma);
@@ -1974,15 +2010,25 @@ async function sendMonthlyReport(vonD, bisD, firma) {
   if (!mailer) { console.log('Monatsbericht übersprungen: SMTP nicht eingerichtet.'); return 0; }
 
   let empfaenger = [];
+  let abgemeldet = 0;
   try {
     const snap = await db.collection('users').where('role', '==', 'chef').get();
     snap.forEach(doc => {
       const d = doc.data() || {};
       if (!gehoertZu(d, firma)) return;
+      /* Wer den Bericht abbestellt hat, bekommt ihn nicht. Die Liste
+         nennt die ABGESCHALTETEN Themen — ein Konto ohne das Feld ist
+         also wie bisher dabei. */
+      const aus = Array.isArray(d.mailAus) ? d.mailAus : [];
+      if (aus.indexOf('bericht') >= 0) { abgemeldet++; return; }
       if (d.email) empfaenger.push(d.email);
     });
   } catch (e) { console.error('Chef-Konten:', e); }
-  if (!empfaenger.length) { console.log('Monatsbericht: kein Chef mit E-Mail gefunden.'); return 0; }
+  if (!empfaenger.length) {
+    console.log('Monatsbericht: kein Chef mit E-Mail' +
+      (abgemeldet ? ' (' + abgemeldet + ' abbestellt)' : '') + '.');
+    return 0;
+  }
 
   const daten = await collectMonthly(vonD.getTime(), bisD.getTime(), firma);
   const text = monatsText(daten, vonD, bisD);
@@ -2439,3 +2485,14 @@ exports.purgeTrash = region
     } catch (e) { console.error('Papierkorb leeren:', e); }
     return null;
   });
+
+/* ── Nur zum Pruefen ──────────────────────────────────────────────────
+   mailWillHaben() entscheidet, wer eine Sorte Mail ueberhaupt bekommt.
+   Ohne diesen Ausgang koennte ein Durchlauf nur pruefen, dass eine
+   Funktion nicht abstuerzt — nicht, WER am Ende uebrig bleibt. Und
+   genau das ist hier die Frage.
+
+   Bewusst unter einem eigenen Namen und nicht als exports.<name>:
+   alles, was oben mit exports. anfaengt, waere ein ausgerollter
+   Endpunkt. Dieser hier ist keiner. */
+exports.__intern = { mailWillHaben };

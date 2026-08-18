@@ -4147,6 +4147,174 @@ angeklickten Tag" zu unterscheiden.
 
 ---
 
+# 50 · Nicht jeder Chef bekommt jede Mail
+
+**18. August 2026**
+
+Aus dem Betrieb: „das nicht JEDER Chef jede Mail bekommt zu jedem Thema,
+und dass er das selber ausschalten kann."
+
+Bei 14 Studios heißt „Studio fertig" bis zu **14 Mails am Tag** — an
+jeden Chef. Wer das nicht abstellen kann, stellt irgendwann den ganzen
+Absender ab, und dann kommt auch die eine Mail nicht mehr an, auf die es
+ankommt.
+
+Drei Sorten, je Konto abschaltbar: neue Aufgabe, Studio fertig
+(nur Chefs), Monatsbericht (nur Chefs).
+
+## Zwei Entscheidungen, die den Unterschied machen
+
+**Gespeichert wird, was AUS ist** (`mailAus`), nicht was an ist. Sonst
+bekäme nach dem Ausrollen niemand mehr etwas, bis jedes Konto von Hand
+nachgepflegt ist. So gilt ohne Zutun weiter alles wie bisher.
+
+**Gerät und Konto stehen getrennt untereinander**, mit zwei
+Überschriften. Der Push-Schalter gilt je Gerät, der Mail-Schalter je
+Konto. Hält man das für dasselbe, stellt man das Falsche ab und wundert
+sich.
+
+Ein Mitarbeiter sieht nur „neue Aufgabe". Die anderen zwei bekommt er
+nie — ein Schalter dafür verspräche etwas, das ohnehin nicht passiert.
+
+Keine Regeländerung nötig: `mailAus` fällt nicht unter die gesperrten
+Felder, die ein Konto an sich selbst nicht ändern darf.
+
+## Nachgemessen
+
+```
+Vorgabe          → alle drei an
+„fertig" aus     → users/<uid>  mailAus:["fertig"]
+„bericht" dazu   →              mailAus:["fertig","bericht"]
+„fertig" zurück  →              mailAus:["bericht"]
+Mitarbeiter      → sieht nur „aufgabe"
+```
+
+Serverseitig filtert `mailWillHaben(uids, thema)` vor dem Versand;
+`sendMonthlyReport` überspringt abbestellte Chefs und schreibt die Zahl
+ins Protokoll. Acht Behauptungen dazu im Emulator, darunter
+ausdrücklich: **der Filter lässt NICHT einfach alles durch.**
+
+---
+
+# 51 · Notizen, Nachweise, Bewegung
+
+**18. August 2026**
+
+Die letzten drei Punkte der Wunschliste aus Runde 49.
+
+## Notizen für den Trainer-Alltag
+
+Was sich ein Trainer notiert, ist selten „eine Notiz". Es ist etwas über
+eine Kundin (Knie, Ziel, Vorliebe), etwas über eine Einheit, oder etwas,
+das er noch angehen muss. Bisher war das eine einzige lange Liste, und
+man musste das jedes Mal aus dem Text herauslesen.
+
+Vier Arten, **dieselben vier Töne wie im Kalender** — bewusst nicht
+dieselben Namen: „privat" und „Arbeit" passen auf einen Termin, nicht
+auf eine Notiz. Die Art steht als 3px-Streifen links, nicht als
+eingefärbter Kasten: vier getönte Kästen untereinander sind ein
+Farbkasten, kein Notizblock.
+
+Ändern geht an Ort und Stelle statt löschen und neu schreiben, und zwar
+per `update()`. Ein `set()` hätte `fest` und `ts` stillschweigend
+mitgelöscht — die angeheftete Notiz wäre nach dem Korrigieren eines
+Tippfehlers nach unten gerutscht und ohne Datum dagestanden.
+
+Suche und Filter erscheinen **erst ab fünf Notizen**. Darunter sind sie
+zwei Bedienelemente, die nichts tun außer Platz wegnehmen.
+
+Zwei Dinge, die ohne Absicht kaputt gewesen wären:
+
+- Der Horcher feuert auch, **während jemand tippt**. Der halb getippte
+  Satz im offenen Änderungsfeld überlebt das Neuzeichnen jetzt.
+- Suchbegriff und Filter werden beim Abmelden geleert. Auf einem
+  geteilten Gerät stünde sonst der Name einer Kundin im Suchfeld, deren
+  Notiz dem vorigen Konto gehört.
+
+## Nachweise
+
+Selbst eintragen ging schon — aber im Profilfenster, also dort, wo
+niemand danach sucht. „Mein Bereich" zeigt die eigenen Nachweise und
+hatte keinen Weg dorthin. Jetzt steht dort ein Knopf, der **dasselbe**
+Formular aufschlägt; ein zweites wäre die zweite Stelle, an der ein
+neues Feld vergessen wird.
+
+Drei freiwillige Angaben dazu, eingeklappt: ausgestellt von, ausgestellt
+am, Nummer. Genau die drei sucht man beim Verlängern zusammen. Der
+schnelle Weg bleibt zwei Felder.
+
+Zwei Fehler, die dabei aufgefallen sind:
+
+- Der Ich-Bereich zeigte die **rohe Kennung**: „ersthelfer" statt
+  „Erste-Hilfe-Kurs", und bei „Sonstiges" nicht das, was jemand selbst
+  hineingeschrieben hatte.
+- Man sah nicht, ob ein Nachweis selbst eingetragen oder von der
+  Verwaltung bestätigt ist. Ohne diesen Unterschied ist die
+  Selbsteintragung ein Freibrief.
+
+Die Zusatzangaben sieht auch die Verwaltung, in derselben Zeile, in der
+sie bestätigt. Wer nicht sieht, von wem der Nachweis ist, bestätigt eine
+Zeile statt eines Nachweises.
+
+## Bewegung
+
+Der interessante Teil war nicht, **dass** sich etwas bewegt, sondern wo
+sich nichts bewegen darf.
+
+Bewegt wird nur, was sich auf einen Klick hin ändert: der Reiterwechsel
+und das Blättern im Kalender. Vor und zurück laufen in verschiedene
+Richtungen — das ist die einzige Stelle hier, an der die Bewegung etwas
+**sagt**: man sieht, ob man vor- oder zurückgeblättert hat, ohne die
+Beschriftung zu lesen. „Heute" springt bewusst ohne Richtung.
+
+**Nicht** animiert werden die einzelnen Zeilen. Die Notizliste wird bei
+jedem Tastendruck im Suchfeld neu gezeichnet; eine Animation je Zeile
+wäre dort kein Einlaufen, sondern ein Flackern bei jedem Buchstaben.
+
+Die Bewegungs-Klasse wird nach `animationend` wieder abgeräumt. Mit
+`animation-fill-mode:both` bliebe sie sonst für immer am Element
+hängen — „Heute" trüge noch die Richtung des letzten Klicks.
+
+## Nachgemessen
+
+```
+Ändern            → update {text, kategorie} — kein ts, kein fest
+Anheften          → update {fest:true}, Notiz steht oben, auch als älteste
+Filter „Kunde"    → 3 von 6
+Suche „knie"      → 1 Treffer, Groß-/Kleinschreibung egal
+Bei 2 Notizen     → keine Suchzeile
+
+Nachweis speichern → aussteller, von, nummer landen mit
+Ausstellung nach Ablauf → 0 Schreibvorgänge, Meldung kommt
+Ohne Zusatzangaben → 0 Zusatzzeilen, 0 Marken
+
+Reiterwechsel     → ichPaneEin, nach 700 ms nichts mehr
+Zweiter Klick nach 80 ms → Bewegung startet bei 0 ms neu
+Beim Tippen       → 0 Animationen in der Liste
+„Bewegung reduzieren" → 0 Animationen, Deckkraft trotzdem 1
+```
+
+Drei neue Durchläufe. **Vier Gegenproben nachgestellt**, und zwei davon
+haben etwas gefunden:
+
+| Gegenprobe | Ergebnis |
+|---|---|
+| Filter ausgehebelt | 7 rot ✓ |
+| `update` durch `set` ersetzt | 1 rot ✓ |
+| Rohkennung wiederhergestellt | 4 rot ✓ |
+| Animations-Neustart entfernt | **grün** ✗ |
+
+Die letzte war zuerst wertlos: der Durchlauf wartete 600 ms zwischen den
+Klicks, da hatte der Aufräumer die Klasse längst entfernt — die Behauptung
+wäre auch ohne Neustart grün gewesen. Mit 80 ms Abstand, also so, wie man
+wirklich drei Monate weiterblättert, greift sie: 83 ms statt 0.
+
+Es genügt dabei **nicht**, dass eine Animation läuft — sie lief ja
+schon. Sie muss von vorn laufen, und das steht nur in der verstrichenen
+Zeit.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
