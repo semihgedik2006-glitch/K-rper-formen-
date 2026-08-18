@@ -342,8 +342,22 @@ var USERS = [
             (window.__schreib = window.__schreib || []).push({ pfad: docPath, daten: d });
             return Promise.resolve();
           },
-          update: function () { return Promise.resolve(); },
-          delete: function () { return Promise.resolve(); },
+          /* update() merkt sich seit dem 18.8. ebenfalls mit — und zwar
+             getrennt von set(), weil der Unterschied zaehlt: ein
+             Kalendereintrag, der beim Aendern per set() geschrieben
+             wird, verliert alle Felder, die im Formular gerade nicht
+             gefuellt sind. Ohne diese Zeile koennte ein Durchlauf das
+             nicht auseinanderhalten. */
+          update: function (d) {
+            (window.__schreib = window.__schreib || [])
+              .push({ pfad: docPath, art: 'update', daten: d });
+            return Promise.resolve();
+          },
+          delete: function () {
+            (window.__schreib = window.__schreib || [])
+              .push({ pfad: docPath, art: 'delete' });
+            return Promise.resolve();
+          },
           onSnapshot: function (cb) {
             if (path === 'inventory') {
               var inv = INVENTORY[id];
@@ -395,6 +409,17 @@ var USERS = [
            bekam eine leere Antwort und haette daraus geschlossen, in der
            App fehle etwas. Der Durchlauf test-sicherung-inhalt.js ist
            genau darauf gestossen. */
+        /* Eigene Termine, To-dos und Notizen aus „Mein Bereich".
+           Nur wenn ein Durchlauf window.__privat vorher hinlegt — sonst
+           saehen alle anderen ploetzlich Eintraege, wo sie einen leeren
+           Zustand erwarten. */
+        var gp = /^privat\/[^/]+\/(termine|notizen|aufgaben)$/.exec(path);
+        if (gp) {
+          var pl = ((window.__privat || {})[gp[1]] || []);
+          return Promise.resolve(makeSnap(pl.map(function (d) {
+            return { id: d.id, data: function () { return d; } };
+          })));
+        }
         var gm = /^channels\/(.+)\/messages$/.exec(path);
         var gh = /^studios\/(.+)\/handovers$/.exec(path);
         var list = gm ? (gm[1] === 'allgemein' ? MESSAGES : [])
@@ -430,6 +455,14 @@ var USERS = [
         if (ma) {
           var al = ABSENCES[ma[1]] || [];
           try { cb(makeSnap(al.map(function (d) { return { id: d.id, data: function () { return d; } }; }))); } catch (e) { console.error(e); }
+          return unsub();
+        }
+        var mp = /^privat\/[^/]+\/(termine|notizen|aufgaben)$/.exec(path);
+        if (mp) {
+          var pl2 = ((window.__privat || {})[mp[1]] || []);
+          try { cb(makeSnap(pl2.map(function (d) {
+            return { id: d.id, data: function () { return d; } }; }))); }
+          catch (e) { console.error(e); }
           return unsub();
         }
         var mm = /^channels\/(.+)\/messages$/.exec(path);

@@ -3947,6 +3947,116 @@ eine Liste einzelner Sammlungen ersetzt, macht jede neue lautlos
 
 ---
 
+# 48 · Tippfehler, eine zuckende Kopfzeile, und ein Kalender mit Arten
+
+**18. August 2026**
+
+Drei Meldungen aus dem Betrieb an einem Tag. Zwei davon sind Fehler,
+die ich selbst gebaut hatte.
+
+## „Es ist voll der Film, wenn man sich verschrieben hat"
+
+Der Artikelname in der Materialliste stand als reiner **Text** in der
+Zeile. Bedienbar waren nur die drei Zahlen und das Löschkreuz. Wer sich
+vertippt hatte, musste die Zeile löschen und neu anlegen — und verlor
+dabei Soll- und Ist-Bestand.
+
+Jetzt ein Feld, das wie Text aussieht, bis man hineintippt. Kein
+Bearbeiten-Knopf, kein Modus: die Zeile ist an derselben Stelle
+dieselbe Sache.
+
+Gespeichert wird beim **Verlassen**, nicht bei jedem Tastendruck —
+sonst stünde nach „Handtuc" eine Sekunde lang genau das in der
+Datenbank, und wer gleichzeitig zählt, sieht es. Escape nimmt zurück,
+leer wird abgewiesen. Ändern darf, wer auch löschen darf.
+
+## Die zuckende Animation beim Scrollen
+
+Eine echte Rückkopplung, kein Gefühl. Die Kopfzeile liegt **außerhalb**
+des Scroll-Bereichs; schrumpft sie, wird der Bereich höher, und damit
+sinkt der größte mögliche `scrollTop`. Bei knapp scrollbarem Inhalt
+fiel er unter die Schwelle, die Marke ging weg, der Kopf wuchs,
+`scrollTop` stieg wieder darüber — und von vorn.
+
+```
+ohne Bremse   47px Überhang → 17 Wechsel in gut einer Sekunde
+mit Bremse    47px Überhang →  0
+              287px Überhang →  1   (der gewollte)
+```
+
+Die Bremse: schrumpfen nur, wenn danach noch genug Weg übrig bleibt
+(`gibtHer + 28`). Der Wert wird **gemessen**, nicht geschätzt — die
+Schriftgrößen-Einstellung verschiebt ihn, und eine feste Zahl wäre bei
+einer der Einstellungen falsch.
+
+Auf einer Seite, die ohnehin kaum scrollt, bringt das Schrumpfen auch
+nichts. Es ist also keine Einschränkung, sondern das Weglassen einer
+Bewegung ohne Nutzen.
+
+## Kalender: ändern, ganztägig, vier Arten
+
+**Ändern statt löschen-und-neu.** Dieselbe Frustration wie bei der
+Materialliste. Zwei Dinge daran sind leicht zu übersehen und beide
+geprüft:
+
+- Es muss ein `update()` sein, kein `set()`. Ein `set()` aus einem
+  Formular heraus löscht jedes Feld, das gerade nicht gefüllt ist — der
+  Eintrag verlöre still seine Notiz.
+- Das **Datum** darf nicht mitgeschrieben werden. Man bearbeitet den
+  Eintrag von seinem Tag aus; ein Tippfehler-Fix wäre sonst ein
+  Verschieben auf den gerade angeklickten Tag.
+
+**Ganztägig** blendet die Uhrzeiten aus, statt sie zu sperren — ein
+graues Feld, das man nicht bedienen kann, wirft die Frage auf, warum es
+da ist. Eine Uhrzeit, die vorher im Feld stand, wird beim Speichern
+verworfen; ein ganztägiger Eintrag mit Uhrzeit ist ein Widerspruch.
+
+**Vier Arten** (Allgemein, Privat, Arbeit, Wichtig) mit je einer Farbe,
+an drei Stellen dieselbe: Punkt im Raster, Plakette in der Liste,
+Auswahl im Formular. Nicht mehr als vier — ab etwa fünf Tönen
+unterscheidet man sie in einem 6-Pixel-Punkt nicht mehr zuverlässig,
+und dann ist die Farbe keine Hilfe, sondern Dekoration.
+
+## Drei Fehler, die beim Bauen auffielen
+
+**`withBusy()` machte mein Zurücksetzen rückgängig.** Der Helfer merkt
+sich den Knopftext beim Klick und stellt ihn in seinem `done()` wieder
+her. Das läuft in derselben Microtask-Kette wie das `then()` des
+Speicherns — „Eintragen" wurde also sofort wieder zu „Speichern". Ein
+`setTimeout(…, 0)` ist ein Macrotask und kommt danach.
+
+**Der Test lief auf einer unsichtbaren Karte.** Ein Abschnitt klickte
+denselben Tag an, den ein früherer schon gewählt hatte — der Umschalter
+wählte ihn damit ab. Die Tageskarte war zu, die Knöpfe darin fand
+`querySelector` trotzdem, und die Runde meldete grün. Seitdem prüft sie
+zuerst, ob die Karte überhaupt sichtbar ist.
+
+**Der Gegencheck zur Scroll-Bremse war zuerst wertlos.** Ich hatte die
+Bremse ausgehängt, ohne den CSP-Hash neu zu setzen. Das Skript wurde
+blockiert, alles maß 0, und der Durchlauf wurde rot mit „MESSUNG LEER"
+— also aus dem richtigen Grund rot, aber nicht aus dem, den ich prüfen
+wollte. Zweiter Anlauf mit gültigem Hash: die 17 Wechsel.
+
+## Nachgemessen
+
+`tests/test-scrollkopf.js` und `tests/test-material-name.js`, beide
+neu, beide mit Gegenprobe in **beide** Richtungen. Beim Scrollkopf ist
+die zweite Hälfte die wichtigere: ohne sie wäre der Durchlauf auch dann
+grün, wenn die Bremse so scharf steht, dass die Kopfzeile nie mehr
+schrumpft — die Funktion wäre stillschweigend abgeschafft.
+
+Nebenbei repariert: `test-material-bereich5.js` las den Artikelnamen
+über `textContent`. Bei einem `<input>` ist das immer leer — die Runde
+verglich `""` mit `""` und war grün, egal an welcher Stelle die Zeile
+zurückkam.
+
+Und der Attrappe beigebracht, `update()` und `delete()` mitzuschreiben.
+Ohne das kann ein Durchlauf `set()` und `update()` nicht
+auseinanderhalten — und genau dieser Unterschied entscheidet, ob eine
+Änderung die Notiz behält.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

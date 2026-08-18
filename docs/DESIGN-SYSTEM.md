@@ -529,6 +529,44 @@ in einer, fehlt ihm entweder der Fokus-Käfig oder Escape.
 Acht Sekunden. Für alles, was löscht. Zusätzlich `confirm()`, wenn die
 Wirkung über den eigenen Bildschirm hinausgeht (14 Studios, alle Kollegen).
 
+### Text, der sich ändern lässt, ohne Modus
+Wo ein Wert nur angezeigt wird, den man gelegentlich korrigiert: ein
+Eingabefeld, das **wie Text aussieht**, bis man hineintippt
+(`.mat-name-inp` als Muster). Kein Bearbeiten-Knopf, kein zweiter
+Zustand — die Zeile bleibt an derselben Stelle dieselbe Sache.
+
+```
+ruhend    background:none; border:1.5px solid transparent
+hover     background:var(--auf-1)
+fokus     background:var(--auf-1); border-color:var(--accent)
+```
+
+Dazu drei Regeln, die sonst wehtun:
+- **Speichern beim Verlassen**, nicht bei jedem Tastendruck. Sonst steht
+  „Handtuc" für eine Sekunde in der Datenbank, und wer gleichzeitig
+  daraufschaut, sieht es.
+- **Escape stellt den alten Wert wieder her.** Ohne Rückweg traut sich
+  niemand hineinzutippen.
+- **Leer wird abgewiesen**, nicht gespeichert.
+
+Und im Test: `textContent` eines `<input>` ist **immer leer**. Wer eine
+Textzeile zu einem Feld macht, muss jede Prüfung mitziehen, die den
+Wert liest — sonst vergleicht sie `""` mit `""` und ist grün.
+
+### Höchstens vier Farben für eine Kategorie
+Ab etwa fünf Tönen unterscheidet man sie in einem 6-Pixel-Punkt nicht
+mehr zuverlässig. Dann ist die Farbe keine Hilfe mehr, sondern
+Dekoration — und die Liste braucht wieder Text, um lesbar zu sein.
+Dieselbe Farbe muss an **allen** Stellen dieselbe Sache heißen: Punkt im
+Raster, Plakette in der Liste, Auswahl im Formular.
+
+### Kein Zustand, den man nicht bedienen kann
+Ein graues, gesperrtes Feld wirft die Frage auf, warum es da ist. Wenn
+eine Auswahl ein Feld gegenstandslos macht (`ganztägig` → Uhrzeiten),
+blende es **aus**, statt es zu sperren. Und verwirf den Wert beim
+Speichern: ein ganztägiger Termin mit Uhrzeit ist ein Widerspruch, den
+niemand später erklären kann.
+
 ### Blatt `.ich-blatt` — Abstand statt Kasten
 Für Seiten, die man **ansieht** statt bedient. Kein Grund, kein Rahmen,
 keine Füllung: nur ein Abschnitt mit `margin-bottom` und einer

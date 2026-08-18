@@ -58,6 +58,17 @@ function pruefe(bedingung, meldung) {
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**fonts.googleapis.com/**', r => r.abort());
   await p.addInitScript({ path: path.join(SP, 'stub-chef.js') });
+  /* Ein vorhandener Eintrag, damit „Ändern" etwas zu ändern hat. Am
+     ersten des laufenden Monats, damit er im Raster sicher auftaucht. */
+  await p.addInitScript(() => {
+    const d = new Date();
+    const erster = d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-01';
+    window.__privat = { termine: [{
+      id: 't1', datum: erster, titel: 'Zahnarzt', zeit: '09:30', bis: '10:15',
+      ort: 'Köln', notiz: 'Karte mitnehmen', kategorie: 'wichtig', ts: 1
+    }] };
+  });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(2600);
 
@@ -349,6 +360,160 @@ function pruefe(bedingung, meldung) {
         ' geschrieben');
     }
     pruefe(r.feldLeer, 'FELD: nach dem Anlegen steht der Text noch im Feld');
+  }
+
+  /* ══ 4c. Einen Eintrag ÄNDERN ══
+     Derselbe Ärger wie bei der Materialliste: wer sich vertippt, soll
+     nicht löschen und neu anlegen müssen. Zwei Dinge müssen dabei
+     stimmen, und beide sind leicht zu übersehen:
+
+       1. Es muss ein update() sein, kein set(). Ein set() aus einem
+          Formular heraus löscht jedes Feld, das gerade nicht gefüllt
+          ist — der Eintrag verlöre still seine Notiz.
+       2. Das DATUM darf sich nicht ändern. Man bearbeitet den Eintrag
+          von seinem Tag aus; ein Tippfehler-Fix wäre sonst ein
+          Verschieben.  */
+  {
+    const r = await p.evaluate(async () => {
+      document.querySelector('[data-ichtab="kalender"]').click();
+      await new Promise(r => setTimeout(r, 400));
+      // Den Tag öffnen, an dem der eingespielte Termin liegt
+      const feld = document.querySelector('#ichKalender [data-ichtag="' +
+        window.__privat.termine[0].datum + '"]');
+      if (!feld) return { keinTag: true };
+      /* Nur klicken, wenn der Tag NICHT schon gewaehlt ist. Ein zweiter
+         Klick waehlt ihn ab (so ist der Umschalter gebaut) — und dann
+         lief diese Runde auf einer unsichtbaren Tageskarte weiter und
+         hat trotzdem gruen gemeldet. Genau deshalb steht unten die
+         Sichtprobe. */
+      if (!feld.classList.contains('gewaehlt')) {
+        feld.click();
+        await new Promise(r => setTimeout(r, 350));
+      }
+      const karteSichtbar =
+        getComputedStyle(document.getElementById('ichTagKarte')).display !== 'none';
+
+      const aendernKnopf = document.querySelector('[data-ichtermbearb]');
+      if (!aendernKnopf) return { keinKnopf: true };
+      aendernKnopf.click();
+      await new Promise(r => setTimeout(r, 300));
+
+      const gefuellt = {
+        titel: document.getElementById('ichTerminTitel').value,
+        ort: document.getElementById('ichTerminOrt').value,
+        notiz: document.getElementById('ichTerminNotiz').value,
+        kat: (document.querySelector('#ichTerminKats .ich-kat.an') || {})
+          .getAttribute ? document.querySelector('#ichTerminKats .ich-kat.an')
+            .getAttribute('data-ichkat') : null,
+        knopf: document.getElementById('ichTerminAdd').textContent.trim(),
+        abbruchDa: getComputedStyle(document.getElementById('ichTerminAbbruch')).display !== 'none'
+      };
+
+      window.__schreib = [];
+      document.getElementById('ichTerminTitel').value = 'Zahnarzt Kontrolle';
+      document.getElementById('ichTerminAdd').click();
+      await new Promise(r => setTimeout(r, 450));
+
+      return {
+        karteSichtbar, gefuellt, schreib: window.__schreib,
+        knopfDanach: document.getElementById('ichTerminAdd').textContent.trim(),
+        abbruchDanach: getComputedStyle(document.getElementById('ichTerminAbbruch')).display
+      };
+    });
+
+    if (r.keinTag) errs.push('FEHLT: der Tag des eingespielten Termins steht nicht im Raster');
+    else if (r.keinKnopf) errs.push('FEHLT: zu einem eigenen Eintrag gibt es kein „Ändern"');
+    else {
+      pruefe(r.karteSichtbar,
+        'TAGESKARTE ZU: die Runde lief auf einer unsichtbaren Karte — dann sagt ' +
+        'ihr Ergebnis nichts darüber, was ein Mensch sehen und antippen kann');
+      console.log('Formular gefüllt:', JSON.stringify(r.gefuellt));
+      console.log('Änderung geschrieben:', JSON.stringify(r.schreib));
+
+      pruefe(r.gefuellt.titel === 'Zahnarzt',
+        'FORMULAR: der Titel steht als ' + JSON.stringify(r.gefuellt.titel) + ' drin');
+      pruefe(r.gefuellt.ort === 'Köln',
+        'FORMULAR: der Ort steht als ' + JSON.stringify(r.gefuellt.ort) + ' drin');
+      pruefe(r.gefuellt.notiz === 'Karte mitnehmen',
+        'FORMULAR: die Notiz steht als ' + JSON.stringify(r.gefuellt.notiz) + ' drin');
+      pruefe(r.gefuellt.kat === 'wichtig',
+        'FORMULAR: die Art steht auf ' + JSON.stringify(r.gefuellt.kat) + ' statt „wichtig"');
+      pruefe(/Speichern/.test(r.gefuellt.knopf),
+        'KNOPF: beim Ändern steht „' + r.gefuellt.knopf + '" statt „Speichern"');
+      pruefe(r.gefuellt.abbruchDa, 'FEHLT: beim Ändern gibt es kein „Abbrechen"');
+
+      const w = r.schreib[0];
+      if (!w) {
+        errs.push('NICHTS GESCHRIEBEN: „Speichern" ändert den Eintrag nicht');
+      } else {
+        pruefe(w.art === 'update',
+          'SET STATT UPDATE: geschrieben wurde „' + w.art + '" — ein set() aus dem ' +
+          'Formular heraus löscht jedes Feld, das gerade nicht gefüllt ist');
+        pruefe(/termine\/t1$/.test(w.pfad),
+          'FALSCHES ZIEL: geändert wurde „' + w.pfad + '"');
+        pruefe(w.daten && w.daten.titel === 'Zahnarzt Kontrolle',
+          'INHALT: geschrieben wurde ' + JSON.stringify(w.daten && w.daten.titel));
+        pruefe(w.daten && w.daten.datum === undefined,
+          'DATUM VERSCHOBEN: die Änderung schreibt datum=' +
+          JSON.stringify(w.daten && w.daten.datum) + ' mit — ein Tippfehler-Fix ' +
+          'wäre damit ein Verschieben auf den gerade angeklickten Tag');
+        pruefe(w.daten && w.daten.notiz === 'Karte mitnehmen',
+          'NOTIZ WEG: die Änderung schreibt notiz=' +
+          JSON.stringify(w.daten && w.daten.notiz));
+      }
+      pruefe(/Eintragen/.test(r.knopfDanach),
+        'ZURÜCKSETZEN: nach dem Speichern steht der Knopf auf „' + r.knopfDanach + '"');
+      pruefe(r.abbruchDanach === 'none',
+        'ZURÜCKSETZEN: „Abbrechen" bleibt nach dem Speichern stehen');
+    }
+  }
+
+  /* ══ 4d. Ganztägig blendet die Uhrzeiten aus ══ */
+  {
+    const r = await p.evaluate(async () => {
+      const box = document.getElementById('ichTerminBox');
+      if (box) box.open = true;
+      // Steht ueberhaupt noch ein Tag offen? Ohne den legt nichts an.
+      const tagOffen = !!document.querySelector('#ichKalender .ich-tagfeld.gewaehlt');
+      const karteOffen = getComputedStyle(document.getElementById('ichTagKarte')).display;
+      const ganz = document.getElementById('ichTerminGanz');
+      const zeiten = document.getElementById('ichTerminZeiten');
+      const vorher = getComputedStyle(zeiten).display;
+      ganz.checked = true;
+      ganz.dispatchEvent(new Event('change', { bubbles: true }));
+      await new Promise(r => setTimeout(r, 200));
+      const nachher = getComputedStyle(zeiten).display;
+
+      // Und ein ganztägiger Eintrag darf keine Uhrzeit schreiben
+      window.__schreib = [];
+      document.getElementById('ichTerminZeit').value = '09:00';
+      document.getElementById('ichTerminTitel').value = 'Fortbildung';
+      document.getElementById('ichTerminAdd').click();
+      await new Promise(r => setTimeout(r, 400));
+
+      ganz.checked = false;
+      ganz.dispatchEvent(new Event('change', { bubbles: true }));
+      await new Promise(r => setTimeout(r, 200));
+      return { vorher, nachher, zurueck: getComputedStyle(zeiten).display,
+               schreib: window.__schreib, tagOffen, karteOffen };
+    });
+    console.log('Ganztägig · Zeiten:', r.vorher, '→', r.nachher, '→', r.zurueck);
+    console.log('Ganztägig geschrieben:', JSON.stringify(r.schreib),
+      '· Tag offen:', r.tagOffen, '· Tageskarte:', r.karteOffen);
+    pruefe(r.vorher !== 'none', 'ZEITEN: sind schon ohne „ganztägig" ausgeblendet');
+    pruefe(r.nachher === 'none',
+      'GANZTÄGIG: die Uhrzeiten bleiben stehen (' + r.nachher + ')');
+    pruefe(r.zurueck !== 'none', 'GANZTÄGIG: das Abwählen bringt die Uhrzeiten nicht zurück');
+    const g = r.schreib[0];
+    if (!g) errs.push('GANZTÄGIG: es wurde nichts angelegt');
+    else {
+      pruefe(g.daten && g.daten.ganztags === true,
+        'GANZTÄGIG: geschrieben wurde ganztags=' + JSON.stringify(g.daten && g.daten.ganztags));
+      pruefe(g.daten && g.daten.zeit === null,
+        'GANZTÄGIG MIT UHRZEIT: im Feld stand 09:00 und wurde als ' +
+        JSON.stringify(g.daten && g.daten.zeit) + ' mitgeschrieben — ein ganztägiger ' +
+        'Eintrag mit Uhrzeit ist ein Widerspruch');
+    }
   }
 
   // ══ 5. Eine Notiz: derselbe Test, und der Hinweis daneben ══

@@ -128,7 +128,15 @@ async function start(stub, errs) {
 
     let gefragt = false;
     page.on('dialog', async d => { gefragt = true; await d.accept(); });
-    const vorName = await page.evaluate(() => document.querySelector('.mat-name').textContent);
+    /* Seit dem 18.8. ist der Name fuer die Verwaltung ein Eingabefeld.
+       textContent ist bei einem <input> immer leer — ohne diese
+       Unterscheidung verglich die Runde unten "" mit "" und war gruen,
+       egal an welcher Stelle die Zeile zurueckkam. */
+    const nameVon = el => el ? (el.value !== undefined ? el.value : el.textContent) : null;
+    const vorName = await page.evaluate(() => {
+      const el = document.querySelector('.mat-name');
+      return el ? (el.value !== undefined ? el.value : el.textContent) : null;
+    });
     const vorZahl = await page.evaluate(() => document.querySelectorAll('.mat-row').length);
     await page.evaluate(() => document.querySelector('.mat-del').click());
     await page.waitForTimeout(700);
@@ -146,11 +154,16 @@ async function start(stub, errs) {
     await page.waitForTimeout(600);
     const zurueck = await page.evaluate(() => ({
       zeilen: document.querySelectorAll('.mat-row').length,
-      ersterName: document.querySelector('.mat-name').textContent,
+      ersterName: (() => { const el = document.querySelector('.mat-name');
+        return el ? (el.value !== undefined ? el.value : el.textContent) : null; })(),
     }));
     console.log('nach Rückgängig:', JSON.stringify(zurueck));
     if (zurueck.zeilen !== vorZahl) errs.push('Rueckgaengig hat die Zeile nicht zurueckgeholt');
-    if (zurueck.ersterName !== vorName) errs.push('Die Zeile kam an anderer Stelle zurueck: ' + zurueck.ersterName);
+    if (!vorName) errs.push('MESSUNG LEER: der erste Artikelname liess sich nicht lesen');
+    if (zurueck.ersterName !== vorName) {
+      errs.push('Die Zeile kam an anderer Stelle zurueck: ' +
+        JSON.stringify(zurueck.ersterName) + ' statt ' + JSON.stringify(vorName));
+    }
 
     await page.screenshot({ path: SP + '/material-chef.png' });
     await b.close();
