@@ -553,6 +553,33 @@ Und im Test: `textContent` eines `<input>` ist **immer leer**. Wer eine
 Textzeile zu einem Feld macht, muss jede Prüfung mitziehen, die den
 Wert liest — sonst vergleicht sie `""` mit `""` und ist grün.
 
+### Ziehen: ein Griff, nicht die ganze Zeile
+Sortierbare Listen werden mit **Zeigerereignissen** gebaut, nicht mit
+HTML5-Drag — nur so funktioniert es auf dem Handy wie mit der Maus.
+
+`touch-action:none` gehört **ausschließlich** auf den Griff. Steht es auf
+der Zeile, lässt sich die Liste auf dem Handy nicht mehr scrollen, ohne
+etwas zu verschieben — und das merkt man erst am echten Gerät.
+
+```
+.ich-griff{touch-action:none; cursor:grab}     ← nur hier
+.ich-tdo  { … }                                ← nichts davon
+```
+
+Geschrieben wird beim **Loslassen**, nicht bei jeder Bewegung, und nur
+die Zeilen, deren Position sich wirklich geändert hat.
+
+Jeder Test dazu braucht zwei Züge: einen **am** Griff (muss sortieren)
+und einen **daneben** (darf nicht). Ohne den zweiten ist auch eine
+Liste grün, die sich beim Scrollen selbst umsortiert.
+
+### Nur eine Ordnung pro Liste
+Wenn der Nutzer von Hand sortieren darf, gewinnt seine Reihenfolge —
+vor Datum, Priorität und allem anderen. Zwei Ordnungen gleichzeitig
+sind nicht erklärbar: man zieht etwas nach oben und es rutscht wieder
+weg. Andere Merkmale dürfen weiterhin **auffallen** (überfällig rot),
+aber nicht mehr umsortieren.
+
 ### Höchstens vier Farben für eine Kategorie
 Ab etwa fünf Tönen unterscheidet man sie in einem 6-Pixel-Punkt nicht
 mehr zuverlässig. Dann ist die Farbe keine Hilfe mehr, sondern

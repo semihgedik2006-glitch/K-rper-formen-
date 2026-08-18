@@ -4057,6 +4057,96 @@ auseinanderhalten — und genau dieser Unterschied entscheidet, ob eine
 
 ---
 
+# 49 · Kalender und To-dos: verschieben statt neu anlegen
+
+**18. August 2026**
+
+Eine lange Wunschliste aus dem Betrieb. Zwei Punkte davon sind hier
+drin, drei stehen noch aus (Notizen für den Trainer-Alltag, Lizenzen
+selbst eintragen, Animationen).
+
+## Kalender
+
+**Doppelklick legt sofort an.** Tag doppelklicken → Formular auf, Datum
+gesetzt, Cursor im Titel. Auf dem Handy gibt es keinen Doppelklick;
+dort bleibt der Weg über die Tageskarte.
+
+Der Punkt, an dem das schiefgeht: der Doppelklick muss den Tag
+**wählen**, nicht nur das Formular öffnen. Sonst landet der Eintrag am
+zuletzt offenen Tag. Der Durchlauf wählt deshalb erst einen anderen Tag
+und prüft dann, wo wirklich angelegt wird.
+
+**Verschieben** heißt: das Datum steht im Formular. Kein Ziehen, das auf
+dem Handy ohnehin schwer zu treffen ist. Nach dem Verschieben geht die
+Ansicht mit — bliebe sie am alten Tag, sähe Verschieben aus wie Löschen.
+
+**Wiederholung** wöchentlich, zweiwöchentlich, monatlich. Bewusst nicht
+vervielfacht geschrieben: es bleibt **ein** Dokument, gerechnet wird
+beim Anzeigen. Sonst hätte „jede Woche" nach einem Jahr 52 Zeilen, und
+eine Änderung müsste 52-mal nachgezogen werden.
+
+Preis davon, offen gesagt: eine einzelne Ausnahme („diese Woche fällt
+aus") gibt es nicht. Das wäre ein Feld mit Ausnahmelisten — mehr
+Maschinerie, als ein Notizkalender verdient.
+
+**Wochenansicht.** Der Monat zeigt, *dass* etwas ist; die Woche zeigt,
+*wann*. Beide teilen sich dieselbe Zelle und dieselben Punkte — zwei
+Bauarten für dasselbe laufen sonst auseinander.
+
+**Am Rechner auf eine Seite.** Ab 821 px flachere Zellen, Raster auf
+640 px gedeckelt, Raster und Tageskarte nebeneinander. Gemessen: 359 px
+Raster in 758 px Platz. Auf dem Handy bleibt die Zelle quadratisch —
+dort braucht der Daumen die Fläche.
+
+## To-dos
+
+**Verschieben per Griff**, gezogen mit Zeigerereignissen statt
+HTML5-Drag: funktioniert auf dem Handy wie mit der Maus.
+
+Der Griff ist die **einzige** Stelle mit `touch-action:none`. Wäre die
+ganze Zeile ziehbar, ließe sich die Liste auf dem Handy nicht mehr
+scrollen, ohne etwas zu verschieben. Der Durchlauf zieht deshalb einmal
+am Griff (muss sortieren) und einmal daneben (darf nicht).
+
+Geschrieben wird erst beim Loslassen, und nur die Zeilen, deren
+Position sich wirklich geändert hat.
+
+**Handsortierung gewinnt vor der Frist.** Zwei Ordnungen gleichzeitig
+wären nicht erklärbar: man zieht etwas nach oben und es rutscht wieder
+weg. Die Frist steht weiter daneben und wird überfällig rot, sortiert
+aber nicht mehr um.
+
+Dazu Stern für Wichtiges, Notiz je Punkt, und Ändern direkt in der
+Zeile — die wird zum kleinen Formular und wieder zurück.
+
+## Nachgemessen
+
+```
+Wöchentlich ab dem 12. → 12., 19., 26. — und NICHT am 13.
+                          dabei 2 Dokumente in der Ablage, nicht 5
+Doppelklick auf den 20. → angelegt am 20., obwohl der 5. offen war
+Verschieben 05. → 20.   → update, Ansicht folgt
+Woche                   → 7 Tage, Montag bis Sonntag, lückenlos
+Am Rechner              → 359px Raster in 758px Platz
+
+Ziehen am Griff   → 3× update mit sort 0,1,2
+Ziehen daneben    → keine Änderung
+```
+
+Zwei neue Durchläufe, `tests/test-kalender.js` und
+`tests/test-todos.js`. Beide mit Gegenprobe: ohne die Runde „nicht am
+13." wäre auch ein „fällt immer" grün, und ohne „neben dem Griff" auch
+eine Liste, die sich beim Scrollen selbst sortiert.
+
+Nachgezogen: die Behauptung „beim Ändern wird kein `datum` geschrieben"
+stimmt nicht mehr — das Datum **ist** das Verschiebe-Feld. Sie prüft
+jetzt, dass eine Änderung ohne Anfassen des Feldes den Eintrag an
+seinem Tag lässt. Der eingespielte Termin liegt dafür bewusst nicht am
+Monatsersten, sonst wäre „bleibt an seinem Tag" nicht von „nimmt den
+angeklickten Tag" zu unterscheiden.
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:
