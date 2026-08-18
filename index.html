@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-GizvXH6+oPBS5z5I3ILnR8X03JXmowmAeJco7P+LvdQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-b/6uv4fnLadrDRXnI7uiLMEDiscIRakiJcZJuf0W7PA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1649,10 +1649,19 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .mysh-note{flex:0 0 100%;color:var(--text-3);font-size:var(--t-xs)}
 
 /* ── Mein Bereich ──
-   Die Wochenliste borgt sich bewusst das Aussehen von .mysh-row: es ist
-   dieselbe Sorte Zeile (Tag, Zeit, Sache), nur aus mehreren Quellen. Ein
-   zweites Aussehen fuer dasselbe waere nur eine zweite Sprache. */
-.ich-zeile{display:flex;align-items:baseline;gap:var(--s10);padding:var(--s8) 0;
+   Leichter als der Rest der App, mit Absicht. Die anderen Seiten sind
+   Werkzeug fuer den Betrieb; diese hier sieht man morgens einmal an.
+   Deshalb keine Karten mit Fuellung, sondern Blaetter: Abstand statt
+   Kasten, eine Trennlinie nur da, wo wirklich zwei Dinge nebeneinander
+   stehen. */
+.ich-blatt{margin:0 0 var(--s24)}
+.ich-kopf{display:flex;align-items:baseline;justify-content:space-between;
+  gap:var(--s10);margin:0 0 var(--s10)}
+.ich-kopf h3{font-size:var(--t-md);font-weight:650;letter-spacing:var(--ls-eng);margin:0}
+.ich-zahl-klein{font-size:var(--t-2xs);color:var(--text-3);
+  letter-spacing:var(--ls-l);text-transform:uppercase}
+
+.ich-zeile{display:flex;align-items:baseline;gap:var(--s10);padding:var(--s10) 0;
   flex-wrap:wrap;border-top:1px solid var(--line);font-size:var(--t-sm)}
 .ich-zeile:first-child{border-top:none}
 .ich-zeile.heute{font-weight:600}
@@ -1660,9 +1669,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-zeile.heute .ich-tag{color:var(--accent)}
 .ich-was{flex:1;min-width:0}
 .ich-zeit{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--text-2)}
+/* Ort und Notiz stehen unter der Zeile, nicht daneben: auf 320 Pixel
+   waere sonst der Titel das erste, was abgeschnitten wird. */
+.ich-dazu{flex:0 0 100%;color:var(--text-3);font-size:var(--t-xs);
+  line-height:var(--lh);padding-left:calc(88px + var(--s10))}
+@media(max-width:480px){ .ich-dazu{padding-left:0} }
+
 /* Woher die Zeile stammt. Ohne das steht „Zahnarzt" neben „Dienst Hürth"
    und man weiss nicht, was davon der Betrieb sieht und was nicht. */
-.ich-quelle{flex:0 0 auto;font-size:var(--t-2xs);padding:var(--s1) var(--s6);
+.ich-quelle{flex:0 0 auto;font-size:var(--t-2xs);padding:var(--s1) var(--s8);
   border-radius:var(--r-pille);background:var(--auf-2);color:var(--text-3)}
 /* --f-* und --k-* sind Flaechen, keine Textfarben. Als color: waeren sie
    halbdurchsichtig auf halbdurchsichtig — lesbar ist das nicht. Fuer
@@ -1671,19 +1686,32 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-quelle.warn{background:var(--f-warn);color:var(--warm-tx)}
 .ich-quelle.bad{background:var(--f-bad);color:var(--danger-tx)}
 
-/* Monatsraster. Sieben Spalten, feste Zellenhoehe — sonst springt die
-   Hoehe je nach Monat und der Rest der Seite wandert mit. */
-.ich-kal{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--s2)}
+/* ── Monatsraster ──
+   Quadratische Felder ueber aspect-ratio statt fester Hoehe: auf einem
+   breiten Bildschirm wuchs das Raster sonst in die Breite und blieb
+   44 Pixel hoch — sieben Briefkastenschlitze. */
+.ich-monat-nav{display:flex;gap:var(--s4)}
+.ich-pfeil{min-width:38px;min-height:38px;padding:0 var(--s10);border:none;
+  background:none;color:var(--text-2);font-family:var(--font-body);
+  font-size:var(--t-sm);font-weight:600;border-radius:var(--r-xs);cursor:pointer;
+  transition:background .2s var(--ease-ios),color .2s var(--ease-ios)}
+.ich-pfeil:hover{background:var(--auf-1);color:var(--text)}
+.ich-kal{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--s4)}
 .ich-kal .kal-kopf{text-align:center;font-size:var(--t-2xs);color:var(--text-3);
-  padding:var(--s4) 0;letter-spacing:var(--ls-weit)}
-.ich-tagfeld{position:relative;min-height:44px;border:none;background:var(--auf-1);
-  border-radius:var(--r-8);color:var(--text);font-size:var(--t-sm);cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  gap:var(--s2);padding:var(--s4) 0;font-variant-numeric:tabular-nums}
-.ich-tagfeld:hover{background:var(--auf-2)}
+  padding:0 0 var(--s6);letter-spacing:var(--ls-l)}
+.ich-tagfeld{position:relative;aspect-ratio:1;border:none;background:none;
+  border-radius:var(--r-md);color:var(--text-2);font-size:var(--t-sm);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--s4);padding:0;font-variant-numeric:tabular-nums;
+  transition:background .2s var(--ease-ios),color .2s var(--ease-ios)}
+.ich-tagfeld:hover{background:var(--auf-1);color:var(--text)}
 .ich-tagfeld.leer{background:none;cursor:default;pointer-events:none}
-.ich-tagfeld.heute{outline:2px solid var(--accent);outline-offset:-2px;font-weight:700}
-.ich-tagfeld.gewaehlt{background:var(--accent-glow)}
+/* Heute wird gefuellt, nicht umrandet. Ein Ring neben einem Ring (der
+   gewaehlte Tag) liest sich als zwei gleichrangige Zustaende. */
+.ich-tagfeld.heute{background:var(--accent);color:#fff;font-weight:700}
+.ich-tagfeld.heute .ich-punkt{background:rgba(255,255,255,.85)}
+.ich-tagfeld.gewaehlt{outline:2px solid var(--accent);outline-offset:-2px;color:var(--text)}
+.ich-tagfeld.heute.gewaehlt{outline-color:var(--text)}
 /* Punkte statt Zahlen: bei vier Terminen an einem Tag bleibt die Zelle
    sonst nicht mehr lesbar, und die genaue Zahl steht ohnehin darunter. */
 .ich-punkte{display:flex;gap:var(--s2);height:var(--s6)}
@@ -1694,22 +1722,48 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-punkt.dienst{background:var(--accent)}
 .ich-punkt.frei{background:var(--warm-tx)}
 
-.ich-notiz{padding:var(--s12) var(--s14);background:var(--auf-1);
-  border-radius:var(--r-12);margin-bottom:var(--s8)}
-.ich-notiz p{white-space:pre-wrap;word-break:break-word;margin:0 0 var(--s6);
-  font-size:var(--t-sm);line-height:var(--lh-normal)}
+/* ── To-do ── */
+.ich-neu-zeile{display:flex;gap:var(--s8);flex-wrap:wrap}
+.ich-neu-zeile .inp{flex:1 1 150px;min-width:0}
+.ich-neu-zeile .ich-datum{flex:0 1 150px}
+.ich-neu-zeile .btn{flex:0 0 auto}
+.ich-tdo{display:flex;align-items:flex-start;gap:var(--s12);padding:var(--s10) 0;
+  border-top:1px solid var(--line)}
+.ich-tdo:first-child{border-top:none}
+/* 24 Pixel sichtbar, 44 tastbar: das Kaestchen ist das, was man am
+   haeufigsten trifft, und Daumen sind ungenau. */
+.ich-hak{position:relative;flex:0 0 auto;width:24px;height:24px;margin-top:var(--s1);
+  border:2px solid var(--line-2);border-radius:var(--r-xs);background:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s var(--ease-ios),border-color .2s var(--ease-ios)}
+.ich-hak::after{content:"";position:absolute;inset:-10px}
+.ich-hak:hover{border-color:var(--accent)}
+.ich-hak.an{background:var(--accent);border-color:var(--accent);color:#fff}
+.ich-hak svg{width:14px;height:14px;display:none}
+.ich-hak.an svg{display:block}
+.ich-tdo-txt{flex:1;min-width:0;font-size:var(--t-sm);line-height:var(--lh);
+  word-break:break-word}
+.ich-tdo.fertig .ich-tdo-txt{color:var(--text-3);text-decoration:line-through}
+.ich-tdo-frist{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
+.ich-tdo-frist.faellig{color:var(--danger-tx)}
+.ich-tdo .mini-link{flex:0 0 auto}
+
+.ich-notiz{padding:var(--s16) var(--s16);background:var(--auf-1);
+  border-radius:var(--r-md);margin-bottom:var(--s8)}
+.ich-notiz p{white-space:pre-wrap;word-break:break-word;margin:0 0 var(--s8);
+  font-size:var(--t-sm);line-height:var(--lh-weit)}
 .ich-notiz-fuss{display:flex;align-items:center;gap:var(--s10);
   font-size:var(--t-2xs);color:var(--text-3)}
 .ich-notiz-fuss button{margin-left:auto}
 
 .ich-stamm{display:flex;justify-content:space-between;gap:var(--s10);
-  padding:var(--s8) 0;border-top:1px solid var(--line);font-size:var(--t-sm)}
+  padding:var(--s10) 0;border-top:1px solid var(--line);font-size:var(--t-sm)}
 .ich-stamm:first-child{border-top:none}
 .ich-stamm span:first-child{color:var(--text-2)}
 .ich-stamm span:last-child{text-align:right;font-weight:600}
 
 .ich-zahl{display:flex;justify-content:space-between;align-items:baseline;
-  gap:var(--s10);padding:var(--s8) 0;border-top:1px solid var(--line)}
+  gap:var(--s10);padding:var(--s10) 0;border-top:1px solid var(--line)}
 .ich-zahl:first-child{border-top:none}
 .ich-zahl b{font-size:var(--t-xl);font-variant-numeric:tabular-nums}
 .ich-zahl span{font-size:var(--t-sm);color:var(--text-2)}
@@ -2890,21 +2944,24 @@ html{font-size:var(--fs,100%)}
            ============================================================ -->
       <section class="view" id="view-ich">
         <div class="view-head shrink"><h2 id="ichGreet">Mein Bereich</h2>
-          <p id="ichSub">Was dich betrifft – und was nur dir gehört.</p></div>
+          <p id="ichSub">Was dich betrifft.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <div class="pm-tabs" id="ichTabs" style="margin:0 0 14px">
             <button class="pm-tab on" data-ichtab="woche">Woche</button>
             <button class="pm-tab" data-ichtab="kalender">Kalender</button>
+            <button class="pm-tab" data-ichtab="todo">To-do</button>
             <button class="pm-tab" data-ichtab="notizen">Notizen</button>
             <button class="pm-tab" data-ichtab="daten">Ich</button>
           </div>
 
-          <!-- ── WOCHE ── -->
+          <!-- ── WOCHE ──
+               Ohne Kartenrahmen. Die Woche IST der Inhalt der Seite; eine
+               Karte darum ist ein Rahmen um einen Rahmen. -->
           <div id="ichPaneWoche">
-            <div class="card">
-              <div class="karten-kopf">
-                <h3 data-ikon="kalender">Diese Woche</h3>
-                <span class="todo-count" id="ichWocheZahl"></span>
+            <div class="ich-blatt">
+              <div class="ich-kopf">
+                <h3>Diese Woche</h3>
+                <span class="ich-zahl-klein" id="ichWocheZahl"></span>
               </div>
               <div id="ichWocheListe"></div>
             </div>
@@ -2912,83 +2969,109 @@ html{font-size:var(--fs,100%)}
 
           <!-- ── KALENDER ── -->
           <div id="ichPaneKalender" style="display:none">
-            <div class="card">
-              <div class="karten-kopf">
+            <div class="ich-blatt">
+              <div class="ich-kopf">
                 <h3 id="ichMonatLabel">Monat</h3>
-                <div style="display:flex;gap:7px">
-                  <button class="btn btn-ghost btn-sm" id="ichMonatPrev" aria-label="Voriger Monat">‹</button>
-                  <button class="btn btn-ghost btn-sm" id="ichMonatHeute">Heute</button>
-                  <button class="btn btn-ghost btn-sm" id="ichMonatNext" aria-label="Nächster Monat">›</button>
+                <div class="ich-monat-nav">
+                  <button class="ich-pfeil" id="ichMonatPrev" aria-label="Voriger Monat">‹</button>
+                  <button class="ich-pfeil" id="ichMonatHeute">Heute</button>
+                  <button class="ich-pfeil" id="ichMonatNext" aria-label="Nächster Monat">›</button>
                 </div>
               </div>
               <div class="ich-kal" id="ichKalender"></div>
-              <p class="hint" style="margin:10px 0 0">Tippe auf einen Tag, um etwas einzutragen.
-                Deine Einträge sieht nur du – Schichten und Abwesenheiten kommen aus dem Betrieb.</p>
             </div>
-            <div class="card" id="ichTagKarte" style="display:none">
-              <div class="karten-kopf">
+            <div class="ich-blatt" id="ichTagKarte" style="display:none">
+              <div class="ich-kopf">
                 <h3 id="ichTagLabel">Tag</h3>
                 <button class="mini-link" id="ichTagZu">Schließen</button>
               </div>
               <div id="ichTagListe"></div>
-              <div class="row" style="margin-top:10px">
-                <div class="field" style="flex:2 1 160px"><label for="ichTerminTitel">Was?</label>
-                  <input class="inp" id="ichTerminTitel" maxlength="80" placeholder="z. B. Zahnarzt" /></div>
-                <div class="field" style="flex:1 1 90px"><label for="ichTerminZeit">Uhrzeit (optional)</label>
-                  <input class="inp" id="ichTerminZeit" type="time" /></div>
-              </div>
-              <button class="btn btn-primary btn-sm" id="ichTerminAdd">Eintragen</button>
+              <!-- Das Formular liegt hinter einer Aufklappzeile. Wer nur
+                   nachsehen will, was ansteht, sieht keine sechs leeren
+                   Felder; wer eintragen will, ist einen Tipp entfernt. -->
+              <details class="nachfrage ich-neu" id="ichTerminBox">
+                <summary class="nachfrage-text">Etwas eintragen</summary>
+                <div class="row" style="margin-top:10px">
+                  <div class="field" style="flex:2 1 170px"><label for="ichTerminTitel">Was?</label>
+                    <input class="inp" id="ichTerminTitel" maxlength="80" placeholder="z. B. Zahnarzt" /></div>
+                  <div class="field" style="flex:1 1 130px"><label for="ichTerminOrt">Wo? (optional)</label>
+                    <input class="inp" id="ichTerminOrt" maxlength="60" placeholder="z. B. Köln" /></div>
+                </div>
+                <div class="row">
+                  <div class="field" style="flex:1 1 90px"><label for="ichTerminZeit">Von</label>
+                    <input class="inp" id="ichTerminZeit" type="time" /></div>
+                  <div class="field" style="flex:1 1 90px"><label for="ichTerminBis">Bis</label>
+                    <input class="inp" id="ichTerminBis" type="time" /></div>
+                </div>
+                <div class="field"><label for="ichTerminNotiz">Notiz (optional)</label>
+                  <textarea class="inp" id="ichTerminNotiz" rows="2" maxlength="500"
+                    placeholder="Was du dazu wissen musst …"></textarea></div>
+                <button class="btn btn-primary btn-sm" id="ichTerminAdd">Eintragen</button>
+              </details>
             </div>
+          </div>
+
+          <!-- ── TO-DO ──
+               Eigene Punkte, unabhaengig von den Studio-Aufgaben. Die
+               kommen von der Leitung und stehen unter Betrieb; hier steht,
+               was man sich selbst vornimmt. -->
+          <div id="ichPaneTodo" style="display:none">
+            <div class="ich-blatt">
+              <div class="ich-neu-zeile">
+                <input class="inp" id="ichTodoNeu" maxlength="140"
+                  placeholder="Was willst du erledigen?" />
+                <input class="inp ich-datum" id="ichTodoDatum" type="date" aria-label="Bis wann (optional)" />
+                <button class="btn btn-primary btn-sm" id="ichTodoAdd">Hinzu</button>
+              </div>
+            </div>
+            <div class="ich-blatt">
+              <div class="ich-kopf">
+                <h3>Offen</h3>
+                <span class="ich-zahl-klein" id="ichTodoZahl"></span>
+              </div>
+              <div id="ichTodoListe"></div>
+            </div>
+            <details class="nachfrage" id="ichTodoFertigBox" style="display:none">
+              <summary class="nachfrage-text" id="ichTodoFertigText">Erledigtes</summary>
+              <div id="ichTodoFertig"></div>
+            </details>
           </div>
 
           <!-- ── NOTIZEN ── -->
           <div id="ichPaneNotizen" style="display:none">
-            <div class="card">
-              <div class="karten-kopf">
-                <h3 data-ikon="stift">Notizblock</h3>
-                <span class="todo-count" id="ichNotizZahl"></span>
-              </div>
-              <!-- Der Hinweis steht bewusst DA, wo man schreibt, nicht in
-                   einer Fussnote. Und er sagt beides: was die Regel kann
-                   und was sie nicht kann. Ein Versprechen, das die Technik
-                   nicht haelt, waere schlimmer als gar kein Notizblock. -->
-              <p class="hint" style="margin:2px 0 12px">Kein anderes Konto kommt hier heran –
-                auch die Verwaltung nicht. Verschlüsselt ist es aber nicht:
-                wer Zugang zur Datenbank selbst hat, kann es lesen.</p>
-              <div class="field">
-                <label for="ichNotizNeu">Neue Notiz</label>
+            <div class="ich-blatt">
+              <div class="field" style="margin:0">
                 <textarea class="inp" id="ichNotizNeu" rows="3" maxlength="2000"
                   placeholder="Was du dir merken willst …"></textarea>
               </div>
-              <button class="btn btn-primary btn-sm" id="ichNotizAdd">Speichern</button>
+              <button class="btn btn-primary btn-sm" id="ichNotizAdd" style="margin-top:10px">Speichern</button>
+            </div>
+            <div class="ich-kopf" id="ichNotizKopf" style="display:none">
+              <h3>Gespeichert</h3>
+              <span class="ich-zahl-klein" id="ichNotizZahl"></span>
             </div>
             <div id="ichNotizListe"></div>
           </div>
 
           <!-- ── ICH: Nachweise, Stammdaten, eigene Zahlen ── -->
           <div id="ichPaneDaten" style="display:none">
-            <div class="card">
-              <h3 data-ikon="person">Meine Daten</h3>
+            <div class="ich-blatt">
+              <div class="ich-kopf"><h3>Meine Daten</h3>
+                <button class="mini-link" id="ichProfilBtn">Bearbeiten</button></div>
               <div id="ichStamm"></div>
-              <button class="btn btn-ghost btn-sm" id="ichProfilBtn" style="margin-top:10px">Profil bearbeiten</button>
             </div>
-            <div class="card">
-              <div class="karten-kopf">
-                <h3 data-ikon="blatt">Meine Nachweise</h3>
-                <span class="todo-count" id="ichCertZahl"></span>
+            <div class="ich-blatt">
+              <div class="ich-kopf">
+                <h3>Meine Nachweise</h3>
+                <span class="ich-zahl-klein" id="ichCertZahl"></span>
               </div>
-              <p class="hint" style="margin:2px 0 12px">Eintragen kann sie nur die Verwaltung.
-                Fehlt etwas oder stimmt ein Datum nicht, sag Bescheid.</p>
               <div id="ichCerts"></div>
             </div>
-            <div class="card" id="ichZahlenKarte">
-              <div class="karten-kopf">
-                <h3 data-ikon="trendAuf">Meine Zahlen</h3>
-                <span class="todo-count">letzte 90 Tage</span>
+            <div class="ich-blatt" id="ichZahlenKarte">
+              <div class="ich-kopf">
+                <h3>Meine Zahlen</h3>
+                <span class="ich-zahl-klein">90 Tage</span>
               </div>
-              <!-- Nur die eigenen. Eine Rangliste waere schnell gebaut und
-                   macht aus einem persoenlichen Bereich einen Pranger. -->
-              <p class="hint" style="margin:2px 0 12px">Nur deine eigenen – niemand wird hier verglichen.</p>
               <div id="ichZahlen"></div>
             </div>
           </div>
@@ -11231,31 +11314,30 @@ function renderMyShifts(){
 /* ══════════════════════════════════════════════════════════════════════
    MEIN BEREICH
    ══════════════════════════════════════════════════════════════════════
-   Vier Reiter, zwei Sorten Daten:
+   Fuenf Reiter, zwei Sorten Daten:
 
-     aus dem Betrieb   Schichten, Abwesenheiten, Aufgaben, Nachweise,
-                       Probetrainings — werden gelesen, nie hier
-                       geschrieben. Diese Seite ist eine zweite Brille
-                       auf vorhandene Daten, keine zweite Ablage.
+     aus dem Betrieb   Schichten, Abwesenheiten, Studio-Aufgaben,
+                       Nachweise, Probetrainings — werden gelesen, nie
+                       hier geschrieben. Diese Seite ist eine zweite
+                       Brille auf vorhandene Daten, keine zweite Ablage.
 
-     nur meins         Termine und Notizen unter privat/<uid>/. Die
-                       einzigen, die hier entstehen — und die einzigen,
-                       die sonst niemand sieht.
+     nur meins         Termine, eigene To-dos und Notizen unter
+                       privat/<uid>/. Die einzigen, die hier entstehen.
 
    Warum die Trennung sichtbar bleibt: In der Wochenliste steht neben
    jeder Zeile, woher sie kommt. Ohne das steht „Zahnarzt" neben „Dienst
    Hürth" und niemand weiss mehr, was die Verwaltung sieht und was nicht.
    ══════════════════════════════════════════════════════════════════════ */
 var ICHPANES = { woche:'ichPaneWoche', kalender:'ichPaneKalender',
-                 notizen:'ichPaneNotizen', daten:'ichPaneDaten' };
+                 todo:'ichPaneTodo', notizen:'ichPaneNotizen',
+                 daten:'ichPaneDaten' };
 var _ichTab='woche';
 var _ichMonat=null;              // erster Tag des gezeigten Monats
 var _ichTagGewaehlt=null;        // 'YYYY-MM-DD' oder null
-var _ichTermine=[], _ichNotizen=[];
-var _ichTerminUnsub=null, _ichNotizUnsub=null;
+var _ichTermine=[], _ichNotizen=[], _ichTodos=[];
+var _ichTerminUnsub=null, _ichNotizUnsub=null, _ichTodoUnsub=null;
 var _ichBetrieb={ schichten:[], abwesend:[] };
 var _ichBetriebFuer='';          // fuer welchen Zeitraum das gilt
-var _ichZahlen=null;
 
 function privatRef(){
   return (session && session.uid) ? S('privat').doc(session.uid) : null;
@@ -11273,6 +11355,12 @@ function ichHorchen(){
       if(currentView==='ich'){ renderIchWoche(); renderIchKalender(); }
     }, function(e){ console.warn('Termine:', e && e.code); });
   }
+  if(!_ichTodoUnsub){
+    _ichTodoUnsub=ref.collection('aufgaben').onSnapshot(function(sn){
+      _ichTodos=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      if(currentView==='ich'){ renderIchTodos(); renderIchWoche(); renderIchKalender(); }
+    }, function(e){ console.warn('Aufgaben:', e && e.code); });
+  }
   if(!_ichNotizUnsub){
     _ichNotizUnsub=ref.collection('notizen').orderBy('ts','desc').limit(200)
       .onSnapshot(function(sn){
@@ -11284,8 +11372,10 @@ function ichHorchen(){
 function ichAufraeumen(){
   if(_ichTerminUnsub){ _ichTerminUnsub(); _ichTerminUnsub=null; }
   if(_ichNotizUnsub){ _ichNotizUnsub(); _ichNotizUnsub=null; }
-  _ichTermine=[]; _ichNotizen=[]; _ichBetrieb={ schichten:[], abwesend:[] };
-  _ichBetriebFuer=''; _ichZahlen=null; _ichTagGewaehlt=null; _ichMonat=null;
+  if(_ichTodoUnsub){ _ichTodoUnsub(); _ichTodoUnsub=null; }
+  _ichTermine=[]; _ichNotizen=[]; _ichTodos=[];
+  _ichBetrieb={ schichten:[], abwesend:[] };
+  _ichBetriebFuer=''; _ichTagGewaehlt=null; _ichMonat=null;
 }
 
 /* Schichten und Abwesenheiten fuer einen Zeitraum, ueber alle eigenen
@@ -11344,6 +11434,13 @@ function ichTagName(key){
 }
 var ABW_NAME={ urlaub:'Urlaub', krank:'Krank', frei:'Frei' };
 
+/* Zeitspanne als ein Stueck. „09:30–11:00" statt zweier Felder, und bei
+   nur einem Ende eben nur das eine. */
+function ichSpanne(von, bis){
+  if(von && bis) return von+'–'+bis;
+  return von || bis || '';
+}
+
 /* Alles, was an einem Tag fuer mich ansteht — aus beiden Welten. */
 function ichEintraegeFuer(key){
   var raus=[];
@@ -11351,30 +11448,50 @@ function ichEintraegeFuer(key){
     if(x.date!==key) return;
     raus.push({ art:'dienst', zeit:(x.from||''),
       text:'Dienst · '+studioName(x.sk),
-      zusatz:(x.from||'')+'–'+(x.to||''), notiz:x.note||'' });
+      zusatz:ichSpanne(x.from, x.to), dazu:x.note||'' });
   });
   _ichBetrieb.abwesend.forEach(function(x){
     if((x.from||'')>key || (x.to||'')<key) return;
     raus.push({ art:'frei', zeit:'',
       text:(ABW_NAME[x.type]||'Abwesend')+(x.status==='offen'?' (beantragt)':''),
-      zusatz:'', notiz:x.note||'' });
+      zusatz:'', dazu:x.note||'' });
   });
   _ichTermine.forEach(function(t){
     if(t.datum!==key) return;
+    var dazu=[];
+    if(t.ort) dazu.push(t.ort);
+    if(t.notiz) dazu.push(t.notiz);
     raus.push({ art:'privat', zeit:t.zeit||'', text:t.titel||'Eintrag',
-      zusatz:t.zeit||'', notiz:'', id:t.id });
+      zusatz:ichSpanne(t.zeit, t.bis), dazu:dazu.join(' · '), id:t.id });
+  });
+  // Eigene To-dos mit Frist stehen an ihrem Tag mit drin.
+  _ichTodos.forEach(function(t){
+    if(t.erledigt || t.frist!==key) return;
+    raus.push({ art:'todo', zeit:'', text:t.text||'To-do', zusatz:'', dazu:'' });
   });
   (session && session.studioKeys || []).forEach(function(sk){
     (cachedTodos[sk]||[]).forEach(function(t){
       if(t.assignedTo!==session.uid || isDone(t) || isArchived(t)) return;
       if(!t.due || ymd(new Date(t.due))!==key) return;
-      raus.push({ art:'aufgabe', zeit:'', text:t.title||'Aufgabe', zusatz:'', notiz:'' });
+      raus.push({ art:'aufgabe', zeit:'', text:t.title||'Aufgabe', zusatz:'', dazu:'' });
     });
   });
   return raus.sort(function(a,b){ return (a.zeit||'~').localeCompare(b.zeit||'~'); });
 }
 
-var ICH_QUELLE={ dienst:'Dienst', frei:'Frei', privat:'nur du', aufgabe:'Aufgabe' };
+var ICH_QUELLE={ dienst:'Dienst', frei:'Frei', privat:'nur du',
+                 todo:'To-do', aufgabe:'Aufgabe' };
+
+function ichZeileHTML(x, tagText, heute){
+  return '<div class="ich-zeile'+(heute?' heute':'')+'">'+
+    (tagText!==null ? '<span class="ich-tag">'+esc(tagText)+'</span>' : '')+
+    '<span class="ich-was">'+esc(x.text)+'</span>'+
+    (x.zusatz?'<span class="ich-zeit">'+esc(x.zusatz)+'</span>':'')+
+    '<span class="ich-quelle'+(x.art==='privat'||x.art==='todo'?' privat':'')+'">'+
+      esc(ICH_QUELLE[x.art]||'')+'</span>'+
+    (x.dazu?'<div class="ich-dazu">'+esc(x.dazu)+'</div>':'')+
+    '</div>';
+}
 
 function renderIchWoche(){
   var box=$('ichWocheListe'), zahl=$('ichWocheZahl'); if(!box) return;
@@ -11387,19 +11504,12 @@ function renderIchWoche(){
     var e=ichEintraegeFuer(key); n+=e.length;
     if(!e.length) return '';
     return e.map(function(x, idx){
-      return '<div class="ich-zeile'+(key===heute?' heute':'')+'">'+
-        '<span class="ich-tag">'+esc(idx===0?ichTagName(key):'')+'</span>'+
-        '<span class="ich-was">'+esc(x.text)+
-          (x.notiz?' <span style="color:var(--text-3)">· '+esc(x.notiz)+'</span>':'')+'</span>'+
-        (x.zusatz?'<span class="ich-zeit">'+esc(x.zusatz)+'</span>':'')+
-        '<span class="ich-quelle'+(x.art==='privat'?' privat':'')+'">'+
-          esc(ICH_QUELLE[x.art]||'')+'</span>'+
-        '</div>';
+      return ichZeileHTML(x, idx===0?ichTagName(key):'', key===heute);
     }).join('');
   }).join('');
   if(zahl) zahl.textContent = n ? (n===1?'1 Eintrag':n+' Einträge') : '';
   box.innerHTML = html || emptyHTML('Diese Woche ist nichts eingetragen',
-    'Weder Dienst noch Termine. Über den Kalender trägst du dir selbst etwas ein.', 'kalender');
+    'Über den Kalender trägst du dir selbst etwas ein.', 'kalender');
 }
 
 /* ── Monatsraster ── */
@@ -11446,27 +11556,84 @@ function renderIchTag(){
     return '<div class="ich-zeile">'+
       '<span class="ich-was">'+esc(x.text)+'</span>'+
       (x.zusatz?'<span class="ich-zeit">'+esc(x.zusatz)+'</span>':'')+
-      '<span class="ich-quelle'+(x.art==='privat'?' privat':'')+'">'+
+      '<span class="ich-quelle'+(x.art==='privat'||x.art==='todo'?' privat':'')+'">'+
         esc(ICH_QUELLE[x.art]||'')+'</span>'+
       (x.art==='privat'
         ? '<button class="mini-link" data-ichtermweg="'+esc(x.id)+'">Löschen</button>'
         : '')+
+      (x.dazu?'<div class="ich-dazu">'+esc(x.dazu)+'</div>':'')+
       '</div>';
   }).join('') : emptyMini('Für diesen Tag ist nichts eingetragen.');
 }
 
+/* ── Eigene To-dos ──
+   Getrennt von den Studio-Aufgaben unter Betrieb: die kommen von der
+   Leitung und gehoeren einem Studio. Was man sich selbst vornimmt,
+   gehoert niemandem sonst und soll auch niemanden sonst erreichen. */
+var HAKEN_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
+  'stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<path d="M5 13l4 4L19 7"/></svg>';
+
+function ichTodoZeile(t){
+  var heute=ymd(new Date());
+  var frist='';
+  if(t.frist){
+    var spaet = !t.erledigt && t.frist<heute;
+    var txt = t.frist===heute ? 'heute fällig'
+      : new Date(t.frist+'T12:00:00').toLocaleDateString('de-DE',
+          {weekday:'short',day:'2-digit',month:'2-digit'});
+    frist='<span class="ich-tdo-frist'+(spaet?' faellig':'')+'">'+
+      esc(spaet?'überfällig · '+txt:txt)+'</span>';
+  }
+  return '<div class="ich-tdo'+(t.erledigt?' fertig':'')+'">'+
+    '<button class="ich-hak'+(t.erledigt?' an':'')+'" data-ichtdo="'+esc(t.id)+'" '+
+      'role="checkbox" aria-checked="'+(t.erledigt?'true':'false')+'" '+
+      'aria-label="'+esc((t.erledigt?'Wieder öffnen: ':'Abhaken: ')+(t.text||''))+'">'+
+      HAKEN_SVG+'</button>'+
+    '<span class="ich-tdo-txt">'+esc(t.text||'')+frist+'</span>'+
+    '<button class="mini-link" data-ichtdoweg="'+esc(t.id)+'">Löschen</button>'+
+    '</div>';
+}
+
+function renderIchTodos(){
+  var box=$('ichTodoListe'), zahl=$('ichTodoZahl');
+  var fBox=$('ichTodoFertig'), fWrap=$('ichTodoFertigBox'), fTxt=$('ichTodoFertigText');
+  if(!box) return;
+  /* Sortierung: was eine Frist hat, zuerst und nach Datum. Ohne Frist
+     danach, neueste oben — sonst versinkt der frisch getippte Punkt
+     unter zwanzig alten. */
+  var offen=_ichTodos.filter(function(t){ return !t.erledigt; })
+    .sort(function(a,b){
+      if(!!a.frist !== !!b.frist) return a.frist ? -1 : 1;
+      if(a.frist && b.frist) return a.frist.localeCompare(b.frist);
+      return (b.ts||0)-(a.ts||0);
+    });
+  var fertig=_ichTodos.filter(function(t){ return t.erledigt; })
+    .sort(function(a,b){ return (b.erledigtAm||b.ts||0)-(a.erledigtAm||a.ts||0); });
+
+  if(zahl) zahl.textContent = offen.length
+    ? (offen.length===1?'1 offen':offen.length+' offen') : '';
+  box.innerHTML = offen.length ? offen.map(ichTodoZeile).join('')
+    : emptyHTML('Nichts offen', 'Trag oben ein, was du dir vornimmst.', 'hakenKreis');
+
+  if(fWrap) fWrap.style.display = fertig.length ? '' : 'none';
+  if(fTxt) fTxt.textContent = fertig.length===1 ? '1 erledigt' : fertig.length+' erledigt';
+  if(fBox) fBox.innerHTML = fertig.map(ichTodoZeile).join('');
+}
+
 function renderIchNotizen(){
-  var box=$('ichNotizListe'), zahl=$('ichNotizZahl'); if(!box) return;
+  var box=$('ichNotizListe'), zahl=$('ichNotizZahl'), kopf=$('ichNotizKopf');
+  if(!box) return;
   if(zahl) zahl.textContent=_ichNotizen.length
     ? (_ichNotizen.length===1?'1 Notiz':_ichNotizen.length+' Notizen') : '';
+  if(kopf) kopf.style.display=_ichNotizen.length ? '' : 'none';
   box.innerHTML = _ichNotizen.length ? _ichNotizen.map(function(n){
     return '<div class="ich-notiz">'+
       '<p>'+esc(n.text||'')+'</p>'+
       '<div class="ich-notiz-fuss"><span>'+esc(fmtDateTime(n.ts))+'</span>'+
       '<button class="mini-link" data-ichnotizweg="'+esc(n.id)+'">Löschen</button></div>'+
       '</div>';
-  }).join('') : emptyHTML('Noch keine Notiz',
-    'Was du hier schreibst, bleibt bei dir.', 'stift');
+  }).join('') : emptyHTML('Noch keine Notiz', 'Was du hier schreibst, bleibt bei dir.', 'stift');
 }
 
 function renderIchDaten(){
@@ -11542,13 +11709,15 @@ function ichZahlenLaden(){
         if(t.assignedTo===session.uid && isDone(t)) meine++;
       });
     });
+    var eigene=_ichTodos.filter(function(t){ return t.erledigt; }).length;
     box.innerHTML=
       '<div class="ich-zahl"><span>Probetrainings</span><b>'+rows.length+'</b></div>'+
       '<div class="ich-zahl"><span>davon abgeschlossen</span><b>'+ab+'</b></div>'+
       (rows.length
         ? '<div class="ich-zahl"><span>Quote</span><b>'+quote+' %</b></div>'
         : '')+
-      '<div class="ich-zahl"><span>erledigte Aufgaben</span><b>'+meine+'</b></div>';
+      '<div class="ich-zahl"><span>erledigte Aufgaben</span><b>'+meine+'</b></div>'+
+      '<div class="ich-zahl"><span>eigene To-dos erledigt</span><b>'+eigene+'</b></div>';
   }).catch(function(){
     box.innerHTML=emptyMini('Die Zahlen lassen sich gerade nicht laden.');
   });
@@ -11584,6 +11753,7 @@ function ichReiterZeigen(t){
     ichBetriebLaden(ymd(a), ymd(b)).then(renderIchKalender);
     renderIchKalender();
   }
+  if(t==='todo') renderIchTodos();
   if(t==='notizen') renderIchNotizen();
   if(t==='daten') renderIchDaten();
   foldAufbauen();
@@ -16920,12 +17090,25 @@ function bindActions(){
     if(!_ichTagGewaehlt){ toast('Bitte zuerst einen Tag wählen.',true); return; }
     var titel=($('ichTerminTitel').value||'').trim();
     if(!titel){ toast('Bitte eintragen, worum es geht.',true); $('ichTerminTitel').focus(); return; }
-    var zeit=($('ichTerminZeit').value||'').trim();
+    var von=($('ichTerminZeit').value||'').trim();
+    var bis=($('ichTerminBis').value||'').trim();
+    /* Ein Ende vor dem Anfang ist fast immer ein Vertipper. Abweisen
+       statt still speichern: sonst steht spaeter „14:00–09:00" im
+       Kalender und niemand weiss, was gemeint war. */
+    if(von && bis && bis<von){
+      toast('Das Ende liegt vor dem Anfang.',true); $('ichTerminBis').focus(); return;
+    }
     withBusy(termAdd,function(){
       return ref.collection('termine').add({
-        datum:_ichTagGewaehlt, titel:titel, zeit:zeit||null, ts:Date.now()
+        datum:_ichTagGewaehlt, titel:titel,
+        zeit:von||null, bis:bis||null,
+        ort:($('ichTerminOrt').value||'').trim()||null,
+        notiz:($('ichTerminNotiz').value||'').trim()||null,
+        ts:Date.now()
       }).then(function(){
-        $('ichTerminTitel').value=''; $('ichTerminZeit').value='';
+        ['ichTerminTitel','ichTerminZeit','ichTerminBis','ichTerminOrt','ichTerminNotiz']
+          .forEach(function(id){ var f=$(id); if(f) f.value=''; });
+        var box=$('ichTerminBox'); if(box) box.open=false;
         toast('Eingetragen ✓');
       }).catch(function(e){ toast(errMsg(e),true); });
     });
@@ -16938,6 +17121,57 @@ function bindActions(){
       .then(function(){ toast('Gelöscht ✓'); })
       .catch(function(e){ toast(errMsg(e),true); });
   });
+
+  /* ── Eigene To-dos ── */
+  var tdAdd=$('ichTodoAdd'), tdFeld=$('ichTodoNeu');
+  function todoAnlegen(){
+    var ref=privatRef(); if(!ref) return;
+    var text=(tdFeld.value||'').trim();
+    if(!text){ toast('Da steht noch nichts.',true); tdFeld.focus(); return; }
+    var frist=($('ichTodoDatum').value||'').trim();
+    withBusy(tdAdd,function(){
+      return ref.collection('aufgaben').add({
+        text:text, erledigt:false, frist:frist||null, ts:Date.now()
+      }).then(function(){
+        tdFeld.value=''; $('ichTodoDatum').value='';
+        tdFeld.focus();   // wer eines eintraegt, traegt meist zwei ein
+      }).catch(function(e){ toast(errMsg(e),true); });
+    });
+  }
+  if(tdAdd) tdAdd.addEventListener('click', todoAnlegen);
+  if(tdFeld) tdFeld.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); todoAnlegen(); }
+  });
+
+  /* Abhaken und Löschen für beide Listen — offen und erledigt. Ein
+     Zuhoerer je Liste statt einer je Zeile: die Zeilen werden bei jeder
+     Aenderung neu gebaut. */
+  function todoKlicks(box){
+    if(!box) return;
+    box.addEventListener('click',function(e){
+      var ref=privatRef(); if(!ref) return;
+      var hak=e.target.closest('[data-ichtdo]');
+      if(hak){
+        var id=hak.getAttribute('data-ichtdo');
+        var t=_ichTodos.filter(function(x){ return x.id===id; })[0];
+        if(!t) return;
+        var neu=!t.erledigt;
+        // Sofort umschalten, nicht erst wenn der Server antwortet.
+        hak.classList.toggle('an', neu);
+        ref.collection('aufgaben').doc(id)
+          .update({ erledigt:neu, erledigtAm: neu?Date.now():null })
+          .catch(function(e){ hak.classList.toggle('an', !neu); toast(errMsg(e),true); });
+        return;
+      }
+      var weg=e.target.closest('[data-ichtdoweg]');
+      if(weg){
+        ref.collection('aufgaben').doc(weg.getAttribute('data-ichtdoweg')).delete()
+          .catch(function(e){ toast(errMsg(e),true); });
+      }
+    });
+  }
+  todoKlicks($('ichTodoListe'));
+  todoKlicks($('ichTodoFertig'));
 
   var nAdd=$('ichNotizAdd');
   if(nAdd) nAdd.addEventListener('click',function(){

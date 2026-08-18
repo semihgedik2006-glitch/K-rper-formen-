@@ -529,6 +529,35 @@ in einer, fehlt ihm entweder der Fokus-Käfig oder Escape.
 Acht Sekunden. Für alles, was löscht. Zusätzlich `confirm()`, wenn die
 Wirkung über den eigenen Bildschirm hinausgeht (14 Studios, alle Kollegen).
 
+### Blatt `.ich-blatt` — Abstand statt Kasten
+Für Seiten, die man **ansieht** statt bedient. Kein Grund, kein Rahmen,
+keine Füllung: nur ein Abschnitt mit `margin-bottom` und einer
+Überschriftenzeile `.ich-kopf`. Trennlinien nur zwischen Zeilen
+innerhalb eines Blatts.
+
+`.card` bleibt für alles, wo etwas **getan** wird — Formulare, Listen
+mit Aktionen, alles mit einem Knopf darin. Faustregel: brauchst du einen
+Rahmen, damit klar ist, wo der Klickbereich aufhört? Dann `.card`.
+Liest man nur? Dann `.ich-blatt`.
+
+### Prüfe jede `var(--…)`, bevor du den Testlauf startest
+Eine undefinierte CSS-Variable erzeugt **keine Fehlermeldung**. Die
+Eigenschaft wird ungültig, das Element sieht eben anders aus, und kein
+Durchlauf meldet etwas. Am 17.8. wären so die Kalenderpunkte unsichtbar
+geworden (`--s5` gibt es nicht), am 18.8. hätte es fünf weitere
+getroffen (`--r-8`, `--r-12`, `--s14`, `--lh-locker`, `--ls-weit`).
+
+Die Leitern heißen **nicht** nach ihrem Pixelwert:
+
+```
+Rundung    --r-xs 8 · --r-sm 11 · --r-md 14 · --r-lg 18 · --r-pille · --r-rund
+Abstand    --s1 2 4 6 8 10 12 16 20 24 32 40 48 56 72   (kein --s5, kein --s14)
+Zeilen     --lh-1 · --lh-eng · --lh · --lh-weit
+Laufweite  --ls-eng · --ls-s · --ls-m · --ls-l
+```
+
+Nach jedem neuen CSS-Block einmal gegenlesen, welche es wirklich gibt.
+
 ### Herkunftsmarke `.ich-quelle`
 Eine kleine Plakette am Ende einer Zeile, die sagt, **woher** die Zeile
 kommt. Gebaut für „Mein Bereich", wo Betriebsdaten und Privates

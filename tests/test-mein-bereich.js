@@ -1,20 +1,19 @@
 /* ── „Mein Bereich" ─────────────────────────────────────────────────
    Aus dem Betrieb gewuenscht: ein Bereich, der fuer jeden selber ist.
 
-   Vier Reiter, zwei Sorten Daten. Aus dem Betrieb gelesen (Schichten,
-   Abwesenheiten, Aufgaben, Nachweise, Probetrainings) und nur meins
-   (Termine, Notizen unter privat/<uid>/).
+   Fuenf Reiter, zwei Sorten Daten. Aus dem Betrieb gelesen (Schichten,
+   Abwesenheiten, Studio-Aufgaben, Nachweise, Probetrainings) und nur
+   meins (Termine, eigene To-dos, Notizen unter privat/<uid>/).
 
    Was dieser Durchlauf wirklich pruefen muss, ist nicht „der Reiter ist
    da". Es sind drei Dinge, bei denen ein Fehler teuer waere:
 
      1. Was beim Anlegen WIRKLICH geschrieben wird — und wohin. Landet
-        eine Notiz versehentlich in einer geteilten Sammlung, ist die
-        Zusage „das sieht niemand ausser dir" gebrochen, und zwar
-        unbemerkt.
-     2. Dass der Hinweis am Notizblock beides sagt. „Niemand sonst" ohne
-        „nicht verschluesselt" waere ein Versprechen, das die Technik
-        nicht haelt.
+        eine Notiz oder ein To-do versehentlich in einer geteilten
+        Sammlung, sieht es die Leitung, und zwar unbemerkt.
+     2. Dass der Bereich leicht bleibt. Erklaerungsabsaetze schleichen
+        sich zurueck; drei Saetze spaeter steht wieder einer ueber der
+        Eingabe. Also: keine langen Hinweistexte hier.
      3. Dass keine Flaeche leer bleibt. Ein Reiter, hinter dem nichts
         steht, sieht kaputt aus — auch wenn er nur nichts zu zeigen hat.
 
@@ -91,26 +90,28 @@ function pruefe(bedingung, meldung) {
     pruefe(ankunft.stelle === 1,
       'STELLE: „Mein Bereich" steht an Position ' + ankunft.stelle +
       ' statt an zweiter — bei sechs Einträgen rutscht er sonst aus dem Bild');
-    ['woche', 'kalender', 'notizen', 'daten'].forEach(t => {
+    ['woche', 'kalender', 'todo', 'notizen', 'daten'].forEach(t => {
       pruefe(ankunft.reiter.indexOf(t) >= 0, 'FEHLT: der Reiter „' + t + '"');
     });
   }
 
   // ══ 2. Jeder Reiter zeigt etwas — keiner bleibt leer ══
-  for (const t of ['woche', 'kalender', 'notizen', 'daten']) {
+  for (const t of ['woche', 'kalender', 'todo', 'notizen', 'daten']) {
     const r = await p.evaluate(async (tab) => {
       const b = document.querySelector('[data-ichtab="' + tab + '"]');
       if (!b) return { fehlt: true };
       b.click();
       await new Promise(r => setTimeout(r, 450));
       const pane = { woche: 'ichPaneWoche', kalender: 'ichPaneKalender',
-                     notizen: 'ichPaneNotizen', daten: 'ichPaneDaten' }[tab];
+                     todo: 'ichPaneTodo', notizen: 'ichPaneNotizen',
+                     daten: 'ichPaneDaten' }[tab];
       const el = document.getElementById(pane);
       if (!el) return { keineFlaeche: true };
       const sichtbar = getComputedStyle(el).display !== 'none';
       const text = (el.innerText || '').trim();
       // Sind die ANDEREN Flaechen auch wirklich weg?
-      const andere = ['ichPaneWoche', 'ichPaneKalender', 'ichPaneNotizen', 'ichPaneDaten']
+      const andere = ['ichPaneWoche', 'ichPaneKalender', 'ichPaneTodo',
+                      'ichPaneNotizen', 'ichPaneDaten']
         .filter(id => id !== pane)
         .filter(id => {
           const x = document.getElementById(id);
@@ -133,7 +134,8 @@ function pruefe(bedingung, meldung) {
      Punkt 2 auch dann gruen, wenn schlicht alles immer sichtbar ist. */
   {
     const r = await p.evaluate(async () => {
-      const vorher = ['ichPaneWoche', 'ichPaneKalender', 'ichPaneNotizen', 'ichPaneDaten']
+      const vorher = ['ichPaneWoche', 'ichPaneKalender', 'ichPaneTodo',
+                      'ichPaneNotizen', 'ichPaneDaten']
         .filter(id => getComputedStyle(document.getElementById(id)).display !== 'none');
       const b = document.querySelector('[data-ichtab="gibtesnicht"]');
       return { vorher, erfundenDa: !!b };
@@ -214,17 +216,38 @@ function pruefe(bedingung, meldung) {
       await new Promise(r => setTimeout(r, 250));
       const offen = getComputedStyle(document.getElementById('ichTagKarte')).display !== 'none';
 
+      // Das Formular liegt seit dem 18.8. hinter einer Aufklappzeile.
+      const box = document.getElementById('ichTerminBox');
+      const zuAnfang = box ? box.open : null;
+      if (box) box.open = true;
+      await new Promise(r => setTimeout(r, 120));
+
       // GEGENPROBE: ohne Titel darf nichts geschrieben werden
       document.getElementById('ichTerminTitel').value = '';
       document.getElementById('ichTerminAdd').click();
       await new Promise(r => setTimeout(r, 300));
       const nachLeer = window.__schreib.length;
 
+      /* GEGENPROBE: Ende vor dem Anfang. Das ist fast immer ein
+         Vertipper — still gespeichert stuende spaeter „14:00-09:00"
+         im Kalender und niemand wuesste, was gemeint war. */
+      document.getElementById('ichTerminTitel').value = 'Verdreht';
+      document.getElementById('ichTerminZeit').value = '14:00';
+      document.getElementById('ichTerminBis').value = '09:00';
+      document.getElementById('ichTerminAdd').click();
+      await new Promise(r => setTimeout(r, 300));
+      const nachVerdreht = window.__schreib.length;
+
       document.getElementById('ichTerminTitel').value = 'Zahnarzt';
       document.getElementById('ichTerminZeit').value = '09:30';
+      document.getElementById('ichTerminBis').value = '10:15';
+      document.getElementById('ichTerminOrt').value = 'Köln';
+      document.getElementById('ichTerminNotiz').value = 'Karte mitnehmen';
       document.getElementById('ichTerminAdd').click();
       await new Promise(r => setTimeout(r, 400));
-      return { key, offen, zuVorher, nachLeer, schreib: window.__schreib };
+      return { key, offen, zuVorher, nachLeer, nachVerdreht, zuAnfang,
+               schreib: window.__schreib,
+               zuDanach: box ? box.open : null };
     });
     console.log('Termin geschrieben:', JSON.stringify(r.schreib));
     pruefe(r.zuVorher === 'none', 'TAGESKARTE: steht offen, bevor ein Tag gewählt wurde');
@@ -245,7 +268,87 @@ function pruefe(bedingung, meldung) {
         ', angeklickt war ' + r.key);
       pruefe(t.daten && t.daten.zeit === '09:30',
         'ZEIT: geschrieben wurde ' + JSON.stringify(t.daten && t.daten.zeit));
+      pruefe(t.daten && t.daten.bis === '10:15',
+        'ENDE: geschrieben wurde ' + JSON.stringify(t.daten && t.daten.bis));
+      pruefe(t.daten && t.daten.ort === 'Köln',
+        'ORT: geschrieben wurde ' + JSON.stringify(t.daten && t.daten.ort));
+      pruefe(t.daten && t.daten.notiz === 'Karte mitnehmen',
+        'NOTIZ: geschrieben wurde ' + JSON.stringify(t.daten && t.daten.notiz));
     }
+    pruefe(r.nachVerdreht === r.nachLeer,
+      'GEGENPROBE: „14:00 bis 09:00" wurde gespeichert — ein Ende vor dem ' +
+      'Anfang ist ein Vertipper und gehört abgewiesen');
+    /* Zugeklappt beim Oeffnen: wer nur nachsehen will, was ansteht, soll
+       nicht durch sechs leere Felder scrollen. */
+    pruefe(r.zuAnfang === false,
+      'FORMULAR: das Eintragefeld steht schon offen, bevor jemand es aufklappt');
+    pruefe(r.zuDanach === false,
+      'FORMULAR: nach dem Eintragen bleibt es offen stehen');
+  }
+
+  /* ══ 4b. Eigene To-dos ══
+     Der Punkt, an dem es teuer wird, ist derselbe wie beim Termin: WOHIN
+     wird geschrieben. Eine To-do-Liste, die versehentlich in den
+     Studio-Aufgaben landet, erscheint bei der Leitung im Betrieb — und
+     das merkt man erst, wenn jemand fragt, was „Steuererklärung" im
+     Putzplan zu suchen hat. */
+  {
+    const r = await p.evaluate(async () => {
+      document.querySelector('[data-ichtab="todo"]').click();
+      await new Promise(r => setTimeout(r, 350));
+      window.__schreib = [];
+
+      // GEGENPROBE: leer legt nichts an
+      document.getElementById('ichTodoNeu').value = '   ';
+      document.getElementById('ichTodoAdd').click();
+      await new Promise(r => setTimeout(r, 300));
+      const nachLeer = window.__schreib.length;
+
+      document.getElementById('ichTodoNeu').value = 'Steuerunterlagen sortieren';
+      document.getElementById('ichTodoDatum').value = '2026-09-04';
+      document.getElementById('ichTodoAdd').click();
+      await new Promise(r => setTimeout(r, 400));
+
+      // Und einmal ohne Frist — der haeufigere Fall
+      window.__schreibOhne = null;
+      const vorher = window.__schreib.length;
+      document.getElementById('ichTodoNeu').value = 'Zweiter Punkt';
+      document.getElementById('ichTodoAdd').click();
+      await new Promise(r => setTimeout(r, 350));
+
+      return {
+        nachLeer, vorher, schreib: window.__schreib,
+        feldLeer: document.getElementById('ichTodoNeu').value === '',
+        hatKaestchen: !!document.querySelector('#ichTodoListe .ich-hak, #ichPaneTodo .ich-hak')
+      };
+    });
+    console.log('To-do geschrieben:', JSON.stringify(r.schreib));
+    pruefe(r.nachLeer === 0,
+      'GEGENPROBE: ein leeres To-do wurde geschrieben (' + r.nachLeer + ')');
+    const td = r.schreib[0];
+    if (!td) {
+      errs.push('NICHTS GESCHRIEBEN: „Hinzu" legt kein To-do an');
+    } else {
+      pruefe(/^privat\/[^/]+\/aufgaben\//.test(td.pfad),
+        'FALSCHER PFAD: das To-do landet unter „' + td.pfad +
+        '" — in einer geteilten Sammlung sähe es die Leitung');
+      pruefe(td.daten && td.daten.text === 'Steuerunterlagen sortieren',
+        'INHALT: geschrieben wurde ' + JSON.stringify(td.daten && td.daten.text));
+      pruefe(td.daten && td.daten.frist === '2026-09-04',
+        'FRIST: geschrieben wurde ' + JSON.stringify(td.daten && td.daten.frist));
+      pruefe(td.daten && td.daten.erledigt === false,
+        'ZUSTAND: ein neues To-do muss offen sein, geschrieben wurde erledigt=' +
+        JSON.stringify(td.daten && td.daten.erledigt));
+    }
+    const ohne = r.schreib[1];
+    if (!ohne) {
+      errs.push('OHNE FRIST: ein To-do ohne Datum lässt sich nicht anlegen');
+    } else {
+      pruefe(ohne.daten && ohne.daten.frist === null,
+        'OHNE FRIST: statt null wurde ' + JSON.stringify(ohne.daten && ohne.daten.frist) +
+        ' geschrieben');
+    }
+    pruefe(r.feldLeer, 'FELD: nach dem Anlegen steht der Text noch im Feld');
   }
 
   // ══ 5. Eine Notiz: derselbe Test, und der Hinweis daneben ══
@@ -265,7 +368,11 @@ function pruefe(bedingung, meldung) {
       await new Promise(r => setTimeout(r, 400));
       return {
         nachLeer, schreib: window.__schreib,
-        hinweis: (document.getElementById('ichPaneNotizen').innerText || '')
+        hinweis: (document.getElementById('ichPaneNotizen').innerText || ''),
+        // Alle Hinweiszeilen des ganzen Bereichs, nicht nur des Notizblocks
+        hinweisTexte: [...document.querySelectorAll('#view-ich .hint')]
+          .map(x => (x.textContent || '').replace(/\s+/g, ' ').trim())
+          .filter(Boolean)
       };
     });
     console.log('Notiz geschrieben:', JSON.stringify(r.schreib));
@@ -280,16 +387,26 @@ function pruefe(bedingung, meldung) {
       pruefe(n.daten && n.daten.text === 'Gehaltsgespräch vorbereiten',
         'INHALT: geschrieben wurde ' + JSON.stringify(n.daten && n.daten.text));
     }
-    /* Der Hinweis muss BEIDES sagen. Nur „niemand sonst" waere ein
-       Versprechen, das die Technik nicht haelt — wer an die Datenbank
-       kommt, liest mit. */
-    const sagtGeschuetzt = /niemand|kein anderes|nur du|auch die Verwaltung nicht/i.test(r.hinweis);
-    const sagtGrenze = /nicht verschlüsselt|Verschlüsselt ist es aber nicht|Zugang zur Datenbank/i.test(r.hinweis);
-    console.log('Hinweis · geschützt:', sagtGeschuetzt, '· Grenze genannt:', sagtGrenze);
-    pruefe(sagtGeschuetzt, 'HINWEIS: am Notizblock steht nicht, dass niemand sonst hineinsieht');
-    pruefe(sagtGrenze,
-      'HINWEIS: der Notizblock verspricht Schutz, sagt aber nicht, wo der aufhört — ' +
-      'wer an die Datenbank kommt, liest mit, und das gehört dazu');
+    /* Hier stand bis zum 18.8. die Forderung, der Notizblock muesse
+       erklaeren, dass die Daten nicht verschluesselt sind. Aus dem
+       Betrieb gestrichen, mit einer Begruendung, die traegt: es ist
+       kein Tagebuch, und wer die App benutzt, muss die Datenbank
+       dahinter nicht kennen.
+
+       Was die Pruefung STATTDESSEN festhaelt, ist das, was der Wunsch
+       eigentlich meinte — die Seite soll leicht sein. Eine Erklaerung
+       schleicht sich schnell wieder ein; drei Saetze spaeter steht
+       wieder ein Absatz ueber der Eingabe. Also: keine langen
+       Hinweistexte in diesem Bereich. */
+    const absaetze = r.hinweisTexte.filter(t => t.length > 90);
+    console.log('Hinweistexte im Bereich:', JSON.stringify(r.hinweisTexte));
+    pruefe(!absaetze.length,
+      'ZU VIEL TEXT: im Bereich stehen Erklärungsabsätze (' +
+      absaetze.map(t => t.slice(0, 45) + '…').join(' | ') +
+      ') — die Seite soll leicht sein, nicht belehrend');
+    pruefe(!/verschlüsselt|Datenbank/i.test(r.hinweis),
+      'WIEDER DA: die Erklärung über Datenbank und Verschlüsselung steht ' +
+      'wieder am Notizblock — die wurde bewusst gestrichen');
   }
 
   // ══ 6. „Ich": Stammdaten wirklich gefüllt ══
@@ -347,7 +464,7 @@ function pruefe(bedingung, meldung) {
   await b.close();
   console.log(errs.length
     ? '\n✗ ' + errs.join('\n✗ ')
-    : '\n✓ Mein Bereich: vier Reiter, der Kalender zählt richtig, und was ' +
-      'angelegt wird, landet unter privat/<uid>/ — mit Gegenproben');
+    : '\n✓ Mein Bereich: fünf Reiter, der Kalender zählt richtig, Termine und ' +
+      'To-dos landen unter privat/<uid>/, keine Erklärungsabsätze — mit Gegenproben');
   process.exit(errs.length ? 1 : 0);
 })();
