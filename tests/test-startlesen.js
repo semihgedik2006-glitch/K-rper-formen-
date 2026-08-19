@@ -98,7 +98,23 @@ async function start(errs, brett) {
     if (!stand.annTexte.length) errs.push('FEHLT: kein Aushangtext auf der Startseite');
     if (stand.brettTexte.length !== 2) errs.push('FEHLT: Brett zeigt ' + stand.brettTexte.length + ' statt 2 Einträgen');
     if (!/Kaffeemaschine/.test(stand.brettTexte.join(' '))) errs.push('FEHLT: Bretttext steht nicht da');
-    if (!stand.ungelesen) errs.push('FEHLT: ungelesene Aushänge sind nicht erkennbar');
+    /* Hier stand: „ungelesene Aushänge sind nicht erkennbar" — geprüft
+       an einem CHEF. Das war seit dem 19.8. falsch herum.
+       markAnnouncementsRead() trägt Chefs bewusst nicht in readBy ein,
+       damit der Überblick „12 gelesen" nur das Team zählt. Für einen
+       Chef war readBy also immer leer, der Punkt stand dauerhaft und
+       liess sich durch nichts abstellen — ein Hinweis, der nie ausgeht,
+       ist keiner. Seit es den Knopf „alles gelesen" gibt, wäre er beim
+       Chef ausserdem nie wieder verschwunden.
+
+       Der Punkt gehört zu dem, für den der Aushang bestimmt ist. Genau
+       das prüft jetzt der Mitarbeiter-Durchlauf unten — und der ist die
+       schärfere Behauptung, weil dort ein fehlender Punkt ein echter
+       Fehler wäre. */
+    if (stand.ungelesen) {
+      errs.push('UMGEKEHRT: die Verwaltung sieht ' + stand.ungelesen +
+        ' Ungelesen-Punkte an eigenen Aushängen — die kann sie nie abstellen');
+    }
 
     // Keine doppelte Meldung mehr
     if (/neue Info/.test(stand.hinweise)) {
@@ -113,8 +129,13 @@ async function start(errs, brett) {
     if (!angeheftetOben && !angeheftetUnten) {
       errs.push('FEHLT: der angeheftete Aushang taucht gar nicht auf');
     }
-    if (JSON.stringify(stand.linkZiele) !== JSON.stringify(['ann', 'team'])) {
-      errs.push('FEHLT: die Links zeigen nicht auf Aushänge und Team (' + JSON.stringify(stand.linkZiele) + ')');
+    /* Drei Karten seit dem 19.8.: Aushänge, Übergabe, Brett. Die
+       Übergabe stand vorher nur im Team-Bereich hinter zwei Klicks und
+       einer Studio-Auswahl — also da, wo sie niemand liest, der gerade
+       zur Schicht kommt. */
+    if (JSON.stringify(stand.linkZiele) !== JSON.stringify(['ann', 'team', 'team'])) {
+      errs.push('FEHLT: die Links zeigen nicht auf Aushänge, Übergabe und Team (' +
+        JSON.stringify(stand.linkZiele) + ')');
     }
 
     // Der Link darf die Karte nicht zuklappen, sondern muss umschalten

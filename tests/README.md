@@ -150,6 +150,7 @@ was sie sehen soll.
 | `test-notizen.js` | Notizen mit vier Arten: Ändern schreibt ein `update` samt Art, Angeheftetes steht oben, Filter und Suche schneiden wirklich |
 | `test-lizenzen.js` | Nachweise: Arten beim Namen statt roher Kennung, „selbst eingetragen" vs. „bestätigt", drei freiwillige Angaben landen in der Datenbank |
 | `test-bewegung-ich.js` | wo sich in „Mein Bereich" etwas bewegen darf — und wo nicht: die Notizliste beim Tippen nicht, bei „Bewegung reduzieren" gar nichts |
+| `test-startuebergabe.js` | die Übergabe auf der Startseite über alle eigenen Studios (ohne alte, ohne fremde) und „alles gelesen" — was der Knopf wirklich speichert |
 
 ### Alle auf einmal
 

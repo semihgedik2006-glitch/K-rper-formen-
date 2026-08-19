@@ -15,16 +15,23 @@
         in keiner fremden.
 
    NICHT GEPRÜFT — bevor „alles grün" jemanden beruhigt:
-   Geprüft wird nur, was eine Spur hinterlässt, also geschriebene und
-   gelöschte Dokumente. Funktionen, deren einziges Ergebnis eine
-   Push-Nachricht oder eine E-Mail ist, hinterlassen keine:
-   dueTaskReminder, certExpiry, appointmentMailScheduler und der
-   Monatsbericht laufen zwar, aber ob sie das Richtige gefunden haben,
-   sieht man hier nicht. Für sie steht nur fest, dass sie über
-   alleFirmen() und W(firma) gehen (tests/test-funktionen-pfade.js).
+   Geprüft wird, was eine Spur hinterlässt: geschriebene und gelöschte
+   Dokumente — und seit dem 19.8. auch das, was eine Funktion
+   ZURÜCKGIBT. dueTaskReminder, certExpiry und appointmentMailScheduler
+   enden in einer Push-Nachricht oder einer Mail und hinterlassen
+   nichts; für sie steht nur fest, dass sie über alleFirmen() und
+   W(firma) gehen (tests/test-funktionen-pfade.js).
+
+   Der Bericht stand bis dahin in derselben Liste, und das war zu
+   pauschal: nicht prüfbar ist nur der VERSAND. Die ZAHLEN kommen aus
+   collectMonthly(), das aus der Datenbank liest und ein Objekt
+   zurückgibt — nachzählbar. Beim ersten Anlauf sind dabei drei
+   Ungenauigkeiten herausgefallen, darunter ein verdeckter Funktionsname,
+   der das Ergebnis still halbiert hat. Ein Jahr lang hätte niemand
+   gemerkt, dass „0 offen" ein Fehler war und keine gute Nachricht.
 
    Ob Push auf einem Gerät ankommt und ob eine Mail zugestellt wird,
-   lässt sich hier gar nicht feststellen.
+   lässt sich hier weiterhin nicht feststellen.
    ───────────────────────────────────────────────────────────────────── */
 const path = require('path');
 
@@ -831,6 +838,186 @@ const TAG = 86400000;
          dann um. */
       pruefe('GEGENPROBE der Filter lässt NICHT einfach alles durch',
         fertig.length < alle.length);
+    }
+  }
+
+  /* ══ Wer bekommt „Studio fertig"? ══
+     Aus dem Betrieb: „Studio Leiter sollen Mails bekommen wenn IHRE
+     Studios alle Aufgaben erledigt haben."
+
+     Vorher ging die Meldung ausschliesslich an Chefs. Der Schalter dafuer
+     war aber schon fuer jeden mit canManage() sichtbar, also auch fuer
+     Leiter — er hat ihnen etwas versprochen, das nie passiert ist.
+
+     Das Teure an dieser Aenderung ist die andere Richtung: eine Mail zu
+     viel faellt dem nicht auf, der sie nicht bekommen sollte. Deshalb
+     steht hier nicht nur „der Leiter bekommt sie", sondern vor allem
+     „der Leiter des ANDEREN Studios bekommt sie nicht". */
+  {
+    const konten = fns.__intern && fns.__intern.kontenImStudio;
+    if (!konten) {
+      pruefe('kontenImStudio überhaupt erreichbar', false);
+    } else {
+      await db.collection('users').doc('fChef')
+        .set({ name: 'Chef', role: 'chef', firma: 'alpha' });
+      await db.collection('users').doc('fLeiterA')
+        .set({ name: 'Leiter A', role: 'leiter', firma: 'alpha', studioKeys: ['st-a'] });
+      await db.collection('users').doc('fLeiterB')
+        .set({ name: 'Leiter B', role: 'leiter', firma: 'alpha', studioKeys: ['st-b'] });
+      await db.collection('users').doc('fMit')
+        .set({ name: 'Mitarbeiter', role: 'mitarbeiter', firma: 'alpha', studioKeys: ['st-a'] });
+      await db.collection('users').doc('fLeiterAus')
+        .set({ name: 'Weg', role: 'leiter', firma: 'alpha', studioKeys: ['st-a'], aktiv: false });
+      /* Fremde Firma, gleiche Studio-Kennung. Kennungen sind je Betrieb
+         vergeben, „st-a" gibt es also mehrfach — ohne die Firmen-Grenze
+         bekaeme der Leiter eines fremden Betriebs unsere Meldung. */
+      await db.collection('users').doc('fFremd')
+        .set({ name: 'Fremd', role: 'leiter', firma: 'beta', studioKeys: ['st-a'] });
+
+      const chefs   = await konten('alpha', null, 'chef');
+      const leiterA = await konten('alpha', 'st-a', 'leiter');
+      const leiterB = await konten('alpha', 'st-b', 'leiter');
+      const alleA   = await konten('alpha', 'st-a');
+
+      pruefe('FERTIG · der Chef ist dabei, ohne Studio-Bindung',
+        chefs.includes('fChef'));
+      pruefe('FERTIG · der Leiter seines Studios ist dabei',
+        leiterA.includes('fLeiterA'));
+      /* Der Kern. Ohne diese Zeile waere auch „schickt an alle Leiter"
+         gruen — und aus einer nuetzlichen Meldung wuerde genau der
+         Mailberg, den der Betrieb loswerden wollte. */
+      pruefe('FERTIG · der Leiter eines ANDEREN Studios ist NICHT dabei',
+        !leiterA.includes('fLeiterB') && !leiterB.includes('fLeiterA'));
+      pruefe('FERTIG · ein Mitarbeiter im Studio ist NICHT dabei',
+        !leiterA.includes('fMit'));
+      pruefe('FERTIG · ein abgeschaltetes Konto ist NICHT dabei',
+        !leiterA.includes('fLeiterAus') && !alleA.includes('fLeiterAus'));
+      pruefe('FERTIG · eine fremde Firma ist NICHT dabei',
+        !leiterA.includes('fFremd') && !chefs.includes('fFremd'));
+      /* Ohne Rollenfilter kommen alle im Studio — sonst haette die
+         Einschraenkung oben gar nichts zu tun gehabt. */
+      pruefe('GEGENPROBE ohne Rollenfilter ist der Mitarbeiter sehr wohl dabei',
+        alleA.includes('fMit') && alleA.includes('fLeiterA'));
+    }
+  }
+
+  /* ══ Der Bericht: stimmen die Zahlen? ══
+     Aus dem Betrieb: „eine viel bessere und genauere Mail-Berichterstattung
+     […] es soll IMMER von allen Studios sein und schön sortiert."
+
+     Bis heute stand im Kopf dieser Datei, der Monatsbericht sei nicht
+     prüfbar, weil er nur eine Mail hinterlässt. Das stimmte für den
+     VERSAND — nicht für die Zahlen. collectMonthly() liest aus der
+     Datenbank und gibt ein Objekt zurück; genau das lässt sich hier
+     ausrechnen und nachzählen. Drei Ungenauigkeiten sind dabei
+     herausgekommen, und alle drei stehen unten als eigene Behauptung. */
+  {
+    const collect = fns.__intern && fns.__intern.collectMonthly;
+    const text = fns.__intern && fns.__intern.monatsText;
+    if (!collect) {
+      pruefe('collectMonthly überhaupt erreichbar', false);
+    } else {
+      const T = Date.now();
+      const imZeitraum = T - 3 * 86400000;
+      const davor      = T - 60 * 86400000;
+      const gestern    = T - 30 * 3600000;
+      const B = 'firmen/bericht';
+      await db.doc(B).set({ name: 'Berichtsfirma', aktiv: true });
+
+      /* Drei Studios in der Sammlung. st-leer bekommt ABSICHTLICH
+         keine Person zugewiesen — das ist der Fall, an dem der alte
+         Bericht gescheitert ist. */
+      await db.doc(B + '/studios/st-nord').set({ name: 'Nord' });
+      await db.doc(B + '/studios/st-sued').set({ name: 'Süd' });
+      await db.doc(B + '/studios/st-leer').set({ name: 'Neu eröffnet' });
+      await db.collection('users').doc('bChef')
+        .set({ name: 'Chef', role: 'chef', firma: 'bericht',
+               studioKeys: ['st-nord', 'st-sued'], studios: ['Nord', 'Süd'] });
+
+      // Nord: eine im Zeitraum erledigt, eine überfällig offen
+      await db.doc(B + '/studios/st-nord/todos/t1')
+        .set({ title: 'Erledigt im Zeitraum', done: true, doneAt: imZeitraum, doneBy: 'Anna' });
+      await db.doc(B + '/studios/st-nord/todos/t2')
+        .set({ title: 'Überfällig', done: false, due: T - 86400000 });
+      // Ausserhalb des Zeitraums erledigt — darf NICHT mitzählen
+      await db.doc(B + '/studios/st-nord/todos/t3')
+        .set({ title: 'Lange her', done: true, doneAt: davor, doneBy: 'Anna' });
+      /* Der Kern der zweiten Ungenauigkeit: eine TÄGLICHE Aufgabe,
+         gestern abgehakt. done:true — der alte Bericht zählte sie
+         deshalb als nicht offen, obwohl sie heute wieder ansteht. */
+      await db.doc(B + '/studios/st-nord/todos/t4')
+        .set({ title: 'Täglich, gestern erledigt', done: true, doneAt: gestern,
+               doneBy: 'Ben', recurring: 'daily' });
+      // Putzplan — fehlte im Bericht komplett
+      await db.doc(B + '/studios/st-nord/cleaning/c1')
+        .set({ title: 'Böden', done: true, doneAt: imZeitraum, doneBy: 'Anna' });
+      await db.doc(B + '/studios/st-nord/cleaning/c2')
+        .set({ title: 'Fenster', done: false });
+      await db.doc(B + '/inventory/st-nord')
+        .set({ items: [{ name: 'Handtücher', have: 5, limit: 20 }] });
+
+      // Süd: nur eine offene Aufgabe, nichts überfällig
+      await db.doc(B + '/studios/st-sued/todos/s1')
+        .set({ title: 'Offen', done: false });
+
+      // st-leer: gar nichts.
+
+      const d = await collect(T - 7 * 86400000, T, 'bericht');
+      const namen = d.zeilen.map(z => z.name);
+
+      /* 1. ALLE Studios. Vorher kamen sie aus den Nutzerprofilen —
+            „Neu eröffnet" hat niemanden und fehlte deshalb ganz. Nicht
+            mit Null, sondern gar nicht. */
+      pruefe('BERICHT · alle drei Studios sind drin, auch das ohne Personal',
+        d.zeilen.length === 3 && namen.includes('Neu eröffnet'));
+      pruefe('BERICHT · die Zahl im Kopf stimmt mit der Liste überein',
+        d.studios === d.zeilen.length);
+
+      /* 2. Der Putzplan zählt mit. */
+      pruefe('BERICHT · der Putzplan ist erfasst',
+        d.putzErledigt === 1 && d.putzOffen === 1);
+
+      /* 3. Wiederholung: gestern erledigt heisst heute wieder offen. */
+      const nord = d.zeilen.find(z => z.name === 'Nord');
+      pruefe('BERICHT · eine täglich wiederkehrende Aufgabe zählt heute wieder als offen',
+        nord && nord.offen === 2);
+      pruefe('BERICHT · sie zählt trotzdem als im Zeitraum erledigt',
+        nord && nord.erledigt === 2);
+
+      // Ausserhalb des Zeitraums bleibt draussen
+      pruefe('BERICHT · was vor dem Zeitraum erledigt wurde, zählt nicht mit',
+        d.erledigt === 2);
+      pruefe('BERICHT · überfällig wird getrennt gezählt',
+        d.ueberfaellig === 1 && nord.ueber === 1);
+      pruefe('BERICHT · fehlendes Material kommt aus dem Bestand',
+        d.fehlt === 15);
+
+      /* 4. Sortierung: oben steht, wo etwas liegt — nicht, wo am
+            meisten geschafft wurde. Gegenprobe zur alten Reihenfolge:
+            nach „erledigt" sortiert stünde Nord auch oben, deshalb
+            prüft die zweite Zeile das Ende der Liste. */
+      pruefe('BERICHT · oben steht das Studio mit Überfälligem',
+        d.zeilen[0].name === 'Nord');
+      pruefe('BERICHT · das Studio ohne alles steht unten',
+        d.zeilen[d.zeilen.length - 1].name === 'Neu eröffnet');
+
+      pruefe('BERICHT · wer was erledigt hat, steht drin',
+        d.proPerson['Anna'] === 2 && d.proPerson['Ben'] === 1);
+
+      if (text) {
+        const t = text(d, new Date(T - 7 * 86400000), new Date(T));
+        pruefe('BERICHT · der Text nennt alle Studios',
+          /Nord/.test(t) && /Süd/.test(t) && /Neu eröffnet/.test(t));
+        pruefe('BERICHT · der Text sagt, über wie viele Studios er geht',
+          /alle 3 Studios/.test(t));
+        pruefe('BERICHT · der Text nennt den Putzplan getrennt',
+          /Putzplan/.test(t));
+        /* Ein leeres Studio muss als leer erkennbar sein. Sonst liest
+           sich „0 offen" wie „alles geschafft", obwohl dort nur nichts
+           eingerichtet ist. */
+        pruefe('BERICHT · ein Studio ganz ohne Einträge wird benannt',
+          /Ohne jeden Eintrag/.test(t) && /Neu eröffnet/.test(t));
+      }
     }
   }
 

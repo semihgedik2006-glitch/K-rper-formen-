@@ -4315,6 +4315,178 @@ Zeit.
 
 ---
 
+# 52 · Übergabe dorthin, wo sie gelesen wird — und ein Bericht, der stimmt
+
+**19. August 2026**
+
+Vier Wünsche aus dem Betrieb, und beim Nachrechnen sind **vier Fehler**
+herausgefallen, nach denen niemand gefragt hatte. Drei davon im Bericht.
+
+## Übergabe auf der Startseite
+
+> „das man die Übergabe auch auf der Startseite sieht direkt weil sonst
+> macht das ja kein Sinn"
+
+Genau so war es. Die Übergabe stand im Team-Bereich hinter zwei Klicks
+**und** einer Studio-Auswahl — also da, wo sie niemand liest, der gerade
+zur Schicht kommt. Das ist der einzige Zweck einer Übergabe.
+
+Jetzt steht sie in „Zum Lesen", über **alle eigenen Studios**, nicht nur
+über das im Team-Bereich zufällig gewählte. Bei mehr als einem Studio
+steht der Ort dabei; ohne ihn wären vierzehn Übergaben untereinander
+eine Auskunft ohne Ort.
+
+Geladen wird wie „Mein Dienst": einmal, kurz gemerkt, kein Dauerhorcher.
+Ein Horcher je Studio wären beim Chef vierzehn offene Verbindungen für
+eine Karte mit drei Zeilen.
+
+## Alles als gesehen markieren
+
+Der Knopf erscheint **nur, wenn wirklich etwas ungelesen ist**, und
+nennt die Zahl. „Alles gelesen" ohne Zahl lässt offen, ob man drei
+Punkte wegklickt oder dreißig.
+
+Zwei Wege, mit Absicht verschieden:
+
+| | wo gespeichert | warum |
+|---|---|---|
+| Aushänge | `readBy` am Dokument | die Verwaltung muss sehen, **wer** noch nicht gelesen hat |
+| Übergabe, Brett | Zeitstempel unter `privat/<uid>` | niemand muss wissen, wer einen Bretteintrag gelesen hat |
+
+Ein `readBy` für die Übergabe hieße: jeder schreibt in jedes fremde
+Dokument, die Liste wächst mit jedem Konto, und die Regeln müssten
+Schreibrechte auf fremde Übergaben öffnen. Ein Zeitstempel im eigenen
+Bereich ist **ein** Schreibvorgang, braucht keine Regeländerung und
+verrät nichts.
+
+**Eigenes zählt nicht als ungelesen.** Wer seine Übergabe gerade selbst
+geschrieben hat, braucht dafür keinen Punkt.
+
+### Zwei Funde nebenbei
+
+**Die Verwaltung sah Punkte, die sie nie abstellen konnte.**
+`markAnnouncementsRead()` trägt Chefs bewusst nicht in `readBy` ein,
+damit der Überblick „12 gelesen" nur das Team zählt. Für einen Chef war
+`readBy` also immer leer — der Punkt stand dauerhaft an jedem eigenen
+Aushang. Ein Hinweis, der nie ausgeht, ist keiner; mit dem neuen Knopf
+wäre er nie wieder verschwunden.
+
+**Der Punkt blieb nach dem Klick stehen.** `markAnnouncementsRead()`
+schrieb in die Datenbank, aber nicht in die lokale Liste — der Punkt ging
+erst aus, wenn der Horcher die Runde zurückbrachte. Also genau die
+Verzögerung, gegen die der Knopf gebaut ist. Gefunden hat das der eigene
+Durchlauf, nicht das Auge.
+
+## Studio-Leiter bekommen die Fertig-Mail
+
+> „Studio Leiter sollen Mails bekommen wenn IHRE Studios alle Aufgaben
+> erledigt haben"
+
+Die Meldung ging bisher ausschließlich an Chefs. Der Schalter „Studio
+fertig" war aber schon für jeden mit `canManage()` sichtbar — **also
+auch für Leiter, die die Mail nie bekamen.** Der Schalter hat ihnen
+etwas versprochen, das nicht passiert ist.
+
+Für den Leiter ist es außerdem die nützlichere Meldung: bei ihm sind es
+ein bis zwei Studios, nicht vierzehn. Der Hinweistext sagt das jetzt
+rollenabhängig — und die Studiozahl kommt aus den echten Studios statt
+aus dem Text. Ein Betrieb mit drei Studios las hier bisher von vierzehn.
+
+## Der Bericht
+
+> „eine viel bessere und genauere Mail Bericht Erstattung […] es soll
+> IMMER von allen Studios sein und schön sortiert"
+
+Beim Nachrechnen kamen drei Ungenauigkeiten heraus:
+
+**1. Nicht alle Studios.** Die Studioliste des Berichts kam aus den
+*Nutzerprofilen*. Ein Studio ohne zugewiesene Person — neu eröffnet,
+umgebaut, Leitung gewechselt — tauchte überhaupt nicht auf. Nicht mit
+Null, sondern **gar nicht**. Genau dort wären offene Aufgaben am
+ehesten liegengeblieben.
+
+**2. Der Putzplan fehlte komplett.** Gezählt wurden nur `todos`. In
+einem EMS-Studio ist der Putzplan der größere Teil der täglichen
+Arbeit; ein Bericht ohne ihn beantwortet „läuft es rund" mit der Hälfte
+der Zahlen.
+
+**3. „Offen" wurde zu niedrig gezählt.** Der Bericht prüfte `!t.done`,
+die Fertig-Meldung dagegen `erledigt()`, das Wiederholungen kennt. Eine
+**tägliche** Aufgabe, gestern abgehakt, hat `done:true` — der Bericht
+zählte sie als nicht offen, obwohl sie heute wieder ansteht. Und zwar
+systematisch bei genau den Aufgaben, die jeden Tag anfallen.
+
+Dazu: sortiert nach dem, **was Aufmerksamkeit braucht** (überfällig,
+dann offen, dann Material), nicht mehr nach Fleiß. Wer den Bericht
+überfliegt, liest die ersten drei Zeilen — dort muss stehen, wo etwas
+klemmt, nicht wo alles läuft. Spaltenbreite aus den echten Namen. Ein
+Studio ganz ohne Einträge wird ausdrücklich benannt, sonst liest sich
+„0 offen" wie „alles geschafft".
+
+**Der Knopf schickt nur noch an einen selbst.** Vorher schrieb er
+ungefragt alle Chef-Konten an — wer die aktuellen Zahlen sehen wollte,
+weckte damit vier Kolleginnen. Das Rundschreiben bleibt dem Zeitplan am
+Monatsersten. Zeitraum frei wählbar: 7/14/30/90/180/365 oder eine eigene
+Zahl bis 370.
+
+Der Betreff nennt jetzt den Zeitraum. „Monatsbericht August" über sieben
+Tage war schlicht falsch, und im Postfach ist der Betreff das Einzige,
+was man vor dem Öffnen sieht.
+
+## Der vierte Fund — und der teuerste
+
+In `collectMonthly` hieß der Zähler `erledigt` **und verdeckte damit die
+Funktion `erledigt()`**, die drei Zeilen weiter aufgerufen wird. Der
+Aufruf warf einen `TypeError`, das `try/catch` schrieb ihn in eine
+Protokollzeile, und die Funktion lief mit halben Zahlen weiter:
+
+```
+mit Fehler:   erledigt 1 · offen 0 · überfällig 0 · Putzplan 1/0
+richtig:      erledigt 2 · offen 3 · überfällig 1 · Putzplan 1/1
+```
+
+Nichts daran sieht nach einem Fehler aus. Ein Bericht, der plötzlich
+„0 offen" meldet, liest sich wie eine gute Nachricht.
+
+Gefunden hat ihn nur, dass der Bericht überhaupt zum ersten Mal
+nachgerechnet wurde. Im Kopf von `funktionen.test.js` stand ein Jahr
+lang, der Monatsbericht sei nicht prüfbar, weil er nur eine Mail
+hinterlässt. Das war zu pauschal: nicht prüfbar ist der **Versand**. Die
+**Zahlen** kommen aus einer Funktion, die ein Objekt zurückgibt — und
+ein Objekt kann man nachzählen.
+
+## Nachgemessen
+
+```
+Übergabe (Mitarbeiter)  → 2 Einträge, 1 Punkt (die eigene zählt nicht)
+                          9 Tage alt fällt raus, fremdes Studio fällt raus
+Übergabe (Chef)         → 3 Einträge aus zwei Studios, Ort steht dabei
+„alles gelesen"         → privat/testuid {gelesenHo, gelesenBrett}
+                          + 2× readBy an den Aushängen
+                          Punkte danach 0/0, Knopf weg
+Mit gespeichertem Stand → 0 Punkte, Einträge bleiben sichtbar
+
+Fertig-Mail  → Chef ja · Leiter seines Studios ja
+               Leiter des ANDEREN Studios nein · Mitarbeiter nein
+               abgeschaltetes Konto nein · fremde Firma nein
+
+Bericht      → 3 von 3 Studios, auch das ohne Personal
+               Putzplan 1 erledigt / 1 offen
+               tägliche Aufgabe: heute wieder offen UND im Zeitraum erledigt
+               vor dem Zeitraum erledigt zählt nicht
+               oben Nord (überfällig), unten das leere Studio
+Zeitraum     → 45 kommt als 45 an, 9999 wird auf 370 gedeckelt
+```
+
+## Gegenproben
+
+| Gegenprobe | Ergebnis |
+|---|---|
+| Gelesen-Stand nicht mehr auslesen | 1 rot ✓ |
+| Filter ohne Rollen-Einschränkung | Mitarbeiter ist dabei ✓ |
+
+---
+
 ## Was aus früheren Runden noch offen ist
 
 Vollständig in `OFFEN.md`. Kurzfassung:

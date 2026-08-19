@@ -757,3 +757,14 @@ Vor dem Einchecken durchgehen:
 - [ ] Werden Zustand und Suchbegriff beim Abmelden geleert? Auf einem
       geteilten Gerät steht sonst der Name einer Kundin im Suchfeld,
       deren Eintrag dem vorigen Konto gehört.
+- [ ] Geht ein Hinweis, den man **abstellen** kann, auch wirklich aus?
+      Ein Ungelesen-Punkt, der für eine Rolle nie verschwinden kann, ist
+      kein Hinweis mehr — man sieht ihn nach zwei Tagen nicht mehr, und
+      dann auch nicht an dem Tag, an dem er stimmt. (So stand jahrelang
+      ein Punkt an jedem Aushang der Verwaltung.)
+- [ ] Wird die **lokale** Liste beim Schreiben mitgezogen? Ein Klick, der
+      erst wirkt, wenn der Horcher die Runde zurückbringt, sieht aus wie
+      einer, der nichts getan hat — und wird ein zweites Mal gedrückt.
+- [ ] Steht das Ergebnis dort, wo es gebraucht wird? Eine Übergabe hinter
+      zwei Klicks und einer Studio-Auswahl liest niemand, der gerade zur
+      Schicht kommt. Das war ihr einziger Zweck.

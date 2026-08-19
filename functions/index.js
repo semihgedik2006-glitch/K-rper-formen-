@@ -335,12 +335,26 @@ const _fertigPruefen = async (change, ctx) => {
      es ist leer. Dafür bekommt niemand eine Mail. */
   if (!stand.dokumente) return;
 
+  /* Chefs bekommen die Meldung fuer JEDES Studio, Studio-Leiter nur fuer
+     IHRE. Vorher gingen die Mails ausschliesslich an Chefs — der
+     Schalter „Studio fertig" in den Einstellungen war aber schon fuer
+     jeden mit canManage() sichtbar, also auch fuer Leiter. Der hat
+     ihnen etwas versprochen, das nie passiert ist.
+
+     Fuer den Leiter ist es ausserdem die nuetzlichere Meldung: bei ihm
+     sind es ein bis zwei Studios, nicht vierzehn. */
   const chefs = await kontenImStudio(firma, null, 'chef');
-  if (!chefs.length) return;
+  const leiter = await kontenImStudio(firma, studioKey, 'leiter');
+  /* Ein Konto, das beides ist, darf die Mail nicht doppelt bekommen.
+     kontenImStudio filtert auf genau eine Rolle, aber die beiden Listen
+     zusammenzuschuetten kann trotzdem Doppelte ergeben, sobald sich das
+     Rollenmodell einmal aendert. Billiger als der Fehler. */
+  const empfaenger = [...new Set(chefs.concat(leiter))];
+  if (!empfaenger.length) return;
   const wo = await studioName(firma, studioKey);
   const zeit = new Date().toLocaleString('de-DE',
     { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  await teamMail(firma, chefs,
+  await teamMail(firma, empfaenger,
     wo + ': alles erledigt',
     'In ' + wo + ' ist gerade nichts mehr offen — weder Aufgaben noch Putzplan.\n\n' +
     'Stand: ' + zeit + ' Uhr.\n\n' +
@@ -1927,12 +1941,45 @@ async function studioNameMap(firma) {
   return map;
 }
 
+/* ALLE Studios, nicht nur die mit Personal.
+
+   Vorher kamen die Studios des Berichts aus studioNameMap(), und die
+   liest die Nutzerprofile. Ein Studio, dem gerade niemand zugewiesen
+   ist — neu eroeffnet, umgebaut, Leitung gewechselt — tauchte im
+   Bericht ueberhaupt nicht auf. Nicht mit Null, sondern gar nicht.
+   Genau dort waeren offene Aufgaben am ehesten liegengeblieben, und der
+   Bericht haette sie stillschweigend verschwiegen.
+
+   Die Studioliste steht seit dem Umzug in der Datenbank. Die Profile
+   bleiben als Rueckfall dabei — flache Altbestaende haben die Sammlung
+   noch nicht. */
+async function alleStudios(firma) {
+  const namen = {};
+  try {
+    const snap = await W(firma).collection('studios').get();
+    snap.forEach(d => { namen[d.id] = ((d.data() || {}).name) || d.id; });
+  } catch (e) { console.error('Studios:', e); }
+  try {
+    const ausProfilen = await studioNameMap(firma);
+    Object.keys(ausProfilen).forEach(k => { if (!namen[k]) namen[k] = ausProfilen[k]; });
+  } catch (e) { /* dann eben nur die Sammlung */ }
+  return namen;
+}
+
 /* Zahlen für einen Zeitraum einsammeln */
 async function collectMonthly(vonMs, bisMs, firma) {
-  const namen = await studioNameMap(firma);
+  const namen = await alleStudios(firma);
   const keys = Object.keys(namen);
   const zeilen = [];
-  let erledigt = 0, offen = 0, ueberfaellig = 0, fehlt = 0;
+  /* Die Summen heissen NICHT wie die Felder, die sie fuellen. Hier stand
+     „let erledigt = 0" — und verdeckte damit die Funktion erledigt(),
+     die drei Zeilen weiter unten aufgerufen wird. Der Aufruf warf einen
+     TypeError, das try/catch drumherum hat ihn in die Protokollzeile
+     geschrieben, und die Funktion lief mit halben Zahlen weiter. Ein
+     Bericht, der ploetzlich „0 offen" meldet, sieht aus wie eine gute
+     Nachricht. */
+  let summeErledigt = 0, offen = 0, ueberfaellig = 0, fehlt = 0;
+  let putzErledigt = 0, putzOffen = 0;
   const proPerson = {};
   const jetzt = Date.now();
 
@@ -1942,17 +1989,47 @@ async function collectMonthly(vonMs, bisMs, firma) {
       const snap = await W(firma).collection('studios').doc(key).collection('todos').get();
       snap.forEach(doc => {
         const t = doc.data() || {};
+        /* Im Zeitraum ERLEDIGT: die Arbeit hat stattgefunden, auch wenn
+           eine taegliche Aufgabe inzwischen wieder offen ist. */
         if (t.doneAt && t.doneAt >= vonMs && t.doneAt <= bisMs) {
-          sErledigt++; erledigt++;
+          sErledigt++; summeErledigt++;
           const wer = t.doneBy || 'Unbekannt';
           proPerson[wer] = (proPerson[wer] || 0) + 1;
         }
-        if (!t.done) {
+        /* AKTUELL offen: hier stand „!t.done", und das zaehlte falsch.
+           Eine taegliche Aufgabe, die gestern abgehakt wurde, hat
+           done:true und galt damit als erledigt — obwohl sie heute
+           wieder ansteht. Die Fertig-Meldung rechnet seit jeher mit
+           erledigt(), das die Wiederholung beruecksichtigt. Der Bericht
+           hat den offenen Bestand also systematisch zu niedrig
+           ausgewiesen, und zwar genau bei den Aufgaben, die jeden Tag
+           anfallen. */
+        if (!erledigt(t)) {
           sOffen++; offen++;
           if (t.due && jetzt > t.due) { sUeber++; ueberfaellig++; }
         }
       });
     } catch (e) { console.error('Aufgaben ' + key + ':', e); }
+
+    /* Der Putzplan fehlte im Bericht komplett — gezaehlt wurden nur
+       todos. In einem EMS-Studio ist der Putzplan der groessere Teil
+       der taeglichen Arbeit; ein Bericht ohne ihn beantwortet die Frage
+       „laeuft es rund" mit der Haelfte der Zahlen. */
+    let pErledigt = 0, pOffen = 0;
+    try {
+      const snap = await W(firma).collection('studios').doc(key).collection('cleaning').get();
+      snap.forEach(doc => {
+        const c = doc.data() || {};
+        if (c.doneAt && c.doneAt >= vonMs && c.doneAt <= bisMs) {
+          pErledigt++; putzErledigt++;
+          const wer = c.doneBy || c.by;
+          if (wer) proPerson[wer] = (proPerson[wer] || 0) + 1;
+        }
+        /* Dieselbe Rechnung wie bei der Fertig-Meldung: erledigt()
+           kennt taeglich und woechentlich. */
+        if (!erledigt(c)) { pOffen++; putzOffen++; }
+      });
+    } catch (e) { console.error('Putzplan ' + key + ':', e); }
 
     let sFehlt = 0;
     try {
@@ -1964,50 +2041,103 @@ async function collectMonthly(vonMs, bisMs, firma) {
       });
     } catch (e) { console.error('Material ' + key + ':', e); }
 
-    zeilen.push({ name: namen[key] || key, erledigt: sErledigt, offen: sOffen, ueber: sUeber, fehlt: sFehlt });
+    zeilen.push({
+      name: namen[key] || key, erledigt: sErledigt, offen: sOffen, ueber: sUeber,
+      putzErledigt: pErledigt, putzOffen: pOffen, fehlt: sFehlt
+    });
   }
 
-  zeilen.sort((a, b) => b.erledigt - a.erledigt);
-  return { zeilen, erledigt, offen, ueberfaellig, fehlt, proPerson };
+  /* Sortiert nach dem, was Aufmerksamkeit braucht — nicht nach Fleiss.
+     Vorher stand das Studio mit den meisten Erledigungen oben; wer den
+     Bericht ueberfliegt, sah zuerst das, wo alles laeuft. Ueberfaellig
+     zuerst, dann offen, dann fehlendes Material. Bei Gleichstand nach
+     Namen, damit die Reihenfolge zwischen zwei Berichten nicht springt. */
+  zeilen.sort((a, b) =>
+    (b.ueber - a.ueber) ||
+    ((b.offen + b.putzOffen) - (a.offen + a.putzOffen)) ||
+    (b.fehlt - a.fehlt) ||
+    a.name.localeCompare(b.name, 'de'));
+  return {
+    zeilen, erledigt: summeErledigt, offen, ueberfaellig, fehlt,
+    putzErledigt, putzOffen, proPerson, studios: keys.length
+  };
 }
 
 function monatsText(d, vonD, bisD) {
   const dat = (x) => x.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const tage = Math.max(1, Math.round((bisD - vonD) / 86400000));
+  /* Spaltenbreite aus den echten Namen, nicht fest auf 22. „Köln
+     Ehrenfeld Süd" ist laenger, und ein fester Wert schiebt dann die
+     ganze Zeile aus dem Raster — in einer Mail mit fester Schrift
+     faellt genau das auf. */
+  const breite = Math.min(28, Math.max(14,
+    ...d.zeilen.map(z => z.name.length),
+    ...Object.keys(d.proPerson).map(n => n.length)));
+  const sp = (t, n) => String(t).padEnd(n);
+  const z4 = (n) => String(n).padStart(4);
   const L = [];
-  L.push('Monatsbericht StudioChat');
-  L.push('Zeitraum: ' + dat(vonD) + ' bis ' + dat(bisD));
+
+  L.push('StudioChat — Bericht');
+  L.push('Zeitraum: ' + dat(vonD) + ' bis ' + dat(bisD) + '  (' + tage +
+    (tage === 1 ? ' Tag' : ' Tage') + ')');
+  L.push('Erfasst: alle ' + d.studios + ' Studios');
   L.push('');
+
   L.push('AUF EINEN BLICK');
-  L.push('  Aufgaben erledigt:      ' + d.erledigt);
-  L.push('  Aktuell offen:          ' + d.offen);
-  L.push('  Davon überfällig:       ' + d.ueberfaellig);
-  L.push('  Fehlende Artikel:       ' + d.fehlt);
+  L.push('  Aufgaben erledigt      ' + z4(d.erledigt));
+  L.push('  Putzplan erledigt      ' + z4(d.putzErledigt));
+  L.push('  Aktuell offen          ' + z4(d.offen + d.putzOffen) +
+    '   (' + d.offen + ' Aufgaben, ' + d.putzOffen + ' Putzplan)');
+  L.push('  Davon überfällig       ' + z4(d.ueberfaellig));
+  L.push('  Fehlende Artikel       ' + z4(d.fehlt));
   L.push('');
-  L.push('NACH STUDIO');
+
+  /* Sortiert nach dem, was Aufmerksamkeit braucht. Wer den Bericht
+     ueberfliegt, liest die ersten drei Zeilen — dort muss stehen, wo
+     etwas klemmt, nicht wo alles laeuft. */
+  L.push('NACH STUDIO — oben steht, wo am meisten liegt');
+  L.push('  ' + sp('', breite) + ' erled.  offen  überf.  Material');
+  L.push('  ' + '─'.repeat(breite + 32));
   d.zeilen.forEach(z => {
-    const ges = z.erledigt + z.offen;
-    const pct = ges ? Math.round(z.erledigt / ges * 100) : 0;
-    L.push('  ' + z.name.padEnd(22) + String(z.erledigt).padStart(4) + ' erledigt · ' +
-      String(z.offen).padStart(3) + ' offen' +
-      (z.ueber ? ' · ' + z.ueber + ' überfällig' : '') +
-      (z.fehlt ? ' · ' + z.fehlt + ' Artikel fehlen' : '') +
-      '   (' + pct + '%)');
+    L.push('  ' + sp(z.name, breite) +
+      z4(z.erledigt + z.putzErledigt) + '   ' +
+      z4(z.offen + z.putzOffen) + '   ' +
+      z4(z.ueber) + '    ' +
+      z4(z.fehlt));
   });
-  const leute = Object.keys(d.proPerson).sort((a, b) => d.proPerson[b] - d.proPerson[a]);
+  /* Ein Bericht, der nur Zahlen zeigt, laesst offen, ob „0 offen"
+     heisst „alles geschafft" oder „hier ist nichts eingerichtet". */
+  const leer = d.zeilen.filter(z =>
+    !z.erledigt && !z.putzErledigt && !z.offen && !z.putzOffen && !z.fehlt);
+  if (leer.length) {
+    L.push('');
+    L.push('  Ohne jeden Eintrag: ' + leer.map(z => z.name).join(', '));
+    L.push('  (dort ist weder eine Aufgabe noch ein Putzplan hinterlegt)');
+  }
+
+  const leute = Object.keys(d.proPerson).sort((a, b) =>
+    (d.proPerson[b] - d.proPerson[a]) || a.localeCompare(b, 'de'));
   if (leute.length) {
     L.push('');
     L.push('WER HAT WIE VIEL ERLEDIGT');
-    leute.forEach(n => L.push('  ' + n.padEnd(22) + String(d.proPerson[n]).padStart(4)));
+    leute.forEach(n => L.push('  ' + sp(n, breite) + z4(d.proPerson[n])));
   }
   L.push('');
   L.push('Alle Zahlen im Detail findest du in StudioChat unter Verwaltung → Auswertung.');
+  L.push('Diese Mail lässt sich unter Einstellungen → Meldungen abschalten.');
   return L.join('\n');
 }
 
-/* Bericht bauen und an alle Chef-Konten schicken */
-async function sendMonthlyReport(vonD, bisD, firma) {
+/* Bericht bauen und verschicken.
+
+   nurUid: wenn gesetzt, geht der Bericht NUR an dieses Konto. Das ist
+   der Weg fuer den Knopf „Bericht jetzt anfordern". Wer sich die
+   aktuellen Zahlen ansehen will, soll dafuer nicht vier Kolleginnen
+   anschreiben — und beim Zeitplan am Monatsersten bleibt es beim
+   Rundschreiben an alle. */
+async function sendMonthlyReport(vonD, bisD, firma, nurUid) {
   const mailer = getMailer();
-  if (!mailer) { console.log('Monatsbericht übersprungen: SMTP nicht eingerichtet.'); return 0; }
+  if (!mailer) { console.log('Bericht übersprungen: SMTP nicht eingerichtet.'); return 0; }
 
   let empfaenger = [];
   let abgemeldet = 0;
@@ -2016,32 +2146,40 @@ async function sendMonthlyReport(vonD, bisD, firma) {
     snap.forEach(doc => {
       const d = doc.data() || {};
       if (!gehoertZu(d, firma)) return;
-      /* Wer den Bericht abbestellt hat, bekommt ihn nicht. Die Liste
-         nennt die ABGESCHALTETEN Themen — ein Konto ohne das Feld ist
-         also wie bisher dabei. */
+      if (nurUid && doc.id !== nurUid) return;
+      /* Wer den Bericht abbestellt hat, bekommt ihn nicht — ausser er
+         fordert ihn gerade selbst an. Einen Knopf zu druecken und dann
+         nichts zu bekommen, weil man vor Monaten den Zeitplan
+         abbestellt hat, waere nicht zu erklaeren. */
       const aus = Array.isArray(d.mailAus) ? d.mailAus : [];
-      if (aus.indexOf('bericht') >= 0) { abgemeldet++; return; }
+      if (!nurUid && aus.indexOf('bericht') >= 0) { abgemeldet++; return; }
       if (d.email) empfaenger.push(d.email);
     });
   } catch (e) { console.error('Chef-Konten:', e); }
   if (!empfaenger.length) {
-    console.log('Monatsbericht: kein Chef mit E-Mail' +
+    console.log('Bericht: kein Chef mit E-Mail' +
       (abgemeldet ? ' (' + abgemeldet + ' abbestellt)' : '') + '.');
     return 0;
   }
 
   const daten = await collectMonthly(vonD.getTime(), bisD.getTime(), firma);
   const text = monatsText(daten, vonD, bisD);
-  const monat = vonD.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+  const tage = Math.max(1, Math.round((bisD - vonD) / 86400000));
+  /* Der Betreff nennt den Zeitraum, nicht den Monat. „Monatsbericht
+     August" ueber sieben Tage war schlicht falsch — und im Postfach ist
+     der Betreff das Einzige, was man vor dem Oeffnen sieht. */
+  const dat = (x) => x.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+  const betreff = 'StudioChat-Bericht · ' + tage + (tage === 1 ? ' Tag' : ' Tage') +
+    ' bis ' + dat(bisD);
   const fromAddr = process.env.MAIL_FROM || process.env.SMTP_USER;
 
   await mailer.sendMail({
     from: '"StudioChat" <' + fromAddr + '>',
     to: empfaenger.join(', '),
-    subject: 'Monatsbericht ' + monat + ' – StudioChat',
+    subject: betreff,
     text
   });
-  console.log('Monatsbericht an', empfaenger.length, 'Empfänger gesendet.');
+  console.log('Bericht an', empfaenger.length, 'Empfänger gesendet.');
   return empfaenger.length;
 }
 
@@ -2111,12 +2249,16 @@ exports.sendTestReport = region
     const bis = new Date();
     const von = new Date(Date.now() - tage * 86400000);
 
-    const empfaenger = await sendMonthlyReport(von, bis, await firmaVonProfil(profil));
+    /* Nur an den, der drueckt. Vorher ging der Knopf an ALLE Chef-Konten
+       — wer die aktuellen Zahlen sehen wollte, schrieb damit ungefragt
+       seine Kolleginnen an. Das Rundschreiben bleibt dem Zeitplan am
+       Monatsersten vorbehalten. */
+    const empfaenger = await sendMonthlyReport(von, bis, await firmaVonProfil(profil), uid);
     if (!empfaenger) {
       // Ehrlich sagen, woran es liegt, statt "hat nicht geklappt"
       const mailer = getMailer();
       throw new functions.https.HttpsError('failed-precondition', mailer
-        ? 'Kein Chef-Konto mit hinterlegter E-Mail-Adresse gefunden.'
+        ? 'Für dein Konto ist keine E-Mail-Adresse hinterlegt.'
         : 'Der E-Mail-Versand ist noch nicht eingerichtet (SMTP-Zugangsdaten fehlen).');
     }
     return { ok: true, empfaenger: empfaenger, tage: tage };
@@ -2492,7 +2634,13 @@ exports.purgeTrash = region
    Funktion nicht abstuerzt — nicht, WER am Ende uebrig bleibt. Und
    genau das ist hier die Frage.
 
+   kontenImStudio() entscheidet, WER ueberhaupt in Frage kommt. Seit die
+   Fertig-Meldung auch an Studio-Leiter geht, haengt daran die Frage, ob
+   ein Leiter die Mail nur fuer SEINE Studios bekommt — die teuerste
+   Sorte Fehler, weil eine Mail zu viel niemandem auffaellt, der sie
+   nicht bekommen sollte.
+
    Bewusst unter einem eigenen Namen und nicht als exports.<name>:
    alles, was oben mit exports. anfaengt, waere ein ausgerollter
-   Endpunkt. Dieser hier ist keiner. */
-exports.__intern = { mailWillHaben };
+   Endpunkt. Diese hier sind keiner. */
+exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText };

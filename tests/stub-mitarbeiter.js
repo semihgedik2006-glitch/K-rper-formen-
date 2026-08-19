@@ -179,6 +179,23 @@ var USERS = [
     { id:'d2', name:'Gerätewartung Anleitung', kind:'link', url:'https://example.com', cat:'technik', studios:'all', ts:Date.now()-172800000, uploadedBy:'Chef' },
     { id:'d3', name:'Arbeitsvertrag Muster', kind:'file', size:88000, cat:'personal', studios:'all', ts:Date.now()-259200000, uploadedBy:'Chef' }
   ];
+  /* Übergaben — dieselbe Mischung wie im Chef-Stub, aber nur für das
+     eine Studio dieser Person. Damit lässt sich zeigen, dass sie
+     NICHT die Übergabe aus studio-7 sieht. */
+  var HANDOVERS = {
+    'studio-6': [
+      { id:'h1', text:'Rechte Beinpresse hakt beim Zurückfahren — Technik ist informiert.',
+        uid:'u2', name:'Anna Meier', ts:Date.now()-2*3600000 },
+      { id:'h2', text:'Neue Handtücher liegen im Lager hinten links.',
+        uid:'testuid', name:'Lisa Wagner', ts:Date.now()-5*3600000 },
+      { id:'h3', text:'Uralte Übergabe, darf nicht mehr auftauchen.',
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-9*86400000 }
+    ],
+    'studio-7': [
+      { id:'h4', text:'Fremdes Studio — darf hier nicht auftauchen.',
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-26*3600000 }
+    ]
+  };
   var SHIFTS = {
     'studio-6': [
       // eigene Schicht -> "Ich kann nicht" muss erscheinen
@@ -228,11 +245,38 @@ var USERS = [
           get: function () {
             var data = (path === 'users') ? PROFILE : {};
             if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }
+            /* Das eigene privat/<uid>-Dokument — darin steht der
+               Gelesen-Stand für Übergabe und Brett. Ohne __privatDoc
+               gibt es das Dokument NICHT, dann gilt alles als
+               ungelesen. Das ist die harmlosere Richtung: ein Punkt zu
+               viel, nicht einer zu wenig. */
+            if (path === 'privat') {
+              var pd = window.__privatDoc;
+              return Promise.resolve({ exists: !!pd, id: id,
+                data: function () { return pd || {}; } });
+            }
             return Promise.resolve({ exists: true, id: id, data: function () { return data; } });
           },
-          set: function () { return Promise.resolve(); },
-          update: function () { return Promise.resolve(); },
-          delete: function () { return Promise.resolve(); },
+          /* Geschriebenes festhalten — hier fehlte es bisher ganz.
+             Damit konnte ein Durchlauf aus Mitarbeitersicht nur prüfen,
+             dass ein Knopf klickbar war, nicht WAS er tut. Beim
+             „alles gelesen" ist genau das die Frage: ein Knopf, der nur
+             die Punkte ausblendet, sieht identisch aus wie einer, der
+             sich etwas merkt — bis man neu lädt. */
+          set: function (d) {
+            (window.__schreib = window.__schreib || []).push({ pfad: docPath, daten: d });
+            return Promise.resolve();
+          },
+          update: function (d) {
+            (window.__schreib = window.__schreib || [])
+              .push({ pfad: docPath, art: 'update', daten: d });
+            return Promise.resolve();
+          },
+          delete: function () {
+            (window.__schreib = window.__schreib || [])
+              .push({ pfad: docPath, art: 'delete' });
+            return Promise.resolve();
+          },
           onSnapshot: function (cb) {
             if (path === 'inventory') {
               var inv = INVENTORY[id];
