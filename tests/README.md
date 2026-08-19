@@ -151,6 +151,7 @@ was sie sehen soll.
 | `test-lizenzen.js` | Nachweise: Arten beim Namen statt roher Kennung, „selbst eingetragen" vs. „bestätigt", drei freiwillige Angaben landen in der Datenbank |
 | `test-bewegung-ich.js` | wo sich in „Mein Bereich" etwas bewegen darf — und wo nicht: die Notizliste beim Tippen nicht, bei „Bewegung reduzieren" gar nichts |
 | `test-startuebergabe.js` | die Übergabe auf der Startseite über alle eigenen Studios (ohne alte, ohne fremde) und „alles gelesen" — was der Knopf wirklich speichert |
+| `test-kopf-bericht.js` | der Berichts-Knopf neben der Marke: in jeder Ansicht da, nur für die Verwaltung, schickt den gemerkten Zeitraum, sperrt sich gegen Doppelklick |
 
 ### Alle auf einmal
 

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-DzBQet5cxjrcY8PKdCTZ+rskTX1DaYStP8A0WVZZ2eU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-A41VameYc9jNfJ/GvIzH9rVrGmLp7AJY66S1SGFAGLs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -518,6 +518,32 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background:var(--auf-1);color:var(--text-2);cursor:pointer;display:grid;place-items:center}
 .icon-btn:hover{background:var(--auf-2);color:var(--text)}
 .icon-btn svg{width:18px;height:18px}
+/* Groesse kommt von .icon-btn — dieselbe wie bei Suchen, Hell/Dunkel und
+   Abmelden. Hier steht nur, was ihn von denen unterscheidet.
+
+   flex:0 0 auto ist noetig, weil .tb-brand ein Flex-Behaelter ist: ohne
+   das quetscht sie ihn auf einem 390er-Geraet auf 33px zusammen, waehrend
+   seine Nachbarn rechts ihre 36px behalten.
+
+   ZUR 44-PIXEL-REGEL: die haelt in der Kopfzeile keiner ein. Unter 520px
+   setzt eine Regel alle .icon-btn auf 36px, damit die Zeile auf ein Handy
+   passt. Der zweite Weg aus dem Design-System — unsichtbare Flaeche
+   darueberlegen — geht hier auch nicht: .tb-brand bekommt in derselben
+   Abfrage overflow:hidden, damit ein langer Firmenname die Zeile nicht
+   sprengt, und beschneidet damit jede vergroesserte Trefferflaeche.
+   Nachgemessen mit elementFromPoint 21px ueber und unter der Mitte, bei
+   diesem Knopf und bei zwei bestehenden: alle drei landen auf der
+   Kopfzeile. Das ist ein Befund fuer die ganze Zeile, kein Sonderfall
+   dieses Knopfes — und er gehoert in eine eigene Aenderung, weil er die
+   Hoehe der Kopfzeile auf jedem Geraet verschiebt. */
+.tb-bericht{flex:0 0 auto;margin-left:var(--s4)}
+/* Waehrend die Mail gebaut wird: kein zweiter Klick. Ein Bericht, den
+   man dreimal anfordert, kommt dreimal an. */
+.tb-bericht[disabled]{opacity:.5;cursor:default}
+@media(max-width:400px){
+  /* Auf dem schmalsten Geraet weicht der Schriftzug, nicht der Knopf. */
+  .tb-brand{font-size:var(--t-md)}
+}
 
 .shell{flex:1;display:flex;min-height:0}
 .side{width:210px;flex-shrink:0;padding:var(--s16) var(--s12);border-right:1px solid var(--line);
@@ -3047,7 +3073,15 @@ html{font-size:var(--fs,100%)}
         <path d="M38 88 q-3 13 -15 18 q15 0 25 -12 z" fill="url(#scGrad)"/>
         <text x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="url(#scGrad)" text-anchor="middle" dominant-baseline="central">SC</text>
       </svg></span>
-      STUDIO<b>CHAT</b> <span class="tb-live">Live</span></div>
+      STUDIO<b>CHAT</b> <span class="tb-live">Live</span>
+      <!-- Bericht auf einen Griff. Steht bewusst hier neben der Marke und
+           nicht rechts bei Suchen/Abmelden: dort liegen Werkzeuge, die
+           jeder hat. Dieser gehoert nur der Verwaltung, und er soll aus
+           jeder Ansicht erreichbar sein, ohne vorher in die Verwaltung
+           und dort in den Reiter System zu gehen. -->
+      <button class="icon-btn tb-bericht" id="tbBericht" data-chef-only="1"
+              style="display:none" data-ikon="mail"
+              title="Bericht an mich senden" aria-label="Bericht an mich senden"></button></div>
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>
@@ -4951,6 +4985,9 @@ var PREFS = {
   folds:{},         // welche Abschnitte aufgeklappt sind (pro Gerät)
   sort:{},          // gewählte Sortierung je Liste (pro Gerät)
   keys:{},          // selbst belegte Tastenkürzel (pro Gerät)
+  /* Zuletzt gewaehlter Zeitraum fuer den Bericht. Den nimmt der Knopf
+     oben neben der Marke, der kein eigenes Feld hat. */
+  berichtTage:30,
   // Welche Meldungen dieses Gerät bekommen soll. Bewusst pro GERÄT und
   // nicht pro Person: der Push hängt am Gerät, und viele wollen am Handy
   // etwas anderes als am Rechner.
@@ -11687,6 +11724,37 @@ function allesGelesen(){
   ref.set({ gelesenHo:jetzt, gelesenBrett:jetzt }, {merge:true})
     .then(function(){ toast('Als gelesen markiert ✓'); })
     .catch(function(e){ toast(errMsg(e),true); });
+}
+
+/* ── Bericht anfordern ──
+   Ein Weg fuer beide Knoepfe: den in der Verwaltung und den oben neben
+   der Marke. Zwei Aufrufe waeren zwei Stellen, an denen eine Aenderung
+   vergessen wird — und eine davon vergisst man.
+
+   Der Bericht geht immer nur an den, der drueckt. Das entscheidet der
+   Server anhand der Anmeldung, nicht die App: hier steht keine
+   Adresse. */
+function berichtAnfordern(tage, note){
+  var fns=firebase.app().functions(KONFIG.region);
+  return fns.httpsCallable('sendTestReport')({ tage:tage })
+    .then(function(res){
+      /* Die Zahl kommt vom Server zurueck, nicht aus dem Feld. Wer 999
+         eintippt, soll lesen, was wirklich im Bericht steht — nicht,
+         was er wollte. */
+      var t=(res && res.data && res.data.tage)||tage;
+      var satz='Unterwegs an dich: die letzten '+t+(t===1?' Tag':' Tage')+
+        ' über alle Studios.';
+      if(note){ note.textContent='✓ '+satz; note.style.color='var(--ok-tx)'; }
+      /* Der Knopf oben hat keine Zeile unter sich. Damit dort nicht nur
+         „gesendet" steht, nennt die Meldung den Zeitraum mit. */
+      toast(note ? 'Bericht gesendet ✓' : satz);
+    })
+    .catch(function(e){
+      // Die Server-Meldung ist hier aussagekräftiger als ein Standardtext
+      var msg=(e && e.message) || 'Unbekannter Fehler';
+      if(note){ note.textContent='Hat nicht geklappt: '+msg; note.style.color='var(--danger)'; }
+      toast(msg,true);
+    });
 }
 
 /* ── Mein Dienst ──
@@ -18829,6 +18897,26 @@ function bindActions(){
   var cA=$('certAdd'); if(cA) cA.addEventListener('click',function(){ addCert(this); });
   var mcA=$('myCertAdd'); if(mcA) mcA.addEventListener('click',function(){ addMyCert(this); });
 
+  /* Bericht direkt aus der Kopfzeile — aus jeder Ansicht erreichbar,
+     ohne den Umweg Verwaltung → System.
+
+     Er nimmt den zuletzt in der Karte eingestellten Zeitraum, sonst
+     30 Tage. Ein eigenes Feld daneben waere eine zweite Stelle, an der
+     dasselbe eingestellt wird, und die beiden liefen auseinander.
+
+     withBusy sperrt den Knopf, solange die Mail gebaut wird. Ohne das
+     kommt der Bericht dreimal, wenn jemand dreimal tippt, weil nichts
+     sichtbar passiert. */
+  var tbB=$('tbBericht');
+  if(tbB) tbB.addEventListener('click',function(){
+    var tage=Math.min(370, Math.max(1, +PREFS.berichtTage || 30));
+    tbB.title='Bericht wird gesendet …';
+    withBusy(tbB, function(){
+      return berichtAnfordern(tage, null)
+        .then(function(){ tbB.title='Bericht an mich senden'; });
+    });
+  });
+
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){
     if(confirm('Abmelden?\n\nDeine Daten bleiben gespeichert – du kannst dich jederzeit wieder anmelden.')){
@@ -18914,53 +19002,54 @@ function bindActions(){
        danebenzustellen — sonst stuenden zwei Angaben da und es waere
        nicht zu sehen, welche gilt. */
     var rtSel=$('repTestTage');
-    if(rtSel) rtSel.addEventListener('change',function(){
-      var box=$('repTageEigenBox');
-      if(box) box.style.display = rtSel.value==='eigen' ? '' : 'none';
-      if(rtSel.value==='eigen'){ var f=$('repTageEigen'); if(f) f.focus(); }
-    });
+    if(rtSel){
+      /* Den gemerkten Zeitraum wieder einstellen. Ohne das zeigte die
+         Karte 30 Tage an, waehrend der Knopf oben 90 verschickt — zwei
+         Anzeigen fuer dieselbe Sache, die nicht uebereinstimmen. */
+      var merk=+PREFS.berichtTage || 30;
+      var passt=[...rtSel.options].some(function(o){ return o.value===String(merk); });
+      if(passt){ rtSel.value=String(merk); }
+      else {
+        rtSel.value='eigen';
+        var ef=$('repTageEigen'); if(ef) ef.value=String(merk);
+        var eb=$('repTageEigenBox'); if(eb) eb.style.display='';
+      }
+      rtSel.addEventListener('change',function(){
+        var box=$('repTageEigenBox');
+        if(box) box.style.display = rtSel.value==='eigen' ? '' : 'none';
+        if(rtSel.value==='eigen'){ var f=$('repTageEigen'); if(f) f.focus(); }
+      });
+    }
     /* Wie viele Tage gelten gerade? An einer Stelle, damit Knopf und
-       Meldung nicht auseinanderlaufen. */
+       Meldung nicht auseinanderlaufen.
+
+       Die Auswahl wird gemerkt. Der Knopf oben neben der Marke hat kein
+       eigenes Feld — er nimmt genau das, was hier zuletzt eingestellt
+       war. Ohne das Merken haette er immer 30 Tage geschickt, egal was
+       in der Karte steht, und zwei Knoepfe fuer dasselbe haetten
+       Verschiedenes getan. */
     function berichtTage(){
       var sel=($('repTestTage')||{}).value;
+      var n;
       if(sel==='eigen'){
-        var n=parseInt(($('repTageEigen')||{}).value,10);
+        n=parseInt(($('repTageEigen')||{}).value,10);
         /* Der Server deckelt ohnehin auf 1..370. Hier noch einmal, damit
            die Meldung darunter dieselbe Zahl nennt wie die Mail. */
-        return Math.min(370, Math.max(1, n||30));
+        n=Math.min(370, Math.max(1, n||30));
+      } else {
+        n=parseInt(sel,10)||30;
       }
-      return parseInt(sel,10)||30;
+      PREFS.berichtTage=n; savePrefs();
+      return n;
     }
 
     // Bericht anfordern. Die Rolle wird auf dem Server geprüft, nicht hier –
     // der Knopf ist nur die Bequemlichkeit, nicht die Absicherung.
     var rts=$('repTestSend');
     if(rts) rts.addEventListener('click',function(){
-      var btn=this, note=$('repTestNote');
-      var tage=berichtTage();
+      var note=$('repTestNote');
       if(note){ note.textContent='Wird erstellt und versendet …'; note.style.color='var(--text-2)'; }
-      withBusy(btn,function(){
-        var fns=firebase.app().functions(KONFIG.region);
-        return fns.httpsCallable('sendTestReport')({ tage:tage })
-          .then(function(res){
-            var t=(res && res.data && res.data.tage)||tage;
-            if(note){
-              /* Die Zahl kommt vom Server zurueck, nicht aus dem Feld.
-                 Wer 999 eintippt, soll hier lesen, was wirklich im
-                 Bericht steht — nicht, was er wollte. */
-              note.textContent='✓ Unterwegs an dich: die letzten '+t+
-                (t===1?' Tag':' Tage')+' über alle Studios.';
-              note.style.color='var(--ok-tx)';
-            }
-            toast('Bericht gesendet ✓');
-          })
-          .catch(function(e){
-            // Die Server-Meldung ist hier aussagekräftiger als ein Standardtext
-            var msg=(e && e.message) || 'Unbekannter Fehler';
-            if(note){ note.textContent='Hat nicht geklappt: '+msg; note.style.color='var(--danger)'; }
-            toast(msg,true);
-          });
-      });
+      withBusy(this, function(){ return berichtAnfordern(berichtTage(), note); });
     });
 
     // Passwort zurücksetzen (schickt eine E-Mail von Firebase)
