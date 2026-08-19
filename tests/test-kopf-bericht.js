@@ -66,6 +66,11 @@ async function seite(b, stub, prefs) {
       const user = document.querySelector('.tb-user').getBoundingClientRect();
       return {
         da: k.offsetParent !== null,
+        /* Er darf NICHT in .tb-brand liegen. Dort stand er zuerst — und
+           nahm dem Schriftzug den Platz, weil die Marke unter 520px
+           overflow:hidden hat: bei 320 und 390px wurde „STUDIOCHAT"
+           abgeschnitten. Geprüft wird deshalb die Absicht (links, beim
+           Logo, nicht bei den Werkzeugen), nicht die Verschachtelung. */
         inDerMarke: !!k.closest('.tb-brand'),
         rechtsVomLogo: Math.round(kb.left - logo.right),
         linksVonDenWerkzeugen: kb.right < user.left,
@@ -76,8 +81,11 @@ async function seite(b, stub, prefs) {
     });
     console.log('Verwaltung:', JSON.stringify(wo));
     pruefe(wo.da, 'FEHLT: der Knopf steht nicht in der Kopfzeile');
-    pruefe(wo.inDerMarke && wo.rechtsVomLogo > 0 && wo.linksVonDenWerkzeugen,
-      'PLATZ: er steht nicht neben der Marke (' + JSON.stringify(wo) + ')');
+    pruefe(wo.rechtsVomLogo > 0 && wo.linksVonDenWerkzeugen,
+      'PLATZ: er steht nicht links neben der Marke (' + JSON.stringify(wo) + ')');
+    pruefe(!wo.inDerMarke,
+      'IN DER MARKE: er liegt in .tb-brand — dort nimmt er dem Schriftzug ' +
+      'den Platz, und der wird unter 520px abgeschnitten (overflow:hidden)');
     /* Gequetscht war er beim ersten Anlauf: 33px statt 36, weil die
        Marke ein Flex-Behälter ist. Ohne diese Zeile fiele das nicht auf. */
     pruefe(wo.breite >= 36 && wo.hoch >= 36,

@@ -536,7 +536,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Kopfzeile. Das ist ein Befund fuer die ganze Zeile, kein Sonderfall
    dieses Knopfes — und er gehoert in eine eigene Aenderung, weil er die
    Hoehe der Kopfzeile auf jedem Geraet verschiebt. */
-.tb-bericht{flex:0 0 auto;margin-left:var(--s4)}
+/* margin-right:auto haelt ihn links bei der Marke. Die Kopfzeile steht
+   auf justify-content:space-between; ohne das saesse ein drittes Kind
+   mittig zwischen Marke und Werkzeugen. */
+.tb-bericht{flex:0 0 auto;margin-right:auto}
 /* Waehrend die Mail gebaut wird: kein zweiter Klick. Ein Bericht, den
    man dreimal anfordert, kommt dreimal an. */
 .tb-bericht[disabled]{opacity:.5;cursor:default}
@@ -1524,7 +1527,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   .icon-btn svg{width:17px;height:17px}
 }
 @media(max-width:360px){
-  .tb-brand .tb-logo{display:none}   /* ganz schmal: nur noch der Schriftzug */
+  /* Ganz schmal: nur noch das Zeichen, nicht der Schriftzug.
+     Hier stand es umgekehrt — das Logo weg, „STUDIOCHAT" behalten. Für
+     den knappsten Platz ist das die teurere Haelfte: der Schriftzug
+     misst 119px, das Zeichen 26px. Seit in der Kopfzeile ein Knopf mehr
+     steht, reichte es nicht mehr, und der Schriftzug wurde bei 320px
+     abgeschnitten (test-abgeschnitten.js). Das Zeichen traegt die Marke
+     auf dieser Breite besser als ein halbes Wort. */
+  .tb-brand .tb-wort{display:none}
 }
 
 /* ── Putzplan ── */
@@ -3073,15 +3083,21 @@ html{font-size:var(--fs,100%)}
         <path d="M38 88 q-3 13 -15 18 q15 0 25 -12 z" fill="url(#scGrad)"/>
         <text x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="url(#scGrad)" text-anchor="middle" dominant-baseline="central">SC</text>
       </svg></span>
-      STUDIO<b>CHAT</b> <span class="tb-live">Live</span>
-      <!-- Bericht auf einen Griff. Steht bewusst hier neben der Marke und
-           nicht rechts bei Suchen/Abmelden: dort liegen Werkzeuge, die
-           jeder hat. Dieser gehoert nur der Verwaltung, und er soll aus
-           jeder Ansicht erreichbar sein, ohne vorher in die Verwaltung
-           und dort in den Reiter System zu gehen. -->
-      <button class="icon-btn tb-bericht" id="tbBericht" data-chef-only="1"
-              style="display:none" data-ikon="mail"
-              title="Bericht an mich senden" aria-label="Bericht an mich senden"></button></div>
+      <span class="tb-wort">STUDIO<b>CHAT</b></span> <span class="tb-live">Live</span></div>
+    <!-- Bericht auf einen Griff. Steht bewusst links neben der Marke und
+         nicht rechts bei Suchen/Abmelden: dort liegen Werkzeuge, die
+         jeder hat. Dieser gehoert nur der Verwaltung, und er soll aus
+         jeder Ansicht erreichbar sein, ohne vorher in die Verwaltung
+         und dort in den Reiter System zu gehen.
+
+         NEBEN der Marke, nicht DARIN: .tb-brand hat unter 520px
+         overflow:hidden, damit ein langer Firmenname die Zeile nicht
+         sprengt. Ein Kind darin nimmt dem Schriftzug den Platz, und der
+         wurde bei 320 und 390px abgeschnitten — gefunden von
+         test-abgeschnitten.js, nicht vom Auge. -->
+    <button class="icon-btn tb-bericht" id="tbBericht" data-chef-only="1"
+            style="display:none" data-ikon="mail"
+            title="Bericht an mich senden" aria-label="Bericht an mich senden"></button>
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>
