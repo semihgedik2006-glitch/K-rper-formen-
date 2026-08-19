@@ -550,8 +550,16 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
    margin-right:auto haelt ihn links; die Kopfzeile steht auf
    justify-content:space-between, ohne das saesse ein drittes Kind
-   mittig. */
-.tb-bericht{flex:0 0 auto;margin-right:auto;margin-left:var(--s8);
+   mittig.
+
+   KEIN margin-left: die Kopfzeile hat schon ein gap. Hier stand eins,
+   und damit lagen 16px zwischen Marke und Knopf statt 8. Bei 390px
+   braucht die Marke 145px und bekam nur 142 — der Schriftzug wurde um
+   drei Pixel abgeschnitten. Die Zeile ist an dieser Breite auf drei
+   Pixel genau voll: 12 Rand + 145 Marke + 36 Knopf + 8 Abstand + 164
+   Werkzeuge + 12 Rand = 377 von 390. Wer hier etwas hinzufuegt, nimmt
+   es der Marke weg. */
+.tb-bericht{flex:0 0 auto;margin-right:auto;
   border-color:transparent;background:var(--accent-glow);color:var(--accent-d)}
 .tb-bericht:hover{color:var(--accent);background:var(--accent-glow)}
 .tb-bericht .tbb-wort{display:none}
