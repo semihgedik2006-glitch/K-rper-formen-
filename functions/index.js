@@ -110,10 +110,27 @@ function willHaben(d, art) {
 }
 
 /* Push an eine Liste von Tokens senden + ungültige Tokens aufräumen */
+/* ══ Warum hier KEIN notification-Feld steht ═══════════════════════════
+   Aus dem Betrieb: „Push-Nachrichten kommen an, meistens sogar doppelt."
+
+   Genau daran lag es. Traegt eine FCM-Nachricht ein `notification`-Feld,
+   zeigt der Browser sie im Hintergrund SELBST an — und ruft zusaetzlich
+   onBackgroundMessage() im Service Worker auf, wo sw.js sie ein zweites
+   Mal anzeigt. Zwei Meldungen fuer eine Nachricht. Das ist kein Fehler
+   im Service Worker, sondern das dokumentierte Verhalten von FCM im Web.
+
+   Deshalb gehen die Texte als DATEN raus. Dann feuert nur
+   onBackgroundMessage, und angezeigt wird genau einmal — von uns.
+
+   Der Preis: zeigt der Service Worker nichts an, kommt gar nichts. Das
+   ist die richtige Seite des Handels — eine Meldung zu viel merkt sich
+   niemand als Fehler, sie nervt nur, und genau das war die Rueckmeldung.
+
+   Datenfelder muessen Zeichenketten sein; alles andere weist FCM ab. */
 async function sendPush(tokens, title, body) {
   if (!tokens.length) return;
   const message = {
-    notification: { title, body: body || '' },
+    data: { title: String(title || 'StudioChat'), body: String(body || '') },
     tokens: tokens.slice(0, 500)
   };
   const res = await admin.messaging().sendEachForMulticast(message);

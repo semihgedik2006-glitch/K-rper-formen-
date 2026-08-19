@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = 'studiochat-' + VERSION;
 const PRECACHE = ['./index.html', './konfig.js', './icon.svg'];
 
@@ -16,12 +16,40 @@ importScripts('./konfig.js');
 firebase.initializeApp(KONFIG.firebase);
 const messaging = firebase.messaging();
 
+/* Aus DATEN bauen, nicht aus notification.
+
+   Trug die Nachricht ein notification-Feld, zeigte der Browser sie im
+   Hintergrund selbst an UND rief diese Funktion auf — zwei Meldungen
+   fuer eine Nachricht. Aus dem Betrieb gemeldet als „kommen meistens
+   sogar doppelt". Der Server schickt seit dem 19.8. reine Daten.
+
+   Der Rueckfall auf payload.notification bleibt: waehrend des Ausrollens
+   liegen noch Nachrichten alter Form unterwegs, und eine PWA aktualisiert
+   ihren Service Worker nicht in derselben Sekunde. */
 messaging.onBackgroundMessage(function (payload) {
+  const d = (payload && payload.data) || {};
   const n = (payload && payload.notification) || {};
-  self.registration.showNotification(n.title || 'StudioChat', {
-    body: n.body || '', icon: 'icon.svg', badge: 'icon.svg', tag: 'kf-' + Date.now()
+  const titel = d.title || n.title || 'StudioChat';
+  const text = d.body || n.body || '';
+  self.registration.showNotification(titel, {
+    body: text, icon: 'icon.svg', badge: 'icon.svg',
+    /* Die Marke haengt am INHALT, nicht an der Uhrzeit.
+
+       Vorher stand hier Date.now() — damit war jede Marke einmalig und
+       zwei gleiche Meldungen legten sich nebeneinander statt
+       uebereinander. Mit dem Inhalt als Marke ersetzt eine identische
+       Meldung die vorige, egal woher die zweite kam. Verschiedene
+       Nachrichten stossen sich dabei nicht: sie haben andere Marken. */
+    tag: 'kf-' + marke(titel + '|' + text)
   });
 });
+/* Kurze, stabile Zahl aus einer Zeichenkette. Kein Sicherheitszweck —
+   sie muss nur fuer denselben Text immer gleich herauskommen. */
+function marke(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+  return Math.abs(h).toString(36);
+}
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {

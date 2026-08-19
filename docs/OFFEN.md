@@ -290,14 +290,16 @@ Anwaltstisch; siehe `RECHT.md`.
 
 ---
 
-## Ein Schritt offen: der Firmencode
+## ~~Ein Schritt offen: der Firmencode~~ ✅ 17.8. erledigt
 
-**Verwaltung → Team → „🔑 Wer darf sich anmelden"** — Code eintragen,
-Haken bei der Freigabe setzen, speichern. Zwei Minuten, in der App.
+Der Code ist gesetzt und die Freigabe steht — am 17.8. gemeldet, oben in
+der Liste seitdem abgehakt.
 
-Bis dahin kann sich jeder anmelden, der die Adresse kennt, und sieht
-Teamchat, Personenliste, Aufgaben und Dokumente. Für bestehende Konten
-ändert sich durch die Einstellung nichts.
+> **Warum das hier trotzdem noch stand:** die Tabelle oben wurde
+> nachgezogen, dieser Abschnitt nicht. Zwei Stellen für dieselbe Sache,
+> und eine davon vergisst man — hier ist genau das passiert. Wer die
+> Datei von unten liest, hielt einen erledigten Schritt für offen.
+> Aufgefallen beim Durchgehen der offenen Punkte am 19.8.
 
 ---
 

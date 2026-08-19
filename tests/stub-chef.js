@@ -216,7 +216,14 @@ var USERS = [
       { id:'h2', text:'Neue Handtücher liegen im Lager hinten links.',
         uid:'testuid', name:'Test Chef', ts:Date.now()-5*3600000 },
       { id:'h3', text:'Uralte Übergabe, darf nicht mehr auftauchen.',
-        uid:'u3', name:'Ben Kraus', ts:Date.now()-9*86400000 }
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-9*86400000 },
+      /* Der Eintrag, der die 24-Stunden-Grenze WIRKLICH prüft.
+         „Uralt" mit neun Tagen fiele auch bei einem Sieben-Tage-Fenster
+         raus — mit ihm allein wäre die Verkürzung von sieben Tagen auf
+         einen Tag ungeprüft geblieben. Dieser hier ist drei Tage alt:
+         vorher sichtbar, jetzt nicht mehr. */
+      { id:'h5', text:'Drei Tage alt — bei sieben Tagen sichtbar, bei einem nicht.',
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-3*86400000 }
     ],
     'studio-7': [
       /* Bewusst die NEUESTE von allen. Die Startseite zeigt nur die
@@ -467,7 +474,7 @@ var USERS = [
         var gm = /^channels\/(.+)\/messages$/.exec(path);
         var gh = /^studios\/(.+)\/handovers$/.exec(path);
         var list = gm ? (gm[1] === 'allgemein' ? MESSAGES : [])
-          : gh ? (typeof HANDOVERS !== 'undefined' ? (HANDOVERS[gh[1]] || []) : [])
+          : gh ? ((window.__handovers || (typeof HANDOVERS !== 'undefined' ? HANDOVERS : {}))[gh[1]] || [])
           : path === 'board' ? (typeof BOARD !== 'undefined' ? BOARD : [])
           : ga ? (ABSENCES[ga[1]] || [])
           : ms ? (SHIFTS[ms[1]] || [])

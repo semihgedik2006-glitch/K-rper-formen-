@@ -189,7 +189,11 @@ var USERS = [
       { id:'h2', text:'Neue Handtücher liegen im Lager hinten links.',
         uid:'testuid', name:'Lisa Wagner', ts:Date.now()-5*3600000 },
       { id:'h3', text:'Uralte Übergabe, darf nicht mehr auftauchen.',
-        uid:'u3', name:'Ben Kraus', ts:Date.now()-9*86400000 }
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-9*86400000 },
+      /* Prüft die 24-Stunden-Grenze. Neun Tage fielen auch bei einem
+         Sieben-Tage-Fenster raus; drei Tage nur bei einem Tag. */
+      { id:'h5', text:'Drei Tage alt — bei sieben Tagen sichtbar, bei einem nicht.',
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-3*86400000 }
     ],
     'studio-7': [
       { id:'h4', text:'Fremdes Studio — darf hier nicht auftauchen.',
@@ -325,7 +329,7 @@ var USERS = [
         var gm = /^channels\/(.+)\/messages$/.exec(path);
         var gh = /^studios\/(.+)\/handovers$/.exec(path);
         var list = gm ? (gm[1] === 'allgemein' ? MESSAGES : [])
-          : gh ? (typeof HANDOVERS !== 'undefined' ? (HANDOVERS[gh[1]] || []) : [])
+          : gh ? ((window.__handovers || (typeof HANDOVERS !== 'undefined' ? HANDOVERS : {}))[gh[1]] || [])
           : path === 'board' ? (typeof BOARD !== 'undefined' ? BOARD : [])
           : ga ? (ABSENCES[ga[1]] || [])
           : ms ? (SHIFTS[ms[1]] || [])
