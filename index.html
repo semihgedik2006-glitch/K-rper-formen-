@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-m8yyvt4yPyOGCsTD2Nn+Xhjj9F1bsjZaIThan3+rp0M='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-sqMQ8dco4F6fPOO+lk+nkx8zKNfsgMy0iDdGF+A5w2g='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -8843,6 +8843,16 @@ var _archiveTimer=null;
 /* Meldung anzeigen, während die App offen ist – hält sich an dieselben
    Einstellungen wie der Push, sonst wäre der Schalter nur halb wirksam.
    art: 'chat' | 'dm' | 'ann' | 'todos' | 'mentions' (fehlt = immer zeigen) */
+/* Kurze, stabile Zahl aus einer Zeichenkette. Kein Sicherheitszweck —
+   sie muss nur fuer denselben Text immer gleich herauskommen, damit eine
+   identische Meldung die vorige ersetzt statt sich danebenzulegen.
+   Dieselbe Rechnung steht in sw.js; sie muss dort nicht gleich sein,
+   aber sie ist es, damit man beim Lesen nicht zweimal nachdenkt. */
+function notizMarke(s){
+  var h=0;
+  for(var i=0;i<s.length;i++){ h=((h<<5)-h+s.charCodeAt(i))|0; }
+  return Math.abs(h).toString(36);
+}
 function localNotify(title, body, art){
   if(art && PREFS.notify && PREFS.notify[art]===false) return;
   return _localNotify(title, body);
@@ -8853,7 +8863,10 @@ function _localNotify(title, body){
       var n=new Notification(title, {
         body: body || '',
         icon: 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27192%27 height=%27192%27%3E%3Crect width=%27192%27 height=%27192%27 rx=%2742%27 fill=%27%230E1712%27/%3E%3Ctext x=%2750%25%27 y=%2756%25%27 font-family=%27Arial%27 font-size=%2784%27 font-weight=%27bold%27 fill=%27%2300E06E%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27%3ESC%3C/text%3E%3C/svg%3E',
-        tag: 'kf-'+Date.now()
+        /* Marke am INHALT, nicht an der Uhrzeit — dieselbe Ueberlegung
+           wie im Service Worker: zwei gleiche Meldungen sollen sich
+           ersetzen, nicht stapeln. */
+        tag: 'kf-'+notizMarke(String(title||'')+'|'+String(body||''))
       });
       n.onclick=function(){ window.focus(); n.close(); };
     } else {
@@ -8878,10 +8891,18 @@ function initMessaging(){
   try{
     if(typeof firebase==='undefined' || !firebase.messaging || !firebase.messaging.isSupported || !firebase.messaging.isSupported()) return;
     messaging = firebase.messaging();
-    // Wenn App offen ist und eine Push-Nachricht kommt → lokal anzeigen
+    /* Wenn die App offen ist und eine Push-Nachricht kommt → lokal
+       anzeigen. Die Texte stehen seit dem 19.8. in payload.data, nicht
+       mehr in payload.notification: mit notification zeigte der Browser
+       die Nachricht im Hintergrund selbst an und rief zusaetzlich den
+       Service Worker auf, der sie ein zweites Mal anzeigte.
+
+       Der Rueckfall bleibt fuer Nachrichten, die beim Ausrollen noch in
+       alter Form unterwegs sind. */
     messaging.onMessage(function(payload){
+      var d=(payload && payload.data)||{};
       var n=(payload && payload.notification)||{};
-      localNotify(n.title||'Neue Nachricht', n.body||'');
+      localNotify(d.title||n.title||'Neue Nachricht', d.body||n.body||'');
     });
     // Falls Berechtigung schon erteilt: Token (neu) registrieren
     if('Notification' in window && Notification.permission==='granted') registerFcmToken();
