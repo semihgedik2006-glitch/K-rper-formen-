@@ -176,7 +176,34 @@ const ansicht = page => page.evaluate(() => {
     console.log('STARTSEITE:', JSON.stringify(home, null, 1));
     if (!home.schnellzugriffWeg) errs.push('Der doppelte Schnellzugriff ist noch da');
     if (home.kacheln.length && !home.ersteHatZahl) errs.push('Eine Null steht vor einer echten Zahl');
-    if (home.bildschirme > 1.6) errs.push('Startseite ist ' + home.bildschirme + ' Bildschirme lang');
+    /* Bis zum 19.8. stand hier 1.6. Nachgemessen, bevor die Zahl bewegt
+       wurde — Höhen aus stub-mitarbeiter.js bei 390×844:
+
+           157px  homeAlerts        233px  homeHoCard   (neu)
+            95px  myShiftCard        19px  sec-head
+            23px  homeLesenHead     298px  homeGrid
+           150px  homeAnnCard        58px  homeActivityCard
+
+       Die Seite lag OHNE die Übergabe bei 943px = 1.49, also schon bei
+       93 % ihres Budgets. Eine Kartenüberschrift kostet 67px, jeder
+       Eintrag 83px. Eine dritte Lese-Karte passt damit rechnerisch nicht
+       hinein, egal wie kurz man sie macht: selbst mit einem einzigen
+       Eintrag bliebe sie bei 1.73.
+
+       Der Betrieb hat die Übergabe ausdrücklich auf der Startseite
+       verlangt („sonst macht das ja kein Sinn"). Also entweder die Zahl
+       bewegt sich, oder die Funktion wird unbrauchbar gebaut. Sie
+       bewegt sich — aber nicht kommentarlos, und nicht weiter als
+       gemessen: 1.9, und die Lese-Karten zeigen dafür nur noch zwei
+       Zeilen statt drei.
+
+       Wofür die Grenze da ist, gilt weiter: keine Wand aus Inhalt. Zwei
+       Bildschirme bleiben die Obergrenze. Wer sie erneut reisst, kürzt
+       die Seite — er hebt die Zahl nicht wieder an. */
+    if (home.bildschirme > 1.9) {
+      errs.push('Startseite ist ' + home.bildschirme + ' Bildschirme lang ' +
+        '(erlaubt 1.9 — kürzen, nicht die Grenze anheben)');
+    }
     await b.close();
   }
 

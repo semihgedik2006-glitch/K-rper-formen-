@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-ddmuG+WbQfLzbLOsKXAK7doF+v9n2Bs+a0NACanw8nc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-DzBQet5cxjrcY8PKdCTZ+rskTX1DaYStP8A0WVZZ2eU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -11556,6 +11556,18 @@ function hochzaehlen(wurzel){
 
    Leere Karten verschwinden ganz. „Noch nichts da" ist auf einer
    Startseite nur Platzverschwendung. */
+/* Wie viele Zeilen je Lese-Karte.
+
+   Bis zum 19.8. drei — bei zwei Karten. Mit der Uebergabe sind es drei
+   Karten, und die Startseite wurde 1,86 Bildschirme lang; erlaubt sind
+   1,6. Gefunden hat das test-navigation.js, nicht das Auge.
+
+   Zwei statt drei ist der bessere Schnitt als eine Karte wegzulassen:
+   auf der Startseite muss stehen, DASS es etwas gibt und was das
+   Neueste ist. Alles Weitere steht hinter „Alle ›" — dafuer ist der
+   Link da. */
+var LESE_MAX = 2;
+
 function renderHomeLesen(){
   if(!session) return;
   var kopf=$('homeLesenHead');
@@ -11580,7 +11592,7 @@ function renderHomeLesen(){
       (session.studioKeys||[]).indexOf(a.target)>=0;
   });
   if(meine.length){
-    annBox.innerHTML=meine.slice(0,3).map(function(a){
+    annBox.innerHTML=meine.slice(0,LESE_MAX).map(function(a){
       return '<div class="lese-eintrag">'+
         '<div class="lese-text">'+linkify(esc(a.text||''))+'</div>'+
         fuss(a.from||'Leitung', a.ts, annNeu(a))+'</div>';
@@ -11598,7 +11610,7 @@ function renderHomeLesen(){
   var ho=!featureAn('uebergabe') ? [] : (_myHo||[]);
   if(hoKarte && hoBox){
     if(ho.length){
-      hoBox.innerHTML=ho.slice(0,3).map(function(h){
+      hoBox.innerHTML=ho.slice(0,LESE_MAX).map(function(h){
         var wer=(h.name||'')+(mehrereStudios?' · '+studioName(h.sk):'');
         return '<div class="lese-eintrag">'+
           '<div class="lese-text">'+linkify(esc(h.text||''))+'</div>'+
@@ -11612,7 +11624,7 @@ function renderHomeLesen(){
 
   var brett=!featureAn('brett') ? [] : (_board||[]);
   if(brett.length){
-    brettBox.innerHTML=brett.slice(0,3).map(function(b){
+    brettBox.innerHTML=brett.slice(0,LESE_MAX).map(function(b){
       return '<div class="lese-eintrag">'+
         '<div class="lese-text">'+linkify(esc(b.text||''))+'</div>'+
         fuss(b.name, b.ts, istNeu(b,_gelesen.brett))+'</div>';

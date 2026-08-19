@@ -219,8 +219,12 @@ var USERS = [
         uid:'u3', name:'Ben Kraus', ts:Date.now()-9*86400000 }
     ],
     'studio-7': [
+      /* Bewusst die NEUESTE von allen. Die Startseite zeigt nur die
+         zwei jüngsten; läge diese hier auf Platz drei, käme sie nie ins
+         Bild — und die Behauptung „es gehen alle eigenen Studios ein"
+         wäre nicht mehr zu prüfen, sondern nur noch zu hoffen. */
       { id:'h4', text:'Schlüssel für den Putzschrank liegt jetzt im Tresor.',
-        uid:'u3', name:'Ben Kraus', ts:Date.now()-26*3600000 }
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-1*3600000 }
     ]
   };
   var SHIFTS = {
