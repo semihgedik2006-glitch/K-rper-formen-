@@ -198,6 +198,35 @@ var USERS = [
     { id:'d2', name:'Gerätewartung Anleitung', kind:'link', url:'https://example.com', cat:'technik', studios:'all', ts:Date.now()-172800000, uploadedBy:'Chef' },
     { id:'d3', name:'Arbeitsvertrag Muster', kind:'file', size:88000, cat:'personal', studios:'all', ts:Date.now()-259200000, uploadedBy:'Chef' }
   ];
+  /* Übergaben. Gab es hier bisher gar nicht — HANDOVERS wurde an zwei
+     Stellen abgefragt und war nirgends definiert, der Wächter
+     `typeof HANDOVERS !== 'undefined'` hat das stillschweigend
+     geschluckt. Seit die Übergabe auf der Startseite steht, braucht es
+     echte Daten.
+
+     Bewusst gemischt: eine FREMDE (muss als ungelesen zählen), eine
+     EIGENE (darf es nicht — wer sie selbst geschrieben hat, braucht
+     keinen Punkt), eine ALTE (älter als sieben Tage, fällt raus) und
+     eine aus einem ZWEITEN Studio (zeigt, dass die Startseite über alle
+     eigenen Studios geht, nicht nur über das im Team-Bereich gewählte). */
+  var HANDOVERS = {
+    'studio-6': [
+      { id:'h1', text:'Rechte Beinpresse hakt beim Zurückfahren — Technik ist informiert.',
+        uid:'u2', name:'Anna Meier', ts:Date.now()-2*3600000 },
+      { id:'h2', text:'Neue Handtücher liegen im Lager hinten links.',
+        uid:'testuid', name:'Test Chef', ts:Date.now()-5*3600000 },
+      { id:'h3', text:'Uralte Übergabe, darf nicht mehr auftauchen.',
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-9*86400000 }
+    ],
+    'studio-7': [
+      /* Bewusst die NEUESTE von allen. Die Startseite zeigt nur die
+         zwei jüngsten; läge diese hier auf Platz drei, käme sie nie ins
+         Bild — und die Behauptung „es gehen alle eigenen Studios ein"
+         wäre nicht mehr zu prüfen, sondern nur noch zu hoffen. */
+      { id:'h4', text:'Schlüssel für den Putzschrank liegt jetzt im Tresor.',
+        uid:'u3', name:'Ben Kraus', ts:Date.now()-1*3600000 }
+    ]
+  };
   var SHIFTS = {
     'studio-6': [
       // eigene Schicht -> "Ich kann nicht" muss erscheinen
@@ -327,6 +356,16 @@ var USERS = [
               var mk = window.__marke;
               return Promise.resolve({ exists: !!mk, id: id,
                 data: function () { return mk || {}; } });
+            }
+            /* Das eigene privat/<uid>-Dokument. Darin steht seit dem
+               19.8. der Gelesen-Stand für Übergabe und Brett. Ohne
+               __privatDoc gibt es das Dokument NICHT — und das ist der
+               Normalfall: dann gilt alles als ungelesen, was die
+               harmlosere Richtung ist. */
+            if (path === 'privat') {
+              var pd = window.__privatDoc;
+              return Promise.resolve({ exists: !!pd, id: id,
+                data: function () { return pd || {}; } });
             }
             /* Impressum/Datenschutz je Firma. Ohne __recht gibt es das
                Dokument NICHT — das ist der Normalfall, auf dem jeder

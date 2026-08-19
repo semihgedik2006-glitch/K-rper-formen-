@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-Dxwfb/xSvd7iaV03oVqM/a1Jl0rY4KSYH6iwJ665ZDk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-A41VameYc9jNfJ/GvIzH9rVrGmLp7AJY66S1SGFAGLs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -518,6 +518,35 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   background:var(--auf-1);color:var(--text-2);cursor:pointer;display:grid;place-items:center}
 .icon-btn:hover{background:var(--auf-2);color:var(--text)}
 .icon-btn svg{width:18px;height:18px}
+/* Groesse kommt von .icon-btn — dieselbe wie bei Suchen, Hell/Dunkel und
+   Abmelden. Hier steht nur, was ihn von denen unterscheidet.
+
+   flex:0 0 auto ist noetig, weil .tb-brand ein Flex-Behaelter ist: ohne
+   das quetscht sie ihn auf einem 390er-Geraet auf 33px zusammen, waehrend
+   seine Nachbarn rechts ihre 36px behalten.
+
+   ZUR 44-PIXEL-REGEL: die haelt in der Kopfzeile keiner ein. Unter 520px
+   setzt eine Regel alle .icon-btn auf 36px, damit die Zeile auf ein Handy
+   passt. Der zweite Weg aus dem Design-System — unsichtbare Flaeche
+   darueberlegen — geht hier auch nicht: .tb-brand bekommt in derselben
+   Abfrage overflow:hidden, damit ein langer Firmenname die Zeile nicht
+   sprengt, und beschneidet damit jede vergroesserte Trefferflaeche.
+   Nachgemessen mit elementFromPoint 21px ueber und unter der Mitte, bei
+   diesem Knopf und bei zwei bestehenden: alle drei landen auf der
+   Kopfzeile. Das ist ein Befund fuer die ganze Zeile, kein Sonderfall
+   dieses Knopfes — und er gehoert in eine eigene Aenderung, weil er die
+   Hoehe der Kopfzeile auf jedem Geraet verschiebt. */
+/* margin-right:auto haelt ihn links bei der Marke. Die Kopfzeile steht
+   auf justify-content:space-between; ohne das saesse ein drittes Kind
+   mittig zwischen Marke und Werkzeugen. */
+.tb-bericht{flex:0 0 auto;margin-right:auto}
+/* Waehrend die Mail gebaut wird: kein zweiter Klick. Ein Bericht, den
+   man dreimal anfordert, kommt dreimal an. */
+.tb-bericht[disabled]{opacity:.5;cursor:default}
+@media(max-width:400px){
+  /* Auf dem schmalsten Geraet weicht der Schriftzug, nicht der Knopf. */
+  .tb-brand{font-size:var(--t-md)}
+}
 
 .shell{flex:1;display:flex;min-height:0}
 .side{width:210px;flex-shrink:0;padding:var(--s16) var(--s12);border-right:1px solid var(--line);
@@ -1498,7 +1527,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   .icon-btn svg{width:17px;height:17px}
 }
 @media(max-width:360px){
-  .tb-brand .tb-logo{display:none}   /* ganz schmal: nur noch der Schriftzug */
+  /* Ganz schmal: nur noch das Zeichen, nicht der Schriftzug.
+     Hier stand es umgekehrt — das Logo weg, „STUDIOCHAT" behalten. Für
+     den knappsten Platz ist das die teurere Haelfte: der Schriftzug
+     misst 119px, das Zeichen 26px. Seit in der Kopfzeile ein Knopf mehr
+     steht, reichte es nicht mehr, und der Schriftzug wurde bei 320px
+     abgeschnitten (test-abgeschnitten.js). Das Zeichen traegt die Marke
+     auf dieser Breite besser als ein halbes Wort. */
+  .tb-brand .tb-wort{display:none}
 }
 
 /* ── Putzplan ── */
@@ -3047,7 +3083,21 @@ html{font-size:var(--fs,100%)}
         <path d="M38 88 q-3 13 -15 18 q15 0 25 -12 z" fill="url(#scGrad)"/>
         <text x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="url(#scGrad)" text-anchor="middle" dominant-baseline="central">SC</text>
       </svg></span>
-      STUDIO<b>CHAT</b> <span class="tb-live">Live</span></div>
+      <span class="tb-wort">STUDIO<b>CHAT</b></span> <span class="tb-live">Live</span></div>
+    <!-- Bericht auf einen Griff. Steht bewusst links neben der Marke und
+         nicht rechts bei Suchen/Abmelden: dort liegen Werkzeuge, die
+         jeder hat. Dieser gehoert nur der Verwaltung, und er soll aus
+         jeder Ansicht erreichbar sein, ohne vorher in die Verwaltung
+         und dort in den Reiter System zu gehen.
+
+         NEBEN der Marke, nicht DARIN: .tb-brand hat unter 520px
+         overflow:hidden, damit ein langer Firmenname die Zeile nicht
+         sprengt. Ein Kind darin nimmt dem Schriftzug den Platz, und der
+         wurde bei 320 und 390px abgeschnitten — gefunden von
+         test-abgeschnitten.js, nicht vom Auge. -->
+    <button class="icon-btn tb-bericht" id="tbBericht" data-chef-only="1"
+            style="display:none" data-ikon="mail"
+            title="Bericht an mich senden" aria-label="Bericht an mich senden"></button>
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>
@@ -3095,13 +3145,30 @@ html{font-size:var(--fs,100%)}
             <div id="myShiftList"></div>
           </div>
 
-          <div class="sec-head" id="homeLesenHead" style="display:none"><span>Zum Lesen</span><i></i></div>
+          <div class="sec-head" id="homeLesenHead" style="display:none"><span>Zum Lesen</span><i></i>
+            <!-- Erscheint nur, wenn wirklich etwas ungelesen ist. Ein Knopf,
+                 der immer dasteht und meistens nichts tut, wird nach zwei
+                 Tagen nicht mehr wahrgenommen — und dann auch nicht an dem
+                 Tag, an dem er gebraucht wird. -->
+            <button class="mini-link" id="homeAllesGelesen" style="display:none">Alles gelesen</button>
+          </div>
           <div class="card" id="homeAnnCard" data-fold="startinfos" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
               <h3 data-ikon="megafon">Von der Leitung</h3>
               <button class="mini-link" data-go="ann">Alle ›</button>
             </div>
             <div id="homeAnnList"></div>
+          </div>
+          <!-- Übergabe an die nächste Schicht. Stand bisher nur im
+               Team-Bereich hinter zwei Klicks und einer Studio-Auswahl —
+               also genau da, wo sie niemand liest, der gerade zur Schicht
+               kommt. Das ist der einzige Zweck einer Übergabe. -->
+          <div class="card" id="homeHoCard" data-fold="startuebergabe" data-fold-offen="1" style="display:none">
+            <div class="karten-kopf">
+              <h3 data-ikon="wiederholen">Übergabe</h3>
+              <button class="mini-link" data-go="team">Alle ›</button>
+            </div>
+            <div id="homeHoList"></div>
           </div>
           <div class="card" id="homeBoardCard" data-fold="startbrett" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
@@ -4358,16 +4425,29 @@ html{font-size:var(--fs,100%)}
               style="width:100%;margin-top:12px">Papierkorb endgültig leeren</button>
           </div>
           <div class="card" data-fold="monatsbericht" data-chef-only="1">
-            <h3 data-ikon="mail">Monatsbericht</h3>
-            <p class="hint">Kommt am Ersten jedes Monats um 8 Uhr per E-Mail. Hier
-              kannst du ihn sofort anfordern.</p>
+            <h3 data-ikon="mail">Bericht</h3>
+            <p class="hint">Über alle Studios. Kommt am Ersten jedes Monats um
+              8 Uhr an alle in der Verwaltung — hier kannst du ihn dir jederzeit
+              selbst schicken, für den Zeitraum, den du brauchst.</p>
             <div class="field"><label for="repTestTage">Zeitraum</label>
               <select class="inp" id="repTestTage">
                 <option value="7">Letzte 7 Tage</option>
+                <option value="14">Letzte 14 Tage</option>
                 <option value="30" selected>Letzte 30 Tage</option>
                 <option value="90">Letzte 90 Tage</option>
+                <option value="180">Letzte 180 Tage</option>
+                <option value="365">Letztes Jahr</option>
+                <option value="eigen">Andere Anzahl Tage …</option>
               </select></div>
-            <button data-ikon="mail" class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Testbericht jetzt senden</button>
+            <!-- Erscheint erst bei „Andere". Ein Zahlenfeld, das
+                 danebensteht und meistens leer bleibt, laesst offen,
+                 welches der beiden gilt. -->
+            <div class="field" id="repTageEigenBox" style="display:none">
+              <label for="repTageEigen">Wie viele Tage zurück?</label>
+              <input class="inp" id="repTageEigen" type="number" min="1" max="370"
+                step="1" value="60" inputmode="numeric" />
+            </div>
+            <button data-ikon="mail" class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Bericht an mich senden</button>
             <p class="em-saved" id="repTestNote"></p>
           </div>
           <div class="card" data-fold="pwreset" data-chef-only="1">
@@ -4921,6 +5001,9 @@ var PREFS = {
   folds:{},         // welche Abschnitte aufgeklappt sind (pro Gerät)
   sort:{},          // gewählte Sortierung je Liste (pro Gerät)
   keys:{},          // selbst belegte Tastenkürzel (pro Gerät)
+  /* Zuletzt gewaehlter Zeitraum fuer den Bericht. Den nimmt der Knopf
+     oben neben der Marke, der kein eigenes Feld hat. */
+  berichtTage:30,
   // Welche Meldungen dieses Gerät bekommen soll. Bewusst pro GERÄT und
   // nicht pro Person: der Push hängt am Gerät, und viele wollen am Handy
   // etwas anderes als am Rechner.
@@ -10148,6 +10231,12 @@ function stopListeners(){
   if(_matSaveTimer){ clearTimeout(_matSaveTimer); _matSaveTimer=null; }
   _matSaveKey=null;
   _myShifts=[]; _myShiftsAt=0; _myShiftsLoading=false;
+  /* Dasselbe fuer die Uebergaben und den Gelesen-Stand: beides haengt am
+     Konto, nicht am Geraet. Der Stand des Vorgaengers wuerde beim
+     Naechsten dafuer sorgen, dass Neues gar nicht erst als neu
+     erscheint — der stillste denkbare Fehler. */
+  _myHo=[]; _myHoAt=0; _myHoLoading=false;
+  _gelesen={ ho:0, brett:0 };
   /* In den Studios teilen sich mehrere Leute ein Geraet. Bliebe der
      Horcher auf privat/<uid> stehen, saehe der Naechste beim Anmelden
      kurz die Notizen seines Vorgaengers aufblitzen — bei genau der
@@ -10312,6 +10401,11 @@ function markAnnouncementsRead(){
     var forMe = !a.target||a.target==='all'||session.studioKeys.indexOf(a.target)>=0;
     if(forMe && (a.readBy||[]).indexOf(session.uid)<0){
       S('announcements').doc(a.id).update({ readBy: fv.arrayUnion(session.uid) }).catch(function(){});
+      /* Die eigene Liste gleich mitziehen. Ohne das bleibt der Punkt
+         stehen, bis der Horcher die Runde zurueckbringt — und wer nach
+         einem Klick weiter einen Punkt sieht, klickt noch einmal.
+         Genau dafuer gibt es den Knopf „alles gelesen" ja. */
+      a.readBy=(a.readBy||[]).concat([session.uid]);
     }
   });
 }
@@ -11377,6 +11471,8 @@ function renderHome(){
   // Für den Chef mit 14 Studios ist das keine Kernfrage – renderMyShifts()
   // blendet die Karte für ihn aus, wenn er selbst nicht eingeteilt ist.
   loadMyShifts();
+  loadMyHandovers();
+  ladeGelesenStand();
 
   /* Der Chef sieht zusätzlich, WO etwas los ist. Ohne das musste er raten,
      welches der 14 Studios er sich ansehen soll – die Zahlen darüber sind
@@ -11513,6 +11609,18 @@ function hochzaehlen(wurzel){
 
    Leere Karten verschwinden ganz. „Noch nichts da" ist auf einer
    Startseite nur Platzverschwendung. */
+/* Wie viele Zeilen je Lese-Karte.
+
+   Bis zum 19.8. drei — bei zwei Karten. Mit der Uebergabe sind es drei
+   Karten, und die Startseite wurde 1,86 Bildschirme lang; erlaubt sind
+   1,6. Gefunden hat das test-navigation.js, nicht das Auge.
+
+   Zwei statt drei ist der bessere Schnitt als eine Karte wegzulassen:
+   auf der Startseite muss stehen, DASS es etwas gibt und was das
+   Neueste ist. Alles Weitere steht hinter „Alle ›" — dafuer ist der
+   Link da. */
+var LESE_MAX = 2;
+
 function renderHomeLesen(){
   if(!session) return;
   var kopf=$('homeLesenHead');
@@ -11537,30 +11645,68 @@ function renderHomeLesen(){
       (session.studioKeys||[]).indexOf(a.target)>=0;
   });
   if(meine.length){
-    annBox.innerHTML=meine.slice(0,3).map(function(a){
-      var gelesen=(a.readBy||[]).some(function(u){ return u===session.uid; });
+    annBox.innerHTML=meine.slice(0,LESE_MAX).map(function(a){
       return '<div class="lese-eintrag">'+
         '<div class="lese-text">'+linkify(esc(a.text||''))+'</div>'+
-        fuss(a.from||'Leitung', a.ts, !gelesen)+'</div>';
+        fuss(a.from||'Leitung', a.ts, annNeu(a))+'</div>';
     }).join('');
     annKarte.style.display='';
   } else {
     annKarte.style.display='none';
   }
 
+  /* Übergabe. Der Studioname steht dabei, sobald jemand mehr als ein
+     Studio hat — sonst ist „Kühlschrank abgetaut" eine Auskunft ohne
+     Ort, und beim Chef stehen vierzehn davon untereinander. */
+  var hoKarte=$('homeHoCard'), hoBox=$('homeHoList');
+  var mehrereStudios=(session.studioKeys||[]).length>1;
+  var ho=!featureAn('uebergabe') ? [] : (_myHo||[]);
+  if(hoKarte && hoBox){
+    if(ho.length){
+      hoBox.innerHTML=ho.slice(0,LESE_MAX).map(function(h){
+        var wer=(h.name||'')+(mehrereStudios?' · '+studioName(h.sk):'');
+        return '<div class="lese-eintrag">'+
+          '<div class="lese-text">'+linkify(esc(h.text||''))+'</div>'+
+          fuss(wer, h.ts, istNeu(h,_gelesen.ho))+'</div>';
+      }).join('');
+      hoKarte.style.display='';
+    } else {
+      hoKarte.style.display='none';
+    }
+  }
+
   var brett=!featureAn('brett') ? [] : (_board||[]);
   if(brett.length){
-    brettBox.innerHTML=brett.slice(0,3).map(function(b){
+    brettBox.innerHTML=brett.slice(0,LESE_MAX).map(function(b){
       return '<div class="lese-eintrag">'+
         '<div class="lese-text">'+linkify(esc(b.text||''))+'</div>'+
-        fuss(b.name, b.ts, false)+'</div>';
+        fuss(b.name, b.ts, istNeu(b,_gelesen.brett))+'</div>';
     }).join('');
     brettKarte.style.display='';
   } else {
     brettKarte.style.display='none';
   }
 
-  if(kopf) kopf.style.display=(meine.length||brett.length)?'':'none';
+  if(kopf) kopf.style.display=(meine.length||ho.length||brett.length)?'':'none';
+
+  /* Der Knopf erscheint nur, wenn es wirklich etwas zu markieren gibt —
+     und er nennt die Zahl. „Alles gelesen" ohne Zahl laesst offen, ob
+     man gerade drei Punkte wegklickt oder dreissig. */
+  var knopf=$('homeAllesGelesen');
+  if(knopf){
+    var offen = meine.filter(annNeu).length +
+      ho.filter(function(h){ return istNeu(h,_gelesen.ho); }).length +
+      brett.filter(function(b){ return istNeu(b,_gelesen.brett); }).length;
+    knopf.style.display = offen ? '' : 'none';
+    knopf.textContent = offen===1 ? '1 neu · gelesen' : offen+' neu · alles gelesen';
+    if(!knopf.dataset.gebunden){
+      knopf.dataset.gebunden='1';
+      knopf.addEventListener('click',function(e){
+        e.stopPropagation();
+        tick(8); allesGelesen();
+      });
+    }
+  }
 
   // „Alle ›" / „Zum Brett ›"
   [annKarte,brettKarte].forEach(function(k){
@@ -11572,6 +11718,59 @@ function renderHomeLesen(){
       tick(8); showView(l.getAttribute('data-go'));
     });
   });
+}
+
+/* Alles auf einmal als gesehen markieren.
+
+   Die Anzeige geht SOFORT aus, nicht erst wenn die Datenbank antwortet.
+   Wer auf „gelesen" tippt und drei Sekunden lang weiter Punkte sieht,
+   tippt ein zweites Mal. Schlaegt das Schreiben fehl, kommt der Stand
+   beim naechsten Laden von selbst zurueck — das ist die harmlosere
+   Richtung als ein Punkt, der faelschlich verschwindet. */
+function allesGelesen(){
+  var jetzt=Date.now();
+  _gelesen={ ho:jetzt, brett:jetzt };
+  /* Aushänge behalten ihren eigenen Weg: markAnnouncementsRead schreibt
+     readBy, damit die Verwaltung weiter sieht, wer noch nicht gelesen
+     hat. Beim Chef tut die Funktion bewusst nichts — er ist der
+     Absender. */
+  markAnnouncementsRead();
+  renderHomeLesen();
+  var ref=privatRef(); if(!ref) return;
+  ref.set({ gelesenHo:jetzt, gelesenBrett:jetzt }, {merge:true})
+    .then(function(){ toast('Als gelesen markiert ✓'); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+
+/* ── Bericht anfordern ──
+   Ein Weg fuer beide Knoepfe: den in der Verwaltung und den oben neben
+   der Marke. Zwei Aufrufe waeren zwei Stellen, an denen eine Aenderung
+   vergessen wird — und eine davon vergisst man.
+
+   Der Bericht geht immer nur an den, der drueckt. Das entscheidet der
+   Server anhand der Anmeldung, nicht die App: hier steht keine
+   Adresse. */
+function berichtAnfordern(tage, note){
+  var fns=firebase.app().functions(KONFIG.region);
+  return fns.httpsCallable('sendTestReport')({ tage:tage })
+    .then(function(res){
+      /* Die Zahl kommt vom Server zurueck, nicht aus dem Feld. Wer 999
+         eintippt, soll lesen, was wirklich im Bericht steht — nicht,
+         was er wollte. */
+      var t=(res && res.data && res.data.tage)||tage;
+      var satz='Unterwegs an dich: die letzten '+t+(t===1?' Tag':' Tage')+
+        ' über alle Studios.';
+      if(note){ note.textContent='✓ '+satz; note.style.color='var(--ok-tx)'; }
+      /* Der Knopf oben hat keine Zeile unter sich. Damit dort nicht nur
+         „gesendet" steht, nennt die Meldung den Zeitraum mit. */
+      toast(note ? 'Bericht gesendet ✓' : satz);
+    })
+    .catch(function(e){
+      // Die Server-Meldung ist hier aussagekräftiger als ein Standardtext
+      var msg=(e && e.message) || 'Unbekannter Fehler';
+      if(note){ note.textContent='Hat nicht geklappt: '+msg; note.style.color='var(--danger)'; }
+      toast(msg,true);
+    });
 }
 
 /* ── Mein Dienst ──
@@ -11611,6 +11810,97 @@ function loadMyShifts(force){
         return (a.date||'').localeCompare(b.date||'') || (a.from||'').localeCompare(b.from||'');
       });
     renderMyShifts();
+  });
+}
+
+/* ── Was habe ich schon gesehen? ──
+   Zwei Wege, und zwar mit Absicht verschieden:
+
+   AUSHÄNGE behalten ihr readBy am Dokument. Die Verwaltung muss sehen,
+   WER einen Aushang noch nicht gelesen hat — das steht so im Überblick
+   und ist der halbe Zweck eines Aushangs. Ein Zeitstempel je Konto
+   könnte das nicht beantworten.
+
+   ÜBERGABE und BRETT bekommen stattdessen einen Zeitstempel unter
+   privat/<uid>. Niemand muss wissen, wer einen Bretteintrag gelesen hat.
+   Ein readBy dort hiesse: jeder Nutzer schreibt in jedes fremde
+   Dokument, die Liste wächst mit jedem Konto, und die Regeln müssten
+   Schreibrechte auf fremde Übergaben öffnen. Ein Zeitstempel im eigenen
+   Bereich ist ein Schreibvorgang, braucht keine Regeländerung und
+   verrät nichts. */
+var _gelesen={ ho:0, brett:0 };
+
+function ladeGelesenStand(){
+  var ref=privatRef(); if(!ref) return;
+  ref.get().then(function(d){
+    var x=(d.exists && d.data()) || {};
+    _gelesen={ ho:+x.gelesenHo||0, brett:+x.gelesenBrett||0 };
+    renderHomeLesen();
+  }).catch(function(){ /* ohne Stand gilt alles als ungelesen — das ist
+    die harmlosere Richtung: man sieht einen Punkt zu viel, nicht einen
+    zu wenig. */ });
+}
+
+/* Eigenes zählt nicht als ungelesen. Wer seine eigene Übergabe gerade
+   geschrieben hat, braucht dafür keinen Punkt. */
+function istNeu(eintrag, seit){
+  if(!eintrag) return false;
+  if(eintrag.uid && session && eintrag.uid===session.uid) return false;
+  return (eintrag.ts||0) > (seit||0);
+}
+
+/* Aushänge: für die Verwaltung gibt es hier nichts zu lesen.
+   markAnnouncementsRead() traegt Chefs bewusst NICHT in readBy ein —
+   sonst zaehlte der Überblick „12 gelesen" die Absender mit, und die
+   Frage „wer im Team hat es noch nicht gesehen" waere nicht mehr zu
+   beantworten. Folge davon: fuer einen Chef ist readBy immer leer, und
+   ohne diese Zeile stuende der Punkt dauerhaft an jedem Aushang — der
+   Knopf „alles gelesen" ginge nie wieder aus. */
+function annNeu(a){
+  if(!session || session.role==='chef') return false;
+  return (a.readBy||[]).indexOf(session.uid)<0;
+}
+
+/* ── Übergaben der eigenen Studios ──
+   Derselbe Weg wie bei „Mein Dienst": einmal laden, kurz merken, kein
+   Dauer-Horcher. Ein Horcher je Studio waeren beim Chef vierzehn
+   offene Verbindungen fuer eine Karte, die drei Zeilen zeigt.
+
+   Der Team-Bereich hat einen eigenen Horcher auf GENAU EIN Studio
+   (_teamStudioKey). Den hier mitzubenutzen ginge nicht: auf der
+   Startseite geht es um alle eigenen Studios, und der Team-Horcher
+   laeuft erst, wenn jemand den Bereich geoeffnet hat. */
+var _myHo=[], _myHoAt=0, _myHoLoading=false;
+var MYHO_TTL = 5*60*1000;
+var HO_TAGE = 7;
+
+function loadMyHandovers(force){
+  if(!session || _myHoLoading) return;
+  if(!featureAn('uebergabe')){ _myHo=[]; renderHomeLesen(); return; }
+  if(!force && Date.now()-_myHoAt < MYHO_TTL){ renderHomeLesen(); return; }
+  var keys=session.studioKeys||[];
+  if(!keys.length){ _myHo=[]; renderHomeLesen(); return; }
+  _myHoLoading=true;
+  var grenze=Date.now()-HO_TAGE*86400000;
+  /* Je Studio hoechstens fuenf. Auf der Karte stehen ohnehin nur drei;
+     mehr zu holen kostet beim Chef vierzehnmal Lesevorgaenge fuer etwas,
+     das niemand zu sehen bekommt. */
+  var jobs=keys.map(function(sk){
+    return S('studios').doc(sk).collection('handovers')
+      .orderBy('ts','desc').limit(5).get()
+      .then(function(sn){
+        return sn.docs.map(function(d){ return Object.assign({id:d.id, sk:sk}, d.data()); });
+      })
+      .catch(function(){ return []; });
+  });
+  Promise.all(jobs).then(function(res){
+    _myHoLoading=false;
+    _myHoAt=Date.now();
+    var alle=[];
+    res.forEach(function(a){ alle=alle.concat(a); });
+    _myHo=alle.filter(function(h){ return (h.ts||0)>grenze; })
+      .sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    renderHomeLesen();
   });
 }
 
@@ -17392,13 +17682,29 @@ function buildNotifyOptions(){
 
    „Neue Aufgabe" steht auch fuer Mitarbeiter hier; die anderen beiden
    erreichen ohnehin nur Chefs und werden deshalb nur denen gezeigt. */
+/* Der Hinweis darf nicht luegen, und fuer Chef und Leiter stimmt nicht
+   dasselbe: der Chef bekommt die Fertig-Meldung aus allen Studios, der
+   Leiter nur aus seinen. Stand hier vorher fest „Bei 14 Studios wird das
+   viel" — fuer einen Leiter mit zwei Studios ist das eine Warnung vor
+   etwas, das ihm nicht passiert. Die Zahl kommt ausserdem aus den
+   echten Studios, nicht aus dem Text: ein Betrieb mit drei Studios las
+   hier bisher von vierzehn. */
 var MAIL_OPTS = [
   { id:'aufgabe', name:'Neue Aufgabe',
-    hint:'Wenn dir eine Aufgabe zugewiesen wird oder in deinem Studio eine dazukommt.' },
+    hint:function(){ return 'Wenn dir eine Aufgabe zugewiesen wird oder in deinem Studio eine dazukommt.'; } },
   { id:'fertig',  name:'Studio fertig', chef:true,
-    hint:'Wenn in einem Studio nichts mehr offen ist. Bei 14 Studios wird das viel.' },
+    hint:function(){
+      if(!isChef()){
+        var n=(session&&session.studioKeys||[]).length;
+        return 'Wenn in '+(n===1?'deinem Studio':'einem deiner Studios')+
+          ' nichts mehr offen ist.';
+      }
+      var alle=(typeof STUDIOS_ALPHA!=='undefined' && STUDIOS_ALPHA.length) || 0;
+      return 'Wenn in einem Studio nichts mehr offen ist.'+
+        (alle>5 ? ' Bei '+alle+' Studios wird das viel.' : '');
+    } },
   { id:'bericht', name:'Monatsbericht', chef:true,
-    hint:'Einmal im Monat die Zahlen aller Studios.' }
+    hint:function(){ return 'Einmal im Monat die Zahlen aller Studios.'; } }
 ];
 var _mailAus = [];
 
@@ -17407,8 +17713,9 @@ function buildMailOptions(){
   var zeigen=MAIL_OPTS.filter(function(o){ return !o.chef || canManage(); });
   box.innerHTML=zeigen.map(function(o){
     var an = _mailAus.indexOf(o.id) < 0;
+    var text = (typeof o.hint==='function') ? o.hint() : o.hint;
     return '<label class="sw-row" data-mk="'+o.id+'">'+
-      '<span class="sw-txt"><b>'+esc(o.name)+'</b><span>'+esc(o.hint)+'</span></span>'+
+      '<span class="sw-txt"><b>'+esc(o.name)+'</b><span>'+esc(text)+'</span></span>'+
       '<span class="sw'+(an?' on':'')+'"><i></i></span></label>';
   }).join('');
   box.querySelectorAll('[data-mk]').forEach(function(el){
@@ -18606,6 +18913,26 @@ function bindActions(){
   var cA=$('certAdd'); if(cA) cA.addEventListener('click',function(){ addCert(this); });
   var mcA=$('myCertAdd'); if(mcA) mcA.addEventListener('click',function(){ addMyCert(this); });
 
+  /* Bericht direkt aus der Kopfzeile — aus jeder Ansicht erreichbar,
+     ohne den Umweg Verwaltung → System.
+
+     Er nimmt den zuletzt in der Karte eingestellten Zeitraum, sonst
+     30 Tage. Ein eigenes Feld daneben waere eine zweite Stelle, an der
+     dasselbe eingestellt wird, und die beiden liefen auseinander.
+
+     withBusy sperrt den Knopf, solange die Mail gebaut wird. Ohne das
+     kommt der Bericht dreimal, wenn jemand dreimal tippt, weil nichts
+     sichtbar passiert. */
+  var tbB=$('tbBericht');
+  if(tbB) tbB.addEventListener('click',function(){
+    var tage=Math.min(370, Math.max(1, +PREFS.berichtTage || 30));
+    tbB.title='Bericht wird gesendet …';
+    withBusy(tbB, function(){
+      return berichtAnfordern(tage, null)
+        .then(function(){ tbB.title='Bericht an mich senden'; });
+    });
+  });
+
   // Abmelden
   $('logoutBtn').addEventListener('click',function(){
     if(confirm('Abmelden?\n\nDeine Daten bleiben gespeichert – du kannst dich jederzeit wieder anmelden.')){
@@ -18687,32 +19014,58 @@ function bindActions(){
     var ex=$('expXls'); if(ex) ex.addEventListener('click', exportAllXls);
     var ej=$('expJson'); if(ej) ej.addEventListener('click', exportAllJson);
 
-    // Testbericht anfordern. Die Rolle wird auf dem Server geprüft, nicht hier –
+    /* Zeitraum. „Andere" blendet das Zahlenfeld ein, statt es dauerhaft
+       danebenzustellen — sonst stuenden zwei Angaben da und es waere
+       nicht zu sehen, welche gilt. */
+    var rtSel=$('repTestTage');
+    if(rtSel){
+      /* Den gemerkten Zeitraum wieder einstellen. Ohne das zeigte die
+         Karte 30 Tage an, waehrend der Knopf oben 90 verschickt — zwei
+         Anzeigen fuer dieselbe Sache, die nicht uebereinstimmen. */
+      var merk=+PREFS.berichtTage || 30;
+      var passt=[...rtSel.options].some(function(o){ return o.value===String(merk); });
+      if(passt){ rtSel.value=String(merk); }
+      else {
+        rtSel.value='eigen';
+        var ef=$('repTageEigen'); if(ef) ef.value=String(merk);
+        var eb=$('repTageEigenBox'); if(eb) eb.style.display='';
+      }
+      rtSel.addEventListener('change',function(){
+        var box=$('repTageEigenBox');
+        if(box) box.style.display = rtSel.value==='eigen' ? '' : 'none';
+        if(rtSel.value==='eigen'){ var f=$('repTageEigen'); if(f) f.focus(); }
+      });
+    }
+    /* Wie viele Tage gelten gerade? An einer Stelle, damit Knopf und
+       Meldung nicht auseinanderlaufen.
+
+       Die Auswahl wird gemerkt. Der Knopf oben neben der Marke hat kein
+       eigenes Feld — er nimmt genau das, was hier zuletzt eingestellt
+       war. Ohne das Merken haette er immer 30 Tage geschickt, egal was
+       in der Karte steht, und zwei Knoepfe fuer dasselbe haetten
+       Verschiedenes getan. */
+    function berichtTage(){
+      var sel=($('repTestTage')||{}).value;
+      var n;
+      if(sel==='eigen'){
+        n=parseInt(($('repTageEigen')||{}).value,10);
+        /* Der Server deckelt ohnehin auf 1..370. Hier noch einmal, damit
+           die Meldung darunter dieselbe Zahl nennt wie die Mail. */
+        n=Math.min(370, Math.max(1, n||30));
+      } else {
+        n=parseInt(sel,10)||30;
+      }
+      PREFS.berichtTage=n; savePrefs();
+      return n;
+    }
+
+    // Bericht anfordern. Die Rolle wird auf dem Server geprüft, nicht hier –
     // der Knopf ist nur die Bequemlichkeit, nicht die Absicherung.
     var rts=$('repTestSend');
     if(rts) rts.addEventListener('click',function(){
-      var btn=this, note=$('repTestNote');
-      var tage=parseInt(($('repTestTage')||{}).value,10)||30;
+      var note=$('repTestNote');
       if(note){ note.textContent='Wird erstellt und versendet …'; note.style.color='var(--text-2)'; }
-      withBusy(btn,function(){
-        var fns=firebase.app().functions(KONFIG.region);
-        return fns.httpsCallable('sendTestReport')({ tage:tage })
-          .then(function(res){
-            var n=(res && res.data && res.data.empfaenger)||0;
-            if(note){
-              note.textContent='✓ Gesendet an '+n+(n===1?' Empfänger':' Empfänger')+
-                ' – schau in dein E-Mail-Postfach.';
-              note.style.color='var(--ok-tx)';
-            }
-            toast('Testbericht gesendet ✓');
-          })
-          .catch(function(e){
-            // Die Server-Meldung ist hier aussagekräftiger als ein Standardtext
-            var msg=(e && e.message) || 'Unbekannter Fehler';
-            if(note){ note.textContent='Hat nicht geklappt: '+msg; note.style.color='var(--danger)'; }
-            toast(msg,true);
-          });
-      });
+      withBusy(this, function(){ return berichtAnfordern(berichtTage(), note); });
     });
 
     // Passwort zurücksetzen (schickt eine E-Mail von Firebase)
