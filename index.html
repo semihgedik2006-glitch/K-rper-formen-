@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-A41VameYc9jNfJ/GvIzH9rVrGmLp7AJY66S1SGFAGLs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-m8yyvt4yPyOGCsTD2Nn+Xhjj9F1bsjZaIThan3+rp0M='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -11328,9 +11328,13 @@ function renderAbsences(){
 
 function renderHandovers(){
   var box=$('hoList'); if(!box) return;
-  var grenze=Date.now()-7*86400000;
+  /* Dieselben 24 Stunden wie auf der Startseite — HO_STUNDEN steht an
+     einer Stelle. Vorher waren es hier sieben Tage und dort sieben:
+     jetzt sind es hier 24 Stunden und dort 24. */
+  var grenze=Date.now()-HO_STUNDEN*3600000;
   var list=_handovers.filter(function(h){ return (h.ts||0)>grenze; });
-  if(!list.length){ box.innerHTML='<p class="lese-leer">Keine Übergaben in den letzten 7 Tagen.</p>'; return; }
+  if(!list.length){ box.innerHTML='<p class="lese-leer">Keine Übergabe aus den letzten 24 Stunden. '+
+    'Eine Übergabe gilt einen Tag — für die nächste Schicht.</p>'; return; }
   box.innerHTML=list.map(function(h){
     var mine=h.uid===session.uid;
     var del=(mine||canManage())?'<button class="mini-x" data-hodel="'+esc(h.id)+'">löschen</button>':'';
@@ -11694,7 +11698,11 @@ function renderHomeLesen(){
      Ort, und beim Chef stehen vierzehn davon untereinander. */
   var hoKarte=$('homeHoCard'), hoBox=$('homeHoList');
   var mehrereStudios=(session.studioKeys||[]).length>1;
-  var ho=!featureAn('uebergabe') ? [] : (_myHo||[]);
+  /* Hier faellt das Alter weg, nicht schon beim Laden — so stimmt die
+     24-Stunden-Grenze auch, wenn die App stundenlang offen liegt. */
+  var hoGrenze=Date.now()-HO_STUNDEN*3600000;
+  var ho=!featureAn('uebergabe') ? []
+    : (_myHo||[]).filter(function(h){ return (h.ts||0)>hoGrenze; });
   if(hoKarte && hoBox){
     if(ho.length){
       hoBox.innerHTML=ho.slice(0,LESE_MAX).map(function(h){
@@ -11906,7 +11914,23 @@ function annNeu(a){
    laeuft erst, wenn jemand den Bereich geoeffnet hat. */
 var _myHo=[], _myHoAt=0, _myHoLoading=false;
 var MYHO_TTL = 5*60*1000;
-var HO_TAGE = 7;
+/* Eine Uebergabe gilt EINEN Tag.
+
+   Hier standen sieben. Aus dem Betrieb: „bringt ja nichts wenn man
+   7 Tage lang sieht was am selben Tag nuetzlich ist." Genau so ist es —
+   eine Uebergabe ist fuer die naechste Schicht geschrieben. Nach einem
+   Tag hat entweder jemand daran gearbeitet oder sie ist ueberholt; in
+   beiden Faellen steht sie nur noch im Weg und verdraengt das, was
+   heute gilt.
+
+   GELOESCHT wird nichts. Die Eintraege bleiben in der Datenbank, sie
+   werden nur nicht mehr angezeigt — wer sie loeschen will, tut das
+   weiter von Hand.
+
+   Eine Zahl fuer BEIDE Stellen: Startseite und Team-Bereich. Zwei
+   verschiedene Fenster hiessen, dass dieselbe Uebergabe hier noch steht
+   und dort nicht mehr, und niemand koennte erklaeren warum. */
+var HO_STUNDEN = 24;
 
 function loadMyHandovers(force){
   if(!session || _myHoLoading) return;
@@ -11915,7 +11939,6 @@ function loadMyHandovers(force){
   var keys=session.studioKeys||[];
   if(!keys.length){ _myHo=[]; renderHomeLesen(); return; }
   _myHoLoading=true;
-  var grenze=Date.now()-HO_TAGE*86400000;
   /* Je Studio hoechstens fuenf. Auf der Karte stehen ohnehin nur drei;
      mehr zu holen kostet beim Chef vierzehnmal Lesevorgaenge fuer etwas,
      das niemand zu sehen bekommt. */
@@ -11932,8 +11955,12 @@ function loadMyHandovers(force){
     _myHoAt=Date.now();
     var alle=[];
     res.forEach(function(a){ alle=alle.concat(a); });
-    _myHo=alle.filter(function(h){ return (h.ts||0)>grenze; })
-      .sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    /* NICHT hier nach Alter filtern. Der Lader laeuft hoechstens alle
+       fuenf Minuten, die App bleibt aber stundenlang offen — ein
+       Eintrag, der waehrenddessen 24 Stunden alt wird, bliebe bis zum
+       naechsten Laden stehen. Gefiltert wird beim Zeichnen, dann
+       stimmt die Grenze immer. */
+    _myHo=alle.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
     renderHomeLesen();
   });
 }

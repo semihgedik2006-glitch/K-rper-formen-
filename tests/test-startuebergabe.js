@@ -32,7 +32,7 @@ const CHROME = process.env.CHROME ||
 const errs = [];
 const pruefe = (b, m) => { if (!b) errs.push(m); };
 
-async function seite(b, stub, vorbelegt) {
+async function seite(b, stub, vorbelegt, uebergaben) {
   const p = await b.newPage({ viewport: { width: 430, height: 900 } });
   p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   p.on('console', m => {
@@ -44,6 +44,7 @@ async function seite(b, stub, vorbelegt) {
   await p.route('**fonts.googleapis.com/**', r => r.abort());
   await p.addInitScript({ path: path.join(SP, stub) });
   if (vorbelegt) await p.addInitScript(`window.__privatDoc = ${JSON.stringify(vorbelegt)};`);
+  if (uebergaben) await p.addInitScript(`window.__handovers = ${JSON.stringify(uebergaben)};`);
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3000);
   return p;
@@ -82,6 +83,8 @@ const stand = p => p.evaluate(() => ({
        wäre auch ein Lader grün, der einfach alles holt. */
     pruefe(!r.hoTexte.some(t => /Uralte/.test(t)),
       'ZU ALT: eine 9 Tage alte Übergabe steht noch da');
+    pruefe(!r.hoTexte.some(t => /Drei Tage alt/.test(t)),
+      'GRENZE: eine 3 Tage alte Übergabe steht in der Liste');
     pruefe(!r.hoTexte.some(t => /Fremdes Studio/.test(t)),
       'FREMD: die Übergabe eines Studios, in dem diese Person nicht ' +
       'arbeitet, steht auf ihrer Startseite');
@@ -152,6 +155,57 @@ const stand = p => p.evaluate(() => ({
     pruefe(r.hoPunkte === 0,
       'STAND: ' + r.hoPunkte + ' Punkte trotz gespeichertem Gelesen-Stand — ' +
       'der Stand wird nicht ausgelesen');
+    await p.close();
+  }
+
+  /* ══ Die 24-Stunden-Grenze, eindeutig geprüft ══
+     Aus dem Betrieb: „bringt ja nichts wenn man 7 Tage lang sieht was
+     am selben Tag nützlich ist."
+
+     Der erste Anlauf dieser Prüfung war wertlos: er sah nach, ob ein
+     drei Tage alter Eintrag in der Liste steht — die zeigt aber nur die
+     zwei jüngsten, also stand er auch bei sieben Tagen nicht drin. Die
+     Gegenprobe fiel damals nur zufällig auf, weil der Zähler daneben
+     von 2 auf 3 sprang.
+
+     Hier gibt es deshalb NUR alte Übergaben. Bei 24 Stunden muss die
+     Karte ganz verschwinden; bei sieben Tagen stünde sie da. Das ist
+     nicht zu verwechseln. */
+  {
+    const p = await seite(b, 'stub-mitarbeiter.js', null, {
+      'studio-6': [
+        { id: 'a1', text: 'Zwei Tage alt.', uid: 'u2', name: 'Anna Meier',
+          ts: Date.now() - 2 * 86400000 },
+        { id: 'a2', text: 'Fünf Tage alt.', uid: 'u3', name: 'Ben Kraus',
+          ts: Date.now() - 5 * 86400000 }
+      ]
+    });
+    const r = await stand(p);
+    console.log('Nur alte Übergaben — Karte sichtbar:', r.hoDa,
+      '· Einträge:', r.hoTexte.length);
+    pruefe(!r.hoDa && r.hoTexte.length === 0,
+      'GRENZE: bei nur zwei und fünf Tage alten Übergaben steht die Karte ' +
+      'noch da (' + r.hoTexte.length + ' Einträge) — eine Übergabe gilt ' +
+      'einen Tag, danach ist sie überholt');
+    await p.close();
+  }
+
+  /* Und die Gegenprobe dazu: eine FRISCHE Übergabe muss sehr wohl
+     erscheinen. Ohne diese Zeile wäre auch eine Karte grün, die gar
+     nichts mehr zeigt. */
+  {
+    const p = await seite(b, 'stub-mitarbeiter.js', null, {
+      'studio-6': [
+        { id: 'f1', text: 'Frisch von der letzten Schicht.', uid: 'u2',
+          name: 'Anna Meier', ts: Date.now() - 3 * 3600000 }
+      ]
+    });
+    const r = await stand(p);
+    console.log('Nur frische Übergabe — Karte sichtbar:', r.hoDa,
+      '·', JSON.stringify(r.hoTexte));
+    pruefe(r.hoDa && r.hoTexte.length === 1,
+      'GEGENPROBE: eine 3 Stunden alte Übergabe fehlt (' +
+      JSON.stringify(r.hoTexte) + ') — dann zeigt die Karte gar nichts mehr');
     await p.close();
   }
 
