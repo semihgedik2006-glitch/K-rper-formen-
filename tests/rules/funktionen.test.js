@@ -1015,8 +1015,67 @@ const TAG = 86400000;
         /* Ein leeres Studio muss als leer erkennbar sein. Sonst liest
            sich „0 offen" wie „alles geschafft", obwohl dort nur nichts
            eingerichtet ist. */
-        pruefe('BERICHT · ein Studio ganz ohne Einträge wird benannt',
-          /Ohne jeden Eintrag/.test(t) && /Neu eröffnet/.test(t));
+        pruefe('BERICHT · der Text nennt kein Studio ohne Eintrag als erledigt',
+          /nichts hinterlegt/.test(t));
+
+        /* ── Wie die Mail AUSSIEHT ──
+           Aus dem Betrieb zur ersten ausgelieferten Fassung: „das sieht
+           grade sehr verwirrend aus."
+
+           Ursache war eine mit Leerzeichen ausgerichtete Tabelle. Die
+           setzt eine Schreibmaschinenschrift voraus; Postfächer setzen
+           Text proportional, und auf dem Handy brach die Trennlinie um.
+           Deshalb prüft die erste Zeile ausdrücklich, dass so etwas
+           nicht zurückkommt. */
+        pruefe('MAIL · der Text baut KEINE Spaltentabelle mehr',
+          !/─{20,}/.test(t) && !/\s{6,}\d/.test(t));
+        /* Was zu tun ist, steht VOR den Zahlen. Ein Bericht, der mit
+           Summen anfängt, beantwortet „lief es gut" — die Frage beim
+           Öffnen ist aber „muss ich etwas tun". */
+        pruefe('MAIL · „was zu tun ist" steht vor den Zahlen',
+          t.indexOf('WAS ZU TUN IST') >= 0 &&
+          t.indexOf('WAS ZU TUN IST') < t.indexOf('ZAHLEN'));
+        pruefe('MAIL · die Personen-Überschrift nennt beide Quellen',
+          /Aufgaben \+ Putzplan/.test(t));
+      }
+
+      const html = fns.__intern && fns.__intern.berichtHtml;
+      if (html) {
+        const h = html(d, new Date(T - 7 * 86400000), new Date(T));
+        /* Der erste Bericht wurde auf einem Handy im DUNKELMODUS
+           gelesen. Ohne eigene Hintergrundfarbe erbt die Mail den Grund
+           des Postfachs — dunkler Text auf dunklem Grund. */
+        pruefe('MAIL · die HTML-Fassung bringt ihren eigenen hellen Grund mit',
+          /bgcolor="#ffffff"/.test(h) && /background:#ffffff/.test(h));
+        /* Stile inline, nicht im Kopf: <style> wird von einigen
+           Postfächern entfernt, und dann steht der Bericht nackt da. */
+        pruefe('MAIL · keine Stile im Kopf, die ein Postfach entfernen kann',
+          !/<style/i.test(h));
+        pruefe('MAIL · nichts wird von aussen nachgeladen',
+          !/<img|src=|@import|https?:\/\/fonts/i.test(h));
+        /* Tabellen statt flex/grid — ältere Postfächer können beides
+           nicht, und dann steht alles untereinander. */
+        pruefe('MAIL · die Spalten stehen in einer echten Tabelle',
+          /<table/.test(h) && !/display:\s*(flex|grid)/.test(h));
+        pruefe('MAIL · die überfälligen Aufgaben stehen mit Namen drin',
+          /Überfällig/.test(h) && /Nord/.test(h));
+        pruefe('MAIL · Studios ohne Eintrag sind als solche erkennbar',
+          /nichts hinterlegt/.test(h));
+        pruefe('MAIL · der Text ist gegen HTML gesichert',
+          h.indexOf('<script') < 0);
+
+        /* GEGENPROBE: ohne offene Punkte muss die Mail das SAGEN, nicht
+           einfach einen leeren Kasten zeigen. */
+        const leer = Object.assign({}, d, {
+          ueberListe: [], nachweise: [], ueberfaellig: 0, fehlt: 0,
+          zeilen: d.zeilen.map(z => Object.assign({}, z, { fehltListe: [], ueber: 0, fehlt: 0 }))
+        });
+        const hLeer = html(leer, new Date(T - 7 * 86400000), new Date(T));
+        pruefe('GEGENPROBE ohne offene Punkte sagt die Mail „nichts liegt an"',
+          /Nichts liegt an/.test(hLeer) && !/Überfällig \(/.test(hLeer));
+        const tLeer = text(leer, new Date(T - 7 * 86400000), new Date(T));
+        pruefe('GEGENPROBE auch die Textfassung sagt es',
+          /Nichts\./.test(tLeer));
       }
     }
   }

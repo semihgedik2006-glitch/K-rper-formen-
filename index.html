@@ -536,10 +536,35 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Kopfzeile. Das ist ein Befund fuer die ganze Zeile, kein Sonderfall
    dieses Knopfes — und er gehoert in eine eigene Aenderung, weil er die
    Hoehe der Kopfzeile auf jedem Geraet verschiebt. */
-/* margin-right:auto haelt ihn links bei der Marke. Die Kopfzeile steht
-   auf justify-content:space-between; ohne das saesse ein drittes Kind
-   mittig zwischen Marke und Werkzeugen. */
-.tb-bericht{flex:0 0 auto;margin-right:auto}
+/* KEIN viertes graues Werkzeug, sondern eine Handlung.
+
+   Vorher sah er falsch aus, und das lag nicht an der Ausrichtung: er
+   stand 8px von der Marke und 13px von der Werkzeuggruppe entfernt und
+   trug dieselbe graue Kachel wie Suchen, Hell/Dunkel und Abmelden. Damit
+   gehoerte er optisch zu keinem von beidem — ein Knopf, der aus der
+   rechten Gruppe gefallen ist.
+
+   Zwei Aenderungen: die Farbe der Marke statt Grau, und ab 700px das
+   Wort dazu. Damit liest er sich als das, was er ist — die eine
+   Handlung neben dem Namen der App.
+
+   margin-right:auto haelt ihn links; die Kopfzeile steht auf
+   justify-content:space-between, ohne das saesse ein drittes Kind
+   mittig. */
+.tb-bericht{flex:0 0 auto;margin-right:auto;margin-left:var(--s8);
+  border-color:transparent;background:var(--accent-glow);color:var(--accent-d)}
+.tb-bericht:hover{color:var(--accent);background:var(--accent-glow)}
+.tb-bericht .tbb-wort{display:none}
+@media (min-width:700px){
+  /* Dieselbe Falle wie beim Suchknopf: .icon-btn ist ein GRID mit
+     place-items:center, gedacht fuer genau EIN Kind. Kommt das Wort
+     dazu, legt das Grid es in eine zweite Zeile und die feste Hoehe
+     schneidet es ab. Deshalb inline-flex und height:auto. */
+  .tb-bericht{display:inline-flex;align-items:center;justify-content:center;
+    gap:var(--s6);width:auto;height:auto;min-height:36px;padding:0 var(--s12)}
+  .tb-bericht .tbb-wort{display:inline;font-size:var(--t-sm);font-weight:600;
+    white-space:nowrap}
+}
 /* Waehrend die Mail gebaut wird: kein zweiter Klick. Ein Bericht, den
    man dreimal anfordert, kommt dreimal an. */
 .tb-bericht[disabled]{opacity:.5;cursor:default}
@@ -3097,7 +3122,8 @@ html{font-size:var(--fs,100%)}
          test-abgeschnitten.js, nicht vom Auge. -->
     <button class="icon-btn tb-bericht" id="tbBericht" data-chef-only="1"
             style="display:none" data-ikon="mail"
-            title="Bericht an mich senden" aria-label="Bericht an mich senden"></button>
+            title="Bericht an mich senden" aria-label="Bericht an mich senden"><span
+            class="tbb-wort">Bericht</span></button>
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>

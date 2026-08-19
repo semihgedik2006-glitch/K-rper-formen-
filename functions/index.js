@@ -1982,6 +1982,10 @@ async function collectMonthly(vonMs, bisMs, firma) {
   let putzErledigt = 0, putzOffen = 0;
   const proPerson = {};
   const jetzt = Date.now();
+  /* Was konkret zu tun ist — über alle Studios gesammelt, nicht je
+     Studio. Der Bericht soll die Frage „wo muss ich ran" beantworten,
+     und die stellt sich über den ganzen Betrieb. */
+  const sUeberListe = [];
 
   for (const key of keys) {
     let sErledigt = 0, sOffen = 0, sUeber = 0;
@@ -2006,7 +2010,22 @@ async function collectMonthly(vonMs, bisMs, firma) {
            anfallen. */
         if (!erledigt(t)) {
           sOffen++; offen++;
-          if (t.due && jetzt > t.due) { sUeber++; ueberfaellig++; }
+          if (t.due && jetzt > t.due) {
+            sUeber++; ueberfaellig++;
+            /* Nicht nur zaehlen, sondern benennen. „3 ueberfaellig" sagt
+               niemandem, was zu tun ist; „Brandschutzbegehung, 12 Tage"
+               schon. Bewusst gedeckelt — eine Mail mit 200 Zeilen liest
+               niemand, und wo 200 offen sind, ist die Liste nicht das
+               Problem. */
+            if (sUeberListe.length < 25) {
+              sUeberListe.push({
+                studio: namen[key] || key,
+                titel: String(t.title || t.text || 'Ohne Titel').slice(0, 70),
+                tage: Math.floor((jetzt - t.due) / 86400000),
+                wer: t.assignee || t.fuer || ''
+              });
+            }
+          }
         }
       });
     } catch (e) { console.error('Aufgaben ' + key + ':', e); }
@@ -2032,18 +2051,26 @@ async function collectMonthly(vonMs, bisMs, firma) {
     } catch (e) { console.error('Putzplan ' + key + ':', e); }
 
     let sFehlt = 0;
+    const sFehltListe = [];
     try {
       const inv = await W(firma).collection('inventory').doc(key).get();
       const items = (inv.exists && inv.data().items) || [];
       items.forEach(it => {
         const n = (it.limit > 0) ? Math.max(0, it.limit - (it.have || 0)) : (it.need || 0);
-        if (n > 0) { sFehlt += n; fehlt += n; }
+        if (n > 0) {
+          sFehlt += n; fehlt += n;
+          /* WAS fehlt, nicht nur wie viel. „2 Artikel fehlen" laesst
+             offen, ob es Handtuecher oder Desinfektionsmittel sind —
+             und das eine kann man verschieben, das andere nicht. */
+          sFehltListe.push({ name: String(it.name || 'Artikel').slice(0, 40), n: n });
+        }
       });
     } catch (e) { console.error('Material ' + key + ':', e); }
 
     zeilen.push({
       name: namen[key] || key, erledigt: sErledigt, offen: sOffen, ueber: sUeber,
-      putzErledigt: pErledigt, putzOffen: pOffen, fehlt: sFehlt
+      putzErledigt: pErledigt, putzOffen: pOffen, fehlt: sFehlt,
+      fehltListe: sFehltListe
     });
   }
 
@@ -2057,75 +2084,358 @@ async function collectMonthly(vonMs, bisMs, firma) {
     ((b.offen + b.putzOffen) - (a.offen + a.putzOffen)) ||
     (b.fehlt - a.fehlt) ||
     a.name.localeCompare(b.name, 'de'));
+  /* Ablaufende Nachweise. Gehoeren in den Bericht, weil sie die einzige
+     Sorte offener Punkte sind, die von selbst schlimmer wird und nicht
+     im Putzplan auftaucht — ein abgelaufener Erste-Hilfe-Schein faellt
+     erst auf, wenn er gebraucht wird. */
+  const nachweise = [];
+  try {
+    const snap = await W(firma).collection('certificates').get();
+    const heute = new Date(); heute.setHours(0, 0, 0, 0);
+    snap.forEach(doc => {
+      const c = doc.data() || {};
+      if (!c.bis) return;
+      const tage = Math.round((new Date(c.bis + 'T00:00:00') - heute) / 86400000);
+      if (tage > 60) return;
+      nachweise.push({
+        name: String(c.name || 'Unbekannt').slice(0, 40),
+        art: String((c.art === 'sonstiges' && c.bez) ? c.bez : (c.art || 'Nachweis')).slice(0, 40),
+        tage: tage
+      });
+    });
+    nachweise.sort((a, b) => a.tage - b.tage);
+  } catch (e) { console.error('Nachweise:', e); }
+
   return {
     zeilen, erledigt: summeErledigt, offen, ueberfaellig, fehlt,
-    putzErledigt, putzOffen, proPerson, studios: keys.length
+    putzErledigt, putzOffen, proPerson, studios: keys.length,
+    ueberListe: sUeberListe, nachweise
   };
 }
+
+/* Die Kennungen der Nachweis-Arten sind in der App hinterlegt, nicht in
+   den Functions. Damit im Bericht nicht „ersthelfer" steht, hier
+   dieselben Namen — bewusst mit Rueckfall auf die Kennung, damit eine
+   neue Art nicht zu einer leeren Zeile wird. */
+const CERT_NAMEN = {
+  ersthelfer: 'Erste-Hilfe-Kurs', trainer: 'Trainerlizenz',
+  ems: 'EMS-Einweisung', hygiene: 'Hygieneschulung',
+  brandschutz: 'Brandschutzhelfer', sonstiges: 'Sonstiges'
+};
+function certName(art) { return CERT_NAMEN[art] || art; }
 
 function monatsText(d, vonD, bisD) {
   const dat = (x) => x.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const tage = Math.max(1, Math.round((bisD - vonD) / 86400000));
-  /* Spaltenbreite aus den echten Namen, nicht fest auf 22. „Köln
-     Ehrenfeld Süd" ist laenger, und ein fester Wert schiebt dann die
-     ganze Zeile aus dem Raster — in einer Mail mit fester Schrift
-     faellt genau das auf. */
-  const breite = Math.min(28, Math.max(14,
-    ...d.zeilen.map(z => z.name.length),
-    ...Object.keys(d.proPerson).map(n => n.length)));
-  const sp = (t, n) => String(t).padEnd(n);
-  const z4 = (n) => String(n).padStart(4);
   const L = [];
 
-  L.push('StudioChat — Bericht');
-  L.push('Zeitraum: ' + dat(vonD) + ' bis ' + dat(bisD) + '  (' + tage +
-    (tage === 1 ? ' Tag' : ' Tage') + ')');
-  L.push('Erfasst: alle ' + d.studios + ' Studios');
+  /* KEINE Spaltentabelle mehr.
+
+     Hier stand eine mit padEnd() ausgerichtete Tabelle. Die setzt eine
+     Schreibmaschinenschrift voraus — Postfaecher zeigen Text aber
+     proportional, und auf dem Handy brach die 52 Zeichen lange
+     Trennlinie zusaetzlich um. Das Ergebnis waren verrutschte Spalten
+     und zwei Striche verschiedener Laenge. Aus dem Betrieb kam dazu
+     genau ein Wort: verwirrend.
+
+     Wer die Mail als reinen Text liest, bekommt jetzt ganze Saetze je
+     Studio. Die Tabelle steht in der HTML-Fassung, wo sie ausgerichtet
+     bleibt, weil das Postfach die Spalten setzt und nicht ich. */
+  L.push('STUDIOCHAT — BERICHT');
+  L.push(dat(vonD) + ' bis ' + dat(bisD) + ' (' + tage +
+    (tage === 1 ? ' Tag' : ' Tage') + ') · alle ' + d.studios + ' Studios');
   L.push('');
 
-  L.push('AUF EINEN BLICK');
-  L.push('  Aufgaben erledigt      ' + z4(d.erledigt));
-  L.push('  Putzplan erledigt      ' + z4(d.putzErledigt));
-  L.push('  Aktuell offen          ' + z4(d.offen + d.putzOffen) +
-    '   (' + d.offen + ' Aufgaben, ' + d.putzOffen + ' Putzplan)');
-  L.push('  Davon überfällig       ' + z4(d.ueberfaellig));
-  L.push('  Fehlende Artikel       ' + z4(d.fehlt));
-  L.push('');
-
-  /* Sortiert nach dem, was Aufmerksamkeit braucht. Wer den Bericht
-     ueberfliegt, liest die ersten drei Zeilen — dort muss stehen, wo
-     etwas klemmt, nicht wo alles laeuft. */
-  L.push('NACH STUDIO — oben steht, wo am meisten liegt');
-  L.push('  ' + sp('', breite) + ' erled.  offen  überf.  Material');
-  L.push('  ' + '─'.repeat(breite + 32));
-  d.zeilen.forEach(z => {
-    L.push('  ' + sp(z.name, breite) +
-      z4(z.erledigt + z.putzErledigt) + '   ' +
-      z4(z.offen + z.putzOffen) + '   ' +
-      z4(z.ueber) + '    ' +
-      z4(z.fehlt));
-  });
-  /* Ein Bericht, der nur Zahlen zeigt, laesst offen, ob „0 offen"
-     heisst „alles geschafft" oder „hier ist nichts eingerichtet". */
-  const leer = d.zeilen.filter(z =>
-    !z.erledigt && !z.putzErledigt && !z.offen && !z.putzOffen && !z.fehlt);
-  if (leer.length) {
-    L.push('');
-    L.push('  Ohne jeden Eintrag: ' + leer.map(z => z.name).join(', '));
-    L.push('  (dort ist weder eine Aufgabe noch ein Putzplan hinterlegt)');
+  // ── Was zu tun ist, ganz nach oben ──
+  const tun = [];
+  if (d.ueberListe.length) {
+    tun.push('ÜBERFÄLLIG (' + d.ueberfaellig + ')');
+    d.ueberListe.forEach(u => {
+      tun.push('  · ' + u.studio + ': ' + u.titel + ' — seit ' + u.tage +
+        (u.tage === 1 ? ' Tag' : ' Tagen') + (u.wer ? ' (' + u.wer + ')' : ''));
+    });
+    if (d.ueberfaellig > d.ueberListe.length) {
+      tun.push('  · … und ' + (d.ueberfaellig - d.ueberListe.length) + ' weitere');
+    }
+    tun.push('');
   }
+  const mitMaterial = d.zeilen.filter(z => z.fehltListe && z.fehltListe.length);
+  if (mitMaterial.length) {
+    tun.push('MATERIAL NACHBESTELLEN (' + d.fehlt + ' Stück)');
+    mitMaterial.forEach(z => {
+      tun.push('  · ' + z.name + ': ' +
+        z.fehltListe.map(f => f.name + ' ' + f.n + '×').join(', '));
+    });
+    tun.push('');
+  }
+  if (d.nachweise && d.nachweise.length) {
+    const ab = d.nachweise.filter(n => n.tage < 0);
+    const bald = d.nachweise.filter(n => n.tage >= 0);
+    tun.push('NACHWEISE');
+    ab.forEach(n => tun.push('  · ABGELAUFEN: ' + n.name + ' — ' + certName(n.art) +
+      ' (seit ' + Math.abs(n.tage) + ' Tagen)'));
+    bald.forEach(n => tun.push('  · ' + n.name + ' — ' + certName(n.art) +
+      ' läuft in ' + n.tage + (n.tage === 1 ? ' Tag' : ' Tagen') + ' ab'));
+    tun.push('');
+  }
+
+  if (tun.length) {
+    L.push('── WAS ZU TUN IST ──');
+    L.push('');
+    tun.forEach(z => L.push(z));
+  } else {
+    L.push('── WAS ZU TUN IST ──');
+    L.push('');
+    L.push('  Nichts. Nichts überfällig, kein Material fehlt, kein Nachweis');
+    L.push('  läuft in den nächsten 60 Tagen ab.');
+    L.push('');
+  }
+
+  L.push('── ZAHLEN ──');
+  L.push('');
+  L.push('  Erledigt im Zeitraum: ' + (d.erledigt + d.putzErledigt) +
+    ' (' + d.erledigt + ' Aufgaben, ' + d.putzErledigt + ' Putzplan)');
+  L.push('  Aktuell offen: ' + (d.offen + d.putzOffen) +
+    ' (' + d.offen + ' Aufgaben, ' + d.putzOffen + ' Putzplan)');
+  L.push('  Davon überfällig: ' + d.ueberfaellig);
+  L.push('  Fehlende Artikel: ' + d.fehlt);
+  L.push('');
+
+  /* Ganze Saetze statt Spalten. Sortiert bleibt nach dem, was
+     Aufmerksamkeit braucht — oben steht, wo etwas liegt. */
+  L.push('── NACH STUDIO (oben liegt am meisten) ──');
+  L.push('');
+  d.zeilen.forEach(z => {
+    const offenGes = z.offen + z.putzOffen;
+    const erlGes = z.erledigt + z.putzErledigt;
+    if (!offenGes && !erlGes && !z.fehlt) {
+      L.push('  ' + z.name + ': nichts hinterlegt');
+      return;
+    }
+    const teile = [];
+    teile.push(offenGes + ' offen');
+    if (z.ueber) teile.push(z.ueber + ' überfällig');
+    if (z.fehlt) teile.push(z.fehlt + (z.fehlt === 1 ? ' Artikel fehlt' : ' Artikel fehlen'));
+    teile.push(erlGes + ' erledigt');
+    L.push('  ' + z.name + ': ' + teile.join(' · '));
+  });
 
   const leute = Object.keys(d.proPerson).sort((a, b) =>
     (d.proPerson[b] - d.proPerson[a]) || a.localeCompare(b, 'de'));
   if (leute.length) {
     L.push('');
-    L.push('WER HAT WIE VIEL ERLEDIGT');
-    leute.forEach(n => L.push('  ' + sp(n, breite) + z4(d.proPerson[n])));
+    /* Die Überschrift nennt jetzt beides. Vorher stand hier nur „wer hat
+       wie viel erledigt", waehrend die Zahlen Aufgaben UND Putzplan
+       zusammenzaehlten — die Summe passte dann zu keiner der beiden
+       Zahlen weiter oben und sah nach einem Fehler aus. */
+    L.push('── WER HAT WIE VIEL ERLEDIGT (Aufgaben + Putzplan) ──');
+    L.push('');
+    leute.forEach(n => L.push('  ' + n + ': ' + d.proPerson[n]));
   }
   L.push('');
-  L.push('Alle Zahlen im Detail findest du in StudioChat unter Verwaltung → Auswertung.');
-  L.push('Diese Mail lässt sich unter Einstellungen → Meldungen abschalten.');
+  L.push('Alle Zahlen im Detail: StudioChat → Verwaltung → Auswertung.');
+  L.push('Abschalten: Einstellungen → Meldungen.');
   return L.join('\n');
+}
+
+/* ══ Der Bericht als HTML ═════════════════════════════════════════════
+   Warum ueberhaupt HTML: eine Tabelle aus Leerzeichen richtet sich nur
+   in Schreibmaschinenschrift aus. Postfaecher setzen Text proportional,
+   und auf dem Handy bricht eine lange Zeile zusaetzlich um. Hier setzt
+   das Postfach die Spalten — dafuer sind Tabellen da.
+
+   Regeln fuer Mail-HTML, alle drei hier eingehalten:
+     - Stile INLINE. <style> im Kopf wird von einigen Postfaechern
+       entfernt, und dann steht der Bericht nackt da.
+     - <table> statt flex/grid. Aeltere Postfaecher koennen beides nicht.
+     - Keine Bilder, keine Schriften von aussen. Ein Bericht, der auf
+       eine Internetverbindung wartet, ist kein Bericht.
+
+   Die Textfassung geht in derselben Mail mit. Wer HTML abgeschaltet hat
+   — und wer es aus dem Postfach heraus weiterleitet — bekommt dann
+   nicht eine leere Seite, sondern denselben Inhalt in Saetzen. */
+function eh(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function berichtHtml(d, vonD, bisD) {
+  const dat = (x) => x.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const tage = Math.max(1, Math.round((bisD - vonD) / 86400000));
+  const TEXT = '#1a1c23', GRAU = '#6b7280', LINIE = '#e5e7eb';
+  const ROT = '#b91c1c', ROTBG = '#fef2f2', GELB = '#92400e', GELBBG = '#fffbeb';
+  const GRUEN = '#15803d', GRUENBG = '#f0fdf4', BLAU = '#1d4ed8';
+  const F = 'font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Arial,sans-serif';
+  const H = [];
+
+  /* Eigener Grund, nicht der des Postfachs.
+
+     Der erste ausgelieferte Bericht wurde auf einem Handy im
+     DUNKELMODUS gelesen. Eine Mail ohne eigene Hintergrundfarbe erbt den
+     des Postfachs — dann steht dunkler Text auf dunklem Grund, und die
+     farbigen Kaesten unten (helles Rot, helles Gelb) haetten als einzige
+     einen Hintergrund gehabt. Deshalb traegt die Mail ihre helle Flaeche
+     selbst, ueber ein bgcolor am aeusseren <table>: das respektieren
+     auch Postfaecher, die HTML sonst umfaerben. */
+  H.push('<table cellpadding="0" cellspacing="0" border="0" width="100%" ' +
+    'bgcolor="#ffffff" style="background:#ffffff;margin:0;padding:0"><tr>' +
+    '<td align="center" bgcolor="#ffffff" style="background:#ffffff;padding:0">');
+  H.push('<div style="' + F + ';max-width:640px;margin:0 auto;padding:20px;' +
+    'background:#ffffff;color:' + TEXT + ';font-size:15px;line-height:1.5;text-align:left">');
+
+  // ── Kopf ──
+  H.push('<div style="border-bottom:2px solid ' + TEXT + ';padding-bottom:12px;margin-bottom:20px">');
+  H.push('<div style="font-size:22px;font-weight:700;letter-spacing:-.3px">StudioChat — Bericht</div>');
+  H.push('<div style="color:' + GRAU + ';font-size:14px;margin-top:4px">' +
+    eh(dat(vonD)) + ' bis ' + eh(dat(bisD)) + ' &middot; ' + tage +
+    (tage === 1 ? ' Tag' : ' Tage') + ' &middot; alle ' + d.studios + ' Studios</div>');
+  H.push('</div>');
+
+  /* ── Was zu tun ist — ganz oben ──
+     Ein Bericht, der mit Summen anfaengt, beantwortet die Frage „lief es
+     gut". Die Frage, mit der jemand die Mail oeffnet, ist aber „muss ich
+     etwas tun". Also steht die zuerst. */
+  const kasten = (farbe, bg, titel, zeilen) => {
+    H.push('<div style="background:' + bg + ';border-left:4px solid ' + farbe +
+      ';padding:12px 14px;margin-bottom:12px;border-radius:0 6px 6px 0">');
+    H.push('<div style="font-weight:700;color:' + farbe + ';font-size:13px;' +
+      'text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">' + eh(titel) + '</div>');
+    zeilen.forEach(z => H.push('<div style="margin:3px 0">' + z + '</div>'));
+    H.push('</div>');
+  };
+
+  H.push('<div style="font-size:13px;font-weight:700;color:' + GRAU +
+    ';text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Was zu tun ist</div>');
+
+  let wasZuTun = false;
+
+  if (d.ueberListe.length) {
+    wasZuTun = true;
+    const z = d.ueberListe.map(u =>
+      '<b>' + eh(u.studio) + '</b> &middot; ' + eh(u.titel) +
+      ' <span style="color:' + ROT + '">seit ' + u.tage +
+      (u.tage === 1 ? ' Tag' : ' Tagen') + '</span>' +
+      (u.wer ? ' <span style="color:' + GRAU + '">(' + eh(u.wer) + ')</span>' : ''));
+    if (d.ueberfaellig > d.ueberListe.length) {
+      z.push('<span style="color:' + GRAU + '">… und ' +
+        (d.ueberfaellig - d.ueberListe.length) + ' weitere</span>');
+    }
+    kasten(ROT, ROTBG, 'Überfällig (' + d.ueberfaellig + ')', z);
+  }
+
+  const mitMaterial = d.zeilen.filter(x => x.fehltListe && x.fehltListe.length);
+  if (mitMaterial.length) {
+    wasZuTun = true;
+    kasten(GELB, GELBBG, 'Material nachbestellen (' + d.fehlt + ' Stück)',
+      mitMaterial.map(z => '<b>' + eh(z.name) + '</b> &middot; ' +
+        z.fehltListe.map(f => eh(f.name) + ' <b>' + f.n + '&times;</b>').join(', ')));
+  }
+
+  if (d.nachweise && d.nachweise.length) {
+    wasZuTun = true;
+    kasten(GELB, GELBBG, 'Nachweise (' + d.nachweise.length + ')',
+      d.nachweise.map(n => n.tage < 0
+        ? '<b>' + eh(n.name) + '</b> &middot; ' + eh(certName(n.art)) +
+          ' <span style="color:' + ROT + ';font-weight:700">abgelaufen seit ' +
+          Math.abs(n.tage) + ' Tagen</span>'
+        : '<b>' + eh(n.name) + '</b> &middot; ' + eh(certName(n.art)) +
+          ' <span style="color:' + GELB + '">läuft in ' + n.tage +
+          (n.tage === 1 ? ' Tag' : ' Tagen') + ' ab</span>'));
+  }
+
+  if (!wasZuTun) {
+    kasten(GRUEN, GRUENBG, 'Nichts liegt an',
+      ['Nichts überfällig, kein Material fehlt, und kein Nachweis läuft in ' +
+       'den nächsten 60 Tagen ab.']);
+  }
+
+  // ── Zahlen ──
+  H.push('<div style="font-size:13px;font-weight:700;color:' + GRAU +
+    ';text-transform:uppercase;letter-spacing:.6px;margin:24px 0 10px">Auf einen Blick</div>');
+  H.push('<table cellpadding="0" cellspacing="0" border="0" width="100%" style="' + F + '">');
+  const zahl = (was, wert, zusatz, farbe) => {
+    H.push('<tr>' +
+      '<td style="padding:7px 0;border-bottom:1px solid ' + LINIE + ';font-size:15px">' + eh(was) + '</td>' +
+      '<td style="padding:7px 0;border-bottom:1px solid ' + LINIE + ';text-align:right;' +
+        'font-size:19px;font-weight:700;color:' + (farbe || TEXT) + ';white-space:nowrap">' + wert + '</td>' +
+      '<td style="padding:7px 0 7px 10px;border-bottom:1px solid ' + LINIE + ';color:' + GRAU +
+        ';font-size:13px;white-space:nowrap">' + (zusatz || '') + '</td></tr>');
+  };
+  zahl('Erledigt im Zeitraum', d.erledigt + d.putzErledigt,
+    d.erledigt + ' Aufgaben &middot; ' + d.putzErledigt + ' Putzplan', GRUEN);
+  zahl('Aktuell offen', d.offen + d.putzOffen,
+    d.offen + ' Aufgaben &middot; ' + d.putzOffen + ' Putzplan');
+  zahl('Davon überfällig', d.ueberfaellig, '', d.ueberfaellig ? ROT : TEXT);
+  zahl('Fehlende Artikel', d.fehlt, '', d.fehlt ? GELB : TEXT);
+  H.push('</table>');
+
+  // ── Nach Studio ──
+  H.push('<div style="font-size:13px;font-weight:700;color:' + GRAU +
+    ';text-transform:uppercase;letter-spacing:.6px;margin:24px 0 4px">Nach Studio</div>');
+  H.push('<div style="color:' + GRAU + ';font-size:13px;margin-bottom:10px">' +
+    'Oben steht, wo am meisten liegt.</div>');
+  H.push('<table cellpadding="0" cellspacing="0" border="0" width="100%" style="' + F + ';font-size:14px">');
+  H.push('<tr>' +
+    '<th align="left"  style="padding:6px 4px;border-bottom:2px solid ' + LINIE + ';color:' + GRAU + ';font-size:12px;font-weight:600">Studio</th>' +
+    '<th align="right" style="padding:6px 4px;border-bottom:2px solid ' + LINIE + ';color:' + GRAU + ';font-size:12px;font-weight:600">offen</th>' +
+    '<th align="right" style="padding:6px 4px;border-bottom:2px solid ' + LINIE + ';color:' + GRAU + ';font-size:12px;font-weight:600">überf.</th>' +
+    '<th align="right" style="padding:6px 4px;border-bottom:2px solid ' + LINIE + ';color:' + GRAU + ';font-size:12px;font-weight:600">Material</th>' +
+    '<th align="right" style="padding:6px 4px;border-bottom:2px solid ' + LINIE + ';color:' + GRAU + ';font-size:12px;font-weight:600">erledigt</th></tr>');
+  d.zeilen.forEach(z => {
+    const offenGes = z.offen + z.putzOffen, erlGes = z.erledigt + z.putzErledigt;
+    const leer = !offenGes && !erlGes && !z.fehlt;
+    const td = (inhalt, farbe, fett) =>
+      '<td align="right" style="padding:7px 4px;border-bottom:1px solid ' + LINIE +
+      ';color:' + (farbe || TEXT) + (fett ? ';font-weight:700' : '') + '">' + inhalt + '</td>';
+    H.push('<tr>' +
+      '<td style="padding:7px 4px;border-bottom:1px solid ' + LINIE + ';' +
+        (leer ? 'color:' + GRAU : 'font-weight:600') + '">' + eh(z.name) +
+        (leer ? ' <span style="font-size:12px">(nichts hinterlegt)</span>' : '') + '</td>' +
+      td(leer ? '–' : offenGes, leer ? GRAU : null, !leer && offenGes > 0) +
+      td(z.ueber || (leer ? '–' : '0'), z.ueber ? ROT : GRAU, !!z.ueber) +
+      td(z.fehlt || (leer ? '–' : '0'), z.fehlt ? GELB : GRAU, !!z.fehlt) +
+      /* Eine gruene Null ist eine falsche gute Nachricht: „0 erledigt"
+         heisst, dass dort nichts passiert ist. */
+      td(leer ? '–' : erlGes, (leer || !erlGes) ? GRAU : GRUEN) +
+      '</tr>');
+  });
+  H.push('</table>');
+
+  // ── Wer ──
+  const leute = Object.keys(d.proPerson).sort((a, b) =>
+    (d.proPerson[b] - d.proPerson[a]) || a.localeCompare(b, 'de'));
+  if (leute.length) {
+    const hoechste = d.proPerson[leute[0]] || 1;
+    H.push('<div style="font-size:13px;font-weight:700;color:' + GRAU +
+      ';text-transform:uppercase;letter-spacing:.6px;margin:24px 0 4px">Wer hat wie viel erledigt</div>');
+    /* Aufgaben UND Putzplan. Ohne diesen Zusatz passte die Summe zu
+       keiner der beiden Zahlen weiter oben und sah nach einem Fehler
+       aus — im ersten ausgelieferten Bericht standen oben 3 erledigte
+       Aufgaben und hier 26. */
+    H.push('<div style="color:' + GRAU + ';font-size:13px;margin-bottom:10px">' +
+      'Aufgaben und Putzplan zusammen.</div>');
+    H.push('<table cellpadding="0" cellspacing="0" border="0" width="100%" style="' + F + ';font-size:14px">');
+    leute.forEach(n => {
+      const v = d.proPerson[n];
+      const breite = Math.max(3, Math.round(v / hoechste * 100));
+      H.push('<tr>' +
+        '<td width="35%" style="padding:5px 4px">' + eh(n) + '</td>' +
+        '<td style="padding:5px 4px">' +
+          '<div style="background:' + BLAU + ';height:8px;border-radius:4px;width:' + breite + '%"></div>' +
+        '</td>' +
+        '<td width="42" align="right" style="padding:5px 4px;font-weight:700">' + v + '</td></tr>');
+    });
+    H.push('</table>');
+  }
+
+  H.push('<div style="margin-top:26px;padding-top:14px;border-top:1px solid ' + LINIE +
+    ';color:' + GRAU + ';font-size:13px">' +
+    'Alle Zahlen im Detail: StudioChat &rarr; Verwaltung &rarr; Auswertung.<br>' +
+    'Diese Mail lässt sich abschalten: Einstellungen &rarr; Meldungen.</div>');
+  H.push('</div>');
+  H.push('</td></tr></table>');
+  return H.join('');
 }
 
 /* Bericht bauen und verschicken.
@@ -2173,11 +2483,15 @@ async function sendMonthlyReport(vonD, bisD, firma, nurUid) {
     ' bis ' + dat(bisD);
   const fromAddr = process.env.MAIL_FROM || process.env.SMTP_USER;
 
+  /* Beide Fassungen in einer Mail. Das Postfach nimmt HTML, wenn es
+     kann, sonst den Text — und wer HTML abgeschaltet hat, bekommt keine
+     leere Seite. */
   await mailer.sendMail({
     from: '"StudioChat" <' + fromAddr + '>',
     to: empfaenger.join(', '),
     subject: betreff,
-    text
+    text,
+    html: berichtHtml(daten, vonD, bisD)
   });
   console.log('Bericht an', empfaenger.length, 'Empfänger gesendet.');
   return empfaenger.length;
@@ -2643,4 +2957,4 @@ exports.purgeTrash = region
    Bewusst unter einem eigenen Namen und nicht als exports.<name>:
    alles, was oben mit exports. anfaengt, waere ein ausgerollter
    Endpunkt. Diese hier sind keiner. */
-exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText };
+exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml };
