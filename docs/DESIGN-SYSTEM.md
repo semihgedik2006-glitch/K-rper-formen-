@@ -338,9 +338,81 @@ Gemessen wird nicht die gemalte Höhe, sondern was der Finger trifft –
 | Zahlenfeld Material `.num` | 40 | 44 |
 | Wochenknöpfe `.wk-btns .btn` | 38 | 44 |
 | Reaktion, Anheften, Löschen, Haken | 19–34 | 44 (unsichtbar) |
+| Kopfzeile `.icon-btn` unter 520px | 36 | 44 *(24.8.)* |
+| Marke `.tb-brand` | 38×20 | 44×50 *(24.8.)* |
+| Untere Leiste, schmalster Eintrag | – | 44 breit *(24.8.)* |
 
 Ausnahme: Symbole **innerhalb** einer Zeile, die selbst anklickbar ist
 (die Kamera in der Aufgaben-Fußzeile). Dort ist die ganze Zeile das Ziel.
+
+**Die Kopfzeile war die letzte Ausnahme — sie ist am 24.8. weggefallen.**
+Sie stand ein halbes Jahr auf 36px, mit dem Argument, dass 44 die Zeile
+sprengen würden. Nachgemessen kostet es **sechs Pixel** (63 → 69), und
+zwar nur, weil die Marke als Knopf ohnehin 50 belegt. Wer eine solche
+Ausnahme im Quelltext festhält, sollte die Zahl daneben schreiben — hier
+stand nur die Behauptung, und die war zu teuer geschätzt.
+
+Zwei Folgen, die zur Regel gehören:
+
+* Die Marke bekommt ihre Höhe über `padding` **plus gleich großen
+  negativen `margin`**. Der Griff wächst, die Zeile nicht.
+* Vier Knöpfe mal acht Pixel sind 32, und die fehlen woanders. Hier dem
+  Schriftzug: er weicht jetzt schon ab 420px statt erst ab 360.
+  Eine Vergrößerung ist nie nur lokal.
+
+---
+
+## 4b. Waagerecht schieben — die Liste
+
+> **Der Bildschirm wackelt nicht. Leisten dürfen schieben, Seiten nicht.**
+
+Erlaubt sind genau fünf Leisten, jede mit Grund:
+
+| Leiste | Grund |
+|---|---|
+| `.subnav` | „Betrieb" hat sechs Reiter, der längste heißt „Probetraining". Umgebrochen: vier Zeilen und 162 statt 42 Pixel bei 320px |
+| `.chat-channels` | bis zu 14 Studios plus Gruppen |
+| `.chip-row` | Filter; umbrechend nahm die Leiste 150px über einer Liste mit drei Einträgen |
+| `.sort-row` | dasselbe für die Sortierung |
+| `.pm-tabs` | passt inzwischen überall, bleibt als Notausgang |
+
+Alles andere ist ein Fund — `tests/test-quer.js` hält die Liste fest.
+**Die untere Leiste steht ausdrücklich nicht darin:** was man in der
+Hauptnavigation wegwischen muss, gibt es für den Benutzer nicht.
+
+**Wer eine Leiste schieben lässt, schuldet zwei Dinge:**
+
+1. Der aktive Eintrag muss ins Bild geschoben werden
+   (`kanalSichtbarMachen`, `subtabSichtbarMachen`). Sonst weiß niemand,
+   wo er ist.
+2. `scrollIntoView({inline:'center'})`, nicht `'nearest'`. Steht der
+   offene Eintrag ganz rechts, sieht man bei `'nearest'` zwar ihn, aber
+   keinen Nachbarn — und damit nicht, dass es weitergeht.
+
+### Beim Messen: was zählt als schiebbar
+
+| | `scrollLeft` bewegt sich | mit dem Finger schiebbar |
+|---|---|---|
+| `overflow:hidden` / `clip` | ja | **nein** |
+| `<input>`, `<textarea>` | ja | nein (scrollt beim Tippen) |
+| `overflow-x:auto/scroll` | ja | **ja** |
+
+Die erste Messung dieser Sorte hat genau daran vorbeigemessen und
+Funde gemeldet, die keine waren.
+
+### Zwei Fallen
+
+* **`overflow-y:auto` allein macht auch waagerecht scrollbar.** Steht
+  `overflow-x` auf dem Vorgabewert, rechnet der Browser ihn ebenfalls
+  als `auto`. `.scroll-area` braucht deshalb ausdrücklich
+  `overflow-x:hidden` — als Sperre, nicht als Ersatz fürs Aufräumen:
+  was überläuft, wird dann abgeschnitten, und das meldet
+  `test-abgeschnitten.js`.
+* **`white-space:nowrap` ist die häufigste Ursache.** Ein Pfad, eine
+  Mail-Adresse, eine Nummer — was nicht umbrechen darf, drückt seinen
+  Kasten auf. Auf 320px kostet ein einziges `nowrap` 30 Pixel
+  Seitenversatz. Nur dort setzen, wo die Länge feststeht (eine
+  Rufnummer: ja; eine Mail-Adresse: nein).
 
 ---
 

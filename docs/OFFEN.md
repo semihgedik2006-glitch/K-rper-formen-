@@ -1,6 +1,22 @@
 # Was noch offen ist
 
-Stand 17. August 2026.
+Stand 24. August 2026.
+
+> **Nachtrag 24.8. — was aus der Oberflächen-Runde offen bleibt.**
+> Waagerechtes Schieben ist weg, bis auf fünf Leisten, bei denen es
+> Absicht ist (Liste in `DESIGN-SYSTEM.md`, festgehalten von
+> `tests/test-quer.js`). Die 44-Pixel-Regel gilt jetzt auch in der
+> Kopfzeile. Nummern, Mails, Adressen und die Marke sind anklickbar.
+>
+> Nicht erledigt und **keine Frage der Zeit, sondern der Entscheidung:**
+>
+> * **„die Knöpfe alle überarbeiten"** — der eine messbare Mangel war
+>   die 44-Pixel-Regel in der Kopfzeile, und der ist behoben. Was sonst
+>   noch stört, ist Geschmack und lässt sich nicht erraten. Ohne eine
+>   konkrete Stelle wäre jede weitere Änderung Raten mit dem Risiko,
+>   etwas kaputtzumachen, das gefällt.
+> * **„geheime Aktivitäten"** — nicht angefangen, weil unklar ist, was
+>   gemeint ist.
 
 > **Neu bei dir seit dem 17.8.:** `KONFIG.vertriebMail` in `konfig.js`.
 > Auf dem Anmeldebildschirm gibt es jetzt „Ich führe ein Studio" mit

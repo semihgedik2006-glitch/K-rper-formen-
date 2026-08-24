@@ -4501,3 +4501,167 @@ Vollständig in `OFFEN.md`. Kurzfassung:
 | Suche über alle Studios | bewusst nicht gebaut |
 | Mehrere Firmen in einer App | ab dem 5./6. Kunden |
 | KI-Funktionen | Datenschutz zuerst |
+
+---
+
+# 53 · Nichts wackelt mehr, alles ist anklickbar
+
+**24. August 2026**
+
+> „kannst du in der ganzen app horizontales scrollen entfernen und die
+> knöpfe alle überarbeiten nochmal und kannszt du nummern, mails, links
+> und das logo anklickbar machen und das logo führt zurück zum start
+> bildschirm"
+
+Vier Wünsche. Beim Nachmessen sind daraus **fünf Befunde** geworden, von
+denen drei nicht im Wunsch standen.
+
+## Erst messen, dann ändern
+
+Die erste Messung meldete Funde in `.ab-t`, `.pin-txt`, `.pb-name` und
+in mehreren Eingabefeldern. Alle falsch. Der Unterschied, an dem sie
+vorbeigemessen hat:
+
+| | `scrollLeft` bewegt sich | mit dem Finger schiebbar |
+|---|---|---|
+| `overflow:hidden` / `clip` | ja | **nein** |
+| `<input>`, `<textarea>` | ja | nein (scrollt beim Tippen) |
+| `overflow-x:auto/scroll` | ja | **ja** |
+
+Erst mit dieser Unterscheidung blieb ein einziger echter Fund übrig:
+30px auf der Startseite bei 320px Breite.
+
+## Befund 1 — eine Zeile CSS hat die Startseite verschoben
+
+Nicht die Karte war zu breit, sondern eine Regel:
+
+```css
+.setup-txt i em{white-space:nowrap}   /* damit „Verwaltung → System"
+                                         zusammenbleibt */
+```
+
+Der Pfad passt auf einem 320px-Gerät nicht in eine Zeile, konnte nicht
+umbrechen und hat die Einrichtungs-Karte auf **336px in einem 292px
+breiten Kasten** gedrückt. Ein umgebrochener Pfad ist lesbar; eine
+Seite, die wackelt, nicht.
+
+Dazu `overflow-x:hidden` auf `.scroll-area`. Steht `overflow-y` auf
+`auto` und `overflow-x` auf dem Vorgabewert, rechnet der Browser
+`overflow-x` **ebenfalls als auto** — die Fläche war also grundsätzlich
+schiebbar, sobald irgendein Kind zu breit wurde. Das ist eine Sperre und
+kein Ersatz fürs Aufräumen: was überläuft, wird jetzt abgeschnitten
+statt scrollbar, und genau das meldet `test-abgeschnitten.js`. Aus einem
+wackelnden Bildschirm wird ein sichtbarer Fund.
+
+## Befund 2 — die Hauptnavigation lag halb neben dem Bild
+
+Nach dem Wunsch nicht gesucht, beim Messen gefunden: die untere Leiste
+hatte **462px Inhalt** — bei 320, 360, 390 *und* 430px Breite.
+„Verwaltung" war auf jedem Handy nur nach einem Wisch erreichbar.
+
+`min-width:74px` bei `flex:0 0 auto` war die Ursache: „Ich" braucht 23px
+Schrift und bekam dieselben 74 wie „Verwaltung" mit 72.
+
+```
+                Überhang   schmalster   breitester
+  320px            0           44           81
+  360px            0           44           91
+  390px            0           47           97
+  430px            0           53          103
+```
+
+Der Weg über Zeilenumbruch war die Alternative und ist gemessen keine:
+„Verwal-tung" zweizeilig macht die Leiste auf **allen** Geräten 13px
+höher, für ein einziges Wort.
+
+## Befund 3 — die 44-Pixel-Regel im Kopf
+
+Im Quelltext stand seit Runde 52: *„die hält in der Kopfzeile keiner ein
+… gehört in eine eigene Änderung, weil sie die Höhe auf jedem Gerät
+verschiebt."* Erledigt. Kosten gemessen: **sechs Pixel** (63 → 69), und
+zwar nur, weil die Marke als Knopf ohnehin 50px belegt.
+
+Folgekosten, gemessen und behoben: vier Knöpfe mal acht Pixel sind 32,
+und die fehlten der Marke. Bei 390px standen **157px Schriftzug in einem
+130px breiten Kasten**. Der Schriftzug fällt deshalb schon ab 420px weg
+statt erst ab 360; ab 430 steht er wieder vollständig da. Kleiner setzen
+wäre die naheliegende Alternative — auf `--t-xs` heruntergerechnet
+bleiben zwei Pixel Überhang, und dann ist er zu klein zum Lesen **und**
+abgeschnitten.
+
+## Befund 4 — eine Medienabfrage ohne Wirkung
+
+Die Regeln für die schmalen Reiterleisten standen zuerst oben bei der
+Kopfzeile und taten nichts. Eine Medienabfrage erhöht die Spezifität
+nicht; es entscheidet die Reihenfolge, und `.subtab` weiter unten hat
+sie wieder überschrieben. **Nichts hat das gemeldet** — aufgefallen ist
+es nur, weil hinterher nachgemessen wurde.
+
+## Befund 5 — Links waren unsichtbar
+
+`linkify()` lief längst in der Übergabe, am schwarzen Brett, bei den
+Aushängen und in den Putzplan-Notizen. Gestylt war aber nur
+`.msg .body a` im Chat, und `a{color:inherit;text-decoration:none}` ganz
+oben ebnet alles ein. Anklickbar und nicht erkennbar ist dasselbe wie
+nicht vorhanden.
+
+## Was jetzt anklickbar ist
+
+Vier Formen statt einer: `http(s)://`, `www.…`, Mail-Adresse,
+Rufnummer. Die Rufnummer ist eng gefasst — sie muss mit `+` oder `0`
+beginnen und lang genug sein. Das ist die eigentliche Behauptung, und
+`test-verlinkung.js` prüft sie mit acht Gegenproben:
+
+| bleibt Text | warum |
+|---|---|
+| `12.08.2025` | beginnt nicht mit 0 oder + |
+| `01.09.2026` | nach der 0 kommt nur **eine** Ziffer |
+| `08:30` | Doppelpunkt gehört nicht zum Zeichensatz |
+| `1.234,56` | Komma auch nicht |
+| `Hausnummer 12`, `PLZ 50354`, `Gerät 0123`, `Version 2.4.1` | zu kurz |
+
+Dazu: Satzzeichen am Ende gehören zum Satz. „Schau auf https://kf.de."
+führte vorher auf eine Adresse mit Punkt hinten dran, also ins Leere.
+
+Sicherheit: der Text ist bereits durch `esc()`. Anführungszeichen stehen
+als `&quot;` und können aus dem `href` nicht ausbrechen; keines der vier
+Muster lässt ein anderes Schema als `http`, `https`, `mailto` oder `tel`
+zu.
+
+## Die Marke ist ein Knopf
+
+Ein Logo, das nichts tut, ist ein Griff ins Leere — fast jeder tippt
+dort hin, wenn er sich verlaufen hat. Echter `<button>` statt `div` mit
+Zuhörer: mit der Tastatur erreichbar, für Vorlesegeräte als Handlung
+erkennbar. `showView('home')` und nicht `history.back()`: „zurück"
+landet dort, wo man vorher war, „Start" immer am selben Ort.
+
+## Was weiter waagerecht scrollt — mit Absicht
+
+| Leiste | Grund |
+|---|---|
+| `.subnav` | „Betrieb" hat sechs Reiter, der längste heißt „Probetraining". Umgebrochen: vier Zeilen und 162 statt 42 Pixel bei 320px |
+| `.chat-channels` | bis zu 14 Studios plus Gruppen |
+| `.chip-row`, `.sort-row` | Filter; umbrechend nahmen sie 150px über einer Liste mit drei Einträgen |
+
+Was gefehlt hat, war die Zusage, dass man dabei nicht die Orientierung
+verliert. Für die Kanalreihe im Chat gibt es das seit langem, für die
+Reiterleiste nicht — `subtabSichtbarMachen()` schiebt den offenen Reiter
+jetzt in die Mitte des Bildes.
+
+## Ein Fund in den Attrappen
+
+Beide Attrappen kannten Übergaben nur bei `get()`, nicht bei
+`onSnapshot()` — und der Team-Bereich hört zu. Die Liste dort stand also
+**immer leer**, und jeder Durchlauf, der sie geprüft hätte, hätte nichts
+geprüft. Aufgefallen, weil `test-verlinkung.js` „0 von 15 Proben
+gerendert" meldete, statt stillschweigend grün zu sein.
+
+## Gegenproben
+
+| Gegenprobe | Ergebnis |
+|---|---|
+| altes `min-width:74px` wiederhergestellt | `test-quer.js` meldet „mobnav +64px" in jeder Ansicht ✓ |
+| acht Nicht-Nummern durch `linkify()` | keine einzige verlinkt ✓ |
+| Logo-Klick aus dem Team-Bereich | `view-team` → `view-home` ✓ |
+| Marke mit `elementFromPoint` an beiden Rändern | trifft `tbHome`, keinen Nachbarn ✓ |
