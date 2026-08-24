@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-beh2Bp1YoMFzsgtxHAxhlndGY7YNY67v+6AP6P4cIeg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-gt3fW4J9M0xaezCu1qlgEZz27pPys6aZ34iBI3ljUkQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1784,6 +1784,23 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 #personModal{animation:fadeBlur .3s var(--ease-ios)}
 
 /* Weiterleiten und Tastenkürzel nutzen dasselbe Fenster-Aussehen */
+#werkbankModal{position:fixed;inset:0;z-index:222;display:none;align-items:center;
+  justify-content:center;padding:var(--s20);background:var(--scrim);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#werkbankModal.show{display:flex}
+#werkbankModal .pm-box{max-width:620px;max-height:88vh;overflow:auto}
+.wb-zeile{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s12);
+  padding:var(--s8) 0;border-bottom:1px solid var(--line)}
+.wb-zeile:last-child{border-bottom:none}
+.wb-zeile b{font-variant-numeric:tabular-nums;flex:0 0 auto}
+.wb-zeile span{color:var(--text-2);min-width:0}
+/* Der Balken zeigt Verhaeltnisse, nicht Betraege — deshalb keine Achse
+   und keine Zahl daran. Die Zahl steht rechts in der Zeile. */
+.wb-balken{height:6px;border-radius:var(--r-pille);background:var(--auf-2);overflow:hidden;margin-top:var(--s4)}
+.wb-balken i{display:block;height:100%;background:var(--accent);border-radius:var(--r-pille)}
+.wb-tot{color:var(--danger-tx)}
+.wb-tot .wb-balken i{background:var(--danger)}
+.wb-knopfe{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s8)}
 #fwdModal,#keysModal{position:fixed;inset:0;z-index:215;display:none;
   align-items:center;justify-content:center;padding:var(--s20);
   background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
@@ -4685,6 +4702,37 @@ html{font-size:var(--fs,100%)}
   </div>
 </div>
 
+<!-- ── Die Werkbank ──
+     Geht auf, wenn man siebenmal auf die Marke tippt — und nur beim
+     Betreiberkonto. Dasselbe Muster wie die Entwickleroptionen bei
+     Android.
+
+     WICHTIG, damit sich niemand darauf verlaesst: der Griff ist eine
+     SCHUBLADE, KEIN SAFE. Das Repo ist oeffentlich, jeder kann
+     nachlesen, dass es sieben Tipps sind. Geschuetzt ist nur, was auch
+     ohne diese Seite geschuetzt waere — die Sammlung `statistik` darf
+     laut Regel nur der Chef lesen, `istAdmin()` haengt an einem Feld,
+     das der Server prueft. Das Antippen raeumt die Oberflaeche auf,
+     mehr nicht. Wer hier etwas hineinbaut, das nur durch die
+     Unbekanntheit des Griffs geschuetzt waere, baut ein Leck. -->
+<div id="werkbankModal">
+  <div class="pm-box">
+    <button class="lb-close" id="wbClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 data-ikon="werkzeug" style="margin-bottom:4px">Werkbank</h3>
+    <p class="hint" style="margin:0 0 var(--s16)">Nur für dich. Zahlen ohne Personen — und die Knöpfe, die man selten braucht.</p>
+    <div class="pm-tabs" id="wbTabs">
+      <button class="pm-tab on" type="button" data-wbtab="nutzung">Nutzung</button>
+      <button class="pm-tab" type="button" data-wbtab="funktionen">Funktionen</button>
+      <button class="pm-tab" type="button" data-wbtab="zahlen">Zahlen</button>
+      <button class="pm-tab" type="button" data-wbtab="werkzeug">Werkzeug</button>
+    </div>
+    <div id="wbPaneNutzung"></div>
+    <div id="wbPaneFunktionen" style="display:none"></div>
+    <div id="wbPaneZahlen" style="display:none"></div>
+    <div id="wbPaneWerkzeug" style="display:none"></div>
+  </div>
+</div>
+
 <div id="printArea"></div>
 
 <div class="toast" id="toast"></div>
@@ -6139,6 +6187,20 @@ function renderRecht(){
       '<p><b>Technisch:</b> Zeitpunkt der letzten Anmeldung, damit die '+
         'Anwesenheitsanzeige funktioniert. Ein Gerätekennzeichen für '+
         'Push-Nachrichten, falls du sie einschaltest.</p>'+
+      /* Der Absatz gehoert hierher, obwohl in der Zaehlung keine Person
+         vorkommt. Zwei Gruende: erstens ist „anonym" eine Behauptung,
+         solange sie nirgends steht — hier steht sie, und die Regel in
+         firestore.rules haelt sie ein (sie laesst genau drei Felder zu).
+         Zweitens ist das der billigste Weg, einer Frage zuvorzukommen,
+         die sonst als Verdacht auftaucht: „was zaehlt die App eigentlich
+         mit?" */
+      '<p><b>Wie die App benutzt wird:</b> pro Tag wird gezählt, wie oft '+
+        'die App geöffnet wurde und welche Seiten aufgingen – <b>ohne '+
+        'Namen, ohne Konto, ohne Uhrzeit</b>. Aus diesen Zahlen lässt '+
+        'sich niemand herauslesen; die Sicherheitsregel der Datenbank '+
+        'erlaubt an dieser Stelle gar keine Angabe zu einer Person. '+
+        'Zweck ist allein die Frage, welche Funktionen niemand benutzt. '+
+        'Ein Protokoll, wer wann in der App war, gibt es nicht.</p>'+
 
       '<h4>Wo es liegt</h4>'+
       '<p>Google Firebase (Firestore, Authentication, Cloud Functions, '+
@@ -7748,7 +7810,7 @@ function anyModalOpen(){
 var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModal',
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
-               'msgSheet','todoSheet','docSheet'];
+               'msgSheet','todoSheet','docSheet','werkbankModal'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -9000,6 +9062,7 @@ function showApp(){
   startPeriodWatcher();       // erkennt Tageswechsel/Intervall-Ablauf
   setTimeout(checkDueReminders, 6000);   // an heute/morgen fällige Aufgaben erinnern
   startPresence();            // "ich bin online" melden
+  startNutzung();             // anonyme Zählung: welche Funktion wird benutzt
   showView('home');
   birthdayCheck();
   // Regelmäßig neu zeichnen, damit erledigte Aufgaben automatisch ins Archiv wandern
@@ -9414,6 +9477,11 @@ function showView(id, fromKey, ausVerlauf){
      die untere Leiste zeigt nirgendwo hin. */
   if(!ansichtAn(id) && id!=='home'){ id='home'; ausVerlauf=true; }
   currentView=id;
+  /* Anonym mitzaehlen, welche Ansicht geoeffnet wurde. Hier und nicht
+     an den Knoepfen: showView ist die eine Stelle, durch die JEDER Weg
+     geht — Leiste, Reiter, Kachel, Verlauf, Neuladen. */
+  nutzAnsicht(id);
+  nutzSenden(false);
   if(!ausVerlauf) verlaufMerken(id);
   letzteAnsichtMerken(id);
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
@@ -13279,6 +13347,344 @@ function startPresence(){
 }
 function isOnline(u){
   return !!u && !!u.lastSeen && (Date.now()-u.lastSeen < 5*60000);
+}
+
+/* ══ Wie wird die App benutzt? — ohne dass jemand darin vorkommt ══════
+   Diese Zaehlung beantwortet EINE Frage: welche Funktion benutzt
+   niemand? Das ist die nuetzlichste Frage, die man einem Produkt
+   stellen kann — sie sagt, was man wieder herausnehmen darf.
+
+   WAS HIER NICHT STEHT, IST DER PUNKT.
+   Kein uid, kein Name, keine Uhrzeit. Nur:
+
+       statistik/2026-08-24
+         tag:       '2026-08-24'
+         starts:    { 'studio-6': 12 }     wie oft geoeffnet, je Studio
+         ansichten: { todos: 30, chat: 55 } wie oft geoeffnet, je Ansicht
+
+   Aus diesen Zahlen laesst sich niemand herauslesen. Das ist keine
+   Zusage der Oberflaeche, sondern der Regel: firestore.rules erlaubt an
+   dieser Sammlung genau diese drei Felder (`keys().hasOnly`). Wer
+   spaeter eine uid mitschicken will, wird abgewiesen — auch wenn er den
+   Code hier aendert.
+
+   ABSICHTLICH NICHT GEBAUT: ein Protokoll je Person („wer war wann
+   drin"). Das waere Verhaltenskontrolle, gehoert in die
+   Datenschutzerklaerung und wahrscheinlich in eine Absprache mit dem
+   Team — und es beantwortet keine Frage, die diese App stellen muss.
+
+   KOSTENBREMSE, wie bei der Anwesenheit daneben: gesammelt wird im
+   Speicher, geschickt wird gebuendelt — beim Wegschalten der App und
+   hoechstens alle zehn Minuten. Ein Schreibvorgang je Sitzung statt
+   einem je Klick. Bei 57 Konten sind das rund 200 Schreibvorgaenge am
+   Tag; das freie Kontingent liegt bei 20.000. */
+var NUTZ_MIN_GAP = 10*60*1000;
+var _nutz = { starts:0, ansichten:{} };
+var _nutzLetzt = 0;
+
+function nutzTag(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+
+         String(d.getDate()).padStart(2,'0');
+}
+function nutzAnsicht(id){
+  if(!id) return;
+  _nutz.ansichten[id] = (_nutz.ansichten[id]||0) + 1;
+}
+function nutzStart(){ _nutz.starts++; }
+
+/* sofort=true beim Wegschalten der App: dort zaehlt nicht der Takt,
+   sondern dass die Zahlen nicht verlorengehen. */
+function nutzSenden(sofort){
+  if(!session || !navigator.onLine) return;
+  var etwas = _nutz.starts || Object.keys(_nutz.ansichten).length;
+  if(!etwas) return;
+  var jetzt = Date.now();
+  if(!sofort && jetzt-_nutzLetzt < NUTZ_MIN_GAP) return;
+  _nutzLetzt = jetzt;
+
+  var fv = firebase.firestore.FieldValue;
+  var sk = (session.studioKeys && session.studioKeys[0]) || 'unbekannt';
+  var daten = { tag: nutzTag() };
+  if(_nutz.starts){ daten.starts = {}; daten.starts[sk] = fv.increment(_nutz.starts); }
+  var views = Object.keys(_nutz.ansichten);
+  if(views.length){
+    daten.ansichten = {};
+    views.forEach(function(v){ daten.ansichten[v] = fv.increment(_nutz.ansichten[v]); });
+  }
+  /* Erst zuruecksetzen, dann schicken. Andersherum zaehlt ein Klick
+     waehrend des Sendens doppelt — einmal in dieser Sendung und einmal
+     in der naechsten. */
+  _nutz = { starts:0, ansichten:{} };
+  S('statistik').doc(daten.tag).set(daten, { merge:true }).catch(function(){});
+}
+function startNutzung(){
+  nutzStart();
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden) nutzSenden(true);
+  });
+  window.addEventListener('pagehide', function(){ nutzSenden(true); });
+}
+
+/* ══ Die Werkbank ═══════════════════════════════════════════════════
+   Siebenmal auf die Marke tippen. Vier Seiten:
+
+     Nutzung     wie viele Konten waren wann zuletzt drin (aus lastSeen,
+                 das es ohnehin gibt — hier wird nichts Neues erhoben)
+     Funktionen  welche Ansicht wird benutzt, und welche NIE
+     Zahlen      was diese App gerade weiss, plus wo die echten Kosten
+                 stehen
+     Werkzeug    die Knoepfe, die man selten braucht
+
+   Warum versteckt und nicht in der Verwaltung: keiner dieser Werte
+   hilft beim Fuehren eines Studios. Sie helfen beim Fuehren der APP.
+   Das ist eine andere Aufgabe und ein anderer Kopf — und die Verwaltung
+   ist schon voll. */
+var WB_TAGE = 14;
+var _wbTab = 'nutzung';
+var _wbStat = null;          // geladene Tagesdokumente, null = noch nicht geholt
+var _wbSpeicher = null;      // navigator.storage.estimate(), einmal
+
+function werkbankAuf(){
+  if(!istAdmin()) return;
+  var m=$('werkbankModal'); if(!m) return;
+  m.classList.add('show');
+  wbRender();
+  wbStatLaden();
+}
+function werkbankZu(){ var m=$('werkbankModal'); if(m) m.classList.remove('show'); }
+
+/* Die Tagesdokumente der letzten zwei Wochen. Vierzehn Lesevorgaenge,
+   und nur, wenn jemand die Werkbank oeffnet. */
+function wbStatLaden(){
+  if(_wbStat) { wbRender(); return; }
+  var von = new Date(Date.now() - WB_TAGE*86400000);
+  var vonId = von.getFullYear()+'-'+String(von.getMonth()+1).padStart(2,'0')+'-'+
+              String(von.getDate()).padStart(2,'0');
+  S('statistik').orderBy(firebase.firestore.FieldPath.documentId(), 'desc')
+    .limit(WB_TAGE).get()
+    .then(function(sn){
+      _wbStat = [];
+      sn.forEach(function(d){ if(d.id >= vonId) _wbStat.push(d.data()||{}); });
+      wbRender();
+    })
+    .catch(function(){ _wbStat = []; wbRender(); });
+}
+
+function wbRender(){
+  var m=$('werkbankModal'); if(!m || !m.classList.contains('show')) return;
+  document.querySelectorAll('[data-wbtab]').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-wbtab')===_wbTab);
+  });
+  [['nutzung','wbPaneNutzung'],['funktionen','wbPaneFunktionen'],
+   ['zahlen','wbPaneZahlen'],['werkzeug','wbPaneWerkzeug']].forEach(function(p){
+    var el=$(p[1]); if(el) el.style.display = (_wbTab===p[0]) ? '' : 'none';
+  });
+  if(_wbTab==='nutzung')    wbNutzung();
+  if(_wbTab==='funktionen') wbFunktionen();
+  if(_wbTab==='zahlen')     wbZahlen();
+  if(_wbTab==='werkzeug')   wbWerkzeug();
+  ikonenEinsetzen(m);
+}
+
+function wbZeile(text, wert, klasse){
+  return '<div class="wb-zeile'+(klasse?' '+klasse:'')+'"><span>'+text+'</span><b>'+wert+'</b></div>';
+}
+
+/* ── Nutzung ──
+   Alles hier kommt aus users.lastSeen, das die Anwesenheitsanzeige
+   ohnehin schreibt. Es wird also nichts zusaetzlich erhoben — nur
+   anders zusammengezaehlt.
+
+   Bewusst nur Zahlen, keine Namen: „drei Konten in Hürth waren diese
+   Woche nicht drin" ist eine Aufgabe fuer die Einfuehrung. „Anna war
+   nicht drin" ist eine Personalakte. */
+function wbNutzung(){
+  var box=$('wbPaneNutzung'); if(!box) return;
+  var leute=(_allUsers||[]).filter(function(u){ return !u.system; });
+  if(!leute.length){ box.innerHTML='<p class="lese-leer">Die Nutzerliste ist noch nicht geladen.</p>'; return; }
+  var jetzt=Date.now();
+  function inner(tage){
+    return leute.filter(function(u){ return u.lastSeen && jetzt-u.lastSeen < tage*86400000; }).length;
+  }
+  var nie=leute.filter(function(u){ return !u.lastSeen; }).length;
+
+  var h = '<div class="sec-head"><span>Konten insgesamt</span><i></i></div>'+
+    wbZeile('War heute in der App', inner(1)+' von '+leute.length)+
+    wbZeile('War diese Woche in der App', inner(7)+' von '+leute.length)+
+    wbZeile('War diesen Monat in der App', inner(30)+' von '+leute.length)+
+    wbZeile('Hat die App noch <b>nie</b> geöffnet', nie, nie ? 'wb-tot' : '');
+
+  /* Je Studio. Die interessante Spalte ist die rechte: ein Studio, in
+     dem diese Woche niemand drin war, hat die App nicht angenommen —
+     und das merkt man sonst erst, wenn jemand sich beschwert. */
+  var proStudio={};
+  leute.forEach(function(u){
+    var keys=(u.studioKeys&&u.studioKeys.length) ? u.studioKeys : (u.studios||[]).map(studioKey);
+    keys.forEach(function(k){
+      if(!proStudio[k]) proStudio[k]={ n:0, aktiv:0 };
+      proStudio[k].n++;
+      if(u.lastSeen && jetzt-u.lastSeen < 7*86400000) proStudio[k].aktiv++;
+    });
+  });
+  var keys=Object.keys(proStudio).sort(function(a,b){
+    return (proStudio[a].aktiv/proStudio[a].n) - (proStudio[b].aktiv/proStudio[b].n);
+  });
+  if(keys.length){
+    h += '<div class="sec-head" style="margin-top:var(--s16)"><span>Diese Woche aktiv, je Studio</span><i></i></div>';
+    h += keys.map(function(k){
+      var s=proStudio[k];
+      return wbZeile(esc(studioName(k)), s.aktiv+' von '+s.n, s.aktiv ? '' : 'wb-tot');
+    }).join('');
+    h += '<p class="hint" style="margin-top:var(--s8)">Rot heißt: dort war diese Woche niemand drin. '+
+         'Das ist kein Vorwurf an das Studio, sondern meistens ein Zeichen, dass die Einführung dort fehlt.</p>';
+  }
+  box.innerHTML = h;
+}
+
+/* ── Funktionen ──
+   Die einzige Seite, für die überhaupt etwas Neues gezählt wird — und
+   die einzige, die die Frage beantwortet, wegen der sich Aufräumen
+   lohnt: was benutzt niemand? */
+function wbFunktionen(){
+  var box=$('wbPaneFunktionen'); if(!box) return;
+  if(_wbStat===null){ box.innerHTML='<p class="lese-leer">Wird geladen …</p>'; return; }
+
+  var summe={};
+  _wbStat.forEach(function(t){
+    var a=t.ansichten||{};
+    Object.keys(a).forEach(function(v){ summe[v]=(summe[v]||0)+(+a[v]||0); });
+  });
+  /* Alle Ansichten, die es fuer diese Firma ueberhaupt gibt — auch die
+     mit null. Ohne diese Zeile stuenden nur die benutzten da, und genau
+     die unbenutzten sind der Punkt. */
+  var alle=(NAV||[]).filter(function(it){
+    if(it.id==='chef' || it.id==='archive') return true;
+    return ansichtAn(it.id);
+  });
+  if(!alle.length){ box.innerHTML='<p class="lese-leer">Keine Ansichten.</p>'; return; }
+  var hoechst=Math.max(1, Math.max.apply(null, alle.map(function(it){ return summe[it.id]||0; })));
+  var tot=alle.filter(function(it){ return !summe[it.id]; });
+
+  var h='<p class="hint" style="margin:0 0 var(--s12)">Wie oft geöffnet, letzte '+WB_TAGE+' Tage. '+
+        'Gezählt wird ohne Person und ohne Uhrzeit — nur, dass die Ansicht aufging.</p>';
+  h += alle.slice().sort(function(a,b){ return (summe[b.id]||0)-(summe[a.id]||0); })
+    .map(function(it){
+      var n=summe[it.id]||0;
+      return '<div class="wb-zeile'+(n?'':' wb-tot')+'">'+
+        '<span style="flex:1">'+esc(it.label)+
+          '<span class="wb-balken"><i style="width:'+Math.round(100*n/hoechst)+'%"></i></span></span>'+
+        '<b>'+n+'</b></div>';
+    }).join('');
+  if(tot.length){
+    h += '<p class="hint" style="margin-top:var(--s12)"><b>'+tot.length+
+      (tot.length===1?' Ansicht wurde':' Ansichten wurden')+' in '+WB_TAGE+' Tagen nie geöffnet:</b> '+
+      tot.map(function(it){ return esc(it.label); }).join(', ')+
+      '. Kandidaten zum Abschalten — Verwaltung → System → Funktionen.</p>';
+  }
+  if(!_wbStat.length){
+    h += '<p class="hint">Noch keine Zahlen. Die Zählung läuft erst seit dieser Version; '+
+         'die erste Sendung geht raus, sobald jemand die App wegschaltet.</p>';
+  }
+  box.innerHTML=h;
+}
+
+/* ── Zahlen ── */
+function wbZahlen(){
+  var box=$('wbPaneZahlen'); if(!box) return;
+  var leute=(_allUsers||[]).filter(function(u){ return !u.system; });
+  var aus=leute.filter(function(u){ return u.aktiv===false || u.disabled===true; }).length;
+  var h = wbZeile('Konten', leute.length)+
+    wbZeile('davon abgeschaltet', aus)+
+    wbZeile('Studios', (_studioListe||[]).length)+
+    wbZeile('Offene Fehlermeldungen', (_fehler||[]).length)+
+    wbZeile('Firma (Pfad)', esc(_firma || 'flach, ohne Firmenpfad'))+
+    wbZeile('Bildschirm', window.innerWidth+' × '+window.innerHeight+' px');
+  if(_wbSpeicher){
+    h += wbZeile('Vom Browser belegt', Math.round(_wbSpeicher.usage/1048576)+' MB');
+  }
+  /* Der ehrliche Teil. Lesevorgaenge und Kosten kann der Browser nicht
+     wissen — die zaehlt Google auf seiner Seite, und es gibt keinen
+     Weg, sie von hier aus abzufragen. Eine geschaetzte Zahl waere hier
+     schlimmer als keine: sie sieht aus wie eine Messung. */
+  h += '<p class="hint" style="margin-top:var(--s16)"><b>Lesevorgänge und Kosten stehen nicht hier.</b> '+
+       'Die zählt Google, und der Browser kommt nicht an die Zahl. Eine Schätzung an dieser Stelle '+
+       'sähe aus wie eine Messung und wäre keine. Die echte Zahl: Firebase-Konsole → Firestore → Nutzung.</p>';
+  box.innerHTML=h;
+  if(!_wbSpeicher && navigator.storage && navigator.storage.estimate){
+    navigator.storage.estimate().then(function(e){ _wbSpeicher=e; wbRender(); }).catch(function(){});
+  }
+}
+
+/* ── Werkzeug ── */
+function wbWerkzeug(){
+  var box=$('wbPaneWerkzeug'); if(!box) return;
+  box.innerHTML =
+    '<p class="hint" style="margin:0 0 var(--s12)">Knöpfe, die man selten braucht — und die deshalb '+
+    'nicht in die Verwaltung gehören.</p>'+
+    '<div class="wb-knopfe">'+
+      '<button class="btn btn-ghost btn-sm" id="wbFrisch" data-ikon="wiederholen">Zwischenspeicher leeren und neu laden</button>'+
+      '<button class="btn btn-ghost btn-sm" id="wbSichern" data-ikon="schild">Jetzt zusätzlich sichern</button>'+
+      '<button class="btn btn-ghost btn-sm" id="wbBericht" data-ikon="mail">Bericht an mich (30 Tage)</button>'+
+    '</div>'+
+    '<p class="em-saved" id="wbNote"></p>';
+
+  var note=$('wbNote');
+  /* Der haerteste der drei: er wirft alles weg, was der Browser
+     zwischengespeichert hat, und meldet den Service Worker ab. Danach
+     ist die App garantiert die, die auf dem Server liegt. Genau das
+     will man wissen, wenn jemand sagt „bei mir sieht es anders aus". */
+  $('wbFrisch').addEventListener('click', function(){
+    if(!confirm('Zwischenspeicher leeren und neu laden?\n\nDanach lädt die App alles frisch vom Server. '+
+      'Nichts geht verloren — die Daten liegen in der Datenbank, nicht im Browser.')) return;
+    var p = (window.caches && caches.keys) ? caches.keys().then(function(ks){
+      return Promise.all(ks.map(function(k){ return caches.delete(k); }));
+    }) : Promise.resolve();
+    p.then(function(){
+      if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+        return navigator.serviceWorker.getRegistrations().then(function(rs){
+          return Promise.all(rs.map(function(r){ return r.unregister(); }));
+        });
+      }
+    }).catch(function(){}).then(function(){ location.reload(); });
+  });
+  $('wbSichern').addEventListener('click', function(){
+    var b=this;
+    withBusy(b, function(){
+      return firebase.app().functions(KONFIG.region).httpsCallable('backupNow')({})
+        .then(function(){ if(note) note.textContent='Sicherung angestoßen ✓'; })
+        .catch(function(e){ if(note) note.textContent=errMsg(e); });
+    });
+  });
+  $('wbBericht').addEventListener('click', function(){
+    var b=this;
+    withBusy(b, function(){ return berichtAnfordern(30, note); });
+  });
+  ikonenEinsetzen(box);
+}
+
+/* ── Der Griff: siebenmal auf die Marke ──
+   Innerhalb von drei Sekunden. Laenger, und ein Kind, das gelangweilt
+   auf dem Logo herumtippt, oeffnet sie versehentlich; kuerzer, und man
+   schafft es auf einem Handy nicht.
+
+   Fuer alle anderen passiert NICHTS — keine Meldung, kein Zaehler, kein
+   „fast geschafft". Ein Hinweis waere die Einladung, weiterzuprobieren,
+   und dahinter liegt nichts, was jemand anders sehen soll.
+
+   Die sieben Tipps gehen zusaetzlich ganz normal auf die Startseite.
+   Das ist Absicht: der Griff darf die eigentliche Aufgabe der Marke
+   nicht kaputtmachen, und siebenmal „Start" hintereinander tut nichts. */
+var _markeTipps = 0, _markeErst = 0;
+function markeGetippt(){
+  var jetzt = Date.now();
+  if(jetzt - _markeErst > 3000){ _markeTipps = 0; _markeErst = jetzt; }
+  _markeTipps++;
+  if(_markeTipps < 7) return;
+  _markeTipps = 0;
+  if(!istAdmin()) return;
+  tick(20);
+  werkbankAuf();
 }
 
 /* Auswahlliste "Wer soll das machen?" mit allen Personen der verwalteten Studios */
@@ -19205,7 +19611,18 @@ function bindActions(){
      dort, wo man vorher war, „Start" immer am selben Ort — und genau das
      sucht jemand, der sich verlaufen hat. */
   var tbH=$('tbHome');
-  if(tbH) tbH.addEventListener('click',function(){ showView('home'); });
+  if(tbH) tbH.addEventListener('click',function(){ showView('home'); markeGetippt(); });
+
+  /* Die Werkbank. Nur Verdrahtung — ob sie aufgeht, entscheidet
+     istAdmin() in markeGetippt(). */
+  var wbZ=$('wbClose'); if(wbZ) wbZ.addEventListener('click', werkbankZu);
+  var wbM=$('werkbankModal');
+  if(wbM) wbM.addEventListener('click', function(e){ if(e.target===wbM) werkbankZu(); });
+  document.querySelectorAll('[data-wbtab]').forEach(function(b){
+    b.addEventListener('click', function(){
+      _wbTab=b.getAttribute('data-wbtab'); tick(6); wbRender();
+    });
+  });
 
   var tbB=$('tbBericht');
   if(tbB) tbB.addEventListener('click',function(){

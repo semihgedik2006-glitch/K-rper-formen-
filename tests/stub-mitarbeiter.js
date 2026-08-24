@@ -434,6 +434,8 @@ var USERS = [
        aber aus dem falschen Grund. */
     increment: function (n) { return { __increment: n }; }
   };
+  // Siehe stub-chef.js: die Werkbank sortiert über FieldPath.documentId().
+  firebase.firestore.FieldPath = { documentId: function () { return '__name__'; } };
   firebase.auth.Auth = { Persistence: { LOCAL: 'local', SESSION: 'session', NONE: 'none' } };
   firebase.messaging.isSupported = function () { return false; };
 })();

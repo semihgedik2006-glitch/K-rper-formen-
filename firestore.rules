@@ -833,6 +833,28 @@ service cloud.firestore {
         && request.resource.data.text.size() < 400;
     }
 
+    /* ── Anonyme Nutzungszahlen ──
+       Ein Dokument je Tag: wie oft wurde die App geoeffnet (je Studio)
+       und welche Ansicht wie oft. Beantwortet die eine Frage, die ein
+       Produkt sich stellen muss: was benutzt niemand?
+
+       hasOnly IST DIE EIGENTLICHE ZUSAGE. Ohne diese Zeile waere
+       "anonym" eine Behauptung der Oberflaeche — jemand, der den Code
+       aendert, koennte eine uid mitschicken, und niemand haette es
+       gemerkt. Mit ihr weist die Datenbank jedes vierte Feld ab. Die
+       Zusage steht damit dort, wo sie nicht umgangen werden kann.
+
+       SCHREIBEN darf jeder Aktive: sonst zaehlt ausgerechnet die
+       Nutzung nicht mit, die man messen will. LESEN nur der Chef —
+       nicht weil etwas Heikles darin steht, sondern weil eine Zahl
+       ohne Zusammenhang im Team mehr Fragen aufwirft als beantwortet. */
+    match /statistik/{tag} {
+      allow read, delete: if isChef();
+      allow create, update: if istAktiv()
+        && request.resource.data.keys().hasOnly(['tag','starts','ansichten'])
+        && request.resource.data.tag is string;
+    }
+
     // ── Was nur mir gehoert (Mein Bereich) ──
     //
     // Eigene Kalendereintraege und Notizen. Die einzige Sammlung dieser
@@ -1278,6 +1300,17 @@ service cloud.firestore {
           allow create, update: if inFirma(f) && istAktiv()
             && request.resource.data.text is string
             && request.resource.data.text.size() < 400;
+        }
+
+        // Siehe die Begruendung beim flachen Gegenstueck weiter oben.
+        // hasOnly ist auch hier die eigentliche Zusage: die Sammlung
+        // kann keine Person aufnehmen, weil die Datenbank nur drei
+        // Felder durchlaesst.
+        match /statistik/{tag} {
+          allow read, delete: if inFirma(f) && (isChef());
+          allow create, update: if inFirma(f) && istAktiv()
+            && request.resource.data.keys().hasOnly(['tag','starts','ansichten'])
+            && request.resource.data.tag is string;
         }
 
         // Siehe die Begruendung beim flachen Gegenstueck weiter oben.

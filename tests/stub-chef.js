@@ -484,7 +484,8 @@ var USERS = [
           : gl ? (DEVLOG[gl[1]] || [])
           : gt ? (TODOS[gt[1]] || [])
           : (path === 'certificates' ? (window.__certs || CERTS)
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []));
+          : (path === 'statistik' ? (window.__statistik || [])
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -595,6 +596,10 @@ var USERS = [
        aber aus dem falschen Grund. */
     increment: function (n) { return { __increment: n }; }
   };
+  /* FieldPath fehlte. Die Werkbank sortiert die Tagesdokumente über
+     FieldPath.documentId() — ohne diesen Eintrag fliegt „undefined is
+     not an object", noch bevor die Abfrage gebaut ist. */
+  firebase.firestore.FieldPath = { documentId: function () { return '__name__'; } };
   firebase.auth.Auth = { Persistence: { LOCAL: 'local', SESSION: 'session', NONE: 'none' } };
   firebase.messaging.isSupported = function () { return false; };
 })();
