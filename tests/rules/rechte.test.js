@@ -63,6 +63,10 @@ const anonym  = () => env.unauthenticatedContext().firestore();
     await d.doc('users/wartA').set({ name: 'Wartend', role: 'mitarbeiter', firma: A, aktiv: false });
     await d.doc('users/betreiber').set({ name: 'Betreiber', role: 'chef', firma: A, aktiv: true, admin: true });
     await d.doc('users/zweitA').set({ name: 'Zweiter', role: 'mitarbeiter', firma: A, aktiv: true });
+    /* Ein echter Chef der ANDEREN Firma. Ohne ihn waere die Runde
+       „die andere Firma kommt nicht heran" wertlos: ein unbekanntes
+       Konto scheitert an allem, auch ohne Firmengrenze. */
+    await d.doc('users/chefB').set({ name: 'Chef B', role: 'chef', firma: B, aktiv: true });
   });
 
   // ══ 1. Niemand macht sich selbst zu mehr, als er ist ══
@@ -447,6 +451,39 @@ const anonym  = () => env.unauthenticatedContext().firestore();
   await pruefe('GEGENPROBE und abhaken', () =>
     assertSucceeds(privatMit(mitA(), 'aufgaben', 'a1')
       .update({ erledigt: true, erledigtAm: 7 })));
+
+  /* ══ Anonyme Nutzungszahlen ══
+     Die App zaehlt, welche Ansicht wie oft geoeffnet wurde. In der
+     Datenschutzerklaerung steht dazu: „ohne Namen, ohne Konto, ohne
+     Uhrzeit … die Sicherheitsregel der Datenbank erlaubt an dieser
+     Stelle gar keine Angabe zu einer Person."
+
+     Das ist eine Zusage an das Team, und sie darf nicht davon abhaengen,
+     dass der Code in index.html so bleibt, wie er heute ist. Genau das
+     pruefen die naechsten Runden: NICHT, ob die App brav ist, sondern
+     ob die Datenbank etwas anderes ueberhaupt annimmt. */
+  const statA = (db, tag) => db.doc(`firmen/${A}/statistik/${tag}`);
+
+  await pruefe('STATISTIK · Mitarbeiter darf zählen (tag, starts, ansichten)', () =>
+    assertSucceeds(statA(mitA(), '2026-08-24')
+      .set({ tag: '2026-08-24', starts: { 'studio-1': 3 }, ansichten: { todos: 12 } })));
+  await pruefe('STATISTIK · eine uid kommt NICHT durch', () =>
+    assertFails(statA(mitA(), '2026-08-25')
+      .set({ tag: '2026-08-25', ansichten: { todos: 1 }, uid: 'mitA' })));
+  await pruefe('STATISTIK · ein Name kommt NICHT durch', () =>
+    assertFails(statA(mitA(), '2026-08-26')
+      .set({ tag: '2026-08-26', ansichten: { todos: 1 }, name: 'Anna Meier' })));
+  await pruefe('STATISTIK · ein Zeitstempel kommt NICHT durch', () =>
+    assertFails(statA(mitA(), '2026-08-27')
+      .set({ tag: '2026-08-27', ansichten: { todos: 1 }, ts: 1756000000000 })));
+  /* Lesen: nicht weil etwas Heikles darin steht, sondern weil eine Zahl
+     ohne Zusammenhang im Team mehr Fragen aufwirft als beantwortet. */
+  await pruefe('STATISTIK · Mitarbeiter liest die Zahlen nicht', () =>
+    assertFails(statA(mitA(), '2026-08-24').get()));
+  await pruefe('GEGENPROBE der Chef liest sie', () =>
+    assertSucceeds(statA(chefA(), '2026-08-24').get()));
+  await pruefe('STATISTIK · die andere Firma kommt nicht heran', () =>
+    assertFails(statA(env.authenticatedContext('chefB').firestore(), '2026-08-24').get()));
 
   // ══ 6. Aufzaehlen von Konten ══
   await pruefe('Anonym kann users NICHT auflisten', () =>
