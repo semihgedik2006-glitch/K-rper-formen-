@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-pyR+Wna0fxNyYhSd/yq3ekh/KF2CGksdmj7OUFCskT4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-beh2Bp1YoMFzsgtxHAxhlndGY7YNY67v+6AP6P4cIeg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -532,20 +532,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Abmelden. Hier steht nur, was ihn von denen unterscheidet.
 
    flex:0 0 auto ist noetig, weil .tb-brand ein Flex-Behaelter ist: ohne
-   das quetscht sie ihn auf einem 390er-Geraet auf 33px zusammen, waehrend
-   seine Nachbarn rechts ihre 36px behalten.
+   das quetscht sie ihn auf einem 390er-Geraet zusammen, waehrend seine
+   Nachbarn rechts ihre volle Groesse behalten.
 
-   ZUR 44-PIXEL-REGEL: die haelt in der Kopfzeile keiner ein. Unter 520px
-   setzt eine Regel alle .icon-btn auf 36px, damit die Zeile auf ein Handy
-   passt. Der zweite Weg aus dem Design-System — unsichtbare Flaeche
-   darueberlegen — geht hier auch nicht: .tb-brand bekommt in derselben
-   Abfrage overflow:hidden, damit ein langer Firmenname die Zeile nicht
-   sprengt, und beschneidet damit jede vergroesserte Trefferflaeche.
-   Nachgemessen mit elementFromPoint 21px ueber und unter der Mitte, bei
-   diesem Knopf und bei zwei bestehenden: alle drei landen auf der
-   Kopfzeile. Das ist ein Befund fuer die ganze Zeile, kein Sonderfall
-   dieses Knopfes — und er gehoert in eine eigene Aenderung, weil er die
-   Hoehe der Kopfzeile auf jedem Geraet verschiebt. */
+   ZUR 44-PIXEL-REGEL: hier stand, dass sie in der Kopfzeile keiner
+   einhaelt und dass das in eine eigene Aenderung gehoert, weil es die
+   Hoehe der Zeile verschiebt. Das ist inzwischen erledigt — unter 520px
+   sind alle .icon-btn 44px, nachgemessen kostet es sechs Pixel Hoehe.
+   Steht bei der Regel selbst, weiter unten in der 520er-Abfrage. */
 /* KEIN viertes graues Werkzeug, sondern eine Handlung.
 
    Vorher sah er falsch aus, und das lag nicht an der Ausrichtung: er
@@ -1192,8 +1186,19 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
     background:rgba(18,19,28,.96);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
     border-top:1px solid var(--line);
     padding:var(--s6) calc(var(--s4) + var(--sar)) calc(var(--s6) + var(--sab)) calc(var(--s4) + var(--sal))}
-  /* Bei 9 Bereichen wird es sonst zu eng: Leiste ist seitlich verschiebbar,
-     die Einträge behalten dadurch lesbare Größe und große Tippflächen. */
+  /* overflow-x bleibt als Notausgang stehen — greift aber nicht mehr.
+     Hier stand: „Bei 9 Bereichen wird es sonst zu eng, die Leiste ist
+     seitlich verschiebbar." Das stimmte, als es neun Bereiche waren.
+     Seit es sechs Gruppen sind, war es der Grund, warum „Verwaltung"
+     auf JEDEM Handy halb neben dem Bild lag: gemessen 462px Inhalt in
+     320, 360, 390 und 430px Leiste. Die Hauptnavigation ist die eine
+     Stelle, an der nichts weggewischt werden darf — was man dort nicht
+     sieht, gibt es nicht.
+
+     Die Regel darunter loest das. Der Notausgang bleibt trotzdem: wer
+     die Schrift in den Einstellungen auf „gross" stellt, sprengt jede
+     feste Rechnung, und dann ist eine schiebbare Leiste besser als eine
+     abgeschnittene. */
   .mobnav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .mobnav::-webkit-scrollbar{display:none}
   /* Die Füllung sprang bisher von Bereich zu Bereich. Jetzt gleitet sie –
@@ -1208,9 +1213,28 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
     transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
                height .42s var(--ease-ios),opacity .2s}
   .mobnav.sofort::before{transition:none}
-  .mobnav button{flex:0 0 auto;min-width:74px;background:none;border:none;color:var(--text-3);
+  /* flex:1 1 auto statt 0 0 auto, min-width 44 statt 74.
+     Die 74px waren das Problem: „Ich" braucht 23px Schrift und bekam
+     dieselben 74 wie „Verwaltung" mit 72. Sechs mal 74 sind 444 — mehr,
+     als ein Handy hat.
+
+     Jetzt bekommt jeder Eintrag so viel Platz, wie sein Wort braucht,
+     und der Rest wird verteilt. 44px als Untergrenze, damit auch das
+     kuerzeste Wort eine Flaeche behaelt, die man mit dem Daumen trifft.
+
+     Gemessen mit sechs Gruppen (Chef sieht die meisten):
+        320px → Ueberhang 0, schmalster Eintrag 44, breitester 81
+        360px → 0 / 44 / 91
+        390px → 0 / 47 / 97
+        430px → 0 / 53 / 103
+     Kein Wort abgeschnitten, die Leiste bleibt 55px hoch.
+
+     Der Weg ueber Zeilenumbruch waere auch gegangen — „Verwal-tung"
+     zweizeilig — hat die Leiste aber auf allen Geraeten 13px hoeher
+     gemacht, fuer ein einziges Wort. */
+  .mobnav button{flex:1 1 auto;min-width:44px;background:none;border:none;color:var(--text-3);
     cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:var(--s4);
-    padding:var(--s8) var(--s6);border-radius:var(--r-md);font-size:var(--t-2xs);font-weight:600;position:relative;
+    padding:var(--s8) var(--s2);border-radius:var(--r-md);font-size:var(--t-2xs);font-weight:600;position:relative;
     z-index:1;transition:color .2s,transform .3s var(--spring)}
   .mobnav button:active{transform:scale(.9)}
   .mobnav button svg{width:22px;height:22px}
@@ -1607,20 +1631,43 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Abmelde-Knopf ist rechts abgeschnitten. */
 @media(max-width:520px){
   .topbar{gap:var(--s8);padding-left:var(--s12);padding-right:var(--s12)}
-  .tb-brand{font-size:var(--t-md);gap:var(--s6);min-width:0;overflow:hidden}
+  /* min-width:44px statt 0: bei 320px faellt der Schriftzug weg und
+     uebrig bleibt das Zeichen — gemessen 38px breit. Ein Griff, den man
+     nicht sicher trifft, ist keiner, und dieser hier fuehrt zur
+     Startseite. */
+  .tb-brand{font-size:var(--t-md);gap:var(--s6);min-width:44px;overflow:hidden}
   .tb-live{display:none}
   .tb-user{gap:var(--s6);flex-shrink:0}
-  .icon-btn{width:36px;height:36px;border-radius:var(--r-sm)}
-  .icon-btn svg{width:17px;height:17px}
+  /* Hier stand 36px, und daneben im Quelltext stand der Satz: „ZUR
+     44-PIXEL-REGEL: die haelt in der Kopfzeile keiner ein … das gehoert
+     in eine eigene Aenderung, weil es die Hoehe der Kopfzeile auf jedem
+     Geraet verschiebt."
+
+     Das ist diese Aenderung. Nachgemessen kostet sie sechs Pixel: die
+     Kopfzeile wird von 63 auf 69px hoch, und zwar nur, weil die Marke
+     als Knopf ohnehin schon 50px belegt. Bei 320px bleibt die Zeile
+     ohne Ueberhang. Sechs Pixel gegen fuenf Griffe, die man vorher
+     danebentippen konnte — das ist ein guter Tausch. */
+  .icon-btn{width:44px;height:44px;border-radius:var(--r-sm)}
+  .icon-btn svg{width:18px;height:18px}
 }
-@media(max-width:360px){
-  /* Ganz schmal: nur noch das Zeichen, nicht der Schriftzug.
+@media(max-width:420px){
+  /* Schmal: nur noch das Zeichen, nicht der Schriftzug.
      Hier stand es umgekehrt — das Logo weg, „STUDIOCHAT" behalten. Für
      den knappsten Platz ist das die teurere Haelfte: der Schriftzug
-     misst 119px, das Zeichen 26px. Seit in der Kopfzeile ein Knopf mehr
-     steht, reichte es nicht mehr, und der Schriftzug wurde bei 320px
-     abgeschnitten (test-abgeschnitten.js). Das Zeichen traegt die Marke
-     auf dieser Breite besser als ein halbes Wort. */
+     misst 119px, das Zeichen 26px. Das Zeichen traegt die Marke auf
+     dieser Breite besser als ein halbes Wort.
+
+     Die Grenze lag bei 360px und musste auf 420, seit die Werkzeuge
+     rechts 44 statt 36 Pixel breit sind: vier Knoepfe mal acht Pixel
+     sind 32, und die fehlen der Marke. Gemessen bei 390px: 157px
+     Schriftzug in einem 130px breiten Kasten — test-abgeschnitten.js
+     hat das gemeldet, nicht das Auge.
+
+     Kleiner setzen war die Alternative und ist gemessen keine: selbst
+     auf --t-xs herunter bleiben zwei Pixel Ueberhang, und dann steht da
+     ein Schriftzug, der zu klein zum Lesen und trotzdem abgeschnitten
+     ist. Ab 430px steht er wieder vollstaendig da. */
   .tb-brand .tb-wort{display:none}
 }
 
@@ -2220,6 +2267,12 @@ body.light{--dot:rgba(20,10,40,.06)}
 @media(max-width:480px){
   .pm-tab{font-size:var(--t-sm);padding:var(--s8) var(--s4)}
 }
+/* Ganz schmal noch enger: die vier Reiter in „Ich" und „Team" liefen
+   bei 320px um 26 bzw. 37 Pixel ueber. Danach nicht mehr. */
+@media(max-width:400px){
+  .pm-tabs{gap:2px;padding:2px}
+  .pm-tab{padding-left:2px;padding-right:2px;font-size:var(--t-xs)}
+}
 .pm-tab:active{transform:scale(.96)}
 .pm-tab.on{background:var(--bg-2);color:var(--accent);box-shadow:var(--e1)}
 
@@ -2259,6 +2312,18 @@ html{font-size:var(--fs,100%)}
   padding:var(--s8) var(--s16);border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
   font-size:var(--t-sm);cursor:pointer;position:relative;z-index:1;
   transition:transform .3s var(--spring),color .25s}
+/* Auf schmalen Handys enger. Drei kurze Reiter („Chat · Direkt ·
+   Aushänge") liefen bei 320px um sechs Pixel ueber — und waren damit
+   schiebbar, fuer sechs Pixel. Mit zehn statt sechzehn Pixel
+   Innenabstand passen sie.
+
+   Muss NACH .subtab stehen, nicht oben bei der Kopfzeile: eine
+   Medienabfrage erhoeht die Spezifitaet nicht, es entscheidet die
+   Reihenfolge. Genau daran ist der erste Versuch gescheitert — die
+   Regel stand weiter oben und wurde von .subtab wieder ueberschrieben,
+   ohne dass irgendetwas gemeldet haette. Gemerkt nur, weil hinterher
+   nachgemessen wurde. */
+@media(max-width:400px){ .subtab{padding-left:var(--s10);padding-right:var(--s10)} }
 .subtab:active{transform:scale(.93)}
 .subtab svg{width:16px;height:16px}
 .subtab.on{color:var(--on-accent);font-weight:700}
@@ -9239,6 +9304,26 @@ function buildSubNav(){
   updateNavMarkers();
   // Frisch aufgebaut: der Marker soll stehen, nicht hereinfahren
   subnavMarker(true);
+  subtabSichtbarMachen();
+}
+
+/* Der offene Reiter muss im Bild sein — sonst weiss man nicht, wo man
+   ist. Fuer die Kanalreihe im Chat gibt es das seit langem
+   (kanalSichtbarMachen), fuer diese Leiste fehlte es.
+
+   Sie ist mit Absicht schiebbar: „Betrieb" hat sechs Reiter, und der
+   laengste heisst „Probetraining". Umgebrochen braeuchte die Leiste auf
+   einem 320er-Geraet vier Zeilen und 162 statt 42 Pixel — 120 Pixel,
+   die der Liste darunter fehlen. Schiebbar ist hier also richtig. Was
+   fehlte, war nur die Zusage, dass der aktive Reiter dabei zu sehen
+   ist.
+
+   inline:'center' statt 'nearest': steht der offene Reiter ganz rechts,
+   sieht man bei 'nearest' zwar ihn, aber keinen Nachbarn — und damit
+   nicht, dass es links weitergeht. */
+function subtabSichtbarMachen(){
+  var a=document.querySelector('.subnav .subtab.on');
+  if(a && a.scrollIntoView) a.scrollIntoView({block:'nearest', inline:'center'});
 }
 
 /* ── Kopf beim Scrollen zusammenrücken ──
