@@ -255,8 +255,23 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);
 /* Überschriften tragen die Gliederung, nicht die Farbe. Enger gesetzt
    und eine Spur größer: so erfasst man beim Überfliegen sofort, was
    Titel ist und was Erklärung – auch wenn beides denselben Ton hat. */
-h1,h2,h3,h4{font-family:var(--font-head);font-weight:800;line-height:var(--lh-1);
-  letter-spacing:var(--ls-eng);text-transform:uppercase}
+h1,h2,h3,h4{font-family:var(--font-head);font-weight:800;line-height:var(--lh-1)}
+/* Versalien nur noch fuer die Seitenueberschrift.
+   Vorher standen sie an dieser einen Regel und galten damit fuer ALLES:
+   „EINRICHTUNG", „MEIN DIENST", „VON DER LEITUNG", „ÜBERGABE",
+   „PAPIERKORB" — jede Karte schrie gleich laut. Etwas, das ueberall
+   steht, betont nichts mehr; es macht den Text nur langsamer lesbar.
+   Die Seitenueberschrift behaelt sie, weil sie die einzige ist, die
+   sich vom Rest abheben soll. */
+h1,h2{text-transform:uppercase;letter-spacing:var(--ls-eng)}
+/* Kleinschreibung braucht weniger Enge als Versalien: --ls-eng ist fuer
+   grosse Buchstaben gedacht und zieht gemischten Text zusammen.
+
+   letter-spacing steht deshalb NICHT mehr in der Sammelregel darueber,
+   sondern genau einmal je Stufe. Sonst stuende es fuer h3 zweimal da,
+   und an der ersten Angabe dreht man vergeblich — test-gestaltung.js
+   hat genau das gemeldet, direkt nach dem ersten Versuch. */
+h3,h4{letter-spacing:var(--ls-s)}
 h2{font-size:var(--t-2xl)}
 /* Zweitzeilen: kleiner und leichter statt blasser. Der Unterschied
    kommt aus Größe und Gewicht, damit der Kontrast hoch bleiben kann. */
@@ -842,7 +857,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pbar{flex:1;height:9px;border-radius:var(--r-pille);background:var(--auf-2);overflow:hidden}
 .pbar i{display:block;height:100%;border-radius:var(--r-pille);
   background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0}
-.pcount{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);white-space:nowrap}
+/* tabular-nums: „1/4" und „0/1" stehen untereinander, und ohne feste
+   Ziffernbreite springt die Spalte bei jedem Wechsel. Der einzige Ort in
+   der App, an dem das noch fehlte — gefunden mit einem Durchlauf ueber
+   neun Ansichten, der gestapelte Zahlen sucht, nicht Zahlen ueberhaupt. */
+.pcount{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
 .todo{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s16);background:var(--bg-2);
   border:none;border-radius:var(--r-md);margin-bottom:var(--s8)}
 .todo.done{opacity:.58}
@@ -911,7 +931,31 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ── Cards / Chef ── */
 .card{background:var(--bg-2);border:none;border-radius:var(--radius);
   box-shadow:var(--e1);padding:clamp(18px,4.2vw,26px);margin-bottom:var(--s20)}
-.card h3{font-size:var(--t-lg);margin-bottom:var(--s2);letter-spacing:var(--ls-s)}
+/* letter-spacing kommt jetzt von h3,h4 — hier stand derselbe Wert
+   nochmal. */
+.card h3{font-size:var(--t-lg);margin-bottom:var(--s2)}
+
+/* ── Drei Gewichte statt einem ────────────────────────────────────────
+   Auf der Startseite hatten Einrichtung, Mein Dienst, Von der Leitung
+   und Uebergabe dieselbe Flaeche, denselben Rahmen, denselben Schatten.
+   Eine Karte, die man einmal im Quartal braucht, sah aus wie die, die
+   man jeden Morgen liest. Wenn alles gleich laut ist, ist nichts laut.
+
+   Die Gliederung gab es auf der Startseite laengst — die Ueberschrift
+   „Zum Lesen" trennt Nachschlagen von Handeln. Nur die Karten wussten
+   nichts davon. Genau das holen diese zwei Klassen nach:
+
+     .card.jetzt   was HEUTE dran ist. Kante in der Markenfarbe, hoeher
+                   gelegt. Hoechstens ein bis zwei je Bildschirm — sonst
+                   ist es wieder dasselbe Problem eine Stufe lauter.
+     .card         der Normalfall, unveraendert.
+     .card.still   zum Nachschlagen. Kein Schatten, dafuer ein leiser
+                   Rahmen: die Karte liegt AUF der Seite statt darueber.
+
+   Bewusst KEINE Farbe bei .still. Grau waere hier richtig — es ist die
+   einzige Stelle der App, an der „liegt da" auch gemeint ist. */
+.card.jetzt{box-shadow:var(--e2);border-left:3px solid var(--accent)}
+.card.still{box-shadow:none;background:var(--bg-soft);border:1px solid var(--line)}
 
 /* ── Apple-Ecke ──
    Wo der Browser Superellipsen kann, bekommt jede gerundete Fläche die
@@ -1192,7 +1236,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .dm-section{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:var(--ls-m);color:var(--text-3);
   font-weight:700;padding:var(--s10) var(--s4) var(--s4)}
 .dm-unread{width:11px;height:11px;border-radius:var(--r-rund);background:var(--warm);flex-shrink:0}
-.dm-time{font-size:var(--t-2xs);color:var(--text-3);white-space:nowrap;flex-shrink:0}
+.dm-time{font-size:var(--t-2xs);color:var(--text-3);white-space:nowrap;flex-shrink:0;
+  font-variant-numeric:tabular-nums}
 .dm-checklist{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.22);border-radius:var(--r-sm);padding:var(--s10) var(--s12);margin-top:var(--s4)}
 .dm-cl-h{font-family:var(--font-head);font-weight:700;font-size:var(--t-md);margin-bottom:var(--s6);color:var(--accent-2)}
 .dm-cl-item{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) var(--s2);font-size:var(--t-md);cursor:pointer}
@@ -3058,7 +3103,8 @@ html{font-size:var(--fs,100%)}
 .mat-name-inp:focus{outline:none;background:var(--auf-1);border-color:var(--accent);
   box-shadow:0 0 0 3px rgba(0,184,92,.13)}
 .mat-row .num{width:100%;min-height:44px;background:var(--auf-1);border:1.5px solid var(--line-2);
-  border-radius:var(--r-xs);padding:var(--s6) var(--s2);color:var(--text);text-align:center;min-height:40px;font-size:var(--t-md)}
+  border-radius:var(--r-xs);padding:var(--s6) var(--s2);color:var(--text);text-align:center;min-height:40px;font-size:var(--t-md);
+  font-variant-numeric:tabular-nums}
 .mat-row input.num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,184,92,.13)}
 .mat-row input.limit{border-style:dashed;color:var(--accent-2)}
 .mat-row input.limit[readonly]{opacity:.65;border-style:solid;color:var(--text-2);cursor:default}
@@ -3395,7 +3441,7 @@ html{font-size:var(--fs,100%)}
 
           <!-- 1. Was jetzt dran ist -->
           <div id="homeAlerts"></div>
-          <div class="card" id="myShiftCard" style="display:none">
+          <div class="card jetzt" id="myShiftCard" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3 data-ikon="kalender">Mein Dienst</h3>
               <span class="todo-count" id="myShiftSub"></span>
@@ -3410,7 +3456,7 @@ html{font-size:var(--fs,100%)}
                  Tag, an dem er gebraucht wird. -->
             <button class="mini-link" id="homeAllesGelesen" style="display:none">Alles gelesen</button>
           </div>
-          <div class="card" id="homeAnnCard" data-fold="startinfos" data-fold-offen="1" style="display:none">
+          <div class="card still" id="homeAnnCard" data-fold="startinfos" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
               <h3 data-ikon="megafon">Von der Leitung</h3>
               <button class="mini-link" data-go="ann">Alle ›</button>
@@ -3421,14 +3467,14 @@ html{font-size:var(--fs,100%)}
                Team-Bereich hinter zwei Klicks und einer Studio-Auswahl —
                also genau da, wo sie niemand liest, der gerade zur Schicht
                kommt. Das ist der einzige Zweck einer Übergabe. -->
-          <div class="card" id="homeHoCard" data-fold="startuebergabe" data-fold-offen="1" style="display:none">
+          <div class="card still" id="homeHoCard" data-fold="startuebergabe" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
               <h3 data-ikon="wiederholen">Übergabe</h3>
               <button class="mini-link" data-go="team">Alle ›</button>
             </div>
             <div id="homeHoList"></div>
           </div>
-          <div class="card" id="homeBoardCard" data-fold="startbrett" data-fold-offen="1" style="display:none">
+          <div class="card still" id="homeBoardCard" data-fold="startbrett" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
               <h3 data-ikon="anheften">Schwarzes Brett</h3>
               <button class="mini-link" data-go="team">Alle ›</button>
