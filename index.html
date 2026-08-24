@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-8pAxAiEBgchDiWWUg27Z39LClrn7+S1gJjJfUdgd6ks='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-WV6gs94Mz5o7VvqLL7bHpdfQcqq4+CilWtm3AzYsuhw='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2770,11 +2770,34 @@ html{font-size:var(--fs,100%)}
 /* ── Drucken ──
    Der Putzplan hängt in vielen Studios als Zettel an der Wand. Beim Drucken
    wird deshalb nur #printArea ausgegeben: schwarz auf weiß, ohne Menü,
-   ohne Knöpfe, mit Spalten zum Abhaken von Hand. */
+   ohne Knöpfe, mit Spalten zum Abhaken von Hand.
+
+   WAS HIER GEFEHLT HAT: `body > *{display:none}` blendet alles aus, und
+   #printArea ist leer, solange niemand auf „Drucken" gedrueckt hat. Wer
+   also aus einer beliebigen Ansicht heraus Strg+P tippt — oder am Handy
+   „Drucken" im Systemmenue waehlt —, bekam ein vollstaendig WEISSES
+   BLATT. Kein Fehler, kein Hinweis, nichts. Nachgemessen: sichtbare
+   Elemente [printArea], innerText leer.
+
+   Ein leeres Blatt sagt nicht, dass man den falschen Weg genommen hat;
+   es sagt gar nichts. Deshalb #printHinweis, der genau dann erscheint,
+   wenn #printArea nichts enthaelt, und die zwei Wege nennt, die es
+   wirklich gibt. */
 #printArea{display:none}
+#printHinweis{display:none}
 @media print{
   body{background:#fff!important;color:#000!important}
   body > *{display:none!important}
+  /* Der Hinweis nur bei leerem printArea. :empty trifft genau dann,
+     wenn weder Text noch Element darin steht — also vor dem ersten
+     Klick auf einen der beiden Drucken-Knoepfe. */
+  #printArea:empty + #printHinweis{display:block!important;
+    color:#000;font-family:Arial,Helvetica,sans-serif}
+  #printHinweis h1{font-size:18pt;margin:0 0 4mm}
+  #printHinweis p{font-size:11pt;margin:0 0 3mm}
+  #printHinweis ul{font-size:11pt;margin:0 0 4mm;padding-left:6mm;list-style:disc}
+  #printHinweis li{margin-bottom:2mm}
+  #printHinweis .p-foot{font-size:9pt;color:#666;margin-top:8mm}
   #printArea{display:block!important;padding:0;color:#000;font-family:Arial,Helvetica,sans-serif}
   #printArea h1{font-size:20pt;margin:0 0 2mm}
   #printArea .p-sub{font-size:10pt;color:#444;margin:0 0 6mm}
@@ -4869,6 +4892,19 @@ html{font-size:var(--fs,100%)}
 </div>
 
 <div id="printArea"></div>
+<!-- Kommt nur aufs Papier, wenn oben nichts steht. Siehe die Begründung
+     bei @media print im Stylesheet. -->
+<div id="printHinweis">
+  <h1>Diese Seite ist nicht zum Ausdrucken gedacht</h1>
+  <p>Zum Aushängen gibt es zwei fertige Vorlagen, jeweils mit Spalten zum
+     Abhaken von Hand:</p>
+  <ul>
+    <li><b>Putzplan</b> — Betrieb → Putzplan → Knopf „Drucken"</li>
+    <li><b>Einkaufsliste</b> — Betrieb → Material → Knopf „Drucken"</li>
+  </ul>
+  <p class="p-foot">Wer von hier aus druckt, bekam bisher ein leeres
+     Blatt — ohne Hinweis, woran es liegt.</p>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -9633,6 +9669,13 @@ function showView(id, fromKey, ausVerlauf){
      die untere Leiste zeigt nirgendwo hin. */
   if(!ansichtAn(id) && id!=='home'){ id='home'; ausVerlauf=true; }
   currentView=id;
+  /* Den Druckbereich beim Wechsel leeren. Sonst haengt der Putzplan von
+     vorhin noch darin: wer zwei Ansichten weiter Strg+P tippt, bekommt
+     einen Plan, den er nicht gemeint hat — und der Hinweis „diese Seite
+     ist nicht zum Ausdrucken gedacht" bleibt aus, weil #printArea nicht
+     mehr leer ist. */
+  var _pa=document.getElementById('printArea');
+  if(_pa && _pa.innerHTML) _pa.innerHTML='';
   /* Anonym mitzaehlen, welche Ansicht geoeffnet wurde. Hier und nicht
      an den Knoepfen: showView ist die eine Stelle, durch die JEDER Weg
      geht — Leiste, Reiter, Kachel, Verlauf, Neuladen. */
