@@ -419,6 +419,55 @@ const ohneKommentar = (() => {
   }
 }
 
+/* ══ 4b. Kommentare, die zu frueh schliessen ══
+   Der teuerste Fehler dieser Runde, und er war unsichtbar. Im
+   Stylesheet stand sinngemaess:
+
+       --auf-3:rgba(255,255,255,.16);
+       [Kommentar auf, Text, Kommentar ZU]
+       weiterer Text, der zu keinem Kommentar mehr gehoert
+       [nochmal Kommentar ZU]
+       --tipp-1:rgba(56,189,248,.24);
+
+   CSS ueberspringt bei einem Fehler bis zum naechsten Semikolon — und
+   das stand am Ende von --tipp-1. Die Marke war damit weg. Was sie
+   benutzte, fiel auf „nicht gesetzt" zurueck: die Knopffuellung
+   verschwand, waehrend Rand und Schriftfarbe (eigene Marken, zwei
+   Zeilen darunter) blieben. Der Knopf sah dadurch aus wie halb
+   geaendert, nicht wie kaputt. Genau deshalb faellt so etwas nicht auf.
+
+   WARUM HIER NICHT NACH FEHLENDEN MARKEN GESUCHT WIRD: das war der
+   erste Versuch, und er haette den Fehler NICHT gefunden. Ein regulaerer
+   Ausdruck sieht „--tipp-1:" im Text stehen und haelt die Marke fuer
+   gesetzt; nur der Browser verwirft sie. Eine Pruefung, die den eigenen
+   Anlass nicht findet, ist keine.
+
+   Diese hier findet ihn: nach dem Entfernen aller ORDENTLICH
+   geschlossenen Kommentare darf im Stylesheet kein oeffnender und kein
+   schliessender Marker mehr uebrig sein. Einer, der allein steht, ist
+   immer ein Fehler.
+
+   (Beim Schreiben dieser Zeilen ist mir derselbe Fehler noch einmal
+   passiert — hier standen die beiden Marker woertlich, und der zweite
+   hat diesen Kommentar geschlossen. Node meldete daraufhin
+   „SyntaxError: Unexpected identifier". Das ist der Unterschied zu CSS:
+   JavaScript sagt Bescheid, CSS verschluckt es.) */
+{
+  const rest = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const auf = (rest.match(/\/\*/g) || []).length;
+  const zu  = (rest.match(/\*\//g) || []).length;
+  console.log('Kommentar-Marker uebrig: ' + auf + '× /* · ' + zu + '× */');
+  if (auf || zu) {
+    /* Die Fundstelle mitliefern — sonst sucht man in 20.000 Zeilen. */
+    const i = rest.search(/\/\*|\*\//);
+    const stelle = rest.slice(Math.max(0, i - 90), i + 40).replace(/\s+/g, ' ');
+    errs.push('KOMMENTAR KAPUTT: ' + (auf + zu) + ' einzelner Marker im Stylesheet. ' +
+      'CSS ueberspringt ab dort bis zum naechsten Semikolon und verschluckt die ' +
+      'Zeile darunter — meist eine Marke, und dann faellt lautlos aus, was sie ' +
+      'benutzt. Bei: … ' + stelle + ' …');
+  }
+}
+
 /* ══ 5. Kommt das Symbol auch im Bild an? ══
    Bis hierher war alles Textprüfung. Die reicht nicht: data-ikon steht
    im Markup, das SVG haengt ikonenEinsetzen() beim Start ein — und wer

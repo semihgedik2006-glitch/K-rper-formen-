@@ -4665,3 +4665,134 @@ gerendert" meldete, statt stillschweigend grün zu sein.
 | acht Nicht-Nummern durch `linkify()` | keine einzige verlinkt ✓ |
 | Logo-Klick aus dem Team-Bereich | `view-team` → `view-home` ✓ |
 | Marke mit `elementFromPoint` an beiden Rändern | trifft `tbHome`, keinen Nachbarn ✓ |
+
+---
+
+# 54 · Die Werkbank, und Knöpfe mit Farbe
+
+**24. August 2026**
+
+Zwei Wünsche, beide vage, beide erst nach Nachfragen brauchbar geworden.
+
+## „Geheime Aktivitäten nur für den Admin"
+
+Gewünscht war: wer hat die App wann benutzt, plus ein Cheat-Code auf
+eine versteckte Seite. Gebaut ist die Hälfte davon, und die andere
+bewusst nicht.
+
+**Nicht gebaut: ein Protokoll je Person.** „Wer war wann in der App" ist
+Verhaltenskontrolle, gehört in die Datenschutzerklärung und
+wahrscheinlich in eine Absprache mit dem Team — und es beantwortet keine
+Frage, die diese App stellen muss. Die nützliche Frage ist eine andere:
+**was benutzt niemand?** Die geht ohne jede Person.
+
+Der Nutzer hat sich nach dieser Vorlage für die anonyme Hälfte plus die
+Technik-Werkzeuge entschieden. Das ist der Grund, warum es dieses
+Kapitel gibt: die vage Bitte hätte auch als Personenprotokoll enden
+können.
+
+### Was gezählt wird
+
+```
+statistik/2026-08-24
+  tag:       '2026-08-24'
+  starts:    { 'studio-6': 12 }
+  ansichten: { todos: 30, chat: 55 }
+```
+
+Kein `uid`, kein Name, keine Uhrzeit. **Und das ist keine Zusage der
+Oberfläche:** `firestore.rules` lässt an dieser Sammlung genau diese drei
+Felder durch (`keys().hasOnly`). Wer eine `uid` mitschicken will, wird
+von der Datenbank abgewiesen — auch wenn er `index.html` ändert.
+`rechte.test.js` prüft das mit drei Runden (uid, Name, Zeitstempel).
+
+### Der Griff ist eine Schublade, kein Safe
+
+Steht so im Quelltext, damit sich niemand darauf verlässt: das Repo ist
+öffentlich, jeder kann nachlesen, dass es sieben Tipps sind. Geschützt
+ist nur, was auch ohne die Seite geschützt wäre.
+
+Für alle anderen passiert beim Tippen **nichts** — keine Meldung, kein
+Zähler, kein „fast geschafft". Ein Hinweis wäre die Einladung,
+weiterzuprobieren.
+
+## „Die Knöpfe sehen alle zu grau aus"
+
+Das ließ sich nachzählen: **56 von 102 Knöpfen** tragen `btn-ghost`, und
+das war eine 5-%-Tönung. Der häufigste Knopf war der unauffälligste.
+
+| Fläche gegen Grund (1,0 = nicht zu unterscheiden) | dunkel | hell |
+|---|---|---|
+| `btn-ghost` | 1,15 | 1,09 |
+| `icon-btn` | 1,13 | 1,09 |
+
+Drei neue Marken (`--tipp-1`, `--tipp-2`, `--tipp-kante`) für alles, was
+man antippt. `--auf-1` trug bisher beides: den stillen Grund eines
+Eingabefelds **und** den häufigsten Knopf. Solange dasselbe Grau an
+beidem klebt, sieht ein Knopf aus wie ein Kasten.
+
+Die Stärke ist die obere Grenze, nicht Geschmack:
+
+| Tönung | Fläche | Text |
+|---|---|---|
+| .13 | 1,28 | 6,05 |
+| .18 | 1,42 | 5,44 |
+| **.24** | **1,62** | **4,78** ← gewählt |
+| .30 | 1,86 | 4,15 ✗ |
+
+Mehr Tönung heißt weniger Kontrast für die Schrift darauf. `.24` ist der
+kräftigste Wert, der die 4,5:1 nicht bezahlt.
+
+## Der Fehler dieser Runde
+
+Ein Kommentar im Stylesheet war zu früh geschlossen:
+
+```css
+--auf-3:rgba(255,255,255,.16);
+/* Kommentar auf … Kommentar zu */
+   Text, der zu keinem Kommentar mehr gehört
+   … nochmal zu */
+--tipp-1:rgba(56,189,248,.24);
+```
+
+CSS überspringt ab einem Fehler **bis zum nächsten Semikolon** — und das
+stand am Ende von `--tipp-1`. Die Marke war weg, `--tipp-2` und
+`--tipp-kante` zwei Zeilen darunter blieben. Der Knopf bekam Rand und
+Schriftfarbe, aber keine Füllung: **er sah aus wie halb geändert, nicht
+wie kaputt.** Genau deshalb fällt so etwas nicht auf — mir auch erst auf
+dem Bildschirmfoto.
+
+Der Wachposten dagegen steht jetzt in `test-gestaltung.js`: nach dem
+Entfernen aller ordentlich geschlossenen Kommentare darf kein einzelner
+Marker übrig sein.
+
+**Der erste Versuch war eine Prüfung auf fehlende `var()`-Marken — und
+hätte den Fehler nicht gefunden.** Ein regulärer Ausdruck sieht
+`--tipp-1:` im Text stehen und hält die Marke für gesetzt; nur der
+Browser verwirft sie. Eine Prüfung, die ihren eigenen Anlass nicht
+findet, ist keine. Wieder ausgebaut.
+
+Beim Schreiben des Kommentars dazu ist mir derselbe Fehler noch einmal
+passiert, diesmal in JavaScript. Node meldete `SyntaxError`. Das ist der
+ganze Unterschied: **JavaScript sagt Bescheid, CSS verschluckt es.**
+
+## Zwei Messungen, die zuerst falsch waren
+
+1. **Der `icon-btn`-Kontrast.** Gemessen wurde der erste sichtbare
+   `.icon-btn` im Dokument — das ist der Bericht-Knopf, und der trägt
+   absichtlich `border-color:transparent` und eine eigene Füllung. Die
+   Zahlen (1,76/1,31) galten für den Sonderfall, nicht für die Regel.
+   Mit Filter: 1,13/1,09.
+2. **Der Vergleich mit dem Filter-Chip.** „Der Chip schafft am Rand
+   8,63, der Knopf nur 2,68" — der Chip hat aber eine **deckende**
+   Fläche, der Knopf eine Tönung. Das ist kein Vergleich, sondern zwei
+   verschiedene Messungen nebeneinander. Aus dem Kommentar entfernt.
+
+## Gegenproben
+
+| Gegenprobe | Ergebnis |
+|---|---|
+| Wachposten aus `werkbankAuf()` entfernt | „LECK: ein Mitarbeiter bekommt die Werkbank zu sehen" ✓ |
+| `uid` in die Zählung eingebaut | „ZU VIEL: die Zählung schickt das Feld uid mit" ✓ |
+| Kommentar wieder kaputt gemacht | „KOMMENTAR KAPUTT" — mit der verschluckten Zeile im Text ✓ |
+| CSP-Hashes nach einer Änderung nicht neu gesetzt | die Seite tat gar nichts; „nicht offen" hieß **tot**, nicht „bewacht" |
