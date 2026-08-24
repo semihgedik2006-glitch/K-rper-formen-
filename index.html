@@ -78,6 +78,32 @@
   --auf-1:rgba(255,255,255,.05);
   --auf-2:rgba(255,255,255,.09);
   --auf-3:rgba(255,255,255,.16);
+  /* Getoente Flaeche und Kante fuer alles, was man ANTIPPT.
+     Grau ist die Farbe von „liegt da", nicht von „druecke mich".
+
+     Warum es diese Marken gibt: --auf-1 traegt beides — den stillen
+     Grund eines Eingabefelds UND den haeufigsten Knopf der App. Solange
+     dasselbe Grau an beidem klebt, sieht ein Knopf aus wie ein Kasten.
+     Gemessen war der Unterschied zwischen Knopffläche und Karte 1,15:1
+     im Dunkeln und 1,09:1 im Hellen — bei 1,0 waeren sie identisch.
+     Der Filter-Chip daneben schaffte am Rand 8,63. Die App konnte es
+     also, nur nicht dort, wo es am haeufigsten gebraucht wird.
+
+     Die Staerke ist nicht geraten, sondern die obere Grenze. Vier
+     Stufen durchgemessen, jeweils Flaeche-gegen-Grund und Text:
+
+         .13  Flaeche 1,28  Text 6,05
+         .18  Flaeche 1,42  Text 5,44
+         .24  Flaeche 1,62  Text 4,78   ← hier
+         .30  Flaeche 1,86  Text 4,15   ✗ unter 4,5
+
+     Mehr Toenung heisst weniger Kontrast fuer die Schrift darauf. Bei
+     .30 faellt sie unter die 4,5:1, die diese App ueberall einhaelt.
+     .24 ist also der kraeftigste Wert, der die Lesbarkeit nicht
+     bezahlt — nicht der schoenste, den ich gefunden habe. */
+  --tipp-1:rgba(56,189,248,.24);   /* ruhende Flaeche eines Knopfes */
+  --tipp-2:rgba(56,189,248,.34);   /* Finger drauf */
+  --tipp-kante:rgba(56,189,248,.75);
   /* text-3 war #848AA0 - auf getoenten Karten nur 3,4:1 */
   /* Mehr Kontrast: text-2 war #B4B8C8, text-3 #A2A8BC. Beide sind
      jetzt heller – die Zweitzeile bleibt trotzdem klar zweite Zeile,
@@ -184,6 +210,12 @@ body.light{
      dunkler ist. */
   --auf-1:rgba(15,25,45,.045);
   --auf-2:rgba(15,25,45,.075);
+  /* Im Hellen braucht dieselbe Wirkung mehr Deckkraft: eine Toenung auf
+     Weiss verschwindet schneller als auf Schwarz. Nachgemessen, nicht
+     vom dunklen Wert abgeleitet. */
+  --tipp-1:rgba(3,105,161,.19);
+  --tipp-2:rgba(3,105,161,.28);
+  --tipp-kante:rgba(3,105,161,.65);
   --auf-3:rgba(15,25,45,.13);
   --warm-tx:#92400E;--danger-tx:#B42318;--ok-tx:#047857;
   --text:#0B0F1A;--text-2:#3A4256;--text-3:#4A5265;
@@ -294,8 +326,29 @@ button[data-ikon]:not(.btn){display:inline-flex;align-items:center;gap:var(--s6)
   box-shadow:0 10px 26px var(--accent-glow)}
 .btn-primary:hover{box-shadow:0 18px 40px var(--accent-glow)}
 .btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
-.btn-ghost{background:var(--auf-1);color:var(--text);border:1.5px solid var(--line-2)}
-.btn-ghost:hover{border-color:var(--accent);color:var(--accent-d)}
+/* Der zweite Knopf, nicht der halbe.
+   56 von 102 Knoepfen der App tragen diese Klasse — sie ist der
+   Normalfall, nicht die Ausnahme. Als „ghost" war sie eine 5-%-Toenung
+   mit einem Rand bei 1,94:1: gemessen der schwaechste Rand im ganzen
+   Baukasten, schwaecher als der eines Filter-Chips (5,48).
+
+   Jetzt eine getoente Flaeche, eine sichtbare Kante und Text in der
+   Markenfarbe. Der Unterschied zu btn-primary bleibt trotzdem
+   eindeutig — dort Verlauf, weisse Schrift und ein grosser Schein,
+   hier eine flache Toenung. Das ist eine Stufe darunter, nicht
+   dieselbe. */
+.btn-ghost{background:var(--tipp-1);color:var(--accent-d);
+  border:1.5px solid var(--tipp-kante);box-shadow:var(--e1)}
+/* Hebt sich beim Ueberfahren an, wie btn-primary. Beide Knoepfe
+   verhalten sich damit gleich; unterschiedlich ist nur, wie laut sie
+   im Ruhezustand sind. */
+.btn-ghost:hover{background:var(--tipp-2);border-color:var(--accent);
+  box-shadow:var(--e2);transform:translateY(-2px)}
+/* Ein abgeschalteter Knopf darf nicht aussehen wie ein farbiger, der
+   gerade nichts tut. Ohne diese Zeile war „ausgegraut" nach der
+   Umstellung ausgerechnet der einzige Zustand ohne Grau. */
+.btn-ghost:disabled{background:var(--auf-1);color:var(--text-3);
+  border-color:var(--line-2);box-shadow:none;cursor:not-allowed}
 /* Löschen und Defekt-Meldung: rot, nicht grau. Ohne eigene Gestaltung
    sieht .btn-danger aus wie ein normaler Knopf — bei genau den Aktionen,
    die man nicht aus Versehen antippen soll. */
@@ -524,9 +577,27 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   font-family:var(--font-head);font-weight:800;font-size:var(--t-sm);color:var(--on-accent);
   background:var(--brand)}
 .avatar.chef{background:linear-gradient(135deg,var(--warm),#ffa06b);color:#2a0e00}
-.icon-btn{width:40px;height:40px;border-radius:var(--r-sm);border:1px solid var(--line-2);
-  background:var(--auf-1);color:var(--text-2);cursor:pointer;display:grid;place-items:center}
-.icon-btn:hover{background:var(--auf-2);color:var(--text)}
+/* Werkzeuge, nicht Handlungen — deshalb ruhig und NICHT in der
+   Markenfarbe. Suchen, Hell/Dunkel und Abmelden stehen in jeder
+   Ansicht; faerbte man sie ein, gaebe es auf jedem Bildschirm drei
+   Dinge, die um Aufmerksamkeit bitten, und der eigentliche Knopf
+   verlöre.
+
+   Was sie trotzdem gebraucht haben, ist Kante. Gemessen gegen die
+   Kopfzeile dahinter: Flaeche 1,13:1 im Dunkeln und 1,09 im Hellen,
+   Rand 2,66 und 1,94. Bei 1,0 waeren Knopf und Grund identisch — der
+   Knopf verlief also praktisch in der Zeile. Jetzt eine deutlichere
+   Fuellung, ein Schatten, und die Farbe erst unter dem Finger.
+
+   (Die erste Messung nannte hier 1,76/1,31. Sie hatte den falschen
+   Knopf erwischt: der erste sichtbare .icon-btn im Dokument ist der
+   Bericht-Knopf, und der traegt absichtlich border-color:transparent
+   und eine eigene Fuellung. Deshalb steht im Messskript jetzt ein
+   Filter darauf.) */
+.icon-btn{width:40px;height:40px;border-radius:var(--r-sm);border:1px solid var(--tipp-kante);
+  background:var(--tipp-1);color:var(--accent-d);cursor:pointer;display:grid;place-items:center;
+  box-shadow:var(--e1)}
+.icon-btn:hover{background:var(--tipp-2);border-color:var(--accent)}
 .icon-btn svg{width:18px;height:18px}
 /* Groesse kommt von .icon-btn — dieselbe wie bei Suchen, Hell/Dunkel und
    Abmelden. Hier steht nur, was ihn von denen unterscheidet.
@@ -563,9 +634,19 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Pixel genau voll: 12 Rand + 145 Marke + 36 Knopf + 8 Abstand + 164
    Werkzeuge + 12 Rand = 377 von 390. Wer hier etwas hinzufuegt, nimmt
    es der Marke weg. */
+/* Eine Stufe UEBER den Werkzeugen, nicht daneben.
+   Vorher trug er eine schwache Toenung und keinen Rand — das reichte,
+   solange Suchen, Hell/Dunkel und Abmelden grau waren. Seit die drei
+   selbst getoent sind, war ausgerechnet die Handlung das Blasseste in
+   der Zeile. Gesehen auf dem Bildschirmfoto der Kopfzeile, nicht
+   ueberlegt.
+
+   Jetzt deckend in der Markenfarbe mit weissem Zeichen: derselbe
+   Abstand zu den Werkzeugen wie btn-primary zu btn-ghost. */
 .tb-bericht{flex:0 0 auto;margin-right:auto;
-  border-color:transparent;background:var(--accent-glow);color:var(--accent-d)}
-.tb-bericht:hover{color:var(--accent);background:var(--accent-glow)}
+  border-color:transparent;background:var(--brand);color:#fff;
+  box-shadow:0 4px 14px var(--accent-glow)}
+.tb-bericht:hover{color:#fff;box-shadow:0 8px 22px var(--accent-glow);transform:translateY(-1px)}
 .tb-bericht .tbb-wort{display:none}
 @media (min-width:700px){
   /* Dieselbe Falle wie beim Suchknopf: .icon-btn ist ein GRID mit
