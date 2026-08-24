@@ -363,6 +363,17 @@ var USERS = [
           try { cb(makeSnap(al.map(function (d) { return { id: d.id, data: function () { return d; } }; }))); } catch (e) { console.error(e); }
           return unsub();
         }
+        /* Übergaben: get() kannte sie, onSnapshot nicht — und der
+           Team-Bereich hört zu. Dieselbe Lücke wie in stub-chef.js. */
+        var mho = /^studios\/(.+)\/handovers$/.exec(path);
+        if (mho) {
+          var hl = ((window.__handovers ||
+                     (typeof HANDOVERS !== 'undefined' ? HANDOVERS : {}))[mho[1]] || []);
+          try { cb(makeSnap(hl.map(function (d) {
+            return { id: d.id, data: function () { return d; } }; }))); }
+          catch (e) { console.error(e); }
+          return unsub();
+        }
         var mm = /^channels\/(.+)\/messages$/.exec(path);
         var list = m ? (TODOS[m[1]] || []) : mc ? (CLEAN[mc[1]] || []) : mn ? (CLEANNOTES[mn[1]] || []) :
                    msh ? (SHIFTS[msh[1]] || []) :

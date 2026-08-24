@@ -508,6 +508,20 @@ var USERS = [
           try { cb(makeSnap(al.map(function (d) { return { id: d.id, data: function () { return d; } }; }))); } catch (e) { console.error(e); }
           return unsub();
         }
+        /* Übergaben fehlten hier, obwohl get() sie kennt. Der
+           Team-Bereich hört mit onSnapshot zu — dort stand die Liste
+           deshalb IMMER leer, und jeder Durchlauf, der sie geprüft
+           hätte, hätte nichts geprüft. Gefunden beim Bau von
+           test-verlinkung.js: 0 von 15 Proben gerendert. */
+        var mho = /^studios\/(.+)\/handovers$/.exec(path);
+        if (mho) {
+          var hl = ((window.__handovers ||
+                     (typeof HANDOVERS !== 'undefined' ? HANDOVERS : {}))[mho[1]] || []);
+          try { cb(makeSnap(hl.map(function (d) {
+            return { id: d.id, data: function () { return d; } }; }))); }
+          catch (e) { console.error(e); }
+          return unsub();
+        }
         var mp = /^privat\/[^/]+\/(termine|notizen|aufgaben)$/.exec(path);
         if (mp) {
           var pl2 = ((window.__privat || {})[mp[1]] || []);

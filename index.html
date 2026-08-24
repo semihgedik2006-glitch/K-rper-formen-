@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-sqMQ8dco4F6fPOO+lk+nkx8zKNfsgMy0iDdGF+A5w2g='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-pyR+Wna0fxNyYhSd/yq3ekh/KF2CGksdmj7OUFCskT4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -500,8 +500,18 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
           var(--s12) calc(var(--rand) + var(--sal));
   background:rgba(18,19,28,.93);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--line)}
+/* Die Marke ist ein Knopf. Alles ab „background" setzt nur zurueck, was
+   ein <button> von sich aus mitbringt — Aussehen bleibt wie vorher.
+   margin:… -8px zieht die Trefferflaeche ueber den Schriftzug hinaus,
+   ohne die Zeile hoeher zu machen: der Griff ist damit auf jedem Geraet
+   ueber 44px hoch, obwohl der Text nur 20 misst. */
 .tb-brand{display:flex;align-items:center;gap:var(--s8);font-family:var(--font-head);font-weight:800;
-  font-size:var(--t-lg);letter-spacing:var(--ls-s)}
+  font-size:var(--t-lg);letter-spacing:var(--ls-s);
+  background:none;border:0;color:inherit;cursor:pointer;text-align:left;
+  padding:var(--s12) var(--s6);margin:calc(-1 * var(--s12)) calc(-1 * var(--s6));
+  border-radius:var(--r-md);transition:transform .3s var(--spring),background .2s}
+.tb-brand:active{transform:scale(.94)}
+@media (hover:hover){ .tb-brand:hover{background:var(--auf-1)} }
 .tb-brand b{color:var(--accent-d)}
 .tb-live{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:var(--ls-m);padding:var(--s2) var(--s8);border-radius:var(--r-pille);
   background:var(--brand);border:none;color:#fff;font-weight:700;box-shadow:0 2px 10px var(--accent-glow)}
@@ -1468,6 +1478,28 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* Links in Nachrichten */
 .msg .body a{color:var(--accent-2);text-decoration:underline;word-break:break-all}
+/* ── Anklickbares im Fliesstext ──
+   Diese Regel stand vorher nur fuer den Chat da. linkify() lief aber
+   auch in der Uebergabe, am schwarzen Brett, bei den Aushaengen und in
+   den Putzplan-Notizen — und weil a{color:inherit;text-decoration:none}
+   ganz oben alles einebnet, sahen die Links dort aus wie normaler Text.
+   Anklickbar, aber nicht erkennbar, ist dasselbe wie nicht vorhanden.
+   Jetzt haengt das Aussehen an der Klasse, die linkify() selbst setzt,
+   und gilt damit ueberall gleich.
+
+   Die 2px Innenabstand plus negativer Aussenabstand vergroessern die
+   Trefferflaeche, ohne den Zeilenabstand zu veraendern. */
+.ln{color:var(--accent-2);text-decoration:underline;text-underline-offset:2px;
+  word-break:break-word;padding:2px 1px;margin:-2px -1px;border-radius:var(--r-xs);
+  -webkit-tap-highlight-color:var(--accent-glow)}
+.ln:active{background:var(--accent-glow)}
+@media (hover:hover){ .ln:hover{background:var(--accent-glow)} }
+/* Nur die Rufnummer bleibt zusammen — eine halbe Nummer in der
+   naechsten Zeile liest niemand als Nummer, und laenger als rund 110px
+   wird sie nicht. Mail-Adressen bekommen das bewusst NICHT: die werden
+   beliebig lang, und ein nowrap darauf ist genau der Fehler, der die
+   Startseite auf 320px seitwaerts schiebbar gemacht hat. */
+.ln-tel{white-space:nowrap}
 
 /* Tag-Trenner im Chat (Heute / Gestern / Datum) */
 .day-sep{align-self:center;margin:var(--s8) 0 var(--s4);padding:var(--s2) var(--s12);border-radius:var(--r-pille);
@@ -3132,13 +3164,20 @@ html{font-size:var(--fs,100%)}
     <button class="ml-zu" id="mailZu" aria-label="Hinweis ausblenden"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
   <header class="topbar">
-    <div class="tb-brand">
+    <!-- Die Marke ist der Weg nach Hause. Ein Logo, das nichts tut, ist
+         auf jeder Website ein Griff ins Leere: fast alle tippen dort
+         hin, wenn sie sich verlaufen haben. Darum ein echter <button>
+         und kein div mit Klick-Zuhoerer — der laesst sich mit der
+         Tastatur erreichen, sagt Vorlesegeraeten, dass er etwas tut,
+         und bekommt den Fokusrahmen der App. -->
+    <button class="tb-brand" id="tbHome" type="button"
+            title="Zur Startseite" aria-label="Zur Startseite">
       <span class="tb-logo"><svg viewBox="0 0 120 120" aria-hidden="true">
         <circle cx="60" cy="56" r="40" fill="none" stroke="url(#scGrad)" stroke-width="7" stroke-linecap="round"/>
         <path d="M38 88 q-3 13 -15 18 q15 0 25 -12 z" fill="url(#scGrad)"/>
         <text x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="url(#scGrad)" text-anchor="middle" dominant-baseline="central">SC</text>
       </svg></span>
-      <span class="tb-wort">STUDIO<b>CHAT</b></span> <span class="tb-live">Live</span></div>
+      <span class="tb-wort">STUDIO<b>CHAT</b></span> <span class="tb-live">Live</span></button>
     <!-- Bericht auf einen Griff. Steht bewusst links neben der Marke und
          nicht rechts bei Suchen/Abmelden: dort liegen Werkzeuge, die
          jeder hat. Dieser gehoert nur der Verwaltung, und er soll aus
@@ -5993,9 +6032,12 @@ function renderRecht(){
       '</div>'
     : '';
 
+  /* linkify: im Impressum stehen Telefon und E-Mail des Betreibers. Das
+     sind die zwei Angaben, wegen derer man ueberhaupt hierher geht —
+     abtippen muss sie niemand. */
   function zeile(titel, wert){
     return String(wert||'').trim()
-      ? '<p><b>'+esc(titel)+'</b><br/>'+esc(wert).replace(/\n/g,'<br/>')+'</p>' : '';
+      ? '<p><b>'+esc(titel)+'</b><br/>'+linkify(esc(wert)).replace(/\n/g,'<br/>')+'</p>' : '';
   }
 
   if(_rechtTeil === 'impressum'){
@@ -7175,10 +7217,53 @@ function channelLabel(ch){
   if(ch==='gruppe-leitung') return 'Leitung';
   return channelStudioName(ch) || 'Allgemein';
 }
-/* Macht http(s)-Links in (bereits escaptem) Text klickbar */
+/* ── Adressen, Mails und Rufnummern anklickbar machen ─────────────────
+   Vorher konnte man nur http(s)-Adressen antippen. Eine Rufnummer im
+   Uebergabe-Text oder die Mail eines Lieferanten im Materialbereich
+   musste man abschreiben — auf dem Handy der haeufigste Grund, die App
+   zu verlassen.
+
+   Vier Formen, in dieser Reihenfolge geprueft:
+     1. https://… oder http://…
+     2. www.… (ohne Vorsatz getippt — kommt oefter vor als mit)
+     3. eine Mail-Adresse
+     4. eine Rufnummer
+
+   ZUR RUFNUMMER: absichtlich eng gefasst. Sie muss mit + oder 0
+   beginnen und insgesamt lang genug sein. Damit faellt heraus, was hier
+   sonst faelschlich zur Nummer wuerde:
+     · Datum   „12.08.2025" — beginnt nicht mit 0 oder +
+     · Datum   „01.09.2026" — nach der 0 kommt nur EINE Ziffer, dann ein
+                              Punkt; verlangt sind mindestens zwei
+     · Uhrzeit „08:30"      — Doppelpunkt gehoert nicht zum Zeichensatz
+     · Betrag  „1.234,56"   — Komma auch nicht
+   Geprueft in test-verlinkung.js, jede Zeile davon als Gegenprobe.
+
+   SICHERHEIT: der Text ist bereits durch esc() gegangen. Anfuehrungs-
+   zeichen stehen als &quot; und koennen aus dem href nicht ausbrechen,
+   und keines der vier Muster laesst ein anderes Schema als http, https,
+   mailto oder tel zu — javascript: hat hier keinen Weg hinein. */
+var LINK_RE = new RegExp(
+  '(https?:\\/\\/[^\\s<]+)'                                        + '|' +
+  '(\\bwww\\.[A-Za-z0-9-]+\\.[^\\s<]+)'                            + '|' +
+  '([A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,})' + '|' +
+  '(\\+\\d[\\d\\s\\/().-]{6,}\\d|\\b0\\d{2,5}[\\s\\/.-]?[\\d\\s\\/.-]{5,}\\d)',
+  'g');
 function linkify(escaped){
-  return escaped.replace(/(https?:\/\/[^\s<]+)/g, function(u){
-    return '<a href="'+u+'" target="_blank" rel="noopener">'+u+'</a>';
+  return String(escaped==null?'':escaped).replace(LINK_RE, function(treffer){
+    /* Satzzeichen am Ende gehoeren zum Satz, nicht zum Ziel. „Schau auf
+       https://kf.de." fuehrte vorher auf eine Adresse mit Punkt hinten
+       dran und damit ins Leere. */
+    var schwanz='', p=/[.,;:!?)\]]+$/.exec(treffer);
+    if(p){ schwanz=p[0]; treffer=treffer.slice(0, treffer.length-schwanz.length); }
+    if(!treffer) return schwanz;
+    var ziel, art;
+    if(/^https?:\/\//i.test(treffer)){ ziel=treffer; art='netz'; }
+    else if(/^www\./i.test(treffer)){ ziel='https://'+treffer; art='netz'; }
+    else if(treffer.indexOf('@')>0){ ziel='mailto:'+treffer; art='mail'; }
+    else { ziel='tel:'+treffer.replace(/[^\d+]/g,''); art='tel'; }
+    var extern = art==='netz' ? ' target="_blank" rel="noopener noreferrer"' : '';
+    return '<a class="ln ln-'+art+'" href="'+ziel+'"'+extern+'>'+treffer+'</a>'+schwanz;
   });
 }
 /* Tag-Trenner-Label für den Chat */
@@ -9853,7 +9938,10 @@ function renderEmployees(emps){
     var badge='<span class="role-badge'+(isL?' leiter':'')+'">'+(isL?'Studio-Leiter':'Mitarbeiter')+'</span>';
     return '<div class="emp" data-uid="'+esc(e.uid)+'">'+
       '<div class="emp-info"><b>'+esc(e.name||'?')+'</b> '+badge+
-      '<div class="em-mail">'+esc(e.email||'')+'</div>'+
+      /* Antippen schreibt eine Mail. Die Liste ist die Stelle, an der
+         die Verwaltung nach der Adresse eines Kollegen sucht — und
+         danach ins Mailprogramm wechselt. */
+      '<div class="em-mail">'+linkify(esc(e.email||''))+'</div>'+
       '<div class="em-studios">'+esc(studios)+'</div>'+
       '<div class="emp-edit" style="display:none">'+
       '<label style="display:block;font-size:.8rem;color:var(--text-2);margin:8px 0 4px">Rolle</label>'+
@@ -19027,6 +19115,13 @@ function bindActions(){
      withBusy sperrt den Knopf, solange die Mail gebaut wird. Ohne das
      kommt der Bericht dreimal, wenn jemand dreimal tippt, weil nichts
      sichtbar passiert. */
+  /* Marke → Startseite. Der eine Weg zurueck, den jeder ohne Erklaerung
+     kennt. showView('home') und nicht history.back(): „zurueck" landet
+     dort, wo man vorher war, „Start" immer am selben Ort — und genau das
+     sucht jemand, der sich verlaufen hat. */
+  var tbH=$('tbHome');
+  if(tbH) tbH.addEventListener('click',function(){ showView('home'); });
+
   var tbB=$('tbBericht');
   if(tbB) tbB.addEventListener('click',function(){
     var tage=Math.min(370, Math.max(1, +PREFS.berichtTage || 30));
