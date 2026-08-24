@@ -1514,7 +1514,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Die 2px Innenabstand plus negativer Aussenabstand vergroessern die
    Trefferflaeche, ohne den Zeilenabstand zu veraendern. */
 .ln{color:var(--accent-2);text-decoration:underline;text-underline-offset:2px;
-  word-break:break-word;padding:2px 1px;margin:-2px -1px;border-radius:var(--r-xs);
+  word-break:break-word;padding:var(--s2) var(--s1);margin:calc(-1 * var(--s2)) calc(-1 * var(--s1));border-radius:var(--r-xs);
   -webkit-tap-highlight-color:var(--accent-glow)}
 .ln:active{background:var(--accent-glow)}
 @media (hover:hover){ .ln:hover{background:var(--accent-glow)} }
@@ -2270,8 +2270,8 @@ body.light{--dot:rgba(20,10,40,.06)}
 /* Ganz schmal noch enger: die vier Reiter in „Ich" und „Team" liefen
    bei 320px um 26 bzw. 37 Pixel ueber. Danach nicht mehr. */
 @media(max-width:400px){
-  .pm-tabs{gap:2px;padding:2px}
-  .pm-tab{padding-left:2px;padding-right:2px;font-size:var(--t-xs)}
+  .pm-tabs{gap:var(--s2);padding:var(--s2)}
+  .pm-tab{padding-left:var(--s2);padding-right:var(--s2);font-size:var(--t-xs)}
 }
 .pm-tab:active{transform:scale(.96)}
 .pm-tab.on{background:var(--bg-2);color:var(--accent);box-shadow:var(--e1)}
