@@ -212,7 +212,8 @@ Alles unter `docs/`.
 **Was die App kann**
 `HANDBUCH.md` Bedienung · `SPEZIFIKATION.md` Funktionsumfang ·
 `DESIGN-SYSTEM.md` Farben, Abstände, Bausteine · `ROADMAP.md` ·
-`IDEEN.md`
+`IDEEN.md` Funktionen, die fehlen könnten ·
+`DESIGN-IDEEN.md` wie sich das anfühlen könnte, was schon da ist
 
 **Sicherheit**
 `SICHERHEIT.md` was geprüft wurde, was gefunden wurde, was offen ist ·

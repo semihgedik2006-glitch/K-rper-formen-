@@ -167,12 +167,18 @@ sind weiter erreichbar, aber nur für den Chef und ohne Oberfläche.
 
 ### Was sich hier nicht beweisen lässt
 
-* Ob Push auf einem echten Handy ankommt.
-* Ob der Server wirklich keine Erinnerung schickt, wenn eine Funktion
-  abgeschaltet ist.
+* ~~Ob Push auf einem echten Handy ankommt.~~ ✅ **24.8. aus dem Betrieb
+  bestätigt** — kommt an.
+* ~~Ob der Server wirklich keine Erinnerung schickt, wenn eine Funktion
+  abgeschaltet ist.~~ ✅ **24.8. aus dem Betrieb bestätigt** — bleibt aus.
 * Ob die Sicherheitsregel im echten Browser mit dem echten Firebase-SDK
   hält — Chromium kommt aus der Entwicklungsumgebung nicht ins Netz.
   Verstösse melden sich in der App unter Verwaltung → System.
+
+> Die ersten beiden Punkte standen seit dem 9.8. hier, weil sie sich in
+> dieser Umgebung nicht messen lassen: kein Gerät, keine Empfänger im
+> Emulator. Beantwortet hat sie am Ende der Betrieb, nicht ein Test —
+> und das ist die einzige Instanz, die sie beantworten konnte.
 
 ---
 
@@ -293,22 +299,23 @@ also kein Rückschritt. Schritt für Schritt in `docs/SHEETS-TOKEN.md`.
 
 ## Offen, weil noch niemand hingeschaut hat
 
-- **Ob Push auf einem echten Handy ankommt.** Der Versand ist
-  unveränderter Code, der seit Monaten läuft, und der Auslöser ist im
-  Betrieb belegt. Aber zwischen „die Funktion lief" und „es hat
-  gebrummt" liegt ein Gerät, das ich nicht habe.
+- ~~**Ob Push auf einem echten Handy ankommt.**~~ ✅ **24.8. bestätigt.**
+  Hier stand: „zwischen ‚die Funktion lief' und ‚es hat gebrummt' liegt
+  ein Gerät, das ich nicht habe." Das Gerät hat jetzt jemand anders
+  gehalten. Es brummt — und seit dem Umbau auf reine Datennachrichten
+  auch nur noch einmal.
 - **Das Abo-Modell.** Stufe A und B stehen (Abo je Firma von Hand
   setzen, Gratis-Abo, Basic grenzt Nachweise und Monatsbericht ab).
   Stufe C bis E — Stripe, automatische Mahnungen, Selbstbedienung —
   sind geplant und bewusst nicht gebaut; siehe `ABO-PLAN.md`. Vor dem
   ersten echten Geld steht ein Gespräch mit dem Steuerberater, nicht
   Code.
-- **Ob auf dem Server wirklich keine Erinnerung mehr hinausgeht**, wenn
-  eine Funktion abgeschaltet ist. Der Code prüft es (`featureAn` in
-  `functions/index.js`), aber im Emulator gibt es keine Empfänger — das
-  Ausbleiben lässt sich dort nicht messen. Fällt frühestens auf, wenn
-  jemand Aufgaben abschaltet und am nächsten Morgen um 7:30 Uhr nichts
-  brummt.
+- ~~**Ob auf dem Server wirklich keine Erinnerung mehr hinausgeht**, wenn
+  eine Funktion abgeschaltet ist.~~ ✅ **24.8. bestätigt — es bleibt
+  aus.** Hier stand: „fällt frühestens auf, wenn jemand Aufgaben
+  abschaltet und am nächsten Morgen um 7:30 Uhr nichts brummt." Genau so
+  ist es geprüft worden. `featureAn` in `functions/index.js` hält also
+  auch im Echtbetrieb, nicht nur im Code.
 
 **Vier rechtliche Pflichtfelder** (Betreiber, Anschrift, vertretungs-
 berechtigte Person, E-Mail) sind noch leer — solange steht in der App eine
