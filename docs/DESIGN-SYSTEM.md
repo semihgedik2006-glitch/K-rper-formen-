@@ -302,6 +302,47 @@ unsichtbare `::after`-Fläche.
 
 ---
 
+## 3b. Knöpfe — die Rangfolge
+
+> **Grau ist die Farbe von „liegt da", nicht von „drücke mich".**
+
+| | Aussehen | wofür |
+|---|---|---|
+| `btn-primary` | Marken-Verlauf, weiße Schrift, großer Schein | die eine Handlung, die man auf dieser Seite tun soll |
+| `btn-ghost` | getönte Fläche (`--tipp-1`), Kante (`--tipp-kante`), Schrift in `--accent-d`, kleiner Schatten | alles andere Antippbare |
+| `btn-danger` | rot getönt, rote Kante und Schrift | löschen, defekt melden |
+| `:disabled` | grau | **der einzige graue Zustand** |
+
+Die drei Marken `--tipp-1` (Ruhe), `--tipp-2` (Finger drauf) und
+`--tipp-kante` gehören allem, was man antippt. Sie sind bewusst von
+`--auf-1/2/3` getrennt: die tragen den stillen Grund eines Eingabefelds.
+Solange dasselbe Grau an beidem klebt, sieht ein Knopf aus wie ein
+Kasten — vorher unterschied sich `btn-ghost` von seiner Karte um
+**1,15:1** (dunkel) und **1,09:1** (hell); bei 1,0 wären sie identisch.
+
+**Wie stark getönt werden darf, ist keine Geschmacksfrage.** Mehr Tönung
+heißt weniger Kontrast für die Schrift darauf:
+
+| Tönung | Fläche/Grund | Text/Fläche |
+|---|---|---|
+| .13 | 1,28 | 6,05 |
+| .18 | 1,42 | 5,44 |
+| **.24** | **1,62** | **4,78** ← die Grenze |
+| .30 | 1,86 | 4,15 ✗ |
+
+Wer die Werte anfasst, misst beide Spalten nach. Unter 4,5:1 geht die
+Schrift nicht.
+
+**Werkzeuge sind keine Handlungen.** `.icon-btn` (Suchen, Hell/Dunkel,
+Abmelden) trägt dieselbe Tönung, aber der Bericht-Knopf daneben ist
+*deckend* — derselbe Abstand wie `btn-primary` zu `btn-ghost`. Als die
+Werkzeuge noch grau waren, reichte für ihn eine schwache Tönung; danach
+war ausgerechnet die Handlung das Blasseste in der Zeile. **Eine
+Aufwertung ist nie nur lokal:** wer eine Gruppe lauter macht, macht ihre
+Nachbarn leiser.
+
+---
+
 ## 4. Fingerziele — die harte Regel
 
 > **Alles, was man antippt, ist mindestens 44 Pixel hoch.**

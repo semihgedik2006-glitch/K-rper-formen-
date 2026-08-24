@@ -10,13 +10,26 @@ Stand 24. August 2026.
 >
 > Nicht erledigt und **keine Frage der Zeit, sondern der Entscheidung:**
 >
-> * **„die Knöpfe alle überarbeiten"** — der eine messbare Mangel war
->   die 44-Pixel-Regel in der Kopfzeile, und der ist behoben. Was sonst
->   noch stört, ist Geschmack und lässt sich nicht erraten. Ohne eine
->   konkrete Stelle wäre jede weitere Änderung Raten mit dem Risiko,
->   etwas kaputtzumachen, das gefällt.
-> * **„geheime Aktivitäten"** — nicht angefangen, weil unklar ist, was
->   gemeint ist.
+> * ~~**„die Knöpfe alle überarbeiten"**~~ ✅ **24.8. erledigt**, nachdem
+>   die Rückfrage „zu unauffällig und grau" ergeben hat. 56 von 102
+>   Knöpfen waren eine 5-%-Tönung; sie tragen jetzt Farbe. Details in
+>   `DESIGN-SYSTEM.md`, Abschnitt 3b.
+> * ~~**„geheime Aktivitäten"**~~ ✅ **24.8. erledigt** als Werkbank
+>   (siebenmal auf die Marke tippen). Bewusst **ohne** Protokoll je
+>   Person — siehe unten.
+
+### Was bei den „geheimen Aktivitäten" absichtlich fehlt
+
+Gewünscht war unter anderem „wer hat die App wann benutzt". Gebaut ist
+nur die anonyme Hälfte: pro Tag, wie oft die App aufging und welche
+Seiten — **ohne Konto, ohne Namen, ohne Uhrzeit**, und das hält die
+Sicherheitsregel ein, nicht nur der Code.
+
+Ein Protokoll je Person wäre Verhaltenskontrolle. Es gehört in die
+Datenschutzerklärung, wahrscheinlich in eine Absprache mit dem Team, und
+es beantwortet keine Frage, die diese App stellen muss. **Wenn du es
+trotzdem willst, ist es eine bewusste Entscheidung und kein
+Nachtrag** — dann kommt der Datenschutz-Absatz mit dazu.
 
 > **Neu bei dir seit dem 17.8.:** `KONFIG.vertriebMail` in `konfig.js`.
 > Auf dem Anmeldebildschirm gibt es jetzt „Ich führe ein Studio" mit
