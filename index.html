@@ -735,7 +735,23 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .at-ro{flex-shrink:0;font-size:var(--t-2xs);color:var(--text-3)}
 
 /* ── Todos ── */
-.scroll-area{flex:1;overflow-y:auto;padding:0 var(--rand) var(--s24)}
+/* overflow-x:hidden ist hier eine SPERRE, kein Ersatz fuer Aufraeumen.
+
+   Steht overflow-y auf auto und overflow-x auf dem Vorgabewert, rechnet
+   der Browser overflow-x ebenfalls als auto — die Flaeche liess sich
+   also seitwaerts schieben, sobald irgendein Kind zu breit war. Bei
+   320px waren das 30px auf der Startseite.
+
+   Die Ursachen gehoeren trotzdem behoben, und diese Zeile darf nicht
+   dazu verleiten, sie stehen zu lassen: was hier ueberlaeuft, wird
+   jetzt ABGESCHNITTEN statt scrollbar. test-abgeschnitten.js meldet
+   genau das — die Sperre macht aus einem wackelnden Bildschirm also
+   einen sichtbaren Fund, nicht ein verstecktes Problem.
+
+   Waagerechte Leisten mit Absicht (Kanaele, Reiter, Filterchips) haben
+   ihren eigenen Behaelter mit eigenem overflow-x und sind davon nicht
+   betroffen. */
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 var(--rand) var(--s24)}
 .todo-progress{display:flex;align-items:center;gap:var(--s12);margin:var(--s2) 0 var(--s12);padding:var(--s10) var(--s12);
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
 .pbar{flex:1;height:9px;border-radius:var(--r-pille);background:var(--auf-2);overflow:hidden}
@@ -1358,7 +1374,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .setup-txt b{font-size:var(--t-md);font-weight:650}
 .setup-zeile.fertig .setup-txt b{font-weight:500;text-decoration:line-through}
 .setup-txt i{font-style:normal;font-size:var(--t-xs);color:var(--text-3);line-height:var(--lh)}
-.setup-txt i em{font-style:normal;color:var(--accent-2);white-space:nowrap}
+/* Kein nowrap mehr. Hier stand white-space:nowrap, damit ein Pfad wie
+   „Verwaltung → System" zusammenbleibt. Auf einem 320px-Geraet passt er
+   aber nicht in eine Zeile, konnte nicht umbrechen und hat die
+   Einrichtungs-Karte auseinandergedrueckt — 336px Inhalt in 292px
+   Kasten. Damit liess sich die ganze Startseite seitwaerts schieben.
+   Ein umgebrochener Pfad ist lesbar; eine Seite, die wackelt, nicht. */
+.setup-txt i em{font-style:normal;color:var(--accent-2)}
 /* Farbauswahl der Firma */
 .marke-wahl{display:flex;flex-wrap:wrap;gap:var(--s8)}
 .marke-chip{display:inline-flex;align-items:center;gap:var(--s6);padding:var(--s6) var(--s12);border-radius:var(--r-pille);
