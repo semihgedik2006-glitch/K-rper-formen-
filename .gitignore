@@ -16,3 +16,7 @@ firestore-debug.log
 # Derselbe Emulator schreibt eine zweite Datei. Die stand hier nicht und
 # tauchte deshalb nach jedem Regellauf als unversionierte Aenderung auf.
 firebase-debug.log
+
+# Mess-Skripte und Protokolle einer Sitzung. Entstehen beim Nachmessen,
+# gehoeren nicht ins Repo — sie sind Werkzeug, kein Ergebnis.
+scratchpad/
