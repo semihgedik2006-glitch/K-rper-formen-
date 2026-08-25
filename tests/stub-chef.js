@@ -482,7 +482,7 @@ var USERS = [
           : gn ? (CLEANNOTES[gn[1]] || [])
           : gd ? (DEVICES[gd[1]] || [])
           : gl ? (DEVLOG[gl[1]] || [])
-          : gt ? (TODOS[gt[1]] || [])
+          : gt ? ((window.__todos || TODOS)[gt[1]] || [])
           : (path === 'certificates' ? (window.__certs || CERTS)
           : (path === 'statistik' ? (window.__statistik || [])
           : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])));
@@ -532,12 +532,12 @@ var USERS = [
           return unsub();
         }
         var mm = /^channels\/(.+)\/messages$/.exec(path);
-        var list = m ? (TODOS[m[1]] || []) : mc ? (CLEAN[mc[1]] || []) : mn ? (CLEANNOTES[mn[1]] || []) :
+        var list = m ? ((window.__todos || TODOS)[m[1]] || []) : mc ? (CLEAN[mc[1]] || []) : mn ? (CLEANNOTES[mn[1]] || []) :
                    msh ? (SHIFTS[msh[1]] || []) :
                    md ? (DEVICES[md[1]] || []) : ml ? (DEVLOG[ml[1]] || []) :
                    mm ? (mm[1]==='allgemein' ? MESSAGES : []) :
                    (path==='certificates' ? (window.__certs || CERTS) :
-                   (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
+                   (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? (window.__users || USERS) : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
                    (path==='probetrainings' ? PROBE :
                    (path==='documents' ? DOCS :

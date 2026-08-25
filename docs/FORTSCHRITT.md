@@ -4796,3 +4796,119 @@ ganze Unterschied: **JavaScript sagt Bescheid, CSS verschluckt es.**
 | `uid` in die Zählung eingebaut | „ZU VIEL: die Zählung schickt das Feld uid mit" ✓ |
 | Kommentar wieder kaputt gemacht | „KOMMENTAR KAPUTT" — mit der verschluckten Zeile im Text ✓ |
 | CSP-Hashes nach einer Änderung nicht neu gesetzt | die Seite tat gar nichts; „nicht offen" hieß **tot**, nicht „bewacht" |
+
+---
+
+# 55 · Fünf Ideen aus der Liste, zwei davon anders als gedacht
+
+**25. August 2026**
+
+Der Nutzer hat die fünf ausgewählt, die ich vorgeschlagen hatte. Bei
+zweien stimmte meine eigene Begründung nicht — das steht hier zuerst,
+weil es die nützlichere Hälfte des Kapitels ist.
+
+## Zwei Ideen waren größer angekündigt als sie waren
+
+**Idee 27, Zahlen tabellarisch.** Angekündigt als „heute springen die
+Spalten". Ein Durchlauf über neun Ansichten hat gesucht, wo Zahlen
+*untereinander* stehen — nicht, wo Zahlen vorkommen. Ergebnis:
+`tabular-nums` war schon an allen relevanten Stellen gesetzt. Ein
+einziger echter Fund (`.pcount`), dazu zwei Kleinigkeiten.
+
+**Idee 30, Druckansicht.** Angekündigt als „heute kommt Dunkelmodus mit
+Navigationsleiste aus dem Drucker". Nachgemessen stimmt davon **nichts**:
+Putzplan und Einkaufsliste haben je eine fertige Vorlage, schwarz auf
+weiß, mit Spalten zum Abhaken, und beide funktionieren.
+
+Es gab trotzdem etwas zu holen, nur woanders — siehe unten.
+
+## Was wirklich kaputt war: das weiße Blatt
+
+`body > *{display:none}` blendet beim Drucken alles aus, und
+`#printArea` ist leer, solange niemand auf einen der beiden
+Drucken-Knöpfe gedrückt hat. Wer aus **irgendeiner anderen** Ansicht
+Strg+P tippt, bekam ein vollständig weißes Blatt. Kein Fehler, kein
+Hinweis, nichts.
+
+Ein leeres Blatt sagt nicht, dass man den falschen Weg genommen hat. Es
+sagt gar nichts. Jetzt steht dort, wo die zwei Vorlagen liegen. Dazu
+wird `#printArea` beim Ansichtswechsel geleert — sonst druckt man zwei
+Bildschirme weiter einen Plan, den man nicht meinte.
+
+## Idee 14 war besser als die Idee
+
+`emptyHTML()` kennt seit jeher einen vierten Parameter für eine
+Handlung. Nachgezählt: **neunzehn Aufrufe, kein einziger hat ihn
+gefüllt.** Der Mechanismus war da, es hat ihn nur nie jemand benutzt —
+deshalb bestand jeder leere Bildschirm aus grauem Text und einer
+Sackgasse.
+
+Vier Stellen sind jetzt verdrahtet. „Aufgabe anlegen" nur für die
+Verwaltung: ein Mitarbeiter sieht „+ Neu" gar nicht, und ein Knopf, der
+ins Leere zeigt, ist schlechter als der bloße Satz.
+
+## Der Fehler, der teuer geworden wäre
+
+`bindMessageTools` hat eine Ausnahmeliste — alles, was selbst anklickbar
+ist, soll nicht das Nachrichtenmenü öffnen. Darin stand `audio`. Das
+reichte, solange das `<audio>`-Element **selbst** die sichtbare
+Steuerung war. Seit der eigene Abspieler eigene Knöpfe hat und das
+`<audio>` auf `display:none` steht, traf `audio` dort nichts mehr:
+
+> Jeder Tipp auf Abspielen, Tempo oder Schieber öffnete stattdessen
+> „Antworten / Weiterleiten / Löschen".
+
+Der Abspieler wäre unbenutzbar gewesen — ohne Fehler im Protokoll, ohne
+dass irgendetwas kaputt aussieht. Aufgefallen ist es nur, weil ein
+Bildschirmfoto nach dem Tempo-Klick plötzlich das Menü zeigte.
+
+**Die Lehre:** wer eine eingebaute Steuerung ersetzt, muss suchen, wo
+das eingebaute Element beim Namen genannt wird. Es steht selten dort, wo
+man arbeitet.
+
+Der Test dazu hat zwei Gegenproben, die zusammengehören: der Abspieler
+darf das Menü **nicht** öffnen, und ein Tipp auf den Nachrichtentext
+muss es **weiterhin** öffnen. Ohne die zweite hätte man die Ausnahme zu
+weit ziehen und das Menü ganz abschalten können.
+
+## Keine Wellenform, und warum
+
+Alle anderen Messenger haben eine, und sie sieht gut aus. Um sie ehrlich
+zu zeichnen, müsste man die Datei dekodieren und die Amplituden auslesen
+— je Nachricht, mit Codecs, die nicht überall gehen. Der billige Weg
+wäre, aus der Nachrichten-Kennung Pseudozufall zu ziehen und Balken zu
+malen. **Das sieht aus wie eine Messung, ist aber keine.** Lieber ein
+ehrlicher Fortschrittsbalken als eine hübsche Lüge.
+
+## Der Läufer hat beim Fehlschlag geschwiegen
+
+`test-chat-bereich3` fiel in einem vollen Lauf um und war danach dreimal
+einzeln grün. Warum, ließ sich nicht mehr sagen: `alle.sh` schrieb bei
+einem Exit-Code ungleich null nur „Exit-Code 1" und verwarf die Ausgabe.
+
+Ein Läufer, der genau dann schweigt, wenn etwas kaputt ist, zwingt zum
+Raten. Er nimmt jetzt die Fundzeilen mit. Im nächsten vollen Lauf war
+der Durchlauf grün — **woran er beim ersten Mal scheiterte, weiß ich
+weiterhin nicht.** Beim nächsten Mal steht es da.
+
+## Vier Messfehler, alle meine
+
+| Wo | Was |
+|---|---|
+| `icon-btn`-Kontrast (Runde 54) | am Bericht-Knopf gemessen, einem Sonderfall mit `border-color:transparent` |
+| Vergleich mit dem Filter-Chip | deckende Fläche gegen Tönung — kein Vergleich |
+| `test-drucken` × 3 | `innerText` liefert den **gerenderten** Text; „Putzplan" findet man in „PUTZPLAN" nicht |
+| `test-drucken` | `getComputedStyle(x).display` verrät nicht, ob ein **Vorfahr** ausgeblendet ist |
+
+## Gegenproben
+
+| Gegenprobe | Ergebnis |
+|---|---|
+| Ziel eines leeren Zustands gibt es nicht | in der Konsole gemeldet ✓ |
+| Tipp auf den Nachrichtentext | Menü öffnet weiterhin ✓ |
+| Vorlage im Druckbereich | Hinweis erscheint **nicht** mit ✓ |
+| absichtlich kaputter Durchlauf | Läufer nennt jetzt den Grund ✓ |
+| `letter-spacing` doppelt gesetzt | `test-gestaltung.js` gemeldet ✓ |
+| Zeichen „mikrofon" ungenutzt | gemeldet — und die Ursache waren zwei Inline-Kopien ✓ |
+
+Regression: **86 grün · 0 rot · 0 ohne Ausgabe**, in einem Lauf.

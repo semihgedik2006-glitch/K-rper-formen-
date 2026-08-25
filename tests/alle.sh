@@ -50,7 +50,20 @@ for f in tests/test-*.js; do
 
   grund=""
   if [ $rc -ne 0 ]; then
-    grund="Exit-Code $rc"
+    # Den Grund MITNEHMEN, nicht nur die Zahl.
+    #
+    # Hier stand nur "Exit-Code $rc". Am 24.8. fiel test-chat-bereich3
+    # in einem vollen Lauf um und war danach dreimal einzeln grün — und
+    # weil die Ausgabe weggeworfen wurde, liess sich nicht mehr sagen,
+    # WORAN er gescheitert war. Ein Läufer, der beim Fehlschlag die
+    # Diagnose verwirft, zwingt zum Raten; genau dann braucht man sie.
+    #
+    # Bevorzugt die Zeilen, die der Durchlauf selbst als Fund markiert
+    # (✗ / Fehler: / PAGEERROR), sonst die letzten Zeilen — bei einem
+    # Absturz steht dort die Ausnahme.
+    detail=$(printf '%s' "$aus" | grep -E '^✗|^Fehler:|PAGEERROR|Error:' | head -3 | tr '\n' ' ')
+    [ -z "$detail" ] && detail=$(printf '%s' "$aus" | tail -3 | tr '\n' ' ')
+    grund="Exit-Code $rc — ${detail}"
   elif printf '%s' "$aus" | grep -qE '^✗'; then
     grund=$(printf '%s' "$aus" | grep -E '^✗' | head -3 | tr '\n' ' ')
   elif printf '%s' "$aus" | grep -qE '^Fehler:' &&
