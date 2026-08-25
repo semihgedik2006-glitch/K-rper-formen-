@@ -1,13 +1,19 @@
 # Design-Ideen
 
-Stand: 24. August 2026. Dreißig Vorschläge, **alle aus Bildschirmfotos der
+Stand: 25. August 2026. **Fünf davon sind gebaut** — 1, 2, 7, 14 und 27,
+plus 30 in anderer Form. Sie sind unten abgehakt; die Begründungen
+bleiben stehen, auch dort, wo sie sich als falsch herausgestellt haben.
+Was aus ihnen wurde, steht in `FORTSCHRITT.md`, Runde 55.
+
+Ursprünglicher Stand: 24. August 2026. Dreißig Vorschläge, **alle aus Bildschirmfotos der
 laufenden App abgeleitet**, nicht aus einem Gestaltungskatalog. Zu jedem
 steht, was er kostet und was dagegen spricht.
 
 `IDEEN.md` daneben sammelt *Funktionen*. Hier geht es nur darum, wie sich
 das anfühlt, was schon da ist.
 
-Nichts davon ist gebaut. Das ist eine Auswahlliste.
+Ursprünglich war nichts davon gebaut. Sechs Punkte tragen inzwischen
+eine Marke oben — der Rest ist weiterhin Auswahlliste.
 
 ---
 
@@ -27,7 +33,7 @@ jeden Morgen liest (Übergabe). Die Punkte 1–6 gehen alle darauf zurück.
 
 ## A · Rangfolge und Dichte
 
-### 1. Karten in drei Gewichten statt einem
+### 1. Karten in drei Gewichten statt einem  ✅ *gebaut (25.8.)*
 
 Heute gibt es genau eine `.card`. Vorschlag: `.card stumm` (flach, kein
 Schatten — zum Nachschlagen), `.card` (wie heute) und `.card jetzt`
@@ -37,7 +43,7 @@ Schatten — zum Nachschlagen), `.card` (wie heute) und `.card jetzt`
 falsch zugeordnet ist schlimmer als gar nicht. Wenn „Einrichtung" laut
 bleibt, hat man nichts gewonnen.
 
-### 2. Nicht mehr alles in Versalien
+### 2. Nicht mehr alles in Versalien  ✅ *gebaut (25.8.)*
 
 `EINRICHTUNG · MEIN DIENST · VON DER LEITUNG · ÜBERGABE · AUFGABEN ·
 HÜRTH` — jede Überschrift schreit. Versalien liest man messbar langsamer,
@@ -89,7 +95,7 @@ Unterstrich statt der Füllung.
 
 ## B · Chat — der meistbenutzte Bildschirm
 
-### 7. Der Audio-Player ist ein Fremdkörper
+### 7. Der Audio-Player ist ein Fremdkörper  ✅ *gebaut (25.8.)*
 
 Sprachnachrichten benutzen den **eingebauten Browser-Player**: weiß,
 eckig, eigene Typografie, mitten in einer dunklen Blase. Das ist die
@@ -99,6 +105,18 @@ Vorschlag: eigener Player mit Wellenform, Abspielknopf in Markenfarbe,
 Dauer, Tempo 1× / 1,5×.
 
 *Aufwand: mittel.* **Bringt pro Zeile Code am meisten fürs Auge.**
+
+> **Nachtrag 25.8.: gebaut, aber OHNE Wellenform** — und das war eine
+> Entscheidung, keine Abkürzung. Um sie ehrlich zu zeichnen, müsste man
+> die Datei dekodieren und die Amplituden auslesen, je Nachricht, mit
+> Codecs, die nicht überall gehen. Der billige Weg wäre, aus der
+> Nachrichten-Kennung Pseudozufall zu ziehen und Balken zu malen. Das
+> sieht aus wie eine Messung, ist aber keine.
+>
+> Stattdessen: echter Fortschritt, echte Zeit, echtes Tempo (1× / 1,5× /
+> 2×), Schieber als `input[type=range]`, damit Tastatur und
+> Vorlesegeräte springen können. Eine echte Wellenform bleibt als
+> eigener Punkt offen.
 
 ### 8. Fünf Leisten über der ersten Nachricht
 
@@ -150,7 +168,7 @@ schneller, obwohl nichts schneller ist.
 
 *Aufwand: klein.*
 
-### 14. Leere Zustände mit nächstem Schritt
+### 14. Leere Zustände mit nächstem Schritt  ✅ *gebaut (25.8.)*
 
 „Noch keine Mitarbeiter angelegt" ist eine Feststellung. „Noch niemand da
 — **Zugang anlegen**" ist ein Weg.
@@ -259,14 +277,21 @@ Schaden zu belegen. Solange die Aufgabe offen ist: „Foto" danebenschreiben.
 
 *Aufwand: winzig.*
 
-### 27. Zahlen tabellarisch setzen
+### 27. Zahlen tabellarisch setzen  ✅ *gebaut (25.8.) — war fast schon fertig*
 
 `font-variant-numeric: tabular-nums` überall, wo Zahlen untereinander
 stehen: Uhrzeiten in „Mein Dienst", Bestände im Material, Zähler im
 Bericht. Heute springen die Spalten.
 
-*Aufwand: winzig, Wirkung sofort.* **Der beste Aufwand-Nutzen-Punkt der
-Liste.**
+*Aufwand: winzig, Wirkung sofort.*
+
+> **Nachtrag 25.8.: war größer angekündigt als er war.** Ein Durchlauf
+> über neun Ansichten hat gesucht, wo Zahlen *untereinander* stehen —
+> nicht, wo Zahlen vorkommen. `tabular-nums` war schon an allen
+> relevanten Stellen gesetzt; ein einziger echter Fund (`.pcount`), dazu
+> die Material-Felder und die Zeitspalte der Direktnachrichten. „Der
+> beste Aufwand-Nutzen-Punkt der Liste" stand hier zu Recht — nur war
+> der Nutzen bereits eingesammelt.
 
 ### 28. Eine Regel für Datum und Uhrzeit
 
@@ -282,13 +307,24 @@ Weg dorthin: „?" drücken öffnet die Übersicht.
 
 *Aufwand: klein.*
 
-### 30. Eine echte Druckansicht
+### 30. Eine echte Druckansicht  ⚠️ *Annahme war falsch (25.8.)*
 
 Putzplan und Materialliste werden im Studio ausgedruckt und an die Wand
 gehängt. Es gibt `no-print`, aber keine Druckgestaltung — heute kommt
 Dunkelmodus mit Navigationsleiste aus dem Drucker.
 
 *Aufwand: mittel.* **Bringt im Alltag mehr, als es aussieht.**
+
+> **Nachtrag 25.8.: die Annahme oben stimmt nicht.** Nachgemessen haben
+> Putzplan **und** Einkaufsliste je eine fertige Vorlage — schwarz auf
+> weiß, mit Spalten zum Abhaken —, und beide funktionieren. Aus dem
+> Drucker kommt kein Dunkelmodus.
+>
+> Kaputt war etwas anderes: wer aus **irgendeiner anderen** Ansicht
+> Strg+P tippt, bekam ein vollständig **weißes Blatt**. `body >
+> *{display:none}` blendet alles aus, und `#printArea` ist leer, solange
+> niemand auf einen der beiden Knöpfe gedrückt hat. Das ist behoben — es
+> steht jetzt drauf, wo die Vorlagen liegen.
 
 ---
 

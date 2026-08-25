@@ -457,6 +457,53 @@ Funde gemeldet, die keine waren.
 
 ---
 
+## 4c. Leere Zustände
+
+> **Ein leerer Bildschirm sagt, was gerade fehlt — und wie man es
+> ändert.**
+
+`emptyHTML(titel, satz, zeichen, tat)` hat einen vierten Parameter für
+eine Handlung. Er stand ein Jahr lang in neunzehn Aufrufen leer; jeder
+leere Bildschirm war grauer Text und eine Sackgasse.
+
+Der Weg wird mit `tatKnopf(text, zielSelektor)` gebaut und zeigt auf ein
+Bedienelement, **das es ohnehin gibt** — ein einziger Zuhörer
+(`data-leerzu`) drückt es. Der leere Zustand bekommt keine eigene Logik.
+Wandert der Knopf, wandert der Weg mit.
+
+Drei Regeln:
+
+1. **Nur wenn es einen Weg gibt.** „Nichts aufgetreten, so soll es sein"
+   braucht keinen Knopf — das ist der gute Zustand.
+2. **Nur für den, der ihn gehen darf.** Ein Mitarbeiter sieht „+ Neu"
+   bei den Aufgaben nicht; ihm einen Knopf dorthin zu zeigen wäre eine
+   Sackgasse mit Einladung.
+3. **Der Knopf steht unter dem Satz**, nicht daneben — der Satz erklärt,
+   warum der Knopf da ist.
+
+`tests/test-leerzustand.js` prüft jedes Ziel einzeln: existiert es, ist
+es von dort aus sichtbar, tut der Klick etwas.
+
+---
+
+## 4d. Drucken
+
+Zwei Vorlagen hängen in den Studios an der Wand: **Putzplan** und
+**Einkaufsliste**. Beim Drucken wird nur `#printArea` ausgegeben —
+schwarz auf weiß, ohne Menü, mit Spalten zum Abhaken von Hand.
+
+**Der dritte Fall gehört mitgedacht.** `body > *{display:none}` blendet
+alles aus, und `#printArea` ist leer, solange niemand auf einen der
+Knöpfe gedrückt hat. Ohne Auffangnetz kommt aus jeder anderen Ansicht
+ein **weißes Blatt** — kein Fehler, kein Hinweis, nichts. `#printHinweis`
+erscheint deshalb genau dann, wenn `#printArea:empty` zutrifft, und
+nennt die zwei echten Wege.
+
+`#printArea` wird beim Ansichtswechsel geleert: sonst druckt man zwei
+Bildschirme weiter einen Plan, den man nicht meinte.
+
+---
+
 ## 5. Bewegung
 
 | Marke | Kurve | Wofür |
