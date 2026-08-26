@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-cEJ3CSq4wliGShaCIifooUKQBwBnS1GfTkQMEc8iBUI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-1d0yc1qH4yanCZUlztzh9NV/Z7SuCpTzBsYQqMhsWpI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -795,9 +795,34 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* Aktiv: nur die Schrift. Die Fläche liefert der gleitende Marker. */
 .chan.active{background:none;color:var(--accent-d);font-weight:700}
 .chat-scroll{flex:1;overflow-y:auto;padding:var(--s8) var(--rand);display:flex;flex-direction:column;gap:var(--s8)}
-.msg{max-width:80%;padding:var(--s10) var(--s12);border-radius:var(--r-md);background:var(--bg-2);border:1px solid var(--line);
+/* Die untere Ecke zeigt, von wem die Nachricht kommt — eine
+   Sprechblase ohne Dreieck. Billiger als ein echter Zipfel und
+   ueberlebt jede Gruppierung. Steht in der Kurzform mit drin, damit
+   border-radius nicht an zwei Stellen fuer dasselbe Element gesetzt
+   wird: die spaetere Angabe gewinnt, an der frueheren dreht man
+   vergeblich. */
+.msg{max-width:80%;padding:var(--s10) var(--s12);
+  border-radius:var(--r-md) var(--r-md) var(--r-md) var(--r-xs);
+  background:var(--bg-2);border:1px solid var(--line);
   align-self:flex-start;word-break:break-word}
-.msg.mine{align-self:flex-end;background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.22)}
+/* Eigene Nachricht: deutlich, nicht nur rechtsbuendig.
+   Vorher eine feste 12-%-Toenung. Gemessen unterschied sich die eigene
+   Blase von einer fremden um 1,11:1 im Dunkeln und 1,16 im Hellen — bei
+   1,0 waeren sie gleich. Wer schnell durchscrollt, sieht nicht, was von
+   ihm selbst ist.
+
+   Vier Stufen durchgemessen (eigen/fremd · Text auf der eigenen Blase):
+
+       .12 (vorher)   1,11 · 14,01
+       .24            1,43 · 10,92
+       .34            1,83 ·  8,55   ← hier
+
+   --tipp-2 ist auf der Leiter eigentlich der Zustand „Finger drauf".
+   Hier traegt es eine ruhende Flaeche, und das ist Absicht: es ist die
+   Staerke, die die Blasen trennt, und ein vierter Wert nur fuer diese
+   eine Stelle waere eine Leiter mit Sonderfall. */
+.msg.mine{align-self:flex-end;background:var(--tipp-2);border-color:var(--tipp-kante);
+  border-radius:var(--r-md) var(--r-md) var(--r-xs) var(--r-md)}
 .msg .meta{display:flex;align-items:center;gap:var(--s6);margin-bottom:var(--s2);flex-wrap:wrap}
 /* Folgenachricht derselben Person: rückt näher heran und wiederholt den Kopf nicht */
 .msg.grp{margin-top:-5px;border-top-left-radius:7px}
@@ -1491,6 +1516,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @media(max-width:520px){ .nb-mehr{display:none} }
 .notif-banner .nb-txt b{color:var(--text);font-family:var(--font-head)}
 .notif-banner button{flex-shrink:0}
+/* Das Kreuz bleibt klein und ruhig — es ist der Nebenweg, nicht die
+   Handlung. 44er Trefferflaeche unsichtbar darueber, damit man es
+   trotzdem sicher erwischt. */
+.nb-zu{position:relative;background:none;border:none;color:var(--text-3);
+  cursor:pointer;line-height:var(--lh-1);padding:var(--s4);display:grid;place-items:center}
+.nb-zu svg{width:15px;height:15px}
+.nb-zu:hover{color:var(--text)}
+.nb-zu::after{content:'';position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
 
 /* ── Studio-Mehrfachauswahl (Registrierung) ── */
 .studio-checks{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);max-height:220px;overflow-y:auto;
@@ -3790,6 +3824,13 @@ html{font-size:var(--fs,100%)}
         <div class="notif-banner" id="notifBanner" data-ikon="glocke">
           <div class="nb-txt"><b>Meldungen an?</b><span class="nb-mehr"> Sonst bleibt Neues unbemerkt.</span></div>
           <button class="btn btn-primary btn-sm" id="notifEnable">Aktivieren</button>
+          <!-- Wegtippbar. Vorher stand der Hinweis dauerhaft da, solange
+               die Berechtigung „unentschieden" war — also bei jedem, der
+               sich nicht entscheidet, für immer. 58 von 740 Pixeln, jeden
+               Tag, für eine Frage, die man einmal beantwortet.
+               Der Weg bleibt: Einstellungen → Meldungen. -->
+          <button class="nb-zu" id="notifDismiss" type="button"
+                  data-ikon="schliessen" aria-label="Hinweis ausblenden"></button>
         </div>
         <!-- Studios und Gruppen sind zwei verschiedene Dinge und gehören
              nicht in dieselbe Leiste: bei vierzehn Studios stünde „Chefs"
@@ -5074,6 +5115,11 @@ html{font-size:var(--fs,100%)}
         einstellen als am Rechner.</p>
       <div id="notifyOpts"></div>
       <p class="hint" id="notifyState" style="margin:14px 0 0"></p>
+      <!-- Nur sichtbar, solange die Berechtigung unentschieden ist.
+           Seit der Hinweis über dem Chat wegtippbar ist, ist das hier
+           der verlässliche Weg. -->
+      <button class="btn btn-primary btn-sm" id="notifyAsk"
+              style="display:none;margin-top:10px">Meldungen erlauben</button>
 
       <!-- E-Mail hängt am Konto, nicht am Gerät: eine Mail geht an eine
            Adresse, nicht an ein Handy. Deshalb zwei getrennte Blöcke mit
@@ -9515,10 +9561,17 @@ function registerFcmToken(){
   }).catch(function(e){ console.warn('FCM-Token:', e.message); });
 }
 
+/* Einmal weggetippt, bleibt er weg — je GERAET, so wie die Berechtigung
+   selbst. Deshalb localStorage und nicht das Konto: wer am Rechner „nein"
+   sagt, will die Frage auf dem Handy trotzdem sehen. */
+var NOTIF_WEG='kf_notif_weg';
+function notifBannerWeg(){
+  try{ return localStorage.getItem(NOTIF_WEG)==='1'; }catch(e){ return false; }
+}
 function maybeShowNotifBanner(){
   if(!('Notification' in window)) return;
-  if(Notification.permission==='default') $('notifBanner').classList.add('show');
-  else $('notifBanner').classList.remove('show');
+  var b=$('notifBanner'); if(!b) return;
+  b.classList.toggle('show', Notification.permission==='default' && !notifBannerWeg());
 }
 
 /* ── Navigation ── */
@@ -18717,15 +18770,25 @@ function buildNotifyOptions(){
       savePrefs(); pushNotifyPrefs(); tick(8);
     });
   });
-  // Ehrlich sagen, ob Meldungen überhaupt erlaubt sind
-  var st=$('notifyState');
+  /* Ehrlich sagen, ob Meldungen ueberhaupt erlaubt sind — und den Weg
+     dorthin HIER anbieten, nicht anderswo.
+
+     Vorher stand da: „Tippe oben im Banner auf Erlauben." Das zeigte auf
+     den Hinweis ueber dem Chat, und der war der einzige Weg. Seit man
+     ihn wegtippen kann, waere dieser Satz eine Sackgasse — er verwiese
+     auf etwas, das nicht mehr da ist. Ein Knopf an dieser Stelle ist
+     ohnehin der richtigere Ort: Einstellungen sind der Ort, an dem man
+     etwas einstellt. */
+  var st=$('notifyState'), erl=$('notifyAsk');
+  if(erl) erl.style.display =
+    (('Notification' in window) && Notification.permission==='default') ? '' : 'none';
   if(st){
     if(!('Notification' in window)){
       st.textContent='Dieses Gerät unterstützt keine Meldungen.';
     } else if(Notification.permission==='denied'){
       st.textContent='Meldungen sind für StudioChat gesperrt. Das lässt sich nur in den Einstellungen des Geräts wieder erlauben.';
     } else if(Notification.permission!=='granted'){
-      st.textContent='Meldungen sind noch nicht erlaubt. Tippe oben im Banner auf „Erlauben".';
+      st.textContent='Meldungen sind noch nicht erlaubt.';
     } else {
       st.textContent='Meldungen sind erlaubt. Änderungen hier wirken sofort.';
     }
@@ -19446,6 +19509,15 @@ function bindActions(){
   // Benachrichtigungen aktivieren
   var nb=$('notifEnable');
   if(nb) nb.addEventListener('click',enablePush);
+  var nz=$('notifDismiss');
+  if(nz) nz.addEventListener('click',function(){
+    try{ localStorage.setItem(NOTIF_WEG,'1'); }catch(e){}
+    maybeShowNotifBanner();
+    toast('Ausgeblendet. Einstellungen → Meldungen, falls du es dir anders überlegst.');
+  });
+  // Derselbe Weg, nur an der Stelle, wo man ihn spaeter sucht
+  var na=$('notifyAsk');
+  if(na) na.addEventListener('click',enablePush);
 
   // Material: eigenes Item hinzufügen
   var matAdd=$('matAdd'); if(matAdd) matAdd.addEventListener('click',addMaterial);
