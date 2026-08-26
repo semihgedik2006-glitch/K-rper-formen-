@@ -1,9 +1,15 @@
 # Design-Ideen
 
-Stand: 25. August 2026. **Fünf davon sind gebaut** — 1, 2, 7, 14 und 27,
-plus 30 in anderer Form. Sie sind unten abgehakt; die Begründungen
-bleiben stehen, auch dort, wo sie sich als falsch herausgestellt haben.
-Was aus ihnen wurde, steht in `FORTSCHRITT.md`, Runde 55.
+Stand: 26. August 2026. **Neun davon sind gebaut** — 1, 2, 3, 7, 8, 9,
+14 und 27, plus 30 und 13 in anderer Form. Sie sind unten abgehakt; die
+Begründungen bleiben stehen, auch dort, wo sie sich als falsch
+herausgestellt haben. Was aus ihnen wurde, steht in `FORTSCHRITT.md`,
+Runde 55 und 56.
+
+**Drei meiner Begründungen waren falsch** (27, 30, 13). Zu jeder steht
+unten ein Nachtrag mit dem, was tatsächlich gemessen wurde. Sie stehen
+absichtlich noch da: eine Ideenliste, aus der man die Irrtümer
+herausstreicht, sieht klüger aus, als sie war.
 
 Ursprünglicher Stand: 24. August 2026. Dreißig Vorschläge, **alle aus Bildschirmfotos der
 laufenden App abgeleitet**, nicht aus einem Gestaltungskatalog. Zu jedem
@@ -54,7 +60,7 @@ in normaler Schreibung mit Gewicht 700.
 
 *Aufwand: klein, aber überall sichtbar.*
 
-### 3. Der Seitenkopf ist zu hoch
+### 3. Der Seitenkopf ist zu hoch  ✅ *gebaut (26.8.)*
 
 In „Aufgaben" stehen **fünf Schichten** übereinander, bevor die erste
 Aufgabe kommt: Titel, Untertitel, Suchfeld, Filterzeile,
@@ -118,7 +124,7 @@ Dauer, Tempo 1× / 1,5×.
 > Vorlesegeräte springen können. Eine echte Wellenform bleibt als
 > eigener Punkt offen.
 
-### 8. Fünf Leisten über der ersten Nachricht
+### 8. Fünf Leisten über der ersten Nachricht  ✅ *gebaut (26.8.)*
 
 Reiter · „Meldungen an?" · Studios/Gruppen · Kanalreihe · angeheftete
 Nachricht. Das Gespräch beginnt bei 45 % der Bildschirmhöhe.
@@ -128,7 +134,17 @@ Einstellungen; Studios/Gruppen und Kanalreihe in **eine** Zeile.
 
 *Aufwand: mittel.*
 
-### 9. Eigene Nachrichten deutlicher
+> **Nachtrag 26.8.: die Hälfte gebaut.** „Meldungen an?" (58px) lässt
+> sich wegtippen und bleibt weg — mit Ersatzweg in den Einstellungen,
+> ohne den es eine Sackgasse geworden wäre. Studios/Gruppen und
+> Kanalreihe sind **nicht** zusammengelegt: das sind zwei verschiedene
+> Fragen (welche Art, welcher Kanal), und in eine Zeile gequetscht
+> hätte man vierzehn Studios hinter dem Umschalter versteckt.
+>
+> Dazu die Zahl, die vorher fehlte: bei 740px Bildschirmhöhe bekommt das
+> Gespräch **35 %** — 260 von 740 Pixeln.
+
+### 9. Eigene Nachrichten deutlicher  ✅ *gebaut (26.8.)*
 
 Heute sind sie nur leicht eingerückt und getönt. Vorschlag: eigene Blase
 in `--tipp-1`, fremde in `--bg-2`, dazu eine kleine Sprechblasen-Ecke.
@@ -161,12 +177,27 @@ Tippen springt zur Originalnachricht und hebt sie kurz hervor.
 
 ## C · Zustände — was man sieht, wenn nichts da ist
 
-### 13. Skelette statt leerer Flächen
+### 13. Skelette statt leerer Flächen  ⚠️ *Annahme war falsch (26.8.)*
 
 Beim Start ist kurz alles leer. Drei graue Balken in Kartenform wirken
 schneller, obwohl nichts schneller ist.
 
 *Aufwand: klein.*
+
+> **Nachtrag 26.8.: die Annahme stimmt nicht.** Die Startseite ist
+> vollständig aufgebaut, sobald man sie sieht. Verdeckt wurde sie von
+> etwas anderem: der Startbildschirm lag auf einem **festen Zeitgeber
+> von 3200 ms** und wartete nicht auf die App.
+>
+> ```
+> vorher   2611 ms
+> nachher   832 ms
+> ```
+>
+> Skelette hätten das kaschiert, statt es zu beheben — die Lösung für
+> ein Problem, das es nicht gab. Eine echte Ladeanzeige bleibt trotzdem
+> offen für den Fall, dass die Datenbank langsam ist; nur ist das ein
+> anderer Fall als der Start.
 
 ### 14. Leere Zustände mit nächstem Schritt  ✅ *gebaut (25.8.)*
 

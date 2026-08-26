@@ -4912,3 +4912,127 @@ weiterhin nicht.** Beim nächsten Mal steht es da.
 | Zeichen „mikrofon" ungenutzt | gemeldet — und die Ursache waren zwei Inline-Kopien ✓ |
 
 Regression: **86 grün · 0 rot · 0 ohne Ausgabe**, in einem Lauf.
+
+---
+
+# 56 · Der Rahmen kostet Platz und Zeit
+
+**26. August 2026**
+
+Vier Ideen aus der Liste — 8, 9, 3 und 13. Bei **13 war meine eigene
+Begründung falsch, und der echte Fund war größer als die Idee.**
+
+## Idee 13: nicht Skelette, sondern 1,8 Sekunden
+
+In `DESIGN-IDEEN.md` stand: *„Beim Start ist kurz alles leer. Drei graue
+Balken in Kartenform wirken schneller, obwohl nichts schneller ist."*
+
+Nachgemessen stimmt das nicht. Die Startseite ist vollständig aufgebaut,
+sobald man sie sieht. Verdeckt wurde sie von etwas anderem: der
+Startbildschirm lag auf einem **festen Zeitgeber von 3200 ms**. Er
+wartete nicht auf die App und ging nicht früher, wenn sie fertig war.
+
+```
+vorher   2611 ms   (2627 / 2602 / 2605)
+nachher   832 ms   (854 / 838 / 805)
+```
+
+**1,8 Sekunden bei jedem Öffnen.** Und zwar wirklich, nicht gefühlt: dort
+wurde nichts geladen, dort wurde gewartet. Skelette hätten genau das
+kaschiert, statt es zu beheben — sie wären die Lösung für ein Problem
+gewesen, das es nicht gab.
+
+Untergrenze 650 ms, sonst blitzt der Bildschirm bei einem warmen Start
+nur auf; ein Zucken ist unruhiger als eine kurze Pause. Die 3200 bleiben
+als Notausgang, falls die Anmeldung hängt.
+
+Damit das überhaupt messbar wurde, haben beide Attrappen jetzt
+`window.__langsam` — eine Antwortverzögerung. Ohne sie antwortet die
+Attrappe sofort, und jeder Durchlauf über „was steht da, bevor die Daten
+kommen" misst nichts.
+
+## Idee 3: Suche und Filter in eine Zeile
+
+| | vorher | nachher |
+|---|---|---|
+| Aufgaben, Inhalt ab | 407px | **353px** |
+| Material, Inhalt ab | 607px | **555px** |
+
+Bei Material blieben auf einem 844er-Handy vorher **unter 200px** für die
+eigentliche Liste. Die Suche schrumpft auf ihre Lupe, solange nichts
+drinsteht, und wird breit, sobald sie den Fokus hat **oder etwas
+eingetippt ist** — auch nachdem der Finger weg ist. Ein Feld, das sich
+mit dem Suchwort darin zuklappt, versteckt den Grund, warum die Liste
+kurz ist.
+
+Was danach noch über dem Inhalt steht, ist Inhalt: Studio-Auswahl,
+Fehlt-Hinweis, Tabellenkopf.
+
+## Idee 8: der Hinweis, den man nicht loswurde
+
+„Meldungen an?" erschien, solange die Berechtigung *unentschieden* war —
+also bei jedem, der sich nicht entscheidet, für immer. 58 von 740 Pixeln,
+jeden Tag, für eine Frage, die man einmal beantwortet.
+
+**Das Wegtippen wäre ohne Ersatz eine Sackgasse gewesen:** die
+Einstellungen sagten wörtlich *„Tippe oben im Banner auf Erlauben"*. Der
+Hinweis war der einzige Weg. Deshalb steht der Knopf jetzt auch unter
+Einstellungen → Meldungen, sichtbar genau dann, wenn die Berechtigung
+offen ist.
+
+## Idee 9: eigene Nachrichten
+
+| Tönung | eigen/fremd | Text auf der eigenen Blase |
+|---|---|---|
+| .12 (vorher) | 1,11 | 14,01 |
+| .24 | 1,43 | 10,92 |
+| **.34** | **1,83** | **8,55** |
+
+Bei 1,0 wären die Blasen nicht zu unterscheiden. Dazu eine untere Ecke,
+die die Richtung zeigt — eine Sprechblase ohne Dreieck, die jede
+Gruppierung überlebt.
+
+## Drei Messfehler, alle meine
+
+1. **Der Grund unter den Sprechblasen.** Die erste Sonde las ihn aus
+   `.chat-scroll`. Das Element hat gar keinen eigenen Hintergrund;
+   `getComputedStyle` liefert dann `rgba(0,0,0,0)`, und als Farbe gelesen
+   ist das **Schwarz**. Im Dunkeln fiel es nicht auf, im Hellen kippten
+   die Zahlen ins Absurde („Text 1,06" wäre unlesbar).
+2. **Die Breite des Suchfelds** wurde gemessen, *während* es den Fokus
+   hatte — dann macht es schon `:has(input:focus)` breit. Die Klasse
+   `.offen` war damit ungeprüft, und die Gegenprobe blieb grün.
+3. **„Das Gespräch beginnt bei 45 %"** stand in der Ideenliste. Das war
+   aus einem Bildschirmfoto mit zufälliger Scrollposition abgelesen. Der
+   Chat scrollt ans Ende; die erste Nachricht liegt *über* dem Bild
+   (gemessen −65px). Die richtige Frage ist, wie hoch die Fläche ist, in
+   der Nachrichten stehen: **35 % bei 740px Bildschirmhöhe.**
+
+## Ein Fund, den man nicht unsichtbar machen darf
+
+`test-abgeschnitten.js` meldete nach dem Umbau: *„#todoSearch — 76 px
+Text in 0 px Feld."* Zusammengeklappt ist das Feld 44px breit, davon
+gehen 40 für die Lupe und 6 für den Rand ab.
+
+`opacity:0` am `::placeholder` wäre eine Zeile gewesen — der Text stünde
+dann aber weiterhin im Dokument und wäre weiterhin abgeschnitten. **Ein
+Fund, den man unsichtbar macht, ist nicht behoben.** Der Platzhalter wird
+jetzt entfernt, solange das Feld schmal ist; die Beschriftung hängt an
+einem `aria-label`, sonst wäre das Feld für ein Vorlesegerät namenlos.
+
+## Der Läufer hat sich bezahlt gemacht
+
+Seit Runde 55 nennt `alle.sh` bei einem Fehlschlag den Grund. Beim ersten
+vollen Lauf dieser Runde stand direkt in der Zusammenfassung:
+*„✗ test-abgeschnitten — Exit-Code 1 — ✗ 2 Stelle(n) schneiden ihren
+Inhalt ab: #todoSearch, #matSearch"*. In Runde 55 hätte dort nur
+„Exit-Code 1" gestanden, und die Ursache hätte einen Extralauf gekostet.
+
+## Gegenproben
+
+| Gegenprobe | Ergebnis |
+|---|---|
+| Zeitgeber wiederhergestellt | „bleibt 2625 ms stehen" ✓ |
+| Klasse `.offen` abgeschaltet | „bleibt schmal (48px)" ✓ |
+| Emoji statt Zeichen im Kreuz-Knopf | `test-gestaltung.js` gemeldet ✓ |
+| `line-height:1` fest statt `--lh-1` | gemeldet ✓ |
