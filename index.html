@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-TmlRMLJ0XsJo1ObP89c86v2pspfrKpQgTdBH4gd4grU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-fx/evy2a39/CD/yEZDSdryu6dLocd28C8wgYpYGtGmc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3953,7 +3953,7 @@ html{font-size:var(--fs,100%)}
             <div class="chip-row werkzeugzeile">
               <div class="todo-search klein">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input id="todoSearch" type="search" placeholder="Suchen …" autocomplete="off" />
+                <input id="todoSearch" type="search" placeholder="Suchen …" aria-label="Aufgaben suchen" autocomplete="off" />
               </div>
               <span class="todo-count" id="todoCount"></span>
               <button class="chip on" data-tfilter="alle">Alle</button>
@@ -4025,7 +4025,7 @@ html{font-size:var(--fs,100%)}
             <select class="inp" id="matStudio"></select>
             <div class="todo-search klein">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-              <input id="matSearch" type="search" placeholder="Material suchen …" autocomplete="off" />
+              <input id="matSearch" type="search" placeholder="Material suchen …" aria-label="Material suchen" autocomplete="off" />
             </div>
             <span class="todo-count" id="matCount"></span>
           </div>
@@ -8891,6 +8891,41 @@ document.addEventListener('input', function(e){
   }, true);
 });
 
+/* ── Schrumpfende Suchfelder ──────────────────────────────────────────
+   Zusammengeklappt ist das Feld 44px breit, und davon gehen 40px fuer
+   die Lupe und 6px Rand ab. Fuer den Platzhalter bleiben null Pixel —
+   test-abgeschnitten.js hat das gemeldet: „76 px Text in 0 px Feld".
+
+   Ein Platzhalter, der garantiert nicht zu sehen ist, gehoert nicht ins
+   Dokument. Er wird deshalb weggenommen, solange das Feld schmal ist,
+   und zurueckgegeben, sobald es aufgeht. Die Beschriftung haengt dafuer
+   an aria-label und nicht am Platzhalter — sonst waere das Feld fuer
+   ein Vorlesegeraet im zugeklappten Zustand namenlos.
+
+   Nicht per CSS geloest (opacity:0 am ::placeholder): der Text stuende
+   dann weiterhin im Dokument und waere weiterhin abgeschnitten. Ein
+   Fund, den man unsichtbar macht, ist nicht behoben. */
+function suchFeldStand(f){
+  if(!f) return;
+  var box=f.closest && f.closest('.todo-search');
+  if(!box || !box.closest('.werkzeugzeile')) return;
+  var offen = box.classList.contains('offen') || document.activeElement===f;
+  if(offen){
+    if(f.dataset.platz){ f.setAttribute('placeholder', f.dataset.platz); }
+  } else {
+    if(!f.dataset.platz) f.dataset.platz = f.getAttribute('placeholder') || '';
+    f.setAttribute('placeholder','');
+  }
+}
+function suchFelderBinden(){
+  document.querySelectorAll('.werkzeugzeile .todo-search input').forEach(function(f){
+    suchFeldStand(f);
+    f.addEventListener('focus', function(){ suchFeldStand(f); });
+    f.addEventListener('blur',  function(){ setTimeout(function(){ suchFeldStand(f); }, 0); });
+    f.addEventListener('input', function(){ suchFeldStand(f); });
+  });
+}
+
 /* ── Der Weg aus einem leeren Zustand ──
    EIN Zuhoerer fuer alle. Der Knopf im leeren Zustand traegt den
    Selektor des echten Bedienelements und drueckt es; er kennt selbst
@@ -9460,6 +9495,7 @@ function weiterMitAnmeldung(user){
 function showApp(){
   $('app').classList.add('show');
   splashWeg();                 // die App steht — der Startbildschirm darf gehen
+  suchFelderBinden();          // Platzhalter nur, solange das Feld offen ist
   $('uName').textContent = session.name;
   $('uMeta').textContent = isChef() ? 'Chef · Leitung'
     : ((isLeiter()?'Studio-Leiter · ':'')+(session.studios.length>2
@@ -19500,6 +19536,8 @@ function bindActions(){
          versteckt den Grund, warum die Liste kurz ist. */
       var box=this.closest('.todo-search');
       if(box) box.classList.toggle('offen', !!this.value);
+      suchFeldStand(this);
+      suchFeldStand(this);
       renderTodos();
     });
   }
