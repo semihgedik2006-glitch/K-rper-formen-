@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-1d0yc1qH4yanCZUlztzh9NV/Z7SuCpTzBsYQqMhsWpI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-TmlRMLJ0XsJo1ObP89c86v2pspfrKpQgTdBH4gd4grU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1744,6 +1744,29 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ── Aufgaben: Suchfeld ── */
 .todo-tools{display:flex;gap:var(--s8);align-items:center;margin:var(--s2) 0 var(--s12)}
 .todo-search{flex:1;position:relative}
+
+/* ── Suche und Filter in EINER Zeile ──
+   Zwei Zeilen uebereinander kosteten 40px Suchfeld plus 54px Filter.
+   Die erste Aufgabe begann dadurch erst bei 407px — auf einem
+   844er-Handy fast in der Mitte des Bildschirms.
+
+   Zusammengelegt: die Suche steht links und ist so breit wie ihre Lupe,
+   solange nichts darin steht. Sobald sie den Fokus hat oder etwas
+   eingetippt ist, wird sie breit.
+
+   flex-basis statt width: das Feld sitzt in einer Flex-Zeile, und
+   width allein wuerde von flex-shrink wieder aufgefressen. */
+.werkzeugzeile{align-items:center}
+.werkzeugzeile .todo-search{flex:0 0 44px;transition:flex-basis .28s var(--ease-ios)}
+.werkzeugzeile .todo-search input{padding-left:var(--s40);padding-right:var(--s6);
+  min-height:44px;cursor:pointer}
+/* Offen, wenn der Finger drin ist oder etwas drinsteht. :has kennt jeder
+   Browser, der auch die App traegt; ohne :has bliebe sie schmal — dann
+   ist die Suche unbequem, aber nicht kaputt. */
+.werkzeugzeile .todo-search:has(input:focus),
+.werkzeugzeile .todo-search.offen{flex:1 1 190px}
+.werkzeugzeile .todo-search input:not(:placeholder-shown){cursor:text}
+.werkzeugzeile .todo-count{flex:0 0 auto;order:99}
 .todo-search input{width:100%;padding:var(--s10) var(--s12) var(--s10) var(--s40);border-radius:var(--r-sm);
   background:var(--bg-2);border:1.5px solid var(--line);color:var(--text);
   font-family:var(--font-body);font-size:var(--t-md);transition:border-color .2s,box-shadow .2s}
@@ -3916,15 +3939,23 @@ html{font-size:var(--fs,100%)}
           </div>
         </div>
         <div class="scroll-area" data-shrinks="1">
+          <!-- Suche UND Filter in einer Zeile.
+               Vorher zwei Zeilen uebereinander: 40px Suchfeld plus 54px
+               Filter. Gemessen begann die erste Aufgabe damit erst bei
+               407px — auf einem 844er-Handy fast in der Mitte.
+
+               Die Suche liegt links und schrumpft auf ihre Lupe, solange
+               nichts darin steht; die Filter scrollen daneben weiter.
+               Tippt man hinein, wird sie breit und die Filter rutschen
+               nach rechts aus dem Bild — sie bleiben erreichbar, sind
+               beim Suchen aber ohnehin nicht das, was man sucht. -->
           <div class="sticky-tools">
-            <div class="todo-tools">
-              <div class="todo-search">
+            <div class="chip-row werkzeugzeile">
+              <div class="todo-search klein">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                 <input id="todoSearch" type="search" placeholder="Suchen …" autocomplete="off" />
               </div>
               <span class="todo-count" id="todoCount"></span>
-            </div>
-            <div class="chip-row">
               <button class="chip on" data-tfilter="alle">Alle</button>
               <button class="chip" data-tfilter="offen">Nur offene</button>
               <button class="chip" data-tfilter="faellig">Überfällig</button>
@@ -3984,11 +4015,15 @@ html{font-size:var(--fs,100%)}
       <section class="view" id="view-material">
         <div class="view-head shrink"><h2>Material</h2><p>Trage ein, was da ist. Was fehlt, rechnet die App selbst aus.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <div class="mat-bar">
+          <!-- Studio-Auswahl UND Suche in einer Zeile. Getrennt kosteten
+               sie 50 plus 40 Pixel; die erste Materialzeile begann
+               dadurch erst bei 607px — auf einem 844er-Handy blieben
+               unter 200px fuer die eigentliche Liste.
+               Die Suche schrumpft auf ihre Lupe, solange nichts
+               drinsteht (siehe .werkzeugzeile im Stylesheet). -->
+          <div class="mat-bar werkzeugzeile">
             <select class="inp" id="matStudio"></select>
-          </div>
-          <div class="todo-tools" style="padding:0">
-            <div class="todo-search">
+            <div class="todo-search klein">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
               <input id="matSearch" type="search" placeholder="Material suchen …" autocomplete="off" />
             </div>
@@ -5628,7 +5663,34 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
   });
 }
 
-/* ── Splash: Tippen überspringt, danach entfernen ── */
+/* ── Startbildschirm ──────────────────────────────────────────────────
+   Er lag auf einem festen Zeitgeber: 3200 Millisekunden, jedes Mal, egal
+   wie schnell die App bereit war. Nachgemessen war die Startseite nach
+   rund einer Sekunde vollstaendig aufgebaut und wurde danach noch zwei
+   Sekunden lang verdeckt.
+
+   Das ist der Unterschied zwischen „wirkt schnell" und „ist schnell":
+   hier wurde nichts geladen, hier wurde gewartet.
+
+   Jetzt geht er weg, sobald die App oder der Anmeldebildschirm steht —
+   aber nicht vor SPLASH_MIN. Ohne diese Untergrenze blitzt er bei einem
+   warmen Start nur kurz auf, und ein Aufblitzen ist unruhiger als eine
+   kurze Pause.
+
+   Die 3200 bleiben als Notausgang: haengt die Anmeldung, soll der
+   Bildschirm trotzdem irgendwann verschwinden. */
+var SPLASH_MIN = 650;
+var _splashAb = Date.now();
+function splashWeg(){
+  var sp=document.getElementById('splash'); if(!sp) return;
+  if(sp.dataset.geht) return;
+  sp.dataset.geht='1';
+  var rest=Math.max(0, SPLASH_MIN-(Date.now()-_splashAb));
+  setTimeout(function(){
+    sp.classList.add('hide');
+    setTimeout(function(){ if(sp.parentNode) sp.parentNode.removeChild(sp); }, 500);
+  }, rest);
+}
 (function initSplash(){
   var sp=document.getElementById('splash'); if(!sp) return;
   sp.addEventListener('click',function(){ sp.classList.add('hide'); });
@@ -9361,7 +9423,7 @@ function weiterMitAnmeldung(user){
           return firmaLaeuftNoch(doc.data()).then(function(ok){
             if(ok){ enterApp(user.uid, doc.data()); return; }
             auth.signOut();
-            $('authWrap').classList.add('show');
+            $('authWrap').classList.add('show'); splashWeg();
             setAuthMode('login');
             /* Bewusst ohne Unterscheidung zwischen „gesperrt" und
                „gelöscht": beides geht die Person am Bildschirm nichts
@@ -9375,20 +9437,20 @@ function weiterMitAnmeldung(user){
           return;
         } else {
           auth.signOut();
-          $('authWrap').classList.add('show');
+          $('authWrap').classList.add('show'); splashWeg();
           setAuthMode('login');
           $('loginErr').textContent = 'Kein Zugang (mehr) hinterlegt. Bitte beim Chef melden.';
         }
       })
       .catch(function(e){
         auth.signOut();
-        $('authWrap').classList.add('show');
+        $('authWrap').classList.add('show'); splashWeg();
         $('loginErr').textContent = 'Profilfehler: '+e.message;
       });
   } else {
     stopListeners();
     $('app').classList.remove('show');
-    $('authWrap').classList.add('show');
+    $('authWrap').classList.add('show'); splashWeg();
   }
 }
 
@@ -9397,6 +9459,7 @@ function weiterMitAnmeldung(user){
    ============================================================ */
 function showApp(){
   $('app').classList.add('show');
+  splashWeg();                 // die App steht — der Startbildschirm darf gehen
   $('uName').textContent = session.name;
   $('uMeta').textContent = isChef() ? 'Chef · Leitung'
     : ((isLeiter()?'Studio-Leiter · ':'')+(session.studios.length>2
@@ -19432,6 +19495,11 @@ function bindActions(){
   if(ts){
     ts.addEventListener('input',function(){
       _todoFilter=this.value.trim().toLowerCase();
+      /* Bleibt offen, solange etwas drinsteht — auch nachdem der Finger
+         weg ist. Ein Feld, das sich mit dem Suchwort darin zuklappt,
+         versteckt den Grund, warum die Liste kurz ist. */
+      var box=this.closest('.todo-search');
+      if(box) box.classList.toggle('offen', !!this.value);
       renderTodos();
     });
   }
@@ -19474,6 +19542,9 @@ function bindActions(){
   if(ms){
     ms.addEventListener('input',function(){
       _matFilter=this.value.trim().toLowerCase();
+      // Bleibt offen, solange etwas drinsteht — siehe todoSearch
+      var box=this.closest('.todo-search');
+      if(box) box.classList.toggle('offen', !!this.value);
       renderMaterial();
     });
   }
