@@ -2,6 +2,15 @@
    Simuliert einen angemeldeten Chef und leere Sammlungen. */
 (function () {
   function unsub() { return function () {}; }
+  /* Antwortverzoegerung, damit sich der LADEZUSTAND ueberhaupt pruefen
+     laesst. Ohne sie antwortet die Attrappe sofort, und jeder Durchlauf
+     ueber „was steht da, bevor die Daten kommen" misst nichts.
+     window.__langsam = Millisekunden, vor dem Laden gesetzt. */
+  function spaeter(fn) {
+    var ms = +(window.__langsam || 0);
+    if (ms > 0) { setTimeout(fn, ms); return; }
+    fn();
+  }
   function makeSnap(docs) {
     docs = docs || [];
     return {
@@ -385,7 +394,7 @@ var USERS = [
                    (path==='probetrainings' ? PROBE :
                    (path==='documents' ? DOCS : [])))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
-        try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
+        spaeter(function () { try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); } });
         return unsub();
       }
     };
