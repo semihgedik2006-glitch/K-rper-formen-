@@ -5217,6 +5217,31 @@ Jede Behauptung einmal absichtlich kaputt gemacht:
 Die letzte lief gegen den Emulator: 165 statt 166 bestanden, genau die
 eine Zeile.
 
+## Und der Gestaltungs-Durchlauf hat mein eigenes CSS kassiert
+
+Vier Zeilen im neuen Stylesheet standen neben der Leiter, nicht auf ihr:
+
+| gemeldet | war | ist |
+|---|---|---|
+| `FESTER ABSTAND: 1px` | `margin-top:1px` | `var(--s1)` |
+| `FESTER ABSTAND: 2px` | `gap:2px` | `var(--s2)` |
+| `FESTE SCHRIFTANGABE 12px` | `font-size:12px` | `var(--t-xs)` |
+| `FESTE SCHRIFTANGABE 19px` | `line-height:19px` | `display:grid; place-items:center` |
+
+Die letzte ist die interessante: `line-height:19px` war nur ein Trick,
+um die Zahl in ihrem Kreis zu zentrieren. `.tab .badge` macht dasselbe
+seit jeher über `place-items` — ohne festen Wert, und die Zahl sitzt auch
+dann mittig, wenn jemand die Schrift größer stellt. Der Durchlauf hat
+nicht nur eine Zahl gefunden, sondern die schlechtere Lösung.
+
+## Eine Zeile, die ich zurückgenommen habe
+
+Im Fenster stand zuerst *„Was heute in deinen Studios abgehakt wurde."*
+Das stimmt nicht: die Liste beginnt beim Öffnen der App, nicht um
+Mitternacht. Wer sie morgens öffnet, sieht nichts — und läse „heute" als
+„heute ist nichts passiert" statt als „seit dem Öffnen ist nichts
+passiert". Jetzt steht dort, was wirklich gilt.
+
 ## Was hier NICHT bewiesen ist
 
 - **Dass eine Mail ankommt.** Kein SMTP im Durchlauf. Belegt ist, welche

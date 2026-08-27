@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-XDN7n3GNVuOV4459+ihCSZI+FjtjWmI8JQQakplEIGA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-DIJEJeksrOQTq5FAYNsq/e+FjQq7yFjAbQ2PxR3vT6Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2020,7 +2020,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    hier meldet etwas Neues. */
 .gl-zahl{position:absolute;top:1px;right:1px;min-width:19px;height:19px;
   padding:0 var(--s4);border-radius:var(--r-pille);background:var(--danger);color:#fff;
-  font-size:var(--t-2xs);font-weight:700;line-height:19px;text-align:center;
+  font-size:var(--t-2xs);font-weight:700;display:grid;place-items:center;
   font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--bg)}
 #glockeModal{position:fixed;inset:0;z-index:216;display:none;
   align-items:center;justify-content:center;padding:var(--s20);
@@ -2044,11 +2044,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .gl-zeile.neu{background:var(--tipp-1);border-left:3px solid var(--accent);
   padding-left:calc(var(--s4) + var(--s8));margin-left:-3px;border-radius:var(--r-sm)}
 .gl-ico{flex:0 0 auto;color:var(--accent-d);display:flex;align-items:center;
-  justify-content:center;width:22px;height:22px;margin-top:1px}
+  justify-content:center;width:22px;height:22px;margin-top:var(--s1)}
 .gl-ico .sym{width:18px;height:18px}
-.gl-txt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.gl-txt{min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 .gl-txt b{font-weight:700;line-height:var(--lh-eng);overflow-wrap:anywhere}
-.gl-txt span{color:var(--text-2);font-size:12px}
+.gl-txt span{color:var(--text-2);font-size:var(--t-xs)}
 #fwdModal,#keysModal{position:fixed;inset:0;z-index:215;display:none;
   align-items:center;justify-content:center;padding:var(--s20);
   background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
@@ -5098,7 +5098,7 @@ html{font-size:var(--fs,100%)}
     <button class="lb-close" id="glockeClose" aria-label="Schließen" data-ikon="schliessen"
             style="position:absolute;top:12px;right:14px"></button>
     <h3 data-ikon="glocke" style="margin-bottom:4px">Meldungen</h3>
-    <p class="hint" style="margin:0 0 var(--s16)">Was heute in deinen Studios abgehakt wurde. Was du selbst abhakst, steht nicht darin.</p>
+    <p class="hint" style="margin:0 0 var(--s16)">Was in deinen Studios abgehakt wurde, seit du die App geöffnet hast. Deine eigenen Haken stehen nicht darin.</p>
     <div id="glockeListe"></div>
   </div>
 </div>
@@ -9774,7 +9774,7 @@ function meldMarker(){
 function meldListe(){
   var box=$('glockeListe'); if(!box) return;
   if(!_meldungen.length){
-    box.innerHTML=emptyMini('Heute hat noch niemand etwas abgehakt.');
+    box.innerHTML=emptyMini('Seit dem Öffnen hat hier noch niemand etwas abgehakt.');
     return;
   }
   box.innerHTML=_meldungen.map(function(m){
