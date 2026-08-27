@@ -394,11 +394,22 @@ var USERS = [
                    (path==='probetrainings' ? PROBE :
                    (path==='documents' ? DOCS : [])))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
+        // Siehe stub-chef.js: ein zweiter Schnappschuss auf Zuruf.
+        (HORCHER[path] = HORCHER[path] || []).push(cb);
         spaeter(function () { try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); } });
         return unsub();
       }
     };
   }
+  var HORCHER = {};
+  window.__nachschub = function (pfad, liste) {
+    var cbs = HORCHER[pfad] || [];
+    var docs = (liste || []).map(function (d) {
+      return { id: d.id, data: function () { return d; } };
+    });
+    cbs.forEach(function (cb) { try { cb(makeSnap(docs)); } catch (e) { console.error('NACHSCHUB', e); } });
+    return cbs.length;
+  };
   var fs = {
     settings: function () {},
     enablePersistence: function () { return Promise.resolve(); },

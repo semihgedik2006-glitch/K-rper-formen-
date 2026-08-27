@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-fx/evy2a39/CD/yEZDSdryu6dLocd28C8wgYpYGtGmc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-XDN7n3GNVuOV4459+ihCSZI+FjtjWmI8JQQakplEIGA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1861,6 +1861,22 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
      ist. Ab 430px steht er wieder vollstaendig da. */
   .tb-brand .tb-wort{display:none}
 }
+/* Für die LEITUNG liegt die Grenze höher, weil bei ihr zwei Knöpfe mehr
+   in der Zeile stehen (Bericht und Glocke).
+
+   Gemessen mit erzwungenem Schriftzug, Chef-Konto, in 10-Pixel-Schritten:
+   bis 460px werden 157px Schriftzug in einen 150px-Kasten gedrückt, ab
+   470px sind Kasten und Inhalt beide 157px. Die Grenze steht deshalb auf
+   469 und nicht auf einer runden Zahl — 480 nähme dem Schriftzug zehn
+   Pixel, die er hat, und 460 schnitte ihn ab.
+
+   Warum an der Rolle und nicht einfach für alle: ein Mitarbeiter hat
+   diese beiden Knöpfe nicht. Ihm den Schriftzug wegzunehmen, weil beim
+   Chef der Platz knapp ist, wäre der Fehler, den man beim Messen mit
+   genau einem Konto macht. */
+@media(max-width:469px){
+  body.rolle-leitung .tb-brand .tb-wort{display:none}
+}
 
 /* ── Putzplan ── */
 .pp-item{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s12) var(--s12);background:var(--bg-soft);
@@ -1992,6 +2008,47 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .wb-tot{color:var(--danger-tx)}
 .wb-tot .wb-balken i{background:var(--danger)}
 .wb-knopfe{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s8)}
+
+/* ── Die Glocke und ihre Liste ──
+   Die Zahl sitzt oben rechts auf dem Knopf. position:relative muss hier
+   stehen und nicht auf .icon-btn allgemein: sonst haengt sich jedes
+   spaetere absolut positionierte Kind an den falschen Kasten. */
+.tb-glocke{position:relative;overflow:visible}
+/* Maße und Schriftgrad wie .tab .badge — dasselbe Ding an anderer
+   Stelle soll nicht anders aussehen. Rot statt Akzent ist der einzige
+   Unterschied und Absicht: die Zahl an einem Reiter zählt Vorräte, diese
+   hier meldet etwas Neues. */
+.gl-zahl{position:absolute;top:1px;right:1px;min-width:19px;height:19px;
+  padding:0 var(--s4);border-radius:var(--r-pille);background:var(--danger);color:#fff;
+  font-size:var(--t-2xs);font-weight:700;line-height:19px;text-align:center;
+  font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--bg)}
+#glockeModal{position:fixed;inset:0;z-index:216;display:none;
+  align-items:center;justify-content:center;padding:var(--s20);
+  background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  animation:fadeBlur .3s var(--ease-ios)}
+#glockeModal.show{display:flex}
+#glockeModal .pm-box{max-width:480px;max-height:82vh;overflow:auto}
+#glockeModal.show .pm-box{animation:sheetIn .46s var(--spring)}
+@media (max-width:620px){
+  #glockeModal{align-items:flex-end;padding:0}
+  #glockeModal .pm-box{max-width:none;border-radius:var(--radius) var(--radius) 0 0;
+    border-bottom:none;padding:var(--s20) var(--s20) calc(var(--s24) + var(--sab));max-height:82vh}
+  #glockeModal.show .pm-box{animation:sheetUp .5s var(--ease-ios)}
+}
+.gl-zeile{display:flex;gap:var(--s10);align-items:flex-start;
+  padding:var(--s10) var(--s4);border-top:1px solid var(--line)}
+.gl-zeile:first-child{border-top:none}
+/* Ungelesen wird durch den Streifen links markiert, nicht durch eine
+   Farbe im Text: die Zeile muss auch dann noch gut lesbar sein, wenn
+   sie nach dem Zumachen wieder als gelesen gilt. */
+.gl-zeile.neu{background:var(--tipp-1);border-left:3px solid var(--accent);
+  padding-left:calc(var(--s4) + var(--s8));margin-left:-3px;border-radius:var(--r-sm)}
+.gl-ico{flex:0 0 auto;color:var(--accent-d);display:flex;align-items:center;
+  justify-content:center;width:22px;height:22px;margin-top:1px}
+.gl-ico .sym{width:18px;height:18px}
+.gl-txt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.gl-txt b{font-weight:700;line-height:var(--lh-eng);overflow-wrap:anywhere}
+.gl-txt span{color:var(--text-2);font-size:12px}
 #fwdModal,#keysModal{position:fixed;inset:0;z-index:215;display:none;
   align-items:center;justify-content:center;padding:var(--s20);
   background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
@@ -3537,6 +3594,19 @@ html{font-size:var(--fs,100%)}
             style="display:none" data-ikon="mail"
             title="Bericht an mich senden" aria-label="Bericht an mich senden"><span
             class="tbb-wort">Bericht</span></button>
+    <!-- Die Glocke. Nur fuer Chef und Studio-Leiter, deshalb dieselbe
+         Schaltung wie beim Bericht: display:none im Markup, sichtbar
+         erst wenn meldMarker() canManage() bejaht. Ein Knopf, der beim
+         Mitarbeiter kurz aufblitzt und dann verschwindet, ist ein
+         Versprechen, das man gleich wieder zurueckzieht.
+
+         Die Zahl steht NEBEN dem Symbol, nicht darin: ein blosser Punkt
+         sagt „irgendwas ist neu", die Zahl sagt, ob es sich lohnt,
+         jetzt hinzuschauen. -->
+    <button class="icon-btn tb-glocke" id="tbGlocke" data-manage-only="1"
+            style="display:none" data-ikon="glocke"
+            title="Meldungen" aria-label="Meldungen"><span
+            class="gl-zahl" style="display:none">0</span></button>
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>
@@ -5014,6 +5084,25 @@ html{font-size:var(--fs,100%)}
   </div>
 </div>
 
+<!-- ── Meldungen (die Glocke) ──
+     Zeigt, was seit dem letzten Hinschauen abgehakt wurde. Die Liste
+     entsteht im Browser aus den Schnappschuessen, die ohnehin schon
+     laufen (cachedTodos / cachedClean) — sie ist NICHT gespeichert.
+     Beim Neuladen ist sie darum leer, und das ist Absicht: eine
+     dauerhafte Meldungsliste haette bei rund 65 Erledigungen am Tag
+     ebenso viele Schreibvorgaenge gekostet, fuer Text, den man aus
+     vorhandenen Daten bauen kann. Wer die Historie braucht, findet sie
+     unter „Zuletzt passiert" auf der Startseite. -->
+<div id="glockeModal">
+  <div class="pm-box">
+    <button class="lb-close" id="glockeClose" aria-label="Schließen" data-ikon="schliessen"
+            style="position:absolute;top:12px;right:14px"></button>
+    <h3 data-ikon="glocke" style="margin-bottom:4px">Meldungen</h3>
+    <p class="hint" style="margin:0 0 var(--s16)">Was heute in deinen Studios abgehakt wurde. Was du selbst abhakst, steht nicht darin.</p>
+    <div id="glockeListe"></div>
+  </div>
+</div>
+
 <div id="printArea"></div>
 <!-- Kommt nur aufs Papier, wenn oben nichts steht. Siehe die Begründung
      bei @media print im Stylesheet. -->
@@ -5521,6 +5610,16 @@ var NOTIFY_OPTS = [
   {id:'dm',       name:'Direktnachrichten',      hint:'Persönliche Nachrichten an dich'},
   {id:'ann',      name:'Infos der Leitung',      hint:'Ankündigungen'},
   {id:'todos',    name:'Neue Aufgaben',          hint:'Wenn in deinem Studio eine Aufgabe angelegt wird'},
+  /* Ein Schalter für ZWEI Kanäle, und das ist Absicht: der Toast in der
+     offenen App und der Push aufs Handy sagen dasselbe, nur zu
+     verschiedenen Zeitpunkten. Zwei Schalter dafür hiessen, jemanden
+     zweimal dasselbe fragen zu lassen.
+
+     Die Glocke bleibt davon unberührt. Sie stört nicht — man geht zu
+     ihr, sie kommt nicht zu einem. Etwas abzuschalten, das nur dann
+     etwas sagt, wenn man hinschaut, wäre ein Schalter ohne Wirkung. */
+  {id:'erledigt', name:'Erledigte Aufgaben', chef:true,
+   hint:'Wenn in deinem Studio jemand etwas abhakt. Die Glocke sammelt weiter.'},
   {id:'chat',     name:'Alle Chat-Nachrichten',  hint:'Kann viel werden – hier zuerst abschalten'}
 ];
 var CHAT_BGS = [
@@ -6324,6 +6423,12 @@ function applyRoleVisibility(){
   document.querySelectorAll('[data-manage-only]').forEach(function(el){
     el.style.display = canManage() ? '' : 'none';
   });
+  /* Die Rolle auch als Klasse am body: die Kopfzeile traegt fuer die
+     Leitung zwei Knoepfe mehr (Bericht, Glocke), und ob der Schriftzug
+     der Marke daneben noch passt, haengt genau daran. Ohne diese Klasse
+     muesste das Stylesheet den ungünstigsten Fall annehmen und dem
+     Mitarbeiter den Schriftzug wegnehmen, obwohl bei ihm Platz ist. */
+  document.body.classList.toggle('rolle-leitung', canManage());
   var t=$('chefTitle'), sub=$('chefSub');
   if(t) t.textContent = chef ? 'Chef-Bereich' : 'Studio-Verwaltung';
   if(sub) sub.textContent = chef
@@ -8136,7 +8241,7 @@ function anyModalOpen(){
 var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModal',
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
-               'msgSheet','todoSheet','docSheet','werkbankModal'];
+               'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -9516,6 +9621,7 @@ function showApp(){
     $('docUploadCard').style.display='block'; buildDocStudios(); buildDocCatSelect();
     setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
+  meldMarker();                // Glocke zeigen/verstecken, Zahl auf 0
   mailHinweisBinden(); mailHinweisPruefen();
   listenStudios();                       // jede Rolle: Umbenennen soll sofort ankommen
   listenFeatures();                      // schaltet der Chef etwas um, ist es überall weg
@@ -9572,6 +9678,129 @@ function notizMarke(s){
   var h=0;
   for(var i=0;i<s.length;i++){ h=((h<<5)-h+s.charCodeAt(i))|0; }
   return Math.abs(h).toString(36);
+}
+/* ══ Erledigt-Meldungen für die Verwaltung ═══════════════════════════
+   Gewuenscht war „ein Feld, wo eine Nachricht aufploppt, wenn eine
+   Aufgabe erledigt wurde". Gebaut sind drei Kanaele, weil jeder eine
+   andere Frage beantwortet:
+
+     Glocke   Was lief heute? — staut sich, stoert nie, man geht hin.
+     Toast    Gerade passiert. — nur wenn die App offen ist.
+     Push     Auch bei geschlossener App. Kommt vom Server.
+
+   KEINE NEUE SAMMLUNG. Das ist der Kern dieser Loesung: cachedTodos und
+   cachedClean werden fuer ALLE verwalteten Studios ohnehin schon
+   beobachtet (listenTodos, listenClean). Was hier passiert, ist reines
+   Ablesen — kein zusaetzlicher Schreibvorgang, keine neue Regel, keine
+   Kosten. Eine eigene Sammlung „meldungen" haette bei 13 Studios und
+   rund 65 Erledigungen am Tag genau so viele Schreibvorgaenge gekostet,
+   fuer eine Liste, die man aus vorhandenen Daten bauen kann.
+
+   Nur fuer canManage(): ein Mitarbeiter braucht nicht zu sehen, wer
+   was abgehakt hat. Das ist dieselbe Grenze wie bei der Fertig-Mail. */
+var MELD_MAX = 40;            // mehr liest niemand
+var _meldungen = [];          // {ts, art, text, wo}
+var _meldGelesen = 0;         // Zeitstempel: bis hierher gesehen
+var MELD_SPEICHER = 'kf_meld_gelesen';
+try{ _meldGelesen = +(localStorage.getItem(MELD_SPEICHER) || 0) || 0; }catch(e){}
+
+/* Der Startzustand je Studio, damit beim ersten Schnappschuss nicht die
+   halbe Woche als „gerade passiert" hereinbricht. */
+var _meldStand = {};          // studioKey -> { todo:{id:doneAt}, putz:{id:doneAt} }
+
+function meldHinzu(ts, art, text, wo){
+  _meldungen.push({ ts:ts, art:art, text:text, wo:wo });
+  _meldungen.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+  if(_meldungen.length>MELD_MAX) _meldungen.length=MELD_MAX;
+}
+function meldNeu(){
+  return _meldungen.filter(function(m){ return (m.ts||0) > _meldGelesen; }).length;
+}
+
+/* Vergleicht den vorigen Stand eines Studios mit dem neuen und meldet,
+   was seither erledigt wurde.
+
+   Verglichen wird doneAt und NICHT done: eine taegliche Aufgabe steht am
+   naechsten Morgen wieder auf offen und wird abends erneut abgehakt —
+   done allein wuerde denselben Punkt nie zweimal melden. */
+function meldPruefen(sk, art, liste, erstmal){
+  if(!canManage()) return;
+  var vorher = _meldStand[sk] || (_meldStand[sk]={});
+  var alt = vorher[art] || {};
+  var neu = {};
+  (liste||[]).forEach(function(t){ neu[t.id] = t.doneAt || 0; });
+  vorher[art] = neu;
+  if(erstmal) return;               // erster Schnappschuss: nur merken
+
+  (liste||[]).forEach(function(t){
+    var vorherWann = alt[t.id] || 0;
+    var jetztWann  = t.doneAt || 0;
+    if(!jetztWann || jetztWann<=vorherWann) return;
+    if(!t.done) return;
+    /* Was ich selbst abgehakt habe, muss mir niemand melden. */
+    if(t.doneByUid && t.doneByUid===session.uid) return;
+    var wer = t.doneBy || 'Jemand';
+    meldHinzu(jetztWann, art,
+      wer+' hat „'+(t.title||'')+'" erledigt', studioName(sk));
+    meldToast(wer+' hat „'+(t.title||'')+'" erledigt', studioName(sk));
+  });
+  meldMarker();
+}
+
+/* Toast nur, wenn die App wirklich vorn ist. Im Hintergrund uebernimmt
+   die Push-Meldung vom Server; beides zusammen waere doppelt. */
+function meldToast(text, wo){
+  if(document.hidden) return;
+  /* Derselbe Schalter wie beim Push („Erledigte Aufgaben"). Wer die
+     Meldung aufs Handy nicht will, will sie in der App auch nicht. */
+  if(PREFS.notify && PREFS.notify.erledigt===false) return;
+  toast(text + (wo ? ' · '+wo : ''));
+}
+
+/* Punkt an der Glocke. Die Zahl steht daneben, nicht nur ein Punkt:
+   „drei neue" und „dreissig neue" sind verschiedene Nachrichten. */
+function meldMarker(){
+  var k=$('tbGlocke'); if(!k) return;
+  k.style.display = canManage() ? '' : 'none';
+  var n=meldNeu();
+  var z=k.querySelector('.gl-zahl');
+  if(z){
+    z.textContent = n>99 ? '99+' : String(n);
+    z.style.display = n ? '' : 'none';
+  }
+  k.setAttribute('aria-label', n ? n+' neue Meldungen' : 'Meldungen');
+}
+
+function meldListe(){
+  var box=$('glockeListe'); if(!box) return;
+  if(!_meldungen.length){
+    box.innerHTML=emptyMini('Heute hat noch niemand etwas abgehakt.');
+    return;
+  }
+  box.innerHTML=_meldungen.map(function(m){
+    var neu = (m.ts||0) > _meldGelesen;
+    var zeichen = m.art==='putz' ? ikon('tropfen') : ikon('hakenKreis');
+    return '<div class="gl-zeile'+(neu?' neu':'')+'">'+
+      '<span class="gl-ico">'+zeichen+'</span>'+
+      '<span class="gl-txt"><b>'+esc(m.text)+'</b>'+
+      '<span>'+esc(m.wo||'')+' · '+esc(fmtDateTime(m.ts))+'</span></span></div>';
+  }).join('');
+}
+
+/* Aufgemacht heisst gelesen. Ein Punkt, den man nur durch einen zweiten
+   Klick loswird, ist ein Punkt, der stehen bleibt. */
+function glockeAuf(){
+  var f=$('glockeModal'); if(!f) return;
+  meldListe();
+  f.classList.add('show');
+  _meldGelesen = Date.now();
+  try{ localStorage.setItem(MELD_SPEICHER, String(_meldGelesen)); }catch(e){}
+  /* Erst nach dem Zeichnen: sonst waeren beim Oeffnen alle Zeilen schon
+     als gelesen markiert und der Unterschied waere nie zu sehen. */
+  setTimeout(meldMarker, 50);
+}
+function glockeZu(){
+  var f=$('glockeModal'); if(f) f.classList.remove('show');
 }
 function localNotify(title, body, art){
   if(art && PREFS.notify && PREFS.notify[art]===false) return;
@@ -11120,6 +11349,9 @@ var _cleanUnsubs = [];
 function listenClean(){
   _cleanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _cleanUnsubs=[];
   cachedClean={};
+  /* Je Studio merken, ob der erste Schnappschuss schon durch ist —
+     listenClean hat dafuer keine eigene Variable wie listenTodoStudio. */
+  var ersterPutz={};
   var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
   keys.forEach(function(sk){
     var unsub=S('studios').doc(sk).collection('cleaning').orderBy('ts')
@@ -11128,6 +11360,8 @@ function listenClean(){
         // und Ausdruck ohne weiteres Zutun dieselbe Zahl zeigen.
         cachedClean[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
           .filter(function(t){ return !ppAbgelaufen(t); });
+        meldPruefen(sk, 'putz', cachedClean[sk], ersterPutz[sk]!==false);
+        ersterPutz[sk]=false;
         if(_ppStudioKey===sk){ _ppTasks=cachedClean[sk]; renderPutzplan(); }
         homeSpaeter();
       }, function(e){ console.error('Putzplan '+sk+':',e.message); });
@@ -11176,8 +11410,12 @@ function listenTodoStudio(sk, notify){
           }
         });
       }
-      first=false;
       cachedTodos[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      /* VOR first=false: der erste Schnappschuss legt nur den Stand an,
+         sonst braeche beim App-Start die halbe Woche als „gerade
+         passiert" herein. */
+      meldPruefen(sk, 'todo', cachedTodos[sk], first);
+      first=false;
       renderTodos();
     }, function(e){ console.error('Todos '+sk+':',e.message); });
   _todosUnsubs.push(unsub);
@@ -14572,8 +14810,20 @@ function bindTodoClicks(area){
         if(openOthers===0 && list.length>0){ fireConfetti(); toast('Alle Aufgaben erledigt'); }
         else toast(pickPraise());                  // kleines Lob beim Abhaken
       }
+      /* doneByUid kommt mit, nicht nur der Name.
+
+         Der Putzplan schreibt es seit jeher (siehe dort), die Aufgaben
+         nicht — und das fiel erst mit der Glocke auf: „was ich selbst
+         abgehakt habe, muss mir niemand melden" braucht eine Kennung,
+         kein Anzeigename. Zwei Personen koennen „Anna" heissen, und ein
+         Name aendert sich, wenn jemand heiratet.
+
+         Beinahe waere es unbemerkt geblieben: die Attrappe lieferte das
+         Feld, der Durchlauf war gruen — geprueft wurde damit etwas, das
+         die App gar nicht schreibt. */
       S('studios').doc(sk).collection('todos').doc(id)
-        .update({done:done,doneBy:done?session.name:null,doneAt:done?Date.now():null})
+        .update({done:done,doneBy:done?session.name:null,
+                 doneByUid:done?session.uid:null,doneAt:done?Date.now():null})
         .catch(function(e){ toast(errMsg(e),true); });
     });
     // Teilschritte abhaken
@@ -18854,7 +19104,10 @@ function switchPmTab(which){
    Server-Funktion beim Versand danach filtert. */
 function buildNotifyOptions(){
   var box=$('notifyOpts'); if(!box) return;
-  box.innerHTML=NOTIFY_OPTS.map(function(o){
+  /* Dieselbe Regel wie bei den Mails: einen Schalter zeigen, der nichts
+     bewirken kann, ist ein Versprechen ohne Deckung. „Erledigte
+     Aufgaben" geht nur an Chef und Leiter. */
+  box.innerHTML=NOTIFY_OPTS.filter(function(o){ return !o.chef || canManage(); }).map(function(o){
     var an = PREFS.notify[o.id]!==false;
     return '<label class="sw-row" data-nk="'+o.id+'">'+
       '<span class="sw-txt"><b>'+esc(o.name)+'</b><span>'+esc(o.hint)+'</span></span>'+
@@ -18927,6 +19180,31 @@ var MAIL_OPTS = [
       var alle=(typeof STUDIOS_ALPHA!=='undefined' && STUDIOS_ALPHA.length) || 0;
       return 'Wenn in einem Studio nichts mehr offen ist.'+
         (alle>5 ? ' Bei '+alle+' Studios wird das viel.' : '');
+    } },
+  /* Die beiden Teil-Meldungen. Aus dem Betrieb: „eine Mail, wenn alle
+     täglichen Aufgaben erledigt sind, und wenn nur der Putzplan fertig
+     ist oder wenn nur Aufgaben fertig sind."
+
+     „Nur" ist wörtlich umgesetzt — ist im selben Augenblick alles
+     durch, kommt die Mail „Studio fertig" und diese beiden nicht.
+     Sonst lägen für einen einzigen letzten Haken drei Mails im
+     Postfach, die dasselbe sagen. */
+  { id:'fertigTodos', name:'Aufgaben fertig', chef:true,
+    hint:function(){ return 'Wenn alle Aufgaben abgehakt sind, im Putzplan aber noch etwas offen ist.'; } },
+  { id:'fertigPutz',  name:'Putzplan fertig', chef:true,
+    hint:function(){ return 'Wenn der Putzplan durch ist, bei den Aufgaben aber noch etwas offen ist.'; } },
+  /* Die einzige Meldung, die auch dann kommt, wenn NICHTS fertig wurde
+     — und damit die einzige, die ein liegengebliebenes Studio zeigt.
+     Die anderen schweigen genau dort, wo man hinschauen müsste. */
+  { id:'tagesbericht', name:'Tagesübersicht am Abend', chef:true,
+    hint:function(){
+      var chef=isChef();
+      var n=chef
+        ? ((typeof STUDIOS_ALPHA!=='undefined' && STUDIOS_ALPHA.length) || 0)
+        : (session&&session.studioKeys||[]).length;
+      var wessen = n>1 ? (chef?'aller ':'deiner ')+n+' Studios' : 'deines Studios';
+      return 'Um 20:30 Uhr einmal der Stand '+wessen+' in einer Mail — '+
+        'auch da, wo nichts fertig wurde.';
     } },
   { id:'bericht', name:'Monatsbericht', chef:true,
     hint:function(){ return 'Einmal im Monat die Zahlen aller Studios.'; } }
@@ -20184,6 +20462,13 @@ function bindActions(){
       _wbTab=b.getAttribute('data-wbtab'); tick(6); wbRender();
     });
   });
+
+  /* Die Glocke. Zumachen geht ueber das Kreuz, den Hintergrund und
+     Escape — das letzte kommt aus DIALOGE. */
+  var tbG=$('tbGlocke'); if(tbG) tbG.addEventListener('click', glockeAuf);
+  var glZ=$('glockeClose'); if(glZ) glZ.addEventListener('click', glockeZu);
+  var glM=$('glockeModal');
+  if(glM) glM.addEventListener('click', function(e){ if(e.target===glM) glockeZu(); });
 
   var tbB=$('tbBericht');
   if(tbB) tbB.addEventListener('click',function(){
