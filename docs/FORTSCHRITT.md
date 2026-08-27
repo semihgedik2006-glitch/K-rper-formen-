@@ -5036,3 +5036,223 @@ Inhalt ab: #todoSearch, #matSearch"*. In Runde 55 hätte dort nur
 | Klasse `.offen` abgeschaltet | „bleibt schmal (48px)" ✓ |
 | Emoji statt Zeichen im Kreuz-Knopf | `test-gestaltung.js` gemeldet ✓ |
 | `line-height:1` fest statt `--lh-1` | gemeldet ✓ |
+
+---
+
+# 57 · Drei Kanäle für eine Meldung — und eine Zeile, die verschwunden war
+
+**27. August 2026**
+
+Gewünscht war *„ein Benachrichtigungsfeld für Chefs, wo eine Nachricht
+aufploppt, wenn eine Aufgabe erledigt wurde"* — und Mails, wenn **alle
+Aufgaben**, **nur der Putzplan** oder **beides** fertig sind.
+
+Vier Rückfragen, vier Antworten, und die sind die Bauanleitung:
+
+| Frage | Antwort |
+|---|---|
+| Was heißt „aufploppen"? | **alle drei**: Glocke mit Liste, Toast in der App, Push aufs Handy |
+| Welche Studios? | **alle** — Chef alle 13, Leiter seine, Mitarbeiter keine |
+| Wie kommen die Mails? | **drei einzelne Schalter** *und* eine Tagesübersicht am Abend |
+| Wie oft darf dasselbe Studio melden? | **einmal pro Tag je Studio** |
+
+## Die wichtigste Entscheidung: keine neue Sammlung
+
+Der naheliegende Bau wäre eine Sammlung `meldungen` gewesen — jede
+Erledigung schreibt eine Zeile, die Glocke liest sie. Bei 13 Studios und
+rund 65 Erledigungen am Tag sind das **65 zusätzliche Schreibvorgänge
+täglich**, plus Regeln, plus Aufräumen.
+
+Nachgesehen, was schon da ist: `cachedTodos` und `cachedClean` werden für
+**alle verwalteten Studios ohnehin beobachtet** (`listenTodoStudio`,
+`listenClean`). Die Meldungen entstehen deshalb aus dem Vergleich zweier
+Schnappschüsse — reines Ablesen. **Kein zusätzlicher Schreibvorgang,
+keine neue Regel, keine Kosten.**
+
+Der Preis, offen gesagt: die Liste überlebt kein Neuladen. Wer die
+Historie braucht, findet sie unter „Zuletzt passiert" auf der Startseite.
+Für die Frage, die die Glocke beantwortet — *was lief, während ich
+woanders war?* — reicht sie.
+
+Verglichen wird `doneAt`, nicht `done`. Eine tägliche Aufgabe steht am
+nächsten Morgen wieder offen und wird abends erneut abgehakt; über `done`
+allein wäre derselbe Punkt nie ein zweites Mal ein Ereignis.
+
+## Drei Kanäle, drei Fragen
+
+| Kanal | beantwortet | stört |
+|---|---|---|
+| Glocke | Was lief heute? | nie — man geht hin |
+| Toast | Gerade passiert. | nur bei offener App |
+| Push | Auch bei geschlossener App. | am Gerät abschaltbar |
+
+Ein Schalter für Toast **und** Push, nicht zwei: beide sagen dasselbe,
+nur zu verschiedenen Zeitpunkten. Die Glocke hat keinen Schalter — etwas
+abzuschalten, das nur dann etwas sagt, wenn man hinschaut, wäre ein
+Schalter ohne Wirkung.
+
+## „Nur" ist wörtlich gemeint
+
+Drei Mailsorten, aber nie drei Mails für einen Haken:
+
+```
+alles offen        →  nichts
+Aufgaben durch     →  „Aufgaben erledigt"   (fertigTodos)
+Putzplan durch     →  „Putzplan fertig"     (fertigPutz)
+beides durch       →  „alles erledigt"      (fertig)  — und nur diese
+```
+
+Dazu die Tagessperre: derselbe Übergang meldet höchstens einmal je Tag
+und Studio. Ohne sie reicht **eine** neu angelegte und gleich abgehakte
+Aufgabe für eine zweite Mail — der Zustand springt ja wirklich von offen
+auf fertig.
+
+Damit sich das überhaupt **prüfen** lässt, schreibt der Merker jetzt
+`gesendet: [...]` mit. Ohne dieses Feld sähe ein unterdrückter Fall
+genauso aus wie einer, der nie fällig war — der Durchlauf hätte grün
+gemeldet, ohne etwas gemessen zu haben. Es kostet nichts; der
+Schreibvorgang findet ohnehin statt.
+
+## Die Tagesübersicht ist die einzige, die etwas Neues sagt
+
+Alle drei Meldungen oben kommen im Augenblick des Fertigwerdens. Ein
+Studio, in dem **nie etwas fertig wurde**, meldet sich damit gar nicht —
+und ausgerechnet das ist das Studio, von dem man hören wollte.
+
+Deshalb um 20:30 Uhr eine Mail mit allen Studios darin, auch den leer
+gebliebenen. Eine Nachricht statt dreizehn, und der Blick geht auf die
+Zeilen, in denen noch etwas steht.
+
+## Der Fund: eine Zeile, die es nicht mehr gab
+
+Beim Einfügen des Melde-Blocks in `index.html` ist der **Kopf der
+Funktion darunter** verlorengegangen:
+
+```js
+function localNotify(title, body, art){      ← diese Zeile fehlte
+  if(art && PREFS.notify && PREFS.notify[art]===false) return;
+```
+
+Folge: Syntaxfehler, die App startete überhaupt nicht. Der Durchlauf
+klickte daraufhin auf eine Glocke, die es nie geben würde, und lief
+**240 Sekunden in den Zeitablauf, ohne einen einzigen Satz auszugeben.**
+Vier Minuten Warten für die Auskunft „nichts".
+
+Der eigentliche Fehler war meiner. Der zweite Fehler war, dass er so
+teuer zu finden war. `test-glocke.js` prüft jetzt als erstes, ob
+`#app.show` überhaupt da ist, und bricht mit der Browser-Fehlermeldung
+ab, statt auf ein Element zu warten, das nie kommt.
+
+## Die Glocke kostet der Marke ihren Schriftzug — aber nur beim Chef
+
+Ein Knopf mehr in der Kopfzeile sind 44 Pixel plus Abstand.
+`test-abgeschnitten.js` meldete prompt: *„#tbHome — 157 > 127 px bei
+430 px"*. Nachgemessen mit erzwungenem Schriftzug, Chef-Konto, in
+Zehnerschritten:
+
+| Breite | Kasten | Schriftzug |
+|---|---|---|
+| 430 px | 127 px | 157 px — abgeschnitten |
+| 460 px | 150 px | 157 px — abgeschnitten |
+| **470 px** | **157 px** | **157 px — passt** |
+
+Die Grenze steht deshalb auf **469px** und nicht auf einer runden Zahl.
+Und sie hängt an `body.rolle-leitung`, nicht an der Breite allein: ein
+Mitarbeiter hat Bericht- und Glocken-Knopf gar nicht. Ihm den Schriftzug
+wegzunehmen, weil beim Chef der Platz knapp ist, wäre der Fehler, den man
+beim Messen mit genau einem Konto macht.
+
+## Der zweite Fund: grün für etwas, das die App nicht tat
+
+„Was ich selbst abgehakt habe, muss mir niemand melden" hängt an
+`doneByUid`. Der Durchlauf prüfte das und war grün.
+
+Er war grün, weil die **Attrappe** das Feld mitbrachte. Die App schrieb
+es beim Abhaken einer Aufgabe gar nicht — nur der Putzplan tat das:
+
+```js
+// Putzplan, seit jeher
+.update({ done, doneBy, doneByUid, doneKuerzel, doneAt })
+// Aufgaben, bis heute
+.update({ done, doneBy, doneAt })
+```
+
+Im Betrieb hätte jeder Chef seinen eigenen Haken als Meldung
+zurückbekommen. Aufgefallen ist es beim Nachsehen, nicht beim Testen —
+und das ist der eigentliche Punkt: **eine Attrappe, die großzügiger ist
+als die Wirklichkeit, macht jeden Durchlauf darüber wertlos.**
+
+`test-glocke.js` klickt deshalb jetzt ein echtes Kästchen an und liest,
+was zur Datenbank ginge (`window.__schreib`). Gegenprobe: Feld wieder
+entfernt → *„Abhaken schreibt kein doneByUid: {done, doneBy, doneAt}"*.
+
+Nebenbei ist der Name als Kennung ohnehin die schlechtere Wahl: zwei
+Personen können „Anna" heißen, und ein Name ändert sich, wenn jemand
+heiratet.
+
+## Die Attrappe konnte nicht messen, was hier zu messen ist
+
+`stub-chef.js` und `stub-mitarbeiter.js` feuerten je Sammlung **genau
+einen** Schnappschuss. Für alles, was *Veränderungen* erkennt, ist das
+keine Probe: es gibt nichts zu vergleichen, und ein Durchlauf darüber
+wäre immer grün gewesen.
+
+Beide haben jetzt `window.__nachschub(pfad, liste)` — derselbe Zuhörer,
+neue Daten. Der Rückgabewert ist die Zahl der bedienten Zuhörer, und der
+Durchlauf schlägt bei **0** an: sonst prüfte er ins Leere, wenn der Pfad
+sich einmal ändert.
+
+## Gegenproben
+
+Jede Behauptung einmal absichtlich kaputt gemacht:
+
+| Eingriff | Ergebnis |
+|---|---|
+| `meldPruefen` gibt sofort zurück | 8 Funde, darunter „Zahl ist "" statt "1"" ✓ |
+| „selbst abgehakt" nicht mehr gefiltert | „Zahl ist "3" statt "2"" ✓ |
+| Toast ignoriert den Schalter | „Schalter aus, trotzdem ein Toast" ✓ |
+| `doneByUid` beim Abhaken weggenommen | „Abhaken schreibt kein doneByUid" ✓ |
+| Tagessperre entfernt | „zweimal am selben Tag meldet nur einmal" rot ✓ |
+
+Die letzte lief gegen den Emulator: 165 statt 166 bestanden, genau die
+eine Zeile.
+
+## Und der Gestaltungs-Durchlauf hat mein eigenes CSS kassiert
+
+Vier Zeilen im neuen Stylesheet standen neben der Leiter, nicht auf ihr:
+
+| gemeldet | war | ist |
+|---|---|---|
+| `FESTER ABSTAND: 1px` | `margin-top:1px` | `var(--s1)` |
+| `FESTER ABSTAND: 2px` | `gap:2px` | `var(--s2)` |
+| `FESTE SCHRIFTANGABE 12px` | `font-size:12px` | `var(--t-xs)` |
+| `FESTE SCHRIFTANGABE 19px` | `line-height:19px` | `display:grid; place-items:center` |
+
+Die letzte ist die interessante: `line-height:19px` war nur ein Trick,
+um die Zahl in ihrem Kreis zu zentrieren. `.tab .badge` macht dasselbe
+seit jeher über `place-items` — ohne festen Wert, und die Zahl sitzt auch
+dann mittig, wenn jemand die Schrift größer stellt. Der Durchlauf hat
+nicht nur eine Zahl gefunden, sondern die schlechtere Lösung.
+
+## Eine Zeile, die ich zurückgenommen habe
+
+Im Fenster stand zuerst *„Was heute in deinen Studios abgehakt wurde."*
+Das stimmt nicht: die Liste beginnt beim Öffnen der App, nicht um
+Mitternacht. Wer sie morgens öffnet, sieht nichts — und läse „heute" als
+„heute ist nichts passiert" statt als „seit dem Öffnen ist nichts
+passiert". Jetzt steht dort, was wirklich gilt.
+
+## Was hier NICHT bewiesen ist
+
+- **Dass eine Mail ankommt.** Kein SMTP im Durchlauf. Belegt ist, welche
+  Sorte `teamMail` mit welchem Thema aufruft — nicht, was im Postfach
+  landet.
+- **Dass ein Push auf einem Handy erscheint.** Chromium hier hat kein
+  Netz. Belegt ist nur die **Auswahl** der Geräte — Rolle, Studio,
+  eigener Schalter, eigener Haken — und zwar über `collectTokens` im
+  Emulator. Die Bedingung selbst steht dabei zweimal da, in
+  `erledigtPush` und im Durchlauf. Das ist die schwache Stelle dieses
+  Abschnitts und bewusst in Kauf genommen: die Funktion selbst
+  *verschickt*, und Verschicken geht hier nicht.
+- **Die Tagesübersicht um 20:30 Uhr** ist nur im Code belegt, nicht in
+  einem Lauf: ein Zeitplan hinterlässt keine Spur in der Datenbank.

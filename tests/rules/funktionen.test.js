@@ -693,10 +693,20 @@ const TAG = 86400000;
     const todo = (id) => db.doc('firmen/alpha/studios/' + sk + '/todos/' + id);
     const putz = (id) => db.doc('firmen/alpha/studios/' + sk + '/cleaning/' + id);
     /* Der Auslöser bekommt Pfad-Parameter mit; .run() erwartet sie so,
-       wie Firebase sie liefert. */
-    const lauf = async (art) => {
+       wie Firebase sie liefert.
+
+       before/after tragen jetzt auch data(). Vorher stand hier nur
+       exists, und das war eine Attrappe, die weniger konnte als die
+       Wirklichkeit: seit der Auslöser den EINZELNEN Haken erkennt
+       (Push „X hat Y erledigt"), liest er die Daten des Dokuments. Ein
+       Aufruf ohne data() hätte hier eine Ausnahme geworfen — und der
+       Fehler wäre einer im Testaufbau gewesen, nicht im Code. */
+    const lauf = async (art, daten) => {
+      const leer = { exists: false, data: () => undefined };
+      const voll = (d) => ({ exists: true, data: () => (d || {}) });
       await fns.onTodoFertigF.run({
-        before: { exists: art !== 'neu' }, after: { exists: art !== 'weg' },
+        before: art === 'neu' ? leer : voll(daten && daten.vor),
+        after:  art === 'weg' ? leer : voll(daten && daten.nach),
       }, { params: { firma: 'alpha', studioKey: sk, todoId: 'x' } });
     };
 
@@ -763,6 +773,71 @@ const TAG = 86400000;
     pruefe('fertig: ein abgeschalteter Bereich hält das Studio nicht auf',
       (m.data() || {}).fertig === true, JSON.stringify(m.data()));
     await db.doc('firmen/alpha/config/features').set({ todos: true, putzplan: true });
+
+    /* ── Drei Meldungen statt einer ──
+       Gewünscht: eine Mail, wenn alles durch ist — und je eine, wenn NUR
+       die Aufgaben bzw. NUR der Putzplan durch sind.
+
+       Geprüft wird das Feld `gesendet` im Merker. Ohne es ließe sich von
+       außen nicht unterscheiden, ob eine Meldung unterdrückt wurde oder
+       nie fällig war: der Merker sähe in beiden Fällen gleich aus, und
+       ein Durchlauf über die Tagessperre hätte gar nichts gemessen. */
+    const sauber = async () => {
+      for (const c of ['todos', 'cleaning']) {
+        const s = await db.collection('firmen/alpha/studios/' + sk + '/' + c).get();
+        for (const d of s.docs) await d.ref.delete();
+      }
+      await db.doc('firmen/alpha/config/fertig-' + sk).delete();
+    };
+    const gesendet = async () => ((await merker()).data() || {}).gesendet || [];
+
+    await sauber();
+    await todo('b1').set({ title: 'Aufgabe', done: true, doneAt: Date.now() });
+    await putz('q1').set({ title: 'Wischen', done: false });
+    await lauf('haken', { vor: { done: false }, nach: { done: true, doneAt: Date.now() } });
+    pruefe('drei Sorten: nur Aufgaben durch → Meldung "aufgaben"',
+      JSON.stringify(await gesendet()) === '["aufgaben"]',
+      JSON.stringify((await merker()).data()));
+
+    await putz('q1').update({ done: true, doneAt: Date.now() });
+    await lauf('haken', { vor: { done: false }, nach: { done: true, doneAt: Date.now() } });
+    pruefe('drei Sorten: jetzt auch der Putzplan → Meldung "alles", nicht "putz"',
+      JSON.stringify(await gesendet()) === '["alles"]',
+      JSON.stringify((await merker()).data()));
+
+    /* Der Kern der Tagessperre: derselbe Übergang ein zweites Mal am
+       selben Tag meldet sich NICHT. Ohne sie reicht eine neu angelegte
+       und gleich abgehakte Aufgabe für eine zweite Mail. */
+    await todo('b2').set({ title: 'Noch was', done: false });
+    await lauf('neu', { nach: { title: 'Noch was', done: false } });
+    pruefe('Tagessperre: eine neue Aufgabe stellt zurück auf offen',
+      ((await merker()).data() || {}).fertig === false,
+      JSON.stringify((await merker()).data()));
+    await todo('b2').update({ done: true, doneAt: Date.now() });
+    await lauf('haken', { vor: { done: false }, nach: { done: true, doneAt: Date.now() } });
+    pruefe('Tagessperre: zweimal am selben Tag fertig meldet nur einmal',
+      JSON.stringify(await gesendet()) === '[]',
+      JSON.stringify((await merker()).data()));
+
+    /* GEGENPROBE: mit dem Stempel von gestern muss dieselbe Lage wieder
+       melden. Sonst wäre oben nicht die Sperre grün, sondern irgendetwas
+       anderes — etwa ein Merker, der gar nicht mehr kippt. */
+    await db.doc('firmen/alpha/config/fertig-' + sk)
+      .set({ fertig: false, tagAlles: '2000-01-01' }, { merge: true });
+    await lauf('haken', { vor: { done: false }, nach: { done: true, doneAt: Date.now() } });
+    pruefe('GEGENPROBE Tagessperre: mit gestrigem Stempel meldet es wieder',
+      JSON.stringify(await gesendet()) === '["alles"]',
+      JSON.stringify((await merker()).data()));
+
+    /* Ein Studio ohne Putzplan darf nicht „Putzplan fertig" melden.
+       Null von null ist nicht fertig, sondern leer. */
+    await sauber();
+    await todo('c1').set({ title: 'Einzige Aufgabe', done: true, doneAt: Date.now() });
+    await lauf('haken', { vor: { done: false }, nach: { done: true, doneAt: Date.now() } });
+    pruefe('leer: ohne Putzplan meldet nur "alles", nie "putz"',
+      JSON.stringify(await gesendet()) === '["alles"]',
+      JSON.stringify((await merker()).data()));
+    await sauber();
   }
 
   /* ══ 4. Der Test, der rot werden muss ══
@@ -898,6 +973,111 @@ const TAG = 86400000;
          Einschraenkung oben gar nichts zu tun gehabt. */
       pruefe('GEGENPROBE ohne Rollenfilter ist der Mitarbeiter sehr wohl dabei',
         alleA.includes('fMit') && alleA.includes('fLeiterA'));
+    }
+  }
+
+  /* ── Push „X hat Y erledigt": welche GERÄTE ──
+     Die Mail geht an Konten, der Push an Geräte, und die stehen in einer
+     eigenen Sammlung mit eigenen Feldern. Beides sieht ähnlich aus und
+     ist es nicht: ein Gerät trägt seine Rolle selbst, es kann einen
+     eigenen Schalter aus haben, und es gehört einer Person, die den
+     Haken womöglich gerade selbst gesetzt hat.
+
+     Geprüft wird die Auswahl, nicht die Zustellung. Ob eine Meldung auf
+     einem Handy erscheint, lässt sich hier nicht feststellen. */
+  {
+    const sammle = fns.__intern && fns.__intern.collectTokens;
+    const imStudio = fns.__intern && fns.__intern.inStudio;
+    const will = fns.__intern && fns.__intern.willHaben;
+    if (!sammle) {
+      pruefe('collectTokens überhaupt erreichbar', false);
+    } else {
+      const T = {
+        chef:      { uid: 'pChef',   role: 'chef',        firma: 'alpha' },
+        leiterA:   { uid: 'pLeitA',  role: 'leiter',      firma: 'alpha', studioKeys: ['st-a'] },
+        leiterB:   { uid: 'pLeitB',  role: 'leiter',      firma: 'alpha', studioKeys: ['st-b'] },
+        mitarb:    { uid: 'pMit',    role: 'mitarbeiter', firma: 'alpha', studioKeys: ['st-a'] },
+        chefStumm: { uid: 'pStumm',  role: 'chef',        firma: 'alpha', notify: { erledigt: false } },
+        fremd:     { uid: 'pFremd',  role: 'chef',        firma: 'beta' },
+      };
+      for (const k of Object.keys(T)) await db.collection('pushTokens').doc('tok-' + k).set(T[k]);
+
+      /* Wortgleich die Bedingung aus erledigtPush(). Sie hier
+         abzuschreiben ist der schwache Punkt dieses Abschnitts und mit
+         Absicht in Kauf genommen: die Funktion selbst schickt, und
+         Schicken geht hier nicht. */
+      const waehle = (studioKey, ausser) => sammle(
+        d => (d.role === 'chef' || (d.role === 'leiter' && imStudio(d, studioKey))) &&
+             will(d, 'erledigt'),
+        ausser, 'alpha');
+
+      const a = await waehle('st-a', null);
+      pruefe('PUSH · das Gerät des Chefs bekommt es', a.includes('tok-chef'));
+      pruefe('PUSH · der Leiter DIESES Studios bekommt es', a.includes('tok-leiterA'));
+      pruefe('PUSH · der Leiter eines ANDEREN Studios nicht', !a.includes('tok-leiterB'));
+      pruefe('PUSH · ein Mitarbeiter nicht', !a.includes('tok-mitarb'));
+      pruefe('PUSH · wer den Schalter aus hat, nicht', !a.includes('tok-chefStumm'));
+      pruefe('PUSH · eine fremde Firma nicht', !a.includes('tok-fremd'));
+
+      /* Wer selbst abgehakt hat, weiss es. */
+      const ohneChef = await waehle('st-a', 'pChef');
+      pruefe('PUSH · das eigene Gerät bleibt aussen vor',
+        !ohneChef.includes('tok-chef') && ohneChef.includes('tok-leiterA'));
+
+      /* Ohne die Bedingung kämen alle — sonst hätte oben nichts geprüft. */
+      const alle = await sammle(() => true, null, 'alpha');
+      pruefe('GEGENPROBE ohne Filter sind Mitarbeiter und Stummer sehr wohl dabei',
+        alle.includes('tok-mitarb') && alle.includes('tok-chefStumm'));
+
+      for (const k of Object.keys(T)) await db.collection('pushTokens').doc('tok-' + k).delete();
+    }
+  }
+
+  /* ── Welche Mail ist fällig? Die reine Rechnung ──
+     fertigMeldungen() bekommt Zustand, Merker und Datum und gibt die
+     Liste zurück. Ohne Datenbank, deshalb hier vollständig durchspielbar
+     — im Auslöser oben ist nur der Weg durch die häufigen Fälle. */
+  {
+    const f = fns.__intern && fns.__intern.fertigMeldungen;
+    const satz = fns.__intern && fns.__intern.standSatz;
+    if (!f) {
+      pruefe('fertigMeldungen überhaupt erreichbar', false);
+    } else {
+      const H = '2026-08-27';
+      const S = (auf, pu, nA, nP) => ({ aufgaben: auf, putz: pu, gesamt: auf + pu,
+                                        nAufgaben: nA, nPutz: nP, dokumente: nA + nP });
+      const j = (x) => JSON.stringify(x);
+
+      pruefe('RECHNUNG · alles offen meldet nichts',
+        j(f(S(2, 1, 3, 2), {}, H)) === '[]');
+      pruefe('RECHNUNG · nur Aufgaben durch meldet "aufgaben"',
+        j(f(S(0, 1, 3, 2), {}, H)) === '["aufgaben"]');
+      pruefe('RECHNUNG · nur Putzplan durch meldet "putz"',
+        j(f(S(2, 0, 3, 2), {}, H)) === '["putz"]');
+      pruefe('RECHNUNG · beides durch meldet NUR "alles"',
+        j(f(S(0, 0, 3, 2), {}, H)) === '["alles"]');
+      pruefe('RECHNUNG · ein leeres Studio meldet nichts',
+        j(f(S(0, 0, 0, 0), {}, H)) === '[]');
+      /* Der Fall, der ohne getrennte Zählung falsch wäre: ein Studio
+         ganz ohne Putzplan hat den Putzplan nicht „geschafft". */
+      pruefe('RECHNUNG · ohne Putzplan gibt es kein "putz"',
+        j(f(S(1, 0, 3, 0), {}, H)) === '[]');
+      pruefe('RECHNUNG · war schon fertig meldet nicht erneut',
+        j(f(S(0, 0, 3, 2), { fertig: true }, H)) === '[]');
+      pruefe('RECHNUNG · Stempel von heute sperrt',
+        j(f(S(0, 0, 3, 2), { tagAlles: H }, H)) === '[]');
+      pruefe('RECHNUNG · Stempel von gestern sperrt nicht',
+        j(f(S(0, 0, 3, 2), { tagAlles: '2026-08-26' }, H)) === '["alles"]');
+      /* Der Merker fehlt beim allerersten Mal ganz. Behandelte man das
+         wie „war fertig", bliebe die erste Meldung für immer stumm. */
+      pruefe('RECHNUNG · ohne Merker wird gemeldet',
+        j(f(S(0, 0, 3, 2), null, H)) === '["alles"]');
+
+      pruefe('SATZ · fertig heisst fertig', satz(S(0, 0, 3, 2)) === 'fertig');
+      pruefe('SATZ · Einzahl bei einem Punkt',
+        satz(S(1, 1, 3, 2)) === '1 Aufgabe und 1 Punkt im Putzplan offen');
+      pruefe('SATZ · nur die Seite, auf der etwas steht',
+        satz(S(0, 3, 3, 2)) === '3 Punkte im Putzplan offen');
     }
   }
 

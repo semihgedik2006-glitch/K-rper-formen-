@@ -315,18 +315,88 @@ function erledigt(t) {
 
 async function offenImStudio(firma, studioKey) {
   const ref = W(firma).collection('studios').doc(studioKey);
-  let aufgaben = 0, putz = 0, dokumente = 0;
+  let aufgaben = 0, putz = 0, nAufgaben = 0, nPutz = 0;
   if (await featureAn(firma, 'todos')) {
     const s1 = await ref.collection('todos').get();
-    dokumente += s1.size;
+    nAufgaben = s1.size;
     s1.forEach(d => { if (!erledigt(d.data() || {})) aufgaben++; });
   }
   if (await featureAn(firma, 'putzplan')) {
     const s2 = await ref.collection('cleaning').get();
-    dokumente += s2.size;
+    nPutz = s2.size;
     s2.forEach(d => { if (!erledigt(d.data() || {})) putz++; });
   }
-  return { aufgaben, putz, gesamt: aufgaben + putz, dokumente };
+  /* nAufgaben/nPutz getrennt, nicht nur die Summe: „Aufgaben erledigt"
+     darf nicht in einem Studio gemeldet werden, das ueberhaupt keine
+     Aufgaben hat. Null von null ist nicht fertig, sondern leer. */
+  return { aufgaben, putz, gesamt: aufgaben + putz,
+           nAufgaben, nPutz, dokumente: nAufgaben + nPutz };
+}
+
+/* Tagesstempel in Ortszeit. sv-SE liefert YYYY-MM-DD, das sortiert und
+   vergleicht sich als Zeichenkette richtig. */
+function tagBerlin(d) {
+  return (d || new Date()).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+}
+
+/* ── Push: EIN Punkt wurde abgehakt ──
+   Die Mail meldet den Zustand eines Studios, dieser Push das einzelne
+   Ereignis. Beides zusammen ist Absicht: das eine beantwortet „ist mein
+   Studio durch?", das andere „was passiert gerade?".
+
+   Nur an Leitung: ein Mitarbeiter braucht nicht zu wissen, wer was
+   abgehakt hat. Dieselbe Grenze wie bei der Fertig-Mail und wie bei der
+   Glocke in der App.
+
+   Und nicht an den, der es getan hat — der weiss es. */
+async function erledigtPush(firma, studioKey, t) {
+  const wo = await studioName(firma, studioKey);
+  const wer = t.doneBy || 'Jemand';
+  const tokens = await collectTokens(
+    d => (d.role === 'chef' || (d.role === 'leiter' && inStudio(d, studioKey))) &&
+         willHaben(d, 'erledigt'),
+    t.doneByUid || null, firma);
+  if (!tokens.length) return;
+  await sendPush(tokens, wo, wer + ' hat „' + (t.title || 'einen Punkt') + '" erledigt');
+}
+
+/* ── Welche der drei Meldungen ist faellig? ──
+   Reine Rechnung, ohne Datenbank: Zustand jetzt, Merker von vorhin,
+   heutiges Datum — heraus kommt die Liste der Mails.
+
+   Aus dem Betrieb gewuenscht: eine Mail, wenn ALLES durch ist, und je
+   eine, wenn NUR die Aufgaben bzw. NUR der Putzplan durch sind.
+
+   „Nur" ist woertlich gemeint: ist im selben Augenblick alles fertig,
+   geht die Studio-Mail raus und die beiden Teil-Mails nicht. Sonst
+   laegen bei einem Studio, dessen letzter Haken beides abschliesst, drei
+   Mails im Postfach, die dasselbe sagen.
+
+   Ein fehlender Merker verhaelt sich wie „war nicht fertig" — deshalb
+   `!== true` und nicht `=== false`. Sonst bliebe die allererste Meldung
+   stumm, weil der Merker erst beim zweiten Mal existiert. Genau das ist
+   beim ersten Anlauf passiert.
+
+   HOECHSTENS EINMAL JE TAG UND STUDIO, wie gewuenscht. Ohne diese Sperre
+   reicht EINE neu angelegte und gleich wieder abgehakte Aufgabe, um
+   dieselbe Meldung ein zweites Mal auszuloesen — der Zustand springt ja
+   wirklich von offen auf fertig. Bei 13 Studios ist das der Unterschied
+   zwischen ein paar Mails und einem vollen Postfach. Der Stempel steht
+   je Sorte: „Aufgaben fertig" am Mittag und „Studio fertig" am Abend
+   sind zwei verschiedene Nachrichten. */
+const STEMPEL_TAG = { alles: 'tagAlles', aufgaben: 'tagAufgaben', putz: 'tagPutz' };
+function fertigMeldungen(stand, alt, heute) {
+  const a = alt || {};
+  const faellig = [];
+  if (stand.gesamt === 0) {
+    /* Ein Studio ganz ohne Aufgaben und ohne Putzplan ist nicht
+       „fertig", es ist leer. Dafuer bekommt niemand eine Mail. */
+    if (a.fertig !== true && stand.dokumente) faellig.push('alles');
+  } else {
+    if (stand.aufgaben === 0 && a.aufgabenFertig !== true && stand.nAufgaben) faellig.push('aufgaben');
+    if (stand.putz === 0 && a.putzFertig !== true && stand.nPutz) faellig.push('putz');
+  }
+  return faellig.filter(f => a[STEMPEL_TAG[f]] !== heute);
 }
 
 const _fertigPruefen = async (change, ctx) => {
@@ -334,23 +404,44 @@ const _fertigPruefen = async (change, ctx) => {
   const studioKey = ctx.params.studioKey;
   if (!studioKey) return;
 
+  /* Zuerst das einzelne Ereignis. Gemessen wird an doneAt und nicht an
+     done: eine taegliche Aufgabe steht am naechsten Morgen wieder offen
+     und wird abends erneut abgehakt — ueber done allein waere derselbe
+     Punkt nie ein zweites Mal ein Ereignis. Dieselbe Rechnung wie
+     meldPruefen() in der App. */
+  const vor = change.before.exists ? (change.before.data() || {}) : null;
+  const nach = change.after.exists ? (change.after.data() || {}) : null;
+  if (nach && nach.done && (nach.doneAt || 0) > ((vor && vor.doneAt) || 0)) {
+    try { await erledigtPush(firma, studioKey, nach); }
+    catch (e) { console.error('erledigtPush:', e.message); }
+  }
+
   const stand = await offenImStudio(firma, studioKey);
   const merker = W(firma).collection('config').doc('fertig-' + studioKey);
   const alt = await merker.get();
-  /* null heisst „noch nie festgehalten". Wichtig, dass das NICHT wie
-     „war offen" behandelt wird: sonst bliebe die allererste Meldung
-     stumm, weil der Merker erst beim zweiten Mal existiert. Genau das
-     ist beim ersten Anlauf passiert. */
-  const warFertig = alt.exists ? ((alt.data() || {}).fertig === true) : null;
-  const istFertig = stand.gesamt === 0;
+  const a = alt.exists ? (alt.data() || {}) : {};
 
-  if (istFertig === warFertig) return;          // nichts hat sich geändert
-  await merker.set({ fertig: istFertig, ts: Date.now() }, { merge: true });
-  if (!istFertig) return;                       // wieder etwas offen: nur merken
+  const neu = { fertig: stand.gesamt === 0,
+                aufgabenFertig: stand.aufgaben === 0,
+                putzFertig: stand.putz === 0, ts: Date.now() };
 
-  /* Ein Studio ganz ohne Aufgaben und ohne Putzplan ist nicht „fertig",
-     es ist leer. Dafür bekommt niemand eine Mail. */
-  if (!stand.dokumente) return;
+  const heute = tagBerlin();
+  const senden = fertigMeldungen(stand, a, heute);
+  /* Nichts zu melden UND nichts anders als vorhin: dann auch nicht
+     schreiben. Der Ausloeser feuert bei JEDEM Haken, bei jeder neuen
+     Aufgabe und bei jeder Aenderung an einem Text — das waeren mehrere
+     hundert Schreibvorgaenge am Tag, nur um `ts` zu erneuern. */
+  if (!senden.length && a.fertig === neu.fertig &&
+      a.aufgabenFertig === neu.aufgabenFertig && a.putzFertig === neu.putzFertig) return;
+  senden.forEach(f => { neu[STEMPEL_TAG[f]] = heute; });
+  /* Was diesmal wirklich verschickt wurde, steht im Merker. Nicht als
+     Beiwerk: ohne dieses Feld ist von aussen nicht zu unterscheiden, ob
+     eine Meldung unterdrueckt wurde oder nie faellig war — weder im
+     Durchlauf noch spaeter, wenn jemand fragt „warum kam da keine
+     Mail?". Es kostet nichts, der Schreibvorgang findet ohnehin statt. */
+  neu.gesendet = senden;
+  await merker.set(neu, { merge: true });
+  if (!senden.length) return;
 
   /* Chefs bekommen die Meldung fuer JEDES Studio, Studio-Leiter nur fuer
      IHRE. Vorher gingen die Mails ausschliesslich an Chefs — der
@@ -371,14 +462,27 @@ const _fertigPruefen = async (change, ctx) => {
   const wo = await studioName(firma, studioKey);
   const zeit = new Date().toLocaleString('de-DE',
     { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  await teamMail(firma, empfaenger,
-    wo + ': alles erledigt',
-    'In ' + wo + ' ist gerade nichts mehr offen — weder Aufgaben noch Putzplan.\n\n' +
-    'Stand: ' + zeit + ' Uhr.\n\n' +
-    'Diese Meldung kommt einmal, wenn der letzte Punkt abgehakt ist. Kommt ' +
-    'später etwas dazu und wird auch das erledigt, meldet sie sich erneut.\n\n' +
-    'Zu viele dieser Mails? Unter Einstellungen → Meldungen lässt sich ' +
-    'jede Sorte einzeln abschalten.', 'fertig');
+  const fuss = '\n\nStand: ' + zeit + ' Uhr. Diese Meldung kommt höchstens ' +
+    'einmal am Tag je Studio.\n\nZu viele dieser Mails? Unter Einstellungen → ' +
+    'Meldungen lässt sich jede Sorte einzeln abschalten.';
+
+  for (const f of senden) {
+    if (f === 'alles') {
+      await teamMail(firma, empfaenger, wo + ': alles erledigt',
+        'In ' + wo + ' ist gerade nichts mehr offen — weder Aufgaben noch Putzplan.' +
+        fuss, 'fertig');
+    } else if (f === 'aufgaben') {
+      await teamMail(firma, empfaenger, wo + ': Aufgaben erledigt',
+        'In ' + wo + ' sind alle Aufgaben abgehakt.\n\n' +
+        'Im Putzplan ' + (stand.putz === 1 ? 'steht noch 1 Punkt' :
+          'stehen noch ' + stand.putz + ' Punkte') + ' offen.' + fuss, 'fertigTodos');
+    } else {
+      await teamMail(firma, empfaenger, wo + ': Putzplan fertig',
+        'In ' + wo + ' ist der Putzplan komplett abgehakt.\n\n' +
+        'Bei den Aufgaben ' + (stand.aufgaben === 1 ? 'steht noch 1 Punkt' :
+          'stehen noch ' + stand.aufgaben + ' Punkte') + ' offen.' + fuss, 'fertigPutz');
+    }
+  }
 };
 
 const _fertigTodo = beideWelten('studios/{studioKey}/todos/{todoId}',
@@ -389,6 +493,84 @@ exports.onTodoFertig = _fertigTodo.flach;
 exports.onTodoFertigF = _fertigTodo.firma;
 exports.onPutzFertig = _fertigPutz.flach;
 exports.onPutzFertigF = _fertigPutz.firma;
+
+/* ══ Tagesübersicht am Abend ═════════════════════════════════════════
+   Die drei Meldungen oben kommen im Augenblick des Fertigwerdens. Sie
+   beantworten nicht die Frage, mit der man den Tag abschliesst: WAS IST
+   LIEGENGEBLIEBEN? Ein Studio, in dem nie etwas fertig wurde, meldet
+   sich naemlich gar nicht — und ausgerechnet das ist das Studio, von
+   dem man hoeren wollte.
+
+   Deshalb genau eine Mail am Abend, mit allen Studios darin: eine
+   Nachricht statt dreizehn, und der Blick geht auf die Zeilen, in denen
+   noch etwas steht.
+
+   20:30 Berlin: die Studios schliessen gegen 21 Uhr. Frueher hiesse
+   „noch offen" nur „noch nicht dran gewesen".
+   ═══════════════════════════════════════════════════════════════════ */
+function standSatz(s) {
+  if (s.gesamt === 0) return 'fertig';
+  const teile = [];
+  if (s.aufgaben) teile.push(s.aufgaben + (s.aufgaben === 1 ? ' Aufgabe' : ' Aufgaben'));
+  if (s.putz) teile.push(s.putz + (s.putz === 1 ? ' Punkt im Putzplan' : ' Punkte im Putzplan'));
+  return teile.join(' und ') + ' offen';
+}
+
+exports.tagesUebersicht = region
+  .runWith({ timeoutSeconds: 540, memory: '256MB' })
+  .pubsub.schedule('30 20 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    for (const firma of await alleFirmen()) {
+      const namen = await alleStudios(firma);
+      const keys = Object.keys(namen).sort((a, b) =>
+        String(namen[a]).localeCompare(String(namen[b]), 'de'));
+      const stand = {};
+      for (const k of keys) {
+        const s = await offenImStudio(firma, k);
+        /* Ein Studio ohne Aufgaben und ohne Putzplan hat nichts zu
+           melden. Es als „fertig" aufzufuehren waere gelogen. */
+        if (s.dokumente) stand[k] = s;
+      }
+      /* Ueber die sortierte Liste filtern, nicht Object.keys(stand):
+         die Reihenfolge im Postfach soll die alphabetische sein und
+         nicht davon abhaengen, wie ein Objekt seine Schluessel haelt. */
+      const mitInhalt = keys.filter(k => stand[k]);
+      if (!mitInhalt.length) continue;
+
+      /* Wer bekommt welche Zeilen? Der Chef alle, der Leiter seine.
+         Eine Uebersicht ueber Studios, fuer die man nicht zustaendig
+         ist, ist keine Uebersicht, sondern Rauschen. */
+      const empfaenger = {};                    // uid -> [studioKey]
+      for (const uid of await kontenImStudio(firma, null, 'chef')) {
+        empfaenger[uid] = mitInhalt.slice();   // eigene Liste je Konto
+      }
+      for (const k of mitInhalt) {
+        for (const uid of await kontenImStudio(firma, k, 'leiter')) {
+          if (empfaenger[uid]) continue;        // ist schon als Chef dabei
+          (empfaenger[uid] = empfaenger[uid] || []).push(k);
+        }
+      }
+
+      const datum = new Date().toLocaleDateString('de-DE',
+        { timeZone: 'Europe/Berlin', weekday: 'long', day: '2-digit', month: '2-digit' });
+
+      for (const uid of Object.keys(empfaenger)) {
+        const meine = empfaenger[uid];
+        if (!meine.length) continue;
+        const fertig = meine.filter(k => stand[k].gesamt === 0).length;
+        const zeilen = meine.map(k => namen[k] + ': ' + standSatz(stand[k]));
+        const betreff = meine.length === 1
+          ? 'Tagesübersicht ' + namen[meine[0]] + ': ' + standSatz(stand[meine[0]])
+          : 'Tagesübersicht: ' + fertig + ' von ' + meine.length + ' Studios fertig';
+        await teamMail(firma, [uid], betreff,
+          'Stand ' + datum + ', 20:30 Uhr:\n\n' + zeilen.join('\n') +
+          '\n\nDiese Übersicht kommt einmal am Abend. Unter Einstellungen → ' +
+          'Meldungen lässt sie sich abschalten.', 'tagesbericht');
+      }
+    }
+    return null;
+  });
 /* ── Neue Ankündigung ── */
 const _neuerAushang = async (snap, ctx) => {
     const a = snap.data() || {};
@@ -2974,4 +3156,5 @@ exports.purgeTrash = region
    Bewusst unter einem eigenen Namen und nicht als exports.<name>:
    alles, was oben mit exports. anfaengt, waere ein ausgerollter
    Endpunkt. Diese hier sind keiner. */
-exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml };
+exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
+                     collectTokens, inStudio, willHaben, fertigMeldungen, standSatz };

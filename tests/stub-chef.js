@@ -556,11 +556,30 @@ var USERS = [
                    (path==='firmen' ? (window.__firmen||[]) :
                    (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : [])))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
+        /* Zuhoerer merken, damit ein ZWEITER Schnappschuss moeglich ist.
+           Die Attrappe feuerte bisher genau einmal je Sammlung. Fuer
+           alles, was VERAENDERUNGEN erkennt — die Glocke vergleicht
+           doneAt vorher gegen nachher — ist ein einziger Schnappschuss
+           aber gar keine Probe: es gibt nichts zu vergleichen, und ein
+           Durchlauf darueber waere immer gruen. */
+        (HORCHER[path] = HORCHER[path] || []).push(cb);
         spaeter(function () { try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); } });
         return unsub();
       }
     };
   }
+  var HORCHER = {};
+  /* Feuert die Zuhoerer einer Sammlung noch einmal, mit neuen Daten.
+     Rueckgabe ist die Anzahl der bedienten Zuhoerer: 0 heisst, der Pfad
+     stimmt nicht — sonst prueft der Durchlauf hinterher ins Leere. */
+  window.__nachschub = function (pfad, liste) {
+    var cbs = HORCHER[pfad] || [];
+    var docs = (liste || []).map(function (d) {
+      return { id: d.id, data: function () { return d; } };
+    });
+    cbs.forEach(function (cb) { try { cb(makeSnap(docs)); } catch (e) { console.error('NACHSCHUB', e); } });
+    return cbs.length;
+  };
   var fs = {
     settings: function () {},
     enablePersistence: function () { return Promise.resolve(); },

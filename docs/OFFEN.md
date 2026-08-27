@@ -42,6 +42,23 @@ Nachtrag** — dann kommt der Datenschutz-Absatz mit dazu.
 > selbst als Platzhalter markiert. Sobald du einen echten Preis hast,
 > ist er eine Zeile.
 
+> **Nachtrag 27.8. — die Melde-Runde.** Glocke, Toast und Push für
+> erledigte Punkte sind gebaut, dazu drei Mailsorten („Aufgaben fertig",
+> „Putzplan fertig", „alles erledigt") und eine Tagesübersicht um 20:30
+> Uhr. Höchstens eine Meldung je Sorte, Tag und Studio.
+>
+> **Zwei Dinge, die man dabei wissen sollte:**
+>
+> * **Die Glockenliste überlebt kein Neuladen.** Sie entsteht im Browser
+>   aus den Schnappschüssen, die ohnehin laufen — bewusst so, weil eine
+>   eigene Sammlung bei 13 Studios rund 65 zusätzliche Schreibvorgänge am
+>   Tag gekostet hätte. Die dauerhafte Fassung ist „Zuletzt passiert" auf
+>   der Startseite. Wenn dir das zu wenig ist, ist eine gespeicherte
+>   Liste eine bewusste Entscheidung mit laufenden Kosten, kein Nachtrag.
+> * **Die Uhrzeit 20:30 ist geraten, nicht gemessen.** Sie geht davon
+>   aus, dass die Studios gegen 21 Uhr schließen. Passt das nicht, ist es
+>   eine Zeile in `functions/index.js` (`tagesUebersicht`).
+
 ## Auf einen Blick
 
 Das Ausführliche steht weiter unten und in `SICHERHEIT.md`. Hier nur die

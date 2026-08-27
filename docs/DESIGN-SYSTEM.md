@@ -504,6 +504,46 @@ Bildschirme weiter einen Plan, den man nicht meinte.
 
 ---
 
+## 4e. Melden — welcher Kanal wofür
+
+Dieselbe Nachricht kann auf drei Wegen kommen. Sie sind nicht
+austauschbar, jeder beantwortet eine andere Frage:
+
+| Kanal | Frage | Stört | Abschaltbar |
+|---|---|---|---|
+| **Glocke** (`#tbGlocke`) | Was lief, während ich weg war? | nie — man geht hin | nein |
+| **Toast** | Was passiert gerade? | nur bei offener App | ja |
+| **Push** | Auch bei geschlossener App | am Gerät | ja (derselbe Schalter) |
+| **Mail** | Was ist der Stand? | im Postfach | ja, je Sorte |
+
+Drei Regeln, die daraus folgen:
+
+1. **Toast und Push teilen sich einen Schalter.** Sie sagen dasselbe, nur
+   zu verschiedenen Zeitpunkten. Zwei Schalter hiessen, jemanden zweimal
+   dasselbe zu fragen.
+2. **Was nur passiv wartet, bekommt keinen Schalter.** Die Glocke sagt
+   nichts, solange man nicht hinsieht. Ein Schalter dafür wäre ein
+   Schalter ohne Wirkung.
+3. **Ein Zähler statt eines Punktes.** „Drei neue" und „dreissig neue"
+   sind verschiedene Nachrichten; ein Punkt sagt nur „irgendwas".
+
+Die Glocke füllt sich aus dem, was ohnehin beobachtet wird
+(`cachedTodos`, `cachedClean`) — **keine eigene Sammlung, kein
+zusätzlicher Schreibvorgang**. Der Preis steht dazu: die Liste überlebt
+kein Neuladen. Die dauerhafte Fassung ist „Zuletzt passiert" auf der
+Startseite.
+
+Verglichen wird immer `doneAt`, nie `done` allein: eine tägliche Aufgabe
+steht am nächsten Morgen wieder offen, und über `done` wäre derselbe
+Punkt nie ein zweites Mal ein Ereignis.
+
+**Ein Knopf mehr in der Kopfzeile kostet der Marke ihren Schriftzug.**
+Gemessen: ab 470px passen beide, darunter wird abgeschnitten. Deshalb
+`@media(max-width:469px)` — und gebunden an `body.rolle-leitung`, weil
+ein Mitarbeiter Bericht- und Glocken-Knopf gar nicht hat.
+
+---
+
 ## 5. Bewegung
 
 | Marke | Kurve | Wofür |
@@ -862,6 +902,13 @@ falsch    background:var(--k-warn); color:var(--f-warn-stark)
 | `data-chef-only="1"` | nur Chef |
 | `data-manage-only="1"` | Chef und Leiter |
 | (nichts) | alle |
+
+Dazu setzt `applyRoleVisibility()` die Klasse **`body.rolle-leitung`**
+(= `canManage()`). Sie ist für das Stylesheet gedacht, nicht für einzelne
+Elemente: die Kopfzeile trägt für die Leitung zwei Knöpfe mehr, und
+davon hängt ab, ob der Schriftzug der Marke daneben noch passt. Ohne die
+Klasse müsste das Stylesheet den ungünstigsten Fall annehmen und dem
+Mitarbeiter etwas wegnehmen, wofür bei ihm Platz ist.
 
 Beides wird in `applyRoleVisibility()` gesetzt. **Verlass dich darauf nie
 allein** – die Sicherheitsregeln müssen dasselbe sagen.
