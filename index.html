@@ -330,6 +330,23 @@ h2[data-ikon] .sym,h3[data-ikon] .sym{color:var(--accent)}
 .cc-ico .sym{color:var(--accent)}
 button[data-ikon]{gap:var(--s8)}
 button[data-ikon]:not(.btn){display:inline-flex;align-items:center;gap:var(--s6)}
+/* ── Nur-Symbol-Knoepfe bleiben mittig ──
+   Die Zeile darueber ist fuer Knoepfe gedacht, die Symbol UND Wort
+   tragen. Sie ueberschreibt dabei das place-items:center von .icon-btn
+   und setzt selbst kein justify-content — Folge: das Zeichen rutschte
+   an den linken Rand. Gemessen 12 Pixel bei tbBericht, tbGlocke und
+   chatMic, also bei jedem Nur-Symbol-Knopf mit data-ikon.
+
+   Aufgefallen ist es erst, als die Glocke ein Abzeichen bekam: rechts
+   klaffte eine Luecke, in der die Zahl allein stand. Der Fehler war
+   aelter als das Abzeichen.
+
+   Nicht pauschal auf alle button[data-ikon]: der Anhang-Knopf „Umfrage"
+   ist ein Menueeintrag und steht zu Recht linksbuendig. Gemessen wuerde
+   ihn ein pauschales center um 20 Pixel verschieben. Deshalb nur die
+   beiden Bauformen, die wirklich nur ein Zeichen tragen. */
+button[data-ikon].icon-btn,
+button[data-ikon].attach-btn{justify-content:center}
 
 /* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s8);
@@ -2037,13 +2054,23 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    stehen und nicht auf .icon-btn allgemein: sonst haengt sich jedes
    spaetere absolut positionierte Kind an den falschen Kasten. */
 .tb-glocke{position:relative;overflow:visible}
-/* Maße und Schriftgrad wie .tab .badge — dasselbe Ding an anderer
-   Stelle soll nicht anders aussehen. Rot statt Akzent ist der einzige
-   Unterschied und Absicht: die Zahl an einem Reiter zählt Vorräte, diese
-   hier meldet etwas Neues. */
-.gl-zahl{position:absolute;top:1px;right:1px;min-width:19px;height:19px;
+/* ── Die Zahl an der Glocke ──
+   Hier stand zuerst „Maße wie .tab .badge" — 19px, hart in die Ecke.
+   Das war die falsche Begruendung: dieselbe Groesse, die NEBEN Text gut
+   liest, ist AUF einem 44er-Knopf zu gross. Nachgemessen belegte sie
+   43 % der Knopfbreite, ihr Ring schnitt in den Rand, und das Ganze sah
+   aus wie ein Aufkleber statt wie ein Teil des Knopfes.
+
+   Jetzt 16px und ueber der Ecke sitzend statt in ihr: so deckt sie den
+   Knopf nicht zu, beruehrt seinen Rand nicht und kommt dem Symbol nicht
+   ins Gehege (Abzeichen endet bei 12px, das Symbol beginnt bei 13px).
+   Der Ring trennt sie vom Rand darunter.
+
+   Gemessen statt geschaetzt — siehe tests/test-knoepfe.js, der diese
+   Verhaeltnisse fuer JEDEN Knopf der App prueft. */
+.gl-zahl{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;
   padding:0 var(--s4);border-radius:var(--r-pille);background:var(--danger);color:#fff;
-  font-size:var(--t-2xs);font-weight:700;display:grid;place-items:center;
+  font-size:var(--t-2xs);font-weight:700;display:grid;place-items:center;line-height:var(--lh-1);
   font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--bg)}
 #glockeModal{position:fixed;inset:0;z-index:216;display:none;
   align-items:center;justify-content:center;padding:var(--s20);

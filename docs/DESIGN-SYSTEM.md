@@ -504,6 +504,36 @@ Bildschirme weiter einen Plan, den man nicht meinte.
 
 ---
 
+## 4d2. Knöpfe — gemessen, nicht angesehen
+
+Aus dem Betrieb: *„achte auf sowas bei ALLEN Knöpfen IMMER, bevor es
+neue gibt."* Deshalb steht die Regel als Messung da und nicht als
+Merksatz — `tests/test-knoepfe.js` geht jede Ansicht ab und prüft jeden
+sichtbaren Knopf. Die Arbeitsweise dazu: `.claude/skills/knoepfe/`.
+
+| Regel | Woher sie kommt |
+|---|---|
+| Nur-Symbol-Knopf: Zeichen mittig (±2px) | `button[data-ikon]:not(.btn)` setzt `inline-flex` **ohne** `justify-content` und überschreibt das `place-items:center` von `.icon-btn`. Drei Knöpfe standen 12px daneben |
+| Abzeichen liegt nicht auf dem Symbol | genau das ließ die Glocke „off" aussehen — 64 px² Überdeckung |
+| Abzeichen wird von keinem Vorfahren abgeschnitten | ein halber Kreis sieht aus wie Absicht |
+| `data-ikon` und eigenes `<svg>` schließen sich aus | 22 Knöpfe zeichneten doppelt (§ Runde 58) |
+
+**Schwellen werden hergeleitet, nicht gewählt.** „Höchstens 40 % der
+Knopfbreite" hätte die beiden Fälle auch getrennt (alt 43 %, neu 36 %) —
+aber nur, weil die Zahl dazwischenpasst. „Nicht auf dem Symbol liegen"
+trennt sie **und** erklärt, warum es schlecht aussah.
+
+**Eine gemeinsame Regel ändern heißt: die Reichweite messen.**
+`justify-content:center` pauschal auf `button[data-ikon]` hätte den
+Menüeintrag „Umfrage" um 20px verschoben. Die Korrektur trägt deshalb
+nur `.icon-btn` und `.attach-btn`.
+
+Dasselbe gilt für Klassennamen: der Bearbeiten-Stift hieß der Maße wegen
+`pp-del`, danach traf `querySelector('.pp-del')` den Stift statt des
+Papierkorbs. **Eine Klasse ist ein Name, keine Formatvorlage.**
+
+---
+
 ## 4e. Melden — welcher Kanal wofür
 
 Dieselbe Nachricht kann auf drei Wegen kommen. Sie sind nicht
