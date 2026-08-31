@@ -383,6 +383,11 @@ var USERS = [
         if (mho) {
           var hl = ((window.__handovers ||
                      (typeof HANDOVERS !== 'undefined' ? HANDOVERS : {}))[mho[1]] || []);
+          /* Auch dieser Zweig muss sich den Zuhoerer merken, sonst
+             erreicht __nachschub() die Uebergaben nicht — er gibt dann
+             0 zurueck, und ein Durchlauf, der darauf baut, prueft ins
+             Leere statt rot zu werden. */
+          (HORCHER[path] = HORCHER[path] || []).push(cb);
           try { cb(makeSnap(hl.map(function (d) {
             return { id: d.id, data: function () { return d; } }; }))); }
           catch (e) { console.error(e); }
@@ -397,7 +402,13 @@ var USERS = [
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? (window.__users || USERS) : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
                    (path==='probetrainings' ? PROBE :
-                   (path==='documents' ? DOCS : [])))))));
+                   /* board fehlte hier, obwohl get() es kennt. Das
+                      Schwarze Brett haengt mit onSnapshot zu — es blieb
+                      deshalb IMMER leer, und jeder Durchlauf darueber
+                      haette nichts geprueft. Dieselbe Luecke wie bei den
+                      Uebergaben, gefunden beim Bau der Erwaehnungen. */
+                   (path==='board' ? (window.__board || []) :
+                   (path==='documents' ? DOCS : []))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         // Siehe stub-chef.js: ein zweiter Schnappschuss auf Zuruf.
         (HORCHER[path] = HORCHER[path] || []).push(cb);

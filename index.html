@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-kqOO7kI3vD8Da9Q+CMwE8ayobcNpy5acc0NQ2hBi/4U='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-BJPJvqjK7TLYRrL7kfli5tIZJSenSeXfz56MmqiLEpU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2550,6 +2550,10 @@ body.light{--dot:rgba(20,10,40,.06)}
 .mention{color:var(--accent);font-weight:700;background:rgba(34,211,238,.12);
   padding:var(--s1) var(--s4);border-radius:var(--r-xs)}
 .msg.mentioned{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+/* Dieselbe Markierung ausserhalb des Chats. Bewusst dieselbe Optik: wer
+   sie im Chat einmal gelernt hat, muss sie hier nicht neu lernen. */
+.ho-item.mentioned,.bb-item.mentioned{border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent) inset}
 
 /* Antwort-/Bearbeiten-Leiste über dem Eingabefeld */
 .compose-bar{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--rand);
@@ -5712,7 +5716,7 @@ var PREFS = {
   notify:{ chat:true, dm:true, ann:true, todos:true, mentions:true }
 };
 var NOTIFY_OPTS = [
-  {id:'mentions', name:'Wenn ich erwähnt werde', hint:'@Name im Chat – empfohlen an'},
+  {id:'mentions', name:'Wenn ich erwähnt werde', hint:'@Name im Chat, in Übergaben und am Schwarzen Brett – empfohlen an'},
   {id:'dm',       name:'Direktnachrichten',      hint:'Persönliche Nachrichten an dich'},
   {id:'ann',      name:'Infos der Leitung',      hint:'Ankündigungen'},
   {id:'todos',    name:'Neue Aufgaben',          hint:'Wenn in deinem Studio eine Aufgabe angelegt wird'},
@@ -11340,6 +11344,7 @@ function listenBoard(voll){
   _bbUnsub=S('board').orderBy('ts','desc').limit(voll?50:12)
     .onSnapshot(function(sn){
       _board=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      erwMelden(_board, 'Schwarzes Brett');
       renderBoard();
       renderHomeLesen();
     }, function(e){ console.warn('Brett:',e.message); });
@@ -11802,6 +11807,38 @@ function findMentions(text){
   return out;
 }
 
+/* ── Eine Erwähnung ausserhalb des Chats melden ──
+   Bis heute war die Erwähnung eine reine Chat-Sache: nur dort wurde sie
+   hervorgehoben, nur dort kam eine Meldung an. „@Anna bitte übernehmen"
+   in einer Übergabe erreichte Anna nicht — der Satz sah aus wie eine
+   Ansprache und war keine.
+
+   EIN Ort fuer alle Sorten. Zwei Kopien derselben Regel laufen
+   auseinander, sobald eine davon einen Sonderfall bekommt.
+
+   Drei Faelle, die NICHT melden, jeder mit Grund:
+     · aelter als der App-Start — sonst braeche beim Anmelden die ganze
+       Woche als „gerade erwaehnt" herein
+     · selbst geschrieben — wer sich selbst nennt, weiss es
+     · schon gemeldet — der Zuhoerer wird beim Wechsel auf die Team-Seite
+       neu aufgebaut (listenBoard(voll)), und dieselbe Meldung zweimal
+       ist schlimmer als keine */
+var _erwGemeldet = {};
+var _erwStart = Date.now();
+function erwMelden(liste, was){
+  if(!Array.isArray(liste) || !session) return;
+  liste.forEach(function(x){
+    if(!x || !x.id || _erwGemeldet[x.id]) return;
+    if((x.ts||0) < _erwStart){ _erwGemeldet[x.id]=1; return; }
+    if(x.uid===session.uid){ _erwGemeldet[x.id]=1; return; }
+    var wen = Array.isArray(x.mentions) ? x.mentions : [];
+    if(wen.indexOf(session.uid)<0) return;
+    _erwGemeldet[x.id]=1;
+    localNotify((x.name||'Jemand')+' hat dich erwähnt',
+      was+': '+String(x.text||'').slice(0,120), 'mentions');
+  });
+}
+
 /* ── Vorschlagsliste beim Tippen von „@" ── */
 var _atTreffer=[], _atWahl=0, _atStart=-1;
 function atSchliessen(){
@@ -12187,6 +12224,7 @@ function loadTeam(sk){
   }, function(e){ console.warn('Abwesenheiten:',e.message); });
   _hoUnsub=ref.collection('handovers').orderBy('ts','desc').limit(40).onSnapshot(function(sn){
     _handovers=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+    erwMelden(_handovers, 'Übergabe');
     renderHandovers();
   }, function(e){ console.warn('Übergabe:',e.message); });
   listenBoard(true);   // auf der Team-Seite alle Einträge, nicht nur zwölf
@@ -12475,7 +12513,11 @@ function renderHandovers(){
   box.innerHTML=list.map(function(h){
     var mine=h.uid===session.uid;
     var del=(mine||canManage())?'<button class="mini-x" data-hodel="'+esc(h.id)+'">löschen</button>':'';
-    return '<div class="ho-item"><div class="ho-text">'+linkify(esc(h.text||''))+'</div>'+
+    /* Der Toast ist nach 2,7 Sekunden weg. Wer beim Auftauchen nicht
+       hinsieht, soll die Erwaehnung spaeter trotzdem WIEDERFINDEN — im
+       Chat leistet das .msg.mentioned, hier bisher nichts. */
+    var michGemeint = Array.isArray(h.mentions) && h.mentions.indexOf(session.uid)>=0;
+    return '<div class="ho-item'+(michGemeint?' mentioned':'')+'"><div class="ho-text">'+markMentions(linkify(esc(h.text||'')))+'</div>'+
       '<div class="ho-head"><span>'+esc(h.name||'')+' · '+fmtDateTime(h.ts)+'</span>'+del+'</div></div>';
   }).join('');
   box.querySelectorAll('[data-hodel]').forEach(function(b){
@@ -12493,8 +12535,9 @@ function renderBoard(){
   box.innerHTML=_board.map(function(b){
     var mine=b.uid===session.uid;
     var del=(mine||isChef())?'<button class="mini-x" data-bbdel="'+esc(b.id)+'">löschen</button>':'';
-    return '<div class="bb-item"><span class="bb-kind">'+esc(BB_KINDS[b.kind]||'Info')+'</span>'+
-      '<div class="bb-text">'+linkify(esc(b.text||''))+'</div>'+
+    var michGemeint = Array.isArray(b.mentions) && b.mentions.indexOf(session.uid)>=0;
+    return '<div class="bb-item'+(michGemeint?' mentioned':'')+'"><span class="bb-kind">'+esc(BB_KINDS[b.kind]||'Info')+'</span>'+
+      '<div class="bb-text">'+markMentions(linkify(esc(b.text||'')))+'</div>'+
       '<div class="bb-head"><span>'+esc(b.name||'')+' · '+fmtDateTime(b.ts)+'</span>'+del+'</div></div>';
   }).join('');
   box.querySelectorAll('[data-bbdel]').forEach(function(x){
@@ -12822,7 +12865,7 @@ function renderHomeLesen(){
   if(meine.length){
     annBox.innerHTML=meine.slice(0,LESE_MAX).map(function(a){
       return '<div class="lese-eintrag">'+
-        '<div class="lese-text">'+linkify(esc(a.text||''))+'</div>'+
+        '<div class="lese-text">'+markMentions(linkify(esc(a.text||'')))+'</div>'+
         fuss(a.from||'Leitung', a.ts, annNeu(a))+'</div>';
     }).join('');
     annKarte.style.display='';
@@ -12845,7 +12888,7 @@ function renderHomeLesen(){
       hoBox.innerHTML=ho.slice(0,LESE_MAX).map(function(h){
         var wer=(h.name||'')+(mehrereStudios?' · '+studioName(h.sk):'');
         return '<div class="lese-eintrag">'+
-          '<div class="lese-text">'+linkify(esc(h.text||''))+'</div>'+
+          '<div class="lese-text">'+markMentions(linkify(esc(h.text||'')))+'</div>'+
           fuss(wer, h.ts, istNeu(h,_gelesen.ho))+'</div>';
       }).join('');
       hoKarte.style.display='';
@@ -12858,7 +12901,7 @@ function renderHomeLesen(){
   if(brett.length){
     brettBox.innerHTML=brett.slice(0,LESE_MAX).map(function(b){
       return '<div class="lese-eintrag">'+
-        '<div class="lese-text">'+linkify(esc(b.text||''))+'</div>'+
+        '<div class="lese-text">'+markMentions(linkify(esc(b.text||'')))+'</div>'+
         fuss(b.name, b.ts, istNeu(b,_gelesen.brett))+'</div>';
     }).join('');
     brettKarte.style.display='';
@@ -15026,7 +15069,7 @@ function renderAnnouncements(anns){
         return '<div class="ann'+(a.pinned?' pinned':'')+'"><div class="ann-head">'+
           '<span class="pin">'+ikon('megafon')+'</span>'+
           '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
-          '<div class="ann-body">'+esc(a.text)+'</div>'+
+          '<div class="ann-body">'+markMentions(linkify(esc(a.text)))+'</div>'+
           '<span class="ann-target">'+esc(label)+'</span>'+readHtml+'</div>';
       }
       readHtml='<button class="ann-read'+(fehlen.length?' offen':'')+'" data-wer="'+esc(a.id)+'">'+
@@ -15042,7 +15085,7 @@ function renderAnnouncements(anns){
     return '<div class="ann'+(a.pinned?' pinned':'')+'"><div class="ann-head">'+
       '<span class="pin">'+ikon('megafon')+'</span>'+
       '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
-      '<div class="ann-body">'+esc(a.text)+'</div>'+
+      '<div class="ann-body">'+markMentions(linkify(esc(a.text)))+'</div>'+
       '<span class="ann-target">'+esc(label)+'</span>'+readHtml+'</div>';
   }).join('');
   if(chef){
@@ -16974,7 +17017,7 @@ function renderPutzNotes(){
     var wer = n.kuerzel
       ? esc(n.kuerzel)+' <span class="pp-konto">('+esc(n.by||'')+')</span>'
       : esc(n.by||'—');
-    return '<div class="pp-note"><div class="pp-note-text">'+linkify(esc(n.text))+'</div>'+
+    return '<div class="pp-note"><div class="pp-note-text">'+markMentions(linkify(esc(n.text)))+'</div>'+
       '<div class="pp-note-foot"><span>'+wer+' · '+fmtDateTime(n.ts)+'</span>'+machen+del+'</div></div>';
   }).join('');
   box.querySelectorAll('[data-notetask]').forEach(function(b){
@@ -19152,7 +19195,7 @@ function renderDmMessages(msgs){
         }).join('')+'</div>';
     } else {
       body = (m.fwdFrom ? '<div class="fwd-mark">↪ weitergeleitet von '+esc(m.fwdFrom)+'</div>' : '')
-        + (m.text ? '<div class="body">'+linkify(esc(m.text))+'</div>' : '')
+        + (m.text ? '<div class="body">'+markMentions(linkify(esc(m.text)))+'</div>' : '')
         + (m.audio ? audioHTML(safeMedia(m.audio), m.audioMs||0) : '');
     }
     return '<div class="msg'+(mine?' mine':'')+'"><div class="meta"><b>'+esc(m.name)+'</b><time>'+fmtTime(m.ts)+'</time>'+del+'</div>'+body+'</div>';
@@ -20635,7 +20678,12 @@ function bindActions(){
     var t=(hoNew.value||'').trim(); if(!t) return;
     hoNew.value='';
     S('studios').doc(_teamStudioKey).collection('handovers').add({
-      text:t, uid:session.uid, name:session.name, ts:Date.now()
+      /* mentions wird MITGESCHRIEBEN, nicht beim Lesen errechnet: wer
+         erwaehnt wurde, haengt an der Personenliste zum Zeitpunkt des
+         Schreibens. Ein spaeter umbenanntes Konto wuerde die Erwaehnung
+         sonst rueckwirkend verlieren. Dieselbe Ueberlegung wie im Chat. */
+      text:t, mentions:findMentions(t),
+      uid:session.uid, name:session.name, ts:Date.now()
     }).catch(function(e){ toast(errMsg(e),true); });
   }
   if(hoAdd) hoAdd.addEventListener('click', addHandover);
@@ -20646,7 +20694,8 @@ function bindActions(){
     if(!t){ toast('Bitte einen Text eingeben.',true); return; }
     withBusy(btn,function(){
       return S('board').add({
-        text:t, kind:$('bbType').value, uid:session.uid, name:session.name, ts:Date.now()
+        text:t, mentions:findMentions(t), kind:$('bbType').value,
+        uid:session.uid, name:session.name, ts:Date.now()
       }).then(function(){ $('bbText').value=''; toast('Angepinnt ✓'); })
         .catch(function(e){ toast(errMsg(e),true); });
     });

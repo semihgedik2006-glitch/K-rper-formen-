@@ -5771,3 +5771,102 @@ hat gar keine.
 Steht in `OFFEN.md` und ist bewusst nicht von mir gelöst: das ist
 dieselbe Frage wie die vier rechtlichen Pflichtfelder — eine
 Entscheidung, kein Handgriff.
+
+---
+
+# 62 · Eine Erwähnung, die aussah wie eine Ansprache
+
+## Der Fund
+
+Die `@Erwähnung` war eine reine **Chat-Sache**. Nur dort wurde ein Name
+hervorgehoben, nur dort kam eine Meldung an.
+
+Derselbe Satz an jedem anderen Ort — Übergabe, Schwarzes Brett,
+Putzplan-Notiz, Direktnachricht, Lesemodus, Ankündigung — war
+**schlichter Text**. „@Anna bitte übernehmen" in einer Übergabe erreichte
+Anna nicht.
+
+Das ist die schlimmere Sorte Fehler: nicht *„es geht nicht"*, sondern
+*„es sieht aus, als ginge es"*. Wer den Satz schreibt, hat den Eindruck,
+Bescheid gesagt zu haben. Und im Chat funktioniert es ja — die Erwartung
+ist also gelernt.
+
+## Zwei Hälften, die zusammengehören
+
+| | |
+|---|---|
+| **Hervorheben** | `markMentions()` um jeden Text, der von Menschen kommt |
+| **Melden** | `mentions:[]` wird **beim Schreiben** gespeichert, `erwMelden()` liest es beim Zuhören |
+
+Warum mitgeschrieben und nicht beim Lesen errechnet: wer erwähnt wurde,
+hängt an der Personenliste **zum Zeitpunkt des Schreibens**. Ein später
+umbenanntes Konto verlöre die Erwähnung sonst rückwirkend. Dieselbe
+Überlegung wie im Chat, deshalb dieselbe Lösung.
+
+Zehn Stellen gehen jetzt durch `markMentions()`: Übergabe, Brett, drei
+im Lesemodus, Putzplan-Notiz, Direktnachricht, Kanal-Chat und zweimal
+Ankündigungen. Zwei Stellen bleiben bewusst draußen — E-Mail-Adressen in
+einer Liste (dort steht kein `@Name`, sondern ein `@Anbieter`) und das
+Impressum (Angaben des Betreibers, keine Beiträge von Menschen). Beide
+stehen mit Grund in einer Ausnahmeliste im Durchlauf, damit „gehört
+dazu" eine Entscheidung ist und kein Vergessen.
+
+## Drei Fälle, die NICHT melden
+
+Jeder mit Grund, alle drei nachgemessen:
+
+* **älter als der App-Start** — sonst bräche beim Anmelden die ganze
+  Woche als „gerade erwähnt" herein
+* **selbst geschrieben** — wer sich selbst nennt, weiß es
+* **schon gemeldet** — der Zuhörer wird beim Wechsel auf die Team-Seite
+  neu aufgebaut; dieselbe Meldung zweimal ist schlimmer als keine
+
+## Der Toast ist nach 2,7 Sekunden weg
+
+Damit wäre die Erwähnung eine Meldung, die man verpassen kann, und
+danach nicht mehr auffindbar. Im Chat leistet `.msg.mentioned` genau
+das — ein Rahmen in Akzentfarbe. Außerhalb gab es nichts.
+
+Jetzt tragen `.ho-item` und `.bb-item` dieselbe Markierung, mit
+**bewusst derselben Optik**: wer sie im Chat gelernt hat, muss sie hier
+nicht neu lernen.
+
+Markiert wird auch die **selbst geschriebene** Erwähnung. Wiederfinden
+und Melden sind zwei verschiedene Fragen: melden nein, wiederfinden ja.
+
+## Zwei Lücken in den Attrappen, gefunden beim Bauen
+
+Beide derselben Sorte — und beide hätten jeden Durchlauf darüber
+**stumm grün** gemacht:
+
+1. **`board` fehlte in `onSnapshot`**, obwohl `get()` es kannte. Das
+   Schwarze Brett hört mit `onSnapshot` zu. `#bbList` war deshalb
+   *immer* leer; ein Durchlauf über das Brett hätte null Zeilen gemessen
+   und nichts gemeldet.
+2. **Die Übergaben merkten sich ihren Zuhörer nicht.** `__nachschub()`
+   erreichte sie nicht und gab 0 zurück. Der neue Durchlauf prüft diese
+   Rückgabe jetzt ausdrücklich als *erste* Zeile — alles Danach hinge
+   sonst in der Luft.
+
+Dazu ein dritter Stolperstein, der keine Lücke war, sondern eine falsche
+Annahme von mir: die Probe legte ihre Daten unter `studio-6` ab, der
+Team-Bereich startet aber auf dem **alphabetisch ersten** Studio
+(Brühl = `studio-7`). Der Durchlauf liest den Schlüssel jetzt ab, statt
+ihn zu raten.
+
+## Der Durchlauf
+
+`tests/test-erwaehnungen.js` — 20 Prüfungen, davon **vier Gegenproben**,
+weil sonst „hebt hervor" nur hieße „setzt irgendwo ein span":
+
+* ein Text **ohne** `@` bekommt keine Markierung
+* `@Niemand Da` bleibt schlichter Text — sonst würde jedes `@Wort`
+  eingefärbt
+* die Quelltext-Regel schlägt bei einer künstlich vergessenen Stelle
+  auch wirklich an — und zwar mit **derselben Funktion**, die den echten
+  Quelltext prüft, nicht mit einer nachgebauten
+* die Regel sieht überhaupt Stellen (zehn)
+
+Die Markierung wird **an der Randfarbe** nachgemessen, nicht am
+Klassennamen: eine Klasse, die dransteht und nichts ändert, wäre sonst
+grün.
