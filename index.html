@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-6W0cotvTWZMRs9MSfHMGNbVyMHr1tpXqwBR1R+7Ll2w='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-kqOO7kI3vD8Da9Q+CMwE8ayobcNpy5acc0NQ2hBi/4U='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -330,6 +330,23 @@ h2[data-ikon] .sym,h3[data-ikon] .sym{color:var(--accent)}
 .cc-ico .sym{color:var(--accent)}
 button[data-ikon]{gap:var(--s8)}
 button[data-ikon]:not(.btn){display:inline-flex;align-items:center;gap:var(--s6)}
+/* ── Nur-Symbol-Knoepfe bleiben mittig ──
+   Die Zeile darueber ist fuer Knoepfe gedacht, die Symbol UND Wort
+   tragen. Sie ueberschreibt dabei das place-items:center von .icon-btn
+   und setzt selbst kein justify-content — Folge: das Zeichen rutschte
+   an den linken Rand. Gemessen 12 Pixel bei tbBericht, tbGlocke und
+   chatMic, also bei jedem Nur-Symbol-Knopf mit data-ikon.
+
+   Aufgefallen ist es erst, als die Glocke ein Abzeichen bekam: rechts
+   klaffte eine Luecke, in der die Zahl allein stand. Der Fehler war
+   aelter als das Abzeichen.
+
+   Nicht pauschal auf alle button[data-ikon]: der Anhang-Knopf „Umfrage"
+   ist ein Menueeintrag und steht zu Recht linksbuendig. Gemessen wuerde
+   ihn ein pauschales center um 20 Pixel verschieben. Deshalb nur die
+   beiden Bauformen, die wirklich nur ein Zeichen tragen. */
+button[data-ikon].icon-btn,
+button[data-ikon].attach-btn{justify-content:center}
 
 /* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s8);
@@ -1911,9 +1928,19 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pp-note{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
   border-left:3px solid var(--accent-3);border-radius:var(--r-sm);margin-bottom:var(--s8);animation:rowIn .3s var(--ease-out) both}
 .pp-note-text{font-size:var(--t-md);white-space:pre-wrap;word-break:break-word}
-.pp-note-foot{display:flex;justify-content:space-between;gap:var(--s10);margin-top:var(--s4);font-size:var(--t-2xs);color:var(--text-3)}
-.pp-note-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:var(--t-2xs);padding:0}
+/* Zwei Knoepfe rechts statt einem: der Name links, die Handlungen
+   rechts. margin-left:auto am ersten schiebt beide an den Rand, ohne
+   dass die Zeile bei einem langen Namen umbricht. */
+.pp-note-foot{display:flex;align-items:baseline;gap:var(--s10);margin-top:var(--s4);font-size:var(--t-2xs);color:var(--text-3)}
+.pp-note-foot > span{min-width:0;overflow-wrap:anywhere}
+.pp-note-del,.pp-note-tat{background:none;border:none;cursor:pointer;font-size:var(--t-2xs);padding:0;flex-shrink:0}
+.pp-note-del{color:var(--text-3)}
+.pp-note-foot > button:first-of-type{margin-left:auto}
 .pp-note-del:hover{color:var(--danger-tx)}
+/* Nicht rot: aus einer Notiz eine Aufgabe zu machen ist die Handlung,
+   die man haeufiger will, und keine, vor der man erschrecken soll. */
+.pp-note-tat{color:var(--accent-d);font-weight:600}
+.pp-note-tat:hover{text-decoration:underline}
 
 /* ============================================================
    BEWEGUNG IM APPLE-STIL
@@ -2027,13 +2054,23 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    stehen und nicht auf .icon-btn allgemein: sonst haengt sich jedes
    spaetere absolut positionierte Kind an den falschen Kasten. */
 .tb-glocke{position:relative;overflow:visible}
-/* Maße und Schriftgrad wie .tab .badge — dasselbe Ding an anderer
-   Stelle soll nicht anders aussehen. Rot statt Akzent ist der einzige
-   Unterschied und Absicht: die Zahl an einem Reiter zählt Vorräte, diese
-   hier meldet etwas Neues. */
-.gl-zahl{position:absolute;top:1px;right:1px;min-width:19px;height:19px;
+/* ── Die Zahl an der Glocke ──
+   Hier stand zuerst „Maße wie .tab .badge" — 19px, hart in die Ecke.
+   Das war die falsche Begruendung: dieselbe Groesse, die NEBEN Text gut
+   liest, ist AUF einem 44er-Knopf zu gross. Nachgemessen belegte sie
+   43 % der Knopfbreite, ihr Ring schnitt in den Rand, und das Ganze sah
+   aus wie ein Aufkleber statt wie ein Teil des Knopfes.
+
+   Jetzt 16px und ueber der Ecke sitzend statt in ihr: so deckt sie den
+   Knopf nicht zu, beruehrt seinen Rand nicht und kommt dem Symbol nicht
+   ins Gehege (Abzeichen endet bei 12px, das Symbol beginnt bei 13px).
+   Der Ring trennt sie vom Rand darunter.
+
+   Gemessen statt geschaetzt — siehe tests/test-knoepfe.js, der diese
+   Verhaeltnisse fuer JEDEN Knopf der App prueft. */
+.gl-zahl{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;
   padding:0 var(--s4);border-radius:var(--r-pille);background:var(--danger);color:#fff;
-  font-size:var(--t-2xs);font-weight:700;display:grid;place-items:center;
+  font-size:var(--t-2xs);font-weight:700;display:grid;place-items:center;line-height:var(--lh-1);
   font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--bg)}
 #glockeModal{position:fixed;inset:0;z-index:216;display:none;
   align-items:center;justify-content:center;padding:var(--s20);
@@ -4173,6 +4210,29 @@ html{font-size:var(--fs,100%)}
           <div class="mat-bar">
             <select class="inp" id="ppStudio"></select>
             <button data-ikon="drucken" class="btn btn-ghost btn-sm no-print" id="ppPrint" title="Putzplan ausdrucken">Drucken</button>
+          </div>
+
+          <!-- Suchen und Filtern, wie bei den Aufgaben.
+
+               NUR die Filter, die es hier wirklich gibt: „Überfällig"
+               und „Für mich" fehlen mit Absicht — Putzaufgaben haben
+               weder Frist noch Zuweisung, und ein Filter, der nie etwas
+               findet, ist ein Versprechen ohne Deckung.
+
+               „Pausiert" gibt es dafür nur hier: die Fortschrittszeile
+               nennt die Zahl schon („2 pausiert"), bis jetzt gab es aber
+               keinen Weg, sie sich anzusehen. -->
+          <div class="sticky-tools no-print">
+            <div class="chip-row werkzeugzeile">
+              <div class="todo-search klein">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="ppSearch" type="search" placeholder="Suchen …" aria-label="Putzaufgaben suchen" autocomplete="off" />
+              </div>
+              <span class="todo-count" id="ppCount"></span>
+              <button class="chip on" data-ppfilter="alle">Alle</button>
+              <button class="chip" data-ppfilter="offen">Nur offene</button>
+              <button class="chip" data-ppfilter="pausiert">Pausiert</button>
+            </div>
           </div>
 
           <!-- Liste der Putzaufgaben des gewählten Studios -->
@@ -16491,6 +16551,68 @@ function printPutzplan(){
   window.print();
 }
 
+/* ── Suchen und Filtern im Putzplan ──
+   Dieselbe Mechanik wie bei den Aufgaben: ein Suchtext und ein
+   Schnellfilter, beide gleichzeitig wirksam. */
+var _ppFilter='', _ppMode='alle';
+
+function ppPasst(t){
+  if(_ppMode==='offen'   && (isDone(t) || ppPausiert(t))) return false;
+  if(_ppMode==='pausiert' && !ppPausiert(t)) return false;
+  if(!_ppFilter) return true;
+  return String(t.title||'').toLowerCase().indexOf(_ppFilter)>=0;
+}
+
+/* Die Zahl am Reiter. Sie zaehlt im GANZEN Plan, nicht im gefilterten —
+   sonst zeigte „Pausiert" nach dem Antippen seine eigene Zahl als 0.
+
+   `gezeigt` kommt als Zahl herein und wird NICHT aus dem DOM gelesen.
+   Der erste Anlauf tat das (`querySelectorAll('#ppList .pp-item')`) und
+   zaehlte damit den VORIGEN Durchgang — der Aufruf steht vor dem
+   Schreiben der Liste. Herausgekommen ist „5 von 5", waehrend drei
+   Punkte dastanden. */
+function ppZahlenSetzen(alle, gezeigt){
+  var offen=0, pausiert=0;
+  (alle||[]).forEach(function(t){
+    if(ppPausiert(t)) pausiert++;
+    else if(!isDone(t)) offen++;
+  });
+  var zahl={ offen:offen, pausiert:pausiert };
+  document.querySelectorAll('[data-ppfilter]').forEach(function(c){
+    var f=c.getAttribute('data-ppfilter');
+    var alt=c.querySelector('.chip-num'); if(alt) alt.remove();
+    if(!(f in zahl) || !zahl[f]) return;
+    var b=document.createElement('b');
+    b.className='chip-num';
+    b.textContent=zahl[f];
+    c.appendChild(b);
+  });
+  var z=$('ppCount');
+  if(z) z.textContent = (_ppFilter || _ppMode!=='alle')
+    ? gezeigt+' von '+(alle||[]).length
+    : '';
+}
+
+/* Der leere Bereich muss den Grund nennen. „Kein Putzplan" waere falsch,
+   wenn es zwoelf Punkte gibt und nur keinen, der zum Filter passt — man
+   sucht dann an der falschen Stelle. */
+function ppLeerText(gesamt){
+  if(_ppFilter){
+    return emptyHTML('Nichts gefunden',
+      'Für „'+esc(_ppFilter)+'" gibt es keinen Punkt im Putzplan.'+
+      (_ppMode!=='alle' ? ' Der Filter „'+esc(ppChipWort(_ppMode))+'" ist zusätzlich aktiv.' : ''),
+      'tropfen');
+  }
+  var WORT={ offen:'offenen', pausiert:'pausierten' };
+  return emptyHTML('Keine '+(WORT[_ppMode]||'')+' Punkte',
+    gesamt ? 'Der Plan hat '+gesamt+(gesamt===1?' Punkt':' Punkte')+' – tippe auf „Alle", um sie zu sehen.'
+           : 'Hier ist noch gar nichts angelegt.', 'tropfen');
+}
+function ppChipWort(modus){
+  var c=document.querySelector('[data-ppfilter="'+modus+'"]');
+  return c ? c.textContent.replace(/\d+$/,'').trim() : modus;
+}
+
 function renderPutzplan(){
   var box=$('ppList'); if(!box) return;
   putzKuerzelBinden();
@@ -16504,13 +16626,22 @@ function renderPutzplan(){
   var done=zaehlbar.filter(isDone).length, total=zaehlbar.length;
   var pausiert=list.length-zaehlbar.length;
   var prog=$('ppProgress');
+  /* Die Fortschrittszeile zaehlt IMMER alle Punkte, nie die gefilterten.
+     Sonst stuende beim Filter „Nur offene" ploetzlich „0 von 5
+     erledigt" — eine Zahl, die stimmt und trotzdem luegt. */
   if(prog) prog.textContent = total
     ? (done+' von '+total+' erledigt'+(pausiert?(' · '+pausiert+' pausiert'):''))
     : (pausiert ? (pausiert+' pausiert') : '');
   if(!list.length){
     box.innerHTML=emptyHTML('Kein Putzplan','Der Chef legt hier Reinigungsaufgaben an.','tropfen');
+    ppZahlenSetzen(list, 0);
     return;
   }
+  /* Erst jetzt filtern: was oben gezaehlt wird, ist der ganze Plan. */
+  var gesamt=list.length;
+  list=list.filter(ppPasst);
+  ppZahlenSetzen(_ppTasks, list.length);
+  if(!list.length){ box.innerHTML=ppLeerText(gesamt); return; }
   box.innerHTML=list.map(function(t){
     var d=isDone(t);
     var rep=t.recurring?'<span class="t-rep">'+ikon('wiederholen')+' '+esc(repLabelFor(t))+'</span>':'';
@@ -16831,13 +16962,36 @@ function renderPutzNotes(){
     var mine=n.byUid===session.uid;
     var canDel = chef || (mine && (Date.now()-(n.ts||0) < 3600000));
     var del = canDel ? '<button class="pp-note-del" data-notedel="'+esc(n.id)+'">löschen</button>' : '';
+    /* „Wischmopp ist kaputt" landete bisher hier und blieb liegen. Bei
+       den Geraeten gibt es den Weg schon — eine Defektmeldung erzeugt
+       eine Aufgabe —, beim Putzplan fehlte er.
+
+       Nur fuer die Leitung: anlegen darf laut firestore.rules ohnehin
+       nur sie. Ein Knopf, der beim Mitarbeiter in eine Fehlermeldung
+       laeuft, waere eine Sackgasse mit Einladung. */
+    var machen = chef ? '<button class="pp-note-tat" data-notetask="'+esc(n.id)+'">→ Putzaufgabe</button>' : '';
     // Gleiche Darstellung wie beim Abhaken: Kürzel vorne, Konto in Klammern
     var wer = n.kuerzel
       ? esc(n.kuerzel)+' <span class="pp-konto">('+esc(n.by||'')+')</span>'
       : esc(n.by||'—');
     return '<div class="pp-note"><div class="pp-note-text">'+linkify(esc(n.text))+'</div>'+
-      '<div class="pp-note-foot"><span>'+wer+' · '+fmtDateTime(n.ts)+'</span>'+del+'</div></div>';
+      '<div class="pp-note-foot"><span>'+wer+' · '+fmtDateTime(n.ts)+'</span>'+machen+del+'</div></div>';
   }).join('');
+  box.querySelectorAll('[data-notetask]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-notetask'), n=null;
+      _ppNotes.forEach(function(x){ if(x.id===id) n=x; });
+      if(!n) return;
+      /* Anlegen-Zustand, dann den Text hineinschreiben: das Fenster
+         leert das Feld beim Oeffnen, also erst danach setzen. */
+      oeffnePutzAufgabe();
+      var f=$('ppTitle');
+      if(f){ f.value=String(n.text||'').trim().slice(0,120); }
+      /* Die Notiz bleibt stehen. Sie automatisch zu loeschen hiesse,
+         jemandem seine Nachricht wegzunehmen, weil man sie gelesen hat —
+         der Loeschknopf steht daneben, das ist eine eigene Entscheidung. */
+    });
+  });
   box.querySelectorAll('[data-notedel]').forEach(function(b){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-notedel');
@@ -20499,6 +20653,26 @@ function bindActions(){
   });
 
   // ── Putzplan ──
+  var ppS=$('ppSearch');
+  if(ppS) ppS.addEventListener('input',function(){
+    _ppFilter=this.value.trim().toLowerCase();
+    /* Bleibt offen, solange etwas drinsteht — auch nachdem der Finger
+       weg ist. Ein Feld, das sich mit dem Suchwort darin zuklappt,
+       versteckt den Grund, warum die Liste kurz ist. (Wie bei den
+       Aufgaben; suchFeldStand nimmt das Feld, nicht die Huelle.) */
+    var box=this.closest('.todo-search');
+    if(box) box.classList.toggle('offen', !!this.value);
+    suchFeldStand(this);
+    renderPutzplan();
+  });
+  document.querySelectorAll('[data-ppfilter]').forEach(function(c){
+    c.addEventListener('click',function(){
+      _ppMode=c.getAttribute('data-ppfilter');
+      document.querySelectorAll('[data-ppfilter]').forEach(function(x){
+        x.classList.toggle('on', x===c); });
+      renderPutzplan(); tick(6);
+    });
+  });
   var ppPr=$('ppPrint'); if(ppPr) ppPr.addEventListener('click',printPutzplan);
   var ppNoteAdd=$('ppNoteAdd'); if(ppNoteAdd) ppNoteAdd.addEventListener('click',addPutzNote);
   var ppNoteInp=$('ppNoteInput'); if(ppNoteInp) ppNoteInp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addPutzNote(); } });

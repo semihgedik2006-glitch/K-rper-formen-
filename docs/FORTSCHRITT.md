@@ -5443,3 +5443,201 @@ Der neue Durchlauf vergleicht die **Lage** der beiden „+ Neu"-Knöpfe,
 nicht ihr Vorhandensein: gleiche Höhe, gleicher Abstand rechts, jeweils
 auf zehn Pixel genau. „Steht auch dort" ist die Behauptung, also wird das
 gemessen.
+
+---
+
+# 59 · Suchen, Filtern, und aus einer Notiz wird eine Aufgabe
+
+**31. August 2026**
+
+Empfehlung 2 und 5 aus der Liste von Runde 58.
+
+## Suchen und Filtern — aber nur, was es hier geben kann
+
+Die Aufgaben haben Suchfeld, vier Filter-Chips und Sortierung. Der
+Putzplan hatte eine nackte Liste; bei zwölf Punkten je Studio ist das
+derselbe Bedarf.
+
+Übernommen sind **drei** Chips, nicht vier:
+
+| Aufgaben | Putzplan | warum |
+|---|---|---|
+| Alle | Alle | |
+| Nur offene | Nur offene | |
+| Überfällig | — | Putzaufgaben haben keine Frist |
+| Für mich | — | Putzaufgaben haben keine Zuweisung |
+| — | **Pausiert** | die Zahl stand schon da, der Weg dorthin fehlte |
+
+**Ein Filter, der nie etwas findet, ist ein Versprechen ohne Deckung.**
+Der Durchlauf schlägt deshalb an, wenn „Überfällig" oder „Für mich" hier
+auftauchen — nicht nur, wenn die drei richtigen fehlen.
+
+„Pausiert" gibt es umgekehrt nur hier: die Fortschrittszeile nannte die
+Zahl längst („2 pausiert"), aber es gab keinen Weg, sich diese zwei
+anzusehen.
+
+## Die Zahl, die stimmt und trotzdem lügt
+
+Die Fortschrittszeile zählt **immer den ganzen Plan**, nie das Gefilterte.
+Sonst stünde bei „Nur offene" plötzlich
+
+```
+0 von 3 erledigt · 2 pausiert
+```
+
+— rechnerisch richtig und als Aussage falsch, weil zwei Punkte längst
+abgehakt sind. Die Gegenprobe macht genau das und meldet den Satz oben
+wörtlich.
+
+## Ein Fehler in der Reihenfolge
+
+Der Zähler „X von Y" las die gezeigten Zeilen aus dem DOM:
+
+```js
+document.querySelectorAll('#ppList .pp-item').length
+```
+
+Der Aufruf steht aber **vor** dem Schreiben der Liste — gezählt wurde
+damit der vorige Durchgang. Auf dem Bildschirm stand „5 von 5", während
+drei Punkte dastanden. Die Zahl kommt jetzt als Argument herein.
+
+Gefunden nicht durch Nachdenken, sondern durch Hinsehen: die Probe gab
+`{"punkte":3,"zaehler":"5 von 5"}` aus, und die zwei Zahlen passten nicht
+zueinander.
+
+## Aus einer Notiz wird eine Aufgabe
+
+„Wischmopp ist kaputt" landete in den Notizen und blieb dort liegen. Bei
+den Geräten gibt es den Weg längst — eine Defektmeldung erzeugt eine
+Aufgabe mit `devId` —, beim Putzplan fehlte er.
+
+Jetzt steht an jeder Notiz **„→ Putzaufgabe"** (nur für die Leitung, weil
+`firestore.rules` das Anlegen ohnehin auf sie beschränkt). Der Knopf
+öffnet dasselbe Fenster im **Anlege**-Zustand, mit dem Notiztext als
+Titel und dem aktuellen Studio vorbelegt.
+
+**Die Notiz bleibt stehen.** Sie automatisch zu löschen hieße, jemandem
+seine Nachricht wegzunehmen, weil man sie gelesen hat. Der Löschknopf
+steht daneben; das ist eine eigene Entscheidung.
+
+## Gegenproben
+
+| Eingriff | Ergebnis |
+|---|---|
+| Fortschritt zählt die gefilterten | „ändert sich mit dem Filter: 2 von 5 → 0 von 3" ✓ |
+| Zähler wieder aus dem DOM gelesen | „„5 von 5", gezeigt werden 3 von 5" ✓ |
+| Notiz-Knopf öffnet im Bearbeiten-Zustand | „öffnet im Bearbeiten-Zustand" ✓ |
+| Notiz-Knopf auch für Mitarbeiter | „Mitarbeiter sieht → Putzaufgabe" ✓ |
+
+Und `test-gestaltung.js` hat wieder mein eigenes CSS kassiert:
+`.pp-note-tat` setzte `color` zweimal — einmal in der gemeinsamen Regel
+mit `.pp-note-del`, einmal in der eigenen. Die erste war damit tot. Der
+gemeinsame Teil trägt jetzt keine Farbe mehr.
+
+---
+
+# 60 · „Das sieht auch wieder so off aus" — und der ältere Fehler dahinter
+
+**31. August 2026**
+
+Gemeldet wurde die Glocke mit ihrem Abzeichen. Gefunden wurden **zwei**
+Fehler, und der ältere war nicht der, um den es ging.
+
+## Fehler 1, der eigentliche: das Symbol saß nicht in der Mitte
+
+```css
+button[data-ikon]:not(.btn){display:inline-flex;align-items:center;gap:var(--s6)}
+```
+
+Diese Zeile ist für Knöpfe mit Symbol **und** Wort gedacht. Sie
+überschreibt dabei das `place-items:center` von `.icon-btn` und setzt
+selbst **kein** `justify-content` — das Zeichen rutscht also an den
+linken Rand.
+
+Gemessen, app-weit: **drei Knöpfe, alle 12 Pixel daneben.**
+
+```
+tbBericht  dx=-12   (44x44)
+tbGlocke   dx=-12   (44x44)
+chatMic    dx=-12   (46x46)
+```
+
+Der Fehler war älter als das Abzeichen. Aufgefallen ist er erst, weil
+rechts eine Lücke klaffte, in der die neue Zahl allein stand.
+
+## Fehler 2: das Abzeichen war zu groß und saß in der Ecke
+
+19px auf einem 44px-Knopf — 43 % der Breite, hart in die Ecke gedrückt,
+mit einem Ring, der in den Rand schnitt. Meine eigene Begründung im Code
+war falsch: *„Maße wie `.tab .badge`"*. Dieselbe Größe, die **neben**
+Text gut liest, ist **auf** einem 44er-Knopf zu groß.
+
+Jetzt 16px, über der Ecke sitzend statt in ihr.
+
+## Die beiden haben sich gegenseitig verdeckt
+
+Das ist der interessante Teil. Solange das Symbol 12px links stand, lag
+das alte Abzeichen **neben** der Glocke — gemessen 0 px² Überdeckung.
+Erst mit mittigem Symbol wird sichtbar, was es angerichtet hätte:
+
+| | Überdeckung des Symbols |
+|---|---|
+| altes Abzeichen, Symbol mittig | **64 px²** |
+| neues Abzeichen, Symbol mittig | **0 px²** |
+
+**Wenn eine Messung „unauffällig" sagt, obwohl das Auge etwas sieht,
+fehlt der zweite Fehler.**
+
+## Die Regel wird hergeleitet, nicht gewählt
+
+Naheliegend wäre gewesen: *„ein Abzeichen darf höchstens 40 % der
+Knopfbreite belegen."* Das hätte die zwei Fälle getrennt (43 % gegen
+36 %) — aber nur, weil die Zahl dazwischenpasst. Eine ans Ergebnis
+angepasste Schwelle hält bis zum nächsten Sonderfall.
+
+*„Ein Abzeichen darf nicht auf dem Symbol liegen"* trennt dieselben
+Fälle **und** sagt, warum es schlecht aussah.
+
+## Und die Reichweite einer gemeinsamen Regel wird gemessen
+
+`justify-content:center` pauschal auf `button[data-ikon]` war die
+einfache Korrektur. Vorher nachgemessen, welche Knöpfe sich dadurch
+bewegen:
+
+```
+tbBericht   1 ->  13  ✓ gewollt
+tbGlocke    1 ->  13  ✓ gewollt
+chatMic     1 ->  13  ✓ gewollt
+Umfrage    12 ->  32  ✗ ein Menüeintrag, der zu Recht links steht
+```
+
+Deshalb trägt die Korrektur nur `.icon-btn` und `.attach-btn`.
+
+## Aus der Rückmeldung wurde eine Prüfung, kein Vorsatz
+
+*„bitte achte auf sowas bei ALLEN Knöpfen IMMER bevor es neue gibt"* —
+ein Vorsatz rutscht beim nächsten Mal wieder durch. `test-knoepfe.js`
+geht jetzt jede Ansicht ab: **165 Nur-Symbol-Knöpfe und 25 Abzeichen**
+je Lauf.
+
+Dazu `.claude/skills/knoepfe/` mit der Reihenfolge (erst messen, dann
+bauen, dann gegenprüfen) und den zwei Fallen, die mich beim Messen
+selbst erwischt haben.
+
+## Zwei Fallen beim Messen
+
+1. **Verstecktes Wort zählt als Text.** Meine erste Sonde filterte über
+   `textContent` und übersah `tbGlocke` und `tbBericht` — beide tragen
+   ein unsichtbares Wort („Bericht", die „0" des Abzeichens). Sie fand
+   nur `chatMic`. Erst die Prüfung auf *sichtbaren* Inhalt fand alle drei.
+2. **`getBoundingClientRect` allein reicht nicht**, wenn man wissen will,
+   welche Regel gewinnt. Die Ursache stand erst fest, nachdem der
+   Durchlauf `document.styleSheets` nach allen passenden Regeln gefragt
+   hat.
+
+## Gegenproben
+
+| Eingriff | Ergebnis |
+|---|---|
+| Zentrierung zurückgenommen | 3× „NICHT MITTIG … -12/0 px" ✓ |
+| altes Abzeichen (19px in der Ecke) | „ABZEICHEN AUF DEM SYMBOL — 64 px²" ✓ |
