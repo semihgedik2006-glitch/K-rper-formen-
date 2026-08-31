@@ -5443,3 +5443,93 @@ Der neue Durchlauf vergleicht die **Lage** der beiden „+ Neu"-Knöpfe,
 nicht ihr Vorhandensein: gleiche Höhe, gleicher Abstand rechts, jeweils
 auf zehn Pixel genau. „Steht auch dort" ist die Behauptung, also wird das
 gemessen.
+
+---
+
+# 59 · Suchen, Filtern, und aus einer Notiz wird eine Aufgabe
+
+**31. August 2026**
+
+Empfehlung 2 und 5 aus der Liste von Runde 58.
+
+## Suchen und Filtern — aber nur, was es hier geben kann
+
+Die Aufgaben haben Suchfeld, vier Filter-Chips und Sortierung. Der
+Putzplan hatte eine nackte Liste; bei zwölf Punkten je Studio ist das
+derselbe Bedarf.
+
+Übernommen sind **drei** Chips, nicht vier:
+
+| Aufgaben | Putzplan | warum |
+|---|---|---|
+| Alle | Alle | |
+| Nur offene | Nur offene | |
+| Überfällig | — | Putzaufgaben haben keine Frist |
+| Für mich | — | Putzaufgaben haben keine Zuweisung |
+| — | **Pausiert** | die Zahl stand schon da, der Weg dorthin fehlte |
+
+**Ein Filter, der nie etwas findet, ist ein Versprechen ohne Deckung.**
+Der Durchlauf schlägt deshalb an, wenn „Überfällig" oder „Für mich" hier
+auftauchen — nicht nur, wenn die drei richtigen fehlen.
+
+„Pausiert" gibt es umgekehrt nur hier: die Fortschrittszeile nannte die
+Zahl längst („2 pausiert"), aber es gab keinen Weg, sich diese zwei
+anzusehen.
+
+## Die Zahl, die stimmt und trotzdem lügt
+
+Die Fortschrittszeile zählt **immer den ganzen Plan**, nie das Gefilterte.
+Sonst stünde bei „Nur offene" plötzlich
+
+```
+0 von 3 erledigt · 2 pausiert
+```
+
+— rechnerisch richtig und als Aussage falsch, weil zwei Punkte längst
+abgehakt sind. Die Gegenprobe macht genau das und meldet den Satz oben
+wörtlich.
+
+## Ein Fehler in der Reihenfolge
+
+Der Zähler „X von Y" las die gezeigten Zeilen aus dem DOM:
+
+```js
+document.querySelectorAll('#ppList .pp-item').length
+```
+
+Der Aufruf steht aber **vor** dem Schreiben der Liste — gezählt wurde
+damit der vorige Durchgang. Auf dem Bildschirm stand „5 von 5", während
+drei Punkte dastanden. Die Zahl kommt jetzt als Argument herein.
+
+Gefunden nicht durch Nachdenken, sondern durch Hinsehen: die Probe gab
+`{"punkte":3,"zaehler":"5 von 5"}` aus, und die zwei Zahlen passten nicht
+zueinander.
+
+## Aus einer Notiz wird eine Aufgabe
+
+„Wischmopp ist kaputt" landete in den Notizen und blieb dort liegen. Bei
+den Geräten gibt es den Weg längst — eine Defektmeldung erzeugt eine
+Aufgabe mit `devId` —, beim Putzplan fehlte er.
+
+Jetzt steht an jeder Notiz **„→ Putzaufgabe"** (nur für die Leitung, weil
+`firestore.rules` das Anlegen ohnehin auf sie beschränkt). Der Knopf
+öffnet dasselbe Fenster im **Anlege**-Zustand, mit dem Notiztext als
+Titel und dem aktuellen Studio vorbelegt.
+
+**Die Notiz bleibt stehen.** Sie automatisch zu löschen hieße, jemandem
+seine Nachricht wegzunehmen, weil man sie gelesen hat. Der Löschknopf
+steht daneben; das ist eine eigene Entscheidung.
+
+## Gegenproben
+
+| Eingriff | Ergebnis |
+|---|---|
+| Fortschritt zählt die gefilterten | „ändert sich mit dem Filter: 2 von 5 → 0 von 3" ✓ |
+| Zähler wieder aus dem DOM gelesen | „„5 von 5", gezeigt werden 3 von 5" ✓ |
+| Notiz-Knopf öffnet im Bearbeiten-Zustand | „öffnet im Bearbeiten-Zustand" ✓ |
+| Notiz-Knopf auch für Mitarbeiter | „Mitarbeiter sieht → Putzaufgabe" ✓ |
+
+Und `test-gestaltung.js` hat wieder mein eigenes CSS kassiert:
+`.pp-note-tat` setzte `color` zweimal — einmal in der gemeinsamen Regel
+mit `.pp-note-del`, einmal in der eigenen. Die erste war damit tot. Der
+gemeinsame Teil trägt jetzt keine Farbe mehr.
