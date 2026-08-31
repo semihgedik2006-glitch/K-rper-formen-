@@ -293,6 +293,11 @@ var USERS = [
       doc: function (id) {
         var docPath = path + '/' + id;
         return {
+          /* Der Pfad muss AM Verweis haengen, nicht nur im Verschluss:
+             ein Stapelschreiben (db.batch) bekommt genau dieses Objekt
+             und sonst nichts. Ohne das Feld konnte die Attrappe nicht
+             sagen, WOHIN ein Stapel geschrieben haette. */
+          _pfad: docPath,
           /* Der Weg, den S() nimmt: db.collection('firmen').doc(k)
              .collection('todos'). Der landet NICHT bei fs.collection —
              und damit auch nicht bei den Attrappen, die einzelne Tests
@@ -584,7 +589,30 @@ var USERS = [
     settings: function () {},
     enablePersistence: function () { return Promise.resolve(); },
     collection: function (p) { return collection(p); },
-    batch: function () { return { set: function () {}, update: function () {}, delete: function () {}, commit: function () { return Promise.resolve(); } }; }
+    /* ── Stapelschreiben merkt sich jetzt auch, was es schreibt ──
+       Vorher verwarf der Stapel alles stillschweigend. Jeder Durchlauf
+       ueber eine Funktion, die db.batch() benutzt — Putzaufgabe fuer
+       mehrere Studios anlegen ist die groesste davon — meldete deshalb
+       „schreibt nichts", und das stimmte nur fuer die Attrappe.
+
+       Dieselbe Ablage wie bei set/update, damit ein Durchlauf nicht
+       wissen muss, welchen Weg der Code nimmt. */
+    batch: function () {
+      var sammlung = [];
+      function merke(art, ref, d) {
+        sammlung.push({ pfad: (ref && ref._pfad) || '(unbekannt)', art: art, daten: d });
+      }
+      return {
+        set: function (ref, d) { merke('set', ref, d); },
+        update: function (ref, d) { merke('update', ref, d); },
+        delete: function (ref) { merke('delete', ref); },
+        commit: function () {
+          window.__schreib = (window.__schreib || []).concat(sammlung);
+          sammlung = [];
+          return Promise.resolve();
+        }
+      };
+    }
   };
   window.firebase = {
     initializeApp: function () { return { firestore: function () { return fs; } }; },

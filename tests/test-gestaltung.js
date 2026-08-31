@@ -165,6 +165,31 @@ const ohneKommentar = (() => {
       errs.push('TOTER BALLAST: ' + ungenutzt.length + ' Symbol(e) werden nirgends ' +
         'benutzt (' + ungenutzt.join(', ') + ')');
     }
+    /* ── Kein Symbol zweimal am selben Element ──
+       Gefunden am 27.8. auf einem Bildschirmfoto der Putzplan-Seite: der
+       Drucken-Knopf zeigte ZWEI Drucker. Ursache war beides zugleich —
+       `data-ikon="drucken"` UND ein von Hand geschriebenes <svg> daneben.
+       ikonenEinsetzen() haengt seines davor, das alte bleibt stehen.
+
+       22 Knoepfe in der ganzen App waren so: Drucken, Excel, Kopieren,
+       Bestellmail, Foto hinzufuegen, Defekt melden … Jeder einzelne war
+       sichtbar falsch, und keiner ist je gemeldet worden — ein doppeltes
+       Symbol sieht aus wie Absicht, wenn man es nicht sucht.
+
+       Geprueft wird die QUELLE, nicht die gezeichnete Seite: hier faellt
+       es auf, bevor es jemand sehen muss. */
+    const doppelt = [];
+    const ELEMENT = /<(button|h3|h2|span|div|a)\b[^>]*\bdata-ikon="([a-zA-Z]+)"[^>]*>([\s\S]{0,600}?)<\/\1>/g;
+    let dm;
+    while ((dm = ELEMENT.exec(mk))) {
+      if (/<svg/.test(dm[3])) doppelt.push(dm[2] + (/id="([^"]+)"/.exec(dm[0]) ? ' (#' + /id="([^"]+)"/.exec(dm[0])[1] + ')' : ''));
+    }
+    if (doppelt.length) {
+      errs.push('SYMBOL DOPPELT: ' + doppelt.length + ' Element(e) tragen data-ikon UND ' +
+        'ein eigenes <svg> — sie zeichnen es zweimal nebeneinander (' +
+        doppelt.slice(0, 4).join(', ') + (doppelt.length > 4 ? ', …' : '') + ')');
+    }
+
     /* Gegenprobe: es gibt überhaupt Symbole. Sonst wäre eine App ganz
        ohne Symbole der grünste Durchlauf von allen. */
     if (benutzt.size < 5) {

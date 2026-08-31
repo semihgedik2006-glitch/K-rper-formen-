@@ -5256,3 +5256,94 @@ passiert". Jetzt steht dort, was wirklich gilt.
   *verschickt*, und Verschicken geht hier nicht.
 - **Die Tagesübersicht um 20:30 Uhr** ist nur im Code belegt, nicht in
   einem Lauf: ein Zeitplan hinterlässt keine Spur in der Datenbank.
+
+---
+
+# 58 · Ein Weg statt zwei — und 22 doppelte Symbole
+
+**28. August 2026**
+
+## Zwei Wege für dieselbe Handlung
+
+Eine Aufgabe legt man über **„+ Neu" in der Kopfzeile** an. Eine
+Putzaufgabe lag hinter einer Karte am **Fuß der Putzplan-Seite** — hinter
+der Liste und hinter den Notizen. Wer sie anlegen wollte, musste erst an
+allem vorbeiscrollen, was er gerade nicht suchte.
+
+| | vorher | jetzt |
+|---|---|---|
+| Griff | Karte am Seitenfuß | „+ Neu" in der Kopfzeile |
+| Studio | jedes Mal von Hand ankreuzen | das oben gewählte ist vorbelegt |
+| nach dem Anlegen | Formular bleibt leer stehen | Fenster geht zu |
+
+**Die Vorauswahl ist der eigentliche Gewinn.** Wer auf der Putzplan-Seite
+von Hürth steht und dort etwas anlegt, meint in aller Regel Hürth —
+vorher fing das Anlegen trotzdem regelmäßig mit *„Bitte mindestens ein
+Studio wählen"* an.
+
+Die Feld-Kennungen sind bewusst unverändert geblieben (`ppTitle`,
+`ppStudios`, `ppRepeat` …). `addPutzTask()` und `buildPutzplanSelect()`
+greifen darauf zu; ein Umzug im Markup sollte nicht die halbe Logik
+mitreißen.
+
+**Nicht mitgemacht:** Mitarbeiter dürfen weiterhin keine Putzaufgaben
+anlegen. Bei den Aufgaben dürfen sie es seit dem 13.8. — beim Putzplan
+sagt `firestore.rules` `allow create: if manages(studioKey)`. Das
+gleichzuziehen ist eine Entscheidung über Zuständigkeit, keine über
+Oberfläche, und gehört in eine eigene Runde.
+
+## Der Fund: 22 Knöpfe zeichnen ihr Symbol doppelt
+
+Auf dem ersten Bildschirmfoto der neuen Kopfzeile standen **zwei
+Drucker** nebeneinander. Ursache: der Knopf trug beides —
+
+```html
+<button data-ikon="drucken" …><svg class="sym">…</svg> Drucken</button>
+```
+
+`ikonenEinsetzen()` hängt sein SVG per `insertAdjacentHTML('afterbegin')`
+davor, das handgeschriebene bleibt stehen. Nachgezählt im laufenden
+Browser: **22 von 108** Elementen mit `data-ikon` waren so — Drucken,
+Als Excel, Kopieren, Bestellmail, Foto hinzufügen, Defekt melden,
+Checkliste senden und fünfzehn weitere.
+
+Jeder einzelne war sichtbar falsch, und keiner ist je gemeldet worden.
+**Ein doppeltes Symbol sieht aus wie Absicht, wenn man es nicht sucht.**
+
+Genau das war der Grund, aus dem `data-ikon` überhaupt eingeführt wurde:
+eine Quelle je Bild. Die 22 waren die Reste der Umstellung — beide
+Fassungen standen noch da.
+
+`test-gestaltung.js` prüft es jetzt an der Quelle, nicht am Bildschirm:
+ein Element mit `data-ikon` darf kein eigenes `<svg>` enthalten.
+Gegenprobe mit einem zurückgebauten Knopf: *„SYMBOL DOPPELT: 1
+Element(e) … (drucken (#ppPrint))"* ✓
+
+## Die Attrappe verschluckte Stapelschreiben
+
+`addPutzTask()` schreibt über `db.batch()` — für mehrere Studios auf
+einmal. Der Stapel der Attrappe war:
+
+```js
+batch: function () { return { set: function () {}, … } }
+```
+
+Alles still verworfen. Der erste Lauf meldete darum *„Anlegen schreibt
+nichts"*, und das stimmte nur für die Attrappe. Beide Attrappen legen
+jetzt auch Stapel in `window.__schreib` ab, und der Verweis trägt seinen
+Pfad mit (`_pfad`) — ohne den kann ein Stapel nicht sagen, **wohin** er
+geschrieben hätte.
+
+## Gegenproben
+
+| Eingriff | Ergebnis |
+|---|---|
+| Vorauswahl abgeschaltet | „angekreuzt ist []" + drei Folgefehler ✓ |
+| Fenster bleibt nach dem Anlegen offen | „steht noch offen" ✓ |
+| `data-manage-only` am Knopf entfernt | „Mitarbeiter sieht + Neu" ✓ |
+| Doppel-SVG am Drucken-Knopf zurückgebaut | `test-gestaltung` rot ✓ |
+
+Der neue Durchlauf vergleicht die **Lage** der beiden „+ Neu"-Knöpfe,
+nicht ihr Vorhandensein: gleiche Höhe, gleicher Abstand rechts, jeweils
+auf zehn Pixel genau. „Steht auch dort" ist die Behauptung, also wird das
+gemessen.
