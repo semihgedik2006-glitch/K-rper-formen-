@@ -5724,4 +5724,50 @@ dazu eine eigene CSP mit Skript-Hash. Ein Durchlauf darüber wäre grün
 gewesen und hätte nichts bewiesen — die Sorte Grün, gegen die dieses
 Projekt sonst anschreibt.
 
-Beim Nachsehen fiel dafür etwas Ernsteres auf. Siehe `OFFEN.md`.
+## Dafür lag darunter etwas Ernsteres
+
+`werbung.html` wird ausgeliefert und hatte ein Kontaktformular: Name,
+E-Mail, Nachricht, Knopf „Probetraining anfragen". Darüber stand *„Wir
+melden uns innerhalb von 24 Stunden bei dir – versprochen."* Nach dem
+Absenden erschien *„Danke! Wir melden uns innerhalb von 24 Stunden. 💪"*
+
+**Die Nachricht ging nirgendwohin.** Kein `fetch`, kein
+`XMLHttpRequest`, kein `action`, kein Formspree — nur
+`note.textContent = …` und `form.reset()`. Im Quelltext stand daneben:
+
+```html
+<!-- HINWEIS: Für echten Versand einen Backend-Service einbinden (z.B. Formspree) -->
+```
+
+Der Platzhalter ist live gegangen. Wer ihn ausgefüllt hat, bekam ein
+ausdrückliches Versprechen und nie eine Antwort — während Telefonnummer,
+E-Mail-Adresse und Anschrift direkt daneben standen und funktionieren.
+
+**Nicht stillschweigend geändert**, weil die zwei Wege verschieden teuer
+sind: den Text ehrlich machen (fünf Minuten) oder echten Versand bauen
+(Cloud Function plus Regel für einen öffentlichen, nicht angemeldeten
+Schreibweg — ein Spam-Tor, das eine Bremse braucht). Entschieden wurde
+**ehrlich machen**.
+
+Jetzt stehen an der Stelle die zwei Wege, die funktionieren: Telefon
+zuerst, weil der Termin dort im selben Gespräch steht, daneben E-Mail
+mit vorbereitetem Betreff und Textgerüst. Beides sind gewöhnliche
+Verweise — sie funktionieren auch, wenn JavaScript scheitert. Das ist
+der Punkt.
+
+**Ein Formular, das nur so tut, ist schlechter als gar keins:** es hält
+jemanden davon ab, den Weg zu gehen, der wirklich funktioniert.
+
+Der Exit-Intent hing am Fokus im Formular. Er zählt jetzt den Griff zu
+Telefon oder E-Mail — wer schon anruft, braucht kein Fenster mehr.
+
+## Und noch ein toter Link auf derselben Seite
+
+Im Fußbereich stehen **„Datenschutz" und „AGB" als `href="#"`**. Beide
+führen nirgendwohin. `werbung.html` ist eine öffentliche, gewerbliche
+Seite; die App hat ihre Angaben unter Verwaltung → System, diese Seite
+hat gar keine.
+
+Steht in `OFFEN.md` und ist bewusst nicht von mir gelöst: das ist
+dieselbe Frage wie die vier rechtlichen Pflichtfelder — eine
+Entscheidung, kein Handgriff.

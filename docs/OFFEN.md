@@ -83,6 +83,25 @@ Nachtrag** — dann kommt der Datenschutz-Absatz mit dazu.
 > * **Wirklich versenden:** Cloud Function plus Regel für einen
 >   öffentlichen, nicht angemeldeten Schreibweg — das ist ein Spam-Tor
 >   und braucht eine Bremse. Eine eigene Runde.
+>
+> **31.8. entschieden: ehrlich gemacht.** Das Formular ist weg, an seiner
+> Stelle stehen die zwei Wege, die funktionieren — Telefon zuerst (der
+> Termin steht im selben Gespräch), daneben E-Mail mit vorbereitetem
+> Betreff. Beides sind gewöhnliche Verweise und funktionieren auch ohne
+> JavaScript. Der Satz „Wir melden uns innerhalb von 24 Stunden –
+> versprochen" ist ersetzt.
+>
+> **Und dabei aufgefallen, noch offen:** im Fußbereich derselben Seite
+> stehen **„Datenschutz" und „AGB" als `href="#"`** — beide Links führen
+> nirgendwohin. `werbung.html` ist eine öffentliche, gewerbliche Seite;
+> Impressum und Datenschutzerklärung gehören dort hin. Die App hat ihre
+> Angaben unter Verwaltung → System, diese Seite hat gar keine.
+>
+> Ich schreibe hier keinen Rechtstext hin — das ist dieselbe Frage wie
+> die vier Pflichtfelder weiter unten und der Datenschutztext über einen
+> Anwalt. Entweder die Links zeigen auf die vorhandenen Seiten von
+> koerperformen.com, oder die Seite bekommt eigene. **Ein toter Link ist
+> in beiden Fällen die schlechteste Antwort.**
 
 ## Auf einen Blick
 
