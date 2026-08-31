@@ -403,6 +403,61 @@ service cloud.firestore {
             && request.resource.data.audio.size() <= 800000);
     }
 
+    // ── Reaktionen ────────────────────────────────────────────────────
+    // reactions sieht so aus: { '👍': ['uid1','uid2'], '❤️': ['uid3'] }
+    //
+    // Bisher stand an der Chat-Nachricht nur hasOnly(['reactions']): das
+    // Feld durfte angefasst werden, sein INHALT aber beliebig. Jeder
+    // Eingeloggte konnte damit die Reaktionen aller anderen loeschen oder
+    // eine fremde Kennung eintragen — und es faellt niemandem auf, weil
+    // es aussieht wie eine gewoehnliche Reaktion.
+    //
+    // Das war zu verschmerzen, solange es EINE Stelle war. Jetzt kommen
+    // Brett und Aushaenge dazu; eine schwache Regel an drei Stellen zu
+    // kopieren ist der Punkt, an dem sie bleibt. Also einmal richtig,
+    // und alle drei benutzen dieselbe.
+    //
+    // Die Zeichen stehen hier noch einmal, obwohl sie auch in index.html
+    // stehen: die Regel muss auch dann halten, wenn jemand OHNE die
+    // Oberflaeche schreibt — genau dafuer gibt es sie.
+    function reaktionsZeichen() {
+      return ['👍','❤️','😂','🎉','👏','😮'];
+    }
+
+    // Alles ausser der eigenen Kennung muss gleich bleiben. Deshalb wird
+    // auf beiden Seiten die eigene Kennung entfernt und dann verglichen:
+    // hinzufuegen und wegnehmen sind damit erlaubt, alles andere nicht.
+    // Firestore-Regeln koennen nicht ueber Schluessel laufen, darum steht
+    // jedes Zeichen einzeln da.
+    //
+    // Die zweite Zeile sieht wie eine Kleinigkeit aus und ist der halbe
+    // Schutz. removeAll() streicht ALLE Vorkommen — Dubletten der eigenen
+    // Kennung sind fuer den Vergleich damit unsichtbar. Im Emulator
+    // nachgemessen: 4000 Kopien der eigenen Kennung in einem neuen
+    // Zeichen gingen glatt durch, wenn nur nichts Fremdes dabei kaputt
+    // ging. Ein Dokument darf 1 MB gross sein; wer es vollschreibt, macht
+    // es unbrauchbar, und bezahlt wird es vom Betreiber. Also: die eigene
+    // Kennung darf hoechstens EINMAL in der Liste stehen — das Entfernen
+    // darf sie um hoechstens einen Eintrag kuerzen.
+    function gleichOhneMich(alt, neu, z) {
+      return alt.get(z, []).removeAll([request.auth.uid])
+          == neu.get(z, []).removeAll([request.auth.uid])
+        && neu.get(z, []).size()
+           - neu.get(z, []).removeAll([request.auth.uid]).size() <= 1;
+    }
+    function nurEigeneReaktion() {
+      let alt = resource.data.get('reactions', {});
+      let neu = request.resource.data.get('reactions', {});
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+        && neu.keys().hasOnly(reaktionsZeichen())
+        && gleichOhneMich(alt, neu, '👍')
+        && gleichOhneMich(alt, neu, '❤️')
+        && gleichOhneMich(alt, neu, '😂')
+        && gleichOhneMich(alt, neu, '🎉')
+        && gleichOhneMich(alt, neu, '👏')
+        && gleichOhneMich(alt, neu, '😮');
+    }
+
     // ── Chat-Nachrichten ──
     match /channels/{channelId}/messages/{msgId} {
       allow read: if istAktiv() && kanalErlaubt(channelId);
@@ -412,10 +467,11 @@ service cloud.firestore {
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 2000
         && audioOk();
-      // Reagieren darf jeder (nur das Feld reactions).
+      // Reagieren darf jeder — aber nur mit der EIGENEN Kennung und nur
+      // mit einem der sechs Zeichen. Siehe nurEigeneReaktion() oben.
       // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
       allow update: if istAktiv() && kanalErlaubt(channelId) && (
-           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+           nurEigeneReaktion()
         // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
         // Stimmenfeld anfassen, nicht Frage oder Antworten.
         || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
@@ -529,7 +585,11 @@ service cloud.firestore {
       // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
       allow update: if isChef()
         || (isLeiter() && resource.data.target in myKeys())
-        || (istAktiv() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']));
+        || (istAktiv() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']))
+        // Reagieren darf jeder — nur mit der eigenen Kennung, nur mit einem
+        // der sechs Zeichen. Neben dem Gelesen-Haken, nicht statt ihm:
+        // „gesehen" und „finde ich gut" sind zwei Aussagen.
+        || (istAktiv() && nurEigeneReaktion());
       allow delete: if isChef()
         || (isLeiter() && resource.data.target in myKeys());
     }
@@ -803,7 +863,10 @@ service cloud.firestore {
     match /board/{postId} {
       allow read: if istAktiv();
       allow create: if istAktiv() && request.resource.data.uid == request.auth.uid;
-      allow update: if false;
+      // Bearbeiten geht weiterhin nicht — ein Aushang, dessen Text sich
+      // hinterher aendert, ist kein Aushang. Reagieren schon: nur mit der
+      // eigenen Kennung und nur mit einem der sechs Zeichen.
+      allow update: if istAktiv() && nurEigeneReaktion();
       allow delete: if isChef()
         || (istAktiv() && resource.data.uid == request.auth.uid);
     }
@@ -1012,10 +1075,11 @@ service cloud.firestore {
             && request.resource.data.text is string
             && request.resource.data.text.size() <= 2000
             && audioOk());
-          // Reagieren darf jeder (nur das Feld reactions).
+          // Reagieren darf jeder — aber nur mit der EIGENEN Kennung und nur
+          // mit einem der sechs Zeichen. Siehe nurEigeneReaktion() oben.
           // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
           allow update: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId) && (
-               request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+               nurEigeneReaktion()
             // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
             // Stimmenfeld anfassen, nicht Frage oder Antworten.
             || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
@@ -1106,7 +1170,10 @@ service cloud.firestore {
           // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
           allow update: if inFirma(f) && (isChef()
             || (isLeiter() && resource.data.target in myKeys())
-            || (istAktiv() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])));
+            || (istAktiv() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']))
+            // Reagieren darf jeder — nur mit der eigenen Kennung, nur mit
+            // einem der sechs Zeichen.
+            || (istAktiv() && nurEigeneReaktion()));
           allow delete: if inFirma(f) && (isChef()
             || (isLeiter() && resource.data.target in myKeys()));
         }
@@ -1293,7 +1360,9 @@ service cloud.firestore {
         match /board/{postId} {
           allow read: if inFirma(f) && (istAktiv());
           allow create: if inFirma(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
-          allow update: if false;
+          // Bearbeiten geht weiterhin nicht, Reagieren schon — nur mit der
+          // eigenen Kennung und nur mit einem der sechs Zeichen.
+          allow update: if inFirma(f) && (istAktiv() && nurEigeneReaktion());
           allow delete: if inFirma(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
         }

@@ -5870,3 +5870,111 @@ weil sonst „hebt hervor" nur hieße „setzt irgendwo ein span":
 Die Markierung wird **an der Randfarbe** nachgemessen, nicht am
 Klassennamen: eine Klasse, die dransteht und nichts ändert, wäre sonst
 grün.
+
+---
+
+# 63 · Reaktionen — und die Regel, die schon vorher zu schwach war
+
+## Der Anlass
+
+Reagieren war, wie die Erwähnung vorher, eine reine Chat-Sache. Am
+Schwarzen Brett und an den Aushängen der Leitung gab es keinen Weg, auf
+etwas zu antworten, ausser einen eigenen Beitrag zu schreiben. Für
+*„gesehen, finde ich gut"* ist das zu viel Aufwand — also passiert es
+nicht, und der Verfasser hört nie etwas.
+
+## Der Fund, der wichtiger war als das Feature
+
+Reagieren heisst, in ein Dokument zu schreiben, das jemand anderem
+gehört. Am Brett stand `allow update: if false` — das musste aufgehen.
+Beim Nachsehen, wie der Chat es macht, stand dort:
+
+```
+affectedKeys().hasOnly(['reactions'])
+```
+
+Das Feld durfte angefasst werden, sein **Inhalt aber beliebig**. Jeder
+Eingeloggte konnte damit
+
+* die Reaktionen aller anderen löschen,
+* eine fremde Kennung eintragen (*„Anna hat das mit ❤️ versehen"*),
+* ein beliebiges Zeichen setzen,
+* eine beliebig grosse Liste hineinschreiben.
+
+Keiner dieser Fälle sieht hinterher nach einem Angriff aus. Er sieht aus
+wie eine gewöhnliche Reaktion — genau deshalb fällt er nicht auf.
+
+Zu verschmerzen war das, solange es **eine** Stelle war. Mit Brett und
+Aushängen wären es drei geworden. **Eine schwache Regel, die man dreimal
+kopiert, bleibt.** Also einmal richtig: `nurEigeneReaktion()` in
+`firestore.rules`, benutzt von allen dreien, in beiden Welten (flach und
+unter `firmen/`).
+
+Der Kern ist eine einzige Idee: auf beiden Seiten die eigene Kennung
+entfernen und dann vergleichen. Was danach noch verschieden ist, gehört
+jemand anderem.
+
+## Grün aus dem falschen Grund
+
+Der erste Durchlauf war 40 von 40 grün — und eine Zeile davon log.
+*„Eine riesige Liste geht NICHT"* fiel nur, weil dabei nebenbei die
+Reaktion eines anderen verschwand. Eine riesige Liste aus **lauter
+eigenen Kennungen in einem neuen Zeichen** hätte durchgehen müssen.
+
+Im Emulator nachgemessen statt angenommen:
+
+```
+LOCH OFFEN: 4000 eigene Kennungen sind durchgegangen
+```
+
+`removeAll()` streicht **alle** Vorkommen — Dubletten der eigenen
+Kennung sind für den Vergleich unsichtbar. Ein Dokument darf 1 MB gross
+sein; wer es vollschreibt, macht es unbrauchbar, und bezahlt wird es vom
+Betreiber.
+
+Die Regel hat jetzt eine zweite Zeile: das Entfernen der eigenen Kennung
+darf die Liste um **höchstens einen** Eintrag kürzen. Dazu die
+Gegenprobe, dass *einmal* die eigene Kennung im selben Zeichen weiterhin
+geht — sonst hiesse die Zeile nur „lange Listen sind verboten"; verboten
+ist die Dublette.
+
+## Die Oberfläche: eine Funktion, nicht drei
+
+`reactionsHTML(m, art)` und `toggleReaction(mid, e, art)` bedienen alle
+drei Orte. Die Sorte fährt am Knopf mit (`data-rtyp`). Drei Kopien wären
+der naheliegende Weg gewesen — und drei Kopien laufen auseinander,
+sobald eine davon einen Sonderfall bekommt. Genau das war bei den
+Erwähnungen eine Runde vorher der Fund.
+
+Im Chat kommt der Zeichenwähler über das Nachrichtenblatt (langer
+Druck). Brett und Aushang haben kein Blatt; dort steht ein gedämpftes
+`+` in der Zeile, das die sechs Zeichen aufklappt. Es steht **immer**
+da, auch ohne eine einzige Reaktion — sonst gäbe es keinen Weg, die
+erste zu setzen.
+
+## Nicht dabei: die Übergabe
+
+Eine Übergabe ist betrieblich, gilt 24 Stunden und geht von einer
+Schicht an die nächste. Ein 🎉 darunter ist Lärm, kein Signal. Weggelassen
+mit Grund, nicht vergessen.
+
+## Prüfungen
+
+| Wo | Was |
+|---|---|
+| `tests/rules/reaktionen.test.js` | **46 Fälle im Emulator**, an allen drei Orten dieselben: fremde Reaktion löschen, alles wegwischen, fremde Kennung eintragen, fremdes Zeichen, 4000 Dubletten, Text nebenbei ändern, wartendes Konto, anonym, fremde Firma |
+| `tests/test-reaktionen.js` | **25 Prüfungen im Browser**: steht der Weg da, und schreibt er das, was die Regel durchlässt |
+
+Das ist keine Doppelung, sondern die andere Richtung. Eine Oberfläche,
+die etwas schreibt, das die Regel abweist, ist ein Knopf, der nichts tut
+— und das merkt man erst im Betrieb.
+
+Dazu vier Zeilen, die es sonst nicht gäbe: das `+` trägt Text und fällt
+deshalb durch `test-knoepfe.js`, das nur Nur-Symbol-Knöpfe misst. Also
+hier von Hand nachgemessen — gleiche Höhe, eine Linie, in der Flucht des
+Textes darüber, kein Überlauf.
+
+Und drei Runden, die prüfen, was **nicht** aufgehen durfte: das Brett
+bleibt unbearbeitbar (auch für den Verfasser, auch für den Chef), und
+der Gelesen-Haken am Aushang funktioniert weiterhin — er lief bisher
+über dieselbe Zeile.

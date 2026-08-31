@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-BJPJvqjK7TLYRrL7kfli5tIZJSenSeXfz56MmqiLEpU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-Uz1/vXJ2JkTJxUzpNUCKazTUsAYieTb7BrL2r8XAfUY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2546,6 +2546,14 @@ body.light{--dot:rgba(20,10,40,.06)}
 .react:active{transform:scale(.9)}
 .react.mine{background:rgba(34,211,238,.16);border-color:var(--accent);color:var(--accent)}
 .react b{font-weight:700;font-size:var(--t-2xs)}
+/* Der Zeichenwaehler ausserhalb des Chats. Im Chat kommt er ueber das
+   Nachrichtenblatt; Brett und Aushang haben kein Blatt, dort steht das
+   „+" in der Zeile. Es ist bewusst gedaempft: der Weg zur ersten
+   Reaktion muss da sein, aber nicht lauter als die Reaktionen selbst. */
+.react-plus{color:var(--text-3);font-weight:700;padding:var(--s2) var(--s10)}
+.react-wahl{display:inline-flex;gap:var(--s4);flex-wrap:wrap}
+.react-wahl[hidden]{display:none}
+@media (hover:hover){ .react:hover{border-color:var(--accent)} }
 /* Erwähnung im Text */
 .mention{color:var(--accent);font-weight:700;background:rgba(34,211,238,.12);
   padding:var(--s1) var(--s4);border-radius:var(--r-xs)}
@@ -11748,17 +11756,68 @@ function cancelCompose(){
 var EDIT_WINDOW_MS = 15*60*1000;
 var REACT_EMOJIS = ['👍','❤️','😂','🎉','👏','😮'];
 
-/* Reaktionen unter einer Nachricht darstellen.
-   m.reactions sieht so aus: { '👍': ['uid1','uid2'], '❤️': ['uid3'] } */
-function reactionsHTML(m){
+/* Reaktionen darstellen.
+   m.reactions sieht so aus: { '👍': ['uid1','uid2'], '❤️': ['uid3'] }
+
+   Die Sorte („chat", „brett", „aushang") faehrt am Knopf mit, damit
+   EINE Funktion alle drei Orte bedient. Der Weg ueber drei Kopien war
+   der naheliegende — und drei Kopien laufen auseinander, sobald eine
+   davon einen Sonderfall bekommt. Genau das ist bei markMentions()
+   gerade erst aufgefallen: dort war die Hervorhebung im Chat und
+   sonst nirgends.
+
+   Der Chat bekommt seinen Zeichenwaehler ueber das Nachrichtenblatt
+   (langer Druck). Am Brett und am Aushang gibt es das Blatt nicht;
+   dort steht ein „+" in der Zeile, das die sechs Zeichen aufklappt. */
+function reactionsHTML(m, art){
   var r=m.reactions||{};
   var keys=Object.keys(r).filter(function(k){ return (r[k]||[]).length; });
-  if(!keys.length) return '';
-  return '<div class="reacts">'+keys.map(function(k){
+  var sorte=art||'chat', id=esc(m.id);
+  var zeichen=keys.map(function(k){
     var list=r[k]||[], mine=list.indexOf(session.uid)>=0;
-    return '<button class="react'+(mine?' mine':'')+'" data-toggle="'+esc(k)+'" data-mid="'+esc(m.id)+'">'+
-      k+'<b>'+list.length+'</b></button>';
-  }).join('')+'</div>';
+    return '<button class="react'+(mine?' mine':'')+'" data-toggle="'+esc(k)+
+      '" data-mid="'+id+'" data-rtyp="'+sorte+'">'+k+'<b>'+list.length+'</b></button>';
+  }).join('');
+  if(sorte==='chat') return keys.length ? '<div class="reacts">'+zeichen+'</div>' : '';
+  /* Der Waehler steht IMMER da, auch ohne eine einzige Reaktion —
+     sonst gibt es keinen Weg, die erste zu setzen. */
+  return '<div class="reacts">'+zeichen+
+    '<button class="react react-plus" data-rauf="'+id+'" data-rtyp="'+sorte+
+    '" aria-label="reagieren">+</button>'+
+    '<span class="react-wahl" data-rwahl="'+id+'" hidden>'+
+      REACT_EMOJIS.map(function(e){
+        var meins=((r[e]||[]).indexOf(session.uid)>=0);
+        return '<button class="react'+(meins?' mine':'')+'" data-toggle="'+esc(e)+
+          '" data-mid="'+id+'" data-rtyp="'+sorte+'">'+e+'</button>';
+      }).join('')+
+    '</span></div>';
+}
+
+/* Klicks auf Reaktionen in einem beliebigen Kasten verdrahten.
+   Einmal geschrieben, von Brett und Aushaengen benutzt. */
+function reaktionenVerdrahten(box){
+  if(!box) return;
+  box.querySelectorAll('[data-toggle][data-rtyp]').forEach(function(b){
+    if(b.getAttribute('data-rtyp')==='chat') return;   // der Chat hat seinen eigenen Weg
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      toggleReaction(b.getAttribute('data-mid'), b.getAttribute('data-toggle'),
+                     b.getAttribute('data-rtyp'));
+    });
+  });
+  box.querySelectorAll('[data-rauf]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      var w=box.querySelector('[data-rwahl="'+b.getAttribute('data-rauf')+'"]');
+      if(!w) return;
+      /* Nur einer offen. Zwei aufgeklappte Reihen untereinander sind
+         nicht mehr auseinanderzuhalten, welche zu welchem Beitrag
+         gehoert. */
+      box.querySelectorAll('[data-rwahl]').forEach(function(x){ if(x!==w) x.hidden=true; });
+      w.hidden=!w.hidden;
+      tick(8);
+    });
+  });
 }
 
 /* ── Erwähnungen ──
@@ -12023,17 +12082,29 @@ function bindMessageTools(box){
   });
 }
 
-/* Reaktion setzen oder wieder entfernen */
-function toggleReaction(mid, emoji){
-  var m=(_curMsgs||[]).filter(function(x){ return x.id===mid; })[0]; if(!m) return;
+/* Reaktion setzen oder wieder entfernen.
+
+   Woher der aktuelle Stand kommt und wohin geschrieben wird, haengt an
+   der Sorte. Beides steht hier zusammen und nicht an drei Stellen: eine
+   Liste, die nicht zum Pfad passt, wuerde die Reaktion eines anderen
+   ueberschreiben — und die Regel weist das seit heute ab, was den
+   Fehler zu einer Fehlermeldung macht statt zu stillem Datenverlust. */
+function reaktionsQuelle(art){
+  if(art==='brett')   return { liste:_board, ref:function(id){ return S('board').doc(id); } };
+  if(art==='aushang') return { liste:_allAnns, ref:function(id){ return S('announcements').doc(id); } };
+  return { liste:_curMsgs, ref:function(id){
+    return S('channels').doc(currentChannel).collection('messages').doc(id); } };
+}
+function toggleReaction(mid, emoji, art){
+  var q=reaktionsQuelle(art);
+  var m=(q.liste||[]).filter(function(x){ return x.id===mid; })[0]; if(!m) return;
   var r=Object.assign({}, m.reactions||{});
   var list=(r[emoji]||[]).slice();
   var i=list.indexOf(session.uid);
   if(i>=0) list.splice(i,1); else list.push(session.uid);
   if(list.length) r[emoji]=list; else delete r[emoji];
   tick(8);
-  S('channels').doc(currentChannel).collection('messages').doc(mid)
-    .update({ reactions:r }).catch(function(e){ toast(errMsg(e),true); });
+  q.ref(mid).update({ reactions:r }).catch(function(e){ toast(errMsg(e),true); });
 }
 
 /* ── Chat: „Nach unten"-Knopf mit Zähler ──
@@ -12538,8 +12609,10 @@ function renderBoard(){
     var michGemeint = Array.isArray(b.mentions) && b.mentions.indexOf(session.uid)>=0;
     return '<div class="bb-item'+(michGemeint?' mentioned':'')+'"><span class="bb-kind">'+esc(BB_KINDS[b.kind]||'Info')+'</span>'+
       '<div class="bb-text">'+markMentions(linkify(esc(b.text||'')))+'</div>'+
-      '<div class="bb-head"><span>'+esc(b.name||'')+' · '+fmtDateTime(b.ts)+'</span>'+del+'</div></div>';
+      '<div class="bb-head"><span>'+esc(b.name||'')+' · '+fmtDateTime(b.ts)+'</span>'+del+'</div>'+
+      reactionsHTML(b,'brett')+'</div>';
   }).join('');
+  reaktionenVerdrahten(box);
   box.querySelectorAll('[data-bbdel]').forEach(function(x){
     x.addEventListener('click',function(){
       var id=x.getAttribute('data-bbdel'), backup=copyOf(_board, id);
@@ -15070,7 +15143,8 @@ function renderAnnouncements(anns){
           '<span class="pin">'+ikon('megafon')+'</span>'+
           '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
           '<div class="ann-body">'+markMentions(linkify(esc(a.text)))+'</div>'+
-          '<span class="ann-target">'+esc(label)+'</span>'+readHtml+'</div>';
+          '<span class="ann-target">'+esc(label)+'</span>'+readHtml+
+          reactionsHTML(a,'aushang')+'</div>';
       }
       readHtml='<button class="ann-read'+(fehlen.length?' offen':'')+'" data-wer="'+esc(a.id)+'">'+
         ikon('auge')+' '+n+'/'+betroffen.length+' gelesen'+
@@ -15086,8 +15160,10 @@ function renderAnnouncements(anns){
       '<span class="pin">'+ikon('megafon')+'</span>'+
       '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
       '<div class="ann-body">'+markMentions(linkify(esc(a.text)))+'</div>'+
-      '<span class="ann-target">'+esc(label)+'</span>'+readHtml+'</div>';
+      '<span class="ann-target">'+esc(label)+'</span>'+readHtml+
+      reactionsHTML(a,'aushang')+'</div>';
   }).join('');
+  reaktionenVerdrahten(area);
   if(chef){
     area.querySelectorAll('[data-wer]').forEach(function(b){
       b.addEventListener('click',function(){
