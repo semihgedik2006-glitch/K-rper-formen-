@@ -162,6 +162,91 @@ async function lauf() {
     if (await page.evaluate(() => !!document.querySelector('#putzModal.show')))
       fehler.push('Nach dem Anlegen steht das Fenster noch offen');
 
+    /* ── Bearbeiten ──
+       Vorher konnte man eine Putzaufgabe nur LÖSCHEN. Ein Tippfehler im
+       Titel kostete Löschen + Neuanlegen — und damit die Erledigt-
+       Historie. Genau das ist hier die wichtigste Behauptung: der Haken
+       von heute Morgen überlebt eine Änderung am Titel. */
+    await page.selectOption('#ppStudio', 'studio-6');
+    await page.waitForTimeout(900);
+
+    const stifte = await page.evaluate(() => document.querySelectorAll('[data-ppedit]').length);
+    if (!stifte) fehler.push('Keine Bearbeiten-Knöpfe an den Putzaufgaben');
+
+    /* c2 „Spiegel putzen" ist wöchentlich und NICHT erledigt; c1 „Böden
+       wischen" ist erledigt. Beide werden gebraucht. */
+    const zeile = (id) => page.evaluate(x => {
+      const k = document.querySelector('[data-ppedit="' + x + '"]');
+      if (!k) return false; k.click(); return true;
+    }, id);
+
+    if (!(await zeile('c2'))) fehler.push('Putzaufgabe c2 hat keinen Stift');
+    await page.waitForTimeout(700);
+    const bearb = await page.evaluate(() => ({
+      titel: (document.getElementById('ppmTitel') || {}).textContent || '',
+      knopf: (document.getElementById('ppAddWort') || {}).textContent || '',
+      wert: (document.getElementById('ppTitle') || {}).value,
+      rep: (document.getElementById('ppRepeat') || {}).value,
+      studioFeld: !!(document.getElementById('ppStudioFeld') || {}).getClientRects
+        && document.getElementById('ppStudioFeld').getClientRects().length > 0
+    }));
+    if (!/bearbeiten/i.test(bearb.titel))
+      fehler.push('Überschrift sagt nicht „bearbeiten": „' + bearb.titel + '"');
+    if (!/speichern/i.test(bearb.knopf))
+      fehler.push('Der Knopf sagt nicht „speichern": „' + bearb.knopf + '"');
+    if (bearb.wert !== 'Spiegel putzen')
+      fehler.push('Der Titel steht nicht im Feld: „' + bearb.wert + '"');
+    if (bearb.rep !== 'weekly')
+      fehler.push('Die Wiederholung steht nicht im Feld: „' + bearb.rep + '"');
+    /* Eine Aufgabe liegt in genau einem Studio; sie beim Ändern in ein
+       anderes zu schieben ist etwas anderes als sie zu ändern. */
+    if (bearb.studioFeld)
+      fehler.push('Beim Bearbeiten steht die Studio-Auswahl noch da');
+
+    await page.evaluate(() => { window.__schreib = []; });
+    await page.fill('#ppTitle', 'Spiegel und Fenster putzen');
+    await page.click('#ppAdd');
+    await page.waitForTimeout(900);
+
+    const g = await page.evaluate(() =>
+      (window.__schreib || []).filter(x => /\/cleaning\//.test(x.pfad)));
+    if (!g.length) fehler.push('Bearbeiten schreibt nichts');
+    else {
+      const d = g[0].daten || {};
+      if (g[0].art !== 'update')
+        fehler.push('Bearbeiten legt neu an statt zu ändern: ' + g[0].art + ' auf ' + g[0].pfad);
+      if (!/c2$/.test(g[0].pfad))
+        fehler.push('Falsches Dokument geändert: ' + g[0].pfad);
+      if (d.title !== 'Spiegel und Fenster putzen')
+        fehler.push('Titel nicht übernommen: ' + JSON.stringify(d.title));
+      /* DER Punkt: der Haken darf nicht mitgeschrieben werden. Stünde
+         done/doneAt im Update, würde jede Titeländerung die Erledigung
+         von heute Morgen zurücksetzen — genau der Schaden, den Löschen
+         und Neuanlegen vorher angerichtet hat. */
+      ['done', 'doneBy', 'doneAt', 'doneByUid', 'doneKuerzel', 'pausiertBis']
+        .forEach(f => {
+          if (Object.prototype.hasOwnProperty.call(d, f))
+            fehler.push('Bearbeiten fasst „' + f + '" an — das löscht den Haken: ' + JSON.stringify(d));
+        });
+    }
+    if (await page.evaluate(() => !!document.querySelector('#putzModal.show')))
+      fehler.push('Nach dem Speichern steht das Fenster noch offen');
+
+    /* Gegenprobe: danach legt „+ Neu" wieder AN und nicht ändert. Ohne
+       diese Zeile bliebe ein Fenster, das im Bearbeiten-Zustand hängt,
+       unbemerkt — und der nächste „+ Neu" überschriebe eine fremde
+       Aufgabe. */
+    await page.click('#ppNew');
+    await page.waitForTimeout(700);
+    const wiederNeu = await page.evaluate(() => ({
+      titel: (document.getElementById('ppmTitel') || {}).textContent || '',
+      wert: (document.getElementById('ppTitle') || {}).value,
+      studioFeld: document.getElementById('ppStudioFeld').getClientRects().length > 0
+    }));
+    if (/bearbeiten/i.test(wiederNeu.titel) || wiederNeu.wert || !wiederNeu.studioFeld)
+      fehler.push('„+ Neu" nach dem Bearbeiten hängt im Ändern-Zustand: ' +
+        JSON.stringify(wiederNeu));
+
     errs.forEach(e => fehler.push('Chef: ' + e));
     await b.close();
   }
@@ -172,6 +257,8 @@ async function lauf() {
     await zurPutzplanSeite(page);
     if (await page.evaluate(LAGE, 'ppNew'))
       fehler.push('Mitarbeiter sieht „+ Neu" im Putzplan — anlegen darf er laut Regeln nicht');
+    if (await page.evaluate(() => document.querySelectorAll('[data-ppedit]').length))
+      fehler.push('Mitarbeiter sieht Bearbeiten-Knöpfe — ändern darf er laut Regeln nicht');
     /* Gegenprobe zur Gegenprobe: die Seite ist wirklich da. Sonst wäre
        „kein Knopf" auch dann grün, wenn gar nichts geladen hat. */
     if (!(await page.evaluate(() => {
