@@ -5641,3 +5641,87 @@ selbst erwischt haben.
 |---|---|
 | Zentrierung zurückgenommen | 3× „NICHT MITTIG … -12/0 px" ✓ |
 | altes Abzeichen (19px in der Ecke) | „ABZEICHEN AUF DEM SYMBOL — 64 px²" ✓ |
+
+---
+
+# 61 · Die stillgelegten Nebenseiten — und eine Warnung an die Anleitung
+
+**31. August 2026**
+
+## Erst eine Korrektur an mir selbst
+
+Ich hatte gemeldet: *„`marketing.html` und `wachstum.html` schreiben auf
+flache Pfade — mit einem zweiten Kunden lesen und schreiben beide Seiten
+in dieselben Sammlungen."* Die Zahlen stimmten (23 und 13 flache
+Zugriffe), der Schluss war falsch.
+
+**Beide Seiten sind seit dem 13.8.2026 stillgelegt**, an zwei Stellen
+gleichzeitig: `firebase.json` liefert sie nicht aus, und in
+`firestore.rules` stehen ihre Sammlungen auf `allow read, write: if
+false` — flach *und* unter `firmen/`. Kein Browser kommt an diese Daten,
+auch der erste Kunde nicht.
+
+Ich hatte `db.collection(...)` gezählt und daraus auf ein Leck
+geschlossen, ohne zu prüfen, ob die Seiten überhaupt erreichbar sind.
+Eine Vermutung als Befund verkauft.
+
+## Was wirklich das Risiko ist
+
+Nicht der heutige Zustand, sondern die **Anleitung zum Zurückholen**. In
+`firebase.json` stand:
+
+> *„die beiden Zeilen unten streichen und ausrollen holt sie zurück"*
+
+und in `firestore.rules`:
+
+> *„dieses false durch die Regeln ersetzen, die im Verlauf stehen"*
+
+Wer dem folgt, holt das Leck mit zurück: die alten Regeln fragten nur
+`istAktiv()` — genau daran lag es —, und der Code greift weiterhin flach
+zu. Zwei Kunden sähen sich gegenseitig in den Terminen, mitsamt Namen
+und E-Mail-Adressen ihrer Endkundinnen.
+
+An beiden Stellen steht jetzt die Reihenfolge:
+
+1. `S()` einbauen, alle Aufrufe umstellen (`users` bleibt oben — ein
+   Profil muss vor der Anmeldung findbar sein)
+2. `tools/umzug.js` um die Sammlungen erweitern, Daten kopieren
+3. firmengebundene Regeln setzen, **nicht** die alten
+4. erst zuletzt die zwei Zeilen aus `firebase.json`
+
+## Und eine Prüfung, die anschlägt, wenn jemand sie umdreht
+
+Eine Warnung im Kommentar liest, wer den Kommentar liest.
+`tests/test-nebenseiten.js` prüft beide Hälften der Abschaltung
+gegeneinander:
+
+| Lage | Urteil |
+|---|---|
+| nicht ausgeliefert, Regeln zu | ✓ abgeschaltet |
+| ausgeliefert, Regeln zu | ✗ die Seite lädt und tut nichts |
+| ausgeliefert, Code noch flach | ✗ **das Leck ist wieder offen** |
+
+**Gegenprobe:** die zwei Zeilen aus `firebase.json` gestrichen, sonst
+nichts geändert — genau das, was die alte Anleitung sagte. Ergebnis:
+acht Funde, die ersten beiden wörtlich *„ist ausgeliefert und greift
+NICHT mehr flach zu"*. ✓
+
+Vorbild ist `test-funktionen-pfade.js`, das dasselbe für
+`functions/index.js` bewacht. Dort war es nötig, weil ein flacher
+Zugriff niemandem auffällt — hier auch.
+
+## Der dritte Punkt fiel aus, und dahinter lag etwas anderes
+
+Geplant war, `werbung.html` durch `test-xss.js` zu ziehen. Nachgemessen
+hat die Seite **keine Angriffsfläche**:
+
+```
+innerHTML 0 · outerHTML 0 · document.write 0 · insertAdjacentHTML 0
+location.search 0 · location.hash 0 · URLSearchParams 0 · eval 0
+```
+
+dazu eine eigene CSP mit Skript-Hash. Ein Durchlauf darüber wäre grün
+gewesen und hätte nichts bewiesen — die Sorte Grün, gegen die dieses
+Projekt sonst anschreibt.
+
+Beim Nachsehen fiel dafür etwas Ernsteres auf. Siehe `OFFEN.md`.

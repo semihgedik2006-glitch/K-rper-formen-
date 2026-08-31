@@ -59,6 +59,31 @@ Nachtrag** — dann kommt der Datenschutz-Absatz mit dazu.
 >   aus, dass die Studios gegen 21 Uhr schließen. Passt das nicht, ist es
 >   eine Zeile in `functions/index.js` (`tagesUebersicht`).
 
+> **Nachtrag 31.8. — ein Fund auf der öffentlichen Landingpage.**
+> `werbung.html` wird ausgeliefert (steht nicht in der ignore-Liste) und
+> hat ein Kontaktformular: Name, E-Mail, Nachricht, Knopf „Probetraining
+> anfragen". Darüber steht *„Wir melden uns innerhalb von 24 Stunden bei
+> dir – versprochen."* Nach dem Absenden erscheint *„Danke! Wir melden
+> uns innerhalb von 24 Stunden. 💪"*
+>
+> **Die Nachricht geht nirgendwohin.** Kein `fetch`, kein
+> `XMLHttpRequest`, kein `action`, kein Formspree — nur
+> `note.textContent = …` und `form.reset()`. Im Quelltext steht als
+> Kommentar: *„HINWEIS: Für echten Versand einen Backend-Service
+> einbinden (z.B. Formspree)."* Der Platzhalter ist live gegangen.
+>
+> Wer das Formular ausfüllt, bekommt ein ausdrückliches Versprechen und
+> nie eine Antwort. Telefonnummer, E-Mail-Adresse und Anschrift stehen
+> direkt daneben und funktionieren.
+>
+> **Das ist eine Entscheidung, keine Reparatur** — deshalb steht es hier
+> und ist nicht stillschweigend geändert:
+> * **Ehrlich machen:** Formular raus oder Text ändern, die drei echten
+>   Wege stehen ohnehin daneben. Fünf Minuten, kein Risiko.
+> * **Wirklich versenden:** Cloud Function plus Regel für einen
+>   öffentlichen, nicht angemeldeten Schreibweg — das ist ein Spam-Tor
+>   und braucht eine Bremse. Eine eigene Runde.
+
 ## Auf einen Blick
 
 Das Ausführliche steht weiter unten und in `SICHERHEIT.md`. Hier nur die
