@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-DIJEJeksrOQTq5FAYNsq/e+FjQq7yFjAbQ2PxR3vT6Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-6W0cotvTWZMRs9MSfHMGNbVyMHr1tpXqwBR1R+7Ll2w='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1287,11 +1287,11 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -1891,9 +1891,22 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .pp-title{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);letter-spacing:var(--ls-s)}
 .pp-meta{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s10);margin-top:var(--s4);font-size:var(--t-xs);color:var(--text-3)}
 .pp-meta .pp-doneby{color:var(--accent-d);font-weight:600}
-.pp-del{background:none;border:none;color:var(--text-3);cursor:pointer;padding:var(--s6);border-radius:var(--r-xs);flex-shrink:0;transition:.2s}
+/* Stift und Papierkorb teilen das Aussehen, aber NICHT den Namen.
+
+   Der Stift trug zuerst ebenfalls `pp-del` — der Bequemlichkeit halber,
+   fuer dieselben Masse. Folge: `document.querySelector('.pp-del')`
+   traf ploetzlich den Stift statt des Papierkorbs, weil er in der Zeile
+   davor steht. test-block3.js wollte loeschen, oeffnete das
+   Bearbeiten-Fenster und lief in den Zeitablauf.
+
+   Eine Klasse ist ein Name, keine Formatvorlage. Wer sie teilt, teilt
+   auch, was sie auswaehlt. */
+.pp-del,.pp-edit{background:none;border:none;color:var(--text-3);cursor:pointer;padding:var(--s6);border-radius:var(--r-xs);flex-shrink:0;transition:.2s}
 .pp-del:hover{color:var(--danger-tx);background:var(--f-bad)}
-.pp-del svg{width:16px;height:16px}
+/* Kein Rot beim Zeigen: Bearbeiten ist keine Handlung, vor der man
+   erschrecken soll. */
+.pp-edit:hover{color:var(--accent-d);background:var(--tipp-1)}
+.pp-del svg,.pp-edit svg{width:16px;height:16px}
 /* Notizen */
 .pp-note{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
   border-left:3px solid var(--accent-3);border-radius:var(--r-sm);margin-bottom:var(--s8);animation:rowIn .3s var(--ease-out) both}
@@ -1958,13 +1971,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
 /* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
-#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#ownTodoModal.show .pm-box,#probeModal.show .pm-box,#zugangModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
+#profileModal.show .pm-box,#devModal.show .pm-box,#pollModal.show .pm-box,#todoEditModal.show .pm-box,#aboModal.show .pm-box,#ownTodoModal.show .pm-box,#probeModal.show .pm-box,#zugangModal.show .pm-box,#putzModal.show .pm-box,#searchOverlay.show .search-box,#lightbox.show img{
   animation:sheetIn .46s var(--spring)}
 @keyframes sheetIn{
   from{opacity:0;transform:scale(.94) translateY(12px)}
   to{opacity:1;transform:none}
 }
-#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
+#profileModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#searchOverlay{animation:fadeBlur .3s var(--ease-ios)}
 @keyframes fadeBlur{from{opacity:0}to{opacity:1}}
 
 /* ── Menüs auf dem Handy: von unten hereinfahren ──
@@ -1972,8 +1985,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    der Daumen kommt nicht hin. Deshalb werden Menüs unter 620 px zu Blättern,
    die von unten hereinfahren; oben ein Griff, wie man es von iOS kennt. */
 @media (max-width:620px){
-  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal{align-items:flex-end;padding:0}
-  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box,#ownTodoModal .pm-box,#probeModal .pm-box,#zugangModal .pm-box{
+  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal{align-items:flex-end;padding:0}
+  #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box,#ownTodoModal .pm-box,#probeModal .pm-box,#zugangModal .pm-box,#putzModal .pm-box{
     max-width:none;border-radius:var(--radius) var(--radius) 0 0;border-bottom:none;
     padding:var(--s20) var(--s20) calc(var(--s24) + var(--sab));max-height:90vh}
   #profileModal.show .pm-box,#personModal.show .pm-box{
@@ -3978,8 +3991,8 @@ html{font-size:var(--fs,100%)}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             </button>
             <div class="attach-menu" id="attachMenu">
-              <button data-ikon="foto" data-att="foto"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto</button>
-              <button data-ikon="umfrage" data-att="umfrage"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Umfrage</button>
+              <button data-ikon="foto" data-att="foto">Foto</button>
+              <button data-ikon="umfrage" data-att="umfrage">Umfrage</button>
             </div>
           </div>
           <button class="attach-btn" data-ikon="mikrofon" id="chatMic" aria-label="Sprachnachricht aufnehmen" title="Sprachnachricht aufnehmen">
@@ -4115,11 +4128,11 @@ html{font-size:var(--fs,100%)}
             <p class="hint">Was insgesamt fehlt – zusammengezählt über alle deine Studios.</p>
             <div id="shopList"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <button data-ikon="drucken" class="btn btn-ghost btn-sm" id="shopPrint"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> Drucken</button>
-              <button data-ikon="laden" class="btn btn-ghost btn-sm" id="shopXls"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Als Excel</button>
-              <button data-ikon="kopieren" class="btn btn-ghost btn-sm" id="shopCopy"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopieren</button>
-              <button data-ikon="mail" class="btn btn-ghost btn-sm" id="shopMail"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Bestellmail</button>
-              <button data-ikon="laden" class="btn btn-ghost btn-sm" id="matExport" style="display:none"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alle Studios</button>
+              <button data-ikon="drucken" class="btn btn-ghost btn-sm" id="shopPrint">Drucken</button>
+              <button data-ikon="laden" class="btn btn-ghost btn-sm" id="shopXls">Als Excel</button>
+              <button data-ikon="kopieren" class="btn btn-ghost btn-sm" id="shopCopy">Kopieren</button>
+              <button data-ikon="mail" class="btn btn-ghost btn-sm" id="shopMail">Bestellmail</button>
+              <button data-ikon="laden" class="btn btn-ghost btn-sm" id="matExport" style="display:none">Alle Studios</button>
             </div>
             <div class="field" style="margin-top:10px;margin-bottom:0">
               <label for="shopMailTo">Adresse des Lieferanten (nur auf diesem Gerät gespeichert)</label>
@@ -4141,11 +4154,25 @@ html{font-size:var(--fs,100%)}
 
       <!-- PUTZPLAN -->
       <section class="view" id="view-putzplan">
-        <div class="view-head shrink"><h2>Putzplan</h2><p>Antippen hakt ab — mit Name und Uhrzeit.</p></div>
+        <!-- Kopfzeile wie bei den Aufgaben: Text links, „+ Neu" rechts.
+             Vorher stand das Anlegen in einer Karte GANZ UNTEN auf dieser
+             Seite — hinter der Liste und hinter den Notizen. Wer eine
+             Putzaufgabe anlegen wollte, musste erst an allem
+             vorbeiscrollen, was er gerade nicht suchte. Bei den Aufgaben
+             ist derselbe Weg ein Griff in der Kopfzeile. -->
+        <div class="view-head shrink">
+          <div class="vh-line">
+            <div class="vh-text">
+              <h2>Putzplan</h2><p>Antippen hakt ab — mit Name und Uhrzeit.</p>
+            </div>
+            <button class="kopf-plus" id="ppNew" data-manage-only="1" style="display:none"
+              title="Neue Putzaufgabe erstellen" aria-label="Neue Putzaufgabe erstellen">+ Neu</button>
+          </div>
+        </div>
         <div class="scroll-area" data-shrinks="1">
           <div class="mat-bar">
             <select class="inp" id="ppStudio"></select>
-            <button data-ikon="drucken" class="btn btn-ghost btn-sm no-print" id="ppPrint" title="Putzplan ausdrucken"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> Drucken</button>
+            <button data-ikon="drucken" class="btn btn-ghost btn-sm no-print" id="ppPrint" title="Putzplan ausdrucken">Drucken</button>
           </div>
 
           <!-- Liste der Putzaufgaben des gewählten Studios -->
@@ -4172,42 +4199,6 @@ html{font-size:var(--fs,100%)}
               <button class="btn btn-ghost btn-sm" id="ppNoteAdd">+ Notiz</button>
             </div>
             <div id="ppNotes" style="margin-top:12px"></div>
-          </div>
-          <!-- Chef: neue Putzaufgabe anlegen -->
-          <div class="card" id="ppChefCard" style="display:none" data-fold="ppneu">
-            <h3 data-ikon="tropfen">Putzaufgabe hinzufügen</h3>
-            <p class="hint">Wird für die gewählten Studios angelegt und dort im
-              Putzplan angezeigt.</p>
-            <details class="nachfrage">
-              <summary>Was passiert mit einmaligen Aufgaben?</summary>
-              <div class="nachfrage-text">
-                <p>Sie verschwinden einen Tag nach dem Abhaken von selbst — auch
-                  aus der Tabelle. Nicht erledigte bleiben stehen.</p>
-              </div>
-            </details>
-            <div class="field"><label for="ppTitle">Aufgabe</label>
-              <input class="inp" id="ppTitle" type="text" placeholder="z. B. Böden wischen" maxlength="120" /></div>
-            <div class="field"><label>Für welche Studios?</label>
-              <label class="studio-check" style="margin-bottom:7px" id="ppAllWrap"><input type="checkbox" id="ppAllStudios" /><span><b>Alle Studios</b></span></label>
-              <div class="studio-checks" id="ppStudios"></div></div>
-            <div class="field"><label for="ppRepeat">Wiederholung</label>
-              <select class="inp" id="ppRepeat">
-                <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
-                <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
-                <option value="">Einmalig (verschwindet einen Tag nach dem Abhaken)</option>
-                <option value="custom">🔁 Eigenes Intervall …</option>
-              </select></div>
-            <div class="field" id="ppCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
-              <div style="display:flex;gap:8px">
-                <input class="inp" id="ppIntN" type="number" min="1" value="2" style="flex:0 0 90px" />
-                <select class="inp" id="ppIntUnit" style="flex:1">
-                  <option value="h">Stunden</option>
-                  <option value="d">Tage</option>
-                  <option value="w">Wochen</option>
-                </select>
-              </div></div>
-            <button class="btn btn-primary btn-sm" id="ppAdd">Putzaufgabe erstellen</button>
-            <p class="em-saved" id="ppAddNote"></p>
           </div>
 
         </div>
@@ -4363,7 +4354,7 @@ html{font-size:var(--fs,100%)}
             <p class="hint">Kleine Dateien bis ~0,7 MB direkt hochladen, größere als
               Link einfügen.</p>
             <input type="file" class="hidden-file" id="docFile" />
-            <button data-ikon="klammer" class="btn btn-ghost btn-sm" id="docPick" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Datei wählen</button>
+            <button data-ikon="klammer" class="btn btn-ghost btn-sm" id="docPick" style="width:100%">Datei wählen</button>
             <p id="docPicked" style="font-size:.84rem;color:var(--text-2);margin:8px 0 0"></p>
             <div class="field" style="margin-top:12px"><label for="docName">Titel (optional)</label>
               <input class="inp" id="docName" type="text" placeholder="z. B. Hygieneplan 2026" maxlength="80" /></div>
@@ -4526,7 +4517,7 @@ html{font-size:var(--fs,100%)}
             <div class="field">
               <label>Foto (optional)</label>
               <input type="file" accept="image/*" class="hidden-file" id="ntFile" />
-              <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="ntAttach" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto hinzufügen</button>
+              <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="ntAttach" style="width:100%">Foto hinzufügen</button>
               <div id="ntPreviewWrap" style="display:none;margin-top:10px;align-items:center;gap:10px">
                 <img id="ntPreviewImg" alt="Vorschau" style="height:60px;width:60px;object-fit:cover;border-radius:10px;border:1px solid var(--line-2)" />
                 <button type="button" class="pv-x" id="ntPreviewX" aria-label="Foto entfernen" style="display:inline-block"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -4610,7 +4601,7 @@ html{font-size:var(--fs,100%)}
             <button data-ikon="person" class="btn btn-primary btn-sm" id="emCreate">Zugang anlegen</button>
             <p class="em-saved" id="emCreateNote"></p>
             <div id="emCopyWrap" style="display:none;gap:8px;margin-top:8px">
-              <button data-ikon="kopieren" type="button" class="btn btn-ghost btn-sm" id="emCopy"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Zugangsdaten kopieren</button>
+              <button data-ikon="kopieren" type="button" class="btn btn-ghost btn-sm" id="emCopy">Zugangsdaten kopieren</button>
             </div>
           </div>
           <div class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
@@ -4634,7 +4625,7 @@ html{font-size:var(--fs,100%)}
             </div>
             <div class="field" style="margin-top:14px"><label for="obSendTo">Als To-do-Checkliste per DM senden an …</label>
               <select class="inp" id="obSendTo"></select></div>
-            <button data-ikon="kopieren" class="btn btn-primary btn-sm" id="obSend"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Checkliste per DM senden</button>
+            <button data-ikon="kopieren" class="btn btn-primary btn-sm" id="obSend">Checkliste per DM senden</button>
           </div>
           </div>
 
@@ -4784,7 +4775,7 @@ html{font-size:var(--fs,100%)}
                 <option value="0">Alles</option>
               </select></div>
             <div class="dash-grid" id="repTiles"></div>
-            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="repExport" style="width:100%;margin-top:6px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Bericht als Excel speichern</button>
+            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="repExport" style="width:100%;margin-top:6px">Bericht als Excel speichern</button>
           </div>
           <div class="card" data-fold="repstudios">
             <h3 data-ikon="pokal">Studios im Vergleich</h3>
@@ -4906,8 +4897,8 @@ html{font-size:var(--fs,100%)}
             <h3 data-ikon="speichern">Daten sichern</h3>
             <p class="hint">Lädt alle Aufgaben, Putzpläne, Material, Infos und das Team als
               Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
-            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expXls" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alles als Excel speichern</button>
-            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Alles als Daten-Datei (JSON)</button>
+            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expXls" style="width:100%">Alles als Excel speichern</button>
+            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">Alles als Daten-Datei (JSON)</button>
             <details class="nachfrage">
               <summary>Was steht in der Datei?</summary>
               <div class="nachfrage-text">
@@ -4975,7 +4966,7 @@ html{font-size:var(--fs,100%)}
               <input class="inp" id="repTageEigen" type="number" min="1" max="370"
                 step="1" value="60" inputmode="numeric" />
             </div>
-            <button data-ikon="mail" class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Bericht an mich senden</button>
+            <button data-ikon="mail" class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%">Bericht an mich senden</button>
             <p class="em-saved" id="repTestNote"></p>
           </div>
           <div class="card" data-fold="pwreset" data-chef-only="1">
@@ -5157,7 +5148,7 @@ html{font-size:var(--fs,100%)}
       <div class="avatar" id="pmPreview" style="width:74px;height:74px;font-size:1.6rem;margin:0 auto">?</div>
       <input type="file" accept="image/*" class="hidden-file" id="pmPhotoFile" />
       <div style="margin-top:10px;display:flex;gap:8px;justify-content:center">
-        <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="pmPhotoBtn"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Bild wählen</button>
+        <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="pmPhotoBtn">Bild wählen</button>
         <button type="button" class="btn btn-ghost btn-sm" id="pmPhotoRemove" style="display:none">Entfernen</button>
       </div>
     </div>
@@ -5185,7 +5176,7 @@ html{font-size:var(--fs,100%)}
       <div class="opt-grid" id="bgOpts"></div>
       <input type="file" accept="image/*" class="hidden-file" id="bgFile" />
       <div id="bgOwnRow" style="display:none;gap:8px;margin-top:9px">
-        <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="bgPick" style="flex:1"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto wählen</button>
+        <button data-ikon="foto" type="button" class="btn btn-ghost btn-sm" id="bgPick" style="flex:1">Foto wählen</button>
         <button type="button" class="btn btn-ghost btn-sm" id="bgRemove" style="display:none">Entfernen</button>
       </div>
       <p class="hint" id="bgOwnNote" style="display:none;margin:7px 0 0">
@@ -5306,6 +5297,61 @@ html{font-size:var(--fs,100%)}
     </div>
     <p class="hint">Einmalige Aufgabe. Wiederkehrende legt die Leitung an.</p>
     <button class="btn btn-primary btn-sm" id="otSave" style="width:100%">Aufgabe anlegen</button>
+  </div>
+</div>
+
+<!-- ── Neue Putzaufgabe ──
+     Dieselbe Form wie „Eigene Aufgabe" darueber: ein Fenster, aus der
+     Kopfzeile erreichbar, mit denselben Feldern in derselben Reihenfolge.
+
+     Vorher war das eine Karte am FUSS der Putzplan-Seite. Zwei Wege fuer
+     dieselbe Handlung — Aufgabe anlegen hier, Putzaufgabe anlegen dort —
+     sind einer zu viel; wer den einen kennt, sucht den anderen an der
+     gleichen Stelle.
+
+     Die Feld-Kennungen sind absichtlich unveraendert (ppTitle, ppStudios,
+     ppRepeat …): addPutzTask() und buildPutzplanSelect() greifen darauf
+     zu, und ein Umzug im Markup soll nicht die halbe Logik mitreissen. -->
+<div id="putzModal">
+  <div class="pm-box">
+    <button class="lb-close" id="ppmClose" aria-label="Schließen" data-ikon="schliessen"
+            style="position:absolute;top:12px;right:14px"></button>
+    <h3 data-ikon="tropfen" id="ppmTitel">Neue Putzaufgabe</h3>
+    <p class="hint" id="ppmWo"></p>
+    <div class="field"><label for="ppTitle">Was ist zu tun?</label>
+      <input class="inp" id="ppTitle" type="text" placeholder="z. B. Böden wischen" maxlength="120" /></div>
+    <!-- Beim Bearbeiten ausgeblendet: eine Putzaufgabe liegt in genau
+         einem Studio. Sie dorthin zu verschieben, wo sie nicht angelegt
+         wurde, ist etwas anderes als sie zu aendern — und niemand hat
+         danach gefragt. -->
+    <div class="field" id="ppStudioFeld"><label>Für welche Studios?</label>
+      <label class="studio-check" style="margin-bottom:7px" id="ppAllWrap"><input type="checkbox" id="ppAllStudios" /><span><b>Alle Studios</b></span></label>
+      <div class="studio-checks" id="ppStudios"></div></div>
+    <div class="field"><label for="ppRepeat">Wiederholung</label>
+      <select class="inp" id="ppRepeat">
+        <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
+        <option value="weekly">🔁 Wöchentlich (Reset jede Woche)</option>
+        <option value="">Einmalig (verschwindet einen Tag nach dem Abhaken)</option>
+        <option value="custom">🔁 Eigenes Intervall …</option>
+      </select></div>
+    <div class="field" id="ppCustomWrap" style="display:none"><label>Eigenes Intervall – wiederholt sich alle …</label>
+      <div style="display:flex;gap:8px">
+        <input class="inp" id="ppIntN" type="number" min="1" value="2" style="flex:0 0 90px" />
+        <select class="inp" id="ppIntUnit" style="flex:1">
+          <option value="h">Stunden</option>
+          <option value="d">Tage</option>
+          <option value="w">Wochen</option>
+        </select>
+      </div></div>
+    <details class="nachfrage" id="ppmEinmalig">
+      <summary>Was passiert mit einmaligen Aufgaben?</summary>
+      <div class="nachfrage-text">
+        <p>Sie verschwinden einen Tag nach dem Abhaken von selbst — auch
+          aus der Tabelle. Nicht erledigte bleiben stehen.</p>
+      </div>
+    </details>
+    <button class="btn btn-primary btn-sm" id="ppAdd" style="width:100%"><span id="ppAddWort">Putzaufgabe erstellen</span></button>
+    <p class="em-saved" id="ppAddNote"></p>
   </div>
 </div>
 
@@ -5493,11 +5539,11 @@ html{font-size:var(--fs,100%)}
     <div class="field"><label for="devmText">Was ist los?</label>
       <input class="inp" id="devmText" type="text" placeholder="z. B. Weste links gibt keinen Impuls" maxlength="300" /></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-      <button data-ikon="foto" class="btn btn-ghost btn-sm" id="devmPhoto"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Foto</button>
+      <button data-ikon="foto" class="btn btn-ghost btn-sm" id="devmPhoto">Foto</button>
       <span class="hint" id="devmPhotoNote" style="align-self:center"></span>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
-      <button data-ikon="warnung" class="btn btn-danger btn-sm" id="devmDefekt" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Defekt melden</button>
+      <button data-ikon="warnung" class="btn btn-danger btn-sm" id="devmDefekt" style="width:100%">Defekt melden</button>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button data-ikon="werkzeug" class="btn btn-ghost btn-sm" id="devmWartung" style="flex:1">Wartung fällig</button>
         <button class="btn btn-ghost btn-sm" id="devmOk" style="flex:1;display:none">✓ Wieder in Ordnung</button>
@@ -5529,8 +5575,8 @@ html{font-size:var(--fs,100%)}
     <h3 id="pmpName">Name</h3>
     <p id="pmpStatus" style="color:var(--text-2);margin:8px 0 4px;min-height:1em"></p>
     <p id="pmpRole" style="color:var(--text-3);font-size:.85rem;margin-bottom:18px"></p>
-    <button data-ikon="mail" class="btn btn-primary" id="pmpDm" style="width:100%"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Direktnachricht</button>
-    <button data-ikon="kopieren" class="btn btn-ghost btn-sm" id="pmpChecklist" style="width:100%;margin-top:8px;display:none"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> Checkliste senden</button>
+    <button data-ikon="mail" class="btn btn-primary" id="pmpDm" style="width:100%">Direktnachricht</button>
+    <button data-ikon="kopieren" class="btn btn-ghost btn-sm" id="pmpChecklist" style="width:100%;margin-top:8px;display:none">Checkliste senden</button>
   </div>
 </div>
 
@@ -8241,7 +8287,8 @@ function anyModalOpen(){
 var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModal',
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
-               'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal'];
+               'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
+               'putzModal'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -16369,9 +16416,9 @@ function buildPutzplanSelect(){
   var list = managedStudios().length ? managedStudios()
     : session.studios.slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
   sel.innerHTML = list.map(function(s){ return '<option value="'+esc(studioKey(s))+'">'+esc(s)+'</option>'; }).join('');
-  // Chef-Karte + Studio-Checkboxen nur für den Chef
-  var chefCard=$('ppChefCard');
-  if(chefCard) chefCard.style.display = canManage() ? 'block' : 'none';
+  /* Die Studio-Kaestchen stehen jetzt im Fenster, nicht mehr in einer
+     Karte am Seitenfuss. Sichtbar wird der Weg dorthin ueber den Knopf
+     „+ Neu" in der Kopfzeile (data-manage-only). */
   if(canManage()){
     var box=$('ppStudios'); if(box){
       box.innerHTML='';
@@ -16476,6 +16523,10 @@ function renderPutzplan(){
     var doneInfo = d && (t.doneBy || t.doneKuerzel)
       ? '<span class="pp-doneby">✓ '+wer+' · '+fmtDateTime(t.doneAt)+'</span>'
       : '';
+    /* Stift VOR dem Papierkorb: die haeufigere Handlung steht zuerst,
+       und ein Loeschknopf, den der Daumen als erstes trifft, ist an
+       einer Liste die falsche Reihenfolge. */
+    var stift = chef ? '<button class="pp-edit" data-ppedit="'+esc(t.id)+'" aria-label="bearbeiten">'+ikon('stift')+'</button>' : '';
     var del = chef ? '<button class="pp-del" data-del="'+esc(t.id)+'" aria-label="löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
     /* Pausiert: die Aufgabe bleibt sichtbar, aber blass und ohne Haken.
        Verstecken waere schlechter — dann sucht in vier Wochen jemand
@@ -16493,7 +16544,7 @@ function renderPutzplan(){
       '<div class="pp-meta">'+(pause
         ? '<span class="pp-pausetxt">'+esc(ppPauseText(t))+'</span>'
         : (doneInfo||'<span>noch offen</span>'))+pauseKnopf+'</div></div>'+
-      del+'</div></div>';
+      stift+del+'</div></div>';
   }).join('');
   bindPutzplanClicks(box);
 }
@@ -16586,6 +16637,13 @@ function bindPutzplanClicks(box){
       });
     });
   });
+  box.querySelectorAll('[data-ppedit]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-ppedit'), t=null;
+      _ppTasks.forEach(function(x){ if(x.id===id) t=x; });
+      if(t) oeffnePutzAufgabe(t);
+    });
+  });
   box.querySelectorAll('[data-del]').forEach(function(b){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-del');
@@ -16603,10 +16661,87 @@ function bindPutzplanClicks(box){
   });
 }
 
-/* Chef: neue Putzaufgabe für ausgewählte Studios anlegen */
+/* ── Das Fenster „Neue Putzaufgabe" ──
+   Aufgemacht wird mit dem Studio, das gerade oben im Putzplan steht,
+   schon angekreuzt. Das ist der Punkt der ganzen Aenderung: wer auf der
+   Seite von Huerth steht und dort eine Putzaufgabe anlegt, meint in
+   neun von zehn Faellen Huerth — vorher musste er es trotzdem jedes Mal
+   von Hand anhaken, und wer es vergass, bekam „Bitte mindestens ein
+   Studio waehlen". */
+var _ppEdit=null;                 // null = anlegen, sonst die Aufgabe
+
+/* Wiederholung aus einer vorhandenen Aufgabe in die Felder zurueck. */
+function ppWiederholungSetzen(t){
+  var rep=$('ppRepeat'); if(!rep) return;
+  rep.value = t && t.recurring ? t.recurring : '';
+  var eigen = rep.value==='custom';
+  $('ppCustomWrap').style.display = eigen ? 'block' : 'none';
+  if(eigen){
+    $('ppIntN').value = t.intervalN || 2;
+    $('ppIntUnit').value = t.intervalUnit || 'd';
+  }
+}
+
+/* Dasselbe Fenster fuer Anlegen UND Aendern.
+
+   Ein zweiter, fast gleicher Dialog waere die naheliegende Loesung und
+   die schlechtere: zwei Formulare fuer dieselben vier Felder laufen
+   auseinander, sobald eines davon ein Feld dazubekommt. Genau das ist
+   dem Putzplan gegenueber den Aufgaben schon einmal passiert.
+
+   Beim Anlegen ist das Studio vorbelegt, das oben im Putzplan steht.
+   Beim Aendern faellt die Studio-Auswahl ganz weg — eine Aufgabe liegt
+   in genau einem Studio. */
+function oeffnePutzAufgabe(t){
+  var f=$('putzModal'); if(!f) return;
+  if(!$('ppStudios').children.length) buildPutzplanSelect();
+  _ppEdit = t || null;
+
+  $('ppmTitel').textContent = _ppEdit ? 'Putzaufgabe bearbeiten' : 'Neue Putzaufgabe';
+  $('ppAddWort').textContent = _ppEdit ? 'Änderung speichern' : 'Putzaufgabe erstellen';
+  $('ppStudioFeld').style.display = _ppEdit ? 'none' : '';
+  var einmalig=$('ppmEinmalig'); if(einmalig) einmalig.style.display = _ppEdit ? 'none' : '';
+
+  var wo=$('ppmWo');
+  if(_ppEdit){
+    $('ppTitle').value=_ppEdit.title||'';
+    ppWiederholungSetzen(_ppEdit);
+    if(wo) wo.textContent = 'In '+studioName(_ppStudioKey)+
+      (_ppEdit.createdBy ? ' · angelegt von '+_ppEdit.createdBy : '');
+  } else {
+    $('ppTitle').value='';
+    ppWiederholungSetzen(null);
+    $('ppRepeat').value='daily';
+    var vor=0;
+    $('ppStudios').querySelectorAll('input').forEach(function(cb){
+      var an = cb.value===_ppStudioKey;
+      cb.checked=an; cb.parentElement.classList.toggle('on',an);
+      if(an) vor++;
+    });
+    var alle=$('ppAllStudios');
+    if(alle){ alle.checked=false; $('ppAllWrap').classList.remove('on'); }
+    if(wo) wo.textContent = vor
+      ? studioName(_ppStudioKey)+' ist vorausgewählt — du kannst weitere dazunehmen.'
+      : 'Wird in den angekreuzten Studios angelegt.';
+  }
+  var hinweis=$('ppAddNote'); if(hinweis) hinweis.textContent='';
+  f.classList.add('show');
+  /* Nicht auf dem Handy: dort schiebt die Tastatur das halbe Fenster
+     aus dem Bild, bevor man ueberhaupt gesehen hat, was darin steht.
+     Dieselbe Ueberlegung wie beim Fenster fuer eigene Aufgaben. */
+  if(window.innerWidth>620) setTimeout(function(){ var t=$('ppTitle'); if(t) t.focus(); },260);
+}
+function schliessePutzAufgabe(){
+  _ppEdit=null;
+  var f=$('putzModal'); if(f) f.classList.remove('show');
+}
+
+/* Chef: neue Putzaufgabe anlegen — oder eine vorhandene ändern.
+   Welches von beidem, entscheidet _ppEdit; der Knopf ist derselbe. */
 function addPutzTask(btn){
   var title=$('ppTitle').value.trim();
   if(!title){ toast('Bitte Aufgabe eingeben.',true); return; }
+  if(_ppEdit) return savePutzTask(btn, title);
   var targets=Array.prototype.slice.call($('ppStudios').querySelectorAll('input:checked')).map(function(c){ return c.value; });
   if(!targets.length){ toast('Bitte mindestens ein Studio wählen.',true); return; }
   var recurring=$('ppRepeat').value||null;
@@ -16633,7 +16768,43 @@ function addPutzTask(btn){
       $('ppStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
       toast('Putzaufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' erstellt ✓');
       targets.forEach(function(sk){ schedulePutzplanSheets(sk); });
+      schliessePutzAufgabe();
     }).catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+
+/* Eine vorhandene Putzaufgabe ändern.
+
+   Was NICHT angefasst wird: done, doneBy, doneAt, doneKuerzel und
+   pausiertBis. Ein Tippfehler im Titel darf nicht den Haken von heute
+   Morgen loeschen — vorher war Loeschen und Neuanlegen der einzige Weg,
+   und genau das hat er getan.
+
+   Die Felder des eigenen Intervalls werden bei jeder Wiederholungsart
+   mitgeschrieben (leer, wenn keine): sonst bliebe an einer Aufgabe, die
+   von „alle 3 Tage" auf „taeglich" umgestellt wird, das alte
+   intervalMs stehen und erledigt() rechnete weiter damit. */
+function savePutzTask(btn, title){
+  var t=_ppEdit, sk=_ppStudioKey;
+  if(!t || !sk) return;
+  var recurring=$('ppRepeat').value||null;
+  var neu={ title:title, recurring:recurring||null,
+            intervalMs:null, intervalN:null, intervalUnit:null,
+            geaendertVon:session.name, geaendertAm:Date.now() };
+  if(recurring==='custom'){
+    var n=parseInt($('ppIntN').value,10)||0, unit=$('ppIntUnit').value;
+    var ms=n*({h:3600000,d:86400000,w:604800000}[unit]||86400000);
+    if(!n || ms<=0){ toast('Bitte ein gültiges Intervall angeben.',true); return; }
+    neu.intervalMs=ms; neu.intervalN=n; neu.intervalUnit=unit;
+  }
+  withBusy(btn,function(){
+    return S('studios').doc(sk).collection('cleaning').doc(t.id).update(neu)
+      .then(function(){
+        schliessePutzAufgabe();
+        schedulePutzplanSheets(sk);
+        toast('Putzaufgabe geändert ✓'); tick(10);
+      })
+      .catch(function(e){ toast(errMsg(e),true); });
   });
 }
 
@@ -20338,6 +20509,15 @@ function bindActions(){
       $('ppAllWrap').classList.toggle('on', ppAll.checked);
       $('ppStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=ppAll.checked; cb.parentElement.classList.toggle('on',ppAll.checked); });
     });
+    /* Nicht direkt weiterreichen: addEventListener uebergibt das
+       MouseEvent als erstes Argument, und oeffnePutzAufgabe() haelt das
+       erste Argument fuer die zu bearbeitende Aufgabe. Das Fenster waere
+       dann im Bearbeiten-Zustand aufgegangen — mit einem Klick-Ereignis
+       als Aufgabe. */
+    var ppN=$('ppNew'); if(ppN) ppN.addEventListener('click',function(){ oeffnePutzAufgabe(); });
+    var ppmC=$('ppmClose'); if(ppmC) ppmC.addEventListener('click', schliessePutzAufgabe);
+    var ppM=$('putzModal');
+    if(ppM) ppM.addEventListener('click',function(e){ if(e.target===ppM) schliessePutzAufgabe(); });
   }
 
   // ── Geräte ──

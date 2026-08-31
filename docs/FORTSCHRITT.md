@@ -5256,3 +5256,190 @@ passiert". Jetzt steht dort, was wirklich gilt.
   *verschickt*, und Verschicken geht hier nicht.
 - **Die Tagesübersicht um 20:30 Uhr** ist nur im Code belegt, nicht in
   einem Lauf: ein Zeitplan hinterlässt keine Spur in der Datenbank.
+
+---
+
+# 58 · Ein Weg statt zwei — und 22 doppelte Symbole
+
+**28. August 2026**
+
+## Zwei Wege für dieselbe Handlung
+
+Eine Aufgabe legt man über **„+ Neu" in der Kopfzeile** an. Eine
+Putzaufgabe lag hinter einer Karte am **Fuß der Putzplan-Seite** — hinter
+der Liste und hinter den Notizen. Wer sie anlegen wollte, musste erst an
+allem vorbeiscrollen, was er gerade nicht suchte.
+
+| | vorher | jetzt |
+|---|---|---|
+| Griff | Karte am Seitenfuß | „+ Neu" in der Kopfzeile |
+| Studio | jedes Mal von Hand ankreuzen | das oben gewählte ist vorbelegt |
+| nach dem Anlegen | Formular bleibt leer stehen | Fenster geht zu |
+
+**Die Vorauswahl ist der eigentliche Gewinn.** Wer auf der Putzplan-Seite
+von Hürth steht und dort etwas anlegt, meint in aller Regel Hürth —
+vorher fing das Anlegen trotzdem regelmäßig mit *„Bitte mindestens ein
+Studio wählen"* an.
+
+Die Feld-Kennungen sind bewusst unverändert geblieben (`ppTitle`,
+`ppStudios`, `ppRepeat` …). `addPutzTask()` und `buildPutzplanSelect()`
+greifen darauf zu; ein Umzug im Markup sollte nicht die halbe Logik
+mitreißen.
+
+**Nicht mitgemacht:** Mitarbeiter dürfen weiterhin keine Putzaufgaben
+anlegen. Bei den Aufgaben dürfen sie es seit dem 13.8. — beim Putzplan
+sagt `firestore.rules` `allow create: if manages(studioKey)`. Das
+gleichzuziehen ist eine Entscheidung über Zuständigkeit, keine über
+Oberfläche, und gehört in eine eigene Runde.
+
+## Der Fund: 22 Knöpfe zeichnen ihr Symbol doppelt
+
+Auf dem ersten Bildschirmfoto der neuen Kopfzeile standen **zwei
+Drucker** nebeneinander. Ursache: der Knopf trug beides —
+
+```html
+<button data-ikon="drucken" …><svg class="sym">…</svg> Drucken</button>
+```
+
+`ikonenEinsetzen()` hängt sein SVG per `insertAdjacentHTML('afterbegin')`
+davor, das handgeschriebene bleibt stehen. Nachgezählt im laufenden
+Browser: **22 von 108** Elementen mit `data-ikon` waren so — Drucken,
+Als Excel, Kopieren, Bestellmail, Foto hinzufügen, Defekt melden,
+Checkliste senden und fünfzehn weitere.
+
+Jeder einzelne war sichtbar falsch, und keiner ist je gemeldet worden.
+**Ein doppeltes Symbol sieht aus wie Absicht, wenn man es nicht sucht.**
+
+Genau das war der Grund, aus dem `data-ikon` überhaupt eingeführt wurde:
+eine Quelle je Bild. Die 22 waren die Reste der Umstellung — beide
+Fassungen standen noch da.
+
+`test-gestaltung.js` prüft es jetzt an der Quelle, nicht am Bildschirm:
+ein Element mit `data-ikon` darf kein eigenes `<svg>` enthalten.
+Gegenprobe mit einem zurückgebauten Knopf: *„SYMBOL DOPPELT: 1
+Element(e) … (drucken (#ppPrint))"* ✓
+
+## Die Attrappe verschluckte Stapelschreiben
+
+`addPutzTask()` schreibt über `db.batch()` — für mehrere Studios auf
+einmal. Der Stapel der Attrappe war:
+
+```js
+batch: function () { return { set: function () {}, … } }
+```
+
+Alles still verworfen. Der erste Lauf meldete darum *„Anlegen schreibt
+nichts"*, und das stimmte nur für die Attrappe. Beide Attrappen legen
+jetzt auch Stapel in `window.__schreib` ab, und der Verweis trägt seinen
+Pfad mit (`_pfad`) — ohne den kann ein Stapel nicht sagen, **wohin** er
+geschrieben hätte.
+
+## Und gleich die erste Empfehlung: Putzaufgabe bearbeiten
+
+Bis heute konnte man eine Putzaufgabe nur **löschen**. Ein Tippfehler im
+Titel kostete Löschen und Neuanlegen — und damit die gesamte
+Erledigt-Historie des Punktes. Aufgaben haben ihr Bearbeiten-Fenster seit
+Langem.
+
+Gebaut ist es als **derselbe Dialog** mit zwei Zuständen, nicht als
+zweites, fast gleiches Fenster:
+
+| | Anlegen | Bearbeiten |
+|---|---|---|
+| Überschrift | Neue Putzaufgabe | Putzaufgabe bearbeiten |
+| Knopf | Putzaufgabe erstellen | Änderung speichern |
+| Studio-Auswahl | da, vorbelegt | **weg** |
+
+Zwei Formulare für dieselben vier Felder laufen auseinander, sobald eines
+davon ein Feld dazubekommt — genau das ist dem Putzplan gegenüber den
+Aufgaben schon einmal passiert.
+
+Die Studio-Auswahl fällt beim Ändern weg: eine Putzaufgabe liegt in genau
+einem Studio, und sie woandershin zu schieben ist etwas anderes, als sie
+zu ändern.
+
+**Was das Update NICHT anfasst:** `done`, `doneBy`, `doneAt`,
+`doneByUid`, `doneKuerzel`, `pausiertBis`. Der Haken von heute Morgen
+überlebt eine Titeländerung — der Durchlauf prüft jedes dieser Felder
+einzeln.
+
+Die Felder des eigenen Intervalls werden bei **jeder** Wiederholungsart
+mitgeschrieben (leer, wenn keine). Sonst bliebe an einer Aufgabe, die von
+„alle 3 Tage" auf „täglich" umgestellt wird, das alte `intervalMs`
+stehen, und `erledigt()` rechnete weiter damit.
+
+## Ein Fehler, den ich beim Nachlesen des eigenen Diffs gefunden habe
+
+```js
+ppN.addEventListener('click', oeffnePutzAufgabe);
+```
+
+`addEventListener` übergibt das MouseEvent als erstes Argument, und
+`oeffnePutzAufgabe()` hält das erste Argument für die zu bearbeitende
+Aufgabe. Das Fenster wäre im Bearbeiten-Zustand aufgegangen — mit einem
+Klick-Ereignis als Aufgabe. Jetzt steht dort eine Hülle.
+
+## Der teuerste Fund: eine geteilte Klasse ändert, was ausgewählt wird
+
+Der saubere Lauf danach meldete **88 grün, 1 rot** — `test-block3` mit
+einem Zeitablauf. Die Ausgabe nannte den Grund selbst:
+
+```
+<div data-auf="1" class="show" id="putzModal"> intercepts pointer events
+```
+
+`test-block3` klickt `document.querySelector('.pp-del')`, um eine
+Putzaufgabe zu **löschen**. Ich hatte dem neuen Stift dieselbe Klasse
+gegeben — der gleichen Maße wegen — und er steht in der Zeile **davor**.
+Der Durchlauf drückte also den Stift, das Bearbeiten-Fenster ging auf und
+fing alles Weitere ab.
+
+**Eine Klasse ist ein Name, keine Formatvorlage.** Wer sie teilt, teilt
+auch, was sie auswählt. Der Stift heißt jetzt `pp-edit`; das gemeinsame
+Aussehen steht als `.pp-del,.pp-edit{…}` da, wo es hingehört.
+
+Kein Testproblem: hätte jemand im Betrieb eine Putzaufgabe löschen
+wollen, wäre es ihm genauso gegangen — der erste Griff in der Zeile war
+nicht mehr der, für den er gehalten wurde.
+
+Beide Durchläufe halten den Fall jetzt fest. Gegenprobe mit
+zurückgegebener Klasse: `test-putzplan-anlegen` meldet *„Der erste
+.pp-del ist nicht der Papierkorb, sondern „bearbeiten""*, `test-block3`
+fällt wieder um. ✓
+
+## Zwei Rote, die ich selbst verursacht habe
+
+Der volle Lauf meldete vier Rote. Zwei waren die Umgebung nach einem
+Container-Neustart (dieselben zwei wie in Runde 57). Die anderen beiden —
+`test-werkbank` und `test-zugang-rolle`, beide mit *„Cannot read
+properties of null"* — waren **meine**: ich habe `index.html` bearbeitet,
+während der Lauf lief. Zwischen zwei Änderungen stimmte der CSP-Hash
+nicht, die App startete nicht, und die Durchläufe klickten ins Leere.
+
+Einzeln nachgefahren waren beide sofort grün. Die Lehre steht hier, weil
+sie mir zum zweiten Mal passiert ist: **während `alle.sh` läuft, wird
+keine Datei angefasst.**
+
+## Gegenproben
+
+| Eingriff | Ergebnis |
+|---|---|
+| Vorauswahl abgeschaltet | „angekreuzt ist []" + drei Folgefehler ✓ |
+| Fenster bleibt nach dem Anlegen offen | „steht noch offen" ✓ |
+| `data-manage-only` am Knopf entfernt | „Mitarbeiter sieht + Neu" ✓ |
+| Doppel-SVG am Drucken-Knopf zurückgebaut | `test-gestaltung` rot ✓ |
+| Bearbeiten schreibt `done:false` mit | „fasst „done" an — das löscht den Haken" ✓ |
+| beide Rücksetzer von `_ppEdit` entfernt | „+ Neu hängt im Ändern-Zustand" ✓ |
+
+**Eine Gegenprobe hat zweimal nicht gebissen, und das ist eine Aussage
+über den Durchlauf, nicht über den Code.** `_ppEdit` wird an zwei
+unabhängigen Stellen zurückgesetzt — beim Schließen und bei jedem Öffnen.
+Ein einzelner Eingriff bricht das deshalb nicht; erst beide zusammen
+machen die Prüfung rot. Sie misst also etwas, der Code ist nur doppelt
+abgesichert. Das nachzusehen war die eigentliche Arbeit — „grün geblieben"
+heißt sonst genauso gut „prüft nichts".
+
+Der neue Durchlauf vergleicht die **Lage** der beiden „+ Neu"-Knöpfe,
+nicht ihr Vorhandensein: gleiche Höhe, gleicher Abstand rechts, jeweils
+auf zehn Pixel genau. „Steht auch dort" ist die Behauptung, also wird das
+gemessen.
