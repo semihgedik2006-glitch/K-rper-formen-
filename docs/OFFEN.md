@@ -59,6 +59,50 @@ Nachtrag** — dann kommt der Datenschutz-Absatz mit dazu.
 >   aus, dass die Studios gegen 21 Uhr schließen. Passt das nicht, ist es
 >   eine Zeile in `functions/index.js` (`tagesUebersicht`).
 
+> **Nachtrag 31.8. — ein Fund auf der öffentlichen Landingpage.**
+> `werbung.html` wird ausgeliefert (steht nicht in der ignore-Liste) und
+> hat ein Kontaktformular: Name, E-Mail, Nachricht, Knopf „Probetraining
+> anfragen". Darüber steht *„Wir melden uns innerhalb von 24 Stunden bei
+> dir – versprochen."* Nach dem Absenden erscheint *„Danke! Wir melden
+> uns innerhalb von 24 Stunden. 💪"*
+>
+> **Die Nachricht geht nirgendwohin.** Kein `fetch`, kein
+> `XMLHttpRequest`, kein `action`, kein Formspree — nur
+> `note.textContent = …` und `form.reset()`. Im Quelltext steht als
+> Kommentar: *„HINWEIS: Für echten Versand einen Backend-Service
+> einbinden (z.B. Formspree)."* Der Platzhalter ist live gegangen.
+>
+> Wer das Formular ausfüllt, bekommt ein ausdrückliches Versprechen und
+> nie eine Antwort. Telefonnummer, E-Mail-Adresse und Anschrift stehen
+> direkt daneben und funktionieren.
+>
+> **Das ist eine Entscheidung, keine Reparatur** — deshalb steht es hier
+> und ist nicht stillschweigend geändert:
+> * **Ehrlich machen:** Formular raus oder Text ändern, die drei echten
+>   Wege stehen ohnehin daneben. Fünf Minuten, kein Risiko.
+> * **Wirklich versenden:** Cloud Function plus Regel für einen
+>   öffentlichen, nicht angemeldeten Schreibweg — das ist ein Spam-Tor
+>   und braucht eine Bremse. Eine eigene Runde.
+>
+> **31.8. entschieden: ehrlich gemacht.** Das Formular ist weg, an seiner
+> Stelle stehen die zwei Wege, die funktionieren — Telefon zuerst (der
+> Termin steht im selben Gespräch), daneben E-Mail mit vorbereitetem
+> Betreff. Beides sind gewöhnliche Verweise und funktionieren auch ohne
+> JavaScript. Der Satz „Wir melden uns innerhalb von 24 Stunden –
+> versprochen" ist ersetzt.
+>
+> **Und dabei aufgefallen, noch offen:** im Fußbereich derselben Seite
+> stehen **„Datenschutz" und „AGB" als `href="#"`** — beide Links führen
+> nirgendwohin. `werbung.html` ist eine öffentliche, gewerbliche Seite;
+> Impressum und Datenschutzerklärung gehören dort hin. Die App hat ihre
+> Angaben unter Verwaltung → System, diese Seite hat gar keine.
+>
+> Ich schreibe hier keinen Rechtstext hin — das ist dieselbe Frage wie
+> die vier Pflichtfelder weiter unten und der Datenschutztext über einen
+> Anwalt. Entweder die Links zeigen auf die vorhandenen Seiten von
+> koerperformen.com, oder die Seite bekommt eigene. **Ein toter Link ist
+> in beiden Fällen die schlechteste Antwort.**
+
 ## Auf einen Blick
 
 Das Ausführliche steht weiter unten und in `SICHERHEIT.md`. Hier nur die

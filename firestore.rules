@@ -680,9 +680,27 @@ service cloud.firestore {
        diesen Regeln nicht; der Termin-Mailversand laeuft also weiter,
        falls doch noch Daten liegen.
 
-       Zurueckholen: dieses false durch die Regeln ersetzen, die im
-       Verlauf stehen (git show 6253c61 -- firestore.rules), und die
-       beiden Zeilen aus firebase.json streichen.
+       ZURUECKHOLEN — UND WARUM DIE ALTEN REGELN NICHT REICHEN:
+       Die Fassung im Verlauf (git show 6253c61 -- firestore.rules)
+       fragte nur istAktiv(). Genau daran lag das Leck. Wer sie
+       zurueckholt, holt es mit zurueck.
+
+       Ausserdem greifen beide Seiten im Code weiterhin FLACH zu —
+       wachstum.html 23-mal, marketing.html 13-mal, ohne
+       firmen/<kennung>/. Regeln unter dem Firmen-Pfad wuerden ihnen
+       also gar nichts nuetzen; sie schrieben weiter nach oben.
+
+       Reihenfolge, wenn die Seiten zurueck sollen:
+         1. S() wie in index.html einbauen, alle Aufrufe umstellen
+            (users bleibt oben — ein Profil muss vor der Anmeldung
+            findbar sein, dieselbe Ausnahme wie in den Functions)
+         2. tools/umzug.js um die sechs Sammlungen erweitern und die
+            vorhandenen Daten kopieren
+         3. HIER firmengebundene Regeln setzen, nicht die alten
+         4. erst zuletzt die beiden Zeilen aus firebase.json streichen
+
+       tests/test-nebenseiten.js schlaegt an, wenn jemand die
+       Reihenfolge umdreht — vor allem beim Schritt 4 ohne Schritt 1.
        ═════════════════════════════════════════════════════════════════ */
     match /mkProjects/{projectId} {
       allow read, write: if false;

@@ -18,7 +18,8 @@
   },
 
   "//hosting": "Ausgeliefert wird das Projektverzeichnis abzüglich der ignore-Liste. Alles, was nicht in den Browser gehört, muss dort stehen — sonst ist es öffentlich abrufbar.",
-  "//stillgelegt": "marketing.html und wachstum.html werden seit dem 13.8.2026 auf Ansage nicht mehr ausgeliefert. Sie bleiben im Repo; die beiden Zeilen unten streichen und ausrollen holt sie zurück. Die Sammlungen dahinter stehen in firestore.rules auf false.",
+  "//stillgelegt": "marketing.html und wachstum.html werden seit dem 13.8.2026 auf Ansage nicht mehr ausgeliefert. Sie bleiben im Repo; die Sammlungen dahinter stehen in firestore.rules auf false.",
+  "//zurueckholen": "ACHTUNG, die beiden Zeilen unten zu streichen reicht NICHT. Beide Seiten greifen noch flach zu (db.collection(...) ohne firmen/<kennung>/): wachstum.html 23-mal, marketing.html 13-mal. Wer sie so zurueckholt und die Regeln wieder oeffnet, stellt genau das Leck wieder her, wegen dem sie stillgelegt wurden - zwei Kunden saehen sich gegenseitig in den Terminen, mit Namen und E-Mail-Adressen ihrer Endkundinnen. Reihenfolge: erst S() wie in index.html einbauen und alle Aufrufe umstellen, dann tools/umzug.js um die Sammlungen erweitern und die Daten kopieren, dann die Regeln firmengebunden machen, erst zuletzt diese Zeilen streichen. tests/test-nebenseiten.js schlaegt an, wenn jemand die Reihenfolge umdreht.",
   "hosting": {
     "public": ".",
     "ignore": [

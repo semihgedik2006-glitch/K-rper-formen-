@@ -7,7 +7,7 @@
 <title>Körperformen Hürth – EMS-Training & Body-Shaping</title>
 <!-- Zweite Reihe hinter der Maskierung. Erzeugt und geprüft von
      tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-UUb8U0X/q4JVSBV2axycuUfjoUeJcAnQ1fCuHQlAA8Q='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg https://www.xn--krperformen-rfb.com/wp-content/uploads/2020/03/emstesmal_simone.png; media-src 'none'; connect-src 'none'; worker-src 'none'; manifest-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-g8sJgBWCSqLM3KARSRdKmQ+u+WmT9U3rtI9wGLRTH/I='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg https://www.xn--krperformen-rfb.com/wp-content/uploads/2020/03/emstesmal_simone.png; media-src 'none'; connect-src 'none'; worker-src 'none'; manifest-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <meta name="description" content="Forme deinen Körper mit EMS-Training in Hürth. Nur 20 Minuten pro Woche – persönlich betreut. Jetzt kostenloses Probetraining sichern." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -119,6 +119,14 @@ h1,h2,h3{font-family:var(--font-head);font-weight:800;line-height:1.0;
 }
 .btn-primary:hover{transform:translateY(-4px);box-shadow:0 22px 48px var(--accent-glow)}
 .btn-ghost{background:rgba(10,20,15,.03);color:var(--text);border:1.5px solid var(--line-2)}
+/* Kontaktwege statt Formular: dieselbe Spalte, untereinander. Die
+   Knoepfe sind breit, weil sie auf dem Handy mit dem Daumen getroffen
+   werden — und weil sie die einzige Handlung auf dieser Seite sind. */
+.kontakt-wege{display:flex;flex-direction:column;gap:14px;align-self:start}
+.kontakt-wege h3{font-family:var(--font-head);font-size:clamp(1.3rem,3vw,1.7rem)}
+.kontakt-wege .btn{width:100%;text-transform:none;letter-spacing:.2px}
+.kontakt-wege .btn svg{flex-shrink:0}
+.kontakt-wege .btn:hover svg{transform:none}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent-d);transform:translateY(-4px);
   box-shadow:var(--shadow)}
 
@@ -709,7 +717,7 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
     <div class="cta-band reveal" style="margin-bottom:clamp(48px,7vw,72px)">
       <h2>Bereit für deine <span class="hl">beste Form?</span></h2>
       <p>Sichere dir jetzt dein <b style="color:#fff">100 % kostenloses Probetraining</b> – unverbindlich, persönlich und ohne Vorkenntnisse.</p>
-      <a href="#contactForm" class="btn btn-primary" style="position:relative">
+      <a href="#kontaktWege" class="btn btn-primary" style="position:relative">
         Jetzt gratis sichern
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
@@ -719,7 +727,7 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
       <div class="reveal left">
         <span class="eyebrow">Kontakt</span>
         <h2 style="font-size:clamp(1.8rem,4.5vw,2.6rem)">Sprich mit <span class="hl">uns</span></h2>
-        <p class="lead" style="margin-top:12px">Wir melden uns innerhalb von 24 Stunden bei dir – versprochen.</p>
+        <p class="lead" style="margin-top:12px">Ruf an oder schreib uns – beides landet direkt im Studio Hürth.</p>
         <ul class="info-list">
           <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
             <span><b>Adresse</b><span>Krankenhausstr. 111, 50354 Hürth</span></span></li>
@@ -737,17 +745,33 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
         </div>
       </div>
 
-      <form class="reveal right" id="contactForm" novalidate>
-        <div class="field"><label for="name">Name</label>
-          <input type="text" id="name" name="name" placeholder="Dein Name" autocomplete="name" required /></div>
-        <div class="field"><label for="email">E-Mail</label>
-          <input type="email" id="email" name="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" required /></div>
-        <div class="field"><label for="message">Nachricht</label>
-          <textarea id="message" name="message" placeholder="Ich möchte ein kostenloses Probetraining vereinbaren …" required></textarea></div>
-        <button type="submit" class="btn btn-primary">Probetraining anfragen</button>
-        <!-- HINWEIS: Für echten Versand einen Backend-Service einbinden (z.B. Formspree) -->
-        <p class="form-note" id="formNote" role="status"></p>
-      </form>
+      <!-- ── Die Wege, die wirklich funktionieren ──
+           Hier stand ein Kontaktformular, das NICHTS gesendet hat: kein
+           fetch, kein action, kein Formspree — nur „Danke! Wir melden
+           uns innerhalb von 24 Stunden" und form.reset(). Daneben stand
+           im Quelltext „HINWEIS: Fuer echten Versand einen
+           Backend-Service einbinden". Der Platzhalter ist live gegangen.
+
+           Wer es ausgefuellt hat, bekam ein ausdrueckliches Versprechen
+           und nie eine Antwort. Ein Formular, das nur so tut, ist
+           schlechter als gar keins: es haelt jemanden davon ab, den Weg
+           zu gehen, der funktioniert.
+
+           Telefon steht zuerst, weil es der einzige Weg ist, bei dem der
+           Termin im selben Gespraech steht. -->
+      <div class="reveal right kontakt-wege" id="kontaktWege">
+        <h3>Probetraining vereinbaren</h3>
+        <p>Kostenlos und unverbindlich. Am schnellsten geht ein Anruf — dann
+           steht der Termin gleich.</p>
+        <a class="btn btn-primary" href="tel:+4922339667181" data-kontaktweg="1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+          02233 966 71 81</a>
+        <a class="btn btn-ghost" href="mailto:huerth@koerperformen.com?subject=Kostenloses%20Probetraining&amp;body=Hallo%2C%0A%0Aich%20m%C3%B6chte%20ein%20kostenloses%20Probetraining%20vereinbaren.%0A%0AName%3A%0AWunschtermin%3A%0A%0AViele%20Gr%C3%BC%C3%9Fe" data-kontaktweg="1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5h18v14H3z"/><path d="m3 7 9 6 9-6"/></svg>
+          E-Mail schreiben</a>
+        <p class="form-note">Mo–Fr 8–21 Uhr · Sa 10–16 Uhr. Außerhalb der
+           Zeiten erreichst du uns per E-Mail.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -1018,15 +1042,10 @@ document.querySelectorAll(".faq-q").forEach(function(btn){
   });
 });
 
-/* 10) Contact form (Frontend-Demo – für echten Versand Backend/Formspree) */
-var form=document.getElementById("contactForm"),note=document.getElementById("formNote");
-form.addEventListener("submit",function(e){
-  e.preventDefault();
-  if(!form.checkValidity()){note.style.color="#EF4444";
-    note.textContent="Bitte fülle alle Felder korrekt aus.";return;}
-  note.style.color="var(--accent-d)";
-  note.textContent="Danke! Wir melden uns innerhalb von 24 Stunden. 💪";form.reset();
-});
+/* 10) Kontakt: kein Skript noetig.
+   Hier stand der Absende-Code des Formulars, das nichts gesendet hat.
+   Telefon und E-Mail sind gewoehnliche Verweise — sie funktionieren
+   auch dann, wenn JavaScript scheitert. Das ist der Punkt. */
 
 /* 11) Footer year */
 document.getElementById("year").textContent=new Date().getFullYear();
@@ -1069,15 +1088,17 @@ document.getElementById("year").textContent=new Date().getFullYear();
       setTimeout(show,80);}
   });
 
-  /* Mobile-Fallback: nach 45 s anzeigen wenn noch kein Formular-Fokus */
-  var formTouched=false;
-  var contactForm=document.getElementById("contactForm");
-  if(contactForm)contactForm.addEventListener("focusin",function(){formTouched=true;},{once:true});
+  /* Mobile-Fallback: nach 45 s anzeigen, wenn der Besucher noch keinen
+     Kontaktweg angefasst hat. Hing frueher am Fokus im Formular; das
+     gibt es nicht mehr, also zaehlt jetzt der Griff zu Telefon oder
+     E-Mail. Wer schon anruft, braucht kein Fenster mehr. */
+  var angefasst=false;
   var mobileTimer=setTimeout(function(){
-    if(!formTouched&&!sessionStorage.getItem("exitShown"))show();
+    if(!angefasst&&!sessionStorage.getItem("exitShown"))show();
   },45000);
-  /* Timer abbrechen wenn Formular ausgefüllt wird */
-  if(contactForm)contactForm.addEventListener("submit",function(){clearTimeout(mobileTimer);},{once:true});
+  document.querySelectorAll("[data-kontaktweg]").forEach(function(a){
+    a.addEventListener("click",function(){angefasst=true;clearTimeout(mobileTimer);},{once:true});
+  });
 })();
 
 })();

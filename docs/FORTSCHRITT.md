@@ -5641,3 +5641,133 @@ selbst erwischt haben.
 |---|---|
 | Zentrierung zurückgenommen | 3× „NICHT MITTIG … -12/0 px" ✓ |
 | altes Abzeichen (19px in der Ecke) | „ABZEICHEN AUF DEM SYMBOL — 64 px²" ✓ |
+
+---
+
+# 61 · Die stillgelegten Nebenseiten — und eine Warnung an die Anleitung
+
+**31. August 2026**
+
+## Erst eine Korrektur an mir selbst
+
+Ich hatte gemeldet: *„`marketing.html` und `wachstum.html` schreiben auf
+flache Pfade — mit einem zweiten Kunden lesen und schreiben beide Seiten
+in dieselben Sammlungen."* Die Zahlen stimmten (23 und 13 flache
+Zugriffe), der Schluss war falsch.
+
+**Beide Seiten sind seit dem 13.8.2026 stillgelegt**, an zwei Stellen
+gleichzeitig: `firebase.json` liefert sie nicht aus, und in
+`firestore.rules` stehen ihre Sammlungen auf `allow read, write: if
+false` — flach *und* unter `firmen/`. Kein Browser kommt an diese Daten,
+auch der erste Kunde nicht.
+
+Ich hatte `db.collection(...)` gezählt und daraus auf ein Leck
+geschlossen, ohne zu prüfen, ob die Seiten überhaupt erreichbar sind.
+Eine Vermutung als Befund verkauft.
+
+## Was wirklich das Risiko ist
+
+Nicht der heutige Zustand, sondern die **Anleitung zum Zurückholen**. In
+`firebase.json` stand:
+
+> *„die beiden Zeilen unten streichen und ausrollen holt sie zurück"*
+
+und in `firestore.rules`:
+
+> *„dieses false durch die Regeln ersetzen, die im Verlauf stehen"*
+
+Wer dem folgt, holt das Leck mit zurück: die alten Regeln fragten nur
+`istAktiv()` — genau daran lag es —, und der Code greift weiterhin flach
+zu. Zwei Kunden sähen sich gegenseitig in den Terminen, mitsamt Namen
+und E-Mail-Adressen ihrer Endkundinnen.
+
+An beiden Stellen steht jetzt die Reihenfolge:
+
+1. `S()` einbauen, alle Aufrufe umstellen (`users` bleibt oben — ein
+   Profil muss vor der Anmeldung findbar sein)
+2. `tools/umzug.js` um die Sammlungen erweitern, Daten kopieren
+3. firmengebundene Regeln setzen, **nicht** die alten
+4. erst zuletzt die zwei Zeilen aus `firebase.json`
+
+## Und eine Prüfung, die anschlägt, wenn jemand sie umdreht
+
+Eine Warnung im Kommentar liest, wer den Kommentar liest.
+`tests/test-nebenseiten.js` prüft beide Hälften der Abschaltung
+gegeneinander:
+
+| Lage | Urteil |
+|---|---|
+| nicht ausgeliefert, Regeln zu | ✓ abgeschaltet |
+| ausgeliefert, Regeln zu | ✗ die Seite lädt und tut nichts |
+| ausgeliefert, Code noch flach | ✗ **das Leck ist wieder offen** |
+
+**Gegenprobe:** die zwei Zeilen aus `firebase.json` gestrichen, sonst
+nichts geändert — genau das, was die alte Anleitung sagte. Ergebnis:
+acht Funde, die ersten beiden wörtlich *„ist ausgeliefert und greift
+NICHT mehr flach zu"*. ✓
+
+Vorbild ist `test-funktionen-pfade.js`, das dasselbe für
+`functions/index.js` bewacht. Dort war es nötig, weil ein flacher
+Zugriff niemandem auffällt — hier auch.
+
+## Der dritte Punkt fiel aus, und dahinter lag etwas anderes
+
+Geplant war, `werbung.html` durch `test-xss.js` zu ziehen. Nachgemessen
+hat die Seite **keine Angriffsfläche**:
+
+```
+innerHTML 0 · outerHTML 0 · document.write 0 · insertAdjacentHTML 0
+location.search 0 · location.hash 0 · URLSearchParams 0 · eval 0
+```
+
+dazu eine eigene CSP mit Skript-Hash. Ein Durchlauf darüber wäre grün
+gewesen und hätte nichts bewiesen — die Sorte Grün, gegen die dieses
+Projekt sonst anschreibt.
+
+## Dafür lag darunter etwas Ernsteres
+
+`werbung.html` wird ausgeliefert und hatte ein Kontaktformular: Name,
+E-Mail, Nachricht, Knopf „Probetraining anfragen". Darüber stand *„Wir
+melden uns innerhalb von 24 Stunden bei dir – versprochen."* Nach dem
+Absenden erschien *„Danke! Wir melden uns innerhalb von 24 Stunden. 💪"*
+
+**Die Nachricht ging nirgendwohin.** Kein `fetch`, kein
+`XMLHttpRequest`, kein `action`, kein Formspree — nur
+`note.textContent = …` und `form.reset()`. Im Quelltext stand daneben:
+
+```html
+<!-- HINWEIS: Für echten Versand einen Backend-Service einbinden (z.B. Formspree) -->
+```
+
+Der Platzhalter ist live gegangen. Wer ihn ausgefüllt hat, bekam ein
+ausdrückliches Versprechen und nie eine Antwort — während Telefonnummer,
+E-Mail-Adresse und Anschrift direkt daneben standen und funktionieren.
+
+**Nicht stillschweigend geändert**, weil die zwei Wege verschieden teuer
+sind: den Text ehrlich machen (fünf Minuten) oder echten Versand bauen
+(Cloud Function plus Regel für einen öffentlichen, nicht angemeldeten
+Schreibweg — ein Spam-Tor, das eine Bremse braucht). Entschieden wurde
+**ehrlich machen**.
+
+Jetzt stehen an der Stelle die zwei Wege, die funktionieren: Telefon
+zuerst, weil der Termin dort im selben Gespräch steht, daneben E-Mail
+mit vorbereitetem Betreff und Textgerüst. Beides sind gewöhnliche
+Verweise — sie funktionieren auch, wenn JavaScript scheitert. Das ist
+der Punkt.
+
+**Ein Formular, das nur so tut, ist schlechter als gar keins:** es hält
+jemanden davon ab, den Weg zu gehen, der wirklich funktioniert.
+
+Der Exit-Intent hing am Fokus im Formular. Er zählt jetzt den Griff zu
+Telefon oder E-Mail — wer schon anruft, braucht kein Fenster mehr.
+
+## Und noch ein toter Link auf derselben Seite
+
+Im Fußbereich stehen **„Datenschutz" und „AGB" als `href="#"`**. Beide
+führen nirgendwohin. `werbung.html` ist eine öffentliche, gewerbliche
+Seite; die App hat ihre Angaben unter Verwaltung → System, diese Seite
+hat gar keine.
+
+Steht in `OFFEN.md` und ist bewusst nicht von mir gelöst: das ist
+dieselbe Frage wie die vier rechtlichen Pflichtfelder — eine
+Entscheidung, kein Handgriff.
