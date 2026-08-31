@@ -173,6 +173,25 @@ async function lauf() {
     const stifte = await page.evaluate(() => document.querySelectorAll('[data-ppedit]').length);
     if (!stifte) fehler.push('Keine Bearbeiten-Knöpfe an den Putzaufgaben');
 
+    /* Der Stift darf NICHT `pp-del` heißen.
+       Er trug die Klasse zuerst, der gleichen Maße wegen. Folge:
+       `document.querySelector('.pp-del')` traf den Stift statt des
+       Papierkorbs, weil er in der Zeile davor steht — test-block3.js
+       wollte löschen, öffnete das Bearbeiten-Fenster und lief in den
+       Zeitablauf. Eine Klasse ist ein Name, keine Formatvorlage. */
+    const verwechselt = await page.evaluate(() =>
+      [...document.querySelectorAll('.pp-del')]
+        .filter(k => k.hasAttribute('data-ppedit')).length);
+    if (verwechselt)
+      fehler.push('Der Bearbeiten-Knopf trägt die Klasse „pp-del" — ' +
+        'wer .pp-del auswählt, trifft dann den Stift statt des Papierkorbs');
+    const ersterPpDel = await page.evaluate(() => {
+      const k = document.querySelector('.pp-del');
+      return k ? (k.getAttribute('aria-label') || '') : '(keiner)';
+    });
+    if (!/löschen/i.test(ersterPpDel))
+      fehler.push('Der erste .pp-del ist nicht der Papierkorb, sondern „' + ersterPpDel + '"');
+
     /* c2 „Spiegel putzen" ist wöchentlich und NICHT erledigt; c1 „Böden
        wischen" ist erledigt. Beide werden gebraucht. */
     const zeile = (id) => page.evaluate(x => {

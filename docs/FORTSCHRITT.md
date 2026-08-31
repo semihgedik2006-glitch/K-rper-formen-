@@ -5379,6 +5379,34 @@ ppN.addEventListener('click', oeffnePutzAufgabe);
 Aufgabe. Das Fenster wäre im Bearbeiten-Zustand aufgegangen — mit einem
 Klick-Ereignis als Aufgabe. Jetzt steht dort eine Hülle.
 
+## Der teuerste Fund: eine geteilte Klasse ändert, was ausgewählt wird
+
+Der saubere Lauf danach meldete **88 grün, 1 rot** — `test-block3` mit
+einem Zeitablauf. Die Ausgabe nannte den Grund selbst:
+
+```
+<div data-auf="1" class="show" id="putzModal"> intercepts pointer events
+```
+
+`test-block3` klickt `document.querySelector('.pp-del')`, um eine
+Putzaufgabe zu **löschen**. Ich hatte dem neuen Stift dieselbe Klasse
+gegeben — der gleichen Maße wegen — und er steht in der Zeile **davor**.
+Der Durchlauf drückte also den Stift, das Bearbeiten-Fenster ging auf und
+fing alles Weitere ab.
+
+**Eine Klasse ist ein Name, keine Formatvorlage.** Wer sie teilt, teilt
+auch, was sie auswählt. Der Stift heißt jetzt `pp-edit`; das gemeinsame
+Aussehen steht als `.pp-del,.pp-edit{…}` da, wo es hingehört.
+
+Kein Testproblem: hätte jemand im Betrieb eine Putzaufgabe löschen
+wollen, wäre es ihm genauso gegangen — der erste Griff in der Zeile war
+nicht mehr der, für den er gehalten wurde.
+
+Beide Durchläufe halten den Fall jetzt fest. Gegenprobe mit
+zurückgegebener Klasse: `test-putzplan-anlegen` meldet *„Der erste
+.pp-del ist nicht der Papierkorb, sondern „bearbeiten""*, `test-block3`
+fällt wieder um. ✓
+
 ## Zwei Rote, die ich selbst verursacht habe
 
 Der volle Lauf meldete vier Rote. Zwei waren die Umgebung nach einem
