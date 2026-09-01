@@ -48,7 +48,7 @@ async function lauf() {
     window.__board = [
       { id: 'p1', uid: 'u3', name: 'Ben Kraus', text: '', kind: 'umfrage',
         ts: Date.now() - 3600000,
-        poll: { q: 'Wer kann Samstag früh?', opts: ['Ich', 'Ich nicht'] },
+        poll: { q: '@Anna Meier kannst du Samstag früh?', opts: ['Ich', 'Ich nicht'] },
         votes: { u2: 0, u3: 1 } },
       { id: 't1', uid: 'u3', name: 'Ben Kraus', text: 'Gewöhnlicher Aushang.',
         kind: 'info', ts: Date.now() - 7200000 }
@@ -70,6 +70,7 @@ async function lauf() {
     items: document.querySelectorAll('.bb-item').length,
     umfragen: document.querySelectorAll('.bb-item .poll').length,
     frage: (document.querySelector('.bb-item .poll-q') || {}).textContent || '',
+    frageHtml: (document.querySelector('.bb-item .poll-q') || {}).innerHTML || '',
     antworten: [...document.querySelectorAll('.bb-item .poll-opt')].map(x => x.textContent.trim()),
     fuss: (document.querySelector('.bb-item .poll-foot') || {}).textContent || '',
     arten: [...document.querySelectorAll('.bb-kind')].map(x => x.textContent),
@@ -81,7 +82,14 @@ async function lauf() {
     stand.items + ' statt 2 — ohne beide ist alles Weitere wertlos.');
   pruefe('Genau EIN Beitrag ist eine Umfrage', stand.umfragen === 1,
     stand.umfragen + ' — der gewöhnliche Aushang darf keine bekommen.');
-  pruefe('Die Frage steht da', stand.frage === 'Wer kann Samstag früh?', stand.frage);
+  pruefe('Die Frage steht da', stand.frage === '@Anna Meier kannst du Samstag früh?',
+    stand.frage);
+  /* Die Frage ist Menschentext. Aufgefallen erst hier: sie ging nur
+     durch esc(), nicht durch markMentions() — im Chat seit es Umfragen
+     gibt. „@Anna kannst du Samstag früh?" war schlichter Text. */
+  pruefe('Eine Erwähnung in der Frage ist hervorgehoben',
+    stand.frageHtml.indexOf('<span class="mention">@Anna Meier</span>') === 0,
+    stand.frageHtml);
   pruefe('Beide Antworten stehen da, mit Zählung',
     stand.antworten.length === 2 &&
     /Ich1 · 50%/.test(stand.antworten[0]) && /Ich nicht1 · 50%/.test(stand.antworten[1]),
@@ -174,7 +182,7 @@ async function lauf() {
 
   await page.evaluate(() => {
     window.__schreib = [];
-    document.querySelector('#pollQ').value = 'Kaffee oder Tee?';
+    document.querySelector('#pollQ').value = '@Anna Meier Kaffee oder Tee?';
     document.querySelector('#pollO1').value = 'Kaffee';
     document.querySelector('#pollO2').value = 'Tee';
     document.querySelector('#pollSend').click();
@@ -186,9 +194,14 @@ async function lauf() {
     JSON.stringify(neu).slice(0, 200));
   const nd = (neu[0] || {}).daten || {};
   pruefe('Der neue Beitrag ist eine Umfrage mit Frage und Antworten',
-    nd.kind === 'umfrage' && nd.poll && nd.poll.q === 'Kaffee oder Tee?' &&
+    nd.kind === 'umfrage' && nd.poll && nd.poll.q === '@Anna Meier Kaffee oder Tee?' &&
     (nd.poll.opts || []).join(',') === 'Kaffee,Tee',
     JSON.stringify(nd).slice(0, 200));
+  /* Der Text ist leer — die Erwähnung steht in der FRAGE. Ohne das
+     wäre sie hervorgehoben und trüge trotzdem niemandem etwas zu. */
+  pruefe('mentions kommt aus der Frage, nicht aus dem leeren Text',
+    Array.isArray(nd.mentions) && nd.mentions.join(',') === 'u2',
+    JSON.stringify(nd.mentions));
   pruefe('Sie startet ohne Stimmen',
     nd.votes && Object.keys(nd.votes).length === 0, JSON.stringify(nd.votes));
   pruefe('Der Dialog schliesst sich nach dem Senden',

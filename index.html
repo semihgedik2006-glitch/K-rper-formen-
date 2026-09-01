@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-cl9L8wF0KUkxhTpoU42h317+jfogrAzXKCNmXajF9KI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-g60XNBVuwSGp7o7VcahsMHFUYEIeaZ7V0pHa5dbfOrE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -11702,7 +11702,13 @@ function pollHTML(m, art){
       '<span class="poll-fill" style="width:'+pct+'%"></span>'+
       '<span class="poll-lab"><span>'+esc(o)+'</span><span>'+n+(gesamt?' · '+pct+'%':'')+'</span></span></button>';
   }).join('');
-  return '<div class="poll"><div class="poll-q">'+esc(p.q||'Umfrage')+'</div>'+opts+
+  /* Die FRAGE ist Menschentext und gehoert damit durch markMentions.
+     Aufgefallen erst, als die Umfrage ans Brett kam: „@Anna kannst du
+     Samstag frueh?" als Frage erreichte Anna nicht — im Chat seit jeher
+     nicht. Die Quelltext-Regel in test-erwaehnungen.js hat es nicht
+     gesehen, weil sie linkify(esc( sucht und hier nur esc( steht.
+     Die ANTWORTEN bleiben draussen: „Ja" und „Nein" nennen niemanden. */
+  return '<div class="poll"><div class="poll-q">'+markMentions(esc(p.q||'Umfrage'))+'</div>'+opts+
     '<div class="poll-foot">'+(gesamt?gesamt+(gesamt===1?' Stimme':' Stimmen'):'noch keine Stimme')+
     (meine==null?' · tippe auf eine Antwort':' · Antippen ändert deine Stimme')+'</div></div>';
 }
@@ -11756,13 +11762,16 @@ function sendPoll(btn){
       ? S('board').add({
           uid:session.uid, name:session.name,
           text:'', kind:'umfrage', ts:Date.now(),
-          poll:{ q:q, opts:opts }, votes:{}
+          /* mentions aus der FRAGE, nicht aus text — der ist hier leer.
+             Ohne das waere die Erwaehnung hervorgehoben und truege
+             trotzdem niemandem etwas zu. */
+          poll:{ q:q, opts:opts }, votes:{}, mentions:findMentions(q)
         })
       : S('channels').doc(currentChannel).collection('messages').add({
           uid:session.uid, name:session.name, role:session.role,
           studio:channelStudioName(currentChannel),
           text:'', ts:Date.now(),
-          poll:{ q:q, opts:opts }, votes:{}
+          poll:{ q:q, opts:opts }, votes:{}, mentions:findMentions(q)
         })
     ).then(function(){
       closePoll();

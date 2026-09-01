@@ -6140,3 +6140,45 @@ gewöhnlichen Aushang, der seinen Textabsatz behalten muss.
   kleben.** Wer nach einer Brett-Umfrage im Chat eine stellt, muss sie im
   Chat bekommen — sonst landet sie stillschweigend am falschen Ort, und
   das merkt man erst, wenn jemand danach fragt.
+
+## Nachtrag zu 65 · Der rote Durchlauf hatte recht, aber nicht mit dem, was er sagte
+
+Die volle Regression war **94 grün · 1 rot**: `test-erwaehnungen`, mit
+der Meldung *„Schwarzes Brett: mentions wird beim Anlegen nicht
+mitgeschrieben"*. Der Aushang war in Ordnung. Gemeint war die Umfrage —
+und zwar aus zwei Gründen gleichzeitig.
+
+**Erstens die Prüfung selbst.** Sie nahm `quelle.indexOf(...)`, also die
+ERSTE Fundstelle von `S('board').add`. Bis gestern gab es genau eine.
+Jetzt gibt es zwei, und der Durchlauf sah nur noch die neue. *Eine
+Prüfung, die auf die erste Fundstelle zeigt, wandert mit dem Code weg
+von dem, was sie bewachen soll.* Sie verlangt jetzt **jede** Stelle und
+nennt beim Fehlschlag die Zeilennummern.
+
+**Zweitens ein echter Fund darunter.** Die **Frage** einer Umfrage ist
+Menschentext und ging nur durch `esc()`, nicht durch `markMentions()`.
+„@Anna Meier kannst du Samstag früh?" war schlichter Text — und das
+nicht erst seit gestern, sondern **im Chat, seit es Umfragen gibt**.
+Dazu schrieb `sendPoll` gar kein `mentions[]`, weil es aus `text` käme
+und der bei einer Umfrage leer ist.
+
+Beides ist jetzt zu, an einer Stelle für beide Orte.
+
+### Warum die Regel es nicht gesehen hat
+
+Sie sucht `linkify(esc(` — jeden Text, in dem auch Verweise erkannt
+werden. Die Umfragefrage geht nur durch `esc(`. Auf `esc(` auszuweiten
+geht nicht: das steht an hunderten Stellen für Namen, Kennungen und
+Zahlen, und **eine Regel mit hundert Ausnahmen prüft nichts mehr.**
+
+Also steht die Grenze jetzt im Durchlauf benannt, und die eine Stelle
+wird eigens bewacht: `pollHTML` muss die Frage durch `markMentions`
+schicken.
+
+### Und ein Eigentor
+
+Nach dem Einbau schlug die Regel auf einen **Kommentar** an, in dem
+`linkify(esc(` als Text vorkam. Eine Regel, um die herum man Kommentare
+formulieren muss, erzieht zum Umformulieren statt zum Nachdenken. Sie
+blendet Kommentarzeilen jetzt aus — mit Gegenprobe, dass das Ausblenden
+nur Kommentare schluckt und keinen Code, sonst wäre sie immer grün.
