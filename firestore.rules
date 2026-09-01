@@ -925,9 +925,14 @@ service cloud.firestore {
       allow read: if istAktiv();
       allow create: if istAktiv() && request.resource.data.uid == request.auth.uid;
       // Bearbeiten geht weiterhin nicht — ein Aushang, dessen Text sich
-      // hinterher aendert, ist kein Aushang. Reagieren schon: nur mit der
-      // eigenen Kennung und nur mit einem der sechs Zeichen.
-      allow update: if istAktiv() && nurEigeneReaktion();
+      // hinterher aendert, ist kein Aushang. Zwei Dinge duerfen trotzdem:
+      //   reagieren   nur mit der eigenen Kennung, nur mit einem der
+      //               sechs Zeichen
+      //   abstimmen   nur die eigene Stimme, nur auf eine Antwort, die
+      //               es wirklich gibt
+      // Beides sind dieselben Funktionen wie im Chat. Eine eigene Fassung
+      // fuer das Brett waere eine zweite Gelegenheit, etwas zu vergessen.
+      allow update: if istAktiv() && (nurEigeneReaktion() || nurEigeneStimme());
       allow delete: if isChef()
         || (istAktiv() && resource.data.uid == request.auth.uid);
     }
@@ -1421,9 +1426,10 @@ service cloud.firestore {
         match /board/{postId} {
           allow read: if inFirma(f) && (istAktiv());
           allow create: if inFirma(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
-          // Bearbeiten geht weiterhin nicht, Reagieren schon — nur mit der
-          // eigenen Kennung und nur mit einem der sechs Zeichen.
-          allow update: if inFirma(f) && (istAktiv() && nurEigeneReaktion());
+          // Bearbeiten geht weiterhin nicht. Reagieren und Abstimmen
+          // schon — nur die eigene Kennung, nur die eigene Stimme.
+          allow update: if inFirma(f) && (istAktiv()
+            && (nurEigeneReaktion() || nurEigeneStimme()));
           allow delete: if inFirma(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
         }

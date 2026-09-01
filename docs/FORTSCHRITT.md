@@ -6064,3 +6064,79 @@ Fund überhaupt entstanden.
 * An der Oberfläche war **nichts zu ändern** — die App schrieb schon
   immer nur den eigenen Schlüssel. Die Lücke war ausschliesslich die
   Regel, und genau darum fiel sie im Betrieb nie auf.
+
+---
+
+# 65 · Die Umfrage am Schwarzen Brett
+
+## Warum sie dorthin gehört
+
+Eine Umfrage gab es bisher nur im Chat. Dort ist sie nach zwanzig
+Nachrichten weg — und zwar genau bei der Sorte Frage, die tagelang offen
+bleibt: *„Wer kann Samstag früh?"*, *„Welche Öffnungszeiten wollen wir?"*.
+Am Brett steht sie, bis sie beantwortet ist.
+
+Das war der Auslöser für die letzten beiden Runden und ist zweimal von
+dem überholt worden, was beim Nachsehen darunter zum Vorschein kam.
+Jetzt steht sie.
+
+## Ein Dialog, zwei Ziele
+
+Der Umfrage-Dialog gibt es weiterhin **einmal**. `openPoll(art)` merkt
+sich das Ziel in `_pollZiel` — und zwar dort und nicht am Knopf, weil
+zwischen Aufmachen und Senden mehrere Klicks liegen. `pollHTML(m, art)`
+und `votePoll(id, i, art)` bedienen beide Orte.
+
+Dieselbe Entscheidung wie bei den Reaktionen, aus demselben Grund: zwei
+Kopien laufen auseinander, sobald eine davon einen Sonderfall bekommt.
+
+Der Hinweis im Dialog und die Aufschrift des Sendeknopfs sagen, **wo**
+die Umfrage landet. Ohne das ist der Dialog an beiden Orten derselbe,
+und man weiss beim Senden nicht mehr, welchen Knopf man vorhin gedrückt
+hat.
+
+## Die Regel war die halbe Arbeit
+
+Am Brett stand `allow update` nur für `nurEigeneReaktion()` offen.
+Abstimmen ist derselbe Schreibvorgang in ein fremdes Dokument und
+braucht denselben Beweis — jetzt `nurEigeneReaktion() || nurEigeneStimme()`,
+beides dieselben Funktionen wie im Chat.
+
+Acht neue Fälle im Emulator, darunter die zwei, auf die es ankommt: die
+**Frage lässt sich nachträglich nicht umschreiben** (auch nicht vom
+Verfasser — sonst dreht man das Ergebnis, ohne eine Stimme anzufassen),
+und **Reagieren geht weiterhin**. Die Regel ist jetzt ein ODER aus zwei
+Funktionen; ein Klammerfehler hätte still die eine oder die andere
+ausgeschaltet.
+
+## Ein Knopf, der 252 Pixel zu breit war
+
+Der erste Anlauf gab dem Umfrage-Knopf `width:100%`. Nachgemessen war er
+damit **252px breiter als „Anpinnen"** — die Nebenhandlung hätte lauter
+geschrien als die Haupthandlung.
+
+Jetzt stehen beide in Inhaltsbreite nebeneinander, nach dem Muster, das
+im Projekt schon existiert (`Eintragen / Abbrechen`). Kein eigenes
+erfunden, wo eines da war.
+
+`test-knoepfe.js` misst nur Nur-Symbol-Knöpfe; dieser trägt Symbol UND
+Text und fällt dort durch. Also im eigenen Durchlauf nachgemessen:
+gleiche Höhe, eine Zeile, **genau ein Symbol** (die Falle vom August,
+als 22 Knöpfe ihr Zeichen doppelt zeichneten), kein Überlauf bei 430px.
+
+## Eine Kleinigkeit mit sichtbarer Wirkung
+
+Eine Umfrage hat keinen Text — die Frage steht in der Umfrage. Ohne eine
+Abfrage in `renderBoard` stünde darüber ein **leerer Absatz**, der die
+Frage sichtbar nach unten schiebt. Wird geprüft, und zwar gegen einen
+gewöhnlichen Aushang, der seinen Textabsatz behalten muss.
+
+## Prüfungen
+
+* `tests/test-brett-umfrage.js` neu — **23 Prüfungen**
+* `tests/rules/umfragen.test.js` um 8 Fälle am Brett erweitert
+* Alle Regeltests zusammen: **686 bestanden · 0 gefallen**
+* Eine Gegenprobe, die leicht zu vergessen wäre: **das Ziel darf nicht
+  kleben.** Wer nach einer Brett-Umfrage im Chat eine stellt, muss sie im
+  Chat bekommen — sonst landet sie stillschweigend am falschen Ort, und
+  das merkt man erst, wenn jemand danach fragt.

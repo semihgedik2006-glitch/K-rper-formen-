@@ -228,6 +228,63 @@ async function frisch(pfad, daten) {
   await pruefe('HAKEN · GEGENPROBE die Leitung darf den Aushang weiterhin ändern', () =>
     assertSucceeds(chefA().doc(APFAD).update({ text: 'Pflichtschulung Dienstag' })));
 
+  /* ══ Die Umfrage am Schwarzen Brett ══
+     Bis eben konnte man am Brett nur reagieren; `allow update` liess
+     ausschliesslich nurEigeneReaktion() durch. Abstimmen ist dieselbe
+     Sorte Schreibvorgang in ein fremdes Dokument und braucht dieselbe
+     Sorte Beweis. Deshalb hier ALLE Faelle noch einmal — die Regel ist
+     zwar dieselbe Funktion, aber ob sie am Brett auch aufgerufen wird,
+     sagt nur eine Messung. */
+  const BRETT = 'board/b1';
+  const BUMFRAGE = {
+    uid: 'chefA', name: 'Chef A', text: '', kind: 'umfrage', ts: 1,
+    poll: { q: 'Wer kann Samstag früh?', opts: ['Ich', 'Ich nicht'] },
+    votes: { chefA: 0, zweitA: 0, dritteA: 1 },
+  };
+
+  await frisch(BRETT, BUMFRAGE);
+  await pruefe('BRETT · eine Umfrage anlegen geht', () =>
+    assertSucceeds(mitA().collection('board').add({
+      uid: 'mitA', name: 'Mit A', text: '', kind: 'umfrage', ts: 2,
+      poll: { q: 'Kaffee oder Tee?', opts: ['Kaffee', 'Tee'] }, votes: {} })));
+
+  await frisch(BRETT, BUMFRAGE);
+  await pruefe('BRETT · eigene Stimme abgeben geht', () =>
+    assertSucceeds(mitA().doc(BRETT).update({ 'votes.mitA': 1 })));
+
+  await frisch(BRETT, BUMFRAGE);
+  await pruefe('BRETT · fremde Stimmen umdrehen geht NICHT', () =>
+    assertFails(mitA().doc(BRETT).update({
+      votes: { chefA: 1, zweitA: 1, dritteA: 1 } })));
+
+  await frisch(BRETT, BUMFRAGE);
+  await pruefe('BRETT · eine Antwort, die es nicht gibt, geht NICHT', () =>
+    assertFails(mitA().doc(BRETT).update({ 'votes.mitA': 99 })));
+
+  /* Der Grund, aus dem das Brett ueberhaupt `update: if false` hatte:
+     ein Aushang, dessen Text sich hinterher aendert, ist kein Aushang.
+     Abstimmen zu oeffnen darf daran nichts aendern. */
+  await frisch(BRETT, BUMFRAGE);
+  await pruefe('BRETT · die Frage nachträglich umschreiben geht NICHT', () =>
+    assertFails(mitA().doc(BRETT).update({
+      poll: { q: 'Wer kann Sonntag?', opts: ['Ich', 'Ich nicht'] } })));
+  await frisch(BRETT, BUMFRAGE);
+  await pruefe('BRETT · auch der Verfasser schreibt die Frage nicht um', () =>
+    assertFails(chefA().doc(BRETT).update({
+      poll: { q: 'Wer kann Sonntag?', opts: ['Ich', 'Ich nicht'] } })));
+
+  /* Reagieren muss weiter gehen. Die Regel ist jetzt ein ODER aus zwei
+     Funktionen — ein Klammerfehler haette hier die eine oder die andere
+     still ausgeschaltet. */
+  await frisch(BRETT, Object.assign({}, BUMFRAGE, { reactions: { '👍': ['zweitA'] } }));
+  await pruefe('BRETT · GEGENPROBE reagieren geht weiterhin', () =>
+    assertSucceeds(mitA().doc(BRETT).update({
+      reactions: { '👍': ['zweitA'], '🎉': ['mitA'] } })));
+
+  await frisch(BRETT, BUMFRAGE);
+  await pruefe('BRETT · GEGENPROBE der Verfasser darf weiterhin löschen', () =>
+    assertSucceeds(chefA().doc(BRETT).delete()));
+
   console.log('\n' + protokoll.join('\n'));
   console.log('\n  ' + bestanden + ' bestanden, ' + gefallen + ' gefallen\n');
   await env.cleanup();
