@@ -5978,3 +5978,89 @@ Und drei Runden, die prüfen, was **nicht** aufgehen durfte: das Brett
 bleibt unbearbeitbar (auch für den Verfasser, auch für den Chef), und
 der Gelesen-Haken am Aushang funktioniert weiterhin — er lief bisher
 über dieselbe Zeile.
+
+---
+
+# 64 · Aus einem Fund wurde eine Klasse
+
+## Wie es anfing
+
+Runde 63 hat an den Reaktionen eine schwache Regel gefunden:
+`hasOnly(['reactions'])` liess das Feld anfassen, seinen Inhalt aber
+beliebig. Beim Weiterbauen stand die naheliegende Frage im Raum —
+**Einzelfall oder Bauart?**
+
+Es war die Bauart. Zwei weitere Stellen, beide seit Monaten live, beide
+nach demselben Muster.
+
+## Zweitens: Umfragen
+
+Eine Zeile neben den Reaktionen stand für das Abstimmen dasselbe:
+`hasOnly(['votes'])`. Im Emulator nachgemessen, **bevor** eine Zeile
+Regel geschrieben wurde:
+
+```
+DURCHGEGANGEN: fremde Stimmen umdrehen (2:1 Ja -> 0:3 Nein)
+DURCHGEGANGEN: alle Stimmen loeschen
+DURCHGEGANGEN: Stimme fuer eine Antwort, die es nicht gibt (99)
+DURCHGEGANGEN: Stimme als Text statt Zahl
+```
+
+Eine Reaktion ist Geschmack. **Eine Umfrage entscheidet etwas.**
+„Samstag öffnen?" von 2:1 Ja auf 0:3 Nein zu drehen sieht man dem
+Ergebnis hinterher nicht an, und es gibt keine zweite Aufzeichnung, an
+der es auffallen würde.
+
+`votes` ist nach Kennung geschlüsselt (`{uid: antwortNr}`), deshalb hier
+`diff()` auf der Karte selbst statt des `removeAll`-Umwegs von den
+Reaktionen: *„höchstens der eigene Schlüssel darf sich unterscheiden"*
+ist genau die Aussage, die gebraucht wird.
+
+Dazu zwei Dinge, die vorher niemand prüfte: die Antwortnummer muss eine
+**Zahl sein, die es wirklich gibt**, und ohne Umfrage im Dokument
+entsteht gar kein `votes`-Feld — sonst liesse sich an jeder Nachricht
+eins anlegen.
+
+Und ein Fall, der beim Schreiben der Regel erst auffiel: wer die
+**Antworten nachträglich umschreibt**, dreht das Ergebnis, ohne eine
+einzige Stimme anzufassen. Aus „Ja" wird „Nein", und die 2 steht
+plötzlich woanders. Auch das geht jetzt nicht mehr — auch nicht für den
+Verfasser.
+
+## Drittens: der Gelesen-Haken
+
+Die dritte Liste, die jeder anfassen darf. Auch dort ging alles durch:
+fremde als gelesen eintragen, fremde Haken löschen, 4000 Dubletten.
+
+Der wiegt schwerer, als er aussieht. Die Oberfläche zeigt der Leitung
+mit Namen, **wer eine Pflichtinfo noch nicht gesehen hat**. Einen fremden
+Haken zu setzen heisst, jemanden aus dieser Liste zu nehmen, ohne dass er
+die Info je gesehen hat. Genau der Zweck der Funktion.
+
+## Eine Aussage, drei Benutzer
+
+Die Kernaussage steht jetzt einmal da:
+
+```
+nurMeineKennung(alt, neu)
+```
+
+*Nur die eigene Kennung darf sich bewegt haben, und sie darf höchstens
+einmal dastehen.* Benutzt von den Reaktionen (über `gleichOhneMich`) und
+vom Gelesen-Haken. Drei Fassungen derselben Überlegung wären drei
+Gelegenheiten, eine davon zu vergessen — und genau so ist dieser ganze
+Fund überhaupt entstanden.
+
+## Prüfungen
+
+* `tests/rules/umfragen.test.js` neu — **24 Fälle**, davon 5 zum
+  Gelesen-Haken
+* Alle Regeltests zusammen: **678 bestanden · 0 gefallen**
+* Zu jeder Sperre die Gegenprobe, dass der richtige Weg noch geht:
+  abstimmen so, **wie `votePoll()` wirklich schreibt** (`votes.<uid>`,
+  nicht die ganze Karte); der Verfasser ändert seine eigene Stimme; die
+  Leitung darf den Aushang weiterhin bearbeiten. Ohne die drei wäre eine
+  Regel, die alles verbietet, die beste gewesen.
+* An der Oberfläche war **nichts zu ändern** — die App schrieb schon
+  immer nur den eigenen Schlüssel. Die Lücke war ausschliesslich die
+  Regel, und genau darum fiel sie im Betrieb nie auf.

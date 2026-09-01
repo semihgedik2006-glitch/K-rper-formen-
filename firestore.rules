@@ -439,11 +439,17 @@ service cloud.firestore {
     // es unbrauchbar, und bezahlt wird es vom Betreiber. Also: die eigene
     // Kennung darf hoechstens EINMAL in der Liste stehen — das Entfernen
     // darf sie um hoechstens einen Eintrag kuerzen.
+    //
+    // Die Kernaussage steht in nurMeineKennung() und wird von allem
+    // benutzt, was „eine Liste von Kennungen" ist: Reaktionen und der
+    // Gelesen-Haken. Drei Fassungen derselben Ueberlegung waeren drei
+    // Gelegenheiten, eine davon zu vergessen.
+    function nurMeineKennung(alt, neu) {
+      return alt.removeAll([request.auth.uid]) == neu.removeAll([request.auth.uid])
+        && neu.size() - neu.removeAll([request.auth.uid]).size() <= 1;
+    }
     function gleichOhneMich(alt, neu, z) {
-      return alt.get(z, []).removeAll([request.auth.uid])
-          == neu.get(z, []).removeAll([request.auth.uid])
-        && neu.get(z, []).size()
-           - neu.get(z, []).removeAll([request.auth.uid]).size() <= 1;
+      return nurMeineKennung(alt.get(z, []), neu.get(z, []));
     }
     function nurEigeneReaktion() {
       let alt = resource.data.get('reactions', {});
@@ -456,6 +462,60 @@ service cloud.firestore {
         && gleichOhneMich(alt, neu, '🎉')
         && gleichOhneMich(alt, neu, '👏')
         && gleichOhneMich(alt, neu, '😮');
+    }
+
+    // ── Gelesen-Haken am Aushang ──────────────────────────────────────
+    // readBy ist eine Liste von Kennungen. Auch hier stand nur
+    // hasOnly(['readBy']), und auch hier ging im Emulator alles durch:
+    // FREMDE als gelesen eintragen, fremde Haken loeschen, 4000
+    // Dubletten.
+    //
+    // Das wiegt schwerer, als es aussieht. Der Haken ist genau das,
+    // woran die Leitung sieht, WER eine Pflichtinfo noch nicht gesehen
+    // hat — die Oberflaeche nennt dazu die fehlenden Namen. Einen
+    // fremden Haken zu setzen heisst, jemanden aus dieser Liste zu
+    // nehmen, ohne dass er die Info je gesehen hat.
+    function nurEigenerHaken() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+        && nurMeineKennung(resource.data.get('readBy', []),
+                           request.resource.data.get('readBy', []));
+    }
+
+    // ── Umfragen ──────────────────────────────────────────────────────
+    // votes sieht so aus: { 'uid1': 0, 'uid2': 1 } — Kennung auf Antwort.
+    //
+    // Dieselbe Luecke wie bei den Reaktionen, und die teurere von beiden:
+    // hier stand ebenfalls nur hasOnly(['votes']). Im Emulator
+    // nachgemessen, alles DURCHGEGANGEN:
+    //
+    //   · fremde Stimmen umdrehen — „Samstag oeffnen?" von 2:1 Ja auf
+    //     0:3 Nein, ohne dass es jemand sieht
+    //   · alle Stimmen loeschen
+    //   · fuer eine Antwort stimmen, die es nicht gibt (Nummer 99)
+    //   · statt einer Zahl einen Text eintragen
+    //
+    // Eine Reaktion ist Geschmack. Eine Umfrage ENTSCHEIDET etwas — sie
+    // still zu drehen ist der schwerere Fall, und man sieht es dem
+    // Ergebnis hinterher nicht an.
+    //
+    // votes ist nach Kennung geschluesselt, deshalb hier diff() auf der
+    // Karte selbst statt des removeAll-Umwegs von oben: „hoechstens der
+    // eigene Schluessel darf sich unterscheiden" ist genau die Aussage.
+    function nurEigeneStimme() {
+      let alt = resource.data.get('votes', {});
+      let neu = request.resource.data.get('votes', {});
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+        && neu.diff(alt).affectedKeys().hasOnly([request.auth.uid])
+        // Ohne Umfrage gibt es nichts abzustimmen. Sonst liesse sich an
+        // JEDER Nachricht ein votes-Feld anlegen.
+        && 'poll' in resource.data
+        && resource.data.poll.opts is list
+        // Die eigene Stimme darf zurueckgezogen werden (Schluessel weg)
+        // oder auf eine Antwort zeigen, die es wirklich gibt.
+        && (!(request.auth.uid in neu)
+            || (neu[request.auth.uid] is int
+                && neu[request.auth.uid] >= 0
+                && neu[request.auth.uid] < resource.data.poll.opts.size()));
     }
 
     // ── Chat-Nachrichten ──
@@ -472,9 +532,10 @@ service cloud.firestore {
       // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
       allow update: if istAktiv() && kanalErlaubt(channelId) && (
            nurEigeneReaktion()
-        // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
-        // Stimmenfeld anfassen, nicht Frage oder Antworten.
-        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+        // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur die
+        // EIGENE Stimme, nicht Frage, Antworten oder fremde Stimmen.
+        // Siehe nurEigeneStimme() oben.
+        || nurEigeneStimme()
         || (resource.data.uid == request.auth.uid
             && request.time.toMillis() < resource.data.ts + 900000
             && request.resource.data.diff(resource.data)
@@ -585,7 +646,7 @@ service cloud.firestore {
       // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
       allow update: if isChef()
         || (isLeiter() && resource.data.target in myKeys())
-        || (istAktiv() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']))
+        || (istAktiv() && nurEigenerHaken())
         // Reagieren darf jeder — nur mit der eigenen Kennung, nur mit einem
         // der sechs Zeichen. Neben dem Gelesen-Haken, nicht statt ihm:
         // „gesehen" und „finde ich gut" sind zwei Aussagen.
@@ -1080,9 +1141,9 @@ service cloud.firestore {
           // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
           allow update: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId) && (
                nurEigeneReaktion()
-            // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur das
-            // Stimmenfeld anfassen, nicht Frage oder Antworten.
-            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+            // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur die
+            // EIGENE Stimme. Siehe nurEigeneStimme() oben.
+            || nurEigeneStimme()
             || (resource.data.uid == request.auth.uid
                 && request.time.toMillis() < resource.data.ts + 900000
                 && request.resource.data.diff(resource.data)
@@ -1170,7 +1231,7 @@ service cloud.firestore {
           // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
           allow update: if inFirma(f) && (isChef()
             || (isLeiter() && resource.data.target in myKeys())
-            || (istAktiv() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']))
+            || (istAktiv() && nurEigenerHaken())
             // Reagieren darf jeder — nur mit der eigenen Kennung, nur mit
             // einem der sechs Zeichen.
             || (istAktiv() && nurEigeneReaktion()));
