@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-g60XNBVuwSGp7o7VcahsMHFUYEIeaZ7V0pHa5dbfOrE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-d5wBYmWL9lw8GMr54PIMlz8Ld96Dt/yq5GI8CTaBe0s='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3298,6 +3298,15 @@ html{font-size:var(--fs,100%)}
 }
 
 /* ── Wiederhol-Badge bei Aufgaben ── */
+/* Dringlichkeit. Bewusst dieselbe Groesse und Form wie .t-rep daneben —
+   zwei Marken in einer Zeile, die sich in Hoehe oder Rundung
+   unterscheiden, sehen nach einem Fehler aus. Nur die Farbe traegt die
+   Aussage. */
+.prio{display:inline-flex;align-items:center;font-size:var(--t-2xs);font-weight:700;
+  padding:var(--s2) var(--s8);border-radius:var(--r-pille);margin-right:var(--s6);
+  border:1px solid transparent}
+.prio-hoch{background:var(--f-bad);color:var(--danger-tx);border-color:var(--k-bad)}
+.prio-niedrig{background:var(--auf-2);color:var(--text-3);border-color:var(--line-2)}
 .t-rep{display:inline-flex;align-items:center;gap:var(--s4);font-size:var(--t-2xs);font-weight:700;
   text-transform:uppercase;letter-spacing:var(--ls-s);color:var(--accent-2);
   background:rgba(34,211,238,.12);padding:var(--s2) var(--s6);border-radius:var(--r-pille);margin-left:var(--s6);vertical-align:middle}
@@ -4092,12 +4101,10 @@ html{font-size:var(--fs,100%)}
               <button class="chip" data-tfilter="offen">Nur offene</button>
               <button class="chip" data-tfilter="faellig">Überfällig</button>
               <button class="chip" data-tfilter="meine">Für mich</button>
-              <select class="chip" id="todoSort" style="padding-right:26px">
-                <option value="standard">Sortierung: Standard</option>
-                <option value="faellig">Nach Fälligkeit</option>
-                <option value="name">Nach Name</option>
-                <option value="neu">Neueste zuerst</option>
-              </select>
+              <!-- Inhalt kommt aus sortFeld(); die Wahl liegt in PREFS.sort
+                   und ueberlebt damit das Neuladen. Vorher stand sie in
+                   einer blossen Variablen. -->
+              <select class="chip" id="todoSort" style="padding-right:26px"></select>
             </div>
           </div>
           <div id="todoArea"></div>
@@ -4160,6 +4167,7 @@ html{font-size:var(--fs,100%)}
               <input id="matSearch" type="search" placeholder="Material suchen …" aria-label="Material suchen" autocomplete="off" />
             </div>
             <span class="todo-count" id="matCount"></span>
+            <select class="chip" id="matSort" style="padding-right:26px"></select>
           </div>
           <div class="mat-alert" id="matAlert" style="display:none"></div>
 
@@ -4244,6 +4252,7 @@ html{font-size:var(--fs,100%)}
               <button class="chip on" data-ppfilter="alle">Alle</button>
               <button class="chip" data-ppfilter="offen">Nur offene</button>
               <button class="chip" data-ppfilter="pausiert">Pausiert</button>
+              <select class="chip" id="ppSort" style="padding-right:26px"></select>
             </div>
           </div>
 
@@ -5353,6 +5362,17 @@ html{font-size:var(--fs,100%)}
         <input class="inp" id="teDue" type="date" /></div>
       <div class="field"><label for="teAssign">Zuweisen an</label>
         <select class="inp" id="teAssign"></select></div>
+      <!-- DREI Stufen, nicht fuenf. Wer fuenf hat, benutzt zwei davon
+           nie und muss trotzdem jedes Mal waehlen. „Normal" ist der
+           Standard und wird nicht angezeigt — angezeigt wird nur, was
+           vom Normalfall abweicht, sonst traegt jede Zeile eine Marke
+           und keine faellt mehr auf. -->
+      <div class="field"><label for="tePrio">Dringlichkeit</label>
+        <select class="inp" id="tePrio">
+          <option value="hoch">🔴 Dringend</option>
+          <option value="">⚪ Normal</option>
+          <option value="niedrig">🔵 Kann warten</option>
+        </select></div>
     </div>
     <div class="field"><label for="teSteps">Teilschritte (eine Zeile = ein Häkchen)</label>
       <textarea class="inp" id="teSteps" rows="4" maxlength="1200" placeholder="Geräte abwischen&#10;Gurte prüfen"></textarea>
@@ -5411,6 +5431,14 @@ html{font-size:var(--fs,100%)}
     <div class="field" id="ppStudioFeld"><label>Für welche Studios?</label>
       <label class="studio-check" style="margin-bottom:7px" id="ppAllWrap"><input type="checkbox" id="ppAllStudios" /><span><b>Alle Studios</b></span></label>
       <div class="studio-checks" id="ppStudios"></div></div>
+    <!-- Dieselben drei Stufen wie bei den Aufgaben. Eine zweite Skala
+         waere eine zweite Sprache fuer dieselbe Frage. -->
+    <div class="field"><label for="ppPrio">Dringlichkeit</label>
+      <select class="inp" id="ppPrio">
+        <option value="hoch">🔴 Dringend</option>
+        <option value="">⚪ Normal</option>
+        <option value="niedrig">🔵 Kann warten</option>
+      </select></div>
     <div class="field"><label for="ppRepeat">Wiederholung</label>
       <select class="inp" id="ppRepeat">
         <option value="daily">🔁 Täglich (Reset jeden Tag)</option>
@@ -14783,6 +14811,13 @@ function sortTodos(list){
     a.sort(function(x,y){ return (x.title||'').localeCompare(y.title||'','de'); });
   } else if(_todoSort==='neu'){
     a.sort(function(x,y){ return (y.ts||0)-(x.ts||0); });
+  } else if(_todoSort==='prio'){
+    /* Erledigte bleiben unten, auch wenn sie „dringend" tragen — eine
+       abgehakte Aufgabe ist nicht mehr dringend. */
+    a.sort(function(x,y){
+      return (isDone(x)-isDone(y)) || (prioRang(x)-prioRang(y)) ||
+             (x.title||'').localeCompare(y.title||'','de');
+    });
   } else {
     /* Standard: was brennt, steht oben. Nach Erstellungsdatum allein landet
            eine überfällige Aufgabe von gestern hinter zehn entspannten von
@@ -14976,8 +15011,8 @@ function todoHTML(t,sk,chefView){
   var done=isDone(t);
   var foot=['erstellt von '+esc(t.createdBy||'Chef')];
   if(done&&t.doneBy) foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
-  var rep=t.recurring
-    ? '<span class="t-rep">'+ikon('wiederholen')+' '+esc(repLabelFor(t))+'</span>' : '';
+  var rep=prioMarke(t)+(t.recurring
+    ? '<span class="t-rep">'+ikon('wiederholen')+' '+esc(repLabelFor(t))+'</span>' : '');
   /* Der Grund steht IN der Liste, nicht nur im Blatt dahinter. Der Chef
      öffnet nicht jede offene Aufgabe einzeln — er scrollt. Was er nicht
      im Vorbeigehen sieht, sieht er nie. */
@@ -16275,7 +16310,31 @@ function renderMaterial(){
      dadurch auf FÜNF Zeilen um. Jetzt: schmalere Felder, „Fehlt" nur noch
      als Abzeichen (es wird ohnehin gerechnet), und der Löschknopf nur für
      die Verwaltung. Das verdoppelt die Breite für den Namen. */
-  tbl.innerHTML=_matItems.map(function(it,idx){
+  /* ── Sortieren, ohne die Identitaet zu verschieben ────────────────
+     Der Index IST hier die Kennung: die Eingabefelder tragen data-idx,
+     und geschrieben wird mit _matItems[idx]. Wer _matItems umsortiert,
+     schreibt getippte Zahlen ins falsche Material — und zwar lautlos,
+     weil die Zeile ja richtig aussieht.
+
+     Deshalb wird eine KOPIE sortiert, die ihren urspruenglichen Index
+     mitfuehrt. _matItems selbst bleibt unberuehrt. */
+  var wieSort=sortWahl('mat','liste');
+  var reihen=_matItems.map(function(it,idx){ return { it:it, idx:idx }; });
+  if(wieSort==='name'){
+    reihen.sort(function(a,b){ return (a.it.name||'').localeCompare(b.it.name||'','de'); });
+  } else if(wieSort==='fehlt'){
+    /* Was am meisten fehlt, zuerst — und bei Gleichstand nach Namen,
+       sonst springt die Liste bei jedem Tippen umher. */
+    reihen.sort(function(a,b){
+      return (itemNeed(b.it)-itemNeed(a.it)) ||
+             (a.it.name||'').localeCompare(b.it.name||'','de'); });
+  } else if(wieSort==='bestand'){
+    reihen.sort(function(a,b){
+      return ((a.it.have||0)-(b.it.have||0)) ||
+             (a.it.name||'').localeCompare(b.it.name||'','de'); });
+  }
+  tbl.innerHTML=reihen.map(function(r){
+    var it=r.it, idx=r.idx;
     // Suchfilter: Zeile ausblenden, aber Index unverändert lassen
     if(_matFilter && (it.name||'').toLowerCase().indexOf(_matFilter)<0) return '';
     var fehlt=itemNeed(it);
@@ -16797,11 +16856,76 @@ function ppChipWort(modus){
   return c ? c.textContent.replace(/\d+$/,'').trim() : modus;
 }
 
+/* ── Dringlichkeit ────────────────────────────────────────────────────
+   Drei Stufen, eine Skala fuer Aufgaben UND Putzplan. Zwei Skalen
+   waeren zwei Sprachen fuer dieselbe Frage.
+
+   „Normal" traegt KEINE Marke. Traegt jede Zeile eine, faellt keine
+   mehr auf — und der Normalfall ist die Mehrheit. Angezeigt wird nur,
+   was davon abweicht. */
+var PRIO_RANG={ hoch:0, niedrig:2 };
+function prioRang(x){
+  if(!x) return 1;
+  var r=PRIO_RANG[x.prio];
+  return r===undefined ? 1 : r;
+}
+function prioMarke(x){
+  if(!x || !x.prio) return '';
+  if(x.prio==='hoch')    return '<span class="prio prio-hoch">Dringend</span>';
+  if(x.prio==='niedrig') return '<span class="prio prio-niedrig">Kann warten</span>';
+  return '';
+}
+
+/* Rangfolge fuer „nach Rhythmus": haeufig zuerst.
+   Taeglich vor woechentlich, weil das die Reihenfolge ist, in der man
+   sie abarbeitet — alphabetisch ergaebe „taeglich" nach „woechentlich"
+   und waere damit genau verkehrt.
+
+   Die Werte heissen im Datenbestand 'daily', 'weekly', 'custom' und
+   leer fuer einmalig. Beim ersten Anlauf standen hier deutsche Woerter
+   und ein 'monatlich', das es gar nicht gibt: die Sortierung haette
+   alles auf denselben Rang gelegt und damit nichts getan — und wenn es
+   nichts tut, faellt es nicht auf. Nachgelesen in #ppRepeat.
+
+   Ein eigenes Intervall wird nach seiner LAENGE einsortiert, nicht
+   pauschal ans Ende: „alle 2 Tage" gehoert neben taeglich, nicht hinter
+   einmalig. */
+var PP_RANG={ daily:1, weekly:3, custom:2, '':5 };
+function ppRang(t){
+  if(!t) return 9;
+  if(t.recurring==='custom'){
+    var ms=t.intervalMs||0;
+    if(!ms) return 4;                       // custom ohne Intervall
+    if(ms <= 86400000) return 1.5;          // bis ein Tag
+    if(ms <= 604800000) return 2.5;         // bis eine Woche
+    return 4;                               // laenger
+  }
+  var r=t.recurring;
+  return (r===undefined || r===null) ? 5 : (PP_RANG[r] === undefined ? 5 : PP_RANG[r]);
+}
+
 function renderPutzplan(){
   var box=$('ppList'); if(!box) return;
   putzKuerzelBinden();
-  // offene zuerst, dann erledigte; innerhalb nach Erstellzeit
-  var list=_ppTasks.slice().sort(function(a,b){ return (isDone(a)-isDone(b))||((a.ts||0)-(b.ts||0)); });
+  /* Standard: offene zuerst, dann erledigte; innerhalb nach Erstellzeit.
+     Alles andere sortiert NUR innerhalb dieser Trennung um — eine
+     erledigte Aufgabe soll auch alphabetisch nicht ueber einer offenen
+     stehen, sonst sucht man den naechsten Punkt zwischen abgehakten. */
+  var wieSort=sortWahl('putz','standard');
+  var list=_ppTasks.slice().sort(function(a,b){
+    var d=isDone(a)-isDone(b); if(d) return d;
+    if(wieSort==='name') return (a.title||'').localeCompare(b.title||'','de');
+    if(wieSort==='rhythmus'){
+      var r=ppRang(a)-ppRang(b); if(r) return r;
+      return (a.title||'').localeCompare(b.title||'','de');
+    }
+    if(wieSort==='zuletzt') return (b.doneAt||0)-(a.doneAt||0);
+    if(wieSort==='prio'){
+      var pr=prioRang(a)-prioRang(b); if(pr) return pr;
+      return (a.title||'').localeCompare(b.title||'','de');
+    }
+    return (a.ts||0)-(b.ts||0);
+  });
   var chef=canManage();
   /* Pausierte zaehlen NICHT mit. Sonst stuende dort dauerhaft
      "3 von 12 erledigt", obwohl neun davon gar nicht dran sind — und
@@ -16828,7 +16952,7 @@ function renderPutzplan(){
   if(!list.length){ box.innerHTML=ppLeerText(gesamt); return; }
   box.innerHTML=list.map(function(t){
     var d=isDone(t);
-    var rep=t.recurring?'<span class="t-rep">'+ikon('wiederholen')+' '+esc(repLabelFor(t))+'</span>':'';
+    var rep=prioMarke(t)+(t.recurring?'<span class="t-rep">'+ikon('wiederholen')+' '+esc(repLabelFor(t))+'</span>':'');
     /* Das Kürzel steht VORNE und der Kontoname dahinter in Klammern:
        den Chef interessiert die Person, nicht das Tablet. Ohne Kürzel
        bleibt es wie vorher. */
@@ -16987,6 +17111,7 @@ var _ppEdit=null;                 // null = anlegen, sonst die Aufgabe
 
 /* Wiederholung aus einer vorhandenen Aufgabe in die Felder zurueck. */
 function ppWiederholungSetzen(t){
+  var pr=$('ppPrio'); if(pr) pr.value = (t && t.prio) || '';
   var rep=$('ppRepeat'); if(!rep) return;
   rep.value = t && t.recurring ? t.recurring : '';
   var eigen = rep.value==='custom';
@@ -17073,6 +17198,7 @@ function addPutzTask(btn){
       var ref=S('studios').doc(sk).collection('cleaning').doc();
       var data={ title:title, done:false, doneBy:null, doneAt:null,
         createdBy:session.name, createdByUid:session.uid, ts:Date.now() };
+      var pr=($('ppPrio')||{}).value; if(pr) data.prio=pr;
       if(recurring){ data.recurring=recurring;
         if(recurring==='custom'){ data.intervalMs=intervalMs; data.intervalN=intN; data.intervalUnit=intUnit; } }
       batch.set(ref,data);
@@ -17104,6 +17230,7 @@ function savePutzTask(btn, title){
   if(!t || !sk) return;
   var recurring=$('ppRepeat').value||null;
   var neu={ title:title, recurring:recurring||null,
+            prio:($('ppPrio')||{}).value || null,
             intervalMs:null, intervalN:null, intervalUnit:null,
             geaendertVon:session.name, geaendertAm:Date.now() };
   if(recurring==='custom'){
@@ -18234,6 +18361,7 @@ function openTodoEdit(t, sk){
   $('teTitle').value=t.title||'';
   $('teDesc').value=t.desc||'';
   $('teDue').value = t.due ? ymd(new Date(t.due)) : '';
+  $('tePrio').value = t.prio || '';
   var steps=Array.isArray(t.steps)?t.steps:[];
   $('teSteps').value=steps.map(function(x){ return (x&&x.t)||''; }).join('\n');
   var fertig=steps.filter(function(x){ return x&&x.d; }).length;
@@ -18292,6 +18420,9 @@ function saveTodoEdit(btn){
   } else {
     neu.assignedTo=null; neu.assignedName=null;
   }
+  /* null statt '' bei Normal: ein leerer String ist ein Wert, und die
+     Liste stuende dann voller Felder, die nichts bedeuten. */
+  neu.prio = $('tePrio').value || null;
 
   withBusy(btn,function(){
     return S('studios').doc(sk).collection('todos').doc(t.id).update(neu)
@@ -18317,6 +18448,43 @@ function sortSetzen(kennung, wert){
   PREFS.sort[kennung]=wert;
   savePrefs();
 }
+/* ── EIN Auswahlfeld statt drei Bauarten ──────────────────────────────
+   Fuer dieselbe Sache gab es in der App drei Loesungen: Chips mit
+   PREFS.sort (Dokumente, Geraete, Nachweise), ein eigenes Auswahlfeld
+   OHNE Gedaechtnis (Aufgaben) — und bei Putzplan und Material gar
+   nichts. Wer nach Namen sucht, stellte das in den Aufgaben nach jedem
+   Neuladen wieder um.
+
+   sortFeld() ist die eine Bauart fuer Werkzeugzeilen: ein schmales
+   Auswahlfeld, das neben Suche und Filtern Platz hat, und dieselbe
+   Ablage wie die Chips. Die Chips bleiben, wo sie eine eigene Zeile
+   haben — dort sind sie einen Griff schneller, und sie umzubauen waere
+   Bewegung ohne Gewinn.
+
+   Was hier zaehlt, ist nicht die Form, sondern dass es EINE Ablage
+   gibt: PREFS.sort. */
+function sortFeld(el, kennung, arten, standard, beiWechsel){
+  if(!el) return;
+  var aktuell=sortWahl(kennung, standard);
+  /* Steht in PREFS eine Sortierung, die es nicht mehr gibt (umbenannt,
+     entfernt), faellt sie still auf den Standard zurueck — sonst zeigt
+     das Feld leer und die Liste sortiert nach nichts. */
+  if(!arten.some(function(a){ return a.id===aktuell; })) aktuell=standard;
+  el.innerHTML=arten.map(function(a){
+    return '<option value="'+esc(a.id)+'"'+(a.id===aktuell?' selected':'')+'>'+
+      esc(a.label)+'</option>';
+  }).join('');
+  el.value=aktuell;
+  if(!el._sortFertig){
+    el._sortFertig=true;
+    el.addEventListener('change',function(){
+      sortSetzen(kennung, el.value);
+      tick(6);
+      beiWechsel();
+    });
+  }
+}
+
 /* Baut eine Reihe Sortier-Knöpfe in ein Element.
    arten = [{id, label}], beiWechsel wird nach dem Klick aufgerufen. */
 function sortLeiste(el, kennung, arten, standard, beiWechsel){
@@ -20338,8 +20506,14 @@ function bindActions(){
     });
   });
   // Sortierung der Aufgaben
-  var tso=$('todoSort');
-  if(tso) tso.addEventListener('change',function(){ _todoSort=this.value; renderTodos(); });
+  sortFeld($('todoSort'), 'todo', [
+    {id:'standard', label:'Sortierung: Standard'},
+    {id:'faellig',  label:'Nach Fälligkeit'},
+    {id:'name',     label:'Nach Name'},
+    {id:'prio',     label:'Nach Dringlichkeit'},
+    {id:'neu',      label:'Neueste zuerst'}
+  ], 'standard', function(){ _todoSort=sortWahl('todo','standard'); renderTodos(); });
+  _todoSort=sortWahl('todo','standard');
   // Material-Suche
   // Einkaufsliste: drucken, als Excel, in die Zwischenablage
   var shP=$('shopPrint'); if(shP) shP.addEventListener('click', printShoppingList);
@@ -20363,6 +20537,12 @@ function bindActions(){
     } else { toast('Kopieren wird hier nicht unterstützt.',true); }
   });
 
+  sortFeld($('matSort'), 'mat', [
+    {id:'liste',   label:'Sortierung: Liste'},
+    {id:'name',    label:'Name A–Z'},
+    {id:'fehlt',   label:'Was fehlt zuerst'},
+    {id:'bestand', label:'Kleinster Bestand'}
+  ], 'liste', renderMaterial);
   var ms=$('matSearch');
   if(ms){
     ms.addEventListener('input',function(){
@@ -20845,6 +21025,13 @@ function bindActions(){
   });
 
   // ── Putzplan ──
+  sortFeld($('ppSort'), 'putz', [
+    {id:'standard', label:'Sortierung: Standard'},
+    {id:'name',     label:'Nach Name'},
+    {id:'rhythmus', label:'Nach Rhythmus'},
+    {id:'prio',     label:'Nach Dringlichkeit'},
+    {id:'zuletzt',  label:'Zuletzt erledigt'}
+  ], 'standard', renderPutzplan);
   var ppS=$('ppSearch');
   if(ppS) ppS.addEventListener('input',function(){
     _ppFilter=this.value.trim().toLowerCase();
