@@ -6771,3 +6771,51 @@ Stück. Jetzt fällt es beim nächsten Mal von selbst auf.
 ins Netz. Dass Google Kalender das Abo wirklich frisst, kann erst
 jemand mit einem echten Konto bestätigen. Das ICS ist gegen den
 Standard geprüft, nicht gegen Google.
+
+## Nachtrag zu 70 · Der Wächter hatte recht, die Regel war zu eng
+
+Nach dem Pushen — und bevor die volle Regression durch war, das war
+der Fehler — wurde `regeltest` rot:
+
+```
+✗ kalender: prüft einen Geheim-Schlüssel
+  — ein onRequest ohne Schlüssel ist eine offene Adresse
+```
+
+`tests/test-funktionen-pfade.js` verlangt von **jedem** `onRequest`
+einen Schlüssel aus `process.env`. Die Regel stammt aus dem
+Sicherheits-Durchgang vom 13.8. und ist gut: eine offene Adresse in den
+Functions merkt sonst niemand.
+
+`kalender` hat keinen solchen Schlüssel — und darf keinen haben. Ein
+gemeinsamer Schlüssel hiesse: die ganze Firma hängt an einem Geheimnis,
+und niemand kann seinen eigenen Link zurückziehen, ohne allen anderen
+ihren kaputtzumachen. Das Geheimnis gehört pro Nutzer.
+
+**Der bequeme Fix wäre eine Ausnahmeliste gewesen** — „ausser
+kalender". Der hätte diesen einen Lauf grün gemacht und die Prüfung für
+jeden künftigen Endpunkt entwertet. Stattdessen kennt die Regel jetzt
+die zweite Bauart: ein eigenes Geheimnis, **zeitgleich verglichen**.
+
+Und die neue Bauart ist damit **strenger** als die alte, nicht weicher:
+ein `if (gespeichert === tok)` zählt ausdrücklich nicht. Die
+Antwortdauer verriete sonst, wie viele Zeichen stimmen, und ein
+Schlüssel, den man Zeichen für Zeichen erraten kann, ist keiner. Dazu
+eine Prüfung, dass `tokenGleich` auch wirklich `timingSafeEqual`
+benutzt — sonst stünde die Regel auf einem Funktionsnamen.
+
+Drei Gegenproben halten es fest: ein `onRequest` ganz ohne Geheimnis
+wird erkannt, einer mit `===` wird erkannt, und der alte onCall-Fall
+weiterhin auch.
+
+Reproduziert und belegt, nicht behauptet:
+
+```
+── mit der ALTEN Prüfung ──   ✗ kalender …   Exit: 1
+── mit der NEUEN ──           Exit: 0
+```
+
+**Die Lehre ist aber nicht die Regel, sondern der Zeitpunkt.** Der
+Durchlauf lief lokal längst — ich habe nur nicht auf ihn gewartet. Ein
+Wächter, dessen Ergebnis man nicht abwartet, ist ein Wächter, den man
+sich sparen kann.
