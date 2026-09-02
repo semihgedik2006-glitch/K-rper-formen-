@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-aJ9DTDfPQb87Nx29FUc6phYbYfGv6/s6q02FLTOlWqw='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-gH1Cn+Zpx/7fv6xgR2wGAXEQv52N1QWA/tddH9oljbA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1774,6 +1774,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    flex-basis statt width: das Feld sitzt in einer Flex-Zeile, und
    width allein wuerde von flex-shrink wieder aufgefressen. */
 .werkzeugzeile{align-items:center}
+/* Trennt zwei Gruppen in derselben Zeile: links die EINE Auswahl
+   (Alle / Nur offene / …), rechts unabhaengige Schalter. Ohne den
+   Strich sieht die Zeile aus wie eine einzige Auswahl, und niemand
+   probiert, zwei davon zusammen zu benutzen. */
+.chip-trenner{flex:0 0 1px;align-self:stretch;background:var(--line-2);
+  margin:var(--s6) var(--s2)}
 .werkzeugzeile .todo-search{flex:0 0 44px;transition:flex-basis .28s var(--ease-ios)}
 .werkzeugzeile .todo-search input{padding-left:var(--s40);padding-right:var(--s6);
   min-height:44px;cursor:pointer}
@@ -4112,6 +4118,8 @@ html{font-size:var(--fs,100%)}
               <button class="chip" data-tfilter="offen">Nur offene</button>
               <button class="chip" data-tfilter="faellig">Überfällig</button>
               <button class="chip" data-tfilter="meine">Für mich</button>
+              <span class="chip-trenner" aria-hidden="true"></span>
+              <button class="chip" data-tdring="1">Dringend</button>
               <!-- Inhalt kommt aus sortFeld(); die Wahl liegt in PREFS.sort
                    und ueberlebt damit das Neuladen. Vorher stand sie in
                    einer blossen Variablen. -->
@@ -4263,6 +4271,14 @@ html{font-size:var(--fs,100%)}
               <button class="chip on" data-ppfilter="alle">Alle</button>
               <button class="chip" data-ppfilter="offen">Nur offene</button>
               <button class="chip" data-ppfilter="pausiert">Pausiert</button>
+              <!-- ZWEITE Gruppe, unabhaengig von der ersten. „Nur offene"
+                   und „nur taegliche" ist eine echte Kombination — waeren
+                   sie in derselben Auswahl, muesste man sich entscheiden.
+                   Der Strich davor sagt, dass hier etwas anderes anfaengt. -->
+              <span class="chip-trenner" aria-hidden="true"></span>
+              <button class="chip" data-pprhy="daily">Täglich</button>
+              <button class="chip" data-pprhy="weekly">Wöchentlich</button>
+              <button class="chip" data-ppdring="1">Dringend</button>
               <select class="chip" id="ppSort" style="padding-right:26px"></select>
             </div>
           </div>
@@ -12232,7 +12248,7 @@ function scrollBottom(){
 var _todoFilter='';
 
 /* Aktiver Schnellfilter: alle | offen | faellig | meine – und Sortierung */
-var _todoMode='alle', _todoSort='standard';
+var _todoMode='alle', _todoSort='standard', _todoDring=false;
 
 /* ============================================================
    TEAM-BEREICH
@@ -14876,6 +14892,9 @@ function chipLabel(modus){
 
 /* Passt eine Aufgabe zum Suchtext UND zum Schnellfilter? */
 function todoMatchesFilter(t){
+  /* Unabhaengig von der Auswahl links: „Nur offene" UND „Dringend"
+     gilt zusammen. */
+  if(_todoDring && t.prio!=='hoch') return false;
   if(_todoMode==='meine' && t.assignedTo!==session.uid) return false;
   if(_todoMode==='offen' && isDone(t)) return false;
   if(_todoMode==='faellig'){
@@ -16808,11 +16827,16 @@ function printPutzplan(){
 /* ── Suchen und Filtern im Putzplan ──
    Dieselbe Mechanik wie bei den Aufgaben: ein Suchtext und ein
    Schnellfilter, beide gleichzeitig wirksam. */
-var _ppFilter='', _ppMode='alle';
+var _ppFilter='', _ppMode='alle', _ppRhy='', _ppDring=false;
 
 function ppPasst(t){
   if(_ppMode==='offen'   && (isDone(t) || ppPausiert(t))) return false;
   if(_ppMode==='pausiert' && !ppPausiert(t)) return false;
+  /* Die zweite Gruppe wird UND-verknuepft: „nur offene" und „nur
+     taegliche" gilt zusammen. Ein leerer Wert heisst „egal", nicht
+     „keine" — sonst waere die Liste leer, sobald nichts gewaehlt ist. */
+  if(_ppRhy && t.recurring!==_ppRhy) return false;
+  if(_ppDring && t.prio!=='hoch') return false;
   if(!_ppFilter) return true;
   return String(t.title||'').toLowerCase().indexOf(_ppFilter)>=0;
 }
@@ -20516,6 +20540,12 @@ function bindActions(){
       tick(8); renderTodos();
     });
   });
+  var tdD=document.querySelector('[data-tdring]');
+  if(tdD) tdD.addEventListener('click',function(){
+    _todoDring=!_todoDring;
+    tdD.classList.toggle('on', _todoDring);
+    tick(8); renderTodos();
+  });
   // Sortierung der Aufgaben
   sortFeld($('todoSort'), 'todo', [
     {id:'standard', label:'Sortierung: Standard'},
@@ -21045,6 +21075,25 @@ function bindActions(){
     {id:'prio',     label:'Nach Dringlichkeit'},
     {id:'zuletzt',  label:'Zuletzt erledigt'}
   ], 'standard', renderPutzplan);
+  /* Schalter, keine Auswahl: nochmal antippen macht ihn wieder aus.
+     Ohne das gaebe es keinen Weg zurueck zu „alle Rhythmen" — man
+     muesste die Seite neu laden. */
+  document.querySelectorAll('[data-pprhy]').forEach(function(c){
+    c.addEventListener('click',function(){
+      var w=c.getAttribute('data-pprhy');
+      _ppRhy = (_ppRhy===w) ? '' : w;
+      document.querySelectorAll('[data-pprhy]').forEach(function(x){
+        x.classList.toggle('on', x.getAttribute('data-pprhy')===_ppRhy);
+      });
+      tick(6); renderPutzplan();
+    });
+  });
+  var ppD=document.querySelector('[data-ppdring]');
+  if(ppD) ppD.addEventListener('click',function(){
+    _ppDring=!_ppDring;
+    ppD.classList.toggle('on', _ppDring);
+    tick(6); renderPutzplan();
+  });
   var ppS=$('ppSearch');
   if(ppS) ppS.addEventListener('input',function(){
     _ppFilter=this.value.trim().toLowerCase();
