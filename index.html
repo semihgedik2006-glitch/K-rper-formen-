@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-Uz1/vXJ2JkTJxUzpNUCKazTUsAYieTb7BrL2r8XAfUY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-g60XNBVuwSGp7o7VcahsMHFUYEIeaZ7V0pHa5dbfOrE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4411,7 +4411,19 @@ html{font-size:var(--fs,100%)}
                   <option value="lob">👏 Lob / Danke</option>
                   <option value="mitfahr">🚗 Mitfahrgelegenheit</option>
                 </select></div>
-              <button class="btn btn-primary btn-sm" id="bbAdd">Anpinnen</button>
+              <!-- Dasselbe Muster wie bei „Eintragen / Abbrechen" weiter
+                   oben: primaer zuerst, gedaempft daneben, beide in
+                   Inhaltsbreite. Der erste Anlauf gab dem Umfrage-Knopf
+                   width:100%; nachgemessen war er damit 252px BREITER
+                   als „Anpinnen" — die Nebenhandlung haette lauter
+                   geschrien als die Haupthandlung.
+                   Keine dritte Art im Auswahlfeld darueber, weil eine
+                   Umfrage Frage UND Antworten braucht, das Textfeld
+                   daneben aber nur einen Text. -->
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-primary btn-sm" id="bbAdd">Anpinnen</button>
+                <button class="btn btn-ghost btn-sm" id="bbPoll" data-ikon="umfrage">Umfrage stellen</button>
+              </div>
             </div>
           </div>
         </div>
@@ -5465,7 +5477,7 @@ html{font-size:var(--fs,100%)}
   <div class="pm-box">
     <button class="lb-close" id="pollClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <h3 data-ikon="umfrage">Umfrage</h3>
-    <p class="hint">Spart die 30 Einzelantworten im Chat. Jeder sieht sofort, wie es steht.</p>
+    <p class="hint" id="pollHint">Spart die 30 Einzelantworten im Chat. Jeder sieht sofort, wie es steht.</p>
     <div class="field"><label for="pollQ">Frage</label>
       <input class="inp" id="pollQ" type="text" placeholder="z. B. Wer kann Samstag früh?" maxlength="140" /></div>
     <div class="field"><label>Antworten</label>
@@ -11627,7 +11639,7 @@ function renderMessages(msgs){
     // Sprachnachricht: eigener Abspieler, siehe audioHTML()
     var audioHtml = m.audio ? audioHTML(safeMedia(m.audio), m.audioMs||0) : '';
     var bodyHtml = m.text ? '<div class="body">'+markMentions(linkify(esc(m.text)))+'</div>' : '';
-    var pollHtml = pollHTML(m);
+    var pollHtml = pollHTML(m,'chat');
     // Zitat der Nachricht, auf die geantwortet wurde
     var quote = m.replyTo
       ? '<div class="msg-quote" data-goto="'+esc(m.replyTo)+'"><b>'+esc(m.replyName||'')+'</b>'+
@@ -11667,7 +11679,11 @@ function renderMessages(msgs){
    nicht anonym: im Team von 14 Studios geht es um "wer kann wann", nicht
    um heikle Fragen – und ohne Namen müsste die Leitung doch wieder
    nachfragen. */
-function pollHTML(m){
+/* Eine Umfrage darstellen. Die Sorte („chat", „brett") faehrt am Knopf
+   mit, damit dieselbe Funktion beide Orte bedient — wie bei den
+   Reaktionen. Der Rest ist unveraendert: die Auszaehlung kennt weder
+   Kanal noch Brett, sie kennt nur poll und votes. */
+function pollHTML(m, art){
   var p=m.poll;
   if(!p || !Array.isArray(p.opts) || !p.opts.length) return '';
   var votes=m.votes||{};
@@ -11681,26 +11697,53 @@ function pollHTML(m){
   var opts=p.opts.map(function(o,i){
     var n=zaehler[i];
     var pct = gesamt ? Math.round(n*100/gesamt) : 0;
-    return '<button class="poll-opt'+(meine===i?' mine':'')+'" data-poll="'+esc(m.id)+'" data-po="'+i+'">'+
+    return '<button class="poll-opt'+(meine===i?' mine':'')+'" data-poll="'+esc(m.id)+
+      '" data-ptyp="'+(art||'chat')+'" data-po="'+i+'">'+
       '<span class="poll-fill" style="width:'+pct+'%"></span>'+
       '<span class="poll-lab"><span>'+esc(o)+'</span><span>'+n+(gesamt?' · '+pct+'%':'')+'</span></span></button>';
   }).join('');
-  return '<div class="poll"><div class="poll-q">'+esc(p.q||'Umfrage')+'</div>'+opts+
+  /* Die FRAGE ist Menschentext und gehoert damit durch markMentions.
+     Aufgefallen erst, als die Umfrage ans Brett kam: „@Anna kannst du
+     Samstag frueh?" als Frage erreichte Anna nicht — im Chat seit jeher
+     nicht. Die Quelltext-Regel in test-erwaehnungen.js hat es nicht
+     gesehen, weil sie linkify(esc( sucht und hier nur esc( steht.
+     Die ANTWORTEN bleiben draussen: „Ja" und „Nein" nennen niemanden. */
+  return '<div class="poll"><div class="poll-q">'+markMentions(esc(p.q||'Umfrage'))+'</div>'+opts+
     '<div class="poll-foot">'+(gesamt?gesamt+(gesamt===1?' Stimme':' Stimmen'):'noch keine Stimme')+
     (meine==null?' · tippe auf eine Antwort':' · Antippen ändert deine Stimme')+'</div></div>';
 }
 
-function votePoll(msgId, idx){
+/* Abstimmen. Geschrieben wird NUR der eigene Schluessel als Feldpfad,
+   nicht die ganze Karte — genau das laesst nurEigeneStimme() in
+   firestore.rules durch, und nur das. Wer hier die ganze votes-Karte
+   schriebe, baute einen Knopf, den die Regel abweist. */
+function votePoll(msgId, idx, art){
   var feld={};
   feld['votes.'+session.uid]=idx;
-  S('channels').doc(currentChannel).collection('messages').doc(msgId)
+  (art==='brett' ? S('board').doc(msgId)
+                 : S('channels').doc(currentChannel).collection('messages').doc(msgId))
     .update(feld)
     .then(function(){ tick(6); })
     .catch(function(e){ toast(errMsg(e),true); });
 }
 
-function openPoll(){
+/* EIN Dialog, zwei Ziele. Das Ziel steht in _pollZiel und nicht am
+   Knopf: zwischen Aufmachen und Senden liegen mehrere Klicks, und ein
+   zweiter Dialog waere eine zweite Fassung derselben Pruefungen. */
+var _pollZiel='chat';
+function openPoll(art){
+  _pollZiel = (art==='brett') ? 'brett' : 'chat';
   ['pollQ','pollO1','pollO2','pollO3','pollO4'].forEach(function(id){ var e=$(id); if(e) e.value=''; });
+  var brett=_pollZiel==='brett';
+  /* Der Hinweis sagt, WO die Umfrage landet. Ohne ihn ist der Dialog an
+     beiden Orten derselbe, und man weiss beim Senden nicht mehr, welchen
+     Knopf man vorhin gedrueckt hat. */
+  var h=$('pollHint');
+  if(h) h.textContent = brett
+    ? 'Landet am Schwarzen Brett — für Fragen ans ganze Team, die nicht im Chat untergehen sollen.'
+    : 'Spart die 30 Einzelantworten im Chat. Jeder sieht sofort, wie es steht.';
+  var b=$('pollSend');
+  if(b) b.textContent = brett ? 'Ans Brett pinnen' : 'Umfrage senden';
   $('pollModal').classList.add('show');
   setTimeout(function(){ var q=$('pollQ'); if(q) q.focus(); },80);
 }
@@ -11713,15 +11756,26 @@ function sendPoll(btn){
     .map(function(id){ return $(id).value.trim(); })
     .filter(function(x){ return !!x; });
   if(opts.length<2){ toast('Bitte mindestens zwei Antworten angeben.',true); return; }
+  var ansBrett = _pollZiel==='brett';
   withBusy(btn,function(){
-    return S('channels').doc(currentChannel).collection('messages').add({
-      uid:session.uid, name:session.name, role:session.role,
-      studio:channelStudioName(currentChannel),
-      text:'', ts:Date.now(),
-      poll:{ q:q, opts:opts }, votes:{}
-    }).then(function(){
+    return (ansBrett
+      ? S('board').add({
+          uid:session.uid, name:session.name,
+          text:'', kind:'umfrage', ts:Date.now(),
+          /* mentions aus der FRAGE, nicht aus text — der ist hier leer.
+             Ohne das waere die Erwaehnung hervorgehoben und truege
+             trotzdem niemandem etwas zu. */
+          poll:{ q:q, opts:opts }, votes:{}, mentions:findMentions(q)
+        })
+      : S('channels').doc(currentChannel).collection('messages').add({
+          uid:session.uid, name:session.name, role:session.role,
+          studio:channelStudioName(currentChannel),
+          text:'', ts:Date.now(),
+          poll:{ q:q, opts:opts }, votes:{}, mentions:findMentions(q)
+        })
+    ).then(function(){
       closePoll();
-      toast('Umfrage gesendet ✓');
+      toast(ansBrett ? 'Ans Brett gepinnt ✓' : 'Umfrage gesendet ✓');
     }).catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
   });
 }
@@ -12065,7 +12119,8 @@ function bindMessageTools(box){
   box.querySelectorAll('[data-poll]').forEach(function(b){
     b.addEventListener('click',function(e){
       e.stopPropagation();
-      votePoll(b.getAttribute('data-poll'), parseInt(b.getAttribute('data-po'),10));
+      votePoll(b.getAttribute('data-poll'), parseInt(b.getAttribute('data-po'),10),
+               b.getAttribute('data-ptyp'));
     });
   });
   box.querySelectorAll('[data-toggle]').forEach(function(b){
@@ -12599,7 +12654,7 @@ function renderHandovers(){
   });
 }
 
-var BB_KINDS={info:'Info',tausch:'Schichttausch',lob:'Lob',mitfahr:'Mitfahrgelegenheit'};
+var BB_KINDS={info:'Info',tausch:'Schichttausch',lob:'Lob',mitfahr:'Mitfahrgelegenheit',umfrage:'Umfrage'};
 function renderBoard(){
   var box=$('bbList'); if(!box) return;
   if(!_board.length){ box.innerHTML=emptyMini('Noch nichts angepinnt.','Etwas anpinnen','#bbAdd'); return; }
@@ -12607,12 +12662,22 @@ function renderBoard(){
     var mine=b.uid===session.uid;
     var del=(mine||isChef())?'<button class="mini-x" data-bbdel="'+esc(b.id)+'">löschen</button>':'';
     var michGemeint = Array.isArray(b.mentions) && b.mentions.indexOf(session.uid)>=0;
+    /* Eine Umfrage hat keinen Text — die Frage steht in der Umfrage.
+       Ohne diese Abfrage stuende darueber ein leerer Absatz. */
+    var txt = b.text
+      ? '<div class="bb-text">'+markMentions(linkify(esc(b.text||'')))+'</div>' : '';
     return '<div class="bb-item'+(michGemeint?' mentioned':'')+'"><span class="bb-kind">'+esc(BB_KINDS[b.kind]||'Info')+'</span>'+
-      '<div class="bb-text">'+markMentions(linkify(esc(b.text||'')))+'</div>'+
+      txt + pollHTML(b,'brett')+
       '<div class="bb-head"><span>'+esc(b.name||'')+' · '+fmtDateTime(b.ts)+'</span>'+del+'</div>'+
       reactionsHTML(b,'brett')+'</div>';
   }).join('');
   reaktionenVerdrahten(box);
+  box.querySelectorAll('[data-poll]').forEach(function(k){
+    k.addEventListener('click',function(e){
+      e.stopPropagation();
+      votePoll(k.getAttribute('data-poll'), parseInt(k.getAttribute('data-po'),10), 'brett');
+    });
+  });
   box.querySelectorAll('[data-bbdel]').forEach(function(x){
     x.addEventListener('click',function(){
       var id=x.getAttribute('data-bbdel'), backup=copyOf(_board, id);
@@ -20764,6 +20829,8 @@ function bindActions(){
   }
   if(hoAdd) hoAdd.addEventListener('click', addHandover);
   if(hoNew) hoNew.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addHandover(); } });
+  var bbPoll=$('bbPoll');
+  if(bbPoll) bbPoll.addEventListener('click',function(){ openPoll('brett'); });
   var bbAdd=$('bbAdd');
   if(bbAdd) bbAdd.addEventListener('click',function(){
     var btn=this, t=$('bbText').value.trim();

@@ -56,6 +56,28 @@ const AUSNAHMEN = {
   "esc(titel)+'</b><br/>'+linkify": 'Impressum: Angaben des Betreibers, keine Beiträge von Menschen.',
 };
 
+/* Kommentarzeilen ausblenden.
+   Beim Bau der Brett-Umfrage wurde dieser Durchlauf rot — an einem
+   KOMMENTAR, in dem die gesuchte Zeichenfolge als Text stand. Eine
+   Regel, um die herum man Kommentare formulieren muss, erzieht zum
+   Umformulieren statt zum Nachdenken. Also nimmt sie jetzt nur Code.
+
+   Zeilenweise, weil auch die Prüfung darunter zeilenweise ist. Ein
+   Block, der mitten in einer Zeile aufgeht und in derselben wieder zu,
+   wird nicht behandelt — den gibt es hier nicht, und eine Halbheit, die
+   so tut als koenne sie alles, waere schlimmer als eine benannte. */
+function ohneKommentare(zeilen) {
+  let drin = false;
+  return zeilen.map((z) => {
+    const t = z.trim();
+    if (drin) { if (t.indexOf('*/') >= 0) drin = false; return ''; }
+    if (t.startsWith('//')) return '';
+    if (t.startsWith('/*')) { if (t.indexOf('*/') < 0) drin = true; return ''; }
+    if (t.startsWith('*')) return '';
+    return z;
+  });
+}
+
 /* 'offen' | 'gewickelt' | 'ausnahme' | null — als eigene Funktion, damit
    die Gegenprobe weiter unten GENAU dieselbe Regel anwendet und nicht
    eine nachgebaute. */
@@ -67,7 +89,7 @@ function urteil(z) {
 }
 
 {
-  const zeilen = quelle.split('\n');
+  const zeilen = ohneKommentare(quelle.split('\n'));
   const offen = [];
   let gewickelt = 0;
   zeilen.forEach((z, i) => {
@@ -84,12 +106,46 @@ function urteil(z) {
     'Nur ' + gewickelt + ' Stellen mit markMentions gefunden — entweder ist ' +
     'die Hervorhebung ausgebaut worden oder diese Suche misst am Code vorbei.');
 
+  /* Gegenprobe 1b: das Ausblenden darf nur Kommentare schlucken, nicht
+     Code. Eine Fassung, die zu viel wegwirft, waere immer gruen. */
+  {
+    const probe = ohneKommentare([
+      '  // linkify(esc(x)) — nur ein Kommentar',
+      '  /* auch linkify(esc(x)) im Block */',
+      "  var a = linkify(esc(b));",
+    ]);
+    pruefe('(Gegenprobe) Kommentare fallen weg, Code bleibt',
+      probe[0] === '' && probe[1] === '' && probe[2].indexOf('linkify') >= 0,
+      JSON.stringify(probe));
+  }
+
   /* Gegenprobe 2: schlägt die Regel bei einer vergessenen Stelle auch an?
      Grün allein hiesse sonst nur, dass sie nie anschlägt. */
   pruefe('(Gegenprobe) eine vergessene Stelle fällt auf',
     urteil("      '<div class=\"bb-text\">'+linkify(esc(b.text||''))+'</div>'+") === 'offen' &&
     urteil("      '<div class=\"bb-text\">'+markMentions(linkify(esc(b.text||'')))+'</div>'+") === 'gewickelt',
     'Die Regel unterscheidet die beiden Fälle nicht — sie könnte nie rot werden.');
+}
+
+/* Die Grenze dieser Regel, benannt statt verschwiegen.
+   Sie findet `linkify(esc(` — also jeden Text, in dem auch Verweise
+   erkannt werden sollen. Die FRAGE einer Umfrage ist Menschentext, geht
+   aber nur durch `esc(`; die Regel hat sie deshalb nie gesehen, und
+   genau dort ist die Erwähnung monatelang ins Leere gelaufen (im Chat
+   seit es Umfragen gibt, am Brett vom ersten Tag an).
+
+   Auf `esc(` auszuweiten geht nicht: das steht an hunderten Stellen für
+   Namen, Kennungen und Zahlen, und eine Regel mit hundert Ausnahmen
+   prüft nichts mehr. Also diese eine Stelle mit Namen. */
+{
+  const ix = quelle.indexOf('function pollHTML');
+  const block = ix < 0 ? '' : quelle.slice(ix, ix + 2000);
+  pruefe('Die Frage einer Umfrage geht durch markMentions()',
+    ix >= 0 && /markMentions\(esc\(p\.q/.test(block),
+    ix < 0 ? 'pollHTML gibt es nicht mehr — diese Prüfung zeigt ins Leere.'
+      : 'Die Frage wird nur escapt. „@Anna kannst du Samstag früh?" ist dann ' +
+        'schlichter Text — und die Regel oben sieht es nicht, weil sie ' +
+        'linkify-Stellen sucht und hier keine ist.');
 }
 
 /* Die zweite Hälfte: beim Schreiben muss mentions[] mit. Ohne das ist
@@ -99,15 +155,29 @@ function urteil(z) {
     ["collection('handovers').add", 'Übergabe'],
     ["S('board').add", 'Schwarzes Brett'],
   ];
+  /* JEDE Fundstelle, nicht die erste.
+     Der erste Anlauf nahm indexOf() — also genau eine. Als die Umfrage
+     ans Brett kam, gab es ploetzlich ZWEI `S('board').add`, und der
+     Durchlauf sah nur noch die neue. Er wurde rot und nannte dabei den
+     falschen Grund: der Aushang war in Ordnung, die Umfrage nicht.
+     Eine Pruefung, die auf die erste Fundstelle zeigt, wandert mit dem
+     Code weg von dem, was sie bewachen soll. */
   SCHREIBER.forEach(([nadel, name]) => {
-    const ix = quelle.indexOf(nadel);
-    const block = ix < 0 ? '' : quelle.slice(ix, ix + 700);
-    pruefe(name + ': mentions wird beim Anlegen mitgeschrieben',
-      ix >= 0 && /mentions\s*:\s*findMentions\(/.test(block),
-      ix < 0 ? 'Die Stelle „' + nadel + '" gibt es nicht mehr — diese Prüfung ' +
-        'zeigt ins Leere und muss nachgezogen werden.'
-        : 'Der Eintrag wird ohne mentions[] geschrieben. Er wird dann ' +
-          'hervorgehoben, aber niemand erfährt davon.');
+    const stellen = [];
+    for (let i = quelle.indexOf(nadel); i >= 0; i = quelle.indexOf(nadel, i + 1)) {
+      stellen.push(i);
+    }
+    const ohne = stellen.filter(i => !/mentions\s*:\s*findMentions\(/
+      .test(quelle.slice(i, i + 700)));
+    pruefe(name + ': mentions wird bei ALLEN ' + stellen.length +
+      ' Anlege-Stellen mitgeschrieben',
+      stellen.length > 0 && ohne.length === 0,
+      stellen.length === 0
+        ? 'Die Stelle „' + nadel + '" gibt es nicht mehr — diese Prüfung ' +
+          'zeigt ins Leere und muss nachgezogen werden.'
+        : ohne.length + ' von ' + stellen.length + ' schreiben ohne mentions[] ' +
+          '(Zeile ' + ohne.map(i => quelle.slice(0, i).split('\n').length).join(', ') +
+          '). Der Eintrag wird dann hervorgehoben, aber niemand erfährt davon.');
   });
 }
 
