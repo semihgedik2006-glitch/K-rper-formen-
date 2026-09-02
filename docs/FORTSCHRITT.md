@@ -6479,3 +6479,36 @@ mein Auslesen, nicht die App**: der Titel steht in `.pp-title` vor den
 Marken (`textContent` nahm sie mit), und die Materialtabelle ist ein
 Raster aus `.mat-row`, kein `<tr>`. Nachgelesen im Quelltext, statt die
 Erwartung anzupassen.
+
+## Nachtrag zu 68 · Eine Regel, die für ein einziges Feld geschrieben war
+
+Die Regression war **95 grün · 1 rot**: `test-rahmen`, mit
+*„Material: der Inhalt beginnt erst bei 584px"*. Die Grenze liegt bei
+580, und der Durchlauf hatte recht.
+
+Ursache war eine Zeile, die niemand angefasst hatte:
+
+```css
+.mat-bar select{flex:1;min-width:160px}
+```
+
+Geschrieben für das **eine** Auswahlfeld, das dort stand (Studio). Als
+das Sortierfeld dazukam, erbte es `flex:1` und 160px Mindestbreite.
+Zusammen 444px auf 396px Platz — die Zeile brach um, wurde 79 statt
+50 Pixel hoch, und der Inhalt begann 34 Pixel tiefer.
+
+**Das ist die Sorte Nebenwirkung, die man nicht sieht.** Die Sortierung
+funktionierte tadellos; kaputt war etwas drei Bildschirmzeilen darüber.
+Ohne `test-rahmen` wäre es niemandem aufgefallen, bis jemand sich
+gewundert hätte, warum das Material so weit unten anfängt.
+
+Behoben, indem die Regel auf das Feld eingeengt wurde, für das sie
+gedacht war (`.mat-bar #matStudio`), und der Platz **gerechnet** statt
+geschätzt: 396px stehen zur Verfügung, Suche nimmt 48, der Zähler 68,
+die Lücken 30 — bleiben rund 250 für Studio und Sortierung zusammen.
+Deshalb kurze Wörter im Materialfeld („Liste", „A–Z", „Fehlt",
+„Wenig da") und eine Höchstbreite, statt es auf Kante zu setzen.
+
+Ergebnis: der Inhalt beginnt jetzt bei **555px** — schlanker als die
+607, mit denen die Prüfung ursprünglich eingeführt wurde, und schlanker
+als vor dieser Runde.

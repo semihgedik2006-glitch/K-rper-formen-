@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-d5wBYmWL9lw8GMr54PIMlz8Ld96Dt/yq5GI8CTaBe0s='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-aJ9DTDfPQb87Nx29FUc6phYbYfGv6/s6q02FLTOlWqw='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3330,7 +3330,18 @@ html{font-size:var(--fs,100%)}
 
 /* ── Material-Seite ── */
 .mat-bar{display:flex;gap:var(--s10);align-items:center;flex-wrap:wrap;margin:var(--s2) 0 var(--s16)}
-.mat-bar select{flex:1;min-width:160px}
+/* Ausdruecklich NUR das Studio-Feld. Die Regel stand hier als
+   `.mat-bar select` und galt damit fuer jedes Auswahlfeld in der Zeile
+   — als das Sortierfeld dazukam, bekam auch das flex:1 und 160px
+   Mindestbreite. Zusammen 444px auf 396px Platz: die Zeile brach um,
+   und der Inhalt begann 34 Pixel tiefer. test-rahmen hat genau das
+   gefunden. */
+.mat-bar #matStudio{flex:1;min-width:120px}
+/* Der Platz in dieser Zeile ist gerechnet, nicht geschaetzt: 396px
+   stehen zur Verfuegung, Suche nimmt 48, der Zaehler 68, zwei Luecken
+   20 — bleiben rund 260 fuer Studio UND Sortierung zusammen. Beide
+   duerfen deshalb nicht wachsen wollen. */
+.mat-bar #matSort{flex:0 1 auto;max-width:112px}
 .mat-table{margin-top:var(--s4)}
 /* Schmalere Felder und der Löschknopf nur für die Verwaltung: der Name
    bekommt dadurch statt 103 rund 190 Pixel. Enger bricht
@@ -20537,11 +20548,13 @@ function bindActions(){
     } else { toast('Kopieren wird hier nicht unterstützt.',true); }
   });
 
+  /* Kurze Woerter, weil die Zeile eng ist — „Sortierung: …" wie bei den
+     Aufgaben passte hier nicht neben Studio, Suche und Zaehler. */
   sortFeld($('matSort'), 'mat', [
-    {id:'liste',   label:'Sortierung: Liste'},
-    {id:'name',    label:'Name A–Z'},
-    {id:'fehlt',   label:'Was fehlt zuerst'},
-    {id:'bestand', label:'Kleinster Bestand'}
+    {id:'liste',   label:'Liste'},
+    {id:'name',    label:'A–Z'},
+    {id:'fehlt',   label:'Fehlt'},
+    {id:'bestand', label:'Wenig da'}
   ], 'liste', renderMaterial);
   var ms=$('matSearch');
   if(ms){
