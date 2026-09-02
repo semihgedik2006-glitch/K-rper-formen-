@@ -1,4 +1,4 @@
-/* ── Eine Sortierung für die ganze App ────────────────────────────────
+/* ── Listen organisieren: sortieren UND filtern ───────────────────────
    GEWÜNSCHT WAR: „nach täglich und wöchentlich sortieren, und nach
    Dringlichkeit, die der Chef angibt, und die Materialliste nach
    Alphabet — und dieses Prinzip in der ganzen App verteilen."
@@ -214,11 +214,91 @@ async function lauf() {
     'Stünden sie noch in derselben Folge, hätte die Prüfung darüber ' +
     'nichts bewiesen — dann wäre gar nicht sortiert worden.');
 
+  /* ══ 6. Filtern über Knöpfe ══
+     Nachgereicht auf „kannst du bitte auch machen, dass man zum
+     Beispiel nur tägliche anzeigen kann, mit den Knöpfen".
+
+     Die vorhandenen Knöpfe (Alle / Nur offene / Pausiert) sind EINE
+     Auswahl. Rhythmus und Dringlichkeit sind eine zweite, unabhängige
+     Frage: „nur offene" UND „nur tägliche" ist eine echte Kombination.
+     Deshalb eine zweite Gruppe, durch einen Strich getrennt, die
+     UND-verknüpft wird — und deren Knöpfe Schalter sind, nicht eine
+     Auswahl: nochmal antippen macht sie wieder aus. */
+  await page.evaluate(() => document.querySelector('[data-subview="putzplan"]').click());
+  await page.waitForTimeout(600);
+  await page.selectOption('#ppStudio', 'studio-6');
+  await page.waitForTimeout(600);
+  /* doneAt liegt HEUTE. Beim ersten Anlauf stand dort 5 (also 1970) —
+     und isDone() verlangt für eine tägliche Aufgabe doneAt >= heute,
+     weil sie sich täglich zurücksetzt. Die Zeile galt damit zu Recht
+     als offen, und „Nur offene" sah aus, als filtere es nicht. */
+  await page.evaluate((heute) => window.__nachschub('studios/studio-6/cleaning', [
+    { id: 'a', title: 'Taeglich offen', recurring: 'daily', done: false, ts: 1 },
+    { id: 'b', title: 'Taeglich fertig', recurring: 'daily', done: true, doneAt: heute, ts: 2 },
+    { id: 'c', title: 'Woechentlich', recurring: 'weekly', done: false, ts: 3 },
+    { id: 'd', title: 'Einmalig dringend', recurring: '', done: false, ts: 4, prio: 'hoch' },
+    { id: 'e', title: 'Taeglich dringend', recurring: 'daily', done: false, ts: 5, prio: 'hoch' },
+  ]), Date.now());
+  await page.waitForTimeout(620);
+
+  const klick = async (sel) => {
+    await page.evaluate(s => document.querySelector(s).click(), sel);
+    await page.waitForTimeout(360);
+  };
+
+  pruefe('Ohne Filter stehen alle fünf da',
+    (await ppTitel()).length === 5, JSON.stringify(await ppTitel()));
+
+  await klick('[data-pprhy="daily"]');
+  const nurTag = await ppTitel();
+  pruefe('„Täglich" zeigt nur die täglichen (auch die erledigte)',
+    nurTag.length === 3 && nurTag.every(t => /Taeglich/.test(t)),
+    JSON.stringify(nurTag));
+
+  await klick('[data-ppfilter="offen"]');
+  const tagOffen = await ppTitel();
+  /* Verglichen wird als MENGE, nicht als Folge: die Sortierung steht aus
+     dem Abschnitt davor noch auf „Dringlichkeit", also kommt die
+     dringende zuerst. Das ist richtig so — die Reihenfolge ist oben
+     geprüft, hier geht es darum, WELCHE Zeilen übrig bleiben. */
+  pruefe('„Täglich" UND „Nur offene" gelten zusammen',
+    tagOffen.slice().sort().join('|') === 'Taeglich dringend|Taeglich offen',
+    JSON.stringify(tagOffen) + ' — die erledigte tägliche muss jetzt weg ' +
+    'sein; wäre es eine einzige Auswahl, hätte der zweite Klick den ersten ' +
+    'aufgehoben.');
+
+  await klick('[data-ppdring]');
+  pruefe('Und „Dringend" kommt als dritte Bedingung dazu',
+    (await ppTitel()).join('|') === 'Taeglich dringend',
+    JSON.stringify(await ppTitel()));
+
+  /* Ein Filter, den man nicht wieder loswird, ist eine Falle: ohne
+     Ausschalten müsste man die Seite neu laden. */
+  await klick('[data-pprhy="daily"]');
+  pruefe('Nochmal antippen schaltet „Täglich" wieder aus',
+    (await ppTitel()).slice().sort().join('|') === 'Einmalig dringend|Taeglich dringend',
+    JSON.stringify(await ppTitel()) + ' — jetzt gilt nur noch offen+dringend.');
+  await klick('[data-ppdring]');
+  pruefe('Auch „Dringend" lässt sich wieder ausschalten',
+    (await ppTitel()).length === 4,
+    JSON.stringify(await ppTitel()) + ' — vier offene von fünf.');
+
+  await klick('[data-pprhy="weekly"]');
+  pruefe('„Wöchentlich" zeigt die wöchentliche',
+    (await ppTitel()).join('|') === 'Woechentlich', JSON.stringify(await ppTitel()));
+  /* Zwei Rhythmen zugleich gibt es nicht — eine Aufgabe hat genau
+     einen. Der zweite Klick muss den ersten ablösen, nicht ergänzen. */
+  await klick('[data-pprhy="daily"]');
+  pruefe('(Gegenprobe) „Täglich" löst „Wöchentlich" ab, statt sich zu addieren',
+    (await ppTitel()).every(t => /Taeglich/.test(t)) &&
+    (await ppTitel()).length === 2,
+    JSON.stringify(await ppTitel()));
+
   await b.close();
   pageErrs.forEach(e => { console.log('  ✗ ' + e); errs.push(e); });
 }
 
-console.log('\n── Eine Sortierung für die ganze App ──');
+console.log('\n── Listen organisieren: sortieren und filtern ──');
 lauf()
   .catch(e => { console.log('  ✗ ' + e.message); errs.push(e.message); })
   .then(() => {
@@ -227,7 +307,7 @@ lauf()
       console.log('✗ ' + errs.length + ' Fund(e) bei der Sortierung');
       process.exitCode = 1;
     } else {
-      console.log('✓ Sortierung: überall dasselbe Feld, die Wahl bleibt, ' +
-        'und beim Material wandert die Kennung mit der Zeile');
+      console.log('✓ Sortieren und Filtern: überall dasselbe Feld, die Wahl ' +
+        'bleibt, die Knöpfe lassen sich kombinieren und wieder ausschalten');
     }
   });

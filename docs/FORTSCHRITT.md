@@ -6512,3 +6512,64 @@ Deshalb kurze Wörter im Materialfeld („Liste", „A–Z", „Fehlt",
 Ergebnis: der Inhalt beginnt jetzt bei **555px** — schlanker als die
 607, mit denen die Prüfung ursprünglich eingeführt wurde, und schlanker
 als vor dieser Runde.
+
+---
+
+# 69 · Filtern über Knöpfe — und warum es eine zweite Gruppe braucht
+
+## Der Auftrag
+
+*„Kannst du bitte auch machen, dass man zum Beispiel nur tägliche
+anzeigen kann, und so mit den Knöpfen."*
+
+## Die Entscheidung, die dahintersteckt
+
+Die vorhandenen Knöpfe — *Alle · Nur offene · Pausiert* — sind **eine
+Auswahl**: einer ist an, die anderen aus. Rhythmus und Dringlichkeit
+naiv dazuzustellen hätte bedeutet, dass „nur offene" und „nur tägliche"
+sich gegenseitig aufheben. Genau die Kombination ist aber die
+interessante: *welche täglichen Punkte sind heute noch offen?*
+
+Also eine **zweite, unabhängige Gruppe**, durch einen Strich getrennt
+und mit UND verknüpft:
+
+```
+Alle · Nur offene · Pausiert  │  Täglich · Wöchentlich · Dringend
+```
+
+Der Strich ist kein Schmuck. Ohne ihn sieht die Zeile aus wie eine
+einzige Auswahl, und niemand probiert, zwei davon zusammen zu benutzen.
+
+**Schalter, keine Auswahl.** Nochmal antippen macht sie wieder aus —
+ein Filter, den man nicht loswird, ist eine Falle: man müsste die Seite
+neu laden. Zwei Rhythmen zugleich gibt es dagegen nicht, eine Aufgabe
+hat genau einen; dort löst der zweite Klick den ersten ab.
+
+Bei den Aufgaben dieselbe Bauart mit *Dringend*. Beim Material gab es
+den Gedanken schon — „nur was fehlt" ist genau das.
+
+## Zwei Funde, die keine waren
+
+Der erste Durchlauf sah nach zwei Fehlern aus. Beide waren meine
+Messung:
+
+**„Täglich fertig" blieb bei „Nur offene" stehen.** `isDone()` verlangt
+für eine tägliche Aufgabe `doneAt >= heute` — sie setzt sich täglich
+zurück. Mein Prüfdatum stand auf `5`, also 1970. Die Zeile galt damit
+**zu Recht** wieder als offen.
+
+**„Wöchentlich" lieferte nichts.** Weil „Dringend" aus dem Schritt davor
+noch an war. Auch richtig.
+
+Und eine dritte Zeile war rot, weil ich eine **Reihenfolge** verglich,
+wo es um die **Menge** ging: die Sortierung stand noch auf
+„Dringlichkeit". Verglichen wird jetzt als Menge — die Reihenfolge ist
+im Abschnitt darüber geprüft.
+
+## Prüfungen
+
+* `tests/test-sortierung.js` erweitert — jetzt **25 Prüfungen** (sortieren
+  und filtern), davon 5 Gegenproben
+* `test-knoepfe` · `test-gestaltung` · `test-quer` · `test-rahmen` grün —
+  die neuen Knöpfe sitzen in der ohnehin scrollbaren Werkzeugzeile und
+  schieben nichts aus dem Bild
