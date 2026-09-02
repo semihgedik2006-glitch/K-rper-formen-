@@ -6379,3 +6379,136 @@ node tools/konten-pruefen.js --projekt formenchat
 
 Liest nur. Die zwei neuen Abschnitte beantworten die Frage aus Runde 66;
 danach ist die Firmengrenze auf den flachen Pfaden eine halbe Sitzung.
+
+---
+
+# 68 · Eine Sortierung für die ganze App
+
+## Der Auftrag
+
+*„Ich möchte, dass man beim Putzplan oder bei den Aufgaben oder bei den
+Materialien nach täglich und wöchentlich sortieren kann, und auch nach
+Dringlichkeit, was der Chef dann angibt, und dass man die Materialliste
+zum Beispiel nach Alphabet sortieren kann — und lass uns dieses ganze
+Prinzip mal in der ganzen App verteilen."*
+
+## Erst nachgesehen, was es schon gibt
+
+| Ansicht | Sortierung | merkt sie sich? |
+|---|---|---|
+| Dokumente, Geräte, Nachweise | Chips (`sortLeiste`) | ja, in `PREFS.sort` |
+| Aufgaben | eigenes Auswahlfeld | **nein** |
+| Putzplan, Material | — | — |
+
+**Drei Bauarten für dieselbe Sache**, und die Aufgaben vergassen die
+Wahl nach jedem Neuladen — sie stand in einer blossen Variablen. Genau
+das ist die „generelle Organisation", nach der gefragt war.
+
+`sortFeld()` ist jetzt die eine Bauart für Werkzeugzeilen: ein schmales
+Auswahlfeld, das neben Suche und Filtern Platz hat, mit **derselben
+Ablage wie die Chips**. Die Chips bleiben, wo sie eine eigene Zeile
+haben — dort sind sie einen Griff schneller, und sie umzubauen wäre
+Bewegung ohne Gewinn. Was zählt, ist nicht die Form, sondern dass es
+**eine** Ablage gibt.
+
+## Die gefährlichste Stelle war das Material
+
+Dort ist der Listenindex die **Kennung**: die Eingabefelder tragen
+`data-idx`, geschrieben wird mit `_matItems[idx]`. Wer die Liste
+umsortiert, schreibt getippte Zahlen ins falsche Material — und zwar
+**lautlos**, weil die Zeile richtig aussieht.
+
+Deshalb wird eine Kopie sortiert, die ihren ursprünglichen Index
+mitführt; `_matItems` selbst bleibt unberührt. Der Durchlauf misst genau
+das: nach dem Sortieren muss jede Zeile ihre alte Kennung tragen — plus
+die Gegenprobe, dass die Kennungen danach **nicht** mehr der Reihe nach
+stehen, sonst hätte gar keine Sortierung stattgefunden.
+
+## Ein geratener Wert, der nichts getan hätte
+
+Für „nach Rhythmus" standen im ersten Anlauf deutsche Werte
+(`taeglich`, `woechentlich`) und ein `monatlich`, das es gar nicht gibt.
+Im Datenbestand heissen sie **`daily`, `weekly`, `custom`** und leer für
+einmalig. Die Sortierung hätte alles auf denselben Rang gelegt und damit
+nichts getan — und **wenn sie nichts tut, fällt sie nicht auf**.
+Nachgelesen in `#ppRepeat`, statt es stehen zu lassen.
+
+Täglich steht vor wöchentlich, weil das die Reihenfolge ist, in der man
+sie abarbeitet. Alphabetisch wäre es genau verkehrt herum. Ein eigenes
+Intervall wird nach seiner **Länge** einsortiert: „alle 2 Tage" gehört
+neben täglich, nicht hinter einmalig.
+
+## Dringlichkeit — drei Stufen, eine Skala
+
+`hoch` · normal · `niedrig`, dieselbe Skala für Aufgaben **und**
+Putzplan. Zwei Skalen wären zwei Sprachen für dieselbe Frage. Fünf
+Stufen wären zwei, die niemand benutzt und die trotzdem jedes Mal zu
+wählen sind.
+
+**„Normal" trägt keine Marke.** Trägt jede Zeile eine, fällt keine mehr
+auf — angezeigt wird nur, was vom Normalfall abweicht.
+
+In jeder Sortierung bleiben erledigte Punkte unten, auch wenn sie
+„dringend" tragen: **eine abgehakte Aufgabe ist nicht mehr dringend.**
+
+## Und ein Ertrag aus Runde 66
+
+Dass die Dringlichkeit Chefsache ist, kostete **keine Zeile Regel**. Die
+Feldgrenze aus Runde 66 lässt einem Mitarbeiter nur die dort benannten
+Felder, und `prio` steht nicht darunter. Im Emulator nachgemessen:
+
+```
+gesperrt:      Mitarbeiter setzt prio an einer Aufgabe
+gesperrt:      Mitarbeiter setzt prio im Putzplan
+DURCHGEGANGEN: GEGENPROBE Chef setzt prio an einer Aufgabe
+DURCHGEGANGEN: GEGENPROBE Chef setzt prio im Putzplan
+```
+
+Ein neues Feld ist damit von sich aus sicher, statt es einzeln
+nachzuziehen. Das ist der Zins auf die Sicherheitsrunden.
+
+## Prüfungen
+
+* `tests/test-sortierung.js` neu — **16 Prüfungen**, davon 3 Gegenproben
+* `test-quer` grün — die neuen Felder sitzen in den ohnehin scrollbaren
+  Werkzeugzeilen und schieben nichts aus dem Bild
+* `test-gestaltung` · `test-knoepfe` grün
+
+Sieben Zeilen des Durchlaufs waren beim ersten Lauf rot — **alle sieben
+mein Auslesen, nicht die App**: der Titel steht in `.pp-title` vor den
+Marken (`textContent` nahm sie mit), und die Materialtabelle ist ein
+Raster aus `.mat-row`, kein `<tr>`. Nachgelesen im Quelltext, statt die
+Erwartung anzupassen.
+
+## Nachtrag zu 68 · Eine Regel, die für ein einziges Feld geschrieben war
+
+Die Regression war **95 grün · 1 rot**: `test-rahmen`, mit
+*„Material: der Inhalt beginnt erst bei 584px"*. Die Grenze liegt bei
+580, und der Durchlauf hatte recht.
+
+Ursache war eine Zeile, die niemand angefasst hatte:
+
+```css
+.mat-bar select{flex:1;min-width:160px}
+```
+
+Geschrieben für das **eine** Auswahlfeld, das dort stand (Studio). Als
+das Sortierfeld dazukam, erbte es `flex:1` und 160px Mindestbreite.
+Zusammen 444px auf 396px Platz — die Zeile brach um, wurde 79 statt
+50 Pixel hoch, und der Inhalt begann 34 Pixel tiefer.
+
+**Das ist die Sorte Nebenwirkung, die man nicht sieht.** Die Sortierung
+funktionierte tadellos; kaputt war etwas drei Bildschirmzeilen darüber.
+Ohne `test-rahmen` wäre es niemandem aufgefallen, bis jemand sich
+gewundert hätte, warum das Material so weit unten anfängt.
+
+Behoben, indem die Regel auf das Feld eingeengt wurde, für das sie
+gedacht war (`.mat-bar #matStudio`), und der Platz **gerechnet** statt
+geschätzt: 396px stehen zur Verfügung, Suche nimmt 48, der Zähler 68,
+die Lücken 30 — bleiben rund 250 für Studio und Sortierung zusammen.
+Deshalb kurze Wörter im Materialfeld („Liste", „A–Z", „Fehlt",
+„Wenig da") und eine Höchstbreite, statt es auf Kante zu setzen.
+
+Ergebnis: der Inhalt beginnt jetzt bei **555px** — schlanker als die
+607, mit denen die Prüfung ursprünglich eingeführt wurde, und schlanker
+als vor dieser Runde.
