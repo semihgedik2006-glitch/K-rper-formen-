@@ -3156,5 +3156,242 @@ exports.purgeTrash = region
    Bewusst unter einem eigenen Namen und nicht als exports.<name>:
    alles, was oben mit exports. anfaengt, waere ein ausgerollter
    Endpunkt. Diese hier sind keiner. */
+
+/* ══════════════════════════════════════════════════════════════════════
+   KALENDER-ABO (.ics)
+
+   Jede Person kann ihre Schichten im eigenen Kalender sehen — Google,
+   Apple, Outlook, egal. Nicht als Kalender-Anbindung mit OAuth, sondern
+   als ABO-LINK: eine Adresse, die der Kalender selbst regelmaessig neu
+   liest.
+
+   WARUM SO UND NICHT MIT OAUTH
+   Ein Abo braucht keine Zustimmung bei Google, keine Token-Erneuerung,
+   keinen Anbieter — und es funktioniert bei ALLEN Kalendern gleich.
+   Der Preis: der Kalender entscheidet selbst, wie oft er neu liest
+   (Google oft nur alle paar Stunden). Fuer "wann arbeite ich naechste
+   Woche" ist das richtig, fuer kurzfristige Aenderungen nicht. Die App
+   bleibt die Wahrheit, der Kalender ist die Bequemlichkeit.
+
+   WO DER SCHLUESSEL LIEGT — und wo NICHT
+   Der Link ist ein Dauerschluessel: wer ihn hat, sieht die Schichten,
+   ohne sich anzumelden. Er darf deshalb NICHT ins users-Dokument. Das
+   ist fuer jeden aktiven Kollegen lesbar (siehe firestore.rules) — ein
+   Token dort koennte jeder mitlesen und weitergeben.
+   Er liegt in privat/<uid>, und das liest und schreibt ausschliesslich
+   der Besitzer selbst. Dafuer war keine neue Regel noetig.
+
+   WARUM KEINE SUCHABFRAGE
+   Der Link traegt die Kennung UND das Geheimnis: ?u=<uid>&t=<zufall>.
+   Damit findet die Funktion die Person direkt, ohne Abfrage ueber alle
+   Konten — kein zusaetzlicher Index, kein Aufzaehlen. Die Kennung ist
+   ohnehin kein Geheimnis (sie steht in der App an jeder Schicht); das
+   Geheimnis ist der Zufallsteil, und nur der wird verglichen.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Berliner Wanduhrzeit in echte UTC-Zeit. Zwei Durchgaenge, weil der
+   Versatz selbst vom Zeitpunkt abhaengt: im Sommer zwei Stunden, im
+   Winter eine. Ein fester Wert waere ein halbes Jahr lang falsch.
+
+   In der einen doppelten Stunde bei der Umstellung im Herbst ist die
+   Wanduhrzeit mehrdeutig; dort trifft es die erste. Das ist bewusst
+   hingenommen — eine Schicht, die genau in dieser Stunde beginnt, gibt
+   es einmal im Jahr, und die Alternative waere eine Zeitzonenbibliothek
+   im Auslieferungspfad. */
+const _berlinFmt = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Europe/Berlin', hour12: false,
+  year: 'numeric', month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit', second: '2-digit',
+});
+function _versatzMs(d) {
+  const p = {};
+  for (const t of _berlinFmt.formatToParts(d)) p[t.type] = t.value;
+  const alsWaere = Date.UTC(+p.year, +p.month - 1, +p.day,
+    p.hour === '24' ? 0 : +p.hour, +p.minute, +p.second);
+  return alsWaere - d.getTime();
+}
+function berlinZuUtc(datum, zeit) {
+  const [J, M, T] = String(datum).split('-').map(Number);
+  const [h, m] = String(zeit || '00:00').split(':').map(Number);
+  const roh = Date.UTC(J, (M || 1) - 1, T || 1, h || 0, m || 0, 0);
+  let d = new Date(roh - _versatzMs(new Date(roh)));
+  d = new Date(roh - _versatzMs(d));      // zweiter Durchgang
+  return d;
+}
+function icsZeit(d) {
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+function icsDatum(s) { return String(s).replace(/-/g, ''); }
+
+/* Sonderzeichen in ICS-Text. Ohne das zerreisst ein Komma im Studionamen
+   den Eintrag — der Standard trennt Werte damit. */
+function icsText(s) {
+  return String(s == null ? '' : s)
+    .replace(/\\/g, '\\\\').replace(/;/g, '\\;')
+    .replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+}
+
+/* Zeilen laenger als 75 Zeichen muessen umgebrochen werden, sonst
+   verwerfen manche Kalender den Eintrag. Gezaehlt wird in Bytes, nicht
+   in Zeichen: "Hürth" ist fuenf Zeichen und sechs Bytes. */
+function icsFalten(zeile) {
+  const b = Buffer.from(zeile, 'utf8');
+  if (b.length <= 75) return zeile;
+  const teile = [];
+  let start = 0, grenze = 75;
+  while (start < b.length) {
+    let ende = Math.min(start + grenze, b.length);
+    // Nicht mitten in ein Mehrbyte-Zeichen schneiden
+    while (ende > start && ende < b.length && (b[ende] & 0xc0) === 0x80) ende--;
+    teile.push(b.slice(start, ende).toString('utf8'));
+    start = ende; grenze = 74;             // Folgezeilen tragen ein Leerzeichen
+  }
+  return teile.join('\r\n ');
+}
+
+function icsBauen(zeilen) {
+  return zeilen.map(icsFalten).join('\r\n') + '\r\n';
+}
+
+/* Der Zeitraum: vier Wochen zurueck, ein halbes Jahr voraus. Zurueck,
+   damit die letzte Woche nachvollziehbar bleibt; nicht weiter, weil ein
+   Abo, das jahrelange Historie mitschleppt, bei jedem Abruf waechst. */
+const KAL_TAGE_ZURUECK = 28;
+const KAL_TAGE_VORAUS = 182;
+
+function kalTag(versatzTage) {
+  const d = new Date(Date.now() + versatzTage * 86400000);
+  return d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+}
+
+/* Vergleich ohne Zeitverrat. Bei 32 zufaelligen Bytes ist der Unterschied
+   theoretisch, aber er kostet nichts. */
+function tokenGleich(a, b) {
+  const A = Buffer.from(String(a || ''), 'utf8');
+  const B = Buffer.from(String(b || ''), 'utf8');
+  if (A.length !== B.length || !A.length) return false;
+  return require('crypto').timingSafeEqual(A, B);
+}
+
+async function kalenderDaten(uid, firma, studioKeys) {
+  const von = kalTag(-KAL_TAGE_ZURUECK), bis = kalTag(KAL_TAGE_VORAUS);
+  const schichten = [], abwesend = [];
+  /* Ueber ALLE Studios, nicht nur die eigenen: wer einmal aushilft,
+     bekommt dort eine Schicht, ohne dem Studio zugeordnet zu sein.
+     Nach uid gefiltert wird im Code — eine Abfrage mit Bereich UND
+     Gleichheit braeuchte einen zusammengesetzten Index. */
+  let keys = [];
+  try {
+    const docs = await W(firma).collection('studios').listDocuments();
+    keys = docs.map(d => d.id);
+  } catch (e) { keys = []; }
+  for (const k of (keys.length ? keys : (studioKeys || []))) {
+    /* Der NAME, nicht die Kennung. Ohne diese Zeile stand im Kalender
+       "Schicht · studio-1" — technisch richtig und fuer einen Menschen
+       wertlos. Aufgefallen erst im Durchlauf: das Feld studioName wurde
+       gelesen, aber nirgends gefuellt. */
+    let woName = k;
+    try { woName = await studioName(firma, k); } catch (e) { /* dann die Kennung */ }
+    try {
+      const s = await W(firma).collection('studios').doc(k).collection('shifts')
+        .where('date', '>=', von).where('date', '<=', bis).get();
+      s.forEach(d => {
+        const x = d.data() || {};
+        if (x.uid === uid) schichten.push(Object.assign({ id: d.id, sk: k, studioName: woName }, x));
+      });
+    } catch (e) { /* ein Studio ohne Schichten ist kein Fehler */ }
+    try {
+      const a = await W(firma).collection('studios').doc(k).collection('absences')
+        .where('from', '<=', bis).get();
+      a.forEach(d => {
+        const x = d.data() || {};
+        if (x.uid !== uid) return;
+        if (String(x.to || x.from) < von) return;        // ganz in der Vergangenheit
+        /* Ein offener Urlaubsantrag ist noch kein Urlaub. Ihn in den
+           Kalender zu schreiben hiesse, eine Zusage zu behaupten, die
+           es nicht gibt. Krankmeldungen gelten sofort. */
+        const st = x.type === 'krank' ? 'genehmigt' : (x.status || 'genehmigt');
+        if (st !== 'genehmigt') return;
+        abwesend.push(Object.assign({ id: d.id, sk: k }, x));
+      });
+    } catch (e) { /* dito */ }
+  }
+  return { schichten, abwesend };
+}
+
+exports.kalender = region.https.onRequest(async (req, res) => {
+  const uid = String((req.query && req.query.u) || '').slice(0, 128);
+  const tok = String((req.query && req.query.t) || '').slice(0, 128);
+  /* Eine einzige Antwort fuer "kein Token", "falsches Token" und
+     "Konto gibt es nicht". Wer raten will, soll aus der Antwort nicht
+     lernen, ob eine Kennung existiert. */
+  const abweisen = () => res.status(403)
+    .set('Cache-Control', 'no-store')
+    .send('Dieser Kalender-Link gilt nicht (mehr).');
+  if (!uid || !tok) return abweisen();
+
+  try {
+    const prof = await db.collection('users').doc(uid).get();
+    if (!prof.exists) return abweisen();
+    const p = prof.data() || {};
+    if (p.aktiv === false) return abweisen();
+    const firma = p.firma || null;
+
+    const geheim = await W(firma).collection('privat').doc(uid).get();
+    const gespeichert = ((geheim.exists ? geheim.data() : {}) || {}).kalenderToken;
+    if (!tokenGleich(gespeichert, tok)) return abweisen();
+
+    const { schichten, abwesend } = await kalenderDaten(uid, firma, p.studioKeys || []);
+    const jetzt = icsZeit(new Date());
+    const z = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0',
+      'PRODID:-//StudioChat//Schichtplan//DE',
+      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'X-WR-CALNAME:' + icsText('Schichten · ' + (p.name || 'StudioChat')),
+      'X-WR-TIMEZONE:Europe/Berlin',
+    ];
+    for (const s of schichten) {
+      const start = berlinZuUtc(s.date, s.from || '09:00');
+      let ende = berlinZuUtc(s.date, s.to || '17:00');
+      /* Eine Schicht ueber Mitternacht (22:00–02:00) endet am naechsten
+         Tag. Ohne das waere das Ende vor dem Anfang, und der Kalender
+         zeigt gar nichts. */
+      if (ende <= start) ende = new Date(ende.getTime() + 86400000);
+      const wo = s.studioName || s.sk;
+      z.push('BEGIN:VEVENT',
+        'UID:schicht-' + icsText(s.id) + '@studiochat',
+        'DTSTAMP:' + jetzt,
+        'DTSTART:' + icsZeit(start),
+        'DTEND:' + icsZeit(ende),
+        'SUMMARY:' + icsText('Schicht · ' + wo),
+        'LOCATION:' + icsText(wo));
+      if (s.note) z.push('DESCRIPTION:' + icsText(s.note));
+      z.push('END:VEVENT');
+    }
+    for (const a of abwesend) {
+      /* Ganztaegig. DTEND ist bei VALUE=DATE der Tag DANACH — ohne das
+         eine Tag Zuschlag fehlt der letzte Urlaubstag im Kalender. */
+      const bisPlus = new Date(new Date(String(a.to || a.from) + 'T12:00:00Z').getTime() + 86400000);
+      z.push('BEGIN:VEVENT',
+        'UID:abw-' + icsText(a.id) + '@studiochat',
+        'DTSTAMP:' + jetzt,
+        'DTSTART;VALUE=DATE:' + icsDatum(a.from),
+        'DTEND;VALUE=DATE:' + icsDatum(bisPlus.toISOString().slice(0, 10)),
+        'SUMMARY:' + icsText(a.type === 'krank' ? 'Krank' : 'Urlaub'),
+        'TRANSP:TRANSPARENT',
+        'END:VEVENT');
+    }
+    z.push('END:VCALENDAR');
+
+    res.set('Content-Type', 'text/calendar; charset=utf-8')
+      .set('Cache-Control', 'private, max-age=900')
+      .status(200).send(icsBauen(z));
+  } catch (e) {
+    console.error('kalender:', e);
+    res.status(500).set('Cache-Control', 'no-store').send('Fehler beim Erzeugen des Kalenders.');
+  }
+});
+
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
-                     collectTokens, inStudio, willHaben, fertigMeldungen, standSatz };
+                     collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
+                     berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich };

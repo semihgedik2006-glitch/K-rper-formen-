@@ -30,7 +30,15 @@
      1. Nur-Symbol-Knöpfe: das Zeichen sitzt mittig (±2px).
      2. Abzeichen (absolut gesetzte Kinder) liegen nicht auf dem Symbol.
      3. Abzeichen werden von keinem Vorfahren abgeschnitten.
-     4. Gegenprobe: der Durchlauf hat überhaupt Knöpfe gesehen.
+     4. Doppelte Zeichen: ein Knopf mit data-ikon, der schon ein eigenes
+        <svg> trägt, bekommt ein zweites eingesetzt.
+     5. Gegenprobe: der Durchlauf hat überhaupt Knöpfe gesehen.
+
+   „JEDE ANSICHT" HIESS ANFANGS NUR: was über die untere Leiste
+   erreichbar ist. Die Dialoge blieben aussen vor — und in einem davon
+   (Einstellungen → Profil) sind später neue Knöpfe gelandet. Der Lauf
+   war grün und hatte sie schlicht nie gesehen. Seitdem geht der
+   Durchgang auch die Reiter des Einstellungs-Dialogs ab.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
@@ -51,6 +59,16 @@ const SONDE = () => {
     if (!k.getClientRects().length) return;
     const svg = k.querySelector(':scope > svg');
     const rk = k.getBoundingClientRect();
+
+    /* 4) Zwei Zeichen auf einem Knopf.
+       `ikonenEinsetzen()` schiebt das Symbol vorne hinein, ohne zu
+       fragen, ob dort schon eines steht. Im August trugen 22 Knöpfe
+       deshalb ihr Zeichen doppelt. Man sieht es sofort — aber nur,
+       wenn man hinsieht. */
+    if (k.hasAttribute('data-ikon') && k.querySelectorAll(':scope > svg').length > 1) {
+      funde.push('ZWEI ZEICHEN: ' + name(k) + ' — data-ikon="' +
+        k.getAttribute('data-ikon') + '" und ein eigenes <svg>');
+    }
 
     /* Steht neben dem Zeichen noch etwas SICHTBARES?
        Versteckte Wörter zählen nicht (tbBericht trägt „Bericht" unter
@@ -192,9 +210,42 @@ async function lauf() {
     }
   }
 
+  /* ── Und jetzt die Dialoge ──
+     Der Einstellungs-Dialog hängt nicht an der unteren Leiste; er geht
+     über den Avatar oben auf. Vier Reiter, jeder mit eigenen Knöpfen. */
+  let inDialogen = 0;
+  const auf = await page.evaluate(() => {
+    const a = document.getElementById('uAvatar');
+    if (!a || !a.getClientRects().length) return false;
+    a.click(); return true;
+  });
+  if (auf) {
+    await page.waitForTimeout(600);
+    for (const reiter of ['profil', 'aussehen', 'melden', 'nachweise']) {
+      await page.evaluate(x => {
+        const k = document.querySelector('[data-pmtab="' + x + '"]');
+        if (k) k.click();
+      }, reiter);
+      await page.waitForTimeout(380);
+      const r = await page.evaluate(SONDE);
+      r.funde.forEach(f => gefunden.add(f));
+      gemessen += r.gemessen;
+      mitAbzeichen += r.mitAbzeichen;
+      inDialogen += r.gemessen;
+    }
+  }
+
   await b.close();
 
-  console.log('Nur-Symbol-Knöpfe vermessen:', gemessen, '· Abzeichen vermessen:', mitAbzeichen);
+  console.log('Nur-Symbol-Knöpfe vermessen:', gemessen,
+    '(davon in Dialogen: ' + inDialogen + ')', '· Abzeichen vermessen:', mitAbzeichen);
+
+  /* Gegenprobe zur Gegenprobe: der Dialog-Durchgang muss auch wirklich
+     etwas gesehen haben. Ginge der Avatar-Klick ins Leere, liefe die
+     Schleife durch und meldete nichts. */
+  if (!auf)
+    fehler.push('GEGENPROBE: der Einstellungs-Dialog ging gar nicht auf — ' +
+      'die Knöpfe darin sind ungeprüft');
 
   /* Gegenprobe: hat der Durchlauf überhaupt etwas gesehen? Eine App, in
      der keine Knöpfe gefunden werden, wäre der grünste Lauf von allen. */

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-gH1Cn+Zpx/7fv6xgR2wGAXEQv52N1QWA/tddH9oljbA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-HheaA5rgBw0lwyFRMGQlQB4fOpOkcJVRdRQbbO1UCh0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5284,6 +5284,29 @@ html{font-size:var(--fs,100%)}
     <div class="field"><label for="pmBday">Geburtstag (optional)</label><input class="inp" id="pmBday" type="date" /></div>
     <div class="field"><label for="pmEmoji">Avatar-Emoji statt Initialen (optional, wenn kein Bild)</label><input class="inp" id="pmEmoji" maxlength="2" placeholder="z. B. 💪" /></div>
     <div class="field"><label>Avatar-Farbe</label><div class="pm-colors" id="pmColors"></div></div>
+
+    <!-- ── Schichten im eigenen Kalender ──
+         Bewusst ein ABO-Link und keine Kalender-Anbindung: er
+         funktioniert bei Google, Apple und Outlook gleich, ohne
+         Zustimmungsfenster und ohne dass jemand ein Konto verbindet. -->
+    <div class="field" style="margin-top:var(--s16)">
+      <label>Schichten im eigenen Kalender</label>
+      <p class="hint" id="kalHint">Einmal einrichten – danach stehen deine Schichten
+        in Google&nbsp;Kalender, Apple&nbsp;Kalender oder Outlook.</p>
+      <div id="kalAus" style="display:none">
+        <input class="inp" id="kalLink" readonly
+          style="font-size:var(--t-xs);margin-bottom:var(--s8)" />
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-ghost btn-sm" data-ikon="kopieren" id="kalCopy">Link kopieren</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="kalWeg">Zurückziehen</button>
+        </div>
+        <p class="hint" style="margin-top:var(--s8)">Wer diesen Link hat, sieht deine
+          Schichten – gib ihn nicht weiter. „Zurückziehen“ macht ihn sofort ungültig.
+          Wie oft dein Kalender neu nachsieht, entscheidet er selbst; bei Google
+          dauert es oft ein paar Stunden.</p>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" data-ikon="kalender" id="kalNeu">Link erzeugen</button>
+    </div>
 
     </div>
 
@@ -13453,6 +13476,67 @@ function privatRef(){
   return (session && session.uid) ? S('privat').doc(session.uid) : null;
 }
 
+/* ── Kalender-Abo ─────────────────────────────────────────────────────
+   Der Link ist ein Dauerschluessel: wer ihn hat, sieht die Schichten,
+   ohne sich anzumelden. Deshalb liegt das Geheimnis in privat/<uid> —
+   das liest und schreibt nur der Besitzer. NICHT im users-Dokument:
+   das ist fuer jeden aktiven Kollegen lesbar, und dort koennte es jeder
+   mitlesen und weitergeben.
+
+   Der Zufall kommt aus crypto.getRandomValues, nicht aus Math.random.
+   Math.random ist vorhersagbar genug, dass man daraus geratene Links
+   bauen kann — fuer eine Farbe reicht es, fuer einen Schluessel nicht. */
+function kalenderAdresse(tok){
+  if(!session || !session.uid || !tok) return '';
+  return 'https://'+KONFIG.region+'-'+KONFIG.firebase.projectId+'.cloudfunctions.net/kalender'+
+    '?u='+encodeURIComponent(session.uid)+'&t='+encodeURIComponent(tok);
+}
+function kalenderZeigen(tok){
+  var aus=$('kalAus'), neu=$('kalNeu'), feld=$('kalLink');
+  if(!aus || !neu) return;
+  if(tok){
+    if(feld) feld.value=kalenderAdresse(tok);
+    aus.style.display=''; neu.textContent='Neuen Link erzeugen';
+  } else {
+    aus.style.display='none'; neu.textContent='Link erzeugen';
+  }
+}
+/* Ohne withBusy, und das ist Absicht: withBusy stellt am Ende die alte
+   Beschriftung wieder her (`if(btn.textContent!==label) …`). Fuer einen
+   Ladezustand ist das richtig, hier aber falsch — der Knopf soll danach
+   „Neuen Link erzeugen" heissen. withBusy dafuer umzubauen hiesse,
+   dutzende andere Knoepfe anzufassen; dieser eine schaltet sich selbst. */
+function kalSperren(btn, an){
+  if(!btn) return;
+  btn.disabled=!!an; btn.style.opacity = an ? '.6' : '';
+}
+function kalenderNeu(btn){
+  var ref=privatRef(); if(!ref){ toast('Bitte erst anmelden.',true); return; }
+  var roh=new Uint8Array(24);
+  (window.crypto||window.msCrypto).getRandomValues(roh);
+  var tok=Array.prototype.map.call(roh, function(b){
+    return ('0'+b.toString(16)).slice(-2); }).join('');
+  kalSperren(btn,true);
+  ref.set({ kalenderToken:tok }, {merge:true})
+    .then(function(){
+      kalenderZeigen(tok);
+      /* „Ein neuer Link macht den alten ungueltig" steht hier und nicht
+         nur im Kleingedruckten: wer zum zweiten Mal drueckt, soll
+         wissen, dass sein altes Abo aufhoert zu laufen. */
+      toast('Link erzeugt ✓ Ein früherer Link gilt damit nicht mehr.');
+    })
+    .catch(function(e){ toast(errMsg(e),true); })
+    .then(function(){ kalSperren(btn,false); });
+}
+function kalenderWeg(btn){
+  var ref=privatRef(); if(!ref) return;
+  kalSperren(btn,true);
+  ref.set({ kalenderToken:null }, {merge:true})
+    .then(function(){ kalenderZeigen(null); toast('Link zurückgezogen ✓'); })
+    .catch(function(e){ toast(errMsg(e),true); })
+    .then(function(){ kalSperren(btn,false); });
+}
+
 /* ── Zuhoeren auf das Eigene ──
    Nur einmal einhaengen. Beim Abmelden raeumt ichAufraeumen() auf; sonst
    liefe der Horcher des vorigen Kontos weiter, und der naechste Nutzer
@@ -19770,6 +19854,13 @@ function pmPreview(){
   applyAvatarEl(av, { photo:_pmPhoto||'', emoji:emoji, color:_pmColor, name:name, role:session.role });
 }
 function openProfile(reiter){
+  /* Der Stand kommt aus privat/<uid>, nicht aus session: das Geheimnis
+     liegt bewusst nicht im Profil, das die Kollegen lesen koennen. */
+  kalenderZeigen(null);
+  var pr=privatRef();
+  if(pr) pr.get().then(function(d){
+    kalenderZeigen(((d.exists?d.data():{})||{}).kalenderToken||null);
+  }).catch(function(){ /* kein Kalender ist kein Fehler */ });
   $('pmName').value=session.name||'';
   $('pmStatus').value=session.status||'';
   $('pmEmoji').value=session.emoji||'';
@@ -19814,7 +19905,17 @@ function switchPmTab(which){
   document.querySelectorAll('[data-pmtab]').forEach(function(b){
     b.classList.toggle('on', b.getAttribute('data-pmtab')===(isProfil?'profil':which));
   });
-  var box=document.querySelector('.pm-box'); if(box) box.scrollTop=0;
+  /* AUSDRUECKLICH das Einstellungs-Fenster. Hier stand
+     querySelector('.pm-box') — und das nimmt die ERSTE im Dokument,
+     von denen es zehn gibt (Person, Geraet, Umfrage, Aufgabe, Abo …).
+     Zurueckgesetzt wurde also ein fremdes Fenster, und der eigene
+     Reiter blieb dort stehen, wo man vorher hingescrollt hatte.
+
+     Unbemerkt geblieben ist es, weil der Profil-Reiter kurz genug war,
+     um gar nicht zu scrollen. Mit dem Kalender-Abschnitt wurde er
+     laenger — und test-einstellungen-bereich10 meldete prompt, dass
+     „Hell/Dunkel" nicht mehr ohne Scrollen erreichbar ist. */
+  var box=document.querySelector('#profileModal .pm-box'); if(box) box.scrollTop=0;
 }
 
 /* ── Melde-Einstellungen ──
@@ -20304,6 +20405,21 @@ function bindActions(){
   }
   $('chatSend').addEventListener('click',sendMsg);
   var pc=$('pollClose'); if(pc) pc.addEventListener('click',closePoll);
+  var kn=$('kalNeu'); if(kn) kn.addEventListener('click',function(){ kalenderNeu(this); });
+  var kw=$('kalWeg'); if(kw) kw.addEventListener('click',function(){ kalenderWeg(this); });
+  var kc=$('kalCopy');
+  if(kc) kc.addEventListener('click',function(){
+    var f=$('kalLink'); if(!f || !f.value) return;
+    /* Erst die Zwischenablage, sonst markieren: auf aelteren Geraeten
+       und ohne HTTPS gibt es navigator.clipboard nicht, und ein Knopf,
+       der dann gar nichts tut, ist schlimmer als einer, der markiert. */
+    var fertig=function(){ toast('Link kopiert ✓'); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(f.value).then(fertig).catch(function(){
+        f.select(); toast('Markiert – jetzt kopieren.');
+      });
+    } else { f.select(); toast('Markiert – jetzt kopieren.'); }
+  });
   var pmo=$('pollModal'); if(pmo) pmo.addEventListener('click',function(e){ if(e.target===pmo) closePoll(); });
   var ps=$('pollSend'); if(ps) ps.addEventListener('click',function(){ sendPoll(this); });
   var cbx=$('cbCancel');
