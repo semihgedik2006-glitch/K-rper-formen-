@@ -6182,3 +6182,126 @@ Nach dem Einbau schlug die Regel auf einen **Kommentar** an, in dem
 formulieren muss, erzieht zum Umformulieren statt zum Nachdenken. Sie
 blendet Kommentarzeilen jetzt aus — mit Gegenprobe, dass das Ausblenden
 nur Kommentare schluckt und keinen Code, sonst wäre sie immer grün.
+
+---
+
+# 66 · Dritte Schicht derselben Klasse — und ein Fund, der nicht mir gehört
+
+## Die Frage, die die Runde ausgelöst hat
+
+Zweimal hintereinander war der wertvollste Fund nicht das Feature,
+sondern die Antwort auf *„Einzelfall oder Klasse?"*. Also die Frage zu
+Ende gestellt: **an welchen Stellen darf jemand in ein fremdes Dokument
+schreiben, und ist dort geprüft, was?**
+
+Fünf Stellen erlauben einem beliebigen aktiven Konto zu schreiben. Zwei
+davon waren gravierend.
+
+## Was durchging
+
+Bei Reaktionen, Stimmen und dem Gelesen-Haken war das FELD erlaubt, sein
+Inhalt aber beliebig. Hier war noch weniger geprüft:
+
+```
+allow update: if istAktiv();
+```
+
+Im Emulator nachgemessen, **bevor** eine Zeile Regel geschrieben wurde:
+
+```
+DURCHGEGANGEN: Aufgabe in einem FREMDEN Studio umbenennen
+DURCHGEGANGEN: fremde Aufgabe auf jemand anderen umschreiben
+DURCHGEGANGEN: sich selbst eine WIEDERKEHRENDE Aufgabe geben
+DURCHGEGANGEN: fremde Erledigung zuruecknehmen
+DURCHGEGANGEN: Putzaufgabe im fremden Studio umbenennen
+DURCHGEGANGEN: den TEXT des anderen umschreiben
+DURCHGEGANGEN: die Nachricht auf sich selbst umschreiben
+```
+
+**Der dritte Fall ist der lehrreichste.** `allow create` verbietet einem
+Mitarbeiter ausdrücklich, sich eine wiederkehrende Aufgabe zu geben —
+die Bedingung steht dort mit eigenem Kommentar. Anlegen und danach
+ändern hat sie schlicht umgangen. *Eine Sperre, die nur beim Anlegen
+greift, ist keine Sperre.*
+
+**Die letzten beiden sind die schwersten.** In einer Direktnachricht
+konnte der Empfänger den Text des Absenders umschreiben — und mit `uid`
+und `name` auch, wer ihn geschrieben haben soll. In einem 1:1-Gespräch
+gibt es keine Zeugen: *„das habe ich nie geschrieben"* steht dann gegen
+einen Verlauf, der etwas anderes behauptet.
+
+## Die Oberfläche war die ganze Zeit strenger als die Regel
+
+„Bearbeiten", die Frist-Knöpfe, „Löschen" und „Pausieren" stehen in der
+App hinter `canManage()`. Nur wusste das niemand ausser der App — und
+wer nicht die App benutzt, war an keine davon gebunden.
+
+## Die Feldlisten sind abgelesen, nicht geraten
+
+Für jede erlaubte Feldgruppe gibt es eine Schreibstelle im Client:
+
+| Aufgaben (Mitarbeiter im eigenen Studio) | woher |
+|---|---|
+| `done, doneBy, doneByUid, doneAt` | abhaken |
+| `steps` | Teilschritte |
+| `assignedTo, assignedName` | „ich übernehme das" |
+| `grund, grundVon, grundAm` | Grund für die Verzögerung |
+| `photo, photoBy, photoAt` | Foto anhängen |
+
+Nicht dabei: `title`, `due`, `recurring`, `createdByUid`.
+
+Beim Putzplan sind es fünf Felder (mit Kürzel); Umbenennen und
+**Pausieren** bleiben draussen, weil beides in der App hinter `chef`
+steht. Bei Direktnachrichten gibt es im Client genau **eine**
+Schreibstelle — das Checklisten-Häkchen `items` —, und die alte
+Klammerbemerkung *„(z. B. Checklisten-Häkchen)"* nannte sie sogar
+schon. Aus dem „z. B." ist jetzt eine Aufzählung geworden.
+
+Dazu: `participants` einer Direktnachricht darf sich beim Mitschreiben
+des Verlaufs nicht verändern. Wer einen Dritten hineinschreibt, gibt ihm
+das Leserecht auf ein 1:1-Gespräch.
+
+## Die Hälfte, die hier mehr wiegt
+
+Eine zu strenge Regel bricht **still**, bis jemand eine Aufgabe nicht
+abhaken kann. Von den 33 Prüfungen sind deshalb 13 Gegenproben: abhaken,
+zurücknehmen, Teilschritte, übernehmen, Grund, Foto, der Chef benennt
+um, der Leiter in seinem Studio, der Chef pausiert, das Häkchen in der
+Direktnachricht, der Verlauf wird mitgeschrieben — auch mit
+`participants` in umgekehrter Reihenfolge, weil die Gegenseite das
+Gespräch angelegt haben kann.
+
+## Und ein Fund, der nicht dieser Runde gehört
+
+Eine Prüfzeile fiel um, die belegen sollte, dass der Chef der anderen
+Firma an eine Aufgabe auf dem **flachen** Pfad nicht herankommt. Er
+kommt heran — und nicht nur er.
+
+Nachgemessen liest **jedes aktive Konto einer zweiten Firma**, auch ein
+einfacher Mitarbeiter, auf den flachen Pfaden Aufgaben, Chat, Brett,
+Ankündigungen, Übergaben, Dokumente und Dienstplan.
+
+`OFFEN.md` kennt das — aber enger: dort steht es zu `appointments` und
+den beiden Nachbarseiten. Der Umfang ist jetzt dort richtig notiert,
+mitsamt der Reihenfolge, in der es zu lösen ist.
+
+**Nicht in dieser Runde behoben, und zwar mit Grund.** Der naheliegende
+Schutz hängt daran, was in den echten Konten im Feld `firma` steht.
+Steht dort schon überall die Kennung des bestehenden Betriebs, sperrt
+eine Prüfung auf „leer" den **laufenden Betrieb aus seinen eigenen Daten
+aus**. Das lässt sich von hier aus nicht messen, und es ist keine Regel,
+die man auf Verdacht ausrollt.
+
+Es als bestandene Prüfung zu behaupten wäre die Sorte Grün, gegen die
+dieses Projekt anschreibt. Also steht es als Fund da, nicht als Haken.
+
+Warum es so lange unbemerkt blieb: `kreuz.test.js` deckt
+zweiunddreissig Sammlungen ab — **alle im Firmen-Zweig**. Der flache
+Zweig daneben war nie Gegenstand.
+
+## Prüfungen
+
+* `tests/rules/fremde-felder.test.js` neu — **33 Fälle**, davon 13 Gegenproben
+* Alle Regeltests zusammen: **719 bestanden · 0 gefallen**
+* An der Oberfläche war **nichts** zu ändern: die App schrieb schon
+  immer nur diese Felder. Die Lücke war ausschliesslich die Regel.
