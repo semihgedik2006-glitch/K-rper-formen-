@@ -21,6 +21,23 @@
      3. DOPPELT — dieselbe E-Mail an mehreren Profilen.
      4. UNBESTÄTIGT — Anmeldekonto mit nicht bestätigter Adresse.
 
+   Dazu zwei Auszählungen, die für EINE offene Entscheidung gebraucht
+   werden (siehe OFFEN.md, „Firmengrenze auf den flachen Pfaden"):
+
+     5. FIRMEN-ZUORDNUNG — wie viele Profile tragen ein Feld `firma`,
+        und mit welchem Wert. Davon hängt ab, ob sich die flachen
+        Regeln überhaupt auf „gehört zur Voreinstellung" einengen
+        lassen: trägt schon jedes Konto eine Kennung, sperrte eine
+        Prüfung auf „leer" den ganzen Betrieb aus seinen eigenen Daten
+        aus.
+     6. WO LIEGEN DIE DATEN — wie viele Dokumente stehen noch flach
+        (`studios/…`, `board`, …) und wie viele unter `firmen/<k>/…`.
+        Ist flach nichts mehr übrig, ist die einfachere Lösung, den
+        flachen Regelsatz ganz zu streichen (Schritt 7 in OFFEN.md).
+
+   Beides ist reines Lesen und beantwortet eine Frage, die sich von
+   aussen nicht raten lässt.
+
    Aufruf:
      node tools/konten-pruefen.js --projekt formenchat
      node tools/konten-pruefen.js --projekt formenchat-probe        */
@@ -99,6 +116,59 @@ const db = admin.firestore();
   block('UNBESTÄTIGTE E-MAIL',
     'E-Mail',
     unbestaetigt.map(k => String(k.email)));
+
+  /* ── 5. Firmen-Zuordnung ──────────────────────────────────────────
+     Nicht als Fehlerliste, sondern als Zählung: hier gibt es kein
+     „falsch", nur einen Zustand, den jemand kennen muss, bevor er die
+     flachen Regeln einengt. */
+  const nachFirma = new Map();
+  profile.forEach(p => {
+    const f = Object.prototype.hasOwnProperty.call(p, 'firma')
+      ? String(p.firma === null || p.firma === undefined ? '' : p.firma)
+      : '(Feld fehlt)';
+    nachFirma.set(f, (nachFirma.get(f) || 0) + 1);
+  });
+  console.log('── FIRMEN-ZUORDNUNG der ' + profile.length + ' Profile ──');
+  [...nachFirma.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([f, n]) => console.log('   ' +
+      String(f === '' ? '(leer)' : f).padEnd(28) + String(n).padStart(4)));
+  const ohneFirma = (nachFirma.get('(Feld fehlt)') || 0) + (nachFirma.get('') || 0);
+  console.log('   ' + '—'.repeat(32));
+  console.log('   ohne Kennung (Feld fehlt oder leer): ' + ohneFirma);
+  console.log('   mit Kennung:                         ' + (profile.length - ohneFirma) + '\n');
+
+  /* ── 6. Wo liegen die Daten ───────────────────────────────────────
+     Gezählt wird mit einer Aggregat-Abfrage: count() liest nicht die
+     Dokumente, nur ihre Anzahl. Bei 13 Studios und Monaten an Verlauf
+     waere das Herunterladen sonst teuer — und wir wollen hier gar
+     nichts sehen, nur zaehlen. */
+  const FLACH = [
+    'board', 'announcements', 'documents', 'certificates',
+    'studios/studio-0/todos', 'studios/studio-0/cleaning',
+    'channels/allgemein/messages',
+  ];
+  async function zaehle(pfad) {
+    try { return (await db.collection(pfad).count().get()).data().count; }
+    catch (e) { return '?'; }
+  }
+  console.log('── WO LIEGEN DIE DATEN (Anzahl Dokumente) ──');
+  const firmen = await db.collection('firmen').get();
+  const kennungen = firmen.docs.map(d => d.id);
+  console.log('   Firmen angelegt: ' + (kennungen.join(', ') || 'keine') + '\n');
+  console.log('   Sammlung                          flach   unter firmen/');
+  for (const pfad of FLACH) {
+    const f = await zaehle(pfad);
+    let u = 0;
+    for (const k of kennungen) {
+      const n = await zaehle('firmen/' + k + '/' + pfad);
+      if (typeof n === 'number') u += n;
+    }
+    console.log('   ' + pfad.padEnd(34) + String(f).padStart(5) +
+      String(kennungen.length ? u : '—').padStart(16));
+  }
+  console.log('\n   Stehen die flachen Spalten auf 0, ist der flache Regelsatz');
+  console.log('   entbehrlich — das ist der einfachere der beiden Wege.\n');
 
   if (verwaist.length || doppelt.length) {
     console.log('── Was tun ──');

@@ -6305,3 +6305,77 @@ Zweig daneben war nie Gegenstand.
 * Alle Regeltests zusammen: **719 bestanden · 0 gefallen**
 * An der Oberfläche war **nichts** zu ändern: die App schrieb schon
   immer nur diese Felder. Die Lücke war ausschliesslich die Regel.
+
+---
+
+# 67 · Statt auf die Zahl zu warten, das Werkzeug dafür bauen
+
+Runde 66 endete mit einem Fund, den ich **nicht** beheben konnte: auf den
+flachen Pfaden liest jedes Konto einer zweiten Firma den Kernbestand mit.
+Der naheliegende Schutz — flache Regeln nur für Konten der
+Voreinstellung — hängt an einer Zahl, die ich von hier aus nicht messen
+kann: **wie viele Konten tragen schon ein Feld `firma`, und mit welchem
+Wert?** Ist es jedes, sperrt eine Prüfung auf „leer" den laufenden
+Betrieb aus seinen eigenen Daten aus.
+
+Darauf zu warten wäre bequem. Besser ist, den Weg zur Antwort zu bauen.
+
+## Zwei Auszählungen in `tools/konten-pruefen.js`
+
+Das Werkzeug gibt es längst, es **liest nur** und darf deshalb gegen das
+echte Projekt laufen. Es kannte das Feld `firma` bisher gar nicht.
+
+| | |
+|---|---|
+| **FIRMEN-ZUORDNUNG** | wie viele Profile mit welcher Kennung, wie viele mit leerem Feld, wie viele ganz ohne — plus die Zusammenfassung „x ohne, y mit" |
+| **WO LIEGEN DIE DATEN** | je Sammlung: wie viele Dokumente noch flach, wie viele unter `firmen/<k>/…` |
+
+Die zweite beantwortet die andere Hälfte der Entscheidung: **stehen die
+flachen Spalten auf 0, ist der flache Regelsatz entbehrlich** — das ist
+der einfachere der beiden Wege und macht die Regel-Frage gegenstandslos.
+
+Gezählt wird mit `count()`, nicht durch Herunterladen. Bei 13 Studios
+und Monaten an Verlauf wäre das sonst teuer, und wir wollen hier gar
+nichts sehen, nur zählen.
+
+## Ein Werkzeug, das falsch zählt, ist schlimmer als keins
+
+Es sähe plausibel aus und führte zur falschen Entscheidung — bei einer
+Entscheidung, die man nur einmal falsch treffen muss. Also läuft das
+**echte Werkzeug als eigener Prozess gegen den Emulator**, so wie
+`umzug.test.js` es für den Umzug tut.
+
+Die Ausgangslage ist mit Absicht gemischt: Profile mit Kennung, ohne
+Feld, mit leerem Feld, aus einer zweiten Firma; Daten flach **und**
+unter `firmen/`. Eine Zählung, die nur einen Fall kennt, lässt sich
+nicht von einer kaputten unterscheiden.
+
+Dazu zwei Gegenproben (ein Profil mehr, ein Brett-Eintrag mehr — gehen
+die Zahlen mit?) und die wichtigste Zusicherung: **das Werkzeug hat
+nichts geschrieben.** Genau das ist der Grund, aus dem es an die echte
+Datenbank darf.
+
+## Und ein Fehler in meiner eigenen Prüfung
+
+Einzeln gelaufen war der neue Durchlauf 19/19 grün. Im Gesamtlauf fielen
+vier Zeilen um: alle Regeltests teilen sich dasselbe Emulator-Projekt,
+und `users` und `board` trugen noch die Reste der vorherigen.
+
+Das ist die schlimmere Sorte Fehler — **grün, solange man ihn einzeln
+laufen lässt.** Wer absolute Zahlen prüft, muss die Ausgangslage selbst
+herstellen; die anderen Durchläufe tun das über `env.clearFirestore()`,
+dieser über den Aufräum-Endpunkt des Emulators.
+
+## Prüfungen
+
+* `tests/rules/konten-pruefen.test.js` neu — **19 Fälle**, davon 2 Gegenproben
+* Alle Regeltests zusammen: **738 bestanden · 0 gefallen**
+
+## Was jetzt zu tun ist
+
+```
+node tools/konten-pruefen.js --projekt formenchat
+```
+
+Liest nur. Die zwei neuen Abschnitte beantworten die Frage aus Runde 66;
+danach ist die Firmengrenze auf den flachen Pfaden eine halbe Sitzung.
