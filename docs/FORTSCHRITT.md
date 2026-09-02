@@ -6573,3 +6573,37 @@ im Abschnitt darüber geprüft.
 * `test-knoepfe` · `test-gestaltung` · `test-quer` · `test-rahmen` grün —
   die neuen Knöpfe sitzen in der ohnehin scrollbaren Werkzeugzeile und
   schieben nichts aus dem Bild
+
+## Nachtrag zu 69 · Drei Fragen, drei Gruppen
+
+Aus der Rückmeldung, mit Bildschirmfoto: *„kannst du nur noch die
+Trennung deutlicher machen — dieser Strich zwischen Pausiert und
+Täglich müsste auch noch zwischen Wöchentlich und Dringend."*
+
+Zu Recht, und zwar aus zwei Gründen:
+
+**Es sind drei Fragen, nicht zwei.** Zustand (*Alle · Nur offene ·
+Pausiert*), Rhythmus (*Täglich · Wöchentlich*) und Dringlichkeit
+(*Dringend*). Rhythmus ist eine Auswahl innerhalb der Gruppe — eine
+Aufgabe hat genau einen —, Dringlichkeit ein Schalter. Sie in eine
+Gruppe zu stecken behauptet eine Verwandtschaft, die es nicht gibt.
+
+**Und ein Trenner, den man nicht sieht, trennt nichts.** 1px in
+`--line-2` war auf dem Handy nicht vom Abstand zwischen den Knöpfen zu
+unterscheiden. Jetzt 2px und mehr Luft links und rechts als zwischen den
+Knöpfen selbst — die Gruppen fallen dadurch auch über den **Abstand**
+auseinander, nicht nur über den Strich.
+
+`--line-3` gibt es nicht; die Leiter hat nur `--line` und `--line-2`,
+und der Kommentar an der Stelle sagt, dass `--line-2` der kräftige ist.
+Also den vorhandenen Ton doppelt so breit, statt einen neuen zu
+erfinden.
+
+```
+Alle · Nur offene · Pausiert │ Täglich · Wöchentlich │ Dringend
+```
+
+Drei neue Prüfungen halten es fest: dass es **zwei** Striche sind, wo
+sie stehen, und dass sie breit genug sind, um aufzufallen. Ohne die
+letzte könnte jemand die Breite zurückdrehen und der Durchlauf bliebe
+grün.

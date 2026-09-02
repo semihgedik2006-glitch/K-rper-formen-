@@ -246,6 +246,35 @@ async function lauf() {
     await page.waitForTimeout(360);
   };
 
+  /* ── Die Trennung ist sichtbar und steht an beiden Stellen ──
+     Aus der Rückmeldung: „kannst du die Trennung deutlicher machen,
+     dieser Strich müsste auch noch zwischen Wöchentlich und Dringend."
+     Zu Recht: Zustand, Rhythmus und Dringlichkeit sind DREI Fragen,
+     nicht zwei. Und ein Trenner, den man nicht sieht, trennt nichts —
+     1px in der leisen Linienfarbe war auf dem Handy nicht vom Abstand
+     zwischen den Knöpfen zu unterscheiden. */
+  const gruppen = await page.evaluate(() => {
+    const zeile = document.querySelector('#view-putzplan .chip-row.werkzeugzeile');
+    const teile = [...zeile.children].filter(c => c.getClientRects().length);
+    return {
+      folge: teile.map(c => c.classList.contains('chip-trenner') ? '|'
+        : (c.textContent.trim().slice(0, 12) || c.tagName)),
+      striche: [...zeile.querySelectorAll('.chip-trenner')]
+        .filter(t => t.getClientRects().length)
+        .map(t => Math.round(t.getBoundingClientRect().width)),
+    };
+  });
+  pruefe('Es gibt ZWEI Trennstriche — drei Gruppen, drei Fragen',
+    gruppen.striche.length === 2, JSON.stringify(gruppen.folge));
+  pruefe('Sie stehen vor „Täglich" und vor „Dringend"',
+    gruppen.folge.join(' ').indexOf('Pausiert | Täglich') >= 0 &&
+    gruppen.folge.join(' ').indexOf('Wöchentlich | Dringend') >= 0,
+    JSON.stringify(gruppen.folge));
+  /* Breiter als eine Haarlinie, sonst verschwindet er neben dem
+     Knopf-Abstand. */
+  pruefe('Und sie sind breit genug, um aufzufallen',
+    gruppen.striche.every(b => b >= 2), JSON.stringify(gruppen.striche) + ' px');
+
   pruefe('Ohne Filter stehen alle fünf da',
     (await ppTitel()).length === 5, JSON.stringify(await ppTitel()));
 

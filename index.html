@@ -1778,8 +1778,14 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    (Alle / Nur offene / …), rechts unabhaengige Schalter. Ohne den
    Strich sieht die Zeile aus wie eine einzige Auswahl, und niemand
    probiert, zwei davon zusammen zu benutzen. */
-.chip-trenner{flex:0 0 1px;align-self:stretch;background:var(--line-2);
-  margin:var(--s6) var(--s2)}
+/* Deutlicher als der erste Anlauf: 1px in --line-2 war auf dem Handy
+   kaum vom Abstand zwischen den Knoepfen zu unterscheiden — und ein
+   Trenner, den man nicht sieht, trennt nichts. Jetzt 2px in --line-3
+   und mehr Luft links und rechts als zwischen den Knoepfen selbst
+   (var(--s8) gegen var(--s6) Gap), damit die Gruppen auch ueber den
+   Abstand auseinanderfallen und nicht nur ueber den Strich. */
+.chip-trenner{flex:0 0 2px;align-self:stretch;background:var(--line-2);
+  border-radius:var(--r-xs);margin:var(--s4) var(--s8)}
 .werkzeugzeile .todo-search{flex:0 0 44px;transition:flex-basis .28s var(--ease-ios)}
 .werkzeugzeile .todo-search input{padding-left:var(--s40);padding-right:var(--s6);
   min-height:44px;cursor:pointer}
@@ -4278,6 +4284,7 @@ html{font-size:var(--fs,100%)}
               <span class="chip-trenner" aria-hidden="true"></span>
               <button class="chip" data-pprhy="daily">Täglich</button>
               <button class="chip" data-pprhy="weekly">Wöchentlich</button>
+              <span class="chip-trenner" aria-hidden="true"></span>
               <button class="chip" data-ppdring="1">Dringend</button>
               <select class="chip" id="ppSort" style="padding-right:26px"></select>
             </div>
