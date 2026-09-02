@@ -518,6 +518,53 @@ service cloud.firestore {
                 && neu[request.auth.uid] < resource.data.poll.opts.size()));
     }
 
+    // ── Wer darf an einem fremden Dokument WAS ────────────────────────
+    // Dritte Schicht derselben Klasse. Bei den Reaktionen, den Stimmen
+    // und dem Gelesen-Haken war das Feld erlaubt, sein Inhalt aber
+    // beliebig. Hier war noch weniger geprueft: `allow update: if
+    // istAktiv()` — jedes aktive Konto durfte JEDES Feld JEDER Aufgabe
+    // in JEDEM Studio aendern. Im Emulator nachgemessen, alles
+    // durchgegangen:
+    //
+    //   · eine Aufgabe in einem fremden Studio umbenennen
+    //   · sie auf jemand anderen umschreiben (createdByUid)
+    //   · sich selbst eine WIEDERKEHRENDE Aufgabe geben — genau das,
+    //     was `allow create` drei Zeilen darueber ausdruecklich
+    //     verbietet. Update hat die Bedingung schlicht umgangen.
+    //   · eine fremde Erledigung zuruecknehmen
+    //
+    // Die Oberflaeche war die ganze Zeit strenger als die Regel:
+    // „Bearbeiten", die Frist-Knoepfe und „Loeschen" stehen in der App
+    // hinter canManage(). Nur wusste das niemand ausser der App.
+    //
+    // Die Listen unten sind aus dem Client ABGELESEN, nicht geraten —
+    // jede Feldgruppe hat dort eine Schreibstelle. Wer eine neue baut,
+    // muss sie hier eintragen; das ist der Preis dafuer, dass die Regel
+    // etwas aussagt.
+    function nurDieseFelder(felder) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(felder);
+    }
+
+    // Aufgaben: was ein Mitarbeiter im EIGENEN Studio anfassen darf.
+    //   done/doneBy/doneByUid/doneAt   abhaken
+    //   steps                          Teilschritte abhaken
+    //   assignedTo/assignedName        „ich uebernehme das"
+    //   grund/grundVon/grundAm         Grund fuer die Verzoegerung
+    //   photo/photoBy/photoAt          Foto anhaengen
+    // NICHT dabei: title, due, recurring, createdByUid — alles vier
+    // ist in der App Sache der Leitung.
+    function todoMitarbeiterFelder() {
+      return ['done','doneBy','doneByUid','doneAt','steps',
+              'assignedTo','assignedName','grund','grundVon','grundAm',
+              'photo','photoBy','photoAt'];
+    }
+
+    // Putzplan: anlegen ist Chefsache, abhaken darf jeder.
+    //   Pausieren steht in der App hinter chef — deshalb hier auch.
+    function putzMitarbeiterFelder() {
+      return ['done','doneBy','doneByUid','doneKuerzel','doneAt'];
+    }
+
     // ── Chat-Nachrichten ──
     match /channels/{channelId}/messages/{msgId} {
       allow read: if istAktiv() && kanalErlaubt(channelId);
@@ -573,8 +620,11 @@ service cloud.firestore {
                 || request.resource.data.recurring == null
                 || request.resource.data.recurring == ''));
       allow delete: if manages(studioKey);
-      // Mitarbeiter dürfen abhaken / Foto anhängen (update erlaubt für Eingeloggte)
-      allow update: if istAktiv();
+      // Die Leitung darf alles. Ein Mitarbeiter nur im EIGENEN Studio,
+      // und nur die Felder, die er in der App auch anfassen kann.
+      allow update: if manages(studioKey)
+        || (istAktiv() && studioKey in myKeys()
+            && nurDieseFelder(todoMitarbeiterFelder()));
     }
 
     // ── Putzplan pro Studio (Reinigungsaufgaben) ──
@@ -582,7 +632,10 @@ service cloud.firestore {
       allow read: if istAktiv();
       allow create: if manages(studioKey);   // Chef überall, Leiter in seinen Studios
       allow delete: if manages(studioKey);
-      allow update: if istAktiv();                     // Mitarbeiter dürfen abhaken
+      // Anlegen ist Chefsache, also auch Umbenennen und Pausieren.
+      // Abhaken darf jeder — sonst muesste die Leitung hinterherlaufen.
+      allow update: if manages(studioKey)
+        || (istAktiv() && nurDieseFelder(putzMitarbeiterFelder()));
     }
 
     // ── Putzplan-Notizen pro Studio (vom Team) ──
@@ -769,7 +822,14 @@ service cloud.firestore {
       // Lesen/Abfragen über das participants-Feld (funktioniert auch für Listen-Abfragen)
       allow read: if istAktiv() && request.auth.uid in resource.data.participants;
       allow create: if istAktiv() && request.auth.uid in request.resource.data.participants;
-      allow update: if istAktiv() && request.auth.uid in resource.data.participants;
+      // Der Verlauf wird bei jedem Senden mitgeschrieben (last, lastTs,
+      // readTs …), participants steht dabei mit drin. Es darf sich
+      // dadurch aber nicht VERAENDERN: wer einen Dritten hineinschreibt,
+      // gibt ihm das Leserecht auf ein 1:1-Gespraech.
+      allow update: if istAktiv()
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.participants.size() == 2
+        && request.resource.data.participants.hasOnly(resource.data.participants);
     }
     match /dms/{dmId}/messages/{msgId} {
       allow read: if istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
@@ -777,8 +837,21 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && dmId.split('_').hasAny([request.auth.uid])
         && audioOk();
-      // Update nur für Beteiligte (z. B. Checklisten-Häkchen)
-      allow update: if istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
+      /* Die schwerste Luecke der ganzen Runde, und die stillste.
+         „Update nur fuer Beteiligte" klang nach wenig — es hiess: der
+         Empfaenger darf den TEXT des Absenders umschreiben, und mit uid
+         und name auch, wer ihn geschrieben haben soll. In einem
+         1:1-Gespraech gibt es keine Zeugen; „das habe ich nie
+         geschrieben" steht dann gegen einen Verlauf, der etwas anderes
+         behauptet.
+
+         Im Client gibt es dafuer genau EINE Schreibstelle, und die
+         Klammer im alten Kommentar nannte sie schon: das
+         Checklisten-Haekchen (items). Nichts sonst wird je geaendert —
+         keine Bearbeitung, keine Reaktionen (die gibt es in
+         Direktnachrichten nicht). Also genau dieses eine Feld. */
+      allow update: if istAktiv() && dmId.split('_').hasAny([request.auth.uid])
+        && nurDieseFelder(['items']);
       allow delete: if istAktiv() && dmId.split('_').hasAny([request.auth.uid])
         && (isChef()
             || (resource.data.uid == request.auth.uid
@@ -1178,15 +1251,20 @@ service cloud.firestore {
                     || request.resource.data.recurring == null
                     || request.resource.data.recurring == '')));
           allow delete: if inFirma(f) && (manages(studioKey));
-          // Mitarbeiter dürfen abhaken / Foto anhängen (update erlaubt für Eingeloggte)
-          allow update: if inFirma(f) && (istAktiv());
+          // Leitung alles; Mitarbeiter nur im eigenen Studio und nur die
+          // Felder, die er in der App auch anfassen kann.
+          allow update: if inFirma(f) && (manages(studioKey)
+            || (istAktiv() && studioKey in myKeys()
+                && nurDieseFelder(todoMitarbeiterFelder())));
         }
 
         match /studios/{studioKey}/cleaning/{taskId} {
           allow read: if inFirma(f) && (istAktiv());
           allow create: if inFirma(f) && (manages(studioKey));   // Chef überall, Leiter in seinen Studios
           allow delete: if inFirma(f) && (manages(studioKey));
-          allow update: if inFirma(f) && (istAktiv());                     // Mitarbeiter dürfen abhaken
+          // Anlegen ist Chefsache, also auch Umbenennen und Pausieren.
+          allow update: if inFirma(f) && (manages(studioKey)
+            || (istAktiv() && nurDieseFelder(putzMitarbeiterFelder())));
         }
 
         match /studios/{studioKey}/cleaningNotes/{noteId} {
@@ -1328,7 +1406,13 @@ service cloud.firestore {
           // Lesen/Abfragen über das participants-Feld (funktioniert auch für Listen-Abfragen)
           allow read: if inFirma(f) && (istAktiv() && request.auth.uid in resource.data.participants);
           allow create: if inFirma(f) && (istAktiv() && request.auth.uid in request.resource.data.participants);
-          allow update: if inFirma(f) && (istAktiv() && request.auth.uid in resource.data.participants);
+          // participants darf sich beim Mitschreiben des Verlaufs nicht
+          // veraendern — wer einen Dritten hineinschreibt, gibt ihm das
+          // Leserecht auf ein 1:1-Gespraech.
+          allow update: if inFirma(f) && (istAktiv()
+            && request.auth.uid in resource.data.participants
+            && request.resource.data.participants.size() == 2
+            && request.resource.data.participants.hasOnly(resource.data.participants));
         }
 
         match /dms/{dmId}/messages/{msgId} {
@@ -1337,8 +1421,12 @@ service cloud.firestore {
             && request.resource.data.uid == request.auth.uid
             && dmId.split('_').hasAny([request.auth.uid])
             && audioOk());
-          // Update nur für Beteiligte (z. B. Checklisten-Häkchen)
-          allow update: if inFirma(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid]));
+          // Nur das Checklisten-Haekchen. Ohne die Einschraenkung darf
+          // der Empfaenger den Text des Absenders umschreiben — siehe
+          // den ausfuehrlichen Vermerk in der flachen Fassung oben.
+          allow update: if inFirma(f) && (istAktiv()
+            && dmId.split('_').hasAny([request.auth.uid])
+            && nurDieseFelder(['items']));
           allow delete: if inFirma(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid])
             && (isChef()
                 || (resource.data.uid == request.auth.uid

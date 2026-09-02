@@ -349,6 +349,57 @@ Dann sähe der eine Kunde die Termine des anderen, mitsamt Namen und
 E-Mail-Adressen der Endkundinnen. **Das muss vor dem zweiten Kunden
 erledigt sein**, zusammen mit dem Aufräumen der flachen Daten.
 
+### Nachgemessen am 1.9.2026: es reicht weiter als hier stand
+
+Beim Verschärfen der Feld-Regeln (Runde 66) fiel eine Prüfzeile um, die
+das belegen sollte. Sie hatte recht. Im Emulator nachgemessen — **jedes
+aktive Konto einer zweiten Firma**, auch ein einfacher Mitarbeiter ohne
+jede Rolle, liest auf den flachen Pfaden:
+
+```
+DURCHGEGANGEN: liest eine Aufgabe        → {"title":"Interne Aufgabe"}
+DURCHGEGANGEN: liest den Chat            → {"name":"Anna","text":"Interner Chat"}
+DURCHGEGANGEN: liest das Brett           → {"name":"Anna","text":"Internes Brett"}
+DURCHGEGANGEN: liest eine Ankuendigung   → {"text":"Interne Info"}
+DURCHGEGANGEN: liest eine Uebergabe      → {"name":"Anna","text":"Interne Uebergabe"}
+DURCHGEGANGEN: liest ein Dokument        → {"name":"Vertrag.pdf"}
+DURCHGEGANGEN: liest den Dienstplan      → {"date":"2026-09-01","name":"Anna"}
+DURCHGEGANGEN: LISTET alle Aufgaben
+```
+
+Drei Dinge sind daran neu gegenüber dem Absatz darüber:
+
+1. Es geht **nicht nur um `appointments`** und nicht nur um die beiden
+   Nachbarseiten. Betroffen ist der Kernbestand der App selbst.
+2. Es braucht **keine Nachbarseite**. Ein Konto der zweiten Firma, das
+   sich ganz normal in StudioChat anmeldet, kommt heran.
+3. Es braucht **keine Chef-Rolle**. `allow read: if istAktiv()` genügt.
+
+**Latent, nicht offen.** Einen zweiten Kunden gibt es noch nicht, und
+oben steht bereits, dass das vorher erledigt sein muss. Aber der Umfang
+gehört richtig notiert, sonst wird die Aufgabe nach ihrem alten Umfang
+geplant.
+
+**Warum es nicht in derselben Runde behoben wurde.** Der naheliegende
+Schutz — flache Pfade nur für Konten der Voreinstellung — hängt daran,
+was in den echten Konten im Feld `firma` steht. Steht dort schon überall
+die Kennung des bestehenden Betriebs, sperrt eine Prüfung auf „leer" den
+gesamten laufenden Betrieb aus seinen eigenen Daten aus. Das lässt sich
+von hier aus nicht messen (der Browser dieser Umgebung kommt nicht ins
+Internet), und es ist keine Regel, die man auf Verdacht ausrollt.
+
+**Was zu tun ist, in dieser Reihenfolge:**
+
+| | Schritt |
+|---|---|
+| 1 | In der echten Datenbank auszählen, wie viele Konten ein Feld `firma` haben und mit welchem Wert |
+| 2 | Danach entscheiden: Prüfung auf „gehört zur Voreinstellung" — oder die flachen Daten wegräumen und den flachen Regelsatz ganz streichen (Schritt 7 oben) |
+| 3 | `kreuz.test.js` um die **flachen** Pfade erweitern; heute prüft es ausschliesslich `firmen/{f}/…` |
+
+Schritt 3 ist der eigentliche Grund, warum es so lange unbemerkt blieb:
+die Kreuzprüfung deckt zweiunddreissig Sammlungen ab — alle im
+Firmen-Zweig. Der flache Zweig daneben war nie Gegenstand.
+
 **Die Google-Tabelle ist umgebaut und läuft** ✅ — am 13.8. bestätigt. Der
 Browser kennt die Adresse der Web-App nicht mehr; gesendet wird über die
 Cloud Function `sheetsPush`.
