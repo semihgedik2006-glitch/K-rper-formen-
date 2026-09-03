@@ -6607,3 +6607,215 @@ Drei neue Prüfungen halten es fest: dass es **zwei** Striche sind, wo
 sie stehen, und dass sie breit genug sind, um aufzufallen. Ohne die
 letzte könnte jemand die Breite zurückdrehen und der Durchlauf bliebe
 grün.
+
+---
+
+# 70 · Der Kalender, den niemand einrichten muss
+
+Aus dem Gespräch über Anbindungen: *„lohn export klingt interessant …
+und das mit dem calender sync klingt auch mega."* → **„mach den
+kalender."**
+
+## Warum ein Abo-Link und keine Kalender-Anbindung
+
+Der naheliegende Weg wäre gewesen, sich mit Google Kalender zu
+verbinden: OAuth, Zustimmungsfenster, Termine per API schreiben. Das
+hätte drei Nachteile, von denen jeder für sich reicht:
+
+* Es gälte **nur für Google**. Wer ein iPhone hat, hätte nichts davon.
+* Jeder müsste **sein Konto verbinden** — ein Zustimmungsfenster mit
+  „StudioChat möchte auf Ihren Kalender zugreifen“, und danach hätten
+  wir Schreibrechte auf dem privaten Kalender eines Mitarbeiters. Die
+  will ich gar nicht haben.
+* Wir müssten **jede Änderung nachziehen**. Schicht getauscht, Urlaub
+  genehmigt, Krankmeldung — jedes Mal ein Schreibvorgang, und jeder
+  kann schiefgehen, ohne dass es jemand merkt.
+
+Ein **ICS-Abo** dreht die Richtung um. Der Kalender fragt bei uns nach,
+nicht umgekehrt. Google, Apple und Outlook können das alle, seit
+Jahren, mit derselben Adresse. Wir schreiben nirgendwo hin, wir
+antworten nur. Und wenn sich eine Schicht ändert, ändert sich beim
+nächsten Nachfragen die Antwort — es gibt nichts nachzuziehen.
+
+Der Preis, ehrlich benannt: **wie oft nachgefragt wird, entscheidet der
+Kalender selbst.** Bei Google sind das oft ein paar Stunden. Das steht
+auch so in der App, direkt unter dem Link — eine Zusage „sofort“, die
+wir nicht halten können, wäre schlechter als die Wahrheit.
+
+## Wo das Geheimnis liegt, und warum genau dort
+
+Der Link ist ein Dauerschlüssel: wer ihn hat, sieht die Schichten, ohne
+sich anzumelden. Anders geht es nicht — ein Kalender meldet sich nicht
+an. Also ist die einzige Frage, **wer an den Schlüssel kommt.**
+
+Der bequeme Platz wäre `users/<uid>` gewesen — das Profil, das ohnehin
+schon geladen ist. Genau dort darf er nicht liegen: das Profil ist für
+**jeden aktiven Kollegen lesbar**. Der Schlüssel läge damit für die
+ganze Firma offen, und der ganze Aufwand wäre umsonst.
+
+Er liegt deshalb in `privat/<uid>` — dieselbe Stelle, an der schon der
+Gelesen-Stand steht, und die einzige, die nur der Besitzer liest und
+schreibt. **Nicht behauptet, sondern gemessen:**
+
+```
+── Kommt jemand an Annas Kalender-Geheimnis? ──
+gesperrt:      Kollege liest privat/anna
+gesperrt:      CHEF liest privat/anna
+gesperrt:      Kollege ueberschreibt es
+── Gegenprobe ──
+DURCHGEGANGEN: Anna selbst liest es
+DURCHGEGANGEN: Anna selbst setzt es
+```
+
+Auch der Chef nicht. Das ist kein Versehen, sondern der Punkt: der
+Schlüssel öffnet einen Kalender ohne Anmeldung, und niemand ausser dem
+Besitzer soll ihn weitergeben können.
+
+Der Zufall kommt aus `crypto.getRandomValues`, nicht aus
+`Math.random` — 24 Byte, 48 Hex-Zeichen. Für eine Avatar-Farbe reicht
+`Math.random`, für einen Schlüssel nicht.
+
+`firestore.rules` musste dafür **nicht angefasst** werden. `privat/{uid}`
+war in beiden Welten schon besitzergebunden. Eine Regel, die man für ein
+neues Feld nicht ändern muss, ist eine, die von vornherein die richtige
+Frage gestellt hat.
+
+## Fünfmal dieselbe Absage
+
+Die Funktion weist auf fünf Wegen ab — falsches Geheimnis, fremdes
+Geheimnis, gar keins, keine Kennung, Kennung gibt es nicht — und sagt
+**jedes Mal denselben Satz**: „Dieser Kalender-Link gilt nicht (mehr).“
+
+Unterschiedliche Absagen wären ein Verzeichnis: „gibt es nicht“ gegen
+„falsches Geheimnis“ verrät, welche uid existiert. Der Vergleich läuft
+über `crypto.timingSafeEqual`, damit auch die **Dauer** der Absage
+nichts verrät. Ein eigener Durchlauf prüft, dass die fünf Antworten
+zeichengleich sind — sonst schleicht sich beim nächsten Umbau eine
+gesprächige Fehlermeldung ein.
+
+## Zeitzone: zwei Durchgänge, nicht einer
+
+Schichten stehen als `2026-03-29` + `09:00` in der Datenbank — Ortszeit,
+ohne Zone. Ein ICS braucht UTC. Die naive Rechnung „minus eine Stunde“
+ist im Sommer falsch, „minus zwei“ im Winter, und **am
+Umstellungssonntag ist beides falsch.**
+
+`berlinZuUtc()` rechnet deshalb zweimal: erst den Versatz an der
+groben Stelle bestimmen, dann mit dem Ergebnis noch einmal — weil der
+Versatz vom Zeitpunkt abhängt, den man gerade erst ausrechnet.
+Nachgemessen an Winter (+1), Sommer (+2), dem Umstellungstag selbst und
+einer Schicht über Mitternacht.
+
+## Was im Kalender steht — und was mit Absicht nicht
+
+Drin: die eigenen Schichten (28 Tage zurück, 182 voraus), auch die
+Aushilfs-Schicht in einem fremden Studio, Urlaub und Krankmeldungen.
+Beim Urlaub ist der letzte Tag mitgezählt (`DTEND` = Tag danach, so
+will es der Standard — sonst fehlt der letzte Urlaubstag im Kalender).
+
+Nicht drin: **offene Urlaubsanträge.** Ein Antrag ist kein Termin. Stünde
+er im Kalender, sähe er aus wie genehmigt, und jemand plant darauf.
+Krankmeldungen dagegen gelten sofort — sie brauchen keine Genehmigung.
+
+Und nicht drin: die Schichten der anderen. Der Kalender ist der eigene.
+
+## Zwei Fehler, die der Durchlauf gefunden hat
+
+**Der Knopf hat gelogen.** `withBusy()` stellt am Ende die alte
+Beschriftung wieder her — richtig für einen Ladezustand, falsch hier:
+aus „Neuen Link erzeugen“ wurde wieder „Link erzeugen“, während der
+Link daneben stand. `withBusy` dafür umzubauen hätte dutzende andere
+Knöpfe angefasst; dieser eine schaltet sich jetzt selbst.
+
+**Der falsche Dialog wurde zurückgescrollt.** `switchPmTab` griff mit
+`document.querySelector('.pm-box')` — das nimmt den **ersten von zehn**.
+Solange der Profil-Bereich kurz war, fiel es nicht auf. Jetzt auf
+`#profileModal .pm-box` eingegrenzt.
+
+**Und einer, der schweigend falsch gewesen wäre:** die Studionamen
+wurden nie aufgelöst. Im Kalender hätte „Schicht · studio-1“ gestanden.
+
+## Die Knopf-Prüfung sah die Hälfte nicht
+
+Aus der stehenden Regel — *„bitte achte auf sowas bei ALLEN Knöpfen
+IMMER, bevor es neue gibt“* — lief `test-knoepfe` vor dem Ausliefern.
+Grün. Und das war die eigentliche Entdeckung dieser Runde:
+
+**Der Durchlauf ging nur ab, was über die untere Leiste erreichbar
+ist.** Dialoge nicht. Die neuen Knöpfe sitzen in den Einstellungen —
+sie waren nie gemessen worden. Grün hiess hier „nicht hingesehen“.
+
+Jetzt geht der Durchgang auch die vier Reiter des Einstellungs-Dialogs
+ab: **190 Nur-Symbol-Knöpfe statt 165**, davon 25 in Dialogen. Mit einer
+Gegenprobe darauf, dass der Dialog überhaupt aufging — ginge der Klick
+ins Leere, liefe die Schleife durch und meldete nichts.
+
+Dazu eine vierte Regel, die aus Runde 58 kommt und bisher nur im
+Gedächtnis stand: ein Knopf mit `data-ikon`, der schon ein eigenes
+`<svg>` trägt, bekommt ein zweites eingesetzt. Damals waren es 22
+Stück. Jetzt fällt es beim nächsten Mal von selbst auf.
+
+## Geprüft
+
+* `tests/rules/kalender.test.js` — **23 Prüfungen**, echter Handler
+  gegen den Emulator: gültiges ICS, CRLF, die fünf Absagen,
+  zurückgezogener Link, deaktiviertes Konto, Maskierung von Komma und
+  Semikolon, Faltung auf 75 Byte ohne Mehrbyte-Zeichen zu zerschneiden
+* `tests/test-kalender-abo.js` — **22 Prüfungen** im Browser: der Knopf
+  sagt die Wahrheit, geschrieben wird nur `privat/<uid>`, zweimal
+  drücken gibt zweimal etwas anderes, Zurückziehen räumt auf
+* `test-knoepfe` erweitert und grün · `test-gestaltung` grün
+* Volle Regression
+
+**Nicht geprüft, und das ist zu sagen:** der Chromium hier kommt nicht
+ins Netz. Dass Google Kalender das Abo wirklich frisst, kann erst
+jemand mit einem echten Konto bestätigen. Das ICS ist gegen den
+Standard geprüft, nicht gegen Google.
+
+## Nachtrag zu 70 · Der Wächter hatte recht, die Regel war zu eng
+
+Nach dem Pushen — und bevor die volle Regression durch war, das war
+der Fehler — wurde `regeltest` rot:
+
+```
+✗ kalender: prüft einen Geheim-Schlüssel
+  — ein onRequest ohne Schlüssel ist eine offene Adresse
+```
+
+`tests/test-funktionen-pfade.js` verlangt von **jedem** `onRequest`
+einen Schlüssel aus `process.env`. Die Regel stammt aus dem
+Sicherheits-Durchgang vom 13.8. und ist gut: eine offene Adresse in den
+Functions merkt sonst niemand.
+
+`kalender` hat keinen solchen Schlüssel — und darf keinen haben. Ein
+gemeinsamer Schlüssel hiesse: die ganze Firma hängt an einem Geheimnis,
+und niemand kann seinen eigenen Link zurückziehen, ohne allen anderen
+ihren kaputtzumachen. Das Geheimnis gehört pro Nutzer.
+
+**Der bequeme Fix wäre eine Ausnahmeliste gewesen** — „ausser
+kalender". Der hätte diesen einen Lauf grün gemacht und die Prüfung für
+jeden künftigen Endpunkt entwertet. Stattdessen kennt die Regel jetzt
+die zweite Bauart: ein eigenes Geheimnis, **zeitgleich verglichen**.
+
+Und die neue Bauart ist damit **strenger** als die alte, nicht weicher:
+ein `if (gespeichert === tok)` zählt ausdrücklich nicht. Die
+Antwortdauer verriete sonst, wie viele Zeichen stimmen, und ein
+Schlüssel, den man Zeichen für Zeichen erraten kann, ist keiner. Dazu
+eine Prüfung, dass `tokenGleich` auch wirklich `timingSafeEqual`
+benutzt — sonst stünde die Regel auf einem Funktionsnamen.
+
+Drei Gegenproben halten es fest: ein `onRequest` ganz ohne Geheimnis
+wird erkannt, einer mit `===` wird erkannt, und der alte onCall-Fall
+weiterhin auch.
+
+Reproduziert und belegt, nicht behauptet:
+
+```
+── mit der ALTEN Prüfung ──   ✗ kalender …   Exit: 1
+── mit der NEUEN ──           Exit: 0
+```
+
+**Die Lehre ist aber nicht die Regel, sondern der Zeitpunkt.** Der
+Durchlauf lief lokal längst — ich habe nur nicht auf ihn gewartet. Ein
+Wächter, dessen Ergebnis man nicht abwartet, ist ein Wächter, den man
+sich sparen kann.

@@ -162,6 +162,28 @@ const PRUEFUNG = /require(Admin|Chef|Auth)\s*\(\s*context\s*\)/;
    Geheim-Schlüssel: sie werden von aussen aufgerufen (Cron, Test). */
 const SCHLUESSEL = /process\.env\.\w*(KEY|SECRET|TOKEN)/;
 
+/* ── Und seit dem Kalender-Abo eine ZWEITE Bauart ──
+   `exports.kalender` wird von einem Kalenderprogramm abgerufen, das
+   sich nicht anmelden kann. Ein gemeinsamer Schlüssel aus process.env
+   wäre hier falsch: dann hinge die ganze Firma an einem Geheimnis, und
+   niemand könnte seinen eigenen Link zurückziehen, ohne allen anderen
+   ihren kaputtzumachen. Das Geheimnis steht deshalb PRO NUTZER in
+   privat/<uid>.
+
+   Anerkannt wird das aber nur mit zeitgleichem Vergleich. Ein
+   `if (gespeichert === tok)` wäre ein Zeitleck — die Antwortdauer
+   verriete, wie viele Zeichen stimmen, und ein Schlüssel, den man
+   Zeichen für Zeichen erraten kann, ist keiner. Diese Zeile macht die
+   Regel für die neue Bauart also nicht weicher, sondern strenger als
+   die alte.
+
+   NICHT als Ausnahmeliste geschrieben, und das ist der Punkt: „ausser
+   kalender" hätte diesen einen Lauf grün gemacht und die Prüfung für
+   jeden künftigen Endpunkt entwertet. Erkannt wird die Bauart, nicht
+   der Name. */
+const EIGENES_GEHEIMNIS = /\b(tokenGleich|timingSafeEqual)\s*\(/;
+const geschuetzt = (r) => SCHLUESSEL.test(r) || EIGENES_GEHEIMNIS.test(r);
+
 const aufrufe = bloecke.filter(b => rumpf(b).indexOf('.https.onCall') >= 0);
 const anfragen = bloecke.filter(b => rumpf(b).indexOf('.https.onRequest') >= 0);
 pruefe('Endpunkte überhaupt gefunden', aufrufe.length >= 12,
@@ -172,9 +194,21 @@ aufrufe.forEach(b => {
     'ein onCall ohne Prüfung ist für jeden im Internet offen');
 });
 anfragen.forEach(b => {
-  pruefe(b.name + ': prüft einen Geheim-Schlüssel', SCHLUESSEL.test(rumpf(b)),
-    'ein onRequest ohne Schlüssel ist eine offene Adresse');
+  pruefe(b.name + ': prüft ein Geheimnis', geschuetzt(rumpf(b)),
+    'ein onRequest ohne Geheimnis ist eine offene Adresse — entweder ein ' +
+    'Schlüssel aus process.env oder ein eigener, zeitgleich verglichen');
 });
+
+/* Der Name allein soll nicht reichen: `tokenGleich` zählt nur, solange
+   die Funktion auch wirklich zeitgleich vergleicht. Hiesse sie so und
+   stünde ein `===` darin, wäre die Regel oben eine Behauptung. */
+if (EIGENES_GEHEIMNIS.test(anfragen.map(rumpf).join('\n'))) {
+  const tg = quelle.slice(quelle.indexOf('function tokenGleich'));
+  pruefe('tokenGleich vergleicht wirklich zeitgleich',
+    /function tokenGleich/.test(quelle) &&
+    tg.slice(0, tg.indexOf('\n}')).indexOf('timingSafeEqual') > 0,
+    'sonst verrät die Antwortdauer, wie viele Zeichen stimmen');
+}
 
 /* Gegenprobe: würde eine fehlende Prüfung überhaupt auffallen? */
 {
@@ -183,6 +217,22 @@ anfragen.forEach(b => {
     '    return { alles: "frei" };', '  });'] };
   pruefe('Gegenprobe: ein Endpunkt ohne Prüfung wird erkannt',
     !PRUEFUNG.test(rumpf(erfunden)));
+
+  /* Zwei Gegenproben für die onRequest-Seite, weil dort jetzt zwei
+     Bauarten durchgehen — und eine zu weit gefasste Regel wäre grün,
+     ohne dass es auffiele. */
+  const offen = { name: '(Gegenprobe)', text: [
+    'exports.offen = region', '  .https.onRequest(async (req, res) => {',
+    '    res.send(await allesRausgeben(req.query.u));', '  });'] };
+  pruefe('Gegenprobe: ein onRequest ganz ohne Geheimnis wird erkannt',
+    !geschuetzt(rumpf(offen)));
+
+  const schlampig = { name: '(Gegenprobe)', text: [
+    'exports.schlampig = region', '  .https.onRequest(async (req, res) => {',
+    '    if (gespeichert === req.query.t) res.send(kalender);', '  });'] };
+  pruefe('Gegenprobe: ein Vergleich mit === reicht nicht',
+    !geschuetzt(rumpf(schlampig)),
+    'ein Zeichen-für-Zeichen-Vergleich verrät über die Dauer, wie weit man ist');
 }
 
 /* ── Termine: der Zeitplan muss beide Welten sehen ──
