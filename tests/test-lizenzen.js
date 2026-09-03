@@ -80,6 +80,7 @@ async function seite(b, certs) {
 const ichDaten = p => p.evaluate(async () => {
   document.querySelector('.mobnav [data-group="g-ich"]').click();
   await new Promise(r => setTimeout(r, 400));
+  (function(){var s=document.querySelector('[data-subview="ich"]');if(s) s.click();})();
   document.querySelector('[data-ichtab="daten"]').click();
   await new Promise(r => setTimeout(r, 900));
 });

@@ -74,7 +74,8 @@ const laufen = (p, sel) => p.evaluate(s => {
   {
     const p = await seite(b, false);
     const r = await p.evaluate(async () => {
-      document.querySelector('[data-ichtab="notizen"]').click();
+      (function(){var s=document.querySelector('[data-subview="persoenlich"]');if(s) s.click();})();
+      document.querySelector('[data-perstab="notizen"]').click();
       const el = document.getElementById('ichPaneNotizen');
       // Sofort messen: nach 260 ms ist sie vorbei.
       const sofort = el.getAnimations().map(a => a.animationName);
@@ -116,6 +117,7 @@ const laufen = (p, sel) => p.evaluate(s => {
   {
     const p = await seite(b, false);
     const r = await p.evaluate(async () => {
+      (function(){var s=document.querySelector('[data-subview="ich"]');if(s) s.click();})();
       document.querySelector('[data-ichtab="kalender"]').click();
       await new Promise(r => setTimeout(r, 800));
       const kal = document.getElementById('ichKalender');
@@ -176,13 +178,15 @@ const laufen = (p, sel) => p.evaluate(s => {
   {
     const p = await seite(b, true);
     const r = await p.evaluate(async () => {
+      (function(){var s=document.querySelector('[data-subview="ich"]');if(s) s.click();})();
       document.querySelector('[data-ichtab="kalender"]').click();
       await new Promise(r => setTimeout(r, 800));
       const kal = document.getElementById('ichKalender');
       document.getElementById('ichMonatNext').click();
       const kalAnim = kal.getAnimations().length;
       const kalKlasse = kal.className;
-      document.querySelector('[data-ichtab="notizen"]').click();
+      (function(){var s=document.querySelector('[data-subview="persoenlich"]');if(s) s.click();})();
+      document.querySelector('[data-perstab="notizen"]').click();
       const pane = document.getElementById('ichPaneNotizen');
       return {
         kalAnim, kalKlasse,

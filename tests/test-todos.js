@@ -51,7 +51,8 @@ const pruefe = (b, m) => { if (!b) errs.push(m); };
   await p.evaluate(async () => {
     document.querySelector('.mobnav [data-group="g-ich"]').click();
     await new Promise(r => setTimeout(r, 400));
-    document.querySelector('[data-ichtab="todo"]').click();
+    (function(){var s=document.querySelector('[data-subview="persoenlich"]');if(s) s.click();})();
+    document.querySelector('[data-perstab="todo"]').click();
     await new Promise(r => setTimeout(r, 500));
   });
 
