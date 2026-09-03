@@ -5285,14 +5285,17 @@ html{font-size:var(--fs,100%)}
     <div class="field"><label for="pmEmoji">Avatar-Emoji statt Initialen (optional, wenn kein Bild)</label><input class="inp" id="pmEmoji" maxlength="2" placeholder="z. B. 💪" /></div>
     <div class="field"><label>Avatar-Farbe</label><div class="pm-colors" id="pmColors"></div></div>
 
-    <!-- ── Schichten im eigenen Kalender ──
+    <!-- ── Der eigene Kalender ──
          Bewusst ein ABO-Link und keine Kalender-Anbindung: er
          funktioniert bei Google, Apple und Outlook gleich, ohne
-         Zustimmungsfenster und ohne dass jemand ein Konto verbindet. -->
+         Zustimmungsfenster und ohne dass jemand ein Konto verbindet.
+         Drin stehen Schichten, Urlaub und alles mit Frist — Aufgaben,
+         eigene To-dos und ablaufende Nachweise. -->
     <div class="field" style="margin-top:var(--s16)">
-      <label>Schichten im eigenen Kalender</label>
-      <p class="hint" id="kalHint">Einmal einrichten – danach stehen deine Schichten
-        in Google&nbsp;Kalender, Apple&nbsp;Kalender oder Outlook.</p>
+      <label>Im eigenen Kalender</label>
+      <p class="hint" id="kalHint">Einmal einrichten – danach stehen deine Schichten,
+        dein Urlaub und alles mit Frist in Google&nbsp;Kalender,
+        Apple&nbsp;Kalender oder Outlook.</p>
       <div id="kalAus" style="display:none">
         <input class="inp" id="kalLink" readonly
           style="font-size:var(--t-xs);margin-bottom:var(--s8)" />
@@ -5300,8 +5303,8 @@ html{font-size:var(--fs,100%)}
           <button type="button" class="btn btn-ghost btn-sm" data-ikon="kopieren" id="kalCopy">Link kopieren</button>
           <button type="button" class="btn btn-ghost btn-sm" id="kalWeg">Zurückziehen</button>
         </div>
-        <p class="hint" style="margin-top:var(--s8)">Wer diesen Link hat, sieht deine
-          Schichten – gib ihn nicht weiter. „Zurückziehen“ macht ihn sofort ungültig.
+        <p class="hint" style="margin-top:var(--s8)">Wer diesen Link hat, sieht deinen
+          Plan – gib ihn nicht weiter. „Zurückziehen“ macht ihn sofort ungültig.
           Wie oft dein Kalender neu nachsieht, entscheidet er selbst; bei Google
           dauert es oft ein paar Stunden.</p>
       </div>

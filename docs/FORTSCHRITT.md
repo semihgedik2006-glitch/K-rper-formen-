@@ -6819,3 +6819,102 @@ Reproduziert und belegt, nicht behauptet:
 Durchlauf lief lokal längst — ich habe nur nicht auf ihn gewartet. Ein
 Wächter, dessen Ergebnis man nicht abwartet, ist ein Wächter, den man
 sich sparen kann.
+
+---
+
+# 71 · Alles mit Frist gehört in den Kalender
+
+*„kannst du noch dafür sorgen das aufgaben und so auch im kalender
+eingetragen werden wenn diese ein fälligkeits datum haben"*
+
+Der Kalender aus Runde 70 trug nur Schichten, Urlaub und
+Krankmeldungen. Jetzt auch alles, was ein Datum hat, bis zu dem es
+fertig sein muss:
+
+* **Studio-Aufgaben** mit Frist
+* die **eigenen To-dos** aus dem Ich-Bereich
+* **Nachweise**, die ablaufen
+
+## Die eine Frage, die alles entscheidet
+
+**Welche Aufgabe ist meine?** Davon hängt ab, ob der Kalender nützt oder
+nach einer Woche ungelesen bleibt. Nimmt man alles mit, stehen in einem
+Kalender die offenen Aufgaben aller dreizehn Studios.
+
+Die Frage war schon **zweimal beantwortet**, und beide Male gleich:
+
+* `checkDueReminders()` in der App: *„Nur eigene oder nicht zugewiesene
+  Aufgaben melden"*
+* `dueTaskReminder` in den Functions: Zugewiesenes an die Person,
+  Nichtzugewiesenes ans Studio
+
+Eine dritte Antwort zu erfinden hätte geheißen, dass der Kalender etwas
+anderes für wichtig hält als die Erinnerung daneben. Also dieselbe
+Regel, wörtlich:
+
+* **zugewiesen → überall**, auch in einem Studio, in dem ich sonst nicht
+  stehe (wer aushilft, bekommt dort Aufgaben)
+* **nicht zugewiesen → nur in meinen Studios**
+
+## Drei Dinge, die man leicht falsch macht
+
+**Ganztägig, nicht um 23:59.** `due` steht als Zahl auf 23:59:59. Ein
+Termin zu dieser Uhrzeit stünde im Kalender *unter* dem Tag statt
+darüber — und träfe niemanden mehr, der ihn noch erledigen könnte.
+
+**`TRANSP:TRANSPARENT`.** Eine Frist belegt keine Zeit. Ohne diese Zeile
+gilt der ganze Tag als belegt; wer drei Fristen an einem Tag hat, wäre
+dreimal den ganzen Tag „beschäftigt".
+
+**Kein VTODO.** Der Standard hat für Aufgaben eine eigene Bauart, und
+sie wäre die richtige — aber **Google Kalender zeigt VTODO gar nicht
+an**. Ein Eintrag, den der häufigste Kalender stillschweigend
+verschluckt, ist schlechter als ein etwas unsauberer, den alle zeigen.
+
+## `erledigt()` statt `done`
+
+Eine **tägliche** Aufgabe ist nur *innerhalb ihres Zeitraums* erledigt.
+Ein blosses `t.done` hätte sie nach dem ersten Haken für immer aus dem
+Kalender genommen. Die Funktion dafür gab es server-seitig schon
+(`erledigt()`), also benutzt statt nachgebaut.
+
+Nachgewiesen mit einer Sonde: `erledigt(x)` durch `x.done` ersetzt →
+**2 rote Zeilen**. Grün heisst hier also etwas.
+
+## Ein Schalter, der „aus" hiess und es nicht war
+
+Beim Bauen aufgefallen, nicht gemeldet: `kalenderDaten` fragte **kein
+einziges Merkmal** ab. Eine Firma konnte den Schichtplan ausschalten und
+bekam ihn über den Abo-Link weiter geliefert. Kein Datenleck — es sind
+die eigenen Schichten —, aber der Schalter log.
+
+Jetzt hängen Schichten an `schicht`, Abwesenheiten an `abwesend`,
+Aufgaben an `todos`. Die eigenen To-dos **nicht**: die persönliche Liste
+hängt nicht am Studio-Schalter. Mit Gegenprobe, dass jeder Schalter nur
+trifft, was er heisst.
+
+## Ein Kommentar, den die Sonde widerlegt hat
+
+Ich hatte geschrieben, die naive UTC-Rechnung (`toISOString`) sei „im
+Winter falsch". **Stimmt nicht.** Die Sonde zeigte: bei 23:59 Ortszeit
+liefern beide denselben Tag (23:59 Berlin = 21:59/22:59 UTC).
+Auseinander gehen sie erst **kurz nach Mitternacht**, wo die naive
+Rechnung den Vortag nennt.
+
+Und weil `due` heute immer auf 23:59:59 gesetzt wird — beim Anlegen wie
+beim Verschieben —, wäre die naive Rechnung **derzeit sogar richtig**.
+`berlinDatum()` steht trotzdem da: sie ist nur richtig, *solange*
+niemand eine Frist anders setzt. Eine Frist, die einen Tag zu früh im
+Kalender steht, fällt niemandem als Fehler auf — man glaubt sie einfach.
+
+Kommentar und Prüfung sagen das jetzt so, statt eine Gefahr zu
+behaupten, die es nicht gibt.
+
+## Geprüft
+
+* `tests/rules/kalender.test.js` — von 23 auf **47 Prüfungen**
+* Drei Sonden, jede mit ihrem eigenen Rot:
+  * Studio-Grenze entfernt → 2 rot
+  * `erledigt()` → `done` → 2 rot
+  * `berlinDatum` → `toISOString` → 1 rot
+* ganze Regelsuite grün (785 Prüfungen) · volle Regression
