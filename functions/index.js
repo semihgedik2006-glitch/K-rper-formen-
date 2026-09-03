@@ -3264,6 +3264,31 @@ function kalTag(versatzTage) {
   return d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
 }
 
+/* Aus einem Zeitstempel den TAG machen — in Berliner Zeit, nicht in UTC.
+
+   EHRLICH GESAGT: heute schriebe auch die naive Rechnung dasselbe.
+   `due` wird immer auf 23:59:59 Ortszeit gesetzt (beim Anlegen wie beim
+   Verschieben), und 23:59 Ortszeit ist 21:59 oder 22:59 UTC — noch
+   derselbe Tag. Auseinander gehen die beiden erst zwischen Mitternacht
+   und 01:00 bzw. 02:00 Ortszeit; dort waere `toISOString()` der Vortag.
+
+   Das hier steht trotzdem so, weil die naive Rechnung nur richtig ist,
+   SOLANGE niemand eine Frist anders setzt. Eine Frist, die einen Tag zu
+   frueh im Kalender steht, faellt niemandem als Fehler auf — man glaubt
+   sie einfach und ist einen Tag zu frueh fertig oder zu spaet dran.
+   Eine Zeile, die diese Annahme gar nicht erst braucht, kostet nichts. */
+function berlinDatum(ms) {
+  return new Date(ms).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+}
+
+/* Ganztaegig heisst im Standard: DTEND ist der Tag DANACH. Stand bisher
+   zweimal ausgeschrieben in den Abwesenheiten; jetzt einmal hier, weil
+   die Fristen dieselbe Rechnung brauchen. */
+function tagDanach(tag) {
+  const d = new Date(String(tag) + 'T12:00:00Z');
+  return new Date(d.getTime() + 86400000).toISOString().slice(0, 10);
+}
+
 /* Vergleich ohne Zeitverrat. Bei 32 zufaelligen Bytes ist der Unterschied
    theoretisch, aber er kostet nichts. */
 function tokenGleich(a, b) {
@@ -3273,9 +3298,20 @@ function tokenGleich(a, b) {
   return require('crypto').timingSafeEqual(A, B);
 }
 
-async function kalenderDaten(uid, firma, studioKeys) {
+async function kalenderDaten(uid, firma, profil) {
   const von = kalTag(-KAL_TAGE_ZURUECK), bis = kalTag(KAL_TAGE_VORAUS);
-  const schichten = [], abwesend = [];
+  const p = profil || {};
+  const studioKeys = p.studioKeys || [];
+  const schichten = [], abwesend = [], fristen = [];
+
+  /* Was abgeschaltet ist, steht auch nicht im Kalender.
+     Bis hierher fehlte das: eine Firma konnte den Schichtplan
+     ausschalten und bekam ihn ueber den Abo-Link weiter geliefert. Kein
+     Datenleck — es sind die eigenen Schichten —, aber der Schalter hiess
+     "aus" und war es nicht. */
+  const magSchicht = await featureAn(firma, 'schicht');
+  const magAbwesend = await featureAn(firma, 'abwesend');
+  const magTodos = await featureAn(firma, 'todos');
   /* Ueber ALLE Studios, nicht nur die eigenen: wer einmal aushilft,
      bekommt dort eine Schicht, ohne dem Studio zugeordnet zu sein.
      Nach uid gefiltert wird im Code — eine Abfrage mit Bereich UND
@@ -3292,7 +3328,7 @@ async function kalenderDaten(uid, firma, studioKeys) {
        gelesen, aber nirgends gefuellt. */
     let woName = k;
     try { woName = await studioName(firma, k); } catch (e) { /* dann die Kennung */ }
-    try {
+    if (magSchicht) try {
       const s = await W(firma).collection('studios').doc(k).collection('shifts')
         .where('date', '>=', von).where('date', '<=', bis).get();
       s.forEach(d => {
@@ -3300,7 +3336,7 @@ async function kalenderDaten(uid, firma, studioKeys) {
         if (x.uid === uid) schichten.push(Object.assign({ id: d.id, sk: k, studioName: woName }, x));
       });
     } catch (e) { /* ein Studio ohne Schichten ist kein Fehler */ }
-    try {
+    if (magAbwesend) try {
       const a = await W(firma).collection('studios').doc(k).collection('absences')
         .where('from', '<=', bis).get();
       a.forEach(d => {
@@ -3315,8 +3351,73 @@ async function kalenderDaten(uid, firma, studioKeys) {
         abwesend.push(Object.assign({ id: d.id, sk: k }, x));
       });
     } catch (e) { /* dito */ }
+    /* ── Aufgaben mit Frist ──
+       WELCHE AUFGABE IST MEINE? Die Frage ist in der App schon zweimal
+       beantwortet, und beide Male gleich: `checkDueReminders()` sagt
+       "nur eigene oder nicht zugewiesene", `dueTaskReminder` schickt
+       Zugewiesenes an die Person und Nichtzugewiesenes ans Studio. Hier
+       eine dritte Antwort zu erfinden hiesse, dass der Kalender etwas
+       anderes fuer wichtig haelt als die Erinnerung daneben.
+
+       Zugewiesenes zaehlt also UEBERALL — auch in einem Studio, in dem
+       ich sonst nicht stehe. Nicht zugewiesenes nur in MEINEN Studios;
+       sonst stuenden in einem Kalender die offenen Aufgaben aller
+       dreizehn Studios, und der Kalender waere nach einer Woche
+       ungelesen. */
+    if (magTodos) try {
+      const t = await W(firma).collection('studios').doc(k).collection('todos').get();
+      t.forEach(d => {
+        const x = d.data() || {};
+        if (!x.due) return;
+        if (x.assignedTo ? x.assignedTo !== uid : !inStudio(p, k)) return;
+        /* erledigt() und nicht `x.done`: eine taegliche Aufgabe ist nur
+           INNERHALB ihres Zeitraums erledigt. Ein blosses done haette
+           sie nach dem ersten Haken fuer immer aus dem Kalender
+           genommen. */
+        if (erledigt(x)) return;
+        const tag = berlinDatum(x.due);
+        if (tag < von || tag > bis) return;
+        fristen.push({ art: 'aufgabe', id: k + '-' + d.id, tag: tag,
+          titel: x.title || 'Aufgabe', desc: x.desc || '', wo: woName });
+      });
+    } catch (e) { /* ein Studio ohne Aufgaben ist kein Fehler */ }
   }
-  return { schichten, abwesend };
+
+  /* ── Die eigenen To-dos ──
+     Stehen unter privat/<uid>/aufgaben und gehoeren niemandem sonst.
+     Kein Merkmalsschalter: die Liste ist die persoenliche, nicht die
+     des Studios. */
+  try {
+    const e = await W(firma).collection('privat').doc(uid)
+      .collection('aufgaben').get();
+    e.forEach(d => {
+      const x = d.data() || {};
+      if (x.erledigt || !x.frist) return;
+      const tag = String(x.frist).slice(0, 10);
+      if (tag < von || tag > bis) return;
+      fristen.push({ art: 'todo', id: d.id, tag: tag,
+        titel: x.text || 'To-do', desc: x.notiz || '' });
+    });
+  } catch (e) { /* wer keine eigenen To-dos hat, hat die Sammlung nicht */ }
+
+  /* ── Nachweise, die ablaufen ──
+     Ein Erste-Hilfe-Schein mit Ablaufdatum ist eine Frist wie jede
+     andere, und certExpiry erinnert ohnehin schon daran. Nur die
+     eigenen — die Nachweise der Kollegen gehen niemanden etwas an. */
+  try {
+    const c = await W(firma).collection('certificates')
+      .where('uid', '==', uid).get();
+    c.forEach(d => {
+      const x = d.data() || {};
+      if (!x.bis) return;
+      const tag = String(x.bis).slice(0, 10);
+      if (tag < von || tag > bis) return;
+      fristen.push({ art: 'nachweis', id: d.id, tag: tag,
+        titel: x.bez || x.art || 'Nachweis', desc: '' });
+    });
+  } catch (e) { /* dito */ }
+
+  return { schichten, abwesend, fristen };
 }
 
 exports.kalender = region.https.onRequest(async (req, res) => {
@@ -3341,13 +3442,13 @@ exports.kalender = region.https.onRequest(async (req, res) => {
     const gespeichert = ((geheim.exists ? geheim.data() : {}) || {}).kalenderToken;
     if (!tokenGleich(gespeichert, tok)) return abweisen();
 
-    const { schichten, abwesend } = await kalenderDaten(uid, firma, p.studioKeys || []);
+    const { schichten, abwesend, fristen } = await kalenderDaten(uid, firma, p);
     const jetzt = icsZeit(new Date());
     const z = [
       'BEGIN:VCALENDAR', 'VERSION:2.0',
       'PRODID:-//StudioChat//Schichtplan//DE',
       'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
-      'X-WR-CALNAME:' + icsText('Schichten · ' + (p.name || 'StudioChat')),
+      'X-WR-CALNAME:' + icsText('StudioChat · ' + (p.name || 'Schichten')),
       'X-WR-TIMEZONE:Europe/Berlin',
     ];
     for (const s of schichten) {
@@ -3371,15 +3472,44 @@ exports.kalender = region.https.onRequest(async (req, res) => {
     for (const a of abwesend) {
       /* Ganztaegig. DTEND ist bei VALUE=DATE der Tag DANACH — ohne das
          eine Tag Zuschlag fehlt der letzte Urlaubstag im Kalender. */
-      const bisPlus = new Date(new Date(String(a.to || a.from) + 'T12:00:00Z').getTime() + 86400000);
       z.push('BEGIN:VEVENT',
         'UID:abw-' + icsText(a.id) + '@studiochat',
         'DTSTAMP:' + jetzt,
         'DTSTART;VALUE=DATE:' + icsDatum(a.from),
-        'DTEND;VALUE=DATE:' + icsDatum(bisPlus.toISOString().slice(0, 10)),
+        'DTEND;VALUE=DATE:' + icsDatum(tagDanach(a.to || a.from)),
         'SUMMARY:' + icsText(a.type === 'krank' ? 'Krank' : 'Urlaub'),
         'TRANSP:TRANSPARENT',
         'END:VEVENT');
+    }
+    /* ── Fristen ──
+       GANZTAEGIG UND NICHT UM 23:59. Eine Aufgabe ist "bis Freitag"
+       faellig, nicht "am Freitag um 23:59 Uhr" — ein Termin zu dieser
+       Uhrzeit stuende im Kalender unter dem Tag statt darueber und
+       traefe niemanden mehr, der ihn noch erledigen koennte.
+
+       UND KEIN VTODO. Der Standard haette dafuer eine eigene Bauart,
+       und sie waere die richtige — aber Google Kalender zeigt VTODO
+       gar nicht an. Ein Eintrag, den der haeufigste Kalender
+       stillschweigend verschluckt, ist schlechter als ein etwas
+       unsauberer, den alle zeigen. */
+    for (const f of fristen) {
+      const wort = f.art === 'aufgabe' ? 'Aufgabe · '
+        : f.art === 'todo' ? 'To-do · '
+        : 'Nachweis läuft ab · ';
+      z.push('BEGIN:VEVENT',
+        'UID:' + f.art + '-' + icsText(f.id) + '@studiochat',
+        'DTSTAMP:' + jetzt,
+        'DTSTART;VALUE=DATE:' + icsDatum(f.tag),
+        'DTEND;VALUE=DATE:' + icsDatum(tagDanach(f.tag)),
+        'SUMMARY:' + icsText(wort + f.titel),
+        /* Eine Frist belegt keine Zeit. Ohne TRANSPARENT sieht der
+           ganze Tag fuer jeden, der die Verfuegbarkeit abfragt, belegt
+           aus — und wer drei Fristen an einem Tag hat, waere dreimal
+           den ganzen Tag "beschaeftigt". */
+        'TRANSP:TRANSPARENT');
+      const text = [f.desc, f.wo ? 'Studio: ' + f.wo : ''].filter(Boolean).join('\n');
+      if (text) z.push('DESCRIPTION:' + icsText(text));
+      z.push('END:VEVENT');
     }
     z.push('END:VCALENDAR');
 
@@ -3394,4 +3524,5 @@ exports.kalender = region.https.onRequest(async (req, res) => {
 
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
-                     berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich };
+                     berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
+                     berlinDatum, tagDanach, erledigt };
