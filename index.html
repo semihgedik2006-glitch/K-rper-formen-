@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-HheaA5rgBw0lwyFRMGQlQB4fOpOkcJVRdRQbbO1UCh0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-S44sK6t6jYw77ulhVmmv9YgUmZ35j+w2odiN+LTEMvc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2163,10 +2163,36 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .ich-zahl-klein{font-size:var(--t-2xs);color:var(--text-3);
   letter-spacing:var(--ls-l);text-transform:uppercase}
 
+/* min-height an der ZEILE und nicht nur am Knopf: eine einzeilige Zeile
+   war 41,8px hoch. Als Knopf waere das ein zu kleines Fingerziel, und
+   nur den Knopf zu vergroessern haette genau eine Zeile der Liste zwei
+   Pixel hoeher gemacht als ihre Nachbarn. So sind alle gleich — und die
+   anklickbare ist gross genug. */
 .ich-zeile{display:flex;align-items:baseline;gap:var(--s10);padding:var(--s10) 0;
-  flex-wrap:wrap;border-top:1px solid var(--line);font-size:var(--t-sm)}
+  flex-wrap:wrap;border-top:1px solid var(--line);font-size:var(--t-sm);
+  min-height:44px;box-sizing:border-box}
 .ich-zeile:first-child{border-top:none}
 .ich-zeile.heute{font-weight:600}
+/* Dieselbe Zeile, nur als Knopf. Ein <button> bringt eigene Schrift,
+   einen Rahmen und eine Mitte-Ausrichtung mit — ohne diesen Block saehe
+   die eine klickbare Zeile anders aus als die zwanzig daneben, und
+   genau das faellt in einer Liste sofort auf. */
+/* NICHT `font:inherit`. Die Kurzform setzt AUCH die Schriftgroesse, und
+   zwar auf die des Elternteils (16px) — sie schlug damit das
+   font-size:var(--t-sm) aus .ich-zeile, weil element+klasse staerker
+   wiegt als klasse allein. Gemessen: 16px statt 13.76px, die Zeile war
+   um zwei Punkt groesser als die zwanzig daneben. Deshalb nur die drei
+   Eigenschaften, die der Browser von sich aus anders setzt — die
+   Groesse regelt .ich-zeile weiter selbst.
+   `text-align:inherit` statt `left` aus demselben Grund: es soll
+   dasselbe sein, nicht dasselbe bedeuten. */
+button.ich-zeile{width:100%;text-align:inherit;background:none;border:none;
+  border-top:1px solid var(--line);color:inherit;
+  font-family:inherit;font-weight:inherit;line-height:inherit;
+  padding:var(--s10) 0;cursor:pointer}
+button.ich-zeile:first-child{border-top:none}
+button.ich-zeile:hover .ich-was{color:var(--accent-d)}
+button.ich-zeile:active{opacity:.7}
 .ich-tag{flex:0 0 auto;min-width:88px;color:var(--text-2)}
 .ich-zeile.heute .ich-tag{color:var(--accent)}
 .ich-was{flex:1;min-width:0}
@@ -3823,8 +3849,6 @@ html{font-size:var(--fs,100%)}
           <div class="pm-tabs" id="ichTabs" style="margin:0 0 14px">
             <button class="pm-tab on" data-ichtab="woche">Woche</button>
             <button class="pm-tab" data-ichtab="kalender">Kalender</button>
-            <button class="pm-tab" data-ichtab="todo">To-do</button>
-            <button class="pm-tab" data-ichtab="notizen">Notizen</button>
             <button class="pm-tab" data-ichtab="daten">Ich</button>
           </div>
 
@@ -3920,11 +3944,73 @@ html{font-size:var(--fs,100%)}
             </div>
           </div>
 
+
+          <!-- ── ICH: Nachweise, Stammdaten, eigene Zahlen ── -->
+          <div id="ichPaneDaten" style="display:none">
+            <div class="ich-blatt">
+              <div class="ich-kopf"><h3>Meine Daten</h3>
+                <button class="mini-link" id="ichProfilBtn">Bearbeiten</button></div>
+              <div id="ichStamm"></div>
+            </div>
+            <div class="ich-blatt">
+              <div class="ich-kopf">
+                <h3>Meine Nachweise</h3>
+                <span class="ich-zahl-klein" id="ichCertZahl"></span>
+              </div>
+              <div id="ichCerts"></div>
+              <button class="mini-link ich-cert-neu" id="ichCertNeu">Nachweis eintragen</button>
+            </div>
+            <div class="ich-blatt" id="ichZahlenKarte">
+              <div class="ich-kopf">
+                <h3>Meine Zahlen</h3>
+                <span class="ich-zahl-klein">90 Tage</span>
+              </div>
+              <div id="ichZahlen"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ══ PERSÖNLICH ══════════════════════════════════════════════
+           Der zweite Schreibtisch. „Mein Bereich" beantwortet die Frage
+           WAS IST HEUTE — hier steht, was einem selbst gehoert und
+           gepflegt werden will.
+
+           WARUM ZWEI ANSICHTEN STATT EINER LANGEN REITERREIHE:
+           Das sind zwei verschiedene Taetigkeiten. Morgens will man
+           wissen, was ansteht (Uebersicht). Sonntagabend raeumt man auf,
+           traegt ein, denkt nach (hier). Sieben Reiter nebeneinander
+           haetten beides in eine Reihe gezwungen und keins von beidem
+           gut gemacht.
+
+           WARUM KEIN SIEBTER KNOPF IN DER UNTEREN LEISTE:
+           Nachgemessen — sieben passten (Chef 7/7 im Bild auf 320px),
+           aber es waere der siebte gewesen. „Betrieb" macht es seit
+           jeher anders und haelt sechs Ansichten hinter EINEM Knopf.
+           Derselbe Weg: eine Gruppe, zwei Ansichten, oben umgeschaltet.
+
+           ANGEZEIGT DRUEBEN, GEPFLEGT HIER. In der Wochenliste stehen
+           die eigenen To-dos weiter zwischen Dienst und Urlaub; ein
+           Klick darauf fuehrt hierher. Anlegen und Aendern passiert an
+           genau einem Ort.
+
+           NOCH NICHT DA: abhaken direkt aus der Wochenliste. Das
+           gehoert zur naechsten Runde („Tagesbrille"), und bis dahin
+           steht es nicht hier als Behauptung. -->
+      <section class="view" id="view-persoenlich">
+        <div class="view-head shrink"><h2>Persönlich</h2>
+          <p id="persSub">Was nur dich betrifft.</p></div>
+        <div class="scroll-area" data-shrinks="1">
+          <div class="pm-tabs" id="persTabs" style="margin:0 0 14px">
+            <button class="pm-tab on" data-perstab="todo">To-do</button>
+            <button class="pm-tab" data-perstab="notizen">Notizen</button>
+          </div>
           <!-- ── TO-DO ──
                Eigene Punkte, unabhaengig von den Studio-Aufgaben. Die
                kommen von der Leitung und stehen unter Betrieb; hier steht,
                was man sich selbst vornimmt. -->
-          <div id="ichPaneTodo" style="display:none">
+          <div id="ichPaneTodo">
             <div class="ich-blatt">
               <div class="ich-neu-zeile">
                 <input class="inp" id="ichTodoNeu" maxlength="140"
@@ -3975,30 +4061,6 @@ html{font-size:var(--fs,100%)}
               <span class="ich-zahl-klein" id="ichNotizZahl"></span>
             </div>
             <div id="ichNotizListe"></div>
-          </div>
-
-          <!-- ── ICH: Nachweise, Stammdaten, eigene Zahlen ── -->
-          <div id="ichPaneDaten" style="display:none">
-            <div class="ich-blatt">
-              <div class="ich-kopf"><h3>Meine Daten</h3>
-                <button class="mini-link" id="ichProfilBtn">Bearbeiten</button></div>
-              <div id="ichStamm"></div>
-            </div>
-            <div class="ich-blatt">
-              <div class="ich-kopf">
-                <h3>Meine Nachweise</h3>
-                <span class="ich-zahl-klein" id="ichCertZahl"></span>
-              </div>
-              <div id="ichCerts"></div>
-              <button class="mini-link ich-cert-neu" id="ichCertNeu">Nachweis eintragen</button>
-            </div>
-            <div class="ich-blatt" id="ichZahlenKarte">
-              <div class="ich-kopf">
-                <h3>Meine Zahlen</h3>
-                <span class="ich-zahl-klein">90 Tage</span>
-              </div>
-              <div id="ichZahlen"></div>
-            </div>
           </div>
         </div>
       </section>
@@ -10138,7 +10200,12 @@ var NAVGROUPS = [
      Leiste. Etwas, das man wegwischen muss, um es zu finden, ist fuer
      einen neuen Bereich dasselbe wie nicht vorhanden. Chat rutscht
      dafuer auf drei — noch im Bild, auch auf 320 Pixel. */
-  {id:'g-ich', label:'Ich', views:['ich'],
+  /* Zwei Ansichten hinter einem Knopf, wie „Betrieb" es mit sechsen
+     macht. Ein siebter Eintrag in der unteren Leiste haette gepasst
+     (nachgemessen: Chef 7/7 im Bild auf 320px), waere aber der siebte
+     gewesen — und die Frage „was betrifft mich" braucht keine zwei
+     Knoepfe, sondern zwei Reiter. */
+  {id:'g-ich', label:'Ich', views:['ich','persoenlich'],
    icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
   {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
@@ -10151,7 +10218,8 @@ var NAVGROUPS = [
 ];
 var NAV = [
   {id:'home',  label:'Start',    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
-  {id:'ich',   label:'Mein Bereich', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
+  {id:'ich',   label:'Übersicht', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
+  {id:'persoenlich', label:'Persönlich', icon:'<path d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 5.65-7 10-7 10z"/>'},
   {id:'chat',  label:'Chat',     icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
   {id:'todos', label:'Aufgaben', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
@@ -10472,6 +10540,7 @@ function showView(id, fromKey, ausVerlauf){
     });
   }
   if(id==='ich') ichOeffnen();
+  if(id==='persoenlich') persoenlichOeffnen();
   if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); }
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
@@ -13418,10 +13487,14 @@ function renderMyShifts(){
    jeder Zeile, woher sie kommt. Ohne das steht „Zahnarzt" neben „Dienst
    Hürth" und niemand weiss mehr, was die Verwaltung sieht und was nicht.
    ══════════════════════════════════════════════════════════════════════ */
+/* Zwei Ansichten, zwei Reiterreihen. Die Uebersicht ZEIGT das Eigene
+   (in der Wochenliste, zum Abhaken), gepflegt wird es unter
+   „Persoenlich". Deshalb steht todo/notizen nicht mehr hier. */
 var ICHPANES = { woche:'ichPaneWoche', kalender:'ichPaneKalender',
-                 todo:'ichPaneTodo', notizen:'ichPaneNotizen',
                  daten:'ichPaneDaten' };
+var PERSPANES = { todo:'ichPaneTodo', notizen:'ichPaneNotizen' };
 var _ichTab='woche';
+var _persTab='todo';
 var _ichMonat=null;              // erster Tag des gezeigten Monats
 var _ichTagGewaehlt=null;        // 'YYYY-MM-DD' oder null
 var _ichTermine=[], _ichNotizen=[], _ichTodos=[];
@@ -13544,25 +13617,32 @@ function kalenderWeg(btn){
    Nur einmal einhaengen. Beim Abmelden raeumt ichAufraeumen() auf; sonst
    liefe der Horcher des vorigen Kontos weiter, und der naechste Nutzer
    auf demselben Geraet saehe fremde Notizen aufblitzen. */
+/* Beide Ansichten der Gruppe zaehlen. Stand hier nur 'ich', blieben
+   Aenderungen auf dem zweiten Schreibtisch stehen: wer ein To-do auf
+   einem anderen Geraet abhakt, saehe es hier weiter offen — und wuerde
+   es ein zweites Mal erledigen. */
+function imMeinBereich(){
+  return currentView==='ich' || currentView==='persoenlich';
+}
 function ichHorchen(){
   var ref=privatRef(); if(!ref) return;
   if(!_ichTerminUnsub){
     _ichTerminUnsub=ref.collection('termine').onSnapshot(function(sn){
       _ichTermine=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
-      if(currentView==='ich'){ renderIchWoche(); renderIchKalender(); }
+      if(imMeinBereich()){ renderIchWoche(); renderIchKalender(); }
     }, function(e){ console.warn('Termine:', e && e.code); });
   }
   if(!_ichTodoUnsub){
     _ichTodoUnsub=ref.collection('aufgaben').onSnapshot(function(sn){
       _ichTodos=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
-      if(currentView==='ich'){ renderIchTodos(); renderIchWoche(); renderIchKalender(); }
+      if(imMeinBereich()){ renderIchTodos(); renderIchWoche(); renderIchKalender(); }
     }, function(e){ console.warn('Aufgaben:', e && e.code); });
   }
   if(!_ichNotizUnsub){
     _ichNotizUnsub=ref.collection('notizen').orderBy('ts','desc').limit(200)
       .onSnapshot(function(sn){
         _ichNotizen=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
-        if(currentView==='ich') renderIchNotizen();
+        if(imMeinBereich()) renderIchNotizen();
       }, function(e){ console.warn('Notizen:', e && e.code); });
   }
 }
@@ -13732,15 +13812,22 @@ function ichEintraegeFuer(key){
 var ICH_QUELLE={ dienst:'Dienst', frei:'Frei', privat:'nur du',
                  todo:'To-do', aufgabe:'Aufgabe' };
 
+/* Eigene To-dos fuehren hinueber auf den zweiten Schreibtisch — dort
+   werden sie gepflegt. Nur sie: ein Dienst gehoert der Planung, und
+   eigene Termine werden im Kalender daneben bearbeitet, nicht drueben.
+   Ein Knopf und kein div, damit die Zeile auch mit der Tastatur
+   erreichbar ist; ohne das waere der einzige Weg dorthin die Maus. */
 function ichZeileHTML(x, tagText, heute){
-  return '<div class="ich-zeile'+(heute?' heute':'')+'">'+
+  var hin = x.art==='todo';
+  return '<'+(hin?'button type="button" data-zutodo="1"':'div')+
+    ' class="ich-zeile'+(heute?' heute':'')+(hin?' klickbar':'')+'">'+
     (tagText!==null ? '<span class="ich-tag">'+esc(tagText)+'</span>' : '')+
     '<span class="ich-was">'+esc(x.text)+'</span>'+
     (x.zusatz?'<span class="ich-zeit">'+esc(x.zusatz)+'</span>':'')+
     '<span class="ich-quelle'+(x.art==='privat'||x.art==='todo'?' privat':'')+'">'+
       esc(ICH_QUELLE[x.art]||'')+'</span>'+
     (x.dazu?'<div class="ich-dazu">'+esc(x.dazu)+'</div>':'')+
-    '</div>';
+    '</'+(hin?'button':'div')+'>';
 }
 
 function renderIchWoche(){
@@ -13759,7 +13846,10 @@ function renderIchWoche(){
   }).join('');
   if(zahl) zahl.textContent = n ? (n===1?'1 Eintrag':n+' Einträge') : '';
   box.innerHTML = html || emptyHTML('Diese Woche ist nichts eingetragen',
-    'Über den Kalender trägst du dir selbst etwas ein.', 'kalender');
+    'Termine trägst du im Kalender ein, To-dos unter „Persönlich".', 'kalender');
+  box.querySelectorAll('[data-zutodo]').forEach(function(b){
+    b.addEventListener('click', function(){ _persTab='todo'; showView('persoenlich'); });
+  });
 }
 
 /* ── Raster ──
@@ -14415,6 +14505,29 @@ function ichOeffnen(){
   ichReiterZeigen(_ichTab);
 }
 
+/* ── Der zweite Schreibtisch ──
+   ichHorchen() auch hier, und nicht nur in der Uebersicht: wer die App
+   oeffnet und direkt auf „Persoenlich" landet (letzte Ansicht gemerkt),
+   saehe sonst eine leere Liste und glaubte, seine To-dos seien weg. */
+function persoenlichOeffnen(){
+  ichHorchen();
+  persReiterZeigen(_persTab);
+}
+
+function persReiterZeigen(t){
+  _persTab=t;
+  document.querySelectorAll('[data-perstab]').forEach(function(x){
+    x.classList.toggle('on', x.getAttribute('data-perstab')===t);
+  });
+  Object.keys(PERSPANES).forEach(function(k){
+    var el=$(PERSPANES[k]); if(el) el.style.display = (k===t) ? '' : 'none';
+  });
+  ichBewegen($(PERSPANES[t]), 'ich-pane-ein');
+  if(t==='todo'){ renderIchTodos(); ichZiehenBinden(); }
+  if(t==='notizen') renderIchNotizen();
+  foldAufbauen();
+}
+
 /* Eine laufende Animation noch einmal starten heisst: Klasse weg,
    Messung erzwingen, Klasse wieder dran. Ohne die Messung dazwischen
    fasst der Browser beides zu nichts zusammen, und der zweite Klick auf
@@ -14464,8 +14577,6 @@ function ichReiterZeigen(t){
     ichZeitraumLaden().then(renderIchKalender);
     renderIchKalender();
   }
-  if(t==='todo'){ renderIchTodos(); ichZiehenBinden(); }
-  if(t==='notizen') renderIchNotizen();
   if(t==='daten') renderIchDaten();
   foldAufbauen();
 }
@@ -20772,6 +20883,12 @@ function bindActions(){
   document.querySelectorAll('[data-ichtab]').forEach(function(b){
     b.addEventListener('click',function(){
       ichReiterZeigen(b.getAttribute('data-ichtab'));
+      tick(8);
+    });
+  });
+  document.querySelectorAll('[data-perstab]').forEach(function(b){
+    b.addEventListener('click',function(){
+      persReiterZeigen(b.getAttribute('data-perstab'));
       tick(8);
     });
   });

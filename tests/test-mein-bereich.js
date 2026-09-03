@@ -5,6 +5,17 @@
    Abwesenheiten, Studio-Aufgaben, Nachweise, Probetrainings) und nur
    meins (Termine, eigene To-dos, Notizen unter privat/<uid>/).
 
+   SEIT DEM ZWEITEN SCHREIBTISCH liegen die fuenf Reiter in ZWEI
+   Ansichten derselben Gruppe: „Uebersicht" zeigt (Woche, Kalender,
+   eigene Daten), „Persoenlich" pflegt (To-do, Notizen). Deshalb kommt
+   ein vierter teurer Fehler dazu:
+
+     4. Dass der Weg zwischen beiden haelt. „Angezeigt drueben,
+        gepflegt hier" ist nur wahr, solange die eigene Aufgabe in der
+        Wochenliste stehen BLEIBT und der Klick darauf ankommt. Die
+        halbe Umsetzung — Ansicht da, Weg dorthin kaputt — saehe im
+        Durchlauf sonst genauso aus wie die ganze.
+
    Was dieser Durchlauf wirklich pruefen muss, ist nicht „der Reiter ist
    da". Es sind drei Dinge, bei denen ein Fehler teuer waere:
 
@@ -42,6 +53,34 @@ function pruefe(bedingung, meldung) {
   if (!bedingung) errs.push(meldung);
 }
 
+/* ── Wo liegt welcher Reiter? ──
+   Seit dem zweiten Schreibtisch liegen die fuenf Reiter in ZWEI
+   Ansichten derselben Gruppe: die Uebersicht zeigt, „Persoenlich"
+   pflegt. Der Durchlauf klickte vorher stur auf [data-ichtab] und fiel
+   deshalb mit „Cannot read properties of null" um — richtig so, das ist
+   genau die Sorte Fehler, die er finden soll.
+
+   Diese Zuordnung steht an EINER Stelle. Zieht spaeter ein Reiter um,
+   ist es eine Zeile hier und keine sieben Fundstellen. */
+const WO = { woche: 'ich', kalender: 'ich', daten: 'ich',
+             todo: 'persoenlich', notizen: 'persoenlich' };
+const ALLE_REITER = Object.keys(WO);
+
+async function reiterOeffnen(p, tab) {
+  return p.evaluate(async (x) => {
+    const ansicht = { woche: 'ich', kalender: 'ich', daten: 'ich',
+                      todo: 'persoenlich', notizen: 'persoenlich' }[x];
+    const sub = document.querySelector('[data-subview="' + ansicht + '"]');
+    if (sub) { sub.click(); await new Promise(r => setTimeout(r, 400)); }
+    const attr = ansicht === 'ich' ? 'data-ichtab' : 'data-perstab';
+    const b = document.querySelector('[' + attr + '="' + x + '"]');
+    if (!b) return false;
+    b.click();
+    await new Promise(r => setTimeout(r, 450));
+    return true;
+  }, tab);
+}
+
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   const p = await b.newPage({ viewport: { width: 390, height: 844 } });
@@ -75,9 +114,19 @@ function pruefe(bedingung, meldung) {
     const tag = d.getFullYear() + '-' +
       String(d.getMonth() + 1).padStart(2, '0') + '-15';
     window.__PRIVAT_TAG = tag;
+    /* Und ein eigenes To-do mit Frist HEUTE: nur dann steht in der
+       Wochenliste eine Zeile der Art „todo", und nur die fuehrt auf den
+       zweiten Schreibtisch. Ohne diesen Eintrag pruefte der Abschnitt
+       zur Weiterleitung eine Liste ohne den einen Fall, um den es geht. */
+    const heute = d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+    window.__HEUTE_TAG = heute;
     window.__privat = { termine: [{
       id: 't1', datum: tag, titel: 'Zahnarzt', zeit: '09:30', bis: '10:15',
       ort: 'Köln', notiz: 'Karte mitnehmen', kategorie: 'wichtig', ts: 1
+    }], aufgaben: [{
+      id: 'a1', text: 'Steuerkram', frist: heute, erledigt: false, ts: 1
     }] };
   });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -96,6 +145,12 @@ function pruefe(bedingung, meldung) {
       sichtbar: !!(v && v.classList.contains('show')),
       reiter: [...document.querySelectorAll('[data-ichtab]')]
         .map(x => x.getAttribute('data-ichtab')),
+      /* Die Gruppe hat seit dem zweiten Schreibtisch ZWEI Ansichten.
+         Ohne diese Zeile koennte „Persoenlich" aus der Unternavigation
+         verschwinden und der Durchlauf bliebe gruen — erreichbar waere
+         der Bereich dann nur noch ueber eine To-do-Zeile. */
+      unter: [...document.querySelectorAll('#subnav [data-subview]')]
+        .map(x => x.getAttribute('data-subview')),
       // Der Reiter muss VOR dem Chat stehen, sonst war die Entscheidung
       // aus dem Kommentar in NAVGROUPS nur Absicht.
       stelle: [...document.querySelectorAll('.mobnav [data-group]')]
@@ -112,15 +167,31 @@ function pruefe(bedingung, meldung) {
     pruefe(ankunft.stelle === 1,
       'STELLE: „Mein Bereich" steht an Position ' + ankunft.stelle +
       ' statt an zweiter — bei sechs Einträgen rutscht er sonst aus dem Bild');
-    ['woche', 'kalender', 'todo', 'notizen', 'daten'].forEach(t => {
+    // In der Uebersicht liegen jetzt drei Reiter, nicht mehr fuenf
+    ['woche', 'kalender', 'daten'].forEach(t => {
       pruefe(ankunft.reiter.indexOf(t) >= 0, 'FEHLT: der Reiter „' + t + '"');
+    });
+    /* Und zwar GENAU diese drei. Ohne die Zahl waere „todo steht noch
+       zusaetzlich drin" gruen — also der halbe Umzug. */
+    pruefe(ankunft.reiter.length === 3,
+      'ZU VIELE REITER in der Übersicht: ' + ankunft.reiter.join(', ') +
+      ' — To-do und Notizen gehören auf den zweiten Schreibtisch');
+    console.log('Unternavigation:', ankunft.unter.join(', '));
+    ['ich', 'persoenlich'].forEach(v => {
+      pruefe(ankunft.unter.indexOf(v) >= 0,
+        'FEHLT in der Unternavigation: „' + v + '"');
     });
   }
 
   // ══ 2. Jeder Reiter zeigt etwas — keiner bleibt leer ══
   for (const t of ['woche', 'kalender', 'todo', 'notizen', 'daten']) {
     const r = await p.evaluate(async (tab) => {
-      const b = document.querySelector('[data-ichtab="' + tab + '"]');
+      const ansicht = { woche: 'ich', kalender: 'ich', daten: 'ich',
+                        todo: 'persoenlich', notizen: 'persoenlich' }[tab];
+      const sub = document.querySelector('[data-subview="' + ansicht + '"]');
+      if (sub) { sub.click(); await new Promise(r => setTimeout(r, 400)); }
+      const attr = ansicht === 'ich' ? 'data-ichtab' : 'data-perstab';
+      const b = document.querySelector('[' + attr + '="' + tab + '"]');
       if (!b) return { fehlt: true };
       b.click();
       await new Promise(r => setTimeout(r, 450));
@@ -129,26 +200,107 @@ function pruefe(bedingung, meldung) {
                      daten: 'ichPaneDaten' }[tab];
       const el = document.getElementById(pane);
       if (!el) return { keineFlaeche: true };
-      const sichtbar = getComputedStyle(el).display !== 'none';
+      /* getClientRects() statt display: seit dem zweiten Schreibtisch
+         liegen die Flaechen in ZWEI <section class="view">. Zwei duerfen
+         gleichzeitig display haben, solange nur eine Section .show
+         traegt — nach display allein waere der Durchlauf rot, ohne dass
+         irgendwo etwas doppelt zu sehen waere. Was zaehlt, ist was im
+         Bild steht, und das beantwortet getClientRects(). */
+      const imBild = (x) => !!x && x.getClientRects().length > 0;
+      const sichtbar = imBild(el);
       const text = (el.innerText || '').trim();
       // Sind die ANDEREN Flaechen auch wirklich weg?
       const andere = ['ichPaneWoche', 'ichPaneKalender', 'ichPaneTodo',
                       'ichPaneNotizen', 'ichPaneDaten']
         .filter(id => id !== pane)
-        .filter(id => {
-          const x = document.getElementById(id);
-          return x && getComputedStyle(x).display !== 'none';
-        });
+        .filter(id => imBild(document.getElementById(id)));
       return { sichtbar, laenge: text.length, probe: text.slice(0, 45), andere };
     }, t);
 
     if (r.fehlt || r.keineFlaeche) { errs.push('FEHLT: Fläche zum Reiter „' + t + '"'); continue; }
     console.log('  ' + t.padEnd(9), r.laenge + ' Zeichen ·', JSON.stringify(r.probe));
-    pruefe(r.sichtbar, 'UNSICHTBAR: „' + t + '" bleibt auf display:none');
+    pruefe(r.sichtbar, 'UNSICHTBAR: „' + t + '" steht nicht im Bild');
     pruefe(r.laenge > 20, 'LEER: „' + t + '" zeigt nur ' + r.laenge +
       ' Zeichen — eine leere Fläche sieht kaputt aus, auch wenn es nichts zu zeigen gibt');
     pruefe(!r.andere.length, 'DOPPELT SICHTBAR: bei „' + t + '" steht auch noch ' +
       r.andere.join(', ') + ' offen');
+  }
+
+  /* ══ 2a. Der zweite Schreibtisch, und der Weg dorthin ══
+     Das Versprechen dieser Runde lautet: ANGEZEIGT in der Uebersicht,
+     GEPFLEGT nebenan. Beide Haelften werden hier gemessen — die halbe
+     Umsetzung („es gibt die Ansicht, aber man kommt nicht hin") waere
+     sonst gruen. */
+  {
+    const r = await p.evaluate(async () => {
+      /* Nichts hier darf werfen. Ein Durchlauf, der mit „Cannot read
+         properties of null" abbricht, sagt nur DASS etwas fehlt und
+         nicht WAS — und genau dann braucht man die Diagnose. */
+      const sub = document.querySelector('[data-subview="ich"]');
+      if (!sub) return { keineUnternavigation: true };
+      sub.click();
+      await new Promise(r => setTimeout(r, 350));
+      const wo = document.querySelector('[data-ichtab="woche"]');
+      if (!wo) return { keinWochenreiter: true };
+      wo.click();
+      await new Promise(r => setTimeout(r, 400));
+
+      const zeilen = [...document.querySelectorAll('#ichWocheListe .ich-zeile')];
+      const quellen = zeilen.map(z => {
+        const q = z.querySelector('.ich-quelle');
+        return (q ? q.textContent : '').trim();
+      });
+      // Die eigene Aufgabe steht weiter in der Woche — sie ist nur umgezogen
+      const todoZeile = zeilen.find(z => {
+        const q = z.querySelector('.ich-quelle');
+        return q && q.textContent.trim() === 'To-do';
+      });
+      if (!todoZeile) return { keineTodoZeile: true, quellen };
+
+      /* Ein Knopf, kein div: sonst kaeme man mit der Tastatur nicht
+         hin, und der einzige Weg waere die Maus. */
+      const istKnopf = todoZeile.tagName === 'BUTTON';
+      /* Und er muss aussehen wie die Zeilen daneben. Ein <button>
+         bringt eigene Schrift und einen Rahmen mit; faellt der
+         CSS-Block weg, springt genau diese eine Zeile heraus. */
+      const dienstZeile = zeilen.find(z => z.tagName !== 'BUTTON');
+      const cs = getComputedStyle(todoZeile);
+      const cd = dienstZeile ? getComputedStyle(dienstZeile) : null;
+      const gleich = cd && cs.fontSize === cd.fontSize &&
+        cs.fontFamily === cd.fontFamily && cs.textAlign === cd.textAlign;
+
+      todoZeile.click();
+      await new Promise(r => setTimeout(r, 500));
+      const pv = document.getElementById('view-persoenlich');
+      const tp = document.getElementById('ichPaneTodo');
+      return {
+        quellen, istKnopf, gleich,
+        angekommen: !!(pv && pv.classList.contains('show')),
+        todoOffen: !!(tp && tp.getClientRects().length),
+        // Ein Dienst darf NICHT wegfuehren — der gehoert der Planung
+        dienstIstKnopf: !!(dienstZeile && dienstZeile.tagName === 'BUTTON')
+      };
+    });
+
+    if (r.keineUnternavigation) {
+      errs.push('KEINE UNTERNAVIGATION: [data-subview="ich"] gibt es nicht — ' +
+        'die Gruppe „Ich" hat ihre zweite Ansicht verloren');
+    } else if (r.keinWochenreiter) {
+      errs.push('KEIN WOCHENREITER in der Übersicht');
+    } else if (r.keineTodoZeile) {
+      errs.push('KEINE TO-DO-ZEILE in der Woche — Quellen: ' + r.quellen.join(' | ') +
+        '. Das eigene To-do muss in der Übersicht sichtbar BLEIBEN.');
+    } else {
+      console.log('Wochenzeilen:', r.quellen.join(' | '));
+      pruefe(r.istKnopf, 'NICHT ANKLICKBAR: die To-do-Zeile ist kein <button> — ' +
+        'mit der Tastatur käme man nicht auf den zweiten Schreibtisch');
+      pruefe(r.gleich, 'SIEHT ANDERS AUS: die klickbare Zeile hat nicht dieselbe ' +
+        'Schrift/Ausrichtung wie die Zeilen daneben');
+      pruefe(r.angekommen, 'KEINE WEITERLEITUNG: der Klick öffnet #view-persoenlich nicht');
+      pruefe(r.todoOffen, 'FALSCHER REITER: nach der Weiterleitung steht To-do nicht offen');
+      pruefe(!r.dienstIstKnopf,
+        'ZU VIEL: auch eine Dienst-Zeile führt weg — ein Dienst gehört der Planung');
+    }
   }
 
   /* ══ 2b. GEGENPROBE ══
@@ -156,10 +308,17 @@ function pruefe(bedingung, meldung) {
      Punkt 2 auch dann gruen, wenn schlicht alles immer sichtbar ist. */
   {
     const r = await p.evaluate(async () => {
+      /* Auch hier zaehlt, was im Bild steht — nicht, was display hat.
+         Zwei Ansichten heissen zwei Reiterreihen, und die verborgene
+         Reihe behaelt ihren zuletzt gewaehlten Reiter. */
       const vorher = ['ichPaneWoche', 'ichPaneKalender', 'ichPaneTodo',
                       'ichPaneNotizen', 'ichPaneDaten']
-        .filter(id => getComputedStyle(document.getElementById(id)).display !== 'none');
-      const b = document.querySelector('[data-ichtab="gibtesnicht"]');
+        .filter(id => {
+          const x = document.getElementById(id);
+          return x && x.getClientRects().length > 0;
+        });
+      const b = document.querySelector('[data-ichtab="gibtesnicht"]') ||
+                document.querySelector('[data-perstab="gibtesnicht"]');
       return { vorher, erfundenDa: !!b };
     });
     pruefe(!r.erfundenDa, 'GEGENPROBE: es gibt einen Reiter „gibtesnicht"');
@@ -171,6 +330,7 @@ function pruefe(bedingung, meldung) {
   // ══ 3. Der Kalender: stimmt die Anzahl der Tagesfelder? ══
   {
     const r = await p.evaluate(async () => {
+      (function(){var s=document.querySelector('[data-subview="ich"]');if(s) s.click();})();
       document.querySelector('[data-ichtab="kalender"]').click();
       await new Promise(r => setTimeout(r, 450));
       const koepfe = document.querySelectorAll('#ichKalender .kal-kopf').length;
@@ -316,7 +476,8 @@ function pruefe(bedingung, meldung) {
      Putzplan zu suchen hat. */
   {
     const r = await p.evaluate(async () => {
-      document.querySelector('[data-ichtab="todo"]').click();
+      (function(){var s=document.querySelector('[data-subview="persoenlich"]');if(s) s.click();})();
+      document.querySelector('[data-perstab="todo"]').click();
       await new Promise(r => setTimeout(r, 350));
       window.__schreib = [];
 
@@ -386,6 +547,7 @@ function pruefe(bedingung, meldung) {
           Verschieben.  */
   {
     const r = await p.evaluate(async () => {
+      (function(){var s=document.querySelector('[data-subview="ich"]');if(s) s.click();})();
       document.querySelector('[data-ichtab="kalender"]').click();
       await new Promise(r => setTimeout(r, 400));
       // Den Tag öffnen, an dem der eingespielte Termin liegt
@@ -535,7 +697,8 @@ function pruefe(bedingung, meldung) {
   // ══ 5. Eine Notiz: derselbe Test, und der Hinweis daneben ══
   {
     const r = await p.evaluate(async () => {
-      document.querySelector('[data-ichtab="notizen"]').click();
+      (function(){var s=document.querySelector('[data-subview="persoenlich"]');if(s) s.click();})();
+      document.querySelector('[data-perstab="notizen"]').click();
       await new Promise(r => setTimeout(r, 350));
       window.__schreib = [];
 
@@ -593,6 +756,7 @@ function pruefe(bedingung, meldung) {
   // ══ 6. „Ich": Stammdaten wirklich gefüllt ══
   {
     const r = await p.evaluate(async () => {
+      (function(){var s=document.querySelector('[data-subview="ich"]');if(s) s.click();})();
       document.querySelector('[data-ichtab="daten"]').click();
       await new Promise(r => setTimeout(r, 600));
       const zeilen = [...document.querySelectorAll('#ichStamm .ich-stamm')]
@@ -645,7 +809,8 @@ function pruefe(bedingung, meldung) {
   await b.close();
   console.log(errs.length
     ? '\n✗ ' + errs.join('\n✗ ')
-    : '\n✓ Mein Bereich: fünf Reiter, der Kalender zählt richtig, Termine und ' +
-      'To-dos landen unter privat/<uid>/, keine Erklärungsabsätze — mit Gegenproben');
+    : '\n✓ Mein Bereich: zwei Ansichten, fünf Reiter, der Weg dazwischen hält, ' +
+      'der Kalender zählt richtig, Termine und To-dos landen unter privat/<uid>/, ' +
+      'keine Erklärungsabsätze — mit Gegenproben');
   process.exit(errs.length ? 1 : 0);
 })();

@@ -6918,3 +6918,120 @@ behaupten, die es nicht gibt.
   * `erledigt()` → `done` → 2 rot
   * `berlinDatum` → `toISOString` → 1 rot
 * ganze Regelsuite grün (785 Prüfungen) · volle Regression
+
+---
+
+# 72 · Der zweite Schreibtisch
+
+*„können wir den ICH bereich noch so weiter ausbauen das man den auch
+täglich nutzen kann ODER wir machen einen exklusiven bereich … für alle
+persönlichen sachen, wie todos, kalender, aufgaben, ziele, wünsche"*
+
+Auf Nachfrage: **beides**. *„sodass man es getrennt hat aber es auf der
+ich seite dennoch angezeigt wird aber wenn man es bearbeiten will wird
+man auf den 2ten schreibtisch weitergeleitet."*
+
+Das ist stimmiger, als es zuerst klingt, und es löst genau die Sorge
+auf, die ich gegen einen zweiten Bereich hatte — **zwei Orte für
+dieselbe Sache**. Hier gibt es weiter genau *einen* Ort zum Bearbeiten;
+der andere zeigt nur.
+
+**Ich = die Brille. Persönlich = die Werkstatt.**
+
+Das sind zwei verschiedene Tätigkeiten. Morgens will man wissen, was
+ansteht. Sonntagabend räumt man auf, trägt ein, denkt nach. Sieben
+Reiter nebeneinander hätten beides in eine Reihe gezwungen und keins
+von beidem gut gemacht.
+
+## Warum kein siebter Knopf — und warum ich trotzdem gemessen habe
+
+Im Code stand aus einer früheren Runde die Begründung, ein sechster
+Eintrag rutsche beim Chef aus dem Bild. **Nachgemessen, statt geglaubt:**
+
+| | Chef | Mitarbeiter |
+|---|---|---|
+| heute @320px | 6/6 im Bild | 5/5 |
+| mit einer siebten | **7/7 im Bild** (Inhalt 327px) | 6/6 |
+
+Ein siebter Knopf hätte also gepasst. Gebaut wurde er trotzdem nicht:
+**„Betrieb" hält seit jeher sechs Ansichten hinter EINEM Knopf.** Die
+Frage „was betrifft mich" braucht keine zwei Einträge in der Leiste,
+sondern zwei Reiter. Die Weiterleitung ist damit ein Reiterwechsel und
+kein Sprung in eine fremde Gegend.
+
+Der alte Kommentar war also nicht falsch, aber seine Zahlen galten
+nicht mehr. Beides steht jetzt so da.
+
+## Was umgezogen ist
+
+**Übersicht** (vorher fünf Reiter, jetzt drei): Woche · Kalender · Ich
+**Persönlich** (neu): To-do · Notizen — und später Ziele und Wünsche
+
+Die eigene Aufgabe steht **weiter in der Wochenliste**, zwischen Dienst
+und Urlaub, mit ihrer Herkunfts-Markierung. Ein Klick darauf führt
+hinüber. Ein Dienst führt bewusst **nicht** weg — der gehört der
+Planung, nicht mir.
+
+## Drei Fehler, die die Messung gefunden hat
+
+**`font: inherit` war falsch.** Die Kurzform setzt auch die
+Schriftgröße, und zwar auf die des Elternteils. `button.ich-zeile` wiegt
+schwerer als `.ich-zeile`, also schlug sie das `font-size:var(--t-sm)`:
+**16px statt 13,76px** — die anklickbare Zeile war zwei Punkt größer als
+die zwanzig daneben. Jetzt nur die drei Eigenschaften, die der Browser
+wirklich anders setzt.
+
+**41,8px sind kein Fingerziel.** Die Zeile als Knopf war zu klein. Nur
+den Knopf zu vergrößern hätte genau eine Zeile 2px höher gemacht als
+ihre Nachbarn — also `min-height:44px` an *alle* Zeilen. Jetzt sind sie
+gleich und groß genug.
+
+**Der Durchlauf stürzte ab, statt zu melden.** `querySelector(...).click()`
+auf null wirft, und dann sagt die Ausgabe nur *dass* etwas fehlt, nicht
+*was*. Genau dann braucht man die Diagnose.
+
+## Und ein Fehler in meiner Prüfmethode
+
+Die drei Sonden meldeten beim ersten Anlauf **null rote Zeilen** — und
+das sah aus wie „die Prüfungen greifen nicht". Der wahre Grund:
+
+**Wer `index.html` ändert, muss `tools/csp.js --setzen` nachziehen.**
+Sonst passt der Hash nicht, der Browser sperrt das Skript, und man misst
+die Sperre statt der Änderung. Eine Sonde ohne diesen Schritt beweist
+gar nichts — und hätte mich beinahe glauben lassen, meine eigenen neuen
+Prüfungen seien wertlos.
+
+Mit korrektem Hash:
+
+```
+Sonde 1  Weiterleitung entfernt      → 2 rot
+Sonde 2  Zeile wieder als div        → 3 rot
+Sonde 3  zweite Ansicht aus der Gruppe → 7 rot
+```
+
+## Was noch NICHT da ist
+
+**Abhaken direkt aus der Wochenliste.** Ich hatte es zwischenzeitlich in
+einen Code-Kommentar geschrieben, bevor es gebaut war — und wieder
+herausgenommen. Ein Kommentar, der etwas verspricht, das es nicht gibt,
+ist schlimmer als keiner. Es gehört zu Runde ⑤.
+
+## Der Plan dahinter
+
+① **Rahmen + Umzug** (diese Runde) · ② Ziele · ③ Wünsche ·
+④ die Leitungs-Seite für Abgeschicktes · ⑤ Tagesbrille schärfen
+
+Vereinbart wurde außerdem: **Ziele** in allen drei Bedeutungen (privat,
+Arbeitszahlen, mit der Leitung vereinbart), **Wünsche** ebenso (Urlaub
+und Schicht, Vorschläge ans Studio, private Liste) — wobei Urlaub und
+Schichttausch auf die **vorhandenen** Wege verlinken statt sie zu
+doppeln. Und: **die Leitung sieht nichts, außer es wird ausdrücklich
+abgeschickt**, wobei man je Eintrag wählt, an wen.
+
+## Geprüft
+
+* `tests/test-mein-bereich.js` erweitert — der Weg zwischen beiden
+  Ansichten ist jetzt eigener Prüfstoff, mit drei Sonden belegt
+* `test-knoepfe` (200 Knöpfe) · `test-gestaltung` · `test-navigation` ·
+  `test-rahmen` · `test-quer` (52 Messungen) grün
+* volle Regression
