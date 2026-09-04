@@ -7035,3 +7035,124 @@ abgeschickt**, wobei man je Eintrag wählt, an wen.
 * `test-knoepfe` (200 Knöpfe) · `test-gestaltung` · `test-navigation` ·
   `test-rahmen` · `test-quer` (52 Messungen) grün
 * volle Regression
+
+---
+
+# 73 · Ziele — zwei Bauarten hinter einem Balken
+
+Runde ② des persönlichen Bereichs. Zwei Sorten Ziel, EINE Darstellung:
+
+* **„Selbst zählen"** — ein Wert, den man antippt (10 Bücher, 3× Sport)
+* **„Aus meinen Zahlen"** — gelesen aus dem, was die App ohnehin rechnet
+
+Der Unterschied ist nur, *woher* der Stand kommt. Für den Lesenden ist
+es dieselbe Frage — wie weit bin ich —, also dieselbe Zeile.
+
+## Die Runde wurde billiger, weil die Daten schon da waren
+
+`ichZahlenLaden()` rechnet seit langem **fünf eigene Kennzahlen**:
+Probetrainings, davon abgeschlossen, Quote, erledigte Studio-Aufgaben,
+erledigte eigene To-dos. Ein Arbeitsziel muss also nichts Neues
+erheben — es stellt nur einen Zielwert daneben.
+
+Einzige echte Arbeit: `ichZahlenLaden` rechnet fest über 90 Tage, ein
+Ziel will „diesen Monat". `zielStart()` nimmt deshalb den **Ersten**
+und nicht „vor dreissig Tagen" — der Unterschied ist am 28. eines
+Monats gewaltig.
+
+## Ein Ziel ohne Zahl gibt es nicht
+
+„Besser werden" lässt sich nicht abhaken und steht nach vier Wochen
+unverändert da. Daran sterben Zielelisten. Deshalb immer ein Zielwert,
+notfalls 1 — der Durchlauf weist ein Ziel mit Wert 0 ab.
+
+## Keine neue Regel — und das ist kein Zufall
+
+Die Ziele liegen unter `privat/<uid>/ziele`. Das deckt in
+`firestore.rules` schon das `match /{rest=**}` besitzergebunden ab, in
+beiden Welten. Genau wie beim Kalender-Schlüssel:
+
+> **Eine Sammlung, die von ihrem ORT her privat ist, kann eine falsche
+> Regel gar nicht erst öffnen.**
+
+## Der Fund dieser Runde gehört nicht mir
+
+Beim Bauen zeigte die Zielzeile hartnäckig `0/2`. Die Sonde führte
+nicht zu meinem Code, sondern zur Attrappe:
+
+**Der `get()`-Zweig von `stub-chef.js` kannte `probetrainings` gar
+nicht — nur `onSnapshot`.** `ichZahlenLaden()` liest aber einmalig.
+Die Karte „Meine Zahlen" zeigte deshalb in **jedem** Durchlauf
+0 Probetrainings, 0 Abschlüsse, keine Quote. Grün, und ohne jede
+Aussage.
+
+Das ist exakt die Lücke, die im Stub schon zweimal dokumentiert steht —
+einmal für `board`, einmal für die Übergaben. Beim dritten Mal war sie
+also eine **Klasse**, nicht ein Einzelfall. Nach dem Schliessen zeigt
+die Karte 4 Probetrainings, 2 Abschlüsse, 50 % Quote.
+
+## Und eine Ausgangslage, die ich korrigiert habe statt der Erwartung
+
+Der erste Lauf meldete `0/2` statt `3/2`. Nach dem Stub-Fix stand dort
+`3/2` — und das Ziel rutschte damit unter „Erreicht", weil 3 ≥ 2. Mein
+Prüfabschnitt „offen" hätte den Fall dann gar nicht mehr geprüft.
+
+Behoben wurde die **Ausgangslage** (Zielwert 5 statt 2), nicht die
+Erwartung. Eine Erwartung ans Ergebnis anzupassen ist der bequemste
+Weg, eine Prüfung wertlos zu machen.
+
+## `progressHTML` kann jetzt Überschuss
+
+`done === total` wurde zu `done >= total`, die Balkenbreite auf 100 %
+gedeckelt. Für Aufgaben ändert beides nichts — dort kann `done` nie
+grösser als `total` werden. Für ein Ziel schon: **25 von 20** sagt die
+Zahl weiterhin die Wahrheit, während der Balken in seiner Schiene
+bleibt. Ohne den Deckel lief er auf 250 % heraus (gemessen).
+
+Dazu ein drittes Argument `lob`: bei einem Ziel heisst es „erreicht",
+bei Aufgaben weiter „alles erledigt".
+
+## Ehrlich bei der einen Zahl, die wackelt
+
+Erledigte Studio-Aufgaben werden **nur** gelöscht, wenn jemand in der
+Verwaltung „Archiv leeren" drückt — automatisch passiert das nicht
+(nachgesehen in `clearArchive()` und in allen Zeitplänen). Passiert es
+doch, sinkt die Zahl. Deshalb steht der Hinweis genau an dieser
+Kennzahl und nirgends sonst; ein Satz über jedem Feld wäre der
+Erklärungsabsatz, den `test-mein-bereich` ausdrücklich verbietet.
+
+## Die Knopf-Prüfung war ZUM ZWEITEN MAL zu klein
+
+Dasselbe Muster wie in Runde 72, eine Ebene tiefer: der Durchgang
+besuchte die Ansicht „Persönlich" — aber **nicht ihre Reiter**. Die
+Knöpfe unter „Ziele" wären ungemessen geblieben.
+
+```
+165 → 190   (Dialoge dazu, Runde 72)
+190 → 215   (Reiter innerhalb einer Ansicht, jetzt)
+```
+
+Beide Male war der Lauf vorher grün. Grün hiess beide Male: nicht
+hingesehen.
+
+## Was NICHT in dieser Runde ist
+
+**Entwicklungsziele mit der Leitung.** Sie brauchen dieselbe
+Absende-Mechanik wie die Wünsche (privat → abgeschickt → beantwortet,
+samt Empfängerwahl). Die einmal zu bauen und für beides zu benutzen ist
+sauberer, als sie hier zu bauen und in ③ noch einmal anzufassen. Ein
+„Entwicklungsziel", das man nicht abschicken kann, wäre ohnehin nur ein
+privates Ziel mit einem anderen Wort davor.
+
+Ebenfalls nicht dabei: eine Frist am Ziel (und damit im Kalender).
+
+## Geprüft
+
+* `tests/test-ziele.js` (neu) — 22 Prüfungen, vier Sonden mit eigenem Rot:
+  * Zeitraum ignorieren → `4/5` statt `3/5`
+  * Balken ohne Deckel → `250%`
+  * Ziel in eine geteilte Sammlung → falscher Ort erkannt
+  * `+1` auch bei gelesenen Zielen → erkannt
+* `test-knoepfe` erweitert (215 Knöpfe) · `test-gestaltung` ·
+  `test-mein-bereich` · `test-quer` · `test-rahmen` grün
+* volle Regression

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-S44sK6t6jYw77ulhVmmv9YgUmZ35j+w2odiN+LTEMvc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-CMQX/wkJZtq33pSE/p4JrITt63WXmtpfR5Edml0megs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2339,6 +2339,29 @@ button.ich-zeile:active{opacity:.7}
 
 /* ── To-do ── */
 .ich-neu-zeile{display:flex;gap:var(--s8);flex-wrap:wrap}
+/* ── Ziele ──
+   Die Felder umbrechen mit Absicht statt zu schrumpfen: auf 320 Pixeln
+   waeren drei nebeneinander je 88px breit, und in ein 88px-Feld passt
+   keine Zahl mit Beschriftung. Lieber zwei Zeilen als drei unlesbare
+   Spalten. */
+.ziel-felder{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s8)}
+.ziel-felder .inp{flex:1 1 130px;min-width:0}
+.ziel-felder input[type=number]{flex:0 0 84px}
+.ziel-zeile{display:flex;flex-direction:column;gap:var(--s6);padding:var(--s12) 0;
+  border-top:1px solid var(--line)}
+.ziel-zeile:first-child{border-top:none}
+.ziel-kopf{display:flex;align-items:baseline;gap:var(--s8)}
+.ziel-titel{flex:1;min-width:0;font-size:var(--t-sm);font-weight:600}
+.ziel-zeile.fertig .ziel-titel{text-decoration:line-through;color:var(--text-3)}
+.ziel-woher{flex:0 0 auto;font-size:var(--t-2xs);color:var(--text-3);
+  white-space:nowrap}
+.ziel-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
+.ziel-knopf{display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;min-width:44px;padding:0 var(--s12);background:none;
+  border:1.5px solid var(--line-2);border-radius:var(--r-pille);
+  color:var(--text-2);font-size:var(--t-xs);cursor:pointer}
+.ziel-knopf:hover{border-color:var(--accent);color:var(--accent-d)}
+.ziel-knopf:active{transform:scale(.96)}
 .ich-neu-zeile .inp{flex:1 1 150px;min-width:0}
 .ich-neu-zeile .ich-datum{flex:0 1 150px}
 .ich-neu-zeile .btn{flex:0 0 auto}
@@ -4005,6 +4028,7 @@ html{font-size:var(--fs,100%)}
           <div class="pm-tabs" id="persTabs" style="margin:0 0 14px">
             <button class="pm-tab on" data-perstab="todo">To-do</button>
             <button class="pm-tab" data-perstab="notizen">Notizen</button>
+            <button class="pm-tab" data-perstab="ziele">Ziele</button>
           </div>
           <!-- ── TO-DO ──
                Eigene Punkte, unabhaengig von den Studio-Aufgaben. Die
@@ -4061,6 +4085,61 @@ html{font-size:var(--fs,100%)}
               <span class="ich-zahl-klein" id="ichNotizZahl"></span>
             </div>
             <div id="ichNotizListe"></div>
+          </div>
+
+          <!-- ── ZIELE ──
+               Zwei Bauarten, EIN Balken. „Selbst zaehlen" ist ein Wert,
+               den man antippt; „Aus meinen Zahlen" liest, was die App
+               ohnehin schon rechnet. Der Unterschied ist nur, WOHER der
+               Stand kommt — die Darstellung ist dieselbe, weil es fuer
+               den Lesenden dieselbe Frage ist: wie weit bin ich.
+
+               Ein Ziel ohne Zahl gibt es nicht. „Besser werden" laesst
+               sich nicht abhaken und steht nach vier Wochen unveraendert
+               da; genau daran sterben Zielelisten. Deshalb immer ein
+               Zielwert, notfalls 1. -->
+          <div id="ichPaneZiele" style="display:none">
+            <div class="ich-blatt">
+              <div class="ich-neu-zeile">
+                <input class="inp" id="zielTitel" maxlength="120"
+                  placeholder="Was willst du erreichen?" />
+                <button class="btn btn-primary btn-sm" id="zielAdd">Hinzu</button>
+              </div>
+              <div class="chip-row" id="zielArtWahl" style="margin-top:var(--s8)">
+                <button type="button" class="chip an" data-zielart="privat"
+                  aria-pressed="true">Selbst zählen</button>
+                <button type="button" class="chip" data-zielart="zahl"
+                  aria-pressed="false">Aus meinen Zahlen</button>
+              </div>
+              <div class="ziel-felder" id="zielFelderPrivat">
+                <input class="inp" id="zielWert" type="number" min="1" max="99999"
+                  value="1" aria-label="Wie oft insgesamt" />
+                <input class="inp" id="zielEinheit" maxlength="24"
+                  placeholder="Einheit (z. B. Bücher)" />
+              </div>
+              <div class="ziel-felder" id="zielFelderZahl" style="display:none">
+                <select class="inp" id="zielKennzahl" aria-label="Kennzahl"></select>
+                <input class="inp" id="zielWertZahl" type="number" min="1" max="99999"
+                  value="10" aria-label="Zielwert" />
+                <select class="inp" id="zielZeitraum" aria-label="Zeitraum">
+                  <option value="monat">diesen Monat</option>
+                  <option value="quartal">dieses Quartal</option>
+                  <option value="jahr">dieses Jahr</option>
+                </select>
+              </div>
+              <p class="hint" id="zielHinweis" style="display:none;margin:var(--s8) 0 0"></p>
+            </div>
+            <div class="ich-blatt">
+              <div class="ich-kopf">
+                <h3>Offen</h3>
+                <span class="ich-zahl-klein" id="zielZahl"></span>
+              </div>
+              <div id="zielListe"></div>
+            </div>
+            <details class="nachfrage" id="zielFertigBox" style="display:none">
+              <summary class="nachfrage-text" id="zielFertigText">Erreicht</summary>
+              <div id="zielFertig"></div>
+            </details>
           </div>
         </div>
       </section>
@@ -13492,7 +13571,7 @@ function renderMyShifts(){
    „Persoenlich". Deshalb steht todo/notizen nicht mehr hier. */
 var ICHPANES = { woche:'ichPaneWoche', kalender:'ichPaneKalender',
                  daten:'ichPaneDaten' };
-var PERSPANES = { todo:'ichPaneTodo', notizen:'ichPaneNotizen' };
+var PERSPANES = { todo:'ichPaneTodo', notizen:'ichPaneNotizen', ziele:'ichPaneZiele' };
 var _ichTab='woche';
 var _persTab='todo';
 var _ichMonat=null;              // erster Tag des gezeigten Monats
@@ -13613,6 +13692,235 @@ function kalenderWeg(btn){
     .then(function(){ kalSperren(btn,false); });
 }
 
+/* ══ ZIELE ══════════════════════════════════════════════════════════
+   Zwei Bauarten, EIN Balken.
+
+     „Selbst zaehlen"     ein Wert, den man antippt (10 Buecher, 3x Sport)
+     „Aus meinen Zahlen"  liest, was die App ohnehin schon rechnet
+
+   Der Unterschied ist nur, WOHER der Stand kommt. Fuer den Lesenden ist
+   es dieselbe Frage — wie weit bin ich —, also dieselbe Darstellung.
+
+   EIN ZIEL OHNE ZAHL GIBT ES NICHT. „Besser werden" laesst sich nicht
+   abhaken und steht nach vier Wochen unveraendert da; daran sterben
+   Zielelisten. Deshalb immer ein Zielwert, notfalls 1.
+
+   ALLES BLEIBT PRIVAT. Die Ziele liegen unter privat/<uid>/ziele — das
+   deckt in firestore.rules schon das `match /{rest=**}` besitzergebunden
+   ab, in beiden Welten. Es war keine neue Regel noetig, und das ist kein
+   Zufall: eine Sammlung, die von ihrem ORT her privat ist, kann eine
+   falsche Regel gar nicht erst oeffnen. */
+var _ichZiele = [];
+var _ichZielUnsub = null;
+var _zielArt = 'privat';
+
+/* Die Kennzahlen, an die sich ein Ziel haengen kann. Alle fuenf rechnet
+   ichZahlenLaden() ohnehin schon — hier kommt nur ein Zielwert daneben,
+   nichts wird neu erhoben. */
+var ZIEL_KENNZAHLEN = [
+  { id:'probe',     name:'Probetrainings',            probe:true },
+  { id:'abschluss', name:'davon abgeschlossen',       probe:true },
+  { id:'quote',     name:'Abschlussquote in %',       probe:true },
+  { id:'aufgaben',  name:'erledigte Studio-Aufgaben' },
+  { id:'todos',     name:'erledigte eigene To-dos' }
+];
+function zielKennzahlName(id){
+  for(var i=0;i<ZIEL_KENNZAHLEN.length;i++){
+    if(ZIEL_KENNZAHLEN[i].id===id) return ZIEL_KENNZAHLEN[i].name;
+  }
+  return id||'';
+}
+
+/* Anfang des Zeitraums, in Ortszeit. Nicht ueber Date.now()-30*86400000:
+   „diesen Monat" heisst der ERSTE, nicht „vor dreissig Tagen". */
+function zielStart(zeitraum){
+  var d=new Date();
+  if(zeitraum==='jahr') return new Date(d.getFullYear(),0,1).getTime();
+  if(zeitraum==='quartal')
+    return new Date(d.getFullYear(), Math.floor(d.getMonth()/3)*3, 1).getTime();
+  return new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+}
+var ZIEL_ZEITRAUM_TEXT = { monat:'diesen Monat', quartal:'dieses Quartal', jahr:'dieses Jahr' };
+
+/* Probetrainings einmal holen und kurz behalten. ichZahlenLaden() fragt
+   dieselbe Abfrage; ohne diesen Puffer liefe sie bei jedem Zeichnen der
+   Zielliste erneut. */
+var _probeMeine = null, _probeMeineAt = 0;
+function probeMeineLaden(){
+  if(_probeMeine && Date.now()-_probeMeineAt < 5*60000)
+    return Promise.resolve(_probeMeine);
+  if(!session || !session.uid || !featureAn('probe')) return Promise.resolve([]);
+  return S('probetrainings').where('vonUid','==',session.uid).get()
+    .then(function(sn){
+      _probeMeine = sn.docs.map(function(d){ return d.data(); });
+      _probeMeineAt = Date.now();
+      return _probeMeine;
+    })
+    .catch(function(){ return []; });
+}
+
+function zielStand(z){
+  if(z.art!=='zahl') return z.stand||0;
+  var seit = zielStart(z.zeitraum);
+  var rows = (_probeMeine||[]).filter(function(r){ return (r.datum||0)>=seit; });
+  if(z.kennzahl==='probe') return rows.length;
+  if(z.kennzahl==='abschluss')
+    return rows.filter(function(r){ return r.abschluss===true; }).length;
+  if(z.kennzahl==='quote'){
+    var ab=rows.filter(function(r){ return r.abschluss===true; }).length;
+    return rows.length ? Math.round(ab/rows.length*100) : 0;
+  }
+  if(z.kennzahl==='aufgaben'){
+    var n=0;
+    (session && session.studioKeys || []).forEach(function(sk){
+      (cachedTodos[sk]||[]).forEach(function(t){
+        if(t.assignedTo===session.uid && t.done && (t.doneAt||0)>=seit) n++;
+      });
+    });
+    return n;
+  }
+  if(z.kennzahl==='todos')
+    return _ichTodos.filter(function(t){
+      return t.erledigt && (t.erledigtAm||0)>=seit; }).length;
+  return 0;
+}
+
+function zielWoher(z){
+  if(z.art==='zahl')
+    return zielKennzahlName(z.kennzahl)+' · '+(ZIEL_ZEITRAUM_TEXT[z.zeitraum]||'');
+  return z.einheit || 'selbst gezählt';
+}
+
+function zielZeileHTML(z){
+  var stand=zielStand(z), soll=z.zielwert||1;
+  var fertig = !!z.erledigt || stand>=soll;
+  var id=esc(z.id);
+  return '<div class="ziel-zeile'+(fertig?' fertig':'')+'">'+
+    '<div class="ziel-kopf">'+
+      '<span class="ziel-titel">'+esc(z.titel)+'</span>'+
+      '<span class="ziel-woher">'+esc(zielWoher(z))+'</span>'+
+    '</div>'+
+    progressHTML(stand, soll, 'erreicht')+
+    '<div class="ziel-knoepfe">'+
+      (z.art!=='zahl'
+        ? '<button type="button" class="ziel-knopf" data-zielplus="'+id+'">+1</button>'+
+          (stand>0 ? '<button type="button" class="ziel-knopf" data-zielminus="'+id+'">−1</button>' : '')
+        : '')+
+      '<button type="button" class="ziel-knopf" data-zieldone="'+id+'">'+
+        (z.erledigt?'Wieder öffnen':'Abschließen')+'</button>'+
+      '<button type="button" class="ziel-knopf" data-zielweg="'+id+'">Löschen</button>'+
+    '</div>'+
+  '</div>';
+}
+
+function renderIchZiele(){
+  var box=$('zielListe'), zahl=$('zielZahl');
+  var fbox=$('zielFertigBox'), fliste=$('zielFertig'), ftext=$('zielFertigText');
+  if(!box) return;
+  var offen=[], fertig=[];
+  _ichZiele.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); })
+    .forEach(function(z){
+      var erreicht = !!z.erledigt || zielStand(z) >= (z.zielwert||1);
+      (erreicht ? fertig : offen).push(z);
+    });
+  if(zahl) zahl.textContent = offen.length ? String(offen.length) : '';
+  box.innerHTML = offen.length
+    ? offen.map(zielZeileHTML).join('')
+    : emptyHTML('Noch kein Ziel',
+        'Trag oben ein, was du erreichen willst — mit einer Zahl daran.', 'pokal');
+  if(fbox){
+    fbox.style.display = fertig.length ? '' : 'none';
+    if(ftext) ftext.textContent = fertig.length===1 ? '1 erreicht' : fertig.length+' erreicht';
+    if(fliste) fliste.innerHTML = fertig.map(zielZeileHTML).join('');
+  }
+}
+
+function zielRef(id){
+  var ref=privatRef(); return ref ? ref.collection('ziele').doc(id) : null;
+}
+function zielAnlegen(){
+  var ref=privatRef(); if(!ref){ toast('Bitte erst anmelden.',true); return; }
+  var feld=$('zielTitel'), titel=((feld&&feld.value)||'').trim();
+  if(!titel){ toast('Da steht noch nichts.',true); if(feld) feld.focus(); return; }
+  var daten;
+  if(_zielArt==='zahl'){
+    var w=parseInt(($('zielWertZahl')||{}).value,10)||0;
+    if(w<1){ toast('Bitte einen Zielwert ab 1 angeben.',true); return; }
+    daten={ titel:titel, art:'zahl', kennzahl:($('zielKennzahl')||{}).value||'probe',
+            zielwert:w, zeitraum:($('zielZeitraum')||{}).value||'monat',
+            erledigt:false, ts:Date.now() };
+  } else {
+    var w2=parseInt(($('zielWert')||{}).value,10)||0;
+    if(w2<1){ toast('Bitte einen Zielwert ab 1 angeben.',true); return; }
+    daten={ titel:titel, art:'privat', zielwert:w2,
+            einheit:((($('zielEinheit')||{}).value)||'').trim()||null,
+            stand:0, erledigt:false, ts:Date.now() };
+  }
+  withBusy($('zielAdd'), function(){
+    return ref.collection('ziele').add(daten).then(function(){
+      if(feld){ feld.value=''; feld.focus(); }
+      var e=$('zielEinheit'); if(e) e.value='';
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+function zielStandAendern(id, delta){
+  var z=_ichZiele.filter(function(x){ return x.id===id; })[0];
+  var ref=zielRef(id); if(!z || !ref) return;
+  var neu=Math.max(0, (z.stand||0)+delta);
+  ref.update({ stand:neu }).catch(function(e){ toast(errMsg(e),true); });
+}
+function zielUmschalten(id){
+  var z=_ichZiele.filter(function(x){ return x.id===id; })[0];
+  var ref=zielRef(id); if(!z || !ref) return;
+  ref.update({ erledigt:!z.erledigt }).catch(function(e){ toast(errMsg(e),true); });
+}
+function zielLoeschen(id){
+  var ref=zielRef(id); if(!ref) return;
+  ref.delete().then(function(){ toast('Ziel gelöscht ✓'); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+
+/* Die Auswahl der Bauart und die Felder dazu. Der Hinweis steht nur da,
+   wo er gebraucht wird — ein Satz ueber jedem Feld waere genau der
+   Erklaerungsabsatz, den test-mein-bereich verbietet. */
+function zielArtSetzen(art){
+  _zielArt = art==='zahl' ? 'zahl' : 'privat';
+  document.querySelectorAll('[data-zielart]').forEach(function(b){
+    var an = b.getAttribute('data-zielart')===_zielArt;
+    b.classList.toggle('an', an);
+    b.setAttribute('aria-pressed', an?'true':'false');
+  });
+  var p=$('zielFelderPrivat'), z=$('zielFelderZahl');
+  if(p) p.style.display = _zielArt==='zahl' ? 'none' : '';
+  if(z) z.style.display = _zielArt==='zahl' ? '' : 'none';
+  zielHinweisSetzen();
+}
+/* Ehrlich bleiben, wo die Zahl wackelt: erledigte Studio-Aufgaben
+   werden nur geloescht, wenn jemand in der Verwaltung „Archiv leeren"
+   drueckt — automatisch passiert das nicht (nachgesehen in
+   clearArchive() und in den Zeitplaenen). Passiert es doch, sinkt die
+   Zahl. Wer das nicht weiss, haelt sein Ziel fuer kaputt. */
+function zielHinweisSetzen(){
+  var h=$('zielHinweis'); if(!h) return;
+  var k=($('zielKennzahl')||{}).value;
+  if(_zielArt==='zahl' && k==='aufgaben'){
+    h.textContent='Gezählt wird, was noch in den Aufgabenlisten steht. ' +
+      'Wird das Archiv geleert, sinkt die Zahl.';
+    h.style.display='';
+  } else { h.style.display='none'; h.textContent=''; }
+}
+function zielKennzahlenBauen(){
+  var sel=$('zielKennzahl'); if(!sel || sel._da) return;
+  sel._da=true;
+  /* Ohne Probetrainings-Merkmal gibt es die drei Kennzahlen darueber
+     nicht. Sie anzubieten hiesse, ein Ziel zu erlauben, dessen Stand
+     fuer immer 0 bleibt. */
+  var an = featureAn('probe');
+  sel.innerHTML = ZIEL_KENNZAHLEN.filter(function(k){ return an || !k.probe; })
+    .map(function(k){ return '<option value="'+k.id+'">'+esc(k.name)+'</option>'; })
+    .join('');
+}
+
 /* ── Zuhoeren auf das Eigene ──
    Nur einmal einhaengen. Beim Abmelden raeumt ichAufraeumen() auf; sonst
    liefe der Horcher des vorigen Kontos weiter, und der naechste Nutzer
@@ -13638,6 +13946,12 @@ function ichHorchen(){
       if(imMeinBereich()){ renderIchTodos(); renderIchWoche(); renderIchKalender(); }
     }, function(e){ console.warn('Aufgaben:', e && e.code); });
   }
+  if(!_ichZielUnsub){
+    _ichZielUnsub=ref.collection('ziele').onSnapshot(function(sn){
+      _ichZiele=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      if(imMeinBereich()) renderIchZiele();
+    }, function(e){ console.warn('Ziele:', e && e.code); });
+  }
   if(!_ichNotizUnsub){
     _ichNotizUnsub=ref.collection('notizen').orderBy('ts','desc').limit(200)
       .onSnapshot(function(sn){
@@ -13650,7 +13964,11 @@ function ichAufraeumen(){
   if(_ichTerminUnsub){ _ichTerminUnsub(); _ichTerminUnsub=null; }
   if(_ichNotizUnsub){ _ichNotizUnsub(); _ichNotizUnsub=null; }
   if(_ichTodoUnsub){ _ichTodoUnsub(); _ichTodoUnsub=null; }
-  _ichTermine=[]; _ichNotizen=[]; _ichTodos=[];
+  if(_ichZielUnsub){ _ichZielUnsub(); _ichZielUnsub=null; }
+  _ichTermine=[]; _ichNotizen=[]; _ichTodos=[]; _ichZiele=[];
+  /* Auch die Probetrainings-Zahlen. Sie gehoeren dem vorigen Konto, und
+     auf einem geteilten Geraet stuenden sie sonst im Ziel des naechsten. */
+  _probeMeine=null; _probeMeineAt=0; _zielArt='privat';
   _ichBetrieb={ schichten:[], abwesend:[] };
   _ichBetriebFuer=''; _ichTagGewaehlt=null; _ichMonat=null;
   /* Auch der Suchbegriff geht mit. Auf einem geteilten Geraet stuende
@@ -14525,6 +14843,14 @@ function persReiterZeigen(t){
   ichBewegen($(PERSPANES[t]), 'ich-pane-ein');
   if(t==='todo'){ renderIchTodos(); ichZiehenBinden(); }
   if(t==='notizen') renderIchNotizen();
+  if(t==='ziele'){
+    zielKennzahlenBauen(); zielArtSetzen(_zielArt);
+    /* Erst zeichnen, dann nachladen und noch einmal zeichnen — dasselbe
+       Muster wie bei der Woche. Wer den Reiter oeffnet, soll nicht auf
+       eine Abfrage warten, um seine Ziele ueberhaupt zu sehen. */
+    renderIchZiele();
+    probeMeineLaden().then(renderIchZiele);
+  }
   foldAufbauen();
 }
 
@@ -15112,13 +15438,18 @@ function todoMatchesFilter(t){
 }
 
 /* Baut die Fortschritts-Zeile (Balken + „3/8"). Bei 100 % gibt's Lob dazu. */
-function progressHTML(done,total){
+function progressHTML(done,total,lob){
   var pct=total?Math.round(done/total*100):0;
-  var complete = total>0 && done===total;
+  /* `>=` statt `===` und die Breite gedeckelt: eine Aufgabe kann ihr
+     Ziel nicht ueberschreiten, ein Ziel schon (25 von 20 Probetrainings).
+     Ohne den Deckel liefe der Balken aus seiner Schiene, ohne das `>=`
+     bliebe er bei 125 % unfertig. Fuer die Aufgaben aendert beides
+     nichts — dort kann done nie groesser als total werden. */
+  var complete = total>0 && done>=total;
   return '<div class="todo-progress'+(complete?' complete':'')+'">'+
-    '<div class="pbar"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="pbar"><i style="width:'+Math.min(100,pct)+'%"></i></div>'+
     '<span class="pcount">'+done+'/'+total+'</span>'+
-    (complete?'<span class="pdone">alles erledigt</span>':'')+
+    (complete?'<span class="pdone">'+esc(lob||'alles erledigt')+'</span>':'')+
   '</div>';
 }
 
@@ -20890,6 +21221,34 @@ function bindActions(){
     b.addEventListener('click',function(){
       persReiterZeigen(b.getAttribute('data-perstab'));
       tick(8);
+    });
+  });
+
+  // ── Ziele ──
+  var zAdd=$('zielAdd'); if(zAdd) zAdd.addEventListener('click', zielAnlegen);
+  var zTitel=$('zielTitel');
+  if(zTitel) zTitel.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); zielAnlegen(); }
+  });
+  var zArt=$('zielArtWahl');
+  if(zArt) zArt.addEventListener('click',function(e){
+    var b=e.target.closest('[data-zielart]'); if(!b) return;
+    zielArtSetzen(b.getAttribute('data-zielart'));
+  });
+  var zKenn=$('zielKennzahl');
+  if(zKenn) zKenn.addEventListener('change', zielHinweisSetzen);
+  /* Ein Zuhoerer auf beiden Listen statt einer je Zeile: die Liste wird
+     bei jeder Aenderung neu gezeichnet, und Zuhoerer an Zeilen waeren
+     dann jedes Mal neue. */
+  ['zielListe','zielFertig'].forEach(function(id){
+    var box=$(id); if(!box) return;
+    box.addEventListener('click',function(e){
+      var b=e.target.closest('[data-zielplus],[data-zielminus],[data-zieldone],[data-zielweg]');
+      if(!b) return;
+      if(b.hasAttribute('data-zielplus')) return zielStandAendern(b.getAttribute('data-zielplus'), 1);
+      if(b.hasAttribute('data-zielminus')) return zielStandAendern(b.getAttribute('data-zielminus'), -1);
+      if(b.hasAttribute('data-zieldone')) return zielUmschalten(b.getAttribute('data-zieldone'));
+      if(b.hasAttribute('data-zielweg')) return zielLoeschen(b.getAttribute('data-zielweg'));
     });
   });
   var imP=$('ichMonatPrev'), imN=$('ichMonatNext'), imH=$('ichMonatHeute');
