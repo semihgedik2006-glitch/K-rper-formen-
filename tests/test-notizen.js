@@ -69,7 +69,8 @@ async function seite(b, notizen) {
   await p.evaluate(async () => {
     document.querySelector('.mobnav [data-group="g-ich"]').click();
     await new Promise(r => setTimeout(r, 400));
-    document.querySelector('[data-ichtab="notizen"]').click();
+    (function(){var s=document.querySelector('[data-subview="persoenlich"]');if(s) s.click();})();
+    document.querySelector('[data-perstab="notizen"]').click();
     await new Promise(r => setTimeout(r, 600));
   });
   return p;
