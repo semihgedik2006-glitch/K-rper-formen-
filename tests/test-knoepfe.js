@@ -34,11 +34,20 @@
         <svg> trägt, bekommt ein zweites eingesetzt.
      5. Gegenprobe: der Durchlauf hat überhaupt Knöpfe gesehen.
 
-   „JEDE ANSICHT" HIESS ANFANGS NUR: was über die untere Leiste
-   erreichbar ist. Die Dialoge blieben aussen vor — und in einem davon
-   (Einstellungen → Profil) sind später neue Knöpfe gelandet. Der Lauf
-   war grün und hatte sie schlicht nie gesehen. Seitdem geht der
-   Durchgang auch die Reiter des Einstellungs-Dialogs ab.
+   „JEDE ANSICHT" HAT SICH ZWEIMAL ALS ZU KLEIN ERWIESEN, und beide
+   Male sah der Lauf vorher grün aus:
+
+     · Die Dialoge blieben aussen vor. In einem davon (Einstellungen →
+       Profil) landeten später neue Knöpfe — nie gemessen.
+       165 → 190 Knöpfe.
+     · Die Reiter INNERHALB einer Ansicht blieben aussen vor. Die
+       Ansicht „Persönlich" wurde besucht, ihre drei Reiter aber nie —
+       die Knöpfe unter „Ziele" waren damit ungemessen.
+       190 → 215 Knöpfe.
+
+   Das Muster ist dasselbe: grün hiess „nicht hingesehen". Deshalb geht
+   der Durchgang jetzt Gruppen, Unteransichten, Team-Reiter,
+   Chef-Reiter, Dialog-Reiter UND die Reiter innerhalb einer Ansicht ab.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
@@ -182,6 +191,16 @@ async function lauf() {
       document.querySelectorAll('[data-teamtab]').forEach(x => {
         if (x.getClientRects().length) raus.push('team:' + x.getAttribute('data-teamtab'));
       });
+      /* Reiter INNERHALB einer Ansicht. „Persoenlich" wurde besucht,
+         seine drei Reiter aber nie — die Knoepfe unter „Ziele" waeren
+         damit ungemessen geblieben. Dieselbe Luecke wie zuvor bei den
+         Dialogen: die Ansicht zaehlt, der Reiter darin nicht. */
+      document.querySelectorAll('[data-ichtab]').forEach(x => {
+        if (x.getClientRects().length) raus.push('ich:' + x.getAttribute('data-ichtab'));
+      });
+      document.querySelectorAll('[data-perstab]').forEach(x => {
+        if (x.getClientRects().length) raus.push('pers:' + x.getAttribute('data-perstab'));
+      });
       /* Über den Namen, nicht über den Index: buildChefTabs() baut die
          Leiste bei jedem Wechsel neu. */
       document.querySelectorAll('.chef-tab').forEach(x => {
@@ -197,6 +216,8 @@ async function lauf() {
           let k = null;
           if (art === 'sub') k = document.querySelector('[data-subview="' + wert + '"]');
           else if (art === 'team') k = document.querySelector('[data-teamtab="' + wert + '"]');
+          else if (art === 'ich') k = document.querySelector('[data-ichtab="' + wert + '"]');
+          else if (art === 'pers') k = document.querySelector('[data-perstab="' + wert + '"]');
           else k = [...document.querySelectorAll('.chef-tab')]
             .find(t => t.textContent.trim() === wert);
           if (k) k.click();
