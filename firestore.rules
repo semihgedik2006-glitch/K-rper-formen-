@@ -993,6 +993,54 @@ service cloud.firestore {
         || (istAktiv() && resource.data.uid == request.auth.uid);
     }
 
+    /* ── Anliegen: was jemand ABSICHTLICH herausgibt ──────────────────
+       Wuensche, Vorschlaege und Entwicklungsziele aus dem persoenlichen
+       Bereich. Alles dort ist privat; wer etwas hier hineinschreibt, hat
+       den Knopf „Abschicken" gedrueckt.
+
+       DER UNTERSCHIED ZU JEDER ANDEREN SAMMLUNG HIER: lesen darf NICHT
+       jeder Aktive. Abwesenheiten, Uebergaben und das Brett stehen dem
+       ganzen Team offen — ein Anliegen ist an genau einen Kreis
+       gerichtet. Waere es fuer alle lesbar, waere „ich schicke es der
+       Geschaeftsfuehrung" eine Zusage, die die Regel nicht haelt, und
+       der Nutzer hat ausdruecklich gesagt: nichts ist sichtbar, ausser
+       es wird abgeschickt.
+
+       Der Absender bleibt lesend dabei — er muss die Antwort sehen. */
+    function anliegenFuerMich() {
+      return resource.data.uid == request.auth.uid
+        || isChef()
+        || (resource.data.an == 'leiter' && manages(resource.data.get('studioKey', '')));
+    }
+    /* Antworten darf nur der Kreis, an den es ging — und NUR die vier
+       Felder der Antwort. Ohne hasOnly koennte die Leitung Titel und
+       Text umschreiben; dann stuende hinterher etwas anderes da, als
+       abgeschickt wurde. */
+    function anliegenAntwort() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['antwort','antwortVon','antwortAm','status'])
+          && request.resource.data.status == 'beantwortet';
+    }
+    function anliegenNeu() {
+      return request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'offen'
+        && !('antwort' in request.resource.data)
+        && (request.resource.data.an == 'chef' || request.resource.data.an == 'leiter');
+    }
+    match /anliegen/{aId} {
+      allow read: if istAktiv() && anliegenFuerMich();
+      allow create: if istAktiv() && anliegenNeu();
+      allow update: if istAktiv()
+        && (isChef() || (resource.data.an == 'leiter'
+                         && manages(resource.data.get('studioKey', ''))))
+        && anliegenAntwort();
+      /* Zurueckziehen darf nur der Absender, und nur solange niemand
+         geantwortet hat. Eine beantwortete Bitte verschwinden zu lassen
+         hiesse, die Antwort mit zu loeschen. */
+      allow delete: if istAktiv() && resource.data.uid == request.auth.uid
+        && resource.data.status == 'offen';
+    }
+
     // ── Schwarzes Brett (für alle Studios gemeinsam) ──
     match /board/{postId} {
       allow read: if istAktiv();
@@ -1509,6 +1557,18 @@ service cloud.firestore {
           allow update: if false;
           allow delete: if inFirma(f) && (manages(studioKey)
             || (istAktiv() && resource.data.uid == request.auth.uid));
+        }
+
+        match /anliegen/{aId} {
+          allow read: if inFirma(f) && (istAktiv() && anliegenFuerMich());
+          allow create: if inFirma(f) && (istAktiv() && anliegenNeu());
+          allow update: if inFirma(f) && (istAktiv()
+            && (isChef() || (resource.data.an == 'leiter'
+                             && manages(resource.data.get('studioKey', ''))))
+            && anliegenAntwort());
+          allow delete: if inFirma(f) && (istAktiv()
+            && resource.data.uid == request.auth.uid
+            && resource.data.status == 'offen');
         }
 
         match /board/{postId} {

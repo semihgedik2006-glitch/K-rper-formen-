@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-CMQX/wkJZtq33pSE/p4JrITt63WXmtpfR5Edml0megs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-1h80iOuuYPrUOKzuDe4uOAFY4q9aN0bP735wWKvthhE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2362,6 +2362,20 @@ button.ich-zeile:active{opacity:.7}
   color:var(--text-2);font-size:var(--t-xs);cursor:pointer}
 .ziel-knopf:hover{border-color:var(--accent);color:var(--accent-d)}
 .ziel-knopf:active{transform:scale(.96)}
+/* ── Stand eines abgeschickten Anliegens ──
+   Die Marke traegt die Aussage, nicht die Farbe allein: „abgeschickt"
+   und „beantwortet" muessen sich auch unterscheiden, wenn jemand
+   Farben schlecht trennt. */
+.anl-stand{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;
+  font-size:var(--t-2xs)}
+.anl-marke{display:inline-flex;align-items:center;padding:var(--s2) var(--s8);
+  border-radius:var(--r-pille);background:var(--f-warn);color:var(--text);
+  font-weight:700}
+.anl-stand.fertig .anl-marke{background:rgba(34,211,238,.14);color:var(--accent-2)}
+.anl-wohin{color:var(--text-3)}
+.anl-antwort{font-size:var(--t-xs);color:var(--text-2);
+  border-left:2px solid var(--accent);padding-left:var(--s8)}
+.anl-von{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
 .ich-neu-zeile .inp{flex:1 1 150px;min-width:0}
 .ich-neu-zeile .ich-datum{flex:0 1 150px}
 .ich-neu-zeile .btn{flex:0 0 auto}
@@ -4029,6 +4043,7 @@ html{font-size:var(--fs,100%)}
             <button class="pm-tab on" data-perstab="todo">To-do</button>
             <button class="pm-tab" data-perstab="notizen">Notizen</button>
             <button class="pm-tab" data-perstab="ziele">Ziele</button>
+            <button class="pm-tab" data-perstab="wuensche">Wünsche</button>
           </div>
           <!-- ── TO-DO ──
                Eigene Punkte, unabhaengig von den Studio-Aufgaben. Die
@@ -4140,6 +4155,53 @@ html{font-size:var(--fs,100%)}
               <summary class="nachfrage-text" id="zielFertigText">Erreicht</summary>
               <div id="zielFertig"></div>
             </details>
+          </div>
+
+          <!-- ── WÜNSCHE ──
+               Drei Bedeutungen, ein Ort:
+
+                 „nur für mich"  eine Merkliste, die niemand sieht
+                 „Vorschlag"     etwas fürs Studio oder für die App
+                 „Schicht"       eine Bitte VOR der Planung
+
+               Urlaub und Schichttausch stehen ABSICHTLICH nicht hier:
+               fuer beides gibt es laengst einen Weg (Urlaubsantrag mit
+               Status, Tausch am Schwarzen Brett). Ein zweiter Weg
+               daneben waere kein Feature, sondern eine zweite Stelle,
+               an der etwas haengenbleiben kann. Deshalb oben nur zwei
+               Verweise dorthin. -->
+          <div id="ichPaneWuensche" style="display:none">
+            <div class="ich-blatt">
+              <div class="ich-neu-zeile">
+                <input class="inp" id="wunschText" maxlength="200"
+                  placeholder="Was wünschst du dir?" />
+                <button class="btn btn-primary btn-sm" id="wunschAdd">Hinzu</button>
+              </div>
+              <div class="chip-row" id="wunschArtWahl" style="margin-top:var(--s8)">
+                <button type="button" class="chip an" data-wunschart="frei"
+                  aria-pressed="true">Nur für mich</button>
+                <button type="button" class="chip" data-wunschart="vorschlag"
+                  aria-pressed="false">Vorschlag</button>
+                <button type="button" class="chip" data-wunschart="schicht"
+                  aria-pressed="false">Schicht</button>
+              </div>
+            </div>
+            <div class="ich-blatt">
+              <div class="ich-kopf">
+                <h3>Meine Wünsche</h3>
+                <span class="ich-zahl-klein" id="wunschZahl"></span>
+              </div>
+              <div id="wunschListe"></div>
+            </div>
+            <div class="ich-blatt">
+              <div class="ich-kopf"><h3>Gibt es schon</h3></div>
+              <p class="hint" style="margin:0 0 var(--s8)">Für diese zwei gibt es
+                einen eigenen Weg — dort wird auch entschieden und nachgehalten.</p>
+              <div class="ziel-knoepfe">
+                <button type="button" class="ziel-knopf" id="wunschZuUrlaub">Urlaub beantragen</button>
+                <button type="button" class="ziel-knopf" id="wunschZuBrett">Schicht tauschen</button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -5029,6 +5091,28 @@ html{font-size:var(--fs,100%)}
                 <input class="inp" id="certBis" type="date" /></div>
               <button class="btn btn-primary btn-sm" id="certAdd">Nachweis speichern</button>
             </div>
+          </div>
+
+          <!-- ── ANLIEGEN ──
+               Was jemand aus seinem persoenlichen Bereich abgeschickt
+               hat. Die Gegenseite zum Knopf „Abschicken" — ohne sie
+               schickt man in die Leere.
+
+               Der Chef sieht alles, eine Studioleitung nur das an ihre
+               Studios Gerichtete. Das steht nicht nur hier, sondern in
+               firestore.rules; geprueft in tests/rules/anliegen.test.js. -->
+          <div class="chef-pane" data-cpane="anliegen" style="display:none">
+            <div class="card">
+              <div class="ich-kopf">
+                <h3>Offen</h3>
+                <span class="ich-zahl-klein" id="anlOffenZahl"></span>
+              </div>
+              <div id="anlOffen"></div>
+            </div>
+            <details class="nachfrage" id="anlFertigBox" style="display:none">
+              <summary class="nachfrage-text" id="anlFertigText">Beantwortet</summary>
+              <div id="anlFertig"></div>
+            </details>
           </div>
 
           <div class="chef-pane" data-cpane="report" style="display:none">
@@ -13571,7 +13655,8 @@ function renderMyShifts(){
    „Persoenlich". Deshalb steht todo/notizen nicht mehr hier. */
 var ICHPANES = { woche:'ichPaneWoche', kalender:'ichPaneKalender',
                  daten:'ichPaneDaten' };
-var PERSPANES = { todo:'ichPaneTodo', notizen:'ichPaneNotizen', ziele:'ichPaneZiele' };
+var PERSPANES = { todo:'ichPaneTodo', notizen:'ichPaneNotizen',
+                  ziele:'ichPaneZiele', wuensche:'ichPaneWuensche' };
 var _ichTab='woche';
 var _persTab='todo';
 var _ichMonat=null;              // erster Tag des gezeigten Monats
@@ -13692,6 +13777,211 @@ function kalenderWeg(btn){
     .then(function(){ kalSperren(btn,false); });
 }
 
+/* ══ WUENSCHE ═══════════════════════════════════════════════════════
+   Drei Bedeutungen, ein Ort — und zwei, die es SCHON GIBT und deshalb
+   hier nicht noch einmal gebaut werden:
+
+     Urlaub          Urlaubsantrag mit Status, den die Verwaltung
+                     ueber alle Studios sieht
+     Schichttausch   am Schwarzen Brett, mit Zusage
+
+   Ein zweiter Weg daneben waere kein Feature, sondern eine zweite
+   Stelle, an der ein Vorgang haengenbleibt. Oben stehen deshalb nur
+   zwei Verweise dorthin. */
+var _ichWuensche = [];
+var _ichWunschUnsub = null;
+var _wunschArt = 'frei';
+var WUNSCH_ARTEN = { frei:'nur für mich', vorschlag:'Vorschlag', schicht:'Schicht' };
+
+function wunschZeileHTML(w){
+  var id=esc(w.id);
+  return '<div class="ziel-zeile'+(w.erledigt?' fertig':'')+'">'+
+    '<div class="ziel-kopf">'+
+      '<span class="ziel-titel">'+esc(w.text)+'</span>'+
+      '<span class="ziel-woher">'+esc(WUNSCH_ARTEN[w.art]||'')+'</span>'+
+    '</div>'+
+    /* „Nur fuer mich" bekommt keinen Abschicken-Knopf. Wer eine
+       Merkliste fuehrt, will sie nicht versehentlich verschicken —
+       und ein Knopf, den man nicht druecken soll, gehoert weg. */
+    (w.art==='frei' ? '' : anliegenStandHTML('wuensche', w))+
+    '<div class="ziel-knoepfe">'+
+      '<button type="button" class="ziel-knopf" data-wunschdone="'+id+'">'+
+        (w.erledigt?'Wieder öffnen':'Erledigt')+'</button>'+
+      '<button type="button" class="ziel-knopf" data-wunschweg="'+id+'">Löschen</button>'+
+    '</div>'+
+  '</div>';
+}
+
+function renderIchWuensche(){
+  var box=$('wunschListe'), zahl=$('wunschZahl'); if(!box) return;
+  var liste=_ichWuensche.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+  var offen=liste.filter(function(w){ return !w.erledigt; });
+  if(zahl) zahl.textContent = offen.length ? String(offen.length) : '';
+  box.innerHTML = liste.length
+    ? liste.map(wunschZeileHTML).join('')
+    : emptyHTML('Noch kein Wunsch',
+        'Trag oben ein, was dir fehlt — „nur für mich" bleibt bei dir.', 'herz');
+}
+
+function wunschRef(id){
+  var ref=privatRef(); return ref ? ref.collection('wuensche').doc(id) : null;
+}
+function wunschAnlegen(){
+  var ref=privatRef(); if(!ref){ toast('Bitte erst anmelden.',true); return; }
+  var feld=$('wunschText'), text=((feld&&feld.value)||'').trim();
+  if(!text){ toast('Da steht noch nichts.',true); if(feld) feld.focus(); return; }
+  withBusy($('wunschAdd'), function(){
+    return ref.collection('wuensche').add({
+      text:text, art:_wunschArt, erledigt:false, ts:Date.now()
+    }).then(function(){ if(feld){ feld.value=''; feld.focus(); } })
+      .catch(function(e){ toast(errMsg(e),true); });
+  });
+}
+function wunschUmschalten(id){
+  var w=_ichWuensche.filter(function(x){ return x.id===id; })[0];
+  var ref=wunschRef(id); if(!w || !ref) return;
+  ref.update({ erledigt:!w.erledigt }).catch(function(e){ toast(errMsg(e),true); });
+}
+function wunschLoeschen(id){
+  var w=_ichWuensche.filter(function(x){ return x.id===id; })[0];
+  var ref=wunschRef(id); if(!ref) return;
+  /* Erst das Abgeschickte wegnehmen, dann das Eigene. Andersherum
+     bliebe bei der Leitung ein Anliegen stehen, dessen Urheber es
+     nicht mehr zuruecknehmen kann. */
+  var vorher = (w && w.gesendetId)
+    ? S('anliegen').doc(w.gesendetId).delete().catch(function(){ })
+    : Promise.resolve();
+  vorher.then(function(){ return ref.delete(); })
+    .then(function(){ toast('Gelöscht ✓'); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+function wunschArtSetzen(art){
+  _wunschArt = WUNSCH_ARTEN[art] ? art : 'frei';
+  document.querySelectorAll('[data-wunschart]').forEach(function(b){
+    var an = b.getAttribute('data-wunschart')===_wunschArt;
+    b.classList.toggle('an', an);
+    b.setAttribute('aria-pressed', an?'true':'false');
+  });
+}
+
+/* ══ ABSCHICKEN ═════════════════════════════════════════════════════
+   EINE Mechanik fuer Ziele UND Wuensche.
+
+   Beim Entwurf war ein „Entwicklungsziel mit der Leitung" als dritte
+   Zielart geplant. Beim Bauen fiel auf: das IST nur ein Ziel, das man
+   abgeschickt hat. Eine eigene Art dafuer waere ein zweiter Weg zum
+   selben Ort gewesen — und haette nebenbei verboten, ein gewoehnliches
+   Ziel zu teilen. Jetzt kann jedes Ziel und jeder Wunsch abgeschickt
+   werden.
+
+   DREI ZUSTAENDE, UND MAN SIEHT SIE:
+     privat        (Voreinstellung, niemand sonst kann es lesen)
+     abgeschickt   liegt in anliegen/, lesbar NUR fuer den gewaehlten
+                   Kreis — nachgewiesen in tests/rules/anliegen.test.js
+     beantwortet   die Antwort steht an der Zeile
+
+   Das Private BLEIBT die Wahrheit; das Abgeschickte ist eine Abschrift
+   mit eigenem Leben (Status, Antwort). Wer nach dem Abschicken den Text
+   aendert, aendert die Abschrift NICHT — sonst stuende bei der Leitung
+   hinterher etwas anderes, als sie beantwortet hat. Zurueckziehen und
+   neu schicken geht jederzeit. */
+var _meineAnliegen = [];
+var _anliegenUnsub = null;
+
+function anliegenZu(quellId){
+  for(var i=0;i<_meineAnliegen.length;i++){
+    var a=_meineAnliegen[i];
+    if(a.quelle && a.quelle.id===quellId) return a;
+  }
+  return null;
+}
+/* Fuer wen ist „meine Studioleitung" zustaendig? Das erste eigene
+   Studio. Wer in mehreren steht, schickt an die Leitung des ersten —
+   eine Auswahl darueber waere ein Fragefenster fuer einen Fall, den es
+   bei dreizehn Studios und einer Handvoll Leuten kaum gibt. */
+function meinStudioKey(){
+  return (session && session.studioKeys && session.studioKeys[0]) || null;
+}
+
+function anliegenSenden(sammlung, doc, an, btn){
+  var ref=privatRef(); if(!ref) return;
+  if(an!=='chef' && an!=='leiter') return;
+  var sk = an==='leiter' ? meinStudioKey() : null;
+  if(an==='leiter' && !sk){
+    toast('Dir ist kein Studio zugeordnet — schick es an die Geschäftsführung.', true);
+    return;
+  }
+  var daten = {
+    art: sammlung==='ziele' ? 'ziel' : (doc.art || 'wunsch'),
+    titel: (sammlung==='ziele' ? doc.titel : doc.text) || '',
+    uid: session.uid, name: session.name || '',
+    an: an, status: 'offen', ts: Date.now(),
+    quelle: { sammlung: sammlung, id: doc.id }
+  };
+  if(sk) daten.studioKey = sk;
+  kalSperren(btn, true);
+  S('anliegen').add(daten)
+    .then(function(neu){
+      return ref.collection(sammlung).doc(doc.id).update({
+        gesendetId: neu.id, gesendetAn: an, gesendetAm: Date.now() });
+    })
+    .then(function(){
+      toast(an==='chef' ? 'An die Geschäftsführung geschickt ✓'
+                        : 'An die Studioleitung geschickt ✓');
+    })
+    .catch(function(e){ toast(errMsg(e),true); })
+    .then(function(){ kalSperren(btn, false); });
+}
+
+function anliegenZurueckziehen(sammlung, doc, btn){
+  var ref=privatRef(); if(!ref || !doc.gesendetId) return;
+  var a=anliegenZu(doc.id);
+  if(a && a.status==='beantwortet'){
+    toast('Darauf wurde schon geantwortet — das bleibt stehen.', true);
+    return;
+  }
+  kalSperren(btn, true);
+  S('anliegen').doc(doc.gesendetId).delete()
+    .then(function(){
+      return ref.collection(sammlung).doc(doc.id).update({
+        gesendetId: null, gesendetAn: null, gesendetAm: null });
+    })
+    .then(function(){ toast('Zurückgezogen ✓'); })
+    .catch(function(e){ toast(errMsg(e),true); })
+    .then(function(){ kalSperren(btn, false); });
+}
+
+/* Die Zeile, die den Zustand zeigt — gleich fuer Ziele und Wuensche.
+   Ohne sie waere „abgeschickt" ein Gefuehl und keine Tatsache: man
+   druecke einen Knopf und sehe danach nichts anderes als vorher. */
+function anliegenStandHTML(sammlung, doc){
+  var wohin = doc.gesendetAn==='chef' ? 'Geschäftsführung' : 'Studioleitung';
+  var id=esc(doc.id);
+  if(!doc.gesendetId){
+    return '<div class="ziel-knoepfe">'+
+      '<button type="button" class="ziel-knopf" data-sendchef="'+sammlung+':'+id+'">' +
+        'An die Geschäftsführung</button>'+
+      '<button type="button" class="ziel-knopf" data-sendleiter="'+sammlung+':'+id+'">' +
+        'An die Studioleitung</button>'+
+    '</div>';
+  }
+  var a=anliegenZu(doc.id);
+  var beantwortet = a && a.status==='beantwortet';
+  return '<div class="anl-stand'+(beantwortet?' fertig':'')+'">'+
+      '<span class="anl-marke">'+(beantwortet?'beantwortet':'abgeschickt')+'</span>'+
+      '<span class="anl-wohin">'+esc(wohin)+'</span>'+
+    '</div>'+
+    (beantwortet && a.antwort
+      ? '<div class="anl-antwort">'+esc(a.antwort)+
+        '<span class="anl-von">'+esc(a.antwortVon||'')+'</span></div>'
+      : '')+
+    (beantwortet ? '' :
+      '<div class="ziel-knoepfe">'+
+        '<button type="button" class="ziel-knopf" data-sendweg="'+sammlung+':'+id+'">' +
+          'Zurückziehen</button>'+
+      '</div>');
+}
+
 /* ══ ZIELE ══════════════════════════════════════════════════════════
    Zwei Bauarten, EIN Balken.
 
@@ -13801,6 +14091,7 @@ function zielZeileHTML(z){
       '<span class="ziel-woher">'+esc(zielWoher(z))+'</span>'+
     '</div>'+
     progressHTML(stand, soll, 'erreicht')+
+    anliegenStandHTML('ziele', z)+
     '<div class="ziel-knoepfe">'+
       (z.art!=='zahl'
         ? '<button type="button" class="ziel-knopf" data-zielplus="'+id+'">+1</button>'+
@@ -13946,6 +14237,22 @@ function ichHorchen(){
       if(imMeinBereich()){ renderIchTodos(); renderIchWoche(); renderIchKalender(); }
     }, function(e){ console.warn('Aufgaben:', e && e.code); });
   }
+  if(!_ichWunschUnsub){
+    _ichWunschUnsub=ref.collection('wuensche').onSnapshot(function(sn){
+      _ichWuensche=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      if(imMeinBereich()) renderIchWuensche();
+    }, function(e){ console.warn('Wünsche:', e && e.code); });
+  }
+  /* Die eigenen abgeschickten Anliegen — nur, um die ANTWORT an der
+     Zeile zeigen zu koennen. Ohne diesen Horcher stuende dort ewig
+     „abgeschickt", auch wenn die Leitung laengst geantwortet hat. */
+  if(!_anliegenUnsub && session && session.uid){
+    _anliegenUnsub=S('anliegen').where('uid','==',session.uid)
+      .onSnapshot(function(sn){
+        _meineAnliegen=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+        if(imMeinBereich()){ renderIchZiele(); renderIchWuensche(); }
+      }, function(e){ console.warn('Anliegen:', e && e.code); });
+  }
   if(!_ichZielUnsub){
     _ichZielUnsub=ref.collection('ziele').onSnapshot(function(sn){
       _ichZiele=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
@@ -13965,7 +14272,10 @@ function ichAufraeumen(){
   if(_ichNotizUnsub){ _ichNotizUnsub(); _ichNotizUnsub=null; }
   if(_ichTodoUnsub){ _ichTodoUnsub(); _ichTodoUnsub=null; }
   if(_ichZielUnsub){ _ichZielUnsub(); _ichZielUnsub=null; }
+  if(_ichWunschUnsub){ _ichWunschUnsub(); _ichWunschUnsub=null; }
+  if(_anliegenUnsub){ _anliegenUnsub(); _anliegenUnsub=null; }
   _ichTermine=[]; _ichNotizen=[]; _ichTodos=[]; _ichZiele=[];
+  _ichWuensche=[]; _meineAnliegen=[]; _wunschArt='frei';
   /* Auch die Probetrainings-Zahlen. Sie gehoeren dem vorigen Konto, und
      auf einem geteilten Geraet stuenden sie sonst im Ziel des naechsten. */
   _probeMeine=null; _probeMeineAt=0; _zielArt='privat';
@@ -14851,6 +15161,7 @@ function persReiterZeigen(t){
     renderIchZiele();
     probeMeineLaden().then(renderIchZiele);
   }
+  if(t==='wuensche'){ wunschArtSetzen(_wunschArt); renderIchWuensche(); }
   foldAufbauen();
 }
 
@@ -16061,6 +16372,11 @@ var CHEFTABS=[
    was:'Firmen anlegen, sperren, Zahlen — nur für den Betreiber'},
   {id:'nachweise',  label:'Nachweise',  ico:ikon('blatt'), chefOnly:true,
    was:'Erste Hilfe, Lizenzen, Einweisungen – was demnächst abläuft'},
+  /* Anliegen stehen VOR der Auswertung: etwas, worauf jemand wartet,
+     gehoert weiter nach vorn als eine Zahl, die man sich holt, wenn man
+     sie braucht. */
+  {id:'anliegen',   label:'Anliegen',   ico:ikon('mail'),
+   was:'Wünsche und Ziele, die jemand abgeschickt hat'},
   {id:'report',     label:'Auswertung', ico:ikon('trendAuf'),
    was:'Bericht über einen Zeitraum, drucken, Excel, Monatsbericht'},
   {id:'system',     label:'System',     ico:ikon('regler'),
@@ -16207,10 +16523,125 @@ function showChefTab(id, keep){
   if(id==='standorte') renderStandorte();
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
+  if(id==='anliegen') anliegenLaden();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
+}
+
+/* ══ ANLIEGEN — DIE SEITE DER LEITUNG ═══════════════════════════════
+   Die Gegenseite zum Knopf „Abschicken". Ohne sie schickt jemand etwas
+   los und es passiert nichts — der schlechteste Zustand von allen, weil
+   man ihn nicht sieht.
+
+   WER SIEHT WAS: der Chef alles, eine Studioleitung nur das an IHRE
+   Studios Gerichtete. Das steht nicht in dieser Funktion, sondern in
+   firestore.rules — hier wird nur abgefragt, was dort erlaubt ist. Die
+   Oberflaeche ist keine Sperre; wer die Konsole oeffnet, ruft den Pfad
+   direkt auf. Geprueft in tests/rules/anliegen.test.js.
+
+   Deshalb auch ZWEI verschiedene Abfragen statt einer breiten: als Chef
+   die ganze Sammlung, als Leitung je Studio mit where(). Eine Abfrage
+   ohne Einschraenkung wuerde bei der Leitung an der Regel scheitern —
+   Firestore prueft jede Zeile, und eine einzige verbotene laesst die
+   ganze Liste scheitern. */
+var _anliegen = [], _anliegenLaeuft = false;
+
+function anliegenLaden(){
+  if(_anliegenLaeuft) return;
+  if(!canManage()) return;
+  _anliegenLaeuft = true;
+  var abfragen;
+  if(isChef()){
+    abfragen = [ S('anliegen').get() ];
+  } else {
+    abfragen = (managedKeys()||[]).map(function(sk){
+      return S('anliegen').where('an','==','leiter').where('studioKey','==',sk).get();
+    });
+  }
+  if(!abfragen.length){ _anliegenLaeuft=false; _anliegen=[]; renderAnliegen(); return; }
+  Promise.all(abfragen.map(function(pr){ return pr.catch(function(){ return null; }); }))
+    .then(function(snaps){
+      var alle = [], gesehen = {};
+      snaps.forEach(function(sn){
+        if(!sn) return;
+        sn.docs.forEach(function(d){
+          if(gesehen[d.id]) return;      // wer zwei Studios leitet, sieht nichts doppelt
+          gesehen[d.id] = true;
+          alle.push(Object.assign({id:d.id}, d.data()));
+        });
+      });
+      _anliegen = alle;
+      renderAnliegen();
+    })
+    .catch(function(e){ console.warn('Anliegen:', e && e.code); })
+    .then(function(){ _anliegenLaeuft = false; });
+}
+
+var ANL_ART = { wunsch:'Wunsch', vorschlag:'Vorschlag', schicht:'Schicht', ziel:'Ziel' };
+
+function anliegenZeileHTML(a){
+  var id=esc(a.id);
+  var offen = a.status!=='beantwortet';
+  return '<div class="ziel-zeile'+(offen?'':' fertig')+'">'+
+    '<div class="ziel-kopf">'+
+      '<span class="ziel-titel">'+esc(a.titel||'')+'</span>'+
+      '<span class="ziel-woher">'+esc(ANL_ART[a.art]||a.art||'')+'</span>'+
+    '</div>'+
+    '<div class="anl-stand'+(offen?'':' fertig')+'">'+
+      '<span class="anl-marke">'+esc(a.name||'Jemand')+'</span>'+
+      '<span class="anl-wohin">'+esc(fmtDateTime(a.ts||0))+
+        (a.studioKey ? ' · '+esc(studioName(a.studioKey)) : '')+'</span>'+
+    '</div>'+
+    (a.text ? '<div class="anl-antwort">'+esc(a.text)+'</div>' : '')+
+    (offen
+      ? '<div class="ich-neu-zeile" style="margin-top:var(--s8)">'+
+          '<input class="inp" data-anlfeld="'+id+'" maxlength="500" '+
+            'placeholder="Antwort …" />'+
+          '<button class="btn btn-primary btn-sm" data-anlsenden="'+id+'">Antworten</button>'+
+        '</div>'
+      : '<div class="anl-antwort">'+esc(a.antwort||'')+
+        '<span class="anl-von">'+esc(a.antwortVon||'')+'</span></div>');
+}
+
+function renderAnliegen(){
+  var box=$('anlOffen'), zahl=$('anlOffenZahl');
+  var fbox=$('anlFertigBox'), fl=$('anlFertig'), ft=$('anlFertigText');
+  if(!box) return;
+  var liste=_anliegen.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+  var offen=liste.filter(function(a){ return a.status!=='beantwortet'; });
+  var fertig=liste.filter(function(a){ return a.status==='beantwortet'; });
+  if(zahl) zahl.textContent = offen.length ? String(offen.length) : '';
+  box.innerHTML = offen.length
+    ? offen.map(anliegenZeileHTML).join('')
+    : emptyHTML('Nichts offen', 'Hier steht, was jemand aus seinem persönlichen '+
+        'Bereich abgeschickt hat.', 'mail');
+  if(fbox){
+    fbox.style.display = fertig.length ? '' : 'none';
+    if(ft) ft.textContent = fertig.length===1 ? '1 beantwortet' : fertig.length+' beantwortet';
+    if(fl) fl.innerHTML = fertig.map(anliegenZeileHTML).join('');
+  }
+}
+
+function anliegenAntworten(id, btn){
+  var feld=document.querySelector('[data-anlfeld="'+id+'"]');
+  var text=((feld&&feld.value)||'').trim();
+  if(!text){ toast('Bitte eine Antwort eintippen.',true); if(feld) feld.focus(); return; }
+  withBusy(btn, function(){
+    /* Genau die vier Felder — mehr laesst die Regel nicht zu, und das
+       ist Absicht: die Leitung antwortet, sie schreibt das Anliegen
+       nicht um. */
+    return S('anliegen').doc(id).update({
+      antwort: text, antwortVon: session.name || '',
+      antwortAm: Date.now(), status: 'beantwortet'
+    }).then(function(){
+      toast('Geantwortet ✓');
+      var a=_anliegen.filter(function(x){ return x.id===id; })[0];
+      if(a){ a.antwort=text; a.antwortVon=session.name||''; a.status='beantwortet'; }
+      renderAnliegen();
+    }).catch(function(e){ toast(errMsg(e),true); });
+  });
 }
 
 /* ── "Braucht Aufmerksamkeit" ──
@@ -21240,6 +21671,85 @@ function bindActions(){
   /* Ein Zuhoerer auf beiden Listen statt einer je Zeile: die Liste wird
      bei jeder Aenderung neu gezeichnet, und Zuhoerer an Zeilen waeren
      dann jedes Mal neue. */
+  // ── Wünsche ──
+  var wAdd=$('wunschAdd'); if(wAdd) wAdd.addEventListener('click', wunschAnlegen);
+  var wText=$('wunschText');
+  if(wText) wText.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); wunschAnlegen(); }
+  });
+  var wArt=$('wunschArtWahl');
+  if(wArt) wArt.addEventListener('click',function(e){
+    var b=e.target.closest('[data-wunschart]'); if(!b) return;
+    wunschArtSetzen(b.getAttribute('data-wunschart'));
+  });
+  /* Die zwei Verweise auf die vorhandenen Wege. Kein zweiter Antrag,
+     kein zweites Tauschbrett — nur ein Klick dorthin. */
+  /* Ueber den Reiter-KNOPF und nicht ueber eine Funktion: die
+     Team-Reiter haengen ihre Logik am Klick, es gibt keine benannte
+     Umschaltung. Und erst nach showView, weil buildTeamTabs() die
+     Leiste neu aufbaut und dabei auf den ersten Reiter zuruecksetzen
+     kann. Ist das Merkmal abgeschaltet, steht der Reiter auf
+     display:none — dann fuehrt der Verweis ins Leere, also sagen wir
+     das lieber. */
+  function zumTeamReiter(welcher, wofuer){
+    showView('team');
+    setTimeout(function(){
+      var b=document.querySelector('[data-teamtab="'+welcher+'"]');
+      if(!b || b.style.display==='none'){
+        toast(wofuer+' ist in dieser Firma abgeschaltet.', true);
+        return;
+      }
+      b.click();
+    }, 60);
+  }
+  var wU=$('wunschZuUrlaub');
+  if(wU) wU.addEventListener('click',function(){ zumTeamReiter('abwesend','Abwesenheiten'); });
+  var wB=$('wunschZuBrett');
+  if(wB) wB.addEventListener('click',function(){ zumTeamReiter('brett','Das Schwarze Brett'); });
+  var wBox=$('wunschListe');
+  if(wBox) wBox.addEventListener('click',function(e){
+    var b=e.target.closest('[data-wunschdone],[data-wunschweg]');
+    if(!b) return;
+    if(b.hasAttribute('data-wunschdone')) return wunschUmschalten(b.getAttribute('data-wunschdone'));
+    return wunschLoeschen(b.getAttribute('data-wunschweg'));
+  });
+
+  /* ── Abschicken und Zurückziehen ──
+     Ein Zuhörer für BEIDE Listen und beide Sammlungen: der Knopf trägt
+     im Attribut, wohin er gehört („ziele:abc"). Zwei getrennte
+     Bindungen wären zwei Stellen, an denen man eine vergisst. */
+  // ── Anliegen beantworten (Verwaltung) ──
+  ['anlOffen','anlFertig'].forEach(function(id){
+    var box=$(id); if(!box) return;
+    box.addEventListener('click',function(e){
+      var b=e.target.closest('[data-anlsenden]'); if(!b) return;
+      anliegenAntworten(b.getAttribute('data-anlsenden'), b);
+    });
+    box.addEventListener('keydown',function(e){
+      if(e.key!=='Enter') return;
+      var f=e.target.closest('[data-anlfeld]'); if(!f) return;
+      e.preventDefault();
+      var k=box.querySelector('[data-anlsenden="'+f.getAttribute('data-anlfeld')+'"]');
+      if(k) k.click();
+    });
+  });
+
+  ['zielListe','zielFertig','wunschListe'].forEach(function(id){
+    var box=$(id); if(!box) return;
+    box.addEventListener('click',function(e){
+      var b=e.target.closest('[data-sendchef],[data-sendleiter],[data-sendweg]');
+      if(!b) return;
+      var roh = b.getAttribute('data-sendchef') || b.getAttribute('data-sendleiter')
+              || b.getAttribute('data-sendweg');
+      var teil = roh.split(':'), sammlung = teil[0], docId = teil.slice(1).join(':');
+      var liste = sammlung==='ziele' ? _ichZiele : _ichWuensche;
+      var doc = liste.filter(function(x){ return x.id===docId; })[0];
+      if(!doc) return;
+      if(b.hasAttribute('data-sendweg')) return anliegenZurueckziehen(sammlung, doc, b);
+      anliegenSenden(sammlung, doc, b.hasAttribute('data-sendchef')?'chef':'leiter', b);
+    });
+  });
+
   ['zielListe','zielFertig'].forEach(function(id){
     var box=$(id); if(!box) return;
     box.addEventListener('click',function(e){
