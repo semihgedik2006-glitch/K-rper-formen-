@@ -139,8 +139,15 @@ const reiter = page => page.evaluate(() => {
       kacheln: [...document.querySelectorAll('.chef-card .cc-title')].map(t => t.textContent),
     }));
     console.log('LEITER Kacheln:', JSON.stringify(l.kacheln));
-    if (l.kacheln.length !== 4) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 4 Kacheln');
+    /* Fünf seit „Anliegen": ein Studioleiter bekommt Wünsche, die an
+       SEIN Studio gerichtet sind, und muss sie beantworten können. Die
+       Sichtbarkeit steht nicht an dieser Kachel, sondern in
+       firestore.rules — er sieht dort nur seine eigenen Studios
+       (tests/rules/anliegen.test.js). */
+    if (l.kacheln.length !== 5) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 5 Kacheln');
     if (l.kacheln.some(k => /Team|Nachweise/.test(k))) errs.push('Leiter sieht einen Chef-Reiter');
+    if (!l.kacheln.some(k => /Anliegen/.test(k)))
+      errs.push('Leiter sieht „Anliegen" nicht — dann kommt an ihn Gerichtetes nie an');
 
     await page.evaluate(() => document.querySelector('[data-cgo="ueberblick"]').click());
     await page.waitForTimeout(900);
