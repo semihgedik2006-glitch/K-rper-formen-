@@ -7282,3 +7282,101 @@ Papier.
 * `test-knoepfe` (215) · `test-gestaltung` · `test-quer` ·
   `test-mein-bereich` · `test-ziele` grün
 * volle Regression
+
+---
+
+# 75 · Die Tagesbrille — abhaken, wo man hinsieht
+
+Runde ⑤ und damit die letzte des persönlichen Bereichs.
+
+Seit Runde 72 gilt: **angezeigt drüben, gepflegt hier.** Die Wochenliste
+zeigte die eigene Aufgabe, zum Bearbeiten ging es nach „Persönlich".
+Was fehlte, war das Naheliegendste: **abhaken.**
+
+Wer morgens sieht, was ansteht, will es wegtippen können. Dafür die
+Seite zu wechseln macht aus einem Handgriff drei — und genau daran
+scheitert eine Tagesansicht.
+
+## Zwei Bedienelemente, also kein Knopf mehr
+
+Die Zeile war seit Runde 72 ein einziger `<button>`. Mit einem Kästchen
+darin geht das nicht: **ein `<button>` in einem `<button>` gibt es
+nicht.** Also wieder ein `div` mit zwei Bedienelementen — einem Kästchen
+und dem Text, der hinüberführt. Beide mit der Tastatur erreichbar.
+
+Das Kästchen ist **dasselbe wie in der To-do-Liste** (`.ich-hak`): 24px
+sichtbar, über `::after inset:-10px` auf 44px Fingerziel gedehnt. Ein
+zweites zu erfinden hieße, zwei Haken zu pflegen, die gleich aussehen
+sollen.
+
+## Beide Sorten, eine Stelle
+
+Abhaken geht für die **eigenen To-dos** und für **Studio-Aufgaben**, die
+mir zugewiesen sind. Dafür musste `ichEintraegeFuer()` erst einmal
+Kennungen mitgeben — sie standen bisher gar nicht in der Zeile, weil
+niemand sie brauchte.
+
+Und das Schreiben einer Studio-Aufgabe steht jetzt in einer eigenen
+Funktion `aufgabeHaken()`, statt in der Klickbindung der Aufgabenliste:
+
+> Eine Abschrift wäre eine zweite Stelle, an der `doneByUid` vergessen
+> wird — und **genau das ist dort schon einmal passiert.** Der Kommentar
+> an der alten Stelle erzählt es: die Attrappe lieferte das Feld, der
+> Durchlauf war grün, geprüft wurde etwas, das die App nicht schrieb.
+
+## Der Durchlauf wurde rot, und das war richtig
+
+`test-mein-bereich` prüfte „die To-do-Zeile ist ein `<button>`". Nach
+dem Umbau ist sie ein `div` — also rot.
+
+**Nicht aufgeweicht, sondern verschärft.** Aus einer Prüfung wurden
+fünf:
+
+* der Text ist ein Knopf (Tastatur)
+* es gibt ein Kästchen mit `role="checkbox"`
+* das Kästchen ist **≥44px** — gemessen wird die über `::after`
+  gedehnte Fläche, nicht das sichtbare Kästchen
+* das Abhaken **schreibt** nach `privat/<uid>/aufgaben` mit
+  `erledigt:true`
+* das Abhaken springt **nicht** nebenbei auf den zweiten Schreibtisch
+
+Der letzte ist der, den man ohne Prüfung nie bemerkt: zwei
+Bedienelemente in einer Zeile, und wer das Kästchen trifft, will
+abhaken — nicht die Seite wechseln.
+
+## Drei Sonden, alle mit Treffer-Zählung
+
+Seit Runde 74 zählt jede Sonde erst, ob sie überhaupt gegriffen hat.
+
+```
+Haken weglassen                    Treffer 1 → 3 rot
+Beim Abhaken zusätzlich springen   Treffer 1 → 1 rot
+Fingerziel-Dehnung entfernen       Treffer 1 → „nur 24px hoch"
+```
+
+## Geprüft
+
+* `test-mein-bereich` — von einer Prüfung auf fünf, drei Sonden
+* `test-knoepfe` (215) · `test-gestaltung` · `test-quer` ·
+  `test-bewegung-ich` · `test-todos` grün
+* volle Regression
+
+## Der Plan ist damit durch
+
+```
+① Rahmen + Umzug     ✅ Runde 72
+② Ziele              ✅ Runde 73
+③ Wünsche + Absenden ✅ Runde 74
+④ Leitungs-Seite     ✅ Runde 74
+⑤ Tagesbrille        ✅ Runde 75
+```
+
+**Was der persönliche Bereich jetzt kann:** Woche und Kalender mit
+Betrieb und Privatem nebeneinander, abhaken direkt in der Tagesliste,
+eigene To-dos und Notizen, Ziele in zwei Bauarten, Wünsche in drei
+Bedeutungen — und für Ziele wie Wünsche ein Weg nach draußen, den man
+selbst gehen muss, mit sichtbarem Zustand und Antwort.
+
+**Was ausdrücklich NICHT dazugekommen ist:** ein zweiter Weg für Urlaub
+oder Schichttausch. Beides hat seinen eigenen, und der bleibt der
+einzige.
