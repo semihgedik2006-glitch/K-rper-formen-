@@ -117,7 +117,7 @@ const ansicht = page => page.evaluate(() => {
     // Geprueft wird jetzt, dass jeder Reiter aus CHEFTABS genau eine
     // Kachel hat und keine doppelt ist.
     const ERWARTET = ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise',
-                      'Auswertung', 'System'];
+                      'Anliegen', 'Auswertung', 'System'];
     ERWARTET.forEach(function (w) {
       if (!uebersicht.kacheln.some(function (k) { return k.indexOf(w) >= 0; })) {
         errs.push('Kachel „' + w + '" fehlt in der Verwaltung');

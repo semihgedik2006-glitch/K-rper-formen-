@@ -7156,3 +7156,129 @@ Ebenfalls nicht dabei: eine Frist am Ziel (und damit im Kalender).
 * `test-knoepfe` erweitert (215 Knöpfe) · `test-gestaltung` ·
   `test-mein-bereich` · `test-quer` · `test-rahmen` grün
 * volle Regression
+
+---
+
+# 74 · Wünsche — und der erste Weg nach draußen
+
+Runde ③ des persönlichen Bereichs. Bis hierher war alles dort privat.
+Diese Runde baut den einen Weg heraus — und zwar so, dass man ihn
+selbst gehen muss.
+
+## Eine Vereinfachung, die beim Bauen entstand
+
+Geplant war eine dritte Zielart „Entwicklungsziel mit der Leitung".
+Beim Bauen fiel auf: **das IST nur ein Ziel, das man abgeschickt hat.**
+
+Eine eigene Art dafür wäre ein zweiter Weg zum selben Ort gewesen — und
+hätte nebenbei verboten, ein gewöhnliches Ziel zu teilen. Jetzt hat
+*jedes* Ziel und *jeder* Wunsch denselben Knopf. Weniger Code, mehr
+möglich.
+
+## Drei Zustände, und man sieht sie
+
+```
+privat        Voreinstellung. Niemand sonst kann es lesen.
+abgeschickt   liegt in anliegen/, lesbar NUR für den gewählten Kreis
+beantwortet   die Antwort steht an der Zeile
+```
+
+**Das Private bleibt die Wahrheit**, das Abgeschickte ist eine Abschrift
+mit eigenem Leben. Wer nach dem Abschicken den Text ändert, ändert die
+Abschrift nicht — sonst stünde bei der Leitung hinterher etwas anderes,
+als sie beantwortet hat. Zurückziehen und neu schicken geht jederzeit;
+eine **beantwortete** Bitte nicht mehr, sonst wäre die Antwort mit weg.
+
+## Die erste Sammlung, die nicht jeder Aktive lesen darf
+
+Abwesenheiten, Übergaben und das Schwarze Brett stehen dem ganzen Team
+offen. Das ist dort richtig. Bei `anliegen` wäre es der ganze
+Unterschied:
+
+> Ein Anliegen an die Geschäftsführung, das der Kollege nebenan
+> mitliest, ist kein Anliegen an die Geschäftsführung.
+
+`tests/rules/anliegen.test.js` — **45 Prüfungen in beiden Welten**, und
+der Kern ist die Liste dessen, was NICHT geht:
+
+* Kollege liest ein fremdes Anliegen
+* Studioleitung liest eines, das an den Chef ging
+* Studioleitung eines **fremden** Studios liest mit
+* jemand schickt in fremdem Namen ab
+* jemand legt es gleich als „beantwortet" an
+* **die Leitung schreibt den Text um statt zu antworten**
+* der Absender zieht eine beantwortete Bitte zurück
+* ein Kollege löscht ein fremdes Anliegen
+
+Der vorletzte Fall ist der teuerste: ohne `hasOnly(['antwort',
+'antwortVon','antwortAm','status'])` könnte die Leitung den Titel
+ändern, und hinterher stünde etwas anderes da, als abgeschickt wurde.
+
+Dazu ein eigener Abschnitt für **Abfragen**: Firestore prüft bei einer
+Liste jede Zeile, und eine einzige verbotene lässt die ganze Abfrage
+scheitern. Deshalb fragt der Chef die ganze Sammlung ab, eine
+Studioleitung je Studio mit `where()`.
+
+## Was NICHT gebaut wurde, obwohl es auf der Liste stand
+
+**Urlaub und Schichttausch.** Für beides gibt es längst einen Weg —
+Urlaubsantrag mit Status, den die Verwaltung über alle Studios sieht,
+und Schichttausch am Schwarzen Brett mit Zusage. Ein zweiter Weg
+daneben wäre kein Feature, sondern eine zweite Stelle, an der ein
+Vorgang liegen bleibt.
+
+Im Wünsche-Reiter stehen deshalb nur **zwei Verweise** dorthin. Und
+wenn das Merkmal in einer Firma abgeschaltet ist, sagt der Verweis das,
+statt ins Leere zu führen.
+
+Neu ist nur, was es wirklich noch nicht gab: der **Schichtwunsch vor
+der Planung** — als gewöhnliches Anliegen an die Studioleitung.
+
+## Die Gegenseite, sonst wäre es ein Knopf ins Nichts
+
+Verwaltung → **Anliegen**. Der Chef sieht alles, eine Studioleitung nur
+das an ihre Studios Gerichtete. Antworten geht in einer Zeile.
+
+Ein Knopf, der etwas losschickt, ohne dass irgendwo etwas ankommt, ist
+der schlechteste Zustand von allen — weil man ihn nicht sieht. Deshalb
+kam ④ in dieselbe Runde.
+
+## Eine Lehre über das Prüfen selbst
+
+Drei Sonden gegen den neuen Durchlauf. Die erste meldete **nichts** —
+und sah damit aus wie „die Prüfung greift nicht". Der wahre Grund war
+mein eigenes Zitieren in der Sonde: sie hatte die Datei gar nicht
+verändert.
+
+> **Eine Sonde, die nicht bestätigt, dass sie gegriffen hat, beweist
+> nichts.** Seitdem zählt jede Sonde erst ihre Treffer.
+
+Mit Treffer-Zählung dann alle drei rot:
+
+```
+„Nur für mich" bekommt einen Abschicken-Knopf → FALLE erkannt
+Rückverweis weglassen                        → 2 rot
+Beim Antworten ein fünftes Feld              → erkannt
+```
+
+Die letzte ist die wichtigste: schriebe der Client ein fünftes Feld,
+wäre es im Durchlauf grün und in Produktion von der Regel abgelehnt.
+Der Durchlauf zählt deshalb die Felder, statt nur zu prüfen, dass
+geschrieben wurde.
+
+## Und ein Fund von test-gestaltung
+
+Zweimal `2px` fest hingeschrieben statt `var(--s2)`. Kleinigkeit — aber
+genau so franst eine Leiter aus, und dann gibt es sie nur noch auf dem
+Papier.
+
+## Geprüft
+
+* `tests/rules/anliegen.test.js` (neu) — **45 Prüfungen**, beide Welten,
+  zwei Sonden gegen die Regel (Lesen freigeben → 5 rot; `hasOnly`
+  entfernen → 3 rot)
+* `tests/test-wuensche.js` (neu) — Wünsche, Abschicken, Antwort,
+  Leitungs-Seite; drei Sonden mit eigenem Rot
+* `test-knoepfe` (215) · `test-gestaltung` · `test-quer` ·
+  `test-mein-bereich` · `test-ziele` grün
+* volle Regression

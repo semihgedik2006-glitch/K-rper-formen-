@@ -478,7 +478,7 @@ var USERS = [
            Nur wenn ein Durchlauf window.__privat vorher hinlegt — sonst
            saehen alle anderen ploetzlich Eintraege, wo sie einen leeren
            Zustand erwarten. */
-        var gp = /^privat\/[^/]+\/(termine|notizen|aufgaben|ziele)$/.exec(path);
+        var gp = /^privat\/[^/]+\/(termine|notizen|aufgaben|ziele|wuensche)$/.exec(path);
         if (gp) {
           var pl = ((window.__privat || {})[gp[1]] || []);
           return Promise.resolve(makeSnap(pl.map(function (d) {
@@ -497,6 +497,7 @@ var USERS = [
           : gd ? (DEVICES[gd[1]] || [])
           : gl ? (DEVLOG[gl[1]] || [])
           : gt ? ((window.__todos || TODOS)[gt[1]] || [])
+          : (path === 'anliegen' ? (window.__anliegen || [])
           : (path === 'certificates' ? (window.__certs || CERTS)
           /* probetrainings fehlte hier, obwohl onSnapshot sie kennt —
              dieselbe Luecke wie zuvor bei board und den Uebergaben. Wer
@@ -507,7 +508,7 @@ var USERS = [
              Abfrage lesen. */
           : (path === 'probetrainings' ? (window.__probe || PROBE)
           : (path === 'statistik' ? (window.__statistik || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))));
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -550,7 +551,23 @@ var USERS = [
           catch (e) { console.error(e); }
           return unsub();
         }
-        var mp = /^privat\/[^/]+\/(termine|notizen|aufgaben|ziele)$/.exec(path);
+        /* Anliegen: die eigenen abgeschickten. Ohne diesen Zweig bliebe
+           _meineAnliegen leer, und an der Zeile stuende ewig
+           „abgeschickt" — auch nach einer Antwort. */
+        if (path === 'anliegen') {
+          var al = (window.__anliegen || []);
+          var self2 = this;
+          if (self2._filter && self2._filter.length) {
+            al = al.filter(function (d) {
+              return self2._filter.every(function (f) { return d[f.f] === f.v; });
+            });
+          }
+          try { cb(makeSnap(al.map(function (d) {
+            return { id: d.id, data: function () { return d; } }; }))); }
+          catch (e) { console.error(e); }
+          return unsub();
+        }
+        var mp = /^privat\/[^/]+\/(termine|notizen|aufgaben|ziele|wuensche)$/.exec(path);
         if (mp) {
           var pl2 = ((window.__privat || {})[mp[1]] || []);
           try { cb(makeSnap(pl2.map(function (d) {
