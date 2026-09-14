@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3eSLViPXHo1OyoVH/K9QuH5TfKlhaAcW/pwX94epF8Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-deUFFZhiRtJ+rE3B2Rr4df1V8yAqUXOoy27s64yfFqc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2173,15 +2173,32 @@ html.demo .demo-bar{display:flex;align-items:center;gap:var(--s10);
 .gl-txt{min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 .gl-txt b{font-weight:700;line-height:var(--lh-eng);overflow-wrap:anywhere}
 .gl-txt span{color:var(--text-2);font-size:var(--t-xs)}
-#fwdModal,#keysModal{position:fixed;inset:0;z-index:215;display:none;
+#fwdModal,#keysModal,#oeffnungModal{position:fixed;inset:0;z-index:215;display:none;
   align-items:center;justify-content:center;padding:var(--s20);
   background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   animation:fadeBlur .3s var(--ease-ios)}
-#fwdModal.show,#keysModal.show{display:flex}
-#fwdModal.show .pm-box,#keysModal.show .pm-box{animation:sheetIn .46s var(--spring)}
+#fwdModal.show,#keysModal.show,#oeffnungModal.show{display:flex}
+/* Eine Zeile je Wochentag: Haken, von, bis. Der Tagesname traegt den
+   Haken, damit die ganze Beschriftung anklickbar ist — ein 18px-Kaestchen
+   allein waere kein Fingerziel. */
+.oz-zeile{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) 0}
+.oz-zeile + .oz-zeile{border-top:1px solid var(--line)}
+.oz-tag{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:var(--s8);
+  min-height:44px;cursor:pointer;font-size:var(--t-sm);font-weight:600}
+.oz-tag input{accent-color:var(--accent);width:18px;height:18px;flex-shrink:0}
+.oz-tag span{overflow:hidden;text-overflow:ellipsis}
+.oz-zeit{flex:0 0 auto;width:98px;min-height:44px;padding:0 var(--s6);
+  font-variant-numeric:tabular-nums}
+.oz-zeit:disabled{opacity:.4}
+.oz-bis{flex:0 0 auto;font-size:var(--t-2xs);color:var(--text-3)}
+@media (max-width:400px){
+  .oz-zeit{width:86px}
+  .oz-bis{display:none}
+}
+#fwdModal.show .pm-box,#keysModal.show .pm-box,#oeffnungModal.show .pm-box{animation:sheetIn .46s var(--spring)}
 @media (max-width:620px){
-  #fwdModal,#keysModal{align-items:flex-end;padding:0}
-  #fwdModal .pm-box,#keysModal .pm-box{
+  #fwdModal,#keysModal,#oeffnungModal{align-items:flex-end;padding:0}
+  #fwdModal .pm-box,#keysModal .pm-box,#oeffnungModal .pm-box{
     max-width:none;border-radius:var(--radius) var(--radius) 0 0;border-bottom:none;
     padding:var(--s20) var(--s20) calc(var(--s24) + var(--sab));max-height:88vh}
   #fwdModal.show .pm-box,#keysModal.show .pm-box{animation:sheetUp .5s var(--ease-ios)}
@@ -4104,6 +4121,28 @@ html{font-size:var(--fs,100%)}
               <div id="ichCerts"></div>
               <button class="mini-link ich-cert-neu" id="ichCertNeu">Nachweis eintragen</button>
             </div>
+            <!-- PIN für das Stempeln am Tablet. Steht hier und nicht in
+                 der Verwaltung: setzen darf sie nur die Person selbst.
+                 Es gibt bewusst keinen Weg, über den die Leitung eine
+                 PIN vergibt oder zurücksetzt — wer das kann, kann auch
+                 für jemanden stempeln. -->
+            <div class="ich-blatt" id="ichPinKarte">
+              <div class="ich-kopf">
+                <h3>Meine Stempel-PIN</h3>
+                <span class="ich-zahl-klein" id="ichPinStand"></span>
+              </div>
+              <p class="hint" id="ichPinText" style="margin:0 0 10px">
+                Mit dieser PIN stempelst du am Tablet im Studio.</p>
+              <div class="field" id="ichPinAltWrap" style="display:none">
+                <label for="ichPinAlt">Bisherige PIN</label>
+                <input class="inp" id="ichPinAlt" type="password" inputmode="numeric"
+                       autocomplete="off" maxlength="6" placeholder="••••" /></div>
+              <div class="field"><label for="ichPinNeu">Neue PIN (4 bis 6 Ziffern)</label>
+                <input class="inp" id="ichPinNeu" type="password" inputmode="numeric"
+                       autocomplete="new-password" maxlength="6" placeholder="••••" /></div>
+              <button class="btn btn-primary btn-sm" id="ichPinBtn"
+                      style="width:100%">PIN speichern</button>
+            </div>
             <div class="ich-blatt" id="ichZahlenKarte">
               <div class="ich-kopf">
                 <h3>Meine Zahlen</h3>
@@ -5478,6 +5517,23 @@ html{font-size:var(--fs,100%)}
     <p class="hint" id="fwdPreview" style="margin-bottom:14px"></p>
     <input class="inp" id="fwdSearch" type="search" placeholder="Kanal oder Person suchen …" autocomplete="off" style="margin-bottom:12px" />
     <div id="fwdList"></div>
+  </div>
+</div>
+
+<!-- Öffnungszeiten je Studio. Gebraucht für die Zeiterfassung: ohne sie
+     lässt sich „wie lange war der Laden unbeaufsichtigt" nicht stellen. -->
+<div id="oeffnungModal">
+  <div class="pm-box">
+    <button class="lb-close" id="oeffnungClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="oeffnungTitel" style="margin-bottom:6px">Öffnungszeiten</h3>
+    <p class="hint" style="margin-bottom:14px">Wann ist geöffnet? Nur
+      innerhalb dieser Zeiten zählt später, ob jemand im Studio war.
+      Ein Tag ohne Haken gilt als geschlossen.</p>
+    <div id="oeffnungListe"></div>
+    <button type="button" class="btn btn-ghost btn-sm" id="oeffnungAlle"
+            style="width:100%;margin-top:10px">Für alle Tage übernehmen</button>
+    <button type="button" class="btn btn-primary btn-sm" id="oeffnungSpeichern"
+            style="width:100%;margin-top:10px">Öffnungszeiten speichern</button>
   </div>
 </div>
 
@@ -7713,6 +7769,140 @@ function firmaAnlegen(btn){
   });
 }
 
+/* ══ ÖFFNUNGSZEITEN JE STUDIO ═══════════════════════════════════════
+   Gebraucht werden sie für die Zeiterfassung, genauer für die Frage
+   „wie lange war der Laden unbeaufsichtigt". Ohne Öffnungszeit ist
+   nachts jedes Studio unbeaufsichtigt, und das ist richtig so — die
+   Frage lässt sich ohne diese Angabe gar nicht stellen.
+
+   SIE LIEGEN IM VORHANDENEN STUDIO-DOKUMENT und nicht in einer eigenen
+   Sammlung. Das ist keine Bequemlichkeit: config/studios hat bereits
+   Regeln, die nur die Leitung schreiben lassen, und die Liste wird
+   ohnehin überall gelesen, wo Studios vorkommen. Eine neue Sammlung
+   hiesse eine neue Regel, eine neue Pruefung und einen zweiten Ort, an
+   dem etwas fehlen kann.
+
+   Aufbau je Studio:  oeffnung: { mo:'07:00-21:00', …, so:'' }
+   Leerer Wert heisst geschlossen. Kein Wert heisst „nicht gepflegt" —
+   das ist etwas anderes als geschlossen, und die Auswertung muss den
+   Unterschied kennen, sonst meldet sie für jedes ungepflegte Studio
+   vierundzwanzig Stunden ohne Aufsicht.                              */
+var WOCHENTAGE = [
+  { k:'mo', lang:'Montag' },     { k:'di', lang:'Dienstag' },
+  { k:'mi', lang:'Mittwoch' },   { k:'do', lang:'Donnerstag' },
+  { k:'fr', lang:'Freitag' },    { k:'sa', lang:'Samstag' },
+  { k:'so', lang:'Sonntag' }
+];
+
+/* '07:00-21:00' -> { von:'07:00', bis:'21:00' }; alles Unbrauchbare
+   wird zu null. Die Zeiten kommen aus einem <input type="time">, sind
+   also normalerweise sauber — aber sie stehen in der Datenbank und
+   koennen von dort auch anders kommen. */
+function zeitPaar(wert){
+  var m = /^(\d{2}:\d{2})-(\d{2}:\d{2})$/.exec(String(wert||''));
+  return m ? { von:m[1], bis:m[2] } : null;
+}
+function minuten(hhmm){
+  var m = /^(\d{2}):(\d{2})$/.exec(String(hhmm||''));
+  return m ? (+m[1])*60 + (+m[2]) : null;
+}
+
+/* Kurzfassung für den Knopf in der Studioliste. */
+function oeffnungKurz(st){
+  var o = (st && st.oeffnung) || null;
+  if(!o) return 'Zeiten';
+  var offen = WOCHENTAGE.filter(function(t){ return zeitPaar(o[t.k]); });
+  if(!offen.length) return 'Zeiten';
+  /* Sind alle gepflegten Tage gleich, steht die Zeit selbst da — das ist
+     die haeufigste Lage und spart einen Klick zum Nachsehen. */
+  var erste = o[offen[0].k];
+  var gleich = offen.every(function(t){ return o[t.k]===erste; });
+  return gleich && offen.length>=5 ? esc(erste) : offen.length+' Tage';
+}
+
+var _oeffnungStudio = null;
+
+function oeffnungOeffnen(id){
+  var st=_studioListe.filter(function(x){ return x.id===id; })[0];
+  if(!st) return;
+  _oeffnungStudio = id;
+  var t=$('oeffnungTitel'); if(t) t.textContent = 'Öffnungszeiten · ' + st.name;
+  var o = st.oeffnung || {};
+  var box=$('oeffnungListe');
+  box.innerHTML = WOCHENTAGE.map(function(tag){
+    var p = zeitPaar(o[tag.k]);
+    return '<div class="oz-zeile">'+
+      '<label class="oz-tag"><input type="checkbox" class="oz-an" data-tag="'+tag.k+'"'+
+        (p?' checked':'')+' /><span>'+tag.lang+'</span></label>'+
+      '<input class="inp oz-zeit" type="time" data-von="'+tag.k+'" value="'+(p?p.von:'07:00')+'"'+
+        (p?'':' disabled')+' aria-label="'+tag.lang+' von" />'+
+      '<span class="oz-bis">bis</span>'+
+      '<input class="inp oz-zeit" type="time" data-bis="'+tag.k+'" value="'+(p?p.bis:'21:00')+'"'+
+        (p?'':' disabled')+' aria-label="'+tag.lang+' bis" />'+
+    '</div>';
+  }).join('');
+  box.querySelectorAll('.oz-an').forEach(function(c){
+    c.addEventListener('change',function(){
+      var tag=c.getAttribute('data-tag');
+      box.querySelectorAll('[data-von="'+tag+'"],[data-bis="'+tag+'"]').forEach(function(i){
+        i.disabled = !c.checked;
+      });
+    });
+  });
+  $('oeffnungModal').classList.add('show');
+}
+
+function oeffnungSchliessen(){
+  $('oeffnungModal').classList.remove('show');
+  _oeffnungStudio = null;
+}
+
+/* Alle sieben Tage auf den Wert des ersten angehakten setzen. Die
+   haeufigste Eingabe im Studio ist „jeden Tag dasselbe"; sie sieben Mal
+   zu tippen ist der schnellste Weg, dass es niemand pflegt. */
+function oeffnungUebernehmen(){
+  var box=$('oeffnungListe');
+  var erster=null;
+  WOCHENTAGE.forEach(function(tag){
+    var an=box.querySelector('.oz-an[data-tag="'+tag.k+'"]');
+    if(!erster && an && an.checked) erster=tag.k;
+  });
+  if(!erster){ toast('Erst einen Tag anhaken.',true); return; }
+  var von=box.querySelector('[data-von="'+erster+'"]').value;
+  var bis=box.querySelector('[data-bis="'+erster+'"]').value;
+  WOCHENTAGE.forEach(function(tag){
+    var an=box.querySelector('.oz-an[data-tag="'+tag.k+'"]');
+    if(!an.checked){ an.checked=true; an.dispatchEvent(new Event('change')); }
+    box.querySelector('[data-von="'+tag.k+'"]').value=von;
+    box.querySelector('[data-bis="'+tag.k+'"]').value=bis;
+  });
+}
+
+function oeffnungSpeichern(btn){
+  var id=_oeffnungStudio; if(!id) return;
+  var box=$('oeffnungListe');
+  var neu={}, fehler=null;
+  WOCHENTAGE.forEach(function(tag){
+    var an=box.querySelector('.oz-an[data-tag="'+tag.k+'"]');
+    if(!an || !an.checked){ neu[tag.k]=''; return; }
+    var von=box.querySelector('[data-von="'+tag.k+'"]').value;
+    var bis=box.querySelector('[data-bis="'+tag.k+'"]').value;
+    var a=minuten(von), b=minuten(bis);
+    if(a===null || b===null){ fehler = tag.lang+': Zeit fehlt'; return; }
+    /* Bis vor Von waere eine Nachtschicht ueber Mitternacht. Die gibt es
+       in einem EMS-Studio nicht, und sie einfach zuzulassen hiesse, dass
+       die Abdeckungsrechnung spaeter stillschweigend Unsinn ergibt. */
+    if(b<=a){ fehler = tag.lang+': „bis" muss nach „von" liegen'; return; }
+    neu[tag.k]=von+'-'+bis;
+  });
+  if(fehler){ toast(fehler,true); return; }
+  withBusy(btn, function(){
+    return studiosSpeichern(_studioListe.map(function(x){
+      return x.id===id ? Object.assign({}, x, { oeffnung: neu }) : x;
+    }), 'Öffnungszeiten gespeichert ✓').then(oeffnungSchliessen);
+  });
+}
+
 /* ── Studios verwalten (nur Chef) ──
    Drei Handgriffe: anlegen, umbenennen, schließen. Löschen gibt es nicht,
    und der Grund steht als eigene Karte daneben, weil er nicht offensicht-
@@ -7731,9 +7921,14 @@ function renderStandorte(){
         '<span class="st-sub">'+esc(st.id)+(zu?' · geschlossen':'')+'</span>'+
       '</div>'+
       '<button class="mini-x" data-stum="'+esc(st.id)+'">umbenennen</button>'+
+      '<button class="mini-x" data-stzeit="'+esc(st.id)+'">'+oeffnungKurz(st)+'</button>'+
       '<button class="mini-x" data-stzu="'+esc(st.id)+'">'+(zu?'öffnen':'schließen')+'</button>'+
     '</div>';
   }).join('');
+
+  box.querySelectorAll('[data-stzeit]').forEach(function(b){
+    b.addEventListener('click',function(){ oeffnungOeffnen(b.getAttribute('data-stzeit')); });
+  });
 
   box.querySelectorAll('[data-stum]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -15164,6 +15359,7 @@ function renderIchDaten(){
   }
   ichCertsLaden();
   ichZahlenLaden();
+  ichPinLaden();
 }
 
 /* Nachweise: dieselbe Abfrage wie im Einstellungs-Fenster, nur an einer
@@ -15229,6 +15425,83 @@ function ichCertsLaden(){
 
 /* Eigene Zahlen. Bewusst ohne Vergleich mit anderen: eine Rangliste ist
    schnell gebaut und macht aus einem persoenlichen Bereich einen Pranger. */
+/* ══ STEMPEL-PIN ════════════════════════════════════════════════════
+   Setzen darf sie nur die Person selbst, und nur über den Server. Aus
+   dem Browser gibt es keinen Schreibweg: `zeitPins` steht in
+   firestore.rules auf `if false`, für alle, auch für den Eigentümer.
+
+   Der Grund steht dort ausführlich. Kurz: wer den Hash lesen kann,
+   probiert vier Ziffern in Sekunden durch und stempelt danach für die
+   Person — und dann ist die ganze Aufzeichnung als Nachweis wertlos.
+
+   Die Oberfläche hier erfährt deshalb nur JA oder NEIN und seit wann.
+   Nicht, wie lang die PIN ist. Eine Auskunft über die Länge nimmt dem,
+   der sie erraten will, schon Arbeit ab. */
+var _pinGesetzt = null;
+
+function pinFunktion(name){
+  return firebase.app().functions(KONFIG.region).httpsCallable(name);
+}
+
+function ichPinLaden(){
+  var karte=$('ichPinKarte'); if(!karte) return;
+  pinFunktion('pinStatus')({})
+    .then(function(r){
+      var d=(r&&r.data)||{};
+      _pinGesetzt = !!d.gesetzt;
+      ichPinZeichnen(d.seit||0);
+    })
+    .catch(function(){
+      /* Kein Netz oder die Funktion ist noch nicht ausgerollt. Dann
+         steht hier ehrlich nichts statt einer erfundenen Auskunft. */
+      _pinGesetzt = null;
+      ichPinZeichnen(0);
+    });
+}
+
+function ichPinZeichnen(seit){
+  var stand=$('ichPinStand'), text=$('ichPinText'),
+      altW=$('ichPinAltWrap'), btn=$('ichPinBtn');
+  if(!stand) return;
+  if(_pinGesetzt === null){
+    stand.textContent='—';
+    text.textContent='Der Stand lässt sich gerade nicht abfragen.';
+    altW.style.display='none';
+    if(btn) btn.textContent='PIN speichern';
+    return;
+  }
+  stand.textContent = _pinGesetzt ? 'gesetzt' : 'fehlt noch';
+  text.textContent = _pinGesetzt
+    ? 'Zum Ändern brauchst du die bisherige PIN — auch die Leitung kann sie nicht zurücksetzen.'
+    : 'Mit dieser PIN stempelst du am Tablet im Studio.';
+  if(_pinGesetzt && seit){
+    text.textContent += ' Gesetzt am ' + new Date(seit).toLocaleDateString('de-DE') + '.';
+  }
+  altW.style.display = _pinGesetzt ? '' : 'none';
+  if(btn) btn.textContent = _pinGesetzt ? 'PIN ändern' : 'PIN speichern';
+}
+
+function ichPinSpeichern(btn){
+  var neu=String(($('ichPinNeu')||{}).value||'').trim();
+  var alt=String(($('ichPinAlt')||{}).value||'').trim();
+  if(!/^\d{4,6}$/.test(neu)){
+    toast('Die PIN muss aus 4 bis 6 Ziffern bestehen.',true); return;
+  }
+  if(_pinGesetzt && !alt){
+    toast('Bitte auch die bisherige PIN eingeben.',true); return;
+  }
+  withBusy(btn, function(){
+    return pinFunktion('pinSetzen')({ pin:neu, alt:alt })
+      .then(function(){
+        $('ichPinNeu').value=''; if($('ichPinAlt')) $('ichPinAlt').value='';
+        _pinGesetzt = true;
+        ichPinZeichnen(Date.now());
+        toast('PIN gespeichert ✓'); tick(8);
+      })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+
 function ichZahlenLaden(){
   var box=$('ichZahlen'), karte=$('ichZahlenKarte'); if(!box || !session) return;
   if(!featureAn('probe')){ if(karte) karte.style.display='none'; return; }
@@ -22329,6 +22602,9 @@ function bindActions(){
   var ichCertBtn=$('ichCertNeu');
   if(ichCertBtn) ichCertBtn.addEventListener('click',function(){ openProfile('nachweise'); });
 
+  var pinBtn=$('ichPinBtn');
+  if(pinBtn) pinBtn.addEventListener('click',function(){ ichPinSpeichern(this); });
+
   // ── Team: Reiter, Schichten, Abwesenheiten, Übergabe, Brett ──
   document.querySelectorAll('[data-teamtab]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -22680,6 +22956,13 @@ function bindActions(){
     if(stf) stf.addEventListener('keydown', function(e){
       if(e.key==='Enter'){ e.preventDefault(); studioAnlegen($('stNeuBtn')); }
     });
+
+    var ozC=$('oeffnungClose');
+    if(ozC) ozC.addEventListener('click', oeffnungSchliessen);
+    var ozA=$('oeffnungAlle');
+    if(ozA) ozA.addEventListener('click', oeffnungUebernehmen);
+    var ozS=$('oeffnungSpeichern');
+    if(ozS) ozS.addEventListener('click', function(){ oeffnungSpeichern(this); });
 
     var asn=$('archSaveNow'); if(asn) asn.addEventListener('click',function(){
       var btn=this;

@@ -841,11 +841,105 @@ async function reiterOeffnen(p, tab) {
     }
   }
 
+  /* ── Die Stempel-PIN ──────────────────────────────────────────────
+     Sie steht hier und nicht in der Verwaltung, weil nur die Person
+     selbst sie setzen darf. Geprüft wird vor allem eines: dass der
+     Browser sie NICHT in die Datenbank schreibt. Der einzige Weg ist
+     die Server-Funktion — aus dem Browser gibt es keinen, `zeitPins`
+     steht in den Regeln auf `if false`. Ein direkter Schreibversuch
+     würde dort scheitern, aber er dürfte gar nicht erst unternommen
+     werden. */
+  {
+    await p.evaluate(() => {
+      document.querySelector('.mobnav [data-group="g-ich"]').click();
+    });
+    await p.waitForTimeout(400);
+    await p.evaluate(() => {
+      const t = document.querySelector('[data-ichtab="daten"]');
+      if (t) t.click();
+    });
+    await p.waitForTimeout(900);
+
+    const karte = await p.evaluate(() => {
+      const k = document.getElementById('ichPinKarte');
+      if (!k) return { da: false };
+      return {
+        da: true,
+        sichtbar: getComputedStyle(k).display !== 'none',
+        stand: (document.getElementById('ichPinStand') || {}).textContent || '',
+        altSichtbar: getComputedStyle(document.getElementById('ichPinAltWrap')).display !== 'none',
+        typNeu: (document.getElementById('ichPinNeu') || {}).type,
+        knopf: (document.getElementById('ichPinBtn') || {}).textContent || ''
+      };
+    });
+    console.log('PIN-Karte:', JSON.stringify(karte));
+    if (!karte.da) errs.push('Die Karte für die Stempel-PIN fehlt im Ich-Bereich');
+    else {
+      if (!karte.sichtbar) errs.push('Die PIN-Karte ist da, aber unsichtbar');
+      if (karte.typNeu !== 'password') {
+        errs.push('Das PIN-Feld ist vom Typ „' + karte.typNeu + '" statt password — ' +
+          'am Empfang steht die PIN sonst für jeden lesbar auf dem Schirm');
+      }
+      if (karte.altSichtbar) {
+        errs.push('Das Feld für die bisherige PIN steht da, obwohl noch keine gesetzt ist');
+      }
+    }
+
+    /* Der Kern: schreibt der Browser selbst? */
+    const geschrieben = await p.evaluate(async () => {
+      window.__schreib = [];
+      window.__aufruf = null;
+      const neu = document.getElementById('ichPinNeu');
+      neu.value = '2946';
+      document.getElementById('ichPinBtn').click();
+      await new Promise(r => setTimeout(r, 900));
+      return {
+        direkt: (window.__schreib || []).filter(w => /zeitPins/.test(w.pfad || '')).length,
+        alleSchreib: (window.__schreib || []).length,
+        funktion: window.__aufruf ? window.__aufruf.name : null,
+        pinImAufruf: window.__aufruf && window.__aufruf.data ? window.__aufruf.data.pin : null,
+        feldLeer: neu.value === ''
+      };
+    });
+    console.log('PIN-Speichern:', JSON.stringify(geschrieben));
+    if (geschrieben.direkt) {
+      errs.push('Der Browser schreibt selbst nach zeitPins — der einzige Weg ist die Server-Funktion');
+    }
+    if (geschrieben.funktion !== 'pinSetzen') {
+      errs.push('Aufgerufen wurde „' + geschrieben.funktion + '" statt pinSetzen');
+    }
+    if (geschrieben.pinImAufruf !== '2946') {
+      errs.push('Die PIN kommt nicht bei der Funktion an (' + geschrieben.pinImAufruf + ')');
+    }
+    if (!geschrieben.feldLeer) {
+      errs.push('Das Eingabefeld behält die PIN nach dem Speichern — sie steht dann ' +
+        'am Empfang noch auf dem Schirm');
+    }
+
+    /* Eine zu kurze PIN darf gar nicht erst losgeschickt werden. Die
+       Funktion lehnt sie auch ab, aber ein Rundgang zum Server für
+       etwas, das der Browser selbst sieht, ist eine Sekunde Warten
+       ohne Gegenwert. */
+    const zuKurz = await p.evaluate(async () => {
+      window.__aufruf = null;
+      document.getElementById('ichPinNeu').value = '12';
+      document.getElementById('ichPinBtn').click();
+      await new Promise(r => setTimeout(r, 600));
+      return { funktion: window.__aufruf ? window.__aufruf.name : null,
+               meldung: (document.getElementById('toast') || {}).textContent || '' };
+    });
+    console.log('Zu kurz:', JSON.stringify(zuKurz));
+    if (zuKurz.funktion) errs.push('Eine zweistellige PIN geht trotzdem an den Server');
+    if (!/Ziffern/.test(zuKurz.meldung)) {
+      errs.push('Die Meldung erklärt nicht, was falsch ist: „' + zuKurz.meldung + '"');
+    }
+  }
+
   await b.close();
   console.log(errs.length
     ? '\n✗ ' + errs.join('\n✗ ')
     : '\n✓ Mein Bereich: zwei Ansichten, fünf Reiter, der Weg dazwischen hält, ' +
       'der Kalender zählt richtig, Termine und To-dos landen unter privat/<uid>/, ' +
-      'keine Erklärungsabsätze — mit Gegenproben');
+      'die Stempel-PIN geht nur über den Server — mit Gegenproben');
   process.exit(errs.length ? 1 : 0);
 })();

@@ -981,6 +981,21 @@ service cloud.firestore {
       allow read, write: if false;
       match /versions/{versionId} { allow read, write: if false; }
     }
+
+    /* ── Zeiterfassung: die PIN ──────────────────────────────────────
+       GESPERRT FUER ALLE, und das ist keine Bequemlichkeit. Hier liegt
+       scrypt(PIN, Salz) je Person. Wer den Hash lesen kann, probiert
+       vier Ziffern in Sekunden durch und stempelt danach fuer den
+       Kollegen — dann ist die ganze Aufzeichnung als Nachweis wertlos.
+
+       Auch DIE PERSON SELBST darf nicht lesen. Sie muss es auch nicht:
+       gesetzt wird ueber pinSetzen, geprueft wird im Server. Eine Regel
+       `if request.auth.uid == uid` waere hier der bequeme Fehler.
+
+       Geschrieben wird ausschliesslich von den Cloud Functions; die
+       unterliegen diesen Regeln nicht. */
+    match /zeitPins/{uid} { allow read, write: if false; }
+
     match /appointments/{apptId}     { allow read, write: if false; }
     match /emailTemplates/{tplId}    { allow read, write: if false; }
     match /studioMetrics/{studioKey} { allow read, write: if false; }
@@ -1596,6 +1611,21 @@ service cloud.firestore {
           allow read, write: if false;
           match /versions/{versionId} { allow read, write: if false; }
         }
+
+        /* ── Zeiterfassung: die PIN ──────────────────────────────────────
+           GESPERRT FUER ALLE, und das ist keine Bequemlichkeit. Hier liegt
+           scrypt(PIN, Salz) je Person. Wer den Hash lesen kann, probiert
+           vier Ziffern in Sekunden durch und stempelt danach fuer den
+           Kollegen — dann ist die ganze Aufzeichnung als Nachweis wertlos.
+
+           Auch DIE PERSON SELBST darf nicht lesen. Sie muss es auch nicht:
+           gesetzt wird ueber pinSetzen, geprueft wird im Server. Eine Regel
+           `if request.auth.uid == uid` waere hier der bequeme Fehler.
+
+           Geschrieben wird ausschliesslich von den Cloud Functions; die
+           unterliegen diesen Regeln nicht. */
+        match /zeitPins/{uid} { allow read, write: if false; }
+
         match /appointments/{apptId}     { allow read, write: if false; }
         match /emailTemplates/{tplId}    { allow read, write: if false; }
         match /studioMetrics/{studioKey} { allow read, write: if false; }

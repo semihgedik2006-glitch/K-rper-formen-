@@ -3522,7 +3522,155 @@ exports.kalender = region.https.onRequest(async (req, res) => {
   }
 });
 
+/* ══════════════════════════════════════════════════════════════════════
+   ZEITERFASSUNG — SCHRITT 2: DIE PIN
+
+   Gestempelt wird am Tablet im Studio (docs/ZEITERFASSUNG-PLAN.md). Damit
+   das Tablet weiss, WER stempelt, braucht jede Person eine kurze PIN.
+
+   AN DIESER STELLE STEHT ODER FAELLT DAS GANZE SYSTEM. Kann irgendjemand
+   die PIN eines anderen lesen, kann er fuer ihn stempeln — und dann ist
+   die Aufzeichnung als Nachweis nichts mehr wert.
+
+   Deshalb vier Regeln, und keine davon ist verhandelbar:
+
+   1. GESPEICHERT WIRD NIE DIE PIN, sondern scrypt(PIN, Salz). Ein Hash
+      allein genuegt nicht: vier Ziffern sind zehntausend Moeglichkeiten,
+      eine Regenbogentabelle dafuer passt auf einen USB-Stick. Das Salz
+      ist je Person zufaellig, und scrypt ist absichtlich langsam.
+
+   2. NIEMAND DARF IHN LESEN. Nicht der Kollege, nicht die Leitung, nicht
+      der Chef, NICHT EINMAL DIE PERSON SELBST. Lesen muss ihn niemand;
+      pruefen tut ihn der Server. In firestore.rules steht die Sammlung
+      deshalb auf `if false` — wie appointments und emailTemplates.
+
+   3. VERGLICHEN WIRD ZEITGLEICH (timingSafeEqual). Bei vier Ziffern ist
+      der Zeitunterschied theoretisch — aber er kostet nichts, und die
+      App macht es beim Kalender-Link schon so.
+
+   4. SETZEN DARF NUR DIE PERSON SELBST. Kein Chef-Weg, keine
+      Zuruecksetzung durch die Leitung mit anschliessendem "ich sag dir
+      deine neue PIN". Wer seine PIN vergisst, setzt eine neue — mit
+      seinem Passwort, also mit dem, was er ohnehin hat.
+
+   WAS DAS NICHT LEISTET, und das steht auch im Plan: wer die PIN eines
+   Kollegen KENNT, kann fuer ihn stempeln. Das ist bei jedem PIN-System
+   so. Verhindert wird das Stempeln von zu Hause — dafuer sorgt das
+   Terminal, nicht die PIN.
+   ══════════════════════════════════════════════════════════════════════ */
+const PIN_LAENGE_MIN = 4;
+const PIN_LAENGE_MAX = 6;
+
+/* Ziffernfolgen, die praktisch keine sind. Eine 1234 ist kein Schutz,
+   sondern eine Einladung — und sie waere die haeufigste Wahl. */
+function pinZuSchwach(pin) {
+  if (/^(\d)\1*$/.test(pin)) return 'Alle Ziffern gleich';
+  let auf = true, ab = true;
+  for (let i = 1; i < pin.length; i++) {
+    if (+pin[i] !== +pin[i - 1] + 1) auf = false;
+    if (+pin[i] !== +pin[i - 1] - 1) ab = false;
+  }
+  if (auf || ab) return 'Ziffern der Reihe nach';
+  return null;
+}
+
+function pinHashen(pin, salz) {
+  /* scrypt mit den Vorgaben von Node. N=16384 ist der Standardwert und
+     braucht auf der Function rund 50 ms — genug, um zehntausend
+     Moeglichkeiten teuer zu machen, wenig genug fuer einen Stempel. */
+  return require('crypto').scryptSync(String(pin), String(salz), 32).toString('hex');
+}
+
+/* Zu welcher Firma gehoert der Anrufer? Dieselbe Weiche wie ueberall:
+   ohne Feld ist es der eigene Betrieb. */
+async function anruferProfil(context) {
+  requireAuth(context);
+  const snap = await db.collection('users').doc(context.auth.uid).get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('failed-precondition', 'Kein Profil gefunden.');
+  }
+  const p = snap.data() || {};
+  if (p.aktiv === false) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieser Zugang ist noch nicht freigegeben.');
+  }
+  return { uid: context.auth.uid, profil: p, firma: p.firma || null };
+}
+
+/* ── PIN setzen oder aendern ──
+   Wer schon eine hat, muss die alte nennen. Sonst koennte ein fremdes
+   Handy, das jemand kurz offen liegen laesst, die PIN ueberschreiben —
+   und danach fuer diese Person stempeln. */
+exports.pinSetzen = region.https.onCall(async (data, context) => {
+  const { uid, firma } = await anruferProfil(context);
+  const neu = String((data && data.pin) || '').trim();
+  const alt = String((data && data.alt) || '').trim();
+
+  if (!new RegExp('^\\d{' + PIN_LAENGE_MIN + ',' + PIN_LAENGE_MAX + '}$').test(neu)) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Die PIN muss aus ' + PIN_LAENGE_MIN + ' bis ' + PIN_LAENGE_MAX + ' Ziffern bestehen.');
+  }
+  const schwach = pinZuSchwach(neu);
+  if (schwach) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Diese PIN ist zu einfach (' + schwach + '). Bitte eine andere wählen.');
+  }
+
+  const ref = W(firma).collection('zeitPins').doc(uid);
+  const vorher = await ref.get();
+  if (vorher.exists) {
+    const d = vorher.data() || {};
+    if (!alt) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Bitte zuerst die bisherige PIN eingeben.');
+    }
+    if (!tokenGleich(pinHashen(alt, d.salz), d.hash)) {
+      throw new functions.https.HttpsError('permission-denied',
+        'Die bisherige PIN stimmt nicht.');
+    }
+  }
+
+  const salz = require('crypto').randomBytes(16).toString('hex');
+  await ref.set({
+    hash: pinHashen(neu, salz),
+    salz: salz,
+    gesetztAm: Date.now(),
+    /* Der Name steht MIT DABEI, obwohl er auch im Profil liegt. Grund:
+       das Terminal listet Personen, bevor jemand eine PIN eingetippt
+       hat — und es darf dafuer nicht die ganze Nutzerliste lesen
+       duerfen. Spaeter liest die Stempel-Funktion hier nach. */
+    name: (await db.collection('users').doc(uid).get()).data().name || ''
+  });
+  return { ok: true, gesetzt: true };
+});
+
+/* ── Hat diese Person schon eine PIN? ──
+   Gibt ausdruecklich NUR ja/nein und das Datum zurueck. Kein Hash, kein
+   Salz, keine Laenge — eine Auskunft, die verraet, wie lang die PIN ist,
+   nimmt dem Angreifer schon Arbeit ab. */
+exports.pinStatus = region.https.onCall(async (data, context) => {
+  const { uid, firma } = await anruferProfil(context);
+  const snap = await W(firma).collection('zeitPins').doc(uid).get();
+  return { gesetzt: snap.exists, seit: snap.exists ? (snap.data() || {}).gesetztAm || 0 : 0 };
+});
+
+/* ── Pruefen ──
+   KEIN exports., also kein Endpunkt. Diese Funktion benutzt spaeter das
+   Stempeln; von aussen aufrufbar waere sie ein Orakel, an dem man eine
+   vierstellige PIN in Minuten durchprobiert.
+
+   Die Bremse dagegen gehoert in den Stempel-Weg und nicht hierher —
+   sie steht als Schritt 4 im Plan. */
+async function pinPruefen(firma, uid, pin) {
+  const snap = await W(firma).collection('zeitPins').doc(String(uid || '')).get();
+  if (!snap.exists) return false;
+  const d = snap.data() || {};
+  if (!d.salz || !d.hash) return false;
+  return tokenGleich(pinHashen(String(pin || ''), d.salz), d.hash);
+}
+
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
-                     berlinDatum, tagDanach, erledigt };
+                     berlinDatum, tagDanach, erledigt,
+                     pinZuSchwach, pinHashen, pinPruefen };
