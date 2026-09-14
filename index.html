@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-1h80iOuuYPrUOKzuDe4uOAFY4q9aN0bP735wWKvthhE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-hhd0KcsKiHjeRCduh01+Jt+vMoGlybFuFLrP7kmJk2s='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2193,6 +2193,16 @@ button.ich-zeile{width:100%;text-align:inherit;background:none;border:none;
 button.ich-zeile:first-child{border-top:none}
 button.ich-zeile:hover .ich-was{color:var(--accent-d)}
 button.ich-zeile:active{opacity:.7}
+/* Der Textknopf in einer Wochenzeile. Dieselbe Falle wie oben, nur eine
+   Ebene tiefer: ein <button> bringt Schrift, Rahmen und Mitte mit. Ohne
+   diesen Block saehe die eine anklickbare Zeile anders aus als die
+   zwanzig daneben — und die Schriftgroesse kommt hier vom .ich-zeile
+   darueber, deshalb font-size:inherit und nicht die Kurzform `font`. */
+.ich-was-knopf{background:none;border:none;padding:0;margin:0;cursor:pointer;
+  text-align:inherit;color:inherit;font-family:inherit;font-size:inherit;
+  font-weight:inherit;line-height:inherit}
+.ich-was-knopf:hover{color:var(--accent-d)}
+.ich-was-knopf:active{opacity:.7}
 .ich-tag{flex:0 0 auto;min-width:88px;color:var(--text-2)}
 .ich-zeile.heute .ich-tag{color:var(--accent)}
 .ich-was{flex:1;min-width:0}
@@ -13864,6 +13874,18 @@ function wunschArtSetzen(art){
   });
 }
 
+/* Eine Studio-Aufgabe abhaken. Steht als eigene Funktion da, seit es
+   ZWEI Stellen gibt: die Aufgabenliste und die Wochenliste in „Ich".
+   Eine Abschrift waere eine zweite Stelle, an der doneByUid vergessen
+   wird — und genau das ist hier schon einmal passiert (der Kommentar
+   an der Aufgabenliste erzaehlt es). */
+function aufgabeHaken(sk, id, done){
+  return S('studios').doc(sk).collection('todos').doc(id)
+    .update({ done:done, doneBy:done?session.name:null,
+              doneByUid:done?session.uid:null,
+              doneAt:done?Date.now():null });
+}
+
 /* ══ ABSCHICKEN ═════════════════════════════════════════════════════
    EINE Mechanik fuer Ziele UND Wuensche.
 
@@ -14425,13 +14447,15 @@ function ichEintraegeFuer(key){
   // Eigene To-dos mit Frist stehen an ihrem Tag mit drin.
   _ichTodos.forEach(function(t){
     if(t.erledigt || t.frist!==key) return;
-    raus.push({ art:'todo', zeit:'', text:t.text||'To-do', zusatz:'', dazu:'' });
+    raus.push({ art:'todo', zeit:'', text:t.text||'To-do', zusatz:'', dazu:'',
+      id:t.id });
   });
   (session && session.studioKeys || []).forEach(function(sk){
     (cachedTodos[sk]||[]).forEach(function(t){
       if(t.assignedTo!==session.uid || isDone(t) || isArchived(t)) return;
       if(!t.due || ymd(new Date(t.due))!==key) return;
-      raus.push({ art:'aufgabe', zeit:'', text:t.title||'Aufgabe', zusatz:'', dazu:'' });
+      raus.push({ art:'aufgabe', zeit:'', text:t.title||'Aufgabe', zusatz:'', dazu:'',
+        id:t.id, sk:sk });
     });
   });
   return raus.sort(function(a,b){ return (a.zeit||'~').localeCompare(b.zeit||'~'); });
@@ -14445,17 +14469,65 @@ var ICH_QUELLE={ dienst:'Dienst', frei:'Frei', privat:'nur du',
    eigene Termine werden im Kalender daneben bearbeitet, nicht drueben.
    Ein Knopf und kein div, damit die Zeile auch mit der Tastatur
    erreichbar ist; ohne das waere der einzige Weg dorthin die Maus. */
+/* ── Eine Zeile der Woche ──
+   ABHAKEN GEHT HIER, BEARBEITEN DRUEBEN. Wer morgens sieht, was ansteht,
+   will es wegtippen koennen — dafuer die Seite zu wechseln macht aus
+   einem Handgriff drei. Anlegen und Aendern bleibt unter „Persoenlich".
+
+   Deshalb ist die Zeile ein div mit ZWEI Bedienelementen und nicht mehr
+   ein einziger Knopf: ein <button> in einem <button> gibt es nicht, und
+   die Zeile ohne Haken waere wieder nur ein Weg woandershin.
+
+   Das Kaestchen ist dasselbe wie in der To-do-Liste (.ich-hak): 24px
+   sichtbar, ueber ::after auf 44px Fingerziel gedehnt. Ein zweites
+   Kaestchen zu erfinden hiesse, zwei Haken zu pflegen, die gleich
+   aussehen sollen. */
 function ichZeileHTML(x, tagText, heute){
-  var hin = x.art==='todo';
-  return '<'+(hin?'button type="button" data-zutodo="1"':'div')+
-    ' class="ich-zeile'+(heute?' heute':'')+(hin?' klickbar':'')+'">'+
+  var hakbar = (x.art==='todo' || x.art==='aufgabe') && x.id;
+  var hin = x.art==='todo' && x.id;
+  return '<div class="ich-zeile'+(heute?' heute':'')+'">'+
     (tagText!==null ? '<span class="ich-tag">'+esc(tagText)+'</span>' : '')+
-    '<span class="ich-was">'+esc(x.text)+'</span>'+
+    (hakbar
+      ? '<button type="button" class="ich-hak" role="checkbox" aria-checked="false" '+
+          'data-wohak="'+esc(x.art)+':'+esc(x.id)+':'+esc(x.sk||'')+'" '+
+          'aria-label="'+esc('Abhaken: '+x.text)+'">'+HAKEN_SVG+'</button>'
+      : '')+
+    (hin
+      ? '<button type="button" class="ich-was ich-was-knopf" data-zutodo="'+esc(x.id)+'">'+
+          esc(x.text)+'</button>'
+      : '<span class="ich-was">'+esc(x.text)+'</span>')+
     (x.zusatz?'<span class="ich-zeit">'+esc(x.zusatz)+'</span>':'')+
     '<span class="ich-quelle'+(x.art==='privat'||x.art==='todo'?' privat':'')+'">'+
       esc(ICH_QUELLE[x.art]||'')+'</span>'+
     (x.dazu?'<div class="ich-dazu">'+esc(x.dazu)+'</div>':'')+
-    '</'+(hin?'button':'div')+'>';
+    '</div>';
+}
+
+/* Abhaken aus der Wochenliste. Beide Sorten, eine Stelle.
+   Sofort durchstreichen und dann erst schreiben: wer abhakt, will nicht
+   auf den Server warten — und wenn es scheitert, zeichnet der Horcher
+   die Liste ohnehin neu. */
+function ichWocheHaken(knopf){
+  var teil=(knopf.getAttribute('data-wohak')||'').split(':');
+  var art=teil[0], id=teil[1], sk=teil[2];
+  if(!id) return;
+  knopf.classList.add('an');
+  knopf.setAttribute('aria-checked','true');
+  var schreiben;
+  if(art==='todo'){
+    var ref=privatRef(); if(!ref) return;
+    schreiben = ref.collection('aufgaben').doc(id)
+      .update({ erledigt:true, erledigtAm:Date.now() });
+  } else {
+    if(!sk) return;
+    schreiben = aufgabeHaken(sk, id, true);
+  }
+  schreiben.then(function(){ tick(8); })
+    .catch(function(e){
+      knopf.classList.remove('an');
+      knopf.setAttribute('aria-checked','false');
+      toast(errMsg(e),true);
+    });
 }
 
 function renderIchWoche(){
@@ -14477,6 +14549,9 @@ function renderIchWoche(){
     'Termine trägst du im Kalender ein, To-dos unter „Persönlich".', 'kalender');
   box.querySelectorAll('[data-zutodo]').forEach(function(b){
     b.addEventListener('click', function(){ _persTab='todo'; showView('persoenlich'); });
+  });
+  box.querySelectorAll('[data-wohak]').forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); ichWocheHaken(b); });
   });
 }
 
@@ -16021,10 +16096,7 @@ function bindTodoClicks(area){
          Beinahe waere es unbemerkt geblieben: die Attrappe lieferte das
          Feld, der Durchlauf war gruen — geprueft wurde damit etwas, das
          die App gar nicht schreibt. */
-      S('studios').doc(sk).collection('todos').doc(id)
-        .update({done:done,doneBy:done?session.name:null,
-                 doneByUid:done?session.uid:null,doneAt:done?Date.now():null})
-        .catch(function(e){ toast(errMsg(e),true); });
+      aufgabeHaken(sk, id, done).catch(function(e){ toast(errMsg(e),true); });
     });
     // Teilschritte abhaken
     node.querySelectorAll('[data-step]').forEach(function(li){

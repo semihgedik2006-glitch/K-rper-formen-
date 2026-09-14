@@ -34,7 +34,12 @@ const {
 } = require('@firebase/rules-unit-testing');
 
 const REGELN = path.join(__dirname, '..', '..', 'firestore.rules');
-const A = 'alpha', B = 'beta';
+/* A ist die Kennung des ERSTEN Betriebs, nicht irgendein Name: dieser
+   Durchlauf fasst auch FLACHE Pfade an, und die haengen seit dem
+   Schliessen des Kreuz-Lecks an aufFlachenPfaden() — firma leer ODER
+   die Kennung des ersten Betriebs. Ein erfundenes „alpha" waere dort
+   zu Recht ausgesperrt. */
+const A = 'koerperformen', B = 'beta';
 
 let env;
 let bestanden = 0, gefallen = 0;

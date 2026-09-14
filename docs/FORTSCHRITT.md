@@ -7282,3 +7282,270 @@ Papier.
 * `test-knoepfe` (215) · `test-gestaltung` · `test-quer` ·
   `test-mein-bereich` · `test-ziele` grün
 * volle Regression
+
+---
+
+# 75 · Die Tagesbrille — abhaken, wo man hinsieht
+
+Runde ⑤ und damit die letzte des persönlichen Bereichs.
+
+Seit Runde 72 gilt: **angezeigt drüben, gepflegt hier.** Die Wochenliste
+zeigte die eigene Aufgabe, zum Bearbeiten ging es nach „Persönlich".
+Was fehlte, war das Naheliegendste: **abhaken.**
+
+Wer morgens sieht, was ansteht, will es wegtippen können. Dafür die
+Seite zu wechseln macht aus einem Handgriff drei — und genau daran
+scheitert eine Tagesansicht.
+
+## Zwei Bedienelemente, also kein Knopf mehr
+
+Die Zeile war seit Runde 72 ein einziger `<button>`. Mit einem Kästchen
+darin geht das nicht: **ein `<button>` in einem `<button>` gibt es
+nicht.** Also wieder ein `div` mit zwei Bedienelementen — einem Kästchen
+und dem Text, der hinüberführt. Beide mit der Tastatur erreichbar.
+
+Das Kästchen ist **dasselbe wie in der To-do-Liste** (`.ich-hak`): 24px
+sichtbar, über `::after inset:-10px` auf 44px Fingerziel gedehnt. Ein
+zweites zu erfinden hieße, zwei Haken zu pflegen, die gleich aussehen
+sollen.
+
+## Beide Sorten, eine Stelle
+
+Abhaken geht für die **eigenen To-dos** und für **Studio-Aufgaben**, die
+mir zugewiesen sind. Dafür musste `ichEintraegeFuer()` erst einmal
+Kennungen mitgeben — sie standen bisher gar nicht in der Zeile, weil
+niemand sie brauchte.
+
+Und das Schreiben einer Studio-Aufgabe steht jetzt in einer eigenen
+Funktion `aufgabeHaken()`, statt in der Klickbindung der Aufgabenliste:
+
+> Eine Abschrift wäre eine zweite Stelle, an der `doneByUid` vergessen
+> wird — und **genau das ist dort schon einmal passiert.** Der Kommentar
+> an der alten Stelle erzählt es: die Attrappe lieferte das Feld, der
+> Durchlauf war grün, geprüft wurde etwas, das die App nicht schrieb.
+
+## Der Durchlauf wurde rot, und das war richtig
+
+`test-mein-bereich` prüfte „die To-do-Zeile ist ein `<button>`". Nach
+dem Umbau ist sie ein `div` — also rot.
+
+**Nicht aufgeweicht, sondern verschärft.** Aus einer Prüfung wurden
+fünf:
+
+* der Text ist ein Knopf (Tastatur)
+* es gibt ein Kästchen mit `role="checkbox"`
+* das Kästchen ist **≥44px** — gemessen wird die über `::after`
+  gedehnte Fläche, nicht das sichtbare Kästchen
+* das Abhaken **schreibt** nach `privat/<uid>/aufgaben` mit
+  `erledigt:true`
+* das Abhaken springt **nicht** nebenbei auf den zweiten Schreibtisch
+
+Der letzte ist der, den man ohne Prüfung nie bemerkt: zwei
+Bedienelemente in einer Zeile, und wer das Kästchen trifft, will
+abhaken — nicht die Seite wechseln.
+
+## Drei Sonden, alle mit Treffer-Zählung
+
+Seit Runde 74 zählt jede Sonde erst, ob sie überhaupt gegriffen hat.
+
+```
+Haken weglassen                    Treffer 1 → 3 rot
+Beim Abhaken zusätzlich springen   Treffer 1 → 1 rot
+Fingerziel-Dehnung entfernen       Treffer 1 → „nur 24px hoch"
+```
+
+## Geprüft
+
+* `test-mein-bereich` — von einer Prüfung auf fünf, drei Sonden
+* `test-knoepfe` (215) · `test-gestaltung` · `test-quer` ·
+  `test-bewegung-ich` · `test-todos` grün
+* volle Regression
+
+## Der Plan ist damit durch
+
+```
+① Rahmen + Umzug     ✅ Runde 72
+② Ziele              ✅ Runde 73
+③ Wünsche + Absenden ✅ Runde 74
+④ Leitungs-Seite     ✅ Runde 74
+⑤ Tagesbrille        ✅ Runde 75
+```
+
+**Was der persönliche Bereich jetzt kann:** Woche und Kalender mit
+Betrieb und Privatem nebeneinander, abhaken direkt in der Tagesliste,
+eigene To-dos und Notizen, Ziele in zwei Bauarten, Wünsche in drei
+Bedeutungen — und für Ziele wie Wünsche ein Weg nach draußen, den man
+selbst gehen muss, mit sichtbarem Zustand und Antwort.
+
+**Was ausdrücklich NICHT dazugekommen ist:** ein zweiter Weg für Urlaub
+oder Schichttausch. Beides hat seinen eigenen, und der bleibt der
+einzige.
+
+---
+
+# 76 · Drei alte Punkte — und der Fund lag jedes Mal woanders
+
+Aus der Liste abgearbeitet: SDK-Lücken prüfen, Angriffsdurchlauf durch
+`werbung.html`, flache Alt-Daten. Bei allen dreien war das Ergebnis
+nicht das erwartete.
+
+## 1 · Der Browser-SDK ist sauber — der Server war es nicht
+
+Firebase JS SDK 10.12.2: **eine** gemeldete Lücke insgesamt
+(CVE-2024-11023, `_authTokenSyncURL` über einen `FIREBASE_DEFAULTS`-
+Cookie), behoben in **10.9.0**. Wir liegen darüber. Zwei Quellen
+befragt, nicht eine: die CVE-Datenbank und die Advisory-Liste bei
+GitHub. Beide nennen genau diese eine.
+
+Nebenbei: die aktuelle Fassung ist **12.19.0**, wir sind zwei
+Hauptversionen zurück. Kein Sicherheitsgrund zu springen — aber wenn
+einmal etwas gemeldet wird, ist der Sprung größer.
+
+**Der eigentliche Fund kam von `npm audit` in `functions/`:**
+
+| | |
+|---|---|
+| **nodemailer 9.0.5** | vier Meldungen, eine davon *hoch* |
+| **qs** (über express) | zwei Meldungen, mittel |
+
+Die schwerwiegendste: *„Recipient-domain validation bypass via RFC 5322
+comment mis-parsing"*. Eine Adresse wie `kunde@gut.de(x)boese.de` wird
+von der Prüfung als `gut.de` gelesen und von nodemailer an
+`gut.deboese.de` zugestellt. Diese App verschickt Terminbestätigungen an
+Endkundinnen — genau der Fall.
+
+Behoben mit dem **kleinsten** Sprung, der alle vier schließt: **9.1.1**
+statt 9.0.5. Der Weg auf 10.x wäre größer gewesen, ohne mehr zu lösen.
+`qs` über einen Override auf 6.16.0. Danach: **0 Lücken**.
+
+`test-mail-versand` bestätigt, dass die Nachrichten unverändert
+gerendert werden — und schreibt die Fassung selbst in seine
+Erfolgsmeldung.
+
+## 2 · Der Angriffsdurchlauf, der keiner sein durfte
+
+Auf der Liste stand „wie `test-xss.js` für die App". Beim Hinsehen war
+die ehrliche Antwort: **so geht es hier nicht.**
+
+`werbung.html` hat **kein `innerHTML`, keine Formulare, keine Datenbank
+und liest nichts aus der Adresszeile** — nachgemessen. Es gibt nichts
+einzuspeisen. Ein Durchlauf, der trotzdem Nutzlast hineinschiebt, wäre
+grün und hätte nichts geprüft.
+
+Gebaut wurde deshalb eine **Härtungsprüfung**: der heutige Zustand ist
+gut, und genau der kann still verlorengehen. Und zwar **gemessen statt
+gelesen** — die Sicherheitsregel wird im laufenden Browser auf die Probe
+gestellt:
+
+* ein nachträglich eingefügtes `<script>` muss scheitern
+* ein nachträglich gesetztes `onclick` muss scheitern
+* **während der eigene Skriptblock der Seite gelaufen sein muss** —
+  ohne diese Hälfte wäre „nichts lief" das grünste Ergebnis von allen
+* kein Ereignis im Markup, jedes `target="_blank"` mit `noopener`
+* sechs Richtlinien, deren Fehlen je eine eigene Tür aufmacht
+* `frame-ancestors` und `X-Frame-Options` als **Dateiprüfung** in
+  `firebase.json`, ausdrücklich so benannt: der örtliche Testserver
+  schickt sie nicht, sie kommen von Firebase Hosting
+
+Zwei Fehler waren dabei meine eigenen:
+
+**Der Durchlauf fand seinen eigenen Müll.** Abschnitt 1 fügt zum Testen
+ein `div` mit `onclick` ein, Abschnitt 3 meldete es als „Ereignis im
+Markup". Jetzt räumt jeder Versuch hinter sich auf.
+
+**Ein zu allgemeiner Suchbegriff.** Gesucht wurde nach `onerror` — und
+gefunden wurde der **Kommentar** im Skriptblock der Seite („Kein onload
+und kein onerror mehr im Markup"). `textContent` nimmt Skripttext mit.
+Jetzt trägt die Nutzlast eine eigene Marke.
+
+## 3 · Der Punkt, der seit Monaten auf eine Messung wartete
+
+In `OFFEN.md` stand: die flachen Pfade sind für **jedes** aktive Konto
+lesbar, auch für eines aus einer zweiten Firma. Ein einfacher
+Mitarbeiter kam an Aufgaben, Chat, Brett, Ankündigungen, Übergaben,
+Dokumente und den Dienstplan. Und daneben: *„lässt sich von hier aus
+nicht messen … keine Regel, die man auf Verdacht ausrollt."*
+
+**Die Messung stand die ganze Zeit in `konfig.js`.**
+
+Dort steht `mandant: true`. Die App arbeitet also längst auf den
+Firmen-Pfaden — und die sind durch `inFirma('koerperformen')` geschützt,
+das verlangt: `firma == 'koerperformen'` **oder** `firma == ''`. Ein
+Konto mit einem anderen Wert wäre dort **seit dem 17.8. ausgesperrt**,
+und das wäre aufgefallen.
+
+Der alte Vorbehalt galt für eine Prüfung auf **leer**. Eine Bedingung,
+die **beides** zulässt, braucht die Verteilung gar nicht:
+
+```
+function aufFlachenPfaden() {
+  return istAktiv()
+    && (meineFirma() == '' || meineFirma() == 'koerperformen');
+}
+```
+
+Angewandt auf **79 Regeln** in 26 Sammlungen. Ausdrücklich *nicht*
+dabei: `users`, `beitritt`, die zwei Registrierungs-Schalter, `privat`,
+`pushTokens`, `firmenArchiv` — ein neues Konto hat noch kein Profil, und
+wer sich anmelden will, muss vorher lesen dürfen.
+
+### Zwei Fehler beim Umbau, beide vom Werkzeug gefunden
+
+**Mehrzeilige Regeln in eine Zeile gequetscht.** Mein erster
+Transformator fügte alle Zeilen einer Regel zusammen — und ein
+`//`-Kommentar darin kommentierte den Rest weg. Der Emulator meldete
+„Unexpected 'allow'" an drei Stellen. Der zweite Anlauf lässt die Zeilen
+stehen und ergänzt nur Kopf und Klammer.
+
+**Ein Drittel der Regeln übersprungen.** Der Umbau fügt Zeilen ein,
+dadurch verschieben sich alle folgenden Blöcke — und ihre gemerkten
+Zeilennummern zeigten ins Leere. Sichtbar wurde es daran, dass bei
+`board`, `documents` und `handovers` ausgerechnet das erste
+`allow read` unangetastet blieb. Von hinten nach vorn: **79 statt 48**.
+
+Der zweite Fehler ist der lehrreichere: der erste Anlauf war
+*syntaktisch fehlerfrei* und hätte drei Sammlungen weiter offen
+gelassen. Gefunden hat ihn nicht der Compiler, sondern der Kreuztest.
+
+### Schritt 3: der Grund, warum es so lange unbemerkt blieb
+
+`kreuz.test.js` deckte **zweiunddreißig** Sammlungen ab — alle im
+Firmen-Zweig. Der flache daneben war **nie** Gegenstand. Es war nicht
+falsch geprüft, es war nicht geprüft.
+
+Jetzt vier Prüfungen je flacher Sammlung: fremde Firma liest nicht,
+schreibt nicht — und **zwei Gegenproben**, dass der eigene Betrieb
+weiter herankommt, mit leerem Feld *und* mit Kennung. Die zweite ist
+die gefährliche: sperrt die neue Grenze den laufenden Betrieb aus,
+fällt es hier auf und nicht am Montagmorgen.
+
+### Und eine Regel, die richtig war, während meine Prüfung falsch war
+
+Die Gegenprobe für `certificates` schlug fehl. Ursache: ein Nachweis
+ist **persönlich**, ein Kollege darf ihn nicht lesen — meine Prüfung
+ließ ein fremdes Zeugnis lesen wollen. Korrigiert wurde die Prüfung
+(je Konto ein eigener Nachweis), nicht die Regel.
+
+### Vier Regeltests hatten eine Firma, die es nie gibt
+
+`rechte`, `reaktionen`, `umfragen`, `fremde-felder` legten ihre Konten
+unter `firma: 'alpha'` an und griffen auf **flache** Pfade zu — mit dem
+neuen Schutz zu Recht abgewiesen (8 + 14 rote Zeilen). Nicht die Regel
+war falsch, sondern die Ausgangslage: die flachen Pfade gehören dem
+ersten Betrieb, also heisst er dort auch so.
+
+## Geprüft
+
+* **864 Regelprüfungen** grün (`kreuz` allein 166, davon 34 neu für den
+  flachen Zweig)
+* Sonde: Schutz ausgehebelt → **das dokumentierte Leck kommt zurück**,
+  Zeile für Zeile wie in `OFFEN.md` beschrieben
+* `tests/test-xss-werbung.js` (neu) — vier Sonden mit eigenem Rot
+* `npm audit` in `functions/`: **0 Lücken** (vorher 1 hoch, 1 mittel)
+* volle Regression
+
+## Was bei diesem Punkt offen bleibt
+
+Die flachen Daten **löschen**. Das braucht Produktionszugang, den ich
+nicht habe und nicht anfordere. Es ist jetzt aber Aufräumen und keine
+Sicherheitsfrage mehr — an die Daten kommt keine fremde Firma heran.

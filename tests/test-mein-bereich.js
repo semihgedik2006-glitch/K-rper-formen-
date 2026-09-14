@@ -257,28 +257,53 @@ async function reiterOeffnen(p, tab) {
       });
       if (!todoZeile) return { keineTodoZeile: true, quellen };
 
-      /* Ein Knopf, kein div: sonst kaeme man mit der Tastatur nicht
-         hin, und der einzige Weg waere die Maus. */
-      const istKnopf = todoZeile.tagName === 'BUTTON';
-      /* Und er muss aussehen wie die Zeilen daneben. Ein <button>
-         bringt eigene Schrift und einen Rahmen mit; faellt der
-         CSS-Block weg, springt genau diese eine Zeile heraus. */
-      const dienstZeile = zeilen.find(z => z.tagName !== 'BUTTON');
-      const cs = getComputedStyle(todoZeile);
-      const cd = dienstZeile ? getComputedStyle(dienstZeile) : null;
-      const gleich = cd && cs.fontSize === cd.fontSize &&
-        cs.fontFamily === cd.fontFamily && cs.textAlign === cd.textAlign;
+      /* ZWEI Bedienelemente seit der Tagesbrille: ein Kästchen zum
+         Abhaken und der Text, der hinüberführt. Ein <button> in einem
+         <button> gibt es nicht, deshalb ist die Zeile wieder ein div —
+         beides muss aber mit der Tastatur erreichbar sein. */
+      const haken = todoZeile.querySelector('[data-wohak]');
+      const textKnopf = todoZeile.querySelector('[data-zutodo]');
+      const istKnopf = !!textKnopf && textKnopf.tagName === 'BUTTON';
+      const hatHaken = !!haken && haken.tagName === 'BUTTON' &&
+        haken.getAttribute('role') === 'checkbox';
+      /* Das Kästchen muss ein Fingerziel sein. Sichtbar sind 24px, über
+         ::after auf 44 gedehnt — gemessen wird die gedehnte Fläche,
+         nicht das Kästchen. */
+      const rh = haken ? haken.getBoundingClientRect() : null;
+      const nach = haken ? getComputedStyle(haken, '::after') : null;
+      const zielHoehe = rh && nach
+        ? rh.height + 2 * Math.abs(parseFloat(nach.top || '0')) : 0;
 
-      todoZeile.click();
+      /* Und der Text muss aussehen wie die Zeilen daneben. Ein <button>
+         bringt eigene Schrift mit; fällt der CSS-Block weg, springt
+         genau diese eine Zeile heraus. */
+      const dienstZeile = zeilen.find(z => !z.querySelector('[data-zutodo]'));
+      const cs = textKnopf ? getComputedStyle(textKnopf) : null;
+      const cd = dienstZeile ? getComputedStyle(dienstZeile.querySelector('.ich-was')) : null;
+      const gleich = !!cs && !!cd && cs.fontSize === cd.fontSize &&
+        cs.fontFamily === cd.fontFamily;
+
+      /* Abhaken schreibt — und darf NICHT nebenbei weiterleiten. Zwei
+         Bedienelemente in einer Zeile: wer das Kästchen trifft, will
+         abhaken und nicht die Seite wechseln. */
+      window.__schreib = [];
+      if (haken) haken.click();
+      await new Promise(r => setTimeout(r, 450));
+      const beimHaken = (window.__schreib || []).map(x => ({ pfad: x.pfad, daten: x.daten }))
+        .filter(x => /^privat\//.test(x.pfad));
+      const pv0 = document.getElementById('view-persoenlich');
+      const wegGesprungen = !!(pv0 && pv0.classList.contains('show'));
+
+      if (textKnopf) textKnopf.click();
       await new Promise(r => setTimeout(r, 500));
       const pv = document.getElementById('view-persoenlich');
       const tp = document.getElementById('ichPaneTodo');
       return {
-        quellen, istKnopf, gleich,
+        quellen, istKnopf, gleich, hatHaken, zielHoehe, beimHaken, wegGesprungen,
         angekommen: !!(pv && pv.classList.contains('show')),
         todoOffen: !!(tp && tp.getClientRects().length),
         // Ein Dienst darf NICHT wegfuehren — der gehoert der Planung
-        dienstIstKnopf: !!(dienstZeile && dienstZeile.tagName === 'BUTTON')
+        dienstIstKnopf: !!(dienstZeile && dienstZeile.querySelector('[data-zutodo]'))
       };
     });
 
@@ -292,8 +317,18 @@ async function reiterOeffnen(p, tab) {
         '. Das eigene To-do muss in der Übersicht sichtbar BLEIBEN.');
     } else {
       console.log('Wochenzeilen:', r.quellen.join(' | '));
-      pruefe(r.istKnopf, 'NICHT ANKLICKBAR: die To-do-Zeile ist kein <button> — ' +
-        'mit der Tastatur käme man nicht auf den zweiten Schreibtisch');
+      pruefe(r.istKnopf, 'NICHT ANKLICKBAR: der Text der To-do-Zeile ist kein ' +
+        '<button> — mit der Tastatur käme man nicht auf den zweiten Schreibtisch');
+      pruefe(r.hatHaken, 'KEIN HAKEN: die To-do-Zeile lässt sich nicht abhaken — ' +
+        'dann ist die Wochenliste nur eine Anzeige');
+      pruefe(r.zielHoehe >= 44,
+        'FINGERZIEL: das Kästchen ist nur ' + Math.round(r.zielHoehe) + 'px hoch');
+      pruefe(r.beimHaken.length === 1 &&
+        /^privat\/testuid\/aufgaben\//.test(r.beimHaken[0].pfad) &&
+        r.beimHaken[0].daten && r.beimHaken[0].daten.erledigt === true,
+        'ABHAKEN schreibt nicht richtig: ' + JSON.stringify(r.beimHaken));
+      pruefe(!r.wegGesprungen,
+        'ZU VIEL: das Abhaken springt auch noch auf den zweiten Schreibtisch');
       pruefe(r.gleich, 'SIEHT ANDERS AUS: die klickbare Zeile hat nicht dieselbe ' +
         'Schrift/Ausrichtung wie die Zeilen daneben');
       pruefe(r.angekommen, 'KEINE WEITERLEITUNG: der Klick öffnet #view-persoenlich nicht');
