@@ -64,7 +64,27 @@
   if (!/[?&]demo(=|&|$)/.test(location.search)) return;
 
   var ROLLE = (/[?&]demo=([a-z]+)/.exec(location.search) || [])[1] || 'chef';
-  if (['chef', 'leiter', 'mitarbeiter'].indexOf(ROLLE) < 0) ROLLE = 'chef';
+  if (['chef', 'leiter', 'mitarbeiter', 'terminal'].indexOf(ROLLE) < 0) ROLLE = 'chef';
+
+  /* ?demo=terminal macht aus dem Gerät die Stempeluhr am Empfang. Dafür
+     liegt der Geräteschlüssel schon bereit — in einer Vorführung will
+     niemand erst ein Terminal einrichten, um zu sehen, wie Stempeln
+     aussieht.
+
+     Der Weg ÜBER die Einrichtung ist trotzdem da und sehenswert: als
+     Geschäftsführung unter Verwaltung → Studios. Wer beides zeigt, zeigt
+     das ganze Bild. */
+  var DEMO_PIN = '2946';
+  var DEMO_TERMINAL = { id: 'demo-t6', geheim: 'demo'.repeat(16), name: 'Empfang' };
+  if (ROLLE === 'terminal') {
+    try {
+      localStorage.setItem('kf_terminal', JSON.stringify(DEMO_TERMINAL));
+    } catch (e) {}
+  } else {
+    /* Umgekehrt genauso wichtig: wer von „Terminal" zurück auf „Chef"
+       schaltet, darf nicht in der Stempeluhr gefangen bleiben. */
+    try { localStorage.removeItem('kf_terminal'); } catch (e) {}
+  }
 
   var KENNUNG = 'koerperformen';
   var STUDIOS = [
@@ -87,6 +107,13 @@
     var d = new Date(); d.setDate(d.getDate() + n);
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
       '-' + String(d.getDate()).padStart(2, '0');
+  }
+  /* Eine Uhrzeit von HEUTE. Stempel brauchen das: „vor drei Stunden"
+     landet nach Mitternacht am Vortag, und dann steht in der Demo
+     morgens niemand im Dienst. */
+  function heuteUm(std, min) {
+    var d = new Date(); d.setHours(std, min || 0, 0, 0);
+    return d.getTime();
   }
 
   /* ── Erfundene Menschen ─────────────────────────────────────────────
@@ -135,6 +162,17 @@
         id: 'demo-ich', firma: KENNUNG, name: 'Demo-Studioleitung', role: 'leiter',
         aktiv: true, avatar: '⚡',
         studios: [STUDIOS[6], STUDIOS[7]], studioKeys: [sk(6), sk(7)]
+      };
+    } else if (ROLLE === 'terminal') {
+      /* Das Tablet am Empfang ist mit einem ganz normalen Konto des
+         Betriebs angemeldet — genau so, wie es in Wirklichkeit läuft.
+         Ein eigenes „Terminal-Konto" gibt es nicht und soll es nicht
+         geben: der Schutz sitzt im Geräteschlüssel und in der PIN, nicht
+         in einer Sonderrolle. */
+      ICH = {
+        id: 'demo-ich', firma: KENNUNG, name: 'Empfang Hürth', role: 'mitarbeiter',
+        aktiv: true, avatar: '🖥️',
+        studios: [STUDIOS[6]], studioKeys: [sk(6)]
       };
     } else {
       ICH = {
@@ -346,7 +384,15 @@
 
   legen('users', USERS.slice());
   legen(P('config'), [
-    { id: 'studios', liste: STUDIOS.map(function (n, i) { return { id: sk(i), name: n }; }), naechste: STUDIOS.length },
+    /* Öffnungszeiten sind gepflegt — ohne sie liesse sich in der Demo
+       nicht zeigen, wofür sie da sind: „wie lange war der Laden
+       unbeaufsichtigt" braucht sie als Bezug. Sonntag zu, wie üblich. */
+    { id: 'studios', liste: STUDIOS.map(function (n, i) {
+        return { id: sk(i), name: n, oeffnung: {
+          mo: '07:00-21:00', di: '07:00-21:00', mi: '07:00-21:00',
+          do: '07:00-21:00', fr: '07:00-21:00', sa: '09:00-15:00', so: ''
+        } };
+      }), naechste: STUDIOS.length },
     {
       id: 'marke', name: 'Körperformen', slogan: 'EMS-Training in Köln und Umgebung',
       /* Die rechtlichen Pflichtfelder bleiben in der Demo LEER und sagen
@@ -563,8 +609,138 @@
       size: 21000, ts: vorTag(200), by: 'Geschäftsführung' }
   ]);
 
+  /* ── Zeiterfassung in der Demo ──────────────────────────────────────
+     Drei eingerichtete Terminals und die Stempel von heute. Ohne Stempel
+     stünde in der Vorführung überall „noch nicht da", und der
+     interessanteste Teil — wer ist im Haus, wer in der Pause — bliebe
+     unsichtbar. */
+  var HEUTE = new Date().toLocaleDateString('sv-SE');
+  legen(P('terminals'), [
+    { id: DEMO_TERMINAL.id, studioKey: sk(6), name: 'Empfang',
+      hash: 'demo', angelegtAm: vorTag(40), angelegtVon: 'Demo-Geschäftsführung',
+      letzterStempel: vorStd(1) },
+    { id: 'demo-t7', studioKey: sk(7), name: 'Tablet Empfang',
+      hash: 'demo', angelegtAm: vorTag(38), angelegtVon: 'Demo-Geschäftsführung',
+      letzterStempel: vorStd(3) },
+    { id: 'demo-t0', studioKey: sk(0), name: 'Rechner Büro',
+      hash: 'demo', angelegtAm: vorTag(35), angelegtVon: 'Demo-Geschäftsführung',
+      letzterStempel: 0 }
+  ]);
+
+  var STEMPEL = [];
+  (function stempelBauen() {
+    var nr = 0;
+    STUDIOS.forEach(function (name, i) {
+      var k = sk(i);
+      leuteIn(k).forEach(function (u, j) {
+        /* Nicht alle sind da: in einem Studio arbeiten selten alle
+           gleichzeitig, und eine Demo, in der jeder eingestempelt ist,
+           zeigt den Normalfall nicht. */
+        if (zufall() < 0.35) return;
+        var start = 7 + zahl(0, 5);
+        STEMPEL.push({ id: 'zt' + (++nr), uid: u.id, name: u.name, studioKey: k,
+          art: 'kommen', ts: heuteUm(start, zahl(0, 55)), tag: HEUTE,
+          terminalId: 'demo-t' + i, terminalName: 'Empfang' });
+        if (j === 0 && zufall() < 0.5) {
+          STEMPEL.push({ id: 'zt' + (++nr), uid: u.id, name: u.name, studioKey: k,
+            art: 'pause', ts: heuteUm(start + 4, zahl(0, 30)), tag: HEUTE,
+            terminalId: 'demo-t' + i, terminalName: 'Empfang' });
+        }
+      });
+    });
+  })();
+  legen(P('zeiten'), STEMPEL);
+
   legen('firmen', [{ id: KENNUNG, name: 'Körperformen', aktiv: true, kennung: KENNUNG }]);
   legen(P('abo'), [{ id: 'aktuell', stufe: 'A', seit: vorTag(200) }]);
+
+  /* ══ Server-Funktionen in der Demo ══════════════════════════════════
+     Die meisten gibt es hier nicht, und das sagt die Demo auch: was auf
+     dem Server läuft, verschickt E-Mails oder legt Konten an, und beides
+     gehört nicht in eine Vorführung.
+
+     DREI AUSNAHMEN, und zwar die der Zeiterfassung. Ohne sie wäre der
+     Stempel-Knopf ein Knopf, der nichts tut — und wer in einer Demo
+     abhakt und nichts passiert, hält nicht die Demo für kaputt, sondern
+     die App. Derselbe Satz wie beim Bau dieser Datei.
+
+     NACHGEBAUT WIRD DER WEG, NICHT DIE SICHERHEIT. Das echte `stempeln`
+     prüft drei Schlüssel gegen die Datenbank und rechnet scrypt; hier
+     wird eine feste Demo-PIN verglichen. Das ist in Ordnung, weil hier
+     nichts zu schützen ist — und es gehört gesagt, damit niemand aus der
+     Demo auf die Bauart schliesst. */
+  var DEMO_FUNKTIONEN = {
+    pinStatus: function () {
+      return { gesetzt: true, seit: Date.now() - 40 * TAG };
+    },
+    pinSetzen: function (d) {
+      if (!/^\d{4,6}$/.test(String(d.pin || ''))) {
+        throw new Error('Die PIN muss aus 4 bis 6 Ziffern bestehen.');
+      }
+      return { ok: true, gesetzt: true };
+    },
+    terminalAnlegen: function (d) {
+      var name = String(d.name || '').trim();
+      if (!name) throw new Error('Bitte dem Gerät einen Namen geben.');
+      var id = 'demo-neu-' + Math.floor(zufall() * 100000);
+      holen(P('terminals')).push({
+        id: id, studioKey: String(d.studioKey || ''), name: name,
+        hash: 'demo', angelegtAm: Date.now(),
+        angelegtVon: ICH.name, letzterStempel: 0
+      });
+      melden(P('terminals'));
+      /* Auch in der Demo nur EINMAL sichtbar — sonst lernt der
+         Interessent eine Bauart, die es nicht gibt. */
+      return { id: id, name: name, geheim: 'demo' + 'x'.repeat(60) };
+    },
+    terminalEntfernen: function (d) {
+      var pfad = P('terminals');
+      DB[pfad] = holen(pfad).filter(function (t) { return t.id !== String(d.id || ''); });
+      melden(pfad);
+      return { ok: true };
+    },
+    stempeln: function (d) {
+      var term = holen(P('terminals'))
+        .filter(function (t) { return t.id === String(d.terminalId || ''); })[0];
+      if (!term) throw new Error('Dieses Gerät ist nicht (mehr) als Terminal eingerichtet.');
+      if (String(d.pin || '') !== DEMO_PIN) {
+        throw new Error('Falsche PIN. In dieser Demo ist sie ' + DEMO_PIN + '.');
+      }
+      var person = USERS.filter(function (u) { return u.id === String(d.uid || ''); })[0];
+      if (!person) throw new Error('Diese Person gibt es nicht.');
+
+      var tag = new Date().toLocaleDateString('sv-SE');
+      var meine = holen(P('zeiten'))
+        .filter(function (z) { return z.uid === person.id && z.tag === tag; })
+        .sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      var letzte = meine.length ? meine[meine.length - 1].art : null;
+      var art = (!letzte || letzte === 'gehen') ? 'kommen'
+              : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
+              : (letzte === 'pause') ? 'zurueck' : 'kommen';
+
+      var jetzt = Date.now();
+      holen(P('zeiten')).push({
+        id: neueId(), uid: person.id, name: person.name || '',
+        studioKey: term.studioKey, art: art, ts: jetzt, tag: tag,
+        terminalId: term.id, terminalName: term.name || ''
+      });
+      melden(P('zeiten'));
+      term.letzterStempel = jetzt;
+      melden(P('terminals'));
+      return { ok: true, art: art, ts: jetzt, name: person.name || '' };
+    }
+  };
+
+  function demoAufruf(name, daten) {
+    var f = DEMO_FUNKTIONEN[name];
+    if (!f) {
+      return Promise.reject(new Error(
+        'Das läuft in der Demo nicht: „' + name + '" würde auf dem Server ausgeführt ' +
+        'und zum Beispiel E-Mails verschicken.'));
+    }
+    try { return Promise.resolve({ data: f(daten) }); }
+    catch (e) { return Promise.reject(e); }
+  }
 
   /* ══ Das gefälschte Firebase ════════════════════════════════════════ */
   var fs = {
@@ -616,15 +792,7 @@
       };
     },
     functions: function () {
-      return {
-        httpsCallable: function (name) {
-          return function () {
-            return Promise.reject(new Error(
-              'Das läuft in der Demo nicht: „' + name + '" würde auf dem Server ausgeführt ' +
-              'und zum Beispiel E-Mails verschicken.'));
-          };
-        }
-      };
+      return { httpsCallable: function (name) { return function (d) { return demoAufruf(name, d || {}); }; } };
     },
     messaging: function () { return { onMessage: function () {}, getToken: function () { return Promise.resolve(''); } }; },
     storage: function () { return { ref: function () { return {}; } }; }
@@ -663,6 +831,30 @@
   } catch (e) {}
 
   document.addEventListener('DOMContentLoaded', function () {
+    /* Im Terminal-Modus muss dastehen, welche PIN gilt. Ohne das tippt
+       ein Interessent dreimal daneben und hält die Demo für kaputt —
+       der teuerste Moment einer Vorführung. Gesetzt wird der Text HIER
+       und nicht in index.html: die App soll von der Demo nichts wissen. */
+    if (ROLLE === 'terminal') {
+      var h = document.getElementById('tmHinweis');
+      if (h) h.textContent = 'Demo: Name antippen, dann PIN ' + DEMO_PIN + ' eingeben.';
+
+      /* „Terminal beenden" räumt den Schlüssel weg und lädt neu — in der
+         Demo würde ihn diese Datei sofort wieder hinlegen, weil ?demo=
+         terminal ja noch in der Adresse steht. Eine Schleife.
+
+         Der Knopf bekommt deshalb hier eine andere Aufgabe. Ersetzt wird
+         der ganze Knoten, weil das der einzige Weg ist, den Zuhörer der
+         App loszuwerden, ohne sie selbst zu ändern. */
+      var aus = document.getElementById('tmAus');
+      if (aus) {
+        var neu = aus.cloneNode(true);
+        neu.textContent = 'Zurück zur App';
+        neu.addEventListener('click', function () { location.search = '?demo=chef'; });
+        aus.parentNode.replaceChild(neu, aus);
+      }
+    }
+
     var sel = document.getElementById('demoRolle');
     if (!sel) return;
     sel.value = ROLLE;

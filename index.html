@@ -610,6 +610,12 @@ html.demo .demo-bar{display:flex;align-items:center;gap:var(--s10);
 .demo-bar select:focus-visible{outline:2px solid #0b0f14;outline-offset:-2px}
 /* Unter 380px traegt der Satz nicht mehr neben dem Auswahlfeld. */
 @media (max-width:379px){ .demo-bar .db-text{display:none} }
+/* Der Terminal-Bildschirm liegt sonst UEBER der Demo-Leiste — und damit
+   ueber dem Rollenumschalter. Wer sich in der Vorfuehrung das Stempeln
+   ansieht, kaeme dann nicht mehr heraus. In der echten App ist das
+   Verdecken richtig (dort soll nichts anderes erreichbar sein), in der
+   Demo waere es eine Sackgasse. */
+html.demo #terminalSchirm{top:44px}
 .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
   gap:var(--s12);
   padding:calc(var(--s12) + var(--sat)) calc(var(--rand) + var(--sar))
@@ -3744,6 +3750,7 @@ html{font-size:var(--fs,100%)}
     <option value="chef">Als Geschäftsführung</option>
     <option value="leiter">Als Studioleitung</option>
     <option value="mitarbeiter">Als Mitarbeiter</option>
+    <option value="terminal">Als Stempel-Terminal</option>
   </select>
 </div>
 

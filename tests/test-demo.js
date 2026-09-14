@@ -225,6 +225,117 @@ async function seite(b, url, errs, marke) {
   }
   await p2.close();
 
+  /* ── 8. Die Zeiterfassung muss in der Demo wirklich laufen ────────
+     Das ist der Teil, den ein Interessent sehen will und der am
+     leichtesten eine Attrappe bleibt: ein Knopf, der nichts tut. Wer in
+     einer Vorführung stempelt und nichts passiert, hält nicht die Demo
+     für kaputt, sondern die App. */
+  {
+    const { page: p4, anfragen: a4 } = await seite(b, APP + '?demo=terminal', errs, 'demo=terminal');
+    const term = await p4.evaluate(() => {
+      const s = document.getElementById('terminalSchirm');
+      return {
+        sichtbar: getComputedStyle(s).display !== 'none',
+        obenFrei: parseInt(getComputedStyle(s).top, 10) || 0,
+        leiste: getComputedStyle(document.getElementById('demoBar')).display !== 'none',
+        studio: (document.getElementById('tmStudio') || {}).textContent || '',
+        leute: document.querySelectorAll('#tmListe [data-tmwer]').length,
+        hinweis: (document.getElementById('tmHinweis') || {}).textContent || '',
+        raus: (document.getElementById('tmAus') || {}).textContent || '',
+        imDienst: [...document.querySelectorAll('#tmListe .tm-zst')]
+          .filter(n => /im Dienst|Pause/.test(n.textContent)).length
+      };
+    });
+    console.log('TERMINAL:', JSON.stringify(term));
+    if (!term.sichtbar) errs.push('?demo=terminal zeigt den Stempel-Bildschirm nicht');
+    if (!term.leiste) errs.push('Im Terminal-Modus fehlt die Demo-Leiste');
+    if (!(term.obenFrei >= 40)) {
+      errs.push('Der Terminal-Bildschirm liegt über der Demo-Leiste (top=' + term.obenFrei +
+        ') — dann kommt man aus der Vorführung nicht mehr heraus');
+    }
+    if (!term.leute) errs.push('Im Terminal steht niemand zum Antippen');
+    if (!/\d{4}/.test(term.hinweis)) {
+      errs.push('Der Hinweis nennt die Demo-PIN nicht: „' + term.hinweis + '" — ' +
+        'ein Interessent tippt sonst dreimal daneben');
+    }
+    if (!/Zurück/.test(term.raus)) {
+      errs.push('„Terminal beenden" führt in der Demo in eine Schleife statt zurück zur App');
+    }
+    if (!term.imDienst) errs.push('Niemand ist eingestempelt — die Demo zeigt den Normalfall nicht');
+
+    /* Und jetzt wirklich stempeln. */
+    const pin = (/(\d{4,6})/.exec(term.hinweis) || [])[1];
+    const gestempelt = await p4.evaluate(async (p) => {
+      const vorher = document.querySelectorAll('#tmListe .tm-person.da').length;
+      // Jemanden nehmen, der noch NICHT da ist — sonst sieht man nichts.
+      const frei = [...document.querySelectorAll('#tmListe [data-tmwer]')]
+        .find(b => !b.classList.contains('da'));
+      if (!frei) return { fehler: 'alle sind schon eingestempelt' };
+      const name = (frei.querySelector('.tm-nam') || {}).textContent;
+      frei.click();
+      await new Promise(r => setTimeout(r, 300));
+      String(p).split('').forEach(z => {
+        const t = document.querySelector('#tmTasten [data-tmt="' + z + '"]');
+        if (t) t.click();
+      });
+      document.querySelector('#tmTasten [data-tmt="ok"]').click();
+      await new Promise(r => setTimeout(r, 900));
+      return {
+        fehler: null, name,
+        meldung: (document.getElementById('toast') || {}).textContent || '',
+        daVorher: vorher,
+        daNachher: document.querySelectorAll('#tmListe .tm-person.da').length
+      };
+    }, pin);
+    console.log('DEMO-STEMPEL:', JSON.stringify(gestempelt));
+    if (gestempelt.fehler) errs.push('Stempelprobe: ' + gestempelt.fehler);
+    else {
+      if (!/Kommen|Pause|Zurück|Feierabend/.test(gestempelt.meldung)) {
+        errs.push('Das Stempeln meldet nichts Brauchbares: „' + gestempelt.meldung + '"');
+      }
+      if (!(gestempelt.daNachher > gestempelt.daVorher)) {
+        errs.push('Nach dem Stempeln ist niemand zusätzlich im Dienst (' +
+          gestempelt.daVorher + ' → ' + gestempelt.daNachher + ') — der Knopf tut nichts');
+      }
+    }
+
+    const rausT = a4.filter(nachDraussen);
+    if (rausT.length) errs.push('Der Terminal-Modus spricht nach draussen: ' + rausT.slice(0, 2).join(' | '));
+
+    /* Und die Öffnungszeiten müssen gepflegt sein — ohne sie lässt sich
+       „wie lange war der Laden unbeaufsichtigt" nicht vorführen. */
+    await p4.close();
+    const { page: p5 } = await seite(b, APP + '?demo=chef', errs, 'demo=chef3');
+    const oz = await p5.evaluate(async () => {
+      document.querySelector('.mobnav [data-group="g-chef"]').click();
+      await new Promise(r => setTimeout(r, 500));
+      const t = [...document.querySelectorAll('#view-chef button')]
+        .find(x => /^\s*Studios\s*$/.test(x.textContent || ''));
+      if (t) t.click();
+      await new Promise(r => setTimeout(r, 900));
+      return {
+        zeitKnoepfe: [...document.querySelectorAll('#standortListe [data-stzeit]')]
+          .map(b => b.textContent.trim()),
+        terminals: document.querySelectorAll('#terminalListe [data-termweg]').length
+      };
+    });
+    console.log('DEMO-CHEF:', JSON.stringify(oz).slice(0, 200));
+    /* „Zeiten" ist die Beschriftung, solange NICHTS gepflegt ist. Steht
+       dort eine Uhrzeit oder eine Tageszahl, ist etwas hinterlegt.
+
+       Hier stand zuerst „muss eine Uhrzeit enthalten". Das war meine
+       falsche Erwartung, nicht ein Fehler der App: die Uhrzeit erscheint
+       nur, wenn ALLE offenen Tage gleich sind — in der Demo hat Samstag
+       andere Zeiten, also steht dort „6 Tage". Richtig ist die Frage,
+       ob überhaupt etwas gepflegt ist. */
+    if (!oz.zeitKnoepfe.length || oz.zeitKnoepfe.every(t => t === 'Zeiten')) {
+      errs.push('In der Demo sind keine Öffnungszeiten gepflegt — dann lässt sich nicht ' +
+        'zeigen, wofür sie da sind');
+    }
+    if (oz.terminals < 1) errs.push('In der Demo ist kein Terminal eingerichtet');
+    await p5.close();
+  }
+
   /* ── 7. Keine erfundenen Rechtsangaben ── */
   const recht = await p3.evaluate(() => {
     const t = document.body.innerText || '';
