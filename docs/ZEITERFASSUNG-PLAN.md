@@ -1,6 +1,8 @@
 # Zeiterfassung — Plan
 
-Stand 14. September 2026 · **noch nicht gebaut**
+Stand 14. September 2026 · **Schritte 1 bis 4 gebaut und ausgerollt**,
+in der Demo (`index.html?demo=terminal`) bedienbar. Schritt 5 ist in
+Arbeit. Alles ab 6 steht noch aus.
 
 ---
 
@@ -216,17 +218,44 @@ Zeit folgt — Konten, Lohn, Urlaub, Auswertung."*
 
 Jede davon braucht eigene Regeln und eigene Prüfungen im Regel-Durchlauf.
 
+### Warum in `zeiten` auch ein Feld `monat` steht
+
+Weil dieses Projekt **keinen einzigen zusammengesetzten Index
+verwaltet**: es gibt keine `firestore.indexes.json`, und `firebase.json`
+rollt nur Regeln aus. Firestore verlangt einen solchen Index, sobald
+eine Abfrage Gleichheitsfilter mit einer Sortierung oder einem Bereich
+auf einem **anderen** Feld verbindet. Mehrere Gleichheitsfilter allein
+bedient es aus den Einzelfeld-Indizes.
+
+Deshalb wird monatsweise abgefragt (`uid ==`, `monat ==`) statt über
+einen Zeitraum auf `tag`. Im ganzen `index.html` gibt es aus demselben
+Grund keine einzige Abfrage mit `where` **und** `orderBy` — die Notiz
+bei `papierkorbLaden` sagt es seit Langem.
+
+> **Beim Nachlesen gefunden:** genau diese Falle stand seit dem Ausrollen
+> des Stempelns in `stempeln` — `where uid == … where tag == …
+> .orderBy('ts','desc')`. Im Emulator läuft das, weil der Indizes
+> stillschweigend anlegt; in der Produktion wäre der **allererste
+> Stempel** mit `FAILED_PRECONDITION` gescheitert. Nachgeschlagen am
+> 14.9. in der Firestore-Dokumentation, nicht aus dem Gedächtnis.
+> **Noch nicht behoben** — der Umbau gehört zu Schritt 5: die Handvoll
+> Einträge eines Tages holen und das Maximum in JS suchen.
+>
+> Nachweisen lässt sich der Fehlschlag hier nicht: der Emulator legt
+> fehlende Indizes stillschweigend an und kennt die Grenze gar nicht.
+> Der Beleg ist die Dokumentation, nicht eine Messung.
+
 ---
 
 ## Reihenfolge
 
-1. **Öffnungszeiten je Studio** — klein, unabhängig, wird später
+1. ✅ **Öffnungszeiten je Studio** — klein, unabhängig, wird später
    gebraucht.
-2. **PIN setzen und prüfen** — Server-Funktion, Regeln, Prüfungen. Ohne
-   das geht nichts weiter.
-3. **Terminal registrieren** — Chef richtet ein Gerät ein.
-4. **Stempeln** — der Terminal-Bildschirm und die Schreibfunktion.
-5. **Eigene Zeiten sehen** — jede Person im Ich-Bereich.
+2. ✅ **PIN setzen und prüfen** — Server-Funktion, Regeln, Prüfungen.
+   Ohne das geht nichts weiter.
+3. ✅ **Terminal registrieren** — Chef richtet ein Gerät ein.
+4. ✅ **Stempeln** — der Terminal-Bildschirm und die Schreibfunktion.
+5. **Eigene Zeiten sehen** — jede Person im Ich-Bereich. *(in Arbeit)*
 6. **Soll gegen Ist im Schichtplan**.
 7. **Korrekturen** durch die Leitung, mit Grund.
 8. **Abdeckung und Warnungen** — braucht 1 und 4.
