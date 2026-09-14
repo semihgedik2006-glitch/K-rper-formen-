@@ -241,6 +241,42 @@ Kostenfaktor — deine Zeit für Support ist es.
 > Gebührenmodelle ändern sich, und mein Wissensstand ist nicht die
 > Preisliste von heute. Nachsehen, bevor du damit rechnest.
 
+### Nachgeprüft am 14.9.2026 — und ein Posten fehlte
+
+Die Warnung oben ist eingelöst. Auf der Preisseite von Stripe für
+Deutschland steht heute:
+
+| | |
+|---|---|
+| Europäische Karte | **1,5 % + 0,25 €** |
+| Ausländische Karte | 3,15 % + 0,25 € (+ 2 % bei Währungsumrechnung) |
+| **SEPA-Lastschrift** | **0,35 € pauschal**, unabhängig vom Betrag |
+| Stripe Billing (Abo-Verwaltung) | **0,7 % des Abo-Volumens**, keine Grundgebühr |
+
+**Die Schätzung oben war richtig** (1,5 % × 59 € + 0,25 € = 1,14 €), aber
+sie hatte zwei Lücken:
+
+1. **SEPA-Lastschrift stand gar nicht drin.** Bei 0,35 € pauschal ist sie
+   für jedes Abo über ~7 € günstiger als eine Karte — und der Abstand
+   wächst mit dem Betrag. Bei eurem eigenen Betrieb (224 €) sind es
+   **0,35 € statt 3,61 €**.
+2. **Stripe Billing kostet extra**: 0,7 % obendrauf, wenn man die
+   Abo-Verwaltung von Stripe nutzt statt selbst zu rechnen.
+
+Was das je Kunde und Monat heißt:
+
+| Kunde | Preis | Karte | Karte + Billing | SEPA | SEPA + Billing |
+|---|---|---|---|---|---|
+| 3 Studios | 59 € | 1,14 € | 1,55 € | **0,35 €** | 0,76 € |
+| 8 Studios | 134 € | 2,26 € | 3,20 € | **0,35 €** | 1,29 € |
+| 14 Studios | 224 € | 3,61 € | 5,18 € | **0,35 €** | 1,92 € |
+
+> **Die eigentliche Lehre steht nicht in der Tabelle.** Bei fünf Kunden
+> geht es hier um Unterschiede von wenigen Euro im Monat. Die
+> Zahlungsgebühr ist bei dieser Größe **nicht** die Frage — die Frage
+> ist, ob man für fünf Kunden überhaupt eine Abrechnung baut. Siehe
+> Abschnitt 6.
+
 ---
 
 ## 5. Steuern — beide Fälle vorbereiten
@@ -486,3 +522,120 @@ gehört dann in `firestore.rules`, nicht in die App.
 5. **Erst dann** über Stripe reden.
 
 Punkt 3 vor Punkt 4. Nicht umgekehrt.
+
+---
+
+## 9. Nachtrag 14.9.2026 — Marktanker, und die Frage vor der Preisfrage
+
+### Was Vergleichbares in Deutschland kostet
+
+Am 14.9. nachgesehen, weil die Zahlen in Abschnitt 4 ausdrücklich als
+Platzhalter markiert waren und ein Platzhalter im Kundengespräch nicht
+trägt.
+
+| Modell | Preis | Anmerkung |
+|---|---|---|
+| Übliche Spanne je Mitarbeiter | 0,50 – 9 €/Monat | der Marktstandard |
+| Papershift | ab 4 – 9 €/Mitarbeiter, dazu 39 € Support-Pauschale | modular, Dienstplanung erst im höheren Paket |
+| Ordio | **89 € je Standort**, unabhängig von der Mitarbeiterzahl | dasselbe Modell wie unseres |
+| Connecteam | dauerhaft kostenlos bis 10 Nutzer | drückt das untere Ende |
+
+**Zwei Ableitungen, und die zweite ist unbequem.**
+
+**Erstens: das Modell stimmt.** Ordio rechnet je Standort und nicht je
+Kopf — genau die Entscheidung vom 11.8. Sie ist also nicht exotisch.
+
+**Zweitens: die Platzhalter sind niedrig.** 59 € für drei Studios stehen
+gegen 267 € bei Ordio für dieselbe Zahl Standorte. Auf den Kopf gerechnet
+sieht es anders aus: bei rund vier Personen je Studio wären 59 € für
+zwölf Leute etwa 4,90 € je Kopf — mitten im Marktkorridor.
+
+> **Der Vergleich hinkt, und zwar zu unseren Ungunsten.** Ordio und
+> Papershift machen **Zeiterfassung** mit dem, was rechtlich daran
+> hängt. StudioChat tut das ausdrücklich nicht — der Schichtplan ist ein
+> Plan und keine Stechuhr (`docs/av/LOESCHKONZEPT.md`, Abschnitt 6).
+> Wer gegen die teureren Anbieter antritt, tritt gegen ein größeres
+> Produkt an.
+
+### Die Frage, die vor der Preisfrage kommt
+
+Bei den ersten Kunden geht es um Unterschiede von wenigen Euro
+Zahlungsgebühr im Monat. Die eigentliche Frage ist eine andere:
+
+**Lohnt es sich, für die ersten Kunden überhaupt eine Abrechnung zu
+bauen?**
+
+Die Gegenrechnung:
+
+| | |
+|---|---|
+| Infrastruktur je Kunde und Monat | **~1,70 €** (gemessen) |
+| Zahlungsgebühr je Kunde und Monat | 0,35 – 5,18 € (siehe oben) |
+| **Deine Zeit für Support** | **der eigentliche Kostenblock** |
+
+Bei drei Kunden zu 59 € sind das 177 € Einnahme im Monat. Eine
+Abo-Verwaltung mit Stripe, Mahnstufen und Rechnungsnummern ist in der
+Roadmap als **groß** geführt. Sie würde sich an dieser Stelle nicht
+rechnen — sie würde Zeit kosten, die der Support braucht.
+
+**Der Weg ohne Bauaufwand:** Rechnung schreiben, SEPA-Lastschriftmandat
+einholen, einmal im Monat einziehen. Das ist im deutschen B2B-Geschäft
+der Normalfall, kostet **null Entwicklungsaufwand** und lässt sich
+jederzeit durch etwas Automatisches ersetzen. Der Abo-Zustand in der App
+(Stufe A, von Hand) ist dafür bereits gebaut.
+
+**Ab wann sich das dreht:** wenn das monatliche Einziehen und Nachhalten
+länger dauert als eine Stunde, oder ab etwa zehn Kunden. Vorher ist
+jeder Zeile Abrechnungscode eine Zeile, die nicht am Produkt entsteht.
+
+### Was davon eine Entscheidung ist und was nicht
+
+**Keine Entscheidung, sondern Rechnen:** dass SEPA günstiger ist als
+Karte, dass die Infrastruktur nicht der Kostenfaktor ist, dass eine
+Abrechnung für drei Kunden teurer ist als sie einbringt.
+
+**Entscheidung, und zwar deine:** die Höhe. Ich kenne euren Markt nicht,
+ich habe keine Wettbewerbsangebote gesehen, und ich weiß nicht, was ein
+Studiobetreiber in Köln für so etwas zahlt. Die Tabelle oben ist ein
+Anker, kein Preis.
+
+### Nachtrag: PayPal und Apple Pay als Abo — geprüft am 14.9.
+
+Gefragt, ob sich damit monatlich abbuchen lässt. Die Antworten sind
+unterschiedlich:
+
+**PayPal: ja, das gibt es wirklich.** „Abbuchungsvereinbarung" heißt das
+dort; der Kunde hinterlegt PayPal einmal und es wird monatlich
+eingezogen. Preis national für Waren und Dienstleistungen **2,49 % +
+0,35 €**, ab 2.000 € Monatsumsatz sinkt es auf 2,19 %.
+
+> Eine Quelle nennt für wiederkehrende Zahlungen abweichend
+> **2,9 % + 0,30 €**. Die Angaben widersprechen sich; vor einer
+> Entscheidung gehört das auf der PayPal-Seite selbst nachgesehen. Ich
+> schreibe beide hin, statt mir eine auszusuchen.
+
+**Apple Pay: nein, jedenfalls nicht für sich allein.** Apple Pay ist kein
+Abrechnungssystem, sondern eine Art, eine Karte vorzuzeigen.
+Wiederkehrende Abbuchungen laufen über einen Händler-Token und brauchen
+einen Zahlungsdienstleister dahinter — praktisch also Stripe oder
+vergleichbar, zu Kartengebühren. „Apple Pay als Abo" heißt in der Sache
+„Stripe mit Apple Pay als Kartenvariante".
+
+### Was das je Monat ausmacht
+
+| Weg | 59 € (3 Studios) | 224 € (14 Studios) | im Jahr bei 224 € |
+|---|---|---|---|
+| **SEPA-Lastschrift** | 0,35 € | 0,35 € | **4,20 €** |
+| Karte (Stripe) | 1,14 € | 3,61 € | 43,32 € |
+| PayPal (2,49 %) | 1,82 € | 5,93 € | **71,16 €** |
+
+> **Und ein Punkt, der in keiner Gebührentabelle steht:** PayPal und
+> Apple Pay sind Gewohnheiten aus dem Endkundengeschäft. Ein
+> Studiobetreiber bezahlt Betriebsausgaben über das Geschäftskonto und
+> braucht für die Buchhaltung ohnehin **eine Rechnung** — die musst du
+> so oder so schreiben. PayPal spart dir diesen Schritt nicht, es macht
+> den Einzug nur teurer.
+>
+> Umgekehrt gibt es ein echtes Argument dafür: kein Mandat, kein
+> Papierkram, der Kunde kennt den Knopf. Wenn ein Interessent von sich
+> aus danach fragt, ist das kein Grund, ihn zu verlieren.

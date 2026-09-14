@@ -1,0 +1,259 @@
+# Zeiterfassung — Plan
+
+Stand 14. September 2026 · **noch nicht gebaut**
+
+---
+
+## Warum
+
+Zwei Gründe, und der zweite ist der wichtigere.
+
+**Der Markt.** Ordio nimmt 89 € je Standort, Papershift 4–9 € je Kopf
+plus Pauschale. StudioChat steht bei 15–25 € je Studio. Der Unterschied
+ist nicht Frechheit — es ist **Zeiterfassung**. Sie verkaufen die
+Erfüllung einer Pflicht, wir verkaufen bisher nur Organisation.
+
+**Die Pflicht.** Seit dem EuGH-Urteil von 2019 und dem Beschluss des
+Bundesarbeitsgerichts von 2022 sind Arbeitgeber in Deutschland
+verpflichtet, Arbeitszeiten vollständig und nachvollziehbar zu erfassen —
+**auch ohne eigenes Gesetz**. Ein Arbeitszeiterfassungsgesetz ist im
+Juni 2026 als Referentenentwurf bekannt geworden, steht aber noch nicht
+im Bundesgesetzblatt.
+
+Jeder künftige Kunde hat diese Pflicht bereits. Heute kann StudioChat sie
+nicht bedienen: der Schichtplan ist ein Plan, keine Stechuhr.
+
+---
+
+## Was entschieden ist
+
+| Frage | Entscheidung |
+|---|---|
+| Wie wird gestempelt? | **Tablet am Empfang + PIN je Person** (Terminal) |
+| Gehört die Zeiterfassung zur Basis? | **Ja.** Stempeln kann jeder Kunde |
+| Was ist dann Premium? | **Auswertung und Lohn-Export** — und was daraus folgt |
+
+> **Die zweite Entscheidung ist die klügere von beiden.** Stempeln in die
+> Basis zu legen heißt: „erfüllt die Aufzeichnungspflicht" gilt für
+> **jeden** Kunden und nicht nur für den teureren. Das ist ein Satz, den
+> man im ersten Gespräch sagen kann. Was daraus wird — Arbeitszeitkonto,
+> Überstunden, Lohn-Export, Auswertung — kostet extra, und das versteht
+> jeder sofort.
+
+---
+
+## Wie es laufen soll
+
+### Der Terminal-Modus
+
+Ein Tablet oder ein alter Rechner am Empfang wird als **Terminal für ein
+bestimmtes Studio** registriert. Darauf läuft die App in einem eigenen
+Modus:
+
+1. Liste der Personen dieses Studios, groß und mit Bild.
+2. Antippen → PIN eingeben (vier Ziffern).
+3. Der Knopf zeigt, was als Nächstes dran ist: **Kommen**,
+   **Pause**, **Zurück**, **Gehen**.
+4. Bestätigung mit Uhrzeit, fertig. Kein Menü, keine Untermenüs.
+
+**Das ist die Ortsbindung, um die du gebeten hast** — und zwar eine
+physische: wer stempeln will, muss am Gerät im Studio stehen.
+
+### Warum nicht über den Standort
+
+Crewmeister bietet zusätzlich GPS im Moment des Stempelns an. Für uns
+wäre das ein Rückschritt:
+
+* In `docs/av/LOESCHKONZEPT.md` steht ausdrücklich **„Keine
+  Standortdaten"** — als Eigenschaft, nicht als Zufall.
+* Die App sperrt Ortung heute per Kopfzeile
+  (`Permissions-Policy: geolocation=()`).
+* Standortdaten von Beschäftigten sind eine neue Datenkategorie, ein
+  Punkt für den Betriebsrat und eine Zeile mehr im AV-Vertrag.
+
+Ein Tablet am Empfang leistet dasselbe, ohne irgendetwas davon.
+
+### Was das Terminal NICHT verhindert
+
+**Ein Kollege, der die PIN kennt, kann für jemanden mitstempeln.** Das
+ist bei jedem PIN-System so, auch bei Crewmeister. Wir bauen keine
+Gesichtserkennung und keinen Fingerabdruck.
+
+Was das Terminal verhindert, ist das Stempeln **von zu Hause** oder
+**auf dem Weg** — und das ist der Fall, um den es praktisch geht.
+
+Das gehört so gesagt und nicht verschwiegen: eine Absicherung, die man
+für lückenlos hält, ist gefährlicher als eine, deren Lücke man kennt.
+
+---
+
+## Was der Chef davon hat
+
+### Soll gegen Ist im Schichtplan
+
+Die Schicht zeigt künftig beides: **geplant 09:00–14:00, tatsächlich
+09:04–14:22**. Abweichungen sichtbar, ohne dass jemand nachrechnen muss.
+
+### Wie lange war der Laden unbeaufsichtigt
+
+Deine Idee, und die beste in diesem Plan. Für jeden Tag und jedes Studio:
+Zeiträume innerhalb der Öffnungszeit, in denen **niemand** eingestempelt
+war.
+
+> **Dafür fehlt etwas, das es noch nicht gibt: Öffnungszeiten je
+> Studio.** Nachgesehen — weder in der App noch in `konfig.js`. Ohne sie
+> lässt sich „unbeaufsichtigt" nicht berechnen, denn nachts ist
+> niemand da und das ist richtig so. Also gehören sie mit in diese
+> Runde: je Studio und Wochentag eine Von-Bis-Zeit.
+
+### Warnungen nach dem Arbeitszeitgesetz
+
+Nachgeschlagen am 14.9., nicht aus dem Gedächtnis:
+
+| Regel | Was das Gesetz sagt |
+|---|---|
+| **§ 3 ArbZG** | werktäglich höchstens 8 Stunden, Verlängerung auf 10 Stunden möglich |
+| **§ 4 ArbZG** | Pause **30 Minuten** bei mehr als 6 bis 9 Stunden, **45 Minuten** bei mehr als 9 Stunden. Niemand länger als 6 Stunden ohne Pause |
+| **§ 5 ArbZG** | **11 Stunden** ununterbrochene Ruhezeit nach Arbeitsende |
+
+Die App kann anschlagen, wenn eine dieser Grenzen gerissen wird. **Was
+sie nicht tut: behaupten, der Betrieb sei damit gesetzeskonform.**
+Dieselbe Grenze wie bei den AV-Unterlagen — wir zeichnen auf und weisen
+hin; ob das der Pflicht genügt, entscheidet der Kunde mit seinem Anwalt.
+
+---
+
+## Wie die Sicherheit gebaut wird
+
+Das ist der Teil, an dem ein Zeiterfassungssystem steht oder fällt.
+
+### Die PIN darf niemand lesen können
+
+**Nicht der Kollege, nicht die Leitung, nicht der Chef, nicht das
+Terminal.** Sonst kann jeder für jeden stempeln, und die ganze Erfassung
+ist wertlos.
+
+Deshalb:
+
+* Gespeichert wird **nie die PIN**, sondern ein Hash mit zufälligem
+  Salz.
+* Er liegt an einem Ort, den die Regeln **für alle sperren** — auch für
+  den Eigentümer. Lesen muss ihn niemand; prüfen tut ihn der Server.
+* Geprüft wird in einer Cloud Function mit `timingSafeEqual`, damit die
+  Antwortdauer nicht verrät, wie viele Ziffern stimmen. Genau der Weg,
+  den der Kalender-Abo-Link schon geht.
+* Setzen und Ändern darf nur die Person selbst — über eine Funktion, die
+  den alten Wert nicht herausgibt.
+
+### Das Terminal muss sich ausweisen
+
+Ein registriertes Terminal bekommt ein **Geheimnis je Gerät**, das der
+Chef beim Einrichten einmal sieht. Es liegt lokal im Gerät. Die
+Stempel-Funktion prüft: gehört dieses Geheimnis zu diesem Studio?
+
+Ein Geheimnis je Gerät und nicht eines für alle — sonst hinge der ganze
+Betrieb an einem Wert, und ein verlorenes Tablet zwänge dazu, alle
+anderen neu einzurichten. Dieselbe Begründung wie beim Kalender-Link.
+
+### Gestempelt wird nur über den Server
+
+Kein Schreibweg aus dem Browser in die Zeitdatensätze. **Niemand** darf
+Zeiten anlegen oder ändern — auch der Chef nicht direkt.
+
+Der Grund ist nicht Misstrauen, sondern Beweiswert: eine Aufzeichnung,
+die sich nachträglich beliebig ändern lässt, ist als Nachweis nichts
+wert. Korrekturen laufen deshalb über einen eigenen Weg:
+
+* Der Chef **korrigiert nicht**, er legt eine **Korrektur an**, mit
+  Grund und Zeitpunkt.
+* Der ursprüngliche Eintrag bleibt stehen und bleibt sichtbar.
+* Die Person sieht ihre eigenen Korrekturen.
+
+Das ist mehr Arbeit als ein Bearbeiten-Stift und der einzige Weg, der
+einer Prüfung standhält.
+
+---
+
+## Die Premium-Stufe
+
+Entschieden: **Stempeln ist Basis. Was daraus wird, ist Premium.**
+
+| # | Funktion | Stand | Warum sie trägt |
+|---|---|---|---|
+| 1 | **Auswertung, Excel-Export, Monatsbericht** | gebaut | bereits als Premium vorgesehen |
+| 2 | **Nachweise mit Ablaufwarnung** | gebaut | echtes Schloss in den Regeln; Compliance, jemand haftet |
+| 3 | **Arbeitszeitkonto mit Überstunden** | neu | Soll gegen Ist je Person, Plus- und Minusstunden. Die Zahl, nach der ein Chef als Erstes fragt |
+| 4 | **Lohn-Export für den Steuerberater** | neu | Monatsdatei mit Stunden je Person. Braucht die Zeiterfassung als Grundlage |
+| 5 | **Urlaubskonto mit Resturlaub** | neu | gibt es heute **nicht** — nachgesehen. Die App kennt Anträge, aber keinen Anspruch und keinen Rest |
+| 6 | **Abdeckung: wann war der Laden unbeaufsichtigt** | neu | braucht Öffnungszeiten je Studio |
+| 7 | **Warnungen nach dem Arbeitszeitgesetz** | neu | Pause vergessen, über zehn Stunden, Ruhezeit unter elf |
+| 8 | **Echter Dateispeicher** | neu | hebt die 0,7-MB-Grenze. Kostet Geld je GB, erklärt den Aufpreis von selbst |
+
+**Der Satz für das Verkaufsgespräch:**
+*„Basic: der Laden läuft und die Zeit wird erfasst. Premium: was aus der
+Zeit folgt — Konten, Lohn, Urlaub, Auswertung."*
+
+> **Eine Falle bleibt, und sie steht schon seit August im Abo-Plan:**
+> eine Funktion wegzunehmen, die ein Kunde bereits benutzt, geht nicht
+> gut aus. Die Auswertung und die Nachweise gibt es heute für alle.
+> Entweder die Stufen kommen, **bevor** jemand Kunde wird — oder
+> Bestandskunden behalten dauerhaft, was sie hatten.
+>
+> Bei eurem eigenen Betrieb heißt das: ihr behaltet alles.
+
+---
+
+## Was neu in die Datenbank kommt
+
+| Sammlung | Inhalt |
+|---|---|
+| `zeiten` | ein Datensatz je Stempelvorgang: uid, Studio, Art (kommen/pause/zurück/gehen), Zeitpunkt, Terminal |
+| `zeitKorrekturen` | Korrekturen mit Grund, Urheber und Zeitpunkt — der Urbestand bleibt |
+| `terminals` | registrierte Geräte je Studio, mit Hash des Geräte-Geheimnisses |
+| `privat/<uid>/pinHash` | Hash der PIN, **für alle gesperrt**, geprüft nur vom Server |
+| `config/oeffnungszeiten` | je Studio und Wochentag von–bis |
+| `urlaubskonto` | Anspruch je Jahr und Person, Übertrag, verbraucht |
+
+Jede davon braucht eigene Regeln und eigene Prüfungen im Regel-Durchlauf.
+
+---
+
+## Reihenfolge
+
+1. **Öffnungszeiten je Studio** — klein, unabhängig, wird später
+   gebraucht.
+2. **PIN setzen und prüfen** — Server-Funktion, Regeln, Prüfungen. Ohne
+   das geht nichts weiter.
+3. **Terminal registrieren** — Chef richtet ein Gerät ein.
+4. **Stempeln** — der Terminal-Bildschirm und die Schreibfunktion.
+5. **Eigene Zeiten sehen** — jede Person im Ich-Bereich.
+6. **Soll gegen Ist im Schichtplan**.
+7. **Korrekturen** durch die Leitung, mit Grund.
+8. **Abdeckung und Warnungen** — braucht 1 und 4.
+9. **Arbeitszeitkonto**, dann **Lohn-Export**, dann **Urlaubskonto**.
+
+Die Punkte 1 bis 5 sind die Zeiterfassung. Alles ab 8 ist Premium.
+
+---
+
+## Was ich dabei nicht leisten kann
+
+* **Die Zusage, dass damit die Aufzeichnungspflicht erfüllt ist.** Die
+  App kann aufzeichnen. Ob die Aufzeichnung genügt, entscheidet der
+  Kunde mit seinem Anwalt.
+* **Die Beurteilung, ob eine Betriebsvereinbarung nötig ist.**
+  Arbeitszeiterfassung ist Leistungs- und Verhaltenskontrolle und damit
+  mitbestimmungspflichtig, wo ein Betriebsrat besteht (§ 87 BetrVG).
+* **Lohnabrechnung.** Der Export liefert Stunden. Was daraus an Lohn
+  wird, rechnet der Steuerberater.
+
+---
+
+## Was das für den Preis heißt
+
+Mit Zeiterfassung steht StudioChat zum ersten Mal im selben Regal wie
+Ordio und Papershift. Der Preis von 15–25 € je Studio war für ein
+Organisationswerkzeug angesetzt.
+
+**Das ist eine Entscheidung und keine Rechnung** — aber sie steht an,
+sobald Punkt 5 der Reihenfolge fertig ist, und nicht erst danach.

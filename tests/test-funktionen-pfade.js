@@ -184,13 +184,58 @@ const SCHLUESSEL = /process\.env\.\w*(KEY|SECRET|TOKEN)/;
 const EIGENES_GEHEIMNIS = /\b(tokenGleich|timingSafeEqual)\s*\(/;
 const geschuetzt = (r) => SCHLUESSEL.test(r) || EIGENES_GEHEIMNIS.test(r);
 
+/* ── Eine DRITTE Bauart, seit der Zeiterfassung ──
+   pinSetzen und pinStatus rufen `anruferProfil(context)`. Die
+   Hilfsfunktion prüft requireAuth UND zusätzlich, dass das Konto
+   freigegeben ist — sie ist also strenger als requireAuth allein: ein
+   gesperrter Zugang kommt hier nicht durch.
+
+   ANERKANNT WIRD SIE ABER NUR, WENN SIE ES WIRKLICH TUT. Sonst stünde
+   die Prüfung auf einem Funktionsnamen, und den kann jeder vergeben.
+   Dieselbe Lehre wie bei tokenGleich: der Name ist der Anlass
+   nachzusehen, nicht der Beweis. */
+const HILFE = /\banruferProfil\s*\(\s*context\s*\)/;
+const hilfeRumpf = (() => {
+  const i = quelle.indexOf('async function anruferProfil');
+  if (i < 0) return '';
+  const j = quelle.indexOf('\n}', i);
+  return j < 0 ? quelle.slice(i) : quelle.slice(i, j + 2);
+})();
+pruefe('anruferProfil gibt es überhaupt', !!hilfeRumpf,
+  'ohne die Hilfsfunktion darf ihr Name auch nicht als Prüfung zählen');
+pruefe('anruferProfil ruft selbst requireAuth(context)',
+  /requireAuth\s*\(\s*context\s*\)/.test(hilfeRumpf),
+  'sonst steht die Prüfung nur auf einem Funktionsnamen');
+pruefe('anruferProfil weist gesperrte Zugänge ab',
+  /aktiv\s*===\s*false/.test(hilfeRumpf),
+  'sie soll strenger sein als requireAuth, nicht nur anders');
+
+/* GEGENPROBE zu dieser Erweiterung: ein onCall, das NUR anruferProfil
+   im Text stehen hat, ohne dass es die Hilfsfunktion gibt, darf nicht
+   durchgehen. Geprüft wird das an einer erfundenen Quelle — am echten
+   Code ginge es nicht, ohne ihn kaputtzumachen. */
+(function gegenprobeHilfe() {
+  const erfunden = 'exports.x = region.https.onCall(async (d, context) => {\n' +
+    '  const { uid } = await anruferProfil(context);\n  return { uid };\n  });';
+  const ohneHilfe = '';
+  const erkannt = (HILFE.test(erfunden) && /requireAuth\s*\(\s*context\s*\)/.test(ohneHilfe));
+  pruefe('GEGENPROBE ein Aufruf ohne echte Hilfsfunktion zählt nicht', !erkannt,
+    'der Name allein darf nicht genügen');
+})();
+
 const aufrufe = bloecke.filter(b => rumpf(b).indexOf('.https.onCall') >= 0);
 const anfragen = bloecke.filter(b => rumpf(b).indexOf('.https.onRequest') >= 0);
 pruefe('Endpunkte überhaupt gefunden', aufrufe.length >= 12,
   aufrufe.length + ' onCall, ' + anfragen.length + ' onRequest');
 
+const hilfeEcht = !!hilfeRumpf &&
+  /requireAuth\s*\(\s*context\s*\)/.test(hilfeRumpf) &&
+  /aktiv\s*===\s*false/.test(hilfeRumpf);
+
 aufrufe.forEach(b => {
-  pruefe(b.name + ': prüft requireAuth/Chef/Admin', PRUEFUNG.test(rumpf(b)),
+  const r = rumpf(b);
+  pruefe(b.name + ': prüft requireAuth/Chef/Admin',
+    PRUEFUNG.test(r) || (hilfeEcht && HILFE.test(r)),
     'ein onCall ohne Prüfung ist für jeden im Internet offen');
 });
 anfragen.forEach(b => {

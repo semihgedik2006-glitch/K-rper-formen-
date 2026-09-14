@@ -7826,3 +7826,260 @@ weder eine Musterstraße noch eine erfundene Umsatzsteuer-Nummer steht.
 Cloud Functions laufen nicht. Wer in der Demo etwas auslöst, das eine
 E-Mail verschicken würde, bekommt einen Satz, der das sagt — statt einer
 Fehlermeldung oder, schlimmer, einer stillen Nichtreaktion.
+
+---
+
+# 79 · Zeiterfassung, Schritt 1 und 2: Öffnungszeiten und die PIN
+
+Der Anfang des größten Baus bisher. Der Plan steht in
+`docs/ZEITERFASSUNG-PLAN.md`; hier sind die ersten beiden Schritte.
+
+## Schritt 1 — Öffnungszeiten je Studio
+
+Der unscheinbarste Teil, und er steht am Anfang, weil ohne ihn die Frage
+gar nicht gestellt werden kann, die den ganzen Bau ausgelöst hat:
+**„wie lange war der Laden unbeaufsichtigt".** Nachts ist niemand da,
+und das ist richtig so.
+
+Beim Nachsehen stellte sich heraus: **es gibt keine Öffnungszeiten** —
+weder in der App noch in `konfig.js`. Sie liegen jetzt im vorhandenen
+Dokument `config/studios`, je Studio und Wochentag.
+
+**Warum dort und nicht in einer eigenen Sammlung:** `config/studios` hat
+bereits Regeln, die nur die Leitung schreiben lassen, und die Liste wird
+ohnehin überall gelesen, wo Studios vorkommen. Eine neue Sammlung hieße
+eine neue Regel, eine neue Prüfung und einen zweiten Ort, an dem etwas
+fehlen kann.
+
+Drei Entscheidungen im Kleinen, jede mit einem Grund:
+
+* **Leerer Wert heißt geschlossen, kein Wert heißt „nicht gepflegt".**
+  Der Unterschied zählt: sonst meldet die Abdeckungsrechnung später für
+  jedes ungepflegte Studio vierundzwanzig Stunden ohne Aufsicht.
+* **„bis" vor „von" wird abgelehnt**, mit Nennung des Tages. Eine
+  Nachtschicht über Mitternacht gibt es in einem EMS-Studio nicht; sie
+  stillschweigend zuzulassen hieße, dass die Rechnung später Unsinn
+  ergibt, ohne dass es jemand merkt.
+* **„Für alle Tage übernehmen".** Die häufigste Eingabe ist „jeden Tag
+  dasselbe". Sie sieben Mal zu tippen ist der schnellste Weg, dass es
+  niemand pflegt.
+
+`tests/test-oeffnungszeiten.js` prüft unter anderem, dass beim Speichern
+**alle vierzehn Studios** in der Liste bleiben — ein Dialog, der die
+übrigen verliert, ist schlimmer als keiner. Gegenprobe: zwei Korrekturen
+zurückgebaut → fünf rote Zeilen.
+
+## Schritt 2 — die PIN
+
+Hier steht oder fällt das ganze System. **Kann irgendjemand die PIN
+eines anderen lesen, kann er für ihn stempeln — und dann ist die
+Aufzeichnung als Nachweis nichts mehr wert.**
+
+Vier Regeln, keine davon verhandelbar:
+
+1. **Gespeichert wird nie die PIN**, sondern `scrypt(PIN, Salz)`. Ein
+   Hash allein genügt nicht: vier Ziffern sind zehntausend
+   Möglichkeiten, eine Tabelle dafür passt auf einen USB-Stick. Das Salz
+   ist je Person zufällig.
+2. **Niemand darf ihn lesen** — nicht der Kollege, nicht die Leitung,
+   nicht der Chef, **nicht einmal die Person selbst**. `zeitPins` steht
+   in `firestore.rules` auf `if false`, in beiden Welten.
+3. **Verglichen wird zeitgleich** (`timingSafeEqual`), wie beim
+   Kalender-Link.
+4. **Setzen darf nur die Person selbst**, und wer schon eine hat, muss
+   die alte nennen. Kein Weg, über den die Leitung eine PIN vergibt —
+   wer das kann, kann auch für jemanden stempeln.
+
+### Der Eintrag, den man beim Bauen weglässt
+
+`tests/rules/zeitpin.test.js` prüft acht Wege an den Hash, und der
+wichtigste ist: **die Person selbst darf ihren eigenen Hash nicht
+lesen.** Überall sonst in dieser App darf der Eigentümer sein eigenes
+Dokument lesen — hier wäre `if request.auth.uid == uid` der bequeme
+Fehler. Bequem, weil er anderswo richtig ist.
+
+Gegenprobe: genau diese Regel eingesetzt → **eine rote Zeile**, und zwar
+diese.
+
+Die Gegenprobe zur Ausgangslage ist keine Leseprobe auf `zeitPins`,
+sondern eine **daneben**: dieselben Konten müssen am Schwarzen Brett
+weiter arbeiten können. Sonst wäre der Durchlauf auch grün, wenn die
+Testdaten kaputt sind.
+
+### Der Wächter kannte die neue Bauform nicht
+
+`test-funktionen-pfade` verlangt von jedem `onCall` ein
+`require(Auth|Chef|Admin)(context)` im Rumpf. `pinSetzen` und
+`pinStatus` rufen stattdessen `anruferProfil(context)` — das prüft
+requireAuth **und** zusätzlich, dass das Konto freigegeben ist, ist also
+strenger.
+
+Dieselbe Lehre wie beim Kalender im August: **nicht als Ausnahmeliste.**
+Anerkannt wird die Bauform, und zwar nur, wenn die Hilfsfunktion
+wirklich tut, was ihr Name behauptet — geprüft wird, dass sie
+`requireAuth(context)` ruft **und** gesperrte Zugänge abweist. Sonst
+stünde die Regel auf einem Funktionsnamen, und den kann jeder vergeben.
+
+Gegenprobe: `requireAuth` aus `anruferProfil` entfernt → **drei rote
+Zeilen**, die Hilfsfunktion und beide Endpunkte.
+
+## Ein Fehler beim Bauen, und er war lehrreich
+
+Nach einer Änderung startete die App gar nicht: *„Unexpected string"*.
+Ursache war meine eigene Werkzeugbenutzung — in einer Perl-Ersetzung ist
+`$(` eine **Perl-Variable** (die Gruppen-ID). Sie wurde zur Zahl
+ausgewertet, und aus `var b=$('id')` wurde `var b=0'id')`.
+
+Gefunden wurde es nicht durch Lesen, sondern durch **halbierendes
+Suchen**: die Inline-Blöcke einzeln durch den Parser, dann im kaputten
+Block die erste Zeile eingegrenzt, ab der es nicht mehr aufgeht. Zwei
+Minuten statt zwanzig.
+
+Die Lehre ist nicht „Perl ist heikel", sondern: **eine Ersetzung, die
+Quelltext erzeugt, gehört danach durch einen Parser** — und nicht nur
+durch `grep -c`, das genau diesen Fehler gemeldet hätte als „1 Treffer,
+alles gut".
+
+## Geprüft
+
+* `test-oeffnungszeiten` (neu) · Gegenprobe → 5 rot
+* `tests/rules/zeitpin.test.js` (neu): 30 Zusicherungen in beiden Welten ·
+  Gegenprobe → 1 rot, und zwar der Eintrag, den man weglässt
+* `test-zeitpin` (neu): Salz wirkt, Hash ohne Klartext, scrypt, kein
+  Endpunkt · Gegenprobe zur Prüfung selbst
+* `test-funktionen-pfade` erweitert · Gegenprobe → 3 rot
+* `test-mein-bereich` um die PIN-Karte erweitert: **0 direkte
+  Schreibvorgänge** nach `zeitPins`, der Weg läuft nur über den Server
+* volle Regel-Durchläufe grün
+
+## Was ausdrücklich noch nicht geht
+
+Stempeln. Es gibt die PIN und die Öffnungszeiten, aber kein Terminal und
+keine Zeitdatensätze — Schritte 3 bis 5 im Plan. Wer die PIN heute setzt,
+setzt sie für etwas, das es noch nicht gibt; die Karte sagt das auch so.
+
+---
+
+# 80 · Zeiterfassung, Schritt 3 und 4: das Terminal steht
+
+Ein Tablet am Empfang wird zur Stempeluhr. Der Chef richtet es ein, das
+Team stempelt darauf. Damit ist die Zeiterfassung von Ende zu Ende da —
+was fehlt, ist das, was man daraus rechnet.
+
+## Wie sich das Terminal ausweist
+
+Die Entscheidung mit den meisten Folgen, und es gab zwei Wege.
+
+**Verworfen:** ein offener Endpunkt, den ein nicht angemeldetes Tablet
+mit einem Geräte-Geheimnis ruft. Das wäre eine Adresse im Internet, an
+der jeder klopfen kann — und jeder Klopfversuch ein Versuch auf eine
+vierstellige PIN.
+
+**Gebaut:** das Tablet ist ganz normal angemeldet. Ein Stempel braucht
+damit **drei Dinge gleichzeitig**:
+
+| | |
+|---|---|
+| 1 | ein angemeldetes, freigegebenes Konto **dieses** Betriebs |
+| 2 | das Geheimnis **genau dieses** Terminals |
+| 3 | die PIN der Person |
+
+Wer das Tablet stiehlt, hat zwei davon und kann für niemanden stempeln.
+Wer eine PIN kennt, braucht trotzdem das Gerät im Studio.
+
+**Ein Geheimnis je Terminal**, nicht eines für den Betrieb — sonst zwingt
+ein verlorenes Tablet dazu, alle anderen neu einzurichten. Dieselbe
+Begründung wie beim Kalender-Abo.
+
+**Und ein Unterschied zur PIN, der erklärt gehört:** das
+Terminal-Geheimnis sind 32 zufällige Bytes, sein Hash lässt sich nicht
+durchprobieren. Deshalb darf die Leitung die Terminal-Liste lesen,
+während `zeitPins` für alle gesperrt ist. Der Unterschied ist Rechnung
+und nicht Geschmack: zehntausend Möglichkeiten gegen 2^256.
+
+## Was der Bildschirm anders macht als der Rest der App
+
+**64 Pixel statt 44.** Gestempelt wird im Vorbeigehen, oft mit nassen
+Händen, manchmal von jemandem, der die App sonst nie öffnet.
+
+**Bei vier Ziffern wird nicht von selbst abgeschickt.** Eine PIN darf
+fünf oder sechs Stellen haben; ein Automat, der nach der vierten
+losrennt, macht daraus stillschweigend einen Fehlversuch.
+
+**Was das Terminal nicht kann, und das ist Absicht:** keine Zeiten
+ansehen, keine korrigieren, keine fremden Studios. Ein Gerät, das offen
+am Empfang steht, ist kein Ort für Auskünfte über Arbeitszeiten von
+Kollegen.
+
+## Drei Fehler, und alle drei waren meine
+
+### 1. `S('users')` — der Kommentar stand da, ich habe ihn überlesen
+
+`users` ist die **eine** Sammlung, die nicht unter `firmen/<kennung>/`
+liegt: beim Anmelden weiß die App noch nicht, zu welcher Firma jemand
+gehört. Das steht so im Code. Ich habe trotzdem `S('users')` geschrieben,
+und die Personenliste im Terminal blieb leer.
+
+Gefunden hat es der Durchlauf, nicht ich.
+
+### 2. Der vierte Fall derselben Attrappen-Lücke
+
+`collection('users').get()` lieferte **0** — auch ohne Filter. Der
+`get()`-Zweig von `stub-chef.js` kannte `users` nicht, nur `onSnapshot`.
+
+Dieselbe Lücke wie zuvor bei `board`, bei den Übergaben und bei
+`probetrainings`. **Beim vierten Mal ist es keine Einzelheit.** Behoben,
+und mit einem Hinweis versehen: wer die Attrappe erweitert, trägt eine
+Sammlung an **beiden** Stellen ein. Eine Sammlung, die nur eine Hälfte
+kennt, macht jeden Durchlauf darüber grün und aussagelos.
+
+### 3. Meine erste Gegenprobe war wertlos — und hätte mich beruhigt
+
+Die wichtigste Prüfung dieses Bauteils lautet: **ohne Schlüssel darf der
+Terminal-Bildschirm nicht erscheinen.** Ein Fehler dort verdeckt allen
+Mitarbeitern die ganze App, sofort nach dem Ausrollen — und auf dem
+eigenen Gerät sieht man ihn nie, weil dort ein Schlüssel liegt.
+
+Die Gegenprobe dazu wurde **nicht rot**. Fast hätte ich das als „die
+Prüfung ist eben schon gut" verbucht. Der wahre Grund: meine Sonde ließ
+den Bildschirm nur kurz aufblitzen, und ich habe drei Sekunden später
+gemessen.
+
+Mit einer ehrlichen Sonde schlägt sie an:
+*„OHNE SCHLÜSSEL IST DER TERMINAL-BILDSCHIRM SICHTBAR"*.
+
+**Die Lehre ist nicht „Sonden sorgfältiger bauen", sondern: eine
+Gegenprobe, die nicht rot wird, ist ein Befund und kein Ergebnis.**
+
+### Nachtrag: drei Fehler, die nicht aus der App kamen
+
+`firebase.firestore` ist eine **Funktion mit Eigenschaften**
+(`FieldValue`, `FieldPath`). Meine Test-Attrappe hat sie ersetzt und nur
+die Funktion kopiert — die Eigenschaften waren weg, und die App fiel dort
+um, wo sie `fv.increment()` ruft. Drei PAGEERROR, und keiner davon aus
+dem Code, den ich prüfen wollte.
+
+## Geprüft
+
+* `test-terminal` (neu): ohne Schlüssel bleibt der Bildschirm weg ·
+  Einrichten zeigt den Schlüssel einmal · er landet **nur** lokal ·
+  mit Schlüssel übernimmt der Bildschirm · nur Leute dieses Studios ·
+  kein Selbstabschicken bei vier Ziffern · **0 direkte Schreibvorgänge**
+  in `zeiten` · ein Fehlversuch räumt die PIN weg
+* Gegenprobe auf die teuerste Zusage → rot, mit dem richtigen Satz
+* `tests/rules/zeitpin.test.js`: **68 Zusicherungen** in beiden Welten ·
+  Gegenprobe (Schreiben erlaubt) → fünf rote Zeilen
+* `test-zeitpin`: Reihenfolge, Bremse, drei Schlüssel · mit Gegenproben
+* **Volle Regression: 105 grün · 0 rot · 0 ohne Ausgabe**
+
+## Was jetzt fehlt
+
+Schritt 5 bis 9 aus `docs/ZEITERFASSUNG-PLAN.md`: die eigenen Zeiten
+sehen, Soll gegen Ist im Schichtplan, Korrekturen mit Grund, die
+Abdeckung („wie lange war der Laden unbeaufsichtigt"), das
+Arbeitszeitkonto, der Lohn-Export, das Urlaubskonto.
+
+**Und eine Entscheidung, die jetzt ansteht und nicht später:** mit der
+Zeiterfassung steht StudioChat zum ersten Mal im selben Regal wie Ordio
+und Papershift. Die 15–25 € je Studio waren für ein
+Organisationswerkzeug angesetzt.

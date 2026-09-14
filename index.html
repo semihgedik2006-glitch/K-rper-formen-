@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3eSLViPXHo1OyoVH/K9QuH5TfKlhaAcW/pwX94epF8Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FEDvgJgJ9FJpHEIE+XRiTyYySpZWXXU7BSG0s9JgiGE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2173,15 +2173,100 @@ html.demo .demo-bar{display:flex;align-items:center;gap:var(--s10);
 .gl-txt{min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 .gl-txt b{font-weight:700;line-height:var(--lh-eng);overflow-wrap:anywhere}
 .gl-txt span{color:var(--text-2);font-size:var(--t-xs)}
-#fwdModal,#keysModal{position:fixed;inset:0;z-index:215;display:none;
+#fwdModal,#keysModal,#oeffnungModal{position:fixed;inset:0;z-index:215;display:none;
   align-items:center;justify-content:center;padding:var(--s20);
   background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   animation:fadeBlur .3s var(--ease-ios)}
-#fwdModal.show,#keysModal.show{display:flex}
-#fwdModal.show .pm-box,#keysModal.show .pm-box{animation:sheetIn .46s var(--spring)}
+#fwdModal.show,#keysModal.show,#oeffnungModal.show{display:flex}
+
+/* ── Terminal ────────────────────────────────────────────────────────
+   Bewusst grösser als alles andere in der App. Gestempelt wird im
+   Vorbeigehen, oft mit nassen Händen, manchmal von jemandem, der die
+   App sonst nie öffnet. Fingerziele hier 64px statt der üblichen 44 —
+   das ist keine Willkür, sondern der Unterschied zwischen „geht" und
+   „geht auch im Gedränge". */
+#terminalSchirm{position:fixed;inset:0;z-index:400;display:none;
+  flex-direction:column;background:var(--bg);
+  padding:calc(var(--s16) + var(--sat)) var(--s16) calc(var(--s16) + var(--sab))}
+#terminalSchirm.show{display:flex}
+.tm-kopf{display:flex;align-items:flex-start;justify-content:space-between;
+  gap:var(--s12);flex-shrink:0;margin-bottom:var(--s16)}
+.tm-studio{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+  letter-spacing:var(--ls-s)}
+.tm-gerät{font-size:var(--t-xs);color:var(--text-3)}
+.tm-uhr{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
+  font-variant-numeric:tabular-nums;color:var(--accent-d)}
+.tm-inhalt{flex:1 1 auto;overflow-y:auto;display:grid;gap:var(--s10);
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));align-content:start}
+.tm-person{min-height:72px;display:flex;align-items:center;gap:var(--s10);
+  padding:var(--s10) var(--s12);border-radius:var(--r-md);
+  border:1px solid var(--line-2);background:var(--auf-1);cursor:pointer;
+  font-family:var(--font-body);color:var(--text);text-align:left;
+  transition:transform .2s var(--spring),border-color .2s}
+.tm-person:active{transform:scale(.97)}
+.tm-person .avatar{width:44px;height:44px;font-size:var(--t-md)}
+.tm-person .av-wrap{flex:0 0 auto}
+.tm-person .tm-nam{min-width:0;font-weight:700;font-size:var(--t-md);
+  overflow:hidden;text-overflow:ellipsis}
+.tm-person .tm-zst{font-size:var(--t-2xs);color:var(--text-3);font-weight:600}
+.tm-person.da{border-color:var(--accent);background:rgba(34,211,238,.08)}
+
+.tm-pin{position:absolute;inset:0;background:var(--bg);z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--s12);padding:var(--s16)}
+.tm-zurueck{position:absolute;top:calc(var(--s16) + var(--sat));left:var(--s16);
+  min-height:64px;padding:0 var(--s16);border:none;background:none;
+  color:var(--accent-d);font-family:var(--font-body);font-weight:700;
+  font-size:var(--t-md);cursor:pointer}
+.tm-wer{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl)}
+.tm-was{font-size:var(--t-md);color:var(--text-2);font-weight:600}
+.tm-punkte{display:flex;gap:var(--s10);min-height:24px}
+.tm-punkte i{width:16px;height:16px;border-radius:var(--r-rund);
+  background:var(--auf-3);display:block}
+.tm-punkte i.voll{background:var(--accent)}
+.tm-tasten{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s10);
+  width:min(320px,100%)}
+.tm-taste{min-height:64px;border-radius:var(--r-md);border:1px solid var(--line-2);
+  background:var(--auf-1);color:var(--text);cursor:pointer;
+  font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);
+  font-variant-numeric:tabular-nums;
+  transition:transform .15s var(--spring),background .2s}
+.tm-taste:active{transform:scale(.94);background:var(--bg-2)}
+.tm-taste.weg{font-size:var(--t-md);font-weight:700;color:var(--text-3)}
+
+.tm-fuss{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  gap:var(--s12);margin-top:var(--s12);font-size:var(--t-2xs);color:var(--text-3)}
+.tm-aus{min-height:44px;padding:0 var(--s12);border:none;background:none;
+  color:var(--text-3);font-family:var(--font-body);font-size:var(--t-2xs);
+  cursor:pointer;text-decoration:underline}
+.term-geheim{padding:var(--s12);border-radius:var(--r-md);
+  border:1px solid var(--accent);background:rgba(34,211,238,.08)}
+.term-code{display:block;margin:var(--s8) 0;padding:var(--s8);
+  border-radius:var(--r-xs);background:var(--auf-2);
+  font-size:var(--t-2xs);word-break:break-all;line-height:var(--lh-eng)}
+.term-akt{display:flex;gap:var(--s8);flex-wrap:wrap}
+.term-akt .btn{flex:1 1 140px}
+/* Eine Zeile je Wochentag: Haken, von, bis. Der Tagesname traegt den
+   Haken, damit die ganze Beschriftung anklickbar ist — ein 18px-Kaestchen
+   allein waere kein Fingerziel. */
+.oz-zeile{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) 0}
+.oz-zeile + .oz-zeile{border-top:1px solid var(--line)}
+.oz-tag{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:var(--s8);
+  min-height:44px;cursor:pointer;font-size:var(--t-sm);font-weight:600}
+.oz-tag input{accent-color:var(--accent);width:18px;height:18px;flex-shrink:0}
+.oz-tag span{overflow:hidden;text-overflow:ellipsis}
+.oz-zeit{flex:0 0 auto;width:98px;min-height:44px;padding:0 var(--s6);
+  font-variant-numeric:tabular-nums}
+.oz-zeit:disabled{opacity:.4}
+.oz-bis{flex:0 0 auto;font-size:var(--t-2xs);color:var(--text-3)}
+@media (max-width:400px){
+  .oz-zeit{width:86px}
+  .oz-bis{display:none}
+}
+#fwdModal.show .pm-box,#keysModal.show .pm-box,#oeffnungModal.show .pm-box{animation:sheetIn .46s var(--spring)}
 @media (max-width:620px){
-  #fwdModal,#keysModal{align-items:flex-end;padding:0}
-  #fwdModal .pm-box,#keysModal .pm-box{
+  #fwdModal,#keysModal,#oeffnungModal{align-items:flex-end;padding:0}
+  #fwdModal .pm-box,#keysModal .pm-box,#oeffnungModal .pm-box{
     max-width:none;border-radius:var(--radius) var(--radius) 0 0;border-bottom:none;
     padding:var(--s20) var(--s20) calc(var(--s24) + var(--sab));max-height:88vh}
   #fwdModal.show .pm-box,#keysModal.show .pm-box{animation:sheetUp .5s var(--ease-ios)}
@@ -4104,6 +4189,28 @@ html{font-size:var(--fs,100%)}
               <div id="ichCerts"></div>
               <button class="mini-link ich-cert-neu" id="ichCertNeu">Nachweis eintragen</button>
             </div>
+            <!-- PIN für das Stempeln am Tablet. Steht hier und nicht in
+                 der Verwaltung: setzen darf sie nur die Person selbst.
+                 Es gibt bewusst keinen Weg, über den die Leitung eine
+                 PIN vergibt oder zurücksetzt — wer das kann, kann auch
+                 für jemanden stempeln. -->
+            <div class="ich-blatt" id="ichPinKarte">
+              <div class="ich-kopf">
+                <h3>Meine Stempel-PIN</h3>
+                <span class="ich-zahl-klein" id="ichPinStand"></span>
+              </div>
+              <p class="hint" id="ichPinText" style="margin:0 0 10px">
+                Mit dieser PIN stempelst du am Tablet im Studio.</p>
+              <div class="field" id="ichPinAltWrap" style="display:none">
+                <label for="ichPinAlt">Bisherige PIN</label>
+                <input class="inp" id="ichPinAlt" type="password" inputmode="numeric"
+                       autocomplete="off" maxlength="6" placeholder="••••" /></div>
+              <div class="field"><label for="ichPinNeu">Neue PIN (4 bis 6 Ziffern)</label>
+                <input class="inp" id="ichPinNeu" type="password" inputmode="numeric"
+                       autocomplete="new-password" maxlength="6" placeholder="••••" /></div>
+              <button class="btn btn-primary btn-sm" id="ichPinBtn"
+                      style="width:100%">PIN speichern</button>
+            </div>
             <div class="ich-blatt" id="ichZahlenKarte">
               <div class="ich-kopf">
                 <h3>Meine Zahlen</h3>
@@ -5082,6 +5189,39 @@ html{font-size:var(--fs,100%)}
                        placeholder="z. B. Bergisch Gladbach" /></div>
               <button data-ikon="plus" class="btn btn-primary" id="stNeuBtn">Studio anlegen</button>
             </div>
+            <!-- Terminals für die Zeiterfassung. Ein Tablet am Empfang
+                 wird zur Stempeluhr; nur dort lässt sich stempeln. Das
+                 ist die Ortsbindung, und zwar eine physische. -->
+            <div class="card" data-fold="terminals">
+              <h3 data-ikon="uhr">Stempel-Terminals</h3>
+              <p class="hint">Ein Tablet oder ein alter Rechner am Empfang
+                wird zur Stempeluhr. Wer stempeln will, muss an diesem Gerät
+                stehen — das ist der ganze Schutz gegen Zeiten, die niemand
+                gearbeitet hat.</p>
+              <div id="terminalListe"></div>
+              <div class="field" style="margin-top:12px">
+                <label for="termStudio">Studio</label>
+                <select class="inp" id="termStudio"></select></div>
+              <div class="field"><label for="termName">Name des Geräts</label>
+                <input class="inp" id="termName" type="text" maxlength="40"
+                       placeholder="z. B. Empfang" /></div>
+              <button data-ikon="plus" class="btn btn-primary btn-sm" id="termNeuBtn"
+                      style="width:100%">Terminal einrichten</button>
+              <div id="termGeheimBox" style="display:none;margin-top:14px"></div>
+              <details class="nachfrage">
+                <summary>Was passiert, wenn ein Tablet verloren geht?</summary>
+                <div class="nachfrage-text">
+                  <p>Entfernen — sofort, hier in der Liste. Danach kann mit
+                    diesem Gerät niemand mehr stempeln.</p>
+                  <p>Jedes Gerät hat ein eigenes Geheimnis. Ein verlorenes
+                    Tablet zwingt deshalb nicht dazu, alle anderen neu
+                    einzurichten.</p>
+                  <p>Das Geheimnis wird <b>einmal</b> angezeigt und danach
+                    nie wieder. Wer es verliert, richtet das Gerät neu ein.
+                    Gespeichert ist nur seine Prüfsumme.</p>
+                </div>
+              </details>
+            </div>
             <div class="card">
               <h3 data-ikon="warnung">Studios werden geschlossen, nicht gelöscht</h3>
               <p class="hint" style="margin-bottom:0">Geschlossene Studios
@@ -5478,6 +5618,57 @@ html{font-size:var(--fs,100%)}
     <p class="hint" id="fwdPreview" style="margin-bottom:14px"></p>
     <input class="inp" id="fwdSearch" type="search" placeholder="Kanal oder Person suchen …" autocomplete="off" style="margin-bottom:12px" />
     <div id="fwdList"></div>
+  </div>
+</div>
+
+<!-- ══ TERMINAL ═══════════════════════════════════════════════════════
+     Der Bildschirm, den das Team benutzt. Er legt sich über die ganze
+     App: wer am Empfang stempelt, soll nichts anderes sehen und sich
+     vor allem nicht versehentlich durch den Chat wischen.
+
+     Groß gebaut, mit Absicht. Das hier wird im Vorbeigehen bedient, oft
+     mit nassen oder kalten Händen, manchmal von jemandem, der die App
+     sonst nie öffnet. Jeder Knopf ist mindestens 64 Pixel hoch — mehr
+     als die 44, die sonst gelten. -->
+<div id="terminalSchirm" style="display:none">
+  <div class="tm-kopf">
+    <div>
+      <div class="tm-studio" id="tmStudio">—</div>
+      <div class="tm-gerät" id="tmGeraet">—</div>
+    </div>
+    <div class="tm-uhr" id="tmUhr">--:--</div>
+  </div>
+
+  <div class="tm-inhalt" id="tmListe"></div>
+
+  <div class="tm-pin" id="tmPin" style="display:none">
+    <button class="tm-zurueck" id="tmZurueck">‹ Zurück</button>
+    <div class="tm-wer" id="tmWer">—</div>
+    <div class="tm-was" id="tmWas">—</div>
+    <div class="tm-punkte" id="tmPunkte"></div>
+    <div class="tm-tasten" id="tmTasten"></div>
+  </div>
+
+  <div class="tm-fuss">
+    <span id="tmHinweis">Name antippen, dann PIN eingeben.</span>
+    <button class="tm-aus" id="tmAus">Terminal beenden</button>
+  </div>
+</div>
+
+<!-- Öffnungszeiten je Studio. Gebraucht für die Zeiterfassung: ohne sie
+     lässt sich „wie lange war der Laden unbeaufsichtigt" nicht stellen. -->
+<div id="oeffnungModal">
+  <div class="pm-box">
+    <button class="lb-close" id="oeffnungClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="oeffnungTitel" style="margin-bottom:6px">Öffnungszeiten</h3>
+    <p class="hint" style="margin-bottom:14px">Wann ist geöffnet? Nur
+      innerhalb dieser Zeiten zählt später, ob jemand im Studio war.
+      Ein Tag ohne Haken gilt als geschlossen.</p>
+    <div id="oeffnungListe"></div>
+    <button type="button" class="btn btn-ghost btn-sm" id="oeffnungAlle"
+            style="width:100%;margin-top:10px">Für alle Tage übernehmen</button>
+    <button type="button" class="btn btn-primary btn-sm" id="oeffnungSpeichern"
+            style="width:100%;margin-top:10px">Öffnungszeiten speichern</button>
   </div>
 </div>
 
@@ -7713,6 +7904,479 @@ function firmaAnlegen(btn){
   });
 }
 
+/* ══ ÖFFNUNGSZEITEN JE STUDIO ═══════════════════════════════════════
+   Gebraucht werden sie für die Zeiterfassung, genauer für die Frage
+   „wie lange war der Laden unbeaufsichtigt". Ohne Öffnungszeit ist
+   nachts jedes Studio unbeaufsichtigt, und das ist richtig so — die
+   Frage lässt sich ohne diese Angabe gar nicht stellen.
+
+   SIE LIEGEN IM VORHANDENEN STUDIO-DOKUMENT und nicht in einer eigenen
+   Sammlung. Das ist keine Bequemlichkeit: config/studios hat bereits
+   Regeln, die nur die Leitung schreiben lassen, und die Liste wird
+   ohnehin überall gelesen, wo Studios vorkommen. Eine neue Sammlung
+   hiesse eine neue Regel, eine neue Pruefung und einen zweiten Ort, an
+   dem etwas fehlen kann.
+
+   Aufbau je Studio:  oeffnung: { mo:'07:00-21:00', …, so:'' }
+   Leerer Wert heisst geschlossen. Kein Wert heisst „nicht gepflegt" —
+   das ist etwas anderes als geschlossen, und die Auswertung muss den
+   Unterschied kennen, sonst meldet sie für jedes ungepflegte Studio
+   vierundzwanzig Stunden ohne Aufsicht.                              */
+var WOCHENTAGE = [
+  { k:'mo', lang:'Montag' },     { k:'di', lang:'Dienstag' },
+  { k:'mi', lang:'Mittwoch' },   { k:'do', lang:'Donnerstag' },
+  { k:'fr', lang:'Freitag' },    { k:'sa', lang:'Samstag' },
+  { k:'so', lang:'Sonntag' }
+];
+
+/* '07:00-21:00' -> { von:'07:00', bis:'21:00' }; alles Unbrauchbare
+   wird zu null. Die Zeiten kommen aus einem <input type="time">, sind
+   also normalerweise sauber — aber sie stehen in der Datenbank und
+   koennen von dort auch anders kommen. */
+function zeitPaar(wert){
+  var m = /^(\d{2}:\d{2})-(\d{2}:\d{2})$/.exec(String(wert||''));
+  return m ? { von:m[1], bis:m[2] } : null;
+}
+function minuten(hhmm){
+  var m = /^(\d{2}):(\d{2})$/.exec(String(hhmm||''));
+  return m ? (+m[1])*60 + (+m[2]) : null;
+}
+
+/* Kurzfassung für den Knopf in der Studioliste. */
+function oeffnungKurz(st){
+  var o = (st && st.oeffnung) || null;
+  if(!o) return 'Zeiten';
+  var offen = WOCHENTAGE.filter(function(t){ return zeitPaar(o[t.k]); });
+  if(!offen.length) return 'Zeiten';
+  /* Sind alle gepflegten Tage gleich, steht die Zeit selbst da — das ist
+     die haeufigste Lage und spart einen Klick zum Nachsehen. */
+  var erste = o[offen[0].k];
+  var gleich = offen.every(function(t){ return o[t.k]===erste; });
+  return gleich && offen.length>=5 ? esc(erste) : offen.length+' Tage';
+}
+
+var _oeffnungStudio = null;
+
+function oeffnungOeffnen(id){
+  var st=_studioListe.filter(function(x){ return x.id===id; })[0];
+  if(!st) return;
+  _oeffnungStudio = id;
+  var t=$('oeffnungTitel'); if(t) t.textContent = 'Öffnungszeiten · ' + st.name;
+  var o = st.oeffnung || {};
+  var box=$('oeffnungListe');
+  box.innerHTML = WOCHENTAGE.map(function(tag){
+    var p = zeitPaar(o[tag.k]);
+    return '<div class="oz-zeile">'+
+      '<label class="oz-tag"><input type="checkbox" class="oz-an" data-tag="'+tag.k+'"'+
+        (p?' checked':'')+' /><span>'+tag.lang+'</span></label>'+
+      '<input class="inp oz-zeit" type="time" data-von="'+tag.k+'" value="'+(p?p.von:'07:00')+'"'+
+        (p?'':' disabled')+' aria-label="'+tag.lang+' von" />'+
+      '<span class="oz-bis">bis</span>'+
+      '<input class="inp oz-zeit" type="time" data-bis="'+tag.k+'" value="'+(p?p.bis:'21:00')+'"'+
+        (p?'':' disabled')+' aria-label="'+tag.lang+' bis" />'+
+    '</div>';
+  }).join('');
+  box.querySelectorAll('.oz-an').forEach(function(c){
+    c.addEventListener('change',function(){
+      var tag=c.getAttribute('data-tag');
+      box.querySelectorAll('[data-von="'+tag+'"],[data-bis="'+tag+'"]').forEach(function(i){
+        i.disabled = !c.checked;
+      });
+    });
+  });
+  $('oeffnungModal').classList.add('show');
+}
+
+function oeffnungSchliessen(){
+  $('oeffnungModal').classList.remove('show');
+  _oeffnungStudio = null;
+}
+
+/* Alle sieben Tage auf den Wert des ersten angehakten setzen. Die
+   haeufigste Eingabe im Studio ist „jeden Tag dasselbe"; sie sieben Mal
+   zu tippen ist der schnellste Weg, dass es niemand pflegt. */
+function oeffnungUebernehmen(){
+  var box=$('oeffnungListe');
+  var erster=null;
+  WOCHENTAGE.forEach(function(tag){
+    var an=box.querySelector('.oz-an[data-tag="'+tag.k+'"]');
+    if(!erster && an && an.checked) erster=tag.k;
+  });
+  if(!erster){ toast('Erst einen Tag anhaken.',true); return; }
+  var von=box.querySelector('[data-von="'+erster+'"]').value;
+  var bis=box.querySelector('[data-bis="'+erster+'"]').value;
+  WOCHENTAGE.forEach(function(tag){
+    var an=box.querySelector('.oz-an[data-tag="'+tag.k+'"]');
+    if(!an.checked){ an.checked=true; an.dispatchEvent(new Event('change')); }
+    box.querySelector('[data-von="'+tag.k+'"]').value=von;
+    box.querySelector('[data-bis="'+tag.k+'"]').value=bis;
+  });
+}
+
+function oeffnungSpeichern(btn){
+  var id=_oeffnungStudio; if(!id) return;
+  var box=$('oeffnungListe');
+  var neu={}, fehler=null;
+  WOCHENTAGE.forEach(function(tag){
+    var an=box.querySelector('.oz-an[data-tag="'+tag.k+'"]');
+    if(!an || !an.checked){ neu[tag.k]=''; return; }
+    var von=box.querySelector('[data-von="'+tag.k+'"]').value;
+    var bis=box.querySelector('[data-bis="'+tag.k+'"]').value;
+    var a=minuten(von), b=minuten(bis);
+    if(a===null || b===null){ fehler = tag.lang+': Zeit fehlt'; return; }
+    /* Bis vor Von waere eine Nachtschicht ueber Mitternacht. Die gibt es
+       in einem EMS-Studio nicht, und sie einfach zuzulassen hiesse, dass
+       die Abdeckungsrechnung spaeter stillschweigend Unsinn ergibt. */
+    if(b<=a){ fehler = tag.lang+': „bis" muss nach „von" liegen'; return; }
+    neu[tag.k]=von+'-'+bis;
+  });
+  if(fehler){ toast(fehler,true); return; }
+  withBusy(btn, function(){
+    return studiosSpeichern(_studioListe.map(function(x){
+      return x.id===id ? Object.assign({}, x, { oeffnung: neu }) : x;
+    }), 'Öffnungszeiten gespeichert ✓').then(oeffnungSchliessen);
+  });
+}
+
+/* ══ STEMPEL-TERMINALS ══════════════════════════════════════════════
+   Ein Gerät je Studio, mit eigenem Geheimnis. Angelegt und entfernt wird
+   ausschliesslich über den Server; `terminals` steht in den Regeln auf
+   write:false. Lesen darf die Leitung — das Geheimnis sind 32 zufällige
+   Bytes, sein Hash lässt sich nicht durchprobieren. Bei einer
+   vierstelligen PIN wäre dieselbe Regel ein Fehler.
+
+   DAS GEHEIMNIS WIRD GENAU EINMAL ANGEZEIGT. Danach steht nur noch der
+   Hash in der Datenbank. Dasselbe Vorgehen wie bei den Passwörtern aus
+   firmaAnlegen — und derselbe Satz dazu, weil ihn sonst niemand liest. */
+var _terminals = [], _termUnsub = null;
+
+function terminalsBeobachten(){
+  if(_termUnsub || !canManage()) return;
+  _termUnsub = S('terminals').onSnapshot(function(snap){
+    _terminals = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    renderTerminals();
+  }, function(e){ console.warn('Terminals:', e.message); });
+}
+
+function renderTerminals(){
+  var box=$('terminalListe'); if(!box) return;
+  if(!_terminals.length){
+    box.innerHTML='<p class="lese-leer">Noch kein Terminal eingerichtet. '+
+      'Ohne eines kann niemand stempeln.</p>';
+    return;
+  }
+  box.innerHTML=_terminals
+    .slice().sort(function(a,b){ return (a.studioKey||'').localeCompare(b.studioKey||''); })
+    .map(function(t){
+      var wann = t.letzterStempel
+        ? 'zuletzt ' + new Date(t.letzterStempel).toLocaleString('de-DE',
+            { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
+        : 'noch nie benutzt';
+      return '<div class="st-zeile">'+
+        '<div class="st-haupt">'+
+          '<b>'+esc(t.name||'Terminal')+'</b>'+
+          '<span class="st-sub">'+esc(studioName(t.studioKey))+' · '+esc(wann)+'</span>'+
+        '</div>'+
+        '<button class="mini-x" data-termweg="'+esc(t.id)+'">entfernen</button>'+
+      '</div>';
+    }).join('');
+  box.querySelectorAll('[data-termweg]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-termweg');
+      var t=_terminals.filter(function(x){ return x.id===id; })[0]; if(!t) return;
+      if(!confirm('Terminal „'+(t.name||'')+'" entfernen?\n\n'+
+        'Mit diesem Gerät kann danach niemand mehr stempeln. '+
+        'Bereits erfasste Zeiten bleiben unverändert.')) return;
+      b.disabled=true;
+      pinFunktion('terminalEntfernen')({ id:id })
+        .then(function(){ toast('Terminal entfernt ✓'); })
+        .catch(function(e){ b.disabled=false; toast(fnFehler(e),true); });
+    });
+  });
+}
+
+function terminalStudioAuswahl(){
+  var sel=$('termStudio'); if(!sel) return;
+  var offen=_studioListe.filter(function(s){ return s && s.aktiv !== false; });
+  sel.innerHTML=offen.map(function(s){
+    return '<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>';
+  }).join('');
+}
+
+function terminalAnlegen(btn){
+  var sel=$('termStudio'), feld=$('termName');
+  var studioKey=String((sel||{}).value||''), name=String((feld||{}).value||'').trim();
+  if(!studioKey){ toast('Bitte ein Studio wählen.',true); return; }
+  if(!name){ toast('Bitte dem Gerät einen Namen geben.',true); return; }
+  withBusy(btn, function(){
+    return pinFunktion('terminalAnlegen')({ studioKey:studioKey, name:name })
+      .then(function(r){
+        var d=(r&&r.data)||{};
+        feld.value='';
+        terminalGeheimZeigen(d);
+        toast('Terminal eingerichtet ✓');
+      })
+      .catch(function(e){ toast(fnFehler(e),true); });
+  });
+}
+
+/* Das Geheimnis einmal zeigen — und gleich den Weg anbieten, dieses
+   Gerät damit einzurichten. Wer es abtippen muss, tippt es falsch. */
+function terminalGeheimZeigen(d){
+  var box=$('termGeheimBox'); if(!box || !d.geheim) return;
+  box.style.display='';
+  box.innerHTML='<div class="term-geheim">'+
+    '<b>Einmal sichtbar — danach nie wieder</b>'+
+    '<p class="hint">Richte dieses Gerät jetzt ein, oder notiere den '+
+      'Schlüssel für das Tablet am Empfang.</p>'+
+    '<code class="term-code" id="termCode">'+esc(d.geheim)+'</code>'+
+    '<div class="term-akt">'+
+      '<button class="btn btn-ghost btn-sm" id="termKopieren">Schlüssel kopieren</button>'+
+      '<button class="btn btn-primary btn-sm" id="termHier">Dieses Gerät einrichten</button>'+
+    '</div></div>';
+  $('termKopieren').addEventListener('click',function(){
+    copyText(d.geheim).then(function(){ toast('Schlüssel kopiert ✓'); },
+                            function(){ toast('Kopieren ging nicht.',true); });
+  });
+  $('termHier').addEventListener('click',function(){
+    terminalAufGeraet(d.id, d.geheim, d.name);
+  });
+}
+
+/* ── Dieses Gerät ist ab jetzt ein Terminal ──
+   Der Schlüssel liegt LOKAL im Gerät und geht nie wieder an den Server
+   zurück, ausser beim Stempeln. Er landet bewusst NICHT in der
+   Datenbank: dann läge er dort neben dem Hash, den er aufschliesst. */
+var TERM_SCHLUESSEL = 'kf_terminal';
+
+function terminalAufGeraet(id, geheim, name){
+  try{
+    localStorage.setItem(TERM_SCHLUESSEL, JSON.stringify({ id:id, geheim:geheim, name:name||'' }));
+  }catch(e){ toast('Dieses Gerät kann nichts speichern.',true); return; }
+  toast('Gerät ist jetzt ein Terminal ✓');
+  setTimeout(function(){ location.reload(); }, 900);
+}
+
+function terminalAufGeraetLesen(){
+  try{
+    var r=localStorage.getItem(TERM_SCHLUESSEL);
+    if(!r) return null;
+    var d=JSON.parse(r);
+    return (d && d.id && d.geheim) ? d : null;
+  }catch(e){ return null; }
+}
+
+/* ══ DER TERMINAL-BILDSCHIRM ════════════════════════════════════════
+   Er legt sich über die ganze App. Wer am Empfang stempelt, soll nichts
+   anderes sehen — und sich vor allem nicht versehentlich durch den Chat
+   wischen.
+
+   WAS ER NICHT KANN, und das ist Absicht: keine Zeiten ansehen, keine
+   korrigieren, keine fremden Studios. Ein Gerät, das offen am Empfang
+   steht, ist kein Ort für Auskünfte über Arbeitszeiten von Kollegen. */
+var _tmAktiv = null;       // { id, geheim, name }
+var _tmStudio = null;      // studioKey des Geräts
+var _tmLeute = [];
+var _tmWer = null;
+var _tmPin = '';
+var _tmUhrTimer = null;
+var _tmStaende = {};       // uid -> letzte art des Tages
+
+function terminalStarten(){
+  var t = terminalAufGeraetLesen();
+  if(!t) return false;
+  _tmAktiv = t;
+  var schirm=$('terminalSchirm'); if(!schirm) return false;
+
+  /* Das Studio steht nicht im Gerät, sondern in der Datenbank — sonst
+     liesse es sich lokal umschreiben und ein Terminal aus Hürth würde
+     Stempel für Porz erzeugen. */
+  S('terminals').doc(t.id).get().then(function(doc){
+    if(!doc.exists){
+      toast('Dieses Gerät ist nicht mehr eingerichtet.',true);
+      terminalBeenden(true); return;
+    }
+    var d=doc.data()||{};
+    _tmStudio = d.studioKey||null;
+    $('tmStudio').textContent = studioName(_tmStudio) || 'Studio';
+    $('tmGeraet').textContent = d.name || t.name || 'Terminal';
+    terminalLeuteLaden();
+  }).catch(function(e){
+    /* Kein Netz: der Bildschirm bleibt, aber er sagt es. Ein Terminal,
+       das bei Störung einfach die App zeigt, ist schlimmer als eins,
+       das stillsteht — dann wischt jemand durch den Chat. */
+    $('tmHinweis').textContent = 'Keine Verbindung: ' + errMsg(e);
+  });
+
+  schirm.classList.add('show');
+  schirm.style.display='flex';
+  terminalUhr();
+  _tmUhrTimer = setInterval(terminalUhr, 20000);
+  return true;
+}
+
+function terminalUhr(){
+  var u=$('tmUhr'); if(!u) return;
+  u.textContent = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+
+function terminalBeenden(still){
+  var schirm=$('terminalSchirm');
+  if(schirm){ schirm.classList.remove('show'); schirm.style.display='none'; }
+  if(_tmUhrTimer){ clearInterval(_tmUhrTimer); _tmUhrTimer=null; }
+  _tmAktiv=null; _tmWer=null; _tmPin='';
+  if(!still){
+    try{ localStorage.removeItem(TERM_SCHLUESSEL); }catch(e){}
+    toast('Terminal beendet — das Gerät ist wieder eine normale App.');
+  }
+}
+
+/* Wer gehört zu diesem Studio? Gelesen wird die Personenliste, die
+   ohnehin jeder Angemeldete sehen darf — kein Sonderweg. */
+function terminalLeuteLaden(){
+  if(!_tmStudio) return;
+  /* db.collection('users') und NICHT S('users'): die Personenliste ist
+     die eine Sammlung, die ausserhalb von firmen/<kennung>/ liegt —
+     beim Anmelden weiss die App noch nicht, zu welcher Firma jemand
+     gehoert. Hier stand zuerst S('users'); der Durchlauf hat es
+     gefunden, weil die Liste leer blieb. Der Filter auf firma ist
+     deshalb keine Bequemlichkeit, sondern die Grenze. */
+  db.collection('users').where('firma','==',_firma||'koerperformen').get()
+    .then(function(snap){
+      _tmLeute = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); })
+        .filter(function(u){
+          return u.aktiv !== false && (u.studioKeys||[]).indexOf(_tmStudio)>=0;
+        })
+        .sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||'')); });
+      terminalStaendeLaden();
+    })
+    .catch(function(e){ $('tmHinweis').textContent = errMsg(e); });
+}
+
+/* Wer ist gerade da? Das Terminal zeigt es an den Kacheln — sonst
+   stempelt jemand zweimal „kommen" und merkt es erst am Monatsende. */
+function terminalStaendeLaden(){
+  var tag = new Date().toLocaleDateString('sv-SE');   // YYYY-MM-DD, Ortszeit
+  S('zeiten').where('studioKey','==',_tmStudio).where('tag','==',tag)
+    .get()
+    .then(function(snap){
+      var letzte={};
+      snap.docs.map(function(d){ return d.data()||{}; })
+        .sort(function(a,b){ return (a.ts||0)-(b.ts||0); })
+        .forEach(function(z){ letzte[z.uid]=z.art; });
+      _tmStaende = letzte;
+      renderTerminalListe();
+    })
+    .catch(function(){ _tmStaende={}; renderTerminalListe(); });
+}
+
+var TM_WORT = { kommen:'Kommen', pause:'Pause', zurueck:'Zurück', gehen:'Feierabend' };
+
+function tmNaechster(art){
+  if(!art || art==='gehen') return 'kommen';
+  if(art==='kommen' || art==='zurueck') return 'pause';
+  if(art==='pause') return 'zurueck';
+  return 'kommen';
+}
+
+function renderTerminalListe(){
+  var box=$('tmListe'); if(!box) return;
+  if(!_tmLeute.length){
+    box.innerHTML='<p class="lese-leer">Diesem Studio ist niemand zugeordnet.</p>';
+    return;
+  }
+  box.innerHTML=_tmLeute.map(function(u){
+    var stand=_tmStaende[u.id]||null;
+    var da = stand && stand!=='gehen';
+    var zst = !stand ? 'noch nicht da'
+            : stand==='pause' ? 'in der Pause'
+            : stand==='gehen' ? 'Feierabend' : 'im Dienst';
+    return '<button class="tm-person'+(da?' da':'')+'" data-tmwer="'+esc(u.id)+'">'+
+      /* avatarMarkup statt eines eigenen Kästchens: sie kann Foto,
+         Farbe und Initialen und hält sich an Hell/Dunkel. Hier stand
+         zuerst ein fest eingebautes Emoji — test-gestaltung hat es
+         gemeldet, und zu Recht: ein Emoji sieht auf jedem Gerät anders
+         aus und ignoriert das Farbschema. */
+      avatarMarkup(u)+
+      '<span style="min-width:0">'+
+        '<span class="tm-nam" style="display:block">'+esc(u.name||'?')+'</span>'+
+        '<span class="tm-zst">'+esc(zst)+'</span>'+
+      '</span></button>';
+  }).join('');
+  box.querySelectorAll('[data-tmwer]').forEach(function(b){
+    b.addEventListener('click',function(){ terminalPinOeffnen(b.getAttribute('data-tmwer')); });
+  });
+}
+
+function terminalPinOeffnen(uid){
+  var u=_tmLeute.filter(function(x){ return x.id===uid; })[0]; if(!u) return;
+  _tmWer=u; _tmPin='';
+  $('tmWer').textContent = u.name || '';
+  var art = tmNaechster(_tmStaende[uid]||null);
+  $('tmWas').textContent = TM_WORT[art] || art;
+  renderTerminalTasten();
+  renderTerminalPunkte();
+  $('tmPin').style.display='flex';
+}
+
+function terminalPinSchliessen(){
+  $('tmPin').style.display='none';
+  _tmWer=null; _tmPin='';
+}
+
+function renderTerminalPunkte(){
+  var box=$('tmPunkte'); if(!box) return;
+  var n=Math.max(4,_tmPin.length);
+  var s='';
+  for(var i=0;i<n;i++) s+='<i class="'+(i<_tmPin.length?'voll':'')+'"></i>';
+  box.innerHTML=s;
+}
+
+function renderTerminalTasten(){
+  var box=$('tmTasten'); if(!box || box.dataset.fertig) return;
+  var tasten=['1','2','3','4','5','6','7','8','9','weg','0','ok'];
+  box.innerHTML=tasten.map(function(t){
+    if(t==='weg') return '<button class="tm-taste weg" data-tmt="weg">Löschen</button>';
+    if(t==='ok')  return '<button class="tm-taste weg" data-tmt="ok">Stempeln</button>';
+    return '<button class="tm-taste" data-tmt="'+t+'">'+t+'</button>';
+  }).join('');
+  box.dataset.fertig='1';
+  box.addEventListener('click',function(e){
+    var b=e.target.closest('[data-tmt]'); if(!b) return;
+    var t=b.getAttribute('data-tmt');
+    if(t==='weg'){ _tmPin=_tmPin.slice(0,-1); renderTerminalPunkte(); return; }
+    if(t==='ok'){ terminalStempeln(b); return; }
+    if(_tmPin.length>=6) return;
+    _tmPin+=t; renderTerminalPunkte();
+    tick(4);
+    /* Bei vier Ziffern NICHT von selbst abschicken: eine PIN darf fünf
+       oder sechs Stellen haben, und ein Automat, der nach der vierten
+       losrennt, macht daraus stillschweigend einen Fehlversuch. */
+  });
+}
+
+function terminalStempeln(btn){
+  if(!_tmWer || !_tmAktiv) return;
+  if(_tmPin.length<4){ toast('Bitte die PIN eingeben.',true); return; }
+  withBusy(btn, function(){
+    return pinFunktion('stempeln')({
+      terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim, uid:_tmWer.id, pin:_tmPin
+    }).then(function(r){
+      var d=(r&&r.data)||{};
+      _tmStaende[_tmWer.id]=d.art;
+      var wort=TM_WORT[d.art]||d.art;
+      var zeit=new Date(d.ts||Date.now()).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+      toast(wort+' um '+zeit+' ✓ — '+(d.name||''));
+      tick(12);
+      terminalPinSchliessen();
+      renderTerminalListe();
+    }).catch(function(e){
+      _tmPin=''; renderTerminalPunkte();
+      toast(fnFehler(e), true);
+    });
+  });
+}
+
 /* ── Studios verwalten (nur Chef) ──
    Drei Handgriffe: anlegen, umbenennen, schließen. Löschen gibt es nicht,
    und der Grund steht als eigene Karte daneben, weil er nicht offensicht-
@@ -7731,9 +8395,14 @@ function renderStandorte(){
         '<span class="st-sub">'+esc(st.id)+(zu?' · geschlossen':'')+'</span>'+
       '</div>'+
       '<button class="mini-x" data-stum="'+esc(st.id)+'">umbenennen</button>'+
+      '<button class="mini-x" data-stzeit="'+esc(st.id)+'">'+oeffnungKurz(st)+'</button>'+
       '<button class="mini-x" data-stzu="'+esc(st.id)+'">'+(zu?'öffnen':'schließen')+'</button>'+
     '</div>';
   }).join('');
+
+  box.querySelectorAll('[data-stzeit]').forEach(function(b){
+    b.addEventListener('click',function(){ oeffnungOeffnen(b.getAttribute('data-stzeit')); });
+  });
 
   box.querySelectorAll('[data-stum]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -10214,6 +10883,10 @@ function showApp(){
   meldMarker();                // Glocke zeigen/verstecken, Zahl auf 0
   mailHinweisBinden(); mailHinweisPruefen();
   listenStudios();                       // jede Rolle: Umbenennen soll sofort ankommen
+  /* Ist dieses Geraet als Terminal eingerichtet, legt sich der
+     Stempel-Bildschirm ueber alles. NACH listenStudios, weil er den
+     Studionamen braucht. */
+  setTimeout(function(){ try{ terminalStarten(); }catch(e){ console.warn('Terminal:', e); } }, 400);
   listenFeatures();                      // schaltet der Chef etwas um, ist es überall weg
   /* Jede Rolle: das Impressum steht in jedem Bildschirm unten und muss
      die Angaben DIESER Firma zeigen, nicht die aus konfig.js. */
@@ -15164,6 +15837,7 @@ function renderIchDaten(){
   }
   ichCertsLaden();
   ichZahlenLaden();
+  ichPinLaden();
 }
 
 /* Nachweise: dieselbe Abfrage wie im Einstellungs-Fenster, nur an einer
@@ -15229,6 +15903,83 @@ function ichCertsLaden(){
 
 /* Eigene Zahlen. Bewusst ohne Vergleich mit anderen: eine Rangliste ist
    schnell gebaut und macht aus einem persoenlichen Bereich einen Pranger. */
+/* ══ STEMPEL-PIN ════════════════════════════════════════════════════
+   Setzen darf sie nur die Person selbst, und nur über den Server. Aus
+   dem Browser gibt es keinen Schreibweg: `zeitPins` steht in
+   firestore.rules auf `if false`, für alle, auch für den Eigentümer.
+
+   Der Grund steht dort ausführlich. Kurz: wer den Hash lesen kann,
+   probiert vier Ziffern in Sekunden durch und stempelt danach für die
+   Person — und dann ist die ganze Aufzeichnung als Nachweis wertlos.
+
+   Die Oberfläche hier erfährt deshalb nur JA oder NEIN und seit wann.
+   Nicht, wie lang die PIN ist. Eine Auskunft über die Länge nimmt dem,
+   der sie erraten will, schon Arbeit ab. */
+var _pinGesetzt = null;
+
+function pinFunktion(name){
+  return firebase.app().functions(KONFIG.region).httpsCallable(name);
+}
+
+function ichPinLaden(){
+  var karte=$('ichPinKarte'); if(!karte) return;
+  pinFunktion('pinStatus')({})
+    .then(function(r){
+      var d=(r&&r.data)||{};
+      _pinGesetzt = !!d.gesetzt;
+      ichPinZeichnen(d.seit||0);
+    })
+    .catch(function(){
+      /* Kein Netz oder die Funktion ist noch nicht ausgerollt. Dann
+         steht hier ehrlich nichts statt einer erfundenen Auskunft. */
+      _pinGesetzt = null;
+      ichPinZeichnen(0);
+    });
+}
+
+function ichPinZeichnen(seit){
+  var stand=$('ichPinStand'), text=$('ichPinText'),
+      altW=$('ichPinAltWrap'), btn=$('ichPinBtn');
+  if(!stand) return;
+  if(_pinGesetzt === null){
+    stand.textContent='—';
+    text.textContent='Der Stand lässt sich gerade nicht abfragen.';
+    altW.style.display='none';
+    if(btn) btn.textContent='PIN speichern';
+    return;
+  }
+  stand.textContent = _pinGesetzt ? 'gesetzt' : 'fehlt noch';
+  text.textContent = _pinGesetzt
+    ? 'Zum Ändern brauchst du die bisherige PIN — auch die Leitung kann sie nicht zurücksetzen.'
+    : 'Mit dieser PIN stempelst du am Tablet im Studio.';
+  if(_pinGesetzt && seit){
+    text.textContent += ' Gesetzt am ' + new Date(seit).toLocaleDateString('de-DE') + '.';
+  }
+  altW.style.display = _pinGesetzt ? '' : 'none';
+  if(btn) btn.textContent = _pinGesetzt ? 'PIN ändern' : 'PIN speichern';
+}
+
+function ichPinSpeichern(btn){
+  var neu=String(($('ichPinNeu')||{}).value||'').trim();
+  var alt=String(($('ichPinAlt')||{}).value||'').trim();
+  if(!/^\d{4,6}$/.test(neu)){
+    toast('Die PIN muss aus 4 bis 6 Ziffern bestehen.',true); return;
+  }
+  if(_pinGesetzt && !alt){
+    toast('Bitte auch die bisherige PIN eingeben.',true); return;
+  }
+  withBusy(btn, function(){
+    return pinFunktion('pinSetzen')({ pin:neu, alt:alt })
+      .then(function(){
+        $('ichPinNeu').value=''; if($('ichPinAlt')) $('ichPinAlt').value='';
+        _pinGesetzt = true;
+        ichPinZeichnen(Date.now());
+        toast('PIN gespeichert ✓'); tick(8);
+      })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+
 function ichZahlenLaden(){
   var box=$('ichZahlen'), karte=$('ichZahlenKarte'); if(!box || !session) return;
   if(!featureAn('probe')){ if(karte) karte.style.display='none'; return; }
@@ -16757,7 +17508,7 @@ function showChefTab(id, keep){
   });
   if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
   if(id==='team'){ renderFreigaben(); beitrittLaden(); }
-  if(id==='standorte') renderStandorte();
+  if(id==='standorte'){ renderStandorte(); terminalStudioAuswahl(); terminalsBeobachten(); }
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='anliegen') anliegenLaden();
@@ -22329,6 +23080,9 @@ function bindActions(){
   var ichCertBtn=$('ichCertNeu');
   if(ichCertBtn) ichCertBtn.addEventListener('click',function(){ openProfile('nachweise'); });
 
+  var pinBtn=$('ichPinBtn');
+  if(pinBtn) pinBtn.addEventListener('click',function(){ ichPinSpeichern(this); });
+
   // ── Team: Reiter, Schichten, Abwesenheiten, Übergabe, Brett ──
   document.querySelectorAll('[data-teamtab]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -22680,6 +23434,24 @@ function bindActions(){
     if(stf) stf.addEventListener('keydown', function(e){
       if(e.key==='Enter'){ e.preventDefault(); studioAnlegen($('stNeuBtn')); }
     });
+
+    var tnb=$('termNeuBtn');
+    if(tnb) tnb.addEventListener('click', function(){ terminalAnlegen(this); });
+    var tzb=$('tmZurueck');
+    if(tzb) tzb.addEventListener('click', terminalPinSchliessen);
+    var tab=$('tmAus');
+    if(tab) tab.addEventListener('click', function(){
+      if(confirm('Terminal beenden?\n\nDieses Gerät ist danach wieder eine '+
+        'normale App. Zum Stempeln muss es neu eingerichtet werden — '+
+        'der Schlüssel wird dabei neu vergeben.')) terminalBeenden(false);
+    });
+
+    var ozC=$('oeffnungClose');
+    if(ozC) ozC.addEventListener('click', oeffnungSchliessen);
+    var ozA=$('oeffnungAlle');
+    if(ozA) ozA.addEventListener('click', oeffnungUebernehmen);
+    var ozS=$('oeffnungSpeichern');
+    if(ozS) ozS.addEventListener('click', function(){ oeffnungSpeichern(this); });
 
     var asn=$('archSaveNow'); if(asn) asn.addEventListener('click',function(){
       var btn=this;

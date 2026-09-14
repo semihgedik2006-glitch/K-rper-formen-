@@ -981,6 +981,57 @@ service cloud.firestore {
       allow read, write: if false;
       match /versions/{versionId} { allow read, write: if false; }
     }
+
+    /* ── Zeiterfassung: die PIN ──────────────────────────────────────
+       GESPERRT FUER ALLE, und das ist keine Bequemlichkeit. Hier liegt
+       scrypt(PIN, Salz) je Person. Wer den Hash lesen kann, probiert
+       vier Ziffern in Sekunden durch und stempelt danach fuer den
+       Kollegen — dann ist die ganze Aufzeichnung als Nachweis wertlos.
+
+       Auch DIE PERSON SELBST darf nicht lesen. Sie muss es auch nicht:
+       gesetzt wird ueber pinSetzen, geprueft wird im Server. Eine Regel
+       `if request.auth.uid == uid` waere hier der bequeme Fehler.
+
+       Geschrieben wird ausschliesslich von den Cloud Functions; die
+       unterliegen diesen Regeln nicht. */
+    match /zeitPins/{uid} { allow read, write: if false; }
+
+    /* ── Zeiterfassung: Terminals ────────────────────────────────────
+       Registrierte Geraete je Studio. Geschrieben wird ausschliesslich
+       ueber terminalAnlegen/terminalEntfernen — aus dem Browser gibt es
+       keinen Weg, sonst koennte sich jeder ein Terminal anlegen und
+       damit die Ortsbindung aushebeln.
+
+       LESEN DARF DIE LEITUNG, und das ist ein Unterschied zu zeitPins:
+       das Geheimnis sind 32 zufaellige Bytes, sein Hash laesst sich
+       nicht durchprobieren. Bei einer vierstelligen PIN waere dieselbe
+       Regel ein Fehler. Der Unterschied ist Rechnung, nicht Geschmack:
+       zehntausend Moeglichkeiten gegen 2^256. */
+    match /terminals/{tid} {
+      allow read: if aufFlachenPfaden()
+        && (manages(resource.data.studioKey));
+      allow write: if false;
+    }
+
+    /* ── Zeiterfassung: die Stempel ──────────────────────────────────
+       NIEMAND SCHREIBT HIER, auch der Chef nicht. Der einzige Weg ist
+       die Funktion stempeln.
+
+       Der Grund ist nicht Misstrauen, sondern Beweiswert: eine
+       Aufzeichnung, die sich nachtraeglich beliebig aendern laesst, ist
+       als Nachweis nichts wert — auch dann, wenn sie nie geaendert
+       wurde. Korrekturen bekommen deshalb einen eigenen Weg mit Grund,
+       und der Urbestand bleibt stehen (Schritt 7 im Plan).
+
+       Lesen: die eigenen immer, fremde nur die Leitung des Studios. */
+    match /zeiten/{zid} {
+      allow read: if aufFlachenPfaden()
+        && (istAktiv() && (resource.data.uid == request.auth.uid
+                           || manages(resource.data.studioKey)));
+      allow write: if false;
+    }
+
+
     match /appointments/{apptId}     { allow read, write: if false; }
     match /emailTemplates/{tplId}    { allow read, write: if false; }
     match /studioMetrics/{studioKey} { allow read, write: if false; }
@@ -1596,6 +1647,57 @@ service cloud.firestore {
           allow read, write: if false;
           match /versions/{versionId} { allow read, write: if false; }
         }
+
+        /* ── Zeiterfassung: die PIN ──────────────────────────────────────
+           GESPERRT FUER ALLE, und das ist keine Bequemlichkeit. Hier liegt
+           scrypt(PIN, Salz) je Person. Wer den Hash lesen kann, probiert
+           vier Ziffern in Sekunden durch und stempelt danach fuer den
+           Kollegen — dann ist die ganze Aufzeichnung als Nachweis wertlos.
+
+           Auch DIE PERSON SELBST darf nicht lesen. Sie muss es auch nicht:
+           gesetzt wird ueber pinSetzen, geprueft wird im Server. Eine Regel
+           `if request.auth.uid == uid` waere hier der bequeme Fehler.
+
+           Geschrieben wird ausschliesslich von den Cloud Functions; die
+           unterliegen diesen Regeln nicht. */
+        match /zeitPins/{uid} { allow read, write: if false; }
+
+        /* ── Zeiterfassung: Terminals ────────────────────────────────────
+           Registrierte Geraete je Studio. Geschrieben wird ausschliesslich
+           ueber terminalAnlegen/terminalEntfernen — aus dem Browser gibt es
+           keinen Weg, sonst koennte sich jeder ein Terminal anlegen und
+           damit die Ortsbindung aushebeln.
+
+           LESEN DARF DIE LEITUNG, und das ist ein Unterschied zu zeitPins:
+           das Geheimnis sind 32 zufaellige Bytes, sein Hash laesst sich
+           nicht durchprobieren. Bei einer vierstelligen PIN waere dieselbe
+           Regel ein Fehler. Der Unterschied ist Rechnung, nicht Geschmack:
+           zehntausend Moeglichkeiten gegen 2^256. */
+        match /terminals/{tid} {
+          allow read: if inFirma(f)
+            && (manages(resource.data.studioKey));
+          allow write: if false;
+        }
+
+        /* ── Zeiterfassung: die Stempel ──────────────────────────────────
+           NIEMAND SCHREIBT HIER, auch der Chef nicht. Der einzige Weg ist
+           die Funktion stempeln.
+
+           Der Grund ist nicht Misstrauen, sondern Beweiswert: eine
+           Aufzeichnung, die sich nachtraeglich beliebig aendern laesst, ist
+           als Nachweis nichts wert — auch dann, wenn sie nie geaendert
+           wurde. Korrekturen bekommen deshalb einen eigenen Weg mit Grund,
+           und der Urbestand bleibt stehen (Schritt 7 im Plan).
+
+           Lesen: die eigenen immer, fremde nur die Leitung des Studios. */
+        match /zeiten/{zid} {
+          allow read: if inFirma(f)
+            && (istAktiv() && (resource.data.uid == request.auth.uid
+                               || manages(resource.data.studioKey)));
+          allow write: if false;
+        }
+
+
         match /appointments/{apptId}     { allow read, write: if false; }
         match /emailTemplates/{tplId}    { allow read, write: if false; }
         match /studioMetrics/{studioKey} { allow read, write: if false; }

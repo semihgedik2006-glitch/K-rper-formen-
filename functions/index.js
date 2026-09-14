@@ -3522,7 +3522,348 @@ exports.kalender = region.https.onRequest(async (req, res) => {
   }
 });
 
+/* ══════════════════════════════════════════════════════════════════════
+   ZEITERFASSUNG — SCHRITT 2: DIE PIN
+
+   Gestempelt wird am Tablet im Studio (docs/ZEITERFASSUNG-PLAN.md). Damit
+   das Tablet weiss, WER stempelt, braucht jede Person eine kurze PIN.
+
+   AN DIESER STELLE STEHT ODER FAELLT DAS GANZE SYSTEM. Kann irgendjemand
+   die PIN eines anderen lesen, kann er fuer ihn stempeln — und dann ist
+   die Aufzeichnung als Nachweis nichts mehr wert.
+
+   Deshalb vier Regeln, und keine davon ist verhandelbar:
+
+   1. GESPEICHERT WIRD NIE DIE PIN, sondern scrypt(PIN, Salz). Ein Hash
+      allein genuegt nicht: vier Ziffern sind zehntausend Moeglichkeiten,
+      eine Regenbogentabelle dafuer passt auf einen USB-Stick. Das Salz
+      ist je Person zufaellig, und scrypt ist absichtlich langsam.
+
+   2. NIEMAND DARF IHN LESEN. Nicht der Kollege, nicht die Leitung, nicht
+      der Chef, NICHT EINMAL DIE PERSON SELBST. Lesen muss ihn niemand;
+      pruefen tut ihn der Server. In firestore.rules steht die Sammlung
+      deshalb auf `if false` — wie appointments und emailTemplates.
+
+   3. VERGLICHEN WIRD ZEITGLEICH (timingSafeEqual). Bei vier Ziffern ist
+      der Zeitunterschied theoretisch — aber er kostet nichts, und die
+      App macht es beim Kalender-Link schon so.
+
+   4. SETZEN DARF NUR DIE PERSON SELBST. Kein Chef-Weg, keine
+      Zuruecksetzung durch die Leitung mit anschliessendem "ich sag dir
+      deine neue PIN". Wer seine PIN vergisst, setzt eine neue — mit
+      seinem Passwort, also mit dem, was er ohnehin hat.
+
+   WAS DAS NICHT LEISTET, und das steht auch im Plan: wer die PIN eines
+   Kollegen KENNT, kann fuer ihn stempeln. Das ist bei jedem PIN-System
+   so. Verhindert wird das Stempeln von zu Hause — dafuer sorgt das
+   Terminal, nicht die PIN.
+   ══════════════════════════════════════════════════════════════════════ */
+const PIN_LAENGE_MIN = 4;
+const PIN_LAENGE_MAX = 6;
+
+/* Ziffernfolgen, die praktisch keine sind. Eine 1234 ist kein Schutz,
+   sondern eine Einladung — und sie waere die haeufigste Wahl. */
+function pinZuSchwach(pin) {
+  if (/^(\d)\1*$/.test(pin)) return 'Alle Ziffern gleich';
+  let auf = true, ab = true;
+  for (let i = 1; i < pin.length; i++) {
+    if (+pin[i] !== +pin[i - 1] + 1) auf = false;
+    if (+pin[i] !== +pin[i - 1] - 1) ab = false;
+  }
+  if (auf || ab) return 'Ziffern der Reihe nach';
+  return null;
+}
+
+function pinHashen(pin, salz) {
+  /* scrypt mit den Vorgaben von Node. N=16384 ist der Standardwert und
+     braucht auf der Function rund 50 ms — genug, um zehntausend
+     Moeglichkeiten teuer zu machen, wenig genug fuer einen Stempel. */
+  return require('crypto').scryptSync(String(pin), String(salz), 32).toString('hex');
+}
+
+/* Zu welcher Firma gehoert der Anrufer? Dieselbe Weiche wie ueberall:
+   ohne Feld ist es der eigene Betrieb. */
+async function anruferProfil(context) {
+  requireAuth(context);
+  const snap = await db.collection('users').doc(context.auth.uid).get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('failed-precondition', 'Kein Profil gefunden.');
+  }
+  const p = snap.data() || {};
+  if (p.aktiv === false) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieser Zugang ist noch nicht freigegeben.');
+  }
+  return { uid: context.auth.uid, profil: p, firma: p.firma || null };
+}
+
+/* ── PIN setzen oder aendern ──
+   Wer schon eine hat, muss die alte nennen. Sonst koennte ein fremdes
+   Handy, das jemand kurz offen liegen laesst, die PIN ueberschreiben —
+   und danach fuer diese Person stempeln. */
+exports.pinSetzen = region.https.onCall(async (data, context) => {
+  const { uid, firma } = await anruferProfil(context);
+  const neu = String((data && data.pin) || '').trim();
+  const alt = String((data && data.alt) || '').trim();
+
+  if (!new RegExp('^\\d{' + PIN_LAENGE_MIN + ',' + PIN_LAENGE_MAX + '}$').test(neu)) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Die PIN muss aus ' + PIN_LAENGE_MIN + ' bis ' + PIN_LAENGE_MAX + ' Ziffern bestehen.');
+  }
+  const schwach = pinZuSchwach(neu);
+  if (schwach) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Diese PIN ist zu einfach (' + schwach + '). Bitte eine andere wählen.');
+  }
+
+  const ref = W(firma).collection('zeitPins').doc(uid);
+  const vorher = await ref.get();
+  if (vorher.exists) {
+    const d = vorher.data() || {};
+    if (!alt) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Bitte zuerst die bisherige PIN eingeben.');
+    }
+    if (!tokenGleich(pinHashen(alt, d.salz), d.hash)) {
+      throw new functions.https.HttpsError('permission-denied',
+        'Die bisherige PIN stimmt nicht.');
+    }
+  }
+
+  const salz = require('crypto').randomBytes(16).toString('hex');
+  await ref.set({
+    hash: pinHashen(neu, salz),
+    salz: salz,
+    gesetztAm: Date.now(),
+    /* Der Name steht MIT DABEI, obwohl er auch im Profil liegt. Grund:
+       das Terminal listet Personen, bevor jemand eine PIN eingetippt
+       hat — und es darf dafuer nicht die ganze Nutzerliste lesen
+       duerfen. Spaeter liest die Stempel-Funktion hier nach. */
+    name: (await db.collection('users').doc(uid).get()).data().name || ''
+  });
+  return { ok: true, gesetzt: true };
+});
+
+/* ── Hat diese Person schon eine PIN? ──
+   Gibt ausdruecklich NUR ja/nein und das Datum zurueck. Kein Hash, kein
+   Salz, keine Laenge — eine Auskunft, die verraet, wie lang die PIN ist,
+   nimmt dem Angreifer schon Arbeit ab. */
+exports.pinStatus = region.https.onCall(async (data, context) => {
+  const { uid, firma } = await anruferProfil(context);
+  const snap = await W(firma).collection('zeitPins').doc(uid).get();
+  return { gesetzt: snap.exists, seit: snap.exists ? (snap.data() || {}).gesetztAm || 0 : 0 };
+});
+
+/* ── Pruefen ──
+   KEIN exports., also kein Endpunkt. Diese Funktion benutzt spaeter das
+   Stempeln; von aussen aufrufbar waere sie ein Orakel, an dem man eine
+   vierstellige PIN in Minuten durchprobiert.
+
+   Die Bremse dagegen gehoert in den Stempel-Weg und nicht hierher —
+   sie steht als Schritt 4 im Plan. */
+async function pinPruefen(firma, uid, pin) {
+  const snap = await W(firma).collection('zeitPins').doc(String(uid || '')).get();
+  if (!snap.exists) return false;
+  const d = snap.data() || {};
+  if (!d.salz || !d.hash) return false;
+  return tokenGleich(pinHashen(String(pin || ''), d.salz), d.hash);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ZEITERFASSUNG — SCHRITT 3 UND 4: TERMINAL UND STEMPELN
+
+   WIE WEIST SICH DAS TERMINAL AUS? Das war die Entscheidung mit den
+   meisten Folgen, und es gab zwei Wege.
+
+   Weg A, verworfen: ein offener Endpunkt (onRequest), den ein nicht
+   angemeldetes Tablet mit einem Geraete-Geheimnis aufruft. Das haette
+   eine Adresse im Internet ergeben, an der jeder klopfen kann — und
+   jeder Klopfversuch waere ein Versuch auf eine vierstellige PIN.
+
+   Weg B, gebaut: das Tablet ist ganz normal angemeldet, mit irgendeinem
+   aktiven Konto des Betriebs. Der Chef meldet es einmal an und laesst es
+   angemeldet. Darauf lauft die App im Terminal-Modus.
+
+   Damit braucht ein Stempel DREI Dinge gleichzeitig:
+     1. ein angemeldetes, freigegebenes Konto DIESES Betriebs,
+     2. das Geheimnis GENAU DIESES Terminals,
+     3. die PIN der Person, die stempelt.
+
+   Keines davon allein genuegt. Wer das Tablet stiehlt, hat 1 und 2 und
+   kann trotzdem fuer niemanden stempeln. Wer eine PIN kennt, hat 3 und
+   braucht trotzdem das Geraet im Studio.
+
+   WARUM EIN GEHEIMNIS JE TERMINAL und nicht eines fuer den Betrieb:
+   sonst haengt der ganze Betrieb an einem Wert, und ein verlorenes
+   Tablet zwingt dazu, alle anderen neu einzurichten. Dieselbe
+   Begruendung wie beim Kalender-Abo.
+
+   UND EIN UNTERSCHIED ZUR PIN, der erklaert gehoert: das
+   Terminal-Geheimnis sind 32 zufaellige Bytes. Sein Hash laesst sich
+   nicht durchprobieren, anders als der einer vierstelligen PIN. Deshalb
+   darf die Leitung die Terminal-Liste lesen, waehrend zeitPins fuer alle
+   gesperrt ist. Der Unterschied ist nicht Bequemlichkeit, sondern
+   Rechnung: zehntausend Moeglichkeiten gegen 2^256.
+   ══════════════════════════════════════════════════════════════════════ */
+const PIN_MAX_FEHLER = 5;
+const PIN_SPERRE_MS = 5 * 60000;
+
+function geheimHashen(wert) {
+  return require('crypto').createHash('sha256').update(String(wert)).digest('hex');
+}
+
+/* ── Terminal anlegen ──
+   Gibt das Geheimnis GENAU EINMAL zurueck. Danach steht nur noch sein
+   Hash in der Datenbank — wer es verliert, legt ein neues Terminal an.
+   Dasselbe Vorgehen wie bei den Passwoertern aus firmaAnlegen. */
+exports.terminalAnlegen = region.https.onCall(async (data, context) => {
+  const ich = await requireChef(context);
+  const firma = (ich || {}).firma || null;
+  const studioKey = String((data && data.studioKey) || '').trim();
+  const name = String((data && data.name) || '').trim().slice(0, 40);
+  if (!/^studio-\d+$/.test(studioKey)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Kein gültiges Studio angegeben.');
+  }
+  if (!name) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Bitte dem Gerät einen Namen geben — „Empfang" oder „Tablet hinten".');
+  }
+  const geheim = require('crypto').randomBytes(32).toString('hex');
+  const ref = W(firma).collection('terminals').doc();
+  await ref.set({
+    studioKey, name,
+    hash: geheimHashen(geheim),
+    angelegtAm: Date.now(),
+    angelegtVon: (ich || {}).name || '',
+    letzterStempel: 0
+  });
+  return { id: ref.id, geheim: geheim, name: name };
+});
+
+/* ── Terminal entfernen ──
+   Ein verlorenes Tablet muss sich sperren lassen, und zwar sofort. */
+exports.terminalEntfernen = region.https.onCall(async (data, context) => {
+  const ich = await requireChef(context);
+  const firma = (ich || {}).firma || null;
+  const id = String((data && data.id) || '').trim();
+  if (!id) throw new functions.https.HttpsError('invalid-argument', 'Keine Kennung angegeben.');
+  await W(firma).collection('terminals').doc(id).delete();
+  return { ok: true };
+});
+
+/* ── Was ist als Naechstes dran? ──
+   Aus dem letzten Eintrag DES TAGES. Ohne Eintrag: kommen.
+
+   Bewusst kein Blick auf gestern: eine Schicht ueber Mitternacht gibt es
+   in einem EMS-Studio nicht (siehe Oeffnungszeiten, wo dieselbe Annahme
+   die Eingabe begrenzt). Wer sie doch einmal braucht, bekommt hier einen
+   sichtbaren Fehler statt einer stillen Fehlrechnung. */
+function naechsterSchritt(letzteArt) {
+  if (!letzteArt || letzteArt === 'gehen') return 'kommen';
+  if (letzteArt === 'kommen' || letzteArt === 'zurueck') return 'pause';
+  if (letzteArt === 'pause') return 'zurueck';
+  return 'kommen';
+}
+
+/* ── Stempeln ──
+   Der einzige Weg, der einen Zeitdatensatz erzeugt. Aus dem Browser gibt
+   es keinen: `zeiten` steht in firestore.rules auf write:false.
+
+   Der Grund ist nicht Misstrauen, sondern Beweiswert. Eine Aufzeichnung,
+   die sich nachtraeglich beliebig aendern laesst, ist als Nachweis
+   nichts wert — auch dann, wenn sie nie geaendert wurde. */
+exports.stempeln = region.https.onCall(async (data, context) => {
+  const { firma } = await anruferProfil(context);
+  const terminalId = String((data && data.terminalId) || '').trim();
+  const geheim = String((data && data.geheim) || '').trim();
+  const uid = String((data && data.uid) || '').trim();
+  const pin = String((data && data.pin) || '').trim();
+
+  if (!terminalId || !geheim || !uid || !pin) {
+    throw new functions.https.HttpsError('invalid-argument', 'Es fehlt eine Angabe.');
+  }
+
+  /* 1. Das Geraet. */
+  const tSnap = await W(firma).collection('terminals').doc(terminalId).get();
+  if (!tSnap.exists) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieses Gerät ist nicht (mehr) als Terminal eingerichtet.');
+  }
+  const term = tSnap.data() || {};
+  if (!tokenGleich(geheimHashen(geheim), term.hash)) {
+    throw new functions.https.HttpsError('permission-denied', 'Das Gerät weist sich nicht aus.');
+  }
+
+  /* 2. Die Person — und zwar aus DIESEM Betrieb und DIESEM Studio.
+     Ohne die zweite Haelfte koennte ein Terminal in Hürth Stempel fuer
+     jemanden in Porz erzeugen. */
+  const pSnap = await db.collection('users').doc(uid).get();
+  if (!pSnap.exists) {
+    throw new functions.https.HttpsError('not-found', 'Diese Person gibt es nicht.');
+  }
+  const person = pSnap.data() || {};
+  const seine = person.firma || 'koerperformen';
+  const meine = firma || 'koerperformen';
+  if (seine !== meine || person.aktiv === false) {
+    throw new functions.https.HttpsError('permission-denied', 'Dieser Zugang ist hier nicht gültig.');
+  }
+  if (!(person.studioKeys || []).includes(term.studioKey)) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Diese Person gehört nicht zu dem Studio, in dem dieses Gerät steht.');
+  }
+
+  /* 3. Die PIN — mit Bremse.
+     Ohne sie waere das Terminal ein Automat, an dem sich zehntausend
+     Moeglichkeiten durchprobieren lassen. Gesperrt wird die PERSON und
+     nicht das Geraet: sonst legt ein Scherzkeks mit fuenf Fehlversuchen
+     das ganze Studio lahm. */
+  const pinRef = W(firma).collection('zeitPins').doc(uid);
+  const pinSnap = await pinRef.get();
+  if (!pinSnap.exists) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Für diese Person ist noch keine PIN gesetzt.');
+  }
+  const p = pinSnap.data() || {};
+  if (p.gesperrtBis && p.gesperrtBis > Date.now()) {
+    const min = Math.ceil((p.gesperrtBis - Date.now()) / 60000);
+    throw new functions.https.HttpsError('resource-exhausted',
+      'Zu viele Fehlversuche. Bitte in ' + min + ' Minute' + (min === 1 ? '' : 'n') + ' erneut.');
+  }
+  if (!tokenGleich(pinHashen(pin, p.salz), p.hash)) {
+    const fehler = (p.fehlversuche || 0) + 1;
+    await pinRef.update(fehler >= PIN_MAX_FEHLER
+      ? { fehlversuche: 0, gesperrtBis: Date.now() + PIN_SPERRE_MS }
+      : { fehlversuche: fehler });
+    throw new functions.https.HttpsError('permission-denied',
+      fehler >= PIN_MAX_FEHLER
+        ? 'Zu viele Fehlversuche. Fünf Minuten gesperrt.'
+        : 'Falsche PIN. Noch ' + (PIN_MAX_FEHLER - fehler) + ' Versuche.');
+  }
+  if (p.fehlversuche || p.gesperrtBis) {
+    await pinRef.update({ fehlversuche: 0, gesperrtBis: 0 });
+  }
+
+  /* 4. Schreiben. */
+  const tag = berlinDatum(new Date());
+  const letzte = await W(firma).collection('zeiten')
+    .where('uid', '==', uid).where('tag', '==', tag)
+    .orderBy('ts', 'desc').limit(1).get();
+  const art = naechsterSchritt(letzte.empty ? null : (letzte.docs[0].data() || {}).art);
+
+  const jetzt = Date.now();
+  await W(firma).collection('zeiten').add({
+    uid, name: person.name || '', studioKey: term.studioKey,
+    art, ts: jetzt, tag,
+    terminalId, terminalName: term.name || ''
+  });
+  await tSnap.ref.update({ letzterStempel: jetzt });
+
+  return { ok: true, art, ts: jetzt, name: person.name || '' };
+});
+
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
-                     berlinDatum, tagDanach, erledigt };
+                     berlinDatum, tagDanach, erledigt,
+                     pinZuSchwach, pinHashen, pinPruefen,
+                     geheimHashen, naechsterSchritt };
