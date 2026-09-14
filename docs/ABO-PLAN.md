@@ -598,3 +598,44 @@ Abrechnung für drei Kunden teurer ist als sie einbringt.
 ich habe keine Wettbewerbsangebote gesehen, und ich weiß nicht, was ein
 Studiobetreiber in Köln für so etwas zahlt. Die Tabelle oben ist ein
 Anker, kein Preis.
+
+### Nachtrag: PayPal und Apple Pay als Abo — geprüft am 14.9.
+
+Gefragt, ob sich damit monatlich abbuchen lässt. Die Antworten sind
+unterschiedlich:
+
+**PayPal: ja, das gibt es wirklich.** „Abbuchungsvereinbarung" heißt das
+dort; der Kunde hinterlegt PayPal einmal und es wird monatlich
+eingezogen. Preis national für Waren und Dienstleistungen **2,49 % +
+0,35 €**, ab 2.000 € Monatsumsatz sinkt es auf 2,19 %.
+
+> Eine Quelle nennt für wiederkehrende Zahlungen abweichend
+> **2,9 % + 0,30 €**. Die Angaben widersprechen sich; vor einer
+> Entscheidung gehört das auf der PayPal-Seite selbst nachgesehen. Ich
+> schreibe beide hin, statt mir eine auszusuchen.
+
+**Apple Pay: nein, jedenfalls nicht für sich allein.** Apple Pay ist kein
+Abrechnungssystem, sondern eine Art, eine Karte vorzuzeigen.
+Wiederkehrende Abbuchungen laufen über einen Händler-Token und brauchen
+einen Zahlungsdienstleister dahinter — praktisch also Stripe oder
+vergleichbar, zu Kartengebühren. „Apple Pay als Abo" heißt in der Sache
+„Stripe mit Apple Pay als Kartenvariante".
+
+### Was das je Monat ausmacht
+
+| Weg | 59 € (3 Studios) | 224 € (14 Studios) | im Jahr bei 224 € |
+|---|---|---|---|
+| **SEPA-Lastschrift** | 0,35 € | 0,35 € | **4,20 €** |
+| Karte (Stripe) | 1,14 € | 3,61 € | 43,32 € |
+| PayPal (2,49 %) | 1,82 € | 5,93 € | **71,16 €** |
+
+> **Und ein Punkt, der in keiner Gebührentabelle steht:** PayPal und
+> Apple Pay sind Gewohnheiten aus dem Endkundengeschäft. Ein
+> Studiobetreiber bezahlt Betriebsausgaben über das Geschäftskonto und
+> braucht für die Buchhaltung ohnehin **eine Rechnung** — die musst du
+> so oder so schreiben. PayPal spart dir diesen Schritt nicht, es macht
+> den Einzug nur teurer.
+>
+> Umgekehrt gibt es ein echtes Argument dafür: kein Mandat, kein
+> Papierkram, der Kunde kennt den Knopf. Wenn ein Interessent von sich
+> aus danach fragt, ist das kein Grund, ihn zu verlieren.
