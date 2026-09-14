@@ -79,6 +79,18 @@ const WELTEN = [
     for (const w of WELTEN) {
       await db.doc(w.pfad('zeitPins/anna')).set({
         hash: 'aaaa1111bbbb2222', salz: 'ffff0000', gesetztAm: 1, name: 'Anna' });
+      // Zwei Terminals: eins im Studio von Lisa, eins in einem fremden.
+      await db.doc(w.pfad('terminals/t1')).set({
+        studioKey: 'studio-1', name: 'Empfang', hash: 'a'.repeat(64), angelegtAm: 1 });
+      await db.doc(w.pfad('terminals/t2')).set({
+        studioKey: 'studio-9', name: 'Fremd', hash: 'b'.repeat(64), angelegtAm: 1 });
+      // Zwei Stempel: einer von Anna in studio-1, einer aus einem fremden.
+      await db.doc(w.pfad('zeiten/z-anna')).set({
+        uid: 'anna', name: 'Anna', studioKey: 'studio-1', art: 'kommen',
+        ts: 1, tag: '2026-09-14', terminalId: 't1' });
+      await db.doc(w.pfad('zeiten/z-fremd')).set({
+        uid: 'timo', name: 'Timo', studioKey: 'studio-9', art: 'kommen',
+        ts: 1, tag: '2026-09-14', terminalId: 't2' });
       // Eine vergleichbare Sammlung als Ausgangslage fuer die Gegenprobe.
       await db.doc(w.pfad('board/b1')).set({ uid: 'anna', name: 'Anna', text: 'Hallo', ts: 1 });
     }
@@ -118,6 +130,48 @@ const WELTEN = [
       alsBen.doc(P('zeitPins/anna')).update({ hash: 'bekannt' }));
     await darfNicht('Jemand löscht eine PIN',
       alsMax.doc(P('zeitPins/anna')).delete());
+
+    /* ══ Terminals ══
+       Anders als bei der PIN darf die Leitung hier LESEN — das
+       Geheimnis sind 32 zufällige Bytes, sein Hash lässt sich nicht
+       durchprobieren. Geschrieben wird trotzdem von niemandem. */
+    protokoll.push('  — Terminals —');
+    await darf('Der Chef sieht die Terminals',         alsMax.doc(P('terminals/t1')).get());
+    await darf('Die Leitung sieht ihr eigenes',        alsLisa.doc(P('terminals/t1')).get());
+    await darfNicht('Die Leitung sieht ein fremdes Studio',
+      alsLisa.doc(P('terminals/t2')).get());
+    await darfNicht('Ein Mitarbeiter sieht Terminals', alsBen.doc(P('terminals/t1')).get());
+    await darfNicht('Eine fremde Firma sieht sie',     alsZoe.doc(P('terminals/t1')).get());
+    await darfNicht('Der Chef legt selbst eins an',
+      alsMax.doc(P('terminals/neu')).set({ studioKey: 'studio-1', name: 'Selbst', hash: 'x' }));
+    await darfNicht('Jemand ändert das Geheimnis',
+      alsMax.doc(P('terminals/t1')).update({ hash: 'bekannt' }));
+    await darfNicht('Jemand löscht ein Terminal direkt',
+      alsMax.doc(P('terminals/t1')).delete());
+
+    /* ══ Die Stempel ══
+       NIEMAND schreibt, auch der Chef nicht. Eine Aufzeichnung, die sich
+       nachträglich ändern lässt, ist als Nachweis nichts wert — auch
+       dann, wenn sie nie geändert wurde. */
+    protokoll.push('  — Stempel —');
+    await darf('Anna sieht ihren eigenen Stempel',     alsAnna.doc(P('zeiten/z-anna')).get());
+    await darf('Die Leitung sieht den ihres Studios',  alsLisa.doc(P('zeiten/z-anna')).get());
+    await darf('Der Chef sieht ihn',                   alsMax.doc(P('zeiten/z-anna')).get());
+    await darfNicht('Ein Kollege sieht fremde Stempel', alsBen.doc(P('zeiten/z-anna')).get());
+    await darfNicht('Die Leitung sieht ein fremdes Studio',
+      alsLisa.doc(P('zeiten/z-fremd')).get());
+    await darfNicht('Eine fremde Firma sieht sie',     alsZoe.doc(P('zeiten/z-anna')).get());
+
+    await darfNicht('Anna stempelt sich selbst ein',
+      alsAnna.doc(P('zeiten/neu')).set({ uid: 'anna', studioKey: 'studio-1', art: 'kommen', ts: 9, tag: '2026-09-14' }));
+    await darfNicht('DER CHEF schreibt eine Zeit',
+      alsMax.doc(P('zeiten/neu2')).set({ uid: 'anna', studioKey: 'studio-1', art: 'kommen', ts: 9, tag: '2026-09-14' }));
+    await darfNicht('Die Leitung korrigiert eine Zeit direkt',
+      alsLisa.doc(P('zeiten/z-anna')).update({ ts: 1 }));
+    await darfNicht('Anna schiebt ihren eigenen Stempel',
+      alsAnna.doc(P('zeiten/z-anna')).update({ ts: 1 }));
+    await darfNicht('Jemand löscht einen Stempel',
+      alsMax.doc(P('zeiten/z-anna')).delete());
 
     /* ── Gegenprobe ──
        Dieselben Konten, eine vergleichbare Sammlung. Geht das hier auch

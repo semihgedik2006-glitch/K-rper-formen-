@@ -124,6 +124,79 @@ pruefe('pinStatus gibt weder Hash noch Salz zurück',
   /return \{ gesetzt: snap\.exists, seit:/.test(quelle),
   'eine Auskunft, die die Laenge verraet, nimmt dem Angreifer Arbeit ab');
 
+/* ── Die Reihenfolge beim Stempeln ── */
+console.log('\n── Was ist als Nächstes dran ──');
+const txtSchritt = schneide('naechsterSchritt');
+pruefe('naechsterSchritt gibt es', !!txtSchritt, 'ohne sie stempelt niemand');
+if (txtSchritt) {
+  const naechsterSchritt = new Function('return (' + txtSchritt + ')')();
+  [[null, 'kommen', 'wer noch nichts getan hat, kommt'],
+   ['gehen', 'kommen', 'nach Feierabend faengt ein neuer Durchgang an'],
+   ['kommen', 'pause', 'wer da ist, macht als Naechstes Pause'],
+   ['pause', 'zurueck', 'aus der Pause kommt man zurueck'],
+   ['zurueck', 'pause', 'und kann wieder Pause machen']]
+    .forEach(([vorher, erwartet, warum]) => {
+      const ist = naechsterSchritt(vorher);
+      pruefe('nach „' + (vorher || '—') + '" kommt „' + erwartet + '"', ist === erwartet,
+        warum + ' — geliefert wurde „' + ist + '"');
+    });
+  /* Es gibt kein „gehen" als naechsten Schritt aus der Reihe heraus:
+     Feierabend ist derselbe Knopf wie Pause, nur anders getippt. Das
+     entscheidet die Oberflaeche, nicht diese Funktion — festgehalten,
+     damit es niemand fuer eine Luecke haelt. */
+  pruefe('Ein unbekannter Wert führt nicht ins Leere',
+    naechsterSchritt('quatsch') === 'kommen',
+    'ein kaputter Datensatz darf das Terminal nicht blockieren');
+}
+
+/* ── Die Bremse gegen Durchprobieren ── */
+console.log('\n── Die Bremse ──');
+pruefe('Es gibt eine Obergrenze für Fehlversuche',
+  /PIN_MAX_FEHLER\s*=\s*\d+/.test(quelle),
+  'ohne sie ist das Terminal ein Automat fuer zehntausend Moeglichkeiten');
+pruefe('Sie ist klein genug (höchstens 10)',
+  (+(/PIN_MAX_FEHLER\s*=\s*(\d+)/.exec(quelle) || [])[1] || 99) <= 10,
+  'gemessen ' + (/PIN_MAX_FEHLER\s*=\s*(\d+)/.exec(quelle) || [])[1]);
+pruefe('Gesperrt wird die PERSON, nicht das Gerät',
+  /zeitPins.*\n?[\s\S]{0,400}?gesperrtBis/.test(quelle) &&
+  !/terminals[\s\S]{0,200}gesperrtBis/.test(quelle),
+  'sonst legt ein Scherzkeks mit fuenf Fehlversuchen das ganze Studio lahm');
+pruefe('Ein richtiger Versuch setzt den Zähler zurück',
+  /fehlversuche:\s*0/.test(quelle),
+  'sonst summieren sich Vertipper ueber Wochen zu einer Sperre');
+
+/* ── Was das Stempeln alles prüft ── */
+console.log('\n── Drei Schlüssel, nicht einer ──');
+const txtStempeln = (() => {
+  const i = quelle.indexOf('exports.stempeln');
+  const j = quelle.indexOf('\n});', i);
+  return i < 0 ? '' : quelle.slice(i, j < 0 ? quelle.length : j + 4);
+})();
+pruefe('stempeln gibt es', !!txtStempeln, 'ohne sie ist der Rest gegenstandslos');
+pruefe('1. ein angemeldetes Konto', /anruferProfil\s*\(\s*context\s*\)/.test(txtStempeln),
+  'ohne Anmeldung waere es eine offene Adresse im Internet');
+pruefe('2. das Geheimnis DIESES Terminals',
+  /tokenGleich\s*\(\s*geheimHashen/.test(txtStempeln),
+  'ohne Geraetepruefung stempelt man von zu Hause');
+pruefe('3. die PIN der Person',
+  /tokenGleich\s*\(\s*pinHashen/.test(txtStempeln),
+  'ohne PIN stempelt einer fuer alle');
+pruefe('Die Person muss zu DIESEM Studio gehören',
+  /studioKeys[\s\S]{0,80}term\.studioKey/.test(txtStempeln),
+  'sonst erzeugt ein Terminal in Huerth Stempel fuer jemanden in Porz');
+pruefe('Die Person muss zu DIESEM Betrieb gehören',
+  /seine\s*!==\s*meine/.test(txtStempeln),
+  'sonst stempelt ein fremder Betrieb in unsere Aufzeichnung');
+pruefe('Ein gesperrter Zugang stempelt nicht',
+  /aktiv\s*===\s*false/.test(txtStempeln),
+  'wer nicht mehr da ist, steht auch nicht mehr im Studio');
+
+/* GEGENPROBE zu diesem Abschnitt: fände er die Prüfungen auch in einem
+   Text ohne sie, wäre er wertlos. */
+pruefe('GEGENPROBE die Suche findet nichts in leerem Text',
+  !/tokenGleich\s*\(\s*geheimHashen/.test('exports.stempeln = () => {};'),
+  'die Suchmuster treffen zu leicht');
+
 console.log('\nFehler: ' + (errs.length ? '' : 'keine'));
 errs.forEach(e => console.log('  ' + e));
 process.exit(errs.length ? 1 : 0);
