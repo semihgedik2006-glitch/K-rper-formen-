@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-hhd0KcsKiHjeRCduh01+Jt+vMoGlybFuFLrP7kmJk2s='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-3eSLViPXHo1OyoVH/K9QuH5TfKlhaAcW/pwX94epF8Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -722,8 +722,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Studios" – deshalb eine echte Zeile mit zwei Feldern. */
 .vh-line{display:flex;align-items:flex-start;gap:var(--s12)}
 .vh-text{flex:1;min-width:0}
+/* 40 waren es, 44 braucht der Daumen. „+ Neu" ist die wichtigste
+   Handlung auf Aufgaben, Putzplan und Probetraining — ausgerechnet die
+   war vier Pixel zu klein. Drei Stellen benutzen die Klasse, alle drei
+   sind dieselbe Art Knopf; die Reichweite ist nachgesehen. */
 .kopf-plus{flex-shrink:0;margin-top:var(--s2);
-  min-height:40px;padding:0 var(--s16);border-radius:var(--r-pille);cursor:pointer;
+  min-height:44px;padding:0 var(--s16);border-radius:var(--r-pille);cursor:pointer;
   border:1px solid var(--accent);background:rgba(34,211,238,.12);color:var(--accent);
   font-family:var(--font-body);font-weight:700;font-size:var(--t-sm);white-space:nowrap;
   transition:transform .25s var(--spring),background .2s}
@@ -771,7 +775,13 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Eine schmale Umschaltung ueber der Kanalleiste. Bewusst anders
    aussehend als die Kanaele selbst (kleiner, in einer Wanne), damit man
    nicht denkt, „Gruppen" sei auch nur ein Kanal. */
-.chat-arten{display:flex;gap:var(--s2);margin:var(--s8) var(--rand) 0;
+/* Der untere Rand ist kein Gestaltungswunsch, sondern Platz fuer die
+   Trefferflaeche: das ::after unten reicht 22px unter die Mitte, die
+   Kanalleiste begann bei 20 — und gewann den Treffertest, weil sie
+   spaeter im Dokument steht. Gemessen wurden 42 statt 44 Pixel. Zwei
+   Pixel mehr wuerden genau reichen; vier lassen Luft, falls sich an der
+   Schrifthoehe je etwas aendert. */
+.chat-arten{display:flex;gap:var(--s2);margin:var(--s8) var(--rand) var(--s4);
   padding:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
   align-self:flex-start;flex-shrink:0}
 .chat-arten[hidden]{display:none}
@@ -1622,6 +1632,18 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   color:var(--text-3);cursor:pointer;letter-spacing:var(--ls-s)}
 .t-nimm:hover{color:var(--accent);border-color:var(--accent)}
 .t-nimm:active{transform:scale(.92)}
+/* 19px gemalt, 44px zum Treffen — derselbe Weg wie bei .sp-play und
+   .chat-art. Die Marke soll klein bleiben, sie steht in einer Zeile mit
+   Fristen und Schrittzaehler; ein 44er Knopf dazwischen saehe aus wie
+   ein Fehler.
+
+   Der unsichtbare Teil liegt ueber der Ueberschrift und ueber dem
+   Beschreibungstext. Beide tun beim Antippen nichts — nachgemessen,
+   nicht vermutet. Trotzdem fragt der Klickweg dort einmal nach: das
+   Uebernehmen laesst sich in der App nicht wieder loesen. */
+.t-nimm{position:relative}
+.t-nimm::after{content:'';position:absolute;left:0;right:0;top:50%;
+  transform:translateY(-50%);height:44px}
 /* Woher ein Nachweis kommt. „selbst eingetragen" ist bewusst dezent und
    nicht rot: es ist kein Vorwurf, sondern eine Auskunft. */
 .cert-selbst{display:inline-block;margin-left:var(--s8);padding:var(--s1) var(--s6);border-radius:var(--r-pille);
@@ -2878,6 +2900,14 @@ html{font-size:var(--fs,100%)}
 .sort-lab{font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-m);text-transform:uppercase;
   color:var(--text-3);margin-right:var(--s2)}
 .sec-head{display:flex;align-items:center;gap:var(--s10);margin:var(--s16) 0 var(--s8)}
+/* Steht in der Abschnittszeile ein Knopf, braucht seine Trefferflaeche
+   Platz nach unten: .mini-link ist 23px hoch und traegt ein 44px-::after,
+   das 10 Pixel unter die Zeile ragt. Bei 8px Abstand gewann die Karte
+   darunter den Treffertest — gemessen 41 statt 44. Nur die Zeilen MIT
+   Knopf bekommen den groesseren Abstand; ohne Knopf gibt es nichts zu
+   treffen, und jede Abschnittszeile der App 4px zu verschieben waere
+   eine Gestaltungsaenderung, fuer die es keinen Grund gibt. */
+.sec-head:has(.mini-link){margin-bottom:var(--s12)}
 .sec-head span{font-family:var(--font-head);font-weight:700;font-size:var(--t-xs);
   letter-spacing:var(--ls-l);text-transform:uppercase;color:var(--text-3);white-space:nowrap}
 .sec-head i{flex:1;height:1px;background:var(--line);display:block}
@@ -3138,8 +3168,15 @@ html{font-size:var(--fs,100%)}
   font-family:var(--font-body);font-size:var(--t-2xs);font-weight:700;cursor:pointer}
 .sp-tempo:hover{border-color:var(--accent);color:var(--accent-d)}
 /* Der Schieber ist ein echtes input[type=range] — Tastatur und
-   Vorlesegeraete koennen damit umgehen. Gestaltet wird nur die Optik. */
-.sp-schieber{flex:1 1 auto;min-width:40px;height:22px;margin:0;padding:0;
+   Vorlesegeraete koennen damit umgehen. Gestaltet wird nur die Optik.
+
+   44px hoch, aber mit negativem Rand wieder auf 22 gebracht: die
+   Trefferflaeche ist die des Eingabefelds selbst, die Zeile bleibt so
+   hoch wie vorher. Der Weg ueber ::after, den .sp-play und .sp-tempo
+   gehen, geht hier NICHT — ein input traegt keine Pseudoelemente, und
+   ein daruebergelegtes Feld wuerde das Ziehen abfangen. Gemessen: vorher
+   22px Trefferhoehe, nachher 44. */
+.sp-schieber{flex:1 1 auto;min-width:40px;height:44px;margin:-11px 0;padding:0;
   background:none;border:none;appearance:none;-webkit-appearance:none;cursor:pointer}
 .sp-schieber:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px;border-radius:var(--r-pille)}
 .sp-schieber::-webkit-slider-runnable-track{height:4px;border-radius:var(--r-pille);background:var(--auf-3)}
@@ -3456,13 +3493,17 @@ html{font-size:var(--fs,100%)}
 .mat-name-inp{width:100%;background:none;border:1.5px solid transparent;
   border-radius:var(--r-xs);padding:var(--s6) var(--s6);margin-left:calc(var(--s6) * -1);
   color:var(--text);font-family:var(--font-body);font-weight:600;
-  font-size:var(--t-md);line-height:var(--lh-eng);min-height:40px;
+  font-size:var(--t-md);line-height:var(--lh-eng);min-height:44px;
   transition:background .2s var(--ease-ios),border-color .2s var(--ease-ios)}
 .mat-name-inp:hover{background:var(--auf-1)}
 .mat-name-inp:focus{outline:none;background:var(--auf-1);border-color:var(--accent);
   box-shadow:0 0 0 3px rgba(0,184,92,.13)}
+/* min-height stand hier ZWEIMAL: 44px am Anfang, 40px am Ende. Es galt
+   die 40 — das Fingerziel war nie da, obwohl es im Stylesheet stand.
+   Kein Durchlauf hat es gemerkt, weil keiner Trefferflaechen gemessen
+   hat. Die zweite Angabe ist weg. */
 .mat-row .num{width:100%;min-height:44px;background:var(--auf-1);border:1.5px solid var(--line-2);
-  border-radius:var(--r-xs);padding:var(--s6) var(--s2);color:var(--text);text-align:center;min-height:40px;font-size:var(--t-md);
+  border-radius:var(--r-xs);padding:var(--s6) var(--s2);color:var(--text);text-align:center;font-size:var(--t-md);
   font-variant-numeric:tabular-nums}
 .mat-row input.num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,184,92,.13)}
 .mat-row input.limit{border-style:dashed;color:var(--accent-2)}
@@ -3497,9 +3538,11 @@ html{font-size:var(--fs,100%)}
 .dev-wo:active{transform:scale(.94)}
 @media (hover:hover){ .dev-wo:hover{background:var(--f-bad-stark)} }
 
+/* Derselbe Fall wie bei .mat-row .num zwei Bildschirme weiter oben:
+   min-height zweimal, 44 vorn und 36 hinten, es galt die 36. */
 .mat-alert-go{margin-left:auto;flex-shrink:0;min-height:44px;background:none;border:none;cursor:pointer;
   color:inherit;font-family:var(--font-body);font-weight:800;font-size:var(--t-xs);
-  text-decoration:underline;padding:var(--s6) var(--s2);min-height:36px}
+  text-decoration:underline;padding:var(--s6) var(--s2)}
 .mat-alert{align-items:center;gap:var(--s10);padding:var(--s10) var(--s16);margin-bottom:var(--s12);border-radius:var(--r-md);
   background:var(--f-warn);border:1px solid var(--k-warn);color:var(--warm-tx);
   font-size:var(--t-sm);font-weight:600}
@@ -16114,15 +16157,44 @@ function bindTodoClicks(area){
           .catch(function(err){ li.classList.toggle('done'); toast(errMsg(err),true); });
       });
     });
-    /* „Ich übernehme das". Ein Klick, keine Rueckfrage — und wer schon
-       drinsteht, loest sich damit wieder. Die Regeln erlauben jedem
-       Angemeldeten update auf Aufgaben (Abhaken laeuft denselben Weg),
-       eine neue Regel braucht es dafuer nicht. */
+    /* „Ich übernehme das". Ein Klick, keine Rueckfrage. Die Regeln
+       erlauben jedem Angemeldeten update auf Aufgaben (Abhaken laeuft
+       denselben Weg), eine neue Regel braucht es dafuer nicht.
+
+       HIER STAND EINMAL „und wer schon drinsteht, loest sich damit
+       wieder". Das war nie wahr: zwei Zeilen weiter steht
+       `if(t && t.assignedTo) return;`, und sobald jemand die Aufgabe hat,
+       zeichnet renderTodo eine Marke statt eines Knopfes. Aufgefallen ist
+       es erst, als das Fingerziel vergroessert werden sollte — ein Satz,
+       der elf Monate lang etwas versprach, das der Code darunter nicht
+       tat. Ob ein Mitarbeiter eine uebernommene Aufgabe wieder abgeben
+       darf, ist eine Frage an den Betrieb und keine an mich; sie steht
+       in OFFEN.md. */
     var nimm=node.querySelector('[data-tnimm]');
     if(nimm) nimm.addEventListener('click',function(e){
       e.stopPropagation();
       var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
       if(t && t.assignedTo) return;              // gehoert schon jemandem
+      /* Die Trefferflaeche ist 44px hoch, die Marke selbst 19. Wer die
+         Marke trifft, meint sie — ein Klick, keine Rueckfrage, so ist es
+         oben beschlossen. Wer den unsichtbaren Teil trifft, wollte
+         vielleicht nur die Ueberschrift lesen.
+
+         Nachgefragt wird deshalb genau bei DIESEM Fall und sonst nie.
+         Der Grund ist nicht Vorsicht, sondern dass es keinen Rueckweg
+         gibt: sobald die Aufgabe vergeben ist, wird die Marke gar nicht
+         mehr gezeichnet, und der frueher hier stehende Kommentar
+         („wer schon drinsteht, loest sich damit wieder") beschrieb etwas,
+         das der Code nie getan hat. Wer sie wieder frei bekommen will,
+         braucht heute die Leitung. Bis das entschieden ist, darf ein
+         groesseres Ziel nicht zu mehr Fehlgriffen fuehren.
+
+         Tastatur: Enter liefert clientY 0, das ist kein Danebentippen. */
+      var r=nimm.getBoundingClientRect();
+      if(e.clientY && (e.clientY<r.top || e.clientY>r.bottom)){
+        if(!confirm('Aufgabe übernehmen?\n\n„'+((t&&t.title)||'')+'"\n\n'+
+          'Das lässt sich nur über die Leitung wieder lösen.')) return;
+      }
       withBusy(nimm,function(){
         return S('studios').doc(sk).collection('todos').doc(id)
           .update({ assignedTo:session.uid, assignedName:session.name||'' })
