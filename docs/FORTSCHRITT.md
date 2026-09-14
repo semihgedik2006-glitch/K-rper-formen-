@@ -7957,3 +7957,129 @@ alles gut".
 Stempeln. Es gibt die PIN und die Öffnungszeiten, aber kein Terminal und
 keine Zeitdatensätze — Schritte 3 bis 5 im Plan. Wer die PIN heute setzt,
 setzt sie für etwas, das es noch nicht gibt; die Karte sagt das auch so.
+
+---
+
+# 80 · Zeiterfassung, Schritt 3 und 4: das Terminal steht
+
+Ein Tablet am Empfang wird zur Stempeluhr. Der Chef richtet es ein, das
+Team stempelt darauf. Damit ist die Zeiterfassung von Ende zu Ende da —
+was fehlt, ist das, was man daraus rechnet.
+
+## Wie sich das Terminal ausweist
+
+Die Entscheidung mit den meisten Folgen, und es gab zwei Wege.
+
+**Verworfen:** ein offener Endpunkt, den ein nicht angemeldetes Tablet
+mit einem Geräte-Geheimnis ruft. Das wäre eine Adresse im Internet, an
+der jeder klopfen kann — und jeder Klopfversuch ein Versuch auf eine
+vierstellige PIN.
+
+**Gebaut:** das Tablet ist ganz normal angemeldet. Ein Stempel braucht
+damit **drei Dinge gleichzeitig**:
+
+| | |
+|---|---|
+| 1 | ein angemeldetes, freigegebenes Konto **dieses** Betriebs |
+| 2 | das Geheimnis **genau dieses** Terminals |
+| 3 | die PIN der Person |
+
+Wer das Tablet stiehlt, hat zwei davon und kann für niemanden stempeln.
+Wer eine PIN kennt, braucht trotzdem das Gerät im Studio.
+
+**Ein Geheimnis je Terminal**, nicht eines für den Betrieb — sonst zwingt
+ein verlorenes Tablet dazu, alle anderen neu einzurichten. Dieselbe
+Begründung wie beim Kalender-Abo.
+
+**Und ein Unterschied zur PIN, der erklärt gehört:** das
+Terminal-Geheimnis sind 32 zufällige Bytes, sein Hash lässt sich nicht
+durchprobieren. Deshalb darf die Leitung die Terminal-Liste lesen,
+während `zeitPins` für alle gesperrt ist. Der Unterschied ist Rechnung
+und nicht Geschmack: zehntausend Möglichkeiten gegen 2^256.
+
+## Was der Bildschirm anders macht als der Rest der App
+
+**64 Pixel statt 44.** Gestempelt wird im Vorbeigehen, oft mit nassen
+Händen, manchmal von jemandem, der die App sonst nie öffnet.
+
+**Bei vier Ziffern wird nicht von selbst abgeschickt.** Eine PIN darf
+fünf oder sechs Stellen haben; ein Automat, der nach der vierten
+losrennt, macht daraus stillschweigend einen Fehlversuch.
+
+**Was das Terminal nicht kann, und das ist Absicht:** keine Zeiten
+ansehen, keine korrigieren, keine fremden Studios. Ein Gerät, das offen
+am Empfang steht, ist kein Ort für Auskünfte über Arbeitszeiten von
+Kollegen.
+
+## Drei Fehler, und alle drei waren meine
+
+### 1. `S('users')` — der Kommentar stand da, ich habe ihn überlesen
+
+`users` ist die **eine** Sammlung, die nicht unter `firmen/<kennung>/`
+liegt: beim Anmelden weiß die App noch nicht, zu welcher Firma jemand
+gehört. Das steht so im Code. Ich habe trotzdem `S('users')` geschrieben,
+und die Personenliste im Terminal blieb leer.
+
+Gefunden hat es der Durchlauf, nicht ich.
+
+### 2. Der vierte Fall derselben Attrappen-Lücke
+
+`collection('users').get()` lieferte **0** — auch ohne Filter. Der
+`get()`-Zweig von `stub-chef.js` kannte `users` nicht, nur `onSnapshot`.
+
+Dieselbe Lücke wie zuvor bei `board`, bei den Übergaben und bei
+`probetrainings`. **Beim vierten Mal ist es keine Einzelheit.** Behoben,
+und mit einem Hinweis versehen: wer die Attrappe erweitert, trägt eine
+Sammlung an **beiden** Stellen ein. Eine Sammlung, die nur eine Hälfte
+kennt, macht jeden Durchlauf darüber grün und aussagelos.
+
+### 3. Meine erste Gegenprobe war wertlos — und hätte mich beruhigt
+
+Die wichtigste Prüfung dieses Bauteils lautet: **ohne Schlüssel darf der
+Terminal-Bildschirm nicht erscheinen.** Ein Fehler dort verdeckt allen
+Mitarbeitern die ganze App, sofort nach dem Ausrollen — und auf dem
+eigenen Gerät sieht man ihn nie, weil dort ein Schlüssel liegt.
+
+Die Gegenprobe dazu wurde **nicht rot**. Fast hätte ich das als „die
+Prüfung ist eben schon gut" verbucht. Der wahre Grund: meine Sonde ließ
+den Bildschirm nur kurz aufblitzen, und ich habe drei Sekunden später
+gemessen.
+
+Mit einer ehrlichen Sonde schlägt sie an:
+*„OHNE SCHLÜSSEL IST DER TERMINAL-BILDSCHIRM SICHTBAR"*.
+
+**Die Lehre ist nicht „Sonden sorgfältiger bauen", sondern: eine
+Gegenprobe, die nicht rot wird, ist ein Befund und kein Ergebnis.**
+
+### Nachtrag: drei Fehler, die nicht aus der App kamen
+
+`firebase.firestore` ist eine **Funktion mit Eigenschaften**
+(`FieldValue`, `FieldPath`). Meine Test-Attrappe hat sie ersetzt und nur
+die Funktion kopiert — die Eigenschaften waren weg, und die App fiel dort
+um, wo sie `fv.increment()` ruft. Drei PAGEERROR, und keiner davon aus
+dem Code, den ich prüfen wollte.
+
+## Geprüft
+
+* `test-terminal` (neu): ohne Schlüssel bleibt der Bildschirm weg ·
+  Einrichten zeigt den Schlüssel einmal · er landet **nur** lokal ·
+  mit Schlüssel übernimmt der Bildschirm · nur Leute dieses Studios ·
+  kein Selbstabschicken bei vier Ziffern · **0 direkte Schreibvorgänge**
+  in `zeiten` · ein Fehlversuch räumt die PIN weg
+* Gegenprobe auf die teuerste Zusage → rot, mit dem richtigen Satz
+* `tests/rules/zeitpin.test.js`: **68 Zusicherungen** in beiden Welten ·
+  Gegenprobe (Schreiben erlaubt) → fünf rote Zeilen
+* `test-zeitpin`: Reihenfolge, Bremse, drei Schlüssel · mit Gegenproben
+* **Volle Regression: 105 grün · 0 rot · 0 ohne Ausgabe**
+
+## Was jetzt fehlt
+
+Schritt 5 bis 9 aus `docs/ZEITERFASSUNG-PLAN.md`: die eigenen Zeiten
+sehen, Soll gegen Ist im Schichtplan, Korrekturen mit Grund, die
+Abdeckung („wie lange war der Laden unbeaufsichtigt"), das
+Arbeitszeitkonto, der Lohn-Export, das Urlaubskonto.
+
+**Und eine Entscheidung, die jetzt ansteht und nicht später:** mit der
+Zeiterfassung steht StudioChat zum ersten Mal im selben Regal wie Ordio
+und Papershift. Die 15–25 € je Studio waren für ein
+Organisationswerkzeug angesetzt.
