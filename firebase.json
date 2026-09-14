@@ -18,6 +18,7 @@
   },
 
   "//hosting": "Ausgeliefert wird das Projektverzeichnis abzüglich der ignore-Liste. Alles, was nicht in den Browser gehört, muss dort stehen — sonst ist es öffentlich abrufbar.",
+  "//txt": "**/*.txt stand hier und ist am 14.9. gestrichen worden. Es hat robots.txt mitgesperrt — die Datei waere nie ausgeliefert worden, und eine robots.txt, die es nicht gibt, ist schlimmer als keine: man glaubt, es gebe sie. Firebase Hosting kennt in ignore keine Ausnahme von einem Muster, also musste das Muster weg. Die zwei anderen Textdateien liegen in docs/ und sind ueber docs/** schon gesperrt. Was ein neues .txt im Wurzelverzeichnis angeht: tests/test-ausliefern.js meldet jede ausgelieferte Datei, die keinen Deploy ausloest — ein versehentlich abgelegtes notizen.txt faellt dort auf, bevor es gemergt wird. Die Gegenprobe dazu steht im selben Durchlauf.",
   "//stillgelegt": "marketing.html und wachstum.html werden seit dem 13.8.2026 auf Ansage nicht mehr ausgeliefert. Sie bleiben im Repo; die Sammlungen dahinter stehen in firestore.rules auf false.",
   "//zurueckholen": "ACHTUNG, die beiden Zeilen unten zu streichen reicht NICHT. Beide Seiten greifen noch flach zu (db.collection(...) ohne firmen/<kennung>/): wachstum.html 23-mal, marketing.html 13-mal. Wer sie so zurueckholt und die Regeln wieder oeffnet, stellt genau das Leck wieder her, wegen dem sie stillgelegt wurden - zwei Kunden saehen sich gegenseitig in den Terminen, mit Namen und E-Mail-Adressen ihrer Endkundinnen. Reihenfolge: erst S() wie in index.html einbauen und alle Aufrufe umstellen, dann tools/umzug.js um die Sammlungen erweitern und die Daten kopieren, dann die Regeln firmengebunden machen, erst zuletzt diese Zeilen streichen. tests/test-nebenseiten.js schlaegt an, wenn jemand die Reihenfolge umdreht.",
   "hosting": {
@@ -35,7 +36,6 @@
       "tools/**",
       "docs/**",
       "**/*.md",
-      "**/*.txt",
       "**/*.sh",
       "**/*.gs",
       "**/*.py",
