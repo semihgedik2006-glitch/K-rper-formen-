@@ -69,12 +69,58 @@ const SEITEN = {
 };
 
 /* Jeder <script>-Block ohne src. Der Inhalt geht Zeichen für Zeichen in
-   die Prüfsumme, einschliesslich Zeilenumbrüchen. */
+   die Prüfsumme, einschliesslich Zeilenumbrüchen.
+
+   HTML-KOMMENTARE WERDEN VORHER AUSGEBLENDET, und zwar nach einem echten
+   Fehler: in index.html stand ein erklärender Kommentar, in dem das Wort
+   für ein öffnendes Skript-Tag ausgeschrieben war. Der Ausdruck unten
+   kennt keine Kommentare — er hielt das für einen Block, bildete die
+   Prüfsumme über den Kommentartext und ließ die des echten Skripts weg.
+   Der Browser wies den Block daraufhin ab. Der Fehler war laut (die
+   Seite funktionierte nicht), aber die Ursache stand an einer Stelle,
+   an der niemand sucht.
+
+   Gelesen wird von links nach rechts, genau wie ein Browser es tut: wer
+   an einem Kommentaranfang steht, springt zum Kommentarende; wer an
+   einem Skriptanfang steht, springt zu dessen Ende. Damit kann weder ein
+   Kommentar im Skript noch ein Skript im Kommentar täuschen — bei zwei
+   getrennten Durchläufen mit regulären Ausdrücken ginge genau das, und
+   welcher zuerst läuft, entschiede das Ergebnis.
+
+   Ausgeblendet wird mit Leerzeichen GLEICHER LÄNGE: so verschieben sich
+   keine Positionen, und der Inhalt echter Skripte — auf den es für die
+   Prüfsumme ankommt — bleibt Zeichen für Zeichen unangetastet. */
+function ohneKommentare(html) {
+  let aus = '';
+  let i = 0;
+  while (i < html.length) {
+    if (html.startsWith('<!--', i)) {
+      const e = html.indexOf('-->', i + 4);
+      const bis = e < 0 ? html.length : e + 3;
+      aus += ' '.repeat(bis - i);
+      i = bis;
+      continue;
+    }
+    const s = /^<script\b[^>]*>/i.exec(html.slice(i, i + 400));
+    if (s) {
+      const e = html.toLowerCase().indexOf('</script>', i + s[0].length);
+      const bis = e < 0 ? html.length : e + 9;
+      aus += html.slice(i, bis);        // Skripte unveraendert uebernehmen
+      i = bis;
+      continue;
+    }
+    aus += html[i];
+    i++;
+  }
+  return aus;
+}
+
 function bloecke(html) {
+  const sauber = ohneKommentare(html);
   const re = /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g;
   const out = [];
   let m;
-  while ((m = re.exec(html))) out.push(m[1]);
+  while ((m = re.exec(sauber))) out.push(m[1]);
   return out;
 }
 

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-3eSLViPXHo1OyoVH/K9QuH5TfKlhaAcW/pwX94epF8Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3eSLViPXHo1OyoVH/K9QuH5TfKlhaAcW/pwX94epF8Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -579,6 +579,37 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 /* ── App Shell ── */
 .app{display:none;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 .app.show{display:flex}
+
+/* ── Demo-Leiste ────────────────────────────────────────────────────
+   Alles hier haengt an html.demo, und die Klasse setzt nur
+   demo-daten.js. Ohne ?demo aendert sich an der App kein einziges
+   Pixel — das ist wichtiger als es aussieht: die Leiste verkleinert
+   .app, und ein Versehen wuerde jede Ansicht der echten App um 44px
+   stauchen.
+
+   Die Leiste steht OBEN und nicht unten. Unten waere sie unauffaelliger
+   und genau deshalb falsch: wer die App vorgefuehrt bekommt, muss jeden
+   Moment sehen koennen, dass die Zahlen erfunden sind. Ein Interessent,
+   der spaeter merkt, dass er echte Daten zu sehen geglaubt hat, ist
+   schwerer zurueckzugewinnen als einer, dem es die ganze Zeit dastand.
+
+   44px hoch, weil das Auswahlfeld darin ein Fingerziel ist. */
+html.demo .app{height:calc(100vh - 44px);height:calc(100dvh - 44px)}
+.demo-bar{display:none}
+html.demo .demo-bar{display:flex;align-items:center;gap:var(--s10);
+  height:44px;padding:0 var(--rand);
+  background:var(--accent-2);color:#0b0f14;
+  font-family:var(--font-body);font-weight:700;font-size:var(--t-xs);
+  letter-spacing:var(--ls-s);white-space:nowrap;overflow:hidden}
+.demo-bar b{font-weight:900;text-transform:uppercase;flex-shrink:0}
+.demo-bar .db-text{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.demo-bar select{margin-left:auto;flex-shrink:0;min-height:44px;
+  background:rgba(0,0,0,.14);border:none;border-radius:var(--r-xs);
+  color:#0b0f14;font-family:var(--font-body);font-weight:700;
+  font-size:var(--t-xs);padding:0 var(--s8);cursor:pointer}
+.demo-bar select:focus-visible{outline:2px solid #0b0f14;outline-offset:-2px}
+/* Unter 380px traegt der Satz nicht mehr neben dem Auswahlfeld. */
+@media (max-width:379px){ .demo-bar .db-text{display:none} }
 .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
   gap:var(--s12);
   padding:calc(var(--s12) + var(--sat)) calc(var(--rand) + var(--sar))
@@ -775,13 +806,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    Eine schmale Umschaltung ueber der Kanalleiste. Bewusst anders
    aussehend als die Kanaele selbst (kleiner, in einer Wanne), damit man
    nicht denkt, „Gruppen" sei auch nur ein Kanal. */
-/* Der untere Rand ist kein Gestaltungswunsch, sondern Platz fuer die
-   Trefferflaeche: das ::after unten reicht 22px unter die Mitte, die
-   Kanalleiste begann bei 20 — und gewann den Treffertest, weil sie
-   spaeter im Dokument steht. Gemessen wurden 42 statt 44 Pixel. Zwei
-   Pixel mehr wuerden genau reichen; vier lassen Luft, falls sich an der
-   Schrifthoehe je etwas aendert. */
-.chat-arten{display:flex;gap:var(--s2);margin:var(--s8) var(--rand) var(--s4);
+.chat-arten{display:flex;gap:var(--s2);margin:var(--s8) var(--rand) 0;
   padding:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
   align-self:flex-start;flex-shrink:0}
 .chat-arten[hidden]{display:none}
@@ -792,8 +817,23 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   transition:background .25s var(--ease-ios),color .25s var(--ease-ios)}
 .chat-art.active{background:var(--bg-2);color:var(--text);box-shadow:var(--e1)}
 .chat-art:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
-/* Die Leiste ist 36 hoch, der Daumen braucht 44. */
-.chat-art{position:relative}
+/* Die Leiste ist 36 hoch, der Daumen braucht 44.
+
+   DAS ::after ALLEIN REICHTE NICHT. Gemessen wurden 42 statt 44: die
+   unteren zwei Pixel gehen in die Kanalleiste hinein, und die gewann
+   den Treffertest, weil sie spaeter im Dokument steht. Bei gleichem
+   Stapel entscheidet die Reihenfolge, nicht die Absicht.
+
+   Der erste Anlauf war Abstand — vier Pixel mehr unter der Leiste. Er
+   hat gewirkt und test-chat-bereich3 rot gemacht: der Verlauf braucht
+   mindestens 55 % der Ansicht und fiel auf 54. Der Durchlauf hatte
+   recht, der Chat ist der engste Bildschirm der App.
+
+   Also die Reihenfolge statt des Platzes: z-index hebt nur das
+   unsichtbare Feld ueber die Kanalleiste. Es ueberdeckt dort deren
+   oberen Innenabstand, nicht die Kanalknoepfe selbst — nachgemessen.
+   Kostet null Pixel. */
+.chat-art{position:relative;z-index:1}
 .chat-art::after{content:'';position:absolute;left:0;right:0;top:50%;
   transform:translateY(-50%);height:44px}
 
@@ -3608,6 +3648,20 @@ html{font-size:var(--fs,100%)}
 </head>
 <body>
 
+<!-- Demo-Leiste. Ohne ?demo fehlt html.demo und die Leiste bleibt aus.
+     Sie steht VOR .app, damit sie Platz wegnimmt statt etwas zu
+     verdecken — eine schwebende Leiste laege im Zweifel ueber einem
+     Knopf, und das faellt genau in der Vorfuehrung auf. -->
+<div class="demo-bar" id="demoBar">
+  <b>Demo</b>
+  <span class="db-text">Erfundene Daten. Nichts wird gespeichert.</span>
+  <select id="demoRolle" aria-label="Rolle wechseln">
+    <option value="chef">Als Geschäftsführung</option>
+    <option value="leiter">Als Studioleitung</option>
+    <option value="mitarbeiter">Als Mitarbeiter</option>
+  </select>
+</div>
+
 <!-- Hinweis-Leiste: erscheint automatisch, sobald die Internetverbindung weg ist -->
 <div class="offline-bar" id="offlineBar">Keine Internetverbindung – Änderungen werden gesendet, sobald du wieder online bist.</div>
 
@@ -6074,6 +6128,45 @@ html{font-size:var(--fs,100%)}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+
+<!-- ══ DEMO-MODUS ════════════════════════════════════════════════════
+     Mit ?demo in der Adresse laeuft die App gegen eine kleine Datenbank
+     im Browser statt gegen Firebase. Gedacht ist das fuer den Punkt A3
+     aus docs/VERKAUF.md: wer ueber StudioChat nachdenkt, will die App
+     ansehen, bevor er ein Konto anlegt.
+
+     WARUM AN DIESER STELLE UND NICHT FRUEHER. demo-daten.js ersetzt
+     window.firebase. Stuende es VOR den fuenf Zeilen darueber, wuerde
+     das echte SDK es gleich wieder ueberschreiben. Es muss also danach
+     kommen — und vor dem Block darunter, weil der firebase.initializeApp
+     noch beim Einlesen der Seite aufruft.
+
+     WARUM document.write. Ein nachtraeglich per createElement
+     eingehaengtes Skript-Element laeuft nicht zuverlaessig vor dem
+     naechsten Block im Dokument; genau darauf kommt es hier aber an. Ein
+     waehrend des Einlesens geschriebenes tut es. Die Alternative waere,
+     die Datei IMMER zu laden — dann traegt jeder Mitarbeiter bei jedem
+     Start 20 KB fuer etwas mit, das ihn nichts angeht.
+
+     UND EIN WORT ZUR SCHREIBWEISE HIER OBEN: in diesem Kommentar steht
+     absichtlich nirgends ein oeffnendes Skript-Tag ausgeschrieben.
+     tools/csp.js sucht die Inline-Bloecke mit einem regulaeren Ausdruck
+     und kennt keine Kommentare — ein ausgeschriebenes Tag im Kommentar
+     wird fuer einen Block gehalten, und die Seite bekommt die
+     Pruefsumme eines Kommentars statt die ihres Skripts. Genau das ist
+     beim ersten Anlauf passiert: der Browser hat den Block abgewiesen,
+     und der Demo-Modus startete nicht. csp.js ueberspringt Kommentare
+     inzwischen, aber die Regel bleibt billiger als die Ausnahme.
+
+     OHNE ?demo passiert hier gar nichts: kein Laden, keine Anfrage. Und
+     demo-daten.js prueft dieselbe Bedingung in seiner ersten Zeile noch
+     einmal — ein Versehen beim Einbinden soll nicht die echte App
+     ersetzen. -->
+<script>
+if(/[?&]demo(=|&|$)/.test(location.search)){
+  document.write('<scr' + 'ipt src="demo-daten.js"><\/scr' + 'ipt>');
+}
+</script>
 
 <script>
 (function(){

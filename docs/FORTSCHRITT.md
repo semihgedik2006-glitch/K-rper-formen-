@@ -7702,3 +7702,127 @@ Die Ladephase misst `audit-leistung` mit vierfach gedrosselter CPU:
 einem absichtlich verlangsamten Gerät — was ein echtes Handy im Studio
 tut, ist damit nicht gesagt und wird hier auch nicht gesagt. Es steht
 als eigener Punkt in `OFFEN.md`.
+
+---
+
+# 78 · Der Testzugang — und drei Fehler, die nur beim Bauen sichtbar wurden
+
+*„wir müssen langsam an dem schritt der veröffentlichung arbeiten weil
+ich potentielle kunden habe so langsam und ich denen ja auch was
+präsentieren muss"*
+
+Dafür gab es schon einen Plan: `docs/VERKAUF.md`, Punkt **A3 —
+Testzugang mit erfundenen Daten**, dort beschrieben als *„der wirksamste
+Verkaufshebel und der billigste"*. Seit Wochen offen.
+
+`index.html?demo` startet die App jetzt ohne Anmeldung gegen eine kleine
+Datenbank im Browser. Oben eine Leiste „Demo — erfundene Daten", darin
+ein Umschalter für die Rolle.
+
+## Die Einschätzung im eigenen Plan war falsch
+
+Dort stand, die Test-Attrappen aus `tests/stub-*.js` reichten dafür und
+es sei „wenig Arbeit". Beides stimmte nicht.
+
+Die Attrappen **beantworten Abfragen, verwerfen aber Schreibvorgänge**.
+Für einen Durchlauf ist das genau richtig. Für eine Vorführung ist es
+tödlich: wer eine Aufgabe abhakt und nichts passiert, hält nicht die
+Demo für kaputt, sondern die App. `demo-daten.js` ist deshalb eine
+wirklich schreibende Datenbank mit lebenden Zuhörern geworden.
+
+Der Umfang wurde dabei **nachgesehen statt geraten**: die App benutzt
+keine `FieldValue`, keine Transaktionen, keine Cursor und keine
+Sammlungsgruppen. Gebraucht werden `where`/`orderBy`/`limit`/
+`limitToLast`, `set`/`update`/`delete`/`add`, Stapelschreiben und
+Zuhörer auf Sammlung wie Einzeldokument. Genau das steht drin — nicht
+mehr.
+
+## Fehler 1: eine Zusage, die ich nicht halten konnte
+
+Im Kopf der Datei stand zuerst **„kein einziges Byte verlässt den
+Browser"**. Der erste Durchlauf lief in eine Zeitüberschreitung und
+zeigte warum: die fünf SDK-Dateien werden weiterhin von Googles CDN
+geladen. Sie stehen als feste Zeilen in `index.html`, und sie nur für
+die Demo herauszunehmen würde für alle anderen den Start verlangsamen —
+der Vorauslader des Browsers findet dann keine festen Adressen mehr.
+
+Der Satz ist berichtigt: heruntergeladen wird eine öffentliche
+Programmbibliothek, **gesendet wird nichts**. Das ist die Zusage, die
+trägt, und `tests/test-demo.js` misst genau sie.
+
+## Fehler 2: ein Kommentar, der die Seite lahmlegte
+
+Der Demo-Modus startete nicht. Der Browser meldete *„Refused to execute
+inline script"* — und `demo-daten.js` wurde nie angefordert.
+
+Ursache: **mein erklärender HTML-Kommentar enthielt das Wort für ein
+öffnendes Skript-Tag, ausgeschrieben.** `tools/csp.js` sucht die
+Inline-Blöcke mit einem regulären Ausdruck und kennt keine Kommentare.
+Es hielt den Kommentar für einen Block, bildete dessen Prüfsumme und
+ließ die des echten Skripts weg.
+
+Der Fehler war laut — nichts funktionierte —, aber die Ursache stand an
+einer Stelle, an der niemand sucht. Deshalb nicht nur der Kommentar
+geändert, sondern **das Werkzeug**: `csp.js` liest jetzt von links nach
+rechts wie ein Browser. Wer an einem Kommentaranfang steht, springt zum
+Kommentarende; wer an einem Skriptanfang steht, zu dessen Ende.
+
+Der erste Entwurf dafür hatte dasselbe Henne-Ei-Problem — zwei getrennte
+Durchläufe mit regulären Ausdrücken, und welcher zuerst läuft, entschied
+das Ergebnis. Ein Durchlauf von links nach rechts kennt die Frage nicht.
+
+## Fehler 3: meine Prüfung befragte einen Leichnam
+
+`test-demo` meldete „Abhaken wirkt nicht" — während die Kachelsumme auf
+der Startseite von 106 auf 105 ging. Beides konnte nicht stimmen.
+
+Es lag an der Prüfung: sie hielt den DOM-Knoten der Aufgabe fest, klickte
+und fragte danach denselben Knoten. Die Aufgabenliste zeichnet sich nach
+einem Schreibvorgang aber neu — der festgehaltene Knoten hing in keinem
+Dokument mehr und trug für immer den alten Zustand. Jetzt wird nach der
+Kennung neu gesucht.
+
+**Dritter Fall derselben Art in diesem Durchgang:** vorher schon „wer
+nicht ins Bild rollt, misst das Sichtfenster" und „eine Zahl, die nach
+einer Korrektur schlechter aussieht, ist zuerst ein Verdacht gegen die
+Messung".
+
+## Die Prüfung auf das, was man nicht sieht
+
+Dass die Demo läuft, sieht man beim Vorführen sofort. Dass **nichts nach
+draußen geht**, sieht man nie — und genau deshalb wird es gemessen.
+
+`tests/test-demo.js` zählt jede Anfrage der Seite. Der erste Anlauf
+suchte nach verdächtigen Wörtern (`firestore`, `googleapis`) und schlug
+prompt bei der Schriftart und bei `firebase-firestore-compat.js` an —
+beides harmlos. Eine Liste des Verbotenen ist außerdem die schwächere
+Bauart: sie findet nur, woran jemand gedacht hat.
+
+Jetzt steht dort eine Liste des **Erlaubten**: eigene Adresse,
+Schriften, die Bibliothek. Alles andere ist ein Fund, auch etwas, das es
+heute noch nicht gibt.
+
+## Geprüft
+
+* `test-demo` (neu): ohne `?demo` ändert sich nichts · mit `?demo`
+  startet die App durch · **0 Anfragen nach draußen** · Daten da ·
+  Abhaken wirkt (46 → 45 offene, Startseite 106 → 105) · Chef 15 Kanäle
+  gegen Mitarbeiter 2 · keine erfundenen Rechtsangaben
+* Gegenprobe: ein eingebautes `fetch` zu firestore **und** verworfene
+  Schreibvorgänge → **drei rote Zeilen**, jede mit Messwert
+* `test-csp`, `test-fingerziele`, `test-knoepfe`, `test-gestaltung`,
+  `test-navigation` nach dem Eingriff grün
+* volle Regression
+
+## Was die Demo ausdrücklich nicht tut
+
+Die **rechtlichen Pflichtfelder bleiben leer** und sagen das auch.
+Erfundene Angaben in ein Impressum zu schreiben wäre genau die Art
+Platzhalter, die auf `werbung.html` schon einmal live gegangen ist —
+dort stand „wir melden uns innerhalb von 24 Stunden" an einem Formular,
+das nirgendwohin sendete. Ein Durchlauf prüft jetzt, dass in der Demo
+weder eine Musterstraße noch eine erfundene Umsatzsteuer-Nummer steht.
+
+Cloud Functions laufen nicht. Wer in der Demo etwas auslöst, das eine
+E-Mail verschicken würde, bekommt einen Satz, der das sagt — statt einer
+Fehlermeldung oder, schlimmer, einer stillen Nichtreaktion.

@@ -8,12 +8,25 @@
 
    ── Was hier NICHT passiert, und das ist der wichtigste Satz
 
-   KEIN EINZIGES BYTE VERLÄSST DEN BROWSER. Diese Datei ersetzt das
-   Firebase-SDK vollständig, bevor die App es zum ersten Mal anfasst. Es
-   gibt keine Verbindung, kein Konto, keinen Schlüssel und keinen Weg zu
-   echten Daten — auch nicht versehentlich. Alles, was jemand hier
-   eintippt oder abhakt, liegt in einem JavaScript-Objekt und ist beim
-   Neuladen wieder weg.
+   ES WIRD KEINE DATENBANK ANGEFASST. Diese Datei ersetzt das
+   Firebase-SDK, bevor die App es zum ersten Mal benutzt. Es gibt keine
+   Anmeldung, keine Abfrage, keinen Schreibvorgang nach draußen und
+   keinen Weg zu echten Daten — auch nicht versehentlich. Alles, was
+   jemand hier eintippt oder abhakt, liegt in einem JavaScript-Objekt und
+   ist beim Neuladen wieder weg.
+
+   PRÄZISE, WEIL DER UNTERSCHIED ZÄHLT: „kein einziges Byte verlässt den
+   Browser" wäre zu viel behauptet. Die fünf SDK-Dateien werden weiterhin
+   von Googles CDN geladen — sie stehen als <script> in index.html, und
+   sie dort nur für die Demo herauszunehmen würde für alle anderen den
+   Start verlangsamen (der Vorauslader findet dann keine festen
+   Adressen mehr). Heruntergeladen wird also eine öffentliche
+   Programmbibliothek; gesendet wird nichts. `tests/test-demo.js` misst
+   genau diese Grenze — und zwar andersherum, als man zuerst denkt: dort
+   steht eine Liste dessen, was die Demo anfassen DARF (eigene Adresse,
+   Schriften, Bibliothek). Jede andere Anfrage ist ein Fund, auch eine,
+   an die heute niemand denkt. Eine Liste des Verbotenen findet nur, was
+   jemand vorher aufgeschrieben hat.
 
    ── Warum eine echte kleine Datenbank und nicht die Test-Attrappe
 
@@ -627,6 +640,39 @@
   firebase.auth.Auth = { Persistence: { LOCAL: 'local', SESSION: 'session', NONE: 'none' } };
   firebase.messaging.isSupported = function () { return false; };
 
-  /* Für den Umschalter und den Hinweisbalken in index.html. */
+  /* ══ Die Oberfläche der Demo ════════════════════════════════════════ */
+
   window.__demo = { rolle: ROLLE, name: ICH.name, studios: (ICH.studios || []).length };
+
+  /* Die Klasse steht auf <html> und schaltet die Leiste ein. Sie wird
+     HIER gesetzt und nicht im Markup: so kann es die Leiste ohne ?demo
+     gar nicht geben, auch nicht für einen Wimpernschlag beim Laden. */
+  document.documentElement.classList.add('demo');
+
+  /* Nicht in den Suchergebnissen. Die Demo ist zum Verschicken da, nicht
+     zum Gefundenwerden: eine Seite voller erfundener Aufgaben unter dem
+     Namen Körperformen wäre in einer Suche das Gegenteil von hilfreich.
+     Ein Meta-Element, das erst ein Skript setzt, ist keine Garantie —
+     robots.txt sperrt zusätzlich, und der Link wird ohnehin nur
+     weitergegeben. Beides zusammen, keins allein. */
+  try {
+    var mr = document.createElement('meta');
+    mr.name = 'robots';
+    mr.content = 'noindex, nofollow';
+    document.head.appendChild(mr);
+  } catch (e) {}
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var sel = document.getElementById('demoRolle');
+    if (!sel) return;
+    sel.value = ROLLE;
+    sel.addEventListener('change', function () {
+      /* Neu laden statt umbauen. Die Rolle entscheidet, welche Studios,
+         welche Kanäle und welche Knöpfe es überhaupt gibt — das im
+         laufenden Betrieb umzustellen wäre ein zweiter, eigener
+         Programmzustand, den niemand außer der Demo je benutzt. Ein
+         Neuladen dauert eine Sekunde und kann nicht halb misslingen. */
+      location.search = '?demo=' + sel.value;
+    });
+  });
 })();
