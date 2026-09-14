@@ -507,8 +507,19 @@ var USERS = [
              Aussage. Gefunden beim Bau der Ziele, die aus derselben
              Abfrage lesen. */
           : (path === 'probetrainings' ? (window.__probe || PROBE)
+          /* users fehlte hier, obwohl onSnapshot sie kennt — der VIERTE
+             Fall derselben Luecke nach board, den Uebergaben und
+             probetrainings. Gefunden beim Bau des Stempel-Terminals:
+             dessen Personenliste liest EINMALIG und blieb deshalb leer.
+
+             Beim vierten Mal ist es keine Einzelheit mehr. Wer diese
+             Attrappe erweitert, traegt eine Sammlung bitte an BEIDEN
+             Stellen ein — get() und onSnapshot. Eine Sammlung, die nur
+             eine Haelfte kennt, macht jeden Durchlauf darueber gruen und
+             aussagelos. */
+          : (path === 'users' ? (window.__users || USERS)
           : (path === 'statistik' ? (window.__statistik || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])))));
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
