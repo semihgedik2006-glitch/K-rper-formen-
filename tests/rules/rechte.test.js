@@ -21,7 +21,14 @@ const {
 } = require('@firebase/rules-unit-testing');
 
 const REGELN = path.join(__dirname, '..', '..', 'firestore.rules');
-const A = 'alpha', B = 'beta';
+/* A ist die Kennung des ERSTEN Betriebs, nicht irgendein Name.
+   Dieser Durchlauf greift auf beide Welten zu: firmen/<A>/… UND die
+   flachen Pfade (channels/…). Seit die flachen Pfade an
+   aufFlachenPfaden() haengen — firma leer ODER die Kennung des ersten
+   Betriebs — waere ein erfundenes „alpha" dort zu Recht ausgesperrt,
+   und acht Zeilen fielen um. Nicht die Regel war falsch, sondern die
+   Ausgangslage: eine Firma, die es so nie gibt. */
+const A = 'koerperformen', B = 'beta';
 
 let env;
 let bestanden = 0, gefallen = 0;

@@ -132,9 +132,10 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 |---|---|---|
 | ~~`users`-Regel scharf stellen~~ · ~~`allow create` ohne Firmenprüfung~~ | ✅ **17.8. erledigt** — die Vorbedingung war erfüllt: 12 von 12 Konten tragen `firma` |
 | ~~Regel ging beim ersten Anlauf gar nicht raus~~ | ✅ **17.8. nachgezogen** — siehe Kasten unten |
-| **Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen | wenn Zeit ist | klein |
-| **Angriffsdurchlauf durch `werbung.html`** (wie `test-xss.js`) | wenn Zeit ist | klein |
-| Flache Alt-Daten aufräumen | ab Mitte September | ½ Sitzung |
+| ~~**Firebase-SDK im Browser** (10.12.2) auf gemeldete Lücken prüfen~~ | ✅ **14.9. geprüft** — nicht betroffen. Die eine Meldung (CVE-2024-11023) ist seit 10.9.0 behoben. **Der Fund lag woanders:** `npm audit` in `functions/` meldete vier Lücken in nodemailer und zwei in `qs` — behoben, siehe Runde 76 |
+| ~~**Angriffsdurchlauf durch `werbung.html`**~~ | ✅ **14.9. gebaut** — als Härtungsprüfung, nicht als XSS-Einspeisung: die Seite hat gar keine Eingabe. `tests/test-xss-werbung.js` |
+| ~~Flache Alt-Daten: das **Leck**~~ | ✅ **14.9. geschlossen** — `aufFlachenPfaden()`, 79 Regeln, `kreuz.test.js` deckt jetzt auch den flachen Zweig ab |
+| Flache Alt-Daten **löschen** | wenn jemand mit Produktionszugang Zeit hat | klein |
 
 > **Was am 17.8. NICHT mit zugegangen ist, und warum.** Ein Betrieb ohne
 > hinterlegten Firmencode bleibt offen: wer sich anmeldet, kann sich ihm
@@ -390,11 +391,31 @@ Internet), und es ist keine Regel, die man auf Verdacht ausrollt.
 
 **Was zu tun ist, in dieser Reihenfolge:**
 
-| | Schritt |
-|---|---|
-| 1 | In der echten Datenbank auszählen, wie viele Konten ein Feld `firma` haben und mit welchem Wert |
-| 2 | Danach entscheiden: Prüfung auf „gehört zur Voreinstellung" — oder die flachen Daten wegräumen und den flachen Regelsatz ganz streichen (Schritt 7 oben) |
-| 3 | `kreuz.test.js` um die **flachen** Pfade erweitern; heute prüft es ausschliesslich `firmen/{f}/…` |
+| | Schritt | |
+|---|---|---|
+| 1 | In der echten Datenbank auszählen, wie viele Konten ein Feld `firma` haben und mit welchem Wert | ✅ **entfallen** — siehe unten |
+| 2 | Danach entscheiden: Prüfung auf „gehört zur Voreinstellung" | ✅ **14.9. gebaut**: `aufFlachenPfaden()` |
+| 3 | `kreuz.test.js` um die **flachen** Pfade erweitern | ✅ **14.9.** |
+
+> **Schritt 1 ist entfallen, und das ist die eigentliche Nachricht.**
+> Monatelang stand hier, die Entscheidung hänge daran, was in den
+> echten Konten steht. Das galt für eine Prüfung auf **leer**. Die
+> gebaute Bedingung lässt **beides** zu — leer ODER die Kennung des
+> ersten Betriebs — und braucht die Verteilung deshalb nicht.
+>
+> Und der Beweis, dass sie niemanden aussperrt, stand die ganze Zeit in
+> `konfig.js`: dort steht `mandant: true`. Die App arbeitet also längst
+> auf den Firmen-Pfaden, und die sind durch `inFirma('koerperformen')`
+> geschützt — **das genau dieselbe Bedingung verlangt.** Ein Konto mit
+> einem anderen Wert wäre dort seit dem 17.8. ausgesperrt, und das wäre
+> aufgefallen.
+>
+> Die Messung, auf die dieser Punkt gewartet hat, stand in der
+> Konfiguration. Nicht in der Produktionsdatenbank.
+
+**Was weiterhin offen ist:** die flachen Daten **löschen**. Das braucht
+Produktionszugang und ist jetzt Aufräumen, keine Sicherheitsfrage mehr —
+an die Daten kommt keine fremde Firma mehr heran.
 
 Schritt 3 ist der eigentliche Grund, warum es so lange unbemerkt blieb:
 die Kreuzprüfung deckt zweiunddreissig Sammlungen ab — alle im

@@ -201,6 +201,37 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/firmen/$(f))
         && get(/databases/$(database)/documents/firmen/$(f)).data.get('aktiv', true) == true;
     }
+    /* ── Die flachen Pfade gehoeren dem ERSTEN Betrieb ────────────────
+       Sie sind Altdaten: seit mandant:true schreibt die App unter
+       firmen/<kennung>/. Was flach liegt, ist der Rueckweg — und war
+       bis hierher fuer JEDES aktive Konto lesbar, auch fuer eines aus
+       einer zweiten Firma. Im Emulator nachgemessen kam ein einfacher
+       Mitarbeiter einer fremden Firma an Aufgaben, Chat, Brett,
+       Ankuendigungen, Uebergaben, Dokumente und den Dienstplan.
+
+       WARUM DIESE BEDINGUNG SICHER IST, OHNE IN DIE ECHTEN DATEN ZU
+       SEHEN. Monatelang stand hier: „haengt daran, was in den echten
+       Konten im Feld firma steht — steht dort ueberall die Kennung,
+       sperrt eine Pruefung auf leer den Betrieb aus." Das gilt fuer
+       eine Pruefung auf LEER. Diese laesst beides zu.
+
+       Und mehr noch: konfig.js steht auf mandant:true, die App
+       arbeitet also laengst auf den Firmen-Pfaden — geschuetzt durch
+       inFirma('koerperformen'), das GENAU DIESE Bedingung verlangt. Ein
+       Konto mit einem anderen Wert waere dort seit dem 17.8.
+       ausgesperrt, und das waere aufgefallen. Die Messung, auf die
+       dieser Punkt gewartet hat, steht in der Konfiguration — nicht in
+       der Produktionsdatenbank.
+
+       NICHT hier drin: users, beitritt, die zwei Registrierungs-
+       Schalter, privat, pushTokens, firmenArchiv. Ein neues Konto hat
+       noch kein Profil, und wer sich anmelden will, muss vorher lesen
+       duerfen. */
+    function aufFlachenPfaden() {
+      return istAktiv()
+        && (meineFirma() == '' || meineFirma() == 'koerperformen');
+    }
+
     function inFirma(f) {
       return istAktiv()
         && firmaLaeuft(f)
@@ -365,9 +396,11 @@ service cloud.firestore {
     // lautlos. Die Regel laesst deshalb keine kuerzere Liste zu.
     match /config/studios {
       allow read: if true;
-      allow create: if isChef();
-      allow update: if isChef()
-        && request.resource.data.liste.size() >= resource.data.liste.size();
+      allow create: if aufFlachenPfaden()
+        && (isChef());
+      allow update: if aufFlachenPfaden()
+        && (isChef()
+        && request.resource.data.liste.size() >= resource.data.liste.size());
       allow delete: if false;
     }
 
@@ -391,7 +424,8 @@ service cloud.firestore {
     //          (wie bei 'studios' und 'registrierung'), nicht hier.
     match /config/recht {
       allow read: if true;
-      allow write: if isChef();
+      allow write: if aufFlachenPfaden()
+        && (isChef());
     }
 
     // Sprachnachrichten liegen als Datenblock in der Nachricht. Ein Dokument
@@ -567,17 +601,20 @@ service cloud.firestore {
 
     // ── Chat-Nachrichten ──
     match /channels/{channelId}/messages/{msgId} {
-      allow read: if istAktiv() && kanalErlaubt(channelId);
+      allow read: if aufFlachenPfaden()
+        && (istAktiv() && kanalErlaubt(channelId));
       // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
-      allow create: if istAktiv() && kanalErlaubt(channelId)
+      allow create: if aufFlachenPfaden()
+        && (istAktiv() && kanalErlaubt(channelId)
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 2000
-        && audioOk();
+        && audioOk());
       // Reagieren darf jeder — aber nur mit der EIGENEN Kennung und nur
       // mit einem der sechs Zeichen. Siehe nurEigeneReaktion() oben.
       // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
-      allow update: if istAktiv() && kanalErlaubt(channelId) && (
+      allow update: if aufFlachenPfaden()
+        && (istAktiv() && kanalErlaubt(channelId) && (
            nurEigeneReaktion()
         // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur die
         // EIGENE Stimme, nicht Frage, Antworten oder fremde Stimmen.
@@ -590,13 +627,14 @@ service cloud.firestore {
         // Anheften ist Sache der Verwaltung: was oben steht, sehen alle
         || (manages(channelId)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned']))
-      );
+      ));
       // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
-      allow delete: if kanalErlaubt(channelId) && (isChef()
+      allow delete: if aufFlachenPfaden()
+        && (kanalErlaubt(channelId) && (isChef()
         || manages(channelId)
         || (istAktiv()
             && resource.data.uid == request.auth.uid
-            && request.time.toMillis() < resource.data.ts + 3600000));
+            && request.time.toMillis() < resource.data.ts + 3600000)));
     }
 
     // ── Aufgaben pro Studio ──
@@ -611,43 +649,54 @@ service cloud.firestore {
        Ersteller muss der Anrufer selbst sein — sonst legt jemand
        Aufgaben im Namen des Chefs an. */
     match /studios/{studioKey}/todos/{todoId} {
-      allow read: if istAktiv();
-      allow create: if manages(studioKey)
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (manages(studioKey)
         || (istAktiv()
             && studioKey in myKeys()
             && request.resource.data.createdByUid == request.auth.uid
             && (!('recurring' in request.resource.data)
                 || request.resource.data.recurring == null
-                || request.resource.data.recurring == ''));
-      allow delete: if manages(studioKey);
+                || request.resource.data.recurring == '')));
+      allow delete: if aufFlachenPfaden()
+        && (manages(studioKey));
       // Die Leitung darf alles. Ein Mitarbeiter nur im EIGENEN Studio,
       // und nur die Felder, die er in der App auch anfassen kann.
-      allow update: if manages(studioKey)
+      allow update: if aufFlachenPfaden()
+        && (manages(studioKey)
         || (istAktiv() && studioKey in myKeys()
-            && nurDieseFelder(todoMitarbeiterFelder()));
+            && nurDieseFelder(todoMitarbeiterFelder())));
     }
 
     // ── Putzplan pro Studio (Reinigungsaufgaben) ──
     match /studios/{studioKey}/cleaning/{taskId} {
-      allow read: if istAktiv();
-      allow create: if manages(studioKey);   // Chef überall, Leiter in seinen Studios
-      allow delete: if manages(studioKey);
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (manages(studioKey));   // Chef überall, Leiter in seinen Studios
+      allow delete: if aufFlachenPfaden()
+        && (manages(studioKey));
       // Anlegen ist Chefsache, also auch Umbenennen und Pausieren.
       // Abhaken darf jeder — sonst muesste die Leitung hinterherlaufen.
-      allow update: if manages(studioKey)
-        || (istAktiv() && nurDieseFelder(putzMitarbeiterFelder()));
+      allow update: if aufFlachenPfaden()
+        && (manages(studioKey)
+        || (istAktiv() && nurDieseFelder(putzMitarbeiterFelder())));
     }
 
     // ── Putzplan-Notizen pro Studio (vom Team) ──
     match /studios/{studioKey}/cleaningNotes/{noteId} {
-      allow read: if istAktiv();
-      allow create: if istAktiv()
-        && request.resource.data.byUid == request.auth.uid;
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (istAktiv()
+        && request.resource.data.byUid == request.auth.uid);
       // Chef darf jede Notiz löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
-      allow delete: if manages(studioKey)
+      allow delete: if aufFlachenPfaden()
+        && (manages(studioKey)
         || (istAktiv()
             && resource.data.byUid == request.auth.uid
-            && request.time.toMillis() < resource.data.ts + 3600000);
+            && request.time.toMillis() < resource.data.ts + 3600000));
       allow update: if false;
     }
 
@@ -656,18 +705,22 @@ service cloud.firestore {
     // darf jeder Eingeloggte: einen Defekt melden können muss die Person,
     // die vor dem Gerät steht – nicht die, die gerade Dienst hat.
     match /studios/{studioKey}/devices/{devId} {
-      allow read: if istAktiv();
-      allow create: if manages(studioKey)
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (manages(studioKey)
         && request.resource.data.name is string
-        && request.resource.data.name.size() <= 80;
-      allow delete: if manages(studioKey);
+        && request.resource.data.name.size() <= 80);
+      allow delete: if aufFlachenPfaden()
+        && (manages(studioKey));
       // Umbenennen und umziehen darf nur die Verwaltung. Alle anderen
       // dürfen ausschliesslich den Zustand melden – sonst könnte eine
       // Meldung nebenbei das Gerät umbenennen.
-      allow update: if manages(studioKey)
+      allow update: if aufFlachenPfaden()
+        && (manages(studioKey)
         || (istAktiv()
             && request.resource.data.diff(resource.data)
-                 .affectedKeys().hasOnly(['status','lastNote','lastBy','lastAt']));
+                 .affectedKeys().hasOnly(['status','lastNote','lastBy','lastAt'])));
     }
 
     // ── Verlauf zu den Geräten ──
@@ -679,51 +732,63 @@ service cloud.firestore {
             && request.resource.data.photo.size() <= 400000);
     }
     match /studios/{studioKey}/deviceLog/{logId} {
-      allow read: if istAktiv();
-      allow create: if istAktiv()
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (istAktiv()
         && request.resource.data.byUid == request.auth.uid
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 300
-        && devPhotoOk();
+        && devPhotoOk());
       allow update: if false;
-      allow delete: if manages(studioKey);
+      allow delete: if aufFlachenPfaden()
+        && (manages(studioKey));
     }
 
     // ── Ankündigungen ──
     match /announcements/{annId} {
-      allow read: if istAktiv();
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
       // Chef an alle oder einzelne Studios; Leiter nur an seine Studios
-      allow create: if request.resource.data.uid == request.auth.uid
+      allow create: if aufFlachenPfaden()
+        && (request.resource.data.uid == request.auth.uid
         && (isChef()
-            || (isLeiter() && request.resource.data.target in myKeys()));
+            || (isLeiter() && request.resource.data.target in myKeys())));
       // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
-      allow update: if isChef()
+      allow update: if aufFlachenPfaden()
+        && (isChef()
         || (isLeiter() && resource.data.target in myKeys())
         || (istAktiv() && nurEigenerHaken())
         // Reagieren darf jeder — nur mit der eigenen Kennung, nur mit einem
         // der sechs Zeichen. Neben dem Gelesen-Haken, nicht statt ihm:
         // „gesehen" und „finde ich gut" sind zwei Aussagen.
-        || (istAktiv() && nurEigeneReaktion());
-      allow delete: if isChef()
-        || (isLeiter() && resource.data.target in myKeys());
+        || (istAktiv() && nurEigeneReaktion()));
+      allow delete: if aufFlachenPfaden()
+        && (isChef()
+        || (isLeiter() && resource.data.target in myKeys()));
     }
 
     // ── Materialbestand pro Studio ──
     // Jeder Eingeloggte darf den Bestand lesen und eintragen.
     match /inventory/{studioKey} {
-      allow read: if istAktiv();
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
       // Eintragen dürfen alle Eingeloggten; das Soll-Limit setzt die Verwaltung
-      allow write: if istAktiv();
+      allow write: if aufFlachenPfaden()
+        && (istAktiv());
     }
 
     // ── Dokumente (Metadaten) ──
     match /documents/{docId} {
-      allow read: if istAktiv();
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
       // Leiter darf nur Dokumente anlegen, die ausschließlich seine Studios betreffen
-      allow create: if isChef()
-        || (isLeiter() && request.resource.data.studios.hasOnly(myKeys()));
-      allow update, delete: if isChef()
-        || (isLeiter() && resource.data.studios.hasOnly(myKeys()));
+      allow create: if aufFlachenPfaden()
+        && (isChef()
+        || (isLeiter() && request.resource.data.studios.hasOnly(myKeys())));
+      allow update, delete: if aufFlachenPfaden()
+        && (isChef()
+        || (isLeiter() && resource.data.studios.hasOnly(myKeys())));
     }
     // ── Dokument-Inhalte (kleine Dateien direkt in der Datenbank, kostenlos) ──
     // Hier stand "isChef() || isLeiter()" - ohne Studio-Bezug. Ein Leiter
@@ -733,13 +798,16 @@ service cloud.firestore {
     // Chefsache: Dokumente landen ohne Studio-Kennung im Papierkorb, und
     // den darf ohnehin nur der Chef endgueltig leeren.
     match /documentData/{docId} {
-      allow read: if istAktiv();
-      allow create, update: if isChef()
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create, update: if aufFlachenPfaden()
+        && (isChef()
         || (isLeiter()
             && exists(/databases/$(database)/documents/documents/$(docId))
             && get(/databases/$(database)/documents/documents/$(docId))
-                 .data.studios.hasOnly(myKeys()));
-      allow delete: if isChef();
+                 .data.studios.hasOnly(myKeys())));
+      allow delete: if aufFlachenPfaden()
+        && (isChef());
     }
 
     // ── Nachweise (Erste Hilfe, Trainerlizenz, EMS-Einweisung) ──
@@ -777,25 +845,29 @@ service cloud.firestore {
        da liegt immer eine. Fehlt das Feld, gilt der Eintrag als vom
        Chef erfasst, und genau das ist er dann auch. */
     match /certificates/{certId} {
-      allow read: if isChef()
-        || (istAktiv() && resource.data.uid == request.auth.uid);
-      allow create: if isChef()
+      allow read: if aufFlachenPfaden()
+        && (isChef()
+        || (istAktiv() && resource.data.uid == request.auth.uid));
+      allow create: if aufFlachenPfaden()
+        && (isChef()
         || (istAktiv()
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.erfasstVonUid == request.auth.uid
-            && request.resource.data.get('bestaetigt', false) == false);
+            && request.resource.data.get('bestaetigt', false) == false));
       /* Bis zur Bestaetigung darf man den eigenen Eintrag korrigieren —
          ein Zahlendreher im Datum soll kein Fall fuer den Chef sein.
          DANACH NICHT MEHR: sonst laesst sich ein bestaetigter
          Erste-Hilfe-Schein still um zwei Jahre verlaengern, und die
          Bestaetigung waere wertlos. */
-      allow update: if isChef()
+      allow update: if aufFlachenPfaden()
+        && (isChef()
         || (istAktiv()
             && resource.data.uid == request.auth.uid
             && request.resource.data.uid == request.auth.uid
             && resource.data.get('bestaetigt', false) == false
-            && request.resource.data.get('bestaetigt', false) == false);
-      allow delete: if isChef();
+            && request.resource.data.get('bestaetigt', false) == false));
+      allow delete: if aufFlachenPfaden()
+        && (isChef());
     }
 
     // ── Konfiguration (z. B. Onboarding-Checkliste) ──
@@ -805,38 +877,45 @@ service cloud.firestore {
       // Ausnahme wuerde die allgemeine Regel hier den Firmencode fuer
       // jeden Eingeloggten lesbar machen - und die Sperre waere
       // Dekoration.
-      allow read: if istAktiv() && doc != 'registrierung'
-                   && doc != 'beitrittSchalter' && doc != 'studios';
+      allow read: if aufFlachenPfaden()
+        && (istAktiv() && doc != 'registrierung'
+                   && doc != 'beitrittSchalter' && doc != 'studios');
       // 'studios' muss auch beim SCHREIBEN ausgenommen sein, nicht nur
       // beim Lesen. Sonst haengt die Sperre "die Liste darf nur wachsen"
       // in der Luft: diese Regel hier erlaubt dem Chef write, und in
       // Firestore genuegt EINE zutreffende Regel, die erlaubt. Der
       // Regeltest hat genau das gefunden - dieselbe Falle wie beim
       // Firmencode, in derselben Datei, ein zweites Mal.
-      allow write: if isChef() && doc != 'studios';
+      allow write: if aufFlachenPfaden()
+        && (isChef() && doc != 'studios');
     }
 
     // ── Direktnachrichten (1:1) – nur die beiden Beteiligten ──
     // dmId hat die Form  dm_<uidA>_<uidB>
     match /dms/{dmId} {
       // Lesen/Abfragen über das participants-Feld (funktioniert auch für Listen-Abfragen)
-      allow read: if istAktiv() && request.auth.uid in resource.data.participants;
-      allow create: if istAktiv() && request.auth.uid in request.resource.data.participants;
+      allow read: if aufFlachenPfaden()
+        && (istAktiv() && request.auth.uid in resource.data.participants);
+      allow create: if aufFlachenPfaden()
+        && (istAktiv() && request.auth.uid in request.resource.data.participants);
       // Der Verlauf wird bei jedem Senden mitgeschrieben (last, lastTs,
       // readTs …), participants steht dabei mit drin. Es darf sich
       // dadurch aber nicht VERAENDERN: wer einen Dritten hineinschreibt,
       // gibt ihm das Leserecht auf ein 1:1-Gespraech.
-      allow update: if istAktiv()
+      allow update: if aufFlachenPfaden()
+        && (istAktiv()
         && request.auth.uid in resource.data.participants
         && request.resource.data.participants.size() == 2
-        && request.resource.data.participants.hasOnly(resource.data.participants);
+        && request.resource.data.participants.hasOnly(resource.data.participants));
     }
     match /dms/{dmId}/messages/{msgId} {
-      allow read: if istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
-      allow create: if istAktiv()
+      allow read: if aufFlachenPfaden()
+        && (istAktiv() && dmId.split('_').hasAny([request.auth.uid]));
+      allow create: if aufFlachenPfaden()
+        && (istAktiv()
         && request.resource.data.uid == request.auth.uid
         && dmId.split('_').hasAny([request.auth.uid])
-        && audioOk();
+        && audioOk());
       /* Die schwerste Luecke der ganzen Runde, und die stillste.
          „Update nur fuer Beteiligte" klang nach wenig — es hiess: der
          Empfaenger darf den TEXT des Absenders umschreiben, und mit uid
@@ -850,12 +929,14 @@ service cloud.firestore {
          Checklisten-Haekchen (items). Nichts sonst wird je geaendert —
          keine Bearbeitung, keine Reaktionen (die gibt es in
          Direktnachrichten nicht). Also genau dieses eine Feld. */
-      allow update: if istAktiv() && dmId.split('_').hasAny([request.auth.uid])
-        && nurDieseFelder(['items']);
-      allow delete: if istAktiv() && dmId.split('_').hasAny([request.auth.uid])
+      allow update: if aufFlachenPfaden()
+        && (istAktiv() && dmId.split('_').hasAny([request.auth.uid])
+        && nurDieseFelder(['items']));
+      allow delete: if aufFlachenPfaden()
+        && (istAktiv() && dmId.split('_').hasAny([request.auth.uid])
         && (isChef()
             || (resource.data.uid == request.auth.uid
-                && request.time.toMillis() < resource.data.ts + 3600000));
+                && request.time.toMillis() < resource.data.ts + 3600000)));
     }
 
     /* ══ STILLGELEGT am 13.8.2026 ══════════════════════════════════════
@@ -916,7 +997,8 @@ service cloud.firestore {
        nachtraeglich gedrehte Quote waere schlimmer als ein falscher
        Eintrag, den man loescht und neu setzt. */
     match /probetrainings/{pbId} {
-      allow read: if istAktiv();
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
       /* Seit 14.8.: eingetragen wird AUF eine Person, nicht nur fuer
          sich selbst — am Empfang traegt oft jemand anderes ein als der,
          der trainiert hat. vonUid/vonName sagen, WESSEN Quote es ist;
@@ -926,7 +1008,8 @@ service cloud.firestore {
          jemand einem Kollegen einen Misserfolg anhaengen — deshalb
          steht erfasstVon in jedem Eintrag und in der Liste. Ein
          stiller Weg dafuer waere schlimmer als ein sichtbarer. */
-      allow create: if istAktiv()
+      allow create: if aufFlachenPfaden()
+        && (istAktiv()
         && request.resource.data.erfasstVon == request.auth.uid
         && request.resource.data.vonName is string
         && request.resource.data.vonName.size() > 0
@@ -935,24 +1018,28 @@ service cloud.firestore {
         && request.resource.data.abschluss is bool
         && request.resource.data.datum is number
         && (!('notiz' in request.resource.data)
-            || request.resource.data.notiz.size() <= 200);
+            || request.resource.data.notiz.size() <= 200));
       allow update: if false;
-      allow delete: if isChef()
+      allow delete: if aufFlachenPfaden()
+        && (isChef()
         || (istAktiv()
             && (resource.data.erfasstVon == request.auth.uid
-                || resource.data.vonUid == request.auth.uid));
+                || resource.data.vonUid == request.auth.uid)));
     }
 
     // ── Schichtplan pro Studio ──
     match /studios/{studioKey}/shifts/{shiftId} {
-      allow read: if istAktiv();
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
       // Einteilen darf nur die Verwaltung (Chef bzw. zuständiger Leiter)
-      allow create, delete: if manages(studioKey);
+      allow create, delete: if aufFlachenPfaden()
+        && (manages(studioKey));
       // Beim Tausch dürfen Mitarbeiter mitwirken – aber ausschliesslich an
       // den Tausch-Feldern. WER eingeteilt ist (uid, name), ändert nur die
       // Verwaltung beim Bestätigen. Sonst könnte sich jemand selbst aus dem
       // Plan schreiben oder einen anderen hineinsetzen.
-      allow update: if manages(studioKey)
+      allow update: if aufFlachenPfaden()
+        && (manages(studioKey)
         // 1. Die eigene Schicht ausschreiben oder wieder zurückziehen
         || (istAktiv()
             && resource.data.uid == request.auth.uid
@@ -964,33 +1051,40 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data)
                  .affectedKeys().hasOnly(['tausch','tauschNeu','tauschTs'])
             && request.resource.data.tausch == 'zugesagt'
-            && request.resource.data.tauschNeu.uid == request.auth.uid);
+            && request.resource.data.tauschNeu.uid == request.auth.uid));
     }
 
     // ── Abwesenheiten (Urlaub / Krank / Frei) ──
     match /studios/{studioKey}/absences/{absId} {
-      allow read: if istAktiv();
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
       // Jeder meldet sich selbst; die Verwaltung darf auch für andere eintragen
-      allow create: if istAktiv()
+      allow create: if aufFlachenPfaden()
+        && (istAktiv()
         && (request.resource.data.uid == request.auth.uid || manages(studioKey))
         // Wer für sich selbst einträgt, darf sich nicht gleich selbst
         // genehmigen. Krankmeldungen und Einträge der Verwaltung schon.
         && (manages(studioKey)
             || request.resource.data.type == 'krank'
-            || request.resource.data.status == 'offen');
+            || request.resource.data.status == 'offen'));
       // Genehmigen und Ablehnen ist Sache der Verwaltung
-      allow update: if manages(studioKey);
-      allow delete: if manages(studioKey)
-        || (istAktiv() && resource.data.uid == request.auth.uid);
+      allow update: if aufFlachenPfaden()
+        && (manages(studioKey));
+      allow delete: if aufFlachenPfaden()
+        && (manages(studioKey)
+        || (istAktiv() && resource.data.uid == request.auth.uid));
     }
 
     // ── Übergabe-Notizen zwischen Schichten ──
     match /studios/{studioKey}/handovers/{hoId} {
-      allow read: if istAktiv();
-      allow create: if istAktiv() && request.resource.data.uid == request.auth.uid;
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (istAktiv() && request.resource.data.uid == request.auth.uid);
       allow update: if false;
-      allow delete: if manages(studioKey)
-        || (istAktiv() && resource.data.uid == request.auth.uid);
+      allow delete: if aufFlachenPfaden()
+        && (manages(studioKey)
+        || (istAktiv() && resource.data.uid == request.auth.uid));
     }
 
     /* ── Anliegen: was jemand ABSICHTLICH herausgibt ──────────────────
@@ -1028,23 +1122,29 @@ service cloud.firestore {
         && (request.resource.data.an == 'chef' || request.resource.data.an == 'leiter');
     }
     match /anliegen/{aId} {
-      allow read: if istAktiv() && anliegenFuerMich();
-      allow create: if istAktiv() && anliegenNeu();
-      allow update: if istAktiv()
+      allow read: if aufFlachenPfaden()
+        && (istAktiv() && anliegenFuerMich());
+      allow create: if aufFlachenPfaden()
+        && (istAktiv() && anliegenNeu());
+      allow update: if aufFlachenPfaden()
+        && (istAktiv()
         && (isChef() || (resource.data.an == 'leiter'
                          && manages(resource.data.get('studioKey', ''))))
-        && anliegenAntwort();
+        && anliegenAntwort());
       /* Zurueckziehen darf nur der Absender, und nur solange niemand
          geantwortet hat. Eine beantwortete Bitte verschwinden zu lassen
          hiesse, die Antwort mit zu loeschen. */
-      allow delete: if istAktiv() && resource.data.uid == request.auth.uid
-        && resource.data.status == 'offen';
+      allow delete: if aufFlachenPfaden()
+        && (istAktiv() && resource.data.uid == request.auth.uid
+        && resource.data.status == 'offen');
     }
 
     // ── Schwarzes Brett (für alle Studios gemeinsam) ──
     match /board/{postId} {
-      allow read: if istAktiv();
-      allow create: if istAktiv() && request.resource.data.uid == request.auth.uid;
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (istAktiv() && request.resource.data.uid == request.auth.uid);
       // Bearbeiten geht weiterhin nicht — ein Aushang, dessen Text sich
       // hinterher aendert, ist kein Aushang. Zwei Dinge duerfen trotzdem:
       //   reagieren   nur mit der eigenen Kennung, nur mit einem der
@@ -1053,9 +1153,11 @@ service cloud.firestore {
       //               es wirklich gibt
       // Beides sind dieselben Funktionen wie im Chat. Eine eigene Fassung
       // fuer das Brett waere eine zweite Gelegenheit, etwas zu vergessen.
-      allow update: if istAktiv() && (nurEigeneReaktion() || nurEigeneStimme());
-      allow delete: if isChef()
-        || (istAktiv() && resource.data.uid == request.auth.uid);
+      allow update: if aufFlachenPfaden()
+        && (istAktiv() && (nurEigeneReaktion() || nurEigeneStimme()));
+      allow delete: if aufFlachenPfaden()
+        && (isChef()
+        || (istAktiv() && resource.data.uid == request.auth.uid));
     }
 
     // ── Papierkorb ──
@@ -1065,18 +1167,22 @@ service cloud.firestore {
     // Der Studio-Leiter sieht nur Einträge aus seinen Studios; Einträge
     // ohne Studio-Bezug (Infos, Dokumente, Brett) bleiben Chef-Sache.
     match /trash/{trashId} {
-      allow read: if isChef()
-        || (isLeiter() && resource.data.sk != null && manages(resource.data.sk));
-      allow create: if istAktiv()
-        && request.resource.data.deletedByUid == request.auth.uid;
+      allow read: if aufFlachenPfaden()
+        && (isChef()
+        || (isLeiter() && resource.data.sk != null && manages(resource.data.sk)));
+      allow create: if aufFlachenPfaden()
+        && (istAktiv()
+        && request.resource.data.deletedByUid == request.auth.uid);
       allow update: if false;                    // Papierkorb wird nicht bearbeitet
-      allow delete: if isChef()
-        || (isLeiter() && resource.data.sk != null && manages(resource.data.sk));
+      allow delete: if aufFlachenPfaden()
+        && (isChef()
+        || (isLeiter() && resource.data.sk != null && manages(resource.data.sk)));
     }
 
     // ── Wochen-Sicherungen (Material + Putzplan als Excel) – nur Chef ──
     match /archives/{weekId} {
-      allow read, write: if isChef();
+      allow read, write: if aufFlachenPfaden()
+        && (isChef());
     }
 
     /* ── Fehlerberichte ───────────────────────────────────────────────
@@ -1095,10 +1201,12 @@ service cloud.firestore {
        mitgezaehlt wird. Ohne das entstuenden aus einem kaputten
        Bildschirm hunderte Eintraege, und die Liste waere unlesbar. */
     match /fehler/{sig} {
-      allow read, delete: if isChef();
-      allow create, update: if istAktiv()
+      allow read, delete: if aufFlachenPfaden()
+        && (isChef());
+      allow create, update: if aufFlachenPfaden()
+        && (istAktiv()
         && request.resource.data.text is string
-        && request.resource.data.text.size() < 400;
+        && request.resource.data.text.size() < 400);
     }
 
     /* ── Anonyme Nutzungszahlen ──
@@ -1117,10 +1225,12 @@ service cloud.firestore {
        nicht weil etwas Heikles darin steht, sondern weil eine Zahl
        ohne Zusammenhang im Team mehr Fragen aufwirft als beantwortet. */
     match /statistik/{tag} {
-      allow read, delete: if isChef();
-      allow create, update: if istAktiv()
+      allow read, delete: if aufFlachenPfaden()
+        && (isChef());
+      allow create, update: if aufFlachenPfaden()
+        && (istAktiv()
         && request.resource.data.keys().hasOnly(['tag','starts','ansichten'])
-        && request.resource.data.tag is string;
+        && request.resource.data.tag is string);
     }
 
     // ── Was nur mir gehoert (Mein Bereich) ──

@@ -45,6 +45,27 @@ async function pruefe(name, fn) {
    die Regeln beim SCHREIBEN akzeptieren wuerden — sonst schluege der
    Kreuztest aus dem falschen Grund fehl (Formfehler statt Firmengrenze),
    und man haette einen Beweis, der keiner ist. */
+/* Die flachen Pfade aus der dokumentierten Sonde in OFFEN.md — genau
+   die acht, an die ein fremdes Konto nachweislich herankam. Kurz
+   gehalten: der Beweis liegt darin, dass die Grenze ueberhaupt greift,
+   nicht in der Laenge der Liste. */
+const FLACH = [
+  ['studios/studio-0/todos/t1',       { title: 'Interne Aufgabe', done: false }],
+  ['channels/allgemein/messages/m1',  { uid: 'x', name: 'Anna', text: 'Interner Chat', ts: 1 }],
+  ['board/b1',                        { uid: 'x', name: 'Anna', text: 'Internes Brett', ts: 1 }],
+  ['announcements/a1',                { uid: 'x', text: 'Interne Info', ts: 1 }],
+  ['studios/studio-0/handovers/h1',   { uid: 'x', name: 'Anna', text: 'Interne Uebergabe', ts: 1 }],
+  ['documents/d1',                    { name: 'Vertrag.pdf', ts: 1 }],
+  ['studios/studio-0/shifts/s1',      { date: '2026-09-01', uid: 'x', name: 'Anna' }],
+  /* Nachweise sind PERSOENLICH: ein Kollege darf einen fremden nicht
+     lesen, und das ist richtig so. Deshalb wird hier je Konto ein
+     eigener angelegt — sonst prueft die Gegenprobe „darf lesen" einen
+     Fall, den die Regel zu Recht verbietet, und man repariert die
+     Regel statt der Pruefung. */
+  ['certificates/c1',                 { uid: 'x', name: 'Anna', art: 'ersthelfer', bis: '2027-01-01',
+                                        erfasstVon: 'Anna', erfasstVonUid: 'x' }, 'eigen']
+];
+
 const SAMMLUNGEN = [
   ['config/registrierung',                    { code: 'GEHEIM' }],
   ['config/beitrittSchalter',                 { freigabe: true }],
@@ -150,6 +171,74 @@ const NIEMAND_LIEST = ['pushTokens/tok-b'];
       await pruefe('GEGENPROBE · ' + pfad + ' · Chef von B liest sein eigenes', () =>
         assertSucceeds(chefB().doc(b(pfad)).get()));
     }
+  }
+
+  /* ══ DER FLACHE ZWEIG ═══════════════════════════════════════════════
+     Bis hierher prüfte diese Datei ausschliesslich `firmen/{f}/…`.
+     Genau daran lag es, dass ein Leck monatelang unbemerkt blieb: die
+     flachen Pfade — die Altdaten des ersten Betriebs — waren fuer JEDES
+     aktive Konto lesbar, auch fuer eines aus einer zweiten Firma. Ein
+     einfacher Mitarbeiter ohne jede Rolle kam an Aufgaben, Chat, Brett,
+     Ankuendigungen, Uebergaben, Dokumente und den Dienstplan.
+
+     Es war nicht falsch geprueft — es war NIE geprueft. Zweiunddreissig
+     Sammlungen im Firmen-Zweig, null im flachen daneben.
+
+     Die Grenze heisst jetzt `aufFlachenPfaden()`: `firma` leer ODER die
+     Kennung des ersten Betriebs. Beides, damit ein noch nicht
+     umgezogenes Konto nicht ausgesperrt wird — und weil die App wegen
+     mandant:true ohnehin schon ueber inFirma('koerperformen') laeuft,
+     das dieselbe Bedingung verlangt.
+
+     Chef B gehoert zu 'beta'. Er darf hier NICHTS. */
+  {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      /* Ein Konto der Voreinstellung — mit leerem Feld, denn genau der
+         Fall darf NICHT aussperren. */
+      await db.doc('users/altA').set({ name: 'Alt ohne Firma', role: 'mitarbeiter',
+        studioKeys: ['studio-0'] });
+      await db.doc('users/vorA').set({ name: 'Vor mit Kennung', role: 'mitarbeiter',
+        firma: 'koerperformen', studioKeys: ['studio-0'] });
+      await db.doc('firmen/koerperformen').set({ name: 'Körperformen', aktiv: true });
+      for (const [pfad, daten, art] of FLACH) {
+        await db.doc(pfad).set(daten);
+        if (art === 'eigen') {
+          // je Leser ein eigenes Dokument, sonst greift die Regel zu Recht
+          for (const wer of ['altA', 'vorA']) {
+            await db.doc(pfad + '-' + wer).set(
+              Object.assign({}, daten, { uid: wer, erfasstVonUid: wer }));
+          }
+        }
+      }
+    });
+
+    const altA = env.authenticatedContext('altA').firestore();
+    const vorA = env.authenticatedContext('vorA').firestore();
+
+    for (const [pfad, , art] of FLACH) {
+      const fuer = (wer) => art === 'eigen' ? pfad + '-' + wer : pfad;
+      await pruefe('FLACH · ' + pfad + ' · fremde Firma liest NICHT', () =>
+        assertFails(chefB().doc(pfad).get()));
+      await pruefe('FLACH · ' + pfad + ' · fremde Firma schreibt NICHT', () =>
+        assertFails(chefB().doc(pfad).set({ gekapert: true })));
+      /* DIE BEIDEN GEGENPROBEN, ohne die alles oben wertlos waere:
+         ein Kreuztest auf einer Sammlung, an die NIEMAND kommt, ist
+         immer gruen. Und die zweite ist die eigentlich gefaehrliche —
+         sperrt die neue Grenze den laufenden Betrieb aus, faellt sie
+         hier auf und nicht am Montagmorgen. */
+      await pruefe('GEGENPROBE FLACH · ' + pfad + ' · Konto OHNE Feld firma liest', () =>
+        assertSucceeds(altA.doc(fuer('altA')).get()));
+      await pruefe('GEGENPROBE FLACH · ' + pfad + ' · Konto MIT der Kennung liest', () =>
+        assertSucceeds(vorA.doc(fuer('vorA')).get()));
+    }
+
+    /* Und das Auflisten: eine Regel kann einzeln greifen und die ganze
+       Sammlung trotzdem preisgeben. */
+    await pruefe('FLACH · fremde Firma LISTET die Aufgaben nicht', () =>
+      assertFails(chefB().collection('studios/studio-0/todos').get()));
+    await pruefe('GEGENPROBE FLACH · der eigene Betrieb listet sie schon', () =>
+      assertSucceeds(altA.collection('studios/studio-0/todos').get()));
   }
 
   /* ══ users — die Sammlung, die NICHT unter firmen/ liegt ══
