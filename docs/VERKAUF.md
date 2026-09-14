@@ -102,18 +102,60 @@ hingehört: in den Sicherheitsregeln, nicht im Browser.
 
 **Aufwand:** mittel. **Kosten:** keine.
 
-## A3. Testzugang mit erfundenen Daten
+## A3. Testzugang mit erfundenen Daten ✅ **14.9. gebaut**
 
 Der wirksamste Verkaufshebel und der billigste. Niemand kauft eine
 Team-App, ohne sie angesehen zu haben — und niemand legt für einen Blick
 ein Konto an.
 
-Die Testumgebung dafür **existiert bereits**: in `tests/stub-*.js` liegen
-drei fertige Datensätze für Chef, Studio-Leiter und Mitarbeiter. Daraus
-einen Demo-Modus zu machen (`?demo=chef`), der ohne Anmeldung mit
-erfundenen Daten läuft, ist wenig Arbeit.
+**So benutzt du ihn:**
 
-**Aufwand:** klein. **Kosten:** keine.
+```
+https://<deine-adresse>/index.html?demo
+```
+
+Der Link geht sofort auf, ohne Anmeldung. Oben steht eine Leiste
+„Demo — erfundene Daten, nichts wird gespeichert" mit einem Umschalter
+für die Rolle. `?demo=chef` (Voreinstellung), `?demo=leiter`,
+`?demo=mitarbeiter`.
+
+**Der stärkste Moment im Gespräch** ist der Rollenwechsel: derselbe
+Bildschirm, andere Rolle. Die Geschäftsführung sieht vierzehn Studios und
+fünfzehn Kanäle, der Mitarbeiter sein eigenes Studio und zwei Kanäle. Das
+ist keine Behauptung über Datenschutz, sondern eine Vorführung davon.
+
+**Was die Demo zeigt:** echte Standortnamen, **erfundene Menschen**,
+erfundene Aufgaben, Nachrichten und Zahlen. Alles ist bedienbar —
+abhaken, schreiben, Aufgaben übernehmen. Beim Neuladen ist es wieder wie
+vorher.
+
+**Der Vorbehalt, den ich vorher genannt haben will:** die
+ursprüngliche Einschätzung hier lautete, die Test-Attrappen aus
+`tests/stub-*.js` reichten dafür. Das stimmte nicht. Die beantworten
+Abfragen, **verwerfen aber Schreibvorgänge** — richtig für einen
+Testdurchlauf, tödlich für eine Vorführung: wer eine Aufgabe abhakt und
+nichts passiert, hält nicht die Demo für kaputt, sondern die App.
+`demo-daten.js` ist deshalb eine kleine, wirklich schreibende Datenbank
+im Browser geworden und kein Abzug der Attrappe.
+
+**Was ausdrücklich NICHT passiert:** keine Anmeldung, keine Abfrage,
+kein Schreibvorgang nach draußen, kein Weg zu echten Daten.
+`tests/test-demo.js` misst das bei jedem Durchlauf — und zwar über eine
+Liste dessen, was erlaubt ist (eigene Adresse, Schriften, die
+Firebase-Bibliothek). Jede andere Anfrage ist ein Fund. Eine Gegenprobe
+mit eingebautem Leck wird zuverlässig rot.
+
+Präzise, weil der Unterschied zählt: die Firebase-Bibliothek **wird**
+weiterhin von Googles CDN geladen. Heruntergeladen wird eine öffentliche
+Programmbibliothek; gesendet wird nichts.
+
+**Die Demo ist für Suchmaschinen gesperrt** (`robots.txt` und ein
+`noindex`). Das schützt nichts — es gibt nichts zu schützen —, aber eine
+Suchtreffer-Seite voller ausgedachter Aufgaben unter dem Namen
+Körperformen wäre das Gegenteil von hilfreich.
+
+**Aufwand:** war als „klein" geschätzt, wurde eine eigene Runde.
+**Kosten:** keine.
 
 ## A4. Die Unterlagen, die ein Käufer verlangt
 

@@ -47,7 +47,7 @@ den Preis.
 |---|---|---|---|
 | 2.1 | **Echter Dateispeicher statt Datenbank** | hebt die 0,7-MB-Grenze für Dokumente auf | Firebase Storage, ab ~0,03 €/GB/Monat |
 | 2.2 | **Serverseitige Filter statt „alles im Speicher"** | die Grenze liegt bei etwa 40 Studios oder einigen hundert Aufgaben je Studio | Entwicklungsaufwand, keine laufenden Kosten |
-| 2.3 | **Sammel-Dokument für Studio-Zahlen** | die drei Übersichten („wo etwas los ist", „wo etwas defekt ist", „wartet auf dich") fragen heute je Studio einzeln ab | Entwicklungsaufwand |
+| ~~2.3~~ | ~~**Sammel-Dokument für Studio-Zahlen**~~ | ❌ **14.9. gestrichen, weil die Begründung nicht stimmte.** Die drei Übersichten fragen nichts ab — sie lesen aus `cachedTodos` und `_invAll`, also aus dem Speicher, den die Beobachter für Chat, Aufgaben und Putzplan ohnehin füllen. Gemessen: `audit-leistung.js`. | – |
 | 2.4 | **Volltextsuche über den ganzen Verlauf** | heute findet die Suche den offenen Kanal vollständig und das Neueste der anderen | Suchdienst, ab ~20 €/Monat |
 | 2.5 | **Kanalauswahl mit Suchfeld** | ab etwa 25 Studios trägt die waagerechte Leiste nicht mehr | klein |
 

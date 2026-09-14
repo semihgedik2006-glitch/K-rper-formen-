@@ -115,10 +115,34 @@ Liste, sortiert nach dem, was zuerst dran wäre.
 | ~~Firmencode setzen~~ | ✅ **17.8. erledigt** (von dir gemeldet) | – |
 | ~~`STUDIOCHAT_TOKEN` im Apps Script~~ | ✅ **17.8. erledigt** (von dir gemeldet) | – |
 | **Vier rechtliche Pflichtfelder** | App → Verwaltung → System | 5 Min |
+| **Darf man eine übernommene Aufgabe wieder abgeben?** | Entscheidung, dann eine kleine Runde | siehe Kasten |
 | `KONFIG.vertriebMail` | `konfig.js` | 1 Min |
 | Datenschutztext über einen Anwalt | vor dem ersten fremden Kunden | – |
 | Eigene Absenderadresse (Domain) | vor dem ersten fremden Kunden | – |
 | Steuerberater | vor dem ersten echten Geld (Abo C–E) | – |
+
+> **„Ich übernehme das" — und dann?** Beim Vergrößern des Fingerziels am
+> 14.9. kam heraus, dass der Kommentar über dem Klickweg seit elf Monaten
+> etwas versprach, das der Code nie getan hat: *„wer schon drinsteht,
+> löst sich damit wieder"*. Tatsächlich gilt `if(t && t.assignedTo)
+> return;`, und sobald die Aufgabe vergeben ist, verschwindet der Knopf.
+> **Wer sich vertippt, braucht heute die Leitung.**
+>
+> Der Kommentar ist berichtigt und das Fingerziel sitzt. Offen ist die
+> Frage dahinter, und die gehört dem Betrieb: Soll ein Mitarbeiter eine
+> übernommene Aufgabe selbst wieder freigeben können?
+>
+> * **Ja** — dann wird aus „für dich" ein Knopf, der sie wieder freigibt.
+>   Kleine Runde, keine neue Regel nötig (`assignedTo` und `assignedName`
+>   stehen schon in der erlaubten Feldliste).
+> * **Nur was man selbst genommen hat** — dann braucht es ein zusätzliches
+>   Feld und damit eine Regeländerung an zwei Stellen.
+> * **Nein** — dann bleibt es wie es ist, und die Rückfrage beim
+>   Danebentippen bleibt der einzige Schutz.
+>
+> Solange nichts entschieden ist, fragt der neu hinzugekommene,
+> unsichtbare Teil der Trefferfläche einmal nach. Auf der sichtbaren
+> Marke bleibt es bei einem Tipp ohne Rückfrage.
 
 > Der Firmencode war die wichtigste der drei: seit dem Regel-Deploy vom
 > 17.8. hängt an ihm, dass sich niemand ohne ihn eurem Betrieb zuordnen
@@ -222,7 +246,8 @@ sind weiter erreichbar, aber nur für den Chef und ohne Oberfläche.
 | Einrichtungs-Assistent | macht aus dem Projekt ein Produkt | mittel |
 | Echter Dateispeicher | hebt die 0,7-MB-Grenze | mittel, ab ~0,03 €/GB |
 | Serverseitige Filter | Grenze liegt bei ~40 Studios | mittel |
-| Sammel-Dokument für Studio-Zahlen | drei Übersichten fragen je Studio einzeln | mittel |
+| ~~Sammel-Dokument für Studio-Zahlen~~ | ❌ **14.9. nachgemessen: die Begründung stimmte nicht.** Die drei Übersichten lesen aus dem Speicher (`cachedTodos`, `_invAll`) und setzen **null** eigene Abfragen ab. Je Studio laufen **Beobachter**, und die stehen für Chat, Aufgaben und Putzplan ohnehin da. Gemessen mit `audit-leistung.js`: 19 Abfragen und 56 Beobachter beim Start, nach drei Runden durch alle Ansichten **konstant 66** — kein Leck. Ein Sammel-Dokument würde daran nichts ändern. | – |
+| Lange Aufgaben in der Ladephase | `audit-leistung.js` misst mit **vierfach gedrosselter CPU** 55 Aufgaben über 50 ms, die längste **1050 ms**. Auf einem absichtlich verlangsamten Gerät gemessen — was ein echtes Handy im Studio tut, ist damit **nicht** gesagt. Vor einer Vorführung wäre es die Zahl, die ein Kunde als erstes spürt. | mittel |
 | Kanalauswahl mit Suchfeld | ab ~25 Studios trägt die Leiste nicht mehr | klein |
 | Volltextsuche über den ganzen Verlauf | heute nur der offene Kanal vollständig | ab ~20 €/Monat |
 | Abo Stufe C–E (Stripe, Mahnungen) | erst nach dem Steuerberater | gross |

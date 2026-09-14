@@ -26,6 +26,8 @@ on:
       - '*.html'
       - 'sw.js'
       - 'konfig.js'
+      - 'demo-daten.js'
+      - 'robots.txt'
       - 'manifest.json'
       - 'icon.png'
       - 'icon.svg'

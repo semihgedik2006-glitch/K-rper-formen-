@@ -1,0 +1,16 @@
+# StudioChat
+#
+# Die App selbst ist hinter einer Anmeldung; es gibt nichts zu
+# indizieren. Der Demo-Modus (index.html?demo) zeigt erfundene Daten
+# unter echten Standortnamen — eine Suchtreffer-Seite voller ausgedachter
+# Aufgaben waere das Gegenteil von hilfreich.
+#
+# Das ist eine Bitte und keine Sperre: robots.txt haelt niemanden ab, der
+# sich nicht daran haelt. Geschuetzt wird nichts dadurch — im Demo-Modus
+# gibt es auch nichts zu schuetzen, die Daten sind ausgedacht und liegen
+# nur im Browser. demo-daten.js setzt zusaetzlich ein noindex-Element.
+
+User-agent: *
+Disallow: /index.html?demo
+Disallow: /?demo
+Disallow: /demo-daten.js

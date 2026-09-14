@@ -7549,3 +7549,280 @@ ersten Betrieb, also heisst er dort auch so.
 Die flachen Daten **löschen**. Das braucht Produktionszugang, den ich
 nicht habe und nicht anfordere. Es ist jetzt aber Aufräumen und keine
 Sicherheitsfrage mehr — an die Daten kommt keine fremde Firma heran.
+
+---
+
+# 77 · Nachgemessen — und der Fund war eine Regel, die sich selbst aufhob
+
+Der Auftrag war zweiteilig: *„miss das mal nach und korrigiere auf
+fehler"*. Nachgemessen wurde, was ich in Runde 76 selbst behauptet
+hatte — und die Behauptung hielt nicht.
+
+## Zuerst die Korrektur an mir selbst
+
+In `OFFEN.md` steht seit Monaten „Sammel-Dokument für Studio-Zahlen —
+**drei Übersichten fragen je Studio einzeln ab**". Ich hatte das dem
+Nutzer als den teuersten offenen Punkt genannt.
+
+Es stimmt nicht. `homeBrennpunkte` („Wo etwas los ist") liest aus
+`cachedTodos[sk]` und `_invAll[sk]` — **aus dem Speicher, nicht aus der
+Datenbank**. Die drei Übersichten setzen zusammen **null** zusätzliche
+Abfragen ab.
+
+Was je Studio läuft, sind die **Beobachter**, die diese Speicher füllen —
+und die stehen für den Chat, die Aufgaben und den Putzplan ohnehin da.
+`audit-leistung.js` misst für den Chef bei 14 Studios:
+
+| | |
+|---|---|
+| einmalige Abfragen beim Start | 19 |
+| dauerhafte Beobachter | 56 |
+| davon je Studio | 14× Chat-Nachrichten, 14× Aufgaben, 14× Putzplan |
+| nach 3 Runden durch alle Ansichten | 66 offen, **konstant** — kein Leck |
+
+Ein Sammel-Dokument für die Zahlen der Startseite würde daran nichts
+ändern, weil die Zahlen dort gar nicht herkommen. Die Zeile in
+`OFFEN.md` ist entsprechend korrigiert, statt sie stehen zu lassen.
+
+## Der eigentliche Fund: min-height stand zweimal da
+
+`audit-forensik.js` meldete sechs Fingerziele unter 44 Pixeln. **Zwei
+davon waren falsch** — die Forensik misst das gemalte Rechteck, und das
+Haus kennt zwei Wege zu 44px: den Knopf groß machen, oder eine
+unsichtbare Fläche darüberlegen. `.sp-play` ist 34px gemalt und 44px zu
+treffen; als Fehler gemeldet zu werden ist dort das Gegenteil von wahr.
+
+Also mit der Methode gemessen, die `test-sprachabspieler.js` längst
+benutzt — `elementFromPoint` von der Mitte nach außen tasten:
+
+| Element | gemalt | Trefferhöhe | |
+|---|---|---|---|
+| `.sp-play` | 34×34 | 44 | in Ordnung |
+| `.sp-tempo` | 31×19 | 44 | in Ordnung |
+| `.chat-art` | 96×36 | **42** | zwei Pixel an die Kanalleiste verloren |
+| `.sp-schieber` | 129×22 | **22** | kein `::after` |
+| `.t-nimm` | 142×19 | **20** | kein `::after` |
+
+Und dann die app-weite Erhebung, die es vorher nie gab — sie fand
+**sieben** Bauformen, nicht fünf. Darunter `+ Neu` in Aufgaben, Putzplan
+und Probetraining mit 40px: die wichtigste Handlung der jeweiligen Seite.
+
+Bei zweien davon stand das Fingerziel **im Stylesheet und galt trotzdem
+nie**:
+
+```
+.mat-row .num{width:100%;min-height:44px; … ;min-height:40px;…}
+.mat-alert-go{ … min-height:44px; … ;min-height:36px}
+```
+
+`min-height` zweimal in derselben Regel, die zweite gewinnt. Jemand hat
+das Fingerziel eingebaut, und es ist seither wirkungslos.
+
+Zweimal derselbe Fehler ist keine Einzelheit, also alle 1529 Regeln
+durchsucht: **genau diese zwei**. Die drei weiteren Treffer
+(`100vh → 100svh`, `100vh → 100dvh`) sind Absicht — Rückfall für
+Browser, die die neue Einheit nicht kennen.
+
+## Ein größeres Ziel darf nicht mehr Fehlgriffe bedeuten
+
+`.t-nimm` („Ich übernehme das") liegt in der Überschriftszeile einer
+Aufgabe. Eine unsichtbare 44px-Fläche darüber deckt Text ab, der heute
+nichts tut — nachgemessen, nicht vermutet. Trotzdem wäre sie riskant,
+denn **Übernehmen lässt sich in der App nicht wieder lösen.**
+
+Dabei fiel der vierte Fund an: der Kommentar über dem Klickweg sagte
+*„und wer schon drinsteht, löst sich damit wieder"*. Zwei Zeilen weiter
+steht `if(t && t.assignedTo) return;`, und sobald die Aufgabe vergeben
+ist, wird der Knopf gar nicht mehr gezeichnet. **Der Satz versprach elf
+Monate lang etwas, das der Code darunter nie getan hat.**
+
+Gelöst ohne die Grundsatzfrage zu beantworten: nachgefragt wird **nur
+beim neu hinzugekommenen, unsichtbaren Teil** der Fläche. Wer die Marke
+selbst trifft, meint sie — ein Klick, keine Rückfrage, so ist es dort
+ausdrücklich beschlossen. Wer 15 Pixel daneben trifft, wollte vielleicht
+die Überschrift lesen. Tastatur-Enter liefert `clientY` 0 und zählt
+nicht als danebentippen.
+
+Ob ein Mitarbeiter eine übernommene Aufgabe wieder abgeben darf, ist
+eine Frage an den Betrieb und keine an mich. Sie steht jetzt in
+`OFFEN.md`.
+
+## Der Durchlauf, der gefehlt hat
+
+`test-knoepfe.js` war grün, während sieben Bauformen zu klein waren. Er
+prüft Symbol-Zentrierung und Abzeichen — beides wichtig, beides nicht
+die Größe. Die Größe prüften vier Einzeldurchläufe für vier Einzelstellen,
+also genau dort, wo schon einmal jemand hingesehen hatte.
+
+`tests/test-fingerziele.js` misst jetzt **jedes** Bedienelement in
+**jeder** Ansicht in **allen drei Rollen**, und zwar die Trefferfläche
+statt des Rechtecks: 916 Elemente, Schwelle 44px, **keine
+Ausnahmeliste**. Eine Liste geduldeter Fälle wäre bequem gewesen —
+sieben Einträge, und ab sofort fände er nur noch Neues. Sie sind
+stattdessen alle behoben.
+
+### Zwei Fallen beim Messen, in beide hineingetappt
+
+**Wer nicht rollt, misst das Sichtfenster.** Ein Knopf am unteren
+Bildrand liefert unter seiner Mitte `<main>` statt seiner selbst — ein
+tadelloser 44er erscheint mit 23. Das erzeugte im Material fünf falsche
+Treffer.
+
+**Ein Eingriff kann einen zweiten Fehler freilegen.** Nach dem Anheben
+der Material-Felder sanken drei davon scheinbar auf 23. Das war Falle 1
+und kein neuer Schaden. Wenn eine Zahl nach einer Korrektur schlechter
+aussieht: erst die Messung prüfen, dann den Code.
+
+### Gegenprobe
+
+Der Durchlauf enthält außerdem eine Probe auf sich selbst: erreicht er
+weniger als vier Ansichten oder findet er weniger als 40 Bedienelemente,
+meldet er das als Fehler. Ohne das wäre „null Verstöße" auch dann grün,
+wenn ein Wahlausdruck nicht mehr passt — derselbe Fehler wie „nichts
+lief war das grünste Ergebnis" beim Härtungsdurchlauf der Werbeseite.
+
+Zurückgebaut (`.kopf-plus` auf 40px, `::after` von `.t-nimm` entfernt):
+**8 Funde in drei Rollen**, jeder mit Klasse, gemessenem Wert und dem
+Element, das die Pixel nimmt.
+
+## Geprüft
+
+* `test-fingerziele` (neu): 916 Bedienelemente, 3 Rollen, 0 unter 44px
+* Gegenprobe: zwei Korrekturen zurückgebaut → 8 rote Zeilen
+* `test-knoepfe`, `test-gestaltung`, `test-abgeschnitten`, `test-quer`,
+  `test-sprachabspieler` — alle grün nach den CSS-Eingriffen
+* `audit-leistung` und `audit-forensik` als Ausgangsmessung
+* CSS-Scan über 1529 Regeln auf Eigenschaften, die sich selbst aufheben
+* volle Regression
+
+## Was NICHT behauptet wird
+
+Die Ladephase misst `audit-leistung` mit vierfach gedrosselter CPU:
+**55 lange Aufgaben, die längste 1050 ms.** Das ist gemessen, aber auf
+einem absichtlich verlangsamten Gerät — was ein echtes Handy im Studio
+tut, ist damit nicht gesagt und wird hier auch nicht gesagt. Es steht
+als eigener Punkt in `OFFEN.md`.
+
+---
+
+# 78 · Der Testzugang — und drei Fehler, die nur beim Bauen sichtbar wurden
+
+*„wir müssen langsam an dem schritt der veröffentlichung arbeiten weil
+ich potentielle kunden habe so langsam und ich denen ja auch was
+präsentieren muss"*
+
+Dafür gab es schon einen Plan: `docs/VERKAUF.md`, Punkt **A3 —
+Testzugang mit erfundenen Daten**, dort beschrieben als *„der wirksamste
+Verkaufshebel und der billigste"*. Seit Wochen offen.
+
+`index.html?demo` startet die App jetzt ohne Anmeldung gegen eine kleine
+Datenbank im Browser. Oben eine Leiste „Demo — erfundene Daten", darin
+ein Umschalter für die Rolle.
+
+## Die Einschätzung im eigenen Plan war falsch
+
+Dort stand, die Test-Attrappen aus `tests/stub-*.js` reichten dafür und
+es sei „wenig Arbeit". Beides stimmte nicht.
+
+Die Attrappen **beantworten Abfragen, verwerfen aber Schreibvorgänge**.
+Für einen Durchlauf ist das genau richtig. Für eine Vorführung ist es
+tödlich: wer eine Aufgabe abhakt und nichts passiert, hält nicht die
+Demo für kaputt, sondern die App. `demo-daten.js` ist deshalb eine
+wirklich schreibende Datenbank mit lebenden Zuhörern geworden.
+
+Der Umfang wurde dabei **nachgesehen statt geraten**: die App benutzt
+keine `FieldValue`, keine Transaktionen, keine Cursor und keine
+Sammlungsgruppen. Gebraucht werden `where`/`orderBy`/`limit`/
+`limitToLast`, `set`/`update`/`delete`/`add`, Stapelschreiben und
+Zuhörer auf Sammlung wie Einzeldokument. Genau das steht drin — nicht
+mehr.
+
+## Fehler 1: eine Zusage, die ich nicht halten konnte
+
+Im Kopf der Datei stand zuerst **„kein einziges Byte verlässt den
+Browser"**. Der erste Durchlauf lief in eine Zeitüberschreitung und
+zeigte warum: die fünf SDK-Dateien werden weiterhin von Googles CDN
+geladen. Sie stehen als feste Zeilen in `index.html`, und sie nur für
+die Demo herauszunehmen würde für alle anderen den Start verlangsamen —
+der Vorauslader des Browsers findet dann keine festen Adressen mehr.
+
+Der Satz ist berichtigt: heruntergeladen wird eine öffentliche
+Programmbibliothek, **gesendet wird nichts**. Das ist die Zusage, die
+trägt, und `tests/test-demo.js` misst genau sie.
+
+## Fehler 2: ein Kommentar, der die Seite lahmlegte
+
+Der Demo-Modus startete nicht. Der Browser meldete *„Refused to execute
+inline script"* — und `demo-daten.js` wurde nie angefordert.
+
+Ursache: **mein erklärender HTML-Kommentar enthielt das Wort für ein
+öffnendes Skript-Tag, ausgeschrieben.** `tools/csp.js` sucht die
+Inline-Blöcke mit einem regulären Ausdruck und kennt keine Kommentare.
+Es hielt den Kommentar für einen Block, bildete dessen Prüfsumme und
+ließ die des echten Skripts weg.
+
+Der Fehler war laut — nichts funktionierte —, aber die Ursache stand an
+einer Stelle, an der niemand sucht. Deshalb nicht nur der Kommentar
+geändert, sondern **das Werkzeug**: `csp.js` liest jetzt von links nach
+rechts wie ein Browser. Wer an einem Kommentaranfang steht, springt zum
+Kommentarende; wer an einem Skriptanfang steht, zu dessen Ende.
+
+Der erste Entwurf dafür hatte dasselbe Henne-Ei-Problem — zwei getrennte
+Durchläufe mit regulären Ausdrücken, und welcher zuerst läuft, entschied
+das Ergebnis. Ein Durchlauf von links nach rechts kennt die Frage nicht.
+
+## Fehler 3: meine Prüfung befragte einen Leichnam
+
+`test-demo` meldete „Abhaken wirkt nicht" — während die Kachelsumme auf
+der Startseite von 106 auf 105 ging. Beides konnte nicht stimmen.
+
+Es lag an der Prüfung: sie hielt den DOM-Knoten der Aufgabe fest, klickte
+und fragte danach denselben Knoten. Die Aufgabenliste zeichnet sich nach
+einem Schreibvorgang aber neu — der festgehaltene Knoten hing in keinem
+Dokument mehr und trug für immer den alten Zustand. Jetzt wird nach der
+Kennung neu gesucht.
+
+**Dritter Fall derselben Art in diesem Durchgang:** vorher schon „wer
+nicht ins Bild rollt, misst das Sichtfenster" und „eine Zahl, die nach
+einer Korrektur schlechter aussieht, ist zuerst ein Verdacht gegen die
+Messung".
+
+## Die Prüfung auf das, was man nicht sieht
+
+Dass die Demo läuft, sieht man beim Vorführen sofort. Dass **nichts nach
+draußen geht**, sieht man nie — und genau deshalb wird es gemessen.
+
+`tests/test-demo.js` zählt jede Anfrage der Seite. Der erste Anlauf
+suchte nach verdächtigen Wörtern (`firestore`, `googleapis`) und schlug
+prompt bei der Schriftart und bei `firebase-firestore-compat.js` an —
+beides harmlos. Eine Liste des Verbotenen ist außerdem die schwächere
+Bauart: sie findet nur, woran jemand gedacht hat.
+
+Jetzt steht dort eine Liste des **Erlaubten**: eigene Adresse,
+Schriften, die Bibliothek. Alles andere ist ein Fund, auch etwas, das es
+heute noch nicht gibt.
+
+## Geprüft
+
+* `test-demo` (neu): ohne `?demo` ändert sich nichts · mit `?demo`
+  startet die App durch · **0 Anfragen nach draußen** · Daten da ·
+  Abhaken wirkt (46 → 45 offene, Startseite 106 → 105) · Chef 15 Kanäle
+  gegen Mitarbeiter 2 · keine erfundenen Rechtsangaben
+* Gegenprobe: ein eingebautes `fetch` zu firestore **und** verworfene
+  Schreibvorgänge → **drei rote Zeilen**, jede mit Messwert
+* `test-csp`, `test-fingerziele`, `test-knoepfe`, `test-gestaltung`,
+  `test-navigation` nach dem Eingriff grün
+* volle Regression
+
+## Was die Demo ausdrücklich nicht tut
+
+Die **rechtlichen Pflichtfelder bleiben leer** und sagen das auch.
+Erfundene Angaben in ein Impressum zu schreiben wäre genau die Art
+Platzhalter, die auf `werbung.html` schon einmal live gegangen ist —
+dort stand „wir melden uns innerhalb von 24 Stunden" an einem Formular,
+das nirgendwohin sendete. Ein Durchlauf prüft jetzt, dass in der Demo
+weder eine Musterstraße noch eine erfundene Umsatzsteuer-Nummer steht.
+
+Cloud Functions laufen nicht. Wer in der Demo etwas auslöst, das eine
+E-Mail verschicken würde, bekommt einen Satz, der das sagt — statt einer
+Fehlermeldung oder, schlimmer, einer stillen Nichtreaktion.

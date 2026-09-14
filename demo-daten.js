@@ -1,0 +1,678 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DEMO-MODUS — eine kleine Datenbank im Browser, sonst nichts
+
+   Zweck: Wer über StudioChat nachdenkt, will die App ansehen, bevor er
+   ein Konto anlegt. Niemand legt für einen Blick ein Konto an. Diese
+   Datei macht aus `index.html?demo` eine vollständig bedienbare App mit
+   erfundenen Daten — ohne Anmeldung, ohne Server, ohne Netz.
+
+   ── Was hier NICHT passiert, und das ist der wichtigste Satz
+
+   ES WIRD KEINE DATENBANK ANGEFASST. Diese Datei ersetzt das
+   Firebase-SDK, bevor die App es zum ersten Mal benutzt. Es gibt keine
+   Anmeldung, keine Abfrage, keinen Schreibvorgang nach draußen und
+   keinen Weg zu echten Daten — auch nicht versehentlich. Alles, was
+   jemand hier eintippt oder abhakt, liegt in einem JavaScript-Objekt und
+   ist beim Neuladen wieder weg.
+
+   PRÄZISE, WEIL DER UNTERSCHIED ZÄHLT: „kein einziges Byte verlässt den
+   Browser" wäre zu viel behauptet. Die fünf SDK-Dateien werden weiterhin
+   von Googles CDN geladen — sie stehen als <script> in index.html, und
+   sie dort nur für die Demo herauszunehmen würde für alle anderen den
+   Start verlangsamen (der Vorauslader findet dann keine festen
+   Adressen mehr). Heruntergeladen wird also eine öffentliche
+   Programmbibliothek; gesendet wird nichts. `tests/test-demo.js` misst
+   genau diese Grenze — und zwar andersherum, als man zuerst denkt: dort
+   steht eine Liste dessen, was die Demo anfassen DARF (eigene Adresse,
+   Schriften, Bibliothek). Jede andere Anfrage ist ein Fund, auch eine,
+   an die heute niemand denkt. Eine Liste des Verbotenen findet nur, was
+   jemand vorher aufgeschrieben hat.
+
+   ── Warum eine echte kleine Datenbank und nicht die Test-Attrappe
+
+   `tests/stub-*.js` beantwortet Abfragen, verwirft aber Schreibvorgänge:
+   für einen Durchlauf ist das richtig, für eine Vorführung wäre es
+   tödlich. Wer in der Demo eine Aufgabe abhakt und nichts passiert,
+   hält nicht die Demo für kaputt, sondern die App.
+
+   Deshalb steht hier ein Speicher, der wirklich schreibt und seine
+   Zuhörer wirklich benachrichtigt — dieselbe Mechanik wie bei Firestore,
+   nur ohne Server. Abgehakte Aufgaben verschwinden, geschriebene
+   Nachrichten erscheinen, Zahlen auf der Startseite ändern sich mit.
+
+   ── Die Daten
+
+   Die Standortnamen sind echt (aus `konfig.js`), alle Menschen,
+   Nachrichten, Aufgaben und Zahlen sind erfunden. Erzeugt wird mit einem
+   festen Startwert: zwei Aufrufe zeigen dieselbe Demo. Das ist kein
+   Selbstzweck — wer zweimal dasselbe vorführt, will nicht beim zweiten
+   Mal etwas anderes erklären müssen.
+
+   ── Die Rolle
+
+   `?demo=chef` (Voreinstellung), `?demo=leiter`, `?demo=mitarbeiter`.
+   Der stärkste Moment einer Vorführung ist derselbe Bildschirm in einer
+   anderen Rolle: der Chef sieht vierzehn Studios, der Mitarbeiter sein
+   eigenes. Der Umschalter dafür sitzt in index.html.
+   ══════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* Ohne ?demo tut diese Datei nichts. Sie wird in index.html auch nur
+     dann überhaupt geladen — dieser Riegel ist die zweite Sperre, damit
+     ein Versehen bei der Einbindung nicht die echte App ersetzt. */
+  if (!/[?&]demo(=|&|$)/.test(location.search)) return;
+
+  var ROLLE = (/[?&]demo=([a-z]+)/.exec(location.search) || [])[1] || 'chef';
+  if (['chef', 'leiter', 'mitarbeiter'].indexOf(ROLLE) < 0) ROLLE = 'chef';
+
+  var KENNUNG = 'koerperformen';
+  var STUDIOS = [
+    'Longerich', 'Nippes', 'Ebertplatz', 'Rath', 'Porz', 'Rondorf',
+    'Hürth', 'Brühl', 'Niederkassel Mondorf', 'Refrath', 'Overath',
+    'Marialinden', 'Rösrath', 'Seelscheid'
+  ];
+  function sk(i) { return 'studio-' + i; }
+
+  /* Fester Startwert: dieselbe Demo bei jedem Aufruf. */
+  var _z = 987654321;
+  function zufall() { _z = (_z * 1103515245 + 12345) % 2147483648; return _z / 2147483648; }
+  function waehle(a) { return a[Math.floor(zufall() * a.length)]; }
+  function zahl(min, max) { return min + Math.floor(zufall() * (max - min + 1)); }
+  var STD = 3600000, TAG = 86400000;
+  function vorMin(n) { return Date.now() - n * 60000; }
+  function vorStd(n) { return Date.now() - n * STD; }
+  function vorTag(n) { return Date.now() - n * TAG; }
+  function datum(n) {
+    var d = new Date(); d.setDate(d.getDate() + n);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+      '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  /* ── Erfundene Menschen ─────────────────────────────────────────────
+     Bewusst gewöhnliche Namen und kein „Max Mustermann": eine Demo, in
+     der alle Platzhalter heißen, sieht aus wie eine leere App. */
+  var VORNAME = ['Lena', 'Jonas', 'Mira', 'Tobias', 'Nele', 'Sami', 'Carla',
+    'Erik', 'Yara', 'Milan', 'Fine', 'Ruben', 'Alina', 'Kaspar',
+    'Jette', 'Noah', 'Vera', 'Elias', 'Marlen', 'Timo', 'Sina',
+    'Hendrik', 'Juna', 'Levi', 'Romy', 'Anton', 'Nora', 'Piet'];
+  var NACHNAME = ['Brandt', 'Vogel', 'Sommer', 'Reinhardt', 'Lang', 'Böhm',
+    'Keller', 'Winter', 'Haas', 'Schreiber', 'Kern', 'Ritter',
+    'Falk', 'Stein', 'Adler', 'Berger'];
+
+  var USERS = [];
+  var ICH = null;
+  (function leuteBauen() {
+    var nr = 0;
+    STUDIOS.forEach(function (name, i) {
+      var wieViele = zahl(2, 4);
+      for (var k = 0; k < wieViele; k++) {
+        nr++;
+        var rolle = k === 0 ? 'leiter' : 'mitarbeiter';
+        USERS.push({
+          id: 'demo-u' + nr,
+          firma: KENNUNG,
+          name: waehle(VORNAME) + ' ' + waehle(NACHNAME),
+          role: rolle,
+          aktiv: true,
+          studios: [name],
+          studioKeys: [sk(i)],
+          avatar: waehle(['💪', '🏋️', '⚡', '🔥', '🌿', '☕', '🎧']),
+          lastSeen: vorMin(zahl(1, 900))
+        });
+      }
+    });
+    /* Das Konto, mit dem der Betrachter unterwegs ist. Je nach Rolle
+       sieht es einen anderen Ausschnitt — genau darum geht es. */
+    if (ROLLE === 'chef') {
+      ICH = {
+        id: 'demo-ich', firma: KENNUNG, name: 'Demo-Geschäftsführung', role: 'chef',
+        aktiv: true, avatar: '💪',
+        studios: STUDIOS.slice(), studioKeys: STUDIOS.map(function (_, i) { return sk(i); })
+      };
+    } else if (ROLLE === 'leiter') {
+      ICH = {
+        id: 'demo-ich', firma: KENNUNG, name: 'Demo-Studioleitung', role: 'leiter',
+        aktiv: true, avatar: '⚡',
+        studios: [STUDIOS[6], STUDIOS[7]], studioKeys: [sk(6), sk(7)]
+      };
+    } else {
+      ICH = {
+        id: 'demo-ich', firma: KENNUNG, name: 'Demo-Mitarbeiter', role: 'mitarbeiter',
+        aktiv: true, avatar: '🔥',
+        studios: [STUDIOS[6]], studioKeys: [sk(6)]
+      };
+    }
+    USERS.unshift(ICH);
+  })();
+
+  function leuteIn(studioKey) {
+    return USERS.filter(function (u) {
+      return u.id !== 'demo-ich' && (u.studioKeys || []).indexOf(studioKey) >= 0;
+    });
+  }
+  function jemandIn(studioKey) {
+    var l = leuteIn(studioKey);
+    return l.length ? l[Math.floor(zufall() * l.length)] : ICH;
+  }
+
+  /* ── Der Speicher ───────────────────────────────────────────────────
+     Ein Objekt, dessen Schlüssel der VOLLE Pfad ist:
+       'firmen/koerperformen/studios/studio-6/todos' -> [ {…}, {…} ]
+     Kein Abschneiden des Firmen-Vorsatzes wie in der Test-Attrappe: hier
+     soll genau das laufen, was die App auch in Wirklichkeit tut. Wenn
+     S() einen Pfad falsch baut, fällt es in der Demo auf. */
+  var DB = {};
+  var HORCHER = {};       // Pfad -> [callback]
+  var EINZEL = {};        // Pfad/id -> [callback]  (Zuhörer auf ein Dokument)
+
+  function P(name) { return 'firmen/' + KENNUNG + '/' + name; }
+  function legen(pfad, liste) { DB[pfad] = liste; }
+  function holen(pfad) { return DB[pfad] || (DB[pfad] = []); }
+
+  function melden(pfad) {
+    (HORCHER[pfad] || []).forEach(function (cb) {
+      try { cb(schnapp(holen(pfad))); } catch (e) { console.error('Demo-Zuhörer', e); }
+    });
+    Object.keys(EINZEL).forEach(function (schl) {
+      if (schl.indexOf(pfad + '/') !== 0) return;
+      var id = schl.slice(pfad.length + 1);
+      var d = holen(pfad).filter(function (x) { return x.id === id; })[0];
+      EINZEL[schl].forEach(function (cb) {
+        try { cb(einzelSchnapp(id, d)); } catch (e) { console.error('Demo-Zuhörer', e); }
+      });
+    });
+  }
+
+  function kopie(o) {
+    var n = {};
+    Object.keys(o).forEach(function (k) { if (k !== 'id') n[k] = o[k]; });
+    return n;
+  }
+  function einzelSchnapp(id, d) {
+    return { id: id, exists: !!d, data: function () { return d ? kopie(d) : undefined; } };
+  }
+  function schnapp(liste) {
+    var docs = liste.map(function (d) {
+      return {
+        id: d.id, exists: true,
+        data: function () { return kopie(d); },
+        get: function (f) { return d[f]; }
+      };
+    });
+    return {
+      docs: docs, size: docs.length, empty: !docs.length,
+      forEach: function (fn) { docs.forEach(fn); },
+      /* docChanges: die App meldet damit neue Nachrichten. In der Demo
+         ist beim ersten Schnappschuss alles „added", danach nur das
+         wirklich Neue — mehr braucht sie nicht. */
+      docChanges: function () {
+        return docs.map(function (d) { return { type: 'added', doc: d }; });
+      }
+    };
+  }
+
+  var _nr = 0;
+  function neueId() { return 'demo' + (++_nr) + '-' + Math.floor(zufall() * 100000); }
+
+  /* ── Abfragen ───────────────────────────────────────────────────────
+     where / orderBy / limit / limitToLast. Mehr benutzt die App nicht —
+     nachgesehen, nicht angenommen: keine Transaktionen, keine Cursor,
+     keine Sammlungsgruppen. */
+  function anwenden(liste, f) {
+    var r = liste.slice();
+    (f.wo || []).forEach(function (w) {
+      r = r.filter(function (d) {
+        var v = d[w[0]], op = w[1], z = w[2];
+        if (op === '==') return v === z;
+        if (op === '!=') return v !== z;
+        if (op === '>') return v > z;
+        if (op === '>=') return v >= z;
+        if (op === '<') return v < z;
+        if (op === '<=') return v <= z;
+        if (op === 'in') return Array.isArray(z) && z.indexOf(v) >= 0;
+        if (op === 'not-in') return Array.isArray(z) && z.indexOf(v) < 0;
+        if (op === 'array-contains') return Array.isArray(v) && v.indexOf(z) >= 0;
+        if (op === 'array-contains-any') {
+          return Array.isArray(v) && Array.isArray(z) && z.some(function (x) { return v.indexOf(x) >= 0; });
+        }
+        return true;
+      });
+    });
+    if (f.sortier) {
+      var feld = f.sortier[0], ab = f.sortier[1] === 'desc';
+      r.sort(function (a, b) {
+        var x = a[feld], y = b[feld];
+        if (feld === '__name__') { x = a.id; y = b.id; }
+        if (x === y) return 0;
+        if (x === undefined || x === null) return 1;
+        if (y === undefined || y === null) return -1;
+        return (x < y ? -1 : 1) * (ab ? -1 : 1);
+      });
+    }
+    if (f.grenze) r = r.slice(0, f.grenze);
+    if (f.grenzeHinten) r = r.slice(Math.max(0, r.length - f.grenzeHinten));
+    return r;
+  }
+
+  function abfrage(pfad, f) {
+    f = f || {};
+    function mit(neu) {
+      var k = { wo: (f.wo || []).slice(), sortier: f.sortier, grenze: f.grenze, grenzeHinten: f.grenzeHinten };
+      Object.keys(neu).forEach(function (s) { k[s] = neu[s]; });
+      return abfrage(pfad, k);
+    }
+    return {
+      _pfad: pfad,
+      where: function (a, b, c) { return mit({ wo: (f.wo || []).concat([[a, b, c]]) }); },
+      orderBy: function (a, b) { return mit({ sortier: [a, b || 'asc'] }); },
+      limit: function (n) { return mit({ grenze: n }); },
+      limitToLast: function (n) { return mit({ grenzeHinten: n }); },
+      get: function () { return Promise.resolve(schnapp(anwenden(holen(pfad), f))); },
+      onSnapshot: function (a, b) {
+        var cb = typeof a === 'function' ? a : (a && a.next);
+        if (!cb) return function () {};
+        function feuern() { cb(schnapp(anwenden(holen(pfad), f))); }
+        var huelle = function () { feuern(); };
+        (HORCHER[pfad] = HORCHER[pfad] || []).push(huelle);
+        setTimeout(feuern, 30);
+        return function () {
+          HORCHER[pfad] = (HORCHER[pfad] || []).filter(function (x) { return x !== huelle; });
+        };
+      },
+      add: function (d) {
+        var neu = Object.assign({ id: neueId() }, d);
+        holen(pfad).push(neu);
+        melden(pfad);
+        return Promise.resolve({ id: neu.id });
+      },
+      doc: function (id) { return dokument(pfad, id); }
+    };
+  }
+
+  function dokument(pfad, id) {
+    if (id === undefined) id = neueId();
+    var voll = pfad + '/' + id;
+    return {
+      id: id,
+      _pfad: voll,
+      collection: function (sub) { return abfrage(voll + '/' + sub); },
+      get: function () {
+        var d = holen(pfad).filter(function (x) { return x.id === id; })[0];
+        return Promise.resolve(einzelSchnapp(id, d));
+      },
+      onSnapshot: function (a) {
+        var cb = typeof a === 'function' ? a : (a && a.next);
+        if (!cb) return function () {};
+        function feuern() {
+          var d = holen(pfad).filter(function (x) { return x.id === id; })[0];
+          cb(einzelSchnapp(id, d));
+        }
+        (EINZEL[voll] = EINZEL[voll] || []).push(feuern);
+        setTimeout(feuern, 30);
+        return function () {
+          EINZEL[voll] = (EINZEL[voll] || []).filter(function (x) { return x !== feuern; });
+        };
+      },
+      set: function (d, opt) {
+        var liste = holen(pfad);
+        var i = liste.findIndex(function (x) { return x.id === id; });
+        if (i < 0) liste.push(Object.assign({ id: id }, d));
+        else if (opt && opt.merge) liste[i] = Object.assign(liste[i], d);
+        else liste[i] = Object.assign({ id: id }, d);
+        melden(pfad);
+        return Promise.resolve();
+      },
+      update: function (d) {
+        var liste = holen(pfad);
+        var i = liste.findIndex(function (x) { return x.id === id; });
+        if (i < 0) return Promise.reject(new Error('Dokument gibt es nicht'));
+        Object.keys(d).forEach(function (k) {
+          if (d[k] && d[k].__loeschen) delete liste[i][k];
+          else liste[i][k] = d[k];
+        });
+        melden(pfad);
+        return Promise.resolve();
+      },
+      delete: function () {
+        DB[pfad] = holen(pfad).filter(function (x) { return x.id !== id; });
+        melden(pfad);
+        return Promise.resolve();
+      }
+    };
+  }
+
+  /* ══ Die Daten ══════════════════════════════════════════════════════ */
+
+  legen('users', USERS.slice());
+  legen(P('config'), [
+    { id: 'studios', liste: STUDIOS.map(function (n, i) { return { id: sk(i), name: n }; }), naechste: STUDIOS.length },
+    {
+      id: 'marke', name: 'Körperformen', slogan: 'EMS-Training in Köln und Umgebung',
+      /* Die rechtlichen Pflichtfelder bleiben in der Demo LEER und sagen
+         das auch. Erfundene Angaben in ein Impressum zu schreiben wäre
+         genau die Art Platzhalter, die schon einmal live gegangen ist. */
+      demoHinweis: true
+    },
+    { id: 'features', schichtplan: true, putzplan: true, material: true, geraete: true,
+      dokumente: true, probetraining: true, umfragen: true, nachweise: true }
+  ]);
+
+  /* Chat: ein allgemeiner Kanal, je Studio einer, dazu zwei Gruppen. */
+  var SAETZE = [
+    'Guten Morgen zusammen!', 'Die Lieferung ist da.', 'Wer kann heute Abend übernehmen?',
+    'Handtücher sind knapp, ich habe nachbestellt.', 'Danke fürs Aufräumen gestern 🙏',
+    'Kabine 2 ist wieder frei.', 'Neue Probetrainings-Termine stehen im Plan.',
+    'Bitte denkt an die Desinfektion nach jedem Kunden.', 'Ich bin ab 14 Uhr da.',
+    'Der Wasserspender läuft wieder.', 'Kurze Rückfrage zur Abrechnung.',
+    'Bin heute 10 Minuten später, Bahn fällt aus.', 'Klappt, mache ich.',
+    'Habe die Gurte geprüft, alles in Ordnung.', 'Kann jemand Samstag früh?'
+  ];
+  function nachrichtenFuer(kanal, wer, anzahl) {
+    var r = [];
+    for (var i = anzahl; i > 0; i--) {
+      var u = wer[Math.floor(zufall() * wer.length)] || ICH;
+      r.push({
+        id: 'm-' + kanal + '-' + i, uid: u.id, name: u.name, role: u.role,
+        studio: (u.studios || [])[0] || '', text: waehle(SAETZE),
+        ts: vorMin(i * zahl(7, 40))
+      });
+    }
+    return r;
+  }
+  legen(P('channels/allgemein/messages'), nachrichtenFuer('allgemein', USERS, 18));
+  STUDIOS.forEach(function (n, i) {
+    legen(P('channels/' + sk(i) + '/messages'), nachrichtenFuer(sk(i), leuteIn(sk(i)).concat([ICH]), zahl(4, 11)));
+  });
+  legen(P('channels/gruppe-leitung/messages'),
+    nachrichtenFuer('leitung', USERS.filter(function (u) { return u.role !== 'mitarbeiter'; }), 7));
+
+  /* Aufgaben, Putzplan, Geräte, Material, Schichten, Abwesenheiten,
+     Übergaben — je Studio, mit unterschiedlichen Ständen, damit die
+     Startseite etwas zu sagen hat. */
+  var AUFGABEN = ['Geräte desinfizieren', 'Handtücher waschen', 'Wasserspender auffüllen',
+    'Empfang aufräumen', 'Lager sortieren', 'Gurte prüfen', 'Probetrainings nachfassen',
+    'Wäsche abholen', 'Getränke auffüllen', 'Fenster putzen'];
+  var PUTZ = ['Böden wischen', 'Spiegel putzen', 'Toiletten reinigen', 'Kabinen auswischen',
+    'Empfangstresen', 'Mülleimer leeren', 'Umkleiden'];
+  var GERAETE = ['EMS-Gerät 1', 'EMS-Gerät 2', 'EMS-Gerät 3', 'Waschmaschine',
+    'Trockner', 'Wasserspender', 'Musikanlage'];
+  var POSTEN = ['Handtücher', 'Handschuhe', 'Desinfektionsmittel', 'Wasserflaschen',
+    'Elektroden-Spray', 'Papierrollen', 'Müllbeutel'];
+
+  STUDIOS.forEach(function (name, i) {
+    var k = sk(i), leute = leuteIn(k);
+
+    var todos = [];
+    for (var a = 0; a < zahl(3, 7); a++) {
+      var fertig = zufall() < 0.4;
+      var wer = jemandIn(k);
+      todos.push({
+        id: 't-' + k + '-' + a, title: waehle(AUFGABEN), desc: '',
+        done: fertig, doneBy: fertig ? wer.name : undefined,
+        doneByUid: fertig ? wer.id : undefined,
+        doneAt: fertig ? vorStd(zahl(1, 20)) : undefined,
+        createdBy: 'Geschäftsführung', ts: vorTag(zahl(1, 20)),
+        due: zufall() < 0.35 ? Date.now() + (zufall() < 0.4 ? -1 : 1) * zahl(1, 5) * TAG : undefined,
+        dringend: zufall() < 0.15 ? true : undefined,
+        recurring: zufall() < 0.25 ? waehle(['daily', 'weekly']) : undefined
+      });
+    }
+    /* Eine Aufgabe, die NIEMANDEM gehört — damit „Ich übernehme das" in
+       der Vorführung auch wirklich zu sehen ist. */
+    todos.push({
+      id: 't-' + k + '-frei', title: 'Neue Probetrainings einpflegen', desc: '',
+      done: false, createdBy: 'Geschäftsführung', ts: vorTag(1)
+    });
+    legen(P('studios/' + k + '/todos'), todos);
+
+    var putz = [];
+    for (var c = 0; c < zahl(4, 7); c++) {
+      var pf = zufall() < 0.5, pw = jemandIn(k);
+      putz.push({
+        id: 'c-' + k + '-' + c, title: waehle(PUTZ),
+        recurring: waehle(['daily', 'weekly']),
+        done: pf, doneBy: pf ? pw.name : undefined, doneByUid: pf ? pw.id : undefined,
+        doneAt: pf ? vorStd(zahl(1, 10)) : undefined,
+        ts: vorTag(zahl(10, 60))
+      });
+    }
+    legen(P('studios/' + k + '/cleaning'), putz);
+
+    var dev = [];
+    for (var g = 0; g < zahl(3, 6); g++) {
+      var zustand = zufall() < 0.12 ? 'defekt' : (zufall() < 0.12 ? 'wartung' : 'ok');
+      var gw = jemandIn(k);
+      dev.push({
+        id: 'd-' + k + '-' + g, name: GERAETE[g % GERAETE.length],
+        place: waehle(['Kabine links', 'Kabine rechts', 'Lager', 'Empfang']),
+        status: zustand,
+        lastNote: zustand === 'ok' ? undefined : waehle(['Weste links gibt keinen Impuls', 'Filter reinigen', 'Macht Geräusche']),
+        lastBy: zustand === 'ok' ? undefined : gw.name,
+        lastAt: zustand === 'ok' ? undefined : vorStd(zahl(2, 60)),
+        ts: vorTag(zahl(30, 300))
+      });
+    }
+    legen(P('studios/' + k + '/devices'), dev);
+
+    var schichten = [];
+    for (var t = 0; t < 7; t++) {
+      for (var s = 0; s < zahl(1, 3); s++) {
+        var su = jemandIn(k);
+        schichten.push({
+          id: 's-' + k + '-' + t + '-' + s, date: datum(t),
+          from: waehle(['06:00', '09:00', '13:00', '16:00']),
+          to: waehle(['12:00', '15:00', '18:00', '21:00']),
+          uid: su.id, name: su.name
+        });
+      }
+    }
+    /* Eine eigene Schicht heute — sonst steht „Mein Dienst" leer und die
+       wichtigste Karte der Startseite sagt in der Vorführung nichts. */
+    if ((ICH.studioKeys || []).indexOf(k) >= 0) {
+      schichten.push({ id: 's-' + k + '-ich', date: datum(0), from: '09:00', to: '14:00',
+        uid: ICH.id, name: ICH.name });
+    }
+    legen(P('studios/' + k + '/shifts'), schichten);
+
+    var abw = [];
+    for (var v = 0; v < zahl(0, 2); v++) {
+      var au = jemandIn(k);
+      abw.push({
+        id: 'v-' + k + '-' + v, from: datum(zahl(2, 20)), to: datum(zahl(21, 30)),
+        type: waehle(['urlaub', 'krank']), uid: au.id, name: au.name,
+        status: waehle(['offen', 'genehmigt']), ts: vorTag(zahl(1, 8))
+      });
+    }
+    legen(P('studios/' + k + '/absences'), abw);
+
+    var ueb = [];
+    for (var h = 0; h < zahl(0, 2); h++) {
+      var hu = jemandIn(k);
+      ueb.push({
+        id: 'h-' + k + '-' + h,
+        text: waehle(['Rechte Beinpresse hakt beim Zurückfahren — Technik ist informiert.',
+          'Neue Handtücher liegen im Lager hinten links.',
+          'Schlüssel für den Putzschrank liegt jetzt im Tresor.',
+          'Kundin hat Termin auf Donnerstag verschoben.']),
+        uid: hu.id, name: hu.name, ts: vorStd(zahl(1, 20))
+      });
+    }
+    legen(P('studios/' + k + '/handovers'), ueb);
+
+    var posten = [];
+    for (var m = 0; m < zahl(4, 7); m++) {
+      var grenze = waehle([6, 10, 20, 24]);
+      posten.push({ name: POSTEN[m % POSTEN.length], have: zahl(0, grenze + 6), limit: grenze, need: 0 });
+    }
+    DB[P('inventory')] = DB[P('inventory')] || [];
+    DB[P('inventory')].push({ id: k, items: posten });
+  });
+
+  /* Schwarzes Brett, Aushänge, Nachweise, Probetrainings, Dokumente */
+  var brett = [];
+  for (var b = 0; b < 9; b++) {
+    var bu = USERS[Math.floor(zufall() * USERS.length)];
+    brett.push({
+      id: 'b' + b, uid: bu.id, name: bu.name,
+      text: waehle(['Suche Tausch für Samstagfrüh.', 'Fundsache: schwarze Trinkflasche am Empfang.',
+        'Teamabend am 30., wer kommt mit?', 'Parkausweise sind da, bitte abholen.',
+        'Neue Musikliste liegt auf dem Rechner.']),
+      ts: vorTag(zahl(0, 9))
+    });
+  }
+  legen(P('board'), brett);
+
+  legen(P('announcements'), [
+    { id: 'an1', uid: ICH.id, from: 'Geschäftsführung', target: 'all', pinned: true,
+      text: 'Neue Öffnungszeiten ab Montag: 7–21 Uhr in allen Studios.',
+      ts: vorTag(3), readBy: [] },
+    { id: 'an2', uid: ICH.id, from: 'Geschäftsführung', target: sk(6),
+      text: 'Bitte die Gurte nach jedem Training desinfizieren.',
+      ts: vorStd(5), readBy: [] }
+  ]);
+
+  var nachweise = [];
+  USERS.slice(0, 14).forEach(function (u, i) {
+    nachweise.push({
+      id: 'z' + i, uid: u.id, name: u.name,
+      art: waehle(['ersthelfer', 'ems', 'trainer']),
+      bis: datum(zahl(-20, 400)), ts: vorTag(zahl(30, 400))
+    });
+  });
+  legen(P('certificates'), nachweise);
+
+  var probe = [];
+  STUDIOS.forEach(function (n, i) {
+    for (var p = 0; p < zahl(2, 8); p++) {
+      var pu = jemandIn(sk(i));
+      probe.push({
+        id: 'p-' + i + '-' + p, studioKey: sk(i), datum: vorTag(zahl(0, 28)),
+        abschluss: zufall() < 0.45, vonUid: pu.id, vonName: pu.name
+      });
+    }
+  });
+  legen(P('probetrainings'), probe);
+
+  legen(P('documents'), [
+    { id: 'dok1', name: 'Hygieneplan 2026', fileName: 'hygieneplan.pdf', kat: 'Vorschriften',
+      size: 184000, ts: vorTag(40), by: 'Geschäftsführung' },
+    { id: 'dok2', name: 'Einweisung EMS-Gerät', fileName: 'einweisung.pdf', kat: 'Technik',
+      size: 96000, ts: vorTag(120), by: 'Geschäftsführung' },
+    { id: 'dok3', name: 'Notfallnummern', fileName: 'notfall.pdf', kat: 'Vorschriften',
+      size: 21000, ts: vorTag(200), by: 'Geschäftsführung' }
+  ]);
+
+  legen('firmen', [{ id: KENNUNG, name: 'Körperformen', aktiv: true, kennung: KENNUNG }]);
+  legen(P('abo'), [{ id: 'aktuell', stufe: 'A', seit: vorTag(200) }]);
+
+  /* ══ Das gefälschte Firebase ════════════════════════════════════════ */
+  var fs = {
+    settings: function () {},
+    enablePersistence: function () { return Promise.resolve(); },
+    collection: function (p) { return abfrage(p); },
+    batch: function () {
+      var auftraege = [];
+      return {
+        set: function (ref, d, o) { auftraege.push(function () { return ref.set(d, o); }); },
+        update: function (ref, d) { auftraege.push(function () { return ref.update(d); }); },
+        delete: function (ref) { auftraege.push(function () { return ref.delete(); }); },
+        commit: function () {
+          /* Ein Stapel schreibt wirklich — sonst tut in der Vorführung
+             genau das nichts, was mehrere Studios auf einmal betrifft
+             (Putzaufgabe an alle, Dokument als Aufgabe verteilen). */
+          return Promise.all(auftraege.map(function (f) { return f(); }));
+        }
+      };
+    }
+  };
+
+  var KONTO = { uid: ICH.id, email: 'demo@studiochat.example', displayName: ICH.name };
+
+  window.firebase = {
+    apps: [],
+    initializeApp: function () { return { firestore: function () { return fs; } }; },
+    app: function () {
+      return { firestore: function () { return fs; }, functions: function () { return window.firebase.functions(); } };
+    },
+    firestore: function () { return fs; },
+    auth: function () {
+      return {
+        currentUser: KONTO,
+        onAuthStateChanged: function (cb) { setTimeout(function () { cb(KONTO); }, 40); return function () {}; },
+        signInWithEmailAndPassword: function () { return Promise.resolve({ user: KONTO }); },
+        createUserWithEmailAndPassword: function () {
+          return Promise.reject(new Error('In der Demo lassen sich keine Konten anlegen.'));
+        },
+        sendPasswordResetEmail: function () { return Promise.resolve(); },
+        setPersistence: function () { return Promise.resolve(); },
+        signOut: function () {
+          /* Abmelden führt aus der Demo heraus, nicht in einen leeren
+             Anmeldebildschirm: sonst steht der Interessent vor einer
+             Maske, in die er sich nicht einloggen kann. */
+          location.href = location.pathname;
+          return new Promise(function () {});
+        }
+      };
+    },
+    functions: function () {
+      return {
+        httpsCallable: function (name) {
+          return function () {
+            return Promise.reject(new Error(
+              'Das läuft in der Demo nicht: „' + name + '" würde auf dem Server ausgeführt ' +
+              'und zum Beispiel E-Mails verschicken.'));
+          };
+        }
+      };
+    },
+    messaging: function () { return { onMessage: function () {}, getToken: function () { return Promise.resolve(''); } }; },
+    storage: function () { return { ref: function () { return {}; } }; }
+  };
+  firebase.firestore.FieldValue = {
+    serverTimestamp: function () { return Date.now(); },
+    increment: function (n) { return { __increment: n }; },
+    arrayUnion: function () { return {}; },
+    arrayRemove: function () { return {}; },
+    delete: function () { return { __loeschen: true }; }
+  };
+  firebase.firestore.FieldPath = { documentId: function () { return '__name__'; } };
+  firebase.auth.Auth = { Persistence: { LOCAL: 'local', SESSION: 'session', NONE: 'none' } };
+  firebase.messaging.isSupported = function () { return false; };
+
+  /* ══ Die Oberfläche der Demo ════════════════════════════════════════ */
+
+  window.__demo = { rolle: ROLLE, name: ICH.name, studios: (ICH.studios || []).length };
+
+  /* Die Klasse steht auf <html> und schaltet die Leiste ein. Sie wird
+     HIER gesetzt und nicht im Markup: so kann es die Leiste ohne ?demo
+     gar nicht geben, auch nicht für einen Wimpernschlag beim Laden. */
+  document.documentElement.classList.add('demo');
+
+  /* Nicht in den Suchergebnissen. Die Demo ist zum Verschicken da, nicht
+     zum Gefundenwerden: eine Seite voller erfundener Aufgaben unter dem
+     Namen Körperformen wäre in einer Suche das Gegenteil von hilfreich.
+     Ein Meta-Element, das erst ein Skript setzt, ist keine Garantie —
+     robots.txt sperrt zusätzlich, und der Link wird ohnehin nur
+     weitergegeben. Beides zusammen, keins allein. */
+  try {
+    var mr = document.createElement('meta');
+    mr.name = 'robots';
+    mr.content = 'noindex, nofollow';
+    document.head.appendChild(mr);
+  } catch (e) {}
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var sel = document.getElementById('demoRolle');
+    if (!sel) return;
+    sel.value = ROLLE;
+    sel.addEventListener('change', function () {
+      /* Neu laden statt umbauen. Die Rolle entscheidet, welche Studios,
+         welche Kanäle und welche Knöpfe es überhaupt gibt — das im
+         laufenden Betrieb umzustellen wäre ein zweiter, eigener
+         Programmzustand, den niemand außer der Demo je benutzt. Ein
+         Neuladen dauert eine Sekunde und kann nicht halb misslingen. */
+      location.search = '?demo=' + sel.value;
+    });
+  });
+})();
