@@ -104,7 +104,15 @@ zu bewerten sind:
    im ganzen System.
 2. **Anwesenheitsanzeige.** Die App speichert, wann jemand zuletzt online
    war. Wer das als Kontrolle liest, liegt nicht ganz falsch.
-3. **Sprachaufnahmen im Chat.** Stimme ist ein biometrisches Merkmal.
+3. **Sprachaufnahmen im Chat.** Hier stand „Stimme ist ein biometrisches
+   Merkmal". **Das ist zu pauschal und am 14.9. berichtigt:** Art. 4
+   Nr. 14 DSGVO verlangt eine *spezifische technische Verarbeitung*, die
+   die eindeutige Identifizierung ermöglicht. Die App nimmt auf und gibt
+   wieder — sie erkennt niemanden an der Stimme. Eine Sprachnachricht ist
+   damit personenbezogenes Datum, aber nach dieser Lesart **nicht**
+   Art. 9. Ein Anwalt sollte das bestätigen; die alte Fassung hätte einen
+   Kunden zu einer Einwilligungslösung gedrängt, die er womöglich gar
+   nicht braucht — und eine unnötige Einwilligung ist auch ein Fehler.
 
 Alle drei sind Funktionen, die ihr wolltet und die sinnvoll sind. Sie
 gehören nur in die Erklärung — und wahrscheinlich in eine Absprache mit
@@ -126,7 +134,14 @@ Google. Der Monatsbericht geht per Gmail hinaus.
 | Konto und Inhalte | solange das Konto besteht |
 | Papierkorb | 30 Tage, dann endgültig weg |
 | Wochensicherungen Material | 52 Wochen |
-| Nächtliche Vollsicherung | 30 Tage (Aufräumen läuft automatisch) |
+| Nächtliche Vollsicherung | **7 Tage** (Aufräumen läuft automatisch) |
+
+> **Korrektur vom 14.9.:** Hier stand „30 Tage" für die nächtliche
+> Vollsicherung. Im Code steht `BACKUP_TAGE = 7`. Aufgefallen ist es
+> beim Erstellen der AV-Unterlagen, weil dort jede Frist eine Fundstelle
+> bekommen musste — und diese keine hatte, die zu ihr passte. Eine
+> Aufbewahrungsfrist zuzusagen, die das System nicht einhält, ist genau
+> die Art Angabe, die in einem Vertrag teuer wird.
 
 ### Wer was sieht
 
@@ -177,6 +192,12 @@ Dann verarbeitest **du** Daten **für** den Kunden. Damit brauchst du:
 - technische und organisatorische Maßnahmen, schriftlich
 - eine Regelung zu Unterauftragnehmern (Google)
 - eine Löschzusage nach Vertragsende
+
+> **Seit dem 14.9. liegen die Entwürfe dafür in `docs/av/`:** Vertrag,
+> TOM, Unterauftragnehmer, Löschkonzept und das Verarbeitungsverzeichnis
+> nach Art. 30 Abs. 2, das **du** führen musst. Die technischen Angaben
+> darin sind am Code nachgeprüft; die rechtlichen Formulierungen sind
+> Entwurf und brauchen eine Durchsicht. Anfangen bei `docs/av/README.md`.
 
 **Das ist der Punkt, an dem es aufhört, eine App-Frage zu sein.** Und es
 ist derselbe Punkt, an dem `MANDANT-PLAN.md` empfiehlt, vor dem ersten
