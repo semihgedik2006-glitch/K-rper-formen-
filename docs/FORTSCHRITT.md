@@ -8708,3 +8708,38 @@ tat das nämlich nie.)
 **2. Bereichsfarben, die Statusfarben besetzen.** Siehe oben —
 `test-gestaltung`. Der Durchlauf hatte recht, und zwar aus einem Grund,
 den ich beim Aussuchen der Farben schlicht nicht bedacht hatte.
+
+### Ein dritter Fund — und eine Lücke in den Durchläufen selbst
+
+Die stehende Regel aus dem Betrieb lautet: **vor neuen Knöpfen erst
+messen** (`.claude/skills/knoepfe`). Angewandt auf die neue untere
+Leiste hat sie sofort etwas gefunden — aber erst, nachdem klar war,
+dass die Messung so, wie sie lief, gar nichts über das neue Design
+sagen konnte.
+
+`test-abgeschnitten` startet die App **ohne Schalter**. Er misst also
+die Schriftgrössen von gestern und ist grün, egal was unter `neu`
+passiert. Mit `?neu=1` gestartet fand er im Team-Bereich sofort:
+
+    WAAGERECHT  .scroll-area  327 > 320 px  · bei 320 px · team
+                „Wartet auf deine Entscheidung"
+
+`.sec-head span` trägt `white-space:nowrap`, Versalien und `--ls-l`.
+Mit der um eine Stufe höheren Schrift passt das auf einem 320er-Gerät
+nicht mehr. Behoben durch Umbrechen-Erlauben, nicht durch eine engere
+Laufweite: die hätte genau dieses eine Wort gerettet und beim nächsten
+längeren wieder versagt.
+
+Die eigentliche Lehre ist aber nicht die CSS-Zeile, sondern:
+
+> **Ein Durchlauf prüft nur das, was er zu sehen bekommt.** 109 grüne
+> Durchläufe sagten nichts über das neue Design aus, weil keiner von
+> ihnen es je geladen hat.
+
+Deshalb gibt es jetzt `tests/test-neu-messlatte.js`: dieselben drei
+Messungen, die von Geometrie handeln — abgeschnitten, Knöpfe, seitwärts
+schieben — laufen ein zweites Mal mit `?neu=1`. Die übrigen prüfen
+Verhalten, und das ändert der Schalter nicht.
+
+Gegenprobe gemacht: Regel entfernt → rot (327 > 320), Regel zurück →
+grün. Ein Prüfer, der nie anschlägt, prüft nichts.

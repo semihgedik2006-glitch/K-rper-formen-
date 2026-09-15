@@ -4122,6 +4122,21 @@ body.neu .heute-ruhe .hr-ico{flex:0 0 auto;display:grid;place-items:center;
 body.neu .heute-ruhe b{display:block;font-size:var(--t-md)}
 body.neu .heute-ruhe span{display:block;font-size:var(--t-sm);color:var(--text-2)}
 
+/* Abschnittsüberschriften dürfen umbrechen.
+   .sec-head span trägt white-space:nowrap, Versalien und --ls-l. Mit der
+   um eine Stufe höheren Schrift passte „WARTET AUF DEINE ENTSCHEIDUNG"
+   auf einem 320er-Gerät nicht mehr: gemessen 327px Inhalt in 320px
+   Fläche, also abgeschnittener Text im Team-Bereich.
+
+   Gefunden von test-abgeschnitten — aber erst, als er MIT dem Schalter
+   lief. Ohne ihn misst er die Schriftgrössen von gestern und ist grün.
+   Ein Durchlauf prüft nur das, was er zu sehen bekommt.
+
+   Umbrechen statt die Laufweite zurückzunehmen: eine engere Laufweite
+   hätte genau dieses eine Wort gerettet und beim nächsten längeren
+   wieder versagt. */
+body.neu .sec-head span{white-space:normal;min-width:0}
+
 /* ── 7. Mehr Luft in den Karten ──
    „Weniger und grösser" gilt auch dort, wo schon Karten stehen. */
 body.neu .card{padding:clamp(20px,5vw,30px);margin-bottom:var(--s24)}
