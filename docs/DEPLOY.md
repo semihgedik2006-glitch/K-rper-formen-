@@ -143,3 +143,68 @@ Die installierte App auf dem iPhone einmal ganz schließen (aus der
 App-Übersicht hochwischen) und neu öffnen. Seit August sucht sie beim
 Zurückkommen selbst nach einer neuen Fassung, aber beim allerersten Mal nach
 dem Update braucht es diesen einen Neustart noch.
+
+---
+
+## Nach jedem Squash-Merge: `main` zurück in den Zweig
+
+**Zweimal passiert, zweimal eine halbe Stunde gekostet, beide Male ohne
+eine einzige Fehlermeldung.** Deshalb steht es hier und nicht in
+jemandes Gedächtnis.
+
+Die PRs dieses Projekts werden **als Squash** gemergt. Damit liegt der
+Inhalt eines PR in `main` als **ein neuer Commit**, während der
+Arbeitszweig dieselben Änderungen noch als seine eigenen trägt. Git
+sieht danach beide Seiten als geändert — der Zweig steht im Konflikt
+mit `main`, sobald man auf ihm weiterarbeitet.
+
+### Warum das die Prüfungen verschluckt
+
+Für einen **konfliktbehafteten** Pull Request kann GitHub keinen
+Merge-Commit bilden. Ohne den startet es die `pull_request`-Läufe **gar
+nicht erst**:
+
+```
+get_check_runs  →  {"total_count": 0, "check_runs": []}
+get_status      →  {"state": "pending", "total_count": 0}
+```
+
+Das sieht aus wie „läuft noch". Es ist „läuft nie". Es gibt keine
+Fehlermeldung, keine rote Zeile, nichts — der PR wartet einfach für
+immer.
+
+### Was zu tun ist
+
+Direkt nach dem Merge, **bevor** weitergearbeitet wird:
+
+```bash
+git fetch origin main
+git merge --no-edit origin/main
+```
+
+Gibt es Konflikte, sind es in aller Regel genau die Stellen, die der
+gemergte PR geändert hat — beide Seiten tragen dieselbe Arbeit, der
+Zweig meist in der neueren Fassung.
+
+**Vor dem Auflösen aber nachzählen, nicht annehmen:**
+
+```bash
+git diff HEAD origin/main | grep '^+' | grep -v '^+++'
+```
+
+Steht dort nur die ältere Fassung dessen, was der Zweig geändert hat,
+ist `--ours` richtig. Steht dort etwas, das der Zweig nicht kennt, ist
+es das nicht.
+
+Danach gegenprüfen, dass die aufgelöste Datei **byteweise** dieselbe ist
+wie vor dem Merge — sonst misst die Regression, die vorher grün war,
+etwas anderes als das, was gepusht wird:
+
+```bash
+diff -q index.html /pfad/zur/kopie-vor-dem-merge.html
+```
+
+### Woran man es erkennt, wenn es schon passiert ist
+
+`mergeable_state` des PR steht auf `"dirty"`. Das ist die eine Stelle,
+an der GitHub es überhaupt sagt.

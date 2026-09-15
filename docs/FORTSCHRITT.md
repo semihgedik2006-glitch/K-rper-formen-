@@ -8350,3 +8350,396 @@ Wer den Code abfotografiert und weitergibt, kann innerhalb des Fensters
 von woanders stempeln. Steht so im Code, im Plan und gehört ins
 Verkaufsgespräch — genau wie beim Tablet, wo ein Kollege mit bekannter
 PIN mitstempeln kann.
+
+---
+
+# Runde 83 — was der Kunde sah, und was drei eigene Messfehler beinahe daraus gemacht hätten
+
+15. September 2026
+
+Diese Runde kam nicht aus dem Plan, sondern aus zwei Sätzen aus dem
+Betrieb:
+
+> „so einige Tasten [gehen] nicht immer, wie beim Terminal das zurück"
+> „die Übersicht ist schlecht und nicht organisiert … man muss jede
+> Funktion suchen … fünf Klicks für Gruppen-Chats"
+
+## Der teuerste Fund: drei tote Knöpfe am Terminal
+
+Die Bindungen für „‹ Zurück", das Suchfeld und **„Terminal beenden"**
+standen in `if(session.role==='chef')`, zusammen mit dem *Einrichten*
+von Terminals. Das Einrichten gehört dorthin, das *Bedienen* nicht: ein
+Terminal läuft mit einem ganz normalen Mitarbeiter-Konto.
+
+Auf jedem echten Gerät hiess das: wer sich vertippt, kommt aus der
+PIN-Maske nicht mehr heraus; bei vierzig Leuten findet man niemanden;
+und **das Tablet kommt nie wieder aus dem Stempel-Modus** — der einzige
+Ausweg wäre gewesen, den Browserspeicher zu löschen.
+
+**Warum kein Durchlauf es fand:** `test-terminal.js` lief mit
+`stub-chef.js`, also mit der einen Rolle, die ein Terminal nie bedient.
+Attrappen für Leitung und Mitarbeiter gibt es seit Langem; dieser
+Durchlauf nutzte sie nicht.
+
+Dazu der **fünfte Fall derselben Attrappen-Lücke**, diesmal in
+`stub-mitarbeiter.js`: `users` kannte nur `onSnapshot`, nicht `get()`.
+Der Hinweis dazu steht seit dem vierten Fall in `stub-chef.js` — er half
+nicht, weil ihn niemand liest, der die *andere* Datei bearbeitet.
+
+## Zwei Leisten versteckten die halbe App
+
+Gemessen als Chef auf 390px: unter „Betrieb" waren von sechs Reitern
+**drei** zu sehen (381px Überhang), im Chat von fünfzehn Kanälen
+**drei** (1107px). Material, Geräte, Probetraining und Dokumente
+standen ausserhalb des Bildes — man musste *wissen*, dass es sie gibt.
+
+Gelöst mit **dreimal demselben Muster**: neben der Leiste ein Knopf, der
+eine senkrechte Liste öffnet. „Alle" bei den Reitern, „Alle Kanäle" im
+Chat (Studios *und* Gruppen untereinander, mit Suche), „Alle Studios"
+als Chip in den Aufgaben. Der Knopf erscheint **nur bei Überlauf**,
+gemessen über einen ResizeObserver.
+
+Dreimal dasselbe Muster ist eine Hausregel; drei verschiedene Lösungen
+für dasselbe Problem wären drei Dinge zum Lernen gewesen.
+
+## Zwei eigene Entwürfe, beide von Durchläufen widerlegt
+
+**Der Reiter-Umbruch.** `flex-wrap:wrap` zeigte alle sechs — und schob
+den Inhalt auf 429px. `test-rahmen` wurde rot und hatte recht: den
+Durchlauf gibt es, **weil** die erste Aufgabe einmal bei 407px begann.
+
+**Das Raster über der Aufgabenliste.** Es schob die erste *überfällige*
+Aufgabe auf y=2017. `test-aufgaben-bereich4` wurde rot und hatte recht:
+die Liste sortiert längst nach Dringlichkeit — eine zweite Übersicht
+darüber hat den Überblick **verdeckt**, nicht gegeben.
+
+Beide Male derselbe Denkfehler: *alles zeigen, indem man den Inhalt aus
+dem Bild drückt, gewinnt nichts.*
+
+Und beide Male hatte ich vorher falsch geplant: ich wollte eine
+Studio-Übersicht **bauen**, die es längst gab (in der Verwaltung, hinter
+einem Falz). Was fehlte, war nicht der Überblick, sondern das
+**Eingrenzen** — 238 Bedienelemente auf zwölf Bildschirmhöhen werden 37,
+und die erste Aufgabe bleibt bei y=165.
+
+## Drei Messfehler, keiner davon ein Befund
+
+Sie hätten fast **siebzig erfundene Defekte** ergeben:
+
+1. Fenster mit `style.display='flex'` geöffnet — ein Inline-Stil schlägt
+   die Klasse `.show`, also blieben sie beim Schliessen „offen".
+   16 falsche Funde.
+2. Den **gemalten Kasten** gemessen statt der Trefferfläche. `.lb-close`
+   ist 40px gemalt und 44px zu treffen (`::after`).
+3. **Mitten in die Aufklapp-Animation** gemessen: eine skalierte Kiste
+   meldet 41 statt 44. 54 Funde schrumpften danach auf 15.
+
+Übrig blieb **ein** echter: die Studio-Ankreuzzeilen waren 36px statt
+44.
+
+> **Die Lehre, und sie ist unbequemer als die Funde:** wenn eine Messung
+> *sehr viele* Fehler auf einmal meldet, ist der erste Verdacht die
+> Messung. Sechzehn kaputte Schliessen-Knöpfe in einer App, die täglich
+> benutzt wird, hätte längst jemand gemeldet.
+
+## Zwei kaputte Ansichten in der Demo — im Verkaufswerkzeug
+
+Gefunden vom neuen Abschnitt in `test-demo.js`, der jede Ansicht jeder
+Rolle einmal öffnet:
+
+* **Material war in der ganzen Demo leer.** `loadMaterial` liest
+  `doc.metadata.hasPendingWrites`; die Demo baute Dokumente ohne
+  `metadata`.
+* **`readBy.indexOf is not a function`** bei Leitung und Mitarbeiter.
+  Die Demo erzeugte `FieldValue`-Marken und löste sie nie ein:
+  `arrayUnion` schrieb ein leeres Objekt ins Feld.
+
+> Eine Attrappe, die eine Marke erzeugt und nicht einlöst, ist
+> schlimmer als eine, die die Funktion gar nicht kennt — der Aufruf geht
+> scheinbar durch und hinterlässt Unsinn.
+
+## Ein Durchlauf, der grün war, ohne zu messen
+
+`test-ueberblick` las `#studioGrid` global. Während des Umzugs war das
+ein **verstecktes** Element — grün, ohne Aussage. Er prüft jetzt zuerst
+die Sichtbarkeit.
+
+## Und ein Verstoss gegen die eigene Regel
+
+Ich habe während eines laufenden Durchlaufs an `index.html`
+weitergearbeitet. Ergebnis: sieben rote Zeilen, von denen **eine** echt
+war — die übrigen sechs maßen eine halb umgebaute Datei mit veralteten
+CSP-Hashes. Ich hatte dem Benutzer zuerst „sieben" gemeldet und musste
+es auf „eine" korrigieren.
+
+*Ein Durchlauf, dessen Dateien sich unter ihm ändern, misst nichts.*
+Steht seit August in dieser Datei. Heute selbst gebrochen.
+
+## Die Squash-Falle, zum zweiten Mal
+
+PRs werden als Squash gemergt; der Zweig steht danach im Konflikt mit
+`main`. Und für einen konfliktbehafteten PR bildet GitHub **keinen
+Merge-Commit** — also startet es die `pull_request`-Läufe **gar nicht
+erst**. `total_count: 0`, keine Fehlermeldung, sieht aus wie „läuft
+noch".
+
+Zweimal dasselbe heisst: es gehört in die Doku, nicht ins Gedächtnis.
+Steht jetzt in `docs/DEPLOY.md`, mit Befehlen und dem einen Ort, an dem
+GitHub es überhaupt sagt (`mergeable_state: "dirty"`).
+
+## Geprüft
+
+* `test-navi-sichtbar` (neu): 3 Rollen × 3 Breiten — keine Leiste darf
+  Einträge **ohne Ausweg** verstecken, und der Ausweg darf nicht
+  dastehen, wenn alles passt. Gegenprobe → vier rote Zeilen mit den
+  versteckten Einträgen beim Namen
+* `test-terminal` um einen Abschnitt **als Mitarbeiter** erweitert;
+  Gegenprobe → drei rote Zeilen
+* `test-demo` geht jede Ansicht jeder Rolle durch
+* `test-ueberblick`: Sichtbarkeit, Eingrenzen, Weg zurück
+* **Volle Regression: 108 grün · 0 rot · 0 ohne Ausgabe**
+* **Regel-Durchläufe: 234 Zusicherungen, 0 gefallen**
+
+## Was offen bleibt
+
+Schritt 6 bis 9 der Zeiterfassung. Und die Frage, die keine Messung
+beantwortet: **ob es sich jetzt besser anfühlt.** Gemessen ist, dass
+nichts mehr hinter einer Wischbewegung liegt und dass der Chef von 238
+auf 37 kommt. Ob das reicht, sagt der Kunde.
+
+---
+
+## Runde 84 — Das neue Design, hinter einem Schalter
+
+**Anlass**, wörtlich aus dem Betrieb:
+
+> „es sieht alles gleich aus ich will das man einen unterschied schon
+> erkennt und das es halt schön geordnet ist wenn es sein muss können wir
+> auch das ganze grund gerüst ändern aber es soll übersichtlich wirken
+> sodass es ein klein kind verstehen würde"
+
+und, während der Umbau schon lief:
+
+> „merge alles DIREKT aber NUR auf der demo weil ja grade auch andere die
+> app benutzen und wenn irgendwas doch falsch ist soll es nicht direkt
+> alles ändern sondern mit einem klick veröffentlicht werden"
+
+Die zweite Nachricht bestimmt die Bauform der ersten.
+
+### Was gemessen wurde, bevor etwas geändert wurde
+
+Chef, 390×844, Demo:
+
+| Befund | Wert |
+|---|---|
+| Erster echter Inhalt auf Start | y ≈ 240 |
+| „HALLO, DEMO-GESCHÄFTSFÜHRUNG" über zwei Zeilen | ≈ 150px |
+| Flächenarten auf Start | eine — dieselbe weisse Karte für Einrichtung, Warnung und jede Aufgabe |
+| Unterscheidbarkeit Start / Betrieb / Team | nur an der Leiste unten |
+
+Der Befund war nicht „hässlich", sondern **alles gleich laut**. Wenn
+nichts hervorsticht, muss man lesen statt sehen.
+
+### Der Schalter — zuerst gebaut, absichtlich
+
+Das gesamte neue Aussehen hängt an **einer** Klasse am `body`: `neu`.
+Ohne sie greift keine einzige neue CSS-Regel und kein neuer Zweig in der
+Navigation. Die App im Studio bleibt Zeile für Zeile die bisherige.
+
+Vier Quellen, die erste die etwas sagt gewinnt:
+
+1. `?neu=1` / `?neu=0` in der Adresse — zum Vergleichen in zwei Tabs
+2. Dieses Gerät (`localStorage`) — „für mich ausprobieren"
+3. Demo-Modus — dort immer an
+4. `config/design.neu` — **der eine Klick für alle**
+
+Bedient wird das in **Verwaltung → System → Neues Design**. Zwei Knöpfe:
+auf diesem Gerät ausprobieren, und für alle veröffentlichen (mit
+Rückfrage, und derselbe Knopf nimmt es zurück). Die Karte nennt
+ausserdem, *woher* die gerade sichtbare Antwort kommt — ohne das drückt
+jemand „für alle" und bei ihm ändert sich nichts, weil sein
+Geräteschalter dagegensteht.
+
+Regeländerung: **keine**. `match /config/{doc}` erlaubt Lesen für jeden
+Aktiven und Schreiben nur dem Chef — in beiden Welten, flach und unter
+`inFirma(f)`.
+
+`designLaden()` hat ein `try/catch` um den **Aufruf**, nicht nur ein
+`.catch` um das Versprechen: bricht `S()` selbst ab, flöge der Fehler
+synchron und das `Promise.all` beim Start würde mit ihm platzen. Eine
+App, die wegen eines Design-Schalters gar nicht erst startet, wäre der
+teuerste denkbare Fehler an dieser Stelle.
+
+### Was der Nutzer ausgewählt hat
+
+Vier Fragen, vier Antworten — alle vier sind umgesetzt:
+
+| Frage | Antwort |
+|---|---|
+| Wie tief? | **Auch das Grundgerüst** |
+| Unterschied woran? | **Farbe + grosse Symbole** |
+| Startseite? | **Was heute dran ist** |
+| Dichte? | **Weniger und grösser** |
+
+### 1. Untere Leiste: vier statt sechs
+
+`Start · Aufgaben · Nachrichten · Mehr`. „Ich", „Team" und „Verwaltung"
+liegen in einer **Lade**, die aus der Leiste nach oben ausfährt — grosse
+beschriftete Zeilen mit Zweitzeile, keine Symbole.
+
+Warum überhaupt: sechs Knöpfe waren auf 320px exakt 44px breit — die
+Untergrenze für einen Daumen, und es war nichts übrig.
+
+Die Lade ist **Teil der Leiste**, kein eigenes Fenster: ein Fenster wäre
+ein dritter Ort gewesen, an dem Navigation stattfindet. Sie schliesst
+über denselben Knopf, beim Tippen daneben und mit Esc.
+`position:absolute` hält sie ausserhalb des Flusses — sonst verschöbe
+sie beim Öffnen die Knöpfe, und der gleitende Marker (er misst
+`offsetTop`) sässe daneben.
+
+Zwei Dinge, die sonst still gebrochen wären und deshalb ausdrücklich
+nachgezogen sind: „Mehr" trägt die Marke, wenn man in einem Bereich
+dahinter steht (sonst zeigt die Leiste nirgendwohin), und „Mehr" erbt
+den ungelesen-Punkt von allem, was dahinter liegt.
+
+### 2. Bereichsfarbe und grosses Zeichen
+
+Sechs Töne, einer je Bereich, durchgezogen durch Kopf, Reiterleiste und
+die gleitende Füllung unten.
+
+**Keiner davon ist eine Statusfarbe.** Der erste Anlauf nahm
+`rgba(52,211,153,…)` für Nachrichten und `rgba(251,191,36,…)` für
+Aufgaben — also exakt `--ok` und `--warm`. `test-gestaltung` hat das
+gefunden, und der Durchlauf hatte recht: eine grüne Fläche, die nicht
+„in Ordnung" heisst, und eine gelbe, die nicht warnt, machen die
+Statusfarben bedeutungslos. Ersetzt durch Teal, Orange und Pink.
+
+Der **Bereichskopf** (≈89px) ersetzt auf dem Handy die Überschrift der
+einzelnen Seite — die steht ohnehin im Reiter darunter, und zweimal
+dasselbe kostet nur Höhe. Er rückt beim Scrollen zusammen. Der
+„+ Neu"-Knopf wandert in ihn hinein: davor stand er allein in einer
+sonst leeren Zeile, 56px für ein Bedienelement. Umgehängt wird das echte
+Element, nicht eine Kopie — sein Klick-Zuhörer hängt daran.
+
+Die Unterzeile zählt nur dort, wo Zählen eine Handlung auslöst: offene
+und überfällige Aufgaben, ungelesene Nachrichten. Wo sich nichts zählen
+lässt, das sich auch ändert, steht ein Satz. Eine Zahl, die immer
+dieselbe ist, liest nach zwei Tagen niemand mehr.
+
+### 3. Startseite: was heute dran ist
+
+Überfällig zuerst (mit Namen, Studio und „seit N Tagen"), dann heute,
+dann Ungelesenes. Höchstens drei plus vier, der Rest als „und N
+weitere". Jede Zeile führt dorthin, wo man die Sache erledigt.
+
+Der Unterschied zu den Kachel-Zahlen ist nicht die Form, sondern die
+Aussage: „3 überfällig" nennt eine Menge und verlangt einen zweiten
+Klick, um zu erfahren welche.
+
+**Gemessen und korrigiert:** zuerst stand die Liste hinter der
+Einrichtungskarte — die erste überfällige Aufgabe begann bei **y=682**,
+auf einem 844er-Handy fast unten. Jetzt steht sie ganz oben, y=230 (davon
+44 die Demo-Leiste, die es in der echten App nicht gibt). Die
+Einrichtung ist eine Sache von einmal, die überfällige Aufgabe eine von
+jedem Morgen.
+
+Der Hinweisbalken „N Aufgaben sind überfällig" entfällt im neuen Design:
+die Liste darüber nennt jede davon beim Namen, und Wiederholung ist
+genau die Unruhe, gegen die umgebaut wurde.
+
+### 4. Weniger und grösser
+
+Statt hundert Einzelregeln ist die **Stufenleiter selbst** verschoben —
+sieben Schriftgrössen an einer Stelle, ~7 % höher, und alles was sie
+benutzt wächst mit. Dazu `--zeile: 64px` als Mindesthöhe jeder
+antippbaren Zeile und mehr Luft in den Karten.
+
+### Geprüft
+
+`tests/test-neu-design.js` (neu). Der erste Abschnitt misst **das
+bisherige Design ohne Schalter** — sechs Knöpfe, keine Lade, kein
+Bereichskopf, leere Heute-Liste, sichtbare Seitenüberschrift. Wäre der
+rot, wäre alles andere egal.
+
+Danach: jede der sechs Gruppen ist auf dem Weg erreichbar, den ein
+Mensch geht (die drei hinter „Mehr" über „Mehr", nicht per Direktklick
+auf ein verstecktes Element); jeder Bereich hat eine eigene Farbe und
+keine zwei teilen sich eine; jede Startzeile ist ≥64px hoch, nennt die
+Sache beim Namen und führt irgendwohin; die Zahl im Bereichskopf wird
+gegen die Liste darunter nachgezählt; die Lade hat drei Wege hinaus.
+Zuletzt drei Rollen × drei Breiten (320/390/430): Trefferflächen über
+`elementFromPoint`, kein Überhang, kein abgeschnittenes Wort, kein
+seitliches Scrollen.
+
+### Zwei eigene Fehler, beide von Durchläufen gefunden
+
+**1. `classList.toggle(name, undefined)` schaltet um, statt zu setzen.**
+`designAnwenden()` läuft absichtlich sehr früh, und zu dem Zeitpunkt ist
+`_designNeu` zwar hochgezogen, aber noch nicht zugewiesen — also
+`undefined`. Die bisherige App bekam dadurch für einige hundert
+Millisekunden die Klasse `neu`. Unsichtbar hinter dem Startbild, aber
+lang genug, dass die untere Leiste in diesem Fenster vermessen wurde;
+die gleitende Füllung stand danach dauerhaft auf x=0 statt x=4.
+
+`test-marker` hat es gefunden, und **nur** in der Fassung mit „Bewegung
+reduzieren" — dort blendet das Startbild zu einem anderen Zeitpunkt aus,
+und deshalb fiel die Messung genau in dieses Fenster. Der Unterschied
+zwischen einem Fehler, der in einer von zwei Fassungen auftritt, und
+keinem Fehler ist keiner.
+
+Die Lehre ist grösser als die Zeile: **eine Zusage, die an einem
+`undefined` hängt, ist keine Zusage.** Der ganze Sinn des Schalters war
+„live ändert sich nichts", und genau das hat er kurzzeitig gebrochen.
+`layoutNeu()` gibt jetzt immer einen Wahrheitswert zurück, und
+`designAnwenden()` erzwingt ihn noch einmal.
+
+Zwei falsche Erklärungen standen vorher im Weg — „buildNav vergisst
+`active`" und „der Vorfahr ist versteckt". Beide klangen plausibel,
+beide waren falsch, und beide hätten sich durch Nachdenken nicht
+widerlegen lassen. Widerlegt hat sie erst eine Spur, die JEDE
+Schreibung von `--ind-x` samt Aufrufstapel mitschrieb. **Wer rät, prüft
+nicht.**
+
+(Was aus der ersten falschen Erklärung übrig blieb, ist trotzdem
+richtig: `buildNav()` markiert jetzt am Ende selbst, statt sich darauf
+zu verlassen, dass jemand danach `showView` ruft — `featuresAnwenden()`
+tat das nämlich nie.)
+
+**2. Bereichsfarben, die Statusfarben besetzen.** Siehe oben —
+`test-gestaltung`. Der Durchlauf hatte recht, und zwar aus einem Grund,
+den ich beim Aussuchen der Farben schlicht nicht bedacht hatte.
+
+### Ein dritter Fund — und eine Lücke in den Durchläufen selbst
+
+Die stehende Regel aus dem Betrieb lautet: **vor neuen Knöpfen erst
+messen** (`.claude/skills/knoepfe`). Angewandt auf die neue untere
+Leiste hat sie sofort etwas gefunden — aber erst, nachdem klar war,
+dass die Messung so, wie sie lief, gar nichts über das neue Design
+sagen konnte.
+
+`test-abgeschnitten` startet die App **ohne Schalter**. Er misst also
+die Schriftgrössen von gestern und ist grün, egal was unter `neu`
+passiert. Mit `?neu=1` gestartet fand er im Team-Bereich sofort:
+
+    WAAGERECHT  .scroll-area  327 > 320 px  · bei 320 px · team
+                „Wartet auf deine Entscheidung"
+
+`.sec-head span` trägt `white-space:nowrap`, Versalien und `--ls-l`.
+Mit der um eine Stufe höheren Schrift passt das auf einem 320er-Gerät
+nicht mehr. Behoben durch Umbrechen-Erlauben, nicht durch eine engere
+Laufweite: die hätte genau dieses eine Wort gerettet und beim nächsten
+längeren wieder versagt.
+
+Die eigentliche Lehre ist aber nicht die CSS-Zeile, sondern:
+
+> **Ein Durchlauf prüft nur das, was er zu sehen bekommt.** 109 grüne
+> Durchläufe sagten nichts über das neue Design aus, weil keiner von
+> ihnen es je geladen hat.
+
+Deshalb gibt es jetzt `tests/test-neu-messlatte.js`: dieselben drei
+Messungen, die von Geometrie handeln — abgeschnitten, Knöpfe, seitwärts
+schieben — laufen ein zweites Mal mit `?neu=1`. Die übrigen prüfen
+Verhalten, und das ändert der Schalter nicht.
+
+Gegenprobe gemacht: Regel entfernt → rot (327 > 320), Regel zurück →
+grün. Ein Prüfer, der nie anschlägt, prüft nichts.

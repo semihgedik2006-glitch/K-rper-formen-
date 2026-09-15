@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-fdnFPShzLb1TMDy7KrrrclnKCkYDzMVLnfRST91G5i0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-KsVSVOgwgBbSMTiACAUDFKXO+vhglKNzA9SyFqwh7J4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3846,6 +3846,301 @@ html{font-size:var(--fs,100%)}
 .ann-del:hover{color:var(--danger-tx);background:var(--f-bad)}
 .chat-author{cursor:pointer}
 .chat-author:hover{text-decoration:underline}
+
+/* ══════════════════════════════════════════════════════════════════════
+   DAS NEUE DESIGN
+   ══════════════════════════════════════════════════════════════════════
+   ALLES hier hängt an body.neu. Ohne die Klasse greift keine einzige
+   Regel — die App ist dann Pixel für Pixel die bisherige. Das ist kein
+   Stil, sondern die Zusage aus dem Betrieb: solange das Neue nicht
+   veröffentlicht ist, darf es im Studio nichts verändern.
+
+   Wer es wieder loswerden will, löscht diesen Block und die vier
+   Funktionen um layoutNeu() herum. Deshalb steht es an einer Stelle und
+   nicht verteilt.
+
+   Der Anlass, wörtlich: „es sieht alles gleich aus ich will das man
+   einen unterschied schon erkennt und das es halt schön geordnet ist
+   […] sodass es ein klein kind verstehen würde."
+
+   Drei Messungen von vorher, gegen die gebaut wird (Chef, 390×844):
+     · Jede Fläche ist dieselbe weisse Karte — Einrichtung, Warnung und
+       jede einzelne Aufgabe. Nichts sagt, was wichtig ist.
+     · Start, Betrieb und Team sehen identisch aus. Wo man ist, erkennt
+       man nur an der Leiste unten.
+     · Rund 130px Kopf aus Symbolknöpfen, dann „HALLO,
+       DEMO-GESCHÄFTSFÜHRUNG" über zwei Zeilen — der erste echte Inhalt
+       begann bei etwa 240px.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Grösser und luftiger ──
+   Der Nutzer hat „weniger und grösser" gewählt: ≈6 Zeilen je Bildschirm
+   statt 12, jede Zeile mindestens 64px. Statt hundert Einzelregeln wird
+   die Stufenleiter selbst verschoben — dieselbe Ordnung, nur eine
+   Stufe höher. Sieben Werte an einer Stelle, und alles, was sie
+   benutzt, wächst mit. */
+body.neu{
+  --t-2xs:.74rem;--t-xs:.83rem;--t-sm:.93rem;--t-md:1.03rem;
+  --t-lg:1.2rem;--t-xl:1.45rem;--t-2xl:1.85rem;
+  --zeile:64px;                 /* Mindesthöhe einer antippbaren Zeile */
+}
+
+/* ── 2. Die Bereichsfarben ──
+   Sechs Farbtöne, je Bereich einer. Sie sind bewusst nicht der
+   persönliche Akzent (den stellt jeder selbst ein): der Akzent sagt
+   „das kannst du drücken", die Bereichsfarbe sagt „hier bist du". Zwei
+   Aussagen, zwei Farben.
+
+   --ber   die Farbe selbst (Text, Linien, Zeichen)
+   --ber-f die Fläche dahinter (immer dieselbe Farbe, nur leise)
+
+   Getrennt ausgeschrieben statt mit color-mix gerechnet: die App läuft
+   auf Studio-Tablets, deren Browser niemand aktualisiert, und eine
+   Farbe, die dort still auf „transparent" fällt, nimmt dem Kopf genau
+   die Aussage, für die es ihn gibt.
+
+   KEINE DAVON IST EINE STATUSFARBE. Der erste Anlauf nahm für
+   Nachrichten rgba(52,211,153,…) und für Aufgaben rgba(251,191,36,…) —
+   also exakt --ok und --warm. test-gestaltung hat das gefunden, und
+   der Durchlauf hatte recht: eine grüne Fläche, die nicht „in Ordnung"
+   heisst, und eine gelbe, die nicht warnt, machen die Statusfarben
+   bedeutungslos. Jetzt Teal statt Grün, Orange statt Bernstein, Pink
+   statt Türkis. */
+/* Sechs Töne, so weit auseinander wie es bei sechsen geht: Blau,
+   Bernstein, Grün, Violett, Türkis — und Schiefer für die Verwaltung.
+   Schiefer ist dort kein Rest, sondern die Aussage: das ist die
+   Einstellungsecke, nicht der Betrieb. Und es ist der EINZIGE graue
+   Bereich — grau an zwei Stellen liest sich wie „abgeschaltet".
+
+   Erster Anlauf hatte Start in Schiefer. Im Bild sah der aktive Knopf
+   unten dadurch aus wie ein gesperrter. */
+body.neu{--ber:var(--accent);--ber-f:var(--accent-glow)}
+body.neu[data-bereich="g-start"] {--ber:#60A5FA;--ber-f:rgba(96,165,250,.16)}
+body.neu[data-bereich="g-ich"]   {--ber:#A78BFA;--ber-f:rgba(167,139,250,.17)}
+body.neu[data-bereich="g-komm"]  {--ber:#2DD4BF;--ber-f:rgba(45,212,191,.16)}
+body.neu[data-bereich="g-arbeit"]{--ber:#FB923C;--ber-f:rgba(251,146,60,.16)}
+body.neu[data-bereich="g-team"]  {--ber:#F472B6;--ber-f:rgba(244,114,182,.16)}
+body.neu[data-bereich="g-chef"]  {--ber:#94A3B8;--ber-f:rgba(148,163,184,.16)}
+/* Im Hellmodus tragen dieselben Töne nicht: #FB923C auf Weiss ist als
+   Text nicht lesbar. Dunklere Geschwister, jeder gegen Weiss auf
+   mindestens 4,5:1 gewählt. */
+body.neu.light[data-bereich="g-start"] {--ber:#1D4ED8;--ber-f:rgba(29,78,216,.10)}
+body.neu.light[data-bereich="g-ich"]   {--ber:#6D28D9;--ber-f:rgba(109,40,217,.10)}
+body.neu.light[data-bereich="g-komm"]  {--ber:#0F766E;--ber-f:rgba(15,118,110,.10)}
+body.neu.light[data-bereich="g-arbeit"]{--ber:#C2410C;--ber-f:rgba(194,65,12,.10)}
+body.neu.light[data-bereich="g-team"]  {--ber:#BE185D;--ber-f:rgba(190,24,93,.10)}
+body.neu.light[data-bereich="g-chef"]  {--ber:#475569;--ber-f:rgba(71,85,105,.10)}
+
+/* ── 3. Der Bereichskopf ── */
+.bereich-kopf{display:none}
+body.neu .bereich-kopf{display:flex;align-items:center;gap:var(--s12);
+  flex-shrink:0;padding:var(--s16) var(--rand) var(--s12);
+  background:linear-gradient(180deg,var(--ber-f),transparent);
+  transition:padding .3s var(--ease-ios)}
+body.neu .bk-ikon{flex:0 0 auto;display:grid;place-items:center;
+  width:46px;height:46px;border-radius:var(--r-md);
+  background:var(--ber-f);color:var(--ber);
+  box-shadow:inset 0 0 0 1px var(--ber-f);
+  transition:width .3s var(--ease-ios),height .3s var(--ease-ios)}
+body.neu .bk-ikon svg{width:26px;height:26px;
+  transition:width .3s var(--ease-ios),height .3s var(--ease-ios)}
+body.neu .bk-txt{min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
+body.neu .bk-txt b{font-family:var(--font-head);font-size:var(--t-2xl);
+  line-height:var(--lh-eng);letter-spacing:var(--ls-eng);
+  transition:font-size .3s var(--ease-ios)}
+body.neu .bk-txt i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.neu .bk-txt i.warn{color:var(--danger-tx);font-weight:700}
+/* Beim Scrollen rückt er zusammen — wie die Seitenköpfe es längst tun. */
+body.neu .bereich-kopf.eng{padding-top:var(--s8);padding-bottom:var(--s6)}
+body.neu .bereich-kopf.eng .bk-ikon{width:34px;height:34px}
+body.neu .bereich-kopf.eng .bk-ikon svg{width:20px;height:20px}
+body.neu .bereich-kopf.eng .bk-txt b{font-size:var(--t-lg)}
+body.neu .bereich-kopf.eng .bk-txt i{display:none}
+/* Am Rechner NICHT. Dort steht die Seitenleiste links und nennt den
+   Bereich bereits — der Kopf wäre die zweite Antwort auf dieselbe
+   Frage, und die Seitenüberschrift (die dort sichtbar bleibt) die
+   dritte. Der Bereichskopf ersetzt die Seitenüberschrift; wo er sie
+   nicht ersetzt, hat er nichts zu suchen. */
+@media(min-width:821px){ body.neu .bereich-kopf{display:none} }
+/* Der umgehängte „+ Neu"-Knopf sitzt rechts. margin-top:0 hebt den
+   Versatz auf, den er im Seitenkopf brauchte, um neben der zweizeiligen
+   Überschrift auf der Grundlinie zu sitzen — hier steht er mittig. */
+body.neu .bereich-kopf .kopf-plus{margin-left:auto;margin-top:0}
+
+/* Die Reiterzeile nimmt die Bereichsfarbe an — sonst wäre der Kopf
+   bunt und alles darunter wieder gleich. */
+body.neu #subnav::before{background:var(--ber-f);box-shadow:inset 0 0 0 1px var(--ber)}
+body.neu .subtab.on{color:var(--ber)}
+/* „Alle" steht am rechten Rand über der schiebbaren Reiterzeile. Ohne
+   eigenen Grund schob sich „Material" unter ihm durch, und im Bild sah
+   es aus, als läge Schrift auf Schrift. Jetzt bringt er seinen Grund
+   mit und blendet die Zeile links davon aus. */
+body.neu .subnav-mehr{background:var(--bg);box-shadow:-10px 0 10px -2px var(--bg)}
+
+/* ── 4. Der Seitenkopf wandert in den Bereichskopf ──
+   Nur auf dem Handy: dort stand die Überschrift der Seite direkt über
+   der Reiterzeile, die dieselbe Seite schon benennt. Am Rechner gibt
+   es keinen Bereichskopf, dort bleibt alles wie es ist.
+
+   Der „+ Neu"-Knopf bleibt. Er ist die wichtigste Handlung auf
+   Aufgaben, Putzplan und Probetraining und hängt an dieser Zeile. */
+@media(max-width:820px){
+  body.neu .view-head > h2,
+  body.neu .view-head > p,
+  body.neu .view-head .vh-text{display:none}
+  body.neu .view-head{padding-top:var(--s6);padding-bottom:0}
+  body.neu .view-head:not(:has(.kopf-plus)){display:none}
+  body.neu .view-head .vh-line{justify-content:flex-end}
+}
+
+/* ── 5. Die untere Leiste: vier statt sechs ──
+   Sechs Knöpfe waren auf 320px exakt 44px breit — die Untergrenze für
+   einen Daumen, und nichts blieb übrig. Vier Knöpfe haben Platz für
+   ein Wort, das man lesen kann. */
+@media(max-width:820px){
+  /* Die Leiste trägt jetzt zwei Ebenen: die Knopfreihe und die Lade
+     darüber. Also block statt flex — und KEIN overflow:auto mehr, sonst
+     schnitte es die Lade ab, die über den oberen Rand hinausragt. */
+  body.neu .mobnav{display:block;overflow:visible;padding:0}
+  body.neu .mn-reihe{display:flex;
+    padding:var(--s6) calc(var(--s4) + var(--sar)) calc(var(--s6) + var(--sab)) calc(var(--s4) + var(--sal))}
+  body.neu .mn-reihe button{flex:1 1 0;min-width:0}
+  body.neu .mobnav button svg{width:24px;height:24px}
+  body.neu .mn-reihe button span:not(.badge):not(.ndot){font-size:var(--t-2xs)}
+  /* Die gleitende Füllung nimmt die Farbe des Bereichs an, in dem man
+     gerade ist. Damit stimmt unten und oben dieselbe Aussage überein. */
+  body.neu .mobnav::before{background:var(--ber-f);box-shadow:inset 0 0 0 1px var(--ber)}
+  body.neu .mobnav button.active{color:var(--ber)}
+
+  /* Die Lade. position:absolute hält sie AUSSERHALB des Flusses —
+     sonst schöbe sie beim Öffnen die Knöpfe nach unten, und der
+     gleitende Marker (er misst offsetTop) sässe daneben. */
+  body.neu .mn-lade{position:absolute;bottom:100%;left:0;right:0;
+    background:var(--bg-2);border-top:1px solid var(--line);
+    border-radius:var(--r-md) var(--r-md) 0 0;box-shadow:var(--e3-oben);
+    padding:var(--s8) calc(var(--s8) + var(--sal)) var(--s8) calc(var(--s8) + var(--sar));
+    animation:ladeAuf .26s var(--ease-ios) both}
+  @keyframes ladeAuf{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    body.neu .mn-lade{animation:none}
+  }
+  /* Grosse beschriftete Zeilen, keine Symbole — so hat der Nutzer es
+     ausgewählt. Mindestens --zeile hoch. */
+  body.neu .mn-zeile{display:flex;flex-direction:row;align-items:center;
+    gap:var(--s12);width:100%;min-height:var(--zeile);text-align:left;
+    padding:var(--s10) var(--s12);border-radius:var(--r-md);
+    background:none;border:none;cursor:pointer;color:var(--text);position:relative}
+  body.neu .mn-zeile:active{transform:scale(.985)}
+  body.neu .mn-zeile.active{background:var(--ber-f)}
+  body.neu .mz-ikon{flex:0 0 auto;display:grid;place-items:center;
+    width:40px;height:40px;border-radius:var(--r-sm);
+    background:var(--auf-2);color:var(--text-2)}
+  body.neu .mn-zeile.active .mz-ikon{background:var(--ber-f);color:var(--ber)}
+  body.neu .mz-ikon svg{width:22px;height:22px}
+  body.neu .mz-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
+  body.neu .mz-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng)}
+  body.neu .mz-txt i{font-style:normal;font-size:var(--t-xs);color:var(--text-3);
+    line-height:var(--lh-eng);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.neu .mz-pfeil{flex:0 0 auto;color:var(--text-3);font-size:var(--t-lg)}
+  body.neu .mn-zeile .badge{position:static;transform:none}
+  body.neu .mn-zeile .ndot{position:static;transform:none;margin-left:var(--s4)}
+
+  body.neu .mn-mehr{flex:1 1 0;min-width:0;background:none;border:none;
+    color:var(--text-3);cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;gap:var(--s4);padding:var(--s8) var(--s2);
+    border-radius:var(--r-md);font-size:var(--t-2xs);font-weight:600;
+    position:relative;z-index:1;font-family:var(--font-body)}
+  body.neu .mn-mehr svg{width:24px;height:24px}
+  body.neu .mn-mehr.active{color:var(--ber);font-weight:700}
+  /* Solange die Lade offen ist, zeigt der Knopf das auch. Ohne das
+     tippt man zweimal und weiss nicht, warum sich nichts tut. */
+  body.lade-auf.neu .mn-mehr{color:var(--text)}
+  /* Und die Seite dahinter tritt zurück. Ohne das schnitt die Lade
+     mitten durch die Einrichtungskarte, und man sah zwei Ebenen, die
+     gleich hell waren. z-index 29: unter der Leiste (30), über allem
+     anderen. Ein Tipp darauf schliesst sie — das erledigt der
+     Klick-Zuhörer, der auf alles ausserhalb von .mobnav hört. */
+  body.lade-auf.neu .shell::after{content:'';position:fixed;inset:0;z-index:29;
+    background:var(--scrim);animation:einblenden .26s var(--ease-ios) both}
+  @keyframes einblenden{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){
+    body.lade-auf.neu .shell::after{animation:none}
+  }
+}
+
+/* ── 6. Die Startseite: was heute dran ist ──
+   Vorher stand dort eine Begrüssung über zwei Zeilen und darunter
+   Kacheln mit Zahlen. Eine Zahl sagt, DASS etwas offen ist. Sie sagt
+   nicht, was — und solange sie das nicht sagt, ist sie kein Anfang,
+   sondern ein zweiter Klick.
+
+   Jetzt: überfällig zuerst, dann heute, dann ungelesen. Jede Zeile
+   führt genau dorthin, wo man sie erledigt. */
+body.neu .heute-block{margin-bottom:var(--s20)}
+body.neu .heute-kopf{display:flex;align-items:center;gap:var(--s8);
+  margin:0 0 var(--s8);font-family:var(--font-head);font-weight:700;
+  font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
+  color:var(--text-3)}
+body.neu .heute-kopf .hk-punkt{width:8px;height:8px;border-radius:var(--r-pille);
+  background:var(--danger);flex:0 0 auto}
+body.neu .heute-kopf.dringend{color:var(--danger-tx)}
+body.neu .heute-liste{display:flex;flex-direction:column;gap:var(--s8)}
+body.neu .heute-zeile{display:flex;align-items:center;gap:var(--s12);
+  width:100%;min-height:var(--zeile);text-align:left;cursor:pointer;
+  padding:var(--s12) var(--s16);border-radius:var(--radius);
+  background:var(--bg-2);border:none;box-shadow:var(--e1);
+  color:var(--text);font-family:var(--font-body);
+  border-left:4px solid transparent;
+  transition:transform .25s var(--spring),box-shadow .25s}
+body.neu .heute-zeile:active{transform:scale(.985)}
+/* Der Unterschied, um den es geht: Überfälliges sieht anders aus als
+   alles andere. Vorher war jede Aufgabe dieselbe weisse Karte. */
+body.neu .heute-zeile.dringend{border-left-color:var(--danger);
+  background:var(--f-bad-leise)}
+body.neu .heute-zeile.heute{border-left-color:var(--warm)}
+body.neu .heute-zeile.lesen{border-left-color:var(--ber)}
+body.neu .hz-ikon{flex:0 0 auto;display:grid;place-items:center;
+  width:34px;height:34px;border-radius:var(--r-sm);
+  background:var(--auf-2);color:var(--text-2)}
+body.neu .heute-zeile.dringend .hz-ikon{background:var(--f-bad);color:var(--danger-tx)}
+body.neu .hz-ikon svg{width:20px;height:20px}
+body.neu .hz-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
+body.neu .hz-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.neu .hz-txt i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);
+  line-height:var(--lh-eng);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.neu .heute-zeile.dringend .hz-txt i{color:var(--danger-tx);font-weight:600}
+body.neu .hz-pfeil{flex:0 0 auto;color:var(--text-3);font-size:var(--t-lg)}
+/* Nichts offen ist eine Aussage, kein leerer Bildschirm. */
+body.neu .heute-ruhe{display:flex;align-items:center;gap:var(--s12);
+  padding:var(--s20) var(--s16);border-radius:var(--radius);
+  background:var(--f-ok);border:1px solid var(--k-ok)}
+body.neu .heute-ruhe .hr-ico{flex:0 0 auto;display:grid;place-items:center;
+  width:40px;height:40px;border-radius:var(--r-pille);
+  background:var(--ok);color:var(--on-accent);font-weight:700;font-size:var(--t-lg)}
+body.neu .heute-ruhe b{display:block;font-size:var(--t-md)}
+body.neu .heute-ruhe span{display:block;font-size:var(--t-sm);color:var(--text-2)}
+
+/* Abschnittsüberschriften dürfen umbrechen.
+   .sec-head span trägt white-space:nowrap, Versalien und --ls-l. Mit der
+   um eine Stufe höheren Schrift passte „WARTET AUF DEINE ENTSCHEIDUNG"
+   auf einem 320er-Gerät nicht mehr: gemessen 327px Inhalt in 320px
+   Fläche, also abgeschnittener Text im Team-Bereich.
+
+   Gefunden von test-abgeschnitten — aber erst, als er MIT dem Schalter
+   lief. Ohne ihn misst er die Schriftgrössen von gestern und ist grün.
+   Ein Durchlauf prüft nur das, was er zu sehen bekommt.
+
+   Umbrechen statt die Laufweite zurückzunehmen: eine engere Laufweite
+   hätte genau dieses eine Wort gerettet und beim nächsten längeren
+   wieder versagt. */
+body.neu .sec-head span{white-space:normal;min-width:0}
+
+/* ── 7. Mehr Luft in den Karten ──
+   „Weniger und grösser" gilt auch dort, wo schon Karten stehen. */
+body.neu .card{padding:clamp(20px,5vw,30px);margin-bottom:var(--s24)}
+body.neu .kn-zeile{min-height:var(--zeile)}
 </style>
 </head>
 <body>
@@ -4094,6 +4389,20 @@ html{font-size:var(--fs,100%)}
     <nav class="side" id="side"></nav>
     <div class="main">
 
+      <!-- ══ BEREICHSKOPF (nur im neuen Design) ══════════════════════
+           Ein grosses Zeichen, der Name des Bereichs und EINE Zeile,
+           die sagt, wie es darin steht. Er ersetzt auf dem Handy die
+           Überschrift der einzelnen Seite — die steht ohnehin im
+           Reiter darunter, und zweimal dasselbe kostet nur Höhe.
+
+           Warum hier und nicht in jeder der zwanzig Ansichten: eine
+           Stelle, ein Zustand. Zwanzig gepflegte Köpfe wären zwanzig
+           Gelegenheiten, einen zu vergessen. -->
+      <div class="bereich-kopf" id="bereichKopf" hidden>
+        <span class="bk-ikon" id="bkIkon" aria-hidden="true"></span>
+        <span class="bk-txt"><b id="bkTitel"></b><i id="bkSub"></i></span>
+      </div>
+
       <!-- Reiter innerhalb der gewählten Gruppe -->
       <div class="subnav-zeile" id="subnavZeile">
         <nav class="subnav" id="subnav"></nav>
@@ -4105,6 +4414,20 @@ html{font-size:var(--fs,100%)}
       <section class="view" id="view-home">
         <div class="view-head shrink"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
         <div class="scroll-area" data-shrinks="1">
+
+          <!-- ══ WAS HEUTE DRAN IST (nur im neuen Design) ═══════════
+               Überfällig zuerst, dann heute, dann ungelesen. Jede
+               Zeile führt dorthin, wo man sie erledigt.
+
+               GANZ OBEN, vor der Einrichtung. Gemessen: mit der
+               Einrichtungskarte davor begann die erste überfällige
+               Aufgabe bei y=682 — auf einem 844er-Handy fast unten.
+               Die Einrichtung ist eine Sache von einmal, die
+               überfällige Aufgabe eine von jedem Morgen.
+
+               Im bisherigen Design bleibt dieser Kasten leer und
+               versteckt; die Reihenfolge ändert dort also nichts. -->
+          <div id="heuteListe"></div>
 
           <div class="card" id="setupCard" style="display:none">
             <div class="karten-kopf">
@@ -5583,6 +5906,36 @@ html{font-size:var(--fs,100%)}
               <p class="hint" id="rechtFehltText"></p>
               <button class="btn btn-ghost btn-sm" data-rechtauf="impressum">Ansehen</button>
             </div>
+          <!-- Neues Design: erst ansehen, dann veröffentlichen.
+               Steht bewusst GANZ OBEN im System-Reiter und nicht
+               zugeklappt: solange das neue Aussehen nicht für alle
+               freigegeben ist, ist das hier die Seite, auf die man
+               kommt, um es anzusehen. -->
+          <div class="card" data-chef-only="1">
+            <h3 data-ikon="kontrast">Neues Design</h3>
+            <p class="hint">Probier es erst auf deinem Gerät aus. Erst wenn es
+              passt, veröffentlichst du es für alle — mit einem Klick, und
+              genauso zurück.</p>
+            <div id="designStand" class="setup-zeile" style="display:block"></div>
+            <div class="btn-row" style="margin-top:12px">
+              <button class="btn btn-ghost btn-sm" id="designGeraet">Auf diesem Gerät ausprobieren</button>
+              <button class="btn btn-primary btn-sm" id="designVeroeff">Für alle veröffentlichen</button>
+            </div>
+            <details class="nachfrage">
+              <summary>Was ändert sich?</summary>
+              <div class="nachfrage-text">
+                <p>Die untere Leiste hat vier statt sechs Knöpfe — „Ich",
+                  „Team" und „Verwaltung" liegen hinter <b>Mehr</b>.</p>
+                <p>Jeder Bereich hat eine eigene Farbe und ein großes Zeichen
+                  oben, damit man sieht, wo man ist.</p>
+                <p>Die Startseite zeigt <b>was heute dran ist</b> statt einer
+                  Begrüßung.</p>
+                <p>Zeilen sind größer und weiter auseinander.</p>
+                <p><b>Es geht nichts verloren.</b> Es sind dieselben Daten und
+                  dieselben Seiten, nur anders geordnet.</p>
+              </div>
+            </details>
+          </div>
           <div class="card" data-fold="funktionen" data-chef-only="1">
             <h3 data-ikon="raster">Funktionen</h3>
             <p class="hint">Abgeschaltetes verschwindet aus der Navigation — bei
@@ -6741,6 +7094,9 @@ function applyPrefs(){
 }
 (function initTheme(){
   loadPrefs(); applyPrefs();
+  /* Vor allem anderen: Adresse, Gerät und Demo kennen die Antwort ohne
+     Datenbank. Später kommt der Firmenschalter dazu (designLaden). */
+  designAnwenden();
   // Wenn „auto" gewählt ist, auf Systemwechsel reagieren
   try{
     var mq=window.matchMedia('(prefers-color-scheme: light)');
@@ -9098,6 +9454,177 @@ function featuresAnwenden(){
   if(currentView==='team') teamReiterPruefen();
 }
 
+/* ══ DAS NEUE DESIGN — UND SEIN SCHALTER ═══════════════════════════════
+   Anlass, wörtlich: „merge alles DIREKT aber NUR auf der demo weil ja
+   grade auch andere die app benutzen und wenn irgendwas doch falsch ist
+   soll es nicht direkt alles ändern sondern mit einem klick
+   veröffentlicht werden".
+
+   Genau so ist es gebaut. Das gesamte neue Aussehen hängt an EINER
+   Klasse am body: `neu`. Ohne sie ist die App Zeile für Zeile die, die
+   heute im Studio läuft — kein neues CSS greift, kein neuer Zweig in
+   der Navigation.
+
+   Vier Quellen, in dieser Reihenfolge. Die erste, die etwas sagt,
+   gewinnt:
+
+     1. ?neu=1 / ?neu=0 in der Adresse — zum Vergleichen nebeneinander,
+        in zwei Tabs. Überschreibt alles andere.
+     2. Dieses Gerät (localStorage) — „für mich ausprobieren". Geht
+        niemanden sonst etwas an und überlebt kein anderes Handy.
+     3. Demo-Modus — dort IMMER an. Die Demo ist die Vorschau; sie hat
+        keine echten Nutzer, die etwas verlieren könnten.
+     4. config/design.neu — der eine Klick für alle. Chef schreibt,
+        alle lesen (firestore.rules: match /config/{doc}).
+
+   Warum der Firmen-Schalter nicht einfach in config/features liegt:
+   featuresSetzen() kopiert ausschliesslich bekannte FEATURES-Ids und
+   würde den Schlüssel stillschweigend wegwerfen. Ein eigener Doc ist
+   billiger als eine Ausnahme in einer Schleife, die davon nichts weiss. */
+var _designNeu = false;        // firmenweit veröffentlicht?
+var _designUnsub = null;
+
+function designUrl(){
+  var m=/[?&]neu=([01])/.exec(location.search);
+  return m ? m[1]==='1' : null;
+}
+function designGeraet(){
+  try{
+    var v=localStorage.getItem('kf_neu');
+    return v==='1' ? true : (v==='0' ? false : null);
+  }catch(e){ return null; }
+}
+function designGeraetSetzen(an){
+  try{
+    if(an===null) localStorage.removeItem('kf_neu');
+    else localStorage.setItem('kf_neu', an?'1':'0');
+  }catch(e){}
+  designAnwenden();
+}
+function imDemo(){ return /[?&]demo(=|&|$)/.test(location.search); }
+
+/* Gibt IMMER true oder false zurück, nie undefined. Der Grund steht in
+   designAnwenden(). */
+function layoutNeu(){
+  var u=designUrl();       if(u!==null) return u;
+  var g=designGeraet();    if(g!==null) return g;
+  if(imDemo()) return true;
+  return !!_designNeu;
+}
+
+/* Umschalten heisst: Klasse setzen und alles neu zeichnen, was seine
+   Form daraus nimmt. Kein Neuladen — sonst könnte man es nicht
+   nebeneinander vergleichen, und genau dafür ist der Schalter da. */
+function designAnwenden(){
+  /* Das doppelte Ausrufezeichen ist kein Zierrat. classList.toggle(name,
+     kraft) behandelt `undefined` wie ein FEHLENDES zweites Argument —
+     und schaltet dann um, statt zu setzen.
+
+     Genau das ist passiert: designAnwenden() läuft absichtlich sehr
+     früh (in initTheme), und zu dem Zeitpunkt ist `_designNeu` zwar
+     hochgezogen, aber noch nicht zugewiesen, also undefined. Die
+     bisherige App bekam dadurch für einige hundert Millisekunden das
+     neue Aussehen — unsichtbar hinter dem Startbild, aber lange genug,
+     dass die untere Leiste in dieser Zeit vermessen wurde. Die
+     gleitende Füllung stand danach auf x=0 statt x=4.
+
+     Gefunden hat es test-marker, und nur in der Fassung mit „Bewegung
+     reduzieren": dort blendet das Startbild zu einem anderen Zeitpunkt
+     aus, und deshalb fiel die Messung in genau dieses Fenster. Eine
+     Zusage („live ändert sich nichts"), die an einem undefined hängt,
+     ist keine Zusage. */
+  var an=!!layoutNeu();
+  document.body.classList.toggle('neu', an);
+  /* Die Navigation nur dann neu bauen, wenn es sie überhaupt schon
+     gibt. designAnwenden() läuft absichtlich sehr früh — damit die Demo
+     und ?neu=1 gar nicht erst im alten Aussehen aufblitzen —, und zu
+     dem Zeitpunkt ist niemand angemeldet. */
+  if(session && document.getElementById('mobnav')){
+    buildNav();
+    if(typeof bereichKopfSetzen==='function') bereichKopfSetzen();
+    if(currentView==='home' && typeof renderHome==='function') renderHome();
+  }
+  designSchalterZeigen();
+}
+
+function designLaden(){
+  /* try/catch um den AUFRUF, nicht nur .catch um das Versprechen: bricht
+     S() oder .doc() selbst ab, fliegt der Fehler synchron — und das
+     Promise.all beim Start würde mit ihm platzen, statt die App zu
+     zeigen. Eine App, die wegen eines Design-Schalters gar nicht erst
+     startet, wäre der teuerste denkbare Fehler an dieser Stelle. */
+  var p;
+  try{ p = S('config').doc('design').get(); }
+  catch(e){ console.warn('Design nicht lesbar:', e.message); return Promise.resolve(); }
+  return p
+    .then(function(doc){ _designNeu = !!(doc.exists && doc.data() && doc.data().neu); })
+    .catch(function(e){
+      /* Nicht lesbar heisst: beim Alten bleiben. Von den beiden
+         möglichen Fehlern ist das der harmlose — niemand bekommt
+         wegen eines Netzfehlers eine App, die er nicht kennt. */
+      console.warn('Design nicht lesbar:', e.message);
+    });
+}
+function listenDesign(){
+  if(_designUnsub) return;
+  try{
+    _designUnsub = S('config').doc('design').onSnapshot(function(doc){
+      var neu = !!(doc.exists && doc.data() && doc.data().neu);
+      if(neu===_designNeu) return;
+      _designNeu = neu;
+      designAnwenden();
+    }, function(e){ console.warn('Design:', e.message); });
+  }catch(e){ console.warn('Design:', e.message); }
+}
+
+/* Zeigt, was diese Person gerade sieht und woher das kommt. Ohne die
+   Herkunft ist der Schalter nicht zu bedienen: wer auf dem Gerät „aus"
+   gestellt hat und dann für alle veröffentlicht, sähe nichts und würde
+   zweimal drücken. */
+function designSchalterZeigen(){
+  var box=$('designStand'); if(!box) return;
+  var g=designGeraet(), u=designUrl();
+  var quelle = u!==null ? 'die Adresse (?neu=' + (u?'1':'0') + ')'
+    : (g!==null ? 'deine Einstellung auf diesem Gerät'
+    : (imDemo() ? 'den Demo-Modus' : (_designNeu ? 'die Veröffentlichung für alle' : 'die Voreinstellung')));
+  box.innerHTML =
+    '<b>Du siehst gerade: '+(layoutNeu()?'das neue':'das bisherige')+' Design.</b>'+
+    '<br><span class="hint">Entschieden durch '+esc(quelle)+'.</span>'+
+    '<br><span class="hint">Für alle im Betrieb: <b>'+(_designNeu?'neu':'bisher')+'</b>.</span>';
+  var k=$('designGeraet');
+  if(k) k.textContent = layoutNeu() ? 'Auf diesem Gerät zurück zum bisherigen' : 'Auf diesem Gerät ausprobieren';
+  var v=$('designVeroeff');
+  if(v) v.textContent = _designNeu ? 'Für alle zurücknehmen' : 'Für alle veröffentlichen';
+}
+
+function designGeraetUmschalten(btn){
+  designGeraetSetzen(!layoutNeu());
+  toast(layoutNeu() ? 'Neues Design — nur auf diesem Gerät.'
+                    : 'Bisheriges Design — nur auf diesem Gerät.');
+}
+function designVeroeffentlichen(btn){
+  var an = !_designNeu;
+  var frage = an
+    ? 'Das neue Design für ALLE im Betrieb einschalten?\n\n'+
+      'Jeder sieht es beim nächsten Öffnen — und sofort, wenn die App gerade offen ist. '+
+      'Du kannst es mit demselben Knopf wieder zurücknehmen.'
+    : 'Das neue Design für alle wieder zurücknehmen?\n\n'+
+      'Alle sehen dann wieder die bisherige Ansicht.';
+  if(!confirm(frage)) return;
+  withBusy(btn, function(){
+    return S('config').doc('design').set({ neu:an, ts:Date.now(), von:session?session.uid:'' }, {merge:true})
+      .then(function(){
+        _designNeu=an;
+        /* Der eigene Geräteschalter würde die Veröffentlichung sonst
+           überstimmen — dann drückt der Chef „für alle" und bei sich
+           ändert sich nichts. Also fällt er hier weg. */
+        designGeraetSetzen(null);
+        toast(an ? 'Neues Design ist für alle veröffentlicht.' : 'Zurückgenommen — alle sehen wieder das Bisherige.');
+      })
+      .catch(function(e){ fnFehler(e); });
+  });
+}
+
 /* Zeigt, was die Funktion zurueckgemeldet hat — Zahlen, keine Zusagen. */
 function kontenStandZeigen(r){
   var box=$('knStand'); if(!box) return;
@@ -11094,7 +11621,11 @@ function enterApp(uid, data){
      da, und das ist die harmlosere Richtung. */
   /* Farbe mit VOR showApp: sonst baut sich die App einmal in
      Himmelblau auf und springt dann um. */
-  Promise.all([aboLaden(), featuresLaden(), markeLaden()]).then(showApp, showApp);
+  /* designLaden gehört in dieselbe Runde: baut sich die Navigation
+     einmal im alten Schnitt auf und springt dann um, sieht das aus wie
+     ein Fehler — derselbe Grund, aus dem Abo und Funktionen hier
+     stehen. */
+  Promise.all([aboLaden(), featuresLaden(), markeLaden(), designLaden()]).then(showApp, showApp);
 }
 
 /* ============================================================
@@ -11277,6 +11808,12 @@ function showApp(){
      Studionamen braucht. */
   setTimeout(function(){ try{ terminalStarten(); }catch(e){ console.warn('Terminal:', e); } }, 400);
   listenFeatures();                      // schaltet der Chef etwas um, ist es überall weg
+  /* Jetzt steht die Anmeldung — die Navigation kann gebaut werden, und
+     der Firmenschalter aus designLaden() ist da. Beobachten heisst
+     hier: der Chef drückt „für alle veröffentlichen", und auf den
+     Tablets im Studio ändert sich die Ansicht, ohne dass jemand
+     neu lädt. */
+  designAnwenden(); listenDesign();
   /* Jede Rolle: das Impressum steht in jedem Bildschirm unten und muss
      die Angaben DIESER Firma zeigen, nicht die aus konfig.js. */
   rechtLaden();
@@ -11587,6 +12124,36 @@ var NAVGROUPS = [
   {id:'g-chef', label:'Verwaltung', views:['chef','archive'], manageOnly:true,
    icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>'}
 ];
+/* ── Das neue Aussehen: was steht unten, was liegt hinter „Mehr" ──────
+   Drei Knöpfe plus „Mehr" statt sechs. Die drei sind die, die jemand
+   im Studio mehrmals am Tag drückt; „Ich", „Team" und „Verwaltung"
+   öffnet man ein paarmal die Woche.
+
+   WARUM ÜBERHAUPT: sechs Knöpfe mit 22px-Zeichen und 10px-Schrift sind
+   auf 320 Pixeln 44px breit — die Untergrenze für einen Daumen, und
+   zwar exakt. Es war nichts mehr übrig. Vier Knöpfe haben Platz für
+   ein Wort, das man lesen kann, ohne die Augen zusammenzukneifen.
+
+   Die Lade ist KEIN eigenes Fenster, sondern Teil der Leiste: sie
+   fährt aus ihr heraus. Ein Fenster hätte einen zweiten Weg zum
+   Schliessen gebraucht und wäre ein dritter Ort gewesen, an dem
+   Navigation stattfindet. */
+var NEU_LEISTE = ['g-start','g-arbeit','g-komm'];
+/* „Betrieb" und „Chat" sind kurz, aber keins von beidem sagt, was
+   dahinter liegt. Ein neuer Mitarbeiter sucht „Aufgaben", nicht
+   „Betrieb". Die Reiterzeile darunter nennt weiterhin die einzelne
+   Seite — der Knopf nennt den Zweck. */
+var NEU_LABEL = { 'g-arbeit':'Aufgaben', 'g-komm':'Nachrichten' };
+/* Zweite Zeile in der Lade. Eine beschriftete Zeile ohne Beschreibung
+   wäre nur ein grösseres Symbol. */
+/* Kurz halten: gemessen auf 390px passen rund 26 Zeichen in die Zeile,
+   danach schneidet sie ab. „Deine Woche, Termine, Notizen un…" sagt
+   weniger als „Woche, Termine, Notizen". */
+var NEU_UNTER = {
+  'g-ich':  'Woche, Termine, Notizen',
+  'g-team': 'Schichtplan und Abwesende',
+  'g-chef': 'Anlegen, Studios, Auswertung'
+};
 var NAV = [
   {id:'home',  label:'Start',    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
   {id:'ich',   label:'Übersicht', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
@@ -11626,30 +12193,152 @@ function sichtbareViews(g){
   });
 }
 
+function gruppeSvg(g){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+g.icon+'</svg>';
+}
+function gruppeLabel(g){
+  return (layoutNeu() && NEU_LABEL[g.id]) ? NEU_LABEL[g.id] : g.label;
+}
+/* Eine Gruppe ohne Inhalt kommt gar nicht erst in die Leiste. Ein Knopf,
+   der ins Leere führt, ist schlimmer als ein fehlender. */
+function navGruppen(){
+  return NAVGROUPS.filter(function(g){
+    if(g.manageOnly && !canManage()) return false;
+    return sichtbareViews(g).length > 0;
+  });
+}
+function navKnopf(g, art){
+  var b=document.createElement('button');
+  b.dataset.group=g.id;
+  var badge='<span class="badge" data-'+(art==='seite'?'b':'mb')+'adge="'+g.id+'"></span>'+
+            '<span class="ndot" data-ndot="'+g.id+'"></span>';
+  if(art==='seite'){
+    b.className='tab';
+    b.innerHTML=gruppeSvg(g)+'<span>'+gruppeLabel(g)+'</span>'+badge;
+  } else if(art==='lade'){
+    /* Die grosse beschriftete Zeile hinter „Mehr". Zwei Zeilen Text,
+       damit man nicht raten muss, was dahinter liegt — „Ich" allein
+       sagt niemandem etwas. */
+    b.className='mn-zeile';
+    b.innerHTML='<span class="mz-ikon">'+gruppeSvg(g)+'</span>'+
+      '<span class="mz-txt"><b>'+esc(g.label)+'</b>'+
+      '<i>'+esc(NEU_UNTER[g.id]||sichtbareViews(g).map(function(v){
+        var it=navItem(v); return it?it.label:v; }).join(' · '))+'</i></span>'+
+      badge+'<span class="mz-pfeil">›</span>';
+  } else {
+    b.innerHTML=gruppeSvg(g)+'<span>'+gruppeLabel(g)+'</span>'+badge;
+  }
+  b.addEventListener('click',function(){
+    if(art==='lade') mehrSchliessen();
+    showView(g.views[0]); tick(8);
+  });
+  return b;
+}
+
+/* ── Wer ist gerade markiert? ──
+   Steht bewusst als eigene Funktion und wird am ENDE von buildNav()
+   aufgerufen, nicht nur in showView().
+
+   Der Grund ist ein Fehler, den test-marker gefunden hat: buildNav()
+   wirft die Knöpfe weg und baut neue — und neue Knöpfe tragen kein
+   `active`. Wer die Leiste neu baut, ohne danach zu markieren, lässt
+   sie auf nichts zeigen. Die gleitende Füllung sass danach auf x=0
+   statt auf x=4, also unter gar keinem Knopf.
+
+   Ausgelöst hat es der Design-Schalter (er baut die Leiste nach dem
+   Start noch einmal), die Lücke war aber älter: featuresAnwenden()
+   ruft buildNav() genauso auf. Deshalb sitzt die Reparatur in
+   buildNav und nicht an der Stelle, an der sie aufgefallen ist. */
+function navAktivSetzen(){
+  var g=groupOfView(currentView);
+  document.querySelectorAll('[data-group]').forEach(function(t){
+    t.classList.toggle('active', t.dataset.group===g.id);
+  });
+  /* Liegt die Gruppe hinter „Mehr", muss der Knopf „Mehr" die Marke
+     tragen. Sonst zeigt die Leiste gar nichts an und man weiss beim
+     Blick nach unten nicht, wo man ist — genau das, was die vier
+     Knöpfe besser machen sollen. */
+  var mn=$('mnMehr');
+  if(mn) mn.classList.toggle('active', NEU_LEISTE.indexOf(g.id)<0);
+  gruppenMarker();
+}
+
 function buildNav(){
   var side=$('side'), mob=$('mobnav'); side.innerHTML=''; mob.innerHTML='';
-  NAVGROUPS.forEach(function(g){
-    if(g.manageOnly && !canManage()) return;
-    /* Eine Gruppe ohne Inhalt kommt gar nicht erst in die Leiste. Ein
-       Knopf, der ins Leere führt, ist schlimmer als ein fehlender. */
-    var drin=sichtbareViews(g);
-    if(!drin.length) return;
-    var svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+g.icon+'</svg>';
-    function makeBtn(isMob){
-      var b=document.createElement('button');
-      b.dataset.group=g.id;
-      if(!isMob) b.className='tab';
-      b.innerHTML=svg+'<span>'+g.label+'</span>'+
-        '<span class="badge" data-'+(isMob?'mb':'b')+'adge="'+g.id+'"></span>'+
-        '<span class="ndot" data-ndot="'+g.id+'"></span>';
-      b.addEventListener('click',function(){ showView(g.views[0]); tick(8); });
-      return b;
-    }
-    side.appendChild(makeBtn(false));
-    mob.appendChild(makeBtn(true));
+  var gruppen=navGruppen();
+  gruppen.forEach(function(g){ side.appendChild(navKnopf(g,'seite')); });
+
+  if(!layoutNeu()){
+    gruppen.forEach(function(g){ mob.appendChild(navKnopf(g,'unten')); });
+    buildSubNav();
+    navAktivSetzen();
+    return;
+  }
+
+  /* Die Lade steht ZUERST im Markup und liegt per CSS über der Leiste
+     (position:absolute, bottom:100%). Dadurch bleibt sie ausserhalb
+     des Flusses — sonst verschöbe sie beim Öffnen die Knöpfe darunter,
+     und der gleitende Marker (er misst offsetTop) sässe daneben. */
+  var lade=document.createElement('div');
+  lade.className='mn-lade'; lade.id='mnLade'; lade.hidden=true;
+  var reihe=document.createElement('div');
+  reihe.className='mn-reihe';
+  var hinten=gruppen.filter(function(g){ return NEU_LEISTE.indexOf(g.id)<0; });
+  /* Die Reihenfolge unten kommt aus NEU_LEISTE, nicht aus NAVGROUPS:
+     dort steht „Ich" an zweiter Stelle, und „Nachrichten" wäre dadurch
+     vor „Aufgaben" gelandet. Die Leiste hat ihre eigene Ordnung —
+     Start, dann was man am meisten benutzt. */
+  NEU_LEISTE.forEach(function(id){
+    var g=gruppen.filter(function(x){ return x.id===id; })[0];
+    if(g) reihe.appendChild(navKnopf(g,'unten'));
   });
+  hinten.forEach(function(g){ lade.appendChild(navKnopf(g,'lade')); });
+  if(hinten.length){
+    var m=document.createElement('button');
+    m.id='mnMehr'; m.className='mn-mehr';
+    m.setAttribute('aria-expanded','false');
+    m.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+
+      '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'+
+      '</svg><span>Mehr</span>'+
+      '<span class="ndot" data-ndot="g-mehr"></span>';
+    m.addEventListener('click',function(){ mehrUmschalten(); tick(8); });
+    reihe.appendChild(m);
+  }
+  mob.appendChild(lade); mob.appendChild(reihe);
   buildSubNav();
+  navAktivSetzen();
 }
+
+/* ── Die Lade auf und zu ──
+   Ein zweiter Weg hinaus ist Pflicht: wer sie aufmacht und es sich
+   anders überlegt, darf nicht gezwungen sein, irgendwohin zu
+   navigieren. Deshalb schliesst sie auch beim Tippen daneben und mit
+   der Esc-Taste. */
+function mehrOffen(){
+  var l=$('mnLade');
+  return !!(l && !l.hidden);
+}
+function mehrOeffnen(){
+  var l=$('mnLade'); if(!l) return;
+  l.hidden=false;
+  document.body.classList.add('lade-auf');
+  var m=$('mnMehr'); if(m) m.setAttribute('aria-expanded','true');
+}
+function mehrSchliessen(){
+  var l=$('mnLade'); if(!l) return;
+  l.hidden=true;
+  document.body.classList.remove('lade-auf');
+  var m=$('mnMehr'); if(m) m.setAttribute('aria-expanded','false');
+}
+function mehrUmschalten(){ mehrOffen() ? mehrSchliessen() : mehrOeffnen(); }
+document.addEventListener('click', function(e){
+  if(!mehrOffen()) return;
+  if(e.target.closest && e.target.closest('.mobnav')) return;
+  mehrSchliessen();
+}, true);
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape' && mehrOffen()) mehrSchliessen();
+});
 
 /* ── Gleitender Marker unter der aktiven Auswahl ──
    Statt dass eine Fläche verschwindet und woanders neu auftaucht, wandert
@@ -11695,8 +12384,30 @@ function gruppenMarker(sofort){
   if(getComputedStyle(bar).display === 'none') return;
   // Beim allerersten Mal soll der Marker stehen und nicht von links
   // hereinfahren – das sähe aus, als würde die App noch laden.
+  /* Im neuen Schnitt liegt in der Leiste eine zweite, ausgefahrene
+     Reihe (die Lade). Deren Zeile trägt beim Öffnen ebenfalls
+     `active` und stünde im Markup VOR den Knöpfen — die Füllung wäre
+     dann in der Lade gelandet statt unter dem Knopf. Deshalb zuerst in
+     der Knopfreihe suchen. */
+  var aktiv = bar.querySelector('.mn-reihe button.active') || bar.querySelector('button.active');
+  if(!aktiv){ markerSetzen(bar, null); return; }
+  /* ── Nicht messen, was gar nicht liegt ──
+     Die Prüfung auf display:'none' oben fragt nur die Leiste selbst.
+     Liegt sie in einem versteckten VORFAHREN, meldet getComputedStyle
+     für sie weiterhin „flex" — aber jedes offsetLeft darin ist 0, und
+     eine 0, die niemand später korrigiert, setzt die Füllung unter gar
+     keinen Knopf.
+
+     getClientRects().length ist die ehrliche Frage danach: hat dieses
+     Element überhaupt einen Kasten? Eine 0 von einem Element ohne
+     Kasten ist keine Messung, sondern deren Abwesenheit.
+
+     (Der Fehler, bei dessen Suche das hier entstand, war ein anderer —
+     siehe designAnwenden(). Die Zeile bleibt trotzdem: sie ist
+     billiger als die Klasse von Fehlern, die sie ausschliesst.) */
+  if(!aktiv.getClientRects().length) return;
   if(!bar.dataset.markerDa){ bar.dataset.markerDa='1'; sofort=true; }
-  (sofort ? markerSofort : markerSetzen)(bar, bar.querySelector('button.active'));
+  (sofort ? markerSofort : markerSetzen)(bar, aktiv);
 }
 
 /* Dreht jemand das Gerät oder klappt die Bildschirmtastatur auf, stimmen
@@ -11707,6 +12418,10 @@ function markerNeuMessen(){
   clearTimeout(_markerTimer);
   _markerTimer=setTimeout(function(){
     gruppenMarker(true); subnavMarker(true); chefTabMarker(true);
+    /* Beim Drehen kann die Grenze 820px überschritten werden — dann
+       gehört „+ Neu" wieder in den Seitenkopf statt in den
+       Bereichskopf. */
+    if(typeof kopfPlusUmhaengen==='function') kopfPlusUmhaengen();
     var ab=document.getElementById('authTabs');
     if(ab && ab.style.display!=='none') markerSofort(ab, ab.querySelector('.auth-tab.active'));
     var cb=document.querySelector('.chat-channels');
@@ -11806,8 +12521,95 @@ function renderBereichListe(){
   }).join('');
 }
 
+/* ══ DER BEREICHSKOPF ═══════════════════════════════════════════════
+   Farbe und Zeichen sagen WO, die Zeile darunter sagt WIE ES STEHT.
+
+   Die Unterzeile ist mit Absicht nicht überall eine Zahl. Wo sich
+   nichts zählen lässt, das sich auch ändert, steht ein Satz, der sagt,
+   was dahinter liegt — eine Zahl, die immer dieselbe ist, liest nach
+   zwei Tagen niemand mehr. Gezählt wird also nur dort, wo das Zählen
+   eine Handlung auslöst: offene Aufgaben und ungelesene Nachrichten. */
+function bereichZahlen(){
+  var keys = canManage() ? managedKeys() : (session && session.studioKeys || []);
+  var jetzt=Date.now(), offen=0, ueber=0;
+  keys.forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(isDone(t)||isArchived(t)) return;
+      offen++;
+      if(t.due && jetzt>t.due) ueber++;
+    });
+  });
+  return { offen:offen, ueber:ueber };
+}
+function bereichUnterzeile(g){
+  if(g.id==='g-start'){
+    return new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  }
+  if(g.id==='g-arbeit'){
+    var z=bereichZahlen();
+    if(!z.offen) return 'Nichts offen';
+    return z.offen+' offen'+(z.ueber ? ' · '+z.ueber+' überfällig' : '');
+  }
+  if(g.id==='g-komm'){
+    var n=0;
+    try{ n=dmUnreadCount(); }catch(e){}
+    if(unread.chat) n++;
+    return n ? (n===1 ? '1 ungelesen' : n+' ungelesen') : 'Alles gelesen';
+  }
+  if(g.id==='g-team' && canManage() && STUDIOS.length>1) return STUDIOS.length+' Studios';
+  return NEU_UNTER[g.id] || '';
+}
+/* ── „+ Neu" wandert in den Bereichskopf ──
+   Ohne das stand der Knopf allein in einer sonst leeren Zeile unter der
+   Reiterleiste: 56 Pixel Höhe für ein Bedienelement, rechtsbündig und
+   ohne Bezug zu irgendetwas. Im Kopf hat er Platz, den es ohnehin gibt.
+
+   Umgehängt wird das ECHTE Element, nicht eine Kopie — sein
+   Klick-Zuhörer hängt daran und soll das überleben. Wo es herkommt,
+   merkt es sich selbst (_heim), damit es am Rechner und im bisherigen
+   Design wieder an seinen Platz zurückfindet. */
+function kopfPlusUmhaengen(){
+  var kopf=$('bereichKopf'); if(!kopf) return;
+  kopf.querySelectorAll('.kopf-plus').forEach(function(b){
+    if(b._heim) b._heim.appendChild(b);
+  });
+  if(!layoutNeu() || window.innerWidth>820) return;
+  var v=document.querySelector('.view.show');
+  var b=v && v.querySelector('.view-head .kopf-plus');
+  if(!b) return;
+  if(!b._heim) b._heim=b.parentNode;
+  kopf.appendChild(b);
+}
+
+function bereichKopfSetzen(){
+  var kopf=$('bereichKopf'); if(!kopf) return;
+  if(!layoutNeu() || !session){ kopfPlusUmhaengen(); kopf.hidden=true; return; }
+  var g=groupOfView(currentView);
+  kopf.hidden=false;
+  /* Zusammengerückt bleibt er nur, solange man in DIESER Liste unten
+     steht. Der Kopf ist einer für die ganze App — ohne diese Zeile kam
+     man aus einer gescrollten Aufgabenliste in ein frisches „Team" und
+     fand dort einen geschrumpften Kopf ohne Unterzeile vor, obwohl
+     nichts gescrollt war. Gesehen im Bild, nicht gedacht. */
+  kopf.classList.remove('eng');
+  document.body.setAttribute('data-bereich', g.id);
+  var ik=$('bkIkon'); if(ik) ik.innerHTML=gruppeSvg(g);
+  var ti=$('bkTitel'); if(ti) ti.textContent=gruppeLabel(g);
+  var su=$('bkSub');
+  if(su){
+    var t=bereichUnterzeile(g);
+    su.textContent=t;
+    /* Überfälliges färbt die Zeile. Es ist die einzige Aussage im
+       Kopf, die etwas verlangt — sie darf anders aussehen als der
+       Rest. */
+    su.classList.toggle('warn', g.id==='g-arbeit' && bereichZahlen().ueber>0);
+  }
+  kopfPlusUmhaengen();
+}
+
 /* Reiter innerhalb der aktuellen Gruppe (oben unter der Kopfzeile) */
 function buildSubNav(){
+  bereichKopfSetzen();
   var bar=$('subnav'); if(!bar) return;
   var g=groupOfView(currentView);
   var views=sichtbareViews(g);
@@ -11927,6 +12729,18 @@ function bindShrinkHeaders(){
           else if(y>28) head.classList.add('tight');
           else if(y<10) head.classList.remove('tight');
         }
+        /* Der Bereichskopf im neuen Schnitt rückt mit zusammen. Er hat
+           die Rückkopplung von oben NICHT: er liegt zwar ebenfalls
+           ausserhalb des Scroll-Bereichs, schrumpft aber nur, wenn
+           überhaupt etwas zu scrollen da ist — dieselbe Bremse, nur
+           einfacher, weil er keine Zwischengrössen kennt. */
+        var bk=document.getElementById('bereichKopf');
+        if(bk && !bk.hidden){
+          var ueber = area.scrollHeight - area.clientHeight;
+          if(ueber < 90) bk.classList.remove('eng');
+          else if(y>28) bk.classList.add('eng');
+          else if(y<10) bk.classList.remove('eng');
+        }
         if(tools){
           // Klebt sie? Dann steht ihre Oberkante genau auf der des Bereichs.
           var klebt = (tools.getBoundingClientRect().top - area.getBoundingClientRect().top) < 2;
@@ -11962,8 +12776,8 @@ function showView(id, fromKey, ausVerlauf){
   document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
   // Untere Leiste: die Gruppe markieren, zu der die Ansicht gehört
   var g=groupOfView(id);
-  document.querySelectorAll('[data-group]').forEach(function(t){ t.classList.toggle('active',t.dataset.group===g.id); });
-  gruppenMarker();
+  navAktivSetzen();
+  mehrSchliessen();
   buildSubNav();
   if(id==='home') renderHome();
   // Unread-Marker beim Öffnen der Ansicht löschen
@@ -12011,6 +12825,11 @@ function updateNavMarkers(){
   // Gruppen erben den Marker ihrer Ansichten
   NAVGROUPS.forEach(function(g){
     map[g.id]=g.views.some(function(v){ return map[v] && currentView!==v; });
+  });
+  /* „Mehr" erbt von allem, was dahinter liegt. Ohne das verschwindet
+     ein ungelesener Punkt in der Lade und niemand macht sie auf. */
+  map['g-mehr']=NAVGROUPS.some(function(g){
+    return NEU_LEISTE.indexOf(g.id)<0 && map[g.id];
   });
   document.querySelectorAll('[data-ndot]').forEach(function(d){
     var on = !!map[d.dataset.ndot] && currentView!==d.dataset.ndot;
@@ -14421,8 +15240,139 @@ function renderBoard(){
    Kennzahlen als anklickbare Kacheln, Schnellzugriff, letzte Ereignisse.
    Der Chef sieht zusätzlich Zahlen über alle seine Studios.
    ============================================================ */
+/* ══ WAS HEUTE DRAN IST ═════════════════════════════════════════════
+   Die Startseite des neuen Designs.
+
+   Der Unterschied zu den Kachel-Zahlen darunter ist nicht die Form,
+   sondern die Aussage. „3 überfällig" nennt eine Menge; man muss
+   hingehen und nachsehen, welche. Diese Liste nennt die Aufgabe, das
+   Studio und seit wann — und ein Tipp darauf öffnet sie.
+
+   Höchstens drei überfällige und vier heutige. Wer sieben Zeilen
+   sieht, liest keine davon; das steht schon über den Hinweisbalken,
+   und es gilt hier genauso. Was nicht in die Liste passt, steht am
+   Fuss als „und N weitere" — mit dem Weg in die vollständige Liste. */
+function tageSeit(ms){
+  return Math.floor((Date.now()-ms)/86400000);
+}
+function heuteZeile(k){
+  return '<button type="button" class="heute-zeile '+k.art+'" data-heute="'+esc(k.ziel)+'"'+
+    (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+'>'+
+    '<span class="hz-ikon">'+k.ikon+'</span>'+
+    '<span class="hz-txt"><b>'+esc(k.titel)+'</b><i>'+esc(k.unter)+'</i></span>'+
+    '<span class="hz-pfeil">›</span></button>';
+}
+function renderHeute(){
+  var box=$('heuteListe'); if(!box) return;
+  if(!layoutNeu() || !session){ box.innerHTML=''; box.hidden=true; return; }
+  box.hidden=false;
+
+  var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
+  var jetzt=Date.now();
+  var endeHeute=new Date(); endeHeute.setHours(23,59,59,999); endeHeute=endeHeute.getTime();
+  var mehrereStudios = keys.length>1;
+
+  var ueber=[], heute=[];
+  keys.forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(isDone(t)||isArchived(t)) return;
+      if(!t.due) return;
+      var wo = mehrereStudios ? studioName(sk) : '';
+      if(jetzt>t.due){
+        var d=tageSeit(t.due);
+        ueber.push({ t:t, sk:sk, due:t.due, art:'dringend', ziel:'todos', f:'faellig',
+          ikon:ikon('warnung'), titel:t.title||'(ohne Titel)',
+          unter:(wo?wo+' · ':'')+(d<=0?'seit heute':(d===1?'seit 1 Tag':'seit '+d+' Tagen')) });
+      } else if(t.due<=endeHeute){
+        heute.push({ t:t, sk:sk, due:t.due, art:'heute', ziel:'todos',
+          ikon:ikon('uhr'), titel:t.title||'(ohne Titel)',
+          unter:(wo?wo+' · ':'')+'heute bis '+new Date(t.due).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) });
+      }
+    });
+  });
+  /* Das Älteste zuerst: was am längsten liegt, ärgert am meisten. */
+  ueber.sort(function(a,b){ return a.due-b.due; });
+  heute.sort(function(a,b){ return a.due-b.due; });
+
+  /* Ungelesenes. Kein Zählen von Nachrichten, die man ohnehin gleich
+     sieht — nur der Hinweis, DASS dort etwas liegt, mit dem Weg dahin. */
+  var lesen=[];
+  if(ansichtAn('ann')){
+    var neueAnn=_allAnns.filter(function(a){
+      if(!(isChef()||!a.target||a.target==='all'||(session.studioKeys||[]).indexOf(a.target)>=0)) return false;
+      return a.ts && a.ts > jetzt-7*86400000;
+    });
+    if(unread.ann && neueAnn.length){
+      lesen.push({ art:'lesen', ziel:'ann', ikon:ikon('megafon'),
+        titel:'Neu von der Leitung',
+        unter:(neueAnn[0].text||'').replace(/\s+/g,' ').slice(0,70) });
+    }
+  }
+  var dmN=0; try{ dmN=dmUnreadCount(); }catch(e){}
+  if(dmN && ansichtAn('dm')){
+    lesen.push({ art:'lesen', ziel:'dm', ikon:ikon('mail'),
+      titel: dmN===1 ? '1 neue Direktnachricht' : dmN+' neue Direktnachrichten',
+      unter:'Privat — nur du liest mit' });
+  }
+  if(unread.chat && ansichtAn('chat')){
+    lesen.push({ art:'lesen', ziel:'chat', ikon:ikon('megafon'),
+      titel:'Neues im Teamchat', unter:'Seit deinem letzten Blick' });
+  }
+
+  var html='';
+  function block(titel, dringend, eintraege, alle, ziel, f){
+    if(!eintraege.length) return '';
+    var rest=alle-eintraege.length;
+    return '<div class="heute-block">'+
+      '<div class="heute-kopf'+(dringend?' dringend':'')+'">'+
+      (dringend?'<span class="hk-punkt"></span>':'')+esc(titel)+'</div>'+
+      '<div class="heute-liste">'+eintraege.map(heuteZeile).join('')+
+      (rest>0 ? '<button type="button" class="heute-zeile" data-heute="'+esc(ziel)+'"'+
+        (f?' data-hf="'+esc(f)+'"':'')+'>'+
+        '<span class="hz-ikon">'+ikon('raster')+'</span>'+
+        '<span class="hz-txt"><b>und '+rest+' weitere</b>'+
+        '<i>Alle ansehen</i></span><span class="hz-pfeil">›</span></button>' : '')+
+      '</div></div>';
+  }
+  if(ansichtAn('todos')){
+    html+=block('Überfällig', true, ueber.slice(0,3), ueber.length, 'todos', 'faellig');
+    html+=block('Heute', false, heute.slice(0,4), heute.length, 'todos');
+  }
+  html+=block('Neu für dich', false, lesen, lesen.length, 'chat');
+
+  if(!html){
+    /* Kein leerer Bildschirm: „nichts offen" ist eine Nachricht, und
+       zwar eine gute. Sie muss so aussehen. */
+    /* Genau das sagen, was geprüft wurde — nicht mehr. „Nichts
+       Dringendes" stand im Bild direkt über zwei Hinweisbalken
+       („Neue Öffnungszeiten", „2 Artikel fehlen"), und das liest sich
+       wie ein Widerspruch. Überfällig und ungelesen sind das, was
+       diese Liste zählt; für alles andere gibt es die Balken
+       darunter. */
+    html='<div class="heute-ruhe"><span class="hr-ico">✓</span>'+
+      '<div><b>Nichts Überfälliges</b>'+
+      '<span>Keine Aufgabe ist über ihrer Frist, nichts Ungelesenes.</span></div></div>';
+  }
+  box.innerHTML=html;
+
+  box.querySelectorAll('[data-heute]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var f=el.getAttribute('data-hf');
+      if(f){
+        _todoMode=f;
+        document.querySelectorAll('[data-tfilter]').forEach(function(x){
+          x.classList.toggle('on', x.getAttribute('data-tfilter')===f);
+        });
+      }
+      tick(8);
+      showView(el.getAttribute('data-heute'));
+    });
+  });
+}
+
 function renderHome(){
   if(!session) return;
+  renderHeute();
   /* Steht ganz oben, wird deshalb auch zuerst gebaut. Sie liest nur aus
      dem, was ohnehin schon geladen ist — keine eigene Abfrage ausser dem
      Firmencode, und der wird einmal beim Start geholt. */
@@ -14472,7 +15422,11 @@ function renderHome(){
     }).slice(0,2).forEach(function(a){
       alerts.push({k:' pin',i:ikon('anheften'),t:(a.text||'').slice(0,90),v:'ann'});
     });
-    if(ueber) alerts.push({k:'',i:ikon('warnung'),t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
+    /* Im neuen Design nennt die Liste darüber jede überfällige Aufgabe
+       beim Namen. Ein Balken, der daneben „5 Aufgaben sind überfällig"
+       sagt, wiederholt nur — und Wiederholung ist genau die Unruhe,
+       gegen die die Startseite umgebaut wurde. */
+    if(ueber && !layoutNeu()) alerts.push({k:'',i:ikon('warnung'),t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
     if(matArtikel) alerts.push({k:' warn',i:ikon('paket'),t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),v:'material'});
     // Die Hinweiszeile entfällt: der Text der Aushänge steht ein Stück
     // weiter unten unter „Zum Lesen". Zweimal dasselbe zu melden ist genau
@@ -18298,7 +19252,7 @@ function showChefTab(id, keep){
   if(id==='anliegen') anliegenLaden();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
-  if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); }
+  if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
 
@@ -24295,6 +25249,17 @@ function bindActions(){
       'normale App. Zum Stempeln muss es neu eingerichtet werden — '+
       'der Schlüssel wird dabei neu vergeben.')) terminalBeenden(false);
   });
+
+  /* Der Design-Schalter. Der Geräte-Knopf hängt an keiner Rolle: er
+     schreibt nur in den Speicher dieses Browsers und geht niemanden
+     sonst etwas an. Veröffentlichen kann nur der Chef — das steht
+     nicht hier, sondern in firestore.rules (config/{doc}: write if
+     isChef()); die Karte trägt data-chef-only und ist für andere gar
+     nicht erst da. */
+  var dg=$('designGeraet');
+  if(dg) dg.addEventListener('click', function(){ designGeraetUmschalten(dg); });
+  var dv=$('designVeroeff');
+  if(dv) dv.addEventListener('click', function(){ designVeroeffentlichen(dv); });
 
   if(session.role==='chef'){
     // Mitarbeiter anlegen

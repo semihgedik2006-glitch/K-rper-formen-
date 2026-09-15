@@ -271,6 +271,29 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Chef darf Funktionen umschalten', () =>
     assertSucceeds(alsChef().doc('config/features').set({ schicht: false })));
 
+  /* ── Das neue Design (config/design) ──
+     Dieselbe Regel wie config/features, und genau deshalb steht sie
+     hier noch einmal ausgeschrieben: an /config/{doc} sind inzwischen
+     DREI Ausnahmen gewachsen (registrierung, beitrittSchalter,
+     studios), und in Firestore genuegt EINE zutreffende Regel, die
+     erlaubt. Wer die vierte einbaut, soll an dieser Stelle merken, was
+     er damit noch trifft.
+
+     Was dranhaengt: „Fuer alle veroeffentlichen" in Verwaltung →
+     System schreibt hierhin. Duerfte ein Mitarbeiter das, koennte er
+     das Aussehen der App fuer den ganzen Betrieb umstellen. Duerfte er
+     es nicht LESEN, bekaeme er die Veroeffentlichung nie zu sehen. */
+  await pruefe('Mitarbeiter darf das Design-Dokument LESEN (sonst kommt die Veroeffentlichung nie an)', () =>
+    assertSucceeds(alsMitarbeiter().doc('config/design').get()));
+  await pruefe('Mitarbeiter kann das Design NICHT fuer alle umstellen', () =>
+    assertFails(alsMitarbeiter().doc('config/design').set({ neu: true })));
+  await pruefe('Studio-Leiter kann das Design NICHT fuer alle umstellen', () =>
+    assertFails(alsLeiter().doc('config/design').set({ neu: true })));
+  await pruefe('Chef darf das Design fuer alle veroeffentlichen', () =>
+    assertSucceeds(alsChef().doc('config/design').set({ neu: true })));
+  await pruefe('Chef darf es genauso zuruecknehmen', () =>
+    assertSucceeds(alsChef().doc('config/design').set({ neu: false })));
+
   /* ── Impressum und Datenschutz (config/recht) ──
        Lesen darf jeder, auch ohne Anmeldung: ein Impressum hinter einem
        Login ist keins, und § 5 DDG verlangt „leicht erkennbar, unmittelbar
