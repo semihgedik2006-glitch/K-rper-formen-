@@ -91,6 +91,8 @@ const WELTEN = [
       await db.doc(w.pfad('zeiten/z-fremd')).set({
         uid: 'timo', name: 'Timo', studioKey: 'studio-9', art: 'kommen',
         ts: 1, tag: '2026-09-14', terminalId: 't2' });
+      // Die Saat, aus der die Codes fuer den Bildschirm folgen.
+      await db.doc(w.pfad('terminalCodes/t1')).set({ saat: 'c'.repeat(64), angelegtAm: 1 });
       // Eine vergleichbare Sammlung als Ausgangslage fuer die Gegenprobe.
       await db.doc(w.pfad('board/b1')).set({ uid: 'anna', name: 'Anna', text: 'Hallo', ts: 1 });
     }
@@ -173,6 +175,29 @@ const WELTEN = [
     await darfNicht('Jemand löscht einen Stempel',
       alsMax.doc(P('zeiten/z-anna')).delete());
 
+    /* ── Die Saat fuer den Bildschirm-Code ──
+       GESPERRT FUER ALLE. Das ist der Unterschied zu `terminals`, die
+       die Leitung lesen darf: wer die Saat hat, rechnet die Codes zu
+       Hause aus und stempelt von ueberall. Die Leitung ist dabei nicht
+       der Rand-, sondern der Hauptfall — sie hat das staerkste Motiv
+       und den leichtesten Zugang. */
+    await darfNicht('Die LEITUNG liest die Code-Saat ihres eigenen Studios',
+      alsLisa.doc(P('terminalCodes/t1')).get());
+    await darfNicht('DER CHEF liest die Code-Saat',
+      alsMax.doc(P('terminalCodes/t1')).get());
+    await darfNicht('Ein Mitarbeiter liest die Code-Saat',
+      alsAnna.doc(P('terminalCodes/t1')).get());
+    await darfNicht('Jemand schreibt eine eigene Saat',
+      alsMax.doc(P('terminalCodes/t9')).set({ saat: 'x' }));
+    await darfNicht('Jemand ueberschreibt eine Saat',
+      alsMax.doc(P('terminalCodes/t1')).update({ saat: 'x' }));
+    await darfNicht('Jemand loescht eine Saat',
+      alsMax.doc(P('terminalCodes/t1')).delete());
+    /* Gegenprobe zur Saat: an `terminals` kommt die Leitung weiter
+       heran. Ginge auch das nicht, laege es an der Ausgangslage. */
+    await darf('(Gegenprobe) Die Leitung liest weiterhin das Terminal selbst',
+      alsLisa.doc(P('terminals/t1')).get());
+
     /* ── Gegenprobe ──
        Dieselben Konten, eine vergleichbare Sammlung. Geht das hier auch
        nicht, liegt es an der Ausgangslage und nicht an der Regel oben —
@@ -182,6 +207,35 @@ const WELTEN = [
     await darf('(Gegenprobe) … und dürfen dort auch schreiben',
       alsBen.doc(P('board/b2')).set({ uid: 'ben', name: 'Ben', text: 'Test', ts: 2 }));
   }
+
+  /* ══ DIE FREIGABE FÜRS HANDY ═══════════════════════════════════════
+     `users` liegt als einzige Sammlung NICHT unter firmen/<kennung>/,
+     deshalb steht dieser Block ausserhalb der Weltenschleife.
+
+     Die Regel, um die es geht: `handyStempeln` entscheidet, ob jemand
+     ohne Tablet stempeln darf. Setzt er es sich selbst, ist die
+     Freigabe des Chefs eine Anzeige ohne Schloss — und das braucht
+     nicht mehr als die Browser-Konsole.
+
+     Die Gegenprobe daneben ist die wichtigere Hälfte: Anna muss ihr
+     eigenes Profil weiterhin ändern können. Eine Regel, die alles
+     sperrt, besteht diesen Durchlauf sonst aus dem falschen Grund. */
+  await darfNicht('Anna schaltet sich das Handy-Stempeln selbst frei',
+    alsAnna.doc('users/anna').update({ handyStempeln: true }));
+  await darfNicht('Anna schaltet es sich beim Ändern des Namens mit frei',
+    alsAnna.doc('users/anna').update({ name: 'Anna B.', handyStempeln: true }));
+  await darf('(Gegenprobe) Anna ändert ihren Namen weiterhin',
+    alsAnna.doc('users/anna').update({ name: 'Anna B.' }));
+  await darf('DER CHEF schaltet Anna frei',
+    alsMax.doc('users/anna').update({ handyStempeln: true }));
+  await darf('Der Chef nimmt die Freigabe wieder zurück',
+    alsMax.doc('users/anna').update({ handyStempeln: false }));
+  await darfNicht('Ein Kollege schaltet Anna frei',
+    alsBen.doc('users/anna').update({ handyStempeln: true }));
+  await darfNicht('Die LEITUNG schaltet Anna frei',
+    alsLisa.doc('users/anna').update({ handyStempeln: true }));
+  await darfNicht('Eine fremde Firma schaltet Anna frei',
+    alsZoe.doc('users/anna').update({ handyStempeln: true }));
 
   await env.cleanup();
   console.log('\n' + protokoll.join('\n'));

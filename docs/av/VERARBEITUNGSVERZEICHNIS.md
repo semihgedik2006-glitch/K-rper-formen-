@@ -77,6 +77,23 @@ Ort ist physisch (das Gerät steht im Studio) und nicht technisch
 erhoben; `Permissions-Policy: geolocation=()` sperrt die Ortung auf
 Ebene des Browsers.
 
+**Zwei Wege zum Stempel, beide ohne Standort:**
+
+| Weg | Was geprüft wird |
+|---|---|
+| Terminal am Empfang | angemeldetes Konto des Betriebs · Geheimnis genau dieses Geräts · PIN der Person |
+| Eigenes Telefon | Freigabe des Verantwortlichen für dieses Konto (`handyStempeln`) · sechsstelliger Code, der auf dem Bildschirm im Studio steht und alle 30 Sekunden wechselt |
+
+Beim zweiten Weg wird zusätzlich festgehalten, dass mit dem Telefon
+gestempelt wurde (`quelle`). Der Ort ergibt sich aus dem Gerät, dessen
+Code eingegeben wurde — nicht aus einer Ortung.
+
+> **Die Lücke gehört benannt, auch hier:** wer den Code abfotografiert
+> und weitergibt, kann innerhalb des Zeitfensters von woanders
+> stempeln. Dieses System verhindert das Stempeln von zu Hause im
+> Regelfall, nicht die Absprache zu zweit — genauso wenig wie eine PIN
+> am Tablet.
+
 > **Zwei Hinweise für den Verantwortlichen, keine Rechtsberatung:**
 > Arbeitszeiterfassung ist eine technische Einrichtung, die geeignet
 > ist, Leistung und Verhalten zu überwachen; wo ein Betriebsrat

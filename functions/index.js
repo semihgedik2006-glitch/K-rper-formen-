@@ -3737,6 +3737,7 @@ exports.terminalAnlegen = region.https.onCall(async (data, context) => {
     angelegtVon: (ich || {}).name || '',
     letzterStempel: 0
   });
+  await codeSaatSetzen(firma, ref.id);
   return { id: ref.id, geheim: geheim, name: name };
 });
 
@@ -3748,7 +3749,176 @@ exports.terminalEntfernen = region.https.onCall(async (data, context) => {
   const id = String((data && data.id) || '').trim();
   if (!id) throw new functions.https.HttpsError('invalid-argument', 'Keine Kennung angegeben.');
   await W(firma).collection('terminals').doc(id).delete();
+  /* Die Saat mit wegraeumen. Bliebe sie stehen, erzeugte ein spaeter
+     gleichnamiges Geraet Codes aus der Saat des entfernten — und das
+     alte Tablet, das der Chef gerade gesperrt hat, koennte sie weiter
+     ausrechnen. */
+  await W(firma).collection('terminalCodes').doc(id).delete().catch(() => {});
   return { ok: true };
+});
+
+/* ══ DER CODE AM BILDSCHIRM ═══════════════════════════════════════════
+   Damit jemand mit dem EIGENEN Handy stempeln kann, ohne dass die App
+   je einen Standort anfasst: auf dem Terminal steht eine sechsstellige
+   Zahl, die alle 30 Sekunden wechselt. Wer sie abtippt, war im Studio.
+
+   WARUM DIE SAAT NICHT AUS DEM HASH DES GERAETS KOMMT, obwohl das
+   bequem waere und keine neue Sammlung braeuchte: `terminals` darf die
+   Leitung LESEN (32 zufaellige Bytes, ihr Hash laesst sich nicht
+   durchprobieren — das steht so in firestore.rules). Wuerden die Codes
+   aus diesem Hash folgen, koennte die Leitung sie zu Hause ausrechnen
+   und ihr Team von ueberall stempeln lassen. Genau die Person, die es
+   am ehesten wollte.
+
+   Die Saat liegt deshalb in einer eigenen Sammlung, die die Regeln FUER
+   ALLE sperren — derselbe Ort und derselbe Grund wie bei zeitPins.
+   Lesen muss sie niemand: das Terminal fragt sie nie ab, es bekommt
+   fertige Codes.
+
+   WARUM EIN VORRAT UND NICHT EIN AUFRUF JE FENSTER: bei 30 Sekunden
+   waeren das 2880 Funktionsaufrufe je Tablet und Tag. Der Vorrat von
+   zehn Fenstern deckt fuenf Minuten; nachgeholt wird bei drei uebrigen.
+   Wird ein Tablet gestohlen, sind hoechstens diese fuenf Minuten an
+   Codes im Geraet — nicht mehr, als das Geraet selbst ohnehin hergibt. */
+const CODE_FENSTER_MS = 30000;
+const CODE_VORRAT = 10;
+
+function codeFenster(ms) { return Math.floor(ms / CODE_FENSTER_MS); }
+
+function codeAus(saat, fenster) {
+  const roh = require('crypto').createHmac('sha256', String(saat))
+    .update(String(fenster)).digest();
+  /* Die ersten vier Bytes reichen fuer sechs Ziffern. Kein modulo auf
+     dem ganzen Digest: die Zahl soll gleichverteilt sein, und 2^31 % 1e6
+     verzerrt so wenig, dass es hier nicht ins Gewicht faellt. */
+  const zahl = roh.readUInt32BE(0) & 0x7fffffff;
+  return String(zahl % 1000000).padStart(6, '0');
+}
+
+async function codeSaatSetzen(firma, terminalId) {
+  const saat = require('crypto').randomBytes(32).toString('hex');
+  await W(firma).collection('terminalCodes').doc(terminalId).set({
+    saat, angelegtAm: Date.now()
+  });
+  return saat;
+}
+
+/* Terminals aus der Zeit vor dieser Funktion haben keine Saat. Sie beim
+   ersten Abruf anzulegen ist der Unterschied zwischen „laeuft weiter"
+   und „der Chef muss jedes Geraet neu einrichten". */
+async function codeSaatHolen(firma, terminalId) {
+  const snap = await W(firma).collection('terminalCodes').doc(terminalId).get();
+  const s = (snap.exists && (snap.data() || {}).saat) || null;
+  return s || codeSaatSetzen(firma, terminalId);
+}
+
+/* ── Das Terminal holt seinen Codevorrat ──
+   Nur gegen das Geraetegeheimnis. Ohne diese Pruefung koennte jeder
+   Angemeldete den Vorrat abrufen und danach von zu Hause stempeln — die
+   Ortsbindung waere weg, und zwar lautlos. */
+exports.stempelCodes = region.https.onCall(async (data, context) => {
+  const { firma } = await anruferProfil(context);
+  const terminalId = String((data && data.terminalId) || '').trim();
+  const geheim = String((data && data.geheim) || '').trim();
+  if (!terminalId || !geheim) {
+    throw new functions.https.HttpsError('invalid-argument', 'Es fehlt eine Angabe.');
+  }
+  const tSnap = await W(firma).collection('terminals').doc(terminalId).get();
+  if (!tSnap.exists) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieses Gerät ist nicht (mehr) als Terminal eingerichtet.');
+  }
+  if (!tokenGleich(geheimHashen(geheim), (tSnap.data() || {}).hash)) {
+    throw new functions.https.HttpsError('permission-denied', 'Das Gerät weist sich nicht aus.');
+  }
+  const saat = await codeSaatHolen(firma, terminalId);
+  const jetzt = Date.now();
+  const erstes = codeFenster(jetzt);
+  const codes = [];
+  for (let i = 0; i < CODE_VORRAT; i++) codes.push(codeAus(saat, erstes + i));
+  return {
+    codes,
+    /* Die Serverzeit mitgeben. Die Uhr eines Tablets am Empfang geht
+       gern falsch, und ein Code, den der Server schon nicht mehr kennt,
+       waere ein Fehler, den niemand erklaeren kann. */
+    serverZeit: jetzt,
+    abFenster: erstes,
+    fensterMs: CODE_FENSTER_MS
+  };
+});
+
+/* ── Mit dem eigenen Handy stempeln ──
+   Zwei Schloesser, die zusammenpassen muessen:
+
+     1. Der Chef hat DIESES Konto freigeschaltet (handyStempeln).
+     2. Der Code vom Bildschirm im Studio stimmt.
+
+   Eine PIN gibt es hier nicht, und das ist kein Vergessen: am Tablet
+   ist sie noetig, weil das Geraet allen gehoert. Das eigene Handy ist
+   bereits angemeldet — die PIN wuerde dasselbe zweimal beweisen.
+
+   WAS DAS NICHT VERHINDERT: wer den Code abfotografiert und
+   weitergibt, kann innerhalb des Fensters von woanders stempeln. Steht
+   so im Plan und gehoert ins Verkaufsgespraech — eine Absicherung, die
+   man fuer lueckenlos haelt, ist gefaehrlicher als eine, deren Luecke
+   man kennt. */
+exports.handyStempeln = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.handyStempeln !== true) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Für dieses Konto ist das Stempeln mit dem Handy nicht freigeschaltet.');
+  }
+  const code = String((data && data.code) || '').replace(/\D/g, '');
+  if (code.length !== 6) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Bitte die sechs Ziffern vom Bildschirm im Studio eingeben.');
+  }
+
+  /* Welches Geraet gehoert zu diesem Code? Das beantwortet zugleich die
+     Frage, in welchem Studio gestempelt wird — der Code traegt den Ort. */
+  const jetzt = Date.now();
+  const f = codeFenster(jetzt);
+  const terms = await W(firma).collection('terminals').get();
+  let treffer = null;
+  for (const d of terms.docs) {
+    const saat = await codeSaatHolen(firma, d.id);
+    /* Das laufende UND das vorige Fenster. Sonst scheitert jeder, der
+       beim Tippen in den Wechsel geraet — und das waere die Haelfte
+       der Leute, die langsam tippen. */
+    if (tokenGleich(code, codeAus(saat, f)) || tokenGleich(code, codeAus(saat, f - 1))) {
+      treffer = { id: d.id, daten: d.data() || {} };
+      break;
+    }
+  }
+  if (!treffer) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieser Code stimmt nicht mehr. Er wechselt alle 30 Sekunden — bitte den aktuellen vom Bildschirm nehmen.');
+  }
+
+  const tag = berlinDatum(new Date());
+  const heute = await W(firma).collection('zeiten')
+    .where('uid', '==', uid).where('tag', '==', tag).get();
+  let letzteArt = null, letzteZeit = -1;
+  heute.forEach((d) => {
+    const z = d.data() || {};
+    if ((z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
+  });
+  const art = naechsterSchritt(letzteArt);
+  const studioKey = treffer.daten.studioKey || '';
+
+  await W(firma).collection('zeiten').add({
+    uid, name: profil.name || '', studioKey,
+    art, ts: jetzt, tag, monat: tag.slice(0, 7),
+    fremd: !(profil.studioKeys || []).includes(studioKey),
+    /* Womit gestempelt wurde, steht im Datensatz. Nicht als Misstrauen,
+       sondern damit eine Auswertung spaeter ueberhaupt unterscheiden
+       kann — und damit niemand behaupten muss, es sei dasselbe. */
+    quelle: 'handy',
+    terminalId: treffer.id, terminalName: treffer.daten.name || ''
+  });
+  await W(firma).collection('terminals').doc(treffer.id).update({ letzterStempel: jetzt });
+
+  return { ok: true, art, ts: jetzt, name: profil.name || '', studioKey };
 });
 
 /* ── Was ist als Naechstes dran? ──
@@ -3890,6 +4060,7 @@ exports.stempeln = region.https.onCall(async (data, context) => {
     /* Ausserhalb des eigenen Studios gestempelt. Nicht verboten (der
        Fall ist der Alltag beim Aushelfen), aber sichtbar. */
     fremd,
+    quelle: 'terminal',
     terminalId, terminalName: term.name || ''
   });
   await tSnap.ref.update({ letzterStempel: jetzt });
@@ -3902,4 +4073,5 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
                      berlinDatum, tagDanach, erledigt,
                      pinZuSchwach, pinHashen, pinPruefen,
-                     geheimHashen, naechsterSchritt };
+                     geheimHashen, naechsterSchritt,
+                     codeFenster, codeAus, CODE_FENSTER_MS, CODE_VORRAT };

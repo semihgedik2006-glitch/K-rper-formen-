@@ -136,9 +136,11 @@ erfasst wird) · **registrierte Stempel-Geräte** je Studio, mit dem Hash
 ihres Geräteschlüssels.
 
 **Für niemanden lesbar, auch nicht für den Eigentümer:** der Hash der
-Stempel-PIN je Person, mit zufälligem Salz. Die Sicherheitsregeln
-sperren ihn für alle; geprüft wird er nur serverseitig. Er kann deshalb
-weder ausgelesen noch von der Leitung zurückgesetzt werden.
+Stempel-PIN je Person, mit zufälligem Salz — und die Saat, aus der die
+sechsstelligen Bildschirm-Codes folgen. Die Sicherheitsregeln sperren
+beides für alle; geprüft wird nur serverseitig. Die PIN kann deshalb
+weder ausgelesen noch von der Leitung zurückgesetzt werden, und die
+Codes lassen sich nicht ausserhalb des Studios vorausberechnen.
 
 **Persönlich, für andere nicht lesbar:** eigene To-dos, Notizen,
 Termine, Ziele, Wünsche.
@@ -208,7 +210,7 @@ Betriebsrat besteht).
 
 | | |
 |---|---|
-| **Erfasst** | Zeitpunkt, Art (Kommen / Pause / Zurück / Feierabend), Person, Studio des Geräts, Gerätename |
+| **Erfasst** | Zeitpunkt, Art (Kommen / Pause / Zurück / Feierabend), Person, Studio des Geräts, Gerätename, womit gestempelt wurde (Terminal oder eigenes Telefon) |
 | **Nicht erfasst** | **Standort.** `Permissions-Policy: geolocation=()` gilt unverändert. Die Ortsbindung ist physisch: das Gerät steht im Studio |
 | **Nicht erfasst** | Was jemand in der Zeit getan hat. Es gibt keine Tätigkeitsprotokolle |
 | **Nicht möglich** | Nachträgliches Ändern oder Löschen eines Stempels — auch nicht durch den Eigentümer. `zeiten` steht in den Regeln auf `write:false`; geschrieben wird ausschließlich serverseitig |

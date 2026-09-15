@@ -8231,3 +8231,122 @@ Gegen GPS hat er sich entschieden, nachdem drei Dinge auf dem Tisch
 lagen: Browser-GPS ist in Minuten gefälscht, die AGB sind für
 Beschäftigtendaten der falsche Hebel, und „Keine Standortdaten" steht
 als Zusage in drei Unterlagen plus einer Kopfzeile.
+
+---
+
+# Runde 82 — Stempeln mit dem eigenen Handy
+
+15. September 2026
+
+Semih hatte gefragt, ob bestimmte Konten auch ohne Tablet stempeln
+können, „wenn sie an einem bestimmten Ort sind" — und vorgeschlagen,
+das über GPS zu lösen und „einfach in den AGB" zu ändern.
+
+## Drei Dinge lagen vor der Entscheidung auf dem Tisch
+
+1. **Browser-GPS ist in Minuten gefälscht** (Entwicklerwerkzeuge,
+   Mock-Location-Apps). Es leistet gerade nicht, wofür das Tablet da
+   ist.
+2. **Die AGB sind der falsche Hebel.** Das sind Daten der
+   *Beschäftigten*, nicht der Kunden. Ein Vertrag zwischen StudioChat
+   und dem Betrieb erlaubt keine Verarbeitung von Beschäftigtendaten;
+   dafür braucht es eine Rechtsgrundlage, Information nach Art. 13 und
+   — wo ein Betriebsrat besteht — Mitbestimmung nach § 87 Abs. 1 Nr. 6
+   BetrVG.
+3. „Keine Standortdaten" steht als Zusage in drei Unterlagen plus einer
+   Kopfzeile.
+
+Gewählt wurden daraufhin Weg 1 und 4: **Code am Studio** plus
+**Freigabe je Konto**.
+
+## Sechs Ziffern statt eines QR-Bildes
+
+Eine bewusste Abweichung von „QR-Code", und sie ist vorgelegt worden,
+nicht stillschweigend gemacht. Ein QR bräuchte eine Bibliothek; die CSP
+lässt keine fremden Skripte zu, und ein eigener Erzeuger wären
+zweihundert Zeilen ohne Gewinn.
+
+**Der Code ist das Geheimnis, nicht seine Darstellung.** Sechs Ziffern
+abtippen dauert vier Sekunden, braucht keine Kamera-Freigabe und
+funktioniert auf jedem Telefon. Ein QR lässt sich später darüberlegen —
+mit demselben Verfahren dahinter.
+
+## Die Entscheidung mit den meisten Folgen: wo die Saat liegt
+
+Naheliegend wäre gewesen, die Codes aus dem Hash des Geräts abzuleiten
+— kein neues Feld, keine neue Sammlung.
+
+**Das wäre ein Loch gewesen.** `terminals` darf die Leitung lesen (32
+zufällige Bytes, ihr Hash lässt sich nicht durchprobieren — so steht es
+in den Regeln, und das ist richtig). Folgten die Codes daraus, könnte
+die Leitung sie zu Hause ausrechnen und ihr Team von überall stempeln
+lassen. **Genau die Person mit dem stärksten Motiv und dem leichtesten
+Zugang.**
+
+Die Saat liegt deshalb in `terminalCodes`, für alle gesperrt — derselbe
+Ort und derselbe Grund wie bei `zeitPins`. Lesen muss sie niemand: das
+Terminal holt fertige Codes.
+
+## Ein Vorrat statt eines Aufrufs je Fenster
+
+Bei 30 Sekunden wären das 2880 Funktionsaufrufe je Tablet und Tag. Der
+Vorrat deckt zehn Fenster, nachgeholt wird bei drei übrigen. Wird ein
+Tablet gestohlen, sind höchstens fünf Minuten an Codes darin — nicht
+mehr, als das Gerät ohnehin hergibt.
+
+**Die Uhr des Servers zählt**, nicht die des Tablets: ein Rechner am
+Empfang geht gern falsch, und dann zeigt er einen Code, den der Server
+längst vergessen hat.
+
+## Die Falle, die ich vorab notiert hatte — und die es wirklich gab
+
+`firestore.rules` sperrt beim Selbst-Bearbeiten `role`, `aktiv`,
+`studioKeys` und andere. **`handyStempeln` gehört in dieselbe Liste.**
+Ohne das schaltet sich jede Person die Freigabe in der Browser-Konsole
+selbst frei, und die Freigabe des Chefs ist eine Anzeige ohne Schloss.
+
+Gegenprobe gemacht: Feld aus der Sperrliste genommen → zwei rote
+Zeilen, genau die richtigen.
+
+## Ein eigener Fehler beim Werkzeuggebrauch, zum zweiten Mal
+
+Eine Perl-Ersetzung mit `(?:💪|⚡|🔥)` — einer **nicht-fangenden**
+Gruppe. `$2` war leer, und vier Emoji wurden gelöscht. Gefunden, weil
+ich den Diff gelesen habe statt nur den Trefferzähler.
+
+Dieselbe Lehre wie am 14.9. mit `$(`: *eine Ersetzung, die Quelltext
+erzeugt, gehört danach durch einen Parser und durch den Diff — nicht
+nur durch `grep -c`.* Beim zweiten Mal ist es keine Einzelheit.
+
+## Und eine Messung, die den Zufall mitgemessen hat
+
+Mein Durchlauf las den Meldungskasten einen Moment nach dem Stempeln —
+da stand schon die Aufgaben-Erinnerung der App darin. Gemeldet wurde
+ein Fehler, den es nicht gab. Jetzt werden **alle** Meldungen über
+einen MutationObserver mitgeschrieben. Eine Messung, die auf den
+richtigen Moment angewiesen ist, misst den Zufall mit.
+
+## Geprüft
+
+* `test-handy-stempeln` (neu): ohne Freigabe **keine Karte** · mit
+  Freigabe Feld und Knopf · zu kurzer Code erreicht den Server **nicht**
+  · Stempel geht über die Funktion, **0 Schreibvorgänge** in `zeiten` ·
+  das Terminal **holt** den Code (rechnet ihn nicht) und weist sich dabei
+  mit dem Gerätegeheimnis aus · **ohne Antwort bleibt die Anzeige leer**
+  · der Haken beim Chef ist 44px und wird gespeichert
+* Drei Gegenproben, alle rot: Karte immer sichtbar · Längenprüfung
+  entfernt · Anzeige ohne Antwort
+* `tests/rules/zeitpin.test.js`: **90 Zusicherungen** (vorher 68).
+  Zwei Gegenproben rot: Saat für die Leitung geöffnet → vier Zeilen;
+  `handyStempeln` aus der Sperrliste → zwei Zeilen
+* Die Code-Erzeugung einzeln nachgerechnet: deterministisch,
+  sechsstellig, und bei 20 000 Fenstern 19 796 verschiedene Codes — die
+  204 Kollisionen sind genau der Geburtstagswert für eine
+  Gleichverteilung über 10^6
+
+## Was dieser Weg nicht verhindert
+
+Wer den Code abfotografiert und weitergibt, kann innerhalb des Fensters
+von woanders stempeln. Steht so im Code, im Plan und gehört ins
+Verkaufsgespräch — genau wie beim Tablet, wo ein Kollege mit bekannter
+PIN mitstempeln kann.

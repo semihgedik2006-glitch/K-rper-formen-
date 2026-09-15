@@ -294,7 +294,7 @@ sobald Punkt 5 der Reihenfolge fertig ist, und nicht erst danach.
 
 ---
 
-## Nachtrag 15.9. — Stempeln mit dem eigenen Handy
+## Nachtrag 15.9. — Stempeln mit dem eigenen Handy · **gebaut**
 
 Entschieden von Semih aus vier vorgelegten Wegen: **QR-Code am Studio**
 (Weg 1) **und Freigabe je Konto** (Weg 4). Gegen GPS, nachdem drei
@@ -350,10 +350,39 @@ ein Kollege mit bekannter PIN mitstempeln kann. Eine Absicherung, die
 man für lückenlos hält, ist gefährlicher als eine, deren Lücke man
 kennt.
 
-### Eine Falle in den Regeln, vorab notiert
+### Eine Falle in den Regeln, vorab notiert — und eingetreten
 
 `firestore.rules` sperrt beim Selbst-Bearbeiten genau diese Felder:
 `role`, `studios`, `studio`, `studioKeys`, `aktiv`, `firma`, `admin`.
 **`handyStempeln` muss in dieselbe Liste** — sonst schaltet sich jede
 Person die Freigabe in der Browser-Konsole selbst frei, und die ganze
 Freigabe ist eine Anzeige ohne Schloss.
+
+Eingebaut und mit Gegenprobe belegt: Feld aus der Sperrliste genommen →
+zwei rote Zeilen.
+
+### Wo die Saat liegt, und warum nicht im Terminal-Datensatz
+
+Die zweite Entscheidung mit Folgen. Naheliegend wäre gewesen, die Codes
+aus dem Hash des Geräts abzuleiten — kein neues Feld, keine neue
+Sammlung.
+
+**Das wäre ein Loch gewesen.** `terminals` darf die Leitung lesen (und
+das ist richtig: 32 zufällige Bytes, ihr Hash lässt sich nicht
+durchprobieren). Folgten die Codes daraus, könnte die Leitung sie zu
+Hause ausrechnen und ihr Team von überall stempeln lassen — genau die
+Person mit dem stärksten Motiv und dem leichtesten Zugang.
+
+Die Saat liegt deshalb in `terminalCodes`, in den Regeln **für alle
+gesperrt** — derselbe Ort und derselbe Grund wie bei `zeitPins`.
+
+### Der Vorrat statt eines Aufrufs je Fenster
+
+Bei 30 Sekunden wären das 2880 Funktionsaufrufe je Tablet und Tag. Das
+Terminal holt deshalb zehn Fenster auf einmal (fünf Minuten) und
+frischt bei drei übrigen nach. Ein gestohlenes Tablet trägt damit
+höchstens fünf Minuten an Codes — nicht mehr, als es ohnehin hergibt.
+
+Gerechnet wird gegen die **Serverzeit**: ein Rechner am Empfang geht
+gern falsch, und ein Code, den der Server nicht mehr kennt, ist ein
+Fehler, den am Tresen niemand erklären kann.
