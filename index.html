@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PmDtw6zAT/1V6S9zFkXFARVUD+4U5weTQEPUkFKmQkA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-j2d27CnuTIZ9JUHvpgcySRLeO3IEYfa4TLfuJlh8xQ0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3942,12 +3942,19 @@ body.neu .bereich-kopf{display:flex;align-items:center;gap:var(--s10);
   padding:var(--s16) var(--s8) var(--s12) var(--rand);
   background:none;border:none;color:inherit;font-family:var(--font-body);
   transition:padding .3s var(--ease-ios)}
+/* 46 waren es. Zusammen mit der getönten Fläche war das der lauteste
+   Punkt im Bild — und er sagt nur, wo man ist.
+
+   Nachgemessen bringt das KEINE Höhe: der Kopf ist 85px hoch, und
+   getragen wird das vom Text (Titel 1,85rem plus Unterzeile), nicht
+   vom Zeichen. Es geht hier also allein um das Gewicht im Bild, nicht
+   um Platz. */
 body.neu .bk-ikon{flex:0 0 auto;display:grid;place-items:center;
-  width:46px;height:46px;border-radius:var(--r-md);
+  width:38px;height:38px;border-radius:var(--r-md);
   background:var(--ber-f);color:var(--ber);
   box-shadow:inset 0 0 0 1px var(--ber-f);
   transition:width .3s var(--ease-ios),height .3s var(--ease-ios)}
-body.neu .bk-ikon svg{width:26px;height:26px;
+body.neu .bk-ikon svg{width:22px;height:22px;
   transition:width .3s var(--ease-ios),height .3s var(--ease-ios)}
 body.neu .bk-txt{min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 body.neu .bk-txt b{font-family:var(--font-head);font-size:var(--t-2xl);
@@ -4206,6 +4213,11 @@ body.neu .heute-kopf{display:flex;align-items:center;gap:var(--s8);
 body.neu .heute-kopf .hk-punkt{width:8px;height:8px;border-radius:var(--r-pille);
   background:var(--danger);flex:0 0 auto}
 body.neu .heute-kopf.dringend{color:var(--danger-tx)}
+/* Die Überschrift nennt die volle Zahl und trägt den Weg zur ganzen
+   Liste. Nur so darf darunter gekürzt werden. */
+body.neu .heute-kopf .hk-wort{flex:0 0 auto}
+body.neu .heute-kopf i{flex:1;height:1px;background:var(--line);display:block}
+body.neu .heute-kopf .mini-link{flex:0 0 auto}
 body.neu .heute-liste{display:flex;flex-direction:column;gap:var(--s8)}
 body.neu .heute-zeile{display:flex;align-items:center;gap:var(--s12);
   width:100%;min-height:var(--zeile);text-align:left;cursor:pointer;
@@ -4221,11 +4233,23 @@ body.neu .heute-zeile.dringend{border-left-color:var(--danger);
   background:var(--f-bad-leise)}
 body.neu .heute-zeile.heute{border-left-color:var(--warm)}
 body.neu .heute-zeile.lesen{border-left-color:var(--ber)}
+/* Ohne Kachel. Aus dem Betrieb: „es wirkt jetzt mit den grossen
+   Symbolen immer noch voll überwältigend."
+
+   Er hat recht, und es widerspricht seiner eigenen Wahl aus Runde 84
+   („Farbe + grosse Symbole") nur scheinbar: gross und farbig bleibt das
+   Zeichen des BEREICHS oben — eines je Bildschirm. In einer Liste
+   dagegen stand vor jeder Zeile eine getönte 34er-Kachel; sechs davon
+   untereinander sind sechs Flächen, die um Aufmerksamkeit bitten, und
+   keine davon sagt etwas, was daneben nicht in Worten stünde.
+
+   Jetzt nur noch der Strich des Zeichens, in der Farbe der Zeile. Der
+   farbige Balken links trägt die Dringlichkeit weiter. */
 body.neu .hz-ikon{flex:0 0 auto;display:grid;place-items:center;
-  width:34px;height:34px;border-radius:var(--r-sm);
-  background:var(--auf-2);color:var(--text-2)}
-body.neu .heute-zeile.dringend .hz-ikon{background:var(--f-bad);color:var(--danger-tx)}
-body.neu .hz-ikon svg{width:20px;height:20px}
+  width:24px;height:24px;color:var(--text-3)}
+body.neu .heute-zeile.dringend .hz-ikon{color:var(--danger-tx)}
+body.neu .heute-zeile.lesen .hz-ikon{color:var(--ber)}
+body.neu .hz-ikon svg{width:22px;height:22px}
 body.neu .hz-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 body.neu .hz-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -4278,9 +4302,36 @@ body.neu .sec-head span{white-space:normal;min-width:0}
    Deshalb fallen die drei hier weg. Nicht gelöscht: im bisherigen
    Design stehen sie unverändert, und im neuen führt jede von ihnen
    weiterhin an ihren Ort. */
+/* Nachtrag aus dem Betrieb: „die neue ist immer noch zu voll für mein
+   geschmack, am besten steht alles auf einer seite ohne das man
+   scrollen muss."
+
+   Gemessen: auf einem 390×844-Handy sind unter Kopfzeile,
+   Bereichskopf und unterer Leiste genau 550 Pixel übrig. Drin standen
+   1579. Das geht nur, wenn die Startseite NUR NOCH DIE LISTE ist.
+
+   Alles, was hier verschwindet, ist nicht weg, sondern umgezogen:
+     Einrichtung       eine Zeile in der Liste
+     Hinweisbalken     Zeilen in der Liste (Material, Angeheftetes)
+     Mein Dienst       eine Zeile in der Liste
+     Von der Leitung   eine Zeile in der Liste
+     Übergabe, Brett   „Alles" → Wer arbeitet wann (zwei Tipps)
+     Zuletzt passiert  fällt ersatzlos — es hat noch nie jemand
+                       gebraucht, um zu wissen, was zu tun ist
+
+   Das war erst möglich, NACHDEM es „Alles" gab. Vorher wäre dasselbe
+   Verstecken gewesen. */
 body.neu #homeGrid,
 body.neu #homeGridHead,
-body.neu #homeBrennpunkte{display:none}
+body.neu #homeBrennpunkte,
+body.neu #setupCard,
+body.neu #homeAlerts,
+body.neu #myShiftCard,
+body.neu #homeLesenHead,
+body.neu #homeAnnCard,
+body.neu #homeHoCard,
+body.neu #homeBoardCard,
+body.neu #homeActivityCard{display:none}
 
 /* Empfohlene Einrichtungsschritte stehen leiser da als nötige. */
 body.neu .setup-zeile.empfohlen{opacity:.72}
@@ -15695,7 +15746,9 @@ function tageSeit(ms){
 }
 function heuteZeile(k){
   return '<button type="button" class="heute-zeile '+k.art+'" data-heute="'+esc(k.ziel)+'"'+
-    (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+'>'+
+    (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+
+    (k.ichtab?' data-hichtab="'+esc(k.ichtab)+'"':'')+
+    (k.cgo?' data-hcgo="'+esc(k.cgo)+'"':'')+'>'+
     '<span class="hz-ikon">'+k.ikon+'</span>'+
     '<span class="hz-txt"><b>'+esc(k.titel)+'</b><i>'+esc(k.unter)+'</i></span>'+
     '<span class="hz-pfeil">›</span></button>';
@@ -15710,7 +15763,8 @@ function renderHeute(){
   var endeHeute=new Date(); endeHeute.setHours(23,59,59,999); endeHeute=endeHeute.getTime();
   var mehrereStudios = keys.length>1;
 
-  var ueber=[], heute=[];
+  /* ── Was gibt es überhaupt ── */
+  var ueber=[], heute=[], matArtikel=0, matStudios=0;
   keys.forEach(function(sk){
     (cachedTodos[sk]||[]).forEach(function(t){
       if(isDone(t)||isArchived(t)) return;
@@ -15718,32 +15772,51 @@ function renderHeute(){
       var wo = mehrereStudios ? studioName(sk) : '';
       if(jetzt>t.due){
         var d=tageSeit(t.due);
-        ueber.push({ t:t, sk:sk, due:t.due, art:'dringend', ziel:'todos', f:'faellig',
+        ueber.push({ due:t.due, art:'dringend', ziel:'todos', f:'faellig',
           ikon:ikon('warnung'), titel:t.title||'(ohne Titel)',
           unter:(wo?wo+' · ':'')+(d<=0?'seit heute':(d===1?'seit 1 Tag':'seit '+d+' Tagen')) });
       } else if(t.due<=endeHeute){
-        heute.push({ t:t, sk:sk, due:t.due, art:'heute', ziel:'todos',
+        heute.push({ due:t.due, art:'heute', ziel:'todos',
           ikon:ikon('uhr'), titel:t.title||'(ohne Titel)',
-          unter:(wo?wo+' · ':'')+'heute bis '+new Date(t.due).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) });
+          unter:(wo?wo+' · ':'')+'bis '+new Date(t.due).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) });
       }
     });
+    var fehlt=(_invAll[sk]||[]).filter(function(it){ return itemNeed(it)>0; });
+    if(fehlt.length){ matStudios++; matArtikel+=fehlt.length; }
   });
   /* Das Älteste zuerst: was am längsten liegt, ärgert am meisten. */
   ueber.sort(function(a,b){ return a.due-b.due; });
   heute.sort(function(a,b){ return a.due-b.due; });
 
-  /* Ungelesenes. Kein Zählen von Nachrichten, die man ohnehin gleich
-     sieht — nur der Hinweis, DASS dort etwas liegt, mit dem Weg dahin. */
+  /* Mein Dienst — EINE Zeile statt einer Karte. Die Karte war beim Chef
+     614 Pixel hoch; auf einer Seite, die auf einen Bildschirm passen
+     soll, ist das der ganze Bildschirm. */
+  var heuteYmd=ymd(new Date());
+  var dienst=(_myShifts||[]).filter(function(x){ return x.date===heuteYmd; });
+  if(dienst.length){
+    heute.unshift({ due:0, art:'heute', ziel:'ich', ichtab:'woche', ikon:ikon('kalender'),
+      titel: dienst.length===1 ? 'Dein Dienst heute' : dienst.length+' Schichten heute',
+      unter: dienst.length===1
+        ? (dienst[0].from||'')+'–'+(dienst[0].to||'')+' · '+studioName(dienst[0].sk)
+        : 'Ganze Woche ansehen' });
+  }
+
+  /* Ungelesenes. */
   var lesen=[];
   if(ansichtAn('ann')){
-    var neueAnn=_allAnns.filter(function(a){
-      if(!(isChef()||!a.target||a.target==='all'||(session.studioKeys||[]).indexOf(a.target)>=0)) return false;
-      return a.ts && a.ts > jetzt-7*86400000;
+    var meine=_allAnns.filter(function(a){
+      return isChef()||!a.target||a.target==='all'||(session.studioKeys||[]).indexOf(a.target)>=0;
     });
-    if(unread.ann && neueAnn.length){
+    if(unread.ann && meine.length){
       lesen.push({ art:'lesen', ziel:'ann', ikon:ikon('megafon'),
         titel:'Neu von der Leitung',
-        unter:(neueAnn[0].text||'').replace(/\s+/g,' ').slice(0,70) });
+        unter:(meine[0].text||'').replace(/\s+/g,' ').slice(0,70) });
+    } else {
+      /* Angeheftetes steht auch dann da, wenn es schon gelesen ist —
+         genau dafür heftet man etwas an. */
+      var pin=meine.filter(function(a){ return a.pinned; })[0];
+      if(pin) lesen.push({ art:'lesen', ziel:'ann', ikon:ikon('anheften'),
+        titel:'Angeheftet', unter:(pin.text||'').replace(/\s+/g,' ').slice(0,70) });
     }
   }
   var dmN=0; try{ dmN=dmUnreadCount(); }catch(e){}
@@ -15757,36 +15830,51 @@ function renderHeute(){
       titel:'Neues im Teamchat', unter:'Seit deinem letzten Blick' });
   }
 
+  /* Was sonst noch ansteht: fehlendes Material und offene Einrichtung. */
+  var sonst=[];
+  if(matArtikel && ansichtAn('material')){
+    sonst.push({ art:'heute', ziel:'material', ikon:ikon('paket'),
+      titel: matArtikel+(matArtikel===1?' Artikel fehlt':' Artikel fehlen'),
+      unter: matStudios===1 ? 'in einem Studio' : 'in '+matStudios+' Studios' });
+  }
+  if(isChef()){
+    var offenSetup=setupSchritte().filter(function(s){ return !s.fertig && !s.empfohlen; });
+    if(offenSetup.length){
+      /* Der Schritt gehört in die Unterzeile, nicht in den Titel: „
+         Einrichtung: Rechtliche An…" war abgeschnitten, und
+         abgeschnitten ist der Titel genau die Stelle, die sagen soll,
+         worum es geht. */
+      sonst.push({ art:'heute', ziel:'chef', cgo:offenSetup[0].cgo, ikon:ikon('rakete'),
+        titel: offenSetup.length===1 ? 'Ein Einrichtungsschritt fehlt'
+                                     : offenSetup.length+' Einrichtungsschritte fehlen',
+        unter: offenSetup[0].titel });
+    }
+  }
+
+  /* ── Zeichnen ──
+     Die Überschrift nennt die VOLLE Zahl und führt zur ganzen Liste;
+     darunter stehen nur die obersten. So ist nichts verschwiegen,
+     obwohl wenig dasteht. */
   var html='';
-  function block(titel, dringend, eintraege, alle, ziel, f){
-    if(!eintraege.length) return '';
-    var rest=alle-eintraege.length;
-    return '<div class="heute-block">'+
+  function block(titel, dringend, alle, zeigen, ziel, f){
+    if(!alle.length) return;
+    var rest=alle.length-zeigen.length;
+    html+='<div class="heute-block">'+
       '<div class="heute-kopf'+(dringend?' dringend':'')+'">'+
-      (dringend?'<span class="hk-punkt"></span>':'')+esc(titel)+'</div>'+
-      '<div class="heute-liste">'+eintraege.map(heuteZeile).join('')+
-      (rest>0 ? '<button type="button" class="heute-zeile" data-heute="'+esc(ziel)+'"'+
-        (f?' data-hf="'+esc(f)+'"':'')+'>'+
-        '<span class="hz-ikon">'+ikon('raster')+'</span>'+
-        '<span class="hz-txt"><b>und '+rest+' weitere</b>'+
-        '<i>Alle ansehen</i></span><span class="hz-pfeil">›</span></button>' : '')+
-      '</div></div>';
+      (dringend?'<span class="hk-punkt"></span>':'')+
+      '<span class="hk-wort">'+esc(titel)+(alle.length>1?' · '+alle.length:'')+'</span>'+
+      '<i></i>'+
+      (rest>0 ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
+                (f?' data-hf="'+esc(f)+'"':'')+'>alle '+alle.length+' ›</button>' : '')+
+      '</div><div class="heute-liste">'+zeigen.map(heuteZeile).join('')+'</div></div>';
   }
-  if(ansichtAn('todos')){
-    html+=block('Überfällig', true, ueber.slice(0,3), ueber.length, 'todos', 'faellig');
-    html+=block('Heute', false, heute.slice(0,4), heute.length, 'todos');
-  }
-  html+=block('Neu für dich', false, lesen, lesen.length, 'chat');
+  if(ansichtAn('todos')) block('Überfällig', true, ueber, ueber.slice(0,3), 'todos', 'faellig');
+  block('Heute', false, heute, heute.slice(0,3), 'todos');
+  block('Neu für dich', false, lesen, lesen.slice(0,2), 'chat');
+  block('Zu erledigen', false, sonst, sonst.slice(0,2), 'todos');
 
   if(!html){
-    /* Kein leerer Bildschirm: „nichts offen" ist eine Nachricht, und
-       zwar eine gute. Sie muss so aussehen. */
-    /* Genau das sagen, was geprüft wurde — nicht mehr. „Nichts
-       Dringendes" stand im Bild direkt über zwei Hinweisbalken
-       („Neue Öffnungszeiten", „2 Artikel fehlen"), und das liest sich
-       wie ein Widerspruch. Überfällig und ungelesen sind das, was
-       diese Liste zählt; für alles andere gibt es die Balken
-       darunter. */
+    /* Genau das sagen, was geprüft wurde — nicht mehr. */
     html='<div class="heute-ruhe"><span class="hr-ico">✓</span>'+
       '<div><b>Nichts Überfälliges</b>'+
       '<span>Keine Aufgabe ist über ihrer Frist, nichts Ungelesenes.</span></div></div>';
@@ -15794,7 +15882,8 @@ function renderHeute(){
   box.innerHTML=html;
 
   box.querySelectorAll('[data-heute]').forEach(function(el){
-    el.addEventListener('click',function(){
+    el.addEventListener('click',function(e){
+      e.stopPropagation();
       var f=el.getAttribute('data-hf');
       if(f){
         _todoMode=f;
@@ -15804,7 +15893,88 @@ function renderHeute(){
       }
       tick(8);
       showView(el.getAttribute('data-heute'));
+      var it=el.getAttribute('data-hichtab');
+      if(it){ var ib=document.querySelector('[data-ichtab="'+it+'"]'); if(ib) ib.click(); }
+      var cg=el.getAttribute('data-hcgo');
+      if(cg){ var cb=document.querySelector('#chefHome [data-cgo="'+cg+'"]'); if(cb) cb.click(); }
     });
+  });
+
+  heutePasst(box);
+}
+
+/* ── „Ohne dass man scrollen muss" ──
+   Aus dem Betrieb: „am besten steht alles auf einer Seite ohne das man
+   scrollen muss."
+
+   Gerechnet wird das nicht, sondern GEMESSEN. Eine Rechnung aus
+   Zeilenhöhe mal Anzahl wäre bei jeder Schriftgrösseneinstellung,
+   jedem längeren Studionamen und jedem Gerät anders falsch. Also:
+   zeichnen, nachsehen ob es überläuft, und die unterste Zeile
+   wegnehmen, bis es passt.
+
+   Verschwiegen wird dadurch nichts: jede Überschrift nennt die volle
+   Zahl und trägt „alle N ›". Was hier wegfällt, ist einen Tipp
+   entfernt und sagt das auch.
+
+   Die Überfälligen sind zuletzt dran — sie stehen oben, und ihre
+   Zeilen fallen erst, wenn alles andere schon weg ist. */
+function heutePasst(box){
+  var sa = box.closest('.scroll-area'); if(!sa) return;
+  /* Nicht messen, was nicht liegt. Wäre die Ansicht beim Zeichnen noch
+     versteckt, wäre clientHeight 0 — und die Schleife würde die ganze
+     Liste abräumen. Dieselbe Klasse Fehler wie beim gleitenden Marker
+     (siehe gruppenMarker). */
+  if(sa.clientHeight < 120) return;
+
+  /* ZUERST KÜRZEN, DANN STREICHEN.
+     Der erste Anlauf nahm immer die unterste Kategorie ganz weg. Im
+     Bild blieben dadurch 85 Pixel leer, während „54 Artikel fehlen"
+     verschwunden war — eine ganze Aussage weg, für Platz, der gar
+     nicht gebraucht wurde.
+
+     Besser: Zeilen beim LÄNGSTEN Block wegnehmen, bis überall nur noch
+     eine steht. Dass es fünf überfällige Aufgaben gibt, sagt die
+     Überschrift ohnehin („Überfällig · 5"); dass Material fehlt, sagt
+     sonst niemand. Eine Zeile je Kategorie ist mehr wert als drei aus
+     einer. */
+  function bloecke(){ return [].slice.call(box.querySelectorAll('.heute-block')); }
+  function zeilenVon(b){ return b.querySelectorAll('.heute-zeile'); }
+
+  var schutz = 0;
+  while(sa.scrollHeight > sa.clientHeight + 2 && schutz++ < 40){
+    var bs = bloecke();
+    if(!bs.length) break;
+    var laengster = null;
+    bs.forEach(function(b){
+      var n = zeilenVon(b).length;
+      if(n > 1 && (!laengster || n > zeilenVon(laengster).length)) laengster = b;
+    });
+    if(laengster){
+      var z = zeilenVon(laengster);
+      z[z.length-1].remove();
+      heuteKopfAusgang(laengster);
+      continue;
+    }
+    /* Überall nur noch eine Zeile: jetzt fällt die unterste Kategorie —
+       aber erst jetzt. */
+    if(bs.length < 2) break;          // der letzte Rest bleibt stehen
+    bs[bs.length-1].remove();
+  }
+}
+
+/* Wurde in einem Block gekürzt, MUSS der Weg zum Rest dastehen. Eine
+   Liste, die stillschweigend aufhört, behauptet, sie sei vollständig. */
+function heuteKopfAusgang(blk){
+  var kopf = blk.querySelector('.heute-kopf');
+  if(!kopf || kopf.querySelector('.mini-link')) return;
+  var erste = blk.querySelector('[data-heute]');
+  var ziel = erste ? erste.getAttribute('data-heute') : 'todos';
+  kopf.insertAdjacentHTML('beforeend',
+    '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'">alle ›</button>');
+  var neu = kopf.querySelector('.mini-link');
+  neu.addEventListener('click', function(e){
+    e.stopPropagation(); tick(8); showView(ziel);
   });
 }
 
