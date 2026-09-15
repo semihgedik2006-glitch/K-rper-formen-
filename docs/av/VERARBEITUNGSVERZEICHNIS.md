@@ -2,7 +2,7 @@
 
 nach **Art. 30 Abs. 2 DSGVO** — für den Auftragsverarbeiter
 
-Stand 14. September 2026 · **Das brauchst du selbst, nicht der Kunde.**
+Stand 15. September 2026 · **Das brauchst du selbst, nicht der Kunde.**
 
 > Art. 30 Abs. 2 verpflichtet jeden Auftragsverarbeiter, ein Verzeichnis
 > aller Verarbeitungen zu führen, die er im Auftrag durchführt. Es ist
@@ -58,7 +58,51 @@ Qualifikationen mit Ablaufdatum, persönliche Notizen und Ziele.
 
 **Vollständige Aufstellung:** `LOESCHKONZEPT.md`, Abschnitt 4.
 
-### 3.2 Terminverwaltung und Terminbenachrichtigung
+### 3.2 Arbeitszeiterfassung
+
+**Zweck:** Aufzeichnung von Beginn, Pausen und Ende der täglichen
+Arbeitszeit. Der Verantwortliche verfolgt damit regelmäßig die
+Aufzeichnungspflicht, die sich aus dem EuGH-Urteil vom 14.5.2019
+(C-55/18) und dem BAG-Beschluss vom 13.9.2022 (1 ABR 22/21) ergibt.
+
+**Betroffene:** Beschäftigte des Verantwortlichen.
+
+**Datenkategorien:** Person, Zeitpunkt, Art des Stempels (Kommen,
+Pause, Zurück, Feierabend), Studio des Geräts, Gerätename. Zusätzlich
+je Person ein Hash ihrer Stempel-PIN mit zufälligem Salz und je Gerät
+ein Hash seines Schlüssels.
+
+**Ausdrücklich nicht verarbeitet:** Standortdaten. Die Bindung an den
+Ort ist physisch (das Gerät steht im Studio) und nicht technisch
+erhoben; `Permissions-Policy: geolocation=()` sperrt die Ortung auf
+Ebene des Browsers.
+
+**Zwei Wege zum Stempel, beide ohne Standort:**
+
+| Weg | Was geprüft wird |
+|---|---|
+| Terminal am Empfang | angemeldetes Konto des Betriebs · Geheimnis genau dieses Geräts · PIN der Person |
+| Eigenes Telefon | Freigabe des Verantwortlichen für dieses Konto (`handyStempeln`) · sechsstelliger Code, der auf dem Bildschirm im Studio steht und alle 30 Sekunden wechselt |
+
+Beim zweiten Weg wird zusätzlich festgehalten, dass mit dem Telefon
+gestempelt wurde (`quelle`). Der Ort ergibt sich aus dem Gerät, dessen
+Code eingegeben wurde — nicht aus einer Ortung.
+
+> **Die Lücke gehört benannt, auch hier:** wer den Code abfotografiert
+> und weitergibt, kann innerhalb des Zeitfensters von woanders
+> stempeln. Dieses System verhindert das Stempeln von zu Hause im
+> Regelfall, nicht die Absprache zu zweit — genauso wenig wie eine PIN
+> am Tablet.
+
+> **Zwei Hinweise für den Verantwortlichen, keine Rechtsberatung:**
+> Arbeitszeiterfassung ist eine technische Einrichtung, die geeignet
+> ist, Leistung und Verhalten zu überwachen; wo ein Betriebsrat
+> besteht, ist sie nach **§ 87 Abs. 1 Nr. 6 BetrVG mitbestimmungs-
+> pflichtig**. Und die Beschäftigten sind nach Art. 13 DSGVO über diese
+> Verarbeitung zu informieren. Beides liegt beim Verantwortlichen, nicht
+> beim Auftragsverarbeiter.
+
+### 3.3 Terminverwaltung und Terminbenachrichtigung
 
 **Zweck:** Bestätigungen und Erinnerungen an Endkundinnen des
 Verantwortlichen.
@@ -74,7 +118,7 @@ Verantwortlichen.
 > weil das Verzeichnis beschreiben muss, was **möglich** ist, nicht nur
 > was gerade läuft.
 
-### 3.3 Benachrichtigung und Berichtswesen
+### 3.4 Benachrichtigung und Berichtswesen
 
 **Zweck:** Push-Nachrichten und E-Mails über fällige Aufgaben, erledigte
 Arbeit, ablaufende Nachweise, Geburtstage, Tagesübersicht (20:30 Uhr),
@@ -85,7 +129,7 @@ Monatsbericht (Monatserster).
 **Datenkategorien:** Name, E-Mail-Adresse, Gerätekennzeichen für Push,
 Inhalt der Benachrichtigung.
 
-### 3.4 Auswertung in einer Tabelle
+### 3.5 Auswertung in einer Tabelle
 
 **Zweck:** Übergabe von Aufgaben- und Materialständen an eine
 Google-Tabelle.
@@ -96,7 +140,7 @@ Namen der abhakenden Personen.
 **Siehe:** `UNTERAUFTRAGNEHMER.md`, Abschnitt 2 — mit dem dort
 genannten Vorbehalt für fremde Kunden.
 
-### 3.5 Sicherung und Wiederherstellung
+### 3.6 Sicherung und Wiederherstellung
 
 **Zweck:** Schutz vor Datenverlust.
 
@@ -142,6 +186,7 @@ Vollständig in `LOESCHKONZEPT.md`. Kurzfassung:
 | Wochensicherungen Material | 52 Wochen |
 | Konto und Profil | auf Weisung, sofort |
 | Arbeitsinhalte einer ausgeschiedenen Person | **bleiben** — siehe Löschkonzept 2.2 |
+| Stempelzeiten | **keine automatische Löschfrist.** Hier ist eine Frist offen und zu setzen: Arbeitszeitnachweise unterliegen Aufbewahrungspflichten (§ 16 Abs. 2 ArbZG nennt zwei Jahre für Aufzeichnungen über die werktägliche Arbeitszeit hinaus), und wie lange darüber hinaus, entscheidet der Verantwortliche. Ein Punkt für den Anwalt, ausdrücklich nicht von uns gesetzt |
 | Alle Daten eines Kunden | bei Vertragsende auf Weisung; Sicherungen laufen binnen 7 Tagen aus |
 
 ---

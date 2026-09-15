@@ -1,8 +1,9 @@
 # Zeiterfassung — Plan
 
-Stand 14. September 2026 · **Schritte 1 bis 4 gebaut und ausgerollt**,
-in der Demo (`index.html?demo=terminal`) bedienbar. Schritt 5 ist in
-Arbeit. Alles ab 6 steht noch aus.
+Stand 15. September 2026 · **Schritte 1 bis 5 gebaut**, davon 1 bis 4
+ausgerollt und in der Demo (`index.html?demo=terminal`) bedienbar.
+Alles ab 6 steht noch aus. Der Nachtrag am Ende beschreibt das
+Stempeln mit dem eigenen Handy — entschieden, noch nicht gebaut.
 
 ---
 
@@ -238,12 +239,16 @@ bei `papierkorbLaden` sagt es seit Langem.
 > stillschweigend anlegt; in der Produktion wäre der **allererste
 > Stempel** mit `FAILED_PRECONDITION` gescheitert. Nachgeschlagen am
 > 14.9. in der Firestore-Dokumentation, nicht aus dem Gedächtnis.
-> **Noch nicht behoben** — der Umbau gehört zu Schritt 5: die Handvoll
-> Einträge eines Tages holen und das Maximum in JS suchen.
+> **Behoben am 15.9. mit Schritt 5:** die Handvoll Einträge eines Tages
+> wird geholt und das Maximum in JS gesucht. `tests/test-meine-zeiten.js`
+> hält die Regel fest — eine Abfrage auf `zeiten` mit `orderBy` macht
+> ihn rot. Gegenprobe gemacht: `orderBy` wieder eingesetzt, Durchlauf
+> rot.
 >
-> Nachweisen lässt sich der Fehlschlag hier nicht: der Emulator legt
+> Nachweisen liess sich der Fehlschlag selbst nicht: der Emulator legt
 > fehlende Indizes stillschweigend an und kennt die Grenze gar nicht.
-> Der Beleg ist die Dokumentation, nicht eine Messung.
+> Der Beleg ist die Firestore-Dokumentation, nicht eine Messung — das
+> gehört dazugesagt.
 
 ---
 
@@ -255,7 +260,7 @@ bei `papierkorbLaden` sagt es seit Langem.
    Ohne das geht nichts weiter.
 3. ✅ **Terminal registrieren** — Chef richtet ein Gerät ein.
 4. ✅ **Stempeln** — der Terminal-Bildschirm und die Schreibfunktion.
-5. **Eigene Zeiten sehen** — jede Person im Ich-Bereich. *(in Arbeit)*
+5. ✅ **Eigene Zeiten sehen** — jede Person im Ich-Bereich.
 6. **Soll gegen Ist im Schichtplan**.
 7. **Korrekturen** durch die Leitung, mit Grund.
 8. **Abdeckung und Warnungen** — braucht 1 und 4.
@@ -286,3 +291,98 @@ Organisationswerkzeug angesetzt.
 
 **Das ist eine Entscheidung und keine Rechnung** — aber sie steht an,
 sobald Punkt 5 der Reihenfolge fertig ist, und nicht erst danach.
+
+---
+
+## Nachtrag 15.9. — Stempeln mit dem eigenen Handy · **gebaut**
+
+Entschieden von Semih aus vier vorgelegten Wegen: **QR-Code am Studio**
+(Weg 1) **und Freigabe je Konto** (Weg 4). Gegen GPS, nachdem drei
+Dinge auf dem Tisch lagen:
+
+1. Browser-GPS ist in Minuten gefälscht (Entwicklerwerkzeuge,
+   Mock-Location-Apps). Es leistet nicht, wofür das Tablet da ist.
+2. **Die AGB sind der falsche Hebel.** Das sind Daten der
+   *Beschäftigten*, nicht der Kunden. Ein Vertrag zwischen StudioChat
+   und dem Betrieb erlaubt keine Verarbeitung von Beschäftigtendaten;
+   dafür braucht es eine Rechtsgrundlage, Transparenz nach Art. 13 und
+   — wo ein Betriebsrat besteht — die Mitbestimmung nach § 87 Abs. 1
+   Nr. 6 BetrVG.
+3. „Keine Standortdaten" steht als Zusage in `LOESCHKONZEPT.md`,
+   `TOM.md`, im Verarbeitungsverzeichnis und als Kopfzeile
+   `Permissions-Policy: geolocation=()`.
+
+### Wie es gebaut wird
+
+Ein Kombinationsschloss aus zwei Teilen:
+
+* **Der Chef schaltet es je Konto frei** (`handyStempeln` am
+  Personendatensatz, gesetzt im Personen-Bearbeiter unter Verwaltung →
+  Team). Ohne Freigabe geht nur das Tablet.
+* **Der Code vom Bildschirm im Studio.** Das Terminal zeigt einen Code,
+  der alle 30 Sekunden wechselt. Wer stempeln will, tippt ihn auf dem
+  eigenen Handy ein. Das ist die Ortsbindung — ohne ein einziges
+  Standortdatum.
+
+Die Person weist sich durch ihr **angemeldetes Konto** aus. Eine PIN
+braucht es dabei nicht: am Tablet ist sie nötig, weil das Gerät allen
+gehört; das eigene Handy ist schon angemeldet.
+
+### Kein QR-Bild, sondern sechs Ziffern — und warum
+
+Ein QR-Code bräuchte eine Bibliothek. Die CSP dieser App erlaubt keine
+fremden Skripte, und ein QR-Erzeuger im eigenen Code wären zweihundert
+Zeilen, die nichts tragen, was sechs Ziffern nicht auch tragen.
+
+**Der Code ist das Geheimnis, nicht seine Darstellung.** Sechs Ziffern
+abtippen dauert vier Sekunden, braucht keine Kamera-Freigabe und
+funktioniert auf jedem Telefon. Ein QR lässt sich später darüberlegen —
+als Bequemlichkeit, mit demselben Code dahinter.
+
+### Was dieser Weg NICHT verhindert
+
+Wer den Code abfotografiert und weitergibt, kann innerhalb des
+Zeitfensters von woanders stempeln. Dreißig Sekunden reichen dafür, wenn
+jemand daneben steht und wartet.
+
+Das gehört gesagt und nicht verschwiegen — genauso wie beim Tablet, wo
+ein Kollege mit bekannter PIN mitstempeln kann. Eine Absicherung, die
+man für lückenlos hält, ist gefährlicher als eine, deren Lücke man
+kennt.
+
+### Eine Falle in den Regeln, vorab notiert — und eingetreten
+
+`firestore.rules` sperrt beim Selbst-Bearbeiten genau diese Felder:
+`role`, `studios`, `studio`, `studioKeys`, `aktiv`, `firma`, `admin`.
+**`handyStempeln` muss in dieselbe Liste** — sonst schaltet sich jede
+Person die Freigabe in der Browser-Konsole selbst frei, und die ganze
+Freigabe ist eine Anzeige ohne Schloss.
+
+Eingebaut und mit Gegenprobe belegt: Feld aus der Sperrliste genommen →
+zwei rote Zeilen.
+
+### Wo die Saat liegt, und warum nicht im Terminal-Datensatz
+
+Die zweite Entscheidung mit Folgen. Naheliegend wäre gewesen, die Codes
+aus dem Hash des Geräts abzuleiten — kein neues Feld, keine neue
+Sammlung.
+
+**Das wäre ein Loch gewesen.** `terminals` darf die Leitung lesen (und
+das ist richtig: 32 zufällige Bytes, ihr Hash lässt sich nicht
+durchprobieren). Folgten die Codes daraus, könnte die Leitung sie zu
+Hause ausrechnen und ihr Team von überall stempeln lassen — genau die
+Person mit dem stärksten Motiv und dem leichtesten Zugang.
+
+Die Saat liegt deshalb in `terminalCodes`, in den Regeln **für alle
+gesperrt** — derselbe Ort und derselbe Grund wie bei `zeitPins`.
+
+### Der Vorrat statt eines Aufrufs je Fenster
+
+Bei 30 Sekunden wären das 2880 Funktionsaufrufe je Tablet und Tag. Das
+Terminal holt deshalb zehn Fenster auf einmal (fünf Minuten) und
+frischt bei drei übrigen nach. Ein gestohlenes Tablet trägt damit
+höchstens fünf Minuten an Codes — nicht mehr, als es ohnehin hergibt.
+
+Gerechnet wird gegen die **Serverzeit**: ein Rechner am Empfang geht
+gern falsch, und ein Code, den der Server nicht mehr kennt, ist ein
+Fehler, den am Tresen niemand erklären kann.

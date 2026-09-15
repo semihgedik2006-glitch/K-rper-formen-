@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FEDvgJgJ9FJpHEIE+XRiTyYySpZWXXU7BSG0s9JgiGE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jQOtCEw0ch/ETi01JCVcNhkMPwtOjB28cIUx3CBK5K4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1611,6 +1611,11 @@ html.demo #terminalSchirm{top:44px}
   border-radius:var(--r-sm);cursor:pointer;font-size:var(--t-sm);background:var(--auf-1);
   user-select:none}
 .studio-check.on{border-color:var(--accent);background:rgba(34,211,238,.1);color:var(--accent-2)}
+/* Die Handy-Freigabe steht allein und nicht im zweispaltigen Raster der
+   Studios — sie ist eine andere Art Entscheidung. min-height, weil die
+   Zeile hier nicht neben zwanzig gleichen steht, an denen sie sich
+   ausrichten könnte. */
+.studio-check.em-handy{width:100%;box-sizing:border-box;min-height:44px}
 /* Funktionen an/aus – eine Zeile je Funktion, mit dem Was darunter.
    Ohne die zweite Zeile müsste der Chef raten, was „Übergabe" ist. */
 .feat-row{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s10) var(--s12);margin-bottom:var(--s6);
@@ -2201,10 +2206,32 @@ html.demo #terminalSchirm{top:44px}
   letter-spacing:var(--ls-s)}
 .tm-gerät{font-size:var(--t-xs);color:var(--text-3)}
 .tm-uhr{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
-  font-variant-numeric:tabular-nums;color:var(--accent-d)}
-.tm-inhalt{flex:1 1 auto;overflow-y:auto;display:grid;gap:var(--s10);
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));align-content:start}
-.tm-person{min-height:72px;display:flex;align-items:center;gap:var(--s10);
+  font-variant-numeric:tabular-nums;color:var(--accent-d);text-align:right}
+/* Der Code muss aus einem Meter Abstand lesbar sein — jemand tippt ihn
+   vom Tablet auf dem eigenen Telefon ab. Deshalb Zifferabstand statt
+   Enge: 482917 liest sich als Block falsch, 482 917 nicht. */
+.tm-code{text-align:right;margin-top:var(--s4)}
+.tm-code-lab{display:block;font-size:var(--t-2xs);color:var(--text-3);
+  letter-spacing:var(--ls-l);text-transform:uppercase}
+.tm-code b{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+  font-variant-numeric:tabular-nums;letter-spacing:var(--ls-l);color:var(--text)}
+/* 220px statt 150: auf einem Querformat-Tablet ergaben 150px sechs
+   schmale Kacheln, in denen jeder zweite Name umbrach („Juna / Ritter").
+   Mit 220 sind es vier, die Namen passen in eine Zeile, und das
+   Fingerziel wächst mit.
+   MITTIG STATT OBEN LINKS: mit vier Leuten klebten die Kacheln in der
+   oberen linken Ecke einer ansonsten leeren Fläche. `safe center` rückt
+   sie in die Mitte, SOLANGE Platz ist — sobald gescrollt werden muss,
+   verhält es sich wie `start` und schneidet nichts oben ab. Genau dafür
+   gibt es das Schlüsselwort; das @supports darüber ist der Rückfall für
+   Browser, die es nicht kennen (dort bliebe `align-content` sonst auf
+   `normal` und streckte die Zeilen). */
+.tm-inhalt{flex:1 1 auto;overflow-y:auto;display:grid;gap:var(--s12);
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));align-content:start}
+@supports (align-content:safe center){
+  .tm-inhalt{align-content:safe center}
+}
+.tm-person{min-height:88px;display:flex;align-items:center;gap:var(--s10);
   padding:var(--s10) var(--s12);border-radius:var(--r-md);
   border:1px solid var(--line-2);background:var(--auf-1);cursor:pointer;
   font-family:var(--font-body);color:var(--text);text-align:left;
@@ -2214,8 +2241,21 @@ html.demo #terminalSchirm{top:44px}
 .tm-person .av-wrap{flex:0 0 auto}
 .tm-person .tm-nam{min-width:0;font-weight:700;font-size:var(--t-md);
   overflow:hidden;text-overflow:ellipsis}
-.tm-person .tm-zst{font-size:var(--t-2xs);color:var(--text-3);font-weight:600}
+.tm-person .tm-zst{display:block;font-size:var(--t-2xs);color:var(--text-3);
+  font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tm-person.da{border-color:var(--accent);background:rgba(34,211,238,.08)}
+.tm-suche{flex-shrink:0;margin:0 0 var(--s10)}
+.tm-suche-inp{width:100%;min-height:56px;box-sizing:border-box;
+  border-radius:var(--r-md);border:1px solid var(--line-2);
+  background:var(--auf-1);color:var(--text);padding:0 var(--s16);
+  font-family:var(--font-body);font-size:var(--t-md)}
+/* Die Überschrift läuft über die ganze Rasterbreite — ohne das steht sie
+   als erste „Kachel" in der ersten Spalte und schiebt eine Person in die
+   nächste Zeile. */
+.tm-gruppe{grid-column:1/-1;margin:var(--s6) 0 0;font-size:var(--t-2xs);
+  font-weight:700;color:var(--text-3);letter-spacing:var(--ls-l);
+  text-transform:uppercase}
+.tm-gruppe:first-child{margin-top:0}
 
 .tm-pin{position:absolute;inset:0;background:var(--bg);z-index:2;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -2239,6 +2279,8 @@ html.demo #terminalSchirm{top:44px}
   transition:transform .15s var(--spring),background .2s}
 .tm-taste:active{transform:scale(.94);background:var(--bg-2)}
 .tm-taste.weg{font-size:var(--t-md);font-weight:700;color:var(--text-3)}
+.tm-taste.ok{font-size:var(--t-md);font-weight:800;border-color:var(--accent);
+  background:var(--accent-glow);color:var(--accent-d)}
 
 .tm-fuss{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
   gap:var(--s12);margin-top:var(--s12);font-size:var(--t-2xs);color:var(--text-3)}
@@ -2387,6 +2429,23 @@ button.ich-zeile:active{opacity:.7}
   font-size:var(--t-sm);font-weight:600;border-radius:var(--r-xs);cursor:pointer;
   transition:background .2s var(--ease-ios),color .2s var(--ease-ios)}
 .ich-pfeil:hover{background:var(--auf-1);color:var(--text)}
+/* Meine Zeiten. Die Tageszeile ist .ich-zeile wie überall im
+   Ich-Bereich — eine zweite Zeilenform daneben wäre eine, die gleich
+   aussehen soll und es nach der nächsten Änderung nicht mehr tut. Neu
+   ist nur, was darunter aufklappt. */
+.mz-summe{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s8);
+  margin:0 0 var(--s4)}
+.mz-summe b{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);
+  font-variant-numeric:tabular-nums}
+.mz-summe span{font-size:var(--t-xs);color:var(--text-2)}
+.mz-neben{margin:0 0 var(--s10)}
+.mz-stempel{margin:0 0 var(--s4) var(--s8);padding:var(--s6) 0 var(--s10) var(--s12);
+  border-left:2px solid var(--line)}
+.mz-s{display:flex;align-items:baseline;gap:var(--s8);padding:var(--s2) 0;
+  font-size:var(--t-2xs);color:var(--text-2)}
+.mz-s b{font-variant-numeric:tabular-nums;color:var(--text);font-weight:700}
+.mz-s em{font-style:normal;color:var(--text-3);margin-left:auto;
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ich-kal{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--s4)}
 .ich-kal .kal-kopf{text-align:center;font-size:var(--t-2xs);color:var(--text-3);
   padding:0 0 var(--s6);letter-spacing:var(--ls-l)}
@@ -4218,6 +4277,47 @@ html{font-size:var(--fs,100%)}
               <button class="btn btn-primary btn-sm" id="ichPinBtn"
                       style="width:100%">PIN speichern</button>
             </div>
+            <!-- Die eigenen Stempelzeiten. NUR LESEN: aus dem Browser
+                 führt kein Schreibweg in `zeiten`, die Regeln sagen
+                 write:false für alle. Wer seine Zeit für falsch hält,
+                 bekommt hier deshalb keinen Stift — eine Korrektur mit
+                 Grund kommt später, und der ursprüngliche Eintrag bleibt
+                 dabei stehen. Eine Aufzeichnung, die sich nachträglich
+                 überschreiben lässt, ist als Nachweis nichts wert. -->
+            <!-- Stempeln mit dem eigenen Handy. Steht nur da, wenn der
+                 Chef dieses Konto freigeschaltet hat — und braucht
+                 zusätzlich den Code vom Bildschirm im Studio. Das ist
+                 die Ortsbindung, ohne ein einziges Standortdatum. -->
+            <div class="ich-blatt" id="ichHandyKarte" style="display:none">
+              <div class="ich-kopf">
+                <h3>Mit dem Handy stempeln</h3>
+                <span class="ich-zahl-klein" id="ichHandyStand"></span>
+              </div>
+              <p class="hint mz-neben">Den sechsstelligen Code vom
+                Bildschirm im Studio eingeben. Er wechselt alle 30 Sekunden.</p>
+              <div class="field">
+                <label for="ichHandyCode">Code vom Bildschirm</label>
+                <input class="inp" id="ichHandyCode" type="text" inputmode="numeric"
+                       autocomplete="off" maxlength="7" placeholder="000 000" /></div>
+              <button class="btn btn-primary btn-sm" id="ichHandyBtn"
+                      style="width:100%">Stempeln</button>
+            </div>
+            <div class="ich-blatt" id="ichZeitenKarte">
+              <div class="ich-kopf">
+                <h3>Meine Zeiten</h3>
+                <div class="ich-monat-nav">
+                  <button class="ich-pfeil" id="ichZeitPrev" aria-label="Voriger Monat">‹</button>
+                  <button class="ich-pfeil" id="ichZeitHeute">Heute</button>
+                  <button class="ich-pfeil" id="ichZeitNext" aria-label="Nächster Monat">›</button>
+                </div>
+              </div>
+              <div class="mz-summe">
+                <b id="ichZeitSumme">–</b>
+                <span id="ichZeitMonat"></span>
+              </div>
+              <p class="hint mz-neben" id="ichZeitNeben"></p>
+              <div id="ichZeitenListe"></div>
+            </div>
             <div class="ich-blatt" id="ichZahlenKarte">
               <div class="ich-kopf">
                 <h3>Meine Zahlen</h3>
@@ -5643,7 +5743,25 @@ html{font-size:var(--fs,100%)}
       <div class="tm-studio" id="tmStudio">—</div>
       <div class="tm-gerät" id="tmGeraet">—</div>
     </div>
-    <div class="tm-uhr" id="tmUhr">--:--</div>
+    <!-- Der Code fürs eigene Handy. Bleibt versteckt, solange keiner
+         geholt werden konnte — eine erfundene Zahl wäre schlimmer als
+         gar keine, weil sie nie funktioniert und niemand weiss, warum. -->
+    <div>
+      <div class="tm-uhr" id="tmUhr">--:--</div>
+      <div class="tm-code" id="tmCode" hidden>
+        <span class="tm-code-lab">Code fürs Handy</span>
+        <b id="tmCodeZahl">– – –</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- Das Suchfeld erscheint erst, wenn die Kacheln nicht mehr auf
+       einen Bildschirm passen — gemessen, nicht ab einer ausgedachten
+       Personenzahl. Auf einem Tablet mit acht Leuten wäre es ein
+       Tastatur-Umweg vor dem häufigsten Handgriff des Tages. -->
+  <div class="tm-suche" id="tmSucheWrap" style="display:none">
+    <input class="tm-suche-inp" id="tmSuche" type="text" autocomplete="off"
+           placeholder="Name suchen" aria-label="Name suchen" />
   </div>
 
   <div class="tm-inhalt" id="tmListe"></div>
@@ -8188,6 +8306,8 @@ var _tmWer = null;
 var _tmPin = '';
 var _tmUhrTimer = null;
 var _tmStaende = {};       // uid -> letzte art des Tages
+var _tmSuche = '';         // Filter auf den Namen
+var _tmSucheAn = false;    // Suchfeld eingeblendet (bleibt es dann auch)
 
 function terminalStarten(){
   var t = terminalAufGeraetLesen();
@@ -8218,13 +8338,81 @@ function terminalStarten(){
   schirm.classList.add('show');
   schirm.style.display='flex';
   terminalUhr();
-  _tmUhrTimer = setInterval(terminalUhr, 20000);
+  /* Fünf Sekunden statt zwanzig, seit der Code danebensteht: sein
+     Fenster ist dreissig Sekunden lang. Bei zwanzig Sekunden Takt
+     stünde am Tresen eine Zahl, die vor neunzehn Sekunden gewechselt
+     hat — der Server nähme sie zwar noch an, aber niemand am Tablet
+     weiss das. Eine Uhr, die man beim Falschgehen zusehen kann, kostet
+     mehr Vertrauen als sie an Rechenzeit spart. */
+  _tmUhrTimer = setInterval(terminalUhr, 5000);
+  tmCodesHolen();
   return true;
 }
 
 function terminalUhr(){
   var u=$('tmUhr'); if(!u) return;
   u.textContent = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  tmCodeZeigen();
+}
+
+/* ══ DER CODE FÜRS EIGENE HANDY ═════════════════════════════════════
+   Wer vom Chef dafür freigeschaltet ist, tippt diese sechs Ziffern in
+   seine App statt am Tablet anzustehen. Das ist die Ortsbindung: den
+   Code sieht nur, wer vor dem Bildschirm steht.
+
+   GERECHNET WIRD NICHT HIER. Das Gerät holt einen Vorrat fertiger
+   Codes vom Server und zeigt sie der Reihe nach. Würde der Browser sie
+   selbst ausrechnen, müsste die Saat im Gerät liegen — und ein
+   gestohlenes Tablet lieferte für immer gültige Codes statt für die
+   fünf Minuten, die im Vorrat sind.
+
+   DIE UHR DES SERVERS ZÄHLT, nicht die des Tablets. Ein Rechner am
+   Empfang geht gern zwei Minuten falsch, und dann zeigt er einen Code,
+   den der Server längst vergessen hat — ein Fehler, den am Tresen
+   niemand erklären kann. */
+var _tmCodes = [];        // Vorrat, Fenster für Fenster
+var _tmCodeAb = 0;        // Fensternummer von _tmCodes[0]
+var _tmCodeVersatz = 0;   // Serverzeit minus eigene Zeit
+var _tmCodeFenster = 30000;
+var _tmCodeHolt = false;
+
+function tmCodeJetzt(){
+  return Math.floor((Date.now() + _tmCodeVersatz) / _tmCodeFenster);
+}
+
+function tmCodeZeigen(){
+  var box=$('tmCode'), zahl=$('tmCodeZahl');
+  if(!box || !zahl || !_tmAktiv) return;
+  var i = tmCodeJetzt() - _tmCodeAb;
+  if(i >= 0 && i < _tmCodes.length){
+    var c = _tmCodes[i];
+    zahl.textContent = c.slice(0,3)+' '+c.slice(3);
+    box.hidden = false;
+  }
+  /* Nachschub holen, solange noch welche da sind — nicht erst, wenn
+     der letzte abgelaufen ist. Sonst steht am Tresen eine Lücke. */
+  if(_tmCodes.length - i <= 3) tmCodesHolen();
+}
+
+function tmCodesHolen(){
+  if(_tmCodeHolt || !_tmAktiv) return;
+  _tmCodeHolt = true;
+  pinFunktion('stempelCodes')({ terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim })
+    .then(function(r){
+      var d=(r&&r.data)||{};
+      if(!d.codes || !d.codes.length) return;
+      _tmCodes = d.codes;
+      _tmCodeAb = d.abFenster||0;
+      _tmCodeFenster = d.fensterMs || 30000;
+      _tmCodeVersatz = (d.serverZeit||Date.now()) - Date.now();
+      tmCodeZeigen();
+    })
+    .catch(function(){
+      /* Still. Der Code ist eine Zugabe; wer am Tablet steht, stempelt
+         weiter mit seiner PIN. Eine Fehlermeldung an dieser Stelle
+         würde den Hinweis überschreiben, den der Bildschirm braucht. */
+    })
+    .then(function(){ _tmCodeHolt=false; });
 }
 
 function terminalBeenden(still){
@@ -8232,14 +8420,25 @@ function terminalBeenden(still){
   if(schirm){ schirm.classList.remove('show'); schirm.style.display='none'; }
   if(_tmUhrTimer){ clearInterval(_tmUhrTimer); _tmUhrTimer=null; }
   _tmAktiv=null; _tmWer=null; _tmPin='';
+  /* Den Codevorrat mit wegräumen. Er bliebe sonst im Speicher eines
+     Geräts stehen, das gerade aufgehört hat, ein Terminal zu sein. */
+  _tmCodes=[]; _tmCodeAb=0;
+  var cb=$('tmCode'); if(cb) cb.hidden=true;
   if(!still){
     try{ localStorage.removeItem(TERM_SCHLUESSEL); }catch(e){}
     toast('Terminal beendet — das Gerät ist wieder eine normale App.');
   }
 }
 
-/* Wer gehört zu diesem Studio? Gelesen wird die Personenliste, die
-   ohnehin jeder Angemeldete sehen darf — kein Sonderweg. */
+/* Wer kann hier stempeln? JEDER im Betrieb. Gelesen wird die
+   Personenliste, die ohnehin jeder Angemeldete sehen darf — kein
+   Sonderweg.
+
+   BIS ZUM 14.9. STAND HIER EIN FILTER AUF DAS STUDIO DES GERÄTS. Der
+   verbot den häufigsten ehrlichen Fall: wer eine Schicht woanders
+   übernimmt, konnte dort nicht stempeln und hatte einen Tag ohne
+   Zeiten. Die Zuordnung bleibt trotzdem sichtbar — die eigenen Leute
+   stehen oben, alle anderen darunter mit ihrem Studio daneben. */
 function terminalLeuteLaden(){
   if(!_tmStudio) return;
   /* db.collection('users') und NICHT S('users'): die Personenliste ist
@@ -8251,10 +8450,14 @@ function terminalLeuteLaden(){
   db.collection('users').where('firma','==',_firma||'koerperformen').get()
     .then(function(snap){
       _tmLeute = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); })
-        .filter(function(u){
-          return u.aktiv !== false && (u.studioKeys||[]).indexOf(_tmStudio)>=0;
-        })
-        .sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||'')); });
+        .filter(function(u){ return u.aktiv !== false; })
+        .sort(function(a,b){
+          /* Eigenes Studio zuerst — das sind neunundneunzig von hundert
+             Stempeln. Erst danach alphabetisch. */
+          var ah = tmGehoert(a) ? 0 : 1, bh = tmGehoert(b) ? 0 : 1;
+          if(ah !== bh) return ah - bh;
+          return String(a.name||'').localeCompare(String(b.name||''));
+        });
       terminalStaendeLaden();
     })
     .catch(function(e){ $('tmHinweis').textContent = errMsg(e); });
@@ -8289,30 +8492,77 @@ function tmNaechster(art){
 function renderTerminalListe(){
   var box=$('tmListe'); if(!box) return;
   if(!_tmLeute.length){
-    box.innerHTML='<p class="lese-leer">Diesem Studio ist niemand zugeordnet.</p>';
+    box.innerHTML='<p class="lese-leer">In diesem Betrieb ist niemand angelegt.</p>';
     return;
   }
-  box.innerHTML=_tmLeute.map(function(u){
-    var stand=_tmStaende[u.id]||null;
-    var da = stand && stand!=='gehen';
-    var zst = !stand ? 'noch nicht da'
-            : stand==='pause' ? 'in der Pause'
-            : stand==='gehen' ? 'Feierabend' : 'im Dienst';
-    return '<button class="tm-person'+(da?' da':'')+'" data-tmwer="'+esc(u.id)+'">'+
-      /* avatarMarkup statt eines eigenen Kästchens: sie kann Foto,
-         Farbe und Initialen und hält sich an Hell/Dunkel. Hier stand
-         zuerst ein fest eingebautes Emoji — test-gestaltung hat es
-         gemeldet, und zu Recht: ein Emoji sieht auf jedem Gerät anders
-         aus und ignoriert das Farbschema. */
-      avatarMarkup(u)+
-      '<span style="min-width:0">'+
-        '<span class="tm-nam" style="display:block">'+esc(u.name||'?')+'</span>'+
-        '<span class="tm-zst">'+esc(zst)+'</span>'+
-      '</span></button>';
-  }).join('');
+  var suche=_tmSuche.trim().toLowerCase();
+  function passt(u){
+    return !suche || String(u.name||'').toLowerCase().indexOf(suche)>=0;
+  }
+  var hier=[], andere=[];
+  _tmLeute.forEach(function(u){
+    if(!passt(u)) return;
+    (tmGehoert(u) ? hier : andere).push(u);
+  });
+  if(!hier.length && !andere.length){
+    box.innerHTML='<p class="lese-leer">Niemand gefunden.</p>';
+    return;
+  }
+  /* Überschriften nur, wenn es wirklich zwei Gruppen gibt. Bei einem
+     Betrieb mit einem Studio wäre „Hier im Studio" eine Zeile, die
+     nichts unterscheidet. */
+  var html='';
+  if(andere.length && hier.length) html+='<p class="tm-gruppe">Hier im Studio</p>';
+  html+=hier.map(tmKachel).join('');
+  if(andere.length && hier.length) html+='<p class="tm-gruppe">Aus anderen Studios</p>';
+  html+=andere.map(tmKachel).join('');
+  box.innerHTML=html;
   box.querySelectorAll('[data-tmwer]').forEach(function(b){
     b.addEventListener('click',function(){ terminalPinOeffnen(b.getAttribute('data-tmwer')); });
   });
+  tmSucheZeigen();
+}
+
+function tmGehoert(u){
+  return (u.studioKeys||[]).indexOf(_tmStudio)>=0;
+}
+
+function tmKachel(u){
+  var stand=_tmStaende[u.id]||null;
+  var da = stand && stand!=='gehen';
+  var zst = !stand ? 'noch nicht da'
+          : stand==='pause' ? 'in der Pause'
+          : stand==='gehen' ? 'Feierabend' : 'im Dienst';
+  /* Bei jemandem aus einem anderen Studio steht dessen Studio davor.
+     Sonst stünden zwei Leute gleichen Namens ununterscheidbar
+     nebeneinander — und man sähe nicht, dass hier jemand aushilft. */
+  if(!tmGehoert(u)){
+    var heim=(u.studioKeys||[]).map(studioName).filter(Boolean)[0];
+    /* Zustand VOR dem Studio. Die Zeile wird bei langen Studionamen
+       abgeschnitten („Niederkassel Mondorf"), und abgeschnitten werden
+       darf nur die Auskunft, die weniger zählt: ob jemand im Dienst
+       ist, entscheidet über den nächsten Knopf — woher er kommt, nicht. */
+    if(heim) zst = zst+' · '+heim;
+  }
+  return '<button class="tm-person'+(da?' da':'')+'" data-tmwer="'+esc(u.id)+'">'+
+    /* avatarMarkup statt eines eigenen Kästchens: sie kann Foto,
+       Farbe und Initialen und hält sich an Hell/Dunkel. Hier stand
+       zuerst ein fest eingebautes Emoji — test-gestaltung hat es
+       gemeldet, und zu Recht: ein Emoji sieht auf jedem Gerät anders
+       aus und ignoriert das Farbschema. */
+    avatarMarkup(u)+
+    '<span style="min-width:0">'+
+      '<span class="tm-nam" style="display:block">'+esc(u.name||'?')+'</span>'+
+      '<span class="tm-zst">'+esc(zst)+'</span>'+
+    '</span></button>';
+}
+
+/* Einmal sichtbar, bleibt sichtbar. Ein Feld, das beim Leeren der
+   Suche wieder verschwindet, springt einem unter dem Finger weg. */
+function tmSucheZeigen(){
+  var box=$('tmListe'), wrap=$('tmSucheWrap'); if(!box || !wrap) return;
+  if(!_tmSucheAn && box.scrollHeight > box.clientHeight + 4) _tmSucheAn=true;
+  wrap.style.display = _tmSucheAn ? '' : 'none';
 }
 
 function terminalPinOeffnen(uid){
@@ -8329,6 +8579,14 @@ function terminalPinOeffnen(uid){
 function terminalPinSchliessen(){
   $('tmPin').style.display='none';
   _tmWer=null; _tmPin='';
+  /* Die Suche zurücksetzen. Sonst steht der Nächste vor einer Liste,
+     die auf den Namen des Vorigen gefiltert ist, und findet sich nicht
+     — am Empfang tippt niemand zweimal, der sucht das Weite. */
+  if(_tmSuche){
+    _tmSuche='';
+    var f=$('tmSuche'); if(f) f.value='';
+    renderTerminalListe();
+  }
 }
 
 function renderTerminalPunkte(){
@@ -8344,7 +8602,11 @@ function renderTerminalTasten(){
   var tasten=['1','2','3','4','5','6','7','8','9','weg','0','ok'];
   box.innerHTML=tasten.map(function(t){
     if(t==='weg') return '<button class="tm-taste weg" data-tmt="weg">Löschen</button>';
-    if(t==='ok')  return '<button class="tm-taste weg" data-tmt="ok">Stempeln</button>';
+    /* NICHT dieselbe Klasse wie „Löschen". Beide trugen .weg und sahen
+       damit gleich aus — der bestätigende Knopf wie der abräumende, in
+       derselben Reihe nebeneinander. Am Empfang, im Vorbeigehen, ist
+       das genau die Verwechslung, die man nicht einbauen darf. */
+    if(t==='ok')  return '<button class="tm-taste ok" data-tmt="ok">Stempeln</button>';
     return '<button class="tm-taste" data-tmt="'+t+'">'+t+'</button>';
   }).join('');
   box.dataset.fertig='1';
@@ -12107,6 +12369,17 @@ function renderEmployees(emps){
       '<option value="leiter"'+(isL?' selected':'')+'>Studio-Leiter</option></select>'+
       '<label style="display:block;font-size:.8rem;color:var(--text-2);margin:10px 0 4px">Studios</label>'+
       '<div class="studio-checks"></div>'+
+      /* Die Freigabe fürs Handy steht hier und nicht bei der Person
+         selbst: sie ist eine Erlaubnis und keine Einstellung. Dass sie
+         auch in firestore.rules gesperrt ist, macht sie erst echt —
+         eine Freigabe, die sich der Freigegebene selbst erteilt, ist
+         keine. */
+      '<label class="studio-check em-handy'+(e.handyStempeln?' on':'')+'" '+
+        'style="margin-top:10px">'+
+        '<input type="checkbox" class="em-handy-cb"'+(e.handyStempeln?' checked':'')+' />'+
+        '<span>Darf mit dem eigenen Handy stempeln</span></label>'+
+      '<div class="hint" style="margin-top:6px">Braucht zusätzlich den '+
+        'Code, der auf dem Terminal im Studio steht.</div>'+
       '<button class="btn btn-primary btn-sm em-save" style="margin-top:8px">Speichern</button></div>'+
       '</div>'+
       '<div class="emp-actions">'+
@@ -12134,13 +12407,22 @@ function renderEmployees(emps){
         });
       }
     });
+    var handyLab=node.querySelector('.em-handy');
+    if(handyLab){
+      var handyCb=handyLab.querySelector('.em-handy-cb');
+      handyCb.addEventListener('change',function(){
+        handyLab.classList.toggle('on', handyCb.checked);
+      });
+    }
     node.querySelector('.em-save').addEventListener('click',function(){
       var sel=Array.prototype.slice.call(node.querySelectorAll('.emp-edit input:checked')).map(function(c){ return c.value; });
       if(!sel.length){ toast('Mindestens ein Studio wählen.',true); return; }
       var rs=node.querySelector('.em-role');
       var newRole=(rs&&rs.value==='leiter')?'leiter':'mitarbeiter';
+      var hcb=node.querySelector('.em-handy-cb');
       db.collection('users').doc(uid).update({
-        role:newRole, studios:sel, studio:sel[0], studioKeys:sel.map(studioKey)
+        role:newRole, studios:sel, studio:sel[0], studioKeys:sel.map(studioKey),
+        handyStempeln: !!(hcb && hcb.checked)
       }).then(function(){ toast(roleLabel(newRole)+' · Studios gespeichert ✓'); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
@@ -15845,6 +16127,7 @@ function renderIchDaten(){
   ichCertsLaden();
   ichZahlenLaden();
   ichPinLaden();
+  ichZeitenLaden();
 }
 
 /* Nachweise: dieselbe Abfrage wie im Einstellungs-Fenster, nur an einer
@@ -15985,6 +16268,192 @@ function ichPinSpeichern(btn){
       })
       .catch(function(e){ toast(fnFehler(e), true); });
   });
+}
+
+/* ══ MEINE ZEITEN ═══════════════════════════════════════════════════
+   Was am Tablet gestempelt wurde, sieht hier jeder für sich selbst.
+   Ohne das wäre die Zeiterfassung eine Einbahnstrasse: man stempelt
+   hinein und erfährt nie, was daraus geworden ist.
+
+   GELESEN WIRD MONATSWEISE über ZWEI GLEICHHEITSFILTER (uid, monat)
+   und ohne orderBy. Das ist keine Stilfrage: Gleichheit plus Bereich
+   oder Sortierung auf einem anderen Feld verlangt in Firestore einen
+   zusammengesetzten Index, und dieses Projekt verwaltet keinen
+   einzigen — es gibt keine firestore.indexes.json, und firebase.json
+   rollt nur Regeln aus. Mehrere Gleichheiten bedient Firestore aus den
+   Einzelfeld-Indizes. Deshalb schreibt `stempeln` das Feld `monat`
+   mit; dieselbe Notiz steht dort.
+
+   NICHT GERECHNET WIRD bei einem Tag ohne Feierabend. Wer das Gehen
+   vergisst, bekommt „Feierabend fehlt" und einen Strich statt einer
+   Zahl. Eine gerechnete Null wäre bequemer und wäre gelogen — sie
+   behauptet „null Stunden gearbeitet", wo in Wahrheit die Endzeit
+   fehlt. Der laufende Tag zählt bis jetzt und sagt „läuft". */
+var _zeitMonat = null;     // Date auf den 1. des angezeigten Monats
+var _zeitOffen = {};       // tag -> aufgeklappt
+
+function zeitMonatKey(d){
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+function zeitUhr(ts){
+  return new Date(ts||0).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+function stundenText(ms){
+  var min=Math.round((ms||0)/60000);
+  return Math.floor(min/60)+':'+('0'+(min%60)).slice(-2)+' h';
+}
+
+/* Aus einer Liste Stempel Tage machen. Gerechnet wird über die
+   Strecken zwischen zwei Stempeln: nach „kommen" und „zurueck" läuft
+   Arbeit, nach „pause" läuft Pause, nach „gehen" läuft nichts. */
+function zeitenTage(rows, heute, jetzt){
+  var nachTag={};
+  rows.forEach(function(z){ (nachTag[z.tag]=nachTag[z.tag]||[]).push(z); });
+  return Object.keys(nachTag).sort().reverse().map(function(tag){
+    var l=nachTag[tag].slice().sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    var arbeit=0, pause=0, seit=0, vorher=null;
+    l.forEach(function(z){
+      if(vorher){
+        var d=(z.ts||0)-seit;
+        if(vorher==='kommen'||vorher==='zurueck') arbeit+=d;
+        else if(vorher==='pause') pause+=d;
+      }
+      seit=z.ts||0; vorher=z.art;
+    });
+    var offen = !!vorher && vorher!=='gehen';
+    var laeuft = offen && tag===heute;
+    if(laeuft && (vorher==='kommen'||vorher==='zurueck')) arbeit += jetzt-seit;
+    if(laeuft && vorher==='pause') pause += jetzt-seit;
+    return { tag:tag, von:l[0].ts, bis:l[l.length-1].ts, arbeit:arbeit, pause:pause,
+             offen:offen, laeuft:laeuft, stempel:l };
+  });
+}
+
+function ichZeitenLaden(){
+  var karte=$('ichZeitenKarte'); if(!karte || !session) return;
+  var t=new Date();
+  if(!_zeitMonat) _zeitMonat=new Date(t.getFullYear(), t.getMonth(), 1);
+  var m=zeitMonatKey(_zeitMonat);
+  var mon=$('ichZeitMonat');
+  if(mon) mon.textContent='im '+_zeitMonat.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+  var box=$('ichZeitenListe');
+  if(box) box.innerHTML=emptyMini('Wird geladen …');
+  S('zeiten').where('uid','==',session.uid).where('monat','==',m).get()
+    .then(function(sn){
+      /* Inzwischen weitergeblättert? Dann gehört diese Antwort zu
+         einem Monat, der nicht mehr angezeigt wird. Ohne die Prüfung
+         überschreibt eine langsame Antwort die schnellere. */
+      if(zeitMonatKey(_zeitMonat)!==m) return;
+      renderIchZeiten(sn.docs.map(function(d){ return d.data()||{}; }));
+    })
+    .catch(function(){
+      if(box) box.innerHTML=emptyMini('Die Zeiten lassen sich gerade nicht laden.');
+    });
+}
+
+function renderIchZeiten(rows){
+  var box=$('ichZeitenListe'), summe=$('ichZeitSumme'), neben=$('ichZeitNeben');
+  if(!box) return;
+  var heute=new Date().toLocaleDateString('sv-SE');
+  var tage=zeitenTage(rows, heute, Date.now());
+  var heuteTag=tage.filter(function(t){ return t.tag===heute; })[0];
+  _zeitHeuteArt = heuteTag ? (heuteTag.stempel[heuteTag.stempel.length-1]||{}).art : null;
+  ichHandyZeigen();
+  var gezaehlt=tage.filter(function(t){ return !t.offen || t.laeuft; });
+  var summeMs=0, pauseMs=0;
+  gezaehlt.forEach(function(t){ summeMs+=t.arbeit; pauseMs+=t.pause; });
+  var luecken=tage.filter(function(t){ return t.offen && !t.laeuft; }).length;
+
+  if(summe) summe.textContent = tage.length ? stundenText(summeMs) : '–';
+  if(neben) neben.textContent = tage.length
+    ? (tage.length+' Tag'+(tage.length===1?'':'e')+' · '+stundenText(pauseMs)+' Pause'+
+       (luecken ? ' · '+luecken+'× Feierabend fehlt' : ''))
+    : '';
+
+  if(!tage.length){
+    box.innerHTML=emptyMini('In diesem Monat wurde noch nicht gestempelt.');
+    return;
+  }
+  box.innerHTML=tage.map(function(t){
+    var auf=!!_zeitOffen[t.tag];
+    var kopf=new Date(t.von).toLocaleDateString('de-DE',
+      {weekday:'short',day:'numeric',month:'numeric'});
+    var luecke = t.offen && !t.laeuft;
+    var spanne = zeitUhr(t.von)+' – '+(t.laeuft ? 'läuft' : (luecke ? '?' : zeitUhr(t.bis)));
+    return '<button type="button" class="ich-zeile'+(t.tag===heute?' heute':'')+'" '+
+        'data-ztag="'+esc(t.tag)+'" aria-expanded="'+(auf?'true':'false')+'">'+
+        '<span class="ich-tag">'+esc(kopf)+'</span>'+
+        '<span class="ich-was">'+esc(spanne)+'</span>'+
+        (luecke ? '<span class="ich-quelle warn">Feierabend fehlt</span>' : '')+
+        '<span class="ich-zeit">'+(luecke ? '–' : stundenText(t.arbeit))+'</span>'+
+      '</button>'+
+      '<div class="mz-stempel" id="mzs-'+esc(t.tag)+'"'+(auf?'':' hidden')+'>'+
+        t.stempel.map(function(z){
+          return '<div class="mz-s"><b>'+esc(zeitUhr(z.ts))+'</b>'+
+            '<span>'+esc(TM_WORT[z.art]||z.art||'?')+'</span>'+
+            (z.terminalName?'<em>'+esc(z.terminalName)+'</em>':'')+'</div>';
+        }).join('')+
+      '</div>';
+  }).join('');
+}
+
+/* ══ MIT DEM HANDY STEMPELN ═════════════════════════════════════════
+   Zwei Schlösser: die Freigabe des Chefs am eigenen Konto, und der
+   Code vom Bildschirm im Studio. Eine PIN braucht es hier nicht — am
+   Tablet ist sie nötig, weil das Gerät allen gehört; dieses Telefon ist
+   bereits angemeldet.
+
+   DIE KARTE ERSCHEINT NUR MIT FREIGABE, und zwar aus dem eigenen
+   Profil gelesen. Das ist keine Sicherheitsmassnahme (die steht in
+   firestore.rules und in der Funktion), sondern Höflichkeit: ein Feld,
+   das bei jedem Versuch „nicht freigeschaltet" sagt, ist schlimmer als
+   keins. */
+function ichHandyZeigen(){
+  var k=$('ichHandyKarte'); if(!k || !session) return;
+  var an = session.handyStempeln === true;
+  k.style.display = an ? '' : 'none';
+  if(!an) return;
+  var stand=$('ichHandyStand');
+  if(stand) stand.textContent = TM_WORT[tmNaechster(_zeitHeuteArt)] || 'Kommen';
+}
+
+/* Was heute zuletzt gestempelt wurde — damit der Knopf sagen kann, was
+   als Nächstes dran ist. Gesetzt aus derselben Abfrage, die „Meine
+   Zeiten" ohnehin macht; eine zweite wäre dieselbe Auskunft zweimal. */
+var _zeitHeuteArt = null;
+
+function ichHandyStempeln(btn){
+  var feld=$('ichHandyCode');
+  var code=String((feld&&feld.value)||'').replace(/\D/g,'');
+  if(code.length!==6){
+    toast('Bitte die sechs Ziffern vom Bildschirm im Studio eingeben.',true); return;
+  }
+  withBusy(btn, function(){
+    return pinFunktion('handyStempeln')({ code:code })
+      .then(function(r){
+        var d=(r&&r.data)||{};
+        if(feld) feld.value='';
+        var zeit=new Date(d.ts||Date.now())
+          .toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+        toast((TM_WORT[d.art]||d.art)+' um '+zeit+' ✓');
+        tick(12);
+        /* Neu laden, damit der Stempel sofort in „Meine Zeiten" steht.
+           Ohne das müsste man den Reiter wechseln, um zu sehen, dass
+           es geklappt hat — und genau das glaubt einem niemand. */
+        ichZeitenLaden();
+      })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+
+function zeitMonatWechseln(delta){
+  var t=new Date();
+  if(!_zeitMonat) _zeitMonat=new Date(t.getFullYear(), t.getMonth(), 1);
+  _zeitMonat = delta===0
+    ? new Date(t.getFullYear(), t.getMonth(), 1)
+    : new Date(_zeitMonat.getFullYear(), _zeitMonat.getMonth()+delta, 1);
+  _zeitOffen={};
+  ichZeitenLaden();
 }
 
 function ichZahlenLaden(){
@@ -23090,6 +23559,27 @@ function bindActions(){
   var pinBtn=$('ichPinBtn');
   if(pinBtn) pinBtn.addEventListener('click',function(){ ichPinSpeichern(this); });
 
+  var hsBtn=$('ichHandyBtn');
+  if(hsBtn) hsBtn.addEventListener('click',function(){ ichHandyStempeln(this); });
+  var hsFeld=$('ichHandyCode');
+  if(hsFeld) hsFeld.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); ichHandyStempeln($('ichHandyBtn')); }
+  });
+
+  // ── Meine Zeiten: Monat blättern, Tag aufklappen ──
+  var zp=$('ichZeitPrev'), zh=$('ichZeitHeute'), zn=$('ichZeitNext');
+  if(zp) zp.addEventListener('click',function(){ zeitMonatWechseln(-1); });
+  if(zh) zh.addEventListener('click',function(){ zeitMonatWechseln(0); });
+  if(zn) zn.addEventListener('click',function(){ zeitMonatWechseln(1); });
+  var zl=$('ichZeitenListe');
+  if(zl) zl.addEventListener('click',function(e){
+    var b=e.target.closest('[data-ztag]'); if(!b) return;
+    var tag=b.getAttribute('data-ztag');
+    _zeitOffen[tag]=!_zeitOffen[tag];
+    b.setAttribute('aria-expanded', _zeitOffen[tag]?'true':'false');
+    var d=$('mzs-'+tag); if(d) d.hidden=!_zeitOffen[tag];
+  });
+
   // ── Team: Reiter, Schichten, Abwesenheiten, Übergabe, Brett ──
   document.querySelectorAll('[data-teamtab]').forEach(function(b){
     b.addEventListener('click',function(){
@@ -23446,6 +23936,10 @@ function bindActions(){
     if(tnb) tnb.addEventListener('click', function(){ terminalAnlegen(this); });
     var tzb=$('tmZurueck');
     if(tzb) tzb.addEventListener('click', terminalPinSchliessen);
+    var tsf=$('tmSuche');
+    if(tsf) tsf.addEventListener('input', function(){
+      _tmSuche=this.value||''; renderTerminalListe();
+    });
     var tab=$('tmAus');
     if(tab) tab.addEventListener('click', function(){
       if(confirm('Terminal beenden?\n\nDieses Gerät ist danach wieder eine '+

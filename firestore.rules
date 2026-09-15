@@ -342,9 +342,16 @@ service cloud.firestore {
         || (isChef() && gleicheFirma() && !fremderChef(uid)
             && !request.resource.data.diff(resource.data)
                  .affectedKeys().hasAny(['admin']))
+        /* 'handyStempeln' gehoert in dieselbe Sperrliste wie 'role'.
+           Es entscheidet, ob jemand mit dem eigenen Telefon stempeln
+           darf; wer es sich selbst setzen koennte, braeuchte dafuer nur
+           die Browser-Konsole, und die Freigabe des Chefs waere eine
+           Anzeige ohne Schloss. Der Code vom Bildschirm bliebe zwar
+           noetig — aber eine von zwei Sperren, die jeder selbst
+           aufmacht, ist keine. */
         || (request.auth.uid == uid
             && !request.resource.data.diff(resource.data)
-                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma','admin']));
+                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma','admin','handyStempeln']));
       // nur der Chef kann einen Zugang entfernen - und nur in der
       // eigenen Firma. Sonst koennte der Chef von A das Team von B
       // umschreiben oder loeschen; users liegt ja gemeinsam oben.
@@ -995,6 +1002,19 @@ service cloud.firestore {
        Geschrieben wird ausschliesslich von den Cloud Functions; die
        unterliegen diesen Regeln nicht. */
     match /zeitPins/{uid} { allow read, write: if false; }
+
+    /* ── Zeiterfassung: die Saat fuer den Bildschirm-Code ────────────
+       GESPERRT FUER ALLE, aus demselben Grund wie zeitPins.
+
+       Warum sie nicht einfach im Terminal-Datensatz steht, wo sie
+       bequemer waere: den darf die LEITUNG lesen (siehe unten). Wuerden
+       die Codes daraus folgen, koennte sie sie zu Hause ausrechnen und
+       ihr Team von ueberall stempeln lassen — genau die Person, die es
+       am ehesten wollte.
+
+       Lesen muss die Saat niemand. Das Terminal fragt sie nie ab, es
+       bekommt ueber stempelCodes fertige Codes. */
+    match /terminalCodes/{tid} { allow read, write: if false; }
 
     /* ── Zeiterfassung: Terminals ────────────────────────────────────
        Registrierte Geraete je Studio. Geschrieben wird ausschliesslich
@@ -1661,6 +1681,12 @@ service cloud.firestore {
            Geschrieben wird ausschliesslich von den Cloud Functions; die
            unterliegen diesen Regeln nicht. */
         match /zeitPins/{uid} { allow read, write: if false; }
+
+        /* ── Zeiterfassung: die Saat fuer den Bildschirm-Code ────────────
+           GESPERRT FUER ALLE, aus demselben Grund wie zeitPins. Sie liegt
+           nicht im Terminal-Datensatz, weil den die Leitung lesen darf —
+           sie koennte die Codes sonst zu Hause ausrechnen. */
+        match /terminalCodes/{tid} { allow read, write: if false; }
 
         /* ── Zeiterfassung: Terminals ────────────────────────────────────
            Registrierte Geraete je Studio. Geschrieben wird ausschliesslich

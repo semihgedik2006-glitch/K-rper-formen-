@@ -76,6 +76,12 @@
      das ganze Bild. */
   var DEMO_PIN = '2946';
   var DEMO_TERMINAL = { id: 'demo-t6', geheim: 'demo'.repeat(16), name: 'Empfang' };
+  /* Der Code fürs Handy steht in der Demo FEST. Im Betrieb wechselt er
+     alle 30 Sekunden und wird auf dem Server gerechnet — hier gäbe das
+     eine Vorführung, in der der Interessent tippt und dabei abläuft.
+     Dass es nachgebaut ist und nicht echt, steht unten bei den
+     Funktionen; niemand soll aus der Demo auf die Bauart schliessen. */
+  var DEMO_CODE = '314159';
   if (ROLLE === 'terminal') {
     try {
       localStorage.setItem('kf_terminal', JSON.stringify(DEMO_TERMINAL));
@@ -154,13 +160,13 @@
     if (ROLLE === 'chef') {
       ICH = {
         id: 'demo-ich', firma: KENNUNG, name: 'Demo-Geschäftsführung', role: 'chef',
-        aktiv: true, avatar: '💪',
+        aktiv: true, handyStempeln: true, avatar: '💪',
         studios: STUDIOS.slice(), studioKeys: STUDIOS.map(function (_, i) { return sk(i); })
       };
     } else if (ROLLE === 'leiter') {
       ICH = {
         id: 'demo-ich', firma: KENNUNG, name: 'Demo-Studioleitung', role: 'leiter',
-        aktiv: true, avatar: '⚡',
+        aktiv: true, handyStempeln: true, avatar: '⚡',
         studios: [STUDIOS[6], STUDIOS[7]], studioKeys: [sk(6), sk(7)]
       };
     } else if (ROLLE === 'terminal') {
@@ -169,15 +175,19 @@
          Ein eigenes „Terminal-Konto" gibt es nicht und soll es nicht
          geben: der Schutz sitzt im Geräteschlüssel und in der PIN, nicht
          in einer Sonderrolle. */
+      /* Ein ganz normaler Personenname und KEIN „Empfang Hürth".
+         Zuerst hiess das Konto so — und stand damit als erste Kachel
+         zwischen den Mitarbeitern, als waere das Tablet eine Person.
+         Beim Nachsehen der Bilder aufgefallen, nicht beim Schreiben. */
       ICH = {
-        id: 'demo-ich', firma: KENNUNG, name: 'Empfang Hürth', role: 'mitarbeiter',
-        aktiv: true, avatar: '🖥️',
+        id: 'demo-ich', firma: KENNUNG, name: 'Mara Velten', role: 'mitarbeiter',
+        aktiv: true, handyStempeln: true, avatar: '🔥',
         studios: [STUDIOS[6]], studioKeys: [sk(6)]
       };
     } else {
       ICH = {
         id: 'demo-ich', firma: KENNUNG, name: 'Demo-Mitarbeiter', role: 'mitarbeiter',
-        aktiv: true, avatar: '🔥',
+        aktiv: true, handyStempeln: true, avatar: '🔥',
         studios: [STUDIOS[6]], studioKeys: [sk(6)]
       };
     }
@@ -630,6 +640,15 @@
   var STEMPEL = [];
   (function stempelBauen() {
     var nr = 0;
+    /* `monat` gehört an JEDEN Stempel. „Meine Zeiten" liest monatsweise
+       über zwei Gleichheitsfilter — ein Datensatz ohne das Feld ist
+       dort unsichtbar, ohne dass irgendwo ein Fehler erscheint. */
+    function stempel(u, k, art, ts, tag, term) {
+      STEMPEL.push({ id: 'zt' + (++nr), uid: u.id, name: u.name, studioKey: k,
+        art: art, ts: ts, tag: tag, monat: tag.slice(0, 7), fremd: false,
+        terminalId: term, terminalName: 'Empfang' });
+    }
+
     STUDIOS.forEach(function (name, i) {
       var k = sk(i);
       leuteIn(k).forEach(function (u, j) {
@@ -638,16 +657,42 @@
            zeigt den Normalfall nicht. */
         if (zufall() < 0.35) return;
         var start = 7 + zahl(0, 5);
-        STEMPEL.push({ id: 'zt' + (++nr), uid: u.id, name: u.name, studioKey: k,
-          art: 'kommen', ts: heuteUm(start, zahl(0, 55)), tag: HEUTE,
-          terminalId: 'demo-t' + i, terminalName: 'Empfang' });
+        stempel(u, k, 'kommen', heuteUm(start, zahl(0, 55)), HEUTE, 'demo-t' + i);
         if (j === 0 && zufall() < 0.5) {
-          STEMPEL.push({ id: 'zt' + (++nr), uid: u.id, name: u.name, studioKey: k,
-            art: 'pause', ts: heuteUm(start + 4, zahl(0, 30)), tag: HEUTE,
-            terminalId: 'demo-t' + i, terminalName: 'Empfang' });
+          stempel(u, k, 'pause', heuteUm(start + 4, zahl(0, 30)), HEUTE, 'demo-t' + i);
         }
       });
     });
+
+    /* ── Die eigene Vorgeschichte ──
+       Ohne sie stünde „Meine Zeiten" in der Vorführung leer da, und
+       eine leere Karte zeigt nicht, was die Funktion kann. 45 Tage
+       zurück, damit auch das Zurückblättern in den Vormonat etwas
+       findet.
+
+       EIN TAG BLEIBT ABSICHTLICH OFFEN (vor acht Tagen, kein „gehen").
+       Genau daran zeigt sich, dass die App keine Zahl erfindet, wo die
+       Endzeit fehlt — das ist der Teil, den ein Chef sehen will. */
+    var meinStudio = (ICH.studioKeys || [])[0] || sk(6);
+    var eigen = 0;
+    for (var d = 45; d >= 1; d--) {
+      var tagD = new Date(); tagD.setDate(tagD.getDate() - d);
+      var wt = tagD.getDay();
+      if (wt === 0) continue;                       // sonntags zu
+      if (zufall() < 0.25) continue;                // frei, krank, Urlaub
+      var tag = tagD.toLocaleDateString('sv-SE');
+      function um(std, min) {
+        var x = new Date(tagD); x.setHours(std, min, 0, 0); return x.getTime();
+      }
+      var an = 8 + zahl(0, 1);
+      stempel(ICH, meinStudio, 'kommen', um(an, zahl(0, 50)), tag, 'demo-t6');
+      if (d === 8) continue;                        // der vergessene Feierabend
+      stempel(ICH, meinStudio, 'pause', um(an + 4, zahl(0, 20)), tag, 'demo-t6');
+      stempel(ICH, meinStudio, 'zurueck', um(an + 4, 30 + zahl(0, 15)), tag, 'demo-t6');
+      stempel(ICH, meinStudio, 'gehen', um(an + 8, zahl(0, 40)), tag, 'demo-t6');
+      eigen++;
+    }
+    void eigen;
   })();
   legen(P('zeiten'), STEMPEL);
 
@@ -699,6 +744,43 @@
       melden(pfad);
       return { ok: true };
     },
+    /* Ein Vorrat aus lauter demselben Code. Im Betrieb kommen zehn
+       verschiedene, je 30 Sekunden gültig, gerechnet aus einer Saat,
+       die in einer für alle gesperrten Sammlung liegt. */
+    stempelCodes: function () {
+      var codes = [];
+      for (var i = 0; i < 10; i++) codes.push(DEMO_CODE);
+      return {
+        codes: codes, serverZeit: Date.now(),
+        abFenster: Math.floor(Date.now() / 30000), fensterMs: 30000
+      };
+    },
+    handyStempeln: function (d) {
+      if (ICH.handyStempeln !== true) {
+        throw new Error('Für dieses Konto ist das Stempeln mit dem Handy nicht freigeschaltet.');
+      }
+      if (String(d.code || '').replace(/\D/g, '') !== DEMO_CODE) {
+        throw new Error('Dieser Code stimmt nicht mehr. In dieser Demo ist er ' +
+          DEMO_CODE + '.');
+      }
+      var studioKey = (ICH.studioKeys || [])[0] || sk(6);
+      var tag = new Date().toLocaleDateString('sv-SE');
+      var meine = holen(P('zeiten'))
+        .filter(function (z) { return z.uid === ICH.id && z.tag === tag; })
+        .sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      var letzte = meine.length ? meine[meine.length - 1].art : null;
+      var art = (!letzte || letzte === 'gehen') ? 'kommen'
+              : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
+              : (letzte === 'pause') ? 'zurueck' : 'kommen';
+      var jetzt = Date.now();
+      holen(P('zeiten')).push({
+        id: neueId(), uid: ICH.id, name: ICH.name || '', studioKey: studioKey,
+        art: art, ts: jetzt, tag: tag, monat: tag.slice(0, 7), fremd: false,
+        quelle: 'handy', terminalId: DEMO_TERMINAL.id, terminalName: DEMO_TERMINAL.name
+      });
+      melden(P('zeiten'));
+      return { ok: true, art: art, ts: jetzt, name: ICH.name || '', studioKey: studioKey };
+    },
     stempeln: function (d) {
       var term = holen(P('terminals'))
         .filter(function (t) { return t.id === String(d.terminalId || ''); })[0];
@@ -719,15 +801,19 @@
               : (letzte === 'pause') ? 'zurueck' : 'kommen';
 
       var jetzt = Date.now();
+      var fremd = (person.studioKeys || []).indexOf(term.studioKey) < 0;
       holen(P('zeiten')).push({
         id: neueId(), uid: person.id, name: person.name || '',
         studioKey: term.studioKey, art: art, ts: jetzt, tag: tag,
+        /* monat und fremd wie beim echten `stempeln` — ohne monat wäre
+           der frisch gesetzte Stempel in „Meine Zeiten" unsichtbar. */
+        monat: tag.slice(0, 7), fremd: fremd,
         terminalId: term.id, terminalName: term.name || ''
       });
       melden(P('zeiten'));
       term.letzterStempel = jetzt;
       melden(P('terminals'));
-      return { ok: true, art: art, ts: jetzt, name: person.name || '' };
+      return { ok: true, art: art, ts: jetzt, name: person.name || '', fremd: fremd };
     }
   };
 
@@ -763,7 +849,13 @@
     }
   };
 
-  var KONTO = { uid: ICH.id, email: 'demo@studiochat.example', displayName: ICH.name };
+  /* emailVerified: true — sonst mahnt die App oben „Bitte bestätige
+     demo@studiochat.example, die Mail ist unterwegs". In einer
+     Vorführung ohne Konto ist das Unsinn, und es steht quer über dem
+     ersten Eindruck. Es fehlte schlicht: `u.emailVerified` war
+     undefined, und die Leiste prüft auf wahr. */
+  var KONTO = { uid: ICH.id, email: 'demo@studiochat.example',
+                displayName: ICH.name, emailVerified: true };
 
   window.firebase = {
     apps: [],
@@ -854,6 +946,21 @@
         aus.parentNode.replaceChild(neu, aus);
       }
     }
+
+    /* Dasselbe für den Handy-Code: in der Demo steht er fest, und das
+       muss dastehen. Sonst tippt der Interessent den ab, den das
+       Terminal anzeigt — und der ist in der Demo derselbe, aber das
+       weiss er nicht. Gesetzt wird das Feld gleich mit: eine Demo, in
+       der man den Knopf sofort drücken kann, zeigt mehr als eine, in
+       der man erst sechs Ziffern abtippt. */
+    var hinw = document.querySelector('#ichHandyKarte .hint');
+    if (hinw) {
+      hinw.textContent = 'Demo: der Code lautet ' + DEMO_CODE +
+        '. Im Betrieb steht er auf dem Bildschirm im Studio und wechselt ' +
+        'alle 30 Sekunden.';
+    }
+    var feld = document.getElementById('ichHandyCode');
+    if (feld) feld.value = DEMO_CODE;
 
     var sel = document.getElementById('demoRolle');
     if (!sel) return;
