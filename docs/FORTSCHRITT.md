@@ -8350,3 +8350,159 @@ Wer den Code abfotografiert und weitergibt, kann innerhalb des Fensters
 von woanders stempeln. Steht so im Code, im Plan und gehört ins
 Verkaufsgespräch — genau wie beim Tablet, wo ein Kollege mit bekannter
 PIN mitstempeln kann.
+
+---
+
+# Runde 83 — was der Kunde sah, und was drei eigene Messfehler beinahe daraus gemacht hätten
+
+15. September 2026
+
+Diese Runde kam nicht aus dem Plan, sondern aus zwei Sätzen aus dem
+Betrieb:
+
+> „so einige Tasten [gehen] nicht immer, wie beim Terminal das zurück"
+> „die Übersicht ist schlecht und nicht organisiert … man muss jede
+> Funktion suchen … fünf Klicks für Gruppen-Chats"
+
+## Der teuerste Fund: drei tote Knöpfe am Terminal
+
+Die Bindungen für „‹ Zurück", das Suchfeld und **„Terminal beenden"**
+standen in `if(session.role==='chef')`, zusammen mit dem *Einrichten*
+von Terminals. Das Einrichten gehört dorthin, das *Bedienen* nicht: ein
+Terminal läuft mit einem ganz normalen Mitarbeiter-Konto.
+
+Auf jedem echten Gerät hiess das: wer sich vertippt, kommt aus der
+PIN-Maske nicht mehr heraus; bei vierzig Leuten findet man niemanden;
+und **das Tablet kommt nie wieder aus dem Stempel-Modus** — der einzige
+Ausweg wäre gewesen, den Browserspeicher zu löschen.
+
+**Warum kein Durchlauf es fand:** `test-terminal.js` lief mit
+`stub-chef.js`, also mit der einen Rolle, die ein Terminal nie bedient.
+Attrappen für Leitung und Mitarbeiter gibt es seit Langem; dieser
+Durchlauf nutzte sie nicht.
+
+Dazu der **fünfte Fall derselben Attrappen-Lücke**, diesmal in
+`stub-mitarbeiter.js`: `users` kannte nur `onSnapshot`, nicht `get()`.
+Der Hinweis dazu steht seit dem vierten Fall in `stub-chef.js` — er half
+nicht, weil ihn niemand liest, der die *andere* Datei bearbeitet.
+
+## Zwei Leisten versteckten die halbe App
+
+Gemessen als Chef auf 390px: unter „Betrieb" waren von sechs Reitern
+**drei** zu sehen (381px Überhang), im Chat von fünfzehn Kanälen
+**drei** (1107px). Material, Geräte, Probetraining und Dokumente
+standen ausserhalb des Bildes — man musste *wissen*, dass es sie gibt.
+
+Gelöst mit **dreimal demselben Muster**: neben der Leiste ein Knopf, der
+eine senkrechte Liste öffnet. „Alle" bei den Reitern, „Alle Kanäle" im
+Chat (Studios *und* Gruppen untereinander, mit Suche), „Alle Studios"
+als Chip in den Aufgaben. Der Knopf erscheint **nur bei Überlauf**,
+gemessen über einen ResizeObserver.
+
+Dreimal dasselbe Muster ist eine Hausregel; drei verschiedene Lösungen
+für dasselbe Problem wären drei Dinge zum Lernen gewesen.
+
+## Zwei eigene Entwürfe, beide von Durchläufen widerlegt
+
+**Der Reiter-Umbruch.** `flex-wrap:wrap` zeigte alle sechs — und schob
+den Inhalt auf 429px. `test-rahmen` wurde rot und hatte recht: den
+Durchlauf gibt es, **weil** die erste Aufgabe einmal bei 407px begann.
+
+**Das Raster über der Aufgabenliste.** Es schob die erste *überfällige*
+Aufgabe auf y=2017. `test-aufgaben-bereich4` wurde rot und hatte recht:
+die Liste sortiert längst nach Dringlichkeit — eine zweite Übersicht
+darüber hat den Überblick **verdeckt**, nicht gegeben.
+
+Beide Male derselbe Denkfehler: *alles zeigen, indem man den Inhalt aus
+dem Bild drückt, gewinnt nichts.*
+
+Und beide Male hatte ich vorher falsch geplant: ich wollte eine
+Studio-Übersicht **bauen**, die es längst gab (in der Verwaltung, hinter
+einem Falz). Was fehlte, war nicht der Überblick, sondern das
+**Eingrenzen** — 238 Bedienelemente auf zwölf Bildschirmhöhen werden 37,
+und die erste Aufgabe bleibt bei y=165.
+
+## Drei Messfehler, keiner davon ein Befund
+
+Sie hätten fast **siebzig erfundene Defekte** ergeben:
+
+1. Fenster mit `style.display='flex'` geöffnet — ein Inline-Stil schlägt
+   die Klasse `.show`, also blieben sie beim Schliessen „offen".
+   16 falsche Funde.
+2. Den **gemalten Kasten** gemessen statt der Trefferfläche. `.lb-close`
+   ist 40px gemalt und 44px zu treffen (`::after`).
+3. **Mitten in die Aufklapp-Animation** gemessen: eine skalierte Kiste
+   meldet 41 statt 44. 54 Funde schrumpften danach auf 15.
+
+Übrig blieb **ein** echter: die Studio-Ankreuzzeilen waren 36px statt
+44.
+
+> **Die Lehre, und sie ist unbequemer als die Funde:** wenn eine Messung
+> *sehr viele* Fehler auf einmal meldet, ist der erste Verdacht die
+> Messung. Sechzehn kaputte Schliessen-Knöpfe in einer App, die täglich
+> benutzt wird, hätte längst jemand gemeldet.
+
+## Zwei kaputte Ansichten in der Demo — im Verkaufswerkzeug
+
+Gefunden vom neuen Abschnitt in `test-demo.js`, der jede Ansicht jeder
+Rolle einmal öffnet:
+
+* **Material war in der ganzen Demo leer.** `loadMaterial` liest
+  `doc.metadata.hasPendingWrites`; die Demo baute Dokumente ohne
+  `metadata`.
+* **`readBy.indexOf is not a function`** bei Leitung und Mitarbeiter.
+  Die Demo erzeugte `FieldValue`-Marken und löste sie nie ein:
+  `arrayUnion` schrieb ein leeres Objekt ins Feld.
+
+> Eine Attrappe, die eine Marke erzeugt und nicht einlöst, ist
+> schlimmer als eine, die die Funktion gar nicht kennt — der Aufruf geht
+> scheinbar durch und hinterlässt Unsinn.
+
+## Ein Durchlauf, der grün war, ohne zu messen
+
+`test-ueberblick` las `#studioGrid` global. Während des Umzugs war das
+ein **verstecktes** Element — grün, ohne Aussage. Er prüft jetzt zuerst
+die Sichtbarkeit.
+
+## Und ein Verstoss gegen die eigene Regel
+
+Ich habe während eines laufenden Durchlaufs an `index.html`
+weitergearbeitet. Ergebnis: sieben rote Zeilen, von denen **eine** echt
+war — die übrigen sechs maßen eine halb umgebaute Datei mit veralteten
+CSP-Hashes. Ich hatte dem Benutzer zuerst „sieben" gemeldet und musste
+es auf „eine" korrigieren.
+
+*Ein Durchlauf, dessen Dateien sich unter ihm ändern, misst nichts.*
+Steht seit August in dieser Datei. Heute selbst gebrochen.
+
+## Die Squash-Falle, zum zweiten Mal
+
+PRs werden als Squash gemergt; der Zweig steht danach im Konflikt mit
+`main`. Und für einen konfliktbehafteten PR bildet GitHub **keinen
+Merge-Commit** — also startet es die `pull_request`-Läufe **gar nicht
+erst**. `total_count: 0`, keine Fehlermeldung, sieht aus wie „läuft
+noch".
+
+Zweimal dasselbe heisst: es gehört in die Doku, nicht ins Gedächtnis.
+Steht jetzt in `docs/DEPLOY.md`, mit Befehlen und dem einen Ort, an dem
+GitHub es überhaupt sagt (`mergeable_state: "dirty"`).
+
+## Geprüft
+
+* `test-navi-sichtbar` (neu): 3 Rollen × 3 Breiten — keine Leiste darf
+  Einträge **ohne Ausweg** verstecken, und der Ausweg darf nicht
+  dastehen, wenn alles passt. Gegenprobe → vier rote Zeilen mit den
+  versteckten Einträgen beim Namen
+* `test-terminal` um einen Abschnitt **als Mitarbeiter** erweitert;
+  Gegenprobe → drei rote Zeilen
+* `test-demo` geht jede Ansicht jeder Rolle durch
+* `test-ueberblick`: Sichtbarkeit, Eingrenzen, Weg zurück
+* **Volle Regression: 108 grün · 0 rot · 0 ohne Ausgabe**
+* **Regel-Durchläufe: 234 Zusicherungen, 0 gefallen**
+
+## Was offen bleibt
+
+Schritt 6 bis 9 der Zeiterfassung. Und die Frage, die keine Messung
+beantwortet: **ob es sich jetzt besser anfühlt.** Gemessen ist, dass
+nichts mehr hinter einer Wischbewegung liegt und dass der Chef von 238
+auf 37 kommt. Ob das reicht, sagt der Kunde.
