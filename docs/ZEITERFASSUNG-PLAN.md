@@ -1,8 +1,9 @@
 # Zeiterfassung — Plan
 
-Stand 14. September 2026 · **Schritte 1 bis 4 gebaut und ausgerollt**,
-in der Demo (`index.html?demo=terminal`) bedienbar. Schritt 5 ist in
-Arbeit. Alles ab 6 steht noch aus.
+Stand 15. September 2026 · **Schritte 1 bis 5 gebaut**, davon 1 bis 4
+ausgerollt und in der Demo (`index.html?demo=terminal`) bedienbar.
+Alles ab 6 steht noch aus. Der Nachtrag am Ende beschreibt das
+Stempeln mit dem eigenen Handy — entschieden, noch nicht gebaut.
 
 ---
 
@@ -290,3 +291,69 @@ Organisationswerkzeug angesetzt.
 
 **Das ist eine Entscheidung und keine Rechnung** — aber sie steht an,
 sobald Punkt 5 der Reihenfolge fertig ist, und nicht erst danach.
+
+---
+
+## Nachtrag 15.9. — Stempeln mit dem eigenen Handy
+
+Entschieden von Semih aus vier vorgelegten Wegen: **QR-Code am Studio**
+(Weg 1) **und Freigabe je Konto** (Weg 4). Gegen GPS, nachdem drei
+Dinge auf dem Tisch lagen:
+
+1. Browser-GPS ist in Minuten gefälscht (Entwicklerwerkzeuge,
+   Mock-Location-Apps). Es leistet nicht, wofür das Tablet da ist.
+2. **Die AGB sind der falsche Hebel.** Das sind Daten der
+   *Beschäftigten*, nicht der Kunden. Ein Vertrag zwischen StudioChat
+   und dem Betrieb erlaubt keine Verarbeitung von Beschäftigtendaten;
+   dafür braucht es eine Rechtsgrundlage, Transparenz nach Art. 13 und
+   — wo ein Betriebsrat besteht — die Mitbestimmung nach § 87 Abs. 1
+   Nr. 6 BetrVG.
+3. „Keine Standortdaten" steht als Zusage in `LOESCHKONZEPT.md`,
+   `TOM.md`, im Verarbeitungsverzeichnis und als Kopfzeile
+   `Permissions-Policy: geolocation=()`.
+
+### Wie es gebaut wird
+
+Ein Kombinationsschloss aus zwei Teilen:
+
+* **Der Chef schaltet es je Konto frei** (`handyStempeln` am
+  Personendatensatz, gesetzt im Personen-Bearbeiter unter Verwaltung →
+  Team). Ohne Freigabe geht nur das Tablet.
+* **Der Code vom Bildschirm im Studio.** Das Terminal zeigt einen Code,
+  der alle 30 Sekunden wechselt. Wer stempeln will, tippt ihn auf dem
+  eigenen Handy ein. Das ist die Ortsbindung — ohne ein einziges
+  Standortdatum.
+
+Die Person weist sich durch ihr **angemeldetes Konto** aus. Eine PIN
+braucht es dabei nicht: am Tablet ist sie nötig, weil das Gerät allen
+gehört; das eigene Handy ist schon angemeldet.
+
+### Kein QR-Bild, sondern sechs Ziffern — und warum
+
+Ein QR-Code bräuchte eine Bibliothek. Die CSP dieser App erlaubt keine
+fremden Skripte, und ein QR-Erzeuger im eigenen Code wären zweihundert
+Zeilen, die nichts tragen, was sechs Ziffern nicht auch tragen.
+
+**Der Code ist das Geheimnis, nicht seine Darstellung.** Sechs Ziffern
+abtippen dauert vier Sekunden, braucht keine Kamera-Freigabe und
+funktioniert auf jedem Telefon. Ein QR lässt sich später darüberlegen —
+als Bequemlichkeit, mit demselben Code dahinter.
+
+### Was dieser Weg NICHT verhindert
+
+Wer den Code abfotografiert und weitergibt, kann innerhalb des
+Zeitfensters von woanders stempeln. Dreißig Sekunden reichen dafür, wenn
+jemand daneben steht und wartet.
+
+Das gehört gesagt und nicht verschwiegen — genauso wie beim Tablet, wo
+ein Kollege mit bekannter PIN mitstempeln kann. Eine Absicherung, die
+man für lückenlos hält, ist gefährlicher als eine, deren Lücke man
+kennt.
+
+### Eine Falle in den Regeln, vorab notiert
+
+`firestore.rules` sperrt beim Selbst-Bearbeiten genau diese Felder:
+`role`, `studios`, `studio`, `studioKeys`, `aktiv`, `firma`, `admin`.
+**`handyStempeln` muss in dieselbe Liste** — sonst schaltet sich jede
+Person die Freigabe in der Browser-Konsole selbst frei, und die ganze
+Freigabe ist eine Anzeige ohne Schloss.
