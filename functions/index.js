@@ -3794,9 +3794,22 @@ exports.stempeln = region.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('permission-denied', 'Das Gerät weist sich nicht aus.');
   }
 
-  /* 2. Die Person — und zwar aus DIESEM Betrieb und DIESEM Studio.
-     Ohne die zweite Haelfte koennte ein Terminal in Hürth Stempel fuer
-     jemanden in Porz erzeugen. */
+  /* 2. Die Person — und zwar aus DIESEM Betrieb.
+     NICHT mehr aus diesem Studio: hier stand bis zum 14.9. zusaetzlich
+     eine Pruefung auf studioKeys. Sie ist weg, weil sie den haeufigsten
+     ehrlichen Fall verbot — wer eine Schicht in einem anderen Studio
+     uebernimmt, konnte dort nicht stempeln und stand mit einem Tag ohne
+     Zeiten da.
+
+     WAS DAS KOSTET, und das gehoert gesagt: mit Geraeteschluessel UND
+     PIN einer Person laesst sich jetzt an jedem Terminal des Betriebs
+     fuer sie stempeln. Vorher nur an denen ihres Studios. Beide
+     Schluessel braucht es weiter, und die PIN kennt nur sie selbst —
+     der Schutz sitzt dort, nicht in der Studio-Zuordnung.
+
+     Wo jemand gestempelt hat, steht im Datensatz (`studioKey` ist das
+     Studio des GERAETS). Ein Stempel ausserhalb des eigenen Studios ist
+     damit sichtbar und nicht still. */
   const pSnap = await db.collection('users').doc(uid).get();
   if (!pSnap.exists) {
     throw new functions.https.HttpsError('not-found', 'Diese Person gibt es nicht.');
@@ -3807,10 +3820,7 @@ exports.stempeln = region.https.onCall(async (data, context) => {
   if (seine !== meine || person.aktiv === false) {
     throw new functions.https.HttpsError('permission-denied', 'Dieser Zugang ist hier nicht gültig.');
   }
-  if (!(person.studioKeys || []).includes(term.studioKey)) {
-    throw new functions.https.HttpsError('permission-denied',
-      'Diese Person gehört nicht zu dem Studio, in dem dieses Gerät steht.');
-  }
+  const fremd = !(person.studioKeys || []).includes(term.studioKey);
 
   /* 3. Die PIN — mit Bremse.
      Ohne sie waere das Terminal ein Automat, an dem sich zehntausend
@@ -3843,22 +3853,48 @@ exports.stempeln = region.https.onCall(async (data, context) => {
     await pinRef.update({ fehlversuche: 0, gesperrtBis: 0 });
   }
 
-  /* 4. Schreiben. */
+  /* 4. Schreiben.
+
+     OHNE orderBy, und das ist keine Stilfrage. Hier stand
+     `.orderBy('ts','desc').limit(1)` hinter zwei Gleichheitsfiltern.
+     Firestore verlangt dafuer einen zusammengesetzten Index — und
+     dieses Projekt verwaltet keinen einzigen: es gibt keine
+     firestore.indexes.json, und firebase.json rollt nur Regeln aus.
+     Der Emulator legt fehlende Indizes stillschweigend an, die
+     Produktion nicht; der ALLERERSTE Stempel waere dort mit
+     FAILED_PRECONDITION gescheitert.
+
+     Ein Tag hat eine Handvoll Eintraege. Das Maximum ist in JS
+     schneller gefunden, als ein Index angelegt waere — denselben Weg
+     geht der Browser seit jeher (siehe papierkorbLaden in
+     index.html). */
   const tag = berlinDatum(new Date());
-  const letzte = await W(firma).collection('zeiten')
-    .where('uid', '==', uid).where('tag', '==', tag)
-    .orderBy('ts', 'desc').limit(1).get();
-  const art = naechsterSchritt(letzte.empty ? null : (letzte.docs[0].data() || {}).art);
+  const heute = await W(firma).collection('zeiten')
+    .where('uid', '==', uid).where('tag', '==', tag).get();
+  let letzteArt = null, letzteZeit = -1;
+  heute.forEach((d) => {
+    const z = d.data() || {};
+    if ((z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
+  });
+  const art = naechsterSchritt(letzteArt);
 
   const jetzt = Date.now();
   await W(firma).collection('zeiten').add({
     uid, name: person.name || '', studioKey: term.studioKey,
     art, ts: jetzt, tag,
+    /* `monat` ist Absicht und keine Bequemlichkeit: „Meine Zeiten"
+       liest monatsweise ueber ZWEI GLEICHHEITSFILTER (uid, monat).
+       Ein Bereich auf `tag` neben der Gleichheit auf `uid` braeuchte
+       wieder einen zusammengesetzten Index — siehe oben. */
+    monat: tag.slice(0, 7),
+    /* Ausserhalb des eigenen Studios gestempelt. Nicht verboten (der
+       Fall ist der Alltag beim Aushelfen), aber sichtbar. */
+    fremd,
     terminalId, terminalName: term.name || ''
   });
   await tSnap.ref.update({ letzterStempel: jetzt });
 
-  return { ok: true, art, ts: jetzt, name: person.name || '' };
+  return { ok: true, art, ts: jetzt, name: person.name || '', fremd };
 });
 
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

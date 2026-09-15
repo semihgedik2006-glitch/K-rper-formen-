@@ -8083,3 +8083,151 @@ Arbeitszeitkonto, der Lohn-Export, das Urlaubskonto.
 Zeiterfassung steht StudioChat zum ersten Mal im selben Regal wie Ordio
 und Papershift. Die 15–25 € je Studio waren für ein
 Organisationswerkzeug angesetzt.
+
+---
+
+# Runde 81 — Meine Zeiten, jeder am Terminal, und ein Index, der in der Produktion umgefallen wäre
+
+15. September 2026
+
+## Der teuerste Fund der Runde stand in eigenem Code
+
+`stempeln` fragte:
+
+```js
+.where('uid','==',uid).where('tag','==',tag).orderBy('ts','desc').limit(1)
+```
+
+Firestore verlangt dafür einen **zusammengesetzten Index**: sobald
+Gleichheitsfilter mit einer Sortierung auf einem anderen Feld
+zusammenkommen, reichen die Einzelfeld-Indizes nicht mehr. Dieses
+Projekt verwaltet keinen einzigen — es gibt keine
+`firestore.indexes.json`, und `firebase.json` rollt nur Regeln aus.
+
+**Der Emulator legt fehlende Indizes stillschweigend an. Die Produktion
+nicht.** Der allererste echte Stempel wäre mit `FAILED_PRECONDITION`
+gescheitert — und zwar nach grüner Regression, grüner CI und grünem
+Deploy.
+
+Im ganzen `index.html` gibt es aus genau diesem Grund keine einzige
+Abfrage mit `where` **und** `orderBy`; die Notiz bei `papierkorbLaden`
+sagt es seit Langem. Die Stempel-Funktion war die eine Stelle, die
+ausscherte, und ich habe sie selbst geschrieben.
+
+Behoben: die Handvoll Einträge eines Tages holen, das Maximum in JS
+suchen. **Nachweisen liess sich der Fehlschlag nicht** — der Emulator
+kennt die Grenze gar nicht. Beleg ist die Firestore-Dokumentation,
+nachgeschlagen am 14.9., nicht eine Messung. Das gehört dazugesagt.
+
+## Schritt 5: Meine Zeiten
+
+Im Ich-Bereich, direkt unter der Stempel-PIN. Monat blättern, Tag
+antippen, die einzelnen Stempel aufklappen.
+
+**Gelesen wird monatsweise über zwei Gleichheitsfilter (`uid`, `monat`)
+und ohne `orderBy`** — aus demselben Grund wie oben. Deshalb schreibt
+`stempeln` jetzt ein Feld `monat` mit.
+
+**Ein Tag ohne Feierabend bekommt keine Zahl.** Er zeigt „Feierabend
+fehlt" und einen Strich. Eine gerechnete Null wäre bequemer und wäre
+gelogen: sie behauptet „null Stunden gearbeitet", wo in Wahrheit die
+Endzeit fehlt. Der laufende Tag zählt bis jetzt und sagt „läuft".
+
+## Jeder im Betrieb kann an jedem Terminal stempeln
+
+Auf Wunsch von Semih. Vorher filterte das Terminal auf das Studio des
+Geräts — und verbot damit den häufigsten ehrlichen Fall: wer eine
+Schicht woanders übernimmt, konnte dort nicht stempeln und stand mit
+einem Tag ohne Zeiten da.
+
+Was das kostet, und das gehört gesagt: mit Geräteschlüssel **und** PIN
+lässt sich jetzt an jedem Terminal des Betriebs für eine Person
+stempeln, nicht nur an denen ihres Studios. Beide Schlüssel braucht es
+weiter, und die PIN kennt nur sie selbst. Wer von auswärts stempelt,
+steht mit `fremd: true` im Datensatz — sichtbar, nicht still.
+
+Die Liste zeigt die eigenen Leute zuerst, alle anderen darunter mit
+ihrem Studio. Das Suchfeld erscheint erst, wenn die Kacheln nicht mehr
+auf einen Bildschirm passen — **gemessen (`scrollHeight > clientHeight`)
+und nicht ab einer ausgedachten Personenzahl**.
+
+## Eine Prüfung, die ihre eigene Behauptung nie gemessen hat
+
+Im Kopf von `test-terminal.js` stand: „zeigt nur Leute DIESES Studios".
+Als der Filter fiel, blieb der Durchlauf **grün** — die Zeile war ein
+Kommentar und keine Prüfung. Aufgefallen ist es nur, weil ich die
+Gegenprobe gemacht habe.
+
+Dieselbe Lehre wie in Runde 80, jetzt zum zweiten Mal: *eine Gegenprobe,
+die nicht rot wird, ist ein Befund und kein Ergebnis.* Jetzt stehen
+sieben Zusicherungen dort, wo vorher ein Satz stand.
+
+## Vier Schönheitsfehler, gefunden beim Ansehen der eigenen Bilder
+
+Nicht beim Schreiben — beim Nachsehen von Bildschirmfotos aus der
+laufenden App:
+
+1. **„Stempeln" sah aus wie „Löschen"** — beide trugen `.tm-taste.weg`,
+   also dieselbe graue Bauform. Der bestätigende Knopf wie der
+   abräumende, nebeneinander, am Empfang im Vorbeigehen.
+2. **Die Kacheln klebten oben links** in einer leeren Fläche. Jetzt
+   `align-content: safe center` (im Chromium nachgemessen: unterstützt),
+   mit `@supports`-Rückfall.
+3. **150px Kachelbreite liess jeden zweiten Namen umbrechen** („Juna /
+   Ritter"). Mit 220px vier Spalten und einzeilige Namen — nachgemessen:
+   alle 40 Namen 18px hoch.
+4. **Die Demo mahnte zur E-Mail-Bestätigung.** `emailVerified` fehlte
+   schlicht im Demo-Konto, und die Leiste prüft auf wahr. In einer
+   Vorführung ohne Konto ist das Unsinn, und es stand quer über dem
+   ersten Eindruck.
+
+Dazu: das Demo-Konto des Tablets hiess „Empfang Hürth" und stand damit
+als erste Kachel zwischen den Mitarbeitern, als wäre das Tablet eine
+Person. Heisst jetzt wie ein Mensch.
+
+## Die AV-Unterlagen sagten die Unwahrheit
+
+In `docs/av/LOESCHKONZEPT.md` stand unter „Was die App bewusst NICHT
+speichert": **„Keine Zeiterfassung."** Seit PR #123 falsch — und in
+einer Unterlage, die zum Anwalt und zum Kunden geht, ist das der
+schlimmste Satz von allen: eine Zusage, die der Betrieb nicht hält.
+
+Ersetzt durch eine Aufstellung, was erfasst wird und was nicht,
+einschliesslich des Teils, der weiter gilt: **keine Standortdaten.**
+Dazu ein neuer Abschnitt 3.2 im Verarbeitungsverzeichnis mit den zwei
+Hinweisen, die dem Verantwortlichen gehören und nicht uns — § 87 Abs. 1
+Nr. 6 BetrVG und die Information nach Art. 13.
+
+Und eine Frist, die **offen bleibt und offen genannt wird**: wie lange
+Stempelzeiten aufbewahrt werden, ist nicht von uns zu setzen.
+
+## Geprüft
+
+* `test-meine-zeiten` (neu): Karte, Monatssumme, Tage · **Tag ohne
+  Feierabend bekommt keine Zahl** · Aufklappen zeigt die Stempel ·
+  Fingerziel 44px · **die Abfrage benutzt kein `orderBy`** · **0
+  Schreibvorgänge** aus dem Browser · Monat zurück fragt den richtigen
+  Monat ab · „Heute" führt zurück
+* Zwei Gegenproben, beide rot: Lücken-Kennzeichnung entfernt → „steht
+  mit einer Zahl da, die es nicht gibt"; `orderBy` eingesetzt → der
+  Index-Satz
+* `test-terminal` um sieben Zusicherungen erweitert; Gegenprobe
+  (Studio-Filter zurück) → drei rote Zeilen
+* `test-demo`, `test-knoepfe`, `test-gestaltung`, `test-abgeschnitten`,
+  `test-quer`, `test-fingerziele`: grün
+
+## Was jetzt fehlt
+
+Schritt 6 bis 9 aus `docs/ZEITERFASSUNG-PLAN.md`. Und aus dem Gespräch
+vom 15.9. zwei Punkte, die Semih ausgewählt hat:
+
+* **QR-Code am Studio** — ein wechselnder Code, den man mit dem eigenen
+  Handy scannt. Keine Standortdaten, kein Eingriff in die AV-Unterlagen.
+* **Freigabe je Konto** — der Chef erlaubt bestimmten Konten das
+  Stempeln ohne Terminal; wo gestempelt wurde, wird festgehalten und
+  nicht geprüft.
+
+Gegen GPS hat er sich entschieden, nachdem drei Dinge auf dem Tisch
+lagen: Browser-GPS ist in Minuten gefälscht, die AGB sind für
+Beschäftigtendaten der falsche Hebel, und „Keine Standortdaten" steht
+als Zusage in drei Unterlagen plus einer Kopfzeile.

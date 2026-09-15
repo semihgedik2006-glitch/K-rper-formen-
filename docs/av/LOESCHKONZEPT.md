@@ -130,7 +130,15 @@ Notizen · Materialbestände · Gerätemeldungen mit Fotos ·
 Schichten · **Urlaub und Krankmeldungen** · Übergaben · Schwarzes Brett ·
 Qualifikationsnachweise mit Ablaufdatum · Dokumente · Probetrainings
 (Zahlen und Namen des eigenen Teams, **keine Kundennamen**) · Umfragen
-und Reaktionen.
+und Reaktionen · **Stempelzeiten** (Zeitpunkt, Art, Person, Studio des
+Geräts, Gerätename — Abschnitt 6 sagt, was dabei ausdrücklich nicht
+erfasst wird) · **registrierte Stempel-Geräte** je Studio, mit dem Hash
+ihres Geräteschlüssels.
+
+**Für niemanden lesbar, auch nicht für den Eigentümer:** der Hash der
+Stempel-PIN je Person, mit zufälligem Salz. Die Sicherheitsregeln
+sperren ihn für alle; geprüft wird er nur serverseitig. Er kann deshalb
+weder ausgelesen noch von der Leitung zurückgesetzt werden.
 
 **Persönlich, für andere nicht lesbar:** eigene To-dos, Notizen,
 Termine, Ziele, Wünsche.
@@ -186,6 +194,32 @@ kommen:
 * **Keine Kundennamen bei Probetrainings** — nur Zahlen und die Namen
   des eigenen Teams. Ein Durchlauf prüft es bei jedem Lauf mit
   (`tests/test-probetraining.js`).
-* **Keine Zeiterfassung.** Der Schichtplan ist ein Plan, keine
-  Stechuhr. Wer daraus Arbeitszeiten ableitet, leitet aus einer
-  Absichtserklärung ab.
+> **Hier stand bis zum 15.9. „Keine Zeiterfassung".** Das stimmt seit
+> PR #123 nicht mehr und wäre in einer Unterlage, die zum Anwalt und
+> zum Kunden geht, der schlimmste Satz von allen: eine Zusage, die der
+> Betrieb nicht hält. Was jetzt gilt, steht darunter.
+
+### Zeiterfassung — was erfasst wird und was nicht
+
+Seit September gibt es eine Stempeluhr. Damit ist eine neue
+Datenkategorie hinzugekommen, und zwar eine, die Leistungs- und
+Verhaltenskontrolle ermöglicht (§ 87 Abs. 1 Nr. 6 BetrVG, wo ein
+Betriebsrat besteht).
+
+| | |
+|---|---|
+| **Erfasst** | Zeitpunkt, Art (Kommen / Pause / Zurück / Feierabend), Person, Studio des Geräts, Gerätename |
+| **Nicht erfasst** | **Standort.** `Permissions-Policy: geolocation=()` gilt unverändert. Die Ortsbindung ist physisch: das Gerät steht im Studio |
+| **Nicht erfasst** | Was jemand in der Zeit getan hat. Es gibt keine Tätigkeitsprotokolle |
+| **Nicht möglich** | Nachträgliches Ändern oder Löschen eines Stempels — auch nicht durch den Eigentümer. `zeiten` steht in den Regeln auf `write:false`; geschrieben wird ausschließlich serverseitig |
+| **Sichtbar für die Person selbst** | ihre eigenen Zeiten, vollständig, im Ich-Bereich |
+| **Sichtbar für die Leitung** | die Zeiten der von ihr geführten Studios |
+
+Die PIN liegt als Hash mit zufälligem Salz an einem Ort, den die Regeln
+**für alle sperren** — auch für den Eigentümer. Niemand kann sie lesen,
+niemand kann sie zurücksetzen, auch die Leitung nicht.
+
+**Was dabei nicht zugesagt wird:** dass die Aufzeichnung der Pflicht aus
+dem EuGH-Urteil von 2019 und dem BAG-Beschluss von 2022 genügt. Die App
+zeichnet auf. Ob das genügt, entscheidet der Verantwortliche mit seinem
+Anwalt.

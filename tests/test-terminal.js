@@ -16,8 +16,16 @@
        gezeigt.
      · „Dieses Gerät einrichten" legt ihn lokal ab — und NICHT in der
        Datenbank. Dort läge er neben dem Hash, den er aufschliesst.
-     · Mit Schlüssel erscheint der Bildschirm und zeigt nur Leute DIESES
-       Studios.
+     · Mit Schlüssel erscheint der Bildschirm und zeigt JEDEN im
+       Betrieb — die Leute dieses Studios zuerst, alle anderen darunter
+       mit ihrem Studio daneben.
+
+       DIESE ZEILE SAGTE BIS ZUM 14.9. DAS GEGENTEIL („zeigt nur Leute
+       DIESES Studios") — und keine einzige Prüfung darunter hat es je
+       gemessen. Aufgefallen ist es erst, als der Filter fiel und der
+       Durchlauf grün blieb: eine Gegenprobe, die nicht rot wird, ist
+       ein Befund und kein Ergebnis. Jetzt steht die Behauptung als
+       Prüfung da und nicht als Kommentar.
      · Das Tastenfeld füllt Punkte und schickt bei vier Ziffern NICHT
        von selbst ab — eine PIN darf fünf oder sechs Stellen haben, und
        ein Automat, der nach der vierten losrennt, macht daraus
@@ -262,6 +270,7 @@ async function starten(errs, vorbereiten) {
         leute: document.querySelectorAll('#tmListe [data-tmwer]').length,
         namen: [...document.querySelectorAll('#tmListe .tm-nam')].map(n => n.textContent),
         stand: [...document.querySelectorAll('#tmListe .tm-zst')].map(n => n.textContent),
+        gruppen: [...document.querySelectorAll('#tmListe .tm-gruppe')].map(g => g.textContent),
         pinZu: getComputedStyle(document.getElementById('tmPin')).display === 'none'
       };
     });
@@ -278,6 +287,35 @@ async function starten(errs, vorbereiten) {
     if (!schirm.stand.some(s => /im Dienst/.test(s))) {
       errs.push('Niemand wird als „im Dienst" gezeigt, obwohl ein Stempel vorliegt: ' +
         JSON.stringify(schirm.stand));
+    }
+
+    /* JEDER IM BETRIEB, nicht nur dieses Studio. Anna Meier gehört zu
+       Hürth (dem Studio des Geräts), Ben Kraus zu Brühl. Wer eine
+       Schicht woanders übernimmt, muss dort stempeln können — sonst
+       steht er am Monatsende mit einem Tag ohne Zeiten da. */
+    if (!schirm.namen.some(n => /Anna Meier/.test(n))) {
+      errs.push('Die eigene Belegschaft fehlt: ' + JSON.stringify(schirm.namen));
+    }
+    if (!schirm.namen.some(n => /Ben Kraus/.test(n))) {
+      errs.push('JEMAND AUS EINEM ANDEREN STUDIO FEHLT — wer aushilft, ' +
+        'kann hier nicht stempeln: ' + JSON.stringify(schirm.namen));
+    }
+    /* Reihenfolge: die eigenen zuerst. Sonst sucht man am Empfang den
+       eigenen Namen zwischen sechzig fremden. */
+    const iAnna = schirm.namen.findIndex(n => /Anna Meier/.test(n));
+    const iBen = schirm.namen.findIndex(n => /Ben Kraus/.test(n));
+    if (iAnna >= 0 && iBen >= 0 && iAnna > iBen) {
+      errs.push('Die Leute dieses Studios stehen nicht zuerst (Anna ' + iAnna +
+        ', Ben ' + iBen + ')');
+    }
+    /* Und man muss sehen, dass jemand von auswärts ist. */
+    if (!schirm.stand.some(s => /Brühl/.test(s))) {
+      errs.push('Bei jemandem aus einem anderen Studio steht dessen Studio nicht ' +
+        'dabei: ' + JSON.stringify(schirm.stand));
+    }
+    if (schirm.gruppen.length !== 2) {
+      errs.push('Es fehlen die Überschriften „Hier im Studio" / „Aus anderen ' +
+        'Studios": ' + JSON.stringify(schirm.gruppen));
     }
 
     /* Das Tastenfeld. */

@@ -238,12 +238,16 @@ bei `papierkorbLaden` sagt es seit Langem.
 > stillschweigend anlegt; in der Produktion wäre der **allererste
 > Stempel** mit `FAILED_PRECONDITION` gescheitert. Nachgeschlagen am
 > 14.9. in der Firestore-Dokumentation, nicht aus dem Gedächtnis.
-> **Noch nicht behoben** — der Umbau gehört zu Schritt 5: die Handvoll
-> Einträge eines Tages holen und das Maximum in JS suchen.
+> **Behoben am 15.9. mit Schritt 5:** die Handvoll Einträge eines Tages
+> wird geholt und das Maximum in JS gesucht. `tests/test-meine-zeiten.js`
+> hält die Regel fest — eine Abfrage auf `zeiten` mit `orderBy` macht
+> ihn rot. Gegenprobe gemacht: `orderBy` wieder eingesetzt, Durchlauf
+> rot.
 >
-> Nachweisen lässt sich der Fehlschlag hier nicht: der Emulator legt
+> Nachweisen liess sich der Fehlschlag selbst nicht: der Emulator legt
 > fehlende Indizes stillschweigend an und kennt die Grenze gar nicht.
-> Der Beleg ist die Dokumentation, nicht eine Messung.
+> Der Beleg ist die Firestore-Dokumentation, nicht eine Messung — das
+> gehört dazugesagt.
 
 ---
 
@@ -255,7 +259,7 @@ bei `papierkorbLaden` sagt es seit Langem.
    Ohne das geht nichts weiter.
 3. ✅ **Terminal registrieren** — Chef richtet ein Gerät ein.
 4. ✅ **Stempeln** — der Terminal-Bildschirm und die Schreibfunktion.
-5. **Eigene Zeiten sehen** — jede Person im Ich-Bereich. *(in Arbeit)*
+5. ✅ **Eigene Zeiten sehen** — jede Person im Ich-Bereich.
 6. **Soll gegen Ist im Schichtplan**.
 7. **Korrekturen** durch die Leitung, mit Grund.
 8. **Abdeckung und Warnungen** — braucht 1 und 4.
