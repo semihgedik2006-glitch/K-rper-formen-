@@ -42,6 +42,37 @@ const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
+/* ── Wege, die in BEIDEN Schnitten funktionieren ──────────────────────
+   Die Demo zeigt das neue Design: unten stehen vier Knöpfe, und „Ich",
+   „Team" und „Verwaltung" liegen in der Liste „Alles" statt in der
+   Leiste. Ein Durchlauf, der fest `.mobnav [data-group="g-chef"]`
+   anklickt, findet dort nichts mehr — und das ist kein Fehler der App,
+   sondern der Messung.
+
+   Deshalb dieser Helfer: erst der kurze Weg über die Leiste, sonst
+   über die Liste. Derselbe Durchlauf misst damit beide Fassungen, und
+   er geht dabei genau den Weg, den ein Mensch ginge. */
+const ERSTE_ANSICHT = {
+  'g-start': 'home', 'g-ich': 'ich', 'g-komm': 'chat',
+  'g-arbeit': 'todos', 'g-team': 'team', 'g-chef': 'chef', 'g-alles': 'alles',
+};
+async function zurGruppe(page, id) {
+  return page.evaluate(async ([id, view]) => {
+    const warte = ms => new Promise(r => setTimeout(r, ms));
+    const k = document.querySelector('.mobnav [data-group="' + id + '"]');
+    if (k) { k.click(); await warte(600); return 'leiste'; }
+    const griff = document.getElementById('bereichKopf');
+    if (!griff) return null;
+    griff.click();
+    await warte(400);
+    const z = document.querySelector('#allesLadeInhalt [data-alles="' + view + '"]');
+    if (!z) { griff.click(); return null; }
+    z.click();
+    await warte(800);
+    return 'liste';
+  }, [id, ERSTE_ANSICHT[id]]);
+}
+
 /* UMGEKEHRT GEDACHT: nicht eine Liste des Verbotenen, sondern eine des
    Erlaubten. Der erste Anlauf suchte nach Wörtern wie „firestore" und
    „googleapis" — und schlug bei der Schriftart (fonts.googleapis.com)
@@ -306,9 +337,8 @@ async function seite(b, url, errs, marke) {
        „wie lange war der Laden unbeaufsichtigt" nicht vorführen. */
     await p4.close();
     const { page: p5 } = await seite(b, APP + '?demo=chef', errs, 'demo=chef3');
+    await zurGruppe(p5, 'g-chef');
     const oz = await p5.evaluate(async () => {
-      document.querySelector('.mobnav [data-group="g-chef"]').click();
-      await new Promise(r => setTimeout(r, 500));
       const t = [...document.querySelectorAll('#view-chef button')]
         .find(x => /^\s*Studios\s*$/.test(x.textContent || ''));
       if (t) t.click();
@@ -380,14 +410,28 @@ async function seite(b, url, errs, marke) {
     await pv.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
     await pv.waitForTimeout(4200);
 
-    const gruppen = await pv.evaluate(() =>
-      [...document.querySelectorAll('.mobnav [data-group]')]
+    /* ALLE Gruppen, nicht nur die in der Leiste. Im neuen Schnitt
+       stehen dort vier Knöpfe; „Ich", „Team" und „Verwaltung" liegen
+       in der Liste. Wer nur die Leiste abgeht, hätte ab jetzt drei
+       Bereiche nie wieder geöffnet — und genau dafür gibt es diesen
+       Abschnitt. zurGruppe() geht beide Wege. */
+    const gruppen = await pv.evaluate(() => {
+      const ausLeiste = [...document.querySelectorAll('.mobnav [data-group]')]
         .filter(g => g.getClientRects().length)
-        .map(g => g.getAttribute('data-group')));
+        .map(g => g.getAttribute('data-group'));
+      if (!document.getElementById('allesLade')) return ausLeiste;
+      const alle = ['g-start', 'g-ich', 'g-komm', 'g-arbeit', 'g-team', 'g-chef'];
+      /* Nur die, die es für diese Rolle wirklich gibt — sonst meldet
+         der Mitarbeiter eine leere Verwaltung, die er gar nicht hat. */
+      return alle.filter(id =>
+        ausLeiste.indexOf(id) >= 0 ||
+        !!document.querySelector('#allesSeite [data-alles], #allesLadeInhalt [data-alles]') );
+    });
 
     const leer = [];
     for (const g of gruppen) {
-      await pv.evaluate(id => document.querySelector('.mobnav [data-group="' + id + '"]').click(), g);
+      const weg = await zurGruppe(pv, g);
+      if (!weg) continue;          // gibt es für diese Rolle nicht
       await pv.waitForTimeout(500);
       const views = await pv.evaluate(() =>
         [...document.querySelectorAll('#subnav [data-subview]')].map(t => t.getAttribute('data-subview')));
