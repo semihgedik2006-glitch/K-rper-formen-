@@ -8506,3 +8506,205 @@ Schritt 6 bis 9 der Zeiterfassung. Und die Frage, die keine Messung
 beantwortet: **ob es sich jetzt besser anfühlt.** Gemessen ist, dass
 nichts mehr hinter einer Wischbewegung liegt und dass der Chef von 238
 auf 37 kommt. Ob das reicht, sagt der Kunde.
+
+---
+
+## Runde 84 — Das neue Design, hinter einem Schalter
+
+**Anlass**, wörtlich aus dem Betrieb:
+
+> „es sieht alles gleich aus ich will das man einen unterschied schon
+> erkennt und das es halt schön geordnet ist wenn es sein muss können wir
+> auch das ganze grund gerüst ändern aber es soll übersichtlich wirken
+> sodass es ein klein kind verstehen würde"
+
+und, während der Umbau schon lief:
+
+> „merge alles DIREKT aber NUR auf der demo weil ja grade auch andere die
+> app benutzen und wenn irgendwas doch falsch ist soll es nicht direkt
+> alles ändern sondern mit einem klick veröffentlicht werden"
+
+Die zweite Nachricht bestimmt die Bauform der ersten.
+
+### Was gemessen wurde, bevor etwas geändert wurde
+
+Chef, 390×844, Demo:
+
+| Befund | Wert |
+|---|---|
+| Erster echter Inhalt auf Start | y ≈ 240 |
+| „HALLO, DEMO-GESCHÄFTSFÜHRUNG" über zwei Zeilen | ≈ 150px |
+| Flächenarten auf Start | eine — dieselbe weisse Karte für Einrichtung, Warnung und jede Aufgabe |
+| Unterscheidbarkeit Start / Betrieb / Team | nur an der Leiste unten |
+
+Der Befund war nicht „hässlich", sondern **alles gleich laut**. Wenn
+nichts hervorsticht, muss man lesen statt sehen.
+
+### Der Schalter — zuerst gebaut, absichtlich
+
+Das gesamte neue Aussehen hängt an **einer** Klasse am `body`: `neu`.
+Ohne sie greift keine einzige neue CSS-Regel und kein neuer Zweig in der
+Navigation. Die App im Studio bleibt Zeile für Zeile die bisherige.
+
+Vier Quellen, die erste die etwas sagt gewinnt:
+
+1. `?neu=1` / `?neu=0` in der Adresse — zum Vergleichen in zwei Tabs
+2. Dieses Gerät (`localStorage`) — „für mich ausprobieren"
+3. Demo-Modus — dort immer an
+4. `config/design.neu` — **der eine Klick für alle**
+
+Bedient wird das in **Verwaltung → System → Neues Design**. Zwei Knöpfe:
+auf diesem Gerät ausprobieren, und für alle veröffentlichen (mit
+Rückfrage, und derselbe Knopf nimmt es zurück). Die Karte nennt
+ausserdem, *woher* die gerade sichtbare Antwort kommt — ohne das drückt
+jemand „für alle" und bei ihm ändert sich nichts, weil sein
+Geräteschalter dagegensteht.
+
+Regeländerung: **keine**. `match /config/{doc}` erlaubt Lesen für jeden
+Aktiven und Schreiben nur dem Chef — in beiden Welten, flach und unter
+`inFirma(f)`.
+
+`designLaden()` hat ein `try/catch` um den **Aufruf**, nicht nur ein
+`.catch` um das Versprechen: bricht `S()` selbst ab, flöge der Fehler
+synchron und das `Promise.all` beim Start würde mit ihm platzen. Eine
+App, die wegen eines Design-Schalters gar nicht erst startet, wäre der
+teuerste denkbare Fehler an dieser Stelle.
+
+### Was der Nutzer ausgewählt hat
+
+Vier Fragen, vier Antworten — alle vier sind umgesetzt:
+
+| Frage | Antwort |
+|---|---|
+| Wie tief? | **Auch das Grundgerüst** |
+| Unterschied woran? | **Farbe + grosse Symbole** |
+| Startseite? | **Was heute dran ist** |
+| Dichte? | **Weniger und grösser** |
+
+### 1. Untere Leiste: vier statt sechs
+
+`Start · Aufgaben · Nachrichten · Mehr`. „Ich", „Team" und „Verwaltung"
+liegen in einer **Lade**, die aus der Leiste nach oben ausfährt — grosse
+beschriftete Zeilen mit Zweitzeile, keine Symbole.
+
+Warum überhaupt: sechs Knöpfe waren auf 320px exakt 44px breit — die
+Untergrenze für einen Daumen, und es war nichts übrig.
+
+Die Lade ist **Teil der Leiste**, kein eigenes Fenster: ein Fenster wäre
+ein dritter Ort gewesen, an dem Navigation stattfindet. Sie schliesst
+über denselben Knopf, beim Tippen daneben und mit Esc.
+`position:absolute` hält sie ausserhalb des Flusses — sonst verschöbe
+sie beim Öffnen die Knöpfe, und der gleitende Marker (er misst
+`offsetTop`) sässe daneben.
+
+Zwei Dinge, die sonst still gebrochen wären und deshalb ausdrücklich
+nachgezogen sind: „Mehr" trägt die Marke, wenn man in einem Bereich
+dahinter steht (sonst zeigt die Leiste nirgendwohin), und „Mehr" erbt
+den ungelesen-Punkt von allem, was dahinter liegt.
+
+### 2. Bereichsfarbe und grosses Zeichen
+
+Sechs Töne, einer je Bereich, durchgezogen durch Kopf, Reiterleiste und
+die gleitende Füllung unten.
+
+**Keiner davon ist eine Statusfarbe.** Der erste Anlauf nahm
+`rgba(52,211,153,…)` für Nachrichten und `rgba(251,191,36,…)` für
+Aufgaben — also exakt `--ok` und `--warm`. `test-gestaltung` hat das
+gefunden, und der Durchlauf hatte recht: eine grüne Fläche, die nicht
+„in Ordnung" heisst, und eine gelbe, die nicht warnt, machen die
+Statusfarben bedeutungslos. Ersetzt durch Teal, Orange und Pink.
+
+Der **Bereichskopf** (≈89px) ersetzt auf dem Handy die Überschrift der
+einzelnen Seite — die steht ohnehin im Reiter darunter, und zweimal
+dasselbe kostet nur Höhe. Er rückt beim Scrollen zusammen. Der
+„+ Neu"-Knopf wandert in ihn hinein: davor stand er allein in einer
+sonst leeren Zeile, 56px für ein Bedienelement. Umgehängt wird das echte
+Element, nicht eine Kopie — sein Klick-Zuhörer hängt daran.
+
+Die Unterzeile zählt nur dort, wo Zählen eine Handlung auslöst: offene
+und überfällige Aufgaben, ungelesene Nachrichten. Wo sich nichts zählen
+lässt, das sich auch ändert, steht ein Satz. Eine Zahl, die immer
+dieselbe ist, liest nach zwei Tagen niemand mehr.
+
+### 3. Startseite: was heute dran ist
+
+Überfällig zuerst (mit Namen, Studio und „seit N Tagen"), dann heute,
+dann Ungelesenes. Höchstens drei plus vier, der Rest als „und N
+weitere". Jede Zeile führt dorthin, wo man die Sache erledigt.
+
+Der Unterschied zu den Kachel-Zahlen ist nicht die Form, sondern die
+Aussage: „3 überfällig" nennt eine Menge und verlangt einen zweiten
+Klick, um zu erfahren welche.
+
+**Gemessen und korrigiert:** zuerst stand die Liste hinter der
+Einrichtungskarte — die erste überfällige Aufgabe begann bei **y=682**,
+auf einem 844er-Handy fast unten. Jetzt steht sie ganz oben, y=230 (davon
+44 die Demo-Leiste, die es in der echten App nicht gibt). Die
+Einrichtung ist eine Sache von einmal, die überfällige Aufgabe eine von
+jedem Morgen.
+
+Der Hinweisbalken „N Aufgaben sind überfällig" entfällt im neuen Design:
+die Liste darüber nennt jede davon beim Namen, und Wiederholung ist
+genau die Unruhe, gegen die umgebaut wurde.
+
+### 4. Weniger und grösser
+
+Statt hundert Einzelregeln ist die **Stufenleiter selbst** verschoben —
+sieben Schriftgrössen an einer Stelle, ~7 % höher, und alles was sie
+benutzt wächst mit. Dazu `--zeile: 64px` als Mindesthöhe jeder
+antippbaren Zeile und mehr Luft in den Karten.
+
+### Geprüft
+
+`tests/test-neu-design.js` (neu). Der erste Abschnitt misst **das
+bisherige Design ohne Schalter** — sechs Knöpfe, keine Lade, kein
+Bereichskopf, leere Heute-Liste, sichtbare Seitenüberschrift. Wäre der
+rot, wäre alles andere egal.
+
+Danach: jede der sechs Gruppen ist auf dem Weg erreichbar, den ein
+Mensch geht (die drei hinter „Mehr" über „Mehr", nicht per Direktklick
+auf ein verstecktes Element); jeder Bereich hat eine eigene Farbe und
+keine zwei teilen sich eine; jede Startzeile ist ≥64px hoch, nennt die
+Sache beim Namen und führt irgendwohin; die Zahl im Bereichskopf wird
+gegen die Liste darunter nachgezählt; die Lade hat drei Wege hinaus.
+Zuletzt drei Rollen × drei Breiten (320/390/430): Trefferflächen über
+`elementFromPoint`, kein Überhang, kein abgeschnittenes Wort, kein
+seitliches Scrollen.
+
+### Zwei eigene Fehler, beide von Durchläufen gefunden
+
+**1. `classList.toggle(name, undefined)` schaltet um, statt zu setzen.**
+`designAnwenden()` läuft absichtlich sehr früh, und zu dem Zeitpunkt ist
+`_designNeu` zwar hochgezogen, aber noch nicht zugewiesen — also
+`undefined`. Die bisherige App bekam dadurch für einige hundert
+Millisekunden die Klasse `neu`. Unsichtbar hinter dem Startbild, aber
+lang genug, dass die untere Leiste in diesem Fenster vermessen wurde;
+die gleitende Füllung stand danach dauerhaft auf x=0 statt x=4.
+
+`test-marker` hat es gefunden, und **nur** in der Fassung mit „Bewegung
+reduzieren" — dort blendet das Startbild zu einem anderen Zeitpunkt aus,
+und deshalb fiel die Messung genau in dieses Fenster. Der Unterschied
+zwischen einem Fehler, der in einer von zwei Fassungen auftritt, und
+keinem Fehler ist keiner.
+
+Die Lehre ist grösser als die Zeile: **eine Zusage, die an einem
+`undefined` hängt, ist keine Zusage.** Der ganze Sinn des Schalters war
+„live ändert sich nichts", und genau das hat er kurzzeitig gebrochen.
+`layoutNeu()` gibt jetzt immer einen Wahrheitswert zurück, und
+`designAnwenden()` erzwingt ihn noch einmal.
+
+Zwei falsche Erklärungen standen vorher im Weg — „buildNav vergisst
+`active`" und „der Vorfahr ist versteckt". Beide klangen plausibel,
+beide waren falsch, und beide hätten sich durch Nachdenken nicht
+widerlegen lassen. Widerlegt hat sie erst eine Spur, die JEDE
+Schreibung von `--ind-x` samt Aufrufstapel mitschrieb. **Wer rät, prüft
+nicht.**
+
+(Was aus der ersten falschen Erklärung übrig blieb, ist trotzdem
+richtig: `buildNav()` markiert jetzt am Ende selbst, statt sich darauf
+zu verlassen, dass jemand danach `showView` ruft — `featuresAnwenden()`
+tat das nämlich nie.)
+
+**2. Bereichsfarben, die Statusfarben besetzen.** Siehe oben —
+`test-gestaltung`. Der Durchlauf hatte recht, und zwar aus einem Grund,
+den ich beim Aussuchen der Farben schlicht nicht bedacht hatte.
