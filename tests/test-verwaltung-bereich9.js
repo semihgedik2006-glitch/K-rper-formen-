@@ -77,6 +77,13 @@ const reiter = page => page.evaluate(() => {
     if (!/Aufmerksamkeit/.test(ub.karten[0].titel)) {
       errs.push('„Braucht Aufmerksamkeit" steht nicht oben: ' + ub.karten[0].titel);
     }
+    /* Am 15.9. war diese Karte kurz nach „Betrieb → Aufgaben" gezogen,
+       weil ein Chef dort 238 Bedienelemente auf zwölf Bildschirmhöhen
+       bekam. Zurückgenommen: das Raster schob die erste ÜBERFÄLLIGE
+       Aufgabe auf y=2017, und die Aufgabenliste sortiert längst nach
+       Dringlichkeit. Was dem Chef fehlte, war das EINGRENZEN auf ein
+       Studio — das sitzt jetzt als Chip in der Werkzeugzeile und
+       kostet keine Höhe. Hier bleibt alles, wie es war. */
     if (!ub.karten.some(k => /Studios/.test(k.titel) && k.zu)) {
       errs.push('Die Studio-Tabelle startet nicht zugeklappt');
     }

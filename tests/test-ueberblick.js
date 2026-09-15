@@ -80,7 +80,17 @@ function pruefe(name, bedingung, zusatz) {
   });
   pruefe('nochmal antippen klappt wieder zu', zu === true);
 
-  // ══ 2. + 3. Die Studio-Tafel ══
+  /* ══ 2. + 3. Die Studio-Tafel ══
+     Sie steht in der Verwaltung. Am 15.9. war sie kurz oben in
+     „Betrieb → Aufgaben" — und schob die erste ÜBERFÄLLIGE Aufgabe auf
+     y=2017; test-aufgaben-bereich4 wurde rot und hatte recht. Die
+     Aufgabenliste sortiert längst nach Dringlichkeit; ein Raster
+     darüber verdeckt den Überblick, statt ihn zu geben.
+
+     DIE SICHTBARKEITS-PRÜFUNG BLEIBT. Während des Umzugs las dieser
+     Abschnitt `#studioGrid` global — also ein verstecktes Element —
+     und war grün, ohne noch etwas zu messen. Ein Raster, das niemand
+     sieht, ist kein Überblick. */
   console.log('\n── Übersicht: was ist wo offen ──');
   await page.evaluate(async () => {
     document.querySelector('.mobnav [data-group="g-chef"]').click();
@@ -89,6 +99,21 @@ function pruefe(name, bedingung, zusatz) {
     if (k) k.click();
   });
   await page.waitForTimeout(1400);
+  /* Der Falz muss dafür auf. Zugeklappt ist er richtig — die Tafel ist
+     dort eine von acht Karten —, gemessen werden kann sie so aber
+     nicht. */
+  await page.evaluate(() => {
+    const g = document.getElementById('studioGrid');
+    const karte = g ? g.closest('.card') : null;
+    const kopf = karte ? karte.querySelector('.fold-head') : null;
+    if (kopf && !karte.classList.contains('auf')) kopf.click();
+  });
+  await page.waitForTimeout(600);
+  const sichtbar = await page.evaluate(() => {
+    const g = document.getElementById('studioGrid');
+    return !!(g && g.getClientRects().length);
+  });
+  pruefe('die Studio-Tafel ist nach dem Aufklappen sichtbar', sichtbar);
 
   const tafel = await page.evaluate(() => {
     const g = document.getElementById('studioGrid');
@@ -136,6 +161,34 @@ function pruefe(name, bedingung, zusatz) {
   await page.waitForTimeout(800);
   const gelandet = await page.evaluate(() => !!document.querySelector('#view-todos.show'));
   pruefe('eine Kachel führt in die Aufgaben des Studios', klickbar && gelandet);
+
+  /* Und sie GRENZT EIN, statt nur hinzuscrollen. Vorher landete man in
+     derselben Liste aus vierzehn Studios, nur weiter unten — 238
+     Bedienelemente auf zwölf Bildschirmhöhen. */
+  const eng = await page.evaluate(() => ({
+    koepfe: document.querySelectorAll('#todoArea .studio-head').length,
+    chip: (document.getElementById('todoStudioChip') || {}).textContent || '',
+    unterzeile: (document.getElementById('todoSub') || {}).textContent || ''
+  }));
+  console.log('NACH DEM ANTIPPEN:', JSON.stringify(eng));
+  pruefe('die Liste zeigt danach NUR dieses Studio', eng.koepfe === 1, JSON.stringify(eng));
+  pruefe('und sagt WELCHES — am Chip und in der Unterzeile',
+    /^Nur /.test(eng.unterzeile.trim()) && eng.chip.trim() !== 'Alle Studios',
+    JSON.stringify(eng));
+
+  /* Zurück über denselben Chip. Ein Weg hinein, der keinen Weg hinaus
+     hat, ist eine Falle — und der Chip ist der einzige Ort, an dem der
+     Zustand überhaupt sichtbar ist. */
+  const zurueckOk = await page.evaluate(async () => {
+    document.getElementById('todoStudioChip').click();
+    await new Promise(r => setTimeout(r, 500));
+    const alle = document.querySelector('#studioWahlListe [data-studiowahl=""]');
+    if (!alle) return -1;
+    alle.click();
+    await new Promise(r => setTimeout(r, 600));
+    return document.querySelectorAll('#todoArea .studio-head').length;
+  });
+  pruefe('„Alle Studios" bringt die ganze Liste zurück', zurueckOk > 1, 'Köpfe: ' + zurueckOk);
 
   await page.screenshot({ path: path.join(SP, 'ueberblick.png') });
   await b.close();

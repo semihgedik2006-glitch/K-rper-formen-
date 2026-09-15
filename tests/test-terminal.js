@@ -405,6 +405,105 @@ async function starten(errs, vorbereiten) {
     await b.close();
   }
 
+  /* ══ 7. ALS MITARBEITER — die Rolle, die ein Terminal WIRKLICH bedient ══
+
+     Der teuerste Abschnitt dieser Datei, und er fehlte bis zum 15.9.
+     Alles darüber lief mit stub-chef.js. Ein Terminal läuft aber mit
+     einem ganz normalen Mitarbeiter-Konto — so ist es gebaut.
+
+     Gefunden wurde der Unterschied nicht hier, sondern im Betrieb:
+     „zurück geht nicht". Die Bindungen für Zurück, Suche und „Terminal
+     beenden" standen in einem Block `if(session.role==='chef')`. Auf
+     jedem echten Gerät waren sie damit tot — und „Terminal beenden"
+     tot heisst: das Tablet kommt nie wieder heraus.
+
+     Ein Durchlauf, der nur die stärkste Rolle prüft, prüft die
+     Berechtigungen nicht mit. */
+  {
+    const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+    const page = await b.newPage({ viewport: { width: 900, height: 1000 }, deviceScaleFactor: 2 });
+    page.on('pageerror', e => errs.push('PAGEERROR (Mitarbeiter): ' + e.message.slice(0, 160)));
+    await page.route('**://www.gstatic.com/**', r => r.abort());
+    await page.route('**fonts.googleapis.com/**', r => r.abort());
+    await page.addInitScript({
+      content: 'try{ localStorage.setItem("kf_terminal", JSON.stringify(' +
+        '{id:"t1",geheim:"g".repeat(64),name:"Empfang"})); }catch(e){}' +
+        'window.__terminals = [{ id:"t1", studioKey:"studio-6", name:"Empfang", letzterStempel:0 }];' +
+        'window.__zeiten = [];' +
+        'window.__beendet=false; window.confirm=function(){ window.__beendet=true; return false; };'
+    });
+    await page.addInitScript({ path: SP + '/stub-mitarbeiter.js' });
+    await page.addInitScript({ content: ZUSATZ });
+    await page.goto(APP, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3200);
+
+    const start = await page.evaluate(() => ({
+      schirm: getComputedStyle(document.getElementById('terminalSchirm')).display !== 'none',
+      leute: document.querySelectorAll('#tmListe [data-tmwer]').length
+    }));
+    console.log('ALS MITARBEITER:', JSON.stringify(start));
+    if (!start.schirm) errs.push('Als Mitarbeiter erscheint der Terminal-Bildschirm nicht');
+    if (!start.leute) errs.push('Als Mitarbeiter steht niemand zum Antippen bereit');
+
+    /* ── „‹ Zurück" ── */
+    const zurueck = await page.evaluate(() => {
+      const erste = document.querySelector('#tmListe [data-tmwer]');
+      if (erste) erste.click();
+      return getComputedStyle(document.getElementById('tmPin')).display !== 'none';
+    });
+    await page.waitForTimeout(400);
+    await page.evaluate(() => document.getElementById('tmZurueck').click());
+    await page.waitForTimeout(400);
+    const zu = await page.evaluate(() =>
+      getComputedStyle(document.getElementById('tmPin')).display === 'none');
+    console.log('ZURÜCK ALS MITARBEITER:', JSON.stringify({ aufgegangen: zurueck, wiederZu: zu }));
+    if (!zurueck) errs.push('Als Mitarbeiter geht das Tastenfeld gar nicht erst auf');
+    if (!zu) {
+      errs.push('„‹ ZURÜCK" TUT ALS MITARBEITER NICHTS — wer sich vertippt, ' +
+        'kommt aus der PIN-Maske nicht mehr heraus');
+    }
+
+    /* ── Das Suchfeld ── */
+    const gesucht = await page.evaluate(() => {
+      const vorher = document.querySelectorAll('#tmListe [data-tmwer]').length;
+      const f = document.getElementById('tmSuche');
+      if (!f) return { fehler: 'kein Feld' };
+      f.value = 'zzzz';
+      f.dispatchEvent(new Event('input', { bubbles: true }));
+      return { vorher, nachher: document.querySelectorAll('#tmListe [data-tmwer]').length };
+    });
+    console.log('SUCHE ALS MITARBEITER:', JSON.stringify(gesucht));
+    if (gesucht.fehler) errs.push('Das Suchfeld fehlt: ' + gesucht.fehler);
+    else if (gesucht.nachher >= gesucht.vorher) {
+      errs.push('DAS SUCHFELD FILTERT ALS MITARBEITER NICHT (' + gesucht.vorher +
+        ' → ' + gesucht.nachher + ') — bei vierzig Leuten findet man niemanden');
+    }
+
+    /* ── „Terminal beenden" ──
+       Die Rückfrage ist auf „nein" gestellt; geprüft wird, DASS sie
+       überhaupt kommt. Käme sie nicht, wäre das Gerät gefangen. */
+    await page.evaluate(() => {
+      const f = document.getElementById('tmSuche');
+      f.value = ''; f.dispatchEvent(new Event('input', { bubbles: true }));
+      document.getElementById('tmAus').click();
+    });
+    await page.waitForTimeout(300);
+    const beenden = await page.evaluate(() => ({
+      gefragt: !!window.__beendet,
+      schluesselDa: (() => { try { return !!localStorage.getItem('kf_terminal'); } catch (e) { return null; } })()
+    }));
+    console.log('BEENDEN ALS MITARBEITER:', JSON.stringify(beenden));
+    if (!beenden.gefragt) {
+      errs.push('„TERMINAL BEENDEN" TUT ALS MITARBEITER NICHTS — das Gerät ' +
+        'kommt nie wieder aus dem Stempel-Modus heraus');
+    }
+    if (beenden.schluesselDa !== true) {
+      errs.push('Auf „nein" wurde der Schlüssel trotzdem entfernt');
+    }
+
+    await b.close();
+  }
+
   console.log('\nFehler: ' + (errs.length ? '' : 'keine'));
   errs.forEach(e => console.log('  ' + e));
   process.exit(errs.length ? 1 : 0);

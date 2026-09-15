@@ -353,6 +353,78 @@ async function seite(b, url, errs, marke) {
   }
   await p3.close();
 
+  /* ══ JEDE ANSICHT ZEIGT ETWAS ══════════════════════════════════════
+
+     Der Durchlauf oben prüft, was die Demo ANFASST. Er prüft nicht, ob
+     das, was sie zeigt, überhaupt erscheint — und genau daran ist sie
+     stillschweigend gescheitert:
+
+     `loadMaterial` liest `doc.metadata.hasPendingWrites`, um beim
+     Tippen nicht die eigene Eingabe zu überschreiben. Die Demo baute
+     Dokumente ohne `metadata`. Ergebnis: die MATERIAL-ANSICHT WAR IN
+     DER GANZEN DEMO LEER, mit einem Fehler in der Konsole. Eine von
+     sechs Funktionen unter „Betrieb" — im Verkaufswerkzeug.
+
+     Gefunden wurde das beim Nachmessen der Klickwege, nicht hier. Eine
+     Attrappe, die nur die halbe Form eines Dokuments nachbaut, macht
+     genau die Stellen kaputt, die die andere Hälfte lesen — und das
+     fällt nirgends auf, solange niemand hinsieht.
+
+     Deshalb: jede Ansicht jeder Rolle einmal öffnen. Kein PAGEERROR,
+     und etwas Sichtbares muss darin stehen. */
+  for (const rolle of ['chef', 'leiter', 'mitarbeiter']) {
+    const pv = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const seitenfehler = [];
+    pv.on('pageerror', e => seitenfehler.push(e.message.slice(0, 120)));
+    await pv.route('**://www.gstatic.com/**', r => r.abort());
+    await pv.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
+    await pv.waitForTimeout(4200);
+
+    const gruppen = await pv.evaluate(() =>
+      [...document.querySelectorAll('.mobnav [data-group]')]
+        .filter(g => g.getClientRects().length)
+        .map(g => g.getAttribute('data-group')));
+
+    const leer = [];
+    for (const g of gruppen) {
+      await pv.evaluate(id => document.querySelector('.mobnav [data-group="' + id + '"]').click(), g);
+      await pv.waitForTimeout(500);
+      const views = await pv.evaluate(() =>
+        [...document.querySelectorAll('#subnav [data-subview]')].map(t => t.getAttribute('data-subview')));
+      const ziele = views.length ? views : [null];
+      for (const v of ziele) {
+        if (v) {
+          await pv.evaluate(id => {
+            const t = document.querySelector('#subnav [data-subview="' + id + '"]');
+            if (t) t.click();
+          }, v);
+          await pv.waitForTimeout(700);
+        }
+        const inhalt = await pv.evaluate(() => {
+          const s = [...document.querySelectorAll('.view')]
+            .find(x => getComputedStyle(x).display !== 'none');
+          if (!s) return null;
+          const txt = (s.innerText || '').replace(/\s+/g, ' ').trim();
+          return { id: s.id, zeichen: txt.length,
+                   bedien: [...s.querySelectorAll('button,input,select,a[href]')]
+                     .filter(e => e.getClientRects().length).length };
+        });
+        /* „Etwas Sichtbares" heisst nicht „viel": eine leere Liste mit
+           ihrem Hinweistext ist in Ordnung. Ein Bildschirm mit unter
+           40 Zeichen und ohne Bedienelement ist keiner. */
+        if (inhalt && inhalt.zeichen < 40 && inhalt.bedien === 0) {
+          leer.push(rolle + ' · ' + inhalt.id + ' (' + inhalt.zeichen + ' Zeichen)');
+        }
+      }
+    }
+    console.log('ANSICHTEN ' + rolle + ': leer=' + JSON.stringify(leer) +
+      ' fehler=' + JSON.stringify([...new Set(seitenfehler)]));
+    leer.forEach(l => errs.push('Ansicht bleibt leer: ' + l));
+    [...new Set(seitenfehler)].forEach(f =>
+      errs.push('PAGEERROR beim Durchgehen (' + rolle + '): ' + f));
+    await pv.close();
+  }
+
   await b.close();
   console.log('\nFehler: ' + (errs.length ? '' : 'keine'));
   errs.forEach(e => console.log('  ' + e));
