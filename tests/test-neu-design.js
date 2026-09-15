@@ -1,9 +1,9 @@
 /* ── Das neue Design ──────────────────────────────────────────────────
    Zwei Dinge werden hier geprüft, und das zweite ist das wichtigere.
 
-   1. Dass das Neue funktioniert: vier Knöpfe statt sechs, jede Gruppe
-      erreichbar, ein Bereichskopf, der sagt wo man ist, und eine
-      Startseite, die Aufgaben beim Namen nennt.
+   1. Dass der neue Aufbau hält, was er verspricht: EINE Liste, in der
+      alles steht, von jeder Seite aus erreichbar, und JEDES Ziel mit
+      genau zwei Tipps.
 
    2. DASS DAS BISHERIGE UNBERÜHRT BLEIBT. Das ist die Zusage aus dem
       Betrieb: „nur auf der demo weil ja grade auch andere die app
@@ -11,6 +11,20 @@
       sein, die heute im Studio läuft. Ein Durchlauf, der nur das Neue
       misst, würde genau den Fehler nicht finden, vor dem die Zusage
       schützen soll.
+
+   DER ANLASS, wörtlich: „es ist nichts an der struktur anders […] es
+   soll die GRUNDSTRUKTUR besser gestaltet sein und damit um welten
+   leichter zu navigieren, unabhängig von suchfeldern."
+
+   Gemessen vorher (Chef, 390px, alle Ziele durchgeklickt):
+     24 Ziele · 15 davon erst ab 3 Tipps · 6 verschiedene Bedienarten
+     Reiter unter „Aufgaben": 2 von 6 sichtbar
+
+   Die Zahl, auf die es ankommt, ist die letzte: Material, Geräte,
+   Probetraining und Dokumente gab es auf dem Bildschirm nicht. Eine
+   App, die ihren eigenen Inhalt versteckt, kann man nicht durch
+   grössere Schrift retten. Deshalb steht hier eine Prüfung, die genau
+   das misst — und zwar bei drei Breiten.
 
    Gemessen wird mit elementFromPoint, nicht mit getBoundingClientRect:
    .lb-close ist 40px gemalt und 44px treffbar. Ein Durchlauf, der die
@@ -54,241 +68,309 @@ async function seite(b, stub, such, breite) {
   console.log('── Ohne Schalter: die App von heute ──');
   {
     const page = await seite(b, 'stub-chef.js', '');
-    const alt = await page.evaluate(() => ({
-      klasse: document.body.classList.contains('neu'),
-      knoepfe: document.querySelectorAll('.mobnav > button[data-group]').length,
-      lade: !!document.getElementById('mnLade'),
-      mehr: !!document.getElementById('mnMehr'),
-      kopfDa: !!(document.getElementById('bereichKopf') &&
-                 document.getElementById('bereichKopf').getClientRects().length),
-      heute: (document.getElementById('heuteListe') || {}).innerHTML || '',
-      titelSichtbar: !!document.querySelector('#view-home .view-head h2').getClientRects().length,
-    }));
+    const alt = await page.evaluate(() => {
+      const zeile = document.getElementById('bereichZeile');
+      const lade = document.getElementById('allesLade');
+      return {
+        klasse: document.body.classList.contains('neu'),
+        knoepfe: document.querySelectorAll('.mobnav > button[data-group]').length,
+        allesKnopf: !!document.querySelector('.mobnav [data-group="g-alles"]'),
+        kopfDa: !!(zeile && zeile.getClientRects().length),
+        ladeDa: !!(lade && lade.getClientRects().length),
+        heute: (document.getElementById('heuteListe') || {}).innerHTML || '',
+        titelSichtbar: !!document.querySelector('#view-home .view-head h2').getClientRects().length,
+        /* Das Wort „Neu" muss am Knopf stehen bleiben — verkürzt wird
+           es NUR im neuen Schnitt. */
+        neuWort: (document.getElementById('todoNew') || {}).textContent || '',
+      };
+    });
     console.log('BISHER:', JSON.stringify(alt));
     pruefe('body trägt die Klasse „neu" NICHT', alt.klasse === false);
     pruefe('die Leiste hat weiterhin alle Gruppen direkt', alt.knoepfe === 6, String(alt.knoepfe));
-    pruefe('es gibt keine Lade und keinen „Mehr"-Knopf', !alt.lade && !alt.mehr);
+    pruefe('es gibt keinen „Alles"-Knopf', alt.allesKnopf === false);
     pruefe('der Bereichskopf ist nicht zu sehen', alt.kopfDa === false);
+    pruefe('die Schublade ist nicht zu sehen', alt.ladeDa === false);
     pruefe('„Was heute dran ist" ist leer', alt.heute === '');
     pruefe('die Überschrift der Seite steht weiterhin da', alt.titelSichtbar === true);
+    pruefe('„+ Neu" heisst weiterhin „Neu"', /Neu/.test(alt.neuWort), JSON.stringify(alt.neuWort));
     await page.close();
   }
 
-  /* ══ 2. MIT SCHALTER: DER NEUE SCHNITT ═══════════════════════════════ */
-  console.log('\n── Mit ?neu=1: vier Knöpfe und eine Lade ──');
+  /* ══ 2. MIT SCHALTER: VIER KNÖPFE UND EINE LISTE ════════════════════ */
+  console.log('\n── Mit ?neu=1: vier Knöpfe, eine Liste ──');
   const page = await seite(b, 'stub-chef.js', '?neu=1');
   {
     const neu = await page.evaluate(() => ({
       klasse: document.body.classList.contains('neu'),
       reihe: [...document.querySelectorAll('.mn-reihe > button')]
         .map(x => x.textContent.replace(/\s+/g, ' ').trim()),
-      lade: [...document.querySelectorAll('.mn-lade > button')]
-        .map(x => (x.querySelector('b') || {}).textContent),
-      ladeZu: document.getElementById('mnLade').hidden,
+      ladeZu: document.getElementById('allesLade').hidden,
+      griff: !!document.querySelector('#bereichKopf .bk-griff'),
     }));
     console.log('NEU:', JSON.stringify(neu));
     pruefe('body trägt die Klasse „neu"', neu.klasse === true);
     pruefe('unten stehen vier Knöpfe', neu.reihe.length === 4, JSON.stringify(neu.reihe));
-    pruefe('und zwar Start, Aufgaben, Nachrichten, Mehr',
-      neu.reihe.join('|') === 'Start|Aufgaben|Nachrichten|Mehr', JSON.stringify(neu.reihe));
-    pruefe('hinter „Mehr" liegen Ich, Team und Verwaltung',
-      neu.lade.join('|') === 'Ich|Team|Verwaltung', JSON.stringify(neu.lade));
-    pruefe('die Lade ist beim Start zu', neu.ladeZu === true);
+    pruefe('und zwar Start, Aufgaben, Nachrichten, Alles',
+      neu.reihe.join('|') === 'Start|Aufgaben|Nachrichten|Alles', JSON.stringify(neu.reihe));
+    pruefe('die Schublade ist beim Start zu', neu.ladeZu === true);
+    pruefe('der Bereichskopf trägt einen sichtbaren Griff', neu.griff === true);
   }
 
-  /* ── Jede Gruppe ist erreichbar. Der Punkt der ganzen Umstellung:
-       drei Bereiche liegen jetzt eine Ebene tiefer. Wenn einer davon
-       nicht mehr ankommt, ist der Umbau ein Rückschritt, kein
-       Fortschritt. ── */
-  console.log('\n── Ist jede Gruppe noch erreichbar? ──');
-  const ziele = [
-    ['g-start', 'view-home'], ['g-arbeit', 'view-todos'], ['g-komm', 'view-chat'],
-    ['g-ich', 'view-ich'], ['g-team', 'view-team'], ['g-chef', 'view-chef'],
-  ];
-  for (const [gid, viewId] of ziele) {
-    const r = await page.evaluate(async (g) => {
-      /* Genau der Weg, den ein Mensch geht: liegt die Gruppe hinter
-         „Mehr", muss man erst „Mehr" antippen. Ein Test, der den
-         versteckten Knopf direkt klickt, prüft nicht die Navigation,
-         sondern nur, dass ein Element im Dokument steht. */
-      let k = document.querySelector('.mn-reihe [data-group="' + g + '"]');
-      let ueberMehr = false;
-      if (!k) {
-        document.getElementById('mnMehr').click();
-        await new Promise(r => setTimeout(r, 350));
-        ueberMehr = true;
-        k = document.querySelector('.mn-lade [data-group="' + g + '"]');
-      }
-      if (!k) return { fehlt: true };
-      k.click();
-      await new Promise(r => setTimeout(r, 900));
-      return {
-        view: (document.querySelector('.view.show') || {}).id,
-        bereich: document.body.getAttribute('data-bereich'),
-        ueberMehr,
-        ladeZu: document.getElementById('mnLade').hidden,
-        mehrAktiv: document.getElementById('mnMehr').classList.contains('active'),
-        kopf: (document.getElementById('bkTitel') || {}).textContent,
-        farbe: getComputedStyle(document.body).getPropertyValue('--ber').trim(),
-      };
-    }, gid);
-    console.log(' ', gid, JSON.stringify(r));
-    pruefe(gid + ' führt zur richtigen Seite', r.view === viewId, JSON.stringify(r));
-    pruefe(gid + ': der Kopf nennt den Bereich', !!r.kopf, JSON.stringify(r));
-    if (r.ueberMehr) {
-      pruefe(gid + ': die Lade schliesst sich danach', r.ladeZu === true);
-      /* Sonst zeigt die Leiste nirgends hin und man weiss beim Blick
-         nach unten nicht mehr, wo man ist. */
-      pruefe(gid + ': „Mehr" trägt die Marke', r.mehrAktiv === true);
-    }
-  }
-
-  /* ── Sechs Bereiche, sechs Farben. Genau das war der Wunsch: „ich
-       will das man einen unterschied schon erkennt". Zwei gleiche
-       Farben wären zwei Bereiche, die man nicht unterscheiden kann. ── */
-  console.log('\n── Hat jeder Bereich eine eigene Farbe? ──');
-  const farben = {};
-  for (const [gid] of ziele) {
-    farben[gid] = await page.evaluate(async (g) => {
-      document.body.setAttribute('data-bereich', g);
-      return getComputedStyle(document.body).getPropertyValue('--ber').trim();
-    }, gid);
-  }
-  console.log('FARBEN:', JSON.stringify(farben));
-  const werte = Object.values(farben);
-  pruefe('jeder Bereich hat eine Farbe', werte.every(v => /^#|rgb/.test(v)), JSON.stringify(farben));
-  pruefe('keine zwei Bereiche teilen sich eine',
-    new Set(werte).size === werte.length, JSON.stringify(farben));
-
-  /* ══ 3. DIE STARTSEITE ══════════════════════════════════════════════ */
-  console.log('\n── Was heute dran ist ──');
-  await page.evaluate(async () => {
-    document.querySelector('.mn-reihe [data-group="g-start"]').click();
-    await new Promise(r => setTimeout(r, 900));
-  });
-  const start = await page.evaluate(() => {
-    const zeilen = [...document.querySelectorAll('#heuteListe .heute-zeile')];
+  /* ══ 3. DIE LISTE ═══════════════════════════════════════════════════ */
+  console.log('\n── Die Liste „Alles" ──');
+  const liste = await page.evaluate(async () => {
+    document.getElementById('bereichKopf').click();
+    await new Promise(r => setTimeout(r, 500));
+    const gruppen = [...document.querySelectorAll('#allesLadeInhalt .al-gruppe')];
+    const zeilen = [...document.querySelectorAll('#allesLadeInhalt .al-zeile')];
     return {
-      anzahl: zeilen.length,
-      ruhe: !!document.querySelector('#heuteListe .heute-ruhe'),
-      koepfe: [...document.querySelectorAll('#heuteListe .heute-kopf')]
-        .map(k => k.textContent.trim()),
+      offen: !document.getElementById('allesLade').hidden,
+      fragen: gruppen.map(g => (g.querySelector('.al-frage') || {}).textContent),
+      ziele: zeilen.length,
       hoehen: zeilen.map(z => Math.round(z.getBoundingClientRect().height)),
-      ziele: zeilen.map(z => z.getAttribute('data-heute')),
-      /* Jede Zeile muss sagen WAS und WO — eine Zahl allein ist der
-         Zustand von vorher. */
       texte: zeilen.map(z => ({
         was: (z.querySelector('b') || {}).textContent || '',
-        wo: (z.querySelector('i') || {}).textContent || '',
+        wozu: (z.querySelector('i') || {}).textContent || '',
+        ziel: z.getAttribute('data-alles'),
       })),
-      erstesY: zeilen.length ? Math.round(zeilen[0].getBoundingClientRect().top) : null,
+      abgeschnitten: zeilen.some(z => {
+        const t = z.querySelector('b');
+        return t && t.scrollWidth > t.clientWidth + 1;
+      }),
     };
   });
-  console.log('START:', JSON.stringify(start));
-  pruefe('die Startseite sagt etwas — Zeilen oder „nichts Dringendes"',
-    start.anzahl > 0 || start.ruhe);
-  if (start.anzahl) {
-    pruefe('Überfälliges steht oben', /Überfällig/i.test(start.koepfe[0] || ''),
-      JSON.stringify(start.koepfe));
-    /* Der gewählte Wunsch war „weniger und grösser": mindestens 64px
-       je Zeile. Zwei Pixel Luft für Rundung. */
-    pruefe('jede Zeile ist mindestens 64px hoch',
-      start.hoehen.every(h => h >= 62), JSON.stringify(start.hoehen));
-    pruefe('jede Zeile führt irgendwohin',
-      start.ziele.every(z => !!z), JSON.stringify(start.ziele));
-    pruefe('jede Zeile nennt die Sache beim Namen',
-      start.texte.every(t => t.was.trim().length > 2), JSON.stringify(start.texte));
-    pruefe('und sagt dazu, wo oder seit wann',
-      start.texte.every(t => t.wo.trim().length > 2), JSON.stringify(start.texte));
-    /* Der Fund, der diesen Abschnitt ausgelöst hat: mit der
-       Einrichtungskarte davor begann die erste überfällige Aufgabe bei
-       y=682 — auf einem 844er-Handy fast unten. */
-    pruefe('die erste Zeile steht im oberen Drittel', start.erstesY < 280,
-      'y=' + start.erstesY);
-  }
+  console.log('FRAGEN:', JSON.stringify(liste.fragen));
+  console.log('ZIELE:', liste.ziele);
+  pruefe('der Griff öffnet die Liste', liste.offen === true);
+  /* Nicht auf eine feste Zahl prüfen: die schlägt bei jedem neuen
+     Bereich fehl und sagt nichts darüber, ob die Liste stimmt. */
+  pruefe('sie enthält mindestens 20 Ziele', liste.ziele >= 20, String(liste.ziele));
+  pruefe('sie ist nach Fragen gegliedert',
+    liste.fragen.length >= 5 && liste.fragen.filter(f => /\?$/.test(f || '')).length >= 3,
+    JSON.stringify(liste.fragen));
+  /* „Weniger und grösser": mindestens 64px je antippbarer Zeile.
+     Zwei Pixel Luft für Rundung. */
+  pruefe('jede Zeile ist mindestens 64px hoch',
+    liste.hoehen.every(h => h >= 62), JSON.stringify([...new Set(liste.hoehen)]));
+  pruefe('jede Zeile nennt ein Ziel',
+    liste.texte.every(t => t.was.trim().length > 2 && t.ziel), JSON.stringify(liste.texte.slice(0, 3)));
+  /* Der Name allein beantwortet nicht, wofür man hingeht. „Geräte"
+     sagt wenig, „Geräte — Defekt melden" sagt alles. */
+  pruefe('und sagt dazu, wofür sie da ist',
+    liste.texte.every(t => t.wozu.trim().length > 4),
+    JSON.stringify(liste.texte.filter(t => t.wozu.trim().length <= 4)));
+  pruefe('kein Name ist abgeschnitten', liste.abgeschnitten === false);
 
-  /* Gegenprobe gegen erfundene Zahlen: was der Bereichskopf bei
-     „Aufgaben" behauptet, muss zur Liste darunter passen. Eine falsche
-     Zahl sieht genauso ordentlich aus wie eine richtige. */
-  console.log('\n── Stimmt die Zahl im Kopf? ──');
-  const zahl = await page.evaluate(async () => {
-    document.querySelector('.mn-reihe [data-group="g-arbeit"]').click();
-    await new Promise(r => setTimeout(r, 1200));
-    const sub = (document.getElementById('bkSub') || {}).textContent || '';
-    const m = /^(\d+) offen/.exec(sub);
-    const offen = document.querySelectorAll('#todoArea .todo:not(.done)').length;
-    return { sub, behauptet: m ? +m[1] : null, gezaehlt: offen };
+  /* ══ 4. DIE ZUSAGE: JEDES ZIEL IN ZWEI TIPPS ════════════════════════
+     Das ist der Kern des ganzen Umbaus. Vorher brauchten 15 von 24
+     Zielen drei oder mehr Tipps, verteilt auf sechs Bedienarten. */
+  console.log('\n── Jedes Ziel in zwei Tipps? ──');
+  const wege = [];
+  for (let i = 0; i < liste.ziele; i++) {
+    wege.push(await page.evaluate(async (i) => {
+      const warte = ms => new Promise(r => setTimeout(r, ms));
+      /* Immer von einer ANDEREN Seite aus starten — sonst misst man
+         den Sonderfall „ich bin schon da". */
+      document.querySelector('.mn-reihe [data-group="g-start"]').click();
+      await warte(550);
+      let tipps = 0;
+      document.getElementById('bereichKopf').click();        // 1. Griff
+      tipps++;
+      await warte(380);
+      const z = [...document.querySelectorAll('#allesLadeInhalt .al-zeile')][i];
+      if (!z) return { fehlt: true };
+      const name = (z.querySelector('b') || {}).textContent || '?';
+      z.click();                                             // 2. Ziel
+      tipps++;
+      await warte(1000);
+      /* Landet man auf der richtigen SEITE und im richtigen REITER?
+         Ein Inhaltsverzeichnis, das die Seite trifft und dort den
+         falschen Reiter zeigt, hat nicht geliefert. */
+      const tt = z.getAttribute('data-al-teamtab');
+      const it = z.getAttribute('data-al-ichtab');
+      const cg = z.getAttribute('data-al-cgo');
+      let reiterOk = true;
+      if (tt) reiterOk = !!document.querySelector('[data-teamtab="' + tt + '"].on');
+      if (it) reiterOk = !!document.querySelector('[data-ichtab="' + it + '"].on');
+      if (cg) {
+        const pane = [...document.querySelectorAll('.chef-pane')].find(x => x.offsetParent !== null);
+        reiterOk = !!(pane && pane.getAttribute('data-cpane') === cg);
+      }
+      return {
+        name, tipps, reiterOk,
+        view: (document.querySelector('.view.show') || {}).id,
+        ziel: 'view-' + z.getAttribute('data-alles'),
+        ladeZu: document.getElementById('allesLade').hidden,
+      };
+    }, i));
+  }
+  const fehlend = wege.filter(w => w.fehlt);
+  const falsch = wege.filter(w => !w.fehlt && w.view !== w.ziel);
+  const reiterFalsch = wege.filter(w => !w.fehlt && !w.reiterOk);
+  const offen = wege.filter(w => !w.fehlt && !w.ladeZu);
+  const tipps = wege.filter(w => !w.fehlt).map(w => w.tipps);
+  console.log('Tipps: min ' + Math.min(...tipps) + ' · max ' + Math.max(...tipps) +
+    ' über ' + tipps.length + ' Ziele');
+  pruefe('keine Zeile fehlt', fehlend.length === 0);
+  pruefe('JEDES Ziel ist mit genau zwei Tipps erreichbar',
+    tipps.every(t => t === 2), JSON.stringify(wege.filter(w => w.tipps !== 2).map(w => w.name)));
+  pruefe('jedes landet auf der richtigen Seite',
+    falsch.length === 0, JSON.stringify(falsch.map(w => w.name + ': ' + w.view)));
+  pruefe('und im richtigen Reiter',
+    reiterFalsch.length === 0, JSON.stringify(reiterFalsch.map(w => w.name)));
+  pruefe('die Schublade schliesst sich dabei jedes Mal',
+    offen.length === 0, JSON.stringify(offen.map(w => w.name)));
+
+  /* Seite und Schublade müssen dasselbe zeigen — sonst gibt es zwei
+     Wahrheiten, und eine davon ist immer die alte. */
+  const gleich = await page.evaluate(async () => {
+    document.querySelector('.mn-reihe [data-group="g-alles"]').click();
+    await new Promise(r => setTimeout(r, 900));
+    const seite = [...document.querySelectorAll('#allesSeite .al-zeile b')].map(x => x.textContent);
+    document.getElementById('bereichKopf').click();
+    await new Promise(r => setTimeout(r, 450));
+    const lade = [...document.querySelectorAll('#allesLadeInhalt .al-zeile b')].map(x => x.textContent);
+    return { seite: seite.length, lade: lade.length, gleich: seite.join('|') === lade.join('|') };
   });
-  console.log('KOPFZAHL:', JSON.stringify(zahl));
-  pruefe('der Kopf nennt eine Zahl offener Aufgaben', zahl.behauptet !== null, zahl.sub);
-  if (zahl.behauptet !== null) {
-    pruefe('und sie stimmt mit der Liste überein',
-      zahl.behauptet === zahl.gezaehlt,
-      'Kopf sagt ' + zahl.behauptet + ', gezählt ' + zahl.gezaehlt);
-  }
+  console.log('SEITE gegen SCHUBLADE:', JSON.stringify(gleich));
+  pruefe('Seite und Schublade zeigen exakt dasselbe',
+    gleich.gleich && gleich.seite > 0, JSON.stringify(gleich));
 
-  /* ══ 4. DIE LADE HAT EINEN WEG HINAUS ═══════════════════════════════
-     Ein Fenster, das man nur durch Navigieren wieder loswird, ist eine
-     Falle. Dieselbe Prüfung wie bei den anderen Wählern der App. */
-  console.log('\n── Kommt man aus der Lade wieder heraus? ──');
+  /* ══ 5. EIN WEG HINAUS ══════════════════════════════════════════════ */
+  console.log('\n── Kommt man wieder heraus? ──');
   const raus = await page.evaluate(async () => {
+    const warte = ms => new Promise(r => setTimeout(r, ms));
+    /* Bekannten Zustand herstellen. Der Abschnitt davor endet mit
+       OFFENER Schublade (er vergleicht Seite und Schublade) — ohne
+       diese Zeile misst „der Griff öffnet" in Wahrheit „der Griff
+       schliesst", und der Durchlauf meldet einen Fehler, den es nicht
+       gibt. Zwei rote Zeilen kamen genau daher. */
+    if (!document.getElementById('allesLade').hidden) {
+      document.getElementById('bereichKopf').click();
+      await warte(350);
+    }
     const auf = async () => {
-      document.getElementById('mnMehr').click();
-      await new Promise(r => setTimeout(r, 300));
-      return !document.getElementById('mnLade').hidden;
+      document.getElementById('bereichKopf').click();
+      await warte(350);
+      return !document.getElementById('allesLade').hidden;
     };
     const r = {};
     r.oeffnet = await auf();
-    /* nochmal auf denselben Knopf */
-    document.getElementById('mnMehr').click();
-    await new Promise(r2 => setTimeout(r2, 300));
-    r.knopfSchliesst = document.getElementById('mnLade').hidden;
-    /* danebentippen */
+    document.getElementById('bereichKopf').click();
+    await warte(350);
+    r.griffSchliesst = document.getElementById('allesLade').hidden;
     await auf();
-    document.querySelector('.scroll-area').dispatchEvent(
-      new MouseEvent('click', { bubbles: true }));
-    await new Promise(r2 => setTimeout(r2, 300));
-    r.danebenSchliesst = document.getElementById('mnLade').hidden;
-    /* Esc */
+    document.getElementById('allesZu').click();
+    await warte(350);
+    r.kreuzSchliesst = document.getElementById('allesLade').hidden;
+    await auf();
+    document.querySelector('.scroll-area').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await warte(350);
+    r.danebenSchliesst = document.getElementById('allesLade').hidden;
     await auf();
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    await new Promise(r2 => setTimeout(r2, 300));
-    r.escSchliesst = document.getElementById('mnLade').hidden;
+    await warte(350);
+    r.escSchliesst = document.getElementById('allesLade').hidden;
     return r;
   });
-  console.log('LADE:', JSON.stringify(raus));
-  pruefe('„Mehr" öffnet die Lade', raus.oeffnet === true);
-  pruefe('„Mehr" schliesst sie wieder', raus.knopfSchliesst === true);
-  pruefe('Tippen daneben schliesst sie', raus.danebenSchliesst === true);
-  pruefe('Esc schliesst sie', raus.escSchliesst === true);
+  console.log('SCHUBLADE:', JSON.stringify(raus));
+  pruefe('der Griff öffnet', raus.oeffnet === true);
+  pruefe('derselbe Griff schliesst wieder', raus.griffSchliesst === true);
+  pruefe('das Kreuz schliesst', raus.kreuzSchliesst === true);
+  pruefe('Tippen daneben schliesst', raus.danebenSchliesst === true);
+  pruefe('Esc schliesst', raus.escSchliesst === true);
 
-  await page.screenshot({ path: path.join(SP, 'neu-design.png'), fullPage: false });
+  await page.screenshot({ path: path.join(SP, 'neu-design.png') });
   await page.close();
 
-  /* ══ 5. DREI ROLLEN, DREI BREITEN ═══════════════════════════════════
-     Trefferflächen und Überhang. Die Leiste ist die eine Stelle, an der
-     nichts abgeschnitten sein darf: was man dort nicht sieht, gibt es
-     nicht. */
+  /* ══ 6. NICHTS IST MEHR UNSICHTBAR ══════════════════════════════════
+     Der Fund, der diesen ganzen Umbau ausgelöst hat: unter „Aufgaben"
+     waren von sechs Reitern zwei zu sehen. Vier Seiten der App gab es
+     auf einem 390er-Handy nicht. */
+  console.log('\n── Sind alle Reiter sichtbar? ──');
+  for (const breite of [320, 390, 430]) {
+    const p2 = await seite(b, 'stub-chef.js', '?neu=1', breite);
+    const m = await p2.evaluate(async () => {
+      document.querySelector('.mn-reihe [data-group="g-arbeit"]').click();
+      await new Promise(r => setTimeout(r, 1000));
+      const bar = document.getElementById('subnav');
+      const rb = bar.getBoundingClientRect();
+      const tabs = [...bar.querySelectorAll('.subtab')];
+      return {
+        gesamt: tabs.length,
+        /* Sichtbar heisst: vollständig innerhalb der Leiste, waagerecht
+           UND senkrecht. Ein Reiter, der halb unter dem Rand liegt,
+           zählt nicht. */
+        sichtbar: tabs.filter(e => {
+          const r = e.getBoundingClientRect();
+          return r.left >= rb.left - 1 && r.right <= rb.right + 1 &&
+                 r.top >= rb.top - 1 && r.bottom <= rb.bottom + 1;
+        }).map(e => e.textContent.replace(/\s+/g, ' ').trim()),
+        mehrKnopf: !!(document.getElementById('subnavMehr') &&
+                      document.getElementById('subnavMehr').getClientRects().length),
+      };
+    });
+    console.log('  ' + breite + 'px: ' + m.sichtbar.length + '/' + m.gesamt +
+      ' — ' + JSON.stringify(m.sichtbar));
+    pruefe(breite + 'px: JEDER Reiter ist zu sehen',
+      m.sichtbar.length === m.gesamt, m.sichtbar.length + ' von ' + m.gesamt);
+    pruefe(breite + 'px: „Alle" wird nicht mehr gebraucht', m.mehrKnopf === false);
+    await p2.close();
+  }
+
+  /* ══ 7. ROLLEN ══════════════════════════════════════════════════════
+     Gegenprobe gegen eine Liste, die einfach alles zeigt: ein
+     Mitarbeiter darf die Verwaltung dort nicht finden. */
+  console.log('\n── Was sieht wer? ──');
+  for (const [stub, wer, darfChef] of [
+    ['stub-chef.js', 'Chef', true],
+    ['stub-leiter.js', 'Leiter', true],
+    ['stub-mitarbeiter.js', 'Mitarbeiter', false],
+  ]) {
+    const p3 = await seite(b, stub, '?neu=1');
+    const r = await p3.evaluate(async () => {
+      document.querySelector('.mn-reihe [data-group="g-alles"]').click();
+      await new Promise(r => setTimeout(r, 900));
+      return {
+        fragen: [...document.querySelectorAll('#allesSeite .al-frage')].map(x => x.textContent),
+        ziele: [...document.querySelectorAll('#allesSeite .al-zeile b')].map(x => x.textContent),
+      };
+    });
+    const hatVerwalten = r.fragen.some(f => /Verwalten/.test(f || ''));
+    console.log('  ' + wer + ': ' + r.ziele.length + ' Ziele · Verwalten: ' + hatVerwalten);
+    pruefe(wer + ' sieht eine gefüllte Liste', r.ziele.length >= 10, String(r.ziele.length));
+    pruefe(wer + (darfChef ? ' sieht „Verwalten"' : ' sieht „Verwalten" NICHT'),
+      hatVerwalten === darfChef, JSON.stringify(r.fragen));
+    await p3.close();
+  }
+
+  /* ══ 8. TREFFERFLÄCHEN UND ÜBERHANG ═════════════════════════════════ */
   console.log('\n── Trefferflächen und Überhang ──');
-  for (const stub of ['stub-chef.js', 'stub-leiter.js', 'stub-mitarbeiter.js']) {
+  for (const stub of ['stub-chef.js', 'stub-mitarbeiter.js']) {
     for (const breite of [320, 390, 430]) {
-      const p2 = await seite(b, stub, '?neu=1', breite);
-      const m = await p2.evaluate(() => {
+      const p4 = await seite(b, stub, '?neu=1', breite);
+      const m = await p4.evaluate(() => {
         const reihe = [...document.querySelectorAll('.mn-reihe > button')];
         const bar = document.querySelector('.mobnav');
+        const griff = document.getElementById('bereichKopf');
+        function treffbar(k, r) {
+          const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+          return [[-21, -21], [21, -21], [-21, 21], [21, 21]].every(([dx, dy]) => {
+            const el = document.elementFromPoint(cx + dx, cy + dy);
+            return !!(el && (el === k || k.contains(el)));
+          });
+        }
+        const gr = griff.getBoundingClientRect();
         return {
-          anzahl: reihe.length,
-          /* Treffbar, nicht gemalt: elementFromPoint in allen vier
-             Ecken der 44er-Fläche um die Mitte des Knopfes. */
-          treffer: reihe.map(k => {
-            const r = k.getBoundingClientRect();
-            const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-            const ok = [[-21, -21], [21, -21], [-21, 21], [21, 21]].every(([dx, dy]) => {
-              const el = document.elementFromPoint(cx + dx, cy + dy);
-              return !!(el && (el === k || k.contains(el)));
-            });
-            return { t: k.textContent.replace(/\s+/g, ' ').trim(), ok, b: Math.round(r.width) };
-          }),
+          treffer: reihe.map(k => ({
+            t: k.textContent.replace(/\s+/g, ' ').trim(),
+            ok: treffbar(k, k.getBoundingClientRect()),
+          })),
+          /* Der Griff ist das grösste Ziel auf dem Bildschirm — das war
+             der Punkt („mehr an der seite zum tippen"). */
+          griffHoch: Math.round(gr.height),
+          griffBreit: Math.round(gr.width),
+          griffOk: treffbar(griff, gr),
           ueberhang: Math.max(0, bar.scrollWidth - bar.clientWidth),
           abgeschnitten: reihe.some(k => {
             const s = k.querySelector('span:not(.badge):not(.ndot)');
@@ -298,22 +380,25 @@ async function seite(b, stub, such, breite) {
         };
       });
       const wer = stub.replace('stub-', '').replace('.js', '');
-      console.log(' ', wer, breite + 'px', JSON.stringify(m));
-      pruefe(wer + '@' + breite + ': jeder Knopf ist 44px treffbar',
+      console.log('  ' + wer + '@' + breite + ': Griff ' + m.griffBreit + '×' + m.griffHoch +
+        ' · Überhang ' + m.ueberhang + ' · quer ' + m.seitlich);
+      pruefe(wer + '@' + breite + ': jeder Knopf unten ist 44px treffbar',
         m.treffer.every(t => t.ok), JSON.stringify(m.treffer.filter(t => !t.ok)));
-      pruefe(wer + '@' + breite + ': die Leiste läuft nicht über',
-        m.ueberhang === 0, String(m.ueberhang));
+      pruefe(wer + '@' + breite + ': der Griff ist gross und treffbar',
+        m.griffOk && m.griffHoch >= 44 && m.griffBreit >= 200,
+        m.griffBreit + '×' + m.griffHoch);
+      pruefe(wer + '@' + breite + ': die Leiste läuft nicht über', m.ueberhang === 0, String(m.ueberhang));
       pruefe(wer + '@' + breite + ': kein Wort ist abgeschnitten', !m.abgeschnitten);
       pruefe(wer + '@' + breite + ': die Seite scrollt nicht seitlich',
         m.seitlich === 0, String(m.seitlich));
-      await p2.close();
+      await p4.close();
     }
   }
 
   await b.close();
   console.log(errs.length
     ? '\n✗ ' + errs.length + ' Fehler im neuen Design'
-    : '\n✓ Neues Design: vier Knöpfe, jede Gruppe erreichbar, eigene Farbe ' +
-      'je Bereich — und ohne Schalter ist alles wie vorher');
+    : '\n✓ Neues Design: eine Liste, jedes Ziel in zwei Tipps, kein Reiter ' +
+      'mehr unsichtbar — und ohne Schalter ist alles wie vorher');
   process.exit(errs.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

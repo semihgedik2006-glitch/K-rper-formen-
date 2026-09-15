@@ -8743,3 +8743,119 @@ Verhalten, und das ändert der Schalter nicht.
 
 Gegenprobe gemacht: Regel entfernt → rot (327 > 320), Regel zurück →
 grün. Ein Prüfer, der nie anschlägt, prüft nichts.
+
+---
+
+## Runde 85 — Die Grundstruktur, nicht das Aussehen
+
+**Anlass**, wörtlich, nachdem Runde 84 ausgeliefert war:
+
+> „du hast jetzt alles grösser gemacht und so aber es ist nichts an der
+> struktur anders wie wäre es wenn wir dafür sorgen das es mehr an der
+> seite zum tippen gibt und ein kleinkind sich wirklich gut zurecht
+> finden würde und damit meine ich NICHT das es kindlicher aussieht
+> sondern die GRUNDSTRUKTUR besser gestalltet ist und es damit um
+> wellten leichter ist zu navigieren unabhängig von suchfeldern"
+
+Er hatte recht. Sechs Knöpfe auf vier zu kürzen ist eine Umsortierung
+desselben Baums, kein neuer Baum. Runde 84 hat das Aussehen geändert und
+die Struktur angefasst, ohne sie zu verbessern.
+
+### Gemessen, bevor etwas geändert wurde
+
+Alle 24 Ziele der App als Chef auf 390px durchgeklickt, jeder Weg
+gezählt:
+
+| | |
+|---|---|
+| Ziele | 24 |
+| davon mit 3+ Tipps | **15** |
+| verschiedene Bedienarten | **6** |
+| Reiter unter „Aufgaben" sichtbar | **2 von 6** |
+
+Die letzte Zeile ist der eigentliche Befund. **Material, Geräte,
+Probetraining und Dokumente gab es auf dem Bildschirm nicht.** Man
+musste wissen, dass es sie gibt, und dann eine Leiste zur Seite wischen.
+Das ist nicht „unübersichtlich" — das ist eine App, die ihren eigenen
+Inhalt versteckt. Und „Betrieb" als Name ist ein Eimer, kein Wegweiser:
+wer fragt „wo melde ich ein kaputtes Gerät?", kommt über „Aufgaben →
+wischen → Geräte" nie an.
+
+### Was der Nutzer ausgewählt hat
+
+| Frage | Antwort |
+|---|---|
+| Wo soll die eine Liste sitzen? | **Beides** — Schublade und eigene Seite |
+| Was wird aus den Reitern oben? | **Bleiben als Abkürzung**, aber alle sichtbar |
+| Wie heissen die Überschriften? | **Als Frage** |
+
+### Gebaut
+
+**Eine Liste, „Alles".** Jedes Ziel der App, gruppiert nach der Frage,
+mit der man kommt: *Was soll ich tun? · Was ist im Studio? · Wer
+arbeitet wann? · Was gibt es Neues? · Meine Sachen · Verwalten.* Jede
+Zeile trägt Zeichen, Namen, einen Satz wozu, und eine Zahl, wo es eine
+gibt.
+
+Sie liegt an zwei Orten und wird von **einer** Funktion gezeichnet: als
+Seite hinter dem vierten Knopf unten, und als Schublade über der Seite,
+auf der man gerade steht. Zwei Wahrheiten wären eine zu viel.
+
+**Der Griff ist die Kopfzeile des Bereichs.** Das war „mehr an der seite
+zum tippen": gemessen 374×85 Pixel auf einem 390er-Gerät — das grösste
+Ziel auf dem Bildschirm, auf jeder Seite an derselben Stelle. Dazu Esc,
+Tippen daneben, das Kreuz, und Wischen vom linken Rand.
+
+**Abgeleitet, nicht abgeschrieben.** Die Einträge kommen aus `FEATURES`
+(Team-Reiter), `chefTabsFuerMich()` (Verwaltung) und `NAV`. Eine zweite,
+von Hand gepflegte Liste würde beim ersten neuen Reiter auseinander­
+laufen, und zwar still.
+
+**Die „Mehr"-Lade aus Runde 84 ist weg.** Sie war eine eigene Bedienart
+für drei Ziele und hat die Tiefe nicht verringert, sondern verschoben.
+
+**Die Reiterleiste bricht um statt zu schieben.** Alle sechs sind
+sichtbar, auf 320, 390 und 430 Pixeln. „Alle" wird nicht mehr gebraucht.
+
+### Gemessen, nachdem gebaut war
+
+| | vorher | nachher |
+|---|---|---|
+| Ziele | 24 | 26 |
+| Tipps je Ziel | 1–3, Schnitt 2,50 | **genau 2, für jedes** |
+| Bedienarten für den verlässlichen Weg | 6 | **1** |
+| Reiter sichtbar (390px) | 2 von 6 | **6 von 6** |
+| erste Aufgabe beginnt bei | y=401 | y=449 |
+
+Die letzte Zeile ist der Preis: **48 Pixel mehr Kopf.** Der Nutzer hatte
+bei der Auswahl ausdrücklich „ca. 90px" in Kauf genommen; es sind
+weniger geworden. Dafür ist keine Seite der App mehr unsichtbar.
+
+Geprüft wird das nicht als Behauptung, sondern als Durchlauf: `test-neu-
+design.js` klickt **jedes** der 26 Ziele einzeln an, jeweils von der
+Startseite aus, über Griff und Liste — und prüft, dass zwei Tipps
+reichen, dass die richtige Seite kommt UND der richtige Unterreiter
+sitzt. Ein Inhaltsverzeichnis, das die Seite trifft und dort den
+falschen Reiter zeigt, hat nicht geliefert.
+
+### Vier Funde beim Bauen, jeder durch Messen
+
+1. **Die Schublade stand immer offen.** `[hidden]` wiegt (0,1,0) und
+   verliert gegen `body.neu .alles-lade` (0,2,1). Im Quelltext sah
+   nichts falsch aus; gesehen hat es erst der Bildschirmabzug.
+2. **Die Kopfzeile schnitt ab:** „45 offen · 5 über…". Gerechnet blieben
+   bei 390px 120 Pixel für einen Satz, der 165 braucht. Behoben, indem
+   „+ Neu" auf dem Handy nur noch das Pluszeichen zeigt (dieselbe
+   Bauform wie `.sk-wort` beim Suchen-Knopf) — und auf 320px zusätzlich
+   kleinerer Titel und umbrechende Unterzeile.
+3. **Die Reiter brauchten drei Zeilen** (116px), und die erste Aufgabe
+   begann bei y=489. Ohne die Zeichen in den Reitern sind es zwei Zeilen
+   und y=449. Das Zeichen sagt dort ohnehin wenig — die Beschriftung
+   steht daneben; im Bereichskopf darüber bleibt es gross und farbig.
+4. **`test-demo` fiel um**, und zwar zu Recht: er klickte fest
+   `.mobnav [data-group="g-chef"]`, und das gibt es in der Demo nicht
+   mehr. Statt den Selektor zu flicken, geht er jetzt den Weg, den ein
+   Mensch ginge — erst die Leiste, sonst die Liste. Derselbe Durchlauf
+   misst damit beide Fassungen.
+
+**110 Durchläufe grün.**
