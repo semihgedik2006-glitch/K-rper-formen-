@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-80IUjO3k2rgtHtaGK3yafrKuyD7GBFTE1XSpX4NiW8g='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PmDtw6zAT/1V6S9zFkXFARVUD+4U5weTQEPUkFKmQkA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4258,6 +4258,45 @@ body.neu .heute-ruhe span{display:block;font-size:var(--t-sm);color:var(--text-2
    wieder versagt. */
 body.neu .sec-head span{white-space:normal;min-width:0}
 
+/* ── 6b. Die Startseite beantwortet EINE Frage ───────────────────────
+   Aus dem Betrieb: „die startseite sieht sehr überwältigend aus noch,
+   das müssten wir minimieren."
+
+   Gemessen (Chef, 390px): 5,31 Bildschirme, zehn Überschriften, zwölf
+   Blöcke. Drei davon sagen dasselbe wie die Liste darüber, nur als
+   Zahl statt als Sache:
+
+     Überblick (Kachelraster)   330px   „45 offene Aufgaben, 5 überfällig"
+     Wo etwas los ist           270px   „Rondorf: 2 überfällig"
+     Mein Dienst (7 Tage)       642px
+
+   Die Heute-Liste nennt dieselben Aufgaben beim Namen, mit Studio und
+   seit wann. Und seit es „Alles" gibt, muss die Startseite kein
+   Inhaltsverzeichnis mehr sein: jede Zahl, die hier stand, steht dort
+   an ihrer Sache — zwei Tipps entfernt.
+
+   Deshalb fallen die drei hier weg. Nicht gelöscht: im bisherigen
+   Design stehen sie unverändert, und im neuen führt jede von ihnen
+   weiterhin an ihren Ort. */
+body.neu #homeGrid,
+body.neu #homeGridHead,
+body.neu #homeBrennpunkte{display:none}
+
+/* Empfohlene Einrichtungsschritte stehen leiser da als nötige. */
+body.neu .setup-zeile.empfohlen{opacity:.72}
+/* Als Knopf gebaut, aber wie ein Absatz gesetzt: alles ab „background"
+   nimmt nur zurück, was ein <button> mitbringt. */
+body.neu .setup-zeile.tuelbar{display:flex;align-items:center;width:100%;
+  min-height:var(--zeile);text-align:left;cursor:pointer;
+  background:none;border:none;color:inherit;font-family:var(--font-body);
+  padding:var(--s8) 0;border-radius:var(--r-sm);transition:background .2s}
+body.neu .setup-zeile.tuelbar:active{background:var(--auf-2)}
+@media (hover:hover){ body.neu .setup-zeile.tuelbar:hover{background:var(--auf-1)} }
+.setup-kann{display:inline-block;margin-left:var(--s6);padding:var(--s1) var(--s6);
+  border-radius:var(--r-pille);background:var(--auf-2);color:var(--text-3);
+  font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-s);
+  text-transform:uppercase;vertical-align:middle}
+
 /* ── 7. Mehr Luft in den Karten ──
    „Weniger und grösser" gilt auch dort, wo schon Karten stehen. */
 body.neu .card{padding:clamp(20px,5vw,30px);margin-bottom:var(--s24)}
@@ -4644,7 +4683,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
 
           <!-- 3. Wie es steht -->
-          <div class="sec-head"><span>Überblick</span><i></i></div>
+          <div class="sec-head" id="homeGridHead"><span>Überblick</span><i></i></div>
           <div class="home-grid" id="homeGrid"></div>
 
           <!-- Nur für die Verwaltung ab zwei Studios: wo etwas los ist -->
@@ -9887,15 +9926,35 @@ function setupSchritte(){
     return s && s.name && !new RegExp('^Studio\\s*\\d+$').test(String(s.name).trim());
   });
   var fehltRecht = rechtFehlend();
+  /* `cgo` ist der Reiter der Verwaltung, in dem der Schritt erledigt
+     wird. Im neuen Schnitt ist die Zeile ein Knopf, der dorthin führt —
+     ein Auftrag, der einem den Weg beschreibt, statt ihn zu gehen, ist
+     ein halber Auftrag. */
   return [
-    { id:'studios', titel:'Studios benennen',
+    { id:'studios', titel:'Studios benennen', cgo:'standorte',
       was:'Aus „Studio 1" wird der Name, den dein Team kennt.',
       wo:'Verwaltung → Studios', fertig: eigeneNamen },
-    { id:'recht', titel:'Rechtliche Angaben eintragen',
-      was: fehltRecht.length ? ('Es fehlt: '+fehltRecht.join(' · ')+'.')
-                             : 'Impressum und Datenschutz sind vollständig.',
+    { id:'recht', titel:'Rechtliche Angaben eintragen', cgo:'system',
+      /* Kurz. Die vollständige Liste stand hier über vier Zeilen und
+         machte die Karte um rund 120 Pixel höher — nachgelesen wird sie
+         ohnehin dort, wo man sie einträgt. */
+      was: fehltRecht.length
+             ? (fehltRecht.length===1 ? 'Eine Pflichtangabe fehlt noch.'
+                                      : fehltRecht.length+' Pflichtangaben fehlen noch.')
+             : 'Impressum und Datenschutz sind vollständig.',
       wo:'Verwaltung → System → Rechtliche Angaben', fertig: !fehltRecht.length },
-    { id:'code', titel:'Firmencode setzen',
+    /* Aus dem Betrieb: „das mit dem firmencode muss jetzt auch nicht so
+       penetrant sein, das ist nicht ÜBER wichtig."
+
+       Also leiser, aber nicht weg. `empfohlen` heisst: steht unten,
+       zählt nicht in „N von M offen", und die Karte verschwindet, sobald
+       nur noch empfohlene Schritte offen sind.
+
+       Nicht weg, weil der Satz darunter stimmt: ohne Code kann sich
+       jeder anmelden, der die Adresse kennt. Wer das weiss und trotzdem
+       so entscheidet, entscheidet es — wer es nicht weiss, kann es
+       nicht. Deshalb bleibt die Zeile lesbar an ihrem Platz. */
+    { id:'code', titel:'Firmencode setzen', empfohlen:true, cgo:'team',
       was:'Ohne ihn kann sich jeder anmelden, der die Adresse kennt.',
       wo:'Verwaltung → Team → Wer darf sich anmelden',
       /* _setupCode === null heisst „konnte ich nicht lesen", nicht „ist
@@ -9904,11 +9963,11 @@ function setupSchritte(){
          Vertrauen als ein fehlender Hinweis. */
       fertig: _setupCode === null
         || !!String((_setupCode||{}).code||'').trim() },
-    { id:'team', titel:'Das Team anlegen',
+    { id:'team', titel:'Das Team anlegen', cgo:'team',
       was:'Zugänge für die Personen, die mitarbeiten sollen.',
       wo:'Verwaltung → Team → Zugang anlegen',
       fertig: (_employees||[]).length > 1 },
-    { id:'inhalt', titel:'Erste Aufgaben oder Putzpunkte anlegen',
+    { id:'inhalt', titel:'Erste Aufgaben oder Putzpunkte anlegen', cgo:'erstellen',
       was:'Eine leere App sieht kaputt aus, auch wenn sie es nicht ist.',
       wo:'Verwaltung → Erstellen',
       fertig: Object.keys(cachedTodos||{}).some(function(k){
@@ -9935,16 +9994,38 @@ function renderSetup(){
   if(!isChef()){ karte.style.display='none'; return; }
   var schritte=setupSchritte();
   var offen=schritte.filter(function(s){ return !s.fertig; });
-  if(!offen.length){ karte.style.display='none'; return; }
+  /* Empfohlene Schritte halten die Karte nicht mehr am Leben. Stehen
+     nur noch sie offen, ist die Einrichtung im Sinne des Betriebs
+     fertig — und eine Karte, die nie verschwindet, liest nach einer
+     Woche niemand mehr. */
+  var noetig=offen.filter(function(s){ return !s.empfohlen; });
+  if(!noetig.length){ karte.style.display='none'; return; }
   karte.style.display='';
   var z=$('setupZahl');
-  if(z) z.textContent = offen.length + ' von ' + schritte.length + ' offen';
+  var gesamt=schritte.filter(function(s){ return !s.empfohlen; }).length;
+  if(z) z.textContent = noetig.length + ' von ' + gesamt + ' offen';
+  /* Das Empfohlene steht unten, nach dem Nötigen. */
+  offen=noetig.concat(offen.filter(function(s){ return s.empfohlen; }));
   var box=$('setupListe'); if(!box) return;
+  /* Im neuen Schnitt ist die Zeile ein Knopf, der dorthin führt, wo der
+     Schritt erledigt wird — und der Wegweiser („Verwaltung → System →
+     …") entfällt dadurch. Im bisherigen Design bleibt alles, wie es
+     war: ein Absatz mit dem Weg als Text. */
+  var klickbar = layoutNeu();
   function zeile(s){
-    return '<div class="setup-zeile'+(s.fertig?' fertig':'')+'">'+
+    var inhalt =
       '<span class="setup-hak">'+(s.fertig?'✓':'○')+'</span>'+
-      '<span class="setup-txt"><b>'+esc(s.titel)+'</b>'+
-      '<i>'+esc(s.was)+(s.fertig?'':' <em>'+esc(s.wo)+'</em>')+'</i></span></div>';
+      '<span class="setup-txt"><b>'+esc(s.titel)+
+      (s.empfohlen && !s.fertig ? ' <span class="setup-kann">empfohlen</span>' : '')+'</b>'+
+      '<i>'+esc(s.was)+
+      (!s.fertig && !(klickbar && s.cgo) ? ' <em>'+esc(s.wo)+'</em>' : '')+'</i></span>';
+    if(klickbar && s.cgo && !s.fertig){
+      return '<button type="button" class="setup-zeile tuelbar'+
+        (s.empfohlen?' empfohlen':'')+'" data-setupgo="'+esc(s.cgo)+'">'+
+        inhalt+'<span class="al-pfeil">›</span></button>';
+    }
+    return '<div class="setup-zeile'+(s.fertig?' fertig':'')+
+      (s.empfohlen?' empfohlen':'')+'">'+inhalt+'</div>';
   }
   /* Nur das Offene steht da. Was erledigt ist, hat seine Arbeit getan —
      es durchgestrichen stehen zu lassen macht die Karte dreimal so hoch,
@@ -9956,6 +10037,14 @@ function renderSetup(){
         (fertig.length===1?' Schritt':' Schritte')+' schon erledigt</summary>'+
         '<div class="nachfrage-text">'+fertig.map(zeile).join('')+'</div></details>'
       : '');
+  box.querySelectorAll('[data-setupgo]').forEach(function(b){
+    b.addEventListener('click', function(){
+      showView('chef');
+      var k=document.querySelector('#chefHome [data-cgo="'+b.getAttribute('data-setupgo')+'"]');
+      if(k) k.click();
+      tick(8);
+    });
+  });
 }
 
 /* ══ Die Farbe der Firma ═════════════════════════════════════════════
@@ -16166,6 +16255,10 @@ function berichtAnfordern(tage, note){
    Uhr für etwas, das sich selten ändert. Stattdessen einmal laden und
    höchstens alle fünf Minuten erneuern. */
 var _myShifts=[], _myShiftsAt=0, _myShiftsLoading=false;
+/* Wie viele Schichten die Startseite im neuen Schnitt weggelassen hat.
+   Steht hier und nicht in renderMyShifts, weil der Knopf darunter die
+   Zahl nennen muss. */
+var _myShiftRest=0;
 var MYSHIFT_TTL = 5*60*1000;
 
 function loadMyShifts(force){
@@ -16326,7 +16419,32 @@ function renderMyShifts(){
   }
   var heute=ymd(new Date());
   var morgen=new Date(); morgen.setDate(morgen.getDate()+1); morgen=ymd(morgen);
-  box.innerHTML=_myShifts.map(function(x){
+  /* Im neuen Schnitt steht auf der Startseite nur, was JETZT gilt:
+     heute und morgen. Gemessen war diese Karte beim Chef 642 Pixel hoch
+     — sieben Tage Dienstplan auf einer Seite, die die Frage „was ist
+     jetzt zu tun" beantworten soll. Die ganze Woche steht zwei Tipps
+     entfernt unter „Alles → Meine Woche"; genau dafür gibt es die
+     Liste. */
+  var zeigen=_myShifts;
+  if(layoutNeu()){
+    var nah=_myShifts.filter(function(x){ return x.date===heute || x.date===morgen; });
+    /* Ist in den nächsten zwei Tagen nichts, steht die nächste Schicht
+       da — sonst wäre die Karte leer und man wüsste nicht, ob es keine
+       gibt oder ob sie nur weiter weg ist. */
+    zeigen = nah.length ? nah : _myShifts.slice(0, 1);
+    /* Und höchstens drei Zeilen. Beim Chef standen auch nach dem
+       Eingrenzen auf heute und morgen noch 14 — er ist in allen
+       Studios eingeteilt, und die Karte war 614 Pixel hoch. Drei
+       Zeilen sagen „du hast heute etwas vor"; vierzehn sagen dasselbe
+       und kosten einen halben Bildschirm. */
+    var mehr = Math.max(0, zeigen.length - 3);
+    zeigen = zeigen.slice(0, 3);
+    if(sub) sub.textContent = nah.length
+      ? (nah.length===1 ? '1 Schicht' : nah.length+' Schichten')
+      : 'nächste Schicht';
+    if(mehr) _myShiftRest = mehr; else _myShiftRest = 0;
+  } else { _myShiftRest = 0; }
+  box.innerHTML=zeigen.map(function(x){
     var d=new Date(x.date+'T12:00:00');
     var tag = x.date===heute ? 'Heute'
             : (x.date===morgen ? 'Morgen'
@@ -16337,7 +16455,19 @@ function renderMyShifts(){
       '<span class="mysh-studio">'+esc(studioName(x.sk))+'</span>'+
       (x.note?'<span class="mysh-note">'+esc(x.note)+'</span>':'')+
       '</div>';
-  }).join('');
+  }).join('') +
+    /* Der Weg zum Rest. Eine gekürzte Liste ohne Ausgang wäre eine
+       Auskunft, die verschweigt, dass sie gekürzt ist. */
+    (_myShiftRest
+      ? '<button type="button" class="mini-link" id="myShiftMehr">und '+_myShiftRest+
+        ' weitere — ganze Woche ansehen ›</button>'
+      : '');
+  var mb=$('myShiftMehr');
+  if(mb) mb.addEventListener('click', function(){
+    showView('ich');
+    var t=document.querySelector('[data-ichtab="woche"]'); if(t) t.click();
+    tick(8);
+  });
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -22630,6 +22760,18 @@ function foldAufbauen(){
     var id=card.getAttribute('data-fold');
     // Standard: zu, ausser die Karte ist ausdrücklich als offen markiert
     var offen = card.hasAttribute('data-fold-offen');
+    /* Im neuen Schnitt starten Übergabe und Schwarzes Brett auf der
+       Startseite ZU. Gemessen waren die drei Lesekarten zusammen 616
+       Pixel — mehr als zwei Drittel eines Handybildschirms für Dinge,
+       die man liest, wenn man Zeit hat.
+
+       „Von der Leitung" bleibt offen: eine Anweisung der
+       Geschäftsführung ist keine Nachschlage-Karte, und wer sie
+       zuklappt, hat sie nicht gelesen.
+
+       Eine eigene Entscheidung des Nutzers (PREFS.folds) überstimmt das
+       gleich darunter — was er selbst aufgeklappt hat, bleibt auf. */
+    if(layoutNeu() && ['startuebergabe','startbrett'].indexOf(id)>=0) offen=false;
     if(PREFS.folds && PREFS.folds[id]!=null) offen = !!PREFS.folds[id];
     card.classList.toggle('zu', !offen);
     if(offen) body.style.height='auto';

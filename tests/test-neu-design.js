@@ -283,6 +283,77 @@ async function seite(b, stub, such, breite) {
   await page.screenshot({ path: path.join(SP, 'neu-design.png') });
   await page.close();
 
+  /* ══ 5b. DIE STARTSEITE BEANTWORTET EINE FRAGE ══════════════════════
+     Aus dem Betrieb: „die startseite sieht sehr überwältigend aus noch,
+     das müssten wir minimieren."
+
+     Gemessen wird nicht gegen eine ausgedachte Schwelle, sondern gegen
+     die BISHERIGE Seite — beide Fassungen in derselben Runde, mit
+     denselben Daten. Eine gewählte Zahl („höchstens 3 Bildschirme")
+     hätte nur getrennt, was ohnehin getrennt ist; der Vergleich sagt,
+     ob der Umbau etwas gebracht hat. */
+  console.log('\n── Ist die Startseite kürzer geworden? ──');
+  for (const stub of ['stub-chef.js', 'stub-mitarbeiter.js']) {
+    const mass = {};
+    for (const [flagge, name] of [['?neu=0', 'bisher'], ['?neu=1', 'neu']]) {
+      const ph = await seite(b, stub, flagge);
+      mass[name] = await ph.evaluate(() => {
+        const sa = document.querySelector('#view-home .scroll-area');
+        return {
+          bildschirme: +(sa.scrollHeight / sa.clientHeight).toFixed(2),
+          hoehe: sa.scrollHeight,
+          ueberschriften: [...sa.querySelectorAll('h3,.sec-head span,.heute-kopf')]
+            .filter(e => e.getClientRects().length).length,
+          /* Was doppelt sagte, was die Liste oben schon nennt. */
+          raster: !!(document.getElementById('homeGrid') || {}).getClientRects
+            && !!document.getElementById('homeGrid').getClientRects().length,
+          brennpunkte: (() => {
+            const e = document.getElementById('homeBrennpunkte');
+            return !!(e && e.getClientRects().length);
+          })(),
+          dienstZeilen: document.querySelectorAll('#myShiftList .mysh-row').length,
+          dienstMehr: !!document.getElementById('myShiftMehr'),
+        };
+      });
+      await ph.close();
+    }
+    const wer = stub.replace('stub-', '').replace('.js', '');
+    console.log('  ' + wer + ': bisher ' + mass.bisher.bildschirme + ' Bildschirme (' +
+      mass.bisher.ueberschriften + ' Überschriften) → neu ' + mass.neu.bildschirme +
+      ' (' + mass.neu.ueberschriften + ')');
+    pruefe(wer + ': die Startseite ist kürzer als vorher',
+      mass.neu.hoehe < mass.bisher.hoehe,
+      mass.bisher.hoehe + ' → ' + mass.neu.hoehe);
+    /* „Nicht mehr", nicht „weniger". Der neue Schnitt NIMMT „Überblick"
+       weg und SETZT dafür „Überfällig" und „Heute" — beim Mitarbeiter
+       geht das genau auf. Das ist kein Rückschritt, sondern der Tausch,
+       um den es ging: eine Überschrift, die eine Zahl ankündigt, gegen
+       eine, die eine Sache ankündigt. Gezählt wird deshalb nur, dass
+       die Seite nicht voller wird; ob sie kürzer wurde, sagt die Zeile
+       darüber. */
+    pruefe(wer + ': sie hat nicht mehr Überschriften als vorher',
+      mass.neu.ueberschriften <= mass.bisher.ueberschriften,
+      mass.bisher.ueberschriften + ' → ' + mass.neu.ueberschriften);
+    /* Gegenprobe: im BISHERIGEN Design müssen Raster und Brennpunkte
+       noch da sein. Sonst misst der Vergleich oben zwei Mal dasselbe. */
+    pruefe(wer + ': GEGENPROBE das Kachelraster steht bisher noch da',
+      mass.bisher.raster === true);
+    pruefe(wer + ': das Kachelraster ist im neuen Schnitt weg',
+      mass.neu.raster === false);
+    pruefe(wer + ': „Wo etwas los ist" ist im neuen Schnitt weg',
+      mass.neu.brennpunkte === false);
+    /* „Mein Dienst" war beim Chef 614px — vierzehn Zeilen auf einer
+       Seite, die sagen soll, was JETZT dran ist. */
+    pruefe(wer + ': „Mein Dienst" zeigt höchstens drei Zeilen',
+      mass.neu.dienstZeilen <= 3, String(mass.neu.dienstZeilen));
+    /* Eine gekürzte Liste ohne Ausgang verschweigt, dass sie gekürzt
+       ist. */
+    if (mass.bisher.dienstZeilen > 3) {
+      pruefe(wer + ': und nennt den Weg zum Rest',
+        mass.neu.dienstMehr === true);
+    }
+  }
+
   /* ══ 6. NICHTS IST MEHR UNSICHTBAR ══════════════════════════════════
      Der Fund, der diesen ganzen Umbau ausgelöst hat: unter „Aufgaben"
      waren von sechs Reitern zwei zu sehen. Vier Seiten der App gab es
