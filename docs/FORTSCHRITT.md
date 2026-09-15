@@ -8952,3 +8952,97 @@ Gesetz öffentlich; im Quelltext steht dann nichts, was nicht ohnehin in
 der App für jeden sichtbar wäre.
 
 **110 Durchläufe grün.**
+
+---
+
+## Runde 87 — Start passt auf einen Bildschirm
+
+**Anlass**, wörtlich: „die neue ist immer noch zu voll für mein geschmack,
+am besten steht alles auf einer seite ohne das man scrollen muss yk · und
+es wirkt jetzt mit den grossen symbolen immer noch voll überwältigend
+irgendwie."
+
+### Zuerst: der Widerspruch, offen benannt
+
+„Alles auf eine Seite" und „weniger und grösser" (seine Wahl aus Runde
+84: Zeilen mindestens 64px) ziehen gegeneinander. Aufgelöst, indem nicht
+die Zeilen kleiner werden, sondern **ihre Anzahl**. Und „grosse Symbole"
+(Runde 84) gilt weiterhin für das EINE Bereichszeichen oben — nicht für
+eine getönte Kachel vor jeder Listenzeile.
+
+### Gemessen, bevor etwas geändert wurde
+
+| Gerät | Kopf | Bereich | Leiste | **Platz** | drin |
+|---|---|---|---|---|---|
+| 390×844 | 69 | 85 | 71 | **550px** | 1579px |
+| 360×780 | 69 | 77 | 71 | **494px** | 1608px |
+| 320×568 | 69 | 77 | 71 | **282px** | 1671px |
+
+Bei 550 Pixeln Platz und 1579 Pixeln Inhalt ist die Frage nicht, was man
+kürzt, sondern was überhaupt bleiben darf.
+
+### Start ist jetzt NUR die Liste
+
+Alles andere ist nicht weg, sondern umgezogen:
+
+| vorher eigener Block | jetzt |
+|---|---|
+| Einrichtung (353px) | eine Zeile |
+| Hinweisbalken | Zeilen (Material, Angeheftetes) |
+| Mein Dienst (206px) | eine Zeile |
+| Von der Leitung | eine Zeile |
+| Übergabe, Schwarzes Brett | „Alles" → Wer arbeitet wann |
+| Zuletzt passiert | ersatzlos |
+
+**Das war erst möglich, nachdem es „Alles" gab.** Vorher wäre dasselbe
+Verstecken gewesen.
+
+### Die Symbole
+
+Vor jeder Zeile stand eine getönte 34px-Kachel. Sechs davon
+untereinander sind sechs Flächen, die um Aufmerksamkeit bitten, und
+keine sagt etwas, was daneben nicht in Worten stünde. Jetzt nur noch der
+Strich des Zeichens in der Farbe der Zeile; die Dringlichkeit trägt der
+farbige Balken links. Das Bereichszeichen oben ging von 46 auf 38 —
+**nachgemessen bringt das keine Höhe** (der Kopf wird vom Text getragen,
+nicht vom Zeichen), es geht allein um das Gewicht im Bild. Der Kommentar
+im Quelltext behauptete zuerst etwas anderes und ist korrigiert.
+
+### Wie „passt auf eine Seite" durchgesetzt wird
+
+**Gerechnet wird nicht, gemessen wird.** Eine Rechnung aus Zeilenhöhe mal
+Anzahl wäre bei jeder Schriftgrösseneinstellung, jedem längeren
+Studionamen und jedem Gerät anders falsch. Also: zeichnen, nachsehen ob
+es überläuft, kürzen, wieder nachsehen.
+
+Zwei Regeln dabei, beide aus einem Fehler gelernt:
+
+1. **Nicht messen, was nicht liegt.** Wäre die Ansicht beim Zeichnen noch
+   versteckt, wäre `clientHeight` 0 und die Schleife räumte die ganze
+   Liste ab. Dieselbe Klasse Fehler wie beim gleitenden Marker in Runde
+   84.
+2. **Zuerst kürzen, dann streichen.** Der erste Anlauf nahm immer die
+   unterste Kategorie ganz weg. Im Bild blieben dadurch 85 Pixel leer,
+   während „54 Artikel fehlen" verschwunden war — eine ganze Aussage weg,
+   für Platz, der gar nicht gebraucht wurde. Jetzt fallen Zeilen beim
+   LÄNGSTEN Block, bis überall nur noch eine steht; erst dann eine ganze
+   Kategorie. Dass es fünf überfällige Aufgaben gibt, sagt die
+   Überschrift ohnehin; dass Material fehlt, sagt sonst niemand.
+
+**Verschwiegen wird nichts:** jede Überschrift nennt die volle Zahl
+(„Überfällig · 5") und trägt „alle 5 ›". Wo gekürzt wurde, wird der
+Ausgang nachträglich eingesetzt — geprüft wird genau das.
+
+### Ergebnis
+
+| | Runde 84 | Runde 86 | **jetzt** |
+|---|---|---|---|
+| Chef | 5,31 Bildschirme | 2,75 | **1,00** |
+| Mitarbeiter | 2,20 Bildschirme | 1,36 | **1,00** |
+
+Auf allen drei Geräten, beide Rollen, ohne Scrollen — mit Gegenprobe,
+dass es im bisherigen Design NICHT passt (1726px in 606px). Ohne die
+Gegenprobe leuchtete der Abschnitt auch dann grün, wenn die Messung
+nichts misst.
+
+**110 Durchläufe grün.**

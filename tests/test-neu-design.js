@@ -348,10 +348,72 @@ async function seite(b, stub, such, breite) {
       mass.neu.dienstZeilen <= 3, String(mass.neu.dienstZeilen));
     /* Eine gekürzte Liste ohne Ausgang verschweigt, dass sie gekürzt
        ist. */
-    if (mass.bisher.dienstZeilen > 3) {
-      pruefe(wer + ': und nennt den Weg zum Rest',
-        mass.neu.dienstMehr === true);
+  }
+
+  /* ── „Ohne dass man scrollen muss" ──
+     Aus dem Betrieb: „am besten steht alles auf einer seite ohne das
+     man scrollen muss."
+
+     Das ist eine Zusage, die sich exakt prüfen lässt: passt der Inhalt
+     in die sichtbare Höhe? Gemessen bei drei Geräten, weil die Antwort
+     davon abhängt — ein iPhone SE hat unter Kopfzeile, Bereichskopf
+     und Leiste nur 282 Pixel übrig, ein 390er 550.
+
+     Mit Gegenprobe: im BISHERIGEN Design passt es NICHT. Ohne die
+     würde der Abschnitt auch dann grün leuchten, wenn die Messung
+     nichts misst. */
+  console.log('\n── Passt die Startseite auf einen Bildschirm? ──');
+  for (const stub of ['stub-chef.js', 'stub-mitarbeiter.js']) {
+    for (const [breite, hoehe] of [[390, 844], [360, 780], [320, 568]]) {
+      const pn = await b.newPage({ viewport: { width: breite, height: hoehe } });
+      pn.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 180)));
+      await pn.route('**://www.gstatic.com/**', r => r.abort());
+      await pn.addInitScript({ path: path.join(SP, stub) });
+      await pn.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
+      await pn.waitForTimeout(3600);
+      const m = await pn.evaluate(() => {
+        const sa = document.querySelector('#view-home .scroll-area');
+        return {
+          inhalt: sa.scrollHeight, platz: sa.clientHeight,
+          bloecke: document.querySelectorAll('#heuteListe .heute-block').length,
+          zeilen: document.querySelectorAll('#heuteListe .heute-zeile').length,
+          /* Wo gekürzt wurde, MUSS der Weg zum Rest dastehen. Eine
+             Liste, die stillschweigend aufhört, behauptet, sie sei
+             vollständig. */
+          ohneAusgang: [...document.querySelectorAll('#heuteListe .heute-block')]
+            .filter(bl => {
+              const kopf = bl.querySelector('.heute-kopf');
+              const zahl = /·\s*(\d+)/.exec((kopf.textContent || ''));
+              const gezeigt = bl.querySelectorAll('.heute-zeile').length;
+              return zahl && +zahl[1] > gezeigt && !kopf.querySelector('.mini-link');
+            }).length,
+        };
+      });
+      const wer = stub.replace('stub-', '').replace('.js', '');
+      console.log('  ' + wer + '@' + breite + '×' + hoehe + ': ' + m.inhalt + 'px in ' +
+        m.platz + 'px · ' + m.bloecke + ' Blöcke, ' + m.zeilen + ' Zeilen');
+      pruefe(wer + '@' + breite + '×' + hoehe + ': passt ohne Scrollen',
+        m.inhalt <= m.platz + 2, m.inhalt + ' > ' + m.platz);
+      pruefe(wer + '@' + breite + '×' + hoehe + ': es steht auch etwas drin',
+        m.zeilen >= 1 || m.bloecke === 0, String(m.zeilen));
+      pruefe(wer + '@' + breite + '×' + hoehe + ': gekürzte Blöcke nennen den Weg zum Rest',
+        m.ohneAusgang === 0, String(m.ohneAusgang));
+      await pn.close();
     }
+  }
+  /* GEGENPROBE: im bisherigen Design passt die Startseite NICHT auf
+     einen Bildschirm. Wäre das auch dort so, misst die Prüfung oben
+     nichts. */
+  {
+    const pa = await seite(b, 'stub-chef.js', '?neu=0');
+    const m = await pa.evaluate(() => {
+      const sa = document.querySelector('#view-home .scroll-area');
+      return { inhalt: sa.scrollHeight, platz: sa.clientHeight };
+    });
+    console.log('  GEGENPROBE bisher: ' + m.inhalt + 'px in ' + m.platz + 'px');
+    pruefe('GEGENPROBE: bisher passt sie NICHT auf einen Bildschirm',
+      m.inhalt > m.platz + 2, m.inhalt + ' vs ' + m.platz);
+    await pa.close();
   }
 
   /* ══ 6. NICHTS IST MEHR UNSICHTBAR ══════════════════════════════════
