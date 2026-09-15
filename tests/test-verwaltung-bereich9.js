@@ -77,23 +77,15 @@ const reiter = page => page.evaluate(() => {
     if (!/Aufmerksamkeit/.test(ub.karten[0].titel)) {
       errs.push('„Braucht Aufmerksamkeit" steht nicht oben: ' + ub.karten[0].titel);
     }
-    /* HIER STAND: „die Studio-Tabelle startet zugeklappt".
-       Sie steht seit dem 15.9. nicht mehr in der Verwaltung, sondern
-       oben in „Betrieb → Aufgaben" — und dort offen.
-
-       Der Grund war eine Rückmeldung aus dem Betrieb („die Übersicht
-       ist schlecht organisiert") und eine Messung dazu: ein Chef sah
-       unter Aufgaben 238 Bedienelemente auf zwölf Bildschirmhöhen,
-       während die Übersicht, die genau das löst, zwei Ansichten weiter
-       hinter einem Falz lag. Zugeklappt war damals richtig — in einer
-       Ansicht, in der sie nur eine von acht Karten war. Am neuen Ort
-       ist sie der Einstieg.
-
-       Geprüft wird sie jetzt in test-navi-sichtbar und test-ueberblick.
-       Was hier bleibt: die Verwaltung soll sie NICHT mehr tragen. */
-    if (ub.karten.some(k => /Übersicht aller Studios|Übersicht deiner Studios/.test(k.titel))) {
-      errs.push('Die Studio-Übersicht steht wieder in der Verwaltung — ' +
-        'sie gehört in „Betrieb → Aufgaben", wo der Chef sie braucht');
+    /* Am 15.9. war diese Karte kurz nach „Betrieb → Aufgaben" gezogen,
+       weil ein Chef dort 238 Bedienelemente auf zwölf Bildschirmhöhen
+       bekam. Zurückgenommen: das Raster schob die erste ÜBERFÄLLIGE
+       Aufgabe auf y=2017, und die Aufgabenliste sortiert längst nach
+       Dringlichkeit. Was dem Chef fehlte, war das EINGRENZEN auf ein
+       Studio — das sitzt jetzt als Chip in der Werkzeugzeile und
+       kostet keine Höhe. Hier bleibt alles, wie es war. */
+    if (!ub.karten.some(k => /Studios/.test(k.titel) && k.zu)) {
+      errs.push('Die Studio-Tabelle startet nicht zugeklappt');
     }
     if (ub.bildschirme > 2.4) errs.push('Überblick ist ' + ub.bildschirme + ' Bildschirme lang');
 

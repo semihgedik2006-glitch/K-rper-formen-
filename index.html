@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-HbjMGpdrfHAzCbHn1mqQBSSANPVHeeMPLo/nUTNS2J8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-fdnFPShzLb1TMDy7KrrrclnKCkYDzMVLnfRST91G5i0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1360,11 +1360,11 @@ html.demo #terminalSchirm{top:44px}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -4714,32 +4714,18 @@ html{font-size:var(--fs,100%)}
               <button class="chip" data-tfilter="meine">Für mich</button>
               <span class="chip-trenner" aria-hidden="true"></span>
               <button class="chip" data-tdring="1">Dringend</button>
+              <!-- Auf ein Studio eingrenzen. Steht als Chip in der Zeile,
+                   die es ohnehin gibt, und kostet damit keine Höhe — der
+                   Versuch mit einem Raster darüber hat die überfällige
+                   Aufgabe auf y=2017 geschoben. Nur für die Verwaltung:
+                   wer ein Studio hat, hat nichts einzugrenzen. -->
+              <button class="chip" id="todoStudioChip" data-manage-only
+                      aria-haspopup="dialog" style="display:none">Alle Studios</button>
               <!-- Inhalt kommt aus sortFeld(); die Wahl liegt in PREFS.sort
                    und ueberlebt damit das Neuladen. Vorher stand sie in
                    einer blossen Variablen. -->
               <select class="chip" id="todoSort" style="padding-right:26px"></select>
             </div>
-          </div>
-          <!-- ── Die Studio-Übersicht, und zwar HIER ──
-               Sie stand bis zum 15.9. unter „Verwaltung", in einem
-               zugeklappten Falz. Nachgemessen sah ein Chef unter
-               „Betrieb → Aufgaben" 238 Bedienelemente auf zwölf
-               Bildschirmhöhen — alle vierzehn Studios untereinander —,
-               während die Übersicht, die genau dieses Problem löst,
-               zwei Ansichten weiter hinter einem Falz lag.
-
-               „Verwaltung" liest sich wie Einstellungen. Was der Chef
-               morgens wissen will — wo hakt es —, gehört dorthin, wo er
-               ohnehin hinsieht. Gebaut war sie längst; sie stand nur
-               falsch. -->
-          <div id="todoStudioUebersicht" style="display:none">
-            <div class="ich-kopf" style="margin-top:4px">
-              <h3 data-ikon="umfrage" id="studioGridTitle">Übersicht aller Studios</h3>
-              <button class="mini-link" id="tsuAlle" style="display:none">← Alle Studios</button>
-            </div>
-            <p class="hint" style="margin:0 0 10px">Tippe ein Studio an — dann steht
-              unten nur dieses Studio.</p>
-            <div class="studio-grid" id="studioGrid"></div>
           </div>
           <div id="todoArea"></div>
         </div>
@@ -5205,6 +5191,21 @@ html{font-size:var(--fs,100%)}
             <h3 data-ikon="warnung">Braucht Aufmerksamkeit</h3>
             <p class="hint">Alles, was gerade hakt – auf einen Blick, ohne Suchen.</p>
             <div id="chefAttention"></div>
+          </div>
+          <!-- Diese Karte war am 15.9. kurz oben in „Betrieb → Aufgaben".
+               Der Gedanke war richtig, die Stelle falsch: das Raster
+               schob die erste ÜBERFÄLLIGE Aufgabe auf y=2017, und
+               test-aufgaben-bereich4 wurde rot. Zu Recht — die Liste
+               sortiert bereits nach Dringlichkeit, das Überfällige stand
+               oben. Eine zweite Übersicht darüber hat den Überblick
+               nicht verbessert, sondern verdeckt.
+               Was dem Chef fehlte, war kein Raster, sondern das
+               EINGRENZEN auf ein Studio. Das sitzt jetzt als Chip in der
+               Werkzeugzeile der Aufgaben und kostet keine Höhe. -->
+          <div class="card" data-fold="studiotabelle">
+            <h3 data-ikon="umfrage" id="studioGridTitle">Übersicht aller Studios</h3>
+            <p class="hint">Aufgaben-Fortschritt pro Studio. Tippe ein Studio an, um die Aufgaben zu öffnen.</p>
+            <div class="studio-grid" id="studioGrid"></div>
           </div>
           <div class="dash-bday" id="dashBday"></div>
           </div>
@@ -5857,6 +5858,18 @@ html{font-size:var(--fs,100%)}
   <div class="tm-fuss">
     <span id="tmHinweis">Name antippen, dann PIN eingeben.</span>
     <button class="tm-aus" id="tmAus">Terminal beenden</button>
+  </div>
+</div>
+
+<!-- Studio wählen. Dritte Stelle mit derselben Bauform — Kanal, Bereich,
+     Studio. Ein Muster, dreimal benutzt, ist eine Hausregel. -->
+<div id="studioModal">
+  <div class="pm-box">
+    <button class="lb-close" id="studioWahlClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 style="margin-bottom:6px">Studio wählen</h3>
+    <p class="hint" style="margin:0 0 10px">Die Liste zeigt danach nur dieses
+      Studio. Sortiert nach Rückstand.</p>
+    <div id="studioWahlListe"></div>
   </div>
 </div>
 
@@ -11713,6 +11726,50 @@ function chefTabMarker(sofort){
   (sofort ? markerSofort : markerSetzen)(bar, an);
 }
 
+/* ══ STUDIO WÄHLEN ══════════════════════════════════════════════════
+   Was dem Chef in den Aufgaben fehlte, war das Eingrenzen: vierzehn
+   Studios untereinander sind 238 Bedienelemente auf zwölf
+   Bildschirmhöhen. Ein Studio sind 37.
+
+   ERST STAND HIER EIN RASTER ÜBER DER LISTE. Das war falsch, und
+   test-aufgaben-bereich4 hat es gefunden: die erste ÜBERFÄLLIGE
+   Aufgabe rutschte auf y=2017. Die Liste sortiert längst nach
+   Dringlichkeit — eine zweite Übersicht darüber hat den Überblick
+   nicht verbessert, sondern verdeckt.
+
+   Jetzt ein Chip in der Werkzeugzeile, die es ohnehin gibt. Kostet
+   keine Höhe, und der Weg dahinter ist derselbe wie bei Kanal und
+   Bereich: eine senkrechte Liste. Dreimal dasselbe Muster ist eine
+   Hausregel. */
+function studioWaehlerOeffnen(){
+  var m=$('studioModal'); if(!m) return;
+  renderStudioWahl();
+  m.classList.add('show');
+}
+function studioWaehlerSchliessen(){
+  var m=$('studioModal'); if(m) m.classList.remove('show');
+}
+function renderStudioWahl(){
+  var box=$('studioWahlListe'); if(!box) return;
+  /* Dieselbe Reihenfolge wie die Liste darunter: nach Rückstand. Eine
+     Auswahl, die anders sortiert als das, was sie steuert, lässt einen
+     zweimal suchen. */
+  var html='<button type="button" class="kn-zeile'+(_todoStudio?'':' an')+'" '+
+    'data-studiowahl="">Alle Studios</button>';
+  html+=studiosNachDringlichkeit().map(function(s){
+    var sk=studioKey(s);
+    var offen=(cachedTodos[sk]||[]).filter(function(t){ return !isDone(t) && !isArchived(t); });
+    var faellig=offen.filter(function(t){ return t.due && Date.now()>t.due; }).length;
+    return '<button type="button" class="kn-zeile'+(sk===_todoStudio?' an':'')+'" '+
+      'data-studiowahl="'+esc(sk)+'">'+
+      '<span style="flex:1 1 auto;min-width:0">'+esc(s)+'</span>'+
+      (faellig ? '<span class="sm-marke warn">'+faellig+' überfällig</span>'
+               : '<span class="ich-zeit">'+offen.length+' offen</span>')+
+      '</button>';
+  }).join('');
+  box.innerHTML=html;
+}
+
 /* ══ BEREICH WÄHLEN ═════════════════════════════════════════════════
    „Alle" neben der Reiterleiste, wenn sie nicht aufs Bild passt —
    dieselbe Bauform wie „Alle Kanäle" im Chat, und aus demselben Grund:
@@ -17470,18 +17527,14 @@ function renderTodos(){
     $('todoSub').textContent = isChef()
       ? 'Alle '+STUDIOS.length+' Studios.'
       : 'Deine Studios: '+managedStudios().join(', ');
-    /* Die Übersicht steht über der Liste und ist der Einstieg. Ist ein
-       Studio gewählt, zeigt die Liste NUR dieses — mit dem Weg zurück
-       an der Überschrift. */
-    var uebersicht=$('todoStudioUebersicht');
-    if(uebersicht) uebersicht.style.display='';
-    var zurueck=$('tsuAlle');
-    if(zurueck) zurueck.style.display = _todoStudio ? '' : 'none';
-    /* Die Überschrift des Rasters bleibt, wie sie ist — das Raster zeigt
-       ja weiterhin ALLE Studios. Worauf die LISTE eingegrenzt ist,
-       gehört in die Unterzeile der Liste. Ein erster Versuch schrieb
-       den Rastertitel um; renderStudioGrid setzte ihn danach wieder
-       zurück, und keiner von beiden hatte unrecht. */
+    /* Eingegrenzt oder nicht — der Chip sagt es, und die Unterzeile
+       auch. Beides ohne eine einzige Zeile Höhe zusätzlich. */
+    var chip=$('todoStudioChip');
+    if(chip){
+      chip.style.display = (managedStudios().length>1) ? '' : 'none';
+      chip.textContent = _todoStudio ? (studioName(_todoStudio)||'Studio') : 'Alle Studios';
+      chip.classList.toggle('on', !!_todoStudio);
+    }
     if(_todoStudio) $('todoSub').textContent = 'Nur ' + (studioName(_todoStudio)||'') + '.';
     var html='';
     studiosNachDringlichkeit().forEach(function(s){
@@ -17974,6 +18027,8 @@ function renderStudioGrid(){
       _todoStudio = studioKey(el.getAttribute('data-open-studio'));
       tick(8); showView('todos');
       renderTodos();
+      var sa=document.querySelector('#view-todos .scroll-area');
+      if(sa) sa.scrollTop=0;
     });
   });
 }
@@ -23812,9 +23867,23 @@ function bindActions(){
   var pinBtn=$('ichPinBtn');
   if(pinBtn) pinBtn.addEventListener('click',function(){ ichPinSpeichern(this); });
 
-  // ── Zurück zu allen Studios in der Aufgabenliste ──
-  var tsa=$('tsuAlle');
-  if(tsa) tsa.addEventListener('click', function(){ _todoStudio=''; tick(8); renderTodos(); });
+  // ── Auf ein Studio eingrenzen ──
+  var tsc=$('todoStudioChip');
+  if(tsc) tsc.addEventListener('click', studioWaehlerOeffnen);
+  var swc=$('studioWahlClose');
+  if(swc) swc.addEventListener('click', studioWaehlerSchliessen);
+  var swl=$('studioWahlListe');
+  if(swl) swl.addEventListener('click', function(e){
+    var b=e.target.closest('[data-studiowahl]'); if(!b) return;
+    _todoStudio = b.getAttribute('data-studiowahl');
+    studioWaehlerSchliessen(); tick(8); renderTodos();
+    var sa=document.querySelector('#view-todos .scroll-area');
+    if(sa) sa.scrollTop=0;
+  });
+  var swm=$('studioModal');
+  if(swm) swm.addEventListener('click', function(e){
+    if(e.target===swm) studioWaehlerSchliessen();
+  });
 
   // ── Bereich wählen: der Weg ohne Wischen ──
   var sm=$('subnavMehr');

@@ -81,25 +81,39 @@ function pruefe(name, bedingung, zusatz) {
   pruefe('nochmal antippen klappt wieder zu', zu === true);
 
   /* ══ 2. + 3. Die Studio-Tafel ══
-     SEIT DEM 15.9. UNTER „BETRIEB → AUFGABEN", nicht mehr in der
-     Verwaltung. Vorher navigierte dieser Abschnitt in den Chef-
-     Überblick und las `#studioGrid` global — nach dem Umzug war das
-     ein VERSTECKTES Element, und der Durchlauf blieb grün, ohne noch
-     etwas zu messen. Deshalb steht unten jetzt auch eine Prüfung auf
-     Sichtbarkeit: ein Raster, das niemand sieht, ist kein Überblick. */
+     Sie steht in der Verwaltung. Am 15.9. war sie kurz oben in
+     „Betrieb → Aufgaben" — und schob die erste ÜBERFÄLLIGE Aufgabe auf
+     y=2017; test-aufgaben-bereich4 wurde rot und hatte recht. Die
+     Aufgabenliste sortiert längst nach Dringlichkeit; ein Raster
+     darüber verdeckt den Überblick, statt ihn zu geben.
+
+     DIE SICHTBARKEITS-PRÜFUNG BLEIBT. Während des Umzugs las dieser
+     Abschnitt `#studioGrid` global — also ein verstecktes Element —
+     und war grün, ohne noch etwas zu messen. Ein Raster, das niemand
+     sieht, ist kein Überblick. */
   console.log('\n── Übersicht: was ist wo offen ──');
   await page.evaluate(async () => {
-    document.querySelector('.mobnav [data-group="g-arbeit"]').click();
+    document.querySelector('.mobnav [data-group="g-chef"]').click();
     await new Promise(r => setTimeout(r, 300));
-    const t = document.querySelector('#subnav [data-subview="todos"]');
-    if (t) t.click();
+    const k = document.querySelector('#chefHome [data-cgo="ueberblick"]');
+    if (k) k.click();
   });
   await page.waitForTimeout(1400);
+  /* Der Falz muss dafür auf. Zugeklappt ist er richtig — die Tafel ist
+     dort eine von acht Karten —, gemessen werden kann sie so aber
+     nicht. */
+  await page.evaluate(() => {
+    const g = document.getElementById('studioGrid');
+    const karte = g ? g.closest('.card') : null;
+    const kopf = karte ? karte.querySelector('.fold-head') : null;
+    if (kopf && !karte.classList.contains('auf')) kopf.click();
+  });
+  await page.waitForTimeout(600);
   const sichtbar = await page.evaluate(() => {
     const g = document.getElementById('studioGrid');
     return !!(g && g.getClientRects().length);
   });
-  pruefe('die Studio-Tafel ist in den Aufgaben sichtbar', sichtbar);
+  pruefe('die Studio-Tafel ist nach dem Aufklappen sichtbar', sichtbar);
 
   const tafel = await page.evaluate(() => {
     const g = document.getElementById('studioGrid');
@@ -153,16 +167,24 @@ function pruefe(name, bedingung, zusatz) {
      Bedienelemente auf zwölf Bildschirmhöhen. */
   const eng = await page.evaluate(() => ({
     koepfe: document.querySelectorAll('#todoArea .studio-head').length,
-    zurueck: (() => { const z = document.getElementById('tsuAlle');
-      return !!(z && getComputedStyle(z).display !== 'none'); })(),
+    chip: (document.getElementById('todoStudioChip') || {}).textContent || '',
     unterzeile: (document.getElementById('todoSub') || {}).textContent || ''
   }));
   console.log('NACH DEM ANTIPPEN:', JSON.stringify(eng));
   pruefe('die Liste zeigt danach NUR dieses Studio', eng.koepfe === 1, JSON.stringify(eng));
-  pruefe('und nennt den Weg zurück', eng.zurueck && /^Nur /.test(eng.unterzeile.trim()));
+  pruefe('und sagt WELCHES — am Chip und in der Unterzeile',
+    /^Nur /.test(eng.unterzeile.trim()) && eng.chip.trim() !== 'Alle Studios',
+    JSON.stringify(eng));
 
+  /* Zurück über denselben Chip. Ein Weg hinein, der keinen Weg hinaus
+     hat, ist eine Falle — und der Chip ist der einzige Ort, an dem der
+     Zustand überhaupt sichtbar ist. */
   const zurueckOk = await page.evaluate(async () => {
-    document.getElementById('tsuAlle').click();
+    document.getElementById('todoStudioChip').click();
+    await new Promise(r => setTimeout(r, 500));
+    const alle = document.querySelector('#studioWahlListe [data-studiowahl=""]');
+    if (!alle) return -1;
+    alle.click();
     await new Promise(r => setTimeout(r, 600));
     return document.querySelectorAll('#todoArea .studio-head').length;
   });
