@@ -353,7 +353,18 @@ var USERS = [
           : gl ? (DEVLOG[gl[1]] || [])
           : gt ? ((window.__todos || TODOS)[gt[1]] || [])
           : (path === 'certificates' ? CERTS
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []));
+          /* FUENFTER FALL DERSELBEN LUECKE, diesmal in DIESER Attrappe:
+             `users` kannte nur onSnapshot, nicht get(). Die
+             Personenliste des Stempel-Terminals liest EINMALIG — sie
+             blieb deshalb leer, und der neue Abschnitt von
+             test-terminal.js meldete „niemand zum Antippen bereit".
+
+             In stub-chef.js steht derselbe Hinweis seit dem vierten
+             Fall. Er half hier nicht, weil ihn niemand liest, der die
+             andere Datei bearbeitet. Wer eine Sammlung ergaenzt, traegt
+             sie in JEDER Attrappe an BEIDEN Stellen ein. */
+          : (path === 'users' ? (window.__users || USERS)
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {

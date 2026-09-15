@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jQOtCEw0ch/ETi01JCVcNhkMPwtOjB28cIUx3CBK5K4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Tb2rOXj6xBsaJW70FiXH7nnFi3Jal+rgY2DD16IlBmo='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1607,15 +1607,19 @@ html.demo #terminalSchirm{top:44px}
   -webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 28px),transparent);
   mask-image:linear-gradient(180deg,#000 calc(100% - 28px),transparent)}
 .studio-checks:not(.mehr-da){-webkit-mask-image:none;mask-image:none}
+/* min-height an der ZEILE, nicht am Kästchen. Das Kästchen ist 17px und
+   soll es bleiben — ein 44px grosses Ankreuzfeld sieht falsch aus. Zu
+   treffen ist ohnehin die ganze Zeile: ein <label> gibt den Klick an
+   sein Feld weiter. Ohne min-height war diese Zeile 36px hoch, und im
+   Putzplan-Fenster stehen sechzehn davon untereinander. */
 .studio-check{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s10);border:1.5px solid var(--line-2);
   border-radius:var(--r-sm);cursor:pointer;font-size:var(--t-sm);background:var(--auf-1);
-  user-select:none}
+  user-select:none;min-height:44px;box-sizing:border-box}
 .studio-check.on{border-color:var(--accent);background:rgba(34,211,238,.1);color:var(--accent-2)}
 /* Die Handy-Freigabe steht allein und nicht im zweispaltigen Raster der
-   Studios — sie ist eine andere Art Entscheidung. min-height, weil die
-   Zeile hier nicht neben zwanzig gleichen steht, an denen sie sich
-   ausrichten könnte. */
-.studio-check.em-handy{width:100%;box-sizing:border-box;min-height:44px}
+   Studios — sie ist eine andere Art Entscheidung. Die 44px erbt sie
+   inzwischen von .studio-check selbst; hier bleibt nur die Breite. */
+.studio-check.em-handy{width:100%}
 /* Funktionen an/aus – eine Zeile je Funktion, mit dem Was darunter.
    Ohne die zweite Zeile müsste der Chef raten, was „Übergabe" ist. */
 .feat-row{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s10) var(--s12);margin-bottom:var(--s6);
@@ -23889,6 +23893,39 @@ function bindActions(){
     }
   });
 
+  /* ══ DER STEMPEL-BILDSCHIRM — FÜR JEDE ROLLE ═══════════════════════
+     Diese drei Bindungen standen bis zum 15.9. im Block
+     `if(session.role==='chef')` darunter, zusammen mit dem EINRICHTEN
+     von Terminals. Das Einrichten gehört dorthin; das BEDIENEN nicht.
+
+     Ein Terminal läuft mit einem ganz normalen Mitarbeiter-Konto — so
+     ist es ausdrücklich gebaut und steht so im Plan. Auf jedem echten
+     Gerät waren damit tot:
+
+       · „‹ Zurück"        wer sich vertippt, kommt aus der PIN-Maske
+                           nicht mehr heraus
+       · das Suchfeld      bei vierzig Leuten findet man niemanden
+       · „Terminal beenden" DAS GERÄT KOMMT NIE WIEDER HERAUS. Der
+                           einzige Ausweg wäre gewesen, den Speicher des
+                           Browsers zu löschen
+
+     Gefunden hat es nicht der Durchlauf, sondern eine Rückmeldung aus
+     dem Betrieb. Der Grund: `test-terminal.js` lief mit stub-chef.js —
+     also mit der einen Rolle, die ein Terminal nie bedient. Deshalb
+     prüft er jetzt zusätzlich als Mitarbeiter. */
+  var tzb=$('tmZurueck');
+  if(tzb) tzb.addEventListener('click', terminalPinSchliessen);
+  var tsf=$('tmSuche');
+  if(tsf) tsf.addEventListener('input', function(){
+    _tmSuche=this.value||''; renderTerminalListe();
+  });
+  var tab=$('tmAus');
+  if(tab) tab.addEventListener('click', function(){
+    if(confirm('Terminal beenden?\n\nDieses Gerät ist danach wieder eine '+
+      'normale App. Zum Stempeln muss es neu eingerichtet werden — '+
+      'der Schlüssel wird dabei neu vergeben.')) terminalBeenden(false);
+  });
+
   if(session.role==='chef'){
     // Mitarbeiter anlegen
     $('emCreate').addEventListener('click', createEmployee);
@@ -23934,18 +23971,6 @@ function bindActions(){
 
     var tnb=$('termNeuBtn');
     if(tnb) tnb.addEventListener('click', function(){ terminalAnlegen(this); });
-    var tzb=$('tmZurueck');
-    if(tzb) tzb.addEventListener('click', terminalPinSchliessen);
-    var tsf=$('tmSuche');
-    if(tsf) tsf.addEventListener('input', function(){
-      _tmSuche=this.value||''; renderTerminalListe();
-    });
-    var tab=$('tmAus');
-    if(tab) tab.addEventListener('click', function(){
-      if(confirm('Terminal beenden?\n\nDieses Gerät ist danach wieder eine '+
-        'normale App. Zum Stempeln muss es neu eingerichtet werden — '+
-        'der Schlüssel wird dabei neu vergeben.')) terminalBeenden(false);
-    });
 
     var ozC=$('oeffnungClose');
     if(ozC) ozC.addEventListener('click', oeffnungSchliessen);
