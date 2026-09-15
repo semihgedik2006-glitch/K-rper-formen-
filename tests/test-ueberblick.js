@@ -80,15 +80,26 @@ function pruefe(name, bedingung, zusatz) {
   });
   pruefe('nochmal antippen klappt wieder zu', zu === true);
 
-  // ══ 2. + 3. Die Studio-Tafel ══
+  /* ══ 2. + 3. Die Studio-Tafel ══
+     SEIT DEM 15.9. UNTER „BETRIEB → AUFGABEN", nicht mehr in der
+     Verwaltung. Vorher navigierte dieser Abschnitt in den Chef-
+     Überblick und las `#studioGrid` global — nach dem Umzug war das
+     ein VERSTECKTES Element, und der Durchlauf blieb grün, ohne noch
+     etwas zu messen. Deshalb steht unten jetzt auch eine Prüfung auf
+     Sichtbarkeit: ein Raster, das niemand sieht, ist kein Überblick. */
   console.log('\n── Übersicht: was ist wo offen ──');
   await page.evaluate(async () => {
-    document.querySelector('.mobnav [data-group="g-chef"]').click();
+    document.querySelector('.mobnav [data-group="g-arbeit"]').click();
     await new Promise(r => setTimeout(r, 300));
-    const k = document.querySelector('#chefHome [data-cgo="ueberblick"]');
-    if (k) k.click();
+    const t = document.querySelector('#subnav [data-subview="todos"]');
+    if (t) t.click();
   });
   await page.waitForTimeout(1400);
+  const sichtbar = await page.evaluate(() => {
+    const g = document.getElementById('studioGrid');
+    return !!(g && g.getClientRects().length);
+  });
+  pruefe('die Studio-Tafel ist in den Aufgaben sichtbar', sichtbar);
 
   const tafel = await page.evaluate(() => {
     const g = document.getElementById('studioGrid');
@@ -136,6 +147,26 @@ function pruefe(name, bedingung, zusatz) {
   await page.waitForTimeout(800);
   const gelandet = await page.evaluate(() => !!document.querySelector('#view-todos.show'));
   pruefe('eine Kachel führt in die Aufgaben des Studios', klickbar && gelandet);
+
+  /* Und sie GRENZT EIN, statt nur hinzuscrollen. Vorher landete man in
+     derselben Liste aus vierzehn Studios, nur weiter unten — 238
+     Bedienelemente auf zwölf Bildschirmhöhen. */
+  const eng = await page.evaluate(() => ({
+    koepfe: document.querySelectorAll('#todoArea .studio-head').length,
+    zurueck: (() => { const z = document.getElementById('tsuAlle');
+      return !!(z && getComputedStyle(z).display !== 'none'); })(),
+    unterzeile: (document.getElementById('todoSub') || {}).textContent || ''
+  }));
+  console.log('NACH DEM ANTIPPEN:', JSON.stringify(eng));
+  pruefe('die Liste zeigt danach NUR dieses Studio', eng.koepfe === 1, JSON.stringify(eng));
+  pruefe('und nennt den Weg zurück', eng.zurueck && /^Nur /.test(eng.unterzeile.trim()));
+
+  const zurueckOk = await page.evaluate(async () => {
+    document.getElementById('tsuAlle').click();
+    await new Promise(r => setTimeout(r, 600));
+    return document.querySelectorAll('#todoArea .studio-head').length;
+  });
+  pruefe('„Alle Studios" bringt die ganze Liste zurück', zurueckOk > 1, 'Köpfe: ' + zurueckOk);
 
   await page.screenshot({ path: path.join(SP, 'ueberblick.png') });
   await b.close();

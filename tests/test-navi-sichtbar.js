@@ -13,13 +13,21 @@
    Eine Leiste, die man wischen muss, um zu sehen, WAS es gibt, ist
    keine Navigation, sondern ein Versteck. Genau das prüft diese Datei:
 
-     1. Die Reiterleiste (#subnav) zeigt in JEDER Gruppe und bei JEDER
-        Breite ALLE ihre Einträge — kein Überhang.
-     2. Läuft die Kanalleiste über, MUSS „Alle Kanäle" dastehen. Läuft
-        sie nicht über, darf der Knopf nicht da sein: wer zwei Studios
+     1. Läuft eine Leiste über, MUSS der Weg ohne Wischen danebenstehen
+        — „Alle" bei den Reitern, „Alle Kanäle" bei den Kanälen. Läuft
+        sie nicht über, darf der Knopf NICHT da sein: wer zwei Studios
         hat, bekommt keinen Knopf für ein Problem, das er nicht hat.
-     3. Die Kanalliste ist vollständig — Studios UND Gruppen. Der
-        Gruppen-Chat lag vorher zusätzlich hinter einem eigenen Reiter.
+     2. Die Listen sind vollständig — alle Reiter der Gruppe, und bei
+        den Kanälen Studios UND Gruppen. Der Gruppen-Chat lag vorher
+        zusätzlich hinter einem eigenen Reiter.
+
+   WARUM NICHT EINFACH UMBRECHEN, was ja alles zeigen würde: der erste
+   Versuch tat genau das, und `test-rahmen` wurde rot. Zwei Reiterzeilen
+   schoben den Inhalt auf 429px hinunter — schlechter als die 407, wegen
+   derer jener Durchlauf geschrieben wurde. Eine Navigation, die alles
+   zeigt, indem sie den Inhalt aus dem Bild drückt, hat nichts gewonnen.
+   Deshalb prüft diese Datei NICHT „kein Überhang", sondern „kein
+   Überhang ohne Ausweg".
 
    Gemessen wird in der Demo, weil nur dort ein Betrieb mit vierzehn
    Studios steht. Eine Attrappe mit zwei Studios würde den Fall, um den
@@ -61,17 +69,46 @@ const ROLLEN = ['chef', 'leiter', 'mitarbeiter'];
             const r = t.getBoundingClientRect();
             return r.left >= br.left - 1 && r.right <= br.right + 1;
           });
+          const knopf = document.getElementById('subnavMehr');
           return {
             tabs: tabs.length, ganz: ganz.length,
             ueberhang: Math.round(bar.scrollWidth - bar.clientWidth),
+            mehrDa: knopf ? !knopf.hidden : false,
             namen: tabs.map(t => (t.textContent || '').trim())
           };
         });
         if (!z) continue;
-        if (z.ganz < z.tabs || z.ueberhang > 0) {
+        const laeuftUeber = z.ueberhang > 4;
+        if (laeuftUeber && !z.mehrDa) {
           errs.push(rolle + ' ' + w + 'px · Gruppe ' + g + ': nur ' + z.ganz + ' von ' +
-            z.tabs + ' Reitern sichtbar, ' + z.ueberhang + 'px Überhang — ' +
-            'versteckt: ' + z.namen.slice(z.ganz).join(', '));
+            z.tabs + ' Reitern sichtbar, ' + z.ueberhang + 'px Überhang, und KEIN „Alle" ' +
+            '— versteckt: ' + z.namen.slice(z.ganz).join(', '));
+        }
+        if (!laeuftUeber && z.mehrDa) {
+          errs.push(rolle + ' ' + w + 'px · Gruppe ' + g + ': „Alle" steht da, obwohl alle ' +
+            z.tabs + ' Reiter ins Bild passen');
+        }
+        /* Die Liste dahinter muss vollständig sein — sonst ist der
+           Ausweg ein Ausweg auf dem Papier. */
+        if (laeuftUeber && z.mehrDa && rolle === 'chef' && w === 390) {
+          await p.evaluate(() => document.getElementById('subnavMehr').click());
+          await p.waitForTimeout(500);
+          const liste = await p.evaluate(() => {
+            const zs = [...document.querySelectorAll('#bereichListe [data-bereichwahl]')];
+            return {
+              zeilen: zs.length,
+              kleinste: zs.length ? Math.min.apply(null, zs.map(x => Math.round(x.getBoundingClientRect().height))) : 0,
+              markiert: zs.filter(x => x.classList.contains('an')).length
+            };
+          });
+          console.log('BEREICHSLISTE ' + g + ':', JSON.stringify(liste));
+          if (liste.zeilen !== z.tabs) {
+            errs.push('Die Bereichsliste zeigt ' + liste.zeilen + ' von ' + z.tabs + ' Reitern');
+          }
+          if (liste.kleinste < 44) errs.push('Eine Bereichszeile ist nur ' + liste.kleinste + 'px hoch');
+          if (liste.markiert !== 1) errs.push('Der laufende Bereich ist nicht markiert');
+          await p.evaluate(() => document.getElementById('bereichClose').click());
+          await p.waitForTimeout(300);
         }
       }
 

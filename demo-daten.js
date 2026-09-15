@@ -237,19 +237,51 @@
     Object.keys(o).forEach(function (k) { if (k !== 'id') n[k] = o[k]; });
     return n;
   }
+  /* `metadata` gehört dazu, auch wenn es hier nie etwas anderes sagt.
+     Ohne das Feld war DIE GANZE MATERIAL-ANSICHT IN DER DEMO KAPUTT:
+     `loadMaterial` liest `doc.metadata.hasPendingWrites`, um die eigene
+     Eingabe nicht zu überschreiben — und stolperte über undefined.
+     Null Zeilen, ein Fehler in der Konsole, und der Interessent sieht
+     eine leere Seite.
+
+     Gefunden beim Nachmessen der Klickwege, nicht von einem Durchlauf:
+     test-demo prüft, was die Demo ANFASST, nicht, ob jede Ansicht
+     etwas zeigt. Eine Attrappe, die nur die halbe Form eines Dokuments
+     nachbaut, macht die Stellen kaputt, die die andere Hälfte lesen. */
+  var METADATEN = { hasPendingWrites: false, fromCache: false };
+
+  /* Eine FieldValue-Marke auf den alten Wert anwenden. Kennt die Marke
+     nicht, ist der neue Wert einfach der neue Wert. */
+  function markeEinloesen(alt, neu) {
+    if (!neu || typeof neu !== 'object') return neu;
+    if (Array.isArray(neu.__hinzu)) {
+      var liste = Array.isArray(alt) ? alt.slice() : [];
+      neu.__hinzu.forEach(function (w) { if (liste.indexOf(w) < 0) liste.push(w); });
+      return liste;
+    }
+    if (Array.isArray(neu.__weg)) {
+      var l2 = Array.isArray(alt) ? alt.slice() : [];
+      return l2.filter(function (w) { return neu.__weg.indexOf(w) < 0; });
+    }
+    if (typeof neu.__increment === 'number') {
+      return (typeof alt === 'number' ? alt : 0) + neu.__increment;
+    }
+    return neu;
+  }
   function einzelSchnapp(id, d) {
-    return { id: id, exists: !!d, data: function () { return d ? kopie(d) : undefined; } };
+    return { id: id, exists: !!d, metadata: METADATEN,
+             data: function () { return d ? kopie(d) : undefined; } };
   }
   function schnapp(liste) {
     var docs = liste.map(function (d) {
       return {
-        id: d.id, exists: true,
+        id: d.id, exists: true, metadata: METADATEN,
         data: function () { return kopie(d); },
         get: function (f) { return d[f]; }
       };
     });
     return {
-      docs: docs, size: docs.length, empty: !docs.length,
+      docs: docs, size: docs.length, empty: !docs.length, metadata: METADATEN,
       forEach: function (fn) { docs.forEach(fn); },
       /* docChanges: die App meldet damit neue Nachrichten. In der Demo
          ist beim ersten Schnappschuss alles „added", danach nur das
@@ -366,7 +398,14 @@
         var liste = holen(pfad);
         var i = liste.findIndex(function (x) { return x.id === id; });
         if (i < 0) liste.push(Object.assign({ id: id }, d));
-        else if (opt && opt.merge) liste[i] = Object.assign(liste[i], d);
+        else if (opt && opt.merge) {
+          /* Beim Verschmelzen dieselben Marken einloesen wie beim update —
+             sonst haengt es vom Aufrufweg ab, ob arrayUnion wirkt. */
+          Object.keys(d).forEach(function (k) {
+            if (d[k] && d[k].__loeschen) delete liste[i][k];
+            else liste[i][k] = markeEinloesen(liste[i][k], d[k]);
+          });
+        }
         else liste[i] = Object.assign({ id: id }, d);
         melden(pfad);
         return Promise.resolve();
@@ -377,7 +416,7 @@
         if (i < 0) return Promise.reject(new Error('Dokument gibt es nicht'));
         Object.keys(d).forEach(function (k) {
           if (d[k] && d[k].__loeschen) delete liste[i][k];
-          else liste[i][k] = d[k];
+          else liste[i][k] = markeEinloesen(liste[i][k], d[k]);
         });
         melden(pfad);
         return Promise.resolve();
@@ -889,11 +928,21 @@
     messaging: function () { return { onMessage: function () {}, getToken: function () { return Promise.resolve(''); } }; },
     storage: function () { return { ref: function () { return {}; } }; }
   };
+  /* Die Marken von FieldValue — und zwar solche, die auch AUSGEWERTET
+     werden. Bis zum 15.9. gab arrayUnion ein leeres Objekt zurück, das
+     ungeprüft ins Feld geschrieben wurde. Danach war `readBy` kein
+     Feld mehr, sondern `{}` — und die App fiel über
+     `(a.readBy||[]).indexOf(...)`. Bei Leitung und Mitarbeiter, also
+     genau bei den Rollen, die Aushänge lesen.
+
+     Eine Attrappe, die eine Marke erzeugt und nicht einlöst, ist
+     schlimmer als eine, die die Funktion gar nicht kennt: der Aufruf
+     geht scheinbar durch und hinterlässt Unsinn. */
   firebase.firestore.FieldValue = {
     serverTimestamp: function () { return Date.now(); },
     increment: function (n) { return { __increment: n }; },
-    arrayUnion: function () { return {}; },
-    arrayRemove: function () { return {}; },
+    arrayUnion: function () { return { __hinzu: [].slice.call(arguments) }; },
+    arrayRemove: function () { return { __weg: [].slice.call(arguments) }; },
     delete: function () { return { __loeschen: true }; }
   };
   firebase.firestore.FieldPath = { documentId: function () { return '__name__'; } };
