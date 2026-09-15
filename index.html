@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Tb2rOXj6xBsaJW70FiXH7nnFi3Jal+rgY2DD16IlBmo='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Zn1+9wbyCymVdY5WEn9zTypCX1lQsGFrV8cVHzGrlmI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1360,11 +1360,11 @@ html.demo #terminalSchirm{top:44px}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -2924,9 +2924,21 @@ html{font-size:var(--fs,100%)}
    Ein Marker gleitet zum aktiven Reiter, statt dass die Füllung
    springt: man sieht, wohin man gegangen ist, nicht nur, wo man
    angekommen ist. Gleiches Muster wie die Kanalreihe im Chat. */
-.subnav{position:relative;display:flex;gap:var(--s4);padding:var(--s8) var(--rand) 0;
-  flex-shrink:0;overflow-x:auto;scrollbar-width:none}
-.subnav::-webkit-scrollbar{display:none}
+/* UMBRUCH STATT QUERSCROLLEN, seit dem 15.9. Nachgemessen unter
+   „Betrieb" als Chef: sechs Reiter, davon auf einem iPhone **drei ganz
+   sichtbar**, 381 Pixel Überhang nach rechts. Material, Geräte,
+   Probetraining und Dokumente standen also ausserhalb des Bildes — man
+   musste wissen, dass es sie gibt, um zu wischen.
+
+   Eine Leiste, die man wischen muss, um zu sehen, WAS es gibt, ist
+   keine Navigation, sondern ein Versteck. Aus dem Betrieb gemeldet als
+   „man muss jede Funktion suchen".
+
+   Der Preis ist eine zweite Zeile, und nur dort, wo es mehr als drei
+   Reiter gibt: bei „Ich" (3) und „Chat" (3) bleibt es eine. Die
+   Laufpille kann das schon — markerSetzen liest offsetTop mit. */
+.subnav{position:relative;display:flex;flex-wrap:wrap;gap:var(--s4);
+  padding:var(--s8) var(--rand) 0;flex-shrink:0}
 .subnav::before{content:'';position:absolute;left:0;top:0;
   height:var(--ind-h,38px);width:var(--ind-w,0);
   transform:translate(var(--ind-x,0),var(--ind-y,8px));
@@ -2955,6 +2967,28 @@ html{font-size:var(--fs,100%)}
 .subtab:active{transform:scale(.93)}
 .subtab svg{width:16px;height:16px}
 .subtab.on{color:var(--on-accent);font-weight:700}
+/* Die Kanalzeile: „Alle Kanäle" steht FEST links, die Leiste schiebt
+   sich daneben. Läge der Knopf in der Leiste, wäre er nach der ersten
+   Wischbewegung weg — also genau dann, wenn man ihn braucht. */
+.chan-zeile{display:flex;align-items:center;gap:var(--s6);min-width:0}
+.chan-zeile .chat-channels{flex:1 1 auto;min-width:0}
+.chan-alle{flex:0 0 auto;min-height:44px;padding:0 var(--s12);
+  border:1.5px solid var(--line-2);border-radius:var(--r-pille);
+  background:var(--auf-1);color:var(--text-2);font-family:var(--font-body);
+  font-weight:600;font-size:var(--t-sm);white-space:nowrap;cursor:pointer;
+  transition:background .2s,color .2s}
+.chan-alle:hover{background:var(--auf-2);color:var(--text)}
+.kn-gruppe{margin:var(--s12) 0 var(--s4);font-size:var(--t-2xs);color:var(--text-3);
+  font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase}
+.kn-gruppe:first-child{margin-top:0}
+.kn-zeile{display:flex;align-items:center;gap:var(--s10);width:100%;
+  min-height:44px;box-sizing:border-box;padding:var(--s8) var(--s12);
+  border:1.5px solid var(--line-2);border-radius:var(--r-sm);
+  background:var(--auf-1);color:var(--text);font-family:var(--font-body);
+  font-size:var(--t-sm);text-align:left;cursor:pointer;margin-bottom:var(--s4)}
+.kn-zeile.an{border-color:var(--accent);background:var(--accent-glow);
+  color:var(--accent-d);font-weight:700}
+.kn-zeile:hover{background:var(--auf-2)}
 .sub-dot{position:absolute;top:5px;right:8px;width:7px;height:7px;border-radius:var(--r-rund);
   background:var(--warm);display:none}
 .sub-dot.show{display:block}
@@ -4556,7 +4590,15 @@ html{font-size:var(--fs,100%)}
           <button type="button" class="chat-art active" data-chatart="studios">Studios</button>
           <button type="button" class="chat-art" data-chatart="gruppen">Gruppen</button>
         </div>
-        <div class="chat-channels" id="chatChannels"></div>
+        <!-- „Alle" erscheint nur, wenn die Kanalreihe nicht mehr auf den
+             Bildschirm passt — nachgemessen, nicht ab einer ausgedachten
+             Zahl. Ein Mitarbeiter mit zwei Studios braucht es nicht; der
+             Chef hat fünfzehn Kanäle, von denen drei zu sehen waren. -->
+        <div class="chan-zeile">
+          <button type="button" class="chan-alle" id="kanalAlle" hidden
+                  aria-haspopup="dialog">Alle Kanäle</button>
+          <div class="chat-channels" id="chatChannels"></div>
+        </div>
         <div class="pin-bar" id="pinBar">
           <span class="pin-ico"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M5 12h14l-2-3V4H7v5z"/></svg></span>
           <span class="pin-txt" id="pinText"></span>
@@ -5781,6 +5823,22 @@ html{font-size:var(--fs,100%)}
   <div class="tm-fuss">
     <span id="tmHinweis">Name antippen, dann PIN eingeben.</span>
     <button class="tm-aus" id="tmAus">Terminal beenden</button>
+  </div>
+</div>
+
+<!-- Kanal wählen. Eine senkrechte Liste statt einer Leiste, die man
+     wischen muss: bei vierzehn Studios plus Gruppen waren auf einem
+     iPhone DREI von fünfzehn Kanälen zu sehen, 1107 Pixel Überhang.
+     Studios und Gruppen stehen hier untereinander, damit der
+     Gruppen-Chat nicht zusätzlich hinter einem Reiter liegt. -->
+<div id="kanalModal">
+  <div class="pm-box">
+    <button class="lb-close" id="kanalClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 style="margin-bottom:6px">Kanal wählen</h3>
+    <div class="field" id="kanalSucheWrap" style="display:none">
+      <input class="inp" id="kanalSuche" type="text" autocomplete="off"
+             placeholder="Studio oder Gruppe suchen" aria-label="Kanal suchen" /></div>
+    <div id="kanalListe"></div>
   </div>
 </div>
 
@@ -11846,6 +11904,86 @@ function studioKanaele(){
   return chans;
 }
 
+/* ══ KANAL WÄHLEN ═══════════════════════════════════════════════════
+   Aus dem Betrieb gemeldet: „man muss fünfmal klicken für Gruppen-Chats".
+   Nachgemessen als Chef auf einem iPhone: fünfzehn Kanäle, davon DREI
+   ganz sichtbar, 1107 Pixel Überhang nach rechts. Dazu lagen die
+   Gruppen hinter einem eigenen Reiter.
+
+   Die Leiste bleibt — für zwei Studios ist sie das Schnellste, was es
+   gibt. Daneben steht jetzt „Alle Kanäle" und öffnet eine senkrechte
+   Liste mit ALLEN Kanälen, Studios und Gruppen untereinander. Damit
+   ist jeder Kanal in zwei Klicks erreichbar und ohne eine einzige
+   Wischbewegung.
+
+   DER KNOPF ERSCHEINT NUR, WENN DIE LEISTE ÜBERLÄUFT. Gemessen, nicht
+   ab einer ausgedachten Kanalzahl — derselbe Weg wie beim Suchfeld im
+   Terminal. Wer zwei Studios hat, bekommt keinen Knopf für ein Problem,
+   das er nicht hat. */
+function alleKanaele(){
+  var raus=[];
+  studioKanaele().forEach(function(c){ raus.push({ id:c.id, label:c.label, art:'studios' }); });
+  gruppenKanaele().forEach(function(c){ raus.push({ id:c.id, label:c.label, art:'gruppen' }); });
+  return raus;
+}
+
+function kanalKnopfPruefen(){
+  var wrap=$('chatChannels'), knopf=$('kanalAlle');
+  if(!wrap || !knopf) return;
+  knopf.hidden = wrap.scrollWidth <= wrap.clientWidth + 4;
+}
+
+function kanalWaehlerOeffnen(){
+  var m=$('kanalModal'); if(!m) return;
+  var f=$('kanalSuche'); if(f) f.value='';
+  renderKanalListe();
+  m.classList.add('show');
+  /* Das Suchfeld erst ab einer Liste, die nicht auf einen Bildschirm
+     passt — sonst steht über zwei Kanälen ein Suchfeld. */
+  var liste=$('kanalListe'), such=$('kanalSucheWrap');
+  if(liste && such) such.style.display = (alleKanaele().length > 8) ? '' : 'none';
+  if(f && alleKanaele().length > 8) setTimeout(function(){ try{ f.focus(); }catch(e){} }, 60);
+}
+
+function kanalWaehlerSchliessen(){
+  var m=$('kanalModal'); if(m) m.classList.remove('show');
+}
+
+function renderKanalListe(){
+  var box=$('kanalListe'); if(!box) return;
+  var such=String(($('kanalSuche')||{}).value||'').trim().toLowerCase();
+  var alle=alleKanaele().filter(function(c){
+    return !such || c.label.toLowerCase().indexOf(such)>=0;
+  });
+  if(!alle.length){ box.innerHTML=emptyMini('Kein Kanal gefunden.'); return; }
+  var studios=alle.filter(function(c){ return c.art==='studios'; });
+  var gruppen=alle.filter(function(c){ return c.art==='gruppen'; });
+  function zeile(c){
+    return '<button type="button" class="kn-zeile'+(c.id===currentChannel?' an':'')+'" '+
+      'data-kanalwahl="'+esc(c.id)+'" data-kanalart="'+esc(c.art)+'">'+
+      esc(c.label)+'</button>';
+  }
+  var html='';
+  /* Überschriften nur, wenn es beides gibt. */
+  if(studios.length && gruppen.length) html+='<p class="kn-gruppe">Studios</p>';
+  html+=studios.map(zeile).join('');
+  if(studios.length && gruppen.length) html+='<p class="kn-gruppe">Gruppen</p>';
+  html+=gruppen.map(zeile).join('');
+  box.innerHTML=html;
+}
+
+function kanalWaehlen(id, art){
+  if(art && art!==_chatArt){ _chatArt=art; }
+  currentChannel=id;
+  _chatLimit=CHAT_PAGE;
+  buildChannels();
+  markChannelRead(id);
+  listenChannel(id);
+  cancelCompose();
+  kanalWaehlerSchliessen();
+  kanalSichtbarMachen();
+}
+
 function buildChannels(){
   var wrap=$('chatChannels'); wrap.innerHTML='';
   var gruppen=gruppenKanaele();
@@ -11889,6 +12027,9 @@ function buildChannels(){
   wrap.classList.add('sofort');
   kanalMarker();
   requestAnimationFrame(function(){ wrap.classList.remove('sofort'); });
+  /* Erst nach dem Zeichnen messen: vorher ist scrollWidth die des
+     leeren Behälters, und der läuft nie über. */
+  requestAnimationFrame(kanalKnopfPruefen);
   /* Ungelesenes wird fuer ALLE eigenen Kanaele gezaehlt, nicht nur fuer
      die gerade gezeigten — sonst merkt ein Chef nichts von der
      Chefrunde, solange er auf „Studios" steht. */
@@ -23562,6 +23703,34 @@ function bindActions(){
 
   var pinBtn=$('ichPinBtn');
   if(pinBtn) pinBtn.addEventListener('click',function(){ ichPinSpeichern(this); });
+
+  // ── Kanal wählen: der Weg ohne Wischen ──
+  var ka=$('kanalAlle');
+  if(ka) ka.addEventListener('click', kanalWaehlerOeffnen);
+  /* Gemessen wird, WENN die Leiste eine Breite bekommt — nicht beim
+     Aufbau. Beim Aufbau ist die Chat-Ansicht oft noch versteckt, und
+     ein Behälter ohne Breite läuft nie über: der Knopf blieb deshalb
+     beim Chef mit fünfzehn Kanälen aus. Ein ResizeObserver trifft
+     zusätzlich den Fall „Gerät gedreht". */
+  var kw=$('chatChannels');
+  if(kw && window.ResizeObserver){
+    try{ new ResizeObserver(kanalKnopfPruefen).observe(kw); }catch(e){}
+  }
+  var kc=$('kanalClose');
+  if(kc) kc.addEventListener('click', kanalWaehlerSchliessen);
+  var ks=$('kanalSuche');
+  if(ks) ks.addEventListener('input', renderKanalListe);
+  var kl=$('kanalListe');
+  if(kl) kl.addEventListener('click', function(e){
+    var b=e.target.closest('[data-kanalwahl]'); if(!b) return;
+    kanalWaehlen(b.getAttribute('data-kanalwahl'), b.getAttribute('data-kanalart'));
+  });
+  var km=$('kanalModal');
+  if(km) km.addEventListener('click', function(e){
+    /* Klick auf den dunklen Rand schliesst. Dasselbe wie bei den
+       anderen Fenstern — wer daneben tippt, will raus. */
+    if(e.target===km) kanalWaehlerSchliessen();
+  });
 
   var hsBtn=$('ichHandyBtn');
   if(hsBtn) hsBtn.addEventListener('click',function(){ ichHandyStempeln(this); });
