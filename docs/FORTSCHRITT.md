@@ -8859,3 +8859,96 @@ falschen Reiter zeigt, hat nicht geliefert.
    misst damit beide Fassungen.
 
 **110 Durchläufe grün.**
+
+---
+
+## Runde 86 — Die Startseite ausgedünnt
+
+**Anlass**, wörtlich: „die startseite sieht sehr überwältigend aus noch
+das müssten wir minimieren · bitte entferne diese rechtlichen schritte
+sachen aus der einrichtung bzw lass uns das jetzt einfach endlich machen
+· das mit dem firmencode muss jetzt auch nicht so penetrant sein, das
+ist nicht ÜBER wichtig."
+
+### Gemessen, bevor etwas geändert wurde
+
+Chef, 390px, Demo: **5,31 Bildschirme (3047px), zehn Überschriften,
+zwölf Blöcke.** Mitarbeiter: 2,20 Bildschirme.
+
+Drei Blöcke sagten dasselbe wie die Liste darüber, nur als Zahl statt
+als Sache:
+
+| Block | Höhe | sagt |
+|---|---|---|
+| Überblick (Kachelraster) | 330px | „45 offene Aufgaben · 5 überfällig" |
+| Wo etwas los ist | 270px | „Rondorf: 2 überfällig · 5 Artikel fehlen" |
+| Mein Dienst (7 Tage) | 642px | vierzehn Schichtzeilen |
+
+Die Heute-Liste nennt dieselben Aufgaben beim Namen, mit Studio und seit
+wann. **Und seit es „Alles" gibt, muss die Startseite kein
+Inhaltsverzeichnis mehr sein:** jede Zahl, die dort stand, steht in der
+Liste an ihrer Sache, zwei Tipps entfernt. Das ist der eigentliche
+Grund, warum sich jetzt streichen lässt, was vorher gebraucht wurde.
+
+### Geändert (alles nur unter `body.neu`)
+
+- **Kachelraster und „Wo etwas los ist" fallen weg** — doppelt.
+- **„Mein Dienst" zeigt heute und morgen, höchstens drei Zeilen**, mit
+  einem Weg zum Rest („und N weitere — ganze Woche ansehen"). Eine
+  gekürzte Liste ohne Ausgang verschweigt, dass sie gekürzt ist.
+- **Übergabe und Schwarzes Brett starten zugeklappt.** „Von der Leitung"
+  bleibt offen: eine Anweisung der Geschäftsführung ist keine
+  Nachschlage-Karte, und wer sie zuklappt, hat sie nicht gelesen. Eine
+  eigene Entscheidung (`PREFS.folds`) überstimmt das weiterhin.
+- **Einrichtungsschritte sind antippbare Zeilen**, die dorthin führen,
+  wo der Schritt erledigt wird. Der Wegweiser („Verwaltung → System →
+  …") entfällt dadurch. Ein Auftrag, der einem den Weg beschreibt,
+  statt ihn zu gehen, ist ein halber Auftrag.
+- **Der Text „Es fehlt: …" ist kurz** („4 Pflichtangaben fehlen noch")
+  — er stand über vier Zeilen und machte die Karte rund 120px höher.
+
+### Der Firmencode
+
+`empfohlen: true`. Heisst: steht unten, zählt nicht in „N von M offen",
+und die Einrichtungskarte verschwindet, sobald nur noch empfohlene
+Schritte offen sind.
+
+**Nicht weg.** Der Satz darunter stimmt weiterhin: ohne Code kann sich
+jeder anmelden, der die Adresse kennt. Wer das weiss und trotzdem so
+entscheidet, entscheidet es — wer es nicht weiss, kann es nicht. Deshalb
+bleibt die Zeile an ihrem Platz, nur leiser.
+
+### Ergebnis
+
+| | vorher | nachher |
+|---|---|---|
+| Chef | 5,31 Bildschirme | **2,75** |
+| Mitarbeiter | 2,20 Bildschirme | **1,36** |
+| Überschriften (Chef) | 10 | 8 |
+
+### Wie das geprüft wird
+
+**Nicht gegen eine ausgedachte Schwelle.** „Höchstens drei Bildschirme"
+hätte nur getrennt, was ohnehin getrennt ist. Stattdessen lädt
+`test-neu-design.js` dieselbe Rolle zweimal — mit `?neu=0` und `?neu=1`,
+gleiche Daten, gleiche Runde — und vergleicht. Dazu die Gegenprobe, dass
+das Kachelraster im BISHERIGEN Schnitt noch dasteht; sonst verglichen
+beide Messungen dasselbe.
+
+Eine Zusage musste dabei zurückgenommen werden: „weniger Überschriften"
+gilt beim Mitarbeiter nicht. Der neue Schnitt nimmt „Überblick" weg und
+setzt „Überfällig" und „Heute" dafür — das geht genau auf. Das ist kein
+Rückschritt, sondern der Tausch, um den es ging: eine Überschrift, die
+eine Zahl ankündigt, gegen eine, die eine Sache ankündigt. Geprüft wird
+deshalb „nicht mehr", und die Kürzung misst die Zeile darüber.
+
+### Offen beim Nutzer
+
+Die vier Pflichtangaben nach § 5 DDG (Betreiber · Anschrift ·
+vertretungsberechtigte Person · E-Mail). Sobald sie da sind,
+verschwindet der Einrichtungsschritt von selbst — entweder eingetragen
+in der App oder als `KONFIG.recht` in `konfig.js`. Ein Impressum ist per
+Gesetz öffentlich; im Quelltext steht dann nichts, was nicht ohnehin in
+der App für jeden sichtbar wäre.
+
+**110 Durchläufe grün.**
