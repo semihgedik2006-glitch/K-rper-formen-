@@ -9046,3 +9046,74 @@ Gegenprobe leuchtete der Abschnitt auch dann grün, wenn die Messung
 nichts misst.
 
 **110 Durchläufe grün.**
+
+---
+
+## Runde 88 — Farbe zurück, ohne wieder voll zu werden
+
+**Anlass**, wörtlich: „neues layout ist bisschen besser aber noch nicht
+ganz perfekt lass es uns noch mehr anpassen und die farben mit den
+übergängen gefallen mir auch sehr aber sorg dafür dass ein wenig mehr
+farbe und leben wieder da ist."
+
+### Was schiefgelaufen war
+
+Beim Ausdünnen in Runde 87 sind mit den getönten Kacheln auch die
+**Farbflächen** verschwunden. Übrig blieben weisse Zeilen mit einem
+4px-Strich. Richtig war, die Kacheln wegzunehmen; falsch war, die Farbe
+mitzunehmen. Das ist der Unterschied zwischen „ruhig" und „leblos", und
+den hat er sofort gesehen.
+
+### Das Mittel: sein eigener Hinweis
+
+„Die Farben mit den Übergängen gefallen mir" — das ist der Bereichskopf,
+der seine Tönung nach unten auslaufen lässt. Dieselbe Sprache jetzt an
+drei Stellen:
+
+| Stelle | Übergang |
+|---|---|
+| Bereichskopf | Tönung oben, nach unten aus |
+| Zeile der Heute-Liste | Tönung an der farbigen Kante, nach 62 % aus |
+| Strich hinter der Überschrift | Farbe links, nach 40 % ins Graue |
+
+Farbe, die von einer Kante ausgeht, statt einer Fläche, die man anmalt.
+
+### Vier Kategorien, vier Farben
+
+`--kat` und `--kat-f` je Zeilenart; alles darunter (Balken, Fläche,
+Zeichen, Pfeil, Punkt in der Überschrift) liest nur noch diese zwei
+Werte. Eine Stelle statt fünf.
+
+| Kategorie | Farbe | warum |
+|---|---|---|
+| Überfällig | Rot (`--danger`) | ist ein Status |
+| Heute | Bernstein (`--warm`) | ist ein Status |
+| Neu für dich | Bereichston | ist keiner |
+| Zu erledigen | Violett | ist keiner |
+
+Die beiden unteren nehmen ausdrücklich **keine** Statusfarbe — sonst
+wäre wieder kaputt, was `test-gestaltung` in Runde 84 gefunden hat.
+
+### Sechs Fragen, sechs Farben
+
+Die Liste „Alles" war 26 graue Zeilen. Jetzt trägt jede Frage einen der
+sechs Bereichstöne, und die Kachel davor ist ein Verlauf in dieser Farbe
+statt eines grauen Kastens. Die Kachel bleibt dort — anders als auf der
+Startseite: dort standen sechs davon auf einem Bildschirm, der EINE
+Frage beantworten soll; hier sind sie das Raster, an dem man 26 Zeilen
+entlangliest.
+
+### Ein Fund im Bild
+
+„Zu erledigen" hatte zuerst `--accent-glow` als Tönung — den
+**persönlichen** Akzentton. Im Bild lief dadurch eine violette Kante in
+eine türkise Fläche. Kein Test schlägt bei so etwas an; gesehen hat es
+der Bildschirmabzug. Jetzt ein eigener Ton, hell und dunkel getrennt.
+
+### Unverändert
+
+Start passt weiterhin auf einen Bildschirm (574px in 574px, alle drei
+Geräte), jedes Ziel weiterhin in zwei Tipps, und ohne Schalter ist alles
+wie vorher.
+
+**110 Durchläufe grün.**
