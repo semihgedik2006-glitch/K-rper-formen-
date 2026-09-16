@@ -188,6 +188,17 @@ jobs:
             echo "MAIL_FROM="${{ secrets.MAIL_FROM }}""
             echo "SHEETS_URL="${{ secrets.SHEETS_URL }}""
             echo "SHEETS_TOKEN="${{ secrets.SHEETS_TOKEN }}""
+            # Die Kasse. Fehlen diese Werte, laeuft die App vollstaendig
+            # weiter — nur die drei Stripe-Endpunkte antworten mit
+            # "Bezahlung ist noch nicht eingerichtet". Siehe docs/KASSE.md.
+            echo "STRIPE_SECRET="${{ secrets.STRIPE_SECRET }}""
+            echo "STRIPE_WEBHOOK_SECRET="${{ secrets.STRIPE_WEBHOOK_SECRET }}""
+            echo "STRIPE_PREIS_BASIC="${{ secrets.STRIPE_PREIS_BASIC }}""
+            echo "STRIPE_PREIS_BASIC_STUDIO="${{ secrets.STRIPE_PREIS_BASIC_STUDIO }}""
+            echo "STRIPE_PREIS_PREMIUM="${{ secrets.STRIPE_PREIS_PREMIUM }}""
+            echo "STRIPE_PREIS_PREMIUM_STUDIO="${{ secrets.STRIPE_PREIS_PREMIUM_STUDIO }}""
+            echo "APP_URL="${{ secrets.APP_URL }}""
+            echo "TEST_TAGE="${{ secrets.TEST_TAGE }}""
           } > functions/.env
 
       # Nur ein Hinweis im Protokoll, kein Abbruch — sonst fällt fehlender
@@ -198,6 +209,21 @@ jobs:
             echo "::warning::SMTP ist nicht eingerichtet – Monatsbericht und Termin-Mails werden nicht versendet. Siehe docs/MAIL-SETUP.md"
           else
             echo "SMTP-Zugangsdaten sind hinterlegt."
+          fi
+
+      # Ebenfalls nur ein Hinweis. Ein Abbruch waere hier falsch: die App
+      # soll sich ausrollen lassen, BEVOR es eine Kasse gibt — genau so
+      # ist sie gebaut.
+      - name: Prüfen, ob die Kasse eingerichtet ist
+        run: |
+          if [ -z "${{ secrets.STRIPE_SECRET }}" ]; then
+            echo "::warning::Stripe ist nicht eingerichtet – die Abo-Knöpfe antworten mit einem Hinweis statt mit einer Bezahlseite. Siehe docs/KASSE.md"
+          elif [ -z "${{ secrets.STRIPE_WEBHOOK_SECRET }}" ]; then
+            echo "::warning::STRIPE_SECRET ist da, STRIPE_WEBHOOK_SECRET fehlt – dann kann bezahlt werden, aber die Freischaltung kommt nie an. Siehe docs/KASSE.md"
+          elif [ -z "${{ secrets.STRIPE_PREIS_BASIC }}" ]; then
+            echo "::warning::Stripe ist da, aber keine Preis-Kennung – die Kasse lehnt jeden Aufruf ab. Siehe docs/KASSE.md"
+          else
+            echo "Die Kasse ist eingerichtet."
           fi
 
       - name: Google-Auth (Service-Account aus GitHub-Secret)

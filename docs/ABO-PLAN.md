@@ -1,7 +1,9 @@
 # Abo-Modell für StudioChat — Planung
 
-**Stand:** 11. August 2026 · **Stufe A und B sind gebaut** (Abo eintragen,
-Stufen greifen). Alles ab Stufe C — Zahlung, Mahnungen — ist Planung.
+**Stand:** 16. September 2026 · **Stufe A bis E sind gebaut** — Abo
+eintragen, Stufen greifen, Stripe-Kasse, Mahnleiter in den Regeln,
+Selbstbedienung. Was fehlt, sind die Stripe-Schlüssel; siehe
+`docs/KASSE.md`.
 
 ---
 
@@ -394,9 +396,65 @@ Der Umbau in Stufen, so wie beim Umzug:
 |---|---|---|
 | **A** ✅ | Abo-Zustand unter `firmen/<kennung>/abo/aktuell`, von Hand gesetzt. Die App liest und zeigt ihn, sperrt aber nichts | keins |
 | **B** ✅ | Die Stufen greifen: in der App sichtbar gesperrt, bei den Nachweisen auch in den Regeln | gering |
-| **C** | Stripe anbinden: Bezahlseite, Rückmeldung per Webhook, Zustand wird automatisch gesetzt | **hoch** — echtes Geld |
-| **D** | Der Zustand `nurlesen` in den Regeln, dazu die Uhr, die die Mahnstufen aus Abschnitt 3 weiterstellt | mittel |
-| **E** | Selbstbedienung: Kunde ändert Stufe, sieht Rechnungen, kündigt | gering |
+| **C** ✅ | Stripe anbinden: Bezahlseite, Rückmeldung per Webhook, Zustand wird automatisch gesetzt | **hoch** — echtes Geld |
+| **D** ✅ | Der Zustand `nurlesen` in den Regeln, dazu die Uhr, die die Mahnstufen aus Abschnitt 3 weiterstellt | mittel |
+| **E** ✅ | Selbstbedienung: Kunde sieht Rechnungen, ändert das Zahlungsmittel, kündigt | gering |
+
+### ✅ Stufe C, D und E sind gebaut — 16. September 2026
+
+**Einrichten steht in `docs/KASSE.md`.** Ohne Stripe-Schlüssel läuft die
+App vollständig weiter; die drei Endpunkte antworten dann mit „Die
+Bezahlung ist noch nicht eingerichtet". Das ist derselbe Grundsatz wie
+oben in Abschnitt 6: kein Kaufknopf, solange es keine Kasse gibt.
+
+**Vier Entscheidungen, die beim Bauen dazugekommen sind:**
+
+*Bestandsschutz, dauerhaft.* Körperformen und jede Firma, die vor der
+Paywall existierte, steht fest auf `gratis`. Die Paywall greift nur für
+Firmen, die ab jetzt angelegt werden — die bekommen beim Anlegen
+automatisch eine Testphase von 30 Tagen. Technisch wäre das gar nicht
+nötig, weil „kein Eintrag" weiterhin vollen Zugriff bedeutet; es steht
+trotzdem ausdrücklich da, damit der Bestandsschutz die Änderung
+überlebt, die diese Regel eines Tages jemandem zu lasch vorkommen lässt.
+
+*Zwei Mahnleitern statt einer.* Die lange aus Abschnitt 3 (0 / 7 / 14 /
+21 / 35 Tage) gilt für einen Kunden, der schon gezahlt hat. Wer die
+Testphase hat verstreichen lassen oder gekündigt hat, bekommt die kurze:
+sofort Nur-Lesen, nach 14 Tagen zu.
+
+> **Der erste Anlauf schloss aus „hat je gezahlt", welche Leiter gilt.
+> Das war an genau einer Stelle falsch:** wer regulär kündigt, hat
+> gezahlt — und hätte damit nach Vertragsende fünf Wochen Vollzugriff
+> bekommen. Eine Kündigung wäre günstiger gewesen als das Abo. Jetzt
+> steht die Leiter als Feld im Eintrag und wird dort gesetzt, wo der
+> Rückstand entsteht: da ist immer klar, worum es sich handelt.
+
+*Die Uhr rechnet, sie stellt nicht weiter.* Der Zustand wird jede Nacht
+neu aus **einem** Datum berechnet (`offenSeit`), nicht vom vorigen
+Zustand aus eine Stufe weitergeschoben. Der Unterschied zeigt sich an
+dem Tag, an dem der Lauf ausfällt: eine weitergestellte Leiter steht
+still und ein Kunde behält Zugang, den er nicht mehr hat. Eine
+gerechnete holt den Tag beim nächsten Lauf von selbst auf.
+
+*Der Chef wird bei `zu` nicht ausgesperrt.* Er bleibt angemeldet und
+sieht eine Seite mit einem Knopf zur Kasse. Ohne das wäre die Sperre
+eine Einbahnstraße: abgemeldet kann er die Kasse nicht aufrufen, denn
+die prüft serverseitig, wer ruft — und ein Betrieb, der wegen einer
+offenen Zahlung stillgelegt ist, ist genau der, der zahlen will.
+
+**Wo die Grenze steht.** `nurlesen` und `zu` sperren in
+`firestore.rules` (`schreibtIn`/`darfSchreiben`), nicht in der App —
+genau wie es oben in diesem Abschnitt gefordert war. `zu` entzieht
+zusätzlich den Zugang ganz, und zwar über das vorhandene Feld `aktiv`
+auf dem Firmen-Dokument: das prüft `firmaLaeuft(f)` ohnehin bei jedem
+Zugriff, kostet also keinen zusätzlichen Lesevorgang. Ein `get()` auf
+den Abo-Eintrag in jedem `allow read` hätte die Lesekosten der ganzen
+App verdoppelt — für eine Grenze, die hoffentlich nie jemanden trifft.
+
+**Belegt durch:** `tests/rules/abo-sperre.test.js` (42 Zusicherungen,
+mit Gegenproben), `tests/test-abo-leiter.js` (48 Zusicherungen auf die
+reine Rechnung, ohne Datenbank) und `tests/test-paywall.js` (28
+Zusicherungen auf das, was ein Mensch zu lesen bekommt).
 
 ### ✅ Stufe B ist gebaut — 11. August 2026
 

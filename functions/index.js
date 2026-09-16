@@ -986,20 +986,198 @@ exports.firmaAnlegen = region
       createdAt: Date.now(),
     });
 
-    return { kennung: kennung, uid: konto.uid, passwort: passwort, studios: anzahl };
+    /* ── Die Testphase beginnt beim Anlegen, nicht beim ersten Klick ──
+       JEDE NEUE FIRMA BEKOMMT HIER EINEN EINTRAG, und das ist der
+       eigentliche Schalter der Paywall: "kein Eintrag" heisst ueberall
+       sonst "voller Zugriff" — dabei bleibt es, denn darauf steht der
+       Bestandsschutz. Neu ist nur, dass es ab jetzt keine Firma mehr
+       OHNE Eintrag gibt. Wer heute schon da ist, bleibt offen; wer
+       morgen dazukommt, hat eine Frist.
+
+       Waere es andersherum geloest — "kein Eintrag" heisst "zu" —,
+       ginge am Tag der Auslieferung jeder Bestandskunde zu, und der
+       Fehler faellt erst auf, wenn das Telefon klingelt. */
+    const tage = Math.max(1, Number(process.env.TEST_TAGE || 30));
+    await db.collection('firmen').doc(kennung)
+      .collection('abo').doc('aktuell').set({
+        stufe: 'basic',
+        status: 'test',
+        netto: 0,
+        bisAm: Date.now() + tage * 86400000,
+        offenSeit: null,
+        leiter: null,
+        jeGezahlt: false,
+        vonHand: false,
+        firmaName: name,
+        notiz: 'Testphase ' + tage + ' Tage, beim Anlegen gesetzt',
+        gesetztVon: context.auth.uid,
+        gesetztAm: Date.now(),
+      });
+
+    return {
+      kennung: kennung, uid: konto.uid, passwort: passwort,
+      studios: anzahl, testTage: tage,
+    };
   });
 
-/* ── Abo-Zustand setzen (Stufe A aus docs/ABO-PLAN.md) ────────────────
-   Von Hand durch den Betreiber. Es fliesst kein Geld und es sperrt nichts —
-   die App liest den Zustand und zeigt ihn an.
+/* ── Bestandsschutz ───────────────────────────────────────────────────
+   Einmal laufen zu lassen, bevor die Paywall scharf wird: jede Firma,
+   die es HEUTE schon gibt und die noch keinen Abo-Eintrag hat, bekommt
+   fest 'gratis'.
 
-   Als Function statt als Regel, weil hier gepruefte Werte (Stufennamen,
-   Betraege, Datum) und ein Vermerk hingehoeren, wer es gesetzt hat.
+   Warum ueberhaupt, wo "kein Eintrag" doch vollen Zugriff bedeutet?
+   Weil diese Regel eines Tages jemandem zu lasch vorkommt. Steht bei
+   jedem Bestandskunden ausdruecklich 'gratis', ueberlebt der
+   Bestandsschutz auch die Aenderung, die ihn sonst still abraeumt —
+   und man sieht in der Liste, dass es Absicht war und kein leeres Feld.
+
+   ANSEHEN IST DIE VOREINSTELLUNG. Geschrieben wird nur mit
+   wirklich:true — dieselbe Vorsichtsregel wie bei den Werkzeugen unter
+   tools/, und aus demselben Grund: ein Lauf, der ueber alle Kunden
+   geht, soll man erst sehen und dann ausfuehren. */
+exports.bestandsschutz = region
+  .https.onCall(async (data, context) => {
+    await requireAdmin(context);
+    const wirklich = !!(data && data.wirklich);
+    const firmen = await db.collection('firmen').get();
+
+    const betroffen = [];
+    for (const f of firmen.docs) {
+      const abo = await f.ref.collection('abo').doc('aktuell').get();
+      if (abo.exists) continue;                 // hat schon einen Zustand
+      betroffen.push({ kennung: f.id, name: (f.data() || {}).name || '' });
+      if (!wirklich) continue;
+      await f.ref.collection('abo').doc('aktuell').set({
+        stufe: 'premium',
+        status: 'gratis',
+        netto: 0,
+        bisAm: null,
+        offenSeit: null,
+        leiter: null,
+        jeGezahlt: false,
+        /* vonHand, damit die naechtliche Uhr diesen Eintrag nie
+           anfasst. Bestandsschutz ist eine Entscheidung. */
+        vonHand: true,
+        firmaName: (f.data() || {}).name || '',
+        notiz: 'Bestandsschutz — war vor der Paywall da',
+        gesetztVon: context.auth.uid,
+        gesetztAm: Date.now(),
+      });
+    }
+    return {
+      ok: true,
+      wirklich: wirklich,
+      anzahl: betroffen.length,
+      firmen: betroffen,
+    };
+  });
+
+/* ══════════════════════════════════════════════════════════════════════
+   DAS ABO — ZUSTAENDE UND WAS SIE ERLAUBEN (Stufe C/D aus ABO-PLAN.md)
 
    'gratis' ist ein eigener Zustand, kein Preis von 0: eine Entscheidung,
-   kein Zahlungsausfall — und darf nie in die Mahnstufen geraten. */
+   kein Zahlungsausfall — und darf nie in die Mahnstufen geraten. Genau
+   darauf steht der Bestandsschutz fuer Koerperformen.
+
+   DIE LEITER IST EINE EINBAHNSTRASSE NACH UNTEN, und sie wird nicht aus
+   dem vorigen Zustand weitergestellt, sondern jedes Mal neu aus EINEM
+   Datum gerechnet (offenSeit). Der Unterschied ist der zwischen einer
+   Uhr, die man aufziehen muss, und einer, die man ablesen kann: laeuft
+   der Zeitplan einen Tag nicht, steht eine weitergestellte Leiter still
+   und ein Kunde behaelt Zugang, den er nicht mehr hat. Eine gerechnete
+   holt den Tag beim naechsten Lauf von selbst auf.
+   ══════════════════════════════════════════════════════════════════ */
 const ABO_STUFEN = ['basic', 'premium'];
-const ABO_STATUS = ['aktiv', 'gratis', 'test', 'gekuendigt'];
+
+const ABO_STATUS = [
+  'gratis',      // zahlt nie. Bestandsschutz, eigener Betrieb, Sonderfaelle
+  'test',        // Testphase, laeuft bis bisAm
+  'aktiv',       // bezahlt
+  'gekuendigt',  // gekuendigt, laeuft aber noch bis bisAm
+  'faellig',     // Zahlung offen — Tag 0
+  'mahnung1',    // Tag 7
+  'mahnung2',    // Tag 14
+  'nurlesen',    // Tag 21 — sehen ja, aendern nein
+  'zu',          // Tag 35 — kein Zugang mehr
+];
+
+/* Was ein Zustand erlaubt. DREI Stufen, und die Aufzaehlung steht
+   ausdruecklich hier und nicht als Vergleich "ab Stufe X": wer eine
+   Leiter mit > vergleicht, sperrt beim Einfuegen eines neuen Zustands
+   versehentlich den halben Kundenstamm aus.
+
+   KEIN EINTRAG HEISST VOLLER ZUGRIFF. Das ist der heutige Zustand fuer
+   den eigenen Betrieb und fuer jeden Kunden, bei dem noch nichts
+   eingetragen ist — ein Kunde, dem die App zugeht, weil jemand ein Feld
+   nicht ausgefuellt hat, waere der schlechtere Fehler. Dieselbe
+   Entscheidung wie bei aboStufe() in index.html. */
+const ABO_NURLESEN = ['nurlesen'];
+const ABO_ZU = ['zu'];
+
+function aboZugriff(status) {
+  const s = String(status || '');
+  if (ABO_ZU.indexOf(s) >= 0) return 'zu';
+  if (ABO_NURLESEN.indexOf(s) >= 0) return 'nurlesen';
+  return 'voll';
+}
+
+/* ── Die Mahnleiter: zwei, nicht eine ──────────────────────────────────
+   Wer schon einmal gezahlt hat, bekommt die lange Leiter aus Abschnitt 3
+   des Plans: drei Wochen, in denen das Team GAR NICHTS merkt. Der Grund
+   steht dort und gilt unveraendert — eine Aushilfe kann die Rechnung
+   nicht bezahlen, und wer sie aussperrt, bestraft die Falsche und
+   verliert den Kunden wegen der Sperre statt wegen des Preises.
+
+   Wer noch nie gezahlt hat, dessen Testphase ist abgelaufen. Ihm
+   dieselben fuenf Wochen zu geben hiesse, die Paywall abzuschaffen: die
+   Testphase waere dann in Wahrheit zehn Wochen lang. Er kommt sofort
+   auf nurlesen — sehen und herausholen ja, weiterarbeiten nein — und
+   nach zwei Wochen ist zu.
+
+   Beide Leitern lassen 'nurlesen' vor 'zu' stehen, und das ist kein
+   Entgegenkommen: Putzplan, Dienstplan und Nachweise sind
+   Betriebsunterlagen. Sie von einem Tag auf den anderen unerreichbar zu
+   machen ist etwas anderes, als eine Software abzuschalten. */
+const LEITERN = {
+  lang: [
+    { tag: 35, status: 'zu' },
+    { tag: 21, status: 'nurlesen' },
+    { tag: 14, status: 'mahnung2' },
+    { tag: 7, status: 'mahnung1' },
+    { tag: 0, status: 'faellig' },
+  ],
+  kurz: [
+    { tag: 14, status: 'zu' },
+    { tag: 0, status: 'nurlesen' },
+  ],
+};
+
+/* WELCHE LEITER GILT, WIRD BEIM BETRETEN FESTGEHALTEN, nicht spaeter
+   erraten. Die erste Fassung schloss sie aus "hat je gezahlt" — das
+   war an genau einer Stelle falsch: wer regulaer KUENDIGT, hat gezahlt
+   und bekaeme die lange Leiter, also fuenf Wochen Vollzugriff nach dem
+   Vertragsende. Eine Kuendigung waere damit guenstiger als das Abo.
+
+   Deshalb steht im Eintrag das Feld `leiter`. Gesetzt wird es dort, wo
+   der Rueckstand entsteht, und dort ist immer klar, worum es sich
+   handelt. `jeGezahlt` bleibt als Angabe fuer die Anzeige, ist aber
+   keine Weiche mehr. */
+function aboStufeNachTagen(offenSeit, leiterName, jetzt) {
+  const leiter = LEITERN[leiterName] || LEITERN.kurz;
+  const tage = Math.floor(((jetzt || Date.now()) - offenSeit) / 86400000);
+  for (const stufe of leiter) {
+    if (tage >= stufe.tag) return stufe.status;
+  }
+  return leiter[leiter.length - 1].status;
+}
+
+/* ── Abo-Zustand von Hand setzen (Stufe A) ────────────────────────────
+   Der Betreiber kann jeden Zustand setzen — auch einen aus der
+   Mahnleiter, etwa um eine Sperre zurueckzunehmen, waehrend eine
+   Ueberweisung noch unterwegs ist.
+
+   Als Function statt als Regel, weil hier gepruefte Werte (Stufennamen,
+   Betraege, Datum) und ein Vermerk hingehoeren, wer es gesetzt hat. */
 
 exports.aboSetzen = region
   .https.onCall(async (data, context) => {
@@ -1038,19 +1216,690 @@ exports.aboSetzen = region
     let bisAm = (data && data.bisAm) ? Number(data.bisAm) : null;
     if (!bisAm || !isFinite(bisAm) || bisAm <= 0) bisAm = null;
 
+    /* Was vorher dastand, wird gebraucht: jeGezahlt darf eine Hand nicht
+       versehentlich loeschen, sonst bekaeme ein langjaehriger Kunde beim
+       naechsten Zahlungsausfall die kurze Testphasen-Leiter. */
+    const ref = db.collection('firmen').doc(kennung).collection('abo').doc('aktuell');
+    const alt = (await ref.get()).data() || {};
+
+    /* Setzt der Betreiber von Hand einen Zustand OBERHALB der Mahnleiter,
+       ist der Rueckstand erledigt — also muss die Uhr zurueckgestellt
+       werden. Bliebe offenSeit stehen, faende der naechste naechtliche
+       Lauf den alten Rueckstand wieder und sperrte sofort erneut. Genau
+       so verliert man einen Kunden, dem man gerade geholfen hat. */
+    const inLeiter = ['faellig', 'mahnung1', 'mahnung2', 'nurlesen', 'zu'];
+    let offenSeit = alt.offenSeit || null;
+    let leiter = alt.leiter || null;
+    if (inLeiter.indexOf(status) < 0) {
+      offenSeit = null;
+      leiter = null;
+    } else if (!offenSeit) {
+      offenSeit = Date.now();
+      /* Von Hand in die Leiter gesetzt: die lange, denn das tut der
+         Betreiber bei einem zahlenden Kunden, der in Rueckstand ist.
+         Steht schon eine drin, bleibt sie. */
+      leiter = leiter || 'lang';
+    }
+
     const eintrag = {
       stufe: stufe,
       status: status,
       netto: netto,
       bisAm: bisAm,                                  // null = unbefristet
+      offenSeit: offenSeit,                          // null = nichts offen
+      leiter: leiter,                                // 'lang' | 'kurz' | null
+      /* Einmal wahr, immer wahr: es beschreibt die Vergangenheit.
+         Nur noch Anzeige, keine Weiche — siehe aboStufeNachTagen(). */
+      jeGezahlt: !!(alt.jeGezahlt || status === 'aktiv' || status === 'gekuendigt'),
+      /* Von Hand gesetzt heisst: die Uhr laesst diesen Eintrag in Ruhe,
+         bis wieder Bewegung von Stripe kommt. Sonst ueberschreibt der
+         naechtliche Lauf eine Entscheidung, die jemand bewusst getroffen
+         hat — etwa eine Kulanzfrist, waehrend eine Ueberweisung laeuft. */
+      vonHand: true,
       notiz: String((data && data.notiz) || '').slice(0, 300),
       gesetztVon: context.auth.uid,
       gesetztVonName: ich.name || '',
       gesetztAm: Date.now(),
     };
-    await db.collection('firmen').doc(kennung)
-      .collection('abo').doc('aktuell').set(eintrag);
+    /* merge, damit die Stripe-Kennungen (kunde, abo) stehen bleiben —
+       ein set() ohne merge wuerde die Verbindung zur Kasse kappen, und
+       der naechste Webhook fuende die Firma nicht mehr. */
+    await ref.set(eintrag, { merge: true });
     return Object.assign({ ok: true, kennung: kennung }, eintrag);
+  });
+
+/* ══════════════════════════════════════════════════════════════════════
+   DIE KASSE — STRIPE (Stufe C aus docs/ABO-PLAN.md)
+
+   KARTENDATEN FASST DIESE APP NIEMALS AN. Das ist keine Vorsicht,
+   sondern der einzige gangbare Weg: wer Kartennummern selbst
+   entgegennimmt, faellt unter PCI-DSS, und das ist fuer einen Betrieb
+   dieser Groesse unbezahlbar. Der Kunde wird auf eine Seite von Stripe
+   geschickt und kommt zurueck. Hier laeuft nur die Kennung des Abos
+   durch, nie eine Nummer.
+
+   ALLE SCHLUESSEL KOMMEN AUS process.env. Das Repository ist
+   OEFFENTLICH — ein Stripe-Geheimschluessel darin waere nicht nur ein
+   Fehler, sondern ein Schaden in echtem Geld, ab der Minute des
+   Hochladens. Sie liegen in functions/.env, gefuellt aus
+   GitHub-Secrets.
+
+   OHNE SCHLUESSEL PASSIERT NICHTS, und das ist Absicht: fehlt
+   STRIPE_SECRET, antworten die drei Endpunkte mit einer klaren Meldung,
+   statt zu versuchen und auf halbem Weg liegenzubleiben. Die App kann
+   dann alles ausser kassieren — genau der Zustand, in dem sie heute
+   ausgeliefert wird.
+   ══════════════════════════════════════════════════════════════════ */
+
+let _stripe = null;
+function stripeHolen() {
+  if (_stripe) return _stripe;
+  const key = process.env.STRIPE_SECRET || '';
+  if (!key) return null;
+  _stripe = require('stripe')(key, { apiVersion: '2024-06-20' });
+  return _stripe;
+}
+
+/* Wohin Stripe den Kunden zurueckschickt. Aus der Umgebung, damit der
+   Probelauf nicht in den Betrieb zurueckfaellt — ein Kunde, der nach
+   dem Bezahlen in der falschen App landet, haelt sie fuer kaputt. */
+function appAdresse() {
+  return (process.env.APP_URL || 'https://formenchat.web.app').replace(/\/+$/, '');
+}
+
+/* Zwei Posten je Stufe: der Grundpreis und der Aufschlag JE WEITEREM
+   Studio. Genau die Form aus Abschnitt 4 des Plans — "je Studio,
+   Mitarbeiter unbegrenzt". Die Preis-Kennungen legt man in Stripe an;
+   hier stehen nur ihre Namen. */
+function preiseFuer(stufe) {
+  if (stufe === 'premium') {
+    return {
+      grund: process.env.STRIPE_PREIS_PREMIUM || '',
+      studio: process.env.STRIPE_PREIS_PREMIUM_STUDIO || '',
+    };
+  }
+  return {
+    grund: process.env.STRIPE_PREIS_BASIC || '',
+    studio: process.env.STRIPE_PREIS_BASIC_STUDIO || '',
+  };
+}
+
+/* Wie viele Studios hat dieser Betrieb gerade? Die Zahl geht als Menge
+   in den zweiten Posten. Stillgelegte Studios zaehlen nicht mit —
+   sonst zahlt jemand fuer einen Standort, den er geschlossen hat. */
+async function studiozahl(firma) {
+  try {
+    const d = await db.collection('firmen').doc(firma)
+      .collection('config').doc('studios').get();
+    const liste = d.exists ? (d.data().liste || []) : [];
+    const offen = liste.filter(x => x && x.aktiv !== false).length;
+    return Math.max(1, offen);
+  } catch (e) {
+    console.warn('studiozahl (' + firma + '):', e.message);
+    return 1;
+  }
+}
+
+function keineKasse() {
+  return new functions.https.HttpsError('failed-precondition',
+    'Die Bezahlung ist noch nicht eingerichtet. Bitte an den Betreiber wenden.');
+}
+
+/* ── Die Firma fuer die KASSE ─────────────────────────────────────────
+   Bewusst NICHT firmaVonProfil(): das weist eine stillgelegte Firma ab
+   — mit gutem Grund, denn dort geht es darum, nicht in fremde Daten zu
+   schreiben.
+
+   HIER WAERE DIESELBE PRUEFUNG DIE FALLE: ein Betrieb, der wegen
+   Nichtzahlung stillgelegt ist, ist genau der, der zahlen will. Wer
+   ihm die Kasse verschliesst, hat eine Sperre gebaut, aus der es
+   keinen Weg zurueck gibt — und einen Kunden verloren, der bezahlen
+   wollte.
+
+   Geprueft wird deshalb nur, dass es die Firma ueberhaupt gibt: eine
+   archivierte (geloeschte) Firma hat kein Dokument mehr, und fuer die
+   waere ein Abo sinnlos. */
+async function firmaFuerKasse(profil) {
+  const f = (profil || {}).firma || KONFIG_FIRMA_RUECKFALL;
+  if (!f) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Für diesen Betrieb gibt es noch keine Firmenkennung.');
+  }
+  const d = await db.collection('firmen').doc(f).get();
+  if (!d.exists) {
+    throw new functions.https.HttpsError('not-found',
+      'Diesen Betrieb gibt es nicht mehr.');
+  }
+  return f;
+}
+const KONFIG_FIRMA_RUECKFALL = 'koerperformen';
+
+/* ── Zur Kasse ────────────────────────────────────────────────────────
+   Nur der Chef. Ein Mitarbeiter, der ein Abo fuer seinen Betrieb
+   abschliesst, waere ein Vertrag ohne Vertretungsmacht. */
+exports.stripeKasse = region
+  .https.onCall(async (data, context) => {
+    const ich = await requireChef(context);
+    const stripe = stripeHolen();
+    if (!stripe) throw keineKasse();
+
+    const firma = await firmaFuerKasse(ich);
+    const stufe = ABO_STUFEN.indexOf(String((data && data.stufe) || '')) >= 0
+      ? String(data.stufe) : 'basic';
+    const preise = preiseFuer(stufe);
+    if (!preise.grund) throw keineKasse();
+
+    const ref = db.collection('firmen').doc(firma).collection('abo').doc('aktuell');
+    const abo = (await ref.get()).data() || {};
+    const studios = await studiozahl(firma);
+
+    const posten = [{ price: preise.grund, quantity: 1 }];
+    if (studios > 1 && preise.studio) {
+      posten.push({ price: preise.studio, quantity: studios - 1 });
+    }
+
+    const firmaDoc = (await db.collection('firmen').doc(firma).get()).data() || {};
+
+    /* client_reference_id UND metadata, und das ist keine Doppelung:
+       das erste kommt bei checkout.session.completed zurueck, das
+       zweite haengt am Abo selbst und ist noch da, wenn Monate spaeter
+       eine Rechnung fehlschlaegt und keine Sitzung mehr existiert. */
+    const sitzung = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: posten,
+      client_reference_id: firma,
+      customer: abo.kunde || undefined,
+      customer_email: abo.kunde ? undefined : (ich.email || undefined),
+      subscription_data: { metadata: { firma: firma, stufe: stufe } },
+      metadata: { firma: firma, stufe: stufe },
+      allow_promotion_codes: true,
+      locale: 'de',
+      /* Die Anschrift wird fuer die Rechnung gebraucht — und bei
+         Geschaeftskunden in der EU fuer die Frage, ob Reverse Charge
+         greift. Das entscheidet Stripe anhand der USt-IdNr., nicht
+         diese Funktion. */
+      billing_address_collection: 'required',
+      tax_id_collection: { enabled: true },
+      success_url: appAdresse() + '/?kasse=ok',
+      cancel_url: appAdresse() + '/?kasse=ab',
+    });
+
+    await ref.set({
+      stufeGewuenscht: stufe,
+      letzteKasse: Date.now(),
+      firmaName: firmaDoc.name || '',
+    }, { merge: true });
+
+    return { ok: true, url: sitzung.url };
+  });
+
+/* ── Rechnungen, Zahlungsmittel, Kuendigung ───────────────────────────
+   Alles drei kann Stripe besser als wir, und alles drei gehoert dem
+   Kunden. Selbst zu bauen hiesse, Rechnungen selbst zu erzeugen — und
+   an deren Pflichtangaben scheitert man leise. */
+exports.stripeVerwaltung = region
+  .https.onCall(async (data, context) => {
+    const ich = await requireChef(context);
+    const stripe = stripeHolen();
+    if (!stripe) throw keineKasse();
+
+    const firma = await firmaFuerKasse(ich);
+    const abo = (await db.collection('firmen').doc(firma)
+      .collection('abo').doc('aktuell').get()).data() || {};
+    if (!abo.kunde) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Für diesen Betrieb liegt noch kein Abo bei der Kasse.');
+    }
+    const sitzung = await stripe.billingPortal.sessions.create({
+      customer: abo.kunde,
+      return_url: appAdresse() + '/',
+      locale: 'de',
+    });
+    return { ok: true, url: sitzung.url };
+  });
+
+/* ── Der Rueckweg von Stripe ──────────────────────────────────────────
+   DIESE ADRESSE IST OEFFENTLICH, und sie setzt den Zustand, der
+   darueber entscheidet, ob ein Betrieb arbeiten kann. Wer sie ohne
+   Pruefung laesst, hat einen Knopf ins Internet gehaengt, mit dem
+   jeder jede Firma freischalten oder sperren kann.
+
+   GEPRUEFT WIRD MIT DER SIGNATUR, NICHT MIT EINEM SCHLUESSEL IN DER
+   ADRESSE. Stripe unterschreibt jede Zustellung; constructEvent prueft
+   die Unterschrift gegen STRIPE_WEBHOOK_SECRET und wirft, wenn sie
+   nicht stimmt.
+
+   UND ZWAR UEBER req.rawBody. Das ist der Punkt, an dem diese Bauart
+   still kaputtgeht: Express hat den Text laengst zu einem Objekt
+   gemacht, und JSON.stringify(req.body) ergibt NICHT dieselben Bytes —
+   andere Reihenfolge, andere Leerzeichen. Die Pruefung schluege dann
+   immer fehl, und die Versuchung waere gross, sie "vorerst"
+   auszubauen. Firebase legt den Rohtext unter req.rawBody ab; genau
+   der gehoert hier hin. */
+exports.stripeHaken = region.https.onRequest(async (req, res) => {
+  const stripe = stripeHolen();
+  const geheim = process.env.STRIPE_WEBHOOK_SECRET || '';
+  if (!stripe || !geheim) { res.status(503).send('Kasse nicht eingerichtet'); return; }
+
+  let ereignis;
+  try {
+    ereignis = stripe.webhooks.constructEvent(
+      req.rawBody, req.headers['stripe-signature'], geheim);
+  } catch (e) {
+    console.error('Stripe-Haken: Unterschrift stimmt nicht —', e.message);
+    res.status(400).send('Unterschrift stimmt nicht');
+    return;
+  }
+
+  try {
+    await stripeEreignis(stripe, ereignis);
+  } catch (e) {
+    /* 500 heisst fuer Stripe: noch einmal versuchen. Genau das wollen
+       wir — eine Zustellung, die an einem Netzfehler scheitert, darf
+       nicht dazu fuehren, dass ein zahlender Kunde gesperrt bleibt. */
+    console.error('Stripe-Haken (' + ereignis.type + '):', e);
+    res.status(500).send('später noch einmal');
+    return;
+  }
+  res.status(200).send('ok');
+});
+
+/* Die Firma zu einem Stripe-Objekt. Drei Wege, absichtlich in dieser
+   Reihenfolge: die Kennung am Abo haelt am laengsten, die an der
+   Sitzung gibt es nur beim ersten Mal, und der Kunde ist der Rueckweg,
+   wenn beides fehlt. Findet keiner etwas, wird NICHTS gesetzt — lieber
+   ein Ereignis, das liegen bleibt und im Protokoll steht, als eines,
+   das die falsche Firma trifft. */
+async function firmaZuStripe(stripe, obj) {
+  const m = (obj && obj.metadata) || {};
+  if (m.firma) return m.firma;
+  if (obj && obj.client_reference_id) return obj.client_reference_id;
+
+  const aboId = obj && (obj.subscription || obj.id);
+  if (aboId && String(aboId).startsWith('sub_')) {
+    try {
+      const s = await stripe.subscriptions.retrieve(String(aboId));
+      if (s && s.metadata && s.metadata.firma) return s.metadata.firma;
+    } catch (e) { /* weiter unten */ }
+  }
+  const kunde = obj && obj.customer;
+  if (kunde) {
+    const t = await db.collectionGroup('abo').where('kunde', '==', kunde).limit(2).get();
+    /* Genau EINE Firma darf es sein. Zwei Treffer heissen, dass ein
+       Stripe-Kunde an zwei Betrieben haengt — dann ist jede Wahl
+       geraten, und geraten wird hier nicht. */
+    if (t.size === 1) return t.docs[0].ref.parent.parent.id;
+    if (t.size > 1) console.error('Stripe-Kunde ' + kunde + ' haengt an mehreren Firmen.');
+  }
+  return null;
+}
+
+async function stripeEreignis(stripe, ereignis) {
+  const obj = ereignis.data.object;
+  const firma = await firmaZuStripe(stripe, obj);
+  if (!firma) {
+    console.error('Stripe: keine Firma zu ' + ereignis.type + ' (' + ereignis.id + ')');
+    return;
+  }
+  const ref = db.collection('firmen').doc(firma).collection('abo').doc('aktuell');
+
+  /* Jedes Ereignis nimmt vonHand zurueck: sobald die Kasse wieder
+      spricht, gilt wieder die Kasse. */
+  const grund = { vonHand: false, letztesEreignis: ereignis.type, letztesEreignisAm: Date.now() };
+
+  switch (ereignis.type) {
+    case 'checkout.session.completed': {
+      await ref.set(Object.assign({
+        kunde: obj.customer || null,
+        abo: obj.subscription || null,
+        stufe: (obj.metadata && obj.metadata.stufe) || 'basic',
+      }, grund), { merge: true });
+      break;
+    }
+
+    case 'invoice.paid': {
+      /* Bezahlt ist der einzige Zustand, der die Leiter wirklich
+         loescht. Alles andere waere ein Rueckstand, der spaeter
+         unerklaerlich wieder auftaucht. */
+      const bis = obj.lines && obj.lines.data && obj.lines.data[0]
+        && obj.lines.data[0].period && obj.lines.data[0].period.end;
+      await ref.set(Object.assign({
+        status: 'aktiv',
+        jeGezahlt: true,
+        offenSeit: null,
+        leiter: null,
+        netto: typeof obj.amount_paid === 'number' ? obj.amount_paid / 100 : undefined,
+        bisAm: bis ? bis * 1000 : null,
+        kunde: obj.customer || undefined,
+        abo: obj.subscription || undefined,
+      }, grund), { merge: true });
+      break;
+    }
+
+    case 'invoice.payment_failed': {
+      const alt = (await ref.get()).data() || {};
+      await ref.set(Object.assign({
+        status: alt.offenSeit ? alt.status : 'faellig',
+        /* Die Uhr laeuft ab dem ERSTEN Fehlschlag. Stripe versucht es
+           mehrfach; wer bei jedem Versuch neu anfaengt, sperrt nie. */
+        offenSeit: alt.offenSeit || Date.now(),
+        leiter: alt.leiter || 'lang',
+      }, grund), { merge: true });
+      break;
+    }
+
+    case 'customer.subscription.updated': {
+      if (obj.cancel_at_period_end) {
+        await ref.set(Object.assign({
+          status: 'gekuendigt',
+          bisAm: obj.current_period_end ? obj.current_period_end * 1000 : null,
+        }, grund), { merge: true });
+      } else if (obj.status === 'active') {
+        await ref.set(Object.assign({
+          status: 'aktiv', offenSeit: null, leiter: null,
+          bisAm: obj.current_period_end ? obj.current_period_end * 1000 : null,
+        }, grund), { merge: true });
+      }
+      break;
+    }
+
+    case 'customer.subscription.deleted': {
+      /* Vertragsende. NICHT sofort zu: der Putzplan, die Dienstplaene
+         und die Nachweise sind Betriebsunterlagen, und zwei Wochen
+         Nur-Lesen sind die Frist, in der jemand sie herausholen kann.
+
+         Die KURZE Leiter, ausdruecklich. Wer gekuendigt hat, hat
+         gezahlt — mit der langen Leiter waere eine Kuendigung fuenf
+         Wochen Vollzugriff geschenkt und damit guenstiger als das Abo. */
+      await ref.set(Object.assign({
+        status: 'nurlesen',
+        offenSeit: Date.now(),
+        leiter: 'kurz',
+        abo: null,
+      }, grund), { merge: true });
+      break;
+    }
+
+    default:
+      /* Stripe schickt viel. Was hier nicht steht, geht niemanden an —
+         aber es wird beantwortet, sonst versucht Stripe es tagelang. */
+      break;
+  }
+}
+
+/* ── Was das TEAM erfahren darf ───────────────────────────────────────
+   Der Abo-Eintrag ist fuer den Chef und den Betreiber lesbar und fuer
+   sonst niemanden — dort steht, was ein Betrieb zahlt, und das geht
+   eine Aushilfe nichts an.
+
+   Trotzdem muss die App jedem sagen koennen „gerade laesst sich nichts
+   aendern". Ohne das laeuft ein Mitarbeiter beim Abhaken in einen
+   Fehler, und die Oberflaeche behauptet das Gegenteil der Datenbank —
+   genau der Zustand, der beim Sperren einer Firma zwei Tage lang
+   unbemerkt blieb.
+
+   Deshalb spiegelt dieser Ausloeser NUR DIE STUFE nach
+   config/zugriff: voll, nurlesen oder zu. Kein Betrag, kein Datum,
+   keine Mahnstufe. Dass ein Betrieb im Rueckstand ist, erfaehrt das
+   Team hier nicht — und drei Wochen lang merkt es ohnehin nichts, das
+   ist die Entscheidung aus Abschnitt 3 des Plans.
+
+   ALS AUSLOESER UND NICHT ALS AUFRUF IN JEDER FUNKTION: den Zustand
+   setzen inzwischen fuenf Stellen (von Hand, vier Stripe-Ereignisse,
+   die Uhr, das Anlegen, der Bestandsschutz). Eine davon wuerde man
+   irgendwann vergessen, und dann steht in der App etwas anderes als in
+   der Datenbank. Hier haengt es an der Aenderung selbst. */
+exports.aboZugriffSpiegeln = region
+  .firestore.document('firmen/{firma}/abo/aktuell')
+  .onWrite(async (change, ctx) => {
+    const firma = ctx.params.firma;
+    const nach = change.after.exists ? (change.after.data() || {}) : null;
+    const vor = change.before.exists ? (change.before.data() || {}) : null;
+
+    /* Zugang ganz entziehen oder zurueckgeben — siehe zuSchalten().
+       Steht hier und nicht in der Uhr, weil der Zustand aus vier
+       Richtungen kommen kann (Uhr, Stripe, von Hand, Anlegen) und eine
+       davon man irgendwann vergisst. */
+    await zuSchalten(firma, vor, nach ? nach.status : '');
+
+    const stufeNeu = nach ? aboZugriff(nach.status) : 'voll';
+    const stufeAlt = vor ? aboZugriff(vor.status) : 'voll';
+    /* Nur bei echter Aenderung schreiben. Sonst loest jede Notiz am
+       Abo einen Schreibvorgang aus, den alle Geraete als Aenderung
+       zugestellt bekommen. */
+    if (stufeNeu === stufeAlt && change.before.exists) return null;
+
+    try {
+      await db.collection('firmen').doc(firma)
+        .collection('config').doc('zugriff')
+        .set({ stufe: stufeNeu, stand: Date.now() });
+      console.log('Zugriffsstufe ' + firma + ': ' + stufeAlt + ' → ' + stufeNeu);
+    } catch (e) {
+      console.error('Zugriffsstufe (' + firma + '):', e.message);
+    }
+    return null;
+  });
+
+/* ══════════════════════════════════════════════════════════════════════
+   DIE UHR — die Mahnstufen weiterstellen (Stufe D aus ABO-PLAN.md)
+
+   Laeuft jede Nacht und rechnet fuer jedes Abo den Zustand NEU aus dem
+   Datum aus, statt ihn eine Stufe weiterzuschieben. Warum, steht oben
+   bei LEITERN: eine Nacht ohne Lauf darf keinem Kunden Zugang
+   schenken, den er nicht mehr hat.
+
+   DREI DINGE FASST DIESE UHR NIE AN:
+   · 'gratis' — das ist eine Entscheidung, kein Zahlungsausfall. Darauf
+     steht der Bestandsschutz fuer Koerperformen und jeden, der die App
+     heute benutzt.
+   · Eintraege mit vonHand:true — der Betreiber hat bewusst etwas
+     gesetzt, etwa eine Kulanzfrist waehrend eine Ueberweisung laeuft.
+     Eine Uhr, die eine Entscheidung ueberschreibt, ist keine Hilfe.
+   · Firmen ohne Abo-Eintrag — kein Eintrag heisst voller Zugriff, und
+     eine Uhr, die daraus einen Rueckstand macht, sperrt den Betrieb
+     wegen eines leeren Feldes aus.
+   ══════════════════════════════════════════════════════════════════ */
+
+const MAHN_TEXT = {
+  faellig: {
+    betreff: 'Zahlung offen',
+    text: 'die letzte Abbuchung für StudioChat hat nicht geklappt.\n\n' +
+      'Meist liegt es an einer abgelaufenen Karte. Unter Verwaltung → System → Abo ' +
+      'lässt sich das Zahlungsmittel in einer Minute ändern.\n\n' +
+      'Für das Team ändert sich vorerst nichts.',
+  },
+  mahnung1: {
+    betreff: 'Zahlung weiterhin offen',
+    text: 'die Zahlung für StudioChat ist seit einer Woche offen.\n\n' +
+      'Unter Verwaltung → System → Abo lässt sich das Zahlungsmittel ändern.\n\n' +
+      'Für das Team ändert sich weiterhin nichts.',
+  },
+  mahnung2: {
+    betreff: 'Zahlung offen — in einer Woche nur noch lesen',
+    text: 'die Zahlung für StudioChat ist seit zwei Wochen offen.\n\n' +
+      'In einer Woche lässt sich in der App nichts mehr anlegen oder ändern. ' +
+      'Sehen kann das Team dann weiterhin alles.\n\n' +
+      'Unter Verwaltung → System → Abo lässt sich das Zahlungsmittel ändern.',
+  },
+  nurlesen: {
+    betreff: 'StudioChat steht jetzt auf Nur-Lesen',
+    text: 'in StudioChat lässt sich ab sofort nichts mehr anlegen oder ändern. ' +
+      'Alles Vorhandene — Dienstpläne, Putzplan, Nachweise, Dokumente — bleibt ' +
+      'sichtbar und lässt sich herausholen.\n\n' +
+      'Sobald die Zahlung durch ist, ist alles sofort wieder da.',
+  },
+  zu: {
+    betreff: 'StudioChat ist stillgelegt',
+    text: 'der Zugang zu StudioChat ist stillgelegt.\n\n' +
+      'Die Daten sind nicht gelöscht. Wer zahlt, ist einen Klick entfernt: ' +
+      'die Anmeldung führt die Geschäftsführung weiterhin zur Kasse.',
+  },
+};
+
+/* Die Chefs einer Firma. Eine Mahnung geht an die Geschaeftsfuehrung
+   und an sonst niemanden — eine Aushilfe kann die Rechnung nicht
+   bezahlen, und sie hat auch nichts damit zu tun. */
+async function chefsVon(firma) {
+  try {
+    const s = await db.collection('users')
+      .where('firma', '==', firma).where('role', '==', 'chef').get();
+    return s.docs.filter(d => (d.data() || {}).aktiv !== false).map(d => d.id);
+  } catch (e) {
+    console.warn('chefsVon (' + firma + '):', e.message);
+    return [];
+  }
+}
+
+/* Absichtlich NICHT ueber teamMail(): das respektiert die
+   Abschaltwuensche unter mailAus, und eine Zahlungserinnerung ist
+   keine Benachrichtigungseinstellung. Wer sie abschalten koennte,
+   erfuehre von der Sperre erst, wenn sie da ist. */
+async function mahnMail(firma, status) {
+  const vorlage = MAHN_TEXT[status];
+  const mailer = getMailer();
+  if (!vorlage || !mailer) return 0;
+  const uids = await chefsVon(firma);
+  if (!uids.length) return 0;
+  const adressen = await adressenVon(uids);
+  const von = process.env.MAIL_FROM || process.env.SMTP_USER;
+  let raus = 0;
+  for (const an of adressen) {
+    try {
+      await mailer.sendMail({
+        from: '"StudioChat" <' + von + '>',
+        to: an,
+        subject: 'StudioChat: ' + vorlage.betreff,
+        text: 'Guten Tag,\n\n' + vorlage.text + '\n\nViele Grüße\nStudioChat',
+      });
+      raus++;
+    } catch (e) {
+      console.error('Mahnmail an ' + an + ':', e.message);
+    }
+  }
+  return raus;
+}
+
+/* ── 'zu' heisst wirklich zu ───────────────────────────────────────────
+   Die Schreibsperre haengt an einem get() auf den Abo-Eintrag. Beim
+   LESEN dasselbe zu tun, hiesse ein zusaetzlicher Lesevorgang bei
+   JEDEM Zugriff der ganzen App — fuer eine Grenze, die hoffentlich nie
+   jemanden trifft. Der Vermerk bei hatPremium() in firestore.rules
+   sagt aus genau diesem Grund: nicht in inFirma() aufnehmen.
+
+   Also anders herum: 'zu' setzt das Feld `aktiv` auf dem Firmen-
+   Dokument, und dieses Feld prueft firmaLaeuft(f) laengst — in
+   inFirma(f), also bei jedem Lesen und Schreiben. Kosten: null. Die
+   Grenze ist dieselbe wie beim Sperren einer Firma von Hand, und die
+   ist erprobt.
+
+   `zuDurchAbo` merkt sich, WER gesperrt hat. Ohne diese Zeile wuerde
+   eine eingehende Zahlung eine Firma wieder oeffnen, die der Betreiber
+   von Hand stillgelegt hat — aus einem ganz anderen Grund. */
+async function zuSchalten(firma, aboVorher, statusNachher) {
+  const warZu = (aboVorher || {}).status === 'zu';
+  const istZu = statusNachher === 'zu';
+  if (warZu === istZu) return;
+  const ref = db.collection('firmen').doc(firma);
+  try {
+    if (istZu) {
+      await ref.set({ aktiv: false, zuDurchAbo: true }, { merge: true });
+      console.log('Abo-Uhr: ' + firma + ' stillgelegt (Zahlung).');
+    } else {
+      const f = (await ref.get()).data() || {};
+      if (f.zuDurchAbo !== true) {
+        console.log('Abo-Uhr: ' + firma + ' bleibt gesperrt — nicht wegen der Zahlung.');
+        return;
+      }
+      await ref.set({ aktiv: true, zuDurchAbo: false }, { merge: true });
+      console.log('Abo-Uhr: ' + firma + ' wieder frei.');
+    }
+  } catch (e) {
+    console.error('zuSchalten (' + firma + '):', e.message);
+  }
+}
+
+/* Den Zustand EINES Abos neu bestimmen. Gibt zurueck, was sich aendern
+   soll, oder null. Als eigene Funktion, damit ein Durchlauf sie ohne
+   Datenbank und ohne Uhrzeit pruefen kann — die Leiter ist der Teil,
+   bei dem ein Fehler Geld und Kunden kostet. */
+function aboNeuRechnen(abo, jetzt) {
+  if (!abo) return null;                          // kein Eintrag = voller Zugriff
+  if (abo.status === 'gratis') return null;       // Entscheidung, kein Rueckstand
+  if (abo.vonHand) return null;                   // der Betreiber hat entschieden
+
+  let offenSeit = abo.offenSeit || null;
+  let leiter = abo.leiter || null;
+
+  /* Testphase oder gekuendigtes Abo abgelaufen: ab hier laeuft die
+     kurze Leiter, und sie laeuft ab dem Ablaufdatum — nicht ab
+     heute. Sonst verschenkt ein Lauf, der ein paar Tage aussetzt,
+     genau diese Tage. */
+  if (!offenSeit && abo.bisAm && jetzt > abo.bisAm &&
+      (abo.status === 'test' || abo.status === 'gekuendigt')) {
+    offenSeit = abo.bisAm;
+    leiter = 'kurz';
+  }
+  if (!offenSeit) return null;
+
+  const neu = aboStufeNachTagen(offenSeit, leiter || 'kurz', jetzt);
+  if (neu === abo.status && offenSeit === abo.offenSeit) return null;
+  return { status: neu, offenSeit: offenSeit, leiter: leiter || 'kurz' };
+}
+
+async function aboUhrLauf() {
+  const jetzt = Date.now();
+  let geprueft = 0, geaendert = 0, gemailt = 0;
+
+  let snap;
+  try {
+    snap = await db.collectionGroup('abo').get();
+  } catch (e) {
+    console.error('Abo-Uhr: Abos nicht lesbar:', e.message);
+    return { geprueft: 0, geaendert: 0, gemailt: 0, fehler: e.message };
+  }
+
+  for (const doc of snap.docs) {
+    if (doc.id !== 'aktuell') continue;
+    const firma = doc.ref.parent.parent ? doc.ref.parent.parent.id : null;
+    if (!firma) continue;
+    geprueft++;
+
+    const abo = doc.data() || {};
+    const aenderung = aboNeuRechnen(abo, jetzt);
+    if (!aenderung) continue;
+
+    try {
+      await doc.ref.set(Object.assign({ uhrAm: jetzt }, aenderung), { merge: true });
+      geaendert++;
+      console.log('Abo-Uhr: ' + firma + ' → ' + aenderung.status);
+      /* Das Stilllegen haengt am Ausloeser aboZugriffSpiegeln, nicht
+         hier: es muss auch dann geschehen, wenn der Zustand von einer
+         Stripe-Zustellung oder von Hand kommt. */
+      /* Gemailt wird nur bei einem WECHSEL der Stufe, nicht jede
+         Nacht. Fuenf gleiche Mahnungen liest niemand mehr. */
+      gemailt += await mahnMail(firma, aenderung.status);
+    } catch (e) {
+      console.error('Abo-Uhr (' + firma + '):', e.message);
+    }
+  }
+  console.log('Abo-Uhr: ' + geprueft + ' geprüft, ' + geaendert + ' geändert, ' +
+    gemailt + ' Mails.');
+  return { geprueft, geaendert, gemailt };
+}
+
+/* 03:45 — nach purgeTrash (03:30), damit sich die beiden Laeufe nicht
+   um dieselben Dokumente streiten. */
+exports.aboUhr = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('45 3 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => { await aboUhrLauf(); return null; });
+
+/* Zum Nachsehen, ohne bis 3:45 Uhr zu warten. Nur der Betreiber. */
+exports.aboUhrJetzt = region
+  .https.onCall(async (data, context) => {
+    await requireAdmin(context);
+    return await aboUhrLauf();
   });
 
 /* ── Eine Firma löschen ───────────────────────────────────────────────
@@ -4074,4 +4923,8 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      berlinDatum, tagDanach, erledigt,
                      pinZuSchwach, pinHashen, pinPruefen,
                      geheimHashen, naechsterSchritt,
-                     codeFenster, codeAus, CODE_FENSTER_MS, CODE_VORRAT };
+                     codeFenster, codeAus, CODE_FENSTER_MS, CODE_VORRAT,
+                     /* Die Abo-Leiter ist rein rechnerisch und damit ohne
+                        Datenbank pruefbar — genau deshalb steht sie hier. */
+                     aboZugriff, aboStufeNachTagen, aboNeuRechnen,
+                     ABO_STATUS, ABO_STUFEN, LEITERN };
