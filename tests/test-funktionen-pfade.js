@@ -120,6 +120,11 @@ const AUSNAHME = {
   dailyBackup:
     'der Export umfasst die ganze Datenbank auf einmal; den Stand verteilt ' +
     'sicherungStatus an alle Firmen',
+  aboUhr:
+    'läuft ABSICHTLICH über collectionGroup(\'abo\') statt alleFirmen(): ' +
+    'alleFirmen() lässt stillgelegte Betriebe weg, und genau deren Mahnleiter ' +
+    'muss weiterlaufen — sonst bliebe eine Firma für immer auf der Stufe ' +
+    'stehen, auf der sie gesperrt wurde',
 };
 plaene.forEach(b => {
   const t = b.text.join('\n');
@@ -134,9 +139,30 @@ plaene.forEach(b => {
     console.log('  – ' + b.name + ': ' + AUSNAHME[b.name]);
     return;
   }
+  /* Die Ausnahme fuer aboUhr behauptet etwas Nachpruefbares: dass sie
+     ueber collectionGroup laeuft und damit MEHR erreicht als
+     alleFirmen(), nicht weniger. Waere das nicht so, waere die
+     Begruendung nur ein Freifahrtschein — und der naechste, der hier
+     einen Namen einträgt, haette ein Vorbild dafür. */
   pruefe(b.name + ': läuft über alleFirmen()', false,
     'weder alleFirmen() im Block noch als Ausnahme begründet');
 });
+
+{
+  const uhr = bloecke.find(b => b.name === 'aboUhrLauf') ||
+    { text: [quelle.slice(quelle.indexOf('async function aboUhrLauf'),
+                          quelle.indexOf('exports.aboUhr'))] };
+  const t = uhr.text.join('\n');
+  pruefe('aboUhr erreicht wirklich ALLE Abos (collectionGroup)',
+    /collectionGroup\(\s*['"]abo['"]\s*\)/.test(t),
+    'die Ausnahme oben behauptet genau das — ohne collectionGroup ist sie falsch');
+  pruefe('aboUhr lässt gratis in Ruhe',
+    /status\s*===\s*'gratis'/.test(quelle),
+    'darauf steht der Bestandsschutz für Körperformen');
+  pruefe('aboUhr lässt von Hand Gesetztes in Ruhe',
+    /abo\.vonHand/.test(quelle),
+    'sonst überschreibt die Uhr eine Kulanzfrist des Betreibers');
+}
 
 /* ── Jeder Aufruf aus der App prüft, wer ruft ──
    Ein onCall-Endpunkt ist von jedem Rechner der Welt erreichbar, sobald

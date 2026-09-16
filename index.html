@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-vszdy0+LwLbI8/+uqj7yWsmZTKmxKE1a/VMLIdxGkTA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-pHvEx+QnuYEgbWYu7Mve9IMBJh4L1QnGq/3IYyO4NVc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1135,6 +1135,30 @@ html.demo #terminalSchirm{top:44px}
   transform:translate(-50%,-50%);width:max(100%,44px);height:max(100%,44px)}
 .ml-zu{flex-shrink:0;position:relative;background:none;border:none;cursor:pointer;
   color:var(--text-3);font-size:var(--t-sm);padding:var(--s4) var(--s2)}
+
+/* ── Hinweis: nur noch lesen ──
+   Dieselbe Bauform wie die Mail-Leiste, nur in der Warnfarbe und ohne
+   Schliessknopf. Sie sitzt bewusst GANZ OBEN und nicht in der Ansicht:
+   die Sperre gilt ueberall, also darf der Hinweis nicht verschwinden,
+   sobald jemand den Bereich wechselt. */
+.abo-leiste{display:flex;align-items:center;gap:var(--s10);flex-shrink:0;
+  padding:var(--s10) var(--rand);padding-top:calc(9px + var(--sat));
+  background:var(--f-bad);border-bottom:1px solid var(--k-bad);
+  font-size:var(--t-sm);min-height:48px;animation:pinIn .35s var(--ease-ios)}
+.abo-leiste[hidden]{display:none}
+.abo-leiste .ml-text{color:var(--danger-tx)}
+
+/* ── Nur noch lesen: die „Neu"-Knöpfe verschwinden ──
+   NUR DIESE, und das ist Absicht. Ein Formular ausfüllen zu lassen, das
+   beim Absenden an der Regel scheitert, ist die schlechteste von allen
+   Möglichkeiten — deshalb geht der Weg dorthin zu. Die übrigen
+   Schreibwege bleiben stehen und scheitern mit einer Meldung; sie alle
+   auszugrauen hiesse, hunderte Knöpfe einzeln zu kennen, und die Liste
+   wäre am Tag nach dem nächsten neuen Knopf falsch.
+
+   Die Grenze ist ohnehin keine von beidem: sie steht in
+   firestore.rules. Das hier ist Höflichkeit, nicht Sicherheit. */
+body.nurlesen .kopf-plus{display:none !important}
 
 /* ── Firmen (Betreiber) ── */
 .fm-zeile{display:flex;align-items:center;gap:var(--s12);padding:var(--s12) 0;
@@ -4659,6 +4683,41 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 </div>
 
 <!-- ── Auth Screen ── -->
+<!-- ── Zahlseite ──
+     Was die Geschäftsführung sieht, wenn der Betrieb wegen einer
+     offenen Zahlung stillgelegt ist. Bewusst KEINE halbe App: die
+     Regeln lassen ohnehin nichts mehr zu, und eine App, in der man
+     überall gegen eine Wand läuft, ist schlimmer als eine Seite, die
+     sagt, woran es liegt.
+
+     Der Satz über die Daten steht da, weil er die erste Frage
+     beantwortet, die jeder hat — und weil er wahr ist: firmaLoeschen
+     archiviert nur das Elterndokument, die Daten bleiben liegen. -->
+<div class="auth-wrap" id="zahlWrap">
+  <div class="auth-card">
+    <h2 class="zm-titel">Zugang stillgelegt</h2>
+    <!-- KEIN GRUND GENANNT, und das ist wichtig. Der Browser weiss
+         nicht, ob hier eine offene Zahlung dahintersteht oder ob der
+         Betreiber von Hand gesperrt hat — beides setzt dasselbe Feld.
+         „Eine Zahlung ist offen" stand hier zuerst und war bei jedem
+         von Hand gesperrten Betrieb schlicht falsch. Lieber offen
+         lassen als raten: der Knopf hilft in beiden Fällen, und was
+         wirklich los ist, steht nach dem Anmelden im Abo. -->
+    <p class="zm-sub" id="zahlText">Dieser Betrieb ist stillgelegt.
+      Die Daten sind vollständig vorhanden und nicht gelöscht — sobald der
+      Zugang wieder freigegeben ist, ist alles sofort da.</p>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" id="zahlKasse">Zahlung nachholen</button>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-ghost btn-sm" id="zahlPortal">Rechnungen ansehen</button>
+      <button class="btn btn-ghost btn-sm" id="zahlAbmelden">Abmelden</button>
+    </div>
+    <p class="hint" style="margin-top:12px">Bezahlt wird bei Stripe.
+      Kartendaten werden hier nicht erfasst.</p>
+  </div>
+</div>
+
 <div class="auth-wrap" id="authWrap">
   <div class="auth-mesh" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
   <div class="auth-card">
@@ -4762,6 +4821,20 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <span class="ml-text" id="mailText">Bitte bestätige deine E-Mail-Adresse.</span>
     <button class="ml-btn" id="mailSenden">Mail erneut senden</button>
     <button class="ml-zu" id="mailZu" aria-label="Hinweis ausblenden"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <!-- ── Hinweis: nur noch lesen ──
+       BEWUSST OHNE SCHLIESSKNOPF, anders als die Mail-Leiste darüber.
+       Die dort ist eine Bitte; diese hier erklärt, warum das Abhaken
+       gerade nicht funktioniert. Wer sie wegklickt, steht vor einer App,
+       die stillschweigend nichts mehr speichert — und hält sie für
+       kaputt statt für gesperrt.
+
+       role="status", damit Vorlesegeräte sie melden, wenn sie auftaucht:
+       sie erscheint mitten in der Arbeit, nicht beim Start. -->
+  <div class="abo-leiste" id="aboLeiste" role="status" hidden>
+    <span class="ml-ico" aria-hidden="true"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+    <span class="ml-text" id="aboLeisteText">Gerade lässt sich nichts ändern.</span>
+    <button class="ml-btn" id="aboLeisteKnopf" hidden>Abo ansehen</button>
   </div>
   <header class="topbar">
     <!-- Die Marke ist der Weg nach Hause. Ein Logo, das nichts tut, ist
@@ -6384,6 +6457,21 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <p class="hint" id="rechtFehltText"></p>
               <button class="btn btn-ghost btn-sm" data-rechtauf="impressum">Ansehen</button>
             </div>
+          <!-- ── Abo ──
+               Steht oben, weil ein Betrieb, bei dem etwas offen ist,
+               hier nachsieht. Der Zustand kommt aus der Datenbank; die
+               Knöpfe führen zu Stripe und nirgendwo sonst — Kartendaten
+               fasst diese App nie an.
+
+               Der Betrag steht hier und NUR hier: die Karte sieht nur
+               der Chef, und was ein Betrieb zahlt, geht das Team
+               nichts an. -->
+          <div class="card" id="aboKarte" data-chef-only="1">
+            <h3 data-ikon="karte">Abo</h3>
+            <div id="aboStand" class="setup-zeile" style="display:block"></div>
+            <p class="hint" id="aboHinweis"></p>
+            <div class="btn-row" id="aboKnoepfe" style="margin-top:12px"></div>
+          </div>
           <!-- Neues Design: erst ansehen, dann veröffentlichen.
                Steht bewusst GANZ OBEN im System-Reiter und nicht
                zugeklappt: solange das neue Aussehen nicht für alle
@@ -8051,6 +8139,16 @@ function $(id){ return document.getElementById(id); }
    ausgeschrieben; beide Fassungen muessen dieselben Pfade zeichnen. */
 var IKONEN = {
   schliessen:  '<path d="M18 6 6 18M6 6l12 12"/>',
+  /* Eine Karte, kein Geldschein und kein Euro-Zeichen: bezahlt wird
+     per Karte oder Lastschrift, und ein Schein stuende fuer etwas,
+     das in dieser App nie vorkommt. */
+  karte:       '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+  /* Das Schloss der Sperrleiste. Es steht im Markup ausgeschrieben —
+     dort kann keine Funktion laufen —, muss aber hier Zeichen fuer
+     Zeichen gleich stehen, sonst zeichnen Markup und ikon() zwei
+     verschiedene Schloesser fuer dieselbe Sache. Der
+     Gestaltungs-Durchlauf prueft genau das. */
+  schloss:     '<rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
   /* Stern fuer „wichtig" und der Griff zum Verschieben. Beide waren
      zuerst Zeichen (★ und ⠿) — die ignorieren Hell/Dunkel und sehen auf
      jedem Geraet anders aus. Der Gestaltungs-Durchlauf hat es gefunden. */
@@ -9826,6 +9924,91 @@ function aboLaden(){
     .catch(function(e){ console.warn('Abo nicht lesbar:', e.message); });
 }
 
+/* ══ DIE ZUGRIFFSSTUFE ════════════════════════════════════════════════
+   Drei Stufen: voll · nurlesen · zu. Sie stehen in config/zugriff, und
+   dort steht auch sonst nichts — kein Betrag, kein Datum, keine
+   Mahnstufe. Den Abo-Eintrag selbst darf nur der Chef lesen (was ein
+   Betrieb zahlt, geht eine Aushilfe nichts an); die Stufe darf jeder
+   lesen, denn ohne sie liefe er beim Abhaken in einen Fehler.
+
+   DAS HIER IST EINE ERKLAERUNG, KEINE GRENZE. Die Grenze steht in
+   firestore.rules (schreibtIn/darfSchreiben). Wer diese Zeilen im
+   Browser aushebelt, darf danach genauso wenig schreiben wie vorher —
+   er bekommt nur keinen Hinweis mehr, warum.
+
+   KEIN EINTRAG HEISST VOLLER ZUGRIFF, und zwar an allen vier Stellen
+   gleich: hier, in den Regeln, in den Cloud Functions und in der Uhr.
+   Am Tag der Auslieferung hat kein einziger Bestandskunde einen
+   Eintrag — eine Stelle, die daraus ein „zu" macht, legt den ganzen
+   Kundenstamm still. */
+var _zugriff = 'voll';
+var _zugriffUnsub = null;
+
+function zugriffStufe(){ return _zugriff; }
+function darfSchreibenApp(){ return _zugriff === 'voll'; }
+
+function zugriffSetzen(stufe){
+  var neu = (stufe === 'nurlesen' || stufe === 'zu') ? stufe : 'voll';
+  if(neu === _zugriff) return false;
+  _zugriff = neu;
+  return true;
+}
+
+function zugriffLaden(){
+  if(!KONFIG.mandant || !_firma) return Promise.resolve();
+  return S('config').doc('zugriff').get()
+    .then(function(d){ zugriffSetzen(d.exists ? (d.data()||{}).stufe : 'voll'); })
+    .catch(function(e){
+      /* Nicht lesbar heisst: voller Zugriff. Dieselbe Entscheidung wie
+         bei den Funktionen — eine App, die wegen eines Netzfehlers
+         zugeht, waere der schlechtere Fehler. Die Regeln sperren
+         ohnehin richtig; hier fehlt dann nur die Erklaerung. */
+      console.warn('Zugriffsstufe nicht lesbar:', e.message);
+    });
+}
+
+/* Danach beobachten: zahlt der Chef mitten im Betrieb, sind die Tablets
+   im Studio sofort wieder frei, ohne dass jemand neu laedt. Das ist
+   nicht nur bequem — es ist der Unterschied zwischen „ich habe gezahlt,
+   es tut sich nichts" und einem Abo, das sich lohnt. */
+function listenZugriff(){
+  if(_zugriffUnsub || !KONFIG.mandant || !_firma) return;
+  _zugriffUnsub = S('config').doc('zugriff').onSnapshot(function(d){
+    if(!zugriffSetzen(d.exists ? (d.data()||{}).stufe : 'voll')) return;
+    zugriffAnwenden();
+  }, function(e){ console.warn('Zugriffsstufe:', e.message); });
+}
+
+function zugriffAnwenden(){
+  var leiste = $('aboLeiste');
+  if(!leiste) return;
+  var stufe = zugriffStufe();
+  document.body.classList.toggle('nurlesen', stufe !== 'voll');
+
+  if(stufe === 'voll'){ leiste.hidden = true; return; }
+  leiste.hidden = false;
+
+  /* Zwei Texte, und der Unterschied ist wichtig: dem Chef sagt man,
+     was zu tun ist; dem Team sagt man, dass es nicht an ihm liegt.
+     „Bitte an die Geschaeftsfuehrung wenden" ist keine Floskel — die
+     Alternative waere, dass eine Aushilfe glaubt, sie habe etwas
+     kaputtgemacht. */
+  var txt = $('aboLeisteText');
+  var knopf = $('aboLeisteKnopf');
+  if(isChef()){
+    txt.textContent = stufe === 'zu'
+      ? 'Der Zugang ist stillgelegt. Alles bleibt sichtbar, gespeichert wird nichts mehr.'
+      : 'Nur noch lesen: bis zur Zahlung lässt sich nichts anlegen oder ändern.';
+    knopf.hidden = false;
+    knopf.textContent = 'Abo ansehen';
+  } else {
+    txt.textContent = stufe === 'zu'
+      ? 'Der Zugang ist stillgelegt. Bitte an die Geschäftsführung wenden.'
+      : 'Gerade lässt sich nichts ändern. Das liegt nicht an dir — bitte an die Geschäftsführung wenden.';
+    knopf.hidden = true;
+  }
+}
+
 /* ══ Funktionen an- und abschalten ═══════════════════════════════════
    Was dieser Betrieb ueberhaupt benutzt — nicht zu verwechseln mit dem
    Abo, das sagt, wofuer bezahlt wurde.
@@ -10080,6 +10263,147 @@ function designGeraetUmschalten(btn){
   toast(layoutNeu() ? 'Neues Design — nur auf diesem Gerät.'
                     : 'Bisheriges Design — nur auf diesem Gerät.');
 }
+/* ══ DIE ABO-KARTE ════════════════════════════════════════════════════
+   Verwaltung → System. Nur der Chef sieht sie, und nur hier steht ein
+   Betrag.
+
+   Der Grundsatz aus docs/ABO-PLAN.md, Abschnitt 6, gilt unveraendert:
+   KEIN KAUFKNOPF, SOLANGE ES KEINE KASSE GIBT. Fehlen die
+   Stripe-Schluessel, antwortet die Funktion mit einer klaren Meldung
+   statt mit einer halben Bezahlseite — ein Knopf, der nach Bezahlen
+   aussieht und keins ist, kostet mehr Vertrauen als er einbringt. */
+var ABO_WORT = {
+  gratis:'kostenlos', test:'Testphase', aktiv:'läuft',
+  gekuendigt:'gekündigt', faellig:'Zahlung offen',
+  mahnung1:'Zahlung offen', mahnung2:'Zahlung offen',
+  nurlesen:'nur noch lesen', zu:'stillgelegt'
+};
+
+function aboTage(bis){
+  if(!bis) return null;
+  return Math.ceil((bis - Date.now()) / 86400000);
+}
+
+function renderAboKarte(){
+  var karte = $('aboKarte'); if(!karte) return;
+  if(!isChef()){ karte.style.display='none'; return; }
+  karte.style.display='';
+
+  var a = _abo || null;
+  var stand = $('aboStand'), hinweis = $('aboHinweis'), knoepfe = $('aboKnoepfe');
+  var status = a ? String(a.status||'') : '';
+  var stufe = a && a.stufe === 'premium' ? 'Premium' : 'Basic';
+
+  /* Kein Eintrag ist der Normalfall fuer jeden Bestandskunden und darf
+     NICHT wie ein Fehler aussehen. Genau derselbe Gedanke wie bei
+     aboText() in der Betreiber-Ansicht.
+
+     `!status` gehoert dazu und ist beim Durchlauf aufgefallen: ein
+     Dokument OHNE Zustand ergab „Basic · " — eine Ueberschrift mit
+     einem Trennzeichen und nichts dahinter. Ein halb gefuellter
+     Eintrag ist fuer den Leser dasselbe wie gar keiner, also gehoert
+     er in denselben Zweig. */
+  if(!a || !status){
+    stand.innerHTML = '<b>Alles freigeschaltet</b><span>Für diesen Betrieb ist kein Abo hinterlegt.</span>';
+    hinweis.textContent = '';
+    knoepfe.innerHTML = '';
+    return;
+  }
+
+  var wort = ABO_WORT[status] || status;
+  var zeile = stufe + ' · ' + wort;
+  var unter = '';
+
+  if(status === 'test'){
+    var t = aboTage(a.bisAm);
+    unter = t === null ? '' :
+      (t > 1 ? 'Noch ' + t + ' Tage.' :
+       t === 1 ? 'Noch einen Tag.' : 'Die Testphase ist abgelaufen.');
+  } else if(status === 'gekuendigt'){
+    unter = a.bisAm ? 'Läuft noch bis ' + new Date(a.bisAm).toLocaleDateString('de-DE') + '.' : '';
+  } else if(status === 'aktiv'){
+    unter = (a.netto ? fmtEuro(a.netto) + ' netto im Monat' : '') +
+      (a.bisAm ? ' · bezahlt bis ' + new Date(a.bisAm).toLocaleDateString('de-DE') : '');
+  } else if(status === 'gratis'){
+    unter = 'Dauerhaft kostenlos.';
+  } else if(['faellig','mahnung1','mahnung2'].indexOf(status) >= 0){
+    /* Die Zahl der Tage steht hier BEWUSST, und sie steht nur beim
+       Chef: „Zahlung offen" ohne Frist laesst offen, wie dringend es
+       ist — und genau das entscheidet, ob jemand heute handelt oder
+       in drei Wochen ueberrascht wird. */
+    var offen = a.offenSeit ? Math.floor((Date.now()-a.offenSeit)/86400000) : 0;
+    unter = 'Seit ' + (offen === 1 ? 'einem Tag' : offen + ' Tagen') +
+      '. Das Team merkt davon nichts.';
+  } else if(status === 'nurlesen'){
+    unter = 'Es lässt sich nichts mehr anlegen oder ändern. Alles bleibt sichtbar.';
+  } else if(status === 'zu'){
+    unter = 'Kein Zugang mehr. Die Daten sind nicht gelöscht.';
+  }
+
+  stand.innerHTML = '<b>'+esc(zeile)+'</b>'+(unter?'<span>'+esc(unter)+'</span>':'');
+
+  /* Welche Knoepfe? Wer noch nie an der Kasse war, bekommt „buchen";
+     wer schon dort war, bekommt den Weg zu Rechnungen und Kuendigung.
+     Beides gleichzeitig waere eine Entscheidung, die niemand treffen
+     muss. */
+  var h = '';
+  if(a.kunde){
+    h += '<button class="btn btn-ghost btn-sm" id="aboVerwalten">Rechnungen, Zahlungsmittel, kündigen</button>';
+  }
+  if(['test','faellig','mahnung1','mahnung2','nurlesen','zu','gekuendigt'].indexOf(status) >= 0){
+    h += '<button class="btn btn-primary btn-sm" id="aboBuchen">'+
+         (a.kunde ? 'Zahlung aktualisieren' : 'Abo buchen')+'</button>';
+  }
+  knoepfe.innerHTML = h;
+  hinweis.textContent = h
+    ? 'Bezahlt wird bei Stripe. Kartendaten werden hier nicht erfasst.'
+    : '';
+
+  var b = $('aboBuchen');   if(b) b.addEventListener('click', function(){ zurKasse(b, a.stufe); });
+  var v = $('aboVerwalten'); if(v) v.addEventListener('click', function(){ zurVerwaltung(v); });
+}
+
+/* Beide Wege fuehren auf eine Seite von Stripe. Der Knopf wird dabei
+   gesperrt und beschriftet: ein zweiter Klick waehrend der Umleitung
+   legt eine zweite Sitzung an, und der Kunde landet in der falschen. */
+function stripeWeg(btn, name, daten){
+  if(!btn) return;
+  var alt = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Einen Moment …';
+  firebase.app().functions(KONFIG.region).httpsCallable(name)(daten || {})
+    .then(function(r){
+      var url = r && r.data && r.data.url;
+      if(!url) throw new Error('Keine Adresse zurückbekommen.');
+      location.href = url;
+    })
+    .catch(function(e){
+      btn.disabled = false; btn.textContent = alt;
+      /* Die Meldung des Servers durchreichen statt sie zu übersetzen:
+         „Die Bezahlung ist noch nicht eingerichtet" sagt dem Chef
+         genau, wen er fragen muss. Ein allgemeines „Fehler" nicht. */
+      toast((e && e.message) || 'Das hat gerade nicht geklappt.', true);
+    });
+}
+function zurKasse(btn, stufe){ stripeWeg(btn, 'stripeKasse', { stufe: stufe || 'basic' }); }
+function zurVerwaltung(btn){ stripeWeg(btn, 'stripeVerwaltung', {}); }
+
+/* ── Der Rückweg von Stripe ──
+   Stripe schickt auf ?kasse=ok zurück. Der Webhook ist da meist noch
+   nicht durch — also wird hier NICHTS behauptet, was noch nicht
+   feststeht. „Wir haben die Zahlung" wäre eine Zusage über einen
+   Vorgang, den diese Seite nicht kennt. */
+function kasseRueckweg(){
+  var m = /[?&]kasse=(ok|ab)/.exec(location.search || '');
+  if(!m) return;
+  try{ history.replaceState({}, '', location.pathname); }catch(e){}
+  if(m[1] === 'ab'){ toast('Abgebrochen — es wurde nichts gebucht.'); return; }
+  toast('Danke. Sobald die Zahlung durch ist, schaltet sich alles frei.');
+  /* Nachsehen, aber mit Abstand: der Webhook braucht meist ein paar
+     Sekunden. Findet er es nicht, sorgt der Zuhörer auf config/zugriff
+     dafür, dass es trotzdem ankommt — ohne Neuladen. */
+  setTimeout(function(){ aboLaden().then(renderAboKarte); }, 4000);
+}
+
 function designVeroeffentlichen(btn){
   var an = !_designNeu;
   var frage = an
@@ -12153,7 +12477,11 @@ function enterApp(uid, data){
      einmal im alten Schnitt auf und springt dann um, sieht das aus wie
      ein Fehler — derselbe Grund, aus dem Abo und Funktionen hier
      stehen. */
-  Promise.all([aboLaden(), featuresLaden(), markeLaden(), designLaden()]).then(showApp, showApp);
+  /* zugriffLaden gehört aus demselben Grund in diese Runde: eine App,
+     die erst offen aussieht und eine Sekunde später die Sperrleiste
+     aufklappt, sieht nach einem Fehler aus. */
+  Promise.all([aboLaden(), featuresLaden(), markeLaden(), designLaden(),
+               zugriffLaden()]).then(showApp, showApp);
 }
 
 /* ============================================================
@@ -12262,6 +12590,33 @@ function firmaLaeuftNoch(profil){
     });
 }
 
+/* ── Die Zahlseite ────────────────────────────────────────────────────
+   Nur für die Geschäftsführung, und nur wenn der Betrieb stillgelegt
+   ist. Die Person bleibt ANGEMELDET — das ist der ganze Zweck: die
+   Kasse prüft serverseitig, wer ruft, und eine abgemeldete Person kann
+   sie nicht aufrufen.
+
+   Was hier NICHT steht: warum genau stillgelegt wurde. Ob es an einer
+   offenen Zahlung liegt oder daran, dass der Betreiber von Hand
+   gesperrt hat, weiss der Browser nicht — und raten waere schlimmer
+   als offenlassen. Der Knopf hilft in beiden Fällen: eine Zahlung
+   hebt die Sperre auf, und wenn nicht, meldet sich der Betreiber. */
+function zeigeZahlseite(profil){
+  splashWeg();
+  var wrap = $('zahlWrap'); if(!wrap) return;
+  document.getElementById('app').style.display = 'none';
+  $('authWrap').classList.remove('show');
+  wrap.classList.add('show');
+
+  var kasse = $('zahlKasse'), portal = $('zahlPortal'), ab = $('zahlAbmelden');
+  if(kasse && !kasse._an){ kasse._an = 1;
+    kasse.addEventListener('click', function(){ zurKasse(kasse, 'basic'); }); }
+  if(portal && !portal._an){ portal._an = 1;
+    portal.addEventListener('click', function(){ zurVerwaltung(portal); }); }
+  if(ab && !ab._an){ ab._an = 1;
+    ab.addEventListener('click', function(){ auth.signOut().then(function(){ location.reload(); }); }); }
+}
+
 function weiterMitAnmeldung(user){
   if(user){
     db.collection('users').doc(user.uid).get()
@@ -12269,6 +12624,21 @@ function weiterMitAnmeldung(user){
         if(doc.exists){
           return firmaLaeuftNoch(doc.data()).then(function(ok){
             if(ok){ enterApp(user.uid, doc.data()); return; }
+            /* ── Der Chef wird NICHT ausgesperrt ──
+               Ist ein Betrieb wegen einer offenen Zahlung stillgelegt,
+               ist die Geschäftsführung genau die Person, die das lösen
+               kann. Sie abzumelden hiesse, eine Sperre zu bauen, aus
+               der es keinen Weg zurück gibt: abgemeldet kann sie die
+               Kasse nicht aufrufen, denn die prüft, WER ruft.
+
+               Sie bleibt also angemeldet und sieht statt der App eine
+               Seite mit genau einem Knopf. Lesen und Schreiben sperren
+               die Regeln ohnehin — das hier nimmt ihr nichts weg, es
+               gibt ihr nur den einen Weg, der noch offen ist. */
+            if((doc.data()||{}).role === 'chef'){
+              zeigeZahlseite(doc.data());
+              return;
+            }
             auth.signOut();
             $('authWrap').classList.add('show'); splashWeg();
             setAuthMode('login');
@@ -12336,6 +12706,20 @@ function showApp(){
      Studionamen braucht. */
   setTimeout(function(){ try{ terminalStarten(); }catch(e){ console.warn('Terminal:', e); } }, 400);
   listenFeatures();                      // schaltet der Chef etwas um, ist es überall weg
+  listenZugriff();                       // zahlt der Chef, sind die Tablets sofort wieder frei
+  zugriffAnwenden();                     // und der Stand von eben gilt ab jetzt sichtbar
+  kasseRueckweg();                       // kommt jemand gerade von Stripe zurück?
+
+  /* Der Weg aus der Sperrleiste zum Abo. Nur der Chef sieht den Knopf
+     überhaupt (siehe zugriffAnwenden) — einem Mitarbeiter einen Weg
+     zur Kasse anzubieten, den er nicht gehen darf, wäre eine Sackgasse
+     mit Fehlermeldung. */
+  var alk = $('aboLeisteKnopf');
+  if(alk) alk.addEventListener('click', function(){
+    showView('chef');
+    var b = document.querySelector('#chefHome [data-cgo="system"]');
+    if(b) b.click();
+  });
   /* Jetzt steht die Anmeldung — die Navigation kann gebaut werden, und
      der Firmenschalter aus designLaden() ist da. Beobachten heisst
      hier: der Chef drückt „für alle veröffentlichen", und auf den
@@ -20138,7 +20522,7 @@ function showChefTab(id, keep){
   if(id==='anliegen') anliegenLaden();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
-  if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); }
+  if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); renderAboKarte(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
 

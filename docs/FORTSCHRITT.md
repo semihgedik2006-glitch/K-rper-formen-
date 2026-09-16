@@ -9212,3 +9212,140 @@ seinen Akzent umstellt. Ein Verzeichnis, dessen Farbe von einer
 Einstellung abhängt, ist keine Ordnung.
 
 **110 Durchläufe grün.**
+
+---
+
+## Runde 90 — Das Abo-Modell mit Kasse und Paywall
+
+**Anlass**, wörtlich: „lass uns schonmal ein abo modell bauen mit zahlung
+und alles drum und dran das man sozusagen eine paywall hat bevor man die
+app nutzen kann".
+
+Vier Entscheidungen vorab abgefragt, weil sie die Arbeit verschieden
+gemacht hätten: **Stripe** · **Bestandsschutz dauerhaft gratis** ·
+**Testphase, dann zu** · **Basic und Premium wie gebaut**.
+
+Damit sind die Stufen C, D und E aus `docs/ABO-PLAN.md` gebaut. Die
+Planung dort stammt vom 11. August und ist unverändert gültig geblieben
+— sie hat den Bau getragen, statt umgeschrieben zu werden.
+
+### Die Grenze steht in den Regeln, nicht in der App
+
+Der Vermerk bei `abo/{doc}` in `firestore.rules` stand seit August da
+und sagte genau, was zu tun ist: *„Wenn später der Zustand `nurlesen`
+dazukommt, gehört die Prüfung in JEDES allow der Firma — nicht in die
+App. Beim Sperren war dieser Fehler zwei Tage lang unbemerkt, und die
+Oberfläche behauptete derweil das Gegenteil."*
+
+Also `schreibtIn(f)` statt `inFirma(f)` an **54 Schreibregeln**. Lesen
+bleibt offen: Dienstpläne, Putzplan und Nachweise sind
+Betriebsunterlagen, und sie von einem Tag auf den anderen unerreichbar
+zu machen ist etwas anderes, als eine Software abzuschalten.
+
+**Drei Sammlungen ausdrücklich ausgenommen** — `pushTokens`, `fehler`,
+`statistik`. Die erste ist die Anmeldung eines Geräts und kein Inhalt;
+wer sie mitsperrt, lässt jedes Handy beim Start in einen Fehler laufen,
+ausgerechnet bei einem Kunden, der ohnehin gerade eine schlechte
+Nachricht bekommt. Die anderen beiden wären genau dann still, wenn man
+sie braucht.
+
+### `zu` heißt wirklich zu — aber ohne die Lesekosten zu verdoppeln
+
+Die Schreibsperre hängt an einem `get()` auf den Abo-Eintrag. Beim
+**Lesen** dasselbe zu tun hieße: ein zusätzlicher Lesevorgang bei jedem
+Zugriff der ganzen App, für eine Grenze, die hoffentlich nie jemanden
+trifft. Der Vermerk bei `hatPremium()` warnt aus genau diesem Grund
+davor, so etwas in `inFirma()` aufzunehmen.
+
+Also anders herum: `zu` setzt `aktiv` auf dem Firmen-Dokument, und das
+prüft `firmaLaeuft(f)` längst — in `inFirma(f)`, also bei jedem Zugriff.
+Kosten: null. Die Grenze ist dieselbe wie beim Sperren von Hand, und
+die ist erprobt.
+
+`zuDurchAbo` merkt sich, **wer** gesperrt hat. Ohne dieses Feld würde
+eine eingehende Zahlung eine Firma wieder öffnen, die der Betreiber aus
+einem ganz anderen Grund stillgelegt hat.
+
+### Der Fund, der am teuersten gewesen wäre
+
+Der erste Anlauf schloss aus „hat je gezahlt", welche Mahnleiter gilt.
+Das war an **genau einer Stelle** falsch: wer regulär **kündigt**, hat
+gezahlt — und hätte damit nach Vertragsende die lange Leiter bekommen,
+also fünf Wochen Vollzugriff. **Eine Kündigung wäre günstiger gewesen
+als das Abo.**
+
+Aufgefallen ist es beim Schreiben von `test-abo-leiter.js`, an der
+Zeile „die kurze Leiter sperrt früher als die lange". Jetzt steht die
+Leiter als Feld im Eintrag und wird dort gesetzt, wo der Rückstand
+entsteht — da ist immer klar, worum es sich handelt.
+
+### Die Uhr rechnet, sie stellt nicht weiter
+
+Der Zustand wird jede Nacht neu aus **einem** Datum berechnet, nicht
+vom vorigen Zustand aus eine Stufe weitergeschoben. Der Unterschied
+zeigt sich an dem Tag, an dem der Lauf ausfällt: eine weitergestellte
+Leiter steht still, und ein Kunde behält Zugang, den er nicht mehr hat.
+Eine gerechnete holt den Tag beim nächsten Lauf von selbst auf.
+
+Drei Dinge fasst sie nie an: `gratis` (darauf steht der Bestandsschutz),
+von Hand Gesetztes (sonst überschreibt sie eine Kulanzfrist) und Firmen
+ohne Eintrag.
+
+### Die Einbahnstraße, die beinahe entstanden wäre
+
+Ein Betrieb, der wegen einer offenen Zahlung stillgelegt ist, ist genau
+der, der zahlen will. Bis hierher wurde **jeder** abgemeldet — und
+abgemeldet kann niemand die Kasse aufrufen, denn die prüft
+serverseitig, wer ruft.
+
+Der Chef bleibt jetzt angemeldet und sieht eine Seite mit einem Knopf.
+`stripeKasse` benutzt deshalb ausdrücklich **nicht** `firmaVonProfil()`
+— das weist eine stillgelegte Firma ab, mit gutem Grund, aber hier wäre
+genau das die Falle.
+
+### Was das Team erfährt und was nicht
+
+Den Abo-Eintrag darf nur der Chef lesen: was ein Betrieb zahlt, geht
+eine Aushilfe nichts an. Trotzdem muss die App jedem sagen können
+„gerade lässt sich nichts ändern" — sonst läuft ein Mitarbeiter beim
+Abhaken in einen Fehler und hält die App für kaputt.
+
+Ein Auslöser auf dem Abo-Eintrag spiegelt deshalb **nur die Stufe**
+nach `config/zugriff`: voll, nurlesen oder zu. Kein Betrag, kein Datum,
+keine Mahnstufe. Als Auslöser und nicht als Aufruf in jeder Funktion,
+weil den Zustand inzwischen fünf Stellen setzen — eine davon vergisst
+man.
+
+Der Satz für das Team lautet „**Das liegt nicht an dir**". Die
+Alternative wäre, dass eine Aushilfe glaubt, sie habe etwas
+kaputtgemacht.
+
+### Zwei Funde nebenbei
+
+*Die Demo trug `stufe: 'A'`* — einen Wert, den es im Abo-Modell nie
+gab. Altbestand aus der Zeit, als der Eintrag nur herumlag und niemand
+ihn las. Sichtbar wurde er erst, als die Abo-Karte ihn anzeigte:
+„Basic · " mit einem Trennzeichen und nichts dahinter.
+
+*Die Zahlseite behauptete einen Grund, den sie nicht kennen kann.*
+„Für diesen Betrieb ist eine Zahlung offen" stand dort — bei jedem von
+Hand gesperrten Betrieb schlicht falsch, und es wäre die erste
+Falschaussage gewesen, die der Kunde liest. Der Browser weiß nicht,
+warum gesperrt wurde; beides setzt dasselbe Feld. Jetzt steht dort kein
+Grund, und ein Durchlauf hält fest, dass auch keiner hineinwandert.
+
+### Ohne Schlüssel passiert nichts
+
+Fehlt `STRIPE_SECRET`, antworten die drei Endpunkte mit „Die Bezahlung
+ist noch nicht eingerichtet". Die App läuft vollständig weiter.
+Derselbe Grundsatz wie in Abschnitt 6 des Plans: **kein Kaufknopf,
+solange es keine Kasse gibt.** Einrichten: `docs/KASSE.md`.
+
+Und der Punkt, der nicht hier gelöst werden kann: Geld einzunehmen ohne
+Impressum, AGB und — bei Verbrauchern — Widerrufsbelehrung ist
+abmahnfähig. Stripe lässt sich einrichten und im Testmodus ausprobieren;
+scharf geschaltet wird erst, wenn die Unterlagen da sind.
+
+**112 Durchläufe grün · 1.001 Zusicherungen in den Regeltests**
+(davon 42 neue für die Sperre, mit Gegenproben) · 48 auf die reine
+Rechnung der Mahnleiter · 28 auf das, was ein Mensch zu lesen bekommt.

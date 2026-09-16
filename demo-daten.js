@@ -431,6 +431,16 @@
 
   /* ══ Die Daten ══════════════════════════════════════════════════════ */
 
+  /* Nur drei Werte sind erlaubt, und alles andere wird zu 'voll'. Eine
+     Aufzaehlung statt einer Uebernahme: was aus einer Adresse kommt,
+     gehoert geprueft, auch wenn es hier nur die Demo betrifft. */
+  function aboAusAdresse() {
+    try {
+      var m = /[?&]abo=(voll|nurlesen|zu)(&|$)/.exec(String(location.search || ''));
+      return m ? m[1] : 'voll';
+    } catch (e) { return 'voll'; }
+  }
+
   legen('users', USERS.slice());
   legen(P('config'), [
     /* Öffnungszeiten sind gepflegt — ohne sie liesse sich in der Demo
@@ -450,7 +460,21 @@
       demoHinweis: true
     },
     { id: 'features', schichtplan: true, putzplan: true, material: true, geraete: true,
-      dokumente: true, probetraining: true, umfragen: true, nachweise: true }
+      dokumente: true, probetraining: true, umfragen: true, nachweise: true },
+    /* ── Die Zugriffsstufe ──
+       Im Betrieb schreibt sie ausschliesslich der Server, abgeleitet
+       aus dem Abo. In der Demo gibt es keinen Server, also kommt sie
+       aus der Adresse: ?demo=chef&abo=nurlesen.
+
+       Warum ueberhaupt: die Sperre ist der einzige Zustand der App,
+       den man nicht herbeifuehren kann, indem man etwas anklickt. Ohne
+       diesen Weg liesse sie sich nur pruefen, indem ein Durchlauf
+       Funktionen von innen aufruft — und dann prueft er die Funktion
+       statt den Weg, den ein Mensch nimmt.
+
+       'voll' ist die Voreinstellung. Ein Besucher, der die Demo
+       oeffnet, sieht nie eine Sperre. */
+    { id: 'zugriff', stufe: aboAusAdresse(), stand: Date.now() }
   ]);
 
   /* Chat: ein allgemeiner Kanal, je Studio einer, dazu zwei Gruppen. */
@@ -736,7 +760,26 @@
   legen(P('zeiten'), STEMPEL);
 
   legen('firmen', [{ id: KENNUNG, name: 'Körperformen', aktiv: true, kennung: KENNUNG }]);
-  legen(P('abo'), [{ id: 'aktuell', stufe: 'A', seit: vorTag(200) }]);
+  /* ── Das Abo in der Demo ──
+     Hier stand `stufe: 'A'` — ein Wert, den es im Abo-Modell gar nicht
+     gibt (die Stufen heissen basic und premium). Aufgefallen ist es
+     erst, als die Abo-Karte gebaut wurde: sie zeigte „Basic · " mit
+     einem Trennzeichen und nichts dahinter. Altbestand aus der Zeit,
+     als der Eintrag nur herumlag und niemand ihn las.
+
+     Der Zustand haengt jetzt an derselben Adresse wie die
+     Zugriffsstufe, damit die Demo sich nicht widerspricht: eine App,
+     die „nur noch lesen" anzeigt und daneben ein laufendes Abo, ist
+     als Vorfuehrung schlimmer als gar keine. */
+  legen(P('abo'), [{
+    id: 'aktuell',
+    stufe: 'premium',
+    status: aboAusAdresse() === 'voll' ? 'test' : aboAusAdresse(),
+    netto: 0,
+    bisAm: Date.now() + 21 * 86400000,
+    jeGezahlt: false,
+    seit: vorTag(9)
+  }]);
 
   /* ══ Server-Funktionen in der Demo ══════════════════════════════════
      Die meisten gibt es hier nicht, und das sagt die Demo auch: was auf

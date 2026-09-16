@@ -201,6 +201,40 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/firmen/$(f))
         && get(/databases/$(database)/documents/firmen/$(f)).data.get('aktiv', true) == true;
     }
+
+    /* ── DARF IN DIESER FIRMA NOCH GESCHRIEBEN WERDEN? ─────────────────
+       Der Zustand 'nurlesen' aus der Mahnleiter (docs/ABO-PLAN.md,
+       Abschnitt 3). Er steht HIER und nicht in der App, und der Vermerk
+       weiter unten bei abo/{doc} sagt seit August, warum: beim Sperren
+       einer Firma stand die Grenze zwei Tage lang nur in der
+       Oberflaeche, und die Oberflaeche behauptete derweil das Gegenteil.
+       Wer die Adresse kennt, schreibt an einer App-Pruefung vorbei.
+
+       KEIN EINTRAG HEISST SCHREIBEN ERLAUBT. Das ist dieselbe
+       Entscheidung wie in der App und in den Cloud Functions: ein
+       Betrieb, dem die App zugeht, weil niemand ein Feld ausgefuellt
+       hat, waere der schlechtere Fehler. Heute hat kein einziger
+       Bestandskunde einen Eintrag — eine Regel, die aus "leer" ein
+       "zu" macht, legte am Tag der Auslieferung alle still.
+
+       EIN einziges exists()/get()-Paar, und zwar ueber eine let-Bindung:
+       zweimal denselben Pfad zu holen kostet zweimal. Der Aufruf steht
+       nur an SCHREIB-Regeln — Lesen bleibt in jedem Zustand offen, denn
+       Dienstplaene und Nachweise sind Betriebsunterlagen. */
+    function aboStatus(f) {
+      let p = /databases/$(database)/documents/firmen/$(f)/abo/aktuell;
+      return exists(p) ? get(p).data.get('status', '') : '';
+    }
+    function darfSchreiben(f) {
+      return !(aboStatus(f) in ['nurlesen', 'zu']);
+    }
+    /* Die beiden zusammen. Ueberall dort, wo bisher inFirma(f) an einer
+       Schreibregel stand, steht jetzt das hier — damit man an EINER
+       Stelle sieht, dass beides zusammengehoert, und damit ein neuer
+       Block nicht versehentlich nur die halbe Pruefung bekommt. */
+    function schreibtIn(f) {
+      return inFirma(f) && darfSchreiben(f);
+    }
     /* ── Die flachen Pfade gehoeren dem ERSTEN Betrieb ────────────────
        Sie sind Altdaten: seit mandant:true schreibt die App unter
        firmen/<kennung>/. Was flach liegt, ist der Rueckweg — und war
@@ -1400,18 +1434,19 @@ service cloud.firestore {
       allow write: if istAdminKonto();
 
         match /config/registrierung {
-          allow read, write: if inFirma(f) && (isChef());
+          allow read: if inFirma(f) && (isChef());
+          allow write: if schreibtIn(f) && (isChef());
         }
 
         match /config/beitrittSchalter {
           allow read: if true;
-          allow write: if inFirma(f) && (isChef());
+          allow write: if schreibtIn(f) && (isChef());
         }
 
         match /config/studios {
           allow read: if true;
-          allow create: if inFirma(f) && (isChef());
-          allow update: if inFirma(f) && (isChef()
+          allow create: if schreibtIn(f) && (isChef());
+          allow update: if schreibtIn(f) && (isChef()
             && request.resource.data.liste.size() >= resource.data.liste.size());
           allow delete: if false;
         }
@@ -1432,13 +1467,13 @@ service cloud.firestore {
         // das Lesen. Beim Schreiben ist sie deckungsgleich.
         match /config/recht {
           allow read: if true;
-          allow write: if inFirma(f) && isChef();
+          allow write: if schreibtIn(f) && isChef();
         }
 
         match /channels/{channelId}/messages/{msgId} {
           allow read: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId));
           // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
-          allow create: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId)
+          allow create: if schreibtIn(f) && (istAktiv() && kanalErlaubt(channelId)
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.text is string
             && request.resource.data.text.size() <= 2000
@@ -1446,7 +1481,7 @@ service cloud.firestore {
           // Reagieren darf jeder — aber nur mit der EIGENEN Kennung und nur
           // mit einem der sechs Zeichen. Siehe nurEigeneReaktion() oben.
           // Den Text bearbeiten darf nur der Verfasser, und nur 15 Minuten lang.
-          allow update: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId) && (
+          allow update: if schreibtIn(f) && (istAktiv() && kanalErlaubt(channelId) && (
                nurEigeneReaktion()
             // Bei einer Umfrage abstimmen darf jeder – aber wirklich nur die
             // EIGENE Stimme. Siehe nurEigeneStimme() oben.
@@ -1460,7 +1495,7 @@ service cloud.firestore {
                 && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned']))
           ));
           // Chef darf jede Nachricht löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
-          allow delete: if inFirma(f) && kanalErlaubt(channelId) && (isChef()
+          allow delete: if schreibtIn(f) && kanalErlaubt(channelId) && (isChef()
             || manages(channelId)
             || (istAktiv()
                 && resource.data.uid == request.auth.uid
@@ -1472,36 +1507,36 @@ service cloud.firestore {
            Block weiter oben. */
         match /studios/{studioKey}/todos/{todoId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (manages(studioKey)
+          allow create: if schreibtIn(f) && (manages(studioKey)
             || (istAktiv()
                 && studioKey in myKeys()
                 && request.resource.data.createdByUid == request.auth.uid
                 && (!('recurring' in request.resource.data)
                     || request.resource.data.recurring == null
                     || request.resource.data.recurring == '')));
-          allow delete: if inFirma(f) && (manages(studioKey));
+          allow delete: if schreibtIn(f) && (manages(studioKey));
           // Leitung alles; Mitarbeiter nur im eigenen Studio und nur die
           // Felder, die er in der App auch anfassen kann.
-          allow update: if inFirma(f) && (manages(studioKey)
+          allow update: if schreibtIn(f) && (manages(studioKey)
             || (istAktiv() && studioKey in myKeys()
                 && nurDieseFelder(todoMitarbeiterFelder())));
         }
 
         match /studios/{studioKey}/cleaning/{taskId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (manages(studioKey));   // Chef überall, Leiter in seinen Studios
-          allow delete: if inFirma(f) && (manages(studioKey));
+          allow create: if schreibtIn(f) && (manages(studioKey));   // Chef überall, Leiter in seinen Studios
+          allow delete: if schreibtIn(f) && (manages(studioKey));
           // Anlegen ist Chefsache, also auch Umbenennen und Pausieren.
-          allow update: if inFirma(f) && (manages(studioKey)
+          allow update: if schreibtIn(f) && (manages(studioKey)
             || (istAktiv() && nurDieseFelder(putzMitarbeiterFelder())));
         }
 
         match /studios/{studioKey}/cleaningNotes/{noteId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (istAktiv()
+          allow create: if schreibtIn(f) && (istAktiv()
             && request.resource.data.byUid == request.auth.uid);
           // Chef darf jede Notiz löschen; Mitarbeiter nur eigene innerhalb 1 Stunde
-          allow delete: if inFirma(f) && (manages(studioKey)
+          allow delete: if schreibtIn(f) && (manages(studioKey)
             || (istAktiv()
                 && resource.data.byUid == request.auth.uid
                 && request.time.toMillis() < resource.data.ts + 3600000));
@@ -1510,14 +1545,14 @@ service cloud.firestore {
 
         match /studios/{studioKey}/devices/{devId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (manages(studioKey)
+          allow create: if schreibtIn(f) && (manages(studioKey)
             && request.resource.data.name is string
             && request.resource.data.name.size() <= 80);
-          allow delete: if inFirma(f) && (manages(studioKey));
+          allow delete: if schreibtIn(f) && (manages(studioKey));
           // Umbenennen und umziehen darf nur die Verwaltung. Alle anderen
           // dürfen ausschliesslich den Zustand melden – sonst könnte eine
           // Meldung nebenbei das Gerät umbenennen.
-          allow update: if inFirma(f) && (manages(studioKey)
+          allow update: if schreibtIn(f) && (manages(studioKey)
             || (istAktiv()
                 && request.resource.data.diff(resource.data)
                      .affectedKeys().hasOnly(['status','lastNote','lastBy','lastAt'])));
@@ -1525,55 +1560,55 @@ service cloud.firestore {
 
         match /studios/{studioKey}/deviceLog/{logId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (istAktiv()
+          allow create: if schreibtIn(f) && (istAktiv()
             && request.resource.data.byUid == request.auth.uid
             && request.resource.data.text is string
             && request.resource.data.text.size() <= 300
             && devPhotoOk());
           allow update: if false;
-          allow delete: if inFirma(f) && (manages(studioKey));
+          allow delete: if schreibtIn(f) && (manages(studioKey));
         }
 
         match /announcements/{annId} {
           allow read: if inFirma(f) && (istAktiv());
           // Chef an alle oder einzelne Studios; Leiter nur an seine Studios
-          allow create: if inFirma(f) && (request.resource.data.uid == request.auth.uid
+          allow create: if schreibtIn(f) && (request.resource.data.uid == request.auth.uid
             && (isChef()
                 || (isLeiter() && request.resource.data.target in myKeys())));
           // Chef/zuständiger Leiter dürfen alles; alle anderen nur das Lesen markieren
-          allow update: if inFirma(f) && (isChef()
+          allow update: if schreibtIn(f) && (isChef()
             || (isLeiter() && resource.data.target in myKeys())
             || (istAktiv() && nurEigenerHaken())
             // Reagieren darf jeder — nur mit der eigenen Kennung, nur mit
             // einem der sechs Zeichen.
             || (istAktiv() && nurEigeneReaktion()));
-          allow delete: if inFirma(f) && (isChef()
+          allow delete: if schreibtIn(f) && (isChef()
             || (isLeiter() && resource.data.target in myKeys()));
         }
 
         match /inventory/{studioKey} {
           allow read: if inFirma(f) && (istAktiv());
           // Eintragen dürfen alle Eingeloggten; das Soll-Limit setzt die Verwaltung
-          allow write: if inFirma(f) && (istAktiv());
+          allow write: if schreibtIn(f) && (istAktiv());
         }
 
         match /documents/{docId} {
           allow read: if inFirma(f) && (istAktiv());
           // Leiter darf nur Dokumente anlegen, die ausschließlich seine Studios betreffen
-          allow create: if inFirma(f) && (isChef()
+          allow create: if schreibtIn(f) && (isChef()
             || (isLeiter() && request.resource.data.studios.hasOnly(myKeys())));
-          allow update, delete: if inFirma(f) && (isChef()
+          allow update, delete: if schreibtIn(f) && (isChef()
             || (isLeiter() && resource.data.studios.hasOnly(myKeys())));
         }
 
         match /documentData/{docId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create, update: if inFirma(f) && (isChef()
+          allow create, update: if schreibtIn(f) && (isChef()
             || (isLeiter()
                 && exists(/databases/$(database)/documents/documents/$(docId))
                 && get(/databases/$(database)/documents/documents/$(docId))
                      .data.studios.hasOnly(myKeys())));
-          allow delete: if inFirma(f) && (isChef());
+          allow delete: if schreibtIn(f) && (isChef());
         }
 
         /* ── Nachweise: der eine Riegel, der wirklich einer ist ──
@@ -1597,21 +1632,21 @@ service cloud.firestore {
         match /certificates/{certId} {
           allow read: if inFirma(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
-          allow create: if inFirma(f) && hatPremium(f)
+          allow create: if schreibtIn(f) && hatPremium(f)
             && (isChef()
                 || (istAktiv()
                     && request.resource.data.uid == request.auth.uid
                     && request.resource.data.erfasstVonUid == request.auth.uid
                     && request.resource.data.get('bestaetigt', false) == false));
           // Nach der Bestaetigung nur noch der Chef — siehe oben.
-          allow update: if inFirma(f) && hatPremium(f)
+          allow update: if schreibtIn(f) && hatPremium(f)
             && (isChef()
                 || (istAktiv()
                     && resource.data.uid == request.auth.uid
                     && request.resource.data.uid == request.auth.uid
                     && resource.data.get('bestaetigt', false) == false
                     && request.resource.data.get('bestaetigt', false) == false));
-          allow delete: if inFirma(f) && isChef() && hatPremium(f);
+          allow delete: if schreibtIn(f) && isChef() && hatPremium(f);
         }
 
         match /config/{doc} {
@@ -1620,6 +1655,14 @@ service cloud.firestore {
           // Ausnahme wuerde die allgemeine Regel hier den Firmencode fuer
           // jeden Eingeloggten lesbar machen - und die Sperre waere
           // Dekoration.
+          /* 'zugriff' ist ausdruecklich LESBAR fuer jeden Aktiven, und
+             das ist Absicht: nur so kann die App einem Mitarbeiter
+             sagen „gerade laesst sich nichts aendern", statt ihn in
+             einen Fehler laufen zu lassen. Darin steht NUR die Stufe
+             (voll / nurlesen / zu) — kein Betrag, kein Datum, keine
+             Mahnstufe. Dass ein Betrieb im Rueckstand ist, geht das
+             Team nichts an; dass gerade nichts gespeichert wird, schon.
+             Geschrieben wird es ausschliesslich vom Server. */
           allow read: if inFirma(f) && (istAktiv() && doc != 'registrierung'
                        && doc != 'beitrittSchalter' && doc != 'studios');
           // 'studios' muss auch beim SCHREIBEN ausgenommen sein, nicht nur
@@ -1628,17 +1671,25 @@ service cloud.firestore {
           // Firestore genuegt EINE zutreffende Regel, die erlaubt. Der
           // Regeltest hat genau das gefunden - dieselbe Falle wie beim
           // Firmencode, in derselben Datei, ein zweites Mal.
-          allow write: if inFirma(f) && (isChef() && doc != 'studios');
+          /* 'zugriff' gehoert ebenso ausgenommen. Zwar koennte ein Chef
+             damit ohnehin nichts erreichen — die echte Grenze liest
+             abo/aktuell, und das kann er nicht schreiben —, aber er
+             koennte die Leiste wegklicken, die seinem Team erklaert,
+             warum gerade nichts geht. Eine Oberflaeche, die etwas
+             anderes behauptet als die Datenbank, ist genau der
+             Zustand, der beim Sperren zwei Tage lang unbemerkt blieb. */
+          allow write: if schreibtIn(f)
+                       && (isChef() && doc != 'studios' && doc != 'zugriff');
         }
 
         match /dms/{dmId} {
           // Lesen/Abfragen über das participants-Feld (funktioniert auch für Listen-Abfragen)
           allow read: if inFirma(f) && (istAktiv() && request.auth.uid in resource.data.participants);
-          allow create: if inFirma(f) && (istAktiv() && request.auth.uid in request.resource.data.participants);
+          allow create: if schreibtIn(f) && (istAktiv() && request.auth.uid in request.resource.data.participants);
           // participants darf sich beim Mitschreiben des Verlaufs nicht
           // veraendern — wer einen Dritten hineinschreibt, gibt ihm das
           // Leserecht auf ein 1:1-Gespraech.
-          allow update: if inFirma(f) && (istAktiv()
+          allow update: if schreibtIn(f) && (istAktiv()
             && request.auth.uid in resource.data.participants
             && request.resource.data.participants.size() == 2
             && request.resource.data.participants.hasOnly(resource.data.participants));
@@ -1646,17 +1697,17 @@ service cloud.firestore {
 
         match /dms/{dmId}/messages/{msgId} {
           allow read: if inFirma(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid]));
-          allow create: if inFirma(f) && (istAktiv()
+          allow create: if schreibtIn(f) && (istAktiv()
             && request.resource.data.uid == request.auth.uid
             && dmId.split('_').hasAny([request.auth.uid])
             && audioOk());
           // Nur das Checklisten-Haekchen. Ohne die Einschraenkung darf
           // der Empfaenger den Text des Absenders umschreiben — siehe
           // den ausfuehrlichen Vermerk in der flachen Fassung oben.
-          allow update: if inFirma(f) && (istAktiv()
+          allow update: if schreibtIn(f) && (istAktiv()
             && dmId.split('_').hasAny([request.auth.uid])
             && nurDieseFelder(['items']));
-          allow delete: if inFirma(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid])
+          allow delete: if schreibtIn(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid])
             && (isChef()
                 || (resource.data.uid == request.auth.uid
                     && request.time.toMillis() < resource.data.ts + 3600000)));
@@ -1733,7 +1784,7 @@ service cloud.firestore {
         /* Probetraining — siehe den flachen Block weiter oben. */
         match /probetrainings/{pbId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (istAktiv()
+          allow create: if schreibtIn(f) && (istAktiv()
             && request.resource.data.erfasstVon == request.auth.uid
             && request.resource.data.vonName is string
             && request.resource.data.vonName.size() > 0
@@ -1744,7 +1795,7 @@ service cloud.firestore {
             && (!('notiz' in request.resource.data)
                 || request.resource.data.notiz.size() <= 200));
           allow update: if false;
-          allow delete: if inFirma(f) && (isChef()
+          allow delete: if schreibtIn(f) && (isChef()
             || (istAktiv()
                 && (resource.data.erfasstVon == request.auth.uid
                     || resource.data.vonUid == request.auth.uid)));
@@ -1753,12 +1804,12 @@ service cloud.firestore {
         match /studios/{studioKey}/shifts/{shiftId} {
           allow read: if inFirma(f) && (istAktiv());
           // Einteilen darf nur die Verwaltung (Chef bzw. zuständiger Leiter)
-          allow create, delete: if inFirma(f) && (manages(studioKey));
+          allow create, delete: if schreibtIn(f) && (manages(studioKey));
           // Beim Tausch dürfen Mitarbeiter mitwirken – aber ausschliesslich an
           // den Tausch-Feldern. WER eingeteilt ist (uid, name), ändert nur die
           // Verwaltung beim Bestätigen. Sonst könnte sich jemand selbst aus dem
           // Plan schreiben oder einen anderen hineinsetzen.
-          allow update: if inFirma(f) && (manages(studioKey)
+          allow update: if schreibtIn(f) && (manages(studioKey)
             // 1. Die eigene Schicht ausschreiben oder wieder zurückziehen
             || (istAktiv()
                 && resource.data.uid == request.auth.uid
@@ -1776,7 +1827,7 @@ service cloud.firestore {
         match /studios/{studioKey}/absences/{absId} {
           allow read: if inFirma(f) && (istAktiv());
           // Jeder meldet sich selbst; die Verwaltung darf auch für andere eintragen
-          allow create: if inFirma(f) && (istAktiv()
+          allow create: if schreibtIn(f) && (istAktiv()
             && (request.resource.data.uid == request.auth.uid || manages(studioKey))
             // Wer für sich selbst einträgt, darf sich nicht gleich selbst
             // genehmigen. Krankmeldungen und Einträge der Verwaltung schon.
@@ -1784,54 +1835,55 @@ service cloud.firestore {
                 || request.resource.data.type == 'krank'
                 || request.resource.data.status == 'offen'));
           // Genehmigen und Ablehnen ist Sache der Verwaltung
-          allow update: if inFirma(f) && (manages(studioKey));
-          allow delete: if inFirma(f) && (manages(studioKey)
+          allow update: if schreibtIn(f) && (manages(studioKey));
+          allow delete: if schreibtIn(f) && (manages(studioKey)
             || (istAktiv() && resource.data.uid == request.auth.uid));
         }
 
         match /studios/{studioKey}/handovers/{hoId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
+          allow create: if schreibtIn(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
           allow update: if false;
-          allow delete: if inFirma(f) && (manages(studioKey)
+          allow delete: if schreibtIn(f) && (manages(studioKey)
             || (istAktiv() && resource.data.uid == request.auth.uid));
         }
 
         match /anliegen/{aId} {
           allow read: if inFirma(f) && (istAktiv() && anliegenFuerMich());
-          allow create: if inFirma(f) && (istAktiv() && anliegenNeu());
-          allow update: if inFirma(f) && (istAktiv()
+          allow create: if schreibtIn(f) && (istAktiv() && anliegenNeu());
+          allow update: if schreibtIn(f) && (istAktiv()
             && (isChef() || (resource.data.an == 'leiter'
                              && manages(resource.data.get('studioKey', ''))))
             && anliegenAntwort());
-          allow delete: if inFirma(f) && (istAktiv()
+          allow delete: if schreibtIn(f) && (istAktiv()
             && resource.data.uid == request.auth.uid
             && resource.data.status == 'offen');
         }
 
         match /board/{postId} {
           allow read: if inFirma(f) && (istAktiv());
-          allow create: if inFirma(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
+          allow create: if schreibtIn(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
           // Bearbeiten geht weiterhin nicht. Reagieren und Abstimmen
           // schon — nur die eigene Kennung, nur die eigene Stimme.
-          allow update: if inFirma(f) && (istAktiv()
+          allow update: if schreibtIn(f) && (istAktiv()
             && (nurEigeneReaktion() || nurEigeneStimme()));
-          allow delete: if inFirma(f) && (isChef()
+          allow delete: if schreibtIn(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
         }
 
         match /trash/{trashId} {
           allow read: if inFirma(f) && (isChef()
             || (isLeiter() && resource.data.sk != null && manages(resource.data.sk)));
-          allow create: if inFirma(f) && (istAktiv()
+          allow create: if schreibtIn(f) && (istAktiv()
             && request.resource.data.deletedByUid == request.auth.uid);
           allow update: if false;                    // Papierkorb wird nicht bearbeitet
-          allow delete: if inFirma(f) && (isChef()
+          allow delete: if schreibtIn(f) && (isChef()
             || (isLeiter() && resource.data.sk != null && manages(resource.data.sk)));
         }
 
         match /archives/{weekId} {
-          allow read, write: if inFirma(f) && (isChef());
+          allow read: if inFirma(f) && (isChef());
+          allow write: if schreibtIn(f) && (isChef());
         }
 
         // Siehe oben: schreiben darf jeder Angemeldete, lesen nur der Chef.
@@ -1858,12 +1910,28 @@ service cloud.firestore {
         // hier zu ist — sonst waere ausgerechnet die private Sammlung die
         // einzige, die eine Sperre ueberlebt.
         match /privat/{uid} {
-          allow read, write: if inFirma(f) && request.auth.uid == uid;
+          allow read: if inFirma(f) && request.auth.uid == uid;
+          allow write: if schreibtIn(f) && request.auth.uid == uid;
           match /{rest=**} {
-            allow read, write: if inFirma(f) && request.auth.uid == uid;
+            allow read: if inFirma(f) && request.auth.uid == uid;
+            allow write: if schreibtIn(f) && request.auth.uid == uid;
           }
         }
 
+        /* ── ZWEI SAMMLUNGEN OHNE DIE SCHREIBSPERRE, mit Absicht ──
+           pushTokens ist die Anmeldung eines GERAETS fuer Meldungen,
+           kein Inhalt. Wer sie mitsperrt, laesst die App beim Start
+           eines jeden Handys in einen Fehler laufen, und zwar
+           ausgerechnet bei einem Kunden, der ohnehin gerade eine
+           schlechte Nachricht bekommt.
+
+           fehler/ und statistik/ weiter oben ebenso: das eine ist die
+           Fehlermeldung, mit der man herausfindet, warum etwas klemmt,
+           das andere sind die anonymen Tageszahlen. Beide waeren
+           ausgerechnet dann still, wenn man sie braucht. Beide koennen
+           keine Person aufnehmen — die Regel laesst bei statistik nur
+           drei Felder durch und bei fehler nur einen Text unter 400
+           Zeichen. */
         match /pushTokens/{token} {
           allow read: if false;
           allow create, update: if inFirma(f) && (istAktiv()
