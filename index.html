@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-j2d27CnuTIZ9JUHvpgcySRLeO3IEYfa4TLfuJlh8xQ0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-vszdy0+LwLbI8/+uqj7yWsmZTKmxKE1a/VMLIdxGkTA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4102,12 +4102,41 @@ body.neu .al-inhalt{flex:1;min-height:0;overflow-y:auto;
 /* Auf der SEITE (nicht in der Schublade) trägt der Rand die Seite. */
 body.neu #allesSeite{padding-top:var(--s8)}
 
-body.neu .al-gruppe{margin-bottom:var(--s24)}
+/* ── Sechs Fragen, sechs Farben ─────────────────────────────────────
+   Dieselbe Palette wie die Bereichsfarben: sechs Töne, die schon gegen
+   Weiss und gegen Schwarz nachgerechnet sind und von denen keiner eine
+   Statusfarbe besetzt (das hatte test-gestaltung in Runde 84
+   gefunden).
+
+   Ohne sie sind das sechsundzwanzig graue Zeilen. Mit ihnen findet das
+   Auge die Gruppe, bevor es die Überschrift liest — und genau darum
+   ging es: „sorg dafür dass ein wenig mehr farbe und leben wieder da
+   ist." */
+body.neu .al-gruppe{--gf:var(--text-3);--gf-f:var(--auf-2);margin-bottom:var(--s24)}
+body.neu .al-gruppe[data-farbe="tun"]      {--gf:#FB923C;--gf-f:rgba(251,146,60,.16)}
+body.neu .al-gruppe[data-farbe="studio"]   {--gf:#60A5FA;--gf-f:rgba(96,165,250,.16)}
+body.neu .al-gruppe[data-farbe="wann"]     {--gf:#F472B6;--gf-f:rgba(244,114,182,.16)}
+body.neu .al-gruppe[data-farbe="neues"]    {--gf:#2DD4BF;--gf-f:rgba(45,212,191,.16)}
+body.neu .al-gruppe[data-farbe="meine"]    {--gf:#A78BFA;--gf-f:rgba(167,139,250,.17)}
+body.neu .al-gruppe[data-farbe="verwalten"]{--gf:#94A3B8;--gf-f:rgba(148,163,184,.16)}
+body.neu.light .al-gruppe[data-farbe="tun"]      {--gf:#C2410C;--gf-f:rgba(194,65,12,.11)}
+body.neu.light .al-gruppe[data-farbe="studio"]   {--gf:#1D4ED8;--gf-f:rgba(29,78,216,.11)}
+body.neu.light .al-gruppe[data-farbe="wann"]     {--gf:#BE185D;--gf-f:rgba(190,24,93,.11)}
+body.neu.light .al-gruppe[data-farbe="neues"]    {--gf:#0F766E;--gf-f:rgba(15,118,110,.11)}
+body.neu.light .al-gruppe[data-farbe="meine"]    {--gf:#6D28D9;--gf-f:rgba(109,40,217,.11)}
+body.neu.light .al-gruppe[data-farbe="verwalten"]{--gf:#475569;--gf-f:rgba(71,85,105,.11)}
 /* Die Frage, nicht das Hauptwort: „Was ist im Studio?" findet jemand,
-   der die App nicht kennt — „Betrieb" nicht. So vom Nutzer gewählt. */
-body.neu .al-frage{font-family:var(--font-head);font-weight:700;
+   der die App nicht kennt — „Betrieb" nicht. So vom Nutzer gewählt.
+
+   Der Strich dahinter läuft in der Gruppenfarbe aus: derselbe Übergang
+   wie im Bereichskopf und in der Heute-Liste. Drei Stellen, eine
+   Sprache. */
+body.neu .al-frage{display:flex;align-items:center;gap:var(--s8);
+  font-family:var(--font-head);font-weight:700;
   font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
-  color:var(--text-3);margin:0 var(--s4) var(--s8);white-space:normal}
+  color:var(--gf);margin:0 var(--s4) var(--s8);white-space:normal}
+body.neu .al-frage::after{content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,var(--gf),transparent 70%);opacity:.5}
 body.neu .al-zeile{display:flex;align-items:center;gap:var(--s12);
   width:100%;min-height:var(--zeile);text-align:left;cursor:pointer;
   padding:var(--s10) var(--s12);border-radius:var(--r-md);
@@ -4115,9 +4144,14 @@ body.neu .al-zeile{display:flex;align-items:center;gap:var(--s12);
   transition:background .2s}
 body.neu .al-zeile:active{background:var(--auf-2)}
 @media (hover:hover){ body.neu .al-zeile:hover{background:var(--auf-1)} }
+/* Die Kachel bleibt hier — anders als auf der Startseite. Dort standen
+   sechs davon auf einem Bildschirm, der eine Frage beantworten soll;
+   hier sind sie das Raster, an dem man 26 Zeilen entlangliest. Sie
+   trägt jetzt die Gruppenfarbe als Verlauf statt eines grauen Kastens. */
 body.neu .al-ikon{flex:0 0 auto;display:grid;place-items:center;
-  width:42px;height:42px;border-radius:var(--r-sm);
-  background:var(--auf-2);color:var(--text-2)}
+  width:40px;height:40px;border-radius:var(--r-sm);
+  background:linear-gradient(135deg,var(--gf-f),transparent);
+  box-shadow:inset 0 0 0 1px var(--gf-f);color:var(--gf)}
 body.neu .al-ikon svg{width:22px;height:22px}
 body.neu .al-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 body.neu .al-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng)}
@@ -4210,29 +4244,76 @@ body.neu .heute-kopf{display:flex;align-items:center;gap:var(--s8);
   margin:0 0 var(--s8);font-family:var(--font-head);font-weight:700;
   font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
   color:var(--text-3)}
+/* Die Überschrift trägt dieselbe Farbe wie die Zeilen darunter — sonst
+   wäre die Farbe ein Zufall je Zeile statt die Sprache der Kategorie.
+   --kat kommt aus derselben Zuordnung wie bei den Zeilen. */
+body.neu .heute-kopf{--kat:var(--text-3)}
+body.neu .heute-kopf.dringend{--kat:var(--danger);color:var(--danger-tx)}
+body.neu .heute-kopf.heute   {--kat:var(--warm)}
+body.neu .heute-kopf.lesen   {--kat:var(--ber)}
+body.neu .heute-kopf.tun     {--kat:#A78BFA}
+body.neu.light .heute-kopf.tun{--kat:#6D28D9}
 body.neu .heute-kopf .hk-punkt{width:8px;height:8px;border-radius:var(--r-pille);
-  background:var(--danger);flex:0 0 auto}
-body.neu .heute-kopf.dringend{color:var(--danger-tx)}
+  background:var(--kat);flex:0 0 auto}
+/* Im Hellmodus tragen --warm und --accent-2 als TEXT nicht — sie sind
+   Flächenfarben. Die Überschrift bleibt deshalb ihr ruhiges Grau; nur
+   Punkt, Strich und Zeichen nehmen die Farbe. Dieselbe Trennung wie
+   bei --warm/--warm-tx in :root, und aus demselben Grund. */
+body.neu .heute-kopf .hk-wort{color:var(--text-3)}
+body.neu .heute-kopf.dringend .hk-wort{color:var(--danger-tx)}
 /* Die Überschrift nennt die volle Zahl und trägt den Weg zur ganzen
    Liste. Nur so darf darunter gekürzt werden. */
 body.neu .heute-kopf .hk-wort{flex:0 0 auto}
-body.neu .heute-kopf i{flex:1;height:1px;background:var(--line);display:block}
+/* Der Strich läuft in der Farbe der Kategorie aus. Das ist derselbe
+   Übergang wie im Bereichskopf — Farbe, die von einer Kante ausgeht
+   und verschwindet, statt einer Linie, die man anmalt. */
+body.neu .heute-kopf i{flex:1;height:1px;display:block;
+  background:linear-gradient(90deg,var(--kat),var(--line) 40%)}
 body.neu .heute-kopf .mini-link{flex:0 0 auto}
 body.neu .heute-liste{display:flex;flex-direction:column;gap:var(--s8)}
-body.neu .heute-zeile{display:flex;align-items:center;gap:var(--s12);
+/* ── Jede Kategorie hat ihre Farbe, und sie läuft aus ──────────────
+   Aus dem Betrieb: „die farben mit den übergängen gefallen mir auch
+   sehr aber sorg dafür dass ein wenig mehr farbe und leben wieder da
+   ist."
+
+   Beim Ausdünnen (Runde 87) sind mit den getönten Kacheln auch die
+   Farbflächen verschwunden — übrig blieben weisse Zeilen mit einem
+   4px-Strich. Richtig war, die KACHELN wegzunehmen; falsch war, die
+   Farbe mitzunehmen.
+
+   Jetzt trägt die Fläche selbst die Farbe, aber als Verlauf: kräftig
+   am farbigen Rand, nach 62 % aus. Das ist dieselbe Sprache wie der
+   Bereichskopf darüber (der ihm gefällt) — Farbe, die von einer Kante
+   ausgeht, statt einer Fläche, die man anmalt.
+
+   --kat ist die Farbe der Kategorie, --kat-f ihre leise Tönung. Beide
+   werden je Zeilenart gesetzt; alles darunter liest nur noch diese
+   zwei Werte. Eine Stelle statt vier. */
+body.neu .heute-zeile{--kat:var(--text-3);--kat-f:transparent;
+  display:flex;align-items:center;gap:var(--s12);
   width:100%;min-height:var(--zeile);text-align:left;cursor:pointer;
   padding:var(--s12) var(--s16);border-radius:var(--radius);
-  background:var(--bg-2);border:none;box-shadow:var(--e1);
+  background:linear-gradient(100deg,var(--kat-f),var(--bg-2) 62%);
+  border:none;box-shadow:var(--e1);
   color:var(--text);font-family:var(--font-body);
-  border-left:4px solid transparent;
+  border-left:4px solid var(--kat);
   transition:transform .25s var(--spring),box-shadow .25s}
 body.neu .heute-zeile:active{transform:scale(.985)}
 /* Der Unterschied, um den es geht: Überfälliges sieht anders aus als
-   alles andere. Vorher war jede Aufgabe dieselbe weisse Karte. */
-body.neu .heute-zeile.dringend{border-left-color:var(--danger);
-  background:var(--f-bad-leise)}
-body.neu .heute-zeile.heute{border-left-color:var(--warm)}
-body.neu .heute-zeile.lesen{border-left-color:var(--ber)}
+   alles andere. Vorher war jede Aufgabe dieselbe weisse Karte.
+
+   Rot und Bernstein sind hier ausdrücklich die STATUSFARBEN, und das
+   ist richtig: „überfällig" und „heute fällig" sind Status. Für die
+   beiden Kategorien, die keiner sind, stehen der Bereichston und
+   Violett — damit die Statusfarben ihre Bedeutung behalten. */
+body.neu .heute-zeile.dringend{--kat:var(--danger);--kat-f:var(--f-bad)}
+body.neu .heute-zeile.heute   {--kat:var(--warm);--kat-f:var(--f-warn)}
+body.neu .heute-zeile.lesen   {--kat:var(--ber);--kat-f:var(--ber-f)}
+/* Eigene Tönung, NICHT --accent-glow. Die ist der persönliche
+   Akzentton (hier Cyan) — im Bild lief dadurch eine violette Kante in
+   eine türkise Fläche. Gesehen, nicht überlegt. */
+body.neu .heute-zeile.tun     {--kat:#A78BFA;--kat-f:rgba(167,139,250,.18)}
+body.neu.light .heute-zeile.tun{--kat:#6D28D9;--kat-f:rgba(109,40,217,.12)}
 /* Ohne Kachel. Aus dem Betrieb: „es wirkt jetzt mit den grossen
    Symbolen immer noch voll überwältigend."
 
@@ -4245,10 +4326,10 @@ body.neu .heute-zeile.lesen{border-left-color:var(--ber)}
 
    Jetzt nur noch der Strich des Zeichens, in der Farbe der Zeile. Der
    farbige Balken links trägt die Dringlichkeit weiter. */
+/* Das Zeichen trägt die Farbe der Kategorie — ohne Kachel darunter.
+   Farbe kostet keine Fläche; eine Kachel schon. */
 body.neu .hz-ikon{flex:0 0 auto;display:grid;place-items:center;
-  width:24px;height:24px;color:var(--text-3)}
-body.neu .heute-zeile.dringend .hz-ikon{color:var(--danger-tx)}
-body.neu .heute-zeile.lesen .hz-ikon{color:var(--ber)}
+  width:26px;height:26px;color:var(--kat)}
 body.neu .hz-ikon svg{width:22px;height:22px}
 body.neu .hz-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 body.neu .hz-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng);
@@ -4256,6 +4337,9 @@ body.neu .hz-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-en
 body.neu .hz-txt i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);
   line-height:var(--lh-eng);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 body.neu .heute-zeile.dringend .hz-txt i{color:var(--danger-tx);font-weight:600}
+/* Der Pfeil nimmt die Farbe leise mit — er ist das Versprechen, dass
+   die Zeile irgendwohin führt. */
+body.neu .heute-zeile .hz-pfeil{color:var(--kat);opacity:.55}
 body.neu .hz-pfeil{flex:0 0 auto;color:var(--text-3);font-size:var(--t-lg)}
 /* Nichts offen ist eine Aussage, kein leerer Bildschirm. */
 body.neu .heute-ruhe{display:flex;align-items:center;gap:var(--s12);
@@ -12586,18 +12670,23 @@ function allesGruppen(){
     if(e.view && !ansichtAn(e.view)) return null;
     return e;
   }
-  function gruppe(frage, liste){
+  /* `farbe` ist der Ton der Gruppe. Er kommt aus derselben Palette wie
+     die Bereichsfarben — sechs Töne, die schon nachgerechnet sind und
+     von denen keiner eine Statusfarbe besetzt. Ohne ihn wäre die Liste
+     sechsundzwanzig graue Zeilen; mit ihm findet das Auge die Gruppe,
+     bevor es die Überschrift liest. */
+  function gruppe(frage, farbe, liste){
     var drin=liste.map(eintrag).filter(Boolean);
-    if(drin.length) g.push({ frage:frage, eintraege:drin });
+    if(drin.length) g.push({ frage:frage, farbe:farbe, eintraege:drin });
   }
 
-  gruppe('Was soll ich tun?', [
+  gruppe('Was soll ich tun?', 'tun', [
     {label:'Aufgaben',  view:'todos',    ikon:'todos',    zahl:z.todos, warn:z.ueber,
      was: z.ueber ? z.ueber+' überfällig' : (z.todos ? z.todos+' offen' : 'nichts offen')},
     {label:'Putzplan',  view:'putzplan', ikon:'putzplan', zahl:z.putzplan,
      was: z.putzplan ? z.putzplan+' offen' : 'alles abgehakt'},
   ]);
-  gruppe('Was ist im Studio?', [
+  gruppe('Was ist im Studio?', 'studio', [
     {label:'Material',      view:'material', ikon:'material', zahl:z.material,
      was: z.material ? z.material+' fehlen' : 'alles da'},
     {label:'Geräte',        view:'geraete',  ikon:'geraete',  was:'Defekt melden, Verlauf ansehen'},
@@ -12606,12 +12695,12 @@ function allesGruppen(){
   ]);
   /* Aus FEATURES abgeleitet: dieselben vier Schalter, dieselben
      Beschriftungen, dieselbe Reihenfolge wie im System-Reiter. */
-  gruppe('Wer arbeitet wann?', teamFeatures().map(function(f){
+  gruppe('Wer arbeitet wann?', 'wann', teamFeatures().map(function(f){
     return { label:f.label, view:'team', teamtab:f.id, feature:f.id,
              ikon:({schicht:'kalender',abwesend:'sonne',uebergabe:'wiederholen',brett:'anheften'})[f.id],
              was:f.was };
   }));
-  gruppe('Was gibt es Neues?', [
+  gruppe('Was gibt es Neues?', 'neues', [
     {label:'Teamchat',        view:'chat', ikon:'chat', punkt:unread.chat,
      was:'Kanäle für das ganze Team'},
     {label:'Direktnachricht', view:'dm',   ikon:'dm',   zahl:z.dm,
@@ -12619,7 +12708,7 @@ function allesGruppen(){
     {label:'Aushänge',        view:'ann',  ikon:'ann',  punkt:unread.ann,
      was:'Neuigkeiten von der Leitung'},
   ]);
-  gruppe('Meine Sachen', [
+  gruppe('Meine Sachen', 'meine', [
     {label:'Meine Woche',   view:'ich', ichtab:'woche',    ikon:'ich',
      was:'Schichten und Aufgaben, die dich betreffen'},
     {label:'Mein Kalender', view:'ich', ichtab:'kalender', ikon:'kalender',
@@ -12637,14 +12726,15 @@ function allesGruppen(){
     });
     v.push({ label:'Archiv', view:'archive', ikon:'archive',
              was:'Sicherungen und Erledigtes' });
-    gruppe('Verwalten', v);
+    gruppe('Verwalten', 'verwalten', v);
   }
   return g;
 }
 
 function allesMarkup(){
   return allesGruppen().map(function(gr){
-    return '<div class="al-gruppe"><h3 class="al-frage">'+esc(gr.frage)+'</h3>'+
+    return '<div class="al-gruppe" data-farbe="'+esc(gr.farbe||'')+'">'+
+      '<h3 class="al-frage">'+esc(gr.frage)+'</h3>'+
       gr.eintraege.map(function(e){
         var marke = e.warn ? '<span class="al-zahl warn">'+e.warn+'</span>'
                   : (e.zahl ? '<span class="al-zahl">'+e.zahl+'</span>'
@@ -15833,7 +15923,7 @@ function renderHeute(){
   /* Was sonst noch ansteht: fehlendes Material und offene Einrichtung. */
   var sonst=[];
   if(matArtikel && ansichtAn('material')){
-    sonst.push({ art:'heute', ziel:'material', ikon:ikon('paket'),
+    sonst.push({ art:'tun', ziel:'material', ikon:ikon('paket'),
       titel: matArtikel+(matArtikel===1?' Artikel fehlt':' Artikel fehlen'),
       unter: matStudios===1 ? 'in einem Studio' : 'in '+matStudios+' Studios' });
   }
@@ -15844,7 +15934,7 @@ function renderHeute(){
          Einrichtung: Rechtliche An…" war abgeschnitten, und
          abgeschnitten ist der Titel genau die Stelle, die sagen soll,
          worum es geht. */
-      sonst.push({ art:'heute', ziel:'chef', cgo:offenSetup[0].cgo, ikon:ikon('rakete'),
+      sonst.push({ art:'tun', ziel:'chef', cgo:offenSetup[0].cgo, ikon:ikon('rakete'),
         titel: offenSetup.length===1 ? 'Ein Einrichtungsschritt fehlt'
                                      : offenSetup.length+' Einrichtungsschritte fehlen',
         unter: offenSetup[0].titel });
@@ -15856,22 +15946,27 @@ function renderHeute(){
      darunter stehen nur die obersten. So ist nichts verschwiegen,
      obwohl wenig dasteht. */
   var html='';
-  function block(titel, dringend, alle, zeigen, ziel, f){
+  /* `art` färbt den Block: die Überschrift, der Punkt davor und der
+     Strich dahinter nehmen dieselbe Farbe wie die Zeilen darunter.
+     Ohne das wäre die Farbe ein Zufall je Zeile statt die Sprache der
+     Kategorie. */
+  function block(titel, art, alle, zeigen, ziel, f){
     if(!alle.length) return;
     var rest=alle.length-zeigen.length;
+    var dringend = art==='dringend';
     html+='<div class="heute-block">'+
-      '<div class="heute-kopf'+(dringend?' dringend':'')+'">'+
-      (dringend?'<span class="hk-punkt"></span>':'')+
+      '<div class="heute-kopf '+art+(dringend?' dringend':'')+'">'+
+      '<span class="hk-punkt"></span>'+
       '<span class="hk-wort">'+esc(titel)+(alle.length>1?' · '+alle.length:'')+'</span>'+
       '<i></i>'+
       (rest>0 ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
                 (f?' data-hf="'+esc(f)+'"':'')+'>alle '+alle.length+' ›</button>' : '')+
       '</div><div class="heute-liste">'+zeigen.map(heuteZeile).join('')+'</div></div>';
   }
-  if(ansichtAn('todos')) block('Überfällig', true, ueber, ueber.slice(0,3), 'todos', 'faellig');
-  block('Heute', false, heute, heute.slice(0,3), 'todos');
-  block('Neu für dich', false, lesen, lesen.slice(0,2), 'chat');
-  block('Zu erledigen', false, sonst, sonst.slice(0,2), 'todos');
+  if(ansichtAn('todos')) block('Überfällig', 'dringend', ueber, ueber.slice(0,3), 'todos', 'faellig');
+  block('Heute', 'heute', heute, heute.slice(0,3), 'todos');
+  block('Neu für dich', 'lesen', lesen, lesen.slice(0,2), 'chat');
+  block('Zu erledigen', 'tun', sonst, sonst.slice(0,2), 'todos');
 
   if(!html){
     /* Genau das sagen, was geprüft wurde — nicht mehr. */
