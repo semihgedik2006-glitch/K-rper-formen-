@@ -9117,3 +9117,98 @@ Geräte), jedes Ziel weiterhin in zwei Tipps, und ohne Schalter ist alles
 wie vorher.
 
 **110 Durchläufe grün.**
+
+---
+
+## Runde 89 — Tiefe, Kontrast, Schärfe
+
+**Anlass**, wörtlich: „der hintergrund im dunkel und hell modus [muss]
+mitspielen · mehr kontrast und viel mehr tiefe einbauen in 3D objekten ·
+alles was anklickbar ist soll sich auch wie ein richtiger knopf anfühlen
+und etwas tiefe haben · die farben sollen knackiger und kontrastreicher
+sein und viel bessere genauere übergänge · falls nötig bau die farben
+mit java oder so ein statt im html · (SO DASS ICH GLEICH SOFORT EINEN
+UNTERSCHIED SEHE)."
+
+### Zur Bitte, die Farben „mit Java" zu bauen
+
+**Nicht gemacht**, und der Grund lässt sich messen: ein Skript läuft
+erst, nachdem das erste Bild schon steht — man sähe beim Start einen
+Moment lang die falschen Farben. Das ist dieselbe Klasse Fehler, die in
+Runde 84 die untere Leiste auf x=0 gesetzt hat: gemessen, bevor etwas
+lag.
+
+An **einer** Stelle steuerbar ist es trotzdem, nur eben in CSS: alles
+liest die Leitern in `body.neu`, und wer die ändert, ändert die ganze
+App.
+
+### Die Höhen-Leiter wurde NEU BELEGT, nicht ergänzt
+
+Dieselben Namen (`--e1/--e2/--e3`), reichere Werte. Dadurch hebt sich
+jedes Bauteil, das sie schon benutzt, auf einmal — statt dreissig
+Einzelregeln.
+
+Jede Stufe hat drei Lagen, und das ist der Unterschied zwischen
+„Schatten" und „Tiefe":
+
+1. eine **Haarlinie** (`0 0 0 1px`) — die Kante, die Schärfe gibt
+2. ein **enger, dunkler Kernschatten** — das Objekt sitzt auf
+3. ein **weiter, weicher Umgebungsschatten** — der Raum darum
+
+Dazu innen oben eine helle Linie (`--kante`): so fängt eine erhabene
+Fläche im echten Licht an. Und `--e-tief` für gedrückt: zwei Lagen statt
+drei, Kernschatten nach innen.
+
+Im Hellmodus ist der Ring eine echte graue Linie statt Schwarz mit
+halber Deckung — sonst sieht jede Karte aus, als läge Russ um sie herum.
+
+### Der Grund, auf dem alles liegt
+
+Eine einzelne Farbe ist eine Wand. Zwei weiche Lichter darüber — eines
+in der **Bereichsfarbe** oben, eines kühl unten — geben dem Bild eine
+Richtung, ohne dass man ein Muster erkennt. `background-attachment:fixed`,
+damit es beim Scrollen nicht mitwandert: Grund bleibt Grund.
+
+### Anfassbar
+
+Ein Knopf ist erhaben, wenn drei Dinge zusammenkommen: Lichtkante oben
+innen, Schatten darunter, **und eine Bewegung beim Drücken, die beides
+zurücknimmt.** Fehlt das Dritte, ist es ein Bild von einem Knopf.
+
+Gedrückt heisst `translateY(1px)` plus Schatten nach innen — kein
+Schrumpfen. Flächen, die beim Antippen kleiner werden, sehen nach
+Spielzeug aus; sie sollen nachgeben, nicht wegrutschen.
+
+Nicht alles schwebt: die Verzeichniszeilen liegen flach (sie sind ein
+Inhaltsverzeichnis, keine Kacheln), von den Reitern ist nur der offene
+erhaben (sechs erhabene Flächen nebeneinander sind keine Leiste mehr,
+sondern eine Wand), und der Bereichskopf gibt nur nach.
+
+### Knackiger
+
+Bereichs- und Gruppentöne eine Stufe heller und die Tönungen von .16 auf
+.26–.30. Die Zeilen der Startseite haben jetzt **drei** Farbhalte statt
+zwei: die Farbe steht kurz, läuft zügig aus und ist ab 58 % ganz weg.
+Zwei Halte gaben einen Verlauf, der über die ganze Zeile schmiert; drei
+geben eine Kante mit Abklang. Dazu ein **farbiger Schatten** je Zeile —
+der Unterschied zwischen „liegt auf dem Blatt" und „gehört dorthin".
+
+Schärfe: `--line` von .08 auf .13, `--text-2/-3` und die `--auf-*`-Stufen
+angehoben. Der Hauptton bleibt, wie er war — er war nie das Problem.
+
+### Ein Fund, den der Durchlauf geliefert hat
+
+Der erste Anlauf war **eine grosse Sammelregel** für ein Dutzend
+Bauformen, gefolgt von Ausnahmen, die `box-shadow` und `transition`
+gleich wieder überschrieben. `test-gestaltung` fand **neun Selektoren**,
+bei denen dieselbe Eigenschaft zweimal stand — an der ersten hätte man
+ewig gedreht, ohne dass sich etwas tut. Jetzt setzt jede Bauform ihre
+Tiefe an genau einer Stelle: dort, wo sie ohnehin beschrieben ist.
+
+Ausserdem: `g-alles` hatte keinen eigenen Ton und fiel auf
+`var(--accent)` zurück — also auf die **persönliche** Akzentfarbe. Die
+Kopfzeile des Verzeichnisses hätte die Farbe gewechselt, sobald jemand
+seinen Akzent umstellt. Ein Verzeichnis, dessen Farbe von einer
+Einstellung abhängt, ist keine Ordnung.
+
+**110 Durchläufe grün.**

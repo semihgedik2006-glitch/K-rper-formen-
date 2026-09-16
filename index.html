@@ -3885,6 +3885,80 @@ body.neu{
   --zeile:64px;                 /* Mindesthöhe einer antippbaren Zeile */
 }
 
+/* ══ TIEFE, KONTRAST, SCHÄRFE ════════════════════════════════════════
+   Aus dem Betrieb: „mehr kontrast und viel mehr tiefe einbauen · alles
+   was anklickbar ist soll sich auch wie ein richtiger knopf anfühlen
+   und etwas tiefe haben · die farben sollen knackiger und
+   kontrastreicher sein · SO DASS ICH GLEICH SOFORT EINEN UNTERSCHIED
+   SEHE."
+
+   ZUR BITTE, DIE FARBEN „MIT JAVA" ZU BAUEN: nicht gemacht, und zwar
+   aus einem Grund, der sich messen lässt. Ein Skript läuft erst,
+   nachdem das erste Bild schon steht — man sähe beim Start für einen
+   Moment die falschen Farben. Dieselbe Klasse Fehler, die in Runde 84
+   die untere Leiste auf x=0 gesetzt hat. Steuerbar an EINER Stelle ist
+   es trotzdem: alles unten liest die Leitern hier, und wer die ändert,
+   ändert die ganze App.
+
+   DIE HÖHEN-LEITER WIRD NEU BELEGT, nicht ergänzt. Dieselben Namen
+   (--e1/--e2/--e3), reichere Werte — dadurch hebt sich JEDES Bauteil,
+   das sie schon benutzt, auf einmal, ohne dreissig Einzelregeln.
+
+   Jede Stufe hat drei Lagen, und das ist der Unterschied zwischen
+   „Schatten" und „Tiefe":
+     1. eine Haarlinie (0 0 0 1px) — die Kante, die Schärfe gibt
+     2. ein enger, dunkler Kernschatten — das Objekt sitzt auf
+     3. ein weiter, weicher Umgebungsschatten — der Raum darum
+   Dazu innen oben eine helle Linie: so fängt eine erhabene Fläche im
+   echten Licht an. */
+body.neu{
+  --kante:rgba(255,255,255,.07);      /* Lichtkante oben auf erhabenem */
+  --ring:rgba(0,0,0,.5);              /* Haarlinie um erhabenes */
+  --e1:0 0 0 1px var(--ring), 0 1px 2px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.28);
+  --e2:0 0 0 1px var(--ring), 0 2px 6px rgba(0,0,0,.5), 0 10px 24px rgba(0,0,0,.42);
+  --e3:0 0 0 1px var(--ring), 0 6px 16px rgba(0,0,0,.55), 0 26px 60px rgba(0,0,0,.6);
+  --e1-oben:0 0 0 1px var(--ring), 0 -2px 8px rgba(0,0,0,.4), 0 -12px 28px rgba(0,0,0,.34);
+  --e3-oben:0 0 0 1px var(--ring), 0 -6px 18px rgba(0,0,0,.5), 0 -26px 60px rgba(0,0,0,.6);
+  /* Gedrückt: die Fläche sackt ab. Zwei Lagen statt drei, und der
+     Kernschatten wandert nach innen. */
+  --e-tief:0 0 0 1px var(--ring), inset 0 2px 5px rgba(0,0,0,.4);
+  /* Schärfe: kräftigere Kanten und lesbarere Zweitfarben. Der
+     Hauptton bleibt, wie er ist — er war nie das Problem. */
+  --line:rgba(255,255,255,.13);--line-2:rgba(255,255,255,.34);
+  --text-2:#D3D7E4;--text-3:#BFC5D6;
+  --auf-1:rgba(255,255,255,.07);--auf-2:rgba(255,255,255,.12);--auf-3:rgba(255,255,255,.2);
+}
+/* Im Hellmodus kommt das Licht von oben auf Weiss: die Lichtkante ist
+   fast weiss, der Ring eine echte graue Linie statt Schwarz mit halber
+   Deckung — sonst sieht jede Karte aus, als läge Russ um sie herum. */
+body.neu.light{
+  --kante:rgba(255,255,255,.9);
+  --ring:rgba(15,25,45,.1);
+  --e1:0 0 0 1px var(--ring), 0 1px 2px rgba(15,25,45,.09), 0 2px 6px rgba(15,25,45,.07);
+  --e2:0 0 0 1px var(--ring), 0 2px 6px rgba(15,25,45,.11), 0 10px 24px rgba(15,25,45,.1);
+  --e3:0 0 0 1px var(--ring), 0 6px 16px rgba(15,25,45,.13), 0 26px 60px rgba(15,25,45,.16);
+  --e1-oben:0 0 0 1px var(--ring), 0 -2px 8px rgba(15,25,45,.09), 0 -12px 28px rgba(15,25,45,.08);
+  --e3-oben:0 0 0 1px var(--ring), 0 -6px 18px rgba(15,25,45,.12), 0 -26px 60px rgba(15,25,45,.16);
+  --e-tief:0 0 0 1px var(--ring), inset 0 2px 5px rgba(15,25,45,.14);
+  --line:rgba(15,25,45,.14);--line-2:rgba(15,25,45,.32);
+  --text-2:#2F374A;--text-3:#414B60;
+  --auf-1:rgba(15,25,45,.055);--auf-2:rgba(15,25,45,.095);--auf-3:rgba(15,25,45,.16);
+}
+
+/* ── Der Grund, auf dem alles liegt ──
+   Eine einzelne Farbe ist eine Wand. Zwei weiche Lichter darüber —
+   eines in der Bereichsfarbe oben, eines kühl unten — geben dem Bild
+   eine Richtung, ohne dass man ein Muster erkennt. Fest am Fenster
+   (background-attachment), damit es beim Scrollen nicht mitwandert:
+   Grund bleibt Grund. */
+body.neu{
+  background:
+    radial-gradient(120% 70% at 50% -10%, var(--ber-f), transparent 60%),
+    radial-gradient(100% 60% at 0% 100%, var(--auf-1), transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+}
+
 /* ── 2. Die Bereichsfarben ──
    Sechs Farbtöne, je Bereich einer. Sie sind bewusst nicht der
    persönliche Akzent (den stellt jeder selbst ein): der Akzent sagt
@@ -3915,21 +3989,29 @@ body.neu{
    Erster Anlauf hatte Start in Schiefer. Im Bild sah der aktive Knopf
    unten dadurch aus wie ein gesperrter. */
 body.neu{--ber:var(--accent);--ber-f:var(--accent-glow)}
-body.neu[data-bereich="g-start"] {--ber:#60A5FA;--ber-f:rgba(96,165,250,.16)}
-body.neu[data-bereich="g-ich"]   {--ber:#A78BFA;--ber-f:rgba(167,139,250,.17)}
-body.neu[data-bereich="g-komm"]  {--ber:#2DD4BF;--ber-f:rgba(45,212,191,.16)}
-body.neu[data-bereich="g-arbeit"]{--ber:#FB923C;--ber-f:rgba(251,146,60,.16)}
-body.neu[data-bereich="g-team"]  {--ber:#F472B6;--ber-f:rgba(244,114,182,.16)}
-body.neu[data-bereich="g-chef"]  {--ber:#94A3B8;--ber-f:rgba(148,163,184,.16)}
+body.neu[data-bereich="g-start"] {--ber:#7DB8FF;--ber-f:rgba(96,165,250,.26)}
+body.neu[data-bereich="g-ich"]   {--ber:#BBA4FF;--ber-f:rgba(167,139,250,.27)}
+body.neu[data-bereich="g-komm"]  {--ber:#4EE6D2;--ber-f:rgba(45,212,191,.26)}
+body.neu[data-bereich="g-arbeit"]{--ber:#FFA85C;--ber-f:rgba(251,146,60,.26)}
+body.neu[data-bereich="g-team"]  {--ber:#FF8FC8;--ber-f:rgba(244,114,182,.26)}
+body.neu[data-bereich="g-chef"]  {--ber:#AEBBCE;--ber-f:rgba(148,163,184,.24)}
+/* „Alles" hat keinen eigenen Bereich, sondern ist das Verzeichnis
+   über alle. Trotzdem braucht es einen festen Ton: ohne ihn fiel es
+   auf var(--accent) zurück — also auf die PERSÖNLICHE Akzentfarbe,
+   und die Kopfzeile hätte die Farbe gewechselt, sobald jemand sie
+   umstellt. Ein Verzeichnis, dessen Farbe von einer Einstellung
+   abhängt, ist keine Ordnung. */
+body.neu[data-bereich="g-alles"] {--ber:#8FA3C4;--ber-f:rgba(143,163,196,.24)}
 /* Im Hellmodus tragen dieselben Töne nicht: #FB923C auf Weiss ist als
    Text nicht lesbar. Dunklere Geschwister, jeder gegen Weiss auf
    mindestens 4,5:1 gewählt. */
-body.neu.light[data-bereich="g-start"] {--ber:#1D4ED8;--ber-f:rgba(29,78,216,.10)}
-body.neu.light[data-bereich="g-ich"]   {--ber:#6D28D9;--ber-f:rgba(109,40,217,.10)}
-body.neu.light[data-bereich="g-komm"]  {--ber:#0F766E;--ber-f:rgba(15,118,110,.10)}
-body.neu.light[data-bereich="g-arbeit"]{--ber:#C2410C;--ber-f:rgba(194,65,12,.10)}
-body.neu.light[data-bereich="g-team"]  {--ber:#BE185D;--ber-f:rgba(190,24,93,.10)}
-body.neu.light[data-bereich="g-chef"]  {--ber:#475569;--ber-f:rgba(71,85,105,.10)}
+body.neu.light[data-bereich="g-start"] {--ber:#1743C4;--ber-f:rgba(29,78,216,.17)}
+body.neu.light[data-bereich="g-ich"]   {--ber:#5F1FC7;--ber-f:rgba(109,40,217,.17)}
+body.neu.light[data-bereich="g-komm"]  {--ber:#0B6A62;--ber-f:rgba(15,118,110,.17)}
+body.neu.light[data-bereich="g-arbeit"]{--ber:#AE3A0A;--ber-f:rgba(194,65,12,.17)}
+body.neu.light[data-bereich="g-team"]  {--ber:#A91453;--ber-f:rgba(190,24,93,.17)}
+body.neu.light[data-bereich="g-chef"]  {--ber:#3B4859;--ber-f:rgba(71,85,105,.16)}
+body.neu.light[data-bereich="g-alles"] {--ber:#3E4E6B;--ber-f:rgba(62,78,107,.16)}
 
 /* ── 3. Der Bereichskopf ── */
 .bereich-kopf{display:none}
@@ -4113,18 +4195,18 @@ body.neu #allesSeite{padding-top:var(--s8)}
    ging es: „sorg dafür dass ein wenig mehr farbe und leben wieder da
    ist." */
 body.neu .al-gruppe{--gf:var(--text-3);--gf-f:var(--auf-2);margin-bottom:var(--s24)}
-body.neu .al-gruppe[data-farbe="tun"]      {--gf:#FB923C;--gf-f:rgba(251,146,60,.16)}
-body.neu .al-gruppe[data-farbe="studio"]   {--gf:#60A5FA;--gf-f:rgba(96,165,250,.16)}
-body.neu .al-gruppe[data-farbe="wann"]     {--gf:#F472B6;--gf-f:rgba(244,114,182,.16)}
-body.neu .al-gruppe[data-farbe="neues"]    {--gf:#2DD4BF;--gf-f:rgba(45,212,191,.16)}
-body.neu .al-gruppe[data-farbe="meine"]    {--gf:#A78BFA;--gf-f:rgba(167,139,250,.17)}
-body.neu .al-gruppe[data-farbe="verwalten"]{--gf:#94A3B8;--gf-f:rgba(148,163,184,.16)}
-body.neu.light .al-gruppe[data-farbe="tun"]      {--gf:#C2410C;--gf-f:rgba(194,65,12,.11)}
-body.neu.light .al-gruppe[data-farbe="studio"]   {--gf:#1D4ED8;--gf-f:rgba(29,78,216,.11)}
-body.neu.light .al-gruppe[data-farbe="wann"]     {--gf:#BE185D;--gf-f:rgba(190,24,93,.11)}
-body.neu.light .al-gruppe[data-farbe="neues"]    {--gf:#0F766E;--gf-f:rgba(15,118,110,.11)}
-body.neu.light .al-gruppe[data-farbe="meine"]    {--gf:#6D28D9;--gf-f:rgba(109,40,217,.11)}
-body.neu.light .al-gruppe[data-farbe="verwalten"]{--gf:#475569;--gf-f:rgba(71,85,105,.11)}
+body.neu .al-gruppe[data-farbe="tun"]      {--gf:#FFA85C;--gf-f:rgba(251,146,60,.3)}
+body.neu .al-gruppe[data-farbe="studio"]   {--gf:#7DB8FF;--gf-f:rgba(96,165,250,.3)}
+body.neu .al-gruppe[data-farbe="wann"]     {--gf:#FF8FC8;--gf-f:rgba(244,114,182,.3)}
+body.neu .al-gruppe[data-farbe="neues"]    {--gf:#4EE6D2;--gf-f:rgba(45,212,191,.3)}
+body.neu .al-gruppe[data-farbe="meine"]    {--gf:#BBA4FF;--gf-f:rgba(167,139,250,.3)}
+body.neu .al-gruppe[data-farbe="verwalten"]{--gf:#AEBBCE;--gf-f:rgba(148,163,184,.28)}
+body.neu.light .al-gruppe[data-farbe="tun"]      {--gf:#AE3A0A;--gf-f:rgba(194,65,12,.2)}
+body.neu.light .al-gruppe[data-farbe="studio"]   {--gf:#1743C4;--gf-f:rgba(29,78,216,.2)}
+body.neu.light .al-gruppe[data-farbe="wann"]     {--gf:#A91453;--gf-f:rgba(190,24,93,.2)}
+body.neu.light .al-gruppe[data-farbe="neues"]    {--gf:#0B6A62;--gf-f:rgba(15,118,110,.2)}
+body.neu.light .al-gruppe[data-farbe="meine"]    {--gf:#5F1FC7;--gf-f:rgba(109,40,217,.2)}
+body.neu.light .al-gruppe[data-farbe="verwalten"]{--gf:#3B4859;--gf-f:rgba(71,85,105,.18)}
 /* Die Frage, nicht das Hauptwort: „Was ist im Studio?" findet jemand,
    der die App nicht kennt — „Betrieb" nicht. So vom Nutzer gewählt.
 
@@ -4141,8 +4223,8 @@ body.neu .al-zeile{display:flex;align-items:center;gap:var(--s12);
   width:100%;min-height:var(--zeile);text-align:left;cursor:pointer;
   padding:var(--s10) var(--s12);border-radius:var(--r-md);
   background:none;border:none;color:var(--text);font-family:var(--font-body);
-  transition:background .2s}
-body.neu .al-zeile:active{background:var(--auf-2)}
+  transition:background .2s,transform .14s var(--ease-ios)}
+body.neu .al-zeile:active{background:var(--auf-2);transform:translateY(1px)}
 @media (hover:hover){ body.neu .al-zeile:hover{background:var(--auf-1)} }
 /* Die Kachel bleibt hier — anders als auf der Startseite. Dort standen
    sechs davon auf einem Bildschirm, der eine Frage beantworten soll;
@@ -4251,8 +4333,8 @@ body.neu .heute-kopf{--kat:var(--text-3)}
 body.neu .heute-kopf.dringend{--kat:var(--danger);color:var(--danger-tx)}
 body.neu .heute-kopf.heute   {--kat:var(--warm)}
 body.neu .heute-kopf.lesen   {--kat:var(--ber)}
-body.neu .heute-kopf.tun     {--kat:#A78BFA}
-body.neu.light .heute-kopf.tun{--kat:#6D28D9}
+body.neu .heute-kopf.tun     {--kat:#BBA4FF}
+body.neu.light .heute-kopf.tun{--kat:#5F1FC7}
 body.neu .heute-kopf .hk-punkt{width:8px;height:8px;border-radius:var(--r-pille);
   background:var(--kat);flex:0 0 auto}
 /* Im Hellmodus tragen --warm und --accent-2 als TEXT nicht — sie sind
@@ -4293,12 +4375,18 @@ body.neu .heute-zeile{--kat:var(--text-3);--kat-f:transparent;
   display:flex;align-items:center;gap:var(--s12);
   width:100%;min-height:var(--zeile);text-align:left;cursor:pointer;
   padding:var(--s12) var(--s16);border-radius:var(--radius);
-  background:linear-gradient(100deg,var(--kat-f),var(--bg-2) 62%);
-  border:none;box-shadow:var(--e1);
+  /* Drei Halte statt zwei: die Farbe steht kurz, läuft dann zügig aus
+     und ist ab 58 % ganz weg. Zwei Halte gaben einen Verlauf, der über
+     die ganze Zeile schmiert; drei geben eine Kante mit Abklang. */
+  background:linear-gradient(100deg,var(--kat-f) 0 12%,var(--bg-2) 58%);
+  border:none;
+  /* Die Kante links wird zur Lichtkante, und der Schatten nimmt die
+     Farbe der Kategorie auf. Ein farbiger Schatten ist der Unterschied
+     zwischen „liegt auf dem Blatt" und „gehört dorthin". */
+  box-shadow:inset 0 1px 0 var(--kante), inset 5px 0 10px -6px var(--kat), var(--e1);
   color:var(--text);font-family:var(--font-body);
-  border-left:4px solid var(--kat);
-  transition:transform .25s var(--spring),box-shadow .25s}
-body.neu .heute-zeile:active{transform:scale(.985)}
+  border-left:5px solid var(--kat);
+  transition:transform .14s var(--ease-ios),box-shadow .14s var(--ease-ios)}
 /* Der Unterschied, um den es geht: Überfälliges sieht anders aus als
    alles andere. Vorher war jede Aufgabe dieselbe weisse Karte.
 
@@ -4306,14 +4394,15 @@ body.neu .heute-zeile:active{transform:scale(.985)}
    ist richtig: „überfällig" und „heute fällig" sind Status. Für die
    beiden Kategorien, die keiner sind, stehen der Bereichston und
    Violett — damit die Statusfarben ihre Bedeutung behalten. */
-body.neu .heute-zeile.dringend{--kat:var(--danger);--kat-f:var(--f-bad)}
+body.neu .heute-zeile.dringend{--kat:var(--danger);--kat-f:var(--f-bad);
+  box-shadow:inset 0 1px 0 var(--kante), inset 7px 0 14px -6px var(--kat), var(--e2)}
 body.neu .heute-zeile.heute   {--kat:var(--warm);--kat-f:var(--f-warn)}
 body.neu .heute-zeile.lesen   {--kat:var(--ber);--kat-f:var(--ber-f)}
 /* Eigene Tönung, NICHT --accent-glow. Die ist der persönliche
    Akzentton (hier Cyan) — im Bild lief dadurch eine violette Kante in
    eine türkise Fläche. Gesehen, nicht überlegt. */
-body.neu .heute-zeile.tun     {--kat:#A78BFA;--kat-f:rgba(167,139,250,.18)}
-body.neu.light .heute-zeile.tun{--kat:#6D28D9;--kat-f:rgba(109,40,217,.12)}
+body.neu .heute-zeile.tun     {--kat:#BBA4FF;--kat-f:rgba(167,139,250,.3)}
+body.neu.light .heute-zeile.tun{--kat:#5F1FC7;--kat-f:rgba(109,40,217,.2)}
 /* Ohne Kachel. Aus dem Betrieb: „es wirkt jetzt mit den grossen
    Symbolen immer noch voll überwältigend."
 
@@ -4424,13 +4513,66 @@ body.neu .setup-zeile.empfohlen{opacity:.72}
 body.neu .setup-zeile.tuelbar{display:flex;align-items:center;width:100%;
   min-height:var(--zeile);text-align:left;cursor:pointer;
   background:none;border:none;color:inherit;font-family:var(--font-body);
-  padding:var(--s8) 0;border-radius:var(--r-sm);transition:background .2s}
-body.neu .setup-zeile.tuelbar:active{background:var(--auf-2)}
+  padding:var(--s8) 0;border-radius:var(--r-sm);
+  transition:background .2s,transform .14s var(--ease-ios)}
+body.neu .setup-zeile.tuelbar:active{background:var(--auf-2);transform:translateY(1px)}
 @media (hover:hover){ body.neu .setup-zeile.tuelbar:hover{background:var(--auf-1)} }
 .setup-kann{display:inline-block;margin-left:var(--s6);padding:var(--s1) var(--s6);
   border-radius:var(--r-pille);background:var(--auf-2);color:var(--text-3);
   font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-s);
   text-transform:uppercase;vertical-align:middle}
+
+/* ══ ALLES, WAS MAN DRÜCKEN KANN, FÜHLT SICH AUCH SO AN ═════════════
+   Aus dem Betrieb: „alles was anklickbar ist soll sich auch wie ein
+   richtiger knopf anfühlen und etwas tiefe haben."
+
+   Ein Knopf ist erhaben, wenn drei Dinge zusammenkommen — eine
+   Lichtkante oben innen, ein Schatten darunter, und eine Bewegung beim
+   Drücken, die beides zurücknimmt. Fehlt das Dritte, ist es ein Bild
+   von einem Knopf.
+
+   HIER STAND ZUERST EINE GROSSE SAMMELREGEL, die box-shadow und
+   transition für ein Dutzend Bauformen auf einmal setzte — und danach
+   Ausnahmen, die beides gleich wieder überschrieben.
+   test-gestaltung hat neun Selektoren gefunden, bei denen dieselbe
+   Eigenschaft zweimal stand; an der ersten Angabe hätte man ewig
+   gedreht. Jetzt setzt jede Bauform ihre Tiefe an genau EINER Stelle:
+   dort, wo sie ohnehin schon beschrieben ist. */
+body.neu .chef-card,
+body.neu .quick,
+body.neu .icon-btn,
+body.neu .kopf-plus,
+body.neu .chip,
+body.neu .btn{
+  box-shadow:inset 0 1px 0 var(--kante), var(--e1);
+  transition:transform .14s var(--ease-ios), box-shadow .14s var(--ease-ios),
+             background .2s, color .2s;
+}
+/* Gedrückt heisst: einen Pixel tiefer und der Schatten geht nach innen.
+   Kein Schrumpfen — Flächen, die beim Antippen kleiner werden, sehen
+   nach Spielzeug aus; sie sollen nachgeben, nicht wegrutschen. */
+body.neu .chef-card:active,
+body.neu .quick:active,
+body.neu .icon-btn:active,
+body.neu .kopf-plus:active,
+body.neu .chip:active,
+body.neu .btn:active,
+body.neu .heute-zeile:active{
+  transform:translateY(1px);
+  box-shadow:var(--e-tief);
+}
+/* Die Reiterleiste: erhaben ist nur der offene Reiter. Ein Streifen aus
+   sechs erhabenen Flächen ist keine Leiste mehr, sondern eine Wand. */
+body.neu .subtab.on{box-shadow:inset 0 1px 0 var(--kante), var(--e1)}
+/* Die untere Leiste gibt beim Drücken nach. Eine Füllung hat sie schon
+   (der gleitende Marker), ein Schatten wäre einer zu viel. */
+body.neu .mn-reihe button:active{transform:translateY(1px)}
+/* Der Bereichskopf ist ein Griff, keine Karte — er schwebt nicht, er
+   gibt nur nach. */
+body.neu .bereich-kopf:active{transform:translateY(1px)}
+/* Die Zeilen der Verzeichnisse liegen flach im Blatt: sie sind ein
+   Inhaltsverzeichnis, keine Kacheln. Tiefe zeigen sie beim Drücken. */
+body.neu .kn-zeile:active{transform:translateY(1px)}
 
 /* ── 7. Mehr Luft in den Karten ──
    „Weniger und grösser" gilt auch dort, wo schon Karten stehen. */
