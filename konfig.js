@@ -106,16 +106,34 @@
        Impressum als fertiges auszugeben. Die Texte selbst sind kein
        Programmierproblem: siehe docs/RECHT.md. */
     recht: {
-      /* Pflichtangaben nach § 5 DDG */
-      betreiber: '',          // z. B. 'Körperformen Köln GmbH'
-      anschrift: '',          // Straße, PLZ, Ort – ein Postfach genügt nicht
-      vertreten: '',          // Geschäftsführer / Inhaber
-      telefon: '',
-      email: '',              // muss existieren und gelesen werden
-      register: '',           // z. B. 'Amtsgericht Köln, HRB 12345'
-      ustId: '',              // falls vorhanden
+      /* Pflichtangaben nach § 5 DDG.
 
-      datenschutzKontakt: '', // Ansprechpartner oder Datenschutzbeauftragter
+         STAND 17.9.2026: zwei von vier sind da, zwei fehlen noch.
+         Eingetragen ist nur, was im Rechts-Entwurf vom 17.9. ohne
+         eckige Klammern stand. Was dort als [Platzhalter] steht, bleibt
+         hier LEER — und zwar mit Absicht: die App zeigt dann weiter die
+         rote Warnung, und zwar genau fuer die fehlenden Felder. Ein
+         Impressum, in dem "[vollstaendige ladungsfaehige Anschrift]"
+         steht, sieht fertig aus und ist es nicht. Das ist schlimmer als
+         eine Warnung.
+
+         WER HIER STEHT: der Betreiber des DIENSTES, nicht der Kunde.
+         StudioChat laeuft unter formenchat.web.app, und
+         Diensteanbieter im Sinne von § 5 DDG ist, wer den Dienst
+         betreibt. Dass jede Kundenfirma darueber hinaus eigene Angaben
+         pflegen kann (config/recht), ist eine zweite Ebene fuer den
+         Fall, dass ein Kunde gegenueber seinem Team selbst als
+         Anbieter auftritt. Ob beide Ebenen noetig sind, gehoert zu den
+         Fragen fuer den Anwalt — siehe docs/RECHT.md. */
+      betreiber: 'Semih Gedik',
+      anschrift: '',          // FEHLT — Straße, PLZ, Ort. Ein Postfach genügt nicht
+      vertreten: 'Semih Gedik',   // Einzelunternehmen: der Inhaber selbst
+      telefon: '',            // keine Pflicht
+      email: '',              // FEHLT — muss existieren und gelesen werden
+      register: '',           // Einzelunternehmen: kein Handelsregistereintrag
+      ustId: '',              // noch nicht vorhanden
+
+      datenschutzKontakt: '', // bei einem Einzelunternehmen der Inhaber
 
       /* Zusaetzliche Absaetze, die nur der Betrieb kennt — etwa eine
          Videoueberwachung. Jeder Eintrag wird ein eigener Absatz. */
