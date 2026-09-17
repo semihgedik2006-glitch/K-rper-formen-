@@ -21,7 +21,21 @@ const DATEI = path.join(__dirname, '..', 'index.html');
 const quelle = fs.readFileSync(DATEI, 'utf8');
 const errs = [];
 
-const css = quelle.slice(quelle.indexOf('<style>') + 7, quelle.indexOf('</style>'));
+/* Seit dem 17.9.2026 hat index.html ZWEI <style>-Blöcke im Kopf: zuerst
+   neun @font-face-Regeln für die lokalen Schriften, dann das eigentliche
+   Stylesheet. Ein indexOf('<style>') traf davor immer das Richtige und
+   trifft jetzt den falschen Block — und zwar lautlos: alle Leitern wären
+   leer, alle Zählungen null, und ein Durchlauf, der nichts mehr findet,
+   findet auch nichts Schlechtes. Deshalb wird hier der GRÖSSTE Block
+   genommen und unten nachgeprüft, dass er überhaupt etwas enthält. */
+const STIL = (() => {
+  const re = /<style>([\s\S]*?)<\/style>/g;
+  let m, gr = null;
+  while ((m = re.exec(quelle))) if (!gr || m[1].length > gr[1].length) gr = m;
+  if (!gr) { console.log('  ✗ kein <style>-Block gefunden'); process.exit(1); }
+  return { anfang: gr.index, ende: gr.index + gr[0].length - 8, text: gr[1] };
+})();
+const css = STIL.text;
 
 /* Kommentare heraus: dort stehen Kastenlinien und Beispiele, die sonst
    als Fund gezählt würden. Bei den Zeilenkommentaren nur die, die eine
@@ -36,7 +50,7 @@ function ohneCode(t) {
   return t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 }
 const ohneKommentar = (() => {
-  const sA = quelle.indexOf('<style>'), sE = quelle.indexOf('</style>');
+  const sA = STIL.anfang, sE = STIL.ende;
   const kA = quelle.indexOf('<script>', sE);
   const stil = quelle.slice(sA, sE);
   const markup = quelle.slice(sE, kA);

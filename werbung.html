@@ -7,12 +7,31 @@
 <title>Körperformen Hürth – EMS-Training & Body-Shaping</title>
 <!-- Zweite Reihe hinter der Maskierung. Erzeugt und geprüft von
      tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-g8sJgBWCSqLM3KARSRdKmQ+u+WmT9U3rtI9wGLRTH/I='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg https://www.xn--krperformen-rfb.com/wp-content/uploads/2020/03/emstesmal_simone.png; media-src 'none'; connect-src 'none'; worker-src 'none'; manifest-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-9sshSh6XGB6pxy5DcWKI12/nIGTpvab/52YGUrtNFzE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https://www.xn--krperformen-rfb.com/wp-content/themes/koerperformen/images/kf-logo.svg https://www.xn--krperformen-rfb.com/wp-content/uploads/2020/03/emstesmal_simone.png; media-src 'none'; connect-src 'none'; worker-src 'none'; manifest-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <meta name="description" content="Forme deinen Körper mit EMS-Training in Hürth. Nur 20 Minuten pro Woche – persönlich betreut. Jetzt kostenloses Probetraining sichern." />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link id="schriftLink" rel="stylesheet" media="print" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" /></noscript>
+<!-- ── Schriften lokal, seit 17.9.2026 ──
+     Diese Seite ist OEFFENTLICH und ohne Anmeldung erreichbar — damit
+     ist sie der Fall, bei dem ein Abruf an Google am schwersten wiegt:
+     jeder Besucher, auch ein zufaelliger, haette seine IP-Adresse an
+     einen Dritten geschickt, ohne gefragt zu werden. Dieselben Dateien
+     wie in index.html. Begruendung dort ausfuehrlich.
+
+     Zwei Bilder kommen weiter von aussen: Logo und Trainingsfoto vom
+     eigenen Webauftritt (siehe img-src oben, auf den PFAD genau). Das
+     ist derselbe Betrieb, nicht Google — aber ein Abruf bleibt es, und
+     wer die Seite ganz ohne fremde Verbindung will, muss auch die zwei
+     Dateien herholen. -->
+<style>
+@font-face{font-family:'Barlow';font-style:normal;font-weight:300;font-display:swap;src:url(schriften/barlow-300.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:400;font-display:swap;src:url(schriften/barlow-400.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:500;font-display:swap;src:url(schriften/barlow-500.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:600;font-display:swap;src:url(schriften/barlow-600.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:700;font-display:swap;src:url(schriften/barlow-700.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:500;font-display:swap;src:url(schriften/barlow-condensed-500.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:600;font-display:swap;src:url(schriften/barlow-condensed-600.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(schriften/barlow-condensed-700.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:800;font-display:swap;src:url(schriften/barlow-condensed-800.woff2) format('woff2')}
+</style>
 <style>
 /* ============================================================
    DESIGN-TOKENS  – hier zentral anpassen
@@ -875,9 +894,6 @@ footer{border-top:1px solid var(--line);padding:54px 0 calc(40px + env(safe-area
 /* Kein onload und kein onerror mehr im Markup: die Sicherheitsregel der
    Seite (CSP) laesst nur diesen einen Skriptblock zu, ueber seine
    Pruefsumme. Ein Ereignis im Attribut ist fuer sie fremder Code. */
-var schrift=document.getElementById("schriftLink");
-if(schrift) schrift.media="all";
-
 /* Das Logo kommt von der Hauptseite. Ist es nicht da, soll die Luecke
    verschwinden statt als kaputtes Bild dazustehen. complete wird
    mitgeprueft, weil das Ereignis schon durch sein kann, wenn dieser

@@ -114,7 +114,8 @@ Die tragenden Hilfsfunktionen dort:
 |---|---|
 | `istAktiv()` | Es gibt ein Profil **und** es ist freigegeben |
 | `isChef()`, `isLeiter()` | Rolle aus dem eigenen Profil — nicht aus dem Aufruf |
-| `manages(studioKey)` | Verwaltet dieses Studio |
+| `manages(studioKey)` | Verwaltet dieses Studio — fürs **Schreiben** |
+| `meinStudio(studioKey)` | Gehört dieses Studio zu meinen — fürs **Lesen** (seit 17.9.2026) |
 | `inFirma(f)` | Gehört zu diesem Betrieb, und der Betrieb läuft |
 | `schreibtIn(f)` | wie `inFirma`, **plus**: das Abo erlaubt Schreiben |
 | `hatPremium(f)` | Abo-Stufe, nur dort wo eine Stufe wirklich abgrenzt |
@@ -253,11 +254,17 @@ der Inline-Skripte**.
 
 | | Version | Wofür |
 |---|---|---|
-| Firebase JS SDK (compat) | 10.12.2 | app, auth, firestore, messaging, functions |
-| Google Fonts | — | Barlow, Barlow Condensed (**extern nachgeladen** — siehe `docs/RECHT.md`) |
+| Firebase JS SDK (compat) | 10.12.2 | app, auth, firestore, messaging, functions — **von `www.gstatic.com`** |
+| Barlow, Barlow Condensed | — | 9 `woff2` unter `schriften/`, 195,8 KB — **seit 17.9.2026 lokal** |
 
 Sonst nichts. Keine Icon-Bibliothek (eigene SVG), kein jQuery, kein
 Lodash, kein Chart-Paket.
+
+**Damit geht beim Laden der Seite genau ein Abruf an einen Dritten
+hinaus: das Firebase-SDK.** Das ist gemessen, nicht angenommen —
+`tests/test-schriften.js` schreibt jede Anfrage mit und lässt nur diese
+eine durch. Bis zum 17.9.2026 kamen die Schriften dazu; siehe
+`BEKANNTE-PROBLEME.md`, P-03.
 
 ### Serverseitig (`functions/package.json`)
 
@@ -294,8 +301,8 @@ Getrennt nach **nachgewiesenem Problem** und **Verbesserungsvorschlag**.
 
 | | Wo | Auswirkung |
 |---|---|---|
-| Studiogrenze beim Lesen nur in der Oberfläche | `firestore.rules`, ~11 Sammlungen | Art.-9-Daten betriebsweit lesbar. Siehe `docs/RECHT.md` |
-| Google Fonts extern nachgeladen | `index.html` | einziger unnötiger Drittabruf |
+| Studiogrenze beim Lesen: Brett, Dokumente, Chat-Kanäle | `firestore.rules` | **Art.-9-Daten sind seit 17.9. begrenzt** (`meinStudio()`); für die Sammlungen ausserhalb von `studios/…` ist es offen. `BEKANNTE-PROBLEME.md`, P-01 |
+| ~~Google Fonts extern nachgeladen~~ | `index.html` | **behoben 17.9.2026** — lokal unter `schriften/` |
 | Keine Lizenzdatei im öffentlichen Repository | Wurzelverzeichnis | Nutzungsrechte ungeklärt |
 | Passwort-Mindestlänge 6 Zeichen | `index.html` | in `TOM.md` als offen geführt |
 | Kein Verfahren für Datenschutzvorfälle | — | Pflicht nach Art. 33 DSGVO |

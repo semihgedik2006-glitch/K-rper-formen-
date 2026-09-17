@@ -20,6 +20,7 @@ ein Verkaufsgespräch endet.
 | `UNTERAUFTRAGNEHMER.md` | Wen du einschaltest | Anlage zum Vertrag |
 | `LOESCHKONZEPT.md` | Was wann verschwindet | Anlage, und für Art. 17 |
 | `VERARBEITUNGSVERZEICHNIS.md` | Art. 30 Abs. 2 — dein eigenes | brauchst **du**, nicht der Kunde |
+| `VORFALL.md` | Ablauf und Vorlagen bei einem Datenschutzvorfall, Art. 33/34 | Anlage zum Vertrag — **und die Seite, die du im Ernstfall aufschlägst** |
 
 ---
 

@@ -48,17 +48,33 @@ deren Zertifizierungen belegt (ISO 27001, SOC 2/3). Siehe
 Der Kern des Systems, und der Grund, warum die App mehrere Kunden
 nebeneinander tragen kann.
 
-**Durchgesetzt wird in den Sicherheitsregeln der Datenbank
-(`firestore.rules`), nicht in der Oberfläche.** Das ist der Unterschied
-zwischen „man sieht es nicht" und „man kommt nicht heran": ein
-manipulierter Browser kommt an der Oberfläche vorbei, an der Regel nicht.
+**Die Betriebsgrenze wird in den Sicherheitsregeln der Datenbank
+(`firestore.rules`) durchgesetzt, nicht in der Oberfläche.** Das ist der
+Unterschied zwischen „man sieht es nicht" und „man kommt nicht heran":
+ein manipulierter Browser kommt an der Oberfläche vorbei, an der Regel
+nicht.
 
-| Rolle | Sichtbereich |
-|---|---|
-| Mitarbeiter | die eigenen zugeordneten Studios |
-| Studioleitung | die von ihr verwalteten Studios |
-| Geschäftsführung | alle Studios des **eigenen** Betriebs |
-| Betreiber (Admin) | Firmen-Stammdaten, **keine Inhalte** der Kunden |
+**Die Studiogrenze wird beim Lesen bisher NUR in der Oberfläche
+durchgesetzt.** Diese Zeile stand hier bis zum 17.9.2026 falsch — die
+Tabelle las sich so, als hielte die Datenbank auch sie. Der Unterschied
+ist für einen Auftraggeber wesentlich, deshalb steht er jetzt in der
+Tabelle selbst:
+
+| Rolle | Sichtbereich | Wodurch gehalten |
+|---|---|---|
+| Mitarbeiter | die eigenen zugeordneten Studios | **nur Oberfläche** (siehe unten) |
+| Studioleitung | die von ihr verwalteten Studios | Oberfläche; Schreibrechte zusätzlich in der Regel (`manages()`) |
+| Geschäftsführung | alle Studios des **eigenen** Betriebs | Regel |
+| Betreiber (Admin) | Firmen-Stammdaten, **keine Inhalte** der Kunden | Regel |
+
+> **Offener Punkt, bekannt und dokumentiert:** an rund elf Sammlungen
+> lautet die Leseregel `inFirma(f) && istAktiv()`, prüft also die Firma
+> und nicht das Studio. Wer im Betrieb angemeldet ist und ein
+> Datenbankwerkzeug bedienen kann, erreicht damit auch Einträge anderer
+> Studios — **einschliesslich Abwesenheiten und Krankmeldungen, also
+> Gesundheitsdaten nach Art. 9 DSGVO.** Siehe
+> `docs/BEKANNTE-PROBLEME.md`, P-01. Schreiben ist davon nicht
+> betroffen: dort steht `manages(studioKey)` in der Regel.
 
 **Mandantentrennung:** jeder Zugriff auf Betriebsdaten läuft durch eine
 einzige Stelle im Code (`S(name)`), die den Pfad

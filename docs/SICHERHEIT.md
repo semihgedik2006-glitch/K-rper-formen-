@@ -153,14 +153,15 @@ irgendwann vergessen wird.
 
 ```
 default-src 'none'
-script-src  'self' https://www.gstatic.com 'sha256-…' 'sha256-…'
-style-src   'self' 'unsafe-inline' https://fonts.googleapis.com
+script-src  'self' https://www.gstatic.com 'sha256-…' 'sha256-…' 'sha256-…'
+style-src   'self' 'unsafe-inline'
+font-src    'self' data:
 img-src     'self' data: blob:
 connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net …
 frame-src 'none' · object-src 'none' · base-uri 'none' · form-action 'none'
 ```
 
-**`script-src` ohne `'unsafe-inline'`** — das ist der Punkt. Die beiden
+**`script-src` ohne `'unsafe-inline'`** — das ist der Punkt. Die drei
 Skriptblöcke der Datei sind einzeln über ihre Prüfsumme erlaubt, jeder
 andere nicht. Ein `<script>` aus einem Chattext wird nicht ausgeführt,
 selbst wenn er als Markup ankäme.
@@ -177,10 +178,25 @@ beiden Notschalter im Ladebildschirm liegen jetzt in einem eigenen
 kleinen Block — getrennt vom grossen, damit sie auch dann funktionieren,
 wenn die App selbst nicht hochkommt.
 
+Seit dem 17.9.2026 wird **genau das auch nachgemessen**: `test-csp.js`
+entfernt den grossen Block unterwegs aus der Datei und klickt dann den
+Knopf. Vorher stand an dieser Stelle eine Frage nach einem Nebeneffekt
+des Blocks, die mit den lokalen Schriften weggefallen ist — eine
+Zusicherung, die niemand mehr auslösen kann, prüft nichts.
+
 **`style-src` behält `'unsafe-inline'`.** Die Oberfläche setzt Farben und
 Grössen an `style="…"` einzelner Elemente; dafür gibt es keine
 Prüfsumme. Ein Stil führt keinen Code aus — die Regel verliert dadurch
 nichts von dem, wofür sie hier steht.
+
+**`font-src 'self' data:` und `style-src` ohne fremden Host** (seit
+17.9.2026). Solange die Schriften von Google kamen, mussten
+`fonts.googleapis.com` und `fonts.gstatic.com` in der Regel stehen. Jetzt
+nicht mehr — und das ist mehr als Kosmetik: stünden sie noch dort, fiele
+ein versehentlich wieder eingebauter Google-Link niemandem auf. Die
+Regel ist damit auch ein Wächter über die Entscheidung, nicht nur über
+den Code. Erzeugt wird sie aus `tools/csp.js`; eine Änderung nur im HTML
+überlebt das nächste `--setzen` nicht.
 
 **Gemessen statt gehofft:** zwölf Ansichten geöffnet, **0 Verletzungen**,
 App läuft, und die Gegenprobe (eingeschleustes `<img onerror>`, ein

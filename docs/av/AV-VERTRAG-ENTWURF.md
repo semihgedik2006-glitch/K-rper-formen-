@@ -165,7 +165,8 @@ gesonderte Weisung, soweit technisch möglich.
 Verantwortlichen unverzüglich, spätestens innerhalb von **24 Stunden**
 nach Kenntnis, über eine Verletzung des Schutzes personenbezogener Daten
 (Art. 33 Abs. 2), und stellt die zur Meldung erforderlichen Angaben
-bereit.
+bereit. Ablauf, Inhalt der Meldung und Dokumentation richten sich nach
+**Anlage 5**.
 
 (5) Der Auftragsverarbeiter unterstützt bei Datenschutz-Folgen-
 abschätzungen (Art. 35) und vorheriger Konsultation (Art. 36), soweit
@@ -237,6 +238,7 @@ wirksam.
 2. Unterauftragnehmer → `UNTERAUFTRAGNEHMER.md`
 3. Löschkonzept und Datenkategorien → `LOESCHKONZEPT.md`
 4. Kreis der zugriffsberechtigten Personen → `[von dir zu erstellen]`
+5. Verfahren bei Datenschutzvorfällen (Art. 33, 34) → `VORFALL.md`
 
 ---
 

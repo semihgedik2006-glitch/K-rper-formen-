@@ -86,8 +86,8 @@
         ]
       },
       {
-        "//": "Symbole ändern sich praktisch nie.",
-        "source": "**/*.@(png|svg|jpg|jpeg|webp|ico)",
+        "//": "Symbole und Schriften ändern sich praktisch nie. Die woff2-Dateien liegen seit dem 17.9.2026 hier statt bei Google — sie MUESSEN zwischengespeichert werden, sonst holt jedes Laden der App 196 KB neu.",
+        "source": "**/*.@(png|svg|jpg|jpeg|webp|ico|woff2)",
         "headers": [
           { "key": "Cache-Control", "value": "public, max-age=604800" }
         ]

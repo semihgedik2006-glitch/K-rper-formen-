@@ -28,12 +28,13 @@ open http://127.0.0.1:8765/index.html
 ```
 
 Die App braucht kein Build, keinen Bundler und keine Installation. Sie ist
-eine HTML-Datei, die drei weitere Dateien lädt.
+eine HTML-Datei, die `konfig.js`, `sw.js` und die Schriften aus
+`schriften/` lädt — dazu das Firebase-SDK von Google.
 
 Alle Durchläufe auf einmal:
 
 ```bash
-bash tests/alle.sh              # Oberfläche, 57 Durchläufe im Browser
+bash tests/alle.sh              # Oberfläche, 114 Durchläufe im Browser
 cd tests/rules && npm test      # Sicherheitsregeln und Cloud Functions im Emulator
 ```
 
@@ -50,6 +51,7 @@ cd tests/rules && npm test      # Sicherheitsregeln und Cloud Functions im Emula
 | `sw.js` | Service Worker: macht die App installierbar und nimmt Push-Nachrichten an |
 | `manifest.json` | Name, Symbol und Startverhalten der installierten App |
 | `icon.png`, `icon.svg` | Das Symbol |
+| `schriften/` | Barlow und Barlow Condensed als neun `woff2`, 196 KB. **Liegen hier und nicht bei Google**, damit beim Laden der Seite keine IP-Adresse an einen Dritten geht — siehe `docs/BEKANNTE-PROBLEME.md`, P-03 |
 
 ### Der Server
 
@@ -64,7 +66,7 @@ cd tests/rules && npm test      # Sicherheitsregeln und Cloud Functions im Emula
 
 | Pfad | Was drin steht |
 |---|---|
-| `tests/` | 57 Durchläufe durch die Oberfläche mit Playwright |
+| `tests/` | 114 Durchläufe durch die Oberfläche mit Playwright |
 | `tests/rules/` | Regeltests und Cloud Functions gegen den Firestore-Emulator |
 | `tools/` | Werkzeuge, die von Hand laufen: Umzug, Kontenprüfung, Apps Script |
 | `docs/` | Sämtliche Dokumentation, siehe unten |
