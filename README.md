@@ -207,30 +207,39 @@ nichts) und Adressen, die ohnehin öffentlich sind.
 
 ## Dokumentation
 
-Alles unter `docs/`.
+**`docs/DOKUMENTATION.md` sagt, welche Datei welche Frage beantwortet.**
+Die wichtigsten:
 
-**Was die App kann**
-`HANDBUCH.md` Bedienung · `SPEZIFIKATION.md` Funktionsumfang ·
-`DESIGN-SYSTEM.md` Farben, Abstände, Bausteine · `ROADMAP.md` ·
-`IDEEN.md` Funktionen, die fehlen könnten ·
-`DESIGN-IDEEN.md` wie sich das anfühlen könnte, was schon da ist
+| | |
+|---|---|
+| `docs/ARCHITEKTUR.md` | wie es gebaut ist, Datenflüsse, Abhängigkeiten, technische Schulden |
+| `docs/FUNKTIONEN.md` | vollständige Funktionsliste mit Prüfstatus |
+| `docs/DATENBANK.md` | Sammlungen, Felder, Regeln, Sicherung |
+| `docs/PRUEFPLAN.md` | wie geprüft wird — und was **nicht** geprüft wird |
+| `docs/BEKANNTE-PROBLEME.md` | offene Funde mit Schweregrad |
+| `docs/HANDBUCH.md` | für Anwender · PDF: `docs/StudioChat-Handbuch.pdf` |
+| `docs/FORTSCHRITT.md` | was wann warum geändert wurde |
+| `docs/KASSE.md` | Stripe einrichten, Schritt für Schritt |
+| `docs/RECHT.md` | was die App mit Daten tut |
+| `docs/av/` | Auftragsverarbeitung: Vertrag, TOM, Löschkonzept, Verzeichnis |
 
-**Sicherheit**
-`SICHERHEIT.md` was geprüft wurde, was gefunden wurde, was offen ist ·
-`SHEETS-TOKEN.md` die Google-Tabelle gegen fremde Sendungen sperren
+---
 
-**Betrieb**
-`OFFEN.md` was noch aussteht · `DEIN-TEIL.md` Handgriffe für den Betreiber ·
-`DEPLOY.md` · `MAIL-SETUP.md` E-Mail-Absender · `RECHT.md` Impressum und
-Datenschutz
+## Bekannte Probleme
 
-**Architektur und Entscheidungen**
-`MANDANT-PLAN.md` mehrere Firmen in einer Datenbank · `ABO-PLAN.md` ·
-`KI-PLAN.md` · `PROBELAUF-EINRICHTEN.md` · `PROBELAUF-DATEN.md` ·
-`2E-PRUEFEN.md`
+Die vollständige Liste steht in `docs/BEKANNTE-PROBLEME.md`. Die zwei,
+die man vor dem ersten fremden Kunden kennen muss:
 
-**Verlauf**
-`FORTSCHRITT.md` jede Sitzung mit Fund, Reparatur und Beleg
+* **Die Studiogrenze ist beim Lesen keine technische Grenze** (P-01).
+  Zwischen Betrieben hält sie; zwischen Studios desselben Betriebs macht
+  sie die Oberfläche. Betrifft unter anderem Krankmeldungen.
+* **Kein Verfahren für Datenschutzvorfälle** (P-02). Pflicht nach
+  Art. 33 DSGVO.
 
-**Vertrieb**
-`VERKAUF.md` · `PITCH.md`
+---
+
+## Lizenz
+
+**Keine.** Das Repository ist öffentlich, es liegt aber keine
+Lizenzdatei bei — damit gilt das normale Urheberrecht. Siehe
+`docs/BEKANNTE-PROBLEME.md`, P-04.

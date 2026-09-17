@@ -1,0 +1,319 @@
+# StudioChat — die Datenbank
+
+**Stand:** 17. September 2026 · Cloud Firestore, Region `europe-west1`
+(St. Ghislain, Belgien).
+
+Erhoben aus `firestore.rules` und `index.html`. Wo ein Feldname nicht
+aus einer Regel, sondern nur aus dem Schreibvorgang stammt, steht das
+dabei — Firestore hat kein Schema, also ist die Regel die einzige
+Stelle, die ein Feld wirklich festlegt.
+
+---
+
+## 1. Der Aufbau in einem Bild
+
+```
+users/{uid}                          ← die EINZIGE Sammlung außerhalb
+                                        (muss vor dem Anmelden lesbar sein)
+
+firmen/{kennung}                     ← Stammdaten, öffentlich lesbar (get)
+   │
+   ├── abo/aktuell                   ← was der Betrieb zahlt (Chef + Betreiber)
+   │
+   ├── config/
+   │     ├── studios                 ← die Standortliste
+   │     ├── features                ← welche Ansichten an sind
+   │     ├── marke                   ← Name, Farbe
+   │     ├── recht                   ← Impressum je Betrieb
+   │     ├── design                  ← neues Aussehen für alle?
+   │     ├── zugriff                 ← voll / nurlesen / zu  (nur Server)
+   │     ├── registrierung           ← der Firmencode (für NIEMANDEN lesbar)
+   │     └── beitrittSchalter        ← Freigabe an/aus
+   │
+   ├── channels/{kanal}/messages/    ← Teamchat
+   ├── dms/{paar}/messages/          ← Direktnachrichten
+   │
+   ├── studios/{studioKey}/
+   │     ├── todos/                  ← Aufgaben
+   │     ├── cleaning/               ← Putzplan
+   │     ├── cleaningNotes/
+   │     ├── devices/                ← Geräte
+   │     ├── deviceLog/              ← Protokoll je Gerät
+   │     ├── shifts/                 ← Schichten
+   │     ├── absences/               ← Urlaub und Krank
+   │     └── handovers/              ← Übergaben
+   │
+   ├── inventory/{studioKey}         ← Material
+   ├── announcements/                ← Aushänge
+   ├── board/                        ← Schwarzes Brett
+   ├── documents/  +  documentData/  ← Dokumente (Verweis + Inhalt)
+   ├── certificates/                 ← Nachweise (Premium)
+   ├── probetrainings/               ← Zahlen, KEINE Kundennamen
+   ├── anliegen/                     ← Wünsche an die Leitung
+   ├── trash/                        ← Papierkorb, 30 Tage
+   ├── archives/                     ← Wochensicherungen Material
+   ├── statistik/{tag}               ← anonyme Tageszahlen
+   ├── fehler/{sig}                  ← Fehlermeldungen
+   ├── pushTokens/{token}            ← Geräte für Meldungen
+   ├── privat/{uid}/…                ← persönlicher Bereich
+   │
+   ├── terminals/{id}                ← registrierte Stempelgeräte
+   ├── zeiten/{id}                   ← Stempelzeiten   (write: false)
+   ├── zeitPins/{uid}                ← PIN-Hash        (read+write: false)
+   └── terminalCodes/{id}            ← Code-Saat       (read+write: false)
+
+firmenArchiv/{kennung}               ← gelöschte Firmen
+```
+
+**Stillgelegt** (Regeln auf `false`, bestehen aber als Pfad):
+`appointments`, `emailTemplates`, `studioMetrics`, `competitors`,
+`expansionLeads`, `mkProjects`.
+
+**Flache Altpfade** ohne `firmen/<kennung>/` existieren parallel und
+gehören dem ersten Betrieb. Die App schreibt dort nicht mehr.
+
+---
+
+## 2. Die wichtigsten Sammlungen im Einzelnen
+
+### `users/{uid}`
+
+Die einzige Sammlung außerhalb der Firmenpfade.
+
+| Feld | Typ | Anmerkung |
+|---|---|---|
+| `name` | Text | |
+| `email` | Text | |
+| `role` | Text | `mitarbeiter` / `leiter` / `chef` |
+| `admin` | bool | **nur der Betreiber.** Vergibt ausschließlich ein Admin |
+| `firma` | Text | die Firmenkennung. **Das ist die Mandantengrenze** |
+| `studios` | Liste | Klarnamen der Studios |
+| `studioKeys` | Liste | Kennungen (`studio-6`) |
+| `aktiv` | bool | `false` = freigegeben, aber gesperrt |
+| `createdAt`, `lastSeen` | Zahl | Zeitstempel |
+| `color`, `icon`, `photo` | Text | Darstellung |
+| `birthday` | Text | freiwillig |
+| `mailAus` | Liste | abgeschaltete Mail-Themen |
+| `handyStempeln` | bool | darf mit dem eigenen Telefon stempeln |
+
+**Was ein Benutzer an sich selbst NICHT ändern darf** — steht so in der
+Regel, nicht nur in der App:
+
+```
+['role','studios','studio','studioKeys','aktiv','firma','admin','handyStempeln']
+```
+
+**Lesen:** nur Konten **derselben Firma**. `users` liegt außerhalb der
+Firmenpfade, deshalb muss die Regel es dort ausdrücklich verlangen —
+und die App muss gefiltert abfragen, weil Firestore Abfragen im Voraus
+prüft und nicht Dokument für Dokument.
+
+---
+
+### `firmen/{kennung}`
+
+| Feld | Anmerkung |
+|---|---|
+| `name` | Anzeigename |
+| `aktiv` | `false` = stillgelegt. **Prüft `firmaLaeuft(f)` bei jedem Zugriff** |
+| `zuDurchAbo` | merkt sich, ob die Abo-Uhr gesperrt hat — damit eine Zahlung keine von Hand gesperrte Firma öffnet |
+| `angelegtAm`, `angelegtVon` | |
+| `zahlKonten`, `zahlStudios` | Zahlen beim Anlegen |
+
+**`allow get: if true`** — jeder darf **ein** Firmendokument lesen, denn
+der Anmeldebildschirm braucht den Namen.
+**`allow list: if istAdminKonto()`** — aufzählen darf nur der Betreiber.
+
+> Die Trennung von `get` und `list` ist der Punkt: mit `read: true`
+> könnte jeder die **ganze Kundenliste** abrufen, mit Namen, Konten- und
+> Studiozahl. Die Zufallsendung in der Kennung (`mueller-7f3a`) soll
+> genau das verhindern und nützte dann nichts.
+
+---
+
+### `firmen/{kennung}/abo/aktuell`
+
+**Lesen:** Betreiber und der Chef dieser Firma. **Schreiben:** nur der
+Betreiber (und die Serverfunktionen mit Adminrechten).
+
+| Feld | Anmerkung |
+|---|---|
+| `stufe` | `basic` / `premium` |
+| `status` | einer von neun — siehe `docs/ABO-PLAN.md` |
+| `netto` | Betrag je Monat, **netto** |
+| `bisAm` | bezahlt bzw. Testphase bis |
+| `offenSeit` | seit wann ein Rückstand besteht. **Aus diesem einen Datum rechnet die Uhr** |
+| `leiter` | `lang` / `kurz` — welche Mahnleiter gilt |
+| `jeGezahlt` | nur Anzeige, keine Weiche |
+| `vonHand` | der Betreiber hat entschieden — die Uhr fasst es nicht an |
+| `kunde`, `abo` | Stripe-Kennungen |
+| `gesetztVon`, `gesetztVonName`, `gesetztAm` | wer hat es gesetzt |
+| `letztesEreignis`, `letztesEreignisAm` | was Stripe zuletzt meldete |
+
+> **Warum das nicht im Firmen-Dokument steht**, obwohl es bequemer
+> wäre: das ist öffentlich lesbar, weil der Anmeldebildschirm den Namen
+> braucht. Was ein Kunde zahlt, geht niemanden etwas an — am wenigsten
+> einen Wettbewerber, der die Kennung errät.
+
+---
+
+### `firmen/{kennung}/config/zugriff`
+
+**Neu seit 16.9.2026.** Der einzige Weg, auf dem das Team von einer
+Sperre erfährt.
+
+| Feld | Werte |
+|---|---|
+| `stufe` | `voll` / `nurlesen` / `zu` |
+| `stand` | Zeitstempel |
+
+**Mehr steht nicht drin** — kein Betrag, kein Datum, keine Mahnstufe.
+Dass ein Betrieb im Rückstand ist, geht das Team nichts an; dass gerade
+nichts gespeichert wird, schon.
+
+**Lesen:** jeder Aktive. **Schreiben:** ausschließlich der Server
+(Auslöser `aboZugriffSpiegeln`) — dem Chef ist es ausdrücklich
+verboten, damit er die Leiste nicht wegklicken kann.
+
+---
+
+### `firmen/{kennung}/config/registrierung`
+
+Der **Firmencode**. **Für Clients nicht lesbar** — auch nicht für den
+Chef, obwohl er ihn setzen darf.
+
+> Die allgemeine Regel `config/{doc}` würde ihn sonst für jeden
+> Eingeloggten lesbar machen und die Sperre wäre Dekoration. Deshalb
+> steht `registrierung` in der Leseregel ausdrücklich ausgenommen. In
+> Firestore gilt **jede** zutreffende Regel, nicht die speziellste —
+> diese Falle ist in derselben Datei zweimal aufgetreten.
+
+Beim Registrieren legt die App den eingegebenen Code unter
+`beitritt/{uid}` ab; die Regel für `users/{uid}` liest ihn dort nach.
+**Er kommt bewusst nicht ins Profil** — das ist für alle Aktiven lesbar.
+
+---
+
+### `firmen/{kennung}/zeiten/{id}` — Stempelzeiten
+
+| Feld | Anmerkung |
+|---|---|
+| `uid`, `name` | Person |
+| `studioKey` | Studio **des Geräts** |
+| `art` | `kommen` / `pause` / `zurueck` / `feierabend` |
+| `ts`, `tag`, `monat` | Zeitpunkt, Datum, Monat |
+| `fremd` | außerhalb des eigenen Studios gestempelt |
+| `quelle` | `terminal` / `handy` |
+| `terminalId`, `terminalName` | welches Gerät |
+
+```
+allow read:  eigene Zeiten ODER Leitung dieses Studios
+allow write: if false
+```
+
+**Niemand** kann über die Anwendung einen Stempel ändern oder löschen —
+auch nicht der Chef, auch nicht der Betreiber. Geschrieben wird
+ausschließlich serverseitig.
+
+**Kein Standort, keine IP, kein Gerätefingerabdruck.**
+`monat` ist Absicht: „Meine Zeiten" liest monatsweise über zwei
+Gleichheitsfilter; ein Bereichsfilter auf `tag` bräuchte einen
+zusammengesetzten Index.
+
+---
+
+### `firmen/{kennung}/statistik/{tag}`
+
+```
+request.resource.data.keys().hasOnly(['tag','starts','ansichten'])
+```
+
+**Die Sammlung kann keine Person aufnehmen, weil die Datenbank nur drei
+Felder durchlässt.** Das ist die eigentliche Zusage — nicht, dass die
+App keine Namen schreibt, sondern dass sie es nicht könnte.
+
+---
+
+### `firmen/{kennung}/trash/{id}` — Papierkorb
+
+| Feld | Anmerkung |
+|---|---|
+| `col` | aus welcher Sammlung |
+| `sk` | Studio |
+| `orig` | ursprüngliche Kennung |
+| `data` | der ganze Datensatz |
+| `deletedBy`, `deletedByUid`, `deletedAt` | **wer wann gelöscht hat** |
+
+Umfasst genau fünf Arten: **Aufgaben, Putzaufgaben, Ankündigungen,
+Dokumente, Brett-Beiträge.** Chatnachrichten ausdrücklich nicht.
+
+Der Lauf `purgeTrash` (täglich 03:30) löscht nach **30 Tagen** — bei
+Dokumenten **beide** Datensätze, Verweis und Inhalt.
+
+---
+
+### `firmen/{kennung}/documents/` und `documentData/`
+
+Geteilt, weil der Dateiinhalt groß ist und nicht bei jeder Listenabfrage
+mitkommen soll.
+
+| `documents` | `documentData` |
+|---|---|
+| `name`, `fileName`, `kind`, `size`, `type`, `cat`, `studios`, `uploadedBy`, `uploadedByUid`, `ts` | `data` — Base64 |
+
+`kind` ist `file` oder `link`. Bei `link` gibt es keinen zweiten
+Datensatz; die Datei liegt beim Drittanbieter des Kunden.
+
+> **Es gibt keinen echten Dateispeicher.** Cloud Storage enthält
+> ausschließlich die nächtliche Sicherung; die Storage-Regeln sperren
+> jeden Client-Zugriff vollständig.
+
+---
+
+## 3. Indexe
+
+**NICHT VERIFIZIERBAR** von hier aus: Es gibt keine
+`firestore.indexes.json` im Repository, und die tatsächlich angelegten
+zusammengesetzten Indexe stehen in der Firebase-Konsole.
+
+Was aus dem Code hervorgeht: an mehreren Stellen ist die
+**Datenmodellierung so gewählt, dass kein zusammengesetzter Index nötig
+ist** — etwa das Feld `monat` bei den Stempelzeiten. Der Kommentar dort
+nennt den Grund ausdrücklich.
+
+---
+
+## 4. Wie Firestore-Abfragen und Regeln zusammenspielen
+
+Der Punkt, über den man in diesem Projekt zweimal stolpert:
+
+> **Firestore prüft eine Abfrage im Voraus, nicht Dokument für
+> Dokument.** Sobald auch nur ein möglicher Treffer nicht gelesen werden
+> dürfte, wird die **ganze** Abfrage abgewiesen.
+
+Deshalb muss die App dort, wo die Regel einschränkt, **selbst schon
+gefiltert abfragen**. Beim Papierkorb sieht man es: der Chef sortiert
+direkt in der Abfrage, der Leiter muss zusätzlich nach seinen Studios
+filtern — sonst bekäme er gar nichts.
+
+Das ist auch der Grund, warum eine Studiogrenze beim Lesen nachträglich
+Arbeit ist: nicht die Regel, sondern jede betroffene Abfrage.
+
+---
+
+## 5. Sicherung
+
+| Was | Rhythmus | Aufbewahrung |
+|---|---|---|
+| Vollexport der Datenbank | täglich 02:40 | **7 Tage** |
+| Tages-Sicherung der Bestände | täglich 23:45 | rollierend |
+| Wochensicherung Material | wöchentlich | 52 Wochen |
+
+Der Vollexport liegt in Cloud Storage unter `sicherung/JJJJ-MM-TT/`.
+
+> **Dort liegt alles auf einmal** — jeder Chatverlauf, jede
+> Direktnachricht, das komplette Team mit E-Mail-Adressen. Eine einzige
+> zu weite Storage-Regel wöge schwerer als jede Lücke in den
+> Firestore-Regeln. Deshalb: `allow read, write: if false` für alle.
+
+**Wiederherstellung: nie geprobt.** Steht so in `docs/av/TOM.md`.

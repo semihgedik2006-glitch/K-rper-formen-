@@ -1,0 +1,336 @@
+# StudioChat — vollständige Funktionsübersicht
+
+**Stand:** 17. September 2026 · Erhoben am Quelltext, nicht aus dem
+Gedächtnis.
+
+Dieses Dokument ist die **Bestandsliste**: was es gibt, was es nicht
+gibt, und was ich nicht prüfen konnte. Es ist die Grundlage für das
+Kundenhandbuch — was hier nicht steht, darf dort nicht behauptet werden.
+
+---
+
+## Wie dieses Dokument zu lesen ist
+
+| Kennzeichnung | Bedeutung |
+|---|---|
+| **VERIFIZIERT** | Am Quelltext nachgewiesen. Wo es nützlich ist, steht die Fundstelle dabei. |
+| **NICHT GEFUNDEN** | Gesucht und nicht vorhanden. Das ist eine Aussage, keine Lücke im Bericht. |
+| **NICHT VERIFIZIERBAR** | Ich kann es von hier aus nicht prüfen — meist, weil es Produktivzugriff bräuchte. |
+| **TEILWEISE** | Vorhanden, aber nicht so vollständig, wie der Name nahelegt. |
+| **VERMUTUNG** | Eine Einschätzung, ausdrücklich keine Feststellung. |
+
+**Was ich nicht prüfen konnte, und warum das hier steht:** Ich habe
+keinen Zugang zum Produktivprojekt `formenchat` und fordere ihn nicht
+an. Alles, was den Zustand der laufenden Datenbank oder der
+Firebase-Konsole betrifft, ist deshalb **NICHT VERIFIZIERBAR** — nicht
+weil es fehlt, sondern weil ich es nicht sehen darf.
+
+---
+
+## 1. Kennzahlen
+
+| | | Quelle |
+|---|---|---|
+| Anwendung | `index.html`, **26.814 Zeilen** | `wc -l` |
+| Serverfunktionen | **59** Cloud Functions | `grep -c '^exports\.'` |
+| Sicherheitsregeln | `firestore.rules`, **1.910 Zeilen** | `wc -l` |
+| Automatische Durchläufe (Oberfläche) | **113** | `ls tests/test-*.js` |
+| Automatische Durchläufe (Regeln) | **13 Dateien**, 1.001 Zusicherungen | `tests/rules/` |
+| Ansichten | 16 | `NAV` in `index.html` |
+| Sammlungen in der Datenbank | 31 | `firestore.rules` |
+| Build-Schritt | **keiner** | kein `package.json` im Wurzelverzeichnis |
+
+---
+
+## 2. Rollen
+
+**VERIFIZIERT.** Drei Rollen und ein Zusatzkennzeichen.
+
+| Rolle | Wert im Profil | Was sie bedeutet |
+|---|---|---|
+| Mitarbeiter | `role: 'mitarbeiter'` | Normaler Zugang |
+| Studioleitung | `role: 'leiter'` | Verwaltet die ihr zugeordneten Studios |
+| Geschäftsführung | `role: 'chef'` | Verwaltet alle Studios des eigenen Betriebs |
+| Betreiber | `admin: true` **zusätzlich** auf einem Chef-Konto | Sieht Firmen-Stammdaten, **keine Inhalte** |
+
+**Das Zeiterfassungsterminal ist keine Rolle**, sondern ein
+registriertes Gerät. Es meldet sich nicht als Benutzer an.
+
+Das Feld `admin` vergibt ausschließlich ein Admin; die Sicherheitsregel
+verhindert ausdrücklich, dass sich jemand selbst dazu macht.
+
+---
+
+## 3. Anmeldung und Konto
+
+| Funktion | Status | Anmerkung |
+|---|---|---|
+| Anmeldung E-Mail + Passwort | **VERIFIZIERT** | Firebase Authentication |
+| Google-Login, Apple-Login, SSO | **NICHT GEFUNDEN** | `GoogleAuthProvider` kommt im Quelltext nicht vor |
+| Selbstregistrierung | **VERIFIZIERT** | erzeugt immer `mitarbeiter`, erzwungen in den Regeln |
+| Firmencode beim Registrieren | **VERIFIZIERT** | je Betrieb einstellbar, liegt an einem für niemanden lesbaren Ort |
+| Freigabe durch den Chef | **VERIFIZIERT** | je Betrieb einstellbar; ohne Freigabe kommt das Konto an **keine** Daten |
+| Passwort zurücksetzen | **VERIFIZIERT** | auf dem Anmeldebildschirm und durch den Chef auslösbar |
+| E-Mail-Bestätigung | **TEILWEISE** | wird verschickt und angezeigt, **blockiert den Zugang aber nicht** |
+| Passwort-Mindestlänge | **VERIFIZIERT: 6 Zeichen** | in `docs/av/TOM.md` ausdrücklich als zu kurz geführt |
+| Zwei-Faktor-Authentifizierung | **NICHT GEFUNDEN** | offen geführt in `TOM.md` |
+| Automatische Abmeldung bei Inaktivität | **NICHT GEFUNDEN** | |
+| Sperre nach Fehlversuchen | **TEILWEISE** | Firebase drosselt selbst (`auth/too-many-requests`); eine eigene Sperre gibt es nicht |
+| Geräte-/Sitzungsverwaltung | **NICHT GEFUNDEN** | keine Liste angemeldeter Geräte, kein „überall abmelden" |
+| Konto sperren | **VERIFIZIERT** | `aktiv: false`, wirkt auf Regelebene |
+| Zugang entfernen | **VERIFIZIERT** | `zugangEntfernen`, nur Chef; löscht Anmeldekonto **und** Profil |
+| Eigenes Konto löschen | **NICHT GEFUNDEN** | die Funktion weist den eigenen Zugang ausdrücklich ab |
+
+---
+
+## 4. Die 16 Ansichten
+
+**VERIFIZIERT** aus dem `NAV`-Verzeichnis.
+
+| Ansicht | Kennung | Wer | Zweck |
+|---|---|---|---|
+| Start | `home` | alle | Was heute ansteht |
+| Alles | `alles` | alle | Verzeichnis aller Ziele (nur im neuen Design) |
+| Übersicht | `ich` | alle | Eigene Schichten, Zeiten, Daten |
+| Persönlich | `persoenlich` | alle | Eigene Notizen, Termine, Ziele — für niemanden sonst lesbar |
+| Chat | `chat` | alle | Kanäle je Studio |
+| Direkt | `dm` | alle | Direktnachrichten zwischen zwei Personen |
+| Infos | `ann` | alle | Aushänge der Leitung |
+| Aufgaben | `todos` | alle | Aufgaben mit Frist |
+| Putzplan | `putzplan` | alle | Putzpunkte zum Abhaken |
+| Material | `material` | alle | Bestand und was fehlt |
+| Geräte | `geraete` | alle | Geräte- und Schadensbuch |
+| Probetraining | `probe` | alle | Durchgeführt und abgeschlossen, mit Quote |
+| Team | `team` | alle | Schichten, Abwesenheiten, Übergabe, Schwarzes Brett |
+| Dokumente | `docs` | alle | Dateien fürs Team |
+| Archiv | `archive` | Leitung | Wochensicherungen Material |
+| Verwaltung | `chef` | Leitung | neun Unterbereiche, siehe unten |
+
+### Die neun Unterbereiche der Verwaltung
+
+| Reiter | Wer | Zweck |
+|---|---|---|
+| Überblick | Leitung | Zahlen zum Betrieb |
+| Erstellen | Leitung | Aufgaben, Aushänge, Umfragen anlegen |
+| Team | nur Chef | Konten anlegen, freigeben, entfernen |
+| Studios | nur Chef | Standorte anlegen und umbenennen |
+| Firmen | **nur Betreiber** | Kunden anlegen, sperren, Abo eintragen |
+| Nachweise | nur Chef | Qualifikationen mit Ablaufwarnung (**Premium**) |
+| Anliegen | Leitung | Wünsche und Anliegen aus dem Team |
+| Auswertung | Leitung | Zahlen über einen Zeitraum (**Premium**) |
+| System | Leitung | Einstellungen, Papierkorb, Sicherung, Recht, Design, **Abo** |
+
+---
+
+## 5. Chat und Nachrichten
+
+| Funktion | Status | Anmerkung |
+|---|---|---|
+| Kanäle je Studio | **VERIFIZIERT** | plus „Chefs" und „Leitung" mit Rollenprüfung |
+| Frei gebildete Gruppen | **NICHT GEFUNDEN** | Kanäle folgen den Studios |
+| Direktnachrichten 1:1 | **VERIFIZIERT** | nur die beiden Beteiligten können lesen — auch nicht der Chef, auch nicht der Betreiber |
+| Text senden | **VERIFIZIERT** | max. 2.000 Zeichen, in der Regel erzwungen |
+| Fotos senden | **VERIFIZIERT** | verkleinert auf 1.280 px längste Kante |
+| Sprachaufnahmen | **VERIFIZIERT** | begrenzt, „etwa 30 Sekunden" |
+| Nachricht bearbeiten | **VERIFIZIERT: 15 Minuten** | nur der Verfasser, Kennzeichen „bearbeitet" |
+| Eigene Nachricht löschen | **VERIFIZIERT: 1 Stunde** | |
+| Fremde Nachricht löschen | **VERIFIZIERT** | Chef und Studioleitung, jederzeit |
+| Fremde Nachricht **bearbeiten** | **NICHT MÖGLICH** | die Regel lässt nur `pinned` zu |
+| Anheften | **VERIFIZIERT** | Sache der Verwaltung |
+| Reaktionen | **VERIFIZIERT** | sechs Zeichen, nur mit der eigenen Kennung |
+| Umfragen | **VERIFIZIERT** | nur die eigene Stimme änderbar |
+| Erwähnungen (@) | **VERIFIZIERT** | erzeugen eine eigene Push-Meldung |
+| Ungelesen-Anzeige | **VERIFIZIERT** | |
+| Lesestatus je Person | **NICHT GEFUNDEN** | kein „gelesen von …" |
+| Suche im Chat | **VERIFIZIERT** | es gibt eine ansichtsübergreifende Suche |
+| Nachrichten im Papierkorb | **NICHT GEFUNDEN — mit Absicht** | Kommentar im Code: „ein Papierkorb voller Nachrichten wäre eher ein Datenschutzproblem als eine Hilfe" |
+| Chat-Hintergrundbild | **VERIFIZIERT** | liegt nur im Browser des Geräts |
+
+---
+
+## 6. Kunden, Mitglieder, Kontakte
+
+**NICHT VORHANDEN.** Diese Frage kommt regelmäßig, deshalb hier
+ausdrücklich:
+
+StudioChat ist ein **internes Team-Portal**. Es verwaltet keine
+Studiokunden, keine Mitgliedschaften, keine Verträge und keine
+Endkundenkontakte.
+
+| Was es einmal gab | Status |
+|---|---|
+| Terminverwaltung (`appointments`) | **stillgelegt** — Regeln auf `false`, Oberfläche seit 13.8.2026 nicht mehr ausgeliefert |
+| Marketing-Seiten (`marketing.html`, `wachstum.html`) | **stillgelegt** — nicht mehr ausgeliefert |
+| `competitors`, `expansionLeads`, `studioMetrics`, `mkProjects` | **stillgelegt** — Regeln auf `false` |
+
+Die Cloud Functions dafür bestehen fort. Das steht auch so im
+Verarbeitungsverzeichnis, weil das beschreiben muss, was **möglich**
+ist, nicht nur was gerade läuft.
+
+**Die einzige Ausnahme:** Probetrainings werden gezählt — aber
+ausdrücklich **ohne Kundennamen**, nur Zahlen und die Namen des eigenen
+Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
+
+---
+
+## 7. Arbeitsorganisation
+
+| Funktion | Status | Anmerkung |
+|---|---|---|
+| Aufgaben mit Frist | **VERIFIZIERT** | Mitarbeiter dürfen seit 13.8. einmalige Aufgaben im eigenen Studio anlegen |
+| Wiederkehrende Aufgaben | **VERIFIZIERT** | nur die Verwaltung |
+| Abhaken mit Nachweis | **VERIFIZIERT** | Kennung, Name und Zeitpunkt werden mitgeschrieben |
+| Foto zur Aufgabe | **VERIFIZIERT** | |
+| Putzplan | **VERIFIZIERT** | Anlegen Chefsache, Abhaken darf jeder |
+| Material mit Soll-Bestand | **VERIFIZIERT** | Eintragen darf jeder, das Soll setzt die Verwaltung |
+| Geräte- und Schadensbuch | **VERIFIZIERT** | mit Protokoll je Gerät |
+| Schichtplan | **VERIFIZIERT** | Einteilen nur die Verwaltung |
+| Abwesenheiten | **VERIFIZIERT** | **zwei Arten: Urlaub und Krank** |
+| Übergaben | **VERIFIZIERT** | 24 Stunden auf der Startseite sichtbar |
+| Schwarzes Brett | **VERIFIZIERT** | Aushänge und Schichttausch |
+| Dokumente | **TEILWEISE** | max. ~0,7 MB je Datei; größere nur als Link. **Hochladen und Löschen nur Chef und Leitung** |
+| Qualifikationsnachweise | **VERIFIZIERT** | mit Ablaufwarnung; **Premium** |
+| Anliegen an die Leitung | **VERIFIZIERT** | gegen nachträgliche Textänderung geschützt |
+| Persönlicher Bereich | **VERIFIZIERT** | Notizen, Termine, Ziele — besitzergebunden |
+
+---
+
+## 8. Zeiterfassung
+
+| Funktion | Status | Anmerkung |
+|---|---|---|
+| Stempeln am Terminal | **VERIFIZIERT** | Gerätegeheimnis + PIN der Person |
+| Stempeln mit dem eigenen Telefon | **VERIFIZIERT** | Freigabe je Konto + sechsstelliger Code, der alle 30 Sekunden wechselt |
+| Erfasst wird | **VERIFIZIERT** | Person, Zeitpunkt, Art, Studio, Gerät, Quelle, „fremdes Studio"-Kennzeichen |
+| Standort / GPS | **NICHT ERFASST** | zusätzlich gesperrt durch `Permissions-Policy: geolocation=()` |
+| IP-Adresse | **NICHT ERFASST** | |
+| Gerätefingerabdruck | **NICHT ERFASST** | nur welches registrierte Terminal |
+| Nachträglich ändern | **NICHT MÖGLICH** | `zeiten` steht auf `allow write: if false` — für **jeden** |
+| Korrekturweg | **NICHT GEFUNDEN** | wer vergisst auszustempeln, hat einen falschen Eintrag, der stehen bleibt |
+| Eigene Zeiten einsehen | **VERIFIZIERT** | vollständig |
+| Automatische Löschfrist | **NICHT GEFUNDEN** | Stempelzeiten bleiben unbegrenzt liegen — offen, siehe `docs/RECHT.md` |
+| PIN zurücksetzen durch die Leitung | **NICHT MÖGLICH** | der Hash liegt an einem Ort, den die Regeln für **alle** sperren |
+
+---
+
+## 9. Abo und Bezahlung
+
+**Neu seit 16./17. September 2026.**
+
+| Funktion | Status | Anmerkung |
+|---|---|---|
+| Abo-Zustand je Firma | **VERIFIZIERT** | neun Zustände, siehe `docs/ABO-PLAN.md` |
+| Stufen Basic / Premium | **VERIFIZIERT** | Nachweise sind ein echter Riegel, die Auswertung nur ausgeblendet |
+| Testphase beim Anlegen | **VERIFIZIERT** | 30 Tage, einstellbar über `TEST_TAGE` |
+| Bestandsschutz | **VERIFIZIERT** | `bestandsschutz`, Ansehen ist die Voreinstellung |
+| Stripe-Kasse | **VERIFIZIERT im Code**, **NICHT VERIFIZIERBAR im Betrieb** | ohne Schlüssel antwortet der Endpunkt `503` — das ist gemessen |
+| Webhook mit Signaturprüfung | **VERIFIZIERT** | `constructEvent` über `req.rawBody` |
+| Rechnungen, Kündigung | **VERIFIZIERT** | über das Stripe-Portal, nicht in der App |
+| Mahnleiter | **VERIFIZIERT** | zwei Leitern, 48 Zusicherungen |
+| Zustand `nurlesen` in den Regeln | **VERIFIZIERT** | 54 Schreibregeln, 42 Zusicherungen mit Gegenproben |
+| PayPal, Überweisung, Rechnungsstellung | **NICHT GEFUNDEN** | widerspricht dem AGB-Entwurf, siehe `docs/RECHT.md` |
+
+---
+
+## 10. Benachrichtigungen
+
+| Funktion | Status | Anlass |
+|---|---|---|
+| Push aufs Handy | **VERIFIZIERT** | neue Nachricht, neue Aufgabe, neuer Aushang, Direktnachricht, Erwähnung |
+| Erinnerung an fällige Aufgaben | **VERIFIZIERT** | geplanter Lauf |
+| Ablaufende Nachweise | **VERIFIZIERT** | geplanter Lauf |
+| Geburtstagsgrüße | **VERIFIZIERT** | geplanter Lauf |
+| Tagesübersicht per E-Mail | **VERIFIZIERT** | 20:30 Uhr |
+| Monatsbericht per E-Mail | **VERIFIZIERT** | am Monatsersten |
+| Je Thema abschaltbar | **VERIFIZIERT** | Feld `mailAus` im Profil |
+| Mahnmails | **VERIFIZIERT — bewusst NICHT abschaltbar** | eine Zahlungserinnerung ist keine Benachrichtigungseinstellung |
+
+---
+
+## 11. Was die App bewusst NICHT tut
+
+**VERIFIZIERT**, jeweils mit Fundstelle in `docs/av/LOESCHKONZEPT.md`.
+
+* **Kein Protokoll je Person**, wer die App wann benutzt hat. Die
+  Nutzungszahlen sind anonym: pro Tag, ohne Konto, ohne Namen, ohne
+  Uhrzeit. Die Sicherheitsregel lässt dort nur drei Felder durch.
+* **Keine Standortdaten.**
+* **Keine Kundennamen bei Probetrainings.**
+* **Kein Analysedienst.** Kein Google Analytics, kein Meta Pixel, kein
+  Clarity, kein Hotjar. Die Content-Security-Policy würde ein
+  Tracking-Skript blockieren, selbst wenn es jemand einbaute.
+* **Keine Cookies.** `document.cookie` kommt im Quelltext nicht vor;
+  verwendet wird `localStorage`.
+* **Keine Ende-zu-Ende-Verschlüsselung.** Der Betreiber könnte über die
+  Firebase-Konsole technisch auf die Daten zugreifen. Das ist bei einem
+  Auftragsverarbeiter der Normalfall und steht hier, damit niemand
+  etwas anderes annimmt.
+
+---
+
+## 12. Berechtigungsmatrix
+
+**VERIFIZIERT** aus `firestore.rules`. „Oberfläche" und „Regel" werden
+getrennt ausgewiesen, weil der Unterschied der Kern der Sache ist.
+
+| Funktion | Mitarbeiter | Leitung | Chef | Betreiber |
+|---|---|---|---|---|
+| Aufgaben abhaken | ✓ | ✓ | ✓ | — |
+| Aufgaben anlegen (einmalig, eigenes Studio) | ✓ | ✓ | ✓ | — |
+| Aufgaben anlegen (wiederkehrend) | — | ✓ | ✓ | — |
+| Putzpunkte abhaken | ✓ | ✓ | ✓ | — |
+| Putzplan anlegen | — | — | ✓ | — |
+| Material eintragen | ✓ | ✓ | ✓ | — |
+| Chat schreiben | ✓ | ✓ | ✓ | — |
+| Fremde Nachricht löschen | — | ✓ | ✓ | — |
+| Direktnachrichten anderer lesen | — | — | **—** | **—** |
+| Dokumente hochladen | **—** | ✓ | ✓ | — |
+| Schichten einteilen | — | ✓ | ✓ | — |
+| Abwesenheit melden | ✓ | ✓ | ✓ | — |
+| Abwesenheit genehmigen | — | ✓ | ✓ | — |
+| Nachweise sehen | nur eigene | nur eigene | alle | — |
+| Konten anlegen / freigeben | — | — | ✓ | — |
+| Rolle ändern | — | — | ✓ | — |
+| Studios anlegen | — | — | ✓ | — |
+| Einstellungen ändern | — | — | ✓ | — |
+| Abo ansehen | — | — | ✓ | ✓ |
+| Abo von Hand setzen | — | — | — | ✓ |
+| Firmen anlegen / sperren | — | — | — | ✓ |
+| Kundeninhalte einsehen | — | — | — | **—** |
+| Stempelzeiten anderer | — | eigene Studios | alle | — |
+| Stempel-PIN lesen | — | — | — | **—** |
+
+> ### ⚠️ Die Studiogrenze ist beim LESEN keine technische Grenze
+>
+> **Gefunden am 16.9.2026, dokumentiert in `docs/RECHT.md`.**
+>
+> Zwischen **Betrieben** hält die Grenze technisch — 32 Sammlungen
+> geprüft, mit Gegenproben.
+>
+> Zwischen **Studios desselben Betriebs** prüft die Leseregel für die
+> meisten Sammlungen nur, ob jemand ein freigegebenes Konto dieses
+> Betriebs hat. Betroffen: Aufgaben, Putzplan, Geräte, Material,
+> Aushänge, Schichten, **Abwesenheiten einschließlich Krankmeldungen**,
+> Übergaben, Brett, **Dokumente**, Chat-Kanäle.
+>
+> Dass ein Mitarbeiter nur „seine" Studios sieht, macht die
+> **Oberfläche**. Beim **Schreiben** ist die Grenze echt.
+>
+> Echte Leseschranken gibt es bei: Direktnachrichten, persönlichem
+> Bereich, Nachweisen, Stempelzeiten, Stempel-PINs.
+
+---
+
+## 13. Was ich nicht prüfen konnte
+
+Vollständigkeitshalber, damit niemand es für geprüft hält:
+
+| | Warum |
+|---|---|
+| Die ausgelieferten Firestore-Regeln in der Datenbank | bräuchte Produktivzugriff. Der Ausroll-Lauf meldet Erfolg; die Regeln selbst sind über den Emulator geprüft |
+| Welche Firebase-Produkte in der Konsole aktiviert sind | dasselbe. Was die App **lädt**, ist verifiziert: fünf SDKs |
+| Ob der Google-AV-Vertrag angenommen wurde | ein Häkchen in der Cloud-Konsole |
+| Welcher SMTP-Anbieter eingesetzt wird | liegt in den GitHub-Secrets |
+| Ladezeiten, Firestore-Lese-/Schreibzahlen im Betrieb | **NICHT GEMESSEN** |
+| Ob die Wiederherstellung aus der Sicherung funktioniert | **nie geprobt** — steht so in `TOM.md` |
+| Verhalten auf echten iOS-Geräten | geprüft wird mit Chromium |

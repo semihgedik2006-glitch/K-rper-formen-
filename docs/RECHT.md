@@ -225,3 +225,164 @@ Datenschutzerklärung."*
 Der Grund: ein Text, der aussieht wie eine geprüfte Erklärung, aber keine
 ist, ist schlechter als ein Text, der sagt, was er ist. Man verlässt sich
 sonst darauf.
+
+---
+
+# Der Rechts-Entwurf vom 17. September 2026
+
+Aus dem Betrieb kam ein Arbeitsentwurf („StudioChat – Rechtliche Angaben /
+Legal Pack"). Was davon in die App konnte, ist drin. Was nicht, steht hier
+— und es sind zwei verschiedene Arten von Problemen.
+
+**Ich bin kein Anwalt.** Was hier steht, ist ein Abgleich zwischen dem
+Entwurf und dem, was die Anwendung nachweislich tut. Jeder Punkt ist am
+Code prüfbar. Ob eine Formulierung trägt, ist eine andere Frage.
+
+---
+
+## 1. Was eingetragen wurde
+
+In `konfig.js`, Block `recht`:
+
+| Feld | Wert | Quelle |
+|---|---|---|
+| `betreiber` | Semih Gedik | Entwurf, Abschnitt 1 |
+| `anschrift` | Kendenicher Straße 15, 50354 Hürth | Nachtrag vom 17.9. |
+| `vertreten` | Semih Gedik | Einzelunternehmen — der Inhaber selbst |
+| `email` | S.gedik@kformen.com | Nachtrag vom 17.9. |
+
+**Damit sind alle vier Pflichtangaben nach § 5 DDG da, und die rote
+Warnung in der App ist weg.**
+
+Zwei Anmerkungen dazu:
+
+*Die Schreibweise der Straße.* Genannt war `Kendenicherstrasse.15`,
+eingetragen ist `Kendenicher Straße 15`. Eine ladungsfähige Anschrift
+muss zustellbar sein — bitte einmal gegenprüfen, ob die Straße so
+heißt.
+
+*Diese Angaben sind ab sofort öffentlich.* Sie stehen auf jeder Seite
+der App, auch ohne Anmeldung, und in einem öffentlichen Repository. Das
+ist bei einem Impressum der Zweck und kein Versehen — es ist trotzdem
+eine Privatanschrift. Wer das später ändern will, braucht eine
+Geschäftsadresse; der Eintrag hier ist dann eine Zeile.
+
+**Am 17.9. nachgereicht und eingetragen.** Im Entwurf standen an
+diesen beiden Stellen noch Platzhalter in eckigen Klammern; sie wurden
+bewusst nicht übernommen, bis die echten Werte da waren. Ein
+Impressum, in dem „[vollständige ladungsfähige Anschrift]" steht,
+sieht fertig aus und ist es nicht.
+
+
+---
+
+## 2. Wo der Entwurf dem widerspricht, was gebaut ist
+
+**Das ist der wichtigere Teil.** Die Punkte unten sind keine
+Formulierungsfragen — sie beschreiben ein anderes Produkt als das, was
+seit dem 16.9. ausgeliefert ist.
+
+### 2.1 Zahlungsarten — direkter Widerspruch
+
+| | |
+|---|---|
+| **Entwurf, AGB** | „Vorgesehen sind insbesondere **PayPal, Überweisung und Rechnung**" |
+| **Gebaut** | **Stripe.** Karte und SEPA-Lastschrift. Kein PayPal, keine Überweisung, keine Rechnungsstellung |
+
+Die Anwendung erzeugt **keine Rechnungen** — das macht Stripe. PayPal ist
+nicht angebunden. Wer die AGB so verwendet, sagt Zahlungsarten zu, die es
+nicht gibt.
+
+**Zu entscheiden:** entweder die AGB an Stripe anpassen, oder PayPal
+zusätzlich anbinden. Ersteres ist eine Textänderung, Letzteres Arbeit.
+
+### 2.2 „Zunächst kein fortlaufendes Abo" — trifft nicht mehr zu
+
+Der Entwurf schreibt bei Laufzeit/Kündigung: *„Da zunächst kein
+fortlaufendes Abo eingesetzt werden soll…"*
+
+**Doch.** Seit dem 16.9. ist genau das gebaut: ein monatlich
+wiederkehrendes Abo mit Testphase, Mahnstufen und Selbstbedienung. Der
+Satz war zum Zeitpunkt des Entwurfs richtig und ist es seitdem nicht
+mehr.
+
+### 2.3 Der Preis — anderes Modell
+
+| | |
+|---|---|
+| **Entwurf** | „59,00 € netto pro Monat" als Platzhalter |
+| **Gebaut** | **je Studio**: Grundpreis + Aufschlag je weiterem Standort |
+
+Die 59 € sind im gebauten Modell zufällig der Preis für **drei Studios
+auf Basic** (29 + 2 × 15). Für ein Einzelstudio wären es 29 €, für
+vierzehn 224 €. Ein Festpreis in den AGB widerspricht dem Rechner in der
+Kasse.
+
+### 2.4 Kündigungsfrist
+
+Der Entwurf nennt „monatliche Kündbarkeit mit einer Kündigungsfrist von
+einem Monat". Im Stripe-Portal kündigt der Kunde selbst, und das Abo
+läuft bis zum Ende des **bezahlten Zeitraums** — keine zusätzliche
+Frist. Das ist kundenfreundlicher als der Entwurf, aber es steht anders
+drin.
+
+### 2.5 Umsatzannahme
+
+Der Entwurf geht von „zunächst ein Studio, geplanter Umsatz unter ca.
+1.000 € jährlich" aus. Das ist für die Kleinunternehmerfrage relevant.
+**Körperformen hat vierzehn Studios** — sie stehen allerdings auf
+Bestandsschutz und zahlen nichts. Die Annahme trifft also zu, solange
+kein fremder Kunde dazukommt; beim ersten Kunden mit mehreren Standorten
+wird sie schnell falsch.
+
+---
+
+## 3. Wo der Entwurf offen lässt, was längst beantwortet ist
+
+Diese Punkte sind kein Widerspruch, sondern Arbeit, die schon getan ist.
+Der Entwurf fordert sie zu Recht — sie liegen nur woanders.
+
+| Entwurf verlangt | Liegt vor in |
+|---|---|
+| „alle tatsächlich eingesetzten Dienste vollständig ergänzen" | `docs/av/UNTERAUFTRAGNEHMER.md` — vollständig **bis auf den Mailversand** |
+| TOMs dokumentieren | `docs/av/TOM.md` — mit Fundstellen im Code, einschließlich der offenen Maßnahmen |
+| Löschfristen festlegen | `docs/av/LOESCHKONZEPT.md` — vollständig **bis auf die Stempelzeiten** |
+| VVT erstellen | `docs/av/VERARBEITUNGSVERZEICHNIS.md` |
+| AVV-Entwurf | `docs/av/AV-VERTRAG-ENTWURF.md` |
+
+**Zwei Lücken bleiben in beiden Papieren dieselben:** welcher Anbieter
+den Mailversand macht, und wie lange Stempelzeiten aufbewahrt werden.
+
+---
+
+## 4. Wo der Entwurf etwas zusagt, das es nicht gibt
+
+**Abschnitt 6 (TOMs)** nennt unter den vorgesehenen Maßnahmen die
+„Protokollierung sicherheitsrelevanter Vorgänge" und „ein Verfahren für
+Datenschutz- und Sicherheitsvorfälle".
+
+**Beides gibt es nicht.**
+
+| | Stand |
+|---|---|
+| Durchgängiges Protokoll administrativer Zugriffe | **nicht vorhanden** in der App. Google Cloud protokolliert auf seiner Ebene |
+| Verfahren für einen Datenschutzvorfall | **nicht festgelegt** — keine benannte Person, kein Meldeweg, keine Vorlage |
+
+Das Zweite ist eine **Pflicht**: Art. 33 DSGVO verlangt die Meldung an
+die Aufsichtsbehörde binnen 72 Stunden, und Art. 33 Abs. 2 verpflichtet
+den Auftragsverarbeiter, den Verantwortlichen unverzüglich zu
+informieren. Als Aufwand ist es klein — eine Seite, eine Adresse, eine
+Vorlage. Als Lücke ist es die ernsteste in diesem Abschnitt.
+
+---
+
+## 5. Die Reihenfolge, die sich daraus ergibt
+
+| Wann | Was | Wer |
+|---|---|---|
+| ~~jetzt~~ | ~~Anschrift und Geschäfts-E-Mail nennen~~ — **erledigt 17.9.** | Betreiber |
+| **jetzt** | SMTP-Anbieter nennen (steht in den GitHub-Secrets) | Betreiber |
+| **vor dem ersten Kunden** | AGB an Stripe und an „je Studio" anpassen | Anwalt |
+| **vor dem ersten Kunden** | Verfahren für Datenschutzvorfälle festlegen | Betreiber + Anwalt |
+| **vor dem ersten Kunden** | Aufbewahrungsfrist für Stempelzeiten setzen | Anwalt |
+| **vor dem Livemodus** | gesamtes Paket anwaltlich durchsehen lassen | Anwalt |

@@ -106,16 +106,39 @@
        Impressum als fertiges auszugeben. Die Texte selbst sind kein
        Programmierproblem: siehe docs/RECHT.md. */
     recht: {
-      /* Pflichtangaben nach § 5 DDG */
-      betreiber: '',          // z. B. 'Körperformen Köln GmbH'
-      anschrift: '',          // Straße, PLZ, Ort – ein Postfach genügt nicht
-      vertreten: '',          // Geschäftsführer / Inhaber
-      telefon: '',
-      email: '',              // muss existieren und gelesen werden
-      register: '',           // z. B. 'Amtsgericht Köln, HRB 12345'
-      ustId: '',              // falls vorhanden
+      /* Pflichtangaben nach § 5 DDG.
 
-      datenschutzKontakt: '', // Ansprechpartner oder Datenschutzbeauftragter
+         STAND 17.9.2026: ALLE VIER PFLICHTANGABEN SIND DA. Die rote
+         Warnung in der App ist damit weg.
+
+         Anschrift und Geschaeftsmail kamen am 17.9. aus dem Betrieb
+         und wurden woertlich uebernommen, bis auf die Schreibweise der
+         Strasse: genannt war "Kendenicherstrasse.15", eingetragen ist
+         "Kendenicher Straße 15". Eine ladungsfaehige Anschrift muss
+         zustellbar sein — wenn die Strasse anders heisst, gehoert es
+         hier berichtigt.
+
+         DIESE ANGABEN SIND OEFFENTLICH, und das ist bei einem Impressum
+         der Zweck. Sie stehen in einem oeffentlichen Repository und auf
+         jeder Seite der App, auch ohne Anmeldung.
+
+         WER HIER STEHT: der Betreiber des DIENSTES, nicht der Kunde.
+         StudioChat laeuft unter formenchat.web.app, und
+         Diensteanbieter im Sinne von § 5 DDG ist, wer den Dienst
+         betreibt. Dass jede Kundenfirma darueber hinaus eigene Angaben
+         pflegen kann (config/recht), ist eine zweite Ebene fuer den
+         Fall, dass ein Kunde gegenueber seinem Team selbst als
+         Anbieter auftritt. Ob beide Ebenen noetig sind, gehoert zu den
+         Fragen fuer den Anwalt — siehe docs/RECHT.md. */
+      betreiber: 'Semih Gedik',
+      anschrift: 'Kendenicher Straße 15, 50354 Hürth',
+      vertreten: 'Semih Gedik',   // Einzelunternehmen: der Inhaber selbst
+      telefon: '',            // keine Pflicht
+      email: 'S.gedik@kformen.com',
+      register: '',           // Einzelunternehmen: kein Handelsregistereintrag
+      ustId: '',              // noch nicht vorhanden
+
+      datenschutzKontakt: '', // bei einem Einzelunternehmen der Inhaber
 
       /* Zusaetzliche Absaetze, die nur der Betrieb kennt — etwa eine
          Videoueberwachung. Jeder Eintrag wird ein eigener Absatz. */

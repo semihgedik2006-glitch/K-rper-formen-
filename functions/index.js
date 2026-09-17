@@ -1296,8 +1296,87 @@ function stripeHolen() {
   if (_stripe) return _stripe;
   const key = process.env.STRIPE_SECRET || '';
   if (!key) return null;
-  _stripe = require('stripe')(key, { apiVersion: '2024-06-20' });
+  /* Ohne feste Angabe nimmt die Bibliothek die Version, fuer die sie
+     gebaut ist. Das ist hier richtig und nicht Bequemlichkeit: eine
+     Version festzunageln, die aelter ist als die Bibliothek, hiesse
+     Objekte in einer Form zu bekommen, fuer die der eingebaute Code
+     nicht geschrieben wurde.
+
+     WICHTIG, UND DAS WAR EIN FEHLER IN DER ERSTEN FASSUNG: diese
+     Angabe gilt nur fuer AUFRUFE, die von hier ausgehen. Die Form der
+     ZUGESTELLTEN Ereignisse bestimmt der Webhook-Endpunkt im
+     Stripe-Dashboard, nicht diese Zeile. Deshalb liest der Haken
+     unten beide Formen — siehe aboIdAusRechnung(). */
+  _stripe = require('stripe')(key);
   return _stripe;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   DREI FELDER, DIE STRIPE VERSCHOBEN HAT
+
+   Mit der API-Version 2025-03-31 ("basil") sind Felder weggefallen, die
+   die erste Fassung dieses Hakens gelesen hat:
+
+   | frueher                          | heute                                        |
+   |----------------------------------|----------------------------------------------|
+   | invoice.subscription             | invoice.parent.subscription_details.subscription |
+   | subscription.current_period_end  | subscription.items.data[0].current_period_end |
+
+   Nachgeprueft im CHANGELOG der installierten Bibliothek, nicht aus dem
+   Gedaechtnis: „Remove support for ... `subscription` ... on `Invoice`"
+   und „Remove support for `current_period_end` ... on `Subscription`".
+
+   WARUM DAS NICHT MIT EINER VERSIONSANGABE ZU LOESEN IST: die Form der
+   zugestellten Ereignisse haengt am WEBHOOK-ENDPUNKT im Dashboard, nicht
+   am Client. Wer den Endpunkt heute anlegt, bekommt die neue Form —
+   egal, was hier steht. Und wer spaeter die Kontoversion hochzieht,
+   aendert sie erneut.
+
+   Der Fehler waere leise gewesen: die Firma wuerde ueber den Kunden
+   trotzdem gefunden, aber `bisAm` bliebe leer und die Abo-Kennung
+   fehlte. In der App staende dann „laeuft" ohne Datum, und die
+   Kuendigung ueber das Portal fiele auf die Uhr zurueck. Nichts davon
+   wirft einen Fehler — es stimmt nur nicht.
+
+   Also beide Formen lesen. Die neue zuerst, weil sie die kuenftige ist.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Stripe liefert Verweise entweder als Kennung oder — bei erweiterten
+   Objekten — als das ganze Objekt. Beides kommt vor, je nachdem wie der
+   Endpunkt eingestellt ist. Wer das nicht abfaengt, schreibt ein Objekt
+   in ein Feld, in dem eine Kennung stehen soll, und merkt es erst beim
+   naechsten Aufruf. */
+function kennungVon(wert) {
+  if (!wert) return null;
+  return typeof wert === 'string' ? wert : (wert.id || null);
+}
+
+/* Die Abo-Kennung aus einer Rechnung. */
+function aboIdAusRechnung(rechnung) {
+  if (!rechnung) return null;
+  const neu = rechnung.parent
+    && rechnung.parent.subscription_details
+    && rechnung.parent.subscription_details.subscription;
+  return kennungVon(neu || rechnung.subscription);
+}
+
+/* Bis wann ist bezahlt? Aus der Rechnung: der Zeitraum der ersten
+   Position. Dieses Feld hat Stripe NICHT verschoben. */
+function periodeAusRechnung(rechnung) {
+  const p = rechnung && rechnung.lines && rechnung.lines.data
+    && rechnung.lines.data[0] && rechnung.lines.data[0].period;
+  return p && p.end ? p.end * 1000 : null;
+}
+
+/* Bis wann laeuft ein Abo? Alt am Abo selbst, neu an der ersten
+   Position. */
+function periodeAusAbo(abo) {
+  if (!abo) return null;
+  const alt = abo.current_period_end;
+  const neu = abo.items && abo.items.data && abo.items.data[0]
+    && abo.items.data[0].current_period_end;
+  const s = neu || alt;
+  return s ? s * 1000 : null;
 }
 
 /* Wohin Stripe den Kunden zurueckschickt. Aus der Umgebung, damit der
@@ -1515,7 +1594,9 @@ async function firmaZuStripe(stripe, obj) {
   if (m.firma) return m.firma;
   if (obj && obj.client_reference_id) return obj.client_reference_id;
 
-  const aboId = obj && (obj.subscription || obj.id);
+  /* aboIdAusRechnung deckt beide Formen ab; obj.id greift, wenn das
+     Ereignis das Abo selbst ist (customer.subscription.*). */
+  const aboId = aboIdAusRechnung(obj) || (obj && obj.id);
   if (aboId && String(aboId).startsWith('sub_')) {
     try {
       const s = await stripe.subscriptions.retrieve(String(aboId));
@@ -1551,7 +1632,12 @@ async function stripeEreignis(stripe, ereignis) {
     case 'checkout.session.completed': {
       await ref.set(Object.assign({
         kunde: obj.customer || null,
-        abo: obj.subscription || null,
+        /* Checkout.Session.subscription gibt es weiterhin — aber als
+           `string | Subscription`. Erweitert liefert Stripe das ganze
+           Abo; dann laege hier ein Objekt statt einer Kennung, und der
+           naechste Portal-Aufruf suchte nach einem Kunden namens
+           [object Object]. */
+        abo: kennungVon(obj.subscription),
         stufe: (obj.metadata && obj.metadata.stufe) || 'basic',
       }, grund), { merge: true });
       break;
@@ -1561,17 +1647,15 @@ async function stripeEreignis(stripe, ereignis) {
       /* Bezahlt ist der einzige Zustand, der die Leiter wirklich
          loescht. Alles andere waere ein Rueckstand, der spaeter
          unerklaerlich wieder auftaucht. */
-      const bis = obj.lines && obj.lines.data && obj.lines.data[0]
-        && obj.lines.data[0].period && obj.lines.data[0].period.end;
       await ref.set(Object.assign({
         status: 'aktiv',
         jeGezahlt: true,
         offenSeit: null,
         leiter: null,
         netto: typeof obj.amount_paid === 'number' ? obj.amount_paid / 100 : undefined,
-        bisAm: bis ? bis * 1000 : null,
+        bisAm: periodeAusRechnung(obj),
         kunde: obj.customer || undefined,
-        abo: obj.subscription || undefined,
+        abo: aboIdAusRechnung(obj) || undefined,
       }, grund), { merge: true });
       break;
     }
@@ -1592,12 +1676,12 @@ async function stripeEreignis(stripe, ereignis) {
       if (obj.cancel_at_period_end) {
         await ref.set(Object.assign({
           status: 'gekuendigt',
-          bisAm: obj.current_period_end ? obj.current_period_end * 1000 : null,
+          bisAm: periodeAusAbo(obj),
         }, grund), { merge: true });
       } else if (obj.status === 'active') {
         await ref.set(Object.assign({
           status: 'aktiv', offenSeit: null, leiter: null,
-          bisAm: obj.current_period_end ? obj.current_period_end * 1000 : null,
+          bisAm: periodeAusAbo(obj),
         }, grund), { merge: true });
       }
       break;
@@ -4927,4 +5011,5 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      /* Die Abo-Leiter ist rein rechnerisch und damit ohne
                         Datenbank pruefbar — genau deshalb steht sie hier. */
                      aboZugriff, aboStufeNachTagen, aboNeuRechnen,
+                     kennungVon, aboIdAusRechnung, periodeAusRechnung, periodeAusAbo,
                      ABO_STATUS, ABO_STUFEN, LEITERN };
