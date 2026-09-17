@@ -247,30 +247,32 @@ In `konfig.js`, Block `recht`:
 | Feld | Wert | Quelle |
 |---|---|---|
 | `betreiber` | Semih Gedik | Entwurf, Abschnitt 1 |
+| `anschrift` | Kendenicher Straße 15, 50354 Hürth | Nachtrag vom 17.9. |
 | `vertreten` | Semih Gedik | Einzelunternehmen — der Inhaber selbst |
+| `email` | S.gedik@kformen.com | Nachtrag vom 17.9. |
 
-**Was NICHT eingetragen wurde, und warum:**
+**Damit sind alle vier Pflichtangaben nach § 5 DDG da, und die rote
+Warnung in der App ist weg.**
 
-| Feld | Im Entwurf steht | Warum es leer bleibt |
-|---|---|---|
-| `anschrift` | `[vollständige ladungsfähige Anschrift]` | ein Platzhalter |
-| `email` | `[Geschäfts-E-Mail]` | ein Platzhalter |
+Zwei Anmerkungen dazu:
 
-Beide sind **Pflicht nach § 5 DDG**. Sie als Platzhalter einzutragen
-hieße, ein Impressum auszuliefern, in dem „[vollständige ladungsfähige
-Anschrift]" steht. Das sieht fertig aus und ist es nicht — und genau
-davor warnt dieses Dokument seit August: *eine App, die eine leere Seite
-„Impressum" nennt, sieht erledigt aus. Das ist gefährlicher als gar keine
-Seite.*
+*Die Schreibweise der Straße.* Genannt war `Kendenicherstrasse.15`,
+eingetragen ist `Kendenicher Straße 15`. Eine ladungsfähige Anschrift
+muss zustellbar sein — bitte einmal gegenprüfen, ob die Straße so
+heißt.
 
-Solange sie fehlen, zeigt die App die rote Warnung — jetzt aber nur noch
-für diese beiden Felder statt für vier.
+*Diese Angaben sind ab sofort öffentlich.* Sie stehen auf jeder Seite
+der App, auch ohne Anmeldung, und in einem öffentlichen Repository. Das
+ist bei einem Impressum der Zweck und kein Versehen — es ist trotzdem
+eine Privatanschrift. Wer das später ändern will, braucht eine
+Geschäftsadresse; der Eintrag hier ist dann eine Zeile.
 
-> **Was ich dafür brauche: zwei Zeichenketten.**
-> Eine Anschrift (Straße, Hausnummer, PLZ, Ort — ein Postfach genügt
-> nicht) und eine E-Mail-Adresse, die existiert und gelesen wird.
-> Beides ist nach dem Eintragen öffentlich sichtbar; das ist bei einem
-> Impressum der Zweck.
+**Am 17.9. nachgereicht und eingetragen.** Im Entwurf standen an
+diesen beiden Stellen noch Platzhalter in eckigen Klammern; sie wurden
+bewusst nicht übernommen, bis die echten Werte da waren. Ein
+Impressum, in dem „[vollständige ladungsfähige Anschrift]" steht,
+sieht fertig aus und ist es nicht.
+
 
 ---
 
@@ -378,7 +380,7 @@ Vorlage. Als Lücke ist es die ernsteste in diesem Abschnitt.
 
 | Wann | Was | Wer |
 |---|---|---|
-| **jetzt** | Anschrift und Geschäfts-E-Mail nennen | Betreiber |
+| ~~jetzt~~ | ~~Anschrift und Geschäfts-E-Mail nennen~~ — **erledigt 17.9.** | Betreiber |
 | **jetzt** | SMTP-Anbieter nennen (steht in den GitHub-Secrets) | Betreiber |
 | **vor dem ersten Kunden** | AGB an Stripe und an „je Studio" anpassen | Anwalt |
 | **vor dem ersten Kunden** | Verfahren für Datenschutzvorfälle festlegen | Betreiber + Anwalt |

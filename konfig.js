@@ -108,14 +108,19 @@
     recht: {
       /* Pflichtangaben nach § 5 DDG.
 
-         STAND 17.9.2026: zwei von vier sind da, zwei fehlen noch.
-         Eingetragen ist nur, was im Rechts-Entwurf vom 17.9. ohne
-         eckige Klammern stand. Was dort als [Platzhalter] steht, bleibt
-         hier LEER — und zwar mit Absicht: die App zeigt dann weiter die
-         rote Warnung, und zwar genau fuer die fehlenden Felder. Ein
-         Impressum, in dem "[vollstaendige ladungsfaehige Anschrift]"
-         steht, sieht fertig aus und ist es nicht. Das ist schlimmer als
-         eine Warnung.
+         STAND 17.9.2026: ALLE VIER PFLICHTANGABEN SIND DA. Die rote
+         Warnung in der App ist damit weg.
+
+         Anschrift und Geschaeftsmail kamen am 17.9. aus dem Betrieb
+         und wurden woertlich uebernommen, bis auf die Schreibweise der
+         Strasse: genannt war "Kendenicherstrasse.15", eingetragen ist
+         "Kendenicher Straße 15". Eine ladungsfaehige Anschrift muss
+         zustellbar sein — wenn die Strasse anders heisst, gehoert es
+         hier berichtigt.
+
+         DIESE ANGABEN SIND OEFFENTLICH, und das ist bei einem Impressum
+         der Zweck. Sie stehen in einem oeffentlichen Repository und auf
+         jeder Seite der App, auch ohne Anmeldung.
 
          WER HIER STEHT: der Betreiber des DIENSTES, nicht der Kunde.
          StudioChat laeuft unter formenchat.web.app, und
@@ -126,10 +131,10 @@
          Anbieter auftritt. Ob beide Ebenen noetig sind, gehoert zu den
          Fragen fuer den Anwalt — siehe docs/RECHT.md. */
       betreiber: 'Semih Gedik',
-      anschrift: '',          // FEHLT — Straße, PLZ, Ort. Ein Postfach genügt nicht
+      anschrift: 'Kendenicher Straße 15, 50354 Hürth',
       vertreten: 'Semih Gedik',   // Einzelunternehmen: der Inhaber selbst
       telefon: '',            // keine Pflicht
-      email: '',              // FEHLT — muss existieren und gelesen werden
+      email: 'S.gedik@kformen.com',
       register: '',           // Einzelunternehmen: kein Handelsregistereintrag
       ustId: '',              // noch nicht vorhanden
 
