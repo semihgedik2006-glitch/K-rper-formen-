@@ -49,18 +49,21 @@ Datei welche Frage beantwortet — und was es **nicht** gibt.
 | Frage | Datei |
 |---|---|
 | Was die App mit Daten tut · Abgleich mit dem Rechts-Entwurf | `RECHT.md` |
+| **AGB-Entwurf, an das gebaute Produkt angeglichen** | `AGB-ENTWURF.md` |
+| **Der Name „StudioChat": was geprüft ist, was nicht** | `MARKE.md` |
 | Auftragsverarbeitungsvertrag (Entwurf) | `av/AV-VERTRAG-ENTWURF.md` |
 | Technische und organisatorische Maßnahmen | `av/TOM.md` |
 | Unterauftragnehmer | `av/UNTERAUFTRAGNEHMER.md` |
 | Löschkonzept | `av/LOESCHKONZEPT.md` |
 | Verzeichnis von Verarbeitungstätigkeiten (Art. 30 Abs. 2) | `av/VERARBEITUNGSVERZEICHNIS.md` |
+| **Was bei einem Datenschutzvorfall zu tun ist (Art. 33, 34)** | `av/VORFALL.md` |
 | Wo man anfängt | `av/README.md` |
 
 ### Verlauf
 
 | Frage | Datei |
 |---|---|
-| **Was wann warum geändert wurde** — 90 Runden | `FORTSCHRITT.md` |
+| **Was wann warum geändert wurde** — 91 Runden | `FORTSCHRITT.md` |
 | Was noch offen ist | `OFFEN.md` |
 | Was du selbst tun musst | `DEIN-TEIL.md` |
 | Ideen, noch nicht entschieden | `IDEEN.md` · `ROADMAP.md` · `DESIGN-IDEEN.md` · `KI-PLAN.md` |
@@ -124,8 +127,10 @@ erst, wenn eines falsch ist. Ein Verweis ist billiger als eine Kopie.
 Zwei Dinge, die vorher niemandem aufgefallen sind — beide stehen
 ausführlich in `BEKANNTE-PROBLEME.md`:
 
-1. **Die Studiogrenze ist beim Lesen keine technische Grenze** (P-01).
-   Betrifft unter anderem Krankmeldungen.
+1. **Die Studiogrenze war beim Lesen keine technische Grenze** (P-01).
+   Betraf unter anderem Krankmeldungen. Für Schichten, Abwesenheiten und
+   Übergaben behoben am 17.9., mit 27 Zusicherungen; für Brett,
+   Dokumente und Chat-Kanäle offen.
 2. **Der Stripe-Haken las Felder, die es nicht mehr gibt** (B-01).
    Behoben am 17.9., mit 32 Zusicherungen festgehalten.
 

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-95CiATj2MsK/Ok9qYHj6lkY3v+EyIrSsOPLqE1ir7PQ=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-pHvEx+QnuYEgbWYu7Mve9IMBJh4L1QnGq/3IYyO4NVc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-+rLsR1LLl421rqFqqeZiB6D02ThROV3SZDV7WegFMSE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -22,12 +22,48 @@
 <link rel="icon" type="image/svg+xml" href="icon.svg" />
 <link rel="apple-touch-icon" href="icon.png" />
 <title>StudioChat – Körperformen Team</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link id="schriftLink" rel="stylesheet" media="print"
-      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" />
-<noscript><link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600;700&display=swap" /></noscript>
+<!-- ── Die Schriften liegen hier, nicht bei Google ──
+     Bis zum 17.9.2026 kamen Barlow und Barlow Condensed von
+     fonts.googleapis.com — und zwar SCHON BEIM LADEN DER SEITE, vor
+     jeder Anmeldung und vor jedem Hinweis. Die IP-Adresse jedes
+     Besuchers ging damit an Google, ohne dass er gefragt wurde. Das
+     LG München I hat 2022 (3 O 17493/20) entschieden, dass das einen
+     Unterlassungsanspruch begründen kann; die Rechtsprechung ist nicht
+     einheitlich.
+
+     Jetzt liegen sie unter schriften/, und die Sicherheitsregel oben
+     engt font-src und style-src auf 'self' ein — was nicht erreichbar
+     ist, kann auch nicht missbraucht werden.
+
+     ABER: „ohne jeden Drittabruf" wäre falsch. Das Firebase-SDK kommt
+     weiter von www.gstatic.com, ebenfalls einem Google-Host. Der
+     Unterschied ist die Notwendigkeit: ohne das SDK gibt es keine App,
+     ohne Google Fonts gibt es nur eine andere Schrift. Was davon in die
+     Datenschutzerklärung gehört, steht in docs/RECHT.md;
+     tests/test-schriften.js misst, welche Abrufe wirklich hinausgehen,
+     und lässt genau diesen einen zu.
+
+     NUR DIE LATIN-TEILMENGE, neun Dateien, zusammen 196 KB. Sie deckt
+     U+0000-00FF ab: ä, ö, ü, ß, alle Akzente, € und die typografischen
+     Anführungszeichen. latin-ext, vietnamese und kyrillisch liefert
+     Google mit — diese App braucht sie nicht, und acht ungenutzte
+     Dateien sind kein Vorteil.
+
+     KEIN media="print"-Trick mehr: der war dafür da, dass ein Abruf ins
+     Netz das Zeichnen nicht aufhält. Eine Datei vom eigenen Server
+     braucht ihn nicht, und font-display:swap sorgt weiterhin dafür,
+     dass Text sofort sichtbar ist. -->
+<style>
+@font-face{font-family:'Barlow';font-style:normal;font-weight:300;font-display:swap;src:url(schriften/barlow-300.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:400;font-display:swap;src:url(schriften/barlow-400.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:500;font-display:swap;src:url(schriften/barlow-500.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:600;font-display:swap;src:url(schriften/barlow-600.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:700;font-display:swap;src:url(schriften/barlow-700.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:500;font-display:swap;src:url(schriften/barlow-condensed-500.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:600;font-display:swap;src:url(schriften/barlow-condensed-600.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(schriften/barlow-condensed-700.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:800;font-display:swap;src:url(schriften/barlow-condensed-800.woff2) format('woff2')}
+</style>
 <style>
 :root{
   /* Ruhiges Schiefer-Blau statt harter Neon-Kontrast: ueber lange Zeit
@@ -7455,13 +7491,10 @@ body.neu .kn-zeile{min-height:var(--zeile)}
    läuft. Vorher lag der Aufruf im onclick-Attribut; das erlaubt die
    Sicherheitsregel der Seite (CSP) nicht mehr.
 
-   Die Schrift hängt am selben Block: das Stylesheet kommt mit
-   media="print" herein, damit es das Zeichnen nicht aufhält, und wird
-   hier auf "all" gestellt. */
+   Die Schrift hing bis zum 17.9. an diesem Block: das Stylesheet kam
+   mit media="print" herein und wurde hier auf "all" gestellt. Seit die
+   Schriften lokal liegen, ist das nicht mehr nötig. */
 (function () {
-  var s = document.getElementById('schriftLink');
-  if (s) s.media = 'all';
-
   var f = document.getElementById('loadingForce');
   if (f) f.addEventListener('click', function () {
     var l = document.getElementById('loadingWrap');
@@ -8595,17 +8628,70 @@ function renderRecht(){
         'Cloud Storage), Region <b>europe-west1</b> – Belgien, also '+
         'innerhalb der EU. Anbieter ist Google Ireland Limited. '+
         'Eine nächtliche Sicherung liegt in derselben Region.</p>'+
+      /* Der Absatz ist neu am 17.9.2026. Vorher stand hier nur, WO die
+         Daten liegen — nicht, dass schon das Oeffnen der Seite eine
+         Verbindung zu Google herstellt. Das ist ein Unterschied: die
+         IP-Adresse geht hinaus, bevor irgendjemand angemeldet ist.
+
+         Bis zum selben Tag galt das ausserdem fuer die Schriften. Die
+         liegen jetzt auf dem eigenen Server, und damit bleibt genau
+         dieser eine Abruf uebrig. Er ist nicht vermeidbar, ohne das
+         Firebase-SDK mitzuliefern; gemessen wird er in
+         tests/test-schriften.js. */
+      '<p><b>Beim Öffnen der App</b> wird ein Programmteil von Google '+
+        'geladen (<code>www.gstatic.com</code>), ohne den die App nicht '+
+        'läuft. Dabei erfährt Google die IP-Adresse des Geräts – auch '+
+        'schon vor der Anmeldung. Schriften und alles Übrige kommen vom '+
+        'eigenen Server; weitere Verbindungen nach außen gibt es beim '+
+        'Laden nicht.</p>'+
 
       '<h4>Wie lange</h4>'+
       '<p>Solange das Konto besteht. Gelöschtes landet für 30 Tage im '+
         'Papierkorb und ist danach weg. Wochensicherungen des Materials '+
         'werden ein Jahr aufbewahrt.</p>'+
 
+      /* HIER STAND BIS ZUM 17.9.2026 ETWAS FALSCHES, und es stand in
+         einem Text, den Beschaeftigte lesen sollen:
+
+           „Mitarbeiter sehen ihr eigenes Studio. Studio-Leiter ihre
+            Studios. Die Geschaeftsfuehrung alle. Niemand von aussen —
+            geregelt ueber Sicherheitsregeln in der Datenbank, nicht nur
+            ueber die Oberflaeche."
+
+         Der zweite Satz war richtig: von aussen kommt niemand herein,
+         und die Firmengrenze haelt die Datenbank selbst. Der erste war
+         es nicht. Die Studiogrenze stand beim LESEN nur in der
+         Oberflaeche; es hiess `allow read: if inFirma(f) && istAktiv()`.
+         Wer angemeldet war und ein Werkzeug bedienen konnte, kam an die
+         Abwesenheiten jedes Studios — Krankmeldungen eingeschlossen,
+         also Gesundheitsdaten nach Art. 9 DSGVO.
+
+         AM SELBEN TAG BEHOBEN, aber nicht pauschal: die Grenze steht
+         jetzt in den Regeln fuer shifts, absences und handovers — die
+         drei Sammlungen mit Personendaten. Aufgaben, Putzplan und
+         Geraete bleiben betriebsweit lesbar, und das ist eine
+         Entscheidung: ein defektes Geraet soll jeder melden koennen,
+         auch aus einem anderen Studio.
+
+         Genau so steht es jetzt auch hier. Der Absatz ist laenger als
+         der alte Einzeiler, und das ist der Preis dafuer, dass er
+         stimmt. tests/rules/studiogrenze.test.js haelt beide Haelften
+         fest, mit Gegenproben in beide Richtungen. */
       '<h4>Wer es sieht</h4>'+
-      '<p>Mitarbeiter sehen ihr eigenes Studio. Studio-Leiter ihre '+
-        'Studios. Die Geschäftsführung alle. Niemand von außen – '+
-        'geregelt über Sicherheitsregeln in der Datenbank, nicht nur '+
-        'über die Oberfläche.</p>'+
+      '<p><b>Von außen sieht niemand etwas.</b> Wer nicht zu diesem '+
+        'Betrieb gehört, kommt an keine Zeile – das hält die Datenbank '+
+        'selbst durch, nicht die Oberfläche.</p>'+
+      '<p><b>Schichten, Abwesenheiten und Übergaben sind auf dein '+
+        'Studio begrenzt.</b> Mitarbeiter sehen ihr eigenes Studio, die '+
+        'Studio-Leitung ihre Studios, die Geschäftsführung alle. Auch '+
+        'das hält die Datenbank selbst durch: <b>deine Krankmeldung ist '+
+        'für ein anderes Studio nicht abrufbar</b>, nicht einmal mit '+
+        'technischen Mitteln.</p>'+
+      '<p><b>Aufgaben, Putzplan und Geräte sind dagegen im ganzen '+
+        'Betrieb einsehbar</b> – absichtlich. Ein defektes Gerät soll '+
+        'auch melden können, wer gerade aushilft. Personenbezogen ist '+
+        'daran nur, wer eine Aufgabe abgehakt oder einen Schaden '+
+        'gemeldet hat.</p>'+
 
       '<h4>Deine Rechte</h4>'+
       '<p>Auskunft, Berichtigung, Löschung, Einschränkung, '+
@@ -12301,6 +12387,10 @@ function authMarker(){
   var an=bar.querySelector('.auth-tab.active');
   if(!_authMarkerDa){ _authMarkerDa=true; markerSofort(bar, an); }
   else markerSetzen(bar, an);
+  /* Die Anmeldereiter sind das ERSTE, was jemand sieht — hier faellt
+     ein zu schmaler Marker am ehesten auf. Erklaerung bei
+     schriftenNachmessen(). */
+  schriftenNachmessen();
 }
 
 /* ── Darf man sich selbst anmelden? ──
@@ -13457,6 +13547,7 @@ function markerSetzen(behaelter, aktiv){
 function kanalMarker(){
   var bar=document.querySelector('.chat-channels'); if(!bar) return;
   markerSetzen(bar, bar.querySelector('.chan.active'));
+  schriftenNachmessen();
 }
 
 /* Beim ersten Aufbau soll der Marker DA sein, nicht von links hereinfahren.
@@ -13502,6 +13593,7 @@ function gruppenMarker(sofort){
   if(!aktiv.getClientRects().length) return;
   if(!bar.dataset.markerDa){ bar.dataset.markerDa='1'; sofort=true; }
   (sofort ? markerSofort : markerSetzen)(bar, aktiv);
+  schriftenNachmessen();
 }
 
 /* Dreht jemand das Gerät oder klappt die Bildschirmtastatur auf, stimmen
@@ -13524,15 +13616,57 @@ function markerNeuMessen(){
 }
 window.addEventListener('resize', markerNeuMessen);
 window.addEventListener('orientationchange', markerNeuMessen);
+
+/* ── Und wenn die Schrift später kommt ──
+   Der Marker misst sich am Reiter, und der Reiter ist so breit wie sein
+   Wort. Das Wort ist aber erst dann richtig breit, wenn die richtige
+   Schrift da ist — vorher steht es in der Ersatzschrift des Geräts, und
+   die ist schmaler oder breiter.
+
+   Gemessen am 17.9.2026, Start der App auf dem Handy: „Start" war als
+   Reiter 58 px breit, der Marker darunter 51 px. Sieben Pixel, die
+   niemand als Fehler meldet und die trotzdem der Grund sind, dass etwas
+   „off" aussieht. Nach dem ersten Reiterwechsel stimmte es wieder — die
+   Art Fehler, die man beim Nachstellen verliert.
+
+   Das war schon immer so: auch die Schriften von Google kamen nach dem
+   ersten Zeichnen. Seit sie lokal liegen, kommen sie nur ZUVERLAESSIG
+   spaet genug, und test-marker hat es dadurch gefunden.
+
+   document.fonts.ready ist genau die Frage danach: es loest auf, wenn
+   keine Schrift mehr aussteht. Kein Zeitgeber, kein Raten.
+
+   Ohne Uebergang (sofort=true), denn hier bewegt sich nichts — hier
+   wird korrigiert, und eine Korrektur, die hinuebergleitet, sieht nach
+   Fehler aus.
+
+   NICHT EINFACH HIER BEIM LADEN ANHAENGEN: die Zusage kann schon
+   aufgeloest sein, bevor die Navigation ueberhaupt gebaut ist — dann
+   misst sie eine Leiste, die es noch nicht gibt, und der schmale Marker
+   bleibt stehen. Angehaengt wird deshalb DANN, wenn ein Marker zum
+   ersten Mal gesetzt wird (siehe schriftenNachmessen() unten, gerufen
+   aus gruppenMarker und aus den drei anderen). */
+var _schriftenGeprueft = false;
+function schriftenNachmessen(){
+  if(_schriftenGeprueft) return;
+  _schriftenGeprueft = true;
+  try{
+    if(document.fonts && document.fonts.ready && document.fonts.ready.then){
+      document.fonts.ready.then(function(){ markerNeuMessen(); });
+    }
+  }catch(e){}
+}
 function subnavMarker(sofort){
   var bar=document.getElementById('subnav'); if(!bar) return;
   var an=bar.querySelector('.subtab.on');
   (sofort ? markerSofort : markerSetzen)(bar, an);
+  schriftenNachmessen();
 }
 function chefTabMarker(sofort){
   var bar=document.getElementById('chefTabs'); if(!bar) return;
   var an=bar.querySelector('.chef-tab.on');
   (sofort ? markerSofort : markerSetzen)(bar, an);
+  schriftenNachmessen();
 }
 
 /* ══ STUDIO WÄHLEN ══════════════════════════════════════════════════

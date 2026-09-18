@@ -140,8 +140,17 @@ function regel(hashes, seite) {
        Grössen an style="…" der einzelnen Elemente, und dafür gibt es keine
        Prüfsumme. Ein Stil kann keinen Code ausführen; die Regel verliert
        damit nichts von dem, wofür sie hier steht. */
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src https://fonts.gstatic.com data:",
+    "style-src 'self' 'unsafe-inline'",
+    /* Schriften seit 17.9.2026 lokal unter schriften/ — kein Aufruf mehr
+       zu Google beim Laden der Seite, also auch keine IP-Uebermittlung
+       an einen Dritten (LG Muenchen I, 3 O 17493/20). fonts.googleapis.com
+       und fonts.gstatic.com sind deshalb hier entfernt; stuenden sie noch
+       drin, waere ein versehentlich wieder eingebauter Google-Link nicht
+       zu bemerken. data: bleibt fuer eingebettete Symbolschriften.
+
+       DIESE ZEILEN SIND DIE EINZIGE QUELLE DER REGEL. Wer die CSP nur im
+       HTML aendert, verliert die Aenderung beim naechsten --setzen. */
+    "font-src 'self' data:",
     // Bilder und Ton kommen aus der Datenbank als data:-Adressen (safeMedia).
     "img-src " + k.img,
     "media-src " + k.medien,

@@ -29,6 +29,27 @@ service cloud.firestore {
       return isChef() || (isLeiter() && studioKey in myKeys());
     }
 
+    /* ── Gehoert dieses Studio zu meinen? ──
+       manages() fragt nach dem Verwalten und ist fuer einen Mitarbeiter
+       immer falsch. Fuers LESEN braucht es eine zweite, weitere Frage:
+       ein Mitarbeiter darf die Schichten SEINES Studios sehen, nur eben
+       nichts daran aendern.
+
+       Das war bis zum 17.9.2026 nirgends geprueft. Die Leseregel lautete
+       `inFirma(f) && istAktiv()` — die Studiogrenze stand allein in der
+       Oberflaeche, und eine Grenze in der Oberflaeche ist keine. Wer
+       angemeldet war und ein Datenbankwerkzeug bedienen konnte, kam an
+       die Abwesenheiten jedes Studios der Firma, Krankmeldungen
+       eingeschlossen — Gesundheitsdaten nach Art. 9 DSGVO.
+       (docs/BEKANNTE-PROBLEME.md, P-01)
+
+       KEIN get() DARIN. myProfile() ist ohnehin schon gelesen; diese
+       Frage kostet nichts zusaetzlich. Siehe die Warnung bei
+       hatPremium() weiter unten. */
+    function meinStudio(studioKey) {
+      return isChef() || studioKey in myProfile().get('studioKeys', []);
+    }
+
     /* ── Gruppenkanaele im Chat ──
        Zwei Kanaele gehoeren nicht allen:
 
@@ -1135,7 +1156,7 @@ service cloud.firestore {
     // ── Schichtplan pro Studio ──
     match /studios/{studioKey}/shifts/{shiftId} {
       allow read: if aufFlachenPfaden()
-        && (istAktiv());
+        && (istAktiv() && meinStudio(studioKey));
       // Einteilen darf nur die Verwaltung (Chef bzw. zuständiger Leiter)
       allow create, delete: if aufFlachenPfaden()
         && (manages(studioKey));
@@ -1162,7 +1183,7 @@ service cloud.firestore {
     // ── Abwesenheiten (Urlaub / Krank / Frei) ──
     match /studios/{studioKey}/absences/{absId} {
       allow read: if aufFlachenPfaden()
-        && (istAktiv());
+        && (istAktiv() && meinStudio(studioKey));
       // Jeder meldet sich selbst; die Verwaltung darf auch für andere eintragen
       allow create: if aufFlachenPfaden()
         && (istAktiv()
@@ -1183,7 +1204,7 @@ service cloud.firestore {
     // ── Übergabe-Notizen zwischen Schichten ──
     match /studios/{studioKey}/handovers/{hoId} {
       allow read: if aufFlachenPfaden()
-        && (istAktiv());
+        && (istAktiv() && meinStudio(studioKey));
       allow create: if aufFlachenPfaden()
         && (istAktiv() && request.resource.data.uid == request.auth.uid);
       allow update: if false;
@@ -1802,7 +1823,7 @@ service cloud.firestore {
         }
 
         match /studios/{studioKey}/shifts/{shiftId} {
-          allow read: if inFirma(f) && (istAktiv());
+          allow read: if inFirma(f) && (istAktiv() && meinStudio(studioKey));
           // Einteilen darf nur die Verwaltung (Chef bzw. zuständiger Leiter)
           allow create, delete: if schreibtIn(f) && (manages(studioKey));
           // Beim Tausch dürfen Mitarbeiter mitwirken – aber ausschliesslich an
@@ -1825,7 +1846,7 @@ service cloud.firestore {
         }
 
         match /studios/{studioKey}/absences/{absId} {
-          allow read: if inFirma(f) && (istAktiv());
+          allow read: if inFirma(f) && (istAktiv() && meinStudio(studioKey));
           // Jeder meldet sich selbst; die Verwaltung darf auch für andere eintragen
           allow create: if schreibtIn(f) && (istAktiv()
             && (request.resource.data.uid == request.auth.uid || manages(studioKey))
@@ -1841,7 +1862,7 @@ service cloud.firestore {
         }
 
         match /studios/{studioKey}/handovers/{hoId} {
-          allow read: if inFirma(f) && (istAktiv());
+          allow read: if inFirma(f) && (istAktiv() && meinStudio(studioKey));
           allow create: if schreibtIn(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
           allow update: if false;
           allow delete: if schreibtIn(f) && (manages(studioKey)

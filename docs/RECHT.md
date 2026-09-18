@@ -102,6 +102,15 @@ zu bewerten sind:
 1. **Krankmeldungen.** Die App speichert, wer wann krank war. Das sind
    Gesundheitsdaten (Art. 9 DSGVO) und damit die empfindlichste Kategorie
    im ganzen System.
+
+   > **Bis zum 17.9.2026 war eine Krankmeldung für jeden freigegebenen
+   > Beschäftigten des Betriebs abrufbar, nicht nur für das eigene
+   > Studio** — die Studiogrenze stand beim Lesen allein in der
+   > Oberfläche. Seit dem 17.9. hält sie die Datenbank selbst
+   > (`meinStudio(studioKey)` für `shifts`, `absences`, `handovers`,
+   > 27 Zusicherungen in `tests/rules/studiogrenze.test.js`). Der
+   > Vorgang ist in `BEKANNTE-PROBLEME.md`, P-01, vollständig
+   > festgehalten — **einschliesslich der Zeit, in der es so war.**
 2. **Anwesenheitsanzeige.** Die App speichert, wann jemand zuletzt online
    war. Wer das als Kontrolle liest, liegt nicht ganz falsch.
 3. **Sprachaufnahmen im Chat.** Hier stand „Stimme ist ein biometrisches
@@ -247,7 +256,7 @@ In `konfig.js`, Block `recht`:
 | Feld | Wert | Quelle |
 |---|---|---|
 | `betreiber` | Semih Gedik | Entwurf, Abschnitt 1 |
-| `anschrift` | Kendenicher Straße 15, 50354 Hürth | Nachtrag vom 17.9. |
+| `anschrift` | Kendenicherstraße 15, 50354 Hürth | Nachtrag vom 17.9. |
 | `vertreten` | Semih Gedik | Einzelunternehmen — der Inhaber selbst |
 | `email` | S.gedik@kformen.com | Nachtrag vom 17.9. |
 
@@ -256,10 +265,14 @@ Warnung in der App ist weg.**
 
 Zwei Anmerkungen dazu:
 
-*Die Schreibweise der Straße.* Genannt war `Kendenicherstrasse.15`,
-eingetragen ist `Kendenicher Straße 15`. Eine ladungsfähige Anschrift
-muss zustellbar sein — bitte einmal gegenprüfen, ob die Straße so
-heißt.
+*Die Schreibweise der Straße.* Genannt war `Kendenicherstrasse.15`.
+Eingetragen ist **`Kendenicherstraße 15`** — ein Wort, mit ß, ohne den
+Punkt vor der Hausnummer, so ausdrücklich bestätigt am 17.9.
+
+Zwischenstand am Vormittag des 17.9. war `Kendenicher Straße 15`, also
+getrennt. Das war eine Vermutung von mir und keine Angabe; sie ist
+zurückgenommen. **In einem Impressum wird nichts geraten** — eine
+ladungsfähige Anschrift muss zustellbar sein.
 
 *Diese Angaben sind ab sofort öffentlich.* Sie stehen auf jeder Seite
 der App, auch ohne Anmeldung, und in einem öffentlichen Repository. Das
@@ -374,6 +387,14 @@ den Auftragsverarbeiter, den Verantwortlichen unverzüglich zu
 informieren. Als Aufwand ist es klein — eine Seite, eine Adresse, eine
 Vorlage. Als Lücke ist es die ernsteste in diesem Abschnitt.
 
+> **Am 17.9.2026 geschrieben: `av/VORFALL.md`.** Sechs Schritte, eine
+> benannte Person, eine Meldevorlage, eine Aktenvorlage, eine
+> Einstufungstabelle. **Die Lücke ist damit kleiner, nicht zu.** Es gibt
+> weiterhin keine Vertretung — fällt die eine zuständige Person aus,
+> läuft die Frist des Kunden weiter und niemand meldet. Das ist eine
+> Entscheidung, kein Schreibvorgang, und sie gehört auf die Liste für
+> den Anwalt.
+
 ---
 
 ## 5. Die Reihenfolge, die sich daraus ergibt
@@ -381,8 +402,10 @@ Vorlage. Als Lücke ist es die ernsteste in diesem Abschnitt.
 | Wann | Was | Wer |
 |---|---|---|
 | ~~jetzt~~ | ~~Anschrift und Geschäfts-E-Mail nennen~~ — **erledigt 17.9.** | Betreiber |
-| **jetzt** | SMTP-Anbieter nennen (steht in den GitHub-Secrets) | Betreiber |
-| **vor dem ersten Kunden** | AGB an Stripe und an „je Studio" anpassen | Anwalt |
-| **vor dem ersten Kunden** | Verfahren für Datenschutzvorfälle festlegen | Betreiber + Anwalt |
+| ~~vor dem ersten Kunden~~ | ~~AGB an Stripe und an „je Studio" anpassen~~ — **Entwurf geschrieben 17.9.: `AGB-ENTWURF.md`**, Prüfung offen | ich, dann Anwalt |
+| ~~vor dem ersten Kunden~~ | ~~Verfahren für Datenschutzvorfälle festlegen~~ — **geschrieben 17.9.: `av/VORFALL.md`.** Offen bleibt die **Vertretung** | Betreiber |
+| **jetzt** | SMTP-Anbieter nennen — **die Zugangsdaten SIND hinterlegt** (im Ausrollprotokoll steht „SMTP-Zugangsdaten sind hinterlegt."). GitHub gibt ein Secret nicht zurück; der Anbieter steht in der Kopfzeile jeder Mail aus der App („Original anzeigen") | Betreiber |
+| **jetzt** | Markenregister zu „StudioChat" abfragen — Vorarbeit und Anleitung in `MARKE.md`. **Zwei gleichnamige Produkte in derselben Branche gefunden** | Betreiber |
 | **vor dem ersten Kunden** | Aufbewahrungsfrist für Stempelzeiten setzen | Anwalt |
+| **vor dem ersten Kunden** | Entscheiden, ob § 8 des AGB-Entwurfs (30 Tage, Export) so zugesagt wird — **dann muss die Exportfunktion gebaut werden** | Betreiber, dann ich |
 | **vor dem Livemodus** | gesamtes Paket anwaltlich durchsehen lassen | Anwalt |

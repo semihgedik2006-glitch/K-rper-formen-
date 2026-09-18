@@ -19,46 +19,95 @@ bekommt, findet die Lücken trotzdem, nur später und im falschen Moment.
 
 ---
 
-## P-01 · Die Studiogrenze ist beim Lesen keine technische Grenze
+## P-01 · Die Studiogrenze beim Lesen
 
 | | |
 |---|---|
 | **Schweregrad** | **HOCH** |
-| **Status** | Open |
+| **Status** | **Für die Personendaten behoben am 17.9.2026.** Für den Rest: **bewusst offen** |
 | **Gefunden** | 16.9.2026, beim Erstellen der Rechtsantworten |
-| **Betroffen** | Aufgaben, Putzplan, Geräte, Material, Aushänge, Schichten, **Abwesenheiten**, Übergaben, Brett, **Dokumente**, Chat-Kanäle |
 
-**Was ist das Problem?** Die Leseregel prüft für diese Sammlungen nur,
-ob jemand ein freigegebenes Konto **dieses Betriebs** hat — nicht, zu
-welchem Studio er gehört:
+**Was war das Problem?** Die Leseregel prüfte nur, ob jemand ein
+freigegebenes Konto **dieses Betriebs** hat — nicht, zu welchem Studio
+er gehört:
 
 ```
 allow read: if inFirma(f) && istAktiv();
 ```
 
-**Warum ist es relevant?** Unter den Abwesenheiten stehen
-**Krankmeldungen** — Gesundheitsdaten nach Art. 9 DSGVO, die
-empfindlichste Kategorie im System. Sie sind damit für jeden
-freigegebenen Beschäftigten des Betriebs lesbar, nicht nur für dessen
-Studio.
+Damit standen **Krankmeldungen** — Gesundheitsdaten nach Art. 9 DSGVO,
+die empfindlichste Kategorie im System — jedem freigegebenen
+Beschäftigten des Betriebs offen, nicht nur dem eigenen Studio. Nicht
+über Betriebsgrenzen hinweg; dort hielt die Grenze immer.
 
-**Was könnte passieren?** Wer die Anwendung umgeht und direkt mit der
-Datenbank spricht, kommt an die Daten anderer Studios **seines eigenen
-Betriebs**. Über Betriebsgrenzen hinweg nicht — dort hält die Grenze.
+---
 
-**Wie beheben?** Zwei Stellschrauben:
+### Behoben: die drei Sammlungen mit Personendaten
 
-1. Kollegen nur „abwesend" ohne Grund anzeigen — die Unterscheidung
-   Urlaub/Krank bliebe der Leitung vorbehalten.
-2. Die Leseregel um eine Studioprüfung ergänzen.
+| Sammlung | Was drinsteht |
+|---|---|
+| `shifts` | wer wann arbeitet |
+| `absences` | Urlaub, frei — **und krank** |
+| `handovers` | Übergaben, oft mit Namen von Kundinnen |
 
-**Der Preis von (2):** Firestore weist eine Abfrage komplett ab, sobald
-auch nur ein Treffer nicht gelesen werden dürfte. Die Anwendung müsste
-an jeder betroffenen Stelle gefiltert abfragen. Arbeit, aber kein Umbau.
+Neue Regelfunktion in `firestore.rules`:
 
-> **`docs/av/TOM.md` enthält eine Tabelle („Mitarbeiter — die eigenen
-> zugeordneten Studios"), die nach diesem Fund zu weit gefasst ist und
-> vor der Weitergabe berichtigt werden muss.**
+```
+function meinStudio(studioKey) {
+  return isChef() || studioKey in myProfile().get('studioKeys', []);
+}
+```
+
+`manages()` gab es schon, aber die fragt nach dem **Verwalten** und ist
+für einen Mitarbeiter immer falsch. Fürs Lesen braucht es die weitere
+Frage: ein Mitarbeiter darf die Schichten *seines* Studios sehen, nur
+nichts daran ändern.
+
+**Kein `get()` darin.** `myProfile()` ist ohnehin schon gelesen; die
+Prüfung kostet keinen zusätzlichen Lesevorgang.
+
+**Und die Abfragen?** Der befürchtete Preis ist nicht angefallen.
+Firestore weist eine Abfrage komplett ab, sobald auch nur ein Treffer
+nicht gelesen werden dürfte — die Anwendung hätte also überall gefiltert
+abfragen müssen. **Beim Nachsehen fragt sie ohnehin schon je Studio ab**
+(`S('studios').doc(sk).collection('absences')`), und `sk` kommt aus
+`session.studioKeys` oder aus einer Auswahlliste, die selbst schon
+begrenzt ist (`buildTeamSelect`). Es war keine einzige Abfrage zu
+ändern.
+
+> **Das ist der Grund, warum man erst misst und dann plant.** Der
+> geschätzte Aufwand für diesen Punkt war „Arbeit an jeder betroffenen
+> Stelle". Der tatsächliche war eine Regelfunktion und sechs Zeilen.
+
+**Nachgemessen:** `tests/rules/studiogrenze.test.js`, 27 Zusicherungen.
+Mitarbeiter, Leiter mit zwei von drei Studios, Chef ohne eigene Studios,
+ein Konto ganz ohne `studioKeys`, dazu die Abfrage und nicht nur das
+einzelne Dokument — und die Gegenproben in beide Richtungen.
+
+---
+
+### Bewusst NICHT behoben: Aufgaben, Putzplan, Geräte, Material
+
+Diese bleiben betriebsweit lesbar. **Das ist eine Entscheidung:** ein
+defektes Gerät soll auch melden können, wer gerade aushilft, und eine
+Putzaufgabe ist keine Personenangabe. Personenbezogen ist daran nur,
+*wer* abgehakt oder gemeldet hat.
+
+Wer das anders sieht, ändert es — und ändert `tests/rules/studiogrenze.test.js`
+mit, wo diese Offenheit als Gegenprobe festgehalten ist.
+
+### Ebenfalls offen: Dokumente, Brett, Chat-Kanäle
+
+Die liegen nicht unter `studios/<key>/`, sondern direkt beim Betrieb.
+Eine Studiogrenze gäbe es dort nur über ein Feld im Dokument, und das
+ist eine andere Aufgabe als diese hier. **NICHT GEPRÜFT**, ob sie nötig
+ist.
+
+> **`docs/av/TOM.md` wurde am 17.9. berichtigt:** die Tabelle „Wer
+> welche Daten sieht" trägt jetzt eine dritte Spalte — **Wodurch
+> gehalten**. Ebenso der Datenschutztext in der App, der bis dahin
+> behauptete, die Aufteilung sei „über Sicherheitsregeln in der
+> Datenbank" geregelt.
 
 ---
 
@@ -67,39 +116,69 @@ an jeder betroffenen Stelle gefiltert abfragen. Arbeit, aber kein Umbau.
 | | |
 |---|---|
 | **Schweregrad** | **HOCH** |
-| **Status** | Open |
+| **Status** | **Teilweise behoben am 17.9.2026** |
 | **Betroffen** | Organisation, nicht Code |
 
 Art. 33 DSGVO verlangt die Meldung an die Aufsichtsbehörde binnen **72
 Stunden**; Art. 33 Abs. 2 verpflichtet den Auftragsverarbeiter, den
 Verantwortlichen **unverzüglich** zu informieren.
 
-Es fehlt: eine benannte Person, ein Meldeweg zu jedem Kunden, eine
-Vorlage, ein Ort für die Dokumentation.
+**Geschrieben am 17.9.2026:** `docs/av/VORFALL.md` — sechs Schritte
+(stoppen, feststellen, Kunden melden, dokumentieren, Art. 34, abstellen),
+eine benannte Person mit Adresse, eine Meldevorlage, eine Aktenvorlage,
+eine Einstufungstabelle mit sieben Beispielen und die Ablage der Akten.
 
-**Aufwand:** klein. Eine Seite, eine Adresse, eine Vorlage.
-**Als Lücke:** die ernsteste organisatorische in dieser Liste.
+**Was damit NICHT behoben ist**, und warum der Punkt offen bleibt:
+
+| | |
+|---|---|
+| **Keine Vertretung** | Ein Einzelunternehmen hat keine Meldekette. Fällt die eine Person aus, meldet niemand — und die Frist des Kunden läuft weiter. |
+| **Ein einziger Meldeweg** | Eine E-Mail-Adresse. Ist das Postfach Teil des Vorfalls, gibt es keinen zweiten. |
+| **Die Behördenanschrift fehlt** | Bewusst: eine veraltete Adresse in einer Notfallvorlage ist schlimmer als keine. |
+| **Nie erprobt** | Ein Verfahren, das nie gelaufen ist, ist eine Annahme. Ein Trockenlauf dauert eine Stunde. |
+
+**Aufwand für den Rest:** die Vertretung ist eine Entscheidung, kein
+Schreibvorgang.
 
 ---
 
-## P-03 · Google Fonts werden extern nachgeladen
+## P-03 · Google Fonts wurden extern nachgeladen
 
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open |
-| **Betroffen** | `index.html` |
+| **Status** | **BEHOBEN am 17.9.2026** |
+| **Betroffen** | `index.html`, `werbung.html` |
 
-*Barlow* und *Barlow Condensed* kommen von `fonts.googleapis.com` und
-`fonts.gstatic.com`. Dabei geht die IP-Adresse des Besuchers an Google.
-
-**Die einzige Stelle im System, an der ohne Not Daten an einen Dritten
-gehen.** Das LG München I hat 2022 (3 O 17493/20) entschieden, dass das
-ohne Einwilligung einen Unterlassungsanspruch begründen kann; die
+*Barlow* und *Barlow Condensed* kamen von `fonts.googleapis.com` und
+`fonts.gstatic.com`. Dabei ging die IP-Adresse des Besuchers an Google —
+**beim Laden der Seite, vor jeder Anmeldung und vor jedem Hinweis.** Das
+LG München I hat 2022 (3 O 17493/20) entschieden, dass das ohne
+Einwilligung einen Unterlassungsanspruch begründen kann; die
 Rechtsprechung ist nicht einheitlich.
 
-**Wie beheben?** Die Schriften lokal ausliefern. Es sind zwei Familien.
-Danach läuft die Anwendung **ohne jeden Drittabruf**.
+**Behoben:** neun `woff2`-Dateien der latin-Teilmenge liegen jetzt unter
+`schriften/` (zusammen 195,8 KB, gemessen). In beiden HTML-Dateien
+stehen statt der `<link>`-Zeilen neun `@font-face`-Regeln. `font-src`
+und `style-src` in der CSP sind auf `'self'` eingeengt — erzeugt aus
+`tools/csp.js`, nicht von Hand.
+
+**Nachgemessen** in `tests/test-schriften.js` (28 Zusicherungen): jede
+Anfrage der geladenen Seite wird mitgeschrieben; zu `fonts.googleapis`
+und `fonts.gstatic` geht keine mehr. Zusätzlich wird die Breite desselben
+Textes in Barlow und in einer nicht existierenden Schrift verglichen —
+sonst wäre eine sauber geladene, aber nirgends benutzte Schrift ein
+grüner Durchlauf.
+
+> **Was NICHT behoben ist, und auch nicht behoben werden sollte:** das
+> Firebase-SDK kommt weiter von `www.gstatic.com`. Das ist derselbe
+> Google-Host. Der Unterschied ist die Notwendigkeit — ohne das SDK gibt
+> es keine App, ohne Google Fonts nur eine andere Schrift. Die Formel
+> „läuft ohne jeden Drittabruf" wäre also falsch, und sie stand am
+> Vormittag des 17.9. in einem Kommentar in `index.html`, bis der neue
+> Durchlauf fünf Anfragen nach `gstatic.com/firebasejs` gezählt hat.
+> `werbung.html` holt ausserdem Logo und Trainingsfoto vom eigenen
+> Webauftritt.
 
 ---
 

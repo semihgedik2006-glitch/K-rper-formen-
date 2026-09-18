@@ -167,14 +167,11 @@ const ANSICHTEN = [
   const lebt = await page.evaluate(() => ({
     ansicht: !!document.querySelector('.view.on, .view.active, #view-home'),
     leiste: document.querySelectorAll('.mobnav [data-group]').length,
-    text: document.body.textContent.replace(/\s+/g, ' ').trim().length,
-    schrift: (document.getElementById('schriftLink') || {}).media
+    text: document.body.textContent.replace(/\s+/g, ' ').trim().length
   }));
   console.log('  Zustand:', JSON.stringify(lebt));
   pruefe('GEGENPROBE die App läuft unter der Regel (Skriptblock erlaubt)',
     lebt.leiste >= 4 && lebt.text > 400, JSON.stringify(lebt));
-  pruefe('der zweite Block läuft auch (Schrift auf all gestellt)',
-    lebt.schrift === 'all', String(lebt.schrift));
 
   const echte = verstoesse.filter(v => !/gstatic|fonts\.googleapis/.test(v.quelle));
   console.log('  Verletzungen gesamt:', verstoesse.length,
@@ -231,7 +228,6 @@ const ANSICHTEN = [
 
     const zustand = await w.evaluate(() => ({
       text: document.body.textContent.replace(/\s+/g, ' ').trim().length,
-      schrift: (document.getElementById('schriftLink') || {}).media,
       logosWeg: [...document.querySelectorAll('.brand-logo')]
         .filter(x => x.style.display === 'none').length,
       logos: document.querySelectorAll('.brand-logo').length
@@ -242,15 +238,85 @@ const ANSICHTEN = [
     pruefe('werbung.html: keine Verletzung', echteW.length === 0,
       echteW.map(v => v.richtlinie + ' ' + v.quelle).join(' | '));
     pruefe('werbung.html: die Seite steht', zustand.text > 1500, String(zustand.text));
-    pruefe('werbung.html: der Skriptblock läuft (Schrift auf all)',
-      zustand.schrift === 'all', String(zustand.schrift));
     /* Das Logo kommt hier nicht durch (abgewiesen). Genau dann muss der
-       Ersatz greifen — frueher stand er im onerror-Attribut. */
+       Ersatz greifen — frueher stand er im onerror-Attribut. Diese eine
+       Zusicherung ist zugleich der Nachweis, dass der Skriptblock der
+       Seite ueberhaupt laeuft: seit dem 17.9.2026 hat werbung.html nur
+       noch einen, und ohne ihn bliebe das kaputte Bild stehen. */
     pruefe('werbung.html: fehlendes Logo wird ausgeblendet (war ein onerror)',
       zustand.logos > 0 && zustand.logosWeg === zustand.logos,
       zustand.logosWeg + ' von ' + zustand.logos);
     pruefe('werbung.html: keine Skriptfehler', wf.length === 0, wf.join(' | '));
     await w.close();
+  }
+
+  // ══ 6. Der kleine Block: der Ausweg, wenn der grosse ausfällt ══
+  /* index.html hat drei Skriptblöcke, und der erste ist nur deshalb ein
+     eigener: die zwei Knöpfe im Ladebildschirm sollen auch dann gehen,
+     wenn im grossen Block etwas schiefläuft. Diese Behauptung wird hier
+     wirklich geprüft, indem der grosse Block unterwegs entfernt wird.
+
+     Dass die Prüfsummen einzeln gelten, ist dafür die Voraussetzung: das
+     Entfernen eines Blocks macht die Summen der anderen nicht ungültig.
+     Käme der erste Block nicht durch die Regel, bliebe der Knopf stumm
+     und diese Zusicherung rot — und zwar genau in dem Fall, in dem es
+     dem Benutzer auffiele.
+
+     Bis zum 17.9.2026 stand hier stattdessen die Frage, ob das
+     Schrift-Stylesheet von media="print" auf "all" gestellt wurde. Das
+     war nur ein Nebeneffekt, und mit den lokalen Schriften ist er weg. */
+  console.log('\n── Der Ausweg im Ladebildschirm ──');
+  {
+    const re = /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g;
+    let m, groesster = null;
+    while ((m = re.exec(html))) {
+      if (!groesster || m[1].length > groesster[1].length) groesster = m;
+    }
+    const ohne = html.slice(0, groesster.index) +
+                 html.slice(groesster.index + groesster[0].length);
+    console.log('  grosser Block entfernt:', groesster[1].length, 'Zeichen');
+
+    const n = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const nv = [];
+    await n.exposeFunction('__cspFund3', (d) => nv.push(d));
+    await n.addInitScript(`
+      document.addEventListener('securitypolicyviolation', function (e) {
+        window.__cspFund3(e.violatedDirective + ' ' + String(e.blockedURI || ''));
+      });
+    `);
+    await n.route('**/index.html', r => r.fulfill(
+      { status: 200, contentType: 'text/html; charset=utf-8', body: ohne }));
+    await n.route('**://www.gstatic.com/**', r => r.abort());
+    await n.goto(APP, { waitUntil: 'domcontentloaded' });
+    await n.waitForTimeout(1500);
+
+    const vorher = await n.evaluate(() => ({
+      knopf: !!document.getElementById('loadingForce'),
+      auth: document.getElementById('authWrap').className,
+      lade: document.getElementById('loadingWrap').style.display
+    }));
+    /* GEGENPROBE: ohne sie wäre eine Anmeldemaske, die ohnehin schon
+       offen steht, kein Beweis für irgendetwas. */
+    pruefe('GEGENPROBE vorher steht die Anmeldemaske noch nicht offen',
+      vorher.knopf && !/\bshow\b/.test(vorher.auth) && vorher.lade !== 'none',
+      JSON.stringify(vorher));
+
+    await n.evaluate(() => {
+      const f = document.getElementById('loadingForce');
+      f.hidden = false;   // sichtbar macht ihn sonst der grosse Block
+      f.click();
+    });
+    await n.waitForTimeout(300);
+    const nachher = await n.evaluate(() => ({
+      auth: document.getElementById('authWrap').className,
+      lade: document.getElementById('loadingWrap').style.display
+    }));
+    console.log('  nach dem Klick:', JSON.stringify(nachher));
+    pruefe('ohne den grossen Block führt der Knopf zur Anmeldung',
+      /\bshow\b/.test(nachher.auth) && nachher.lade === 'none',
+      JSON.stringify(nachher));
+    pruefe('dabei keine Verletzung der Regel', nv.length === 0, nv.join(' | '));
+    await n.close();
   }
 
   await b.close();

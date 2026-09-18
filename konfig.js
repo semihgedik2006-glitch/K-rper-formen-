@@ -113,10 +113,8 @@
 
          Anschrift und Geschaeftsmail kamen am 17.9. aus dem Betrieb
          und wurden woertlich uebernommen, bis auf die Schreibweise der
-         Strasse: genannt war "Kendenicherstrasse.15", eingetragen ist
-         "Kendenicher Straße 15". Eine ladungsfaehige Anschrift muss
-         zustellbar sein — wenn die Strasse anders heisst, gehoert es
-         hier berichtigt.
+         Strasse: genannt war "Kendenicherstrasse.15", bestaetigt am 17.9. als
+         "Kendenicherstraße 15" — ein Wort, mit ß.
 
          DIESE ANGABEN SIND OEFFENTLICH, und das ist bei einem Impressum
          der Zweck. Sie stehen in einem oeffentlichen Repository und auf
@@ -131,7 +129,7 @@
          Anbieter auftritt. Ob beide Ebenen noetig sind, gehoert zu den
          Fragen fuer den Anwalt — siehe docs/RECHT.md. */
       betreiber: 'Semih Gedik',
-      anschrift: 'Kendenicher Straße 15, 50354 Hürth',
+      anschrift: 'Kendenicherstraße 15, 50354 Hürth',
       vertreten: 'Semih Gedik',   // Einzelunternehmen: der Inhaber selbst
       telefon: '',            // keine Pflicht
       email: 'S.gedik@kformen.com',

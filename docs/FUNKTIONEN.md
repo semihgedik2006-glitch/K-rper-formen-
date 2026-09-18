@@ -34,7 +34,7 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 | Anwendung | `index.html`, **26.814 Zeilen** | `wc -l` |
 | Serverfunktionen | **59** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **1.910 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **113** | `ls tests/test-*.js` |
+| Automatische Durchläufe (Oberfläche) | **114** | `ls tests/test-*.js` |
 | Automatische Durchläufe (Regeln) | **13 Dateien**, 1.001 Zusicherungen | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
@@ -300,21 +300,27 @@ getrennt ausgewiesen, weil der Unterschied der Kern der Sache ist.
 | Stempelzeiten anderer | — | eigene Studios | alle | — |
 | Stempel-PIN lesen | — | — | — | **—** |
 
-> ### ⚠️ Die Studiogrenze ist beim LESEN keine technische Grenze
+> ### ⚠️ Die Studiogrenze beim LESEN — halb technisch, halb Anzeige
 >
-> **Gefunden am 16.9.2026, dokumentiert in `docs/RECHT.md`.**
+> **Gefunden am 16.9.2026, für die Personendaten behoben am 17.9.2026.**
+> Ausführlich in `docs/BEKANNTE-PROBLEME.md`, P-01.
 >
 > Zwischen **Betrieben** hält die Grenze technisch — 32 Sammlungen
 > geprüft, mit Gegenproben.
 >
-> Zwischen **Studios desselben Betriebs** prüft die Leseregel für die
-> meisten Sammlungen nur, ob jemand ein freigegebenes Konto dieses
-> Betriebs hat. Betroffen: Aufgaben, Putzplan, Geräte, Material,
-> Aushänge, Schichten, **Abwesenheiten einschließlich Krankmeldungen**,
-> Übergaben, Brett, **Dokumente**, Chat-Kanäle.
+> Zwischen **Studios desselben Betriebs** gilt seit dem 17.9. zweierlei:
 >
-> Dass ein Mitarbeiter nur „seine" Studios sieht, macht die
-> **Oberfläche**. Beim **Schreiben** ist die Grenze echt.
+> | | |
+> |---|---|
+> | **Schichten, Abwesenheiten, Übergaben** | technisch begrenzt, `meinStudio(studioKey)` in der Regel |
+> | Aufgaben, Putzplan, Geräte, Material, Aushänge, Brett, Dokumente, Chat-Kanäle | **betriebsweit lesbar** |
+>
+> Die zweite Zeile ist für `studios/…` eine **Entscheidung** (ein
+> defektes Gerät soll auch melden können, wer aushilft) und für Brett,
+> Dokumente und Chat eine **offene Frage** — die liegen nicht unter
+> einem Studio und bräuchten ein Feld im Dokument.
+>
+> Beim **Schreiben** war die Grenze immer echt (`manages()`).
 >
 > Echte Leseschranken gibt es bei: Direktnachrichten, persönlichem
 > Bereich, Nachweisen, Stempelzeiten, Stempel-PINs.

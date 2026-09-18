@@ -9349,3 +9349,226 @@ scharf geschaltet wird erst, wenn die Unterlagen da sind.
 **112 Durchläufe grün · 1.001 Zusicherungen in den Regeltests**
 (davon 42 neue für die Sperre, mit Gegenproben) · 48 auf die reine
 Rechnung der Mahnleiter · 28 auf das, was ein Mensch zu lesen bekommt.
+
+---
+
+## Runde 91 — Schriften ins Haus, und was dabei auffiel
+
+**17. September 2026.** Zwei Entscheidungen aus dem Betrieb („beim
+ersten JA und beim zweiten auch JA"), dazu die Aufforderung, die
+Widersprüche selbst auszubessern. Die zweite Entscheidung war „Google
+Fonts lokal ausliefern". Was danach kam, war nicht geplant.
+
+### Die Schriften
+
+Neun `woff2`-Dateien der latin-Teilmenge, zusammen **195,8 KB**, liegen
+jetzt unter `schriften/`. In `index.html` und `werbung.html` stehen statt
+der `<link>`-Zeilen neun `@font-face`-Regeln. Der `media="print"`-Trick
+ist weg: er sollte verhindern, dass ein Abruf ins Netz das Zeichnen
+aufhält — eine Datei vom eigenen Server braucht das nicht.
+
+Nur latin, nicht latin-ext, vietnamesisch oder kyrillisch. Latin deckt
+`U+0000–00FF` ab: ä, ö, ü, ß, alle Akzente, € und die typografischen
+Anführungszeichen. **Acht ungenutzte Dateien sind kein Vorteil.**
+
+Damit ist `P-03` behoben. Bis zum 17.9. ging die IP-Adresse jedes
+Besuchers an Google, **beim Laden der Seite, vor jeder Anmeldung und vor
+jedem Hinweis** — der Fall, den das LG München I 2022 entschieden hat
+(3 O 17493/20).
+
+### Die CSP wird erzeugt, nicht geschrieben
+
+Erster Versuch: die `font-src`-Zeile im HTML von Hand geändert. Danach
+`node tools/csp.js --setzen` — und die Änderung war weg. **Die Regel
+entsteht aus einer Vorlage in `tools/csp.js`**, und dort stand
+`font-src https://fonts.gstatic.com data:` fest verdrahtet.
+
+Das ist kein Ärgernis, sondern die richtige Bauweise: es gibt genau eine
+Stelle, an der die Regel steht. Sie steht jetzt auf `'self' data:` —
+und das ist mehr als Kosmetik. **Stünde Google dort noch, fiele ein
+versehentlich wieder eingebauter Google-Link niemandem auf.** Die Regel
+bewacht damit auch die Entscheidung, nicht nur den Code.
+
+### Eine Formel, die falsch war
+
+Im Kommentar stand am Vormittag: *„Damit läuft die App OHNE JEDEN
+DRITTABRUF."* Der neue Durchlauf hat fünf Anfragen an
+`gstatic.com/firebasejs` gezählt. **Das Firebase-SDK kommt weiter von
+einem Google-Host.**
+
+Der Unterschied ist die Notwendigkeit — ohne das SDK gibt es keine App,
+ohne Google Fonts nur eine andere Schrift. Aber „ohne jeden Drittabruf"
+ist trotzdem falsch, und der Satz stand in einer Datei, die
+Datenschutzfragen beantworten soll. Er ist ersetzt, in `index.html`, in
+`ARCHITEKTUR.md` und in `BEKANNTE-PROBLEME.md`.
+
+**Der Absatz gehörte außerdem in den Datenschutztext der App** — dort
+stand bisher nur, WO die Daten liegen, nicht dass schon das Öffnen der
+Seite eine Verbindung zu Google herstellt. Jetzt steht es da.
+
+### Und eine zweite, die schlimmer war
+
+Im selben Text stand: *„Mitarbeiter sehen ihr eigenes Studio. […]
+geregelt über Sicherheitsregeln in der Datenbank, nicht nur über die
+Oberfläche."*
+
+Der zweite Halbsatz stimmt für die **Firmengrenze**. Für die
+**Studiogrenze** stimmt er nicht: an rund elf Sammlungen lautet die
+Leseregel `inFirma(f) && istAktiv()`. Das ist `P-01`, seit dem 16.9.
+bekannt — aber niemandem war aufgefallen, dass die App es den
+Beschäftigten gegenüber **anders behauptet**, und zwar in dem Text, den
+sie zur Frage „wer sieht meine Krankmeldung?" lesen.
+
+Der Text sagt es jetzt so, wie es ist. Er wird wieder kürzer, wenn die
+Grenze in den Regeln steht — **nicht vorher.** Eine Zusage, die man erst
+noch einlösen will, ist im Datenschutztext eine falsche Angabe.
+
+Dieselbe Berichtigung in `av/TOM.md`: die Tabelle „Wer welche Daten
+sieht" trägt jetzt eine dritte Spalte, **Wodurch gehalten**.
+
+### Sieben Pixel
+
+`test-marker` wurde rot: der gleitende Marker unter der Navigation war
+beim ersten Aufbau **51 px breit, der Reiter darüber 58 px**. Nach dem
+ersten Reiterwechsel stimmte es wieder.
+
+Der Marker misst sich am Reiter, und der Reiter ist so breit wie sein
+Wort — aber das Wort hat erst dann seine richtige Breite, wenn die
+richtige Schrift da ist. **Das war schon immer so**; auch die Schriften
+von Google kamen nach dem ersten Zeichnen. Seit sie lokal liegen, kommen
+sie nur *zuverlässig* spät genug, und dadurch wurde es messbar.
+
+Behoben über `document.fonts.ready` — keine Zeitgeber, kein Raten.
+Angehängt wird die Zusage nicht beim Laden, sondern dann, wenn ein
+Marker zum ersten Mal gesetzt wird: sonst kann sie schon aufgelöst sein,
+bevor die Navigation überhaupt existiert, und misst eine Leiste, die es
+nicht gibt.
+
+> **Sieben Pixel sind der Grund, aus dem etwas „off" aussieht, ohne dass
+> jemand sagen kann, warum.** Genau dafür gibt es `test-marker`.
+
+### Ein Durchlauf, der eine Frage verloren hatte
+
+`test-csp` fragte bisher, ob der kleine Skriptblock läuft — daran, ob er
+das Schrift-Stylesheet von `media="print"` auf `all` gestellt hat. Den
+Nebeneffekt gibt es nicht mehr. **Eine Zusicherung, die niemand mehr
+auslösen kann, prüft nichts.**
+
+Statt sie zu löschen, prüft der Durchlauf jetzt die Behauptung, für die
+der kleine Block überhaupt existiert: *er läuft auch dann, wenn der
+grosse ausfällt.* Dafür wird der grosse Block unterwegs aus der Datei
+entfernt — die Prüfsummen gelten einzeln, das Entfernen eines Blocks
+macht die anderen nicht ungültig — und dann der Knopf geklickt. Mit
+Gegenprobe, dass die Anmeldemaske vorher nicht schon offen stand.
+
+`test-gestaltung` hatte ein stilleres Problem: es nahm den **ersten**
+`<style>`-Block, und das ist seit dem 17.9. der mit den neun
+`@font-face`-Regeln. Alle Leitern leer, alle Zählungen null — **und ein
+Durchlauf, der nichts mehr findet, findet auch nichts Schlechtes.**
+Gerettet haben es die Gegenproben, die genau darauf angelegt sind. Jetzt
+wird der grösste Block genommen.
+
+### Neu: `tests/test-schriften.js`
+
+Vier Fragen, 28 Zusicherungen:
+
+1. **Geht noch etwas an Google?** Jede Anfrage der geladenen Seite wird
+   mitgeschrieben. Durch darf genau eine: das Firebase-SDK.
+2. **Kommen die Schriften an?** `document.fonts`, nicht die Existenz
+   einer Regel.
+3. **Wird auch wirklich Barlow gezeichnet?** Derselbe Text wird in
+   Barlow und in einer nicht existierenden Schrift gemessen. *Eine
+   sauber geladene, aber nirgends benutzte Schrift wäre sonst ein grüner
+   Durchlauf.*
+4. **Sind es Schriftdateien?** Die ersten vier Zeichen einer `woff2`
+   sind `wOF2`. Eine Fehlerseite, die `curl` als Datei abgelegt hat,
+   hätte sonst eine Grösse und ginge durch.
+
+Zwei Gegenproben haben beim ersten Lauf angeschlagen und waren beide
+berechtigt: die Suche nach Google-Links traf den Fliesstext der
+Erklärung (**ein Prüfer, der den Namen im Kommentar für einen Abruf
+hält, zwingt dazu, die Erklärung zu löschen**), und die Messung verglich
+`serif` mit einer erfundenen Schrift — die ja auf `serif` zurückfällt.
+
+### Recht: die Widersprüche, ausgebessert
+
+**`docs/AGB-ENTWURF.md`** — der AGB-Entwurf aus dem Betrieb beschreibt an
+fünf Stellen ein anderes Produkt. Alle fünf sind jetzt am gebauten Stand
+ausgerichtet: Stripe statt PayPal/Überweisung/Rechnung, laufendes Abo
+statt „zunächst keins", Preis je Studio statt 59 € pauschal, Kündigung
+zum Ende des bezahlten Zeitraums, Rechnungen von Stripe.
+
+Der Preis steht **absichtlich nicht als Zahl im Vertragstext**: es gilt,
+was der Kunde vor der Bestätigung in der Kasse sieht. Ein fester Betrag
+im Vertrag und ein anderer in der Kasse ist der klassische Fehler.
+
+§ 8 (Daten nach Vertragsende) trägt eine Warnung, die unbequem ist:
+**die zugesagte Exportfunktion und die automatische Löschung nach 30
+Tagen gibt es nicht.** Entweder wird gebaut oder der Text geändert.
+
+**`docs/av/VORFALL.md`** — das Verfahren nach Art. 33/34. Sechs Schritte,
+eine benannte Person, eine Meldevorlage, eine Aktenvorlage, eine
+Einstufungstabelle mit sieben Beispielen. Die Akten kommen **nicht**
+ungefiltert in dieses Repository: es ist öffentlich.
+
+Offen bleibt der eigentliche Punkt: **es gibt keine Vertretung.** Fällt
+die eine zuständige Person aus, läuft die Frist des Kunden weiter und
+niemand meldet. Das ist eine Entscheidung, kein Schreibvorgang.
+
+**`docs/MARKE.md`** — der Name. Die offene Suche hat **zwei gleichnamige
+Produkte in derselben Branche** gefunden: `studiochat.io` (KI-Agenten,
+identische Schreibweise, kein Impressum) und „Studio Chat" als Funktion
+in Studio Pro, einer Verwaltungssoftware für Tanz- und Sportstudios.
+Die Register selbst konnte ich von hier aus **nicht** abfragen — DPMA
+und TMview suchen über Formulare mit Sitzung, nicht über eine Adresse.
+Das steht so da, mit der Anleitung für die Viertelstunde.
+
+### Die Anschrift
+
+Genannt war `Kendenicherstrasse.15`. Am Vormittag des 17.9. stand in
+`RECHT.md` `Kendenicher Straße 15` — getrennt. Das war meine Vermutung
+und keine Angabe. Bestätigt und eingetragen ist **`Kendenicherstraße 15`**:
+ein Wort, mit ß. **In einem Impressum wird nichts geraten.**
+
+### Und dann P-01, weil der Weg kürzer war als gedacht
+
+Die zweite Entscheidung aus dem Betrieb war die Studiogrenze. Der Plan
+dafür stand seit dem 16.9. und war abschreckend: *„Firestore weist eine
+Abfrage komplett ab, sobald auch nur ein Treffer nicht gelesen werden
+dürfte — die Anwendung müsste an jeder betroffenen Stelle gefiltert
+abfragen."*
+
+**Beim Nachsehen fragt sie ohnehin schon je Studio ab.** Jede Stelle
+lautet `S('studios').doc(sk).collection('absences')`, und `sk` kommt aus
+`session.studioKeys` oder aus einer Auswahlliste, die selbst schon
+begrenzt ist (`buildTeamSelect`). **Es war keine einzige Abfrage zu
+ändern** — der geschätzte Aufwand war „Arbeit an jeder betroffenen
+Stelle", der tatsächliche eine Regelfunktion und sechs Zeilen.
+
+```
+function meinStudio(studioKey) {
+  return isChef() || studioKey in myProfile().get('studioKeys', []);
+}
+```
+
+`manages()` gab es schon, aber die fragt nach dem **Verwalten** und ist
+für einen Mitarbeiter immer falsch. Fürs Lesen braucht es die weitere
+Frage. Kein `get()` darin: `myProfile()` ist ohnehin gelesen.
+
+Geändert wurden `shifts`, `absences` und `handovers` — die drei
+Sammlungen mit Personendaten, in beiden Welten (flach und unter
+`firmen/`). **Aufgaben, Putzplan und Geräte bleiben betriebsweit
+lesbar**, und das ist eine Entscheidung: ein defektes Gerät soll auch
+melden können, wer gerade aushilft. Sie steht als Gegenprobe im neuen
+`tests/rules/studiogrenze.test.js` — **27 Zusicherungen**, darunter ein
+Leiter mit zwei von drei Studios, ein Chef ganz ohne eigene Studios und
+ein Konto ohne das Feld `studioKeys`.
+
+Offen bleiben Brett, Dokumente und Chat-Kanäle. Die liegen nicht unter
+einem Studio; dort bräuchte es ein Feld im Dokument, und das ist eine
+andere Aufgabe.
+
+**114 Durchläufe · 28 neue Zusicherungen für die Schriften · 27 für die
+Studiogrenze.** Die vier Roten waren alle echt: eine falsche Formel, eine
+falsche Zusage im Datenschutztext, sieben Pixel und ein Zerleger, der am
+falschen Ort gemessen hat.

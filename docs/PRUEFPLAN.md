@@ -3,7 +3,7 @@
 **Stand:** 17. September 2026
 
 Dieses Projekt hat **keine manuelle Testliste, die jemand abarbeitet.**
-Es hat 126 ausführbare Durchläufe, die bei jeder Änderung laufen. Dieses
+Es hat 127 ausführbare Durchläufe, die bei jeder Änderung laufen. Dieses
 Dokument beschreibt, wie sie gebaut sind, was sie abdecken und — der
 wichtigere Teil — **was sie nicht abdecken**.
 
@@ -53,7 +53,7 @@ pruefe('GEGENPROBE die alte Fassung findet das Abo NICHT mehr',
 
 | Art | Anzahl | Womit | Dauer |
 |---|---|---|---|
-| **Oberfläche** | 113 Dateien | Playwright + Chromium, gegen die echte Anwendung | ~25 Min |
+| **Oberfläche** | 114 Dateien | Playwright + Chromium, gegen die echte Anwendung | ~25 Min |
 | **Sicherheitsregeln** | 13 Dateien, **1.001 Zusicherungen** | Firestore-Emulator | ~2 Min |
 | **Reine Rechnung** | 2 Dateien, 80 Zusicherungen | Node, ohne Browser und Datenbank | < 1 Sek |
 
@@ -91,7 +91,7 @@ schreibend, einzeln wie über Abfragen, jeweils mit Gegenprobe.
 
 ## 4. Die Oberflächen-Durchläufe nach Thema
 
-113 Dateien. Nach Gebiet sortiert:
+114 Dateien. Nach Gebiet sortiert:
 
 | Gebiet | Durchläufe |
 |---|---|
@@ -100,18 +100,21 @@ schreibend, einzeln wie über Abfragen, jeweils mit Gegenprobe.
 | **Zeiterfassung** | `terminal`, `zeitpin`, `handy-stempeln`, `meine-zeiten` |
 | **Gestaltung** | `gestaltung`, `knoepfe`, `fingerziele`, `abgeschnitten`, `quer`, `rahmen`, `marker`, `neu-design`, `neu-messlatte` |
 | **Bereiche** | `chat-bereich3`, `aufgaben-bereich4`, `material-bereich5`, `geraete-bereich6`, `team-bereich7`, `dokumente-bereich8`, `verwaltung-bereich9`, `einstellungen-bereich10` |
-| **Demo und Auslieferung** | `demo`, `ausliefern`, `konfig`, `lizenzen`, `nachladen` |
+| **Demo und Auslieferung** | `demo`, `ausliefern`, `konfig`, `lizenzen`, `nachladen`, `schriften` |
 | **Server** | `funktionen-pfade`, `funktionen-schalter`, `mail-versand`, `sheets`, `sicherung`, `kalender` |
 | **Recht** | `recht`, `recht-firma` |
 | **Alltag** | `alltag`, `all`, `final`, `oberflaeche`, `ui`, `navigation` |
 
-**Drei davon sind Messungen, keine Prüfungen** und deshalb besonders
+**Vier davon sind Messungen, keine Prüfungen** und deshalb besonders
 wertvoll:
 
 * `abgeschnitten` — sucht abgeschnittenen Text bei drei Breiten
 * `fingerziele` — misst, ob jedes Ziel groß genug ist (≥ 44 px)
 * `neu-messlatte` — fährt drei Durchläufe **ein zweites Mal** mit
   `?neu=1`
+* `schriften` — schreibt jede Anfrage der geladenen Seite mit und misst
+  die Breite desselben Textes in Barlow und in einer nicht existierenden
+  Schrift (seit 17.9.2026)
 
 > **`neu-messlatte` entstand aus einem Fund, der teuer hätte werden
 > können:** 109 grüne Durchläufe sagten nichts über das neue Design
@@ -214,7 +217,7 @@ Nach dem Schema, das ein Prüfer erwartet.
 
 | | |
 |---|---|
-| Oberfläche | **113 von 113 grün** |
+| Oberfläche | **114 von 114 grün** |
 | Regeln | **1.001 Zusicherungen, 0 gefallen** |
 | Rechnung | 80 Zusicherungen, 0 gefallen |
 
