@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jNCTzxqMQ4g46AqTgT3F2JeYFwXRjnJxCkR3m7ArpOg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-us18cgTsbTPXbrwcqc77l8YUy/+es6nxR0e0pKjdZ/M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -381,6 +381,29 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);
              --akz-w .35s var(--ease-ios),--akz2-w .35s var(--ease-ios),
              --akz-s .35s var(--ease-ios),--akz2-s .35s var(--ease-ios)}
 @media (prefers-reduced-motion:reduce){ body{transition:none} }
+/* ── Dichte: kompakt (22.9.2026) ─────────────────────────────────────
+   Aus den Design-Ideen, Punkt 5: „Für einen Chef mit 14 Studios ist die
+   heutige Luftigkeit teuer, für den Trainer am Empfang ist eng zu eng."
+
+   EIN SCHALTER, KEIN ZWEITES DESIGN. Geändert wird nur die
+   Abstandsleiter, und auch die nur ab --s10 — die kleinen Werte tragen
+   Ränder und Lücken zwischen Zeichen, dort kostet jeder Pixel sofort
+   Lesbarkeit. Alles darüber ist Luft.
+
+   WAS AUSDRÜCKLICH NICHT MITGEHT: Schriftgröße, Zeilenhöhe und die
+   44-Pixel-Trefferflächen. Eine kompakte Ansicht, die man nicht mehr
+   trifft, ist keine Einstellung, sondern ein Fehler — `.btn` behält
+   seine min-height, und die unsichtbaren Trefferflächen sind in Pixeln
+   gesetzt, nicht in Leitersprossen.
+
+   Der Seitenrand geht von 4vw auf 3vw: auf 390px sind das 12 statt 16
+   Pixel, also eine halbe Spalte mehr Inhalt, ohne dass der Text den
+   Rand berührt. */
+body[data-dichte="kompakt"]{
+  --s10:8px;--s12:9px;--s16:12px;--s20:15px;--s24:17px;
+  --s32:22px;--s40:28px;--s48:34px;--s56:40px;--s72:50px;
+  --rand:clamp(12px,3vw,22px);
+}
 .chat-scroll,.scroll-area{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 /* Überschriften tragen die Gliederung, nicht die Farbe. Enger gesetzt
    und eine Spur größer: so erfasst man beim Überfliegen sofort, was
@@ -479,8 +502,22 @@ button[data-ikon].icon-btn,
 button[data-ikon].attach-btn{justify-content:center}
 
 /* ── Buttons ── */
+/* ── Knöpfe stehen NICHT mehr in Versalien (22.9.2026) ───────────────
+   Für Überschriften ist das am 25.8. schon entschieden worden:
+   „Versalien liest man messbar langsamer, und sie können nichts mehr
+   betonen, wenn alles sie hat." Bei den Knöpfen ist es stehengeblieben
+   — und dort fällt es am meisten auf, weil eine Beschriftung ein Satz
+   sein kann. Auf dem Bildschirmfoto der Abo-Karte stand
+   „RECHNUNGEN, ZAHLUNGSMITTEL, KÜNDIGEN" über zwei Zeilen.
+
+   Das Gewicht 700 und die schmale Schrift tragen den Knopf weiterhin;
+   die Versalien waren nicht das, was ihn erkennbar gemacht hat.
+
+   Der Buchstabenabstand geht von --ls-s auf null: die .02em waren für
+   Versalien da, wo sie das Wort öffnen. In gemischter Schreibung
+   zerren sie es nur auseinander. */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s8);
-  font-family:var(--font-head);font-weight:700;letter-spacing:var(--ls-s);text-transform:uppercase;
+  font-family:var(--font-head);font-weight:700;letter-spacing:0;
   font-size:var(--t-md);padding:var(--s12) var(--s24);border-radius:var(--r-pille);cursor:pointer;border:none;
   min-height:46px}
 .btn:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px}
@@ -1687,6 +1724,28 @@ body.nurlesen .kopf-plus{display:none !important}
 }
 
 /* ── Toast ── */
+/* ── Führung ─────────────────────────────────────────────────────────
+   Über allem ausser dem Startbildschirm: eine Führung, die hinter einem
+   Fenster verschwindet, zeigt auf etwas, das niemand sieht. */
+#tour{display:none;position:fixed;inset:0;z-index:1100}
+#tour.show{display:block}
+/* Das Loch im Dunkel. Der riesige Schatten IST die Abdunklung — ein
+   zweites Element davor würde das Licht wieder zudecken. */
+#tourLicht{position:absolute;border-radius:var(--r-md);pointer-events:none;
+  box-shadow:0 0 0 9999px var(--scrim), 0 0 0 3px var(--accent);
+  transition:top .32s var(--ease-ios),left .32s var(--ease-ios),
+             width .32s var(--ease-ios),height .32s var(--ease-ios)}
+#tourKarte{position:absolute;width:min(320px,calc(100vw - 32px));
+  background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:var(--r-lg);padding:var(--s16);box-shadow:var(--e3);
+  transition:top .32s var(--ease-ios),left .32s var(--ease-ios)}
+#tourZahl{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xs);
+  text-transform:uppercase;letter-spacing:var(--ls-m);color:var(--accent-d);
+  margin-bottom:var(--s4)}
+#tourTitel{font-size:var(--t-lg);margin-bottom:var(--s6)}
+#tourText{font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2)}
+.tour-knoepfe{display:flex;gap:var(--s8);margin-top:var(--s16)}
+.tour-knoepfe .btn{flex:1 1 0;min-width:0}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);z-index:90;
   background:var(--bg-2);border:1px solid var(--accent-d);color:var(--text);padding:var(--s10) var(--s20);
   border-radius:var(--r-pille);box-shadow:var(--e3);opacity:0;pointer-events:none;
@@ -2264,6 +2323,32 @@ body.nurlesen .kopf-plus{display:none !important}
 .view.show{animation:viewIn .5s var(--ease-ios)}
 @keyframes viewIn{
   from{opacity:0;transform:translateY(10px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+/* ── Und mit Richtung, wenn sie bekannt ist (22.9.2026) ──────────────
+   Bisher kam jede Ansicht von unten, egal wohin man ging. Damit merkt
+   man sich nicht, wo man ist. Jetzt schiebt sie aus der Richtung
+   herein, in der sie in der Navigation liegt: wer nach rechts tippt,
+   sieht die neue Seite von rechts kommen.
+
+   Die Reihenfolge stammt aus NAVGROUPS — derselben Liste, die auch die
+   Leiste baut. Eine zweite Reihenfolge wäre eine zweite Wahrheit, und
+   sie würde genau dann falsch, wenn jemand die Leiste umsortiert.
+
+   24 Pixel, nicht mehr: die Ansicht soll aus der Richtung kommen, nicht
+   durchs Bild fahren. Ein voller Bildschirmweg dauert entweder zu lang
+   oder ruckelt.
+
+   Kein eigener Ausschalter für reduzierte Bewegung nötig — weiter unten
+   steht eine Regel, die JEDE Animation auf .01ms stellt. */
+.view.show.von-rechts{animation:viewRechts .42s var(--ease-ios)}
+.view.show.von-links {animation:viewLinks  .42s var(--ease-ios)}
+@keyframes viewRechts{
+  from{opacity:0;transform:translateX(24px)}
+  to{opacity:1;transform:none}
+}
+@keyframes viewLinks{
+  from{opacity:0;transform:translateX(-24px)}
   to{opacity:1;transform:none}
 }
 
@@ -3964,6 +4049,46 @@ html{font-size:var(--fs,100%)}
 
 /* ── Schnellfilter-Chips (Aufgaben) ── */
 .chip-row{display:flex;gap:var(--s8);flex-wrap:wrap}
+
+/* ── Lösungen (22.9.2026) ────────────────────────────────────────────
+   Eine Karte je Eintrag, die sich aufklappt. Kein eigenes Fenster: was
+   man nebeneinander vergleichen will, gehört in eine Liste, und zwei
+   Probleme hintereinander nachzulesen ist genau der Fall. */
+.loes-karte{padding:0;overflow:hidden}
+.loes-kopf{display:flex;align-items:center;gap:var(--s10);width:100%;
+  background:none;border:none;cursor:pointer;text-align:left;
+  padding:var(--s12) var(--s16);min-height:56px}
+.loes-titel{flex:1;min-width:0}
+.loes-titel b{display:block;font-family:var(--font-head);font-weight:700;
+  font-size:var(--t-md);line-height:var(--lh-1)}
+.loes-titel i{display:block;font-style:normal;margin-top:var(--s2);
+  font-size:var(--t-xs);color:var(--text-3)}
+.loes-pfeil{flex-shrink:0;color:var(--accent-d);font-size:var(--t-sm);
+  transition:transform .25s var(--ease-ios)}
+.loes-karte.auf .loes-pfeil{transform:rotate(180deg)}
+.loes-inhalt{padding:0 var(--s16) var(--s16);animation:cardUp .3s var(--ease-ios) both}
+.loes-abschnitt{margin-bottom:var(--s12);font-size:var(--t-sm);
+  line-height:var(--lh);color:var(--text-2)}
+.loes-abschnitt b{display:block;font-family:var(--font-head);font-weight:700;
+  font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:var(--ls-m);
+  color:var(--text-3);margin-bottom:var(--s4)}
+.loes-fuss{font-size:var(--t-2xs);color:var(--text-3);margin:var(--s8) 0 var(--s12)}
+/* Die Fotos. Feste Höhe, damit die Liste beim Nachladen nicht springt —
+   ein Bild ohne reservierten Platz schiebt beim Eintreffen alles
+   darunter nach unten, und wer gerade liest, verliert die Zeile. */
+.loes-bilder{display:flex;gap:var(--s8);flex-wrap:wrap;margin-bottom:var(--s8)}
+.loes-bild{width:96px;height:96px;object-fit:cover;border-radius:var(--r-md);
+  border:1px solid var(--line-2);background:var(--bg-soft)}
+.loes-bild.leer-bild{display:grid;place-items:center;font-size:var(--t-2xs);
+  color:var(--text-3)}
+.loes-vorschau{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s8)}
+.loes-vor{position:relative;width:72px;height:72px}
+.loes-vor img{width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm);
+  border:1px solid var(--line-2)}
+.loes-vor .mini-x{position:absolute;top:-6px;right:-6px;background:var(--bg-2);
+  border:1px solid var(--line-2);border-radius:var(--r-rund);
+  width:22px;height:22px;display:grid;place-items:center;color:var(--text-2)}
+.loes-vor .mini-x svg{width:12px;height:12px}
 .chip{display:inline-flex;align-items:center;min-height:44px;
   background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--text-2);
   padding:0 var(--s16);border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
@@ -6303,6 +6428,59 @@ body.neu .kn-zeile{min-height:var(--zeile)}
         </div>
       </section>
 
+      <!-- ══ LÖSUNGEN ══════════════════════════════════════════════
+           Probleme, die im Studio anfallen, und was dagegen hilft.
+           Aus dem Betrieb, 22.9.2026: „ein bereich wo man videos und
+           texte zu bestimmten problemen hochladen kann die in einem
+           studio anfallen."
+
+           TEXT UND FOTOS ZUERST, VIDEO SPÄTER. Fotos kann die App
+           schon — sie werden im Browser verkleinert und liegen in der
+           Datenbank, das kostet nichts. Video braucht echten
+           Dateispeicher und damit eigene Regeln neben dem Eimer, in
+           dem die nächtliche Sicherung liegt. Erst der Bereich, dann
+           die Frage, ob er überhaupt benutzt wird.
+
+           Der Inhalt liegt in zwei Sammlungen, wie bei den Dokumenten:
+           `loesungen` trägt den Text, `loesungBilder` je ein Foto.
+           Ein Dokument in Firestore darf 1 MB haben; drei Fotos in
+           einem Eintrag sprengen das, drei Fotos in drei Dokumenten
+           nicht. -->
+      <section class="view" id="view-loesungen">
+        <div class="view-head shrink"><h2>Lösungen</h2><p>Probleme aus dem Studio — und was dagegen hilft.</p></div>
+        <div class="scroll-area" data-shrinks="1">
+          <div class="card" id="loesNeuKarte" data-fold="loesneu">
+            <h3 data-ikon="werkzeug">Lösung festhalten</h3>
+            <p class="hint">Was war los, und was hat geholfen? Wer es aufschreibt,
+              spart dem nächsten die Sucherei.</p>
+            <div class="field"><label for="loesTitel">Worum geht es?</label>
+              <input class="inp" id="loesTitel" type="text" maxlength="90"
+                     placeholder="z. B. Gerät 3 piept beim Start" /></div>
+            <div class="field"><label for="loesProblem">Das Problem</label>
+              <textarea class="inp" id="loesProblem" rows="3" maxlength="1200"
+                        placeholder="Was passiert, und wann?"></textarea></div>
+            <div class="field"><label for="loesLoesung">Was hilft</label>
+              <textarea class="inp" id="loesLoesung" rows="4" maxlength="2500"
+                        placeholder="Schritt für Schritt, so wie du es gemacht hast."></textarea></div>
+            <div class="field"><label for="loesKat">Kategorie</label>
+              <select class="inp" id="loesKat"></select></div>
+            <div class="field"><label>Welche Studios betrifft es?</label>
+              <label class="studio-check" id="loesAllWrap"><input type="checkbox" id="loesAll" /><span><b>Alle Studios</b></span></label>
+              <div class="studio-checks" id="loesStudios"></div></div>
+            <div class="field"><label>Fotos (bis zu drei)</label>
+              <input type="file" accept="image/*" class="hidden-file" id="loesFile" multiple />
+              <button data-ikon="foto" class="btn btn-ghost btn-sm" id="loesPick" style="width:100%">Foto hinzufügen</button>
+              <div id="loesVorschau" class="loes-vorschau"></div></div>
+            <button class="btn btn-primary btn-sm" id="loesSpeichern" style="width:100%">Speichern</button>
+            <p class="em-saved" id="loesNote"></p>
+          </div>
+          <input class="inp" id="loesSuche" type="search" autocomplete="off"
+                 placeholder="Nach Problem suchen …" style="margin-bottom:10px" />
+          <div class="chip-row" id="loesKatRow" style="margin-bottom:12px"></div>
+          <div id="loesListe"></div>
+        </div>
+      </section>
+
       <!-- DIREKTNACHRICHTEN -->
       <section class="view" id="view-dm">
         <div class="view-head"><h2 id="dmTitle">Direkt</h2><p>Private Nachrichten an einzelne Personen. Niemand sonst liest mit.</p></div>
@@ -7258,6 +7436,32 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
 <div class="toast" id="toast"></div>
 
+<!-- ══ FÜHRUNG DURCH DIE APP ═══════════════════════════════════════════
+     Aus dem Betrieb, 22.9.2026: „ich würde gerne den einrichtungs
+     assistenten bauen das man am anfang eine ganze führung durch die app
+     bekommt im gewissen sinne."
+
+     AUF DEM ECHTEN BILDSCHIRM, nicht als Dia-Schau. Die Führung wechselt
+     wirklich den Bereich und zeigt auf den wirklichen Knopf. Eine
+     Bilderfolge daneben müsste man jedes Mal nachpflegen, wenn sich
+     etwas ändert — und sie tut es nicht, sie erzählt nur davon.
+
+     Das Licht ist EIN Element mit einem 9999px grossen Schatten nach
+     aussen. So gibt es ein Loch im Dunkel, ohne vier Rechtecke zu
+     rechnen, die bei jeder Drehung wieder falsch stehen. -->
+<div id="tour" aria-live="polite">
+  <div id="tourLicht"></div>
+  <div id="tourKarte" role="dialog" aria-modal="true" aria-labelledby="tourTitel">
+    <p id="tourZahl"></p>
+    <h3 id="tourTitel"></h3>
+    <p id="tourText"></p>
+    <div class="tour-knoepfe">
+      <button class="btn btn-ghost btn-sm" id="tourWeg">Überspringen</button>
+      <button class="btn btn-primary btn-sm" id="tourWeiter">Weiter</button>
+    </div>
+  </div>
+</div>
+
 <!-- Rückgängig-Leiste: erscheint kurz nach dem Löschen -->
 <div class="undobar" id="undoBar"><span id="undoText"></span><button id="undoBtn">Rückgängig</button></div>
 
@@ -7342,6 +7546,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Schriftgröße</label>
       <div class="opt-grid" id="fsOpts"></div>
 
+      <!-- Dichte, neu am 22.9.2026. Direkt unter der Schriftgröße, weil
+           beide dasselbe regeln: wie viel auf einen Bildschirm passt.
+           Die Schrift bleibt dabei gleich gross — nur die Luft geht weg. -->
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Dichte</label>
+      <div class="opt-grid" id="dichteOpts"></div>
+
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
       <div class="opt-grid" id="accOpts"></div>
 
@@ -7383,9 +7593,17 @@ body.neu .kn-zeile{min-height:var(--zeile)}
            etwas weg. -->
       <div style="margin-top:24px;border-top:1px solid var(--line-2);padding-top:16px">
         <button data-ikon="wiederholen" class="btn btn-ghost btn-sm" id="pmReset" style="width:100%">Aussehen zurücksetzen</button>
-        <p class="hint" style="margin:8px 0 0">Stellt Modus, Schriftgröße, Farbe und
+        <p class="hint" style="margin:8px 0 0">Stellt Modus, Schriftgröße, Dichte, Farbe und
           beide Hintergründe auf unsere Voreinstellung zurück. Dein Profil,
           deine Meldungen und alles in der Datenbank bleiben unberührt.</p>
+      </div>
+      <!-- Die Führung noch einmal. Sie steht HIER und nicht in einem
+           Hilfe-Menü: wer sie einmal weggetippt hat, sucht sie sonst nie
+           wieder — und ein Weg, den man nicht findet, ist keiner. -->
+      <div class="setup-zeile" style="margin-top:12px;display:block">
+        <button data-ikon="kompass" class="btn btn-ghost btn-sm" id="pmTour" style="width:100%">Führung noch einmal ansehen</button>
+        <p class="hint" style="margin:8px 0 0">Zeigt dir in ein paar Schritten,
+          wo in dieser App was steht — passend zu deiner Rolle.</p>
       </div>
     </div>
     <div id="pmPaneNachweise" style="display:none">
@@ -7900,6 +8118,7 @@ var PREFS = {
      dessen kf_prefs steht bereits ein Wert. */
   accent:'bunt',    // 'bunt' oder ein Schlüssel aus ACCENTS
   fs:'100',         // Schriftgröße in Prozent
+  dichte:'normal',  // normal | kompakt — siehe body[data-dichte]
   lieferantMail:'', // Adresse für die Bestellmail (bleibt auf diesem Gerät)
   folds:{},         // welche Abschnitte aufgeklappt sind (pro Gerät)
   sort:{},          // gewählte Sortierung je Liste (pro Gerät)
@@ -8289,6 +8508,7 @@ function applyPrefs(){
      läuft seit dem 21.9. durch dieselbe Funktion. */
   akzentAnwenden();
   document.documentElement.style.setProperty('--fs', (PREFS.fs||100)+'%');
+  document.body.setAttribute('data-dichte', PREFS.dichte||'normal');
   /* Der Hintergrund der ganzen App, nicht nur des Chats. */
   document.body.setAttribute('data-appbg', PREFS.appbg||'keiner');
   // Farbe der Statusleiste mitziehen
@@ -10720,6 +10940,7 @@ var FEATURES = [
   {id:'material',  label:'Material',         was:'Bestand und was fehlt'},
   {id:'geraete',   label:'Geräte',           was:'Geräte- und Schadensbuch'},
   {id:'docs',      label:'Dokumente',        was:'Dateien für das Team'},
+  {id:'loesungen', label:'Lösungen',         was:'Probleme aus dem Studio und was dagegen hilft'},
   {id:'probe',     label:'Probetraining',    was:'Durchgeführt und abgeschlossen, mit Quote'},
   {id:'schicht',   label:'Schichtplan',      was:'Wer wann arbeitet', team:true},
   {id:'abwesend',  label:'Abwesenheiten',    was:'Urlaub, Krankheit, frei', team:true},
@@ -13488,6 +13709,18 @@ function showApp(){
   startNutzung();             // anonyme Zählung: welche Funktion wird benutzt
   showView('home');
   birthdayCheck();
+  /* Die Führung, aber erst nach zwei Sekunden und nur beim ersten Mal.
+     SOFORT WÄRE FALSCH: die Startseite baut sich noch auf, und ein
+     Licht auf einen Knopf, der eine Zehntelsekunde später zwanzig
+     Pixel weiter liegt, zeigt daneben. Zwei Sekunden sind auch die
+     Zeit, in der jemand kurz sieht, was ihn erwartet — eine Führung,
+     die vor dem Inhalt da ist, führt durch nichts.
+
+     Nicht im Terminal-Betrieb: dort liegt der Stempelbildschirm über
+     allem, und geführt werden muss niemand. */
+  if(!tourGesehen() && !terminalAufGeraetLesen()){
+    setTimeout(function(){ if(session) tourStarten(false); }, 2000);
+  }
   // Regelmäßig neu zeichnen, damit erledigte Aufgaben automatisch ins Archiv wandern
   if(!_archiveTimer) _archiveTimer=setInterval(function(){ if(session) renderTodos(); }, 5*60*1000);
 }
@@ -13760,7 +13993,7 @@ var NAVGROUPS = [
    icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
   {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
-  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','probe','docs'],
+  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','probe','docs','loesungen'],
    icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'g-team', label:'Team', views:['team'],
    icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
@@ -13817,11 +14050,41 @@ var NAV = [
   {id:'probe', label:'Probetraining', icon:'<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>'},
   {id:'team', label:'Team', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
   {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
+  /* Glühbirne: „hier steht, was schon einmal jemand herausgefunden hat".
+     Bewusst nicht der Schraubenschlüssel — den trägt in dieser App die
+     Werkbank, und zwei Bedeutungen auf einem Zeichen sind eine zu viel. */
+  {id:'loesungen', label:'Lösungen', icon:'<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V18h8v-3.3A7 7 0 0 0 12 2Z"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
   {id:'archive', label:'Archiv', icon:'<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>', manageOnly:true},
   {id:'chef',  label:'Chef',     icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>', manageOnly:true}
 ];
 /* Welche Gruppe gehört zu einer Ansicht? */
+/* ── Aus welcher Richtung kommt eine Ansicht? ─────────────────────────
+   Die Reihenfolge ist die der Navigation: alle Gruppen der Reihe nach,
+   innerhalb einer Gruppe ihre Reiter. Genau das ist die Reihenfolge,
+   die jemand auf dem Bildschirm sieht — deshalb dieselbe Liste und
+   keine zweite.
+
+   Gibt null zurück, wenn eine der beiden Ansichten unbekannt ist oder
+   es dieselbe ist. Dann bleibt es beim Heranziehen von unten, und das
+   ist richtig so: eine Richtung zu erfinden, die es nicht gibt, ist
+   irreführender als gar keine. */
+var _vorigeAnsicht = null;
+function ansichtPlatz(id){
+  if(typeof NAVGROUPS === 'undefined' || !NAVGROUPS) return -1;
+  var n = 0;
+  for(var i=0;i<NAVGROUPS.length;i++){
+    var v = NAVGROUPS[i].views;
+    for(var j=0;j<v.length;j++){ if(v[j]===id) return n; n++; }
+  }
+  return -1;
+}
+function ansichtRichtung(alt, neu){
+  if(!alt || alt===neu) return null;
+  var a = ansichtPlatz(alt), b = ansichtPlatz(neu);
+  if(a<0 || b<0 || a===b) return null;
+  return b>a ? 'von-rechts' : 'von-links';
+}
 function groupOfView(v){
   for(var i=0;i<NAVGROUPS.length;i++){
     if(NAVGROUPS[i].views.indexOf(v)>=0) return NAVGROUPS[i];
@@ -13949,6 +14212,7 @@ function allesGruppen(){
     {label:'Geräte',        view:'geraete',  ikon:'geraete',  was:'Defekt melden, Verlauf ansehen'},
     {label:'Probetraining', view:'probe',    ikon:'probe',    was:'Durchgeführt und abgeschlossen'},
     {label:'Dokumente',     view:'docs',     ikon:'docs',     was:'Dateien und Links fürs Team'},
+    {label:'Lösungen',      view:'loesungen',ikon:'loesungen',was:'Probleme und was dagegen hilft'},
   ]);
   /* Aus FEATURES abgeleitet: dieselben vier Schalter, dieselben
      Beschriftungen, dieselbe Reihenfolge wie im System-Reiter. */
@@ -14657,7 +14921,21 @@ function showView(id, fromKey, ausVerlauf){
   nutzSenden(false);
   if(!ausVerlauf) verlaufMerken(id);
   letzteAnsichtMerken(id);
-  document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('show',v.id==='view-'+id); });
+  /* Aus welcher Richtung kommt die neue Ansicht? Die Reihenfolge ist
+     die der Navigation — siehe das CSS zu .von-rechts. Die Klasse muss
+     VOR dem Einschalten stehen: die Animation startet in dem Moment,
+     in dem die Ansicht sichtbar wird, und was danach dazukommt, sieht
+     sie nicht mehr. */
+  var richtung = ansichtRichtung(_vorigeAnsicht, id);
+  _vorigeAnsicht = id;
+  document.querySelectorAll('.view').forEach(function(v){
+    var dran = v.id==='view-'+id;
+    if(dran){
+      v.classList.remove('von-links','von-rechts');
+      if(richtung) v.classList.add(richtung);
+    }
+    v.classList.toggle('show', dran);
+  });
   // Untere Leiste: die Gruppe markieren, zu der die Ansicht gehört
   var g=groupOfView(id);
   navAktivSetzen();
@@ -14689,6 +14967,7 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='material'){ ensureMaterialLoaded(); ensureArchivesLoaded(); }
   if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='geraete') ensureDevicesLoaded();
+  if(id==='loesungen'){ buildLoesUi(); ensureLoesungenLoaded(); renderLoesungen(); }
   if(id==='probe'){ if(!_probeUnsub) listenProbe(); renderProbe(); }
   if(id==='chat'){
     var cb=document.querySelector('.chat-channels');
@@ -15762,6 +16041,554 @@ function deleteDoc(d){
   }).catch(function(e){ toast(errMsg(e),true); });
 }
 
+/* ══ DIE FÜHRUNG ═════════════════════════════════════════════════════
+   Aus dem Betrieb, 22.9.2026: „dass man am anfang eine ganze führung
+   durch die app bekommt".
+
+   VIER ENTSCHEIDUNGEN, die den Unterschied machen:
+
+   1. ROLLENABHÄNGIG. Ein Mitarbeiter bekommt fünf Schritte, ein Leiter
+      sechs, der Chef acht. Eine Führung, die allen dasselbe zeigt,
+      zeigt den meisten das Falsche — und wer in Schritt 3 etwas sieht,
+      das er nie anfassen darf, glaubt der Führung ab da nicht mehr.
+
+   2. AUF DEM ECHTEN BILDSCHIRM. Jeder Schritt wechselt wirklich in
+      seinen Bereich. Eine Bilderfolge wäre einfacher und wäre nach der
+      ersten Änderung falsch.
+
+   3. JEDERZEIT ABBRECHBAR UND WIEDERHOLBAR. „Überspringen" steht in
+      jedem Schritt, und unter Profil → Aussehen kommt man zurück. Wer
+      sie einmal weggetippt hat, sucht sie sonst nie wieder.
+
+   4. PRO GERÄT GEMERKT, wie jede andere Einstellung auch — und mit
+      einer FASSUNGSNUMMER. Kommt später ein Schritt dazu, läuft sie
+      noch einmal, statt still zu bleiben. */
+var TOUR_SCHLUESSEL='kf_tour';
+var TOUR_FASSUNG=1;
+
+function tourGesehen(){
+  try{ return Number(localStorage.getItem(TOUR_SCHLUESSEL)||0) >= TOUR_FASSUNG; }
+  catch(e){ return true; }   /* Kein Speicher: lieber nicht als jedes Mal */
+}
+function tourMerken(){
+  try{ localStorage.setItem(TOUR_SCHLUESSEL, String(TOUR_FASSUNG)); }catch(e){}
+}
+
+/* Ein Schritt: wohin gewechselt wird, worauf gezeigt wird, was dasteht.
+   `ziel` darf mehrere Selektoren nennen — am Rechner steht die
+   Navigation links (#side), am Handy unten (.mobnav). Genommen wird
+   der erste, der wirklich gezeichnet ist. */
+function tourSchritte(){
+  var s=[
+    { view:'home', ziel:'.mobnav [data-group="g-start"], #side [data-group="g-start"]',
+      titel:'Start: was heute ansteht',
+      text:'Überfälliges, was heute dran ist, was neu für dich ist — und '+
+           'ganz unten alles, was noch offen ist. Wenn du nur einen '+
+           'Bildschirm ansiehst, dann diesen.' },
+    { view:'todos', ziel:'.mobnav [data-group="g-arbeit"], #side [data-group="g-arbeit"]',
+      titel:'Aufgaben und alles aus dem Betrieb',
+      text:'Hinter diesem Knopf liegen Aufgaben, Putzplan, Material, Geräte, '+
+           'Probetraining, Dokumente und Lösungen. Die Zeile darüber wechselt '+
+           'zwischen ihnen.' },
+    { view:'loesungen', ziel:'#view-loesungen .view-head, #view-loesungen',
+      titel:'Lösungen: was schon einmal jemand herausgefunden hat',
+      text:'Ein Gerät piept, ein Ablauf klemmt? Hier steht, was beim letzten '+
+           'Mal geholfen hat — und hier schreibst du es auf, wenn du es '+
+           'herausgefunden hast.' },
+    { view:'chat', ziel:'.mobnav [data-group="g-komm"], #side [data-group="g-komm"]',
+      titel:'Nachrichten',
+      text:'Teamchat je Studio, Direktnachrichten an einzelne Personen und '+
+           'die Infos der Leitung. Ungelesenes trägt einen Punkt.' },
+    { view:'ich', ziel:'.mobnav [data-group="g-alles"], #side [data-group="g-ich"]',
+      titel:'Deine Woche, deine Zeiten',
+      text:'Deine Schichten, deine Termine, deine gestempelten Stunden und '+
+           'deine Nachweise. Am Handy liegt der Bereich hinter „Alles".' }
+  ];
+  if(canManage()){
+    s.push({ view:'team', ziel:'#view-team .view-head, #view-team',
+      titel:'Das Team',
+      text:'Schichtplan, Abwesenheiten, Übergaben und das Schwarze Brett — '+
+           'alles, was zwischen zwei Schichten weitergegeben werden muss.' });
+  }
+  if(isChef()){
+    s.push({ view:'chef', ziel:'#view-chef .view-head, #view-chef',
+      titel:'Verwaltung',
+      text:'Zugänge anlegen, Studios pflegen, Auswertungen, Nachweise und die '+
+           'Einstellungen des Betriebs. Diesen Bereich sieht nur die Leitung.' });
+    s.push({ view:'chef', ziel:'#setupCard',
+      titel:'Die Einrichtung',
+      text:'Solange hier etwas offen steht, fehlt der App etwas, das nur du '+
+           'setzen kannst — allen voran der Firmencode. Jede Zeile führt '+
+           'direkt an die richtige Stelle.' });
+  }
+  s.push({ ziel:'#uAvatar',
+    titel:'Und das hier bist du',
+    text:'Profilbild, Aussehen, Meldungen und deine Nachweise. Dort startest '+
+         'du diese Führung auch wieder, wenn du sie noch einmal brauchst.' });
+  return s;
+}
+
+var _tour={ an:false, i:0, schritte:[] };
+
+function tourZiel(sel){
+  var treffer=document.querySelectorAll(sel);
+  for(var i=0;i<treffer.length;i++){
+    if(treffer[i].getClientRects().length) return treffer[i];
+  }
+  return null;
+}
+
+/* Licht und Karte setzen. Getrennt vom Weiterschalten, weil dieselbe
+   Rechnung auch beim Drehen des Geräts und beim Scrollen gebraucht
+   wird — dort wäre ein zweiter Schritt falsch. */
+function tourZeichnen(){
+  if(!_tour.an) return;
+  var sch=_tour.schritte[_tour.i]; if(!sch) return;
+  var licht=$('tourLicht'), karte=$('tourKarte');
+  if(!licht||!karte) return;
+
+  /* ERST den Text, DANN messen. Die Höhe der Karte hängt daran, und die
+     Höhe entscheidet, wohin sie passt — in der anderen Reihenfolge
+     rechnet man mit der Karte des vorigen Schritts. */
+  $('tourZahl').textContent = 'Schritt '+(_tour.i+1)+' von '+_tour.schritte.length;
+  $('tourTitel').textContent = sch.titel;
+  $('tourText').textContent = sch.text;
+  $('tourWeiter').textContent = (_tour.i+1===_tour.schritte.length) ? 'Fertig' : 'Weiter';
+
+  var el=tourZiel(sch.ziel);
+  var luft=8, abstand=12;
+  var hoehe=window.innerHeight, breite=window.innerWidth;
+  var kh=karte.offsetHeight||190, kw=karte.offsetWidth||300;
+  var r = el ? el.getBoundingClientRect()
+             : { top:hoehe/2-40, left:breite/2-80, width:160, height:80 };
+
+  /* ── Wie hoch darf das Licht sein? ──
+     Ein Ziel, das den halben Bildschirm füllt, ist kein Ziel mehr — und
+     die Karte hätte daneben keinen Platz und läge darauf. Gemessen beim
+     ersten Anlauf: Schritt 3 leuchtete 382×506 Pixel aus, die Karte lag
+     mitten darin; im zweiten Anlauf lag sie bei „Verwaltung" immer noch
+     darauf, weil die feste Obergrenze nichts von der Karte weiss.
+
+     Jetzt wird zurückgerechnet: so hoch, dass die Karte darunter noch
+     ganz ins Bild passt. Bleibt dafür weniger als 120 Pixel, ist das
+     Ziel ohnehin zu gross für einen Lichtkegel — dann bekommt es einen
+     schmalen Streifen an seinem oberen Rand, wo die Überschrift steht. */
+  var passtDarunter = hoehe - r.top - luft*2 - abstand*2 - kh;
+  var maxHoehe = Math.max(120, Math.min(Math.round(hoehe*0.42), passtDarunter));
+  if(r.height > maxHoehe){
+    r = { top:r.top, left:r.left, width:r.width, height:maxHoehe };
+  }
+
+  /* Der Lichtkegel bleibt IM Bild. Die Höhe allein zu begrenzen reicht
+     nicht: die untere Leiste sitzt am Rand, und mit der Luft von 8
+     Pixeln ragte der Ring gemessen 2 Pixel unter den Bildschirm und 4
+     neben ihn. Deshalb wird erst die Ecke gesetzt und dann die Grösse
+     so gekappt, dass die andere Ecke drin bleibt. */
+  var lo = Math.max(4, r.top-luft), ll = Math.max(4, r.left-luft);
+  licht.style.top    = lo+'px';
+  licht.style.left   = ll+'px';
+  licht.style.width  = Math.max(8, Math.min(r.width+luft*2,  breite-ll-4))+'px';
+  licht.style.height = Math.max(8, Math.min(r.height+luft*2, hoehe-lo-4))+'px';
+
+  /* Die Karte unter das Licht, wenn darunter Platz ist — sonst darüber.
+     Ohne diese Fallunterscheidung liegt sie bei der unteren Leiste
+     ausserhalb des Bildes, und der letzte Schritt ist unbedienbar. */
+  var unten=r.top+r.height+luft+abstand;
+  var oben =r.top-luft-abstand-kh;
+  var y = (unten+kh < hoehe-abstand) ? unten
+        : (oben > abstand ? oben : Math.max(abstand, (hoehe-kh)/2));
+  var x = Math.min(Math.max(abstand, r.left+r.width/2-kw/2), breite-kw-abstand);
+  karte.style.top=y+'px';
+  karte.style.left=x+'px';
+}
+
+function tourSchrittZeigen(){
+  var sch=_tour.schritte[_tour.i]; if(!sch) return tourEnde(true);
+  /* Erst wechseln, dann messen: nach showView baut sich die Ansicht
+     auf, und ein Rechteck, das vorher gemessen wurde, zeigt ins Leere. */
+  if(sch.view && currentView!==sch.view && ansichtAn(sch.view)) showView(sch.view);
+  requestAnimationFrame(function(){
+    setTimeout(tourZeichnen, 260);
+  });
+}
+
+function tourStarten(vonHand){
+  if(!session) return;
+  var schritte=tourSchritte().filter(function(s){
+    return !s.view || ansichtAn(s.view) || s.view==='chef' || s.view==='home';
+  });
+  if(!schritte.length) return;
+  _tour={ an:true, i:0, schritte:schritte, zurueck:currentView };
+  var t=$('tour'); if(!t) return;
+  t.classList.add('show');
+  /* Ein offenes Profilfenster läge über der Führung. Wer sie von dort
+     startet, will sie sehen und nicht das Fenster. */
+  if(typeof closeProfile==='function') closeProfile();
+  if(!vonHand) tourMerken();
+  tourSchrittZeigen();
+}
+
+function tourWeiter(){
+  if(_tour.i+1 >= _tour.schritte.length) return tourEnde(true);
+  _tour.i++; tick(6); tourSchrittZeigen();
+}
+
+function tourEnde(fertig){
+  _tour.an=false;
+  var t=$('tour'); if(t) t.classList.remove('show');
+  tourMerken();
+  if(fertig) toast('Fertig — die Führung findest du unter Profil → Aussehen.');
+}
+
+(function tourBinden(){
+  function bind(){
+    var w=$('tourWeiter'), s=$('tourWeg'), p=$('pmTour');
+    if(w) w.addEventListener('click', tourWeiter);
+    if(s) s.addEventListener('click', function(){ tourEnde(false); });
+    if(p) p.addEventListener('click', function(){ tourStarten(true); });
+    /* Beim Drehen und bei geänderter Größe neu messen. Ohne das bleibt
+       das Licht dort stehen, wo der Knopf vorhin war. */
+    window.addEventListener('resize', tourZeichnen);
+    document.addEventListener('keydown', function(e){
+      if(!_tour.an) return;
+      if(e.key==='Escape'){ tourEnde(false); }
+      else if(e.key==='Enter' || e.key==='ArrowRight'){ e.preventDefault(); tourWeiter(); }
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
+/* ══ LÖSUNGEN ════════════════════════════════════════════════════════
+   Probleme aus dem Studio und was dagegen hilft. Aufbau wie bei den
+   Dokumenten: der Text steht in `loesungen`, jedes Foto als eigenes
+   Dokument in `loesungBilder`.
+
+   WARUM JEDES FOTO EIN EIGENES DOKUMENT IST: ein Firestore-Dokument
+   darf 1 MB tragen. Ein Eintrag mit drei Fotos im selben Dokument
+   sprengt das — und zwar erst beim dritten, also lange nachdem jemand
+   geglaubt hat, es funktioniere. Getrennt kann es das nicht.
+
+   WARUM DIE LISTE DIE FOTOS NICHT LÄDT: eine Liste mit dreissig
+   Einträgen zu je drei Fotos wären neunzig Lesevorgänge und ein paar
+   Megabyte, jedes Mal beim Öffnen. Geladen wird erst, wenn jemand
+   einen Eintrag aufklappt.
+
+   FÜR DIE GANZE FIRMA LESBAR, mit Studio-Marke. Das ist eine bewusste
+   Entscheidung und dieselbe wie bei Aufgaben, Putzplan und Geräten:
+   ein Problem, das in Rondorf auftrat, hilft in Brühl genauso weiter.
+   Die Studio-Angabe sagt, wo es herkommt — sie ist keine Schranke.
+   Siehe BEKANNTE-PROBLEME.md, P-01. */
+var LOES_KATS = [
+  {id:'geraet',   name:'Gerät',     ico:ikon('hantel')},
+  {id:'technik',  name:'Technik',   ico:ikon('werkzeug')},
+  {id:'ablauf',   name:'Ablauf',    ico:ikon('wiederholen')},
+  {id:'kunde',    name:'Kunde',     ico:ikon('person')},
+  {id:'sonstig',  name:'Sonstiges', ico:ikon('paket')}
+];
+/* Zeilenumbrüche bleiben, Links werden anklickbar — eine Lösung
+   verweist oft auf eine Anleitung. esc() zuerst, linkify danach:
+   umgekehrt käme fremder Text in die erzeugten Verweise. */
+function loesText(t){
+  /* Dieselbe Kette wie im Chat, in den Übergaben und am Brett:
+     esc → linkify → markMentions. `markMentions` gehörte beim ersten
+     Anlauf nicht dazu, und test-erwaehnungen hat das gemeldet — es
+     prüft genau diese Regel: JEDER von Menschen geschriebene Text geht
+     durch dieselbe Kette. Eine Lösung, in der „@Tobias weiss mehr
+     dazu" steht, soll Tobias auch erwähnen. */
+  return markMentions(linkify(esc(String(t||'')))).replace(/\n/g,'<br/>');
+}
+function loesKatName(id){
+  for(var i=0;i<LOES_KATS.length;i++){ if(LOES_KATS[i].id===id) return LOES_KATS[i].name; }
+  return 'Sonstiges';
+}
+var _loesUnsub=null, _loes=[], _loesKat='alle', _loesSuche='';
+var _loesNeuBilder=[];      // data-URLs, noch nicht gespeichert
+var _loesBildCache={};      // id → data-URL, einmal geladen
+var _loesOffen={};          // welche Einträge aufgeklappt sind
+var _loesUiGebunden=false;
+var LOES_MAX_BILDER=3;
+
+function ensureLoesungenLoaded(){
+  if(_loesUnsub) return;
+  _loesUnsub=S('loesungen').orderBy('ts','desc').limit(300)
+    .onSnapshot(function(sn){
+      _loes=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderLoesungen();
+    }, function(e){
+      console.warn('Lösungen:', e.message);
+      var box=$('loesListe');
+      /* Der Fehler gehört dorthin, wo die Liste wäre — nicht in einen
+         Toast, der nach drei Sekunden weg ist. Design-Ideen, Punkt 16. */
+      if(box) box.innerHTML='<div class="empty"><h3>Die Liste lässt sich gerade nicht laden.</h3>'+
+        '<p>'+esc(errMsg(e))+'</p></div>';
+    });
+}
+
+function loesSichtbar(l){
+  if(l.studios==='all' || !l.studios) return true;
+  if(session && session.role==='chef') return true;
+  return Array.isArray(l.studios) && l.studios.some(function(k){
+    return (session.studioKeys||[]).indexOf(k)>=0;
+  });
+}
+function loesStudioText(l){
+  if(l.studios==='all' || !l.studios) return 'Alle Studios';
+  return l.studios.map(studioName).join(', ');
+}
+/* Darf ich diesen Eintrag ändern? Der Verfasser und die Verwaltung —
+   sonst niemand. Eine Lösung, die jeder überschreiben kann, ist nach
+   einem halben Jahr keine Lösung mehr. */
+function loesMeins(l){
+  return !!session && (session.role==='chef' || canManage() || l.uid===session.uid);
+}
+
+function buildLoesKatRow(){
+  var row=$('loesKatRow'); if(!row) return;
+  var alle=[{id:'alle',name:'Alle'}].concat(LOES_KATS);
+  row.innerHTML=alle.map(function(k){
+    return '<button type="button" class="chip'+(_loesKat===k.id?' an':'')+
+      '" data-loeskat="'+esc(k.id)+'">'+esc(k.name)+'</button>';
+  }).join('');
+  row.querySelectorAll('[data-loeskat]').forEach(function(b){
+    b.addEventListener('click',function(){
+      _loesKat=b.getAttribute('data-loeskat');
+      buildLoesKatRow(); renderLoesungen(); tick(6);
+    });
+  });
+}
+
+function renderLoesungen(){
+  var box=$('loesListe'); if(!box) return;
+  buildLoesKatRow();
+  var such=(_loesSuche||'').trim().toLowerCase();
+  var liste=_loes.filter(loesSichtbar).filter(function(l){
+    if(_loesKat!=='alle' && (l.kategorie||'sonstig')!==_loesKat) return false;
+    if(!such) return true;
+    return ((l.titel||'')+' '+(l.problem||'')+' '+(l.loesung||'')).toLowerCase().indexOf(such)>=0;
+  });
+  if(!liste.length){
+    /* Leere Zustände mit nächstem Schritt, Design-Ideen Punkt 14:
+       eine Feststellung hilft niemandem weiter. */
+    box.innerHTML='<div class="empty"><h3>'+
+      (such||_loesKat!=='alle' ? 'Dazu steht noch nichts hier.'
+                               : 'Noch keine Lösung festgehalten.')+'</h3>'+
+      '<p>Das erste Mal, dass jemand ein Problem löst, ist die beste '+
+      'Gelegenheit, es aufzuschreiben.</p></div>';
+    return;
+  }
+  box.innerHTML=liste.map(function(l){
+    var auf=!!_loesOffen[l.id];
+    var bilder=(l.bilder||[]);
+    return '<div class="card loes-karte'+(auf?' auf':'')+'" data-loes="'+esc(l.id)+'">'+
+      '<button type="button" class="loes-kopf" data-loesauf="'+esc(l.id)+'">'+
+        '<span class="loes-titel"><b>'+esc(l.titel||'Ohne Titel')+'</b>'+
+          '<i>'+esc(loesKatName(l.kategorie))+' · '+esc(loesStudioText(l))+
+          (bilder.length ? ' · '+bilder.length+(bilder.length===1?' Foto':' Fotos') : '')+'</i></span>'+
+        /* Immer dasselbe Zeichen, gedreht statt getauscht. `▾` steht in
+           dieser App schon als Auf/Zu-Marke und ist ein einfarbiges
+           Textzeichen, kein Emoji — `▴` wäre ein zweites gewesen, und
+           test-gestaltung hat es sofort gemeldet. Gedreht gibt es
+           obendrein eine Bewegung, die sagt, was passiert. */
+        '<span class="loes-pfeil">▾</span>'+
+      '</button>'+
+      (auf ? '<div class="loes-inhalt">'+
+        (l.problem ? '<p class="loes-abschnitt"><b>Das Problem</b>'+loesText(l.problem)+'</p>' : '')+
+        (l.loesung ? '<p class="loes-abschnitt"><b>Was hilft</b>'+loesText(l.loesung)+'</p>' : '')+
+        (bilder.length ? '<div class="loes-bilder" data-loesbilder="'+esc(l.id)+'">'+
+           bilder.map(function(bid){
+             var d=_loesBildCache[bid];
+             return d ? '<img class="loes-bild" src="'+esc(d)+'" alt="Foto zur Lösung" />'
+                      : '<div class="loes-bild leer-bild">lädt …</div>';
+           }).join('')+'</div>' : '')+
+        '<p class="loes-fuss">'+esc(l.vonName||'Unbekannt')+
+          (l.ts ? ' · '+new Date(l.ts).toLocaleDateString('de-DE') : '')+'</p>'+
+        (loesMeins(l) ? '<button type="button" class="btn btn-danger btn-sm" '+
+          'data-loesweg="'+esc(l.id)+'">Löschen</button>' : '')+
+      '</div>' : '')+
+    '</div>';
+  }).join('');
+
+  box.querySelectorAll('[data-loesauf]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-loesauf');
+      _loesOffen[id]=!_loesOffen[id];
+      renderLoesungen(); tick(6);
+      if(_loesOffen[id]) loesBilderLaden(id);
+    });
+  });
+  box.querySelectorAll('[data-loesweg]').forEach(function(b){
+    b.addEventListener('click',function(){ loesungLoeschen(b.getAttribute('data-loesweg')); });
+  });
+}
+
+/* Fotos erst beim Aufklappen. Einmal geladen, bleiben sie im Speicher —
+   wer zweimal hinsieht, zahlt nicht zweimal. */
+function loesBilderLaden(id){
+  var l=null;
+  for(var i=0;i<_loes.length;i++){ if(_loes[i].id===id) l=_loes[i]; }
+  if(!l || !(l.bilder||[]).length) return;
+  var offen=l.bilder.filter(function(b){ return !_loesBildCache[b]; });
+  if(!offen.length) return;
+  Promise.all(offen.map(function(bid){
+    return S('loesungBilder').doc(bid).get().then(function(d){
+      if(d.exists) _loesBildCache[bid]=(d.data()||{}).data||'';
+    }).catch(function(e){ console.warn('Foto:', e.message); });
+  })).then(function(){ if(_loesOffen[id]) renderLoesungen(); });
+}
+
+function loesVorschauZeichnen(){
+  var v=$('loesVorschau'); if(!v) return;
+  v.innerHTML=_loesNeuBilder.map(function(d,i){
+    return '<div class="loes-vor"><img src="'+esc(d)+'" alt="Vorschau" />'+
+      '<button type="button" class="mini-x" data-loesvorweg="'+i+'" '+
+      'aria-label="Foto entfernen">'+ikon('schliessen')+'</button></div>';
+  }).join('');
+  v.querySelectorAll('[data-loesvorweg]').forEach(function(b){
+    b.addEventListener('click',function(){
+      _loesNeuBilder.splice(Number(b.getAttribute('data-loesvorweg')),1);
+      loesVorschauZeichnen();
+    });
+  });
+  var p=$('loesPick');
+  if(p) p.disabled=_loesNeuBilder.length>=LOES_MAX_BILDER;
+}
+
+function buildLoesUi(){
+  /* Die Studio-Kästchen werden bei jedem Aufruf neu gebaut, die Knöpfe
+     darunter nur einmal — sonst speichert ein Klick doppelt. Derselbe
+     Fehler ist bei den Dokumenten schon einmal passiert. */
+  var wrap=$('loesStudios');
+  if(wrap){
+    wrap.innerHTML='';
+    managedStudios().forEach(function(s){
+      var lab=document.createElement('label'); lab.className='studio-check';
+      var cb=document.createElement('input'); cb.type='checkbox'; cb.value=studioKey(s);
+      cb.addEventListener('change',function(){
+        lab.classList.toggle('on',cb.checked);
+        if(!cb.checked){ var a=$('loesAll'); if(a){ a.checked=false; $('loesAllWrap').classList.remove('on'); } }
+      });
+      var span=document.createElement('span'); span.textContent=s;
+      lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
+    });
+    auslaufPruefen(wrap);
+  }
+  var kat=$('loesKat');
+  if(kat && !kat.options.length){
+    kat.innerHTML=LOES_KATS.map(function(k){
+      return '<option value="'+esc(k.id)+'">'+esc(k.name)+'</option>';
+    }).join('');
+  }
+  buildLoesKatRow();
+  if(_loesUiGebunden) return;
+  _loesUiGebunden=true;
+
+  var alle=$('loesAll');
+  if(alle) alle.addEventListener('change',function(){
+    $('loesAllWrap').classList.toggle('on', alle.checked);
+    if(alle.checked){
+      document.querySelectorAll('#loesStudios input').forEach(function(c){
+        c.checked=false; c.parentNode.classList.remove('on');
+      });
+    }
+  });
+  var such=$('loesSuche');
+  if(such) such.addEventListener('input',function(){ _loesSuche=such.value; renderLoesungen(); });
+  var pick=$('loesPick'), datei=$('loesFile');
+  if(pick && datei){
+    pick.addEventListener('click',function(){ datei.click(); });
+    datei.addEventListener('change',function(){
+      var auswahl=[].slice.call(datei.files||[]);
+      datei.value='';
+      if(!auswahl.length) return;
+      var platz=LOES_MAX_BILDER-_loesNeuBilder.length;
+      if(auswahl.length>platz){
+        toast('Es passen noch '+platz+(platz===1?' Foto':' Fotos')+'.', true);
+        auswahl=auswahl.slice(0,Math.max(0,platz));
+      }
+      /* 1280px und 300 KB je Foto: drei davon bleiben unter einem
+         Megabyte, und jedes liegt ohnehin in seinem eigenen Dokument.
+         Grösser bringt auf einem Handybildschirm nichts. */
+      Promise.all(auswahl.map(function(f){
+        return fileToCompressedDataURL(f, 1280, 300000);
+      })).then(function(bilder){
+        _loesNeuBilder=_loesNeuBilder.concat(bilder);
+        loesVorschauZeichnen();
+      }).catch(function(e){ toast(errMsg(e), true); });
+    });
+  }
+  var sp=$('loesSpeichern');
+  if(sp) sp.addEventListener('click', loesungSpeichern);
+}
+
+function loesungSpeichern(){
+  var btn=$('loesSpeichern'), note=$('loesNote');
+  var titel=($('loesTitel').value||'').trim();
+  var problem=($('loesProblem').value||'').trim();
+  var loesung=($('loesLoesung').value||'').trim();
+  if(note) note.textContent='';
+  if(!titel){ if(note) note.textContent='Bitte sag in einem Satz, worum es geht.'; return; }
+  if(!loesung){ if(note) note.textContent='Ohne „Was hilft" ist es ein Problem, keine Lösung.'; return; }
+  var alle=$('loesAll') && $('loesAll').checked;
+  var keys=[];
+  document.querySelectorAll('#loesStudios input:checked').forEach(function(c){ keys.push(c.value); });
+  if(!alle && !keys.length){
+    if(note) note.textContent='Bitte wähle mindestens ein Studio — oder „Alle Studios".';
+    return;
+  }
+  btn.disabled=true; var alt=btn.textContent; btn.textContent='Speichern …';
+
+  /* Erst die Fotos, dann der Eintrag. Andersherum stünde bei einem
+     Abbruch ein Eintrag da, der auf Fotos zeigt, die es nicht gibt. */
+  var bildIds=[];
+  var kette=Promise.resolve();
+  _loesNeuBilder.forEach(function(d){
+    kette=kette.then(function(){
+      var ref=S('loesungBilder').doc();
+      bildIds.push(ref.id);
+      return ref.set({ data:d, uid:session.uid, ts:Date.now() });
+    });
+  });
+  kette.then(function(){
+    return S('loesungen').add({
+      titel:titel, problem:problem, loesung:loesung,
+      kategorie:($('loesKat').value||'sonstig'),
+      studios: alle ? 'all' : keys,
+      bilder: bildIds,
+      uid:session.uid, vonName:session.name, ts:Date.now()
+    });
+  }).then(function(){
+    btn.disabled=false; btn.textContent=alt;
+    $('loesTitel').value=''; $('loesProblem').value=''; $('loesLoesung').value='';
+    _loesNeuBilder=[]; loesVorschauZeichnen();
+    document.querySelectorAll('#loesStudios input').forEach(function(c){
+      c.checked=false; c.parentNode.classList.remove('on');
+    });
+    if($('loesAll')){ $('loesAll').checked=false; $('loesAllWrap').classList.remove('on'); }
+    toast('Lösung gespeichert ✓'); tick(12);
+  }).catch(function(e){
+    btn.disabled=false; btn.textContent=alt;
+    if(note) note.textContent=errMsg(e);
+  });
+}
+
+function loesungLoeschen(id){
+  var l=null;
+  for(var i=0;i<_loes.length;i++){ if(_loes[i].id===id) l=_loes[i]; }
+  if(!l) return;
+  if(!confirm('„'+(l.titel||'Diese Lösung')+'" löschen?\n\n'+
+              'Die Fotos gehen mit. Das lässt sich nicht rückgängig machen.')) return;
+  var weg=(l.bilder||[]).map(function(b){
+    return S('loesungBilder').doc(b).delete().catch(function(){});
+  });
+  Promise.all(weg).then(function(){
+    return S('loesungen').doc(id).delete();
+  }).then(function(){
+    delete _loesOffen[id];
+    toast('Gelöscht ✓');
+  }).catch(function(e){ toast(errMsg(e), true); });
+}
+
 /* ============================================================
    FIRESTORE-LISTENER
    ============================================================ */
@@ -15803,6 +16630,7 @@ function stopListeners(){
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
+  if(_loesUnsub){ _loesUnsub(); _loesUnsub=null; }
   if(_invUnsub){ _invUnsub(); _invUnsub=null; }
   _invUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _invUnsubs=[];
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
@@ -21747,7 +22575,14 @@ function backupSammeln(){
     weich(S('certificates').get(), 'Nachweise'),
     weich(S('zeiten').orderBy('ts','desc').limit(SICHERUNG_ZEITEN_MAX).get(), 'Stempelzeiten'),
     weich(S('anliegen').orderBy('ts','desc').limit(500).get(), 'Anliegen'),
-    weich(S('probetrainings').orderBy('ts','desc').limit(500).get(), 'Probetrainings')
+    weich(S('probetrainings').orderBy('ts','desc').limit(500).get(), 'Probetrainings'),
+    /* Seit dem 22.9.2026 mit dabei. Eine neue Sammlung, die nicht
+       mitgeht, ist genau die Zusage, die einen Tag vorher gebrochen
+       war — damals bei den Stempelzeiten. Die FOTOS bleiben draussen,
+       wie bei den Dokumenten auch: dafuer ist die naechtliche
+       Datenbank-Sicherung da, und drei Fotos je Eintrag machen aus
+       einer lesbaren Datei eine unbenutzbare. */
+    weich(S('loesungen').orderBy('ts','desc').limit(500).get(), 'Lösungen')
   ];
   kanaele.forEach(function(ch){
     jobs.push(weich(S('channels').doc(ch).collection('messages')
@@ -21764,6 +22599,7 @@ function backupSammeln(){
     var i=0;
     var daten={ brett:r[i++], dokumente:r[i++], nachweise:r[i++],
                 zeiten:r[i++], anliegen:r[i++], probetrainings:r[i++],
+                loesungen:r[i++],
                 chat:{}, studios:{} };
     kanaele.forEach(function(ch){ daten.chat[ch]=r[i++]; });
     STUDIOS.forEach(function(s){
@@ -21792,11 +22628,12 @@ function backupData(){
                    'Chat (öffentliche Kanäle)','Geräte mit Verlauf','Schichten',
                    'Abwesenheiten','Übergaben','Schwarzes Brett',
                    'Dokumente (Angaben, ohne Dateiinhalt)','Nachweise',
-                   'Stempelzeiten','Anliegen mit Antwort','Probetrainings'],
+                   'Stempelzeiten','Anliegen mit Antwort','Probetrainings',
+                   'Lösungen (Text, ohne Fotos)'],
         nichtEnthalten:[
           'Direktnachrichten — gehören zwei Personen, nicht dem Betrieb',
           'Persönlicher Bereich — gehört der einzelnen Person, nicht dem Betrieb',
-          'Inhalt hochgeladener Dateien — dafür ist die nächtliche Datenbank-Sicherung da',
+          'Inhalt hochgeladener Dateien und Fotos zu Lösungen — dafür ist die nächtliche Datenbank-Sicherung da',
           'Stempel-PINs und Terminal-Codes — Geheimnisse gehören in keine Datei, die herumliegt',
           'Fehlerberichte und Push-Kennungen — Technik, keine Betriebsdaten'],
         chatGrenze:'je Kanal die neuesten '+SICHERUNG_CHAT_MAX+' Nachrichten',
@@ -21804,7 +22641,7 @@ function backupData(){
         luecken: g.luecken.length ? g.luecken : 'keine'
       },
       studios:{}, team:[], infos:[], brett:[], dokumente:[], nachweise:[],
-      stempelzeiten:[], anliegen:[], probetrainings:[], chat:{}
+      stempelzeiten:[], anliegen:[], probetrainings:[], loesungen:[], chat:{}
     };
     STUDIOS.forEach(function(s){
       var sk=studioKey(s), q=g.studios[s]||{};
@@ -21872,6 +22709,22 @@ function backupData(){
     out.nachweise=docsZuListe(g.nachweise).map(function(c){
       return { person:c.name||'', art:c.kind||c.title||'',
                laeuftAb:c.expires||c.until||'', notiz:c.note||'' };
+    });
+    /* ── Lösungen ──
+       Der ganze Text, aber nur die ANZAHL der Fotos. Die Bilder stecken
+       als data-URL in einer zweiten Sammlung; drei davon je Eintrag
+       machen aus einer Datei, die man öffnen und lesen kann, eine von
+       vielen Megabyte, die niemand mehr durchsieht. Dass sie fehlen,
+       steht deshalb dran — ein Export, der etwas weglässt, ohne es zu
+       sagen, ist schlimmer als einer, der es gar nicht erst anbietet. */
+    out.loesungen=docsZuListe(g.loesungen).map(function(l){
+      return { titel:l.titel||'', kategorie:l.kategorie||'',
+               problem:l.problem||'', loesung:l.loesung||'',
+               studios: l.studios==='all' ? 'alle'
+                      : (Array.isArray(l.studios) ? l.studios.map(studioName).join(', ') : ''),
+               fotos:(l.bilder||[]).length,
+               von:l.vonName||'',
+               datum:l.ts?new Date(l.ts).toISOString():'' };
     });
     /* ── Stempelzeiten ──
        Aeltestes zuerst: eine Zeitliste liest man vorwaerts. Die Abfrage
@@ -21999,6 +22852,11 @@ function exportAllXls(){
       d.probetrainings.map(function(t){
         return [t.tag, t.mitarbeiter, t.studio, t.abschluss?'ja':'nein',
                 t.notiz, t.erfasstVon]; }));
+    if(d.loesungen && d.loesungen.length) html+=xlsTable('Lösungen',
+      ['Datum','Titel','Kategorie','Studios','Das Problem','Was hilft','Fotos','Von'],
+      d.loesungen.map(function(l){
+        return [l.datum, l.titel, l.kategorie, l.studios,
+                l.problem, l.loesung, l.fotos, l.von]; }));
     Object.keys(d.chat).forEach(function(name){
       var m=d.chat[name]; if(!m.length) return;
       html+=xlsTable('Chat – '+name,['Datum','Von','Text','Sprachnachricht','Umfrage'],
@@ -26054,6 +26912,32 @@ function buildAppearanceOptions(){
       });
     });
   }
+  // 3b) Dichte
+  var dc=$('dichteOpts');
+  if(dc){
+    /* Die Vorschau zeigt, worum es geht: drei Zeilen mit dem Abstand,
+       den man wählt. Ein Wort allein („kompakt") sagt nicht, wie viel
+       enger es wird. */
+    var stufen=[['normal','Normal',9],['kompakt','Kompakt',4]];
+    dc.innerHTML=stufen.map(function(s){
+      var balken='';
+      for(var i=0;i<3;i++){
+        balken+='<i style="display:block;height:3px;border-radius:2px;'+
+          'background:var(--text-3)'+(i?';margin-top:'+s[2]+'px':'')+'"></i>';
+      }
+      return '<div class="opt'+((PREFS.dichte||'normal')===s[0]?' on':'')+'" data-dichte="'+s[0]+'">'+
+        '<div style="width:34px;padding:2px 0">'+balken+'</div>'+
+        '<span>'+s[1]+'</span></div>';
+    }).join('');
+    dc.querySelectorAll('[data-dichte]').forEach(function(el){
+      el.addEventListener('click',function(){
+        PREFS.dichte=el.getAttribute('data-dichte'); savePrefs(); applyPrefs();
+        dc.querySelectorAll('[data-dichte]').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on'); tick(8);
+      });
+    });
+  }
+
   // 4) Hell / Dunkel / Automatisch
   var th=$('thOpts');
   if(th){
@@ -26097,12 +26981,13 @@ function buildAppearanceOptions(){
    „Entfernen" daneben. */
 function aussehenZuruecksetzen(){
   if(!confirm('Aussehen auf die Voreinstellung zurücksetzen?\n\n'+
-              'Modus, Schriftgröße, Akzentfarbe und beide Hintergründe gehen '+
+              'Modus, Schriftgröße, Dichte, Akzentfarbe und beide Hintergründe gehen '+
               'auf den Auslieferungsstand zurück. Dein Profil, deine '+
               'Meldungen und alle Daten bleiben unberührt.\n\n'+
               'Gilt nur auf diesem Gerät.')) return;
   PREFS.theme  = 'auto';
   PREFS.fs     = '100';
+  PREFS.dichte = 'normal';
   PREFS.accent = 'bunt';
   PREFS.chatbg = 'verlauf';
   PREFS.appbg  = 'keiner';

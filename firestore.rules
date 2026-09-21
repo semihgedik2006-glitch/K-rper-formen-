@@ -872,6 +872,46 @@ service cloud.firestore {
         && (isChef());
     }
 
+    // ── Lösungen: Probleme aus dem Studio und was dagegen hilft ──
+    // ANLEGEN DARF JEDER, und das ist der Sinn: wer das Problem gelöst
+    // hat, ist der Trainer am Gerät, nicht die Verwaltung. Ein Bereich,
+    // in den nur der Chef schreiben darf, füllt sich nie.
+    //
+    // ÄNDERN UND LÖSCHEN NUR DER VERFASSER ODER DIE VERWALTUNG. Eine
+    // Lösung, die jeder überschreiben kann, ist nach einem halben Jahr
+    // keine mehr — und eine, die niemand berichtigen darf, wird falsch.
+    //
+    // Gelesen wird firmenweit, mit Studio-Marke am Eintrag. Das ist
+    // dieselbe Entscheidung wie bei Aufgaben, Putzplan und Geräten:
+    // ein Problem aus Rondorf hilft in Brühl genauso weiter. Die
+    // Studio-Angabe sagt, wo es herkommt; sie ist keine Schranke.
+    match /loesungen/{lId} {
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (istAktiv() && request.resource.data.uid == request.auth.uid);
+      allow update: if aufFlachenPfaden()
+        && (istAktiv()
+        && (isChef() || isLeiter() || resource.data.uid == request.auth.uid));
+      allow delete: if aufFlachenPfaden()
+        && (istAktiv()
+        && (isChef() || isLeiter() || resource.data.uid == request.auth.uid));
+    }
+    // Die Fotos dazu, je eines pro Dokument. Dieselbe Schranke wie oben,
+    // und aus demselben Grund wie bei documentData: wer die Metadaten
+    // nicht anfassen darf, darf auch den Inhalt nicht überschreiben.
+    match /loesungBilder/{bId} {
+      allow read: if aufFlachenPfaden()
+        && (istAktiv());
+      allow create: if aufFlachenPfaden()
+        && (istAktiv() && request.resource.data.uid == request.auth.uid);
+      allow update: if aufFlachenPfaden()
+        && (istAktiv() && resource.data.uid == request.auth.uid);
+      allow delete: if aufFlachenPfaden()
+        && (istAktiv()
+        && (isChef() || isLeiter() || resource.data.uid == request.auth.uid));
+    }
+
     // ── Nachweise (Erste Hilfe, Trainerlizenz, EMS-Einweisung) ──
     // Qualifikationsdaten sind heikler als Putzplaene. Deshalb sehen sie
     // NUR die betroffene Person und der Chef - die Studio-Leitung
@@ -1630,6 +1670,34 @@ service cloud.firestore {
                 && get(/databases/$(database)/documents/documents/$(docId))
                      .data.studios.hasOnly(myKeys())));
           allow delete: if schreibtIn(f) && (isChef());
+        }
+
+        /* ── Lösungen ─────────────────────────────────────────────────
+           Die Begründung steht bei der flachen Fassung weiter oben und
+           gilt unverändert. Sie steht hier ABSICHTLICH ein zweites Mal
+           als Regel und nicht als Verweis: eine Sammlung, die es nur
+           auf einem der beiden Pfade gibt, ist die Lücke, die in diesem
+           Projekt schon fünfmal zugeschlagen hat. */
+        match /loesungen/{lId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if schreibtIn(f)
+            && (istAktiv() && request.resource.data.uid == request.auth.uid);
+          allow update: if schreibtIn(f)
+            && (istAktiv()
+            && (isChef() || isLeiter() || resource.data.uid == request.auth.uid));
+          allow delete: if schreibtIn(f)
+            && (istAktiv()
+            && (isChef() || isLeiter() || resource.data.uid == request.auth.uid));
+        }
+        match /loesungBilder/{bId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create: if schreibtIn(f)
+            && (istAktiv() && request.resource.data.uid == request.auth.uid);
+          allow update: if schreibtIn(f)
+            && (istAktiv() && resource.data.uid == request.auth.uid);
+          allow delete: if schreibtIn(f)
+            && (istAktiv()
+            && (isChef() || isLeiter() || resource.data.uid == request.auth.uid));
         }
 
         /* ── Nachweise: der eine Riegel, der wirklich einer ist ──

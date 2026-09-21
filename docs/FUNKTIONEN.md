@@ -34,7 +34,7 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 | Anwendung | `index.html`, **26.814 Zeilen** | `wc -l` |
 | Serverfunktionen | **59** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **1.910 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **118** | `ls tests/test-*.js` |
+| Automatische Durchläufe (Oberfläche) | **120** | `ls tests/test-*.js` |
 | Automatische Durchläufe (Regeln) | **14 Dateien**, 1.028 Zusicherungen | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
@@ -146,12 +146,40 @@ verhindert ausdrücklich, dass sich jemand selbst dazu macht.
 | Nachrichten im Papierkorb | **NICHT GEFUNDEN — mit Absicht** | Kommentar im Code: „ein Papierkorb voller Nachrichten wäre eher ein Datenschutzproblem als eine Hilfe" |
 | Chat-Hintergrundbild | **VERIFIZIERT** | liegt nur im Browser des Geräts |
 
+### Lösungen (seit 22.9.2026)
+
+Probleme aus dem Studio und was dagegen hilft — Titel, Problem,
+Anleitung, Kategorie, Studios, bis zu drei Fotos.
+
+| | Stand | Anmerkung |
+|---|---|---|
+| Anlegen darf jeder Aktive | **VERIFIZIERT** | `tests/rules/loesungen.test.js` |
+| Ändern und Löschen: Verfasser und Verwaltung | **VERIFIZIERT** | dito, beide Welten |
+| Firmenweit lesbar, mit Studio-Marke | **VERIFIZIERT** | bewusst keine Schranke — siehe P-01 |
+| Filter nach Kategorie, Suche über den ganzen Text | **VERIFIZIERT** | `tests/test-loesungen.js` |
+| Bis zu drei Fotos, im Browser verkleinert | **VERIFIZIERT** | 1280 px / 300 KB, je Foto ein eigenes Dokument |
+| Fotos erst beim Aufklappen geladen | **VERIFIZIERT** | |
+| Im Export enthalten (Text, ohne Fotos) | **VERIFIZIERT** | `tests/test-sicherung-inhalt.js` |
+| **Video** | **NICHT VORHANDEN** | braucht echten Dateispeicher; die Begründung steht in `FORTSCHRITT.md`, Runde 95 |
+
+### Führung durch die App (seit 22.9.2026)
+
+| | Stand | Anmerkung |
+|---|---|---|
+| Startet beim ersten Mal von selbst | **VERIFIZIERT** | `tests/test-fuehrung.js`, 175 Zusicherungen |
+| Beim zweiten Mal nicht mehr | **VERIFIZIERT** | pro Gerät gemerkt, mit Fassungsnummer |
+| Rollenabhängig | **VERIFIZIERT** | Chef 9 Schritte, Leiter 7, Mitarbeiter 6 |
+| Jederzeit abbrechbar | **VERIFIZIERT** | |
+| Wiederholbar | **VERIFIZIERT** | Profil → Aussehen |
+| Im Terminal-Betrieb aus | **VERIFIZIERT** | dort liegt der Stempelbildschirm über allem |
+
 ### Aussehen (Profil → Aussehen, gilt nur auf diesem Gerät)
 
 | Kann man einstellen | Stand | Anmerkung |
 |---|---|---|
 | Hell / Dunkel / Automatisch | **VERIFIZIERT** | `test-aussehen` |
 | Schriftgröße, vier Stufen | **VERIFIZIERT** | |
+| Dichte: normal oder kompakt | **VERIFIZIERT** | nur die Abstände; Schrift und Trefferflächen bleiben |
 | Akzentfarbe: **„Lebendig" + 10 feste** | **VERIFIZIERT** | `test-akzent`, 79 Zusicherungen |
 | Chat-Hintergrund, 9 + eigenes Foto | **VERIFIZIERT** | |
 | Hintergrund der ganzen App, 5 | **VERIFIZIERT** | |

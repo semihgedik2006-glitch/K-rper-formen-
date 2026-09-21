@@ -7,6 +7,18 @@
 
    Muss NACH stub-chef.js geladen werden. */
 (function () {
+  /* ── Die Führung ist hier schon gelaufen ──────────────────────────
+     Diese Attrappe stellt einen ANGEMELDETEN, WIEDERKEHRENDEN Benutzer
+     nach — und ein wiederkehrender Benutzer hat die Führung hinter
+     sich. Ohne diese Zeile legt sie sich zwei Sekunden nach dem Aufbau
+     über die ganze App: `elementFromPoint` trifft dann den Lichtkegel
+     statt den Knopf, und jeder Klick geht ins Dunkel.
+
+     Das ist keine Abschaltung, sondern der richtige Ausgangszustand.
+     Den ERSTEN Start prüft tests/test-fuehrung.js, und der benutzt
+     keine Attrappe. */
+  try { localStorage.setItem('kf_tour', '1'); } catch (e) {}
+
   var NUTZLAST = window.__xssNutzlast || ['<img src=x onerror="window.__xss=1">'];
   var i = 0;
   function naechste() { return NUTZLAST[(i++) % NUTZLAST.length]; }

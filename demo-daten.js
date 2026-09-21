@@ -773,6 +773,59 @@
       size: 21000, ts: vorTag(200), by: 'Geschäftsführung' }
   ]);
 
+  /* ── Lösungen ───────────────────────────────────────────────────────
+     Der Bereich lebt davon, dass Leute aufschreiben, was sie
+     herausgefunden haben — und genau das lässt sich mit einem leeren
+     Bereich nicht vorführen. Vier Einträge, die aussehen wie das, was
+     im Studio wirklich anfällt: ein Gerät, ein Ablauf, die Technik und
+     ein Kundenfall.
+
+     OHNE FOTOS. Ein erfundenes Foto in einer Vorführung ist entweder
+     ein Platzhalter, den man als solchen erkennt, oder ein Bild, das
+     Leute für echt halten — beides schlechter als keins. Dass Fotos
+     möglich sind, sagt der Knopf im Formular. */
+  legen(P('loesungen'), [
+    { id: 'loes1', titel: 'Gerät 3 piept beim Start und geht wieder aus',
+      kategorie: 'geraet', studios: [sk(6)],
+      problem: 'Beim Einschalten piept Gerät 3 dreimal, die Anzeige bleibt dunkel ' +
+               'und nach etwa zehn Sekunden schaltet es sich ab. Passiert nur morgens ' +
+               'als erstes Gerät.',
+      loesung: '1. Stecker ziehen, zwei Minuten warten.\n' +
+               '2. Prüfen, ob der Weste-Stecker richtig sitzt — er rastet hörbar ein.\n' +
+               '3. Wieder einstecken und einschalten.\n\n' +
+               'Wenn es danach immer noch piept: im Geräte-Bereich als defekt melden, ' +
+               'nicht weiter versuchen.',
+      bilder: [], uid: 'u7', vonName: 'Tobias Böhm', ts: vorTag(12) },
+    { id: 'loes2', titel: 'Kunde kommt zu spät — was zählt als Trainingszeit?',
+      kategorie: 'kunde', studios: 'all',
+      problem: 'Ein Kunde erscheint zehn Minuten nach dem Termin und möchte ' +
+               'trotzdem die vollen zwanzig Minuten trainieren.',
+      loesung: 'Der Termin endet zur geplanten Zeit. Das ist keine Strenge, sondern ' +
+               'Rücksicht auf den nächsten Kunden — der wartet sonst.\n\n' +
+               'Freundlich ansagen, wie viel Zeit noch bleibt, und anbieten, den ' +
+               'nächsten Termin früher zu legen. Steht auch so im Aushang.',
+      bilder: [], uid: 'u3', vonName: 'Alina Adler', ts: vorTag(26) },
+    { id: 'loes3', titel: 'Tablet am Empfang lädt die App nicht mehr',
+      kategorie: 'technik', studios: 'all',
+      problem: 'Die App bleibt beim Ladebildschirm stehen. WLAN ist da, andere ' +
+               'Seiten gehen.',
+      loesung: 'Meist hängt eine alte Fassung im Zwischenspeicher.\n\n' +
+               'Seite einmal ganz schliessen und neu öffnen. Hilft das nicht: ' +
+               'im Browser den Verlauf der letzten Stunde löschen — NICHT die ' +
+               'Passwörter, sonst muss sich das ganze Team neu anmelden.',
+      bilder: [], uid: 'u5', vonName: 'Nora Haas', ts: vorTag(40) },
+    { id: 'loes4', titel: 'Handtücher riechen nach dem Waschen muffig',
+      kategorie: 'ablauf', studios: [sk(0), sk(6)],
+      problem: 'Frisch gewaschene Handtücher riechen schon beim Ausräumen ' +
+               'unangenehm.',
+      loesung: 'Kommt fast immer davon, dass die Maschine nach dem Programm zu ' +
+               'lange zu bleibt.\n\n' +
+               'Wecker auf das Programmende stellen und direkt ausräumen. Einmal ' +
+               'im Monat ein Leerlauf bei 90 Grad ohne Wäsche.',
+      bilder: [], uid: 'u9', vonName: 'Sami Berger', ts: vorTag(55) }
+  ]);
+  legen(P('loesungBilder'), []);
+
   /* ── Zeiterfassung in der Demo ──────────────────────────────────────
      Drei eingerichtete Terminals und die Stempel von heute. Ohne Stempel
      stünde in der Vorführung überall „noch nicht da", und der

@@ -83,6 +83,42 @@ const errs = [];
         console.log('Nicht enthalten:', JSON.stringify(d.hinweise.nichtEnthalten.length) + ' Punkte');
       }
 
+      /* ══ 4b. Lösungen, seit dem 22.9.2026 ══
+         Eine neue Sammlung, die nicht mitgeht, ist genau die Zusage,
+         die einen Tag vorher gebrochen war — damals bei den
+         Stempelzeiten. Dass sie hier steht und nicht in
+         test-loesungen.js, hat einen Grund: DIESER Durchlauf liest die
+         Datei, die beim Druck auf den echten Knopf wirklich entsteht. */
+      if (!Array.isArray(d.loesungen)) {
+        errs.push('FEHLT: die Lösungen stehen nicht in der Datei');
+      } else {
+        console.log('Lösungen in der Datei:', d.loesungen.length);
+        if (!d.loesungen.length) {
+          errs.push('LEER: das Feld „loesungen" ist da, aber nichts darin — ' +
+                    'die Attrappe kennt zwei Einträge');
+        } else {
+          const l = d.loesungen[0];
+          ['titel', 'problem', 'loesung'].forEach(f => {
+            if (!(f in l)) errs.push('FEHLT: den Lösungen fehlt das Feld „' + f + '"');
+          });
+          /* Die Fotos gehören NICHT hinein (sie machen die Datei
+             unbenutzbar), aber die Anzahl schon — sonst weiss niemand,
+             dass welche fehlen. */
+          if (!('fotos' in l)) {
+            errs.push('FEHLT: die Zahl der Fotos steht nicht dabei — dann sieht ' +
+                      'niemand, dass welche fehlen');
+          }
+        }
+        if (/"data"\s*:\s*"data:image/.test(roh)) {
+          errs.push('ZU VIEL: ein Foto liegt als Bilddatei in der Sicherung — ' +
+                    'damit ist die Datei nicht mehr zu öffnen');
+        }
+        const nennt = (d.hinweise.enthalten || []).join(' ');
+        if (!/Lösungen/i.test(nennt)) {
+          errs.push('FEHLT: das Verzeichnis oben nennt die Lösungen nicht');
+        }
+      }
+
       // ══ 5. Direktnachrichten dürfen NICHT drin sein ══
       if (d.dm || d.direktnachrichten || /"dms?"\s*:/.test(roh)) {
         errs.push('GEFÄHRLICH: Direktnachrichten liegen in der Sicherung — die gehören zwei Personen');

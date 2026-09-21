@@ -1,6 +1,19 @@
 /* Minimaler Firebase-Ersatz, nur zum Ansehen der Oberfläche im Test.
    Simuliert einen angemeldeten Chef und leere Sammlungen. */
 (function () {
+  /* ── Die Führung ist hier schon gelaufen ──────────────────────────
+     Diese Attrappe stellt einen ANGEMELDETEN, WIEDERKEHRENDEN Chef
+     nach — und ein wiederkehrender Benutzer hat die Führung hinter
+     sich. Ohne diese Zeile legt sie sich zwei Sekunden nach dem
+     Aufbau über die ganze App: `elementFromPoint` trifft dann den
+     Lichtkegel statt den Knopf, und jeder Klick geht ins Dunkel.
+     Gemessen am 22.9.2026 an acht Durchläufen gleichzeitig.
+
+     Das ist keine Abschaltung, sondern der richtige Ausgangszustand.
+     Den ERSTEN Start prüft tests/test-fuehrung.js, und der benutzt
+     diese Attrappe ausdrücklich nicht. */
+  try { localStorage.setItem('kf_tour', '1'); } catch (e) {}
+
   function unsub() { return function () {}; }
   /* Antwortverzoegerung, damit sich der LADEZUSTAND ueberhaupt pruefen
      laesst. Ohne sie antwortet die Attrappe sofort, und jeder Durchlauf
@@ -224,6 +237,20 @@ var USERS = [
       titel:'Neue Handtücher', text:'Die alten fusseln.',
       antwort:'Bestellt.', antwortVon:'Test Chef', antwortAm:Date.now()-86400000,
       ts:Date.now()-9*86400000 }
+  ];
+  /* Lösungen. Beide Eintragspunkte, wie es der Kommentar bei get()
+     verlangt — eine Sammlung, die nur eine Seite kennt, macht jeden
+     Durchlauf darüber grün und aussagelos. Das ist in diesem Projekt
+     schon fünfmal passiert. */
+  var LOESUNGEN = [
+    { id:'l1', titel:'Gerät 3 piept beim Start', kategorie:'geraet',
+      studios:['studio-6'], problem:'Dreimal Piepen, Anzeige bleibt dunkel.',
+      loesung:'Stecker ziehen, zwei Minuten warten, neu starten.',
+      bilder:[], uid:'u2', vonName:'Anna Meier', ts:Date.now()-5*86400000 },
+    { id:'l2', titel:'Handtücher riechen muffig', kategorie:'ablauf',
+      studios:'all', problem:'Frisch gewaschen, riecht trotzdem.',
+      loesung:'Direkt nach dem Programm ausräumen.',
+      bilder:[], uid:'u3', vonName:'Ben Kraus', ts:Date.now()-20*86400000 }
   ];
   var ABSENCES = {
     'studio-6': [
@@ -543,6 +570,7 @@ var USERS = [
           : gl ? (DEVLOG[gl[1]] || [])
           : gt ? ((window.__todos || TODOS)[gt[1]] || [])
           : (path === 'zeiten' ? (window.__zeiten || ZEITEN)
+          : (path === 'loesungen' ? (window.__loesungen || LOESUNGEN)
           : (path === 'anliegen' ? (window.__anliegen || ANLIEGEN)
           : (path === 'certificates' ? (window.__certs || CERTS)
           /* probetrainings fehlte hier, obwohl onSnapshot sie kennt —
@@ -565,7 +593,7 @@ var USERS = [
              aussagelos. */
           : (path === 'users' ? (window.__users || USERS)
           : (path === 'statistik' ? (window.__statistik || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])))))));
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))))))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -642,6 +670,7 @@ var USERS = [
                       kennt, macht jeden Durchlauf darueber gruen und
                       aussagelos. */
                    (path==='zeiten' ? (window.__zeiten || ZEITEN) :
+                   (path==='loesungen' ? (window.__loesungen || LOESUNGEN) :
                    (path==='anliegen' ? (window.__anliegen || ANLIEGEN) :
                    (path==='certificates' ? (window.__certs || CERTS) :
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? (window.__users || USERS) : (path==='announcements' ? ANNS :
@@ -658,7 +687,7 @@ var USERS = [
                       window.__firmen / window.__firmenArchiv hin. So merkt
                       keiner der anderen Durchlaeufe etwas davon. */
                    (path==='firmen' ? (window.__firmen||[]) :
-                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))))))));
+                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : [])))))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         /* Zuhoerer merken, damit ein ZWEITER Schnappschuss moeglich ist.
            Die Attrappe feuerte bisher genau einmal je Sammlung. Fuer

@@ -10036,3 +10036,102 @@ weiter unten längst eine `transition`, und die spätere gewinnt. Eine
 Regel, an der man vergeblich dreht, ist schlimmer als keine.
 
 **118 Durchläufe.**
+
+---
+
+## Runde 95 — Eine Führung, ein Ort für Lösungen, und vier Design-Punkte
+
+Aus dem Betrieb, 22.9.2026:
+
+> „design technisch können wir noch einiges ausbessern […] UND ich würde
+> gerne den einrichtungs assistenten bauen das man am anfang eine ganze
+> führung durch die app bekommt […] und ich würde noch einen bereich
+> wollen wo man videos und texte zu bestimmten problemen hochladen kann
+> die in einem studio anfallen."
+
+### 1. Die Führung
+
+Rollenabhängig, auf dem echten Bildschirm, jederzeit abbrechbar und über
+Profil → Aussehen wiederholbar. Gemessen: **Chef 9 Schritte, Leiter 7,
+Mitarbeiter 6.**
+
+> **Eine Führung, die allen dasselbe zeigt, zeigt den meisten das
+> Falsche** — und wer in Schritt 6 etwas sieht, das er nie anfassen darf,
+> glaubt ihr ab da nicht mehr.
+
+Der Lichtkegel ist **ein** Element mit einem 9999 px grossen Schatten
+nach aussen. So gibt es ein Loch im Dunkel, ohne vier Rechtecke zu
+rechnen, die bei jeder Drehung wieder falsch stehen.
+
+**Zwei Funde an mir selbst, beide aus der Geometrie:**
+
+Die Karte lag **auf** dem Licht — erst bei „Lösungen" (382×506 px
+ausgeleuchtet, Karte mittendrin), dann, nach einer festen Obergrenze,
+immer noch bei „Verwaltung". Eine feste Zahl weiss nichts von der Karte.
+Jetzt wird zurückgerechnet: so hoch, dass die Karte darunter noch ganz
+ins Bild passt.
+
+Und der Ring ragte **2 px unter den Bildschirm und 4 daneben** — die
+Höhe allein zu begrenzen reicht nicht, wenn das Ziel am Rand sitzt.
+
+**Ein dritter Fund, diesmal im Durchlauf selbst:** die Zeile „Titel
+länger als 8 Zeichen" schlug bei „Das Team" an — acht Zeichen genau. Eine
+Schwelle, die ans Ergebnis angepasst war statt an die Frage.
+
+### 2. Der Bereich „Lösungen"
+
+Probleme aus dem Studio und was dagegen hilft: Titel, Problem, Anleitung,
+Kategorie, Studios, bis zu drei Fotos. Mit Filter, Suche und Aufklappen.
+
+**Text und Fotos zuerst, Video später** — und das ist keine Sparversion,
+sondern die Reihenfolge:
+
+> Im vorhandenen Speicher-Eimer liegt unter `sicherung/` der nächtliche
+> **Vollexport der Datenbank**. Die Regeln dort stehen aus gutem Grund
+> auf `allow read, write: if false`. Videos gehören niemals in denselben
+> Eimer, und es darf nie eine Regel geben, die pauschal „angemeldet =
+> darf lesen" sagt — anmelden kann sich in dieser App jeder selbst.
+
+Fotos kann die App längst: sie werden im Browser auf 1280 px und 300 KB
+verkleinert und liegen in der Datenbank. Das kostet nichts.
+
+**Jedes Foto ist ein eigenes Dokument.** Ein Firestore-Dokument darf
+1 MB tragen; drei Fotos im selben Dokument sprengen das — und zwar erst
+beim dritten, also lange nachdem jemand geglaubt hat, es funktioniere.
+
+**Geladen werden sie erst beim Aufklappen.** Dreissig Einträge zu drei
+Fotos wären neunzig Lesevorgänge und ein paar Megabyte, jedes Mal.
+
+Die Regeln stehen in **beiden** Fassungen, flach und unter
+`firmen/<kennung>/`. Gelesen wird firmenweit, geändert nur vom Verfasser
+und der Verwaltung. `tests/rules/loesungen.test.js` hält beides fest,
+mit der Gegenprobe zur Gegenprobe: dass ein Kollege aus einem **anderen**
+Studio lesen darf, ist die Zeile, ohne die auch eine Regel „verbiete
+alles" grün wäre.
+
+Und der Export trägt sie. **Eine neue Sammlung, die nicht mitgeht, ist
+genau die Zusage, die einen Tag vorher gebrochen war.**
+
+### 3. Vier Design-Punkte
+
+| | |
+|---|---|
+| **Knöpfe nicht mehr in Versalien** | Für Überschriften am 25.8. entschieden, bei den Knöpfen stehengeblieben — und dort fällt es am meisten auf: „RECHNUNGEN, ZAHLUNGSMITTEL, KÜNDIGEN" über zwei Zeilen |
+| **Ansichtswechsel mit Richtung** | Die neue Ansicht kommt aus der Richtung, in der sie in der Navigation liegt. Die Reihenfolge stammt aus `NAVGROUPS` — eine zweite wäre eine zweite Wahrheit |
+| **Dichte: kompakt** | Nur die Abstandsleiter ab `--s10`. **Schriftgröße, Zeilenhöhe und die 44-px-Trefferflächen gehen ausdrücklich nicht mit** — eine kompakte Ansicht, die man nicht mehr trifft, ist keine Einstellung, sondern ein Fehler. Nachgemessen: 326 Bedienelemente, 0 unter 44 px |
+| **Fehler in der Liste** | Lässt sich die Lösungsliste nicht laden, steht das dort, wo die Liste wäre — nicht in einem Toast, der nach drei Sekunden weg ist |
+
+**Ein Fund von `test-gestaltung`:** das Auf/Zu-Zeichen war `▴`/`▾`. `▾`
+ist in dieser App als Textzeichen erlaubt, `▴` wäre ein zweites gewesen.
+Jetzt dasselbe Zeichen, gedreht — und damit auch eine Bewegung, die
+sagt, was passiert.
+
+### Neu
+
+| | |
+|---|---|
+| `tests/test-fuehrung.js` | 175 Zusicherungen. Stellt den **ersten Start** nach, geht jeden Schritt jeder Rolle ab und misst, ob der Lichtkegel auf etwas Wirkliches zeigt (`elementFromPoint`) und die Karte ihn nicht verdeckt |
+| `tests/test-loesungen.js` | 19 Zusicherungen. Der Weg über die Leiste und über „Alles", Filter und Suche gegen die Zahl davor, mit Gegenprobe |
+| `tests/rules/loesungen.test.js` | 30 Zusicherungen, beide Welten |
+
+**120 Durchläufe.**
