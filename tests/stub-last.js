@@ -18,6 +18,18 @@
      Chat: 120 Nachrichten je Kanal (mehr lädt die App nicht auf einmal)
      52 Wochensicherungen, 80 Dokumente, 40 Aushänge, 110 Nachweise      */
 (function () {
+  /* ── Die Führung ist hier schon gelaufen ──────────────────────────
+     Diese Attrappe stellt einen ANGEMELDETEN, WIEDERKEHRENDEN Benutzer
+     nach — und ein wiederkehrender Benutzer hat die Führung hinter
+     sich. Ohne diese Zeile legt sie sich zwei Sekunden nach dem Aufbau
+     über die ganze App: `elementFromPoint` trifft dann den Lichtkegel
+     statt den Knopf, und jeder Klick geht ins Dunkel.
+
+     Das ist keine Abschaltung, sondern der richtige Ausgangszustand.
+     Den ERSTEN Start prüft tests/test-fuehrung.js, und der benutzt
+     keine Attrappe. */
+  try { localStorage.setItem('kf_tour', '1'); } catch (e) {}
+
   var STUDIOS = ['Longerich', 'Nippes', 'Ebertplatz', 'Rath', 'Porz', 'Rondorf',
     'Hürth', 'Brühl', 'Niederkassel Mondorf', 'Refrath', 'Overath',
     'Marialinden', 'Rösrath', 'Seelscheid'];

@@ -56,7 +56,27 @@ const WELTEN = [
       rules: fs.readFileSync(path.join(__dirname, '..', '..', 'firestore.rules'), 'utf8')
     }
   });
-  await env.clearFirestore();
+  /* ── Warum hier eine Wiederholung steht ──
+     Allein läuft dieser Durchlauf durch; als LETZTER in der Kette
+     scheiterte er beim ersten Leeren mit
+       499 „call already cancelled"
+     — eine abgebrochene gRPC-Verbindung, nicht eine Regel. Gemessen mit
+     vier Versuchen hintereinander: Versuch 1 fällt, Versuch 2 klappt,
+     und zwar zuverlässig.
+
+     Das ist eine Eigenheit des Emulators nach einem grossen Vorgänger
+     (studiogrenze legt zwei Firmen mit allem Drum und Dran an), kein
+     Fund über diese App. Verschwiegen wird sie trotzdem nicht: drei
+     Versuche, und wenn auch der dritte fällt, fällt der Durchlauf mit
+     ihm — ein stilles `catch` würde hier eine leere Datenbank
+     vortäuschen und jede Zeile danach wertlos machen. */
+  for (let versuch = 1; ; versuch++) {
+    try { await env.clearFirestore(); break; }
+    catch (e) {
+      if (versuch >= 3) throw e;
+      await new Promise(r => setTimeout(r, 400));
+    }
+  }
 
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();

@@ -11,6 +11,18 @@
    config/beitrittSchalter liefert beide Schranken auf "an", damit der
    Reiter „Konto anlegen" überhaupt erscheint.                          */
 (function(){
+  /* ── Die Führung ist hier schon gelaufen ──────────────────────────
+     Diese Attrappe stellt einen ANGEMELDETEN, WIEDERKEHRENDEN Benutzer
+     nach — und ein wiederkehrender Benutzer hat die Führung hinter
+     sich. Ohne diese Zeile legt sie sich zwei Sekunden nach dem Aufbau
+     über die ganze App: `elementFromPoint` trifft dann den Lichtkegel
+     statt den Knopf, und jeder Klick geht ins Dunkel.
+
+     Das ist keine Abschaltung, sondern der richtige Ausgangszustand.
+     Den ERSTEN Start prüft tests/test-fuehrung.js, und der benutzt
+     keine Attrappe. */
+  try { localStorage.setItem('kf_tour', '1'); } catch (e) {}
+
   function unsub(){ return function(){}; }
   window.firebase = {
     initializeApp: function(){ return {}; }, apps: [], app: function(){ return {

@@ -1,6 +1,19 @@
 /* Minimaler Firebase-Ersatz, nur zum Ansehen der Oberfläche im Test.
    Simuliert einen angemeldeten Chef und leere Sammlungen. */
 (function () {
+  /* ── Die Führung ist hier schon gelaufen ──────────────────────────
+     Diese Attrappe stellt einen ANGEMELDETEN, WIEDERKEHRENDEN Chef
+     nach — und ein wiederkehrender Benutzer hat die Führung hinter
+     sich. Ohne diese Zeile legt sie sich zwei Sekunden nach dem
+     Aufbau über die ganze App: `elementFromPoint` trifft dann den
+     Lichtkegel statt den Knopf, und jeder Klick geht ins Dunkel.
+     Gemessen am 22.9.2026 an acht Durchläufen gleichzeitig.
+
+     Das ist keine Abschaltung, sondern der richtige Ausgangszustand.
+     Den ERSTEN Start prüft tests/test-fuehrung.js, und der benutzt
+     diese Attrappe ausdrücklich nicht. */
+  try { localStorage.setItem('kf_tour', '1'); } catch (e) {}
+
   function unsub() { return function () {}; }
   /* Antwortverzoegerung, damit sich der LADEZUSTAND ueberhaupt pruefen
      laesst. Ohne sie antwortet die Attrappe sofort, und jeder Durchlauf
