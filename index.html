@@ -2970,9 +2970,22 @@ body.light{--dot:rgba(20,10,40,.06)}
 
    Alle fuenf sind BEWUSST schwach. Was acht Stunden am Tag offen ist,
    darf nicht auffallen; es darf nur nicht leer wirken. */
-.app::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+/* z-index:-1, NICHT 0 mit `.app > * {position:relative}` darüber.
+
+   Der erste Versuch hob jedes Kind der App auf `position:relative`, um
+   es über den Schleier zu legen. Das hat test-chat-bereich3 gefunden:
+   der Chatverlauf fiel bei langem Text auf 241 px statt der Hälfte der
+   Ansicht. Grund ist nicht die Stapelung, sondern der Bezugsrahmen —
+   `position:relative` macht aus jedem Kind den Bezug für alles, was
+   darin absolut sitzt, und der Verfasser unten hing vorher an einem
+   anderen Vorfahren.
+
+   Eine Zeile, die „nur die Stapelung regeln" sollte, hat die Groesse
+   eines Bereichs veraendert. Mit einem negativen z-index braucht es sie
+   gar nicht: der Schleier liegt dann hinter allem in der App und vor
+   dem Grund des Fensters — und kein Kind wird angefasst. */
+.app::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
   background-image:none;background-size:cover;background-repeat:no-repeat}
-.app > *{position:relative;z-index:1}
 body[data-appbg="schimmer"] .app::before{
   background-image:radial-gradient(1000px 600px at 82% 4%, var(--akz-w), transparent 58%),
                    radial-gradient(900px 560px at 8% 96%, var(--akz2-w), transparent 58%)}
