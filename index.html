@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-EOxGVV5kfPGDJtjDuLWKCJL5p0weX6/jdCoN3PKjuVM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-us18cgTsbTPXbrwcqc77l8YUy/+es6nxR0e0pKjdZ/M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -16289,7 +16289,15 @@ var LOES_KATS = [
 /* Zeilenumbrüche bleiben, Links werden anklickbar — eine Lösung
    verweist oft auf eine Anleitung. esc() zuerst, linkify danach:
    umgekehrt käme fremder Text in die erzeugten Verweise. */
-function loesText(t){ return linkify(esc(String(t||''))).replace(/\n/g,'<br/>'); }
+function loesText(t){
+  /* Dieselbe Kette wie im Chat, in den Übergaben und am Brett:
+     esc → linkify → markMentions. `markMentions` gehörte beim ersten
+     Anlauf nicht dazu, und test-erwaehnungen hat das gemeldet — es
+     prüft genau diese Regel: JEDER von Menschen geschriebene Text geht
+     durch dieselbe Kette. Eine Lösung, in der „@Tobias weiss mehr
+     dazu" steht, soll Tobias auch erwähnen. */
+  return markMentions(linkify(esc(String(t||'')))).replace(/\n/g,'<br/>');
+}
 function loesKatName(id){
   for(var i=0;i<LOES_KATS.length;i++){ if(LOES_KATS[i].id===id) return LOES_KATS[i].name; }
   return 'Sonstiges';
