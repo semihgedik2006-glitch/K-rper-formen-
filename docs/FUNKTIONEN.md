@@ -34,7 +34,7 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 | Anwendung | `index.html`, **26.814 Zeilen** | `wc -l` |
 | Serverfunktionen | **59** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **1.910 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **117** | `ls tests/test-*.js` |
+| Automatische Durchläufe (Oberfläche) | **118** | `ls tests/test-*.js` |
 | Automatische Durchläufe (Regeln) | **14 Dateien**, 1.028 Zusicherungen | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
@@ -145,6 +145,27 @@ verhindert ausdrücklich, dass sich jemand selbst dazu macht.
 | Suche im Chat | **VERIFIZIERT** | es gibt eine ansichtsübergreifende Suche |
 | Nachrichten im Papierkorb | **NICHT GEFUNDEN — mit Absicht** | Kommentar im Code: „ein Papierkorb voller Nachrichten wäre eher ein Datenschutzproblem als eine Hilfe" |
 | Chat-Hintergrundbild | **VERIFIZIERT** | liegt nur im Browser des Geräts |
+
+### Aussehen (Profil → Aussehen, gilt nur auf diesem Gerät)
+
+| Kann man einstellen | Stand | Anmerkung |
+|---|---|---|
+| Hell / Dunkel / Automatisch | **VERIFIZIERT** | `test-aussehen` |
+| Schriftgröße, vier Stufen | **VERIFIZIERT** | |
+| Akzentfarbe: **„Lebendig" + 10 feste** | **VERIFIZIERT** | `test-akzent`, 79 Zusicherungen |
+| Chat-Hintergrund, 9 + eigenes Foto | **VERIFIZIERT** | |
+| Hintergrund der ganzen App, 5 | **VERIFIZIERT** | |
+| Alles zurücksetzen | **VERIFIZIERT** | nimmt Meldungen, Tastenkürzel und Daten **nicht** mit |
+
+**„Lebendig" ist die Voreinstellung** (seit 21.9.2026): die Akzentfarbe
+ist die des Bereichs, in dem man steht — Start blau, Ich violett,
+Nachrichten türkis, Aufgaben orange, Team pink, Verwaltung und Alles
+schiefergrau. Knöpfe, Reiter, Abzeichen, Ränder und Schleier ziehen mit.
+Wer eine feste Farbe wählt, bekommt sie überall.
+
+Grün und Rot sind **keine** Bereichsfarben: sie sind in der ganzen App
+„erledigt" und „überfällig". Die Begründung steht in
+`DESIGN-SYSTEM.md`.
 
 ---
 

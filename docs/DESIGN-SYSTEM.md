@@ -34,11 +34,108 @@ Zeit angenehmer zu lesen als harter Neon-Kontrast.
 | `--accent` | `#38BDF8` | `#0369A1` | primär, Cyan aus dem Logo |
 | `--accent-2` | `#A78BFA` | `#6D28D9` | Violett, zweite Ebene |
 | `--accent-3` | `#F472B6` | `#BE185D` | Pink, Akzent |
-| `--brand` | Verlauf Violett → Cyan → Pink, 135° |
+| `--brand` | Verlauf aus `--accent-2` → `--accent`, 135° |
 | `--on-accent` | `#0A1420` | `#FFFFFF` | Text auf Akzentflächen |
 
 Die hellen Töne sind bewusst **dunkler als die dunklen** – auf Weiß wäre
 `#38BDF8` nicht lesbar.
+
+> Die Werte in der Tabelle sind **Rückfallwerte**. Im Betrieb setzt
+> `akzentAnwenden()` sie am `<body>` neu – aus der gewählten Akzentfarbe
+> oder, in der Voreinstellung „Lebendig", aus der des Bereichs.
+
+### Die Akzentfarbe wandert — und alles wandert mit (21.9.2026)
+
+Voreinstellung ist **„Lebendig"**: der Akzent ist die Farbe des Bereichs,
+in dem man gerade steht. `BEREICH_FARBE` (in `index.html`) ordnet jeder
+Gruppe der unteren Leiste einen Eintrag aus `ACCENTS` zu — **denselben
+Farbton, den `--ber` dort schon trägt.** Zwei Listen wären zwei
+Wahrheiten.
+
+| Bereich | Ton | Bereich | Ton |
+|---|---|---|---|
+| Start | Blau | Team | Pink |
+| Ich | Violett | Verwaltung | Schiefer |
+| Nachrichten | Türkis | Alles | Schiefer |
+| Aufgaben | Orange | | |
+
+**Grün und Rot fehlen mit Absicht.** Grün ist `--ok`, Rot ist `--danger`.
+Ein Bereich, der dauerhaft in einer Statusfarbe steht, nimmt ihr die
+Bedeutung.
+
+Wer eine feste Farbe wählt, bekommt sie überall – dann wandert nur noch
+die Kopfzeile (`--ber`), nicht der Knopf.
+
+#### Was am Akzent hängt
+
+| Marke | Woraus |
+|---|---|
+| `--accent`, `--accent-d` | Hauptfarbe (oder die Firmenfarbe, falls gesetzt) |
+| `--accent-2` | bei „Lebendig" derselbe Ton, heller/dunkler; sonst der Partner aus `ACCENTS` |
+| `--brand` | Verlauf aus beiden |
+| `--tipp-1/2/kante` | getönte Fläche der zweiten Knopfform |
+| `--akz-w/-s`, `--akz2-w/-s` | Schleier der Hintergründe |
+| `--akz-rgb`, `--akz2-rgb` | **Zahlentripel** für die 56 getönten Flächen im Stylesheet |
+
+`--akz-rgb` ist eine Kommaliste (`34,211,238`), damit
+`rgba(var(--akz-rgb),.12)` überall stehen kann, wo vorher
+`rgba(34,211,238,.12)` stand: **jede Deckkraft bleibt exakt, nur der
+Farbton wandert.** Bewusst kein `color-mix()` und keine
+Schrägstrich-Schreibweise – auf alten Studio-Tablets fiele die Farbe
+still auf „transparent".
+
+#### Die Tönung ist gerechnet, nicht gewählt
+
+`--tipp-1` trug bis zum 21.9.2026 fest `.24`, mit dem Vermerk „bei `.30`
+fällt der Text auf 4,15:1". Das stimmte – **für Cyan.** Gemessen mit den
+Bereichsfarben: Pink fällt bei denselben `.24` auf **4,17** (hell 4,37).
+
+`tippDeckung()` geht deshalb von der Obergrenze so weit herunter, bis der
+Text darauf über 4,5:1 liegt. Ergebnis je Farbe:
+
+| Farbe | dunkel | hell |
+|---|---|---|
+| Cyan | `.24` | `.11` |
+| Violett | `.16` | `.19` |
+| Pink | `.18` | `.17` |
+| Grün | `.24` | `.13` |
+| Bernstein | `.24` | `.07` |
+| Blau | `.20` | `.19` |
+| Koralle | `.18` | `.19` |
+| Türkis | `.24` | `.13` |
+| Orange | `.24` | `.09` |
+| Schiefer | `.20` | `.19` |
+
+Wo die Tönung weit heruntergeht (Bernstein und Orange im Hellen), trägt
+die **Kante** den Knopf: `--tipp-kante` bleibt bei `.65` und ist damit
+unverändert deutlich. Ein Knopf ist dort eine helle Fläche mit
+kräftigem Rand, kein verblasster.
+
+`tests/test-akzent.js` misst alle zehn Akzente und alle sieben Bereiche
+in beiden Modi nach.
+
+#### Der Wechsel gleitet — und warum das `@property` braucht
+
+Eine `transition` auf dem Knopf bringt **nichts**, wenn sich nur die
+Variable ändert, aus der seine Farbe kommt: für den Browser ist eine
+benutzerdefinierte Eigenschaft erst einmal Text. Gemessen sprang die
+Farbe in einem Bild.
+
+Die zwölf Farbmarken sind deshalb mit `@property` als `<color>`
+angemeldet; `body{}` trägt die `transition` über 350 ms. Kennt ein
+Browser `@property` nicht, überliest er den Block und die Farbe wechselt
+sofort — **ein Rückschritt ins Alte, kein Fehler.**
+
+Nicht dabei, weil keine Farbe:
+
+| | |
+|---|---|
+| `--brand` | ein Verlauf. Steht als **Formel** an `body{}` aus `--accent-2` und `--accent` — und folgt ihnen dadurch trotzdem. **Nicht aus dem Skript setzen**, ein Inline-Wert überstimmt die Formel |
+| `--akz-rgb` | eine Kommaliste. Die 56 feinen Tönungen springen also weiterhin; die kräftigen Flächen gleiten |
+
+> Angemeldete Eigenschaften gibt `getPropertyValue` nicht mehr als
+> `#60A5FA` zurück, sondern als `RGB(96, 165, 250)`. Wer sie in einem
+> Durchlauf vergleicht, vergleicht **Zahlen**, keine Zeichenketten.
 
 ### Bedeutung — Fläche und Text sind zwei verschiedene Dinge
 

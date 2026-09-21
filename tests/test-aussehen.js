@@ -60,11 +60,27 @@ async function zumAussehen(p) {
 async function stand(p) {
   return await p.evaluate(() => ({
     theme: document.body.classList.contains('light') ? 'light' : 'dark',
+    /* Die GEWÄHLTE Einstellung, nicht die gerade gezeichnete Farbe.
+       Seit „Lebendig" sind das zwei verschiedene Dinge: die Farbe hängt
+       am Bereich, die Einstellung nicht. Ein Vergleich „vorher ungleich
+       nachher" über die Farbe wäre falsch grün, sobald der gerade
+       offene Bereich zufällig dieselbe Farbe trägt. */
+    gewaehlt: (function () {
+      try { return (JSON.parse(localStorage.getItem('kf_prefs') || '{}')).accent; }
+      catch (e) { return null; }
+    })(),
     appbg: document.body.getAttribute('data-appbg'),
     chatbg: document.body.getAttribute('data-chatbg'),
-    akzent: getComputedStyle(document.documentElement)
+    /* Am <body> gelesen und nicht mehr am <html>: seit dem 21.9.2026
+       setzt akzentAnwenden() die Farben dort. Der Grund steht in der
+       Funktion — body.light{} setzt dieselben Namen noch einmal, und
+       ein Wert am Vorfahren verliert gegen eine Regel, die den
+       Nachfahren trifft. Am <html> stünde hier ab jetzt der
+       Rückfallwert aus dem Stylesheet, und der ändert sich nie: der
+       Durchlauf wäre grün, ohne etwas zu prüfen. */
+    akzent: getComputedStyle(document.body)
       .getPropertyValue('--accent').trim(),
-    schleier: getComputedStyle(document.documentElement)
+    schleier: getComputedStyle(document.body)
       .getPropertyValue('--akz-w').trim(),
     fs: getComputedStyle(document.documentElement)
       .getPropertyValue('--fs').trim(),
@@ -105,6 +121,12 @@ async function stand(p) {
     auswahl.appbg.indexOf('keiner') >= 0, auswahl.appbg.join(' '));
   pruefe('mehr Akzentfarben als vorher (waren 6)',
     auswahl.akzente.length > 6, String(auswahl.akzente.length));
+  /* „Lebendig" ist seit dem 21.9.2026 die Voreinstellung und steht
+     vorn. Es ist keine Farbe, sondern die Regel „nimm die Farbe des
+     Bereichs" — geprüft wird es ausführlich in test-akzent.js; hier
+     nur, dass es zur Auswahl steht und an erster Stelle. */
+  pruefe('„Lebendig" steht zur Auswahl, und zwar zuerst',
+    auswahl.akzente[0] === 'bunt', auswahl.akzente.join(' '));
   pruefe('mehr Chat-Hintergründe als vorher (waren 7 mit Foto)',
     auswahl.chatbg.length > 7, String(auswahl.chatbg.length));
   pruefe('es gibt einen Knopf zum Zurücksetzen', auswahl.reset);
@@ -200,8 +222,10 @@ async function stand(p) {
     chatbg: zurueck.chatbg, appbg: zurueck.appbg }));
 
   pruefe('Schriftgröße steht wieder auf 100 %', zurueck.fs === '100%', zurueck.fs);
-  pruefe('Akzentfarbe ist wieder die Voreinstellung',
-    zurueck.akzent !== verstellt.akzent, zurueck.akzent);
+  pruefe('GEGENPROBE die Akzentwahl stand wirklich auf Orange',
+    verstellt.gewaehlt === 'orange', String(verstellt.gewaehlt));
+  pruefe('Akzentfarbe steht wieder auf der Voreinstellung „Lebendig"',
+    zurueck.gewaehlt === 'bunt', String(zurueck.gewaehlt));
   pruefe('Chat-Hintergrund ist wieder „verlauf"',
     zurueck.chatbg === 'verlauf', zurueck.chatbg);
   pruefe('App-Hintergrund ist wieder „keiner"',

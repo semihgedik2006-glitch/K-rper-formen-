@@ -907,6 +907,18 @@
      wird eine feste Demo-PIN verglichen. Das ist in Ordnung, weil hier
      nichts zu schützen ist — und es gehört gesagt, damit niemand aus der
      Demo auf die Bauart schliesst. */
+  /* Die Adresse der Zwischenseite. Rolle UND Abo-Zustand reisen mit —
+     ohne sie käme man nach dem Kassengang als jemand anderes zurück. */
+  function demoStripeAdresse(art) {
+    return location.pathname + '?demo=' + encodeURIComponent(ROLLE) +
+           '&abo=' + encodeURIComponent(ABO_STAND) + '&stripe=' + art;
+  }
+  function demoZurueck(abo, kasse) {
+    return location.pathname + '?demo=' + encodeURIComponent(ROLLE) +
+           '&abo=' + encodeURIComponent(abo) +
+           (kasse ? '&kasse=' + kasse : '');
+  }
+
   var DEMO_FUNKTIONEN = {
     /* ── Die zwei Wege zur Kasse ──
        Sie fuehren im Betrieb zu Stripe, und Stripe gibt es in der Demo
@@ -921,18 +933,32 @@
        Bezahlseite klickt, haelt sie fuer die echte und schliesst aus
        ihr auf Sicherheit, Preise und Ablauf. Der Satz sagt stattdessen,
        was passieren WUERDE — und wo man den Zustand danach ansieht. */
-    stripeKasse: function () {
-      throw new Error(
-        'In der Demo führt das nicht zu Stripe. Im Betrieb öffnet sich hier ' +
-        'die Bezahlseite von Stripe; Kartendaten sehen wir nie. Wie es danach ' +
-        'aussieht, zeigt oben in der Demo-Leiste „Abo: bezahlt".');
-    },
-    stripeVerwaltung: function () {
-      throw new Error(
-        'In der Demo führt das nicht zu Stripe. Im Betrieb öffnet sich hier ' +
-        'das Kundenportal von Stripe: Rechnungen, Zahlungsmittel, kündigen. ' +
-        'Gekündigt sieht so aus wie oben „Abo: gekündigt".');
-    },
+    /* ── Nachtrag vom 21.9.2026: sie führen jetzt weiter ──
+       Aus dem Betrieb: „das mit dem demo abo test klappt immer noch
+       nicht, weil der demo modus mich nicht auf stripe weiter leitet
+       und dort auch kein anderer knopf ist als abo buchen, also kann
+       ich da auch offene optionen nicht ausprobieren."
+
+       Der Einwand trifft. Ein Knopf, der eine Erklärung wirft, ist in
+       einer Vorführung ein Knopf, der nicht geht — und der zweite
+       Knopf („Rechnungen, Zahlungsmittel, kündigen") stand tatsächlich
+       nur in den Zuständen da, in denen es schon einen Kunden bei
+       Stripe gibt. In der Voreinstellung „Testphase" gibt es den
+       nicht, also stand dort genau ein Knopf.
+
+       DIE ABFUHR VON OBEN BLEIBT TROTZDEM RICHTIG: eine nachgebaute
+       Bezahlseite wäre das Falsche, weil man aus ihr auf Sicherheit,
+       Preise und Ablauf schliesst. Deshalb führt der Weg jetzt auf
+       eine Zwischenseite, die KEINE Bezahlseite nachstellt, sondern
+       sagt, was im Betrieb an dieser Stelle passiert — und die einen
+       weiterklicken lässt, in den Zustand danach.
+
+       Sie geben eine Adresse zurück, wie die echten Funktionen es tun.
+       So läuft der ganze Weg in der App unverändert durch: der Knopf
+       sperrt sich, beschriftet sich mit „Einen Moment …" und leitet
+       um. Nachgebaut wird der WEG, nicht die Gegenstelle. */
+    stripeKasse: function () { return { url: demoStripeAdresse('kasse') }; },
+    stripeVerwaltung: function () { return { url: demoStripeAdresse('portal') }; },
     pinStatus: function () {
       return { gesetzt: true, seit: Date.now() - 40 * TAG };
     },
@@ -1150,7 +1176,82 @@
     document.head.appendChild(mr);
   } catch (e) {}
 
+  /* ══ Die Zwischenseite auf dem Weg zur Kasse ════════════════════════
+     Sie stellt Stripe NICHT nach. Kein Kartenfeld, kein Logo, keine
+     Beträge in einer fremden Aufmachung — wer so etwas sieht, hält es
+     für die echte Seite und schliesst daraus auf Sicherheit und
+     Ablauf. Was hier steht, ist die Auskunft, was im Betrieb an dieser
+     Stelle passiert, und die Möglichkeit, den Zustand DANACH zu
+     sehen. Genau das war der Wunsch: „offene Optionen ausprobieren".
+
+     Gebaut in dieser Datei und nicht in index.html: die App soll von
+     der Demo nichts wissen. Gestaltet über die Variablen der App, damit
+     sie nicht wie ein Fremdkörper aussieht — aber mit eigener
+     Überschrift, die in jedem Satz „Demo" sagt. */
+  function demoStripeSeite(art) {
+    var kasse = art === 'kasse';
+    var k = document.createElement('div');
+    k.id = 'demoStripe';
+    k.setAttribute('role', 'dialog');
+    k.setAttribute('aria-modal', 'true');
+    k.setAttribute('aria-label', 'Demo: der Weg zur Kasse');
+    k.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;' +
+      'align-items:center;justify-content:center;padding:24px;' +
+      'background:var(--bg);overflow:auto';
+    var wege = kasse
+      ? [['Bezahlung war erfolgreich', 'aktiv', 'ok', 'primary'],
+         ['Abgebrochen', ABO_STAND, 'ab', 'ghost']]
+      : [['Gekündigt zum Ende der Laufzeit', 'gekuendigt', '', 'primary'],
+         ['Zahlungsmittel erneuert, alles läuft', 'aktiv', '', 'ghost'],
+         ['Nichts geändert', ABO_STAND, '', 'ghost']];
+    k.innerHTML =
+      '<div style="max-width:520px;width:100%;background:var(--bg-2);' +
+        'border:1px solid var(--line-2);border-radius:var(--r-lg,16px);' +
+        'padding:24px;box-shadow:var(--e3)">' +
+        '<div style="font-family:var(--font-head);font-weight:800;' +
+          'text-transform:uppercase;letter-spacing:.04em;font-size:12px;' +
+          'color:var(--accent-d);margin-bottom:8px">Demo — das ist nicht Stripe</div>' +
+        '<h2 style="font-size:22px;margin-bottom:12px;color:var(--text)">' +
+          (kasse ? 'Hier ginge es jetzt zur Bezahlseite'
+                 : 'Hier ginge es jetzt ins Kundenportal') + '</h2>' +
+        '<p style="color:var(--text-2);line-height:1.55;margin-bottom:12px">' +
+          (kasse
+            ? 'Im Betrieb öffnet sich an dieser Stelle die Bezahlseite von ' +
+              'Stripe. Die Kartendaten werden dort eingegeben, nicht in ' +
+              'StudioChat — wir sehen sie nie und speichern sie nirgends.'
+            : 'Im Betrieb öffnet sich an dieser Stelle das Kundenportal von ' +
+              'Stripe: Rechnungen herunterladen, Zahlungsmittel ändern, ' +
+              'kündigen. Auch dort bleibt die Zahlung bei Stripe.') +
+        '</p>' +
+        '<p style="color:var(--text-2);line-height:1.55;margin-bottom:18px">' +
+          'Diese Seite baut sie bewusst <b>nicht</b> nach. Sie lässt dich ' +
+          'stattdessen wählen, wie es ausgegangen ist — und zeigt die App ' +
+          'danach.</p>' +
+        '<div style="display:flex;flex-direction:column;gap:10px">' +
+        wege.map(function (w, i) {
+          return '<button type="button" class="btn btn-' + w[3] + '" ' +
+            'data-demoweg="' + i + '" style="width:100%">' + w[0] + '</button>';
+        }).join('') +
+        '</div>' +
+        '<p style="color:var(--text-3);font-size:12px;line-height:1.5;' +
+          'margin-top:16px">Denselben Zustand erreichst du jederzeit über ' +
+          'die Auswahl oben in der Demo-Leiste.</p>' +
+      '</div>';
+    document.body.appendChild(k);
+    k.querySelectorAll('[data-demoweg]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var w = wege[Number(b.getAttribute('data-demoweg'))];
+        location.href = demoZurueck(w[1], w[2]);
+      });
+    });
+    /* Die App darunter darf nicht mitscrollen. */
+    document.documentElement.style.overflow = 'hidden';
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
+    var st = /[?&]stripe=(kasse|portal)(&|$)/.exec(String(location.search || ''));
+    if (st) demoStripeSeite(st[1]);
+
     /* Im Terminal-Modus muss dastehen, welche PIN gilt. Ohne das tippt
        ein Interessent dreimal daneben und hält die Demo für kaputt —
        der teuerste Moment einer Vorführung. Gesetzt wird der Text HIER

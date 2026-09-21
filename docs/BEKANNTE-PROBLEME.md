@@ -398,6 +398,11 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-06** | Flache Pfade waren für Konten fremder Firmen lesbar | früher, im Emulator nachgemessen |
 | **B-07** | Firmencode war über die allgemeine `config`-Regel für jeden Eingeloggten lesbar | früher |
 | **B-08** | Untere Leiste stand bei reduzierter Bewegung auf x=0 | Runde 84 |
+| **B-09** | **Die Akzentfarbe kam an der Hauptfarbe nie an.** `markeAnwenden()` lief nach `applyPrefs()` und räumte `--accent` weg, sobald **keine** Firmenfarbe gesetzt war — der Normalfall. Zweite Ursache: gesetzt wurde am `<html>`, aber `body.light{}` setzt dieselben Namen noch einmal | 21.9.2026, `tests/test-akzent.js` |
+| **B-10** | **56 getönte Flächen trugen die Akzentfarbe fest verdrahtet** (`rgba(34,211,238,…)`) — Chips, markierte Zeilen, Fokusringe, beide Knopfformen. Wer auf Grün stellte, bekam grüne Ränder und violette Knöpfe | 21.9.2026 |
+| **B-11** | **Weisse Schrift auf dem Hauptknopf war im dunklen Modus nie lesbar**: gemessen 2,14:1 in der Mitte des Verlaufs, Untergrenze dieser App ist 4,5. Ein `text-shadow` stand als Notbehelf dabei | 21.9.2026, `tests/test-akzent.js` |
+| **B-12** | **Die Deckkraft `.24` der getönten Knopffläche war für Cyan gemessen** und galt pauschal. Pink fällt bei denselben `.24` auf 4,17:1. Sie wird jetzt je Farbe gerechnet | 21.9.2026 |
+| **B-13** | `kasseRueckweg()` warf nach der Rückkehr von Stripe die **ganze** Adresse weg — samt `?firma=`, `?neu=` und `?demo=` | 21.9.2026, `tests/test-demo-abo.js` |
 
 Die vollständige Fassung mit Begründungen steht in
-`docs/FORTSCHRITT.md` — chronologisch, 90 Runden.
+`docs/FORTSCHRITT.md` — chronologisch, 94 Runden.
