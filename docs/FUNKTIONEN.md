@@ -34,8 +34,8 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 | Anwendung | `index.html`, **26.814 Zeilen** | `wc -l` |
 | Serverfunktionen | **59** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **1.910 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **114** | `ls tests/test-*.js` |
-| Automatische Durchläufe (Regeln) | **13 Dateien**, 1.001 Zusicherungen | `tests/rules/` |
+| Automatische Durchläufe (Oberfläche) | **115** | `ls tests/test-*.js` |
+| Automatische Durchläufe (Regeln) | **14 Dateien**, 1.028 Zusicherungen | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
 | Build-Schritt | **keiner** | kein `package.json` im Wurzelverzeichnis |

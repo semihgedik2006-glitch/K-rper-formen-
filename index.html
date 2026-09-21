@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-+rLsR1LLl421rqFqqeZiB6D02ThROV3SZDV7WegFMSE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-23UOqz2cBhYN7WW34QrowSje+RP9X/p5ZQdPRPRivbs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -639,13 +639,29 @@ html.demo .demo-bar{display:flex;align-items:center;gap:var(--s10);
   letter-spacing:var(--ls-s);white-space:nowrap;overflow:hidden}
 .demo-bar b{font-weight:900;text-transform:uppercase;flex-shrink:0}
 .demo-bar .db-text{overflow:hidden;text-overflow:ellipsis;min-width:0}
-.demo-bar select{margin-left:auto;flex-shrink:0;min-height:44px;
+/* ZWEI Auswahlfelder seit dem 21.9.2026 (Rolle und Abo-Zustand), und
+   damit passt die alte Regel nicht mehr:
+
+   `margin-left:auto` auf JEDEM select schiebt auch das zweite nach
+   rechts — gemessen lag es bei 390px Breite von 245 bis 408 px in einer
+   390 px breiten Leiste, also zur Haelfte hinter dem Rand. Auffallen
+   konnte das nicht: die Leiste hat overflow:hidden, die Seite scrollt
+   also nicht seitwaerts, und ein halb abgeschnittenes Auswahlfeld sieht
+   aus wie eines, das eben so breit ist.
+
+   Jetzt bekommt nur das ERSTE den Schub; beide duerfen schrumpfen. Ein
+   <select> kuerzt seine Beschriftung selbst und laesst sich trotzdem
+   aufklappen — schmal ist hier besser als unerreichbar. */
+.demo-bar select{flex:0 1 auto;min-width:0;min-height:44px;
   background:rgba(0,0,0,.14);border:none;border-radius:var(--r-xs);
   color:#0b0f14;font-family:var(--font-body);font-weight:700;
   font-size:var(--t-xs);padding:0 var(--s8);cursor:pointer}
+.demo-bar select:first-of-type{margin-left:auto}
 .demo-bar select:focus-visible{outline:2px solid #0b0f14;outline-offset:-2px}
-/* Unter 380px traegt der Satz nicht mehr neben dem Auswahlfeld. */
-@media (max-width:379px){ .demo-bar .db-text{display:none} }
+/* Der Satz weicht jetzt frueher: zwei Auswahlfelder brauchen den Platz,
+   und „Erfundene Daten" ist die Angabe, auf die man am ehesten
+   verzichten kann — das Wort DEMO daneben sagt dasselbe kuerzer. */
+@media (max-width:560px){ .demo-bar .db-text{display:none} }
 /* Der Terminal-Bildschirm liegt sonst UEBER der Demo-Leiste — und damit
    ueber dem Rollenumschalter. Wer sich in der Vorfuehrung das Stempeln
    ansieht, kaeme dann nicht mehr heraus. In der echten App ist das
@@ -1710,6 +1726,19 @@ body.nurlesen .kopf-plus{display:none !important}
 
 .setup-zeile{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s8) 0;
   border-bottom:1px solid var(--line-2)}
+/* ── Die zwei Zeilen der Abo-Karte ──
+   #aboStand traegt zwar .setup-zeile, setzt aber display:block am
+   Element — die Luecke aus `gap` greift damit nicht, und <b> und <span>
+   sind beide inline. Ergebnis war „Zahlung offenSeit 14 Tagen.": zwei
+   Saetze ohne Trennung, mitten in einer Karte, die dem Chef sagen soll,
+   wie dringend es ist.
+
+   Aufgefallen am 21.9.2026 auf dem Bildschirmfoto, nicht im Durchlauf —
+   textContent liest beides zusammen und merkt den Unterschied nicht.
+   Deshalb prueft tests/test-demo-abo.js jetzt <b> und <span> einzeln. */
+#aboStand b{display:block}
+#aboStand span{display:block;margin-top:var(--s4);
+  color:var(--text-2);font-size:var(--t-sm);font-weight:400}
 .setup-zeile:last-child{border-bottom:none}
 .setup-zeile.fertig{opacity:.5}
 .setup-hak{flex-shrink:0;width:20px;text-align:center;font-weight:700;color:var(--text-3)}
@@ -4655,6 +4684,20 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <option value="mitarbeiter">Als Mitarbeiter</option>
     <option value="terminal">Als Stempel-Terminal</option>
   </select>
+  <!-- ── Der Abo-Zustand, zum Durchklicken ──
+       Nachgetragen am 21.9.2026. Bis dahin ging das nur ueber einen
+       Zusatz in der Adresse (?abo=nurlesen), den niemand kannte, weil
+       er nirgends stand. Aus dem Betrieb kam genau das zurueck: „Ich
+       kann im Demo Modus das mit den Abo Modellen nicht testen."
+
+       Eine Einstellung, die es nur in der Adresszeile gibt, gibt es
+       fuer den Benutzer nicht.
+
+       Die Auswahl steht neben der Rolle, weil sie dasselbe ist: ein
+       Zustand, den man in der Vorfuehrung sehen will und nicht
+       herbeifuehren kann, indem man etwas anklickt. Die Liste fuellt
+       demo-daten.js — sie gehoert zur Demo, nicht zur App. -->
+  <select id="demoAbo" aria-label="Abo-Zustand wechseln"></select>
 </div>
 
 <!-- Hinweis-Leiste: erscheint automatisch, sobald die Internetverbindung weg ist -->
@@ -10417,8 +10460,14 @@ function renderAboKarte(){
        Chef: „Zahlung offen" ohne Frist laesst offen, wie dringend es
        ist — und genau das entscheidet, ob jemand heute handelt oder
        in drei Wochen ueberrascht wird. */
+    /* „Seit 0 Tagen" stand hier bis zum 21.9.2026 und ist beim
+       Durchklicken der Demo aufgefallen — am ersten Tag rechnet die
+       Formel null, und eine Null in einem Satz liest sich wie ein
+       Fehler, nicht wie „heute". Aufgefallen ist es erst, als sich der
+       Zustand vorfuehren liess: vorher gab es ihn nur im Kopf. */
     var offen = a.offenSeit ? Math.floor((Date.now()-a.offenSeit)/86400000) : 0;
-    unter = 'Seit ' + (offen === 1 ? 'einem Tag' : offen + ' Tagen') +
+    unter = 'Seit ' + (offen <= 0 ? 'heute' :
+                       offen === 1 ? 'einem Tag' : offen + ' Tagen') +
       '. Das Team merkt davon nichts.';
   } else if(status === 'nurlesen'){
     unter = 'Es lässt sich nichts mehr anlegen oder ändern. Alles bleibt sichtbar.';
@@ -10441,9 +10490,21 @@ function renderAboKarte(){
          (a.kunde ? 'Zahlung aktualisieren' : 'Abo buchen')+'</button>';
   }
   knoepfe.innerHTML = h;
-  hinweis.textContent = h
-    ? 'Bezahlt wird bei Stripe. Kartendaten werden hier nicht erfasst.'
-    : '';
+  /* In der Demo gehoert der Hinweis dauerhaft unter die Knoepfe und
+     nicht in eine Meldung.
+
+     Nachgetragen am 21.9.2026, gemessen: der Knopf wirft in der Demo
+     eine Erklaerung, die als Toast 2,7 Sekunden steht — und die
+     Aufgaben-Erinnerung der Demo ueberschreibt sie nach 300 ms. Selbst
+     ohne sie liest niemand drei Saetze in zweieinhalb Sekunden. Ein
+     Text, den man nicht zu Ende lesen kann, ist kein Hinweis. */
+  hinweis.textContent = !h ? ''
+    : imDemo()
+      ? 'Demo: die Knöpfe führen hier nicht zu Stripe. Im Betrieb öffnet ' +
+        'sich dort die Bezahlseite bzw. das Kundenportal — Rechnungen, ' +
+        'Zahlungsmittel, kündigen. Kartendaten werden hier nie erfasst. ' +
+        'Wie es danach aussieht, zeigt oben die Auswahl in der Demo-Leiste.'
+      : 'Bezahlt wird bei Stripe. Kartendaten werden hier nicht erfasst.';
 
   var b = $('aboBuchen');   if(b) b.addEventListener('click', function(){ zurKasse(b, a.stufe); });
   var v = $('aboVerwalten'); if(v) v.addEventListener('click', function(){ zurVerwaltung(v); });

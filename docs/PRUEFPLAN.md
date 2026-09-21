@@ -3,7 +3,7 @@
 **Stand:** 17. September 2026
 
 Dieses Projekt hat **keine manuelle Testliste, die jemand abarbeitet.**
-Es hat 127 ausführbare Durchläufe, die bei jeder Änderung laufen. Dieses
+Es hat 128 ausführbare Durchläufe, die bei jeder Änderung laufen. Dieses
 Dokument beschreibt, wie sie gebaut sind, was sie abdecken und — der
 wichtigere Teil — **was sie nicht abdecken**.
 
@@ -53,7 +53,7 @@ pruefe('GEGENPROBE die alte Fassung findet das Abo NICHT mehr',
 
 | Art | Anzahl | Womit | Dauer |
 |---|---|---|---|
-| **Oberfläche** | 114 Dateien | Playwright + Chromium, gegen die echte Anwendung | ~25 Min |
+| **Oberfläche** | 115 Dateien | Playwright + Chromium, gegen die echte Anwendung | ~25 Min |
 | **Sicherheitsregeln** | 13 Dateien, **1.001 Zusicherungen** | Firestore-Emulator | ~2 Min |
 | **Reine Rechnung** | 2 Dateien, 80 Zusicherungen | Node, ohne Browser und Datenbank | < 1 Sek |
 
@@ -91,12 +91,12 @@ schreibend, einzeln wie über Abfragen, jeweils mit Gegenprobe.
 
 ## 4. Die Oberflächen-Durchläufe nach Thema
 
-114 Dateien. Nach Gebiet sortiert:
+115 Dateien. Nach Gebiet sortiert:
 
 | Gebiet | Durchläufe |
 |---|---|
 | **Sicherheit** | `xss`, `xss-werbung`, `csp`, `passwort`, `beitritt`, `zugang-rolle`, `firma-stillgelegt`, `nebenseiten` |
-| **Abo und Kasse** | `abo-leiter`, `abo-stufe`, `stripe-felder`, `paywall` |
+| **Abo und Kasse** | `abo-leiter`, `abo-stufe`, `stripe-felder`, `paywall`, `demo-abo` |
 | **Zeiterfassung** | `terminal`, `zeitpin`, `handy-stempeln`, `meine-zeiten` |
 | **Gestaltung** | `gestaltung`, `knoepfe`, `fingerziele`, `abgeschnitten`, `quer`, `rahmen`, `marker`, `neu-design`, `neu-messlatte` |
 | **Bereiche** | `chat-bereich3`, `aufgaben-bereich4`, `material-bereich5`, `geraete-bereich6`, `team-bereich7`, `dokumente-bereich8`, `verwaltung-bereich9`, `einstellungen-bereich10` |
@@ -105,7 +105,7 @@ schreibend, einzeln wie über Abfragen, jeweils mit Gegenprobe.
 | **Recht** | `recht`, `recht-firma` |
 | **Alltag** | `alltag`, `all`, `final`, `oberflaeche`, `ui`, `navigation` |
 
-**Vier davon sind Messungen, keine Prüfungen** und deshalb besonders
+**Fünf davon sind Messungen, keine Prüfungen** und deshalb besonders
 wertvoll:
 
 * `abgeschnitten` — sucht abgeschnittenen Text bei drei Breiten
@@ -115,6 +115,11 @@ wertvoll:
 * `schriften` — schreibt jede Anfrage der geladenen Seite mit und misst
   die Breite desselben Textes in Barlow und in einer nicht existierenden
   Schrift (seit 17.9.2026)
+* `demo-abo` — misst die Abo-Karte in allen zehn Zuständen und die
+  Demo-Leiste auf vier Breiten. **Fragt die gerechnete Darstellung, nicht
+  den Text:** dass „Zahlung offen" und „Seit 14 Tagen" ineinanderliefen,
+  konnte `textContent` nicht sehen — es liest beides zusammen (seit
+  21.9.2026)
 
 > **`neu-messlatte` entstand aus einem Fund, der teuer hätte werden
 > können:** 109 grüne Durchläufe sagten nichts über das neue Design
@@ -217,7 +222,7 @@ Nach dem Schema, das ein Prüfer erwartet.
 
 | | |
 |---|---|
-| Oberfläche | **114 von 114 grün** |
+| Oberfläche | **115 von 115 grün** |
 | Regeln | **1.001 Zusicherungen, 0 gefallen** |
 | Rechnung | 80 Zusicherungen, 0 gefallen |
 
