@@ -53,7 +53,7 @@ pruefe('GEGENPROBE die alte Fassung findet das Abo NICHT mehr',
 
 | Art | Anzahl | Womit | Dauer |
 |---|---|---|---|
-| **Oberfläche** | 118 Dateien | Playwright + Chromium, gegen die echte Anwendung | ~25 Min |
+| **Oberfläche** | 120 Dateien | Playwright + Chromium, gegen die echte Anwendung | ~25 Min |
 | **Sicherheitsregeln** | 13 Dateien, **1.001 Zusicherungen** | Firestore-Emulator | ~2 Min |
 | **Reine Rechnung** | 2 Dateien, 80 Zusicherungen | Node, ohne Browser und Datenbank | < 1 Sek |
 
@@ -91,7 +91,7 @@ schreibend, einzeln wie über Abfragen, jeweils mit Gegenprobe.
 
 ## 4. Die Oberflächen-Durchläufe nach Thema
 
-118 Dateien. Nach Gebiet sortiert:
+120 Dateien. Nach Gebiet sortiert:
 
 | Gebiet | Durchläufe |
 |---|---|
@@ -99,7 +99,8 @@ schreibend, einzeln wie über Abfragen, jeweils mit Gegenprobe.
 | **Abo und Kasse** | `abo-leiter`, `abo-stufe`, `stripe-felder`, `paywall`, `demo-abo` |
 | **Zeiterfassung** | `terminal`, `zeitpin`, `handy-stempeln`, `meine-zeiten` |
 | **Gestaltung** | `gestaltung`, `knoepfe`, `fingerziele`, `abgeschnitten`, `quer`, `rahmen`, `marker`, `neu-design`, `neu-messlatte`, `aussehen`, `akzent` |
-| **Bereiche** | `chat-bereich3`, `aufgaben-bereich4`, `material-bereich5`, `geraete-bereich6`, `team-bereich7`, `dokumente-bereich8`, `verwaltung-bereich9`, `einstellungen-bereich10` |
+| **Einstieg** | `fuehrung` |
+| **Bereiche** | `chat-bereich3`, `aufgaben-bereich4`, `material-bereich5`, `geraete-bereich6`, `team-bereich7`, `dokumente-bereich8`, `loesungen`, `verwaltung-bereich9`, `einstellungen-bereich10` |
 | **Demo und Auslieferung** | `demo`, `ausliefern`, `konfig`, `lizenzen`, `nachladen`, `schriften` |
 | **Server** | `funktionen-pfade`, `funktionen-schalter`, `mail-versand`, `sheets`, `sicherung`, `kalender` |
 | **Recht** | `recht`, `recht-firma` |
@@ -227,7 +228,7 @@ Nach dem Schema, das ein Prüfer erwartet.
 
 | | |
 |---|---|
-| Oberfläche | **118 von 118 grün** |
+| Oberfläche | **120 von 120 grün** |
 | Regeln | **1.001 Zusicherungen, 0 gefallen** |
 | Rechnung | 80 Zusicherungen, 0 gefallen |
 

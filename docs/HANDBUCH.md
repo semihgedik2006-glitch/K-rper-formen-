@@ -487,6 +487,37 @@ Wer ursprünglich eingeteilt war, bleibt am Eintrag vermerkt.
 
 ---
 
+## 12b. Lösungen
+
+**Unter „Aufgaben" der letzte Reiter.** Hier steht, was schon einmal
+jemand herausgefunden hat: ein Gerät piept, ein Ablauf klemmt, ein Kunde
+fragt etwas Ungewöhnliches — und was beim letzten Mal geholfen hat.
+
+**Nachlesen**
+- Oben suchen oder nach Kategorie filtern (Gerät, Technik, Ablauf,
+  Kunde, Sonstiges).
+- Eintrag antippen: darunter stehen **Das Problem** und **Was hilft**,
+  dazu die Fotos.
+- Einträge aus **allen** Studios sind sichtbar. Das ist Absicht: ein
+  Problem aus Rondorf hilft in Brühl genauso weiter. Woher es kommt,
+  steht am Eintrag.
+
+**Selbst festhalten** — das darf jeder, nicht nur die Leitung.
+- Oben auf **„Lösung festhalten"**.
+- Titel, das Problem, was hilft. Schreib die Schritte so auf, wie du sie
+  gemacht hast; Zeilenumbrüche bleiben erhalten.
+- Kategorie und Studios wählen, bis zu **drei Fotos** dazu.
+- **Speichern.**
+
+**Ändern oder löschen** darf den Eintrag, wer ihn geschrieben hat — und
+die Leitung. Eine Lösung, die jeder überschreiben kann, ist nach einem
+halben Jahr keine mehr.
+
+> **Videos gibt es (noch) nicht.** Sie brauchen echten Dateispeicher;
+> der kommt, wenn sich zeigt, dass der Bereich benutzt wird.
+
+---
+
 ## 13. Suche
 
 Über die Lupe oben oder mit **Cmd/Strg + K**. Auf breiten Bildschirmen steht
@@ -529,6 +560,8 @@ man etwas nicht lesen kann, steht oben.
 
 - **Hell / Dunkel** – auch „automatisch" (folgt dem Gerät).
 - **Schriftgröße** in vier Stufen.
+- **Dichte** – „kompakt" rückt alles enger zusammen, ohne die Schrift zu
+  verkleinern. Für wer viele Studios auf einen Blick haben will.
 - **Akzentfarbe** – voreingestellt ist **„Lebendig"**: die Farbe ist die
   des Bereichs, in dem du gerade bist. Start blau, Ich violett,
   Nachrichten türkis, Aufgaben orange, Team pink, Verwaltung grau. Knöpfe,
@@ -541,6 +574,8 @@ man etwas nicht lesen kann, steht oben.
   Hintergründe auf den Auslieferungsstand zurück. Meldungen,
   Tastenkürzel und alles in der Datenbank bleiben unberührt; ein eigenes
   Chat-Foto wird nur abgewählt, nicht gelöscht.
+- **Führung noch einmal ansehen** – zeigt dir in ein paar Schritten, wo
+  was steht. Beim ersten Anmelden läuft sie von selbst.
 - **Tastenkürzel anpassen** (nur am Rechner).
 
 ### Meldungen

@@ -49,7 +49,15 @@ Schatten — zum Nachschlagen), `.card` (wie heute) und `.card jetzt`
 falsch zugeordnet ist schlimmer als gar nicht. Wenn „Einrichtung" laut
 bleibt, hat man nichts gewonnen.
 
-### 2. Nicht mehr alles in Versalien  ✅ *gebaut (25.8.)*
+### 2. Nicht mehr alles in Versalien  ✅ *gebaut (25.8.), Knöpfe nachgezogen (22.9.)*
+
+> **Nachtrag 22.9.2026:** bei den Überschriften war es erledigt, bei den
+> KNÖPFEN nicht — `.btn` erzwang weiter `text-transform:uppercase`. Dort
+> fällt es am meisten auf, weil eine Beschriftung ein Satz sein kann:
+> „RECHNUNGEN, ZAHLUNGSMITTEL, KÜNDIGEN" stand über zwei Zeilen. Der
+> Buchstabenabstand ging mit von `.02em` auf null — er war für Versalien
+> da, wo er das Wort öffnet; in gemischter Schreibung zerrt er es
+> auseinander.
 
 `EINRICHTUNG · MEIN DIENST · VON DER LEITUNG · ÜBERGABE · AUFGABEN ·
 HÜRTH` — jede Überschrift schreit. Versalien liest man messbar langsamer,
@@ -79,7 +87,7 @@ daneben sieht man.
 
 *Aufwand: klein* — ein SVG-Kreis mit `stroke-dasharray`.
 
-### 5. Dichte-Schalter: kompakt / normal
+### 5. Dichte-Schalter: kompakt / normal  ✅ *gebaut (22.9.)*
 
 Für einen Chef mit 14 Studios ist die heutige Luftigkeit teuer, für den
 Trainer am Empfang ist eng zu eng. Ein Schalter, der die Abstandsleiter
@@ -214,7 +222,7 @@ Zwischenspeicher kommen, leicht entsättigen.
 *Aufwand: mittel.* **Dagegen:** wenn man es falsch trifft, verwirrt es
 mehr, als es hilft.
 
-### 16. Fehler gehören in die Liste, nicht in einen Toast
+### 16. Fehler gehören in die Liste, nicht in einen Toast  ◐ *bei den Lösungen gebaut (22.9.), sonst offen*
 
 Ein Toast ist nach drei Sekunden weg. Wenn eine Liste nicht laden konnte,
 gehört das dorthin, wo die Liste wäre — mit „nochmal versuchen".
@@ -225,7 +233,7 @@ gehört das dorthin, wo die Liste wäre — mit „nochmal versuchen".
 
 ## D · Bewegung
 
-### 17. Ansichtswechsel mit Richtung
+### 17. Ansichtswechsel mit Richtung  ✅ *gebaut (22.9.)*
 
 Heute blendet die neue Ansicht ein. Innerhalb einer Gruppe seitwärts
 schieben — in der Richtung, in der der Reiter liegt. Man merkt sich

@@ -47,6 +47,7 @@ firmen/{kennung}                     ← Stammdaten, öffentlich lesbar (get)
    ├── announcements/                ← Aushänge
    ├── board/                        ← Schwarzes Brett
    ├── documents/  +  documentData/  ← Dokumente (Verweis + Inhalt)
+   ├── loesungen/  +  loesungBilder/ ← Probleme und was hilft (Text + Fotos)
    ├── certificates/                 ← Nachweise (Premium)
    ├── probetrainings/               ← Zahlen, KEINE Kundennamen
    ├── anliegen/                     ← Wünsche an die Leitung
@@ -267,6 +268,35 @@ Datensatz; die Datei liegt beim Drittanbieter des Kunden.
 > **Es gibt keinen echten Dateispeicher.** Cloud Storage enthält
 > ausschließlich die nächtliche Sicherung; die Storage-Regeln sperren
 > jeden Client-Zugriff vollständig.
+
+---
+
+### `firmen/{kennung}/loesungen/` und `loesungBilder/` (seit 22.9.2026)
+
+Probleme aus dem Studio und was dagegen hilft. Genauso geteilt wie die
+Dokumente, und aus demselben Grund — hier kommt ein zweiter dazu:
+
+> Ein Firestore-Dokument darf **1 MB** tragen. Drei Fotos im selben
+> Dokument sprengen das, und zwar erst beim dritten — also lange
+> nachdem jemand geglaubt hat, es funktioniere. Deshalb liegt **jedes
+> Foto in seinem eigenen Dokument**.
+
+| `loesungen` | `loesungBilder` |
+|---|---|
+| `titel`, `problem`, `loesung`, `kategorie`, `studios`, `bilder` (Liste von IDs), `uid`, `vonName`, `ts` | `data` — Base64, dazu `uid` und `ts` |
+
+`studios` ist entweder `'all'` oder eine Liste von Studio-Kennungen.
+**Die Angabe ist eine Herkunft, keine Schranke:** gelesen wird
+firmenweit, weil ein Problem aus Rondorf in Brühl genauso weiterhilft.
+
+Die Fotos werden im Browser auf **1280 px und 300 KB** verkleinert
+(`fileToCompressedDataURL`) und **erst beim Aufklappen** geladen — bei
+dreissig Einträgen zu drei Fotos wären es sonst neunzig Lesevorgänge je
+Listenaufruf.
+
+**Video gibt es nicht.** Es bräuchte echten Dateispeicher, und der Eimer
+daneben enthält die nächtliche Vollsicherung der Datenbank. Die
+Begründung steht in `FORTSCHRITT.md`, Runde 95.
 
 ---
 
