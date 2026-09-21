@@ -205,10 +205,16 @@ async function zumPutzplan(page) {
   }
 
   // ══ 6. Die Farbe der Firma ══
+  /* Am <body> gelesen und nicht mehr am <html>: seit dem 21.9.2026
+     setzt akzentAnwenden() alle Farben dort. Der Grund steht in der
+     Funktion — body.light{} setzt dieselben Namen noch einmal, und ein
+     Wert am Vorfahren verliert gegen eine Regel, die den Nachfahren
+     trifft. Am <html> stünde ab jetzt nichts mehr, und dieser Durchlauf
+     würde melden, die Firmenfarbe käme nicht an. */
   {
     const { b, page } = await start({ marke: { farbe: 'gruen' } });
     const farbe = await page.evaluate(() =>
-      document.documentElement.style.getPropertyValue('--accent').trim());
+      document.body.style.getPropertyValue('--accent').trim());
     /* Grün hat ZWEI Werte: einen für den dunklen Modus, einen für den
        hellen. Genau darin liegt der Sinn der festen Auswahl — eine
        einzige Farbe wäre in einem der beiden Modi schlecht lesbar. Der
@@ -225,18 +231,34 @@ async function zumPutzplan(page) {
     await b.close();
   }
 
-  /* ══ 6b. Ohne Eintrag ändert sich NICHTS ══
+  /* ══ 6b. Ohne Eintrag gibt es keine FIRMENfarbe ══
      Der wichtigere der beiden Fälle: heute hat kein Betrieb einen
-     Eintrag. Würde die App trotzdem etwas setzen, sähen alle vierzehn
-     Studios morgen früh eine andere Farbe, ohne dass jemand etwas
-     bestellt hätte. */
+     Eintrag. Würde die App trotzdem eine Firmenfarbe setzen, sähen alle
+     vierzehn Studios morgen früh eine andere Farbe, ohne dass jemand
+     etwas bestellt hätte.
+
+     DIE FRAGE HAT SICH AM 21.9.2026 GESCHÄRFT. Bis dahin prüfte dieser
+     Abschnitt, dass --accent am <html> LEER bleibt — und das war grün,
+     weil markeAnwenden() die Marke ohne Eintrag schlicht entfernte.
+     Genau dieses Entfernen hat aber auch die persönliche Akzentfarbe
+     weggeräumt: die Einstellung kam seit ihrem Einbau nie an der
+     Hauptfarbe an.
+
+     Jetzt steht dort immer eine Farbe — die des Akzents. Geprüft wird
+     deshalb das, was wirklich gemeint war: ohne Eintrag darf es NICHT
+     die Firmenfarbe sein. „Leer" war nie die Zusage, sondern nur ihr
+     damaliges Anzeichen. */
   {
     const { b, page } = await start({});
     const farbe = await page.evaluate(() =>
-      document.documentElement.style.getPropertyValue('--accent').trim());
+      document.body.style.getPropertyValue('--accent').trim());
     console.log('6b. Ohne Eintrag:', JSON.stringify(farbe));
-    if (farbe) {
-      errs.push('UNGEFRAGT: ohne Eintrag wird trotzdem eine Farbe gesetzt (' + farbe + ')');
+    const gruenwerte = ['#34d399', '#047857'];
+    if (!farbe) {
+      errs.push('LEER: ohne Eintrag steht gar keine Farbe da — dann kommt auch ' +
+                'die persönliche Akzentfarbe nicht an');
+    } else if (gruenwerte.indexOf(farbe.toLowerCase()) >= 0) {
+      errs.push('UNGEFRAGT: ohne Eintrag steht trotzdem die Firmenfarbe da (' + farbe + ')');
     }
     await b.close();
   }

@@ -53,7 +53,7 @@ pruefe('GEGENPROBE die alte Fassung findet das Abo NICHT mehr',
 
 | Art | Anzahl | Womit | Dauer |
 |---|---|---|---|
-| **Oberfläche** | 117 Dateien | Playwright + Chromium, gegen die echte Anwendung | ~25 Min |
+| **Oberfläche** | 118 Dateien | Playwright + Chromium, gegen die echte Anwendung | ~25 Min |
 | **Sicherheitsregeln** | 13 Dateien, **1.001 Zusicherungen** | Firestore-Emulator | ~2 Min |
 | **Reine Rechnung** | 2 Dateien, 80 Zusicherungen | Node, ohne Browser und Datenbank | < 1 Sek |
 
@@ -91,21 +91,21 @@ schreibend, einzeln wie über Abfragen, jeweils mit Gegenprobe.
 
 ## 4. Die Oberflächen-Durchläufe nach Thema
 
-117 Dateien. Nach Gebiet sortiert:
+118 Dateien. Nach Gebiet sortiert:
 
 | Gebiet | Durchläufe |
 |---|---|
 | **Sicherheit** | `xss`, `xss-werbung`, `csp`, `passwort`, `beitritt`, `zugang-rolle`, `firma-stillgelegt`, `nebenseiten` |
 | **Abo und Kasse** | `abo-leiter`, `abo-stufe`, `stripe-felder`, `paywall`, `demo-abo` |
 | **Zeiterfassung** | `terminal`, `zeitpin`, `handy-stempeln`, `meine-zeiten` |
-| **Gestaltung** | `gestaltung`, `knoepfe`, `fingerziele`, `abgeschnitten`, `quer`, `rahmen`, `marker`, `neu-design`, `neu-messlatte`, `aussehen` |
+| **Gestaltung** | `gestaltung`, `knoepfe`, `fingerziele`, `abgeschnitten`, `quer`, `rahmen`, `marker`, `neu-design`, `neu-messlatte`, `aussehen`, `akzent` |
 | **Bereiche** | `chat-bereich3`, `aufgaben-bereich4`, `material-bereich5`, `geraete-bereich6`, `team-bereich7`, `dokumente-bereich8`, `verwaltung-bereich9`, `einstellungen-bereich10` |
 | **Demo und Auslieferung** | `demo`, `ausliefern`, `konfig`, `lizenzen`, `nachladen`, `schriften` |
 | **Server** | `funktionen-pfade`, `funktionen-schalter`, `mail-versand`, `sheets`, `sicherung`, `kalender` |
 | **Recht** | `recht`, `recht-firma` |
 | **Alltag** | `alltag`, `all`, `final`, `oberflaeche`, `ui`, `navigation`, `startseite-offen` |
 
-**Fünf davon sind Messungen, keine Prüfungen** und deshalb besonders
+**Sechs davon sind Messungen, keine Prüfungen** und deshalb besonders
 wertvoll:
 
 * `abgeschnitten` — sucht abgeschnittenen Text bei drei Breiten
@@ -120,6 +120,11 @@ wertvoll:
   den Text:** dass „Zahlung offen" und „Seit 14 Tagen" ineinanderliefen,
   konnte `textContent` nicht sehen — es liest beides zusammen (seit
   21.9.2026)
+* `akzent` — geht alle sieben Bereiche in beiden Modi ab, liest die Farbe
+  am **fertig gebauten Knopf** und **rechnet** den Kontrast: die getönte
+  Fläche wird über den ersten undurchsichtigen Vorfahren gelegt und erst
+  dann gemessen. So kam heraus, dass die feste Deckkraft `.24` zwar für
+  Cyan trägt, für Pink aber auf 4,17:1 fällt (seit 21.9.2026)
 
 > **`neu-messlatte` entstand aus einem Fund, der teuer hätte werden
 > können:** 109 grüne Durchläufe sagten nichts über das neue Design
@@ -222,7 +227,7 @@ Nach dem Schema, das ein Prüfer erwartet.
 
 | | |
 |---|---|
-| Oberfläche | **117 von 117 grün** |
+| Oberfläche | **118 von 118 grün** |
 | Regeln | **1.001 Zusicherungen, 0 gefallen** |
 | Rechnung | 80 Zusicherungen, 0 gefallen |
 

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-GEq8Ed2ZdePQPA4ei9UZ+LALL1M7b1ATsdKlUpVu1wQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-fzV2mz6Wtuvs0Zva/iZM5b8f0sAwcPI54E0R+U4ze4k='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -91,6 +91,24 @@
   --line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.26);
   /* Marken-Trio aus dem StudioChat-Logo: Cyan (primär), Violett, Pink */
   --accent:#38BDF8;--accent-2:#A78BFA;--accent-3:#F472B6;--accent-d:#38BDF8;
+  /* ── Die Akzentfarbe als Zahlentripel ──────────────────────────────
+     Neu am 21.9.2026. Im Stylesheet standen 56 getönte Flächen mit
+     fest eingetragenem Cyan bzw. Violett: ausgewählte Chips, markierte
+     Zeilen, Fokusringe, „heute"-Marken. Sie blieben cyan, egal was
+     jemand als Akzent wählte — das war der Hauptgrund, aus dem die
+     Einstellung wie wirkungslos aussah.
+
+     Als KOMMALISTE und nicht als Farbe, damit rgba(var(--akz-rgb),.12)
+     überall stehen kann, wo vorher rgba(34,211,238,.12) stand: jede
+     Deckkraft bleibt exakt, wie sie war, und nur der Farbton wandert.
+     Bewusst nicht color-mix() und nicht die Schrägstrich-Schreibweise —
+     die App läuft auf Studio-Tablets, deren Browser niemand
+     aktualisiert, und eine Farbe, die dort still auf „transparent"
+     fällt, nimmt der Fläche genau die Aussage, für die es sie gibt.
+
+     Die Werte hier sind der Rückfall für die Sekunde vor dem ersten
+     akzentAnwenden(); danach stehen sie am <body>. */
+  --akz-rgb:34,211,238;--akz2-rgb:167,139,250;
   --accent-glow:rgba(56,189,248,.28);
   --on-accent:#0A1420;            /* dunkler Text auf hellen Akzentflächen */
   --brand:linear-gradient(135deg,#7C6BF0 0%,#38BDF8 55%,#E879B9 100%);
@@ -243,6 +261,9 @@ body.light{
   --daem-1:rgba(180,83,9,.09);--daem-2:rgba(190,24,93,.08);
   --line:rgba(15,25,45,.09);--line-2:rgba(15,25,45,.27);
   /* etwas dunklere Logo-Töne, damit sie auf Weiß gut lesbar sind */
+  /* Auch als Rückfall je Modus: die getönten Flächen waren im Hellen
+     bisher dasselbe Cyan wie im Dunklen. */
+  --akz-rgb:14,116,144;--akz2-rgb:124,58,237;
   --accent:#0369A1;--accent-2:#6D28D9;--accent-3:#BE185D;--accent-d:#075985;
   --accent-glow:rgba(3,105,161,.18);
   --on-accent:#ffffff;
@@ -407,7 +428,24 @@ button[data-ikon].attach-btn{justify-content:center}
   font-size:var(--t-md);padding:var(--s12) var(--s24);border-radius:var(--r-pille);cursor:pointer;border:none;
   min-height:46px}
 .btn:focus-visible{outline:3px solid var(--accent-2);outline-offset:2px}
-.btn-primary{background:var(--brand);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.22);
+/* ── Weisse Schrift war auf diesen Flächen nie lesbar ──
+   Gemessen am 21.9.2026, weiss auf dem Verlauf des Hauptknopfes im
+   DUNKLEN Modus: 4,02 am einen Ende, 2,14 in der Mitte, 2,67 am
+   anderen. Die Untergrenze dieser App ist 4,5. Der `text-shadow`
+   stand als Notbehelf dabei — ein Schatten hebt keinen Kontrast, er
+   verdeckt nur, dass einer fehlt.
+
+   Aufgefallen ist es erst, als der Verlauf der Akzentfarbe folgen
+   sollte: dann werden BEIDE Haltepunkte hell, und der Wert fällt auf
+   1,4. Ein Fehler, der vorher nur halb sichtbar war, wird beim
+   Verallgemeinern ganz sichtbar.
+
+   --on-accent ist das Gegenstück, das es dafür längst gibt: im
+   Dunkeln fast schwarz auf heller Fläche, im Hellen weiss auf dunkler.
+   Im hellen Modus ändert sich damit nichts (dort ist es #ffffff).
+   DESIGN-SYSTEM.md, Abschnitt 1: „dieselbe Farbe kann nicht zugleich
+   eine gute Fläche und ein guter Text sein." */
+.btn-primary{background:var(--brand);color:var(--on-accent);text-shadow:none;
   box-shadow:0 10px 26px var(--accent-glow)}
 .btn-primary:hover{box-shadow:0 18px 40px var(--accent-glow)}
 .btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
@@ -498,7 +536,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @keyframes spFade{to{opacity:0;visibility:hidden;pointer-events:none}}
 .sp-logo{filter:drop-shadow(0 0 14px rgba(124,58,237,.65));animation:spPop .7s var(--ease-out) both, spGlow 1.8s ease-in-out .7s infinite}
 @keyframes spPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
-@keyframes spGlow{0%,100%{filter:drop-shadow(0 0 10px rgba(34,211,238,.45))}50%{filter:drop-shadow(0 0 22px rgba(236,72,153,.75))}}
+@keyframes spGlow{0%,100%{filter:drop-shadow(0 0 10px rgba(var(--akz-rgb),.45))}50%{filter:drop-shadow(0 0 22px rgba(236,72,153,.75))}}
 .sp-ring{stroke-dasharray:252;stroke-dashoffset:252;animation:spDraw 1s var(--ease-out) .15s forwards}
 @keyframes spDraw{to{stroke-dashoffset:0}}
 .sp-tail,.sp-sc{opacity:0;animation:spIn .5s ease .8s forwards}
@@ -535,7 +573,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .auth-mesh i{position:absolute;display:block;border-radius:var(--r-rund)}
 .auth-mesh .a{width:50vw;height:50vw;background:radial-gradient(circle,rgba(139,92,246,.45),transparent 70%);top:-10%;right:-10%}
 .auth-mesh .b{width:40vw;height:40vw;background:radial-gradient(circle,rgba(236,72,153,.30),transparent 70%);bottom:-15%;left:-5%}
-.auth-mesh .c{width:34vw;height:34vw;background:radial-gradient(circle,rgba(56,189,248,.28),transparent 70%);top:35%;left:30%}
+.auth-mesh .c{width:34vw;height:34vw;background:radial-gradient(circle,rgba(var(--akz-rgb),.28),transparent 70%);top:35%;left:30%}
 .auth-card{position:relative;z-index:1;width:100%;max-width:450px;margin:auto;background:var(--bg-2);
   border:1px solid var(--line-2);border-radius:var(--radius-lg);padding:clamp(24px,6vw,40px);
   box-shadow:var(--e3)}
@@ -547,7 +585,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .auth-logo svg{width:74px;height:74px;animation:scGlow 2.6s ease-in-out infinite}
 .auth-logo .al-ring{stroke-dasharray:252;stroke-dashoffset:252;animation:scDraw 1.1s var(--ease-out) .2s forwards}
 @keyframes scDraw{to{stroke-dashoffset:0}}
-@keyframes scGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(34,211,238,.4))}50%{filter:drop-shadow(0 0 18px rgba(236,72,153,.7))}}
+@keyframes scGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(var(--akz-rgb),.4))}50%{filter:drop-shadow(0 0 18px rgba(236,72,153,.7))}}
 .tb-logo{display:inline-flex;align-items:center}
 .tb-logo svg{width:26px;height:26px;filter:drop-shadow(0 0 5px rgba(124,58,237,.55))}
 @media(prefers-reduced-motion:reduce){.auth-logo .al-ring,.sp-ring{stroke-dashoffset:0!important}}
@@ -651,7 +689,15 @@ html.demo .app{height:calc(100vh - 44px);height:calc(100dvh - 44px)}
 .demo-bar{display:none}
 html.demo .demo-bar{display:flex;align-items:center;gap:var(--s10);
   height:44px;padding:0 var(--rand);
-  background:var(--accent-2);color:#0b0f14;
+  /* Früher `var(--accent-2)` mit fest eingetragenem Fast-Schwarz. Das
+     ging, solange der zweite Ton immer ein HELLES Violett oder Cyan
+     war. Seit „Lebendig" ist er im hellen Modus ein DUNKLER Ton
+     derselben Farbe — und dunkle Schrift auf dunklem Grund war auf dem
+     Bildschirmfoto nicht mehr zu lesen. Gefunden beim Durchsehen der
+     Fotos, nicht in den Zahlen.
+     --accent zusammen mit --on-accent ist das Paar, das dafür da ist:
+     im Dunkeln heller Grund mit dunkler Schrift, im Hellen umgekehrt. */
+  background:var(--accent);color:var(--on-accent);
   font-family:var(--font-body);font-weight:700;font-size:var(--t-xs);
   letter-spacing:var(--ls-s);white-space:nowrap;overflow:hidden}
 .demo-bar b{font-weight:900;text-transform:uppercase;flex-shrink:0}
@@ -705,7 +751,7 @@ html.demo #terminalSchirm{top:44px}
 @media (hover:hover){ .tb-brand:hover{background:var(--auf-1)} }
 .tb-brand b{color:var(--accent-d)}
 .tb-live{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:var(--ls-m);padding:var(--s2) var(--s8);border-radius:var(--r-pille);
-  background:var(--brand);border:none;color:#fff;font-weight:700;box-shadow:0 2px 10px var(--accent-glow)}
+  background:var(--brand);border:none;color:var(--on-accent);font-weight:700;box-shadow:0 2px 10px var(--accent-glow)}
 .tb-user{display:flex;align-items:center;gap:var(--s10)}
 .tb-who{text-align:right;line-height:var(--lh-eng);display:none}
 @media(min-width:600px){.tb-who{display:block}}
@@ -782,9 +828,9 @@ html.demo #terminalSchirm{top:44px}
    Jetzt deckend in der Markenfarbe mit weissem Zeichen: derselbe
    Abstand zu den Werkzeugen wie btn-primary zu btn-ghost. */
 .tb-bericht{flex:0 0 auto;margin-right:auto;
-  border-color:transparent;background:var(--brand);color:#fff;
+  border-color:transparent;background:var(--brand);color:var(--on-accent);
   box-shadow:0 4px 14px var(--accent-glow)}
-.tb-bericht:hover{color:#fff;box-shadow:0 8px 22px var(--accent-glow);transform:translateY(-1px)}
+.tb-bericht:hover{color:var(--on-accent);box-shadow:0 8px 22px var(--accent-glow);transform:translateY(-1px)}
 .tb-bericht .tbb-wort{display:none}
 @media (min-width:700px){
   /* Dieselbe Falle wie beim Suchknopf: .icon-btn ist ein GRID mit
@@ -812,7 +858,7 @@ html.demo #terminalSchirm{top:44px}
   background:none;border:none;width:100%;text-align:left;position:relative}
 .tab svg{width:19px;height:19px;flex-shrink:0}
 .tab:hover{background:var(--auf-1);color:var(--text)}
-.tab.active{background:rgba(34,211,238,.12);color:var(--accent-2)}
+.tab.active{background:rgba(var(--akz-rgb),.12);color:var(--accent-2)}
 .tab .badge{margin-left:auto;background:var(--accent);color:var(--on-accent);font-family:var(--font-body);
   font-weight:700;font-size:var(--t-2xs);min-width:19px;height:19px;border-radius:var(--r-pille);display:none;
   place-items:center;padding:0 var(--s4)}
@@ -834,11 +880,11 @@ html.demo #terminalSchirm{top:44px}
    sind dieselbe Art Knopf; die Reichweite ist nachgesehen. */
 .kopf-plus{flex-shrink:0;margin-top:var(--s2);
   min-height:44px;padding:0 var(--s16);border-radius:var(--r-pille);cursor:pointer;
-  border:1px solid var(--accent);background:rgba(34,211,238,.12);color:var(--accent);
+  border:1px solid var(--accent);background:rgba(var(--akz-rgb),.12);color:var(--accent);
   font-family:var(--font-body);font-weight:700;font-size:var(--t-sm);white-space:nowrap;
   transition:transform .25s var(--spring),background .2s}
 .kopf-plus:active{transform:scale(.94)}
-@media (hover:hover){ .kopf-plus:hover{background:rgba(34,211,238,.2)} }
+@media (hover:hover){ .kopf-plus:hover{background:rgba(var(--akz-rgb),.2)} }
 
 /* ── Kopf schrumpft beim Scrollen ──
    Auf dem Handy nahm der feste Kopf den halben Bildschirm ein. Sobald man
@@ -975,7 +1021,7 @@ html.demo #terminalSchirm{top:44px}
 .msg .meta b{font-family:var(--font-head);font-size:var(--t-sm);letter-spacing:var(--ls-s)}
 .tag{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:var(--ls-s);padding:var(--s2) var(--s6);border-radius:var(--r-pille);font-weight:700}
 .tag.chef{background:var(--f-warn);color:var(--warm-tx)}
-.tag.studio{background:rgba(34,211,238,.14);color:var(--accent-2)}
+.tag.studio{background:rgba(var(--akz-rgb),.14);color:var(--accent-2)}
 .msg .meta time{margin-left:auto;color:var(--text-3);font-size:var(--t-2xs);white-space:nowrap}
 .msg .body{font-size:var(--t-md);color:var(--text);white-space:pre-wrap}
 .chat-empty{margin:auto;text-align:center;color:var(--text-3);padding:var(--s40)}
@@ -994,7 +1040,7 @@ html.demo #terminalSchirm{top:44px}
 .at-list.show{display:flex}
 .at-item{display:flex;align-items:center;gap:var(--s10);width:100%;min-height:44px;padding:var(--s6) var(--s10);
   background:none;border:none;border-radius:var(--r-sm);cursor:pointer;text-align:left;color:var(--text)}
-.at-item.on{background:rgba(34,211,238,.12)}
+.at-item.on{background:rgba(var(--akz-rgb),.12)}
 .at-av{width:28px;height:28px;flex-shrink:0;border-radius:var(--r-rund);display:grid;place-items:center;
   background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--on-accent);
   font-family:var(--font-head);font-weight:800;font-size:var(--t-xs)}
@@ -1050,7 +1096,7 @@ html.demo #terminalSchirm{top:44px}
   transition:transform .25s var(--spring),color .2s,background .2s}
 .t-cam svg{width:16px;height:16px}
 .t-cam:active{transform:scale(.88)}
-@media (hover:hover){ .t-cam:hover{color:var(--accent);background:rgba(34,211,238,.12)} }
+@media (hover:hover){ .t-cam:hover{color:var(--accent);background:rgba(var(--akz-rgb),.12)} }
 /* „Mehr" öffnet das Aktionsblatt – ersetzt drei Symbole am Zeilenrand */
 .t-mehr{background:none;border:none;color:var(--text-3);cursor:pointer;flex-shrink:0;
   width:34px;min-height:44px;padding:0;border-radius:var(--r-xs);font-size:var(--t-lg);line-height:var(--lh-1);
@@ -1074,7 +1120,7 @@ html.demo #terminalSchirm{top:44px}
 .ann-head time{margin-left:auto;color:var(--text-3);font-size:var(--t-xs)}
 .ann-body{color:var(--text);white-space:pre-wrap;font-size:var(--t-md)}
 .ann-target{display:inline-block;margin-top:var(--s8);font-size:var(--t-2xs);color:var(--accent-d);font-weight:600;
-  background:rgba(34,211,238,.1);padding:var(--s2) var(--s8);border-radius:var(--r-pille)}
+  background:rgba(var(--akz-rgb),.1);padding:var(--s2) var(--s8);border-radius:var(--r-pille)}
 .ann-read{position:relative;display:inline-flex;align-items:center;gap:var(--s4);margin-top:var(--s8);margin-left:var(--s6);
   font-size:var(--t-2xs);color:var(--text-2);font-family:inherit;border:none;cursor:pointer;
   font-weight:600;background:var(--auf-1);padding:var(--s2) var(--s8);border-radius:var(--r-pille)}
@@ -1088,7 +1134,7 @@ html.demo #terminalSchirm{top:44px}
   background:var(--auf-1);border-radius:var(--r-sm);padding:var(--s8) var(--s10)}
 .ann-wer b{color:var(--text);font-weight:700}
 /* Angeheftete Info: bleibt oben und ist deutlich hervorgehoben */
-.ann.pinned{border-left-color:var(--accent);background:linear-gradient(180deg,rgba(56,189,248,.07),transparent)}
+.ann.pinned{border-left-color:var(--accent);background:linear-gradient(180deg,rgba(var(--akz-rgb),.07),transparent)}
 .ann-pin{background:none;border:none;cursor:pointer;font-size:var(--t-md);opacity:.35;padding:var(--s2) var(--s4);
   transition:opacity .2s,transform .25s var(--spring)}
 .ann-pin.on{opacity:1}
@@ -1409,7 +1455,7 @@ body.nurlesen .kopf-plus{display:none !important}
 .sr{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-sm);cursor:pointer}
 .sr:hover{background:var(--auf-1)}
 .sr-type{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:var(--ls-s);font-weight:700;color:var(--accent-d);
-  background:rgba(34,211,238,.1);padding:var(--s2) var(--s6);border-radius:var(--r-pille);flex-shrink:0}
+  background:rgba(var(--akz-rgb),.1);padding:var(--s2) var(--s6);border-radius:var(--r-pille);flex-shrink:0}
 .sr-main{flex:1;min-width:0}
 .sr-main b{display:block;font-size:var(--t-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-body);font-weight:600}
 .sr-main span{font-size:var(--t-xs);color:var(--text-2)}
@@ -1437,7 +1483,7 @@ body.nurlesen .kopf-plus{display:none !important}
 .dm-unread{width:11px;height:11px;border-radius:var(--r-rund);background:var(--warm);flex-shrink:0}
 .dm-time{font-size:var(--t-2xs);color:var(--text-3);white-space:nowrap;flex-shrink:0;
   font-variant-numeric:tabular-nums}
-.dm-checklist{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.22);border-radius:var(--r-sm);padding:var(--s10) var(--s12);margin-top:var(--s4)}
+.dm-checklist{background:rgba(var(--akz-rgb),.08);border:1px solid rgba(var(--akz-rgb),.22);border-radius:var(--r-sm);padding:var(--s10) var(--s12);margin-top:var(--s4)}
 .dm-cl-h{font-family:var(--font-head);font-weight:700;font-size:var(--t-md);margin-bottom:var(--s6);color:var(--accent-2)}
 .dm-cl-item{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) var(--s2);font-size:var(--t-md);cursor:pointer}
 .dm-cl-item input{width:17px;height:17px;accent-color:var(--accent);flex-shrink:0}
@@ -1687,7 +1733,7 @@ body.nurlesen .kopf-plus{display:none !important}
 /* Einzeilig und schmal: Der Hinweis stand vorher fünf Zeilen hoch mitten im
    Chat und nahm dem Verlauf 200 Pixel – für einen Satz, den man einmal liest. */
 .notif-banner{display:none;align-items:center;gap:var(--s10);margin:var(--s6) var(--rand) var(--s6);
-  padding:var(--s6) var(--s12);background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:var(--r-sm)}
+  padding:var(--s6) var(--s12);background:rgba(var(--akz-rgb),.08);border:1px solid rgba(var(--akz-rgb),.3);border-radius:var(--r-sm)}
 .notif-banner.show{display:flex}
 .notif-banner svg{width:18px;height:18px;color:var(--accent-d);flex-shrink:0}
 .notif-banner .nb-txt{flex:1;font-size:var(--t-xs);color:var(--text-2);
@@ -1723,7 +1769,7 @@ body.nurlesen .kopf-plus{display:none !important}
 .studio-check{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s10);border:1.5px solid var(--line-2);
   border-radius:var(--r-sm);cursor:pointer;font-size:var(--t-sm);background:var(--auf-1);
   user-select:none;min-height:44px;box-sizing:border-box}
-.studio-check.on{border-color:var(--accent);background:rgba(34,211,238,.1);color:var(--accent-2)}
+.studio-check.on{border-color:var(--accent);background:rgba(var(--akz-rgb),.1);color:var(--accent-2)}
 /* Die Handy-Freigabe steht allein und nicht im zweispaltigen Raster der
    Studios — sie ist eine andere Art Entscheidung. Die 44px erbt sie
    inzwischen von .studio-check selbst; hier bleibt nur die Breite. */
@@ -1733,7 +1779,7 @@ body.nurlesen .kopf-plus{display:none !important}
 .feat-row{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s10) var(--s12);margin-bottom:var(--s6);
   border:1.5px solid var(--line-2);border-radius:var(--r-sm);cursor:pointer;
   transition:border-color .16s,background .16s,opacity .16s;opacity:.55}
-.feat-row.on{border-color:var(--accent);background:rgba(34,211,238,.08);opacity:1}
+.feat-row.on{border-color:var(--accent);background:rgba(var(--akz-rgb),.08);opacity:1}
 .feat-row input{accent-color:var(--accent);width:18px;height:18px;flex-shrink:0;margin:var(--s2) 0 0}
 .feat-txt{display:flex;flex-direction:column;gap:var(--s2);min-width:0}
 .feat-txt b{font-size:var(--t-md);font-weight:650}
@@ -1823,7 +1869,7 @@ body.nurlesen .kopf-plus{display:none !important}
 /* Woher ein Nachweis kommt. „selbst eingetragen" ist bewusst dezent und
    nicht rot: es ist kein Vorwurf, sondern eine Auskunft. */
 .cert-selbst{display:inline-block;margin-left:var(--s8);padding:var(--s1) var(--s6);border-radius:var(--r-pille);
-  font-size:var(--t-2xs);background:rgba(167,139,250,.14);color:var(--accent-2)}
+  font-size:var(--t-2xs);background:rgba(var(--akz2-rgb),.14);color:var(--accent-2)}
 .cert-bestaetigt{display:inline-block;margin-left:var(--s8);font-size:var(--t-2xs);color:var(--accent)}
 .cert-mehr{font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2);
   line-height:var(--lh-eng)}
@@ -1869,14 +1915,14 @@ body.nurlesen .kopf-plus{display:none !important}
 
 /* Live-Badge pulsiert dezent */
 .tb-live{animation:liveGlow 2.6s ease-in-out infinite}
-@keyframes liveGlow{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}50%{box-shadow:0 0 0 4px rgba(34,211,238,.12)}}
+@keyframes liveGlow{0%,100%{box-shadow:0 0 0 0 rgba(var(--akz-rgb),0)}50%{box-shadow:0 0 0 4px rgba(var(--akz-rgb),.12)}}
 
 /* Druck-Feedback steht unten bei „Bewegung im Apple-Stil" — hier nur,
    was dort fehlt. */
 .attach-btn:active{transform:scale(.92)}
 .studio-tile:active{transform:scale(.98)}
 .studio-tile{transition:transform .2s var(--ease-out),border-color .2s}
-.studio-tile:hover{border-color:rgba(34,211,238,.3);transform:translateY(-2px)}
+.studio-tile:hover{border-color:rgba(var(--akz-rgb),.3);transform:translateY(-2px)}
 
 /* Bilder blenden ein. checkPop steht unten; den Namen benutzt auch
    .fab-count, eine zweite Fassung wuerde dort mitwirken. */
@@ -1997,7 +2043,7 @@ body.nurlesen .kopf-plus{display:none !important}
 .todo-search input{width:100%;padding:var(--s10) var(--s12) var(--s10) var(--s40);border-radius:var(--r-sm);
   background:var(--bg-2);border:1.5px solid var(--line);color:var(--text);
   font-family:var(--font-body);font-size:var(--t-md);transition:border-color .2s,box-shadow .2s}
-.todo-search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+.todo-search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--akz-rgb),.12)}
 .todo-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);
   width:16px;height:16px;color:var(--text-3);pointer-events:none}
 .todo-count{font-size:var(--t-xs);color:var(--text-2);white-space:nowrap;font-weight:600}
@@ -2007,7 +2053,7 @@ body.nurlesen .kopf-plus{display:none !important}
 .todo.just-done{animation:doneFlash .7s var(--ease-out)}
 @keyframes doneFlash{
   0%{background:var(--bg-2)}
-  22%{background:rgba(34,211,238,.16);border-color:rgba(34,211,238,.45)}
+  22%{background:rgba(var(--akz-rgb),.16);border-color:rgba(var(--akz-rgb),.45)}
   100%{background:var(--bg-2)}
 }
 /* Titel wird beim Erledigen weich durchgestrichen statt hart */
@@ -2024,7 +2070,7 @@ body.nurlesen .kopf-plus{display:none !important}
 @keyframes shimmer{to{transform:translateX(100%)}}
 .todo-progress.complete .pbar i::after{animation:none}
 /* „Alles erledigt"-Zeile */
-.todo-progress.complete{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.07)}
+.todo-progress.complete{border-color:rgba(var(--akz-rgb),.4);background:rgba(var(--akz-rgb),.07)}
 .pdone{font-size:var(--t-xs);font-weight:700;color:var(--accent-2);white-space:nowrap}
 
 /* ── Listen blenden leicht versetzt ein (wirkt lebendig, nicht verspielt) ── */
@@ -2196,6 +2242,35 @@ body.nurlesen .kopf-plus{display:none !important}
 /* Kräftiger als vorher: der Druck soll im Finger ankommen, nicht nur
    angedeutet sein. Große Flächen dürfen weniger einsinken als kleine,
    sonst wirkt es wackelig. */
+/* ── Das, was beim Bereichswechsel sonst springen würde ──
+   Neu am 21.9.2026, zu „Lebendig". Die Zeile darüber deckt die Knöpfe
+   schon ab — sie hat `background` als Kurzform und nimmt den Verlauf
+   damit mit. Was dort NICHT steht, sprang: Abzeichen, Reiterzeilen,
+   Chips und die Kacheln im Aussehen-Menü.
+
+   EIGENE REGEL STATT ERWEITERTER LISTE. Die Zeile darüber setzt auch
+   `transform` — ein Abzeichen, das beim Antippen einsinkt, wäre eine
+   Bewegung, die niemand bestellt hat. Hier stehen nur Farben.
+
+   `background-image` gehört dazu, weil --brand ein Verlauf ist. Zwei
+   Verläufe gleiten nur ineinander, wenn sie gleich gebaut sind; seit
+   heute hat --brand in jeder Farbe dieselben zwei Haltepunkte.
+
+   NUR ZWEI BAUTEILE, UND DAS IST GEMESSEN. Der erste Anlauf nannte
+   hier auch .chef-tab, .opt und .chip — test-gestaltung hat gemeldet,
+   dass die drei weiter unten schon eine transition tragen und die
+   spätere gewinnt. Eine Regel, an der man vergeblich dreht, ist
+   schlimmer als keine. Die drei gleiten also längst; übrig blieben
+   die zwei, die es wirklich nicht taten. */
+.badge,.subnav button{
+  transition:background-color .3s var(--ease-ios),
+             background-image .3s var(--ease-ios),
+             border-color .3s var(--ease-ios),
+             color .3s var(--ease-ios),
+             box-shadow .3s var(--ease-ios)}
+@media (prefers-reduced-motion:reduce){
+  .badge,.subnav button{transition:none}
+}
 .btn:active{transform:scale(.94)}
 .icon-btn:active,.chan:active,.tab:active,.mobnav button:active{transform:scale(.88)}
 .studio-check:active,.card[data-go]:active,
@@ -2368,7 +2443,7 @@ body.nurlesen .kopf-plus{display:none !important}
   overflow:hidden;text-overflow:ellipsis}
 .tm-person .tm-zst{display:block;font-size:var(--t-2xs);color:var(--text-3);
   font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tm-person.da{border-color:var(--accent);background:rgba(34,211,238,.08)}
+.tm-person.da{border-color:var(--accent);background:rgba(var(--akz-rgb),.08)}
 .tm-suche{flex-shrink:0;margin:0 0 var(--s10)}
 .tm-suche-inp{width:100%;min-height:56px;box-sizing:border-box;
   border-radius:var(--r-md);border:1px solid var(--line-2);
@@ -2413,7 +2488,7 @@ body.nurlesen .kopf-plus{display:none !important}
   color:var(--text-3);font-family:var(--font-body);font-size:var(--t-2xs);
   cursor:pointer;text-decoration:underline}
 .term-geheim{padding:var(--s12);border-radius:var(--r-md);
-  border:1px solid var(--accent);background:rgba(34,211,238,.08)}
+  border:1px solid var(--accent);background:rgba(var(--akz-rgb),.08)}
 .term-code{display:block;margin:var(--s8) 0;padding:var(--s8);
   border-radius:var(--r-xs);background:var(--auf-2);
   font-size:var(--t-2xs);word-break:break-all;line-height:var(--lh-eng)}
@@ -2583,7 +2658,7 @@ button.ich-zeile:active{opacity:.7}
 .ich-tagfeld.leer{background:none;cursor:default;pointer-events:none}
 /* Heute wird gefuellt, nicht umrandet. Ein Ring neben einem Ring (der
    gewaehlte Tag) liest sich als zwei gleichrangige Zustaende. */
-.ich-tagfeld.heute{background:var(--accent);color:#fff;font-weight:700}
+.ich-tagfeld.heute{background:var(--accent);color:var(--on-accent);font-weight:700}
 .ich-tagfeld.heute .ich-punkt{background:rgba(255,255,255,.85)}
 .ich-tagfeld.gewaehlt{outline:2px solid var(--accent);outline-offset:-2px;color:var(--text)}
 .ich-tagfeld.heute.gewaehlt{outline-color:var(--text)}
@@ -2718,7 +2793,7 @@ button.ich-zeile:active{opacity:.7}
 .anl-marke{display:inline-flex;align-items:center;padding:var(--s2) var(--s8);
   border-radius:var(--r-pille);background:var(--f-warn);color:var(--text);
   font-weight:700}
-.anl-stand.fertig .anl-marke{background:rgba(34,211,238,.14);color:var(--accent-2)}
+.anl-stand.fertig .anl-marke{background:rgba(var(--akz-rgb),.14);color:var(--accent-2)}
 .anl-wohin{color:var(--text-3)}
 .anl-antwort{font-size:var(--t-xs);color:var(--text-2);
   border-left:2px solid var(--accent);padding-left:var(--s8)}
@@ -2737,7 +2812,7 @@ button.ich-zeile:active{opacity:.7}
   transition:background .2s var(--ease-ios),border-color .2s var(--ease-ios)}
 .ich-hak::after{content:"";position:absolute;inset:-10px}
 .ich-hak:hover{border-color:var(--accent)}
-.ich-hak.an{background:var(--accent);border-color:var(--accent);color:#fff}
+.ich-hak.an{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .ich-hak svg{width:14px;height:14px;display:none}
 .ich-hak.an svg{display:block}
 .ich-tdo-txt{flex:1;min-width:0;font-size:var(--t-sm);line-height:var(--lh);
@@ -3031,7 +3106,7 @@ body[data-appbg="raster"] .app::before{
 .ms-emoji{flex:1;min-height:46px;font-size:var(--t-xl);background:var(--auf-1);
   border:1px solid var(--line);border-radius:var(--r-md);cursor:pointer;
   transition:transform .25s var(--spring),background .2s,border-color .2s}
-.ms-emoji.on{background:rgba(34,211,238,.16);border-color:var(--accent)}
+.ms-emoji.on{background:rgba(var(--akz-rgb),.16);border-color:var(--accent)}
 .ms-emoji:active{transform:scale(.88)}
 .ms-acts{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s4) 0 var(--s10)}
 /* 48 Pixel hoch und beschriftet – vorher waren es 21 × 19 Pixel ohne Wort. */
@@ -3048,7 +3123,7 @@ body[data-appbg="raster"] .app::before{
   border:1px solid var(--line-2);border-radius:var(--r-pille);padding:var(--s2) var(--s8);font-size:var(--t-xs);
   cursor:pointer;transition:transform .3s var(--spring),background .2s,border-color .2s}
 .react:active{transform:scale(.9)}
-.react.mine{background:rgba(34,211,238,.16);border-color:var(--accent);color:var(--accent)}
+.react.mine{background:rgba(var(--akz-rgb),.16);border-color:var(--accent);color:var(--accent)}
 .react b{font-weight:700;font-size:var(--t-2xs)}
 /* Der Zeichenwaehler ausserhalb des Chats. Im Chat kommt er ueber das
    Nachrichtenblatt; Brett und Aushang haben kein Blatt, dort steht das
@@ -3059,7 +3134,7 @@ body[data-appbg="raster"] .app::before{
 .react-wahl[hidden]{display:none}
 @media (hover:hover){ .react:hover{border-color:var(--accent)} }
 /* Erwähnung im Text */
-.mention{color:var(--accent);font-weight:700;background:rgba(34,211,238,.12);
+.mention{color:var(--accent);font-weight:700;background:rgba(var(--akz-rgb),.12);
   padding:var(--s1) var(--s4);border-radius:var(--r-xs)}
 .msg.mentioned{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 /* Dieselbe Markierung ausserhalb des Chats. Bewusst dieselbe Optik: wer
@@ -3113,7 +3188,7 @@ body[data-appbg="raster"] .app::before{
   display:flex;flex-direction:column;gap:var(--s6);align-items:center;
   transition:transform .3s var(--spring),border-color .25s,background .25s}
 .opt:active{transform:scale(.96)}
-.opt.on{border-color:var(--accent);background:rgba(34,211,238,.10)}
+.opt.on{border-color:var(--accent);background:rgba(var(--akz-rgb),.10)}
 .opt span{font-size:var(--t-2xs);font-weight:700;color:var(--text-2)}
 .opt.on span{color:var(--accent)}
 .opt-prev{width:100%;height:42px;border-radius:var(--r-xs);border:1px solid var(--line);background:var(--bg-2)}
@@ -3227,7 +3302,7 @@ html{font-size:var(--fs,100%)}
   margin-bottom:var(--s8);cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
   background:var(--f-bad-leise);border:none;border-left:3px solid var(--danger)}
 .alert-bar.warn{background:var(--f-warn-leise);border-left-color:var(--warm)}
-.alert-bar.pin{background:rgba(56,189,248,.07);border-left-color:var(--accent)}
+.alert-bar.pin{background:rgba(var(--akz-rgb),.07);border-left-color:var(--accent)}
 /* Die Sammelzeile ist selbst keine Warnung – sie darf nicht rot sein */
 .alert-bar.mehr{background:var(--bg-soft);border-left-color:var(--line-2);color:var(--text-2)}
 .alert-bar .ab-ico{font-size:var(--t-lg);flex-shrink:0}
@@ -3585,7 +3660,7 @@ html{font-size:var(--fs,100%)}
   background:var(--auf-1);border:1px solid var(--line);border-radius:var(--r-pille)}
 .sp audio{display:none}
 .sp-play{flex:0 0 auto;width:34px;height:34px;border-radius:var(--r-rund);border:none;
-  background:var(--brand);color:#fff;cursor:pointer;display:grid;place-items:center;
+  background:var(--brand);color:var(--on-accent);cursor:pointer;display:grid;place-items:center;
   box-shadow:0 2px 10px var(--accent-glow);
   transition:transform .3s var(--spring),box-shadow .3s var(--ease-ios)}
 .sp-play:active{transform:scale(.9)}
@@ -3647,7 +3722,7 @@ html{font-size:var(--fs,100%)}
    wurde vom Chatverlauf darunter abgefangen. Gemessen kam der Finger nur
    an 23 Pixel. */
 .pin-bar{display:none;align-items:center;gap:var(--s8);padding:var(--s8) var(--s12);min-height:46px;flex-shrink:0;
-  background:rgba(56,189,248,.1);border-bottom:1px solid rgba(56,189,248,.32);
+  background:rgba(var(--akz-rgb),.1);border-bottom:1px solid rgba(var(--akz-rgb),.32);
   font-size:var(--t-sm);animation:pinIn .35s var(--ease-ios)}
 .pin-bar.show{display:flex}
 @keyframes pinIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
@@ -3730,7 +3805,7 @@ html{font-size:var(--fs,100%)}
 /* ── Schichtplan ── */
 .shift-day{border:1px solid var(--line);border-radius:var(--r-md);padding:var(--s10) var(--s12);margin-bottom:var(--s8);
   background:var(--bg-soft);animation:cardUp .4s var(--ease-ios) both}
-.shift-day.today{border-color:var(--accent);background:rgba(34,211,238,.08)}
+.shift-day.today{border-color:var(--accent);background:rgba(var(--akz-rgb),.08)}
 .shift-day-h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s8);margin-bottom:var(--s6)}
 .shift-day-h b{font-family:var(--font-head);font-size:var(--t-md)}
 .shift-day-h span{font-size:var(--t-xs);color:var(--text-3)}
@@ -3754,7 +3829,7 @@ html{font-size:var(--fs,100%)}
   margin:-2px 0 var(--s6) var(--s8);padding:var(--s6) var(--s8);border-radius:var(--r-xs);
   background:var(--bg-soft);border:1px solid var(--line)}
 .tausch-row.offen{background:var(--f-warn);border-color:var(--k-warn)}
-.tausch-row.zugesagt{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.38)}
+.tausch-row.zugesagt{background:rgba(var(--akz-rgb),.1);border-color:rgba(var(--akz-rgb),.38)}
 /* Der Text bekommt eine eigene Zeile. Teilt er sie sich mit zwei Knöpfen,
    bleiben auf einem 390-Pixel-Handy rund 100 Pixel übrig – dann steht dort
    ein Wort pro Zeile. */
@@ -3816,15 +3891,15 @@ html{font-size:var(--fs,100%)}
 
 /* ── Zuweisung an eine Person ── */
 .t-assign{display:inline-flex;align-items:center;gap:var(--s4);font-size:var(--t-2xs);font-weight:700;
-  color:var(--accent-2);background:rgba(167,139,250,.15);padding:var(--s2) var(--s8);border-radius:var(--r-pille);
+  color:var(--accent-2);background:rgba(var(--akz2-rgb),.15);padding:var(--s2) var(--s8);border-radius:var(--r-pille);
   margin-left:var(--s6);vertical-align:middle;white-space:nowrap}
-.t-assign.me{color:var(--accent);background:rgba(34,211,238,.18)}
+.t-assign.me{color:var(--accent);background:rgba(var(--akz-rgb),.18)}
 
 /* ── Wischen zum Abhaken ──
    Die Karte lässt sich nach rechts ziehen; dahinter erscheint ein Haken. */
 .todo,.pp-item{position:relative;overflow:hidden;touch-action:pan-y}
 .swipe-hint{position:absolute;inset:0;display:flex;align-items:center;padding-left:var(--s16);
-  background:linear-gradient(90deg, rgba(34,211,238,.35), transparent 60%);
+  background:linear-gradient(90deg, rgba(var(--akz-rgb),.35), transparent 60%);
   opacity:0;pointer-events:none;font-size:var(--t-xl)}
 .swiping .swipe-hint{opacity:1}
 .swipe-body{position:relative;display:flex;gap:var(--s12);align-items:flex-start;width:100%;
@@ -3840,14 +3915,14 @@ html{font-size:var(--fs,100%)}
   transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
 .chip:hover{color:var(--text);border-color:var(--accent)}
 .chip:active{transform:scale(.94)}
-.chip.on{background:rgba(34,211,238,.15);border-color:var(--accent);color:var(--accent)}
+.chip.on{background:rgba(var(--akz-rgb),.15);border-color:var(--accent);color:var(--accent)}
 
 /* ── Rollen-Kennzeichen ── */
 .role-badge{display:inline-block;font-size:var(--t-2xs);font-weight:800;letter-spacing:var(--ls-s);
   padding:var(--s2) var(--s8);border-radius:var(--r-pille);vertical-align:middle;
   background:var(--auf-2);color:var(--text-2);border:1px solid var(--line-2)}
-.role-badge.leiter{background:rgba(167,139,250,.16);color:var(--accent-2);border-color:rgba(167,139,250,.4)}
-.tag.leiter{background:rgba(167,139,250,.12);color:var(--accent-2)}
+.role-badge.leiter{background:rgba(var(--akz2-rgb),.16);color:var(--accent-2);border-color:rgba(var(--akz2-rgb),.4)}
+.tag.leiter{background:rgba(var(--akz2-rgb),.12);color:var(--accent-2)}
 
 /* ── Wochen-Sicherungen im Archiv ── */
 .wk-row{display:flex;align-items:center;gap:var(--s12);flex-wrap:wrap;padding:var(--s12) var(--s12);
@@ -3876,7 +3951,7 @@ html{font-size:var(--fs,100%)}
 .prio-niedrig{background:var(--auf-2);color:var(--text-3);border-color:var(--line-2)}
 .t-rep{display:inline-flex;align-items:center;gap:var(--s4);font-size:var(--t-2xs);font-weight:700;
   text-transform:uppercase;letter-spacing:var(--ls-s);color:var(--accent-2);
-  background:rgba(34,211,238,.12);padding:var(--s2) var(--s6);border-radius:var(--r-pille);margin-left:var(--s6);vertical-align:middle}
+  background:rgba(var(--akz-rgb),.12);padding:var(--s2) var(--s6);border-radius:var(--r-pille);margin-left:var(--s6);vertical-align:middle}
 .t-due{display:inline-flex;align-items:center;gap:var(--s4);font-size:var(--t-2xs);font-weight:700;
   letter-spacing:var(--ls-s);color:var(--text-2);background:var(--auf-1);
   padding:var(--s2) var(--s6);border-radius:var(--r-pille);margin-left:var(--s6);vertical-align:middle}
@@ -4014,14 +4089,14 @@ html{font-size:var(--fs,100%)}
   border-radius:var(--r-sm);background:var(--bg-soft);border:1px solid var(--line);
   color:var(--text-2);user-select:text;-webkit-user-select:text}
 .sich-stand b{color:var(--text)}
-.sich-stand.gut{background:rgba(56,189,248,.10);border-color:rgba(56,189,248,.30)}
+.sich-stand.gut{background:rgba(var(--akz-rgb),.10);border-color:rgba(var(--akz-rgb),.30)}
 .sich-stand.schlecht{background:var(--f-bad);border-color:var(--k-bad)}
 
 /* ── Dokumente ── */
 .doc{display:flex;align-items:center;gap:var(--s10);padding:var(--s12);background:var(--bg-2);
   border:none;border-radius:var(--r-sm);margin-bottom:var(--s8)}
 .doc .doc-ic{width:42px;height:42px;border-radius:var(--r-sm);flex-shrink:0;display:grid;place-items:center;
-  background:rgba(34,211,238,.12);color:var(--accent-2)}
+  background:rgba(var(--akz-rgb),.12);color:var(--accent-2)}
 .doc .doc-ic svg{width:20px;height:20px}
 .doc-info{flex:1;min-width:0}
 /* Silbentrennung statt harter Umbruch: „Gerätewartung Anleitung" wurde
@@ -4037,7 +4112,7 @@ html{font-size:var(--fs,100%)}
 @media (hover:hover){ .doc:hover{border-color:var(--line-2)} }
 .doc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .t-doc{display:inline-flex;align-items:center;gap:var(--s4);margin-top:var(--s6);font-size:var(--t-xs);font-weight:600;
-  color:var(--accent-2);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);
+  color:var(--accent-2);background:rgba(var(--akz-rgb),.1);border:1px solid rgba(var(--akz-rgb),.25);
   padding:var(--s4) var(--s10);border-radius:var(--r-pille)}
 
 /* Löschen-Buttons (Chat & Ankündigungen) */
@@ -4163,10 +4238,19 @@ body.neu{
 }
 
 /* ── 2. Die Bereichsfarben ──
-   Sechs Farbtöne, je Bereich einer. Sie sind bewusst nicht der
-   persönliche Akzent (den stellt jeder selbst ein): der Akzent sagt
-   „das kannst du drücken", die Bereichsfarbe sagt „hier bist du". Zwei
-   Aussagen, zwei Farben.
+   Sechs Farbtöne, je Bereich einer.
+
+   BIS ZUM 21.9.2026 STAND HIER DAS GEGENTEIL: „Sie sind bewusst nicht
+   der persönliche Akzent — der Akzent sagt DAS KANNST DU DRÜCKEN, die
+   Bereichsfarbe sagt HIER BIST DU. Zwei Aussagen, zwei Farben."
+
+   Aus dem Betrieb kam der Wunsch, die Trennung aufzuheben: „wenn home
+   grün ist dann sind auch alle knöpfe grün". Seitdem nimmt die
+   Voreinstellung „Lebendig" den Akzent aus demselben Bereich (siehe
+   BEREICH_FARBE im Skript) — die Töne hier bleiben die Quelle, an die
+   er sich hält. Wer eine feste Akzentfarbe wählt, bekommt die alte
+   Trennung zurück: dann steht der Kopf in der Bereichsfarbe und der
+   Knopf in der gewählten.
 
    --ber   die Farbe selbst (Text, Linien, Zeichen)
    --ber-f die Fläche dahinter (immer dieselbe Farbe, nur leise)
@@ -4193,7 +4277,7 @@ body.neu{
    unten dadurch aus wie ein gesperrter. */
 body.neu{--ber:var(--accent);--ber-f:var(--accent-glow)}
 body.neu[data-bereich="g-start"] {--ber:#7DB8FF;--ber-f:rgba(96,165,250,.26)}
-body.neu[data-bereich="g-ich"]   {--ber:#BBA4FF;--ber-f:rgba(167,139,250,.27)}
+body.neu[data-bereich="g-ich"]   {--ber:#BBA4FF;--ber-f:rgba(var(--akz2-rgb),.27)}
 body.neu[data-bereich="g-komm"]  {--ber:#4EE6D2;--ber-f:rgba(45,212,191,.26)}
 body.neu[data-bereich="g-arbeit"]{--ber:#FFA85C;--ber-f:rgba(251,146,60,.26)}
 body.neu[data-bereich="g-team"]  {--ber:#FF8FC8;--ber-f:rgba(244,114,182,.26)}
@@ -4402,7 +4486,7 @@ body.neu .al-gruppe[data-farbe="tun"]      {--gf:#FFA85C;--gf-f:rgba(251,146,60,
 body.neu .al-gruppe[data-farbe="studio"]   {--gf:#7DB8FF;--gf-f:rgba(96,165,250,.3)}
 body.neu .al-gruppe[data-farbe="wann"]     {--gf:#FF8FC8;--gf-f:rgba(244,114,182,.3)}
 body.neu .al-gruppe[data-farbe="neues"]    {--gf:#4EE6D2;--gf-f:rgba(45,212,191,.3)}
-body.neu .al-gruppe[data-farbe="meine"]    {--gf:#BBA4FF;--gf-f:rgba(167,139,250,.3)}
+body.neu .al-gruppe[data-farbe="meine"]    {--gf:#BBA4FF;--gf-f:rgba(var(--akz2-rgb),.3)}
 body.neu .al-gruppe[data-farbe="verwalten"]{--gf:#AEBBCE;--gf-f:rgba(148,163,184,.28)}
 body.neu.light .al-gruppe[data-farbe="tun"]      {--gf:#AE3A0A;--gf-f:rgba(194,65,12,.2)}
 body.neu.light .al-gruppe[data-farbe="studio"]   {--gf:#1743C4;--gf-f:rgba(29,78,216,.2)}
@@ -4604,7 +4688,7 @@ body.neu .heute-zeile.lesen   {--kat:var(--ber);--kat-f:var(--ber-f)}
 /* Eigene Tönung, NICHT --accent-glow. Die ist der persönliche
    Akzentton (hier Cyan) — im Bild lief dadurch eine violette Kante in
    eine türkise Fläche. Gesehen, nicht überlegt. */
-body.neu .heute-zeile.tun     {--kat:#BBA4FF;--kat-f:rgba(167,139,250,.3)}
+body.neu .heute-zeile.tun     {--kat:#BBA4FF;--kat-f:rgba(var(--akz2-rgb),.3)}
 body.neu.light .heute-zeile.tun{--kat:#5F1FC7;--kat-f:rgba(109,40,217,.2)}
 /* Ohne Kachel. Aus dem Betrieb: „es wirkt jetzt mit den grossen
    Symbolen immer noch voll überwältigend."
@@ -7753,7 +7837,12 @@ var PREFS = {
   theme:'auto',     // auto | dark | light
   chatbg:'verlauf', // siehe CHAT_BGS
   appbg:'keiner',   // siehe APP_BGS — der Hintergrund der ganzen App
-  accent:'cyan',    // siehe ACCENTS
+  /* 'bunt' ist seit dem 21.9.2026 die Voreinstellung: die Farbe folgt
+     dem Bereich (siehe BEREICH_FARBE). Jeder feste Wert aus ACCENTS
+     bleibt wählbar und wechselt dann NICHT mit der Ansicht.
+     Wer schon einmal etwas gespeichert hat, behält seine Wahl — in
+     dessen kf_prefs steht bereits ein Wert. */
+  accent:'bunt',    // 'bunt' oder ein Schlüssel aus ACCENTS
   fs:'100',         // Schriftgröße in Prozent
   lieferantMail:'', // Adresse für die Bestellmail (bleibt auf diesem Gerät)
   folds:{},         // welche Abschnitte aufgeklappt sind (pro Gerät)
@@ -7832,6 +7921,57 @@ function clearChatBgImg(){
    Faellt auf den Eingabewert zurueck, wenn es kein Sechsstelliger ist:
    ein Hintergrund, der bei einer unerwarteten Farbe GAR NICHT
    erscheint, waere schlimmer als einer, der zu kraeftig ist. */
+/* Zwei Farben mischen, Anteil 0…1 von der zweiten. Gebraucht für den
+   zweiten Ton in „Lebendig": dort soll er derselbe Farbton sein, nur
+   heller bzw. dunkler — siehe die Begründung in akzentAnwenden(). */
+function mischen(hexA, hexB, anteil){
+  var a=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hexA||''));
+  var b=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hexB||''));
+  if(!a||!b) return hexA;
+  function t(i){
+    var v=Math.round(parseInt(a[i],16)*(1-anteil)+parseInt(b[i],16)*anteil);
+    return ('0'+Math.max(0,Math.min(255,v)).toString(16)).slice(-2);
+  }
+  return '#'+t(1)+t(2)+t(3);
+}
+/* ── Kontrast rechnen, nicht schätzen ──
+   Gebraucht für die getönte Fläche der zweiten Knopfform: auf ihr
+   steht Text in derselben Farbe, aus der die Tönung gemacht ist. Wie
+   stark die Tönung sein DARF, hängt damit am Farbton — und seit die
+   Farbe dem Bereich folgt, wechselt der Farbton im Betrieb.
+   Formel nach WCAG 2.1 (relative Leuchtdichte). */
+function leuchtdichte(hex){
+  var m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex||''));
+  if(!m) return 0;
+  var k=[1,2,3].map(function(i){
+    var c=parseInt(m[i],16)/255;
+    return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+  });
+  return 0.2126*k[0]+0.7152*k[1]+0.0722*k[2];
+}
+function kontrastWert(hexA, hexB){
+  var x=leuchtdichte(hexA), y=leuchtdichte(hexB);
+  return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);
+}
+/* Die stärkste Tönung, bei der der Text darauf noch über 4,5:1 liegt.
+   GERECHNET, NICHT GEWÄHLT — und genau deshalb steht sie hier:
+
+   Bis zum 21.9.2026 stand .24 fest im Stylesheet, mit dem Vermerk „bei
+   .30 fällt der Text auf 4,15". Das stimmte — für Cyan. Der erste
+   Durchlauf mit den Bereichsfarben hat gemessen, dass Pink bei
+   derselben .24 auf 4,17 fällt (hell 4,37). Eine Zahl, die für eine
+   Farbe gemessen wurde, gilt nicht für alle. */
+function tippDeckung(farbe, grund, obergrenze){
+  var d=obergrenze;
+  while(d>0.06 && kontrastWert(farbe, mischen(grund, farbe, d))<4.5) d-=0.02;
+  return Math.round(d*100)/100;
+}
+/* „#22D3EE" → „34,211,238". Für rgba(var(--akz-rgb), …) im Stylesheet. */
+function alsTripel(hex){
+  var m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex||''));
+  if(!m) return '34,211,238';
+  return parseInt(m[1],16)+','+parseInt(m[2],16)+','+parseInt(m[3],16);
+}
 function mitDeckung(hex, deckung){
   var m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex||''));
   if(!m) return hex;
@@ -7867,6 +8007,176 @@ var ACCENTS = {
      in einer App, die er acht Stunden am Tag offen hat. */
   schiefer:{name:'Schiefer', d:'#94A3B8', d2:'#CBD5E1', l:'#475569', l2:'#334155'}
 };
+
+/* ══ „Lebendig": die Farbe gehört dem Bereich ════════════════════════
+   Aus dem Betrieb, 21.9.2026:
+     „wenn home grün ist dann sind auch alle knöpfe grün, wenn man dann
+      zu ich wechselt und das rot ist dann werden auch alle knöpfe rot
+      […] und das komplett dann im system integriert."
+
+   Jeder Bereich der unteren Leiste bekommt eine eigene Farbe. Beim
+   Wechsel zieht ALLES mit, was die Akzentfarbe benutzt — Knöpfe,
+   Reiter, Abzeichen, Ränder, Schleier.
+
+   KEINE ZWEITE FARBLISTE. Beim Bauen ist aufgefallen, dass es die
+   Bereichsfarben längst gibt: --ber / --ber-f, gesetzt über
+   body.neu[data-bereich=…] (weiter unten im Stylesheet). Sie waren
+   bisher nur für Kopfzeile und Leiste da, weil dort stand: „der Akzent
+   sagt DAS KANNST DU DRÜCKEN, die Bereichsfarbe sagt HIER BIST DU."
+
+   Dieser Wunsch hebt die Trennung auf — und dann darf es nicht zwei
+   Listen geben. Die Zuordnung hier nennt deshalb zu jedem Bereich den
+   ACCENTS-Eintrag mit DEMSELBEN Farbton, den --ber schon trägt. Beide
+   Seiten zeigen danach dieselbe Farbe, nur in der Helligkeit, die an
+   ihrer Stelle lesbar ist.
+
+   WARUM NICHT GRÜN FÜR START UND ROT FÜR „ICH", wie es aus dem Betrieb
+   kam: Grün ist in dieser App --ok („erledigt"), Rot ist --danger
+   („überfällig", „defekt"). Ein Bereich, der dauerhaft in einer
+   Statusfarbe steht, nimmt ihr die Bedeutung. Genau dieser Fehler
+   steckte im ersten Anlauf der Bereichsfarben, test-gestaltung hat ihn
+   gefunden, und die Begründung steht dort unverändert. Die Farben
+   wechseln also — aber in den sechs Tönen, die keine Aussage haben.
+   Wer es anders will, ändert diese sieben Zeilen. */
+var BEREICH_FARBE = {
+  'g-start':  'blau',      /* --ber #7DB8FF / #1743C4 */
+  'g-ich':    'violett',   /* --ber #BBA4FF / #5F1FC7 */
+  'g-komm':   'tuerkis',   /* --ber #4EE6D2 / #0B6A62 */
+  'g-arbeit': 'orange',    /* --ber #FFA85C / #AE3A0A */
+  'g-team':   'pink',      /* --ber #FF8FC8 / #A91453 */
+  'g-chef':   'schiefer',  /* --ber #AEBBCE / #3B4859 — die Einstellungsecke */
+  'g-alles':  'schiefer'   /* --ber #8FA3C4 / #3E4E6B — das Verzeichnis */
+};
+/* Welcher Akzent gilt gerade? Bei allen Werten ausser 'bunt' ist das
+   die Einstellung selbst — eine bewusst gewählte Farbe wechselt nicht
+   von allein die Ansicht.
+
+   Die Prüfung auf NAVGROUPS ist kein Zierrat: die Liste ist ein `var`
+   und steht erst weit unten, applyPrefs() läuft aber sehr früh. Ohne
+   sie wirft groupOfView() beim Start „Cannot read properties of
+   undefined" — derselbe Fall, der bei markeVon() schon einmal die
+   halbe App nicht aufbauen liess. */
+function akzentSchluessel(){
+  if(PREFS.accent !== 'bunt') return PREFS.accent;
+  var g = null;
+  if(typeof NAVGROUPS !== 'undefined' && NAVGROUPS && typeof groupOfView === 'function'){
+    try{ g = groupOfView(currentView || 'home'); }catch(e){}
+  }
+  return (g && BEREICH_FARBE[g.id]) || BEREICH_FARBE['g-start'];
+}
+function aktiverAkzent(){ return ACCENTS[akzentSchluessel()] || ACCENTS.cyan; }
+
+/* ══ Die eine Stelle, an der die Akzentfarbe gesetzt wird ════════════
+   Vorher waren es zwei — applyPrefs() und markeAnwenden() —, und sie
+   haben sich gegenseitig überschrieben. GEMESSEN am 21.9.2026, im
+   Demo-Betrieb, am fertig gebauten Knopf:
+
+     Einstellung „Grün", dunkler Modus
+       --accent    #38BDF8   ← der Wert aus dem Stylesheet
+       --accent-2  #22D3EE   ← der Wert aus der Einstellung
+
+   Nur die ZWEITE Farbe kam an. Ursache: markeAnwenden() läuft nach
+   applyPrefs() und räumt --accent, --accent-d, --accent-glow und
+   --on-accent wieder weg, wenn KEINE Firmenfarbe gesetzt ist — und das
+   ist der Normalfall. Die Akzentwahl hat also seit ihrem Einbau die
+   Hauptfarbe nie erreicht. Deshalb sahen die Knöpfe immer gleich aus,
+   egal was man wählte.
+
+   ZWEITE URSACHE, dieselbe Wirkung: gesetzt wurde auf <html>, aber
+   body.light{} setzt dieselben Namen noch einmal. Ein Wert am
+   Vorfahren verliert gegen eine Regel, die den Nachfahren trifft. Im
+   hellen Modus konnte die Wahl deshalb gar nicht ankommen. Jetzt steht
+   alles als Inline-Stil am <body> selbst — dort gewinnt es gegen
+   body.light, und der Rückfallwert im Stylesheet bleibt, was er ist:
+   das, was VOR dem ersten Aufruf gilt.
+
+   VORRANG: eine Firmenfarbe ist die Ansage des Chefs für den ganzen
+   Betrieb und steht über der persönlichen Wahl. Sie färbt die
+   Hauptfarbe; der zweite Ton und die Schleier kommen weiter aus dem
+   Akzent, sonst bliebe von der persönlichen Einstellung nichts. */
+function akzentAnwenden(){
+  var light = document.body.classList.contains('light');
+  var a = aktiverAkzent();
+  var c1 = light ? a.l  : a.d;     // Hauptfarbe
+  var c2 = light ? a.l2 : a.d2;    // zweiter Ton
+  /* ── Warum „Lebendig" den zweiten Ton selbst rechnet ──
+     Die Paare in ACCENTS sind als schmaler Verlauf auf einem Knopf
+     gedacht, und dort ist ein Sprung im Farbton genau richtig. Als
+     FLÄCHENFARBE trägt der zweite Ton aber unter anderem die
+     Studio-Überschriften über der ganzen Aufgabenliste — und der
+     Partner von Orange ist Pink. Auf dem Bildschirmfoto der
+     Aufgaben-Ansicht stand deshalb ein oranger Kopf über pinken
+     Überschriften: zwei Aussagen in einem Bereich, der eine sein
+     sollte.
+
+     In „Lebendig" ist der zweite Ton deshalb derselbe Farbton, nur
+     aufgehellt (dunkler Modus) bzw. abgedunkelt (heller Modus). Ein
+     Bereich ist dann EINE Farbe, so wie es aus dem Betrieb kam. Wer
+     eine feste Farbe wählt, bekommt weiter das geprüfte Paar. */
+  if(PREFS.accent === 'bunt') c2 = mischen(c1, light ? '#000000' : '#FFFFFF', light ? .28 : .34);
+  var s  = document.body.style;
+  var m  = (typeof markeVon === 'function') ? markeVon(_marke) : null;
+  if(m) c1 = light ? m.hell : m.dunkel;
+  s.setProperty('--accent',   c1);
+  s.setProperty('--accent-2', c2);
+  s.setProperty('--accent-d', c1);
+  s.setProperty('--on-accent', m ? (light ? '#ffffff' : m.auf) : (light ? '#ffffff' : '#0A1420'));
+  /* ── Und jetzt das, was vorher fest verdrahtet war ──
+     --brand trägt JEDEN Hauptknopf der App, --tipp-* jeden zweiten
+     Knopf (56 von 102). Beide standen als feste Violett-Cyan-Werte im
+     Stylesheet. Wer auf Grün stellte, bekam grüne Ränder und
+     violette Knöpfe — also genau den Eindruck, die Einstellung tue
+     nichts.
+
+     DIE DECKKRAFTEN BLEIBEN, WIE SIE WAREN. Sie sind nicht gewählt,
+     sondern gemessen: .24 ist im Dunkeln der kräftigste Wert, bei dem
+     der Text darauf noch über 4,5:1 liegt (.30 fällt auf 4,15).
+     Geändert wird der Farbton, nicht die Stärke — sonst wäre mit der
+     Farbe auch die Lesbarkeit gewandert. Nachgemessen wird sie
+     trotzdem, für alle zehn Akzente, in tests/test-akzent.js. */
+  s.setProperty('--brand', 'linear-gradient(135deg,'+c2+' 0%,'+c1+' 100%)');
+  s.setProperty('--accent-glow', mitDeckung(c1, light?.18:.28));
+  /* Die Obergrenze bleibt die gemessene (.24 dunkel, .19 hell); ob sie
+     erreicht wird, entscheidet der Kontrast. Der Grund ist die
+     Kartenfläche --bg-2 — dort steht diese Knopfform fast immer. Aus
+     dem Stylesheet gelesen statt hier notiert, damit die Rechnung
+     nicht stillschweigend falsch wird, wenn dort einmal ein anderer
+     Ton steht. */
+  var grund = getComputedStyle(document.body).getPropertyValue('--bg-2').trim() ||
+              (light ? '#ffffff' : '#1C1E2A');
+  var dTipp = tippDeckung(c1, grund, light?.19:.24);
+  s.setProperty('--tipp-1',     mitDeckung(c1, dTipp));
+  s.setProperty('--tipp-2',     mitDeckung(c1, Math.round(dTipp*(light?28/19:34/24)*100)/100));
+  s.setProperty('--tipp-kante', mitDeckung(c1, light?.65:.75));
+  /* ── Die Akzentfarbe als Schleier ──
+     Neu am 21.9.2026. Die Hintergründe hatten ihre Farben fest
+     verdrahtet: wer auf Grün stellte, bekam im Chat trotzdem einen
+     violetten Schimmer. Eine Einstellung, die eine zweite
+     stillschweigend überstimmt, ist keine Einstellung.
+
+     Zwei Stärken, weil die Muster verschieden viel vertragen: -w
+     (weich) liegt unter Punkten und Gittern, -s (stark) trägt allein.
+
+     Im HELLEN deutlich schwächer. Ein Schleier, der auf Weiss
+     dieselbe Deckkraft hat wie auf Schwarz, ist dort kein Schleier
+     mehr, sondern eine Fläche — und der Text darauf verliert Kontrast.
+     Gemessen wurde das nicht; es ist die bekannte Regel, dass eine
+     Aufhellung auf Hell weniger verträgt als auf Dunkel. */
+  /* Und die beiden Zahlentripel, aus denen die 56 getönten Flächen im
+     Stylesheet ihre Farbe ziehen. */
+  s.setProperty('--akz-rgb',  alsTripel(c1));
+  s.setProperty('--akz2-rgb', alsTripel(c2));
+  s.setProperty('--akz-w',  mitDeckung(c1, light?.10:.16));
+  s.setProperty('--akz2-w', mitDeckung(c2, light?.08:.13));
+  s.setProperty('--akz-s',  mitDeckung(c1, light?.13:.20));
+  s.setProperty('--akz2-s', mitDeckung(c2, light?.10:.17));
+  /* data-bereich wird hier ABSICHTLICH nicht gesetzt. Es gibt das
+     Attribut schon — navAktivSetzen() schreibt die Gruppenkennung
+     hinein, und die Bereichsfarben im Stylesheet hängen daran. Beim
+     ersten Anlauf stand hier ein setAttribute mit dem Akzentnamen; die
+     Kopfzeile verlor damit ihre Farbe, weil „violett" auf keine Regel
+     passt. Aufgefallen beim Nachmessen der Leiste, nicht im Code. */
+}
 
 /* ── Der Hintergrund der ganzen App ───────────────────────────────────
    Neu am 21.9.2026. Bis dahin liess sich nur der CHAT gestalten — also
@@ -7910,40 +8220,16 @@ function systemPrefersLight(){
 function applyPrefs(){
   var light = PREFS.theme==='light' || (PREFS.theme==='auto' && systemPrefersLight());
   document.body.classList.toggle('light', light);
-  /* Die Firmenfarbe hat je Modus einen eigenen Wert — sonst wäre sie im
-     hellen Modus zu grell oder im dunklen zu dumpf. Deshalb hier, direkt
-     nachdem der Modus feststeht, und nicht nur einmal beim Start.
-     markeAnwenden gibt es evtl. noch nicht (applyPrefs läuft sehr früh). */
-  if(typeof markeAnwenden==='function') markeAnwenden();
   document.body.setAttribute('data-chatbg', PREFS.chatbg||'keiner');
   // Eigenes Foto als Hintergrund einsetzen (nur auf diesem Gerät gespeichert)
   var eigen = (PREFS.chatbg==='eigenes') ? (_chatBgImg||loadChatBgImg()) : null;
   document.documentElement.style.setProperty('--chatbg-img', eigen ? 'url("'+eigen+'")' : 'none');
   document.body.classList.toggle('has-bg-img', !!eigen);
-  var a=ACCENTS[PREFS.accent]||ACCENTS.cyan;
-  var r=document.documentElement.style;
-  r.setProperty('--accent',  light?a.l :a.d);
-  r.setProperty('--accent-2',light?a.l2:a.d2);
-  r.setProperty('--accent-d',light?a.l :a.d);
-  /* ── Die Akzentfarbe als Schleier ──
-     Neu am 21.9.2026. Die Hintergründe hatten ihre Farben fest
-     verdrahtet: wer auf Grün stellte, bekam im Chat trotzdem einen
-     violetten Schimmer. Eine Einstellung, die eine zweite
-     stillschweigend überstimmt, ist keine Einstellung.
-
-     Zwei Stärken, weil die Muster verschieden viel vertragen: -w
-     (weich) liegt unter Punkten und Gittern, -s (stark) trägt allein.
-
-     Im HELLEN deutlich schwächer. Ein Schleier, der auf Weiss
-     dieselbe Deckkraft hat wie auf Schwarz, ist dort kein Schleier
-     mehr, sondern eine Fläche — und der Text darauf verliert Kontrast.
-     Gemessen wurde das nicht; es ist die bekannte Regel, dass eine
-     Aufhellung auf Hell weniger verträgt als auf Dunkel. */
-  r.setProperty('--akz-w',  mitDeckung(light?a.l :a.d,  light?.10:.16));
-  r.setProperty('--akz2-w', mitDeckung(light?a.l2:a.d2, light?.08:.13));
-  r.setProperty('--akz-s',  mitDeckung(light?a.l :a.d,  light?.13:.20));
-  r.setProperty('--akz2-s', mitDeckung(light?a.l2:a.d2, light?.10:.17));
-  r.setProperty('--fs', (PREFS.fs||100)+'%');
+  /* Die Farbe erst hier, NACH dem Umschalten von body.light: sie hat je
+     Modus einen eigenen Wert. Dasselbe gilt für die Firmenfarbe — sie
+     läuft seit dem 21.9. durch dieselbe Funktion. */
+  akzentAnwenden();
+  document.documentElement.style.setProperty('--fs', (PREFS.fs||100)+'%');
   /* Der Hintergrund der ganzen App, nicht nur des Chats. */
   document.body.setAttribute('data-appbg', PREFS.appbg||'keiner');
   // Farbe der Statusleiste mitziehen
@@ -10713,13 +10999,22 @@ function renderAboKarte(){
      eine Erklaerung, die als Toast 2,7 Sekunden steht — und die
      Aufgaben-Erinnerung der Demo ueberschreibt sie nach 300 ms. Selbst
      ohne sie liest niemand drei Saetze in zweieinhalb Sekunden. Ein
-     Text, den man nicht zu Ende lesen kann, ist kein Hinweis. */
+     Text, den man nicht zu Ende lesen kann, ist kein Hinweis.
+
+     Am selben Tag noch einmal geaendert: seit die Knoepfe in der Demo
+     weiterfuehren, waere „fuehren hier nicht zu Stripe" schlicht
+     falsch. Der Satz sagt jetzt, wohin sie fuehren — und warum in der
+     Testphase nur EINER dasteht. Genau das war die Rueckfrage aus dem
+     Betrieb: „dort ist auch kein anderer knopf als abo buchen". */
   hinweis.textContent = !h ? ''
     : imDemo()
-      ? 'Demo: die Knöpfe führen hier nicht zu Stripe. Im Betrieb öffnet ' +
-        'sich dort die Bezahlseite bzw. das Kundenportal — Rechnungen, ' +
-        'Zahlungsmittel, kündigen. Kartendaten werden hier nie erfasst. ' +
-        'Wie es danach aussieht, zeigt oben die Auswahl in der Demo-Leiste.'
+      ? 'Demo: die Knöpfe führen auf eine Zwischenseite — sie sagt, was im ' +
+        'Betrieb an dieser Stelle passiert, und lässt dich in den Zustand ' +
+        'danach klicken. Kartendaten werden nie erfasst. ' +
+        (a.kunde
+          ? 'Beide Wege stehen hier, weil es schon einen Kunden bei Stripe gibt.'
+          : 'In der Testphase gibt es erst einen Knopf; das Kundenportal kommt ' +
+            'dazu, sobald einmal gebucht wurde.')
       : 'Bezahlt wird bei Stripe. Kartendaten werden hier nicht erfasst.';
 
   var b = $('aboBuchen');   if(b) b.addEventListener('click', function(){ zurKasse(b, a.stufe); });
@@ -10758,7 +11053,23 @@ function zurVerwaltung(btn){ stripeWeg(btn, 'stripeVerwaltung', {}); }
 function kasseRueckweg(){
   var m = /[?&]kasse=(ok|ab)/.exec(location.search || '');
   if(!m) return;
-  try{ history.replaceState({}, '', location.pathname); }catch(e){}
+  /* NUR das eine Merkmal entfernen, nicht die ganze Adresse.
+     Bis zum 21.9.2026 stand hier `location.pathname` — damit war nach
+     der Rückkehr von Stripe alles weg, was sonst noch im Link stand:
+     `?firma=` (die Firmenkennung), `?neu=` (das Design auf diesem
+     Gerät) und `?demo=`. Gefunden beim Bau der Demo, in der der Weg
+     zur Kasse jetzt durchklickbar ist: nach „Bezahlung erfolgreich"
+     stand die Demo nicht mehr in der Adresse.
+
+     Die Kennung kam bisher aus dem Speicher zurück, es ist also kein
+     Datenverlust gewesen — aber ein geteilter Link hörte nach einem
+     Kassengang auf, der geteilte Link zu sein. */
+  try{
+    var rest = String(location.search||'').replace(/[?&]kasse=(ok|ab)/, '')
+                                          .replace(/^&/, '?');
+    if(rest === '?') rest = '';
+    history.replaceState({}, '', location.pathname + rest);
+  }catch(e){}
   if(m[1] === 'ab'){ toast('Abgebrochen — es wurde nichts gebucht.'); return; }
   toast('Danke. Sobald die Zahlung durch ist, schaltet sich alles frei.');
   /* Nachsehen, aber mit Abstand: der Webhook braucht meist ein paar
@@ -11043,24 +11354,17 @@ function markeVon(id){
 
 /* Setzt die Farbe. Ohne Eintrag passiert NICHTS — dann gelten die Werte
    aus dem Stylesheet, und das ist der heutige Zustand jedes Betriebs. */
-function markeAnwenden(){
-  var m = markeVon(_marke);
-  var w = document.documentElement.style;
-  if(!m){
-    ['--accent','--accent-d','--accent-glow','--on-accent'].forEach(function(v){
-      w.removeProperty(v);
-    });
-    return;
-  }
-  /* Hell oder dunkel entscheidet sich am body, nicht hier — deshalb
-     wird bei jedem Moduswechsel neu gesetzt (siehe modusAnwenden). */
-  var hell = document.body && document.body.classList.contains('light');
-  var f = hell ? m.hell : m.dunkel;
-  w.setProperty('--accent', f);
-  w.setProperty('--accent-d', f);
-  w.setProperty('--accent-glow', hell ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.22)');
-  w.setProperty('--on-accent', hell ? '#ffffff' : m.auf);
-}
+/* Seit dem 21.9.2026 nur noch ein Weiterreichen. Vorher setzte diese
+   Funktion die Farbe selbst — und räumte dabei die persönliche
+   Akzentwahl weg, wenn keine Firmenfarbe gesetzt war. Der Name bleibt,
+   weil vier Stellen ihn rufen; die Arbeit macht akzentAnwenden().
+
+   Die alte Fassung setzte --accent-glow auf ein pauschales Weiss bzw.
+   Schwarz statt auf die Firmenfarbe. Der Schein unter einem Knopf ist
+   damit farblos gewesen, obwohl die Firma eine Farbe gesetzt hat.
+   Jetzt kommt auch er aus der Farbe — dieselbe Rechnung wie für jeden
+   anderen Akzent. */
+function markeAnwenden(){ akzentAnwenden(); }
 
 function markeLaden(){
   return S('config').doc('marke').get()
@@ -14273,6 +14577,12 @@ function showView(id, fromKey, ausVerlauf){
      die untere Leiste zeigt nirgendwo hin. */
   if(!ansichtAn(id) && id!=='home'){ id='home'; ausVerlauf=true; }
   currentView=id;
+  /* Die Farbe des Bereichs, bevor irgendetwas gezeichnet wird — sonst
+     baut sich die Ansicht in der alten Farbe auf und springt danach.
+     Bei jeder anderen Einstellung als „Lebendig" ändert der Aufruf
+     nichts; er bleibt trotzdem unbedingt, damit es nicht zwei Wege
+     gibt, von denen einer vergessen wird. */
+  akzentAnwenden();
   /* Den Druckbereich beim Wechsel leeren. Sonst haengt der Putzplan von
      vorhin noch darin: wer zwei Ansichten weiter Strg+P tippt, bekommt
      einen Plan, den er nicht gemeint hat — und der Hinweis „diese Seite
@@ -25640,7 +25950,20 @@ function buildAppearanceOptions(){
   var ac=$('accOpts');
   if(ac){
     var light=document.body.classList.contains('light');
-    ac.innerHTML=Object.keys(ACCENTS).map(function(k){
+    /* „Lebendig" steht vorn, weil es die Voreinstellung ist. Sein Punkt
+       zeigt die sieben Bereichsfarben in genau der Reihenfolge, in der
+       die untere Leiste sie durchläuft — er ist damit keine Zierde,
+       sondern die Legende zu dem, was gleich passiert. */
+    var buntPunkt = Object.keys(BEREICH_FARBE).map(function(g,i,alle){
+      var b=ACCENTS[BEREICH_FARBE[g]];
+      return (light?b.l:b.d)+' '+Math.round(i*100/alle.length)+'% '+
+             Math.round((i+1)*100/alle.length)+'%';
+    }).join(',');
+    ac.innerHTML =
+      '<div class="opt'+(PREFS.accent==='bunt'?' on':'')+'" data-acc="bunt">'+
+        '<div class="acc-dot" style="background:conic-gradient(from 210deg,'+buntPunkt+')"></div>'+
+        '<span>Lebendig</span></div>' +
+      Object.keys(ACCENTS).map(function(k){
       var a=ACCENTS[k];
       return '<div class="opt'+(PREFS.accent===k?' on':'')+'" data-acc="'+k+'">'+
         '<div class="acc-dot" style="background:linear-gradient(135deg,'+(light?a.l:a.d)+','+(light?a.l2:a.d2)+')"></div>'+
@@ -25720,7 +26043,7 @@ function aussehenZuruecksetzen(){
               'Gilt nur auf diesem Gerät.')) return;
   PREFS.theme  = 'auto';
   PREFS.fs     = '100';
-  PREFS.accent = 'cyan';
+  PREFS.accent = 'bunt';
   PREFS.chatbg = 'verlauf';
   PREFS.appbg  = 'keiner';
   savePrefs();
@@ -25745,7 +26068,11 @@ function previewBgFor(id){
   /* Kräftiger als im Betrieb: der Wert aus --akz-w liegt bei .10–.16
      und wäre auf einer Kachel nicht zu sehen. */
   function av(name, deckung){
-    var a=ACCENTS[PREFS.accent]||ACCENTS.cyan;
+    /* aktiverAkzent() und nicht ACCENTS[PREFS.accent]: bei „Lebendig"
+       gibt es unter dem zweiten Namen gar keinen Eintrag, und die
+       Vorschau fiele auf Cyan zurück — sie zeigte dann eine Farbe, die
+       der Benutzer im selben Moment nirgends sieht. */
+    var a=aktiverAkzent();
     var hell=document.body.classList.contains('light');
     return mitDeckung(name==='2'?(hell?a.l2:a.d2):(hell?a.l:a.d), deckung);
   }

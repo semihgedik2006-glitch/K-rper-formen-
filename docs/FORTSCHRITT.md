@@ -9857,3 +9857,149 @@ keine `<input type="checkbox">`). Er hat das **gemeldet** statt grün zu
 sein — eine Gegenprobe, die nicht lief, ist keine.
 
 **117 Durchläufe.**
+
+---
+
+## Runde 94 — Die Farbe gehört dem Bereich, und die Demo führt zur Kasse
+
+Aus dem Betrieb, 21.9.2026:
+
+> „ich würde noch wollen das sich das standard design an eine bunte
+> mischung anpasst, also wenn home grün ist dann sind auch alle knöpfe
+> grün, wenn man dann zu ich wechselt und das rot ist dann werden auch
+> alle knöpfe rot […] und das komplett dann im system integriert […]
+> und ausserdem klappt das mit dem demo abo test immer noch nicht weil
+> der demo modus mich nicht auf stripe weiter leitet."
+
+Beim Nachmessen kam zuerst etwas anderes heraus, als der Wunsch
+vermuten liess.
+
+### Die Akzentwahl von gestern kam an der Hauptfarbe nie an
+
+Gemessen am fertig gebauten Knopf, dunkler Modus, Einstellung „Grün":
+
+| | |
+|---|---|
+| `--accent` | `#38BDF8` ← der Wert aus dem Stylesheet |
+| `--accent-2` | `#22D3EE` ← der Wert aus der Einstellung |
+
+**Nur die zweite Farbe kam an.** Zwei Ursachen, beide im Code
+unsichtbar:
+
+1. `markeAnwenden()` lief **nach** `applyPrefs()` und räumte `--accent`,
+   `--accent-d`, `--accent-glow` und `--on-accent` wieder weg, wenn
+   **keine** Firmenfarbe gesetzt ist — und das ist der Normalfall.
+2. Gesetzt wurde am `<html>`, aber `body.light{}` setzt dieselben Namen
+   noch einmal. **Ein Wert am Vorfahren verliert gegen eine Regel, die
+   den Nachfahren trifft.** Im hellen Modus konnte die Wahl deshalb gar
+   nicht ankommen.
+
+Beides zusammen heisst: die Akzentfarbe hat seit ihrem Einbau nie
+gewirkt. Der Wunsch aus dem Betrieb hat einen Fehler freigelegt, den
+niemand gesucht hat.
+
+### Und 56 Flächen, die fest verdrahtet waren
+
+`--brand` (jeder Hauptknopf), `--tipp-*` (56 von 102 Knöpfen),
+ausgewählte Chips, markierte Zeilen, Fokusringe, „heute"-Marken: alles
+mit `rgba(34,211,238,…)` fest im Stylesheet. Wer auf Grün stellte, bekam
+grüne Ränder und violette Knöpfe.
+
+> **Eine Einstellung, die an 56 Stellen nicht ankommt, sieht aus wie
+> eine Einstellung ohne Wirkung — und genau so wurde sie gemeldet.**
+
+Sie lesen ihre Farbe jetzt aus `--akz-rgb`, einer **Kommaliste**. So
+kann `rgba(var(--akz-rgb),.12)` überall dort stehen, wo vorher
+`rgba(34,211,238,.12)` stand: jede Deckkraft bleibt exakt, nur der
+Farbton wandert. Bewusst kein `color-mix()` — auf alten Studio-Tablets
+fiele die Farbe still auf „transparent".
+
+### Die Bereichsfarben gab es schon
+
+Beim Bauen kam heraus, dass `--ber` / `--ber-f` längst existieren, mit
+einer ausgeschriebenen Begründung im Stylesheet:
+
+> „Sie sind bewusst nicht der persönliche Akzent: der Akzent sagt DAS
+> KANNST DU DRÜCKEN, die Bereichsfarbe sagt HIER BIST DU."
+
+Der Wunsch hebt die Trennung auf. Dann darf es aber **keine zweite
+Liste** geben: `BEREICH_FARBE` nennt zu jedem Bereich den
+`ACCENTS`-Eintrag mit **demselben Farbton**, den `--ber` dort schon
+trägt. Der erste Anlauf hatte eine eigene Zuordnung — und überschrieb
+dabei `data-bereich`, worauf die Kopfzeile ihre Farbe verlor. Gefunden
+beim Nachmessen der Leiste, nicht im Code.
+
+### Grün für Start und Rot für „Ich" gibt es trotzdem nicht
+
+Grün ist in dieser App `--ok`, Rot ist `--danger`. Ein Bereich, der
+dauerhaft in einer Statusfarbe steht, nimmt ihr die Bedeutung —
+derselbe Fehler steckte im ersten Anlauf der Bereichsfarben, und
+`test-gestaltung` hat ihn damals gefunden. Die Farben wechseln also, aber
+in den sechs Tönen ohne Aussage: Blau, Violett, Türkis, Orange, Pink,
+Schiefer. **Wer es anders will, ändert sieben Zeilen.**
+
+### Die Tönung ist jetzt gerechnet
+
+`--tipp-1` trug fest `.24`, mit dem Vermerk „bei `.30` fällt der Text auf
+4,15:1". Das stimmte — **für Cyan.** Gemessen mit den Bereichsfarben
+fällt Pink bei denselben `.24` auf **4,17** (hell 4,37).
+
+> **Eine Zahl, die für eine Farbe gemessen wurde, gilt nicht für alle.**
+
+`tippDeckung()` geht von der Obergrenze so weit herunter, bis der Text
+über 4,5:1 liegt. Zehn Akzente, sieben Bereiche, zwei Modi — alle
+nachgemessen, alle über 4,5.
+
+### Zweiter Fund an mir selbst: der zweite Ton
+
+Auf dem Bildschirmfoto der Aufgaben-Ansicht stand ein **oranger Kopf
+über pinken Studio-Überschriften**. Ursache: `--accent-2` kam aus dem
+Paar in `ACCENTS`, und der Partner von Orange ist Pink. Als schmaler
+Verlauf auf einem Knopf ist das eine warme Kante; als Flächenfarbe über
+einer ganzen Liste sind es zwei Aussagen in einem Bereich, der eine sein
+sollte. In „Lebendig" ist der zweite Ton deshalb **derselbe Farbton, nur
+heller bzw. dunkler**.
+
+### Die Demo führt jetzt zur Kasse
+
+Der Einwand traf doppelt: der Knopf warf eine Erklärung statt
+weiterzuführen, und der zweite Knopf („Rechnungen, Zahlungsmittel,
+kündigen") steht erst da, wenn es schon einen Kunden bei Stripe gibt —
+in der Voreinstellung „Testphase" also nie.
+
+Die alte Begründung bleibt trotzdem richtig: **eine nachgebaute
+Bezahlseite wäre das Falsche**, weil man aus ihr auf Sicherheit, Preise
+und Ablauf schliesst. Der Weg führt deshalb auf eine Zwischenseite, die
+Stripe nicht nachstellt, sondern sagt, was im Betrieb dort passiert — und
+in den Zustand danach klicken lässt. Nachgebaut wird der **Weg**, nicht
+die Gegenstelle: die Funktion gibt eine Adresse zurück, wie die echte es
+tut, und der Knopf in der App sperrt sich und beschriftet sich
+unverändert selbst.
+
+### Dabei gefunden: `kasseRueckweg()` warf die ganze Adresse weg
+
+`history.replaceState({}, '', location.pathname)` — nach der Rückkehr von
+Stripe war alles weg, was sonst im Link stand: `?firma=` (die
+Firmenkennung), `?neu=` (das Design auf diesem Gerät) und `?demo=`. Die
+Kennung kam aus dem Speicher zurück, es war also kein Datenverlust — aber
+ein geteilter Link hörte nach einem Kassengang auf, der geteilte Link zu
+sein. Jetzt fällt nur das eine Merkmal weg.
+
+### Neu
+
+| | |
+|---|---|
+| `tests/test-akzent.js` | 79 Zusicherungen. Geht alle sieben Bereiche in beiden Modi ab, misst die Farbe am fertigen Knopf und rechnet den Kontrast der getönten Fläche |
+| `tests/test-demo-abo.js` | +13 auf 121. Der ganze Weg zur Kasse, mit der Gegenprobe, dass auf der Zwischenseite **kein Eingabefeld** steht |
+
+**Die Gegenprobe, ohne die alles grün wäre:** eine fest gewählte Farbe
+muss in jedem Bereich **gleich** bleiben. Ohne diese Zeile wäre der
+Durchlauf auch mit einer App grün, die die Einstellung ignoriert und
+einfach immer bunt macht.
+
+**Und ein Fund von `test-gestaltung` an mir:** die neue
+Übergangs-Regel nannte `.chef-tab`, `.opt` und `.chip` — die drei tragen
+weiter unten längst eine `transition`, und die spätere gewinnt. Eine
+Regel, an der man vergeblich dreht, ist schlimmer als keine.
+
+**118 Durchläufe.**

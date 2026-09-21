@@ -297,9 +297,102 @@ async function zurAboKarte(p) {
     await p.close();
   }
 
+  /* ══ 5. Der Weg zur Kasse ist begehbar ══════════════════════════════
+     Aus dem Betrieb, 21.9.2026, nach der ersten Runde:
+       „der demo modus leitet mich nicht auf stripe weiter und dort ist
+        auch kein anderer knopf als abo buchen, also kann ich offene
+        optionen nicht ausprobieren."
+
+     Beides stimmte. Der Knopf warf eine Erklärung statt weiterzuführen,
+     und der zweite Knopf steht erst da, wenn es schon einen Kunden bei
+     Stripe gibt — in der Voreinstellung „Testphase" also nie.
+
+     Geprüft wird der ganze Weg, den ein Mensch geht: buchen →
+     Zwischenseite → „bezahlt" → und danach muss BEIDES dastehen.
+     Die Zwischenseite darf dabei keine Bezahlseite nachstellen; was
+     sie sagt, ist Teil der Zusicherung. */
+  console.log('\n── Der Weg zur Kasse ──');
+  {
+    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const fehler = [];
+    p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3000);
+    await zurAboKarte(p);
+
+    const vorher = await p.evaluate(() =>
+      [...document.querySelectorAll('#aboKnoepfe button')].map(x => x.id));
+    pruefe('in der Testphase steht genau ein Knopf da',
+      vorher.length === 1 && vorher[0] === 'aboBuchen', vorher.join(' '));
+
+    await p.evaluate(() => document.getElementById('aboBuchen').click());
+    await p.waitForTimeout(1800);
+    const seite = await p.evaluate(() => {
+      const k = document.getElementById('demoStripe');
+      if (!k) return null;
+      return { text: k.textContent, knoepfe: [...k.querySelectorAll('button')].map(x => x.textContent.trim()) };
+    });
+    pruefe('der Knopf führt auf eine Zwischenseite', !!seite);
+    if (seite) {
+      /* DAS IST DER PUNKT, an dem eine Demo gefährlich würde: eine
+         nachgebaute Bezahlseite lässt Leute auf Sicherheit, Preise und
+         Ablauf schliessen. Sie muss also sagen, dass sie es nicht ist. */
+      pruefe('sie sagt, dass sie NICHT Stripe ist',
+        /nicht Stripe/i.test(seite.text), seite.text.slice(0, 80));
+      pruefe('sie sagt, dass Kartendaten nicht hier landen',
+        /Kartendaten/.test(seite.text));
+      pruefe('sie bietet beide Ausgänge an',
+        seite.knoepfe.length === 2, seite.knoepfe.join(' | '));
+      /* GEGENPROBE: kein Feld, in das man etwas eintippen könnte. Ein
+         Eingabefeld auf dieser Seite wäre der Anfang einer Attrappe. */
+      pruefe('GEGENPROBE kein Eingabefeld auf der Zwischenseite',
+        await p.evaluate(() =>
+          document.querySelectorAll('#demoStripe input, #demoStripe form').length === 0));
+    }
+
+    await p.evaluate(() => document.querySelector('#demoStripe [data-demoweg="0"]').click());
+    await p.waitForTimeout(3400);
+    const adresse = await p.evaluate(() => location.search);
+    /* Ohne die Berichtigung an kasseRueckweg() stünde hier nur noch der
+       nackte Pfad: die Funktion hat bis zum 21.9. die GANZE Adresse
+       weggeräumt, samt ?demo= und ?firma=. */
+    pruefe('die Demo bleibt nach dem Kassengang in der Adresse',
+      /demo=chef/.test(adresse), adresse);
+    pruefe('und das Merkmal der Kasse ist weg', !/kasse=/.test(adresse), adresse);
+
+    await zurAboKarte(p);
+    const nachher = await p.evaluate(() => ({
+      knoepfe: [...document.querySelectorAll('#aboKnoepfe button')].map(x => x.id),
+      stand: (document.getElementById('aboStand') || {}).textContent || ''
+    }));
+    pruefe('danach läuft das Abo', /läuft/.test(nachher.stand), nachher.stand);
+    pruefe('und jetzt steht auch der Weg zum Kundenportal da',
+      nachher.knoepfe.indexOf('aboVerwalten') >= 0, nachher.knoepfe.join(' '));
+
+    await p.evaluate(() => document.getElementById('aboVerwalten').click());
+    await p.waitForTimeout(1800);
+    const portal = await p.evaluate(() => {
+      const k = document.getElementById('demoStripe');
+      return k ? [...k.querySelectorAll('button')].map(x => x.textContent.trim()) : null;
+    });
+    pruefe('das Kundenportal hat einen eigenen Weg mit Kündigung',
+      !!portal && portal.length === 3 && /[Kk]ündig/.test(portal.join(' ')),
+      String(portal));
+    await p.evaluate(() => document.querySelector('#demoStripe [data-demoweg="0"]').click());
+    await p.waitForTimeout(3400);
+    await zurAboKarte(p);
+    pruefe('nach der Kündigung steht „gekündigt" auf der Karte',
+      /gekündigt/i.test(await p.evaluate(() =>
+        (document.getElementById('aboStand') || {}).textContent || '')));
+    pruefe('keine Skriptfehler auf dem ganzen Weg', fehler.length === 0, fehler[0]);
+    await p.close();
+  }
+
   await b.close();
   console.log('\n' + (schlecht
     ? '✗ ' + schlecht + ' Fehler, ' + gut + ' in Ordnung'
-    : '✓ Demo-Abo: alle zehn Zustände vorführbar, ' + gut + ' Zusicherungen'));
+    : '✓ Demo-Abo: alle zehn Zustände vorführbar, der Weg zur Kasse ' +
+      'begehbar — ' + gut + ' Zusicherungen'));
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

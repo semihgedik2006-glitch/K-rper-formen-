@@ -34,11 +34,76 @@ Zeit angenehmer zu lesen als harter Neon-Kontrast.
 | `--accent` | `#38BDF8` | `#0369A1` | primär, Cyan aus dem Logo |
 | `--accent-2` | `#A78BFA` | `#6D28D9` | Violett, zweite Ebene |
 | `--accent-3` | `#F472B6` | `#BE185D` | Pink, Akzent |
-| `--brand` | Verlauf Violett → Cyan → Pink, 135° |
+| `--brand` | Verlauf aus `--accent-2` → `--accent`, 135° |
 | `--on-accent` | `#0A1420` | `#FFFFFF` | Text auf Akzentflächen |
 
 Die hellen Töne sind bewusst **dunkler als die dunklen** – auf Weiß wäre
 `#38BDF8` nicht lesbar.
+
+> Die Werte in der Tabelle sind **Rückfallwerte**. Im Betrieb setzt
+> `akzentAnwenden()` sie am `<body>` neu – aus der gewählten Akzentfarbe
+> oder, in der Voreinstellung „Lebendig", aus der des Bereichs.
+
+### Die Akzentfarbe wandert — und alles wandert mit (21.9.2026)
+
+Voreinstellung ist **„Lebendig"**: der Akzent ist die Farbe des Bereichs,
+in dem man gerade steht. `BEREICH_FARBE` (in `index.html`) ordnet jeder
+Gruppe der unteren Leiste einen Eintrag aus `ACCENTS` zu — **denselben
+Farbton, den `--ber` dort schon trägt.** Zwei Listen wären zwei
+Wahrheiten.
+
+| Bereich | Ton | Bereich | Ton |
+|---|---|---|---|
+| Start | Blau | Team | Pink |
+| Ich | Violett | Verwaltung | Schiefer |
+| Nachrichten | Türkis | Alles | Schiefer |
+| Aufgaben | Orange | | |
+
+**Grün und Rot fehlen mit Absicht.** Grün ist `--ok`, Rot ist `--danger`.
+Ein Bereich, der dauerhaft in einer Statusfarbe steht, nimmt ihr die
+Bedeutung.
+
+Wer eine feste Farbe wählt, bekommt sie überall – dann wandert nur noch
+die Kopfzeile (`--ber`), nicht der Knopf.
+
+#### Was am Akzent hängt
+
+| Marke | Woraus |
+|---|---|
+| `--accent`, `--accent-d` | Hauptfarbe (oder die Firmenfarbe, falls gesetzt) |
+| `--accent-2` | bei „Lebendig" derselbe Ton, heller/dunkler; sonst der Partner aus `ACCENTS` |
+| `--brand` | Verlauf aus beiden |
+| `--tipp-1/2/kante` | getönte Fläche der zweiten Knopfform |
+| `--akz-w/-s`, `--akz2-w/-s` | Schleier der Hintergründe |
+| `--akz-rgb`, `--akz2-rgb` | **Zahlentripel** für die 56 getönten Flächen im Stylesheet |
+
+`--akz-rgb` ist eine Kommaliste (`34,211,238`), damit
+`rgba(var(--akz-rgb),.12)` überall stehen kann, wo vorher
+`rgba(34,211,238,.12)` stand: **jede Deckkraft bleibt exakt, nur der
+Farbton wandert.** Bewusst kein `color-mix()` und keine
+Schrägstrich-Schreibweise – auf alten Studio-Tablets fiele die Farbe
+still auf „transparent".
+
+#### Die Tönung ist gerechnet, nicht gewählt
+
+`--tipp-1` trug bis zum 21.9.2026 fest `.24`, mit dem Vermerk „bei `.30`
+fällt der Text auf 4,15:1". Das stimmte – **für Cyan.** Gemessen mit den
+Bereichsfarben: Pink fällt bei denselben `.24` auf **4,17** (hell 4,37).
+
+`tippDeckung()` geht deshalb von der Obergrenze so weit herunter, bis der
+Text darauf über 4,5:1 liegt. Ergebnis je Farbe:
+
+| dunkel | | hell | |
+|---|---|---|---|
+| Cyan, Grün, Bernstein, Türkis, Orange | `.24` | Violett, Blau, Koralle, Schiefer | `.19` |
+| Blau, Schiefer | `.20` | Pink | `.17` |
+| Pink, Koralle | `.18` | Grün, Türkis | `.13` |
+| Violett | `.16` | Cyan | `.11` |
+| | | Orange | `.09` |
+| | | Bernstein | `.07` |
+
+`tests/test-akzent.js` misst alle zehn Akzente und alle sieben Bereiche
+in beiden Modi nach.
 
 ### Bedeutung — Fläche und Text sind zwei verschiedene Dinge
 
