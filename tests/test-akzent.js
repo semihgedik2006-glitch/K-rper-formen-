@@ -102,11 +102,27 @@ async function zumBereich(p, gruppe) {
    abzulesen hiesse, den Kontrast zu schätzen. */
 async function messen(p) {
   return p.evaluate(() => {
+    /* EINE Farbe, egal in welcher Schreibweise.
+       Seit dem 21.9.2026 sind --accent & Co. mit @property als FARBE
+       angemeldet, damit der Wechsel gleiten kann. Nebenwirkung: der
+       Browser gibt sie nicht mehr als „#60A5FA" zurück, sondern als
+       „RGB(96, 165, 250)" — mit grossem RGB. Der erste Anlauf verglich
+       Zeichenketten und meldete 84 Fehler, die keine waren. Verglichen
+       werden deshalb Zahlen, nicht Schreibweisen. */
     function zahlen(s) {
-      const m = /rgba?\(([^)]+)\)/.exec(s || '');
+      s = String(s || '').trim();
+      const h = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(s);
+      if (h) return { r: parseInt(h[1], 16), g: parseInt(h[2], 16), b: parseInt(h[3], 16), a: 1 };
+      const m = /rgba?\(([^)]+)\)/i.exec(s);
       if (!m) return null;
-      const t = m[1].split(',').map(x => parseFloat(x.trim()));
+      const t = m[1].split(/[,\s/]+/).filter(x => x !== '').map(x => parseFloat(x));
       return { r: t[0], g: t[1], b: t[2], a: t.length > 3 ? t[3] : 1 };
+    }
+    function alsHex(s) {
+      const f = zahlen(s);
+      if (!f) return null;
+      return '#' + ['r', 'g', 'b'].map(k =>
+        ('0' + Math.round(f[k]).toString(16)).slice(-2)).join('').toUpperCase();
     }
     function grund(el) {
       let e = el;
@@ -145,7 +161,7 @@ async function messen(p) {
     const erg = {
       bereich: document.body.getAttribute('data-bereich'),
       ansicht: (document.querySelector('.view.show') || {}).id || null,
-      accent: cs.getPropertyValue('--accent').trim().toUpperCase(),
+      accent: alsHex(cs.getPropertyValue('--accent')),
       brand: cs.getPropertyValue('--brand').trim(),
       tipp1: cs.getPropertyValue('--tipp-1').trim(),
       primVerlauf: prim ? getComputedStyle(prim).backgroundImage : null,
@@ -162,26 +178,23 @@ async function messen(p) {
        Bild, und ein Durchlauf, der dort nichts misst, hält sie für
        geprüft. Gerechnet wird dann aus den Werten selbst — --tipp-1
        über der Kartenfläche --bg-2, darauf --accent-d. */
-    function hex(h) {
-      const m = /^#(..)(..)(..)$/.exec((h || '').trim());
-      return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16), a: 1 } : null;
-    }
     /* Der Hauptknopf trägt einen VERLAUF. Gemessen wird der schlechtere
        der beiden Haltepunkte — die Schrift liegt über beiden, und ein
-       Mittelwert würde die schlechtere Hälfte verstecken. */
-    const stops = (cs.getPropertyValue('--brand').match(/#[0-9a-f]{6}/gi) || []);
-    const aufAkzent = zahlen(cs.getPropertyValue('--on-accent').trim()) ||
-                      hex(cs.getPropertyValue('--on-accent'));
+       Mittelwert würde die schlechtere Hälfte verstecken.
+       --brand ist seit dem 21.9.2026 eine Formel aus zwei Variablen; im
+       gerechneten Wert stehen die Haltepunkte deshalb als rgb(…), nicht
+       mehr als Hex. */
+    const stops = (cs.getPropertyValue('--brand')
+      .match(/#[0-9a-f]{6}|rgba?\([^)]+\)/gi) || []);
+    const aufAkzent = zahlen(cs.getPropertyValue('--on-accent'));
     erg.primKontrast = (stops.length && aufAkzent)
       ? Math.round(Math.min.apply(null, stops.map(function (h) {
-          const m = /^#(..)(..)(..)$/.exec(h);
-          return kontrast(aufAkzent, { r: parseInt(m[1], 16), g: parseInt(m[2], 16),
-                                       b: parseInt(m[3], 16), a: 1 });
+          return kontrast(aufAkzent, zahlen(h));
         })) * 100) / 100
       : null;
-    const kartenGrund = hex(cs.getPropertyValue('--bg-2'));
+    const kartenGrund = zahlen(cs.getPropertyValue('--bg-2'));
     const flaeche = zahlen(cs.getPropertyValue('--tipp-1'));
-    const schrift = hex(cs.getPropertyValue('--accent-d'));
+    const schrift = zahlen(cs.getPropertyValue('--accent-d'));
     erg.tippDeckung = flaeche ? flaeche.a : null;
     erg.tokenKontrast = (kartenGrund && flaeche && schrift)
       ? Math.round(kontrast(schrift, drauf(flaeche, kartenGrund)) * 100) / 100 : null;
@@ -272,6 +285,60 @@ async function messen(p) {
     pruefe('GEGENPROBE die Bereiche tragen wirklich verschiedene Farben',
       verschieden.length === 6, verschieden.join(' '));
 
+    /* ══ Der Wechsel muss GLEITEN ══════════════════════════════════
+       „damit es einfach lebendig und interaktiv wirkt" — das ist eine
+       Zusage über Bewegung, also wird sie gemessen und nicht behauptet.
+
+       Beim ersten Anlauf sprang die Farbe: eine gewöhnliche
+       `transition` auf dem Knopf bringt nichts, wenn sich nur die
+       VARIABLE ändert, aus der seine Farbe kommt. Fünf Messpunkte, ein
+       einziger Wert. Erst @property macht aus der Eigenschaft eine
+       Farbe, die der Browser zwischenrechnen kann.
+
+       Gemessen wird an einem Bauteil, das den Wechsel ÜBERLEBT: die
+       Knöpfe in der Ansicht werden beim Wechsel neu gebaut, und ein
+       frisch gebautes Element hat keinen Vorzustand, von dem aus es
+       gleiten könnte. */
+    console.log('  ── Gleitet der Wechsel? ──');
+    await zumBereich(p, 'g-start');
+    await p.waitForTimeout(700);
+    const bewegung = await p.evaluate(async () => {
+      const ziel = document.querySelector('.tb-bericht') ||
+                   document.querySelector('.demo-bar');
+      if (!ziel) return null;
+      const f = () => {
+        const c = getComputedStyle(ziel);
+        return c.backgroundImage !== 'none' ? c.backgroundImage : c.backgroundColor;
+      };
+      const vor = f();
+      const k = document.querySelector('.mobnav [data-group="g-komm"]') ||
+                document.querySelector('.nav [data-group="g-komm"]');
+      if (!k) return null;
+      k.click();
+      const proben = []; let letzte = 0;
+      for (const t of [90, 180, 700]) {
+        await new Promise(r => setTimeout(r, t - letzte)); letzte = t;
+        proben.push(f());
+      }
+      return { vor: vor, proben: proben };
+    });
+    if (bewegung) {
+      console.log('    vorher ' + bewegung.vor.slice(0, 52));
+      bewegung.proben.forEach((x, i) => console.log('    ' + [90,180,700][i] + 'ms   ' + x.slice(0, 52)));
+      /* Zwischenwerte heisst: bei 90 ms weder der alte noch der neue
+         Wert. Genau das war vorher nicht so. */
+      pruefe('der Farbwechsel läuft über Zwischenwerte, springt nicht',
+        bewegung.proben[0] !== bewegung.vor &&
+        bewegung.proben[0] !== bewegung.proben[2],
+        bewegung.proben[0].slice(0, 60));
+      pruefe('und er ist nach 700 ms angekommen',
+        bewegung.proben[1] !== bewegung.proben[2] ||
+        bewegung.proben[2] !== bewegung.vor,
+        bewegung.proben[2].slice(0, 60));
+    } else {
+      pruefe('ein Bauteil zum Messen der Bewegung gefunden', false, 'keins');
+    }
+
     /* GEGENPROBE 2: eine FEST gewählte Farbe darf NICHT mitwandern.
        Ohne diese Zeile wäre der Durchlauf auch mit einer App grün, die
        die Einstellung einfach ignoriert und immer bunt macht. */
@@ -296,7 +363,10 @@ async function messen(p) {
         const el = document.querySelector('#accOpts [data-acc="' + id + '"]');
         if (el) el.click();
       }, k);
-      await p.waitForTimeout(300);
+      /* 600 ms und nicht 300: der Farbwechsel gleitet seit heute über
+         350 ms. Bei 300 ms stand in der Ausgabe einmal #FA923D statt
+         #FB923C — ein Zwischenstand, gemessen wie ein Endwert. */
+      await p.waitForTimeout(600);
       const m = await messen(p);
       console.log('    ' + k.padEnd(10) + m.accent + '  Tönung ' + m.tippDeckung +
         '  Kontrast ' + m.tokenKontrast + ' / Knopf ' + m.primKontrast);

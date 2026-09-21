@@ -528,10 +528,19 @@ keinen Speichern-Knopf. Sortiert nach Häufigkeit: was man einstellt, weil
 man etwas nicht lesen kann, steht oben.
 
 - **Hell / Dunkel** – auch „automatisch" (folgt dem Gerät).
-- **Schriftgröße** in drei Stufen.
-- **Akzentfarbe**.
-- **Chat-Hintergrund** – Verlauf, Punkte, Gitter, Wellen, Nacht oder ein
-  eigenes Foto. Das Foto bleibt auf dem Gerät und wird nicht hochgeladen.
+- **Schriftgröße** in vier Stufen.
+- **Akzentfarbe** – voreingestellt ist **„Lebendig"**: die Farbe ist die
+  des Bereichs, in dem du gerade bist. Start blau, Ich violett,
+  Nachrichten türkis, Aufgaben orange, Team pink, Verwaltung grau. Knöpfe,
+  Reiter und Marken ziehen mit. Wer es ruhiger mag, wählt eine der zehn
+  festen Farben – die bleibt dann überall gleich.
+- **Chat-Hintergrund** – neun Muster oder ein eigenes Foto. Das Foto
+  bleibt auf dem Gerät und wird nicht hochgeladen.
+- **Hintergrund der ganzen App** – fünf Muster, voreingestellt schlicht.
+- **Aussehen zurücksetzen** – nimmt Modus, Schriftgröße, Farbe und beide
+  Hintergründe auf den Auslieferungsstand zurück. Meldungen,
+  Tastenkürzel und alles in der Datenbank bleiben unberührt; ein eigenes
+  Chat-Foto wird nur abgewählt, nicht gelöscht.
 - **Tastenkürzel anpassen** (nur am Rechner).
 
 ### Meldungen

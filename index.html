@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-fzV2mz6Wtuvs0Zva/iZM5b8f0sAwcPI54E0R+U4ze4k='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jNCTzxqMQ4g46AqTgT3F2JeYFwXRjnJxCkR3m7ArpOg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -65,6 +65,39 @@
 @font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:800;font-display:swap;src:url(schriften/barlow-condensed-800.woff2) format('woff2')}
 </style>
 <style>
+/* ══ Damit der Bereichswechsel gleitet statt zu springen ═════════════
+   Gemessen am 21.9.2026: eine gewöhnliche `transition` auf dem Knopf
+   bringt GAR NICHTS, wenn sich nur die Variable ändert, aus der seine
+   Farbe kommt. Die Farbe sprang in einem Bild von Blau auf Türkis —
+   nachgemessen bei 30, 90, 160, 250 und 400 ms, fünfmal derselbe Wert.
+
+   Eine Benutzerdefinierte Eigenschaft ist für den Browser erst einmal
+   nur Text. Sie wird zu einer FARBE, die sich zwischenrechnen lässt,
+   wenn man sie anmeldet — dann gleitet alles mit, was sie benutzt.
+   Dieselbe Messung danach: 96,165,250 → 82,178,234 → 59,199,207 →
+   46,211,192 → 45,212,191.
+
+   ALTE GERÄTE VERLIEREN NICHTS. Kennt ein Browser @property nicht,
+   überliest er den Block, und die Farbe wechselt wie bisher sofort.
+   Das ist der Unterschied zu color-mix(), das in diesem Fall auf
+   „transparent" fiele — deshalb steht es an keiner Stelle dieser App.
+
+   Nicht dabei: --brand (ein Verlauf, keine Farbe — er folgt weiter
+   unten über die beiden Farben, aus denen er gebaut ist) und
+   --akz-rgb (eine Kommaliste). Die feinen Tönungen springen also
+   weiterhin; die kräftigen Flächen gleiten. */
+@property --accent      {syntax:'<color>';inherits:true;initial-value:#38BDF8}
+@property --accent-2    {syntax:'<color>';inherits:true;initial-value:#A78BFA}
+@property --accent-d    {syntax:'<color>';inherits:true;initial-value:#38BDF8}
+@property --on-accent   {syntax:'<color>';inherits:true;initial-value:#0A1420}
+@property --accent-glow {syntax:'<color>';inherits:true;initial-value:rgba(56,189,248,.28)}
+@property --tipp-1      {syntax:'<color>';inherits:true;initial-value:rgba(56,189,248,.24)}
+@property --tipp-2      {syntax:'<color>';inherits:true;initial-value:rgba(56,189,248,.34)}
+@property --tipp-kante  {syntax:'<color>';inherits:true;initial-value:rgba(56,189,248,.75)}
+@property --akz-w       {syntax:'<color>';inherits:true;initial-value:rgba(34,211,238,.16)}
+@property --akz2-w      {syntax:'<color>';inherits:true;initial-value:rgba(167,139,250,.13)}
+@property --akz-s       {syntax:'<color>';inherits:true;initial-value:rgba(34,211,238,.20)}
+@property --akz2-s      {syntax:'<color>';inherits:true;initial-value:rgba(167,139,250,.17)}
 :root{
   /* Ruhiges Schiefer-Blau statt harter Neon-Kontrast: ueber lange Zeit
      angenehmer zu lesen. */
@@ -267,7 +300,10 @@ body.light{
   --accent:#0369A1;--accent-2:#6D28D9;--accent-3:#BE185D;--accent-d:#075985;
   --accent-glow:rgba(3,105,161,.18);
   --on-accent:#ffffff;
-  --brand:linear-gradient(135deg,#6D28D9 0%,#0369A1 55%,#BE185D 100%);
+  /* --brand steht hier NICHT mehr: es ist seit dem 21.9.2026 eine Formel
+     an body{}, gebaut aus --accent-2 und --accent. Stünde hier ein
+     eigener Wert, gewänne er (body.light ist spezifischer als body) und
+     der helle Modus behielte für immer den alten Verlauf. */
   /* Die Flaechen (--warm/--danger) bleiben gleich: sie tragen dunklen
      Text und funktionieren auf Weiss genauso. Die TEXT-Marken brauchen
      hier dunkle Werte - jeder Wert unten ist gegen Weiss, gegen die
@@ -324,7 +360,27 @@ button{color:inherit}
 html{-webkit-text-size-adjust:100%;height:100%}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);
   line-height:var(--lh);-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100svh;
-  overscroll-behavior-y:none;-webkit-overflow-scrolling:touch}
+  overscroll-behavior-y:none;-webkit-overflow-scrolling:touch;
+  /* ── Der Verlauf des Hauptknopfes, HIER und nicht im Skript ──
+     Er ist keine Farbe, lässt sich also nicht anmelden und nicht
+     zwischenrechnen. Gebaut aus den beiden Farben, die es können,
+     folgt er ihnen trotzdem — Bild für Bild.
+
+     Am <body> und nicht am :root, weil die beiden Farben als
+     Inline-Stil am <body> stehen. Auf :root würde var() dort
+     eingesetzt, wo der Verlauf definiert ist, und damit gegen den
+     Rückfallwert aufgelöst statt gegen die gewählte Farbe. */
+  --brand:linear-gradient(135deg,var(--accent-2) 0%,var(--accent) 100%);
+  /* Und die Bewegung selbst. 350 ms: kurz genug, dass niemand wartet,
+     lang genug, dass man den Wechsel als einen Vorgang sieht und nicht
+     als Bildfehler. */
+  transition:--accent .35s var(--ease-ios),--accent-2 .35s var(--ease-ios),
+             --accent-d .35s var(--ease-ios),--on-accent .35s var(--ease-ios),
+             --accent-glow .35s var(--ease-ios),--tipp-1 .35s var(--ease-ios),
+             --tipp-2 .35s var(--ease-ios),--tipp-kante .35s var(--ease-ios),
+             --akz-w .35s var(--ease-ios),--akz2-w .35s var(--ease-ios),
+             --akz-s .35s var(--ease-ios),--akz2-s .35s var(--ease-ios)}
+@media (prefers-reduced-motion:reduce){ body{transition:none} }
 .chat-scroll,.scroll-area{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 /* Überschriften tragen die Gliederung, nicht die Farbe. Enger gesetzt
    und eine Spur größer: so erfasst man beim Überfliegen sofort, was
@@ -8134,7 +8190,10 @@ function akzentAnwenden(){
      Geändert wird der Farbton, nicht die Stärke — sonst wäre mit der
      Farbe auch die Lesbarkeit gewandert. Nachgemessen wird sie
      trotzdem, für alle zehn Akzente, in tests/test-akzent.js. */
-  s.setProperty('--brand', 'linear-gradient(135deg,'+c2+' 0%,'+c1+' 100%)');
+  /* --brand wird hier ABSICHTLICH nicht gesetzt. Es steht als Formel im
+     Stylesheet (`body{--brand:…}`) und liest die beiden Farben von
+     oben. Ein Inline-Wert hier würde die Formel überstimmen — und der
+     Verlauf spränge wieder, statt mitzugleiten. */
   s.setProperty('--accent-glow', mitDeckung(c1, light?.18:.28));
   /* Die Obergrenze bleibt die gemessene (.24 dunkel, .19 hell); ob sie
      erreicht wird, entscheidet der Kontrast. Der Grund ist die
@@ -11008,9 +11067,10 @@ function renderAboKarte(){
      Betrieb: „dort ist auch kein anderer knopf als abo buchen". */
   hinweis.textContent = !h ? ''
     : imDemo()
-      ? 'Demo: die Knöpfe führen auf eine Zwischenseite — sie sagt, was im ' +
-        'Betrieb an dieser Stelle passiert, und lässt dich in den Zustand ' +
-        'danach klicken. Kartendaten werden nie erfasst. ' +
+      ? 'Demo: die Knöpfe führen auf eine Zwischenseite statt zu Stripe — sie ' +
+        'sagt, was im Betrieb an dieser Stelle passiert, und lässt dich in ' +
+        'den Zustand danach klicken. Bezahlt wird im Betrieb bei Stripe; ' +
+        'Kartendaten werden nie erfasst. ' +
         (a.kunde
           ? 'Beide Wege stehen hier, weil es schon einen Kunden bei Stripe gibt.'
           : 'In der Testphase gibt es erst einen Knopf; das Kundenportal kommt ' +

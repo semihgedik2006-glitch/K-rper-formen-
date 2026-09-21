@@ -93,17 +93,49 @@ Bereichsfarben: Pink fällt bei denselben `.24` auf **4,17** (hell 4,37).
 `tippDeckung()` geht deshalb von der Obergrenze so weit herunter, bis der
 Text darauf über 4,5:1 liegt. Ergebnis je Farbe:
 
-| dunkel | | hell | |
-|---|---|---|---|
-| Cyan, Grün, Bernstein, Türkis, Orange | `.24` | Violett, Blau, Koralle, Schiefer | `.19` |
-| Blau, Schiefer | `.20` | Pink | `.17` |
-| Pink, Koralle | `.18` | Grün, Türkis | `.13` |
-| Violett | `.16` | Cyan | `.11` |
-| | | Orange | `.09` |
-| | | Bernstein | `.07` |
+| Farbe | dunkel | hell |
+|---|---|---|
+| Cyan | `.24` | `.11` |
+| Violett | `.16` | `.19` |
+| Pink | `.18` | `.17` |
+| Grün | `.24` | `.13` |
+| Bernstein | `.24` | `.07` |
+| Blau | `.20` | `.19` |
+| Koralle | `.18` | `.19` |
+| Türkis | `.24` | `.13` |
+| Orange | `.24` | `.09` |
+| Schiefer | `.20` | `.19` |
+
+Wo die Tönung weit heruntergeht (Bernstein und Orange im Hellen), trägt
+die **Kante** den Knopf: `--tipp-kante` bleibt bei `.65` und ist damit
+unverändert deutlich. Ein Knopf ist dort eine helle Fläche mit
+kräftigem Rand, kein verblasster.
 
 `tests/test-akzent.js` misst alle zehn Akzente und alle sieben Bereiche
 in beiden Modi nach.
+
+#### Der Wechsel gleitet — und warum das `@property` braucht
+
+Eine `transition` auf dem Knopf bringt **nichts**, wenn sich nur die
+Variable ändert, aus der seine Farbe kommt: für den Browser ist eine
+benutzerdefinierte Eigenschaft erst einmal Text. Gemessen sprang die
+Farbe in einem Bild.
+
+Die zwölf Farbmarken sind deshalb mit `@property` als `<color>`
+angemeldet; `body{}` trägt die `transition` über 350 ms. Kennt ein
+Browser `@property` nicht, überliest er den Block und die Farbe wechselt
+sofort — **ein Rückschritt ins Alte, kein Fehler.**
+
+Nicht dabei, weil keine Farbe:
+
+| | |
+|---|---|
+| `--brand` | ein Verlauf. Steht als **Formel** an `body{}` aus `--accent-2` und `--accent` — und folgt ihnen dadurch trotzdem. **Nicht aus dem Skript setzen**, ein Inline-Wert überstimmt die Formel |
+| `--akz-rgb` | eine Kommaliste. Die 56 feinen Tönungen springen also weiterhin; die kräftigen Flächen gleiten |
+
+> Angemeldete Eigenschaften gibt `getPropertyValue` nicht mehr als
+> `#60A5FA` zurück, sondern als `RGB(96, 165, 250)`. Wer sie in einem
+> Durchlauf vergleicht, vergleicht **Zahlen**, keine Zeichenketten.
 
 ### Bedeutung — Fläche und Text sind zwei verschiedene Dinge
 

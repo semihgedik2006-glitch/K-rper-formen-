@@ -9960,6 +9960,39 @@ einer ganzen Liste sind es zwei Aussagen in einem Bereich, der eine sein
 sollte. In „Lebendig" ist der zweite Ton deshalb **derselbe Farbton, nur
 heller bzw. dunkler**.
 
+### Dritter Fund an mir selbst: es sprang, statt zu gleiten
+
+„damit es einfach lebendig und interaktiv wirkt" ist eine Zusage über
+Bewegung — also gemessen statt behauptet. Ergebnis beim ersten Anlauf,
+fünf Messpunkte nach dem Bereichswechsel (30, 90, 160, 250, 400 ms):
+
+    rgb(45,212,191) · rgb(45,212,191) · rgb(45,212,191) · …
+
+**Fünfmal derselbe Wert.** Eine gewöhnliche `transition` auf dem Knopf
+bringt nichts, wenn sich nur die *Variable* ändert, aus der seine Farbe
+kommt: für den Browser ist eine benutzerdefinierte Eigenschaft erst
+einmal Text, und Text lässt sich nicht zwischenrechnen.
+
+Mit `@property` wird sie als **Farbe** angemeldet. Dieselbe Messung
+danach:
+
+    96,165,250 → 82,178,234 → 59,199,207 → 46,211,192 → 45,212,191
+
+> **Alte Geräte verlieren nichts:** kennt ein Browser `@property` nicht,
+> überliest er den Block und die Farbe wechselt wie bisher sofort. Das
+> ist der Unterschied zu `color-mix()`, das in diesem Fall auf
+> „transparent" fiele — deshalb steht es an keiner Stelle dieser App.
+
+`--brand` ist ein Verlauf und damit keine Farbe. Er steht deshalb seit
+heute als **Formel** an `body{}` statt als Zeichenkette aus dem Skript —
+gebaut aus den beiden Farben, die gleiten können, folgt er ihnen Bild
+für Bild. Ein Inline-Wert aus dem Skript hätte die Formel überstimmt.
+
+**Und eine Nebenwirkung, die 84 Fehlmeldungen erzeugt hat:** angemeldete
+Eigenschaften gibt der Browser nicht mehr als `#60A5FA` zurück, sondern
+als `RGB(96, 165, 250)`. `test-akzent` verglich Zeichenketten und meldete
+84 Fehler, die keine waren. Er vergleicht jetzt Zahlen.
+
 ### Die Demo führt jetzt zur Kasse
 
 Der Einwand traf doppelt: der Knopf warf eine Erklärung statt
@@ -9989,7 +10022,7 @@ sein. Jetzt fällt nur das eine Merkmal weg.
 
 | | |
 |---|---|
-| `tests/test-akzent.js` | 79 Zusicherungen. Geht alle sieben Bereiche in beiden Modi ab, misst die Farbe am fertigen Knopf und rechnet den Kontrast der getönten Fläche |
+| `tests/test-akzent.js` | 117 Zusicherungen. Geht alle sieben Bereiche in beiden Modi ab, misst die Farbe am fertigen Knopf, rechnet den Kontrast der getönten Fläche **und des Hauptknopfes** und prüft, dass der Wechsel über Zwischenwerte läuft |
 | `tests/test-demo-abo.js` | +13 auf 121. Der ganze Weg zur Kasse, mit der Gegenprobe, dass auf der Zwischenseite **kein Eingabefeld** steht |
 
 **Die Gegenprobe, ohne die alles grün wäre:** eine fest gewählte Farbe
