@@ -52,8 +52,12 @@ const ansicht = page => page.evaluate(() => {
     const unter = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('BETRIEB:', JSON.stringify(unter));
     if (!unter.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt nicht unter Betrieb');
-    /* Sechs seit dem 13.8.: Probetraining ist dazugekommen. */
-    if (unter.length !== 6) errs.push('Betrieb hat ' + unter.length + ' statt 6 Unterseiten');
+    /* Sechs seit dem 13.8. (Probetraining), sieben seit dem 22.9.
+       (Lösungen). Die feste Zahl wird bei jeder neuen Unterseite von
+       Hand nachgezogen, und das ist ihr Zweck: sie ist die Stelle, an
+       der auffällt, wenn eine Reiterzeile STILL wächst — ab acht
+       Reitern passt sie auf 390 px nicht mehr in eine Zeile. */
+    if (unter.length !== 7) errs.push('Betrieb hat ' + unter.length + ' statt 7 Unterseiten');
     await b.close();
   }
 
