@@ -9682,3 +9682,178 @@ finden soll. Nachgemessen: ohne die Auswahl meldet er jetzt 13 Fehler
 und läuft zu Ende.
 
 **115 Durchläufe.**
+
+---
+
+## Runde 93 — Export, offene Aufgaben, und das Aussehen in die Hand des Benutzers
+
+**21. September 2026.** Vier Wünsche aus dem Betrieb in einem Satz. Jeder
+davon hat beim Nachsehen einen Fehler freigelegt, den vorher niemand
+gesehen hatte.
+
+### 1. Der Export war unvollständig — und ich hatte ihn falsch beschrieben
+
+Zuerst die Berichtigung an mir selbst: in `AGB-ENTWURF.md` stand, es gebe
+**keine** Selbstbedienungs-Exportfunktion. Das war zu pauschal. Es gibt
+sie seit langem (`exportAllJson`, `exportAllXls`, nur für den Chef).
+
+Beim Nachmessen fehlten aber **drei Sammlungen, und zwar genau die mit
+Personenbezug**:
+
+| | |
+|---|---|
+| `zeiten` | Arbeitszeiten der Beschäftigten |
+| `anliegen` | was jemand der Leitung geschrieben hat, samt Antwort |
+| `probetrainings` | wer wann eines gemacht hat und ob es zum Abschluss kam |
+
+> **Wer einen Vertrag kündigt und „seine Daten" mitnehmen will, meint
+> zuallererst die Arbeitszeiten.** Ohne sie ist die Zusage „Sie können
+> einen Export verlangen" nicht eingelöst.
+
+Dass der Chef diese drei **ungefiltert abfragen darf**, ist gemessen und
+nicht angenommen: die Regeln prüfen je Dokument
+(`resource.data.uid == …`), und Firestore entscheidet über eine Abfrage
+vorher und im Ganzen. Der `isChef()`-Zweig trägt sie — mitsamt der
+Gegenprobe, dass ein Mitarbeiter dieselbe Abfrage **nicht** stellen darf
+und dass auch der Chef an die **Stempel-PINs nicht herankommt**.
+
+**Zwei Fehler in meiner ersten Fassung**, beide beim Aufmachen der
+erzeugten Datei gefunden:
+
+* Die Stempelarten standen als erfundenes „kommt/geht" da. Das Vokabular
+  gibt es im Datenbestand nicht; es heisst `kommen/pause/zurueck/gehen`,
+  und `TM_WORT` übersetzt es — dieselbe Liste, die auch die Oberfläche
+  benutzt.
+* Ich hatte in einen Kommentar geschrieben, Probetrainings enthielten
+  „Namen von Interessenten, also Daten Dritter". **Falsch.** Ein Eintrag
+  hält fest, welcher *Mitarbeiter* eines gemacht hat. Der Unterschied ist
+  nicht akademisch: als Kundendaten wäre das eine Sache für die
+  Datenschutzerklärung, als Leistungsdaten von Beschäftigten eine für die
+  Mitbestimmung.
+
+`test-sicherung-inhalt.js` prüft jetzt zusätzlich, dass **kein Geheimnis**
+in der Datei landet — nicht nur Direktnachrichten, sondern `zeitPins`,
+`terminalCodes`, `pushTokens`, `privat` und die Felder `hash`, `geheim`,
+`secret`. Die alte Frage prüfte einen Fall; sie sagte nichts über den
+nächsten Bereich, den jemand aufnimmt.
+
+Und in der Attrappe fehlten `zeiten` und `anliegen` ganz — **der fünfte
+Fall derselben Lücke** nach `board`, den Übergaben, `probetrainings` und
+`users`. Der Kommentar dort verlangt seit dem vierten Mal, eine Sammlung
+an *beiden* Stellen einzutragen; jetzt stehen sie dort.
+
+### 2. Offene Aufgaben standen nirgends
+
+> *„ich möchte das beim home bildschirm in der app wieder die offenen
+> aufgaben stehen oder zumindest ganz klar das aufgaben offen sind."*
+
+Gemessen, bevor etwas geändert wurde:
+
+| Rolle | offen | davon auf der Startseite |
+|---|---|---|
+| Mitarbeiter | 5 von 5 | **keine** |
+| Leiter | 7 von 8 | **keine** |
+| Chef | 48 von 61 | nur die 5 überfälligen |
+
+Zwei Ursachen, beide eine Zeile:
+
+**`renderHeute()` sprang über jede Aufgabe ohne Frist** (`if(!t.due)
+return;`). Die meisten Aufgaben haben keine. Neuer Block „Offen", ganz
+unten — oben steht, was einen Zeitbezug hat; ohne Frist ist offen, nicht
+dringend.
+
+**Das Abzeichen an „Aufgaben" konnte nie erscheinen.** Es suchte
+`[data-mbadge="todos"]`, die Knöpfe tragen aber die Gruppen-Kennung
+`g-arbeit`. Der Selektor traf nichts — seit dem Umbau der Leiste war es
+tot. Dazu zählte es für den Chef ausdrücklich gar nichts.
+
+> **Ein Abzeichen, das fehlt, sieht aus wie „nichts offen".** Deshalb
+> fällt so etwas nie auf.
+
+Der Ruhe-Satz hiess „Keine Aufgabe ist über ihrer Frist" und stand auch
+bei fünf offenen Aufgaben da — wörtlich richtig und trotzdem
+irreführend. Jetzt kann er gar nicht mehr erscheinen, solange etwas
+offen ist, und darf deshalb „Alles erledigt" sagen.
+
+**Und das Abzeichen lag auf dem Symbol**, 88 px² Überdeckung — gemessen,
+kaum dass es zum ersten Mal sichtbar war. Ursache war `right:50%`: der
+Kasten wächst damit nach **links**, also auf das Zeichen zu. Mit einem
+Anker auf der linken Kante wächst er nach rechts in den freien Raum.
+Nachgemessen auch mit „99+": Überdeckung 0.
+
+### 3. Das Aussehen
+
+> *„das ganze aussehen für sich sollte man selber viel mehr customizen
+> können und die hintergründe sollen besser aussehen."*
+
+| | vorher | jetzt |
+|---|---|---|
+| Akzentfarben | 6 | **10** |
+| Chat-Hintergründe | 6 + Foto | **9 + Foto** |
+| Hintergrund der ganzen App | — | **5** |
+
+**Die Hintergründe hatten alle nur eine Ebene.** „Punkte" war ein
+Punktraster auf nichts. Jetzt liegt unter jedem Muster ein weicher
+Verlauf: das Muster gibt die Textur, der Verlauf die Tiefe.
+
+**Und sie ignorierten die Akzentfarbe.** Violett und Cyan standen fest im
+Stylesheet — wer auf Grün stellte, bekam trotzdem einen violetten
+Schimmer. **Eine Einstellung, die eine zweite stillschweigend
+überstimmt, ist keine Einstellung.** Jetzt kommen die Schleier aus der
+gewählten Farbe, in zwei Stärken und im Hellen deutlich schwächer.
+
+Der neue App-Hintergrund liegt auf `.app` und nicht auf `body`: der
+Anmeldebildschirm und die Zahlseite bleiben ruhig. Fest hinter dem
+Inhalt, nicht mitscrollend — **ein Hintergrund, den man bemerkt, ist
+keiner.**
+
+**Ein Fehler, den erst das Bildschirmfoto zeigte:** in der Vorschau
+sah „Gitter" aus wie ein grobes violettes Raster. `background-size` gilt
+für **alle** Ebenen — der Verlauf darunter wurde auf 20 px mitgekachelt.
+Jetzt eine Grösse je Ebene.
+
+### 4. Der Weg zurück
+
+> *„man sollte auch alle funktionen wieder zurücksetzten können das man
+> einfach das standard design von uns geniessen kann."*
+
+Ein Knopf, ganz unten, mit Rückfrage. Er setzt Modus, Schriftgröße,
+Farbe und **beide** Hintergründe zurück.
+
+Was er **nicht** anfasst, und das ist der wichtigere Teil: Meldungen,
+Tastenkürzel, Sortierungen, aufgeklappte Abschnitte, die
+Lieferantenadresse — und nichts in der Datenbank. Deshalb steht dort
+eine Aufzählung und kein `PREFS = {}`: wer später ein Feld hinzufügt,
+nimmt es nicht versehentlich mit. Das eigene Chat-Foto wird abgewählt,
+nicht gelöscht — **„zurücksetzen" heisst nicht „vernichten".**
+
+> Der eigentliche Grund für diesen Knopf: wer vier Einstellungen
+> verstellt hat und das Ergebnis nicht mag, erinnert sich an keine davon
+> mehr. Ein Weg zurück nimmt dem Ausprobieren das Risiko — und erst
+> dadurch probiert jemand überhaupt etwas aus.
+
+### Zwei Funde von `test-gestaltung`, beide von mir
+
+`.app` stand zweimal im Stylesheet, weil ich einen zweiten Block
+angelegt hatte statt die Eigenschaft in den vorhandenen zu schreiben —
+und „dieselbe Eigenschaft zweimal" ist genau die Falle, vor der die
+Regel warnt.
+
+Und „Dämmerung" trug seine zwei warmen Töne in der Zeile. Der Prüfer
+kennt diesen Amberton, weil es **die Warnfarbe ist**. Beide Werte stehen
+jetzt als Marken im einen dafür vorgesehenen Block, mit einer hellen
+Fassung — und bei .13 weit unter jeder Statusfläche.
+
+### Neu
+
+| | |
+|---|---|
+| `tests/test-startseite-offen.js` | 29 Zusicherungen. Vergleicht die Startseite gegen den Zähler der Aufgabenliste statt gegen eine feste Zahl |
+| `tests/test-aussehen.js` | 34 Zusicherungen. Verstellt **alle fünf** Einstellungen und setzt dann zurück — inklusive Neuladen |
+
+**Die Gegenprobe zur Gegenprobe:** `test-startseite-offen` fand die
+Kästchen zum Abhaken zunächst nicht (es sind `<button class="check">`,
+keine `<input type="checkbox">`). Er hat das **gemeldet** statt grün zu
+sein — eine Gegenprobe, die nicht lief, ist keine.
+
+**117 Durchläufe.**

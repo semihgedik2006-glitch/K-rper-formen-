@@ -63,7 +63,7 @@ Datei welche Frage beantwortet — und was es **nicht** gibt.
 
 | Frage | Datei |
 |---|---|
-| **Was wann warum geändert wurde** — 92 Runden | `FORTSCHRITT.md` |
+| **Was wann warum geändert wurde** — 93 Runden | `FORTSCHRITT.md` |
 | Was noch offen ist | `OFFEN.md` |
 | Was du selbst tun musst | `DEIN-TEIL.md` |
 | Ideen, noch nicht entschieden | `IDEEN.md` · `ROADMAP.md` · `DESIGN-IDEEN.md` · `KI-PLAN.md` |

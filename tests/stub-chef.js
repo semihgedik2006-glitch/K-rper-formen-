@@ -180,6 +180,51 @@ var USERS = [
     { id:'p9', studioKey:'studio-7', datum:Date.now()-3*86400000, abschluss:false, vonUid:null, vonName:'marcel ',
       erfasstVon:'testuid', erfasstVonName:'Test Chef' }
   ];
+  /* ── Stempelzeiten und Anliegen ──
+     Beide fehlten in dieser Attrappe ganz. Aufgefallen am 21.9.2026,
+     als der Export sie mitnahm: die Datei war an beiden Stellen leer,
+     und der Durchlauf darueber haette „gesichert" gemeldet.
+
+     Das ist der FUENFTE Fall derselben Luecke nach board, den
+     Uebergaben, probetrainings und users — deshalb stehen beide
+     unten an BEIDEN Stellen (get() und onSnapshot), wie es der
+     Kommentar dort verlangt.
+
+     Ein Tag mit allen vier Stempelarten, damit der Export zeigen kann,
+     dass er die Woerter setzt und nicht die Kennungen. */
+  var ZEITEN = (function () {
+    var t0 = Date.now() - 86400000;
+    var tagS = new Date(t0).toISOString().slice(0, 10);
+    function z(n, uid, name, art, stunde) {
+      return { id: 'zt' + n, uid: uid, name: name, studioKey: 'studio-6',
+               art: art, ts: new Date(t0).setHours(stunde, 0, 0, 0),
+               tag: tagS, monat: tagS.slice(0, 7), fremd: false,
+               terminalId: 'term-1', terminalName: 'Empfang' };
+    }
+    return [
+      z(1, 'u2', 'Anna Meier', 'kommen', 8),
+      z(2, 'u2', 'Anna Meier', 'pause', 12),
+      z(3, 'u2', 'Anna Meier', 'zurueck', 13),
+      z(4, 'u2', 'Anna Meier', 'gehen', 17),
+      /* An einem fremden Terminal gestempelt. Das Feld traegt den
+         Unterschied zwischen „war da" und „war woanders". */
+      { id: 'zt5', uid: 'u3', name: 'Ben Kraus', studioKey: 'studio-7',
+        art: 'kommen', ts: new Date(t0).setHours(9, 30, 0, 0),
+        tag: tagS, monat: tagS.slice(0, 7), fremd: true,
+        terminalId: 'term-2', terminalName: 'Empfang Brühl' }
+    ];
+  })();
+  var ANLIEGEN = [
+    { id:'anl1', uid:'u2', name:'Anna Meier', an:'chef', status:'offen',
+      titel:'Zweiter Wäschekorb', text:'Der eine läuft über.',
+      ts:Date.now()-3*86400000 },
+    /* Beantwortet, MIT Antwort: ohne sie waere der Export die halbe
+       Unterhaltung, und genau das prueft test-sicherung-inhalt. */
+    { id:'anl2', uid:'u3', name:'Ben Kraus', an:'chef', status:'beantwortet',
+      titel:'Neue Handtücher', text:'Die alten fusseln.',
+      antwort:'Bestellt.', antwortVon:'Test Chef', antwortAm:Date.now()-86400000,
+      ts:Date.now()-9*86400000 }
+  ];
   var ABSENCES = {
     'studio-6': [
       { id:'a1', from:tag(13), to:tag(21), type:'urlaub', uid:'u2', name:'Anna Meier',
@@ -497,7 +542,8 @@ var USERS = [
           : gd ? (DEVICES[gd[1]] || [])
           : gl ? (DEVLOG[gl[1]] || [])
           : gt ? ((window.__todos || TODOS)[gt[1]] || [])
-          : (path === 'anliegen' ? (window.__anliegen || [])
+          : (path === 'zeiten' ? (window.__zeiten || ZEITEN)
+          : (path === 'anliegen' ? (window.__anliegen || ANLIEGEN)
           : (path === 'certificates' ? (window.__certs || CERTS)
           /* probetrainings fehlte hier, obwohl onSnapshot sie kennt —
              dieselbe Luecke wie zuvor bei board und den Uebergaben. Wer
@@ -519,7 +565,7 @@ var USERS = [
              aussagelos. */
           : (path === 'users' ? (window.__users || USERS)
           : (path === 'statistik' ? (window.__statistik || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))))));
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])))))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -591,6 +637,12 @@ var USERS = [
                    msh ? (SHIFTS[msh[1]] || []) :
                    md ? (DEVICES[md[1]] || []) : ml ? (DEVLOG[ml[1]] || []) :
                    mm ? (mm[1]==='allgemein' ? MESSAGES : []) :
+                   /* Die zweite Haelfte, wie der Kommentar in get()
+                      es verlangt: eine Sammlung, die nur eine Seite
+                      kennt, macht jeden Durchlauf darueber gruen und
+                      aussagelos. */
+                   (path==='zeiten' ? (window.__zeiten || ZEITEN) :
+                   (path==='anliegen' ? (window.__anliegen || ANLIEGEN) :
                    (path==='certificates' ? (window.__certs || CERTS) :
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? (window.__users || USERS) : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
@@ -606,7 +658,7 @@ var USERS = [
                       window.__firmen / window.__firmenArchiv hin. So merkt
                       keiner der anderen Durchlaeufe etwas davon. */
                    (path==='firmen' ? (window.__firmen||[]) :
-                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))))));
+                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         /* Zuhoerer merken, damit ein ZWEITER Schnappschuss moeglich ist.
            Die Attrappe feuerte bisher genau einmal je Sammlung. Fuer
