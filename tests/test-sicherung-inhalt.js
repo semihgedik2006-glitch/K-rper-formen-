@@ -88,9 +88,76 @@ const errs = [];
         errs.push('GEFÄHRLICH: Direktnachrichten liegen in der Sicherung — die gehören zwei Personen');
       }
 
+      /* ══ 5b. UND SONST KEIN GEHEIMNIS ══
+         Neu am 21.9.2026, zusammen mit den Stempelzeiten. Die Frage
+         „sind Direktnachrichten drin" prueft EINEN Fall; sie sagt
+         nichts ueber den naechsten Bereich, den jemand aufnimmt.
+
+         Eine Sicherungsdatei liegt im Download-Ordner, geht per Mail
+         herum und landet irgendwann bei einem Steuerberater. Was darin
+         steht, ist damit aus der Hand gegeben — ein Stempel-PIN oder
+         ein Terminal-Code darin macht aus der Datei einen Schluessel. */
+      [['zeitPins', 'Stempel-PINs'], ['terminalCodes', 'Terminal-Codes'],
+       ['pushTokens', 'Push-Kennungen'], ['privat', 'der persönliche Bereich']]
+        .forEach(([feld, wort]) => {
+          if (new RegExp('"' + feld + '"\\s*:').test(roh))
+            errs.push('GEFÄHRLICH: ' + wort + ' liegen in der Sicherung');
+        });
+      /* Und die Felder, an denen ein Geheimnis haengt, egal wie der
+         Bereich heisst. `hash` traegt den scrypt-Wert der PIN. */
+      ['"hash"', '"geheim"', '"secret"'].forEach(f => {
+        if (roh.indexOf(f) >= 0)
+          errs.push('GEFÄHRLICH: das Feld ' + f + ' steht in der Sicherung');
+      });
+
       // ══ 1. Die versprochenen Bereiche ══
-      ['studios', 'team', 'infos', 'chat', 'brett', 'dokumente', 'nachweise']
+      ['studios', 'team', 'infos', 'chat', 'brett', 'dokumente', 'nachweise',
+       'stempelzeiten', 'anliegen', 'probetrainings']
         .forEach(k => { if (d[k] === undefined) errs.push('FEHLT: der Bereich „' + k + '" ist gar nicht da'); });
+
+      /* ══ 1b. Die drei Bereiche vom 21.9.2026 ══
+         Sie kamen dazu, weil der Export sie ausliess — und zwar
+         ausgerechnet die mit Personenbezug. Eine Zusage „Sie koennen
+         einen Export verlangen" ist ohne die Arbeitszeiten nicht
+         eingeloest (AGB-Entwurf § 8).
+
+         Geprueft wird GEFUELLT, nicht vorhanden: ein leeres Feld sieht
+         aus wie gesichert und ist es nicht. */
+      if (!(d.stempelzeiten || []).length)
+        errs.push('LEER: keine einzige Stempelzeit in der Sicherung');
+      if (!(d.anliegen || []).length)
+        errs.push('LEER: kein einziges Anliegen in der Sicherung');
+      if (!(d.probetrainings || []).length)
+        errs.push('LEER: kein einziges Probetraining in der Sicherung');
+      console.log('Stempelzeiten:', (d.stempelzeiten || []).length,
+        '· Anliegen:', (d.anliegen || []).length,
+        '· Probetrainings:', (d.probetrainings || []).length);
+
+      const z0 = (d.stempelzeiten || [])[0] || {};
+      ['person', 'tag', 'zeit', 'art', 'studio'].forEach(f => {
+        if (!(f in z0)) errs.push('FEHLT: ein Stempel ohne Feld „' + f + '"');
+      });
+      /* Das Wort, nicht die Kennung. Beim ersten Bauen stand hier ein
+         erfundenes „kommt/geht" — Vokabular, das es im Datenbestand
+         gar nicht gibt. TM_WORT ist die Liste, die auch die Oberflaeche
+         benutzt. */
+      const arten = [...new Set((d.stempelzeiten || []).map(z => z.art))];
+      console.log('Stempelarten:', JSON.stringify(arten));
+      if (arten.some(a => /^(kommen|pause|zurueck|gehen)$/.test(a)))
+        errs.push('ROH: eine Stempelart steht als Kennung statt als Wort (' + arten.join(',') + ')');
+
+      /* Ein beantwortetes Anliegen muss die ANTWORT mitbringen. Ohne
+         sie waere der Export die halbe Unterhaltung. */
+      const beantwortet = (d.anliegen || []).filter(a => a.status === 'beantwortet');
+      if (beantwortet.length && !beantwortet.some(a => a.antwort))
+        errs.push('FEHLT: ein beantwortetes Anliegen ohne die Antwort');
+
+      /* Probetrainings halten fest, WELCHER MITARBEITER eines gemacht
+         hat — nicht, wer der Interessent war. Ohne den Namen ist der
+         Eintrag wertlos, und beim ersten Bauen war genau er leer: die
+         Feldnamen waren geraten. */
+      const ohneName = (d.probetrainings || []).filter(t => !t.mitarbeiter).length;
+      if (ohneName) errs.push('LEER: ' + ohneName + ' Probetrainings ohne Mitarbeiter');
 
       const s6 = d.studios && (d.studios['Hürth'] || {});
       console.log('Bereiche je Studio:', JSON.stringify(Object.keys(s6)));
@@ -124,6 +191,7 @@ const errs = [];
   await b.close();
   console.log(errs.length
     ? '\n✗ ' + errs.join('\n✗ ')
-    : '\n✓ Sicherung: alles Versprochene drin, Direktnachrichten bewusst nicht, Verzeichnis dabei');
+    : '\n✓ Sicherung: alles Versprochene drin (auch Stempelzeiten, Anliegen, ' +
+      'Probetrainings), kein Geheimnis dabei, Verzeichnis dabei');
   process.exit(errs.length ? 1 : 0);
 })();

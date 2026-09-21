@@ -713,13 +713,56 @@
   STUDIOS.forEach(function (n, i) {
     for (var p = 0; p < zahl(2, 8); p++) {
       var pu = jemandIn(sk(i));
+      /* `ts` und `erfasstVonName` fehlten hier, obwohl die App sie beim
+         Eintragen setzt (index.html, probeSpeichern). Aufgefallen ist
+         es erst, als der Export die Sammlung mitnahm: er sortiert nach
+         `ts`, und Firestore laesst Dokumente OHNE das sortierte Feld
+         ganz weg. In der Demo fiel das nicht auf — die Attrappe nimmt
+         orderBy nicht so genau —, im Betrieb waere die Tabelle leer
+         geblieben, ohne Fehlermeldung.
+
+         Eine Demo, deren Datensaetze anders aussehen als die echten,
+         prueft die falsche Sache. */
+      var wann = vorTag(zahl(0, 28));
       probe.push({
-        id: 'p-' + i + '-' + p, studioKey: sk(i), datum: vorTag(zahl(0, 28)),
-        abschluss: zufall() < 0.45, vonUid: pu.id, vonName: pu.name
+        id: 'p-' + i + '-' + p, studioKey: sk(i), datum: wann, ts: wann,
+        abschluss: zufall() < 0.45, vonUid: pu.id, vonName: pu.name,
+        notiz: '', erfasstVon: pu.id, erfasstVonName: pu.name
       });
     }
   });
   legen(P('probetrainings'), probe);
+
+  /* ── Anliegen ──
+     Gab es in der Demo bisher gar nicht: die Sammlung blieb leer, und
+     damit war der ganze Bereich „Anliegen" unvorfuehrbar — und im
+     Export nicht pruefbar. Ein Zustand, den man nicht herbeifuehren
+     kann, wird auch nicht geprueft.
+
+     Drei Stueck, und zwar in allen drei Zustaenden, die es gibt: offen
+     an die Geschaeftsfuehrung, offen an die Studioleitung, beantwortet.
+     Eines davon vom angemeldeten Konto selbst — sonst saehe der
+     Mitarbeiter in „meine Anliegen" nichts. */
+  (function anliegenBauen(){
+    var leiterIn = USERS.filter(function (u) { return u.role === 'leiter'; })[0] || ICH;
+    legen(P('anliegen'), [
+      { id: 'anl1', uid: ICH.id, name: ICH.name, an: 'chef', status: 'offen',
+        titel: 'Zweiter Wäschekorb für die Kabine',
+        text: 'Der eine läuft an Spitzentagen über, und dann liegt alles daneben.',
+        ts: vorTag(3), quelle: { sammlung: 'ideen', id: 'i-demo-1' } },
+      { id: 'anl2', uid: leiterIn.id, name: leiterIn.name, an: 'leiter',
+        studioKey: (leiterIn.studioKeys || [])[0] || sk(0), status: 'offen',
+        titel: 'Schichttausch Freitag',
+        text: 'Ich könnte Freitag früher anfangen, wenn jemand den Abend übernimmt.',
+        ts: vorTag(1), quelle: { sammlung: 'ziele', id: 'z-demo-1' } },
+      { id: 'anl3', uid: ICH.id, name: ICH.name, an: 'chef', status: 'beantwortet',
+        titel: 'Neue Handtücher',
+        text: 'Die alten fusseln stark.',
+        antwort: 'Bestellt, kommen nächste Woche.',
+        antwortVon: 'Geschäftsführung', antwortAm: vorTag(5),
+        ts: vorTag(9), quelle: { sammlung: 'ideen', id: 'i-demo-2' } }
+    ]);
+  })();
 
   legen(P('documents'), [
     { id: 'dok1', name: 'Hygieneplan 2026', fileName: 'hygieneplan.pdf', kat: 'Vorschriften',

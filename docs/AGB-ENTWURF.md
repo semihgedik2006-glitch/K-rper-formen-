@@ -229,14 +229,41 @@ verfügbar. In dieser Zeit kann der Kunde einen Export verlangen.
 
 (2) Danach werden sie gelöscht.
 
-> **NICHT GEBAUT, und das gehört hier gesagt:** es gibt heute **keine
-> Selbstbedienungs-Exportfunktion für den gesamten Datenbestand** und
-> keinen automatischen Ablauf, der nach 30 Tagen löscht. Beides wäre
-> beim heutigen Stand Handarbeit des Anbieters. **Bevor dieser
-> Paragraph in einen unterschriebenen Vertrag geht, muss entweder die
-> Funktion gebaut oder der Text geändert werden** — eine zugesagte
-> Löschfrist ohne Mechanismus ist eine Zusage, die niemand einhält.
-> Siehe `docs/av/LOESCHKONZEPT.md`.
+(3) Der Export steht dem Kunden jederzeit selbst zur Verfügung:
+Verwaltung → System → **„Alles als Excel speichern"** bzw. **„Alles als
+Daten-Datei (JSON)"**. Beide Dateien enthalten dieselben Daten.
+
+> **Was der Export enthält** — die Datei sagt es selbst, in einem
+> Verzeichnis ganz oben: Aufgaben, Material, Putzplan mit Notizen,
+> Team, Infos, Chat der öffentlichen Kanäle, Geräte mit Verlauf,
+> Schichten, Abwesenheiten, Übergaben, Schwarzes Brett, Dokumente
+> (Angaben, ohne Dateiinhalt), Nachweise, **Stempelzeiten**,
+> **Anliegen mit Antwort** und **Probetrainings**.
+>
+> **Was er bewusst NICHT enthält:** Direktnachrichten (die gehören zwei
+> Personen, nicht dem Betrieb), den persönlichen Bereich jedes
+> Einzelnen, die Inhalte hochgeladener Dateien, Stempel-PINs und
+> Terminal-Codes sowie Fehlerberichte und Push-Kennungen.
+>
+> **Die drei fett gesetzten Bereiche kamen am 21.9.2026 dazu.** Bis
+> dahin fehlten sie — ausgerechnet die mit Personenbezug. Eine Zusage
+> „Sie können einen Export verlangen" ist ohne die Arbeitszeiten nicht
+> eingelöst. Nachgemessen in `tests/test-sicherung-inhalt.js`,
+> einschliesslich der Gegenprobe, dass **kein Geheimnis** in der Datei
+> landet.
+
+(4) **Die Inhalte hochgeladener Dateien sind im Export nicht enthalten.**
+Der Kunde kann sie einzeln über die Anwendung herunterladen.
+
+> **NICHT GEBAUT, und das gehört hier gesagt:** es gibt **keinen
+> automatischen Ablauf, der nach 30 Tagen löscht** — das wäre beim
+> heutigen Stand Handarbeit des Anbieters. Und es gibt **keinen
+> Sammel-Download der Dateiinhalte**.
+>
+> **Bevor dieser Paragraph in einen unterschriebenen Vertrag geht, muss
+> für beides entweder die Funktion gebaut oder der Text geändert
+> werden** — eine zugesagte Löschfrist ohne Mechanismus ist eine
+> Zusage, die niemand einhält. Siehe `docs/av/LOESCHKONZEPT.md`.
 
 ---
 
@@ -292,7 +319,7 @@ Nicht Formulierungen — **Sachfragen, an denen etwas hängt:**
 |---|---|
 | Die tatsächlichen Beträge, und ob netto oder brutto | Betrieb |
 | Umsatzsteuer: § 19 UStG oder nicht | Betrieb, mit Steuerberater |
-| Ob § 8 (30 Tage, Export) so zugesagt wird — **dann muss es gebaut werden** | Betrieb, dann ich |
+| Ob § 8 so zugesagt wird: der **Export ist gebaut**, die **automatische Löschung nach 30 Tagen nicht** und ein Sammel-Download der Dateiinhalte auch nicht | Betrieb, dann ich |
 | Ob die Kasse die Unternehmereigenschaft abfragen soll | Betrieb, dann ich |
 | Ob die Mahnstufen aus § 5 rechtlich tragen | Anwalt |
 | Ob die Haftungsklausel trägt | Anwalt |

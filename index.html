@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-23UOqz2cBhYN7WW34QrowSje+RP9X/p5ZQdPRPRivbs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-GEq8Ed2ZdePQPA4ei9UZ+LALL1M7b1ATsdKlUpVu1wQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -69,6 +69,19 @@
   /* Ruhiges Schiefer-Blau statt harter Neon-Kontrast: ueber lange Zeit
      angenehmer zu lesen. */
   --bg:#12131C;--bg-2:#1C1E2A;--bg-soft:#171925;--bg-3:#252838;
+  /* ── „Dämmerung" ──
+     Der eine Hintergrund, der NICHT der Akzentfarbe folgt: warm zu sein
+     ist sein ganzer Zweck. Die zwei Töne stehen deshalb hier und nicht
+     in der Zeile — test-gestaltung hat sie dort als feste
+     Statusfärbung gemeldet, und die Regel dahinter ist richtig. Eine
+     Farbe mitten im Stylesheet ist der Anfang der nächsten Sammlung
+     aus zwölf Werten, die dasselbe meinen.
+
+     Dass der Prüfer gerade diesen Amberton kennt, ist kein Zufall: es
+     IST die Warnfarbe. Ein warmer Schleier, der aussieht wie ein
+     Hinweis, wäre eine schlechte Wahl — deshalb liegt er bei .13 und
+     damit weit unter jeder Statusfläche. */
+  --daem-1:rgba(251,191,36,.13);--daem-2:rgba(244,114,182,.13);
   /* Kanten. Eine Karte muss sich abheben — sie muss aber nicht umrandet
      sein. Der Grund traegt sie (--bg-2 liegt sichtbar ueber --bg), der
      Schatten hebt sie an, und der Rahmen ist nur noch die feine Kante
@@ -224,6 +237,10 @@
 /* ── Hell-Modus ── */
 body.light{
   --bg:#F4F6FA;--bg-2:#ffffff;--bg-soft:#EDF0F6;--bg-3:#E3E8F1;
+  /* Auf Weiss traegt derselbe Schleier weiter — dieselbe Regel wie bei
+     --akz-w: eine Aufhellung auf Hell vertraegt weniger als auf
+     Dunkel. */
+  --daem-1:rgba(180,83,9,.09);--daem-2:rgba(190,24,93,.08);
   --line:rgba(15,25,45,.09);--line-2:rgba(15,25,45,.27);
   /* etwas dunklere Logo-Töne, damit sie auf Weiß gut lesbar sind */
   --accent:#0369A1;--accent-2:#6D28D9;--accent-3:#BE185D;--accent-d:#075985;
@@ -613,7 +630,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   font-size:var(--t-xs);line-height:var(--lh);color:var(--warm-tx)}
 
 /* ── App Shell ── */
-.app{display:none;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
+.app{display:none;position:relative;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 .app.show{display:flex}
 
 /* ── Demo-Leiste ────────────────────────────────────────────────────
@@ -1547,7 +1564,22 @@ body.nurlesen .kopf-plus{display:none !important}
   .mobnav button:active{transform:scale(.9)}
   .mobnav button svg{width:22px;height:22px}
   .mobnav button.active{color:var(--accent);font-weight:700}
-  .mobnav .badge{position:absolute;top:1px;right:50%;transform:translateX(15px);
+  /* ── Das Abzeichen sitzt NEBEN dem Symbol, nicht darauf ──
+     Bis zum 21.9.2026 hiess es hier `right:50%; translateX(15px)`.
+     Gemessen (Mitarbeiter, 390px, „5" im Abzeichen): Symbol 135–159,
+     Abzeichen 147–162 — also 12 × 8 px mitten auf dem Zeichen. Genau
+     der Fund, aus dem die Knopf-Regel entstanden ist.
+
+     Aufgefallen ist es erst jetzt, weil das Abzeichen nie erschien:
+     der Selektor traf die falsche Kennung (siehe updateBadges).
+
+     ANKER LINKS, nicht rechts. Das ist der eigentliche Punkt: mit
+     `right` waechst der Kasten nach LINKS, also auf das Symbol zu —
+     und „99+" ist breiter als „5". Die Messung waere mit einer
+     einstelligen Zahl gruen und mit einer dreistelligen rot gewesen.
+     Mit `left` waechst er nach rechts, in den freien Raum: der Knopf
+     ist 96 px breit, das Symbol 24. */
+  .mobnav .badge{position:absolute;top:1px;left:50%;transform:translateX(13px);
     background:var(--accent);color:var(--on-accent);font-size:var(--t-2xs);font-weight:700;min-width:15px;height:15px;
     border-radius:var(--r-pille);display:none;place-items:center;padding:0 var(--s2)}
 }
@@ -2852,23 +2884,60 @@ button.ich-zeile:active{opacity:.7}
    Die Auswahl liegt lokal im Gerät (localStorage), nicht in der Datenbank.
    ============================================================ */
 
-/* Chat-Hintergründe – liegen hinter den Nachrichten */
+/* ── Chat-Hintergründe ────────────────────────────────────────────────
+   Am 21.9.2026 überarbeitet. Rückmeldung aus dem Betrieb: „die
+   hintergründe sollen besser aussehen".
+
+   Was vorher fehlte: sie hatten ALLE nur eine Ebene. „Punkte" war ein
+   Punktraster auf nichts, „Gitter" ein Gitter auf nichts. Auf einem
+   fast schwarzen Grund sieht ein 5,5-%-Punkt aus wie Bildrauschen, und
+   auf hellem Grund fast wie gar nichts.
+
+   Jetzt liegt unter jedem Muster ein weicher Farbverlauf. Das Muster
+   gibt die Textur, der Verlauf die Tiefe — dieselbe Bauweise wie bei
+   „Farbverlauf", nur mit einer zweiten Lage darüber.
+
+   DIE AKZENTFARBE TRÄGT SIE. Vorher waren die Farben fest verdrahtet
+   (violett und cyan), egal welchen Akzent jemand gewählt hatte — wer
+   auf Grün stellte, bekam trotzdem einen violetten Schimmer im Chat.
+   Jetzt stehen dort --akz-w und --akz2-w, die aus der gewählten Farbe
+   kommen. Eine Einstellung, die eine zweite stillschweigend
+   überstimmt, ist keine Einstellung. */
 .chat-scroll{position:relative;background-attachment:local}
 body[data-chatbg="verlauf"] .chat-scroll{
-  background-image:radial-gradient(900px 500px at 85% 8%, rgba(139,92,246,.16), transparent 62%),
-                   radial-gradient(800px 500px at 10% 92%, rgba(34,211,238,.13), transparent 62%)}
+  background-image:radial-gradient(900px 500px at 85% 8%, var(--akz-w), transparent 62%),
+                   radial-gradient(800px 500px at 10% 92%, var(--akz2-w), transparent 62%)}
 body[data-chatbg="punkte"] .chat-scroll{
-  background-image:radial-gradient(circle at center, var(--dot) 1.4px, transparent 1.5px);
-  background-size:22px 22px}
+  background-image:radial-gradient(circle at center, var(--dot) 1.4px, transparent 1.5px),
+                   radial-gradient(760px 460px at 88% 6%, var(--akz-w), transparent 60%);
+  background-size:22px 22px, cover}
 body[data-chatbg="gitter"] .chat-scroll{
   background-image:linear-gradient(var(--dot) 1px, transparent 1px),
-                   linear-gradient(90deg, var(--dot) 1px, transparent 1px);
-  background-size:34px 34px}
+                   linear-gradient(90deg, var(--dot) 1px, transparent 1px),
+                   radial-gradient(820px 520px at 12% 94%, var(--akz2-w), transparent 62%);
+  background-size:34px 34px, 34px 34px, cover}
 body[data-chatbg="wellen"] .chat-scroll{
-  background-image:repeating-linear-gradient(135deg, var(--dot) 0 2px, transparent 2px 16px)}
+  background-image:repeating-linear-gradient(135deg, var(--dot) 0 2px, transparent 2px 16px),
+                   linear-gradient(160deg, var(--akz-w), transparent 55%);
+  background-size:auto, cover}
 body[data-chatbg="nacht"] .chat-scroll{
-  background-image:linear-gradient(180deg, rgba(139,92,246,.14), transparent 45%),
-                   linear-gradient(0deg, rgba(236,72,153,.12), transparent 40%)}
+  background-image:linear-gradient(180deg, var(--akz2-s), transparent 45%),
+                   linear-gradient(0deg, var(--akz-s), transparent 40%)}
+/* ── Drei neue, am 21.9.2026 ──
+   Sie decken ab, was die sechs alten nicht konnten: etwas Ruhiges
+   ohne jede Farbe („Papier"), etwas mit einer klaren Richtung
+   („Bogen") und etwas Warmes („Dämmerung"). Wer sich etwas aussucht,
+   soll zwischen verschiedenen Dingen wählen und nicht zwischen sechs
+   Abstufungen derselben Idee. */
+body[data-chatbg="papier"] .chat-scroll{
+  background-image:repeating-linear-gradient(0deg, var(--dot) 0 1px, transparent 1px 7px),
+                   repeating-linear-gradient(90deg, var(--dot) 0 1px, transparent 1px 7px)}
+body[data-chatbg="bogen"] .chat-scroll{
+  background-image:radial-gradient(1100px 620px at 50% -14%, var(--akz-w), transparent 64%),
+                   radial-gradient(900px 520px at 50% 114%, var(--akz2-w), transparent 64%)}
+body[data-chatbg="daemmerung"] .chat-scroll{
+  background-image:linear-gradient(170deg, var(--daem-1), transparent 42%),
+                   linear-gradient(10deg, var(--daem-2), transparent 46%)}
 /* Eigenes Foto: wird formatfüllend gezeigt und leicht abgedunkelt, damit
    der Text lesbar bleibt – sonst verschwinden helle Blasen im hellen Bild. */
 body[data-chatbg="eigenes"].has-bg-img .chat-scroll{
@@ -2882,8 +2951,53 @@ body.light[data-chatbg="eigenes"].has-bg-img .chat-scroll::before{
   background:rgba(255,255,255,.5)}
 body[data-chatbg="eigenes"].has-bg-img .chat-scroll > *{position:relative;z-index:1}
 
-:root{--dot:rgba(255,255,255,.055);--chatbg-img:none}
+:root{--dot:rgba(255,255,255,.055);--chatbg-img:none;
+  /* Rueckfallwerte. Gesetzt werden sie in applyPrefs aus der
+     Akzentfarbe; ohne sie stuenden die Hintergruende in der Sekunde
+     vor dem ersten applyPrefs ohne Farbe da. */
+  --akz-w:rgba(34,211,238,.16);--akz2-w:rgba(167,139,250,.13);
+  --akz-s:rgba(34,211,238,.20);--akz2-s:rgba(167,139,250,.17)}
 body.light{--dot:rgba(20,10,40,.06)}
+
+/* ── Der Hintergrund der ganzen App ──
+   Er liegt auf .app und nicht auf body: body traegt die Grundfarbe,
+   und ein Muster darauf laege auch unter dem Anmeldebildschirm und
+   unter der Zahlseite. Beide sollen ruhig bleiben.
+
+   FEST HINTER DEM INHALT, nicht mitscrollend: `fixed`. Ein Verlauf,
+   der beim Scrollen mitwandert, zieht den Blick — und ein Hintergrund,
+   den man bemerkt, ist keiner.
+
+   Alle fuenf sind BEWUSST schwach. Was acht Stunden am Tag offen ist,
+   darf nicht auffallen; es darf nur nicht leer wirken. */
+/* z-index:-1, NICHT 0 mit `.app > * {position:relative}` darüber.
+
+   Der erste Versuch hob jedes Kind der App auf `position:relative`, um
+   es über den Schleier zu legen. Das hat test-chat-bereich3 gefunden:
+   der Chatverlauf fiel bei langem Text auf 241 px statt der Hälfte der
+   Ansicht. Grund ist nicht die Stapelung, sondern der Bezugsrahmen —
+   `position:relative` macht aus jedem Kind den Bezug für alles, was
+   darin absolut sitzt, und der Verfasser unten hing vorher an einem
+   anderen Vorfahren.
+
+   Eine Zeile, die „nur die Stapelung regeln" sollte, hat die Groesse
+   eines Bereichs veraendert. Mit einem negativen z-index braucht es sie
+   gar nicht: der Schleier liegt dann hinter allem in der App und vor
+   dem Grund des Fensters — und kein Kind wird angefasst. */
+.app::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:none;background-size:cover;background-repeat:no-repeat}
+body[data-appbg="schimmer"] .app::before{
+  background-image:radial-gradient(1000px 600px at 82% 4%, var(--akz-w), transparent 58%),
+                   radial-gradient(900px 560px at 8% 96%, var(--akz2-w), transparent 58%)}
+body[data-appbg="oben"] .app::before{
+  background-image:linear-gradient(180deg, var(--akz-s), transparent 38%)}
+body[data-appbg="ecken"] .app::before{
+  background-image:radial-gradient(520px 520px at 0% 0%, var(--akz-w), transparent 62%),
+                   radial-gradient(520px 520px at 100% 100%, var(--akz2-w), transparent 62%)}
+body[data-appbg="raster"] .app::before{
+  background-image:linear-gradient(var(--dot) 1px, transparent 1px),
+                   linear-gradient(90deg, var(--dot) 1px, transparent 1px);
+  background-size:40px 40px}
 
 /* ============================================================
    CHAT-ERWEITERUNGEN
@@ -7091,6 +7205,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
       <div class="opt-grid" id="accOpts"></div>
 
+      <!-- Der Hintergrund der GANZEN App, neu am 21.9.2026. Steht VOR
+           dem Chat-Hintergrund: er betrifft zwölf Ansichten, der
+           andere eine. -->
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Hintergrund der App</label>
+      <div class="opt-grid" id="appbgOpts"></div>
+
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Chat-Hintergrund</label>
       <div class="opt-grid" id="bgOpts"></div>
       <input type="file" accept="image/*" class="hidden-file" id="bgFile" />
@@ -7105,6 +7225,27 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <div id="pmKeysWrap" style="display:none;margin-top:20px">
         <label style="display:block;font-size:.82rem;color:var(--text-2);margin:0 0 7px">Tastenkürzel</label>
         <button data-ikon="tastatur" class="btn btn-ghost btn-sm" id="pmKeysBtn" style="width:100%">Tastenkürzel anpassen</button>
+      </div>
+
+      <!-- ── Der Weg zurück ──
+           Aus dem Betrieb, 21.9.2026: „man sollte auch alle funktionen
+           wieder zurücksetzten können das man einfach das standard
+           design von uns geniessen kann".
+
+           Das ist mehr als Bequemlichkeit. Wer vier Einstellungen
+           verstellt hat und das Ergebnis nicht mag, kann sich an keine
+           davon mehr erinnern — und probiert dann so lange herum, bis
+           es schlimmer ist als vorher. Ein einziger Knopf nimmt dem
+           Ausprobieren das Risiko, und erst dadurch probiert jemand
+           überhaupt etwas aus.
+
+           Steht ganz unten und ist zurückhaltend gesetzt: er wirft
+           etwas weg. -->
+      <div style="margin-top:24px;border-top:1px solid var(--line-2);padding-top:16px">
+        <button data-ikon="wiederholen" class="btn btn-ghost btn-sm" id="pmReset" style="width:100%">Aussehen zurücksetzen</button>
+        <p class="hint" style="margin:8px 0 0">Stellt Modus, Schriftgröße, Farbe und
+          beide Hintergründe auf unsere Voreinstellung zurück. Dein Profil,
+          deine Meldungen und alles in der Datenbank bleiben unberührt.</p>
       </div>
     </div>
     <div id="pmPaneNachweise" style="display:none">
@@ -7611,6 +7752,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
 var PREFS = {
   theme:'auto',     // auto | dark | light
   chatbg:'verlauf', // siehe CHAT_BGS
+  appbg:'keiner',   // siehe APP_BGS — der Hintergrund der ganzen App
   accent:'cyan',    // siehe ACCENTS
   fs:'100',         // Schriftgröße in Prozent
   lieferantMail:'', // Adresse für die Bestellmail (bleibt auf diesem Gerät)
@@ -7649,6 +7791,10 @@ var CHAT_BGS = [
   {id:'gitter',  name:'Gitter'},
   {id:'wellen',  name:'Streifen'},
   {id:'nacht',   name:'Nachtlicht'},
+  /* Drei neue am 21.9.2026, siehe die Begründung beim CSS. */
+  {id:'papier',     name:'Papier'},
+  {id:'bogen',      name:'Bogen'},
+  {id:'daemmerung', name:'Dämmerung'},
   {id:'eigenes', name:'Eigenes Foto', eigen:true}
 ];
 
@@ -7679,14 +7825,64 @@ function clearChatBgImg(){
   _chatBgImg=null;
 }
 /* Akzentfarben – jeweils für dunkel und hell, damit der Kontrast stimmt */
+/* Ein #rrggbb in ein rgba() mit der gewünschten Deckkraft. Kein
+   Farbraumwechsel, keine Bibliothek — drei Zahlen herauslesen und
+   wieder zusammensetzen.
+
+   Faellt auf den Eingabewert zurueck, wenn es kein Sechsstelliger ist:
+   ein Hintergrund, der bei einer unerwarteten Farbe GAR NICHT
+   erscheint, waere schlimmer als einer, der zu kraeftig ist. */
+function mitDeckung(hex, deckung){
+  var m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex||''));
+  if(!m) return hex;
+  return 'rgba('+parseInt(m[1],16)+','+parseInt(m[2],16)+','+
+         parseInt(m[3],16)+','+deckung+')';
+}
+
 var ACCENTS = {
   cyan:   {name:'Cyan',    d:'#22D3EE', d2:'#A78BFA', l:'#0E7490', l2:'#7C3AED'},
   violett:{name:'Violett', d:'#A78BFA', d2:'#22D3EE', l:'#6D28D9', l2:'#0E7490'},
   pink:   {name:'Pink',    d:'#F472B6', d2:'#A78BFA', l:'#BE185D', l2:'#6D28D9'},
   gruen:  {name:'Grün',    d:'#34D399', d2:'#22D3EE', l:'#047857', l2:'#0E7490'},
   bernstein:{name:'Bernstein', d:'#FBBF24', d2:'#F472B6', l:'#B45309', l2:'#BE185D'},
-  blau:   {name:'Blau',    d:'#60A5FA', d2:'#A78BFA', l:'#1D4ED8', l2:'#6D28D9'}
+  blau:   {name:'Blau',    d:'#60A5FA', d2:'#A78BFA', l:'#1D4ED8', l2:'#6D28D9'},
+  /* ── Vier weitere, am 21.9.2026 ──
+     Aus dem Betrieb: „das ganze aussehen für sich sollte man selber
+     viel mehr customizen können."
+
+     Gewählt nach dem, was die sechs alten NICHT abdeckten: sie lagen
+     alle im kalten bis pinken Bereich, dazu ein Gelb. Es fehlte ein
+     Rot, ein Türkis mit Grünstich, ein warmes Orange und ein ruhiges
+     Grau für alle, die überhaupt keine Farbe wollen.
+
+     Jede Farbe steht zweimal da: `d` für Dunkel, `l` für Hell. Das ist
+     nicht dieselbe Farbe mit anderer Helligkeit, sondern zwei
+     abgestimmte Werte — ein Ton, der auf Schwarz leuchtet, verschwindet
+     auf Weiss, und umgekehrt. Deshalb sind die hellen Werte durchweg
+     dunkler und gesättigter. */
+  koralle:{name:'Koralle', d:'#FB7185', d2:'#FBBF24', l:'#BE123C', l2:'#B45309'},
+  tuerkis:{name:'Türkis',  d:'#2DD4BF', d2:'#60A5FA', l:'#0F766E', l2:'#1D4ED8'},
+  orange: {name:'Orange',  d:'#FB923C', d2:'#F472B6', l:'#C2410C', l2:'#BE185D'},
+  /* Der graue ist Absicht und kein Platzhalter: nicht jeder will Farbe
+     in einer App, die er acht Stunden am Tag offen hat. */
+  schiefer:{name:'Schiefer', d:'#94A3B8', d2:'#CBD5E1', l:'#475569', l2:'#334155'}
 };
+
+/* ── Der Hintergrund der ganzen App ───────────────────────────────────
+   Neu am 21.9.2026. Bis dahin liess sich nur der CHAT gestalten — also
+   eine von zwölf Ansichten. Wer „das ganze Aussehen" einstellen wollte,
+   konnte das nicht.
+
+   'keiner' ist die Voreinstellung und bleibt es. Eine App, die beim
+   ersten Start gemustert ist, nimmt dem Benutzer die Entscheidung ab,
+   die er hier gerade bekommen soll. */
+var APP_BGS = [
+  {id:'keiner',   name:'Schlicht'},
+  {id:'schimmer', name:'Schimmer'},
+  {id:'oben',     name:'Licht von oben'},
+  {id:'ecken',    name:'Ecken'},
+  {id:'raster',   name:'Feines Raster'}
+];
 
 function loadPrefs(){
   try{
@@ -7729,7 +7925,27 @@ function applyPrefs(){
   r.setProperty('--accent',  light?a.l :a.d);
   r.setProperty('--accent-2',light?a.l2:a.d2);
   r.setProperty('--accent-d',light?a.l :a.d);
+  /* ── Die Akzentfarbe als Schleier ──
+     Neu am 21.9.2026. Die Hintergründe hatten ihre Farben fest
+     verdrahtet: wer auf Grün stellte, bekam im Chat trotzdem einen
+     violetten Schimmer. Eine Einstellung, die eine zweite
+     stillschweigend überstimmt, ist keine Einstellung.
+
+     Zwei Stärken, weil die Muster verschieden viel vertragen: -w
+     (weich) liegt unter Punkten und Gittern, -s (stark) trägt allein.
+
+     Im HELLEN deutlich schwächer. Ein Schleier, der auf Weiss
+     dieselbe Deckkraft hat wie auf Schwarz, ist dort kein Schleier
+     mehr, sondern eine Fläche — und der Text darauf verliert Kontrast.
+     Gemessen wurde das nicht; es ist die bekannte Regel, dass eine
+     Aufhellung auf Hell weniger verträgt als auf Dunkel. */
+  r.setProperty('--akz-w',  mitDeckung(light?a.l :a.d,  light?.10:.16));
+  r.setProperty('--akz2-w', mitDeckung(light?a.l2:a.d2, light?.08:.13));
+  r.setProperty('--akz-s',  mitDeckung(light?a.l :a.d,  light?.13:.20));
+  r.setProperty('--akz2-s', mitDeckung(light?a.l2:a.d2, light?.10:.17));
   r.setProperty('--fs', (PREFS.fs||100)+'%');
+  /* Der Hintergrund der ganzen App, nicht nur des Chats. */
+  document.body.setAttribute('data-appbg', PREFS.appbg||'keiner');
   // Farbe der Statusleiste mitziehen
   var m=document.querySelector('meta[name="theme-color"]');
   if(m) m.setAttribute('content', light?'#F4F6FA':'#12131C');
@@ -16575,11 +16791,32 @@ function renderHeute(){
   var mehrereStudios = keys.length>1;
 
   /* ── Was gibt es überhaupt ── */
-  var ueber=[], heute=[], matArtikel=0, matStudios=0;
+  /* ── `ohneFrist` ist am 21.9.2026 dazugekommen ──
+     Aus dem Betrieb: „ich möchte dass beim home bildschirm wieder die
+     offenen aufgaben stehen oder zumindest ganz klar das aufgaben offen
+     sind."
+
+     Er hatte recht, und der Grund stand eine Zeile tiefer: `if(!t.due)
+     return;`. Die Startseite kannte nur Aufgaben MIT Frist. Eine
+     Aufgabe ohne Frist — und das sind die meisten — kam nirgends vor.
+
+     Gemessen am selben Tag: ein Mitarbeiter hatte 5 von 5 Aufgaben
+     offen und sah davon auf der Startseite KEINE; ein Leiter 7 von 8,
+     ebenfalls keine. Beim Chef standen die 5 ueberfaelligen da, die
+     uebrigen 43 nicht.
+
+     Eine Startseite, die bei fuenf offenen Aufgaben „Nichts
+     Ueberfaelliges" sagt, ist nicht ruhig, sondern falsch. */
+  var ueber=[], heute=[], ohneFrist=[], matArtikel=0, matStudios=0;
   keys.forEach(function(sk){
     (cachedTodos[sk]||[]).forEach(function(t){
       if(isDone(t)||isArchived(t)) return;
-      if(!t.due) return;
+      if(!t.due){
+        ohneFrist.push({ ts:t.ts||0, art:'tun', ziel:'todos', f:'offen',
+          ikon:ikon('hakenKreis'), titel:t.title||'(ohne Titel)',
+          unter:(mehrereStudios?studioName(sk)+' · ':'')+'ohne Frist' });
+        return;
+      }
       var wo = mehrereStudios ? studioName(sk) : '';
       if(jetzt>t.due){
         var d=tageSeit(t.due);
@@ -16688,12 +16925,30 @@ function renderHeute(){
   block('Heute', 'heute', heute, heute.slice(0,3), 'todos');
   block('Neu für dich', 'lesen', lesen, lesen.slice(0,2), 'chat');
   block('Zu erledigen', 'tun', sonst, sonst.slice(0,2), 'todos');
+  /* ── „Offen" steht GANZ UNTEN, und das ist Absicht ──
+     Oben stehen die Sachen mit einem Zeitbezug: ueberfaellig, heute,
+     neu. Aufgaben ohne Frist sind genau das nicht — sie sind offen,
+     nicht dringend. Stuenden sie oben, verdraengten sie die Frist,
+     und der Rang waere wieder Zufall statt Aussage.
+
+     Zwei Zeilen wie ueberall, die Ueberschrift nennt die volle Zahl
+     und fuehrt in die gefilterte Liste. Das Aelteste zuerst: was am
+     laengsten liegt, ist das, was am ehesten vergessen wird. */
+  ohneFrist.sort(function(a,b){ return a.ts-b.ts; });
+  if(ansichtAn('todos'))
+    block('Offen', 'tun', ohneFrist, ohneFrist.slice(0,2), 'todos', 'offen');
 
   if(!html){
-    /* Genau das sagen, was geprüft wurde — nicht mehr. */
+    /* Genau das sagen, was geprüft wurde — nicht mehr.
+       Der Satz hiess bis zum 21.9.2026 „Keine Aufgabe ist über ihrer
+       Frist, nichts Ungelesenes." Das stimmte woertlich und war
+       trotzdem irrefuehrend: er stand auch dann da, wenn fuenf
+       Aufgaben offen waren — sie hatten nur keine Frist. Jetzt kann er
+       gar nicht mehr erscheinen, solange etwas offen ist, und darf
+       deshalb sagen, was er sagt. */
     html='<div class="heute-ruhe"><span class="hr-ico">✓</span>'+
-      '<div><b>Nichts Überfälliges</b>'+
-      '<span>Keine Aufgabe ist über ihrer Frist, nichts Ungelesenes.</span></div></div>';
+      '<div><b>Alles erledigt</b>'+
+      '<span>Keine offene Aufgabe, nichts über der Frist, nichts Ungelesenes.</span></div></div>';
   }
   box.innerHTML=html;
 
@@ -21064,6 +21319,12 @@ function exportReport(){
    - Fehlerberichte und Push-Kennungen. Technik, keine Betriebsdaten. */
 
 var SICHERUNG_CHAT_MAX = 1000;   // je Kanal, siehe Hinweis in der Datei
+/* Stempelzeiten: die juengsten 20.000. Bei vierzehn Studios und vier
+   Stempeln je Person und Tag sind das rund ein Jahr. Eine Grenze muss
+   sein — ohne sie zieht ein Betrieb nach drei Jahren eine Abfrage ueber
+   hunderttausend Dokumente, und der Browser bleibt stehen. Die Zahl
+   steht in der Datei, damit niemand glaubt, er haette alles. */
+var SICHERUNG_ZEITEN_MAX = 20000;
 
 /* Holt alles aus der Datenbank, was in der Sicherung landen soll.
    Einzelne Fehlschläge sollen die ganze Sicherung nicht verhindern —
@@ -21077,10 +21338,46 @@ function backupSammeln(){
       return null;
     });
   }
+  /* ── Was am 21.9.2026 dazukam, und warum ──
+     Der Export gab es schon; er liess aber DREI Sammlungen aus, und
+     zwar ausgerechnet die mit Personenbezug:
+
+       zeiten          Arbeitszeiten der Beschaeftigten. Wer einen
+                       Vertrag kuendigt und seine Daten mitnehmen will,
+                       meint zuallererst die. Ohne sie ist eine Zusage
+                       „Sie koennen einen Export verlangen" nicht
+                       eingeloest.
+       anliegen        was jemand der Leitung geschrieben hat, samt
+                       Antwort.
+       probetrainings  wer wann ein Probetraining gemacht hat und ob es
+                       zum Abschluss kam — eine Leistungsangabe ueber
+                       Beschaeftigte. (KEINE Interessentendaten: ein
+                       Namensfeld fuer den Kunden gibt es nicht.)
+
+     Dass der Chef diese drei ungefiltert ABFRAGEN darf, ist gemessen
+     und nicht angenommen: die Regeln pruefen je Dokument
+     (`resource.data.uid == …`), und Firestore entscheidet ueber eine
+     Abfrage vorher und im Ganzen. Der `isChef()`-Zweig traegt sie —
+     nachgewiesen in tests/rules/export.test.js, mitsamt der Gegenprobe,
+     dass ein Mitarbeiter dieselbe Abfrage NICHT stellen darf.
+
+     WAS WEITER DRAUSSEN BLEIBT, und das ist kein Versehen:
+       zeitPins        Geheimnisse. Ein Export, der Zugangsdaten
+                       mitliefert, macht aus einer Datei einen
+                       Schluessel. (Der Chef kommt auch gar nicht heran
+                       — ebenfalls gemessen.)
+       dms             gehoeren zwei Personen, nicht dem Betrieb.
+       privat          der persoenliche Bereich jedes Einzelnen.
+       pushTokens,     Technik ueber Geraete, keine Betriebsdaten.
+       fehler
+       terminalCodes   kurzlebige Geheimnisse. */
   var jobs=[
     weich(S('board').orderBy('ts','desc').limit(500).get(), 'Schwarzes Brett'),
     weich(S('documents').orderBy('ts','desc').limit(500).get(), 'Dokumente'),
-    weich(S('certificates').get(), 'Nachweise')
+    weich(S('certificates').get(), 'Nachweise'),
+    weich(S('zeiten').orderBy('ts','desc').limit(SICHERUNG_ZEITEN_MAX).get(), 'Stempelzeiten'),
+    weich(S('anliegen').orderBy('ts','desc').limit(500).get(), 'Anliegen'),
+    weich(S('probetrainings').orderBy('ts','desc').limit(500).get(), 'Probetrainings')
   ];
   kanaele.forEach(function(ch){
     jobs.push(weich(S('channels').doc(ch).collection('messages')
@@ -21095,7 +21392,9 @@ function backupSammeln(){
   });
   return Promise.all(jobs).then(function(r){
     var i=0;
-    var daten={ brett:r[i++], dokumente:r[i++], nachweise:r[i++], chat:{}, studios:{} };
+    var daten={ brett:r[i++], dokumente:r[i++], nachweise:r[i++],
+                zeiten:r[i++], anliegen:r[i++], probetrainings:r[i++],
+                chat:{}, studios:{} };
     kanaele.forEach(function(ch){ daten.chat[ch]=r[i++]; });
     STUDIOS.forEach(function(s){
       daten.studios[s]={};
@@ -21122,15 +21421,20 @@ function backupData(){
         enthalten:['Aufgaben','Material','Putzplan mit Notizen','Team','Infos',
                    'Chat (öffentliche Kanäle)','Geräte mit Verlauf','Schichten',
                    'Abwesenheiten','Übergaben','Schwarzes Brett',
-                   'Dokumente (Angaben, ohne Dateiinhalt)','Nachweise'],
+                   'Dokumente (Angaben, ohne Dateiinhalt)','Nachweise',
+                   'Stempelzeiten','Anliegen mit Antwort','Probetrainings'],
         nichtEnthalten:[
           'Direktnachrichten — gehören zwei Personen, nicht dem Betrieb',
+          'Persönlicher Bereich — gehört der einzelnen Person, nicht dem Betrieb',
           'Inhalt hochgeladener Dateien — dafür ist die nächtliche Datenbank-Sicherung da',
+          'Stempel-PINs und Terminal-Codes — Geheimnisse gehören in keine Datei, die herumliegt',
           'Fehlerberichte und Push-Kennungen — Technik, keine Betriebsdaten'],
         chatGrenze:'je Kanal die neuesten '+SICHERUNG_CHAT_MAX+' Nachrichten',
+        zeitenGrenze:'die neuesten '+SICHERUNG_ZEITEN_MAX+' Stempel',
         luecken: g.luecken.length ? g.luecken : 'keine'
       },
-      studios:{}, team:[], infos:[], brett:[], dokumente:[], nachweise:[], chat:{}
+      studios:{}, team:[], infos:[], brett:[], dokumente:[], nachweise:[],
+      stempelzeiten:[], anliegen:[], probetrainings:[], chat:{}
     };
     STUDIOS.forEach(function(s){
       var sk=studioKey(s), q=g.studios[s]||{};
@@ -21199,6 +21503,56 @@ function backupData(){
       return { person:c.name||'', art:c.kind||c.title||'',
                laeuftAb:c.expires||c.until||'', notiz:c.note||'' };
     });
+    /* ── Stempelzeiten ──
+       Aeltestes zuerst: eine Zeitliste liest man vorwaerts. Die Abfrage
+       holt absteigend (die juengsten, falls die Grenze greift), also
+       wird hier einmal gedreht.
+
+       `fremd` bedeutet: gestempelt an einem Terminal eines anderen
+       Studios. Das Feld steht mit im Export, weil es den Unterschied
+       zwischen „war da" und „war woanders" traegt — und weil eine
+       Arbeitszeitauskunft ohne diese Angabe unvollstaendig waere. */
+    out.stempelzeiten=docsZuListe(g.zeiten).reverse().map(function(z){
+      return { person:z.name||'', tag:z.tag||'',
+               zeit:z.ts?new Date(z.ts).toLocaleTimeString('de-DE',
+                     {hour:'2-digit',minute:'2-digit'}):'',
+               /* TM_WORT ist die Liste, die auch die Oberflaeche
+                  benutzt (kommen/pause/zurueck/gehen). Hier stand beim
+                  ersten Bauen ein eigenes „kommt/geht" — erfundenes
+                  Vokabular, das es im Datenbestand gar nicht gibt.
+                  Aufgefallen beim Nachsehen in der erzeugten Datei. */
+               art:TM_WORT[z.art]||z.art||'',
+               studio:z.studioKey?studioName(z.studioKey):'',
+               terminal:z.terminalName||'',
+               anderesStudio:!!z.fremd,
+               datum:z.ts?new Date(z.ts).toISOString():'' };
+    });
+    out.anliegen=docsZuListe(g.anliegen).map(function(a){
+      return { von:a.name||'', an:a.an||'', titel:a.titel||'', text:a.text||'',
+               status:a.status||'', antwort:a.antwort||'',
+               antwortVon:a.antwortVon||'',
+               datum:a.ts?new Date(a.ts).toISOString():'' };
+    });
+    /* ── Probetrainings ──
+       ACHTUNG, hier stand beim ersten Bauen etwas Falsches: „Namen von
+       Interessenten, also Daten Dritter". Das ist nicht, was drinsteht.
+       Ein Eintrag haelt fest, WELCHER MITARBEITER ein Probetraining
+       gemacht hat und ob es zum Abschluss kam — eine Angabe ueber den
+       Beschaeftigten, nicht ueber den Kunden. Es gibt kein Namensfeld
+       fuer den Interessenten.
+
+       Der Unterschied ist nicht akademisch: als Kundendaten waere das
+       eine Sache fuer die Datenschutzerklaerung des Betriebs, als
+       Leistungsdaten von Beschaeftigten eine fuer die Mitbestimmung. */
+    out.probetrainings=docsZuListe(g.probetrainings).map(function(t){
+      return { mitarbeiter:t.vonName||'',
+               studio:t.studioKey?studioName(t.studioKey):'',
+               tag:t.datum?new Date(t.datum).toLocaleDateString('de-DE'):'',
+               abschluss:!!t.abschluss,
+               notiz:t.notiz||'',
+               erfasstVon:t.erfasstVonName||'',
+               datum:t.ts?new Date(t.ts).toISOString():'' };
+    });
     Object.keys(g.chat).forEach(function(ch){
       out.chat[ch==='allgemein'?'Allgemein':studioName(ch)]=
         docsZuListe(g.chat[ch]).reverse().map(function(m){
@@ -21237,6 +21591,7 @@ function exportAllXls(){
       [['Enthalten', d.hinweise.enthalten.join(' · ')],
        ['Nicht enthalten', d.hinweise.nichtEnthalten.join(' · ')],
        ['Chat', d.hinweise.chatGrenze],
+       ['Stempelzeiten', d.hinweise.zeitenGrenze],
        ['Lücken beim Lesen', d.hinweise.luecken==='keine' ? 'keine'
           : (Array.isArray(d.hinweise.luecken)?d.hinweise.luecken.join(' · '):String(d.hinweise.luecken))]]);
     html+=xlsTable('Team',['Name','E-Mail','Rolle','Studios'],
@@ -21256,6 +21611,24 @@ function exportAllXls(){
         return [x.name, x.art, x.kategorie, x.groesse, x.hochgeladenVon, x.datum]; }));
     if(d.nachweise.length) html+=xlsTable('Nachweise',['Person','Art','Läuft ab','Notiz'],
       d.nachweise.map(function(c){ return [c.person, c.art, c.laeuftAb, c.notiz]; }));
+    /* Die drei neuen Tabellen stehen VOR dem Chat, nicht hinter den
+       Studios: wer eine Arbeitszeitauskunft aufmacht, sucht sie nicht
+       hinter fuenfzehn Chatverlaeufen. */
+    if(d.stempelzeiten.length) html+=xlsTable('Stempelzeiten',
+      ['Tag','Zeit','Person','Art','Studio','Terminal','anderes Studio'],
+      d.stempelzeiten.map(function(z){
+        return [z.tag, z.zeit, z.person, z.art, z.studio, z.terminal,
+                z.anderesStudio?'ja':'']; }));
+    if(d.anliegen.length) html+=xlsTable('Anliegen',
+      ['Datum','Von','An','Titel','Text','Status','Antwort','Antwort von'],
+      d.anliegen.map(function(a){
+        return [a.datum, a.von, a.an, a.titel, a.text, a.status,
+                a.antwort, a.antwortVon]; }));
+    if(d.probetrainings.length) html+=xlsTable('Probetrainings',
+      ['Tag','Mitarbeiter','Studio','Abschluss','Notiz','Erfasst von'],
+      d.probetrainings.map(function(t){
+        return [t.tag, t.mitarbeiter, t.studio, t.abschluss?'ja':'nein',
+                t.notiz, t.erfasstVon]; }));
     Object.keys(d.chat).forEach(function(name){
       var m=d.chat[name]; if(!m.length) return;
       html+=xlsTable('Chat – '+name,['Datum','Von','Text','Sprachnachricht','Umfrage'],
@@ -21434,15 +21807,45 @@ function emptyMini(text, knopf, ziel){
   return '<div class="lese-leer leer-block"><p>'+esc(text)+'</p>'+weg+'</div>';
 }
 
+/* ── Das Abzeichen an „Aufgaben" ──
+   Es hat bis zum 21.9.2026 nie erscheinen koennen, und zwar aus zwei
+   Gruenden gleichzeitig:
+
+   ERSTENS suchte es `[data-mbadge="todos"]`. Die Knoepfe der unteren
+   Leiste tragen aber die GRUPPEN-Kennung, und die heisst `g-arbeit`.
+   Der Selektor traf nichts. Im alten Schnitt fiel das nicht auf, weil
+   dort dieselbe Lage herrschte — es war seit dem Umbau der Leiste
+   tot und hat niemandem gefehlt, weil ein Abzeichen, das fehlt,
+   aussieht wie „nichts offen".
+
+   ZWEITENS zaehlte es fuer den Chef ausdruecklich nichts
+   (`role!=='chef'`). Das war einmal gemeint als „der Chef sieht
+   ohnehin alles" — er sieht aber gerade NICHT, dass 48 Aufgaben offen
+   sind, wenn keine davon eine Frist hat.
+
+   Jetzt zaehlt es fuer jeden ueber seine eigenen Studios (beim Chef:
+   alle) und haengt an der Gruppe, die es wirklich gibt. Wer eine Zahl
+   sieht, weiss von jeder Seite aus, dass etwas offen ist — genau die
+   Ruecksprache aus dem Betrieb: „oder zumindest ganz klar das aufgaben
+   offen sind."
+
+   Dreistellig wird es nicht: ab 100 steht „99+". Eine dreistellige
+   Zahl sprengt den Kreis, und der Unterschied zwischen 112 und 137
+   aendert nichts an dem, was man tut. */
 function updateBadges(){
   var open=0;
-  if(session&&session.role!=='chef'){
-    session.studioKeys.forEach(function(sk){
-      open += (cachedTodos[sk]||[]).filter(function(t){ return !isDone(t); }).length;
+  if(session){
+    var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
+    keys.forEach(function(sk){
+      open += (cachedTodos[sk]||[]).filter(function(t){
+        return !isDone(t) && !isArchived(t); }).length;
     });
   }
-  document.querySelectorAll('[data-badge="todos"],[data-mbadge="todos"]').forEach(function(b){
-    b.textContent=open; b.style.display=open?'grid':'none';
+  var text = open>99 ? '99+' : String(open);
+  document.querySelectorAll(
+    '[data-badge="todos"],[data-mbadge="todos"],'+
+    '[data-badge="g-arbeit"],[data-mbadge="g-arbeit"]').forEach(function(b){
+    b.textContent=text; b.style.display=open?'grid':'none';
   });
 }
 
@@ -25191,7 +25594,7 @@ function buildAppearanceOptions(){
       var host=document.createElement('div');
       host.setAttribute('data-chatbg', id);
       el.style.backgroundImage=previewBgFor(id);
-      el.style.backgroundSize = (id==='punkte'?'14px 14px':(id==='gitter'?'20px 20px':'auto'));
+      el.style.backgroundSize = previewSizeFor(id);
     });
     bg.querySelectorAll('[data-bg]').forEach(function(el){
       el.addEventListener('click',function(){
@@ -25212,6 +25615,26 @@ function buildAppearanceOptions(){
       eigenPrev.style.backgroundPosition='center';
     }
     updateOwnBgRow();
+  }
+  // 1b) Hintergrund der ganzen App
+  var abg=$('appbgOpts');
+  if(abg){
+    abg.innerHTML=APP_BGS.map(function(b){
+      return '<div class="opt'+((PREFS.appbg||'keiner')===b.id?' on':'')+'" data-appbg="'+b.id+'">'+
+        '<div class="opt-prev" data-aprev="'+b.id+'"></div><span>'+esc(b.name)+'</span></div>';
+    }).join('');
+    abg.querySelectorAll('[data-aprev]').forEach(function(el){
+      var id=el.getAttribute('data-aprev');
+      el.style.backgroundImage=previewBgFor(id);
+      el.style.backgroundSize = previewSizeFor(id);
+    });
+    abg.querySelectorAll('[data-appbg]').forEach(function(el){
+      el.addEventListener('click',function(){
+        PREFS.appbg=el.getAttribute('data-appbg'); savePrefs(); applyPrefs();
+        abg.querySelectorAll('[data-appbg]').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on'); tick(8);
+      });
+    });
   }
   // 2) Akzentfarbe
   var ac=$('accOpts');
@@ -25264,16 +25687,102 @@ function buildAppearanceOptions(){
       });
     });
   }
+
+  // 5) Zurücksetzen
+  var rs=$('pmReset');
+  if(rs && !rs.dataset.gebunden){
+    rs.dataset.gebunden='1';
+    rs.addEventListener('click', aussehenZuruecksetzen);
+  }
+}
+
+/* ── Alles aufs Standard-Design zurück ────────────────────────────────
+   Nur das AUSSEHEN, und nur auf diesem Gerät.
+
+   Was NICHT angefasst wird, und warum das wichtiger ist als die Liste
+   dessen, was zurückgeht: Meldungseinstellungen, Tastenkürzel, der
+   zuletzt gewählte Berichtszeitraum, aufgeklappte Abschnitte,
+   Sortierungen, die Lieferantenadresse — und natürlich nichts in der
+   Datenbank. Ein Knopf mit „Zurücksetzen" darauf weckt die Sorge, er
+   nehme mehr mit als angekündigt. Deshalb steht hier eine
+   Aufzählung und kein `PREFS = {}`: wer später ein Feld hinzufügt,
+   nimmt es nicht versehentlich mit.
+
+   Das eigene Chat-Foto wird NICHT gelöscht, nur abgewählt. Es
+   wegzuwerfen wäre nicht umkehrbar — und „zurücksetzen" heisst nicht
+   „vernichten". Wer es wirklich loswerden will, hat dafür den Knopf
+   „Entfernen" daneben. */
+function aussehenZuruecksetzen(){
+  if(!confirm('Aussehen auf die Voreinstellung zurücksetzen?\n\n'+
+              'Modus, Schriftgröße, Akzentfarbe und beide Hintergründe gehen '+
+              'auf den Auslieferungsstand zurück. Dein Profil, deine '+
+              'Meldungen und alle Daten bleiben unberührt.\n\n'+
+              'Gilt nur auf diesem Gerät.')) return;
+  PREFS.theme  = 'auto';
+  PREFS.fs     = '100';
+  PREFS.accent = 'cyan';
+  PREFS.chatbg = 'verlauf';
+  PREFS.appbg  = 'keiner';
+  savePrefs();
+  applyPrefs();
+  buildAppearanceOptions();
+  tick(12);
+  toast('Aussehen zurückgesetzt ✓');
 }
 /* Muster für die kleinen Vorschauflächen im Menü */
+/* ── Die Vorschauflächen ──
+   Sie zeigen dasselbe Muster wie der echte Hintergrund, nur kräftiger:
+   eine 60×40-px-Kachel mit einem 5-%-Schleier wäre leer. Das ist keine
+   Schummelei, sondern der Grund, aus dem eine Vorschau überhaupt
+   grösser gezeichnet wird als sie ist.
+
+   Seit dem 21.9.2026 nehmen auch sie die GEWÄHLTE Akzentfarbe (`av()`
+   liest --akz-…). Vorher standen hier fest verdrahtete Violett- und
+   Cyanwerte — wer auf Grün stand, sah in der Vorschau trotzdem
+   Violett und wählte damit etwas anderes aus, als er bekam. */
 function previewBgFor(id){
   var dot=document.body.classList.contains('light')?'rgba(20,10,40,.10)':'rgba(255,255,255,.10)';
-  if(id==='verlauf') return 'radial-gradient(60px 40px at 80% 15%, rgba(139,92,246,.5), transparent 65%),radial-gradient(60px 40px at 15% 85%, rgba(34,211,238,.45), transparent 65%)';
-  if(id==='punkte')  return 'radial-gradient(circle at center, '+dot+' 1.4px, transparent 1.5px)';
-  if(id==='gitter')  return 'linear-gradient('+dot+' 1px, transparent 1px),linear-gradient(90deg, '+dot+' 1px, transparent 1px)';
-  if(id==='wellen')  return 'repeating-linear-gradient(135deg, '+dot+' 0 2px, transparent 2px 12px)';
-  if(id==='nacht')   return 'linear-gradient(180deg, rgba(139,92,246,.45), transparent 55%),linear-gradient(0deg, rgba(236,72,153,.4), transparent 50%)';
+  /* Kräftiger als im Betrieb: der Wert aus --akz-w liegt bei .10–.16
+     und wäre auf einer Kachel nicht zu sehen. */
+  function av(name, deckung){
+    var a=ACCENTS[PREFS.accent]||ACCENTS.cyan;
+    var hell=document.body.classList.contains('light');
+    return mitDeckung(name==='2'?(hell?a.l2:a.d2):(hell?a.l:a.d), deckung);
+  }
+  if(id==='verlauf') return 'radial-gradient(60px 40px at 80% 15%, '+av('1',.5)+', transparent 65%),radial-gradient(60px 40px at 15% 85%, '+av('2',.45)+', transparent 65%)';
+  if(id==='punkte')  return 'radial-gradient(circle at center, '+dot+' 1.4px, transparent 1.5px),radial-gradient(60px 40px at 85% 10%, '+av('1',.4)+', transparent 65%)';
+  if(id==='gitter')  return 'linear-gradient('+dot+' 1px, transparent 1px),linear-gradient(90deg, '+dot+' 1px, transparent 1px),radial-gradient(60px 40px at 15% 90%, '+av('2',.4)+', transparent 65%)';
+  if(id==='wellen')  return 'repeating-linear-gradient(135deg, '+dot+' 0 2px, transparent 2px 12px),linear-gradient(160deg, '+av('1',.35)+', transparent 60%)';
+  if(id==='nacht')   return 'linear-gradient(180deg, '+av('2',.45)+', transparent 55%),linear-gradient(0deg, '+av('1',.4)+', transparent 50%)';
+  if(id==='papier')  return 'repeating-linear-gradient(0deg, '+dot+' 0 1px, transparent 1px 6px),repeating-linear-gradient(90deg, '+dot+' 0 1px, transparent 1px 6px)';
+  if(id==='bogen')   return 'radial-gradient(70px 45px at 50% -12%, '+av('1',.5)+', transparent 68%),radial-gradient(70px 45px at 50% 112%, '+av('2',.45)+', transparent 68%)';
+  if(id==='daemmerung') return 'linear-gradient(170deg, rgba(251,191,36,.42), transparent 48%),linear-gradient(10deg, rgba(244,114,182,.4), transparent 52%)';
+  /* Und die Muster der ganzen App. */
+  if(id==='schimmer') return 'radial-gradient(60px 40px at 82% 10%, '+av('1',.45)+', transparent 62%),radial-gradient(60px 40px at 12% 92%, '+av('2',.4)+', transparent 62%)';
+  if(id==='oben')     return 'linear-gradient(180deg, '+av('1',.45)+', transparent 55%)';
+  if(id==='ecken')    return 'radial-gradient(40px 40px at 0% 0%, '+av('1',.45)+', transparent 68%),radial-gradient(40px 40px at 100% 100%, '+av('2',.4)+', transparent 68%)';
+  if(id==='raster')   return 'linear-gradient('+dot+' 1px, transparent 1px),linear-gradient(90deg, '+dot+' 1px, transparent 1px)';
   return 'none';
+}
+
+/* ── Die Grösse je EBENE ──
+   Seit die Muster zweischichtig sind, reicht ein einzelner Wert nicht
+   mehr: `background-size` gilt für ALLE Ebenen. Beim ersten Versuch
+   stand an „Gitter" noch `20px 20px` — damit wurde auch der
+   Farbverlauf darunter auf 20 px gekachelt, und die Vorschau zeigte
+   ein grobes violettes Raster statt eines feinen Gitters mit
+   Schimmer. Auf dem Bildschirmfoto sofort zu sehen, in den Zahlen
+   nicht.
+
+   Eine Liste je Muster, in derselben Reihenfolge wie die Ebenen in
+   previewBgFor. Wer dort eine Ebene einfügt, fügt sie hier mit ein. */
+function previewSizeFor(id){
+  if(id==='punkte') return '14px 14px, cover';
+  if(id==='gitter') return '20px 20px, 20px 20px, cover';
+  if(id==='raster') return '20px 20px, 20px 20px';
+  /* Alles andere ist entweder ein Verlauf (deckt von selbst) oder ein
+     repeating-…-gradient, der seinen Abstand selbst mitbringt. */
+  return 'auto';
 }
 function closeProfile(){ $('profileModal').classList.remove('show'); }
 function saveProfile(){
