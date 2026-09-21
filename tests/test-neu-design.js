@@ -102,8 +102,20 @@ async function seite(b, stub, such, breite) {
   {
     const neu = await page.evaluate(() => ({
       klasse: document.body.classList.contains('neu'),
+      /* Die BESCHRIFTUNG lesen, nicht den ganzen Knopf.
+         `textContent` nimmt das Abzeichen mit, und seit dem 21.9.2026
+         trägt „Aufgaben" eines: aus „Aufgaben" wurde „Aufgaben4".
+
+         Genau davor warnt die Knopf-Regel im Projekt — ein absolut
+         gesetztes Kind nimmt im Fluss keinen Platz ein und gehört
+         nicht zum Wort. Der Durchlauf hat es richtig gemeldet; falsch
+         war die Messung, nicht die App. */
       reihe: [...document.querySelectorAll('.mn-reihe > button')]
-        .map(x => x.textContent.replace(/\s+/g, ' ').trim()),
+        .map(x => {
+          const wort = x.querySelector('span:not(.badge):not(.ndot)');
+          return (wort ? wort.textContent : x.textContent)
+            .replace(/\s+/g, ' ').trim();
+        }),
       ladeZu: document.getElementById('allesLade').hidden,
       griff: !!document.querySelector('#bereichKopf .bk-griff'),
     }));
