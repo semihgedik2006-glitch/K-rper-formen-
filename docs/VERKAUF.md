@@ -115,14 +115,46 @@ https://<deine-adresse>/index.html?demo
 ```
 
 Der Link geht sofort auf, ohne Anmeldung. Oben steht eine Leiste
-„Demo — erfundene Daten, nichts wird gespeichert" mit einem Umschalter
-für die Rolle. `?demo=chef` (Voreinstellung), `?demo=leiter`,
-`?demo=mitarbeiter`.
+„Demo — erfundene Daten, nichts wird gespeichert" mit **zwei
+Umschaltern**: einem für die Rolle und einem für den Abo-Zustand.
 
 **Der stärkste Moment im Gespräch** ist der Rollenwechsel: derselbe
 Bildschirm, andere Rolle. Die Geschäftsführung sieht vierzehn Studios und
 fünfzehn Kanäle, der Mitarbeiter sein eigenes Studio und zwei Kanäle. Das
 ist keine Behauptung über Datenschutz, sondern eine Vorführung davon.
+
+### Der zweite Umschalter: das Abo
+
+Seit dem 21.9.2026. Er stellt alle **zehn** Zustände ein, die es gibt —
+nicht nur „läuft" und „gesperrt":
+
+| Zustand | Was man sieht |
+|---|---|
+| Testphase | „Noch 21 Tage" |
+| bezahlt | Betrag und bezahlt-bis, dazu der Weg zu Rechnungen und Kündigung |
+| dauerhaft gratis | der Bestandsschutz |
+| Zahlung offen · 1. Mahnung · 2. Mahnung | **„Seit 14 Tagen. Das Team merkt davon nichts."** |
+| nur noch lesen | Leiste oben, „+ Neu" verschwindet, alles bleibt sichtbar |
+| stillgelegt | Leiste oben, gespeichert wird nichts mehr |
+| gekündigt | „Läuft noch bis …" |
+| kein Abo hinterlegt | „Alles freigeschaltet" — der Zustand jedes heutigen Kunden |
+
+**Die drei Mahnstufen sind der interessante Teil**, und sie waren vorher
+nicht vorführbar. Drei Wochen lang merkt das Team nichts, nur der Chef
+sieht die Karte. Das ist eine Entscheidung, die man erklären muss — und
+am besten zeigt, statt sie zu behaupten.
+
+**Der zweite starke Moment** ist derselbe Zustand aus zwei Blickwinkeln:
+auf „nur noch lesen" stellen, dann die Rolle wechseln. Der Chef liest,
+was zu tun ist, und hat einen Knopf dorthin. Der Mitarbeiter liest *„Das
+liegt nicht an dir — bitte an die Geschäftsführung wenden."* und hat
+keinen. Beide Werte reisen beim Wechseln mit.
+
+> **Was die Demo hier NICHT tut:** die Knöpfe führen nicht zu Stripe.
+> Es gibt keine nachgebaute Bezahlseite, und das ist Absicht — wer in
+> einer Vorführung auf eine gefälschte Kasse klickt, schließt aus ihr
+> auf Preise, Ablauf und Sicherheit. Stattdessen steht unter den
+> Knöpfen, was im Betrieb passieren würde.
 
 **Was die Demo zeigt:** echte Standortnamen, **erfundene Menschen**,
 erfundene Aufgaben, Nachrichten und Zahlen. Alles ist bedienbar —

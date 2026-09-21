@@ -431,14 +431,62 @@
 
   /* ══ Die Daten ══════════════════════════════════════════════════════ */
 
-  /* Nur drei Werte sind erlaubt, und alles andere wird zu 'voll'. Eine
-     Aufzaehlung statt einer Uebernahme: was aus einer Adresse kommt,
-     gehoert geprueft, auch wenn es hier nur die Demo betrifft. */
+  /* ══ Der Abo-Zustand in der Demo ═════════════════════════════════════
+     Bis zum 21.9.2026 kannte die Demo drei Werte (voll / nurlesen / zu)
+     und nahm sie nur aus der Adresse entgegen. Beides war zu wenig:
+
+     ERSTENS ist das nicht das Modell. Im Betrieb gibt es neun Zustaende,
+     und die interessanten liegen dazwischen — die drei Mahnstufen, in
+     denen noch gar nichts gesperrt ist und trotzdem etwas passiert.
+     Wer nur „voll" und „zu" zeigen kann, zeigt das Abo-Modell nicht.
+
+     ZWEITENS stand der Zusatz nirgends. Eine Einstellung, die es nur in
+     der Adresszeile gibt, gibt es fuer den Benutzer nicht — aus dem
+     Betrieb kam genau das zurueck.
+
+     Die Liste hier ist die einzige Stelle: sie fuellt die Auswahl in der
+     Demo-Leiste UND legt den Eintrag in der Datenbank an. Zwei Listen
+     waeren zwei Wahrheiten. */
+  var ABO_DEMO = [
+    { id: 'test',       wort: 'Abo: Testphase' },
+    { id: 'aktiv',      wort: 'Abo: bezahlt' },
+    { id: 'gratis',     wort: 'Abo: dauerhaft gratis' },
+    { id: 'faellig',    wort: 'Abo: Zahlung offen' },
+    { id: 'mahnung1',   wort: 'Abo: 1. Mahnung' },
+    { id: 'mahnung2',   wort: 'Abo: 2. Mahnung' },
+    { id: 'nurlesen',   wort: 'Abo: nur noch lesen' },
+    { id: 'zu',         wort: 'Abo: stillgelegt' },
+    { id: 'gekuendigt', wort: 'Abo: gekündigt' },
+    { id: 'keins',      wort: 'Kein Abo hinterlegt' }
+  ];
+
+  /* Dieselbe Rechnung wie aboZugriff() in functions/index.js. Sie steht
+     hier ein zweites Mal, weil die Demo keinen Server hat — aber sie
+     steht ABSICHTLICH so kurz, dass ein Unterschied auffiele. Wer die
+     Liste dort aendert, aendert sie hier mit; tests/test-paywall.js
+     faehrt beide Seiten gegeneinander. */
+  function zugriffVon(status) {
+    if (status === 'zu') return 'zu';
+    if (status === 'nurlesen') return 'nurlesen';
+    return 'voll';
+  }
+
+  /* Aufzaehlung statt Uebernahme: was aus einer Adresse kommt, gehoert
+     geprueft, auch wenn es hier nur die Demo betrifft.
+
+     'voll' bleibt gueltig, obwohl es kein Zustand des Modells ist —
+     Links aus der Zeit davor sollen nicht ins Leere laufen. Es meint
+     die Testphase, also den Zustand, in dem alles offen ist. */
   function aboAusAdresse() {
     try {
-      var m = /[?&]abo=(voll|nurlesen|zu)(&|$)/.exec(String(location.search || ''));
-      return m ? m[1] : 'voll';
-    } catch (e) { return 'voll'; }
+      var m = /[?&]abo=([a-z0-9]+)(&|$)/.exec(String(location.search || ''));
+      if (!m) return 'test';
+      if (m[1] === 'voll') return 'test';
+      for (var i = 0; i < ABO_DEMO.length; i++) {
+        if (ABO_DEMO[i].id === m[1]) return m[1];
+      }
+      return 'test';
+    } catch (e) { return 'test'; }
   }
 
   legen('users', USERS.slice());
@@ -463,18 +511,18 @@
       dokumente: true, probetraining: true, umfragen: true, nachweise: true },
     /* ── Die Zugriffsstufe ──
        Im Betrieb schreibt sie ausschliesslich der Server, abgeleitet
-       aus dem Abo. In der Demo gibt es keinen Server, also kommt sie
-       aus der Adresse: ?demo=chef&abo=nurlesen.
+       aus dem Abo. In der Demo gibt es keinen Server, also wird sie
+       aus demselben Zustand gerechnet, der auch die Abo-Karte fuellt.
 
-       Warum ueberhaupt: die Sperre ist der einzige Zustand der App,
-       den man nicht herbeifuehren kann, indem man etwas anklickt. Ohne
-       diesen Weg liesse sie sich nur pruefen, indem ein Durchlauf
-       Funktionen von innen aufruft — und dann prueft er die Funktion
-       statt den Weg, den ein Mensch nimmt.
+       ABGELEITET, NICHT ZWEITES FELD: die Demo soll sich nicht
+       widersprechen koennen. Eine App, die oben „nur noch lesen" zeigt
+       und in der Verwaltung ein laufendes Abo, ist als Vorfuehrung
+       schlimmer als gar keine.
 
-       'voll' ist die Voreinstellung. Ein Besucher, der die Demo
-       oeffnet, sieht nie eine Sperre. */
-    { id: 'zugriff', stufe: aboAusAdresse(), stand: Date.now() }
+       Die Testphase ist die Voreinstellung. Ein Besucher, der die Demo
+       einfach oeffnet, sieht nie eine Sperre — die muss er in der
+       Demo-Leiste ausdruecklich waehlen. */
+    { id: 'zugriff', stufe: zugriffVon(aboAusAdresse()), stand: Date.now() }
   ]);
 
   /* Chat: ein allgemeiner Kanal, je Studio einer, dazu zwei Gruppen. */
@@ -771,15 +819,35 @@
      Zugriffsstufe, damit die Demo sich nicht widerspricht: eine App,
      die „nur noch lesen" anzeigt und daneben ein laufendes Abo, ist
      als Vorfuehrung schlimmer als gar keine. */
-  legen(P('abo'), [{
-    id: 'aktuell',
-    stufe: 'premium',
-    status: aboAusAdresse() === 'voll' ? 'test' : aboAusAdresse(),
-    netto: 0,
-    bisAm: Date.now() + 21 * 86400000,
-    jeGezahlt: false,
-    seit: vorTag(9)
-  }]);
+  /* Jeder Zustand braucht die Felder, aus denen die Abo-Karte ihre
+     zweite Zeile baut — sonst steht dort eine Ueberschrift und nichts
+     darunter, und die Vorfuehrung zeigt eine halb gefuellte Karte.
+
+     Die Tage entsprechen der langen Mahnleiter aus functions/index.js
+     (0 / 7 / 14 / 21 / 35). Das ist kein Zierrat: wer in der Demo
+     „2. Mahnung" waehlt, soll „Seit 14 Tagen" lesen und nicht eine
+     erfundene Zahl. */
+  var ABO_STAND = aboAusAdresse();
+  function aboEintrag(status) {
+    var tag = 86400000, jetzt = Date.now();
+    var e = { id: 'aktuell', stufe: 'premium', status: status, seit: vorTag(40) };
+    if (status === 'test')            { e.bisAm = jetzt + 21 * tag; e.netto = 0; }
+    else if (status === 'aktiv')      { e.bisAm = jetzt + 12 * tag; e.netto = 374; e.kunde = 'cus_demo'; }
+    else if (status === 'gratis')     { e.netto = 0; }
+    else if (status === 'gekuendigt') { e.bisAm = jetzt + 9 * tag; e.netto = 374; e.kunde = 'cus_demo'; }
+    else if (status === 'faellig')    { e.offenSeit = jetzt;             e.netto = 374; e.kunde = 'cus_demo'; }
+    else if (status === 'mahnung1')   { e.offenSeit = jetzt -  7 * tag;  e.netto = 374; e.kunde = 'cus_demo'; }
+    else if (status === 'mahnung2')   { e.offenSeit = jetzt - 14 * tag;  e.netto = 374; e.kunde = 'cus_demo'; }
+    else if (status === 'nurlesen')   { e.offenSeit = jetzt - 21 * tag;  e.netto = 374; e.kunde = 'cus_demo'; }
+    else if (status === 'zu')         { e.offenSeit = jetzt - 35 * tag;  e.netto = 374; e.kunde = 'cus_demo'; }
+    return e;
+  }
+  /* 'keins' legt KEINEN Eintrag an — das ist der Zustand jedes heutigen
+     Bestandskunden, und er ist der wichtigste von allen: kein Eintrag
+     muss „alles freigeschaltet" heissen und darf nicht wie ein Fehler
+     aussehen. Ein Zustand, den man nicht vorfuehren kann, wird auch
+     nicht geprueft. */
+  legen(P('abo'), ABO_STAND === 'keins' ? [] : [aboEintrag(ABO_STAND)]);
 
   /* ══ Server-Funktionen in der Demo ══════════════════════════════════
      Die meisten gibt es hier nicht, und das sagt die Demo auch: was auf
@@ -797,6 +865,31 @@
      nichts zu schützen ist — und es gehört gesagt, damit niemand aus der
      Demo auf die Bauart schliesst. */
   var DEMO_FUNKTIONEN = {
+    /* ── Die zwei Wege zur Kasse ──
+       Sie fuehren im Betrieb zu Stripe, und Stripe gibt es in der Demo
+       nicht. Bis zum 21.9.2026 fielen sie deshalb in die allgemeine
+       Abfuhr — „wuerde auf dem Server ausgefuehrt und zum Beispiel
+       E-Mails verschicken". Das ist fuer die Kasse schlicht falsch (sie
+       verschickt keine Mail) und half niemandem weiter: der Knopf sah
+       aus wie kaputt.
+
+       Sie werfen jetzt, statt etwas vorzutaeuschen. EINE ATTRAPPE WAERE
+       HIER DAS FALSCHE: wer in einer Vorfuehrung auf eine nachgebaute
+       Bezahlseite klickt, haelt sie fuer die echte und schliesst aus
+       ihr auf Sicherheit, Preise und Ablauf. Der Satz sagt stattdessen,
+       was passieren WUERDE — und wo man den Zustand danach ansieht. */
+    stripeKasse: function () {
+      throw new Error(
+        'In der Demo führt das nicht zu Stripe. Im Betrieb öffnet sich hier ' +
+        'die Bezahlseite von Stripe; Kartendaten sehen wir nie. Wie es danach ' +
+        'aussieht, zeigt oben in der Demo-Leiste „Abo: bezahlt".');
+    },
+    stripeVerwaltung: function () {
+      throw new Error(
+        'In der Demo führt das nicht zu Stripe. Im Betrieb öffnet sich hier ' +
+        'das Kundenportal von Stripe: Rechnungen, Zahlungsmittel, kündigen. ' +
+        'Gekündigt sieht so aus wie oben „Abo: gekündigt".');
+    },
     pinStatus: function () {
       return { gesetzt: true, seit: Date.now() - 40 * TAG };
     },
@@ -1054,16 +1147,42 @@
     var feld = document.getElementById('ichHandyCode');
     if (feld) feld.value = DEMO_CODE;
 
+    /* ── Die zwei Schalter der Demo-Leiste ──
+       Beide laden neu statt umzubauen. Rolle und Abo-Zustand
+       entscheiden, welche Studios, welche Kanäle und welche Knöpfe es
+       überhaupt gibt — das im laufenden Betrieb umzustellen wäre ein
+       zweiter, eigener Programmzustand, den niemand außer der Demo je
+       benutzt. Ein Neuladen dauert eine Sekunde und kann nicht halb
+       misslingen.
+
+       BEIDE WERTE REISEN MIT. Vorher hiess es hier
+       `location.search = '?demo=' + sel.value` — und damit fiel ein
+       gewählter Abo-Zustand beim Rollenwechsel lautlos weg. Genau der
+       Wechsel ist aber das Interessante: dieselbe Sperre einmal als
+       Chef und einmal als Mitarbeiter, denn die App sagt beiden etwas
+       anderes. */
+    function neuLaden(rolle, abo) {
+      location.search = '?demo=' + encodeURIComponent(rolle) +
+                        '&abo=' + encodeURIComponent(abo);
+    }
+
     var sel = document.getElementById('demoRolle');
+    var aboSel = document.getElementById('demoAbo');
+
+    if (aboSel) {
+      aboSel.innerHTML = ABO_DEMO.map(function (z) {
+        return '<option value="' + z.id + '">' + z.wort + '</option>';
+      }).join('');
+      aboSel.value = ABO_STAND;
+      aboSel.addEventListener('change', function () {
+        neuLaden(ROLLE, aboSel.value);
+      });
+    }
+
     if (!sel) return;
     sel.value = ROLLE;
     sel.addEventListener('change', function () {
-      /* Neu laden statt umbauen. Die Rolle entscheidet, welche Studios,
-         welche Kanäle und welche Knöpfe es überhaupt gibt — das im
-         laufenden Betrieb umzustellen wäre ein zweiter, eigener
-         Programmzustand, den niemand außer der Demo je benutzt. Ein
-         Neuladen dauert eine Sekunde und kann nicht halb misslingen. */
-      location.search = '?demo=' + sel.value;
+      neuLaden(sel.value, ABO_STAND);
     });
   });
 })();

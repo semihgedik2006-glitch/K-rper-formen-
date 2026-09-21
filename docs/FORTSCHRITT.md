@@ -9572,3 +9572,113 @@ andere Aufgabe.
 Studiogrenze.** Die vier Roten waren alle echt: eine falsche Formel, eine
 falsche Zusage im Datenschutztext, sieben Pixel und ein Zerleger, der am
 falschen Ort gemessen hat.
+
+---
+
+## Runde 92 — Das Abo-Modell vorführbar machen
+
+**21. September 2026.** Aus dem Betrieb, wörtlich:
+
+> *„Ich kann im Demo Modus dass mit den Abo Modellen nicht testen."*
+
+Er hatte recht, und der Grund war nicht, dass etwas fehlte.
+
+### Was war
+
+Die Zustände gab es alle — im Code, in den Regeln, in den Durchläufen.
+Umstellen ließ sich der Zustand aber nur über einen Zusatz in der
+Adresse, `?abo=nurlesen`, und der stand nirgends. Nicht in der App,
+nicht in `VERKAUF.md`, nicht in der Demo-Leiste.
+
+> **Eine Einstellung, die es nur in der Adresszeile gibt, gibt es für
+> den Benutzer nicht.** Das ist kein Bedienfehler auf seiner Seite,
+> sondern ein Baufehler auf meiner.
+
+Dazu kannte die Demo nur drei Werte — `voll`, `nurlesen`, `zu` — und
+damit ausgerechnet die uninteressanten: ganz offen und ganz zu. **Die
+drei Mahnstufen, in denen noch gar nichts gesperrt ist und trotzdem
+etwas passiert, ließen sich überhaupt nicht zeigen.** Das ist aber der
+Teil, den man in einem Verkaufsgespräch erklären muss: drei Wochen lang
+merkt das Team nichts, nur der Chef sieht die Karte.
+
+### Was jetzt ist
+
+Ein zweiter Umschalter in der Demo-Leiste, neben dem für die Rolle, mit
+**allen zehn Zuständen** — die neun des Modells plus „kein Abo
+hinterlegt", den Zustand jedes heutigen Bestandskunden.
+
+Jeder Zustand legt den Datenbankeintrag an, den er braucht: die
+Mahnstufen mit den Tagen der langen Mahnleiter aus `functions/index.js`
+(0 / 7 / 14 / 21 / 35), damit „2. Mahnung" auch wirklich **„Seit 14
+Tagen"** liest und keine erfundene Zahl.
+
+Die Zugriffsstufe wird aus demselben Zustand **abgeleitet** statt als
+zweites Feld geführt. Eine Demo, die oben „nur noch lesen" zeigt und in
+der Verwaltung ein laufendes Abo, ist als Vorführung schlimmer als gar
+keine.
+
+### Drei Fehler, die dabei herausfielen
+
+**1. Der Rollenwechsel warf den Abo-Zustand weg.** `location.search =
+'?demo=' + wert` — lautlos. Gerade dieser Wechsel ist das Interessante:
+derselbe Zustand sagt dem Chef *„was zu tun ist"* und dem Team *„das
+liegt nicht an dir"*. Beide Werte reisen jetzt mit.
+
+**2. „Seit 0 Tagen."** Am ersten Tag der Mahnleiter rechnet die Formel
+null, und eine Null in einem Satz liest sich wie ein Fehler, nicht wie
+„heute". Aufgefallen ist das erst, als sich der Zustand vorführen ließ —
+**vorher gab es ihn nur im Kopf.**
+
+**3. „Zahlung offenSeit 14 Tagen."** `#aboStand` trägt zwar
+`.setup-zeile`, setzt aber `display:block` am Element; `<b>` und
+`<span>` sind beide inline und liefen ineinander. Gefunden auf dem
+Bildschirmfoto, nicht im Durchlauf: **`textContent` liest beides
+zusammen und merkt den Unterschied nie.** Der neue Durchlauf fragt
+deshalb die gerechnete Darstellung — wo endet das eine, wo beginnt das
+andere.
+
+### Was der Knopf in der Demo tut
+
+Er führt nicht zu Stripe, und er sagt das jetzt auch. Vorher fiel er in
+die allgemeine Abfuhr („würde auf dem Server ausgeführt und zum Beispiel
+E-Mails verschicken") — für die Kasse schlicht falsch, sie verschickt
+keine Mail, und der Knopf sah aus wie kaputt.
+
+**Keine nachgebaute Bezahlseite.** Wer in einer Vorführung auf eine
+gefälschte Kasse klickt, schließt aus ihr auf Preise, Ablauf und
+Sicherheit. Stattdessen steht dauerhaft unter den Knöpfen, was im
+Betrieb passieren würde — **dauerhaft, nicht als Meldung:** gemessen
+überschreibt die Aufgaben-Erinnerung der Demo den Toast nach 300 ms, und
+drei Sätze liest ohnehin niemand in zweieinhalb Sekunden.
+
+### Und die Leiste selbst
+
+Zwei Auswahlfelder statt einem, und die alte Regel `margin-left:auto`
+galt für jedes — gemessen lag das zweite bei 390 px Breite von 245 bis
+408 px in einer 390 px breiten Leiste, also **zur Hälfte hinter dem
+Rand**. Auffallen konnte das nicht: die Leiste hat `overflow:hidden`,
+die Seite scrollt also nicht seitwärts, und ein halb abgeschnittenes
+Auswahlfeld sieht aus wie eines, das eben so breit ist.
+
+Jetzt bekommt nur das erste den Schub, beide dürfen schrumpfen. Geprüft
+auf 320, 390, 430 und 820 px, mitsamt der 44-px-Fingerregel.
+
+### Neu: `tests/test-demo-abo.js`
+
+**108 Zusicherungen.** Alle zehn Zustände über den Weg, den ein Mensch
+nimmt — untere Leiste, Lade „Alles", Verwaltung, Reiter System. Je
+Zustand: steht die Überschrift richtig, steht eine Erklärung darunter,
+stehen die zwei untereinander, warnt die Leiste oben genau dann, wenn
+gesperrt ist.
+
+Dazu die Gegenproben: ohne `?demo` ist die Leiste unsichtbar, die
+Beschriftungen sind keine Kennungen, und die Texte für Chef und Team
+sind wirklich verschieden.
+
+**Die Gegenprobe zur Gegenprobe:** beim ersten Bauen brach der Durchlauf
+ab, als die Auswahl fehlte, statt zu melden — und ein Abbruch
+verschweigt alles, was danach käme, ausgerechnet in dem Fall, den er
+finden soll. Nachgemessen: ohne die Auswahl meldet er jetzt 13 Fehler
+und läuft zu Ende.
+
+**115 Durchläufe.**
