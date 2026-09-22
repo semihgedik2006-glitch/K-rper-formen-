@@ -885,6 +885,68 @@ service cloud.firestore {
     // dieselbe Entscheidung wie bei Aufgaben, Putzplan und Geräten:
     // ein Problem aus Rondorf hilft in Brühl genauso weiter. Die
     // Studio-Angabe sagt, wo es herkommt; sie ist keine Schranke.
+    /* ── SCHULUNG (22.9.2026) ─────────────────────────────────────────
+       Webinare mit Videos, Fragen und einem Nachweis, wer sie wann
+       gemacht hat.
+
+       DIE ENTSCHEIDENDE ZEILE STEHT WEITER UNTEN: `schulungLaeufe`
+       darf NIEMAND anlegen — auch die Leitung nicht. Ein Durchlauf
+       entsteht ausschliesslich in der Cloud Function `schulungStart`,
+       und zwar erst, nachdem der Teilnahme-Code gestimmt hat. Duerfte
+       der Browser ihn anlegen, schriebe sich jeder mit der Konsole
+       einen fertigen, bestandenen Durchlauf auf einen fremden Namen —
+       und die ganze Liste waere eine Behauptung statt eines
+       Nachweises. */
+    // Die Module. Lesen darf jeder Aktive: eine Schulung, die man nicht
+    // aufmachen kann, ist keine. Schreiben nur die Leitung.
+    match /schulungen/{sId} {
+      allow read: if aufFlachenPfaden() && (istAktiv());
+      allow create, update, delete: if aufFlachenPfaden()
+        && (istAktiv() && (isChef() || isLeiter()));
+    }
+    // Wer eine Schulung machen darf, und unter welchem Namen.
+    // Lesen darf das die Leitung — und die Person selbst, wenn sie ein
+    // Konto hat: sonst saehe sie im Ich-Bereich ihre eigenen Zahlen
+    // nicht, und genau das war die Zusage aus dem Betrieb.
+    match /schulungTeilnehmer/{tId} {
+      allow read: if aufFlachenPfaden()
+        && (istAktiv()
+        && (isChef() || isLeiter() || resource.data.get('uid', '') == request.auth.uid));
+      allow create, update, delete: if aufFlachenPfaden()
+        && (istAktiv() && (isChef() || isLeiter()));
+    }
+    /* Der Teilnahme-Code, gehasht. GESPERRT FUER ALLE, wie zeitPins und
+       aus demselben Grund: wer die Liste lesen kann, macht die Schulung
+       fuer einen Kollegen, und der Nachweis ist wertlos. Auch die
+       Leitung kommt nicht heran — sie sieht den Code genau einmal beim
+       Anlegen, danach niemand mehr. Verloren heisst: neu erzeugen. */
+    match /schulungCodes/{kennung} { allow read, write: if false; }
+    /* Die Bremse gegen Durchprobieren. Ebenfalls zu: wer den eigenen
+       Zaehler zuruecksetzen koennte, haette keine Bremse. */
+    match /schulungVersuche/{uid} { allow read, write: if false; }
+    /* Die Durchlaeufe. `create` fehlt hier mit Absicht — siehe oben.
+       Schreiben darf nur das GERAET, auf dem der Durchlauf laeuft, und
+       nur solange er laeuft: ein abgeschlossener Durchlauf ist ein
+       Nachweis und darf sich nicht mehr aendern.
+
+       Lesen: die Leitung, und die Person selbst. Das ist die Zusage
+       „jeder sieht seine eigenen Zahlen" — ohne sie waere es eine
+       heimliche Leistungsakte. */
+    match /schulungLaeufe/{lId} {
+      allow read: if aufFlachenPfaden()
+        && (istAktiv()
+        && (isChef() || isLeiter() || resource.data.get('uid', '') == request.auth.uid));
+      allow create: if false;
+      allow update: if aufFlachenPfaden()
+        && (istAktiv()
+        && resource.data.geraetUid == request.auth.uid
+        && resource.data.status == 'laeuft'
+        && request.resource.data.geraetUid == resource.data.geraetUid
+        && request.resource.data.teilnehmer == resource.data.teilnehmer
+        && request.resource.data.modul == resource.data.modul);
+      allow delete: if aufFlachenPfaden() && (istAktiv() && isChef());
+    }
+
     match /loesungen/{lId} {
       allow read: if aufFlachenPfaden()
         && (istAktiv());
@@ -1670,6 +1732,47 @@ service cloud.firestore {
                 && get(/databases/$(database)/documents/documents/$(docId))
                      .data.studios.hasOnly(myKeys())));
           allow delete: if schreibtIn(f) && (isChef());
+        }
+
+        /* ── SCHULUNG (22.9.2026) ─────────────────────────────────────────
+           Webinare mit Videos, Fragen und einem Nachweis, wer sie wann
+           gemacht hat.
+
+           DIE ENTSCHEIDENDE ZEILE STEHT WEITER UNTEN: `schulungLaeufe`
+           darf NIEMAND anlegen — auch die Leitung nicht. Ein Durchlauf
+           entsteht ausschliesslich in der Cloud Function `schulungStart`,
+           und zwar erst, nachdem der Teilnahme-Code gestimmt hat. Duerfte
+           der Browser ihn anlegen, schriebe sich jeder mit der Konsole
+           einen fertigen, bestandenen Durchlauf auf einen fremden Namen —
+           und die ganze Liste waere eine Behauptung statt eines
+           Nachweises. */
+        match /schulungen/{sId} {
+          allow read: if inFirma(f) && (istAktiv());
+          allow create, update, delete: if schreibtIn(f)
+            && (istAktiv() && (isChef() || isLeiter()));
+        }
+        match /schulungTeilnehmer/{tId} {
+          allow read: if inFirma(f)
+            && (istAktiv()
+            && (isChef() || isLeiter() || resource.data.get('uid', '') == request.auth.uid));
+          allow create, update, delete: if schreibtIn(f)
+            && (istAktiv() && (isChef() || isLeiter()));
+        }
+        match /schulungCodes/{kennung} { allow read, write: if false; }
+        match /schulungVersuche/{uid} { allow read, write: if false; }
+        match /schulungLaeufe/{lId} {
+          allow read: if inFirma(f)
+            && (istAktiv()
+            && (isChef() || isLeiter() || resource.data.get('uid', '') == request.auth.uid));
+          allow create: if false;
+          allow update: if schreibtIn(f)
+            && (istAktiv()
+            && resource.data.geraetUid == request.auth.uid
+            && resource.data.status == 'laeuft'
+            && request.resource.data.geraetUid == resource.data.geraetUid
+            && request.resource.data.teilnehmer == resource.data.teilnehmer
+            && request.resource.data.modul == resource.data.modul);
+          allow delete: if schreibtIn(f) && (istAktiv() && isChef());
         }
 
         /* ── Lösungen ─────────────────────────────────────────────────

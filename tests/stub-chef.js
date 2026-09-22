@@ -242,6 +242,29 @@ var USERS = [
      verlangt — eine Sammlung, die nur eine Seite kennt, macht jeden
      Durchlauf darüber grün und aussagelos. Das ist in diesem Projekt
      schon fünfmal passiert. */
+  /* Schulung, seit dem 22.9.2026. Zwei abgeschlossene Durchläufe —
+     einer davon für jemanden OHNE Zugang zur App, denn das ist der
+     Fall, um den es geht: die Einarbeitung vor dem ersten Login. */
+  var SCHULUNG_TN = [
+    { id: 'tn-a', name: 'Anna Meier', uid: 'u2', kennung: 'M4K7', gesperrt: false, ts: 1 },
+    { id: 'tn-b', name: 'Jamie Kurz', uid: null, kennung: 'RPQ2', gesperrt: false, ts: 2 }
+  ];
+  var SCHULUNG_LAEUFE = [
+    { id: 'sl1', modul: 'm-start', modulTitel: 'Dein erster Tag im Studio',
+      kategorie: 'einarbeitung', teilnehmer: 'tn-b', teilnehmerName: 'Jamie Kurz',
+      uid: null, geraetUid: 'testuid', geraetName: 'Empfang H\u00fcrth',
+      studioKey: 'studio-6', start: 1, ende: 601000, aktivMs: 600000, durchgang: 1,
+      schritteGesehen: [0, 1, 2], punkte: 100, bestanden: true, status: 'fertig', ts: 601000,
+      fragen: [{ frage: 'Ger\u00e4t piept', versuche: 2, falsch: [0], richtig: true },
+               { frage: 'Unsicher', versuche: 1, falsch: [], richtig: true }] },
+    { id: 'sl2', modul: 'm-hygiene', modulTitel: 'Hygiene nach jedem Training',
+      kategorie: 'hygiene', teilnehmer: 'tn-a', teilnehmerName: 'Anna Meier',
+      uid: 'u2', geraetUid: 'testuid', geraetName: 'Empfang H\u00fcrth',
+      studioKey: 'studio-6', start: 1, ende: 421000, aktivMs: 420000, durchgang: 1,
+      schritteGesehen: [0, 1, 2, 3], punkte: 100, bestanden: true, status: 'fertig', ts: 421000,
+      fragen: [{ frage: 'Wann reinigen', versuche: 1, falsch: [], richtig: true }] }
+  ];
+
   var LOESUNGEN = [
     { id:'l1', titel:'Gerät 3 piept beim Start', kategorie:'geraet',
       studios:['studio-6'], problem:'Dreimal Piepen, Anzeige bleibt dunkel.',
@@ -550,6 +573,18 @@ var USERS = [
            Nur wenn ein Durchlauf window.__privat vorher hinlegt — sonst
            saehen alle anderen ploetzlich Eintraege, wo sie einen leeren
            Zustand erwarten. */
+        /* Schulung als eigene Weiche, NICHT in der Ternaer-Kette
+           darunter: die ist schon acht Ebenen tief, und eine weitere
+           Klammer verliert man beim Zaehlen. Dieselbe Bauform wie bei
+           `privat` eine Zeile weiter. */
+        if (path === 'schulungLaeufe' || path === 'schulungTeilnehmer' || path === 'schulungen') {
+          var sl = path === 'schulungLaeufe' ? (window.__schulungLaeufe || SCHULUNG_LAEUFE)
+                 : path === 'schulungTeilnehmer' ? (window.__schulungTn || SCHULUNG_TN)
+                 : (window.__schulungen || []);
+          return Promise.resolve(makeSnap(sl.map(function (d) {
+            return { id: d.id, data: function () { return d; } };
+          })));
+        }
         var gp = /^privat\/[^/]+\/(termine|notizen|aufgaben|ziele|wuensche)$/.exec(path);
         if (gp) {
           var pl = ((window.__privat || {})[gp[1]] || []);
@@ -648,6 +683,25 @@ var USERS = [
             });
           }
           try { cb(makeSnap(al.map(function (d) {
+            return { id: d.id, data: function () { return d; } }; }))); }
+          catch (e) { console.error(e); }
+          return unsub();
+        }
+        /* Die zweite Haelfte. Eine Sammlung, die nur EINE Seite kennt,
+           macht jeden Durchlauf darueber gruen und aussagelos — das
+           ist in dieser Attrappe schon fuenfmal passiert (board, die
+           Uebergaben, probetrainings, users, der Chat). */
+        if (path === 'schulungLaeufe' || path === 'schulungTeilnehmer' || path === 'schulungen') {
+          var sl2 = path === 'schulungLaeufe' ? (window.__schulungLaeufe || SCHULUNG_LAEUFE)
+                  : path === 'schulungTeilnehmer' ? (window.__schulungTn || SCHULUNG_TN)
+                  : (window.__schulungen || []);
+          var selbst3 = this;
+          if (selbst3._filter && selbst3._filter.length) {
+            sl2 = sl2.filter(function (d) {
+              return selbst3._filter.every(function (f) { return d[f.f] === f.v; });
+            });
+          }
+          try { cb(makeSnap(sl2.map(function (d) {
             return { id: d.id, data: function () { return d; } }; }))); }
           catch (e) { console.error(e); }
           return unsub();

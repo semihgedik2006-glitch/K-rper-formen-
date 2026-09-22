@@ -87,7 +87,7 @@
       },
       {
         "//": "Der Grundstock der Hilfe: 47 KB, die sich nur ändern, wenn das Mitarbeiter-Handbuch neu gelesen wird. Eine Woche Zwischenspeicher spart bei 39 Konten jeden Tag ein paar hundert Abrufe — und die Datei ist ohnehin im Vorrat des Service Workers (sw.js, PRECACHE). Wer sie neu erzeugt, zählt dort VERSION hoch; dann holt jedes Gerät sie beim nächsten Start.",
-        "source": "/loesungen-basis.js",
+        "source": "/{loesungen,schulungen}-basis.js",
         "headers": [
           { "key": "Cache-Control", "value": "public, max-age=604800" }
         ]

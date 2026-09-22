@@ -92,6 +92,12 @@ async function zumTeam(page) {
        und der Test meldet einen Fehler, der keiner ist. Wer der Gruppe
        etwas hinzufuegt, kommt hier wieder vorbei; genau dafuer ist
        diese Zeile da.
+       `schulung` gehört seit dem 22.9.2026 dazu: der Durchlauf prüft,
+       ob eine LEERE Gruppe verschwindet, und dafür muss wirklich alles
+       darin aus sein. Wer einen Reiter hinzufügt und diese Zeile
+       vergisst, sieht hier einen roten Durchlauf — und nicht im Studio
+       eine Gruppe, die ins Leere führt.
+
        `loesungen` steht bewusst NICHT mehr dabei: der Schalter gibt es
        weiter, aber er schaltet seit dem 22.9. den Rettungsring in der
        Kopfzeile ab, keinen Reiter unter „Betrieb". Würde er hier
@@ -99,7 +105,7 @@ async function zumTeam(page) {
        mehr gibt. */
     const { b, page } = await start({
       todos: false, putzplan: false, material: false, geraete: false,
-      docs: false, probe: false
+      docs: false, probe: false, schulung: false
     });
     const g = await leiste(page);
     console.log('Betrieb komplett aus, Gruppen:', JSON.stringify(g));
@@ -293,7 +299,7 @@ async function zumTeam(page) {
        der auffällt, wenn ein Schalter STILL dazukommt — und ein
        Schalter, den der Chef nicht erwartet, schaltet im Zweifel etwas
        ab, das jemand braucht. */
-    if (liste.zahl !== 14) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 14');
+    if (liste.zahl !== 15) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 15');
     await b.close();
   }
 

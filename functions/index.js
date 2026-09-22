@@ -5001,11 +5001,292 @@ exports.stempeln = region.https.onCall(async (data, context) => {
   return { ok: true, art, ts: jetzt, name: person.name || '', fremd };
 });
 
+/* ══════════════════════════════════════════════════════════════════════
+   SCHULUNG — DER TEILNAHME-CODE
+
+   Aus dem Betrieb, 22.9.2026:
+     „Der Code soll am Anfang eines Webinars eingegeben werden vom
+      Mitarbeiter, der erstellte Code soll vorher von der Leitung einem
+      Namen zugewiesen werden, dann braucht der Mitarbeiter keinen
+      eigenen Account, aber man kann tracken wer es war."
+
+   ── WARUM DAS EIN EIGENER WEG IST UND NICHT EINFACH DAS KONTO ──────
+   Eine Schulung laeuft auf dem Tablet im Studio, und dort ist ein
+   Studio-Konto angemeldet — nicht die Person, die davor sitzt. Genau
+   deshalb der Code: er sagt, WER es wirklich war, ohne dass jemand ein
+   eigenes Konto braucht. Neue Leute koennen die Einarbeitung machen,
+   bevor sie ueberhaupt einen Zugang haben.
+
+   Mitgeschrieben wird trotzdem, WORAUF es lief: Geraetekonto, Studio
+   und Uhrzeit. Das ist der zweite Teil derselben Frage aus dem Betrieb
+   („dann muss man aber die Uhrzeit tracken und den Ort bzw. der Studio
+   Account welcher genutzt wurde").
+
+   ── WARUM DER CODE GEHASHT LIEGT ───────────────────────────────────
+   Dieselbe Ueberlegung wie bei der Stempel-PIN, und aus demselben
+   Grund ernst gemeint: wer die Code-Liste lesen kann, macht die
+   Schulung fuer einen Kollegen — und der ganze Nachweis ist wertlos.
+   `schulungCodes` steht in firestore.rules auf `allow read, write: if
+   false`, fuer alle. Nur diese Funktionen kommen heran.
+
+   Die LEITUNG bekommt den Code deshalb genau EINMAL zu sehen, beim
+   Anlegen. Danach niemand mehr, auch sie nicht. Verloren heisst: neu
+   erzeugen. Derselbe Weg wie beim Passwort aus `firmaAnlegen`.
+
+   ── WARUM DER CODE EINEN OFFENEN VORDERTEIL HAT ────────────────────
+   `M4K7-RPQ2-XT9B`. Die ersten vier Zeichen sind die Kennung des
+   Teilnehmers und stehen im Klartext in der Datenbank; die acht
+   dahinter sind das Geheimnis.
+
+   Das ist kein Nachlassen, sondern Rechnen: scrypt braucht rund 50 ms.
+   Ohne Vorderteil muesste die Funktion bei 39 Teilnehmern 39-mal
+   hashen — zwei Sekunden, bei jedem Start. Mit Vorderteil ist es ein
+   Zugriff und ein Hash. Die acht geheimen Zeichen aus einem Alphabet
+   von 32 sind rund 10^12 Moeglichkeiten; die Bremse unten macht den
+   Rest.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Ohne I, O, 0 und 1: diese vier werden auf einem Zettel und am Telefon
+   zuverlaessig verwechselt, und ein Code, den man falsch abliest, ist
+   ein Anruf bei der Leitung. */
+const SCHULUNG_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const SCHULUNG_KENNUNG_LAENGE = 4;
+const SCHULUNG_GEHEIM_LAENGE = 8;
+/* Die Bremse. Zehn Fehlversuche je Geraet und Stunde: wer den Code
+   abgetippt und sich vertan hat, merkt nichts davon; wer probiert,
+   kommt in einer Stunde auf zehn von 10^12. */
+const SCHULUNG_VERSUCHE_MAX = 10;
+const SCHULUNG_VERSUCHE_FENSTER_MS = 60 * 60 * 1000;
+
+function schulungZeichen(n) {
+  const b = require('crypto').randomBytes(n);
+  let raus = '';
+  for (let i = 0; i < n; i++) raus += SCHULUNG_ALPHABET[b[i] % SCHULUNG_ALPHABET.length];
+  return raus;
+}
+/* Kleinbuchstaben, Leerzeichen und Bindestriche verzeihen: abgetippt
+   wird das von einem Zettel, oft mit nassen Haenden. */
+function schulungCodeNormal(roh) {
+  return String(roh || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+/* Chef ODER Studioleitung. Die Schulung ist Betriebsorganisation, nicht
+   Geld und nicht Betriebswissen — dafuer waere `requireChef` zu eng:
+   eingearbeitet wird im Studio, nicht in der Zentrale. */
+async function requireLeitung(context) {
+  requireAuth(context);
+  const snap = await db.collection('users').doc(context.auth.uid).get();
+  const p = snap.exists ? (snap.data() || {}) : {};
+  if (p.aktiv === false) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieser Zugang ist noch nicht freigegeben.');
+  }
+  if (p.role !== 'chef' && p.role !== 'leiter') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Das darf nur die Leitung.');
+  }
+  return { uid: context.auth.uid, profil: p, firma: p.firma || null };
+}
+
+/* Einen Code erzeugen und ablegen. Gibt ihn EINMAL zurueck. */
+async function schulungCodeSetzen(firma, teilnehmerId) {
+  const F = W(firma);
+  let kennung = '';
+  /* Die Kennung muss in der Firma einmalig sein, sonst zeigt sie auf
+     den falschen Teilnehmer. Fuenf Anlaeufe: bei 32^4 = gut einer
+     Million Moeglichkeiten und ein paar Dutzend Teilnehmern ist schon
+     der erste praktisch immer frei. */
+  for (let i = 0; i < 5 && !kennung; i++) {
+    const k = schulungZeichen(SCHULUNG_KENNUNG_LAENGE);
+    const da = await F.collection('schulungCodes').doc(k).get();
+    if (!da.exists) kennung = k;
+  }
+  if (!kennung) {
+    throw new functions.https.HttpsError('internal',
+      'Es liess sich keine freie Kennung finden. Bitte noch einmal versuchen.');
+  }
+  const geheim = schulungZeichen(SCHULUNG_GEHEIM_LAENGE);
+  const salz = require('crypto').randomBytes(16).toString('hex');
+  await F.collection('schulungCodes').doc(kennung).set({
+    hash: pinHashen(geheim, salz), salz: salz,
+    teilnehmer: teilnehmerId, ts: Date.now()
+  });
+  return {
+    kennung: kennung,
+    /* Mit Bindestrichen: so steht er auf dem Zettel und so tippt man
+       ihn ab. Beim Pruefen werden sie wieder weggeworfen. */
+    code: kennung + '-' + geheim.slice(0, 4) + '-' + geheim.slice(4)
+  };
+}
+
+/* ── Einen Teilnehmer anlegen ──
+   Der Name ist der Zweck der ganzen Uebung: der Code haengt an ihm.
+   `uid` ist freiwillig — wer ein Konto hat, sieht seine eigenen Zahlen
+   damit spaeter im Ich-Bereich wieder. Wer keines hat, wird trotzdem
+   sauber gefuehrt. */
+exports.schulungTeilnehmerAnlegen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await requireLeitung(context);
+  const name = String((data && data.name) || '').trim();
+  if (name.length < 2 || name.length > 80) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Bitte Vor- und Nachnamen eintragen.');
+  }
+  const F = W(firma);
+  const ref = F.collection('schulungTeilnehmer').doc();
+  const gesetzt = await schulungCodeSetzen(firma, ref.id);
+  await ref.set({
+    name: name,
+    /* Nur eine Kennung aus der eigenen Firma, und nur eine, die es
+       gibt. Sonst haengte der Code an einer erfundenen Person. */
+    uid: String((data && data.uid) || '') || null,
+    studioKey: String((data && data.studioKey) || '') || null,
+    kennung: gesetzt.kennung,
+    gesperrt: false,
+    angelegtVonUid: uid, angelegtVon: profil.name || '',
+    ts: Date.now(), codeAm: Date.now()
+  });
+  return { ok: true, id: ref.id, name: name, code: gesetzt.code };
+});
+
+/* ── Einen neuen Code fuer denselben Teilnehmer ──
+   Zettel verlegt, Code weitergegeben, jemand geht: dann ist der alte
+   sofort wertlos. Der alte Eintrag wird geloescht, nicht ueberschrieben
+   — sonst bliebe die alte Kennung als Leiche stehen und zeigte weiter
+   auf diesen Teilnehmer. */
+exports.schulungCodeNeu = region.https.onCall(async (data, context) => {
+  const { firma } = await requireLeitung(context);
+  const id = String((data && data.id) || '');
+  if (!id) throw new functions.https.HttpsError('invalid-argument', 'Kein Teilnehmer angegeben.');
+  const F = W(firma);
+  const tSnap = await F.collection('schulungTeilnehmer').doc(id).get();
+  if (!tSnap.exists) {
+    throw new functions.https.HttpsError('not-found', 'Diesen Teilnehmer gibt es nicht.');
+  }
+  const alt = (tSnap.data() || {}).kennung;
+  const gesetzt = await schulungCodeSetzen(firma, id);
+  if (alt && alt !== gesetzt.kennung) {
+    await F.collection('schulungCodes').doc(alt).delete().catch(() => {});
+  }
+  await tSnap.ref.update({ kennung: gesetzt.kennung, codeAm: Date.now() });
+  return { ok: true, code: gesetzt.code };
+});
+
+/* Die Bremse. Ein Zaehler je GERAET, nicht je Code: wer probiert, sitzt
+   an einem Tablet und wechselt die Codes durch — der Code ist also die
+   falsche Achse. */
+async function schulungVersuchPruefen(firma, uid) {
+  const ref = W(firma).collection('schulungVersuche').doc(uid);
+  const snap = await ref.get();
+  const d = snap.exists ? (snap.data() || {}) : {};
+  const jetzt = Date.now();
+  if ((jetzt - (d.seit || 0)) > SCHULUNG_VERSUCHE_FENSTER_MS) return { ref, zahl: 0, seit: jetzt };
+  if ((d.zahl || 0) >= SCHULUNG_VERSUCHE_MAX) {
+    throw new functions.https.HttpsError('resource-exhausted',
+      'Zu viele Fehlversuche auf diesem Gerät. Bitte in einer Stunde noch einmal, ' +
+      'oder die Leitung erzeugt einen neuen Code.');
+  }
+  return { ref, zahl: d.zahl || 0, seit: d.seit || jetzt };
+}
+
+/* ── Anfangen ──
+   Der einzige Weg, auf dem ein Durchlauf entsteht. In firestore.rules
+   ist `create` auf `schulungLaeufe` fuer JEDEN gesperrt — auch fuer die
+   Leitung. Sonst koennte man sich mit der Browser-Konsole einen
+   fertigen, bestandenen Durchlauf auf einen fremden Namen schreiben,
+   und die ganze Liste waere eine Behauptung. */
+exports.schulungStart = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const roh = schulungCodeNormal(data && data.code);
+  const modulId = String((data && data.modul) || '');
+  if (!modulId) throw new functions.https.HttpsError('invalid-argument', 'Kein Modul angegeben.');
+  if (roh.length !== SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Der Code besteht aus ' + (SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) +
+      ' Zeichen. Bitte noch einmal ansehen.');
+  }
+  const F = W(firma);
+  const bremse = await schulungVersuchPruefen(firma, uid);
+
+  const kennung = roh.slice(0, SCHULUNG_KENNUNG_LAENGE);
+  const geheim = roh.slice(SCHULUNG_KENNUNG_LAENGE);
+  const cSnap = await F.collection('schulungCodes').doc(kennung).get();
+  const c = cSnap.exists ? (cSnap.data() || {}) : null;
+  const stimmt = !!c && tokenGleich(pinHashen(geheim, c.salz), c.hash);
+  if (!stimmt) {
+    /* Hochzaehlen und dieselbe Auskunft wie bei einer falschen
+       Kennung: ob der Vorderteil stimmt, geht niemanden etwas an. */
+    await bremse.ref.set({ zahl: bremse.zahl + 1, seit: bremse.seit, letzter: Date.now() });
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieser Code stimmt nicht.');
+  }
+  await bremse.ref.set({ zahl: 0, seit: Date.now(), letzter: Date.now() });
+
+  const tSnap = await F.collection('schulungTeilnehmer').doc(String(c.teilnehmer || '')).get();
+  const t = tSnap.exists ? (tSnap.data() || {}) : null;
+  if (!t) throw new functions.https.HttpsError('not-found', 'Zu diesem Code gibt es keinen Namen mehr.');
+  if (t.gesperrt) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
+  }
+
+  /* ── Warum das Modul hier NICHT ueberprueft wird ──
+     Der Grundstock der Schulungen liegt als Datei (schulungen-basis.js)
+     und nicht in der Datenbank — dieselbe Rechnung wie beim Handbuch,
+     und aus demselben Grund: in der Sammlung kostete er bei jedem
+     Oeffnen so viele Lesevorgaenge, wie es Module gibt. Der Server
+     sieht diese Datei nicht. Wuerde er hier auf die Sammlung pruefen,
+     lehnte er JEDEN Start ab, solange kein einziges Modul von Hand
+     angelegt wurde — also heute jeden.
+
+     Das ist kein Loch: die Schranke dieses Weges ist der CODE, nicht
+     die Modulkennung. Wer einen gueltigen Code hat, darf eine Schulung
+     machen; welche, ist keine Frage der Sicherheit. Ein erfundener
+     Modulname ergaebe hoechstens einen Durchlauf, den niemand
+     zuordnen kann.
+
+     Was aus der Sammlung kommt, wird trotzdem genommen — dann steht
+     der Titel schon beim Anlegen im Datensatz. Bei einem Modul aus der
+     Datei traegt ihn die App beim ersten Zwischenspeichern nach. */
+  const mSnap = await F.collection('schulungen').doc(modulId).get();
+  const m = mSnap.exists ? (mSnap.data() || {}) : null;
+  if (m && m.aktiv === false) {
+    throw new functions.https.HttpsError('not-found', 'Dieses Modul ist abgeschaltet.');
+  }
+
+  /* Wie oft hat dieselbe Person dieses Modul schon angefangen? Das ist
+     die Zahl aus dem Betrieb („wie oft er alles geguckt hat"), und sie
+     gehoert an den Durchlauf, nicht in eine Rechnung hinterher. */
+  const frueher = await F.collection('schulungLaeufe')
+    .where('teilnehmer', '==', tSnap.id).where('modul', '==', modulId).get();
+
+  const jetzt = Date.now();
+  const lauf = F.collection('schulungLaeufe').doc();
+  await lauf.set({
+    modul: modulId, modulTitel: (m && m.titel) || '', kategorie: (m && m.kategorie) || '',
+    teilnehmer: tSnap.id, teilnehmerName: t.name || '',
+    /* Steht die Person auch als Konto in der App, sieht sie ihre
+       eigenen Zahlen spaeter im Ich-Bereich. Ohne Konto bleibt das
+       Feld leer, und der Durchlauf ist trotzdem vollstaendig. */
+    uid: t.uid || null,
+    /* Worauf es lief. Genau die drei Angaben aus dem Betrieb. */
+    geraetUid: uid, geraetName: profil.name || '',
+    studioKey: t.studioKey || (profil.studioKeys || [])[0] || null,
+    start: jetzt, ende: 0, aktivMs: 0,
+    durchgang: frueher.size + 1,
+    schritteGesehen: [], fragen: [],
+    punkte: 0, bestanden: false, status: 'laeuft',
+    ts: jetzt
+  });
+  return { ok: true, lauf: lauf.id, name: t.name || '', durchgang: frueher.size + 1 };
+});
+
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
                      berlinDatum, tagDanach, erledigt,
                      pinZuSchwach, pinHashen, pinPruefen,
+                     schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
+                     SCHULUNG_VERSUCHE_MAX, SCHULUNG_VERSUCHE_FENSTER_MS,
                      geheimHashen, naechsterSchritt,
                      codeFenster, codeAus, CODE_FENSTER_MS, CODE_VORRAT,
                      /* Die Abo-Leiter ist rein rechnerisch und damit ohne
