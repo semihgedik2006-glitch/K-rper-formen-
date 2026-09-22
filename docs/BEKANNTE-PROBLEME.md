@@ -410,6 +410,8 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-18** | **`schulungStart` hätte JEDEN Start abgelehnt.** Die Funktion prüfte das Modul gegen die Sammlung `schulungen` — die Module liegen aber als Datei, und die sieht der Server nicht. Solange kein Modul von Hand angelegt ist, also jeden. Die Schranke dieses Weges ist der Code, nicht die Modulkennung; die Prüfung ist raus | 22.9.2026 |
 | **B-19** | **Die Code-Anzeige trug zwei `<b>`** — eines um den Namen, eines um den Code. Der Probelauf las prompt den Namen aus und tippte ihn als Code ein. Was eine Prüfung verwechselt, verwechselt auch ein Mensch | 22.9.2026, `tests/test-schulung.js` |
 | **B-20** | **Der Hinweis nach einer falschen Antwort stand halb unter dem Bildrand** — bei 390 px gemessen y=776 von 844. Ausgerechnet der Text, der erklären soll, war der einzige, den niemand sah | 22.9.2026 |
+| **B-21** | **Die Pfeilknöpfe im Modul-Editor wurden bei 320px auf 41 Pixel gequetscht** — das Auswahlfeld daneben nahm ihnen den Platz. Drei Pixel unter der Regel dieser App; das Feld darf schrumpfen, die Griffe nicht | 22.9.2026 |
+| **B-22** | **`▴` als Zeichen für „nach oben"** — `▾` steht in dieser App schon als Auf/Zu-Marke, `▴` wäre ein zweites für dieselbe Sache gewesen. Jetzt dasselbe Zeichen, gedreht. Derselbe Fall wie in Runde 96, diesmal vor dem Durchlauf bemerkt | 22.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
-`docs/FORTSCHRITT.md` — chronologisch, 98 Runden.
+`docs/FORTSCHRITT.md` — chronologisch, 99 Runden.

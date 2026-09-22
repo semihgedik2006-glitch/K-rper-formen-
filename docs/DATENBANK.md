@@ -278,7 +278,7 @@ hat.
 
 | Sammlung | Was drin steht | Wer darf |
 |---|---|---|
-| `schulungen` | Module, die der Betrieb SELBST anlegt. Der Grundstock liegt als Datei (`schulungen-basis.js`) und kostet nichts | lesen: jeder Aktive · schreiben: die Leitung |
+| `schulungen` | Module, die der Betrieb SELBST anlegt: `titel`, `kategorie`, `beschreibung`, `dauer`, `pflicht`, `gueltigMonate`, `strenge`, `grenze`, `schritte[]`, `fragen[]`, `basis`, `aktiv`. Der Grundstock liegt als Datei (`schulungen-basis.js`) und kostet nichts | lesen: jeder Aktive · schreiben: die Leitung |
 | `schulungTeilnehmer` | `name`, `uid` (freiwillig), `kennung` (der offene Vorderteil des Codes), `gesperrt` | lesen: die Leitung und die Person selbst · schreiben: die Leitung |
 | `schulungCodes/{kennung}` | `salz`, `hash`, `teilnehmer` | **niemand** — `allow read, write: if false` |
 | `schulungVersuche/{uid}` | die Bremse gegen Durchprobieren | **niemand** |
@@ -302,6 +302,16 @@ scrypt braucht rund 50 ms, und ohne den offenen Vorderteil müsste die
 Funktion bei 39 Teilnehmern 39-mal hashen — zwei Sekunden bei jedem
 Start. Die acht geheimen Zeichen aus einem Alphabet von 32 sind rund
 10¹² Möglichkeiten; zehn Fehlversuche je Gerät und Stunde machen den Rest.
+
+**`basis` funktioniert wie bei den Lösungen.** Ein Modul aus der Datei
+lässt sich nicht an Ort und Stelle ändern — wer es trotzdem ändert, legt
+einen eigenen Datensatz an, dessen `basis` auf die Datei-ID zeigt, unter
+dem festen Dokumentnamen `basis-<id>`. Die App zeigt dann den eigenen
+**statt** des Datei-Moduls; löscht man ihn, gilt wieder das Original.
+
+Der feste Name ist kein Schmuck: mit einer zufälligen Kennung legten
+zwei Leute, die dasselbe Modul am selben Tag ändern, zwei Fassungen an,
+und die App müsste raten, welche gilt.
 
 **`aktivMs` ist nicht die Wanduhr.** Der Zähler läuft nur, wenn das
 Fenster vorn und die Seite offen ist — wer den Bildschirm sperrt und

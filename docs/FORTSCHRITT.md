@@ -10508,3 +10508,67 @@ dem die Leitung Module selbst anlegt. Bis dahin kommen Module als Datei
 ins Repo.
 
 **121 Durchläufe.**
+
+---
+
+## Runde 99 — Beides geht: Datei UND Editor
+
+> „Ich würde sie lieber AUCH pflegen können, also dass beides geht."
+
+Der Grundstock bleibt eine Datei und kostet keinen Lesevorgang. Was die
+Leitung selbst anlegt, steht in der Sammlung `schulungen` und wird
+dazugemischt — und ein Modul **aus der Datei** bekommt bei Bedarf eine
+**eigene Fassung**, die sich darüberlegt.
+
+Dasselbe Muster wie bei den 115 Problemlösungen, und die entscheidende
+Zahl ist auch dieselbe:
+
+> **Nach einer eigenen Fassung stehen genauso viele Module da wie
+> vorher.** Stünde dasselbe Modul zweimal in der Liste — einmal
+> richtig, einmal veraltet —, wüsste niemand, welches gilt.
+
+„Eigene Fassung verwerfen" stellt das Original jederzeit wieder her.
+Das ist der Grund, warum der Grundstock eine Datei bleiben darf: was das
+Studio ändert, ist zurücknehmbar, und das Original war nie in Gefahr.
+
+### Der Editor
+
+Titel, Kategorie, Dauer, Pflicht, Gültigkeit in Monaten, Strenge der
+Fragen. Schritte in vier Arten (Text, Video, Bild, Verstanden-Haken),
+verschiebbar und löschbar. Fragen mit zwei bis sechs Antworten, der
+richtigen und einem Hinweis.
+
+**Der Entwurf liegt im Speicher, nicht in der Datenbank.** Ein Modul mit
+acht Schritten und sechs Fragen wäre sonst ein paar hundert
+Schreibvorgänge, bloss weil jemand einen Satz tippt. Und neu gezeichnet
+wird nur, wenn sich der AUFBAU ändert — bei jedem Tastendruck spränge
+der Eingabezeiger an den Anfang.
+
+### Zwei Funde beim Nachmessen
+
+| | |
+|---|---|
+| **Die Pfeilknöpfe wurden bei 320px auf 41 Pixel gequetscht** | drei unter der Regel dieser App. Das Auswahlfeld daneben darf schrumpfen, die Griffe nicht |
+| **`▴` wäre ein zweites Zeichen** für dieselbe Sache | `▾` steht in dieser App schon als Auf/Zu-Marke. Jetzt dasselbe Zeichen, gedreht — derselbe Fall wie bei den Lösungen in Runde 96, und diesmal vor dem Durchlauf bemerkt |
+
+Dazu eine Kleinigkeit, die trotzdem zählt: in der Modulliste stand
+„1 Schritte". Eine Zahl, die man anzeigt, bekommt das Wort, das zu ihr
+passt.
+
+### Und der Umzug
+
+> „platziere sie wo anders als Aufgaben, weil das nicht zu Aufgaben
+> zählt halt."
+
+Die Seite liegt jetzt unter **„Ich"**. Nachgemessen kostet das keinen
+Griff: „Ich" stand nie in der unteren Leiste (die trägt Start,
+Aufgaben, Nachrichten und „Alles"), und über „Alles" sind es dieselben
+**zwei Tipps** wie vorher über die Reiterzeile. `test-neu-design`
+belegt das für jedes Ziel der Liste.
+
+| | |
+|---|---|
+| `tests/test-schulung.js` | **66 Zusicherungen** (+21) |
+| Bedienelemente im Editor | 74 je Breite, bei 320/390/430 px **0 unter 44 px, 0 über den Rand** |
+
+**121 Durchläufe.**

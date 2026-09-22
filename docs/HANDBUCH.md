@@ -542,6 +542,43 @@ wievielte Durchgang es war.
 > niemandem, auch nicht von dir. Das ist der Grund, warum er als
 > Nachweis taugt.
 
+### Module selbst anlegen und ändern
+
+In der Verwaltung steht über der Liste ein zweiter Kasten: **Module**.
+
+**Neues Modul anlegen** — Titel, Kategorie, wie lange es dauert, ob es
+Pflicht ist und ob es nach N Monaten wiederholt werden muss (0 = nie).
+
+**Schritte** in der Reihenfolge, in der sie durchgegangen werden:
+
+| Art | Wofür |
+|---|---|
+| **Text** | Erklärung, Hintergrund, Regel |
+| **Video** | Adresse der Datei. Leer lassen, solange sie fehlt — dann steht „Video folgt" da |
+| **Bild** | dasselbe mit einem Bild |
+| **Verstanden-Haken** | muss angehakt werden, bevor es weitergeht |
+
+Mit ▾ und den Pfeilen darüber schiebst du einen Schritt nach oben oder
+unten, mit dem Papierkorb wirft du ihn weg.
+
+**Fragen** mit zwei bis sechs Antworten. Der Punkt vor einer Antwort
+sagt, welche die richtige ist. Der **Hinweis** darunter ist das
+Wichtigste am ganzen Formular:
+
+> Er erscheint, wenn jemand danebenliegt — und er soll **erklären, nicht
+> tadeln**. „Falsch" allein bringt niemandem etwas bei.
+
+**Zwei Quellen, und beides geht.** Der Grundstock liegt als Datei im
+Programm und kostet nichts. Ein Modul daraus kannst du nicht an Ort und
+Stelle ändern — dafür gibt es **„Eigene Fassung"**: sie legt sich darüber
+und gilt ab sofort fürs ganze Team. Das Original bleibt unberührt, und
+**„Eigene Fassung verwerfen"** stellt es jederzeit wieder her. Dasselbe
+Muster wie bei den 115 Problemlösungen.
+
+**Ein gelöschtes Modul nimmt keine Nachweise mit.** Schon abgeschlossene
+Durchläufe bleiben stehen — sie sind der Nachweis, und der geht nicht
+verloren, weil jemand aufgeräumt hat.
+
 **Videos gibt es noch nicht.** An der Stelle steht „Video folgt" samt
 der vorgesehenen Länge. Die App tut nicht so, als sei der Schritt
 vollständig.
