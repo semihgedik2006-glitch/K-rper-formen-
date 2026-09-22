@@ -904,10 +904,21 @@ service cloud.firestore {
       allow create, update, delete: if aufFlachenPfaden()
         && (istAktiv() && (isChef() || isLeiter()));
     }
-    // Wer eine Schulung machen darf, und unter welchem Namen.
-    // Lesen darf das die Leitung — und die Person selbst, wenn sie ein
-    // Konto hat: sonst saehe sie im Ich-Bereich ihre eigenen Zahlen
-    // nicht, und genau das war die Zusage aus dem Betrieb.
+    // Wer eine Schulung machen darf, unter welchem Namen — UND MIT
+    // WELCHEM CODE. Seit dem 22.9.2026 steht er hier im Klartext, auf
+    // Wunsch aus dem Betrieb: ein Code, den man nur einmal sieht, ist
+    // ein Zettel, der verlorengeht.
+    //
+    // Deshalb ist diese Zeile jetzt die einzige Sperre, die zaehlt.
+    // Lesen darf nur die Leitung — und die Person selbst ihren EIGENEN
+    // Datensatz. Ein Kollege kommt an einen fremden Code nicht heran:
+    // eine ungefilterte Abfrage ueber die ganze Sammlung scheitert an
+    // resource.data, weil sie fuer jedes Dokument einzeln gilt.
+    //
+    // Was das kostet, steht offen in functions/index.js: wer den Code
+    // lesen kann, KANN die Schulung im Namen dieser Person machen. Die
+    // Leitung kann das — und die Leitung besitzt die Auswertung, hat
+    // also keinen Grund dazu.
     match /schulungTeilnehmer/{tId} {
       allow read: if aufFlachenPfaden()
         && (istAktiv()
@@ -915,11 +926,11 @@ service cloud.firestore {
       allow create, update, delete: if aufFlachenPfaden()
         && (istAktiv() && (isChef() || isLeiter()));
     }
-    /* Der Teilnahme-Code, gehasht. GESPERRT FUER ALLE, wie zeitPins und
-       aus demselben Grund: wer die Liste lesen kann, macht die Schulung
-       fuer einen Kollegen, und der Nachweis ist wertlos. Auch die
-       Leitung kommt nicht heran — sie sieht den Code genau einmal beim
-       Anlegen, danach niemand mehr. Verloren heisst: neu erzeugen. */
+    /* Die alten, gehashten Codes. Seit dem 22.9.2026 legt hier nichts
+       mehr etwas an; die Funktion liest sie nur noch als Rueckfall fuer
+       Codes, die vorher ausgegeben wurden, und raeumt sie dabei weg.
+       GESPERRT FUER ALLE bleibt es trotzdem: ein Salz und ein Hash
+       gehen niemanden im Browser etwas an. */
     match /schulungCodes/{kennung} { allow read, write: if false; }
     /* Die Bremse gegen Durchprobieren. Ebenfalls zu: wer den eigenen
        Zaehler zuruecksetzen koennte, haette keine Bremse. */

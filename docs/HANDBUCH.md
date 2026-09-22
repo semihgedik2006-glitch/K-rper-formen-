@@ -520,23 +520,48 @@ nichts davon ist vor dir verborgen.
 
 ### Für die Leitung
 
-Der Knopf oben rechts (≡) führt zur Verwaltung.
+Der Knopf oben rechts (≡) führt zur Verwaltung. Dort stehen **drei
+Reiter**, und in jedem Reiter steht eine Zahl — du siehst also, wo etwas
+ist, bevor du hinklickst:
+
+| Reiter | Was dort steht |
+|---|---|
+| **Teilnehmer** | Namen anlegen, Codes ansehen und weitergeben, stilllegen |
+| **Module** | anlegen, ändern, eigene Fassungen |
+| **Auswertung** | wer was wann gemacht hat |
 
 **Teilnehmer anlegen** — Name eintragen, fertig. Wer schon einen Zugang
 zur App hat, kann dort ausgewählt werden; dann sieht die Person ihre
 Zahlen auch in ihrem eigenen Bereich.
 
-> **Der Code ist genau EINMAL zu sehen**, direkt nach dem Anlegen.
-> Danach kann ihn niemand mehr auslesen — auch du nicht. Er liegt
-> verschlüsselt, genau wie eine Stempel-PIN, und aus demselben Grund:
-> wer die Liste lesen könnte, machte die Schulung für einen Kollegen.
-> **Aufschreiben oder gleich weitergeben.** Verlegt heisst: „Neuer Code".
+#### Die Codes
 
+**Der Code bleibt stehen.** In der Liste siehst du zunächst nur die
+vier offenen Zeichen vorn — die Kennung, die allein nichts
+aufschliesst. Ein Druck auf **„Code zeigen"** holt den ganzen Code
+hervor, daneben stehen dann **Kopieren** und **Weitergeben**; ein
+zweiter Druck räumt ihn wieder weg.
+
+> Das ist bewusst so und nicht anders: zwanzig vollständige Codes
+> untereinander liest jeder mit, der einmal auf den Bildschirm sieht.
+>
+> **Was es kostet, und das soll hier stehen:** wer einen Code lesen
+> kann, *kann* die Schulung im Namen dieser Person machen. Der Nachweis
+> sagt damit nicht mehr „es war mit Sicherheit sie", sondern „es war
+> sie, und die Leitung steht dafür gerade". Für eine interne
+> Unterweisung ist das die richtige Höhe — wer die Auswertung besitzt,
+> hat keinen Grund, sich selbst zu betrügen.
+>
+> **Ein Kollege kommt nicht heran.** Lesen darf die Teilnehmerliste nur
+> die Leitung, und jede Person ihren eigenen Eintrag. In die nächtliche
+> Sicherung geht der Code nicht.
+
+**Neuer Code** erzeugt einen neuen und macht den alten wertlos.
 **Stilllegen** macht einen Code sofort wertlos — für jemanden, der geht.
 
-**Die Liste** darunter zeigt jeden abgeschlossenen Durchlauf: Name,
-Modul, Zeitpunkt, Studio, Gerät, Dauer, Prozent, Fehlversuche und der
-wievielte Durchgang es war.
+**Die Liste** unter *Auswertung* zeigt jeden abgeschlossenen Durchlauf:
+Name, Modul, Zeitpunkt, Studio, Gerät, Dauer, Prozent, Fehlversuche und
+der wievielte Durchgang es war.
 
 > **Ein abgeschlossener Durchlauf lässt sich nicht mehr ändern** — von
 > niemandem, auch nicht von dir. Das ist der Grund, warum er als
@@ -544,7 +569,7 @@ wievielte Durchgang es war.
 
 ### Module selbst anlegen und ändern
 
-In der Verwaltung steht über der Liste ein zweiter Kasten: **Module**.
+In der Verwaltung, Reiter **Module**.
 
 **Neues Modul anlegen** — Titel, Kategorie, wie lange es dauert, ob es
 Pflicht ist und ob es nach N Monaten wiederholt werden muss (0 = nie).

@@ -413,5 +413,9 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-21** | **Die Pfeilknöpfe im Modul-Editor wurden bei 320px auf 41 Pixel gequetscht** — das Auswahlfeld daneben nahm ihnen den Platz. Drei Pixel unter der Regel dieser App; das Feld darf schrumpfen, die Griffe nicht | 22.9.2026 |
 | **B-22** | **`▴` als Zeichen für „nach oben"** — `▾` steht in dieser App schon als Auf/Zu-Marke, `▴` wäre ein zweites für dieselbe Sache gewesen. Jetzt dasselbe Zeichen, gedreht. Derselbe Fall wie in Runde 96, diesmal vor dem Durchlauf bemerkt | 22.9.2026 |
 
+| **B-23** | **Zwei verschiedene Zeilen trugen dasselbe Merkmal `data-schmodul`** — die neuen Zeilen unter „Das steht für dich an" und die Modulkarten darunter. Sie haben aber einen anderen Aufbau; der Probelauf suchte alle Modulkarten, fand die neuen mit und brach ab. Ein Merkmal, das zwei Dinge meint, ist keins | 22.9.2026 |
+| **B-24** | **Der Probelauf klappte die falsche Zeile zu** — er griff nach dem ersten „Code zeigen"-Knopf der Liste statt nach dem in der offenen Zeile. Die Teilnehmer stehen alphabetisch, die geprüfte Person war nicht die erste. Ergebnis: er öffnete eine zweite Zeile, statt die erste zu schliessen | 22.9.2026 |
+| **Entscheidung, kein Fehler** | **Der Schulungs-Code liegt seit heute im Klartext** statt gehasht — auf Ansage aus dem Betrieb. Der Preis steht offen in `functions/index.js`, `docs/DATENBANK.md` und im Handbuch: wer den Code lesen kann, kann die Schulung im Namen dieser Person machen. Lesen darf ihn nur die Leitung und jede Person ihren eigenen | 22.9.2026 |
+
 Die vollständige Fassung mit Begründungen steht in
-`docs/FORTSCHRITT.md` — chronologisch, 99 Runden.
+`docs/FORTSCHRITT.md` — chronologisch, 100 Runden.

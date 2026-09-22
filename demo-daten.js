@@ -865,15 +865,18 @@
      OHNE Zugang zur App — das ist der eigentliche Fall: jemand macht
      die Einarbeitung, bevor er ein Konto hat.
 
-     Die Codes stehen hier NICHT. Auch nicht in der Demo: wer sie in
-     einer Vorführung liest, hält sie für das, was im Betrieb auch
-     sichtbar wäre — und genau das sind sie nicht. Zum Ausprobieren
-     legt man in der Demo einen Teilnehmer an und bekommt einen. */
+     Die Codes stehen seit dem 22.9.2026 am Teilnehmer — auch hier, denn
+     eine Demo, die etwas anderes zeigt als der Betrieb, ist keine. In
+     der Verwaltung liegen sie hinter „Code zeigen", nicht offen in der
+     Liste: wer über die Schulter schaut, soll nicht zwanzig auf einmal
+     mitlesen. */
   legen(P('schulungen'), []);
   legen(P('schulungTeilnehmer'), [
     { id: 'tn-nora', name: 'Nora Haas', uid: 'u5', kennung: 'M4K7',
+      code: 'M4K7-9TQD-B2HX',
       gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(30), codeAm: vorTag(30) },
     { id: 'tn-neu', name: 'Jamie Kurz', uid: null, kennung: 'RPQ2',
+      code: 'RPQ2-K7MV-4NDS',
       gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(4), codeAm: vorTag(4) }
   ]);
   legen(P('schulungLaeufe'), [
@@ -1064,8 +1067,9 @@
        Die drei Wege laufen in der Demo WIRKLICH, nicht als Attrappe:
        ein angelegter Teilnehmer steht danach in der Liste, ein Code
        gerät wirklich, und wer ihn eintippt, bekommt einen Durchlauf.
-       Nur das Hashen fällt weg — in einer Datenbank, die im Browser
-       liegt, wäre es Theater. */
+       Der Code steht am Teilnehmer, wie im Betrieb seit dem 22.9.2026;
+       `DEMO_CODES` bleibt als Rückfall, damit der Weg über den alten
+       Hash-Eintrag in der Demo genauso durchläuft wie live. */
     schulungTeilnehmerAnlegen: function (d) {
       var name = String((d && d.name) || '').trim();
       if (name.length < 2) throw new Error('Bitte Vor- und Nachnamen eintragen.');
@@ -1077,14 +1081,14 @@
       }
       var kennung = zeichen(4), geheim = zeichen(8);
       var id = neueId();
+      var code = kennung + '-' + geheim.slice(0, 4) + '-' + geheim.slice(4);
       holen(P('schulungTeilnehmer')).push({
-        id: id, name: name, uid: (d && d.uid) || null, kennung: kennung,
+        id: id, name: name, uid: (d && d.uid) || null, kennung: kennung, code: code,
         gesperrt: false, angelegtVon: ICH.name, ts: Date.now(), codeAm: Date.now()
       });
       DEMO_CODES[kennung] = { geheim: geheim, teilnehmer: id };
       melden(P('schulungTeilnehmer'));
-      return { ok: true, id: id, name: name,
-               code: kennung + '-' + geheim.slice(0, 4) + '-' + geheim.slice(4) };
+      return { ok: true, id: id, name: name, code: code };
     },
     schulungCodeNeu: function (d) {
       var id = String((d && d.id) || '');
@@ -1098,19 +1102,32 @@
       }
       var kennung = zeichen(4), geheim = zeichen(8);
       if (t.kennung) delete DEMO_CODES[t.kennung];
-      t.kennung = kennung; t.codeAm = Date.now();
+      var code = kennung + '-' + geheim.slice(0, 4) + '-' + geheim.slice(4);
+      t.kennung = kennung; t.code = code; t.codeAm = Date.now();
       DEMO_CODES[kennung] = { geheim: geheim, teilnehmer: id };
       melden(P('schulungTeilnehmer'));
-      return { ok: true, code: kennung + '-' + geheim.slice(0, 4) + '-' + geheim.slice(4) };
+      return { ok: true, code: code };
     },
     schulungStart: function (d) {
       var roh = String((d && d.code) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       var modul = String((d && d.modul) || '');
       if (roh.length !== 12) throw new Error('Der Code besteht aus 12 Zeichen. Bitte noch einmal ansehen.');
-      var eintrag = DEMO_CODES[roh.slice(0, 4)];
-      if (!eintrag || eintrag.geheim !== roh.slice(4)) throw new Error('Dieser Code stimmt nicht.');
+      var kennung = roh.slice(0, 4);
+      /* Erst am Teilnehmer nachsehen — der Normalfall. Nur wenn dort
+         kein Code steht, greift der alte Hash-Weg. Genau die Reihenfolge
+         aus functions/index.js. */
       var t = holen(P('schulungTeilnehmer')).filter(function (x) {
-        return x.id === eintrag.teilnehmer; })[0];
+        return x.kennung === kennung; })[0];
+      if (t && t.code) {
+        if (String(t.code).toUpperCase().replace(/[^A-Z0-9]/g, '') !== roh) {
+          throw new Error('Dieser Code stimmt nicht.');
+        }
+      } else {
+        var eintrag = DEMO_CODES[kennung];
+        if (!eintrag || eintrag.geheim !== roh.slice(4)) throw new Error('Dieser Code stimmt nicht.');
+        t = holen(P('schulungTeilnehmer')).filter(function (x) {
+          return x.id === eintrag.teilnehmer; })[0];
+      }
       if (!t) throw new Error('Zu diesem Code gibt es keinen Namen mehr.');
       if (t.gesperrt) throw new Error('Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
       var frueher = holen(P('schulungLaeufe')).filter(function (l) {

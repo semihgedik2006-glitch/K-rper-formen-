@@ -246,8 +246,10 @@ var USERS = [
      einer davon für jemanden OHNE Zugang zur App, denn das ist der
      Fall, um den es geht: die Einarbeitung vor dem ersten Login. */
   var SCHULUNG_TN = [
-    { id: 'tn-a', name: 'Anna Meier', uid: 'u2', kennung: 'M4K7', gesperrt: false, ts: 1 },
-    { id: 'tn-b', name: 'Jamie Kurz', uid: null, kennung: 'RPQ2', gesperrt: false, ts: 2 }
+    { id: 'tn-a', name: 'Anna Meier', uid: 'u2', kennung: 'M4K7',
+      code: 'M4K7-9TQD-B2HX', gesperrt: false, ts: 1 },
+    { id: 'tn-b', name: 'Jamie Kurz', uid: null, kennung: 'RPQ2',
+      code: 'RPQ2-K7MV-4NDS', gesperrt: false, ts: 2 }
   ];
   var SCHULUNG_LAEUFE = [
     { id: 'sl1', modul: 'm-start', modulTitel: 'Dein erster Tag im Studio',

@@ -20,10 +20,22 @@
       Schulung machen kann, ohne zu sagen wer er ist, hinterlässt
       keinen Nachweis, sondern eine Zeile.
 
-   2. DER CODE IST GENAU EINMAL ZU SEHEN. Danach kann ihn niemand mehr
-      auslesen, auch die Leitung nicht. Geprüft wird beides: dass er
-      nach dem Anlegen dasteht, und dass er in keinem Datensatz landet,
-      den die App liest.
+   2. DER CODE BLEIBT — ABER ER LIEGT NICHT OFFEN HERUM. Seit dem
+      22.9.2026, auf Ansage aus dem Betrieb: „das die codes nicht weg
+      sind und sie keiner sehen kann, sondern sie bei der verwaltung
+      gespeichert werden, sodass man ihn immer wieder neu erstellen und
+      ansehen und weiterleiten kann."
+
+      Geprüft wird deshalb BEIDES, und beides ist wichtig:
+      dass in der geschlossenen Liste nur die vier offenen Zeichen der
+      Kennung stehen — wer über die Schulter schaut, liest nicht zwanzig
+      Codes auf einmal mit —, und dass ein Druck auf „Code zeigen" den
+      ganzen Code hervorholt, ein zweiter ihn wieder wegräumt.
+
+      Was das kostet, steht offen in functions/index.js: wer den Code
+      lesen kann, kann die Schulung im Namen dieser Person machen. Lesen
+      darf ihn nur die Leitung — und jede Person ihren eigenen
+      (tests/rules/schulung.test.js).
 
    3. DIE ZUSTIMMUNG MUSS EINE SEIN. Der „Verstanden"-Haken gibt
       „Weiter" frei — vorher ist der Knopf gesperrt. Mit Gegenprobe,
@@ -100,6 +112,18 @@ async function zurSchulung(p) {
   await p.waitForTimeout(1500);
   return da;
 }
+/* Die Verwaltung hat seit dem 22.9.2026 drei Reiter: Teilnehmer,
+   Module, Auswertung. Sie liegen nicht mehr alle drei untereinander
+   auf einer Seite — wer etwas sucht, drückt vorher den Reiter. Die
+   Probe geht denselben Weg, sonst prüft sie etwas, das kein Mensch je
+   zu sehen bekäme. */
+async function vwReiter(seite, id) {
+  await seite.evaluate((i) => {
+    const b = document.querySelector('[data-schvwtab="' + i + '"]');
+    if (b) b.click();
+  }, id);
+  await seite.waitForTimeout(600);
+}
 /* Einen Teilnehmer anlegen und seinen Code holen. Genau der Weg, den
    die Leitung im Studio geht. */
 async function codeHolen(p, name) {
@@ -142,15 +166,98 @@ async function codeHolen(p, name) {
   pruefe('es gibt Kategorien zum Filtern', offen.kats.length >= 3, offen.kats.join(', '));
   pruefe('mit „Alle" vorn', offen.kats[0] === 'Alle', offen.kats.join(' '));
 
+  /* ── Was offen ist, steht oben ──────────────────────────────────
+     Vorher fuehrte die Seite mit einer Chipzeile und dann allen
+     Modulen in einer Reihe. Wer wissen wollte, was er noch machen
+     MUSS, las dafuer jede Karte durch und suchte das Wort „Pflicht".
+     Jetzt steht die Antwort als erstes da. */
+  const faellig = await p.evaluate(() => {
+    const k = document.getElementById('schFaelligKarte');
+    const uebersicht = document.getElementById('schUebersicht');
+    const kinder = [...uebersicht.children];
+    return {
+      sichtbar: !!k && k.style.display !== 'none',
+      zeilen: document.querySelectorAll('[data-schfaellig]').length,
+      /* Nur Pflichtmodule duerfen hier stehen. Stuende ein freiwilliges
+         darunter, waere der Kasten eine zweite Modulliste statt einer
+         Ansage. */
+      nurPflicht: [...document.querySelectorAll('[data-schfaellig]')].every(z => {
+        const id = z.getAttribute('data-schfaellig');
+        const m = ((window.SCHULUNGEN_BASIS || {}).module || [])
+          .find(x => x.id === id);
+        return !m || m.pflicht === true;
+      }),
+      pflichtGesamt: ((window.SCHULUNGEN_BASIS || {}).module || [])
+        .filter(x => x.pflicht).length,
+      /* Ganz oben, nicht irgendwo: ein Hinweis unter der Modulliste
+         waere auf 390 Pixeln unter dem Rand. */
+      zuerst: kinder.indexOf(k) === 0,
+      text: (k || {}).textContent || ''
+    };
+  });
+  pruefe('was fuer dich faellig ist, steht ganz oben', faellig.sichtbar && faellig.zuerst,
+    JSON.stringify({ s: faellig.sichtbar, z: faellig.zuerst }));
+  /* Wieviele offen sind, haengt davon ab, was das Demokonto schon
+     gemacht hat — die Zahl festzuschreiben hiesse, die Demodaten
+     festzuschreiben. Gepruefte Aussage: es steht mindestens eines da,
+     nie mehr als es Pflichtmodule gibt, und AUSSCHLIESSLICH
+     Pflichtmodule. */
+  pruefe('mit Zeilen fuer offene Pflichtmodule',
+    faellig.zeilen >= 1 && faellig.zeilen <= faellig.pflichtGesamt,
+    faellig.zeilen + ' von ' + faellig.pflichtGesamt);
+  pruefe('GEGENPROBE und nur fuer Pflichtmodule', faellig.nurPflicht);
+  pruefe('und jede sagt, warum sie dasteht',
+    /noch nicht gemacht|wieder faellig|wieder fällig/.test(faellig.text),
+    faellig.text.slice(0, 120).replace(/\s+/g, ' '));
+
+  /* Und der Weg zur anderen Haelfte desselben Themas. Schulung sagt,
+     wie es geht, BEVOR es soweit ist; „Hilfe im Studio" sagt es, wenn
+     es gerade brennt. */
+  const zurHilfe = await p.evaluate(() => {
+    const b = document.getElementById('schZurHilfe');
+    if (!b) return null;
+    b.click();
+    return new Promise(r => setTimeout(() => {
+      const h = document.getElementById('hilfe');
+      const offen = !!h && h.style.display !== 'none' && !h.hidden;
+      const z = document.getElementById('hilfeZu');
+      if (z) z.click();
+      setTimeout(() => r(offen), 400);
+    }, 700));
+  });
+  pruefe('von der Schulung fuehrt ein Weg zur Hilfe im Studio', zurHilfe === true,
+    String(zurHilfe));
+
   /* Auch über „Alles", das Inhaltsverzeichnis. Ein Bereich, der dort
-     fehlt, ist für jeden unsichtbar, der die Reiterzeile nicht kennt. */
+     fehlt, ist für jeden unsichtbar, der die Reiterzeile nicht kennt.
+
+     Seit dem 22.9.2026 stehen Hilfe und Schulung dort unter EINER
+     Ueberschrift — die Antwort auf „eventuell, das er auch anders
+     liegt, irgendwie ein weiteres Modul, wo dann Hilfe und Schulung
+     oder so steht". Ein siebter Bereich in der Navigation waere die
+     falsche Antwort auf den Wunsch gewesen, es moege einfacher werden:
+     die untere Leiste hat vier feste Plaetze. */
   const imVerzeichnis = await p.evaluate(() => {
     const a = document.querySelector('.mobnav [data-group="g-alles"]');
     if (a) a.click();
-    return new Promise(r => setTimeout(() =>
-      r(!!document.querySelector('[data-alles="schulung"]')), 700));
+    return new Promise(r => setTimeout(() => {
+      const ziel = document.querySelector('[data-alles="schulung"]');
+      const gr = ziel && ziel.closest('.al-gruppe');
+      r({
+        da: !!ziel,
+        farbe: gr ? gr.getAttribute('data-farbe') : '',
+        frage: gr ? (gr.querySelector('h3, .al-frage') || {}).textContent || '' : '',
+        /* Beides unter derselben Ueberschrift — sonst waere es nur
+           umsortiert und nicht zusammengefasst. */
+        mitHilfe: !!(gr && gr.querySelector('[data-al-hilfe]'))
+      });
+    }, 700));
   });
-  pruefe('und er steht auch in „Alles"', imVerzeichnis);
+  pruefe('und er steht auch in „Alles"', imVerzeichnis.da);
+  pruefe('unter einer eigenen Ueberschrift', imVerzeichnis.farbe === 'wissen',
+    imVerzeichnis.farbe + ' / ' + imVerzeichnis.frage);
+  pruefe('und die Hilfe im Studio steht dort daneben', imVerzeichnis.mitHilfe,
+    imVerzeichnis.frage);
   await zurSchulung(p);
 
   // ══ 2. Filter ══
@@ -183,15 +290,64 @@ async function codeHolen(p, name) {
      bei der Leitung. */
   pruefe('und bekommt einen lesbaren Code zu sehen',
     !!code && /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code), String(code));
-  /* Die Zeile, auf die es ankommt: der Code darf in keinem Datensatz
-     stehen, den die App liest. Sichtbar ist nur die Kennung — der
-     offene Vorderteil, der allein nichts aufschliesst. */
-  const inDenDaten = await p.evaluate((c) => {
+  /* Die Zeile, auf die es ankommt — und sie hat seit dem 22.9.2026 zwei
+     Hälften. ERSTE HÄLFTE: zugeklappt steht in der Liste nur die
+     Kennung, der offene Vorderteil, der allein nichts aufschliesst.
+     Stünden dort zwanzig vollständige Codes untereinander, läse jeder
+     sie mit, der einmal auf den Bildschirm sieht. */
+  await p.click('#schVerwaltenBtn');
+  await p.waitForTimeout(800);
+  const zu = await p.evaluate((c) => {
     const kenn = c.slice(0, 4), geheim = c.slice(5).replace('-', '');
-    const zeilen = [...document.querySelectorAll('#schTnListe')].map(x => x.textContent).join(' ');
-    return { kennungSichtbar: zeilen.indexOf(kenn) >= 0, geheimSichtbar: zeilen.indexOf(geheim) >= 0 };
+    const t = (document.getElementById('schTnListe') || {}).textContent || '';
+    return { kennung: t.indexOf(kenn) >= 0, geheim: t.indexOf(geheim) >= 0,
+             knopf: !!document.querySelector('[data-schcode]') };
   }, code);
-  pruefe('der geheime Teil steht in keiner Liste', !inDenDaten.geheimSichtbar);
+  pruefe('in der Liste steht die Kennung', zu.kennung);
+  pruefe('GEGENPROBE aber nicht der geheime Teil', !zu.geheim);
+  pruefe('und daneben ein Knopf, der ihn hervorholt', zu.knopf);
+
+  /* ZWEITE HÄLFTE: ein Druck, und er steht da. Das ist der Wunsch aus
+     dem Betrieb — ein Code, den man nur einmal sieht, ist ein Zettel,
+     der verlorengeht. */
+  const auf = await p.evaluate((c) => {
+    const kenn = c.slice(0, 4);
+    const b = [...document.querySelectorAll('[data-schcode]')]
+      .find(x => x.closest('.sch-tn-zeile').textContent.indexOf(kenn) >= 0);
+    if (!b) return null;
+    b.click();
+    return new Promise(r => setTimeout(() => {
+      const t = (document.getElementById('schTnListe') || {}).textContent || '';
+      r({ text: t, voll: !!document.querySelector('.sch-kenn-voll'),
+          kopie: !!document.querySelector('[data-schkopie]'),
+          teilen: !!document.querySelector('[data-schteilen]'),
+          knopfText: (document.querySelector('[data-schcode]') || {}).textContent || '' });
+    }, 500));
+  }, code);
+  pruefe('„Code zeigen" holt den ganzen Code hervor',
+    !!auf && auf.text.indexOf(code) >= 0, auf ? auf.text.slice(0, 90) : 'kein Knopf');
+  pruefe('mit einem Knopf zum Kopieren', !!auf && auf.kopie);
+  pruefe('und einem zum Weitergeben', !!auf && auf.teilen);
+
+  const wiederZu = await p.evaluate(() => {
+    /* Der Knopf IN DER OFFENEN ZEILE, nicht der erste der Liste: die
+       Teilnehmer stehen alphabetisch, und „Prüf Person" ist nicht die
+       erste. Beim ersten Anlauf klappte die Probe damit eine zweite
+       Zeile auf statt die erste zu. */
+    const voll = document.querySelector('.sch-kenn-voll');
+    const b = voll && voll.closest('.sch-tn-zeile').querySelector('[data-schcode]');
+    if (b) b.click();
+    return new Promise(r => setTimeout(() =>
+      r(!document.querySelector('.sch-kenn-voll')), 500));
+  });
+  /* Er bleibt nicht offen stehen. Sonst wäre „zeigen" ein Schalter, den
+     jemand einmal umlegt und danach vergisst. */
+  pruefe('GEGENPROBE und ein zweiter Druck räumt ihn wieder weg', wiederZu);
+  await p.evaluate(() => {
+    const z = document.querySelector('#schVerwalten [data-schzurueck]');
+    if (z) z.click();
+  });
+  await p.waitForTimeout(600);
 
   await p.evaluate(() => document.querySelector('[data-schmodul]').click());
   await p.waitForTimeout(600);
@@ -333,15 +489,24 @@ async function codeHolen(p, name) {
 
   // ══ 7. Die Liste für die Leitung ══
   console.log('\n── Was die Leitung sieht ──');
-  const inListe = await p.evaluate(() => {
+  await p.evaluate(() => {
     document.querySelector('#schErgebnis [data-schzurueck]').click();
-    return new Promise(r => setTimeout(() => {
-      document.getElementById('schVerwaltenBtn').click();
-      setTimeout(() => {
-        const z = [...document.querySelectorAll('#schLaufListe .sch-lauf-zeile')];
-        r({ zahl: z.length, erste: z[0] ? z[0].textContent.replace(/\s+/g, ' ') : '' });
-      }, 900);
-    }, 700));
+  });
+  await p.waitForTimeout(700);
+  await p.click('#schVerwaltenBtn');
+  await p.waitForTimeout(900);
+  /* Die Reiterzeile trägt die Zahl dahinter — damit man sieht, wo
+     etwas steht, BEVOR man drei Reiter durchtippt. */
+  const reiterZahlen = await p.evaluate(() =>
+    [...document.querySelectorAll('[data-schvwtab]')].map(x => x.textContent.trim()));
+  pruefe('die Verwaltung hat drei Reiter', reiterZahlen.length === 3,
+    reiterZahlen.join(' | '));
+  pruefe('und jeder sagt, wieviel dahintersteht',
+    reiterZahlen.every(x => /\d/.test(x)), reiterZahlen.join(' | '));
+  await vwReiter(p, 'aus');
+  const inListe = await p.evaluate(() => {
+    const z = [...document.querySelectorAll('#schLaufListe .sch-lauf-zeile')];
+    return { zahl: z.length, erste: z[0] ? z[0].textContent.replace(/\s+/g, ' ') : '' };
   });
   pruefe('der Durchlauf steht in der Liste', inListe.zahl >= 1, String(inListe.zahl));
   pruefe('mit dem Namen der Person', /Prüf Person/.test(inListe.erste), inListe.erste.slice(0, 60));
@@ -388,6 +553,7 @@ async function codeHolen(p, name) {
     [...document.querySelectorAll('[data-schmodul]')].map(x => x.querySelector('b').textContent));
   await c.click('#schVerwaltenBtn');
   await c.waitForTimeout(900);
+  await vwReiter(c, 'mod');
   const verwaltung = await c.evaluate(() => ({
     zeilen: document.querySelectorAll('#schModulListe .sch-tn-zeile').length,
     knoepfe: [...document.querySelectorAll('[data-schbearbeiten]')].map(x => x.textContent.trim()),
@@ -477,8 +643,10 @@ async function codeHolen(p, name) {
     inUebersicht.indexOf('Vom Durchlauf angelegt') >= 0, inUebersicht.join(' | '));
 
   // ── Eine eigene Fassung eines Datei-Moduls ──
+  await c.click('#schVerwaltenBtn');
+  await c.waitForTimeout(700);
+  await vwReiter(c, 'mod');
   const fassung = await c.evaluate(() => {
-    document.getElementById('schVerwaltenBtn').click();
     return new Promise(r => setTimeout(() => {
       document.querySelector('[data-schbearbeiten]').click();
       setTimeout(() => r({
@@ -516,8 +684,10 @@ async function codeHolen(p, name) {
 
   // ── Und wieder verwerfen ──
   c.on('dialog', d => d.accept());
+  await c.click('#schVerwaltenBtn');
+  await c.waitForTimeout(700);
+  await vwReiter(c, 'mod');
   const verworfen = await c.evaluate(() => {
-    document.getElementById('schVerwaltenBtn').click();
     return new Promise(r => setTimeout(() => {
       document.querySelector('[data-schbearbeiten]').click();
       setTimeout(() => {

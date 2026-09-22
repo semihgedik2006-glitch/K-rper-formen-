@@ -180,7 +180,11 @@ noch**; das ist Absicht und der nächste Schritt.
 | Module Schritt für Schritt, mit Fragen am Ende | **VERIFIZIERT** | `tests/test-schulung.js` |
 | Teilnahme-Code statt Login | **VERIFIZIERT** | falscher Code wird abgewiesen, richtiger startet — beides geprüft |
 | Ohne eigenes Konto benutzbar | **VERIFIZIERT** | der Durchlauf trägt einen Namen, auch wenn `uid` leer ist |
-| Der Code ist genau einmal zu sehen | **VERIFIZIERT** | gehasht abgelegt, `schulungCodes` steht auf `if false` |
+| Der Code bleibt bei der Verwaltung und ist wieder abrufbar | **VERIFIZIERT** | „Code zeigen" holt ihn hervor, Kopieren und Weitergeben daneben — `tests/test-schulung.js` |
+| Zugeklappt steht nur die Kennung da | **VERIFIZIERT** | Gegenprobe: der geheime Teil steht in der geschlossenen Liste nicht |
+| Ein Kollege kommt an keinen fremden Code | **VERIFIZIERT** | auch nicht über eine Abfrage der ganzen Sammlung — `tests/rules/schulung.test.js`, beide Welten |
+| Drei Reiter in der Verwaltung, jeder mit seiner Zahl | **VERIFIZIERT** | `tests/test-schulung.js` |
+| „Das steht für dich an" ganz oben, nur bei Pflichtmodulen | **VERIFIZIERT** | mit Gegenprobe, dass nichts Freiwilliges dort landet |
 | Bremse gegen Durchprobieren | **VERIFIZIERT im Code** | 10 Fehlversuche je Gerät und Stunde; im Emulator nicht nachgestellt |
 | Zeitpunkt, Studio und Gerätekonto am Durchlauf | **VERIFIZIERT** | steht in der Liste der Leitung |
 | Fehlversuche je Frage gezählt **und erklärt** | **VERIFIZIERT** | falsch angeklickt bringt einen Hinweis, nicht nur ein Kreuz |

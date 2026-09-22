@@ -279,8 +279,8 @@ hat.
 | Sammlung | Was drin steht | Wer darf |
 |---|---|---|
 | `schulungen` | Module, die der Betrieb SELBST anlegt: `titel`, `kategorie`, `beschreibung`, `dauer`, `pflicht`, `gueltigMonate`, `strenge`, `grenze`, `schritte[]`, `fragen[]`, `basis`, `aktiv`. Der Grundstock liegt als Datei (`schulungen-basis.js`) und kostet nichts | lesen: jeder Aktive · schreiben: die Leitung |
-| `schulungTeilnehmer` | `name`, `uid` (freiwillig), `kennung` (der offene Vorderteil des Codes), `gesperrt` | lesen: die Leitung und die Person selbst · schreiben: die Leitung |
-| `schulungCodes/{kennung}` | `salz`, `hash`, `teilnehmer` | **niemand** — `allow read, write: if false` |
+| `schulungTeilnehmer` | `name`, `uid` (freiwillig), `kennung`, **`code` (Klartext)**, `codeAm`, `gesperrt` | lesen: die Leitung und die Person selbst · schreiben: die Leitung |
+| `schulungCodes/{kennung}` | `salz`, `hash`, `teilnehmer` — **nur noch Rückfall für Codes von vor dem 22.9.2026** | **niemand** — `allow read, write: if false` |
 | `schulungVersuche/{uid}` | die Bremse gegen Durchprobieren | **niemand** |
 | `schulungLaeufe` | ein Durchlauf: `teilnehmer`, `teilnehmerName`, `uid`, `modul`, `geraetUid`, `geraetName`, `studioKey`, `start`, `ende`, `aktivMs`, `durchgang`, `schritteGesehen`, `fragen[]`, `punkte`, `bestanden`, `status` | lesen: die Leitung und die Person selbst · **anlegen: niemand** · ändern: nur das Gerät, nur solange `status == 'laeuft'` |
 
@@ -291,17 +291,35 @@ Dürfte der Browser ihn anlegen, schriebe sich jeder mit der Konsole
 einen fertigen, bestandenen Durchlauf auf einen fremden Namen — und die
 ganze Liste wäre eine Behauptung statt eines Nachweises.
 
-**Der Code liegt gehasht** (scrypt, wie die Stempel-PIN), und zwar aus
-demselben Grund: wer die Liste lesen kann, macht die Schulung für einen
-Kollegen. Die Leitung sieht ihn **genau einmal** beim Anlegen.
+**Der Code steht seit dem 22.9.2026 im Klartext** an
+`schulungTeilnehmer`. Bis dahin lag er gehasht und war nach dem Anlegen
+für niemanden mehr zu sehen — auch nicht für die Leitung. Aus dem
+Betrieb kam dazu:
+
+> „ich würde mir wünschen … das die codes nicht weg sind und sie keiner
+> sehen kann sondern sie bei der verwaltung gespeichert werden, sodass
+> man ihn immer wieder neu erstellen und ansehen und weiterleiten kann."
+
+Der Einwand trifft die Praxis: ein Code, den man nur einmal sieht, ist
+ein Zettel, der verlorengeht.
+
+**Damit ist die Leseregel dieser Sammlung die einzige Sperre, die noch
+zählt**, und sie ist eng: die Leitung — und jede Person ihren eigenen
+Datensatz. Ein Kollege kommt weder an ein fremdes Dokument noch über
+eine Abfrage der ganzen Sammlung heran; beides steht als Gegenprobe in
+`tests/rules/schulung.test.js`, in beiden Welten.
+
+**Was das kostet:** wer den Code lesen kann, *kann* die Schulung im
+Namen dieser Person machen. Der Nachweis sagt damit „es war sie, und die
+Leitung steht dafür gerade" statt „es war mit Sicherheit sie". Für eine
+interne Unterweisung ist das die richtige Höhe. In die nächtliche
+Sicherung geht der Code nicht — sie trägt nur die Durchläufe.
 
 Der Code sieht aus wie `M4K7-RPQ2-XT9B`. Die ersten vier Zeichen sind die
-**Kennung** und stehen im Klartext an `schulungTeilnehmer`; die acht
-dahinter sind das Geheimnis. Das ist kein Nachlassen, sondern Rechnen:
-scrypt braucht rund 50 ms, und ohne den offenen Vorderteil müsste die
-Funktion bei 39 Teilnehmern 39-mal hashen — zwei Sekunden bei jedem
-Start. Die acht geheimen Zeichen aus einem Alphabet von 32 sind rund
-10¹² Möglichkeiten; zehn Fehlversuche je Gerät und Stunde machen den Rest.
+**Kennung**; über sie findet die Funktion den Teilnehmer mit EINER
+Abfrage statt mit einem Durchgang durch die ganze Liste. Die acht
+dahinter sind das Geheimnis: aus einem Alphabet von 32 rund 10¹²
+Möglichkeiten, und zehn Fehlversuche je Gerät und Stunde machen den Rest.
 
 **`basis` funktioniert wie bei den Lösungen.** Ein Modul aus der Datei
 lässt sich nicht an Ort und Stelle ändern — wer es trotzdem ändert, legt
