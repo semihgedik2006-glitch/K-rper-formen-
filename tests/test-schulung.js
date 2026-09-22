@@ -69,13 +69,18 @@ async function starte(b, rolle) {
   await p.waitForTimeout(3300);
   return p;
 }
-/* Der Weg, den ein Mensch geht: untere Leiste → „Betrieb" → Reiter
+/* Der Weg, den ein Mensch geht: untere Leiste → „Ich" → Reiter
    „Schulung". Kein showView() von aussen — das prüfte die Funktion
-   statt den Weg. */
+   statt den Weg.
+
+   Unter „Ich" und nicht unter „Betrieb", seit dem 22.9.2026 und auf
+   Ansage: dort liegt, was HEUTE im Studio zu tun ist. Eine Schulung
+   gehört zu dem, was man selbst kann — wie „Meine Zeiten" und
+   „Meine Nachweise". */
 async function zurSchulung(p) {
   await p.evaluate(() => {
-    const k = document.querySelector('.mobnav [data-group="g-arbeit"]') ||
-              document.querySelector('#side [data-group="g-arbeit"]');
+    const k = document.querySelector('.mobnav [data-group="g-ich"]') ||
+              document.querySelector('#side [data-group="g-ich"]');
     if (k) k.click();
   });
   await p.waitForTimeout(700);
@@ -116,7 +121,7 @@ async function codeHolen(p, name) {
 
   // ══ 1. Der Weg dorthin ══
   console.log('\n── Der Weg dorthin ──');
-  pruefe('der Reiter „Schulung" steht unter „Betrieb"', await zurSchulung(p));
+  pruefe('der Reiter „Schulung" steht unter „Ich"', await zurSchulung(p));
   const offen = await p.evaluate(() => ({
     seite: (document.querySelector('.view.show') || {}).id,
     basis: ((window.SCHULUNGEN_BASIS || {}).module || []).length,

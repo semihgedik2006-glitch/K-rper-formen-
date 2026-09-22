@@ -489,7 +489,11 @@ Wer ursprünglich eingeteilt war, bleibt am Eintrag vermerkt.
 
 ## 12c. Schulung
 
-**Unter „Betrieb" der letzte Reiter.** Webinare Schritt für Schritt, mit
+**Unter „Ich" der letzte Reiter.** Nicht unter „Betrieb": dort liegt,
+was HEUTE im Studio zu tun ist — eine Schulung gehört zu dem, was du
+selbst kannst und nachweist, wie „Meine Zeiten" und „Meine Nachweise".
+
+Webinare Schritt für Schritt, mit
 Fragen am Ende — Einarbeitung, Hygiene, Notfall und was noch dazukommt.
 
 ### Für Mitarbeiter

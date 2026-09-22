@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-g7hUiyOurPlY8GRS5MVcgY3677mjO6UXV9q6nJ+5vb8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-KcMbF9NrhHAA8Rhzo2PJIfJxbjykK6bo+/ErdZsetFo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -14351,11 +14351,25 @@ var NAVGROUPS = [
      (nachgemessen: Chef 7/7 im Bild auf 320px), waere aber der siebte
      gewesen — und die Frage „was betrifft mich" braucht keine zwei
      Knoepfe, sondern zwei Reiter. */
-  {id:'g-ich', label:'Ich', views:['ich','persoenlich'],
+  /* ── Warum die Schulung hier steht und nicht unter „Betrieb" ──
+     Aus dem Betrieb, 22.9.2026: „platziere sie wo anders als Aufgaben,
+     weil das nicht zu Aufgaben zählt halt."
+
+     Der Einwand trifft. Unter „Betrieb" liegt, was HEUTE im Studio zu
+     tun ist — Aufgaben, Putzplan, Material, Geräte. Eine Schulung ist
+     nichts davon: sie steht nicht auf der Liste des Tages, sie gehört
+     zu dem, was man selbst kann und nachweist. Dieselbe Frage wie
+     „Meine Zeiten" und „Meine Nachweise", und die stehen hier.
+
+     Die Auswertung für die Leitung liegt trotzdem auf derselben Seite,
+     hinter dem Knopf oben rechts. Sie zweimal zu bauen — einmal hier,
+     einmal in der Verwaltung — wären zwei Stellen, an denen dieselbe
+     Liste auseinanderlaufen kann. */
+  {id:'g-ich', label:'Ich', views:['ich','persoenlich','schulung'],
    icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
   {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
-  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','probe','docs','schulung'],
+  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','probe','docs'],
    icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'g-team', label:'Team', views:['team'],
    icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
@@ -14574,7 +14588,6 @@ function allesGruppen(){
     {label:'Geräte',        view:'geraete',  ikon:'geraete',  was:'Defekt melden, Verlauf ansehen'},
     {label:'Probetraining', view:'probe',    ikon:'probe',    was:'Durchgeführt und abgeschlossen'},
     {label:'Dokumente',     view:'docs',     ikon:'docs',     was:'Dateien und Links fürs Team'},
-    {label:'Schulung',      view:'schulung', ikon:'schulung', was:'Webinare Schritt für Schritt, mit Fragen'},
     /* Kein `view`: dahinter liegt keine Seite mehr, sondern das
        Hilfe-Fenster. `hilfe:true` sagt allesZiel(), dass es öffnen
        statt wechseln soll. */
@@ -14610,6 +14623,8 @@ function allesGruppen(){
      was:'Eigene Termine und Notizen'},
     {label:'Meine Zeiten',  view:'ich', ichtab:'daten',    ikon:'uhr',
      was:'Gestempelte Stunden, Nachweise, Daten'},
+    {label:'Schulung',      view:'schulung', ikon:'schulung',
+     was:'Webinare Schritt für Schritt, mit Fragen'},
     {label:'Persönlich',    view:'persoenlich', ikon:'persoenlich',
      was:'Nur für dich, niemand sonst sieht es'},
   ]);
