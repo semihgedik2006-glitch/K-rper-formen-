@@ -403,6 +403,10 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-11** | **Weisse Schrift auf dem Hauptknopf war im dunklen Modus nie lesbar**: gemessen 2,14:1 in der Mitte des Verlaufs, Untergrenze dieser App ist 4,5. Ein `text-shadow` stand als Notbehelf dabei | 21.9.2026, `tests/test-akzent.js` |
 | **B-12** | **Die Deckkraft `.24` der getönten Knopffläche war für Cyan gemessen** und galt pauschal. Pink fällt bei denselben `.24` auf 4,17:1. Sie wird jetzt je Farbe gerechnet | 21.9.2026 |
 | **B-13** | `kasseRueckweg()` warf nach der Rückkehr von Stripe die **ganze** Adresse weg — samt `?firma=`, `?neu=` und `?demo=` | 21.9.2026, `tests/test-demo-abo.js` |
+| **B-14** | **Zwei Elemente hiessen `hilfeTitel`** — die Überschrift des Hilfe-Fensters und das Eingabefeld im Formular darin. `getElementById` gab die Überschrift zurück, `.value` war `undefined`: **jedes Speichern scheiterte still** an der Prüfung „Bitte sag in einem Satz, worum es geht". Gefunden, weil der Probelauf den Titel nachgelesen hat, statt dem Knopf zu glauben | 22.9.2026, `tests/test-loesungen.js` |
+| **B-15** | **Die Kopfzeile lief bei 320px um 50 Pixel über**, als der sechste Knopf dazukam — Querlauf der ganzen Seite, Abmelden ausserhalb des Bildes. Bei der Leitung auch noch bei 390px. Nebenbefund: die Glocke wurde dabei auf 20px zusammengedrückt, weit unter der 44-Pixel-Regel | 22.9.2026, `tests/test-abgeschnitten.js` |
+| **B-16** | **`loesungen-basis.js` löste keinen Deploy aus** — die Datei wird ausgeliefert, stand aber in keinem `paths`-Muster des Ablaufs. Änderungen am Grundstock wären nie im Betrieb angekommen | 22.9.2026, `tests/test-ausliefern.js` |
+| **B-17** | **„Zurück" führte aus der Trefferliste in eine Kategorie von vorhin.** Wer gesucht, gelesen und zurückgegangen ist, stand plötzlich in einer Liste, die er zehn Minuten vorher geöffnet hatte — und tippte seine Suche noch einmal | 22.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
-`docs/FORTSCHRITT.md` — chronologisch, 94 Runden.
+`docs/FORTSCHRITT.md` — chronologisch, 96 Runden.
