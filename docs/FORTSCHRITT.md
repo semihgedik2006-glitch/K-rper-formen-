@@ -10244,6 +10244,10 @@ als keiner.
 | **„Zurück" führte in die falsche Liste** | wer aus der Trefferliste heraus las, landete in einer Kategorie von vorhin und hatte seine Suche verloren. Jetzt merkt sich das Fenster, woher der Eintrag angeklickt wurde |
 | **Das Wort „Hilfe" erst ab 900 px** | bei 700 px stünden „Hilfe" und „Suchen" nebeneinander in einer Zeile, die ohnehin Name, Studio und vier Knöpfe trägt |
 | **`ansichtAn('loesungen')` gibt jetzt `false`** | die Seite gibt es nicht mehr, aber ein Verlaufseintrag aus einer offenen Sitzung oder ein weitergeleiteter Link zeigen noch dorthin |
+| **Abmelden warf einen Fehler** | `stopListeners()` fasste `_loesUnsub` an, und die Variable gibt es nicht mehr. Gefunden von `test-firma-link` und `test-firmenname`, beide mit *PAGEERROR: _loesUnsub is not defined* |
+| **Die Kopfzeile lief bei 320px über** | siehe unten — der eigene Abschnitt |
+| **Der Rettungsring galt als toter Ballast** | `allesIkon(name)` sucht erst in `NAV`, und dort steht er nicht mehr. `test-gestaltung` sieht nur wörtliche `ikon('name')`-Aufrufe; jetzt steht einer da |
+| **`loesungen-basis.js` löste keinen Deploy aus** | die Datei wird ausgeliefert, stand aber in keinem `paths`-Muster. Änderungen am Grundstock wären nie im Betrieb angekommen. `test-ausliefern.js` |
 
 ### 5. Was mitging
 
@@ -10255,6 +10259,30 @@ als keiner.
 | **Der Schalter** | „Lösungen" heisst jetzt „Hilfe im Studio" und schaltet den Rettungsring ab. Er hängt nicht in der Navigation — `buildNav()` kommt nicht an ihm vorbei, also steht die Zeile in `featureKartenAnwenden()` |
 | **Service Worker** | `v6`, mit `loesungen-basis.js` im Vorrat |
 
+### 6. Die Kopfzeile hatte kein Budget mehr
+
+Der Rettungsring war der **sechste** Knopf in einer Zeile, die schon
+fünf trug. Nachgemessen bei 320px: 50 Pixel über dem Rand, Querlauf der
+ganzen Seite, Abmelden ausserhalb des Bildes. Bei der Leitung auch noch
+bei 390px. `test-abgeschnitten.js` hat es gemeldet, nicht das Auge.
+
+Damit hat die Zeile eine Regel bekommen, die im Design-System steht:
+**wer ihr einen Knopf hinzufügt, nimmt einen heraus** — und zwar nicht
+den, den man am wenigsten mag, sondern den, der **vollständig woanders
+steht**.
+
+| | |
+|---|---|
+| **Hell/Dunkel** | gegangen, ab 520px abwärts. Steht ganz in Profil → Aussehen, hinter dem Kürzel einen Finger breit daneben — dort sogar reicher: Hell, Dunkel **und** „wie das Gerät", was ein Umschalter mit zwei Zuständen gar nicht ausdrücken kann |
+| **Bericht an mich** | gegangen, ab 360px abwärts. Derselbe Knopf steht in Verwaltung → Berichte und in der Werkbank |
+| **Suchen** | geblieben — auf dem Handy der einzige Weg dorthin |
+| **Abmelden** | geblieben — am Schichtwechsel auf einem geteilten Tablet der häufigste Griff überhaupt |
+| **Glocke** | geblieben — sie trägt eine Zahl, und eine Meldung, die man nicht sieht, ist keine |
+
+Nebenbefund: die Glocke wurde bei 320px auf **20 Pixel** zusammen­gedrückt,
+weit unter der 44-Pixel-Regel dieser App. Sie hat jetzt wieder ihre
+vollen 44.
+
 ### Neu und geändert
 
 | | |
@@ -10264,6 +10292,8 @@ als keiner.
 | `tests/test-funktionen-schalter.js` | + der Rettungsring folgt seinem Schalter, mit Gegenprobe |
 | `tests/test-navigation.js` | „Betrieb" hat wieder **sechs** Unterseiten |
 | `tests/test-sicherung-inhalt.js` | `schritte` und `herkunft` in der Datei |
-| `tests/probe-foto.png` | 89 Byte. Ein echtes Bild für den Weg Auswahl → Verkleinern → Vorschau → Speichern → Anzeigen |
+| das Probefoto | 89 Byte, im Durchlauf selbst erzeugt statt als Datei abgelegt: `tests/*.png` ist in `.gitignore` (dort landen die Bildschirmfotos). Es geht den ganzen Weg: Auswahl → Verkleinern → Vorschau → Speichern → Anzeigen |
+| `tests/test-neu-design.js` | eine Zeile in „Alles” führt jetzt auf ein **Fenster** statt auf eine Seite — dieselbe Zusage, anderer Beleg |
+| `firebase.json`, `deploy-functions.yml` | `loesungen-basis.js` löst einen Deploy aus und bekommt eine Woche Zwischenspeicher |
 
 **120 Durchläufe.**
