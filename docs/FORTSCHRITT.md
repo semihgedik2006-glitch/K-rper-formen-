@@ -10480,9 +10480,27 @@ unter dem Rand: ausgerechnet der Text, der erklären soll.
 |---|---|
 | `schulungen-basis.js` | drei Module aus dem Mitarbeiter-Handbuch, mit Platzhaltern für die Videos |
 | `tests/rules/schulung.test.js` | **56 Zusicherungen**, beide Welten |
-| `tests/test-schulung.js` | **45 Zusicherungen** — der ganze Weg: Code anlegen, falscher Code, richtiger Code, Schritte, „Verstanden"-Haken mit Gegenprobe, gezielt danebenklicken, Ergebnis, Liste |
+| `tests/test-schulung.js` | **45 Zusicherungen** — der ganze Weg über „Ich“: Code anlegen, falscher Code, richtiger Code, Schritte, „Verstanden"-Haken mit Gegenprobe, gezielt danebenklicken, Ergebnis, Liste |
 | 3 Cloud Functions | `schulungTeilnehmerAnlegen`, `schulungCodeNeu`, `schulungStart` |
 | 5 Sammlungen | zwei davon auf `if false` |
+
+### 6. Nachtrag am selben Tag: sie liegt unter „Ich"
+
+> „platziere sie wo anders als Aufgaben, weil das nicht zu Aufgaben
+> zählt halt."
+
+Der Einwand trifft, und zwar genau. Unter „Betrieb" liegt, was **heute**
+im Studio zu tun ist — Aufgaben, Putzplan, Material, Geräte. Eine
+Schulung steht nicht auf der Liste des Tages; sie gehört zu dem, was man
+selbst kann und nachweist. Dieselbe Frage wie „Meine Zeiten" und
+„Meine Nachweise", und die stehen unter „Ich".
+
+Die Auswertung für die Leitung bleibt auf derselben Seite, hinter dem
+Knopf oben rechts. Sie zweimal zu bauen — einmal hier, einmal in der
+Verwaltung — wären zwei Stellen, an denen dieselbe Liste auseinander
+laufen kann.
+
+„Betrieb" hat damit wieder **sechs** Reiter, „Ich" hat **drei**.
 
 **Was noch fehlt** und ausdrücklich so vereinbart ist: die Videos, der
 eigene Speicher-Eimer, die echte Abspielmessung — und ein Editor, mit
