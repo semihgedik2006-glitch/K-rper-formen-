@@ -61,6 +61,10 @@ const ansicht = page => page.evaluate(() => {
        nachgezogen, und das ist ihr Zweck: sie ist die Stelle, an der
        auffällt, wenn eine Reiterzeile STILL wächst — ab acht
        Reitern passt sie auf 390 px nicht mehr in eine Zeile. */
+    /* Wieder sechs. Die Schulung stand am 22.9.2026 kurz als siebter
+       Reiter hier und ist noch am selben Tag nach „Ich" gezogen — auf
+       Ansage aus dem Betrieb: unter „Betrieb" liegt, was HEUTE im
+       Studio zu tun ist, und eine Schulung ist nichts davon. */
     if (unter.length !== 6) errs.push('Betrieb hat ' + unter.length + ' statt 6 Unterseiten');
     await b.close();
   }

@@ -271,6 +271,45 @@ Datensatz; die Datei liegt beim Drittanbieter des Kunden.
 
 ---
 
+### Schulung: fünf Sammlungen (seit 22.9.2026)
+
+Webinare mit Videos und Fragen — und ein Nachweis, wer sie wann gemacht
+hat.
+
+| Sammlung | Was drin steht | Wer darf |
+|---|---|---|
+| `schulungen` | Module, die der Betrieb SELBST anlegt. Der Grundstock liegt als Datei (`schulungen-basis.js`) und kostet nichts | lesen: jeder Aktive · schreiben: die Leitung |
+| `schulungTeilnehmer` | `name`, `uid` (freiwillig), `kennung` (der offene Vorderteil des Codes), `gesperrt` | lesen: die Leitung und die Person selbst · schreiben: die Leitung |
+| `schulungCodes/{kennung}` | `salz`, `hash`, `teilnehmer` | **niemand** — `allow read, write: if false` |
+| `schulungVersuche/{uid}` | die Bremse gegen Durchprobieren | **niemand** |
+| `schulungLaeufe` | ein Durchlauf: `teilnehmer`, `teilnehmerName`, `uid`, `modul`, `geraetUid`, `geraetName`, `studioKey`, `start`, `ende`, `aktivMs`, `durchgang`, `schritteGesehen`, `fragen[]`, `punkte`, `bestanden`, `status` | lesen: die Leitung und die Person selbst · **anlegen: niemand** · ändern: nur das Gerät, nur solange `status == 'laeuft'` |
+
+**`allow create: if false` auf `schulungLaeufe` ist die Zeile, auf die es
+ankommt.** Ein Durchlauf entsteht ausschliesslich in der Cloud Function
+`schulungStart`, und erst, nachdem der Teilnahme-Code gestimmt hat.
+Dürfte der Browser ihn anlegen, schriebe sich jeder mit der Konsole
+einen fertigen, bestandenen Durchlauf auf einen fremden Namen — und die
+ganze Liste wäre eine Behauptung statt eines Nachweises.
+
+**Der Code liegt gehasht** (scrypt, wie die Stempel-PIN), und zwar aus
+demselben Grund: wer die Liste lesen kann, macht die Schulung für einen
+Kollegen. Die Leitung sieht ihn **genau einmal** beim Anlegen.
+
+Der Code sieht aus wie `M4K7-RPQ2-XT9B`. Die ersten vier Zeichen sind die
+**Kennung** und stehen im Klartext an `schulungTeilnehmer`; die acht
+dahinter sind das Geheimnis. Das ist kein Nachlassen, sondern Rechnen:
+scrypt braucht rund 50 ms, und ohne den offenen Vorderteil müsste die
+Funktion bei 39 Teilnehmern 39-mal hashen — zwei Sekunden bei jedem
+Start. Die acht geheimen Zeichen aus einem Alphabet von 32 sind rund
+10¹² Möglichkeiten; zehn Fehlversuche je Gerät und Stunde machen den Rest.
+
+**`aktivMs` ist nicht die Wanduhr.** Der Zähler läuft nur, wenn das
+Fenster vorn und die Seite offen ist — wer den Bildschirm sperrt und
+Mittag macht, sammelt keine Minuten. Eine Dauer, die das mitzählt, ist
+als Auskunft wertlos und als Leistungsangabe unfair.
+
+---
+
 ### `users/{uid}` — das Feld `tourGesehen` (seit 22.9.2026)
 
 Eine Zahl: die Fassung der Führung, die dieses Konto durchlaufen hat.

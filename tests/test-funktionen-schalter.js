@@ -92,6 +92,12 @@ async function zumTeam(page) {
        und der Test meldet einen Fehler, der keiner ist. Wer der Gruppe
        etwas hinzufuegt, kommt hier wieder vorbei; genau dafuer ist
        diese Zeile da.
+       `schulung` stand hier kurz und gehört nicht mehr dazu: die
+       Schulung liegt seit dem 22.9.2026 unter „Ich", nicht unter
+       „Betrieb". Würde sie hier mitgesetzt, prüfte diese Zeile eine
+       Verbindung, die es nicht gibt — und „Ich" hat ohnehin keinen
+       Schalter, die Gruppe verschwindet also nie ganz.
+
        `loesungen` steht bewusst NICHT mehr dabei: der Schalter gibt es
        weiter, aber er schaltet seit dem 22.9. den Rettungsring in der
        Kopfzeile ab, keinen Reiter unter „Betrieb". Würde er hier
@@ -293,7 +299,7 @@ async function zumTeam(page) {
        der auffällt, wenn ein Schalter STILL dazukommt — und ein
        Schalter, den der Chef nicht erwartet, schaltet im Zweifel etwas
        ab, das jemand braucht. */
-    if (liste.zahl !== 14) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 14');
+    if (liste.zahl !== 15) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 15');
     await b.close();
   }
 

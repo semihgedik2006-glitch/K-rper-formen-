@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-vA/HCx4lHzILh4u4Dfs5UkjM48pi7pX8/aJGGM0PER8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-KcMbF9NrhHAA8Rhzo2PJIfJxbjykK6bo+/ErdZsetFo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4224,6 +4224,139 @@ html{font-size:var(--fs,100%)}
   .hilfe-kopf{padding-top:calc(var(--s16) + var(--sat))}
   .hilfe-body{padding-bottom:calc(var(--s24) + var(--sab))}
 }
+
+/* ── Schulung (22.9.2026) ─────────────────────────────────────────────
+   Ein Modul ist eine Karte, ein Durchlauf eine Seite. Der Unterschied
+   ist Absicht: in der Übersicht vergleicht man, im Durchlauf soll
+   nichts daneben stehen, worauf das Auge ausweichen kann. */
+.sch-karte{display:flex;align-items:flex-start;gap:var(--s12);width:100%;
+  padding:var(--s16);text-align:left;cursor:pointer;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r-md);
+  color:var(--text);margin-bottom:var(--s8);
+  transition:border-color .2s,transform .15s var(--ease-ios)}
+.sch-karte:active{transform:scale(.99)}
+@media (hover:hover){ .sch-karte:hover{border-color:var(--accent)} }
+.sch-ico{flex:0 0 auto;width:40px;height:40px;border-radius:var(--r-sm);
+  display:grid;place-items:center;background:var(--tipp-1);color:var(--accent-d)}
+.sch-ico .sym{width:20px;height:20px}
+.sch-txt{flex:1;min-width:0}
+.sch-txt b{display:block;font-family:var(--font-head);font-weight:700;
+  font-size:var(--t-md);line-height:var(--lh-1)}
+.sch-txt i{display:block;font-style:normal;margin-top:var(--s4);
+  font-size:var(--t-sm);color:var(--text-2);line-height:var(--lh)}
+.sch-marken{display:flex;gap:var(--s6);flex-wrap:wrap;margin-top:var(--s8)}
+.sch-marke{display:inline-flex;align-items:center;gap:var(--s4);
+  padding:var(--s2) var(--s8);border-radius:var(--r-pille);
+  font-size:var(--t-2xs);font-weight:700;
+  background:var(--bg-3);color:var(--text-3);border:1px solid var(--line)}
+.sch-marke.pflicht{background:var(--tipp-1);color:var(--accent-d);border-color:var(--tipp-kante)}
+.sch-marke.fertig{background:var(--f-ok-leise);color:var(--ok-tx);border-color:var(--k-ok)}
+.sch-marke.faellig{background:var(--f-warn-leise);color:var(--warm-tx);border-color:var(--k-warn)}
+/* Der Fortschritt. Eine Leiste statt „Schritt 3 von 7": die Zahl liest
+   man, die Leiste sieht man — und was noch kommt, ist beim Durchhalten
+   die wichtigere Auskunft. */
+.sch-fortschritt{display:flex;align-items:center;gap:var(--s10);margin-bottom:var(--s16)}
+.sch-balken{flex:1;height:8px;border-radius:var(--r-pille);background:var(--bg-3);overflow:hidden}
+.sch-balken i{display:block;height:100%;border-radius:var(--r-pille);
+  background:var(--brand);transition:width .35s var(--ease-ios)}
+.sch-zahl{flex:0 0 auto;font-size:var(--t-2xs);color:var(--text-3);
+  font-variant-numeric:tabular-nums;font-weight:700}
+.sch-schritt h3{font-family:var(--font-head);font-weight:800;
+  font-size:var(--t-xl);line-height:var(--lh-eng);margin-bottom:var(--s12)}
+.sch-schritt p{font-size:var(--t-md);line-height:var(--lh);color:var(--text-2);
+  margin-bottom:var(--s16)}
+/* Der Platzhalter, solange kein Video da ist. Er sagt ausdrücklich,
+   dass es fehlt — ein leerer Kasten liesse jeden glauben, sein Gerät
+   sei schuld. */
+.sch-video{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--r-md);
+  background:var(--bg-3);border:1px dashed var(--line-2);
+  display:grid;place-items:center;text-align:center;padding:var(--s20);
+  margin-bottom:var(--s16)}
+.sch-video video{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;border-radius:var(--r-md);background:#000}
+.sch-video .sym{width:34px;height:34px;color:var(--text-3);margin-bottom:var(--s8)}
+.sch-video b{display:block;font-family:var(--font-head);font-size:var(--t-md)}
+.sch-video span{display:block;font-size:var(--t-xs);color:var(--text-3);margin-top:var(--s4)}
+/* „Verstanden" — ein Haken, der den Weiter-Knopf freigibt. Kein
+   Schmuck: er ist die einzige Stelle im Durchlauf, an der jemand aktiv
+   zustimmt, und sie soll sich auch so anfühlen. */
+.sch-haken{display:flex;align-items:flex-start;gap:var(--s12);cursor:pointer;
+  padding:var(--s16);border-radius:var(--r-md);
+  background:var(--bg-soft);border:1.5px solid var(--line-2);
+  margin-bottom:var(--s16);transition:border-color .2s,background .2s}
+.sch-haken.an{border-color:var(--accent);background:var(--tipp-1)}
+.sch-haken input{width:22px;height:22px;flex-shrink:0;accent-color:var(--accent);margin-top:var(--s1)}
+.sch-haken span{font-size:var(--t-md);line-height:var(--lh)}
+/* Die Fragen. Eine je Bildschirm — vier Fragen untereinander laden
+   zum Querlesen ein, und wer quer liest, lernt nichts. */
+.sch-frage{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+  line-height:var(--lh-eng);margin-bottom:var(--s16)}
+.sch-antworten{display:flex;flex-direction:column;gap:var(--s8);margin-bottom:var(--s16)}
+.sch-antwort{display:flex;align-items:flex-start;gap:var(--s12);width:100%;
+  min-height:56px;padding:var(--s12) var(--s16);text-align:left;cursor:pointer;
+  background:var(--bg-2);border:1.5px solid var(--line-2);border-radius:var(--r-md);
+  color:var(--text);font-family:var(--font-body);font-size:var(--t-md);
+  line-height:var(--lh);transition:border-color .2s,background .2s}
+@media (hover:hover){ .sch-antwort:hover:not(:disabled){border-color:var(--accent)} }
+.sch-antwort:disabled{cursor:default}
+.sch-antwort .sch-buchst{flex:0 0 auto;width:26px;height:26px;border-radius:var(--r-rund);
+  display:grid;place-items:center;font-family:var(--font-head);font-weight:800;
+  font-size:var(--t-2xs);background:var(--bg-3);color:var(--text-3)}
+.sch-antwort.richtig{border-color:var(--k-ok);background:var(--f-ok-leise)}
+.sch-antwort.richtig .sch-buchst{background:var(--ok-tx);color:var(--on-accent)}
+.sch-antwort.falsch{border-color:var(--k-warn);background:var(--f-warn-leise)}
+.sch-antwort.falsch .sch-buchst{background:var(--warm-tx);color:var(--on-accent)}
+/* Der Hinweis nach einer falschen Antwort. Er erklärt, statt zu
+   tadeln — das ist der ganze Zweck des Bereichs. */
+.sch-hinweis{padding:var(--s12) var(--s16);border-radius:var(--r-md);
+  background:var(--bg-soft);border-left:3px solid var(--accent);
+  font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2);
+  margin-bottom:var(--s16);animation:cardUp .3s var(--ease-ios) both}
+/* Das Ergebnis */
+.sch-fertig{text-align:center;padding:var(--s32) var(--s20)}
+.sch-fertig .sch-kranz{width:72px;height:72px;border-radius:var(--r-rund);
+  margin:0 auto var(--s16);display:grid;place-items:center;
+  background:var(--f-ok-leise);color:var(--ok-tx)}
+.sch-fertig .sch-kranz .sym{width:34px;height:34px}
+.sch-fertig h3{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
+  line-height:var(--lh-eng);margin-bottom:var(--s8)}
+.sch-fertig p{font-size:var(--t-md);color:var(--text-2);line-height:var(--lh)}
+.sch-zahlen{display:grid;gap:var(--s8);margin:var(--s24) 0;
+  grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+.sch-zahl-kachel{padding:var(--s12);border-radius:var(--r-md);
+  background:var(--bg-soft);border:1px solid var(--line);text-align:center}
+.sch-zahl-kachel b{display:block;font-family:var(--font-head);font-weight:800;
+  font-size:var(--t-xl);font-variant-numeric:tabular-nums;color:var(--accent-d)}
+.sch-zahl-kachel span{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
+/* Der Code, genau einmal sichtbar. Gross, mit Zifferabstand und zum
+   Abschreiben gedacht — auf einem Zettel landet er, nicht in einer
+   Datei. */
+.sch-codebox{padding:var(--s20);border-radius:var(--r-md);text-align:center;
+  background:var(--tipp-1);border:1.5px solid var(--accent);margin:var(--s12) 0}
+.sch-codebox b{display:block;font-family:var(--font-head);font-weight:800;
+  font-size:var(--t-2xl);letter-spacing:var(--ls-l);color:var(--accent-d);
+  word-break:break-all;margin-bottom:var(--s8)}
+.sch-codebox p{font-size:var(--t-xs);color:var(--text-2);line-height:var(--lh);margin-bottom:var(--s12)}
+/* Die Auswertung. Eine Zeile je Durchlauf, die Zahlen rechtsbündig mit
+   Zifferabstand — so stehen sie untereinander und lassen sich
+   vergleichen, ohne dass man sie liest. */
+.sch-lauf-zeile{display:flex;align-items:center;gap:var(--s10);
+  padding:var(--s10) var(--s12);border-top:1px solid var(--line);
+  font-size:var(--t-sm);flex-wrap:wrap}
+.sch-lauf-zeile:first-child{border-top:none}
+.sch-lauf-wer{flex:1 1 140px;min-width:0}
+.sch-lauf-wer b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sch-lauf-wer span{display:block;font-size:var(--t-2xs);color:var(--text-3)}
+.sch-lauf-zahl{flex:0 0 auto;min-width:54px;text-align:right;
+  font-variant-numeric:tabular-nums;font-size:var(--t-xs);color:var(--text-2)}
+.sch-tn-zeile{display:flex;align-items:center;gap:var(--s10);
+  padding:var(--s10) var(--s12);border-top:1px solid var(--line);flex-wrap:wrap}
+.sch-tn-zeile:first-child{border-top:none}
+.sch-tn-name{flex:1 1 120px;min-width:0;font-weight:600;font-size:var(--t-sm)}
+.sch-tn-name span{display:block;font-size:var(--t-2xs);color:var(--text-3);font-weight:400}
+.sch-kenn{font-family:var(--font-head);font-weight:800;letter-spacing:var(--ls-l);
+  font-size:var(--t-xs);color:var(--text-3);flex:0 0 auto}
+
 .chip{display:inline-flex;align-items:center;min-height:44px;
   background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--text-2);
   padding:0 var(--s16);border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
@@ -6656,6 +6789,60 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </div>
             <div id="archiveArea"></div>
           </div>
+        </div>
+      </section>
+
+      <!-- ══ SCHULUNG ═══════════════════════════════════════════════════
+           Aus dem Betrieb, 22.9.2026: „ein bereich für eine art webinar
+           und onboarding … mit videos und interaktivität … und danach
+           noch fragen … und wir können dann in einer liste sehen wer es
+           alles gemacht hat und wann und wie lange."
+
+           FÜNF ZUSTÄNDE, EINE SEITE. Übersicht → Code → Durchlauf →
+           Ergebnis, dazu die Verwaltung für die Leitung. Kein eigenes
+           Fenster wie bei der Hilfe: eine Schulung ist nichts, was man
+           nebenbei aufschlägt — man setzt sich hin und braucht den
+           ganzen Bildschirm. -->
+      <section class="view" id="view-schulung">
+        <div class="view-head shrink">
+          <div class="vh-line">
+            <div class="vh-text">
+              <h2>Schulung</h2>
+              <p>Schritt für Schritt, mit Fragen am Ende — und einem Nachweis, wer sie gemacht hat.</p>
+            </div>
+            <button class="kopf-plus" id="schVerwaltenBtn" data-manage-only="1"
+                    style="display:none" title="Teilnehmer, Codes und Auswertung"
+                    aria-label="Verwalten">≡<span class="kp-wort"> Verwalten</span></button>
+          </div>
+        </div>
+        <div class="scroll-area" data-shrinks="1">
+
+          <!-- ── 1. Übersicht ── -->
+          <div id="schUebersicht">
+            <!-- „Jeder sieht seine eigenen Zahlen." Das ist der
+                 Unterschied zwischen einer Auswertung und einer
+                 heimlichen Akte — und er steht deshalb ganz oben, nicht
+                 versteckt im Ich-Bereich. -->
+            <div class="card" id="schMeineKarte" style="display:none">
+              <h3 data-ikon="pokal">Was du schon gemacht hast</h3>
+              <div id="schMeine"></div>
+            </div>
+            <div class="chip-row" id="schKatRow" style="margin-bottom:12px"></div>
+            <div id="schListe"></div>
+            <p class="hint" id="schStand"></p>
+          </div>
+
+          <!-- ── 2. Der Code ── -->
+          <div id="schCode" style="display:none"></div>
+
+          <!-- ── 3. Der Durchlauf ── -->
+          <div id="schLauf" style="display:none"></div>
+
+          <!-- ── 4. Das Ergebnis ── -->
+          <div id="schErgebnis" style="display:none"></div>
+
+          <!-- ── 5. Verwaltung (nur Leitung) ── -->
+          <div id="schVerwalten" style="display:none"></div>
         </div>
       </section>
 
@@ -11103,6 +11290,7 @@ var FEATURES = [
   {id:'geraete',   label:'Geräte',           was:'Geräte- und Schadensbuch'},
   {id:'docs',      label:'Dokumente',        was:'Dateien für das Team'},
   {id:'loesungen', label:'Hilfe im Studio',  was:'Der Rettungsring oben: 115 Probleme und was hilft'},
+  {id:'schulung',  label:'Schulung',         was:'Webinare mit Fragen und einem Nachweis, wer sie gemacht hat'},
   {id:'probe',     label:'Probetraining',    was:'Durchgeführt und abgeschlossen, mit Quote'},
   {id:'schicht',   label:'Schichtplan',      was:'Wer wann arbeitet', team:true},
   {id:'abwesend',  label:'Abwesenheiten',    was:'Urlaub, Krankheit, frei', team:true},
@@ -14163,7 +14351,21 @@ var NAVGROUPS = [
      (nachgemessen: Chef 7/7 im Bild auf 320px), waere aber der siebte
      gewesen — und die Frage „was betrifft mich" braucht keine zwei
      Knoepfe, sondern zwei Reiter. */
-  {id:'g-ich', label:'Ich', views:['ich','persoenlich'],
+  /* ── Warum die Schulung hier steht und nicht unter „Betrieb" ──
+     Aus dem Betrieb, 22.9.2026: „platziere sie wo anders als Aufgaben,
+     weil das nicht zu Aufgaben zählt halt."
+
+     Der Einwand trifft. Unter „Betrieb" liegt, was HEUTE im Studio zu
+     tun ist — Aufgaben, Putzplan, Material, Geräte. Eine Schulung ist
+     nichts davon: sie steht nicht auf der Liste des Tages, sie gehört
+     zu dem, was man selbst kann und nachweist. Dieselbe Frage wie
+     „Meine Zeiten" und „Meine Nachweise", und die stehen hier.
+
+     Die Auswertung für die Leitung liegt trotzdem auf derselben Seite,
+     hinter dem Knopf oben rechts. Sie zweimal zu bauen — einmal hier,
+     einmal in der Verwaltung — wären zwei Stellen, an denen dieselbe
+     Liste auseinanderlaufen kann. */
+  {id:'g-ich', label:'Ich', views:['ich','persoenlich','schulung'],
    icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
   {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
@@ -14224,6 +14426,10 @@ var NAV = [
   {id:'probe', label:'Probetraining', icon:'<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>'},
   {id:'team', label:'Team', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
   {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
+  /* Abspieldreieck im Rahmen: „hier wird etwas gezeigt". Bewusst nicht
+     die Glühbirne — die trug bis zum 22.9. die Lösungen, und zwei
+     Bedeutungen auf einem Zeichen sind eine zu viel. */
+  {id:'schulung', label:'Schulung', icon:'<rect x="2" y="4" width="20" height="14" rx="2"/><path d="m10 9 5 2.5-5 2.5z"/><path d="M8 21h8"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
   {id:'archive', label:'Archiv', icon:'<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>', manageOnly:true},
   {id:'chef',  label:'Chef',     icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>', manageOnly:true}
@@ -14417,6 +14623,8 @@ function allesGruppen(){
      was:'Eigene Termine und Notizen'},
     {label:'Meine Zeiten',  view:'ich', ichtab:'daten',    ikon:'uhr',
      was:'Gestempelte Stunden, Nachweise, Daten'},
+    {label:'Schulung',      view:'schulung', ikon:'schulung',
+     was:'Webinare Schritt für Schritt, mit Fragen'},
     {label:'Persönlich',    view:'persoenlich', ikon:'persoenlich',
      was:'Nur für dich, niemand sonst sieht es'},
   ]);
@@ -15152,6 +15360,7 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='material'){ ensureMaterialLoaded(); ensureArchivesLoaded(); }
   if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='geraete') ensureDevicesLoaded();
+  if(id==='schulung') schOeffnen();
   if(id==='probe'){ if(!_probeUnsub) listenProbe(); renderProbe(); }
   if(id==='chat'){
     var cb=document.querySelector('.chat-channels');
@@ -17446,6 +17655,790 @@ function hilfeKnopfPruefen(){
   if(!an && _hAn) hilfeSchliessen();
 }
 
+/* ══ SCHULUNG ════════════════════════════════════════════════════════
+   Aus dem Betrieb, 22.9.2026:
+     „ich möchte einen bereich für eine art webinar und onboarding …
+      wo dann jegliche schritte mit videos und interaktivität erklärt
+      werden und danach noch fragen gestellt werden … die leitung muss
+      auch einen bestimmten code angeben der zu einem bestimmten namen
+      gegeben wird … wir können dann in einer liste sehen wer es alles
+      gemacht hat und wann und wie lange."
+
+   ── DER CODE IST DER KERN, NICHT DAS LOGIN ─────────────────────────
+   Geschult wird am Tablet im Studio, und dort ist ein Studio-Konto
+   angemeldet — nicht die Person, die davor sitzt. Deshalb gibt die
+   Leitung vorher je Person einen Code aus; wer anfängt, tippt ihn ein.
+
+   Damit braucht niemand ein eigenes Konto, um eine Schulung zu machen
+   — neue Leute können die Einarbeitung hinter sich bringen, bevor sie
+   überhaupt einen Zugang haben. Und trotzdem steht am Ende ein Name
+   unter dem Durchlauf.
+
+   Mitgeschrieben wird dazu, WORAUF es lief: Gerätekonto, Studio und
+   Uhrzeit. Das ist der zweite Teil derselben Ansage aus dem Betrieb.
+
+   ── WARUM DER DURCHLAUF NICHT AUS DEM BROWSER ENTSTEHT ─────────────
+   `schulungLaeufe` steht in firestore.rules auf `allow create: if
+   false` — für alle, auch für den Chef. Ein Durchlauf entsteht
+   ausschliesslich in der Cloud Function `schulungStart`, und erst,
+   nachdem der Code gestimmt hat. Sonst schriebe sich jeder mit der
+   Konsole einen fertigen, bestandenen Durchlauf auf einen fremden
+   Namen, und die ganze Liste wäre eine Behauptung.
+
+   Und: ein ABGESCHLOSSENER Durchlauf ändert sich nicht mehr. Dasselbe
+   Muster wie bei den Nachweisen.
+
+   ── WAS HIER EHRLICH GEMESSEN WIRD UND WAS NICHT ───────────────────
+   Gemessen: die AKTIVE Zeit. Der Zähler läuft nur, wenn das Fenster
+   vorn ist und diese Seite offen — wer den Bildschirm sperrt und
+   Mittag macht, sammelt keine Minuten.
+
+   NICHT gemessen, solange kein Video da ist: ob jemand zugesehen hat.
+   Die App behauptet das auch nicht. Sobald die Videos im eigenen
+   Speicher liegen, misst der eigene Player es wirklich; bis dahin
+   steht am Platzhalter, dass das Video fehlt.
+
+   ── JEDER SIEHT SEINE EIGENEN ZAHLEN ───────────────────────────────
+   Ausdrücklich so entschieden. Dauer, Fehlversuche und Wiederholungen
+   sind Leistungsdaten; sie nur der Leitung zu zeigen, wäre eine
+   heimliche Akte. Oben auf der Seite steht deshalb für jeden, was er
+   gemacht hat und wie es lief. Die Regeln lassen es auch so zu. */
+
+var SCH_BASIS_DATEI = 'schulungen-basis.js';
+var _schBasis = { kategorien: [], module: [] };
+var _schBasisStatus = 'leer';        // leer | laedt | da | fehler
+var _schBasisWarte = [];
+var _schEigen = [], _schEigenUnsub = null;
+var _schMeine = [], _schMeineUnsub = null;
+var _schAlleLaeufe = [], _schLaeufeUnsub = null;
+var _schTeilnehmer = [], _schTnUnsub = null;
+var _schKat = 'alle';
+var _schAnsicht = 'uebersicht';
+var _schModul = null, _schLauf = null;
+var _schPos = 0, _schPhase = 'schritte';   // schritte | fragen
+var _schGesehen = [], _schAntworten = [], _schFrageIdx = 0;
+var _schHaken = false, _schOffenerHinweis = '';
+var _schAktivMs = 0, _schUhr = null, _schGesichert = 0;
+var _schGebunden = false;
+
+function schFn(name){
+  return firebase.app().functions(KONFIG.region).httpsCallable(name);
+}
+
+/* ── Der Grundstock ──
+   Erst beim ersten Öffnen geladen, danach im Zwischenspeicher des
+   Browsers und im Vorrat des Service Workers. Dieselbe Rechnung wie
+   beim Handbuch: in der Datenbank kostete jedes Öffnen so viele
+   Lesevorgänge, wie es Module gibt. */
+function schBasisLaden(){
+  return new Promise(function(fertig){
+    if(_schBasisStatus==='da' || _schBasisStatus==='fehler') return fertig();
+    _schBasisWarte.push(fertig);
+    if(_schBasisStatus==='laedt') return;
+    _schBasisStatus='laedt';
+    function durch(status){
+      _schBasisStatus=status;
+      if(status==='da') _schBasis=window.SCHULUNGEN_BASIS||{kategorien:[],module:[]};
+      var w=_schBasisWarte; _schBasisWarte=[];
+      w.forEach(function(f){ f(); });
+    }
+    if(window.SCHULUNGEN_BASIS) return durch('da');
+    var s=document.createElement('script');
+    s.src=SCH_BASIS_DATEI;
+    s.onload=function(){ durch(window.SCHULUNGEN_BASIS ? 'da' : 'fehler'); };
+    s.onerror=function(){ durch('fehler'); };
+    document.head.appendChild(s);
+  });
+}
+
+function schKatListe(){
+  return (_schBasis.kategorien||[]).concat([]);
+}
+function schKat(id){
+  var l=schKatListe();
+  for(var i=0;i<l.length;i++){ if(l[i].id===id) return l[i]; }
+  return { id:'sonstig', name:'Sonstiges', ico:'kompass' };
+}
+/* Grundstock und was der Betrieb selbst angelegt hat, in EINER Liste.
+   Heute ist die Sammlung leer; die Zeile steht trotzdem, damit ein
+   später angelegtes Modul keine Änderung an der App braucht. */
+function schModule(){
+  var liste=(_schBasis.module||[]).slice();
+  _schEigen.forEach(function(m){ liste.push(m); });
+  return liste.filter(function(m){ return m && m.aktiv!==false; })
+    .sort(function(a,b){ return (a.nr||999)-(b.nr||999); });
+}
+function schModulVon(id){
+  var l=schModule();
+  for(var i=0;i<l.length;i++){ if(l[i].id===id) return l[i]; }
+  return null;
+}
+
+function schEigeneLaden(){
+  if(_schEigenUnsub) return;
+  _schEigenUnsub=S('schulungen').limit(200).onSnapshot(function(sn){
+    _schEigen=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+    if(currentView==='schulung') schZeichnen();
+  }, function(e){ console.warn('Schulungen:', e.message); });
+}
+/* Die eigenen Durchläufe — die Grundlage für „was du schon gemacht
+   hast". Ohne Konto gibt es keine; dann bleibt die Karte weg. */
+function schMeineLaden(){
+  if(_schMeineUnsub || !session) return;
+  _schMeineUnsub=S('schulungLaeufe').where('uid','==',session.uid)
+    .limit(200).onSnapshot(function(sn){
+      _schMeine=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      if(currentView==='schulung' && _schAnsicht==='uebersicht') schZeichnen();
+    }, function(e){ console.warn('Meine Schulungen:', e.message); });
+}
+
+/* Wie steht es um dieses Modul bei MIR? */
+function schStand(m){
+  var meine=_schMeine.filter(function(l){
+    return l.modul===m.id && l.status==='fertig' && l.bestanden;
+  }).sort(function(a,b){ return (b.ende||0)-(a.ende||0); });
+  if(!meine.length) return { art:'offen' };
+  var letzter=meine[0];
+  if(!m.gueltigMonate) return { art:'fertig', am:letzter.ende };
+  var faelligAm=letzter.ende + m.gueltigMonate*30.4*86400000;
+  return {
+    art: Date.now()>faelligAm ? 'faellig' : 'fertig',
+    am: letzter.ende, bis: faelligAm
+  };
+}
+function schDauerText(ms){
+  var m=Math.round((ms||0)/60000);
+  if(m<1) return 'unter 1 Min';
+  if(m<60) return m+' Min';
+  return Math.floor(m/60)+' Std '+(m%60)+' Min';
+}
+
+/* ── Der Wechsel zwischen den fünf Zuständen ── */
+function schPane(welche){
+  _schAnsicht=welche;
+  [['schUebersicht','uebersicht'],['schCode','code'],['schLauf','lauf'],
+   ['schErgebnis','ergebnis'],['schVerwalten','verwalten']].forEach(function(p){
+    var el=$(p[0]); if(el) el.style.display=(p[1]===welche?'':'none');
+  });
+  var b=$('schVerwaltenBtn');
+  if(b) b.style.display=(canManage() && welche==='uebersicht') ? '' : 'none';
+  var sa=document.querySelector('#view-schulung .scroll-area');
+  if(sa) sa.scrollTop=0;
+}
+function schZeichnen(){
+  if(_schAnsicht==='uebersicht') schUebersichtZeichnen();
+  else if(_schAnsicht==='lauf') schLaufZeichnen();
+  else if(_schAnsicht==='verwalten') schVerwaltenZeichnen();
+}
+
+function schOeffnen(){
+  schEigeneLaden(); schMeineLaden();
+  if(!_schAnsicht || _schAnsicht==='uebersicht') schPane('uebersicht');
+  schZeichnen();
+  schBasisLaden().then(function(){ if(currentView==='schulung') schZeichnen(); });
+}
+
+/* ── 1. Übersicht ──────────────────────────────────────────────── */
+function schUebersichtZeichnen(){
+  var row=$('schKatRow'), box=$('schListe'), stand=$('schStand');
+  var alle=schModule();
+  if(row){
+    var kats=[{id:'alle',name:'Alle'}].concat(schKatListe().filter(function(k){
+      return alle.some(function(m){ return m.kat===k.id; });
+    }));
+    row.innerHTML=kats.map(function(k){
+      return '<button type="button" class="chip'+(_schKat===k.id?' an':'')+
+        '" data-schkat="'+esc(k.id)+'">'+esc(k.name)+'</button>';
+    }).join('');
+    row.querySelectorAll('[data-schkat]').forEach(function(b){
+      b.addEventListener('click', function(){
+        _schKat=b.getAttribute('data-schkat'); schUebersichtZeichnen(); tick(6);
+      });
+    });
+  }
+  if(box){
+    var liste=alle.filter(function(m){ return _schKat==='alle' || m.kat===_schKat; });
+    if(!liste.length){
+      box.innerHTML='<div class="empty"><h3>'+
+        (_schBasisStatus==='laedt' ? 'Wird geladen …'
+         : _schBasisStatus==='fehler' ? 'Die Schulungen liessen sich nicht laden.'
+         : 'Hier steht noch nichts.')+'</h3>'+
+        (_schBasisStatus==='fehler'
+          ? '<p>Nochmal öffnen hilft meistens.</p>'
+          : '<p>Sobald es Module gibt, stehen sie hier.</p>')+'</div>';
+    } else {
+      box.innerHTML=liste.map(function(m){
+        var k=schKat(m.kat), st=schStand(m);
+        var marken=[];
+        if(m.pflicht) marken.push('<span class="sch-marke pflicht">Pflicht</span>');
+        if(st.art==='fertig') marken.push('<span class="sch-marke fertig">✓ '+
+          esc(fmtDateTime(st.am).split(' ')[0])+'</span>');
+        if(st.art==='faellig') marken.push('<span class="sch-marke faellig">wieder fällig</span>');
+        marken.push('<span class="sch-marke">'+esc(k.name)+'</span>');
+        if(m.dauer) marken.push('<span class="sch-marke">'+m.dauer+' Min</span>');
+        return '<button type="button" class="sch-karte" data-schmodul="'+esc(m.id)+'">'+
+          '<span class="sch-ico">'+ikon(k.ico)+'</span>'+
+          '<span class="sch-txt"><b>'+esc(m.titel||'Ohne Titel')+'</b>'+
+            '<i>'+esc(m.beschreibung||'')+'</i>'+
+            '<span class="sch-marken">'+marken.join('')+'</span></span>'+
+          '<span class="al-pfeil">›</span></button>';
+      }).join('');
+      box.querySelectorAll('[data-schmodul]').forEach(function(b){
+        b.addEventListener('click', function(){
+          schCodeZeigen(b.getAttribute('data-schmodul'));
+        });
+      });
+    }
+  }
+  if(stand){
+    stand.textContent = _schBasisStatus==='da'
+      ? (_schBasis.module||[]).length+' Module'+
+        (_schEigen.length ? ' · '+_schEigen.length+' eigene' : '')+
+        (_schBasis.stand ? ' · Stand '+_schBasis.stand : '')
+      : '';
+  }
+  schMeineZeichnen();
+}
+function schMeineZeichnen(){
+  var karte=$('schMeineKarte'), box=$('schMeine');
+  if(!karte || !box) return;
+  var fertig=_schMeine.filter(function(l){ return l.status==='fertig'; })
+    .sort(function(a,b){ return (b.ende||0)-(a.ende||0); }).slice(0,8);
+  if(!fertig.length){ karte.style.display='none'; return; }
+  karte.style.display='';
+  box.innerHTML=fertig.map(function(l){
+    var fehl=(l.fragen||[]).reduce(function(s,f){ return s+Math.max(0,(f.versuche||1)-1); },0);
+    return '<div class="sch-lauf-zeile">'+
+      '<span class="sch-lauf-wer"><b>'+esc(l.modulTitel||'')+'</b>'+
+        '<span>'+esc(fmtDateTime(l.ende||l.ts))+
+        (l.durchgang>1 ? ' · '+l.durchgang+'. Durchgang' : '')+'</span></span>'+
+      '<span class="sch-lauf-zahl">'+esc(schDauerText(l.aktivMs))+'</span>'+
+      '<span class="sch-lauf-zahl">'+(fehl? fehl+'× daneben' : 'ohne Fehler')+'</span>'+
+      '<span class="sch-marke '+(l.bestanden?'fertig':'faellig')+'">'+
+        (l.bestanden?'bestanden':'offen')+'</span></div>';
+  }).join('');
+}
+
+/* ── 2. Der Code ───────────────────────────────────────────────── */
+function schCodeZeigen(modulId){
+  var m=schModulVon(modulId); if(!m) return;
+  _schModul=m;
+  schPane('code');
+  var box=$('schCode'); if(!box) return;
+  var k=schKat(m.kat);
+  box.innerHTML=
+    '<button type="button" class="hilfe-zurueck" data-schzurueck="uebersicht">‹ Zurück</button>'+
+    '<div class="card">'+
+      '<h3>'+esc(m.titel||'')+'</h3>'+
+      '<p class="hint" style="margin-top:4px">'+esc(k.name)+
+        (m.dauer ? ' · etwa '+m.dauer+' Minuten' : '')+
+        ' · '+(m.schritte||[]).length+' Schritte · '+(m.fragen||[]).length+' Fragen</p>'+
+      '<div class="field" style="margin-top:18px">'+
+        '<label for="schCodeFeld">Dein Teilnahme-Code</label>'+
+        '<input class="inp" id="schCodeFeld" type="text" autocomplete="off" '+
+          'inputmode="text" spellcheck="false" maxlength="20" '+
+          'placeholder="z. B. M4K7-RPQ2-XT9B" '+
+          'style="font-family:var(--font-head);font-weight:800;letter-spacing:.12em;text-transform:uppercase" />'+
+        /* Der Satz erklärt den ganzen Bereich in zwei Zeilen: warum
+           es überhaupt einen Code gibt, und dass man kein Konto
+           braucht. Ohne ihn fragt jeder Erste. */
+        '<p class="hint">Den Code bekommst du von der Studioleitung. Er sagt, '+
+          'wer du bist — deshalb brauchst du keinen eigenen Zugang. Mitgeschrieben '+
+          'wird ausserdem, wann und an welchem Gerät du die Schulung gemacht hast.</p>'+
+      '</div>'+
+      '<p class="hint" id="schCodeNote" style="min-height:1.2em"></p>'+
+      '<button class="btn btn-primary" id="schStartBtn" style="width:100%">Anfangen</button>'+
+    '</div>';
+  schZurueckBinden(box);
+  var feld=$('schCodeFeld');
+  if(feld){
+    feld.addEventListener('keydown', function(e){
+      if(e.key==='Enter'){ e.preventDefault(); schStarten(); }
+    });
+    setTimeout(function(){ feld.focus(); }, 60);
+  }
+  var b=$('schStartBtn');
+  if(b) b.addEventListener('click', schStarten);
+}
+function schZurueckBinden(box){
+  box.querySelectorAll('[data-schzurueck]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var wohin=b.getAttribute('data-schzurueck');
+      if(wohin==='uebersicht'){ schPane('uebersicht'); schUebersichtZeichnen(); }
+      else if(wohin==='verwalten'){ schPane('verwalten'); schVerwaltenZeichnen(); }
+    });
+  });
+}
+
+function schStarten(){
+  var btn=$('schStartBtn'), note=$('schCodeNote');
+  var code=(($('schCodeFeld')||{}).value||'').trim();
+  if(note) note.textContent='';
+  if(code.length<8){
+    if(note) note.textContent='Bitte den ganzen Code eintippen.';
+    return;
+  }
+  withBusy(btn, function(){
+    return schFn('schulungStart')({ code:code, modul:_schModul.id })
+      .then(function(r){
+        var d=(r&&r.data)||{};
+        _schLauf={ id:d.lauf, name:d.name||'', durchgang:d.durchgang||1 };
+        _schPos=0; _schPhase='schritte'; _schGesehen=[]; _schFrageIdx=0;
+        _schHaken=false; _schOffenerHinweis=''; _schAktivMs=0; _schGesichert=Date.now();
+        _schAntworten=(_schModul.fragen||[]).map(function(){
+          return { versuche:0, falsch:[], richtig:false };
+        });
+        schUhrStarten();
+        schPane('lauf'); schLaufZeichnen(); tick(10);
+      })
+      .catch(function(e){ if(note) note.textContent=errMsg(e); });
+  });
+}
+
+/* ── Die Uhr ──
+   Zählt NUR, wenn das Fenster vorn ist und diese Seite offen. Wer den
+   Bildschirm sperrt und Mittag macht, sammelt keine Minuten — eine
+   Dauer, die das mitzählt, ist als Auskunft wertlos und als
+   Leistungsangabe unfair. */
+function schUhrStarten(){
+  schUhrStoppen();
+  _schUhr=setInterval(function(){
+    if(!_schLauf) return schUhrStoppen();
+    if(document.visibilityState!=='visible') return;
+    if(currentView!=='schulung' || _schAnsicht!=='lauf') return;
+    _schAktivMs+=1000;
+    if(Date.now()-_schGesichert > 15000) schLaufSichern();
+  }, 1000);
+}
+function schUhrStoppen(){ if(_schUhr){ clearInterval(_schUhr); _schUhr=null; } }
+/* Zwischenspeichern alle 15 Sekunden. Wer das Tablet zuklappt, verliert
+   damit höchstens eine Viertelminute statt der ganzen Schulung. */
+function schLaufSichern(){
+  if(!_schLauf) return Promise.resolve();
+  _schGesichert=Date.now();
+  return S('schulungLaeufe').doc(_schLauf.id).update({
+    aktivMs:_schAktivMs, schritteGesehen:_schGesehen.slice(),
+    fragen:schFragenStand(),
+    /* Titel und Kategorie trägt die App nach, nicht der Server: die
+       Module liegen als Datei, und die sieht der Server nicht. Das ist
+       Beschriftung, keine Behauptung — wer wirklich was gemacht hat,
+       steht in `teilnehmer` und `modul`, und die beiden rührt hier
+       niemand mehr an (die Regeln lassen es nicht zu). */
+    modulTitel:String(_schModul.titel||''), kategorie:String(_schModul.kat||'')
+  }).catch(function(e){ console.warn('Schulung sichern:', e.message); });
+}
+function schFragenStand(){
+  return (_schModul.fragen||[]).map(function(f,i){
+    var a=_schAntworten[i]||{};
+    return { frage:String(f.frage||'').slice(0,200),
+             versuche:a.versuche||0, falsch:(a.falsch||[]).slice(), richtig:!!a.richtig };
+  });
+}
+
+/* ── 3. Der Durchlauf ──────────────────────────────────────────── */
+function schGesamt(){
+  return (_schModul.schritte||[]).length + (_schModul.fragen||[]).length;
+}
+function schErledigt(){
+  return _schPhase==='schritte' ? _schPos : (_schModul.schritte||[]).length + _schFrageIdx;
+}
+function schLaufZeichnen(){
+  var box=$('schLauf'); if(!box || !_schModul || !_schLauf) return;
+  var gesamt=schGesamt(), fertig=schErledigt();
+  var kopf=
+    '<div class="sch-fortschritt">'+
+      '<span class="sch-zahl">'+(fertig+1)+'/'+gesamt+'</span>'+
+      '<span class="sch-balken"><i style="width:'+
+        Math.round(fertig/Math.max(1,gesamt)*100)+'%"></i></span>'+
+      '<span class="sch-zahl">'+esc(_schLauf.name)+'</span>'+
+    '</div>';
+  box.innerHTML=kopf+'<div class="card">'+
+    (_schPhase==='schritte' ? schSchrittMarkup() : schFrageMarkup())+'</div>';
+  schLaufBinden(box);
+  /* Nach einer falschen Antwort steht der Hinweis unter den Antworten —
+     bei vier Antworten auf einem 390er Telefon gemessen bei y=776 von
+     844, also halb unter dem Rand. Ausgerechnet der Text, der erklaeren
+     soll, waere damit der einzige, den niemand sieht. */
+  if(_schOffenerHinweis){
+    var h=box.querySelector('.sch-hinweis');
+    if(h && h.scrollIntoView) h.scrollIntoView({ block:'nearest', behavior:'smooth' });
+  }
+}
+function schSchrittMarkup(){
+  var s=(_schModul.schritte||[])[_schPos]||{};
+  var inhalt='';
+  if(s.art==='video'){
+    inhalt = s.quelle
+      ? '<div class="sch-video"><video controls preload="metadata" '+
+        'src="'+esc(s.quelle)+'"></video></div>'
+      /* Ehrlich statt hübsch: der Kasten sagt, dass das Video fehlt.
+         Ein leerer Rahmen liesse jeden glauben, sein Gerät sei schuld. */
+      : '<div class="sch-video">'+
+        '<div>'+ikon('foto')+'<b>Video folgt</b>'+
+        '<span>'+(s.dauer ? 'vorgesehen: etwa '+Math.round(s.dauer/60)+' Minuten' : '')+
+        (s.hinweis ? '<br/>'+esc(s.hinweis) : '')+'</span></div></div>';
+  } else if(s.art==='bestaetigen'){
+    inhalt='<label class="sch-haken'+(_schHaken?' an':'')+'" id="schHaken">'+
+      '<input type="checkbox"'+(_schHaken?' checked':'')+' />'+
+      '<span>'+esc(s.text||'Verstanden.')+'</span></label>';
+  } else if(s.art==='bild' && s.quelle){
+    inhalt='<img src="'+esc(s.quelle)+'" alt="'+esc(s.titel||'')+'" '+
+      'style="width:100%;border-radius:var(--r-md);margin-bottom:16px" />';
+  }
+  var weiterAus = (s.art==='bestaetigen' && !_schHaken);
+  return '<div class="sch-schritt">'+
+    (s.titel ? '<h3>'+esc(s.titel)+'</h3>' : '')+
+    (s.art!=='bestaetigen' && s.text ? '<p>'+markMentions(linkify(esc(s.text))).replace(/\n/g,'<br/>')+'</p>' : '')+
+    inhalt+
+    '<div class="hilfe-knoepfe">'+
+      (_schPos>0 ? '<button type="button" class="btn btn-ghost" data-schzurueckschritt="1">Zurück</button>' : '')+
+      '<button type="button" class="btn btn-primary" id="schWeiter"'+
+        (weiterAus?' disabled':'')+'>Weiter</button>'+
+    '</div></div>';
+}
+function schFrageMarkup(){
+  var f=(_schModul.fragen||[])[_schFrageIdx]||{};
+  var a=_schAntworten[_schFrageIdx]||{ falsch:[], richtig:false };
+  var buchst='ABCDEFGH';
+  return '<div class="sch-schritt">'+
+    '<p class="hint">Frage '+(_schFrageIdx+1)+' von '+(_schModul.fragen||[]).length+'</p>'+
+    '<div class="sch-frage">'+esc(f.frage||'')+'</div>'+
+    '<div class="sch-antworten">'+
+      (f.antworten||[]).map(function(t,i){
+        var kl='';
+        if(a.richtig && i===f.richtig) kl=' richtig';
+        else if((a.falsch||[]).indexOf(i)>=0) kl=' falsch';
+        return '<button type="button" class="sch-antwort'+kl+'" data-schantwort="'+i+'"'+
+          ((a.richtig || (a.falsch||[]).indexOf(i)>=0) ? ' disabled' : '')+'>'+
+          '<span class="sch-buchst">'+buchst[i]+'</span><span>'+esc(t)+'</span></button>';
+      }).join('')+
+    '</div>'+
+    (_schOffenerHinweis ? '<div class="sch-hinweis">'+esc(_schOffenerHinweis)+'</div>' : '')+
+    (a.richtig ? '<div class="hilfe-knoepfe"><button type="button" class="btn btn-primary" '+
+      'id="schWeiter">'+((_schFrageIdx+1) < (_schModul.fragen||[]).length ?
+      'Nächste Frage' : 'Abschliessen')+'</button></div>' : '')+
+    '</div>';
+}
+function schLaufBinden(box){
+  var h=$('schHaken');
+  if(h) h.addEventListener('change', function(){
+    _schHaken=!!h.querySelector('input').checked;
+    schLaufZeichnen();
+  });
+  var w=$('schWeiter');
+  if(w) w.addEventListener('click', schWeiter);
+  box.querySelectorAll('[data-schzurueckschritt]').forEach(function(b){
+    b.addEventListener('click', function(){
+      if(_schPos>0){ _schPos--; _schHaken=schHakenStand(); schLaufZeichnen(); tick(4); }
+    });
+  });
+  box.querySelectorAll('[data-schantwort]').forEach(function(b){
+    b.addEventListener('click', function(){
+      schAntwort(Number(b.getAttribute('data-schantwort')));
+    });
+  });
+}
+/* Beim Zurückblättern soll ein schon gesetzter Haken gesetzt bleiben —
+   sonst müsste man dieselbe Zustimmung zweimal geben. */
+function schHakenStand(){
+  var s=(_schModul.schritte||[])[_schPos]||{};
+  return s.art==='bestaetigen' && _schGesehen.indexOf(_schPos)>=0;
+}
+function schWeiter(){
+  if(_schPhase==='schritte'){
+    if(_schGesehen.indexOf(_schPos)<0) _schGesehen.push(_schPos);
+    if(_schPos+1 < (_schModul.schritte||[]).length){
+      _schPos++; _schHaken=schHakenStand(); _schOffenerHinweis='';
+      schLaufZeichnen(); schLaufSichern(); tick(4); return;
+    }
+    /* Keine Fragen? Dann ist das Modul hier zu Ende. */
+    if(!(_schModul.fragen||[]).length) return schAbschliessen();
+    _schPhase='fragen'; _schFrageIdx=0; _schOffenerHinweis='';
+    schLaufZeichnen(); schLaufSichern(); tick(6); return;
+  }
+  if(_schFrageIdx+1 < (_schModul.fragen||[]).length){
+    _schFrageIdx++; _schOffenerHinweis='';
+    schLaufZeichnen(); schLaufSichern(); tick(4); return;
+  }
+  schAbschliessen();
+}
+function schAntwort(i){
+  var f=(_schModul.fragen||[])[_schFrageIdx]||{};
+  var a=_schAntworten[_schFrageIdx];
+  if(!a || a.richtig) return;
+  a.versuche=(a.versuche||0)+1;
+  if(i===f.richtig){
+    a.richtig=true;
+    _schOffenerHinweis = a.versuche>1 && f.hinweis ? f.hinweis : '';
+    tick(10);
+  } else {
+    if(a.falsch.indexOf(i)<0) a.falsch.push(i);
+    /* Der Hinweis erklärt, statt zu tadeln. Das ist der ganze Zweck:
+       wer nur „falsch" liest, weiss danach genauso wenig. */
+    _schOffenerHinweis = f.hinweis || 'Noch nicht ganz. Sieh dir die Antworten noch einmal an.';
+    tick(14);
+    /* Bei einer Bestehensgrenze zählt der erste Versuch — dann geht es
+       ohne Wiederholung weiter. „Alles richtig" lässt so lange
+       probieren, bis es sitzt. */
+    if((_schModul.strenge||'alles')==='grenze'){
+      a.richtig=false; a.fertig=true;
+      if(_schFrageIdx+1 < (_schModul.fragen||[]).length){
+        _schFrageIdx++; schLaufZeichnen(); schLaufSichern(); return;
+      }
+      return schAbschliessen();
+    }
+  }
+  schLaufZeichnen(); schLaufSichern();
+}
+
+function schAbschliessen(){
+  schUhrStoppen();
+  var fragen=schFragenStand();
+  var richtig=fragen.filter(function(f){ return f.richtig; }).length;
+  var punkte=fragen.length ? Math.round(richtig/fragen.length*100) : 100;
+  var bestanden=(_schModul.strenge||'alles')==='grenze'
+    ? punkte >= (_schModul.grenze||80)
+    : richtig===fragen.length;
+  var lauf=_schLauf;
+  S('schulungLaeufe').doc(lauf.id).update({
+    aktivMs:_schAktivMs, schritteGesehen:_schGesehen.slice(), fragen:fragen,
+    modulTitel:String(_schModul.titel||''), kategorie:String(_schModul.kat||''),
+    punkte:punkte, bestanden:bestanden, status:'fertig', ende:Date.now()
+  }).then(function(){
+    schErgebnisZeigen(punkte, bestanden, fragen);
+  }).catch(function(e){
+    toast(errMsg(e), true);
+    schErgebnisZeigen(punkte, bestanden, fragen);
+  });
+}
+function schErgebnisZeigen(punkte, bestanden, fragen){
+  schPane('ergebnis');
+  var box=$('schErgebnis'); if(!box) return;
+  var fehl=fragen.reduce(function(s,f){ return s+Math.max(0,(f.versuche||1)-1); },0);
+  box.innerHTML='<div class="card"><div class="sch-fertig">'+
+    '<div class="sch-kranz">'+ikon(bestanden?'hakenKreis':'warnung')+'</div>'+
+    '<h3>'+(bestanden?'Geschafft.':'Noch nicht ganz.')+'</h3>'+
+    '<p>'+esc(_schLauf.name)+' · '+esc(_schModul.titel||'')+'<br/>'+
+      (bestanden
+        ? 'Der Durchlauf ist festgehalten und steht für die Leitung in der Liste.'
+        : 'Du kannst das Modul jederzeit noch einmal machen.')+'</p>'+
+    '<div class="sch-zahlen">'+
+      '<div class="sch-zahl-kachel"><b>'+punkte+'%</b><span>richtig</span></div>'+
+      '<div class="sch-zahl-kachel"><b>'+esc(schDauerText(_schAktivMs))+'</b><span>gebraucht</span></div>'+
+      '<div class="sch-zahl-kachel"><b>'+fehl+'</b><span>Fehlversuche</span></div>'+
+      '<div class="sch-zahl-kachel"><b>'+(_schLauf.durchgang||1)+'</b><span>Durchgang</span></div>'+
+    '</div>'+
+    '<button type="button" class="btn btn-primary" data-schzurueck="uebersicht" '+
+      'style="width:100%">Fertig</button>'+
+    '</div></div>';
+  schZurueckBinden(box);
+  _schLauf=null;
+}
+
+/* ── 5. Verwaltung: Teilnehmer, Codes, Auswertung ───────────────── */
+function schVerwaltenOeffnen(){
+  if(!canManage()) return;
+  schTeilnehmerLaden(); schLaeufeLaden();
+  schPane('verwalten'); schVerwaltenZeichnen();
+}
+function schTeilnehmerLaden(){
+  if(_schTnUnsub) return;
+  _schTnUnsub=S('schulungTeilnehmer').limit(300).onSnapshot(function(sn){
+    _schTeilnehmer=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+      .sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||'')); });
+    if(_schAnsicht==='verwalten') schVerwaltenZeichnen();
+  }, function(e){ console.warn('Teilnehmer:', e.message); });
+}
+function schLaeufeLaden(){
+  if(_schLaeufeUnsub) return;
+  /* 300 reicht: 39 Konten mal ein paar Module. Eine offene Abfrage
+     wäre hier der Fehler, der erst in zwei Jahren auffällt. */
+  _schLaeufeUnsub=S('schulungLaeufe').orderBy('ts','desc').limit(300)
+    .onSnapshot(function(sn){
+      _schAlleLaeufe=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      if(_schAnsicht==='verwalten') schVerwaltenZeichnen();
+    }, function(e){ console.warn('Durchläufe:', e.message); });
+}
+function schVerwaltenZeichnen(){
+  var box=$('schVerwalten'); if(!box || !canManage()) return;
+  var fertig=_schAlleLaeufe.filter(function(l){ return l.status==='fertig'; });
+  box.innerHTML=
+    '<button type="button" class="hilfe-zurueck" data-schzurueck="uebersicht">‹ Zurück</button>'+
+    /* Erst die Codes, dann die Auswertung: ohne Code gibt es keinen
+       Durchlauf, und wer hier zum ersten Mal steht, braucht genau
+       diesen Knopf. */
+    '<div class="card">'+
+      '<h3 data-ikon="schluessel">Teilnehmer und Codes</h3>'+
+      '<p class="hint">Jeder Code gehört zu genau einem Namen. Wer ihn eintippt, '+
+        'gilt als diese Person — auch ohne eigenen Zugang zur App. '+
+        '<b>Der Code ist nur einmal zu sehen</b>, direkt nach dem Anlegen; danach '+
+        'kann ihn niemand mehr auslesen, auch die Leitung nicht.</p>'+
+      '<div class="field" style="margin-top:14px">'+
+        '<label for="schTnName">Name der Person</label>'+
+        '<input class="inp" id="schTnName" type="text" maxlength="80" '+
+          'placeholder="Vor- und Nachname" /></div>'+
+      '<div class="field"><label for="schTnKonto">Hat die Person schon einen Zugang? (freiwillig)</label>'+
+        '<select class="inp" id="schTnKonto"></select>'+
+        '<p class="hint">Mit Zugang sieht sie ihre eigenen Zahlen später in der App.</p></div>'+
+      '<p class="hint" id="schTnNote"></p>'+
+      '<button class="btn btn-primary btn-sm" id="schTnNeu">Teilnehmer anlegen</button>'+
+      '<div id="schCodeBox"></div>'+
+      '<div id="schTnListe" style="margin-top:14px"></div>'+
+    '</div>'+
+    '<div class="card">'+
+      '<h3 data-ikon="raster">Wer hat was gemacht</h3>'+
+      '<p class="hint">'+fertig.length+' abgeschlossene Durchläufe. Dauer zählt nur, '+
+        'solange das Fenster wirklich offen war.</p>'+
+      '<div id="schLaufListe"></div>'+
+    '</div>';
+  schZurueckBinden(box);
+  schTnSelectBauen();
+  schTnListeZeichnen();
+  schLaufListeZeichnen();
+  var b=$('schTnNeu');
+  if(b) b.addEventListener('click', schTnAnlegen);
+  ikonenEinsetzen(box);
+}
+function schTnSelectBauen(){
+  var sel=$('schTnKonto'); if(!sel) return;
+  var leute=(typeof _employees!=='undefined' && _employees) ? _employees : [];
+  sel.innerHTML='<option value="">— ohne Zugang —</option>'+
+    leute.map(function(e){
+      return '<option value="'+esc(e.uid||e.id)+'">'+esc(e.name||e.email||'?')+'</option>';
+    }).join('');
+}
+function schTnListeZeichnen(){
+  var box=$('schTnListe'); if(!box) return;
+  if(!_schTeilnehmer.length){
+    box.innerHTML='<p class="hint">Noch niemand angelegt.</p>';
+    return;
+  }
+  box.innerHTML=_schTeilnehmer.map(function(t){
+    var zahl=_schAlleLaeufe.filter(function(l){
+      return l.teilnehmer===t.id && l.status==='fertig' && l.bestanden; }).length;
+    return '<div class="sch-tn-zeile">'+
+      '<span class="sch-tn-name">'+esc(t.name||'')+
+        '<span>'+zahl+(zahl===1?' Modul':' Module')+' bestanden'+
+        (t.uid?' · mit Zugang':'')+'</span></span>'+
+      '<span class="sch-kenn">'+esc(t.kennung||'')+'</span>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-schneucode="'+esc(t.id)+'">Neuer Code</button>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-schsperre="'+esc(t.id)+'">'+
+        (t.gesperrt?'Wieder freigeben':'Stilllegen')+'</button>'+
+      '</div>';
+  }).join('');
+  box.querySelectorAll('[data-schneucode]').forEach(function(b){
+    b.addEventListener('click', function(){ schCodeNeu(b.getAttribute('data-schneucode'), b); });
+  });
+  box.querySelectorAll('[data-schsperre]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var id=b.getAttribute('data-schsperre');
+      var t=_schTeilnehmer.filter(function(x){ return x.id===id; })[0]||{};
+      S('schulungTeilnehmer').doc(id).update({ gesperrt: !t.gesperrt })
+        .then(function(){ toast(t.gesperrt?'Wieder freigegeben ✓':'Stillgelegt ✓'); })
+        .catch(function(e){ toast(errMsg(e), true); });
+    });
+  });
+}
+function schCodeAnzeigen(name, code){
+  var box=$('schCodeBox'); if(!box) return;
+  /* Genau EIN <b> in diesem Kasten, und darin steht der Code. Der Name
+     daneben ist bewusst ein <span>: beim ersten Anlauf trug er auch ein
+     <b>, und der Probelauf las prompt den Namen statt des Codes aus.
+     Was eine Prüfung verwechselt, verwechselt auch ein Mensch. */
+  box.innerHTML='<div class="sch-codebox">'+
+    '<p>Code für <span style="font-weight:700">'+esc(name)+'</span> — '+
+      'jetzt aufschreiben oder weitergeben. Nach dem Schliessen ist er nicht mehr zu sehen.</p>'+
+    '<b id="schCodeText">'+esc(code)+'</b>'+
+    '<button type="button" class="btn btn-ghost btn-sm" id="schCodeKopie">Kopieren</button> '+
+    '<button type="button" class="btn btn-ghost btn-sm" id="schCodeZu">Schliessen</button>'+
+    '</div>';
+  var k=$('schCodeKopie');
+  if(k) k.addEventListener('click', function(){
+    copyText(code).then(function(){ toast('Code kopiert ✓'); });
+  });
+  var z=$('schCodeZu');
+  if(z) z.addEventListener('click', function(){ box.innerHTML=''; });
+}
+function schTnAnlegen(){
+  var btn=$('schTnNeu'), note=$('schTnNote');
+  var name=(($('schTnName')||{}).value||'').trim();
+  var uid=(($('schTnKonto')||{}).value||'');
+  if(note) note.textContent='';
+  if(name.length<2){ if(note) note.textContent='Bitte Vor- und Nachnamen eintragen.'; return; }
+  withBusy(btn, function(){
+    return schFn('schulungTeilnehmerAnlegen')({ name:name, uid:uid })
+      .then(function(r){
+        var d=(r&&r.data)||{};
+        if($('schTnName')) $('schTnName').value='';
+        schCodeAnzeigen(name, d.code||'');
+        toast('Teilnehmer angelegt ✓');
+      })
+      .catch(function(e){ if(note) note.textContent=errMsg(e); });
+  });
+}
+function schCodeNeu(id, btn){
+  var t=_schTeilnehmer.filter(function(x){ return x.id===id; })[0]||{};
+  if(!confirm('Neuen Code für „'+(t.name||'diese Person')+'" erzeugen?\n\n'+
+              'Der bisherige gilt dann nicht mehr.')) return;
+  withBusy(btn, function(){
+    return schFn('schulungCodeNeu')({ id:id })
+      .then(function(r){ schCodeAnzeigen(t.name||'', ((r&&r.data)||{}).code||''); })
+      .catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+function schLaufListeZeichnen(){
+  var box=$('schLaufListe'); if(!box) return;
+  var liste=_schAlleLaeufe.filter(function(l){ return l.status==='fertig'; });
+  if(!liste.length){
+    box.innerHTML='<div class="empty"><h3>Noch hat niemand eine Schulung gemacht.</h3>'+
+      '<p>Lege oben einen Teilnehmer an und gib ihm seinen Code.</p></div>';
+    return;
+  }
+  box.innerHTML=liste.map(function(l){
+    var fehl=(l.fragen||[]).reduce(function(s,f){ return s+Math.max(0,(f.versuche||1)-1); },0);
+    var wo=l.studioKey ? studioName(l.studioKey) : '';
+    return '<div class="sch-lauf-zeile">'+
+      '<span class="sch-lauf-wer"><b>'+esc(l.teilnehmerName||'—')+'</b>'+
+        '<span>'+esc(l.modulTitel||'')+' · '+esc(fmtDateTime(l.ende||l.ts))+
+        (wo?' · '+esc(wo):'')+' · am Gerät '+esc(l.geraetName||'?')+
+        (l.durchgang>1 ? ' · '+l.durchgang+'. Durchgang' : '')+'</span></span>'+
+      '<span class="sch-lauf-zahl">'+esc(schDauerText(l.aktivMs))+'</span>'+
+      '<span class="sch-lauf-zahl">'+(l.punkte||0)+'%</span>'+
+      '<span class="sch-lauf-zahl">'+fehl+'× daneben</span>'+
+      '<span class="sch-marke '+(l.bestanden?'fertig':'faellig')+'">'+
+        (l.bestanden?'bestanden':'offen')+'</span></div>';
+  }).join('');
+}
+
+/* Beim Abmelden alles zurück. Sonst sieht der nächste Kollege am
+   selben Tablet die Durchläufe und Teilnehmer des vorigen Betriebs —
+   und einen halb angefangenen Durchlauf auf einen fremden Namen. */
+function schAufraeumen(){
+  schUhrStoppen();
+  [_schEigenUnsub,_schMeineUnsub,_schLaeufeUnsub,_schTnUnsub].forEach(function(u){
+    if(u){ try{ u(); }catch(e){} }
+  });
+  _schEigenUnsub=_schMeineUnsub=_schLaeufeUnsub=_schTnUnsub=null;
+  _schEigen=[]; _schMeine=[]; _schAlleLaeufe=[]; _schTeilnehmer=[];
+  _schModul=null; _schLauf=null; _schPos=0; _schPhase='schritte';
+  _schGesehen=[]; _schAntworten=[]; _schFrageIdx=0; _schAktivMs=0;
+  _schKat='alle'; _schAnsicht='uebersicht';
+}
+
+(function schBinden(){
+  function bind(){
+    if(_schGebunden) return; _schGebunden=true;
+    var v=$('schVerwaltenBtn');
+    if(v) v.addEventListener('click', schVerwaltenOeffnen);
+    /* Wer das Fenster wegklickt, soll den Stand nicht verlieren. */
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState!=='visible' && _schLauf) schLaufSichern();
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
 /* ============================================================
    FIRESTORE-LISTENER
    ============================================================ */
@@ -17488,6 +18481,7 @@ function stopListeners(){
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
   hilfeAufraeumen();
+  schAufraeumen();
   if(_invUnsub){ _invUnsub(); _invUnsub=null; }
   _invUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _invUnsubs=[];
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
@@ -23439,7 +24433,8 @@ function backupSammeln(){
        wie bei den Dokumenten auch: dafuer ist die naechtliche
        Datenbank-Sicherung da, und drei Fotos je Eintrag machen aus
        einer lesbaren Datei eine unbenutzbare. */
-    weich(S('loesungen').orderBy('ts','desc').limit(500).get(), 'Lösungen')
+    weich(S('loesungen').orderBy('ts','desc').limit(500).get(), 'Lösungen'),
+    weich(S('schulungLaeufe').orderBy('ts','desc').limit(1000).get(), 'Schulungen')
   ];
   kanaele.forEach(function(ch){
     jobs.push(weich(S('channels').doc(ch).collection('messages')
@@ -23457,6 +24452,7 @@ function backupSammeln(){
     var daten={ brett:r[i++], dokumente:r[i++], nachweise:r[i++],
                 zeiten:r[i++], anliegen:r[i++], probetrainings:r[i++],
                 loesungen:r[i++],
+                schulungen:r[i++],
                 chat:{}, studios:{} };
     kanaele.forEach(function(ch){ daten.chat[ch]=r[i++]; });
     STUDIOS.forEach(function(s){
@@ -23486,19 +24482,21 @@ function backupData(){
                    'Abwesenheiten','Übergaben','Schwarzes Brett',
                    'Dokumente (Angaben, ohne Dateiinhalt)','Nachweise',
                    'Stempelzeiten','Anliegen mit Antwort','Probetrainings',
-                   'Lösungen (Text, ohne Fotos)'],
+                   'Lösungen (Text, ohne Fotos)',
+                   'Schulungen (Nachweis und Zahlen)'],
         nichtEnthalten:[
           'Direktnachrichten — gehören zwei Personen, nicht dem Betrieb',
           'Persönlicher Bereich — gehört der einzelnen Person, nicht dem Betrieb',
           'Inhalt hochgeladener Dateien und Fotos zu Lösungen — dafür ist die nächtliche Datenbank-Sicherung da',
-          'Stempel-PINs und Terminal-Codes — Geheimnisse gehören in keine Datei, die herumliegt',
+          'Stempel-PINs, Terminal-Codes und Schulungs-Codes — Geheimnisse gehören in keine Datei, die herumliegt',
+          'Welche Antwort in einer Schulung angeklickt wurde — die Zahl der Versuche steht dabei, die einzelnen Fehlgriffe nicht',
           'Fehlerberichte und Push-Kennungen — Technik, keine Betriebsdaten'],
         chatGrenze:'je Kanal die neuesten '+SICHERUNG_CHAT_MAX+' Nachrichten',
         zeitenGrenze:'die neuesten '+SICHERUNG_ZEITEN_MAX+' Stempel',
         luecken: g.luecken.length ? g.luecken : 'keine'
       },
       studios:{}, team:[], infos:[], brett:[], dokumente:[], nachweise:[],
-      stempelzeiten:[], anliegen:[], probetrainings:[], loesungen:[], chat:{}
+      stempelzeiten:[], anliegen:[], probetrainings:[], loesungen:[], schulungen:[], chat:{}
     };
     STUDIOS.forEach(function(s){
       var sk=studioKey(s), q=g.studios[s]||{};
@@ -23600,6 +24598,36 @@ function backupData(){
                geaendertVon:l.geaendertVon||'',
                datum:l.ts?new Date(l.ts).toISOString():'' };
     });
+    /* ── Schulungen ──
+       Der NACHWEIS, nicht die Fragen. Was hier hineingehört, ist die
+       Auskunft „XY wurde am 3.11. unterwiesen" — dazu die Zahlen, die
+       der Betrieb ausdrücklich haben wollte.
+
+       Was NICHT hineingehört: welche Antwort jemand angeklickt hat.
+       Die Zahl der Versuche sagt der Leitung alles, was sie braucht;
+       die einzelnen Fehlgriffe sind Leistungsdaten ohne Zweck, und ein
+       Export, der jahrelang in einer Ablage liegt, ist der falsche Ort
+       dafür. */
+    out.schulungen=docsZuListe(g.schulungen)
+      .filter(function(l){ return l.status==='fertig'; })
+      .map(function(l){
+        var fragen=l.fragen||[];
+        return {
+          name:l.teilnehmerName||'', modul:l.modulTitel||l.modul||'',
+          kategorie:l.kategorie||'',
+          datum:l.ende?new Date(l.ende).toISOString():'',
+          dauerMinuten:Math.round((l.aktivMs||0)/60000),
+          bestanden:!!l.bestanden, punkte:l.punkte||0,
+          fragen:fragen.length,
+          /* „wie oft er gebraucht hat, um eine Frage richtig zu
+             beantworten" — als Summe der Fehlgriffe, nicht als Liste. */
+          fehlversuche:fragen.reduce(function(sum,f){
+            return sum+Math.max(0,(f.versuche||1)-1); },0),
+          durchgang:l.durchgang||1,
+          studio:l.studioKey?studioName(l.studioKey):'',
+          geraet:l.geraetName||''
+        };
+      });
     /* ── Stempelzeiten ──
        Aeltestes zuerst: eine Zeitliste liest man vorwaerts. Die Abfrage
        holt absteigend (die juengsten, falls die Grenze greift), also
@@ -23726,6 +24754,11 @@ function exportAllXls(){
       d.probetrainings.map(function(t){
         return [t.tag, t.mitarbeiter, t.studio, t.abschluss?'ja':'nein',
                 t.notiz, t.erfasstVon]; }));
+    if(d.schulungen && d.schulungen.length) html+=xlsTable('Schulungen',
+      ['Datum','Name','Modul','Kategorie','Bestanden','Punkte','Minuten','Fehlversuche','Durchgang','Studio','Gerät'],
+      d.schulungen.map(function(x){
+        return [x.datum, x.name, x.modul, x.kategorie, x.bestanden?'ja':'nein',
+                x.punkte, x.dauerMinuten, x.fehlversuche, x.durchgang, x.studio, x.geraet]; }));
     if(d.loesungen && d.loesungen.length) html+=xlsTable('Lösungen',
       ['Datum','Titel','Kategorie','Herkunft','Studios','Das Problem','Was hilft','Fotos','Von'],
       d.loesungen.map(function(l){

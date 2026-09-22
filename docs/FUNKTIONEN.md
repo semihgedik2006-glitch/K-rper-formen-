@@ -170,6 +170,29 @@ das Team selbst festhält.
 | Der Grundstock kostet keinen Lesevorgang | **VERIFIZIERT** | statische Datei, im Vorrat des Service Workers |
 | **Video** | **NICHT VORHANDEN** | braucht echten Dateispeicher; die Begründung steht in `FORTSCHRITT.md`, Runde 95 |
 
+### Schulung (seit 22.9.2026) — Grundgerüst
+
+Webinare mit Schritten, Fragen und einem Nachweis. **Die Videos fehlen
+noch**; das ist Absicht und der nächste Schritt.
+
+| | Stand | Anmerkung |
+|---|---|---|
+| Module Schritt für Schritt, mit Fragen am Ende | **VERIFIZIERT** | `tests/test-schulung.js` |
+| Teilnahme-Code statt Login | **VERIFIZIERT** | falscher Code wird abgewiesen, richtiger startet — beides geprüft |
+| Ohne eigenes Konto benutzbar | **VERIFIZIERT** | der Durchlauf trägt einen Namen, auch wenn `uid` leer ist |
+| Der Code ist genau einmal zu sehen | **VERIFIZIERT** | gehasht abgelegt, `schulungCodes` steht auf `if false` |
+| Bremse gegen Durchprobieren | **VERIFIZIERT im Code** | 10 Fehlversuche je Gerät und Stunde; im Emulator nicht nachgestellt |
+| Zeitpunkt, Studio und Gerätekonto am Durchlauf | **VERIFIZIERT** | steht in der Liste der Leitung |
+| Fehlversuche je Frage gezählt **und erklärt** | **VERIFIZIERT** | falsch angeklickt bringt einen Hinweis, nicht nur ein Kreuz |
+| Aktive Zeit statt Wanduhr | **VERIFIZIERT im Code** | zählt nur bei sichtbarem Fenster und offener Seite |
+| Niemand kann einen Durchlauf anlegen | **VERIFIZIERT** | `tests/rules/schulung.test.js`, beide Welten |
+| Ein fertiger Durchlauf ändert sich nicht mehr | **VERIFIZIERT** | dito — auch die Leitung kommt nicht mehr heran |
+| Jeder sieht seine eigenen Zahlen | **VERIFIZIERT** | Karte oben auf der Seite; die Regeln lassen es ausdrücklich zu |
+| Im Export enthalten | **VERIFIZIERT** | `tests/test-sicherung-inhalt.js` — mit der Gegenprobe, dass die einzelnen Fehlgriffe NICHT mitgehen |
+| **Videos** | **NOCH NICHT** | entschieden ist eigener Speicher (zweiter Eimer). Bis dahin steht am Platzhalter „Video folgt" samt vorgesehener Länge |
+| **„wirklich angesehen"** | **NOCH NICHT MESSBAR** | geht erst mit eigenem Player. Ein Häkchen wäre eine Behauptung, keine Messung — deshalb gibt es keines |
+| **Modul-Editor** | **NICHT VORHANDEN** | Module kommen bis auf Weiteres als Datei ins Repo |
+
 ### Führung durch die App (seit 22.9.2026)
 
 | | Stand | Anmerkung |

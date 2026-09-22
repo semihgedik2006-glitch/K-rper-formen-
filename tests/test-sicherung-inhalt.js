@@ -122,6 +122,44 @@ const errs = [];
                       'niemand, dass welche fehlen');
           }
         }
+      /* ══ 4c. Schulungen, seit dem 22.9.2026 ══
+         Der Nachweis gehört in die Sicherung — und zwar VOLLSTÄNDIG:
+         wer, welches Modul, wann, bestanden, wie lange, wie viele
+         Fehlversuche. Genau das hat der Betrieb bestellt.
+
+         UND DIE GEGENPROBE, die hier mehr zählt als die Liste: die
+         einzelnen Fehlgriffe dürfen NICHT mitgehen. Welche Antwort
+         jemand angeklickt hat, ist eine Leistungsangabe ohne Zweck,
+         und ein Export liegt jahrelang in einer Ablage. */
+      if (!Array.isArray(d.schulungen)) {
+        errs.push('FEHLT: die Schulungen stehen nicht in der Datei');
+      } else if (d.schulungen.length) {
+        console.log('Schulungen in der Datei:', d.schulungen.length);
+        const x = d.schulungen[0];
+        ['name', 'modul', 'datum', 'bestanden', 'dauerMinuten', 'fehlversuche', 'durchgang']
+          .forEach(f => {
+            if (!(f in x)) errs.push('FEHLT: den Schulungen fehlt das Feld \u201e' + f + '"');
+          });
+        if (typeof x.dauerMinuten !== 'number') {
+          errs.push('FALSCH: die Dauer steht nicht als Zahl in der Datei');
+        }
+        if (d.schulungen.some(y => Array.isArray(y.falsch) || 'falsch' in y)) {
+          errs.push('ZU VIEL: die einzelnen Fehlgriffe stehen in der Sicherung — ' +
+                    'die Zahl der Versuche genügt, alles weitere ist eine ' +
+                    'Leistungsangabe ohne Zweck');
+        }
+        const nenntSch = (d.hinweise.enthalten || []).join(' ');
+        if (!/Schulung/i.test(nenntSch)) {
+          errs.push('FEHLT: das Verzeichnis oben nennt die Schulungen nicht');
+        }
+      }
+      /* Und die Codes: ein Schulungs-Code in der Sicherung wäre
+         dasselbe wie eine Stempel-PIN darin — wer sie liest, macht die
+         Schulung für einen Kollegen. */
+      if (/"kennung"|schulungCodes/.test(roh)) {
+        errs.push('ZU VIEL: Schulungs-Codes oder Kennungen stehen in der Sicherung');
+      }
+
         if (/"data"\s*:\s*"data:image/.test(roh)) {
           errs.push('ZU VIEL: ein Foto liegt als Bilddatei in der Sicherung — ' +
                     'damit ist die Datei nicht mehr zu öffnen');

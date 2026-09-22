@@ -407,6 +407,9 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-15** | **Die Kopfzeile lief bei 320px um 50 Pixel über**, als der sechste Knopf dazukam — Querlauf der ganzen Seite, Abmelden ausserhalb des Bildes. Bei der Leitung auch noch bei 390px. Nebenbefund: die Glocke wurde dabei auf 20px zusammengedrückt, weit unter der 44-Pixel-Regel | 22.9.2026, `tests/test-abgeschnitten.js` |
 | **B-16** | **`loesungen-basis.js` löste keinen Deploy aus** — die Datei wird ausgeliefert, stand aber in keinem `paths`-Muster des Ablaufs. Änderungen am Grundstock wären nie im Betrieb angekommen | 22.9.2026, `tests/test-ausliefern.js` |
 | **B-17** | **„Zurück" führte aus der Trefferliste in eine Kategorie von vorhin.** Wer gesucht, gelesen und zurückgegangen ist, stand plötzlich in einer Liste, die er zehn Minuten vorher geöffnet hatte — und tippte seine Suche noch einmal | 22.9.2026 |
+| **B-18** | **`schulungStart` hätte JEDEN Start abgelehnt.** Die Funktion prüfte das Modul gegen die Sammlung `schulungen` — die Module liegen aber als Datei, und die sieht der Server nicht. Solange kein Modul von Hand angelegt ist, also jeden. Die Schranke dieses Weges ist der Code, nicht die Modulkennung; die Prüfung ist raus | 22.9.2026 |
+| **B-19** | **Die Code-Anzeige trug zwei `<b>`** — eines um den Namen, eines um den Code. Der Probelauf las prompt den Namen aus und tippte ihn als Code ein. Was eine Prüfung verwechselt, verwechselt auch ein Mensch | 22.9.2026, `tests/test-schulung.js` |
+| **B-20** | **Der Hinweis nach einer falschen Antwort stand halb unter dem Bildrand** — bei 390 px gemessen y=776 von 844. Ausgerechnet der Text, der erklären soll, war der einzige, den niemand sah | 22.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
-`docs/FORTSCHRITT.md` — chronologisch, 97 Runden.
+`docs/FORTSCHRITT.md` — chronologisch, 98 Runden.

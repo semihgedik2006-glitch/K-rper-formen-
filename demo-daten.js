@@ -859,6 +859,55 @@
   ]);
   legen(P('loesungBilder'), []);
 
+  /* ── Schulung ──
+     Zwei Teilnehmer und drei abgeschlossene Durchläufe, damit die
+     Auswertung in der Vorführung nicht leer dasteht. Einer davon
+     OHNE Zugang zur App — das ist der eigentliche Fall: jemand macht
+     die Einarbeitung, bevor er ein Konto hat.
+
+     Die Codes stehen hier NICHT. Auch nicht in der Demo: wer sie in
+     einer Vorführung liest, hält sie für das, was im Betrieb auch
+     sichtbar wäre — und genau das sind sie nicht. Zum Ausprobieren
+     legt man in der Demo einen Teilnehmer an und bekommt einen. */
+  legen(P('schulungen'), []);
+  legen(P('schulungTeilnehmer'), [
+    { id: 'tn-nora', name: 'Nora Haas', uid: 'u5', kennung: 'M4K7',
+      gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(30), codeAm: vorTag(30) },
+    { id: 'tn-neu', name: 'Jamie Kurz', uid: null, kennung: 'RPQ2',
+      gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(4), codeAm: vorTag(4) }
+  ]);
+  legen(P('schulungLaeufe'), [
+    { id: 'lauf1', modul: 'm-start', modulTitel: 'Dein erster Tag im Studio',
+      kategorie: 'einarbeitung', teilnehmer: 'tn-neu', teilnehmerName: 'Jamie Kurz',
+      uid: null, geraetUid: 'demo-ich', geraetName: 'Empfang Hürth', studioKey: sk(6),
+      start: vorTag(4), ende: vorTag(4) + 640000, aktivMs: 611000, durchgang: 1,
+      schritteGesehen: [0, 1, 2, 3, 4],
+      fragen: [{ frage: 'Ein Gerät piept …', versuche: 2, falsch: [0], richtig: true },
+               { frage: 'Du bist unsicher …', versuche: 1, falsch: [], richtig: true }],
+      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(4) },
+    { id: 'lauf2', modul: 'm-hygiene', modulTitel: 'Hygiene nach jedem Training',
+      kategorie: 'hygiene', teilnehmer: 'tn-neu', teilnehmerName: 'Jamie Kurz',
+      uid: null, geraetUid: 'demo-ich', geraetName: 'Empfang Hürth', studioKey: sk(6),
+      start: vorTag(3), ende: vorTag(3) + 520000, aktivMs: 498000, durchgang: 1,
+      schritteGesehen: [0, 1, 2, 3],
+      fragen: [{ frage: 'Wann wird gereinigt?', versuche: 1, falsch: [], richtig: true },
+               { frage: 'Mittel leer …', versuche: 3, falsch: [0, 3], richtig: true },
+               { frage: 'Elektroden …', versuche: 1, falsch: [], richtig: true }],
+      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(3) },
+    /* Ein Durchlauf des angemeldeten Demo-Kontos selbst — damit oben
+       auf der Seite die Karte „was du schon gemacht hast" steht. */
+    { id: 'lauf3', modul: 'm-notfall', modulTitel: 'Wenn einem Kunden schlecht wird',
+      kategorie: 'notfall', teilnehmer: 'tn-nora', teilnehmerName: 'Nora Haas',
+      uid: 'demo-ich', geraetUid: 'demo-ich', geraetName: 'Empfang Brühl', studioKey: sk(7),
+      start: vorTag(11), ende: vorTag(11) + 580000, aktivMs: 552000, durchgang: 2,
+      schritteGesehen: [0, 1, 2, 3],
+      fragen: [{ frage: 'Erster Schritt?', versuche: 1, falsch: [], richtig: true },
+               { frage: 'Kunde sagt, es sei nichts …', versuche: 1, falsch: [], richtig: true },
+               { frage: 'Wer entscheidet?', versuche: 2, falsch: [1], richtig: true }],
+      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(11) }
+  ]);
+
+
   /* ── Zeiterfassung in der Demo ──────────────────────────────────────
      Drei eingerichtete Terminals und die Stempel von heute. Ohne Stempel
      stünde in der Vorführung überall „noch nicht da", und der
@@ -1005,7 +1054,81 @@
            (kasse ? '&kasse=' + kasse : '');
   }
 
+  /* Die Codes der Vorführung. Im Arbeitsspeicher und nirgends sonst —
+     beim Neuladen sind sie weg, genau wie im Betrieb ein Code, den
+     niemand aufgeschrieben hat. */
+  var DEMO_CODES = {};
+
   var DEMO_FUNKTIONEN = {
+    /* ── Schulung ──
+       Die drei Wege laufen in der Demo WIRKLICH, nicht als Attrappe:
+       ein angelegter Teilnehmer steht danach in der Liste, ein Code
+       gerät wirklich, und wer ihn eintippt, bekommt einen Durchlauf.
+       Nur das Hashen fällt weg — in einer Datenbank, die im Browser
+       liegt, wäre es Theater. */
+    schulungTeilnehmerAnlegen: function (d) {
+      var name = String((d && d.name) || '').trim();
+      if (name.length < 2) throw new Error('Bitte Vor- und Nachnamen eintragen.');
+      var buchst = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      function zeichen(n) {
+        var r = '';
+        for (var i = 0; i < n; i++) r += buchst[Math.floor(Math.random() * buchst.length)];
+        return r;
+      }
+      var kennung = zeichen(4), geheim = zeichen(8);
+      var id = neueId();
+      holen(P('schulungTeilnehmer')).push({
+        id: id, name: name, uid: (d && d.uid) || null, kennung: kennung,
+        gesperrt: false, angelegtVon: ICH.name, ts: Date.now(), codeAm: Date.now()
+      });
+      DEMO_CODES[kennung] = { geheim: geheim, teilnehmer: id };
+      melden(P('schulungTeilnehmer'));
+      return { ok: true, id: id, name: name,
+               code: kennung + '-' + geheim.slice(0, 4) + '-' + geheim.slice(4) };
+    },
+    schulungCodeNeu: function (d) {
+      var id = String((d && d.id) || '');
+      var t = holen(P('schulungTeilnehmer')).filter(function (x) { return x.id === id; })[0];
+      if (!t) throw new Error('Diesen Teilnehmer gibt es nicht.');
+      var buchst = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      function zeichen(n) {
+        var r = '';
+        for (var i = 0; i < n; i++) r += buchst[Math.floor(Math.random() * buchst.length)];
+        return r;
+      }
+      var kennung = zeichen(4), geheim = zeichen(8);
+      if (t.kennung) delete DEMO_CODES[t.kennung];
+      t.kennung = kennung; t.codeAm = Date.now();
+      DEMO_CODES[kennung] = { geheim: geheim, teilnehmer: id };
+      melden(P('schulungTeilnehmer'));
+      return { ok: true, code: kennung + '-' + geheim.slice(0, 4) + '-' + geheim.slice(4) };
+    },
+    schulungStart: function (d) {
+      var roh = String((d && d.code) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      var modul = String((d && d.modul) || '');
+      if (roh.length !== 12) throw new Error('Der Code besteht aus 12 Zeichen. Bitte noch einmal ansehen.');
+      var eintrag = DEMO_CODES[roh.slice(0, 4)];
+      if (!eintrag || eintrag.geheim !== roh.slice(4)) throw new Error('Dieser Code stimmt nicht.');
+      var t = holen(P('schulungTeilnehmer')).filter(function (x) {
+        return x.id === eintrag.teilnehmer; })[0];
+      if (!t) throw new Error('Zu diesem Code gibt es keinen Namen mehr.');
+      if (t.gesperrt) throw new Error('Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
+      var frueher = holen(P('schulungLaeufe')).filter(function (l) {
+        return l.teilnehmer === t.id && l.modul === modul; }).length;
+      var id = neueId();
+      holen(P('schulungLaeufe')).push({
+        id: id, modul: modul, modulTitel: '', kategorie: '',
+        teilnehmer: t.id, teilnehmerName: t.name || '', uid: t.uid || null,
+        geraetUid: ICH.id, geraetName: ICH.name || '',
+        studioKey: (ICH.studioKeys || [])[0] || null,
+        start: Date.now(), ende: 0, aktivMs: 0, durchgang: frueher + 1,
+        schritteGesehen: [], fragen: [], punkte: 0, bestanden: false,
+        status: 'laeuft', ts: Date.now()
+      });
+      melden(P('schulungLaeufe'));
+      return { ok: true, lauf: id, name: t.name || '', durchgang: frueher + 1 };
+    },
+
     /* ── Die zwei Wege zur Kasse ──
        Sie fuehren im Betrieb zu Stripe, und Stripe gibt es in der Demo
        nicht. Bis zum 21.9.2026 fielen sie deshalb in die allgemeine

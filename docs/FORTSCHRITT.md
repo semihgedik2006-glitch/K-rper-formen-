@@ -10353,3 +10353,158 @@ jetzt eben so aussieht.
 | `tests/test-fuehrung.js` | **177 Zusicherungen** (+2) |
 
 **120 Durchläufe.**
+
+---
+
+## Runde 98 — Schulung: der Code ist die Schranke, nicht das Login
+
+> „ich möchte einen bereich für eine art webinar und onboarding … wo
+> dann jegliche schritte mit videos und interaktivität erklärt werden
+> und danach noch fragen gestellt werden … und wir können dann in einer
+> liste sehen wer es alles gemacht hat und wann und wie lange und was
+> alles falsch ist und wie oft er gebraucht hat um eine frage richtig zu
+> beantworten … Am anfang möchte ich nur das grundgerüst."
+
+Auf die Rückfrage, was der Code der Leitung tun soll, kam die Antwort,
+die den ganzen Entwurf umgedreht hat:
+
+> „Der Code soll am Anfang eines Webinars eingegeben werden vom
+> Mitarbeiter, der erstellte Code soll vorher von der Leitung einem
+> Namen zugewiesen werden, **dann braucht der Mitarbeiter keinen eigenen
+> Account**, aber man kann tracken wer es war … dann muss man aber die
+> Uhrzeit tracken und den Ort bzw. der Studio Account welcher genutzt
+> wurde."
+
+Ich hatte eine **Gegenzeichnung danach** vorgeschlagen — Mitarbeiter
+macht fertig, Leitung bestätigt. Der Vorschlag war schlechter, und zwar
+aus einem Grund, den ich nicht gesehen hatte: **geschult wird am Tablet
+im Studio.** Dort ist ein Studio-Konto angemeldet, nicht die Person, die
+davor sitzt. Eine Gegenzeichnung hätte das Problem hinterher geflickt;
+der Code löst es vorher.
+
+Und er kann mehr: **neue Leute können die Einarbeitung machen, bevor sie
+überhaupt einen Zugang haben.** Genau dafür ist ein Onboarding da.
+
+### 1. Der Code
+
+`M4K7-RPQ2-XT9B`. Die Leitung legt einen Teilnehmer an und sieht den Code
+**genau einmal** — danach niemand mehr, auch sie nicht.
+
+Er liegt gehasht (scrypt), und `schulungCodes` steht auf `allow read,
+write: if false`, für alle. Dieselbe Überlegung wie bei der Stempel-PIN
+und aus demselben Grund ernst gemeint:
+
+> Wer die Code-Liste lesen kann, macht die Schulung für einen Kollegen —
+> und der ganze Nachweis ist wertlos.
+
+**Die ersten vier Zeichen sind offen.** Das ist kein Nachlassen, sondern
+Rechnen: scrypt braucht rund 50 ms. Ohne einen offenen Vorderteil müsste
+die Funktion bei 39 Teilnehmern 39-mal hashen — **zwei Sekunden bei jedem
+Start**. Mit ihm ist es ein Zugriff und ein Hash. Die acht geheimen
+Zeichen aus einem Alphabet von 32 sind rund 10¹² Möglichkeiten; zehn
+Fehlversuche je Gerät und Stunde machen den Rest. Kein I, O, 0 und 1 —
+die vier werden auf einem Zettel zuverlässig verwechselt.
+
+### 2. Die Zeile, auf die es ankommt
+
+```
+match /schulungLaeufe/{lId} { allow create: if false; }
+```
+
+**Für alle. Auch für den Chef.** Ein Durchlauf entsteht ausschliesslich
+in `schulungStart`, und erst, nachdem der Code gestimmt hat.
+
+> Dürfte der Browser ihn anlegen, schriebe sich jeder mit der Konsole
+> einen fertigen, bestandenen Durchlauf auf einen fremden Namen. Die
+> ganze Liste wäre eine Behauptung statt eines Nachweises — und eine
+> Schulungsliste, der man nicht glauben kann, ist schlimmer als gar
+> keine: man glaubt ihr trotzdem.
+
+Die zweite tragende Zeile: **ein abgeschlossener Durchlauf ändert sich
+nicht mehr**, auch nicht durch die Leitung. Dasselbe Muster wie beim
+bestätigten Nachweis.
+
+Der teuerste Fall stand nicht im Auftrag und ist trotzdem geprüft: das
+Tablet DARF am laufenden Durchlauf schreiben — es könnte ihn also mitten
+im Lauf **auf einen anderen Namen umhängen**. Die Regel hält
+`teilnehmer`, `modul` und `geraetUid` fest.
+
+### 3. Was ehrlich gemessen wird und was nicht
+
+| | |
+|---|---|
+| **Aktive Zeit** | Der Zähler läuft nur, wenn das Fenster vorn und die Seite offen ist. Wer den Bildschirm sperrt und Mittag macht, sammelt keine Minuten — eine Dauer, die das mitzählt, ist als Auskunft wertlos und als Leistungsangabe unfair |
+| **Fehlversuche** | je Frage gezählt — und **erklärt**. Falsch angeklickt bringt einen Hinweis, der sagt warum. „Falsch" allein bringt niemandem etwas bei |
+| **„Wirklich angesehen"** | **geht heute nicht** und wird auch nicht behauptet. Solange kein Video hinterlegt ist, steht am Platzhalter „Video folgt" samt vorgesehener Länge. Ein Häkchen wäre eine Behauptung, keine Messung |
+
+Zur letzten Zeile: der Betrieb hat **eigenen Speicher** gewählt, einen
+zweiten Eimer — niemals den mit der nächtlichen Sicherung. Nur mit
+eigenem Player lässt sich Abspielzeit wirklich messen. Das ist der
+nächste Schritt, wenn die Videos da sind.
+
+### 4. Jeder sieht seine eigenen Zahlen
+
+Ausdrücklich so entschieden. Dauer, Fehlversuche und Wiederholungen sind
+Leistungsdaten; sie nur der Leitung zu zeigen, wäre eine heimliche Akte.
+Oben auf der Seite steht für jeden, was er gemacht hat und wie es lief —
+und die Regeln lassen genau das zu (`resource.data.uid ==
+request.auth.uid`).
+
+Im Export geht der **Nachweis** mit, samt Dauer, Punkten, Fehlversuchen
+und Durchgang. NICHT mit geht, welche Antwort jemand angeklickt hat: die
+Zahl der Versuche sagt der Leitung alles, was sie braucht, und ein Export
+liegt jahrelang in einer Ablage.
+
+### 5. Der Fund beim Bauen
+
+**Der Server hätte JEDEN Start abgelehnt.** `schulungStart` prüfte das
+Modul gegen die Sammlung `schulungen` — die Module liegen aber als Datei
+(`schulungen-basis.js`, dieselbe Rechnung wie beim Handbuch), und die
+sieht der Server nicht. Solange kein einziges Modul von Hand angelegt
+ist, also **heute jeden**.
+
+Die Prüfung ist raus, und die Begründung steht an ihrer Stelle: **die
+Schranke dieses Weges ist der Code, nicht die Modulkennung.** Wer einen
+gültigen Code hat, darf eine Schulung machen; welche, ist keine Frage
+der Sicherheit.
+
+Dazu zwei kleinere: die Code-Anzeige trug zwei `<b>`, und der Probelauf
+las prompt den Namen statt des Codes aus — *was eine Prüfung
+verwechselt, verwechselt auch ein Mensch*. Und der Hinweis nach einer
+falschen Antwort stand bei 390 px gemessen auf y=776 von 844, also halb
+unter dem Rand: ausgerechnet der Text, der erklären soll.
+
+### Neu
+
+| | |
+|---|---|
+| `schulungen-basis.js` | drei Module aus dem Mitarbeiter-Handbuch, mit Platzhaltern für die Videos |
+| `tests/rules/schulung.test.js` | **56 Zusicherungen**, beide Welten |
+| `tests/test-schulung.js` | **45 Zusicherungen** — der ganze Weg über „Ich“: Code anlegen, falscher Code, richtiger Code, Schritte, „Verstanden"-Haken mit Gegenprobe, gezielt danebenklicken, Ergebnis, Liste |
+| 3 Cloud Functions | `schulungTeilnehmerAnlegen`, `schulungCodeNeu`, `schulungStart` |
+| 5 Sammlungen | zwei davon auf `if false` |
+
+### 6. Nachtrag am selben Tag: sie liegt unter „Ich"
+
+> „platziere sie wo anders als Aufgaben, weil das nicht zu Aufgaben
+> zählt halt."
+
+Der Einwand trifft, und zwar genau. Unter „Betrieb" liegt, was **heute**
+im Studio zu tun ist — Aufgaben, Putzplan, Material, Geräte. Eine
+Schulung steht nicht auf der Liste des Tages; sie gehört zu dem, was man
+selbst kann und nachweist. Dieselbe Frage wie „Meine Zeiten" und
+„Meine Nachweise", und die stehen unter „Ich".
+
+Die Auswertung für die Leitung bleibt auf derselben Seite, hinter dem
+Knopf oben rechts. Sie zweimal zu bauen — einmal hier, einmal in der
+Verwaltung — wären zwei Stellen, an denen dieselbe Liste auseinander
+laufen kann.
+
+„Betrieb" hat damit wieder **sechs** Reiter, „Ich" hat **drei**.
+
+**Was noch fehlt** und ausdrücklich so vereinbart ist: die Videos, der
+eigene Speicher-Eimer, die echte Abspielmessung — und ein Editor, mit
+dem die Leitung Module selbst anlegt. Bis dahin kommen Module als Datei
+ins Repo.
+
+**121 Durchläufe.**

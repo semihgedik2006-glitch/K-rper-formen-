@@ -28,6 +28,7 @@ on:
       - 'konfig.js'
       - 'demo-daten.js'
       - 'loesungen-basis.js'
+      - 'schulungen-basis.js'
       - 'robots.txt'
       - 'manifest.json'
       - 'icon.png'
