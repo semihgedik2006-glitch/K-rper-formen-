@@ -37,10 +37,12 @@ was.
 ┌─────────────────────────────────────────────────────────────┐
 │  BROWSER                                                     │
 │                                                              │
-│   index.html   ── die ganze Anwendung (26.814 Zeilen)        │
+│   index.html   ── die ganze Anwendung (29.569 Zeilen)        │
 │   konfig.js    ── alles, was sich je Kunde unterscheidet     │
 │   sw.js        ── Service Worker: Push, Offline              │
 │   demo-daten.js── ersetzt das SDK, wenn ?demo in der Adresse │
+│   loesungen-basis.js ── 115 Probleme aus dem Handbuch,       │
+│                        erst beim ersten Öffnen der Hilfe     │
 │                                                              │
 │   5 Firebase-SDKs von gstatic.com:                           │
 │   app · auth · firestore · messaging · functions             │

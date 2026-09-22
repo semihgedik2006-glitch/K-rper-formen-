@@ -146,20 +146,28 @@ verhindert ausdrücklich, dass sich jemand selbst dazu macht.
 | Nachrichten im Papierkorb | **NICHT GEFUNDEN — mit Absicht** | Kommentar im Code: „ein Papierkorb voller Nachrichten wäre eher ein Datenschutzproblem als eine Hilfe" |
 | Chat-Hintergrundbild | **VERIFIZIERT** | liegt nur im Browser des Geräts |
 
-### Lösungen (seit 22.9.2026)
+### Hilfe im Studio (seit 22.9.2026)
 
-Probleme aus dem Studio und was dagegen hilft — Titel, Problem,
-Anleitung, Kategorie, Studios, bis zu drei Fotos.
+Der Rettungsring in der Kopfzeile. 115 Probleme aus dem
+Mitarbeiter-Handbuch, jedes mit nummerierten Schritten, dazu alles, was
+das Team selbst festhält.
 
 | | Stand | Anmerkung |
 |---|---|---|
+| Von jeder Seite aus erreichbar | **VERIFIZIERT** | `tests/test-loesungen.js` — Knopf und Zeile in „Alles" |
+| 115 Einträge aus dem Handbuch | **VERIFIZIERT** | nachgezählt, `loesungen-basis.js` |
+| Stichwortsuche mit Synonymen und einem Tippfehler | **VERIFIZIERT** | gegen den erwarteten Eintrag, mit Gegenprobe |
+| **KI** | **NICHT VORHANDEN — und so beschriftet** | der Hinweis im Fenster nennt Synonyme, nicht KI; geprüft |
+| Blättern nach Kategorie, ganze Liste durchgehen | **VERIFIZIERT** | 14 Kacheln mit Anzahl |
+| Handbuch-Eintrag ändern legt eine eigene Fassung an | **VERIFIZIERT** | `basis`-Feld; der Eintrag steht danach **nicht** zweimal da (geprüft) |
+| „Änderung verwerfen" stellt das Handbuch wieder her | **VERIFIZIERT** | Löschen der eigenen Fassung |
 | Anlegen darf jeder Aktive | **VERIFIZIERT** | `tests/rules/loesungen.test.js` |
-| Ändern und Löschen: Verfasser und Verwaltung | **VERIFIZIERT** | dito, beide Welten |
+| Ändern und Löschen eigener Einträge: Verfasser und Verwaltung | **VERIFIZIERT** | dito, beide Welten; fremder Eintrag hat keinen Knopf und sagt warum |
 | Firmenweit lesbar, mit Studio-Marke | **VERIFIZIERT** | bewusst keine Schranke — siehe P-01 |
-| Filter nach Kategorie, Suche über den ganzen Text | **VERIFIZIERT** | `tests/test-loesungen.js` |
-| Bis zu drei Fotos, im Browser verkleinert | **VERIFIZIERT** | 1280 px / 300 KB, je Foto ein eigenes Dokument |
-| Fotos erst beim Aufklappen geladen | **VERIFIZIERT** | |
-| Im Export enthalten (Text, ohne Fotos) | **VERIFIZIERT** | `tests/test-sicherung-inhalt.js` |
+| Bis zu drei Fotos, im Browser verkleinert, auch nachträglich | **VERIFIZIERT** | 1280 px / 300 KB, je Foto ein eigenes Dokument |
+| Fotos erst beim Öffnen eines Eintrags geladen | **VERIFIZIERT** | die Liste lädt keines (Gegenprobe) |
+| Im Export enthalten (Text und Schritte, ohne Fotos) | **VERIFIZIERT** | `tests/test-sicherung-inhalt.js` |
+| Der Grundstock kostet keinen Lesevorgang | **VERIFIZIERT** | statische Datei, im Vorrat des Service Workers |
 | **Video** | **NICHT VORHANDEN** | braucht echten Dateispeicher; die Begründung steht in `FORTSCHRITT.md`, Runde 95 |
 
 ### Führung durch die App (seit 22.9.2026)

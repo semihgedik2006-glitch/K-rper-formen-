@@ -98,9 +98,22 @@ const errs = [];
                     'die Attrappe kennt zwei Einträge');
         } else {
           const l = d.loesungen[0];
-          ['titel', 'problem', 'loesung'].forEach(f => {
+          /* `schritte` seit dem 22.9.2026: eine Anleitung ist eine
+             Reihenfolge, und die geht verloren, wenn sie nur als ein
+             Textklumpen in der Datei steht. `loesung` bleibt daneben
+             stehen — die Tabellenfassung braucht eine Zelle, und jede
+             ältere Auswertung liest dieses Feld.
+             `herkunft` sagt, ob der Eintrag aus dem Studio kommt oder
+             eine Änderung am Handbuch ist. Ohne sie liest man in der
+             Sicherung eine Studio-Fassung und hält sie für eine
+             eigene Entdeckung. */
+          ['titel', 'problem', 'loesung', 'schritte', 'herkunft'].forEach(f => {
             if (!(f in l)) errs.push('FEHLT: den Lösungen fehlt das Feld „' + f + '"');
           });
+          if (!Array.isArray(l.schritte) || !l.schritte.length) {
+            errs.push('LEER: die Schritte stehen nicht als Liste in der Datei — ' +
+                      'dann ist die Reihenfolge nur noch Formatierung');
+          }
           /* Die Fotos gehören NICHT hinein (sie machen die Datei
              unbenutzbar), aber die Anzahl schon — sonst weiss niemand,
              dass welche fehlen. */

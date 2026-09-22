@@ -100,7 +100,8 @@ schreibend, einzeln wie über Abfragen, jeweils mit Gegenprobe.
 | **Zeiterfassung** | `terminal`, `zeitpin`, `handy-stempeln`, `meine-zeiten` |
 | **Gestaltung** | `gestaltung`, `knoepfe`, `fingerziele`, `abgeschnitten`, `quer`, `rahmen`, `marker`, `neu-design`, `neu-messlatte`, `aussehen`, `akzent` |
 | **Einstieg** | `fuehrung` |
-| **Bereiche** | `chat-bereich3`, `aufgaben-bereich4`, `material-bereich5`, `geraete-bereich6`, `team-bereich7`, `dokumente-bereich8`, `loesungen`, `verwaltung-bereich9`, `einstellungen-bereich10` |
+| **Bereiche** | `chat-bereich3`, `aufgaben-bereich4`, `material-bereich5`, `geraete-bereich6`, `team-bereich7`, `dokumente-bereich8`, `verwaltung-bereich9`, `einstellungen-bereich10` |
+| **Hilfe im Studio** | `loesungen` — kein Bereich mehr, sondern der Rettungsring in der Kopfzeile: Knopf → Suche → Treffer → Eintrag → Bearbeiten → Foto |
 | **Demo und Auslieferung** | `demo`, `ausliefern`, `konfig`, `lizenzen`, `nachladen`, `schriften` |
 | **Server** | `funktionen-pfade`, `funktionen-schalter`, `mail-versand`, `sheets`, `sicherung`, `kalender` |
 | **Recht** | `recht`, `recht-firma` |

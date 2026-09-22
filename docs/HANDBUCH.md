@@ -487,31 +487,62 @@ Wer ursprünglich eingeteilt war, bleibt am Eintrag vermerkt.
 
 ---
 
-## 12b. Lösungen
+## 12b. Hilfe im Studio
 
-**Unter „Aufgaben" der letzte Reiter.** Hier steht, was schon einmal
-jemand herausgefunden hat: ein Gerät piept, ein Ablauf klemmt, ein Kunde
-fragt etwas Ungewöhnliches — und was beim letzten Mal geholfen hat.
+**Der Rettungsring oben rechts — von jeder Seite aus.** Ein Problem hat
+man mitten in etwas anderem: am Gerät, an der Theke, mit dem Kunden
+daneben. Deshalb liegt die Hilfe nicht hinter drei Tipps in einem
+Reiter, sondern immer an derselben Stelle in der Kopfzeile. Das Fenster
+legt sich über das, was gerade offen ist, und gibt hinterher genau
+dorthin zurück.
 
-**Nachlesen**
-- Oben suchen oder nach Kategorie filtern (Gerät, Technik, Ablauf,
-  Kunde, Sonstiges).
-- Eintrag antippen: darunter stehen **Das Problem** und **Was hilft**,
-  dazu die Fotos.
-- Einträge aus **allen** Studios sind sichtbar. Das ist Absicht: ein
-  Problem aus Rondorf hilft in Brühl genauso weiter. Woher es kommt,
-  steht am Eintrag.
+Darin stehen **115 Probleme aus dem Mitarbeiter-Handbuch**, jedes mit
+nummerierten Schritten — und alles, was das Team selbst dazuschreibt.
 
-**Selbst festhalten** — das darf jeder, nicht nur die Leitung.
-- Oben auf **„Lösung festhalten"**.
-- Titel, das Problem, was hilft. Schreib die Schritte so auf, wie du sie
-  gemacht hast; Zeilenumbrüche bleiben erhalten.
-- Kategorie und Studios wählen, bis zu **drei Fotos** dazu.
-- **Speichern.**
+**Drei Wege, weil Menschen verschieden suchen**
 
-**Ändern oder löschen** darf den Eintrag, wer ihn geschrieben hat — und
-die Leitung. Eine Lösung, die jeder überschreiben kann, ist nach einem
-halben Jahr keine mehr.
+1. **Tippen.** „Was ist das Problem?" — in eigenen Worten:
+   „gerät piept", „handtücher alle", „kunde kommt nicht".
+   Die Suche kennt andere Wörter für dasselbe („kaputt" findet
+   „defekt") und verzeiht einen Tippfehler.
+2. **Blättern.** Vierzehn Kacheln: Kunde, Gerät & Elektroden, Hygiene,
+   Wäsche, Lager & Nachschub, Termine, Team & Abläufe, Gebäude,
+   Sicherheit, Datenschutz, Verkauf & Beratung, Öffnen & Schliessen,
+   App & Software, Sonstiges. Die Zahl an der Kachel sagt, wie viele
+   drin sind.
+3. **Alles durchgehen.** Ein Knopf, dann die ganze Liste von oben nach
+   unten — für den ersten Arbeitstag oder eine ruhige Stunde.
+
+> **Es ist keine KI.** Es ist eine Stichwortsuche mit Synonymen. Sie
+> läuft im Gerät, kostet nichts und funktioniert auch, wenn das WLAN
+> gerade der Grund fürs Nachschlagen ist.
+
+**Einen Eintrag lesen**
+- Titel, die Kategorie, die Nummer aus dem Handbuch.
+- **Das Problem** in einem Kasten, darunter die Schritte — nummeriert,
+  weil die Reihenfolge trägt.
+- Ganz unten steht, woher er kommt: aus dem Handbuch oder aus dem
+  Studio, und von wem.
+
+**Ändern und Fotos anhängen** — der Knopf steht an jedem Eintrag.
+- Bei einem **Handbuch-Eintrag** darf das **jeder**. Das Handbuch bleibt
+  unangetastet; deine Fassung legt sich darüber und gilt ab sofort fürs
+  ganze Team. Sie ist als „gedändert" gekennzeichnet, und
+  **„Änderung verwerfen"** stellt jederzeit das Handbuch wieder her.
+- Bei einem **eigenen Eintrag** dürfen es die verfassende Person und die
+  Leitung. Eine Lösung, die jeder überschreiben kann, ist nach einem
+  halben Jahr keine mehr; eine, die niemand berichtigen darf, wird
+  falsch und bleibt es.
+- **Ein Schritt je Zeile.** Die App nummeriert selbst.
+- Bis zu **drei Fotos**. Ein Bild vom Stecker, vom Schalter oder vom
+  Regal erspart drei Sätze Erklärung. Sie lassen sich auch später noch
+  anhängen — derselbe Knopf.
+
+**Etwas ganz Neues festhalten**: **„Eigene Lösung festhalten"** unten im
+Fenster. Dort wählst du zusätzlich, für welche Studios es gilt.
+Einträge aus **allen** Studios sind trotzdem für jeden sichtbar — ein
+Problem aus Rondorf hilft in Brühl genauso weiter; die Studio-Angabe
+sagt nur, wo es herkommt.
 
 > **Videos gibt es (noch) nicht.** Sie brauchen echten Dateispeicher;
 > der kommt, wenn sich zeigt, dass der Bereich benutzt wird.

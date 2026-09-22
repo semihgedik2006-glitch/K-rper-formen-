@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-us18cgTsbTPXbrwcqc77l8YUy/+es6nxR0e0pKjdZ/M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-auW44DSK8t1WeVccPZ7MrP1xqwLxHab3bETRGJ45il0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3551,6 +3551,20 @@ html{font-size:var(--fs,100%)}
     width:auto;height:auto;min-height:36px;padding:0 var(--s12);gap:var(--s8)}
   .suchknopf .sk-wort{display:inline;font-size:var(--t-sm);font-weight:600;white-space:nowrap}
 }
+/* Derselbe Weg für den Rettungsring — aber erst später. Bei 700px
+   stünden „Hilfe" und „Suchen" nebeneinander in einer Kopfzeile, die
+   dort ohnehin schon Name, Studio und vier Knöpfe trägt. Ab 900px ist
+   der Platz gemessen da.
+   Eine eigene Klasse, nicht .hk-wort: die trägt in dieser App schon
+   die Überschrift „Heute" auf der Startseite, und zwei Bedeutungen auf
+   einem Namen ist genau die Sorte Kollision, die man erst sieht, wenn
+   eine von beiden falsch aussieht. */
+.hilfeknopf .hi-wort{display:none}
+@media (min-width:900px){
+  .hilfeknopf{display:inline-flex;align-items:center;justify-content:center;
+    width:auto;height:auto;min-height:36px;padding:0 var(--s12);gap:var(--s8)}
+  .hilfeknopf .hi-wort{display:inline;font-size:var(--t-sm);font-weight:600;white-space:nowrap}
+}
 /* Eine Zeile zum Schieben statt drei Zeilen Knöpfe: bei vier Sortierungen
    nahm die Leiste umbrechend 150 Pixel über einer Liste mit drei Einträgen. */
 .sort-row{display:flex;align-items:center;gap:var(--s6);flex-wrap:nowrap;margin:0 0 var(--s12);
@@ -4050,45 +4064,138 @@ html{font-size:var(--fs,100%)}
 /* ── Schnellfilter-Chips (Aufgaben) ── */
 .chip-row{display:flex;gap:var(--s8);flex-wrap:wrap}
 
-/* ── Lösungen (22.9.2026) ────────────────────────────────────────────
-   Eine Karte je Eintrag, die sich aufklappt. Kein eigenes Fenster: was
-   man nebeneinander vergleichen will, gehört in eine Liste, und zwei
-   Probleme hintereinander nachzulesen ist genau der Fall. */
-.loes-karte{padding:0;overflow:hidden}
-.loes-kopf{display:flex;align-items:center;gap:var(--s10);width:100%;
-  background:none;border:none;cursor:pointer;text-align:left;
-  padding:var(--s12) var(--s16);min-height:56px}
-.loes-titel{flex:1;min-width:0}
-.loes-titel b{display:block;font-family:var(--font-head);font-weight:700;
-  font-size:var(--t-md);line-height:var(--lh-1)}
-.loes-titel i{display:block;font-style:normal;margin-top:var(--s2);
-  font-size:var(--t-xs);color:var(--text-3)}
-.loes-pfeil{flex-shrink:0;color:var(--accent-d);font-size:var(--t-sm);
-  transition:transform .25s var(--ease-ios)}
-.loes-karte.auf .loes-pfeil{transform:rotate(180deg)}
-.loes-inhalt{padding:0 var(--s16) var(--s16);animation:cardUp .3s var(--ease-ios) both}
-.loes-abschnitt{margin-bottom:var(--s12);font-size:var(--t-sm);
-  line-height:var(--lh);color:var(--text-2)}
-.loes-abschnitt b{display:block;font-family:var(--font-head);font-weight:700;
-  font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:var(--ls-m);
-  color:var(--text-3);margin-bottom:var(--s4)}
-.loes-fuss{font-size:var(--t-2xs);color:var(--text-3);margin:var(--s8) 0 var(--s12)}
-/* Die Fotos. Feste Höhe, damit die Liste beim Nachladen nicht springt —
+/* ── Hilfe im Studio (22.9.2026) ──────────────────────────────────────
+   Aus dem Betrieb: „das man auf einen knopf drückt und dann wird
+   gefragt was das problem ist."
+
+   EIN FENSTER, KEIN REITER. Ein Problem hat man mitten in etwas
+   anderem — beim Gerät, an der Theke, mit dem Kunden daneben. Wer
+   dafür die Seite wechseln muss, verliert, woran er gerade war. Das
+   Fenster legt sich darüber und gibt hinterher genau dorthin zurück.
+
+   Auf dem Handy füllt es den Schirm, auf dem Rechner ist es eine
+   Tafel in der Mitte — dieselbe Bauform wie die übrigen Fenster
+   dieser App, damit es sich nicht wie ein Fremdkörper anfühlt. */
+#hilfe{position:fixed;inset:0;z-index:300;display:none;
+  align-items:center;justify-content:center;padding:var(--s20);
+  background:var(--scrim);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  animation:fadeBlur .3s var(--ease-ios)}
+#hilfe.show{display:flex}
+.hilfe-schale{position:relative;width:100%;max-width:640px;max-height:88vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:var(--r-lg);box-shadow:var(--e3);
+  animation:sheetIn .46s var(--spring)}
+/* Der Kopf trägt die Bereichsfarbe, wie die Kopfzeile der App selbst.
+   Damit sieht man am Farbton, dass man immer noch in derselben App
+   ist — das Fenster ist kein zweites Programm. */
+.hilfe-kopf{display:flex;align-items:center;gap:var(--s12);flex-shrink:0;
+  padding:var(--s16) var(--s20);background:var(--brand);color:var(--on-accent)}
+.hilfe-kopf h2{flex:1;min-width:0;font-family:var(--font-head);font-weight:800;
+  font-size:var(--t-lg);letter-spacing:var(--ls-s);line-height:var(--lh-1)}
+.hilfe-kopf .icon-btn{flex-shrink:0;color:var(--on-accent);background:none;border:none}
+.hilfe-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:var(--s20)}
+.hilfe-frage{display:block;font-family:var(--font-head);font-weight:800;
+  font-size:var(--t-lg);margin-bottom:var(--s10);line-height:var(--lh-eng)}
+.hilfe-ueber{margin:var(--s24) 0 var(--s10);font-size:var(--t-2xs);
+  text-transform:uppercase;letter-spacing:var(--ls-l);color:var(--text-3);
+  font-weight:700}
+/* Die dreizehn Kacheln. auto-fill statt fester Spaltenzahl: auf einem
+   schmalen Telefon zwei, auf einem Tablet vier — ohne Haltepunkt. */
+.hilfe-kats{display:grid;gap:var(--s8);
+  grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
+.hilfe-kat{display:flex;align-items:center;gap:var(--s8);min-height:52px;
+  padding:var(--s8) var(--s12);text-align:left;cursor:pointer;
+  background:var(--bg);border:1.5px solid var(--line-2);border-radius:var(--r-md);
+  color:var(--text);font-family:var(--font-body);font-weight:600;font-size:var(--t-sm);
+  transition:border-color .2s,background .2s,transform .15s var(--ease-ios)}
+.hilfe-kat:active{transform:scale(.97)}
+@media (hover:hover){ .hilfe-kat:hover{border-color:var(--accent);background:var(--tipp-1)} }
+.hilfe-kat .sym{width:18px;height:18px;flex-shrink:0;color:var(--accent-d)}
+.hilfe-kat span{flex:1;min-width:0}
+.hilfe-kat i{font-style:normal;color:var(--text-3);font-size:var(--t-2xs);
+  font-variant-numeric:tabular-nums;flex-shrink:0}
+/* Trefferliste und „alles durchgehen" benutzen dieselbe Zeile — es ist
+   derselbe Inhalt, nur anders zusammengestellt. Zwei Bauformen für
+   dasselbe wären zwei Stellen zum Kaputtgehen. */
+.hilfe-liste{display:flex;flex-direction:column;gap:var(--s8);margin-top:var(--s12)}
+.hilfe-zeile{display:flex;align-items:center;gap:var(--s10);width:100%;
+  min-height:56px;padding:var(--s10) var(--s12);cursor:pointer;text-align:left;
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r-md);
+  color:var(--text);transition:border-color .2s,background .2s}
+.hilfe-zeile:active{background:var(--bg-soft)}
+@media (hover:hover){ .hilfe-zeile:hover{border-color:var(--accent)} }
+.hilfe-zeile .sym{width:18px;height:18px;flex-shrink:0;color:var(--accent-d)}
+.hilfe-ztxt{flex:1;min-width:0}
+.hilfe-ztxt b{display:block;font-family:var(--font-head);font-weight:700;
+  font-size:var(--t-sm);line-height:var(--lh-1)}
+.hilfe-ztxt i{display:block;font-style:normal;margin-top:var(--s2);
+  font-size:var(--t-2xs);color:var(--text-3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hilfe-zeile .al-pfeil{flex-shrink:0;color:var(--text-3)}
+/* Ein einzelner Eintrag. Die Schritte sind nummeriert, weil die
+   Reihenfolge trägt: „erst Stecker ziehen, dann öffnen" ist etwas
+   anderes als andersherum. */
+.hilfe-eintrag h3{font-family:var(--font-head);font-weight:800;
+  font-size:var(--t-xl);line-height:var(--lh-eng);margin-bottom:var(--s6)}
+.hilfe-marken{display:flex;gap:var(--s6);flex-wrap:wrap;margin-bottom:var(--s16)}
+.hilfe-marke{display:inline-flex;align-items:center;gap:var(--s4);
+  padding:var(--s2) var(--s8);border-radius:var(--r-pille);
+  font-size:var(--t-2xs);font-weight:700;
+  background:var(--tipp-1);color:var(--accent-d);border:1px solid var(--tipp-kante)}
+.hilfe-marke.grau{background:var(--bg-3);color:var(--text-3);border-color:var(--line)}
+.hilfe-problem{font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2);
+  padding:var(--s12);background:var(--bg-soft);border-radius:var(--r-md);
+  border-left:3px solid var(--accent);margin-bottom:var(--s16)}
+.hilfe-schritte{display:flex;flex-direction:column;gap:var(--s10);
+  counter-reset:hschritt;margin-bottom:var(--s16)}
+.hilfe-schritt{display:flex;gap:var(--s10);align-items:flex-start;
+  font-size:var(--t-sm);line-height:var(--lh);color:var(--text)}
+.hilfe-schritt::before{counter-increment:hschritt;content:counter(hschritt);
+  flex-shrink:0;width:24px;height:24px;border-radius:var(--r-rund);
+  display:grid;place-items:center;font-family:var(--font-head);font-weight:800;
+  font-size:var(--t-2xs);font-variant-numeric:tabular-nums;
+  background:var(--accent);color:var(--on-accent)}
+.hilfe-fuss{font-size:var(--t-2xs);color:var(--text-3);margin:var(--s16) 0 var(--s12);
+  padding-top:var(--s12);border-top:1px solid var(--line)}
+/* Eine Reihe gleich hoher Knöpfe. flex-wrap statt fester Breite: auf
+   350px stehen sie untereinander, ohne dass einer abgeschnitten wird —
+   genau der Fall, der beim Nachmessen sonst auffällt. */
+.hilfe-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
+.hilfe-knoepfe .btn{flex:1 1 180px;min-height:44px}
+/* Die Fotos. Feste Höhe, damit nichts springt, wenn sie nachkommen —
    ein Bild ohne reservierten Platz schiebt beim Eintreffen alles
    darunter nach unten, und wer gerade liest, verliert die Zeile. */
-.loes-bilder{display:flex;gap:var(--s8);flex-wrap:wrap;margin-bottom:var(--s8)}
-.loes-bild{width:96px;height:96px;object-fit:cover;border-radius:var(--r-md);
+.hilfe-bilder{display:flex;gap:var(--s8);flex-wrap:wrap;margin-bottom:var(--s16)}
+.hilfe-bild{width:104px;height:104px;object-fit:cover;border-radius:var(--r-md);
   border:1px solid var(--line-2);background:var(--bg-soft)}
-.loes-bild.leer-bild{display:grid;place-items:center;font-size:var(--t-2xs);
+.hilfe-bild.leer-bild{display:grid;place-items:center;font-size:var(--t-2xs);
   color:var(--text-3)}
-.loes-vorschau{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s8)}
-.loes-vor{position:relative;width:72px;height:72px}
-.loes-vor img{width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm);
+.hilfe-vorschau{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s8)}
+.hilfe-vor{position:relative;width:72px;height:72px}
+.hilfe-vor img{width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm);
   border:1px solid var(--line-2)}
-.loes-vor .mini-x{position:absolute;top:-6px;right:-6px;background:var(--bg-2);
+.hilfe-vor .mini-x{position:absolute;top:-6px;right:-6px;background:var(--bg-2);
   border:1px solid var(--line-2);border-radius:var(--r-rund);
   width:22px;height:22px;display:grid;place-items:center;color:var(--text-2)}
-.loes-vor .mini-x svg{width:12px;height:12px}
+.hilfe-vor .mini-x svg{width:12px;height:12px}
+/* Zurück-Zeile über dem Inhalt: immer an derselben Stelle, egal wie
+   tief man steckt. */
+.hilfe-zurueck{display:inline-flex;align-items:center;gap:var(--s6);
+  min-height:44px;padding:0 var(--s8);margin-bottom:var(--s8);margin-left:calc(var(--s8) * -1);
+  background:none;border:none;cursor:pointer;color:var(--accent-d);
+  font-family:var(--font-body);font-weight:700;font-size:var(--t-sm)}
+@media (max-width:620px){
+  /* Auf dem Telefon der ganze Schirm. Ein zentriertes Kästchen mit
+     Rand ringsum verschenkt hier die Hälfte der Höhe, und gelesen
+     wird meistens im Stehen, mit einer Hand. */
+  #hilfe{padding:0;align-items:stretch}
+  .hilfe-schale{max-width:none;max-height:none;border:none;border-radius:0;
+    animation:sheetUp .42s var(--ease-ios)}
+  .hilfe-kopf{padding-top:calc(var(--s16) + var(--sat))}
+  .hilfe-body{padding-bottom:calc(var(--s24) + var(--sab))}
+}
 .chip{display:inline-flex;align-items:center;min-height:44px;
   background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--text-2);
   padding:0 var(--s16);border-radius:var(--r-pille);font-family:var(--font-body);font-weight:600;
@@ -5340,6 +5447,28 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <div class="tb-user">
       <div class="tb-who"><b id="uName">–</b><span id="uMeta">–</span></div>
       <div class="avatar" id="uAvatar" title="Mein Profil" style="cursor:pointer">?</div>
+      <!-- ══ HILFE IM STUDIO ══════════════════════════════════════════
+           Aus dem Betrieb, 22.9.2026: „kannst du diesen lösungen bereich
+           ganz wo anders hinpacken irgendwie oben oder so, das man auf
+           einen knopf drückt und dann wird gefragt was das problem ist."
+
+           OBEN UND FÜR JEDEN. Der Bereich lag bisher als siebter Reiter
+           unter „Betrieb" — also drei Tipps entfernt, und man musste
+           wissen, dass es ihn gibt. Ein Problem hat man aber JETZT, und
+           meistens mit dem Handy in der einen und dem Gerät in der
+           anderen Hand.
+
+           Der Rettungsring ist bewusst kein Fragezeichen: ein
+           Fragezeichen heisst „Anleitung zu dieser App", hier geht es
+           um das Studio. Das Wort daneben verschwindet auf schmalen
+           Bildschirmen, wie beim Suchknopf — derselbe Weg, dieselbe
+           Klasse-Bauform. -->
+      <button class="icon-btn hilfeknopf" id="hilfeBtn"
+              title="Hilfe im Studio — was ist das Problem?"
+              aria-label="Hilfe im Studio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.4"/><path d="m5.6 5.6 4 4M18.4 5.6l-4 4M18.4 18.4l-4-4M5.6 18.4l4-4"/></svg>
+        <span class="hi-wort">Hilfe</span>
+      </button>
       <button class="icon-btn suchknopf" id="searchBtn" title="Suchen (Cmd/Strg + K)" aria-label="Suchen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <span class="sk-wort">Suchen</span>
@@ -6428,59 +6557,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
         </div>
       </section>
 
-      <!-- ══ LÖSUNGEN ══════════════════════════════════════════════
-           Probleme, die im Studio anfallen, und was dagegen hilft.
-           Aus dem Betrieb, 22.9.2026: „ein bereich wo man videos und
-           texte zu bestimmten problemen hochladen kann die in einem
-           studio anfallen."
-
-           TEXT UND FOTOS ZUERST, VIDEO SPÄTER. Fotos kann die App
-           schon — sie werden im Browser verkleinert und liegen in der
-           Datenbank, das kostet nichts. Video braucht echten
-           Dateispeicher und damit eigene Regeln neben dem Eimer, in
-           dem die nächtliche Sicherung liegt. Erst der Bereich, dann
-           die Frage, ob er überhaupt benutzt wird.
-
-           Der Inhalt liegt in zwei Sammlungen, wie bei den Dokumenten:
-           `loesungen` trägt den Text, `loesungBilder` je ein Foto.
-           Ein Dokument in Firestore darf 1 MB haben; drei Fotos in
-           einem Eintrag sprengen das, drei Fotos in drei Dokumenten
-           nicht. -->
-      <section class="view" id="view-loesungen">
-        <div class="view-head shrink"><h2>Lösungen</h2><p>Probleme aus dem Studio — und was dagegen hilft.</p></div>
-        <div class="scroll-area" data-shrinks="1">
-          <div class="card" id="loesNeuKarte" data-fold="loesneu">
-            <h3 data-ikon="werkzeug">Lösung festhalten</h3>
-            <p class="hint">Was war los, und was hat geholfen? Wer es aufschreibt,
-              spart dem nächsten die Sucherei.</p>
-            <div class="field"><label for="loesTitel">Worum geht es?</label>
-              <input class="inp" id="loesTitel" type="text" maxlength="90"
-                     placeholder="z. B. Gerät 3 piept beim Start" /></div>
-            <div class="field"><label for="loesProblem">Das Problem</label>
-              <textarea class="inp" id="loesProblem" rows="3" maxlength="1200"
-                        placeholder="Was passiert, und wann?"></textarea></div>
-            <div class="field"><label for="loesLoesung">Was hilft</label>
-              <textarea class="inp" id="loesLoesung" rows="4" maxlength="2500"
-                        placeholder="Schritt für Schritt, so wie du es gemacht hast."></textarea></div>
-            <div class="field"><label for="loesKat">Kategorie</label>
-              <select class="inp" id="loesKat"></select></div>
-            <div class="field"><label>Welche Studios betrifft es?</label>
-              <label class="studio-check" id="loesAllWrap"><input type="checkbox" id="loesAll" /><span><b>Alle Studios</b></span></label>
-              <div class="studio-checks" id="loesStudios"></div></div>
-            <div class="field"><label>Fotos (bis zu drei)</label>
-              <input type="file" accept="image/*" class="hidden-file" id="loesFile" multiple />
-              <button data-ikon="foto" class="btn btn-ghost btn-sm" id="loesPick" style="width:100%">Foto hinzufügen</button>
-              <div id="loesVorschau" class="loes-vorschau"></div></div>
-            <button class="btn btn-primary btn-sm" id="loesSpeichern" style="width:100%">Speichern</button>
-            <p class="em-saved" id="loesNote"></p>
-          </div>
-          <input class="inp" id="loesSuche" type="search" autocomplete="off"
-                 placeholder="Nach Problem suchen …" style="margin-bottom:10px" />
-          <div class="chip-row" id="loesKatRow" style="margin-bottom:12px"></div>
-          <div id="loesListe"></div>
-        </div>
-      </section>
-
       <!-- DIREKTNACHRICHTEN -->
       <section class="view" id="view-dm">
         <div class="view-head"><h2 id="dmTitle">Direkt</h2><p>Private Nachrichten an einzelne Personen. Niemand sonst liest mit.</p></div>
@@ -7435,6 +7511,59 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ══ HILFE IM STUDIO ═════════════════════════════════════════════════
+     Ein Fenster über allem, kein Bereich in der Navigation. Der Grund
+     steht am Knopf oben: ein Problem hat man JETZT, mit dem Handy in
+     der einen und dem Gerät in der anderen Hand. Wer dafür erst eine
+     Ansicht wechseln, einen Reiter finden und scrollen muss, macht es
+     nicht.
+
+     DREI WEGE ZUM SELBEN INHALT, weil Menschen verschieden suchen:
+       tippen     „gerät piept" → Treffer, nach Stichwörtern gewichtet
+       Kategorie  dreizehn Kacheln, für alle, die lieber blättern
+       alles      die ganze Liste durchgehen
+
+     Es ist KEINE KI. Es ist eine Stichwortsuche mit Synonymen, die
+     Tippfehler verzeiht — sie läuft im Gerät, kostet nichts und
+     funktioniert ohne Netz. Das steht auch so im Fenster; „KI" auf
+     etwas zu schreiben, das keine ist, wäre eine Zusage über eine
+     Fähigkeit, die es nicht gibt. -->
+<div id="hilfe" role="dialog" aria-modal="true" aria-labelledby="hilfeKopf">
+  <div class="hilfe-schale">
+    <div class="hilfe-kopf">
+      <h2 id="hilfeKopf">Hilfe im Studio</h2>
+      <button class="icon-btn" id="hilfeZu" data-ikon="schliessen"
+              title="Schliessen" aria-label="Schliessen"></button>
+    </div>
+    <div class="hilfe-body" id="hilfeBody">
+      <!-- Suchen, blättern, alles durchgehen -->
+      <div id="hilfeSuchTeil">
+        <label class="hilfe-frage" for="hilfeSuche">Was ist das Problem?</label>
+        <input class="inp" id="hilfeSuche" type="search" autocomplete="off"
+               placeholder="z. B. Gerät piept, Kunde zu spät, Handtücher alle …" />
+        <p class="hint" id="hilfeHinweis">Tippe in eigenen Worten. Die Suche kennt
+          auch andere Wörter für dasselbe — „kaputt" findet „defekt".</p>
+        <div id="hilfeTreffer"></div>
+        <div id="hilfeStart">
+          <p class="hilfe-ueber">Oder such dir etwas aus</p>
+          <div id="hilfeKats" class="hilfe-kats"></div>
+          <div class="hilfe-knoepfe" style="margin-top:14px">
+            <button class="btn btn-ghost btn-sm" id="hilfeAlle">Alle durchgehen</button>
+            <button class="btn btn-ghost btn-sm" id="hilfeNeu">Eigene Lösung festhalten</button>
+          </div>
+          <p class="hint" id="hilfeStand"></p>
+        </div>
+      </div>
+      <!-- Eine Kategorie oder die ganze Liste -->
+      <div id="hilfeListe" style="display:none"></div>
+      <!-- Ein einzelner Eintrag, Schritt für Schritt -->
+      <div id="hilfeEintrag" class="hilfe-eintrag" style="display:none"></div>
+      <!-- Bearbeiten, Fotos anhängen, neu anlegen -->
+      <div id="hilfeForm" style="display:none"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ FÜHRUNG DURCH DIE APP ═══════════════════════════════════════════
      Aus dem Betrieb, 22.9.2026: „ich würde gerne den einrichtungs
@@ -9092,6 +9221,11 @@ var IKONEN = {
                '<path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
   schluessel:  '<circle cx="7.5" cy="15.5" r="4.5"/>' +
                '<path d="m10.7 12.3 8.3-8.3M17 6l3 3M14.5 8.5l3 3"/>',
+  /* Der Rettungsring. Dasselbe Zeichen wie im Knopf oben in der
+     Kopfzeile: wer es dort einmal gedrückt hat, erkennt es in der
+     Liste „Alles" wieder. */
+  rettung:     '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.4"/>' +
+               '<path d="m5.6 5.6 4 4M18.4 5.6l-4 4M18.4 18.4l-4-4M5.6 18.4l4-4"/>',
   werkzeug:    '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
   hochladen:   '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><path d="M12 3v12"/>',
   herz:        '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/>',
@@ -10940,7 +11074,7 @@ var FEATURES = [
   {id:'material',  label:'Material',         was:'Bestand und was fehlt'},
   {id:'geraete',   label:'Geräte',           was:'Geräte- und Schadensbuch'},
   {id:'docs',      label:'Dokumente',        was:'Dateien für das Team'},
-  {id:'loesungen', label:'Lösungen',         was:'Probleme aus dem Studio und was dagegen hilft'},
+  {id:'loesungen', label:'Hilfe im Studio',  was:'Der Rettungsring oben: 115 Probleme und was hilft'},
   {id:'probe',     label:'Probetraining',    was:'Durchgeführt und abgeschlossen, mit Quote'},
   {id:'schicht',   label:'Schichtplan',      was:'Wer wann arbeitet', team:true},
   {id:'abwesend',  label:'Abwesenheiten',    was:'Urlaub, Krankheit, frei', team:true},
@@ -10966,6 +11100,14 @@ function teamAn(){ return teamFeatures().some(function(f){ return featureAn(f.id
 /* Gilt für Ansichten der unteren Leiste UND für die Team-Reiter. */
 function ansichtAn(v){
   if(v==='team') return teamAn();
+  /* „Lösungen" ist seit dem 22.9.2026 keine Seite mehr, sondern das
+     Hilfe-Fenster in der Kopfzeile. Der Schalter bleibt (er schaltet
+     jetzt den Rettungsring ab), aber als ANSICHT gibt es sie nicht
+     mehr — und ein Verlaufseintrag aus einer offenen Sitzung, ein
+     alter Lesezeichen-Anker oder ein weitergeleiteter Link zeigen
+     noch dorthin. Ohne diese Zeile landete man auf einer leeren
+     Seite mit einer Leiste, die nirgendwo hinzeigt. */
+  if(v==='loesungen') return false;
   return featureInfo(v) ? featureAn(v) : true;   // home, chef, archive: immer
 }
 
@@ -11014,6 +11156,10 @@ function featureKartenAnwenden(){
   document.querySelectorAll('[data-nurwenn]').forEach(function(el){
     el.style.display = featureAn(el.getAttribute('data-nurwenn')) ? '' : 'none';
   });
+  /* Der Rettungsring steht in der Kopfzeile, nicht in der Navigation —
+     buildNav() kommt also nicht an ihm vorbei. Ohne diese Zeile bliebe
+     er stehen, wenn die Firma „Lösungen" abschaltet. */
+  hilfeKnopfPruefen();
 }
 
 function featuresAnwenden(){
@@ -13993,7 +14139,7 @@ var NAVGROUPS = [
    icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
   {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
-  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','probe','docs','loesungen'],
+  {id:'g-arbeit', label:'Betrieb', views:['todos','putzplan','material','geraete','probe','docs'],
    icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'g-team', label:'Team', views:['team'],
    icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
@@ -14050,10 +14196,6 @@ var NAV = [
   {id:'probe', label:'Probetraining', icon:'<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>'},
   {id:'team', label:'Team', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
   {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
-  /* Glühbirne: „hier steht, was schon einmal jemand herausgefunden hat".
-     Bewusst nicht der Schraubenschlüssel — den trägt in dieser App die
-     Werkbank, und zwei Bedeutungen auf einem Zeichen sind eine zu viel. */
-  {id:'loesungen', label:'Lösungen', icon:'<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V18h8v-3.3A7 7 0 0 0 12 2Z"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
   {id:'archive', label:'Archiv', icon:'<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>', manageOnly:true},
   {id:'chef',  label:'Chef',     icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>', manageOnly:true}
@@ -14212,7 +14354,11 @@ function allesGruppen(){
     {label:'Geräte',        view:'geraete',  ikon:'geraete',  was:'Defekt melden, Verlauf ansehen'},
     {label:'Probetraining', view:'probe',    ikon:'probe',    was:'Durchgeführt und abgeschlossen'},
     {label:'Dokumente',     view:'docs',     ikon:'docs',     was:'Dateien und Links fürs Team'},
-    {label:'Lösungen',      view:'loesungen',ikon:'loesungen',was:'Probleme und was dagegen hilft'},
+    /* Kein `view`: dahinter liegt keine Seite mehr, sondern das
+       Hilfe-Fenster. `hilfe:true` sagt allesZiel(), dass es öffnen
+       statt wechseln soll. */
+    {label:'Hilfe im Studio', hilfe:true, feature:'loesungen', ikon:'rettung',
+     was:'115 Probleme und was Schritt für Schritt hilft'},
   ]);
   /* Aus FEATURES abgeleitet: dieselben vier Schalter, dieselben
      Beschriftungen, dieselbe Reihenfolge wie im System-Reiter. */
@@ -14260,7 +14406,8 @@ function allesMarkup(){
         var marke = e.warn ? '<span class="al-zahl warn">'+e.warn+'</span>'
                   : (e.zahl ? '<span class="al-zahl">'+e.zahl+'</span>'
                   : (e.punkt ? '<span class="al-punkt"></span>' : ''));
-        return '<button type="button" class="al-zeile" data-alles="'+esc(e.view)+'"'+
+        return '<button type="button" class="al-zeile" data-alles="'+esc(e.view||'')+'"'+
+          (e.hilfe   ?' data-al-hilfe="1"':'')+
           (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
           (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
           (e.cgo    ?' data-al-cgo="'+esc(e.cgo)+'"':'')+'>'+
@@ -14277,6 +14424,9 @@ function allesMarkup(){
 function allesZiel(el){
   var view=el.getAttribute('data-alles');
   allesLadeSchliessen();
+  /* Die Hilfe ist keine Seite. Sie legt sich über das, was gerade da
+     ist — also wird hier nicht gewechselt, sondern geöffnet. */
+  if(el.getAttribute('data-al-hilfe')){ hilfeOeffnen(); return; }
   showView(view);
   var t=el.getAttribute('data-al-teamtab');
   if(t){ var tb=document.querySelector('[data-teamtab="'+t+'"]'); if(tb) tb.click(); }
@@ -14967,7 +15117,6 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='material'){ ensureMaterialLoaded(); ensureArchivesLoaded(); }
   if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='geraete') ensureDevicesLoaded();
-  if(id==='loesungen'){ buildLoesUi(); ensureLoesungenLoaded(); renderLoesungen(); }
   if(id==='probe'){ if(!_probeUnsub) listenProbe(); renderProbe(); }
   if(id==='chat'){
     var cb=document.querySelector('.chat-channels');
@@ -16088,13 +16237,16 @@ function tourSchritte(){
     { view:'todos', ziel:'.mobnav [data-group="g-arbeit"], #side [data-group="g-arbeit"]',
       titel:'Aufgaben und alles aus dem Betrieb',
       text:'Hinter diesem Knopf liegen Aufgaben, Putzplan, Material, Geräte, '+
-           'Probetraining, Dokumente und Lösungen. Die Zeile darüber wechselt '+
+           'Probetraining und Dokumente. Die Zeile darüber wechselt '+
            'zwischen ihnen.' },
-    { view:'loesungen', ziel:'#view-loesungen .view-head, #view-loesungen',
-      titel:'Lösungen: was schon einmal jemand herausgefunden hat',
-      text:'Ein Gerät piept, ein Ablauf klemmt? Hier steht, was beim letzten '+
-           'Mal geholfen hat — und hier schreibst du es auf, wenn du es '+
-           'herausgefunden hast.' },
+    /* Der Rettungsring steht in der Kopfzeile und ist damit von JEDER
+       Seite aus zu sehen — deshalb bleibt die Führung hier stehen, wo
+       sie gerade ist, statt vorher irgendwohin zu wechseln. */
+    { ziel:'#hilfeBtn',
+      titel:'Hilfe im Studio: 115 Probleme, Schritt für Schritt',
+      text:'Gerät piept, Handtücher alle, Kunde kommt nicht? Hier drückst '+
+           'du und tippst in eigenen Worten, was los ist. Was du selbst '+
+           'herausfindest, hältst du an derselben Stelle fest.' },
     { view:'chat', ziel:'.mobnav [data-group="g-komm"], #side [data-group="g-komm"]',
       titel:'Nachrichten',
       text:'Teamchat je Studio, Direktnachrichten an einzelne Personen und '+
@@ -16259,334 +16411,944 @@ function tourEnde(fertig){
   else bind();
 })();
 
-/* ══ LÖSUNGEN ════════════════════════════════════════════════════════
-   Probleme aus dem Studio und was dagegen hilft. Aufbau wie bei den
-   Dokumenten: der Text steht in `loesungen`, jedes Foto als eigenes
-   Dokument in `loesungBilder`.
+/* ══ HILFE IM STUDIO ═════════════════════════════════════════════════
+   Aus dem Betrieb, 22.9.2026:
+     „kannst du diesen lösungen bereich ganz wo andern hinpacken
+      irgendwie oben oder so das man auf einen knopf drückt und dann
+      wird gefragt was das problem ist und die probleme sind dann nach
+      key wörtern sortiert … oder man kann direkt selber die ganze
+      liste durchgehen … sorge dafür das man schon erstellte sachen
+      auch bearbeiten und/oder bilder hinzufügen kann."
 
-   WARUM JEDES FOTO EIN EIGENES DOKUMENT IST: ein Firestore-Dokument
-   darf 1 MB tragen. Ein Eintrag mit drei Fotos im selben Dokument
-   sprengt das — und zwar erst beim dritten, also lange nachdem jemand
-   geglaubt hat, es funktioniere. Getrennt kann es das nicht.
+   ── DREI WEGE ZUM SELBEN INHALT ────────────────────────────────────
+   Menschen suchen verschieden, und wer ein Problem hat, sucht anders
+   als wer stöbert:
+     tippen      „gerät piept" → Treffer, nach Stichwörtern gewichtet
+     blättern    vierzehn Kacheln, eine je Kategorie
+     alles       die ganze Liste, Nummer für Nummer
 
-   WARUM DIE LISTE DIE FOTOS NICHT LÄDT: eine Liste mit dreissig
-   Einträgen zu je drei Fotos wären neunzig Lesevorgänge und ein paar
-   Megabyte, jedes Mal beim Öffnen. Geladen wird erst, wenn jemand
-   einen Eintrag aufklappt.
+   ── ES IST KEINE KI ────────────────────────────────────────────────
+   Es ist eine Stichwortsuche mit Synonymen, die einen Tippfehler
+   verzeiht. Sie läuft im Gerät, kostet nichts und geht ohne Netz. Das
+   steht auch so im Fenster. „KI" auf etwas zu schreiben, das keine
+   ist, wäre eine Zusage über eine Fähigkeit, die es nicht gibt — und
+   jemand, der ihr vertraut, tippt einen ganzen Satz ein und bekommt
+   nichts.
 
-   FÜR DIE GANZE FIRMA LESBAR, mit Studio-Marke. Das ist eine bewusste
-   Entscheidung und dieselbe wie bei Aufgaben, Putzplan und Geräten:
-   ein Problem, das in Rondorf auftrat, hilft in Brühl genauso weiter.
-   Die Studio-Angabe sagt, wo es herkommt — sie ist keine Schranke.
-   Siehe BEKANNTE-PROBLEME.md, P-01. */
-var LOES_KATS = [
-  {id:'geraet',   name:'Gerät',     ico:ikon('hantel')},
-  {id:'technik',  name:'Technik',   ico:ikon('werkzeug')},
-  {id:'ablauf',   name:'Ablauf',    ico:ikon('wiederholen')},
-  {id:'kunde',    name:'Kunde',     ico:ikon('person')},
-  {id:'sonstig',  name:'Sonstiges', ico:ikon('paket')}
+   ── ZWEI QUELLEN, EINE LISTE ───────────────────────────────────────
+   Der Grundstock (115 Einträge) liegt als Datei: loesungen-basis.js.
+   Er kostet keinen einzigen Lesevorgang und ist auch offline da.
+   Alles, was im Studio dazukommt oder geändert wird, steht in der
+   Sammlung `loesungen` — samt Fotos in `loesungBilder`, je Foto ein
+   eigenes Dokument (ein Firestore-Dokument trägt 1 MB; drei Fotos im
+   selben sprengen das, und zwar erst beim dritten).
+
+   Wer einen Eintrag aus dem Handbuch ändert, legt einen EIGENEN
+   Datensatz an, der auf ihn zeigt (Feld `basis`). Die App zeigt dann
+   den eigenen. Das Handbuch bleibt unangetastet, und nur geänderte
+   Einträge kosten etwas.
+
+   ── FÜR DIE GANZE FIRMA LESBAR ─────────────────────────────────────
+   Dieselbe bewusste Entscheidung wie bei Aufgaben, Putzplan und
+   Geräten: ein Problem, das in Rondorf auftrat, hilft in Brühl
+   genauso weiter. Die Studio-Angabe sagt, wo es herkommt — sie ist
+   keine Schranke. Siehe BEKANNTE-PROBLEME.md, P-01. */
+
+var HILFE_KATS = [
+  {id:'kunde',       name:'Kunde',               ico:'person'},
+  {id:'geraet',      name:'Gerät & Elektroden',  ico:'hantel'},
+  {id:'hygiene',     name:'Hygiene',             ico:'tropfen'},
+  {id:'waesche',     name:'Wäsche',              ico:'archiv'},
+  {id:'lager',       name:'Lager & Nachschub',   ico:'paket'},
+  {id:'termin',      name:'Termine',             ico:'kalender'},
+  {id:'team',        name:'Team & Abläufe',      ico:'leute'},
+  {id:'gebaeude',    name:'Gebäude',             ico:'gebaeude'},
+  {id:'sicherheit',  name:'Sicherheit',          ico:'schild'},
+  {id:'datenschutz', name:'Datenschutz',         ico:'schloss'},
+  {id:'verkauf',     name:'Verkauf & Beratung',  ico:'wagen'},
+  {id:'routine',     name:'Öffnen & Schliessen', ico:'wiederholen'},
+  {id:'technik',     name:'App & Software',      ico:'werkzeug'},
+  {id:'sonstig',     name:'Sonstiges',           ico:'kompass'}
 ];
-/* Zeilenumbrüche bleiben, Links werden anklickbar — eine Lösung
-   verweist oft auf eine Anleitung. esc() zuerst, linkify danach:
-   umgekehrt käme fremder Text in die erzeugten Verweise. */
-function loesText(t){
-  /* Dieselbe Kette wie im Chat, in den Übergaben und am Brett:
-     esc → linkify → markMentions. `markMentions` gehörte beim ersten
-     Anlauf nicht dazu, und test-erwaehnungen hat das gemeldet — es
-     prüft genau diese Regel: JEDER von Menschen geschriebene Text geht
-     durch dieselbe Kette. Eine Lösung, in der „@Tobias weiss mehr
-     dazu" steht, soll Tobias auch erwähnen. */
+/* Die fünf Kategorien der ersten Fassung gibt es als Daten noch — in
+   jedem Eintrag, den jemand vor heute angelegt hat. `ablauf` heisst
+   jetzt `routine`; die übrigen drei heissen gleich. Ohne diese Zeile
+   fielen alte Einträge unter „Sonstiges", ohne dass es auffiele. */
+var HILFE_ALT_KAT = { ablauf:'routine' };
+
+function hilfeKat(id){
+  var k = HILFE_ALT_KAT[id] || id;
+  for(var i=0;i<HILFE_KATS.length;i++){ if(HILFE_KATS[i].id===k) return HILFE_KATS[i]; }
+  return HILFE_KATS[HILFE_KATS.length-1];        // Sonstiges
+}
+function hilfeKatId(id){ return hilfeKat(id).id; }
+function hilfeKatName(id){ return hilfeKat(id).name; }
+
+/* Dieselbe Kette wie im Chat, in den Übergaben und am Brett:
+   esc → linkify → markMentions. `markMentions` gehörte beim ersten
+   Anlauf nicht dazu, und test-erwaehnungen hat das gemeldet — es
+   prüft genau diese Regel: JEDER von Menschen geschriebene Text geht
+   durch dieselbe Kette. Eine Lösung, in der „@Tobias weiss mehr dazu"
+   steht, soll Tobias auch erwähnen. */
+function hilfeText(t){
   return markMentions(linkify(esc(String(t||'')))).replace(/\n/g,'<br/>');
 }
-function loesKatName(id){
-  for(var i=0;i<LOES_KATS.length;i++){ if(LOES_KATS[i].id===id) return LOES_KATS[i].name; }
-  return 'Sonstiges';
-}
-var _loesUnsub=null, _loes=[], _loesKat='alle', _loesSuche='';
-var _loesNeuBilder=[];      // data-URLs, noch nicht gespeichert
-var _loesBildCache={};      // id → data-URL, einmal geladen
-var _loesOffen={};          // welche Einträge aufgeklappt sind
-var _loesUiGebunden=false;
-var LOES_MAX_BILDER=3;
+/* Der alte Name. Er steht noch in der Sicherung und in älteren
+   Prüfungen; hier bleibt eine Zeile, statt an fünf Stellen zu
+   suchen. */
+function loesText(t){ return hilfeText(t); }
 
-function ensureLoesungenLoaded(){
-  if(_loesUnsub) return;
-  _loesUnsub=S('loesungen').orderBy('ts','desc').limit(300)
+/* ── Die Suche ─────────────────────────────────────────────────────
+   Umlaute werden aufgelöst, nicht entfernt: „gerät" und „geraet"
+   sollen dasselbe finden, und auf einer Handytastatur schreibt in der
+   Eile niemand den Umlaut. */
+function hilfeNorm(s){
+  return String(s||'').toLowerCase()
+    .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
+    .replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
+}
+/* Wörter, die in fast jedem Eintrag stehen. Ohne diese Liste bringt
+   „gerät geht nicht" dieselben 115 Treffer wie „nicht". */
+var HILFE_STOPP = ('der die das ein eine einer einem einen und oder ist sind war ' +
+  'im in am an auf mit von vom zu zum zur es der den dem des ich wir man was wie ' +
+  'bei nicht kein keine hat habe haben sich sie er sein seine aber noch mehr sehr ' +
+  'dass wenn als auch nur schon wird werden kann koennen muss').split(' ');
+
+/* Andere Wörter für dasselbe. Jede Gruppe gilt in beide Richtungen —
+   wer „kaputt" tippt, findet „defekt" und umgekehrt. Einzelwörter,
+   keine Wendungen: gesucht wird Wort für Wort. */
+var HILFE_WORTGRUPPEN = [
+  ['kaputt','defekt','beschaedigt','hinueber','kaput'],
+  ['piept','piepst','ton','signal','alarm','geraeusch','laerm'],
+  ['dreckig','schmutzig','verschmutzt','verdreckt','sauber','reinigen','putzen','wischen'],
+  ['klo','toilette','wc','bad','sanitaer'],
+  ['handtuch','handtuecher','papierhandtuch','papierhandtuecher','tuch'],
+  ['waesche','waschen','wasch','trainingswaesche','klamotten','anzug','anzuege','kleidung'],
+  ['strom','steckdose','sicherung','stromausfall','elektrik','spannung'],
+  ['wlan','internet','netz','wifi','router','verbindung','online'],
+  ['licht','lampe','birne','beleuchtung','dunkel'],
+  ['musik','anlage','lautsprecher','boxen','sound','radio'],
+  ['tuer','schloss','schluessel','abschliessen','aufschliessen','zutritt','access'],
+  ['kunde','kundin','gast','mitglied','teilnehmer','trainierende'],
+  ['termin','buchung','stunde','training','einheit','slot'],
+  ['spaet','verspaetet','verspaetung','zuspaet'],
+  ['abgesagt','absage','absagen','storniert','stornieren','abgemeldet'],
+  ['elektrode','elektroden','kontakt','kontakte','pads','weste'],
+  ['kabel','stecker','anschluss','leitung','buchse'],
+  ['leer','aufgebraucht','nachbestellen','ausgegangen','nachfuellen','nachschub'],
+  ['notfall','unfall','verletzt','verletzung','sanitaeter','kreislauf','ohnmacht'],
+  ['feuer','brand','feuerloescher','rauch','brandschutz'],
+  ['datenschutz','daten','dsgvo','vertraulich','privat','auskunft'],
+  ['app','software','programm','system','rechner','computer','pc','tablet','ipad'],
+  ['kollege','kollegin','mitarbeiter','schicht','uebergabe'],
+  ['preis','kosten','vertrag','abo','verkauf','kaufen','abschluss','angebot'],
+  ['muell','abfall','muelleimer','muellbeutel','entsorgen'],
+  ['desinfektion','desinfizieren','desinfektionsmittel','hygiene','keime'],
+  ['boden','fussboden','teppich','matte'],
+  ['schwitzen','schweiss','nass','feucht','klamm'],
+  ['laden','akku','batterie','aufladen','geladen','ladestation'],
+  ['heizung','klima','warm','kalt','temperatur','lueftung'],
+  ['wasser','spender','trinken','leitung','glas'],
+  ['spiegel','fenster','scheibe','glas'],
+  ['dokument','unterlage','papier','formular','vertragsblatt'],
+  ['anmeldung','anmelden','neukunde','registrieren','aufnehmen']
+];
+var _hSyn = null;
+function hilfeSynonyme(w){
+  if(!_hSyn){
+    _hSyn = {};
+    HILFE_WORTGRUPPEN.forEach(function(gruppe){
+      gruppe.forEach(function(wort){
+        _hSyn[wort] = (_hSyn[wort]||[]).concat(gruppe.filter(function(x){ return x!==wort; }));
+      });
+    });
+  }
+  return _hSyn[w] || [];
+}
+
+/* Ein Tippfehler. Nicht mehr: bei zwei Fehlern findet man auch Wörter,
+   die niemand gemeint hat, und das ist schlimmer als kein Treffer —
+   wer nichts findet, sucht anders; wer Falsches findet, glaubt es. */
+function hilfeFastGleich(a,b){
+  if(a===b) return true;
+  var la=a.length, lb=b.length;
+  if(Math.abs(la-lb)>1) return false;
+  var i=0, j=0, fehler=0;
+  while(i<la && j<lb){
+    if(a.charAt(i)===b.charAt(j)){ i++; j++; continue; }
+    if(++fehler>1) return false;
+    if(la>lb) i++; else if(lb>la) j++; else { i++; j++; }
+  }
+  if(i<la || j<lb) fehler++;
+  return fehler<=1;
+}
+/* 1 volles Wort · 0,75 Wortanfang · 0,5 ein Tippfehler daneben. */
+function hilfeTrifft(feld, w){
+  var worte = feld.split(' '), i;
+  for(i=0;i<worte.length;i++){ if(worte[i]===w) return 1; }
+  if(w.length>=4){
+    for(i=0;i<worte.length;i++){
+      if(worte[i].indexOf(w)===0) return 0.75;
+      if(worte[i].length>=4 && w.indexOf(worte[i])===0) return 0.75;
+    }
+  }
+  if(w.length>=5){
+    for(i=0;i<worte.length;i++){ if(hilfeFastGleich(worte[i],w)) return 0.5; }
+  }
+  return 0;
+}
+/* Titel schlägt Stichwort schlägt Fliesstext. Ein Wort im Titel ist
+   fast immer das, was gemeint war; dasselbe Wort irgendwo im fünften
+   Schritt meistens nicht. */
+function hilfeFelder(e){
+  if(e._nt===undefined){
+    e._nt = hilfeNorm(e.titel);
+    e._ns = hilfeNorm((e.stich||'') + ' ' + hilfeKatName(e.kat));
+    e._nb = hilfeNorm((e.problem||'') + ' ' + (e.schritte||[]).join(' '));
+  }
+  return e;
+}
+function hilfeWortWert(e, w){
+  hilfeFelder(e);
+  return Math.max(hilfeTrifft(e._nt,w)*10, hilfeTrifft(e._ns,w)*6, hilfeTrifft(e._nb,w)*3);
+}
+function hilfeSuchWorte(text){
+  return hilfeNorm(text).split(' ').filter(function(w){
+    return w.length>=2 && HILFE_STOPP.indexOf(w)<0;
+  });
+}
+function hilfeSuchen(text){
+  var worte = hilfeSuchWorte(text);
+  if(!worte.length) return [];
+  var treffer = [];
+  hilfeAlleEintraege().forEach(function(e){
+    var punkte = 0;
+    worte.forEach(function(w){
+      var beste = hilfeWortWert(e, w);
+      /* Ein Synonym zählt weniger als das Wort selbst: wer „handtuch"
+         tippt, soll „Handtücher sammeln" vor „Wäsche noch nass"
+         bekommen, auch wenn beides passt. */
+      hilfeSynonyme(w).forEach(function(s){
+        beste = Math.max(beste, hilfeWortWert(e,s)*0.6);
+      });
+      punkte += beste;
+    });
+    if(punkte>0) treffer.push({ e:e, p:punkte });
+  });
+  treffer.sort(function(a,b){ return b.p-a.p || (a.e.nr||999)-(b.e.nr||999); });
+  return treffer.slice(0,14).map(function(t){ return t.e; });
+}
+
+/* ── Der Grundstock ────────────────────────────────────────────────
+   Erst beim ersten Öffnen geladen, nicht beim Start der App: 47 KB,
+   die die meisten Sitzungen nie brauchen. Danach liegt die Datei im
+   Zwischenspeicher des Browsers und im Arbeitsspeicher. */
+var _hBasis = [], _hBasisStand = '', _hBasisQuelle = '';
+var _hBasisStatus = 'leer';         // leer | laedt | da | fehler
+var _hBasisWarte = [];
+
+function hilfeBasisUebernehmen(){
+  var b = window.LOESUNGEN_BASIS || {};
+  _hBasisStand = b.stand || '';
+  _hBasisQuelle = b.quelle || '';
+  _hBasis = (b.eintraege||[]).map(function(x){
+    return { id:x.id, docId:null, basis:null, eigen:false, nr:x.nr,
+             kat:x.kat, titel:x.titel, problem:x.problem,
+             schritte:(x.schritte||[]).slice(), stich:x.stich||'',
+             bilder:[], studios:'all' };
+  });
+}
+function hilfeBasisLaden(){
+  return new Promise(function(fertig){
+    if(_hBasisStatus==='da' || _hBasisStatus==='fehler') return fertig();
+    _hBasisWarte.push(fertig);
+    if(_hBasisStatus==='laedt') return;
+    _hBasisStatus='laedt';
+    function durch(status){
+      _hBasisStatus=status;
+      if(status==='da') hilfeBasisUebernehmen();
+      var w=_hBasisWarte; _hBasisWarte=[];
+      w.forEach(function(f){ f(); });
+    }
+    if(window.LOESUNGEN_BASIS) return durch('da');
+    var s=document.createElement('script');
+    s.src='loesungen-basis.js';
+    s.onload=function(){ durch(window.LOESUNGEN_BASIS ? 'da' : 'fehler'); };
+    /* Der Fehler wird NICHT verschwiegen. Ohne die Datei fehlen 115
+       Einträge, und ein stilles „keine Treffer" liesse jeden glauben,
+       zu seinem Problem stehe nichts da. */
+    s.onerror=function(){ durch('fehler'); };
+    document.head.appendChild(s);
+  });
+}
+
+/* ── Die eigenen Einträge ──────────────────────────────────────────*/
+var _hUnsub=null, _hEigen=[], _hLadefehler='';
+function hilfeEigeneLaden(){
+  if(_hUnsub) return;
+  _hUnsub = S('loesungen').orderBy('ts','desc').limit(300)
     .onSnapshot(function(sn){
-      _loes=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
-      renderLoesungen();
+      _hEigen = sn.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      _hLadefehler='';
+      hilfeAuffrischen();
     }, function(e){
       console.warn('Lösungen:', e.message);
-      var box=$('loesListe');
-      /* Der Fehler gehört dorthin, wo die Liste wäre — nicht in einen
-         Toast, der nach drei Sekunden weg ist. Design-Ideen, Punkt 16. */
-      if(box) box.innerHTML='<div class="empty"><h3>Die Liste lässt sich gerade nicht laden.</h3>'+
-        '<p>'+esc(errMsg(e))+'</p></div>';
+      _hLadefehler = errMsg(e);
+      hilfeAuffrischen();
     });
 }
-
-function loesSichtbar(l){
+function hilfeSichtbar(l){
   if(l.studios==='all' || !l.studios) return true;
   if(session && session.role==='chef') return true;
   return Array.isArray(l.studios) && l.studios.some(function(k){
-    return (session.studioKeys||[]).indexOf(k)>=0;
+    return ((session&&session.studioKeys)||[]).indexOf(k)>=0;
   });
 }
-function loesStudioText(l){
-  if(l.studios==='all' || !l.studios) return 'Alle Studios';
-  return l.studios.map(studioName).join(', ');
+function hilfeStudioText(e){
+  if(e.studios==='all' || !e.studios) return 'Alle Studios';
+  return e.studios.map(studioName).join(', ');
 }
 /* Darf ich diesen Eintrag ändern? Der Verfasser und die Verwaltung —
    sonst niemand. Eine Lösung, die jeder überschreiben kann, ist nach
-   einem halben Jahr keine Lösung mehr. */
-function loesMeins(l){
-  return !!session && (session.role==='chef' || canManage() || l.uid===session.uid);
+   einem halben Jahr keine mehr; eine, die niemand berichtigen darf,
+   wird falsch und bleibt es. Dieselbe Grenze steht in firestore.rules;
+   hier steht sie nur, damit kein Knopf dasteht, der scheitert. */
+function hilfeMeins(e){
+  if(!e.eigen) return true;                      // Handbuch: jeder darf ergänzen
+  return !!session && (session.role==='chef' || canManage() || e.uid===session.uid);
+}
+function hilfeAusEigen(l, basis){
+  var schritte = (Array.isArray(l.schritte) && l.schritte.length) ? l.schritte.slice()
+    : String(l.loesung||'').split('\n').map(function(z){ return z.trim(); })
+        .filter(function(z){ return !!z; });
+  return {
+    id: l.basis || l.id, docId: l.id, basis: l.basis || null, eigen: true,
+    nr: basis ? basis.nr : 0,
+    kat: hilfeKatId(l.kategorie),
+    titel: l.titel || (basis ? basis.titel : 'Ohne Titel'),
+    problem: l.problem || '',
+    schritte: schritte,
+    stich: basis ? basis.stich : '',
+    bilder: l.bilder || [],
+    studios: l.studios || 'all',
+    uid: l.uid, vonName: l.vonName, ts: l.ts,
+    geaendertVon: l.geaendertVon || '', geaendertAm: l.geaendertAm || 0
+  };
+}
+/* Grundstock und Studio in EINER Liste. Wer einen Handbuch-Eintrag
+   geändert hat, sieht seine Fassung — nicht beide nebeneinander. */
+function hilfeAlleEintraege(){
+  var nachBasis = {}, eigene = [];
+  _hEigen.forEach(function(l){
+    if(l.basis) nachBasis[l.basis] = l; else eigene.push(l);
+  });
+  var liste = [];
+  _hBasis.forEach(function(b){
+    var o = nachBasis[b.id];
+    liste.push(o ? hilfeAusEigen(o, b) : b);
+  });
+  eigene.filter(hilfeSichtbar).forEach(function(o){
+    liste.push(hilfeAusEigen(o, null));
+  });
+  return liste;
+}
+function hilfeFinden(id){
+  var alle = hilfeAlleEintraege();
+  for(var i=0;i<alle.length;i++){ if(alle[i].id===id) return alle[i]; }
+  return null;
 }
 
-function buildLoesKatRow(){
-  var row=$('loesKatRow'); if(!row) return;
-  var alle=[{id:'alle',name:'Alle'}].concat(LOES_KATS);
-  row.innerHTML=alle.map(function(k){
-    return '<button type="button" class="chip'+(_loesKat===k.id?' an':'')+
-      '" data-loeskat="'+esc(k.id)+'">'+esc(k.name)+'</button>';
-  }).join('');
-  row.querySelectorAll('[data-loeskat]').forEach(function(b){
-    b.addEventListener('click',function(){
-      _loesKat=b.getAttribute('data-loeskat');
-      buildLoesKatRow(); renderLoesungen(); tick(6);
+/* ── Das Fenster ───────────────────────────────────────────────────*/
+var _hAn=false, _hAnsicht='start', _hOffen='', _hListeTitel='', _hListe=[];
+/* Woher der offene Eintrag angeklickt wurde. „Zurück“ muss dorthin
+   führen, wo man herkam — wer aus der Trefferliste heraus liest und
+   danach in einer Kategorie von vorhin landet, hat seine Suche
+   verloren und tippt sie noch einmal. */
+var _hVon='start';
+var _hSuche='', _hBildCache={}, _hGebunden=false;
+var _hFormFuer=null, _hNeueBilder=[], _hAltBilder=[], _hWegBilder=[];
+var HILFE_MAX_BILDER = 3;
+
+function hilfeOeffnen(){
+  var box=$('hilfe'); if(!box) return;
+  _hAn=true; box.classList.add('show');
+  hilfeEigeneLaden();
+  hilfeStartZeigen();
+  hilfeBasisLaden().then(function(){ if(_hAn) hilfeAuffrischen(); });
+  /* Auf dem Rechner sofort in das Feld; auf dem Telefon NICHT — dort
+     springt sonst die Tastatur hoch und verdeckt die Kacheln, bevor
+     man sie gesehen hat. */
+  if(window.matchMedia && window.matchMedia('(hover:hover)').matches){
+    setTimeout(function(){ var f=$('hilfeSuche'); if(f) f.focus(); }, 60);
+  }
+}
+function hilfeSchliessen(){
+  var box=$('hilfe'); if(!box) return;
+  _hAn=false; box.classList.remove('show');
+}
+function hilfePane(welche){
+  _hAnsicht = welche;
+  [['hilfeSuchTeil','start'],['hilfeListe','liste'],
+   ['hilfeEintrag','eintrag'],['hilfeForm','form']].forEach(function(p){
+    var el=$(p[0]); if(el) el.style.display = (p[1]===welche ? '' : 'none');
+  });
+  var b=$('hilfeBody'); if(b) b.scrollTop=0;
+}
+/* Nach jeder Änderung an den Daten: die offene Ansicht neu zeichnen,
+   ohne den Platz zu wechseln. Wer gerade einen Eintrag liest, soll
+   nicht auf die Startseite geworfen werden, weil jemand anders etwas
+   gespeichert hat. */
+function hilfeAuffrischen(){
+  if(!_hAn) return;
+  if(_hAnsicht==='start') hilfeStartZeichnen();
+  else if(_hAnsicht==='liste') hilfeListeZeichnen();
+  else if(_hAnsicht==='eintrag') hilfeEintragZeichnen();
+}
+
+function hilfeStartZeigen(){
+  hilfePane('start');
+  hilfeStartZeichnen();
+}
+function hilfeStartZeichnen(){
+  var kats=$('hilfeKats');
+  if(kats){
+    var alle=hilfeAlleEintraege(), zahl={};
+    alle.forEach(function(e){ zahl[e.kat]=(zahl[e.kat]||0)+1; });
+    kats.innerHTML=HILFE_KATS.filter(function(k){
+      /* „Sonstiges" nur, wenn wirklich etwas darin liegt — eine leere
+         Kachel ist eine Sackgasse mit Beschriftung. */
+      return k.id!=='sonstig' || zahl[k.id];
+    }).map(function(k){
+      return '<button type="button" class="hilfe-kat" data-hkat="'+esc(k.id)+'">'+
+        ikon(k.ico)+'<span>'+esc(k.name)+'</span>'+
+        '<i>'+(zahl[k.id]||0)+'</i></button>';
+    }).join('');
+    kats.querySelectorAll('[data-hkat]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var id=b.getAttribute('data-hkat');
+        hilfeListeZeigen(hilfeKatName(id), hilfeAlleEintraege().filter(function(e){
+          return e.kat===id;
+        }));
+      });
     });
-  });
+  }
+  var stand=$('hilfeStand');
+  if(stand){
+    if(_hBasisStatus==='fehler'){
+      stand.innerHTML='<b>Das Handbuch liess sich nicht laden.</b> Es fehlen '+
+        'die 115 Einträge daraus; was das Team selbst festgehalten hat, ist da. '+
+        'Nochmal öffnen hilft meistens.';
+    } else if(_hBasisStatus==='da'){
+      var eigen=hilfeAlleEintraege().length-_hBasis.length;
+      stand.textContent=_hBasis.length+' Einträge aus dem Handbuch'+
+        (eigen>0 ? ' · '+eigen+(eigen===1?' eigener':' eigene')+' aus dem Studio' : '')+
+        (_hBasisStand ? ' · Stand '+_hBasisStand : '');
+    } else {
+      stand.textContent='Handbuch wird geladen …';
+    }
+  }
+  var treffer=$('hilfeTreffer');
+  if(treffer) hilfeTrefferZeichnen();
 }
 
-function renderLoesungen(){
-  var box=$('loesListe'); if(!box) return;
-  buildLoesKatRow();
-  var such=(_loesSuche||'').trim().toLowerCase();
-  var liste=_loes.filter(loesSichtbar).filter(function(l){
-    if(_loesKat!=='alle' && (l.kategorie||'sonstig')!==_loesKat) return false;
-    if(!such) return true;
-    return ((l.titel||'')+' '+(l.problem||'')+' '+(l.loesung||'')).toLowerCase().indexOf(such)>=0;
-  });
-  if(!liste.length){
-    /* Leere Zustände mit nächstem Schritt, Design-Ideen Punkt 14:
-       eine Feststellung hilft niemandem weiter. */
-    box.innerHTML='<div class="empty"><h3>'+
-      (such||_loesKat!=='alle' ? 'Dazu steht noch nichts hier.'
-                               : 'Noch keine Lösung festgehalten.')+'</h3>'+
-      '<p>Das erste Mal, dass jemand ein Problem löst, ist die beste '+
-      'Gelegenheit, es aufzuschreiben.</p></div>';
+/* Die Trefferliste unter dem Suchfeld. Der untere Teil (Kacheln,
+   „alle durchgehen") verschwindet, solange getippt wird — sonst steht
+   die Antwort über einer Wand aus Angeboten. */
+function hilfeTrefferZeichnen(){
+  var box=$('hilfeTreffer'), start=$('hilfeStart');
+  if(!box) return;
+  var worte=hilfeSuchWorte(_hSuche);
+  if(!worte.length){
+    box.innerHTML=''; if(start) start.style.display='';
     return;
   }
-  box.innerHTML=liste.map(function(l){
-    var auf=!!_loesOffen[l.id];
-    var bilder=(l.bilder||[]);
-    return '<div class="card loes-karte'+(auf?' auf':'')+'" data-loes="'+esc(l.id)+'">'+
-      '<button type="button" class="loes-kopf" data-loesauf="'+esc(l.id)+'">'+
-        '<span class="loes-titel"><b>'+esc(l.titel||'Ohne Titel')+'</b>'+
-          '<i>'+esc(loesKatName(l.kategorie))+' · '+esc(loesStudioText(l))+
-          (bilder.length ? ' · '+bilder.length+(bilder.length===1?' Foto':' Fotos') : '')+'</i></span>'+
-        /* Immer dasselbe Zeichen, gedreht statt getauscht. `▾` steht in
-           dieser App schon als Auf/Zu-Marke und ist ein einfarbiges
-           Textzeichen, kein Emoji — `▴` wäre ein zweites gewesen, und
-           test-gestaltung hat es sofort gemeldet. Gedreht gibt es
-           obendrein eine Bewegung, die sagt, was passiert. */
-        '<span class="loes-pfeil">▾</span>'+
-      '</button>'+
-      (auf ? '<div class="loes-inhalt">'+
-        (l.problem ? '<p class="loes-abschnitt"><b>Das Problem</b>'+loesText(l.problem)+'</p>' : '')+
-        (l.loesung ? '<p class="loes-abschnitt"><b>Was hilft</b>'+loesText(l.loesung)+'</p>' : '')+
-        (bilder.length ? '<div class="loes-bilder" data-loesbilder="'+esc(l.id)+'">'+
-           bilder.map(function(bid){
-             var d=_loesBildCache[bid];
-             return d ? '<img class="loes-bild" src="'+esc(d)+'" alt="Foto zur Lösung" />'
-                      : '<div class="loes-bild leer-bild">lädt …</div>';
-           }).join('')+'</div>' : '')+
-        '<p class="loes-fuss">'+esc(l.vonName||'Unbekannt')+
-          (l.ts ? ' · '+new Date(l.ts).toLocaleDateString('de-DE') : '')+'</p>'+
-        (loesMeins(l) ? '<button type="button" class="btn btn-danger btn-sm" '+
-          'data-loesweg="'+esc(l.id)+'">Löschen</button>' : '')+
-      '</div>' : '')+
-    '</div>';
-  }).join('');
-
-  box.querySelectorAll('[data-loesauf]').forEach(function(b){
-    b.addEventListener('click',function(){
-      var id=b.getAttribute('data-loesauf');
-      _loesOffen[id]=!_loesOffen[id];
-      renderLoesungen(); tick(6);
-      if(_loesOffen[id]) loesBilderLaden(id);
+  if(start) start.style.display='none';
+  var t=hilfeSuchen(_hSuche);
+  if(!t.length){
+    box.innerHTML='<div class="empty"><h3>Dazu steht noch nichts hier.</h3>'+
+      '<p>Versuch ein einzelnes Wort — „elektrode", „wäsche", „wlan". '+
+      'Oder halte es selbst fest, wenn du es gelöst hast.</p>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-hneu="1">'+
+      'Eigene Lösung festhalten</button></div>';
+  } else {
+    box.innerHTML='<p class="hilfe-ueber">'+t.length+
+      (t.length===1?' Treffer':' Treffer')+'</p>'+
+      '<div class="hilfe-liste">'+t.map(hilfeZeile).join('')+'</div>';
+  }
+  hilfeZeilenBinden(box, 'start');
+}
+function hilfeZeile(e){
+  var k=hilfeKat(e.kat);
+  var unter=k.name+
+    (e.bilder && e.bilder.length ? ' · '+e.bilder.length+(e.bilder.length===1?' Foto':' Fotos') : '')+
+    (e.eigen ? (e.basis ? ' · geändert' : ' · aus dem Studio') : '');
+  return '<button type="button" class="hilfe-zeile" data-heintrag="'+esc(e.id)+'">'+
+    ikon(k.ico)+
+    '<span class="hilfe-ztxt"><b>'+esc(e.titel)+'</b><i>'+esc(unter)+'</i></span>'+
+    '<span class="al-pfeil">›</span></button>';
+}
+function hilfeZeilenBinden(box, von){
+  box.querySelectorAll('[data-heintrag]').forEach(function(b){
+    b.addEventListener('click', function(){
+      _hVon = von || 'start';
+      hilfeEintragZeigen(b.getAttribute('data-heintrag'));
     });
   });
-  box.querySelectorAll('[data-loesweg]').forEach(function(b){
-    b.addEventListener('click',function(){ loesungLoeschen(b.getAttribute('data-loesweg')); });
+  box.querySelectorAll('[data-hneu]').forEach(function(b){
+    b.addEventListener('click', function(){ hilfeFormZeigen(null); });
   });
 }
 
-/* Fotos erst beim Aufklappen. Einmal geladen, bleiben sie im Speicher —
-   wer zweimal hinsieht, zahlt nicht zweimal. */
-function loesBilderLaden(id){
-  var l=null;
-  for(var i=0;i<_loes.length;i++){ if(_loes[i].id===id) l=_loes[i]; }
-  if(!l || !(l.bilder||[]).length) return;
-  var offen=l.bilder.filter(function(b){ return !_loesBildCache[b]; });
+/* ── Eine Liste: eine Kategorie oder alles ─────────────────────────*/
+function hilfeListeZeigen(titel, eintraege){
+  _hListeTitel=titel;
+  _hListe=eintraege.map(function(e){ return e.id; });
+  hilfePane('liste');
+  hilfeListeZeichnen();
+}
+function hilfeListeZeichnen(){
+  var box=$('hilfeListe'); if(!box) return;
+  var alle=hilfeAlleEintraege(), nachId={};
+  alle.forEach(function(e){ nachId[e.id]=e; });
+  var liste=_hListe.map(function(id){ return nachId[id]; })
+                   .filter(function(e){ return !!e; });
+  box.innerHTML=
+    '<button type="button" class="hilfe-zurueck" data-hzurueck="start">‹ Zurück</button>'+
+    '<h3 class="hilfe-frage">'+esc(_hListeTitel)+'</h3>'+
+    '<p class="hint">'+liste.length+(liste.length===1?' Eintrag':' Einträge')+
+    ' · von oben nach unten durchgehen</p>'+
+    '<div class="hilfe-liste">'+liste.map(hilfeZeile).join('')+'</div>';
+  hilfeZeilenBinden(box, 'liste');
+  hilfeZurueckBinden(box);
+}
+function hilfeZurueckBinden(box){
+  box.querySelectorAll('[data-hzurueck]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var wohin=b.getAttribute('data-hzurueck');
+      if(wohin==='start') hilfeStartZeigen();
+      else if(wohin==='liste' && _hListe.length) { hilfePane('liste'); hilfeListeZeichnen(); }
+      else hilfeStartZeigen();
+    });
+  });
+}
+
+/* ── Ein Eintrag, Schritt für Schritt ──────────────────────────────*/
+function hilfeEintragZeigen(id){
+  _hOffen=id;
+  hilfePane('eintrag');
+  hilfeEintragZeichnen();
+  hilfeBilderLaden(id);
+}
+function hilfeEintragZeichnen(){
+  var box=$('hilfeEintrag'); if(!box) return;
+  var e=hilfeFinden(_hOffen);
+  if(!e){
+    box.innerHTML='<button type="button" class="hilfe-zurueck" data-hzurueck="start">‹ Zurück</button>'+
+      '<div class="empty"><h3>Dieser Eintrag ist nicht mehr da.</h3>'+
+      '<p>Jemand hat ihn gerade gelöscht.</p></div>';
+    hilfeZurueckBinden(box);
+    return;
+  }
+  var k=hilfeKat(e.kat);
+  var zurueck=(_hVon==='liste' && _hListe.length) ? 'liste' : 'start';
+  var darf=hilfeMeins(e);
+  var fuss;
+  if(!e.eigen){
+    fuss='Aus dem Handbuch'+(_hBasisQuelle ? ' — '+esc(_hBasisQuelle) : '')+
+         (_hBasisStand ? ' · Stand '+esc(_hBasisStand) : '');
+  } else if(e.basis){
+    fuss='Im Studio geändert von '+esc(e.vonName||'Unbekannt')+
+         (e.ts ? ' · '+esc(fmtDateTime(e.ts)) : '')+
+         (e.nr ? ' · Grundlage: Handbuch Nr. '+e.nr : '');
+  } else {
+    fuss='Festgehalten von '+esc(e.vonName||'Unbekannt')+
+         (e.ts ? ' · '+esc(fmtDateTime(e.ts)) : '')+
+         ' · '+esc(hilfeStudioText(e));
+  }
+  if(e.geaendertVon) fuss+=' · zuletzt berichtigt von '+esc(e.geaendertVon)+
+    (e.geaendertAm ? ' am '+esc(fmtDateTime(e.geaendertAm)) : '');
+
+  box.innerHTML=
+    '<button type="button" class="hilfe-zurueck" data-hzurueck="'+zurueck+'">‹ Zurück</button>'+
+    '<h3>'+esc(e.titel)+'</h3>'+
+    '<div class="hilfe-marken">'+
+      '<span class="hilfe-marke">'+ikon(k.ico)+esc(k.name)+'</span>'+
+      (e.nr ? '<span class="hilfe-marke grau">Nr. '+e.nr+'</span>' : '')+
+      (e.eigen
+        ? '<span class="hilfe-marke grau">'+(e.basis?'geändert':'aus dem Studio')+'</span>'
+        : '<span class="hilfe-marke grau">Handbuch</span>')+
+      (e.eigen && !e.basis && e.studios!=='all'
+        ? '<span class="hilfe-marke grau">'+esc(hilfeStudioText(e))+'</span>' : '')+
+    '</div>'+
+    (e.problem ? '<p class="hilfe-problem">'+hilfeText(e.problem)+'</p>' : '')+
+    (e.schritte.length
+      ? '<div class="hilfe-schritte">'+e.schritte.map(function(s){
+          return '<div class="hilfe-schritt"><span>'+hilfeText(s)+'</span></div>';
+        }).join('')+'</div>'
+      : '<p class="hint">Zu diesem Eintrag stehen noch keine Schritte da. '+
+        'Trag ein, was bei dir geholfen hat.</p>')+
+    (e.bilder.length
+      ? '<div class="hilfe-bilder">'+e.bilder.map(function(bid){
+          var d=_hBildCache[bid];
+          return d ? '<img class="hilfe-bild" src="'+esc(d)+'" alt="Foto zu: '+esc(e.titel)+'" />'
+                   : '<div class="hilfe-bild leer-bild">lädt …</div>';
+        }).join('')+'</div>'
+      : '')+
+    '<p class="hilfe-fuss">'+fuss+'</p>'+
+    '<div class="hilfe-knoepfe">'+
+      (darf
+        ? '<button type="button" class="btn btn-ghost btn-sm" data-hbearbeiten="1">'+
+          (e.bilder.length ? 'Bearbeiten' : 'Bearbeiten oder Foto anhängen')+'</button>'
+        : '')+
+      (darf && e.eigen
+        ? '<button type="button" class="btn btn-danger btn-sm" data-hweg="1">'+
+          (e.basis ? 'Änderung verwerfen' : 'Löschen')+'</button>'
+        : '')+
+    '</div>'+
+    (darf ? '' : '<p class="hint">Diesen Eintrag hat '+esc(e.vonName||'jemand anderes')+
+      ' festgehalten. Ändern dürfen ihn '+esc(e.vonName||'die verfassende Person')+
+      ' und die Studioleitung.</p>');
+
+  hilfeZurueckBinden(box);
+  var bea=box.querySelector('[data-hbearbeiten]');
+  if(bea) bea.addEventListener('click', function(){ hilfeFormZeigen(e.id); });
+  var weg=box.querySelector('[data-hweg]');
+  if(weg) weg.addEventListener('click', function(){ hilfeLoeschen(e); });
+}
+
+/* Fotos erst beim Öffnen eines Eintrags. Einmal geladen, bleiben sie
+   im Speicher — wer zweimal hinsieht, zahlt nicht zweimal. */
+function hilfeBilderLaden(id){
+  var e=hilfeFinden(id);
+  if(!e || !e.bilder.length) return;
+  var offen=e.bilder.filter(function(b){ return !_hBildCache[b]; });
   if(!offen.length) return;
   Promise.all(offen.map(function(bid){
     return S('loesungBilder').doc(bid).get().then(function(d){
-      if(d.exists) _loesBildCache[bid]=(d.data()||{}).data||'';
-    }).catch(function(e){ console.warn('Foto:', e.message); });
-  })).then(function(){ if(_loesOffen[id]) renderLoesungen(); });
-}
-
-function loesVorschauZeichnen(){
-  var v=$('loesVorschau'); if(!v) return;
-  v.innerHTML=_loesNeuBilder.map(function(d,i){
-    return '<div class="loes-vor"><img src="'+esc(d)+'" alt="Vorschau" />'+
-      '<button type="button" class="mini-x" data-loesvorweg="'+i+'" '+
-      'aria-label="Foto entfernen">'+ikon('schliessen')+'</button></div>';
-  }).join('');
-  v.querySelectorAll('[data-loesvorweg]').forEach(function(b){
-    b.addEventListener('click',function(){
-      _loesNeuBilder.splice(Number(b.getAttribute('data-loesvorweg')),1);
-      loesVorschauZeichnen();
-    });
+      if(d.exists) _hBildCache[bid]=(d.data()||{}).data||'';
+    }).catch(function(err){ console.warn('Foto:', err.message); });
+  })).then(function(){
+    if(_hAn && _hAnsicht==='eintrag' && _hOffen===id) hilfeEintragZeichnen();
   });
-  var p=$('loesPick');
-  if(p) p.disabled=_loesNeuBilder.length>=LOES_MAX_BILDER;
 }
 
-function buildLoesUi(){
-  /* Die Studio-Kästchen werden bei jedem Aufruf neu gebaut, die Knöpfe
-     darunter nur einmal — sonst speichert ein Klick doppelt. Derselbe
-     Fehler ist bei den Dokumenten schon einmal passiert. */
-  var wrap=$('loesStudios');
+/* ── Bearbeiten und neu anlegen ────────────────────────────────────
+   Ein Formular für beides. Ein zweites für „neu" wäre dieselbe Maske
+   mit leeren Feldern — und eine zweite Stelle, an der ein Feld
+   fehlen kann. */
+function hilfeFormZeigen(id){
+  var e = id ? hilfeFinden(id) : null;
+  _hFormFuer = e;
+  _hNeueBilder = [];
+  _hAltBilder = e ? (e.bilder||[]).slice() : [];
+  _hWegBilder = [];
+  hilfePane('form');
+  hilfeFormZeichnen();
+}
+function hilfeFormZeichnen(){
+  var box=$('hilfeForm'); if(!box) return;
+  var e=_hFormFuer;
+  var zurueck = e ? 'eintrag' : ((_hVon==='liste' && _hListe.length) ? 'liste' : 'start');
+  var studioTeil='';
+  /* Die Studio-Frage nur bei eigenen Einträgen. Was aus dem Handbuch
+     kommt, gilt in jedem Studio; eine Frage, auf die es nur eine
+     Antwort gibt, ist keine Frage. */
+  if(!e || (!e.basis && e.eigen)){
+    var aus = e ? e.studios : 'all';
+    studioTeil=
+      '<div class="field"><label>Für welche Studios?</label>'+
+        '<label class="studio-check'+(aus==='all'?' on':'')+'" id="hilfeAllWrap">'+
+          '<input type="checkbox" id="hilfeAll"'+(aus==='all'?' checked':'')+' />'+
+          '<span><b>Alle Studios</b></span></label>'+
+        '<div class="studio-checks" id="hilfeStudios"></div></div>';
+  }
+  box.innerHTML=
+    '<button type="button" class="hilfe-zurueck" data-hzurueck="'+zurueck+'">‹ Zurück</button>'+
+    '<h3 class="hilfe-frage">'+(e ? 'Eintrag bearbeiten' : 'Eigene Lösung festhalten')+'</h3>'+
+    (e && !e.eigen
+      ? '<p class="hint">Das Handbuch bleibt, wie es ist. Deine Fassung legt '+
+        'sich darüber und gilt ab sofort für das ganze Team.</p>'
+      : '')+
+    '<div class="field"><label for="hilfeTitel">Worum geht es? (ein Satz)</label>'+
+      '<input class="inp" id="hilfeTitel" type="text" maxlength="120" '+
+      'placeholder="z. B. Gerät lässt sich nicht einschalten" value="'+esc(e?e.titel:'')+'" /></div>'+
+    '<div class="field"><label for="hilfeKat">Wozu gehört es?</label>'+
+      '<select class="inp" id="hilfeKat">'+
+        HILFE_KATS.map(function(k){
+          return '<option value="'+esc(k.id)+'"'+
+            (e && e.kat===k.id ? ' selected' : '')+'>'+esc(k.name)+'</option>';
+        }).join('')+
+      '</select></div>'+
+    '<div class="field"><label for="hilfeProblem">Das Problem</label>'+
+      '<textarea class="inp" id="hilfeProblem" rows="3" '+
+      'placeholder="Was passiert, woran merkt man es?">'+esc(e?e.problem:'')+'</textarea></div>'+
+    '<div class="field"><label for="hilfeSchritte">Was hilft — ein Schritt je Zeile</label>'+
+      '<textarea class="inp" id="hilfeSchritte" rows="7" '+
+      'placeholder="Stecker ziehen.&#10;Zehn Sekunden warten.&#10;Wieder einstecken.">'+
+      esc(e?e.schritte.join('\n'):'')+'</textarea>'+
+      '<p class="hint">Die Zeilen werden nummeriert. Die Reihenfolge trägt: '+
+      '„erst abschalten, dann öffnen" ist etwas anderes als andersherum.</p></div>'+
+    studioTeil+
+    '<div class="field"><label>Fotos (bis zu '+HILFE_MAX_BILDER+')</label>'+
+      '<div id="hilfeVorschau" class="hilfe-vorschau"></div>'+
+      '<button type="button" class="btn btn-ghost btn-sm" id="hilfePick" '+
+      'style="margin-top:8px">Foto auswählen</button>'+
+      '<input type="file" id="hilfeFile" accept="image/*" multiple hidden /></div>'+
+    '<p class="hint" id="hilfeNote"></p>'+
+    '<div class="hilfe-knoepfe" style="margin-top:14px">'+
+      '<button type="button" class="btn btn-primary" id="hilfeSpeichern">Speichern</button>'+
+      '<button type="button" class="btn btn-ghost" data-hzurueck="'+zurueck+'">Abbrechen</button>'+
+    '</div>';
+
+  var wrap=$('hilfeStudios');
   if(wrap){
-    wrap.innerHTML='';
+    var aktiv = (e && Array.isArray(e.studios)) ? e.studios : [];
     managedStudios().forEach(function(s){
-      var lab=document.createElement('label'); lab.className='studio-check';
-      var cb=document.createElement('input'); cb.type='checkbox'; cb.value=studioKey(s);
-      cb.addEventListener('change',function(){
-        lab.classList.toggle('on',cb.checked);
-        if(!cb.checked){ var a=$('loesAll'); if(a){ a.checked=false; $('loesAllWrap').classList.remove('on'); } }
+      var key=studioKey(s), an=aktiv.indexOf(key)>=0;
+      var lab=document.createElement('label');
+      lab.className='studio-check'+(an?' on':'');
+      var cb=document.createElement('input');
+      cb.type='checkbox'; cb.value=key; cb.checked=an;
+      cb.addEventListener('change', function(){
+        lab.classList.toggle('on', cb.checked);
+        if(cb.checked){
+          var a=$('hilfeAll');
+          if(a && a.checked){ a.checked=false; $('hilfeAllWrap').classList.remove('on'); }
+        }
       });
       var span=document.createElement('span'); span.textContent=s;
       lab.appendChild(cb); lab.appendChild(span); wrap.appendChild(lab);
     });
     auslaufPruefen(wrap);
   }
-  var kat=$('loesKat');
-  if(kat && !kat.options.length){
-    kat.innerHTML=LOES_KATS.map(function(k){
-      return '<option value="'+esc(k.id)+'">'+esc(k.name)+'</option>';
-    }).join('');
-  }
-  buildLoesKatRow();
-  if(_loesUiGebunden) return;
-  _loesUiGebunden=true;
-
-  var alle=$('loesAll');
-  if(alle) alle.addEventListener('change',function(){
-    $('loesAllWrap').classList.toggle('on', alle.checked);
+  var alle=$('hilfeAll');
+  if(alle) alle.addEventListener('change', function(){
+    $('hilfeAllWrap').classList.toggle('on', alle.checked);
     if(alle.checked){
-      document.querySelectorAll('#loesStudios input').forEach(function(c){
+      document.querySelectorAll('#hilfeStudios input').forEach(function(c){
         c.checked=false; c.parentNode.classList.remove('on');
       });
     }
   });
-  var such=$('loesSuche');
-  if(such) such.addEventListener('input',function(){ _loesSuche=such.value; renderLoesungen(); });
-  var pick=$('loesPick'), datei=$('loesFile');
+  hilfeZurueckBinden(box);
+  hilfeVorschauZeichnen();
+
+  var pick=$('hilfePick'), datei=$('hilfeFile');
   if(pick && datei){
-    pick.addEventListener('click',function(){ datei.click(); });
-    datei.addEventListener('change',function(){
+    pick.addEventListener('click', function(){ datei.click(); });
+    datei.addEventListener('change', function(){
       var auswahl=[].slice.call(datei.files||[]);
       datei.value='';
       if(!auswahl.length) return;
-      var platz=LOES_MAX_BILDER-_loesNeuBilder.length;
+      var platz=HILFE_MAX_BILDER-(_hAltBilder.length+_hNeueBilder.length);
       if(auswahl.length>platz){
         toast('Es passen noch '+platz+(platz===1?' Foto':' Fotos')+'.', true);
-        auswahl=auswahl.slice(0,Math.max(0,platz));
+        auswahl=auswahl.slice(0, Math.max(0,platz));
       }
+      if(!auswahl.length) return;
       /* 1280px und 300 KB je Foto: drei davon bleiben unter einem
-         Megabyte, und jedes liegt ohnehin in seinem eigenen Dokument.
+         Megabyte, und jedes liegt ohnehin im eigenen Dokument.
          Grösser bringt auf einem Handybildschirm nichts. */
       Promise.all(auswahl.map(function(f){
         return fileToCompressedDataURL(f, 1280, 300000);
       })).then(function(bilder){
-        _loesNeuBilder=_loesNeuBilder.concat(bilder);
-        loesVorschauZeichnen();
-      }).catch(function(e){ toast(errMsg(e), true); });
+        _hNeueBilder=_hNeueBilder.concat(bilder);
+        hilfeVorschauZeichnen();
+      }).catch(function(err){ toast(errMsg(err), true); });
     });
   }
-  var sp=$('loesSpeichern');
-  if(sp) sp.addEventListener('click', loesungSpeichern);
+  var sp=$('hilfeSpeichern');
+  if(sp) sp.addEventListener('click', hilfeSpeichern);
+  var t=$('hilfeTitel'); if(t && !e) t.focus();
+}
+function hilfeVorschauZeichnen(){
+  var v=$('hilfeVorschau'); if(!v) return;
+  var teile=[];
+  _hAltBilder.forEach(function(bid){
+    var d=_hBildCache[bid];
+    teile.push('<div class="hilfe-vor">'+
+      (d ? '<img src="'+esc(d)+'" alt="Vorschau" />'
+         : '<div class="hilfe-bild leer-bild" style="width:72px;height:72px">lädt …</div>')+
+      '<button type="button" class="mini-x" data-haltweg="'+esc(bid)+'" '+
+      'aria-label="Foto entfernen">'+ikon('schliessen')+'</button></div>');
+  });
+  _hNeueBilder.forEach(function(d,i){
+    teile.push('<div class="hilfe-vor"><img src="'+esc(d)+'" alt="Vorschau" />'+
+      '<button type="button" class="mini-x" data-hneuweg="'+i+'" '+
+      'aria-label="Foto entfernen">'+ikon('schliessen')+'</button></div>');
+  });
+  v.innerHTML=teile.join('') ||
+    '<p class="hint" style="margin:0">Noch kein Foto. Ein Bild vom Stecker, '+
+    'vom Schalter oder vom Regal erspart drei Sätze Erklärung.</p>';
+  v.querySelectorAll('[data-haltweg]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var bid=b.getAttribute('data-haltweg');
+      _hAltBilder=_hAltBilder.filter(function(x){ return x!==bid; });
+      _hWegBilder.push(bid);
+      hilfeVorschauZeichnen();
+    });
+  });
+  v.querySelectorAll('[data-hneuweg]').forEach(function(b){
+    b.addEventListener('click', function(){
+      _hNeueBilder.splice(Number(b.getAttribute('data-hneuweg')),1);
+      hilfeVorschauZeichnen();
+    });
+  });
+  var p=$('hilfePick');
+  if(p) p.disabled=(_hAltBilder.length+_hNeueBilder.length)>=HILFE_MAX_BILDER;
 }
 
-function loesungSpeichern(){
-  var btn=$('loesSpeichern'), note=$('loesNote');
-  var titel=($('loesTitel').value||'').trim();
-  var problem=($('loesProblem').value||'').trim();
-  var loesung=($('loesLoesung').value||'').trim();
+function hilfeSpeichern(){
+  var btn=$('hilfeSpeichern'), note=$('hilfeNote');
+  var e=_hFormFuer;
+  var titel=($('hilfeTitel').value||'').trim();
+  var problem=($('hilfeProblem').value||'').trim();
+  var schritte=($('hilfeSchritte').value||'').split('\n')
+    .map(function(z){ return z.trim(); }).filter(function(z){ return !!z; });
   if(note) note.textContent='';
   if(!titel){ if(note) note.textContent='Bitte sag in einem Satz, worum es geht.'; return; }
-  if(!loesung){ if(note) note.textContent='Ohne „Was hilft" ist es ein Problem, keine Lösung.'; return; }
-  var alle=$('loesAll') && $('loesAll').checked;
-  var keys=[];
-  document.querySelectorAll('#loesStudios input:checked').forEach(function(c){ keys.push(c.value); });
-  if(!alle && !keys.length){
-    if(note) note.textContent='Bitte wähle mindestens ein Studio — oder „Alle Studios".';
+  if(!schritte.length){
+    if(note) note.textContent='Ohne einen Schritt ist es ein Problem, keine Lösung.';
     return;
+  }
+  var studios='all';
+  if($('hilfeAll') && !$('hilfeAll').checked){
+    var keys=[];
+    document.querySelectorAll('#hilfeStudios input:checked').forEach(function(c){ keys.push(c.value); });
+    if(!keys.length){
+      if(note) note.textContent='Bitte wähle mindestens ein Studio — oder „Alle Studios".';
+      return;
+    }
+    studios=keys;
   }
   btn.disabled=true; var alt=btn.textContent; btn.textContent='Speichern …';
 
   /* Erst die Fotos, dann der Eintrag. Andersherum stünde bei einem
      Abbruch ein Eintrag da, der auf Fotos zeigt, die es nicht gibt. */
-  var bildIds=[];
-  var kette=Promise.resolve();
-  _loesNeuBilder.forEach(function(d){
+  var neueIds=[], kette=Promise.resolve();
+  _hNeueBilder.forEach(function(d){
     kette=kette.then(function(){
       var ref=S('loesungBilder').doc();
-      bildIds.push(ref.id);
+      neueIds.push(ref.id);
+      _hBildCache[ref.id]=d;
       return ref.set({ data:d, uid:session.uid, ts:Date.now() });
     });
   });
   kette.then(function(){
-    return S('loesungen').add({
-      titel:titel, problem:problem, loesung:loesung,
-      kategorie:($('loesKat').value||'sonstig'),
-      studios: alle ? 'all' : keys,
-      bilder: bildIds,
-      uid:session.uid, vonName:session.name, ts:Date.now()
-    });
+    var daten={
+      titel:titel, kategorie:$('hilfeKat').value||'sonstig',
+      problem:problem, schritte:schritte,
+      /* `loesung` bleibt mitgeschrieben: die Sicherung, der Export und
+         alles, was vor heute geschrieben wurde, lesen dieses Feld.
+         Zwei Felder für denselben Text sind ein Preis; eine Sicherung,
+         in der die Lösungen plötzlich leer sind, ein höherer. */
+      loesung:schritte.join('\n'),
+      studios:studios, bilder:_hAltBilder.concat(neueIds)
+    };
+    if(e && e.docId){
+      /* Berichtigen. uid und vonName bleiben stehen: wer den Eintrag
+         verfasst hat, hat ihn verfasst — auch wenn die Leitung eine
+         Zeile geradezieht. Wer berichtigt hat, steht daneben. */
+      daten.geaendertVon=session.name;
+      daten.geaendertAm=Date.now();
+      return S('loesungen').doc(e.docId).update(daten);
+    }
+    daten.uid=session.uid; daten.vonName=session.name; daten.ts=Date.now();
+    if(e && !e.eigen){
+      /* Eine Änderung am Handbuch. Fester Dokumentname, aus der
+         Nummer des Grundeintrags: sonst legen zwei Leute, die
+         denselben Eintrag am selben Tag bessern, zwei Fassungen an,
+         und die App müsste raten, welche gilt. */
+      daten.basis=e.id;
+      return S('loesungen').doc('basis-'+e.id).set(daten);
+    }
+    return S('loesungen').add(daten);
   }).then(function(){
     btn.disabled=false; btn.textContent=alt;
-    $('loesTitel').value=''; $('loesProblem').value=''; $('loesLoesung').value='';
-    _loesNeuBilder=[]; loesVorschauZeichnen();
-    document.querySelectorAll('#loesStudios input').forEach(function(c){
-      c.checked=false; c.parentNode.classList.remove('on');
-    });
-    if($('loesAll')){ $('loesAll').checked=false; $('loesAllWrap').classList.remove('on'); }
-    toast('Lösung gespeichert ✓'); tick(12);
-  }).catch(function(e){
+    return Promise.all(_hWegBilder.map(function(bid){
+      return S('loesungBilder').doc(bid).delete().catch(function(){});
+    }));
+  }).then(function(){
+    _hNeueBilder=[]; _hWegBilder=[];
+    toast(e ? 'Gespeichert ✓' : 'Lösung festgehalten ✓'); tick(12);
+    if(e){ hilfeEintragZeigen(e.id); }
+    else { hilfeStartZeigen(); }
+  }).catch(function(err){
     btn.disabled=false; btn.textContent=alt;
-    if(note) note.textContent=errMsg(e);
+    if(note) note.textContent=errMsg(err);
   });
 }
 
-function loesungLoeschen(id){
-  var l=null;
-  for(var i=0;i<_loes.length;i++){ if(_loes[i].id===id) l=_loes[i]; }
-  if(!l) return;
-  if(!confirm('„'+(l.titel||'Diese Lösung')+'" löschen?\n\n'+
-              'Die Fotos gehen mit. Das lässt sich nicht rückgängig machen.')) return;
-  var weg=(l.bilder||[]).map(function(b){
+function hilfeLoeschen(e){
+  if(!e.docId) return;
+  var frage = e.basis
+    ? 'Deine Fassung von „'+(e.titel||'diesem Eintrag')+'" verwerfen?\n\n'+
+      'Danach steht wieder der Eintrag aus dem Handbuch da. Die Fotos gehen mit.'
+    : '„'+(e.titel||'Diese Lösung')+'" löschen?\n\n'+
+      'Die Fotos gehen mit. Das lässt sich nicht rückgängig machen.';
+  if(!confirm(frage)) return;
+  Promise.all((e.bilder||[]).map(function(b){
     return S('loesungBilder').doc(b).delete().catch(function(){});
-  });
-  Promise.all(weg).then(function(){
-    return S('loesungen').doc(id).delete();
+  })).then(function(){
+    return S('loesungen').doc(e.docId).delete();
   }).then(function(){
-    delete _loesOffen[id];
-    toast('Gelöscht ✓');
-  }).catch(function(e){ toast(errMsg(e), true); });
+    toast(e.basis ? 'Verworfen ✓' : 'Gelöscht ✓');
+    if(e.basis) hilfeEintragZeigen(e.id);
+    else if(_hVon==='liste' && _hListe.length){ hilfePane('liste'); hilfeListeZeichnen(); }
+    else hilfeStartZeigen();
+  }).catch(function(err){ toast(errMsg(err), true); });
+}
+
+/* Der Knopf oben, die Tasten und das Feld — einmal gebunden. */
+(function hilfeBinden(){
+  function bind(){
+    if(_hGebunden) return; _hGebunden=true;
+    var auf=$('hilfeBtn'), zu=$('hilfeZu'), schirm=$('hilfe');
+    if(auf) auf.addEventListener('click', hilfeOeffnen);
+    if(zu) zu.addEventListener('click', hilfeSchliessen);
+    /* Klick auf den dunklen Rand schliesst. Nur der Rand selbst: ein
+       Klick in die Tafel darf nicht durchschlagen. */
+    if(schirm) schirm.addEventListener('click', function(ev){
+      if(ev.target===schirm) hilfeSchliessen();
+    });
+    var feld=$('hilfeSuche');
+    if(feld) feld.addEventListener('input', function(){
+      _hSuche=feld.value; hilfeTrefferZeichnen();
+    });
+    var alleBtn=$('hilfeAlle');
+    if(alleBtn) alleBtn.addEventListener('click', function(){
+      hilfeListeZeigen('Alle Einträge', hilfeAlleEintraege());
+    });
+    var neuBtn=$('hilfeNeu');
+    if(neuBtn) neuBtn.addEventListener('click', function(){ hilfeFormZeigen(null); });
+    document.addEventListener('keydown', function(ev){
+      if(!_hAn) return;
+      if(ev.key==='Escape'){
+        /* Schrittweise zurück, nicht gleich ganz zu. Wer aus einem
+           Eintrag heraus Escape drückt, will zur Liste — nicht aus
+           der Hilfe heraus und wieder von vorn anfangen. */
+        if(_hAnsicht==='form'){ ev.preventDefault();
+          if(_hFormFuer){ hilfePane('eintrag'); hilfeEintragZeichnen(); }
+          else hilfeStartZeigen(); }
+        else if(_hAnsicht==='eintrag'){ ev.preventDefault();
+          if(_hVon==='liste' && _hListe.length){ hilfePane('liste'); hilfeListeZeichnen(); }
+          else hilfeStartZeigen(); }
+        else if(_hAnsicht==='liste'){ ev.preventDefault(); hilfeStartZeigen(); }
+        else hilfeSchliessen();
+      }
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
+/* Der Knopf verschwindet, wenn die Firma den Bereich abgeschaltet hat —
+   derselbe Schalter wie vorher für den Reiter. */
+function hilfeKnopfPruefen(){
+  var b=$('hilfeBtn'); if(!b) return;
+  var an=featureAn('loesungen');
+  b.style.display = an ? '' : 'none';
+  if(!an && _hAn) hilfeSchliessen();
 }
 
 /* ============================================================
@@ -22718,12 +23480,29 @@ function backupData(){
        steht deshalb dran — ein Export, der etwas weglässt, ohne es zu
        sagen, ist schlimmer als einer, der es gar nicht erst anbietet. */
     out.loesungen=docsZuListe(g.loesungen).map(function(l){
+      var schritte = (Array.isArray(l.schritte) && l.schritte.length)
+        ? l.schritte : String(l.loesung||'').split('\n')
+            .map(function(z){ return z.trim(); })
+            .filter(function(z){ return !!z; });
       return { titel:l.titel||'', kategorie:l.kategorie||'',
-               problem:l.problem||'', loesung:l.loesung||'',
+               problem:l.problem||'',
+               /* Beides: die Schritte als Liste, weil sie eine sind,
+                  und derselbe Text am Stück, weil die Tabellenfassung
+                  eine Zelle braucht und weil jede ältere Auswertung
+                  dieses Feld liest. */
+               schritte:schritte, loesung:schritte.join('\n'),
+               /* Woher der Eintrag kommt. Ohne diese Zeile stünde in
+                  der Sicherung „Kabel beschädigt" ohne den Hinweis,
+                  dass es die Studio-Fassung von Handbuch-Nummer 23
+                  ist — und wer sie liest, hielte sie für eine eigene
+                  Entdeckung. */
+               herkunft: l.basis ? ('Änderung am Handbuch-Eintrag '+l.basis)
+                                 : 'aus dem Studio',
                studios: l.studios==='all' ? 'alle'
                       : (Array.isArray(l.studios) ? l.studios.map(studioName).join(', ') : ''),
                fotos:(l.bilder||[]).length,
                von:l.vonName||'',
+               geaendertVon:l.geaendertVon||'',
                datum:l.ts?new Date(l.ts).toISOString():'' };
     });
     /* ── Stempelzeiten ──
@@ -22853,9 +23632,9 @@ function exportAllXls(){
         return [t.tag, t.mitarbeiter, t.studio, t.abschluss?'ja':'nein',
                 t.notiz, t.erfasstVon]; }));
     if(d.loesungen && d.loesungen.length) html+=xlsTable('Lösungen',
-      ['Datum','Titel','Kategorie','Studios','Das Problem','Was hilft','Fotos','Von'],
+      ['Datum','Titel','Kategorie','Herkunft','Studios','Das Problem','Was hilft','Fotos','Von'],
       d.loesungen.map(function(l){
-        return [l.datum, l.titel, l.kategorie, l.studios,
+        return [l.datum, l.titel, l.kategorie, l.herkunft, l.studios,
                 l.problem, l.loesung, l.fotos, l.von]; }));
     Object.keys(d.chat).forEach(function(name){
       var m=d.chat[name]; if(!m.length) return;

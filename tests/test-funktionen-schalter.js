@@ -15,6 +15,9 @@
         Aufgaben an, die niemand je sieht.
      8. Wer eine abgeschaltete Ansicht direkt aufruft, landet auf der
         Startseite statt im Nichts.
+     9. Der Rettungsring in der Kopfzeile verschwindet mit. Er hängt
+        nicht in der Navigation — buildNav() kommt also nicht an ihm
+        vorbei, und ohne eine eigene Zeile bliebe er stehen.
 
    Nicht geprüft: ob am nächsten Morgen wirklich keine Erinnerung
    hinausgeht. Der Server prüft es mit (functions/index.js, featureAn),
@@ -84,14 +87,19 @@ async function zumTeam(page) {
   // ══ 2.+3. Abgeschaltet: Eintrag weg, leere Gruppe ganz weg ══
   {
     // Der ganze Betrieb-Bereich aus — die Gruppe darf nicht stehen bleiben
-    /* probe (Probetraining) gehoert seit dem 13.8. auch dazu, loesungen
-       seit dem 22.9. — ohne diese Zeilen bleibt die Gruppe stehen, weil
-       noch etwas darin ist, und der Test meldet einen Fehler, der
-       keiner ist. Wer der Gruppe etwas hinzufuegt, kommt hier wieder
-       vorbei; genau dafuer ist diese Zeile da. */
+    /* probe (Probetraining) gehoert seit dem 13.8. auch dazu — ohne
+       diese Zeile bleibt die Gruppe stehen, weil noch etwas darin ist,
+       und der Test meldet einen Fehler, der keiner ist. Wer der Gruppe
+       etwas hinzufuegt, kommt hier wieder vorbei; genau dafuer ist
+       diese Zeile da.
+       `loesungen` steht bewusst NICHT mehr dabei: der Schalter gibt es
+       weiter, aber er schaltet seit dem 22.9. den Rettungsring in der
+       Kopfzeile ab, keinen Reiter unter „Betrieb". Würde er hier
+       mitgesetzt, prüfte diese Zeile eine Verbindung, die es nicht
+       mehr gibt. */
     const { b, page } = await start({
       todos: false, putzplan: false, material: false, geraete: false,
-      docs: false, probe: false, loesungen: false
+      docs: false, probe: false
     });
     const g = await leiste(page);
     console.log('Betrieb komplett aus, Gruppen:', JSON.stringify(g));
@@ -287,6 +295,39 @@ async function zumTeam(page) {
        ab, das jemand braucht. */
     if (liste.zahl !== 14) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 14');
     await b.close();
+  }
+
+  // ══ 9. Der Rettungsring folgt seinem Schalter ══
+  {
+    /* Zuerst die Gegenprobe. Ohne sie wäre der Punkt darunter auch
+       dann grün, wenn es den Knopf überhaupt nicht gäbe. */
+    const an = await start(null);
+    const daAn = await an.page.evaluate(() => {
+      const k = document.getElementById('hilfeBtn');
+      return !!k && getComputedStyle(k).display !== 'none';
+    });
+    console.log('Rettungsring, Schalter an:', daAn);
+    if (!daAn) errs.push('FEHLT: der Rettungsring steht nicht in der Kopfzeile');
+    await an.b.close();
+
+    const aus = await start({ loesungen: false });
+    const daAus = await aus.page.evaluate(() => {
+      const k = document.getElementById('hilfeBtn');
+      return !!k && getComputedStyle(k).display !== 'none';
+    });
+    console.log('Rettungsring, Schalter aus:', daAus);
+    if (daAus) errs.push('FALSCH: „Lösungen" ist aus, der Rettungsring steht noch da');
+    /* Und die Zeile in „Alles" geht mit. Ein Inhaltsverzeichnis, das
+       auf ein Fenster zeigt, das es für diese Firma nicht gibt, ist
+       schlimmer als eine fehlende Zeile: man glaubt ihm. */
+    const inAlles = await aus.page.evaluate(() => {
+      const a = document.querySelector('.mobnav [data-group="g-alles"]');
+      if (a) a.click();
+      return new Promise(r => setTimeout(() =>
+        r(!!document.querySelector('[data-al-hilfe]')), 700));
+    });
+    if (inAlles) errs.push('FALSCH: „Hilfe im Studio" steht noch in „Alles"');
+    await aus.b.close();
   }
 
   console.log(errs.length
