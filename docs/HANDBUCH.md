@@ -487,6 +487,63 @@ Wer ursprünglich eingeteilt war, bleibt am Eintrag vermerkt.
 
 ---
 
+## 12c. Schulung
+
+**Unter „Betrieb" der letzte Reiter.** Webinare Schritt für Schritt, mit
+Fragen am Ende — Einarbeitung, Hygiene, Notfall und was noch dazukommt.
+
+### Für Mitarbeiter
+
+**Du brauchst keinen eigenen Zugang.** Die Schulung läuft am Tablet im
+Studio, und dort ist ein Studio-Konto angemeldet. Damit trotzdem
+feststeht, wer sie gemacht hat, bekommst du von der Studioleitung einen
+**Teilnahme-Code** — er sieht aus wie `M4K7-RPQ2-XT9B` und gehört nur
+dir.
+
+1. Modul aussuchen.
+2. Code eintippen.
+3. Durchgehen: Texte, Videos, zwischendurch ein „Verstanden".
+4. Die Fragen beantworten. Falsch ist kein Problem — du bekommst eine
+   Erklärung und versuchst es noch einmal, bis es sitzt.
+
+Oben auf der Seite steht, **was du schon gemacht hast**: wann, wie lange
+und wie oft du danebengelegen hast. Dieselben Zahlen sieht die Leitung —
+nichts davon ist vor dir verborgen.
+
+> **Mitgeschrieben wird** ausserdem, wann und an welchem Gerät du die
+> Schulung gemacht hast. Die Zeit zählt nur, solange das Fenster
+> wirklich offen ist: Bildschirm gesperrt heisst Uhr aus.
+
+### Für die Leitung
+
+Der Knopf oben rechts (≡) führt zur Verwaltung.
+
+**Teilnehmer anlegen** — Name eintragen, fertig. Wer schon einen Zugang
+zur App hat, kann dort ausgewählt werden; dann sieht die Person ihre
+Zahlen auch in ihrem eigenen Bereich.
+
+> **Der Code ist genau EINMAL zu sehen**, direkt nach dem Anlegen.
+> Danach kann ihn niemand mehr auslesen — auch du nicht. Er liegt
+> verschlüsselt, genau wie eine Stempel-PIN, und aus demselben Grund:
+> wer die Liste lesen könnte, machte die Schulung für einen Kollegen.
+> **Aufschreiben oder gleich weitergeben.** Verlegt heisst: „Neuer Code".
+
+**Stilllegen** macht einen Code sofort wertlos — für jemanden, der geht.
+
+**Die Liste** darunter zeigt jeden abgeschlossenen Durchlauf: Name,
+Modul, Zeitpunkt, Studio, Gerät, Dauer, Prozent, Fehlversuche und der
+wievielte Durchgang es war.
+
+> **Ein abgeschlossener Durchlauf lässt sich nicht mehr ändern** — von
+> niemandem, auch nicht von dir. Das ist der Grund, warum er als
+> Nachweis taugt.
+
+**Videos gibt es noch nicht.** An der Stelle steht „Video folgt" samt
+der vorgesehenen Länge. Die App tut nicht so, als sei der Schritt
+vollständig.
+
+---
+
 ## 12b. Hilfe im Studio
 
 **Der Rettungsring oben rechts — von jeder Seite aus.** Ein Problem hat

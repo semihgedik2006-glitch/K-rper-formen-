@@ -236,6 +236,34 @@ pruefe('anruferProfil weist gesperrte Zugänge ab',
   /aktiv\s*===\s*false/.test(hilfeRumpf),
   'sie soll strenger sein als requireAuth, nicht nur anders');
 
+/* ── Und dasselbe für `requireLeitung`, seit dem 22.9.2026 ──
+   Die Schulung legt Teilnehmer und Codes an. Das ist Betriebs­-
+   organisation und nicht Geld — `requireChef` wäre zu eng, denn
+   eingearbeitet wird im Studio, nicht in der Zentrale.
+
+   Geprueft wird sie nach derselben Regel wie `anruferProfil`: der Name
+   ist der Anlass nachzusehen, nicht der Beweis. Sie zählt nur, wenn
+   sie WIRKLICH requireAuth ruft, gesperrte Zugänge abweist UND auf die
+   Rolle sieht — sonst wäre „Leitung" ein Wort im Funktionsnamen und
+   sonst nichts. */
+const LEITUNG = /\brequireLeitung\s*\(\s*context\s*\)/;
+const leitungRumpf = (() => {
+  const i = quelle.indexOf('async function requireLeitung');
+  if (i < 0) return '';
+  const j = quelle.indexOf('\n}', i);
+  return j < 0 ? quelle.slice(i) : quelle.slice(i, j + 2);
+})();
+pruefe('requireLeitung gibt es überhaupt', !!leitungRumpf,
+  'ohne die Hilfsfunktion darf ihr Name auch nicht als Prüfung zählen');
+pruefe('requireLeitung ruft selbst requireAuth(context)',
+  /requireAuth\s*\(\s*context\s*\)/.test(leitungRumpf),
+  'sonst steht die Prüfung nur auf einem Funktionsnamen');
+pruefe('requireLeitung weist gesperrte Zugänge ab',
+  /aktiv\s*===\s*false/.test(leitungRumpf));
+pruefe('requireLeitung sieht wirklich auf die Rolle',
+  /role\s*!==\s*'chef'/.test(leitungRumpf) && /role\s*!==\s*'leiter'/.test(leitungRumpf),
+  'sonst dürfte jeder Angemeldete Teilnehmer und Codes anlegen');
+
 /* GEGENPROBE zu dieser Erweiterung: ein onCall, das NUR anruferProfil
    im Text stehen hat, ohne dass es die Hilfsfunktion gibt, darf nicht
    durchgehen. Geprüft wird das an einer erfundenen Quelle — am echten
@@ -257,11 +285,15 @@ pruefe('Endpunkte überhaupt gefunden', aufrufe.length >= 12,
 const hilfeEcht = !!hilfeRumpf &&
   /requireAuth\s*\(\s*context\s*\)/.test(hilfeRumpf) &&
   /aktiv\s*===\s*false/.test(hilfeRumpf);
+const leitungEcht = !!leitungRumpf &&
+  /requireAuth\s*\(\s*context\s*\)/.test(leitungRumpf) &&
+  /aktiv\s*===\s*false/.test(leitungRumpf) &&
+  /role\s*!==\s*'chef'/.test(leitungRumpf);
 
 aufrufe.forEach(b => {
   const r = rumpf(b);
-  pruefe(b.name + ': prüft requireAuth/Chef/Admin',
-    PRUEFUNG.test(r) || (hilfeEcht && HILFE.test(r)),
+  pruefe(b.name + ': prüft requireAuth/Chef/Leitung/Admin',
+    PRUEFUNG.test(r) || (hilfeEcht && HILFE.test(r)) || (leitungEcht && LEITUNG.test(r)),
     'ein onCall ohne Prüfung ist für jeden im Internet offen');
 });
 anfragen.forEach(b => {
