@@ -45,9 +45,23 @@
       an der Regel scheitert, ist schlimmer als keiner.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const CHROME = process.env.CHROME ||
   '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
+
+/* Das Probefoto entsteht hier, statt als Datei im Verzeichnis zu
+   liegen: `tests/*.png` ist in .gitignore — dort landen die
+   Bildschirmfotos der Durchläufe. Eine Ausnahme in .gitignore wäre die
+   Sorte Zeile, an der ein halbes Jahr später niemand mehr erkennt,
+   warum sie da ist; ausserdem fünf Zeilen hier sind ehrlicher als ein
+   Binärklumpen im Verlauf. 8×8 Pixel, grau. */
+const FOTO = path.join(os.tmpdir(), 'studiochat-probe-foto.png');
+fs.writeFileSync(FOTO, Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5' +
+  'AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII=', 'base64'));
 
 let gut = 0, schlecht = 0;
 function pruefe(was, bedingung, hinweis) {
@@ -301,7 +315,7 @@ async function starte(b, rolle) {
   /* Ein echtes Bild durch die ganze Kette: auswählen, verkleinern,
      Vorschau, speichern, wieder anzeigen. Eine Auswahl, die nur da
      ist, ist keine. */
-  await p.setInputFiles('#hilfeFile', __dirname + '/probe-foto.png');
+  await p.setInputFiles('#hilfeFile', FOTO);
   await p.waitForTimeout(900);
   const vorschau = await p.evaluate(() =>
     document.querySelectorAll('#hilfeVorschau img').length);

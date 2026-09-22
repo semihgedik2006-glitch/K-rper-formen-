@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-auW44DSK8t1WeVccPZ7MrP1xqwLxHab3bETRGJ45il0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-zTAKF3RWYrayAwrNYMNstoCmVZ5nEY/NhDlIdfNQSBc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2229,6 +2229,34 @@ body.nurlesen .kopf-plus{display:none !important}
      danebentippen konnte — das ist ein guter Tausch. */
   .icon-btn{width:44px;height:44px;border-radius:var(--r-sm)}
   .icon-btn svg{width:18px;height:18px}
+  /* ── Hell/Dunkel fällt auf dem Handy aus der Kopfzeile ──
+     Nachgemessen am 22.9.2026, als der Rettungsring dazukam: die Zeile
+     trug danach fünf Werkzeuge plus das Kürzel, und bei 320px lief sie
+     um 50 Pixel über — die ganze Seite bekam einen Querlauf, und der
+     Abmelde-Knopf stand ausserhalb. `test-abgeschnitten.js` hat das
+     gemeldet, nicht das Auge.
+
+     Gegangen ist Hell/Dunkel, und zwar als einziges mit gutem Grund:
+     es ist das einzige der fünf, das vollständig woanders steht — in
+     Profil → Aussehen, hinter genau dem Kürzel, das einen Finger
+     breit daneben liegt. Dort gibt es sogar mehr: Hell, Dunkel UND
+     „wie das Gerät", was ein Umschalter mit zwei Zuständen gar nicht
+     ausdrücken kann.
+
+     Nicht gegangen sind Suchen (auf dem Handy der einzige Weg dorthin),
+     Abmelden (am Schichtwechsel auf einem geteilten Gerät der
+     häufigste Griff überhaupt) und die Hilfe (der Grund für die
+     Änderung). */
+  #themeBtn{display:none}
+}
+/* Und bei 320px reicht auch das nicht — für die Leitung. Sie trägt
+   zwei Knoepfe mehr in der Zeile (Bericht und Glocke), gemessen 24
+   Pixel über dem Rand. Der Bericht geht: denselben Knopf gibt es in
+   Verwaltung → Berichte („Bericht an mich senden") und in der
+   Werkbank. Die Glocke bleibt — sie trägt eine Zahl, und eine
+   Meldung, die man nicht sieht, ist keine. */
+@media(max-width:360px){
+  #tbBericht{display:none !important}
 }
 @media(max-width:420px){
   /* Schmal: nur noch das Zeichen, nicht der Schriftzug.
@@ -16838,6 +16866,14 @@ function hilfeStartZeichnen(){
       stand.innerHTML='<b>Das Handbuch liess sich nicht laden.</b> Es fehlen '+
         'die 115 Einträge daraus; was das Team selbst festgehalten hat, ist da. '+
         'Nochmal öffnen hilft meistens.';
+    } else if(_hLadefehler){
+      /* Der Fehler gehört dorthin, wo die Liste wäre — nicht in einen
+         Toast, der nach drei Sekunden weg ist (Design-Ideen, Punkt 16).
+         Und er sagt, was TROTZDEM geht: das Handbuch liegt als Datei
+         und ist davon nicht betroffen. */
+      stand.innerHTML='<b>Was das Team selbst festgehalten hat, lässt sich '+
+        'gerade nicht laden.</b> '+esc(_hLadefehler)+'<br/>Die '+
+        _hBasis.length+' Einträge aus dem Handbuch sind davon nicht betroffen.';
     } else if(_hBasisStatus==='da'){
       var eigen=hilfeAlleEintraege().length-_hBasis.length;
       stand.textContent=_hBasis.length+' Einträge aus dem Handbuch'+

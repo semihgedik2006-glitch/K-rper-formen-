@@ -27,6 +27,7 @@ on:
       - 'sw.js'
       - 'konfig.js'
       - 'demo-daten.js'
+      - 'loesungen-basis.js'
       - 'robots.txt'
       - 'manifest.json'
       - 'icon.png'
