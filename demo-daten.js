@@ -784,44 +784,77 @@
      ein Platzhalter, den man als solchen erkennt, oder ein Bild, das
      Leute für echt halten — beides schlechter als keins. Dass Fotos
      möglich sind, sagt der Knopf im Formular. */
+  /* Vier Eintraege, die das Studio SELBST festgehalten hat — nicht aus
+     dem Handbuch. Genau deshalb stehen sie hier: der Grundstock liegt
+     als Datei und ist in jeder Firma gleich; was eine Vorfuehrung
+     zeigen muss, ist der Fall daneben — jemand hat etwas
+     herausgefunden und aufgeschrieben.
+     `schritte` statt nummerierter Zeilen in `loesung`: die App
+     nummeriert selbst, sonst stuende dort „1. 1. Stecker ziehen".
+     `loesung` bleibt trotzdem mitgeschrieben — die Sicherung liest
+     dieses Feld. */
   legen(P('loesungen'), [
     { id: 'loes1', titel: 'Gerät 3 piept beim Start und geht wieder aus',
       kategorie: 'geraet', studios: [sk(6)],
       problem: 'Beim Einschalten piept Gerät 3 dreimal, die Anzeige bleibt dunkel ' +
                'und nach etwa zehn Sekunden schaltet es sich ab. Passiert nur morgens ' +
                'als erstes Gerät.',
-      loesung: '1. Stecker ziehen, zwei Minuten warten.\n' +
-               '2. Prüfen, ob der Weste-Stecker richtig sitzt — er rastet hörbar ein.\n' +
-               '3. Wieder einstecken und einschalten.\n\n' +
-               'Wenn es danach immer noch piept: im Geräte-Bereich als defekt melden, ' +
+      schritte: [
+        'Stecker ziehen, zwei Minuten warten.',
+        'Prüfen, ob der Weste-Stecker richtig sitzt — er rastet hörbar ein.',
+        'Wieder einstecken und einschalten.',
+        'Piept es danach immer noch: im Geräte-Bereich als defekt melden, ' +
+        'nicht weiter versuchen.'
+      ],
+      loesung: 'Stecker ziehen, zwei Minuten warten.\n' +
+               'Prüfen, ob der Weste-Stecker richtig sitzt — er rastet hörbar ein.\n' +
+               'Wieder einstecken und einschalten.\n' +
+               'Piept es danach immer noch: im Geräte-Bereich als defekt melden, ' +
                'nicht weiter versuchen.',
       bilder: [], uid: 'u7', vonName: 'Tobias Böhm', ts: vorTag(12) },
     { id: 'loes2', titel: 'Kunde kommt zu spät — was zählt als Trainingszeit?',
       kategorie: 'kunde', studios: 'all',
       problem: 'Ein Kunde erscheint zehn Minuten nach dem Termin und möchte ' +
                'trotzdem die vollen zwanzig Minuten trainieren.',
-      loesung: 'Der Termin endet zur geplanten Zeit. Das ist keine Strenge, sondern ' +
-               'Rücksicht auf den nächsten Kunden — der wartet sonst.\n\n' +
-               'Freundlich ansagen, wie viel Zeit noch bleibt, und anbieten, den ' +
-               'nächsten Termin früher zu legen. Steht auch so im Aushang.',
+      schritte: [
+        'Freundlich ansagen, wie viel Zeit noch bleibt.',
+        'Den Termin zur geplanten Zeit beenden — der nächste Kunde wartet sonst.',
+        'Anbieten, den nächsten Termin früher zu legen.',
+        'Bei Nachfragen auf den Aushang verweisen, dort steht dasselbe.'
+      ],
+      loesung: 'Freundlich ansagen, wie viel Zeit noch bleibt.\n' +
+               'Den Termin zur geplanten Zeit beenden — der nächste Kunde wartet sonst.\n' +
+               'Anbieten, den nächsten Termin früher zu legen.\n' +
+               'Bei Nachfragen auf den Aushang verweisen, dort steht dasselbe.',
       bilder: [], uid: 'u3', vonName: 'Alina Adler', ts: vorTag(26) },
     { id: 'loes3', titel: 'Tablet am Empfang lädt die App nicht mehr',
       kategorie: 'technik', studios: 'all',
       problem: 'Die App bleibt beim Ladebildschirm stehen. WLAN ist da, andere ' +
-               'Seiten gehen.',
-      loesung: 'Meist hängt eine alte Fassung im Zwischenspeicher.\n\n' +
-               'Seite einmal ganz schliessen und neu öffnen. Hilft das nicht: ' +
-               'im Browser den Verlauf der letzten Stunde löschen — NICHT die ' +
-               'Passwörter, sonst muss sich das ganze Team neu anmelden.',
+               'Seiten gehen. Meist hängt eine alte Fassung im Zwischenspeicher.',
+      schritte: [
+        'Die Seite einmal ganz schliessen und neu öffnen.',
+        'Hilft das nicht: im Browser den Verlauf der letzten Stunde löschen.',
+        'Dabei NICHT die Passwörter mitlöschen — sonst muss sich das ganze ' +
+        'Team neu anmelden.'
+      ],
+      loesung: 'Die Seite einmal ganz schliessen und neu öffnen.\n' +
+               'Hilft das nicht: im Browser den Verlauf der letzten Stunde löschen.\n' +
+               'Dabei NICHT die Passwörter mitlöschen — sonst muss sich das ganze ' +
+               'Team neu anmelden.',
       bilder: [], uid: 'u5', vonName: 'Nora Haas', ts: vorTag(40) },
     { id: 'loes4', titel: 'Handtücher riechen nach dem Waschen muffig',
-      kategorie: 'ablauf', studios: [sk(0), sk(6)],
+      kategorie: 'waesche', studios: [sk(0), sk(6)],
       problem: 'Frisch gewaschene Handtücher riechen schon beim Ausräumen ' +
-               'unangenehm.',
-      loesung: 'Kommt fast immer davon, dass die Maschine nach dem Programm zu ' +
-               'lange zu bleibt.\n\n' +
-               'Wecker auf das Programmende stellen und direkt ausräumen. Einmal ' +
-               'im Monat ein Leerlauf bei 90 Grad ohne Wäsche.',
+               'unangenehm. Kommt fast immer davon, dass die Maschine nach dem ' +
+               'Programm zu lange zu bleibt.',
+      schritte: [
+        'Wecker auf das Programmende stellen und direkt ausräumen.',
+        'Einmal im Monat einen Leerlauf bei 90 Grad ohne Wäsche.',
+        'Türe der Maschine zwischen den Gängen offen stehen lassen.'
+      ],
+      loesung: 'Wecker auf das Programmende stellen und direkt ausräumen.\n' +
+               'Einmal im Monat einen Leerlauf bei 90 Grad ohne Wäsche.\n' +
+               'Türe der Maschine zwischen den Gängen offen stehen lassen.',
       bilder: [], uid: 'u9', vonName: 'Sami Berger', ts: vorTag(55) }
   ]);
   legen(P('loesungBilder'), []);

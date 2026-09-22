@@ -1,8 +1,10 @@
 # StudioChat
 
 Internes Team-Portal für EMS-Studios: Chat, Aufgaben, Putzplan, Material,
-Geräte, Dokumente, Schichten und Abwesenheiten. Läuft als installierbare
-Web-App (PWA) auf dem Handy, ohne App-Store.
+Geräte, Dokumente, Schichten und Abwesenheiten — dazu „Hilfe im Studio":
+115 Probleme aus dem Mitarbeiter-Handbuch, Schritt für Schritt, hinter
+dem Rettungsring in der Kopfzeile. Läuft als installierbare Web-App (PWA)
+auf dem Handy, ohne App-Store.
 
 Mehrere Firmen teilen sich eine Datenbank. Jede sieht ausschließlich ihre
 eigenen Daten; getrennt wird über den Pfad `firmen/<kennung>/…` und über die

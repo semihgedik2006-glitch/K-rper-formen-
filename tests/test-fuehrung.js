@@ -168,7 +168,11 @@ function ueberlappt(a, b) {
   /* ══ 3. Beim zweiten Mal bleibt sie weg ══ */
   console.log('\n── Das zweite Mal ──');
   {
-    const p = await seite(b, 'chef', '1');
+    /* Die Form, die die App wirklich schreibt: Fassung UND
+       Kontokennung. Eine blosse „1" gilt seit dem 22.9.2026 nicht mehr
+       — sie würde auf einem geteilten Tablet auch den nächsten
+       Kollegen aussperren. `demo-ich` ist das Konto der Vorführung. */
+    const p = await seite(b, 'chef', '1:demo-ich');
     const s = await stand(p);
     pruefe('GEGENPROBE mit gemerktem Stand startet sie NICHT',
       s.auf !== true, JSON.stringify(s).slice(0, 60));
@@ -197,6 +201,32 @@ function ueberlappt(a, b) {
   }
 
   /* ══ 4. Überspringen geht, und zwar sofort ══ */
+  /* ══ Das Tablet am Empfang ══
+     Aus dem Betrieb, 22.9.2026: „die führung soll bei jedem einmal
+     starten."
+
+     Auf einem geteilten Gerät melden sich nacheinander mehrere Leute
+     an — Abmelden ist dort der häufigste Griff überhaupt. Wäre der
+     Stand am GERÄT gemerkt, bekäme nur der erste die Führung, und die
+     übrigen erführen nie, dass es sie gibt.
+
+     Nachgestellt wird das über die Kontokennung im gemerkten Stand:
+     das Gerät hat die Führung schon gesehen — aber für JEMAND
+     ANDEREN. Sie muss trotzdem starten.
+
+     Das ist die Gegenprobe zu „mit gemerktem Stand startet sie NICHT"
+     eine Zeile weiter oben: beide zusammen zeigen, dass wirklich das
+     Konto entscheidet und nicht einfach immer oder nie gestartet
+     wird. */
+  console.log('\n── Das geteilte Gerät ──');
+  {
+    const p = await seite(b, 'chef', '1:ein-anderer-kollege');
+    pruefe('ein fremder Stand auf demselben Gerät hält sie NICHT auf',
+      (await stand(p)).auf === true,
+      JSON.stringify(await stand(p)));
+    await p.close();
+  }
+
   console.log('\n── Überspringen ──');
   {
     const p = await seite(b, 'mitarbeiter');
@@ -208,9 +238,18 @@ function ueberlappt(a, b) {
       !(await stand(p)).auf);
     /* Und der Stand ist gemerkt: wer sie wegtippt, will sie beim
        nächsten Öffnen nicht wiedersehen. */
-    pruefe('der Stand ist gemerkt',
-      await p.evaluate(() => localStorage.getItem('kf_tour') === '1'),
+    pruefe('der Stand ist gemerkt — mit Kontokennung',
+      await p.evaluate(() => localStorage.getItem('kf_tour') === '1:demo-ich'),
       await p.evaluate(() => String(localStorage.getItem('kf_tour'))));
+    /* Und am KONTO, nicht nur am Gerät. Das ist der Unterschied, der
+       auf dem Tablet am Empfang zählt. */
+    pruefe('und am Konto selbst',
+      await p.evaluate(() => new Promise(r => {
+        window.firebase.firestore().collection('users').doc('demo-ich').get()
+          .then(d => r(Number((d.data() || {}).tourGesehen || 0)))
+          .catch(() => r(-1));
+      })) === 1,
+      'tourGesehen am Konto');
     await p.close();
   }
 

@@ -222,10 +222,15 @@ Zwischenspeicher kommen, leicht entsättigen.
 *Aufwand: mittel.* **Dagegen:** wenn man es falsch trifft, verwirrt es
 mehr, als es hilft.
 
-### 16. Fehler gehören in die Liste, nicht in einen Toast  ◐ *bei den Lösungen gebaut (22.9.), sonst offen*
+### 16. Fehler gehören in die Liste, nicht in einen Toast  ◐ *in der Hilfe gebaut (22.9.), sonst offen*
 
 Ein Toast ist nach drei Sekunden weg. Wenn eine Liste nicht laden konnte,
 gehört das dorthin, wo die Liste wäre — mit „nochmal versuchen".
+
+Und noch eine Zeile dazu: **sagen, was TROTZDEM geht.** In der Hilfe
+liegen die 115 Handbuch-Einträge als Datei und sind von einem Fehler der
+Datenbank gar nicht betroffen — wer das nicht dazuschreibt, lässt
+jemanden glauben, es stehe gerade nichts zur Verfügung.
 
 *Aufwand: mittel.*
 

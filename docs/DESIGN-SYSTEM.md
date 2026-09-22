@@ -669,6 +669,27 @@ Gemessen: ab 470px passen beide, darunter wird abgeschnitten. Deshalb
 `@media(max-width:469px)` — und gebunden an `body.rolle-leitung`, weil
 ein Mitarbeiter Bericht- und Glocken-Knopf gar nicht hat.
 
+**Und der Schriftzug war irgendwann aufgebraucht.** Am 22.9.2026 kam der
+Rettungsring dazu — der sechste Knopf in einer Zeile, die schon fünf
+trug. Bei 320px lief sie um 50 Pixel über: Querlauf der ganzen Seite,
+Abmelden ausserhalb des Bildes. Die Zeile hat also ein **Budget**, und
+es ist voll.
+
+Wer ihr etwas hinzufügt, nimmt etwas heraus. Die Frage dabei ist nicht
+„was brauche ich am wenigsten", sondern **„was steht vollständig
+woanders"**:
+
+| | |
+|---|---|
+| **Hell/Dunkel** | gegangen, ab 520px abwärts. Steht ganz in Profil → Aussehen, hinter dem Kürzel einen Finger breit daneben — dort sogar reicher: Hell, Dunkel **und** „wie das Gerät" |
+| **Bericht an mich** | gegangen, ab 360px abwärts. Derselbe Knopf steht in Verwaltung → Berichte und in der Werkbank |
+| **Suchen** | geblieben. Auf dem Handy der einzige Weg dorthin — `Cmd+K` gibt es auf einem Telefon nicht |
+| **Abmelden** | geblieben. Am Schichtwechsel auf einem geteilten Tablet der häufigste Griff überhaupt |
+| **Glocke** | geblieben. Sie trägt eine **Zahl**, und eine Meldung, die man nicht sieht, ist keine |
+
+Nebenbei: die Glocke wurde bei 320px auf 20px zusammengedrückt — sie hat
+jetzt wieder ihre vollen 44.
+
 ---
 
 ## 5. Bewegung

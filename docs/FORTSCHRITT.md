@@ -10131,7 +10131,225 @@ sagt, was passiert.
 | | |
 |---|---|
 | `tests/test-fuehrung.js` | 175 Zusicherungen. Stellt den **ersten Start** nach, geht jeden Schritt jeder Rolle ab und misst, ob der Lichtkegel auf etwas Wirkliches zeigt (`elementFromPoint`) und die Karte ihn nicht verdeckt |
-| `tests/test-loesungen.js` | 19 Zusicherungen. Der Weg über die Leiste und über „Alles", Filter und Suche gegen die Zahl davor, mit Gegenprobe |
+| `tests/test-loesungen.js` | 19 Zusicherungen. Der Weg über die Leiste und über „Alles", Filter und Suche gegen die Zahl davor, mit Gegenprobe *(in Runde 96 neu geschrieben — der Bereich zog um)* |
 | `tests/rules/loesungen.test.js` | 30 Zusicherungen, beide Welten |
+
+**120 Durchläufe.**
+
+---
+
+## Runde 96 — Der Rettungsring: 115 Probleme, einen Griff weit weg
+
+> „kannst du diesen lösungen bereich ganz wo andern hinpacken irgendwie
+> oben oder so das man auf einen knopf drückt und dann wird gefragt was
+> das problem ist und die probleme sind dann nach key wörtern sortiert
+> oder man findet die durch eine art ki oder so oder man kann direkt
+> selber die ganze liste durchgehen das jedes mögliche problem vom
+> mitarbeiter geklärt werden kann und alles schritt für schritt erklärt
+> wird, ich gebe dir auch eine pdf mit 115 problemen und wie man sie
+> löst und alles, kannst du mir dies schonmal eintragen das wir eine
+> art grundbase haben und sorge dafür das man schon erstellte sachen
+> auch bearbeiten und/oder bilder hinzufügen kann."
+
+Der Bereich war **einen Tag alt** und lag schon falsch. Er hing als
+siebter Reiter unter „Betrieb" — drei Tipps entfernt, und man musste
+wissen, dass es ihn gibt. Ein Problem hat man aber **jetzt**, mitten in
+etwas anderem: am Gerät, an der Theke, mit dem Kunden daneben.
+
+Jetzt ist er ein **Rettungsring in der Kopfzeile**, von jeder Seite aus
+sichtbar. Das Fenster legt sich über das, was offen ist, und gibt
+hinterher genau dorthin zurück.
+
+Bewusst kein Fragezeichen: ein Fragezeichen heisst „Anleitung zu dieser
+App", hier geht es um das Studio.
+
+### 1. Die PDF: 115 Probleme, 564 Schritte
+
+Aus dem Mitarbeiter-Handbuch gelesen, nicht abgetippt und nicht
+umformuliert — der Wortlaut ist der des Handbuchs. 13 Kategorien,
+Nummern 1 bis 115 ohne Lücke.
+
+In diesem Container gibt es **kein `pdftotext` und kein Poppler**, und
+`pypdf` bricht beim Import ab (`_cffi_backend` fehlt). Die Streams sind
+deshalb von Hand entpackt: ASCII85, dann Flate. Der erste Durchgang
+hielt den **letzten Schritt jedes Problems** für die nächste Kategorie —
+eine Kategoriezeile erkennt man daran, dass sie nicht auf „." endet und
+dass eine Problem-Überschrift darauf folgt. Nachgezählt: 13 / 115 / 564.
+
+**Warum eine Datei und nicht 115 Datensätze.** In der Datenbank kostete
+der Grundstock bei jedem Öffnen 115 Lesevorgänge — bei 39 Konten und ein
+paar Sitzungen am Tag rund **10.000 am Tag**, für Inhalte, die sich nie
+ändern. Das freie Kontingent liegt bei 50.000. Als Datei kostet er
+**nichts**, liegt im Zwischenspeicher des Browsers und im Vorrat des
+Service Workers — und ist damit genau dann da, wenn das WLAN der Grund
+fürs Nachschlagen ist. Geladen wird sie erst beim ersten Öffnen der
+Hilfe: 47 KB, die die meisten Sitzungen nie brauchen.
+
+### 2. Drei Wege, weil Menschen verschieden suchen
+
+| | |
+|---|---|
+| **Tippen** | „gerät piept", „handtücher alle" — nach Stichwörtern gewichtet: Titel schlägt Stichwort schlägt Fliesstext |
+| **Blättern** | 14 Kacheln, jede mit ihrer Anzahl |
+| **Alles durchgehen** | die ganze Liste, für den ersten Arbeitstag |
+
+**Es ist keine KI, und das Fenster sagt es auch.** Es ist eine
+Stichwortsuche mit 35 Synonymgruppen, die einen Tippfehler verzeiht
+(Levenshtein ≤ 1 ab fünf Zeichen, Wortanfang ab vier). Sie läuft im
+Gerät, kostet nichts und geht ohne Netz.
+
+> „KI" auf etwas zu schreiben, das keine ist, wäre eine Zusage über eine
+> Fähigkeit, die es nicht gibt — und jemand, der ihr vertraut, tippt
+> einen ganzen Satz ein und bekommt nichts. Der Durchlauf prüft, dass
+> im Hinweistext „andere Wörter" steht und **nicht** „KI".
+
+Umlaute werden aufgelöst statt entfernt: „gerät" und „geraet" finden
+dasselbe. Auf einer Handytastatur schreibt in der Eile niemand den
+Umlaut.
+
+### 3. Bearbeiten, ohne das Handbuch zu verlieren
+
+Der ausdrückliche Wunsch — und die interessante Stelle.
+
+Wer einen Handbuch-Eintrag ändert, legt einen **eigenen** Datensatz an,
+dessen Feld `basis` auf die Handbuch-ID zeigt. Die App zeigt dann den
+eigenen. Das Handbuch bleibt unangetastet, nur geänderte Einträge kosten
+etwas — und **„Änderung verwerfen"** stellt es jederzeit wieder her.
+
+Der Dokumentname ist fest: `basis-<id>`. Mit einer zufälligen ID legten
+zwei Leute, die denselben Eintrag am selben Tag bessern, zwei Fassungen
+an, und die App müsste raten, welche gilt.
+
+**Wer berichtigt, ersetzt nicht den Verfasser.** `uid` und `vonName`
+bleiben stehen; wer geändert hat, steht daneben. Sonst übernähme die
+Leitung mit einer geradegezogenen Zeile die Urheberschaft.
+
+Die wichtigste Zahl des Durchlaufs ist deshalb eine Gegenprobe: **nach
+dem Ändern eines Handbuch-Eintrags stehen immer noch 119 in der Liste,
+nicht 120.** Stünde dasselbe Problem zweimal da — einmal richtig, einmal
+veraltet —, wüsste niemand, welcher gilt.
+
+Fotos lassen sich auch **später noch** anhängen, an denselben Knopf. Am
+Handbuch darf das jeder; an einem eigenen Eintrag die verfassende Person
+und die Leitung. Ein fremder Eintrag hat **keinen Knopf** und einen Satz,
+der sagt warum — ein Knopf, der an der Regel scheitert, ist schlimmer
+als keiner.
+
+### 4. Was dabei gefunden wurde
+
+| | |
+|---|---|
+| **Zwei Elemente hiessen `hilfeTitel`** | die Überschrift des Fensters und das Eingabefeld im Formular. `getElementById` gab die Überschrift zurück, `.value` war `undefined` — **jedes Speichern scheiterte still** an „Bitte sag in einem Satz, worum es geht". Gefunden, weil der Probelauf den Titel nachgelesen hat, statt dem Knopf zu glauben |
+| **`.hk-wort` war schon vergeben** | von der Überschrift „Heute" auf der Startseite. Das Wort neben dem Rettungsring hätte nie die Regel bekommen, die es auf schmalen Bildschirmen ausblendet. Jetzt `.hi-wort` |
+| **„Zurück" führte in die falsche Liste** | wer aus der Trefferliste heraus las, landete in einer Kategorie von vorhin und hatte seine Suche verloren. Jetzt merkt sich das Fenster, woher der Eintrag angeklickt wurde |
+| **Das Wort „Hilfe" erst ab 900 px** | bei 700 px stünden „Hilfe" und „Suchen" nebeneinander in einer Zeile, die ohnehin Name, Studio und vier Knöpfe trägt |
+| **`ansichtAn('loesungen')` gibt jetzt `false`** | die Seite gibt es nicht mehr, aber ein Verlaufseintrag aus einer offenen Sitzung oder ein weitergeleiteter Link zeigen noch dorthin |
+| **Abmelden warf einen Fehler** | `stopListeners()` fasste `_loesUnsub` an, und die Variable gibt es nicht mehr. Gefunden von `test-firma-link` und `test-firmenname`, beide mit *PAGEERROR: _loesUnsub is not defined* |
+| **Die Kopfzeile lief bei 320px über** | siehe unten — der eigene Abschnitt |
+| **Der Rettungsring galt als toter Ballast** | `allesIkon(name)` sucht erst in `NAV`, und dort steht er nicht mehr. `test-gestaltung` sieht nur wörtliche `ikon('name')`-Aufrufe; jetzt steht einer da |
+| **`loesungen-basis.js` löste keinen Deploy aus** | die Datei wird ausgeliefert, stand aber in keinem `paths`-Muster. Änderungen am Grundstock wären nie im Betrieb angekommen. `test-ausliefern.js` |
+
+### 5. Was mitging
+
+| | |
+|---|---|
+| **Kategorien** | die fünf der ersten Fassung (`geraet`, `technik`, `ablauf`, `kunde`, `sonstig`) werden abgebildet: `ablauf` → `routine`. Ohne diese Zeile fielen alte Einträge unter „Sonstiges", ohne dass es auffiele |
+| **`schritte` neben `loesung`** | `schritte` ist die Wahrheit — eine Anleitung ist eine Reihenfolge. `loesung` trägt denselben Text am Stück weiter, weil die Tabellenfassung des Exports eine Zelle braucht und jeder Eintrag von vor heute nur dieses Feld hat |
+| **Der Export** | trägt jetzt `schritte` als Liste und `herkunft` — „aus dem Studio" oder „Änderung am Handbuch-Eintrag b23". Ohne sie liest man eine Studio-Fassung und hält sie für eine eigene Entdeckung |
+| **Der Schalter** | „Lösungen" heisst jetzt „Hilfe im Studio" und schaltet den Rettungsring ab. Er hängt nicht in der Navigation — `buildNav()` kommt nicht an ihm vorbei, also steht die Zeile in `featureKartenAnwenden()` |
+| **Service Worker** | `v6`, mit `loesungen-basis.js` im Vorrat |
+
+### 6. Die Kopfzeile hatte kein Budget mehr
+
+Der Rettungsring war der **sechste** Knopf in einer Zeile, die schon
+fünf trug. Nachgemessen bei 320px: 50 Pixel über dem Rand, Querlauf der
+ganzen Seite, Abmelden ausserhalb des Bildes. Bei der Leitung auch noch
+bei 390px. `test-abgeschnitten.js` hat es gemeldet, nicht das Auge.
+
+Damit hat die Zeile eine Regel bekommen, die im Design-System steht:
+**wer ihr einen Knopf hinzufügt, nimmt einen heraus** — und zwar nicht
+den, den man am wenigsten mag, sondern den, der **vollständig woanders
+steht**.
+
+| | |
+|---|---|
+| **Hell/Dunkel** | gegangen, ab 520px abwärts. Steht ganz in Profil → Aussehen, hinter dem Kürzel einen Finger breit daneben — dort sogar reicher: Hell, Dunkel **und** „wie das Gerät", was ein Umschalter mit zwei Zuständen gar nicht ausdrücken kann |
+| **Bericht an mich** | gegangen, ab 360px abwärts. Derselbe Knopf steht in Verwaltung → Berichte und in der Werkbank |
+| **Suchen** | geblieben — auf dem Handy der einzige Weg dorthin |
+| **Abmelden** | geblieben — am Schichtwechsel auf einem geteilten Tablet der häufigste Griff überhaupt |
+| **Glocke** | geblieben — sie trägt eine Zahl, und eine Meldung, die man nicht sieht, ist keine |
+
+Nebenbefund: die Glocke wurde bei 320px auf **20 Pixel** zusammen­gedrückt,
+weit unter der 44-Pixel-Regel dieser App. Sie hat jetzt wieder ihre
+vollen 44.
+
+### Neu und geändert
+
+| | |
+|---|---|
+| `loesungen-basis.js` | 115 Einträge, 47 KB. Entsteht aus der PDF, wird **nicht von Hand gepflegt** |
+| `tests/test-loesungen.js` | neu geschrieben: **38 Zusicherungen**. Die Suche wird gegen den *erwarteten* Eintrag gemessen, nicht gegen „es kam irgendetwas" — „elektrde" muss die Elektrode bringen, „kaputt" etwas Beschädigtes. Dazu das echte Foto durch die ganze Kette und die Gegenprobe, dass die Liste keines auf Vorrat lädt |
+| `tests/test-funktionen-schalter.js` | + der Rettungsring folgt seinem Schalter, mit Gegenprobe |
+| `tests/test-navigation.js` | „Betrieb" hat wieder **sechs** Unterseiten |
+| `tests/test-sicherung-inhalt.js` | `schritte` und `herkunft` in der Datei |
+| das Probefoto | 89 Byte, im Durchlauf selbst erzeugt statt als Datei abgelegt: `tests/*.png` ist in `.gitignore` (dort landen die Bildschirmfotos). Es geht den ganzen Weg: Auswahl → Verkleinern → Vorschau → Speichern → Anzeigen |
+| `tests/test-neu-design.js` | eine Zeile in „Alles” führt jetzt auf ein **Fenster** statt auf eine Seite — dieselbe Zusage, anderer Beleg |
+| `firebase.json`, `deploy-functions.yml` | `loesungen-basis.js` löst einen Deploy aus und bekommt eine Woche Zwischenspeicher |
+
+**120 Durchläufe.**
+
+---
+
+## Runde 97 — „Bei jedem einmal" heisst am Konto, nicht am Gerät
+
+> „die führung soll bei jedem einmal starten und du kannst den pr
+> mergen."
+
+Die erste Hälfte war fast schon erfüllt: der gemerkte Stand lag im
+Browser-Speicher, und der ist bei keinem der heutigen Kolleginnen und
+Kollegen gesetzt — die Führung wäre bei allen einmal gelaufen.
+
+**Fast.** Auf dem Tablet am Empfang melden sich nacheinander mehrere
+Leute an; Abmelden ist dort der häufigste Griff überhaupt, und im Code
+steht es auch so („Neu laden statt nur abmelden: so startet der nächste
+Kollege …"). Am Gerät gemerkt hätte **nur der erste** die Führung
+bekommen. Die übrigen hätten nie erfahren, dass es sie gibt — und
+„bei jedem einmal" wäre eine Zusage geblieben, die das Studio-Tablet
+still gebrochen hätte.
+
+Jetzt entscheidet das **Konto**: `users/{uid}.tourGesehen`, eine Zahl,
+die Fassung der Führung. Die Regeln brauchten dafür nichts — ein Konto
+darf sein eigenes Profil ändern, solange es Rolle, Studios, `aktiv`,
+`firma`, `admin` und `handyStempeln` nicht anfasst.
+
+**Der Browser-Speicher bleibt** — als Rückfall, nicht als Wahrheit.
+Scheitert der Schreibvorgang aufs Konto (kein Netz im Keller), fängt
+die Führung sonst bei jeder Anmeldung wieder an. Er trägt deshalb die
+Kontokennung mit sich — `"<fassung>:<uid>"` — und gilt ausdrücklich
+nur für dieses eine Konto auf diesem einen Gerät.
+
+### Die Zeile, die es beweist
+
+Ein einzelner neuer Punkt in `tests/test-fuehrung.js`, und er ist der
+ganze Unterschied:
+
+> **„ein fremder Stand auf demselben Gerät hält sie NICHT auf"**
+
+Das Gerät hat die Führung schon gesehen — aber für jemand anderen. Sie
+muss trotzdem starten. Zusammen mit der Zeile eine Handbreit darüber
+(„mit gemerktem Stand startet sie NICHT") zeigen die beiden, dass
+wirklich das Konto entscheidet und nicht einfach immer oder nie
+gestartet wird. Dazu: der Stand steht danach auch **am Konto**, nicht
+nur im Browser.
+
+Kein guter Zeitpunkt ohne einen Fund — aber diesmal gab es keinen: die
+sechs Attrappen mussten nur die Form mitgehen (`'1:testuid'` statt
+`'1'`), weil sie einen wiederkehrenden Benutzer nachstellen und das
+jetzt eben so aussieht.
+
+| | |
+|---|---|
+| Oberfläche | **123 Dateien, alle sauber** |
+| `tests/test-fuehrung.js` | **177 Zusicherungen** (+2) |
 
 **120 Durchläufe.**

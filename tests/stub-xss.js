@@ -17,7 +17,7 @@
      Das ist keine Abschaltung, sondern der richtige Ausgangszustand.
      Den ERSTEN Start prüft tests/test-fuehrung.js, und der benutzt
      keine Attrappe. */
-  try { localStorage.setItem('kf_tour', '1'); } catch (e) {}
+  try { localStorage.setItem('kf_tour', '1:testuid'); } catch (e) {}
 
   var NUTZLAST = window.__xssNutzlast || ['<img src=x onerror="window.__xss=1">'];
   var i = 0;

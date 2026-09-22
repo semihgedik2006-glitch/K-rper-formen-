@@ -271,6 +271,27 @@ Datensatz; die Datei liegt beim Drittanbieter des Kunden.
 
 ---
 
+### `users/{uid}` — das Feld `tourGesehen` (seit 22.9.2026)
+
+Eine Zahl: die Fassung der Führung, die dieses Konto durchlaufen hat.
+
+**Warum am Konto und nicht am Gerät.** Auf dem Tablet am Empfang melden
+sich nacheinander mehrere Leute an — Abmelden ist dort der häufigste
+Griff überhaupt. Läge der Stand nur im Browser-Speicher, bekäme nur der
+erste die Führung, und die übrigen erführen nie, dass es sie gibt.
+
+Der Browser-Speicher (`kf_tour`) bleibt als **Rückfall** für den Fall,
+dass der Schreibvorgang aufs Konto scheitert — dann fängt die Führung
+nicht bei jeder Anmeldung wieder an. Er trägt die Kontokennung mit sich
+(`"<fassung>:<uid>"`) und gilt ausdrücklich nur für dieses eine Konto auf
+diesem einen Gerät.
+
+Die Regeln brauchten dafür keine Änderung: ein Konto darf sein eigenes
+Profil ändern, solange es Rolle, Studios, `aktiv`, `firma`, `admin` und
+`handyStempeln` nicht anfasst.
+
+---
+
 ### `firmen/{kennung}/loesungen/` und `loesungBilder/` (seit 22.9.2026)
 
 Probleme aus dem Studio und was dagegen hilft. Genauso geteilt wie die
@@ -283,7 +304,28 @@ Dokumente, und aus demselben Grund — hier kommt ein zweiter dazu:
 
 | `loesungen` | `loesungBilder` |
 |---|---|
-| `titel`, `problem`, `loesung`, `kategorie`, `studios`, `bilder` (Liste von IDs), `uid`, `vonName`, `ts` | `data` — Base64, dazu `uid` und `ts` |
+| `titel`, `problem`, `schritte` (Liste), `loesung` (dieselben Schritte am Stück), `kategorie`, `studios`, `bilder` (Liste von IDs), `basis`, `uid`, `vonName`, `ts`, `geaendertVon`, `geaendertAm` | `data` — Base64, dazu `uid` und `ts` |
+
+**`schritte` und `loesung` stehen beide da.** `schritte` ist die
+Wahrheit — eine Anleitung ist eine Reihenfolge. `loesung` trägt
+denselben Text am Stück, weil die Tabellenfassung des Exports eine
+Zelle braucht und weil jeder Eintrag von vor dem 22.9. nur dieses Feld
+hat. Fehlt `schritte`, zerlegt die App `loesung` an den Zeilenumbrüchen.
+
+**`basis` ist der Grund, warum die 115 Handbuch-Einträge nichts
+kosten.** Der Grundstock liegt als Datei (`loesungen-basis.js`), nicht
+in der Datenbank — in der Datenbank läge er bei 39 Konten bei rund
+10.000 Lesevorgängen am Tag, für Inhalte, die sich nie ändern (freies
+Kontingent: 50.000). Wer einen davon ändert oder ein Foto anhängt, legt
+einen **eigenen** Datensatz an, dessen `basis` auf die Handbuch-ID
+zeigt; die App zeigt dann den eigenen statt des Grundstocks. Der
+Dokumentname ist dabei fest: `basis-<id>`. Das ist kein Schmuck — mit
+einer zufälligen ID legten zwei Leute, die denselben Eintrag am selben
+Tag bessern, zwei Fassungen an, und die App müsste raten, welche gilt.
+
+**`geaendertVon` / `geaendertAm`:** Wer berichtigt, ersetzt nicht den
+Verfasser. `uid` und `vonName` bleiben stehen — sonst übernähme die
+Leitung mit einer geradegezogenen Zeile die Urheberschaft.
 
 `studios` ist entweder `'all'` oder eine Liste von Studio-Kennungen.
 **Die Angabe ist eine Herkunft, keine Schranke:** gelesen wird

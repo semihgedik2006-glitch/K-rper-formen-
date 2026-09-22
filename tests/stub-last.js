@@ -28,7 +28,7 @@
      Das ist keine Abschaltung, sondern der richtige Ausgangszustand.
      Den ERSTEN Start prüft tests/test-fuehrung.js, und der benutzt
      keine Attrappe. */
-  try { localStorage.setItem('kf_tour', '1'); } catch (e) {}
+  try { localStorage.setItem('kf_tour', '1:testuid'); } catch (e) {}
 
   var STUDIOS = ['Longerich', 'Nippes', 'Ebertplatz', 'Rath', 'Porz', 'Rondorf',
     'Hürth', 'Brühl', 'Niederkassel Mondorf', 'Refrath', 'Overath',
