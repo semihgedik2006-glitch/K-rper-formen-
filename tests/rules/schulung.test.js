@@ -101,12 +101,18 @@ const WELTEN = [
       await db.doc(w.pfad('schulungen/m-hygiene')).set({
         titel: 'Hygiene im Studio', kategorie: 'hygiene', aktiv: true,
         strenge: 'alles', schritte: [], fragen: [], ts: 1 });
+      /* Seit dem 22.9.2026 steht der CODE im Klartext am Teilnehmer.
+         Damit ist diese Sammlung die Stelle, an der es wehtut, wenn
+         eine Leseregel zu weit ist — und genau deshalb steht er auch
+         hier in den Testdaten. */
       await db.doc(w.pfad('schulungTeilnehmer/t-anna')).set({
-        name: 'Anna', uid: 'anna', kennung: 'M4K7', gesperrt: false, ts: 1 });
+        name: 'Anna', uid: 'anna', kennung: 'M4K7', code: 'M4K7-9TQD-B2HX',
+        gesperrt: false, ts: 1 });
       /* Ein Teilnehmer OHNE Konto — der eigentliche Fall: jemand macht
          die Einarbeitung, bevor er einen Zugang hat. */
       await db.doc(w.pfad('schulungTeilnehmer/t-neu')).set({
-        name: 'Neue Kollegin', uid: null, kennung: 'RPQ2', gesperrt: false, ts: 1 });
+        name: 'Neue Kollegin', uid: null, kennung: 'RPQ2', code: 'RPQ2-K7MV-4NDS',
+        gesperrt: false, ts: 1 });
       await db.doc(w.pfad('schulungCodes/M4K7')).set({
         hash: 'xxx', salz: 'yyy', teilnehmer: 't-anna', ts: 1 });
       await db.doc(w.pfad('schulungVersuche/tablet')).set({ zahl: 3, seit: 1 });
@@ -188,6 +194,17 @@ const WELTEN = [
       alsBen.doc(P('schulungLaeufe/l-laeuft')).get());
     await darfNicht('ein Kollege liest einen fremden Teilnehmer-Eintrag',
       alsBen.doc(P('schulungTeilnehmer/t-anna')).get());
+    /* DIE ZEILE, DIE SEIT DEM 22.9.2026 ZAEHLT. Der Code steht jetzt in
+       diesem Datensatz. Einen einzelnen Fremden zu lesen scheitert
+       schon oben — aber eine ungefilterte Abfrage ueber die ganze
+       Sammlung waere der Weg drumherum: einmal `.get()` auf alles, und
+       man haette jeden Code. Sie muss ebenso scheitern. */
+    await darfNicht('ein Kollege fragt die ganze Teilnehmerliste ab',
+      alsBen.collection(P('schulungTeilnehmer')).get());
+    /* Und auch nicht mit Filter auf sich selbst plus Rest: wer nicht
+       der Eigentuemer ist, kommt an keinen einzigen Datensatz. */
+    await darfNicht('ein Kollege fragt nach einer fremden Kennung',
+      alsBen.collection(P('schulungTeilnehmer')).where('kennung', '==', 'M4K7').get());
     await darfNicht('ein Mitarbeiter legt ein Modul an',
       alsAnna.doc(P('schulungen/m-neu')).set({ titel: 'Meins', kategorie: 'sonstig', ts: 9 }));
     await darfNicht('ein Mitarbeiter legt einen Teilnehmer an',
@@ -219,6 +236,11 @@ const WELTEN = [
       alsAnna.doc(P('schulungLaeufe/l-laeuft')).get());
     await darf('GEGENPROBE und ihren eigenen Teilnehmer-Eintrag',
       alsAnna.doc(P('schulungTeilnehmer/t-anna')).get());
+    /* Ohne diese beiden Zeilen waere die Sperre oben auch bei einer
+       Regel „verbiete alles" gruen — und die Leitung kaeme an keinen
+       einzigen Code mehr heran, also an den ganzen Bereich nicht. */
+    await darf('GEGENPROBE die Leitung liest die ganze Teilnehmerliste',
+      alsLisa.collection(P('schulungTeilnehmer')).get());
     await darf('GEGENPROBE das Gerät schreibt seinen laufenden Durchlauf fort',
       alsTablet.doc(P('schulungLaeufe/l-laeuft')).update({
         aktivMs: 120000, schritteGesehen: [0, 1] }));

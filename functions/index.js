@@ -5022,16 +5022,31 @@ exports.stempeln = region.https.onCall(async (data, context) => {
    („dann muss man aber die Uhrzeit tracken und den Ort bzw. der Studio
    Account welcher genutzt wurde").
 
-   ── WARUM DER CODE GEHASHT LIEGT ───────────────────────────────────
-   Dieselbe Ueberlegung wie bei der Stempel-PIN, und aus demselben
-   Grund ernst gemeint: wer die Code-Liste lesen kann, macht die
-   Schulung fuer einen Kollegen — und der ganze Nachweis ist wertlos.
-   `schulungCodes` steht in firestore.rules auf `allow read, write: if
-   false`, fuer alle. Nur diese Funktionen kommen heran.
+   ── DER CODE BLEIBT LESBAR — FUER DIE LEITUNG ──────────────────────
+   Bis zum 22.9.2026 lag er gehasht und war nach dem Anlegen fuer
+   niemanden mehr zu sehen, auch fuer die Leitung nicht. Aus dem
+   Betrieb kam dazu:
 
-   Die LEITUNG bekommt den Code deshalb genau EINMAL zu sehen, beim
-   Anlegen. Danach niemand mehr, auch sie nicht. Verloren heisst: neu
-   erzeugen. Derselbe Weg wie beim Passwort aus `firmaAnlegen`.
+     „ich wuerde mir wuenschen … das die codes nicht weg sind und sie
+      keiner sehen kann sondern sie bei der verwaltung gespeichert
+      werden, sodass man ihn immer wieder neu erstellen und ansehen und
+      weiterleiten kann."
+
+   Der Einwand trifft die Praxis: ein Code, den man nur einmal sieht,
+   ist ein Zettel, der verlorengeht — und dann steht die Leitung da und
+   muss fuer jeden Handgriff einen neuen erzeugen.
+
+   WAS DAS KOSTET, und das ist keine Kleinigkeit: wer den Code lesen
+   kann, KANN die Schulung im Namen dieser Person machen. Die Aussage
+   des Nachweises verschiebt sich damit von „es war sicher sie" zu
+   „es war sie, und die Leitung steht dafuer gerade". Fuer eine interne
+   Unterweisung ist das die richtige Hoehe — wer die Auswertung
+   besitzt, hat keinen Grund, sich selbst zu betruegen.
+
+   WAS ES NICHT KOSTET: ein KOLLEGE kommt weiterhin nicht heran.
+   `schulungTeilnehmer` darf nur die Leitung lesen — und die Person
+   selbst ihren eigenen Datensatz. Und in die naechtliche Sicherung
+   geht der Code nicht; sie traegt nur die Durchlaeufe.
 
    ── WARUM DER CODE EINEN OFFENEN VORDERTEIL HAT ────────────────────
    `M4K7-RPQ2-XT9B`. Die ersten vier Zeichen sind die Kennung des
@@ -5091,26 +5106,27 @@ async function requireLeitung(context) {
 /* Einen Code erzeugen und ablegen. Gibt ihn EINMAL zurueck. */
 async function schulungCodeSetzen(firma, teilnehmerId) {
   const F = W(firma);
-  let kennung = '';
   /* Die Kennung muss in der Firma einmalig sein, sonst zeigt sie auf
      den falschen Teilnehmer. Fuenf Anlaeufe: bei 32^4 = gut einer
      Million Moeglichkeiten und ein paar Dutzend Teilnehmern ist schon
      der erste praktisch immer frei. */
+  /* Gefragt wird je Anlauf nach GENAU DIESER Kennung, nicht nach der
+     ganzen Teilnehmerliste. Die Liste einmal zu holen waere der
+     bequemere Weg und derselbe Fehler, der an anderer Stelle schon
+     stand: ein Lesevorgang, der mit dem Betrieb waechst, fuer eine
+     Frage, die mit einem einzigen zu beantworten ist. */
+  let kennung = '';
   for (let i = 0; i < 5 && !kennung; i++) {
     const k = schulungZeichen(SCHULUNG_KENNUNG_LAENGE);
-    const da = await F.collection('schulungCodes').doc(k).get();
-    if (!da.exists) kennung = k;
+    const da = await F.collection('schulungTeilnehmer')
+      .where('kennung', '==', k).limit(1).get();
+    if (da.empty) kennung = k;
   }
   if (!kennung) {
     throw new functions.https.HttpsError('internal',
       'Es liess sich keine freie Kennung finden. Bitte noch einmal versuchen.');
   }
   const geheim = schulungZeichen(SCHULUNG_GEHEIM_LAENGE);
-  const salz = require('crypto').randomBytes(16).toString('hex');
-  await F.collection('schulungCodes').doc(kennung).set({
-    hash: pinHashen(geheim, salz), salz: salz,
-    teilnehmer: teilnehmerId, ts: Date.now()
-  });
   return {
     kennung: kennung,
     /* Mit Bindestrichen: so steht er auf dem Zettel und so tippt man
@@ -5141,6 +5157,10 @@ exports.schulungTeilnehmerAnlegen = region.https.onCall(async (data, context) =>
     uid: String((data && data.uid) || '') || null,
     studioKey: String((data && data.studioKey) || '') || null,
     kennung: gesetzt.kennung,
+    /* Der Code im Klartext — die Entscheidung vom 22.9.2026, oben
+       begruendet. Lesen darf ihn die Leitung und die Person selbst;
+       ein Kollege nicht, und die Sicherung traegt ihn nicht. */
+    code: gesetzt.code,
     gesperrt: false,
     angelegtVonUid: uid, angelegtVon: profil.name || '',
     ts: Date.now(), codeAm: Date.now()
@@ -5164,10 +5184,13 @@ exports.schulungCodeNeu = region.https.onCall(async (data, context) => {
   }
   const alt = (tSnap.data() || {}).kennung;
   const gesetzt = await schulungCodeSetzen(firma, id);
-  if (alt && alt !== gesetzt.kennung) {
-    await F.collection('schulungCodes').doc(alt).delete().catch(() => {});
-  }
-  await tSnap.ref.update({ kennung: gesetzt.kennung, codeAm: Date.now() });
+  /* Den alten Hash-Eintrag wegraeumen, falls es noch einen gibt. Seit
+     dem 22.9.2026 legt diese Funktion keinen mehr an; Codes, die
+     vorher ausgegeben wurden, haben aber noch einen. */
+  if (alt) await F.collection('schulungCodes').doc(alt).delete().catch(() => {});
+  await tSnap.ref.update({
+    kennung: gesetzt.kennung, code: gesetzt.code, codeAm: Date.now()
+  });
   return { ok: true, code: gesetzt.code };
 });
 
@@ -5209,9 +5232,28 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
 
   const kennung = roh.slice(0, SCHULUNG_KENNUNG_LAENGE);
   const geheim = roh.slice(SCHULUNG_KENNUNG_LAENGE);
-  const cSnap = await F.collection('schulungCodes').doc(kennung).get();
-  const c = cSnap.exists ? (cSnap.data() || {}) : null;
-  const stimmt = !!c && tokenGleich(pinHashen(geheim, c.salz), c.hash);
+
+  /* Gesucht wird ueber die KENNUNG — die vier offenen Zeichen vorn.
+     Eine Abfrage, kein Durchgehen der ganzen Liste. */
+  const tref = await F.collection('schulungTeilnehmer')
+    .where('kennung', '==', kennung).limit(1).get();
+  const tDoc = tref.empty ? null : tref.docs[0];
+  const tDaten = tDoc ? (tDoc.data() || {}) : null;
+
+  let stimmt = false;
+  if (tDaten && tDaten.code) {
+    /* Der Normalfall seit dem 22.9.2026: Klartext-Vergleich, zeitgleich.
+       Dass der Code im Klartext liegt, ist eine bewusste Entscheidung —
+       die Begruendung steht oben im Kopf dieses Abschnitts. */
+    stimmt = tokenGleich(schulungCodeNormal(tDaten.code), roh);
+  } else {
+    /* RUECKFALL fuer Codes, die vor dem 22.9.2026 ausgegeben wurden:
+       damals lag nur der Hash. Diese Zeilen duerfen weg, sobald kein
+       Teilnehmer mehr ohne `code` dasteht. */
+    const cSnap = await F.collection('schulungCodes').doc(kennung).get();
+    const c = cSnap.exists ? (cSnap.data() || {}) : null;
+    stimmt = !!c && tokenGleich(pinHashen(geheim, c.salz), c.hash);
+  }
   if (!stimmt) {
     /* Hochzaehlen und dieselbe Auskunft wie bei einer falschen
        Kennung: ob der Vorderteil stimmt, geht niemanden etwas an. */
@@ -5221,8 +5263,16 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
   }
   await bremse.ref.set({ zahl: 0, seit: Date.now(), letzter: Date.now() });
 
-  const tSnap = await F.collection('schulungTeilnehmer').doc(String(c.teilnehmer || '')).get();
-  const t = tSnap.exists ? (tSnap.data() || {}) : null;
+  /* Beim Rueckfall zeigt der Hash-Eintrag auf den Teilnehmer; im
+     Normalfall haben wir ihn schon. */
+  let tSnap = tDoc;
+  if (!tSnap) {
+    const cSnap2 = await F.collection('schulungCodes').doc(kennung).get();
+    const c2 = cSnap2.exists ? (cSnap2.data() || {}) : {};
+    tSnap = await F.collection('schulungTeilnehmer').doc(String(c2.teilnehmer || '')).get();
+    if (!tSnap.exists) tSnap = null;
+  }
+  const t = tSnap ? (tSnap.data() || {}) : null;
   if (!t) throw new functions.https.HttpsError('not-found', 'Zu diesem Code gibt es keinen Namen mehr.');
   if (t.gesperrt) {
     throw new functions.https.HttpsError('permission-denied',

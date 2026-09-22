@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xpqouyiXlJZvC7Ez4czL1F/4lex8X1AoVNLnOsjJtjI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-i+cgUdE1cRAT4aAq4EZHkojtO2xksfWtY3yHQxBN+z0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4372,6 +4372,24 @@ html{font-size:var(--fs,100%)}
 .sch-antwortzeile input[type=radio]{width:22px;height:22px;flex-shrink:0;
   accent-color:var(--accent)}
 .sch-antwortzeile .inp{flex:1;margin-top:0}
+/* Die Zahl im Reiter. Sie sagt, wieviel dahinterliegt, BEVOR man
+   draufdrueckt — sonst tippt man drei Reiter durch, um zu sehen, wo
+   ueberhaupt etwas steht. */
+.sch-reiterzahl{margin-left:var(--s6);opacity:.65;font-variant-numeric:tabular-nums}
+/* Der sichtbare Code. Ziffernbreite fest, damit `0` und `O` nicht
+   erst beim Abtippen auffallen — im Alphabet dieser Codes gibt es
+   beide gar nicht, und genau das soll man sehen koennen. */
+.sch-kenn-voll{color:var(--text-1);font-size:var(--t-sm);
+  font-variant-numeric:tabular-nums;
+  user-select:all;-webkit-user-select:all;white-space:nowrap}
+/* Eine Zeile unter „Das steht fuer dich an". Ganze Zeile anfassbar,
+   nicht nur der Pfeil: bei 320px waere der Pfeil allein 24 Pixel. */
+.sch-faellig-zeile{display:flex;align-items:center;gap:var(--s10);width:100%;
+  min-height:56px;padding:var(--s10) var(--s12);border:1px solid var(--line);
+  border-radius:var(--r-md);background:var(--bg-soft);margin-bottom:var(--s8);
+  text-align:left;cursor:pointer;color:inherit;font:inherit}
+.sch-faellig-zeile:hover{border-color:var(--accent)}
+.sch-faellig-zeile .sch-ico{flex:0 0 auto}
 .sch-tn-zeile{display:flex;align-items:center;gap:var(--s10);
   padding:var(--s10) var(--s12);border-top:1px solid var(--line);flex-wrap:wrap}
 .sch-tn-zeile:first-child{border-top:none}
@@ -4959,12 +4977,14 @@ body.neu .al-gruppe[data-farbe="studio"]   {--gf:#7DB8FF;--gf-f:rgba(96,165,250,
 body.neu .al-gruppe[data-farbe="wann"]     {--gf:#FF8FC8;--gf-f:rgba(244,114,182,.3)}
 body.neu .al-gruppe[data-farbe="neues"]    {--gf:#4EE6D2;--gf-f:rgba(45,212,191,.3)}
 body.neu .al-gruppe[data-farbe="meine"]    {--gf:#BBA4FF;--gf-f:rgba(var(--akz2-rgb),.3)}
+body.neu .al-gruppe[data-farbe="wissen"]   {--gf:#8BE06A;--gf-f:rgba(101,200,70,.3)}
 body.neu .al-gruppe[data-farbe="verwalten"]{--gf:#AEBBCE;--gf-f:rgba(148,163,184,.28)}
 body.neu.light .al-gruppe[data-farbe="tun"]      {--gf:#AE3A0A;--gf-f:rgba(194,65,12,.2)}
 body.neu.light .al-gruppe[data-farbe="studio"]   {--gf:#1743C4;--gf-f:rgba(29,78,216,.2)}
 body.neu.light .al-gruppe[data-farbe="wann"]     {--gf:#A91453;--gf-f:rgba(190,24,93,.2)}
 body.neu.light .al-gruppe[data-farbe="neues"]    {--gf:#0B6A62;--gf-f:rgba(15,118,110,.2)}
 body.neu.light .al-gruppe[data-farbe="meine"]    {--gf:#5F1FC7;--gf-f:rgba(109,40,217,.2)}
+body.neu.light .al-gruppe[data-farbe="wissen"]   {--gf:#2F6B12;--gf-f:rgba(47,107,18,.2)}
 body.neu.light .al-gruppe[data-farbe="verwalten"]{--gf:#3B4859;--gf-f:rgba(71,85,105,.18)}
 /* Die Frage, nicht das Hauptwort: „Was ist im Studio?" findet jemand,
    der die App nicht kennt — „Betrieb" nicht. So vom Nutzer gewählt.
@@ -6842,6 +6862,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
           <!-- ── 1. Übersicht ── -->
           <div id="schUebersicht">
+            <!-- Was offen ist, steht ganz oben — und nur dann. Ein
+                 Kasten, der jeden Tag „alles erledigt" sagt, nimmt
+                 Platz für eine Nachricht, die man einmal braucht. -->
+            <div class="card" id="schFaelligKarte" style="display:none">
+              <h3 data-ikon="warnung">Das steht für dich an</h3>
+              <div id="schFaellig"></div>
+            </div>
             <!-- „Jeder sieht seine eigenen Zahlen." Das ist der
                  Unterschied zwischen einer Auswertung und einer
                  heimlichen Akte — und er steht deshalb ganz oben, nicht
@@ -6853,6 +6880,18 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <div class="chip-row" id="schKatRow" style="margin-bottom:12px"></div>
             <div id="schListe"></div>
             <p class="hint" id="schStand"></p>
+            <!-- ── Die zweite Hälfte desselben Themas ──
+                 Schulung sagt, wie es geht, BEVOR es soweit ist;
+                 „Hilfe im Studio" sagt es, wenn es gerade brennt.
+                 Getrennte Wege in der App, dieselbe Frage im Kopf —
+                 deshalb steht hier der Weg zum anderen, statt dass man
+                 ihn sich merken muss. -->
+            <button type="button" class="sch-karte" id="schZurHilfe"
+                    data-feature="loesungen">
+              <span class="sch-ico" data-ikon="rettung"></span>
+              <span class="sch-txt"><b>Hilfe im Studio</b>
+                <i>Wenn es gerade jetzt klemmt: 115 Probleme und was Schritt für Schritt hilft.</i></span>
+              <span class="al-pfeil">›</span></button>
           </div>
 
           <!-- ── 2. Der Code ── -->
@@ -14614,6 +14653,23 @@ function allesGruppen(){
     {label:'Geräte',        view:'geraete',  ikon:'geraete',  was:'Defekt melden, Verlauf ansehen'},
     {label:'Probetraining', view:'probe',    ikon:'probe',    was:'Durchgeführt und abgeschlossen'},
     {label:'Dokumente',     view:'docs',     ikon:'docs',     was:'Dateien und Links fürs Team'},
+  ]);
+  /* ── Eine eigene Überschrift für beides ──────────────────────────
+     Anlass, wörtlich: „eventuell, das er auch anders liegt, irgendwie
+     ein weiteres Modul, wo dann Hilfe und Schulung oder so steht."
+
+     Ein SIEBTER Bereich neben Start, Chat, Betrieb, Ich, Team und
+     Verwaltung wäre die falsche Antwort auf den Wunsch gewesen, es
+     möge einfacher werden: die untere Leiste hat vier feste Plätze,
+     ein siebter Bereich hätte dort keinen bekommen und wäre nur über
+     „Alles" erreichbar — also genau über diese Liste hier.
+
+     Also steht er als Überschrift IN dieser Liste. Zwei Tipps, wie zu
+     jedem anderen Ziel auch, die beiden gehören sichtbar zusammen,
+     und die Navigation der App bleibt, wie sie ist. Den dritten Weg
+     gibt es zusätzlich: auf der Schulungsseite unten steht der Knopf
+     zur Hilfe, und der Rettungsring bleibt oben in der Leiste. */
+  gruppe('Was muss ich wissen?', 'wissen', [
     /* Kein `view`: dahinter liegt keine Seite mehr, sondern das
        Hilfe-Fenster. `hilfe:true` sagt allesZiel(), dass es öffnen
        statt wechseln soll. */
@@ -14625,7 +14681,9 @@ function allesGruppen(){
        nicht und meldet toten Ballast. */
     {label:'Hilfe im Studio', hilfe:true, feature:'loesungen',
      roh:ikon('rettung'),
-     was:'115 Probleme und was Schritt für Schritt hilft'},
+     was:'Wenn es jetzt klemmt: 115 Probleme, Schritt für Schritt'},
+    {label:'Schulung',      view:'schulung', ikon:'schulung',
+     was:'Vorher wissen, wie es geht — Webinare mit Fragen'},
   ]);
   /* Aus FEATURES abgeleitet: dieselben vier Schalter, dieselben
      Beschriftungen, dieselbe Reihenfolge wie im System-Reiter. */
@@ -14649,8 +14707,6 @@ function allesGruppen(){
      was:'Eigene Termine und Notizen'},
     {label:'Meine Zeiten',  view:'ich', ichtab:'daten',    ikon:'uhr',
      was:'Gestempelte Stunden, Nachweise, Daten'},
-    {label:'Schulung',      view:'schulung', ikon:'schulung',
-     was:'Webinare Schritt für Schritt, mit Fragen'},
     {label:'Persönlich',    view:'persoenlich', ikon:'persoenlich',
      was:'Nur für dich, niemand sonst sieht es'},
   ]);
@@ -17739,6 +17795,9 @@ var _schMeine = [], _schMeineUnsub = null;
 var _schAlleLaeufe = [], _schLaeufeUnsub = null;
 var _schTeilnehmer = [], _schTnUnsub = null;
 var _schKat = 'alle';
+/* Welcher Code gerade sichtbar ist — genau einer, und nur solange die
+   Liste offen steht. Nach dem Abmelden ist das wieder leer. */
+var _schCodeOffen = '';
 var _schAnsicht = 'uebersicht';
 var _schModul = null, _schLauf = null;
 var _schPos = 0, _schPhase = 'schritte';   // schritte | fragen
@@ -17942,6 +18001,12 @@ function schUebersichtZeichnen(){
       });
     }
   }
+  schFaelligZeichnen(alle);
+  var zh=$('schZurHilfe');
+  if(zh && !zh._hat){
+    zh._hat=1;
+    zh.addEventListener('click', function(){ hilfeOeffnen(); });
+  }
   if(stand){
     stand.textContent = _schBasisStatus==='da'
       ? (_schBasis.module||[]).length+' Module'+
@@ -17950,6 +18015,46 @@ function schUebersichtZeichnen(){
       : '';
   }
   schMeineZeichnen();
+}
+/* ── Was offen ist, steht oben ────────────────────────────────────
+   Die Übersicht führte bisher mit einer Chipzeile und dann allen
+   Modulen in einer Reihe. Wer wissen wollte, was er noch machen MUSS,
+   las dafür jede Karte einzeln durch und suchte nach dem Wort
+   „Pflicht".
+
+   Jetzt steht die Antwort als erstes da — und wenn nichts offen ist,
+   steht der Kasten gar nicht erst herum. Ein leerer Kasten, der sagt
+   „alles erledigt", nimmt jeden Tag Platz für eine Nachricht, die man
+   einmal braucht. */
+function schFaelligZeichnen(alle){
+  var karte=$('schFaelligKarte'), box=$('schFaellig');
+  if(!karte || !box) return;
+  var offen=(alle||schModule()).filter(function(m){
+    if(!m.pflicht) return false;
+    var st=schStand(m);
+    return st.art!=='fertig';
+  });
+  if(!offen.length){ karte.style.display='none'; return; }
+  karte.style.display='';
+  box.innerHTML=offen.map(function(m){
+    var st=schStand(m), k=schKat(m.kat);
+    /* EIGENES Merkmal, nicht `data-schmodul`: die Modulkarten in der
+       Liste darunter tragen das schon, und eine Suche nach allen
+       Modulkarten fände sonst diese Zeilen mit — sie haben aber einen
+       anderen Aufbau. Genau daran ist der Probelauf hängengeblieben. */
+    return '<button type="button" class="sch-faellig-zeile" data-schfaellig="'+esc(m.id)+'">'+
+      '<span class="sch-ico">'+ikon(k.ico)+'</span>'+
+      '<span class="sch-tn-name">'+esc(m.titel||'Ohne Titel')+
+        '<span>'+(st.art==='faellig' ? 'wieder fällig' : 'noch nicht gemacht')+
+        (m.dauer ? ' · etwa '+m.dauer+' Minuten' : '')+'</span></span>'+
+      '<span class="al-pfeil">›</span></button>';
+  }).join('');
+  box.querySelectorAll('[data-schfaellig]').forEach(function(b){
+    b.addEventListener('click', function(){
+      schCodeZeigen(b.getAttribute('data-schfaellig'));
+    });
+  });
+  ikonenEinsetzen(box);
 }
 function schMeineZeichnen(){
   var karte=$('schMeineKarte'), box=$('schMeine');
@@ -18311,20 +18416,46 @@ function schLaeufeLaden(){
       if(_schAnsicht==='verwalten') schVerwaltenZeichnen();
     }, function(e){ console.warn('Durchläufe:', e.message); });
 }
+/* ── Drei Reiter statt drei Kästen untereinander ──────────────────
+   Anlass, wörtlich: „ich würde mir wünschen, das es aufbautechnisch
+   leichter ist."
+
+   Vorher standen Teilnehmer, Module und Auswertung als drei Karten
+   hintereinander auf einer Seite. Auf 390 Pixeln war das ein Streifen
+   von über zweitausend Pixeln Höhe — wer die Auswertung sehen wollte,
+   scrollte an einem Formular und einer Modulliste vorbei, die er
+   gerade gar nicht brauchte.
+
+   Die Reiter sind kein Schmuck: sie sagen, dass es DREI Dinge sind,
+   und zeigen jeweils nur eines. Dieselbe Chipzeile wie in der
+   Übersicht darüber — kein neues Bedienmuster für dieselbe Sache. */
+var _schVwTab='tn';
 function schVerwaltenZeichnen(){
   var box=$('schVerwalten'); if(!box || !canManage()) return;
   var fertig=_schAlleLaeufe.filter(function(l){ return l.status==='fertig'; });
-  box.innerHTML=
-    '<button type="button" class="hilfe-zurueck" data-schzurueck="uebersicht">‹ Zurück</button>'+
-    /* Erst die Codes, dann die Auswertung: ohne Code gibt es keinen
-       Durchlauf, und wer hier zum ersten Mal steht, braucht genau
-       diesen Knopf. */
+  var reiter=[
+    { id:'tn',   name:'Teilnehmer', zahl:_schTeilnehmer.length },
+    { id:'mod',  name:'Module',     zahl:schModule().length },
+    { id:'aus',  name:'Auswertung', zahl:fertig.length }
+  ];
+  var kopf='<button type="button" class="hilfe-zurueck" data-schzurueck="uebersicht">‹ Zurück</button>'+
+    '<div class="chip-row" id="schVwTabs" style="margin-bottom:12px">'+
+      reiter.map(function(r){
+        return '<button type="button" class="chip'+(_schVwTab===r.id?' an':'')+
+          '" data-schvwtab="'+r.id+'">'+esc(r.name)+
+          '<span class="sch-reiterzahl">'+r.zahl+'</span></button>';
+      }).join('')+
+    '</div>';
+  var inhalt='';
+  if(_schVwTab==='tn'){
+    inhalt=
     '<div class="card">'+
       '<h3 data-ikon="schluessel">Teilnehmer und Codes</h3>'+
       '<p class="hint">Jeder Code gehört zu genau einem Namen. Wer ihn eintippt, '+
         'gilt als diese Person — auch ohne eigenen Zugang zur App. '+
-        '<b>Der Code ist nur einmal zu sehen</b>, direkt nach dem Anlegen; danach '+
-        'kann ihn niemand mehr auslesen, auch die Leitung nicht.</p>'+
+        'Die Codes bleiben hier stehen: du kannst sie jederzeit wieder '+
+        'ansehen, kopieren, weitergeben oder neu erzeugen. '+
+        '<b>Lesen darf sie nur die Leitung</b> — und jede Person ihren eigenen.</p>'+
       '<div class="field" style="margin-top:14px">'+
         '<label for="schTnName">Name der Person</label>'+
         '<input class="inp" id="schTnName" type="text" maxlength="80" '+
@@ -18336,7 +18467,9 @@ function schVerwaltenZeichnen(){
       '<button class="btn btn-primary btn-sm" id="schTnNeu">Teilnehmer anlegen</button>'+
       '<div id="schCodeBox"></div>'+
       '<div id="schTnListe" style="margin-top:14px"></div>'+
-    '</div>'+
+    '</div>';
+  } else if(_schVwTab==='mod'){
+    inhalt=
     '<div class="card">'+
       '<h3 data-ikon="blatt">Module</h3>'+
       '<p class="hint">Der Grundstock liegt als Datei und kostet nichts. Was du '+
@@ -18345,22 +18478,35 @@ function schVerwaltenZeichnen(){
       '<div id="schModulListe" style="margin-top:12px"></div>'+
       '<button type="button" class="btn btn-ghost btn-sm" id="schModulNeu" '+
         'style="width:100%;margin-top:10px">Neues Modul anlegen</button>'+
-    '</div>'+
+    '</div>';
+  } else {
+    inhalt=
     '<div class="card">'+
       '<h3 data-ikon="raster">Wer hat was gemacht</h3>'+
       '<p class="hint">'+fertig.length+' abgeschlossene Durchläufe. Dauer zählt nur, '+
         'solange das Fenster wirklich offen war.</p>'+
       '<div id="schLaufListe"></div>'+
     '</div>';
+  }
+  box.innerHTML=kopf+inhalt;
+  box.querySelectorAll('[data-schvwtab]').forEach(function(b){
+    b.addEventListener('click', function(){
+      _schVwTab=b.getAttribute('data-schvwtab'); schVerwaltenZeichnen(); tick(6);
+    });
+  });
   schZurueckBinden(box);
-  schTnSelectBauen();
-  schTnListeZeichnen();
-  schModulListeZeichnen();
-  schLaufListeZeichnen();
-  var mn=$('schModulNeu');
-  if(mn) mn.addEventListener('click', function(){ schModulFormZeigen(null); });
-  var b=$('schTnNeu');
-  if(b) b.addEventListener('click', schTnAnlegen);
+  if(_schVwTab==='tn'){
+    schTnSelectBauen();
+    schTnListeZeichnen();
+    var b=$('schTnNeu');
+    if(b) b.addEventListener('click', schTnAnlegen);
+  } else if(_schVwTab==='mod'){
+    schModulListeZeichnen();
+    var mn=$('schModulNeu');
+    if(mn) mn.addEventListener('click', function(){ schModulFormZeigen(null); });
+  } else {
+    schLaufListeZeichnen();
+  }
   ikonenEinsetzen(box);
 }
 function schTnSelectBauen(){
@@ -18380,16 +18526,61 @@ function schTnListeZeichnen(){
   box.innerHTML=_schTeilnehmer.map(function(t){
     var zahl=_schAlleLaeufe.filter(function(l){
       return l.teilnehmer===t.id && l.status==='fertig' && l.bestanden; }).length;
+    /* Der Code steht NICHT offen in der Liste. Wer über die Schulter
+       schaut, soll nicht zwanzig Codes auf einmal mitlesen können —
+       und wer einen braucht, drückt einen Knopf. */
+    var offen=(_schCodeOffen===t.id);
     return '<div class="sch-tn-zeile">'+
       '<span class="sch-tn-name">'+esc(t.name||'')+
         '<span>'+zahl+(zahl===1?' Modul':' Module')+' bestanden'+
-        (t.uid?' · mit Zugang':'')+'</span></span>'+
-      '<span class="sch-kenn">'+esc(t.kennung||'')+'</span>'+
+        (t.uid?' · mit Zugang':'')+
+        (t.gesperrt?' · stillgelegt':'')+'</span></span>'+
+      (offen
+        ? '<span class="sch-kenn sch-kenn-voll" data-schcodetext="'+esc(t.id)+'">'+
+            esc(t.code||(''+(t.kennung||'')+'-????-????'))+'</span>'
+        : '<span class="sch-kenn">'+esc(t.kennung||'')+'</span>')+
+      '<button type="button" class="btn btn-ghost btn-sm" data-schcode="'+esc(t.id)+'">'+
+        (offen?'Verbergen':'Code zeigen')+'</button>'+
+      (offen && t.code
+        ? '<button type="button" class="btn btn-ghost btn-sm" data-schkopie="'+esc(t.id)+'">Kopieren</button>'+
+          '<button type="button" class="btn btn-ghost btn-sm" data-schteilen="'+esc(t.id)+'">Weitergeben</button>'
+        : '')+
       '<button type="button" class="btn btn-ghost btn-sm" data-schneucode="'+esc(t.id)+'">Neuer Code</button>'+
       '<button type="button" class="btn btn-ghost btn-sm" data-schsperre="'+esc(t.id)+'">'+
         (t.gesperrt?'Wieder freigeben':'Stilllegen')+'</button>'+
       '</div>';
   }).join('');
+  function tnVon(el, attr){
+    var id=el.getAttribute(attr);
+    return _schTeilnehmer.filter(function(x){ return x.id===id; })[0]||{};
+  }
+  box.querySelectorAll('[data-schcode]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var id=b.getAttribute('data-schcode');
+      _schCodeOffen = (_schCodeOffen===id) ? '' : id;
+      schTnListeZeichnen(); tick(6);
+    });
+  });
+  box.querySelectorAll('[data-schkopie]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=tnVon(b,'data-schkopie');
+      copyText(t.code||'').then(function(){ toast('Code kopiert ✓'); });
+    });
+  });
+  /* „Weitergeben" reicht den Code an das durch, was das Gerät kennt —
+     Nachrichten, Mail, was auch immer. Ohne Teilen-Fenster bleibt das
+     Kopieren, und der Knopf sagt es dann auch. */
+  box.querySelectorAll('[data-schteilen]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=tnVon(b,'data-schteilen');
+      var text='Dein Zugang zur Schulung ('+(t.name||'')+'): '+(t.code||'');
+      if(navigator.share){
+        navigator.share({ title:'Schulungs-Code', text:text }).catch(function(){});
+      } else {
+        copyText(text).then(function(){ toast('Text kopiert — jetzt einfügen ✓'); });
+      }
+    });
+  });
   box.querySelectorAll('[data-schneucode]').forEach(function(b){
     b.addEventListener('click', function(){ schCodeNeu(b.getAttribute('data-schneucode'), b); });
   });
@@ -18411,7 +18602,8 @@ function schCodeAnzeigen(name, code){
      Was eine Prüfung verwechselt, verwechselt auch ein Mensch. */
   box.innerHTML='<div class="sch-codebox">'+
     '<p>Code für <span style="font-weight:700">'+esc(name)+'</span> — '+
-      'jetzt aufschreiben oder weitergeben. Nach dem Schliessen ist er nicht mehr zu sehen.</p>'+
+      'weitergeben oder kopieren. Er bleibt in der Liste darunter stehen, '+
+      'unter „Code zeigen".</p>'+
     '<b id="schCodeText">'+esc(code)+'</b>'+
     '<button type="button" class="btn btn-ghost btn-sm" id="schCodeKopie">Kopieren</button> '+
     '<button type="button" class="btn btn-ghost btn-sm" id="schCodeZu">Schliessen</button>'+
@@ -18922,7 +19114,7 @@ function schAufraeumen(){
   _schEigen=[]; _schMeine=[]; _schAlleLaeufe=[]; _schTeilnehmer=[];
   _schModul=null; _schLauf=null; _schPos=0; _schPhase='schritte';
   _schGesehen=[]; _schAntworten=[]; _schFrageIdx=0; _schAktivMs=0;
-  _schKat='alle'; _schAnsicht='uebersicht';
+  _schKat='alle'; _schAnsicht='uebersicht'; _schVwTab='tn'; _schCodeOffen='';
   _schEntwurf=null; _schEntwurfNeu=false;
 }
 

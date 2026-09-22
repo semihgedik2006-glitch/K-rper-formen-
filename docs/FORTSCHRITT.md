@@ -10572,3 +10572,109 @@ belegt das für jedes Ziel der Liste.
 | Bedienelemente im Editor | 74 je Breite, bei 320/390/430 px **0 unter 44 px, 0 über den Rand** |
 
 **121 Durchläufe.**
+
+---
+
+## Runde 100 — Die Codes bleiben, und die Verwaltung wird flacher
+
+Drei Wünsche auf einmal, und einer davon endete mit
+„sag du mir einfach, was du für besser einschätzen würdest."
+
+### 1. „Das die codes nicht weg sind"
+
+> „ich würde mir wünschen … das die codes nicht weg sind und sie keiner
+> sehen kann sondern sie bei der verwaltung gespeichert werden, sodass
+> man ihn immer wieder neu erstellen und ansehen und weiterleiten kann."
+
+Bis heute lag der Code gehasht, wie eine Stempel-PIN, und war nach dem
+Anlegen für niemanden mehr zu sehen — auch nicht für die Leitung. Der
+Einwand trifft die Praxis: **ein Code, den man nur einmal sieht, ist ein
+Zettel, der verlorengeht.** Dann steht die Leitung da und erzeugt für
+jeden Handgriff einen neuen.
+
+Jetzt steht er im Klartext an `schulungTeilnehmer`. In der Liste sieht
+man zunächst nur die Kennung — die vier offenen Zeichen vorn, die allein
+nichts aufschliessen. **„Code zeigen"** holt ihn hervor, daneben stehen
+**Kopieren** und **Weitergeben**, ein zweiter Druck räumt ihn weg.
+
+Zugeklappt, weil zwanzig vollständige Codes untereinander jeder
+mitliest, der einmal auf den Bildschirm sieht.
+
+**Was das kostet, und es steht jetzt an vier Stellen offen da** — im
+Kopf der Funktion, in den Regeln, in `DATENBANK.md` und im Handbuch:
+
+> Wer den Code lesen kann, **kann** die Schulung im Namen dieser Person
+> machen. Der Nachweis sagt damit nicht mehr „es war mit Sicherheit
+> sie", sondern „es war sie, und die Leitung steht dafür gerade".
+
+Für eine interne Unterweisung ist das die richtige Höhe: wer die
+Auswertung besitzt, hat keinen Grund, sich selbst zu betrügen.
+
+**Was es NICHT kostet**, und das ist die Zeile, die diesen Schritt
+tragbar macht: ein Kollege kommt weiterhin an keinen fremden Code.
+`schulungTeilnehmer` darf nur die Leitung lesen — und jede Person ihren
+eigenen Datensatz. Neu geprüft, in beiden Welten:
+
+| | |
+|---|---|
+| ein Kollege liest einen fremden Eintrag | **verboten** |
+| … und auch die ganze Sammlung auf einmal | **verboten** — der Weg drumherum |
+| … und auch gefiltert auf eine fremde Kennung | **verboten** |
+| GEGENPROBE die Leitung liest die ganze Liste | **erlaubt** — sonst wäre der Bereich tot |
+
+In die nächtliche Sicherung geht der Code nicht; sie trägt nur die
+Durchläufe. Die alten, gehashten Codes bleiben als Rückfall lesbar und
+werden beim nächsten „Neuer Code" weggeräumt — niemand muss etwas tun.
+
+### 2. „Das es aufbautechnisch leichter ist"
+
+Die Verwaltung bestand aus drei Karten untereinander: Teilnehmer,
+Module, Auswertung. Auf 390 Pixeln ein Streifen von über zweitausend
+Pixeln — wer die Auswertung wollte, scrollte an einem Formular und
+einer Modulliste vorbei, die er gerade nicht brauchte.
+
+Jetzt **drei Reiter**, und **in jedem Reiter steht seine Zahl**: man
+sieht, wo etwas ist, bevor man hinklickt. Dieselbe Chipzeile wie in der
+Übersicht darüber — kein neues Bedienmuster für dieselbe Sache.
+
+Und auf der Übersicht steht jetzt oben **„Das steht für dich an"**: die
+offenen Pflichtmodule. Vorher las man dafür jede Karte durch und suchte
+das Wort „Pflicht". Der Kasten steht **nur da, wenn etwas offen ist** —
+einer, der jeden Tag „alles erledigt" sagt, nimmt Platz für eine
+Nachricht, die man einmal braucht.
+
+### 3. „Eventuell ein weiteres Modul, wo Hilfe und Schulung steht"
+
+Gefragt war meine Einschätzung, und sie lautet: **nein, kein siebter
+Bereich** — und zwar genau, weil der Wunsch dahinter „leichter" hiess.
+
+Die untere Leiste hat **vier feste Plätze** (Start, Aufgaben,
+Nachrichten, Alles). Ein siebter Bereich hätte dort keinen bekommen und
+wäre nur über „Alles" erreichbar gewesen — also über genau die Liste,
+in der beide ohnehin stehen. Dazu eine Farbe, ein Untertitel, ein
+Eintrag in der Seitenleiste: mehr Struktur für denselben Weg.
+
+Also steht er als **Überschrift in dieser Liste**: „Was muss ich
+wissen?" mit Hilfe im Studio und Schulung darunter. Zwei Tipps, wie zu
+jedem anderen Ziel. Dazu zwei weitere Verbindungen, die nichts kosten:
+
+* unten auf der Schulungsseite ein Knopf zur **Hilfe im Studio**
+* der Rettungsring bleibt, wo er ist — oben in der Leiste
+
+Die Trennung ist inhaltlich und hat einen Satz: **Schulung sagt, wie es
+geht, bevor es soweit ist; Hilfe sagt es, wenn es gerade brennt.**
+
+### Zwei Funde beim Nachmessen
+
+| | |
+|---|---|
+| **Zwei verschiedene Zeilen trugen `data-schmodul`** | die neuen Fällig-Zeilen und die Modulkarten. Der Probelauf suchte alle Modulkarten und fand die neuen mit — anderer Aufbau, Abbruch. Ein Merkmal, das zwei Dinge meint, ist keins |
+| **Der Probelauf klappte die falsche Zeile zu** | er griff nach dem ersten „Code zeigen" der Liste statt nach dem in der offenen Zeile. Die Teilnehmer stehen alphabetisch — die geprüfte Person war nicht die erste |
+
+| | |
+|---|---|
+| `tests/test-schulung.js` | **81 Zusicherungen** (+13) |
+| `tests/rules/schulung.test.js` | **62 Zusicherungen** (+6), beide Welten |
+| Bedienelemente, gemessen bei 320/390/430/820 px | Übersicht 10, Verwaltung 4–15 je Reiter — **0 unter 44 px, 0 über den Rand, kein Seitwärtsscrollen** |
+
+**124 Durchläufe.**
