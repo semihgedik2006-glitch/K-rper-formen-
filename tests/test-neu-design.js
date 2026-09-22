@@ -144,6 +144,10 @@ async function seite(b, stub, such, breite) {
         was: (z.querySelector('b') || {}).textContent || '',
         wozu: (z.querySelector('i') || {}).textContent || '',
         ziel: z.getAttribute('data-alles'),
+        /* Seit dem 22.9.2026 führt eine Zeile nicht auf eine Seite,
+           sondern öffnet ein Fenster: „Hilfe im Studio". Sie nennt
+           trotzdem ein Ziel — nur eines ohne eigene Adresse. */
+        fenster: !!z.getAttribute('data-al-hilfe'),
       })),
       abgeschnitten: zeilen.some(z => {
         const t = z.querySelector('b');
@@ -165,7 +169,8 @@ async function seite(b, stub, such, breite) {
   pruefe('jede Zeile ist mindestens 64px hoch',
     liste.hoehen.every(h => h >= 62), JSON.stringify([...new Set(liste.hoehen)]));
   pruefe('jede Zeile nennt ein Ziel',
-    liste.texte.every(t => t.was.trim().length > 2 && t.ziel), JSON.stringify(liste.texte.slice(0, 3)));
+    liste.texte.every(t => t.was.trim().length > 2 && (t.ziel || t.fenster)),
+    JSON.stringify(liste.texte.filter(t => !(t.was.trim().length > 2 && (t.ziel || t.fenster)))));
   /* Der Name allein beantwortet nicht, wofür man hingeht. „Geräte"
      sagt wenig, „Geräte — Defekt melden" sagt alles. */
   pruefe('und sagt dazu, wofür sie da ist',
@@ -207,6 +212,21 @@ async function seite(b, stub, such, breite) {
       if (cg) {
         const pane = [...document.querySelectorAll('.chef-pane')].find(x => x.offsetParent !== null);
         reiterOk = !!(pane && pane.getAttribute('data-cpane') === cg);
+      }
+      /* Die Hilfe ist kein Seitenwechsel: sie legt sich über das, was
+         offen war, und gibt genau dorthin zurück. Geprüft wird
+         deshalb, dass das FENSTER auf ist — dieselbe Zusage (zwei
+         Tipps, und man ist da), nur mit einem anderen Beleg. */
+      if (z.getAttribute('data-al-hilfe')) {
+        const auf = document.getElementById('hilfe').classList.contains('show');
+        const raus = {
+          name, tipps, reiterOk,
+          view: auf ? 'FENSTER-AUF' : 'FENSTER-ZU',
+          ziel: 'FENSTER-AUF',
+          ladeZu: document.getElementById('allesLade').hidden,
+        };
+        if (auf) document.getElementById('hilfeZu').click();
+        return raus;
       }
       return {
         name, tipps, reiterOk,
