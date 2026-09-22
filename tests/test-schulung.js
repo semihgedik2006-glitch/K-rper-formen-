@@ -44,6 +44,13 @@
    7. WAS FEHLT, WIRD GESAGT. Solange kein Video hinterlegt ist, steht
       am Platzhalter „Video folgt" — die App tut NICHT so, als sei der
       Schritt vollständig.
+
+   8. DIE LEITUNG KANN MODULE SELBST PFLEGEN — und der Grundstock
+      bleibt trotzdem eine Datei. Die entscheidende Zahl ist hier
+      dieselbe wie bei den Lösungen: nach einer EIGENEN FASSUNG eines
+      Datei-Moduls stehen genauso viele Module da wie vorher. Stünde
+      dasselbe Modul zweimal in der Liste — einmal richtig, einmal
+      veraltet —, wüsste niemand, welches gilt.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME ||
@@ -370,6 +377,173 @@ async function codeHolen(p, name) {
   pruefe('GEGENPROBE er sieht die Module trotzdem',
     alsMitarbeiter.module >= 3, String(alsMitarbeiter.module));
   pruefe('keine Skriptfehler (Mitarbeiter)', mFehler.length === 0, mFehler[0]);
+
+  // ══ 9. Die Leitung pflegt Module selbst ══
+  console.log('\n── Module selbst pflegen ──');
+  const c = await starte(b, 'chef');
+  const cFehler = [];
+  c.on('pageerror', e => cFehler.push(e.message.slice(0, 160)));
+  await zurSchulung(c);
+  const vorher = await c.evaluate(() =>
+    [...document.querySelectorAll('[data-schmodul]')].map(x => x.querySelector('b').textContent));
+  await c.click('#schVerwaltenBtn');
+  await c.waitForTimeout(900);
+  const verwaltung = await c.evaluate(() => ({
+    zeilen: document.querySelectorAll('#schModulListe .sch-tn-zeile').length,
+    knoepfe: [...document.querySelectorAll('[data-schbearbeiten]')].map(x => x.textContent.trim()),
+    neu: !!document.getElementById('schModulNeu')
+  }));
+  pruefe('die Verwaltung listet die Module', verwaltung.zeilen === vorher.length,
+    verwaltung.zeilen + ' / ' + vorher.length);
+  pruefe('mit einem Knopf zum Anlegen', verwaltung.neu);
+  /* Ein Modul aus der DATEI kann man nicht an Ort und Stelle ändern —
+     die Datei liegt im Programm, nicht in der Datenbank. Der Knopf
+     sagt deshalb „Eigene Fassung" und nicht „Bearbeiten". Ein Knopf,
+     der etwas anderes verspricht, als er tut, ist schlimmer als
+     keiner. */
+  pruefe('an einem Datei-Modul heisst der Knopf „Eigene Fassung"',
+    verwaltung.knoepfe.every(x => /Eigene Fassung/.test(x)), verwaltung.knoepfe.join(' | '));
+
+  // ── Ein neues Modul ──
+  const neuAngelegt = await c.evaluate(() => {
+    document.getElementById('schModulNeu').click();
+    return new Promise(r => setTimeout(() => {
+      const f = document.getElementById('schModulForm');
+      r({
+        offen: f.style.display === '',
+        titel: (f.querySelector('h3') || {}).textContent || '',
+        schritte: document.querySelectorAll('[data-schritt]').length,
+        loeschKnopf: !!document.getElementById('schFWeg')
+      });
+    }, 700));
+  });
+  pruefe('„Neues Modul" öffnet ein leeres Formular', neuAngelegt.offen);
+  pruefe('und es heisst auch so', /Neues Modul/.test(neuAngelegt.titel), neuAngelegt.titel);
+  pruefe('mit einem ersten Schritt zum Ausfüllen', neuAngelegt.schritte === 1,
+    String(neuAngelegt.schritte));
+  /* GEGENPROBE: an etwas, das es noch nicht gibt, darf kein
+     Löschen-Knopf stehen. */
+  pruefe('GEGENPROBE ein neues Modul hat keinen Löschen-Knopf', !neuAngelegt.loeschKnopf);
+
+  /* Ohne Titel speichern MUSS scheitern — sonst steht in der Liste
+     eine namenlose Zeile, die niemand zuordnen kann. */
+  const ohneTitel = await c.evaluate(() => {
+    document.getElementById('schFSpeichern').click();
+    return new Promise(r => setTimeout(() => r({
+      note: (document.getElementById('schFNote') || {}).textContent || '',
+      nochImFormular: document.getElementById('schModulForm').style.display === ''
+    }), 700));
+  });
+  pruefe('ohne Titel wird nicht gespeichert', /Titel/.test(ohneTitel.note), ohneTitel.note);
+  pruefe('und das Formular bleibt offen', ohneTitel.nochImFormular);
+
+  /* Eine Frage mit nur einer ausgefüllten Antwort ist keine Frage —
+     im Durchlauf stünde ein einzelner Knopf da, den man nur drücken
+     kann. Lieber hier sagen als dort zeigen. */
+  const halbeFrage = await c.evaluate(() => {
+    document.getElementById('schFTitel').value = 'Vom Durchlauf angelegt';
+    document.querySelector('[data-schritt="0"] [data-sfeld="text"]').value = 'Ein Satz.';
+    document.querySelector('[data-schplus="frage"]').click();
+    return new Promise(r => setTimeout(() => {
+      document.querySelector('[data-frage="0"] [data-ffeld="frage"]').value = 'Eine Frage?';
+      document.querySelector('[data-frage="0"] [data-fantwort="0"]').value = 'Nur diese eine';
+      document.getElementById('schFSpeichern').click();
+      setTimeout(() => r((document.getElementById('schFNote') || {}).textContent || ''), 700);
+    }, 600));
+  });
+  pruefe('eine Frage mit einer einzigen Antwort wird abgewiesen',
+    /zwei/.test(halbeFrage), halbeFrage);
+
+  const gespeichert = await c.evaluate(() => {
+    document.querySelector('[data-frage="0"] [data-fantwort="1"]').value = 'Oder diese';
+    document.querySelector('[data-frage="0"] [data-frichtig="1"]').click();
+    document.getElementById('schFSpeichern').click();
+    return new Promise(r => setTimeout(() => r({
+      zurueck: document.getElementById('schVerwalten').style.display === '',
+      zeilen: document.querySelectorAll('#schModulListe .sch-tn-zeile').length
+    }), 1600));
+  });
+  pruefe('ein vollständiges Modul lässt sich speichern', gespeichert.zurueck);
+  pruefe('und steht danach in der Verwaltung',
+    gespeichert.zeilen === verwaltung.zeilen + 1,
+    gespeichert.zeilen + ' statt ' + (verwaltung.zeilen + 1));
+  const inUebersicht = await c.evaluate(() => {
+    document.querySelector('#schVerwalten [data-schzurueck]').click();
+    return new Promise(r => setTimeout(() =>
+      r([...document.querySelectorAll('[data-schmodul]')]
+        .map(x => x.querySelector('b').textContent)), 800));
+  });
+  pruefe('und auch in der Übersicht für alle',
+    inUebersicht.indexOf('Vom Durchlauf angelegt') >= 0, inUebersicht.join(' | '));
+
+  // ── Eine eigene Fassung eines Datei-Moduls ──
+  const fassung = await c.evaluate(() => {
+    document.getElementById('schVerwaltenBtn').click();
+    return new Promise(r => setTimeout(() => {
+      document.querySelector('[data-schbearbeiten]').click();
+      setTimeout(() => r({
+        ueberschrift: (document.querySelector('#schModulForm h3') || {}).textContent || '',
+        titel: (document.getElementById('schFTitel') || {}).value || '',
+        schritte: document.querySelectorAll('[data-schritt]').length,
+        fragen: document.querySelectorAll('[data-frage]').length
+      }), 800);
+    }, 900));
+  });
+  pruefe('eine eigene Fassung ist vorausgefüllt', fassung.schritte >= 3 && fassung.fragen >= 1,
+    JSON.stringify(fassung));
+  pruefe('und sagt, dass sie eine ist',
+    /Eigene Fassung/.test(fassung.ueberschrift), fassung.ueberschrift);
+
+  const nachFassung = await c.evaluate(() => {
+    document.getElementById('schFTitel').value = 'Unsere eigene Fassung';
+    document.getElementById('schFSpeichern').click();
+    return new Promise(r => setTimeout(() => {
+      document.querySelector('#schVerwalten [data-schzurueck]').click();
+      setTimeout(() => r([...document.querySelectorAll('[data-schmodul]')]
+        .map(x => x.querySelector('b').textContent)), 800);
+    }, 1600));
+  });
+  pruefe('die eigene Fassung ersetzt das Modul aus der Datei',
+    nachFassung.indexOf('Unsere eigene Fassung') >= 0, nachFassung.join(' | '));
+  /* DIE ZAHL, AUF DIE ES ANKOMMT. Stünde das Modul jetzt zweimal da —
+     einmal aus der Datei, einmal als eigene Fassung —, wüsste niemand,
+     welches gilt. */
+  pruefe('GEGENPROBE und steht nicht zusätzlich dazu',
+    nachFassung.length === inUebersicht.length,
+    nachFassung.length + ' statt ' + inUebersicht.length);
+  pruefe('GEGENPROBE das Original ist aus der Liste verschwunden',
+    nachFassung.indexOf(vorher[0]) < 0, nachFassung.join(' | '));
+
+  // ── Und wieder verwerfen ──
+  c.on('dialog', d => d.accept());
+  const verworfen = await c.evaluate(() => {
+    document.getElementById('schVerwaltenBtn').click();
+    return new Promise(r => setTimeout(() => {
+      document.querySelector('[data-schbearbeiten]').click();
+      setTimeout(() => {
+        const w = document.getElementById('schFWeg');
+        const text = w ? w.textContent : '';
+        if (w) w.click();
+        setTimeout(() => {
+          document.querySelector('#schVerwalten [data-schzurueck]').click();
+          setTimeout(() => r({
+            knopfText: text,
+            titel: [...document.querySelectorAll('[data-schmodul]')]
+              .map(x => x.querySelector('b').textContent)
+          }), 800);
+        }, 1500);
+      }, 800);
+    }, 900));
+  });
+  pruefe('der Knopf heisst „Eigene Fassung verwerfen"',
+    /verwerfen/.test(verworfen.knopfText), verworfen.knopfText);
+  /* Das ist der Grund, warum der Grundstock eine Datei bleiben darf:
+     was das Studio ändert, ist jederzeit zurücknehmbar, und das
+     Original war nie in Gefahr. */
+  pruefe('und danach steht das Modul aus der Datei wieder da',
+    verworfen.titel.indexOf(vorher[0]) >= 0, verworfen.titel.join(' | '));
+  pruefe('keine Skriptfehler (Editor)', cFehler.length === 0, cFehler[0]);
+  await c.close();
 
   await b.close();
   console.log('\n' + (schlecht

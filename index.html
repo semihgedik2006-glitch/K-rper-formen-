@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-KcMbF9NrhHAA8Rhzo2PJIfJxbjykK6bo+/ErdZsetFo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xpqouyiXlJZvC7Ez4czL1F/4lex8X1AoVNLnOsjJtjI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4349,6 +4349,29 @@ html{font-size:var(--fs,100%)}
 .sch-lauf-wer span{display:block;font-size:var(--t-2xs);color:var(--text-3)}
 .sch-lauf-zahl{flex:0 0 auto;min-width:54px;text-align:right;
   font-variant-numeric:tabular-nums;font-size:var(--t-xs);color:var(--text-2)}
+/* Eine Zeile im Modul-Formular. Ein Kasten je Schritt und je Frage:
+   ohne die Umrandung verschwimmen acht Schritte zu einer Wand aus
+   Eingabefeldern, und man verliert, was wozu gehört. */
+.sch-feld{padding:var(--s12);border:1px solid var(--line);border-radius:var(--r-md);
+  background:var(--bg-soft);margin-bottom:var(--s8)}
+.sch-feld .inp{margin-top:var(--s6)}
+.sch-feld-kopf{display:flex;align-items:center;gap:var(--s6)}
+/* Gemessen bei 320px: die drei Knoepfe rechts wurden vom Auswahlfeld
+   daneben auf 41 Pixel zusammengedrueckt — drei unter der Regel dieser
+   App. Das Auswahlfeld darf schrumpfen, die Griffe nicht.
+   `▾` gedreht statt `▴`: ein Symbolsatz, und `▴` waere ein zweites
+   Zeichen fuer dieselbe Sache. */
+.sch-feld-kopf .icon-btn{flex:0 0 auto}
+.sch-feld-kopf .sch-hoch{transform:rotate(180deg)}
+.sch-feld-kopf select{min-width:0}
+.sch-feld-kopf b{font-family:var(--font-head);font-weight:800;color:var(--text-3);
+  min-width:22px}
+.sch-feld-luft{flex:1}
+.sch-feld-kopf .inp,.sch-klein{flex:1;margin-top:0}
+.sch-antwortzeile{display:flex;align-items:center;gap:var(--s8);margin-top:var(--s6)}
+.sch-antwortzeile input[type=radio]{width:22px;height:22px;flex-shrink:0;
+  accent-color:var(--accent)}
+.sch-antwortzeile .inp{flex:1;margin-top:0}
 .sch-tn-zeile{display:flex;align-items:center;gap:var(--s10);
   padding:var(--s10) var(--s12);border-top:1px solid var(--line);flex-wrap:wrap}
 .sch-tn-zeile:first-child{border-top:none}
@@ -6843,6 +6866,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
           <!-- ── 5. Verwaltung (nur Leitung) ── -->
           <div id="schVerwalten" style="display:none"></div>
+
+          <!-- ── 6. Ein Modul anlegen oder ändern (nur Leitung) ── -->
+          <div id="schModulForm" style="display:none"></div>
         </div>
       </section>
 
@@ -17762,9 +17788,34 @@ function schKat(id){
 /* Grundstock und was der Betrieb selbst angelegt hat, in EINER Liste.
    Heute ist die Sammlung leer; die Zeile steht trotzdem, damit ein
    später angelegtes Modul keine Änderung an der App braucht. */
+/* Grundstock und was der Betrieb selbst angelegt hat, in EINER Liste —
+   und eine eigene Fassung schlägt das Modul aus der Datei, auf das sie
+   zeigt. Ohne diese Zeile stünde dasselbe Modul zweimal da: einmal
+   richtig, einmal veraltet, und niemand wüsste, welches gilt.
+   Dasselbe Muster wie bei den 115 Problemlösungen. */
 function schModule(){
-  var liste=(_schBasis.module||[]).slice();
-  _schEigen.forEach(function(m){ liste.push(m); });
+  var nachBasis={}, eigene=[];
+  _schEigen.forEach(function(m){
+    var fassung=Object.assign({}, m, {
+      eigen:true, docId:m.id, kat:m.kategorie||m.kat
+    });
+    if(m.basis){ fassung.id=m.basis; nachBasis[m.basis]=fassung; }
+    else eigene.push(fassung);
+  });
+  var liste=(_schBasis.module||[]).map(function(b){
+    var o=nachBasis[b.id];
+    /* Die Nummer aus der Datei bleibt: sonst springt ein geändertes
+       Modul in der Liste ans Ende, nur weil es geändert wurde. */
+    return o ? Object.assign({}, o, { nr:b.nr }) : Object.assign({}, b, { eigen:false });
+  });
+  /* Eine eigene Fassung zu einem Modul, das es in der Datei nicht
+     (mehr) gibt, wäre sonst unsichtbar. */
+  Object.keys(nachBasis).forEach(function(k){
+    if(!(_schBasis.module||[]).some(function(b){ return b.id===k; })) {
+      liste.push(nachBasis[k]);
+    }
+  });
+  eigene.forEach(function(m){ liste.push(m); });
   return liste.filter(function(m){ return m && m.aktiv!==false; })
     .sort(function(a,b){ return (a.nr||999)-(b.nr||999); });
 }
@@ -17817,7 +17868,8 @@ function schDauerText(ms){
 function schPane(welche){
   _schAnsicht=welche;
   [['schUebersicht','uebersicht'],['schCode','code'],['schLauf','lauf'],
-   ['schErgebnis','ergebnis'],['schVerwalten','verwalten']].forEach(function(p){
+   ['schErgebnis','ergebnis'],['schVerwalten','verwalten'],
+   ['schModulForm','modulform']].forEach(function(p){
     var el=$(p[0]); if(el) el.style.display=(p[1]===welche?'':'none');
   });
   var b=$('schVerwaltenBtn');
@@ -18286,6 +18338,15 @@ function schVerwaltenZeichnen(){
       '<div id="schTnListe" style="margin-top:14px"></div>'+
     '</div>'+
     '<div class="card">'+
+      '<h3 data-ikon="blatt">Module</h3>'+
+      '<p class="hint">Der Grundstock liegt als Datei und kostet nichts. Was du '+
+        'hier anlegst, kommt dazu — und eine eigene Fassung eines Datei-Moduls '+
+        'legt sich darüber, ohne das Original anzutasten.</p>'+
+      '<div id="schModulListe" style="margin-top:12px"></div>'+
+      '<button type="button" class="btn btn-ghost btn-sm" id="schModulNeu" '+
+        'style="width:100%;margin-top:10px">Neues Modul anlegen</button>'+
+    '</div>'+
+    '<div class="card">'+
       '<h3 data-ikon="raster">Wer hat was gemacht</h3>'+
       '<p class="hint">'+fertig.length+' abgeschlossene Durchläufe. Dauer zählt nur, '+
         'solange das Fenster wirklich offen war.</p>'+
@@ -18294,7 +18355,10 @@ function schVerwaltenZeichnen(){
   schZurueckBinden(box);
   schTnSelectBauen();
   schTnListeZeichnen();
+  schModulListeZeichnen();
   schLaufListeZeichnen();
+  var mn=$('schModulNeu');
+  if(mn) mn.addEventListener('click', function(){ schModulFormZeigen(null); });
   var b=$('schTnNeu');
   if(b) b.addEventListener('click', schTnAnlegen);
   ikonenEinsetzen(box);
@@ -18410,6 +18474,442 @@ function schLaufListeZeichnen(){
   }).join('');
 }
 
+
+/* ══ MODULE SELBST PFLEGEN ═══════════════════════════════════════════
+   Aus dem Betrieb, 22.9.2026: „Ich würde sie lieber AUCH pflegen können,
+   also dass beides geht."
+
+   BEIDES GEHT, und zwar so: der Grundstock liegt weiter als Datei
+   (`schulungen-basis.js`) und kostet keinen Lesevorgang. Was die
+   Leitung hier anlegt, steht in der Sammlung `schulungen` und wird
+   dazugemischt.
+
+   Ein Modul AUS DER DATEI lässt sich nicht an Ort und Stelle ändern —
+   die Datei liegt im Programm, nicht in der Datenbank. Wer es
+   trotzdem ändern will, legt eine EIGENE FASSUNG an, die darauf zeigt
+   (Feld `basis`). Die App zeigt dann die eigene. Genau dasselbe Muster
+   wie bei den 115 Problemlösungen, und aus demselben Grund: das
+   Original bleibt unangetastet, und „Eigene Fassung verwerfen" stellt
+   es jederzeit wieder her.
+
+   WARUM DER ENTWURF IM SPEICHER LIEGT und nicht bei jedem Tastendruck
+   in die Datenbank geht: ein Modul mit acht Schritten und sechs Fragen
+   wäre sonst ein paar hundert Schreibvorgänge, bloss weil jemand einen
+   Satz tippt. Gespeichert wird, wenn jemand „Speichern" drückt. */
+
+var _schEntwurf = null;        // das Modul, das gerade bearbeitet wird
+var _schEntwurfNeu = false;    // legt es einen neuen Datensatz an?
+
+function schLeeresModul(){
+  return {
+    titel:'', kategorie:(schKatListe()[0]||{}).id||'einarbeitung',
+    beschreibung:'', dauer:10, pflicht:true, gueltigMonate:0,
+    strenge:'alles', grenze:80,
+    schritte:[{ art:'text', titel:'', text:'' }],
+    fragen:[], basis:null
+  };
+}
+/* Aus einem Modul (Datei oder Sammlung) einen Entwurf machen. Tief
+   kopiert: sonst schreibt das Formular in den Grundstock, und beim
+   Abbrechen stünde die Änderung trotzdem da. */
+function schEntwurfAus(m){
+  return {
+    docId: m.eigen ? m.docId : null,
+    basis: m.eigen ? (m.basis||null) : m.id,
+    titel:String(m.titel||''), kategorie:String(m.kat||m.kategorie||''),
+    beschreibung:String(m.beschreibung||''),
+    dauer:Number(m.dauer||0), pflicht:!!m.pflicht,
+    gueltigMonate:Number(m.gueltigMonate||0),
+    strenge:String(m.strenge||'alles'), grenze:Number(m.grenze||80),
+    schritte:(m.schritte||[]).map(function(s){
+      return { art:String(s.art||'text'), titel:String(s.titel||''),
+               text:String(s.text||''), quelle:s.quelle||null,
+               dauer:Number(s.dauer||0), hinweis:String(s.hinweis||'') };
+    }),
+    fragen:(m.fragen||[]).map(function(f){
+      return { frage:String(f.frage||''),
+               antworten:(f.antworten||['','']).map(function(a){ return String(a||''); }),
+               richtig:Number(f.richtig||0), hinweis:String(f.hinweis||'') };
+    })
+  };
+}
+
+function schModulFormZeigen(modulId){
+  var m = modulId ? schModulVon(modulId) : null;
+  _schEntwurf = m ? schEntwurfAus(m) : schLeeresModul();
+  _schEntwurfNeu = !m || !_schEntwurf.docId;
+  schPane('modulform');
+  schModulFormZeichnen();
+}
+
+function schModulFormZeichnen(){
+  var box=$('schModulForm'); if(!box || !_schEntwurf) return;
+  var e=_schEntwurf;
+  var kats=schKatListe();
+  var ausDerDatei = !!e.basis && !e.docId;
+
+  box.innerHTML=
+    '<button type="button" class="hilfe-zurueck" data-schzurueck="verwalten">‹ Zurück</button>'+
+    '<div class="card">'+
+      '<h3>'+(_schEntwurfNeu ? (ausDerDatei ? 'Eigene Fassung anlegen' : 'Neues Modul')
+                             : 'Modul bearbeiten')+'</h3>'+
+      (ausDerDatei
+        ? '<p class="hint">Das Modul aus der Datei bleibt, wie es ist. Deine Fassung '+
+          'legt sich darüber und gilt ab sofort fürs ganze Team.</p>'
+        : '')+
+      '<div class="field" style="margin-top:14px"><label for="schFTitel">Titel</label>'+
+        '<input class="inp" id="schFTitel" type="text" maxlength="120" value="'+esc(e.titel)+'" /></div>'+
+      '<div class="field"><label for="schFBeschr">Worum geht es? (eine Zeile)</label>'+
+        '<input class="inp" id="schFBeschr" type="text" maxlength="200" value="'+esc(e.beschreibung)+'" /></div>'+
+      '<div class="field"><label for="schFKat">Kategorie</label>'+
+        '<select class="inp" id="schFKat">'+kats.map(function(k){
+          return '<option value="'+esc(k.id)+'"'+(e.kategorie===k.id?' selected':'')+'>'+
+            esc(k.name)+'</option>'; }).join('')+'</select></div>'+
+      '<div class="field"><label for="schFDauer">Wie lange dauert es? (Minuten)</label>'+
+        '<input class="inp" id="schFDauer" type="number" min="1" max="240" value="'+(e.dauer||10)+'" /></div>'+
+      /* „Gültig für N Monate" ist der Grund, warum die App später von
+         selbst erinnern kann. 0 heisst: läuft nie ab. */
+      '<div class="field"><label for="schFGueltig">Muss es wiederholt werden? (Monate, 0 = nie)</label>'+
+        '<input class="inp" id="schFGueltig" type="number" min="0" max="60" value="'+(e.gueltigMonate||0)+'" /></div>'+
+      '<label class="studio-check'+(e.pflicht?' on':'')+'" id="schFPflichtWrap">'+
+        '<input type="checkbox" id="schFPflicht"'+(e.pflicht?' checked':'')+' />'+
+        '<span><b>Pflicht</b> — jeder muss es machen</span></label>'+
+      '<div class="field" style="margin-top:14px"><label for="schFStrenge">Wie streng sind die Fragen?</label>'+
+        '<select class="inp" id="schFStrenge">'+
+          '<option value="alles"'+(e.strenge==='alles'?' selected':'')+'>Bis alles richtig ist</option>'+
+          '<option value="grenze"'+(e.strenge==='grenze'?' selected':'')+'>Bestehensgrenze</option>'+
+        '</select></div>'+
+      (e.strenge==='grenze'
+        ? '<div class="field"><label for="schFGrenze">Ab wie viel Prozent bestanden?</label>'+
+          '<input class="inp" id="schFGrenze" type="number" min="1" max="100" value="'+(e.grenze||80)+'" /></div>'
+        : '')+
+    '</div>'+
+
+    '<div class="card">'+
+      '<h3 data-ikon="raster">Schritte</h3>'+
+      '<p class="hint">Text, Video, Bild oder ein „Verstanden" zum Abhaken. '+
+        'Die Reihenfolge ist die, in der sie durchgegangen werden.</p>'+
+      '<div id="schFSchritte">'+e.schritte.map(schSchrittFeldMarkup).join('')+'</div>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-schplus="schritt" '+
+        'style="width:100%;margin-top:8px">Schritt hinzufügen</button>'+
+    '</div>'+
+
+    '<div class="card">'+
+      '<h3 data-ikon="umfrage">Fragen</h3>'+
+      '<p class="hint">Ohne Fragen ist das Modul nach dem letzten Schritt zu Ende. '+
+        'Die richtige Antwort wählst du mit dem Punkt davor.</p>'+
+      '<div id="schFFragen">'+e.fragen.map(schFrageFeldMarkup).join('')+'</div>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-schplus="frage" '+
+        'style="width:100%;margin-top:8px">Frage hinzufügen</button>'+
+    '</div>'+
+
+    '<p class="hint" id="schFNote"></p>'+
+    '<div class="hilfe-knoepfe">'+
+      '<button type="button" class="btn btn-primary" id="schFSpeichern">Speichern</button>'+
+      '<button type="button" class="btn btn-ghost" data-schzurueck="verwalten">Abbrechen</button>'+
+      (!_schEntwurfNeu
+        ? '<button type="button" class="btn btn-danger" id="schFWeg">'+
+          (e.basis ? 'Eigene Fassung verwerfen' : 'Modul löschen')+'</button>'
+        : '')+
+    '</div>';
+
+  schZurueckBinden(box);
+  schFormBinden(box);
+  ikonenEinsetzen(box);
+}
+
+function schSchrittFeldMarkup(s, i){
+  var arten=[['text','Text'],['video','Video'],['bild','Bild'],['bestaetigen','Verstanden-Haken']];
+  return '<div class="sch-feld" data-schritt="'+i+'">'+
+    '<div class="sch-feld-kopf">'+
+      '<b>'+(i+1)+'.</b>'+
+      '<select class="inp sch-klein" data-sfeld="art">'+arten.map(function(a){
+        return '<option value="'+a[0]+'"'+(s.art===a[0]?' selected':'')+'>'+a[1]+'</option>';
+      }).join('')+'</select>'+
+      '<button type="button" class="icon-btn sch-hoch" data-schhoch="'+i+'" title="nach oben" '+
+        'aria-label="nach oben">▾</button>'+
+      '<button type="button" class="icon-btn" data-schrunter="'+i+'" title="nach unten" '+
+        'aria-label="nach unten">▾</button>'+
+      '<button type="button" class="icon-btn" data-schweg="'+i+'" title="entfernen" '+
+        'aria-label="entfernen" data-ikon="papierkorb"></button>'+
+    '</div>'+
+    (s.art!=='bestaetigen'
+      ? '<input class="inp" data-sfeld="titel" type="text" maxlength="120" '+
+        'placeholder="Überschrift" value="'+esc(s.titel)+'" />' : '')+
+    '<textarea class="inp" data-sfeld="text" rows="'+(s.art==='bestaetigen'?2:4)+'" '+
+      'placeholder="'+(s.art==='bestaetigen'
+        ? 'Was bestätigt wird, z. B. „Ich weiss, wo der Erste-Hilfe-Kasten hängt."'
+        : 'Der Text dieses Schritts')+'">'+esc(s.text)+'</textarea>'+
+    (s.art==='video' || s.art==='bild'
+      ? '<input class="inp" data-sfeld="quelle" type="url" '+
+        'placeholder="Adresse der Datei — leer lassen, solange sie fehlt" '+
+        'value="'+esc(s.quelle||'')+'" />'+
+        (s.art==='video'
+          ? '<input class="inp" data-sfeld="dauer" type="number" min="0" max="7200" '+
+            'placeholder="Länge in Sekunden" value="'+(s.dauer||'')+'" />'+
+            '<input class="inp" data-sfeld="hinweis" type="text" maxlength="160" '+
+            'placeholder="Worum geht es im Video?" value="'+esc(s.hinweis||'')+'" />'
+          : '')
+      : '')+
+    '</div>';
+}
+function schFrageFeldMarkup(f, i){
+  return '<div class="sch-feld" data-frage="'+i+'">'+
+    '<div class="sch-feld-kopf">'+
+      '<b>'+(i+1)+'.</b><span class="sch-feld-luft"></span>'+
+      '<button type="button" class="icon-btn sch-hoch" data-schfhoch="'+i+'" title="nach oben" '+
+        'aria-label="nach oben">▾</button>'+
+      '<button type="button" class="icon-btn" data-schfrunter="'+i+'" title="nach unten" '+
+        'aria-label="nach unten">▾</button>'+
+      '<button type="button" class="icon-btn" data-schfweg="'+i+'" title="entfernen" '+
+        'aria-label="entfernen" data-ikon="papierkorb"></button>'+
+    '</div>'+
+    '<textarea class="inp" data-ffeld="frage" rows="2" placeholder="Die Frage">'+
+      esc(f.frage)+'</textarea>'+
+    f.antworten.map(function(a, j){
+      return '<label class="sch-antwortzeile">'+
+        '<input type="radio" name="schRichtig'+i+'" data-frichtig="'+j+'"'+
+          (f.richtig===j?' checked':'')+' title="das ist die richtige" />'+
+        '<input class="inp" data-fantwort="'+j+'" type="text" maxlength="200" '+
+          'placeholder="Antwort '+'ABCDEF'[j]+'" value="'+esc(a)+'" />'+
+        (f.antworten.length>2
+          ? '<button type="button" class="icon-btn" data-fantwortweg="'+j+'" '+
+            'title="Antwort entfernen" aria-label="Antwort entfernen" data-ikon="schliessen"></button>'
+          : '')+
+        '</label>';
+    }).join('')+
+    (f.antworten.length<6
+      ? '<button type="button" class="btn btn-ghost btn-sm" data-fantwortplus="1" '+
+        'style="margin-top:6px">Antwort hinzufügen</button>' : '')+
+    '<input class="inp" data-ffeld="hinweis" type="text" maxlength="240" '+
+      'style="margin-top:8px" placeholder="Hinweis bei einer falschen Antwort — '+
+      'er erklärt, statt zu tadeln" value="'+esc(f.hinweis)+'" />'+
+    '</div>';
+}
+
+/* Tastendrücke schreiben direkt in den Entwurf, OHNE neu zu zeichnen:
+   sonst springt bei jedem Buchstaben der Eingabezeiger an den Anfang.
+   Neu gezeichnet wird nur, wenn sich der AUFBAU ändert — eine Zeile
+   dazu, eine weg, eine andere Art. */
+function schFormBinden(box){
+  function entwurfSchreiben(){
+    var e=_schEntwurf;
+    e.titel=($('schFTitel')||{}).value||'';
+    e.beschreibung=($('schFBeschr')||{}).value||'';
+    e.kategorie=($('schFKat')||{}).value||e.kategorie;
+    e.dauer=Number(($('schFDauer')||{}).value||0);
+    e.gueltigMonate=Number(($('schFGueltig')||{}).value||0);
+    e.pflicht=!!(($('schFPflicht')||{}).checked);
+    e.strenge=($('schFStrenge')||{}).value||'alles';
+    if($('schFGrenze')) e.grenze=Number($('schFGrenze').value||80);
+    box.querySelectorAll('[data-schritt]').forEach(function(el){
+      var s=e.schritte[Number(el.getAttribute('data-schritt'))]; if(!s) return;
+      el.querySelectorAll('[data-sfeld]').forEach(function(f){
+        var name=f.getAttribute('data-sfeld');
+        s[name] = (name==='dauer') ? Number(f.value||0) : f.value;
+      });
+    });
+    box.querySelectorAll('[data-frage]').forEach(function(el){
+      var f=e.fragen[Number(el.getAttribute('data-frage'))]; if(!f) return;
+      el.querySelectorAll('[data-ffeld]').forEach(function(x){
+        f[x.getAttribute('data-ffeld')]=x.value;
+      });
+      el.querySelectorAll('[data-fantwort]').forEach(function(x){
+        f.antworten[Number(x.getAttribute('data-fantwort'))]=x.value;
+      });
+      var r=el.querySelector('[data-frichtig]:checked');
+      if(r) f.richtig=Number(r.getAttribute('data-frichtig'));
+    });
+  }
+  function neu(){ entwurfSchreiben(); schModulFormZeichnen(); }
+
+  var pf=$('schFPflichtWrap');
+  if(pf) pf.addEventListener('change', function(){
+    pf.classList.toggle('on', $('schFPflicht').checked);
+  });
+  var st=$('schFStrenge');
+  if(st) st.addEventListener('change', neu);
+  box.querySelectorAll('[data-sfeld="art"]').forEach(function(x){
+    x.addEventListener('change', neu);
+  });
+  box.querySelectorAll('[data-schplus]').forEach(function(b){
+    b.addEventListener('click', function(){
+      entwurfSchreiben();
+      if(b.getAttribute('data-schplus')==='schritt'){
+        _schEntwurf.schritte.push({ art:'text', titel:'', text:'' });
+      } else {
+        _schEntwurf.fragen.push({ frage:'', antworten:['',''], richtig:0, hinweis:'' });
+      }
+      schModulFormZeichnen();
+    });
+  });
+  function schieben(liste, von, nach){
+    if(nach<0 || nach>=liste.length) return;
+    var x=liste.splice(von,1)[0]; liste.splice(nach,0,x);
+  }
+  box.querySelectorAll('[data-schhoch]').forEach(function(b){
+    b.addEventListener('click', function(){ entwurfSchreiben();
+      var i=Number(b.getAttribute('data-schhoch'));
+      schieben(_schEntwurf.schritte,i,i-1); schModulFormZeichnen(); }); });
+  box.querySelectorAll('[data-schrunter]').forEach(function(b){
+    b.addEventListener('click', function(){ entwurfSchreiben();
+      var i=Number(b.getAttribute('data-schrunter'));
+      schieben(_schEntwurf.schritte,i,i+1); schModulFormZeichnen(); }); });
+  box.querySelectorAll('[data-schweg]').forEach(function(b){
+    b.addEventListener('click', function(){ entwurfSchreiben();
+      _schEntwurf.schritte.splice(Number(b.getAttribute('data-schweg')),1);
+      schModulFormZeichnen(); }); });
+  box.querySelectorAll('[data-schfhoch]').forEach(function(b){
+    b.addEventListener('click', function(){ entwurfSchreiben();
+      var i=Number(b.getAttribute('data-schfhoch'));
+      schieben(_schEntwurf.fragen,i,i-1); schModulFormZeichnen(); }); });
+  box.querySelectorAll('[data-schfrunter]').forEach(function(b){
+    b.addEventListener('click', function(){ entwurfSchreiben();
+      var i=Number(b.getAttribute('data-schfrunter'));
+      schieben(_schEntwurf.fragen,i,i+1); schModulFormZeichnen(); }); });
+  box.querySelectorAll('[data-schfweg]').forEach(function(b){
+    b.addEventListener('click', function(){ entwurfSchreiben();
+      _schEntwurf.fragen.splice(Number(b.getAttribute('data-schfweg')),1);
+      schModulFormZeichnen(); }); });
+  box.querySelectorAll('[data-fantwortplus]').forEach(function(b){
+    b.addEventListener('click', function(){ entwurfSchreiben();
+      var i=Number(b.closest('[data-frage]').getAttribute('data-frage'));
+      _schEntwurf.fragen[i].antworten.push(''); schModulFormZeichnen(); }); });
+  box.querySelectorAll('[data-fantwortweg]').forEach(function(b){
+    b.addEventListener('click', function(){ entwurfSchreiben();
+      var el=b.closest('[data-frage]');
+      var i=Number(el.getAttribute('data-frage'));
+      var j=Number(b.getAttribute('data-fantwortweg'));
+      var f=_schEntwurf.fragen[i];
+      f.antworten.splice(j,1);
+      /* Die richtige Antwort wandert mit. Ohne diese zwei Zeilen zeigt
+         sie nach dem Löschen auf die falsche Zeile — und niemand
+         merkt es, bis jemand die Frage beantwortet. */
+      if(f.richtig===j) f.richtig=0;
+      else if(f.richtig>j) f.richtig--;
+      schModulFormZeichnen(); }); });
+
+  var sp=$('schFSpeichern');
+  if(sp) sp.addEventListener('click', function(){ entwurfSchreiben(); schModulSpeichern(); });
+  var weg=$('schFWeg');
+  if(weg) weg.addEventListener('click', schModulLoeschen);
+}
+
+function schModulSpeichern(){
+  var e=_schEntwurf, note=$('schFNote'), btn=$('schFSpeichern');
+  if(note) note.textContent='';
+  if(String(e.titel).trim().length<3){
+    if(note) note.textContent='Bitte einen Titel eintragen.'; return;
+  }
+  var schritte=e.schritte.filter(function(s){
+    return String(s.text||'').trim() || String(s.titel||'').trim() || s.quelle;
+  });
+  if(!schritte.length){
+    if(note) note.textContent='Ohne einen Schritt gibt es nichts zu zeigen.'; return;
+  }
+  var fragen=e.fragen.filter(function(f){ return String(f.frage||'').trim(); });
+  /* Eine Frage mit einer einzigen Antwort ist keine, und eine mit
+     leeren Feldern ergibt im Durchlauf leere Knöpfe. Lieber hier
+     sagen als dort zeigen. */
+  for(var i=0;i<fragen.length;i++){
+    var gefuellt=fragen[i].antworten.filter(function(a){ return String(a||'').trim(); });
+    if(gefuellt.length<2){
+      if(note) note.textContent='Frage '+(i+1)+' braucht mindestens zwei ausgefüllte Antworten.';
+      return;
+    }
+    if(!String(fragen[i].antworten[fragen[i].richtig]||'').trim()){
+      if(note) note.textContent='Bei Frage '+(i+1)+' zeigt die Markierung auf eine leere Antwort.';
+      return;
+    }
+  }
+  var daten={
+    titel:String(e.titel).trim(), kategorie:e.kategorie,
+    beschreibung:String(e.beschreibung||'').trim(),
+    dauer:e.dauer||0, pflicht:!!e.pflicht, gueltigMonate:e.gueltigMonate||0,
+    strenge:e.strenge, grenze:e.grenze||80,
+    schritte:schritte.map(function(s){
+      var raus={ art:s.art, titel:String(s.titel||''), text:String(s.text||'') };
+      if(s.art==='video' || s.art==='bild') raus.quelle=String(s.quelle||'')||null;
+      if(s.art==='video'){ raus.dauer=s.dauer||0; raus.hinweis=String(s.hinweis||''); }
+      return raus;
+    }),
+    fragen:fragen.map(function(f){
+      var antworten=f.antworten.filter(function(a){ return String(a||'').trim(); });
+      /* Nach dem Aussieben kann die Markierung verrutscht sein. Der
+         Text ist die Wahrheit, nicht die Nummer. */
+      var richtigText=String(f.antworten[f.richtig]||'');
+      return { frage:String(f.frage).trim(), antworten:antworten,
+               richtig:Math.max(0, antworten.indexOf(richtigText)),
+               hinweis:String(f.hinweis||'') };
+    }),
+    basis:e.basis||null, aktiv:true
+  };
+  btn.disabled=true; var alt=btn.textContent; btn.textContent='Speichern …';
+  var p;
+  if(e.docId){
+    daten.geaendertVon=session.name; daten.geaendertAm=Date.now();
+    p=S('schulungen').doc(e.docId).update(daten);
+  } else {
+    daten.von=session.name; daten.vonUid=session.uid; daten.ts=Date.now();
+    /* Eine eigene Fassung eines Datei-Moduls bekommt einen festen
+       Dokumentnamen. Mit einer zufälligen Kennung legten zwei Leute,
+       die dasselbe Modul am selben Tag ändern, zwei Fassungen an, und
+       die App müsste raten, welche gilt. */
+    p = e.basis ? S('schulungen').doc('basis-'+e.basis).set(daten)
+                : S('schulungen').add(daten);
+  }
+  p.then(function(){
+    btn.disabled=false; btn.textContent=alt;
+    toast(e.docId ? 'Gespeichert ✓' : 'Modul angelegt ✓'); tick(12);
+    schPane('verwalten'); schVerwaltenZeichnen();
+  }).catch(function(err){
+    btn.disabled=false; btn.textContent=alt;
+    if(note) note.textContent=errMsg(err);
+  });
+}
+function schModulLoeschen(){
+  var e=_schEntwurf; if(!e || !e.docId) return;
+  var frage = e.basis
+    ? 'Deine Fassung von „'+(e.titel||'diesem Modul')+'" verwerfen?\n\n'+
+      'Danach gilt wieder das Modul aus der Datei.'
+    : '„'+(e.titel||'Dieses Modul')+'" löschen?\n\n'+
+      'Schon abgeschlossene Durchläufe bleiben stehen — der Nachweis geht nicht verloren.';
+  if(!confirm(frage)) return;
+  S('schulungen').doc(e.docId).delete().then(function(){
+    toast(e.basis ? 'Verworfen ✓' : 'Gelöscht ✓');
+    schPane('verwalten'); schVerwaltenZeichnen();
+  }).catch(function(err){ toast(errMsg(err), true); });
+}
+
+/* „1 Schritte“ stand da, und es las sich wie ein Fehler in den Daten.
+   Eine Zahl, die man anzeigt, bekommt das Wort, das zu ihr passt. */
+function schStueck(n, eins, viele){ return n+' '+(n===1?eins:viele); }
+function schModulListeZeichnen(){
+  var box=$('schModulListe'); if(!box) return;
+  var alle=schModule();
+  if(!alle.length){ box.innerHTML='<p class="hint">Noch keine Module.</p>'; return; }
+  box.innerHTML=alle.map(function(m){
+    var k=schKat(m.kat);
+    var herkunft = m.eigen ? (m.basis ? 'eigene Fassung' : 'selbst angelegt') : 'aus der Datei';
+    var zahl=_schAlleLaeufe.filter(function(l){
+      return l.modul===m.id && l.status==='fertig' && l.bestanden; }).length;
+    return '<div class="sch-tn-zeile">'+
+      '<span class="sch-tn-name">'+esc(m.titel||'')+
+        '<span>'+esc(k.name)+' · '+esc(herkunft)+' · '+
+        schStueck((m.schritte||[]).length,'Schritt','Schritte')+', '+
+        schStueck((m.fragen||[]).length,'Frage','Fragen')+' · '+
+        zahl+'× bestanden</span></span>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-schbearbeiten="'+esc(m.id)+'">'+
+        (m.eigen ? 'Bearbeiten' : 'Eigene Fassung') +'</button>'+
+      '</div>';
+  }).join('');
+  box.querySelectorAll('[data-schbearbeiten]').forEach(function(b){
+    b.addEventListener('click', function(){
+      schModulFormZeigen(b.getAttribute('data-schbearbeiten'));
+    });
+  });
+}
+
 /* Beim Abmelden alles zurück. Sonst sieht der nächste Kollege am
    selben Tablet die Durchläufe und Teilnehmer des vorigen Betriebs —
    und einen halb angefangenen Durchlauf auf einen fremden Namen. */
@@ -18423,6 +18923,7 @@ function schAufraeumen(){
   _schModul=null; _schLauf=null; _schPos=0; _schPhase='schritte';
   _schGesehen=[]; _schAntworten=[]; _schFrageIdx=0; _schAktivMs=0;
   _schKat='alle'; _schAnsicht='uebersicht';
+  _schEntwurf=null; _schEntwurfNeu=false;
 }
 
 (function schBinden(){

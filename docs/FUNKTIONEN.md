@@ -191,7 +191,10 @@ noch**; das ist Absicht und der nächste Schritt.
 | Im Export enthalten | **VERIFIZIERT** | `tests/test-sicherung-inhalt.js` — mit der Gegenprobe, dass die einzelnen Fehlgriffe NICHT mitgehen |
 | **Videos** | **NOCH NICHT** | entschieden ist eigener Speicher (zweiter Eimer). Bis dahin steht am Platzhalter „Video folgt" samt vorgesehener Länge |
 | **„wirklich angesehen"** | **NOCH NICHT MESSBAR** | geht erst mit eigenem Player. Ein Häkchen wäre eine Behauptung, keine Messung — deshalb gibt es keines |
-| **Modul-Editor** | **NICHT VORHANDEN** | Module kommen bis auf Weiteres als Datei ins Repo |
+| Modul-Editor für die Leitung | **VERIFIZIERT** | anlegen, ändern, Schritte und Fragen sortieren, löschen — `tests/test-schulung.js` |
+| Eigene Fassung eines Datei-Moduls | **VERIFIZIERT** | ersetzt es in der Liste, steht **nicht** zusätzlich daneben (Gegenprobe) |
+| „Eigene Fassung verwerfen" stellt das Original her | **VERIFIZIERT** | dito |
+| Halbe Fragen werden abgewiesen | **VERIFIZIERT** | ohne Titel, mit nur einer Antwort, mit Markierung auf einer leeren Antwort |
 
 ### Führung durch die App (seit 22.9.2026)
 
