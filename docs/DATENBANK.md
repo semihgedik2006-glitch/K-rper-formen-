@@ -271,6 +271,27 @@ Datensatz; die Datei liegt beim Drittanbieter des Kunden.
 
 ---
 
+### `users/{uid}` — das Feld `tourGesehen` (seit 22.9.2026)
+
+Eine Zahl: die Fassung der Führung, die dieses Konto durchlaufen hat.
+
+**Warum am Konto und nicht am Gerät.** Auf dem Tablet am Empfang melden
+sich nacheinander mehrere Leute an — Abmelden ist dort der häufigste
+Griff überhaupt. Läge der Stand nur im Browser-Speicher, bekäme nur der
+erste die Führung, und die übrigen erführen nie, dass es sie gibt.
+
+Der Browser-Speicher (`kf_tour`) bleibt als **Rückfall** für den Fall,
+dass der Schreibvorgang aufs Konto scheitert — dann fängt die Führung
+nicht bei jeder Anmeldung wieder an. Er trägt die Kontokennung mit sich
+(`"<fassung>:<uid>"`) und gilt ausdrücklich nur für dieses eine Konto auf
+diesem einen Gerät.
+
+Die Regeln brauchten dafür keine Änderung: ein Konto darf sein eigenes
+Profil ändern, solange es Rolle, Studios, `aktiv`, `firma`, `admin` und
+`handyStempeln` nicht anfasst.
+
+---
+
 ### `firmen/{kennung}/loesungen/` und `loesungBilder/` (seit 22.9.2026)
 
 Probleme aus dem Studio und was dagegen hilft. Genauso geteilt wie die

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-iKbwJSu4BiyoZB4CA2+RxM61yvbAHffUVDds5rZYT6o='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-vA/HCx4lHzILh4u4Dfs5UkjM48pi7pX8/aJGGM0PER8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -16250,12 +16250,46 @@ function deleteDoc(d){
 var TOUR_SCHLUESSEL='kf_tour';
 var TOUR_FASSUNG=1;
 
+/* ── Am KONTO gemerkt, nicht am Gerät ──────────────────────────────
+   Aus dem Betrieb, 22.9.2026: „die führung soll bei jedem einmal
+   starten."
+
+   Am Gerät gemerkt hätte das nicht gehalten. Auf dem Tablet am Empfang
+   melden sich nacheinander fünf Leute an — Abmelden ist dort der
+   häufigste Griff überhaupt —, und nur der erste hätte die Führung
+   gesehen. Die übrigen vier hätten nie erfahren, dass es sie gibt.
+
+   Das Konto entscheidet also. Der Browser-Speicher bleibt als
+   Rückfall: scheitert der Schreibvorgang aufs Konto (kein Netz im
+   Keller, Regel greift), fängt die Führung sonst bei jeder Anmeldung
+   wieder an. Er trägt deshalb die Kontokennung mit sich —
+   „<fassung>:<uid>" — und gilt ausdrücklich nur für dieses eine
+   Konto auf diesem einen Gerät. */
 function tourGesehen(){
-  try{ return Number(localStorage.getItem(TOUR_SCHLUESSEL)||0) >= TOUR_FASSUNG; }
+  /* Ohne Konto führt niemand — und „gesehen" heisst hier nur
+     „nicht starten". */
+  if(!session) return true;
+  if(Number(session.tourGesehen||0) >= TOUR_FASSUNG) return true;
+  try{
+    var roh=String(localStorage.getItem(TOUR_SCHLUESSEL)||'').split(':');
+    return Number(roh[0]||0) >= TOUR_FASSUNG && roh[1]===session.uid;
+  }
   catch(e){ return true; }   /* Kein Speicher: lieber nicht als jedes Mal */
 }
 function tourMerken(){
-  try{ localStorage.setItem(TOUR_SCHLUESSEL, String(TOUR_FASSUNG)); }catch(e){}
+  if(!session) return;
+  /* Erst im laufenden Zustand: die Antwort auf tourGesehen() darf nicht
+     davon abhängen, ob die Datenbank schon geantwortet hat. */
+  session.tourGesehen=TOUR_FASSUNG;
+  try{ localStorage.setItem(TOUR_SCHLUESSEL, TOUR_FASSUNG+':'+session.uid); }catch(e){}
+  /* Und ans Konto. Ohne Aufhebens: scheitert es, ist der Eintrag im
+     Browser da, und beim nächsten Mal wird es noch einmal versucht —
+     ein Fehlerhinweis über eine Führung, die gerade zu Ende ist, wäre
+     das Gegenteil von hilfreich. */
+  try{
+    db.collection('users').doc(session.uid)
+      .update({ tourGesehen:TOUR_FASSUNG }).catch(function(){});
+  }catch(e){}
 }
 
 /* Ein Schritt: wohin gewechselt wird, worauf gezeigt wird, was dasteht.

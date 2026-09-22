@@ -89,7 +89,7 @@ async function starte(b, rolle) {
      schlucken. Sie hat einen eigenen Durchlauf. */
   await p.addInitScript(() => {
     localStorage.setItem('kf_prefs', JSON.stringify({ theme: 'dark' }));
-    localStorage.setItem('kf_tour', '99');
+    localStorage.setItem('kf_tour', '99:demo-ich');
   });
   await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3300);

@@ -174,6 +174,7 @@ das Team selbst festhält.
 
 | | Stand | Anmerkung |
 |---|---|---|
+| Startet **einmal für jedes Konto**, auch auf einem geteilten Gerät | **VERIFIZIERT** | am Konto gemerkt (`users.tourGesehen`), nicht am Gerät; `tests/test-fuehrung.js` prüft beide Richtungen |
 | Startet beim ersten Mal von selbst | **VERIFIZIERT** | `tests/test-fuehrung.js`, 175 Zusicherungen |
 | Beim zweiten Mal nicht mehr | **VERIFIZIERT** | pro Gerät gemerkt, mit Fassungsnummer |
 | Rollenabhängig | **VERIFIZIERT** | Chef 9 Schritte, Leiter 7, Mitarbeiter 6 |

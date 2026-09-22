@@ -606,7 +606,10 @@ man etwas nicht lesen kann, steht oben.
   Tastenkürzel und alles in der Datenbank bleiben unberührt; ein eigenes
   Chat-Foto wird nur abgewählt, nicht gelöscht.
 - **Führung noch einmal ansehen** – zeigt dir in ein paar Schritten, wo
-  was steht. Beim ersten Anmelden läuft sie von selbst.
+  was steht. Beim ersten Anmelden läuft sie von selbst – **einmal für
+  jeden**, auch am geteilten Tablet am Empfang: sie hängt an deinem
+  Konto, nicht am Gerät. Wer sie wegtippt, bekommt sie nicht wieder
+  vorgesetzt; hier steht sie weiter bereit.
 - **Tastenkürzel anpassen** (nur am Rechner).
 
 ### Meldungen

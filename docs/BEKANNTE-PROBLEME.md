@@ -409,4 +409,4 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-17** | **„Zurück" führte aus der Trefferliste in eine Kategorie von vorhin.** Wer gesucht, gelesen und zurückgegangen ist, stand plötzlich in einer Liste, die er zehn Minuten vorher geöffnet hatte — und tippte seine Suche noch einmal | 22.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
-`docs/FORTSCHRITT.md` — chronologisch, 96 Runden.
+`docs/FORTSCHRITT.md` — chronologisch, 97 Runden.

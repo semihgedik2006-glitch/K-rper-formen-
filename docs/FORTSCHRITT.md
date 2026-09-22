@@ -10297,3 +10297,59 @@ vollen 44.
 | `firebase.json`, `deploy-functions.yml` | `loesungen-basis.js` löst einen Deploy aus und bekommt eine Woche Zwischenspeicher |
 
 **120 Durchläufe.**
+
+---
+
+## Runde 97 — „Bei jedem einmal" heisst am Konto, nicht am Gerät
+
+> „die führung soll bei jedem einmal starten und du kannst den pr
+> mergen."
+
+Die erste Hälfte war fast schon erfüllt: der gemerkte Stand lag im
+Browser-Speicher, und der ist bei keinem der heutigen Kolleginnen und
+Kollegen gesetzt — die Führung wäre bei allen einmal gelaufen.
+
+**Fast.** Auf dem Tablet am Empfang melden sich nacheinander mehrere
+Leute an; Abmelden ist dort der häufigste Griff überhaupt, und im Code
+steht es auch so („Neu laden statt nur abmelden: so startet der nächste
+Kollege …"). Am Gerät gemerkt hätte **nur der erste** die Führung
+bekommen. Die übrigen hätten nie erfahren, dass es sie gibt — und
+„bei jedem einmal" wäre eine Zusage geblieben, die das Studio-Tablet
+still gebrochen hätte.
+
+Jetzt entscheidet das **Konto**: `users/{uid}.tourGesehen`, eine Zahl,
+die Fassung der Führung. Die Regeln brauchten dafür nichts — ein Konto
+darf sein eigenes Profil ändern, solange es Rolle, Studios, `aktiv`,
+`firma`, `admin` und `handyStempeln` nicht anfasst.
+
+**Der Browser-Speicher bleibt** — als Rückfall, nicht als Wahrheit.
+Scheitert der Schreibvorgang aufs Konto (kein Netz im Keller), fängt
+die Führung sonst bei jeder Anmeldung wieder an. Er trägt deshalb die
+Kontokennung mit sich — `"<fassung>:<uid>"` — und gilt ausdrücklich
+nur für dieses eine Konto auf diesem einen Gerät.
+
+### Die Zeile, die es beweist
+
+Ein einzelner neuer Punkt in `tests/test-fuehrung.js`, und er ist der
+ganze Unterschied:
+
+> **„ein fremder Stand auf demselben Gerät hält sie NICHT auf"**
+
+Das Gerät hat die Führung schon gesehen — aber für jemand anderen. Sie
+muss trotzdem starten. Zusammen mit der Zeile eine Handbreit darüber
+(„mit gemerktem Stand startet sie NICHT") zeigen die beiden, dass
+wirklich das Konto entscheidet und nicht einfach immer oder nie
+gestartet wird. Dazu: der Stand steht danach auch **am Konto**, nicht
+nur im Browser.
+
+Kein guter Zeitpunkt ohne einen Fund — aber diesmal gab es keinen: die
+sechs Attrappen mussten nur die Form mitgehen (`'1:testuid'` statt
+`'1'`), weil sie einen wiederkehrenden Benutzer nachstellen und das
+jetzt eben so aussieht.
+
+| | |
+|---|---|
+| Oberfläche | **123 Dateien, alle sauber** |
+| `tests/test-fuehrung.js` | **177 Zusicherungen** (+2) |
+
+**120 Durchläufe.**
