@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-zTAKF3RWYrayAwrNYMNstoCmVZ5nEY/NhDlIdfNQSBc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-iKbwJSu4BiyoZB4CA2+RxM61yvbAHffUVDds5rZYT6o='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -14385,7 +14385,14 @@ function allesGruppen(){
     /* Kein `view`: dahinter liegt keine Seite mehr, sondern das
        Hilfe-Fenster. `hilfe:true` sagt allesZiel(), dass es öffnen
        statt wechseln soll. */
-    {label:'Hilfe im Studio', hilfe:true, feature:'loesungen', ikon:'rettung',
+    /* `roh` statt `ikon:'rettung'`: allesIkon() sucht einen Namen erst
+       in NAV und fällt dann auf ikon() zurück — der Rettungsring steht
+       aber in keiner der beiden Tabellen, seit die Lösungen keine
+       Ansicht mehr sind. Nebenbei sieht test-gestaltung das Symbol so
+       als benutzt; über einen Namen in einer Datenzeile sieht es das
+       nicht und meldet toten Ballast. */
+    {label:'Hilfe im Studio', hilfe:true, feature:'loesungen',
+     roh:ikon('rettung'),
      was:'115 Probleme und was Schritt für Schritt hilft'},
   ]);
   /* Aus FEATURES abgeleitet: dieselben vier Schalter, dieselben
@@ -17378,6 +17385,24 @@ function hilfeLoeschen(e){
   else bind();
 })();
 
+/* Beim Abmelden. NICHT nur den Zuhörer abbestellen: der nächste
+   Kollege an demselben Gerät bekommt sonst die Einträge und die Fotos
+   des vorigen zu sehen, bis der neue Schnappschuss eintrifft — und
+   `_hBildCache` hält sie sogar fest, weil er nach Foto-ID schlüssel und
+   die nicht mit dem Konto wechselt.
+
+   Der Grundstock bleibt liegen: er kommt aus einer Datei, steht in
+   jeder Firma gleich und gehört niemandem. Ihn wegzuwerfen hiesse,
+   ihn beim nächsten Anmelden noch einmal zu holen. */
+function hilfeAufraeumen(){
+  if(_hUnsub){ try{ _hUnsub(); }catch(e){} _hUnsub=null; }
+  _hEigen=[]; _hBildCache={}; _hLadefehler='';
+  _hListe=[]; _hListeTitel=''; _hOffen=''; _hSuche=''; _hVon='start';
+  _hFormFuer=null; _hNeueBilder=[]; _hAltBilder=[]; _hWegBilder=[];
+  var feld=$('hilfeSuche'); if(feld) feld.value='';
+  hilfeSchliessen();
+}
+
 /* Der Knopf verschwindet, wenn die Firma den Bereich abgeschaltet hat —
    derselbe Schalter wie vorher für den Reiter. */
 function hilfeKnopfPruefen(){
@@ -17428,7 +17453,7 @@ function stopListeners(){
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
-  if(_loesUnsub){ _loesUnsub(); _loesUnsub=null; }
+  hilfeAufraeumen();
   if(_invUnsub){ _invUnsub(); _invUnsub=null; }
   _invUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _invUnsubs=[];
   if(_usersUnsub){ _usersUnsub(); _usersUnsub=null; }
