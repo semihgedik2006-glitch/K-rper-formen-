@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-i+cgUdE1cRAT4aAq4EZHkojtO2xksfWtY3yHQxBN+z0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-WLhsy9tVargFFdu+9Q3j1JtyHuF2YIOgMbVo/OW5LWI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -331,8 +331,8 @@ body.light{
   --text:#0B0F1A;--text-2:#3A4256;--text-3:#4A5265;
   --scrim:rgba(17,23,38,.52);
 }
-body.light .topbar{background:rgba(255,255,255,.9)}
-body.light .mobnav{background:rgba(255,255,255,.93)}
+body.light .topbar{background:var(--bg-2)}
+body.light .mobnav{background:var(--bg-2)}
 body.light ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18)}
 body.light .auth-mesh{opacity:.35}
 body.light .inp option{background:#ffffff;color:var(--text)}
@@ -370,17 +370,57 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);
      Inline-Stil am <body> stehen. Auf :root würde var() dort
      eingesetzt, wo der Verlauf definiert ist, und damit gegen den
      Rückfallwert aufgelöst statt gegen die gewählte Farbe. */
+  --brand:linear-gradient(135deg,var(--accent-2) 0%,var(--accent) 100%)}
+/* ── Das Gleiten liegt am RAHMEN, nicht am <body> ────────────────────
+   Bis zum 23.9.2026 stand die Bewegung (350 ms) am <body>. Gemessen an
+   dem Tag, CPU auf ein Viertel gedrosselt wie ein Studio-Tablet: jedes
+   Bild des Gleitens berechnete die GANZE Seite neu — 1627 Elemente,
+   80 bis 100 ms je Bild. Die Farbe glitt also mit rund fünf Bildern je
+   Sekunde, und so lange stand die App. Der Grund: die Farben werden
+   VERERBT, und eine vererbte Eigenschaft, die sich an der Wurzel in
+   jedem Bild ändert, reicht jedes Bild bis ins letzte Blatt.
+
+   Jetzt springt die Seite als Ganzes in EINEM Schritt auf die neue
+   Farbe — die Inhaltsseite wechselt beim Bereichswechsel ohnehin, sie
+   hat keinen Vorzustand, von dem aus sie gleiten könnte. Gleiten tut,
+   was stehen bleibt: Kopfzeile, Seitenleiste und Demo-Leiste (die
+   untere Leiste siehe unten). Jedes davon rechnet dieselben
+   Farben SELBST herüber — ein paar Dutzend Elemente je Bild statt
+   anderthalb Tausend.
+
+   --brand wird dort noch einmal als Formel gesetzt. Sonst käme er als
+   schon eingesetzter Text vom <body> herunter und folgte den gleitenden
+   Farben nicht — der Knopf „Bericht" oben wäre gesprungen. */
+/* Die untere Leiste NUR im bisherigen Schnitt: im neuen trägt sie die
+   Bereichsfarbe (--ber), und die gleitet dort über eigene, einfache
+   Übergänge an Knopf und Marker. Nachgemessen bei 390px: von 67
+   sichtbaren Rahmen-Elementen ändern 22 ihre Farbe, und keines davon
+   hängt an den Farben hier. Sie trotzdem mitzurechnen hiesse, je Bild
+   rund 180 Elemente für nichts neu zu berechnen. */
+/* Die Seitenleiste erst ab 821px: darunter ist sie ausgeblendet, und
+   50 unsichtbare Elemente je Bild mitzurechnen wäre Arbeit für nichts
+   — nachgezählt am 23.9.2026. */
+.topbar,.demo-bar,body:not(.neu) .mobnav{
   --brand:linear-gradient(135deg,var(--accent-2) 0%,var(--accent) 100%);
-  /* Und die Bewegung selbst. 350 ms: kurz genug, dass niemand wartet,
-     lang genug, dass man den Wechsel als einen Vorgang sieht und nicht
-     als Bildfehler. */
+  /* 350 ms: kurz genug, dass niemand wartet, lang genug, dass man den
+     Wechsel als einen Vorgang sieht und nicht als Bildfehler. */
   transition:--accent .35s var(--ease-ios),--accent-2 .35s var(--ease-ios),
              --accent-d .35s var(--ease-ios),--on-accent .35s var(--ease-ios),
              --accent-glow .35s var(--ease-ios),--tipp-1 .35s var(--ease-ios),
              --tipp-2 .35s var(--ease-ios),--tipp-kante .35s var(--ease-ios),
              --akz-w .35s var(--ease-ios),--akz2-w .35s var(--ease-ios),
              --akz-s .35s var(--ease-ios),--akz2-s .35s var(--ease-ios)}
-@media (prefers-reduced-motion:reduce){ body{transition:none} }
+@media (min-width:821px){
+  .side{
+    --brand:linear-gradient(135deg,var(--accent-2) 0%,var(--accent) 100%);
+    transition:--accent .35s var(--ease-ios),--accent-2 .35s var(--ease-ios),
+               --accent-d .35s var(--ease-ios),--on-accent .35s var(--ease-ios),
+               --accent-glow .35s var(--ease-ios),--tipp-1 .35s var(--ease-ios),
+               --tipp-2 .35s var(--ease-ios),--tipp-kante .35s var(--ease-ios),
+               --akz-w .35s var(--ease-ios),--akz2-w .35s var(--ease-ios),
+               --akz-s .35s var(--ease-ios),--akz2-s .35s var(--ease-ios)} }
+@media (prefers-reduced-motion:reduce){
+  .topbar,.side,.demo-bar,body:not(.neu) .mobnav{transition:none} }
 /* ── Dichte: kompakt (22.9.2026) ─────────────────────────────────────
    Aus den Design-Ideen, Punkt 5: „Für einen Chef mit 14 Studios ist die
    heutige Luftigkeit teuer, für den Trainer am Empfang ist eng zu eng."
@@ -828,7 +868,17 @@ html.demo #terminalSchirm{top:44px}
   gap:var(--s12);
   padding:calc(var(--s12) + var(--sat)) calc(var(--rand) + var(--sar))
           var(--s12) calc(var(--rand) + var(--sal));
-  background:rgba(18,19,28,.93);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  /* ── Deckend, ohne Weichzeichner (23.9.2026) ──
+     Vorher: 93 % deckend plus blur(20px). Die Leiste liegt aber
+     AUSSERHALB des Scroll-Bereichs — unter ihr scrollt nichts durch.
+     Der Weichzeichner verwischte also nur den stehenden Hintergrund:
+     im Bild eine weiche Kante statt einer klaren Linie, und für die
+     Grafikkarte ein Durchgang über die ganze Leistenfläche. Auf
+     schwachen Tablets ist das bekanntermassen spürbar; in der
+     Messumgebung hier (ohne Grafikkarte) liess es sich NICHT messen,
+     und das steht hier, damit es niemand für gemessen hält.
+     Die Farbe ist dieselbe: --bg ist genau rgb(18,19,28). */
+  background:var(--bg);
   border-bottom:1px solid var(--line)}
 /* Die Marke ist ein Knopf. Alles ab „background" setzt nur zurueck, was
    ein <button> von sich aus mitbringt — Aussehen bleibt wie vorher.
@@ -1647,7 +1697,10 @@ body.nurlesen .kopf-plus{display:none !important}
   .side{display:none}
   .main{padding-bottom:var(--s72)}
   .mobnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
-    background:rgba(18,19,28,.96);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    /* Deckend, ohne Weichzeichner — Begründung an .topbar. Der
+       Inhalt endet über der Leiste (.main trägt unten Abstand), unter
+       ihr scrollt also nichts durch. */
+    background:var(--bg);
     border-top:1px solid var(--line);
     padding:var(--s6) calc(var(--s4) + var(--sar)) calc(var(--s6) + var(--sab)) calc(var(--s4) + var(--sal))}
   /* overflow-x bleibt als Notausgang stehen — greift aber nicht mehr.
@@ -1675,7 +1728,8 @@ body.nurlesen .kopf-plus{display:none !important}
     box-shadow:inset 0 0 0 1px var(--accent);
     opacity:var(--ind-o,0);pointer-events:none;z-index:0;
     transition:transform .42s var(--ease-ios),width .42s var(--ease-ios),
-               height .42s var(--ease-ios),opacity .2s}
+               height .42s var(--ease-ios),opacity .2s,
+               background-color .35s var(--ease-ios),box-shadow .35s var(--ease-ios)}
   .mobnav.sofort::before{transition:none}
   /* flex:1 1 auto statt 0 0 auto, min-width 44 statt 74.
      Die 74px waren das Problem: „Ich" braucht 23px Schrift und bekam
@@ -1907,7 +1961,7 @@ body.nurlesen .kopf-plus{display:none !important}
    waehrend daneben alles gleitet, wirkt nicht schlicht, sondern
    unfertig. Wiederverwendet wird rowIn — keine neue Kurve fuer
    dasselbe Gefuehl. */
-.setup-zeile,.marke-chip,.cert-item{animation:rowIn .3s var(--ease-ios) both}
+.setup-zeile,.marke-chip,.cert-item{animation:rowIn .3s var(--ease-ios) backwards}
 .setup-zeile:nth-child(2),.marke-chip:nth-child(2){animation-delay:.03s}
 .setup-zeile:nth-child(3),.marke-chip:nth-child(3){animation-delay:.06s}
 .setup-zeile:nth-child(4),.marke-chip:nth-child(4){animation-delay:.09s}
@@ -2181,7 +2235,12 @@ body.nurlesen .kopf-plus{display:none !important}
 .pbar i{position:relative;overflow:hidden}
 .pbar i::after{content:'';position:absolute;inset:0;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
-  transform:translateX(-100%);animation:shimmer 2.4s ease-in-out infinite}
+  transform:translateX(-100%);animation:shimmer 2.4s ease-in-out 1}
+/* EINMAL, nicht endlos (bis 23.9.2026: infinite). Die Aufgabenseite des
+   Chefs trägt vierzehn dieser Balken — vierzehn Animationen, die nie
+   aufhören und bei jedem Bild beim Scrollen mitgerechnet werden. Der
+   Glanz sagt „hier bewegt sich etwas"; das muss er einmal sagen, beim
+   Erscheinen, nicht in Dauerschleife. */
 @keyframes shimmer{to{transform:translateX(100%)}}
 .todo-progress.complete .pbar i::after{animation:none}
 /* „Alles erledigt"-Zeile */
@@ -2189,7 +2248,16 @@ body.nurlesen .kopf-plus{display:none !important}
 .pdone{font-size:var(--t-xs);font-weight:700;color:var(--accent-2);white-space:nowrap}
 
 /* ── Listen blenden leicht versetzt ein (wirkt lebendig, nicht verspielt) ── */
-.todo{animation:rowIn .34s var(--ease-out) both}
+/* ── `backwards`, nicht `both` ────────────────────────────────────
+   Gemessen am 23.9.2026, Aufgabenliste des Chefs, 61 Zeilen: mit
+   `both` hing die Einblendung auch Sekunden später noch an JEDER Zeile
+   — eine fertige Animation, die ihren Endwert festhält, bleibt aktiv.
+   Das Ende von rowIn ist aber genau der Normalzustand (sichtbar, nicht
+   verschoben); festgehalten werden muss da nichts. `backwards` hält
+   nur den ANFANG fest (für die Wartezeit davor) und gibt die Zeile
+   danach frei. Im Bild derselbe Ablauf. */
+.todo{animation:rowIn .34s var(--ease-out) backwards}
+.todo.ohne-ein{animation:none}
 @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .todo:nth-child(1){animation-delay:.02s}.todo:nth-child(2){animation-delay:.05s}
 .todo:nth-child(3){animation-delay:.08s}.todo:nth-child(4){animation-delay:.11s}
@@ -2201,7 +2269,13 @@ body.nurlesen .kopf-plus{display:none !important}
 
 /* ── Überfällige Aufgaben deutlicher markieren ── */
 .todo.overdue{border-left:3px solid var(--danger)}
-.t-due.over{animation:duePulse 2.2s ease-in-out infinite}
+/* Dreimal, dann still (bis 23.9.2026: endlos). Gemessen: fünf endlos
+   pulsierende Marken in der Aufgabenliste kosteten beim Scrollen rund
+   3 ms je Bild — ein Drittel dessen, was für 120 Bilder je Sekunde
+   überhaupt zur Verfügung steht. Die Marke bleibt rot, fett und mit
+   Balken links; das Pulsieren holt den Blick beim Öffnen, danach ist
+   es nur noch Unruhe. */
+.t-due.over{animation:duePulse 2.2s ease-in-out 3}
 @keyframes duePulse{0%,100%{opacity:1}50%{opacity:.55}}
 
 /* ── Kopfzeile auf schmalen Handys ──
@@ -2298,7 +2372,7 @@ body.nurlesen .kopf-plus{display:none !important}
 .pp-item{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s12) var(--s12);background:var(--bg-soft);
   border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8);
   transition:background .3s,border-color .2s,transform .2s var(--ease-out);
-  animation:rowIn .3s var(--ease-out) both}
+  animation:rowIn .3s var(--ease-out) backwards}
 .pp-item:hover{transform:translateY(-1px);border-color:var(--line-2)}
 .pp-item.done{opacity:.62}
 .pp-item.done .pp-title{text-decoration:line-through;color:var(--text-2)}
@@ -2325,7 +2399,7 @@ body.nurlesen .kopf-plus{display:none !important}
 .pp-del svg,.pp-edit svg{width:16px;height:16px}
 /* Notizen */
 .pp-note{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
-  border-left:3px solid var(--accent-3);border-radius:var(--r-sm);margin-bottom:var(--s8);animation:rowIn .3s var(--ease-out) both}
+  border-left:3px solid var(--accent-3);border-radius:var(--r-sm);margin-bottom:var(--s8);animation:rowIn .3s var(--ease-out) backwards}
 .pp-note-text{font-size:var(--t-md);white-space:pre-wrap;word-break:break-word}
 /* Zwei Knoepfe rechts statt einem: der Name links, die Handlungen
    rechts. margin-left:auto am ersten schiebt beide an den Rand, ohne
@@ -4405,7 +4479,7 @@ html{font-size:var(--fs,100%)}
   transition:transform .3s var(--spring),background .25s,border-color .25s,color .25s}
 .chip:hover{color:var(--text);border-color:var(--accent)}
 .chip:active{transform:scale(.94)}
-.chip.on{background:rgba(var(--akz-rgb),.15);border-color:var(--accent);color:var(--accent)}
+.chip.on{background:rgba(var(--akz-rgb),.15);border-color:var(--accent);color:var(--accent-d)}
 
 /* ── Rollen-Kennzeichen ── */
 .role-badge{display:inline-block;font-size:var(--t-2xs);font-weight:800;letter-spacing:var(--ls-s);
@@ -4799,8 +4873,18 @@ body.neu.light[data-bereich="g-alles"] {--ber:#3E4E6B;--ber-f:rgba(62,78,107,.16
 body.neu .bereich-kopf{display:flex;align-items:center;gap:var(--s10);
   flex:1 1 220px;min-width:0;text-align:left;cursor:pointer;
   padding:var(--s16) var(--s8) var(--s12) var(--rand);
-  background:none;border:none;color:inherit;font-family:var(--font-body);
-  transition:padding .3s var(--ease-ios)}
+  background:none;border:none;color:inherit;font-family:var(--font-body)}
+/* ── Keine Übergänge auf Grösse und Abstand ─────────────────────────
+   Bis zum 23.9.2026 glitten padding, width, height und font-size über
+   0,3 s. Das sind LAYOUT-Eigenschaften: der Kopf liegt ausserhalb des
+   Scroll-Bereichs, und jedes Bild der Bewegung hat die ganze Liste
+   darunter neu vermessen — 0,3 s lang ein volles Layout je Bild (bei
+   61 Aufgaben), genau in dem Moment, in dem der Finger scrollt.
+
+   Die Bewegung ist nicht weg: bereichKopfEng() springt einmal auf die
+   neue Grösse und lässt Titel und Zeichen per transform vom alten Platz
+   herübergleiten (FLIP). Ein Layout statt eines je Bild, der Rest
+   läuft auf der Grafikkarte. */
 /* 46 waren es. Zusammen mit der getönten Fläche war das der lauteste
    Punkt im Bild — und er sagt nur, wo man ist.
 
@@ -4812,17 +4896,17 @@ body.neu .bk-ikon{flex:0 0 auto;display:grid;place-items:center;
   width:38px;height:38px;border-radius:var(--r-md);
   background:var(--ber-f);color:var(--ber);
   box-shadow:inset 0 0 0 1px var(--ber-f);
-  transition:width .3s var(--ease-ios),height .3s var(--ease-ios)}
-body.neu .bk-ikon svg{width:22px;height:22px;
-  transition:width .3s var(--ease-ios),height .3s var(--ease-ios)}
+  /* Farbe, nicht Grösse: gleitet ohne Layout (die Grösse macht FLIP). */
+  transition:background-color .35s var(--ease-ios),color .35s var(--ease-ios)}
+body.neu .bk-ikon svg{width:22px;height:22px}
 body.neu .bk-txt{min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 body.neu .bk-txt b{font-family:var(--font-head);font-size:var(--t-2xl);
-  line-height:var(--lh-eng);letter-spacing:var(--ls-eng);
-  transition:font-size .3s var(--ease-ios)}
+  line-height:var(--lh-eng);letter-spacing:var(--ls-eng)}
 body.neu .bk-txt i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 body.neu .bk-txt i.warn{color:var(--danger-tx);font-weight:700}
 /* Beim Scrollen rückt er zusammen — wie die Seitenköpfe es längst tun. */
+body.neu .bk-txt b,body.neu .bk-ikon{transform-origin:0 0}
 body.neu .bereich-kopf.eng{padding-top:var(--s8);padding-bottom:var(--s6)}
 body.neu .bereich-kopf.eng .bk-ikon{width:34px;height:34px}
 body.neu .bereich-kopf.eng .bk-ikon svg{width:20px;height:20px}
@@ -5101,6 +5185,18 @@ body.neu .subtab{flex:0 1 auto}
    Jetzt: überfällig zuerst, dann heute, dann ungelesen. Jede Zeile
    führt genau dorthin, wo man sie erledigt. */
 body.neu .heute-block{margin-bottom:var(--s20)}
+/* ── 10 px Luft über der Liste ──
+   Gemessen am 23.9.2026 per Hit-Test: „alle 5 ›" im OBERSTEN Block traf
+   nur 35 px hoch statt 44. Die Trefferfläche (.mini-link::after) ragt
+   22 px über die Knopfmitte — der Scroll-Bereich begann aber schon
+   12 px darüber und schnitt den Rest ab. Sichtbar war das nicht; ein
+   Daumen, der knapp über dem Wort aufsetzt, traf einfach nichts.
+   Die Einpassung auf einen Bildschirm (heutePasst) rechnet die 10 px
+   von selbst mit ein.
+   max() statt der Sprosse allein: in der Dichte „kompakt" ist --s10
+   nur 8 px, und nachgemessen traf der Verweis dann 43 statt 44. Die
+   Trefferfläche richtet sich nicht nach der Dichte. */
+body.neu #heuteListe{padding-top:max(var(--s10),10px)}
 body.neu .heute-kopf{display:flex;align-items:center;gap:var(--s8);
   margin:0 0 var(--s8);font-family:var(--font-head);font-weight:700;
   font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
@@ -5114,6 +5210,12 @@ body.neu .heute-kopf.heute   {--kat:var(--warm)}
 body.neu .heute-kopf.lesen   {--kat:var(--ber)}
 body.neu .heute-kopf.tun     {--kat:#BBA4FF}
 body.neu.light .heute-kopf.tun{--kat:#5F1FC7}
+/* Putzplan in Teal: auf der Startseite frei (Blau ist dort der
+   Bereichston, Bernstein und Rot sind Status, Violett „Zu erledigen"),
+   und es ist KEIN Grün — sonst hiesse eine offene Putzliste „in
+   Ordnung". Dieselben Werte wie die Nachrichten-Gruppe in „Alles". */
+body.neu .heute-kopf.putz    {--kat:#4EE6D2}
+body.neu.light .heute-kopf.putz{--kat:#0B6A62}
 body.neu .heute-kopf .hk-punkt{width:8px;height:8px;border-radius:var(--r-pille);
   background:var(--kat);flex:0 0 auto}
 /* Im Hellmodus tragen --warm und --accent-2 als TEXT nicht — sie sind
@@ -5182,6 +5284,8 @@ body.neu .heute-zeile.lesen   {--kat:var(--ber);--kat-f:var(--ber-f)}
    eine türkise Fläche. Gesehen, nicht überlegt. */
 body.neu .heute-zeile.tun     {--kat:#BBA4FF;--kat-f:rgba(var(--akz2-rgb),.3)}
 body.neu.light .heute-zeile.tun{--kat:#5F1FC7;--kat-f:rgba(109,40,217,.2)}
+body.neu .heute-zeile.putz    {--kat:#4EE6D2;--kat-f:rgba(45,212,191,.26)}
+body.neu.light .heute-zeile.putz{--kat:#0B6A62;--kat-f:rgba(15,118,110,.18)}
 /* Ohne Kachel. Aus dem Betrieb: „es wirkt jetzt mit den grossen
    Symbolen immer noch voll überwältigend."
 
@@ -5209,6 +5313,14 @@ body.neu .heute-zeile.dringend .hz-txt i{color:var(--danger-tx);font-weight:600}
    die Zeile irgendwohin führt. */
 body.neu .heute-zeile .hz-pfeil{color:var(--kat);opacity:.55}
 body.neu .hz-pfeil{flex:0 0 auto;color:var(--text-3);font-size:var(--t-lg)}
+/* „Ausserdem": was nicht mehr auf den Bildschirm passt, als Knöpfe.
+   Flach und ruhig — es ist ein Verweis, keine weitere Kategorie, und
+   darf nicht lauter sein als die Zeilen darüber. */
+body.neu .heute-rest{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);
+  margin-top:calc(-1 * var(--s8))}
+body.neu .heute-rest .hr-wort{font-family:var(--font-head);font-weight:700;
+  font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
+  color:var(--text-3);margin-right:var(--s4)}
 /* Nichts offen ist eine Aussage, kein leerer Bildschirm. */
 body.neu .heute-ruhe{display:flex;align-items:center;gap:var(--s12);
   padding:var(--s20) var(--s16);border-radius:var(--radius);
@@ -8645,6 +8757,28 @@ function kontrastWert(hexA, hexB){
    Durchlauf mit den Bereichsfarben hat gemessen, dass Pink bei
    derselben .24 auf 4,17 fällt (hell 4,37). Eine Zahl, die für eine
    Farbe gemessen wurde, gilt nicht für alle. */
+/* ── Die TEXTSTUFE einer Akzentfarbe ────────────────────────────────
+   Gemessen am 23.9.2026, Hellmodus, „Lebendig", an echten Bildpunkten:
+   Akzent als Text auf einer Tönung derselben Farbe lag an drei Stellen
+   unter 4,5:1 — der Chip „Alle" in den Aufgaben 3,86, der offene Kanal
+   im Chat 3,93, „Drucken" im Putzplan 4,19.
+
+   Der Grund: --accent-d hiess zwar „d" für dunkel, war aber IDENTISCH
+   mit --accent. Und tippDeckung() unten rechnet die Tönung gegen Weiss
+   (--bg-2) — die Knöpfe liegen aber oft auf den grauen Flächen darunter.
+
+   Statt die Tönung blasser zu machen (das nähme genau die Farbe weg,
+   um die es beim Wunsch „lebendig" ging), wird der TEXT so weit
+   abgedunkelt, bis er auf der stärksten Tönung (.20) über der
+   dunkelsten hellen Fläche (--bg-3) mindestens 4,6:1 hat. Gerechnet je
+   Farbe — Orange braucht mehr als Blau, und ein fester Wert wäre bei
+   einer der beiden falsch. Im Dunkelmodus unverändert: helle Schrift
+   auf dunkler Tönung trägt dort ohnehin. */
+function textStufe(farbe, grund, deckung){
+  var flaeche=mischen(grund, farbe, deckung), t=farbe, k=0;
+  while(k<0.6 && kontrastWert(t, flaeche)<4.6){ k+=0.03; t=mischen(farbe, '#000000', k); }
+  return t;
+}
 function tippDeckung(farbe, grund, obergrenze){
   var d=obergrenze;
   while(d>0.06 && kontrastWert(farbe, mischen(grund, farbe, d))<4.5) d-=0.02;
@@ -8778,6 +8912,14 @@ function aktiverAkzent(){ return ACCENTS[akzentSchluessel()] || ACCENTS.cyan; }
    Betrieb und steht über der persönlichen Wahl. Sie färbt die
    Hauptfarbe; der zweite Ton und die Schleier kommen weiter aus dem
    Akzent, sonst bliebe von der persönlichen Einstellung nichts. */
+var _grundJeModus = {};
+function flaecheJeModus(name, ersatz){
+  var k=(document.body.classList.contains('light') ? 'hell' : 'dunkel')+name;
+  if(!_grundJeModus[k]){
+    _grundJeModus[k] = getComputedStyle(document.body).getPropertyValue(name).trim() || ersatz;
+  }
+  return _grundJeModus[k];
+}
 function akzentAnwenden(){
   var light = document.body.classList.contains('light');
   var a = aktiverAkzent();
@@ -8803,7 +8945,7 @@ function akzentAnwenden(){
   if(m) c1 = light ? m.hell : m.dunkel;
   s.setProperty('--accent',   c1);
   s.setProperty('--accent-2', c2);
-  s.setProperty('--accent-d', c1);
+  s.setProperty('--accent-d', light ? textStufe(c1, flaecheJeModus('--bg-3', '#E3E8F1'), .20) : c1);
   s.setProperty('--on-accent', m ? (light ? '#ffffff' : m.auf) : (light ? '#ffffff' : '#0A1420'));
   /* ── Und jetzt das, was vorher fest verdrahtet war ──
      --brand trägt JEDEN Hauptknopf der App, --tipp-* jeden zweiten
@@ -8829,8 +8971,13 @@ function akzentAnwenden(){
      dem Stylesheet gelesen statt hier notiert, damit die Rechnung
      nicht stillschweigend falsch wird, wenn dort einmal ein anderer
      Ton steht. */
-  var grund = getComputedStyle(document.body).getPropertyValue('--bg-2').trim() ||
-              (light ? '#ffffff' : '#1C1E2A');
+  /* Gelesen wird einmal je Farbmodus, nicht bei jedem Aufruf.
+     akzentAnwenden() läuft bei JEDEM Bereichswechsel (siehe showView),
+     und getComputedStyle erzwang dort jedes Mal einen Stil-Durchgang
+     über die ganze Seite — für einen Wert, der nur an body.light hängt.
+     Weiterhin aus dem Stylesheet, nicht hier notiert: ändert sich der
+     Ton dort, stimmt die Rechnung nach dem nächsten Neuladen wieder. */
+  var grund = flaecheJeModus('--bg-2', light ? '#ffffff' : '#1C1E2A');
   var dTipp = tippDeckung(c1, grund, light?.19:.24);
   s.setProperty('--tipp-1',     mitDeckung(c1, dTipp));
   s.setProperty('--tipp-2',     mitDeckung(c1, Math.round(dTipp*(light?28/19:34/24)*100)/100));
@@ -14915,14 +15062,56 @@ document.addEventListener('keydown', function(e){
    Er misst sich am Reiter selbst, auch in der Höhe — mit fester Höhe im
    CSS sitzt er daneben, sobald ein Reiter zweizeilig wird oder die
    Schrift größer ist. */
+/* ── Gemessen wird im nächsten Bild, und zwar gebündelt ────────────
+   Am 23.9.2026 profiliert: ein Tipp auf die untere Leiste kostete im
+   Mittel 194 ms (CPU ÷4), und fast die Hälfte davon lag HIER. Der
+   Grund ist kein langsamer Code, sondern die Reihenfolge: showView()
+   baut die neue Seite auf, und gleich danach fragte der Marker nach
+   offsetLeft. Damit musste der Browser die GANZE neue Seite sofort
+   vermessen, mitten im Klick — und nach den nächsten Änderungen
+   (Unterreiter, Startseite, Kopf) gleich noch einmal. Acht Layouts je
+   Tipp im Mittel (65 bei acht Tipps gezählt), wo eines reicht.
+
+   Jetzt merkt sich markerSetzen() nur, WAS zu setzen ist. Ausgeführt
+   wird im nächsten Bild, für alle Marker zusammen: erst ALLE lesen,
+   dann ALLE schreiben. Das eine Layout, das dabei anfällt, hätte der
+   Browser für dieses Bild ohnehin gerechnet.
+
+   Mehrfache Aufträge für denselben Behälter ersetzen einander — es
+   zählt der letzte Stand, nicht jeder Zwischenschritt. */
+var _markerAuftraege=[], _markerBild=0;
 function markerSetzen(behaelter, aktiv){
   if(!behaelter) return;
-  if(!aktiv){ behaelter.style.setProperty('--ind-o','0'); return; }
-  behaelter.style.setProperty('--ind-x', aktiv.offsetLeft+'px');
-  behaelter.style.setProperty('--ind-y', aktiv.offsetTop+'px');
-  behaelter.style.setProperty('--ind-w', aktiv.offsetWidth+'px');
-  behaelter.style.setProperty('--ind-h', aktiv.offsetHeight+'px');
-  behaelter.style.setProperty('--ind-o','1');
+  for(var i=0;i<_markerAuftraege.length;i++){
+    if(_markerAuftraege[i].b===behaelter){ _markerAuftraege[i].a=aktiv; return; }
+  }
+  _markerAuftraege.push({ b:behaelter, a:aktiv });
+  if(!_markerBild) _markerBild=requestAnimationFrame(markerAusfuehren);
+}
+function markerAusfuehren(){
+  _markerBild=0;
+  var liste=_markerAuftraege; _markerAuftraege=[];
+  /* 1. LESEN. Ein Element ohne Kasten (versteckter Vorfahr, schon
+     ersetzt) liefert keine Messung, sondern deren Abwesenheit — dann
+     bleibt der alte Stand stehen, statt die Füllung auf 0 zu setzen.
+     Siehe die Begründung in gruppenMarker(). */
+  var mass=liste.map(function(x){
+    var a=x.a;
+    if(!a) return null;
+    if(!a.isConnected || !a.getClientRects().length) return 'weg';
+    return { x:a.offsetLeft, y:a.offsetTop, w:a.offsetWidth, h:a.offsetHeight };
+  });
+  /* 2. SCHREIBEN. Nach dem ersten Schreiben wird nichts mehr gelesen. */
+  liste.forEach(function(x, i){
+    var m=mass[i], st=x.b.style;
+    if(m==='weg') return;
+    if(!m){ st.setProperty('--ind-o','0'); return; }
+    st.setProperty('--ind-x', m.x+'px');
+    st.setProperty('--ind-y', m.y+'px');
+    st.setProperty('--ind-w', m.w+'px');
+    st.setProperty('--ind-h', m.h+'px');
+    st.setProperty('--ind-o','1');
+  });
 }
 function kanalMarker(){
   var bar=document.querySelector('.chat-channels'); if(!bar) return;
@@ -14935,18 +15124,29 @@ function kanalMarker(){
 function markerSofort(behaelter, aktiv){
   if(!behaelter) return;
   behaelter.classList.add('sofort');
+  /* markerSetzen() schreibt im NÄCHSTEN Bild. Die Klasse muss also bis
+     danach bleiben: erst im übernächsten Bild weg, sonst gleitet der
+     Marker doch von links herein. Die Reihenfolge ist sicher — der
+     gebündelte Auftrag steht vor diesem hier in der Warteschlange. */
   markerSetzen(behaelter, aktiv);
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){ behaelter.classList.remove('sofort'); });
   });
 }
+var _mobnavBreite = window.matchMedia ? window.matchMedia('(max-width:820px)') : { matches:true };
 function gruppenMarker(sofort){
   var bar=document.querySelector('.mobnav'); if(!bar) return;
   // Die Leiste ist nur auf dem Handy sichtbar; am Rechner gibt es sie nicht.
   // NICHT über offsetParent prüfen: die Leiste ist position:fixed, und da
   // ist offsetParent immer null – die Prüfung hätte den Marker überall
   // abgeschaltet, auch auf dem Handy.
-  if(getComputedStyle(bar).display === 'none') return;
+  /* matchMedia statt getComputedStyle: die Leiste wird ausschliesslich
+     über diese Breite ein- und ausgeblendet (.mobnav{display:none},
+     sichtbar ab max-width:820px). getComputedStyle hätte mitten im
+     Klick einen Stil-Durchgang über die ganze, gerade neu gebaute
+     Seite erzwungen — nur um eine Frage zu beantworten, die die
+     Fensterbreite schon beantwortet. */
+  if(!_mobnavBreite.matches) return;
   // Beim allerersten Mal soll der Marker stehen und nicht von links
   // hereinfahren – das sähe aus, als würde die App noch laden.
   /* Im neuen Schnitt liegt in der Leiste eine zweite, ausgefahrene
@@ -14956,6 +15156,8 @@ function gruppenMarker(sofort){
      der Knopfreihe suchen. */
   var aktiv = bar.querySelector('.mn-reihe button.active') || bar.querySelector('button.active');
   if(!aktiv){ markerSetzen(bar, null); return; }
+  /* Hat der Knopf keinen Kasten, misst markerAusfuehren() das selbst
+     (im nächsten Bild) und lässt den alten Stand stehen. */
   /* ── Nicht messen, was gar nicht liegt ──
      Die Prüfung auf display:'none' oben fragt nur die Leiste selbst.
      Liegt sie in einem versteckten VORFAHREN, meldet getComputedStyle
@@ -14970,7 +15172,6 @@ function gruppenMarker(sofort){
      (Der Fehler, bei dessen Suche das hier entstand, war ein anderer —
      siehe designAnwenden(). Die Zeile bleibt trotzdem: sie ist
      billiger als die Klasse von Fehlern, die sie ausschliesst.) */
-  if(!aktiv.getClientRects().length) return;
   if(!bar.dataset.markerDa){ bar.dataset.markerDa='1'; sofort=true; }
   (sofort ? markerSofort : markerSetzen)(bar, aktiv);
   schriftenNachmessen();
@@ -15304,6 +15505,35 @@ function kopfGibtHer(head){
   return head._gibtHer;
 }
 
+/* ── Der Bereichskopf rückt zusammen — per FLIP ────────────────────
+   First, Last, Invert, Play: die Lage VOR dem Umschalten merken, die
+   Klasse setzen (EIN Layout), die Lage DANACH messen und Titel und
+   Zeichen mit transform vom alten Platz auf den neuen gleiten lassen.
+   transform rechnet die Grafikkarte; der Hauptfaden ist nach dem einen
+   Layout frei. Vorher glitten font-size, width, height und padding —
+   jedes Bild ein volles Layout der Seite darunter.
+
+   Der Titel wird GLEICHMÄSSIG skaliert (Höhe zu Höhe), nicht getrennt
+   in Breite und Höhe: sonst wäre die Schrift während der Bewegung
+   gestaucht. Nach 220 ms steht sie wieder bei scale(1) — scharf. */
+function bereichKopfEng(bk, an){
+  if(bk.classList.contains('eng') === !!an) return;
+  var teile=[bk.querySelector('.bk-txt b'), bk.querySelector('.bk-ikon')];
+  var vorher=teile.map(function(el){ return el ? el.getBoundingClientRect() : null; });
+  bk.classList.toggle('eng', !!an);
+  if(willRuhe()) return;
+  teile.forEach(function(el, i){
+    var v=vorher[i];
+    if(!el || !v || !el.animate) return;
+    var n=el.getBoundingClientRect();
+    if(!n.height || !v.height) return;
+    var sk=v.height/n.height;
+    el.animate([
+      { transform:'translate('+(v.left-n.left)+'px,'+(v.top-n.top)+'px) scale('+sk+')' },
+      { transform:'none' }
+    ], { duration:220, easing:'cubic-bezier(.2,.8,.2,1)' });
+  });
+}
 function bindShrinkHeaders(){
   document.querySelectorAll('.scroll-area[data-shrinks]').forEach(function(area){
     if(area._shrinkBound) return;
@@ -15354,9 +15584,9 @@ function bindShrinkHeaders(){
         var bk=document.getElementById('bereichKopf');
         if(bk && bz && !bz.hidden){
           var ueber = area.scrollHeight - area.clientHeight;
-          if(ueber < 90) bk.classList.remove('eng');
-          else if(y>28) bk.classList.add('eng');
-          else if(y<10) bk.classList.remove('eng');
+          if(ueber < 90) bereichKopfEng(bk, false);
+          else if(y>28) bereichKopfEng(bk, true);
+          else if(y<10) bereichKopfEng(bk, false);
         }
         if(tools){
           // Klebt sie? Dann steht ihre Oberkante genau auf der des Bereichs.
@@ -15689,9 +15919,19 @@ function kanalReihenfolge(){
   kanalSichtbarMachen();
 }
 /* Der offene Kanal muss sichtbar sein – sonst weiß man nicht, wo man ist. */
+/* Im nächsten Bild, und nur einmal — auch wenn vier Stellen es im
+   selben Durchgang verlangen. scrollIntoView() misst die Seite; mitten
+   im Aufbau des Chats aufgerufen, erzwang es ein Layout, bevor die
+   Nachrichten überhaupt standen (37 ms bei acht Wechseln, gemessen am
+   23.9.2026). Im nächsten Bild liegt ohnehin alles fest. */
+var _kanalBild=0;
 function kanalSichtbarMachen(){
-  var a=document.querySelector('.chan.active');
-  if(a && a.scrollIntoView) a.scrollIntoView({block:'nearest', inline:'nearest'});
+  if(_kanalBild) return;
+  _kanalBild=requestAnimationFrame(function(){
+    _kanalBild=0;
+    var a=document.querySelector('.chan.active');
+    if(a && a.scrollIntoView) a.scrollIntoView({block:'nearest', inline:'nearest'});
+  });
 }
 
 /* ── Ungelesen-Zähler je Kanal ──
@@ -20620,6 +20860,66 @@ function renderHeute(){
       titel:'Neues im Teamchat', unter:'Seit deinem letzten Blick' });
   }
 
+  /* ── Der Putzplan ─────────────────────────────────────────────────
+     Aus dem Betrieb, 23.9.2026: „kannst du noch den putzplan zur
+     startseite hinzufügen."
+
+     Bis dahin stand er nirgends auf der Startseite — obwohl
+     `putzOffenGesamt()` die Zahl schon rechnete. Sie landete in der
+     Begrüssung des BISHERIGEN Designs, im neuen gar nicht.
+
+     ZWEI FORMEN, je nachdem, wer hinsieht:
+     • EIN Studio (der Normalfall am Empfang): die Punkte selbst, mit
+       „täglich" oder „wöchentlich" darunter. Wer davor steht, will
+       wissen, WAS noch zu putzen ist, nicht wieviel.
+     • MEHRERE Studios (Leitung): eine Zeile je Studio, das mit dem
+       meisten Rückstand zuerst, die ersten zwei Punkte darunter. Zwölf
+       Einzelpunkte aus drei Studios durcheinander wären keine Übersicht.
+
+     Pausierte Punkte zählen NICHT — Studio im Umbau, Raum vermietet.
+     Eine Pause ist eben genau die Aussage „das steht gerade nicht an".
+     `putzOffenGesamt()` zählt sie mit; hier wäre das falsch, denn eine
+     Zeile auf der Startseite ist eine Aufforderung.
+
+     Ein Tipp öffnet den Putzplan GENAU DIESES Studios. Ohne das landet
+     man im zuletzt geöffneten und sucht. */
+  var putz=[];
+  if(ansichtAn('putzplan')){
+    var putzJe=[];
+    keys.forEach(function(sk){
+      var offenP=(cachedClean[sk]||[]).filter(function(t){
+        return !isDone(t) && !ppPausiert(t);
+      });
+      /* Täglich vor wöchentlich vor allem anderen: was heute nicht
+         gemacht wird, ist morgen schon wieder fällig. */
+      var rang={daily:0, weekly:1};
+      offenP.sort(function(a,b){
+        var ra=(a.recurring in rang)?rang[a.recurring]:2;
+        var rb=(b.recurring in rang)?rang[b.recurring]:2;
+        return ra-rb || (a.ts||0)-(b.ts||0);
+      });
+      if(offenP.length) putzJe.push({ sk:sk, liste:offenP });
+    });
+    if(mehrereStudios){
+      putzJe.sort(function(a,b){ return b.liste.length-a.liste.length; });
+      putzJe.forEach(function(x){
+        var n=x.liste.length;
+        putz.push({ art:'putz', ziel:'putzplan', sk:x.sk, ikon:allesIkon('putzplan'),
+          anzahl:n,
+          titel:studioName(x.sk)+' · '+(n===1?'1 Punkt offen':n+' Punkte offen'),
+          unter:x.liste.slice(0,2).map(function(t){ return t.title||t.text||'Putzpunkt'; }).join(' · ') });
+      });
+    } else if(putzJe.length){
+      putzJe[0].liste.forEach(function(t){
+        putz.push({ art:'putz', ziel:'putzplan', sk:putzJe[0].sk, ikon:allesIkon('putzplan'),
+          anzahl:1,
+          titel:t.title||t.text||'Putzpunkt',
+          unter:repLabelFor(t) || 'einmalig' });
+      });
+    }
+  }
+  var putzGesamt=putz.reduce(function(s,x){ return s+(x.anzahl||1); },0);
+
   /* Was sonst noch ansteht: fehlendes Material und offene Einrichtung. */
   var sonst=[];
   if(matArtikel && ansichtAn('material')){
@@ -20650,21 +20950,38 @@ function renderHeute(){
      Strich dahinter nehmen dieselbe Farbe wie die Zeilen darunter.
      Ohne das wäre die Farbe ein Zufall je Zeile statt die Sprache der
      Kategorie. */
-  function block(titel, art, alle, zeigen, ziel, f){
+  /* `zahl` ist die Zahl in der Überschrift. Meist die Zeilenzahl — beim
+     Putzplan der Leitung aber nicht: dort ist eine Zeile ein STUDIO, und
+     „Putzplan · 3" hiesse drei Studios, obwohl zwölf Punkte offen sind. */
+  function block(titel, art, alle, zeigen, ziel, f, zahl){
     if(!alle.length) return;
     var rest=alle.length-zeigen.length;
     var dringend = art==='dringend';
-    html+='<div class="heute-block">'+
+    var n = zahl || alle.length;
+    /* Die Angaben am Block selbst: fällt er beim Einpassen weg, baut
+       heutePasst() daraus den Verweis unter „Ausserdem". */
+    html+='<div class="heute-block" data-btitel="'+esc(titel)+'" data-bzahl="'+n+'"'+
+      ' data-bziel="'+esc(ziel)+'"'+(f?' data-bf="'+esc(f)+'"':'')+'>'+
       '<div class="heute-kopf '+art+(dringend?' dringend':'')+'">'+
       '<span class="hk-punkt"></span>'+
-      '<span class="hk-wort">'+esc(titel)+(alle.length>1?' · '+alle.length:'')+'</span>'+
+      '<span class="hk-wort">'+esc(titel)+(n>1?' · '+n:'')+'</span>'+
       '<i></i>'+
-      (rest>0 ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
-                (f?' data-hf="'+esc(f)+'"':'')+'>alle '+alle.length+' ›</button>' : '')+
+      /* Der Ausgang steht da, sobald die Überschrift MEHR nennt, als
+         darunter Zeilen stehen — nicht erst, wenn Zeilen weggelassen
+         wurden. Beim Putzplan der Leitung ist das nicht dasselbe: eine
+         Zeile ist ein Studio, die Zahl sind Punkte. test-neu-design hat
+         es gefunden. */
+      ((rest>0 || n>zeigen.length) ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
+                (f?' data-hf="'+esc(f)+'"':'')+'>alle '+n+' ›</button>' : '')+
       '</div><div class="heute-liste">'+zeigen.map(heuteZeile).join('')+'</div></div>';
   }
   if(ansichtAn('todos')) block('Überfällig', 'dringend', ueber, ueber.slice(0,3), 'todos', 'faellig');
   block('Heute', 'heute', heute, heute.slice(0,3), 'todos');
+  /* Direkt unter „Heute": der Putzplan hat einen Tagesbezug — was
+     täglich ist, ist heute fällig. Über den Nachrichten, weil ein
+     ungeputztes Gerät der Kunde sieht und eine ungelesene Nachricht
+     nicht. */
+  block('Putzplan', 'putz', putz, putz.slice(0,3), 'putzplan', null, putzGesamt);
   block('Neu für dich', 'lesen', lesen, lesen.slice(0,2), 'chat');
   block('Zu erledigen', 'tun', sonst, sonst.slice(0,2), 'todos');
   /* ── „Offen" steht GANZ UNTEN, und das ist Absicht ──
@@ -20694,7 +21011,16 @@ function renderHeute(){
   }
   box.innerHTML=html;
 
-  box.querySelectorAll('[data-heute]').forEach(function(el){
+  box.querySelectorAll('[data-heute]').forEach(heuteTippBinden);
+
+  heutePasst(box);
+}
+
+/* Ein Tipp auf eine Zeile der Startseite. Eigene Funktion, weil
+   heutePasst() nachträglich Knöpfe einsetzt („Ausserdem"), die genau
+   dasselbe tun müssen — zwei Abschriften derselben Klicklogik laufen
+   beim nächsten Umbau auseinander. */
+function heuteTippBinden(el){
     el.addEventListener('click',function(e){
       e.stopPropagation();
       var f=el.getAttribute('data-hf');
@@ -20706,14 +21032,24 @@ function renderHeute(){
       }
       tick(8);
       showView(el.getAttribute('data-heute'));
+      /* Studio mitgeben, wo die Zeile eines nennt. `data-hsk` stand
+         schon lange im Markup, gelesen hat es bis zum 23.9.2026
+         niemand — der Putzplan ist die erste Zeile, bei der es darauf
+         ankommt. */
+      var hsk=el.getAttribute('data-hsk');
+      if(hsk && el.getAttribute('data-heute')==='putzplan'){
+        var ps=$('ppStudio');
+        if(ps){
+          if(!ps.options.length) buildPutzplanSelect();
+          ps.value=hsk;
+          if(_ppStudioKey!==hsk) loadPutzplan(hsk);
+        }
+      }
       var it=el.getAttribute('data-hichtab');
       if(it){ var ib=document.querySelector('[data-ichtab="'+it+'"]'); if(ib) ib.click(); }
       var cg=el.getAttribute('data-hcgo');
       if(cg){ var cb=document.querySelector('#chefHome [data-cgo="'+cg+'"]'); if(cb) cb.click(); }
     });
-  });
-
-  heutePasst(box);
 }
 
 /* ── „Ohne dass man scrollen muss" ──
@@ -20754,7 +21090,7 @@ function heutePasst(box){
   function bloecke(){ return [].slice.call(box.querySelectorAll('.heute-block')); }
   function zeilenVon(b){ return b.querySelectorAll('.heute-zeile'); }
 
-  var schutz = 0;
+  var schutz = 0, weggefallen = [];
   while(sa.scrollHeight > sa.clientHeight + 2 && schutz++ < 40){
     var bs = bloecke();
     if(!bs.length) break;
@@ -20772,8 +21108,42 @@ function heutePasst(box){
     /* Überall nur noch eine Zeile: jetzt fällt die unterste Kategorie —
        aber erst jetzt. */
     if(bs.length < 2) break;          // der letzte Rest bleibt stehen
-    bs[bs.length-1].remove();
+    var weg = bs[bs.length-1];
+    weggefallen.unshift({
+      titel: weg.getAttribute('data-btitel')||'',
+      zahl:  Number(weg.getAttribute('data-bzahl')||0),
+      ziel:  weg.getAttribute('data-bziel')||'todos',
+      f:     weg.getAttribute('data-bf')||''
+    });
+    weg.remove();
+    heuteRestZeichnen(box, weggefallen);
   }
+}
+
+/* ── „Ausserdem" ──────────────────────────────────────────────────
+   Bis zum 23.9.2026 fiel eine Kategorie, die nicht mehr auf den
+   Bildschirm passte, STUMM weg. Beim Chef betraf das seit Runde 93
+   „Offen" — also genau die offenen Aufgaben, die auf Wunsch aus dem
+   Betrieb überhaupt erst auf die Startseite gekommen waren. Aufgefallen
+   ist es erst, als der Putzplan dazukam und beim Mitarbeiter dasselbe
+   mit „Offen · 5" passierte.
+
+   Jetzt bleibt von jeder weggefallenen Kategorie ein Knopf: Name,
+   Zahl, und ein Tipp führt hin. Eine Zeile Höhe statt einer ganzen
+   Kategorie — und nichts ist mehr verschwiegen. Das war schon immer
+   die Regel dieser Seite („Verschwiegen wird nichts"); sie galt nur
+   für gekürzte Blöcke, nicht für gestrichene. */
+function heuteRestZeichnen(box, liste){
+  var alt=box.querySelector('.heute-rest'); if(alt) alt.remove();
+  if(!liste.length) return;
+  box.insertAdjacentHTML('beforeend',
+    '<div class="heute-rest"><span class="hr-wort">Ausserdem</span>'+
+    liste.map(function(x){
+      return '<button type="button" class="chip heute-rest-knopf" data-heute="'+esc(x.ziel)+'"'+
+        (x.f?' data-hf="'+esc(x.f)+'"':'')+'>'+esc(x.titel)+
+        (x.zahl>1?' · '+x.zahl:'')+' ›</button>';
+    }).join('')+'</div>');
+  box.querySelectorAll('.heute-rest [data-heute]').forEach(heuteTippBinden);
 }
 
 /* Wurde in einem Block gekürzt, MUSS der Weg zum Rest dastehen. Eine
@@ -20781,14 +21151,20 @@ function heutePasst(box){
 function heuteKopfAusgang(blk){
   var kopf = blk.querySelector('.heute-kopf');
   if(!kopf || kopf.querySelector('.mini-link')) return;
+  /* Ziel, Filter und Zahl stehen seit dem 23.9.2026 am Block selbst.
+     Vorher nahm der nachträglich eingesetzte Ausgang das Ziel der
+     ersten Zeile und liess den Filter weg: ein gekürzter Block „Offen"
+     führte in die UNGEFILTERTE Aufgabenliste, und „alle ›" nannte
+     keine Zahl, anders als jeder andere Ausgang auf dieser Seite.
+     Gefunden von tests/test-startseite-putz.js. */
   var erste = blk.querySelector('[data-heute]');
-  var ziel = erste ? erste.getAttribute('data-heute') : 'todos';
+  var ziel = blk.getAttribute('data-bziel') || (erste ? erste.getAttribute('data-heute') : 'todos');
+  var f = blk.getAttribute('data-bf') || '';
+  var n = Number(blk.getAttribute('data-bzahl') || 0);
   kopf.insertAdjacentHTML('beforeend',
-    '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'">alle ›</button>');
-  var neu = kopf.querySelector('.mini-link');
-  neu.addEventListener('click', function(e){
-    e.stopPropagation(); tick(8); showView(ziel);
-  });
+    '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
+    (f ? ' data-hf="'+esc(f)+'"' : '')+'>alle '+(n>1 ? n+' ' : '')+'›</button>');
+  heuteTippBinden(kopf.querySelector('.mini-link'));
 }
 
 function renderHome(){
@@ -23994,6 +24370,17 @@ function renderTodos(){
     area.innerHTML = (!shown && totalAll) ? leerText(totalAll)
       : (html || emptyHTML('Keine Studios','Dir ist noch kein Studio zugeordnet.','gebaeude'));
   }
+  /* ── Eingeblendet wird, was man sieht ──
+     rowIn lief bei JEDEM Öffnen der Seite auf jeder Zeile — beim Chef
+     61 Animationen, von denen gut 50 unterhalb des Bildschirms liegen.
+     Gemessen am 23.9.2026: gut 300 ms lang Stil-Durchgänge über rund
+     200 Elemente, jedes Bild, für eine Bewegung, die niemand sieht.
+
+     Zwölf Zeilen füllen auch ein grosses Tablet; darunter erscheinen
+     die Zeilen ohne Bewegung. Nur geschrieben, nichts gelesen — kein
+     Layout mitten im Aufbau. */
+  var reihen=area.querySelectorAll('.todo');
+  for(var ri=12; ri<reihen.length; ri++) reihen[ri].classList.add('ohne-ein');
   // Zähler rechts neben dem Suchfeld
   var cnt=$('todoCount');
   if(cnt) cnt.textContent = (_todoFilter || _todoMode!=='alle')

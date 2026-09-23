@@ -10678,3 +10678,162 @@ geht, bevor es soweit ist; Hilfe sagt es, wenn es gerade brennt.**
 | Bedienelemente, gemessen bei 320/390/430/820 px | Übersicht 10, Verwaltung 4–15 je Reiter — **0 unter 44 px, 0 über den Rand, kein Seitwärtsscrollen** |
 
 **124 Durchläufe.**
+
+---
+
+## Runde 101 — Putzplan auf die Startseite, und die App wird flüssig
+
+> „kannst du noch den putzplan zur startseite hinzufügen, und es design
+> technisch auch noch etwas überarbeiten alles so das die app richtig
+> flüssig läuft im ideal fall auch mit 120fps und alles soll etwas
+> schärfer wirken und das design soll over all einfach flüssig und
+> kontrastreich und gut aussehen"
+
+### 1. Der Putzplan auf der Startseite
+
+Die Zahl gab es längst (`putzOffenGesamt()`), sie landete aber nur in
+der Begrüssung des bisherigen Aussehens. Im neuen stand der Putzplan
+nirgends.
+
+Jetzt ein eigener Block, **direkt unter „Heute"** — er hat einen
+Tagesbezug, und ein ungeputztes Gerät sieht der Kunde, eine ungelesene
+Nachricht nicht. In Teal: Blau ist auf der Startseite der Bereichston,
+Rot und Bernstein sind Status, Violett „Zu erledigen" — und Grün wäre
+„in Ordnung", was eine offene Putzliste gerade nicht ist.
+
+| wer | was steht da |
+|---|---|
+| **ein Studio** (Empfang) | die Punkte selbst, „täglich"/„wöchentlich" darunter, tägliche zuerst |
+| **mehrere Studios** (Leitung) | eine Zeile je Studio, meister Rückstand zuerst, die ersten zwei Punkte darunter |
+
+Pausierte Punkte zählen nicht — eine Pause heisst „steht nicht an", eine
+Zeile auf der Startseite ist eine Aufforderung. Ein Tipp öffnet den
+Putzplan **genau dieses Studios**; `data-hsk` stand dafür schon lange im
+Markup, gelesen hat es bis heute niemand.
+
+### Dabei gefunden: ein Block fiel stumm weg
+
+Die Startseite passt auf einen Bildschirm (Runde 87). Reichte der Platz
+nicht, fiel der unterste Block weg — **ohne Spur**. Beim Chef auf
+390×844 war das seit Runde 93 „Offen", also genau die offenen Aufgaben,
+die auf Wunsch überhaupt erst dorthin gekommen waren. Unbemerkt, weil
+`test-startseite-offen` mit 900 px Höhe misst.
+
+Mit dem Putzplan hätte es auch den Mitarbeiter getroffen („Offen · 5"
+verschwand). Jetzt bleibt von jedem weggefallenen Block ein Knopf unter
+**„Ausserdem"** — Name, Zahl, ein Tipp in die gefilterte Liste. Eine
+Zeile Höhe statt einer ganzen Kategorie, und nichts ist verschwiegen.
+
+**Ein Test wurde dafür angepasst, und das gehört gesagt:**
+`test-startseite-offen` verlangte beim Chef den vollen Block „Offen" mit
+Aufgaben beim Namen. Der Wunsch vom 21.9. hiess aber wörtlich „die
+offenen Aufgaben … **oder zumindest** ganz klar dass Aufgaben offen
+sind". Beide Formen sind jetzt erlaubt; geprüft wird in beiden, dass die
+Zahl stimmt, der Weg in die gefilterte Liste führt und der Knopf ein
+Fingerziel ist — mit Gegenprobe (auf 30 px verkleinert → rot).
+
+### 2. Flüssig — gemessen, nicht geschätzt
+
+**Wie gemessen wurde, und was sich hier NICHT messen lässt:** Chromium
+ohne Bildschirm taktet mit 60 Hz; 120 Bilder je Sekunde lassen sich in
+dieser Umgebung nicht direkt beobachten. Gemessen wurde deshalb die
+**Arbeit je Bild** — für 120 fps stehen 8,3 ms zur Verfügung — und zwar
+mit **auf ein Viertel gedrosselter CPU**, wie ein Studio-Tablet. Was auf
+der Grafikkarte läuft, sieht diese Umgebung nicht (sie hat keine).
+
+**Zuerst gesucht, dann geändert.** Die naheliegenden Verdächtigen —
+Weichzeichner, Schatten, Verläufe, fester Hintergrund — hat das
+Ausschlussverfahren entlastet: jeden einzeln abgeschaltet, keiner
+änderte etwas. Die Ursachen waren andere:
+
+| Fund | Wirkung | jetzt |
+|---|---|---|
+| Einblendung `rowIn` mit `fill-mode: both` | hielt alle 61 Aufgabenzeilen als aktive Animation fest, auch Sekunden später | `backwards` — gleicher Ablauf, danach frei |
+| Glanz auf 14 Fortschrittsbalken | lief endlos | einmal |
+| „überfällig" pulsierte | endlos, ~3 ms je Bild beim Scrollen | dreimal, dann still |
+| Bereichskopf schrumpfte über `font-size`, `width`, `height`, `padding` | 0,3 s lang in jedem Bild ein volles Layout der Liste darunter, genau beim Scrollen | ein Layout, Bewegung per `transform` (FLIP) |
+| Marker las `offsetLeft` mitten im Seitenaufbau | im Mittel rund acht Layouts je Tipp (65 bei acht Tipps) | gebündelt im nächsten Bild: erst lesen, dann schreiben |
+| Farbgleiten am `<body>` (angemeldete, **vererbte** Farben) | jedes Bild die ganze Seite neu: 1627 Elemente, 74–98 ms | Seite springt einmal, gleiten tut nur der Rahmen |
+| `getComputedStyle` bei jedem Wechsel für einen festen Wert | ein Stil-Durchgang je Tipp | einmal je Farbmodus |
+| Einblendung auf allen 61 Zeilen | 50 davon unter dem Bildschirmrand | nur die ersten zwölf |
+
+**Ergebnis**, CPU ÷4, Chef-Konto der Demo:
+
+| | vorher | jetzt |
+|---|---|---|
+| Aufgaben scrollen, Arbeit je Bild (Dauerzustand) | 12,4–13,8 ms | **6,8 ms** |
+| … verpasste Bilder | 19–30 von ~120 | **3 von 146** |
+| Tipp auf die untere Leiste, bis fertig | 194 ms (max. 322) | **52 ms** (max. 109) |
+| Bildzeiten beim Bereichswechsel, p95 | 150 ms | **50 ms** |
+| Chat scrollen | 2,3 ms, 0 verpasst | unverändert |
+
+**Wo es noch nicht bei 120 ist, ehrlich:** das ERSTE Bild nach einem
+Bereichswechsel. Dort ändert sich die Akzentfarbe, und weil sie vererbt
+wird, rechnet der Browser die ganze Seite einmal neu (78–97 ms bei CPU ÷4).
+Das ist jetzt einmal statt fünfmal — aber es ist da. Der nächste Hebel
+wären weniger Elemente je Seite (die Aufgaben tragen 1185) oder
+`content-visibility` für Zeilen unter dem Rand; beides ist ein grösserer
+Umbau und hier nicht gemacht.
+
+**Das Farbgleiten bleibt.** Es kam aus dem Betrieb („damit es einfach
+lebendig und interaktiv wirkt", 21.9.) und `test-akzent` misst es. Es
+liegt jetzt nur am Rahmen — Kopfzeile, Seitenleiste (ab 821 px),
+Demo-Leiste. Und eine Annahme vom 21.9. war zu pauschal: „eine
+gewöhnliche Transition am Knopf bringt nichts". Das gilt für
+**Verläufe**; bei einfachen Farben gleitet sie sehr wohl — nachgemessen
+an der unteren Leiste, die das jetzt so macht.
+
+### 3. Kontrast — an echten Bildpunkten
+
+Jeder sichtbare Text auf elf Seiten, beide Farbmodi, gegen seinen
+Hintergrund. Das Rechenmodell nimmt bei Verläufen den ungünstigsten
+Farbhalt und ist damit absichtlich pessimistisch; **jeder Treffer wurde
+deshalb am Bildschirmfoto nachgeprüft**: 20 verschiedene Stellen, davon
+17 in Wahrheit in Ordnung (5,3 bis 19 : 1). Drei nicht, alle im
+Hellmodus, alle nach demselben Muster — Akzentfarbe als Text auf einer
+Tönung derselben Farbe:
+
+| Stelle | vorher | jetzt |
+|---|---|---|
+| Chip „Alle" (Aufgaben) | 3,86 : 1 | **5,84 : 1** |
+| offener Kanal (Chat) | 3,93 : 1 | **5,54 : 1** |
+| „Drucken" (Putzplan) | 4,19 : 1 | **6,33 : 1** |
+
+Die Ursache war ein Name, der etwas versprach: `--accent-d`, „d" wie
+dunkel, war **identisch** mit `--accent`. Jetzt wird die Textstufe im
+Hellmodus je Farbe gerechnet — so weit abgedunkelt, bis sie auf der
+stärksten Tönung über der dunkelsten hellen Fläche 4,6 : 1 hat. Die
+Tönungen selbst bleiben kräftig; blasser zu machen hätte genau die Farbe
+genommen, um die es bei „lebendig" ging.
+
+### 4. Schärfer
+
+Kopfzeile und untere Leiste waren zu 93–96 % deckend, mit Weichzeichner
+dahinter. Unter ihnen scrollt aber nichts — nachgemessen auf vier Seiten,
+beide Modi: die Scroll-Bereiche enden bei y=772, die Leiste beginnt bei
+773. Der Weichzeichner verwischte also nur den stehenden Hintergrund.
+Jetzt deckend, mit derselben Farbe (`--bg` ist genau rgb(18,19,28)) und
+einer klaren Linie. Was das der Grafikkarte erspart, lässt sich hier
+**nicht messen** — auf schwachen Tablets ist es bekanntermassen spürbar.
+
+### Zwei weitere Funde beim Nachmessen
+
+| | |
+|---|---|
+| **Ein gekürzter Block verlor seinen Filter** | Wird beim Einpassen gekürzt, setzt `heuteKopfAusgang()` nachträglich „alle ›" ein — mit dem Ziel der ersten Zeile, ohne Filter, ohne Zahl. Ein gekürzter Block „Offen" führte so in die UNgefilterte Aufgabenliste. Jetzt stehen Ziel, Filter und Zahl am Block, und der Ausgang nimmt sie von dort. Gefunden vom neuen `test-startseite-putz` |
+| **„alle 5 ›" traf nur 35 px hoch** | Die Trefferfläche (`::after`, 44 px) ragt 22 px über die Knopfmitte; beim OBERSTEN Block schnitt der Scroll-Bereich sie nach 12 ab. Im Bild unsichtbar, per Hit-Test gemessen. Jetzt 10 px Luft über der Liste — als `max(var(--s10),10px)`, weil `--s10` in der Dichte „kompakt" nur 8 px ist und es dort nachgemessen 43 statt 44 wurden |
+
+**Und ein Fehler von mir, der gehört dazu:** eine Kommentarkorrektur im
+Skriptblock, danach `tools/csp.js --setzen` vergessen — die
+Sicherheitsregel blockierte das Skript, und ein laufender Gesamtdurchlauf
+war ab dort wertlos. Abgebrochen, Regel gesetzt, von vorn.
+
+### Tests
+
+| | |
+|---|---|
+| `tests/test-startseite-putz.js` | **neu**, 14 Zusicherungen — mit Gegenprobe zur Pause |
+| `tests/test-startseite-offen.js` | volle Form oder Mindestform, siehe oben |
+| Startseite, jedes Ziel per Hit-Test | ≥ 44 × 44 px bei 320/390/430/820, Dichte normal UND kompakt, Mitarbeiter und Chef — vorher „alle 5 ›" 35 px |
+
+**125 Durchläufe, alle sauber.**
