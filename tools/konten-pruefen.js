@@ -20,6 +20,11 @@
         anmeldet, kommt nicht hinein.
      3. DOPPELT — dieselbe E-Mail an mehreren Profilen.
      4. UNBESTÄTIGT — Anmeldekonto mit nicht bestätigter Adresse.
+     4b. OHNE studioKeys — ein Profil mit Studios, aber ohne das Feld
+        `studioKeys`, das die Sicherheitsregeln lesen. Für solche Konten
+        greift die Studiogrenze im Chat noch nicht (Übergang, siehe
+        kanalErlaubt() in firestore.rules). Steht hier 0, kann der
+        Übergang weg.
 
    Dazu zwei Auszählungen, die für EINE offene Entscheidung gebraucht
    werden (siehe OFFEN.md, „Firmengrenze auf den flachen Pfaden"):
@@ -117,6 +122,18 @@ const db = admin.firestore();
     'E-Mail',
     unbestaetigt.map(k => String(k.email)));
 
+  /* Chefs zählen nicht: sie sehen jedes Studio über isChef(), und ein
+     Chef ohne eigenes Studio ist der Normalfall. */
+  const ohneKeys = profile.filter(p =>
+    p.role !== 'chef' && p.uid !== 'system' &&
+    Array.isArray(p.studios) && p.studios.length &&
+    !(Array.isArray(p.studioKeys) && p.studioKeys.length));
+  block('OHNE studioKeys (Studios eingetragen, Feld fehlt)',
+    'Rolle        Name                     Studios                         Kennung',
+    ohneKeys.map(p =>
+      String(p.role || '?').padEnd(12) + String(p.name || '—').slice(0, 24).padEnd(25) +
+      p.studios.join(', ').slice(0, 31).padEnd(32) + p.uid));
+
   /* ── 5. Firmen-Zuordnung ──────────────────────────────────────────
      Nicht als Fehlerliste, sondern als Zählung: hier gibt es kein
      „falsch", nur einen Zustand, den jemand kennen muss, bevor er die
@@ -170,8 +187,14 @@ const db = admin.firestore();
   console.log('\n   Stehen die flachen Spalten auf 0, ist der flache Regelsatz');
   console.log('   entbehrlich — das ist der einfachere der beiden Wege.\n');
 
-  if (verwaist.length || doppelt.length) {
+  if (verwaist.length || doppelt.length || ohneKeys.length) {
     console.log('── Was tun ──');
+    if (ohneKeys.length) {
+      console.log('  OHNE studioKeys: in der App unter Verwaltung → Team die');
+      console.log('  Person öffnen und die Studios einmal neu speichern — das');
+      console.log('  schreibt studioKeys mit. Danach die Übergangszeile in');
+      console.log('  kanalErlaubt() (firestore.rules) streichen.');
+    }
     if (doppelt.length) {
       console.log('  DOPPELT: das Profil mit "anmeldbar? nein" ist der Rest eines');
       console.log('  gelöschten Zugangs. Es in der App unter Verwaltung → Team');

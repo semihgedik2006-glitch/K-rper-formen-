@@ -10837,3 +10837,144 @@ war ab dort wertlos. Abgebrochen, Regel gesetzt, von vorn.
 | Startseite, jedes Ziel per Hit-Test | ≥ 44 × 44 px bei 320/390/430/820, Dichte normal UND kompakt, Mitarbeiter und Chef — vorher „alle 5 ›" 35 px |
 
 **125 Durchläufe, alle sauber.**
+
+---
+
+## Runde 102 — Das ganze Repo durchgesehen, Regeln festgehalten, Design-Recherche
+
+> „Kannst du bitte das ganze GitHub-Repo durchgehen und alles
+> überarbeiten und nach Fehlern gucken und alles aktualisieren und dir
+> selber die Regeln anlegen, die ich dir gegeben hatte. Außerdem suche
+> im Netz nach guten Design-Ideen für so eine Art der App."
+
+### Wie durchgesehen wurde
+
+Nicht durchgelesen und für gut befunden, sondern mit Prüfungen, die
+etwas finden können:
+
+| Prüfung | Ergebnis |
+|---|---|
+| Syntax aller `.js`, der drei Inline-Skripte in `index.html` und der Nebenseiten | sauber |
+| alle `.json` | gültig |
+| 785 Verweise auf Element-IDs gegen das Markup | alle vorhanden |
+| 821 IDs im Markup auf Doppelte | keine |
+| Sammlungen in beiden Regel-Welten (flach / `firmen/<k>/`) | 36 in beiden; die Abweichungen sind gewollt |
+| Sammlungen, die der Code benutzt, gegen die Regeln | alle abgedeckt (fünf über `privat/{uid}/{rest=**}`) |
+| **jedes** Ziel aus „Alles" in drei Rollen, beide Farbmodi, 390 und 1100 px, dazu alle Verwaltungsreiter | **0 Skriptfehler, 0 Konsolenfehler** |
+| `npm audit` der Cloud Functions | 0 Lücken |
+| alle Regeltests | 16 Dateien, **1.141 Einzelprüfungen**, 0 rot |
+
+**Was ich NICHT prüfen konnte:** den echten Anmeldeweg. Das
+Firebase-SDK von `gstatic.com` lädt im Test-Browser dieser Umgebung
+nicht (der Browser vertraut dem Proxy-Zertifikat nicht; `curl` mit dem
+Zertifikat kommt durch). Die App zeigt dann richtig „Firebase konnte
+nicht geladen werden" mit „Neu laden" — aber ob Anmelden, Registrieren
+und Passwort-Vergessen gegen das echte Firebase funktionieren, ist hier
+nicht belegt.
+
+### Gefunden und behoben
+
+**1. Die Studio-Chats waren für den ganzen Betrieb lesbar — und
+beschreibbar.** Das war der gewichtigste Fund. `kanalErlaubt()` gab für
+jeden Kanal ausser den zwei Leitungsgruppen `true` zurück; die
+Oberfläche zeigt jedem nur seine Studios, die Regel liess alle zu. In
+einem Studio-Chat steht schnell „Anna ist heute krank".
+
+Vorher bewiesen, nicht vermutet: der neue Test war mit der alten Regel
+rot, **6 × „GING DURCH"**, in beiden Welten. Jetzt grün.
+
+Eine alte Notiz im Regelwerk sagte, eine Verschärfung brauche „eine
+eigene Runde", weil Leute quer über Studios arbeiten. Das Argument trägt
+nicht — `studioKanaele()` zeigt ohnehin nur die eigenen Studios. **Das
+echte Risiko war ein anderes:** die Regel liest das gespeicherte Feld
+`studioKeys`, die App rechnet aus den Studio-*Namen*, und an mehreren
+Stellen im Code steht ein Rückfall für Konten ohne `studioKeys`. Solche
+Konten hätten ihren eigenen Chat verloren. Ob es sie im Betrieb gibt,
+konnte ich nicht nachsehen — mit Absicht kein Zugang zur echten
+Datenbank. Deshalb:
+
+* **ein Übergang:** Konten ohne `studioKeys` behalten vorerst das alte
+  Verhalten;
+* **`tools/konten-pruefen.js` zählt sie jetzt** („OHNE studioKeys") und
+  sagt, was zu tun ist. Steht dort 0, darf die Übergangszeile weg.
+
+Beides mit Test: `studiogrenze.test.js` 45 Zusicherungen (+18),
+`konten-pruefen.test.js` mit Gegenprobe.
+
+**2. Die Startadresse `/` wurde bis zu einer Stunde zwischengespeichert.**
+`firebase.json` verbot das Zwischenspeichern nur für `/index.html` — die
+App öffnet aber `/`. Gemessen: `cache-control: max-age=3600`, und direkt
+nach der letzten Auslieferung lieferte `/` noch den alten Stand. Jetzt
+ein eigener Eintrag für `/`.
+
+**3. Die Auslieferung lief mit Node 20** — Lebensende April 2026, und
+die Cloud Functions verlangen ohnehin 22. Jetzt Node 22, dazu die
+Actions in ihren aktuellen Hauptversionen (checkout v7, setup-node v7,
+setup-java v6, auth v3). **Vor dem Wechsel in deren `action.yml`
+nachgesehen**, dass es jede Eingabe, die hier benutzt wird, weiter gibt
+— die Zusammenfassungen der Release-Seiten waren bei den Daten
+nachweislich unzuverlässig.
+
+**4. Eine Datenschutz-Unterlage beschrieb den Schutz schlechter, als er
+ist.** `docs/av/TOM.md` — die Unterlage, die Kunden zum
+Auftragsverarbeitungsvertrag bekommen — sagte noch „Studiogrenze beim
+Lesen NUR in der Oberfläche". Seit dem 17.9. hält die Regel sie für die
+Personendaten, jetzt auch für den Chat. Auch eine zu schlechte
+Beschreibung ist eine falsche. Dazu dort 864 statt 1.141 Prüfungen.
+
+**5. Veraltete Angaben in README und Unterlagen:** „über 15.000 Zeilen"
+(es sind 31.777), „zwölf Ansichten" (17), „genau zwei Skriptblöcke" (3),
+„120 Durchläufe" (125), Schulung fehlte in der Beschreibung, und die zwei
+seit dem 13.8. stillgelegten Nebenseiten standen noch als ausgeliefert
+da. Im Dokumentenverzeichnis fehlten zwei Dateien.
+
+### Gefunden und bewusst NICHT behoben
+
+**Dokumente mit Zielstudio.** Dokumente tragen ein Feld `studios`, die
+Oberfläche zeigt sie nur diesen Studios, die Regel liest es nicht. Ein
+Dokument für ein einzelnes Studio kann also jeder im Betrieb über die
+Konsole lesen. Nicht gleich mitbehoben, weil die App alle Dokumente in
+**einer** ungefilterten Abfrage holt — eine Regel je Dokument liesse die
+Dokumentenseite für alle ausser dem Chef leer. Das ist ein Umbau mit
+eigener Prüfung. Steht in P-01.
+
+**Die grossen Versionssprünge.** Firebase-SDK im Browser 10.12.2 →
+12.19.0, `firebase-admin` 12 → 14, `nodemailer` 9 → 10,
+`@google-cloud/firestore` 7 → 9. Keine davon hat eine bekannte Lücke
+(`npm audit`: 0). Aber jeder ist ein Hauptversionssprung, und den
+Browser-Teil kann ich hier nicht einmal laden (siehe oben). Einen
+Sprung, den man nicht prüfen kann, auf eine App zu setzen, die gerade
+andere benutzen, wäre das Gegenteil von „aktualisieren". Gemacht ist
+nur `firebase-functions` 7.3.2 → 7.4.0 (innerhalb der erlaubten
+Spanne; die Funktionen laden damit).
+
+### Die Regeln
+
+`CLAUDE.md` hatte die Grundregeln. Dazu gekommen, was bisher nur im
+Verlauf stand:
+
+* **Wie gearbeitet wird** — erst Plan und Rückfragen bei einem neuen
+  Bereich; auf „sag du mir" eine Empfehlung statt einer Auswahl;
+  Übergänge, wo andere parallel arbeiten; kein Test wird zum
+  Grünwerden gelockert.
+* **Weitere Grenzen** — Admin ohne Kundeninhalte, Einmal-Passwörter,
+  Kennung in der Adresse ist keine Grenze, Abo-Zustand, was nie in den
+  Export gehört, Stand der Studiogrenze.
+* **Wie es aussehen soll** — die Design-Wünsche aus dem Betrieb mit den
+  eigenen Worten und was jeweils daraus folgt; dazu „flüssig heisst
+  konkret" aus der letzten Runde.
+* **Fallen im Werkzeug** — sieben Dinge, in die ich selbst getappt bin.
+
+### Design-Recherche
+
+`docs/DESIGN-RECHERCHE.md`, elf Ideen aus vergleichbaren Apps (Beekeeper,
+Blink, Flip, 7shifts, Deputy), aus Googles Forschung zu „Material 3
+Expressive" und aus der Kritik der Nielsen Norman Group an Apples
+Glas-Design — jede mit Quelle, Aufwand, Gegenargument und Abgleich mit
+den bisherigen Wünschen. Zwei Behauptungen im ersten Entwurf waren
+falsch und sind vor dem Einchecken korrigiert: der Wochenstreifen
+passt bei 320 px **nicht** mit sieben 44-px-Tagen (292 px Platz, 308
+gebraucht), und „der meistgelobte Punkt jeder Vergleichs-App" war mehr,
+als die Quellen hergaben.
+
+**Oberfläche: 125 Durchläufe, alle sauber. Regeln: 16 Dateien, 1.141 Einzelprüfungen, alle grün.**

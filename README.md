@@ -3,8 +3,9 @@
 Internes Team-Portal für EMS-Studios: Chat, Aufgaben, Putzplan, Material,
 Geräte, Dokumente, Schichten und Abwesenheiten — dazu „Hilfe im Studio":
 115 Probleme aus dem Mitarbeiter-Handbuch, Schritt für Schritt, hinter
-dem Rettungsring in der Kopfzeile. Läuft als installierbare Web-App (PWA)
-auf dem Handy, ohne App-Store.
+dem Rettungsring in der Kopfzeile — und „Schulung": Webinare mit Fragen
+und einem Nachweis, wer sie wann gemacht hat. Läuft als installierbare
+Web-App (PWA) auf dem Handy, ohne App-Store.
 
 Mehrere Firmen teilen sich eine Datenbank. Jede sieht ausschließlich ihre
 eigenen Daten; getrennt wird über den Pfad `firmen/<kennung>/…` und über die
@@ -36,7 +37,7 @@ eine HTML-Datei, die `konfig.js`, `sw.js` und die Schriften aus
 Alle Durchläufe auf einmal:
 
 ```bash
-bash tests/alle.sh              # Oberfläche, 120 Durchläufe im Browser
+bash tests/alle.sh              # Oberfläche, 125 Durchläufe im Browser
 cd tests/rules && npm test      # Sicherheitsregeln und Cloud Functions im Emulator
 ```
 
@@ -68,7 +69,7 @@ cd tests/rules && npm test      # Sicherheitsregeln und Cloud Functions im Emula
 
 | Pfad | Was drin steht |
 |---|---|
-| `tests/` | 120 Durchläufe durch die Oberfläche mit Playwright |
+| `tests/` | 125 Durchläufe durch die Oberfläche mit Playwright |
 | `tests/rules/` | Regeltests und Cloud Functions gegen den Firestore-Emulator |
 | `tools/` | Werkzeuge, die von Hand laufen: Umzug, Kontenprüfung, Apps Script |
 | `docs/` | Sämtliche Dokumentation, siehe unten |
@@ -78,14 +79,17 @@ cd tests/rules && npm test      # Sicherheitsregeln und Cloud Functions im Emula
 
 `marketing.html`, `wachstum.html` und `werbung.html` sind eigenständige
 Seiten, die dasselbe Firebase-Projekt benutzen, aber nicht Teil von
-StudioChat sind. Sie liegen im Auslieferungsverzeichnis, weil ihre Adressen
-darauf zeigen.
+StudioChat sind.
 
-| Datei | Was es ist | Anmeldung nötig |
+| Datei | Was es ist | Ausgeliefert? |
 |---|---|---|
-| `marketing.html` | Internes Marketing-Werkzeug | ja |
-| `wachstum.html` | Termine und Termin-E-Mails (Gegenstück zu `sendApptMail` in den Cloud Functions) | ja |
-| `werbung.html` | Öffentliche Werbeseite eines Studios | nein |
+| `marketing.html` | Internes Marketing-Werkzeug | **nein, stillgelegt seit 13.8.2026** |
+| `wachstum.html` | Termine und Termin-E-Mails (Gegenstück zu `sendApptMail` in den Cloud Functions) | **nein, stillgelegt seit 13.8.2026** |
+| `werbung.html` | Öffentliche Werbeseite eines Studios | ja, ohne Anmeldung |
+
+Die beiden stillgelegten greifen noch auf flache Pfade zu und dürfen
+**nicht** einfach wieder ausgeliefert werden — die Reihenfolge fürs
+Zurückholen steht in `firebase.json` unter `//zurueckholen`.
 
 ---
 
@@ -94,14 +98,14 @@ darauf zeigen.
 **Eine Datei statt eines Projekts mit Bundler.** Kein Build heißt: kein
 Schritt, der zwischen „geändert" und „ausgeliefert" scheitern kann, und ein
 Rückweg, der aus einer einzigen Datei besteht. Der Preis ist eine Datei mit
-über 15.000 Zeilen — dagegen hilft die Gliederung im Kopf jeder Datei, nicht
+rund 32.000 Zeilen — dagegen hilft die Gliederung im Kopf jeder Datei, nicht
 das Aufteilen in zwanzig Dateien, die man alle offen haben muss.
 
 **Firebase compat-SDK statt der modularen Fassung.** Die modulare Fassung
 setzt einen Bundler voraus. Siehe oben.
 
 **Kein Framework.** Die App rendert über Zeichenketten und `innerHTML`. Bei
-zwölf Ansichten und einem Entwickler ist das weniger Aufwand als ein
+siebzehn Ansichten und einem Entwickler ist das weniger Aufwand als ein
 Framework, das man mitversorgen muss.
 
 **Datenpfade mit Firmenkennung.** `firmen/<kennung>/…` statt flacher
@@ -194,7 +198,7 @@ früheren dreht man vergeblich. Ein Selektor darf mehrfach vorkommen
 Alles drei prüft `tests/test-gestaltung.js`, die `@keyframes`
 `tests/test-bewegung-doppelt.js`.
 
-**Die Sicherheitsregel der Seite (CSP) kennt genau zwei Skriptblöcke.** Sie
+**Die Sicherheitsregel der Seite (CSP) kennt genau drei Skriptblöcke.** Sie
 stehen mit ihrer Prüfsumme in `index.html`. Wer am Skript etwas ändert, muss
 `node tools/csp.js --setzen` laufen lassen — sonst führt der Browser den Block
 nicht mehr aus und die App bleibt weiss. `tests/test-csp.js` schlägt vorher an.
@@ -234,9 +238,11 @@ Die wichtigsten:
 Die vollständige Liste steht in `docs/BEKANNTE-PROBLEME.md`. Die zwei,
 die man vor dem ersten fremden Kunden kennen muss:
 
-* **Die Studiogrenze ist beim Lesen keine technische Grenze** (P-01).
-  Zwischen Betrieben hält sie; zwischen Studios desselben Betriebs macht
-  sie die Oberfläche. Betrifft unter anderem Krankmeldungen.
+* **Die Studiogrenze beim Lesen hält die Regel nur für einen Teil**
+  (P-01). Schichten, Abwesenheiten (auch Krankmeldungen), Übergaben und
+  seit 23.9.2026 die Studio-Chats: Regel. Aufgaben, Putzplan, Geräte
+  und Material: bewusst betriebsweit lesbar. Zwischen Betrieben hält
+  die Grenze immer.
 * **Kein Verfahren für Datenschutzvorfälle** (P-02). Pflicht nach
   Art. 33 DSGVO.
 

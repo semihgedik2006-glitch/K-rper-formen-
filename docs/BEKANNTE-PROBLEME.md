@@ -24,7 +24,7 @@ bekommt, findet die Lücken trotzdem, nur später und im falschen Moment.
 | | |
 |---|---|
 | **Schweregrad** | **HOCH** |
-| **Status** | **Für die Personendaten behoben am 17.9.2026.** Für den Rest: **bewusst offen** |
+| **Status** | **Für die Personendaten behoben am 17.9.2026, für die Studio-Chats am 23.9.2026.** Aufgaben, Putzplan, Geräte, Material: **bewusst offen**. Dokumente mit Zielstudio: **offen** (siehe unten) |
 | **Gefunden** | 16.9.2026, beim Erstellen der Rechtsantworten |
 
 **Was war das Problem?** Die Leseregel prüfte nur, ob jemand ein
@@ -96,12 +96,47 @@ Putzaufgabe ist keine Personenangabe. Personenbezogen ist daran nur,
 Wer das anders sieht, ändert es — und ändert `tests/rules/studiogrenze.test.js`
 mit, wo diese Offenheit als Gegenprobe festgehalten ist.
 
-### Ebenfalls offen: Dokumente, Brett, Chat-Kanäle
+### Behoben am 23.9.2026: die Studio-Chats
 
-Die liegen nicht unter `studios/<key>/`, sondern direkt beim Betrieb.
-Eine Studiogrenze gäbe es dort nur über ein Feld im Dokument, und das
-ist eine andere Aufgabe als diese hier. **NICHT GEPRÜFT**, ob sie nötig
-ist.
+Bei der Durchsicht des ganzen Repos nachgesehen, was hier bis dahin
+„NICHT GEPRÜFT" hiess: `kanalErlaubt()` gab für jeden Kanal ausser den
+beiden Leitungsgruppen `true` zurück. **Jeder freigegebene Beschäftigte
+des Betriebs konnte den Chat jedes Studios lesen und hineinschreiben** —
+die Oberfläche zeigte nur die eigenen, die Regel liess alle zu.
+Nachgewiesen mit einem Test, der vor der Änderung rot war (6 × „GING
+DURCH", beide Welten).
+
+Jetzt: `allgemein` für alle, Studio-Kanäle über `meinStudio()`, die
+Leitungsgruppen wie bisher. **Mit einem Übergang:** ein Konto ohne
+gespeichertes `studioKeys` behält das alte Verhalten, damit niemand
+seinen eigenen Studio-Chat verliert. Ob es solche Konten im Betrieb
+gibt, liess sich von hier aus nicht prüfen (kein Zugang zur echten
+Datenbank, mit Absicht). **`tools/konten-pruefen.js` zählt sie jetzt**;
+steht dort 0, darf die Übergangszeile in `kanalErlaubt()` weg.
+
+`tests/rules/studiogrenze.test.js`: 45 Zusicherungen (+18).
+
+### Weiterhin offen: Dokumente (und das Brett)
+
+**Dokumente** tragen ein Zielfeld `studios` („alle" oder eine Liste von
+Studios), und die Oberfläche zeigt jedem nur, was für seine Studios
+bestimmt ist (`docVisible()`). Die Regel liest dieses Feld aber nicht:
+ein Dokument, das nur für ein Studio bestimmt ist, kann jeder
+Beschäftigte des Betriebs über die Konsole lesen.
+
+**Warum nicht gleich mitbehoben:** die App holt alle Dokumente in EINER
+ungefilterten Abfrage. Eine Regel je Dokument liesse diese Abfrage für
+jeden ausser dem Chef komplett scheitern — die Dokumentenseite wäre
+leer. Nötig wären zwei Abfragen (die „alle"-Dokumente und die mit dem
+eigenen Studio im Zielfeld) und ein Feld, das Firestore abfragen kann.
+Das ist ein Umbau mit eigener Prüfung, keine Zeile. **Empfehlung:**
+angehen, sobald Dokumente mit Personenbezug an einzelne Studios gehen
+(Dienstanweisungen sind unkritisch, Abmahnungen oder Gesundheitsnachweise
+wären es nicht — die gehören ohnehin nicht dorthin).
+
+**Das Brett** hat kein Studiofeld und ist betriebsweit gedacht („für das
+ganze Team"). Eine Studiogrenze dort wäre eine neue Funktion, keine
+Reparatur.
 
 > **`docs/av/TOM.md` wurde am 17.9. berichtigt:** die Tabelle „Wer
 > welche Daten sieht" trägt jetzt eine dritte Spalte — **Wodurch
@@ -423,6 +458,10 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-29** | **`--accent-d` war identisch mit `--accent`** — die Textstufe hiess „dunkel", war es aber nicht. Im Hellmodus lagen dadurch drei Stellen unter 4,5:1 (Chip „Alle" 3,86 · offener Kanal 3,93 · „Drucken" 4,19), gemessen an echten Bildpunkten | 23.9.2026 |
 | **B-30** | **Ein beim Einpassen gekürzter Block verlor seinen Filter** — der nachträglich eingesetzte Ausgang nahm das Ziel der ersten Zeile, liess den Filter weg und nannte keine Zahl. Ein gekürzter Block „Offen" führte so in die ungefilterte Aufgabenliste | 23.9.2026 |
 | **B-31** | **„alle N ›" im obersten Block der Startseite traf nur 35 px hoch** — die Trefferfläche ragt 22 px über die Knopfmitte, der Scroll-Bereich schnitt sie nach 12 ab. Per Hit-Test gemessen, im Bild unsichtbar. Jetzt 45 × 45, auch in der Dichte „kompakt" | 23.9.2026 |
+| **B-32** | **Die Studio-Chats waren für den ganzen Betrieb lesbar und beschreibbar** — `kanalErlaubt()` gab für jeden Studio-Kanal `true` zurück; die Oberfläche zeigte nur die eigenen. Mit einem Test belegt, der vorher rot war (6 × „GING DURCH", beide Welten). Jetzt Regel, mit Übergang für Konten ohne `studioKeys` (P-01) | 23.9.2026 |
+| **B-33** | **Die Startadresse `/` wurde bis zu einer Stunde zwischengespeichert** — `firebase.json` verbot es nur für `/index.html`, die App öffnet aber `/`. Gemessen: `max-age=3600`, und nach einer Auslieferung kam noch der alte Stand | 23.9.2026 |
+| **B-34** | **Die Auslieferung lief mit Node 20**, Lebensende April 2026; die Funktionen verlangen 22 | 23.9.2026 |
+| **B-35** | **`docs/av/TOM.md` beschrieb die Studiogrenze schlechter, als sie ist** („nur Oberfläche") — seit dem 17.9. hielt die Regel sie für die Personendaten. Auch eine zu schlechte Beschreibung in einer Vertragsunterlage ist eine falsche | 23.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
-`docs/FORTSCHRITT.md` — chronologisch, 101 Runden.
+`docs/FORTSCHRITT.md` — chronologisch, 102 Runden.

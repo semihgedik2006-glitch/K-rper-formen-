@@ -59,10 +59,14 @@ function pruefe(name, bedingung, zusatz) {
      Sieben Profile, vier verschiedene Zustände im Feld `firma`. Genau
      die Mischung, die in einer halb umgezogenen Datenbank steht. */
   await db.doc('users/u1').set({ name: 'Mit Kennung A', role: 'chef', firma: 'koerperformen' });
-  await db.doc('users/u2').set({ name: 'Mit Kennung A', role: 'mitarbeiter', firma: 'koerperformen' });
+  /* u2 und u5 tragen zusätzlich Studios — u2 mit studioKeys (so soll
+     es sein), u5 ohne (der Fall, den das Werkzeug seit dem 23.9.2026
+     melden muss). */
+  await db.doc('users/u2').set({ name: 'Mit Kennung A', role: 'mitarbeiter', firma: 'koerperformen',
+    studios: ['Hürth'], studioKeys: ['studio-6'] });
   await db.doc('users/u3').set({ name: 'Mit Kennung A', role: 'mitarbeiter', firma: 'koerperformen' });
   await db.doc('users/u4').set({ name: 'Zweite Firma', role: 'chef', firma: 'beta' });
-  await db.doc('users/u5').set({ name: 'Feld fehlt', role: 'mitarbeiter' });
+  await db.doc('users/u5').set({ name: 'Feld fehlt', role: 'mitarbeiter', studios: ['Hürth'] });
   await db.doc('users/u6').set({ name: 'Feld fehlt auch', role: 'mitarbeiter' });
   await db.doc('users/u7').set({ name: 'Feld leer', role: 'mitarbeiter', firma: '' });
 
@@ -98,6 +102,12 @@ function pruefe(name, bedingung, zusatz) {
     zeile(/Profile in users/));
 
   /* ── Die erste Auszählung ── */
+  /* ── Konten ohne studioKeys ── */
+  pruefe('Es meldet Konten mit Studios, aber ohne studioKeys (1)',
+    /OHNE studioKeys[^\n]*: 1/.test(aus), zeile(/OHNE studioKeys/));
+  pruefe('und nennt das richtige (u5)', /Hürth\s+u5/.test(aus), zeile(/u5/));
+  pruefe('GEGENPROBE das Konto mit studioKeys (u2) steht nicht darin',
+    !/Hürth\s+u2/.test(aus));
   pruefe('Es gibt einen Abschnitt FIRMEN-ZUORDNUNG', /FIRMEN-ZUORDNUNG/.test(aus));
   pruefe('Drei Profile stehen unter „koerperformen"',
     /koerperformen\s+3/.test(aus), zeile(/koerperformen/));

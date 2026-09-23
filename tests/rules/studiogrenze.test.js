@@ -32,6 +32,7 @@
      · Chef liest ein Studio einer FREMDEN Firma        → geht nicht
      · Schreiben bleibt, wie es war (manages())
      · Putzplan und Geraete bleiben betriebsweit lesbar
+     · Studio-Chats: nur das eigene Studio (seit 23.9.2026), beide Welten
 
    Und die Gegenproben. Eine Regel „verbiete alles" waere sonst gruen.
    ───────────────────────────────────────────────────────────────────── */
@@ -213,6 +214,70 @@ const BETRIEBSWEIT = [
     als('ohne').doc(P('eins', 'studio-1', 'absences', 'a1')).get());
   await darf('GEGENPROBE derselbe liest den Putzplan (bleibt offen)',
     als('ohne').doc(P('eins', 'studio-1', 'cleaning', 'p1')).get());
+
+  /* ═══ 7. Die Studio-Chats ═══
+     Gefunden am 23.9.2026 bei der Durchsicht des ganzen Repos. P-01
+     nannte die Kanäle „NICHT GEPRÜFT" — nachgesehen: kanalErlaubt()
+     gab für jeden Kanal ausser den beiden Leitungsgruppen `true`
+     zurück. Die Oberfläche zeigt jedem nur seine eigenen Studios, die
+     REGEL liess aber jeden freigegebenen Beschäftigten des Betriebs
+     den Chat jedes Studios lesen — mit der Entwicklerkonsole, ohne
+     irgendetwas zu knacken. Und in einem Studio-Chat steht schnell
+     „Anna ist heute krank".
+
+     Geprüft in BEIDEN Welten: unter firmen/<kennung>/ und auf den
+     flachen Pfaden, die Körperformen noch benutzt. */
+  protokoll.push('\n  ── Studio-Chats: eigenes Studio ja, fremdes nein ──');
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    for (const pre of ['firmen/eins/', '']) {
+      for (const k of ['allgemein', 'studio-1', 'studio-2', 'gruppe-leitung']) {
+        await db.doc(pre + 'channels/' + k + '/messages/m1').set(
+          { uid: 'x', name: 'Kollegin', text: 'Anna ist heute krank', ts: 1 });
+      }
+    }
+    /* Für die flache Welt: ein Konto ohne Firma (= Körperformen). */
+    await db.doc('users/ma-flach').set({
+      name: 'Flach', role: 'mitarbeiter', aktiv: true, studioKeys: ['studio-1'] });
+    await db.doc('users/leiter-flach').set({
+      name: 'Leiter flach', role: 'leiter', aktiv: true, studioKeys: ['studio-1'] });
+    await db.doc('users/chef-flach').set({
+      name: 'Chef flach', role: 'chef', aktiv: true, studioKeys: [] });
+  });
+  const WELTEN = [
+    { name: 'Mandant', pre: 'firmen/eins/', ma: 'ma-eins', leiter: 'leiter-eins', chef: 'chef-eins' },
+    { name: 'flach', pre: '', ma: 'ma-flach', leiter: 'leiter-flach', chef: 'chef-flach' }
+  ];
+  for (const w of WELTEN) {
+    const K = (k) => w.pre + 'channels/' + k + '/messages';
+    await darf('[' + w.name + '] Mitarbeiter liest den Chat SEINES Studios',
+      als(w.ma).collection(K('studio-1')).get());
+    await darfNicht('[' + w.name + '] Mitarbeiter liest den Chat eines FREMDEN Studios',
+      als(w.ma).collection(K('studio-2')).get());
+    await darfNicht('[' + w.name + '] … auch nicht als einzelne Nachricht',
+      als(w.ma).doc(K('studio-2') + '/m1').get());
+    await darfNicht('[' + w.name + '] … und schreibt dort auch nichts hinein',
+      als(w.ma).collection(K('studio-2')).add(
+        { uid: w.ma, name: 'x', text: 'hallo', ts: 2 }));
+    await darf('[' + w.name + '] GEGENPROBE Mitarbeiter liest „Allgemein"',
+      als(w.ma).collection(K('allgemein')).get());
+    await darf('[' + w.name + '] GEGENPROBE Mitarbeiter schreibt in sein Studio',
+      als(w.ma).collection(K('studio-1')).add(
+        { uid: w.ma, name: 'x', text: 'hallo', ts: 2 }));
+    await darfNicht('[' + w.name + '] Mitarbeiter liest die Leitungsgruppe (wie bisher)',
+      als(w.ma).collection(K('gruppe-leitung')).get());
+    await darf('[' + w.name + '] GEGENPROBE Chef ohne eigene Studios liest jedes Studio',
+      als(w.chef).collection(K('studio-2')).get());
+  }
+  await darf('[Mandant] Leiter liest den Chat eines verwalteten Studios',
+    als('leiter-eins').collection('firmen/eins/channels/studio-2/messages').get());
+  /* Der Übergang: ein Konto OHNE studioKeys behält das alte Verhalten,
+     damit niemand seinen eigenen Studio-Chat verliert, dessen Konto aus
+     der Zeit vor dem Feld stammt. Festgehalten, damit das Streichen der
+     Übergangszeile eine bewusste Änderung ist und nicht nebenbei
+     passiert. */
+  await darf('[Mandant] ÜBERGANG Konto ohne studioKeys liest einen Studio-Chat',
+    als('ohne').collection('firmen/eins/channels/studio-2/messages').get());
 
   await env.cleanup();
   console.log(protokoll.join('\n'));
