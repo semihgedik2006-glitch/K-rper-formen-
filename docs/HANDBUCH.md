@@ -130,6 +130,44 @@ Fünf Bereiche in der unteren Leiste:
 
 ## 3. Startseite
 
+### Im neuen Aussehen: eine Liste, was heute dran ist
+
+Die Startseite passt auf **einen Bildschirm, ohne Scrollen**. Sie nennt
+die Sachen beim Namen, nicht nur als Zahl, und jede Zeile führt mit
+einem Tipp dorthin, wo man sie erledigt. Von oben nach unten:
+
+| Block | Farbe | was drinsteht |
+|---|---|---|
+| **Überfällig** | Rot | Aufgaben über ihrer Frist, die älteste zuerst |
+| **Heute** | Bernstein | heute fällig, dazu dein Dienst |
+| **Putzplan** | Teal | was im Putzplan noch offen ist (siehe unten) |
+| **Neu für dich** | Bereichsblau | Aushänge, Direktnachrichten, Teamchat |
+| **Zu erledigen** | Violett | fehlendes Material, offene Einrichtung |
+| **Offen** | Violett | Aufgaben ohne Frist |
+
+**Der Putzplan** (seit 23.9.2026) sieht je nach Rolle verschieden aus:
+
+- **Ein Studio** (am Empfang): die Punkte selbst, mit „täglich" oder
+  „wöchentlich" darunter — tägliche zuerst.
+- **Mehrere Studios** (Leitung): eine Zeile je Studio, das mit dem
+  meisten Rückstand oben, die ersten zwei Punkte darunter. Die Zahl in
+  der Überschrift zählt die **Punkte**, nicht die Studios.
+- **Pausierte Punkte zählen nicht** — eine Pause heisst ja gerade „steht
+  nicht an".
+- Ein Tipp öffnet den Putzplan **genau dieses Studios**.
+
+**Jede Überschrift nennt die volle Zahl** („Überfällig · 5") und trägt
+„alle N ›", sobald darunter weniger steht, als sie nennt.
+
+**„Ausserdem"** — reicht der Bildschirm nicht für alle Blöcke, werden
+erst Zeilen gekürzt (beim längsten Block zuerst), dann fällt der
+unterste Block weg. Er **verschwindet aber nicht**: unter „Ausserdem"
+bleibt ein Knopf mit Name und Zahl, etwa **„Offen · 34 ›"**, der in die
+passende, gefilterte Liste führt. Vorher fiel ein Block, der nicht mehr
+passte, stillschweigend weg.
+
+### Im bisherigen Aussehen
+
 Die Seite ist in vier benannte Blöcke geteilt: **was jetzt dran ist**
 (Hinweise und der eigene Dienst), **Zum Lesen** (Infos und schwarzes
 Brett), **Überblick** (die Zahlen) und **Zuletzt passiert**. Sprungziele

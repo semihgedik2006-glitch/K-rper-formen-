@@ -80,9 +80,20 @@ async function startseite(p) {
     const abz = document.querySelector('.mn-reihe [data-group="g-arbeit"] .badge');
     const ueber = koepfe.find(t => /^Überfällig/.test(t)) || '';
     const mu = /·\s*(\d+)/.exec(ueber);
+    /* Seit dem 23.9.2026 kann „Offen" auch als Knopf unter „Ausserdem"
+       stehen — dann, wenn der Bildschirm für den Block nicht mehr
+       reicht (der Putzplan ist dazugekommen). */
+    const knopf = [...document.querySelectorAll('.heute-rest-knopf')]
+      .find(x => /^Offen/.test(x.textContent.trim()));
+    const mk = knopf ? /·\s*(\d+)/.exec(knopf.textContent) : null;
     return {
       bloecke: koepfe,
       offenBlock: !!offenKopf,
+      offenKnopf: knopf ? {
+        text: knopf.textContent.trim(), zahl: mk ? +mk[1] : 1,
+        ziel: knopf.dataset.heute, filter: knopf.dataset.hf || '',
+        hoehe: Math.round(knopf.getBoundingClientRect().height)
+      } : null,
       offenZahl: m ? +m[1] : (offenKopf ? 1 : 0),
       ueberZahl: mu ? +mu[1] : (ueber ? 1 : 0),
       zeilen: [...document.querySelectorAll('.heute-block')]
@@ -139,10 +150,37 @@ async function startseite(p) {
 
        Die vollständige Abdeckung leistet deshalb das ABZEICHEN, und
        genau das wird unten geprüft: es trägt alle offenen. */
-    pruefe(rolle + ': der Block „Offen" steht auf der Startseite',
-      st.offenBlock, st.bloecke.join(' | '));
-    pruefe(rolle + ': „Offen" nennt mindestens eine Aufgabe beim Namen',
-      st.zeilen.length > 0, JSON.stringify(st.zeilen));
+    /* ── Zwei Formen, und beide sind erlaubt ──
+       Der Wunsch vom 21.9. hiess wörtlich: „die offenen aufgaben …
+       ODER ZUMINDEST ganz klar das aufgaben offen sind." Dazu kommt der
+       vom 18.9.: alles auf einen Bildschirm, ohne Scrollen.
+
+       Solange es passt, steht der Block mit den Aufgaben beim Namen
+       (volle Form). Seit der Putzplan auf der Startseite steht
+       (23.9.2026), reicht beim Chef der Platz dafür nicht mehr; dann
+       steht „Offen · N ›" unter „Ausserdem" (Mindestform). Geprüft
+       wird in BEIDEN Fällen, dass die Zahl stimmt und der Weg in die
+       gefilterte Liste führt — nur das Nennen beim Namen gehört allein
+       zur vollen Form.
+
+       Was NICHT erlaubt ist, und worauf es ankommt: dass „Offen"
+       stillschweigend fehlt. Genau das war vor dem 23.9. beim Chef auf
+       390×844 der Fall — unbemerkt, weil dieser Durchlauf mit 900 px
+       Höhe misst. */
+    const voll = st.offenBlock;
+    pruefe(rolle + ': „Offen" steht auf der Startseite — als Block oder unter „Ausserdem"',
+      voll || !!st.offenKnopf, st.bloecke.join(' | '));
+    if (voll) {
+      pruefe(rolle + ': „Offen" nennt mindestens eine Aufgabe beim Namen',
+        st.zeilen.length > 0, JSON.stringify(st.zeilen));
+    } else if (st.offenKnopf) {
+      console.log('  (Mindestform: ' + st.offenKnopf.text + ')');
+      /* Den Block mit Zahl zu übernehmen, ist die Aufgabe des Knopfs. */
+      st.offenZahl = st.offenKnopf.zahl;
+      st.linkZiel = { ziel: st.offenKnopf.ziel, filter: st.offenKnopf.filter };
+      pruefe(rolle + ': der Knopf ist ein Fingerziel (≥ 44 px)',
+        st.offenKnopf.hoehe >= 44, st.offenKnopf.hoehe + 'px');
+    }
     pruefe(rolle + ': „Offen" + „Überfällig" bleiben in der Wirklichkeit ' +
       '(' + st.offenZahl + ' + ' + st.ueberZahl + ' ≤ ' + liste.offen + ' offene)',
       st.offenZahl + st.ueberZahl <= liste.offen,

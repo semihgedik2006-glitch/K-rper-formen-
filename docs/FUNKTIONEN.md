@@ -275,6 +275,9 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 | Schichtplan | **VERIFIZIERT** | Einteilen nur die Verwaltung |
 | Abwesenheiten | **VERIFIZIERT** | **zwei Arten: Urlaub und Krank** |
 | Übergaben | **VERIFIZIERT** | 24 Stunden auf der Startseite sichtbar |
+| Putzplan auf der Startseite (neues Aussehen) | **VERIFIZIERT** | ein Studio: die Punkte; mehrere: je Studio mit Zahl; ein Tipp öffnet das richtige Studio — nachgesehen für Mitarbeiter und Chef |
+| Pausierte Putzpunkte zählen dort nicht | **VERIFIZIERT** | `tests/test-startseite-putz.js`, mit Gegenprobe: ohne Pause zählt derselbe Punkt |
+| Kein Block fällt mehr stumm weg („Ausserdem") | **VERIFIZIERT** | `tests/test-startseite-offen.js`, mit Gegenprobe: ein zu kleiner Knopf (30 px) färbt den Durchlauf rot |
 | Schwarzes Brett | **VERIFIZIERT** | Aushänge und Schichttausch |
 | Dokumente | **TEILWEISE** | max. ~0,7 MB je Datei; größere nur als Link. **Hochladen und Löschen nur Chef und Leitung** |
 | Qualifikationsnachweise | **VERIFIZIERT** | mit Ablaufwarnung; **Premium** |
