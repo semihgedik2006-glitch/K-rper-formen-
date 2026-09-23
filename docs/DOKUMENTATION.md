@@ -1,6 +1,6 @@
 # StudioChat — wo was steht
 
-**Stand:** 17. September 2026
+**Stand:** 23. September 2026
 
 Die Unterlagen sind über die Jahre gewachsen und heißen deutsch, weil
 alles in diesem Projekt deutsch ist. Dieses Verzeichnis sagt, welche
@@ -28,6 +28,9 @@ Datei welche Frage beantwortet — und was es **nicht** gibt.
 | Architektur, Datenflüsse, Abhängigkeiten, technische Schulden | `ARCHITEKTUR.md` |
 | Sammlungen, Felder, Regeln, Indexe, Sicherung | `DATENBANK.md` |
 | Vollständige Funktionsliste mit Prüfstatus | `FUNKTIONEN.md` |
+| Was das Produkt ist und nach welchen Regeln es gebaut ist (Schnappschuss vom 8.8.2026) | `SPEZIFIKATION.md` |
+| Umzugsstufe 2E: springen die Cloud Functions nach dem Umzug wirklich an? | `2E-PRUEFEN.md` |
+| Gestaltungsideen aus der Recherche bei vergleichbaren Apps (23.9.2026) | `DESIGN-RECHERCHE.md` |
 | Wie geprüft wird, und was **nicht** geprüft wird | `PRUEFPLAN.md` |
 | Bekannte Probleme, Schweregrade, behobene Funde | `BEKANNTE-PROBLEME.md` |
 | Ausliefern, Deploy, Rollback | `DEPLOY.md` |

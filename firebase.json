@@ -62,6 +62,13 @@
         ]
       },
       {
+        "//": "Die Startadresse selbst. Bis zum 23.9.2026 fehlte dieser Eintrag: die Regel oben greift nur, wenn jemand ausdruecklich /index.html aufruft — die App oeffnet aber / (start_url im manifest). Gemessen: / kam mit cache-control max-age=3600, und direkt nach einer Auslieferung lieferte die Adresse noch eine Stunde lang die alte App aus dem Zwischenspeicher. Der Service Worker umgeht das bei installierten Geraeten (no-store beim Abruf); Erstbesucher, Browser ohne Service Worker und der Zwischenspeicher des Hosters nicht.",
+        "source": "/",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        ]
+      },
+      {
         "source": "/sw.js",
         "headers": [
           { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }

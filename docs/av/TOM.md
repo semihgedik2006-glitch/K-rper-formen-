@@ -54,27 +54,35 @@ Unterschied zwischen „man sieht es nicht" und „man kommt nicht heran":
 ein manipulierter Browser kommt an der Oberfläche vorbei, an der Regel
 nicht.
 
-**Die Studiogrenze wird beim Lesen bisher NUR in der Oberfläche
-durchgesetzt.** Diese Zeile stand hier bis zum 17.9.2026 falsch — die
-Tabelle las sich so, als hielte die Datenbank auch sie. Der Unterschied
-ist für einen Auftraggeber wesentlich, deshalb steht er jetzt in der
-Tabelle selbst:
+**Die Studiogrenze wird beim Lesen für die Personendaten und den Chat
+in der Regel durchgesetzt, für die Betriebsabläufe bewusst nicht.**
+Stand 23.9.2026. Diese Unterlage beschrieb bis dahin einen älteren
+Zustand („nur Oberfläche") — die Datenbank hielt die Grenze für die
+Personendaten da schon seit dem 17.9. Der Unterschied ist für einen
+Auftraggeber wesentlich, deshalb steht er in der Tabelle selbst:
 
 | Rolle | Sichtbereich | Wodurch gehalten |
 |---|---|---|
-| Mitarbeiter | die eigenen zugeordneten Studios | **nur Oberfläche** (siehe unten) |
-| Studioleitung | die von ihr verwalteten Studios | Oberfläche; Schreibrechte zusätzlich in der Regel (`manages()`) |
+| Mitarbeiter | die eigenen zugeordneten Studios | **Regel** für Schichten, Abwesenheiten (auch Krankmeldungen), Übergaben und Studio-Chats · **bewusst betriebsweit lesbar**: Aufgaben, Putzplan, Geräte, Material |
+| Studioleitung | die von ihr verwalteten Studios | wie Mitarbeiter; Schreibrechte zusätzlich in der Regel (`manages()`) |
 | Geschäftsführung | alle Studios des **eigenen** Betriebs | Regel |
 | Betreiber (Admin) | Firmen-Stammdaten, **keine Inhalte** der Kunden | Regel |
 
-> **Offener Punkt, bekannt und dokumentiert:** an rund elf Sammlungen
-> lautet die Leseregel `inFirma(f) && istAktiv()`, prüft also die Firma
-> und nicht das Studio. Wer im Betrieb angemeldet ist und ein
-> Datenbankwerkzeug bedienen kann, erreicht damit auch Einträge anderer
-> Studios — **einschliesslich Abwesenheiten und Krankmeldungen, also
-> Gesundheitsdaten nach Art. 9 DSGVO.** Siehe
-> `docs/BEKANNTE-PROBLEME.md`, P-01. Schreiben ist davon nicht
-> betroffen: dort steht `manages(studioKey)` in der Regel.
+> **Was davon bewusst offen ist:** Aufgaben, Putzplan, Geräte und
+> Material liest jeder Beschäftigte des Betriebs — ein defektes Gerät
+> soll auch melden können, wer gerade aushilft. Personenbezogen ist
+> daran nur, wer etwas abgehakt oder gemeldet hat.
+>
+> **Noch nicht in der Regel:** Dokumente, die nur für einzelne Studios
+> bestimmt sind. Die Oberfläche zeigt sie nur diesen Studios, die
+> Datenbank liefert sie aber jedem Beschäftigten des Betriebs aus, der
+> ein Datenbankwerkzeug bedienen kann. Siehe P-01.
+>
+> **Ein Übergang beim Chat:** Konten, deren Profil noch kein Feld
+> `studioKeys` trägt (ältere Konten), behalten vorerst den Zugang zu
+> allen Studio-Chats des Betriebs, damit niemand seinen eigenen Chat
+> verliert. `tools/konten-pruefen.js` zählt solche Konten; sind es null,
+> fällt der Übergang weg. Siehe `docs/BEKANNTE-PROBLEME.md`, P-01.
 
 **Mandantentrennung:** jeder Zugriff auf Betriebsdaten läuft durch eine
 einzige Stelle im Code (`S(name)`), die den Pfad
@@ -86,7 +94,7 @@ Stelle genau einmal und einen Durchlauf, der das festhält.
 „als Chef ansehen"-Knopf. Was der Admin sieht, sind Firmenname,
 Kennung, Abo-Stufe und Nutzerzahl.
 
-**Belegt durch:** `tests/rules/` — **864 Zusicherungen** über Sicherheit,
+**Belegt durch:** `tests/rules/` — **1.141 Einzelprüfungen** (gezählt am 23.9.2026) über Sicherheit,
 Kreuzzugriffe zwischen Betrieben, Rollenrechte, Reaktionen, Umfragen,
 fremde Felder, Kalender und Anliegen. Jeder Durchlauf prüft ausdrücklich
 auch, was **nicht** gehen darf, und trägt Gegenproben: eine Regel

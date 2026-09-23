@@ -15,6 +15,10 @@ Ursprünglicher Stand: 24. August 2026. Dreißig Vorschläge, **alle aus Bildsch
 laufenden App abgeleitet**, nicht aus einem Gestaltungskatalog. Zu jedem
 steht, was er kostet und was dagegen spricht.
 
+**Seit dem 23.9.2026 gibt es `DESIGN-RECHERCHE.md` daneben:** elf
+Ideen aus vergleichbaren Apps und den Gestaltungssystemen von 2025/26,
+mit Quellen. Diese Liste hier bleibt, wie sie ist.
+
 `IDEEN.md` daneben sammelt *Funktionen*. Hier geht es nur darum, wie sich
 das anfühlt, was schon da ist.
 

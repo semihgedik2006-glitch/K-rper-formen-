@@ -52,6 +52,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  # ── Versionen (23.9.2026) ──
+  # Node 22 statt 20: Node 20 hat im April 2026 sein Lebensende erreicht,
+  # und functions/package.json verlangt ohnehin 22. Die Actions laufen
+  # in den neuen Hauptversionen auf Node 24. Vor dem Wechsel in den
+  # jeweiligen action.yml nachgesehen, dass es die Eingaben, die hier
+  # stehen, weiter gibt (node-version, distribution, java-version,
+  # credentials_json).
   # Erst prüfen, dann ausrollen. Die Sicherheitsregeln sind die einzige echte
   # Grenze dieser App; fällt hier etwas um, gehen weder Regeln noch Functions
   # raus.
@@ -59,16 +66,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Node 20 einrichten
-        uses: actions/setup-node@v4
+      - name: Node 22 einrichten
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
 
       # Der Firestore-Emulator ist ein Java-Programm.
       - name: Java einrichten
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
@@ -108,16 +115,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Node 20 einrichten
-        uses: actions/setup-node@v4
+      - name: Node 22 einrichten
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Google-Auth (Service-Account aus GitHub-Secret)
         id: auth
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.FIREBASE_SA_KEY }}
 
@@ -138,16 +145,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Node 20 einrichten
-        uses: actions/setup-node@v4
+      - name: Node 22 einrichten
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Google-Auth (Service-Account aus GitHub-Secret)
         id: auth
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.FIREBASE_SA_KEY }}
 
@@ -165,12 +172,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Node 20 einrichten
-        uses: actions/setup-node@v4
+      - name: Node 22 einrichten
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Functions-Abhängigkeiten installieren
         working-directory: functions
@@ -230,7 +237,7 @@ jobs:
 
       - name: Google-Auth (Service-Account aus GitHub-Secret)
         id: auth
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.FIREBASE_SA_KEY }}
 
