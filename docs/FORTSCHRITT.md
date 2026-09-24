@@ -12436,3 +12436,30 @@ verbessert.
 - **Offen gesagt:** Eine Abspiel-Adresse mit Token umgeht die Regeln.
   Wer sie weitergibt, gibt das Video weiter. Das steht in der
   Regeldatei und in `docs/VIDEOS.md`.
+
+## Runde 106, vierter Teil — Hilfe am Rechner zweispaltig
+
+- **Ab 1.100 px ist das Hilfe-Fenster 1.180 px breit und zweigeteilt.**
+  Links stehen Suche und Treffer oder eine Kategorie, rechts die
+  Antwort. Solange nichts gewählt ist, steht rechts „Wähle links eine
+  Frage“ statt eines leeren Rahmens.
+- **Die Liste bleibt stehen**, und die geöffnete Zeile ist markiert.
+  „‹ Zurück“ entfällt rechts, weil links ja steht, wo man war. Beide
+  Spalten scrollen für sich.
+- **Umgesetzt in `hilfePane()`:** Sie merkt sich die linke Ansicht
+  (`_hLinks`) und zeigt am Rechner links und rechts gleichzeitig. Am
+  Handy bleibt es eine Ansicht nach der anderen. Beim Überschreiten der
+  Grenze (Fenster verkleinern, Tablet drehen) wird neu verteilt
+  (`matchMedia`).
+- **Warum:** Auf einer Tafel von 640 px hiess jede Antwort „lesen,
+  zurück, nächste“. Am Hauptgerät ist dafür die Breite da.
+
+### Durchläufe
+
+- **Neu: `tests/test-hilfe-pc.js`** mit 34 Zusicherungen:
+  - bei 1280, 1440 und 1920 px: beide Spalten, Treffer rechts,
+    Markierung links, zweiter Treffer ohne Zurück;
+  - Kategorie links, Eintrag rechts;
+  - Trefferflächen in beiden Spalten, normal und kompakt;
+  - Gegenprobe am Handy: eine Seite nach der anderen.
+- **Gesamtdurchlauf: 143 von 143 grün.**

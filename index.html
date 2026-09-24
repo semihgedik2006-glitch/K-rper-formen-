@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PfBk19/mzkgTeTXob14+EGSs8EPUrrHfv8vMCQ5kq4w='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-hCzKbTpIQA7fR4pGgHz+mJy2mzWxRQO1bvowfzqm5CE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4655,6 +4655,23 @@ html{font-size:var(--fs,100%)}
   min-height:44px;padding:0 var(--s8);margin-bottom:var(--s8);margin-left:calc(var(--s8) * -1);
   background:none;border:none;cursor:pointer;color:var(--accent-d);
   font-family:var(--font-body);font-weight:700;font-size:var(--t-sm)}
+/* ── Am Rechner zwei Spalten ── */
+.hilfe-leer{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+  min-height:240px;padding:var(--s24);border:1px dashed var(--line-2);border-radius:var(--r-md)}
+.hilfe-leer-titel{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);margin-bottom:var(--s6)}
+@media (min-width:1100px){
+  .hilfe-schale{max-width:1180px;height:88vh}
+  .hilfe-body.zwei{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);
+    grid-template-rows:minmax(0,1fr);gap:0;padding:0;overflow:hidden}
+  .hilfe-body.zwei > #hilfeSuchTeil,.hilfe-body.zwei > #hilfeListe{grid-column:1;grid-row:1;
+    overflow-y:auto;padding:var(--s20);border-right:1px solid var(--line)}
+  .hilfe-body.zwei > #hilfeEintrag,.hilfe-body.zwei > #hilfeForm,.hilfe-body.zwei > #hilfeLeer{
+    grid-column:2;grid-row:1;overflow-y:auto;padding:var(--s20) var(--s24)}
+  .hilfe-body.zwei > #hilfeLeer{margin:var(--s20) var(--s24);min-height:0;align-self:start}
+  /* „‹ Zurück" braucht es rechts nicht — links steht ja, wo man war. */
+  .hilfe-body.zwei #hilfeEintrag > .hilfe-zurueck{display:none}
+  .hilfe-body.zwei [data-heintrag].an{border-color:var(--accent);background:var(--tipp-1)}
+}
 @media (max-width:620px){
   /* Auf dem Telefon der ganze Schirm. Ein zentriertes Kästchen mit
      Rand ringsum verschenkt hier die Hälfte der Höhe, und gelesen
@@ -8640,6 +8657,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <div id="hilfeListe" style="display:none"></div>
       <!-- Ein einzelner Eintrag, Schritt für Schritt -->
       <div id="hilfeEintrag" class="hilfe-eintrag" style="display:none"></div>
+      <!-- Nur am Rechner: die rechte Spalte, solange noch nichts gewählt ist. -->
+      <div id="hilfeLeer" class="hilfe-leer" style="display:none">
+        <p class="hilfe-leer-titel">Wähle links eine Frage</p>
+        <p class="hint">Die Antwort erscheint hier, und die Liste bleibt stehen —
+          so lässt sich eine Antwort nach der anderen lesen.</p>
+      </div>
       <!-- Bearbeiten, Fotos anhängen, neu anlegen -->
       <div id="hilfeForm" style="display:none"></div>
     </div>
@@ -15662,6 +15685,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-hilfe-pc', datum:'24.9.2026', titel:'Hilfe am Rechner: Liste links, Antwort rechts', wo:'hilfe', punkte:[
+    'Am Rechner ist das Hilfe-Fenster jetzt breit und zweigeteilt: links suchst du oder blätterst eine Kategorie durch, rechts steht die Antwort.',
+    'Die Liste bleibt dabei stehen — eine Antwort nach der anderen lesen, ohne jedes Mal zurückzugehen. Die geöffnete ist links markiert.',
+    'Am Handy bleibt es, wie es ist: eine Seite nach der anderen.' ] },
   { id:'2026-09-24-zeiten', datum:'24.9.2026', titel:'Vergessenen Feierabend nachtragen', wo:'chef:zeiten', punkte:[
     'Für die Leitung: Unter Verwaltung → Zeiten stehen die Stempelzeiten des Teams je Studio und Monat. Tage, an denen der Feierabend fehlt, stehen oben.',
     'Ein Tipp auf den Tag — dann Art, Uhrzeit und Grund eintragen und „Nachtragen". Ein falscher Stempel lässt sich als ungültig markieren.',
@@ -18830,13 +18857,43 @@ function hilfeSchliessen(){
   var box=$('hilfe'); if(!box) return;
   _hAn=false; box.classList.remove('show');
 }
+/* ── Am Rechner zwei Spalten (Runde 106) ──
+   Links bleibt, was man gesucht oder aufgeschlagen hat (Start mit
+   Treffern oder eine Liste), rechts steht die Antwort. Auf einer Tafel
+   von 640 px las man eine Antwort, ging zurück, las die nächste — am
+   Rechner, dem Hauptgerät, ist dafür die Breite da. Am Handy bleibt es
+   eine Seite nach der anderen. */
+var _hLinks = 'start';
+var _hBreit = window.matchMedia ? window.matchMedia('(min-width:1100px)') : null;
+function hilfeZweiSpalten(){ return !!(_hBreit && _hBreit.matches); }
+if(_hBreit && _hBreit.addEventListener) _hBreit.addEventListener('change', function(){
+  if(_hAn) hilfePane(_hAnsicht);
+});
 function hilfePane(welche){
   _hAnsicht = welche;
+  if(welche==='start' || welche==='liste') _hLinks = welche;
+  var zwei = hilfeZweiSpalten();
+  var body=$('hilfeBody');
+  if(body) body.classList.toggle('zwei', zwei);
+  var rechts = (welche==='eintrag' || welche==='form') ? welche : 'leer';
   [['hilfeSuchTeil','start'],['hilfeListe','liste'],
-   ['hilfeEintrag','eintrag'],['hilfeForm','form']].forEach(function(p){
-    var el=$(p[0]); if(el) el.style.display = (p[1]===welche ? '' : 'none');
+   ['hilfeEintrag','eintrag'],['hilfeForm','form'],['hilfeLeer','leer']].forEach(function(p){
+    var el=$(p[0]); if(!el) return;
+    var an = zwei ? (p[1]===_hLinks || p[1]===rechts) : (p[1]===welche);
+    el.style.display = an ? '' : 'none';
   });
-  var b=$('hilfeBody'); if(b) b.scrollTop=0;
+  if(zwei){
+    var r=$(rechts==='leer' ? 'hilfeLeer' : (rechts==='form' ? 'hilfeForm' : 'hilfeEintrag'));
+    if(r) r.scrollTop=0;
+    hilfeWahlMarkieren();
+  } else if(body) body.scrollTop=0;
+}
+/* Welche Zeile links gerade rechts offen ist. */
+function hilfeWahlMarkieren(){
+  var offen = (_hAnsicht==='eintrag') ? _hOffen : null;
+  document.querySelectorAll('#hilfeBody [data-heintrag]').forEach(function(z){
+    z.classList.toggle('an', !!offen && z.getAttribute('data-heintrag')===offen);
+  });
 }
 /* Nach jeder Änderung an den Daten: die offene Ansicht neu zeichnen,
    ohne den Platz zu wechseln. Wer gerade einen Eintrag liest, soll
@@ -18930,6 +18987,7 @@ function hilfeTrefferZeichnen(){
   }
   box.insertAdjacentHTML('beforeend', emsNetzHTML(_hSuche));
   hilfeZeilenBinden(box, 'start');
+  hilfeWahlMarkieren();
 }
 function hilfeZeile(e){
   if(e.ems){
@@ -18981,6 +19039,7 @@ function hilfeListeZeichnen(){
     '<div class="hilfe-liste">'+liste.map(hilfeZeile).join('')+'</div>';
   hilfeZeilenBinden(box, 'liste');
   hilfeZurueckBinden(box);
+  hilfeWahlMarkieren();
 }
 function hilfeZurueckBinden(box){
   box.querySelectorAll('[data-hzurueck]').forEach(function(b){
