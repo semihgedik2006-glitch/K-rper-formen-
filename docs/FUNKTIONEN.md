@@ -31,7 +31,7 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 
 | | | Quelle |
 |---|---|---|
-| Anwendung | `index.html`, **33234 Zeilen** | `wc -l` |
+| Anwendung | `index.html`, **33.234 Zeilen** | `wc -l` |
 | Serverfunktionen | **62** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **2.170 Zeilen** | `wc -l` |
 | Automatische Durchläufe (Oberfläche) | **132** (129 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |

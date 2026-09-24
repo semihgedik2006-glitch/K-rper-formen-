@@ -16,7 +16,7 @@ nicht gibt. Deshalb vorweg:
 | Bundler, Transpiler | Kein Webpack, kein Vite, kein Babel |
 | Framework | Kein React, kein Vue. ES5-kompatibles JavaScript, direkt im Browser |
 | `node_modules` im Wurzelverzeichnis | nur unter `functions/` und `tests/rules/` |
-| Komponentendateien | 33234 Zeilen in **einer** Datei (Stand 24.9.2026) |
+| Komponentendateien | 33.234 Zeilen in **einer** Datei (Stand 24.9.2026) |
 
 **Das ist eine Entscheidung, keine Nachlässigkeit.** Die Begründung
 steht in `README.md` unter „Warum es so gebaut ist". Kurzfassung: die
@@ -37,7 +37,7 @@ was.
 ┌─────────────────────────────────────────────────────────────┐
 │  BROWSER                                                     │
 │                                                              │
-│   index.html   ── die ganze Anwendung (33234 Zeilen)        │
+│   index.html   ── die ganze Anwendung (33.234 Zeilen)        │
 │   konfig.js    ── alles, was sich je Kunde unterscheidet     │
 │   sw.js        ── Service Worker: Push, Offline              │
 │   demo-daten.js── ersetzt das SDK, wenn ?demo in der Adresse │
@@ -318,7 +318,7 @@ Getrennt nach **nachgewiesenem Problem** und **Verbesserungsvorschlag**.
 
 | | Warum |
 |---|---|
-| 33234 Zeilen in einer Datei | bewusst so; der Preis ist Auffindbarkeit |
+| 33.234 Zeilen in einer Datei | bewusst so; der Preis ist Auffindbarkeit |
 | Flache Altpfade neben Firmenpfaden | verdoppelt jeden Auslöser |
 | Zwei stillgelegte Seiten im Repo | `marketing.html`, `wachstum.html` — greifen noch flach zu |
 | Auskunft nach Art. 15 ist Handarbeit | überschaubar zu bauen |
