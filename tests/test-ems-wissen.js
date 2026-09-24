@@ -109,6 +109,18 @@ async function knoepfe(p) {
     pruefe('alle 57 Fragen der Quelle sind geladen', d.zahl === 57, String(d.zahl));
     pruefe('vier Kategorien, zusammen 57 (11 / 24 / 15 / 7)', d.kats.join('/') === '11/24/15/7', d.kats.join('/'));
     pruefe('jeder Eintrag führt auf genau seinen Originalartikel', d.urlsOk && d.urlsEinmal);
+    /* Hausregel aus dem Betrieb, 24.9.2026: „bei uns sind es MINDESTENS
+       2 Tage". Sie steht in „Wie oft", und nirgends steht mehr eine
+       andere Pause als Regel (4 Tage aus der Leitlinie, 5 aus der FAQ). */
+    const pause = await p.evaluate(() => {
+      const w = window.EMS_WISSEN.eintraege;
+      const oft = w.find(e => e.id === 'wie-oft');
+      const alles = w.map(e => e.kurz + ' ' + e.sagen.join(' ') + ' ' + e.achtung).join(' ');
+      return { oft: oft.kurz + ' ' + oft.sagen.join(' ') + ' ' + oft.achtung,
+               andere: (alles.match(/(mindestens|≥)\s*[3-9] Tage/g) || []) };
+    });
+    pruefe('„Wie oft": bei uns mindestens 2 Tage Pause', /mindestens 2 Tage/.test(pause.oft) && /zwei Tage/.test(pause.oft), pause.oft.slice(0, 90));
+    pruefe('GEGENPROBE keine andere Pause steht als Regel da', !pause.andere.length, pause.andere.join(', '));
     pruefe('die Herkunft steht dabei (ems-training.de, eigene Worte)', /ems-training\.de/.test(d.stand) && /eigenen Worten/.test(d.stand), d.stand);
     pruefe('die Frage lädt auch zu EMS ein, und es steht weiter nicht „KI" da',
       /EMS/.test(d.frage) && /Was ist das Problem/.test(d.frage) && !/\bKI\b/.test(d.hinweis), d.frage);

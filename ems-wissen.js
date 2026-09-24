@@ -36,8 +36,16 @@
        Front Physiol 14:1174103 — 20 min, in den ersten 8–10 Wochen
        höchstens 1× pro Woche, danach ≥ 4 Tage Pause zwischen
        intensiven Einheiten, Betreuung 1:1 (1:2 vertretbar)
-   Zwei FAQ-Artikel nennen „mindestens 5 Tage" Pause; hier steht
-   durchgehend der Wert der Leitlinie (4 Tage).
+   Zwei FAQ-Artikel nennen „mindestens 5 Tage" Pause, die Leitlinie 4.
+
+   ── DIE PAUSE: HAUSREGEL (24.9.2026) ───────────────────────────────
+   Aus dem Betrieb: „bei uns sind es MINDESTENS 2 Tage". Das ist die
+   Regel, die im Studio gilt, und sie steht hier als Hausregel — nicht
+   als Aussage der Leitlinie. Was die Leitlinie für die ersten Wochen
+   empfiehlt (höchstens einmal pro Woche), bleibt als Information
+   dabei und ist als ihre Empfehlung gekennzeichnet. Die Pause steht in
+   `wie-oft` und `kombinieren` sowie in der Schulung „EMS verstehen und
+   erklären".
 
    ── ÄNDERN ─────────────────────────────────────────────────────────
    Von Hand gepflegt. Wer etwas ändert, zählt in sw.js VERSION hoch.
@@ -150,9 +158,9 @@ window.EMS_WISSEN = {
 
   { id: 'wie-oft', kat: 'grundlagen', lesezeit: 3,
     frage: 'Wie oft sollte man EMS-Training machen?',
-    kurz: 'Einmal pro Woche ist die beste Orientierung. In den ersten 8 bis 10 Wochen höchstens eine 20-Minuten-Einheit pro Woche, danach mindestens 4 Tage Pause zwischen intensiven Einheiten. Regelmäßig schlägt häufig.',
-    sagen: ['Einmal die Woche reicht — zweimal ist meistens schon zu viel.'],
-    achtung: 'Wünscht jemand zwei Termine pro Woche in den ersten Wochen: nicht buchen, Leitung fragen.',
+    kurz: 'Bei uns gilt: Zwischen zwei EMS-Einheiten liegen mindestens 2 Tage Pause. Einmal pro Woche bringt schon gute Ergebnisse; wer öfter kommt, braucht die Pause dazwischen, denn der Muskel wächst in der Erholung. Für den Einstieg empfiehlt die Leitlinie (Kemmler 2023) in den ersten 8 bis 10 Wochen höchstens eine Einheit pro Woche. Regelmäßig schlägt häufig.',
+    sagen: ['Zwischen zwei Trainings liegen bei uns mindestens zwei Tage — die Muskeln wachsen in der Pause.'],
+    achtung: 'Weniger als 2 Tage zwischen zwei Terminen: nicht buchen. Will jemand gleich zu Beginn öfter als einmal pro Woche kommen: Leitung fragen.',
     stich: 'haeufigkeit wie oft pro woche zweimal frequenz termine abstand pause',
     url: 'https://www.ems-training.de/faq/grundlagen/wie-oft-darf-und-sollte-ich-ems-training-machen',
     verwandt: ['regeneration', 'zwanzig-minuten', 'ck-wert'] },
@@ -495,7 +503,7 @@ window.EMS_WISSEN = {
 
   { id: 'kombinieren', kat: 'praxis', lesezeit: 4,
     frage: 'Kann man EMS mit anderem Training kombinieren?',
-    kurz: 'Ja, mit Plan: EMS als eigene Krafteinheit, Gewichtstraining und Ausdauer an anderen Tagen, zwischen intensiven Einheiten mindestens 4 Tage Pause. Leichte Bewegung, Spaziergänge und Dehnen sind an freien Tagen unproblematisch und fördern die Erholung.',
+    kurz: 'Ja, mit Plan: EMS als eigene Krafteinheit, Gewichtstraining und Ausdauer an anderen Tagen, zwischen zwei EMS-Einheiten bei uns mindestens 2 Tage Pause. Leichte Bewegung, Spaziergänge und Dehnen sind an freien Tagen unproblematisch und fördern die Erholung.',
     sagen: ['Klar — nur nicht am selben Tag hart ins Fitnessstudio, und dazwischen genug Pause.'],
     achtung: '',
     stich: 'kombinieren kombination fitnessstudio joggen zusaetzlich yoga sport daneben',

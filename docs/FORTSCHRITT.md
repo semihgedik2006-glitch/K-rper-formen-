@@ -12246,3 +12246,84 @@ verbessert.
   - vom Eintrag zum passenden Modul;
   - Gegenprobe: ein Handbuch-Eintrag hat keinen Schulungs-Knopf.
 - **Gesamtdurchlauf: 139 von 139 grün.**
+
+## Runde 106 — Entscheidungen aus dem Betrieb, erster Teil
+
+> „ich entscheide: 1. bei uns sind es MINDESTENS 2 tage 2. Videos kommen
+> noch speicher ort können wir vorbereiten so gut es geht 3. Erstmal
+> keine aber füge hinzu das die leitung die zeiten ändern kann falls
+> jemand sich nicht ausgestempelt hat … und die aufgaben kannst du in
+> deiner reihenfolge machen ausser das längere passwort" (24.9.2026)
+
+### Die Pause: mindestens 2 Tage, als Hausregel
+
+- Geändert sind `ems-wissen.js` („Wie oft“, „Kombinieren“) und die
+  Schulung „EMS verstehen und erklären“: neuer Hinweis und eine neue
+  Frage „Wie viel Pause liegt bei uns mindestens …?“.
+- **Die Hausregel steht als Hausregel da, nicht als Aussage der
+  Leitlinie.** Was die Leitlinie für den Einstieg empfiehlt (in den
+  ersten 8–10 Wochen höchstens einmal pro Woche), bleibt als ihre
+  Empfehlung gekennzeichnet stehen. Die App soll nicht behaupten, eine
+  Quelle sage etwas, das sie nicht sagt.
+- `test-ems-wissen` prüft die 2 Tage. Gegenprobe: nirgends steht mehr
+  eine andere Mindestpause als Regel.
+
+### P-17: Aufgaben schneller
+
+- Der Klick kostet 25–35 ms. Das Warten danach war Stil und Layout
+  für alle 61 Zeilen, gemessen per Trace: `UpdateLayoutTree` über 686
+  Elemente.
+- Zeilen ab der 13. tragen jetzt `content-visibility:auto` mit einer
+  Platzhalterhöhe.
+- Median bis zum ersten Bild, CPU ÷4:
+  - 390 px: 176 → 104 ms;
+  - 1440 px: 156 → 121 ms.
+- **Warum ab der 13.:** Dieselbe Grenze gilt schon für die
+  Einblendung. Zwölf Zeilen füllen auch ein grosses Tablet.
+- **Nicht angefasst:** Nach dem ersten Bild laufen noch ein paar Bilder
+  mit je rund 130 Stil-Elementen (etwa 10 ms bei CPU ÷4). Das ist der
+  Farbübergang des Bereichs und liegt unter der Grenze von 8,3 ms je
+  Bild bei voller Geschwindigkeit.
+
+### P-12: Team springt nicht mehr
+
+- Der Sprung war gewollt. Zwei Zeitgeber rollten zum heutigen Tag,
+  bei der Leitung am Handy 218 px, und „Wartet auf deine Entscheidung“
+  verschwand dabei oben.
+- **Jetzt rollt nichts:**
+  - Am Handy stehen die vergangenen Tage der laufenden Woche in einer
+    Zeile („Mo 21.09. – Mi 23.09. · 0 Schichten · Anzeigen ›“).
+  - Am Rechner steht die Woche in sieben Spalten nebeneinander.
+  - `heuteInsBild()` greift nur noch, wenn vom heutigen Tag gar nichts
+    zu sehen ist.
+- **Dabei gefunden:** ‹ › neben „Heute“ waren 38 × 44 (kompakt
+  30 × 44), das ✕ an einer Schicht gut 28 × 20. Beide sind jetzt
+  44 × 44.
+- **`test-team-bereich7` ist offen geändert.** Er verlangte „heute
+  VOLLSTÄNDIG im Bild“, und das ging nur mit dem Rollen, das P-12 war.
+  Jetzt verlangt er: nicht gerollt, Überschrift und erste Schicht zu
+  sehen. Das Zitat der Freigabe steht im Test. Der Demo-Mitarbeiter hat
+  heute einen 348 px hohen Tag, dessen Ende 48 px unter dem Rand liegt.
+
+### Durchläufe
+
+- **Neu: `test-team-woche`** mit 38 Zusicherungen:
+  - kein Rollen, heute im Bild, Wartet im Bild;
+  - die Zeile auf- und zuklappen;
+  - Gegenprobe: in der nächsten Woche gibt es die Zeile nicht;
+  - sieben Spalten bei 1280, 1440 und 1920 px;
+  - Trefferflächen bei 7 Breiten × 2 Dichten.
+- **Neu: `test-aufgaben-tempo`** mit 14 Zusicherungen. Er prüft die
+  Ursache, und dass späte Zeilen voll benutzbar und fast gleich hoch
+  bleiben. Die Zeit druckt er nur aus.
+- **Gesamtdurchlauf: 141, davon zuerst 2 rot, beide behoben:**
+  - `test-gestaltung`: ein „✕“ stand im Text der Neuigkeit. Jetzt
+    steht dort „das Kreuz zum Entfernen“.
+  - `test-block-c`: Eine gerade abgehakte Aufgabe rutscht beim
+    Umsortieren unter die 12. Zeile. Dort bekam sie
+    `content-visibility:auto`, und ihre Feder (checkPop) startete nicht
+    mehr. Eine Zeile mit `.just-done` ist jetzt ausgenommen.
+
+  Danach wurden `test-gestaltung`, `test-block-c`,
+  `test-aufgaben-tempo`, `test-csp`, `test-neu-design` und
+  `test-team-woche` einzeln wiederholt, alle grün.

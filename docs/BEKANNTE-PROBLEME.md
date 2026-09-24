@@ -346,8 +346,8 @@ zu und sollte eine Frist nennen, die Handarbeit zulässt.
 | | |
 |---|---|
 | **Schweregrad** | **NIEDRIG** |
-| **Status** | Open |
-| **Gemessen** | altes Design 235 px, neues 239 px |
+| **Status** | **BEHOBEN am 24.9.2026** (B-42) |
+| **Gemessen** | altes Design 235 px, neues 239 px; am 24.9.2026 218 px (Leitung, 390 px) |
 
 Vorbestehend, nicht durch den Design-Umbau entstanden.
 
@@ -441,6 +441,14 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
   vermessen. Geprüft ist das noch nicht.
 - **Nächster Schritt:** `content-visibility` für die Zeilen unterhalb
   des Bildschirms, dann erneut messen, am Handy und am PC.
+- **BEHOBEN am 24.9.2026 (B-43).** Die Vermutung stimmte zur Hälfte:
+  der Klick selbst kostet nur 25–35 ms, der Rest war Stil und Layout
+  für alle 61 Zeilen. Zeilen ab der 13. tragen jetzt
+  `content-visibility:auto`. Median bis zum ersten Bild, CPU ÷4:
+  390 px 176 → 104 ms, 1440 px 156 → 121 ms. `test-aufgaben-tempo`
+  prüft die Ursache und dass späte Zeilen voll benutzbar bleiben — die
+  Zeit selbst druckt er nur aus, weil er neben einem zweiten Browser
+  läuft.
 
 ---
 
@@ -491,6 +499,8 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-39** | **„Dienst · Hürth" stand bei 320 px in drei Zeilen untereinander** (Ich → Woche) — `.ich-was` hatte `flex:1` ohne Grundbreite und schrumpfte auf gut 40 px | 24.9.2026 |
 | **B-40** | **Beim Abhaken federten alle erledigten Haken auf einmal, und das grüne Aufleuchten der Zeile war nie zu sehen** — `.todo.done .check` lief bei jedem Neuzeichnen (15 Federn für eine Aufgabe), und der Horcher ersetzte die Zeile nach 0 ms, bevor `.just-done` ein Bild bekam. Jetzt federt der eine Haken, über das Neuzeichnen hinweg | 24.9.2026 |
 | **B-41** | **Neue Inhalte kamen nach einer Auslieferung bis zu einer Woche lang nicht an.** Die Schulungsdatei stand mit `max-age=604800` im Zwischenspeicher, und der Service Worker holte beim Update durch diesen Zwischenspeicher. `VERSION` hochzählen legte also einen neuen Vorrat mit der alten Datei an. Die fünf EMS-Schulungen waren live und „nirgends bei mir“ (aus dem Betrieb). Jetzt holt der Service Worker mit `cache:'reload'`, und die Inhaltsdateien kommen mit `no-cache`. `test-zwischenspeicher` spielt eine Auslieferung durch, mit dem alten Stand als Gegenprobe | 24.9.2026 |
+| **B-42** | **Die Team-Seite rollte beim Öffnen von selbst nach unten** (P-12) — zwei Zeitgeber scrollten zum heutigen Tag, 218 px bei der Leitung am Handy; oben verschwand „Wartet auf deine Entscheidung". Jetzt rollt nichts; die vergangenen Tage der Woche stehen am Handy in einer Zeile, am Rechner steht die Woche in sieben Spalten. Nebenbei: ‹ › waren 38 × 44 (kompakt 30), das ✕ an einer Schicht gut 28 × 20 | 24.9.2026 |
+| **B-43** | **Die Aufgaben brauchten bis zum ersten Bild zu lange** (P-17) — Stil und Layout für alle Zeilen, auch die unsichtbaren. Jetzt `content-visibility:auto` ab der 13. Zeile; Median 176 → 104 ms (Handy, CPU ÷4) | 24.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
 `docs/FORTSCHRITT.md` — chronologisch, 103 Runden.

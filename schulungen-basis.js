@@ -266,7 +266,11 @@ window.SCHULUNGEN_BASIS = {
             'Zweimal ist genau richtig',
             'Das entscheidet der Kunde'
           ], richtig: 1,
-          hinweis: 'Eingewöhnung: höchstens eine 20-Minuten-Einheit pro Woche. Danach mindestens 4 Tage Pause zwischen intensiven Einheiten.' },
+          hinweis: 'Eingewöhnung laut Leitlinie: höchstens eine 20-Minuten-Einheit pro Woche. Und immer gilt bei uns: mindestens 2 Tage Pause zwischen zwei Einheiten.' },
+        /* Hausregel, 24.9.2026: „bei uns sind es MINDESTENS 2 Tage". */
+        { frage: 'Wie viel Pause liegt bei uns mindestens zwischen zwei EMS-Einheiten?',
+          antworten: ['Keine — jeden Tag geht', '1 Tag', 'Mindestens 2 Tage', 'Zwei Wochen'], richtig: 2,
+          hinweis: 'Mindestens 2 Tage. Der Fortschritt entsteht in der Pause; wer zu früh wiederkommt, trainiert auf müde Muskeln.' },
         { frage: 'Warum wird die Funktionskleidung angefeuchtet?',
           antworten: [
             'Damit sie kühlt',
