@@ -63,6 +63,14 @@ in `PREFS`). **Dagegen:** kostet eine Zeile auf einer Seite, die auf
 einen Bildschirm passen soll. **Kollision:** keine — „Ausserdem" fängt
 ab, was dadurch nicht mehr passt.
 
+> **Umgesetzt in Runde 103** — mit drei Abweichungen von diesem Entwurf:
+> die Zeile steht **unten** über der Leiste statt oben (Daumenzone, wie
+> A2; oben hat das Überfällige Vorrang), gewählt wird über einen
+> sichtbaren Knopf „Anpassen" statt per langem Druck (eine unsichtbare
+> Geste darf nie der einzige Weg sein), und ohne eigene Wahl steht ein
+> Vorschlag je Rolle da. Auf Bildschirmen unter 640 px Höhe nur die
+> Zeichen — sonst passte die Startseite beim iPhone SE nicht mehr.
+
 ### A2. Die Hauptaktion gross und in der Daumenzone
 *Vorbild: Material 3 Expressive („Size"), Prüf-Apps im Aussendienst* ([Google Design](https://design.google/library/expressive-material-design-google-research), [BasinCheck](https://basincheck.com/resources/best-mobile-safety-audit-apps))
 
@@ -75,6 +83,15 @@ rechts — der am schwersten erreichbare Punkt auf einem grossen Telefon.
 unteren Leiste). **Dagegen:** ein schwebender Knopf verdeckt die letzte
 Zeile einer Liste; die Liste braucht dann unten Platz. **Kollision:**
 keine, sofern er deckend ist (siehe NN/g oben).
+
+> **Umgesetzt in Runde 103** für die drei Anlegen-Knöpfe (Aufgabe,
+> Putzaufgabe, Probetraining), nur auf dem Handy. Die Liste bekommt
+> unten Platz, beim Scrollen rückt der Knopf auf das Pluszeichen
+> zusammen. **Nicht** gemacht: „Abhaken" im Putzplan (das ist eine
+> Handlung je Zeile, keine je Seite), „Stempeln" (am Handy braucht es
+> den Code vom Bildschirm im Studio — ein Eingabefeld, kein einzelner
+> Knopf; es hat in „Ich" schon eine eigene Karte) und „Senden" im Chat
+> (sitzt dort schon unten).
 
 ### A3. Bento-Kacheln — aber nur in der Verwaltung
 *Vorbild: Bento-Raster* ([Superfiles](https://superfiles.in/bento-grid-ui-design-trend.php), [Moburst](https://www.moburst.com/blog/top-mobile-web-design-trends/))
@@ -89,6 +106,13 @@ Studio, die grösste für das mit dem meisten Rückstand.
 *Aufwand:* mittel. **Dagegen:** die Verwaltung hat schon eine Liste der
 Studios nach Rückstand. Die Kacheln müssten sie ersetzen, nicht
 daneben stehen — zwei Übersichten derselben Sache sind eine zu viel.
+
+> **Umgesetzt in Runde 103**: die bestehende Studio-Tafel ist jetzt ein
+> Bento-Raster (gross / normal / klein nach Rückstand), und „Braucht
+> Aufmerksamkeit" nennt Überfälliges und fehlendes Material nur noch als
+> Summe — vorher je Studio, beim Chef der Demo 14 Zeilen. Die Tafel
+> startet weiter zugeklappt: der Überblick soll höchstens 2,4 Bildschirme
+> lang sein (`test-verwaltung-bereich9`).
 
 ---
 
