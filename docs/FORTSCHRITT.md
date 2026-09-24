@@ -12032,3 +12032,85 @@ Marktwerte sind und nicht die Preise des Studios.
   EMS-Treffer führt „elektrode“ in seinen Schlagwörtern. So streng wie
   vorher, nur für zwei Quellen.
 - **Gesamtdurchlauf: 136 von 136 grün**, mit dem neuen Durchlauf.
+
+## Runde 104, dritter Teil — Schulungen zum Lesen
+
+> „dann können wir passend dazu Schulungen erstellen die auch etwas
+> länger sind wo man dann erstmal was lesen muss und das dann später
+> durch videos ersetzt werden kann" — „Pflichtmodul muss es erstmal
+> nicht geben" (24.9.2026)
+
+### Was gebaut wurde
+
+- **Neue Schrittart `lesen`.** Ein Lesetext kann auf zwei Wegen
+  entstehen. Er kann Einträge aus `ems-wissen.js` nennen (`ems: [...]`)
+  oder eigenen Text tragen, den die Leitung im Editor unter
+  „Lesetext (lang)“ schreibt. `quelle` ist das Video dazu:
+  - Solange es fehlt, steht am Schritt „Etwa N Minuten Lesezeit ·
+    später als Video“.
+  - Sobald es da ist, steht das Video oben und der Text darunter als
+    „Zum Nachlesen“.
+- **„Weiter“ ist erst frei, wenn BEIDES erfüllt ist**:
+  - Man hat bis zum Ende gescrollt. Eine Marke unter dem Text muss im
+    Bild gewesen sein (`IntersectionObserver`).
+  - Eine Mindestzeit ist vergangen: die Hälfte der üblichen Lesezeit
+    bei 200 Wörtern pro Minute, mindestens 15 Sekunden.
+
+  Die Seite sagt, woran es liegt („bis zum Ende gelesen“ /
+  „Noch N Sekunden“). Beim Zurückblättern gilt ein gelesener Schritt als
+  gelesen. Ist ein Video da, entfällt die Sperre, weil das Video selbst
+  die Zeit braucht.
+- **Fünf Module in der neuen Kategorie „EMS-Wissen“**, keines Pflicht:
+  EMS verstehen und erklären; Kontraindikationen und Sicherheit;
+  Besondere Kundengruppen; Ergebnisse ehrlich erklären; Beratung, Preise
+  und Probetraining. Zusammen haben sie 17 Lese-Schritte und 28 Fragen, und
+  jede Frage hat einen Hinweis, der erklärt statt tadelt.
+- **Am Rechner** (ab 1.100 px):
+  - Der Text steht auf Lesebreite (68 Zeichen, gemessen 615 px).
+  - Rechts daneben stehen die Abschnitte des Schritts zum Springen.
+
+  Eine Textzeile über die ganze Kartenbreite von 1.175 px läse niemand
+  bis zum Ende. Nur schmal gesetzt, bliebe aber die halbe Karte leer.
+
+### Warum so entschieden
+
+- **Der Lesestoff steht nicht in `schulungen-basis.js`, sondern wird
+  aus `ems-wissen.js` genommen.** So gibt es jeden Text genau einmal.
+  Wer eine Antwort im Hilfe-Fenster berichtigt, berichtigt sie auch in
+  der Schulung. Zwei Fassungen wären nach der ersten Korrektur zwei
+  verschiedene.
+- **Die Lesesperre ist kein Beweis fürs Verstehen.** Dafür stehen am
+  Ende die Fragen. Sie verhindert nur das Wegklicken in zwei Sekunden.
+  Die Hälfte der Lesezeit ist bewusst knapp: wer schnell liest, soll
+  nicht warten müssen.
+- **Eine eigene Fassung behält die Verweise.** Der Editor speichert
+  bei einem Lesetext `ems` und `quelle` mit. Ohne das wäre ein
+  EMS-Modul nach dem ersten Speichern leer, und niemand hätte es
+  gemerkt, weil das Textfeld im Editor ohnehin leer ist. Der Editor
+  sagt deshalb dazu, welche Texte aus dem EMS-Wissen dazugehören.
+- **Keine Regeländerung nötig:** `schulungen` prüft keine Felder
+  einzelner Schritte (beide Pfade gelesen, `firestore.rules` Z. 955 und
+  1813).
+
+### Durchläufe
+
+- **Neu: `tests/test-ems-schulung.js`** mit 69 Zusicherungen:
+  - Kategorie, fünf Module, keines Pflicht, noch kein Video;
+  - Lesetext = Einträge aus dem EMS-Wissen, mit Originallinks in einem
+    neuen Tab;
+  - Sperre mit einer Gegenprobe je Hälfte: nur Zeit hält gesperrt, nur
+    gescrollt hält gesperrt, erst beides öffnet „Weiter“;
+  - ein Druck auf den gesperrten Knopf bleibt ohne Wirkung;
+  - Zurückblättern;
+  - Editor: „Lesetext (lang)“, Video-Feld, Hinweis auf die EMS-Texte;
+    nach dem Speichern als eigene Fassung steht der Text noch da;
+  - Trefferflächen bei 7 Breiten × 2 Dichten; Lesebreite und
+    Seitenleiste am Rechner, Gegenprobe am Handy.
+
+  Die Mindestzeit wird im Durchlauf über `Date.now` vorgestellt, nicht
+  abgewartet.
+- **Gesamtdurchlauf: 137 von 137 grün.** Beim ersten Lauf war
+  `test-gestaltung` rot: die Marke „Ende des Textes“ hatte einen festen
+  Buchstabenabstand (`.06em`). Er steht jetzt auf der Leiter
+  (`--ls-m`); danach wurden `test-gestaltung`, `test-ems-schulung` und
+  `test-csp` einzeln wiederholt, alle grün.
