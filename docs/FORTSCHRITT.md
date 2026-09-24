@@ -11602,3 +11602,89 @@ Gruppen nach Frist) — noch nicht gebaut.
   Test.
 - **Oberfläche:** 131 Durchläufe; 130 im ersten Gesamtlauf sauber,
   `test-block-a` nach der Anpassung sauber.
+
+## Runde 103, siebter Teil — P3: Startseite am PC in zwei Spalten
+
+> „bitte leg genau so viel Fokus auf die PC-Nutzung wie auf die
+> Handy-Nutzung"
+
+### Vorher gemessen
+
+Am PC lief „Was heute dran ist" als EINE Spalte über 1.174 px. Was
+unten nicht mehr passte, fiel nach „Ausserdem" — während neben jeder
+Zeile rund 800 px leer blieben.
+
+| | PC 1440 × 900, Chef | PC 1440 × 900, Mitarbeiter | PC 1280 × 800, Mitarbeiter |
+|---|---|---|---|
+| Kategorien sichtbar | 4 | 4 | 3 |
+| Zeilen sichtbar | 4 | 4 | 3 |
+| nur als Knopf unter „Ausserdem" | 3 | 2 | 3 |
+
+Das doppelte „Guten Morgen" (Seitenkopf unter dem Bereichskopf) ist
+schon mit P1 weggefallen.
+
+### Gebaut
+
+- **Ab 1100 px zwei Spalten**, oben bündig. Links steht, was eine Frist
+  oder einen Tag hat und getan werden muss: Überfällig, Heute, Zum
+  Übernehmen, Offen. Rechts steht der Stand und was gelesen werden will:
+  Putzplan, Neu für dich, Zu erledigen.
+- **Am PC mehr Zeilen je Block**, zum Beispiel Überfällig bis 5 statt 3
+  und Offen bis 5 statt 2. Die Einpassung (`heutePasst`) kürzt ohnehin,
+  was nicht passt.
+- **Fortschritt über dem Putzplan**, nur am PC: „44 von 70 erledigt"
+  mit Balken in der Farbe des Putzplans. Grün wird er erst, wenn alles
+  erledigt ist, denn dann ist es ein Status.
+- **Wer das Fenster über die Grenze zieht**, bekommt die passende Form,
+  ohne neu zu laden (`matchMedia`-Wechsel).
+
+### Warum so
+
+- **Links das Tun, rechts der Stand.** So bleibt die Leserichtung
+  dieselbe wie am Handy: oben links steht das Dringendste. Nach
+  Kategorie abwechselnd zu verteilen hätte „Überfällig" und „Putzplan"
+  gleich hoch gestellt, und der Rang wäre wieder Zufall.
+- **Gekürzt wird in der höheren Spalte.** Eine Zeile in der kürzeren
+  wegzunehmen, gibt keinen Pixel frei — die Seite ist so hoch wie ihre
+  höchste Spalte.
+- **Der Fortschritt nicht am Handy:** Dort zählt jede Zeile Höhe, und
+  „Putzplan · 6" sagt das Nötige.
+
+### Beim Bauen gefunden
+
+- **Die Einpassung kürzte bei Gleichstand „Überfällig" zuerst.** Der
+  Kommentar über `heutePasst` verspricht das Gegenteil („ihre Zeilen
+  fallen erst, wenn alles andere schon weg ist"), der Vergleich war
+  aber `>` statt `>=`: bei zwei gleich langen Blöcken gewann der obere.
+  Am PC sichtbar: „Überfällig · 4" mit einer Zeile, „Offen" darunter mit
+  zweien. Am Handy wirkt der Unterschied nicht, dort steht am Ende ohnehin
+  überall eine Zeile.
+- **Der Fortschrittsbalken war zuerst blau** (der Bereichston aus
+  `.pg-balken`). Er gehört zum Putzplan-Block, also Teal.
+
+### Nachher gemessen
+
+| | PC 1440 × 900, Chef | PC 1440 × 900, Mitarbeiter | PC 1280 × 800, Mitarbeiter | Handy 390 × 844 |
+|---|---|---|---|---|
+| Kategorien sichtbar | **7** (4) | **6** (4) | **6** (3) | 3 (unverändert) |
+| Zeilen sichtbar | **10** (4) | **9** (4) | **9** (3) | 3 (unverändert) |
+| unter „Ausserdem" | **0** (3) | **0** (2) | **0** (3) | unverändert |
+
+**Offen fürs Handy:** Beim Chef steht dort „Putzplan · 26" nur unter
+„Ausserdem". Der meistgenutzte Bereich bekommt am Handy mit P5 einen
+eigenen Knopf in der unteren Leiste; die Startseite am Handy bleibt
+deshalb in diesem Schritt unverändert.
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-p3-startseite.js`** mit 30 Zusicherungen:
+  - zwei Spalten bei 1100, 1280, 1440 und 1920 px, oben bündig, auf
+    einen Bildschirm passend, keine Kategorie unter „Ausserdem" beim
+    Chef 1440;
+  - Fortschritt, Gleichstand-Regel, Fensterbreite ändern ohne Neuladen;
+  - Trefferflächen aller Knöpfe der Liste bei 1100, 1280, 1440 und
+    1920 px, in „normal" und „kompakt";
+  - Gegenprobe am Handy (Chef und Mitarbeiter): eine Spalte, kein
+    Balken, passt.
+- **Was ist neu:** Eintrag „Startseite am PC: zwei Spalten".
+- **Oberfläche:** 132 Durchläufe, alle sauber.

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-MvDZr2yofDgTu2kwGpL+J1DOHLDdKsHdGOGwHO2M4b8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-iMTQMryEKVxl2xQ5H+WITMIDAOPObDH34gGNvomBrpc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5497,6 +5497,27 @@ body.neu .heute-kopf i{flex:1;height:1px;display:block;
   background:linear-gradient(90deg,var(--kat),var(--line) 40%)}
 body.neu .heute-kopf .mini-link{flex:0 0 auto}
 body.neu .heute-liste{display:flex;flex-direction:column;gap:var(--s8)}
+/* ── Startseite am PC: zwei Spalten (Runde 103, P3) ──
+   Links, was getan werden muss; rechts Stand und Neues. Die Spalten
+   stehen oben bündig und laufen unabhängig — eine lange linke Spalte
+   zieht die rechte nicht in die Länge. „Ausserdem" steht darunter über
+   die ganze Breite. */
+.heute-fortschritt{display:none}
+@media(min-width:1100px){
+  body.neu .heute-spalten{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);
+    gap:var(--s24);align-items:start}
+  body.neu .heute-fortschritt{display:flex;align-items:center;gap:var(--s10);
+    margin:0 0 var(--s10);font-size:var(--t-sm);color:var(--text-2);
+    font-variant-numeric:tabular-nums}
+  body.neu .heute-fortschritt .pg-balken{max-width:220px}
+  /* Der Balken in der Farbe des Putzplans, nicht im Bereichston: er
+     gehört zu dem Block darunter. Grün erst, wenn alles erledigt ist —
+     dann ist es ein Status. */
+  body.neu .heute-fortschritt{--kat:#4EE6D2}
+  body.neu.light .heute-fortschritt{--kat:#0B6A62}
+  body.neu .heute-fortschritt .pg-balken i{background:var(--kat)}
+  body.neu .heute-fortschritt.fertig .pg-balken i{background:var(--ok-tx)}
+}
 /* ── Jede Kategorie hat ihre Farbe, und sie läuft aus ──────────────
    Aus dem Betrieb: „die farben mit den übergängen gefallen mir auch
    sehr aber sorg dafür dass ein wenig mehr farbe und leben wieder da
@@ -15392,6 +15413,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-p3', datum:'24.9.2026', titel:'Startseite am PC: zwei Spalten', wo:'home', punkte:[
+    'Am PC steht die Startseite jetzt in zwei Spalten: links, was zu tun ist (Überfällig, Heute, Zum Übernehmen, Offen), rechts Putzplan, Neu für dich und Zu erledigen.',
+    'Nichts rutscht mehr nach „Ausserdem“ — vorher standen dort drei Bereiche nur als Knopf.',
+    'Über dem Putzplan zeigt ein Balken, wie viel heute schon erledigt ist („44 von 70 erledigt“).',
+    'Am Handy bleibt die Startseite, wie sie war.' ] },
   { id:'2026-09-24-p1', datum:'24.9.2026', titel:'Aufgaben am PC: Liste links, Detail rechts', wo:'todos', punkte:[
     'Am PC steht rechts neben der Liste die gewählte Aufgabe mit allem: Beschreibung, Teilschritte, Frist, Zuständig, Foto und „Abhaken“.',
     'Die Zeilen links sind schlanker — am PC stehen jetzt 7 statt 4 Aufgaben ganz im Bild.',
@@ -21680,10 +21706,16 @@ function renderHeute(){
 
      Ein Tipp öffnet den Putzplan GENAU DIESES Studios. Ohne das landet
      man im zuletzt geöffneten und sucht. */
-  var putz=[];
+  var putz=[], putzStand={ fertig:0, gesamt:0 };
   if(ansichtAn('putzplan')){
     var putzJe=[];
     keys.forEach(function(sk){
+      /* Für den Fortschritt am PC: erledigt von allem, was nicht
+         pausiert ist — dieselbe Menge, aus der „offen" gezählt wird. */
+      (cachedClean[sk]||[]).forEach(function(t){
+        if(ppPausiert(t)) return;
+        putzStand.gesamt++; if(isDone(t)) putzStand.fertig++;
+      });
       var offenP=(cachedClean[sk]||[]).filter(function(t){
         return !isDone(t) && !ppPausiert(t);
       });
@@ -21743,6 +21775,21 @@ function renderHeute(){
      darunter stehen nur die obersten. So ist nichts verschwiegen,
      obwohl wenig dasteht. */
   var html='';
+  /* ── Am PC zwei Spalten (Runde 103, P3) ──
+     Aus dem Betrieb: „bitte leg genau so viel Fokus auf die PC-Nutzung
+     wie auf die Handy-Nutzung". Am PC (1440 × 900) lief die Liste als
+     EINE Spalte über 1.174 px, und was unten nicht mehr passte, fiel
+     nach „Ausserdem" — „Neu für dich · 2", „Zu erledigen" und „Offen ·
+     32" beim Chef —, während rechts neben jeder Zeile 800 px leer
+     blieben.
+
+     Links, was eine Frist oder einen Tag hat und getan werden muss:
+     Überfällig, Heute, Zum Übernehmen, Offen. Rechts, was den Stand
+     zeigt oder gelesen werden will: Putzplan mit Fortschritt, Neu für
+     dich, Zu erledigen. Am Handy bleibt es EINE Spalte in der
+     bisherigen Reihenfolge — `spalte` wird dort nicht gelesen. */
+  var breit = heuteBreit();
+  var links='', rechts='';
   /* `art` färbt den Block: die Überschrift, der Punkt davor und der
      Strich dahinter nehmen dieselbe Farbe wie die Zeilen darunter.
      Ohne das wäre die Farbe ein Zufall je Zeile statt die Sprache der
@@ -21750,8 +21797,9 @@ function renderHeute(){
   /* `zahl` ist die Zahl in der Überschrift. Meist die Zeilenzahl — beim
      Putzplan der Leitung aber nicht: dort ist eine Zeile ein STUDIO, und
      „Putzplan · 3" hiesse drei Studios, obwohl zwölf Punkte offen sind. */
-  function block(titel, art, alle, zeigen, ziel, f, zahl){
+  function block(titel, art, alle, zeigen, ziel, f, zahl, spalte, zusatz){
     if(!alle.length) return;
+    var vorher=html;
     var rest=alle.length-zeigen.length;
     var dringend = art==='dringend';
     var n = zahl || alle.length;
@@ -21770,20 +21818,28 @@ function renderHeute(){
          es gefunden. */
       ((rest>0 || n>zeigen.length) ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
                 (f?' data-hf="'+esc(f)+'"':'')+'>alle '+n+' ›</button>' : '')+
-      '</div><div class="heute-liste">'+zeigen.map(heuteZeile).join('')+'</div></div>';
+      '</div>'+(zusatz||'')+'<div class="heute-liste">'+zeigen.map(heuteZeile).join('')+'</div></div>';
+    if(breit){
+      var neu=html.slice(vorher.length); html=vorher;
+      if(spalte==='r') rechts+=neu; else links+=neu;
+    }
   }
-  if(ansichtAn('todos')) block('Überfällig', 'dringend', ueber, ueber.slice(0,3), 'todos', 'faellig');
-  block('Heute', 'heute', heute, heute.slice(0,3), 'todos');
+  /* Am PC ist Höhe für mehr als eine Zeile je Block da; heutePasst()
+     kürzt ohnehin, was nicht passt. Am Handy die bisherigen Zahlen. */
+  function zeilen(handy, pc){ return breit ? pc : handy; }
+  if(ansichtAn('todos')) block('Überfällig', 'dringend', ueber, ueber.slice(0,zeilen(3,5)), 'todos', 'faellig');
+  block('Heute', 'heute', heute, heute.slice(0,zeilen(3,4)), 'todos');
   /* Direkt unter „Heute": wer eine Schicht abgibt, braucht die Antwort
      vor dem Tag, nicht danach. */
-  block('Zum Übernehmen', 'heute', tausch, tausch.slice(0,2), 'team');
+  block('Zum Übernehmen', 'heute', tausch, tausch.slice(0,zeilen(2,3)), 'team');
   /* Direkt unter „Heute": der Putzplan hat einen Tagesbezug — was
      täglich ist, ist heute fällig. Über den Nachrichten, weil ein
      ungeputztes Gerät der Kunde sieht und eine ungelesene Nachricht
      nicht. */
-  block('Putzplan', 'putz', putz, putz.slice(0,3), 'putzplan', null, putzGesamt);
-  block('Neu für dich', 'lesen', lesen, lesen.slice(0,2), 'chat');
-  block('Zu erledigen', 'tun', sonst, sonst.slice(0,2), 'todos');
+  block('Putzplan', 'putz', putz, putz.slice(0,zeilen(3,5)), 'putzplan', null, putzGesamt, 'r',
+    breit ? putzFortschrittHTML(putzStand) : '');
+  block('Neu für dich', 'lesen', lesen, lesen.slice(0,zeilen(2,3)), 'chat', null, null, 'r');
+  block('Zu erledigen', 'tun', sonst, sonst.slice(0,zeilen(2,3)), 'todos', null, null, 'r');
   /* ── „Offen" steht GANZ UNTEN, und das ist Absicht ──
      Oben stehen die Sachen mit einem Zeitbezug: ueberfaellig, heute,
      neu. Aufgaben ohne Frist sind genau das nicht — sie sind offen,
@@ -21795,7 +21851,16 @@ function renderHeute(){
      laengsten liegt, ist das, was am ehesten vergessen wird. */
   ohneFrist.sort(function(a,b){ return a.ts-b.ts; });
   if(ansichtAn('todos'))
-    block('Offen', 'tun', ohneFrist, ohneFrist.slice(0,2), 'todos', 'offen');
+    block('Offen', 'tun', ohneFrist, ohneFrist.slice(0,zeilen(2,5)), 'todos', 'offen');
+
+  /* Eine Spalte allein bekommt kein leeres Gegenüber: dann bleibt es
+     eine Liste über die ganze Breite. */
+  if(breit){
+    if(links && rechts) html='<div class="heute-spalten"><div class="heute-spalte">'+links+'</div>'+
+      '<div class="heute-spalte">'+rechts+'</div></div>';
+    else html=links+rechts;
+  }
+  box.classList.toggle('zweispaltig', breit && !!links && !!rechts);
 
   if(!html){
     /* Genau das sagen, was geprüft wurde — nicht mehr.
@@ -21817,6 +21882,31 @@ function renderHeute(){
 }
 
 function heuteYmdT(){ return ymd(new Date()); }
+
+/* Ab 1100 px zwei Spalten — dieselbe Grenze wie Liste + Detail in den
+   Aufgaben (P1). Darunter wäre jede Spalte schmaler als eine Zeile am
+   Handy, und die Titel brächen ab. */
+var _heuteBreitMq=null;
+function heuteBreit(){
+  if(!_heuteBreitMq && window.matchMedia){
+    _heuteBreitMq=window.matchMedia('(min-width:1100px)');
+    /* Wer das Fenster über die Grenze zieht, bekommt die passende Form,
+       ohne neu zu laden. */
+    var neuZeichnen=function(){ if(currentView==='home' && session) renderHeute(); };
+    if(_heuteBreitMq.addEventListener) _heuteBreitMq.addEventListener('change', neuZeichnen);
+    else if(_heuteBreitMq.addListener) _heuteBreitMq.addListener(neuZeichnen);
+  }
+  return !!(_heuteBreitMq && _heuteBreitMq.matches);
+}
+/* Fortschritt des Putzplans, nur am PC über dem Block. Am Handy zählt
+   jede Zeile Höhe; dort sagt „Putzplan · 6" das Nötige. */
+function putzFortschrittHTML(st){
+  if(!st || !st.gesamt) return '';
+  var pct=Math.round(st.fertig*100/st.gesamt);
+  return '<div class="heute-fortschritt'+(st.fertig===st.gesamt?' fertig':'')+'">'+
+    '<i class="pg-balken" aria-hidden="true"><i style="width:'+pct+'%"></i></i>'+
+    '<span>'+st.fertig+' von '+st.gesamt+' erledigt</span></div>';
+}
 
 /* Ein Tipp auf eine Zeile der Startseite. Eigene Funktion, weil
    heutePasst() nachträglich Knöpfe einsetzt („Ausserdem"), die genau
@@ -21912,15 +22002,30 @@ function heutePasst(box){
      einer. */
   function bloecke(){ return [].slice.call(box.querySelectorAll('.heute-block')); }
   function zeilenVon(b){ return b.querySelectorAll('.heute-zeile'); }
+  /* Zwei Spalten (PC): gekürzt wird nur in der HÖHEREN. Eine Zeile in
+     der kürzeren wegzunehmen, gäbe keinen Pixel frei — die Seite ist so
+     hoch wie ihre höchste Spalte. */
+  function kandidaten(){
+    var sp = box.querySelectorAll('.heute-spalte');
+    if(sp.length !== 2) return bloecke();
+    var hoch = sp[0].offsetHeight >= sp[1].offsetHeight ? sp[0] : sp[1];
+    var bs = [].slice.call(hoch.querySelectorAll('.heute-block'));
+    return bs.length ? bs : bloecke();
+  }
 
   var schutz = 0, weggefallen = [];
   while(sa.scrollHeight > sa.clientHeight + 2 && schutz++ < 40){
-    var bs = bloecke();
+    var bs = kandidaten();
     if(!bs.length) break;
     var laengster = null;
+    /* Bei Gleichstand der UNTERE Block: `>=` statt `>`. Mit `>` verlor
+       bei zwei gleich langen Blöcken der obere zuerst — also gerade
+       „Überfällig", obwohl der Satz über dieser Funktion das Gegenteil
+       verspricht. Aufgefallen am PC (P3): „Überfällig · 4" zeigte eine
+       Zeile, „Offen" darunter zwei. */
     bs.forEach(function(b){
       var n = zeilenVon(b).length;
-      if(n > 1 && (!laengster || n > zeilenVon(laengster).length)) laengster = b;
+      if(n > 1 && (!laengster || n >= zeilenVon(laengster).length)) laengster = b;
     });
     if(laengster){
       var z = zeilenVon(laengster);
@@ -21930,7 +22035,7 @@ function heutePasst(box){
     }
     /* Überall nur noch eine Zeile: jetzt fällt die unterste Kategorie —
        aber erst jetzt. */
-    if(bs.length < 2) break;          // der letzte Rest bleibt stehen
+    if(bloecke().length < 2) break;   // der letzte Rest bleibt stehen
     var weg = bs[bs.length-1];
     weggefallen.unshift({
       titel: weg.getAttribute('data-btitel')||'',
