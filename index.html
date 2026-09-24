@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-WLhsy9tVargFFdu+9Q3j1JtyHuF2YIOgMbVo/OW5LWI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-NS++ZR+EqtpyqZxKZx9GK2k98PA6QjC28eKJpdfFG7A='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1642,11 +1642,11 @@ body.nurlesen .kopf-plus{display:none !important}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -3799,6 +3799,46 @@ html{font-size:var(--fs,100%)}
 .sm-marke.warn{background:var(--f-warn);color:var(--warm-tx)}
 .sm-marke.ok{background:var(--f-ok);color:var(--ok-tx)}
 .studio-tile.sauber{opacity:.72}
+/* Fünf Kennzahlen in zwei Spalten liessen „Team" allein in einer
+   halben Zeile stehen. Auf dem Handy nimmt die letzte, wenn sie
+   übrig bleibt, die ganze Breite. */
+@media(max-width:560px){ .dash-grid .dash-tile:last-child:nth-child(odd){grid-column:1 / -1} }
+/* ── Bento (Runde 103) ──
+   Sechs Spalten auf dem Handy, zwölf ab 700px — damit gehen drei
+   Grössen auf: gross über die volle Breite (am Rechner halbe Breite,
+   zwei Zeilen hoch), normal zwei je Zeile (am Rechner vier), klein drei
+   je Zeile (am Rechner sechs). `dense` füllt Lücken, die das grosse
+   Feld am Rechner lässt, mit den kleinen auf. */
+.studio-grid.bento{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-flow:row dense}
+/* flex statt block: ein <button> mittet seinen Inhalt sonst senkrecht,
+   und das hohe grosse Feld stand oben halb leer. */
+.studio-grid.bento .studio-tile{grid-column:span 3;min-width:0;width:100%;
+  display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;
+  text-align:left;font:inherit;color:var(--text);cursor:pointer;min-height:44px}
+.studio-grid.bento .studio-tile b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.studio-grid.bento .studio-tile.gross{grid-column:1 / -1;padding:var(--s16);
+  border-color:var(--line-2);background:var(--bg-2);box-shadow:var(--e2)}
+.studio-grid.bento .studio-tile.gross b{font-size:var(--t-xl);margin-bottom:var(--s8)}
+/* Klein heisst ruhig, nicht blass: die volle Schriftfarbe bleibt — nur
+   Fläche und Schatten fallen weg. .sauber{opacity:.72} drückte den
+   Kontrast des Namens unter 4,5 : 1. */
+.studio-grid.bento .studio-tile.klein{grid-column:span 2;opacity:1;
+  background:transparent;border-style:dashed;padding:var(--s8) var(--s10)}
+.studio-grid.bento .studio-tile.klein b{font-size:var(--t-sm);margin-bottom:var(--s4)}
+.studio-grid.bento .studio-tile.klein .sm-marken{margin-top:0}
+@media(min-width:700px){
+  .studio-grid.bento{grid-template-columns:repeat(12,minmax(0,1fr))}
+  .studio-grid.bento .studio-tile.gross{grid-column:span 6;grid-row:span 2}
+}
+/* Die ältesten Sachen im grossen Feld: Titel links, seit wann rechts.
+   Auf dem Handy zwei — das Feld ist dort eine Zeile, keine zwei. */
+@media(max-width:699px){ .st-oben li:nth-child(n+3){display:none} }
+.st-oben{list-style:none;margin:var(--s10) 0 0;padding:var(--s8) 0 0;
+  border-top:1px solid var(--line);display:flex;flex-direction:column;gap:var(--s6)}
+.st-oben li{display:flex;align-items:baseline;gap:var(--s8);font-size:var(--t-sm)}
+.st-oben li span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.st-oben li i{flex:0 0 auto;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
+.st-oben li i.warn{color:var(--danger-tx);font-weight:700}
 
 /* Zeile "Braucht Aufmerksamkeit" */
 .att-row{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) 0;
@@ -5056,20 +5096,20 @@ body.neu #allesSeite{padding-top:var(--s8)}
    ging es: „sorg dafür dass ein wenig mehr farbe und leben wieder da
    ist." */
 body.neu .al-gruppe{--gf:var(--text-3);--gf-f:var(--auf-2);margin-bottom:var(--s24)}
-body.neu .al-gruppe[data-farbe="tun"]      {--gf:#FFA85C;--gf-f:rgba(251,146,60,.3)}
-body.neu .al-gruppe[data-farbe="studio"]   {--gf:#7DB8FF;--gf-f:rgba(96,165,250,.3)}
-body.neu .al-gruppe[data-farbe="wann"]     {--gf:#FF8FC8;--gf-f:rgba(244,114,182,.3)}
-body.neu .al-gruppe[data-farbe="neues"]    {--gf:#4EE6D2;--gf-f:rgba(45,212,191,.3)}
-body.neu .al-gruppe[data-farbe="meine"]    {--gf:#BBA4FF;--gf-f:rgba(var(--akz2-rgb),.3)}
-body.neu .al-gruppe[data-farbe="wissen"]   {--gf:#8BE06A;--gf-f:rgba(101,200,70,.3)}
-body.neu .al-gruppe[data-farbe="verwalten"]{--gf:#AEBBCE;--gf-f:rgba(148,163,184,.28)}
-body.neu.light .al-gruppe[data-farbe="tun"]      {--gf:#AE3A0A;--gf-f:rgba(194,65,12,.2)}
-body.neu.light .al-gruppe[data-farbe="studio"]   {--gf:#1743C4;--gf-f:rgba(29,78,216,.2)}
-body.neu.light .al-gruppe[data-farbe="wann"]     {--gf:#A91453;--gf-f:rgba(190,24,93,.2)}
-body.neu.light .al-gruppe[data-farbe="neues"]    {--gf:#0B6A62;--gf-f:rgba(15,118,110,.2)}
-body.neu.light .al-gruppe[data-farbe="meine"]    {--gf:#5F1FC7;--gf-f:rgba(109,40,217,.2)}
-body.neu.light .al-gruppe[data-farbe="wissen"]   {--gf:#2F6B12;--gf-f:rgba(47,107,18,.2)}
-body.neu.light .al-gruppe[data-farbe="verwalten"]{--gf:#3B4859;--gf-f:rgba(71,85,105,.18)}
+body.neu :is(.al-gruppe,.sz-knopf)[data-farbe="tun"]      {--gf:#FFA85C;--gf-f:rgba(251,146,60,.3)}
+body.neu :is(.al-gruppe,.sz-knopf)[data-farbe="studio"]   {--gf:#7DB8FF;--gf-f:rgba(96,165,250,.3)}
+body.neu :is(.al-gruppe,.sz-knopf)[data-farbe="wann"]     {--gf:#FF8FC8;--gf-f:rgba(244,114,182,.3)}
+body.neu :is(.al-gruppe,.sz-knopf)[data-farbe="neues"]    {--gf:#4EE6D2;--gf-f:rgba(45,212,191,.3)}
+body.neu :is(.al-gruppe,.sz-knopf)[data-farbe="meine"]    {--gf:#BBA4FF;--gf-f:rgba(var(--akz2-rgb),.3)}
+body.neu :is(.al-gruppe,.sz-knopf)[data-farbe="wissen"]   {--gf:#8BE06A;--gf-f:rgba(101,200,70,.3)}
+body.neu :is(.al-gruppe,.sz-knopf)[data-farbe="verwalten"]{--gf:#AEBBCE;--gf-f:rgba(148,163,184,.28)}
+body.neu.light :is(.al-gruppe,.sz-knopf)[data-farbe="tun"]      {--gf:#AE3A0A;--gf-f:rgba(194,65,12,.2)}
+body.neu.light :is(.al-gruppe,.sz-knopf)[data-farbe="studio"]   {--gf:#1743C4;--gf-f:rgba(29,78,216,.2)}
+body.neu.light :is(.al-gruppe,.sz-knopf)[data-farbe="wann"]     {--gf:#A91453;--gf-f:rgba(190,24,93,.2)}
+body.neu.light :is(.al-gruppe,.sz-knopf)[data-farbe="neues"]    {--gf:#0B6A62;--gf-f:rgba(15,118,110,.2)}
+body.neu.light :is(.al-gruppe,.sz-knopf)[data-farbe="meine"]    {--gf:#5F1FC7;--gf-f:rgba(109,40,217,.2)}
+body.neu.light :is(.al-gruppe,.sz-knopf)[data-farbe="wissen"]   {--gf:#2F6B12;--gf-f:rgba(47,107,18,.2)}
+body.neu.light :is(.al-gruppe,.sz-knopf)[data-farbe="verwalten"]{--gf:#3B4859;--gf-f:rgba(71,85,105,.18)}
 /* Die Frage, nicht das Hauptwort: „Was ist im Studio?" findet jemand,
    der die App nicht kennt — „Betrieb" nicht. So vom Nutzer gewählt.
 
@@ -5138,6 +5178,53 @@ body.neu .bereich-zeile .kopf-plus{flex:0 0 auto;margin-top:0;
   body.neu .bereich-zeile .kopf-plus .kp-wort{display:none}
   body.neu .bereich-zeile .kopf-plus{min-width:44px;padding:0 var(--s12);
     font-size:var(--t-xl);line-height:var(--lh-1)}
+}
+
+/* ── Die Hauptaktion in Daumennähe (Runde 103) ──────────────────────
+   Aus der Design-Recherche, Idee A2: „+ Neu" sass oben rechts — auf
+   einem grossen Telefon der Punkt, an den der Daumen am schlechtesten
+   hinkommt. Auf dem Handy steht der Anlegen-Knopf jetzt unten rechts,
+   über der Leiste, gross und mit dem Wort, WAS angelegt wird.
+
+   DECKEND, nicht schwebend-durchsichtig: dieselbe Fläche wie jeder
+   Hauptknopf (.btn-primary), deren Kontrast längst nachgerechnet ist.
+   Die NN/g-Kritik an Glasknöpfen gilt hier genauso.
+
+   Beim Scrollen rückt er auf das Pluszeichen zusammen — im selben
+   Takt wie der Bereichskopf. Voll ausgeschrieben würde er ausgerechnet
+   die rechte Hälfte der Zeile verdecken, die man gerade liest.
+
+   Nur auf dem Handy und nur im neuen Schnitt. Am Rechner gibt es keine
+   Daumenzone, und dort sitzt der Knopf weiter im Seitenkopf. */
+.kopf-plus .kp-daumen{display:none}
+@media(max-width:820px){
+  body.neu .daumen-dock{position:fixed;z-index:29;
+    right:calc(var(--rand) + var(--sar));
+    bottom:calc(var(--mobnav-h, 70px) + var(--s12));
+    pointer-events:none}
+  body.neu .daumen-dock[hidden]{display:none}
+  body.neu .daumen-dock .kopf-plus{pointer-events:auto;margin:0;
+    display:inline-flex;align-items:center;justify-content:center;gap:var(--s8);
+    min-width:56px;min-height:56px;padding:0 var(--s20) 0 var(--s16);
+    border:none;background:var(--brand);color:var(--on-accent);
+    font-size:var(--t-md);font-weight:700;letter-spacing:var(--ls-s);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28), var(--e3)}
+  body.neu .daumen-dock .kopf-plus .kp-zeichen{font-size:var(--t-xl);line-height:var(--lh-1);
+    margin-top:-2px}
+  body.neu .daumen-dock .kopf-plus .kp-wort{display:none}
+  body.neu .daumen-dock .kopf-plus .kp-daumen{display:inline}
+  body.neu .daumen-dock.eng .kopf-plus{padding:0}
+  body.neu .daumen-dock.eng .kopf-plus .kp-daumen{display:none}
+  /* Die Liste endet nicht unter dem Knopf: unten bekommt sie so viel
+     Platz, wie der Knopf hoch ist, plus Luft. Sonst läge der letzte
+     Eintrag — und sein „…" rechts — für immer darunter. */
+  body.neu.hat-daumen .view.show .scroll-area::after{content:'';display:block;
+    height:calc(56px + var(--s24))}
+  /* Meldung und „Rückgängig" stehen sonst genau auf dem Knopf — und
+     „Rückgängig" direkt nach dem Anlegen ist der Moment, in dem man
+     beides braucht. Sie rücken darüber. */
+  body.neu.hat-daumen .toast,
+  body.neu.hat-daumen .undobar{bottom:calc(var(--mobnav-h, 70px) + 56px + var(--s24))}
 }
 body.neu .bk-griff{flex:0 0 auto;display:grid;place-items:center;
   width:30px;height:30px;color:var(--text-2)}
@@ -5321,6 +5408,61 @@ body.neu .heute-rest{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8
 body.neu .heute-rest .hr-wort{font-family:var(--font-head);font-weight:700;
   font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
   color:var(--text-3);margin-right:var(--s4)}
+/* ── Schnellzugriffe (Runde 103) ──
+   Vier gleich breite Felder: drei Ziele und „Anpassen". Zeichen über
+   dem Wort, weil bei 320px ein Feld nur 66px breit ist — daneben
+   blieben dem Wort 30px.
+
+   ABGESETZT VON DER LEISTE DARUNTER. Beide sind eine Reihe mit Zeichen
+   und Wort; ohne Unterschied sähe es aus wie zwei Navigationsleisten.
+   Die Leiste ist flach und einfarbig, diese Felder sind erhabene
+   Knöpfe (Haarlinie, Kernschatten) und tragen die Farbe ihrer Gruppe
+   aus „Alles" — dieselbe, in der man sie ausgewählt hat. Das Zeichen
+   ohne getönte Kachel, wie in jeder Liste. */
+.schnell{display:none}
+body.neu .schnell{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:var(--s8);flex-shrink:0;padding:var(--s10) var(--rand) var(--s10)}
+body.neu .schnell[hidden]{display:none}
+@media(min-width:821px){ body.neu .schnell{max-width:600px;padding-bottom:var(--s16)} }
+body.neu .sz-knopf{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--s4);min-width:0;min-height:60px;padding:var(--s8) var(--s4);
+  border:1px solid var(--line-2);border-radius:var(--r-md);cursor:pointer;
+  background:var(--bg-2);color:var(--text);font-family:var(--font-body);
+  box-shadow:inset 0 1px 0 var(--kante), var(--e1);
+  transition:transform .14s var(--ease-ios), box-shadow .14s var(--ease-ios)}
+body.neu .sz-knopf:active{transform:translateY(1px);box-shadow:var(--e-tief)}
+body.neu .sz-ikon{display:grid;place-items:center;width:24px;height:24px;
+  color:var(--gf, var(--accent))}
+body.neu .sz-ikon svg{width:22px;height:22px}
+body.neu .sz-wort{max-width:100%;font-size:var(--t-2xs);font-weight:700;
+  line-height:var(--lh-eng);text-align:center;hyphens:auto;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Auf sehr kurzen Bildschirmen (iPhone SE: 568 Pixel) nur das Zeichen.
+   Gemessen: mit Wort kostete die Zeile dort 80 Pixel, und die
+   Startseite passte nicht mehr ohne Scrollen — 287 Pixel Inhalt in 257
+   Platz (test-neu-design). Die Zusage „ohne dass man scrollen muss" ist
+   älter und wiegt schwerer als das Wort unter dem Zeichen; der Name
+   bleibt als title und aria-label am Knopf. */
+@media(max-height:640px){
+  body.neu .schnell{padding-top:var(--s6);padding-bottom:var(--s6)}
+  body.neu .sz-knopf{min-height:44px;padding:var(--s4)}
+  body.neu .sz-wort{display:none}
+}
+/* „Anpassen" ist kein Ziel, sondern das Werkzeug dafür: gestrichelt
+   und ohne Schatten. Es soll gefunden werden, aber nicht mit den
+   Zielen verwechselt. */
+body.neu .sz-anpassen{background:transparent;border-style:dashed;box-shadow:none;color:var(--text-2)}
+body.neu .sz-anpassen .sz-ikon{color:var(--text-2)}
+/* Im Auswahlfenster: Zeichen, Name, Stelle. */
+.sz-wahl-ikon{flex:0 0 auto;display:grid;place-items:center;width:20px;height:20px}
+.sz-wahl-ikon svg{width:18px;height:18px}
+.sz-stelle{flex:0 0 auto;display:grid;place-items:center;min-width:24px;height:24px;
+  border-radius:var(--r-pille);background:var(--accent-d);color:var(--on-accent);
+  font-size:var(--t-2xs);font-weight:800}
+.sz-fuss{display:flex;gap:var(--s8);justify-content:flex-end;flex-wrap:wrap;
+  margin-top:var(--s12);position:sticky;bottom:calc(-1 * var(--s24));
+  padding:var(--s12) 0 var(--s4);background:var(--bg-2)}
+.sz-fuss .btn{min-height:44px}
 /* Nichts offen ist eine Aussage, kein leerer Bildschirm. */
 body.neu .heute-ruhe{display:flex;align-items:center;gap:var(--s12);
   padding:var(--s20) var(--s16);border-radius:var(--radius);
@@ -5948,6 +6090,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <div id="homeActivity"></div>
           </div>
         </div>
+        <!-- Schnellzugriffe (Runde 103, Idee A1): bis zu drei Ziele, die
+             jemand täglich braucht — UNTEN, direkt über der Leiste, wo der
+             Daumen ist. Ausserhalb des Scroll-Bereichs, damit sie immer an
+             derselben Stelle stehen; heutePasst() rechnet mit der kleineren
+             Höhe und kürzt die Liste darüber entsprechend. -->
+        <nav class="schnell" id="schnellLeiste" aria-label="Schnellzugriffe" hidden></nav>
       </section>
 
       <!-- ============================================================
@@ -6464,7 +6612,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                  die Rolle — Verwaltung ins volle Formular, alle anderen
                  ins kleine Fenster. -->
             <button class="kopf-plus" id="todoNew"
-              title="Neue Aufgabe erstellen" aria-label="Neue Aufgabe erstellen">+<span class="kp-wort"> Neu</span></button>
+              title="Neue Aufgabe erstellen" aria-label="Neue Aufgabe erstellen"
+              data-daumen="1"><span class="kp-zeichen">+</span><span class="kp-wort"> Neu</span><span class="kp-daumen">Aufgabe</span></button>
           </div>
         </div>
         <div class="scroll-area" data-shrinks="1">
@@ -6516,7 +6665,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <h2>Probetraining</h2><p>Eintragen, was gelaufen ist – die Quote rechnet die App.</p>
             </div>
             <button class="kopf-plus" id="pbNew" title="Probetraining eintragen"
-              aria-label="Probetraining eintragen">+<span class="kp-wort"> Neu</span></button>
+              aria-label="Probetraining eintragen" data-daumen="1"><span class="kp-zeichen">+</span><span class="kp-wort"> Neu</span><span class="kp-daumen">Probetraining</span></button>
           </div>
         </div>
         <div class="scroll-area" data-shrinks="1">
@@ -6620,7 +6769,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <h2>Putzplan</h2><p>Antippen hakt ab — mit Name und Uhrzeit.</p>
             </div>
             <button class="kopf-plus" id="ppNew" data-manage-only="1" style="display:none"
-              title="Neue Putzaufgabe erstellen" aria-label="Neue Putzaufgabe erstellen">+<span class="kp-wort"> Neu</span></button>
+              title="Neue Putzaufgabe erstellen" aria-label="Neue Putzaufgabe erstellen"
+              data-daumen="1"><span class="kp-zeichen">+</span><span class="kp-wort"> Neu</span><span class="kp-daumen">Putzaufgabe</span></button>
           </div>
         </div>
         <div class="scroll-area" data-shrinks="1">
@@ -7055,10 +7205,19 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                Was dem Chef fehlte, war kein Raster, sondern das
                EINGRENZEN auf ein Studio. Das sitzt jetzt als Chip in der
                Werkzeugzeile der Aufgaben und kostet keine Höhe. -->
+          <!-- Runde 103 (Idee A3): die Tafel ist ein Bento-Raster — das
+               Studio mit dem meisten Rückstand gross, die übrigen mit
+               Rückstand normal, die ohne klein. Die Grösse IST die
+               Reihenfolge. „Braucht Aufmerksamkeit" darüber nennt seitdem
+               nur noch die Summen; die Aufschlüsselung je Studio steht
+               hier. Die Karte startet weiter ZUGEKLAPPT — test-verwaltung-
+               bereich9 hält fest, dass der Überblick höchstens 2,4
+               Bildschirme lang ist, und vierzehn Kacheln offen wären mehr.
+               Wer sie aufklappt, dem bleibt sie offen (PREFS.folds). -->
           <div class="card" data-fold="studiotabelle">
             <h3 data-ikon="umfrage" id="studioGridTitle">Übersicht aller Studios</h3>
-            <p class="hint">Aufgaben-Fortschritt pro Studio. Tippe ein Studio an, um die Aufgaben zu öffnen.</p>
-            <div class="studio-grid" id="studioGrid"></div>
+            <p class="hint">Das Studio mit dem meisten Rückstand steht vorn und gross. Antippen zeigt nur seine Aufgaben.</p>
+            <div class="studio-grid bento" id="studioGrid"></div>
           </div>
           <div class="dash-bday" id="dashBday"></div>
           </div>
@@ -7676,6 +7835,11 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     </div>
   </div>
   <nav class="mobnav" id="mobnav"></nav>
+  <!-- Die Hauptaktion in Daumennähe (Runde 103). Auf dem Handy wandert
+       der Anlegen-Knopf der offenen Seite hierher — das ECHTE Element,
+       siehe kopfPlusUmhaengen(). Der Kasten selbst ist unsichtbar; zu
+       sehen ist nur der Knopf darin. -->
+  <div class="daumen-dock" id="daumenDock" hidden></div>
 </div>
 
 <div id="warteWrap" style="display:none;position:fixed;inset:0;z-index:900;
@@ -7768,6 +7932,22 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <p class="hint" style="margin:0 0 10px">Die Liste zeigt danach nur dieses
       Studio. Sortiert nach Rückstand.</p>
     <div id="studioWahlListe"></div>
+  </div>
+</div>
+
+<!-- Schnellzugriffe wählen (Runde 103). Dieselbe Bauform wie „Studio
+     wählen" und „Kanal wählen": eine senkrechte Liste, gegliedert wie
+     „Alles" — dieselben Ziele, dieselben Überschriften. -->
+<div id="schnellModal">
+  <div class="pm-box">
+    <button class="lb-close" id="schnellClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 style="margin-bottom:6px">Schnellzugriffe</h3>
+    <p class="hint" style="margin:0 0 10px" id="schnellHinweis"></p>
+    <div id="schnellListe"></div>
+    <div class="sz-fuss">
+      <button type="button" class="btn btn-ghost btn-sm" id="schnellVorschlag">Zum Vorschlag</button>
+      <button type="button" class="btn btn-primary btn-sm" id="schnellFertig">Fertig</button>
+    </div>
   </div>
 </div>
 
@@ -12790,7 +12970,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal'];
+               'putzModal','schnellModal'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -14870,6 +15050,17 @@ function allesGruppen(){
   return g;
 }
 
+/* Wohin ein Eintrag führt, als Attribute für allesZiel(). Eigene
+   Funktion, weil die Schnellzugriffe (Runde 103) dieselben Ziele tragen
+   — zwei Abschriften derselben Attributliste laufen beim nächsten
+   Unterreiter auseinander. */
+function allesZielAttr(e){
+  return ' data-alles="'+esc(e.view||'')+'"'+
+    (e.hilfe   ?' data-al-hilfe="1"':'')+
+    (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
+    (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
+    (e.cgo    ?' data-al-cgo="'+esc(e.cgo)+'"':'');
+}
 function allesMarkup(){
   return allesGruppen().map(function(gr){
     return '<div class="al-gruppe" data-farbe="'+esc(gr.farbe||'')+'">'+
@@ -14878,11 +15069,7 @@ function allesMarkup(){
         var marke = e.warn ? '<span class="al-zahl warn">'+e.warn+'</span>'
                   : (e.zahl ? '<span class="al-zahl">'+e.zahl+'</span>'
                   : (e.punkt ? '<span class="al-punkt"></span>' : ''));
-        return '<button type="button" class="al-zeile" data-alles="'+esc(e.view||'')+'"'+
-          (e.hilfe   ?' data-al-hilfe="1"':'')+
-          (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
-          (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
-          (e.cgo    ?' data-al-cgo="'+esc(e.cgo)+'"':'')+'>'+
+        return '<button type="button" class="al-zeile"'+allesZielAttr(e)+'>'+
           '<span class="al-ikon">'+(e.roh || allesIkon(e.ikon||e.view))+'</span>'+
           '<span class="al-txt"><b>'+esc(e.label)+'</b><i>'+esc(e.was||'')+'</i></span>'+
           marke+'<span class="al-pfeil">›</span></button>';
@@ -14920,6 +15107,156 @@ function renderAlles(){
     box.innerHTML=html;
     allesBinden(box);
   });
+}
+
+/* ══ SCHNELLZUGRIFFE ═════════════════════════════════════════════════
+   Runde 103, aus der Design-Recherche (Idee A1, Vorbild Beekeeper
+   „Shortcuts on Home"): jede Person legt bis zu drei Ziele fest, die
+   sie täglich braucht. Sie stehen auf der Startseite UNTEN, direkt über
+   der Leiste.
+
+   WARUM UNTEN, obwohl die Recherche „über der Heute-Liste" sagte: aus
+   demselben Grund wie Idee A2 — oben ist auf einem grossen Telefon der
+   Punkt, an den der Daumen am schlechtesten kommt. Ein Absprung, den
+   man jeden Tag nimmt, gehört dorthin, wo er ohne Umgreifen geht. Und
+   oben stünde er VOR dem Überfälligen; das hat mehr Recht auf den
+   ersten Blick.
+
+   ABGELEITET AUS „Alles". Die Auswahl ist dieselbe Liste mit denselben
+   Überschriften, und ein Schnellzugriff ist nur ein Schlüssel auf einen
+   ihrer Einträge. Wird eine Funktion abgeschaltet, fällt ihr Eintrag
+   aus allesGruppen() — und damit von selbst auch hier weg. Kein
+   Schnellzugriff führt ins Leere.
+
+   GEMERKT JE KONTO, auf dem Gerät (PREFS.schnell[uid]). Am Empfangs-
+   Tablet melden sich mehrere Leute nacheinander an; einer allein darf
+   dort nicht für alle entscheiden. Aufs Konto (Datenbank) geht es
+   bewusst NICHT — dafür bräuchte es eine neue Stelle in den Regeln,
+   für drei Wörter, die man in zehn Sekunden neu wählt.
+
+   OHNE EIGENE WAHL steht ein Vorschlag je Rolle da. Eine leere Zeile
+   erklärt nicht, wofür sie da ist; drei brauchbare Ziele tun es. */
+var SCHNELL_MAX = 3;
+var SCHNELL_VORSCHLAG = {
+  mitarbeiter: ['putzplan', 'ich:daten', 'geraete'],
+  leiter:      ['team:schicht', 'chef:anliegen', 'putzplan'],
+  chef:        ['chef:ueberblick', 'team:schicht', 'chef:anliegen']
+};
+function schnellSchluessel(e){
+  var basis = e.hilfe ? 'hilfe' : (e.view||'');
+  var unter = e.teamtab || e.ichtab || e.cgo || '';
+  return unter ? basis+':'+unter : basis;
+}
+/* Alle Einträge aus „Alles", flach, mit ihrem Gruppenton. */
+function schnellKatalog(){
+  var nach={}, reihe=[];
+  allesGruppen().forEach(function(g){
+    g.eintraege.forEach(function(e){
+      var k=schnellSchluessel(e);
+      if(nach[k]) return;
+      nach[k]={ key:k, e:e, farbe:g.farbe, frage:g.frage };
+      reihe.push(nach[k]);
+    });
+  });
+  return { nach:nach, reihe:reihe };
+}
+function schnellRolle(){ return isChef() ? 'chef' : (canManage() ? 'leiter' : 'mitarbeiter'); }
+function schnellEigen(){
+  var alle=PREFS.schnell||{};
+  return (session && Array.isArray(alle[session.uid])) ? alle[session.uid] : null;
+}
+/* Nur, was es für diese Person gerade gibt — in der gewählten Reihenfolge. */
+function schnellGewaehlt(kat){
+  kat = kat || schnellKatalog();
+  var liste = schnellEigen() || SCHNELL_VORSCHLAG[schnellRolle()] || [];
+  return liste.filter(function(k){ return !!kat.nach[k]; }).slice(0, SCHNELL_MAX);
+}
+function schnellSpeichern(liste){
+  if(!session) return;
+  PREFS.schnell=PREFS.schnell||{};
+  if(liste===null) delete PREFS.schnell[session.uid];
+  else PREFS.schnell[session.uid]=liste.slice(0, SCHNELL_MAX);
+  savePrefs();
+}
+
+function renderSchnell(){
+  var box=$('schnellLeiste'); if(!box) return;
+  if(!layoutNeu() || !session){ box.hidden=true; box.innerHTML=''; return; }
+  var kat=schnellKatalog();
+  var gew=schnellGewaehlt(kat);
+  box.hidden=false;
+  box.innerHTML = gew.map(function(k){
+    var x=kat.nach[k], e=x.e;
+    return '<button type="button" class="sz-knopf" data-farbe="'+esc(x.farbe||'')+'"'+
+      allesZielAttr(e)+' title="'+esc(e.label)+'" aria-label="'+esc(e.label)+'">'+
+      '<span class="sz-ikon">'+(e.roh || allesIkon(e.ikon||e.view))+'</span>'+
+      '<span class="sz-wort">'+esc(e.label)+'</span></button>';
+  }).join('') +
+  /* Der Weg zum Ändern steht sichtbar in derselben Zeile. Ein langer
+     Druck wäre eine Geste, die man nicht sieht — und eine Geste, die
+     man nicht sieht, darf nie der einzige Weg sein. */
+  '<button type="button" class="sz-knopf sz-anpassen" id="schnellAnpassen" '+
+    'aria-haspopup="dialog" title="Schnellzugriffe festlegen" aria-label="Schnellzugriffe festlegen">'+
+    '<span class="sz-ikon">'+ikon(gew.length ? 'stift' : 'plus')+'</span>'+
+    '<span class="sz-wort">'+(gew.length ? 'Anpassen' : 'Festlegen')+'</span></button>';
+  box.querySelectorAll('[data-alles]').forEach(function(b){
+    b.addEventListener('click', function(){ allesZiel(b); });
+  });
+  var an=$('schnellAnpassen');
+  if(an) an.addEventListener('click', function(){ tick(8); schnellWahlOeffnen(); });
+}
+
+function schnellWahlOeffnen(){
+  var m=$('schnellModal'); if(!m) return;
+  renderSchnellWahl();
+  m.classList.add('show');
+}
+function schnellWahlSchliessen(){
+  var m=$('schnellModal'); if(m) m.classList.remove('show');
+}
+function renderSchnellWahl(){
+  var box=$('schnellListe'); if(!box) return;
+  var kat=schnellKatalog();
+  var gew=schnellGewaehlt(kat);
+  var h=$('schnellHinweis');
+  if(h) h.textContent = 'Bis zu drei Ziele, die du jeden Tag brauchst. Sie stehen auf der '+
+    'Startseite unten, direkt über der Leiste. Gewählt: '+gew.length+' von '+SCHNELL_MAX+
+    (schnellEigen() ? '.' : ' — ein Vorschlag für deine Rolle, bis du selbst wählst.');
+  var html='', frage='';
+  kat.reihe.forEach(function(x){
+    if(x.frage!==frage){ frage=x.frage; html+='<div class="kn-gruppe">'+esc(frage)+'</div>'; }
+    var pos=gew.indexOf(x.key);
+    html+='<button type="button" class="kn-zeile'+(pos>=0?' an':'')+'" '+
+      'data-schnellwahl="'+esc(x.key)+'" aria-pressed="'+(pos>=0?'true':'false')+'">'+
+      '<span class="sz-wahl-ikon">'+(x.e.roh || allesIkon(x.e.ikon||x.e.view))+'</span>'+
+      '<span style="flex:1 1 auto;min-width:0">'+esc(x.e.label)+'</span>'+
+      /* Die Stelle, nicht nur ein Haken: sie sagt auch, in welcher
+         Reihenfolge die Knöpfe unten stehen werden. */
+      (pos>=0 ? '<span class="sz-stelle">'+(pos+1)+'</span>' : '')+
+      '</button>';
+  });
+  box.innerHTML=html;
+  /* style statt hidden: .btn setzt display selbst und schlägt das
+     Attribut — der Knopf stand sonst auch ohne eigene Wahl da. */
+  var v=$('schnellVorschlag');
+  if(v) v.style.display = schnellEigen() ? '' : 'none';
+}
+function schnellUmschalten(key){
+  var kat=schnellKatalog();
+  var liste=schnellGewaehlt(kat).slice();
+  var i=liste.indexOf(key);
+  if(i>=0) liste.splice(i,1);
+  else {
+    if(liste.length>=SCHNELL_MAX){
+      toast('Höchstens drei — tippe erst einen gewählten an, um ihn zu lösen.');
+      return;
+    }
+    liste.push(key);
+  }
+  tick(8);
+  schnellSpeichern(liste);
+  renderSchnellWahl();
+  renderSchnell();
 }
 
 /* ── Die Schublade ──
@@ -15380,17 +15717,61 @@ function bereichUnterzeile(g){
    Klick-Zuhörer hängt daran und soll das überleben. Wo es herkommt,
    merkt es sich selbst (_heim), damit es am Rechner und im bisherigen
    Design wieder an seinen Platz zurückfindet. */
+/* ── Und seit Runde 103: Anlegen gehört in die Daumenzone ──
+   Knöpfe mit `data-daumen` (Aufgabe, Putzaufgabe, Probetraining) gehen
+   auf dem Handy nicht in den Bereichskopf, sondern nach unten rechts
+   in #daumenDock. Dasselbe Umhängen, nur ein anderes Ziel — der Knopf
+   bleibt ein einziges Element mit einem einzigen Klick-Zuhörer.
+
+   „Verwalten" in der Schulung bleibt oben: es legt nichts an, es ist
+   ein Weg in einen anderen Teil. Eine Hauptaktion je Seite heisst
+   auch, dass nicht jeder Knopf eine ist. */
 function kopfPlusUmhaengen(){
   var zeile=$('bereichZeile'); if(!zeile) return;
-  zeile.querySelectorAll('.kopf-plus').forEach(function(b){
-    if(b._heim) b._heim.appendChild(b);
+  var dock=$('daumenDock');
+  [zeile, dock].forEach(function(box){
+    if(!box) return;
+    box.querySelectorAll('.kopf-plus').forEach(function(b){
+      if(b._heim) b._heim.appendChild(b);
+    });
   });
+  if(dock){
+    dock.hidden=true; dock.classList.remove('eng');
+    document.body.classList.remove('hat-daumen');
+  }
   if(!layoutNeu() || window.innerWidth>820) return;
   var v=document.querySelector('.view.show');
   var b=v && v.querySelector('.view-head .kopf-plus');
   if(!b) return;
   if(!b._heim) b._heim=b.parentNode;
+  /* Ein Knopf, den die Rolle ausblendet (Putzaufgabe anlegen darf nur
+     die Leitung), macht auch unten keinen Platz frei. */
+  if(dock && b.hasAttribute('data-daumen') && b.style.display!=='none'){
+    mobnavHoeheBeobachten();
+    dock.appendChild(b);
+    dock.hidden=false;
+    document.body.classList.add('hat-daumen');
+    return;
+  }
   zeile.appendChild(b);
+}
+/* Wie hoch die untere Leiste ist, weiss nur der Browser: Dichte,
+   Schriftgrösse und der Rand unten am iPhone ändern sie. Der Knopf
+   darüber liest sie aus einer Variablen, die ein Beobachter nachführt
+   — gemessen wird dort, wo der Browser ohnehin gerade gemessen hat,
+   nicht im Klick. */
+var _mobnavBeob=null;
+function mobnavHoeheBeobachten(){
+  if(_mobnavBeob) return;
+  var nav=$('mobnav');
+  if(!nav || !window.ResizeObserver) return;
+  _mobnavBeob=new ResizeObserver(function(eintraege){
+    var e=eintraege[0], h=0;
+    if(e && e.borderBoxSize && e.borderBoxSize[0]) h=e.borderBoxSize[0].blockSize;
+    else h=nav.offsetHeight;
+    if(h) document.documentElement.style.setProperty('--mobnav-h', Math.round(h)+'px');
+  });
+  _mobnavBeob.observe(nav);
 }
 
 function bereichKopfSetzen(){
@@ -15518,6 +15899,10 @@ function kopfGibtHer(head){
    gestaucht. Nach 220 ms steht sie wieder bei scale(1) — scharf. */
 function bereichKopfEng(bk, an){
   if(bk.classList.contains('eng') === !!an) return;
+  /* Der Knopf unten rückt im selben Takt zusammen (Runde 103). Nur eine
+     Klasse — die Breite springt, statt zu gleiten: ein Übergang auf
+     `width` wäre genau die Layout-Bewegung, die hier verboten ist. */
+  var dock=$('daumenDock'); if(dock) dock.classList.toggle('eng', !!an);
   var teile=[bk.querySelector('.bk-txt b'), bk.querySelector('.bk-ikon')];
   var vorher=teile.map(function(el){ return el ? el.getBoundingClientRect() : null; });
   bk.classList.toggle('eng', !!an);
@@ -20764,6 +21149,9 @@ function heuteZeile(k){
 }
 function renderHeute(){
   var box=$('heuteListe'); if(!box) return;
+  /* Die Schnellzugriffe zuerst: sie nehmen der Liste unten Höhe weg,
+     und heutePasst() muss mit der Höhe rechnen, die wirklich übrig ist. */
+  renderSchnell();
   if(!layoutNeu() || !session){ box.innerHTML=''; box.hidden=true; return; }
   box.hidden=false;
 
@@ -24801,19 +25189,54 @@ function renderStudioGrid(){
     if(!zahl) return '';
     return '<span class="sm-marke'+(art?' '+art:'')+'">'+zahl+' '+esc(wort)+'</span>';
   }
-  grid.innerHTML=tafel.map(function(r){
+  /* ── Bento: die Grösse sagt die Reihenfolge (Runde 103, Idee A3) ──
+     Vorher waren alle vierzehn Kacheln gleich gross, und „Rondorf hat
+     fünf Überfällige" sah genauso aus wie „Brühl ist fertig". Jetzt:
+
+       gross   das EINE Studio mit dem meisten Rückstand — mit den
+               ältesten Sachen darin beim Namen, denn dort fängt man an
+               (zwei auf dem Handy, vier am Rechner, wo das Feld zwei
+               Zeilen hoch ist)
+       normal  jedes weitere Studio mit Rückstand
+       klein   Studios ohne Rückstand: Name und ein Haken, drei in einer
+               Zeile. Sie stehen da, damit keins fehlt — nicht, damit
+               man sie liest.
+
+     Für die Startseite rät die Recherche ausdrücklich ab (Runde 86 hat
+     dort ein Kachelraster gestrichen); hier ersetzt es die gleich
+     grossen Kacheln, statt daneben zu stehen. */
+  function aeltesteVier(sk){
+    var offen=(cachedTodos[sk]||[]).filter(function(t){ return !isDone(t) && !isArchived(t); });
+    var ueber=offen.filter(function(t){ return t.due && now>t.due; })
+      .sort(function(a,b){ return a.due-b.due; });
+    var rest=offen.filter(function(t){ return !(t.due && now>t.due); })
+      .sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    return ueber.concat(rest).slice(0,4).map(function(t){
+      var d = (t.due && now>t.due) ? tageSeit(t.due) : null;
+      return { titel:t.title||'(ohne Titel)', ueber: d!==null,
+        wann: d===null ? 'offen' : (d<=0 ? 'seit heute' : (d===1 ? 'seit 1 Tag' : 'seit '+d+' Tagen')) };
+    });
+  }
+  grid.innerHTML=tafel.map(function(r, i){
     var marken=marke(r.faellig,'überfällig','warn')+
                marke(r.offen-r.faellig,'offen')+
                marke(r.putz,'Putzpunkte')+
                marke(r.fehlt,'Material fehlt','warn')+
                marke(r.defekt,'defekt','warn');
-    return '<div class="studio-tile'+(r.last?'':' sauber')+'" data-open-studio="'+esc(r.name)+'" style="cursor:pointer">'+
+    var groesse = !r.last ? 'klein' : (i===0 ? 'gross' : 'normal');
+    var oben = (groesse==='gross' && ansichtAn('todos')) ? aeltesteVier(r.sk) : [];
+    return '<button type="button" class="studio-tile '+groesse+(r.last?'':' sauber')+'" '+
+      'data-open-studio="'+esc(r.name)+'">'+
       '<b>'+esc(r.name)+'</b>'+
-      '<div class="mini"><i style="width:'+r.pct+'%"></i></div>'+
-      '<small>'+(r.total?r.done+' / '+r.total+' Aufgaben erledigt':'keine Aufgaben')+'</small>'+
+      (groesse==='klein' ? '' :
+        '<div class="mini"><i style="width:'+r.pct+'%"></i></div>'+
+        '<small>'+(r.total?r.done+' / '+r.total+' Aufgaben erledigt':'keine Aufgaben')+'</small>')+
       (marken ? '<div class="sm-marken">'+marken+'</div>'
               : '<div class="sm-marken"><span class="sm-marke ok">nichts offen</span></div>')+
-      '</div>';
+      (oben.length ? '<ul class="st-oben">'+oben.map(function(o){
+          return '<li><span>'+esc(o.titel)+'</span><i'+(o.ueber?' class="warn"':'')+'>'+esc(o.wann)+'</i></li>';
+        }).join('')+'</ul>' : '')+
+      '</button>';
   }).join('');
   /* Kachel antippen GRENZT EIN, statt zu scrollen.
 
@@ -25234,22 +25657,35 @@ function renderAttention(){
       s:'zuletzt '+fmtDateTime(_sichStand.ts)+' · Grund steht unter System',
       v:'chef', ctab:'system'});
   }
-  // 1) überfällige Aufgaben je Studio
+  /* ── 1) und 2): EINE Zeile je Art, nicht eine je Studio ──
+     Bis Runde 102 stand hier jedes Studio einzeln: beim Chef der Demo
+     vierzehn Zeilen „N Artikel fehlen" untereinander, die Karte war
+     drei Bildschirme lang, und die Studio-Tafel darunter sagte
+     dasselbe noch einmal. Die Aufschlüsselung je Studio steht jetzt NUR
+     in der Tafel (Bento, gross nach Rückstand); hier steht die Summe
+     und wo — zwei Übersichten derselben Sache sind eine zu viel. */
+  function wo(liste){
+    if(liste.length===1) return liste[0];
+    return 'in '+liste.length+' Studios: '+liste.slice(0,3).join(', ')+(liste.length>3?' …':'');
+  }
+  var odN=0, odWo=[];
   mine.forEach(function(s){
-    var sk=studioKey(s);
-    var od=(cachedTodos[sk]||[]).filter(function(t){
+    var n=(cachedTodos[studioKey(s)]||[]).filter(function(t){
       return !isDone(t) && !isArchived(t) && t.due && now>t.due;
-    });
-    if(od.length) rows.push({i:ikon('uhr'), t:od.length+(od.length===1?' überfällige Aufgabe':' überfällige Aufgaben'),
-      s:s, v:'todos', f:'faellig'});
+    }).length;
+    if(n){ odN+=n; odWo.push({ s:s, n:n }); }
   });
-  // 2) fehlendes Material je Studio
+  odWo.sort(function(a,b){ return b.n-a.n; });
+  if(odN) rows.push({i:ikon('uhr'), t:odN+(odN===1?' überfällige Aufgabe':' überfällige Aufgaben'),
+    s:wo(odWo.map(function(x){ return x.s; })), v:'todos', f:'faellig'});
+  var matN=0, matWo=[];
   mine.forEach(function(s){
-    var items=_invAll[studioKey(s)]||[];
-    var f=items.filter(function(it){ return itemNeed(it)>0; });
-    if(f.length) rows.push({i:ikon('paket'), t:f.length+(f.length===1?' Artikel fehlt':' Artikel fehlen'),
-      s:s+' · '+f.slice(0,3).map(function(x){ return x.name; }).join(', '), v:'material'});
+    var n=(_invAll[studioKey(s)]||[]).filter(function(it){ return itemNeed(it)>0; }).length;
+    if(n){ matN+=n; matWo.push({ s:s, n:n }); }
   });
+  matWo.sort(function(a,b){ return b.n-a.n; });
+  if(matN) rows.push({i:ikon('paket'), t:matN+(matN===1?' Artikel fehlt':' Artikel fehlen'),
+    s:wo(matWo.map(function(x){ return x.s; })), v:'material'});
   // 3) Studios ganz ohne Aufgaben (meist vergessen einzurichten)
   var leer=mine.filter(function(s){ return !(cachedTodos[studioKey(s)]||[]).length; });
   if(leer.length) rows.push({i:ikon('mail'), t:leer.length+(leer.length===1?' Studio hat keine Aufgaben':' Studios haben keine Aufgaben'),
@@ -31082,6 +31518,24 @@ function bindActions(){
   var swm=$('studioModal');
   if(swm) swm.addEventListener('click', function(e){
     if(e.target===swm) studioWaehlerSchliessen();
+  });
+
+  // ── Schnellzugriffe wählen ──
+  var szl=$('schnellListe');
+  if(szl) szl.addEventListener('click', function(e){
+    var b=e.target.closest('[data-schnellwahl]'); if(!b) return;
+    schnellUmschalten(b.getAttribute('data-schnellwahl'));
+  });
+  ['schnellClose','schnellFertig'].forEach(function(id){
+    var b=$(id); if(b) b.addEventListener('click', schnellWahlSchliessen);
+  });
+  var szv=$('schnellVorschlag');
+  if(szv) szv.addEventListener('click', function(){
+    schnellSpeichern(null); tick(8); renderSchnellWahl(); renderSchnell();
+  });
+  var szm=$('schnellModal');
+  if(szm) szm.addEventListener('click', function(e){
+    if(e.target===szm) schnellWahlSchliessen();
   });
 
   // ── Bereich wählen: der Weg ohne Wischen ──
