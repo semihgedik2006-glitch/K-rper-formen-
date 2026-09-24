@@ -11502,4 +11502,4 @@ die Kopfzeile einer Karte und das Kürzelfeld „Wer hakt ab?".
   es täte: `test-sortierung` und `test-putzplan-werkzeuge`. Vorher
   tippte `page.fill('#ppSearch')` in ein zugeklapptes Feld und wartete
   bis zum Abbruch.
-- **Oberfläche:** GESAMT_P2
+- **Oberfläche:** 130 Durchläufe, alle sauber.
