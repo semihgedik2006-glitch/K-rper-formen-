@@ -12114,3 +12114,54 @@ Marktwerte sind und nicht die Preise des Studios.
   Buchstabenabstand (`.06em`). Er steht jetzt auf der Leiter
   (`--ls-m`); danach wurden `test-gestaltung`, `test-ems-schulung` und
   `test-csp` einzeln wiederholt, alle grün.
+
+## Runde 104, vierter Teil — Kopfzeile: 44 px auf jedem Gerät
+
+In Runde 104 (zweiter Teil) als offen notiert: Die Kopfzeile war nur am
+Handy gemessen worden.
+
+### Gemessen vorher (elementFromPoint, Leitung, „normal")
+
+| Breite | zu klein |
+|---|---|
+| 1280 / 1440 / 1920 | Bericht 99 × 36, Glocke 40 × 40, Hilfe 82 × 36, Suchen 102 × 36, Hell/Dunkel 40 × 40, Abmelden 40 × 40, Kürzel 38 × 38 |
+| 820 | wie oben; Kopfzeile 86 px hoch (Name auf zwei Zeilen) |
+| 600 | **Abmelden 0 × 0** (aus dem Bild), Glocke 20 × 40 |
+| 320–430 | Kürzel 38 × 38 (sonst alles 44) |
+
+Der Mitarbeiter hatte dasselbe Bild, ohne Bericht und Glocke.
+
+### Was geändert ist
+
+- `.topbar .icon-btn{min-width:44px;min-height:44px;flex-shrink:0}`.
+  Bericht, Hilfe und Suchen haben jetzt `min-height:44px` statt 36.
+  Das Kürzel misst 44 × 44.
+- **Name und Rolle stehen erst ab 1.100 px da**, vorher ab 600 px.
+  Dazwischen brach der Name um.
+- **Leitung zwischen 521 und 599 px:** Hell/Dunkel fällt weg wie am
+  Handy (es steht unter Profil → Aussehen), und die Abstände sind so
+  eng wie am Handy. Ohne das fehlten bei 521 px 22 px.
+- **Die Kopfzeile ist 69 statt 66 px hoch** (kompakt 63 statt 60).
+  Drei Pixel für sieben Griffe, die vorher zu klein waren.
+
+### Was dabei schiefging
+
+**Der erste Versuch setzte `width:44px`.** Diese Regel schlug wegen
+höherer Spezifität das `width:auto` von Bericht, Hilfe und Suchen. Am
+Rechner stand danach „Beric“ im Knopf. Der Hit-Test war trotzdem grün,
+denn 44 px stimmten ja. Das Bildschirmfoto hat es gezeigt, nicht die
+Messung. Deshalb prüft der neue Durchlauf zusätzlich, dass kein Wort
+über seinen Knopf hinausragt (`scrollWidth > clientWidth`). Gegenprobe
+mit der alten Regel: Bericht 57 > 42 und Suchen 49 > 42 werden
+gemeldet.
+
+### Durchläufe
+
+- **Neu: `tests/test-kopfzeile.js`** mit 192 Zusicherungen:
+  - Leitung und Mitarbeiter, 12 Breiten von 320 bis 1920 px, normal
+    und kompakt;
+  - geprüft werden Trefferfläche, abgeschnittene Wörter, Höhe und
+    Querlauf;
+  - Name ab 1.100 px, mit Gegenprobe darunter.
+- **Gesamtdurchlauf: 138 von 138 grün.** Die Kopfzeile ist drei Pixel
+  höher; kein bestehender Durchlauf hing an ihrer Höhe.
