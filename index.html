@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-iMTQMryEKVxl2xQ5H+WITMIDAOPObDH34gGNvomBrpc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-5u5vzdsipua/zJPDiorqy6k0vvTRxxukt8LLaI7+Rks='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -999,6 +999,11 @@ html.demo #terminalSchirm{top:44px}
 .tab{display:flex;align-items:center;gap:var(--s10);padding:var(--s12) var(--s12);border-radius:var(--r-md);cursor:pointer;
   color:var(--text-2);font-family:var(--font-head);font-weight:600;font-size:var(--t-md);letter-spacing:var(--ls-s);
   background:none;border:none;width:100%;text-align:left;position:relative}
+/* 44 px auch in der Dichte „kompakt". Nachgemessen am 24.9.2026 (P4):
+   die Einträge der Seitenleiste waren 43 px hoch, in „kompakt" 37 —
+   seit es die Dichte gibt, und kein Durchlauf hatte die Seitenleiste
+   am PC per Hit-Test gemessen. */
+.side .tab{min-height:44px}
 .tab svg{width:19px;height:19px;flex-shrink:0}
 .tab:hover{background:var(--auf-1);color:var(--text)}
 .tab.active{background:rgba(var(--akz-rgb),.12);color:var(--accent-2)}
@@ -5653,7 +5658,23 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
 body.neu .schnell{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
   gap:var(--s8);flex-shrink:0;padding:var(--s10) var(--rand) var(--s10)}
 body.neu .schnell[hidden]{display:none}
-@media(min-width:821px){ body.neu .schnell{max-width:600px;padding-bottom:var(--s16)} }
+/* Am PC stehen sie in der Seitenleiste (P4), nicht unten. */
+@media(min-width:821px){ body.neu .schnell{display:none} }
+.side-schnell{display:none}
+body.neu .side{overflow-y:auto}
+body.neu .side-schnell{display:flex;flex-direction:column;gap:var(--s2);
+  margin-top:var(--s16);padding-top:var(--s12);border-top:1px solid var(--line)}
+body.neu .ss-kopf{padding:0 var(--s12) var(--s6);font-family:var(--font-head);font-weight:700;
+  font-size:var(--t-2xs);letter-spacing:var(--ls-l);text-transform:uppercase;color:var(--text-3)}
+/* Wie die Einträge darüber, eine Stufe leiser: es sind Abkürzungen,
+   keine Bereiche. Mindestens 44 px hoch, auch in der Dichte „kompakt". */
+body.neu .ss-knopf{display:flex;align-items:center;gap:var(--s10);min-height:44px;width:100%;
+  padding:var(--s8) var(--s12);border:none;border-radius:var(--r-md);background:none;cursor:pointer;
+  text-align:left;color:var(--text-2);font-family:var(--font-body);font-weight:600;font-size:var(--t-sm)}
+body.neu .ss-knopf svg{width:18px;height:18px;flex-shrink:0}
+body.neu .ss-knopf:hover{background:var(--auf-1);color:var(--text)}
+body.neu .ss-knopf:active{transform:translateY(1px)}
+body.neu .ss-anpassen{color:var(--text-3)}
 body.neu .sz-knopf{display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:var(--s4);min-width:0;min-height:60px;padding:var(--s8) var(--s4);
   border:1px solid var(--line-2);border-radius:var(--r-md);cursor:pointer;
@@ -15413,6 +15434,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-p4', datum:'24.9.2026', titel:'PC: Putzplan mit einem Klick, Schnellzugriffe links', wo:'putzplan', punkte:[
+    'Die Seitenleiste am PC steht jetzt nach Nutzung: Start, Aufgaben, Putzplan — dann Ich, Nachrichten, Team.',
+    'Der Putzplan hat links einen eigenen Eintrag: ein Klick statt zwei. Unter „Aufgaben“ steht er weiterhin als Reiter.',
+    'Deine Schnellzugriffe stehen am PC links unter „Schnellzugriffe“ — auf jeder Seite, nicht nur auf der Startseite. Die Startseite hat dadurch mehr Platz.',
+    'Alle Einträge links sind jetzt mindestens 44 Pixel hoch, auch in der kompakten Darstellung.' ] },
   { id:'2026-09-24-p3', datum:'24.9.2026', titel:'Startseite am PC: zwei Spalten', wo:'home', punkte:[
     'Am PC steht die Startseite jetzt in zwei Spalten: links, was zu tun ist (Überfällig, Heute, Zum Übernehmen, Offen), rechts Putzplan, Neu für dich und Zu erledigen.',
     'Nichts rutscht mehr nach „Ausserdem“ — vorher standen dort drei Bereiche nur als Knopf.',
@@ -15582,6 +15608,40 @@ function renderSchnell(){
   });
   var an=$('schnellAnpassen');
   if(an) an.addEventListener('click', function(){ tick(8); schnellWahlOeffnen(); });
+  schnellSeiteZeichnen();
+}
+
+/* ── Am PC in der Seitenleiste (Runde 103, P4) ──
+   Unten auf der Startseite standen sie am PC in einer 600 px schmalen
+   Reihe am unteren Rand — für den Daumen gedacht, den es dort nicht
+   gibt — und nahmen der Liste darüber 87 px Höhe. In der Seitenleiste
+   sind sie auf JEDER Seite da, nicht nur auf der Startseite, und die
+   Startseite bekommt die Höhe zurück.
+   Dieselben Einträge, dieselbe Wahl, dasselbe „Anpassen". Am Handy
+   bleiben sie unten; die Seitenleiste gibt es dort nicht. */
+function schnellSeiteZeichnen(){
+  var side=$('side'); if(!side) return;
+  var alt=side.querySelector('.side-schnell'); if(alt) alt.remove();
+  if(!layoutNeu() || !session) return;
+  var kat=schnellKatalog();
+  var gew=schnellGewaehlt(kat);
+  side.insertAdjacentHTML('beforeend',
+    '<div class="side-schnell" role="group" aria-labelledby="ssKopf">'+
+    '<div class="ss-kopf" id="ssKopf">Schnellzugriffe</div>'+
+    gew.map(function(k){
+      var x=kat.nach[k], e=x.e;
+      return '<button type="button" class="ss-knopf" data-farbe="'+esc(x.farbe||'')+'"'+
+        allesZielAttr(e)+'>'+(e.roh || allesIkon(e.ikon||e.view))+
+        '<span>'+esc(e.label)+'</span></button>';
+    }).join('')+
+    '<button type="button" class="ss-knopf ss-anpassen" id="schnellAnpassenSeite" aria-haspopup="dialog">'+
+      ikon(gew.length ? 'stift' : 'plus')+'<span>'+(gew.length ? 'Anpassen' : 'Festlegen')+'</span></button>'+
+    '</div>');
+  var box=side.querySelector('.side-schnell');
+  box.querySelectorAll('[data-alles]').forEach(function(b){
+    b.addEventListener('click', function(){ tick(8); allesZiel(b); });
+  });
+  $('schnellAnpassenSeite').addEventListener('click', function(){ tick(8); schnellWahlOeffnen(); });
 }
 
 function schnellWahlOeffnen(){
@@ -15597,8 +15657,10 @@ function renderSchnellWahl(){
   var kat=schnellKatalog();
   var gew=schnellGewaehlt(kat);
   var h=$('schnellHinweis');
-  if(h) h.textContent = 'Bis zu drei Ziele, die du jeden Tag brauchst. Sie stehen auf der '+
-    'Startseite unten, direkt über der Leiste. Gewählt: '+gew.length+' von '+SCHNELL_MAX+
+  if(h) h.textContent = 'Bis zu drei Ziele, die du jeden Tag brauchst. Sie stehen '+
+    (_mobnavBreite && _mobnavBreite.matches ? 'auf der Startseite unten, direkt über der Leiste'
+                                            : 'links in der Seitenleiste, auf jeder Seite')+
+    '. Gewählt: '+gew.length+' von '+SCHNELL_MAX+
     (schnellEigen() ? '.' : ' — ein Vorschlag für deine Rolle, bis du selbst wählst.');
   var html='', frage='';
   kat.reihe.forEach(function(x){
@@ -15696,13 +15758,51 @@ function navAktivSetzen(){
     var al=document.querySelector('.mn-reihe [data-group="g-alles"]');
     if(al) al.classList.add('active');
   }
+  /* Im Putzplan zeigt die Seitenleiste auf „Putzplan", nicht auf
+     „Aufgaben" — auch wenn er zur selben Gruppe gehört. */
+  var pz=document.querySelector('.side [data-group="g-putz"]');
+  if(pz && currentView==='putzplan'){
+    pz.classList.add('active');
+    var ar=document.querySelector('.side [data-group="g-arbeit"]');
+    if(ar) ar.classList.remove('active');
+  }
   gruppenMarker();
+}
+
+/* ── Die Seitenleiste am PC nach Nutzung (Runde 103, P4) ──
+   Aus dem Betrieb, 24.9.2026: „der am meisten benutzte Bereich [ist]
+   der Aufgaben- und Putzplan-Bereich … aber der Chat eher wenig".
+
+   Vorher stand der Putzplan am PC hinter „Aufgaben" als dritter Reiter
+   — zwei Klicks für den meistgenutzten Bereich —, und „Nachrichten"
+   stand an dritter Stelle vor „Aufgaben".
+
+   Jetzt: Start, Aufgaben, Putzplan, dann der Rest. Der Putzplan bleibt
+   ZUSÄTZLICH ein Reiter unter „Aufgaben"; der Knopf hier ist ein
+   zweiter, kürzerer Weg, keine neue Gruppe. So bleibt jede Stelle, die
+   nach Gruppen fragt (Farbe, Reiter, Richtung), wie sie ist.
+   Nur im neuen Design; im bisherigen bleibt die Leiste unverändert. */
+var SEITE_REIHE = ['g-start','g-arbeit','g-putz','g-ich','g-komm','g-team','g-chef','g-alles'];
+function seitenGruppen(gruppen){
+  if(!layoutNeu()) return gruppen;
+  var nach={};
+  gruppen.forEach(function(g){ nach[g.id]=g; });
+  var pz=navItem('putzplan');
+  if(nach['g-arbeit'] && pz && ansichtAn('putzplan'))
+    nach['g-putz']={ id:'g-putz', label:'Putzplan', views:['putzplan'], icon:pz.icon };
+  var reihe=[];
+  SEITE_REIHE.forEach(function(id){ if(nach[id]){ reihe.push(nach[id]); delete nach[id]; } });
+  /* Was hier (noch) nicht genannt ist, hängt hinten an — eine neue
+     Gruppe darf nicht still aus der Leiste fallen. */
+  gruppen.forEach(function(g){ if(nach[g.id]) reihe.push(g); });
+  return reihe;
 }
 
 function buildNav(){
   var side=$('side'), mob=$('mobnav'); side.innerHTML=''; mob.innerHTML='';
   var gruppen=navGruppen();
-  gruppen.forEach(function(g){ side.appendChild(navKnopf(g,'seite')); });
+  seitenGruppen(gruppen).forEach(function(g){ side.appendChild(navKnopf(g,'seite')); });
+  schnellSeiteZeichnen();
 
   if(!layoutNeu()){
     gruppen.forEach(function(g){ mob.appendChild(navKnopf(g,'unten')); });
