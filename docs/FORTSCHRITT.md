@@ -11688,3 +11688,77 @@ deshalb in diesem Schritt unverändert.
     Balken, passt.
 - **Was ist neu:** Eintrag „Startseite am PC: zwei Spalten".
 - **Oberfläche:** 132 Durchläufe, alle sauber.
+
+## Runde 103, achter Teil — P4: die Seitenleiste am PC nach Nutzung
+
+> „der am meisten benutzte Bereich [ist] der Aufgaben- und
+> Putzplan-Bereich und der Startbildschirm, aber der Chat eher wenig"
+
+### Vorher gemessen (Demo, 1440 × 900)
+
+- **Reihenfolge:** Start · Ich · Nachrichten · Aufgaben · Team ·
+  Verwaltung · Alles. Nachrichten stand vor Aufgaben.
+- **Putzplan:** nur als dritter Reiter hinter „Aufgaben", also zwei
+  Klicks für den meistgenutzten Bereich.
+- **Schnellzugriffe:** unten auf der Startseite in einer 600 px schmalen
+  Reihe. Sie waren für den Daumen gedacht, den es am PC nicht gibt, und
+  nahmen der Liste darüber 86 px (Scroll-Bereich 619 px hoch).
+- **Einträge der Seitenleiste:** 43 px hoch, in der Dichte „kompakt"
+  37 px.
+
+### Gebaut
+
+- **Neue Reihenfolge:** Start · Aufgaben · **Putzplan** · Ich ·
+  Nachrichten · Team · Verwaltung · Alles.
+- **Putzplan hat einen eigenen Eintrag.** Im Putzplan trägt er die
+  Marke, nicht „Aufgaben". Unter „Aufgaben" bleibt er zusätzlich als
+  Reiter.
+- **Schnellzugriffe in der Seitenleiste** unter einer Trennlinie: die
+  drei gewählten und „Anpassen", auf jeder Seite. Am PC stehen sie
+  nicht mehr unten auf der Startseite. Der Hinweis im Wahlfenster nennt
+  den Ort, der für das Gerät stimmt.
+- **Mindesthöhe 44 px** für jeden Eintrag der Seitenleiste; das
+  Seitenmenü scrollt, falls ein sehr niedriges Fenster es verlangt.
+
+### Warum so
+
+- **Putzplan als zusätzlicher Knopf, nicht als neue Gruppe.** An der
+  Gruppe hängen die Bereichsfarbe, die Reiterzeile, die Richtung der
+  Seitenwechsel und rund 35 Durchläufe. Ein zweiter, kürzerer Weg auf
+  dieselbe Seite ändert davon nichts. Eine eigene Gruppe hätte all das
+  neu verteilt, ohne dass jemand etwas davon sieht.
+- **Schnellzugriffe links statt unten.** Am PC ist links der Ort, an dem
+  man navigiert; unten ist er nur am Handy richtig. So sind sie auf
+  jeder Seite erreichbar, und die Startseite bekommt ihre Höhe zurück.
+
+### Beim Bauen gefunden
+
+- **Die Einträge der Seitenleiste waren nie 44 px hoch:** 43 in
+  „normal", 37 in „kompakt". Das war auf `main` genauso nachgemessen.
+  Kein Durchlauf hatte die Seitenleiste am PC per Hit-Test gemessen;
+  `test-p4-seitenleiste` tut es jetzt bei fünf Grössen und in beiden
+  Dichten.
+
+### Nachher gemessen
+
+| | vorher | nachher |
+|---|---|---|
+| Klicks bis zum Putzplan (PC) | 2 | **1** |
+| Höhe der Startseiten-Liste, 1440 × 900 | 619 px | **705 px** |
+| Einträge der Seitenleiste, normal / kompakt | 43 / 37 px | **44 / 44 px** |
+| Handy | — | unverändert |
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-p4-seitenleiste.js`** mit 31
+  Zusicherungen:
+  - Reihenfolge je Rolle, Putzplan mit einem Klick und mit Marke;
+  - die Schnellzugriffe führen hin, „Anpassen" öffnet die Wahl, eine
+    geänderte Wahl steht sofort links;
+  - Trefferflächen bei 1100, 1280 × 720, 1366 × 768, 1440 und 1920,
+    in „normal" und „kompakt";
+  - Gegenproben: am Handy bleiben die Schnellzugriffe unten, und das
+    bisherige Design ist unverändert.
+- **Was ist neu:** Eintrag „PC: Putzplan mit einem Klick,
+  Schnellzugriffe links".
+- **Oberfläche:** 133 Durchläufe, alle sauber.
