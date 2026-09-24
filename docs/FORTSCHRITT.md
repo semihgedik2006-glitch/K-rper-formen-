@@ -10978,3 +10978,160 @@ gebraucht), und „der meistgelobte Punkt jeder Vergleichs-App" war mehr,
 als die Quellen hergaben.
 
 **Oberfläche: 125 Durchläufe, alle sauber. Regeln: 16 Dateien, 1.141 Einzelprüfungen, alle grün.**
+
+
+---
+
+## Runde 103 — Block A der Design-Recherche: Wege, Daumen, Bento
+
+> „dann lass bei der designrecherche systematisch anfangen und als
+> erstes block A machen eventuell"
+
+Block A aus `docs/DESIGN-RECHERCHE.md` heisst „Startseite und Wege" und
+hat drei Ideen. Alle drei sind gebaut, jede mit einer Abweichung vom
+Entwurf, die beim Bauen aufgefallen ist. Die Abweichungen stehen jetzt
+auch in der Recherche-Datei bei der jeweiligen Idee.
+
+### A1 · Eigene Schnellzugriffe
+
+Unten auf der Startseite, direkt über der Leiste: drei Ziele und
+„Anpassen". Ein Tipp auf „Anpassen" öffnet eine Liste, die aufgebaut
+ist wie „Alles" (dieselben Überschriften, dieselben Ziele). Gewählt wird
+durch Antippen; die Zahl rechts sagt, an welcher Stelle der Knopf unten
+stehen wird.
+
+**Warum unten, obwohl der Entwurf „über der Heute-Liste" sagte.** Aus
+demselben Grund wie A2: oben ist auf einem grossen Telefon der Punkt,
+den der Daumen am schlechtesten erreicht. Ein Absprung, den man jeden
+Tag nimmt, gehört dorthin, wo er ohne Umgreifen geht. Und oben stünde er
+vor dem Überfälligen, und das hat mehr Recht auf den ersten Blick.
+
+**Warum ein Knopf „Anpassen" statt eines langen Drucks.** Eine Geste,
+die man nicht sieht, darf nie der einzige Weg sein. Diese Regel steht
+schon an der Schublade („Vom linken Rand wischen").
+
+**Warum ein Vorschlag, wenn noch nichts gewählt ist.** Eine leere Zeile
+erklärt nicht, wofür sie da ist; drei brauchbare Ziele tun es. Die
+Vorschläge:
+- Mitarbeiter: Putzplan, Meine Zeiten, Geräte.
+- Leitung: Schichtplan, Anliegen, Putzplan.
+- Chef: Überblick, Schichtplan, Anliegen.
+
+„Zum Vorschlag" nimmt die eigene Wahl zurück.
+
+**Warum am Gerät und je Konto (`PREFS.schnell[uid]`).** Am
+Empfangs-Tablet melden sich mehrere Leute nacheinander an, also darf
+einer allein dort nicht für alle entscheiden. Aufs Konto in der
+Datenbank geht es bewusst nicht: dafür bräuchte es eine neue Stelle in
+beiden Regel-Welten, für drei Wörter, die man in zehn Sekunden neu
+wählt.
+
+**Abgeleitet, nicht abgeschrieben.** Ein Schnellzugriff ist nur ein
+Schlüssel auf einen Eintrag aus `allesGruppen()`. Wird eine Funktion
+abgeschaltet, fällt der Eintrag dort heraus und damit auch hier. Kein
+Schnellzugriff kann ins Leere führen. Die Ziel-Attribute kommen aus
+einer gemeinsamen Funktion `allesZielAttr()`, damit „Alles" und die
+Schnellzugriffe nicht auseinanderlaufen.
+
+**Was dabei gefunden wurde.** Die Zusage „ohne dass man scrollen muss"
+brach auf dem iPhone SE (320 × 568). `test-neu-design` hat es gemeldet:
+287 Pixel Inhalt in 257 Platz. Die Zeile kostete dort mit Wort 80
+Pixel. Unter 640 Pixel Höhe stehen deshalb nur die Zeichen; der Name
+bleibt als `title` und `aria-label` am Knopf. Die Zusage ist älter und
+wiegt schwerer als das Wort.
+
+### A2 · Die Hauptaktion in Daumennähe
+
+Auf dem Handy steht „+ Aufgabe", „+ Putzaufgabe" oder „+ Probetraining"
+jetzt unten rechts über der Leiste: 56 Pixel hoch, deckend, mit dem
+Wort, WAS angelegt wird. Die Fläche ist dieselbe wie bei jedem
+Hauptknopf (`.btn-primary`), weil deren Kontrast längst nachgerechnet
+ist.
+
+- **Das echte Element wandert,** keine Kopie: `kopfPlusUmhaengen()`
+  hängte den Knopf schon bisher um, jetzt mit einem zweiten Ziel. Der
+  Klick-Zuhörer bleibt einer.
+- **Beim Scrollen rückt er auf das Pluszeichen zusammen,** im selben
+  Takt wie der Bereichskopf. Voll ausgeschrieben würde er die rechte
+  Hälfte der Zeile verdecken, die man gerade liest. Die Breite springt,
+  statt zu gleiten: ein Übergang auf `width` wäre genau die
+  Layout-Bewegung, die seit Runde 101 verboten ist.
+- **Die Liste bekommt unten Platz,** sonst läge der letzte Eintrag samt
+  „…" für immer unter dem Knopf.
+- **Meldung und „Rückgängig" rücken darüber.** Direkt nach dem Anlegen
+  ist genau der Moment, in dem man beides braucht.
+- **Die Höhe der unteren Leiste liest ein `ResizeObserver`.** Dichte,
+  Schriftgrösse und der Rand am iPhone ändern sie; gemessen wird dort,
+  wo der Browser ohnehin gerade gemessen hat, nicht im Klick.
+
+**Nicht mitgewandert:**
+- „Verwalten" in der Schulung, weil es nichts anlegt.
+- „Abhaken" im Putzplan, weil das eine Handlung je Zeile ist, keine je
+  Seite.
+- „Stempeln", weil es am Handy den Code vom Studio-Bildschirm braucht,
+  also ein Eingabefeld ist und kein einzelner Knopf.
+- „Senden" im Chat, weil es dort schon unten sitzt.
+
+Am Rechner bleibt alles oben: dort gibt es keine Daumenzone.
+
+### A3 · Bento in der Verwaltung
+
+Die Studio-Tafel unter „Verwaltung → Überblick" ist jetzt ein
+Bento-Raster. Die Grösse sagt die Reihenfolge:
+- **Gross:** das eine Studio mit dem meisten Rückstand, mit den
+  ältesten Sachen darin beim Namen (zwei auf dem Handy, vier am
+  Rechner).
+- **Normal:** die übrigen mit Rückstand.
+- **Klein:** die ohne Rückstand, drei in einer Zeile.
+
+Vorher sah „Rondorf hat fünf Überfällige" genauso aus wie „Brühl ist
+fertig".
+
+Die Recherche hatte selbst den Einwand notiert: „Zwei Übersichten
+derselben Sache sind eine zu viel." Das stimmte schon vorher, nur an
+einer anderen Stelle. „Braucht Aufmerksamkeit" listete Überfälliges und
+fehlendes Material **je Studio**; beim Chef der Demo waren das 14
+Zeilen „N Artikel fehlen", drei Bildschirme lang, und die Tafel darunter
+sagte dasselbe noch einmal. Jetzt steht dort je Art eine Zeile mit der
+Summe und wo („54 Artikel fehlen · in 14 Studios: …"). Die
+Aufschlüsselung je Studio steht nur noch in der Tafel.
+
+Weitere Änderungen an der Tafel:
+- **Die Kacheln sind jetzt `<button>`** statt `<div>` mit Klick, also
+  mit der Tastatur erreichbar.
+- **„Klein" ist ruhig, aber nicht blass.** Das alte
+  `.sauber{opacity:.72}` drückte den Namen unter 4,5 : 1.
+- **Die Karte startet weiter zugeklappt.** `test-verwaltung-bereich9`
+  hält fest, dass der Überblick höchstens 2,4 Bildschirme lang ist, und
+  vierzehn offene Kacheln wären mehr. Ich hatte sie zuerst aufgeklappt,
+  und der Durchlauf wurde zu Recht rot.
+- **Die fünf Kennzahlen darüber:** auf dem Handy stand „Team" allein in
+  einer halben Zeile. Die übrig bleibende letzte Kachel nimmt jetzt die
+  ganze Breite.
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-block-a.js` mit 38 Zusicherungen,**
+  darunter drei Gegenproben:
+  - die Wahl eines fremden Kontos gilt nicht;
+  - im bisherigen Design gibt es keine Schnellzugriffe;
+  - am Rechner bleibt „+ Neu" oben.
+- **Gegen den Stand vor der Runde** ist der Durchlauf rot. Er prüft
+  also etwas.
+- **Trefferflächen per `elementFromPoint`:**
+  - geprüft: jeder Schnellzugriff, jede Zeile und jeder Knopf im
+    Auswahlfenster sowie der Daumen-Knopf, offen und zusammengerückt;
+  - bei 320 / 390 / 430 / 820 px, in „normal" und „kompakt", als
+    Mitarbeiter und als Chef;
+  - 520 Messungen, alle mindestens 44 × 44 und im Bild.
+- **Kontrast an echten Bildpunkten:** Schnellzugriffe, „Anpassen", der
+  Daumen-Knopf und das grosse Bento-Feld liegen in beiden Farbmodi
+  zwischen 6,0 und 19,1 : 1.
+  - Eine Messung war falsch: für die kleine Stellen-Marke im
+    Auswahlfenster ergab die Bildpunkt-Methode 1,86 : 1. Sie hatte die
+    Zeile um die 24-Pixel-Marke herum gemessen, nicht die Marke selbst.
+  - Nachgerechnet aus den berechneten Farben sind es 7,3 : 1 (dunkel)
+    und 7,6 : 1 (hell).
+  - Den „Fix", den ich schon eingebaut hatte, habe ich wieder
+    herausgenommen.
+- **Oberfläche:** 126 Durchläufe, alle sauber.

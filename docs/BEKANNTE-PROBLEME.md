@@ -462,6 +462,8 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-33** | **Die Startadresse `/` wurde bis zu einer Stunde zwischengespeichert** — `firebase.json` verbot es nur für `/index.html`, die App öffnet aber `/`. Gemessen: `max-age=3600`, und nach einer Auslieferung kam noch der alte Stand | 23.9.2026 |
 | **B-34** | **Die Auslieferung lief mit Node 20**, Lebensende April 2026; die Funktionen verlangen 22 | 23.9.2026 |
 | **B-35** | **`docs/av/TOM.md` beschrieb die Studiogrenze schlechter, als sie ist** („nur Oberfläche") — seit dem 17.9. hielt die Regel sie für die Personendaten. Auch eine zu schlechte Beschreibung in einer Vertragsunterlage ist eine falsche | 23.9.2026 |
+| **B-36** | **„Braucht Aufmerksamkeit" listete Überfälliges und fehlendes Material je Studio** — beim Chef der Demo 14 Zeilen „N Artikel fehlen", drei Bildschirme lang, und die Studio-Tafel darunter sagte dasselbe noch einmal. Jetzt je Art eine Summe; die Aufschlüsselung steht nur in der Tafel (Bento) | 24.9.2026 |
+| **B-37** | **Studios ohne Rückstand standen mit `opacity:.72`** in der Tafel — das drückte den Namen unter 4,5 : 1. Im Bento („klein") volle Schriftfarbe, ruhig durch Fläche statt durch Blässe | 24.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
-`docs/FORTSCHRITT.md` — chronologisch, 102 Runden.
+`docs/FORTSCHRITT.md` — chronologisch, 103 Runden.

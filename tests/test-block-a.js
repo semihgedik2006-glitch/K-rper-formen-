@@ -327,7 +327,7 @@ async function leiste(p) {
     await p.evaluate(() => {
       const k = document.getElementById('studioGrid').closest('.card');
       const kopf = k.querySelector('.fold-head');
-      if (kopf && !k.classList.contains('auf')) kopf.click();
+      if (kopf && k.classList.contains('zu')) kopf.click();
     });
     await p.waitForTimeout(500);
     const t = await p.evaluate(() => {
