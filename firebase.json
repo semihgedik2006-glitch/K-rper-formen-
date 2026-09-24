@@ -93,10 +93,10 @@
         ]
       },
       {
-        "//": "Der Grundstock der Hilfe: 47 KB, die sich nur ändern, wenn das Mitarbeiter-Handbuch neu gelesen wird. Eine Woche Zwischenspeicher spart bei 39 Konten jeden Tag ein paar hundert Abrufe — und die Datei ist ohnehin im Vorrat des Service Workers (sw.js, PRECACHE). Wer sie neu erzeugt, zählt dort VERSION hoch; dann holt jedes Gerät sie beim nächsten Start.",
-        "source": "/{loesungen,schulungen}-basis.js",
+        "//": "Die Inhaltsdateien (Handbuch, Schulungen, EMS-Wissen). Bis zum 24.9.2026 stand hier max-age=604800 mit der Annahme, VERSION in sw.js hochzuzählen hole die neue Fassung. Das stimmte nicht: der Service Worker holte beim Update durch den HTTP-Zwischenspeicher und legte die Woche alte Datei in den neuen Vorrat — die fünf EMS-Schulungen waren live und auf den Geräten unsichtbar. Jetzt no-cache: der Browser fragt jedes Mal nach, und solange sich nichts geändert hat, antwortet der Server mit 304 ohne Inhalt. Die Dateien liegen ohnehin im Vorrat des Service Workers, offline geht also nichts verloren. tests/test-zwischenspeicher.js prüft beides.",
+        "source": "/@(loesungen-basis|schulungen-basis|ems-wissen).js",
         "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=604800" }
+          { "key": "Cache-Control", "value": "no-cache" }
         ]
       },
       {
