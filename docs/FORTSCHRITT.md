@@ -11762,3 +11762,92 @@ deshalb in diesem Schritt unverändert.
 - **Was ist neu:** Eintrag „PC: Putzplan mit einem Klick,
   Schnellzugriffe links".
 - **Oberfläche:** 133 Durchläufe, alle sauber.
+
+## Runde 103, neunter Teil — P5: die untere Leiste am Handy nach Nutzung
+
+> „der am meisten benutzte Bereich [ist] der Aufgaben- und
+> Putzplan-Bereich und der Startbildschirm, aber der Chat eher wenig"
+
+### Vorher (Demo, 390 × 844)
+
+- **Leiste unten:** Start · Aufgaben · Nachrichten · Alles.
+- **Putzplan:** zwei Tipps (Aufgaben, dann Reiter Putzplan).
+  Nachrichten: einer.
+- **Vorgeschlagene Schnellzugriffe:** Mitarbeiter bekamen „Putzplan"
+  als ersten Vorschlag, die Leitung als dritten.
+
+### Gebaut
+
+- **Leiste unten:** Start · Aufgaben · **Putzplan** · Alles. Im
+  Putzplan trägt „Putzplan" die Marke, nicht „Aufgaben".
+- **Nachrichten unter „Alles"** (zwei Tipps). Ungelesenes bleibt
+  sichtbar: „Alles" trägt den Punkt jeder Gruppe, die unten keinen
+  eigenen Knopf hat, und die Startseite nennt Neues unter „Neu für
+  dich". Welche Gruppe unten steht, liest die App jetzt aus der
+  gezeichneten Leiste statt aus der Liste `NEU_LEISTE`. So stimmt der
+  Punkt auch dann, wenn ein Knopf ersetzt wurde.
+- **Ersatz:** Ist der Putzplan im Betrieb abgeschaltet, rückt
+  „Nachrichten" an seine Stelle; ein Platz in der Leiste bleibt nie leer.
+- **Vorschlag für die Schnellzugriffe:** „Meine Woche" statt
+  „Putzplan", denn der steht jetzt unten und links. Wer selbst gewählt
+  hat, behält seine Wahl.
+- **Die Führung** hat einen Putzplan-Schritt. Der Nachrichten-Schritt
+  zeigt am Handy auf „Alles" statt ins Leere.
+
+### Warum so
+
+- **Vier Knöpfe, nicht fünf.** Bei 320 px wären fünf Knöpfe je 64 px
+  breit, und „Nachrichten" passte nicht mehr lesbar hinein. Die Leiste
+  hat vier Plätze, weil vier ein lesbares Wort tragen (siehe Kommentar
+  an `NEU_LEISTE`).
+- **Nur im neuen Design.** Das bisherige Design behält seine Leiste;
+  eine Gegenprobe prüft das.
+
+### Beim Bauen gefunden
+
+- **`test-quer` liess im neuen Design Bereiche still aus.** Eine Gruppe
+  ohne eigenen Knopf in der Leiste wurde übersprungen (`continue`):
+  Ich, Team und Verwaltung schon seit dem neuen Design, mit P5 auch die
+  Nachrichten. `test-neu-messlatte` hat es an der Zahl der Messungen
+  bemerkt (28 statt genug). Jetzt geht der Durchlauf wie ein Mensch über
+  „Alles" und misst diese Bereiche mit — mehr Abdeckung als vorher.
+- **Die Führung zeigte am Handy auf den Nachrichten-Knopf**, den es
+  unten nicht mehr gibt. Sie zeigt jetzt auf „Alles".
+
+### Durchläufe, die den neuen Weg gehen
+
+Sie prüfen jeweils dasselbe wie vorher, nur auf dem neuen Weg; jeder
+nennt den Grund im Test.
+
+- `test-neu-design`: erwartet „Start, Aufgaben, Putzplan, Alles".
+- `test-akzent`: misst den Farbwechsel von Start nach Aufgaben (Orange)
+  statt nach Nachrichten (Teal).
+- `test-block-c` und `test-navi-sichtbar`: in den Chat über „Alles".
+- `test-block-a`: der neue Vorschlag „Meine Woche". Dazu prüft „die
+  Auswahl zeigt die drei Gewählten mit ihrer Stelle" jetzt, dass die
+  Stellen 1, 2 und 3 je einmal dastehen. Vorher prüfte es, dass die
+  erste Zeile die Stelle 1 trägt, was nur zufällig stimmte: die Liste
+  steht in der Reihenfolge von „Alles", nicht der Wahl.
+
+### Nachher gemessen
+
+| | vorher | nachher |
+|---|---|---|
+| Tipps bis zum Putzplan (Handy) | 2 | **1** |
+| Tipps bis zu den Nachrichten (Handy) | 1 | 2 |
+| Knöpfe der Leiste bei 320 / 390 / 430 / 820 px, normal und kompakt | ≥ 44 × 44 | ≥ 44 × 44, im Bild |
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-p5-leiste.js`** mit 22 Zusicherungen,
+  darunter:
+  - eine neue Chatnachricht in der Demo setzt den Punkt an „Alles";
+  - die Gegenprobe im bisherigen Design.
+- **Was ist neu:** Eintrag „Handy: Putzplan unten in der Leiste".
+- **`test-akzent` misst den Farbwechsel jetzt zum Putzplan** (erst zu
+  den Aufgaben versucht). Bei den Aufgaben fiel die Probe bei 90 ms in
+  einem von drei Läufen vor das erste Bild. Die Aufgaben brauchen bis
+  dahin 245–577 ms (CPU ÷4); vor P1 war es genauso. Das ist kein
+  Fehler der Farbe, sondern eine langsame Seite. Sie steht als **P-17**
+  in `docs/BEKANNTE-PROBLEME.md` und ist der nächste Schritt.
+- **Oberfläche:** 134 Durchläufe; 133 im Gesamtlauf sauber, `test-akzent` nach der Umstellung auf den Putzplan fünfmal hintereinander sauber.

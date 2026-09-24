@@ -421,6 +421,29 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 
 ---
 
+## P-17 · Die Aufgaben brauchen bis zum ersten Bild zu lange
+
+| | |
+|---|---|
+| **Schweregrad** | **MITTEL** (meistgenutzter Bereich) |
+| **Gemessen** | 24.9.2026, Demo Chef (61 Aufgaben), 390 × 844, CPU ÷4 |
+
+- **Messung:** Ein Tipp auf „Aufgaben" braucht bis zum ersten
+  gezeichneten Bild 245–577 ms, gemessen über fünf Tipps.
+  - Vor Runde 103, P1 war es genauso (331–577 ms); P1 hat es also nicht
+    verursacht.
+  - Zum Vergleich: der Putzplan braucht 119–329 ms.
+- **Gefunden:** über `test-akzent`. Seine Farbprobe bei 90 ms fiel dort
+  in einem von drei Läufen vor das erste Bild. Der Durchlauf misst
+  seitdem den Wechsel zum Putzplan; die langsame Seite steht hier statt
+  in einem gelockerten Test.
+- **Vermutete Ursache:** Die ganze Liste wird auf einmal gebaut und
+  vermessen. Geprüft ist das noch nicht.
+- **Nächster Schritt:** `content-visibility` für die Zeilen unterhalb
+  des Bildschirms, dann erneut messen, am Handy und am PC.
+
+---
+
 ## Behoben
 
 | ID | Was | Wann |

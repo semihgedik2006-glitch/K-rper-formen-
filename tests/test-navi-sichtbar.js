@@ -113,7 +113,15 @@ const ROLLEN = ['chef', 'leiter', 'mitarbeiter'];
       }
 
       /* ── Der Chat ── */
-      await p.evaluate(() => document.querySelector('.mobnav [data-group="g-komm"]').click());
+      /* Seit Runde 103, P5 liegen die Nachrichten im neuen Design unter
+         „Alles" — dorthin wie ein Mensch, sonst direkt. */
+      await p.evaluate(async () => {
+        const k = document.querySelector('.mobnav [data-group="g-komm"]');
+        if (k) { k.click(); return; }
+        document.querySelector('.mobnav [data-group="g-alles"]').click();
+        await new Promise(r => setTimeout(r, 400));
+        document.querySelector('#allesSeite [data-alles="chat"]').click();
+      });
       await p.waitForTimeout(800);
       const chat = await p.evaluate(() => {
         const bar = document.getElementById('chatChannels');

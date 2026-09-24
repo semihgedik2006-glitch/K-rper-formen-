@@ -100,8 +100,10 @@ async function leiste(p) {
     pruefe('die Zeile steht auf der Startseite', !!l);
     pruefe('drei Ziele und „Anpassen"', l && l.length === 4 && l[3].wort === 'Anpassen',
       JSON.stringify(l && l.map(x => x.wort)));
-    pruefe('der Vorschlag für Mitarbeiter: Putzplan, Meine Zeiten, Geräte',
-      l && l.slice(0, 3).map(x => x.wort).join('|') === 'Putzplan|Meine Zeiten|Geräte');
+    /* Seit Runde 103, P5 steht der Putzplan unten in der Leiste; der
+       Vorschlag nennt an seiner Stelle „Meine Woche". */
+    pruefe('der Vorschlag für Mitarbeiter: Meine Woche, Meine Zeiten, Geräte',
+      l && l.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Geräte');
     pruefe('jede Trefferfläche ≥ 44 × 44', l && l.every(x => x.t.w >= 44 && x.t.h >= 44),
       JSON.stringify(l && l.map(x => x.t)));
 
@@ -137,8 +139,12 @@ async function leiste(p) {
       vorschlagKnopf: getComputedStyle(document.getElementById('schnellVorschlag')).display
     }));
     pruefe('„Anpassen" öffnet die Auswahl', fenster.offen);
+    /* Die Liste steht in der Reihenfolge von „Alles", nicht der Wahl —
+       geprüft wird deshalb, dass die Stellen 1, 2 und 3 je einmal da
+       sind. (Bis P5 stand zufällig die erste Wahl auch oben.) */
     pruefe('die Auswahl zeigt die drei Gewählten mit ihrer Stelle',
-      fenster.gewaehlt.length === 3 && /1$/.test(fenster.gewaehlt[0]), JSON.stringify(fenster.gewaehlt));
+      fenster.gewaehlt.length === 3 &&
+      fenster.gewaehlt.map(t => (t.match(/(\d)$/) || [])[1]).sort().join('') === '123', JSON.stringify(fenster.gewaehlt));
     pruefe('„Zum Vorschlag" fehlt, solange nichts Eigenes gewählt ist', fenster.vorschlagKnopf === 'none',
       fenster.vorschlagKnopf);
 
@@ -157,7 +163,7 @@ async function leiste(p) {
     await p.waitForTimeout(400);
     const neu = await leiste(p);
     pruefe('die Zeile zeigt sofort die neue Wahl',
-      neu && neu.slice(0, 3).map(x => x.wort).join('|') === 'Putzplan|Meine Zeiten|Material',
+      neu && neu.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Material',
       JSON.stringify(neu && neu.map(x => x.wort)));
 
     /* Nach dem Neuladen noch da. */
@@ -167,7 +173,7 @@ async function leiste(p) {
     await p.waitForTimeout(300);
     const nachLaden = await leiste(p);
     pruefe('die Wahl übersteht das Neuladen',
-      nachLaden && nachLaden.slice(0, 3).map(x => x.wort).join('|') === 'Putzplan|Meine Zeiten|Material',
+      nachLaden && nachLaden.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Material',
       JSON.stringify(nachLaden && nachLaden.map(x => x.wort)));
     const ablage = await p.evaluate(() => {
       const pr = JSON.parse(localStorage.getItem('kf_prefs') || '{}');
@@ -185,7 +191,7 @@ async function leiste(p) {
     await p.waitForTimeout(300);
     const zurueck = await leiste(p);
     pruefe('„Zum Vorschlag" stellt den Vorschlag wieder her',
-      zurueck && zurueck.slice(0, 3).map(x => x.wort).join('|') === 'Putzplan|Meine Zeiten|Geräte');
+      zurueck && zurueck.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Geräte');
     pruefe('A1 ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
@@ -195,7 +201,7 @@ async function leiste(p) {
     const p = await seite(b, 'mitarbeiter', { prefs: { theme: 'dark', schnell: { 'jemand-anderes': ['material'] } } });
     const l = await leiste(p);
     pruefe('GEGENPROBE die Wahl eines anderen Kontos gilt hier nicht (Vorschlag steht da)',
-      l && l.slice(0, 3).map(x => x.wort).join('|') === 'Putzplan|Meine Zeiten|Geräte',
+      l && l.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Geräte',
       JSON.stringify(l && l.map(x => x.wort)));
     await p.close();
   }

@@ -91,10 +91,21 @@ const MESSEN = erlaubt => {
       await page.waitForTimeout(2600);
 
       for (const [gruppe, views] of Object.entries(ANSICHTEN)) {
-        const gDa = await page.evaluate(g => {
+        /* Wie ein Mensch: erst unten in der Leiste, sonst über „Alles".
+           Bis Runde 103 fiel eine Gruppe ohne eigenen Knopf hier STILL
+           heraus — im neuen Design waren das Ich, Team und Verwaltung,
+           seit P5 auch die Nachrichten. test-neu-messlatte hat es an
+           der Zahl der Messungen bemerkt. */
+        const gDa = await page.evaluate(([g, erste]) => {
           const k = document.querySelector('.mobnav [data-group="' + g + '"]');
-          if (!k) return false; k.click(); return true;
-        }, gruppe);
+          if (k) { k.click(); return true; }
+          const alles = document.querySelector('.mobnav [data-group="g-alles"]');
+          if (!alles) return false;
+          alles.click();
+          const z = document.querySelector('#allesSeite [data-alles="' + erste + '"]');
+          if (!z) return false;
+          z.click(); return true;
+        }, [gruppe, views[0]]);
         if (!gDa) continue;
         await page.waitForTimeout(300);
         for (const v of views) {
