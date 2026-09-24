@@ -490,6 +490,7 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-38** | **Aufgaben mit Frist bekamen im Kalender unter „Ich" nie einen Punkt** — die Reihenfolge der Punkte kannte die Art `aufgabe` nicht, die Zeile stand nur in der Liste. Gefunden beim Herauslösen von `ichPunkteHTML()` für den Wochenstreifen | 24.9.2026 |
 | **B-39** | **„Dienst · Hürth" stand bei 320 px in drei Zeilen untereinander** (Ich → Woche) — `.ich-was` hatte `flex:1` ohne Grundbreite und schrumpfte auf gut 40 px | 24.9.2026 |
 | **B-40** | **Beim Abhaken federten alle erledigten Haken auf einmal, und das grüne Aufleuchten der Zeile war nie zu sehen** — `.todo.done .check` lief bei jedem Neuzeichnen (15 Federn für eine Aufgabe), und der Horcher ersetzte die Zeile nach 0 ms, bevor `.just-done` ein Bild bekam. Jetzt federt der eine Haken, über das Neuzeichnen hinweg | 24.9.2026 |
+| **B-41** | **Neue Inhalte kamen nach einer Auslieferung bis zu einer Woche lang nicht an.** Die Schulungsdatei stand mit `max-age=604800` im Zwischenspeicher, und der Service Worker holte beim Update durch diesen Zwischenspeicher. `VERSION` hochzählen legte also einen neuen Vorrat mit der alten Datei an. Die fünf EMS-Schulungen waren live und „nirgends bei mir“ (aus dem Betrieb). Jetzt holt der Service Worker mit `cache:'reload'`, und die Inhaltsdateien kommen mit `no-cache`. `test-zwischenspeicher` spielt eine Auslieferung durch, mit dem alten Stand als Gegenprobe | 24.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
 `docs/FORTSCHRITT.md` — chronologisch, 103 Runden.

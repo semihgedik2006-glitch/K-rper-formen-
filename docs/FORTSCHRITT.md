@@ -12165,3 +12165,84 @@ gemeldet.
   - Name ab 1.100 px, mit Gegenprobe darunter.
 - **Gesamtdurchlauf: 138 von 138 grün.** Die Kopfzeile ist drei Pixel
   höher; kein bestehender Durchlauf hing an ihrer Höhe.
+
+## Runde 105 — Die Schulung, die „nirgends“ war
+
+> „ja lass uns das mit der ki nicht machen dann lieber wenn es keine
+> kostenlosen alternativen gibt, dann lass uns lieber das aktuelle
+> verbessern … und wo finde ich die neue schulung die ist niergends bei
+> mir“ (24.9.2026)
+
+### Die Ursache
+
+`schulungen-basis.js` kam laut `firebase.json` mit `max-age=604800`,
+also eine Woche Zwischenspeicher. Der Kommentar dort versprach: wer
+`VERSION` in `sw.js` hochzählt, dessen Datei holt jedes Gerät beim
+nächsten Start. Das stimmte nicht:
+- `addAll()` im Service Worker holt **durch** den HTTP-Zwischenspeicher
+  des Browsers.
+- Wer die Schulungen in der Woche davor einmal geöffnet hatte, bekam
+  beim Update die alte Datei in den neuen Vorrat.
+- Das Aktualisieren im Hintergrund legte sie danach jedes Mal wieder
+  hinein.
+
+Die fünf Module waren ausgeliefert (live nachgeprüft: `m-ems-` 5-mal in
+der Datei) und auf dem Gerät trotzdem nicht da. Dasselbe hätte jede
+künftige Änderung am Handbuch getroffen (`loesungen-basis.js`).
+
+### Die Reparatur, an zwei Stellen
+
+- **`sw.js`:**
+  - Der Vorrat wird mit `cache:'reload'` geholt, also am
+    HTTP-Zwischenspeicher vorbei.
+  - Die drei Inhaltsdateien fragen beim Aktualisieren im Hintergrund
+    mit `no-cache` nach; ein 304 kostet fast nichts.
+  - `VERSION` steht auf v10. Damit richtet sich jedes Gerät beim
+    nächsten Öffnen neu ein und holt dabei die frische Datei.
+- **`firebase.json`:** Die drei Inhaltsdateien kommen mit `no-cache`
+  statt einer Woche. Offline geht nichts verloren, weil sie im Vorrat
+  des Service Workers liegen.
+
+Zwei Stellen, weil jede allein reicht. Das zeigt der Durchlauf
+ausdrücklich, damit ein späteres Zurückdrehen der einen nicht wieder
+alles kaputtmacht.
+
+### Gefunden werden
+
+Die Schulungen lagen unter „Ich → Schulung“, drei Tipps weit weg von
+der Stelle, an der man über EMS nachliest. Das Hilfe-Fenster führt jetzt
+hin:
+- **Startseite der Hilfe:** „Als Schulung lernen — 5 Module zum Lesen“
+  öffnet die Schulungen, schon gefiltert auf „EMS-Wissen“.
+- **EMS-Eintrag:** Unter „Als Schulung“ steht das Modul, das diesen
+  Text enthält. Ein Tipp führt direkt zur Code-Eingabe dieses Moduls.
+  Ein laufender Durchlauf wird dabei nicht weggeworfen.
+- Beides nur, wenn der Bereich „Schulung“ für die Firma an ist.
+
+### Die KI
+
+Wird nicht gebaut, auf Ansage. Stattdessen wird das Bestehende
+verbessert.
+
+### Durchläufe
+
+- **Neu: `tests/test-zwischenspeicher.js`** mit 9 Zusicherungen.
+  - Ein eigener kleiner Server liefert die App mit den **echten**
+    Kopfzeilen aus `firebase.json` aus. Der Durchlauf spielt eine
+    Auslieferung durch (neue Datei, neue `VERSION`) und liest danach,
+    was in der App ankommt.
+  - Durchgespielt werden drei Lagen:
+    - wie im Repo: die neue Fassung kommt an;
+    - nur der Service Worker ist repariert: sie kommt auch an;
+    - **Gegenprobe mit dem alten Stand:** die alte Fassung bleibt
+      liegen. Damit ist gezeigt, dass der Durchlauf den Fehler wirklich
+      nachstellt.
+  - Ersetzt wird dabei nur das Firebase-SDK im Service Worker (Push).
+    Es lädt in dieser Umgebung nicht, und ohne es richtet sich der
+    Service Worker gar nicht ein.
+- **`test-ems-schulung`** hat jetzt 81 Zusicherungen (vorher 69). Neu
+  geprüft werden, bei 390 und 1440 px:
+  - der Weg von der Hilfe zu den Schulungen;
+  - vom Eintrag zum passenden Modul;
+  - Gegenprobe: ein Handbuch-Eintrag hat keinen Schulungs-Knopf.
+- **Gesamtdurchlauf: 139 von 139 grün.**

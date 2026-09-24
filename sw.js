@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v9';
+const VERSION = 'v10';
 const CACHE = 'studiochat-' + VERSION;
 /* loesungen-basis.js liegt mit im Vorrat: die 115 Einträge sind genau
    das, was jemand im Studio braucht, wenn das WLAN gerade der Grund
@@ -61,8 +61,19 @@ self.addEventListener('notificationclick', function (e) {
   }));
 });
 
+/* cache:'reload' ist hier die ganze Pointe (24.9.2026). Ohne das holt
+   addAll() die Dateien durch den HTTP-Zwischenspeicher des Browsers —
+   und der hielt schulungen-basis.js eine Woche lang (max-age=604800 in
+   firebase.json). VERSION hochzählen legte dann einen NEUEN Vorrat mit
+   der ALTEN Datei an: die fünf EMS-Schulungen waren ausgeliefert und
+   auf keinem Gerät zu sehen, das die Schulungen in der Woche davor
+   schon einmal geöffnet hatte. Gemeldet aus dem Betrieb: „die ist
+   nirgends bei mir". tests/test-zwischenspeicher.js stellt genau das
+   nach, mit Gegenprobe. */
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(PRECACHE).catch(function () {}); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function (c) {
+    return c.addAll(PRECACHE.map(function (u) { return new Request(u, { cache: 'reload' }); })).catch(function () {});
+  }).then(function () { return self.skipWaiting(); }));
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {
@@ -95,10 +106,15 @@ self.addEventListener('fetch', function (e) {
     );
     return;
   }
-  // Statische Dateien (Fonts, SDK, Icon): sofort aus Cache, im Hintergrund aktualisieren
+  // Statische Dateien (Fonts, SDK, Icon): sofort aus Cache, im Hintergrund aktualisieren.
+  // Die Inhaltsdateien aus dem Vorrat fragen dabei beim Server nach
+  // (no-cache: ein 304 kostet fast nichts) — sonst legte das
+  // Aktualisieren im Hintergrund die Woche alte Kopie aus dem
+  // HTTP-Zwischenspeicher wieder in den Vorrat.
+  const inhalt = url.origin === self.location.origin && /\/(loesungen-basis|schulungen-basis|ems-wissen)\.js$/.test(url.pathname);
   e.respondWith(
     caches.match(e.request).then(function (cached) {
-      const net = fetch(e.request).then(function (r) {
+      const net = fetch(e.request, inhalt ? { cache: 'no-cache' } : undefined).then(function (r) {
         if (r && r.status === 200 && r.type !== 'opaque') {
           const cp = r.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, cp); });
         }

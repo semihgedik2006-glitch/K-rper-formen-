@@ -325,6 +325,75 @@ async function knoepfe(p) {
   pruefe('ohne Skriptfehler im Editor', !c._fehler.length, c._fehler.join(' | '));
   await c.close();
 
+  // ══ 3b. Vom Hilfe-Fenster in die Schulung ══
+  /* Aus dem Betrieb, am Tag danach: „wo finde ich die neue schulung die
+     ist niergends bei mir". Das Hilfe-Fenster — dort, wo man über EMS
+     nachliest — führt jetzt hin. */
+  console.log('\n── Vom Hilfe-Fenster ──');
+  for (const [w, h] of [[390, 844], [1440, 900]]) {
+    const hq = await starte(b, w, h);
+    await hq.click('#hilfeBtn');
+    await hq.waitForTimeout(1500);
+    const start = await hq.evaluate(() => {
+      const k = document.querySelector('#emsSchulung [data-hschulung]');
+      return k ? k.textContent.trim() : null;
+    });
+    pruefe(w + ' px: auf der Startseite der Hilfe steht „Als Schulung lernen"',
+      !!start && /Als Schulung lernen — 5 Module/.test(start), String(start));
+    await hq.evaluate(() => document.querySelector('#emsSchulung [data-hschulung]').click());
+    await hq.waitForTimeout(1200);
+    const dort = await hq.evaluate(() => ({
+      hilfeZu: !document.getElementById('hilfe').classList.contains('show'),
+      seite: (document.querySelector('.view.show') || {}).id,
+      kat: (document.querySelector('[data-schkat].an') || {}).textContent || '',
+      ids: [...document.querySelectorAll('[data-schmodul]')].map(x => x.getAttribute('data-schmodul'))
+    }));
+    pruefe(w + ' px: ein Tipp führt zu den Schulungen, gefiltert auf „EMS-Wissen"',
+      dort.hilfeZu && dort.seite === 'view-schulung' && /EMS-Wissen/.test(dort.kat) && dort.ids.length === 5,
+      JSON.stringify(dort));
+
+    /* Aus einem Eintrag direkt zum Modul, das ihn enthält. */
+    await hq.click('#hilfeBtn');
+    await hq.waitForTimeout(900);
+    await hq.evaluate(() => {
+      const s = document.getElementById('hilfeSuche');
+      s.value = 'kontraindikationen'; s.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await hq.waitForTimeout(400);
+    await hq.evaluate(() => document.querySelector('#hilfeTreffer [data-heintrag="ems:kontraindikationen"]').click());
+    await hq.waitForTimeout(500);
+    const eintrag = await hq.evaluate(() => {
+      const k = document.querySelector('#hilfeEintrag [data-hschulung]');
+      return k ? { id: k.getAttribute('data-hschulung'), text: k.textContent.trim() } : null;
+    });
+    pruefe(w + ' px: ein Eintrag nennt das Modul, in dem er steht',
+      !!eintrag && eintrag.id === 'm-ems-sicherheit', JSON.stringify(eintrag));
+    await hq.evaluate(() => document.querySelector('#hilfeEintrag [data-hschulung]').click());
+    await hq.waitForTimeout(1000);
+    const code = await hq.evaluate(() => ({
+      feld: !!document.getElementById('schCodeFeld'),
+      titel: (document.querySelector('#schCode h3') || {}).textContent || ''
+    }));
+    pruefe(w + ' px: und führt direkt zum Start dieses Moduls',
+      code.feld && /Kontraindikationen/.test(code.titel), JSON.stringify(code));
+    /* GEGENPROBE: ein Handbuch-Eintrag hat keinen solchen Knopf. */
+    await hq.click('#hilfeBtn');
+    await hq.waitForTimeout(900);
+    const handbuch = await hq.evaluate(async () => {
+      const s = document.getElementById('hilfeSuche');
+      s.value = 'gerät piept'; s.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(r => setTimeout(r, 400));
+      const z = document.querySelector('#hilfeTreffer [data-heintrag]:not([data-heintrag^="ems:"])');
+      if (!z) return null;
+      z.click();
+      await new Promise(r => setTimeout(r, 400));
+      return !!document.querySelector('#hilfeEintrag [data-hschulung]');
+    });
+    pruefe(w + ' px: GEGENPROBE ein Handbuch-Eintrag zeigt keinen Schulungs-Knopf', handbuch === false, String(handbuch));
+    pruefe(w + ' px: ohne Skriptfehler', !hq._fehler.length, hq._fehler.join(' | '));
+    await hq.close();
+  }
+
   // ══ 4. Trefferflächen und Lesebreite ══
   console.log('\n── Trefferflächen ──');
   for (const [w, h] of [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {

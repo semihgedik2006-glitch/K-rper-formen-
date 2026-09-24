@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-/FgNwsUZx5I4gA3rVSeNmka5U74vkputEBgJ6f+Rg2M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-oLq8pfkGVVVmBC2Ro0JSd3sY44TkYjtbJsQ2iwpg1to='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4528,6 +4528,11 @@ html{font-size:var(--fs,100%)}
 .hilfe-netz{margin-top:var(--s20);padding-top:var(--s16);border-top:1px solid var(--line);
   display:flex;flex-direction:column;align-items:flex-start;gap:var(--s8);font-size:var(--t-sm)}
 .hilfe-netz .btn{min-height:44px;display:inline-flex;align-items:center}
+.hilfe-zur-schulung{display:flex;align-items:center;gap:var(--s10);width:100%;
+  min-height:48px;margin-top:var(--s8);text-align:left;justify-content:flex-start}
+.hilfe-zur-schulung svg{width:18px;height:18px;flex-shrink:0}
+.hilfe-zur-schulung span{flex:1;min-width:0}
+.hilfe-zur-schulung i{font-style:normal;color:var(--text-3)}
 .hilfe-knoepfe a.btn{display:inline-flex;align-items:center;justify-content:center}
 /* Ein einzelner Eintrag. Die Schritte sind nummeriert, weil die
    Reihenfolge trägt: „erst Stecker ziehen, dann öffnen" ist etwas
@@ -8527,6 +8532,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <div id="hilfeKats" class="hilfe-kats"></div>
           <p class="hilfe-ueber">EMS-Wissen</p>
           <div id="emsKats" class="hilfe-kats"></div>
+          <div id="emsSchulung"></div>
           <p class="hint" id="emsStand"></p>
           <div class="hilfe-knoepfe" style="margin-top:14px">
             <button class="btn btn-ghost btn-sm" id="hilfeAlle">Alle durchgehen</button>
@@ -15561,6 +15567,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-schulung-finden', datum:'24.9.2026', titel:'EMS-Schulungen: jetzt auf jedem Gerät und aus der Hilfe erreichbar', wo:'hilfe', punkte:[
+    'Die fünf neuen EMS-Schulungen kamen auf vielen Geräten nicht an: Die App hielt eine Woche lang die alte Liste im Speicher. Das ist behoben — nach dem nächsten Öffnen der App sind sie unter „Ich → Schulung → EMS-Wissen“ da.',
+    'Im Hilfe-Fenster (Rettungsring oben) steht unter „EMS-Wissen“ jetzt „Als Schulung lernen“. Ein Tipp führt direkt zu den fünf Modulen.',
+    'Jede EMS-Antwort, die in einer Schulung vorkommt, zeigt unter „Als Schulung“, in welchem Modul sie steht — ein Tipp startet es.' ] },
   { id:'2026-09-24-kopf', datum:'24.9.2026', titel:'Oben: grössere Knöpfe am Rechner', wo:'home', punkte:[
     'Die Knöpfe ganz oben — Bericht, Glocke, Hilfe, Suchen, Hell/Dunkel, Abmelden und dein Kürzel — sind am Rechner und Tablet jetzt so gross wie am Handy und leichter zu treffen.',
     'Auf mittleren Bildschirmen (z. B. Tablet hochkant) passte der Abmelde-Knopf der Leitung nicht mehr in die Zeile. Jetzt steht er wieder da.',
@@ -18475,6 +18485,17 @@ function emsStartZeichnen(){
       });
     } else box.innerHTML='';
   }
+  var zs=$('emsSchulung');
+  if(zs){
+    var mods=emsSchulungModule();
+    zs.innerHTML = mods.length
+      ? '<button type="button" class="btn btn-ghost hilfe-zur-schulung" data-hschulung="">'+
+          ikon('blatt')+'<span>Als Schulung lernen — '+mods.length+' Module zum Lesen</span><i>›</i></button>'
+      : '';
+    zs.querySelectorAll('[data-hschulung]').forEach(function(b){
+      b.addEventListener('click', function(){ hilfeZurSchulung(''); });
+    });
+  }
   var sd=$('emsStand');
   if(sd){
     sd.textContent = _eStatus==='da'
@@ -18521,6 +18542,9 @@ function emsEintragZeichnen(box, e){
   var zurueck=(_hVon==='liste' && _hListe.length) ? 'liste' : 'start';
   var verw=e.verwandt.map(function(id){ return emsFinden('ems:'+id); }).filter(Boolean);
   var stich=e.stich.split(' ').filter(function(w){ return w.length>3; }).slice(0,8);
+  var schul=emsSchulungModule().filter(function(m){
+    return (m.schritte||[]).some(function(s){ return s.art==='lesen' && (s.ems||[]).indexOf(e.eid)>=0; });
+  })[0];
   box.innerHTML=
     '<button type="button" class="hilfe-zurueck" data-hzurueck="'+zurueck+'">‹ Zurück</button>'+
     '<h3>'+esc(e.titel)+'</h3>'+
@@ -18541,6 +18565,11 @@ function emsEintragZeichnen(box, e){
     (verw.length
       ? '<p class="hilfe-ueber">Passt auch dazu</p><div class="hilfe-liste">'+verw.map(hilfeZeile).join('')+'</div>'
       : '')+
+    (schul
+      ? '<p class="hilfe-ueber">Als Schulung</p>'+
+        '<button type="button" class="btn btn-ghost hilfe-zur-schulung" data-hschulung="'+esc(schul.id)+'">'+
+          ikon('blatt')+'<span>'+esc(schul.titel)+'</span><i>›</i></button>'
+      : '')+
     (stich.length
       ? '<p class="hilfe-ueber">Schlagwörter</p><div class="hilfe-stich">'+stich.map(function(w){
           return '<button type="button" class="chip hilfe-stichwort" data-hsuch="'+esc(w)+'">'+esc(w)+'</button>';
@@ -18558,6 +18587,31 @@ function emsEintragZeichnen(box, e){
   hilfeZurueckBinden(box);
   hilfeZeilenBinden(box, _hVon);
   hilfeSuchKnoepfeBinden(box);
+  box.querySelectorAll('[data-hschulung]').forEach(function(b){
+    b.addEventListener('click', function(){ hilfeZurSchulung(b.getAttribute('data-hschulung')); });
+  });
+}
+/* ── Vom Hilfe-Fenster in die Schulung (24.9.2026) ──────────────────
+   Aus dem Betrieb, am Tag nach den EMS-Schulungen: „wo finde ich die
+   neue schulung die ist niergends bei mir". Sie lag unter Ich →
+   Schulung — drei Tipps weit weg von der Stelle, an der man über EMS
+   nachliest. Jetzt führt das Hilfe-Fenster hin: von der Startseite zu
+   allen EMS-Modulen, aus einem Eintrag direkt zu dem Modul, das ihn
+   enthält. Nur wenn der Bereich Schulung für diese Firma an ist. */
+function emsSchulungModule(){
+  if(!featureAn('schulung') || _schBasisStatus!=='da') return [];
+  return schModule().filter(function(m){ return m.kat==='ems'; });
+}
+function hilfeZurSchulung(modulId){
+  hilfeSchliessen();
+  _schKat='ems';
+  /* Ein Durchlauf, der gerade offen ist, wird nicht weggeworfen. */
+  var laeuft = _schAnsicht==='lauf' && _schModul;
+  showView('schulung');
+  if(!laeuft){
+    if(modulId && schModulVon(modulId)) schCodeZeigen(modulId);
+    else { schPane('uebersicht'); schZeichnen(); }
+  }
 }
 
 /* ── Die eigenen Einträge ──────────────────────────────────────────*/
@@ -18655,6 +18709,9 @@ function hilfeOeffnen(){
   hilfeStartZeigen();
   hilfeBasisLaden().then(function(){ if(_hAn) hilfeAuffrischen(); });
   emsLaden().then(function(){ if(_hAn) hilfeAuffrischen(); });
+  /* Die Schulungen, damit das Hilfe-Fenster auf sie zeigen kann. Die
+     Datei liegt im Vorrat des Service Workers — das kostet nichts. */
+  if(featureAn('schulung')) schBasisLaden().then(function(){ if(_hAn) hilfeAuffrischen(); });
   /* Auf dem Rechner sofort in das Feld; auf dem Telefon NICHT — dort
      springt sonst die Tastatur hoch und verdeckt die Kacheln, bevor
      man sie gesehen hat. */
