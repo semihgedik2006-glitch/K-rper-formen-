@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-TTlB6qVqt0+yNP5UxSArS6SSacVRGsVMMeqfYbGGO6c='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-23LTMUxFc6/skrbpZvD/+HAul0sDgQqtFgofyOhoxH0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1747,9 +1747,20 @@ body.nurlesen .kopf-plus{display:none !important}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
    dann 124 Pixel weiterscrollen, um zu speichern. Jetzt klebt der Knopf am
    unteren Rand und ist immer erreichbar. */
+/* ── Die Fläche unter „Speichern" reicht GENAU bis an den Rand ──
+   Aus dem Betrieb, 24.9.2026: „Die Profilseite auf dem Handy … lässt
+   sich horizontal sowie vertikal verschieben."
+   Nachgemessen: das Blatt war am Handy 4 px breiter als der Bildschirm
+   (scrollWidth 392 bei 388). Die Fläche rechnete fest mit 24 px Rand,
+   am Handy hat das Blatt aber nur 20 px — die 4 px darüber hinaus
+   machten es quer verschiebbar. Jetzt liest sie den seitlichen Rand aus
+   --pm-rand, das an derselben Stelle gesetzt wird wie der Innenabstand.
+   Unten bleibt es bei 24 px: dort ist der Innenabstand auch am Handy
+   24 px (plus der sichere Rand). */
+.pm-box{--pm-rand:var(--s24)}
 #profileModal #pmSave{position:sticky;bottom:-24px;z-index:3;margin-top:var(--s16)}
-#profileModal #pmSave::after{content:'';position:absolute;left:-24px;right:-24px;bottom:-24px;
-  height:24px;background:var(--bg-2);z-index:-1}
+#profileModal #pmSave::after{content:'';position:absolute;left:calc(-1 * var(--pm-rand));right:calc(-1 * var(--pm-rand));
+  bottom:-24px;height:24px;background:var(--bg-2);z-index:-1}
 .pm-colors{display:flex;gap:var(--s8);flex-wrap:wrap}
 .pm-color{width:34px;height:34px;border-radius:var(--r-rund);cursor:pointer;border:3px solid transparent;transition:transform .15s}
 .pm-color:hover{transform:scale(1.1)}
@@ -2677,8 +2688,17 @@ body.nurlesen .kopf-plus{display:none !important}
 @media (max-width:620px){
   #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal{align-items:flex-end;padding:0}
   #profileModal .pm-box,#personModal .pm-box,#devModal .pm-box,#pollModal .pm-box,#todoEditModal .pm-box,#aboModal .pm-box,#ownTodoModal .pm-box,#probeModal .pm-box,#zugangModal .pm-box,#putzModal .pm-box{
+    --pm-rand:var(--s20);
     max-width:none;border-radius:var(--radius) var(--radius) 0 0;border-bottom:none;
-    padding:var(--s20) var(--s20) calc(var(--s24) + var(--sab));max-height:90vh}
+    padding:var(--s20) var(--s20) calc(var(--s24) + var(--sab));max-height:90vh;
+    /* Das Blatt steht fest: senkrecht scrollt nur sein Inhalt, und am
+       Anfang oder Ende läuft die Bewegung nicht an die Seite dahinter
+       weiter (sonst zieht der ganze Bildschirm mit). Quer gibt es nichts
+       zu schieben. */
+    overscroll-behavior:contain;touch-action:pan-y}
+  /* Wer neben das Blatt tippt und wischt, bewegt nichts. */
+  #profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal{
+    overscroll-behavior:contain;touch-action:none}
   #profileModal.show .pm-box,#personModal.show .pm-box{
     animation:sheetUp .5s var(--ease-ios)}
   /* Griff oben – zeigt ohne Worte, dass sich das Blatt schließen lässt */
@@ -15454,6 +15474,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-profil', datum:'24.9.2026', titel:'Handy: das Profil-Fenster steht fest', punkte:[
+    'Das Fenster mit Profil und Aussehen (oben rechts auf dein Bild tippen) lässt sich am Handy nicht mehr seitlich verschieben — es war 4 Pixel breiter als der Bildschirm.',
+    'Beim Scrollen bewegt sich nur noch der Inhalt; am Ende zieht der Bildschirm dahinter nicht mehr mit.' ] },
   { id:'2026-09-24-p5', datum:'24.9.2026', titel:'Handy: Putzplan unten in der Leiste', wo:'putzplan', punkte:[
     'Unten stehen jetzt Start, Aufgaben, Putzplan und Alles — der Putzplan ist ein Tipp statt zwei.',
     'Die Nachrichten findest du unter „Alles“. Kommt etwas Neues, steht der Punkt an „Alles“, und die Startseite nennt es unter „Neu für dich“.',
