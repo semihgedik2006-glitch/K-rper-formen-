@@ -69,7 +69,8 @@ ab, was dadurch nicht mehr passt.
 > sichtbaren Knopf „Anpassen" statt per langem Druck (eine unsichtbare
 > Geste darf nie der einzige Weg sein), und ohne eigene Wahl steht ein
 > Vorschlag je Rolle da. Auf Bildschirmen unter 640 px Höhe nur die
-> Zeichen — sonst passte die Startseite beim iPhone SE nicht mehr.
+> Zeichen, unter 600 px gar nicht — sonst passte die Startseite beim
+> iPhone SE nicht mehr.
 
 ### A2. Die Hauptaktion gross und in der Daumenzone
 *Vorbild: Material 3 Expressive („Size"), Prüf-Apps im Aussendienst* ([Google Design](https://design.google/library/expressive-material-design-google-research), [BasinCheck](https://basincheck.com/resources/best-mobile-safety-audit-apps))

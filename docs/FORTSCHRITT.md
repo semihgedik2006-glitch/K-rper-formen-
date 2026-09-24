@@ -11221,4 +11221,17 @@ verschoben, und darauf verlassen sich andere Durchläufe.
     zeigen;
   - der Mitarbeiter sieht keine Bestätigen-Zeile.
 - **Gegen den Stand von Block A** ist der Durchlauf rot.
-- **Oberfläche:** GESAMT_B
+- **Oberfläche:** 127 Durchläufe. Einer war rot, und zu Recht:
+  `test-neu-design` meldete für den Chef beim iPhone SE (320 × 568) „339
+  Pixel Inhalt in 294 Platz".
+  - **Ursache:** Mit „Zum Übernehmen" kam eine sechste Kategorie dazu.
+    „Ausserdem" stand danach in vier Reihen, und die Schnellzugriffe aus
+    Block A nahmen darunter weitere 56 Pixel.
+  - **Kleinere Knöpfe gehen nicht,** weil 44 px die Grenze sind.
+    Kompaktere Abstände brachten 30 Pixel; es fehlten 45.
+  - **Entschieden:** Unter 600 Pixeln Höhe entfällt die Zeile der
+    Schnellzugriffe. „Alles auf einer Seite" ist dort die ältere und
+    wichtigere Zusage, und die Ziele bleiben zwei Tipps entfernt über
+    „Alles".
+  - **Danach:** 350 in 350, grün. Die übrigen 126 Durchläufe waren
+    sauber.

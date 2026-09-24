@@ -5482,6 +5482,13 @@ body.neu .sz-wort{max-width:100%;font-size:var(--t-2xs);font-weight:700;
   body.neu .sz-knopf{min-height:44px;padding:var(--s4)}
   body.neu .sz-wort{display:none}
 }
+/* Und unter 600 Pixeln gar nicht. Mit „Zum Übernehmen" (Idee B2) kam
+   eine Kategorie dazu; beim iPhone SE stand „Ausserdem" danach in vier
+   Reihen, und die Startseite war 339 Pixel hoch in 294 Platz — auch
+   mit der Zeile nur aus Zeichen. Auf so einem Bildschirm ist „alles
+   auf einer Seite" die ältere und wichtigere Zusage; die Ziele sind
+   dort zwei Tipps entfernt über „Alles". */
+@media(max-height:600px){ body.neu .schnell{display:none} }
 /* „Anpassen" ist kein Ziel, sondern das Werkzeug dafür: gestrichelt
    und ohne Schatten. Es soll gefunden werden, aber nicht mit den
    Zielen verwechselt. */
