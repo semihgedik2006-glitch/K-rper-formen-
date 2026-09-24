@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-H9IKq7yGk8Kvfowz3wz/tzxbRoRdeJRsQJLgK0kbcT0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-dNaqnx9BRwYvTBka718nB8w9+/tkZt3+ZkwJFCJTkyo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1226,8 +1226,11 @@ html.demo #terminalSchirm{top:44px}
 .check{width:26px;height:26px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid var(--line-2);
   background:none;cursor:pointer;display:grid;place-items:center;margin-top:var(--s1)}
 .check svg{width:15px;height:15px;color:var(--on-accent);opacity:0;transform:scale(.5);transition:.2s}
-.todo.done .check{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent}
-.todo.done .check svg{opacity:1;transform:scale(1)}
+/* Der Putzplan stand hier nicht mit drin (gefunden in Runde 103, P2):
+   ein abgehakter Putzpunkt war durchgestrichen, sein Kästchen aber LEER
+   — er sah zugleich erledigt und offen aus. */
+.todo.done .check,.pp-item.done .check{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent}
+.todo.done .check svg,.pp-item.done .check svg{opacity:1;transform:scale(1)}
 .t-body{flex:1;min-width:0}
 .t-title{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);letter-spacing:var(--ls-s)}
 .t-desc{color:var(--text-2);font-size:var(--t-sm);margin-top:var(--s2);white-space:pre-wrap}
@@ -1447,6 +1450,44 @@ body.nurlesen .kopf-plus{display:none !important}
 .pp-wer .inp{flex:1;min-width:120px;min-height:44px}
 .pp-wer .hint{flex-basis:100%;margin:0;font-size:var(--t-2xs)}
 .pp-wer-leer{color:var(--warm-tx)}
+.pp-wer[hidden]{display:none}
+
+/* ── Putzplan: die Leiste und die Gruppen (Runde 103, P2) ──
+   Eine Zeile statt vier: Studio, Fortschritt, wer abhakt, Filter,
+   Drucken. Auf dem Handy bricht sie in zwei Reihen um — gemessen immer
+   noch rund 400 Pixel weniger bis zum ersten Punkt als vorher. */
+.nur-vorlesen{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.pp-leiste{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;
+  margin:var(--s2) 0 var(--s12)}
+.pp-leiste .pp-studiowahl{flex:0 1 auto;width:auto;max-width:240px;min-height:44px}
+.pp-fort{flex:1 1 72px;min-width:72px;height:8px;border-radius:var(--r-pille);
+  background:var(--auf-2);overflow:hidden}
+.pp-fort i{display:block;height:100%;width:0;border-radius:var(--r-pille);
+  background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.pp-fort-zahl{font-size:var(--t-xs);color:var(--text-2);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+.pp-wer-knopf.leer{color:var(--warm-tx)}
+.pp-leiste .btn{min-height:44px}
+.pp-werkzeuge[hidden]{display:none}
+.pp-gruppen{display:flex;flex-direction:column;gap:var(--s16)}
+.pg-kopf{display:flex;align-items:center;gap:var(--s10);margin:0 0 var(--s8)}
+.pg-kopf h4{margin:0;font-family:var(--font-head);font-size:var(--t-xs);font-weight:700;
+  letter-spacing:var(--ls-l);text-transform:uppercase;color:var(--text-2)}
+.pg-zahl{font-size:var(--t-xs);color:var(--text-2);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+.pg-balken{flex:1 1 auto;height:4px;border-radius:var(--r-pille);background:var(--auf-2);overflow:hidden}
+.pg-balken i{display:block;height:100%;background:var(--accent)}
+.pp-gruppe.fertig .pg-zahl{color:var(--ok-tx);font-weight:700}
+.pp-gruppe.fertig .pg-balken i{background:var(--ok-tx)}
+/* Am PC: die Gruppen als Spalten. Ein Studio mit täglichen,
+   wöchentlichen und einmaligen Punkten steht damit auf EINEM
+   Bildschirm — vorher waren es bei 1440 × 900 drei von fünf. */
+@media(min-width:1100px){
+  .pp-gruppen{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    align-items:start;gap:var(--s16) var(--s20)}
+  .pp-gruppe .pp-item{margin-bottom:var(--s6)}
+}
 .pp-konto{color:var(--text-3);font-weight:400}
 /* Der Grund an einer offenen Aufgabe: warm, nicht rot. Es ist eine
    Erklärung, kein Fehler — wer „Mittel war leer" schreibt, hat das
@@ -3637,7 +3678,17 @@ html{font-size:var(--fs,100%)}
    sehen. Bewusst nur die ersten zehn – danach wäre es Warten.
    Wer im System "Bewegung reduzieren" eingestellt hat, bekommt nichts davon. */
 @media (prefers-reduced-motion: no-preference){
-  .dev-item,.cert-item,.pp-item,.doc,.trash-item{animation:listIn .34s var(--ease-out) both}
+  /* backwards, nicht both — Regel aus Runde 101 („Flüssig heisst
+     konkret"): nach dem Einlaufen hält sonst jede Zeile ihren Endzustand
+     als laufende Animation fest. */
+  .dev-item,.cert-item,.pp-item,.doc,.trash-item{animation:listIn .34s var(--ease-out) backwards}
+  /* Der Putzplan wird bei JEDEM Haken neu gezeichnet (der Horcher
+     meldet die Änderung). Ohne diese Zeile liefen dann alle Punkte
+     erneut gestaffelt ein — gemessen beim Abhaken eines Punktes:
+     beim Chef der Demo (Brühl, 5 Punkte) 4 Animationen auf einmal, für
+     einen einzigen Haken. Eingelaufen wird nur beim ersten Zeichnen
+     eines Studios; danach federt nur, was man gerade abgehakt hat. */
+  #ppList.pp-ruhig .pp-item:not(.just-done){animation:none}
   .dev-item:nth-child(1),.cert-item:nth-child(1),.pp-item:nth-child(1),.doc:nth-child(1){animation-delay:0ms}
   .dev-item:nth-child(2),.cert-item:nth-child(2),.pp-item:nth-child(2),.doc:nth-child(2){animation-delay:26ms}
   .dev-item:nth-child(3),.cert-item:nth-child(3),.pp-item:nth-child(3),.doc:nth-child(3){animation-delay:52ms}
@@ -6900,9 +6951,31 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
         </div>
         <div class="scroll-area" data-shrinks="1">
-          <div class="mat-bar">
-            <select class="inp" id="ppStudio"></select>
-            <button data-ikon="drucken" class="btn btn-ghost btn-sm no-print" id="ppPrint" title="Putzplan ausdrucken">Drucken</button>
+          <!-- ══ DIE LEISTE (Runde 103, P2) ═════════════════════════════
+               Aus dem Betrieb, 24.9.2026: Aufgaben und Putzplan sind die
+               meistgenutzten Bereiche. Gemessen stand der erste Putzpunkt
+               am Handy bei y=764 (390 × 844) und am PC bei y=684 (1440 ×
+               900) — davor 17 Bedienelemente: Studio, Drucken, zwei Reihen
+               Filter, Sortierung, das Kürzelfeld.
+
+               Jetzt EINE Zeile: Studio, Fortschritt, wer abhakt, Filter,
+               Drucken. Filter und Kürzelfeld klappen auf, wenn man sie
+               braucht; sonst beginnt direkt darunter der Plan. -->
+          <div class="pp-leiste no-print" id="ppLeiste">
+            <select class="inp pp-studiowahl" id="ppStudio" aria-label="Studio"></select>
+            <div class="pp-fort" id="ppFort" aria-hidden="true"><i id="ppFortBalken"></i></div>
+            <span class="pp-fort-zahl" id="ppProgress"></span>
+            <button type="button" class="chip pp-wer-knopf" id="ppWerKnopf"
+                    aria-expanded="false" aria-controls="ppWerZeile"></button>
+            <button type="button" class="chip pp-filter-knopf" id="ppFilterKnopf"
+                    aria-expanded="false" aria-controls="ppWerkzeuge">Filter</button>
+            <button data-ikon="drucken" class="btn btn-ghost btn-sm" id="ppPrint" title="Putzplan ausdrucken">Drucken</button>
+          </div>
+          <div class="pp-wer" id="ppWerZeile" hidden>
+            <label for="ppKuerzel">Wer hakt ab?</label>
+            <input class="inp" id="ppKuerzel" type="text" maxlength="20"
+                   autocomplete="off" placeholder="z. B. AB" />
+            <span class="hint" id="ppWerHint"></span>
           </div>
 
           <!-- Suchen und Filtern, wie bei den Aufgaben.
@@ -6915,7 +6988,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                „Pausiert" gibt es dafür nur hier: die Fortschrittszeile
                nennt die Zahl schon („2 pausiert"), bis jetzt gab es aber
                keinen Weg, sie sich anzusehen. -->
-          <div class="sticky-tools no-print">
+          <div class="sticky-tools no-print pp-werkzeuge" id="ppWerkzeuge" hidden>
             <div class="chip-row werkzeugzeile">
               <div class="todo-search klein">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -6938,19 +7011,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </div>
           </div>
 
-          <!-- Liste der Putzaufgaben des gewählten Studios -->
-          <div class="card" id="ppCard" data-fold="ppliste" data-fold-offen="1">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-              <h3 id="ppListTitle">Putzplan</h3>
-              <span class="todo-count" id="ppProgress"></span>
-            </div>
-            <div class="pp-wer" id="ppWerZeile">
-              <label for="ppKuerzel">Wer hakt ab?</label>
-              <input class="inp" id="ppKuerzel" type="text" maxlength="20"
-                     autocomplete="off" placeholder="z. B. AB" />
-              <span class="hint" id="ppWerHint"></span>
-            </div>
-            <div id="ppList" style="margin-top:8px"></div>
+          <!-- Der Plan selbst: ohne Kartenrahmen — er IST der Inhalt der
+               Seite. Gruppiert nach Rhythmus (täglich, wöchentlich, …),
+               am PC als Spalten nebeneinander. -->
+          <div id="ppCard" class="pp-plan">
+            <h3 id="ppListTitle" class="nur-vorlesen">Putzplan</h3>
+            <div id="ppList"></div>
           </div>
 
           <!-- Notizen der Mitarbeiter -->
@@ -15269,6 +15335,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-p2', datum:'24.9.2026', titel:'Putzplan: der Plan steht jetzt oben', wo:'putzplan', punkte:[
+    'Studio, Fortschritt, „Wer hakt ab?“, Filter und Drucken stehen in EINER Leiste — der erste Punkt beginnt am PC und am Handy jeweils fast 300 Pixel weiter oben.',
+    'Der Plan ist nach Täglich, Wöchentlich und Einmalig gegliedert, jede Gruppe mit „2 von 3“. Am PC stehen die Gruppen nebeneinander.',
+    'Filter und Kürzel klappen erst auf, wenn man sie braucht; am Knopf steht, ob ein Filter läuft und wer gerade abhakt.',
+    'Abgehakte Punkte haben jetzt ein gefülltes Kästchen — vorher sahen sie zugleich erledigt und offen aus.' ] },
   { id:'2026-09-24-d', datum:'24.9.2026', titel:'Danke an erledigten Aufgaben', wo:'todos', punkte:[
     'An einer erledigten Aufgabe eines Kollegen steht jetzt „Danke“ — ein Tipp genügt, ein zweiter nimmt es zurück.',
     'Wer ein Danke bekommen hat, sieht es an der Aufgabe und oben auf der Startseite unter „Neu für dich“.',
@@ -27549,6 +27620,7 @@ function printPutzplan(){
    Dieselbe Mechanik wie bei den Aufgaben: ein Suchtext und ein
    Schnellfilter, beide gleichzeitig wirksam. */
 var _ppFilter='', _ppMode='alle', _ppRhy='', _ppDring=false;
+var _ppGezeichnetFuer=null;
 
 function ppPasst(t){
   if(_ppMode==='offen'   && (isDone(t) || ppPausiert(t))) return false;
@@ -27696,6 +27768,9 @@ function renderPutzplan(){
   if(prog) prog.textContent = total
     ? (done+' von '+total+' erledigt'+(pausiert?(' · '+pausiert+' pausiert'):''))
     : (pausiert ? (pausiert+' pausiert') : '');
+  var balken=$('ppFortBalken');
+  if(balken) balken.style.width = (total ? Math.round(done/total*100) : 0)+'%';
+  ppLeisteSetzen();
   if(!list.length){
     box.innerHTML=emptyHTML('Kein Putzplan','Der Chef legt hier Reinigungsaufgaben an.','tropfen');
     ppZahlenSetzen(list, 0);
@@ -27706,7 +27781,11 @@ function renderPutzplan(){
   list=list.filter(ppPasst);
   ppZahlenSetzen(_ppTasks, list.length);
   if(!list.length){ box.innerHTML=ppLeerText(gesamt); return; }
-  box.innerHTML=list.map(function(t){
+  /* Einlaufen nur beim ersten Zeichnen dieses Studios (siehe CSS
+     #ppList.pp-ruhig). */
+  box.classList.toggle('pp-ruhig', _ppGezeichnetFuer===_ppStudioKey);
+  _ppGezeichnetFuer=_ppStudioKey;
+  function zeile(t){
     var d=isDone(t);
     var rep=prioMarke(t)+(t.recurring?'<span class="t-rep">'+ikon('wiederholen')+' '+esc(repLabelFor(t))+'</span>':'');
     /* Das Kürzel steht VORNE und der Kontoname dahinter in Klammern:
@@ -27742,8 +27821,71 @@ function renderPutzplan(){
         ? '<span class="pp-pausetxt">'+esc(ppPauseText(t))+'</span>'
         : (doneInfo||'<span>noch offen</span>'))+pauseKnopf+'</div></div>'+
       stift+del+'</div></div>';
-  }).join('');
+  }
+  /* ── Gruppiert nach Rhythmus (Runde 103, P2) ──
+     In der Standard-Sortierung steht der Plan in Gruppen: täglich, wöchentlich, in eigenem Abstand, einmalig —
+     jede mit „2 von 3". So liest man, was HEUTE noch fehlt, ohne die
+     wöchentlichen erst zu überspringen. Am PC stehen die Gruppen als
+     Spalten nebeneinander.
+
+     Wer ausdrücklich sortiert — nach Name, Rhythmus, „zuletzt
+     erledigt" oder Dringlichkeit —, bekommt eine FLACHE Liste: das ist
+     dann die gewünschte Reihenfolge, und Gruppen würden sie wieder
+     zerschneiden. Auch „nach Rhythmus": dort gilt weiter „offene vor
+     erledigten" über den ganzen Plan (test-sortierung prüft beides). */
+  if(wieSort==='standard'){
+    var GRUPPEN=[
+      { id:'taeglich',    wort:'Täglich',            passt:function(t){ return ppRang(t)<=1.5; } },
+      { id:'woechentlich',wort:'Wöchentlich',        passt:function(t){ var r=ppRang(t); return r>1.5 && r<=3; } },
+      { id:'anders',      wort:'In eigenem Abstand', passt:function(t){ return ppRang(t)===4; } },
+      { id:'einmalig',    wort:'Einmalig',           passt:function(t){ return ppRang(t)>=5; } }
+    ];
+    box.innerHTML='<div class="pp-gruppen">'+GRUPPEN.map(function(g){
+      var drin=list.filter(g.passt); if(!drin.length) return '';
+      var zb=drin.filter(function(t){ return !ppPausiert(t); });
+      var fertig=zb.filter(isDone).length;
+      var pct=zb.length ? Math.round(fertig/zb.length*100) : 0;
+      return '<section class="pp-gruppe'+(zb.length && fertig===zb.length?' fertig':'')+'" data-ppgruppe="'+g.id+'">'+
+        '<div class="pg-kopf"><h4>'+g.wort+'</h4>'+
+          '<span class="pg-zahl">'+(zb.length ? fertig+' von '+zb.length : 'pausiert')+'</span>'+
+          '<i class="pg-balken" aria-hidden="true"><i style="width:'+pct+'%"></i></i></div>'+
+        drin.map(zeile).join('')+'</section>';
+    }).join('')+'</div>';
+  } else {
+    box.innerHTML=list.map(zeile).join('');
+  }
   bindPutzplanClicks(box);
+}
+
+/* ── Leiste: wer hakt ab, und ist ein Filter an? ──
+   Beides klappt auf, wenn man es braucht. Damit trotzdem niemand
+   vergisst, dass ein Filter läuft oder wer gerade abhakt, stehen beide
+   Antworten AUF dem Knopf: „Filter · 2", „Wer: AB". */
+function ppLeisteSetzen(){
+  var wk=$('ppWerKnopf');
+  if(wk){
+    var k=putzKuerzel();
+    wk.innerHTML = k ? 'Wer: <b>'+esc(k)+'</b>' : 'Wer hakt ab?';
+    wk.classList.toggle('leer', !k);
+    wk.title = k ? 'Kürzel ändern' : 'Kürzel eintragen — wird bei jedem Haken mitgeschrieben';
+  }
+  var fk=$('ppFilterKnopf');
+  if(fk){
+    var an=(_ppFilter?1:0)+(_ppMode!=='alle'?1:0)+(_ppRhy?1:0)+(_ppDring?1:0)+
+           (sortWahl('putz','standard')!=='standard'?1:0);
+    fk.innerHTML = 'Filter'+(an ? ' <b class="chip-num">'+an+'</b>' : '');
+    fk.classList.toggle('on', an>0);
+  }
+}
+function ppAufklappen(knopfId, bereichId){
+  var k=$(knopfId), b=$(bereichId); if(!k || !b) return;
+  var auf=b.hidden;
+  b.hidden=!auf;
+  k.setAttribute('aria-expanded', auf?'true':'false');
+  tick(6);
+  if(auf){
+    var f=b.querySelector('input'); if(f && bereichId==='ppWerZeile') try{ f.focus(); }catch(e){}
+  }
 }
 
 /* ── Das Kürzel am geteilten Studio-Gerät ──
@@ -27764,9 +27906,17 @@ function putzKuerzelBinden(){
     var v = f.value.trim().slice(0,20);
     try{ localStorage.setItem(PP_KUERZEL, v); }catch(e){}
     putzWerHinweis();
+    ppLeisteSetzen();
   };
   f.addEventListener('input', speichern);
   f.addEventListener('change', speichern);
+  /* Enter schliesst das Feld wieder: eingetragen ist eingetragen. */
+  f.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){ e.preventDefault(); ppAufklappen('ppWerKnopf','ppWerZeile'); }
+  });
+  var wk=$('ppWerKnopf'), fk=$('ppFilterKnopf');
+  if(wk) wk.addEventListener('click', function(){ ppAufklappen('ppWerKnopf','ppWerZeile'); });
+  if(fk) fk.addEventListener('click', function(){ ppAufklappen('ppFilterKnopf','ppWerkzeuge'); });
   putzWerHinweis();
 }
 function putzWerHinweis(){

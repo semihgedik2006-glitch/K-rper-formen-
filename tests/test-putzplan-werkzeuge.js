@@ -124,9 +124,15 @@ async function lauf() {
       fehler.push('Der Zähler stimmt nicht: „' + offen.zaehler + '", gezeigt werden ' +
         offen.zeilen.length + ' von ' + alle.zeilen.length);
 
-    // 5) Suche
+    // 5) Suche — seit Runde 103 (P2) hinter dem Knopf „Filter".
+    //    Getippt wird wie von einem Menschen: erst aufklappen.
     await page.evaluate(() => document.querySelector('[data-ppfilter="alle"]').click());
     await page.waitForTimeout(400);
+    await page.evaluate(() => {
+      const b = document.getElementById('ppWerkzeuge');
+      if (b && b.hidden) document.getElementById('ppFilterKnopf').click();
+    });
+    await page.waitForTimeout(300);
     await page.fill('#ppSearch', 'spiegel');
     await page.waitForTimeout(500);
     const gesucht = await page.evaluate(STAND);
