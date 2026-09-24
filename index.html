@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Tf9lc6DNf23siApXe5R5Km1H74xvCXCQ7L4e43Md4BE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PfBk19/mzkgTeTXob14+EGSs8EPUrrHfv8vMCQ5kq4w='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3085,6 +3085,35 @@ button.ich-zeile:active{opacity:.7}
 .mz-s b{font-variant-numeric:tabular-nums;color:var(--text);font-weight:700}
 .mz-s em{font-style:normal;color:var(--text-3);margin-left:auto;
   min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Korrekturen an Stempeln (P-09): wer, wann, warum — unter der Zeile.
+   Ein ungültiger Stempel bleibt stehen, durchgestrichen. */
+.mz-korr{display:block;margin:0 0 var(--s4) 0;font-size:var(--t-2xs);color:var(--text-3);line-height:var(--lh)}
+.mz-s.ungueltig b,.mz-s.ungueltig span{text-decoration:line-through;color:var(--text-3)}
+.mz-s.mit-knopf{align-items:center}
+.mz-s.mit-knopf em{margin-left:0}
+.zk-weg{margin-left:auto;min-height:44px}
+.zk-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-bottom:var(--s8)}
+.zk-kopf select{flex:1 1 180px;min-width:0}
+.zk-monat-nav{display:flex;align-items:center;gap:var(--s4)}
+.zk-pfeil{min-width:44px;min-height:44px}
+.zk-monat{min-width:9em;text-align:center;font-weight:700;font-size:var(--t-sm)}
+.zk-zeile.an{background:var(--auf-1)}
+.zk-inline{padding:var(--s10) var(--s12) var(--s16);border-left:2px solid var(--accent);margin:0 0 var(--s8)}
+.zk-titel{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);margin-bottom:var(--s2)}
+.zk-sub{margin:0 0 var(--s8)}
+.zk-stempel{margin-left:0}
+.zk-form{margin-top:var(--s12)}
+.zk-reihe{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.zk-reihe .field{flex:1 1 140px;min-width:0}
+.zk-knoepfe{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.zk-regel{margin-top:var(--s12)}
+.zk-detail:empty{display:none}
+/* Am Rechner: Liste links, der gewählte Tag rechts daneben. */
+@media (min-width:1100px){
+  .zk-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,420px);gap:var(--s24);align-items:start}
+  .zk-detail{position:sticky;top:var(--s16);padding:var(--s16);border:1px solid var(--line);
+    border-radius:var(--r-md);background:var(--bg-soft)}
+}
 .ich-kal{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--s4)}
 .ich-kal .kal-kopf{text-align:center;font-size:var(--t-2xs);color:var(--text-3);
   padding:0 0 var(--s6);letter-spacing:var(--ls-l)}
@@ -7997,6 +8026,32 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </details>
           </div>
 
+          <!-- Stempelzeiten des Teams (P-09, 24.9.2026). Korrigiert wird
+               nie durch Überschreiben: ein nachgetragener Stempel kommt
+               dazu, ein falscher wird als ungültig markiert und bleibt
+               stehen. Geschrieben wird nur über die Funktionen
+               zeitNachtragen und zeitStornieren. -->
+          <div class="chef-pane" data-cpane="zeiten" style="display:none">
+            <div class="card">
+              <div class="zk-kopf">
+                <select class="inp" id="zkStudio" aria-label="Studio"></select>
+                <div class="zk-monat-nav">
+                  <button type="button" class="ich-pfeil zk-pfeil" id="zkPrev" aria-label="Voriger Monat">‹</button>
+                  <span class="zk-monat" id="zkMonat"></span>
+                  <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
+                </div>
+              </div>
+              <p class="hint" id="zkStand"></p>
+              <div class="zk-wrap">
+                <div id="zkListe"></div>
+                <div id="zkDetail" class="zk-detail"></div>
+              </div>
+              <p class="hint zk-regel">Korrigiert wird nie durch Überschreiben:
+                ein nachgetragener Stempel kommt dazu, ein falscher wird als
+                ungültig markiert und bleibt sichtbar. Die Person sieht beides,
+                mit Grund, in „Meine Zeiten".</p>
+            </div>
+          </div>
           <div class="chef-pane" data-cpane="report" style="display:none">
           <div class="card">
             <h3 data-ikon="trendAuf">Bericht</h3>
@@ -15607,6 +15662,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-zeiten', datum:'24.9.2026', titel:'Vergessenen Feierabend nachtragen', wo:'chef:zeiten', punkte:[
+    'Für die Leitung: Unter Verwaltung → Zeiten stehen die Stempelzeiten des Teams je Studio und Monat. Tage, an denen der Feierabend fehlt, stehen oben.',
+    'Ein Tipp auf den Tag — dann Art, Uhrzeit und Grund eintragen und „Nachtragen". Ein falscher Stempel lässt sich als ungültig markieren.',
+    'Überschrieben wird dabei nichts: der ursprüngliche Stempel bleibt sichtbar. Wer, wann und warum korrigiert hat, sieht auch die Person selbst in „Meine Zeiten".',
+    'Die eigenen Zeiten korrigiert eine Studioleitung nicht selbst, das macht die Geschäftsführung.',
+    'Am Rechner steht der gewählte Tag rechts neben der Liste.' ] },
   { id:'2026-09-24-tempo-team', datum:'24.9.2026', titel:'Aufgaben schneller, Team-Seite ruhig, 2 Tage Pause', wo:'todos', punkte:[
     'Aufgaben: Die Seite ist beim Antippen spürbar schneller da — gemessen etwa 40 % am Handy und 20 % am Rechner.',
     'Team → Schichten: Die Seite rollt beim Öffnen nicht mehr von selbst nach unten. Die schon vergangenen Tage dieser Woche stehen am Handy in einer Zeile („Mo – Mi · 4 Schichten“), ein Tipp zeigt sie. So steht heute oben, und „Wartet auf deine Entscheidung“ bleibt im Bild.',
@@ -25211,7 +25272,12 @@ function zeitenTage(rows, heute, jetzt){
   var nachTag={};
   rows.forEach(function(z){ (nachTag[z.tag]=nachTag[z.tag]||[]).push(z); });
   return Object.keys(nachTag).sort().reverse().map(function(tag){
-    var l=nachTag[tag].slice().sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    var alle=nachTag[tag].slice().sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    /* Ein als ungültig markierter Stempel (P-09) bleibt in der Liste —
+       man soll sehen, dass es ihn gab —, gerechnet wird ohne ihn. */
+    var l=alle.filter(function(z){ return !z.storno; });
+    if(!l.length) return { tag:tag, von:alle[0].ts, bis:alle[alle.length-1].ts, arbeit:0, pause:0,
+             offen:false, laeuft:false, stempel:alle };
     var arbeit=0, pause=0, seit=0, vorher=null;
     l.forEach(function(z){
       if(vorher){
@@ -25226,7 +25292,8 @@ function zeitenTage(rows, heute, jetzt){
     if(laeuft && (vorher==='kommen'||vorher==='zurueck')) arbeit += jetzt-seit;
     if(laeuft && vorher==='pause') pause += jetzt-seit;
     return { tag:tag, von:l[0].ts, bis:l[l.length-1].ts, arbeit:arbeit, pause:pause,
-             offen:offen, laeuft:laeuft, stempel:l };
+             offen:offen, laeuft:laeuft, stempel:alle,
+             korrigiert: alle.some(function(z){ return z.storno || z.quelle==='korrektur'; }) };
   });
 }
 
@@ -25286,16 +25353,227 @@ function renderIchZeiten(rows){
         '<span class="ich-tag">'+esc(kopf)+'</span>'+
         '<span class="ich-was">'+esc(spanne)+'</span>'+
         (luecke ? '<span class="ich-quelle warn">Feierabend fehlt</span>' : '')+
+        (t.korrigiert ? '<span class="ich-quelle">korrigiert</span>' : '')+
         '<span class="ich-zeit">'+(luecke ? '–' : stundenText(t.arbeit))+'</span>'+
       '</button>'+
       '<div class="mz-stempel" id="mzs-'+esc(t.tag)+'"'+(auf?'':' hidden')+'>'+
-        t.stempel.map(function(z){
-          return '<div class="mz-s"><b>'+esc(zeitUhr(z.ts))+'</b>'+
-            '<span>'+esc(TM_WORT[z.art]||z.art||'?')+'</span>'+
-            (z.terminalName?'<em>'+esc(z.terminalName)+'</em>':'')+'</div>';
-        }).join('')+
+        t.stempel.map(zkStempelZeile).join('')+
       '</div>';
   }).join('');
+}
+
+/* Eine Stempelzeile — dieselbe in „Meine Zeiten" und in der
+   Verwaltung. Was nachgetragen oder für ungültig erklärt wurde, steht
+   mit Name und Grund darunter; so sieht die Person selbst jede
+   Korrektur an ihren Zeiten. `knopf` hängt der Leitung „Ungültig …" an. */
+function zkStempelZeile(z, knopf){
+  var wer = z.quelle==='korrektur'
+    ? '<small class="mz-korr">nachgetragen von '+esc(z.korrigiertVonName||'der Leitung')+
+      (z.korrigiertAm ? ' am '+esc(fmtDateTime(z.korrigiertAm)) : '')+
+      (z.grund ? ' · „'+esc(z.grund)+'“' : '')+'</small>' : '';
+  var weg = z.storno
+    ? '<small class="mz-korr">ungültig · '+esc(z.storno.vonName||'Leitung')+
+      (z.storno.am ? ', '+esc(fmtDateTime(z.storno.am)) : '')+
+      (z.storno.grund ? ' · „'+esc(z.storno.grund)+'“' : '')+'</small>' : '';
+  return '<div class="mz-s'+(z.storno?' ungueltig':'')+(knopf?' mit-knopf':'')+'">'+
+      '<b>'+esc(zeitUhr(z.ts))+'</b>'+
+      '<span>'+esc(TM_WORT[z.art]||z.art||'?')+'</span>'+
+      (z.terminalName?'<em>'+esc(z.terminalName)+'</em>':'')+
+      (knopf||'')+
+    '</div>'+wer+weg;
+}
+
+/* ══ ZEITEN DES TEAMS — ANSEHEN UND KORRIGIEREN (P-09) ══════════════
+   Aus dem Betrieb, 24.9.2026: „füge hinzu das die leitung die zeiten
+   ändern kann falls jemand sich nicht ausgestempelt hat oder so".
+
+   Oben stehen die Tage, an denen der Feierabend fehlt — das ist der
+   Fall, um den es geht. Ein Tipp öffnet den Tag: die Stempel, ein Feld
+   zum Nachtragen (mit Grund, sonst geht es nicht) und an jedem Stempel
+   „Ungültig …". Am Rechner steht der Tag rechts neben der Liste.
+
+   Die eigenen Zeiten korrigiert eine Studioleitung nicht selbst; der
+   Server weist es ab, und die Oberfläche sagt es vorher. */
+var _zkStudio=null, _zkMonat=null, _zkRows=[], _zkWahl=null, _zkLaedt=0, _zkStorno=null;
+var _zkBreit = window.matchMedia ? window.matchMedia('(min-width:1100px)') : null;
+if(_zkBreit && _zkBreit.addEventListener) _zkBreit.addEventListener('change', function(){
+  if(currentView==='chef' && _chefTab==='zeiten') zkZeichnen();
+});
+
+function zkOeffnen(){
+  var sel=$('zkStudio'); if(!sel) return;
+  var keys=(managedKeys()||[]).slice();
+  if(!_zkStudio || keys.indexOf(_zkStudio)<0) _zkStudio=keys[0]||null;
+  sel.innerHTML=keys.map(function(k){
+    return '<option value="'+esc(k)+'"'+(k===_zkStudio?' selected':'')+'>'+esc(studioName(k)||k)+'</option>';
+  }).join('');
+  if(!_zkMonat){ var t=new Date(); _zkMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
+  zkLaden();
+}
+function zkLaden(){
+  var box=$('zkListe'); if(!box) return;
+  var mon=$('zkMonat');
+  if(mon) mon.textContent=_zkMonat.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+  if(!_zkStudio){ box.innerHTML=emptyMini('Dir ist kein Studio zugeordnet.'); return; }
+  var m=zeitMonatKey(_zkMonat), nr=++_zkLaedt;
+  box.innerHTML=emptyMini('Wird geladen …');
+  S('zeiten').where('studioKey','==',_zkStudio).where('monat','==',m).get()
+    .then(function(sn){
+      if(nr!==_zkLaedt) return;
+      _zkRows=sn.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()||{}); });
+      zkZeichnen();
+    })
+    .catch(function(e){
+      if(nr!==_zkLaedt) return;
+      box.innerHTML=emptyMini('Die Zeiten lassen sich gerade nicht laden: '+errMsg(e));
+    });
+}
+function zkTage(){
+  var heute=new Date().toLocaleDateString('sv-SE');
+  var nachUid={};
+  _zkRows.forEach(function(z){ (nachUid[z.uid]=nachUid[z.uid]||[]).push(z); });
+  var tage=[];
+  Object.keys(nachUid).forEach(function(uid){
+    var name=(nachUid[uid].filter(function(z){ return z.name; })[0]||{}).name||'';
+    zeitenTage(nachUid[uid], heute, Date.now()).forEach(function(t){
+      t.uid=uid; t.name=name; t.key=uid+'|'+t.tag; t.fehlt=t.offen && !t.laeuft;
+      tage.push(t);
+    });
+  });
+  tage.sort(function(a,b){
+    if(a.fehlt!==b.fehlt) return a.fehlt ? -1 : 1;
+    if(a.tag!==b.tag) return a.tag<b.tag ? 1 : -1;
+    return String(a.name).localeCompare(String(b.name));
+  });
+  return tage;
+}
+/* Darf ich diesen Tag korrigieren? Dieselbe Regel wie im Server. */
+function zkDarf(t){ return isChef() || (t && t.uid!==session.uid); }
+
+function zkZeichnen(){
+  var box=$('zkListe'), det=$('zkDetail'), stand=$('zkStand'); if(!box) return;
+  var tage=zkTage();
+  var fehlt=tage.filter(function(t){ return t.fehlt; }).length;
+  if(stand) stand.textContent = !tage.length ? '' : (fehlt
+    ? fehlt+'× fehlt der Feierabend — oben in der Liste.'
+    : 'Kein Tag ohne Feierabend in diesem Monat.');
+  if(!tage.length){
+    box.innerHTML=emptyMini('In diesem Monat wurde in diesem Studio nicht gestempelt.');
+    if(det) det.innerHTML='';
+    return;
+  }
+  if(_zkWahl && !tage.some(function(t){ return t.key===_zkWahl; })) _zkWahl=null;
+  var breit = !!(_zkBreit && _zkBreit.matches);
+  /* Am Rechner ist immer ein Tag offen — rechts soll nichts leer
+     stehen. Am Handy erst auf Tipp. */
+  if(breit && !_zkWahl) _zkWahl=tage[0].key;
+  var gewaehlt=null;
+  box.innerHTML=tage.map(function(t){
+    var an = t.key===_zkWahl;
+    if(an) gewaehlt=t;
+    var kopf=new Date(t.tag+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'numeric'});
+    var spanne=zeitUhr(t.von)+' – '+(t.laeuft ? 'läuft' : (t.fehlt ? '?' : zeitUhr(t.bis)));
+    return '<button type="button" class="ich-zeile zk-zeile'+(an?' an':'')+'" data-zk="'+esc(t.key)+'" aria-expanded="'+(an?'true':'false')+'">'+
+        '<span class="ich-tag">'+esc(kopf)+'</span>'+
+        '<span class="ich-was"><b>'+esc(t.name||'—')+'</b> · '+esc(spanne)+'</span>'+
+        (t.fehlt ? '<span class="ich-quelle warn">Feierabend fehlt</span>' : '')+
+        (t.korrigiert ? '<span class="ich-quelle">korrigiert</span>' : '')+
+        (t.fehlt ? '' : '<span class="ich-zeit">'+stundenText(t.arbeit)+'</span>')+
+      '</button>'+
+      (an && !breit ? '<div class="zk-inline">'+zkDetailHTML(t)+'</div>' : '');
+  }).join('');
+  if(det) det.innerHTML = (breit && gewaehlt) ? zkDetailHTML(gewaehlt) : '';
+  box.querySelectorAll('[data-zk]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k=b.getAttribute('data-zk');
+      _zkWahl = (_zkWahl===k && !breit) ? null : k; _zkStorno=null;
+      zkZeichnen(); tick(6);
+    });
+  });
+  zkDetailBinden(breit ? det : box, gewaehlt);
+}
+
+function zkDetailHTML(t){
+  var darf=zkDarf(t);
+  var kopf=new Date(t.tag+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  var stempel=t.stempel.map(function(z){
+    var knopf = (darf && !z.storno)
+      ? '<button type="button" class="btn btn-ghost btn-sm zk-weg" data-zkweg="'+esc(z.id)+'">Ungültig …</button>' : '';
+    return zkStempelZeile(z, knopf);
+  }).join('');
+  var st = _zkStorno ? t.stempel.filter(function(z){ return z.id===_zkStorno; })[0] : null;
+  var form;
+  if(!darf){
+    form='<p class="hint">Die eigenen Zeiten korrigiert die Geschäftsführung.</p>';
+  } else if(st){
+    form='<div class="zk-form" data-zkform="storno">'+
+      '<p class="hilfe-ueber">Stempel '+esc(zeitUhr(st.ts))+' · '+esc(TM_WORT[st.art]||st.art)+' als ungültig markieren</p>'+
+      '<p class="hint">Er bleibt sichtbar und zählt nicht mehr mit.</p>'+
+      '<div class="field"><label for="zkGrund">Grund</label>'+
+        '<input class="inp" id="zkGrund" data-zkfeld="grund" maxlength="200" '+
+        'placeholder="z. B. doppelt gestempelt" /></div>'+
+      '<div class="zk-knoepfe">'+
+        '<button type="button" class="btn btn-primary" data-zkstorno>Als ungültig markieren</button>'+
+        '<button type="button" class="btn btn-ghost" data-zkabbruch>Abbrechen</button>'+
+      '</div></div>';
+  } else {
+    var vorschlag = t.fehlt ? 'gehen' : 'kommen';
+    form='<div class="zk-form" data-zkform="nach">'+
+      '<p class="hilfe-ueber">Stempel nachtragen</p>'+
+      '<div class="zk-reihe">'+
+        '<div class="field"><label for="zkArt">Art</label>'+
+          '<select class="inp" id="zkArt" data-zkfeld="art">'+
+          ['kommen','pause','zurueck','gehen'].map(function(a){
+            return '<option value="'+a+'"'+(a===vorschlag?' selected':'')+'>'+esc(TM_WORT[a])+'</option>';
+          }).join('')+'</select></div>'+
+        '<div class="field"><label for="zkUhr">Uhrzeit</label>'+
+          '<input class="inp" id="zkUhr" data-zkfeld="uhr" type="time" /></div>'+
+      '</div>'+
+      '<div class="field"><label for="zkGrund">Grund</label>'+
+        '<input class="inp" id="zkGrund" data-zkfeld="grund" maxlength="200" '+
+        'placeholder="z. B. Ausstempeln vergessen, laut Schichtplan bis 18 Uhr" /></div>'+
+      '<button type="button" class="btn btn-primary" data-zknach>Nachtragen</button>'+
+    '</div>';
+  }
+  return '<h4 class="zk-titel">'+esc(t.name||'—')+'</h4>'+
+    '<p class="hint zk-sub">'+esc(kopf)+' · '+(t.fehlt ? 'Feierabend fehlt'
+      : (t.laeuft ? 'läuft noch' : stundenText(t.arbeit)+' Arbeit, '+stundenText(t.pause)+' Pause'))+'</p>'+
+    '<div class="mz-stempel zk-stempel">'+stempel+'</div>'+form;
+}
+
+function zkDetailBinden(box, t){
+  if(!box || !t) return;
+  box.querySelectorAll('[data-zkweg]').forEach(function(b){
+    b.addEventListener('click', function(){
+      _zkStorno=b.getAttribute('data-zkweg'); zkZeichnen();
+      var g=$('zkGrund'); if(g) g.focus();
+    });
+  });
+  var ab=box.querySelector('[data-zkabbruch]');
+  if(ab) ab.addEventListener('click', function(){ _zkStorno=null; zkZeichnen(); });
+  var nach=box.querySelector('[data-zknach]');
+  if(nach) nach.addEventListener('click', function(){
+    var art=($('zkArt')||{}).value, uhr=($('zkUhr')||{}).value, grund=String(($('zkGrund')||{}).value||'').trim();
+    if(!/^\d\d:\d\d$/.test(uhr||'')){ toast('Bitte die Uhrzeit eintragen.',true); return; }
+    if(grund.length<5){ toast('Bitte kurz den Grund angeben.',true); return; }
+    withBusy(nach, function(){
+      return pinFunktion('zeitNachtragen')({ uid:t.uid, tag:t.tag, uhr:uhr, art:art,
+          studioKey:_zkStudio, grund:grund })
+        .then(function(){ toast('Nachgetragen ✓'); zkLaden(); })
+        .catch(function(e){ toast(fnFehler(e),true); });
+    });
+  });
+  var sto=box.querySelector('[data-zkstorno]');
+  if(sto) sto.addEventListener('click', function(){
+    var grund=String(($('zkGrund')||{}).value||'').trim();
+    if(grund.length<5){ toast('Bitte kurz den Grund angeben.',true); return; }
+    var id=_zkStorno;
+    withBusy(sto, function(){
+      return pinFunktion('zeitStornieren')({ id:id, grund:grund })
+        .then(function(){ _zkStorno=null; toast('Als ungültig markiert ✓'); zkLaden(); })
+        .catch(function(e){ toast(fnFehler(e),true); });
+    });
+  });
 }
 
 /* ══ MIT DEM HANDY STEMPELN ═════════════════════════════════════════
@@ -27094,6 +27372,12 @@ var CHEFTABS=[
      sie braucht. */
   {id:'anliegen',   label:'Anliegen',   ico:ikon('mail'),
    was:'Wünsche und Ziele, die jemand abgeschickt hat'},
+  /* Runde 106 (P-09): Stempelzeiten des Teams ansehen und einen
+     vergessenen Feierabend nachtragen. Für die ganze Leitung, nicht nur
+     den Chef — sie steht morgens im Studio und sieht, wer gestern nicht
+     ausgestempelt hat. */
+  {id:'zeiten',     label:'Zeiten',     ico:ikon('uhr'),
+   was:'Stempelzeiten des Teams, vergessenen Feierabend nachtragen'},
   {id:'report',     label:'Auswertung', ico:ikon('trendAuf'),
    was:'Bericht über einen Zeitraum, drucken, Excel, Monatsbericht'},
   {id:'system',     label:'System',     ico:ikon('regler'),
@@ -27241,6 +27525,7 @@ function showChefTab(id, keep){
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='anliegen') anliegenLaden();
+  if(id==='zeiten') zkOeffnen();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); renderAboKarte(); }
@@ -27885,6 +28170,10 @@ function backupData(){
                studio:z.studioKey?studioName(z.studioKey):'',
                terminal:z.terminalName||'',
                anderesStudio:!!z.fremd,
+               /* Korrekturen (P-09) gehören in eine Arbeitszeitauskunft:
+                  wer hat nachgetragen oder für ungültig erklärt, und warum. */
+               korrektur:z.quelle==='korrektur' ? (z.korrigiertVonName||'')+': '+(z.grund||'') : '',
+               ungueltig:z.storno ? (z.storno.vonName||'')+': '+(z.storno.grund||'') : '',
                datum:z.ts?new Date(z.ts).toISOString():'' };
     });
     out.anliegen=docsZuListe(g.anliegen).map(function(a){
@@ -27975,10 +28264,10 @@ function exportAllXls(){
        Studios: wer eine Arbeitszeitauskunft aufmacht, sucht sie nicht
        hinter fuenfzehn Chatverlaeufen. */
     if(d.stempelzeiten.length) html+=xlsTable('Stempelzeiten',
-      ['Tag','Zeit','Person','Art','Studio','Terminal','anderes Studio'],
+      ['Tag','Zeit','Person','Art','Studio','Terminal','anderes Studio','nachgetragen','ungültig'],
       d.stempelzeiten.map(function(z){
         return [z.tag, z.zeit, z.person, z.art, z.studio, z.terminal,
-                z.anderesStudio?'ja':'']; }));
+                z.anderesStudio?'ja':'', z.korrektur||'', z.ungueltig||'']; }));
     if(d.anliegen.length) html+=xlsTable('Anliegen',
       ['Datum','Von','An','Titel','Text','Status','Antwort','Antwort von'],
       d.anliegen.map(function(a){
@@ -33821,6 +34110,11 @@ function bindActions(){
 
     var tnb=$('termNeuBtn');
     if(tnb) tnb.addEventListener('click', function(){ terminalAnlegen(this); });
+  var zks=$('zkStudio');
+  if(zks) zks.addEventListener('change', function(){ _zkStudio=zks.value; _zkWahl=null; _zkStorno=null; zkLaden(); });
+  var zkp=$('zkPrev'), zkn=$('zkNext');
+  if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); });
+  if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); });
 
     var ozC=$('oeffnungClose');
     if(ozC) ozC.addEventListener('click', oeffnungSchliessen);

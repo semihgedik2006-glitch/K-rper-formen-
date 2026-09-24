@@ -295,7 +295,7 @@ Versäumnis.**
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open |
+| **Status** | **BEHOBEN am 24.9.2026** (B-44) |
 
 `zeiten` steht auf `allow write: if false` — für jeden. Wer vergisst
 auszustempeln, hat einen falschen Eintrag, der so stehen bleibt.
@@ -501,6 +501,7 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 | **B-41** | **Neue Inhalte kamen nach einer Auslieferung bis zu einer Woche lang nicht an.** Die Schulungsdatei stand mit `max-age=604800` im Zwischenspeicher, und der Service Worker holte beim Update durch diesen Zwischenspeicher. `VERSION` hochzählen legte also einen neuen Vorrat mit der alten Datei an. Die fünf EMS-Schulungen waren live und „nirgends bei mir“ (aus dem Betrieb). Jetzt holt der Service Worker mit `cache:'reload'`, und die Inhaltsdateien kommen mit `no-cache`. `test-zwischenspeicher` spielt eine Auslieferung durch, mit dem alten Stand als Gegenprobe | 24.9.2026 |
 | **B-42** | **Die Team-Seite rollte beim Öffnen von selbst nach unten** (P-12) — zwei Zeitgeber scrollten zum heutigen Tag, 218 px bei der Leitung am Handy; oben verschwand „Wartet auf deine Entscheidung". Jetzt rollt nichts; die vergangenen Tage der Woche stehen am Handy in einer Zeile, am Rechner steht die Woche in sieben Spalten. Nebenbei: ‹ › waren 38 × 44 (kompakt 30), das ✕ an einer Schicht gut 28 × 20 | 24.9.2026 |
 | **B-43** | **Die Aufgaben brauchten bis zum ersten Bild zu lange** (P-17) — Stil und Layout für alle Zeilen, auch die unsichtbaren. Jetzt `content-visibility:auto` ab der 13. Zeile; Median 176 → 104 ms (Handy, CPU ÷4) | 24.9.2026 |
+| **B-44** | **Kein Korrekturweg für vergessene Stempel** (P-09). Jetzt Verwaltung → Zeiten: die Leitung trägt nach (`zeitNachtragen`) oder markiert als ungültig (`zeitStornieren`), nur mit Grund; der ursprüngliche Stempel bleibt, die Person sieht die Korrektur mit Name und Grund. Die Studioleitung korrigiert ihre eigenen Zeiten nicht selbst | 24.9.2026 |
 
 Die vollständige Fassung mit Begründungen steht in
 `docs/FORTSCHRITT.md` — chronologisch, 103 Runden.

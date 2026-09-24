@@ -128,8 +128,10 @@ const ansicht = page => page.evaluate(() => {
     // Reiter fehl und sagt nichts darueber, ob die Uebersicht STIMMT.
     // Geprueft wird jetzt, dass jeder Reiter aus CHEFTABS genau eine
     // Kachel hat und keine doppelt ist.
+    /* „Zeiten" seit dem 24.9.2026 (P-09): „füge hinzu das die leitung
+       die zeiten ändern kann falls jemand sich nicht ausgestempelt hat". */
     const ERWARTET = ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise',
-                      'Anliegen', 'Auswertung', 'System'];
+                      'Anliegen', 'Zeiten', 'Auswertung', 'System'];
     ERWARTET.forEach(function (w) {
       if (!uebersicht.kacheln.some(function (k) { return k.indexOf(w) >= 0; })) {
         errs.push('Kachel „' + w + '" fehlt in der Verwaltung');

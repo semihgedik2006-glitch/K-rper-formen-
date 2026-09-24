@@ -151,7 +151,14 @@ const reiter = page => page.evaluate(() => {
        Sichtbarkeit steht nicht an dieser Kachel, sondern in
        firestore.rules — er sieht dort nur seine eigenen Studios
        (tests/rules/anliegen.test.js). */
-    if (l.kacheln.length !== 5) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 5 Kacheln');
+    /* Sechs seit „Zeiten" (24.9.2026, P-09): die Studioleitung trägt
+       einen vergessenen Feierabend in IHREN Studios nach — aus dem
+       Betrieb: „füge hinzu das die leitung die zeiten ändern kann".
+       Die Grenze steht im Server (zeitNachtragen) und ist in
+       tests/rules/zeitkorrektur.test.js geprüft. */
+    if (l.kacheln.length !== 6) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 6 Kacheln');
+    if (!l.kacheln.some(k => /Zeiten/.test(k)))
+      errs.push('Leiter sieht „Zeiten" nicht — dann kann sie keinen vergessenen Feierabend nachtragen');
     if (l.kacheln.some(k => /Team|Nachweise/.test(k))) errs.push('Leiter sieht einen Chef-Reiter');
     if (!l.kacheln.some(k => /Anliegen/.test(k)))
       errs.push('Leiter sieht „Anliegen" nicht — dann kommt an ihn Gerichtetes nie an');

@@ -12327,3 +12327,112 @@ verbessert.
   Danach wurden `test-gestaltung`, `test-block-c`,
   `test-aufgaben-tempo`, `test-csp`, `test-neu-design` und
   `test-team-woche` einzeln wiederholt, alle grün.
+
+## Runde 106, zweiter Teil — Vergessenen Feierabend nachtragen (P-09)
+
+> „füge hinzu das die leitung die zeiten ändern kann falls jemand sich
+> nicht ausgestempelt hat oder so" (24.9.2026)
+
+### Was gebaut wurde
+
+- **Zwei neue Funktionen, und keine überschreibt etwas:**
+  - `zeitNachtragen` legt einen **neuen** Stempel an: `quelle:
+    'korrektur'`, dazu Grund und wer/wann. Die Uhrzeit gilt als
+    Berliner Ortszeit, auch über die Sommerzeit (`berlinZeitpunkt`,
+    zweimal gerechnet).
+  - `zeitStornieren` hängt an einen vorhandenen Stempel nur `storno`
+    (wer, wann, Grund). Zeitpunkt, Art und Gerät bleiben, gerechnet
+    wird ohne ihn.
+- **Wer darf:**
+  - der Chef im ganzen Betrieb;
+  - die Studioleitung in ihren Studios, **nicht an den eigenen
+    Zeiten**. Das macht die Geschäftsführung, sonst wäre es eine
+    Änderung ohne zweite Person.
+- **Grenzen:** Ein Grund ist Pflicht (mindestens 5 Zeichen).
+  Nachgetragen wird nicht in die Zukunft und höchstens 62 Tage zurück,
+  also der laufende Monat plus die Abrechnung des Vormonats.
+- **Verwaltung → Zeiten** (neuer Reiter für die ganze Leitung):
+  - Studio und Monat wählen; die Tage ohne Feierabend stehen oben.
+  - Ein Tipp öffnet den Tag mit Formular (Art, Uhrzeit, Grund) und an
+    jedem Stempel „Ungültig …“.
+  - Am Rechner steht der Tag rechts neben der Liste, gleich der erste
+    ohne Tipp.
+- **„Meine Zeiten“:** Jeder korrigierte Tag trägt „korrigiert“. Unter
+  dem Stempel steht „nachgetragen von … · Grund“ bzw. „ungültig · …“.
+  Die Person sieht also jede Änderung an ihren Zeiten.
+- **Export:** Die Stempelzeiten-Tabelle hat zwei neue Spalten,
+  „nachgetragen“ und „ungültig“, jeweils mit Name und Grund.
+- **Demo:** Im Studio Hürth hat jemand gestern nicht ausgestempelt.
+  Das ist ohne `zufall()` gebaut, damit sich die übrigen Demo-Daten
+  nicht verschieben.
+
+### Warum so entschieden
+
+- **Nicht überschreiben.** Eine Arbeitszeitaufzeichnung, die der
+  Arbeitgeber nachträglich unbemerkt ändern kann, ist als Nachweis
+  wenig wert, auch wenn nie jemand etwas geändert hat. So bleibt jede
+  Korrektur sichtbar, mit Name und Grund, auch für die Person selbst.
+  Die Regeln bleiben auf `write: false` für alle.
+- **Kein Löschen.** Ein Stempel, der gar nicht hätte da sein sollen,
+  wird ungültig, nicht weg.
+- **Eine Löschfrist gibt es weiter nicht** („Erstmal keine“, aus dem
+  Betrieb).
+
+### Durchläufe
+
+- **Neu: `tests/rules/zeitkorrektur.test.js`** mit 21 Zusicherungen.
+  Er führt die Funktionen gegen den Emulator aus und läuft in
+  `npm test` mit, also auch in CI.
+  - Geprüft: Nachtragen mit allen Feldern in der Firma; 18:00 heisst
+    18:00 in Berlin; stornieren lässt den Stempel unverändert.
+  - Abgewiesen werden: Mitarbeiter, Leitung eines anderen Studios,
+    Leitung an sich selbst, ohne Grund, Zukunft, zu weit zurück,
+    unbekannte Art, fremde Firma, zweimal stornieren.
+  - Gegenprobe: Die Geschäftsführung korrigiert die Studioleitung.
+- **Neu: `tests/test-zeitkorrektur.js`** mit 38 Zusicherungen. Er geht
+  den Weg durch die Oberfläche in der Demo:
+  - Mitarbeiter ohne Reiter; der fehlende Feierabend steht oben.
+  - Gegenprobe ohne Uhrzeit oder Grund: nichts wird eingetragen.
+  - Nachtragen, danach ungültig markieren: die Zeile bleibt,
+    durchgestrichen, mit Grund.
+  - Die Studioleitung sieht nur Studio 6 und 7 und bekommt an den
+    eigenen Zeiten kein Formular; Gegenprobe beim Team.
+  - Am Rechner steht der Tag neben der Liste.
+  - Trefferflächen bei 7 Breiten × 2 Dichten.
+- **Gesamtdurchlauf: 142, davon zuerst 2 rot, beide wegen der neuen
+  Kachel „Zeiten“.** `test-navigation` erwartete 8 Kacheln für den
+  Chef, `test-verwaltung-bereich9` 5 für die Studioleitung. Beide
+  erwarten jetzt die neue Kachel ausdrücklich, mit dem Zitat aus dem
+  Betrieb im Test, und wurden einzeln wiederholt: grün.
+- **Regeln und Funktionen im Emulator (`npm test` in `tests/rules`):**
+  alles grün, auch die neuen Tests `zeitkorrektur` (21) und `videos`
+  (15).
+
+## Runde 106, dritter Teil — Der Speicherort für die Schulungsvideos
+
+> „Videos kommen noch speicher ort können wir vorbereiten so gut es
+> geht"
+
+- **`storage-videos.rules`**: Regeln für einen **zweiten** Eimer. Dem
+  Sicherungs-Eimer bleibt `storage.rules`, dort ist alles zu.
+  - Lesen darf, wer in der Firma freigegeben ist.
+  - Auflisten darf niemand.
+  - Hochladen darf nur die Leitung, nur `video/*`, unter 500 MB.
+  - Überschreiben darf niemand, löschen die Leitung.
+- **Noch nicht ausgerollt.** Ein Eintrag in `firebase.json` für einen
+  Eimer, den es noch nicht gibt, bräche die ganze Auslieferung ab. Die
+  Datei steht deshalb in der `ignore`-Liste des Hostings, damit sie
+  nicht ausgeliefert wird, und wartet.
+- **`tests/rules/videos.test.js`** mit 15 Zusicherungen, im
+  Speicher-Emulator. Er läuft ab jetzt in `npm test` mit; dafür steht
+  `storage` in `emulators:exec --only` und in `firebase.json` (Port
+  9199).
+  - **Dabei gefunden:** Der Emulator liess ein Überschreiben als
+    „create“ durch. Jetzt verlangt die Regel ausdrücklich
+    `resource == null`. Ob die Produktion das genauso tut, ist hier
+    nicht prüfbar; die Zeile schadet dort nicht.
+- **`docs/VIDEOS.md`**: was fertig ist, was fehlt, die fünf Minuten in
+  der Konsole, Kosten als **Schätzung**, und warum YouTube nicht passt.
+- **Offen gesagt:** Eine Abspiel-Adresse mit Token umgeht die Regeln.
+  Wer sie weitergibt, gibt das Video weiter. Das steht in der
+  Regeldatei und in `docs/VIDEOS.md`.

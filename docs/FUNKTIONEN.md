@@ -31,10 +31,10 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 
 | | | Quelle |
 |---|---|---|
-| Anwendung | `index.html`, **33.900 Zeilen** | `wc -l` |
+| Anwendung | `index.html`, **34.300 Zeilen** | `wc -l` |
 | Serverfunktionen | **62** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **2.170 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **141** (138 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Oberfläche) | **142** (139 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
 | Automatische Durchläufe (Regeln) | **17 Dateien**, 1.177 Einzelprüfungen (gezählt am 24.9.2026) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
@@ -296,8 +296,8 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 | Standort / GPS | **NICHT ERFASST** | zusätzlich gesperrt durch `Permissions-Policy: geolocation=()` |
 | IP-Adresse | **NICHT ERFASST** | |
 | Gerätefingerabdruck | **NICHT ERFASST** | nur welches registrierte Terminal |
-| Nachträglich ändern | **NICHT MÖGLICH** | `zeiten` steht auf `allow write: if false` — für **jeden** |
-| Korrekturweg | **NICHT GEFUNDEN** | wer vergisst auszustempeln, hat einen falschen Eintrag, der stehen bleibt |
+| Nachträglich ändern | **NICHT MÖGLICH** | `zeiten` steht auf `allow write: if false` — für **jeden**; überschrieben wird auch bei einer Korrektur nichts |
+| Korrekturweg | **VERIFIZIERT** (24.9.2026) | Verwaltung → Zeiten: die Leitung trägt einen Stempel nach oder markiert einen als ungültig, **nur mit Grund**; beides bleibt sichtbar, auch für die Person selbst |
 | Eigene Zeiten einsehen | **VERIFIZIERT** | vollständig |
 | Automatische Löschfrist | **NICHT GEFUNDEN** | Stempelzeiten bleiben unbegrenzt liegen — offen, siehe `docs/RECHT.md` |
 | PIN zurücksetzen durch die Leitung | **NICHT MÖGLICH** | der Hash liegt an einem Ort, den die Regeln für **alle** sperren |
