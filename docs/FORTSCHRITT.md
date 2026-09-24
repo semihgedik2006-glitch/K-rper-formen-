@@ -11297,4 +11297,25 @@ dem Ansehen entschieden werden. Zurück ist es eine Zeile.
   auch mit dem alten Stand grün. Die Federn sind beim Messen nach
   900 ms schon vorbei. Den Unterschied zeigt erst „ein späteres
   Neuzeichnen federt nicht noch einmal" (vorher 15).
-- **Oberfläche:** GESAMT_C
+- **Oberfläche:** 128 Durchläufe, alle sauber.
+- **Am PC angesehen** (1440 × 900): Die Feder und der Formen-Kontrast
+  wirken dort genauso. C1 hängt nicht an der Breite, C2 gilt für die
+  Startseite in jeder Breite.
+
+### Der PC ist das Hauptgerät
+
+> „bitte leg genau so viel Fokus auf die PC-Nutzung wie auf die
+> Handy-Nutzung … obwohl das das Hauptgerät ist"
+
+Das stimmte: A1 bis C2 waren am Handy gemessen und am PC nur
+angesehen. Seit dieser Runde steht in `CLAUDE.md`, dass jede Änderung
+auch bei 1280, 1440 und 1920 px gemessen wird.
+
+Die erste Messung am PC (1440 × 900):
+- **Aufgaben:** Der erste Eintrag beginnt bei 486 px, 5 von 61 sind zu
+  sehen, und jede Zeile ist 1.174 px breit.
+- **Putzplan:** Der erste Punkt beginnt bei 684 px.
+
+Der Platz ist da, er wird nur nicht genutzt. Die Vorschläge dazu (Liste
+und Detail nebeneinander, Putzplan als Raster, Startseite in zwei
+Spalten) stehen zur Entscheidung aus.
