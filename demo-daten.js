@@ -640,6 +640,21 @@
       schichten.push({ id: 's-' + k + '-ich', date: datum(0), from: '09:00', to: '14:00',
         uid: ICH.id, name: ICH.name });
     }
+    /* Runde 103: ein Schichttausch, damit „Zum Übernehmen" auf der
+       Startseite in der Vorführung etwas zeigt — nur im ERSTEN eigenen
+       Studio, sonst stünde er beim Chef vierzehnmal da. Die Kollegen
+       kommen aus leuteIn() statt aus jemandIn(): jemandIn() zieht eine
+       Zufallszahl, und jede zusätzliche Ziehung verschöbe alle
+       folgenden Demo-Daten — Zahlen, auf die sich andere Durchläufe
+       verlassen. */
+    if ((ICH.studioKeys || [])[0] === k) {
+      var kol = leuteIn(k);
+      if (kol[0]) schichten.push({ id: 's-' + k + '-tausch', date: datum(1), from: '16:00', to: '21:00',
+        uid: kol[0].id, name: kol[0].name, tausch: 'offen', tauschVon: kol[0].id, tauschTs: vorStd(3) });
+      if (kol[1] && kol[2]) schichten.push({ id: 's-' + k + '-zugesagt', date: datum(2), from: '06:00', to: '12:00',
+        uid: kol[1].id, name: kol[1].name, tausch: 'zugesagt', tauschVon: kol[1].id,
+        tauschNeu: { uid: kol[2].id, name: kol[2].name }, tauschTs: vorStd(1) });
+    }
     legen(P('studios/' + k + '/shifts'), schichten);
 
     var abw = [];

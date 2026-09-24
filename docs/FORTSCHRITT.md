@@ -11135,3 +11135,90 @@ Weitere Änderungen an der Tafel:
   - Den „Fix", den ich schon eingebaut hatte, habe ich wieder
     herausgenommen.
 - **Oberfläche:** 126 Durchläufe, alle sauber.
+
+
+---
+
+## Runde 103, zweiter Teil — Block B: Schicht und Woche
+
+> „mach danach weiter mit block b"
+
+Block A war zu diesem Zeitpunkt gemerged (#147) und live nachgeprüft:
+die ausgelieferte Seite ist bytegleich mit `main`.
+
+### B1 · Der Wochenstreifen
+
+Oben in „Ich → Woche" stehen jetzt sieben Felder, Mo bis So. Jedes
+zeigt den Wochentag, das Datum und einen Punkt je Art Eintrag (Dienst,
+frei, Termin, To-do, Aufgabe). Heute ist gefüllt. Ein Tipp zeigt in der
+Liste darunter nur diesen Tag, die Überschrift nennt ihn und bietet
+„ganze Woche". Ein zweiter Tipp zeigt wieder alles.
+
+- **Breite:** Die Recherche hatte vorher gerechnet: sieben Tage zu
+  44 px sind 308 px, bei 320 px bleiben 288. Statt wischbar zu werden,
+  läuft der Streifen unter 340 px bis an den Bildschirmrand (45,7 px je
+  Tag). Der Abstand zwischen den Tagen steckt **innen** (das sichtbare
+  Feld hat 2 px Rand), damit die ganze Spalte trifft. Nachgemessen per
+  `elementFromPoint` bei 320, 390, 430 und 820 px.
+- **Dieselben Punkte wie im Kalender:** `ichPunkteHTML()` ist aus
+  `ichZelle()` herausgelöst und wird von beiden benutzt. Dabei ist
+  aufgefallen, dass Aufgaben mit Frist (`aufgabe`) im Kalender nie einen
+  Punkt bekamen; die Reihenfolge der Punkte kannte die Art nicht. Jetzt
+  kennt sie sie.
+- **Beim Nachsehen gefunden:** Bei 320 px stand „Dienst · Hürth" in
+  der Wochenliste in drei Zeilen untereinander. `.ich-was` hatte
+  `flex:1` ohne Grundbreite und schrumpfte auf gut 40 px. Mit `8em`
+  Grundbreite bricht jetzt die Uhrzeit in die nächste Zeile, nicht das
+  Wort.
+
+### B2 · Schichttausch — die Recherche lag falsch
+
+Die Recherche sagte „der zweite Schritt fehlt". Das stimmte nicht. „Ich
+kann nicht" → „Ich übernehme" → „Bestätigen" gibt es seit Langem, in
+beiden Regel-Welten abgesichert. Die Korrektur steht jetzt in der
+Recherche-Datei selbst.
+
+Was wirklich fehlte, war die **Sichtbarkeit**. Ein Angebot stand nur im
+Schichtplan, und dort nur für das Studio, das gerade gewählt ist. Wer
+eine Schicht abgab, war darauf angewiesen, dass ein Kollege zufällig
+den Plan öffnet.
+
+Jetzt gibt es auf der Startseite den Block **„Zum Übernehmen"**, direkt
+unter „Heute":
+- Angebote aus den eigenen Studios („Morgen · 16:00–21:00 / Juna Ritter
+  gibt ab");
+- bei der Leitung zuerst, was auf ihre Bestätigung wartet („Tausch
+  bestätigen · Sa., 26.09. / Lena Brandt statt Sami Brandt · …").
+  Zuerst stand dort „Lena Brandt übernimmt – bestätigen?". Das war bei
+  390 px abgeschnitten, und abgeschnitten fehlte genau das Wort, das
+  sagt, was zu tun ist.
+- Ein Tipp öffnet den Schichtplan im **richtigen Studio** und in der
+  **richtigen Woche**. Dort steht dann „Ich übernehme".
+
+**Keine Abfrage zusätzlich, keine Regel neu.** `loadMyShifts()` holte
+schon immer alle Schichten der eigenen Studios für die nächsten sieben
+Tage und warf alles weg, was nicht die eigene war. Die Angebote kommen
+aus genau diesen Daten.
+
+**Nicht gemacht:**
+- Eine Push-Nachricht beim Ausschreiben. Das braucht eine Cloud
+  Function, also etwas, das ich hier nicht gegen das echte Firebase
+  prüfen kann.
+- Für den Chef ohne eigene Studio-Zuordnung bleibt „Tausch bestätigen"
+  leer, weil `loadMyShifts()` nur die eigenen Studios liest. Die
+  Leitung eines Studios sieht es.
+
+**Demo:** Im ersten eigenen Studio gibt es jetzt ein Angebot und eine
+Zusage. Die Kollegen kommen aus `leuteIn()`, nicht aus `jemandIn()`:
+jede zusätzliche Zufallsziehung hätte alle folgenden Demo-Daten
+verschoben, und darauf verlassen sich andere Durchläufe.
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-block-b.js`** mit 27 Zusicherungen,
+  darunter zwei Gegenproben:
+  - ein leerer Tag sagt „nichts eingetragen", statt still die Woche zu
+    zeigen;
+  - der Mitarbeiter sieht keine Bestätigen-Zeile.
+- **Gegen den Stand von Block A** ist der Durchlauf rot.
+- **Oberfläche:** GESAMT_B

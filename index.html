@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-NS++ZR+EqtpyqZxKZx9GK2k98PA6QjC28eKJpdfFG7A='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-fxITPg7GgnFgcqOPpKZr3ttaAf7pso601djym5ZlqnU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2843,7 +2843,11 @@ button.ich-zeile:active{opacity:.7}
 .ich-was-knopf:active{opacity:.7}
 .ich-tag{flex:0 0 auto;min-width:88px;color:var(--text-2)}
 .ich-zeile.heute .ich-tag{color:var(--accent)}
-.ich-was{flex:1;min-width:0}
+/* Grundbreite 8em (Runde 103): mit `flex:1` allein schrumpfte der Text
+   bei 320px auf gut 40px, und „Dienst · Hürth" stand in drei Zeilen
+   untereinander. Mit einer Grundbreite bricht stattdessen die Uhrzeit
+   in die nächste Zeile — die Zeile hat flex-wrap dafür schon. */
+.ich-was{flex:1 1 8em;min-width:0}
 .ich-zeit{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--text-2)}
 /* Ort und Notiz stehen unter der Zeile, nicht daneben: auf 320 Pixel
    waere sonst der Titel das erste, was abgeschnitten wird. */
@@ -2914,6 +2918,36 @@ button.ich-zeile:active{opacity:.7}
 .ich-punkt.privat{background:var(--ok-tx)}
 .ich-punkt.dienst{background:var(--accent)}
 .ich-punkt.frei{background:var(--warm-tx)}
+
+/* ── Wochenstreifen (Runde 103) ──
+   Sieben gleiche Spalten ohne Abstand: der Abstand steckt INNEN (das
+   sichtbare Feld hat 2px Rand), damit die Trefferfläche die ganze
+   Spalte ist. Unter 340px läuft der Streifen bis an den Rand — sonst
+   wären es 41px je Tag. */
+.ich-streifen{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;
+  margin:0 0 var(--s12)}
+@media(max-width:339px){
+  .ich-streifen{margin-left:calc(-1 * var(--rand));margin-right:calc(-1 * var(--rand))}
+}
+.ist-tag{min-width:0;min-height:64px;padding:0;border:none;background:none;cursor:pointer;
+  font-family:var(--font-body);color:var(--text-2)}
+.ist-feld{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--s2);height:100%;margin:0 var(--s2);padding:var(--s6) 0;
+  border-radius:var(--r-md);font-variant-numeric:tabular-nums;
+  transition:background .2s var(--ease-ios),color .2s var(--ease-ios)}
+.ist-wt{font-size:var(--t-2xs);font-weight:600;letter-spacing:var(--ls-s)}
+.ist-zahl{font-size:var(--t-md);font-weight:700;color:var(--text);line-height:var(--lh-1)}
+.ist-tag.vorbei .ist-zahl{color:var(--text-2);font-weight:600}
+@media (hover:hover){ .ist-tag:hover .ist-feld{background:var(--auf-1)} }
+/* Heute gefüllt, gewählt umrandet — dieselbe Sprache wie im Kalender
+   (.ich-tagfeld.heute / .gewaehlt). */
+.ist-tag.heute .ist-feld{background:var(--accent);color:var(--on-accent)}
+.ist-tag.heute .ist-zahl{color:var(--on-accent)}
+.ist-tag.heute .ich-punkt{background:var(--on-accent)}
+.ist-tag.gewaehlt .ist-feld{box-shadow:inset 0 0 0 2px var(--accent)}
+.ist-tag.heute.gewaehlt .ist-feld{box-shadow:inset 0 0 0 2px var(--text)}
+.ist-tag .ich-punkte{min-height:var(--s6)}
+.ist-alle{margin-left:var(--s6);font-size:var(--t-xs)}
 
 /* ── Ansichtsumschalter Monat / Woche ── */
 .ich-sicht{display:inline-flex;gap:var(--s2);background:var(--auf-1);
@@ -6134,9 +6168,14 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <div id="ichPaneWoche">
             <div class="ich-blatt">
               <div class="ich-kopf">
-                <h3>Diese Woche</h3>
+                <h3 id="ichWocheTitel">Diese Woche</h3>
                 <span class="ich-zahl-klein" id="ichWocheZahl"></span>
               </div>
+              <!-- Die Woche als Form (Runde 103, Idee B1): sieben Tage,
+                   ein Punkt je Art Eintrag. Ein Tipp zeigt nur diesen Tag,
+                   ein zweiter wieder die ganze Woche. -->
+              <div class="ich-streifen" id="ichStreifen" role="group"
+                   aria-label="Tage dieser Woche"></div>
               <div id="ichWocheListe"></div>
             </div>
           </div>
@@ -21142,6 +21181,8 @@ function heuteZeile(k){
   return '<button type="button" class="heute-zeile '+k.art+'" data-heute="'+esc(k.ziel)+'"'+
     (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+
     (k.ichtab?' data-hichtab="'+esc(k.ichtab)+'"':'')+
+    (k.teamtab?' data-hteamtab="'+esc(k.teamtab)+'"':'')+
+    (k.datum?' data-hdatum="'+esc(k.datum)+'"':'')+
     (k.cgo?' data-hcgo="'+esc(k.cgo)+'"':'')+'>'+
     '<span class="hz-ikon">'+k.ikon+'</span>'+
     '<span class="hz-txt"><b>'+esc(k.titel)+'</b><i>'+esc(k.unter)+'</i></span>'+
@@ -21217,6 +21258,40 @@ function renderHeute(){
       unter: dienst.length===1
         ? (dienst[0].from||'')+'–'+(dienst[0].to||'')+' · '+studioName(dienst[0].sk)
         : 'Ganze Woche ansehen' });
+  }
+
+  /* ── Schichten zum Übernehmen (Runde 103, Idee B2) ─────────────────
+     „Ich kann nicht" / „Ich übernehme" / „Bestätigen" gibt es seit
+     Langem — aber nur im Schichtplan, und dort nur für das Studio, das
+     gerade gewählt ist. Wer eine Schicht abgab, war darauf angewiesen,
+     dass ein Kollege zufällig den Plan öffnet. Die Recherche hatte das
+     übersehen und „der zweite Schritt fehlt" geschrieben; er fehlte
+     nicht, er war nur nicht zu sehen.
+
+     Jetzt stehen die Angebote aus den eigenen Studios auf der
+     Startseite, und bei der Leitung, was auf ihre Bestätigung wartet.
+     Ein Tipp öffnet den Schichtplan GENAU dieses Studios in GENAU
+     dieser Woche. */
+  var tausch=[];
+  if(ansichtAn('team') && featureAn('schicht')){
+    _tauschWartet.forEach(function(x){
+      tausch.push({ art:'heute', ziel:'team', teamtab:'schicht', sk:x.sk, datum:x.date,
+        ikon:ikon('wiederholen'),
+        /* Kurzer Titel, das Wer in die Unterzeile: „Lena Brandt
+           übernimmt – bestätigen?" war bei 390px abgeschnitten, und
+           abgeschnitten fehlte genau das Wort, das sagt, was zu tun ist. */
+        titel:'Tausch bestätigen · '+ichTagName(x.date),
+        unter:((x.tauschNeu&&x.tauschNeu.name)||'Jemand')+' statt '+(x.name||'?')+
+          ' · '+(x.from||'')+'–'+(x.to||'')+(mehrereStudios?' · '+studioName(x.sk):'') });
+    });
+    _tauschAngebote.forEach(function(x){
+      if(x.date<heuteYmdT()) return;
+      tausch.push({ art:'heute', ziel:'team', teamtab:'schicht', sk:x.sk, datum:x.date,
+        ikon:ikon('wiederholen'),
+        titel:ichTagName(x.date)+' · '+(x.from||'')+'–'+(x.to||''),
+        unter:(x.name||'Jemand')+' gibt ab'+
+          ((session.studioKeys||[]).length>1 || canManage() ? ' · '+studioName(x.sk) : '') });
+    });
   }
 
   /* Ungelesenes. */
@@ -21365,6 +21440,9 @@ function renderHeute(){
   }
   if(ansichtAn('todos')) block('Überfällig', 'dringend', ueber, ueber.slice(0,3), 'todos', 'faellig');
   block('Heute', 'heute', heute, heute.slice(0,3), 'todos');
+  /* Direkt unter „Heute": wer eine Schicht abgibt, braucht die Antwort
+     vor dem Tag, nicht danach. */
+  block('Zum Übernehmen', 'heute', tausch, tausch.slice(0,2), 'team');
   /* Direkt unter „Heute": der Putzplan hat einen Tagesbezug — was
      täglich ist, ist heute fällig. Über den Nachrichten, weil ein
      ungeputztes Gerät der Kunde sieht und eine ungelesene Nachricht
@@ -21404,6 +21482,8 @@ function renderHeute(){
   heutePasst(box);
 }
 
+function heuteYmdT(){ return ymd(new Date()); }
+
 /* Ein Tipp auf eine Zeile der Startseite. Eigene Funktion, weil
    heutePasst() nachträglich Knöpfe einsetzt („Ausserdem"), die genau
    dasselbe tun müssen — zwei Abschriften derselben Klicklogik laufen
@@ -21435,6 +21515,24 @@ function heuteTippBinden(el){
       }
       var it=el.getAttribute('data-hichtab');
       if(it){ var ib=document.querySelector('[data-ichtab="'+it+'"]'); if(ib) ib.click(); }
+      /* Schichttausch (Runde 103): Reiter, Studio und Woche der Schicht.
+         Ohne das landete man im zuletzt gewählten Studio in dieser
+         Woche — und die Schicht stand womöglich in keinem von beiden. */
+      /* „alle N ›" über dem Block trägt kein Reiter-Attribut; auf der
+         Startseite führt „team" nur hierhin, also gilt der Schichtplan. */
+      var tt=el.getAttribute('data-hteamtab') ||
+             (el.getAttribute('data-heute')==='team' ? 'schicht' : '');
+      if(tt){
+        var tb=document.querySelector('[data-teamtab="'+tt+'"]'); if(tb) tb.click();
+        var tsk=el.getAttribute('data-hsk'), tdat=el.getAttribute('data-hdatum');
+        if(tdat) _shiftWeek=mondayOf(new Date(tdat+'T12:00:00'));
+        var sel=$('teamStudio');
+        if(tsk && sel){
+          if(!sel.options.length) buildTeamSelect();
+          sel.value=tsk;
+          if(_teamStudioKey!==tsk) loadTeam(tsk); else renderShifts();
+        } else renderShifts();
+      }
       var cg=el.getAttribute('data-hcgo');
       if(cg){ var cb=document.querySelector('#chefHome [data-cgo="'+cg+'"]'); if(cb) cb.click(); }
     });
@@ -22002,6 +22100,13 @@ function berichtAnfordern(tage, note){
    Uhr für etwas, das sich selten ändert. Stattdessen einmal laden und
    höchstens alle fünf Minuten erneuern. */
 var _myShifts=[], _myShiftsAt=0, _myShiftsLoading=false;
+/* Schichten, die Kollegen abgeben — und bei der Leitung die, bei denen
+   jemand zugesagt hat. Runde 103 (Idee B2). Sie kommen aus DERSELBEN
+   Abfrage wie „Mein Dienst": die holt ohnehin alle Schichten der
+   eigenen Studios für die nächsten sieben Tage und warf bisher alles
+   weg, was nicht die eigene war. Keine Abfrage zusätzlich, keine Regel
+   neu. */
+var _tauschAngebote=[], _tauschWartet=[];
 /* Wie viele Schichten die Startseite im neuen Schnitt weggelassen hat.
    Steht hier und nicht in renderMyShifts, weil der Knopf darunter die
    Zahl nennen muss. */
@@ -22032,11 +22137,19 @@ function loadMyShifts(force){
     _myShiftsAt=Date.now();
     var alle=[];
     res.forEach(function(a){ alle=alle.concat(a); });
-    _myShifts=alle.filter(function(x){ return x.uid===session.uid; })
-      .sort(function(a,b){
-        return (a.date||'').localeCompare(b.date||'') || (a.from||'').localeCompare(b.from||'');
-      });
+    function nachZeit(a,b){
+      return (a.date||'').localeCompare(b.date||'') || (a.from||'').localeCompare(b.from||'');
+    }
+    _myShifts=alle.filter(function(x){ return x.uid===session.uid; }).sort(nachZeit);
+    _tauschAngebote=alle.filter(function(x){
+      return x.tausch==='offen' && x.uid!==session.uid;
+    }).sort(nachZeit);
+    _tauschWartet=canManage() ? alle.filter(function(x){ return x.tausch==='zugesagt'; }).sort(nachZeit) : [];
     renderMyShifts();
+    /* Die Startseite wurde vorher gezeichnet, als die Schichten noch
+       unterwegs waren. renderHeute und nicht renderHome: renderHome ruft
+       loadMyShifts selbst — so bleibt es bei einem Durchgang. */
+    if(currentView==='home') renderHeute();
   });
 }
 
@@ -23104,6 +23217,49 @@ function ichWocheHaken(knopf){
     });
 }
 
+/* ── Der Wochenstreifen (Runde 103, Idee B1) ──
+   Vorbild 7shifts: oben die Woche als Form, sieben Felder, ein Punkt je
+   Art Eintrag, heute gefüllt. Darunter stand schon die Liste — aber
+   „Donnerstag hab ich frei" sah man erst, wenn man sie bis Donnerstag
+   gelesen hatte.
+
+   Ein Tipp auf einen Tag zeigt NUR diesen Tag in der Liste, ein zweiter
+   Tipp (oder „ganze Woche") wieder alles. Kein eigenes Fenster: die
+   Liste darunter ist schon die richtige Ansicht, sie bekommt nur einen
+   Filter.
+
+   BREITE, gemessen statt geschätzt: sieben Felder zu mindestens 44 px
+   brauchen 308 px. Bei 320 px bleiben nach den Rändern 288 — es passt
+   nicht. Unter 340 px läuft der Streifen deshalb bis an den
+   Bildschirmrand (320 / 7 = 45,7 px je Tag). Die Recherche hatte das
+   vorher nachgerechnet; tests/test-block-b.js misst es jetzt nach. */
+var _ichWocheTag=null;
+function ichStreifenZeichnen(tage, heute){
+  var box=$('ichStreifen'); if(!box) return;
+  box.innerHTML=tage.map(function(key){
+    var e=ichEintraegeFuer(key);
+    var d=new Date(key+'T12:00:00');
+    var an=key===_ichWocheTag;
+    return '<button type="button" class="ist-tag'+(key===heute?' heute':'')+
+      (an?' gewaehlt':'')+(key<heute?' vorbei':'')+'" data-isttag="'+key+'" '+
+      'aria-pressed="'+(an?'true':'false')+'" '+
+      'aria-label="'+esc(d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})+
+        (e.length ? ', '+e.length+(e.length===1?' Eintrag':' Einträge') : ', nichts eingetragen'))+'">'+
+      '<span class="ist-feld">'+
+        '<span class="ist-wt">'+esc(d.toLocaleDateString('de-DE',{weekday:'short'}).replace('.',''))+'</span>'+
+        '<span class="ist-zahl">'+d.getDate()+'</span>'+
+        '<span class="ich-punkte">'+ichPunkteHTML(e)+'</span>'+
+      '</span></button>';
+  }).join('');
+  box.querySelectorAll('[data-isttag]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k=b.getAttribute('data-isttag');
+      _ichWocheTag = (_ichWocheTag===k) ? null : k;
+      tick(8);
+      renderIchWoche();
+    });
+  });
+}
 function renderIchWoche(){
   var box=$('ichWocheListe'), zahl=$('ichWocheZahl'); if(!box) return;
   var mo=mondayOf(new Date()), tage=[], n=0;
@@ -23111,6 +23267,20 @@ function renderIchWoche(){
     var d=new Date(mo); d.setDate(mo.getDate()+i); tage.push(ymd(d));
   }
   var heute=ymd(new Date());
+  /* Ein gewählter Tag aus einer anderen Woche (die Seite blieb über
+     Mitternacht am Sonntag offen) gilt nicht mehr. */
+  if(_ichWocheTag && tage.indexOf(_ichWocheTag)<0) _ichWocheTag=null;
+  ichStreifenZeichnen(tage, heute);
+  var titel=$('ichWocheTitel');
+  if(titel){
+    titel.innerHTML = _ichWocheTag
+      ? esc(new Date(_ichWocheTag+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'}))+
+        ' <button type="button" class="mini-link ist-alle" id="ichWocheAlle">ganze Woche</button>'
+      : 'Diese Woche';
+    var alle=$('ichWocheAlle');
+    if(alle) alle.addEventListener('click', function(){ _ichWocheTag=null; tick(8); renderIchWoche(); });
+  }
+  if(_ichWocheTag) tage=[_ichWocheTag];
   var html=tage.map(function(key){
     var e=ichEintraegeFuer(key); n+=e.length;
     if(!e.length) return '';
@@ -23119,8 +23289,10 @@ function renderIchWoche(){
     }).join('');
   }).join('');
   if(zahl) zahl.textContent = n ? (n===1?'1 Eintrag':n+' Einträge') : '';
-  box.innerHTML = html || emptyHTML('Diese Woche ist nichts eingetragen',
-    'Termine trägst du im Kalender ein, To-dos unter „Persönlich".', 'kalender');
+  box.innerHTML = html || (_ichWocheTag
+    ? emptyMini('An diesem Tag ist nichts eingetragen.')
+    : emptyHTML('Diese Woche ist nichts eingetragen',
+        'Termine trägst du im Kalender ein, To-dos unter „Persönlich".', 'kalender'));
   box.querySelectorAll('[data-zutodo]').forEach(function(b){
     b.addEventListener('click', function(){ _persTab='todo'; showView('persoenlich'); });
   });
@@ -23133,15 +23305,22 @@ function renderIchWoche(){
    Monat und Woche teilen sich dieselbe Zelle und dieselben Punkte. Zwei
    Bauarten fuer dasselbe waeren zwei Stellen, an denen man eine neue
    Sorte Eintrag vergisst. */
-function ichZelle(key, heute, gross){
-  var e=ichEintraegeFuer(key);
+/* Die Punkte eines Tages. Eigene Funktion seit Runde 103: der
+   Wochenstreifen oben in „Woche" zeigt dieselben — zwei Abschriften
+   hiessen, dass eine neue Sorte Eintrag an einer Stelle einen Punkt
+   bekommt und an der anderen nicht. */
+function ichPunkteHTML(e){
   var arten={};
   e.forEach(function(x){
     arten[x.art==='privat' ? ('kat-'+(x.kat||'sonst')) : x.art]=true;
   });
-  var reihenfolge=['dienst','frei','kat-wichtig','kat-arbeit','kat-privat','kat-sonst','todo'];
-  var punkte=reihenfolge.filter(function(a){ return arten[a]; })
+  var reihenfolge=['dienst','frei','kat-wichtig','kat-arbeit','kat-privat','kat-sonst','todo','aufgabe'];
+  return reihenfolge.filter(function(a){ return arten[a]; })
     .map(function(a){ return '<i class="ich-punkt '+a+'"></i>'; }).join('');
+}
+function ichZelle(key, heute, gross){
+  var e=ichEintraegeFuer(key);
+  var punkte=ichPunkteHTML(e);
   var d=new Date(key+'T12:00:00');
   /* In der Wochenansicht ist Platz fuer den ersten Titel. Genau einer:
      zwei Zeilen Text in einer Zelle liest ohnehin niemand im Vorbeigehen. */

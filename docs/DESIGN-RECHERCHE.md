@@ -132,12 +132,28 @@ also nicht**: entweder fünf Tage sichtbar und der Rest per Wischen,
 oder der Streifen bekommt auf sehr schmalen Geräten schmalere Ränder.
 Nachgerechnet, nicht gemessen — vor dem Bauen messen.
 
+> **Umgesetzt in Runde 103** — nicht wischbar, sondern immer alle sieben
+> Tage: unter 340 px läuft der Streifen bis an den Bildschirmrand (320 / 7
+> = 45,7 px je Tag), gemessen per Trefferfläche bei 320, 390, 430 und
+> 820 px. Ein Tipp zeigt nur diesen Tag in der Liste darunter, ein
+> zweiter wieder die Woche.
+
 ### B2. Schicht abgeben und übernehmen
 *Vorbild: Deputy, 7shifts* ([Agendrix](https://www.agendrix.com/blog/best-shift-scheduling-apps))
 
 „Ich kann nicht" gibt es schon. Der zweite Schritt fehlt: die Schicht
 wird dem Team angeboten, jemand tippt „Übernehme ich", die Leitung
-bestätigt. Das ist eine Funktion, keine Gestaltung — steht hier, weil
+bestätigt.
+
+> **Korrektur vom 24.9.2026: das stimmte nicht.** Den ganzen Ablauf gibt
+> es seit Langem — „Ich kann nicht", „Ich übernehme", „Bestätigen", in
+> beiden Regel-Welten abgesichert (`tauschHTML()` im Schichtplan). Ich
+> hatte den Ablauf beim Schreiben nicht bis zum Ende nachgelesen. Was
+> wirklich fehlte, war die **Sichtbarkeit**: Angebote standen nur im
+> Schichtplan, und dort nur für das gerade gewählte Studio. Seit Runde
+> 103 stehen sie auf der Startseite („Zum Übernehmen"), bei der Leitung
+> auch, was auf ihre Bestätigung wartet. Offen bleibt eine
+> Push-Nachricht beim Ausschreiben — das braucht eine Cloud Function. Das ist eine Funktion, keine Gestaltung — steht hier, weil
 Nutzerbewertungen von 7shifts und Deputy genau das Tauschen und Anbieten
 von Schichten ausdrücklich loben.
 
