@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-wH7jSZEqR40DcC7dBSjg4qsz2UXpOfgBW87YlL2SqZQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-/FgNwsUZx5I4gA3rVSeNmka5U74vkputEBgJ6f+Rg2M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -897,12 +897,31 @@ html.demo #terminalSchirm{top:44px}
   background:var(--brand);border:none;color:var(--on-accent);font-weight:700;box-shadow:0 2px 10px var(--accent-glow)}
 .tb-user{display:flex;align-items:center;gap:var(--s10)}
 .tb-who{text-align:right;line-height:var(--lh-eng);display:none}
-@media(min-width:600px){.tb-who{display:block}}
+/* Name und Rolle erst am Rechner. Zwischen 600 und 1.100 px brach
+   „Demo-Geschäftsführung" auf zwei Zeilen um, machte die Kopfzeile 86
+   statt 66 px hoch und schob bei 600 px den Abmelde-Knopf aus dem Bild
+   (gemessen 24.9.2026, Leitung). Das Kürzel daneben sagt dasselbe und
+   führt zum Profil. */
+@media(min-width:1100px){.tb-who{display:block}}
 .tb-who b{font-family:var(--font-head);font-size:var(--t-md);display:block}
 .tb-who span{font-size:var(--t-xs);color:var(--text-2)}
 .avatar{width:38px;height:38px;border-radius:var(--r-rund);flex-shrink:0;display:grid;place-items:center;
   font-family:var(--font-head);font-weight:800;font-size:var(--t-sm);color:var(--on-accent);
   background:var(--brand)}
+/* ── Die Kopfzeile: jeder Griff 44 × 44, auf JEDEM Gerät (24.9.2026) ──
+   Bisher galt das nur bis 520 px. Am Rechner — dem Hauptgerät — waren
+   Glocke, Hell/Dunkel und Abmelden 40 × 40, Bericht, Hilfe und Suchen
+   36 px hoch und das Kürzel (öffnet das Profil) 38 × 38. Gemessen per
+   elementFromPoint bei 1280 / 1440 / 1920. Die Kopfzeile bleibt dabei
+   66 px hoch: sie hat 12 px Innenabstand, und 44 + 2 × 12 = 68 liegt
+   nur zwei Pixel darüber. */
+/* min- statt width/height: Bericht, Hilfe und Suchen tragen ab 700 /
+   900 px ein Wort und brauchen width:auto. Ein festes width:44px hier
+   schlüge deren Regel (höhere Spezifität) und schnitte „Bericht" auf
+   „Beric" ab — beim ersten Versuch genau so passiert, und der Hit-Test
+   war trotzdem grün, weil 44 px ja stimmten. */
+.topbar .icon-btn{min-width:44px;min-height:44px;flex-shrink:0}
+#uAvatar{width:44px;height:44px}
 .avatar.chef{background:linear-gradient(135deg,var(--warm),#ffa06b);color:#2a0e00}
 /* Werkzeuge, nicht Handlungen — deshalb ruhig und NICHT in der
    Markenfarbe. Suchen, Hell/Dunkel und Abmelden stehen in jeder
@@ -981,7 +1000,7 @@ html.demo #terminalSchirm{top:44px}
      dazu, legt das Grid es in eine zweite Zeile und die feste Hoehe
      schneidet es ab. Deshalb inline-flex und height:auto. */
   .tb-bericht{display:inline-flex;align-items:center;justify-content:center;
-    gap:var(--s6);width:auto;height:auto;min-height:36px;padding:0 var(--s12)}
+    gap:var(--s6);width:auto;height:auto;min-height:44px;padding:0 var(--s12)}
   .tb-bericht .tbb-wort{display:inline;font-size:var(--t-sm);font-weight:600;
     white-space:nowrap}
 }
@@ -2473,6 +2492,18 @@ body.nurlesen .kopf-plus{display:none !important}
 @media(max-width:469px){
   body.rolle-leitung .tb-brand .tb-wort{display:none}
 }
+/* Und knapp über der Handy-Grenze: zwischen 521 und 599 px trägt die
+   Zeile der Leitung sieben Griffe à 44 px plus den Schriftzug. Gemessen
+   bei 530 px lagen Glocke und Abmelden halb unter ihren Nachbarn
+   (Trefferfläche 20 und 24 px breit). Hell/Dunkel geht hier wie am
+   Handy — es steht vollständig unter Profil → Aussehen. Die Abstände
+   werden so eng wie am Handy; ohne das fehlten bei 521 px noch 22 px,
+   und der Browser drückte die Glocke auf 24 px zusammen. */
+@media(min-width:521px) and (max-width:599px){
+  body.rolle-leitung #themeBtn{display:none}
+  body.rolle-leitung .topbar{gap:var(--s8)}
+  body.rolle-leitung .tb-user{gap:var(--s6)}
+}
 
 /* ── Putzplan ── */
 .pp-item{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s12) var(--s12);background:var(--bg-soft);
@@ -3849,7 +3880,7 @@ html{font-size:var(--fs,100%)}
      Dazu height:auto — sonst bleibt die Hoehe stehen und das Wort ragt
      weiter hinaus. */
   .suchknopf{display:inline-flex;align-items:center;justify-content:center;
-    width:auto;height:auto;min-height:36px;padding:0 var(--s12);gap:var(--s8)}
+    width:auto;height:auto;min-height:44px;padding:0 var(--s12);gap:var(--s8)}
   .suchknopf .sk-wort{display:inline;font-size:var(--t-sm);font-weight:600;white-space:nowrap}
 }
 /* Derselbe Weg für den Rettungsring — aber erst später. Bei 700px
@@ -3863,7 +3894,7 @@ html{font-size:var(--fs,100%)}
 .hilfeknopf .hi-wort{display:none}
 @media (min-width:900px){
   .hilfeknopf{display:inline-flex;align-items:center;justify-content:center;
-    width:auto;height:auto;min-height:36px;padding:0 var(--s12);gap:var(--s8)}
+    width:auto;height:auto;min-height:44px;padding:0 var(--s12);gap:var(--s8)}
   .hilfeknopf .hi-wort{display:inline;font-size:var(--t-sm);font-weight:600;white-space:nowrap}
 }
 /* Eine Zeile zum Schieben statt drei Zeilen Knöpfe: bei vier Sortierungen
@@ -15530,6 +15561,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-kopf', datum:'24.9.2026', titel:'Oben: grössere Knöpfe am Rechner', wo:'home', punkte:[
+    'Die Knöpfe ganz oben — Bericht, Glocke, Hilfe, Suchen, Hell/Dunkel, Abmelden und dein Kürzel — sind am Rechner und Tablet jetzt so gross wie am Handy und leichter zu treffen.',
+    'Auf mittleren Bildschirmen (z. B. Tablet hochkant) passte der Abmelde-Knopf der Leitung nicht mehr in die Zeile. Jetzt steht er wieder da.',
+    'Dein Name steht oben erst ab Rechnerbreite. Auf dem Tablet brach er auf zwei Zeilen um und machte die Leiste unnötig hoch.' ] },
   { id:'2026-09-24-lesen', datum:'24.9.2026', titel:'Schulung: fünf Module zum Lesen über EMS', wo:'schulung', punkte:[
     'Unter „Ich → Schulung“ gibt es die neue Gruppe „EMS-Wissen“ mit fünf Modulen: EMS erklären, Sicherheit, besondere Kunden, Ergebnisse und Beratung. Keines davon ist Pflicht.',
     'Diese Schulungen sind zum Lesen: Die Texte kommen aus dem Hilfe-Fenster, jeweils mit „So erklärst du es“ und dem Weg zum ganzen Artikel. Am Ende stehen ein paar Fragen.',
