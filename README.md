@@ -37,7 +37,7 @@ eine HTML-Datei, die `konfig.js`, `sw.js` und die Schriften aus
 Alle Durchläufe auf einmal:
 
 ```bash
-bash tests/alle.sh              # Oberfläche, 129 Durchläufe im Browser
+bash tests/alle.sh              # Oberfläche, 130 Durchläufe im Browser
 cd tests/rules && npm test      # Sicherheitsregeln und Cloud Functions im Emulator
 ```
 
@@ -69,7 +69,7 @@ cd tests/rules && npm test      # Sicherheitsregeln und Cloud Functions im Emula
 
 | Pfad | Was drin steht |
 |---|---|
-| `tests/` | 129 Durchläufe durch die Oberfläche mit Playwright |
+| `tests/` | 130 Durchläufe durch die Oberfläche mit Playwright |
 | `tests/rules/` | Regeltests und Cloud Functions gegen den Firestore-Emulator |
 | `tools/` | Werkzeuge, die von Hand laufen: Umzug, Kontenprüfung, Apps Script |
 | `docs/` | Sämtliche Dokumentation, siehe unten |

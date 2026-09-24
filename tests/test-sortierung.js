@@ -252,7 +252,15 @@ async function lauf() {
      Zu Recht: Zustand, Rhythmus und Dringlichkeit sind DREI Fragen,
      nicht zwei. Und ein Trenner, den man nicht sieht, trennt nichts —
      1px in der leisen Linienfarbe war auf dem Handy nicht vom Abstand
-     zwischen den Knöpfen zu unterscheiden. */
+     zwischen den Knöpfen zu unterscheiden.
+
+     Seit Runde 103 (P2) liegen die Filter hinter dem Knopf „Filter" —
+     gemessen wird, was man sieht, nachdem man ihn geöffnet hat. */
+  await page.evaluate(() => {
+    const b = document.getElementById('ppWerkzeuge');
+    if (b && b.hidden) document.getElementById('ppFilterKnopf').click();
+  });
+  await page.waitForTimeout(300);
   const gruppen = await page.evaluate(() => {
     const zeile = document.querySelector('#view-putzplan .chip-row.werkzeugzeile');
     const teile = [...zeile.children].filter(c => c.getClientRects().length);
