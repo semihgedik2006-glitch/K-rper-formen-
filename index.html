@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-dNaqnx9BRwYvTBka718nB8w9+/tkZt3+ZkwJFCJTkyo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-MvDZr2yofDgTu2kwGpL+J1DOHLDdKsHdGOGwHO2M4b8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1226,6 +1226,55 @@ html.demo #terminalSchirm{top:44px}
 .check{width:26px;height:26px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid var(--line-2);
   background:none;cursor:pointer;display:grid;place-items:center;margin-top:var(--s1)}
 .check svg{width:15px;height:15px;color:var(--on-accent);opacity:0;transform:scale(.5);transition:.2s}
+/* ── Aufgaben am PC: zwei Spalten (Runde 103, P1) ──
+   Unter 1100 px gibt es die Detailspalte nicht — dort ist die Liste die
+   Ansicht, und „…" öffnet das Blatt wie bisher. */
+.todo-detail{display:none}
+@media(min-width:1100px){
+  .todo-spalten{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,400px);
+    gap:var(--s20);align-items:start}
+  .todo-detail{display:block;position:sticky;top:var(--s72);
+    max-height:calc(100vh - 240px);overflow:auto;
+    padding:var(--s20);border-radius:var(--radius);background:var(--bg-2);
+    border:1px solid var(--line);box-shadow:var(--e2)}
+  /* Die Liste wird dicht: was rechts im Detail steht, steht nicht
+     zusätzlich in jeder Zeile. Titel, Marken, Fuss bleiben. */
+  #todoArea .todo{padding:var(--s10) var(--s12);margin-bottom:var(--s6);cursor:pointer}
+  /* Auch der Fuss („erstellt von", „erledigt von", Kamera) steht rechts
+     im Detail. Ohne ihn ist eine Zeile eine Zeile: gemessen vorher 5,
+     nachher PC_ZEILEN Aufgaben bei 1440 × 900 im Bild. */
+  #todoArea .todo .t-desc,#todoArea .todo .sub-list,#todoArea .todo .t-photo,
+  #todoArea .todo .t-foot,#todoArea .todo .t-danke-zeile{display:none}
+  #todoArea .todo .swipe-body{align-items:center}
+  #todoArea .todo.gewaehlt{box-shadow:inset 0 0 0 2px var(--accent), var(--e1)}
+  @media (hover:hover){ #todoArea .todo:not(.gewaehlt):hover{box-shadow:inset 0 0 0 1px var(--line-2), var(--e1)} }
+}
+.td-kopf h3{margin:0 0 var(--s6);font-size:var(--t-xl);line-height:var(--lh-eng)}
+.td-marken{display:flex;gap:var(--s6);flex-wrap:wrap;margin-bottom:var(--s12)}
+.td-haken{width:100%;min-height:48px;margin-bottom:var(--s16);gap:var(--s8)}
+.td-haken svg{width:20px;height:20px}
+.td-text{margin:0 0 var(--s16);font-size:var(--t-md);line-height:var(--lh);color:var(--text);white-space:pre-wrap}
+.td-schritte{margin:0 0 var(--s16)}
+.td-schritte h4,.td-info dt{font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-l);
+  text-transform:uppercase;color:var(--text-2)}
+.td-schritte h4{margin:0 0 var(--s6)}
+.td-schritt{display:flex;align-items:center;gap:var(--s10);width:100%;min-height:44px;
+  padding:var(--s6) var(--s8);border:none;background:none;cursor:pointer;text-align:left;
+  font-family:var(--font-body);font-size:var(--t-sm);color:var(--text);border-radius:var(--r-sm)}
+.td-schritt:hover{background:var(--auf-1)}
+.td-schritt.an{color:var(--text-2);text-decoration:line-through}
+.td-grund{margin:0 0 var(--s16)}
+.td-info{display:grid;grid-template-columns:auto 1fr;gap:var(--s6) var(--s16);margin:0 0 var(--s16)}
+.td-info dt{margin:0;align-self:center}
+.td-info dd{margin:0;font-size:var(--t-sm);color:var(--text)}
+.td-foto{display:block;max-width:100%;border-radius:var(--r-md);margin:var(--s12) 0}
+.td-aktionen{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s12)}
+.td-aktionen .btn{min-height:44px}
+.td-tasten{margin:var(--s16) 0 0;font-size:var(--t-2xs);color:var(--text-2)}
+.td-leer{display:flex;flex-direction:column;align-items:center;gap:var(--s10);
+  padding:var(--s24) var(--s12);text-align:center;color:var(--text-2)}
+.td-leer svg{width:32px;height:32px}
+
 /* Der Putzplan stand hier nicht mit drin (gefunden in Runde 103, P2):
    ein abgehakter Putzpunkt war durchgestrichen, sein Kästchen aber LEER
    — er sah zugleich erledigt und offen aus. */
@@ -5112,20 +5161,22 @@ body.neu .subtab.on{color:var(--ber)}
 body.neu .subnav-mehr{background:var(--bg);box-shadow:-10px 0 10px -2px var(--bg)}
 
 /* ── 4. Der Seitenkopf wandert in den Bereichskopf ──
-   Nur auf dem Handy: dort stand die Überschrift der Seite direkt über
-   der Reiterzeile, die dieselbe Seite schon benennt. Am Rechner gibt
-   es keinen Bereichskopf, dort bleibt alles wie es ist.
+   Die Überschrift der Seite stand direkt unter dem Bereichskopf, der
+   dieselbe Seite schon benennt — „AUFGABEN · Alle 14 Studios" unter
+   „Aufgaben · 44 offen", auf der Startseite „GUTEN MORGEN, …" unter
+   „Start · Donnerstag".
 
-   Der „+ Neu"-Knopf bleibt. Er ist die wichtigste Handlung auf
-   Aufgaben, Putzplan und Probetraining und hängt an dieser Zeile. */
-@media(max-width:820px){
-  body.neu .view-head > h2,
-  body.neu .view-head > p,
-  body.neu .view-head .vh-text{display:none}
-  body.neu .view-head{padding-top:var(--s6);padding-bottom:0}
-  body.neu .view-head:not(:has(.kopf-plus)){display:none}
-  body.neu .view-head .vh-line{justify-content:flex-end}
-}
+   Bis Runde 103 nur auf dem Handy; hier stand „Am Rechner gibt es
+   keinen Bereichskopf". Das stimmte nicht mehr — den Bereichskopf gibt
+   es im neuen Schnitt auch am PC, und dort kostete die Wiederholung
+   gemessen 70 Pixel vor der ersten Aufgabe. Jetzt überall; „+ Neu"
+   sitzt am PC im Bereichskopf (kopfPlusUmhaengen), am Handy unten. */
+body.neu .view-head > h2,
+body.neu .view-head > p,
+body.neu .view-head .vh-text{display:none}
+body.neu .view-head{padding-top:var(--s6);padding-bottom:0}
+body.neu .view-head:not(:has(.kopf-plus)){display:none}
+body.neu .view-head .vh-line{justify-content:flex-end}
 
 /* ── 5. Die untere Leiste: vier statt sechs ──
    Sechs Knöpfe waren auf 320px exakt 44px breit — die Untergrenze für
@@ -6830,7 +6881,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <select class="chip" id="todoSort" style="padding-right:26px"></select>
             </div>
           </div>
-          <div id="todoArea"></div>
+          <!-- Am PC (ab 1100 px) zwei Spalten: links die Liste, rechts die
+               gewählte Aufgabe im Detail (Runde 103, P1). Am Handy bleibt
+               es die Liste — die Detailspalte ist dort gar nicht da. -->
+          <div class="todo-spalten" id="todoSpalten">
+            <div id="todoArea"></div>
+            <aside class="todo-detail" id="todoDetail" aria-label="Aufgabe im Detail" aria-live="polite"></aside>
+          </div>
         </div>
       </section>
 
@@ -15335,6 +15392,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-p1', datum:'24.9.2026', titel:'Aufgaben am PC: Liste links, Detail rechts', wo:'todos', punkte:[
+    'Am PC steht rechts neben der Liste die gewählte Aufgabe mit allem: Beschreibung, Teilschritte, Frist, Zuständig, Foto und „Abhaken“.',
+    'Die Zeilen links sind schlanker — am PC stehen jetzt 7 statt 4 Aufgaben ganz im Bild.',
+    'Mit der Tastatur: ↑ ↓ wählen, x hakt ab, e bearbeitet, Enter öffnet „Grund, Frist, mehr“.',
+    '„+ Neu“ steht am PC oben im Bereichskopf; die doppelte Überschrift darunter ist weg — auch auf der Startseite.' ] },
   { id:'2026-09-24-p2', datum:'24.9.2026', titel:'Putzplan: der Plan steht jetzt oben', wo:'putzplan', punkte:[
     'Studio, Fortschritt, „Wer hakt ab?“, Filter und Drucken stehen in EINER Leiste — der erste Punkt beginnt am PC und am Handy jeweils fast 300 Pixel weiter oben.',
     'Der Plan ist nach Täglich, Wöchentlich und Einmalig gegliedert, jede Gruppe mit „2 von 3“. Am PC stehen die Gruppen nebeneinander.',
@@ -16029,11 +16091,16 @@ function kopfPlusUmhaengen(){
     dock.hidden=true; dock.classList.remove('eng');
     document.body.classList.remove('hat-daumen');
   }
-  if(!layoutNeu() || window.innerWidth>820) return;
+  if(!layoutNeu()) return;
   var v=document.querySelector('.view.show');
   var b=v && v.querySelector('.view-head .kopf-plus');
   if(!b) return;
   if(!b._heim) b._heim=b.parentNode;
+  /* Am PC (Runde 103, P1) geht „+ Neu" ebenfalls in den Bereichskopf.
+     Damit bleibt der Seitenkopf leer und fällt weg — er wiederholte nur
+     den Bereichskopf („AUFGABEN" unter „Aufgaben · 44 offen") und
+     kostete am PC 70 Pixel vor der ersten Zeile. */
+  if(window.innerWidth>820){ zeile.appendChild(b); return; }
   /* Ein Knopf, den die Rolle ausblendet (Putzaufgabe anlegen darf nur
      die Leitung), macht auch unten keinen Platz frei. */
   if(dock && b.hasAttribute('data-daumen') && b.style.display!=='none'){
@@ -25612,8 +25679,171 @@ function bindTodoClicks(area){
     });
     // Nach rechts wischen = abhaken
     bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
+    /* Am PC wählt ein Klick auf die Zeile sie für die Detailspalte aus.
+       Knöpfe, Links und Teilschritte behalten ihre eigene Wirkung. */
+    node.addEventListener('click', function(e){
+      if(!todoBreit()) return;
+      if(e.target.closest('button,a,input,select,textarea,label,.sub-item')) return;
+      todoWaehlen(id, sk);
+    });
+  });
+  todoWahlMarkieren();
+  renderTodoDetail();
+}
+
+/* ══ AUFGABEN AM PC: LISTE LINKS, DETAIL RECHTS (Runde 103, P1) ══════
+   Aus dem Betrieb: der PC ist das Hauptgerät, Aufgaben und Putzplan sind
+   die meistgenutzten Bereiche. Gemessen bei 1440 × 900: 5 von 61
+   Aufgaben im Bild, jede Zeile 1.174 px breit — der Titel links, „…"
+   ganz rechts, dazwischen nichts.
+
+   Jetzt ab 1100 px zwei Spalten. Links die Liste, dichter (Beschreibung,
+   Teilschritte und Foto stehen rechts statt in der Zeile). Rechts die
+   gewählte Aufgabe mit allem, was es zu ihr gibt, und den Handgriffen:
+   abhaken, Teilschritte, Danke, Grund, bearbeiten.
+
+   KEINE ZWEITE LOGIK. Die Knöpfe rechts lösen dieselben Knöpfe der Zeile
+   aus (Haken, Teilschritt) oder dieselben Funktionen (Blatt, Bearbeiten,
+   Danke). Wer eine Handlung ändert, ändert sie an einer Stelle.
+
+   Tastatur, nur in dieser Ansicht und nur, wenn nichts anderes den Fokus
+   hat: ↑/↓ (oder k/j) wählen, Leertaste oder x hakt ab, e bearbeitet
+   (Leitung), Enter öffnet „Mehr". Die Buchstaben sind mit den
+   Kürzeln der App (AKTIONEN) abgeglichen: keiner doppelt. */
+var _todoWahl=null;   // { id, sk }
+/* Solange niemand selbst gewählt hat, steht rechts die erste OFFENE
+   Aufgabe der Liste — auch wenn die Liste sich beim Laden noch umsortiert
+   (die Studios kommen nacheinander an). */
+var _todoWahlVonHand=false;
+var _todoBreitMq=null;
+function todoBreit(){
+  if(!_todoBreitMq && window.matchMedia) _todoBreitMq=window.matchMedia('(min-width:1100px)');
+  return !!(_todoBreitMq && _todoBreitMq.matches);
+}
+function todoWahlDaten(){
+  if(!_todoWahl) return null;
+  var t=(cachedTodos[_todoWahl.sk]||[]).filter(function(x){ return x.id===_todoWahl.id; })[0];
+  return t ? { t:t, sk:_todoWahl.sk } : null;
+}
+function todoZeilen(){ return [].slice.call(document.querySelectorAll('#todoArea .todo')); }
+function todoWaehlen(id, sk, sichtbarMachen){
+  _todoWahl = { id:id, sk:sk };
+  _todoWahlVonHand = true;
+  todoWahlMarkieren(sichtbarMachen);
+  renderTodoDetail();
+}
+function todoWahlMarkieren(sichtbarMachen){
+  if(!todoBreit()) return;
+  var zeilen=todoZeilen();
+  /* Nichts gewählt, oder die gewählte ist weggefiltert: die erste
+     OFFENE nehmen. Eine leere rechte Spalte neben einer vollen Liste
+     sähe aus wie ein Fehler. */
+  var da = _todoWahl && zeilen.some(function(z){ return z.dataset.id===_todoWahl.id && z.dataset.sid===_todoWahl.sk; });
+  if(!da || !_todoWahlVonHand){
+    var erste = zeilen.filter(function(z){ return !z.classList.contains('done'); })[0] || zeilen[0];
+    _todoWahl = erste ? { id:erste.dataset.id, sk:erste.dataset.sid } : null;
+  }
+  zeilen.forEach(function(z){
+    var an = !!_todoWahl && z.dataset.id===_todoWahl.id && z.dataset.sid===_todoWahl.sk;
+    z.classList.toggle('gewaehlt', an);
+    if(an && sichtbarMachen && z.scrollIntoView) z.scrollIntoView({ block:'nearest' });
   });
 }
+function renderTodoDetail(){
+  var box=$('todoDetail'); if(!box) return;
+  if(!todoBreit()){ box.innerHTML=''; return; }
+  var w=todoWahlDaten();
+  if(!w){
+    box.innerHTML='<div class="td-leer">'+ikon('hakenKreis')+
+      '<p>Wähle links eine Aufgabe — hier steht dann alles dazu.</p></div>';
+    return;
+  }
+  var t=w.t, sk=w.sk, done=isDone(t);
+  var schritte=Array.isArray(t.steps)?t.steps:[];
+  var info=[];
+  info.push(['Studio', studioName(sk)]);
+  if(t.due) info.push(['Frist', new Date(t.due).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})+
+    (!done && Date.now()>t.due ? ' · überfällig' : '')]);
+  if(t.recurring) info.push(['Rhythmus', repLabelFor(t)]);
+  info.push(['Zuständig', t.assignedName || 'Jeder im Studio']);
+  info.push(['Erstellt von', t.createdBy || 'Leitung']);
+  if(done) info.push(['Erledigt', (t.doneBy||'')+(t.doneAt?' · '+fmtDateTime(t.doneAt):'')]);
+  box.innerHTML=
+    '<div class="td-kopf"><h3>'+esc(t.title||'Aufgabe')+'</h3>'+
+      '<div class="td-marken">'+prioMarke(t)+'</div></div>'+
+    '<button type="button" class="btn '+(done?'btn-ghost':'btn-primary')+' td-haken" data-td="haken">'+
+      (done ? 'Wieder öffnen' : ikon('hakenKreis')+' Abhaken')+'</button>'+
+    (t.desc ? '<p class="td-text">'+esc(t.desc)+'</p>' : '')+
+    (schritte.length ? '<div class="td-schritte"><h4>Teilschritte · '+
+        schritte.filter(function(x){ return x && x.d; }).length+' von '+schritte.length+'</h4>'+
+      schritte.map(function(x,i){
+        return '<button type="button" class="td-schritt'+(x&&x.d?' an':'')+'" data-tdschritt="'+i+'" '+
+          'aria-pressed="'+(x&&x.d?'true':'false')+'"><span class="sbox">✓</span>'+esc((x&&x.t)||'')+'</button>';
+      }).join('')+'</div>' : '')+
+    (t.grund && !done ? '<div class="t-grund td-grund">'+ikon('warnung')+' '+esc(t.grund)+
+      (t.grundVon?' <span class="t-grund-wer">— '+esc(t.grundVon)+'</span>':'')+'</div>' : '')+
+    '<dl class="td-info">'+info.map(function(x){
+      return '<dt>'+esc(x[0])+'</dt><dd>'+esc(x[1])+'</dd>'; }).join('')+'</dl>'+
+    dankeHTML(t, done)+
+    (t.photo ? '<img class="td-foto" src="'+esc(t.photo)+'" alt="Foto zur Aufgabe" loading="lazy">' : '')+
+    '<div class="td-aktionen">'+
+      (canManage() ? '<button type="button" class="btn btn-ghost btn-sm" data-td="bearbeiten">'+ikon('stift')+' Bearbeiten</button>' : '')+
+      '<button type="button" class="btn btn-ghost btn-sm" data-td="foto">'+ikon('foto')+
+        (t.photo ? ' Foto ersetzen' : ' Foto')+'</button>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-td="mehr">'+
+        (done ? 'Mehr …' : 'Grund, Frist, mehr …')+'</button>'+
+    '</div>'+
+    '<p class="td-tasten">↑ ↓ wählen · Leertaste abhaken'+(canManage()?' · E bearbeiten':'')+' · Enter mehr</p>';
+
+  box.querySelectorAll('[data-td]').forEach(function(b){
+    b.addEventListener('click', function(){ todoDetailAktion(b.getAttribute('data-td'), b); });
+  });
+  box.querySelectorAll('[data-tdschritt]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var z=document.querySelector('#todoArea .todo.gewaehlt [data-step="'+b.getAttribute('data-tdschritt')+'"]');
+      if(z) z.click();
+    });
+  });
+  var dk=box.querySelector('[data-tdanke]');
+  if(dk) dk.addEventListener('click', function(){ dankeUmschalten(sk, t.id, dk); });
+}
+function todoDetailAktion(was, knopf){
+  var w=todoWahlDaten(); if(!w) return;
+  if(was==='haken'){
+    var chk=document.querySelector('#todoArea .todo.gewaehlt .check');
+    if(chk) chk.click();
+    else aufgabeHaken(w.sk, w.t.id, !isDone(w.t)).catch(function(e){ toast(errMsg(e),true); });
+    return;
+  }
+  if(was==='bearbeiten' && canManage()){ openTodoEdit(w.t, w.sk); return; }
+  if(was==='mehr'){ todoBlattOeffnen(w.t, w.sk); return; }
+  if(was==='foto'){ _todoPhotoTarget={ sk:w.sk, id:w.t.id }; $('todoFileShared').click(); return; }
+}
+/* Tastatur für die Liste am PC. */
+document.addEventListener('keydown', function(e){
+  if(currentView!=='todos' || !todoBreit()) return;
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(typingSomewhere() || anyModalOpen()) return;
+  var k=e.key;
+  var zeilen=todoZeilen(); if(!zeilen.length) return;
+  var i=zeilen.findIndex(function(z){ return z.classList.contains('gewaehlt'); });
+  if(k==='ArrowDown' || k==='j' || k==='ArrowUp' || k==='k'){
+    e.preventDefault();
+    var n = (k==='ArrowDown'||k==='j') ? Math.min(zeilen.length-1, i+1) : Math.max(0, i-1);
+    var z=zeilen[n];
+    todoWaehlen(z.dataset.id, z.dataset.sid, true);
+    return;
+  }
+  /* Leertaste nur, wenn der Fokus nicht auf einem Knopf liegt — sonst
+     löste sie den Knopf UND den Haken aus. */
+  if((k===' ' && !(document.activeElement && document.activeElement.tagName==='BUTTON')) || k==='x'){
+    e.preventDefault(); todoDetailAktion('haken'); return;
+  }
+  if(k==='e' && canManage()){ e.preventDefault(); todoDetailAktion('bearbeiten'); return; }
+  if(k==='Enter' && !(document.activeElement && document.activeElement.tagName==='BUTTON')){
+    e.preventDefault(); todoDetailAktion('mehr'); return;
+  }
+});
 var _todoPhotoTarget=null;
 
 function renderAnnouncements(anns){

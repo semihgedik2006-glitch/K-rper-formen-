@@ -11503,3 +11503,102 @@ die Kopfzeile einer Karte und das Kürzelfeld „Wer hakt ab?".
   tippte `page.fill('#ppSearch')` in ein zugeklapptes Feld und wartete
   bis zum Abbruch.
 - **Oberfläche:** 130 Durchläufe, alle sauber.
+
+## Runde 103, sechster Teil — P1: Aufgaben am PC, Liste links und Detail rechts
+
+> „bitte leg genau so viel Fokus auf die PC-Nutzung wie auf die
+> Handy-Nutzung, … obwohl das das Hauptgerät ist"
+
+### Vorher gemessen
+
+Gemessen wurde, wo die erste Aufgabe beginnt und wie viele **ganz** im
+Bild stehen (Demo):
+
+| | PC 1440 × 900, Chef | PC 1440 × 900, Mitarbeiter | PC 1280 × 800, Mitarbeiter | Handy 390 × 844, Chef |
+|---|---|---|---|---|
+| erste Aufgabe bei | y = 486 | y = 443 | y = 443 | y = 449 |
+| ganz im Bild | 4 von 61 | 4 von 5 | 3 von 5 | 3 von 61 |
+
+Am PC war jede Zeile 1.174 px breit, und über der Liste stand der
+Seitenkopf „Aufgaben" ein zweites Mal — unter dem Bereichskopf, der
+dasselbe schon sagte. Auf der Startseite stand so „Guten Morgen" doppelt.
+
+### Gebaut
+
+- **Ab 1100 px zwei Spalten:** links die Liste, rechts die gewählte
+  Aufgabe im Detail.
+  - Das Detail zeigt Beschreibung, Teilschritte zum Antippen, Grund,
+    Studio, Frist, Rhythmus, Zuständig, Erstellt von, Erledigt, das
+    Danke, das Foto.
+  - Knöpfe: „Abhaken" bzw. „Wieder öffnen", „Bearbeiten" (Leitung),
+    „Foto", „Grund, Frist, mehr …".
+  - Die Spalte bleibt beim Scrollen stehen (`sticky`).
+- **Ohne eigene Wahl steht die erste OFFENE Aufgabe im Detail.** Wer
+  eine Zeile anklickt, behält seine Wahl, auch wenn die Liste neu
+  gezeichnet wird.
+- **„Abhaken" im Detail drückt den Haken der Zeile.** So gibt es nur
+  einen Weg zum Abhaken — mit Feder, Danke und allem, was daran hängt.
+- **Am PC schlankere Zeilen:** Beschreibung, Teilschritte, Foto und Fuss
+  stehen im Detail, nicht in der Zeile.
+- **Tastatur**, nur in den Aufgaben, nur am PC, nie beim Tippen oder bei
+  offenem Fenster: ↑/↓ (oder k/j) wählen, x oder Leertaste hakt ab,
+  e bearbeitet, Enter öffnet „Grund, Frist, mehr".
+- **„+ Neu" steht am PC im Bereichskopf.** Der doppelte Seitenkopf ist
+  im neuen Design bei jeder Breite weg — damit auch das doppelte „Guten
+  Morgen" auf der Startseite (P3 zum Teil vorweggenommen).
+- **Am Handy bleibt alles, wie es war:** keine Detailspalte, ein Tipp
+  auf die Zeile wählt nichts, „+ Aufgabe" bleibt unten in der
+  Daumenzone.
+
+### Warum so
+
+- **Liste und Detail statt aufklappender Zeilen.** Am PC ist Breite
+  da, aber Höhe knapp. Eine aufklappende Zeile schiebt alles darunter
+  weg; eine Detailspalte lässt die Liste stehen, und man sieht beim
+  Durchgehen mit ↓ sofort, worum es geht.
+- **Ab 1100 px, nicht ab 820.** Darunter würde die Liste neben einer
+  340 px breiten Detailspalte so schmal, dass Titel umbrechen.
+- **Tastenkürzel ohne Umschalt- oder Strg-Taste**, weil am PC mit einer
+  Hand an der Maus gearbeitet wird. Sie greifen nicht, solange ein Feld
+  den Fokus hat — sonst hakte ein „x" im Suchfeld ab.
+
+### Beim Bauen gefunden
+
+- **Die Wahl sprang zurück.** Nach jedem Neuzeichnen wählte die Liste
+  wieder die erste offene Aufgabe, auch wenn man eine andere angeklickt
+  hatte. Jetzt merkt sich `_todoWahlVonHand`, dass gewählt wurde.
+- **`hidden` an einem `.btn` wirkte nicht**, weil `.btn` `display`
+  setzt. Im Detail wird deshalb über `style.display` geschaltet.
+- **Eine Angabe doppelt** (`.td-info dt`, `margin`) — `test-gestaltung`
+  hat es gemeldet, zusammengelegt.
+
+### Nachher gemessen
+
+| | PC 1440 × 900, Chef | PC 1440 × 900, Mitarbeiter | PC 1280 × 800, Mitarbeiter | Handy 390 × 844, Chef |
+|---|---|---|---|---|
+| erste Aufgabe bei | **y = 406** (486) | **y = 363** (443) | **y = 363** (443) | y = 449 (unverändert) |
+| ganz im Bild | **7** von 61 (4) | **5** von 5 (4) | **5** von 5 (3) | 3 von 61 (unverändert) |
+
+Nebenbei rückt auch der Putzplan am PC weiter nach oben, weil der
+doppelte Kopf dort ebenfalls wegfällt: erster Punkt bei y = 331 statt
+410 (1440 × 900).
+
+Die Handy-Zahlen sind mit Absicht unverändert: dort war P2 der Schritt,
+und die Aufgaben am Handy bekommen ihren eigenen (kompaktere Filter,
+Gruppen nach Frist) — noch nicht gebaut.
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-p1-aufgaben.js`** mit 28 Zusicherungen:
+  - bei 1440 und 1280 px Detail, erste offene, Klick, ↓, x, „Abhaken";
+  - Trefferflächen im Detail bei 1920, 1440 und 1280 px, in der Dichte
+    „normal" und „kompakt" (per `elementFromPoint`);
+  - Gegenprobe am Handy (390): keine Detailspalte, ein Tipp wählt nichts.
+- **Was ist neu:** Eintrag „Aufgaben am PC: Liste links, Detail rechts".
+- **Ein alter Durchlauf zieht mit:** `test-block-a` prüfte am Rechner, dass
+  „+ Neu" im Seitenkopf steht. Der ist am PC jetzt weg, der Knopf steht
+  im Bereichskopf. Die Gegenprobe prüft weiter dasselbe (nicht in der
+  Daumenzone, sichtbar, oben) — nur mit dem neuen Ort, und sagt das im
+  Test.
+- **Oberfläche:** 131 Durchläufe; 130 im ersten Gesamtlauf sauber,
+  `test-block-a` nach der Anpassung sauber.
