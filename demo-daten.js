@@ -1024,6 +1024,23 @@
       eigen++;
     }
     void eigen;
+
+    /* ── Ein vergessener Feierabend im Team (Runde 106, P-09) ──
+       Damit die Leitung unter Verwaltung → Zeiten etwas zu korrigieren
+       hat: die Leute aus Studio 6 an den letzten drei Werktagen, einer
+       davon hat gestern nicht ausgestempelt. Ohne zufall(): eine neue
+       Zufallszahl verschöbe alles, was danach gewürfelt wird. */
+    leuteIn(sk(6)).forEach(function (u, j) {
+      for (var d2 = 1; d2 <= 3; d2++) {
+        var tagX = new Date(); tagX.setDate(tagX.getDate() - d2);
+        if (tagX.getDay() === 0) continue;
+        var tagS = tagX.toLocaleDateString('sv-SE');
+        var um2 = function (std, min) { var x = new Date(tagX); x.setHours(std, min, 0, 0); return x.getTime(); };
+        stempel(u, sk(6), 'kommen', um2(9 + j, 5), tagS, 'demo-t6');
+        if (j === 0 && d2 === 1) continue;           // gestern vergessen
+        stempel(u, sk(6), 'gehen', um2(15 + j, 10), tagS, 'demo-t6');
+      }
+    });
   })();
   legen(P('zeiten'), STEMPEL);
 
@@ -1256,6 +1273,42 @@
     /* Ein Vorrat aus lauter demselben Code. Im Betrieb kommen zehn
        verschiedene, je 30 Sekunden gültig, gerechnet aus einer Saat,
        die in einer für alle gesperrten Sammlung liegt. */
+    /* ── Stempel korrigieren (P-09) ──
+       Dieselben Grenzen wie im Server: nur die Leitung des Studios, nur
+       mit Grund, die eigenen Zeiten einer Studioleitung nicht. Der
+       ursprüngliche Stempel bleibt stehen. */
+    zeitNachtragen: function (d) {
+      var studioKey = String(d.studioKey || '');
+      var leitung = ICH.role === 'chef' || (ICH.role === 'leiter' && (ICH.studioKeys || []).indexOf(studioKey) >= 0);
+      if (!leitung) throw new Error('Korrigieren darf nur die Leitung dieses Studios.');
+      if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
+      if (d.uid === ICH.id && ICH.role !== 'chef') throw new Error('Die eigenen Zeiten korrigiert die Geschäftsführung.');
+      var person = USERS.filter(function (u) { return u.id === d.uid; })[0];
+      if (!person) throw new Error('Diese Person gibt es in diesem Betrieb nicht.');
+      var ts = new Date(d.tag + 'T' + d.uhr + ':00').getTime();
+      if (ts > Date.now()) throw new Error('Ein Stempel in der Zukunft lässt sich nicht nachtragen.');
+      var id = neueId();
+      holen(P('zeiten')).push({
+        id: id, uid: person.id, name: person.name || '', studioKey: studioKey,
+        art: d.art, ts: ts, tag: d.tag, monat: String(d.tag).slice(0, 7), fremd: false,
+        quelle: 'korrektur', grund: String(d.grund).trim(),
+        korrigiertVon: ICH.id, korrigiertVonName: ICH.name || '', korrigiertAm: Date.now()
+      });
+      melden(P('zeiten'));
+      return { ok: true, id: id, ts: ts };
+    },
+    zeitStornieren: function (d) {
+      var z = holen(P('zeiten')).filter(function (x) { return x.id === String(d.id || ''); })[0];
+      if (!z) throw new Error('Diesen Stempel gibt es nicht.');
+      var leitung = ICH.role === 'chef' || (ICH.role === 'leiter' && (ICH.studioKeys || []).indexOf(z.studioKey) >= 0);
+      if (!leitung) throw new Error('Korrigieren darf nur die Leitung dieses Studios.');
+      if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
+      if (z.uid === ICH.id && ICH.role !== 'chef') throw new Error('Die eigenen Zeiten korrigiert die Geschäftsführung.');
+      if (z.storno) throw new Error('Dieser Stempel ist schon als ungültig markiert.');
+      z.storno = { von: ICH.id, vonName: ICH.name || '', am: Date.now(), grund: String(d.grund).trim() };
+      melden(P('zeiten'));
+      return { ok: true };
+    },
     stempelCodes: function () {
       var codes = [];
       for (var i = 0; i < 10; i++) codes.push(DEMO_CODE);

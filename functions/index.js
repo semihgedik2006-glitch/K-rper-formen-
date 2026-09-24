@@ -5002,6 +5002,150 @@ exports.stempeln = region.https.onCall(async (data, context) => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
+   STEMPEL KORRIGIEREN — MIT PROTOKOLL (P-09)
+
+   Aus dem Betrieb, 24.9.2026:
+     „füge hinzu das die leitung die zeiten ändern kann falls jemand sich
+      nicht ausgestempelt hat oder so"
+
+   `zeiten` bleibt fuer den Browser auf write:false, fuer JEDEN. Der Weg
+   fuer eine Korrektur fuehrt hier durch, und er AENDERT NICHTS, was
+   schon da ist:
+
+     · zeitNachtragen legt einen NEUEN Stempel an (quelle 'korrektur'),
+       mit Grund, wer ihn eingetragen hat und wann. Der typische Fall:
+       der vergessene Feierabend.
+     · zeitStornieren markiert einen vorhandenen Stempel als ungueltig
+       (Feld `storno` mit wer/wann/Grund). Er bleibt stehen, mit allen
+       seinen Feldern — die Auswertung rechnet nur nicht mehr mit ihm.
+
+   Warum nicht einfach ueberschreiben: eine Arbeitszeitaufzeichnung, die
+   der Arbeitgeber nachtraeglich unbemerkt aendern kann, ist als Nachweis
+   nichts wert — auch dann, wenn nie jemand etwas geaendert hat. So
+   bleibt jede Aenderung sichtbar: in „Meine Zeiten" sieht die Person
+   selbst, was nachgetragen wurde, von wem und warum.
+
+   Wer darf: der Chef ueberall im Betrieb, die Studioleitung in ihren
+   Studios. Die EIGENEN Zeiten korrigiert eine Studioleitung nicht
+   selbst, das macht die Geschaeftsfuehrung — sonst waere es genau die
+   Aenderung ohne zweite Person, die der Beweiswert nicht vertraegt. */
+const ZEIT_ARTEN = ['kommen', 'pause', 'zurueck', 'gehen'];
+const KORREKTUR_TAGE_MAX = 62;
+
+/* Ein Tag und eine Uhrzeit in Berliner Ortszeit als Zeitpunkt. Zweimal
+   gerechnet, weil der Abstand zu UTC selbst vom Zeitpunkt abhaengt
+   (Sommerzeit). */
+function berlinZeitpunkt(tag, uhr) {
+  const t = String(tag).split('-').map(Number);
+  const u = String(uhr).split(':').map(Number);
+  const wand = Date.UTC(t[0], t[1] - 1, t[2], u[0], u[1]);
+  const fmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  });
+  function alsWand(ms) {
+    const g = {};
+    fmt.formatToParts(new Date(ms)).forEach((x) => { g[x.type] = x.value; });
+    return Date.UTC(+g.year, +g.month - 1, +g.day, +g.hour, +g.minute);
+  }
+  let ts = wand - (alsWand(wand) - wand);
+  ts = wand - (alsWand(ts) - ts);
+  return ts;
+}
+
+function leitungFuerStudio(profil, studioKey) {
+  const darf = profil.role === 'chef' ||
+    (profil.role === 'leiter' && (profil.studioKeys || []).includes(studioKey));
+  if (!darf) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Korrigieren darf nur die Leitung dieses Studios.');
+  }
+}
+
+function korrekturGrund(data) {
+  const grund = String((data && data.grund) || '').trim().slice(0, 200);
+  if (grund.length < 5) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Bitte kurz den Grund angeben, z. B. „Ausstempeln vergessen, laut Schichtplan bis 18 Uhr".');
+  }
+  return grund;
+}
+
+exports.zeitNachtragen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const personUid = String((data && data.uid) || '').trim();
+  const tag = String((data && data.tag) || '').trim();
+  const uhr = String((data && data.uhr) || '').trim();
+  const art = String((data && data.art) || '').trim();
+  const studioKey = String((data && data.studioKey) || '').trim();
+  if (!personUid || !/^\d{4}-\d{2}-\d{2}$/.test(tag) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(uhr)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Tag oder Uhrzeit fehlt oder stimmt nicht.');
+  }
+  if (ZEIT_ARTEN.indexOf(art) < 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'Unbekannte Art des Stempels.');
+  }
+  if (!/^studio-\d+$/.test(studioKey)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Kein gültiges Studio angegeben.');
+  }
+  const grund = korrekturGrund(data);
+  leitungFuerStudio(profil, studioKey);
+
+  const pSnap = await db.collection('users').doc(personUid).get();
+  const person = pSnap.exists ? (pSnap.data() || {}) : null;
+  if (!person || (person.firma || 'koerperformen') !== (firma || 'koerperformen')) {
+    throw new functions.https.HttpsError('not-found', 'Diese Person gibt es in diesem Betrieb nicht.');
+  }
+  if (personUid === uid && profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Die eigenen Zeiten korrigiert die Geschäftsführung.');
+  }
+
+  const ts = berlinZeitpunkt(tag, uhr);
+  const jetzt = Date.now();
+  if (ts > jetzt) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Ein Stempel in der Zukunft lässt sich nicht nachtragen.');
+  }
+  if (jetzt - ts > KORREKTUR_TAGE_MAX * 86400000) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Nachtragen geht bis ' + KORREKTUR_TAGE_MAX + ' Tage zurück.');
+  }
+
+  const ref = await W(firma).collection('zeiten').add({
+    uid: personUid, name: person.name || '', studioKey,
+    art, ts, tag, monat: tag.slice(0, 7),
+    fremd: !(person.studioKeys || []).includes(studioKey),
+    quelle: 'korrektur',
+    grund, korrigiertVon: uid, korrigiertVonName: profil.name || '', korrigiertAm: jetzt
+  });
+  return { ok: true, id: ref.id, ts };
+});
+
+exports.zeitStornieren = region.https.onCall(async (data, context) => {
+  const zid = String((data && data.id) || '').trim();
+  if (!zid) throw new functions.https.HttpsError('invalid-argument', 'Kein Stempel angegeben.');
+  const grund = korrekturGrund(data);
+  const { uid, profil, firma } = await anruferProfil(context);
+  const ref = W(firma).collection('zeiten').doc(zid);
+  const snap = await ref.get();
+  if (!snap.exists) throw new functions.https.HttpsError('not-found', 'Diesen Stempel gibt es nicht.');
+  const z = snap.data() || {};
+  leitungFuerStudio(profil, z.studioKey || '');
+  if (z.uid === uid && profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Die eigenen Zeiten korrigiert die Geschäftsführung.');
+  }
+  if (z.storno) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Dieser Stempel ist schon als ungültig markiert.');
+  }
+  /* Nur dieses eine Feld kommt dazu. Zeitpunkt, Art, Gerät und Person
+     bleiben, wie sie gestempelt wurden. */
+  await ref.update({ storno: { von: uid, vonName: profil.name || '', am: Date.now(), grund } });
+  return { ok: true };
+});
+
+/* ══════════════════════════════════════════════════════════════════════
    SCHULUNG — DER TEILNAHME-CODE
 
    Aus dem Betrieb, 22.9.2026:

@@ -1,0 +1,71 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────────────
+// Firebase Storage – Regeln für den VIDEO-EIMER der Schulungen
+//
+// VORBEREITET am 24.9.2026, noch NICHT ausgerollt. Aus dem Betrieb:
+//   „Videos kommen noch speicher ort können wir vorbereiten so gut es
+//    geht"
+//
+// Entschieden ist seit dem 22.9.2026: ein EIGENER, ZWEITER Eimer —
+// niemals der mit der nächtlichen Sicherung (storage.rules, dort ist
+// alles zu). Diese Datei gehört zu diesem zweiten Eimer. Sie wird erst
+// in firebase.json eingetragen, wenn es den Eimer gibt; ein Eintrag für
+// einen Eimer, den es nicht gibt, bricht die Auslieferung ab.
+// Die Schritte stehen in docs/VIDEOS.md.
+//
+// Was hier gilt:
+//   · Lesen: wer in DIESER Firma angemeldet und freigegeben ist.
+//   · Auflisten: niemand. Wer ein Video sehen soll, bekommt es über das
+//     Modul, nicht über ein Verzeichnis.
+//   · Hochladen: nur die Leitung (Chef oder Studioleitung) der Firma,
+//     nur Videodateien, höchstens 500 MB.
+//   · Ersetzen: niemand — ein neues Video ist eine neue Datei.
+//   · Löschen: die Leitung der Firma.
+//   · Alles andere: zu.
+//
+// Und NIE: `allow read: if request.auth != null`. Registrieren kann
+// sich in dieser App jeder selbst.
+//
+// WAS DAS NICHT SCHÜTZT, und das gehört gesagt: eine Download-Adresse
+// mit Token (getDownloadURL) umgeht diese Regeln. Wer die Adresse eines
+// Videos weitergibt, gibt das Video weiter. Für Schulungsvideos ist das
+// vertretbar; für etwas Vertrauliches wäre es dieser Weg nicht.
+// Geprüft in tests/rules/videos.test.js.
+// ─────────────────────────────────────────────────────────────────────
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function profil() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+    function aktivIn(firma) {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && profil().get('firma', 'koerperformen') == firma
+        && profil().get('aktiv', true) != false;
+    }
+    function leitungIn(firma) {
+      return aktivIn(firma) && (profil().role == 'chef' || profil().role == 'leiter');
+    }
+
+    match /firmen/{firma}/schulungen/{modul}/{datei} {
+      allow get: if aktivIn(firma);
+      allow list: if false;
+      /* resource == null ausdrücklich: der Emulator hat ein Überschreiben
+         als „create" durchgelassen (tests/rules/videos.test.js). Ob die
+         Produktion das genauso tut, ist hier nicht prüfbar — die Zeile
+         schadet dort nicht. */
+      allow create: if leitungIn(firma)
+        && resource == null
+        && request.resource.contentType.matches('video/.*')
+        && request.resource.size < 500 * 1024 * 1024;
+      allow update: if false;
+      allow delete: if leitungIn(firma);
+    }
+
+    match /{alles=**} {
+      allow read, write: if false;
+    }
+  }
+}

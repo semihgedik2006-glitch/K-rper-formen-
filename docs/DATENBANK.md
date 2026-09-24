@@ -204,8 +204,10 @@ Beim Registrieren legt die App den eingegebenen Code unter
 | `art` | `kommen` / `pause` / `zurueck` / `feierabend` |
 | `ts`, `tag`, `monat` | Zeitpunkt, Datum, Monat |
 | `fremd` | außerhalb des eigenen Studios gestempelt |
-| `quelle` | `terminal` / `handy` |
+| `quelle` | `terminal` / `handy` / `korrektur` (seit 24.9.2026) |
 | `terminalId`, `terminalName` | welches Gerät |
+| `grund`, `korrigiertVon`, `korrigiertVonName`, `korrigiertAm` | nur bei `quelle: korrektur` — wer hat nachgetragen, wann, warum |
+| `storno` | `{ von, vonName, am, grund }` — als ungültig markiert; der Stempel bleibt, gerechnet wird ohne ihn |
 
 ```
 allow read:  eigene Zeiten ODER Leitung dieses Studios
@@ -215,6 +217,16 @@ allow write: if false
 **Niemand** kann über die Anwendung einen Stempel ändern oder löschen —
 auch nicht der Chef, auch nicht der Betreiber. Geschrieben wird
 ausschließlich serverseitig.
+
+**Korrigieren (P-09, seit 24.9.2026)** geht über zwei Funktionen, und
+keine davon überschreibt etwas:
+`zeitNachtragen` legt einen neuen Stempel mit `quelle: korrektur` und
+Grund an; `zeitStornieren` hängt an einen vorhandenen Stempel nur das
+Feld `storno`. Dürfen: der Chef überall, die Studioleitung in ihren
+Studios, nicht an den eigenen Zeiten. Die Person sieht jede Korrektur
+mit Name und Grund in „Meine Zeiten". Geprüft in
+`tests/rules/zeitkorrektur.test.js` (Emulator) und
+`tests/test-zeitkorrektur.js` (Oberfläche).
 
 **Kein Standort, keine IP, kein Gerätefingerabdruck.**
 `monat` ist Absicht: „Meine Zeiten" liest monatsweise über zwei
