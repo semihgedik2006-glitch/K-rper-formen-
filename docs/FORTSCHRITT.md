@@ -11418,3 +11418,88 @@ Betrieb es firmenweit eingeschaltet hat, kann ich von hier nicht sehen
     Unter 640 px Höhe steht die Pille deshalb nicht da; die Liste bleibt
     unter „Alles".
   - **Danach** grün, die übrigen 128 waren sauber.
+
+
+---
+
+## Runde 103, fünfter Teil — P2: Putzplan, Inhalt zuerst (PC und Handy)
+
+> „innerhalb der Testphase aus den letzten Wochen ist aufgefallen, dass
+> der am meisten benutzte Bereich der Aufgaben- und Putzplan-Bereich
+> ist und der Startbildschirm, aber der Chat eher wenig genutzt wird"
+>
+> „bitte leg genau so viel Fokus auf die PC-Nutzung wie auf die
+> Handy-Nutzung"
+
+### Vorher gemessen
+
+Gemessen wurde, wo der erste Putzpunkt beginnt (Demo, Chef):
+
+| | Handy (390 × 844) | PC (1440 × 900) |
+|---|---|---|
+| erster Punkt beginnt bei | y = 764 | y = 684 |
+| Bedienelemente davor | 17 | 17 |
+| Punkte sichtbar | 1, halb unter der Leiste | 3 von 5 |
+
+Davor standen: die Studio-Auswahl (am PC ein 1.174 px breites Feld),
+„Drucken" in einer eigenen Zeile, zwei Reihen Filter, die Sortierung,
+die Kopfzeile einer Karte und das Kürzelfeld „Wer hakt ab?".
+
+### Gebaut
+
+- **Eine Leiste:** Studio, Fortschrittsbalken mit „3 von 5 erledigt",
+  „Wer hakt ab?", „Filter", „Drucken".
+  - **Filter und Kürzelfeld klappen auf**, wenn man sie braucht.
+  - **Am Knopf steht der Zustand:** „Filter 2" sagt, dass zwei Filter
+    laufen; „Wer: AB" sagt, wer gerade abhakt. Enter im Kürzelfeld
+    klappt es wieder zu.
+- **Gruppen nach Rhythmus:** Täglich, Wöchentlich, In eigenem Abstand,
+  Einmalig — jede mit „x von y" und einem schmalen Balken. Ist eine
+  Gruppe fertig, wird sie grün.
+  - **Am PC stehen die Gruppen nebeneinander.**
+  - **Nur in der Standard-Sortierung.** Wer ausdrücklich nach Name,
+    Rhythmus, „zuletzt" oder Dringlichkeit sortiert, bekommt die flache
+    Liste in genau dieser Reihenfolge. `test-sortierung` hat das beim
+    ersten Versuch gemeldet: gruppiert stand ein erledigter täglicher
+    Punkt über einem offenen wöchentlichen, und „offene vor erledigten"
+    gilt beim Sortieren über den ganzen Plan.
+- **Kein Kartenrahmen** um den Plan: er ist der Inhalt der Seite.
+
+### Beim Bauen gefunden
+
+- **Abgehakte Putzpunkte hatten ein leeres Kästchen.** Durchgestrichen,
+  aber mit leerem Haken sahen sie zugleich erledigt und offen aus. Die
+  Regel für das gefüllte Kästchen galt nur für `.todo`, nie für
+  `.pp-item`.
+- **Ein Haken liess den ganzen Plan neu einlaufen.** Der Horcher zeichnet
+  die Liste bei jeder Änderung neu, und `listIn` lief dann auf allen
+  Punkten erneut, gestaffelt: gemessen 4 Animationen für einen Haken.
+  Jetzt läuft der Plan nur beim ersten Zeichnen eines Studios ein;
+  danach federt nur, was man abgehakt hat. Dazu `backwards` statt
+  `both`, nach unserer eigenen Regel.
+- **Beinahe durchgerutscht:** Nach einer Änderung im Skriptblock
+  fehlte `tools/csp.js --setzen`, und die Messung lief gegen eine App,
+  die gar nicht startete. Genau die Falle, die in `CLAUDE.md` steht;
+  bemerkt, weil die Messung „nicht gefunden" meldete statt einer Zahl.
+
+### Nachher gemessen
+
+| | Handy (390 × 844) | PC (1440 × 900) | PC (1280 × 800) |
+|---|---|---|---|
+| erster Punkt (Chef) | y = 478 | y = 410 | y = 410 |
+| erster Punkt (Mitarbeiter) | y = 426 | y = 410 | y = 410 |
+| Punkte sichtbar | 3 | alle 5 | alle 5 |
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-p2-putzplan.js`** mit 25 Zusicherungen,
+  bei 390, 1280 und 1440 px, dazu die Leiste bei 320 px (jedes Element
+  mindestens 44 × 44 und im Bild).
+- **Gegenproben:**
+  - nach Name sortiert ergibt eine flache Liste;
+  - ein Haken lässt den Plan nicht neu einlaufen (vorher 4).
+- **Zwei alte Durchläufe öffnen jetzt zuerst „Filter"**, wie ein Mensch
+  es täte: `test-sortierung` und `test-putzplan-werkzeuge`. Vorher
+  tippte `page.fill('#ppSearch')` in ein zugeklapptes Feld und wartete
+  bis zum Abbruch.
+- **Oberfläche:** GESAMT_P2
