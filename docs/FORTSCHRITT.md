@@ -11235,3 +11235,87 @@ verschoben, und darauf verlassen sich andere Durchläufe.
     „Alles".
   - **Danach:** 350 in 350, grün. Die übrigen 126 Durchläufe waren
     sauber.
+
+
+---
+
+## Runde 103, dritter Teil — Block C: Gefühl und Bewegung
+
+> „mach dann block c weiter"
+
+Block B war zu diesem Zeitpunkt gemerged (#148).
+
+### C1 · Federn beim Abhaken und Senden — und nur dort
+
+Die Recherche schlug vor, den Haken beim Abhaken nachfedern zu lassen.
+Beim Nachsehen stellte sich heraus: das gab es schon (`checkPop`), nur
+an der falschen Stelle. Zwei Dinge waren kaputt, beide gemessen:
+
+- **Die Feder lief auf allen erledigten Haken.** Die Regel hiess
+  `.todo.done .check`, also jede erledigte Aufgabe bei jedem Zeichnen
+  der Liste. Hakte der Chef der Demo eine Aufgabe ab, federten
+  gleichzeitig **15** Haken. Das ist genau die „Bewegung um ihrer
+  selbst willen", die die NN/g kritisiert.
+- **Das grüne Aufleuchten der Zeile ging verloren.** Der Horcher
+  zeichnet die Liste im selben Augenblick neu, in dem man abhakt.
+  Gemessen war nach 0 ms schon ein neuer Knoten da, und die Klasse
+  `.just-done` hing am alten.
+
+Jetzt merkt sich `frischMerken()` den Zeitpunkt. Die neu gezeichnete
+Zeile trägt `.just-done` weiter, und `--seit` (eine negative
+`animation-delay`) setzt die Bewegung dort fort, wo sie war, statt sie
+neu anzufangen. Nach 700 ms ist Schluss, auch wenn die Liste danach
+noch einmal gezeichnet wird. Dasselbe gilt im Putzplan.
+
+**Senden:** Der Knopf federt einmal (Web Animations). Eine Klasse neu
+zu starten hätte im Klick das Layout gelesen (`offsetWidth`), und das
+verbietet „flüssig heisst konkret".
+
+**Weniger Bewegung:** Wer im System „Bewegung reduzieren" eingestellt
+hat, bekommt keine Feder, weder am Haken noch am Senden-Knopf.
+
+### C2 · Formen-Kontrast, als Versuch nur auf der Startseite
+
+Die Recherche sagt ausdrücklich „erst an einer Ansicht ausprobieren",
+also ist es genau eine:
+- **Inhaltszeilen:** 14 statt 22 px Radius.
+- **Knöpfe unter „Ausserdem":** bleiben Pillen.
+
+Ob das auf die anderen Ansichten übertragen wird, soll im Betrieb nach
+dem Ansehen entschieden werden. Zurück ist es eine Zeile.
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-block-c.js`** mit 17 Zusicherungen,
+  darunter zwei Gegenproben mit „weniger Bewegung".
+- **Gegen den Stand von Block B** sind 6 davon rot:
+  - 15 Federn statt einer;
+  - kein Aufleuchten nach dem Neuzeichnen;
+  - keine Feder am Senden-Knopf;
+  - 22 px Radius statt 14.
+- **Eine Zusicherung prüft zu wenig:** „beim Öffnen federt nichts" ist
+  auch mit dem alten Stand grün. Die Federn sind beim Messen nach
+  900 ms schon vorbei. Den Unterschied zeigt erst „ein späteres
+  Neuzeichnen federt nicht noch einmal" (vorher 15).
+- **Oberfläche:** 128 Durchläufe, alle sauber.
+- **Am PC angesehen** (1440 × 900): Die Feder und der Formen-Kontrast
+  wirken dort genauso. C1 hängt nicht an der Breite, C2 gilt für die
+  Startseite in jeder Breite.
+
+### Der PC ist das Hauptgerät
+
+> „bitte leg genau so viel Fokus auf die PC-Nutzung wie auf die
+> Handy-Nutzung … obwohl das das Hauptgerät ist"
+
+Das stimmte: A1 bis C2 waren am Handy gemessen und am PC nur
+angesehen. Seit dieser Runde steht in `CLAUDE.md`, dass jede Änderung
+auch bei 1280, 1440 und 1920 px gemessen wird.
+
+Die erste Messung am PC (1440 × 900):
+- **Aufgaben:** Der erste Eintrag beginnt bei 486 px, 5 von 61 sind zu
+  sehen, und jede Zeile ist 1.174 px breit.
+- **Putzplan:** Der erste Punkt beginnt bei 684 px.
+
+Der Platz ist da, er wird nur nicht genutzt. Die Vorschläge dazu (Liste
+und Detail nebeneinander, Putzplan als Raster, Startseite in zwei
+Spalten) stehen zur Entscheidung aus.
