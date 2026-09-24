@@ -11851,3 +11851,58 @@ nennt den Grund im Test.
   Fehler der Farbe, sondern eine langsame Seite. Sie steht als **P-17**
   in `docs/BEKANNTE-PROBLEME.md` und ist der nächste Schritt.
 - **Oberfläche:** 134 Durchläufe; 133 im Gesamtlauf sauber, `test-akzent` nach der Umstellung auf den Putzplan fünfmal hintereinander sauber.
+
+## Runde 104, erster Teil — das Profil-Blatt steht am Handy fest
+
+> „Die Profilseite auf dem Handy, wo man das Aussehen etc. bearbeiten
+> kann, ist nicht fixiert und lässt sich horizontal sowie vertikal
+> verschieben — das ist nicht so optimal auf dem Handy."
+
+### Gemessen
+
+- **Quer:** Das Blatt war bei 320, 390 und 430 px jeweils **4 px breiter
+  als der Bildschirm** (`scrollWidth` 392 bei 388). Ein Querwisch mit
+  echten Touch-Ereignissen schob es um genau diese 4 px.
+- **Ursache:** Die Fläche unter „Speichern" (`#pmSave::after`) reichte
+  fest 24 px nach links und rechts. Am Handy hat das Blatt aber nur
+  20 px Innenabstand; die 4 px darüber hinaus machten es quer
+  scrollbar.
+- **Senkrecht:** Weder am Blatt noch am abgedunkelten Rand stand ein
+  `overscroll-behavior`. Auf iOS läuft die Bewegung am Anfang oder Ende
+  dann an die Seite dahinter weiter, und der ganze Bildschirm federt
+  mit.
+
+### Gebaut
+
+- **Der seitliche Rand der Fläche kommt aus `--pm-rand`.** Die Variable
+  wird dort gesetzt, wo auch der Innenabstand gesetzt wird: 24 px am
+  Rechner, 20 px am Handy.
+- **Am Handy** tragen alle Blätter `overscroll-behavior: contain` und
+  `touch-action: pan-y`: der Inhalt scrollt senkrecht, quer gibt es
+  nichts zu schieben. Der abgedunkelte Rand daneben trägt
+  `touch-action: none`.
+
+### Nicht prüfbar hier
+
+Das Nachfedern von iOS Safari gibt es in Chromium nicht. Geprüft ist
+die Regel, die es abstellt, nicht das Federn selbst. Ob es auf einem
+iPhone ganz weg ist, muss am Gerät bestätigt werden.
+
+### Geprüft
+
+- **Neuer Durchlauf `tests/test-profil-fest.js`** mit 24 Zusicherungen
+  bei 320, 390 und 430 px, mit echten Touch-Ereignissen:
+  - nicht breiter als der Bildschirm;
+  - ein Querwisch verschiebt nichts;
+  - ein Wisch senkrecht scrollt den Inhalt, das Blatt bleibt stehen;
+  - am Ende läuft nichts weiter;
+  - ein Wisch neben dem Blatt bewegt nichts;
+  - „Speichern" ≥ 44 × 44.
+- **Gegenprobe gegen `main`:** 6 von 24 falsch, nämlich Breite und
+  Querwisch bei allen drei Breiten.
+- **Gefunden beim Bauen des Tests:** `Input.synthesizeScrollGesture`
+  mit „touch" scrollte in dieser Umgebung gar nichts, auch die
+  Aufgabenliste nicht. Ein Test damit wäre immer grün gewesen. Der
+  Durchlauf schickt deshalb einzelne Touch-Ereignisse
+  (`Input.dispatchTouchEvent`).
+- **Oberfläche:** 135 Durchläufe, alle sauber.
