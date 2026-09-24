@@ -175,8 +175,21 @@ async function starte(b, rolle) {
   pruefe('„gerät piept" findet das piepende Gerät',
     t1.some(x => /piept|Geräusche/i.test(x)), t1.slice(0, 3).join(' | '));
   const t2 = await suchen(p, 'elektrde');
+  /* Seit dem 24.9.2026 sucht dasselbe Feld auch im EMS-Wissen. Dort
+     heißt kein Titel „Elektrode", aber „Wie funktioniert EMS-Training
+     technisch?" erklärt genau sie. Die Prüfung bleibt so scharf wie
+     vorher, nur je Quelle: jeder Handbuch-Treffer trägt „Elektrode" im
+     Titel, und jeder EMS-Treffer führt „elektrode" in seinen
+     Schlagwörtern — kein loser Beifang aus dem Fliesstext. */
+  const t2q = await p.evaluate(() => [...document.querySelectorAll('#hilfeTreffer [data-heintrag]')].map(x => {
+    const id = x.getAttribute('data-heintrag');
+    const ems = id.indexOf('ems:') === 0;
+    const roh = ems ? (window.EMS_WISSEN.eintraege.find(e => 'ems:' + e.id === id) || {}) : null;
+    return { ems, titel: x.querySelector('b').textContent, stich: roh ? roh.stich : '' };
+  }));
   pruefe('ein Tippfehler wird verziehen („elektrde")',
-    t2.length > 0 && t2.every(x => /Elektrode/i.test(x)), t2.join(' | '));
+    t2.length > 0 && t2q.filter(x => !x.ems).length > 0 &&
+    t2q.every(x => x.ems ? /elektrode/.test(x.stich) : /Elektrode/i.test(x.titel)), t2.join(' | '));
   const t3 = await suchen(p, 'kaputt');
   pruefe('ein Synonym greift („kaputt" → „beschädigt/defekt")',
     t3.some(x => /beschädigt|defekt/i.test(x)), t3.slice(0, 3).join(' | '));

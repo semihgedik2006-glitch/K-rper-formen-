@@ -29,6 +29,7 @@ on:
       - 'demo-daten.js'
       - 'loesungen-basis.js'
       - 'schulungen-basis.js'
+      - 'ems-wissen.js'
       - 'robots.txt'
       - 'manifest.json'
       - 'icon.png'

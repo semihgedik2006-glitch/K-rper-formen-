@@ -2,12 +2,12 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v7';
+const VERSION = 'v8';
 const CACHE = 'studiochat-' + VERSION;
 /* loesungen-basis.js liegt mit im Vorrat: die 115 Einträge sind genau
    das, was jemand im Studio braucht, wenn das WLAN gerade der Grund
    für das Nachschlagen ist. 47 KB einmal, danach nie wieder. */
-const PRECACHE = ['./index.html', './konfig.js', './icon.svg', './loesungen-basis.js', './schulungen-basis.js'];
+const PRECACHE = ['./index.html', './konfig.js', './icon.svg', './loesungen-basis.js', './schulungen-basis.js', './ems-wissen.js'];
 
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');

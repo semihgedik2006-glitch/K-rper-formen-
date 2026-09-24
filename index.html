@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-23LTMUxFc6/skrbpZvD/+HAul0sDgQqtFgofyOhoxH0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-a9lVLm+cqkriShHGHx2kvN8QnliojRjjAjuGDBqt7Vk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4434,7 +4434,10 @@ html{font-size:var(--fs,100%)}
   padding:var(--s16) var(--s20);background:var(--brand);color:var(--on-accent)}
 .hilfe-kopf h2{flex:1;min-width:0;font-family:var(--font-head);font-weight:800;
   font-size:var(--t-lg);letter-spacing:var(--ls-s);line-height:var(--lh-1)}
-.hilfe-kopf .icon-btn{flex-shrink:0;color:var(--on-accent);background:none;border:none}
+.hilfe-kopf .icon-btn{flex-shrink:0;color:var(--on-accent);background:none;border:none;
+  /* 44 auch am Rechner — dort sind .icon-btn sonst 40 (nachgemessen
+     24.9.2026, test-ems-wissen). */
+  width:44px;height:44px}
 .hilfe-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:var(--s20)}
 .hilfe-frage{display:block;font-family:var(--font-head);font-weight:800;
@@ -4475,6 +4478,26 @@ html{font-size:var(--fs,100%)}
   font-size:var(--t-2xs);color:var(--text-3);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hilfe-zeile .al-pfeil{flex-shrink:0;color:var(--text-3)}
+/* ── EMS-Wissen (24.9.2026) ── */
+.hilfe-stich{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.hilfe-stichwort{min-height:44px}
+.ems-kurz{font-size:var(--t-md);line-height:var(--lh);color:var(--text);margin-bottom:var(--s8)}
+.ems-sagen{display:flex;flex-direction:column;gap:var(--s6);margin-bottom:var(--s16)}
+.ems-sagen p{font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2);
+  padding:var(--s10) var(--s12);background:var(--bg-soft);border-radius:var(--r-md);
+  border-left:3px solid var(--accent)}
+/* Bernstein, weil es eine Warnung IST: „wann Leitung oder Arzt".
+   Statusfarbe für Status. */
+.ems-achtung{display:flex;flex-direction:column;gap:var(--s2);margin-bottom:var(--s16);
+  padding:var(--s10) var(--s12);border-radius:var(--r-md);background:var(--f-warn);
+  border:1px solid var(--warm);font-size:var(--t-sm);line-height:var(--lh);color:var(--text)}
+.ems-achtung b{font-family:var(--font-head);font-size:var(--t-2xs);text-transform:uppercase;
+  letter-spacing:var(--ls-l);color:var(--warm-tx)}
+.ems-hinweis{font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s16)}
+.hilfe-netz{margin-top:var(--s20);padding-top:var(--s16);border-top:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:flex-start;gap:var(--s8);font-size:var(--t-sm)}
+.hilfe-netz .btn{min-height:44px;display:inline-flex;align-items:center}
+.hilfe-knoepfe a.btn{display:inline-flex;align-items:center;justify-content:center}
 /* Ein einzelner Eintrag. Die Schritte sind nummeriert, weil die
    Reihenfolge trägt: „erst Stecker ziehen, dann öffnen" ist etwas
    anderes als andersherum. */
@@ -8432,15 +8455,23 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <div class="hilfe-body" id="hilfeBody">
       <!-- Suchen, blättern, alles durchgehen -->
       <div id="hilfeSuchTeil">
-        <label class="hilfe-frage" for="hilfeSuche">Was ist das Problem?</label>
+        <label class="hilfe-frage" for="hilfeSuche">Was ist das Problem — oder deine Frage zu EMS?</label>
         <input class="inp" id="hilfeSuche" type="search" autocomplete="off"
-               placeholder="z. B. Gerät piept, Kunde zu spät, Handtücher alle …" />
-        <p class="hint" id="hilfeHinweis">Tippe in eigenen Worten. Die Suche kennt
-          auch andere Wörter für dasselbe — „kaputt" findet „defekt".</p>
+               placeholder="z. B. Gerät piept, Schwangerschaft, Muskelkater, Kosten …" />
+        <p class="hint" id="hilfeHinweis">Tippe in eigenen Worten. Gesucht wird im Handbuch
+          und im EMS-Wissen; die Suche kennt auch andere Wörter für dasselbe — „kaputt"
+          findet „defekt", „Schrittmacher" findet „Implantat".</p>
         <div id="hilfeTreffer"></div>
         <div id="hilfeStart">
-          <p class="hilfe-ueber">Oder such dir etwas aus</p>
+          <!-- Schlagwörter: ein Tipp sucht danach. Für die, die nicht
+               wissen, wie sie ihre Frage nennen sollen. -->
+          <p class="hilfe-ueber">Häufig gefragt</p>
+          <div id="hilfeStich" class="hilfe-stich"></div>
+          <p class="hilfe-ueber">Oder such dir etwas aus — Handbuch</p>
           <div id="hilfeKats" class="hilfe-kats"></div>
+          <p class="hilfe-ueber">EMS-Wissen</p>
+          <div id="emsKats" class="hilfe-kats"></div>
+          <p class="hint" id="emsStand"></p>
           <div class="hilfe-knoepfe" style="margin-top:14px">
             <button class="btn btn-ghost btn-sm" id="hilfeAlle">Alle durchgehen</button>
             <button class="btn btn-ghost btn-sm" id="hilfeNeu">Eigene Lösung festhalten</button>
@@ -15474,6 +15505,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-ems', datum:'24.9.2026', titel:'Hilfe: 57 Antworten zu EMS', wo:'hilfe', punkte:[
+    'Im Hilfe-Fenster (Rettungsring oben) kannst du jetzt auch Fragen zu EMS stellen: „Schwangerschaft“, „Muskelkater“, „Krankenkasse“, „Wie oft“ … Die passendste Antwort steht oben.',
+    '57 Fragen in vier Bereichen — Grundlagen, Gesundheit & Sicherheit, Training & Praxis, Kosten & Anbieter —, jeweils kurz erklärt, mit „So erklärst du es“ für den Kunden und „Achtung“, wann Leitung oder Arzt gefragt sind.',
+    'Jede Antwort führt mit „Ganzen Artikel lesen“ zum ausführlichen Original auf ems-training.de.',
+    'Nichts Passendes dabei? „Im Internet suchen“ sucht nur auf geprüften Seiten wie Stiftung Warentest, Quarks oder der Sporthochschule Köln.',
+    'Oben stehen Schlagwörter zum Antippen, unten „Passt auch dazu“.' ] },
   { id:'2026-09-24-profil', datum:'24.9.2026', titel:'Handy: das Profil-Fenster steht fest', punkte:[
     'Das Fenster mit Profil und Aussehen (oben rechts auf dein Bild tippen) lässt sich am Handy nicht mehr seitlich verschieben — es war 4 Pixel breiter als der Bildschirm.',
     'Beim Scrollen bewegt sich nur noch der Inhalt; am Ende zieht der Bildschirm dahinter nicht mehr mit.' ] },
@@ -18086,7 +18123,45 @@ var HILFE_WORTGRUPPEN = [
   ['wasser','spender','trinken','leitung','glas'],
   ['spiegel','fenster','scheibe','glas'],
   ['dokument','unterlage','papier','formular','vertragsblatt'],
-  ['anmeldung','anmelden','neukunde','registrieren','aufnehmen']
+  ['anmeldung','anmelden','neukunde','registrieren','aufnehmen'],
+  /* EMS-Wissen (24.9.2026): Wörter, mit denen Kunden am Empfang fragen,
+     und die Fachwörter, die in den Einträgen stehen. */
+  ['schwanger','schwangerschaft'],
+  ['geburt','entbindung','wochenbett','rueckbildung','kaiserschnitt'],
+  ['herzschrittmacher','schrittmacher','defibrillator','icd','implantat','implantate'],
+  ['blutdruck','bluthochdruck','hypertonie'],
+  ['muskelkater','muskelschmerzen','muskelschmerz'],
+  ['ck','kreatinkinase','muskelwert','blutwert','rhabdomyolyse'],
+  ['abnehmen','uebergewicht','adipositas','bauchfett','kalorien'],
+  ['ruecken','rueckenschmerzen','bandscheibe','bandscheibenvorfall','wirbelsaeule','ischias'],
+  ['kontraindikation','kontraindikationen','ausschluss','ausschlusskriterien'],
+  ['krankenkasse','zuschuss','erstattung','versicherung'],
+  ['periode','menstruation','regelschmerzen'],
+  ['spirale','verhuetung'],
+  ['diabetes','zucker','insulin','blutzucker','diabetiker'],
+  ['krebs','tumor','chemo','chemotherapie','onkologie'],
+  ['senioren','aelter','rentner','sarkopenie'],
+  ['prothese','endoprothese','gelenkersatz','tep'],
+  ['arthrose','verschleiss','gelenkschmerzen'],
+  ['rheuma','arthritis'],
+  ['krampfadern','venen','varizen','thrombose'],
+  ['beckenboden','inkontinenz','blase'],
+  ['medikamente','medikament','tabletten','betablocker','blutverduenner','kortison','cortison'],
+  ['abnehmspritze','glp','ozempic','wegovy','semaglutid','mounjaro','tirzepatid'],
+  ['cellulite','orangenhaut'],
+  ['operation','op','eingriff','narbe'],
+  ['muskelaufbau','muskelmasse','muskeln'],
+  ['ausdauer','kondition','cardio'],
+  ['nacken','schulter','verspannung','verspannungen'],
+  ['haltung','rumpf','core','koerpermitte'],
+  ['beweglichkeit','mobilitaet','dehnen'],
+  ['regeneration','erholung','ruhetag'],
+  ['ernaehrung','essen','eiweiss','protein','mahlzeit'],
+  ['qualifikation','fachkunde','nisv','trainerlizenz','lizenz'],
+  ['probetraining','probestunde','schnuppertraining','kennenlernen'],
+  ['tens','schmerzgeraet'],
+  ['zuhause','heimgeraet','heimtraining','daheim'],
+  ['oft','haeufig','haeufigkeit','frequenz']
 ];
 var _hSyn = null;
 function hilfeSynonyme(w){
@@ -18117,20 +18192,27 @@ function hilfeFastGleich(a,b){
   if(i<la || j<lb) fehler++;
   return fehler<=1;
 }
-/* 1 volles Wort · 0,75 Wortanfang · 0,5 ein Tippfehler daneben. */
+/* 1 volles Wort · 0,75 Wortanfang · 0,5 ein Tippfehler daneben.
+
+   Ist umgekehrt ein Wort im Eintrag nur der ANFANG des Gesuchten
+   („muskel" in „muskelkatr"), zählt es nach dem Anteil, den es abdeckt.
+   Vorher waren es feste 0,75 — und damit schlug „Warum wirkt EMS — was
+   passiert im Muskel?" den Muskelkater-Eintrag, den der Tippfehler
+   eigentlich meinte (gefunden von test-ems-wissen). */
 function hilfeTrifft(feld, w){
-  var worte = feld.split(' '), i;
+  var worte = feld.split(' '), i, teil = 0;
   for(i=0;i<worte.length;i++){ if(worte[i]===w) return 1; }
   if(w.length>=4){
     for(i=0;i<worte.length;i++){
       if(worte[i].indexOf(w)===0) return 0.75;
-      if(worte[i].length>=4 && w.indexOf(worte[i])===0) return 0.75;
+      if(worte[i].length>=4 && w.indexOf(worte[i])===0)
+        teil = Math.max(teil, 0.75 * worte[i].length / w.length);
     }
   }
   if(w.length>=5){
-    for(i=0;i<worte.length;i++){ if(hilfeFastGleich(worte[i],w)) return 0.5; }
+    for(i=0;i<worte.length;i++){ if(hilfeFastGleich(worte[i],w)) return Math.max(0.5, teil); }
   }
-  return 0;
+  return teil;
 }
 /* Titel schlägt Stichwort schlägt Fliesstext. Ein Wort im Titel ist
    fast immer das, was gemeint war; dasselbe Wort irgendwo im fünften
@@ -18156,7 +18238,11 @@ function hilfeSuchen(text){
   var worte = hilfeSuchWorte(text);
   if(!worte.length) return [];
   var treffer = [];
-  hilfeAlleEintraege().forEach(function(e){
+  /* Handbuch und EMS-Wissen in EINER Liste, nach derselben Wertung.
+     Zwei getrennte Listen zwängen dazu, vorher zu wissen, wo die
+     Antwort liegt — genau das weiß man nicht, wenn man fragt. Die
+     Zeile sagt, woher sie kommt. */
+  hilfeAlleEintraege().concat(emsEintraege()).forEach(function(e){
     var punkte = 0;
     worte.forEach(function(w){
       var beste = hilfeWortWert(e, w);
@@ -18171,6 +18257,14 @@ function hilfeSuchen(text){
     if(punkte>0) treffer.push({ e:e, p:punkte });
   });
   treffer.sort(function(a,b){ return b.p-a.p || (a.e.nr||999)-(b.e.nr||999); });
+  /* Was weit hinter dem besten Treffer liegt, fällt weg (unter 35 %).
+     Seit das EMS-Wissen mitgesucht wird, hängten sich sonst lose
+     Treffer an: „Schrittmacher" brachte auf Platz vier „Kunde möchte
+     Trainingspause" — über das Synonym „Implantat" und ein Wort im
+     Fliesstext. Wer das Richtige oben sieht, liest den Rest trotzdem
+     und glaubt ihm. */
+  var besterWert = treffer.length ? treffer[0].p : 0;
+  treffer = treffer.filter(function(t){ return t.p >= besterWert*0.35; });
   return treffer.slice(0,14).map(function(t){ return t.e; });
 }
 
@@ -18215,6 +18309,189 @@ function hilfeBasisLaden(){
     s.onerror=function(){ durch('fehler'); };
     document.head.appendChild(s);
   });
+}
+
+/* ══ EMS-WISSEN (24.9.2026) ═════════════════════════════════════════
+   Aus dem Betrieb: „füge ALLES was du dort an informationen zu dir
+   nehmen kannst zu dem Hilfe Knopf hinzu … mit Schlagwörtern und
+   Empfehlungen … das man oben eine frage stellen kann und das System
+   die Sachen anzeigt die am ehesten dazu passen würden … NUR für EMS"
+   und: „Lass uns A machen, intern … W1".
+
+   57 Fragen aus der FAQ von ems-training.de — nicht abgeschrieben,
+   sondern in eigenen Worten und für den Empfang umgeschrieben (siehe
+   Kopf von ems-wissen.js: warum, und was an den Originalarbeiten
+   nachgeprüft ist). Jede Antwort führt mit „Ganzen Artikel lesen ›"
+   zum Original.
+
+   Dieselbe Bauart wie das Handbuch: eine Datei, erst beim Öffnen
+   geladen, im Vorrat des Service Workers, kein Lesevorgang in der
+   Datenbank. Dieselbe Suche: Stichwörter, Synonyme, ein Tippfehler.
+   KEINE KI — das steht weiter so im Fenster.
+
+   W1, der Weg ins Internet: ein Knopf, der die Frage mit „EMS" davor
+   in einem neuen Tab sucht — beschränkt auf die Seiten, die der
+   Betrieb als seriös genannt hat (EMS_WISSEN.seiten). Die Frage geht
+   dabei an Google; das steht am Knopf, damit niemand einen Kundennamen
+   eintippt. */
+var _eBasis=[], _eStatus='leer', _eWarte=[], _eStand='', _eSeiten=[], _eKats=[];
+function emsLaden(){
+  return new Promise(function(fertig){
+    if(_eStatus==='da' || _eStatus==='fehler') return fertig();
+    _eWarte.push(fertig);
+    if(_eStatus==='laedt') return;
+    _eStatus='laedt';
+    function durch(status){
+      _eStatus=status;
+      if(status==='da') emsUebernehmen();
+      var w=_eWarte; _eWarte=[];
+      w.forEach(function(f){ f(); });
+    }
+    if(window.EMS_WISSEN) return durch('da');
+    var sc=document.createElement('script');
+    sc.src='ems-wissen.js';
+    sc.onload=function(){ durch(window.EMS_WISSEN ? 'da' : 'fehler'); };
+    sc.onerror=function(){ durch('fehler'); };
+    document.head.appendChild(sc);
+  });
+}
+function emsUebernehmen(){
+  var w=window.EMS_WISSEN||{};
+  _eStand=w.stand||''; _eSeiten=w.seiten||[]; _eKats=w.kategorien||[];
+  _eBasis=(w.eintraege||[]).map(function(x){
+    var e={ id:'ems:'+x.id, eid:x.id, ems:true, kat:x.kat, titel:x.frage,
+      kurz:x.kurz||'', sagen:(x.sagen||[]).slice(), achtung:x.achtung||'',
+      stich:x.stich||'', url:x.url||'', autor:x.autor||'',
+      lesezeit:x.lesezeit||0, verwandt:(x.verwandt||[]).slice(), bilder:[] };
+    /* Die Suchfelder gleich hier: hilfeFelder() würde sonst den
+       Kategorienamen aus dem HANDBUCH nachschlagen („Sonstiges"). */
+    e._nt=hilfeNorm(e.titel);
+    e._ns=hilfeNorm(e.stich+' '+emsKat(e.kat).name);
+    e._nb=hilfeNorm(e.kurz+' '+e.sagen.join(' ')+' '+e.achtung);
+    return e;
+  });
+}
+function emsEintraege(){ return _eBasis; }
+function emsFinden(id){
+  for(var i=0;i<_eBasis.length;i++){ if(_eBasis[i].id===id) return _eBasis[i]; }
+  return null;
+}
+function emsKat(id){
+  for(var i=0;i<_eKats.length;i++){ if(_eKats[i].id===id) return _eKats[i]; }
+  return { id:id, name:'EMS-Wissen', ico:'blitz' };
+}
+/* Häufig gefragt: die Wörter, mit denen Kunden am Empfang wirklich
+   fragen. Ein Tipp sucht danach — derselbe Weg wie tippen. */
+var HILFE_STICHWORTE = ['Kontraindikationen','Schwangerschaft','Muskelkater','Bluthochdruck',
+  'Wie oft','Probetraining','Kosten','Krankenkasse','Kleidung','Gerät piept','Elektrode'];
+function emsStartZeichnen(){
+  var st=$('hilfeStich');
+  if(st && !st.childNodes.length){
+    st.innerHTML=HILFE_STICHWORTE.map(function(w){
+      return '<button type="button" class="chip hilfe-stichwort" data-hsuch="'+esc(w)+'">'+esc(w)+'</button>';
+    }).join('');
+    hilfeSuchKnoepfeBinden(st);
+  }
+  var box=$('emsKats');
+  if(box){
+    if(_eStatus==='da'){
+      var zahl={};
+      _eBasis.forEach(function(e){ zahl[e.kat]=(zahl[e.kat]||0)+1; });
+      box.innerHTML=_eKats.map(function(k){
+        return '<button type="button" class="hilfe-kat" data-hemskat="'+esc(k.id)+'">'+
+          ikon(k.ico)+'<span>'+esc(k.name)+'</span><i>'+(zahl[k.id]||0)+'</i></button>';
+      }).join('');
+      box.querySelectorAll('[data-hemskat]').forEach(function(b){
+        b.addEventListener('click', function(){
+          var id=b.getAttribute('data-hemskat');
+          hilfeListeZeigen(emsKat(id).name, _eBasis.filter(function(e){ return e.kat===id; }));
+        });
+      });
+    } else box.innerHTML='';
+  }
+  var sd=$('emsStand');
+  if(sd){
+    sd.textContent = _eStatus==='da'
+      ? _eBasis.length+' Fragen, in eigenen Worten zusammengefasst nach der FAQ von ems-training.de'+
+        (_eStand ? ' · Stand '+_eStand.split('-').reverse().join('.') : '')
+      : (_eStatus==='fehler' ? 'Das EMS-Wissen liess sich nicht laden. Nochmal öffnen hilft meistens.'
+                             : 'EMS-Wissen wird geladen …');
+  }
+}
+function hilfeSuchKnoepfeBinden(box){
+  box.querySelectorAll('[data-hsuch]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var f=$('hilfeSuche'); if(!f) return;
+      f.value=b.getAttribute('data-hsuch');
+      f.dispatchEvent(new Event('input', { bubbles:true }));
+      var body=$('hilfeBody'); if(body) body.scrollTop=0;
+      if(_hAnsicht!=='start') hilfePane('start');
+    });
+  });
+}
+/* Der Weg ins Internet (W1). Immer mit „EMS" — auch wer „Schwanger"
+   tippt, bekommt keine allgemeinen Schwangerschaftsseiten. */
+function emsNetzUrl(frage){
+  var q=String(frage||'').trim();
+  if(!/\bems\b/i.test(q)) q='EMS '+q;
+  var seiten=_eSeiten.length ? _eSeiten : [{ domain:'ems-training.de' }];
+  q+=' ('+seiten.map(function(x){ return 'site:'+x.domain; }).join(' OR ')+')';
+  return 'https://www.google.com/search?q='+encodeURIComponent(q);
+}
+function emsNetzHTML(frage){
+  if(!String(frage||'').trim()) return '';
+  return '<div class="hilfe-netz">'+
+    '<p><b>Nicht dabei?</b> Such auf geprüften Seiten im Internet — nur zu EMS.</p>'+
+    '<a class="btn btn-ghost btn-sm" data-hnetz="1" target="_blank" rel="noopener noreferrer" href="'+
+      esc(emsNetzUrl(frage))+'">Im Internet suchen ›</a>'+
+    '<p class="hint">Öffnet Google in einem neuen Tab, beschränkt auf '+
+      (_eSeiten.length ? _eSeiten.length+' Seiten' : 'ems-training.de')+
+      (_eSeiten.length ? ' ('+esc(_eSeiten.map(function(x){ return x.name; }).join(', '))+')' : '')+
+      '. Deine Frage geht dabei an Google — bitte keine Kundennamen eintippen.</p>'+
+  '</div>';
+}
+function emsEintragZeichnen(box, e){
+  var k=emsKat(e.kat);
+  var zurueck=(_hVon==='liste' && _hListe.length) ? 'liste' : 'start';
+  var verw=e.verwandt.map(function(id){ return emsFinden('ems:'+id); }).filter(Boolean);
+  var stich=e.stich.split(' ').filter(function(w){ return w.length>3; }).slice(0,8);
+  box.innerHTML=
+    '<button type="button" class="hilfe-zurueck" data-hzurueck="'+zurueck+'">‹ Zurück</button>'+
+    '<h3>'+esc(e.titel)+'</h3>'+
+    '<div class="hilfe-marken">'+
+      '<span class="hilfe-marke">'+ikon(k.ico)+esc(k.name)+'</span>'+
+      '<span class="hilfe-marke grau">EMS-Wissen</span>'+
+    '</div>'+
+    '<p class="ems-kurz">'+esc(e.kurz)+'</p>'+
+    (e.sagen.length
+      ? '<p class="hilfe-ueber">So erklärst du es</p>'+
+        '<div class="ems-sagen">'+e.sagen.map(function(t){ return '<p>„'+esc(t)+'“</p>'; }).join('')+'</div>'
+      : '')+
+    (e.achtung ? '<div class="ems-achtung"><b>Achtung</b><span>'+esc(e.achtung)+'</span></div>' : '')+
+    '<div class="hilfe-knoepfe">'+
+      '<a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer" href="'+esc(e.url)+'">'+
+        'Ganzen Artikel lesen ›</a>'+
+    '</div>'+
+    (verw.length
+      ? '<p class="hilfe-ueber">Passt auch dazu</p><div class="hilfe-liste">'+verw.map(hilfeZeile).join('')+'</div>'
+      : '')+
+    (stich.length
+      ? '<p class="hilfe-ueber">Schlagwörter</p><div class="hilfe-stich">'+stich.map(function(w){
+          return '<button type="button" class="chip hilfe-stichwort" data-hsuch="'+esc(w)+'">'+esc(w)+'</button>';
+        }).join('')+'</div>'
+      : '')+
+    '<p class="ems-hinweis">Allgemeine Information, keine ärztliche Beratung. Im Zweifel gelten euer '+
+      'Anamnesebogen und die ärztliche Freigabe.</p>'+
+    /* Quelle als Text, nicht als zweiter, kleiner Link: der Weg zum
+       Artikel ist der Knopf oben, 44 px hoch. Ein Textlink in der
+       Fußzeile wäre ein Bedienelement unter der Mindestgröße. */
+    '<p class="hilfe-fuss">Eigene Kurzfassung nach „'+esc(e.titel)+'“ — www.ems-training.de, '+
+      esc(e.autor || 'EMS-Training-Redaktion')+
+      (e.lesezeit ? ' · im Original etwa '+e.lesezeit+' Minuten Lesezeit' : '')+
+      (_eStand ? ' · zusammengefasst am '+esc(_eStand.split('-').reverse().join('.')) : '')+'</p>';
+  hilfeZurueckBinden(box);
+  hilfeZeilenBinden(box, _hVon);
+  hilfeSuchKnoepfeBinden(box);
 }
 
 /* ── Die eigenen Einträge ──────────────────────────────────────────*/
@@ -18288,6 +18565,7 @@ function hilfeAlleEintraege(){
   return liste;
 }
 function hilfeFinden(id){
+  if(String(id).indexOf('ems:')===0) return emsFinden(id);
   var alle = hilfeAlleEintraege();
   for(var i=0;i<alle.length;i++){ if(alle[i].id===id) return alle[i]; }
   return null;
@@ -18310,6 +18588,7 @@ function hilfeOeffnen(){
   hilfeEigeneLaden();
   hilfeStartZeigen();
   hilfeBasisLaden().then(function(){ if(_hAn) hilfeAuffrischen(); });
+  emsLaden().then(function(){ if(_hAn) hilfeAuffrischen(); });
   /* Auf dem Rechner sofort in das Feld; auf dem Telefon NICHT — dort
      springt sonst die Tastatur hoch und verdeckt die Kacheln, bevor
      man sie gesehen hat. */
@@ -18367,6 +18646,7 @@ function hilfeStartZeichnen(){
       });
     });
   }
+  emsStartZeichnen();
   var stand=$('hilfeStand');
   if(stand){
     if(_hBasisStatus==='fehler'){
@@ -18418,9 +18698,17 @@ function hilfeTrefferZeichnen(){
       (t.length===1?' Treffer':' Treffer')+'</p>'+
       '<div class="hilfe-liste">'+t.map(hilfeZeile).join('')+'</div>';
   }
+  box.insertAdjacentHTML('beforeend', emsNetzHTML(_hSuche));
   hilfeZeilenBinden(box, 'start');
 }
 function hilfeZeile(e){
+  if(e.ems){
+    var ek=emsKat(e.kat);
+    return '<button type="button" class="hilfe-zeile ems" data-heintrag="'+esc(e.id)+'">'+
+      ikon(ek.ico)+
+      '<span class="hilfe-ztxt"><b>'+esc(e.titel)+'</b><i>EMS-Wissen · '+esc(ek.name)+'</i></span>'+
+      '<span class="al-pfeil">›</span></button>';
+  }
   var k=hilfeKat(e.kat);
   var unter=k.name+
     (e.bilder && e.bilder.length ? ' · '+e.bilder.length+(e.bilder.length===1?' Foto':' Fotos') : '')+
@@ -18451,7 +18739,7 @@ function hilfeListeZeigen(titel, eintraege){
 }
 function hilfeListeZeichnen(){
   var box=$('hilfeListe'); if(!box) return;
-  var alle=hilfeAlleEintraege(), nachId={};
+  var alle=hilfeAlleEintraege().concat(emsEintraege()), nachId={};
   alle.forEach(function(e){ nachId[e.id]=e; });
   var liste=_hListe.map(function(id){ return nachId[id]; })
                    .filter(function(e){ return !!e; });
@@ -18492,6 +18780,7 @@ function hilfeEintragZeichnen(){
     hilfeZurueckBinden(box);
     return;
   }
+  if(e.ems){ emsEintragZeichnen(box, e); return; }
   var k=hilfeKat(e.kat);
   var zurueck=(_hVon==='liste' && _hListe.length) ? 'liste' : 'start';
   var darf=hilfeMeins(e);
@@ -18563,7 +18852,7 @@ function hilfeEintragZeichnen(){
    im Speicher — wer zweimal hinsieht, zahlt nicht zweimal. */
 function hilfeBilderLaden(id){
   var e=hilfeFinden(id);
-  if(!e || !e.bilder.length) return;
+  if(!e || !e.bilder || !e.bilder.length) return;
   var offen=e.bilder.filter(function(b){ return !_hBildCache[b]; });
   if(!offen.length) return;
   Promise.all(offen.map(function(bid){

@@ -11906,3 +11906,129 @@ iPhone ganz weg ist, muss am Gerät bestätigt werden.
   Durchlauf schickt deshalb einzelne Touch-Ereignisse
   (`Input.dispatchTouchEvent`).
 - **Oberfläche:** 135 Durchläufe, alle sauber.
+
+## Runde 104, zweiter Teil — EMS-Wissen im Hilfe-Fenster
+
+> „schau dir mal diesen link an und füge ALLES was du dort an
+> informationen zu dir nehmen kannst zu dem Hilfe Knopf/Seite hinzu
+> ebenso mit Schlagwörtern und Empfehlungen … das man oben eine frage
+> stellen kann und … das System die Sachen anzeigt die am ehesten dazu
+> passen würden also so wie google aber NUR für Ems training"
+
+Auf die Rückfrage entschieden: **A** (eigene Kurzfassungen mit Quelle
+und Link statt einer Kopie) und **W1** (intern suchen, dazu ein Knopf
+ins Internet, beschränkt auf eine Liste seriöser Seiten).
+
+### Die Quelle
+
+Die FAQ von www.ems-training.de hat 57 Artikel in vier Kategorien:
+Grundlagen 11, Gesundheit & Sicherheit 24, Praxis 15, Kosten &
+Anbieter 7. 56 davon stammen von der Redaktion der Seite, einer von
+einem externen Autor (Stephan Müller, Ernährung). Die Artikel liegen als
+Daten in der Seite. Ausgelesen wurden sie mit einem Skript, weil ein
+einfacher Abruf nur die Kategorien zeigt.
+
+### Warum keine Kopie
+
+Die Seite erlaubt Weiterverwendung nur mit Quelle, Link und
+Autorennennung. Sie verbietet ausdrücklich die „systematische Übernahme
+… ersetzend … ohne eigenen redaktionellen Mehrwert“, und Texte externer
+Autoren sind von der Freigabe ausgenommen. Das Repository ist
+öffentlich, eine Abschrift wäre also eine Veröffentlichung.
+
+Deshalb steht in `ems-wissen.js` je Frage:
+- eine **Kurzfassung in eigenen Worten**;
+- **„So erklärst du es“**: ein, zwei Sätze für den Kunden;
+- **„Achtung“**: wann Leitung oder Arzt gefragt werden;
+- **Schlagwörter**;
+- **„Passt auch dazu“**;
+- der **Link auf genau diesen Artikel**, mit Autor und Lesezeit.
+
+Aus einem Lesetext für Endkunden wird so eine Arbeitshilfe für den
+Empfang. Das ist der Mehrwert, den die Bedingungen verlangen.
+
+### Fachlich nachgeprüft
+
+Die Sicherheitsangaben stehen nicht nur, weil die FAQ sie nennt. Sie
+sind an den beiden Arbeiten nachgelesen, auf die sich die FAQ beruft:
+
+- **von Stengel et al. 2024** (Kontraindikationen, Tabelle 3): Die
+  absoluten und relativen Kontraindikationen stimmen Wort für Wort mit
+  dem Eintrag „Kontraindikationen“ überein.
+- **Kemmler et al. 2023** (Leitlinie):
+  - 20 Minuten;
+  - in den ersten 8–10 Wochen höchstens 1× pro Woche;
+  - danach ≥ 4 Tage Pause zwischen intensiven Einheiten;
+  - Betreuung 1:1, im nicht-medizinischen Bereich 1:2 vertretbar;
+  - Einstieg mit 5 Minuten Gewöhnung und 12 Minuten Intervall;
+  - je 250–500 ml Flüssigkeit 30 Minuten vorher und direkt danach;
+  - 24–48 Stunden vorher keine Muskelrelaxanzien.
+- **Ein Widerspruch in der Quelle:** Zwei FAQ-Artikel nennen „mindestens
+  5 Tage“ Pause. Hier steht durchgehend der Wert der Leitlinie,
+  4 Tage.
+
+Nicht nachgeprüft sind Einzelstudien, etwa die 17 % bzw. 460 kcal beim
+Kalorienverbrauch, und die Preisangaben. Sie sind als Angaben der Quelle
+gekennzeichnet. Die Preise tragen zusätzlich den Hinweis, dass es
+Marktwerte sind und nicht die Preise des Studios.
+
+### Gebaut
+
+- **Ein Suchfeld für beides.** Handbuch (115) und EMS-Wissen (57)
+  stehen in einer Trefferliste nach derselben Wertung; jede Zeile sagt,
+  woher sie kommt. Zwei getrennte Listen hätten verlangt, vorher zu
+  wissen, wo die Antwort liegt.
+- **Suchwörter:** 36 neue Synonymgruppen für EMS, zum Beispiel
+  Schrittmacher = Implantat, Ozempic = Abnehmspritze, schwanger =
+  Schwangerschaft.
+- **„Häufig gefragt“:** elf Schlagwörter zum Antippen. Dazu vier
+  EMS-Kacheln mit Zahl und eine Detailansicht mit Kurzfassung, „So
+  erklärst du es“, „Achtung“ (Bernstein, weil es eine Warnung ist),
+  „Ganzen Artikel lesen ›“, „Passt auch dazu“, Schlagwörtern und dem
+  Satz „keine ärztliche Beratung“.
+- **Im Internet suchen (W1):** Google in neuem Tab, die Frage immer mit
+  „EMS“ davor und beschränkt auf die acht Seiten, die der Betrieb
+  genannt hat. Der Hinweis dazu sagt, dass die Frage an Google geht,
+  also keine Kundennamen.
+- **Eine Datei wie das Handbuch:** Sie wird erst beim Öffnen geladen,
+  liegt im Vorrat des Service Workers (`sw.js` v8) und ist im
+  Auslieferungsablauf eingetragen. Es gibt keinen Lesevorgang in der
+  Datenbank, und alles läuft ohne Netz.
+
+### Beim Bauen gefunden
+
+- **Lose Treffer:** „Schrittmacher“ brachte auf Platz vier „Kunde möchte
+  Trainingspause“, über ein Synonym und ein Wort im Fliesstext. Jetzt
+  fällt weg, was unter 35 % des besten Treffers liegt.
+- **Tippfehler schlecht gewichtet:** „muskelkatr“ fand zuerst „Warum
+  wirkt EMS — was passiert im Muskel?“. Ein kurzes Wort, das nur der
+  Anfang der Eingabe ist („muskel“), zählte fest 0,75 und schlug den
+  eigentlich gemeinten Tippfehler-Treffer (0,5). Jetzt zählt so ein
+  Wort nach dem Anteil, den es abdeckt.
+- **„Schliessen“ im Hilfe-Fenster war am Rechner 40 × 40**, auch auf
+  `main`; jetzt ist er 44 × 44.
+- **Die Kopfzeile am PC erfüllt die 44-px-Regel nicht:** Glocke,
+  Hell/Dunkel und Abmelden sind 40 × 40, Bericht, Hilfe und Suchen
+  36 px hoch. Sie wurde bisher nur am Handy gemessen. Das ist ein
+  eigener nächster Schritt, weil es die Höhe der Kopfzeile ändert.
+
+### Durchläufe
+
+- **Neu: `tests/test-ems-wissen.js`** mit 53 Zusicherungen:
+  - 57 Einträge, 11/24/15/7, jeder mit eigenem Originallink;
+  - acht Fragen gegen den erwarteten Eintrag an Platz 1, darunter ein
+    Tippfehler und ein Synonym;
+  - „gerät piept“ bleibt beim Handbuch;
+  - Internet-Knopf: „EMS“, die acht Seiten, neuer Tab, `noopener`,
+    Warnung;
+  - Gegenprobe mit einem Unsinnswort;
+  - Eintrag, Kachel, Schlagwort;
+  - Trefferflächen bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px,
+    in „normal“ und „kompakt“, auf Start-, Treffer- und Eintragsansicht.
+- **`test-loesungen`: die Prüfung „elektrde“ gilt jetzt je Quelle.**
+  Vorher musste jeder Treffer „Elektrode“ im Titel tragen. Jetzt steht
+  dort zu Recht auch „Wie funktioniert EMS-Training technisch?“. Geprüft
+  wird: jeder Handbuch-Treffer trägt „Elektrode“ im Titel, jeder
+  EMS-Treffer führt „elektrode“ in seinen Schlagwörtern. So streng wie
+  vorher, nur für zwei Quellen.
+- **Gesamtdurchlauf: 136 von 136 grün**, mit dem neuen Durchlauf.
