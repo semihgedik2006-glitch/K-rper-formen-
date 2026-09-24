@@ -178,6 +178,15 @@ schon). **Dagegen:** nichts, solange es bei `transform`/`opacity` bleibt
 (siehe `CLAUDE.md`, „Flüssig heisst konkret"). Passt zu Idee 19 in
 `DESIGN-IDEEN.md`.
 
+> **Umgesetzt in Runde 103.** Beim Abhaken gab es die Feder schon
+> (`checkPop`), aber an der falschen Stelle: sie lief bei jedem
+> Neuzeichnen auf **allen** erledigten Haken (für eine abgehakte
+> Aufgabe 15 auf einmal), und das grüne Aufleuchten der Zeile ging
+> verloren, weil der Horcher die Liste sofort neu zeichnete. Jetzt
+> federt genau der eine Haken, über das Neuzeichnen hinweg; der
+> Senden-Knopf im Chat federt einmal. Bei „weniger Bewegung" im System
+> federt nichts.
+
 ### C2. Formen-Kontrast: rund für Aktionen, eckig für Inhalt
 *Vorbild: Material 3 Expressive, „Shape"* ([Supercharge](https://supercharge.design/blog/material-3-expressive))
 
@@ -187,6 +196,11 @@ drücken kann. Heute sind Karten, Zeilen und Knöpfe ähnlich rund.
 *Aufwand:* klein (die Radius-Leiter gibt es). **Dagegen:** der Eindruck
 „weich und rund" ist bisher gewollt; ein Umbau aller Karten wäre
 sichtbar gross. Erst an einer Ansicht ausprobieren.
+
+> **Als Versuch in Runde 103, nur auf der Startseite:** die Zeilen dort
+> haben 14 statt 22 px Radius, die Knöpfe unter „Ausserdem" bleiben
+> Pillen. Ob es auf die übrigen Ansichten übertragen wird, entscheidet
+> der Betrieb nach dem Ansehen — zurück ist es eine Zeile.
 
 ---
 

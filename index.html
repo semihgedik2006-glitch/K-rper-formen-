@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-fxITPg7GgnFgcqOPpKZr3ttaAf7pso601djym5ZlqnU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ESIebl6d+bBHct9WA2Z+b3dqv1gC4/ZEc/Na/zO9BE0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2219,7 +2219,7 @@ body.nurlesen .kopf-plus{display:none !important}
 
 /* ── Aufgaben: spielerisches Erledigt-Feedback ── */
 /* Sanftes Aufleuchten der Karte beim Abhaken */
-.todo.just-done{animation:doneFlash .7s var(--ease-out)}
+.todo.just-done{animation:doneFlash .7s var(--ease-out) var(--seit,0ms) backwards}
 @keyframes doneFlash{
   0%{background:var(--bg-2)}
   22%{background:rgba(var(--akz-rgb),.16);border-color:rgba(var(--akz-rgb),.45)}
@@ -2376,7 +2376,11 @@ body.nurlesen .kopf-plus{display:none !important}
 .pp-item:hover{transform:translateY(-1px);border-color:var(--line-2)}
 .pp-item.done{opacity:.62}
 .pp-item.done .pp-title{text-decoration:line-through;color:var(--text-2)}
-.pp-item.just-done{animation:doneFlash .7s var(--ease-out)}
+.pp-item.just-done{animation:doneFlash .7s var(--ease-out) var(--seit,0ms) backwards}
+@media (prefers-reduced-motion:reduce){
+  .todo.just-done,.pp-item.just-done,
+  .todo.just-done .check,.pp-item.just-done .check{animation:none}
+}
 .pp-body{flex:1;min-width:0}
 .pp-title{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);letter-spacing:var(--ls-s)}
 .pp-meta{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s10);margin-top:var(--s4);font-size:var(--t-xs);color:var(--text-3)}
@@ -2520,8 +2524,19 @@ body.nurlesen .kopf-plus{display:none !important}
 .chef-go:active,.doc:active,.dev-item:active{transform:scale(.965)}
 .btn-primary:hover{transform:translateY(-2px)}
 
-/* Häkchen federt beim Erledigen nach */
-.todo.done .check{animation:checkPop .45s var(--spring)}
+/* Häkchen federt beim Erledigen nach — NUR das eben abgehakte.
+   Bis Runde 103 stand hier `.todo.done .check`: die Feder lief bei JEDEM
+   Zeichnen der Liste auf JEDEM erledigten Haken — gemessen federten
+   beim Chef der Demo für EINE abgehakte Aufgabe 15 Haken gleichzeitig.
+   Und das grüne Aufleuchten ging dabei verloren: der Horcher zeichnet
+   die Liste im selben Augenblick neu, der Knoten mit `.just-done` war
+   weg, bevor ein Bild entstand (gemessen: nach 0 ms schon ein neuer
+   Knoten). Jetzt merkt sich
+   frischMerken() den Zeitpunkt, das neu gezeichnete Element trägt die
+   Klasse weiter, und `--seit` setzt die Bewegung dort fort, wo sie
+   war, statt sie neu anzufangen. */
+.todo.just-done .check,.pp-item.just-done .check{
+  animation:checkPop .45s var(--spring) var(--seit,0ms) backwards}
 @keyframes checkPop{0%{transform:scale(1)}45%{transform:scale(1.3)}100%{transform:scale(1)}}
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
@@ -5376,7 +5391,11 @@ body.neu .heute-liste{display:flex;flex-direction:column;gap:var(--s8)}
 body.neu .heute-zeile{--kat:var(--text-3);--kat-f:transparent;
   display:flex;align-items:center;gap:var(--s12);
   width:100%;min-height:var(--zeile);text-align:left;cursor:pointer;
-  padding:var(--s12) var(--s16);border-radius:var(--radius);
+  padding:var(--s12) var(--s16);border-radius:var(--r-md);
+  /* Formen-Kontrast (Runde 103, Idee C2), zuerst nur hier: Inhalt
+     eckiger (14px statt 22px), was man drückt, bleibt Pille — die
+     „Ausserdem"-Knöpfe. Die Recherche sagt „erst an
+     einer Ansicht ausprobieren"; das ist diese Ansicht. */
   /* Drei Halte statt zwei: die Farbe steht kurz, läuft dann zügig aus
      und ist ab 58 % ganz weg. Zwei Halte gaben einen Verlauf, der über
      die ganze Zeile schmiert; drei geben eine Kante mit Abklang. */
@@ -25064,7 +25083,9 @@ function todoHTML(t,sk,chefView){
         '<span class="sbox">✓</span><span class="stxt">'+esc((s&&s.t)||'')+'</span></li>';
     }).join('')+'</ul>';
   }
-  return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+'" data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
+  var frisch=frischAttr(t.id, done);
+  return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+frisch.cls+'"'+frisch.stil+
+    ' data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
     '<div class="swipe-hint">✓</div><div class="swipe-body">'+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+assign+stepCount+'</div>'+
@@ -25115,6 +25136,39 @@ function bindSwipe(node, onDone){
   node.addEventListener('touchcancel', end);
 }
 
+/* ── Frisch abgehakt (Runde 103, Idee C1) ──────────────────────────
+   Die Rückmeldung beim Abhaken muss das Neuzeichnen überleben, das der
+   Horcher sofort danach auslöst. Gemerkt wird nur der Zeitpunkt; wer
+   die Zeile zeichnet, fragt frischSeit() und bekommt die Millisekunden
+   seitdem — oder -1, wenn die Bewegung vorbei ist. */
+var _frischAbgehakt = {};
+var FRISCH_MS = 700;
+function frischMerken(id){ if(id) _frischAbgehakt[id]=Date.now(); }
+function frischSeit(id){
+  var t=_frischAbgehakt[id]; if(!t) return -1;
+  var seit=Date.now()-t;
+  if(seit>=FRISCH_MS){ delete _frischAbgehakt[id]; return -1; }
+  return seit;
+}
+/* Class und Stil für eine frisch abgehakte Zeile. */
+function frischAttr(id, done){
+  var seit = done ? frischSeit(id) : -1;
+  return seit<0 ? { cls:'', stil:'' }
+    : { cls:' just-done', stil:' style="--seit:-'+seit+'ms"' };
+}
+/* Der Senden-Knopf federt einmal nach. Web Animations statt einer
+   Klasse: eine Klasse neu zu starten hiesse, im Klick das Layout zu
+   lesen (offsetWidth) — genau das, was „flüssig" hier verbietet. */
+function federn(el){
+  if(!el || !el.animate || willRuhe()) return;
+  el.animate([
+    { transform:'scale(1)' },
+    { transform:'scale(.86)', offset:.3 },
+    { transform:'scale(1.07)', offset:.68 },
+    { transform:'scale(1)' }
+  ], { duration:380, easing:'cubic-bezier(.2,.8,.2,1)' });
+}
+
 function bindTodoClicks(area){
   area.querySelectorAll('.todo').forEach(function(node){
     var id=node.dataset.id, sk=node.dataset.sid;
@@ -25123,6 +25177,7 @@ function bindTodoClicks(area){
       var done=!node.classList.contains('done');
       if(done){
         // Sofortiges Feedback, noch bevor der Server antwortet:
+        frischMerken(id);                          // überlebt das Neuzeichnen
         node.classList.add('just-done');           // Karte leuchtet kurz grün
         setTimeout(function(){ node.classList.remove('just-done'); }, 720);
         burstAt(chk); tick();                      // Funken-Ring + kurzes Vibrieren
@@ -27407,7 +27462,9 @@ function renderPutzplan(){
     var pauseKnopf = chef
       ? '<button class="pp-pause" data-pause="'+esc(t.id)+'">'+(pause?'fortsetzen':'pausieren')+'</button>'
       : '';
-    return '<div class="pp-item'+(d?' done':'')+(pause?' pausiert':'')+'" data-id="'+esc(t.id)+'">'+
+    var frisch=frischAttr(t.id, d);
+    return '<div class="pp-item'+(d?' done':'')+(pause?' pausiert':'')+frisch.cls+'"'+frisch.stil+
+      ' data-id="'+esc(t.id)+'">'+
       '<div class="swipe-hint">✓</div><div class="swipe-body">'+
       (pause
         ? '<span class="pp-pauseico" aria-hidden="true">'+ikon('pause')+'</span>'
@@ -27461,6 +27518,7 @@ function bindPutzplanClicks(box){
       var t=_ppTasks.filter(function(x){ return x.id===id; })[0]; if(!t) return;
       var willDone=!isDone(t);
       if(willDone){
+        frischMerken(id);
         if(node){ node.classList.add('just-done'); setTimeout(function(){ node.classList.remove('just-done'); },720); }
         burstAt(chk); tick(); toast(pickPraise());
       }
@@ -30870,6 +30928,7 @@ function bindActions(){
     if(voice){ doc.audio=voice; doc.audioMs=voiceMs; }
     S('channels').doc(currentChannel).collection('messages').add(doc)
       .catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
+    federn($('chatSend'));
     ta.focus();
   }
   $('chatSend').addEventListener('click',sendMsg);
