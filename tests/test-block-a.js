@@ -302,16 +302,22 @@ async function leiste(p) {
     pruefe('A2 ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
-  /* GEGENPROBE: am Rechner gibt es keine Daumenzone. */
+  /* GEGENPROBE: am Rechner gibt es keine Daumenzone.
+     Seit Runde 103, P1 steht „+ Neu" am Rechner im BEREICHSKOPF statt im
+     Seitenkopf darunter — der doppelte Seitenkopf ist weg (Wunsch aus
+     dem Betrieb: „genau so viel Fokus auf die PC-Nutzung"). Geprüft wird
+     weiter dasselbe: nicht unten in der Daumenzone, sichtbar, oben. */
   {
     const p = await seite(b, 'chef', { w: 1100, h: 900 });
     await p.evaluate(() => [...document.querySelectorAll('.side button, .side a')].find(x => /Aufgaben/.test(x.textContent)).click());
     await p.waitForTimeout(800);
     const r = await p.evaluate(() => {
       const b = document.getElementById('todoNew');
-      return { imDock: !!b.closest('#daumenDock'), imKopf: !!b.closest('.view-head'), oben: Math.round(b.getBoundingClientRect().top) };
+      return { imDock: !!b.closest('#daumenDock'), imKopf: !!b.closest('#bereichZeile, .view-head'),
+               sichtbar: !!b.getClientRects().length, oben: Math.round(b.getBoundingClientRect().top) };
     });
-    pruefe('GEGENPROBE am Rechner bleibt „+ Neu" oben im Seitenkopf', !r.imDock && r.imKopf && r.oben < 300,
+    pruefe('GEGENPROBE am Rechner steht „+ Neu" oben im Kopf, nicht in der Daumenzone',
+      !r.imDock && r.imKopf && r.sichtbar && r.oben < 300,
       JSON.stringify(r));
     await p.close();
   }
