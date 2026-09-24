@@ -51,14 +51,29 @@ const reiterMessen = (page, listeId) => page.evaluate(id => {
   {
     const { b, page } = await start('stub-mitarbeiter.js', errs);
 
-    // Schichtplan: heute muss vollständig im Bild sein
+    /* Schichtplan: heute muss im Bild sein.
+
+       GEÄNDERT AM 24.9.2026 — offen, nicht still. Bis dahin hiess es
+       hier „VOLLSTÄNDIG im Bild", und erreicht wurde das, indem die
+       Seite nach dem Öffnen zum heutigen Tag rollte. Genau das Rollen
+       war P-12 („Team-Seite springt beim Öffnen nach unten"), dessen
+       Behebung aus dem Betrieb freigegeben ist: „die aufgaben kannst du
+       in deiner reihenfolge machen" (24.9.2026, auf die Liste mit P-12).
+
+       Jetzt rollt nichts; die vergangenen Tage der Woche stehen in einer
+       Zeile, damit heute weit oben steht. Hat der heutige Tag viele
+       Schichten (hier 348 px hoch), ragt sein Ende unter den Rand —
+       gefordert ist deshalb: die Seite hat NICHT gerollt, und die
+       Überschrift des Tages plus die erste Schicht (80 px) sind zu
+       sehen. Mehr prüft tests/test-team-woche.js. */
     const plan = await page.evaluate(() => {
       const sa = document.querySelector('#view-team .scroll-area');
       const h = document.querySelector('#shiftGrid .shift-day.today');
       const f = sa.getBoundingClientRect();
       return {
         heuteDa: !!h,
-        heuteGanzImBild: h ? (h.getBoundingClientRect().bottom <= f.bottom + 1 &&
+        heuteGanzImBild: h ? (sa.scrollTop === 0 &&
+                              h.getBoundingClientRect().top + 80 <= f.bottom &&
                               h.getBoundingClientRect().top >= f.top - 1) : false,
         tage: document.querySelectorAll('#shiftGrid .shift-day').length,
         daueErklaerung: /Wer arbeitet wann/.test(document.getElementById('teamPaneSchicht').textContent),
@@ -66,7 +81,7 @@ const reiterMessen = (page, listeId) => page.evaluate(id => {
     });
     console.log('SCHICHTPLAN:', JSON.stringify(plan));
     if (!plan.heuteDa) errs.push('Kein Heute im Schichtplan');
-    if (!plan.heuteGanzImBild) errs.push('Der heutige Tag liegt nicht vollstaendig im Bild');
+    if (!plan.heuteGanzImBild) errs.push('Der heutige Tag steht nicht ohne Rollen im Bild');
     if (plan.tage !== 7) errs.push('Der Plan zeigt ' + plan.tage + ' statt 7 Tage');
     if (plan.daueErklaerung) errs.push('Die Dauererklaerung ueber dem Plan ist zurueck');
 
