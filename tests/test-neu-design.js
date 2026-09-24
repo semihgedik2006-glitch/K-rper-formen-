@@ -146,8 +146,9 @@ async function seite(b, stub, such, breite) {
         ziel: z.getAttribute('data-alles'),
         /* Seit dem 22.9.2026 führt eine Zeile nicht auf eine Seite,
            sondern öffnet ein Fenster: „Hilfe im Studio". Sie nennt
-           trotzdem ein Ziel — nur eines ohne eigene Adresse. */
-        fenster: !!z.getAttribute('data-al-hilfe'),
+           trotzdem ein Ziel — nur eines ohne eigene Adresse. Seit dem
+           24.9. eine zweite derselben Art: „Was ist neu". */
+        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu')),
       })),
       abgeschnitten: zeilen.some(z => {
         const t = z.querySelector('b');
@@ -226,6 +227,18 @@ async function seite(b, stub, such, breite) {
           ladeZu: document.getElementById('allesLade').hidden,
         };
         if (auf) document.getElementById('hilfeZu').click();
+        return raus;
+      }
+      /* „Was ist neu" (seit 24.9.) ist dieselbe Art: ein Fenster. */
+      if (z.getAttribute('data-al-neu')) {
+        const auf = document.getElementById('neuModal').classList.contains('show');
+        const raus = {
+          name, tipps, reiterOk,
+          view: auf ? 'FENSTER-AUF' : 'FENSTER-ZU',
+          ziel: 'FENSTER-AUF',
+          ladeZu: document.getElementById('allesLade').hidden,
+        };
+        if (auf) document.getElementById('neuClose').click();
         return raus;
       }
       return {

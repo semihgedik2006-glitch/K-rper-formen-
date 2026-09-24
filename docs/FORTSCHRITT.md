@@ -11319,3 +11319,102 @@ Die erste Messung am PC (1440 × 900):
 Der Platz ist da, er wird nur nicht genutzt. Die Vorschläge dazu (Liste
 und Detail nebeneinander, Putzplan als Raster, Startseite in zwei
 Spalten) stehen zur Entscheidung aus.
+
+
+---
+
+## Runde 103, vierter Teil — Block D: „Danke" an der Sache, und „Was ist neu"
+
+> „mach dann weiter mit block d"
+>
+> „sorge bitte dafür, dass man nach jedem Merge einen Unterschied auch
+> sehen kann in der App oder es zumindest nachvollziehen kann"
+
+### D1 · Danke an der erledigten Aufgabe
+
+An einer erledigten Aufgabe eines Kollegen steht jetzt „Danke" (44 px,
+Pille). Ein Tipp macht daraus „Bedankt", ein zweiter nimmt es zurück.
+Wer die Aufgabe erledigt hat, sieht „Danke von …" an der Zeile und oben
+auf der Startseite unter „Neu für dich". Ein Tipp dort gilt als gelesen.
+
+**Die Regel zuerst.** `nurEigenesDanke()` in `firestore.rules`, beide
+Welten, geprüft am Emulator (`tests/rules/danke.test.js`, 36
+Prüfungen). Jeder darf nur seinen eigenen Eintrag in der Karte `danke`
+setzen oder löschen, und zwar:
+- nur an einer erledigten Aufgabe,
+- nicht an der eigenen,
+- nur mit `fuer` = `doneAt` der aktuellen Erledigung,
+- ohne zusätzliche Felder,
+- nicht aus einem fremden Studio oder einer fremden Firma.
+
+Die Gegenprobe gegen die alte Regel: 6 rot. Und die neue Regel steht
+als ODER neben der alten, sie verengt nichts. Abhaken und „Ich
+übernehme" gehen wie vorher, auch das ist geprüft.
+
+**Warum `fuer`.** Tägliche Aufgaben setzen sich nicht durch einen
+Schreibvorgang zurück, sondern durch die Uhr (`isDone()` vergleicht mit
+dem Periodenbeginn). Ein Danke von gestern stünde sonst heute an einer
+Aufgabe, die noch niemand gemacht hat.
+
+**Warum kein Zähler.** Siehe „Wovon ich abrate" in der Recherche: eine
+Rangliste unter Kollegen ist Leistungskontrolle. Am Dokument steht nur,
+wer Danke gesagt hat.
+
+**Nicht am Putzplan.** Dort hakt oft das Empfangstablet ab, und ein
+Danke an den „Studio-Zugang" erreicht niemanden.
+
+**Beim Bauen gefunden:**
+- **Erledigte Aufgaben sind blass** (`opacity:.58`). Ein Knopf darin
+  sah aus wie abgeschaltet und läge unter 4,5 : 1. Bei Zeilen mit
+  Danke wird deshalb jedes Teil ausser dem Danke zurückgenommen, nicht
+  die ganze Zeile.
+- **Einmalige erledigte Aufgaben wandern nach 3 Stunden ins Archiv.**
+  Ein Danke an ihnen ist danach nur noch auf der Startseite zu sehen.
+  Die Demo hat deshalb zwei frisch erledigte Beispiele. Sie kommen ohne
+  Zufallsziehung aus, damit sich die übrigen Demo-Daten nicht
+  verschieben.
+
+### Was ist neu
+
+`NEUIGKEITEN` in `index.html`: ein Eintrag je Auslieferung, oben der
+aktuelle Stand. Nach einer Auslieferung steht auf der Startseite oben
+rechts „Neu". Die Pille sitzt dort, wo auf anderen Seiten „+ Neu"
+steht: kein zusätzlicher Platz, am PC und am Handy dieselbe Stelle.
+
+Ein Tipp zeigt:
+- die Liste mit dem Stand,
+- je Eintrag, was man sieht,
+- „Zeigen ›" dorthin.
+
+Der Tipp gilt als gesehen, bis zur nächsten Auslieferung (am Gerät
+gemerkt). Dauerhaft liegt die Liste unter „Alles → Was muss ich wissen?
+→ Was ist neu".
+
+Die Regel dazu steht in `CLAUDE.md`: **ein PR ohne Eintrag ist nicht
+fertig.** Rückwirkend eingetragen sind die Blöcke A bis D dieser Runde.
+
+**Eine Einschränkung, offen gesagt:** Die Pille, die Startseiten-Blöcke
+und die Schnellzugriffe gibt es nur im **neuen Design**. Ob euer
+Betrieb es firmenweit eingeschaltet hat, kann ich von hier nicht sehen
+(kein Zugriff auf die echte Datenbank). Im Demo-Modus ist es immer an.
+
+### Geprüft
+
+- **Oberfläche:** `tests/test-block-d.js` mit 26 Zusicherungen, **am
+  PC (1440 × 900) und am Handy (390 × 844)**, darunter drei
+  Gegenproben:
+  - kein Danke-Knopf an der eigenen Aufgabe;
+  - kein Danke-Knopf an offenen Aufgaben;
+  - kein Zähler je Person.
+- **Regeln:** 17 Dateien, 1.177 Einzelprüfungen, alle grün.
+- **Oberfläche gesamt:** 129 Durchläufe. Einer war rot, zweimal zu
+  Recht:
+  - **Der Test:** `test-neu-design` kannte als Zeile in „Alles", die ein
+    Fenster öffnet statt einer Seite, nur „Hilfe im Studio". „Was ist
+    neu" ist dieselbe Art; der Test prüft jetzt, dass sein Fenster
+    aufgeht.
+  - **Die App:** Beim iPhone SE (568 px hoch) brach die Kopfzeile mit
+    der „Neu"-Pille um, und die Startseite war 339 px hoch in 332 Platz.
+    Unter 640 px Höhe steht die Pille deshalb nicht da; die Liste bleibt
+    unter „Alles".
+  - **Danach** grün, die übrigen 128 waren sauber.

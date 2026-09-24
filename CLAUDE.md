@@ -50,6 +50,19 @@ abgeschnitten werden — „alle 5 ›" traf so nur 35 px hoch.
   Liste + Detail, Tastenkürzel, Hover.
 - Im Bericht stehen die Zahlen für beide Geräte, nicht nur fürs Handy.
 
+## Jede Auslieferung ist in der App zu sehen
+
+> „sorge bitte dafür, dass man nach jedem Merge einen Unterschied auch
+> sehen kann in der App oder es zumindest nachvollziehen kann"
+> (24.9.2026)
+
+**Jeder PR, der etwas Sichtbares ändert, trägt oben in `NEUIGKEITEN`
+(`index.html`) einen Eintrag**: Datum, Titel, was man sieht und wo
+(`wo` = Schlüssel wie bei den Schnellzugriffen). Geschrieben für die
+Leute im Studio, nicht für Entwickler. Nach der Auslieferung steht auf
+der Startseite oben „Neu"; die ganze Liste liegt unter „Alles → Was ist
+neu". Ein PR ohne Eintrag ist nicht fertig.
+
 ## Mergen
 
 > „Du kannst immer selber mergen statt auf mich zu warten."
