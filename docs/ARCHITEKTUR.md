@@ -16,7 +16,7 @@ nicht gibt. Deshalb vorweg:
 | Bundler, Transpiler | Kein Webpack, kein Vite, kein Babel |
 | Framework | Kein React, kein Vue. ES5-kompatibles JavaScript, direkt im Browser |
 | `node_modules` im Wurzelverzeichnis | nur unter `functions/` und `tests/rules/` |
-| Komponentendateien | 33.334 Zeilen in **einer** Datei (Stand 24.9.2026) |
+| Komponentendateien | 33.377 Zeilen in **einer** Datei (Stand 24.9.2026) |
 
 **Das ist eine Entscheidung, keine Nachlässigkeit.** Die Begründung
 steht in `README.md` unter „Warum es so gebaut ist". Kurzfassung: die
@@ -37,7 +37,7 @@ was.
 ┌─────────────────────────────────────────────────────────────┐
 │  BROWSER                                                     │
 │                                                              │
-│   index.html   ── die ganze Anwendung (33.334 Zeilen)        │
+│   index.html   ── die ganze Anwendung (33.377 Zeilen)        │
 │   konfig.js    ── alles, was sich je Kunde unterscheidet     │
 │   sw.js        ── Service Worker: Push, Offline              │
 │   demo-daten.js── ersetzt das SDK, wenn ?demo in der Adresse │
@@ -286,7 +286,7 @@ Node 22. `npm audit --omit=dev` meldete zuletzt **0 Lücken**.
 
 | | Wofür |
 |---|---|
-| `playwright` + Chromium | 133 Durchläufe über die echte Oberfläche |
+| `playwright` + Chromium | 134 Durchläufe über die echte Oberfläche |
 | `@firebase/rules-unit-testing` 4.0.1 | Regeltests im Emulator |
 | `firebase-tools` 14.27.0 | **feste Version, ohne `^`** |
 
@@ -318,7 +318,7 @@ Getrennt nach **nachgewiesenem Problem** und **Verbesserungsvorschlag**.
 
 | | Warum |
 |---|---|
-| 33.334 Zeilen in einer Datei | bewusst so; der Preis ist Auffindbarkeit |
+| 33.377 Zeilen in einer Datei | bewusst so; der Preis ist Auffindbarkeit |
 | Flache Altpfade neben Firmenpfaden | verdoppelt jeden Auslöser |
 | Zwei stillgelegte Seiten im Repo | `marketing.html`, `wachstum.html` — greifen noch flach zu |
 | Auskunft nach Art. 15 ist Handarbeit | überschaubar zu bauen |

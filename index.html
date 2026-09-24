@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-5u5vzdsipua/zJPDiorqy6k0vvTRxxukt8LLaI7+Rks='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-TTlB6qVqt0+yNP5UxSArS6SSacVRGsVMMeqfYbGGO6c='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -15099,7 +15099,27 @@ var NAVGROUPS = [
    fährt aus ihr heraus. Ein Fenster hätte einen zweiten Weg zum
    Schliessen gebraucht und wäre ein dritter Ort gewesen, an dem
    Navigation stattfindet. */
-var NEU_LEISTE = ['g-start','g-arbeit','g-komm','g-alles'];
+/* ── Putzplan statt Nachrichten (Runde 103, P5) ──
+   Aus dem Betrieb, 24.9.2026: „der am meisten benutzte Bereich [ist]
+   der Aufgaben- und Putzplan-Bereich und der Startbildschirm, aber der
+   Chat eher wenig".
+
+   Also steht unten, was am meisten gedrückt wird. Die Nachrichten
+   liegen unter „Alles" (zwei Tipps), und Ungelesenes geht nicht
+   verloren: „Alles" trägt den Punkt jeder Gruppe, die unten keinen
+   eigenen Knopf hat (updateNavMarkers), und die Startseite nennt es
+   unter „Neu für dich".
+
+   Ist der Putzplan abgeschaltet, rückt „Nachrichten" an seine Stelle —
+   ein Platz in dieser Leiste bleibt nie leer. */
+var NEU_LEISTE = ['g-start','g-arbeit','g-putz','g-alles'];
+function neuLeisteGruppen(gruppen){
+  var nach={};
+  seitenGruppen(gruppen).forEach(function(g){ nach[g.id]=g; });
+  return NEU_LEISTE.map(function(id){
+    return nach[id] || (id==='g-putz' ? nach['g-komm'] : null);
+  }).filter(Boolean);
+}
 /* „Betrieb" und „Chat" sind kurz, aber keins von beidem sagt, was
    dahinter liegt. Ein neuer Mitarbeiter sucht „Aufgaben", nicht
    „Betrieb". Die Reiterzeile darunter nennt weiterhin die einzelne
@@ -15434,6 +15454,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-24-p5', datum:'24.9.2026', titel:'Handy: Putzplan unten in der Leiste', wo:'putzplan', punkte:[
+    'Unten stehen jetzt Start, Aufgaben, Putzplan und Alles — der Putzplan ist ein Tipp statt zwei.',
+    'Die Nachrichten findest du unter „Alles“. Kommt etwas Neues, steht der Punkt an „Alles“, und die Startseite nennt es unter „Neu für dich“.',
+    'Der Vorschlag für die Schnellzugriffe nennt statt des Putzplans jetzt „Meine Woche“. Wer selbst gewählt hat, behält seine Wahl.' ] },
   { id:'2026-09-24-p4', datum:'24.9.2026', titel:'PC: Putzplan mit einem Klick, Schnellzugriffe links', wo:'putzplan', punkte:[
     'Die Seitenleiste am PC steht jetzt nach Nutzung: Start, Aufgaben, Putzplan — dann Ich, Nachrichten, Team.',
     'Der Putzplan hat links einen eigenen Eintrag: ein Klick statt zwei. Unter „Aufgaben“ steht er weiterhin als Reiter.',
@@ -15541,9 +15565,13 @@ function renderNeu(){
    OHNE EIGENE WAHL steht ein Vorschlag je Rolle da. Eine leere Zeile
    erklärt nicht, wofür sie da ist; drei brauchbare Ziele tun es. */
 var SCHNELL_MAX = 3;
+/* Seit P5 steht der Putzplan unten in der Leiste und am PC links als
+   eigener Eintrag. Als Schnellzugriff wäre er ein dritter Weg an
+   dieselbe Stelle; an seinen Platz rückt die Woche mit den eigenen
+   Schichten. Wer selbst gewählt hat, behält seine Wahl. */
 var SCHNELL_VORSCHLAG = {
-  mitarbeiter: ['putzplan', 'ich:daten', 'geraete'],
-  leiter:      ['team:schicht', 'chef:anliegen', 'putzplan'],
+  mitarbeiter: ['ich:woche', 'ich:daten', 'geraete'],
+  leiter:      ['team:schicht', 'chef:anliegen', 'ich:woche'],
   chef:        ['chef:ueberblick', 'team:schicht', 'chef:anliegen']
 };
 function schnellSchluessel(e){
@@ -15754,17 +15782,20 @@ function navAktivSetzen(){
      (Ich, Team, Verwaltung), trägt „Alles" die Marke. Sonst zeigt die
      Leiste auf nichts, und man weiss beim Blick nach unten nicht, wo
      man ist — genau das, was die vier Knöpfe besser machen sollen. */
-  if(layoutNeu() && NEU_LEISTE.indexOf(g.id)<0){
+  if(layoutNeu() && !document.querySelector('.mn-reihe [data-group="'+g.id+'"]')){
     var al=document.querySelector('.mn-reihe [data-group="g-alles"]');
     if(al) al.classList.add('active');
   }
-  /* Im Putzplan zeigt die Seitenleiste auf „Putzplan", nicht auf
-     „Aufgaben" — auch wenn er zur selben Gruppe gehört. */
-  var pz=document.querySelector('.side [data-group="g-putz"]');
-  if(pz && currentView==='putzplan'){
-    pz.classList.add('active');
-    var ar=document.querySelector('.side [data-group="g-arbeit"]');
-    if(ar) ar.classList.remove('active');
+  /* Im Putzplan zeigen Seitenleiste UND untere Leiste auf „Putzplan",
+     nicht auf „Aufgaben" — auch wenn er zur selben Gruppe gehört. */
+  if(currentView==='putzplan'){
+    ['.side', '.mn-reihe'].forEach(function(wo){
+      var pz=document.querySelector(wo+' [data-group="g-putz"]');
+      if(!pz) return;
+      pz.classList.add('active');
+      var ar=document.querySelector(wo+' [data-group="g-arbeit"]');
+      if(ar) ar.classList.remove('active');
+    });
   }
   gruppenMarker();
 }
@@ -15822,9 +15853,8 @@ function buildNav(){
      24 Ziele statt dreier Gruppen. */
   var reihe=document.createElement('div');
   reihe.className='mn-reihe';
-  NEU_LEISTE.forEach(function(id){
-    var g=gruppen.filter(function(x){ return x.id===id; })[0];
-    if(g) reihe.appendChild(navKnopf(g,'unten'));
+  neuLeisteGruppen(gruppen).forEach(function(g){
+    reihe.appendChild(navKnopf(g,'unten'));
   });
   mob.appendChild(reihe);
   buildSubNav();
@@ -16568,7 +16598,7 @@ function updateNavMarkers(){
      das verschwindet ein ungelesener Punkt hinter der Liste und
      niemand macht sie auf. */
   map['g-alles']=NAVGROUPS.some(function(g){
-    return NEU_LEISTE.indexOf(g.id)<0 && map[g.id];
+    return map[g.id] && !document.querySelector('.mn-reihe [data-group="'+g.id+'"]');
   });
   document.querySelectorAll('[data-ndot]').forEach(function(d){
     var on = !!map[d.dataset.ndot] && currentView!==d.dataset.ndot;
@@ -17716,15 +17746,28 @@ function tourSchritte(){
       text:'Gerät piept, Handtücher alle, Kunde kommt nicht? Hier drückst '+
            'du und tippst in eigenen Worten, was los ist. Was du selbst '+
            'herausfindest, hältst du an derselben Stelle fest.' },
-    { view:'chat', ziel:'.mobnav [data-group="g-komm"], #side [data-group="g-komm"]',
+    /* Der Putzplan hat im neuen Design einen eigenen Knopf (Runde 103,
+       P4/P5) — der meistgenutzte Bereich bekommt einen eigenen Schritt.
+       Im bisherigen Design zeigt er auf den Reiter unter „Aufgaben". */
+    { view:'putzplan', ziel:'.mobnav [data-group="g-putz"], #side [data-group="g-putz"], [data-subview="putzplan"]',
+      titel:'Der Putzplan',
+      text:'Was heute, diese Woche oder einmalig zu putzen ist, nach Studio. '+
+           'Abhaken mit einem Tipp; wer abhakt, steht am Punkt.' },
+    /* Am Handy stehen die Nachrichten seit P5 unter „Alles" — die
+       Führung zeigt dann dorthin statt ins Leere. */
+    { view:'chat', ziel:'.mobnav [data-group="g-komm"], #side [data-group="g-komm"], .mobnav [data-group="g-alles"]',
       titel:'Nachrichten',
       text:'Teamchat je Studio, Direktnachrichten an einzelne Personen und '+
-           'die Infos der Leitung. Ungelesenes trägt einen Punkt.' },
+           'die Infos der Leitung. Ungelesenes trägt einen Punkt'+
+           (layoutNeu() ? ' — am Handy liegen sie unter „Alles".' : '.') },
     { view:'ich', ziel:'.mobnav [data-group="g-alles"], #side [data-group="g-ich"]',
       titel:'Deine Woche, deine Zeiten',
       text:'Deine Schichten, deine Termine, deine gestempelten Stunden und '+
            'deine Nachweise. Am Handy liegt der Bereich hinter „Alles".' }
   ];
+  /* Abgeschaltet ist abgeschaltet: kein Schritt, der auf eine Seite
+     führt, die es in diesem Betrieb nicht gibt. */
+  if(!ansichtAn('putzplan')) s=s.filter(function(x){ return x.view!=='putzplan'; });
   if(canManage()){
     s.push({ view:'team', ziel:'#view-team .view-head, #view-team',
       titel:'Das Team',

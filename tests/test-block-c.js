@@ -39,8 +39,20 @@ async function seite(b, rolle, ruhig) {
   await p.waitForTimeout(400);
   return p;
 }
+/* Wie ein Mensch: erst unten in der Leiste, sonst über „Alles". Seit
+   Runde 103, P5 liegen die Nachrichten unter „Alles". */
 async function nav(p, wort) {
-  await p.evaluate(w => [...document.querySelectorAll('.mobnav button')].find(x => x.textContent.includes(w)).click(), wort);
+  const direkt = await p.evaluate(w => {
+    const k = [...document.querySelectorAll('.mobnav button')].find(x => x.textContent.includes(w));
+    if (k) k.click();
+    return !!k;
+  }, wort);
+  if (!direkt) {
+    await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => x.textContent.includes('Alles')).click());
+    await p.waitForTimeout(600);
+    await p.evaluate(w => (w === 'Nachrichten' ? document.querySelector('#allesSeite [data-alles="chat"]')
+      : [...document.querySelectorAll('#allesSeite [data-alles]')].find(x => x.textContent.includes(w))).click(), wort);
+  }
   await p.waitForTimeout(900);
 }
 const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'checkPop').length;

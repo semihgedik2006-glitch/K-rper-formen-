@@ -122,8 +122,12 @@ async function seite(b, stub, such, breite) {
     console.log('NEU:', JSON.stringify(neu));
     pruefe('body trägt die Klasse „neu"', neu.klasse === true);
     pruefe('unten stehen vier Knöpfe', neu.reihe.length === 4, JSON.stringify(neu.reihe));
-    pruefe('und zwar Start, Aufgaben, Nachrichten, Alles',
-      neu.reihe.join('|') === 'Start|Aufgaben|Nachrichten|Alles', JSON.stringify(neu.reihe));
+    /* Seit Runde 103, P5 steht der Putzplan an dritter Stelle, die
+       Nachrichten liegen unter „Alles". Aus dem Betrieb, 24.9.2026:
+       „der am meisten benutzte Bereich [ist] der Aufgaben- und
+       Putzplan-Bereich … aber der Chat eher wenig". */
+    pruefe('und zwar Start, Aufgaben, Putzplan, Alles',
+      neu.reihe.join('|') === 'Start|Aufgaben|Putzplan|Alles', JSON.stringify(neu.reihe));
     pruefe('die Schublade ist beim Start zu', neu.ladeZu === true);
     pruefe('der Bereichskopf trägt einen sichtbaren Griff', neu.griff === true);
   }

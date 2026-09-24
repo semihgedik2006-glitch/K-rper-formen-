@@ -311,8 +311,17 @@ async function messen(p) {
         return c.backgroundImage !== 'none' ? c.backgroundImage : c.backgroundColor;
       };
       const vor = f();
-      const k = document.querySelector('.mobnav [data-group="g-komm"]') ||
-                document.querySelector('.nav [data-group="g-komm"]');
+      /* Putzplan (Orange, Gruppe Betrieb) statt Nachrichten (Teal): seit
+         Runde 103, P5 steht der Putzplan unten an genau der Stelle, an
+         der die Nachrichten standen. Gemessen wird weiter ein Wechsel
+         von Start in einen Bereich anderer Farbe.
+         Zuerst mit „Aufgaben" versucht: dort fiel die Probe bei 90 ms in
+         einem von drei Läufen VOR das erste Bild — die Aufgaben brauchen
+         bis dahin 250–550 ms (CPU ÷4, vor P1 genauso gemessen). Das ist
+         kein Sprung der Farbe, sondern eine langsame Seite; sie steht in
+         docs/BEKANNTE-PROBLEME.md. Der Putzplan zeichnet in 120–330 ms. */
+      const k = document.querySelector('.mobnav [data-group="g-putz"]') ||
+                document.querySelector('.nav [data-group="g-putz"]');
       if (!k) return null;
       k.click();
       const proben = []; let letzte = 0;
