@@ -28,13 +28,27 @@ keinen leeren Rahmen.
 
 **Vor jeder Änderung an Knöpfen den Skill `knoepfe` lesen**
 (`.claude/skills/knoepfe/`). Danach nachmessen: jedes Bedienelement bei
-320 / 390 / 430 / 820 px, mindestens 44 × 44 px und im Bild. Gemessen,
-nicht angesehen.
+320 / 390 / 430 / 820 px **und am Rechner (1280 / 1440 / 1920 px)**,
+mindestens 44 × 44 px und im Bild. Gemessen, nicht angesehen.
 
 Die sichtbare Grösse reicht nicht: gemessen wird die **Trefferfläche**
 per Hit-Test (`elementFromPoint`), in der Dichte „normal" **und**
 „kompakt". Ein unsichtbar vergrösserter Knopf kann vom Scroll-Bereich
 abgeschnitten werden — „alle 5 ›" traf so nur 35 px hoch.
+
+## Der PC ist das Hauptgerät
+
+> „bitte leg genau so viel Fokus auf die PC-Nutzung wie auf die
+> Handy-Nutzung … obwohl das das Hauptgerät ist, welches wir aktuell
+> nutzen" (24.9.2026)
+
+- **Jede Änderung wird auch am Rechner angesehen und gemessen**: 1280 ×
+  800, 1440 × 900 und 1920 × 1080, zusätzlich zu 320 / 390 / 430 / 820.
+- **„Passt aufs Handy" ist nicht fertig.** Eine Ansicht, die am Rechner
+  eine Spalte über 1.200 px zieht, ist dort genauso ungestaltet wie ein
+  abgeschnittener Knopf auf dem Handy. Breite nutzen: zwei Spalten,
+  Liste + Detail, Tastenkürzel, Hover.
+- Im Bericht stehen die Zahlen für beide Geräte, nicht nur fürs Handy.
 
 ## Mergen
 
