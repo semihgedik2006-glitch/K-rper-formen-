@@ -5498,6 +5498,11 @@ body.neu .neu-pille{display:inline-flex;align-items:center;gap:var(--s6);
   background:var(--bg-2);color:var(--accent-d);font-family:var(--font-body);
   font-size:var(--t-sm);font-weight:700;box-shadow:inset 0 1px 0 var(--kante), var(--e1)}
 body.neu .neu-pille[hidden]{display:none}
+/* Auf sehr kurzen Bildschirmen (iPhone SE, 568 px) nicht: dort bricht
+   die Kopfzeile mit der Pille in eine zweite Reihe um, und die
+   Startseite passte nicht mehr ohne Scrollen (339 px in 332,
+   test-neu-design). Die Liste bleibt unter „Alles → Was ist neu". */
+@media(max-height:640px){ body.neu .neu-pille{display:none} }
 body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
 .neu-eintrag{padding:var(--s12) 0;border-top:1px solid var(--line)}
 .neu-eintrag:first-child{border-top:none;padding-top:0}

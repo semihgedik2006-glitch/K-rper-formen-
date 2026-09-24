@@ -11407,4 +11407,14 @@ Betrieb es firmenweit eingeschaltet hat, kann ich von hier nicht sehen
   - kein Danke-Knopf an offenen Aufgaben;
   - kein Zähler je Person.
 - **Regeln:** 17 Dateien, 1.177 Einzelprüfungen, alle grün.
-- **Oberfläche gesamt:** GESAMT_D
+- **Oberfläche gesamt:** 129 Durchläufe. Einer war rot, zweimal zu
+  Recht:
+  - **Der Test:** `test-neu-design` kannte als Zeile in „Alles", die ein
+    Fenster öffnet statt einer Seite, nur „Hilfe im Studio". „Was ist
+    neu" ist dieselbe Art; der Test prüft jetzt, dass sein Fenster
+    aufgeht.
+  - **Die App:** Beim iPhone SE (568 px hoch) brach die Kopfzeile mit
+    der „Neu"-Pille um, und die Startseite war 339 px hoch in 332 Platz.
+    Unter 640 px Höhe steht die Pille deshalb nicht da; die Liste bleibt
+    unter „Alles".
+  - **Danach** grün, die übrigen 128 waren sauber.
