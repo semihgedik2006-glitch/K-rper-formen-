@@ -591,6 +591,30 @@
       id: 't-' + k + '-frei', title: 'Neue Probetrainings einpflegen', desc: '',
       done: false, createdBy: 'Geschäftsführung', ts: vorTag(1)
     });
+    /* Runde 103 (Idee D1): im ersten eigenen Studio ist die erste
+       erledigte Aufgabe vom Betrachter selbst, und ein Kollege hat
+       Danke gesagt — sonst zeigt die Vorführung das Danke nie. Ohne
+       Zufallsziehung (leuteIn statt jemandIn), damit sich die übrigen
+       Demo-Daten nicht verschieben. */
+    if ((ICH.studioKeys || [])[0] === k) {
+      /* Erledigtes ohne Wiederholung wandert nach ein paar Stunden ins
+         Archiv und steht dann nicht mehr in der Liste. Beide Beispiele
+         sind deshalb frisch erledigt: eins vom Betrachter (mit Danke),
+         eins von einem Kollegen (zum Danke-Sagen). */
+      var fertige = todos.filter(function (t) { return !t.recurring; });
+      var kol = leuteIn(k);
+      var eigene = fertige[0], fremde = fertige[1];
+      if (eigene && kol[0]) {
+        eigene.done = true; eigene.doneAt = Date.now() - 50 * 60000;
+        eigene.doneBy = ICH.name; eigene.doneByUid = ICH.id;
+        eigene.danke = {};
+        eigene.danke[kol[0].id] = { n: kol[0].name, ts: Date.now() - 20 * 60000, fuer: eigene.doneAt };
+      }
+      if (fremde && kol[1]) {
+        fremde.done = true; fremde.doneAt = Date.now() - 35 * 60000;
+        fremde.doneBy = kol[1].name; fremde.doneByUid = kol[1].id;
+      }
+    }
     legen(P('studios/' + k + '/todos'), todos);
 
     var putz = [];

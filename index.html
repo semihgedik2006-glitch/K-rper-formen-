@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ESIebl6d+bBHct9WA2Z+b3dqv1gC4/ZEc/Na/zO9BE0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-H9IKq7yGk8Kvfowz3wz/tzxbRoRdeJRsQJLgK0kbcT0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1642,11 +1642,11 @@ body.nurlesen .kopf-plus{display:none !important}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -2523,6 +2523,31 @@ body.nurlesen .kopf-plus{display:none !important}
 .studio-check:active,.card[data-go]:active,
 .chef-go:active,.doc:active,.dev-item:active{transform:scale(.965)}
 .btn-primary:hover{transform:translateY(-2px)}
+
+/* ── Danke an der erledigten Aufgabe (Runde 103) ──
+   Ein eigener kleiner Knopf unter dem Fuss der Zeile: 44 px hoch,
+   Pille, das Herz in der Farbe der Aufgabenliste. „Bedankt" ist
+   gefüllt — ein Zustand, der sich ohne Farbe allein erkennen lässt
+   (Wort und aria-pressed). Kein Zähler, siehe dankeHTML(). */
+.t-danke-zeile{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s6)}
+.t-danke{display:inline-flex;align-items:center;gap:var(--s6);min-height:44px;
+  padding:0 var(--s12);border-radius:var(--r-pille);cursor:pointer;
+  border:1.5px solid var(--line-2);background:var(--auf-1);color:var(--text-2);
+  font-family:var(--font-body);font-size:var(--t-sm);font-weight:600}
+.t-danke svg{width:16px;height:16px}
+.t-danke.an{border-color:var(--accent);background:var(--accent-glow);color:var(--accent-d)}
+.t-danke.an svg{fill:currentColor}
+.t-danke-von{display:inline-flex;align-items:center;gap:var(--s4);
+  font-size:var(--t-xs);color:var(--text-2)}
+.t-danke-von svg{width:14px;height:14px;color:var(--accent-d);fill:currentColor}
+/* Erledigte Zeilen sind blass (.todo.done{opacity:.58}) — der
+   Danke-Knopf darin darf es nicht sein: blass hiesse „nicht mehr
+   bedienbar", und der Kontrast fiele unter 4,5 : 1. Deshalb wird bei
+   solchen Zeilen nicht die Zeile, sondern jedes Teil AUSSER dem Danke
+   zurückgenommen. */
+.todo.done:has(.t-danke-zeile){opacity:1}
+.todo.done:has(.t-danke-zeile) .swipe-body > :not(.t-body),
+.todo.done:has(.t-danke-zeile) .t-body > :not(.t-danke-zeile){opacity:.58}
 
 /* Häkchen federt beim Erledigen nach — NUR das eben abgehakte.
    Bis Runde 103 stand hier `.todo.done .check`: die Feder lief bei JEDEM
@@ -5461,6 +5486,30 @@ body.neu .heute-rest{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8
 body.neu .heute-rest .hr-wort{font-family:var(--font-head);font-weight:700;
   font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
   color:var(--text-3);margin-right:var(--s4)}
+/* ── „Neu" im Bereichskopf und das Fenster „Was ist neu" (Runde 103) ──
+   Die Pille sitzt rechts im Kopf der Startseite, wo auf anderen Seiten
+   „+ Neu" steht — kein zusätzlicher Platz, auf PC und Handy dieselbe
+   Stelle. Der Punkt ist Akzent, keine Statusfarbe: „neu" ist keine
+   Warnung. */
+.neu-pille{display:none}
+body.neu .neu-pille{display:inline-flex;align-items:center;gap:var(--s6);
+  margin-left:auto;margin-bottom:var(--s8);min-height:44px;padding:0 var(--s16);
+  border-radius:var(--r-pille);border:1.5px solid var(--accent);cursor:pointer;
+  background:var(--bg-2);color:var(--accent-d);font-family:var(--font-body);
+  font-size:var(--t-sm);font-weight:700;box-shadow:inset 0 1px 0 var(--kante), var(--e1)}
+body.neu .neu-pille[hidden]{display:none}
+body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
+.neu-eintrag{padding:var(--s12) 0;border-top:1px solid var(--line)}
+.neu-eintrag:first-child{border-top:none;padding-top:0}
+.ne-kopf{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s8);flex-wrap:wrap}
+.ne-kopf b{font-size:var(--t-md)}
+.ne-kopf span{font-size:var(--t-xs);color:var(--text-2)}
+.ne-kopf i{font-style:normal;color:var(--accent-d);font-weight:700}
+.neu-eintrag ul{margin:var(--s6) 0 var(--s8);padding-left:var(--s20);font-size:var(--t-sm);
+  color:var(--text);line-height:var(--lh)}
+.neu-eintrag li{margin:var(--s2) 0}
+.ne-zeigen{min-height:44px}
+
 /* ── Schnellzugriffe (Runde 103) ──
    Vier gleich breite Felder: drei Ziele und „Anpassen". Zeichen über
    dem Wort, weil bei 320px ein Feld nur 66px breit ist — daneben
@@ -6036,6 +6085,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <span class="bk-ikon" id="bkIkon" aria-hidden="true"></span>
           <span class="bk-txt"><b id="bkTitel"></b><i id="bkSub"></i></span>
         </button>
+        <!-- „Neu" (Runde 103): steht nur auf der Startseite und nur, wenn
+             seit dem letzten Blick etwas ausgeliefert wurde. Aus dem
+             Betrieb: „nach jedem Merge einen Unterschied sehen oder es
+             zumindest nachvollziehen können". -->
+        <button type="button" class="neu-pille" id="neuPille" hidden
+                aria-haspopup="dialog" title="Was ist neu in der App">
+          <span class="np-punkt" aria-hidden="true"></span>Neu</button>
       </div>
 
       <!-- Die Schublade. Derselbe Inhalt wie die Seite „Alles", nur
@@ -7997,6 +8053,16 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <p class="hint" style="margin:0 0 10px">Die Liste zeigt danach nur dieses
       Studio. Sortiert nach Rückstand.</p>
     <div id="studioWahlListe"></div>
+  </div>
+</div>
+
+<!-- Was ist neu (Runde 103). Dieselbe Bauform wie die Auswahlfenster. -->
+<div id="neuModal">
+  <div class="pm-box">
+    <button class="lb-close" id="neuClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 style="margin-bottom:4px">Was ist neu</h3>
+    <p class="hint" style="margin:0 0 12px" id="neuStand"></p>
+    <div id="neuListe"></div>
   </div>
 </div>
 
@@ -13035,7 +13101,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal','schnellModal'];
+               'putzModal','schnellModal','neuModal'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -15076,6 +15142,9 @@ function allesGruppen(){
      was:'Wenn es jetzt klemmt: 115 Probleme, Schritt für Schritt'},
     {label:'Schulung',      view:'schulung', ikon:'schulung',
      was:'Vorher wissen, wie es geht — Webinare mit Fragen'},
+    /* Runde 103: jede Auslieferung, nachvollziehbar. */
+    {label:'Was ist neu', neu:true, roh:ikon('stern'),
+     was: NEUIGKEITEN.length ? 'Zuletzt: '+NEUIGKEITEN[0].titel : 'Was sich zuletzt geändert hat'},
   ]);
   /* Aus FEATURES abgeleitet: dieselben vier Schalter, dieselben
      Beschriftungen, dieselbe Reihenfolge wie im System-Reiter. */
@@ -15122,6 +15191,7 @@ function allesGruppen(){
 function allesZielAttr(e){
   return ' data-alles="'+esc(e.view||'')+'"'+
     (e.hilfe   ?' data-al-hilfe="1"':'')+
+    (e.neu     ?' data-al-neu="1"':'')+
     (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
     (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
     (e.cgo    ?' data-al-cgo="'+esc(e.cgo)+'"':'');
@@ -15151,6 +15221,7 @@ function allesZiel(el){
   /* Die Hilfe ist keine Seite. Sie legt sich über das, was gerade da
      ist — also wird hier nicht gewechselt, sondern geöffnet. */
   if(el.getAttribute('data-al-hilfe')){ hilfeOeffnen(); return; }
+  if(el.getAttribute('data-al-neu')){ neuOeffnen(); return; }
   showView(view);
   var t=el.getAttribute('data-al-teamtab');
   if(t){ var tb=document.querySelector('[data-teamtab="'+t+'"]'); if(tb) tb.click(); }
@@ -15171,6 +15242,84 @@ function renderAlles(){
     var box=$(id); if(!box) return;
     box.innerHTML=html;
     allesBinden(box);
+  });
+}
+
+/* ══ WAS IST NEU ═════════════════════════════════════════════════════
+   Aus dem Betrieb, 24.9.2026: „sorge bitte dafür, dass man nach jedem
+   Merge einen Unterschied auch sehen kann in der App oder es zumindest
+   nachvollziehen kann."
+
+   JEDE AUSLIEFERUNG TRÄGT HIER EINEN EINTRAG (steht in CLAUDE.md). Der
+   oberste ist der Stand, der gerade läuft. Wer die App nach einer
+   Auslieferung öffnet, sieht auf der Startseite oben „Neu"; ein Tipp
+   zeigt die Liste und gilt als gesehen. Dauerhaft liegt sie unter
+   „Alles → Was muss ich wissen? → Was ist neu".
+
+   Geschrieben für die, die die App benutzen — nicht für die, die sie
+   bauen: was man sieht und wo, kein Dateiname. `wo` ist ein Schlüssel
+   wie bei den Schnellzugriffen; „Zeigen ›" führt dorthin.
+
+   Gemerkt am Gerät (PREFS.neuGesehen): ein „gesehen" muss nicht in die
+   Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
+   genauso neu. */
+var NEUIGKEITEN = [
+  { id:'2026-09-24-d', datum:'24.9.2026', titel:'Danke an erledigten Aufgaben', wo:'todos', punkte:[
+    'An einer erledigten Aufgabe eines Kollegen steht jetzt „Danke“ — ein Tipp genügt, ein zweiter nimmt es zurück.',
+    'Wer ein Danke bekommen hat, sieht es an der Aufgabe und oben auf der Startseite unter „Neu für dich“.',
+    'Kein Zähler, keine Rangliste: das Danke steht an der Sache, nicht an der Person.',
+    'Und diese Liste ist neu: nach jeder Auslieferung steht auf der Startseite oben „Neu“.' ] },
+  { id:'2026-09-24-c', datum:'24.9.2026', titel:'Abhaken fühlt sich besser an', wo:'todos', punkte:[
+    'Beim Abhaken federt genau der eine Haken — vorher sprangen alle erledigten mit.',
+    'Das kurze grüne Aufleuchten der Zeile ist wieder zu sehen.',
+    'Der Senden-Knopf im Chat federt einmal.',
+    'Startseite: Zeilen etwas eckiger, Knöpfe rund — ein Versuch, der sich leicht zurücknehmen lässt.' ] },
+  { id:'2026-09-24-b', datum:'24.9.2026', titel:'Meine Woche und Schichttausch', wo:'ich:woche', punkte:[
+    'Meine Woche: oben ein Streifen Mo–So mit Punkten; ein Tipp auf einen Tag zeigt nur diesen Tag.',
+    'Startseite: „Zum Übernehmen“ zeigt Schichten, die Kollegen abgeben. Die Leitung sieht zuerst, was auf ihre Bestätigung wartet.' ] },
+  { id:'2026-09-24-a', datum:'24.9.2026', titel:'Schnellzugriffe, Anlegen unten, Studio-Kacheln', wo:'home', punkte:[
+    'Startseite unten: drei eigene Schnellzugriffe — „Anpassen“ zum Wählen.',
+    'Handy: „+ Aufgabe“, „+ Putzaufgabe“ und „+ Probetraining“ sitzen unten rechts, wo der Daumen ist.',
+    'Verwaltung → Überblick: die Studios als Kacheln, das mit dem meisten Rückstand gross.' ] }
+];
+function neuUngesehen(){
+  var g=PREFS.neuGesehen||'';
+  return NEUIGKEITEN.length && NEUIGKEITEN[0].id!==g;
+}
+function neuPilleSetzen(){
+  var b=$('neuPille'); if(!b) return;
+  b.hidden = !(layoutNeu() && session && currentView==='home' && neuUngesehen());
+}
+function neuOeffnen(){
+  var m=$('neuModal'); if(!m) return;
+  renderNeu();
+  m.classList.add('show');
+  PREFS.neuGesehen = NEUIGKEITEN.length ? NEUIGKEITEN[0].id : '';
+  savePrefs();
+  neuPilleSetzen();
+}
+function neuSchliessen(){ var m=$('neuModal'); if(m) m.classList.remove('show'); }
+function renderNeu(){
+  var box=$('neuListe'), stand=$('neuStand'); if(!box) return;
+  var gesehen=PREFS.neuGesehen||'';
+  var kat=schnellKatalog();
+  if(stand) stand.textContent = NEUIGKEITEN.length
+    ? 'Stand der App: '+NEUIGKEITEN[0].datum+' · '+NEUIGKEITEN[0].titel : '';
+  var neuBis = -1;
+  NEUIGKEITEN.forEach(function(n, i){ if(neuBis<0 && n.id===gesehen) neuBis=i; });
+  box.innerHTML = NEUIGKEITEN.map(function(n, i){
+    var frisch = gesehen && (neuBis<0 || i<neuBis);
+    var ziel = n.wo && (n.wo==='home' ? { e:{ view:'home' } } : kat.nach[n.wo]);
+    return '<section class="neu-eintrag'+(frisch?' frisch':'')+'">'+
+      '<div class="ne-kopf"><b>'+esc(n.titel)+'</b><span>'+esc(n.datum)+
+        (frisch?' · <i>neu für dich</i>':'')+'</span></div>'+
+      '<ul>'+n.punkte.map(function(t){ return '<li>'+esc(t)+'</li>'; }).join('')+'</ul>'+
+      (ziel ? '<button type="button" class="btn btn-ghost btn-sm ne-zeigen"'+
+        allesZielAttr(ziel.e)+'>Zeigen ›</button>' : '')+
+      '</section>';
+  }).join('');
+  box.querySelectorAll('[data-alles]').forEach(function(b){
+    b.addEventListener('click', function(){ neuSchliessen(); allesZiel(b); });
   });
 }
 
@@ -15208,7 +15357,7 @@ var SCHNELL_VORSCHLAG = {
   chef:        ['chef:ueberblick', 'team:schicht', 'chef:anliegen']
 };
 function schnellSchluessel(e){
-  var basis = e.hilfe ? 'hilfe' : (e.view||'');
+  var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.view||''));
   var unter = e.teamtab || e.ichtab || e.cgo || '';
   return unter ? basis+':'+unter : basis;
 }
@@ -15864,6 +16013,7 @@ function bereichKopfSetzen(){
     su.classList.toggle('warn', g.id==='g-arbeit' && bereichZahlen().ueber>0);
   }
   kopfPlusUmhaengen();
+  neuPilleSetzen();
 }
 
 /* Reiter innerhalb der aktuellen Gruppe (oben unter der Kopfzeile) */
@@ -21208,6 +21358,7 @@ function heuteZeile(k){
     (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+
     (k.ichtab?' data-hichtab="'+esc(k.ichtab)+'"':'')+
     (k.teamtab?' data-hteamtab="'+esc(k.teamtab)+'"':'')+
+    (k.danke?' data-hdanke="1"':'')+
     (k.datum?' data-hdatum="'+esc(k.datum)+'"':'')+
     (k.cgo?' data-hcgo="'+esc(k.cgo)+'"':'')+'>'+
     '<span class="hz-ikon">'+k.ikon+'</span>'+
@@ -21336,6 +21487,20 @@ function renderHeute(){
       var pin=meine.filter(function(a){ return a.pinned; })[0];
       if(pin) lesen.push({ art:'lesen', ziel:'ann', ikon:ikon('anheften'),
         titel:'Angeheftet', unter:(pin.text||'').replace(/\s+/g,' ').slice(0,70) });
+    }
+  }
+  /* Danke an meine Erledigungen (Runde 103, Idee D1). Oben in „Neu für
+     dich": Anerkennung, die man nicht sieht, ist keine. */
+  if(ansichtAn('todos')){
+    var dank=dankeFuerMich();
+    if(dank.length){
+      var vonWem=[]; dank.forEach(function(x){ if(vonWem.indexOf(x.von)<0) vonWem.push(x.von); });
+      lesen.unshift({ art:'lesen', ziel:'todos', danke:true, ikon:ikon('herz'),
+        titel: dank.length===1 ? dank[0].von+' sagt Danke'
+             : (vonWem.length===1 ? vonWem[0]+' sagt '+dank.length+'× Danke'
+                                  : dank.length+'× Danke von '+vonWem.slice(0,2).join(', ')+(vonWem.length>2?' …':'')),
+        unter: dank.map(function(x){ return x.titel; }).filter(function(v,i,a){ return a.indexOf(v)===i; })
+                   .slice(0,2).join(' · ') });
     }
   }
   var dmN=0; try{ dmN=dmUnreadCount(); }catch(e){}
@@ -21525,6 +21690,9 @@ function heuteTippBinden(el){
         });
       }
       tick(8);
+      /* Gesehen ist gesehen: wer die Danke-Zeile antippt, bekommt sie
+         beim nächsten Mal nicht wieder als neu gezeigt. */
+      if(el.getAttribute('data-hdanke')) dankeGelesen();
       showView(el.getAttribute('data-heute'));
       /* Studio mitgeben, wo die Zeile eines nennt. `data-hsk` stand
          schon lange im Markup, gelesen hat es bis zum 23.9.2026
@@ -22194,13 +22362,13 @@ function loadMyShifts(force){
    Schreibrechte auf fremde Übergaben öffnen. Ein Zeitstempel im eigenen
    Bereich ist ein Schreibvorgang, braucht keine Regeländerung und
    verrät nichts. */
-var _gelesen={ ho:0, brett:0 };
+var _gelesen={ ho:0, brett:0, danke:0 };
 
 function ladeGelesenStand(){
   var ref=privatRef(); if(!ref) return;
   ref.get().then(function(d){
     var x=(d.exists && d.data()) || {};
-    _gelesen={ ho:+x.gelesenHo||0, brett:+x.gelesenBrett||0 };
+    _gelesen={ ho:+x.gelesenHo||0, brett:+x.gelesenBrett||0, danke:+x.gelesenDanke||0 };
     renderHomeLesen();
   }).catch(function(){ /* ohne Stand gilt alles als ungelesen — das ist
     die harmlosere Richtung: man sieht einen Punkt zu viel, nicht einen
@@ -25094,6 +25262,7 @@ function todoHTML(t,sk,chefView){
     grundHtml+
     (t.docUrl?'<a class="t-doc" href="'+safeUrl(t.docUrl)+'" target="_blank" rel="noopener">'+ikon('blatt')+' Dokument öffnen</a>':'')+
     '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+photoBtn+'</div>'+
+    dankeHTML(t, done)+
     photoHtml+'</div>'+
     /* Bearbeiten, Frist verschieben und Löschen lagen als 25 × 27 Pixel große
        Symbole am Rand jeder Zeile. Sie stecken jetzt im Aktionsblatt, das ein
@@ -25169,6 +25338,96 @@ function federn(el){
   ], { duration:380, easing:'cubic-bezier(.2,.8,.2,1)' });
 }
 
+/* ══ „DANKE" AN DER ERLEDIGTEN SACHE (Runde 103, Idee D1) ═══════════
+   Vorbild Blink/Kudos: das Danke dort, wo die Arbeit sichtbar ist —
+   an der erledigten Aufgabe, nicht als eigener Eintrag am Brett, für
+   den man an einen anderen Ort gehen und einen Text schreiben muss.
+
+   Gespeichert als Karte am Dokument: danke[kennung] = { n, ts, fuer }.
+   `fuer` ist das doneAt der Erledigung. Bei einer täglichen Aufgabe
+   gehört ein Danke von gestern nicht zu heute — es wird nicht
+   gelöscht, nur nicht mehr angezeigt, und die Regel lässt ein Danke
+   ohnehin nur für die aktuelle Erledigung zu (nurEigenesDanke() in
+   firestore.rules, beide Welten, tests/rules/danke.test.js).
+
+   BEWUSST NICHT: ein Zähler, eine Summe je Person, eine Rangliste.
+   Siehe docs/DESIGN-RECHERCHE.md, „Wovon ich abrate" — Leistungs- und
+   Verhaltenskontrolle unter Kollegen. Ein Danke steht an der Sache,
+   und wer es bekommen hat, sieht es auf seiner Startseite. Mehr nicht. */
+function dankeGueltig(t){
+  var d=t && t.danke; if(!d || typeof d!=='object') return [];
+  return Object.keys(d).map(function(uid){
+    var e=d[uid]||{};
+    return { uid:uid, n:String(e.n||''), ts:+e.ts||0, fuer:e.fuer };
+  }).filter(function(e){ return e.fuer===t.doneAt && e.n; })
+    .sort(function(a,b){ return a.ts-b.ts; });
+}
+function dankeHTML(t, done){
+  if(!done || !t.doneByUid || !session) return '';
+  var alle=dankeGueltig(t);
+  var ich=session.uid;
+  if(t.doneByUid===ich){
+    return alle.length
+      ? '<div class="t-danke-zeile"><span class="t-danke-von">'+ikon('herz')+
+        ' Danke von '+esc(alle.map(function(e){ return e.n; }).join(', '))+'</span></div>'
+      : '';
+  }
+  var meins=alle.some(function(e){ return e.uid===ich; });
+  var andere=alle.filter(function(e){ return e.uid!==ich; });
+  return '<div class="t-danke-zeile">'+
+    '<button type="button" class="t-danke'+(meins?' an':'')+'" data-tdanke="1" '+
+      'aria-pressed="'+(meins?'true':'false')+'" '+
+      'aria-label="'+esc((meins?'Danke zurücknehmen':'Danke sagen')+' an '+(t.doneBy||''))+'">'+
+      ikon('herz')+'<span>'+(meins?'Bedankt':'Danke')+'</span></button>'+
+    (andere.length ? '<span class="t-danke-von">auch von '+
+      esc(andere.map(function(e){ return e.n; }).join(', '))+'</span>' : '')+
+    '</div>';
+}
+/* Die ganze Karte wird geschrieben, wie bei den Reaktionen. Hat
+   inzwischen jemand anderes gedankt, lehnt die Regel ab (sie sieht, dass
+   ein fremder Eintrag fehlt) — dann steht eine Meldung da, und der
+   nächste Tipp nimmt den neuen Stand. Lieber einmal „nochmal tippen"
+   als ein verschlucktes Danke eines Kollegen. */
+function dankeUmschalten(sk, id, knopf){
+  var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
+  if(!t || !session) return;
+  var d={};
+  dankeGueltig(t).forEach(function(e){ d[e.uid]={ n:e.n, ts:e.ts, fuer:e.fuer }; });
+  /* Alte Einträge (für eine frühere Erledigung) bleiben unverändert
+     stehen — die Regel verbietet, fremde anzufassen, auch veraltete. */
+  Object.keys(t.danke||{}).forEach(function(uid){ if(!d[uid]) d[uid]=t.danke[uid]; });
+  var ich=session.uid;
+  var an = !!(d[ich] && d[ich].fuer===t.doneAt);
+  if(an) delete d[ich];
+  else d[ich]={ n:String(session.name||'').slice(0,80), ts:Date.now(), fuer:t.doneAt };
+  if(!an){ federn(knopf); tick(8); }
+  S('studios').doc(sk).collection('todos').doc(id).update({ danke:d })
+    .then(function(){ if(!an) toast('Danke an '+(t.doneBy||'')+' ✓'); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+/* Für die Startseite: Danke an MEINE Erledigungen, die ich noch nicht
+   gesehen habe. Nur aus dem, was ohnehin geladen ist. */
+function dankeFuerMich(){
+  if(!session) return [];
+  var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
+  var seit=+(_gelesen && _gelesen.danke)||0, raus=[];
+  keys.forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(t.doneByUid!==session.uid || !isDone(t)) return;
+      dankeGueltig(t).forEach(function(e){
+        if(e.uid!==session.uid && e.ts>seit) raus.push({ von:e.n, titel:t.title||'Aufgabe', ts:e.ts });
+      });
+    });
+  });
+  return raus.sort(function(a,b){ return b.ts-a.ts; });
+}
+function dankeGelesen(){
+  var jetzt=Date.now();
+  _gelesen.danke=jetzt;
+  var ref=privatRef(); if(!ref) return;
+  ref.set({ gelesenDanke:jetzt }, {merge:true}).catch(function(){});
+}
+
 function bindTodoClicks(area){
   area.querySelectorAll('.todo').forEach(function(node){
     var id=node.dataset.id, sk=node.dataset.sid;
@@ -25198,6 +25457,10 @@ function bindTodoClicks(area){
          Feld, der Durchlauf war gruen — geprueft wurde damit etwas, das
          die App gar nicht schreibt. */
       aufgabeHaken(sk, id, done).catch(function(e){ toast(errMsg(e),true); });
+    });
+    var dk=node.querySelector('[data-tdanke]');
+    if(dk) dk.addEventListener('click', function(e){
+      e.stopPropagation(); dankeUmschalten(sk, id, dk);
     });
     // Teilschritte abhaken
     node.querySelectorAll('[data-step]').forEach(function(li){
@@ -31764,6 +32027,11 @@ function bindActions(){
   if(swm) swm.addEventListener('click', function(e){
     if(e.target===swm) studioWaehlerSchliessen();
   });
+
+  // ── Was ist neu ──
+  var npl=$('neuPille'); if(npl) npl.addEventListener('click', function(){ tick(8); neuOeffnen(); });
+  var nc=$('neuClose'); if(nc) nc.addEventListener('click', neuSchliessen);
+  var nm=$('neuModal'); if(nm) nm.addEventListener('click', function(e){ if(e.target===nm) neuSchliessen(); });
 
   // ── Schnellzugriffe wählen ──
   var szl=$('schnellListe');

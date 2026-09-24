@@ -219,6 +219,15 @@ es auf ihrer Startseite unter „Neu für dich".
 Startseite). **Dagegen:** Zählen und Ranglisten — siehe unten, davon
 rate ich ab.
 
+> **Umgesetzt in Runde 103, zuerst an den Aufgaben.** Die Regel
+> `nurEigenesDanke()` steht in beiden Welten: nur der eigene Eintrag,
+> nur an einer erledigten Aufgabe, nicht an der eigenen, und nur für die
+> aktuelle Erledigung (bei täglichen Aufgaben gilt ein Danke von
+> gestern nicht für heute). Kein Zähler am Dokument. **Noch nicht** am
+> Putzplan: dort hakt oft das Empfangstablet ab, und ein Danke an den
+> „Studio-Zugang" erreicht niemanden — dafür bräuchte es erst die
+> Kürzel als Personen.
+
 ---
 
 ## E · Schulung

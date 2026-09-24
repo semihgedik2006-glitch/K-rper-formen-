@@ -684,6 +684,36 @@ service cloud.firestore {
       return ['done','doneBy','doneByUid','doneKuerzel','doneAt'];
     }
 
+    // ── „Danke" an einer erledigten Aufgabe (Runde 103, Idee D1) ─────
+    // danke ist eine Karte  Kennung -> { n: Name, ts: Zeit, fuer: doneAt }.
+    // Dieselbe Idee wie bei den Reaktionen: jeder darf NUR seinen eigenen
+    // Eintrag setzen oder wegnehmen — nie einen fremden, nie einen im
+    // Namen eines anderen. Dazu drei Dinge, die es nur hier gibt:
+    //   · nur an einer ERLEDIGTEN Aufgabe (sonst wofuer?)
+    //   · nicht an der eigenen (sich selbst danken ist Zaehlen)
+    //   · `fuer` muss das doneAt der Erledigung sein, die man meint —
+    //     bei einer taeglichen Aufgabe gilt ein Danke von gestern nicht
+    //     fuer heute, und die App zeigt es dann auch nicht mehr an.
+    // Kein Zaehler, keine Summe am Dokument: wer eine Rangliste bauen
+    // will, muesste sie sich selbst zusammenrechnen (siehe
+    // docs/DESIGN-RECHERCHE.md, „Wovon ich abrate").
+    function nurEigenesDanke() {
+      let alt = resource.data.get('danke', {});
+      let neu = request.resource.data.get('danke', {});
+      let ich = request.auth.uid;
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['danke'])
+        && neu is map
+        && resource.data.get('done', false) == true
+        && resource.data.get('doneByUid', '') != ich
+        && neu.diff(alt).affectedKeys().hasOnly([ich])
+        && (!(ich in neu)
+            || (neu[ich] is map
+                && neu[ich].keys().hasOnly(['n', 'ts', 'fuer'])
+                && neu[ich].n is string && neu[ich].n.size() <= 80
+                && neu[ich].ts is number
+                && neu[ich].fuer == resource.data.get('doneAt', 0)));
+    }
+
     // ── Chat-Nachrichten ──
     match /channels/{channelId}/messages/{msgId} {
       allow read: if aufFlachenPfaden()
@@ -751,7 +781,7 @@ service cloud.firestore {
       allow update: if aufFlachenPfaden()
         && (manages(studioKey)
         || (istAktiv() && studioKey in myKeys()
-            && nurDieseFelder(todoMitarbeiterFelder())));
+            && (nurDieseFelder(todoMitarbeiterFelder()) || nurEigenesDanke())));
     }
 
     // ── Putzplan pro Studio (Reinigungsaufgaben) ──
@@ -1676,7 +1706,7 @@ service cloud.firestore {
           // Felder, die er in der App auch anfassen kann.
           allow update: if schreibtIn(f) && (manages(studioKey)
             || (istAktiv() && studioKey in myKeys()
-                && nurDieseFelder(todoMitarbeiterFelder())));
+                && (nurDieseFelder(todoMitarbeiterFelder()) || nurEigenesDanke())));
         }
 
         match /studios/{studioKey}/cleaning/{taskId} {

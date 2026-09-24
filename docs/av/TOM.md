@@ -94,7 +94,7 @@ Stelle genau einmal und einen Durchlauf, der das festhält.
 „als Chef ansehen"-Knopf. Was der Admin sieht, sind Firmenname,
 Kennung, Abo-Stufe und Nutzerzahl.
 
-**Belegt durch:** `tests/rules/` — **1.141 Einzelprüfungen** (gezählt am 23.9.2026) über Sicherheit,
+**Belegt durch:** `tests/rules/` — **1.177 Einzelprüfungen** (gezählt am 24.9.2026) über Sicherheit,
 Kreuzzugriffe zwischen Betrieben, Rollenrechte, Reaktionen, Umfragen,
 fremde Felder, Kalender und Anliegen. Jeder Durchlauf prüft ausdrücklich
 auch, was **nicht** gehen darf, und trägt Gegenproben: eine Regel
