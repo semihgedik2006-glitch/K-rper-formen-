@@ -41,6 +41,39 @@ service cloud.firestore {
        dem Chef leer geblieben. Nachgemessen am 25.9.2026. Bei 'all'
        entscheidet der zweite Teil, bevor hasAny auf eine Zeichenkette
        trifft. */
+    /* ── Schwarzes Brett: die Studiogrenze beim Lesen (Runde 121) ──
+       Wie bei den Dokumenten (Runde 114): wer aushängt, entscheidet —
+       „alle Studios" oder bestimmte.
+
+       BEWUSST NICHT d.get('studios','all') == 'all', obwohl das alte
+       Aushänge ohne Feld gleich lesbar machte. Gemessen im Emulator: mit
+       get(…, Vorgabe) liess die Regel die alte, UNGEFILTERTE Abfrage eines
+       Mitarbeiters durch — bei einer Abfrage ist das Feld unbestimmt, und
+       die Vorgabe greift. Damit läse er über die Konsole auch die Aushänge
+       fremder Studios. Also: ausdrücklich 'all'. Alte Aushänge ohne Feld
+       sieht das Team erst, wenn sie nachgezogen sind — der Server macht
+       das alle 30 Minuten (brettNachziehen), der Chef beim Öffnen. */
+    function brettFuerMich(d) {
+      return isChef()
+        || d.studios == 'all'
+        || d.studios.hasAny(myKeys());
+    }
+    function brettZielOk() {
+      return request.resource.data.get('studios', 'all') == 'all'
+        || (request.resource.data.studios is list
+            && request.resource.data.studios.size() > 0
+            && request.resource.data.studios.size() <= 30
+            && (isChef() || request.resource.data.studios.hasOnly(myKeys())));
+    }
+    /* Der Übergang: ein alter Aushang ohne Feld bekommt 'all' — nichts
+       anderes, und nur, wenn er noch keines hat. Das darf der Chef (beim
+       Öffnen des Bretts) und macht der Server (brettNachziehen). */
+    function brettNachziehenOk() {
+      return isChef() && !('studios' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studios'])
+        && request.resource.data.studios == 'all';
+    }
+
     function dokumentFuerMich(d) {
       return isChef()
         || d.studios == 'all'
@@ -1518,9 +1551,9 @@ service cloud.firestore {
     // ── Schwarzes Brett (für alle Studios gemeinsam) ──
     match /board/{postId} {
       allow read: if aufFlachenPfaden()
-        && (istAktiv());
+        && (istAktiv() && brettFuerMich(resource.data));
       allow create: if aufFlachenPfaden()
-        && (istAktiv() && request.resource.data.uid == request.auth.uid);
+        && (istAktiv() && request.resource.data.uid == request.auth.uid && brettZielOk());
       // Bearbeiten geht weiterhin nicht — ein Aushang, dessen Text sich
       // hinterher aendert, ist kein Aushang. Zwei Dinge duerfen trotzdem:
       //   reagieren   nur mit der eigenen Kennung, nur mit einem der
@@ -1530,7 +1563,8 @@ service cloud.firestore {
       // Beides sind dieselben Funktionen wie im Chat. Eine eigene Fassung
       // fuer das Brett waere eine zweite Gelegenheit, etwas zu vergessen.
       allow update: if aufFlachenPfaden()
-        && (istAktiv() && (nurEigeneReaktion() || nurEigeneStimme()));
+        && (istAktiv() && brettFuerMich(resource.data) && (nurEigeneReaktion() || nurEigeneStimme()))
+        || (aufFlachenPfaden() && brettNachziehenOk());
       allow delete: if aufFlachenPfaden()
         && (isChef()
         || (istAktiv() && resource.data.uid == request.auth.uid));
@@ -2245,12 +2279,15 @@ service cloud.firestore {
         }
 
         match /board/{postId} {
-          allow read: if inFirma(f) && (istAktiv());
-          allow create: if schreibtIn(f) && (istAktiv() && request.resource.data.uid == request.auth.uid);
+          allow read: if inFirma(f) && (istAktiv() && brettFuerMich(resource.data));
+          allow create: if schreibtIn(f) && (istAktiv() && request.resource.data.uid == request.auth.uid
+            && brettZielOk());
           // Bearbeiten geht weiterhin nicht. Reagieren und Abstimmen
-          // schon — nur die eigene Kennung, nur die eigene Stimme.
-          allow update: if schreibtIn(f) && (istAktiv()
-            && (nurEigeneReaktion() || nurEigeneStimme()));
+          // schon — nur die eigene Kennung, nur die eigene Stimme, und nur
+          // an einem Aushang, den man sehen darf. Dazu der Übergang.
+          allow update: if schreibtIn(f) && ((istAktiv() && brettFuerMich(resource.data)
+            && (nurEigeneReaktion() || nurEigeneStimme()))
+            || brettNachziehenOk());
           allow delete: if schreibtIn(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
         }

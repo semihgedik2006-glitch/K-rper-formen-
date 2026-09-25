@@ -30,6 +30,7 @@ on:
       - 'loesungen-basis.js'
       - 'schulungen-basis.js'
       - 'ems-wissen.js'
+      - 'qrcode.js'
       - 'robots.txt'
       - 'manifest.json'
       - 'icon.png'

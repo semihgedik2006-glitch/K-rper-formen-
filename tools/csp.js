@@ -27,7 +27,16 @@ const DATEI = path.join(WURZEL, 'index.html');
    schwaechste von allen. */
 const SEITEN = {
   'index.html': {
-    script: "'self' https://www.gstatic.com",
+    /* apis.google.com seit Runde 118: „Mit Google anmelden" lädt dort die
+       Hilfsbibliothek, über die das Anmeldefenster mit der Seite spricht
+       (gapi.iframes). Ein Host, kein pauschales https:. */
+    script: "'self' https://www.gstatic.com https://apis.google.com",
+    /* Der eine Rahmen, den die Anmeldung mit Google/Apple braucht: die
+       Seite /__/auth/iframe auf der authDomain aus konfig.js — genau dieser
+       PFAD, nicht die ganze Domain. Aus dem Betrieb, 25.9.2026: „es soll
+       einen login geben über andere apps". Alles andere bleibt zu. */
+    rahmen: "https://formenchat.firebaseapp.com/__/auth/iframe " +
+      "https://formenchat-probe.firebaseapp.com/__/auth/iframe",
     /* Der eine fremde Pfad, und zwar genau dieser eine.
        Firestore prueft ueber diese 1×1-Grafik, ob ueberhaupt Netz da ist
        — nachgelesen im SDK:
@@ -63,6 +72,7 @@ const SEITEN = {
       "https://www.xn--krperformen-rfb.com/wp-content/uploads/2020/03/emstesmal_simone.png",
     medien: "'none'",
     verbinden: "'none'",
+    rahmen: "'none'",
     worker: "'none'",
     manifest: "'none'",
   },
@@ -158,8 +168,9 @@ function regel(hashes, seite) {
     "connect-src " + k.verbinden,
     "worker-src " + k.worker,
     "manifest-src " + k.manifest,
+    // Rahmen: nur die Anmeldeseite (index), sonst nichts.
+    "frame-src " + (k.rahmen || "'none'"),
     // Nichts davon braucht die App, und jedes davon ist ein Weg nach draussen.
-    "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'none'",
     "form-action 'none'",

@@ -94,7 +94,9 @@ const WELTEN = [
       // Die Saat, aus der die Codes fuer den Bildschirm folgen.
       await db.doc(w.pfad('terminalCodes/t1')).set({ saat: 'c'.repeat(64), angelegtAm: 1 });
       // Eine vergleichbare Sammlung als Ausgangslage fuer die Gegenprobe.
-      await db.doc(w.pfad('board/b1')).set({ uid: 'anna', name: 'Anna', text: 'Hallo', ts: 1 });
+      // Seit Runde 121 traegt ein Aushang `studios` (Studiogrenze am
+      // Brett); ohne das Feld liest ihn nur der Chef.
+      await db.doc(w.pfad('board/b1')).set({ uid: 'anna', name: 'Anna', text: 'Hallo', ts: 1, studios: 'all' });
     }
   });
 
@@ -205,7 +207,7 @@ const WELTEN = [
     await darf('(Gegenprobe) Dieselben Konten arbeiten am Schwarzen Brett',
       alsBen.doc(P('board/b1')).get());
     await darf('(Gegenprobe) … und dürfen dort auch schreiben',
-      alsBen.doc(P('board/b2')).set({ uid: 'ben', name: 'Ben', text: 'Test', ts: 2 }));
+      alsBen.doc(P('board/b2')).set({ uid: 'ben', name: 'Ben', text: 'Test', ts: 2, studios: 'all' }));
   }
 
   /* ══ DIE FREIGABE FÜRS HANDY ═══════════════════════════════════════

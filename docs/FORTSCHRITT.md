@@ -13280,3 +13280,216 @@ Den echten Anmeldeweg (Konto anlegen gegen Firebase Auth) kann ich hier
 nicht testen, weil das SDK in dieser Umgebung nicht lädt. Regeln und
 Funktionen laufen im Emulator; die Oberfläche läuft in der Demo und mit
 den Attrappen.
+
+## Runde 118 — Mit Google anmelden, Apple vorbereitet
+
+> Aus dem Betrieb, 25.9.2026: „Also es soll einen login geben über
+> andere apps“ und „ich würde es alles gerne so vorbereiten das ich die
+> app im appstore launchen könnte wenn ich ein entwickler konto habe“.
+
+- **„Mit Google anmelden“** steht unter „Anmelden“. Unter „Konto
+  anlegen“ heisst der Knopf „Weiter mit Google“; der Firmencode aus dem
+  Formular geht dabei mit.
+  - Bei der **ersten Anmeldung** wird das Konto ohne Betrieb angelegt,
+    wie in Runde 117 (`anbieterNeuesKonto`).
+  - Bei gesperrtem Popup (installierte App am iPhone) nimmt die App die
+    Weiterleitung. Ein Fehler von dort kommt über `getRedirectResult` an.
+- **Adresse schon mit Passwort:**
+  - Firebase lehnt dann ab (`account-exists-with-different-credential`).
+  - Die App merkt sich das Google-Konto, wechselt auf „Anmelden“ und
+    trägt die Adresse ein.
+  - Nach der Passwort-Anmeldung verknüpft sie Google
+    (`linkWithCredential`). Es bleibt ein Konto mit zwei Wegen, nicht zwei
+    Konten.
+- **„Anmeldung und Sicherheit“** steht im Einstellungsfenster (Profil)
+  und auf „Mein Konto“, aus einer Funktion (`sicherheitZeichnen`).
+  - Die Zeilen: E-Mail/Passwort (Passwort ändern), Google (verknüpfen
+    oder trennen), Zwei-Faktor (angekündigt, folgt in Runde 119).
+  - **„Trennen“ nur, wenn es noch einen zweiten Weg gibt.** Sonst sperrt
+    man sich aus.
+- **Apple** ist fertig eingebaut, aber aus (`konfig.js →
+  anmeldung.apple:false`). Der Knopf erscheint erst dann.
+- **Sicherheitsregel (CSP):**
+  - `script-src` erhält `https://apis.google.com` (Hilfsbibliothek des
+    Anmeldefensters).
+  - `frame-src` war überall `'none'`; auf der Hauptseite steht jetzt
+    **genau ein Pfad**: `…firebaseapp.com/__/auth/iframe`.
+  - `test-csp` prüft das mit Zitat: nur dieser Pfad, nie eine ganze
+    Domain; alle anderen Seiten `'none'`.
+- **`docs/APPSTORE.md`**:
+  - Google einschalten (5 Minuten);
+  - Apple einrichten, wenn das Entwicklerkonto da ist;
+  - was der App Store zusätzlich verlangt: 4.8 Apple-Anmeldung, 5.1.1(v)
+    Konto löschen (für Teammitglieder noch offen), 4.2, 3.1.x Kasse,
+    Prüfkonto;
+  - die Capacitor-Hülle. `signInWithPopup` geht in der iOS-WebView nicht,
+    deshalb steckt die Anmeldung in **einer** Funktion, die dort
+    getauscht wird.
+
+**Nicht prüfbar hier:** der echte Weg zu Google (kein SDK in dieser
+Umgebung, kein Google-Konto). `tests/test-anmeldung-anbieter.js` (46)
+prüft mit einer Attrappe, was die App mit jeder Antwort von Firebase
+macht: Erfolg, Konto schon vorhanden, nicht eingeschaltet, Popup
+gesperrt und abgebrochen. Den ersten echten Durchlauf muss jemand am
+Handy machen, nachdem Google in der Konsole eingeschaltet ist.
+
+## Runde 119 — Zwei-Faktor-Anmeldung per Authenticator-App (eingebaut, noch aus)
+
+> Aus dem Betrieb, 25.9.2026: 2FA „ja für chefs, Admin und studioleiter
+> accounts“. Auf die Frage nach Kosten und Alternativen: Authenticator-App
+> statt SMS.
+
+- **Gefunden, bevor gebaut wurde:** Die compat-Fassung des Firebase-SDK
+  (die diese App benutzt) enthält den TOTP-Teil **nicht**, in keiner
+  Version (10.12.2, 10.14.1, 11.10.0, 12.3.0 heruntergeladen und
+  durchsucht). Sie hat aber die Einsteckstelle
+  (`assertion._process(auth, session, name)`), und zwar in `enroll` und in
+  `resolveSignIn`. Das ist im Quelltext beider Fassungen nachgelesen.
+  - `zfAssertion()` liefert genau diese Stelle.
+  - Die drei Aufrufe an den Server sind dieselben wie im modularen SDK;
+    die Feldnamen stammen aus `firebase-auth.js` 10.12.2.
+  - Warum nicht umsteigen: Das modulare SDK hiesse die ganze App
+    umziehen. Das Risiko der inneren Schnittstelle steht in
+    `docs/ZWEI-FAKTOR.md`, die SDK-Version bleibt fest.
+- **Anmelden:** Verlangt das Konto den zweiten Faktor, tritt das
+  Formular zurück und fragt nach dem 6-stelligen Code. Leerzeichen
+  zählen nicht, „Abbrechen“ meldet ab. Das gilt auch nach „Mit Google
+  anmelden“.
+- **Einrichten:** Einstellungen → Profil → „Anmeldung und Sicherheit“,
+  oder direkt aus der Leiste für die Leitung.
+  - Zuerst die Mail-Bestätigung, die Firebase dafür verlangt.
+  - Dann QR-Code, Schlüssel zum Abtippen in Vierergruppen und ein Link,
+    der am Handy direkt die Authenticator-App öffnet.
+  - Den QR-Code zeichnet `qrcode.js` (qrcode-generator 2.0.4, MIT,
+    Kazuhiko Arase; Kopf mit Lizenz unverändert). Die Datei liegt lokal
+    und wird erst geladen, wenn jemand einrichtet. Sie steht im
+    Auslieferungsablauf.
+- **Pflicht für die Leitung, mit Übergang:**
+  - Stufe 1 ist eine Leiste für Chef, Studioleitung und Admin ohne
+    zweiten Faktor. Sie lässt sich bis zum nächsten Öffnen wegklicken und
+    wird beim Zurückkehren in den Tab neu geprüft.
+  - Das Werkzeug unter Verwaltung → Team → „Zwei-Faktor bei der Leitung“
+    (`zweiFaktorStand`) zeigt nur die eigene Firma, nur Name, Rolle und
+    ja/nein.
+  - Erzwungen wird noch nicht. Vorher braucht es das Zurücksetzen bei
+    verlorenem Handy (offen, siehe `docs/ZWEI-FAKTOR.md`).
+- **Noch aus:** `konfig.js → zweiFaktor: false`, bis der eine Befehl aus
+  `docs/ZWEI-FAKTOR.md` gelaufen ist. Bis dahin sagt die App „wird gerade
+  freigeschaltet“ und zeigt weder Leiste noch Knopf. Ein Knopf, der
+  sicher auf einen Fehler läuft, wäre schlechter als keiner.
+
+**Tests:**
+- `tests/test-zwei-faktor.js` (43): die drei Aufrufe mit ihren Feldern,
+  falscher und richtiger Code, Abbrechen, Leiste, Fenster, Werkzeug,
+  „noch aus“ sowie die Trefferflächen bei 320–1920 px, normal und
+  kompakt;
+- `tests/rules/zweifaktor.test.js` (7): Die Funktion läuft im Firestore-
+  und Auth-Emulator. Der Auth-Emulator vergibt über das Admin-SDK nur
+  Telefon-Faktoren; die Funktion zählt jeden zweiten Faktor, also ist es
+  derselbe Fall.
+
+**Nicht prüfbar hier:** ob Googles Server die Codes annehmen. Den ersten
+echten Durchlauf muss jemand am Handy machen, nachdem TOTP eingeschaltet
+ist.
+
+## Runde 120 — Anliegen am Rechner: Liste + Detail
+
+> Aus dem Betrieb, 24.9.2026: „bitte leg genau so viel Fokus auf die
+> PC-Nutzung wie auf die Handy-Nutzung“.
+
+- Verwaltung → Anliegen war der letzte Reiter der Verwaltung mit **einer**
+  Spalte über die ganze Breite: am Rechner rund 1.190 px breite Zeilen,
+  in jeder ein Antwortfeld.
+- **Ab 1100 px** gilt jetzt dasselbe Muster wie bei den Aufgaben:
+  - links die Liste, oben der Filter „Offen · n / Beantwortet · n“;
+  - rechts das gewählte Anliegen mit Text, von wem, wann, an wen, und
+    **ein** Antwortfeld;
+  - ↑/↓ blättert, Strg+Enter schickt ab;
+  - nach dem Antworten wandert das Anliegen nach „Beantwortet“.
+- **Am Handy bleibt alles wie vorher.** Die Karten sind dieselben, und
+  `test-wuensche` prüft sie unverändert.
+- Beim Test gefunden: Nach dem Klick auf eine Zeile wird die Liste neu
+  gezeichnet, und der Fokus war weg. Damit kamen ↑/↓ nicht mehr an. Der
+  Fokus geht jetzt auf die neue Zeile.
+- Demo: zwei weitere offene Anliegen. Mit nur einem gäbe es links nichts
+  zu blättern.
+
+Test: `tests/test-anliegen-pc.js` (17). Er prüft das Nebeneinander,
+Klick, ↑/↓, Strg+Enter und „Beantwortet“, dazu das Handy (390, 820)
+und die Trefferflächen bei 1280/1440/1920, normal und kompakt.
+
+## Runde 121 — Schwarzes Brett: Studiogrenze beim Lesen
+
+> Aus dem Betrieb, 25.9.2026: „… dann die Anliegen am rechner, dann die
+> studiogrenze …“ — vorgeschlagen „so wie jetzt bei den Dokumenten“, und
+> dort hieß es: „JA aber man kann selber entscheiden ob alle oder nur
+> studio“.
+
+- **Beim Aushängen steht jetzt „Für wen“:** Alle Studios oder eines der
+  eigenen. Der Chef kann jedes wählen. Umfragen am Brett nehmen dieselbe
+  Wahl. An der Karte steht dann ein leises Schild „Nur Hürth“.
+- **Die Regel hält es, nicht nur die Anzeige** (`brettFuerMich`,
+  `brettZielOk`, beide Welten). Nicht erlaubt sind:
+  - ein Aushang für ein fremdes Studio;
+  - eine leere Liste;
+  - Reaktionen an einem Aushang, den man nicht sehen darf.
+- **Zwei Abfragen statt einer** für alle außer dem Chef, ohne `orderBy`.
+  Gleichheit plus Sortierung bräuchte je Abfrage einen zusammengesetzten
+  Index, und die Auslieferung legt keine Indexe an (ein `--force` dort
+  löschte bestehende). Die App fügt beide zusammen und sortiert selbst;
+  bis 300 je Abfrage.
+- **Warum keine Vorgabe in der Regel:**
+  - Der erste Entwurf las ein fehlendes Feld mit `get('studios','all')`
+    als „alle“. Damit ging im Emulator auch die **ungefilterte** Abfrage
+    als Mitarbeiter durch; die Grenze wäre keine gewesen.
+  - Jetzt liest ein Aushang ohne Feld nur der Chef, bis er nachgezogen
+    ist.
+  - `brettNachziehen` setzt alle 30 Minuten `'all'`, je Firma über
+    `alleFirmen()`. Die flachen Pfade braucht nur der Terminplan, und
+    `test-funktionen-pfade` hält das fest. Nach einem
+    Durchgang geht es erst nach sechs Stunden wieder los, weil eine noch
+    zwischengespeicherte alte App weiter ohne Feld aushängt.
+  - Die App des Chefs zieht beim Öffnen ebenfalls nach. Die Regel erlaubt
+    ihm genau diese eine Änderung.
+  - Niemand sieht danach mehr als vorher.
+- **Beim Umbau gefunden:**
+  - Drei Regeltests (`kreuz`, `reaktionen`, `umfragen`) und `zeitpin`
+    legten Aushänge ohne Feld an. Sie tragen jetzt `studios: 'all'` mit
+    Begründung. Gelockert ist keiner: Die Mitarbeiter-Gegenproben
+    erwarten weiter, dass es geht.
+  - `zweifaktor.test.js` (Runde 119) fand in der Kette „Chef A“ und
+    „Betreiber“ aus `firmencode.test.js`, obwohl vorher geleert wurde.
+    Einzeln lief er grün. Er hat jetzt eine eigene Firmenkennung.
+  - Im Gesamtdurchlauf fiel `test-startlesen`: Seine Attrappe kennt am
+    Brett kein `update()`, und das Nachziehen beim Chef warf, **bevor**
+    das Brett gezeichnet war. Jetzt wird erst gezeichnet, und das
+    Nachziehen fängt jeden Fehler ab. Das Brett hängt damit nie am
+    Übergang. Die Attrappe kennt `update()` jetzt auch.
+  - Die Demo schreibt auf Wunsch mit, welche Abfragen die App stellt
+    (`window.DEMO_ABFRAGEN`). Die Demo kennt keine Regeln, also ließe
+    sich sonst nicht prüfen, dass die App keine ungefilterte stellt.
+
+Tests:
+- `tests/rules/brett.test.js` (46) prüft in beiden Welten:
+  - einzeln lesen;
+  - die zwei Abfragen der App, dazu die ungefilterte als Gegenprobe;
+  - aushängen;
+  - reagieren;
+  - den Übergang;
+  - `brettNachziehenFirma` gegen den Emulator.
+- `tests/test-brett-studio.js` (25) prüft:
+  - Die Mitarbeiterin aus Hürth sieht „Nur Hürth“, aber nicht „Nur
+    Brühl“, und stellt keine ungefilterte Abfrage.
+  - Der Chef sieht beide.
+  - „Für wen“ zeigt nur, was man wählen darf.
+  - Ein Aushang wird mit `studios: ["studio-6"]` gespeichert.
+  - Die Trefferflächen bei 320–1920 px, normal und kompakt.
+
+**Nicht prüfbar hier:** der Lauf gegen die echten Daten. Wie viele
+Aushänge ohne Feld es gibt, zeigt das Protokoll von `brettNachziehen`
+nach der Auslieferung („N alte Aushänge auf ‚alle Studios' gesetzt“).
+
+**Gesamtdurchlauf (Runden 118–121 zusammen): 159 von 160 grün**, dazu
+alle 26 Regeldateien. Rot war `test-startlesen` (siehe oben). Nach der
+Korrektur liefen er und die sechs anderen Tests am Brett erneut, alle
+grün.

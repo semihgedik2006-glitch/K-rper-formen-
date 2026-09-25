@@ -56,8 +56,21 @@ const ANSICHTEN = [
     pruefe(seite + ': script-src ohne pauschales https:', !/\shttps:(\s|$)/.test(script), script);
     pruefe(seite + ': default-src steht auf none',
       teile.indexOf("default-src 'none'") === 0, teile[0]);
-    ["object-src 'none'", "base-uri 'none'", "form-action 'none'", "frame-src 'none'"]
+    ["object-src 'none'", "base-uri 'none'", "form-action 'none'"]
       .forEach(d => pruefe(seite + ': gesetzt ' + d, teile.indexOf(d) >= 0));
+    /* frame-src: bis Runde 117 überall 'none'. Seit 118 braucht die
+       Hauptseite GENAU einen Rahmen — die Anmeldeseite von Firebase für
+       „Mit Google/Apple anmelden". Aus dem Betrieb, 25.9.2026: „es soll
+       einen login geben über andere apps". Geprüft wird, dass es nur
+       dieser Pfad ist (…/__/auth/iframe auf *.firebaseapp.com), nie eine
+       ganze Domain und nie etwas anderes; alle anderen Seiten: 'none'. */
+    const rahmen = (teile.find(t => t.indexOf('frame-src') === 0) || '').split(/\s+/).slice(1);
+    if (seite === 'index.html') {
+      pruefe(seite + ': frame-src nur die Anmeldeseite von Firebase',
+        rahmen.length >= 1 && rahmen.every(w => /^https:\/\/[a-z0-9-]+\.firebaseapp\.com\/__\/auth\/iframe$/.test(w)), rahmen.join(' '));
+    } else {
+      pruefe(seite + ": gesetzt frame-src 'none'", rahmen.join(' ') === "'none'", rahmen.join(' '));
+    }
     pruefe(seite + ': jeder Skriptblock hat seine Prüfsumme',
       (script.match(/'sha256-/g) || []).length === csp.bloecke(roh).length, script);
 

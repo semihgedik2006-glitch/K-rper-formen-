@@ -68,7 +68,9 @@ const START = { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'] };
    Regel, die woanders vergessen wurde. */
 const ORTE = [
   ['Chat',      'channels/allgemein/messages/m1', { uid: 'chefA', text: 'Hallo', ts: 1 }],
-  ['Brett',     'board/b1',                       { uid: 'chefA', text: 'Aushang', ts: 1 }],
+  /* studios: 'all' seit Runde 121: reagieren darf nur, wer den Aushang
+     sehen darf (tests/rules/brett.test.js). */
+  ['Brett',     'board/b1',                       { uid: 'chefA', text: 'Aushang', ts: 1, studios: 'all' }],
   ['Aushang',   'announcements/an1',              { uid: 'chefA', text: 'Info', ts: 1, target: 'all' }],
 ];
 
@@ -192,18 +194,18 @@ async function frisch(pfad, grund) {
      Dieselbe Regel steht ein zweites Mal unter firmen/{f}/. Genau dort
      ist sie beim letzten Mal vergessen worden — deshalb hier eigens. */
   const FPFAD = `firmen/${A}/board/b1`;
-  await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1 });
+  await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1, studios: 'all' });
   await pruefe('FIRMA · eigene Reaktion geht', () =>
     assertSucceeds(mitA().doc(FPFAD).update({
       reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], '🎉': ['mitA'] } })));
 
-  await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1 });
+  await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1, studios: 'all' });
   await pruefe('FIRMA · fremde Reaktion löschen geht NICHT', () =>
     assertFails(mitA().doc(FPFAD).update({ reactions: { '👍': ['mitA'], '❤️': ['zweitA'] } })));
 
   /* Die Firmengrenze. Ohne diese Runde hiesse „die Regel greift" nur
      „sie greift bei uns". */
-  await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1 });
+  await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1, studios: 'all' });
   await pruefe('FIRMA · die ANDERE Firma reagiert nicht mit', () =>
     assertFails(chefB().doc(FPFAD).update({
       reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], '🎉': ['chefB'] } })));
@@ -212,7 +214,7 @@ async function frisch(pfad, grund) {
      Reagieren zu erlauben heisst, ein update zu oeffnen, das vorher
      komplett zu war (`allow update: if false`). Wenn dabei das
      Bearbeiten mit aufgeht, ist der Preis hoeher als der Gewinn. */
-  await frisch('board/b1', { uid: 'chefA', text: 'Aushang', ts: 1 });
+  await frisch('board/b1', { uid: 'chefA', text: 'Aushang', ts: 1, studios: 'all' });
   await pruefe('BRETT bleibt unbearbeitbar — auch für den Verfasser', () =>
     assertFails(chefA().doc('board/b1').update({ text: 'nachträglich anders' })));
   await pruefe('BRETT · auch der Chef schreibt den Text nicht um', () =>

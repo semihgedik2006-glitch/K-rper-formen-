@@ -52,7 +52,10 @@ async function pruefe(name, fn) {
 const FLACH = [
   ['studios/studio-0/todos/t1',       { title: 'Interne Aufgabe', done: false }],
   ['channels/allgemein/messages/m1',  { uid: 'x', name: 'Anna', text: 'Interner Chat', ts: 1 }],
-  ['board/b1',                        { uid: 'x', name: 'Anna', text: 'Internes Brett', ts: 1 }],
+  /* Mit studios: 'all' seit Runde 121 — die Leseregel prüft das Feld
+     wie bei den Dokumenten. Ein Aushang OHNE Feld ist Altbestand, den
+     der Server nachzieht; das prüft tests/rules/brett.test.js. */
+  ['board/b1',                        { uid: 'x', name: 'Anna', text: 'Internes Brett', ts: 1, studios: 'all' }],
   ['announcements/a1',                { uid: 'x', text: 'Interne Info', ts: 1 }],
   ['studios/studio-0/handovers/h1',   { uid: 'x', name: 'Anna', text: 'Interne Uebergabe', ts: 1 }],
   /* Mit studios: 'all' seit Runde 114 (P-01): die Leseregel prüft das

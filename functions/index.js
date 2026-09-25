@@ -6015,6 +6015,87 @@ exports.firmencodesPruefen = region.https.onCall(async (data, context) => {
   return { mitCode: Object.keys(nach).length, doppelt, ohneVerzeichnis };
 });
 
+/* ══ ZWEI-FAKTOR: WER IN DER LEITUNG HAT SIE SCHON? (Runde 119) ══════
+   Aus dem Betrieb, 25.9.2026: Pflicht „für chefs, Admin und studioleiter
+   accounts". CLAUDE.md verlangt vor einer schärferen Regel ein Werkzeug,
+   das zeigt, wen sie träfe — das ist es. Die App weiss es nur vom
+   eigenen Konto; ob die ANDEREN einen zweiten Faktor haben, steht nur im
+   Anmeldedienst, und den liest nur der Server.
+
+   Nur für die Geschäftsführung, nur die eigene Firma, nur Name, Rolle und
+   ja/nein — keine Telefonnummer, kein Faktor-Name. */
+exports.zweiFaktorStand = region.https.onCall(async (data, context) => {
+  const { profil, firma } = await anruferProfil(context);
+  if (profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Diese Übersicht sieht die Geschäftsführung.');
+  }
+  const f = firma || KONFIG_FIRMA_RUECKFALL;
+  const snap = await db.collection('users').where('firma', '==', f).get();
+  const leitung = snap.docs.filter((d) => {
+    const u = d.data() || {};
+    return u.aktiv !== false && (u.role === 'chef' || u.role === 'leiter' || u.admin === true);
+  });
+  const an = {};
+  for (let i = 0; i < leitung.length; i += 100) {
+    const teil = leitung.slice(i, i + 100).map((d) => ({ uid: d.id }));
+    const res = await admin.auth().getUsers(teil);
+    res.users.forEach((u) => {
+      an[u.uid] = !!(u.multiFactor && (u.multiFactor.enrolledFactors || []).length);
+    });
+  }
+  const personen = leitung.map((d) => {
+    const u = d.data() || {};
+    return { uid: d.id, name: String(u.name || ''), rolle: u.admin === true ? 'admin' : u.role, an: !!an[d.id] };
+  }).sort((a, b) => (a.an === b.an ? a.name.localeCompare(b.name) : (a.an ? 1 : -1)));
+  return { personen };
+});
+
+/* ══ SCHWARZES BRETT: ALTE AUSHÄNGE NACHZIEHEN (Runde 121) ═══════════
+   Seit Runde 121 prüft die Leseregel das Feld studios; die App fragt
+   (ausser beim Chef) nach studios == 'all' bzw. nach den eigenen Studios.
+   Ein Aushang von VOR Runde 121 hat das Feld nicht — ihn liest nur der
+   Chef, und keine der beiden Abfragen des Teams findet ihn. Ohne diesen
+   Lauf sähe das Team alte Aushänge erst, wenn der Chef das Brett öffnet
+   (die App des Chefs zieht beim Öffnen ebenfalls nach).
+
+   Alle 30 Minuten, je Firma — über alleFirmen(), NICHT über
+   alleFirmenUndFlach(): die flachen Pfade braucht nur der Terminplan
+   (wachstum.html), und test-funktionen-pfade hält das fest. Ohne
+   Firmen-Sammlung liefert alleFirmen() [null], dann ist flach die
+   eine Welt und wird auch nachgezogen. Nach einem Lauf steht ein Vermerk
+   in config/brettNachgezogen; solange er jünger als BRETT_VERMERK_MS ist,
+   kostet der Lauf genau einen Lesevorgang je Firma. Danach wird wieder
+   durchgesehen: Eine noch zwischengespeicherte alte App schreibt
+   Aushänge ohne das Feld, auch nach dem Umstieg. Gesetzt wird NUR 'all'
+   — genau das, was der Aushang vorher war. Niemand sieht mehr als vorher. */
+const BRETT_VERMERK_MS = 6 * 60 * 60 * 1000;
+async function brettNachziehenFirma(firma) {
+  const wurzel = W(firma);
+  const vermerk = wurzel.collection('config').doc('brettNachgezogen');
+  const v = await vermerk.get();
+  if (v.exists && Date.now() - (v.get('ts') || 0) < BRETT_VERMERK_MS) return 0;
+  const snap = await wurzel.collection('board').get();
+  const offen = snap.docs.filter((d) => d.get('studios') === undefined);
+  for (let i = 0; i < offen.length; i += 400) {
+    const b = db.batch();
+    offen.slice(i, i + 400).forEach((d) => b.update(d.ref, { studios: 'all' }));
+    await b.commit();
+  }
+  await vermerk.set({ ts: Date.now(), nachgezogen: offen.length });
+  return offen.length;
+}
+exports.brettNachziehen = region.pubsub.schedule('every 30 minutes').timeZone('Europe/Berlin')
+  .onRun(async () => {
+    let n = 0;
+    for (const f of await alleFirmen()) {
+      try { n += await brettNachziehenFirma(f); }
+      catch (e) { console.error('Brett nachziehen (' + (f || 'flach') + '):', e.message); }
+    }
+    if (n) console.log('Brett: ' + n + ' alte Aushänge auf „alle Studios" gesetzt.');
+    return null;
+  });
+
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
@@ -6024,6 +6105,7 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      SCHULUNG_VERSUCHE_MAX, SCHULUNG_VERSUCHE_FENSTER_MS,
                      geheimHashen, naechsterSchritt,
                      firmencodeNormal, firmencodeErzeugen, OHNE_FIRMA,
+                     brettNachziehenFirma, BRETT_VERMERK_MS,
                      codeFenster, codeAus, CODE_FENSTER_MS, CODE_VORRAT,
                      /* Die Abo-Leiter ist rein rechnerisch und damit ohne
                         Datenbank pruefbar — genau deshalb steht sie hier. */

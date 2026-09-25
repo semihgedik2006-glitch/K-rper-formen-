@@ -24,7 +24,7 @@ bekommt, findet die Lücken trotzdem, nur später und im falschen Moment.
 | | |
 |---|---|
 | **Schweregrad** | **HOCH** |
-| **Status** | **Für die Personendaten behoben am 17.9.2026, für die Studio-Chats am 23.9.2026.** Aufgaben, Putzplan, Geräte, Material: **bewusst offen**. Dokumente mit Zielstudio: **behoben am 25.9.2026** (Runde 114, siehe unten) |
+| **Status** | **Für die Personendaten behoben am 17.9.2026, für die Studio-Chats am 23.9.2026.** Aufgaben, Putzplan, Geräte, Material: **bewusst offen**. Dokumente mit Zielstudio: **behoben am 25.9.2026** (Runde 114, siehe unten). Schwarzes Brett mit Zielstudio: **behoben am 25.9.2026** (Runde 121) |
 | **Gefunden** | 16.9.2026, beim Erstellen der Rechtsantworten |
 
 **Was war das Problem?** Die Leseregel prüfte nur, ob jemand ein
@@ -116,6 +116,29 @@ steht dort 0, darf die Übergangszeile in `kanalErlaubt()` weg.
 
 `tests/rules/studiogrenze.test.js`: 45 Zusicherungen (+18).
 
+### Schwarzes Brett — Studiogrenze seit 25.9.2026 (Runde 121)
+
+Aus dem Betrieb, 25.9.2026: „… dann die Anliegen am rechner, dann die
+studiogrenze …". Gebaut wie bei den Dokumenten: Beim Aushängen wählt man
+**„Für wen"** — alle Studios oder eines der eigenen (der Chef: jedes).
+Der Aushang trägt `studios` (`'all'` oder eine Liste), und die Regel
+liest ihn (`brettFuerMich` in `firestore.rules`, beide Welten). Die App
+fragt für alle ausser dem Chef zweimal (`studios == 'all'` und
+`array-contains-any [meine Studios]`); die ungefilterte Abfrage lässt
+die Regel nicht mehr zu. Reagieren und Abstimmen an einem Aushang, den
+man nicht sehen darf, geht ebenfalls nicht.
+
+**Übergang:** Aushänge von vorher haben kein Feld. Sie liest bis zum
+Nachziehen nur der Chef — bewusst **ohne** Vorgabe in der Regel: Mit
+`get('studios','all')` ging im Emulator auch die ungefilterte Abfrage
+durch, die Grenze wäre also keine gewesen. Nachgezogen wird zweifach:
+die App des Chefs setzt beim Öffnen `'all'` (die Regel erlaubt genau
+diese eine Änderung), und `brettNachziehen` tut es alle 30 Minuten für
+jeden aktiven Betrieb (nach einem Durchgang erst wieder nach sechs Stunden —
+eine noch zwischengespeicherte alte App hängt weiter ohne Feld aus).
+Gesetzt wird nur `'all'`, also genau das, was der Aushang vorher war.
+`tests/rules/brett.test.js` (46), `tests/test-brett-studio.js` (25).
+
 ### Dokumente — behoben am 25.9.2026 (Runde 114)
 
 Aus dem Betrieb: *„JA aber man kann selber entscheiden ob alle oder nur
@@ -151,9 +174,9 @@ angehen, sobald Dokumente mit Personenbezug an einzelne Studios gehen
 (Dienstanweisungen sind unkritisch, Abmahnungen oder Gesundheitsnachweise
 wären es nicht — die gehören ohnehin nicht dorthin).
 
-**Das Brett** hat kein Studiofeld und ist betriebsweit gedacht („für das
-ganze Team"). Eine Studiogrenze dort wäre eine neue Funktion, keine
-Reparatur.
+**Das Brett** hatte kein Studiofeld und war betriebsweit gedacht („für
+das ganze Team"). Eine Studiogrenze dort war eine neue Funktion, keine
+Reparatur — sie kam mit Runde 121 (nächster Abschnitt).
 
 > **`docs/av/TOM.md` wurde am 17.9. berichtigt:** die Tabelle „Wer
 > welche Daten sieht" trägt jetzt eine dritte Spalte — **Wodurch
@@ -283,7 +306,7 @@ Maßnahme — nicht als Zusage, weil sie heute nicht wahr wäre.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open |
+| **Status** | **In Arbeit** — eingebaut in Runde 119 (Authenticator-App), wartet aufs Einschalten im Projekt (`docs/ZWEI-FAKTOR.md`). Offen: Zurücksetzen bei verlorenem Handy, dann die Pflicht in den Regeln |
 
 Für Chef- und Betreiberkonten wäre er angemessen. Ein Betreiberkonto
 kann Firmen anlegen, sperren und Abos setzen.

@@ -363,6 +363,16 @@
     return null;
   }
 
+  /* Für die Durchläufe (Runde 121): welche Abfragen stellt die App?
+     window.DEMO_ABFRAGEN = [] sammelt je get/onSnapshot Pfad und Filter
+     — so lässt sich prüfen, dass sie keine stellt, die die Regel
+     ablehnen würde (die Demo selbst kennt keine Regeln). */
+  function abfrageMerken(pfad, f) {
+    if (Array.isArray(window.DEMO_ABFRAGEN)) {
+      window.DEMO_ABFRAGEN.push({ pfad: pfad, wo: (f.wo || []).map(function (w) { return w[0] + ' ' + w[1] + ' ' + JSON.stringify(w[2]); }) });
+    }
+  }
+
   function abfrage(pfad, f) {
     f = f || {};
     function mit(neu) {
@@ -376,8 +386,9 @@
       orderBy: function (a, b) { return mit({ sortier: [a, b || 'asc'] }); },
       limit: function (n) { return mit({ grenze: n }); },
       limitToLast: function (n) { return mit({ grenzeHinten: n }); },
-      get: function () { return Promise.resolve(schnapp(anwenden(holen(pfad), f))); },
+      get: function () { abfrageMerken(pfad, f); return Promise.resolve(schnapp(anwenden(holen(pfad), f))); },
       onSnapshot: function (a, b) {
+        abfrageMerken(pfad, f);
         var cb = typeof a === 'function' ? a : (a && a.next);
         if (!cb) return function () {};
         var fehlerCb = typeof a === 'function' ? b : (a && a.error);
@@ -771,6 +782,11 @@
       ts: vorTag(zahl(0, 9))
     });
   }
+  /* Runde 121: für wen. Zwei Aushänge nur für ein Studio (ohne neue
+     Zufallsziehung — die würde alle folgenden Demo-Daten verschieben):
+     einer für Hürth (das Studio der Mitarbeiter-Demo), einer für Brühl,
+     den die Mitarbeiterin aus Hürth NICHT sieht. */
+  brett.forEach(function (x, i) { x.studios = i === 1 ? [sk(6)] : (i === 2 ? [sk(7)] : 'all'); });
   legen(P('board'), brett);
 
   legen(P('announcements'), [
@@ -843,7 +859,17 @@
         text: 'Die alten fusseln stark.',
         antwort: 'Bestellt, kommen nächste Woche.',
         antwortVon: 'Geschäftsführung', antwortAm: vorTag(5),
-        ts: vorTag(9), quelle: { sammlung: 'ideen', id: 'i-demo-2' } }
+        ts: vorTag(9), quelle: { sammlung: 'ideen', id: 'i-demo-2' } },
+      /* Zwei mehr seit Runde 120: am Rechner steht links eine Liste —
+         mit nur einem offenen Anliegen gäbe es nichts zu blättern. */
+      { id: 'anl4', uid: 'demo-u2', name: 'Jonas Brandt', an: 'chef', status: 'offen', art: 'vorschlag',
+        titel: 'Anmeldung am Empfang digital',
+        text: 'Die Liste auf Papier ist oft nicht lesbar. Ein Tablet am Empfang würde reichen.',
+        ts: vorTag(2) },
+      { id: 'anl5', uid: 'demo-u3', name: 'Sara Kühn', an: 'chef', status: 'offen', art: 'wunsch',
+        titel: 'Fortbildung Rückentraining',
+        text: 'Im November gibt es in Köln einen Kurs. Könnte ich den machen?',
+        ts: vorTag(4) }
     ]);
   })();
 
@@ -1377,6 +1403,19 @@
       return { ok: true };
     },
     kontoLoeschen: function () { return { ok: true, demo: true }; },
+    /* Zwei-Faktor bei der Leitung (Runde 119): in der Demo hat die erste
+       Studioleitung sie schon, alle anderen noch nicht. */
+    zweiFaktorStand: function () {
+      if (ICH.role !== 'chef') throw new Error('Diese Übersicht sieht die Geschäftsführung.');
+      var erste = true;
+      return { personen: USERS.filter(function (u) {
+        return u.aktiv !== false && (u.role === 'chef' || u.role === 'leiter');
+      }).map(function (u) {
+        var an = false;
+        if (u.role === 'leiter' && erste) { an = true; erste = false; }
+        return { uid: u.id, name: u.name || '', rolle: u.role, an: an };
+      }).sort(function (a, b) { return a.an === b.an ? a.name.localeCompare(b.name) : (a.an ? 1 : -1); }) };
+    },
     firmencodeSetzen: function (d) {
       var roh = d.zufall ? 'K7QM-4XP2' : String(d.code || '').trim();
       var n = roh.toUpperCase().replace(/[^A-Z0-9]/g, '');

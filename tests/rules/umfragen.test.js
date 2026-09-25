@@ -243,6 +243,8 @@ async function frisch(pfad, daten) {
   const BRETT = 'board/b1';
   const BUMFRAGE = {
     uid: 'chefA', name: 'Chef A', text: '', kind: 'umfrage', ts: 1,
+    /* seit Runde 121: abstimmen darf nur, wer den Aushang sehen darf */
+    studios: 'all',
     poll: { q: 'Wer kann Samstag früh?', opts: ['Ich', 'Ich nicht'] },
     votes: { chefA: 0, zweitA: 0, dritteA: 1 },
   };

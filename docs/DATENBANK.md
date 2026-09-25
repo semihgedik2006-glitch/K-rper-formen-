@@ -45,7 +45,7 @@ firmen/{kennung}                     ← Stammdaten, öffentlich lesbar (get)
    │
    ├── inventory/{studioKey}         ← Material
    ├── announcements/                ← Aushänge
-   ├── board/                        ← Schwarzes Brett
+   ├── board/                        ← Schwarzes Brett (`studios`: 'all' oder Liste, seit Runde 121)
    ├── documents/  +  documentData/  ← Dokumente (Verweis + Inhalt)
    ├── loesungen/  +  loesungBilder/ ← Probleme und was hilft (Text + Fotos)
    ├── certificates/                 ← Nachweise (Premium)
