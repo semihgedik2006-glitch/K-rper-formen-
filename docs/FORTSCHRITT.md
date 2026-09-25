@@ -12463,3 +12463,71 @@ verbessert.
   - Trefferflächen in beiden Spalten, normal und kompakt;
   - Gegenprobe am Handy: eine Seite nach der anderen.
 - **Gesamtdurchlauf: 143 von 143 grün.**
+
+## Runde 107 — Design: vier kleine Dinge aus den eigenen Listen
+
+> „mach weiter mit design sachen" (25.9.2026)
+
+Aus `DESIGN-IDEEN.md` und `DESIGN-RECHERCHE.md` kam, was offen stand,
+klein ist und sofort wirkt. Nicht genommen wurde, wovon die Listen
+selbst abraten: Gelesen-Häkchen, Ziehen zum Aktualisieren und
+Bereichszeichen.
+
+- **Chat (Idee 10): Der Tag-Trenner klebt oben** (`position:sticky`).
+  - Er ist deckend (`--bg-2` statt des durchscheinenden `--auf-1`),
+    sonst liefen die Nachrichten sichtbar darunter durch.
+  - Alle Trenner sind gleich breit (`min-width:11em`). So deckt der
+    nächste den vorigen ganz; bei „Gestern“ unter „Heute“ ragte er
+    sonst links und rechts heraus.
+- **Schulung (Recherche E1): „1 von 8 geschafft — 7 fehlen noch“** mit
+  Balken über den Modulen.
+  - Die Zeile folgt der gewählten Kategorie.
+  - Ein Modul, das wieder fällig ist, zählt als offen. Sonst stünde
+    oben „alles erledigt“, während unten „wieder fällig“ steht.
+- **Aufgaben (Idee 26): „Foto“ an offenen Aufgaben.**
+  - Die Kamera war 34 × 26 gross. Jetzt ist die Trefferfläche 44 × 44,
+    über ein `::before` im Innenabstand der Zeile, damit die Zeile
+    nicht höher wird.
+  - An erledigten Aufgaben steht nur das Zeichen.
+- **Rechner (Idee 29): „Tastenkürzel ?“ unten in der Seitenleiste.**
+  Die Einträge der Seitenleiste verraten ihre Taste beim Darüberfahren
+  („Aufgaben — Taste 3“). Am Handy gibt es beides nicht, dort fehlt die
+  Tastatur.
+  - **Dabei gefunden:** Die Schnellzugriffe werden erst später in die
+    Leiste gehängt, deshalb stand der Knopf zuerst zwischen Navigation
+    und Schnellzugriffen. Jetzt steht er mit `order:99` ganz unten.
+- **Idee 12 (Antwort-Vorschau anklickbar)** war schon gebaut
+  (`data-goto`); das hat erst das Nachsehen gezeigt. In der Liste ist
+  es jetzt abgehakt.
+
+### Durchläufe
+
+- **Neu: `tests/test-design-107.js`** mit 46 Zusicherungen:
+  - Der Trenner klebt genau am Rand (Innenabstand + `top`), ist gleich
+    breit und deckend.
+  - Der Schulungs-Rest stimmt mit den Karten darunter überein und folgt
+    der Kategorie.
+  - „Foto“ bei 320–820 px, normal und kompakt: Treffer ≥ 44 × 44,
+    sichtbar ≤ 30 px; Gegenprobe an einer erledigten Aufgabe.
+  - Tastenkürzel bei 1280–1920 px: ganz unten, Taste im Titel, ≥ 44,
+    öffnet die Übersicht; Gegenprobe am Handy.
+- **Gesamtdurchlauf: 144, davon zuerst 4 rot.**
+  - `test-gestaltung`: `.t-cam` bekam eine eigene Trefferfläche
+    (`::before`) samt `position`. Die gibt es aber schon in der
+    gemeinsamen Regel „Trefferfläche ohne Aussehen zu ändern“ oben im
+    Stylesheet. Das doppelte `::before` ist entfernt; gemessen wird
+    weiter 44 × 44.
+  - `test-p4-seitenleiste`: liest die Bereiche als `#side > button`
+    und hielt „Tastenkürzel“ für einen weiteren Bereich. Der Knopf
+    steht jetzt in einer eigenen Hülle (`.side-fuss`); er ist kein
+    Ziel wie Start oder Aufgaben. Der Test ist unverändert.
+  - `test-sortierung` und `test-startseite-putz` (Putzplan) waren nur
+    in diesem Lauf rot. Einzeln sind sie grün, auf dem alten Stand
+    ebenso wie auf dem neuen. Während des Laufs liefen daneben
+    Bildschirmfotos für die nächste Runde, das ist die
+    wahrscheinlichste Ursache. **Eine Vermutung, nicht belegt**; der
+    nächste Gesamtdurchlauf zeigt, ob sie hält.
+
+  Einzeln wiederholt und grün: `test-gestaltung`,
+  `test-p4-seitenleiste`, `test-design-107`, `test-sortierung`,
+  `test-startseite-putz`.
