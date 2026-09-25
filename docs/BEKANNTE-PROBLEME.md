@@ -167,13 +167,13 @@ eine Einstufungstabelle mit sieben Beispielen und die Ablage der Akten.
 
 | | |
 |---|---|
-| **Keine Vertretung** | Ein Einzelunternehmen hat keine Meldekette. Fällt die eine Person aus, meldet niemand — und die Frist des Kunden läuft weiter. |
+| **Keine Vertretung** | Ein Einzelunternehmen hat keine Meldekette. Fällt die eine Person aus, meldet niemand — und die Frist des Kunden läuft weiter. **Entschieden am 25.9.2026:** bleibt so, wird im AV-Vertrag offengelegt; die eigene Meldefrist steigt dafür von 24 auf 48 Stunden. |
 | **Ein einziger Meldeweg** | Eine E-Mail-Adresse. Ist das Postfach Teil des Vorfalls, gibt es keinen zweiten. |
 | **Die Behördenanschrift fehlt** | Bewusst: eine veraltete Adresse in einer Notfallvorlage ist schlimmer als keine. |
 | **Nie erprobt** | Ein Verfahren, das nie gelaufen ist, ist eine Annahme. Ein Trockenlauf dauert eine Stunde. |
 
-**Aufwand für den Rest:** die Vertretung ist eine Entscheidung, kein
-Schreibvorgang.
+**Aufwand für den Rest:** die Vertretung ist entschieden (keine,
+offengelegt). Offen bleiben der zweite Meldeweg und ein Trockenlauf.
 
 ---
 
