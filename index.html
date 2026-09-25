@@ -5179,23 +5179,24 @@ html{font-size:var(--fs,100%)}
   padding:calc(var(--s24) + var(--sat)) var(--s16) calc(var(--s24) + var(--sab))}
 .mk-seite{max-width:520px;margin:0 auto;display:grid;gap:var(--s16)}
 .mk-kopf{display:flex;align-items:center;gap:var(--s12)}
-.mk-kopf .avatar{width:52px;height:52px;font-size:1.2rem;flex:0 0 auto}
+.mk-kopf .avatar{width:52px;height:52px;font-size:var(--t-lg);flex:0 0 auto}
 .mk-kopf h2{margin:0;font-size:var(--t-xl)}
 .mk-kopf .hint{margin:var(--s2) 0 0}
 .mk-karte{background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-lg);
-  padding:var(--s16);box-shadow:var(--e1);display:grid;gap:12px}
-/* Fest 12 px, nicht --s10: in „kompakt" wären es 8, und die unsichtbar
+  padding:var(--s16);box-shadow:var(--e1);display:grid;gap:var(--s16)}
+/* --s16, nicht --s10: in „kompakt" wird --s10 zu 8 px, und die unsichtbar
    vergrösserte Trefferfläche des nächsten Knopfs schnitt dann 2 px vom
-   vorigen ab (gemessen: „Nachsehen" 380 × 42 bei 430 px). */
-.mk-karte > div:not([hidden]){display:grid;gap:12px}
+   vorigen ab (gemessen: „Nachsehen" 380 × 42 bei 430 px). --s16 bleibt
+   dort 12 px. */
+.mk-karte > div:not([hidden]){display:grid;gap:var(--s16)}
 .mk-karte h3{margin:0}
 .mk-karte .hint{margin:0}
 .mk-karte .field{margin:0}
 .mk-karte .btn{min-height:44px;width:100%}
-.mk-knoepfe{display:grid;gap:12px}
+.mk-knoepfe{display:grid;gap:var(--s16)}
 .mk-status{display:flex;align-items:center;gap:var(--s8);margin:0}
-.mk-punkt{width:10px;height:10px;border-radius:50%;background:var(--warn);flex:0 0 auto}
-.mk-fuss{display:grid;gap:12px}
+.mk-punkt{width:10px;height:10px;border-radius:var(--r-rund);background:var(--warn);flex:0 0 auto}
+.mk-fuss{display:grid;gap:var(--s16)}
 .mk-fuss .btn{min-height:44px;width:100%}
 .mk-loeschen{color:var(--danger-tx)}
 .mk-folgt{font-style:italic}
@@ -6604,7 +6605,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       </div>
       <div class="field" id="rgCodeWrap">
         <label for="rgCode">Firmencode <span class="feld-optional">(kannst du auch später eingeben)</span></label>
-        <input class="inp" id="rgCode" type="text" placeholder="Von der Leitung, z. B. K7QM-4XP2"
+        <input class="inp" id="rgCode" type="text" placeholder="z. B. K7QM-4XP2"
                autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="60" />
       </div>
       <p class="auth-err" id="regErr"></p>

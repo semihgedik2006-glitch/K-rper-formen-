@@ -13257,6 +13257,23 @@ bauen darauf auf.
   `beitritt` stehen mit Begründung in der Liste der Sammlungen, die oben
   liegen dürfen.
 
+### Gesamtdurchlauf
+
+156 Durchläufe, davon 152 grün. Die vier Funde:
+- Der Platzhalter im Codefeld war bei 320 px länger als das Feld
+  (`test-abgeschnitten`, `test-neu-messlatte`). Er heisst jetzt nur noch
+  „z. B. K7QM-4XP2“.
+- `test-gestaltung` meldete eine feste Rundung `50%`, feste Abstände
+  `12px` und eine feste Schriftgrösse. Das steht jetzt alles auf der
+  Leiter (`--r-rund`, `--s16`, `--t-lg`).
+- `test-verwaltung-pc` erwartete die Teamliste oben links. Seit der
+  Demo-Anfrage steht dort „Wartet auf Freigabe“. Der Test prüft jetzt die
+  obersten Karten beider Spalten nebeneinander **und** dass die
+  Teamliste in der linken Spalte steht. Die Forderung selbst, zwei
+  Spalten mit der Liste links, bleibt gleich streng.
+
+Danach liefen die betroffenen Tests einzeln grün.
+
 ### Nicht prüfbar hier
 
 Den echten Anmeldeweg (Konto anlegen gegen Firebase Auth) kann ich hier
