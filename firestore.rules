@@ -24,6 +24,28 @@ service cloud.firestore {
     function myKeys() {
       return myProfile().get('studioKeys', []);
     }
+    /* ── Dokumente: die Studiogrenze beim Lesen (P-01, Runde 114) ──
+       Aus dem Betrieb, 25.9.2026: „JA aber man kann selber entscheiden
+       ob alle oder nur studio". Ein Dokument trägt `studios`: 'all'
+       oder eine Liste von Studios. Bis Runde 114 hielt nur die
+       Oberfläche das ein (docVisible) — über die Konsole las jeder im
+       Betrieb jedes Dokument.
+
+       Bewusst ohne .get('studios', 'all'): ein Dokument ganz ohne Feld
+       lässt sich nicht abfragen, und für Abfragen muss die Regel aus
+       den Filtern allein beweisbar sein. Alte Dokumente ohne Feld setzt
+       die App beim Chef einmal auf 'all' (dokumenteNachziehen). */
+    /* Ohne `d.studios is list` davor, obwohl es naheläge: damit liess
+       sich die Abfrage „array-contains-any [meine Studios]" im Emulator
+       nicht mehr beweisen, und die Dokumentenseite wäre für jeden ausser
+       dem Chef leer geblieben. Nachgemessen am 25.9.2026. Bei 'all'
+       entscheidet der zweite Teil, bevor hasAny auf eine Zeichenkette
+       trifft. */
+    function dokumentFuerMich(d) {
+      return isChef()
+        || d.studios == 'all'
+        || d.studios.hasAny(myKeys());
+    }
     // Darf ich in DIESEM Studio verwalten?
     function manages(studioKey) {
       return isChef() || (isLeiter() && studioKey in myKeys());
@@ -896,7 +918,7 @@ service cloud.firestore {
     // ── Dokumente (Metadaten) ──
     match /documents/{docId} {
       allow read: if aufFlachenPfaden()
-        && (istAktiv());
+        && istAktiv() && dokumentFuerMich(resource.data);
       // Leiter darf nur Dokumente anlegen, die ausschließlich seine Studios betreffen
       allow create: if aufFlachenPfaden()
         && (isChef()
@@ -913,8 +935,12 @@ service cloud.firestore {
     // Chefsache: Dokumente landen ohne Studio-Kennung im Papierkorb, und
     // den darf ohnehin nur der Chef endgueltig leeren.
     match /documentData/{docId} {
-      allow read: if aufFlachenPfaden()
-        && (istAktiv());
+      // Der Inhalt folgt seinem Dokument: wer es nicht sehen darf, liest
+      // auch den Inhalt nicht. Fehlt das Dokument, nur der Chef.
+      allow read: if aufFlachenPfaden() && istAktiv()
+        && (isChef()
+            || (exists(/databases/$(database)/documents/documents/$(docId))
+                && dokumentFuerMich(get(/databases/$(database)/documents/documents/$(docId)).data)));
       allow create, update: if aufFlachenPfaden()
         && (isChef()
         || (isLeiter()
@@ -1795,7 +1821,7 @@ service cloud.firestore {
         }
 
         match /documents/{docId} {
-          allow read: if inFirma(f) && (istAktiv());
+          allow read: if inFirma(f) && istAktiv() && dokumentFuerMich(resource.data);
           // Leiter darf nur Dokumente anlegen, die ausschließlich seine Studios betreffen
           allow create: if schreibtIn(f) && (isChef()
             || (isLeiter() && request.resource.data.studios.hasOnly(myKeys())));
@@ -1804,11 +1830,18 @@ service cloud.firestore {
         }
 
         match /documentData/{docId} {
-          allow read: if inFirma(f) && (istAktiv());
+          allow read: if inFirma(f) && istAktiv()
+            && (isChef()
+                || (exists(/databases/$(database)/documents/firmen/$(f)/documents/$(docId))
+                    && dokumentFuerMich(get(/databases/$(database)/documents/firmen/$(f)/documents/$(docId)).data)));
+          /* Bis Runde 114 sah diese Zeile unter /documents/ nach — dem
+             FLACHEN Pfad — statt unter firmen/<f>/documents/. Eine
+             Studioleitung in einer Firma konnte deshalb keinen Inhalt zu
+             ihrem eigenen Dokument speichern. Beim Umbau gefunden. */
           allow create, update: if schreibtIn(f) && (isChef()
             || (isLeiter()
-                && exists(/databases/$(database)/documents/documents/$(docId))
-                && get(/databases/$(database)/documents/documents/$(docId))
+                && exists(/databases/$(database)/documents/firmen/$(f)/documents/$(docId))
+                && get(/databases/$(database)/documents/firmen/$(f)/documents/$(docId))
                      .data.studios.hasOnly(myKeys())));
           allow delete: if schreibtIn(f) && (isChef());
         }

@@ -10,6 +10,29 @@ kann ich nicht beurteilen — und wer das anders behauptet, sollte es nicht.
 
 ---
 
+## Stand 25.9.2026: was dazugekommen ist (Runde 113/114)
+
+Aus dem Betrieb: *„ergänze alle rechtlichen schritte und füge ein was
+nötig ist ebenso wie eine AGB und eine cookie zeile die jeder nutzer
+einmal anklicken muss"*.
+
+| Schritt | wo | Stand |
+|---|---|---|
+| **AGB in der App** | Rechtliches → Reiter „AGB“ (auch vor der Anmeldung) | § 1–11 aus `docs/AGB-ENTWURF.md`, ohne die Anmerkungen für den Anwalt |
+| **Zustimmung an der Kasse** | Verwaltung → System → Abo: Haken „Ich buche für ein Unternehmen (§ 14 BGB) und stimme den AGB und dem AV-Vertrag zu“ | Ohne Haken ist der Knopf gesperrt, **und** `stripeKasse` lehnt ab. Gespeichert: wer, wann, welcher Stand (`abo/aktuell.zustimmung`). Damit ist die offene Frage aus dem AGB-Entwurf entschieden: „Ob die Kasse die Unternehmereigenschaft abfragen soll“ → ja |
+| **Hinweis zur Speicherung** | beim ersten Öffnen, unten, auch vor der Anmeldung | Einmal **je Gerät** bestätigen (§ 25 TDDDG spricht von der Endeinrichtung). Die App setzt nur technisch notwendige Speicherung ein, also keine Einwilligung im Rechtssinn, sondern eine Auskunft. „Mehr dazu“ öffnet die Datenschutzerklärung |
+| **Datenschutzerklärung ergänzt** | Rechtliches → Datenschutz | neu: „Auf deinem Gerät“, „Wenn etwas schiefgeht“ (Vorfall melden), Dokumente je Studio, Auskunft selbst herunterladen |
+| **Auskunft nach Art. 15** | Ich → Daten; für den Chef: Team → Bearbeiten | P-10 behoben |
+| **Datenschutzvorfall melden** | Alles → Was muss ich wissen? | P-02, Meldefrist 48 h im AV-Vertrag |
+| **Lizenzdatei** | `LICENSE` | P-04 behoben |
+
+**Weiterhin nur beim Anwalt:** ob AGB, AV-Vertrag und Datenschutzerklärung
+in dieser Form tragen. Die App zeigt die AGB ohne den Vermerk „Entwurf“,
+denn ein Kunde soll einen Vertragstext lesen und keine Notiz. **Geprüft
+sind sie trotzdem nicht.** Das steht hier und in `docs/AGB-ENTWURF.md`.
+
+---
+
 ## Was schon gebaut ist
 
 | | |

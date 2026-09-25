@@ -24,7 +24,7 @@ bekommt, findet die Lücken trotzdem, nur später und im falschen Moment.
 | | |
 |---|---|
 | **Schweregrad** | **HOCH** |
-| **Status** | **Für die Personendaten behoben am 17.9.2026, für die Studio-Chats am 23.9.2026.** Aufgaben, Putzplan, Geräte, Material: **bewusst offen**. Dokumente mit Zielstudio: **offen** (siehe unten) |
+| **Status** | **Für die Personendaten behoben am 17.9.2026, für die Studio-Chats am 23.9.2026.** Aufgaben, Putzplan, Geräte, Material: **bewusst offen**. Dokumente mit Zielstudio: **behoben am 25.9.2026** (Runde 114, siehe unten) |
 | **Gefunden** | 16.9.2026, beim Erstellen der Rechtsantworten |
 
 **Was war das Problem?** Die Leseregel prüfte nur, ob jemand ein
@@ -116,7 +116,24 @@ steht dort 0, darf die Übergangszeile in `kanalErlaubt()` weg.
 
 `tests/rules/studiogrenze.test.js`: 45 Zusicherungen (+18).
 
-### Weiterhin offen: Dokumente (und das Brett)
+### Dokumente — behoben am 25.9.2026 (Runde 114)
+
+Aus dem Betrieb: *„JA aber man kann selber entscheiden ob alle oder nur
+studio"*. Die Regel liest jetzt `studios` (`dokumentFuerMich` in
+`firestore.rules`, beide Welten, dazu `documentData` für den Inhalt). Die
+App fragt für alle ausser dem Chef zweimal: `studios == 'all'` und
+`studios array-contains-any [meine Studios]`. Genau diese zwei
+Abfragen lässt die Regel zu; die ungefilterte nicht mehr.
+**Übergang:** Dokumente ganz ohne Feld setzt die App beim Chef einmal
+auf `'all'`. So hat sie sie ohnehin gezeigt. **Werkzeug:** Über der
+Dokumentenliste steht beim Chef „Wer sieht was“, mit den Dokumenten
+für einzelne Studios. **Beim Umbau gefunden:** unter
+`firmen/<k>/documentData` sah die Regel am flachen Pfad nach. Eine
+Studioleitung in einer Firma konnte deshalb keinen Inhalt zu ihrem
+eigenen Dokument speichern. `tests/rules/dokumente.test.js`: 34
+Zusicherungen, gegen die alte Regel fallen 11 durch.
+
+Der alte Stand zur Einordnung:
 
 **Dokumente** tragen ein Zielfeld `studios` („alle" oder eine Liste von
 Studios), und die Oberfläche zeigt jedem nur, was für seine Studios
@@ -331,7 +348,16 @@ dokumentiert werden.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open |
+| **Status** | **Behoben am 25.9.2026** (Runde 114): „Ich → Daten → Meine Daten herunterladen" und für den Chef „Datenauskunft herunterladen" im Team |
+
+Umgesetzt mit der Serverfunktion `auskunftErstellen`. Sie geht **alle**
+Sammlungen der Firma durch, statt nur eine Liste. Die volle Fassung
+bekommt nur die Person selbst. Der Chef bekommt sie ohne die Inhalte der
+Direktnachrichten und ohne den persönlichen Bereich, denn beides sieht er
+auch in der App nicht. Nie enthalten sind `zeitPins` und Felder mit
+hash/token/geheim. `tests/rules/auskunft.test.js`: 20 Zusicherungen.
+
+Der alte Stand zur Einordnung:
 
 Verlangt eine Beschäftigte alle Daten über sich, muss jemand mit
 Datenbankzugang nachsehen und zusammenstellen. Die Daten liegen über
