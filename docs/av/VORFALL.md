@@ -27,7 +27,7 @@ zu erfinden.**
 |---|---|
 | **Verantwortlich für Meldungen** | Semih Gedik, Kendenicherstraße 15, 50354 Hürth |
 | **Erreichbar unter** | S.gedik@kformen.com |
-| **Vertretung** | *offen — siehe Abschnitt 7* |
+| **Vertretung** | **keine** — entschieden am 25.9.2026, im Vertrag offengelegt (siehe Abschnitt 7) |
 
 Ein Einzelunternehmen hat keine Meldekette. Das ist ehrlicher, als eine
 zu behaupten, und es hat eine Folge, die in Abschnitt 7 steht.
@@ -94,7 +94,7 @@ Logging; für die App selbst die Sammlung `fehler` (siehe
 > Grundlage.** Wo sie steht, wird im Zweifel zum Nachteil des Betroffenen
 > eingeschätzt, nicht zum eigenen Vorteil.
 
-### Schritt 3 — Kunden benachrichtigen (unverzüglich, spätestens 24 Stunden)
+### Schritt 3 — Kunden benachrichtigen (unverzüglich, spätestens 48 Stunden)
 
 Betroffen ist, wessen Daten im Spiel sind. Bei einem Fehler in der
 gemeinsamen Codebasis sind das **alle Kunden**, nicht nur der, bei dem
@@ -106,9 +106,16 @@ stehen in `users`.
 
 Vorlage: Abschnitt 4.
 
-**24 Stunden ist meine eigene Zusage, nicht das Gesetz.** Das Gesetz
-sagt „unverzüglich". Eine Zahl ist überprüfbar, „unverzüglich" nicht —
-und der Kunde braucht Vorlauf innerhalb seiner 72 Stunden.
+**48 Stunden ist meine eigene Zusage, nicht das Gesetz.** Das Gesetz
+sagt „unverzüglich" — das gilt weiter: wer es in drei Stunden schafft,
+meldet in drei Stunden. Die Zahl ist die Obergrenze, die ich zusagen
+kann. Eine Zahl ist überprüfbar, „unverzüglich" nicht.
+
+Bis 25.9.2026 standen hier 24 Stunden. Aus dem Betrieb: *„Es gibt keine
+vertretung aber wir können das antworte fenster erhöhen."* Ohne
+Vertretung war 24 eine Zusage, die ein einziger Krankheitstag bricht;
+48 lässt Luft für genau diesen Fall. Mehr nicht: der Kunde braucht
+selbst Zeit für seine Meldung an die Behörde.
 
 ### Schritt 4 — Dokumentieren (immer, auch ohne Meldung)
 
@@ -248,7 +255,12 @@ Urlaub ohne Empfang, Krankheit, Unfall —, läuft die Frist des Kunden
 weiter und niemand meldet. Das ist die eigentliche Schwachstelle dieses
 Blatts, und sie lässt sich nicht durch Formulierung beheben.
 
-Drei mögliche Antworten, keine davon umgesetzt:
+**Entschieden am 25.9.2026: Antwort 3** — keine Vertretung, offen im
+AV-Vertrag (§ 8 Abs. 4), und dafür die eigene Frist von 24 auf **48
+Stunden** erhöht. Die Schwachstelle bleibt; sie ist jetzt benannt statt
+verschwiegen.
+
+Die drei Antworten, die zur Wahl standen:
 
 1. Eine zweite Person benennen, die Zugang zur Firebase-Konsole und zu
    den Kundenadressen hat.

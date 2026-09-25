@@ -162,11 +162,13 @@ weiteren Aufbewahrung. Eine darüber hinausgehende Löschung erfolgt auf
 gesonderte Weisung, soweit technisch möglich.
 
 (4) **Meldepflichten.** Der Auftragsverarbeiter benachrichtigt den
-Verantwortlichen unverzüglich, spätestens innerhalb von **24 Stunden**
+Verantwortlichen unverzüglich, spätestens innerhalb von **48 Stunden**
 nach Kenntnis, über eine Verletzung des Schutzes personenbezogener Daten
 (Art. 33 Abs. 2), und stellt die zur Meldung erforderlichen Angaben
 bereit. Ablauf, Inhalt der Meldung und Dokumentation richten sich nach
-**Anlage 5**.
+**Anlage 5**. Der Auftragsverarbeiter ist ein Einzelunternehmen; eine
+Vertretung für Meldungen ist **nicht** bestellt. Der Verantwortliche
+nimmt dies zur Kenntnis.
 
 (5) Der Auftragsverarbeiter unterstützt bei Datenschutz-Folgen-
 abschätzungen (Art. 35) und vorheriger Konsultation (Art. 36), soweit
