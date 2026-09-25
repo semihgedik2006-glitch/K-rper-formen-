@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xDtZZaIUjFTIzfSCDtV8iz9in1cELTeK2/dFyHpFgwA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-EsnFWTe1lDvWi6UMANHMEVAwsAwnj49vGR/2e84uuzQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -351,10 +351,12 @@ button{color:inherit}
    zentriert darüber. Das ist dieselbe Lösung, die Apple in den eigenen
    Richtlinien empfiehlt: getrennte Größe für Auge und Finger. */
 .react,.pin-x,.pin-go,.ann-del,.ann-pin,.shift-x,.check,.t-cam,.mat-del,
-.msg-del,.pp-del,.cert-del,.mini-x{position:relative}
+.msg-del,.pp-del,.cert-del,.mini-x,.pb-weg{position:relative}
+/* .pb-weg seit Runde 108: der Papierkorb im Probetraining war 26 × 29,
+   gefunden beim Nachmessen am Rechner (test-pc-spalten). */
 .react::after,.pin-x::after,.pin-go::after,.ann-del::after,.ann-pin::after,
 .shift-x::after,.check::after,.t-cam::after,.mat-del::after,.msg-del::after,
-.pp-del::after,.cert-del::after,.mini-x::after{
+.pp-del::after,.cert-del::after,.mini-x::after,.pb-weg::after{
   content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:max(100%,44px);height:max(100%,44px)}
 html{-webkit-text-size-adjust:100%;height:100%}
@@ -1247,6 +1249,37 @@ html.demo #terminalSchirm{top:44px}
    ihren eigenen Behaelter mit eigenem overflow-x und sind davon nicht
    betroffen. */
 .scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 var(--rand) var(--s24)}
+/* ── Am Rechner zwei Spalten, wo eine Spalte über 1.100 px lief (Runde 108) ──
+   Gemessen am 25.9.2026 bei 1440 px: Material, Geräte, Probetraining
+   und die Schulungsliste zogen jede Karte über 1.175 px — in der
+   Materialtabelle stand der Name 900 px von seinen Zahlen entfernt,
+   das Probetraining war 5.300 px lang. Die Hauptsache bleibt links und
+   breit, was daneben gehört, steht rechts. Nur wo es rechts auch etwas
+   gibt (:has) — sonst bliebe eine leere Spalte stehen. */
+@media (min-width:1100px){
+  #view-material .scroll-area:has(.mat-seite > .card:not([style*="none"])),
+  #view-geraete .scroll-area:has(#devAddCard:not([style*="none"])),
+  #view-probe .scroll-area{
+    /* Links höchstens 960 px: bei 1920 lief die Materialtabelle sonst
+       wieder auf 1.230 px, und der Name stand wieder weit weg von seinen
+       Zahlen. Rechts bleibt dann Luft — das ist gewollt. */
+    display:grid;grid-template-columns:minmax(0,960px) minmax(320px,400px);justify-content:start;
+    column-gap:var(--s24);align-items:start;align-content:start}
+  #view-material .scroll-area > .mat-bar,#view-material .scroll-area > .mat-alert,
+  #view-geraete .scroll-area > #devWo,#view-geraete .scroll-area > .mat-bar,
+  #view-geraete .scroll-area > .mat-alert{grid-column:1 / -1}
+  #view-material .scroll-area > .mat-seite{grid-column:2;grid-row:3;position:sticky;top:var(--s12)}
+  #view-material .scroll-area > .card{grid-column:1;grid-row:3}
+  #view-geraete .scroll-area > #devCard{grid-column:1;grid-row:4}
+  #view-geraete .scroll-area > #devAddCard{grid-column:2;grid-row:4;position:sticky;top:var(--s12)}
+  #view-probe .scroll-area > .card:not(#pbQuotenCard){grid-column:1;grid-row:1}
+  #view-probe .scroll-area > #pbQuotenCard{grid-column:2;grid-row:1}
+  /* Die Schulungsliste in zwei Spalten: eine Karte über 1.175 px trug
+     eine Zeile Beschreibung und viel Leere. */
+  #schListe{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s10)}
+  #schListe > .sch-karte{margin-bottom:0}
+  #schListe > .empty{grid-column:1 / -1}
+}
 .todo-progress{display:flex;align-items:center;gap:var(--s12);margin:var(--s2) 0 var(--s12);padding:var(--s10) var(--s12);
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
 .pbar{flex:1;height:9px;border-radius:var(--r-pille);background:var(--auf-2);overflow:hidden}
@@ -7218,6 +7251,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
           <div class="mat-alert" id="matAlert" style="display:none"></div>
 
+          <!-- Am Rechner steht diese Hülle rechts neben der Tabelle
+               (Runde 108); am Handy ändert sie nichts an der Reihenfolge. -->
+          <div class="mat-seite">
           <div class="card" id="fcCard" style="display:none" data-fold="vorhersage">
             <h3 data-ikon="trendAb" id="fcTitle">Reicht noch</h3>
             <p class="hint">Aus den Wochen-Sicherungen im Archiv gerechnet – keine Schätzung,
@@ -7242,6 +7278,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <label for="shopMailTo">Adresse des Lieferanten (nur auf diesem Gerät gespeichert)</label>
               <input class="inp" id="shopMailTo" type="email" placeholder="bestellung@lieferant.de" autocomplete="off" />
             </div>
+          </div>
           </div>
 
           <div class="card" style="margin-bottom:14px">
@@ -15731,6 +15768,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-pc-spalten', datum:'25.9.2026', titel:'Am Rechner: Material, Geräte und Probetraining nebeneinander', punkte:[
+    'Material: Die Tabelle steht links, „Reicht noch" und die Einkaufsliste rechts daneben — der Name steht nicht mehr eine halbe Bildschirmbreite von seinen Zahlen entfernt.',
+    'Geräte: Die Liste links, „Gerät aufnehmen" rechts.',
+    'Probetraining: Die Einträge links, die Quote rechts — die Seite ist nur noch halb so lang.',
+    'Schulung: Die Module stehen in zwei Spalten.',
+    'Am Handy bleibt alles, wie es ist.' ] },
   { id:'2026-09-25-design', datum:'25.9.2026', titel:'Vier kleine Verbesserungen', punkte:[
     'Chat: Der Tag („Heute", „Gestern", Datum) bleibt beim Zurückscrollen oben stehen — du weisst immer, von wann die Nachrichten sind.',
     'Schulung: Über den Modulen steht, wie viele du schon geschafft hast und wie viele noch fehlen, mit Balken. Tippst du eine Gruppe an, zählt sie nur diese.',
