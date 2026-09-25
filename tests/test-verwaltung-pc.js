@@ -69,7 +69,12 @@ const nebeneinander = (a, b) => !!a && !!b && b.l >= a.r - 1 && Math.abs(a.t - b
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   const FAELLE = [
-    ['team', '[data-cpane="team"] [data-fold="teamliste"]', '[data-cpane="team"] [data-fold="zugang"]', 'Team: Teamliste links, „Zugang anlegen" rechts'],
+    /* Seit Runde 117 steht in der Demo eine Anfrage in „Wartet auf
+       Freigabe" — ganz oben in der linken Spalte, über der Teamliste.
+       Nebeneinander stehen deshalb die OBERSTEN Karten beider Spalten;
+       dass die Teamliste in der linken Spalte steht, prüft die Zeile
+       direkt nach der Schleife. */
+    ['team', '[data-cpane="team"] .vw-haupt > .card:not([style*="none"])', '[data-cpane="team"] [data-fold="zugang"]', 'Team: links Freigaben und Teamliste, „Zugang anlegen" rechts'],
     ['standorte', '[data-cpane="standorte"] .vw-haupt > .card', '[data-cpane="standorte"] [data-fold="studioneu"]', 'Studios: Liste links, „Studio anlegen" rechts'],
     ['system', '#aboKarte', '[data-cpane="system"] .vw-neben > .card:not([style*="none"])', 'System: Abo links, „Neues Design" rechts'],
     /* Runde 116: Nachweise und Auswertung. */
@@ -86,6 +91,12 @@ const nebeneinander = (a, b) => !!a && !!b && b.l >= a.r - 1 && Math.abs(a.t - b
       const L = await kasten(p, links), R = await kasten(p, rechts);
       pruefe(was, nebeneinander(L, R), JSON.stringify({ L, R }));
     }
+    await reiter(p, 'team');
+    await p.evaluate(() => { const s = document.querySelector('#view-chef .scroll-area'); if (s) s.scrollTop = 0; });
+    const oben = await kasten(p, '[data-cpane="team"] .vw-haupt > .card:not([style*="none"])');
+    const liste = await kasten(p, '[data-cpane="team"] [data-fold="teamliste"]');
+    pruefe('Team: die Teamliste steht in der linken Spalte (unter den Freigaben)',
+      !!oben && !!liste && liste.l === oben.l && liste.t >= oben.t, JSON.stringify({ oben, liste }));
     /* Eine zugeklappte Karte links liess neben der vollen rechten Spalte
        eine leere Fläche stehen („Alle Nachweise": 99 px hoch). Am
        Rechner startet die Hauptspalte deshalb offen. */

@@ -13135,3 +13135,148 @@ Schnellzugriffe deshalb in **zwei Spalten**, das Zeichen über dem Wort,
   gab: `test-regelumgebung`, `test-abo-leiter`, `test-stripe-felder`
   und `test-mail-versand`. Alle sechs sind im Hauptbaum einzeln
   nachgelaufen.
+
+## Runde 117 — Konto ohne Betrieb, eindeutige Firmencodes, Freigabe mit Studios
+
+> Aus dem Betrieb, 25.9.2026:
+> „man kann ein account erstellen und wenn man dann keinen Firmen code
+> eingibt und der chef das bestätigt sieht man nur ein fenster wo man
+> dann sein profil und interface bearbeiten kann und so aber mehr nicht
+> wie so eine mini seite fürs eigne profil halt"
+> „Chef bestätigt trotzdem bzw ein chef der jeweiligen firma und der chef
+> legt ja auch den code an (achte darauf das kein code jemals sich
+> doppeln kann egal wie viele firmen es gibt)"
+> „ja für chefs, Admin und studioleiter accounts" (2FA — Runde 119)
+> „Noch nicht aber ich würde es alles gerne so vorbereiten das ich die
+> app im appstore launchen könnte" (Apple — Runde 118)
+
+Das Grundgerüst für die Anmeldung. Google/Apple (118) und die 2FA (119)
+bauen darauf auf.
+
+### Was gebaut ist
+
+- **Jeder kann ein Konto anlegen.** Es entsteht ohne Betrieb
+  (`firma:'_ohne'`, inaktiv) und sieht nichts ausser sich selbst.
+  - Warum ein eigener Wert und nicht „kein Feld firma": Ein Profil ohne
+    das Feld gilt seit Stufe 2B als Konto von Körperformen. Ein neues
+    Konto wäre dann einen Schalter vom echten Betrieb entfernt.
+  - Warum es trotzdem nichts sieht: `firmen/_ohne` gibt es nicht, also
+    greift weder `inFirma()` noch `aufFlachenPfaden()`. Das gilt selbst
+    dann, wenn das Konto irgendwie aktiv würde.
+- **Firmencode → Anfrage, der Chef gibt frei.** Den Code prüft der
+  Server (`firmaBeitreten`), nicht eine Regel. Der Beitritt setzt `firma`,
+  lässt das Konto aber **inaktiv**. Die Geschäftsführung bekommt eine
+  Push-Meldung.
+  - Raten wird gebremst: nach 10 Fehlversuchen je Konto ist eine Stunde
+    Pause.
+- **Kein Code doppelt.** Dafür gibt es das Verzeichnis `firmencodes/{CODE}`
+  über allen Firmen, geschrieben in einer Transaktion.
+  - Die Schreibweise zählt nicht: „kf-2026“ und „KF 2026“ sind derselbe
+    Code.
+  - Altcodes, die nur in `config/registrierung` stehen, werden beim
+    Setzen und beim Beitritt über alle Firmen mitgeprüft.
+  - Steht ein Altcode in zwei Firmen, gilt er für keine.
+    `firmencodesPruefen` nennt dem Betreiber dann die Firmen, aber nie
+    den Code.
+  - Der Chef kann den Code nicht mehr am Server vorbei schreiben: Die
+    Regel für `config/registrierung` und `beitrittSchalter` steht auf
+    `false`, auch in der allgemeinen `config/{doc}`-Regel, in beiden
+    Welten.
+  - „Code erzeugen“ liefert 8 Zeichen (4-4) ohne 0/O/1/I/L.
+- **Jede Selbstanmeldung startet inaktiv**, auch mit richtigem Code.
+  Bis Runde 116 entschied das ein Schalter je Betrieb. Den Schalter gibt
+  es nicht mehr, weil er fest auf „an“ stünde.
+- **Freigeben mit Studios.** Die Studiowahl im Anmeldeformular ist weg,
+  denn ohne Betrieb gibt es keine Studios. Der Chef ordnet sie beim
+  Freigeben zu; ohne Studio wird er aufgehalten, sonst sähe die Person
+  eine leere App.
+- **Ablehnen löscht nicht mehr.** Die Person geht zurück auf „ohne
+  Betrieb“, behält ihr Konto und kann einen anderen Code eingeben.
+- **Die kleine Seite „Mein Konto“** enthält: Betrieb (Code eingeben,
+  Anfrage-Stand, zurückziehen), Profil und Aussehen, Passwort ändern,
+  Abmelden, Konto löschen, Impressum und Datenschutz.
+  - Am Rechner steht sie zweispaltig, höchstens 880 px breit.
+  - Profil und Aussehen laufen über **dasselbe** Einstellungsfenster wie
+    in der App, nur schlanker (`body.gast`: ohne Meldungen, Nachweise
+    und Kalender). Ein zweites Formular wäre die zweite Stelle, an der
+    ein neues Feld vergessen wird.
+- **Konto löschen** (`kontoLoeschen`) geht nur ohne Team. Wer im Team
+  ist, hat Zeiten und Schichten mit Aufbewahrungspflicht; das Konto
+  entfernt die Geschäftsführung.
+  - Für den App Store (5.1.1(v)) muss es später auch für Teammitglieder
+    einen Weg geben. Das steht in der Planung zu Runde 118.
+- **Wartende Anfragen stehen nicht mehr in der Teamliste**, in den
+  Direktnachrichten oder in Zählungen (`_wartende` getrennt von
+  `_allUsers`). Seit jeder mit dem Code anfragen kann, stünde sonst ein
+  Fremder schon vor der Freigabe im Team.
+- **Demo:** `?demo=neu` zeigt die kleine Seite (Code: `DEMO-2026`), und
+  die Geschäftsführung hat eine wartende Anfrage (Lea Neumann).
+
+### Gefunden
+
+- **B-45: Ein Chef konnte ein Konto in einen fremden Betrieb
+  verschieben.**
+  - `gleicheFirma()` prüfte nur den Stand vor der Änderung. Im Emulator
+    ging `update({firma: B})` am eigenen Mitarbeiter durch, bevor die
+    Regel geändert war.
+  - Jetzt darf sich `firma` nur zurück auf `'_ohne'` bewegen
+    (`firmaWechselErlaubt()`).
+- `firmaLaeuftNoch()` hätte ein Konto ohne Betrieb mit „Dieser Zugang
+  ist stillgelegt“ abgemeldet. Die kleine Seite kommt jetzt vorher.
+- Das Einstellungsfenster bekam seine Knöpfe erst mit `showApp()`
+  (`bindActions`). Auf der kleinen Seite speicherte „Speichern“ deshalb
+  nicht. Der Test hat es gefunden.
+- Bei 430 px in der Dichte „kompakt“ traf „Nachsehen“ nur 42 px hoch,
+  weil sich die Knöpfe um 2 px überlappten. Die Abstände sind jetzt fest
+  12 px.
+- Die strengere Seitenprüfung in `test-firma-link` meldete zuerst
+  Standortnamen einer fremden Firma. Sie standen aber nur im Quelltext
+  der `<script>`-Blöcke. Die Messung lässt Skripte jetzt aus, und die
+  Gegenprobe beweist, dass sie anschlägt.
+
+### Tests
+
+- **Neu:**
+  - `tests/rules/konto-ohne-firma.test.js` (38 Zusicherungen);
+  - `tests/rules/firmencode.test.js` (33; die Funktionen werden
+    ausgeführt);
+  - `tests/test-konto-ohne-firma.js` (64 Zusicherungen; Trefferflächen
+    bei 320–1920 px, normal und kompakt).
+- **Geändert mit Zitat, weil der Wunsch aus dem Betrieb es deckt:**
+  - `security.test.js`: „Neuanmeldung als Mitarbeiter ist erlaubt“ und
+    „OHNE Schranken: Selbstregistrierung geht“ legen jetzt wartend an
+    („Chef bestätigt trotzdem“). Dazu kommt die Gegenprobe, dass sofort
+    aktiv abgelehnt wird.
+  - `test-beitritt.js`: Das Codefeld steht immer da. Statt des
+    Freigabe-Hakens prüft der Test „Code erzeugen“ und die Studiowahl an
+    der Anfrage.
+  - `test-firma-link.js`: Die Standortliste vor der Anmeldung gibt es
+    nicht mehr. Geprüft wird die ganze Seite, was strenger ist, mit einer
+    Gegenprobe.
+- `test-funktionen-pfade`: `firmencodes`, `beitrittVersuche` und
+  `beitritt` stehen mit Begründung in der Liste der Sammlungen, die oben
+  liegen dürfen.
+
+### Gesamtdurchlauf
+
+156 Durchläufe, davon 152 grün. Die vier Funde:
+- Der Platzhalter im Codefeld war bei 320 px länger als das Feld
+  (`test-abgeschnitten`, `test-neu-messlatte`). Er heisst jetzt nur noch
+  „z. B. K7QM-4XP2“.
+- `test-gestaltung` meldete eine feste Rundung `50%`, feste Abstände
+  `12px` und eine feste Schriftgrösse. Das steht jetzt alles auf der
+  Leiter (`--r-rund`, `--s16`, `--t-lg`).
+- `test-verwaltung-pc` erwartete die Teamliste oben links. Seit der
+  Demo-Anfrage steht dort „Wartet auf Freigabe“. Der Test prüft jetzt die
+  obersten Karten beider Spalten nebeneinander **und** dass die
+  Teamliste in der linken Spalte steht. Die Forderung selbst, zwei
+  Spalten mit der Liste links, bleibt gleich streng.
+
+Danach liefen die betroffenen Tests einzeln grün.
+
+### Nicht prüfbar hier
+
+Den echten Anmeldeweg (Konto anlegen gegen Firebase Auth) kann ich hier
+nicht testen, weil das SDK in dieser Umgebung nicht lädt. Regeln und
+Funktionen laufen im Emulator; die Oberfläche läuft in der Demo und mit
+den Attrappen.
