@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-2ZIQS4Mx2W9J1kYJWHeeo/IDk7kLcYKMAsJigAfyfXM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Za7NZnAS4krAB9aJpjsqbWc+6pLhBJfD80uKxf3jvZc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5171,6 +5171,63 @@ html{font-size:var(--fs,100%)}
 .lade-ruhe .hr-ico svg{width:22px;height:22px}
 /* ── Datenschutzvorfall melden (Runde 113) ── */
 .vf-box{max-width:520px}
+/* ── Mein Konto — die kleine Seite (Runde 117) ──
+   Eine Spalte am Handy, zwei am Rechner: links der Betrieb (das, worum
+   es gerade geht), rechts Profil und Sicherheit. Nie über 880 px breit
+   — eine Seite mit vier Karten braucht keinen ganzen Bildschirm. */
+.mk-wrap{position:fixed;inset:0;z-index:900;overflow-y:auto;background:var(--bg);
+  padding:calc(var(--s24) + var(--sat)) var(--s16) calc(var(--s24) + var(--sab))}
+.mk-seite{max-width:520px;margin:0 auto;display:grid;gap:var(--s16)}
+.mk-kopf{display:flex;align-items:center;gap:var(--s12)}
+.mk-kopf .avatar{width:52px;height:52px;font-size:1.2rem;flex:0 0 auto}
+.mk-kopf h2{margin:0;font-size:var(--t-xl)}
+.mk-kopf .hint{margin:var(--s2) 0 0}
+.mk-karte{background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-lg);
+  padding:var(--s16);box-shadow:var(--e1);display:grid;gap:12px}
+/* Fest 12 px, nicht --s10: in „kompakt" wären es 8, und die unsichtbar
+   vergrösserte Trefferfläche des nächsten Knopfs schnitt dann 2 px vom
+   vorigen ab (gemessen: „Nachsehen" 380 × 42 bei 430 px). */
+.mk-karte > div:not([hidden]){display:grid;gap:12px}
+.mk-karte h3{margin:0}
+.mk-karte .hint{margin:0}
+.mk-karte .field{margin:0}
+.mk-karte .btn{min-height:44px;width:100%}
+.mk-knoepfe{display:grid;gap:12px}
+.mk-status{display:flex;align-items:center;gap:var(--s8);margin:0}
+.mk-punkt{width:10px;height:10px;border-radius:50%;background:var(--warn);flex:0 0 auto}
+.mk-fuss{display:grid;gap:12px}
+.mk-fuss .btn{min-height:44px;width:100%}
+.mk-loeschen{color:var(--danger-tx)}
+.mk-folgt{font-style:italic}
+.feld-optional{font-weight:400;color:var(--text-3)}
+@media (min-width:900px){
+  .mk-seite{max-width:880px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+  .mk-kopf,.mk-fuss{grid-column:1 / -1}
+  .mk-betrieb{grid-row:span 2}
+  .mk-fuss{grid-template-columns:repeat(2,minmax(0,1fr));align-items:center}
+  .mk-fuss .auth-foot{grid-column:1 / -1}
+  .mk-knoepfe{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* Das Einstellungsfenster über der kleinen Seite, in schlanker Fassung. */
+body.gast #profileModal{z-index:950}
+body.gast [data-pmtab="melden"],body.gast [data-pmtab="nachweise"],
+body.gast #profileModal .field:has(#kalHint){display:none}
+/* Freigabe beim Chef: Studios gleich zuordnen */
+/* .emp ist sonst eine Zeile (flex). Hier sind es drei Teile: wer,
+   welche Studios, und die beiden Knöpfe — am Handy untereinander, am
+   Rechner nebeneinander. */
+.emp.fg-zeile{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s8);align-items:start}
+@media (min-width:1100px){
+  .emp.fg-zeile{grid-template-columns:minmax(140px,1fr) minmax(0,2fr) auto}
+  .emp.fg-zeile .fg-err{grid-column:1 / -1}
+  .emp.fg-zeile .fg-knoepfe{flex-direction:column}
+}
+.fg-label{display:block;font-size:var(--t-xs);color:var(--text-2);margin:0 0 var(--s4)}
+.fg-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
+.fg-err:empty{display:none}
+.bt-zeile{display:flex;gap:var(--s8);align-items:stretch}
+.bt-zeile .inp{flex:1 1 auto;min-width:0}
+.bt-zeile .btn{flex:0 0 auto;min-height:44px}
 /* ── Schnellzugriffe: Vorschau im Fenster (Runde 116) ── */
 .sz-vorschau{margin:0 0 var(--s12)}
 .sz-v-zeile{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) var(--s8);
@@ -6341,6 +6398,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <option value="leiter">Als Studioleitung</option>
     <option value="mitarbeiter">Als Mitarbeiter</option>
     <option value="terminal">Als Stempel-Terminal</option>
+    <option value="neu">Als neues Konto (ohne Betrieb)</option>
   </select>
   <!-- ── Der Abo-Zustand, zum Durchklicken ──
        Nachgetragen am 21.9.2026. Bis dahin ging das nur ueber einen
@@ -6523,13 +6581,17 @@ body.neu .kn-zeile{min-height:var(--zeile)}
            hatte aber nie einen Zuhörer; er sah aus wie ein Knopf und war
            keiner. Eine Wahl anzubieten, die es nicht gibt, ist schlimmer
            als gar keine. -->
-      <p class="auth-notiz" data-ikon="person">Du legst einen
-        <b>Mitarbeiter-Zugang</b> an. Zugänge für die Leitung vergibt der
-        Chef in der App.</p>
+      <!-- Runde 117: Ein Konto kann jeder anlegen. Aus dem Betrieb,
+           25.9.2026: „man kann ein account erstellen und wenn man dann
+           keinen Firmen code eingibt und der chef das bestätigt sieht man
+           nur ein fenster wo man dann sein profil und interface bearbeiten
+           kann". Die Studiowahl ist weg: ohne Betrieb gibt es keine
+           Studios, und mit Betrieb ordnet der Chef beim Freigeben zu. -->
+      <p class="auth-notiz" data-ikon="person">Mit dem <b>Firmencode</b> deiner
+        Leitung schickst du gleich eine Anfrage. Die Geschäftsführung gibt
+        sie frei — bis dahin siehst du nur dein eigenes Profil.</p>
       <div class="field"><label for="rgName">Dein Name</label>
         <input class="inp" id="rgName" type="text" placeholder="Vor- und Nachname" autocomplete="name" maxlength="50" /></div>
-      <div class="field" id="rgStudioWrap"><label>Deine Studios (mehrere möglich)</label>
-        <div class="studio-checks" id="rgStudios"></div></div>
       <div class="field"><label for="rgEmail">E-Mail</label>
         <input class="inp" id="rgEmail" type="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" /></div>
       <div class="row">
@@ -6540,10 +6602,10 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <div class="pw-wrap"><input class="inp" id="rgPw2" type="password" placeholder="Passwort" autocomplete="new-password" />
             <button type="button" class="pw-auge" data-pw="rgPw2" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
       </div>
-      <div class="field" id="rgCodeWrap" style="display:none">
-        <label for="rgCode">Firmencode</label>
-        <input class="inp" id="rgCode" type="text" placeholder="Von der Leitung"
-               autocomplete="off" maxlength="60" />
+      <div class="field" id="rgCodeWrap">
+        <label for="rgCode">Firmencode <span class="feld-optional">(kannst du auch später eingeben)</span></label>
+        <input class="inp" id="rgCode" type="text" placeholder="Von der Leitung, z. B. K7QM-4XP2"
+               autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="60" />
       </div>
       <p class="auth-err" id="regErr"></p>
       <button class="btn btn-primary" id="registerBtn" style="width:100%">Konto erstellen</button>
@@ -8115,19 +8177,23 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
           <div data-vw="2" class="card" data-fold="beitritt" data-chef-only="1">
             <h3 data-ikon="schluessel">Wer darf sich anmelden</h3>
-            <p class="hint">Ohne Einstellung hier kann sich jeder anmelden, der die
-              Adresse der App kennt – und sieht dann Chat, Team und Aufgaben.</p>
+            <!-- Seit Runde 117: der Code sagt, zu WELCHEM Betrieb jemand
+                 will — hinein kommt er erst nach deiner Freigabe, immer.
+                 Den Schalter „erst nach Freigabe" gibt es deshalb nicht
+                 mehr; er stünde fest auf an. Kein Code gibt es zweimal:
+                 das prüft der Server über alle Betriebe. -->
+            <p class="hint">Wer sich ein Konto anlegt und euren Code eingibt, landet
+              oben unter „Wartet auf Freigabe". Erst wenn du freigibst und Studios
+              zuordnest, sieht er etwas.</p>
             <div class="field"><label for="btCode">Firmencode</label>
-              <input class="inp" id="btCode" type="text" maxlength="60"
-                     placeholder="leer = kein Code nötig" autocomplete="off" />
-              <p class="hint" style="margin-top:6px">Wer sich anmeldet, muss ihn eingeben.
-                Gib ihn im Team weiter. Leer lassen schaltet ihn ab.</p></div>
-            <label class="studio-check" style="margin-top:6px">
-              <input type="checkbox" id="btFreigabe" />
-              <span><b>Neue Konten erst nach meiner Freigabe aktiv</b></span>
-            </label>
-            <p class="hint" style="margin-top:6px">Empfohlen — fängt auch den Fall
-              ab, dass der Code die Runde macht.</p>
+              <div class="bt-zeile">
+                <input class="inp" id="btCode" type="text" maxlength="60"
+                       placeholder="leer = niemand kann anfragen" autocomplete="off"
+                       autocapitalize="characters" spellcheck="false" />
+                <button class="btn btn-ghost btn-sm" id="btZufall" type="button">Code erzeugen</button>
+              </div>
+              <p class="hint" style="margin-top:6px">6 bis 32 Buchstaben oder Ziffern.
+                Jeden Code gibt es nur einmal — auch über alle Betriebe hinweg.</p></div>
             <button class="btn btn-ghost btn-sm" id="btSave" style="width:100%;margin-top:12px">Speichern</button>
             <p class="em-saved" id="btNote"></p>
           </div>
@@ -8639,21 +8705,71 @@ body.neu .kn-zeile{min-height:var(--zeile)}
   <div class="daumen-dock" id="daumenDock" hidden></div>
 </div>
 
-<div id="warteWrap" style="display:none;position:fixed;inset:0;z-index:900;
-     background:var(--bg);align-items:center;justify-content:center;
-     padding:calc(24px + var(--sat)) 24px calc(24px + var(--sab))">
-  <div class="pm-box" style="max-width:420px;text-align:center">
-    <svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
-         style="width:44px;height:44px;margin-bottom:10px;color:var(--accent)">
-      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-    <h3 style="margin-bottom:8px">Fast geschafft</h3>
-    <p class="hint" style="margin-bottom:6px">
-      Dein Konto ist angelegt. Die Leitung muss es einmal freigeben –
-      danach bist du drin.</p>
-    <p class="hint" id="warteWer" style="margin-bottom:18px"></p>
-    <button class="btn btn-ghost btn-sm" id="warteNeu" style="width:100%">Nachsehen, ob es freigegeben ist</button>
-    <button class="btn btn-ghost btn-sm" id="warteAus" style="width:100%;margin-top:8px">Abmelden</button>
+<!-- ══ MEIN KONTO — die kleine Seite (Runde 117) ═══════════════════════
+     Für ein Konto, das (noch) zu keinem Betrieb gehört oder auf die
+     Freigabe wartet. Aus dem Betrieb, 25.9.2026: „sieht man nur ein
+     fenster wo man dann sein profil und interface bearbeiten kann und so
+     aber mehr nicht wie so eine mini seite fürs eigne profil halt".
+     Mehr gibt es hier nicht, und mehr GEHT auch nicht: die Regeln lassen
+     ein solches Konto an nichts heran als an sein eigenes Profil. -->
+<div id="warteWrap" class="mk-wrap" style="display:none">
+  <div class="mk-seite">
+    <header class="mk-kopf">
+      <div class="avatar" id="mkAvatar" aria-hidden="true">?</div>
+      <div>
+        <h2 id="mkTitel">Hallo</h2>
+        <p class="hint" id="warteWer"></p>
+      </div>
+    </header>
+
+    <section class="mk-karte mk-betrieb" aria-labelledby="mkBetriebKopf">
+      <h3 id="mkBetriebKopf">Dein Betrieb</h3>
+      <div id="mkOhne">
+        <p class="hint">Noch keinem Betrieb zugeordnet. Mit dem Firmencode
+          deiner Leitung schickst du eine Anfrage — die Geschäftsführung gibt
+          sie frei, dann bist du drin.</p>
+        <div class="field"><label for="mkCode">Firmencode</label>
+          <input class="inp" id="mkCode" type="text" placeholder="z. B. K7QM-4XP2"
+                 autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="60" /></div>
+        <button class="btn btn-primary" id="mkBeitreten" type="button">Anfrage senden</button>
+        <p class="auth-err" id="mkCodeErr" role="alert"></p>
+      </div>
+      <div id="mkWartet" hidden>
+        <p class="mk-status"><span class="mk-punkt" aria-hidden="true"></span>
+          Anfrage bei <b id="mkFirma">…</b></p>
+        <p class="hint">Die Geschäftsführung muss sie einmal bestätigen und
+          dir deine Studios zuordnen. Danach öffnet sich die App.</p>
+        <button class="btn btn-primary" id="warteNeu" type="button">Nachsehen, ob es freigegeben ist</button>
+        <button class="btn btn-ghost" id="mkZurueck" type="button">Anfrage zurückziehen</button>
+      </div>
+    </section>
+
+    <section class="mk-karte" aria-labelledby="mkIchKopf">
+      <h3 id="mkIchKopf">Profil und Aussehen</h3>
+      <p class="hint">Name, Bild, Farben, Hell oder Dunkel — alles, was nur dich betrifft.</p>
+      <div class="mk-knoepfe">
+        <button class="btn btn-ghost" id="mkProfil" type="button" data-ikon="person">Profil bearbeiten</button>
+        <button class="btn btn-ghost" id="mkAussehen" type="button" data-ikon="sonne">Aussehen</button>
+      </div>
+    </section>
+
+    <section class="mk-karte" aria-labelledby="mkSicherKopf">
+      <h3 id="mkSicherKopf">Sicherheit</h3>
+      <div class="mk-knoepfe">
+        <button class="btn btn-ghost" id="mkPasswort" type="button" data-ikon="schluessel">Passwort ändern</button>
+      </div>
+      <p class="hint mk-folgt" id="mkZweiFaktor">Zwei-Faktor-Anmeldung und „Mit Google anmelden": folgt in Kürze.</p>
+    </section>
+
+    <footer class="mk-fuss">
+      <button class="btn btn-ghost" id="warteAus" type="button">Abmelden</button>
+      <button class="btn btn-ghost mk-loeschen" id="mkLoeschen" type="button">Konto löschen</button>
+      <p class="auth-foot">
+        <a class="recht-link" data-rechtauf="impressum">Impressum</a>
+        <span aria-hidden="true"> · </span>
+        <a class="recht-link" data-rechtauf="datenschutz">Datenschutz</a>
+      </p>
+    </footer>
   </div>
 </div>
 
@@ -14984,12 +15100,11 @@ function beitrittSchalterLaden(){
     var d = doc.exists ? (doc.data()||{}) : {};
     _beitritt.code     = d.codeNoetig === true;
     _beitritt.freigabe = d.freigabe   === true;
-    var w=$('rgCodeWrap'); if(w) w.style.display = _beitritt.code ? '' : 'none';
-    // Selbstanmeldung nur, wenn wenigstens eine Schranke steht. Ohne
-    // Code und ohne Freigabe wäre der Weg offen für jeden, der die
-    // Adresse kennt – dann bleibt der Reiter weg.
-    selbstAnmeldungZeigen(_beitritt.code || _beitritt.freigabe);
-  }).catch(function(){ /* nicht erreichbar: dann eben ohne Code-Feld */ });
+    /* Seit Runde 117 gibt es „Konto anlegen" immer. Der Weg ist nicht
+       mehr offen für jeden, der die Adresse kennt: ein neues Konto sieht
+       NICHTS, bis ein Chef es freigibt (firestore.rules, ohneFirma()). */
+    selbstAnmeldungZeigen(true);
+  }).catch(function(){ selbstAnmeldungZeigen(true); });
 }
 var currentChannel = 'allgemein';
 var currentView = 'chat';
@@ -15239,44 +15354,24 @@ function doRegister(){
   var email = $('rgEmail').value.trim();
   var pw    = $('rgPw').value;
   var pw2   = $('rgPw2').value;
-  var studios = Array.prototype.slice.call($('rgStudios').querySelectorAll('input:checked'))
-    .map(function(c){ return c.value; });
+  var code  = (($('rgCode')||{}).value||'').trim();
   $('regErr').textContent = '';
 
   if(!name||!email||!pw){ $('regErr').textContent='Bitte alle Felder ausfüllen.'; return; }
-  if(!studios.length){ $('regErr').textContent='Bitte mindestens ein Studio auswählen.'; return; }
   if(pw!==pw2){ $('regErr').textContent='Passwörter stimmen nicht überein.'; return; }
-  // Wer sich hier anmeldet, wird immer Mitarbeiter. Chef- und
-  // Leiter-Zugänge legt ein Chef in der App an (Verwaltung → Team).
-  // Erzwungen wird das in firestore.rules, nicht hier.
 
   var btn=$('registerBtn'); btn.disabled=true; btn.textContent='…';
   _registering=true;
-  var code=(($('rgCode')||{}).value||'').trim();
   auth.createUserWithEmailAndPassword(email, pw)
     .then(function(cred){
       var uid=cred.user.uid;
-      /* Den Firmencode zuerst ablegen – die Regel fuer users/{uid} liest
-         ihn dort nach. Er kommt bewusst NICHT ins Profil: users ist fuer
-         alle Aktiven lesbar, der Code stuende dann fuer jeden Kollegen
-         offen da. beitritt/{uid} kann niemand lesen. */
-      var vor = code
-        ? db.collection('beitritt').doc(uid).set({ code:code, ts:Date.now() })
-        : Promise.resolve();
-      return vor.then(function(){
-        var profil = {
-          name:name, email:email, role:'mitarbeiter',
-          /* Siehe createEmployee: ohne firma landet das Konto in der
-             Voreinstellungs-Firma statt in der, ueber deren Link es
-             sich angemeldet hat. */
-          firma: _firma || KONFIG.firma || 'koerperformen',
-          studios:studios, studio:studios[0]||null, createdAt:Date.now()
-        };
-        /* Ist die Freigabe eingeschaltet, MUSS das Konto inaktiv starten –
-           die Regel laesst es sonst gar nicht zu. */
-        if(_beitritt.freigabe) profil.aktiv=false;
-        return db.collection('users').doc(uid).set(profil);
-      }).then(function(){
+      /* Erst OHNE Betrieb (Runde 117). Zu einem Betrieb kommt das Konto
+         nur über den Server, der den Code prüft (firmaBeitreten) — nicht
+         über ein Feld, das man selbst setzt. Die Regel lässt hier nur
+         firma:'_ohne', inaktiv, Mitarbeiter zu. */
+      var profil = { name:name, email:email, role:'mitarbeiter',
+                     firma:OHNE_FIRMA, aktiv:false, createdAt:Date.now() };
+      return db.collection('users').doc(uid).set(profil).then(function(){
         _registering=false;
         /* Bestätigungsmail. Bewusst ohne .catch-Abbruch: schlägt der
            Versand fehl (Kontingent, Tippfehler in der Adresse), soll das
@@ -15288,22 +15383,21 @@ function doRegister(){
               .catch(function(e){ console.warn('Bestätigungsmail:', e && e.message); });
           }
         }catch(e){}
-        if(_beitritt.freigabe){ zeigeWarten(uid); return; }
-        return db.collection('users').doc(uid).get().then(function(doc){
-          enterApp(uid, doc.data());
+        if(!code){ zeigeWarten(uid, profil); return; }
+        /* Der Code war dabei: gleich anfragen. Geht das schief (Tipp-
+           fehler), ist das Konto trotzdem da — die kleine Seite zeigt
+           den Fehler am Codefeld, und man tippt ihn dort neu. */
+        return fnRuf('firmaBeitreten', { code:code }).then(function(r){
+          profil.firma = r.firma; profil._firmaName = r.name;
+          zeigeWarten(uid, profil);
+        }, function(e){
+          zeigeWarten(uid, profil, { code:code, fehler:errMsg(e) });
         });
       });
     })
     .catch(function(e){
       _registering=false;
-      /* Lehnt die Regel ab, liegt es fast immer am Firmencode – der
-         Rohtext "permission-denied" hilft niemandem weiter. */
-      var meldung = (e && e.code==='permission-denied')
-        ? (_beitritt.code
-            ? 'Der Firmencode stimmt nicht. Frag kurz bei der Leitung nach.'
-            : 'Anmeldung abgelehnt. Bitte bei der Leitung melden.')
-        : authErrMsg(e.code);
-      $('regErr').textContent = meldung;
+      $('regErr').textContent = authErrMsg(e.code) || errMsg(e);
       btn.disabled=false; btn.textContent='Konto erstellen';
     });
 }
@@ -15315,31 +15409,137 @@ function doRegister(){
    Regeln. */
 function wartetAufFreigabe(d){ return !!d && d.aktiv === false; }
 
-function zeigeWarten(uid){
+/* ══ MEIN KONTO — die kleine Seite (Runde 117) ══════════════════════
+   Für Konten ohne Betrieb (firma:'_ohne') und für Konten, die auf die
+   Freigabe warten. Die Seite liegt über allem; die App darunter wird
+   gar nicht erst aufgebaut.
+
+   Profil und Aussehen laufen über DASSELBE Einstellungsfenster wie in der
+   App — ein zweites Formular wäre die zweite Stelle, an der ein neues
+   Feld vergessen wird. Dafür bekommt das Fenster hier eine schlanke
+   Fassung (body.gast): ohne Meldungen, ohne Nachweise, ohne Kalender.
+   Dafür braucht openProfile() eine session — sie heisst hier gast:true
+   und wird nie an showApp() gereicht. */
+var OHNE_FIRMA = '_ohne';
+function ohneBetrieb(d){ return !!d && (d.firma === OHNE_FIRMA || d.aktiv === false); }
+function wartetAufFreigabe(d){ return ohneBetrieb(d); }
+
+function fnRuf(name, daten){
+  return firebase.app().functions(KONFIG.region).httpsCallable(name)(daten || {})
+    .then(function(r){ return (r && r.data) || {}; });
+}
+
+var _mk = { uid:null, profil:null };
+function zeigeWarten(uid, profil, vorher){
   var w=$('warteWrap'); if(!w) return;
+  _mk.uid = uid;
+  _mk.profil = Object.assign({}, profil || {});
+  session = Object.assign({ uid:uid, gast:true, studios:[], studioKeys:[] }, _mk.profil);
+  document.body.classList.add('gast');
   $('authWrap').classList.remove('show');
-  w.style.display='flex';
+  splashWeg();
+  w.style.display='';
+  mkZeichnen();
+  if(vorher && vorher.fehler){
+    $('mkCode').value = vorher.code || '';
+    $('mkCodeErr').textContent = vorher.fehler;
+  }
+  mkBinden();
+  /* Die Knöpfe des Einstellungsfensters (Speichern, Schliessen, Reiter)
+     hängen an bindActions() — das läuft sonst erst mit showApp(). Es
+     bindet nur Zuhörer und lädt nichts. */
+  try{ bindActions(); }catch(e){ console.warn('bindActions (Gast):', e && e.message); }
+  if(_mk.profil.firma && _mk.profil.firma !== OHNE_FIRMA && !_mk.profil._firmaName){
+    db.collection('firmen').doc(_mk.profil.firma).get().then(function(d){
+      _mk.profil._firmaName = (d.exists && (d.data()||{}).name) || _mk.profil.firma;
+      mkZeichnen();
+    }).catch(function(){});
+  }
+}
+function mkZeichnen(){
+  var p=_mk.profil||{};
+  var vor=String(p.name||'').split(' ')[0];
+  $('mkTitel').textContent = vor ? ('Hallo, '+vor) : 'Hallo';
   var wer=$('warteWer');
-  if(wer) wer.textContent='Angemeldet als '+((auth.currentUser&&auth.currentUser.email)||'');
-  var neu=$('warteNeu');
-  if(neu && !neu._da){ neu._da=true; neu.addEventListener('click',function(){
-    withBusy(neu,function(){
-      return db.collection('users').doc(uid).get().then(function(doc){
+  if(wer) wer.textContent='Angemeldet als '+((auth.currentUser&&auth.currentUser.email)||p.email||'');
+  try{ applyAvatarEl($('mkAvatar'), Object.assign({ uid:_mk.uid }, p)); }catch(e){}
+  var ohne = !p.firma || p.firma === OHNE_FIRMA;
+  $('mkOhne').hidden = !ohne;
+  $('mkWartet').hidden = ohne;
+  $('mkFirma').textContent = p._firmaName || p.firma || '';
+}
+function mkBinden(){
+  var w=$('warteWrap'); if(w._gebunden) return; w._gebunden=true;
+  $('mkBeitreten').addEventListener('click', function(){
+    var b=this, code=$('mkCode').value.trim(), err=$('mkCodeErr');
+    err.textContent='';
+    if(!code){ err.textContent='Bitte den Firmencode eingeben.'; $('mkCode').focus(); return; }
+    withBusy(b, function(){
+      return fnRuf('firmaBeitreten', { code:code }).then(function(r){
+        _mk.profil.firma=r.firma; _mk.profil._firmaName=r.name; session.firma=r.firma;
+        $('mkCode').value=''; mkZeichnen(); tick(10);
+        toast('Anfrage an '+r.name+' geschickt ✓');
+      }, function(e){ err.textContent=errMsg(e); });
+    });
+  });
+  $('mkCode').addEventListener('keydown', function(e){ if(e.key==='Enter') $('mkBeitreten').click(); });
+  $('warteNeu').addEventListener('click', function(){
+    var b=this;
+    withBusy(b, function(){
+      return db.collection('users').doc(_mk.uid).get().then(function(doc){
         var d=doc.exists?doc.data():null;
-        if(d && !wartetAufFreigabe(d)){ w.style.display='none'; enterApp(uid,d); }
-        else toast('Noch nicht freigegeben. Frag kurz bei der Leitung nach.');
+        /* Frei: neu laden statt umschalten. Die Gast-Sitzung hat das
+           Einstellungsfenster in einer schlanken Fassung aufgebaut; ein
+           sauberer Start ist einfacher, als alles zurückzubauen. */
+        if(d && !ohneBetrieb(d)){ location.reload(); return; }
+        if(d){ Object.assign(_mk.profil, d); mkZeichnen(); }
+        toast(d && d.firma===OHNE_FIRMA ? 'Die Anfrage wurde nicht angenommen.' :
+              'Noch nicht freigegeben. Frag kurz bei der Leitung nach.');
       });
     });
-  }); }
-  var aus=$('warteAus');
-  if(aus && !aus._da){ aus._da=true; aus.addEventListener('click',function(){
-    w.style.display='none'; auth.signOut();
-  }); }
+  });
+  $('mkZurueck').addEventListener('click', function(){
+    var b=this;
+    if(!confirm('Anfrage bei „'+($('mkFirma').textContent||'dem Betrieb')+'" zurückziehen?\n\n'+
+                'Dein Konto bleibt, du kannst danach einen anderen Code eingeben.')) return;
+    withBusy(b, function(){
+      return fnRuf('beitrittZurueckziehen', {}).then(function(){
+        _mk.profil.firma=OHNE_FIRMA; delete _mk.profil._firmaName; session.firma=OHNE_FIRMA;
+        mkZeichnen(); toast('Anfrage zurückgezogen');
+      }, function(e){ toast(errMsg(e), true); });
+    });
+  });
+  $('mkProfil').addEventListener('click', function(){ tick(8); openProfile('profil'); });
+  $('mkAussehen').addEventListener('click', function(){ tick(8); openProfile('aussehen'); });
+  $('mkPasswort').addEventListener('click', function(){
+    var b=this, mail=(auth.currentUser&&auth.currentUser.email)||_mk.profil.email;
+    if(!mail){ toast('Keine E-Mail-Adresse hinterlegt.', true); return; }
+    withBusy(b, function(){
+      return auth.sendPasswordResetEmail(mail).then(function(){
+        toast('Link zum Ändern an '+mail+' geschickt ✓');
+      }, function(e){ toast(errMsg(e), true); });
+    });
+  });
+  $('mkLoeschen').addEventListener('click', function(){
+    var b=this;
+    if(!confirm('Konto endgültig löschen?\n\nDein Profil und deine Anmeldung werden entfernt. '+
+                'Das lässt sich nicht rückgängig machen.')) return;
+    withBusy(b, function(){
+      return fnRuf('kontoLoeschen', { bestaetigt:true }).then(function(r){
+        if(r && r.demo){ toast('In der Demo wird nichts gelöscht.'); return; }
+        toast('Konto gelöscht');
+        setTimeout(function(){ auth.signOut().then(function(){ location.reload(); }); }, 600);
+      }, function(e){ toast(errMsg(e), true); });
+    });
+  });
+  $('warteAus').addEventListener('click', function(){
+    auth.signOut().then(function(){ location.reload(); });
+  });
 }
 
 function enterApp(uid, data){
   if(session || !data) return;
-  if(wartetAufFreigabe(data)){ zeigeWarten(uid); return; }
+  if(ohneBetrieb(data)){ zeigeWarten(uid, data); return; }
   session = Object.assign({ uid:uid }, data);
   /* ── Zu welcher Firma gehört dieses Konto? ──
      Stufe 2B. Solange KONFIG.mandant false ist, bleibt _firma null und
@@ -15517,6 +15717,11 @@ function weiterMitAnmeldung(user){
     db.collection('users').doc(user.uid).get()
       .then(function(doc){
         if(doc.exists){
+          /* Ohne Betrieb oder wartend: gleich auf die kleine Seite. Die
+             Firmenprüfung darunter kennt '_ohne' nicht und würde „Dieser
+             Zugang ist stillgelegt" melden — für jemanden, der gerade
+             erst angekommen ist. */
+          if(ohneBetrieb(doc.data())){ zeigeWarten(user.uid, doc.data()); return; }
           return firmaLaeuftNoch(doc.data()).then(function(ok){
             if(ok){ enterApp(user.uid, doc.data()); return; }
             /* ── Der Chef wird NICHT ausgesperrt ──
@@ -16354,6 +16559,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-konto-anlegen', datum:'25.9.2026', titel:'Selbst ein Konto anlegen — mit Firmencode, der Chef gibt frei', wo:'chef:team', punkte:[
+    'Auf der Anmeldeseite kann jetzt jeder ein Konto anlegen. Mit dem Firmencode des Betriebs geht gleich eine Anfrage an die Geschäftsführung.',
+    'Bis zur Freigabe sieht man nur eine kleine eigene Seite: Profil, Aussehen, Passwort, Firmencode — sonst nichts aus dem Betrieb.',
+    'Chef: Unter Verwaltung → Team steht oben „Wartet auf Freigabe". Dort ordnest du beim Freigeben gleich die Studios zu. „Ablehnen" löscht das Konto nicht mehr — die Person gehört dann einfach nicht zu deinem Betrieb.',
+    'Chef: Unter „Wer darf sich anmelden" setzt du den Firmencode oder lässt einen erzeugen. Jeden Code gibt es nur einmal, über alle Betriebe hinweg. Wartende Anfragen stehen nicht mehr in der Teamliste.' ] },
   { id:'2026-09-25-schnellzugriffe', datum:'25.9.2026', titel:'Schnellzugriffe selbst zusammenstellen — am Rechner bis zu sechs', wo:'home', punkte:[
     'Unter „Anpassen" (Startseite unten, am Rechner links in der Seitenleiste) steht oben jetzt, wie deine Schnellzugriffe aussehen werden — in der richtigen Reihenfolge. Mit ↑ und ↓ schiebst du sie, mit × nimmst du einen heraus. Keine Nummern mehr, die man sich merken muss.',
     'Am Rechner passen bis zu sechs in die Seitenleiste — ab vier in zwei Spalten, damit nichts unter den Rand rutscht. Am Handy stehen die ersten drei; was nur am Rechner steht, ist im Fenster so markiert.',
@@ -18359,34 +18569,55 @@ function listenEmployees(){
    zusaetzlicher Zugriff auf die Datenbank. */
 function renderFreigaben(){
   var karte=$('freigabeKarte'); if(!karte || !isChef()) return;
-  var wartend=_allUsers.filter(function(u){ return u.aktiv===false; });
+  var wartend=_wartende.slice();
   karte.style.display = wartend.length ? '' : 'none';
   if(!wartend.length) return;
   var z=$('freigabeZahl');
   if(z) z.textContent = wartend.length===1 ? '1 Person' : wartend.length+' Personen';
   var box=$('freigabeListe'); if(!box) return;
+  /* Seit Runde 117 kommt ein neues Konto OHNE Studios an — es hat sie
+     sich nicht mehr selbst ausgesucht. Der Chef ordnet sie beim
+     Freigeben zu; ohne Studio sähe die Person nach der Freigabe eine
+     leere App. Wer noch mit der alten Anmeldung Studios angekreuzt hat,
+     bekommt sie hier vorausgewählt. */
   box.innerHTML = wartend.map(function(u){
-    var studios=(u.studios||[]).join(', ') || 'kein Studio angegeben';
-    return '<div class="emp" style="align-items:flex-start">'+
-      '<div style="flex:1;min-width:0">'+
+    var vorher=(u.studios||[]);
+    return '<div class="emp fg-zeile" data-fg="'+esc(u.uid)+'">'+
+      '<div class="fg-kopf">'+
         '<b>'+esc(u.name||'Ohne Namen')+'</b>'+
         '<div class="hint" style="margin-top:var(--s2)">'+esc(u.email||'')+
           '<span class="mail-marke" data-mail="'+esc(u.uid)+'"></span></div>'+
-        '<div class="hint">'+esc(studios)+'</div>'+
       '</div>'+
-      '<div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">'+
+      '<div class="fg-studios"><span class="fg-label">Studios zuordnen</span>'+
+        '<div class="studio-checks">'+STUDIOS_ALPHA.map(function(st){
+          var an=vorher.indexOf(st)>=0;
+          return '<label class="studio-check'+(an?' on':'')+'"><input type="checkbox" value="'+esc(st)+'"'+(an?' checked':'')+' />'+
+            '<span>'+esc(st)+'</span></label>';
+        }).join('')+'</div></div>'+
+      '<p class="auth-err fg-err" role="alert"></p>'+
+      '<div class="fg-knoepfe">'+
         '<button class="btn btn-primary btn-sm" data-frei="'+esc(u.uid)+'">Freigeben</button>'+
         '<button class="btn btn-danger btn-sm" data-ablehn="'+esc(u.uid)+'">Ablehnen</button>'+
       '</div></div>';
   }).join('');
+  box.querySelectorAll('.studio-check input').forEach(function(cb){
+    cb.addEventListener('change', function(){ cb.parentNode.classList.toggle('on', cb.checked); });
+  });
   mailMarkenLaden(wartend.map(function(u){ return u.uid; }));
 
   box.querySelectorAll('[data-frei]').forEach(function(b){
     b.addEventListener('click',function(){
       var uid=b.getAttribute('data-frei');
+      var zeile=b.closest('.fg-zeile');
+      var studios=Array.prototype.slice.call(zeile.querySelectorAll('.studio-check input:checked'))
+        .map(function(c){ return c.value; });
+      var err=zeile.querySelector('.fg-err');
+      if(!studios.length){ err.textContent='Bitte mindestens ein Studio zuordnen.'; return; }
+      err.textContent='';
       withBusy(b,function(){
-        return db.collection('users').doc(uid).update({ aktiv:true })
-          .then(function(){ toast('Freigegeben ✓'); })
+        return db.collection('users').doc(uid).update({
+          aktiv:true, studios:studios, studio:studios[0], studioKeys:studios.map(studioKey)
+        }).then(function(){ toast('Freigegeben ✓'); })
           .catch(function(e){ toast(errMsg(e),true); });
       });
     });
@@ -18394,52 +18625,50 @@ function renderFreigaben(){
   box.querySelectorAll('[data-ablehn]').forEach(function(b){
     b.addEventListener('click',function(){
       var uid=b.getAttribute('data-ablehn');
-      var wer=(_allUsers.filter(function(u){return u.uid===uid;})[0]||{}).name||'dieses Konto';
+      var wer=(_wartende.filter(function(u){return u.uid===uid;})[0]||{}).name||'dieses Konto';
       /* Rueckfrage statt Rueckgaengig: das Profil ist danach weg, und der
          Betroffene kann sich nicht mehr anmelden. Das ist nichts, was man
          acht Sekunden lang zurueckholen koennen sollte. */
-      if(!confirm('Anmeldung von „'+wer+'" ablehnen?\n\nDas Profil wird gelöscht. '+
-                  'Die Person kann sich mit demselben Firmencode neu anmelden.')) return;
+      /* Seit Runde 117 wird nicht mehr gelöscht: die Person behält ihr
+         Konto und ihre kleine Seite, gehört aber nicht zu diesem Betrieb.
+         Die Regel lässt genau diese eine Bewegung zu — zurück auf
+         „ohne Firma", inaktiv (firmaWechselErlaubt). */
+      if(!confirm('Anfrage von „'+wer+'" ablehnen?\n\nDie Person gehört dann nicht zu deinem Betrieb '+
+                  'und sieht nichts davon. Ihr eigenes Konto bleibt bestehen.')) return;
       withBusy(b,function(){
-        return db.collection('users').doc(uid).delete()
-          .then(function(){ toast('Abgelehnt'); })
+        return db.collection('users').doc(uid).update({
+          firma:OHNE_FIRMA, aktiv:false, studios:[], studio:null, studioKeys:[]
+        }).then(function(){ toast('Abgelehnt'); })
           .catch(function(e){ toast(errMsg(e),true); });
       });
     });
   });
 }
 
-/* ── Firmencode und Freigabepflicht einstellen ──
-   Zwei Dokumente in EINEM Schreibvorgang, damit sie nicht auseinander-
-   laufen: der Code (fuer niemanden lesbar) und die Schalter (fuer alle
-   lesbar, weil das Anmeldeformular sie vor dem Login braucht). */
+/* ── Firmencode einstellen (seit Runde 117 über den Server) ──
+   Der Server prüft, dass es den Code in keinem anderen Betrieb gibt —
+   in jeder Schreibweise. Eine Regel könnte das nicht: sie sieht nur das
+   eine Dokument. Aus dem Betrieb, 25.9.2026: „achte darauf das kein code
+   jemals sich doppeln kann egal wie viele firmen es gibt". */
 function beitrittLaden(){
   if(!isChef()) return;
   S('config').doc('registrierung').get().then(function(doc){
     var d=doc.exists?(doc.data()||{}):{};
     var c=$('btCode'); if(c) c.value=d.code||'';
-    var f=$('btFreigabe'); if(f) f.checked = d.freigabe===true;
   }).catch(function(){});
 }
-function beitrittSpeichern(btn){
+function beitrittSpeichern(btn, zufall){
   var code=(($('btCode')||{}).value||'').trim();
-  var frei=!!(($('btFreigabe')||{}).checked);
   var note=$('btNote');
   withBusy(btn,function(){
-    var b=db.batch();
-    b.set(S('config').doc('registrierung'),
-          { code:code, freigabe:frei, ts:Date.now() });
-    b.set(S('config').doc('beitrittSchalter'),
-          { codeNoetig: code!=='', freigabe:frei, ts:Date.now() });
-    return b.commit().then(function(){
-      _beitritt.code = code!==''; _beitritt.freigabe = frei;
+    return fnRuf('firmencodeSetzen', zufall ? { zufall:true } : { code:code }).then(function(r){
+      var c=$('btCode'); if(c) c.value=r.code||'';
+      _beitritt.code = !!r.code;
       if(note){
         note.style.color='var(--accent-d)';
-        note.textContent = code
-          ? (frei ? '✓ Code gesetzt, neue Konten warten auf dich.'
-                  : '✓ Code gesetzt. Neue Konten sind sofort aktiv.')
-          : (frei ? '✓ Kein Code – aber neue Konten warten auf dich.'
-                  : '✓ Kein Code, keine Freigabe. Jeder mit der Adresse kommt rein.');
+        note.textContent = r.code
+          ? '✓ Code „'+r.code+'" gilt. Neue Anfragen warten oben auf dich.'
+          : '✓ Kein Code — niemand kann gerade anfragen.';
       }
     }).catch(function(e){
       if(note){ note.style.color='var(--danger-tx)'; note.textContent=errMsg(e); }
@@ -22158,7 +22387,7 @@ function stopListeners(){
   _ppTasks=[]; _ppNotes=[]; _matItems=[];
   _devices=[]; _devLog=[]; _devOpenId=null; _pendingDevPhoto=null;
   _chanLast={}; _chanList=[];
-  _allUsers=[]; _employees=[]; _invAll={}; _certs=[];
+  _allUsers=[]; _wartende=[]; _employees=[]; _invAll={}; _certs=[];
   // Sonst startet der nächste Anmelder die nachgeladenen Beobachter nie
   _certGeladen=false; _trashGeladen=false; _archGeladen=false;
   /* In den Studios teilen sich mehrere Leute ein Gerät. Bliebe _firma
@@ -32805,7 +33034,7 @@ function doSearch(q){
 /* ============================================================
    DIREKTNACHRICHTEN (1:1)
    ============================================================ */
-var _allUsers=[], _usersUnsub=null, _dmUnsub=null, _dmPeer=null, _dmId=null;
+var _allUsers=[], _wartende=[], _usersUnsub=null, _dmUnsub=null, _dmPeer=null, _dmId=null;
 var _dmThreads=[], _dmThreadsUnsub=null, _dmThreadPrev={}, _dmThreadsFirst=true;
 
 function _userById(uid){ for(var i=0;i<_allUsers.length;i++){ if(_allUsers[i].uid===uid) return _allUsers[i]; } return null; }
@@ -32840,7 +33069,14 @@ function listenAllUsers(){
   var meine = _firma || KONFIG.firma || 'koerperformen';
   _usersUnsub=db.collection('users').where('firma','==',meine).onSnapshot(function(snap){
     var first = !_allUsers.length;
-    _allUsers=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
+    var alle=snap.docs.map(function(d){ return Object.assign({uid:d.id},d.data()); });
+    /* Wartende Konten gehören NICHT in Team, Direktnachrichten, @-Liste
+       und Zählungen (Runde 117). Seit jeder mit dem Code anfragen kann,
+       stünde sonst ein Fremder schon vor der Freigabe in der
+       Personenliste des ganzen Teams. Sichtbar sind sie nur dem Chef,
+       oben in „Wartet auf Freigabe". */
+    _wartende=alle.filter(function(u){ return u.aktiv===false; });
+    _allUsers=alle.filter(function(u){ return u.aktiv!==false; });
     // Die Teillisten (Team, Chefs) fallen hier mit ab – ein Beobachter
     // statt drei auf derselben Sammlung.
     if(canManage()) verteileUsers();
@@ -35057,6 +35293,11 @@ function bindActions(){
   // ── Verwaltung: zurück zur Übersicht ──
   var bts=$('btSave');
   if(bts) bts.addEventListener('click',function(){ beitrittSpeichern(this); });
+  var btz=$('btZufall');
+  if(btz) btz.addEventListener('click',function(){
+    if($('btCode').value.trim() && !confirm('Einen neuen Code erzeugen? Der bisherige gilt danach nicht mehr.')) return;
+    beitrittSpeichern(this, true);
+  });
 
   // ── Rechtliche Angaben (Impressum/Datenschutz je Firma) ──
   var rfs=$('rfSave');

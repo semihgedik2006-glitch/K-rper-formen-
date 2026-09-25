@@ -179,7 +179,14 @@ const konfigPfade = p => p.filter(x => /config\/(studios|beitrittSchalter)$/.tes
     const w = document.getElementById('rgStudios');
     return {
       liste: w ? Array.from(w.querySelectorAll('span')).map(s => s.textContent.trim()) : null,
-      seite: document.body.textContent || ''
+      /* Ohne <script> und <style>: deren Quelltext ist kein Inhalt der
+         Seite, sondern Programm — die Standortliste aus konfig.js steht
+         dort als Voreinstellung und wird nie angezeigt. */
+      seite: (() => {
+        const k = document.body.cloneNode(true);
+        k.querySelectorAll('script,style,template,noscript').forEach(x => x.remove());
+        return k.textContent || '';
+      })()
     };
   });
   const UNSERE = ['Longerich', 'Nippes', 'Ebertplatz', 'Hürth', 'Brühl', 'Rösrath'];
@@ -187,10 +194,13 @@ const konfigPfade = p => p.filter(x => /config\/(studios|beitrittSchalter)$/.tes
     const { b, page } = await start(errs, { mandant: true, query: '?firma=fremd-9x2a' });
     const n = await studioNamen(page);
     console.log('Fremde Firma, Standortliste:', JSON.stringify(n.liste));
-    if (n.liste === null) {
-      errs.push('AUFBAU: #rgStudios gibt es nicht mehr — dieser Test misst nichts');
-    }
-    const verraten = UNSERE.filter(x => (n.liste || []).indexOf(x) >= 0);
+    /* Seit Runde 117 hat das Anmeldeformular KEINE Standortliste mehr
+       (die Studios ordnet der Chef beim Freigeben zu). Damit kann dort
+       auch nichts verraten werden — geprüft wird deshalb die ganze Seite,
+       mit textContent (liest auch Ausgeblendetes). Das ist strenger als
+       vorher: nicht nur die Liste, jede Stelle. */
+    const verraten = UNSERE.filter(x => (n.liste || []).indexOf(x) >= 0 ||
+      (n.liste === null && new RegExp('\\b' + x + '\\b').test(n.seite)));
     if (verraten.length) {
       errs.push('GEFÄHRLICH: fremde Firma sieht unsere Standorte – ' + verraten.join(', '));
     }
@@ -210,7 +220,22 @@ const konfigPfade = p => p.filter(x => /config\/(studios|beitrittSchalter)$/.tes
     const { b, page } = await start(errs, { mandant: true, query: '?firma=koerperformen' });
     const n = await studioNamen(page);
     console.log('Eigene Firma, Standortliste:', JSON.stringify((n.liste || []).slice(0, 3)));
-    if (!(n.liste || []).length) {
+    /* Seit Runde 117 gibt es vor der Anmeldung gar keine Standortliste
+       mehr — auch nicht für die eigene Firma. Die Gegenprobe beweist dann,
+       dass die Messung aus Nummer 6 (ganze Seite, textContent) überhaupt
+       anschlägt: ein ausgeblendeter Standortname wird eingesetzt und muss
+       gefunden werden. */
+    if (n.liste === null) {
+      const gefunden = await page.evaluate(() => {
+        const s = document.createElement('span'); s.hidden = true; s.textContent = 'Hürth';
+        document.body.appendChild(s);
+        const k = document.body.cloneNode(true);
+        k.querySelectorAll('script,style,template,noscript').forEach(x => x.remove());
+        const ja = /\bHürth\b/.test(k.textContent || '');
+        s.remove(); return ja;
+      });
+      if (!gefunden) errs.push('GEGENPROBE: die Seitenmessung findet einen eingesetzten Standortnamen nicht — Nummer 6 prüft nichts');
+    } else if (!(n.liste || []).length) {
       errs.push('GEGENPROBE: die EIGENE Firma hat gar keine Standortliste — ' +
                 'dann prüft Nummer 6 nichts');
     } else if (!UNSERE.some(x => n.liste.indexOf(x) >= 0)) {

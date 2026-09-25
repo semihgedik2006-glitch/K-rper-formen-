@@ -64,7 +64,10 @@
   if (!/[?&]demo(=|&|$)/.test(location.search)) return;
 
   var ROLLE = (/[?&]demo=([a-z]+)/.exec(location.search) || [])[1] || 'chef';
-  if (['chef', 'leiter', 'mitarbeiter', 'terminal'].indexOf(ROLLE) < 0) ROLLE = 'chef';
+  /* ?demo=neu (Runde 117): ein frisch angelegtes Konto, das noch zu
+     keinem Betrieb gehört — es sieht nur die kleine Seite „Mein Konto".
+     Der Firmencode in der Demo ist DEMO-2026. */
+  if (['chef', 'leiter', 'mitarbeiter', 'terminal', 'neu'].indexOf(ROLLE) < 0) ROLLE = 'chef';
 
   /* ?demo=terminal macht aus dem Gerät die Stempeluhr am Empfang. Dafür
      liegt der Geräteschlüssel schon bereit — in einer Vorführung will
@@ -184,6 +187,11 @@
         aktiv: true, handyStempeln: true, avatar: '🔥',
         studios: [STUDIOS[6]], studioKeys: [sk(6)]
       };
+    } else if (ROLLE === 'neu') {
+      ICH = {
+        id: 'demo-ich', firma: '_ohne', name: 'Demo-Neuling', role: 'mitarbeiter',
+        aktiv: false, email: 'neu@studiochat.example', studios: [], studioKeys: []
+      };
     } else {
       ICH = {
         id: 'demo-ich', firma: KENNUNG, name: 'Demo-Mitarbeiter', role: 'mitarbeiter',
@@ -192,6 +200,15 @@
       };
     }
     USERS.unshift(ICH);
+    /* Eine Anfrage, die auf die Freigabe wartet (Runde 117) — damit die
+       Geschäftsführung in der Demo sieht, wie Freigeben mit Studios
+       aussieht. Sie steht NICHT in Team und Personenlisten, nur oben in
+       „Wartet auf Freigabe". */
+    if (ROLLE === 'chef') {
+      USERS.push({ id: 'demo-wartet', firma: KENNUNG, name: 'Lea Neumann', role: 'mitarbeiter',
+                   aktiv: false, email: 'lea.neumann@example.org', studios: [], studioKeys: [],
+                   beitrittAm: Date.now() - 2 * 3600000 });
+    }
   })();
 
   function leuteIn(studioKey) {
@@ -1345,6 +1362,30 @@
                person: { uid: uid, name: person.name, email: person.email || '', role: person.role },
                eintraege: zahl, bereiche: bereiche };
     },
+    /* ── Beitritt (Runde 117) ── Der Code in der Demo: DEMO-2026. */
+    firmaBeitreten: function (d) {
+      var n = String(d.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (!n) throw new Error('Bitte den Firmencode eingeben.');
+      if (ICH.firma && ICH.firma !== '_ohne') throw new Error('Deine Anfrage liegt schon bei einem Betrieb. Zieh sie zurück, um einen anderen Code einzugeben.');
+      if (n !== 'DEMO2026') throw new Error('Diesen Firmencode gibt es nicht. Vertippt? In der Demo heisst er DEMO-2026.');
+      ICH.firma = KENNUNG;
+      return { firma: KENNUNG, name: 'Körperformen' };
+    },
+    beitrittZurueckziehen: function () {
+      if (ICH.aktiv !== false) throw new Error('Es gibt keine offene Anfrage.');
+      ICH.firma = '_ohne';
+      return { ok: true };
+    },
+    kontoLoeschen: function () { return { ok: true, demo: true }; },
+    firmencodeSetzen: function (d) {
+      var roh = d.zufall ? 'K7QM-4XP2' : String(d.code || '').trim();
+      var n = roh.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (roh && (n.length < 6 || n.length > 32)) throw new Error('Der Code braucht 6 bis 32 Buchstaben oder Ziffern.');
+      var cfg = holen(P('config'));
+      var alt = cfg.filter(function (x) { return x.id === 'registrierung'; })[0];
+      if (alt) alt.code = roh; else cfg.push({ id: 'registrierung', code: roh, codeNorm: n });
+      return { code: roh, codeNorm: n };
+    },
     vorfallMelden: function (d) {
       if (String(d.was || '').trim().length < 10) throw new Error('Bitte beschreib in einem Satz, was passiert ist.');
       var bis = new Date(Date.now() + 48 * 3600000);
@@ -1550,6 +1591,13 @@
   /* ══ Die Oberfläche der Demo ════════════════════════════════════════ */
 
   window.__demo = { rolle: ROLLE, name: ICH.name, studios: (ICH.studios || []).length };
+  /* Neues Konto: den Demo-Code dort nennen, wo man ihn braucht. */
+  if (ROLLE === 'neu') {
+    document.addEventListener('DOMContentLoaded', function () {
+      var c = document.getElementById('mkCode');
+      if (c) c.placeholder = 'In der Demo: DEMO-2026';
+    });
+  }
 
   /* Die Klasse steht auf <html> und schaltet die Leiste ein. Sie wird
      HIER gesetzt und nicht im Markup: so kann es die Leiste ohne ?demo

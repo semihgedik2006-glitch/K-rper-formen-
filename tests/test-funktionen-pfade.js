@@ -47,6 +47,9 @@ const OBEN = {
   firmen: 'Die Liste der Firmen selbst — sie kann nicht in einer Firma liegen.',
   firmenArchiv: 'Gelöschte Firmen. Läge das IN der Firma, wäre es mit ihr weg.',
   vorfaelle: 'Gemeldete Datenschutzvorfälle (Runde 113). Gehen an den Betreiber, nicht an die Firma — ein Vorfall kann die Firma selbst betreffen.',
+  firmencodes: 'Verzeichnis Code → Firma (Runde 117). Muss ÜBER allen Firmen liegen: nur so lässt sich zusagen, dass es keinen Code zweimal gibt.',
+  beitrittVersuche: 'Fehlversuche beim Code je Konto (Runde 117). Das Konto gehört zu dem Zeitpunkt noch zu keiner Firma.',
+  beitritt: 'Beitritts-Nachweis aus der alten Anmeldung (vor Runde 117). Gehört zum Konto; kontoLoeschen räumt ihn mit weg.',
 };
 
 const errs = [];

@@ -5741,6 +5741,280 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
   return { ok: true, lauf: lauf.id, name: t.name || '', durchgang: frueher.size + 1 };
 });
 
+/* ══════════════════════════════════════════════════════════════════════
+   BEITRITT PER FIRMENCODE (Runde 117)
+
+   Aus dem Betrieb, 25.9.2026:
+     „man kann ein account erstellen und wenn man dann keinen Firmen code
+      eingibt und der chef das bestätigt sieht man nur ein fenster wo man
+      dann sein profil und interface bearbeiten kann … aber mehr nicht"
+     „Chef bestätigt trotzdem bzw ein chef der jeweiligen firma und der
+      chef legt ja auch den code an (achte darauf das kein code jemals
+      sich doppeln kann egal wie viele firmen es gibt)"
+
+   Daraus:
+   - Ein Konto entsteht OHNE Firma (firma:'_ohne', inaktiv). Das darf
+     jeder, und es sieht nichts (firestore.rules, ohneFirma()).
+   - Der Code sagt, zu WELCHEM Betrieb jemand will. Hinein kommt er
+     trotzdem erst, wenn dessen Chef freigibt.
+   - Den Code setzt nur der Server. Nur er sieht alle Firmen und kann
+     zusagen, dass es ihn nirgends sonst gibt: firmencodes/<CODE> ist das
+     Verzeichnis, angelegt in einer Transaktion.
+   ══════════════════════════════════════════════════════════════════════ */
+const OHNE_FIRMA = '_ohne';
+const FIRMENCODE_MIN = 6;
+const FIRMENCODE_MAX = 32;
+const BEITRITT_VERSUCHE_MAX = 10;
+const BEITRITT_FENSTER_MS = 60 * 60 * 1000;
+
+/* Wie beim Schulungscode: Gross/klein, Leerzeichen und Bindestriche
+   zählen nicht. „kf-2026" und „KF 2026" sind derselbe Code — und damit
+   auch dasselbe Verzeichnis-Dokument. Genau das macht „nie doppelt"
+   erst wahr: zwei Schreibweisen desselben Codes wären sonst zwei. */
+function firmencodeNormal(roh) {
+  return String(roh || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+/* Ein neuer Code zum Abschreiben: 8 Zeichen ohne 0/O und 1/I/L, als
+   4-4 geschrieben. 32^8 ≈ 10^12 — raten ist bei 10 Versuchen je Stunde
+   aussichtslos. */
+function firmencodeErzeugen() {
+  const z = schulungZeichen(8);
+  return z.slice(0, 4) + '-' + z.slice(4);
+}
+
+/* Codes, die VOR Runde 117 gesetzt wurden, stehen nur in
+   config/registrierung der jeweiligen Firma, nicht im Verzeichnis.
+   Sie werden hier gefunden — einmal über alle Firmen und den flachen
+   Pfad der Voreinstellung. Beim ersten erfolgreichen Beitritt wird der
+   Eintrag nachgetragen. Steht derselbe Code in ZWEI Firmen, ist er
+   nicht eindeutig und gilt für keine: firmencodesPruefen zeigt dem
+   Betreiber, welche. */
+async function firmencodeAltbestand(norm) {
+  if (!norm) return [];
+  const treffer = new Set();
+  const firmen = await db.collection('firmen').get();
+  const refs = firmen.docs.map((f) => db.collection('firmen').doc(f.id).collection('config').doc('registrierung'));
+  const docs = refs.length ? await db.getAll(...refs) : [];
+  docs.forEach((d, i) => {
+    if (d.exists && firmencodeNormal(d.get('code')) === norm) treffer.add(firmen.docs[i].id);
+  });
+  const flach = await W(null).collection('config').doc('registrierung').get();
+  if (flach.exists && firmencodeNormal(flach.get('code')) === norm) treffer.add(KONFIG_FIRMA_RUECKFALL);
+  return Array.from(treffer);
+}
+
+/* Der Code, der JETZT bei dieser Firma steht — normalisiert. Ein
+   Verzeichniseintrag gilt nur, solange er noch dazu passt. */
+async function firmencodeAktuell(firma) {
+  let d = await db.collection('firmen').doc(firma).collection('config').doc('registrierung').get();
+  if (!d.exists && firma === KONFIG_FIRMA_RUECKFALL) d = await W(null).collection('config').doc('registrierung').get();
+  return d.exists ? firmencodeNormal(d.get('codeNorm') || d.get('code')) : '';
+}
+
+/* ── Der Chef setzt (oder löscht) den Code seiner Firma ── */
+exports.firmencodeSetzen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Den Firmencode setzt die Geschäftsführung.');
+  }
+  const f = firma || KONFIG_FIRMA_RUECKFALL;
+  const zufall = !!(data && data.zufall);
+  let roh = zufall ? '' : String((data && data.code) || '').trim().slice(0, 60);
+  let norm = firmencodeNormal(roh);
+
+  if (zufall) {
+    for (let i = 0; i < 6 && !norm; i++) {
+      const vorschlag = firmencodeErzeugen();
+      const n = firmencodeNormal(vorschlag);
+      if (!(await db.collection('firmencodes').doc(n).get()).exists) { roh = vorschlag; norm = n; }
+    }
+    if (!norm) throw new functions.https.HttpsError('unavailable', 'Bitte noch einmal versuchen.');
+  } else if (roh && (norm.length < FIRMENCODE_MIN || norm.length > FIRMENCODE_MAX)) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Der Code braucht ' + FIRMENCODE_MIN + ' bis ' + FIRMENCODE_MAX + ' Buchstaben oder Ziffern.');
+  }
+
+  // Altbestand: steht derselbe Code schon bei einer ANDEREN Firma?
+  if (norm) {
+    const andere = (await firmencodeAltbestand(norm)).filter((x) => x !== f);
+    if (andere.length) {
+      throw new functions.https.HttpsError('already-exists',
+        'Diesen Code benutzt schon ein anderer Betrieb. Bitte einen anderen wählen — oder „Code erzeugen".');
+    }
+  }
+
+  const alt = await firmencodeAktuell(f);
+  const wurzel = W(firma);
+  await db.runTransaction(async (t) => {
+    // Erst alles lesen, dann schreiben — so will es die Transaktion.
+    const ref = norm ? db.collection('firmencodes').doc(norm) : null;
+    const altRef = (alt && alt !== norm) ? db.collection('firmencodes').doc(alt) : null;
+    const d = ref ? await t.get(ref) : null;
+    const a = altRef ? await t.get(altRef) : null;
+    if (d && d.exists && d.get('firma') !== f) {
+      throw new functions.https.HttpsError('already-exists',
+        'Diesen Code benutzt schon ein anderer Betrieb. Bitte einen anderen wählen — oder „Code erzeugen".');
+    }
+    if (ref) t.set(ref, { firma: f, ts: Date.now() });
+    if (a && a.exists && a.get('firma') === f) t.delete(altRef);
+    /* freigabe:true für ältere App-Stände, die das Feld noch lesen. Die
+       Regel verlangt seit 117 ohnehin bei JEDER Selbstanmeldung aktiv:false. */
+    t.set(wurzel.collection('config').doc('registrierung'),
+      { code: roh, codeNorm: norm, freigabe: true, ts: Date.now(), von: uid });
+    t.set(wurzel.collection('config').doc('beitrittSchalter'),
+      { codeNoetig: !!norm, freigabe: true, ts: Date.now() });
+  });
+  return { code: roh, codeNorm: norm };
+});
+
+/* ── Ein Konto ohne Firma fragt mit einem Code an ── */
+exports.firmaBeitreten = region.https.onCall(async (data, context) => {
+  requireAuth(context);
+  const uid = context.auth.uid;
+  const ref = db.collection('users').doc(uid);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('failed-precondition', 'Kein Profil gefunden.');
+  }
+  const p = snap.data() || {};
+  if (p.aktiv !== false) {
+    throw new functions.https.HttpsError('failed-precondition', 'Du gehörst schon zu einem Betrieb.');
+  }
+  if (p.firma && p.firma !== OHNE_FIRMA) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Deine Anfrage liegt schon bei einem Betrieb. Zieh sie zurück, um einen anderen Code einzugeben.');
+  }
+
+  /* Raten bremsen: zehn Fehlversuche je Konto und Stunde. Wer sich
+     vertippt, merkt davon nichts. */
+  const vRef = db.collection('beitrittVersuche').doc(uid);
+  const v = (await vRef.get()).data() || {};
+  const jetzt = Date.now();
+  const imFenster = (v.seit || 0) > jetzt - BEITRITT_FENSTER_MS;
+  if (imFenster && (v.n || 0) >= BEITRITT_VERSUCHE_MAX) {
+    throw new functions.https.HttpsError('resource-exhausted',
+      'Zu viele Versuche. Bitte in einer Stunde noch einmal — oder frag die Leitung nach dem Code.');
+  }
+  const fehlversuch = async () => {
+    await vRef.set(imFenster ? { n: (v.n || 0) + 1, seit: v.seit } : { n: 1, seit: jetzt });
+  };
+
+  const norm = firmencodeNormal(data && data.code);
+  if (!norm) throw new functions.https.HttpsError('invalid-argument', 'Bitte den Firmencode eingeben.');
+
+  const reg = await db.collection('firmencodes').doc(norm).get();
+  let firmen;
+  if (reg.exists) {
+    const f = reg.get('firma');
+    // Gilt nur, solange die Firma diesen Code noch hat.
+    firmen = (await firmencodeAktuell(f)) === norm ? [f] : [];
+  } else {
+    firmen = await firmencodeAltbestand(norm);
+  }
+  if (firmen.length > 1) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Dieser Code ist nicht eindeutig. Bitte die Leitung, unter Verwaltung → Team einen neuen zu setzen.');
+  }
+  if (!firmen.length) {
+    await fehlversuch();
+    throw new functions.https.HttpsError('not-found',
+      'Diesen Firmencode gibt es nicht. Vertippt? Frag sonst kurz bei der Leitung nach.');
+  }
+  const f = firmen[0];
+  const fd = await db.collection('firmen').doc(f).get();
+  if ((fd.exists && fd.get('aktiv') === false) || (!fd.exists && f !== KONFIG_FIRMA_RUECKFALL)) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Dieser Betrieb nimmt gerade keine Anmeldungen an.');
+  }
+  if (!reg.exists) {
+    await db.collection('firmencodes').doc(norm).create({ firma: f, ts: jetzt, nachgetragen: true }).catch(() => {});
+  }
+
+  await ref.update({
+    firma: f, aktiv: false, role: 'mitarbeiter',
+    studios: [], studio: null, studioKeys: [], beitrittAm: jetzt
+  });
+  await vRef.delete().catch(() => {});
+
+  const name = (fd.exists && fd.get('name')) || f;
+  // Die Leitung erfährt es sofort — sonst wartet jemand, und keiner weiss davon.
+  try {
+    const chefs = [];
+    (await db.collection('users').where('role', '==', 'chef').get()).forEach((d) => {
+      if (gehoertZu(d.data() || {}, f) && (d.data() || {}).aktiv !== false) chefs.push(d.id);
+    });
+    if (chefs.length) {
+      const tk = await collectTokens((d) => chefs.indexOf(d.uid) >= 0, null, f);
+      await sendPush(tk, 'Neue Anmeldung', (p.name || 'Jemand') + ' möchte ins Team — bitte freigeben (Verwaltung → Team).');
+    }
+  } catch (e) { console.warn('Beitritt-Meldung:', e.message); }
+
+  return { firma: f, name: String(name) };
+});
+
+/* ── Anfrage zurückziehen: zurück auf „ohne Firma" ── */
+exports.beitrittZurueckziehen = region.https.onCall(async (data, context) => {
+  requireAuth(context);
+  const ref = db.collection('users').doc(context.auth.uid);
+  const snap = await ref.get();
+  const p = snap.exists ? (snap.data() || {}) : null;
+  if (!p || p.aktiv !== false) {
+    throw new functions.https.HttpsError('failed-precondition', 'Es gibt keine offene Anfrage.');
+  }
+  await ref.update({ firma: OHNE_FIRMA, studios: [], studio: null, studioKeys: [] });
+  return { ok: true };
+});
+
+/* ── Konto löschen — für Konten, die noch in keinem Betrieb arbeiten ──
+   Wer schon im Team ist, hat Zeiten, Schichten und Nachrichten, die dem
+   Betrieb gehören (Aufbewahrungspflichten). Das entfernt die Leitung
+   unter Verwaltung → Team, nicht die Person mit einem Tipp. */
+exports.kontoLoeschen = region.https.onCall(async (data, context) => {
+  requireAuth(context);
+  const uid = context.auth.uid;
+  if (!data || data.bestaetigt !== true) {
+    throw new functions.https.HttpsError('invalid-argument', 'Bitte das Löschen bestätigen.');
+  }
+  const ref = db.collection('users').doc(uid);
+  const snap = await ref.get();
+  const p = snap.exists ? (snap.data() || {}) : {};
+  if (snap.exists && p.aktiv !== false) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Du bist im Team eines Betriebs. Dein Konto entfernt dort die Geschäftsführung.');
+  }
+  await Promise.all([
+    ref.delete(),
+    db.collection('beitritt').doc(uid).delete(),
+    db.collection('beitrittVersuche').doc(uid).delete(),
+  ].map((x) => x.catch(() => {})));
+  try { await admin.auth().deleteUser(uid); }
+  catch (e) { if (!/user-not-found|no user record/i.test(String(e.code || e.message))) throw e; }
+  return { ok: true };
+});
+
+/* ── Für den Betreiber: stehen alte Codes doppelt? ──
+   CLAUDE.md: „eine Änderung … bekommt einen Übergang und ein Werkzeug,
+   das zeigt, wen sie träfe." Vor Runde 117 konnte derselbe Code in zwei
+   Firmen stehen. Das hier nennt die Firmen — NICHT den Code: der
+   Betreiber sieht nur Stammdaten. */
+exports.firmencodesPruefen = region.https.onCall(async (data, context) => {
+  await requireAdmin(context);
+  const firmen = await db.collection('firmen').get();
+  const nach = {};
+  for (const f of firmen.docs) {
+    const n = await firmencodeAktuell(f.id);
+    if (!n) continue;
+    (nach[n] = nach[n] || []).push(f.id);
+  }
+  const doppelt = Object.keys(nach).filter((k) => nach[k].length > 1).map((k) => nach[k]);
+  let ohneVerzeichnis = 0;
+  for (const n of Object.keys(nach)) {
+    if (!(await db.collection('firmencodes').doc(n).get()).exists) ohneVerzeichnis++;
+  }
+  return { mitCode: Object.keys(nach).length, doppelt, ohneVerzeichnis };
+});
+
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
@@ -5749,6 +6023,7 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
                      SCHULUNG_VERSUCHE_MAX, SCHULUNG_VERSUCHE_FENSTER_MS,
                      geheimHashen, naechsterSchritt,
+                     firmencodeNormal, firmencodeErzeugen, OHNE_FIRMA,
                      codeFenster, codeAus, CODE_FENSTER_MS, CODE_VORRAT,
                      /* Die Abo-Leiter ist rein rechnerisch und damit ohne
                         Datenbank pruefbar — genau deshalb steht sie hier. */

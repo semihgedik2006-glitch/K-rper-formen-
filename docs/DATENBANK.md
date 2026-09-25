@@ -87,10 +87,11 @@ Die einzige Sammlung außerhalb der Firmenpfade.
 | `email` | Text | |
 | `role` | Text | `mitarbeiter` / `leiter` / `chef` |
 | `admin` | bool | **nur der Betreiber.** Vergibt ausschließlich ein Admin |
-| `firma` | Text | die Firmenkennung. **Das ist die Mandantengrenze** |
+| `firma` | Text | die Firmenkennung. **Das ist die Mandantengrenze**. `'_ohne'` = Konto ohne Betrieb (seit Runde 117, siehe unten) |
 | `studios` | Liste | Klarnamen der Studios |
 | `studioKeys` | Liste | Kennungen (`studio-6`) |
-| `aktiv` | bool | `false` = freigegeben, aber gesperrt |
+| `aktiv` | bool | `false` = wartet auf Freigabe (oder gesperrt). **Jede Selbstanmeldung startet so** (seit Runde 117) |
+| `beitrittAm` | Zahl | wann die Anfrage per Firmencode gestellt wurde (setzt nur der Server) |
 | `createdAt`, `lastSeen` | Zahl | Zeitstempel |
 | `color`, `icon`, `photo` | Text | Darstellung |
 | `birthday` | Text | freiwillig |
@@ -193,6 +194,55 @@ Chef, obwohl er ihn setzen darf.
 Beim Registrieren legt die App den eingegebenen Code unter
 `beitritt/{uid}` ab; die Regel für `users/{uid}` liest ihn dort nach.
 **Er kommt bewusst nicht ins Profil** — das ist für alle Aktiven lesbar.
+
+**Seit Runde 117 (25.9.2026):** Schreiben darf **nur der Server**
+(`firmencodeSetzen`), auch der Chef nicht mehr direkt. Felder: `code`
+(wie eingegeben), `codeNorm` (gross, ohne Leer- und Sonderzeichen),
+`freigabe:true`, `ts`, `von`. Der Chef darf ihn weiterhin **lesen**.
+
+### `firmencodes/{CODE}` — Verzeichnis Code → Firma (seit Runde 117)
+
+Oben, nicht in einer Firma — nur so lässt sich zusagen, dass es einen
+Code **nirgends zweimal** gibt. Aus dem Betrieb: „achte darauf das kein
+code jemals sich doppeln kann egal wie viele firmen es gibt".
+
+| Feld | Typ | Anmerkung |
+|---|---|---|
+| Dokument-ID | Text | der normalisierte Code (`K7QM4XP2`) |
+| `firma` | Text | Firmenkennung |
+| `ts` | Zahl | |
+| `nachgetragen` | bool | aus einem Altcode beim ersten Beitritt nachgetragen |
+
+Lesen und Schreiben: **niemand vom Gerät aus** (sonst liesse sich die
+Liste aller Codes abholen). `firmencodeSetzen` legt den Eintrag in einer
+Transaktion an; ein Code, der einer anderen Firma gehört, wird
+abgewiesen — in jeder Schreibweise. Codes von vor Runde 117 stehen nur in
+`config/registrierung`; sie werden beim Setzen und beim Beitritt über
+alle Firmen mitgeprüft. Steht ein Altcode in zwei Firmen, gilt er für
+keine, und `firmencodesPruefen` nennt dem Betreiber die Firmen (nicht
+den Code).
+
+### `beitrittVersuche/{uid}` (seit Runde 117)
+
+Fehlversuche beim Firmencode je Konto (`n`, `seit`). Nach zehn in einer
+Stunde ist Schluss. Nur der Server.
+
+### Konto ohne Betrieb: `firma: '_ohne'` (seit Runde 117)
+
+Ein neues Konto entsteht mit `firma:'_ohne'`, `aktiv:false`,
+`role:'mitarbeiter'` — das darf jeder für sich anlegen. `firmen/_ohne`
+gibt es nicht; die Regeln lassen ein solches Konto an nichts heran als an
+sein eigenes Profil (geprüft über 69 Pfade in
+`tests/rules/konto-ohne-firma.test.js`).
+
+**Warum nicht einfach „ohne Feld firma"?** Ein Profil ohne das Feld gilt
+seit Stufe 2B als Konto der Voreinstellungsfirma — ein neues Konto wäre
+damit einen Schalter von Körperformen entfernt.
+
+In einen Betrieb kommt es nur über `firmaBeitreten` (Code prüfen,
+`firma` setzen, **inaktiv lassen**). Der Chef gibt frei und ordnet dabei
+Studios zu. „Ablehnen" setzt `firma` zurück auf `'_ohne'` — die einzige
+Bewegung des Feldes, die ein Chef machen darf (`firmaWechselErlaubt()`).
 
 ---
 

@@ -3,8 +3,8 @@
    Die Regeln sind in tests/rules/security.test.js geprueft (52 Stueck).
    Hier geht es um das, was der Mensch sieht:
 
-     1. Ohne gesetzten Code bleibt das Anmeldeformular unveraendert kurz.
-     2. Mit Code erscheint das Feld.
+     1.+2. Das Codefeld steht IMMER da, als freiwillige Angabe (seit
+        Runde 117, siehe unten).
      3. Ein wartendes Konto sieht den Wartebildschirm statt der App –
         und zwar KEINE Fehlermeldung: das Konto ist ja in Ordnung.
      4. Der Chef sieht wartende Konten ganz oben im Team-Reiter, mit
@@ -91,7 +91,13 @@ const stubErweitern = (codeNoetig, freigabe, wartende) => `
 (async () => {
   const errs = [];
 
-  // ══ 1. Ohne Code: Feld bleibt weg ══
+  /* ══ 1. Ohne gesetzten Code: Feld steht trotzdem da ══
+     Bis Runde 116 verschwand es, wenn der Betrieb keinen Code hatte.
+     Seit 117 ist der Code der Weg zu JEDEM Betrieb, und das Formular
+     weiss vor der Anmeldung nicht, zu welchem jemand will. Aus dem
+     Betrieb, 25.9.2026: „man kann ein account erstellen und wenn man
+     dann keinen Firmen code eingibt … sieht man nur ein fenster".
+     Das Feld ist also immer da und freiwillig. */
   {
     const { b, page } = await start('stub-chef.js', errs, stubErweitern(false, false, []));
     await page.evaluate(() => {
@@ -108,7 +114,7 @@ const stubErweitern = (codeNoetig, freigabe, wartende) => `
     });
     console.log('OHNE Code:', JSON.stringify(ohne));
     if (!ohne.da) errs.push('FEHLT: Codefeld gar nicht im Markup');
-    if (ohne.anzeige !== 'none') errs.push('FEHLT: Codefeld nicht ausgeblendet, obwohl kein Code gesetzt ist');
+    if (ohne.anzeige === 'none') errs.push('FEHLT: Codefeld ist ausgeblendet — seit Runde 117 steht es immer da');
     await b.close();
   }
 
@@ -176,16 +182,34 @@ const stubErweitern = (codeNoetig, freigabe, wartende) => `
     if (frei && !/2 Personen/.test(frei.zahl)) errs.push('FEHLT: Anzahl steht nicht an der Überschrift');
     if (frei && frei.knopfHoehe < 44) errs.push('FINGERZIEL: Knopf nur ' + frei.knopfHoehe + 'px');
 
-    // Einstell-Karte
+    /* Neu seit Runde 117: Studios gleich beim Freigeben zuordnen — das
+       Konto hat sie sich nicht mehr selbst ausgesucht. */
+    const studios = await page.evaluate(() => [...document.querySelectorAll('#freigabeListe .fg-zeile')]
+      .map(z => z.querySelectorAll('.studio-check input').length));
+    console.log('Studios je Anfrage:', JSON.stringify(studios));
+    if (studios.length !== 2 || studios.some(n => n < 1)) errs.push('FEHLT: keine Studiowahl an der Anfrage');
+    const ohneStudio = await page.evaluate(() => {
+      const z = document.querySelector('#freigabeListe [data-fg="w2"]');
+      z.querySelector('[data-frei]').click();
+      return z.querySelector('.fg-err').textContent;
+    });
+    if (!/Studio/.test(ohneStudio)) errs.push('FEHLT: Freigeben ohne Studio wird nicht aufgehalten (' + ohneStudio + ')');
+
+    /* Einstell-Karte. Den Haken „erst nach meiner Freigabe" gibt es
+       seit Runde 117 nicht mehr: aus dem Betrieb, 25.9.2026, „Chef
+       bestätigt trotzdem" — er stünde fest auf an. An seiner Stelle
+       prüft der Test den Knopf „Code erzeugen". */
     const einst = await page.evaluate(() => {
-      const c = document.getElementById('btCode'), f = document.getElementById('btFreigabe');
-      return { codeFeld: !!c, wert: c ? c.value : null, haken: f ? f.checked : null,
+      const c = document.getElementById('btCode');
+      return { codeFeld: !!c, wert: c ? c.value : null, haken: !!document.getElementById('btFreigabe'),
+               erzeugen: !!document.getElementById('btZufall'),
                speichern: !!document.getElementById('btSave') };
     });
     console.log('Einstellungen:', JSON.stringify(einst));
     if (!einst.codeFeld || !einst.speichern) errs.push('FEHLT: Karte „Wer darf sich anmelden" unvollständig');
     if (einst.wert !== 'KF-2026') errs.push('FEHLT: gesetzter Code wird nicht angezeigt (' + einst.wert + ')');
-    if (einst.haken !== true) errs.push('FEHLT: Freigabe-Haken spiegelt den Stand nicht');
+    if (einst.haken) errs.push('ALT: der Freigabe-Haken steht noch da, obwohl immer freigegeben wird');
+    if (!einst.erzeugen) errs.push('FEHLT: kein „Code erzeugen"');
 
     await page.screenshot({ path: SP + '/beitritt-freigabe.png' });
     await b.close();

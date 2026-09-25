@@ -93,9 +93,17 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   await pruefe('Neuanmeldung mit Rolle chef wird abgelehnt', () =>
     assertFails(env.authenticatedContext('neu1').firestore()
       .doc('users/neu1').set({ name: 'Neu', role: 'chef' })));
-  await pruefe('Neuanmeldung als Mitarbeiter ist erlaubt', () =>
+  /* Seit Runde 117 startet jede Selbstanmeldung inaktiv. Aus dem
+     Betrieb, 25.9.2026: „Chef bestätigt trotzdem bzw ein chef der
+     jeweiligen firma". Die Neuanmeldung als Mitarbeiter bleibt erlaubt —
+     nur eben wartend. Die Gegenprobe steht gleich darunter: sofort
+     aktiv geht nicht mehr. */
+  await pruefe('Neuanmeldung als Mitarbeiter ist erlaubt (wartend)', () =>
     assertSucceeds(env.authenticatedContext('neu2').firestore()
-      .doc('users/neu2').set({ name: 'Neu', role: 'mitarbeiter' })));
+      .doc('users/neu2').set({ name: 'Neu', role: 'mitarbeiter', aktiv: false })));
+  await pruefe('GEGENPROBE: Neuanmeldung, die sofort aktiv ist, wird abgelehnt', () =>
+    assertFails(env.authenticatedContext('neu2b').firestore()
+      .doc('users/neu2b').set({ name: 'Neu', role: 'mitarbeiter' })));
 
   // ══ 3. Aufgaben nur in eigenen Studios verwalten ══
   await pruefe('Mitarbeiter kann KEINE Aufgabe anlegen', () =>
@@ -224,9 +232,13 @@ const alsAnonym      = () => env.unauthenticatedContext().firestore();
   // ══ 9. Beitritt: Firmencode und Freigabe ══
   //     Erst OHNE eingeschaltete Schranken – bestehende Konten und die
   //     alte Selbstregistrierung muessen unveraendert laufen.
-  await pruefe('OHNE Schranken: Selbstregistrierung geht wie bisher', () =>
+  /* „wie bisher" hiess bis Runde 116: sofort aktiv. Seit 117 wartet
+     jede Selbstanmeldung auf den Chef („Chef bestätigt trotzdem", aus
+     dem Betrieb, 25.9.2026). Was bleibt: ohne Code und ohne Schalter
+     kommt man überhaupt bis zum Konto. */
+  await pruefe('OHNE Schranken: Selbstregistrierung geht (wartend)', () =>
     assertSucceeds(env.authenticatedContext('ohne1').firestore()
-      .doc('users/ohne1').set({ name: 'Ohne', role: 'mitarbeiter' })));
+      .doc('users/ohne1').set({ name: 'Ohne', role: 'mitarbeiter', aktiv: false })));
   await pruefe('OHNE Schranken: bestehendes Profil ohne Feld aktiv darf lesen', () =>
     assertSucceeds(alsMitarbeiter().doc('channels/allgemein/messages/m1').get()));
 

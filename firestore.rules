@@ -194,6 +194,42 @@ service cloud.firestore {
             && get(/databases/$(database)/documents/beitritt/$(uid)).data.code
                == codeDerFirma(f));
     }
+    /* ── Konto ohne Firma (Runde 117) ──
+       Aus dem Betrieb, 25.9.2026: „man kann ein account erstellen und
+       wenn man dann keinen Firmen code eingibt … sieht man nur ein
+       fenster wo man dann sein profil und interface bearbeiten kann".
+
+       '_ohne' ist KEINE Firma: firmen/_ohne gibt es nicht, also ist
+       firmaLaeuft('_ohne') falsch, inFirma() ebenso, und
+       aufFlachenPfaden() verlangt '' oder 'koerperformen'. Ein solches
+       Konto kommt an nichts heran als an sein eigenes Profil — selbst
+       wenn es (auf welchem Weg auch immer) aktiv wäre.
+
+       Bewusst NICHT „kein Feld firma": ein Profil ohne das Feld gilt
+       seit Stufe 2B als Konto der Voreinstellungsfirma. Ein neues Konto
+       ohne Betrieb wäre damit einen Schalter von Körperformen entfernt.
+
+       In eine Firma kommt es nur über den Server (firmaBeitreten), der
+       den Code prüft — nicht über eine Regel. */
+    function ohneFirma() { return '_ohne'; }
+
+    /* ── Darf sich das Feld firma bei dieser Änderung bewegen? ──
+       Die Lücke, die beim Planen von Runde 117 auffiel und im Emulator
+       bestätigt ist: der Chef durfte am Profil seines Mitarbeiters
+       firma frei setzen. Damit schob er ein Konto — auch ein eigenes
+       Zweitkonto — in einen FREMDEN Betrieb und las dort alles, was ein
+       Mitarbeiter lesen darf. gleicheFirma() prüfte nur den Stand VOR
+       der Änderung.
+
+       Erlaubt bleibt genau eine Bewegung: zurück auf „ohne Firma",
+       inaktiv. Das ist „Ablehnen" — die Person behält ihr Konto und
+       ihre kleine Seite und kann einen anderen Code eingeben. */
+    function firmaWechselErlaubt() {
+      return request.resource.data.get('firma', '') == resource.data.get('firma', '')
+        || (request.resource.data.get('firma', '') == ohneFirma()
+            && request.resource.data.get('aktiv', true) == false);
+    }
+
     function freigabePflicht() {
       return confDa() && beitrittConf().get('freigabe', false) == true;
     }
@@ -407,11 +443,23 @@ service cloud.firestore {
         || (request.auth.uid == uid
             && (!('role' in request.resource.data)
                 || request.resource.data.role == 'mitarbeiter')
-            // Die Firma, die man sich gibt, muss ihren eigenen Code
-            // haben — nicht den einer beliebigen anderen.
-            && codeStimmtFuer(uid, request.resource.data.get('firma', ''))
-            /* Wenn die Freigabe eingeschaltet ist, startet das Konto
-               inaktiv. Sich selbst aktiv zu setzen waere sonst trivial.
+            /* Seit Runde 117 startet JEDE Selbstanmeldung inaktiv.
+               Aus dem Betrieb, 25.9.2026: „Chef bestätigt trotzdem".
+               Vorher entschied das der Schalter „Freigabe" je Betrieb,
+               und ein Betrieb ohne Schalter liess jeden sofort herein.
+               Bestehende Konten berührt das nicht — es gilt nur beim
+               Anlegen. */
+            && request.resource.data.get('aktiv', true) == false
+            // Was die Leitung vergibt, gibt man sich nicht selbst.
+            && !request.resource.data.keys().hasAny(['admin', 'handyStempeln', 'studioKeys'])
+            // Entweder ohne Firma (dann gibt es nichts zu prüfen) …
+            && (request.resource.data.get('firma', '') == ohneFirma()
+                // … oder die Firma, die man sich gibt, muss ihren
+                // eigenen Code haben — nicht den einer anderen.
+                || codeStimmtFuer(uid, request.resource.data.get('firma', '')))
+            /* (Bis Runde 116 stand hier: „Wenn die Freigabe
+               eingeschaltet ist, startet das Konto inaktiv." Seit 117
+               gilt das immer, siehe oben.)
 
                HIER STAND KURZ MEHR: „sofort aktiv nur mit vorgezeigtem
                Code". Das hat zwei bestehende Pruefungen umgeworfen —
@@ -426,8 +474,7 @@ service cloud.firestore {
                Firma beansprucht, die einen Code hat, muss ihn kennen.
                Ein Betrieb ohne Code bleibt offen — und wird zu, sobald
                der Chef unter Verwaltung → Team einen setzt. */
-            && (!freigabePflicht()
-                || request.resource.data.get('aktiv', true) == false));
+            );
       // Der Chef darf alles ändern. Alle anderen dürfen nur ihr eigenes Profil
       // bearbeiten und dabei NICHT Rolle oder Studio-Zuordnung anfassen –
       // sonst könnte sich jemand selbst zum Studio-Leiter machen.
@@ -440,6 +487,7 @@ service cloud.firestore {
       // die 21 Kreuztests absichern, waere von innen aufgemacht.
       allow update: if istAdminKonto()
         || (isChef() && gleicheFirma() && !fremderChef(uid)
+            && firmaWechselErlaubt()
             && !request.resource.data.diff(resource.data)
                  .affectedKeys().hasAny(['admin']))
         /* 'handyStempeln' gehoert in dieselbe Sperrliste wie 'role'.
@@ -477,8 +525,14 @@ service cloud.firestore {
     // Der CODE. Nur der Chef sieht und aendert ihn. Die Regel fuer
     // users/{uid} vergleicht ihn per get() - das unterliegt den Regeln
     // nicht und funktioniert deshalb trotzdem.
+    /* Seit Runde 117 schreibt NUR der Server (firmencodeSetzen) den
+       Code: nur er kann prüfen, dass es ihn in keiner anderen Firma
+       gibt. Aus dem Betrieb: „achte darauf das kein code jemals sich
+       doppeln kann egal wie viele firmen es gibt". Eine Regel sieht
+       nur das eine Dokument, nie alle anderen. */
     match /config/registrierung {
-      allow read, write: if isChef();
+      allow read: if isChef();
+      allow write: if false;
     }
     // Die SCHALTER: "wird ein Code verlangt" und "muss freigegeben
     // werden". Bewusst fuer jeden lesbar, auch ohne Anmeldung - das
@@ -487,7 +541,7 @@ service cloud.firestore {
     // Code selbst steht hier nicht drin.
     match /config/beitrittSchalter {
       allow read: if true;
-      allow write: if isChef();
+      allow write: if false;
     }
 
     // Die Studioliste. Ebenfalls fuer jeden lesbar, auch ohne Anmeldung:
@@ -1140,8 +1194,12 @@ service cloud.firestore {
       // Firestore genuegt EINE zutreffende Regel, die erlaubt. Der
       // Regeltest hat genau das gefunden - dieselbe Falle wie beim
       // Firmencode, in derselben Datei, ein zweites Mal.
+      /* 'registrierung' und 'beitrittSchalter' seit Runde 117 auch:
+         sonst schriebe der Chef den Code über DIESE Regel doch wieder
+         am Server vorbei. Dieselbe Falle wie bei 'studios'. */
       allow write: if aufFlachenPfaden()
-        && (isChef() && doc != 'studios');
+        && (isChef() && doc != 'studios'
+            && doc != 'registrierung' && doc != 'beitrittSchalter');
     }
 
     // ── Direktnachrichten (1:1) – nur die beiden Beteiligten ──
@@ -1615,9 +1673,30 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    /* ── Firmencodes und Beitrittsversuche (Runde 117) ──
+       Das Verzeichnis Code → Firma. Es ist der Grund, warum sich kein
+       Code doppeln kann: firmencodeSetzen legt den Eintrag in einer
+       Transaktion an, und ein Code, der schon einer anderen Firma
+       gehört, wird abgewiesen. Lesen darf es NIEMAND vom Gerät aus —
+       sonst liesse sich die Liste aller Codes aller Betriebe abholen.
+       beitrittVersuche zählt Fehlversuche je Konto (Raten bremsen). */
+    match /firmencodes/{code} {
+      allow read, write: if false;
+    }
+    match /beitrittVersuche/{uid} {
+      allow read, write: if false;
+    }
+
     match /firmen/{f} {
       // Vorfälle liegen betriebsübergreifend oben (/vorfaelle), nie hier.
       match /vorfaelle/{id} {
+        allow read, write: if false;
+      }
+      // Ebenso das Code-Verzeichnis und die Versuche (Runde 117).
+      match /firmencodes/{code} {
+        allow read, write: if false;
+      }
+      match /beitrittVersuche/{uid} {
         allow read, write: if false;
       }
       // Die Stammdaten der Firma. Der Name steht auf dem
@@ -1663,12 +1742,12 @@ service cloud.firestore {
 
         match /config/registrierung {
           allow read: if inFirma(f) && (isChef());
-          allow write: if schreibtIn(f) && (isChef());
+          allow write: if false;    // nur firmencodeSetzen, Runde 117
         }
 
         match /config/beitrittSchalter {
           allow read: if true;
-          allow write: if schreibtIn(f) && (isChef());
+          allow write: if false;    // nur firmencodeSetzen, Runde 117
         }
 
         match /config/studios {
@@ -1983,7 +2062,8 @@ service cloud.firestore {
              anderes behauptet als die Datenbank, ist genau der
              Zustand, der beim Sperren zwei Tage lang unbemerkt blieb. */
           allow write: if schreibtIn(f)
-                       && (isChef() && doc != 'studios' && doc != 'zugriff');
+                       && (isChef() && doc != 'studios' && doc != 'zugriff'
+                           && doc != 'registrierung' && doc != 'beitrittSchalter');
         }
 
         match /dms/{dmId} {
