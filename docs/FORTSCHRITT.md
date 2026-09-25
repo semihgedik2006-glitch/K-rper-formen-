@@ -12912,3 +12912,11 @@ GitHub Secret `VORFALL_AN` mit der Adresse, an die Meldungen gehen
 sollen. Ohne sie geht die Mail an S.gedik@kformen.com. **Ohne SMTP geht
 gar keine Mail.** Dann wird die Meldung nur gespeichert, und das
 Fenster sagt es.
+- **Gesamtdurchlauf: 148 von 150 grün.** Zwei waren rot, beide sind
+  behoben und einzeln wieder grün:
+  - `test-ausliefern`: `LICENSE` wäre mit auf die Website gegangen. Die
+    Datei steht jetzt in der ignore-Liste von `firebase.json`.
+  - `test-neu-design`: Der Test kannte „Fenster statt Seite“ nur für
+    „Hilfe“ und „Was ist neu“. Jetzt kennt er auch „Datenschutzvorfall
+    melden“ und prüft dort, dass das Fenster aufgeht. Der Grund steht
+    als Kommentar im Test.

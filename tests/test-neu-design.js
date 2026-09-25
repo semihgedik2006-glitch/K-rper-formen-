@@ -151,8 +151,11 @@ async function seite(b, stub, such, breite) {
         /* Seit dem 22.9.2026 führt eine Zeile nicht auf eine Seite,
            sondern öffnet ein Fenster: „Hilfe im Studio". Sie nennt
            trotzdem ein Ziel — nur eines ohne eigene Adresse. Seit dem
-           24.9. eine zweite derselben Art: „Was ist neu". */
-        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu')),
+           24.9. eine zweite derselben Art: „Was ist neu". Seit dem 25.9.
+           (Runde 113) eine dritte: „Datenschutzvorfall melden" — aus dem
+           Betrieb: „es soll einen knopf geben der mir nach ausfüllung
+           sofort eine mail schickt". */
+        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall')),
       })),
       abgeschnitten: zeilen.some(z => {
         const t = z.querySelector('b');
@@ -243,6 +246,18 @@ async function seite(b, stub, such, breite) {
           ladeZu: document.getElementById('allesLade').hidden,
         };
         if (auf) document.getElementById('neuClose').click();
+        return raus;
+      }
+      /* „Datenschutzvorfall melden" (seit 25.9., Runde 113) ebenso. */
+      if (z.getAttribute('data-al-vorfall')) {
+        const auf = document.getElementById('vorfallModal').classList.contains('show');
+        const raus = {
+          name, tipps, reiterOk,
+          view: auf ? 'FENSTER-AUF' : 'FENSTER-ZU',
+          ziel: 'FENSTER-AUF',
+          ladeZu: document.getElementById('allesLade').hidden,
+        };
+        if (auf) document.getElementById('vfClose').click();
         return raus;
       }
       return {
