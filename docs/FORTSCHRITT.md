@@ -12671,3 +12671,7 @@ nachgebildeten Fehler der Demo.
     und 122 × 44 kompakt.
 - **Gegenprobe:** Mit dem alten Fehler-Rückruf bei den Aufgaben wird
   der Durchlauf rot („die Meldung steht in der Aufgabenliste — null“).
+- **Gesamtdurchlauf: 145 von 146 grün.** Rot war `test-gestaltung`,
+  weil ich in der Meldung `line-height:1.45` fest eingetragen hatte
+  statt die Stufe aus `:root` zu nehmen. Das ist jetzt `var(--lh)`,
+  danach sind `test-gestaltung` und `test-ladefehler` einzeln grün.
