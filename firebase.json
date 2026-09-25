@@ -33,6 +33,7 @@
       "firestore.rules",
       "storage.rules",
       "storage-videos.rules",
+      "LICENSE",
       "functions/**",
       "tests/**",
       "tools/**",
