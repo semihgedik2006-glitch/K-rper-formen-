@@ -12790,3 +12790,5 @@ Der erste Gesamtdurchlauf nach Runde 110/111 hatte sechs rote Tests:
   selbst (`\d{2}:\d{2}`). Das ist **strenger**, nicht lockerer, denn
   „Uhr“ stand auch in Sätzen ohne Zeit. Der Grund steht als Kommentar
   im Test.
+- **Zweiter Gesamtdurchlauf: 148 von 148 grün**, ohne dass nebenher
+  etwas anderes lief.
