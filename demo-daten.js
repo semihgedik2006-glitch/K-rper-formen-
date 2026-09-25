@@ -565,7 +565,11 @@
       r.push({
         id: 'm-' + kanal + '-' + i, uid: u.id, name: u.name, role: u.role,
         studio: (u.studios || [])[0] || '', text: waehle(SAETZE),
-        ts: vorMin(i * zahl(7, 40))
+        /* Je sechs Nachrichten zurück ein Tag mehr. Vorher lagen alle
+           in den letzten rund zwölf Stunden — ab dem Vormittag stand
+           im Chat nur noch „Heute", und test-design-107 („der Chat hat
+           mehrere Tage") hing an der Uhrzeit, zu der er lief. */
+        ts: vorMin(i * zahl(7, 40) + Math.floor(i / 6) * 1440)
       });
     }
     return r;

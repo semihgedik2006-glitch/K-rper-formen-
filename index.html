@@ -3778,8 +3778,13 @@ html{font-size:var(--fs,100%)}
    eine Zeile, und „Alle" daneben öffnet eine senkrechte Liste. Zweimal
    dasselbe Muster ist eine Hausregel; zwei verschiedene Lösungen für
    dasselbe Problem wären zwei Dinge zum Lernen. */
+/* Oben ohne Innenabstand (bis Runde 111: 8 px). Die Reiter sind seitdem
+   44 statt 35 hoch, damit man sie trifft; die 8 px darüber zahlen den
+   grössten Teil davon, sonst verlöre der Chat 9 px Verlauf
+   (test-chat-bereich3 misst das). Der neue Schnitt setzt seinen
+   eigenen Wert (siehe „Reiter und Filter"). */
 .subnav-zeile{display:flex;align-items:center;gap:var(--s6);
-  padding:var(--s8) var(--rand) 0;flex-shrink:0;min-width:0}
+  padding:0 var(--rand);flex-shrink:0;min-width:0}
 .subnav{position:relative;display:flex;gap:var(--s4);
   flex:1 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none}
 .subnav::-webkit-scrollbar{display:none}
@@ -3790,8 +3795,8 @@ html{font-size:var(--fs,100%)}
   background:var(--auf-1);color:var(--text-2);font-family:var(--font-body);
   font-weight:600;font-size:var(--t-sm);white-space:nowrap;cursor:pointer}
 .subnav-mehr:hover{background:var(--auf-2);color:var(--text)}
-.subnav::before{content:'';position:absolute;left:0;top:0;
-  height:var(--ind-h,38px);width:var(--ind-w,0);
+.subnav::before{content:'';position:absolute;left:0;top:calc(var(--ind-h,38px) - 3px);
+  height:3px;width:var(--ind-w,0);
   transform:translate(var(--ind-x,0),var(--ind-y,8px));
   border-radius:var(--r-pille);background:var(--accent);
   opacity:var(--ind-o,0);pointer-events:none;z-index:0;
@@ -3817,7 +3822,7 @@ html{font-size:var(--fs,100%)}
 @media(max-width:400px){ .subtab{padding-left:var(--s10);padding-right:var(--s10)} }
 .subtab:active{transform:scale(.93)}
 .subtab svg{width:16px;height:16px}
-.subtab.on{color:var(--on-accent);font-weight:700}
+.subtab.on{color:var(--accent-d);font-weight:700}
 /* Die Kanalzeile: „Alle Kanäle" steht FEST links, die Leiste schiebt
    sich daneben. Läge der Knopf in der Leiste, wäre er nach der ersten
    Wischbewegung weg — also genau dann, wenn man ihn braucht. */
@@ -4075,8 +4080,8 @@ html{font-size:var(--fs,100%)}
 .chef-tabs{position:relative;display:flex;gap:var(--s4);overflow-x:auto;scrollbar-width:none;
   min-width:0;padding-bottom:var(--s2)}
 .chef-tabs::-webkit-scrollbar{display:none}
-.chef-tabs::before{content:'';position:absolute;left:0;top:0;
-  height:var(--ind-h,38px);width:var(--ind-w,0);
+.chef-tabs::before{content:'';position:absolute;left:0;top:calc(var(--ind-h,38px) - 3px);
+  height:3px;width:var(--ind-w,0);
   transform:translate(var(--ind-x,0),var(--ind-y,0));
   border-radius:var(--r-pille);background:var(--accent);
   opacity:var(--ind-o,0);pointer-events:none;z-index:0;
@@ -4089,7 +4094,7 @@ html{font-size:var(--fs,100%)}
   font-size:var(--t-sm);cursor:pointer;position:relative;z-index:1;
   transition:transform .3s var(--spring),color .25s}
 .chef-tab:active{transform:scale(.93)}
-.chef-tab.on{color:var(--on-accent);font-weight:700}
+.chef-tab.on{color:var(--accent-d);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
 
 /* Probetraining: eine Person aufgeklappt zeigt ihre Studios */
@@ -5444,7 +5449,7 @@ body.neu .bereich-kopf.eng .bk-txt i{display:none}
 
 /* Die Reiterzeile nimmt die Bereichsfarbe an — sonst wäre der Kopf
    bunt und alles darunter wieder gleich. */
-body.neu #subnav::before{background:var(--ber-f);box-shadow:inset 0 0 0 1px var(--ber)}
+body.neu #subnav::before{background:var(--ber)}
 body.neu .subtab.on{color:var(--ber)}
 /* „Alle" steht am rechten Rand über der schiebbaren Reiterzeile. Ohne
    eigenen Grund schob sich „Material" unter ihm durch, und im Bild sah
@@ -6139,9 +6144,9 @@ body.neu .heute-zeile:active{
   transform:translateY(1px);
   box-shadow:var(--e-tief);
 }
-/* Die Reiterleiste: erhaben ist nur der offene Reiter. Ein Streifen aus
-   sechs erhabenen Flächen ist keine Leiste mehr, sondern eine Wand. */
-body.neu .subtab.on{box-shadow:inset 0 1px 0 var(--kante), var(--e1)}
+/* Die Reiterleiste: bis Runde 111 war der offene Reiter hier erhaben
+   (Schatten wie ein Knopf). Seitdem trägt er einen Strich, und ein
+   Strich schwebt nicht — siehe „Reiter und Filter" unten. */
 
 /* ── Reiter und Filter sehen verschieden aus (Design-Ideen 6, Runde 111) ──
    Vorher waren „Aufgaben" (WOHIN ich gehe) und „Alle" (WAS ich davon
@@ -6156,18 +6161,34 @@ body.neu .subtab.on{box-shadow:inset 0 1px 0 var(--kante), var(--e1)}
    der Verwaltung (.chef-tabs). Die Segmente im Team (.pm-tabs) sind
    schon eine eigene Form und bleiben.
 
-   Steht HIER, nach der Regel darüber: die gibt dem offenen Reiter einen
-   Schatten, und der gehört zu einer Pille, nicht zu einem Strich. */
-#subnav::before,.chef-tabs::before{
-  top:calc(var(--ind-h,38px) - 3px);height:3px;border-radius:3px}
+   Der Strich selbst steht bei .subnav::before und .chef-tabs::before
+   (Lage und Höhe), die Farbe bei .subtab.on / .chef-tab.on — an ihrer
+   alten Stelle geändert, nicht hier überschrieben: zweimal dieselbe
+   Eigenschaft ist die Falle, die test-gestaltung sucht. */
 /* Dabei nachgemessen: die Reiter trafen nur 36 px hoch (Hit-Test,
-   normal und kompakt, 390 und 1440 px) — seit es sie gibt. Mit dem
-   Strich an der Unterkante ist die fehlende Höhe ohnehin Luft zwischen
-   Wort und Strich, also volle 44. */
+   normal und kompakt, 390 und 1440 px) — seit es sie gibt.
+
+   Zwei Wege, je nach Leiste:
+   · In einer Leiste, die seitlich schiebt (.chef-tabs, der alte Schnitt
+     von #subnav), schneidet der Scroll-Bereich alles ab, was über den
+     Knopf hinausragt — dort hilft nur echte Höhe: 44.
+   · Im neuen Schnitt bricht #subnav um und schneidet nichts ab. Echte
+     Höhe kostete dort 16 px je Seite (zwei Zeilen à 8), und genau die
+     fehlten: die siebte Aufgabe und der erste Putzpunkt rutschten aus
+     dem Bild (test-p1-aufgaben, test-p2-putzplan). Also bleibt der
+     Reiter 36 hoch und bekommt eine unsichtbare Trefferfläche von
+     44; der Zeilenabstand wächst dafür von 4 auf 8, damit sich die
+     Flächen zweier Zeilen nicht überdecken. Die 4 px bezahlt der
+     Innenabstand über der Leiste (8 → 4), in den die oberste Zeile
+     hineinreicht — so wird die Seite nicht länger.
+     Die Fläche reicht 5,5 px über die Innenkante: der Reiter hat einen
+     Rand von 1,5 px, und ein absolut gesetztes Kind misst ab der
+     Innenkante. Mit 4 px waren es gemessen nur 42. */
 .subtab,.chef-tab{min-height:44px}
-body.neu #subnav::before{background:var(--ber);box-shadow:none}
-.subtab.on,.chef-tab.on{color:var(--accent-d)}
-body.neu .subtab.on{color:var(--ber);box-shadow:none}
+body.neu #subnav{row-gap:var(--s8)}
+body.neu .subnav-zeile{padding-top:var(--s4)}
+body.neu #subnav .subtab{min-height:0}
+body.neu #subnav .subtab::after{content:'';position:absolute;left:0;right:0;top:-5.5px;bottom:-5.5px}
 @media (hover:hover){
   .subtab:not(.on):hover,.chef-tab:not(.on):hover{color:var(--text)}
 }
