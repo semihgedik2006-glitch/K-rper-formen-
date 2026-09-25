@@ -232,7 +232,7 @@ rate ich ab.
 
 ## E · Schulung
 
-### E1. Der offene Rest ist sichtbar
+### E1. Der offene Rest ist sichtbar  ✅ *gebaut (25.9.)*
 *Vorbild: LinkedIn-Profilfortschritt (Zeigarnik-Effekt)* ([StriveCloud](https://www.strivecloud.io/blog/gamification-examples-onboarding))
 
 Unerledigtes bleibt im Kopf. Statt „3 Module" steht an der Schulung „2

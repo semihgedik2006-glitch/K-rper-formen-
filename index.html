@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-hCzKbTpIQA7fR4pGgHz+mJy2mzWxRQO1bvowfzqm5CE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xDtZZaIUjFTIzfSCDtV8iz9in1cELTeK2/dFyHpFgwA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1023,6 +1023,21 @@ html.demo #terminalSchirm{top:44px}
    seit es die Dichte gibt, und kein Durchlauf hatte die Seitenleiste
    am PC per Hit-Test gemessen. */
 .side .tab{min-height:44px}
+.side-tasten,.side-fuss{display:none}
+@media (hover:hover) and (min-width:1100px){
+  .side-fuss{display:block;margin-top:auto;order:99}
+  /* order:99 — die Schnellzugriffe werden später in die Leiste gehängt;
+     ohne das stünden die Tastenkürzel zwischen Navigation und ihnen. */
+  .side-tasten{display:flex;align-items:center;gap:var(--s10);min-height:44px;width:100%;
+    padding:var(--s8) var(--s12);border:none;border-radius:var(--r-md);background:none;cursor:pointer;
+    color:var(--text-3);font-family:var(--font-body);font-size:var(--t-sm);text-align:left}
+  .side-tasten:hover{background:var(--auf-1);color:var(--text)}
+  .side-tasten svg{width:18px;height:18px;flex-shrink:0}
+  .side-tasten span{flex:1;min-width:0}
+  .side-tasten kbd{font-family:var(--font-body);font-weight:700;font-size:var(--t-2xs);
+    min-width:22px;padding:var(--s2) var(--s6);border-radius:var(--r-xs);text-align:center;
+    border:1px solid var(--line-2);border-bottom-width:2px;color:var(--text-2)}
+}
 .tab svg{width:19px;height:19px;flex-shrink:0}
 .tab:hover{background:var(--auf-1);color:var(--text)}
 .tab.active{background:rgba(var(--akz-rgb),.12);color:var(--accent-2)}
@@ -1314,6 +1329,12 @@ html.demo #terminalSchirm{top:44px}
   width:34px;height:26px;padding:0;border-radius:var(--r-xs);display:inline-grid;place-items:center;
   transition:transform .25s var(--spring),color .2s,background .2s}
 .t-cam svg{width:16px;height:16px}
+/* Die Trefferfläche 44 × 44 kommt aus der gemeinsamen Regel oben
+   (.t-cam::after, „Trefferfläche ohne Aussehen zu ändern"). Beim
+   ersten Anlauf stand hier ein eigenes ::before dafür — doppelt, und
+   test-gestaltung hat es gemeldet. */
+.t-cam.mit-wort{width:auto;gap:var(--s4);padding:0 var(--s8);display:inline-flex;align-items:center;
+  color:var(--accent-d);font-family:var(--font-body);font-size:var(--t-2xs);font-weight:700}
 .t-cam:active{transform:scale(.88)}
 @media (hover:hover){ .t-cam:hover{color:var(--accent);background:rgba(var(--akz-rgb),.12)} }
 /* „Mehr" öffnet das Aktionsblatt – ersetzt drei Symbole am Zeilenrand */
@@ -2248,10 +2269,17 @@ body.nurlesen .kopf-plus{display:none !important}
    Startseite auf 320px seitwaerts schiebbar gemacht hat. */
 .ln-tel{white-space:nowrap}
 
-/* Tag-Trenner im Chat (Heute / Gestern / Datum) */
+/* Tag-Trenner im Chat (Heute / Gestern / Datum).
+   Seit Runde 107 kleben sie oben, solange man in ihrem Tag liest
+   (DESIGN-IDEEN Nr. 10) — dann weiss man beim Zurückscrollen immer,
+   wo man zeitlich steht. Deckend statt durchscheinend, sonst liefen
+   die Nachrichten sichtbar darunter durch. Alle gleich breit: der
+   nächste Trenner schiebt sich genau über den vorigen, und von dem
+   ragt links und rechts nichts heraus. */
 .day-sep{align-self:center;margin:var(--s8) 0 var(--s4);padding:var(--s2) var(--s12);border-radius:var(--r-pille);
-  background:var(--auf-1);color:var(--text-3);font-size:var(--t-2xs);font-weight:600;
-  border:1px solid var(--line)}
+  background:var(--bg-2);color:var(--text-3);font-size:var(--t-2xs);font-weight:600;
+  border:1px solid var(--line);position:sticky;top:var(--s6);z-index:3;
+  min-width:11em;text-align:center;box-shadow:var(--e1)}
 
 /* „Nach unten"-Knopf im Chat */
 #view-chat{position:relative}
@@ -4723,6 +4751,13 @@ html{font-size:var(--fs,100%)}
   font-size:var(--t-xl);line-height:var(--lh-eng);margin-bottom:var(--s12)}
 .sch-schritt p{font-size:var(--t-md);line-height:var(--lh);color:var(--text-2);
   margin-bottom:var(--s16)}
+/* Der offene Rest über den Modulen (Runde 107). */
+.sch-rest{display:flex;flex-direction:column;gap:var(--s6);margin:0 0 var(--s12);
+  padding:var(--s12) var(--s16);border-radius:var(--r-md);background:var(--bg-soft);border:1px solid var(--line)}
+.sch-rest-text{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s4) var(--s10)}
+.sch-rest-text b{font-family:var(--font-head);font-weight:800;font-size:var(--t-md);font-variant-numeric:tabular-nums}
+.sch-rest-text span{font-size:var(--t-sm);color:var(--text-2)}
+.sch-rest-balken{flex:none;display:block;width:100%}
 /* Der Platzhalter, solange kein Video da ist. Er sagt ausdrücklich,
    dass es fehlt — ein leerer Kasten liesse jeden glauben, sein Gerät
    sei schuld. */
@@ -7620,6 +7655,11 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <h3 data-ikon="pokal">Was du schon gemacht hast</h3>
               <div id="schMeine"></div>
             </div>
+            <!-- Der offene Rest (DESIGN-RECHERCHE E1): was schon geschafft
+                 ist und was fehlt, als Zahl und Balken. Nur für die
+                 Person selbst — dieselben Zahlen wie „Was du schon
+                 gemacht hast". -->
+            <div class="sch-rest" id="schRest" hidden></div>
             <div class="chip-row" id="schKatRow" style="margin-bottom:12px"></div>
             <div id="schListe"></div>
             <p class="hint" id="schStand"></p>
@@ -15453,6 +15493,12 @@ function navKnopf(g, art){
     b.innerHTML=gruppeSvg(g)+'<span>'+gruppeLabel(g)+'</span>'+badge;
   }
   b.addEventListener('click',function(){ showView(g.views[0]); tick(8); });
+  /* Am Rechner verrät der Hinweis beim Darüberfahren die Taste. */
+  if(art==='seite'){
+    var ak={'g-start':'home','g-komm':'chat','g-arbeit':'arbeit','g-team':'team','g-chef':'chef'}[g.id];
+    var a=ak && aktionById(ak);
+    if(a && keyFor(a)) b.title=gruppeLabel(g)+' — Taste '+keyLabel(keyFor(a));
+  }
   return b;
 }
 
@@ -15685,6 +15731,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-design', datum:'25.9.2026', titel:'Vier kleine Verbesserungen', punkte:[
+    'Chat: Der Tag („Heute", „Gestern", Datum) bleibt beim Zurückscrollen oben stehen — du weisst immer, von wann die Nachrichten sind.',
+    'Schulung: Über den Modulen steht, wie viele du schon geschafft hast und wie viele noch fehlen, mit Balken. Tippst du eine Gruppe an, zählt sie nur diese.',
+    'Aufgaben: An offenen Aufgaben steht neben der Kamera jetzt „Foto" — der schnellste Weg, einen Schaden zu belegen.',
+    'Am Rechner: Unten in der Seitenleiste steht „Tastenkürzel". Fährst du mit der Maus über Start, Aufgaben, Team … steht dort die passende Taste.' ] },
   { id:'2026-09-24-hilfe-pc', datum:'24.9.2026', titel:'Hilfe am Rechner: Liste links, Antwort rechts', wo:'hilfe', punkte:[
     'Am Rechner ist das Hilfe-Fenster jetzt breit und zweigeteilt: links suchst du oder blätterst eine Kategorie durch, rechts steht die Antwort.',
     'Die Liste bleibt dabei stehen — eine Antwort nach der anderen lesen, ohne jedes Mal zurückzugehen. Die geöffnete ist links markiert.',
@@ -16104,6 +16155,22 @@ function buildNav(){
   var gruppen=navGruppen();
   seitenGruppen(gruppen).forEach(function(g){ side.appendChild(navKnopf(g,'seite')); });
   schnellSeiteZeichnen();
+  /* Die Tastenkürzel gibt es seit langem, sichtbar waren sie nur für
+     den, der „?" schon kannte (DESIGN-IDEEN Nr. 29). Am Rechner steht
+     der Weg jetzt unten in der Seitenleiste; am Handy nicht — dort gibt
+     es keine Tastatur. */
+  /* In einer eigenen Hülle, nicht als weiterer Knopf direkt in der
+     Leiste: er ist kein Ziel wie Start oder Aufgaben, und alles, was
+     die Leiste als Liste der Bereiche liest (#side > button), soll ihn
+     auch nicht dafür halten. */
+  var fuss=document.createElement('div');
+  fuss.className='side-fuss';
+  var tk=document.createElement('button');
+  tk.type='button'; tk.className='side-tasten';
+  tk.innerHTML=ikon('tastatur')+'<span>Tastenkürzel</span><kbd>?</kbd>';
+  tk.addEventListener('click', function(){ oeffneKeysModal(); tick(6); });
+  fuss.appendChild(tk);
+  side.appendChild(fuss);
 
   if(!layoutNeu()){
     gruppen.forEach(function(g){ mob.appendChild(navKnopf(g,'unten')); });
@@ -19656,6 +19723,25 @@ function schMeineLaden(){
 }
 
 /* Wie steht es um dieses Modul bei MIR? */
+/* „2 von 8 geschafft — 6 fehlen noch". Folgt der gewählten Kategorie:
+   wer „EMS-Wissen" antippt, sieht den Rest dort. Ein Modul, das wieder
+   fällig ist, zählt als offen — sonst stünde hier „alles geschafft",
+   während unten „wieder fällig" steht. */
+function schRestZeichnen(alle){
+  var box=$('schRest'); if(!box) return;
+  var liste=(alle||[]).filter(function(m){ return _schKat==='alle' || m.kat===_schKat; });
+  if(!liste.length || _schBasisStatus!=='da'){ box.hidden=true; return; }
+  var fertig=liste.filter(function(m){ return schStand(m).art==='fertig'; }).length;
+  var rest=liste.length-fertig;
+  var wo=_schKat==='alle' ? '' : (schKat(_schKat).name+': ');
+  box.hidden=false;
+  box.innerHTML=
+    '<div class="sch-rest-text"><b>'+esc(wo)+fertig+' von '+liste.length+' geschafft</b>'+
+      '<span>'+(rest ? (rest===1 ? 'eines fehlt noch' : rest+' fehlen noch') : 'alles erledigt')+'</span></div>'+
+    '<span class="sch-balken sch-rest-balken" role="progressbar" aria-valuemin="0" aria-valuemax="'+liste.length+
+      '" aria-valuenow="'+fertig+'" aria-label="'+fertig+' von '+liste.length+' geschafft">'+
+      '<i style="width:'+Math.round(fertig/liste.length*100)+'%"></i></span>';
+}
 function schStand(m){
   var meine=_schMeine.filter(function(l){
     return l.modul===m.id && l.status==='fertig' && l.bestanden;
@@ -19720,6 +19806,7 @@ function schUebersichtZeichnen(){
       });
     });
   }
+  schRestZeichnen(alle);
   if(box){
     var liste=alle.filter(function(m){ return _schKat==='alle' || m.kat===_schKat; });
     if(!liste.length){
@@ -26608,9 +26695,13 @@ function todoHTML(t,sk,chefView){
   var photoHtml = t.photo
     ? '<img class="t-photo" data-zoom src="'+safeMedia(t.photo)+'" alt="Foto zur Aufgabe" />'
     : '';
+  /* An einer OFFENEN Aufgabe steht „Foto" daneben (DESIGN-IDEEN Nr.
+     26): klein und grau war die Kamera der am wenigsten gefundene
+     Weg, einen Schaden zu belegen. Erledigt reicht das Zeichen. */
   var photoBtn = t.photo ? '' :
-    '<button class="t-cam" data-photoadd="1" title="Foto hinzufügen" aria-label="Foto hinzufügen">'+
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></button>';
+    '<button class="t-cam'+(done?'':' mit-wort')+'" data-photoadd="1" title="Foto hinzufügen" aria-label="Foto hinzufügen">'+
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>'+
+    (done ? '' : '<span>Foto</span>')+'</button>';
   var isOver = !done && t.due && Date.now()>t.due;   // überfällig → roter Balken links
   // Zugewiesene Person anzeigen
   var assign='';

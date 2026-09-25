@@ -286,7 +286,7 @@ Node 22. `npm audit --omit=dev` meldete zuletzt **0 Lücken**.
 
 | | Wofür |
 |---|---|
-| `playwright` + Chromium | 143 Durchläufe über die echte Oberfläche |
+| `playwright` + Chromium | 144 Durchläufe über die echte Oberfläche |
 | `@firebase/rules-unit-testing` 4.0.1 | Regeltests im Emulator |
 | `firebase-tools` 14.27.0 | **feste Version, ohne `^`** |
 

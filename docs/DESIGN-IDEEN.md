@@ -163,7 +163,7 @@ in `--tipp-1`, fremde in `--bg-2`, dazu eine kleine Sprechblasen-Ecke.
 
 *Aufwand: klein.*
 
-### 10. Datumstrenner kleben lassen
+### 10. Datumstrenner kleben lassen  ✅ *gebaut (25.9.)*
 
 „Heute" / „Gestern" gibt es. Beim Scrollen oben festkleben, dann weiß man
 immer, wo man zeitlich steht.
@@ -179,7 +179,7 @@ Leser je Nachricht. Bei 57 Konten und einem lebhaften Kanal ist das
 nachzurechnen, **bevor** es gebaut wird, nicht danach. Und es ist ein
 weiteres Stück Sichtbarkeit über Personen.
 
-### 12. Antwort-Vorschau anklickbar
+### 12. Antwort-Vorschau anklickbar  ✅ *war schon da (`data-goto`), am 25.9. beim Nachsehen gefunden*
 
 Tippen springt zur Originalnachricht und hebt sie kurz hervor.
 
@@ -318,7 +318,7 @@ nur drin, weil er billig ist.
 
 ## F · Kleinigkeiten, die sofort wirken
 
-### 26. Die Kamera in der Aufgabenzeile ist versteckt
+### 26. Die Kamera in der Aufgabenzeile ist versteckt  ✅ *gebaut (25.9.)*
 
 Klein, grau, unten rechts — dabei ist sie der schnellste Weg, einen
 Schaden zu belegen. Solange die Aufgabe offen ist: „Foto" danebenschreiben.
@@ -348,7 +348,7 @@ Uhr". Drei Schreibweisen für dieselbe Sache.
 
 *Aufwand: klein* — eine Funktion, viele Aufrufstellen.
 
-### 29. Tastenkürzel sichtbar machen
+### 29. Tastenkürzel sichtbar machen  ✅ *gebaut (25.9.) — „?" gab es schon, jetzt steht der Weg am Rechner unten in der Seitenleiste*
 
 Es gibt sie (Cmd/Strg + K) und es gibt `keysModal`. Was fehlt, ist der
 Weg dorthin: „?" drücken öffnet die Übersicht.
