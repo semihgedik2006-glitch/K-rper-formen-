@@ -99,7 +99,7 @@ um einen Faktor skaliert.
 
 *Aufwand: klein*, weil `--s1 … --s72` schon eine Leiter ist.
 
-### 6. Reiter und Filter sehen gleich aus
+### 6. Reiter und Filter sehen gleich aus  ✅ *gebaut (25.9., Runde 110/111)*
 
 Im Aufgabenbereich ist **„Aufgaben"** (Navigation) eine gefüllte Pille —
 und **„Alle"** (Filter) auch. Zwei Bedeutungen, ein Aussehen.
@@ -341,7 +341,7 @@ Bericht. Heute springen die Spalten.
 > beste Aufwand-Nutzen-Punkt der Liste" stand hier zu Recht — nur war
 > der Nutzen bereits eingesammelt.
 
-### 28. Eine Regel für Datum und Uhrzeit
+### 28. Eine Regel für Datum und Uhrzeit  ✅ *gebaut (25.9., Runde 110/111)*
 
 Startseite: „heute 21:10 Uhr". Chat: „21:10". Übergabe: „heute 22:10
 Uhr". Drei Schreibweisen für dieselbe Sache.
