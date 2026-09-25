@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Za7NZnAS4krAB9aJpjsqbWc+6pLhBJfD80uKxf3jvZc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-metcbvl7UcIb7QKTZ+nQ+pxuQkHfqMWn4VU5KwbIBIo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1810,11 +1810,11 @@ body.nurlesen .kopf-plus{display:none !important}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal,#vorfallModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal,#vorfallModal,#zfModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -3354,6 +3354,34 @@ button.ich-zeile:active{opacity:.7}
   font-weight:700}
 .anl-stand.fertig .anl-marke{background:rgba(var(--akz-rgb),.14);color:var(--accent-2)}
 .anl-wohin{color:var(--text-3)}
+.anl-pc{display:none}
+@media (min-width:1100px){
+  /* Am Rechner: Liste + Detail statt der Karten */
+  .chef-pane[data-cpane="anliegen"] .anl-handy{display:none !important}
+  .anl-pc{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:var(--s24);align-items:start}
+}
+.anl-pc-liste{display:grid;gap:var(--s10);min-width:0}
+.anl-zeilen{display:grid;gap:var(--s4);outline:none}
+.anl-zeile{display:grid;gap:var(--s2);text-align:left;min-height:44px;width:100%;padding:var(--s8) var(--s12);
+  border:1px solid transparent;border-radius:var(--r-md);background:none;color:var(--text);cursor:pointer;
+  font-family:var(--font-body)}
+.anl-zeile:hover{background:var(--auf-1)}
+.anl-zeile.an{background:rgba(var(--akz-rgb),.12);border-color:rgba(var(--akz-rgb),.35)}
+.anl-z-titel{font-weight:600;font-size:var(--t-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anl-z-meta{font-size:var(--t-xs);color:var(--text-2)}
+.anl-pc-detail{min-width:0;display:grid;gap:var(--s10);padding:var(--s4) 0 0 var(--s24);border-left:1px solid var(--line)}
+.anl-d-kopf{display:flex;align-items:baseline;gap:var(--s10);flex-wrap:wrap}
+.anl-d-kopf h3{margin:0}
+.anl-d-meta{margin:0;color:var(--text-2);font-size:var(--t-sm)}
+.anl-d-text{white-space:pre-wrap;line-height:var(--lh);max-width:70ch}
+.anl-d-label{font-size:var(--t-xs);color:var(--text-2);margin-top:var(--s6)}
+.anl-d-feld{min-height:96px;resize:vertical}
+.anl-d-fuss{display:flex;align-items:center;justify-content:space-between;gap:var(--s12)}
+.anl-d-fuss .btn{min-height:44px}
+.anl-d-antwort{display:grid;gap:var(--s4);padding:var(--s12);border-radius:var(--r-md);background:var(--bg-2)}
+.anl-d-antwort p{margin:0;white-space:pre-wrap}
+.bb-fuer{display:inline-flex;align-items:center;margin-left:var(--s6);padding:var(--s2) var(--s8);
+  border-radius:var(--r-pille);font-size:var(--t-2xs);font-weight:700;color:var(--text-2);background:var(--auf-1)}
 .anl-antwort{font-size:var(--t-xs);color:var(--text-2);
   border-left:2px solid var(--accent);padding-left:var(--s8)}
 .anl-von{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
@@ -5171,6 +5199,49 @@ html{font-size:var(--fs,100%)}
 .lade-ruhe .hr-ico svg{width:22px;height:22px}
 /* ── Datenschutzvorfall melden (Runde 113) ── */
 .vf-box{max-width:520px}
+/* ── Anmelden mit Google / Apple (Runde 118) ──
+   Weiss mit Haarlinie, das Zeichen in seinen eigenen Farben — so wollen
+   es beide Anbieter, und es hebt sich vom eigenen Hauptknopf ab. */
+.auth-oder{display:flex;align-items:center;gap:var(--s10);margin:var(--s16) 0 var(--s12);
+  color:var(--text-3);font-size:var(--t-xs);text-transform:uppercase;letter-spacing:var(--ls-l)}
+.auth-oder::before,.auth-oder::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.auth-anbieter{display:grid;gap:var(--s10)}
+.btn-anbieter{width:100%;min-height:44px;display:flex;align-items:center;justify-content:center;gap:var(--s10);
+  background:#fff;color:#1f1f1f;border:1px solid #747775;font-weight:600}
+.btn-anbieter[hidden]{display:none}
+.btn-anbieter .anb-logo{width:18px;height:18px;flex:0 0 auto}
+body:not(.light) .btn-anbieter[data-anbieter="apple"]{background:#000;color:#fff;border-color:#000}
+.auth-err:empty{display:none}
+/* Anmeldung und Sicherheit */
+.sich-liste{display:grid;gap:var(--s6)}
+.sich-zeile{display:flex;align-items:center;gap:var(--s10);padding:var(--s8) 0;border-top:1px solid var(--line)}
+.sich-zeile:first-child{border-top:none}
+.sich-was{flex:1 1 auto;min-width:0;display:grid}
+.sich-was small{color:var(--text-2);font-size:var(--t-xs);overflow-wrap:anywhere}
+.sich-zeile .btn{flex:0 0 auto;min-height:44px}
+/* ── Zwei-Faktor (Runde 119) ── */
+#loginForm.zf-schritt > :not(#lgZweiFaktor){display:none}
+.zf-anmeldung .auth-notiz{margin-bottom:var(--s12)}
+.zf-code{font-variant-numeric:tabular-nums;letter-spacing:var(--ls-l);font-size:var(--t-lg);text-align:center}
+.zf-box{max-width:460px}
+.zf-box #zfMail:not([hidden]),.zf-box #zfEinrichten:not([hidden]){display:grid;gap:var(--s16)}
+.zf-box .btn{min-height:44px;width:100%}
+.zf-schritte{margin:0;padding-left:var(--s20);display:grid;gap:var(--s6);font-size:var(--t-sm)}
+.zf-link{display:inline-flex;align-items:center;min-height:44px;color:var(--accent-d);text-decoration:underline;font-weight:600}
+.zf-qr{width:200px;max-width:100%;margin:0 auto;background:#fff;border-radius:var(--r-md);padding:var(--s6)}
+.zf-qr:empty{display:none}
+.zf-qr svg{display:block;width:100%;height:auto}
+.zf-schluessel code{font-size:var(--t-sm);overflow-wrap:anywhere;user-select:all}
+.zf-hinweis{margin:0}
+.zf-summe{margin:0 0 var(--s8)}
+.zf-liste{list-style:none;margin:0;padding:0;display:grid;gap:var(--s6)}
+.zf-liste li{display:flex;align-items:center;gap:var(--s10)}
+.zf-liste li > span:last-child{display:grid}
+.zf-liste small{color:var(--text-2);font-size:var(--t-xs)}
+.zf-marke{width:22px;height:22px;flex:0 0 auto;color:var(--text-3)}
+.zf-marke.an{color:var(--ok)}
+.zf-marke svg{width:100%;height:100%}
+body.gast .sich-feld{display:none}
 /* ── Mein Konto — die kleine Seite (Runde 117) ──
    Eine Spalte am Handy, zwei am Rechner: links der Betrieb (das, worum
    es gerade geht), rechts Profil und Sicherheit. Nie über 880 px breit
@@ -6541,6 +6612,28 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <button type="button" class="pw-auge" data-pw="lgPw" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
       <p class="auth-err" id="loginErr"></p>
       <button class="btn btn-primary" id="loginBtn" style="width:100%">Anmelden</button>
+      <!-- Zweiter Schritt (Runde 119): erscheint nur, wenn das Konto die
+           Zwei-Faktor-Anmeldung eingeschaltet hat. Alles andere im
+           Formular tritt dann zurück (#loginForm.zf-schritt). -->
+      <div id="lgZweiFaktor" class="zf-anmeldung" hidden>
+        <p class="auth-notiz" data-ikon="schloss">Noch ein Schritt: der 6-stellige Code
+          aus deiner Authenticator-App.</p>
+        <div class="field"><label for="lgZfCode">Code aus der App</label>
+          <input class="inp zf-code" id="lgZfCode" type="text" inputmode="numeric"
+                 autocomplete="one-time-code" maxlength="7" placeholder="123 456" /></div>
+        <p class="auth-err" id="lgZfErr" role="alert"></p>
+        <button class="btn btn-primary" id="lgZfOk" type="button" style="width:100%">Bestätigen</button>
+        <button class="btn btn-ghost" id="lgZfAbbruch" type="button" style="width:100%;margin-top:10px">Abbrechen</button>
+      </div>
+      <!-- Anmelden mit einem anderen Konto (Runde 118). Aus dem Betrieb,
+           25.9.2026: „es soll einen login geben über andere apps". Apple
+           erscheint erst, wenn es eingerichtet ist (konfig.js). -->
+      <div class="auth-oder" aria-hidden="true"><span>oder</span></div>
+      <div class="auth-anbieter">
+        <button type="button" class="btn btn-anbieter" data-anbieter="google" id="lgGoogle"><svg class="anb-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.2-8.5 2.2-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg><span>Mit Google anmelden</span></button>
+        <button type="button" class="btn btn-anbieter" data-anbieter="apple" id="lgApple" hidden><svg class="anb-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8c1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1zM13.9 5c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.1.1 2.3-.6 3-1.5z"/></svg><span>Mit Apple anmelden</span></button>
+      </div>
+      <p class="auth-err" id="lgAnbieterErr" role="alert"></p>
       <div class="auth-foot"><a id="forgotLink">Passwort vergessen?</a></div>
       <!-- Der erste Bildschirm, den jeder sieht — auch jemand, der noch
            gar nicht dazugehört. Vorher stand hier eine Sackgasse:
@@ -6610,12 +6703,30 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       </div>
       <p class="auth-err" id="regErr"></p>
       <button class="btn btn-primary" id="registerBtn" style="width:100%">Konto erstellen</button>
+      <!-- Anmelden mit einem anderen Konto (Runde 118). Aus dem Betrieb,
+           25.9.2026: „es soll einen login geben über andere apps". Apple
+           erscheint erst, wenn es eingerichtet ist (konfig.js). -->
+      <div class="auth-oder" aria-hidden="true"><span>oder</span></div>
+      <div class="auth-anbieter">
+        <button type="button" class="btn btn-anbieter" data-anbieter="google" id="rgGoogle"><svg class="anb-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.2-8.5 2.2-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg><span>Weiter mit Google</span></button>
+        <button type="button" class="btn btn-anbieter" data-anbieter="apple" id="rgApple" hidden><svg class="anb-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8c1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1zM13.9 5c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.1.1 2.3-.6 3-1.5z"/></svg><span>Weiter mit Apple</span></button>
+      </div>
+      <p class="auth-err" id="rgAnbieterErr" role="alert"></p>
     </div>
   </div>
 </div>
 
 <!-- ── App ── -->
 <div class="app" id="app">
+  <!-- Runde 119. Aus dem Betrieb, 25.9.2026: 2FA „für chefs, Admin und
+       studioleiter accounts". Der Übergang: erst ein deutlicher Hinweis,
+       erzwungen wird noch nicht (docs/ZWEI-FAKTOR.md). -->
+  <div class="mail-leiste zf-leiste" id="zfLeiste" style="display:none">
+    <span class="ml-ico" aria-hidden="true" data-ikon="schloss"></span>
+    <span class="ml-text">Für die Leitung ist die Zwei-Faktor-Anmeldung Pflicht — zwei Minuten.</span>
+    <button class="ml-btn" id="zfLeisteAuf">Jetzt einrichten</button>
+    <button class="ml-zu" id="zfLeisteZu" aria-label="Hinweis für heute ausblenden"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
   <div class="mail-leiste" id="mailLeiste" style="display:none">
     <span class="ml-ico" aria-hidden="true"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
     <span class="ml-text" id="mailText">Bitte bestätige deine E-Mail-Adresse.</span>
@@ -7793,8 +7904,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </div>
             <div class="card" data-fold="brettneu">
               <h3 data-ikon="stift">Aushang schreiben</h3>
-              <p class="hint">Für das ganze Team – Tausch, Mitfahrgelegenheit, Lob.</p>
+              <p class="hint">Tausch, Mitfahrgelegenheit, Lob — fürs ganze Team oder nur ein Studio.</p>
               <div class="field"><textarea class="inp" id="bbText" maxlength="500" placeholder="Dein Aushang …"></textarea></div>
+              <!-- Runde 121: für wen. Wer „Nur Hürth" wählt, dessen Aushang
+                   sehen andere Studios nicht — das hält die Datenbank,
+                   nicht nur die Anzeige. -->
+              <div class="field"><label for="bbFuer">Für wen</label>
+                <select class="inp" id="bbFuer"><option value="all">Alle Studios</option></select></div>
               <div class="field"><label for="bbType">Art</label>
                 <select class="inp" id="bbType">
                   <option value="info">💬 Info</option>
@@ -8198,6 +8314,15 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button class="btn btn-ghost btn-sm" id="btSave" style="width:100%;margin-top:12px">Speichern</button>
             <p class="em-saved" id="btNote"></p>
           </div>
+          <div data-vw="7" class="card" data-fold="zweifaktor" data-chef-only="1" id="zfStandKarte">
+            <h3 data-ikon="schloss">Zwei-Faktor bei der Leitung</h3>
+            <!-- Das Werkzeug zum Übergang (CLAUDE.md: „bekommt einen
+                 Übergang und ein Werkzeug, das zeigt, wen sie träfe").
+                 Erst wenn hier alle ✓ haben, wird die Pflicht erzwungen. -->
+            <p class="hint">Pflicht für Geschäftsführung und Studioleitung. Hier siehst
+              du, wer sie schon eingerichtet hat.</p>
+            <div id="zfStand" class="zf-stand"><p class="hint">Wird geladen …</p></div>
+          </div>
           <div data-vw="6" class="card" data-fold="onboarding" data-chef-only="1">
             <h3 data-ikon="kompass">Onboarding-Checkliste</h3>
             <p class="hint">Schritte für neue Mitarbeiter. Sie sehen die Liste im Infos-Tab und haken sie ab.</p>
@@ -8394,14 +8519,27 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                Studios Gerichtete. Das steht nicht nur hier, sondern in
                firestore.rules; geprueft in tests/rules/anliegen.test.js. -->
           <div class="chef-pane" data-cpane="anliegen" style="display:none">
-            <div class="card">
+            <!-- Am Rechner (Runde 120): Liste links, das gewählte Anliegen
+                 rechts, mit Antwortfeld. ↑/↓ blättert, Strg+Enter schickt.
+                 Am Handy bleiben die Karten darunter, wie sie sind. -->
+            <div class="card anl-pc" id="anlPc">
+              <div class="anl-pc-liste">
+                <div class="chip-row anl-filter" role="group" aria-label="Anliegen filtern">
+                  <button type="button" class="chip on" data-anlfilter="offen" aria-pressed="true">Offen <span id="anlPcOffenZahl"></span></button>
+                  <button type="button" class="chip" data-anlfilter="fertig" aria-pressed="false">Beantwortet <span id="anlPcFertigZahl"></span></button>
+                </div>
+                <div class="anl-zeilen" id="anlPcZeilen" role="listbox" aria-label="Anliegen" tabindex="0"></div>
+              </div>
+              <div class="anl-pc-detail" id="anlPcDetail" aria-live="polite"></div>
+            </div>
+            <div class="card anl-handy">
               <div class="ich-kopf">
                 <h3>Offen</h3>
                 <span class="ich-zahl-klein" id="anlOffenZahl"></span>
               </div>
               <div id="anlOffen"></div>
             </div>
-            <details class="nachfrage" id="anlFertigBox" style="display:none">
+            <details class="nachfrage anl-handy" id="anlFertigBox" style="display:none">
               <summary class="nachfrage-text" id="anlFertigText">Beantwortet</summary>
               <div id="anlFertig"></div>
             </details>
@@ -8755,11 +8893,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     </section>
 
     <section class="mk-karte" aria-labelledby="mkSicherKopf">
-      <h3 id="mkSicherKopf">Sicherheit</h3>
-      <div class="mk-knoepfe">
-        <button class="btn btn-ghost" id="mkPasswort" type="button" data-ikon="schluessel">Passwort ändern</button>
-      </div>
-      <p class="hint mk-folgt" id="mkZweiFaktor">Zwei-Faktor-Anmeldung und „Mit Google anmelden": folgt in Kürze.</p>
+      <h3 id="mkSicherKopf">Anmeldung und Sicherheit</h3>
+      <div class="sich-liste" id="mkSicherheit"></div>
     </section>
 
     <footer class="mk-fuss">
@@ -8771,6 +8906,39 @@ body.neu .kn-zeile{min-height:var(--zeile)}
         <a class="recht-link" data-rechtauf="datenschutz">Datenschutz</a>
       </p>
     </footer>
+  </div>
+</div>
+
+<!-- ══ ZWEI-FAKTOR EINRICHTEN (Runde 119) ═════════════════════════════ -->
+<div id="zfModal" role="dialog" aria-modal="true" aria-labelledby="zfKopf">
+  <div class="pm-box zf-box">
+    <button class="lb-close" id="zfZu" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="zfKopf" style="margin-bottom:6px">Zwei-Faktor-Anmeldung</h3>
+    <p class="hint" style="margin:0 0 12px">Beim Anmelden fragt die App danach zusätzlich nach
+      einem 6-stelligen Code aus einer App auf deinem Handy. Wer dein Passwort kennt,
+      kommt damit allein nicht mehr hinein.</p>
+    <p class="hint" id="zfLaden">Einen Moment …</p>
+    <div id="zfMail" hidden>
+      <p class="zf-hinweis">Zuerst muss deine E-Mail-Adresse bestätigt sein.</p>
+      <button class="btn btn-primary" id="zfMailSenden" type="button">Bestätigungsmail senden</button>
+      <button class="btn btn-ghost" id="zfMailFertig" type="button">Ich habe bestätigt</button>
+    </div>
+    <div id="zfEinrichten" hidden>
+      <ol class="zf-schritte">
+        <li>Eine Authenticator-App öffnen — zum Beispiel Google Authenticator,
+          Microsoft Authenticator oder 1Password.</li>
+        <li>Den QR-Code scannen. Am Handy geht auch:
+          <a id="zfLink" class="zf-link" href="#">direkt in der App öffnen</a>.</li>
+        <li>Den 6-stelligen Code aus der App hier eintragen.</li>
+      </ol>
+      <div class="zf-qr" id="zfQr" aria-label="QR-Code zum Scannen"></div>
+      <p class="hint zf-schluessel">Schlüssel zum Abtippen: <code id="zfSchluessel"></code></p>
+      <div class="field"><label for="zfCode">Code aus der App</label>
+        <input class="inp zf-code" id="zfCode" type="text" inputmode="numeric"
+               autocomplete="one-time-code" maxlength="7" placeholder="123 456" /></div>
+      <button class="btn btn-primary" id="zfBestaetigen" type="button">Einschalten</button>
+    </div>
+    <p class="auth-err" id="zfErr" role="alert"></p>
   </div>
 </div>
 
@@ -9232,6 +9400,14 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           dauert es oft ein paar Stunden.</p>
       </div>
       <button type="button" class="btn btn-ghost btn-sm" data-ikon="kalender" id="kalNeu">Link erzeugen</button>
+    </div>
+
+    <!-- Anmeldung und Sicherheit (Runde 118): womit man sich anmeldet,
+         Google oder Apple verknüpfen, Passwort ändern. Auf der kleinen
+         Seite „Mein Konto" steht derselbe Abschnitt (sicherheitZeichnen). -->
+    <div class="field sich-feld" style="margin-top:var(--s16)">
+      <label>Anmeldung und Sicherheit</label>
+      <div class="sich-liste" id="pmSicherheit"></div>
     </div>
 
     </div>
@@ -14098,7 +14274,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal','schnellModal','neuModal','vorfallModal'];
+               'putzModal','schnellModal','neuModal','vorfallModal','zfModal'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -15285,6 +15461,48 @@ function zugangFensterFuellen(){
 
      Der allererste Chef-Zugang entsteht bei der Einrichtung des Projekts,
      jeder weitere über Verwaltung → Team → Zugang anlegen. */
+  document.querySelectorAll('.btn-anbieter').forEach(function(b){
+    var id=b.getAttribute('data-anbieter');
+    b.hidden = !anbieterAn(id);
+    b.addEventListener('click', function(){
+      tick(8);
+      var feld = b.id.indexOf('rg')===0 ? $('rgAnbieterErr') : $('lgAnbieterErr');
+      withBusy(b, function(){ return mitAnbieterAnmelden(id, feld); });
+    });
+  });
+  $('lgZfOk').addEventListener('click', zfAnmeldungBestaetigen);
+  $('lgZfCode').addEventListener('keydown', function(e){ if(e.key==='Enter') zfAnmeldungBestaetigen(); });
+  $('lgZfAbbruch').addEventListener('click', function(){
+    zfAnmeldungEnde(); try{ auth.signOut(); }catch(e){}
+  });
+  $('zfZu').addEventListener('click', function(){ $('zfModal').classList.remove('show'); });
+  $('zfModal').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('show'); });
+  $('zfBestaetigen').addEventListener('click', zfBestaetigen);
+  $('zfCode').addEventListener('keydown', function(e){ if(e.key==='Enter') zfBestaetigen(); });
+  $('zfMailSenden').addEventListener('click', function(){
+    var b=this, u=auth.currentUser; if(!u) return;
+    withBusy(b, function(){ return u.sendEmailVerification().then(function(){ toast('Mail an '+u.email+' geschickt ✓'); }, function(e){ toast(errMsg(e), true); }); });
+  });
+  $('zfMailFertig').addEventListener('click', function(){
+    var b=this, u=auth.currentUser; if(!u) return;
+    withBusy(b, function(){ return u.reload().then(function(){ zfSchritt(auth.currentUser); }); });
+  });
+  $('zfLeisteAuf').addEventListener('click', function(){ tick(8); zfEinrichten(); });
+  /* Wer die Zwei-Faktor-Anmeldung in einem anderen Tab oder am Handy
+     einrichtet, soll die Leiste hier nicht weiter sehen: beim Zurückkehren
+     neu nachsehen. */
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && session) zfLeisteZeigen(); });
+  $('zfLeisteZu').addEventListener('click', function(){
+    try{ sessionStorage.setItem('kf_zf_leiste','weg'); }catch(e){} $('zfLeiste').style.display='none';
+  });
+  /* Zurück von der Weiterleitung (installierte App auf dem iPhone):
+     ein Fehler dort kommt nur hier an. */
+  try{
+    if(auth.getRedirectResult) auth.getRedirectResult().catch(function(e){
+      var t=anbieterFehlerText(e, (e && e.credential && e.credential.providerId==='apple.com') ? 'apple' : 'google');
+      if(t && $('lgAnbieterErr')) $('lgAnbieterErr').textContent=t;
+    });
+  }catch(e){}
   setAuthMode('login');
 })();
 
@@ -15344,10 +15562,390 @@ function doLogin(){
   if(!email||!pw){ $('loginErr').textContent='Bitte alle Felder ausfüllen.'; return; }
   var btn = $('loginBtn'); btn.disabled=true; btn.textContent='…';
   auth.signInWithEmailAndPassword(email, pw)
+    .then(anbieterNachholen)
     .catch(function(e){
-      $('loginErr').textContent = authErrMsg(e.code);
       btn.disabled=false; btn.textContent='Anmelden';
+      if(e && e.code==='auth/multi-factor-auth-required' && e.resolver){ zfAnmeldungZeigen(e.resolver); return; }
+      $('loginErr').textContent = authErrMsg(e.code);
     });
+}
+
+/* ══ ANMELDEN MIT GOOGLE ODER APPLE (Runde 118) ══════════════════════
+   Aus dem Betrieb, 25.9.2026: „es soll einen login geben über andere
+   apps" — und Apple so vorbereitet, dass die App in den App Store kann.
+
+   Wer sich so zum ersten Mal anmeldet, bekommt ein Konto OHNE Betrieb
+   (wie beim Anlegen mit Passwort, Runde 117) und landet auf der kleinen
+   Seite. Stand im Formular „Konto anlegen" ein Firmencode, geht die
+   Anfrage gleich mit.
+
+   Die eine Falle: hat die Adresse schon ein Konto MIT PASSWORT, lehnt
+   Firebase die zweite Anmeldeart ab (account-exists-with-different-
+   credential). Dann merkt sich die App das Google-Konto, bittet um die
+   Anmeldung mit Passwort und verknüpft danach — ein Konto, zwei Wege.
+
+   Popup, wo es geht; Weiterleitung, wo der Browser das Popup sperrt
+   (installierte App auf dem iPhone). */
+var ANBIETER = { google:{ name:'Google', id:'google.com' }, apple:{ name:'Apple', id:'apple.com' } };
+var _anbieterWartet = null;
+function anbieterAn(id){
+  var a=(KONFIG && KONFIG.anmeldung) || {};
+  return id==='google' ? a.google!==false : a.apple===true;
+}
+function anbieterProvider(id){
+  if(id==='google'){
+    var g=new firebase.auth.GoogleAuthProvider();
+    try{ g.setCustomParameters({ prompt:'select_account' }); }catch(e){}
+    return g;
+  }
+  var a=new firebase.auth.OAuthProvider('apple.com');
+  try{ a.addScope('email'); a.addScope('name'); a.setCustomParameters({ locale:'de_DE' }); }catch(e){}
+  return a;
+}
+function anbieterFehlerText(e, id){
+  var c=(e && e.code) || '', n=(ANBIETER[id]||{}).name || id;
+  if(c==='auth/popup-closed-by-user' || c==='auth/cancelled-popup-request' || c==='auth/user-cancelled') return '';
+  if(c==='auth/operation-not-allowed') return 'Die Anmeldung mit '+n+' ist noch nicht eingeschaltet. Bitte der Geschäftsführung Bescheid geben.';
+  if(c==='auth/unauthorized-domain') return 'Diese Adresse ist für die Anmeldung mit '+n+' nicht freigegeben.';
+  if(c==='auth/account-exists-with-different-credential') return 'Diese E-Mail-Adresse hat schon ein Konto mit Passwort. Melde dich einmal mit Passwort an — danach ist '+n+' verknüpft und geht auch.';
+  if(c==='auth/credential-already-in-use') return 'Dieses '+n+'-Konto gehört schon zu einem anderen StudioChat-Konto.';
+  if(c==='auth/provider-already-linked') return n+' ist schon verknüpft.';
+  if(c==='auth/requires-recent-login') return 'Aus Sicherheitsgründen: bitte einmal ab- und wieder anmelden, dann klappt es.';
+  if(c==='auth/network-request-failed') return 'Keine Verbindung. Bitte noch einmal versuchen.';
+  return errMsg(e);
+}
+function mitAnbieterAnmelden(id, fehlerFeld){
+  if(fehlerFeld) fehlerFeld.textContent='';
+  if(!firebase.auth.GoogleAuthProvider || !auth.signInWithPopup){
+    if(fehlerFeld) fehlerFeld.textContent='Hier nicht verfügbar.';
+    return Promise.resolve();
+  }
+  var imAnlegen = $('registerForm') && $('registerForm').style.display!=='none';
+  var code = imAnlegen ? ((($('rgCode')||{}).value)||'').trim() : '';
+  try{ sessionStorage.setItem('kf_anbieter_code', code); }catch(e){}
+  var p=anbieterProvider(id);
+  return auth.signInWithPopup(p).catch(function(e){
+    var c=e && e.code;
+    if(c==='auth/multi-factor-auth-required' && e.resolver){ zfAnmeldungZeigen(e.resolver); return; }
+    if(c==='auth/popup-blocked' || c==='auth/operation-not-supported-in-this-environment'){
+      return auth.signInWithRedirect(p);
+    }
+    if(c==='auth/account-exists-with-different-credential'){
+      _anbieterWartet = { id:id, cred:e.credential || null,
+                          email:e.email || (e.customData && e.customData.email) || '' };
+      setAuthMode('login');
+      if(_anbieterWartet.email && $('lgEmail')) $('lgEmail').value=_anbieterWartet.email;
+      fehlerFeld = $('lgAnbieterErr');
+    }
+    var t=anbieterFehlerText(e, id);
+    if(t && fehlerFeld) fehlerFeld.textContent=t;
+  });
+}
+/* Nach der Anmeldung mit Passwort: das gemerkte Google-/Apple-Konto
+   gleich mit verknüpfen. */
+function anbieterNachholen(){
+  var w=_anbieterWartet; _anbieterWartet=null;
+  if(!w || !w.cred || !auth.currentUser || !auth.currentUser.linkWithCredential) return;
+  return auth.currentUser.linkWithCredential(w.cred).then(function(){
+    toast((ANBIETER[w.id]||{}).name+' ist jetzt verknüpft ✓');
+  }).catch(function(e){ console.warn('Verknüpfen:', e && e.code); });
+}
+/* Erste Anmeldung mit Google/Apple: noch kein Profil. Dann eines ohne
+   Betrieb anlegen — genau wie „Konto anlegen" mit Passwort. */
+function anbieterNeuesKonto(user){
+  var ids=(user.providerData||[]).map(function(p){ return p && p.providerId; });
+  if(ids.indexOf('google.com')<0 && ids.indexOf('apple.com')<0) return null;
+  var profil = { name:(user.displayName || String(user.email||'').split('@')[0] || 'Neu').slice(0,50),
+                 email:user.email || '', role:'mitarbeiter', firma:OHNE_FIRMA, aktiv:false,
+                 createdAt:Date.now() };
+  var code=''; try{ code=sessionStorage.getItem('kf_anbieter_code')||''; sessionStorage.removeItem('kf_anbieter_code'); }catch(e){}
+  return db.collection('users').doc(user.uid).set(profil).then(function(){
+    if(!code){ zeigeWarten(user.uid, profil); return; }
+    return fnRuf('firmaBeitreten', { code:code }).then(function(r){
+      profil.firma=r.firma; profil._firmaName=r.name; zeigeWarten(user.uid, profil);
+    }, function(e){ zeigeWarten(user.uid, profil, { code:code, fehler:errMsg(e) }); });
+  });
+}
+
+/* ══ ZWEI-FAKTOR-ANMELDUNG (Runde 119) ═════════════════════════════════
+   Aus dem Betrieb, 25.9.2026: „2FA … ja für chefs, Admin und studioleiter
+   accounts" — per Code aus einer Authenticator-App (TOTP), nicht per SMS
+   (kostet je Nachricht und gilt als schwächer).
+
+   DAS GROSSE ABER, gemessen am SDK: die „compat"-Fassung von Firebase,
+   mit der diese App arbeitet, bringt den TOTP-Teil NICHT mit — in keiner
+   Version (10.12.2, 10.14.1, 11.10.0, 12.3.0 durchgesehen). Er steckt nur
+   im modularen SDK, und beide lassen sich nicht an EINER Anmeldung mischen.
+
+   Was compat aber mitbringt, ist die Schnittstelle, in die dieser Teil
+   eingesteckt wird: multiFactor.enroll(assertion) und
+   resolver.resolveSignIn(assertion) rufen assertion._process(auth,
+   session, name) auf und erwarten die Antwort des Servers
+   ({idToken, refreshToken}). session.type ist 'enroll' oder 'signin',
+   session.credential das Token bzw. die offene Anmeldung. So steht es im
+   Quelltext beider Fassungen (nachgelesen, nicht vermutet). zfAssertion()
+   liefert genau das; die drei Aufrufe an den Server sind dieselben wie im
+   modularen SDK (mfaEnrollment:start/finalize, mfaSignIn:finalize).
+
+   Das Risiko: _process ist eine innere Schnittstelle. Ändert Firebase sie
+   in einer neuen compat-Version, bricht die Anmeldung mit zweitem Faktor.
+   Deshalb bleibt die SDK-Version fest (10.12.2), und
+   tests/test-zwei-faktor.js prüft genau diese Aufrufe. Wer das SDK
+   hochzieht, muss den echten Durchlauf einmal am Handy machen. */
+var _zfResolver = null, _zfInfo = null;
+function zfAn(){ return !!(KONFIG && KONFIG.zweiFaktor); }
+function zfFehlerText(m){
+  m=String(m||'');
+  if(/INVALID_CODE|INVALID_TOTP/.test(m)) return 'Der Code stimmt nicht. Bitte den aktuellen aus der App nehmen.';
+  if(/SESSION_EXPIRED|INVALID_MFA_PENDING_CREDENTIAL/.test(m)) return 'Das hat zu lange gedauert. Bitte noch einmal von vorn.';
+  if(/UNVERIFIED_EMAIL/.test(m)) return 'Bitte bestätige zuerst deine E-Mail-Adresse.';
+  if(/CREDENTIAL_TOO_OLD|TOKEN_EXPIRED/.test(m)) return 'Aus Sicherheitsgründen: bitte einmal ab- und wieder anmelden, dann klappt es.';
+  if(/OPERATION_NOT_ALLOWED|NOT_ENABLED|not enabled|TOTP.*disabled/i.test(m)) return 'Die Zwei-Faktor-Anmeldung ist im Projekt noch nicht eingeschaltet.';
+  return 'Das hat nicht geklappt ('+m+').';
+}
+function idtk(pfad, daten){
+  var key=(KONFIG && KONFIG.firebase && KONFIG.firebase.apiKey) || '';
+  return fetch('https://identitytoolkit.googleapis.com/v2/accounts/'+pfad+'?key='+encodeURIComponent(key), {
+    method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(daten)
+  }).then(function(r){
+    return r.json().catch(function(){ return {}; }).then(function(j){
+      if(!r.ok || j.error){
+        var m=(j.error && j.error.message) || ('HTTP '+r.status);
+        var e=new Error(zfFehlerText(m)); e.code='idtk/'+m; throw e;
+      }
+      return j;
+    });
+  });
+}
+function zfAssertion(code, opt){
+  return {
+    factorId:'totp',
+    _process:function(authIntern, session, name){
+      if(session && session.type==='enroll'){
+        return idtk('mfaEnrollment:finalize', { idToken:session.credential, displayName:name || 'Authenticator-App',
+          totpVerificationInfo:{ sessionInfo:opt.sessionInfo, verificationCode:code } });
+      }
+      return idtk('mfaSignIn:finalize', { mfaPendingCredential:session && session.credential,
+        mfaEnrollmentId:opt.enrollmentId, totpVerificationInfo:{ verificationCode:code } });
+    }
+  };
+}
+function zfFaktoren(u){
+  return ((u && u.multiFactor && u.multiFactor.enrolledFactors) || []);
+}
+function zfCodeAus(feld){ return String((feld && feld.value) || '').replace(/\D/g,''); }
+function zfLeitung(){ return !!session && (isChef() || isLeiter() || session.admin===true); }
+
+/* ── Zeile in „Anmeldung und Sicherheit" ── */
+function zfZeile(u){
+  var pflicht = zfLeitung() ? ' Für die Leitung Pflicht.' : '';
+  if(!zfAn()){
+    return '<div class="sich-zeile"><span class="sich-was"><b>Zwei-Faktor-Anmeldung</b>'+
+      '<small>Code aus einer Authenticator-App — wird gerade freigeschaltet.'+pflicht+'</small></span></div>';
+  }
+  var f=zfFaktoren(u);
+  if(f.length){
+    return '<div class="sich-zeile"><span class="sich-was"><b>Zwei-Faktor-Anmeldung</b>'+
+      '<small>an — '+esc(f[0].displayName || 'Authenticator-App')+'</small></span>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-sich="zf-aus">Abschalten</button></div>';
+  }
+  return '<div class="sich-zeile"><span class="sich-was"><b>Zwei-Faktor-Anmeldung</b>'+
+    '<small>aus.'+pflicht+'</small></span>'+
+    '<button type="button" class="btn btn-primary btn-sm" data-sich="zf-an">Einrichten</button></div>';
+}
+
+/* ── Einrichten ── */
+function zfEinrichten(){
+  var u=auth.currentUser;
+  if(!u || !u.multiFactor || !u.multiFactor.getSession){
+    toast('In der Demo lässt sich die Zwei-Faktor-Anmeldung nicht einrichten.'); return;
+  }
+  $('zfModal').classList.add('show');
+  zfSchritt(u);
+}
+function zfZeige(welcher){
+  $('zfLaden').hidden = welcher!=='laden';
+  $('zfMail').hidden = welcher!=='mail';
+  $('zfEinrichten').hidden = welcher!=='einrichten';
+}
+function zfSchritt(u){
+  $('zfErr').textContent=''; $('zfCode').value=''; $('zfQr').innerHTML='';
+  zfZeige('laden');
+  if(!u.emailVerified){ zfZeige('mail'); return; }
+  u.multiFactor.getSession().then(function(sitzung){
+    return idtk('mfaEnrollment:start', { idToken:sitzung.credential, totpEnrollmentInfo:{} });
+  }).then(function(j){
+    var i=_zfInfo=(j.totpSessionInfo || {});
+    var aus='StudioChat', konto=u.email || 'Konto';
+    var url='otpauth://totp/'+encodeURIComponent(aus)+':'+encodeURIComponent(konto)+
+      '?secret='+i.sharedSecretKey+'&issuer='+encodeURIComponent(aus)+
+      '&algorithm='+(i.hashingAlgorithm || 'SHA1')+'&digits='+(i.verificationCodeLength || 6)+
+      '&period='+(i.periodSec || 30);
+    $('zfSchluessel').textContent=String(i.sharedSecretKey || '').replace(/(.{4})/g,'$1 ').trim();
+    $('zfLink').setAttribute('href', url);
+    zfZeige('einrichten');
+    return qrLaden().then(function(){
+      var q=qrcode(0,'M'); q.addData(url); q.make();
+      $('zfQr').innerHTML=q.createSvgTag({ cellSize:4, margin:4, scalable:true, alt:'QR-Code für die Authenticator-App' });
+    }).catch(function(){
+      $('zfQr').innerHTML='<p class="hint">Der QR-Code lässt sich gerade nicht zeichnen — bitte den Schlüssel unten abtippen.</p>';
+    });
+  }).catch(function(e){
+    zfZeige('');
+    $('zfErr').textContent=(e && e.message) || errMsg(e);
+  });
+}
+/* Die QR-Bibliothek (qrcode-generator, MIT) nur, wenn sie gebraucht wird. */
+var _qrLaden=null;
+function qrLaden(){
+  if(window.qrcode) return Promise.resolve();
+  if(_qrLaden) return _qrLaden;
+  _qrLaden=new Promise(function(ja, nein){
+    var sk=document.createElement('script'); sk.src='qrcode.js';
+    sk.onload=function(){ window.qrcode ? ja() : nein(new Error('qrcode fehlt')); };
+    sk.onerror=function(){ _qrLaden=null; nein(new Error('qrcode.js nicht ladbar')); };
+    document.head.appendChild(sk);
+  });
+  return _qrLaden;
+}
+function zfBestaetigen(){
+  var code=zfCodeAus($('zfCode')), u=auth.currentUser;
+  if(code.length!==6){ $('zfErr').textContent='Bitte die 6 Ziffern aus der App eingeben.'; return; }
+  $('zfErr').textContent='';
+  withBusy($('zfBestaetigen'), function(){
+    return u.multiFactor.enroll(zfAssertion(code, { sessionInfo:_zfInfo && _zfInfo.sessionInfo }), 'Authenticator-App')
+      .then(function(){
+        $('zfModal').classList.remove('show');
+        toast('Zwei-Faktor-Anmeldung ist an ✓');
+        tick(12);
+        zfLeisteZeigen();
+        sicherheitZeichnen($('pmSicherheit')); sicherheitZeichnen($('mkSicherheit'));
+      }, function(e){ $('zfErr').textContent=(e && e.message) || errMsg(e); });
+  });
+}
+function zfAbschalten(b, box){
+  var u=auth.currentUser, f=zfFaktoren(u)[0];
+  if(!f) return;
+  var warn = zfLeitung() ? '\n\nFür die Leitung ist sie Pflicht — du wirst gleich wieder daran erinnert.' : '';
+  if(!confirm('Zwei-Faktor-Anmeldung abschalten?\n\nDann reicht zum Anmelden wieder das Passwort allein.'+warn)) return;
+  withBusy(b, function(){
+    return u.multiFactor.unenroll(f).then(function(){
+      toast('Zwei-Faktor-Anmeldung ist aus'); sicherheitZeichnen(box); zfLeisteZeigen();
+    }, function(e){ toast(e && e.code==='auth/requires-recent-login' ? zfFehlerText('CREDENTIAL_TOO_OLD') : ((e && e.message) || errMsg(e)), true); });
+  });
+}
+
+/* ── Zweiter Schritt beim Anmelden ── */
+function zfAnmeldungZeigen(resolver){
+  _zfResolver=resolver;
+  setAuthMode('login');
+  $('loginForm').classList.add('zf-schritt');
+  $('lgZweiFaktor').hidden=false;
+  $('lgZfErr').textContent=''; $('lgZfCode').value='';
+  var t=$('authTabs'); if(t){ t.dataset.zfVorher=t.style.display; t.style.display='none'; }
+  setTimeout(function(){ try{ $('lgZfCode').focus(); }catch(e){} }, 60);
+}
+function zfAnmeldungEnde(){
+  _zfResolver=null;
+  $('loginForm').classList.remove('zf-schritt');
+  $('lgZweiFaktor').hidden=true; $('lgZfCode').value='';
+  var t=$('authTabs'); if(t && t.dataset.zfVorher!==undefined){ t.style.display=t.dataset.zfVorher; delete t.dataset.zfVorher; }
+}
+function zfAnmeldungBestaetigen(){
+  var code=zfCodeAus($('lgZfCode')), err=$('lgZfErr');
+  if(!_zfResolver){ zfAnmeldungEnde(); return; }
+  if(code.length!==6){ err.textContent='Bitte die 6 Ziffern aus der App eingeben.'; return; }
+  var hint=(_zfResolver.hints || []).filter(function(h){ return h && h.factorId==='totp'; })[0];
+  if(!hint){ err.textContent='Für dieses Konto ist ein anderer zweiter Faktor eingerichtet. Bitte bei der Geschäftsführung melden.'; return; }
+  err.textContent='';
+  withBusy($('lgZfOk'), function(){
+    return _zfResolver.resolveSignIn(zfAssertion(code, { enrollmentId:hint.uid })).then(function(){
+      zfAnmeldungEnde(); return anbieterNachholen();
+    }, function(e){ err.textContent=(e && e.message) || errMsg(e); });
+  });
+}
+
+/* ── Die Leiste für die Leitung ── */
+function zfLeisteZeigen(){
+  var l=$('zfLeiste'); if(!l) return;
+  var u=auth.currentUser, weg=false;
+  try{ weg = sessionStorage.getItem('kf_zf_leiste')==='weg'; }catch(e){}
+  var zeigen = zfAn() && zfLeitung() && !!(u && u.multiFactor) && !zfFaktoren(u).length && !weg;
+  l.style.display = zeigen ? '' : 'none';
+}
+
+/* ── Verwaltung → Team: wer hat sie schon ── */
+function zfStandLaden(){
+  var box=$('zfStand'); if(!box || !isChef()) return;
+  if(!zfAn()){ box.innerHTML='<p class="hint">Die Zwei-Faktor-Anmeldung wird gerade freigeschaltet. Danach steht hier, wer sie eingerichtet hat.</p>'; return; }
+  fnRuf('zweiFaktorStand', {}).then(function(r){
+    var p=r.personen || [];
+    if(!p.length){ box.innerHTML='<p class="hint">Keine Leitungskonten gefunden.</p>'; return; }
+    var an=p.filter(function(x){ return x.an; }).length;
+    var ROLLE={ chef:'Geschäftsführung', leiter:'Studioleitung', admin:'Betreiber' };
+    box.innerHTML='<p class="zf-summe"><b>'+an+' von '+p.length+'</b> eingerichtet</p>'+
+      '<ul class="zf-liste">'+p.map(function(x){
+        return '<li><span class="zf-marke'+(x.an?' an':'')+'" aria-hidden="true">'+(x.an?ikon('hakenKreis'):ikon('uhr'))+'</span>'+
+          '<span><b>'+esc(x.name || 'Ohne Namen')+'</b><small>'+esc(ROLLE[x.rolle] || x.rolle || '')+' · '+(x.an?'eingerichtet':'noch offen')+'</small></span></li>';
+      }).join('')+'</ul>';
+  }).catch(function(e){ box.innerHTML='<p class="hint">Nicht ladbar: '+esc(errMsg(e))+'</p>'; });
+}
+
+/* ── Anmeldung und Sicherheit: womit melde ich mich an? ──
+   Derselbe Abschnitt im Einstellungsfenster und auf „Mein Konto". */
+function sicherheitZeichnen(box){
+  if(!box) return;
+  var u=auth.currentUser || {};
+  var ids=(u.providerData||[]).map(function(p){ return p && p.providerId; }).filter(Boolean);
+  if(!ids.length && u.email) ids=['password'];
+  var zeilen=[];
+  var hatPw = ids.indexOf('password')>=0;
+  zeilen.push('<div class="sich-zeile"><span class="sich-was"><b>E-Mail und Passwort</b>'+
+    '<small>'+(hatPw ? esc(u.email||'') : 'nicht eingerichtet')+'</small></span>'+
+    (hatPw ? '<button type="button" class="btn btn-ghost btn-sm" data-sich="passwort">Passwort ändern</button>' : '')+'</div>');
+  ['google','apple'].forEach(function(id){
+    if(!anbieterAn(id)) return;
+    var an = ids.indexOf(ANBIETER[id].id)>=0;
+    zeilen.push('<div class="sich-zeile"><span class="sich-was"><b>'+ANBIETER[id].name+'</b>'+
+      '<small>'+(an ? 'verknüpft' : 'nicht verknüpft')+'</small></span>'+
+      (an ? (ids.length>1 ? '<button type="button" class="btn btn-ghost btn-sm" data-sich="trennen" data-anb="'+id+'">Trennen</button>' : '')
+          : '<button type="button" class="btn btn-ghost btn-sm" data-sich="verknuepfen" data-anb="'+id+'">Verknüpfen</button>')+
+      '</div>');
+  });
+  zeilen.push(zfZeile(u));
+  box.innerHTML=zeilen.join('');
+  box.querySelectorAll('[data-sich]').forEach(function(b){
+    b.addEventListener('click', function(){ sicherheitTun(b, box); });
+  });
+}
+function sicherheitTun(b, box){
+  var was=b.getAttribute('data-sich'), id=b.getAttribute('data-anb'), u=auth.currentUser;
+  if(!u){ toast('Bitte erst anmelden.', true); return; }
+  if(was==='passwort'){
+    withBusy(b, function(){
+      return auth.sendPasswordResetEmail(u.email).then(function(){
+        toast('Link zum Ändern an '+u.email+' geschickt ✓');
+      }, function(e){ toast(errMsg(e), true); });
+    });
+    return;
+  }
+  if(was==='zf-an'){ zfEinrichten(); return; }
+  if(was==='zf-aus'){ zfAbschalten(b, box); return; }
+  if(!u.linkWithPopup || !u.unlink){ toast('In der Demo lässt sich nichts verknüpfen.'); return; }
+  if(was==='verknuepfen'){
+    withBusy(b, function(){
+      return u.linkWithPopup(anbieterProvider(id)).then(function(){
+        toast(ANBIETER[id].name+' ist jetzt verknüpft ✓'); sicherheitZeichnen(box);
+      }, function(e){ var t=anbieterFehlerText(e, id); if(t) toast(t, true); });
+    });
+  } else if(was==='trennen'){
+    if(!confirm(ANBIETER[id].name+' von diesem Konto trennen?\n\nDu meldest dich danach nur noch anders an.')) return;
+    withBusy(b, function(){
+      return u.unlink(ANBIETER[id].id).then(function(){
+        toast(ANBIETER[id].name+' getrennt'); sicherheitZeichnen(box);
+      }, function(e){ toast(anbieterFehlerText(e, id) || errMsg(e), true); });
+    });
+  }
 }
 
 function doRegister(){
@@ -15461,6 +16059,7 @@ function mkZeichnen(){
   var p=_mk.profil||{};
   var vor=String(p.name||'').split(' ')[0];
   $('mkTitel').textContent = vor ? ('Hallo, '+vor) : 'Hallo';
+  sicherheitZeichnen($('mkSicherheit'));
   var wer=$('warteWer');
   if(wer) wer.textContent='Angemeldet als '+((auth.currentUser&&auth.currentUser.email)||p.email||'');
   try{ applyAvatarEl($('mkAvatar'), Object.assign({ uid:_mk.uid }, p)); }catch(e){}
@@ -15512,15 +16111,6 @@ function mkBinden(){
   });
   $('mkProfil').addEventListener('click', function(){ tick(8); openProfile('profil'); });
   $('mkAussehen').addEventListener('click', function(){ tick(8); openProfile('aussehen'); });
-  $('mkPasswort').addEventListener('click', function(){
-    var b=this, mail=(auth.currentUser&&auth.currentUser.email)||_mk.profil.email;
-    if(!mail){ toast('Keine E-Mail-Adresse hinterlegt.', true); return; }
-    withBusy(b, function(){
-      return auth.sendPasswordResetEmail(mail).then(function(){
-        toast('Link zum Ändern an '+mail+' geschickt ✓');
-      }, function(e){ toast(errMsg(e), true); });
-    });
-  });
   $('mkLoeschen').addEventListener('click', function(){
     var b=this;
     if(!confirm('Konto endgültig löschen?\n\nDein Profil und deine Anmeldung werden entfernt. '+
@@ -15753,6 +16343,9 @@ function weiterMitAnmeldung(user){
         } else if(_registering){
           // Profil wird gerade angelegt – nicht ausloggen, doRegister übernimmt
           return;
+        } else if(anbieterNeuesKonto(user)){
+          // Erste Anmeldung mit Google/Apple — erledigt anbieterNeuesKonto
+          return;
         } else {
           auth.signOut();
           $('authWrap').classList.add('show'); splashWeg();
@@ -15777,6 +16370,7 @@ function weiterMitAnmeldung(user){
    ============================================================ */
 function showApp(){
   $('app').classList.add('show');
+  setTimeout(zfLeisteZeigen, 0);
   splashWeg();                 // die App steht — der Startbildschirm darf gehen
   suchFelderBinden();          // Platzhalter nur, solange das Feld offen ist
   $('uName').textContent = session.name;
@@ -16560,6 +17154,23 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-brett-studio', datum:'25.9.2026', titel:'Schwarzes Brett: Aushänge nur für ein Studio', wo:'team:brett', punkte:[
+    'Beim Aushängen wählst du jetzt „Für wen": alle Studios oder nur eines. Ein Aushang nur für Hürth ist in den anderen Studios nicht zu sehen — das hält die Datenbank, nicht nur die Anzeige.',
+    'An der Karte steht „Nur Hürth", damit klar ist, wer ihn liest.',
+    'Alles, was bisher am Brett hing, gilt weiter für alle Studios.' ] },
+  { id:'2026-09-25-anliegen-pc', datum:'25.9.2026', titel:'Anliegen am Rechner: Liste links, Antwort rechts', wo:'chef:anliegen', punkte:[
+    'Unter Verwaltung → Anliegen steht am Rechner links die Liste, rechts das gewählte Anliegen mit einem Antwortfeld — wie bei den Aufgaben.',
+    'Oben „Offen" und „Beantwortet" zum Umschalten. Mit ↑ und ↓ blätterst du, Strg + Enter schickt die Antwort ab.',
+    'Am Handy bleibt alles, wie es war.' ] },
+  { id:'2026-09-25-zwei-faktor', datum:'25.9.2026', titel:'Zwei-Faktor-Anmeldung vorbereitet — Pflicht für die Leitung', wo:'chef:team', punkte:[
+    'Unter Einstellungen → Profil → „Anmeldung und Sicherheit" gibt es eine Zeile für die Zwei-Faktor-Anmeldung: nach dem Passwort zusätzlich ein Code aus einer App am Handy (Google Authenticator, Microsoft Authenticator o. ä.).',
+    'Sie wird gerade freigeschaltet. Bis dahin steht dort „wird gerade freigeschaltet".',
+    'Für Geschäftsführung und Studioleitung wird sie Pflicht. Unter Verwaltung → Team → „Zwei-Faktor bei der Leitung" sieht die Geschäftsführung, wer sie schon eingerichtet hat.' ] },
+  { id:'2026-09-25-google', datum:'25.9.2026', titel:'Mit Google anmelden', wo:'home', punkte:[
+    'Auf der Anmeldeseite gibt es jetzt „Mit Google anmelden" — ohne eigenes Passwort. Wer so zum ersten Mal kommt, bekommt ein Konto und schickt mit dem Firmencode eine Anfrage an die Geschäftsführung.',
+    'Du hast schon ein Konto mit Passwort? Dann melde dich einmal mit Passwort an, danach ist Google verknüpft und beide Wege gehen.',
+    'Unter Einstellungen → Profil → „Anmeldung und Sicherheit" siehst du, womit du dich anmeldest, und kannst Google verknüpfen oder trennen.',
+    '„Mit Apple anmelden" ist vorbereitet und erscheint, sobald Apple eingerichtet ist.' ] },
   { id:'2026-09-25-konto-anlegen', datum:'25.9.2026', titel:'Selbst ein Konto anlegen — mit Firmencode, der Chef gibt frei', wo:'chef:team', punkte:[
     'Auf der Anmeldeseite kann jetzt jeder ein Konto anlegen. Mit dem Firmencode des Betriebs geht gleich eine Anfrage an die Geschäftsführung.',
     'Bis zur Freigabe sieht man nur eine kleine eigene Seite: Profil, Aussehen, Passwort, Firmencode — sonst nichts aus dem Betrieb.',
@@ -22323,13 +22934,75 @@ function listenBoard(voll){
   if(_bbUnsub && (_bbVoll || !voll)) return;
   if(_bbUnsub){ _bbUnsub(); _bbUnsub=null; }
   _bbVoll=!!voll;
-  _bbUnsub=S('board').orderBy('ts','desc').limit(voll?50:12)
-    .onSnapshot(function(sn){
-      _board=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
-      erwMelden(_board, 'Schwarzes Brett');
-      renderBoard();
-      renderHomeLesen();
-    }, function(e){ console.warn('Brett:',e.message); });
+  /* Seit Runde 121 prüft die Regel das Zielstudio. Der Chef fragt wie
+     bisher ungefiltert; alle anderen zweimal — „für alle" und „für eines
+     meiner Studios" — und die App fügt zusammen und sortiert selbst.
+     Ohne orderBy, weil gleich + sortiert je Abfrage einen zusammen-
+     gesetzten Index bräuchte, und die Auslieferung legt keine Indexe an
+     (ein --force dort löschte bestehende). Bis 300 je Abfrage; darüber
+     fiele Älteres heraus — das Brett ist eine Pinnwand, kein Archiv. */
+  var zahl = voll ? 50 : 12;
+  function liste(sn){ return sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }); }
+  function fertig(alle){
+    _board = alle.sort(function(a,b){ return (b.ts||0)-(a.ts||0); }).slice(0, zahl);
+    erwMelden(_board, 'Schwarzes Brett');
+    renderBoard();
+    renderHomeLesen();
+  }
+  if(isChef()){
+    _bbUnsub=S('board').orderBy('ts','desc').limit(zahl)
+      .onSnapshot(function(sn){
+        var alle=liste(sn);
+        fertig(alle);          // erst zeichnen — das Nachziehen darf das Brett nie aufhalten
+        brettNachziehen(alle);
+      }, function(e){ console.warn('Brett:',e.message); });
+    return;
+  }
+  var teile={}, unsubs=[];
+  function zeichnen(){
+    var nach={};
+    Object.keys(teile).forEach(function(k){ teile[k].forEach(function(d){ nach[d.id]=d; }); });
+    fertig(Object.keys(nach).map(function(id){ return nach[id]; }));
+  }
+  function teil(name, abfrage){
+    unsubs.push(abfrage.onSnapshot(function(sn){ teile[name]=liste(sn); zeichnen(); },
+      function(e){ console.warn('Brett ('+name+'):', e.message); }));
+  }
+  teil('alle', S('board').where('studios','==','all').limit(300));
+  var keys=((session && session.studioKeys) || []).slice(0,30);
+  if(keys.length) teil('studio', S('board').where('studios','array-contains-any',keys).limit(300));
+  _bbUnsub=function(){ unsubs.forEach(function(u){ try{ u(); }catch(e){} }); };
+}
+/* Der Übergang für alte Aushänge ohne Feld: beim Chef auf 'all'. Die
+   Regel lässt genau das zu (brettNachziehenOk). Der Server macht es
+   zusätzlich für alle Betriebe (brettNachziehen, alle 30 Minuten, nach
+   einem Durchgang erst wieder nach sechs Stunden) — damit das Team nicht
+   darauf warten muss, dass der Chef das Brett öffnet. */
+var _bbNachgezogen={};
+function brettNachziehen(liste){
+  liste.forEach(function(b){
+    if(b.studios || _bbNachgezogen[b.id]) return;
+    _bbNachgezogen[b.id]=true;
+    try{
+      S('board').doc(b.id).update({ studios:'all' }).catch(function(e){ console.warn('Brett nachziehen:', b.id, e && e.code); });
+    }catch(e){ console.warn('Brett nachziehen:', b.id, e && e.message); }
+  });
+}
+/* Für wen gilt ein Aushang? Anzeige an der Karte. */
+function brettFuerText(b){
+  if(!Array.isArray(b.studios)) return '';
+  return 'Nur '+b.studios.map(studioName).join(', ');
+}
+/* Auswahl beim Aushängen: „Alle Studios" oder eines der eigenen (der
+   Chef: jedes). Die Regel lässt fremde Studios ohnehin nicht zu. */
+function brettZielAuswahl(){
+  var sel=$('bbFuer'); if(!sel || !session) return;
+  var vorher=sel.value;
+  var studios = isChef() ? STUDIOS_ALPHA.slice() : (session.studios||[]).slice();
+  sel.innerHTML='<option value="all">Alle Studios</option>'+studios.map(function(n){
+    return '<option value="'+esc(studioKey(n))+'">Nur '+esc(n)+'</option>';
+  }).join('');
+  if(vorher && sel.querySelector('option[value="'+vorher+'"]')) sel.value=vorher;
 }
 
 function stopListeners(){
@@ -22733,6 +23406,8 @@ function sendPoll(btn){
       ? S('board').add({
           uid:session.uid, name:session.name,
           text:'', kind:'umfrage', ts:Date.now(),
+          /* Dieselbe Wahl „Für wen" wie beim Aushang (Runde 121). */
+          studios: (function(f){ return f==='all' ? 'all' : [f]; })(($('bbFuer')||{}).value||'all'),
           /* mentions aus der FRAGE, nicht aus text — der ist hier leer.
              Ohne das waere die Erwaehnung hervorgehoben und truege
              trotzdem niemandem etwas zu. */
@@ -23342,6 +24017,7 @@ function loadTeam(sk){
     renderHandovers();
   }, function(e){ ladeFehler('team', e, 'uebergabe'); });
   listenBoard(true);   // auf der Team-Seite alle Einträge, nicht nur zwölf
+  brettZielAuswahl();  // „Für wen": Alle Studios oder eines der eigenen (Runde 121)
   buildShiftPersonSelect();
 }
 
@@ -23683,7 +24359,9 @@ function renderBoard(){
        Ohne diese Abfrage stuende darueber ein leerer Absatz. */
     var txt = b.text
       ? '<div class="bb-text">'+markMentions(linkify(esc(b.text||'')))+'</div>' : '';
+    var fuer=brettFuerText(b);
     return '<div class="bb-item'+(michGemeint?' mentioned':'')+'"><span class="bb-kind">'+esc(BB_KINDS[b.kind]||'Info')+'</span>'+
+      (fuer ? '<span class="bb-fuer">'+esc(fuer)+'</span>' : '')+
       txt + pollHTML(b,'brett')+
       '<div class="bb-head"><span>'+esc(b.name||'')+' · '+fmtDateTime(b.ts)+'</span>'+del+'</div>'+
       reactionsHTML(b,'brett')+'</div>';
@@ -28876,7 +29554,7 @@ function showChefTab(id, keep){
     p.style.display = (p.getAttribute('data-cpane')===id) ? '' : 'none';
   });
   if(id==='ueberblick'){ _dashZaehlen=true; renderDashboard(); renderStudioGrid(); renderAttention(); }
-  if(id==='team'){ renderFreigaben(); beitrittLaden(); }
+  if(id==='team'){ renderFreigaben(); beitrittLaden(); zfStandLaden(); }
   if(id==='standorte'){ renderStandorte(); terminalStudioAuswahl(); terminalsBeobachten(); }
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
@@ -28963,11 +29641,92 @@ function anliegenZeileHTML(a){
         '<span class="anl-von">'+esc(a.antwortVon||'')+'</span></div>');
 }
 
+/* ── Am Rechner: Liste + Detail (Runde 120) ──
+   Aus dem Betrieb, 24.9.2026: „bitte leg genau so viel Fokus auf die
+   PC-Nutzung wie auf die Handy-Nutzung". Die Anliegen waren der letzte
+   Verwaltungsreiter mit einer Spalte über die ganze Breite — am Rechner
+   1.190 px breite Zeilen mit einem Antwortfeld in jeder. Jetzt wie bei
+   den Aufgaben: links die Liste, rechts das gewählte Anliegen, EIN
+   Antwortfeld. */
+var _anlFilter='offen', _anlWahl=null;
+function anliegenPcZeichnen(liste){
+  var zeilen=$('anlPcZeilen'), det=$('anlPcDetail'); if(!zeilen || !det) return;
+  var offen=liste.filter(function(a){ return a.status!=='beantwortet'; });
+  var fertig=liste.filter(function(a){ return a.status==='beantwortet'; });
+  $('anlPcOffenZahl').textContent = offen.length ? '\u00a0· '+offen.length : '';
+  $('anlPcFertigZahl').textContent = fertig.length ? '\u00a0· '+fertig.length : '';
+  var sicht = _anlFilter==='fertig' ? fertig : offen;
+  if(!sicht.some(function(a){ return a.id===_anlWahl; })) _anlWahl = sicht.length ? sicht[0].id : null;
+  zeilen.innerHTML = sicht.length ? sicht.map(function(a){
+    var an = a.id===_anlWahl;
+    return '<button type="button" class="anl-zeile'+(an?' an':'')+'" role="option" aria-selected="'+(an?'true':'false')+'" data-anlwahl="'+esc(a.id)+'">'+
+      '<span class="anl-z-titel">'+esc(a.titel||'Ohne Titel')+'</span>'+
+      '<span class="anl-z-meta">'+esc(a.name||'Jemand')+' · '+esc(ANL_ART[a.art]||a.art||'Anliegen')+' · '+esc(fmtDateTime(a.ts||0))+'</span>'+
+    '</button>';
+  }).join('') : emptyHTML(_anlFilter==='fertig' ? 'Noch nichts beantwortet' : 'Nichts offen',
+      _anlFilter==='fertig' ? 'Was du beantwortest, landet hier.' : 'Hier steht, was jemand aus seinem persönlichen Bereich abgeschickt hat.', 'mail');
+  var a = liste.filter(function(x){ return x.id===_anlWahl; })[0];
+  if(!a){ det.innerHTML='<p class="hint anl-leer">Links ein Anliegen wählen.</p>'; return; }
+  var offenA = a.status!=='beantwortet';
+  det.innerHTML =
+    '<div class="anl-d-kopf"><h3>'+esc(a.titel||'Ohne Titel')+'</h3>'+
+      '<span class="ziel-woher">'+esc(ANL_ART[a.art]||a.art||'')+'</span></div>'+
+    '<p class="anl-d-meta">'+esc(a.name||'Jemand')+' · '+esc(fmtDateTime(a.ts||0))+
+      (a.studioKey ? ' · '+esc(studioName(a.studioKey)) : '')+
+      ' · an '+(a.an==='leiter' ? 'die Studioleitung' : 'die Geschäftsführung')+'</p>'+
+    (a.text ? '<div class="anl-d-text">'+esc(a.text)+'</div>' : '')+
+    (offenA
+      ? '<label class="anl-d-label" for="anlPcAntwort">Deine Antwort</label>'+
+        '<textarea class="inp anl-d-feld" id="anlPcAntwort" maxlength="500" rows="4" placeholder="Antwort …"></textarea>'+
+        '<div class="anl-d-fuss"><span class="hint">Strg + Enter schickt ab</span>'+
+        '<button type="button" class="btn btn-primary" id="anlPcSenden" data-anlpc="'+esc(a.id)+'">Antworten</button></div>'
+      : '<div class="anl-d-antwort"><b>Antwort</b><p>'+esc(a.antwort||'')+'</p>'+
+        '<span class="anl-von">'+esc(a.antwortVon||'')+(a.antwortAm ? ' · '+esc(fmtDateTime(a.antwortAm)) : '')+'</span></div>');
+}
+function anliegenPcBinden(){
+  var pc=$('anlPc'); if(!pc || pc._gebunden) return; pc._gebunden=true;
+  pc.addEventListener('click', function(e){
+    var f=e.target.closest('[data-anlfilter]');
+    if(f){
+      _anlFilter=f.getAttribute('data-anlfilter'); _anlWahl=null;
+      pc.querySelectorAll('[data-anlfilter]').forEach(function(x){
+        var an=x===f; x.classList.toggle('on', an); x.setAttribute('aria-pressed', an?'true':'false');
+      });
+      tick(6); renderAnliegen(); return;
+    }
+    var z=e.target.closest('[data-anlwahl]');
+    if(z){
+      _anlWahl=z.getAttribute('data-anlwahl'); tick(6); renderAnliegen();
+      /* Neu gezeichnet heisst: der geklickte Knopf ist weg. Den Fokus auf
+         die neue Zeile, sonst kommen ↑/↓ nicht mehr an. */
+      var neu=pc.querySelector('[data-anlwahl="'+_anlWahl+'"]'); if(neu) neu.focus();
+      return;
+    }
+    var s=e.target.closest('#anlPcSenden');
+    if(s) anliegenAntworten(s.getAttribute('data-anlpc'), s, $('anlPcAntwort'));
+  });
+  pc.addEventListener('keydown', function(e){
+    if(e.target && e.target.id==='anlPcAntwort'){
+      if(e.key==='Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); var s=$('anlPcSenden'); if(s) s.click(); }
+      return;
+    }
+    if(e.key!=='ArrowDown' && e.key!=='ArrowUp') return;
+    var knoepfe=[].slice.call(pc.querySelectorAll('[data-anlwahl]'));
+    if(!knoepfe.length) return;
+    var i=knoepfe.findIndex(function(k){ return k.getAttribute('data-anlwahl')===_anlWahl; });
+    i = e.key==='ArrowDown' ? Math.min(knoepfe.length-1, i+1) : Math.max(0, i-1);
+    e.preventDefault();
+    _anlWahl=knoepfe[i].getAttribute('data-anlwahl'); renderAnliegen();
+    var neu=pc.querySelector('[data-anlwahl="'+_anlWahl+'"]'); if(neu) neu.focus();
+  });
+}
+
 function renderAnliegen(){
   var box=$('anlOffen'), zahl=$('anlOffenZahl');
   var fbox=$('anlFertigBox'), fl=$('anlFertig'), ft=$('anlFertigText');
   if(!box) return;
   var liste=_anliegen.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+  anliegenPcBinden(); anliegenPcZeichnen(liste);
   var offen=liste.filter(function(a){ return a.status!=='beantwortet'; });
   var fertig=liste.filter(function(a){ return a.status==='beantwortet'; });
   if(zahl) zahl.textContent = offen.length ? String(offen.length) : '';
@@ -28982,8 +29741,8 @@ function renderAnliegen(){
   }
 }
 
-function anliegenAntworten(id, btn){
-  var feld=document.querySelector('[data-anlfeld="'+id+'"]');
+function anliegenAntworten(id, btn, feldPc){
+  var feld=feldPc || document.querySelector('[data-anlfeld="'+id+'"]');
   var text=((feld&&feld.value)||'').trim();
   if(!text){ toast('Bitte eine Antwort eintippen.',true); if(feld) feld.focus(); return; }
   withBusy(btn, function(){
@@ -33478,6 +34237,7 @@ function openProfile(reiter){
     el.classList.add('sel'); pmPreview();
   }); });
   buildAppearanceOptions();
+  sicherheitZeichnen($('pmSicherheit'));
   /* Mit Reiter aufrufbar, damit „Mein Bereich" beim Nachweis direkt dort
      landet. Das Formular gibt es weiterhin nur EINMAL — ein zweites im
      Ich-Bereich waere die zweite Stelle, an der ein neues Feld vergessen
@@ -35164,10 +35924,12 @@ function bindActions(){
     var btn=this, t=$('bbText').value.trim();
     if(!t){ toast('Bitte einen Text eingeben.',true); return; }
     withBusy(btn,function(){
+      var fuer=($('bbFuer')||{}).value||'all';
       return S('board').add({
         text:t, mentions:findMentions(t), kind:$('bbType').value,
+        studios: fuer==='all' ? 'all' : [fuer],
         uid:session.uid, name:session.name, ts:Date.now()
-      }).then(function(){ $('bbText').value=''; toast('Angepinnt ✓'); })
+      }).then(function(){ $('bbText').value=''; toast(fuer==='all' ? 'Angepinnt ✓' : 'Angepinnt — nur für '+studioName(fuer)+' ✓'); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });

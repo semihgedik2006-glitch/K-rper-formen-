@@ -54,6 +54,20 @@
     /* Muss zur Firestore-Region passen. */
     region: 'europe-west1',
 
+    /* Anmelden mit einem anderen Konto (Runde 118).
+       google: erst in der Firebase-Konsole einschalten (Authentication →
+               Anmeldemethode → Google). Solange es dort aus ist, sagt die
+               App das beim Tippen, statt stumm zu scheitern.
+       apple:  braucht ein Apple-Entwicklerkonto; bis dahin false — dann
+               erscheint der Knopf gar nicht. Einrichtung: docs/APPSTORE.md. */
+    anmeldung: { google: true, apple: false },
+
+    /* Zwei-Faktor-Anmeldung per Authenticator-App (Runde 119). Erst auf
+       true, wenn sie im Projekt eingeschaltet ist (docs/ZWEI-FAKTOR.md,
+       ein Befehl in der Cloud Shell). Vorher sagt die App ehrlich „wird
+       gerade freigeschaltet", statt auf einen Fehler zu laufen. */
+    zweiFaktor: false,
+
     /* Firebase-Konsole → Cloud Messaging → Web-Push-Zertifikate.
        Leer: die App laeuft normal, nur ohne Meldungen bei geschlossener App. */
     vapidKey: 'BG-Ibkh7PLobYuR7_q2HC63kh7krkKYDi7zUzIAjoiCddfGr1vwq0Kaq1yDNvP27twUprl4H8o8y-9TC58hn_yI',

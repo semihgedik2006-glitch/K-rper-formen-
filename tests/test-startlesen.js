@@ -28,7 +28,10 @@ const brettStub = eintraege => `
         where:function(){ return kette; },
         get:function(){ return Promise.resolve(sn()); },
         onSnapshot:function(cb){ try{ cb(sn()); }catch(e){ console.error(e); } return function(){}; },
-        doc:function(){ return { delete:function(){ return Promise.resolve(); } }; },
+        /* update(): seit Runde 121 setzt die App des Chefs bei Aushängen
+           ohne Feld einmal studios:'all' (brettNachziehen). */
+        doc:function(){ return { delete:function(){ return Promise.resolve(); },
+                                 update:function(){ return Promise.resolve(); } }; },
         add:function(){ return Promise.resolve({ id:'neu' }); } };
       function sn(){
         var d = BRETT.map(function(x){ return { id:x.id, data:function(){ return x; } }; });
