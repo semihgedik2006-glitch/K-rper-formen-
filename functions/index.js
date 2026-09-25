@@ -5146,6 +5146,119 @@ exports.zeitStornieren = region.https.onCall(async (data, context) => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
+   DATENSCHUTZVORFALL MELDEN (P-02, Runde 113)
+
+   Aus dem Betrieb, 25.9.2026:
+     „es soll einen knopf geben der mir nach ausfüllung sofort eine mail
+      schickt mit einer bestimmten betonung von wichtigkeit"
+
+   Jeder mit freigegebenem Zugang darf melden — eine Datenpanne bemerkt
+   oft nicht die Geschäftsführung, sondern wer am Empfang sitzt.
+
+   ── WAS PASSIERT ────────────────────────────────────────────────────
+   1. Die Meldung wird ZUERST gespeichert (Sammlung `vorfaelle`, lesbar
+      nur für den Betreiber). Scheitert danach die Mail, ist sie nicht
+      verloren — und die Antwort sagt ehrlich, dass keine Mail ging.
+   2. Dann die Mail an VORFALL_AN (Standard: die Adresse aus
+      docs/av/VORFALL.md), mit `priority: 'high'`. Nodemailer setzt
+      daraus X-Priority: 1, X-MSMail-Priority: High und Importance: High
+      — die drei Kopfzeilen, an denen Outlook, Apple Mail und Gmail die
+      Wichtigkeit erkennen. Dazu steht es im Betreff, denn nicht jedes
+      Programm zeigt die Kopfzeilen an.
+   3. In der Mail steht die eigene Frist aus dem AV-Vertrag (48 Stunden,
+      § 8 Abs. 4) als Uhrzeit, nicht als Rechenaufgabe.
+
+   ── GRENZE ──────────────────────────────────────────────────────────
+   Höchstens fünf Meldungen je Person und 24 Stunden. Ein Knopf, der
+   sofort eine Mail mit höchster Wichtigkeit auslöst, darf keine
+   Mailschleuder sein.
+   ══════════════════════════════════════════════════════════════════ */
+const VORFALL_AN_STANDARD = 'S.gedik@kformen.com';
+const VORFALL_FRIST_STUNDEN = 48;
+const VORFALL_TAGESGRENZE = 5;
+const VORFALL_LAEUFT = { ja: 'Ja, es läuft noch', nein: 'Nein, ist vorbei', unklar: 'Weiss ich nicht' };
+
+function vorfallText(v, firmaName, fristBis) {
+  return [
+    'DATENSCHUTZVORFALL GEMELDET — BITTE SOFORT ANSEHEN',
+    '',
+    'Eigene Frist laut AV-Vertrag (§ 8 Abs. 4): Kunden benachrichtigen bis spätestens',
+    '  ' + fristBis + ' (48 Stunden ab jetzt).',
+    'Ablauf: docs/av/VORFALL.md, Schritt 1–6.',
+    '',
+    'Firma:        ' + firmaName + ' (' + (v.firma || '–') + ')',
+    'Gemeldet von: ' + (v.name || '–') + ' · ' + (v.rolle || '–') + ' · ' + (v.email || 'keine Adresse'),
+    'Rückruf:      ' + (v.rueckruf || '–'),
+    'Bemerkt:      ' + (v.wann || '–'),
+    'Läuft noch:   ' + (VORFALL_LAEUFT[v.laeuft] || v.laeuft),
+    '',
+    'WAS IST PASSIERT',
+    v.was,
+    '',
+    'WER ODER WAS IST BETROFFEN',
+    v.betroffen || '(nicht angegeben)',
+    '',
+    'Kennung der Meldung: ' + v.id
+  ].join('\n');
+}
+
+exports.vorfallMelden = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const text = (k, max) => String((data && data[k]) || '').trim().slice(0, max);
+  const was = text('was', 4000);
+  if (was.length < 10) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Bitte beschreib in einem Satz, was passiert ist.');
+  }
+  const laeuft = Object.prototype.hasOwnProperty.call(VORFALL_LAEUFT, data && data.laeuft) ? data.laeuft : 'unklar';
+
+  const seit = Date.now() - 86400000;
+  const bisher = await db.collection('vorfaelle').where('uid', '==', uid).get();
+  if (bisher.docs.filter((d) => (d.get('ts') || 0) > seit).length >= VORFALL_TAGESGRENZE) {
+    throw new functions.https.HttpsError('resource-exhausted',
+      'Du hast heute schon ' + VORFALL_TAGESGRENZE + ' Meldungen geschickt. ' +
+      'Ist es dringend, schreib direkt an ' + (process.env.VORFALL_AN || VORFALL_AN_STANDARD) + '.');
+  }
+
+  const ts = Date.now();
+  const eintrag = {
+    uid, name: profil.name || '', email: profil.email || '', rolle: profil.role || '',
+    firma: firma || null, was, laeuft,
+    wann: text('wann', 60), betroffen: text('betroffen', 2000), rueckruf: text('rueckruf', 200),
+    ts, mail: 'offen'
+  };
+  const ref = await db.collection('vorfaelle').add(eintrag);
+
+  let firmaName = firma || '–';
+  if (firma) {
+    const f = await db.collection('firmen').doc(firma).get();
+    if (f.exists && f.get('name')) firmaName = f.get('name');
+  }
+  const fristBis = new Date(ts + VORFALL_FRIST_STUNDEN * 3600000).toLocaleString('de-DE',
+    { timeZone: 'Europe/Berlin', weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  const mailer = getMailer();
+  let mail = false;
+  if (mailer) {
+    try {
+      await mailer.sendMail({
+        from: process.env.MAIL_FROM || process.env.SMTP_USER,
+        to: process.env.VORFALL_AN || VORFALL_AN_STANDARD,
+        replyTo: eintrag.email || undefined,
+        priority: 'high',
+        subject: '‼ DRINGEND: Datenschutzvorfall gemeldet – ' + firmaName + ' – Frist bis ' + fristBis,
+        text: vorfallText(Object.assign({ id: ref.id }, eintrag), firmaName, fristBis)
+      });
+      mail = true;
+    } catch (e) {
+      console.error('Vorfall-Mail gescheitert:', ref.id, e && e.message);
+    }
+  }
+  await ref.update({ mail: mail ? 'gesendet' : (mailer ? 'fehlgeschlagen' : 'nicht eingerichtet') });
+  return { ok: true, id: ref.id, mail, fristBis };
+});
+
+/* ══════════════════════════════════════════════════════════════════════
    SCHULUNG — DER TEILNAHME-CODE
 
    Aus dem Betrieb, 22.9.2026:
@@ -5487,4 +5600,9 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                         Datenbank pruefbar — genau deshalb steht sie hier. */
                      aboZugriff, aboStufeNachTagen, aboNeuRechnen,
                      kennungVon, aboIdAusRechnung, periodeAusRechnung, periodeAusAbo,
-                     ABO_STATUS, ABO_STUFEN, LEITERN };
+                     ABO_STATUS, ABO_STUFEN, LEITERN,
+                     vorfallText,
+                     /* Nur für tests/rules/vorfall.test.js: ein Ersatz-Versender,
+                        der festhält, was er bekommt. Ohne ihn liesse sich die
+                        Wichtigkeit der Mail nicht prüfen, ohne echt zu senden. */
+                     mailerFuerDurchlauf: (m) => { _mailer = m; } };

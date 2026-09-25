@@ -172,8 +172,16 @@ eine Einstufungstabelle mit sieben Beispielen und die Ablage der Akten.
 | **Die Behördenanschrift fehlt** | Bewusst: eine veraltete Adresse in einer Notfallvorlage ist schlimmer als keine. |
 | **Nie erprobt** | Ein Verfahren, das nie gelaufen ist, ist eine Annahme. Ein Trockenlauf dauert eine Stunde. |
 
+**Seit 25.9.2026 (Runde 113) gibt es in der App „Datenschutzvorfall
+melden"** (Alles → Was muss ich wissen?). Jeder mit freigegebenem Zugang
+kann melden; die Funktion `vorfallMelden` speichert die Meldung zuerst
+in `/vorfaelle` (nur für den Betreiber lesbar) und schickt dann eine
+Mail mit Wichtigkeit „hoch" an `VORFALL_AN`. Scheitert die Mail, ist die
+Meldung trotzdem gespeichert, und das Fenster sagt, dass KEINE Mail
+ging. Das ist zugleich ein zweiter Eingang neben dem Postfach.
+
 **Aufwand für den Rest:** die Vertretung ist entschieden (keine,
-offengelegt). Offen bleiben der zweite Meldeweg und ein Trockenlauf.
+offengelegt). Offen bleibt ein Trockenlauf.
 
 ---
 
@@ -222,7 +230,14 @@ grüner Durchlauf.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open |
+| **Status** | **Behoben am 25.9.2026** — `LICENSE`: alle Rechte vorbehalten |
+
+Aus dem Betrieb, 25.9.2026: *„Füge eine Lizenzdatei hinzu, ich hab
+sorge das dass privat stellen uns irgendwie limitieren könnte."* Das
+Repository bleibt öffentlich; die Datei sagt ausdrücklich, dass
+Einsehen keine Erlaubnis zur Nutzung ist (auch nicht zum Training von
+KI-Systemen). **Was sie nicht kann:** jemanden technisch am Kopieren
+hindern. Sie macht die Rechtslage eindeutig, mehr nicht.
 
 Öffentlich einsehbar ist nicht gemeinfrei — ohne Lizenzdatei gilt das
 normale Urheberrecht. Trotzdem ist der Zustand unklar: soll der Code

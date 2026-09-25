@@ -12844,3 +12844,79 @@ Dann gibt es **eine** Spalte und keine leere daneben (`:has`).
   - Gegenprobe Studioleitung: eine Spalte;
   - Gegenprobe Handy: alte Reihenfolge, eine Spalte.
 - **Gegenprobe:** Die alte Seite fällt mit 18 Zusicherungen durch.
+
+## Runde 113 — Lizenzdatei; „Datenschutzvorfall melden"
+
+> Antworten aus dem Betrieb, 25.9.2026:
+> „es soll einen knopf geben der mir nach ausfüllung sofort eine mail
+> schickt mit einer bestimmten betonung von wichtigkeit" ·
+> „Füge eine Lizenzdatei hinzu, ich hab sorge das dass privat stellen
+> uns irgendwie limitieren könnte"
+
+### Lizenzdatei (P-04)
+
+`LICENSE`: alle Rechte vorbehalten, auf Deutsch mit englischer
+Zusammenfassung. Das Repository bleibt öffentlich. Die Datei sagt
+ausdrücklich, dass Einsehen keine Erlaubnis ist, den Code zu nutzen,
+zu betreiben oder für KI-Training zu verwenden. **Was sie nicht kann:**
+jemanden technisch am Kopieren hindern.
+
+### Datenschutzvorfall melden (P-02)
+
+- **Wo:** Alles → Was muss ich wissen? → „Datenschutzvorfall melden“,
+  für **jede** Rolle. Eine Datenpanne bemerkt oft nicht die
+  Geschäftsführung, sondern wer am Empfang sitzt.
+- **Das Fenster:** Pflicht ist nur „Was ist passiert?“. Dazu kommen
+  freiwillig: wann bemerkt, wer betroffen, läuft es noch, Rückruf. Wer
+  zögert, weil er nicht alles weiss, meldet sonst gar nicht.
+- **Der Server (`vorfallMelden`):**
+  1. Er speichert **zuerst** in `/vorfaelle`. Das ist oben, nicht in der
+     Firma, denn ein Vorfall kann die Firma selbst betreffen. Lesen
+     darf nur der Betreiber.
+  2. **Dann** geht die Mail an `VORFALL_AN` raus, mit `priority:'high'`.
+     Nodemailer setzt daraus `X-Priority: 1 (Highest)`,
+     `X-Msmail-Priority: High` und `Importance: High`; nachgesehen am
+     erzeugten Mailkopf. Weil nicht jedes Mailprogramm Kopfzeilen
+     anzeigt, steht „‼ DRINGEND“ zusätzlich im Betreff, dazu die Frist
+     als Uhrzeit (48 h, AV-Vertrag § 8 Abs. 4).
+  3. Höchstens fünf Meldungen je Person und Tag. Ein Knopf, der Mails
+     mit höchster Wichtigkeit auslöst, darf keine Mailschleuder sein.
+- **Ehrlich im Ergebnis:** „Gemeldet — die Mail ist raus“ erscheint nur,
+  wenn der Versand geklappt hat. Sonst steht dort „Gespeichert — aber es
+  ging KEINE Mail raus“ und was jetzt zu tun ist. In der Demo geht nie
+  eine Mail raus, und das steht dann auch so da.
+
+### Durchläufe
+
+- **Neu: `tests/rules/vorfall.test.js`** mit 16 Zusicherungen. Die
+  Funktion wird gegen den Emulator ausgeführt:
+  - ohne SMTP: gespeichert, `mail:false`, nicht „gesendet“;
+  - mit einem Ersatz-Versender: `priority:'high'`, „DRINGEND“ und
+    Frist im Betreff, Antwort geht an die meldende Person;
+  - scheitert der Versand: gespeichert, Vermerk „fehlgeschlagen“;
+  - Abweisungen: ohne Text, ohne Anmeldung, nicht freigegeben, sechste
+    Meldung am Tag.
+- **Neu: `tests/test-vorfall.js`** mit 14 Zusicherungen:
+  - jede Rolle findet den Eintrag;
+  - leer absenden wird abgewiesen;
+  - das Ergebnis ist ehrlich („KEINE Mail“ in der Demo);
+  - Escape schliesst;
+  - alle Bedienelemente ≥ 44 × 44 bei 390 und 1440 px, normal und
+    kompakt.
+- `test-funktionen-pfade`: `vorfaelle` steht jetzt mit Begründung in
+  der Liste der Sammlungen, die oben liegen dürfen.
+
+### Was du tun kannst (freiwillig)
+
+GitHub Secret `VORFALL_AN` mit der Adresse, an die Meldungen gehen
+sollen. Ohne sie geht die Mail an S.gedik@kformen.com. **Ohne SMTP geht
+gar keine Mail.** Dann wird die Meldung nur gespeichert, und das
+Fenster sagt es.
+- **Gesamtdurchlauf: 148 von 150 grün.** Zwei waren rot, beide sind
+  behoben und einzeln wieder grün:
+  - `test-ausliefern`: `LICENSE` wäre mit auf die Website gegangen. Die
+    Datei steht jetzt in der ignore-Liste von `firebase.json`.
+  - `test-neu-design`: Der Test kannte „Fenster statt Seite“ nur für
+    „Hilfe“ und „Was ist neu“. Jetzt kennt er auch „Datenschutzvorfall
+    melden“ und prüft dort, dass das Fenster aufgeht. Der Grund steht
+    als Kommentar im Test.

@@ -1304,6 +1304,16 @@
        Dieselben Grenzen wie im Server: nur die Leitung des Studios, nur
        mit Grund, die eigenen Zeiten einer Studioleitung nicht. Der
        ursprüngliche Stempel bleibt stehen. */
+    /* ── Datenschutzvorfall melden (Runde 113) ──
+       Dieselbe Prüfung wie im Server. In der Demo geht keine Mail raus,
+       und genau das sagt die Antwort (demo: true, mail: false). */
+    vorfallMelden: function (d) {
+      if (String(d.was || '').trim().length < 10) throw new Error('Bitte beschreib in einem Satz, was passiert ist.');
+      var bis = new Date(Date.now() + 48 * 3600000);
+      var z = function (n) { return (n < 10 ? '0' : '') + n; };
+      return { ok: true, demo: true, mail: false, id: neueId(),
+               fristBis: z(bis.getDate()) + '.' + z(bis.getMonth() + 1) + '.' + bis.getFullYear() + ' ' + z(bis.getHours()) + ':' + z(bis.getMinutes()) };
+    },
     zeitNachtragen: function (d) {
       var studioKey = String(d.studioKey || '');
       var leitung = ICH.role === 'chef' || (ICH.role === 'leiter' && (ICH.studioKeys || []).indexOf(studioKey) >= 0);

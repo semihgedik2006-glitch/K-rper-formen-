@@ -196,6 +196,9 @@ jobs:
             echo "SMTP_USER="${{ secrets.SMTP_USER }}""
             echo "SMTP_PASS="${{ secrets.SMTP_PASS }}""
             echo "MAIL_FROM="${{ secrets.MAIL_FROM }}""
+            # Wohin „Vorfall melden" geht. Leer: die Adresse aus
+            # docs/av/VORFALL.md (steht im Code als Standard).
+            echo "VORFALL_AN="${{ secrets.VORFALL_AN }}""
             echo "SHEETS_URL="${{ secrets.SHEETS_URL }}""
             echo "SHEETS_TOKEN="${{ secrets.SHEETS_TOKEN }}""
             # Die Kasse. Fehlen diese Werte, laeuft die App vollstaendig

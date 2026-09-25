@@ -250,6 +250,7 @@ die man vor dem ersten fremden Kunden kennen muss:
 
 ## Lizenz
 
-**Keine.** Das Repository ist öffentlich, es liegt aber keine
-Lizenzdatei bei — damit gilt das normale Urheberrecht. Siehe
-`docs/BEKANNTE-PROBLEME.md`, P-04.
+**Alle Rechte vorbehalten** — siehe `LICENSE`. Das Repository ist
+öffentlich einsehbar; das ist keine Erlaubnis, den Code zu nutzen,
+zu kopieren oder zu betreiben. Hintergrund: `docs/BEKANNTE-PROBLEME.md`,
+P-04.

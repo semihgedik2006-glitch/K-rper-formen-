@@ -27,6 +27,7 @@ zu erfinden.**
 |---|---|
 | **Verantwortlich für Meldungen** | Semih Gedik, Kendenicherstraße 15, 50354 Hürth |
 | **Erreichbar unter** | S.gedik@kformen.com |
+| **In der App** | „Alles → Was muss ich wissen? → Datenschutzvorfall melden" — schickt sofort eine Mail mit Wichtigkeit „hoch" und speichert die Meldung (seit 25.9.2026) |
 | **Vertretung** | **keine** — entschieden am 25.9.2026, im Vertrag offengelegt (siehe Abschnitt 7) |
 
 Ein Einzelunternehmen hat keine Meldekette. Das ist ehrlicher, als eine
