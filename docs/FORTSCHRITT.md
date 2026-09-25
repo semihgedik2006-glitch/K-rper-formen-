@@ -13607,6 +13607,11 @@ Kürzen und Zeichnen: 42 von 42 Fällen gleich dem alten Stand.
   Studio“ unter „Ausserdem“. Stumm fällt nichts weg.
 - **Im Bild gefunden:** Die Beschriftung „jetzt“ stand auf der
   Stundenzahl („11jetzt“). Die Zahl darunter fällt jetzt weg.
+- **Die Linie rückt nach.** Ein Studio-PC hat die Startseite oft
+  stundenlang offen. Einmal je Minute wird nur ihre Lage gesetzt, keine
+  Animation. Kommt jemand oder geht jemand (eine Schichtgrenze liegt
+  dazwischen), wird das Band neu gezeichnet, damit auch „Gerade da“
+  stimmt; sonst alle 15 Minuten.
 
 ### Antworten ohne Menü (Design-Idee 20)
 
@@ -13657,12 +13662,24 @@ Kürzen und Zeichnen: 42 von 42 Fällen gleich dem alten Stand.
   - Treffer des Knopfs bei 1280/1440/1920, normal und kompakt, fremd
     und eigen.
   - Gegen den Stand ohne die Funktion fällt der Test.
-- `tests/test-tagesband.js` (33):
+- `tests/test-tagesband.js` (34):
   - Lage von „Du“ und „jetzt“ auf der Achse, die Uhr steht dafür auf
     11:20;
   - der Klick in den Schichtplan;
   - Treffer, Einpassen und Lesbarkeit ≥ 4,5 : 1 bei 1280/1440/1920,
     hell und dunkel, normal und kompakt;
   - nicht am Handy, nicht beim Chef, um 23:10 ohne Linie;
-  - „sacken“ nur an der frisch abgehakten Zeile.
+  - „sacken“ nur an der frisch abgehakten Zeile;
+  - die Linie wandert: Die Uhr läuft dafür 120-mal so schnell.
+
+**Gesamtdurchlauf: 162 von 163.** Rot war `test-gleiten-rahmen` aus
+Runde 122, und zwar nur unter Last:
+- Mit zwei Durchlaufhälften nebeneinander dauerte der Klick länger als
+  der ganze Übergang, und die Probe „nach 60 ms“ fand schon das Ende.
+  Einzeln lief der Test grün.
+- Jetzt hält der Test jeden laufenden Übergang an, stellt ihn auf genau
+  60 ms und misst dann. Dieselbe Frage, gleich streng, unabhängig von
+  der Last.
+- Danach liefen er und die fünf übrigen Tests, die diese Runde
+  berühren, erneut: alle grün.
 

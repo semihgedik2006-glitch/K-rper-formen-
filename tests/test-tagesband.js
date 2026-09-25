@@ -164,6 +164,35 @@ const KONTRAST = (el) => {
     await n.close();
   }
 
+  console.log('\n── 7. Die Linie rückt nach ──');
+  {
+    /* Die Uhr läuft hier 120-mal so schnell (1 s = 2 min), und die
+       Minuten-Uhr der Seite tickt alle 250 ms statt alle 60 s. */
+    const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+    const p = await ctx.newPage();
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => {
+      localStorage.setItem('kf_tour', '99:demo-ich');
+      const echt = Date; const start = echt.now(); const d0 = new echt(); d0.setHours(10, 0, 0, 0);
+      const off = d0.getTime() - start;
+      const jetzt = () => start + off + (echt.now() - start) * 120;
+      class F extends echt { constructor(...a) { if (a.length) super(...a); else super(jetzt()); } static now() { return jetzt(); } }
+      window.Date = F;
+      const si = window.setInterval;
+      window.setInterval = (f, ms, ...r) => si(f, ms === 60000 ? 250 : ms, ...r);
+    });
+    await p.goto(APP + '?demo=mitarbeiter', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3500);
+    const lage = () => p.evaluate(() => { const j = document.querySelector('#heuteListe .tb-jetzt'); return j ? parseFloat(j.style.left) : null; });
+    const l1 = await lage();
+    await p.waitForTimeout(3000);
+    const l2 = await lage();
+    /* 3 s sind hier 6 Minuten; auf einer Achse von 14 Stunden (840 min)
+       sind das 0,71 %. Gefordert ist mehr als die Hälfte davon. */
+    pruefe('die Linie JETZT wandert mit der Uhr nach rechts', l1 !== null && l2 !== null && l2 - l1 > 0.35 && l2 - l1 < 2, l1 + ' → ' + l2);
+    await ctx.close();
+  }
+
   console.log('\n── 6. Abhaken mit Gewicht ──');
   {
     const p = await oeffne(b, 1440, 900, 'mitarbeiter', [11, 20]);

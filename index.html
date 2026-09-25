@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-HEuEMkwAT67MldCuGmeP+4iJgyouAB+NpLnXZMRUiFM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-pWCsbsaAltFcGj645qM4DG0v8nolOYvG8w69V4ujHFU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -24719,13 +24719,40 @@ function tagesbandDaten(keys){
   var satz = jetztDa.length ? 'Gerade da: '+jetztDa.join(', ')
            : (jetzt ? 'Gerade ist niemand sonst eingetragen' : Object.keys(personen).length+' im Dienst heute');
   var sk=liste[0].sk;
+  /* Grenzen: Anfang und Ende jeder Schicht. Überschreitet die Uhr eine
+     davon, stimmt „Gerade da" nicht mehr — dann zeichnet tbUhr() neu. */
+  var grenzen=[];
+  liste.forEach(function(x){ grenzen.push(tbMin(x.from), tbMin(x.to)); });
+  tbUhrStarten();
   var band='<button type="button" class="heute-zeile band tagesband" data-heute="team" data-hsk="'+esc(sk)+'"'+
+    ' data-von="'+von+'" data-bis="'+bis+'" data-grenzen="'+grenzen.join(',')+'" data-min="'+jetztMin+'"'+
     ' data-hdatum="'+esc(heute)+'" aria-label="'+esc('Heute im Studio. '+satz+'. Schichtplan öffnen')+'">'+
     '<span class="tb-achse">'+achse+'</span>'+
     '<span class="tb-flaeche">'+zeilenHtml+jetzt+'</span>'+
     '<span class="tb-satz">'+esc(satz)+(weg?' · '+weg+' weitere im Schichtplan':'')+'</span>'+
     '</button>';
   return { band:band, personen:Object.keys(personen).length };
+}
+/* Die Linie JETZT rückt jede Minute nach — ein Studio-PC hat die
+   Startseite oft stundenlang offen. Keine Animation: ein Stil je Minute.
+   Liegt zwischen dem letzten Zeichnen und jetzt eine Schichtgrenze
+   (jemand kommt oder geht), wird das Band neu gezeichnet, damit auch
+   „Gerade da" stimmt. */
+var _tbUhr=null;
+function tbUhrStarten(){
+  if(_tbUhr) return;
+  _tbUhr=setInterval(function(){
+    if(document.hidden || currentView!=='home') return;
+    var b=document.querySelector('#heuteListe .tagesband'); if(!b) return;
+    var von=+b.dataset.von, bis=+b.dataset.bis, vorher=+b.dataset.min;
+    var m=new Date().getHours()*60+new Date().getMinutes();
+    var kreuzt=(b.dataset.grenzen||'').split(',').some(function(g){ g=+g; return vorher<g && g<=m; });
+    var j=b.querySelector('.tb-jetzt');
+    /* Alle 15 Minuten ohnehin neu: dann steht auch die Stundenzahl unter
+       „jetzt" wieder richtig (siehe tagesbandDaten). */
+    if(kreuzt || m<vorher || m-vorher>=15 || (!j && m>=von && m<=bis) || (j && (m<von || m>bis))){ renderHeute(); return; }
+    if(j) j.style.left=((m-von)/(bis-von)*100).toFixed(2)+'%';
+  }, 60000);
 }
 function heuteZeile(k){
   if(k.band) return k.band;
