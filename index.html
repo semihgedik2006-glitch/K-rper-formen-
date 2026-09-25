@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PkCasFSdywyHX5Cma0y6A9juEkTUhco9yZWxYJbmI9I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-65TsfTOEkB9gUe7MVPUir3rD2kWvRdRbDFDZmK3zs10='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5171,6 +5171,40 @@ html{font-size:var(--fs,100%)}
 .lade-ruhe .hr-ico svg{width:22px;height:22px}
 /* ── Datenschutzvorfall melden (Runde 113) ── */
 .vf-box{max-width:520px}
+/* ── Hinweis zur Speicherung (Runde 114) ──
+   Unten, über allem, aber schmal: er soll gelesen werden, nicht die App
+   verdecken. Am Rechner nicht über die volle Breite — eine Zeile über
+   1.900 px liest niemand. */
+.speicher-hinweis{position:fixed;left:var(--s12);right:var(--s12);bottom:calc(var(--s12) + env(safe-area-inset-bottom,0px));
+  z-index:400;max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s10) var(--s16);
+  padding:var(--s12) var(--s16);background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-lg);
+  box-shadow:var(--e3);font-size:var(--t-sm);line-height:var(--lh)}
+.speicher-hinweis[hidden]{display:none}
+.speicher-hinweis p{flex:1 1 20em;margin:0;min-width:0}
+.sh-knoepfe{display:flex;gap:var(--s8);flex:0 0 auto;margin-left:auto}
+.sh-knoepfe .btn{min-height:44px}
+/* ── AGB im Rechtliches-Fenster ── */
+.recht-block.agb h4{margin-top:var(--s16)}
+.agb-tab{width:100%;border-collapse:collapse;font-size:var(--t-sm);margin:var(--s8) 0}
+.agb-tab th,.agb-tab td{border:1px solid var(--line);padding:var(--s4) var(--s8);text-align:left}
+/* ── Zustimmung an der Kasse ── */
+.abo-zustimmung{display:flex;gap:var(--s10);align-items:flex-start;margin:var(--s12) 0 var(--s4);
+  font-size:var(--t-sm);line-height:var(--lh);cursor:pointer;min-height:44px}
+.abo-zustimmung input{width:22px;height:22px;flex:0 0 auto;margin:var(--s2) 0 0}
+.abo-zustimmung .recht-link{min-height:auto}
+/* ── Auskunft nach Art. 15 (Runde 114) ── */
+.auskunft-knopf{min-height:44px}
+#ichAuskunft{width:100%}
+.em-auskunft{margin-top:var(--s16);padding-top:var(--s12);border-top:1px solid var(--line)}
+.em-auskunft .hint{margin-top:var(--s6)}
+/* ── Dokumente: wer sieht was (Runde 114) ── */
+.doc-sicht{margin:0 0 var(--s12);padding:var(--s4) var(--s16);border-radius:var(--r-md);
+  background:var(--bg-2);border:1px solid var(--line)}
+.doc-sicht-d > summary{min-height:44px;display:flex;align-items:center;gap:var(--s6);cursor:pointer;
+  font-size:var(--t-sm);color:var(--text-2)}
+.doc-sicht-d > summary b{color:var(--text)}
+.doc-sicht-l{margin:0 0 var(--s12);padding-left:var(--s20);font-size:var(--t-sm)}
+.doc-sicht-l li{margin:var(--s4) 0}
 .vf-box h3{display:flex;align-items:center;gap:var(--s8);margin:0 var(--s48) var(--s8) 0}
 .vf-box h3 svg{width:22px;height:22px;color:var(--warm-tx)}
 .vf-wozu{margin:0 0 var(--s12)}
@@ -6876,6 +6910,18 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 <button class="mini-link" id="ichProfilBtn">Bearbeiten</button></div>
               <div id="ichStamm"></div>
             </div>
+            <!-- Auskunft nach Art. 15 (Runde 114): alles, was über mich
+                 gespeichert ist, als Datei. Die volle Fassung gibt es nur
+                 hier — mit Direktnachrichten und persönlichem Bereich. -->
+            <div class="ich-blatt" id="ichAuskunftKarte">
+              <div class="ich-kopf"><h3>Alles, was über mich gespeichert ist</h3></div>
+              <!-- Kurz halten: test-mein-bereich lässt in „Ich" keine
+                   Erklärungsabsätze über 90 Zeichen zu („die Seite soll
+                   leicht sein"). Was genau drin ist, steht in der Datei. -->
+              <p class="hint" style="margin:0 0 10px">Profil, Zeiten, Aufgaben, Nachrichten und dein persönlicher Bereich – als Datei.</p>
+              <button type="button" class="btn btn-ghost auskunft-knopf" id="ichAuskunft" data-auskunft="">Meine Daten herunterladen</button>
+              <p class="em-saved" id="ichAuskunftNote" role="status"></p>
+            </div>
             <div class="ich-blatt">
               <div class="ich-kopf">
                 <h3>Meine Nachweise</h3>
@@ -7690,6 +7736,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button class="btn btn-primary btn-sm" id="docUpload">Hinzufügen</button>
             <p class="em-saved" id="docNote"></p>
           </div>
+          <div class="doc-sicht" id="docSicht" hidden></div>
           <div class="chip-row" id="docCatRow" style="margin-bottom:12px"></div>
           <div id="docSort"></div>
           <div id="docList"></div>
@@ -8742,6 +8789,22 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 </div>
 
 <!-- Tastenkürzel-Übersicht (nur am Rechner sinnvoll) -->
+<!-- HINWEIS ZUR SPEICHERUNG (Runde 114). Aus dem Betrieb: „eine cookie
+     zeile die jeder nutzer einmal anklicken muss". Einmal JE GERÄT,
+     nicht je Konto: gespeichert wird auf dem Gerät, und genau das ist es,
+     worüber die Zeile Auskunft gibt (§ 25 TDDDG spricht von der
+     Endeinrichtung). Sie steht auch vor der Anmeldung — die App
+     speichert schon dort. -->
+<div id="speicherHinweis" class="speicher-hinweis" role="dialog" aria-labelledby="shText" hidden>
+  <p id="shText"><b>Diese App speichert auf deinem Gerät nur, was sie zum Funktionieren braucht</b> —
+    Anmeldung, Einstellungen und einen Zwischenspeicher für den Betrieb ohne Netz.
+    Keine Werbe- oder Analyse-Cookies.</p>
+  <div class="sh-knoepfe">
+    <button type="button" class="btn btn-ghost btn-sm" id="shMehr">Mehr dazu</button>
+    <button type="button" class="btn btn-primary btn-sm" id="shOk">Verstanden</button>
+  </div>
+</div>
+
 <div id="rechtModal">
   <div class="pm-box">
     <button class="lb-close" id="rechtClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -8749,6 +8812,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <div class="auth-tabs" id="rechtTabs" style="margin-bottom:16px">
       <button class="auth-tab active" type="button" data-recht="impressum">Impressum</button>
       <button class="auth-tab" type="button" data-recht="datenschutz">Datenschutz</button>
+      <button class="auth-tab" type="button" data-recht="agb">AGB</button>
     </div>
     <div id="rechtInhalt"></div>
   </div>
@@ -10874,6 +10938,32 @@ function rechtFehlend(){
                 .map(function(p){ return p[1]; });
 }
 
+/* ══ AGB (Runde 114) ══════════════════════════════════════════════════
+   Aus dem Betrieb, 25.9.2026: „ergänze alle rechtlichen schritte und
+   füge ein was nötig ist ebenso wie eine AGB". Der Text kommt aus
+   docs/AGB-ENTWURF.md (§ 1–11), OHNE die Anmerkungen daraus — die sind
+   für den Anwalt, nicht für den Kunden. Wer die AGB ändert, ändert sie
+   dort und setzt AGB_STAND neu: die Zustimmung an der Kasse speichert
+   genau diesen Stand (stripeKasse, functions/index.js, gleicher Wert). */
+var AGB_STAND = '2026-09-25';
+var AGB_HTML = "<h4>§ 1 Geltungsbereich und Vertragspartner</h4><p>(1) Diese Bedingungen gelten für die Überlassung der Software <b>StudioChat</b> durch Semih Gedik, Kendenicherstraße 15, 50354 Hürth (nachfolgend „Anbieter\") an Unternehmen im Sinne von § 14 BGB (nachfolgend „Kunde\").</p><p>(2) <b>StudioChat richtet sich ausschließlich an Unternehmen.</b> Ein Vertragsschluss mit Verbrauchern ist nicht vorgesehen.</p><p>(3) Abweichende Bedingungen des Kunden gelten nur, soweit der Anbieter ihnen schriftlich zustimmt.</p><h4>§ 2 Gegenstand des Vertrags</h4><p>(1) Der Anbieter stellt dem Kunden StudioChat als über das Internet nutzbare Anwendung zur Verfügung (Software as a Service). Der Kunde erhält keine Kopie der Software und kein Recht am Quellcode.</p><p>(2) Der Funktionsumfang ergibt sich aus der zum Zeitpunkt des Vertragsschlusses gebuchten Stufe. Die Stufen heißen <b>Basic</b> und <b>Premium</b>.</p><p>(3) Der Anbieter entwickelt die Anwendung fortlaufend weiter. Funktionen können hinzukommen; eine Funktion, auf die der Kunde sich eingerichtet hat, wird nicht ohne Vorankündigung entfernt.</p><p>(4) <b>Ein Verfügbarkeitsversprechen wird nicht abgegeben.</b> Die Anwendung läuft auf Google Firebase; deren Verfügbarkeit liegt außerhalb des Einflussbereichs des Anbieters.</p><h4>§ 3 Zustandekommen des Vertrags</h4><p>(1) Die Darstellung der Stufen ist kein bindendes Angebot.</p><p>(2) Der Vertrag kommt zustande, wenn der Kunde den Bezahlvorgang bei Stripe abschließt und der Anbieter dies bestätigt.</p><p>(3) Vor dem Bezahlvorgang kann eine <b>Testphase</b> eingeräumt werden. Sie endet automatisch; es entsteht daraus keine Zahlungspflicht, solange kein Abo abgeschlossen wurde.</p><h4>§ 4 Preise und Zahlung</h4><p>(1) Der Preis richtet sich nach der Stufe und nach der <b>Zahl der Studios</b>, die für den Kunden angelegt sind. Er setzt sich zusammen aus einem Grundpreis und einem Aufschlag für jeden Standort ab dem zweiten.</p><p>(2) <b>Die zum Zeitpunkt des Vertragsschlusses geltenden Beträge werden im Bezahlvorgang angezeigt, bevor der Kunde bestätigt.</b></p><p>(3) Alle Beträge verstehen sich <b>netto zuzüglich Umsatzsteuer</b>, soweit diese anfällt.</p><p>(4) Die Abrechnung erfolgt <b>monatlich im Voraus</b> über den Zahlungsdienstleister Stripe. Zulässige Zahlungsarten sind <b>Zahlungskarte und SEPA-Lastschrift</b>; welche davon angeboten werden, bestimmt Stripe nach Land und Kundenart.</p><p>(5) <b>Rechnungen werden von Stripe erstellt und dem Kunden zugestellt.</b> Der Anbieter erstellt keine eigenen Rechnungen.</p><p>(6) Ändert sich die Zahl der Studios, ändert sich der Preis ab der nächsten Abrechnungsperiode entsprechend.</p><h4>§ 5 Zahlungsverzug und Sperrung</h4><p>(1) Kommt der Kunde mit einer Zahlung in Verzug, wird der Zugang in Stufen eingeschränkt. Der Kunde wird vor jeder Stufe per E-Mail benachrichtigt.</p><p>(2) Der Ablauf ist:</p><table class=\"agb-tab\"><tr><th>Ab Tag</th><th>Was passiert</th></tr><tr><td>0</td><td>Hinweis in der Anwendung, E-Mail an die Geschäftsführung</td></tr><tr><td>7</td><td>erste Mahnung</td></tr><tr><td>14</td><td>zweite Mahnung</td></tr><tr><td>21</td><td><b>Nur-Lesen</b>: alle Daten bleiben sichtbar, es kann nichts mehr eingetragen werden</td></tr><tr><td>35</td><td><b>Gesperrt</b>: die Anwendung ist nicht mehr nutzbar</td></tr></table><p>(3) <b>Daten werden bei einer Sperrung nicht gelöscht.</b> Sie bleiben erhalten und sind nach Zahlung sofort wieder verfügbar. Für die Löschung nach Vertragsende gilt § 8.</p><p>(4) Der Zeitpunkt wird <b>jede Nacht neu berechnet</b> aus dem Tag, an dem die erste Zahlung offen blieb. Es gibt keine Stufe, die „weitergeschaltet\" wird und stehenbleiben könnte.</p><h4>§ 6 Laufzeit und Kündigung</h4><p>(1) Der Vertrag läuft auf unbestimmte Zeit und verlängert sich automatisch um jeweils einen Monat.</p><p>(2) <b>Der Kunde kann jederzeit selbst kündigen</b>, im Kundenportal von Stripe, erreichbar aus der Anwendung heraus. Es ist kein Schreiben und keine Frist nötig.</p><p>(3) Die Kündigung wirkt <b>zum Ende des bereits bezahlten Zeitraums.</b> Bis dahin bleibt die Anwendung vollständig nutzbar; es wird nichts anteilig erstattet und nichts nachberechnet.</p><p>(4) Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt beiden Seiten unberührt.</p><p>(5) Der Anbieter kann mit einer Frist von drei Monaten zum Monatsende kündigen.</p><h4>§ 7 Pflichten des Kunden</h4><p>(1) Der Kunde ist für die Konten seiner Beschäftigten verantwortlich: für deren Anlage, für die Rechtevergabe und für die Löschung beim Ausscheiden.</p><p>(2) <b>Der Kunde ist Verantwortlicher im Sinne der DSGVO</b>, der Anbieter Auftragsverarbeiter. Der Abschluss eines Vertrags zur Auftragsverarbeitung (Art. 28 DSGVO) ist Voraussetzung für die Nutzung; der Entwurf liegt unter docs/av/.</p><p>(3) Der Kunde stellt sicher, dass der Einsatz in seinem Betrieb arbeitsrechtlich zulässig ist — insbesondere, soweit ein Betriebsrat besteht, die Mitbestimmung nach § 87 Abs. 1 Nr. 6 BetrVG.</p><p>(4) Der Kunde darf die Anwendung nicht Dritten außerhalb seines Betriebs zugänglich machen.</p><h4>§ 8 Daten nach Vertragsende</h4><p>(1) Nach Ende des Vertrags bleiben die Daten des Kunden <b>30 Tage</b> verfügbar. In dieser Zeit kann der Kunde einen Export verlangen.</p><p>(2) Danach werden sie gelöscht.</p><p>(3) Der Export steht dem Kunden jederzeit selbst zur Verfügung: Verwaltung → System → <b>„Alles als Excel speichern\"</b> bzw. <b>„Alles als Daten-Datei (JSON)\"</b>. Beide Dateien enthalten dieselben Daten.</p><p>(4) <b>Die Inhalte hochgeladener Dateien sind im Export nicht enthalten.</b> Der Kunde kann sie einzeln über die Anwendung herunterladen.</p><h4>§ 9 Haftung</h4><p>(1) Der Anbieter haftet unbeschränkt bei Vorsatz und grober Fahrlässigkeit sowie bei Verletzung von Leben, Körper und Gesundheit.</p><p>(2) Bei einfacher Fahrlässigkeit haftet der Anbieter nur bei Verletzung einer wesentlichen Vertragspflicht und der Höhe nach begrenzt auf den vertragstypischen, vorhersehbaren Schaden.</p><p>(3) Die Haftung nach dem Produkthaftungsgesetz bleibt unberührt.</p><h4>§ 10 Änderungen dieser Bedingungen</h4><p>(1) Der Anbieter kann diese Bedingungen mit einer Frist von sechs Wochen zum Monatsende ändern. Die Änderung wird dem Kunden in Textform mitgeteilt.</p><p>(2) Widerspricht der Kunde nicht bis zum Wirksamwerden, gilt die Änderung als angenommen. Auf diese Wirkung wird in der Mitteilung gesondert hingewiesen.</p><p>(3) Widerspricht der Kunde, kann jede Seite zum Wirksamwerden kündigen.</p><h4>§ 11 Schlussbestimmungen</h4><p>(1) Es gilt deutsches Recht unter Ausschluss des UN-Kaufrechts.</p><p>(2) Gerichtsstand ist der Sitz des Anbieters, soweit der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen ist.</p><p>(3) Sollte eine Bestimmung unwirksam sein, bleibt der Vertrag im Übrigen wirksam.</p>";
+var SPEICHER_HINWEIS_STAND = '1';
+function speicherHinweisZeigen(){
+  var h=$('speicherHinweis'); if(!h) return;
+  /* In den automatischen Durchläufen (navigator.webdriver) gilt der
+     Hinweis als schon bestätigt: rund 150 Durchläufe messen die App so,
+     wie jemand sie sieht, der schon einmal „Verstanden" getippt hat —
+     sonst läge die Zeile über jeder unteren Leiste. tests/test-rechtliches.js
+     setzt __speicherHinweisPruefen und prüft genau den ersten Besuch. */
+  if(navigator.webdriver && !window.__speicherHinweisPruefen){ h.hidden=true; return; }
+  var gesehen='';
+  try{ gesehen=localStorage.getItem('kf_speicherhinweis')||''; }catch(e){}
+  h.hidden = gesehen===SPEICHER_HINWEIS_STAND;
+}
+function speicherHinweisBestaetigen(){
+  try{ localStorage.setItem('kf_speicherhinweis', SPEICHER_HINWEIS_STAND); }catch(e){}
+  var h=$('speicherHinweis'); if(h) h.hidden=true;
+}
 function renderRecht(){
   var box=$('rechtInhalt'); if(!box) return;
   var r = rechtDaten();
@@ -10900,7 +10990,12 @@ function renderRecht(){
       ? '<p><b>'+esc(titel)+'</b><br/>'+linkify(esc(wert)).replace(/\n/g,'<br/>')+'</p>' : '';
   }
 
-  if(_rechtTeil === 'impressum'){
+  if(_rechtTeil === 'agb'){
+    box.innerHTML = '<div class="recht-block agb">'+
+      '<p class="hint">Allgemeine Geschäftsbedingungen für StudioChat · Stand '+
+        esc(AGB_STAND.split('-').reverse().join('.'))+' · gilt für Unternehmen (§ 14 BGB)</p>'+
+      AGB_HTML+'</div>';
+  } else if(_rechtTeil === 'impressum'){
     box.innerHTML = kopf + '<div class="recht-block">'+
       '<h4>Angaben gemäß § 5 DDG</h4>'+
       zeile('Betreiber', r.betreiber)+
@@ -11018,12 +11113,33 @@ function renderRecht(){
         'auch melden können, wer gerade aushilft. Personenbezogen ist '+
         'daran nur, wer eine Aufgabe abgehakt oder einen Schaden '+
         'gemeldet hat.</p>'+
+      /* Seit Runde 114 (P-01) hält auch das die Datenbank: ein Dokument
+         für ein Studio ist aus einem anderen nicht abrufbar. */
+      '<p><b>Dokumente sehen die Studios, für die sie bestimmt sind</b> – '+
+        'entweder alle oder nur ausgewählte. Auch das hält die Datenbank '+
+        'selbst durch.</p>'+
+
+      /* Runde 114: die Hinweiszeile beim ersten Öffnen verweist hierher. */
+      '<h4>Auf deinem Gerät</h4>'+
+      '<p>Die App speichert auf deinem Gerät nur, was sie zum Funktionieren '+
+        'braucht: deine Anmeldung, deine Einstellungen (zum Beispiel '+
+        'Design, Dichte, Schnellzugriffe) und einen Zwischenspeicher, damit '+
+        'sie auch ohne Netz startet. <b>Keine Werbe- oder Analyse-Cookies, '+
+        'kein Nachverfolgen durch Dritte.</b> Diese Speicherung ist für den '+
+        'Dienst, den du nutzt, technisch notwendig (§ 25 Abs. 2 Nr. 2 TDDDG).</p>'+
+
+      '<h4>Wenn etwas schiefgeht</h4>'+
+      '<p>Wer bemerkt, dass Daten in falsche Hände geraten sind, meldet das '+
+        'unter <b>Alles → Was muss ich wissen? → Datenschutzvorfall melden</b>. '+
+        'Die Meldung geht sofort an die Verantwortlichen.</p>'+
 
       '<h4>Deine Rechte</h4>'+
       '<p>Auskunft, Berichtigung, Löschung, Einschränkung, '+
         'Datenübertragbarkeit und Widerspruch nach Art. 15–21 DSGVO. '+
         'Dazu genügt eine Nachricht an '+
         esc(r.datenschutzKontakt || r.email || 'die Leitung')+'. '+
+        '<b>Eine Kopie von allem, was über dich gespeichert ist,</b> lädst du '+
+        'selbst herunter: Ich → Daten → „Meine Daten herunterladen". '+
         'Außerdem steht dir eine Beschwerde bei einer Aufsichtsbehörde zu.</p>'+
 
       (Array.isArray(r.zusatz) && r.zusatz.length
@@ -12783,7 +12899,16 @@ function renderAboKarte(){
     h += '<button class="btn btn-ghost btn-sm" id="aboVerwalten">Rechnungen, Zahlungsmittel, kündigen</button>';
   }
   if(['test','faellig','mahnung1','mahnung2','nurlesen','zu','gekuendigt'].indexOf(status) >= 0){
-    h += '<button class="btn btn-primary btn-sm" id="aboBuchen">'+
+    /* Runde 114: vor der Kasse drei Bestätigungen in EINEM Haken.
+       docs/AGB-ENTWURF.md § 1 Abs. 2: „die Kasse darf keinem Verbraucher
+       offen stehen" — und sie fragte bisher nicht danach. Der Server
+       prüft den Haken ein zweites Mal (stripeKasse) und speichert, wer
+       wann welchem Stand zugestimmt hat. */
+    h += '<label class="abo-zustimmung"><input type="checkbox" id="aboZustimmung" />'+
+         '<span>Ich buche für ein Unternehmen (§ 14 BGB) und stimme den '+
+         '<a class="recht-link" data-rechtauf="agb">AGB</a> und dem Vertrag zur '+
+         'Auftragsverarbeitung zu.</span></label>'+
+         '<button class="btn btn-primary btn-sm" id="aboBuchen" disabled>'+
          (a.kunde ? 'Zahlung aktualisieren' : 'Abo buchen')+'</button>';
   }
   knoepfe.innerHTML = h;
@@ -12814,6 +12939,11 @@ function renderAboKarte(){
       : 'Bezahlt wird bei Stripe. Kartendaten werden hier nicht erfasst.';
 
   var b = $('aboBuchen');   if(b) b.addEventListener('click', function(){ zurKasse(b, a.stufe); });
+  var zu = $('aboZustimmung');
+  if(zu && b) zu.addEventListener('change', function(){ b.disabled = !zu.checked; });
+  knoepfe.querySelectorAll('[data-rechtauf]').forEach(function(l){
+    l.addEventListener('click', function(ev){ ev.preventDefault(); rechtOeffnen(l.getAttribute('data-rechtauf')); });
+  });
   var v = $('aboVerwalten'); if(v) v.addEventListener('click', function(){ zurVerwaltung(v); });
 }
 
@@ -12838,7 +12968,9 @@ function stripeWeg(btn, name, daten){
       toast((e && e.message) || 'Das hat gerade nicht geklappt.', true);
     });
 }
-function zurKasse(btn, stufe){ stripeWeg(btn, 'stripeKasse', { stufe: stufe || 'basic' }); }
+function zurKasse(btn, stufe){
+  stripeWeg(btn, 'stripeKasse', { stufe: stufe || 'basic', zustimmung: AGB_STAND, unternehmer: true });
+}
 function zurVerwaltung(btn){ stripeWeg(btn, 'stripeVerwaltung', {}); }
 
 /* ── Der Rückweg von Stripe ──
@@ -14217,7 +14349,8 @@ var LADEORT = {
   team:    { view:'team',     vor:'teamTabs',    teile:{ schichten:'Schichten', abwesend:'Abwesenheiten', uebergabe:'Übergaben' } },
   material:{ view:'material', vor:'matAlert',    titel:'Der Bestand dieses Studios', einzahl:true },
   geraete: { view:'geraete',  vor:'devAlert',    teile:{ liste:'Geräte', verlauf:'Gerätemeldungen' } },
-  probe:   { view:'probe',    vor:'pbListe',     titel:'Die Probetrainings' }
+  probe:   { view:'probe',    vor:'pbListe',     titel:'Die Probetrainings' },
+  docs:    { view:'docs',     vor:'docList',     titel:'Die Dokumente' }
 };
 /* Wie „Nochmal versuchen" den Beobachter neu anlegt. Jeder Eintrag ruft
    die Funktion, die es ohnehin gibt — keine zweite Ladelogik. */
@@ -14231,7 +14364,8 @@ var LADE_NOCHMAL = {
   team:    function(){ if(_teamStudioKey) loadTeam(_teamStudioKey); },
   material:function(){ if(_matStudioKey) loadMaterial(_matStudioKey); },
   geraete: function(){ if(_devStudioKey) loadDevices(_devStudioKey); },
-  probe:   function(){ listenProbe(); }
+  probe:   function(){ listenProbe(); },
+  docs:    function(){ listenDocs(); }
 };
 var _ladeFehler = {};   // bereich -> { teil: 'Grund' }
 
@@ -14908,6 +15042,11 @@ function zugangFensterFuellen(){
   buildRegStudios();
   pwAugeBinden();
   rechtBinden();
+  /* Der Speicherhinweis (Runde 114) gehört hierher und nicht in den
+     Aufbau nach der Anmeldung: die App speichert schon vorher. */
+  var shOk=$('shOk'); if(shOk) shOk.addEventListener('click', speicherHinweisBestaetigen);
+  var shM=$('shMehr'); if(shM) shM.addEventListener('click', function(){ rechtOeffnen('datenschutz'); });
+  speicherHinweisZeigen();
   dialogeVorbereiten();
   document.querySelectorAll('[data-authmode]').forEach(function(t){
     t.addEventListener('click', function(){ setAuthMode(t.getAttribute('data-authmode')); });
@@ -16139,6 +16278,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-datenschutz', datum:'25.9.2026', titel:'Deine Daten: Dokumente fürs eigene Studio, Auskunft auf Knopfdruck, AGB', wo:'ich:daten', punkte:[
+    'Dokumente: Ein Dokument nur für ein Studio kann aus einem anderen Studio jetzt niemand mehr öffnen — auch nicht über Umwege. Wer hochlädt, entscheidet weiter selbst: alle Studios oder nur ausgewählte. Der Chef sieht über der Liste, welches Dokument wer sieht.',
+    'Unter „Ich → Daten" gibt es „Meine Daten herunterladen": eine Datei mit allem, was die App über dich gespeichert hat. Der Chef kann dieselbe Auskunft für jemanden aus dem Team erstellen — ohne Direktnachrichten und persönlichen Bereich.',
+    'Unter „Rechtliches" stehen jetzt auch die AGB. Wer ein Abo bucht, bestätigt vorher, dass er für ein Unternehmen bucht und den AGB und dem Vertrag zur Auftragsverarbeitung zustimmt.',
+    'Beim ersten Öffnen auf einem Gerät erscheint einmal ein kurzer Hinweis, was die App auf dem Gerät speichert — nur das Nötige, keine Werbe- oder Analyse-Cookies. Einmal „Verstanden", dann ist er weg.' ] },
   { id:'2026-09-25-vorfall', datum:'25.9.2026', titel:'Neu: Datenschutzvorfall melden', wo:'vorfall', punkte:[
     'Unter „Alles → Was muss ich wissen?" steht jetzt „Datenschutzvorfall melden" — für jeden im Team.',
     'Gemeint ist: Personendaten sind in falsche Hände geraten, verloren gegangen oder verändert worden. Zum Beispiel ein verlorenes Handy mit angemeldeter App, eine Liste am falschen Ort oder eine Nachricht an die falsche Person.',
@@ -16267,6 +16411,94 @@ function neuOeffnen(){
   neuPilleSetzen();
 }
 function neuSchliessen(){ var m=$('neuModal'); if(m) m.classList.remove('show'); }
+
+/* ══ AUSKUNFT NACH ART. 15 (P-10, Runde 114) ══════════════════════════
+   Der Server (auskunftErstellen) sammelt, die App macht daraus EINE
+   Datei: lesbar (HTML, druckbar) und darin dieselben Daten noch einmal
+   maschinenlesbar (JSON) — Art. 15 Abs. 3 verlangt eine Kopie, Art. 20
+   ein gängiges Format. Eine Datei statt zwei, damit nichts verloren geht,
+   wenn sie weitergegeben wird.
+
+   Ein Knopf trägt data-auskunft: leer = ich selbst, sonst die uid. */
+var AUSKUNFT_NAMEN = {
+  zeiten:'Stempelzeiten', 'studios/shifts':'Schichten', 'studios/absences':'Abwesenheiten',
+  'studios/handovers':'Übergaben', 'studios/todos':'Aufgaben', 'studios/cleaning':'Putzplan',
+  'studios/cleaningNotes':'Putz-Notizen', 'studios/devices':'Geräte', 'studios/deviceLog':'Gerätemeldungen',
+  'channels/messages':'Chatnachrichten', dms:'Direktnachrichten', announcements:'Aushänge',
+  board:'Brett', documents:'Dokumente', documentData:'Dokument-Inhalte', certificates:'Nachweise',
+  probetrainings:'Probetrainings', anliegen:'Anliegen', loesungen:'Hilfe-Einträge',
+  schulungLaeufe:'Schulungen', schulungTeilnehmer:'Schulungs-Teilnahmen',
+  privat:'Persönlicher Bereich'
+};
+function auskunftName(k){
+  if(AUSKUNFT_NAMEN[k]) return AUSKUNFT_NAMEN[k];
+  if(/^privat\//.test(k)) return 'Persönlicher Bereich: '+k.slice(7);
+  return k;
+}
+function auskunftWert(v){
+  if(v===null || v===undefined || v==='') return '—';
+  if(typeof v==='number' && v>1e12 && v<4e12) return fmtStand(v);
+  if(typeof v==='object') return JSON.stringify(v);
+  return String(v);
+}
+function auskunftHtml(a){
+  var name=(a.person&&a.person.name)||'Ohne Namen';
+  var teile=Object.keys(a.bereiche||{}).sort(function(x,y){ return auskunftName(x).localeCompare(auskunftName(y),'de'); });
+  var e=function(t){ return String(t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+  var zeile=function(obj){
+    return '<table>'+Object.keys(obj).map(function(k){
+      return '<tr><th>'+e(k)+'</th><td>'+e(auskunftWert(obj[k]))+'</td></tr>';
+    }).join('')+'</table>';
+  };
+  return '<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Auskunft '+e(name)+'</title>'+
+    '<style>body{font:15px/1.5 system-ui,sans-serif;max-width:900px;margin:32px auto;padding:0 16px;color:#1b1f24}'+
+    'h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:32px 0 8px;border-bottom:2px solid #ccd;padding-bottom:4px}'+
+    'table{border-collapse:collapse;width:100%;margin:0 0 12px;font-size:13px}th,td{border:1px solid #d5d9e0;padding:4px 8px;text-align:left;vertical-align:top}'+
+    'th{width:28%;background:#f3f5f8;font-weight:600}.meta{color:#556}pre{white-space:pre-wrap;font-size:11px;background:#f6f7f9;padding:12px}</style></head><body>'+
+    '<h1>Auskunft über gespeicherte Daten</h1>'+
+    '<p class="meta">nach Art. 15 DSGVO · '+e(name)+' · erstellt '+e(fmtStand(Date.parse(a.erstellt)||Date.now()))+
+      ' · von '+e(a.erstelltVon||'')+'<br>Fassung: <b>'+e(a.fassung||'')+'</b> · '+e(a.eintraege||0)+' Einträge</p>'+
+    (a.fassung==='voll' ? '' : '<p><b>Nicht enthalten:</b> die Inhalte der Direktnachrichten (nur ihre Anzahl) und der persönliche Bereich. '+
+      'Beides sieht die Geschäftsführung in der App auch sonst nicht. Die volle Fassung erstellt die Person selbst unter „Ich → Daten".</p>')+
+    '<h2>Profil</h2>'+zeile(a.person||{})+
+    teile.map(function(k){
+      var liste=a.bereiche[k]||[];
+      return '<h2>'+e(auskunftName(k))+' ('+liste.length+')</h2>'+liste.map(zeile).join('');
+    }).join('')+
+    /* Im <pre> nur &, < und > umschreiben, nicht die Anführungszeichen:
+       sonst stünde dort &quot;bereiche&quot; — kein JSON mehr, das man
+       herauskopieren kann. */
+    '<h2>Dieselben Daten maschinenlesbar (JSON)</h2><pre>'+
+      JSON.stringify(a,null,2).replace(/[&<>]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; })+'</pre>'+
+    '</body></html>';
+}
+function auskunftHerunterladen(knopf){
+  var uid=knopf.getAttribute('data-auskunft')||'';
+  var note = uid ? null : $('ichAuskunftNote');
+  var vorher=knopf.textContent;
+  knopf.disabled=true; knopf.textContent='Wird zusammengestellt …';
+  if(note) note.textContent='';
+  pinFunktion('auskunftErstellen')(uid ? { uid:uid } : {}).then(function(r){
+    var a=(r&&r.data)||{};
+    var name=String((a.person&&a.person.name)||'Person').replace(/[^\wÄÖÜäöüß-]+/g,'-');
+    var blob=new Blob([auskunftHtml(a)], { type:'text/html;charset=utf-8' });
+    var link=document.createElement('a');
+    link.href=URL.createObjectURL(blob);
+    link.download='Auskunft-'+name+'-'+new Date().toLocaleDateString('sv-SE')+'.html';
+    document.body.appendChild(link); link.click();
+    setTimeout(function(){ URL.revokeObjectURL(link.href); link.remove(); }, 2000);
+    knopf.disabled=false; knopf.textContent=vorher;
+    var satz='Heruntergeladen: '+(a.eintraege||0)+' Einträge.';
+    if(note) note.textContent=satz; else toast(satz);
+  }).catch(function(e){
+    knopf.disabled=false; knopf.textContent=vorher;
+    if(note) note.textContent=fnFehler(e); else toast(fnFehler(e), true);
+  });
+}
+document.addEventListener('click', function(ev){
+  var k=ev.target.closest && ev.target.closest('.auskunft-knopf');
+  if(k && !k.disabled){ tick(8); auskunftHerunterladen(k); }
+});
 
 /* ══ DATENSCHUTZVORFALL MELDEN (P-02, Runde 113) ═════════════════════
    Das Fenster fragt nur, was man in dem Moment weiss. Pflicht ist allein
@@ -18087,7 +18319,14 @@ function renderEmployees(emps){
         '<span>Darf mit dem eigenen Handy stempeln</span></label>'+
       '<div class="hint" style="margin-top:6px">Braucht zusätzlich den '+
         'Code, der auf dem Terminal im Studio steht.</div>'+
-      '<button class="btn btn-primary btn-sm em-save" style="margin-top:8px">Speichern</button></div>'+
+      '<button class="btn btn-primary btn-sm em-save" style="margin-top:8px">Speichern</button>'+
+      /* Auskunft nach Art. 15 (Runde 114) — nur die Geschäftsführung;
+         die Regel dazu steht im Server (auskunftErstellen). */
+      (isChef() ? '<div class="em-auskunft">'+
+        '<button type="button" class="btn btn-ghost btn-sm auskunft-knopf" data-auskunft="'+esc(e.uid)+'">Datenauskunft herunterladen</button>'+
+        '<div class="hint">Alles über diese Person als Datei — ohne ihre Direktnachrichten und ihren persönlichen Bereich. Die volle Fassung holt sie selbst unter „Ich → Daten".</div>'+
+        '</div>' : '')+
+      '</div>'+
       '</div>'+
       '<div class="emp-actions">'+
       '<button class="btn btn-ghost btn-sm em-edit">Bearbeiten</button>'+
@@ -18266,12 +18505,88 @@ function uploadDoc(){
   }
 }
 
+/* ── Dokumente laden (P-01, Runde 114) ──
+   Seit die Regel das Zielstudio prüft (dokumentFuerMich in
+   firestore.rules), geht die ungefilterte Abfrage nur noch für den Chef.
+   Alle anderen fragen zweimal: „für alle Studios" und „für eines meiner
+   Studios". Zusammen ist das genau das, was docVisible() vorher erst
+   HINTERHER aussortiert hat — nur dass jetzt die Datenbank sortiert.
+   Ohne orderBy: gleich + sortiert bräuchte je Abfrage einen eigenen
+   Index; bei höchstens 200 Dokumenten sortiert die App schneller, als
+   jemand einen Index anlegt. */
+var _docsUnsubs=[], _docsTeile={};
 function listenDocs(){
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
-  _docsUnsub=S('documents').orderBy('ts','desc').limit(200)
-    .onSnapshot(function(snap){
-      renderDocs(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
-    }, function(e){ console.error('Dokumente:',e.message); });
+  _docsUnsubs.forEach(function(u){ try{ u(); }catch(e){} });
+  _docsUnsubs=[]; _docsTeile={};
+  ladeGut('docs');
+  function liste(snap){ return snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }); }
+  if(isChef()){
+    _docsUnsub=S('documents').orderBy('ts','desc').limit(200)
+      .onSnapshot(function(snap){
+        ladeGut('docs');
+        var docs=liste(snap);
+        dokumenteNachziehen(docs);
+        renderDocs(docs);
+      }, function(e){ ladeFehler('docs', e); });
+    return;
+  }
+  function zeichnen(){
+    var nach={};
+    Object.keys(_docsTeile).forEach(function(k){ _docsTeile[k].forEach(function(d){ nach[d.id]=d; }); });
+    renderDocs(Object.keys(nach).map(function(id){ return nach[id]; })
+      .sort(function(a,b){ return (b.ts||0)-(a.ts||0); }));
+  }
+  function teil(name, abfrage){
+    _docsUnsubs.push(abfrage.onSnapshot(function(snap){
+      ladeGut('docs', name);
+      _docsTeile[name]=liste(snap);
+      zeichnen();
+    }, function(e){ ladeFehler('docs', e, name); }));
+  }
+  teil('alle', S('documents').where('studios','==','all').limit(200));
+  /* array-contains-any nimmt höchstens 30 Werte — mehr Studios hat
+     niemand ausser dem Chef, und der fragt oben ungefiltert. */
+  var keys=((session && session.studioKeys) || []).slice(0,30);
+  if(keys.length) teil('studio', S('documents').where('studios','array-contains-any',keys).limit(200));
+}
+/* ── Der Übergang für alte Dokumente ──
+   Ein Dokument ganz ohne `studios` lässt sich nicht abfragen; nach der
+   neuen Regel sähe es niemand ausser dem Chef. docVisible() hat solche
+   Dokumente immer als „für alle" gezeigt, also werden sie genau darauf
+   gesetzt — einmal, beim Chef, sobald er die Dokumente öffnet. Nichts
+   wird sichtbarer oder unsichtbarer, als es in der App vorher war. */
+var _docsNachgezogen={}, _docsNachgezogenZahl=0;
+function dokumenteNachziehen(docs){
+  docs.forEach(function(d){
+    if(d.studios || _docsNachgezogen[d.id]) return;
+    _docsNachgezogen[d.id]=true;
+    S('documents').doc(d.id).update({ studios:'all' })
+      .then(function(){ _docsNachgezogenZahl++; })
+      .catch(function(e){ console.warn('Dokument nachziehen:', d.id, e && e.message); });
+  });
+}
+/* ── Das Werkzeug: wer sieht was ──
+   CLAUDE.md: „Eine Änderung, die echte Konten treffen könnte …, bekommt
+   einen Übergang und ein Werkzeug, das zeigt, wen sie träfe." Nur für
+   den Chef, über der Liste: wie viele Dokumente für alle sind und
+   welche nur für einzelne Studios — mit den Studios. */
+function docSichtZeichnen(docs){
+  var box=$('docSicht'); if(!box) return;
+  if(!isChef() || !docs.length){ box.hidden=true; return; }
+  var einzeln=docs.filter(function(d){ return Array.isArray(d.studios); });
+  var alle=docs.length-einzeln.length;
+  box.hidden=false;
+  box.innerHTML=
+    '<details class="doc-sicht-d"><summary><b>Wer sieht was:</b> '+
+      alle+' für alle Studios · '+einzeln.length+' nur für einzelne Studios</summary>'+
+    '<p class="hint">Seit dem 25.9.2026 hält das die Datenbank selbst, nicht mehr nur die Anzeige: '+
+      'ein Dokument für ein Studio kann aus einem anderen Studio niemand mehr öffnen — auch nicht über Umwege.'+
+      (_docsNachgezogenZahl ? ' '+_docsNachgezogenZahl+' ältere Dokumente ohne Angabe wurden auf „Alle Studios" gesetzt, so wie die App sie ohnehin zeigte.' : '')+'</p>'+
+    (einzeln.length ? '<ul class="doc-sicht-l">'+einzeln.map(function(d){
+      return '<li><b>'+esc(d.name||d.fileName||'Ohne Namen')+'</b> — '+esc(docStudiosLabel(d))+'</li>';
+    }).join('')+'</ul>' : '')+
+    '</details>';
 }
 
 function docVisible(d){
@@ -18334,6 +18649,7 @@ function renderDocCatRow(list){
 function renderDocs(docs){
   var box=$('docList'); if(!box) return;
   _allDocs=docs;
+  docSichtZeichnen(docs);
   var sichtbar=docs.filter(docVisible);
   renderDocCatRow(sichtbar);
   var list = _docCat==='alle' ? sichtbar

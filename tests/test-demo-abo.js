@@ -326,6 +326,13 @@ async function zurAboKarte(p) {
     pruefe('in der Testphase steht genau ein Knopf da',
       vorher.length === 1 && vorher[0] === 'aboBuchen', vorher.join(' '));
 
+    /* Seit Runde 114 steht vor dem Knopf ein Haken — aus dem Betrieb,
+       25.9.2026: „ergänze alle rechtlichen schritte". Ohne ihn bleibt
+       der Knopf gesperrt; geprüft wird das hier, bevor gebucht wird. */
+    const gesperrt = await p.evaluate(() => document.getElementById('aboBuchen').disabled);
+    pruefe('ohne Haken (Unternehmer, AGB, AV-Vertrag) ist „Abo buchen" gesperrt', gesperrt === true);
+    await p.evaluate(() => { const z = document.getElementById('aboZustimmung'); z.click(); });
+    await p.waitForTimeout(200);
     await p.evaluate(() => document.getElementById('aboBuchen').click());
     await p.waitForTimeout(1800);
     const seite = await p.evaluate(() => {

@@ -150,6 +150,7 @@ Betreiber (und die Serverfunktionen mit Adminrechten).
 | `kunde`, `abo` | Stripe-Kennungen |
 | `gesetztVon`, `gesetztVonName`, `gesetztAm` | wer hat es gesetzt |
 | `letztesEreignis`, `letztesEreignisAm` | was Stripe zuletzt meldete |
+| `zustimmung` | seit 25.9.2026: `{agb, av, unternehmer, am, uid, name}` — wer an der Kasse welchem AGB-Stand zugestimmt hat. Ohne sie schickt `stripeKasse` niemanden zur Kasse |
 
 > **Warum das nicht im Firmen-Dokument steht**, obwohl es bequemer
 > wäre: das ist öffentlich lesbar, weil der Anmeldebildschirm den Namen
@@ -277,9 +278,33 @@ mitkommen soll.
 `kind` ist `file` oder `link`. Bei `link` gibt es keinen zweiten
 Datensatz; die Datei liegt beim Drittanbieter des Kunden.
 
+**`studios` ist seit 25.9.2026 eine Grenze der Datenbank** (P-01):
+`'all'` oder eine Liste von Studios. Lesen darf, wer Chef ist, oder
+wenn `studios == 'all'`, oder wenn eines seiner Studios in der Liste
+steht. Dasselbe gilt für `documentData`. Abgefragt wird deshalb nur
+gefiltert (`== 'all'` und `array-contains-any`). Ein Dokument ohne
+Feld lässt sich nicht abfragen; die App setzt es beim Chef einmal auf
+`'all'`.
+
 > **Es gibt keinen echten Dateispeicher.** Cloud Storage enthält
 > ausschließlich die nächtliche Sicherung; die Storage-Regeln sperren
 > jeden Client-Zugriff vollständig.
+
+---
+
+### `vorfaelle/{id}` — gemeldete Datenschutzvorfälle (seit 25.9.2026)
+
+**Oben, nicht in der Firma:** ein Vorfall kann die Firma selbst
+betreffen. **Lesen:** nur der Betreiber. **Schreiben:** niemand, nur die
+Funktion `vorfallMelden`. Unter `firmen/<k>/vorfaelle` steht die Regel
+ausdrücklich zu.
+
+| Feld | Anmerkung |
+|---|---|
+| `uid`, `name`, `email`, `rolle`, `firma` | wer gemeldet hat |
+| `was`, `wann`, `betroffen`, `laeuft`, `rueckruf` | die Meldung |
+| `ts` | wann |
+| `mail` | `gesendet` / `fehlgeschlagen` / `nicht eingerichtet` — ehrlich, was mit der Mail war |
 
 ---
 

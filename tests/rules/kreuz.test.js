@@ -55,7 +55,11 @@ const FLACH = [
   ['board/b1',                        { uid: 'x', name: 'Anna', text: 'Internes Brett', ts: 1 }],
   ['announcements/a1',                { uid: 'x', text: 'Interne Info', ts: 1 }],
   ['studios/studio-0/handovers/h1',   { uid: 'x', name: 'Anna', text: 'Interne Uebergabe', ts: 1 }],
-  ['documents/d1',                    { name: 'Vertrag.pdf', ts: 1 }],
+  /* Mit studios: 'all' seit Runde 114 (P-01): die Leseregel prüft das
+     Zielfeld, und uploadDoc() legt kein Dokument ohne es an. Ohne Feld
+     wäre das ein Altbestand, den die App beim Chef auf 'all' setzt —
+     das prüft tests/rules/dokumente.test.js, nicht dieser Kreuztest. */
+  ['documents/d1',                    { name: 'Vertrag.pdf', ts: 1, studios: 'all' }],
   ['studios/studio-0/shifts/s1',      { date: '2026-09-01', uid: 'x', name: 'Anna' }],
   /* Nachweise sind PERSOENLICH: ein Kollege darf einen fremden nicht
      lesen, und das ist richtig so. Deshalb wird hier je Konto ein

@@ -830,13 +830,21 @@
     ]);
   })();
 
+  /* studios: 'all' oder eine Liste — seit Runde 114 prüft die Regel das
+     (P-01). Zwei Dokumente nur für einzelne Studios, damit „Wer sieht
+     was" beim Chef etwas zu zeigen hat und die Mitarbeiterin aus Hürth
+     das Brühler Dokument NICHT sieht. */
   legen(P('documents'), [
     { id: 'dok1', name: 'Hygieneplan 2026', fileName: 'hygieneplan.pdf', kat: 'Vorschriften',
-      size: 184000, ts: vorTag(40), by: 'Geschäftsführung' },
+      size: 184000, ts: vorTag(40), by: 'Geschäftsführung', studios: 'all' },
     { id: 'dok2', name: 'Einweisung EMS-Gerät', fileName: 'einweisung.pdf', kat: 'Technik',
-      size: 96000, ts: vorTag(120), by: 'Geschäftsführung' },
+      size: 96000, ts: vorTag(120), by: 'Geschäftsführung', studios: 'all' },
     { id: 'dok3', name: 'Notfallnummern', fileName: 'notfall.pdf', kat: 'Vorschriften',
-      size: 21000, ts: vorTag(200), by: 'Geschäftsführung' }
+      size: 21000, ts: vorTag(200), by: 'Geschäftsführung', studios: 'all' },
+    { id: 'dok4', name: 'Schlüsselliste ' + STUDIOS[6], fileName: 'schluessel.pdf', kat: 'Vorschriften',
+      size: 18000, ts: vorTag(12), by: 'Geschäftsführung', studios: [sk(6)] },
+    { id: 'dok5', name: 'Schlüsselliste ' + STUDIOS[7], fileName: 'schluessel.pdf', kat: 'Vorschriften',
+      size: 18000, ts: vorTag(14), by: 'Geschäftsführung', studios: [sk(7)] }
   ]);
 
   /* ── Lösungen ───────────────────────────────────────────────────────
@@ -1266,7 +1274,12 @@
        So läuft der ganze Weg in der App unverändert durch: der Knopf
        sperrt sich, beschriftet sich mit „Einen Moment …" und leitet
        um. Nachgebaut wird der WEG, nicht die Gegenstelle. */
-    stripeKasse: function () { return { url: demoStripeAdresse('kasse') }; },
+    stripeKasse: function (d) {
+      if (!d || d.unternehmer !== true || !d.zustimmung) {
+        throw new Error('Bitte bestätige zuerst, dass du für ein Unternehmen buchst und den AGB und dem Vertrag zur Auftragsverarbeitung zustimmst.');
+      }
+      return { url: demoStripeAdresse('kasse') };
+    },
     stripeVerwaltung: function () { return { url: demoStripeAdresse('portal') }; },
     pinStatus: function () {
       return { gesetzt: true, seit: Date.now() - 40 * TAG };
@@ -1307,6 +1320,31 @@
     /* ── Datenschutzvorfall melden (Runde 113) ──
        Dieselbe Prüfung wie im Server. In der Demo geht keine Mail raus,
        und genau das sagt die Antwort (demo: true, mail: false). */
+    /* ── Auskunft nach Art. 15 (Runde 114) ──
+       Dieselbe Idee wie im Server: jeder Eintrag der Demo, in dem die
+       Person in einem der Kennungsfelder steht. Die Demo hat keinen
+       persönlichen Bereich in der Datenbank; die Fassung sagt das. */
+    auskunftErstellen: function (d) {
+      var uid = String(d.uid || ICH.id);
+      var selbst = uid === ICH.id;
+      if (!selbst && ICH.role !== 'chef') throw new Error('Die Auskunft für eine andere Person erstellt nur die Geschäftsführung.');
+      var person = selbst ? ICH : USERS.filter(function (u) { return u.id === uid; })[0];
+      if (!person) throw new Error('Diese Person gibt es in diesem Betrieb nicht.');
+      var FELDER = ['uid', 'createdByUid', 'doneByUid', 'uploadedByUid', 'erfasstVonUid', 'byUid', 'decidedByUid', 'assignedTo', 'personUid'];
+      var bereiche = {}, zahl = 0;
+      Object.keys(DB).forEach(function (pfad) {
+        if (/zeitPins|terminalCodes|pushTokens|privat/.test(pfad)) return;
+        var name = pfad.replace(/^firmen\/[^/]+\//, '').replace(/^(studios|channels)\/[^/]+\//, '$1/');
+        (DB[pfad] || []).forEach(function (x) {
+          if (!FELDER.some(function (f) { return x[f] === uid; })) return;
+          (bereiche[name] = bereiche[name] || []).push(x); zahl++;
+        });
+      });
+      return { erstellt: new Date().toISOString(), erstelltVon: selbst ? 'die Person selbst' : 'Geschäftsführung (Demo)',
+               fassung: selbst ? 'voll' : 'ohne Direktnachrichten-Inhalte und persönlichen Bereich',
+               person: { uid: uid, name: person.name, email: person.email || '', role: person.role },
+               eintraege: zahl, bereiche: bereiche };
+    },
     vorfallMelden: function (d) {
       if (String(d.was || '').trim().length < 10) throw new Error('Bitte beschreib in einem Satz, was passiert ist.');
       var bis = new Date(Date.now() + 48 * 3600000);

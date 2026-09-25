@@ -1456,6 +1456,11 @@ const KONFIG_FIRMA_RUECKFALL = 'koerperformen';
 /* ── Zur Kasse ────────────────────────────────────────────────────────
    Nur der Chef. Ein Mitarbeiter, der ein Abo fuer seinen Betrieb
    abschliesst, waere ein Vertrag ohne Vertretungsmacht. */
+/* Stand der AGB, dem an der Kasse zugestimmt wird. Derselbe Wert wie
+   AGB_STAND in index.html — tests/test-rechtliches.js prüft, dass beide
+   gleich sind. */
+const AGB_STAND = '2026-09-25';
+
 exports.stripeKasse = region
   .https.onCall(async (data, context) => {
     const ich = await requireChef(context);
@@ -1468,6 +1473,15 @@ exports.stripeKasse = region
     const preise = preiseFuer(stufe);
     if (!preise.grund) throw keineKasse();
 
+    /* Runde 114: ohne Bestätigung keine Kasse. Die App zeigt den Haken
+       (Unternehmer § 14 BGB, AGB, AV-Vertrag) und schickt den Stand mit;
+       hier wird er ein zweites Mal geprüft — eine Grenze nur in der
+       Oberfläche ist keine. */
+    if (!data || data.unternehmer !== true || data.zustimmung !== AGB_STAND) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Bitte bestätige zuerst, dass du für ein Unternehmen buchst und den AGB ' +
+        'und dem Vertrag zur Auftragsverarbeitung zustimmst.');
+    }
     const ref = db.collection('firmen').doc(firma).collection('abo').doc('aktuell');
     const abo = (await ref.get()).data() || {};
     const studios = await studiozahl(firma);
@@ -1490,7 +1504,7 @@ exports.stripeKasse = region
       customer: abo.kunde || undefined,
       customer_email: abo.kunde ? undefined : (ich.email || undefined),
       subscription_data: { metadata: { firma: firma, stufe: stufe } },
-      metadata: { firma: firma, stufe: stufe },
+      metadata: { firma: firma, stufe: stufe, agb: AGB_STAND },
       allow_promotion_codes: true,
       locale: 'de',
       /* Die Anschrift wird fuer die Rechnung gebraucht — und bei
@@ -1507,6 +1521,10 @@ exports.stripeKasse = region
       stufeGewuenscht: stufe,
       letzteKasse: Date.now(),
       firmaName: firmaDoc.name || '',
+      /* Wer wann welchem Stand zugestimmt hat — der Nachweis, falls es
+         je darauf ankommt. */
+      zustimmung: { agb: AGB_STAND, av: AGB_STAND, unternehmer: true,
+                    am: Date.now(), uid: (context.auth && context.auth.uid) || '', name: ich.name || '' },
     }, { merge: true });
 
     return { ok: true, url: sitzung.url };
@@ -5259,6 +5277,142 @@ exports.vorfallMelden = region.https.onCall(async (data, context) => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
+   AUSKUNFT NACH ART. 15 DSGVO (P-10, Runde 114)
+
+   Aus dem Betrieb, 25.9.2026, auf die Empfehlung „alles, was die Person
+   selbst geschrieben hat oder was über sie gespeichert ist, und ein
+   Knopf für den Chef, der daraus eine Datei macht": „Ja genau so".
+
+   ── WER DARF ────────────────────────────────────────────────────────
+   · die Person selbst (Ich → Daten)          → VOLLE Auskunft
+   · die Geschäftsführung ihrer Firma         → Auskunft OHNE zwei Teile:
+       - die Inhalte ihrer Direktnachrichten (nur die Zahl),
+       - ihren persönlichen Bereich (privat/<uid>: eigene Termine,
+         Notizen, Ziele …).
+     Beides sieht der Chef in der App auch sonst nicht. Eine Auskunft,
+     die ihm mehr zeigt als die App, wäre selbst eine Datenpanne. Der
+     Hinweis dazu steht IN der Datei: die volle Fassung holt die Person
+     selbst ab.
+
+   ── WAS HINEINKOMMT ─────────────────────────────────────────────────
+   Jedes Dokument der Firma, in dem die Person in einem der Felder aus
+   AUSKUNFT_FELDER steht (uid, createdByUid, doneByUid …). Bewusst als
+   Durchsuchen aller Sammlungen statt einer Liste einzelner Abfragen:
+   eine neue Sammlung, die jemand vergisst einzutragen, wäre sonst still
+   nicht dabei — und eine Auskunft, der etwas fehlt, ist falsch, nicht
+   nur unvollständig.
+
+   ── WAS NIE HINEINKOMMT ─────────────────────────────────────────────
+   Felder mit hash, geheim, secret, pin, token im Namen (dieselbe Regel
+   wie beim nächtlichen Export, tests/test-sicherung-inhalt.js), dazu
+   zeitPins, terminalCodes und pushTokens ganz.
+   ══════════════════════════════════════════════════════════════════ */
+const AUSKUNFT_FELDER = ['uid', 'createdByUid', 'doneByUid', 'uploadedByUid', 'erfasstVonUid',
+  'byUid', 'decidedByUid', 'deletedByUid', 'assignedTo', 'tauschVon', 'personUid',
+  'korrigiertVon', 'createdBy', 'lastSender', 'vonUid', 'anUid'];
+const AUSKUNFT_NIE = ['zeitPins', 'terminalCodes', 'pushTokens', 'vorfaelle', 'trash', 'versions', 'fehler', 'statistik'];
+const AUSKUNFT_FELD_WEG = /hash|geheim|secret|pin|token/i;
+
+function auskunftSauber(wert) {
+  if (Array.isArray(wert)) return wert.map(auskunftSauber);
+  if (wert && typeof wert === 'object') {
+    if (typeof wert.toDate === 'function') return wert.toDate().toISOString();
+    const aus = {};
+    Object.keys(wert).forEach((k) => {
+      if (AUSKUNFT_FELD_WEG.test(k)) return;
+      aus[k] = auskunftSauber(wert[k]);
+    });
+    return aus;
+  }
+  /* Eingebettete Dateien (data:…) sind oft hunderte Kilobyte. In die
+     Auskunft kommt, DASS es sie gibt, nicht der Inhalt. */
+  if (typeof wert === 'string' && /^data:[^;]+;base64,/.test(wert) && wert.length > 2000) {
+    return '[eingebettete Datei, ' + Math.round(wert.length * 0.75 / 1024) + ' KB]';
+  }
+  return wert;
+}
+function betrifft(d, uid) {
+  if (!d) return false;
+  if (AUSKUNFT_FELDER.some((f) => d[f] === uid)) return true;
+  return ['participants', 'teilnehmer', 'mentions'].some((f) => Array.isArray(d[f]) && d[f].indexOf(uid) >= 0);
+}
+
+/* Geht alle Sammlungen der Firma durch und sammelt, was die Person
+   betrifft. Eine Ebene tiefer nur dort, wo es Untersammlungen gibt
+   (studios/<sk>/…, channels/<k>/messages) — eine Nachricht hat keine
+   Kinder, und jede einzeln danach zu fragen, kostete bei tausend
+   Nachrichten tausend Aufrufe. */
+const AUSKUNFT_MIT_KINDERN = ['studios', 'channels'];
+async function auskunftSammeln(wurzel, uid, voll, bereiche, flach) {
+  const dazu = (name, d) => { (bereiche[name] = bereiche[name] || []).push(auskunftSauber(d)); };
+  for (const s of await wurzel.listCollections()) {
+    if (AUSKUNFT_NIE.indexOf(s.id) >= 0 || s.id === 'privat') continue;
+    if (flach && ['users', 'firmen', 'firmenArchiv', 'beitritt'].indexOf(s.id) >= 0) continue;
+    if (s.id === 'dms') {
+      const q = await s.where('participants', 'array-contains', uid).get();
+      for (const dm of q.docs) {
+        const msgs = await dm.ref.collection('messages').get();
+        const d = dm.data() || {};
+        dazu('dms', voll
+          ? { unterhaltung: dm.id, mit: d.names || {}, nachrichten: msgs.docs.map((m) => Object.assign({ id: m.id }, m.data())) }
+          : { unterhaltung: dm.id, eigeneNachrichten: msgs.docs.filter((m) => m.get('uid') === uid).length,
+              alleNachrichten: msgs.size, hinweis: 'Inhalte nur in der Auskunft, die die Person selbst abruft.' });
+      }
+      continue;
+    }
+    const q = await s.get();
+    q.docs.forEach((x) => { if (betrifft(x.data(), uid)) dazu(s.id, Object.assign({ id: x.id }, x.data())); });
+    if (AUSKUNFT_MIT_KINDERN.indexOf(s.id) < 0) continue;
+    for (const eltern of await s.listDocuments()) {
+      for (const kind of await eltern.listCollections()) {
+        const k = await kind.get();
+        k.docs.forEach((x) => {
+          if (betrifft(x.data(), uid)) dazu(s.id + '/' + kind.id, Object.assign({ id: x.id, [s.id === 'studios' ? 'studio' : 'kanal']: eltern.id }, x.data()));
+        });
+      }
+    }
+  }
+}
+
+exports.auskunftErstellen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const personUid = String((data && data.uid) || uid).trim();
+  const selbst = personUid === uid;
+  if (!selbst && profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Die Auskunft für eine andere Person erstellt nur die Geschäftsführung.');
+  }
+  const pSnap = await db.collection('users').doc(personUid).get();
+  const person = pSnap.exists ? (pSnap.data() || {}) : null;
+  if (!person || (person.firma || null) !== (firma || null)) {
+    throw new functions.https.HttpsError('not-found', 'Diese Person gibt es in diesem Betrieb nicht.');
+  }
+
+  const wurzel = W(firma);
+  const bereiche = {};
+  await auskunftSammeln(wurzel, personUid, selbst, bereiche, !firma);
+  if (selbst) {
+    const privat = wurzel.collection('privat').doc(personUid);
+    const pd = await privat.get();
+    if (pd.exists) bereiche['privat'] = [auskunftSauber(pd.data())];
+    for (const s of await privat.listCollections()) {
+      const q = await s.get();
+      bereiche['privat/' + s.id] = q.docs.map((x) => auskunftSauber(Object.assign({ id: x.id }, x.data())));
+    }
+  }
+  const zahl = Object.keys(bereiche).reduce((n, k) => n + bereiche[k].length, 0);
+  return {
+    erstellt: new Date().toISOString(),
+    erstelltVon: selbst ? 'die Person selbst' : 'Geschäftsführung (' + (profil.name || uid) + ')',
+    fassung: selbst ? 'voll' : 'ohne Direktnachrichten-Inhalte und persönlichen Bereich',
+    firma: firma || null,
+    person: auskunftSauber(Object.assign({ uid: personUid }, person)),
+    eintraege: zahl,
+    bereiche
+  };
+});
+
+/* ══════════════════════════════════════════════════════════════════════
    SCHULUNG — DER TEILNAHME-CODE
 
    Aus dem Betrieb, 22.9.2026:
@@ -5601,7 +5755,7 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      aboZugriff, aboStufeNachTagen, aboNeuRechnen,
                      kennungVon, aboIdAusRechnung, periodeAusRechnung, periodeAusAbo,
                      ABO_STATUS, ABO_STUFEN, LEITERN,
-                     vorfallText,
+                     vorfallText, betrifft, auskunftSauber,
                      /* Nur für tests/rules/vorfall.test.js: ein Ersatz-Versender,
                         der festhält, was er bekommt. Ohne ihn liesse sich die
                         Wichtigkeit der Mail nicht prüfen, ohne echt zu senden. */

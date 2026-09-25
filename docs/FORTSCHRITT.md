@@ -12920,3 +12920,96 @@ Fenster sagt es.
     „Hilfe“ und „Was ist neu“. Jetzt kennt er auch „Datenschutzvorfall
     melden“ und prüft dort, dass das Fenster aufgeht. Der Grund steht
     als Kommentar im Test.
+
+## Runde 114 — Dokumente fürs eigene Studio, Auskunft nach Art. 15, AGB und Speicherhinweis
+
+> Antworten aus dem Betrieb, 25.9.2026:
+> 2. „JA aber man kann selber entscheiden ob alle oder nur studio“
+> 3. „Ja genau so wie du empfohlen hast“ (Auskunft)
+> 5. „JA ergänze alle rechtlichen schritte und füge ein was nötig ist
+>    ebenso wie eine AGB und eine cookie zeile die jeder nutzer einmal
+>    anklicken muss“
+
+### Dokumente (P-01)
+
+- Die Leseregel prüft jetzt `studios` (`dokumentFuerMich`), und zwar in
+  beiden Welten und auch für `documentData`.
+- Die App fragt für alle ausser dem Chef zweimal gefiltert
+  (`== 'all'`, `array-contains-any`).
+- **Wie ich darauf kam, nachgemessen:** Mit `d.studios is list &&
+  hasAny` davor liess sich die Abfrage im Emulator nicht beweisen. Ohne
+  die Prüfung geht sie. Eine Regelprobe mit vier Formen (in
+  `scratchpad`) hat gezeigt, dass `resource.data.studios.hasAny(keys)`
+  mit `array-contains-any` beweisbar ist, `keys.hasAny(studios)`
+  dagegen nicht.
+- **Übergang:** Alte Dokumente ohne Feld setzt die App beim Chef auf
+  `'all'`.
+- **Werkzeug:** „Wer sieht was“ über der Liste, nur für den Chef.
+- **Gefunden:** Unter `firmen/<k>/documentData` prüfte die Regel den
+  flachen Pfad. Die Studioleitung konnte in einer Firma keinen
+  Dateiinhalt speichern.
+- Demo: Zwei Dokumente sind nur für einzelne Studios (Hürth, Brühl).
+
+### Auskunft nach Art. 15 (P-10)
+
+- Die Funktion `auskunftErstellen` geht alle Sammlungen der Firma
+  durch. Eine Liste einzelner Abfragen hätte eine neue Sammlung still
+  vergessen.
+- Die volle Fassung bekommt nur die Person selbst. Der Chef bekommt sie
+  ohne die Inhalte der Direktnachrichten und ohne den persönlichen
+  Bereich, weil er beides auch in der App nicht sieht. Eine Auskunft,
+  die ihm mehr zeigt als die App, wäre selbst eine Datenpanne.
+- Die App baut daraus **eine** Datei: lesbar (HTML, druckbar) und darin
+  dieselben Daten als JSON. Das deckt Art. 15 Abs. 3 und Art. 20 mit
+  einer Datei.
+- Nie enthalten sind `zeitPins` und Felder mit hash/token/geheim.
+  Eingebettete Dateien stehen nur mit ihrer Grösse drin.
+
+### Rechtliches
+
+- AGB als Reiter unter „Rechtliches“, erzeugt aus
+  `docs/AGB-ENTWURF.md` § 1–11 ohne die Anmerkungen.
+- Kasse: ein Haken für Unternehmer, AGB und AV-Vertrag. Ohne ihn ist
+  der Knopf gesperrt, und `stripeKasse` lehnt ab. Die Zustimmung wird
+  mit Stand, Person und Zeit gespeichert. `AGB_STAND` ist in App und
+  Server derselbe Wert; der Durchlauf prüft das.
+- Speicherhinweis: einmal **je Gerät**, auch vor der Anmeldung.
+  „Verstanden“ blendet ihn aus, „Mehr dazu“ öffnet die
+  Datenschutzerklärung.
+  - **In den automatischen Durchläufen (`navigator.webdriver`) gilt er
+    als bestätigt.** Rund 150 Durchläufe stehen für jemanden, der ihn
+    schon weggetippt hat. Sonst läge die Zeile über jeder unteren
+    Leiste, und jeder Knopf-Test mässe die Zeile statt der App.
+  - `tests/test-rechtliches.js` setzt `__speicherHinweisPruefen` und
+    prüft genau den ersten Besuch. Das ist eine bewusste Weiche im
+    Code. Sie gilt nur für Testbrowser; ein Mensch hat kein
+    `navigator.webdriver`.
+- Datenschutzerklärung: Neu sind „Auf deinem Gerät“ (§ 25 Abs. 2 Nr. 2
+  TDDDG), „Wenn etwas schiefgeht“, Dokumente je Studio und die Auskunft
+  zum Selbst-Herunterladen.
+
+### Nicht prüfbar hier
+
+Ob die Texte rechtlich tragen, prüft kein Test. Das bleibt beim Anwalt,
+siehe `docs/RECHT.md`. Den echten Anmeldeweg kann ich hier nicht
+testen, weil das Firebase-SDK in dieser Umgebung nicht lädt. Die Seite
+vor der Anmeldung ist mit `stub-ohne-login.js` nachgebildet.
+
+### Durchläufe
+
+- **Neu, gegen den Emulator:**
+  - `tests/rules/dokumente.test.js` (34 Zusicherungen);
+  - `tests/rules/auskunft.test.js` (20 Zusicherungen).
+- **Neu, Oberfläche:**
+  - `tests/test-dokumente-sicht.js`;
+  - `tests/test-auskunft.js` (13 Zusicherungen);
+  - `tests/test-rechtliches.js` (25 Zusicherungen).
+- `test-demo-abo`: Vor „Abo buchen“ setzt der Test jetzt den Haken und
+  prüft vorher, dass der Knopf ohne Haken gesperrt ist. Das ist eine
+  **zusätzliche** Zusicherung, keine gelockerte.
+- **Gefunden in der Regression:** Der neue Hinweis unter „Ich → Daten →
+  Alles, was über mich gespeichert ist“ war 190 Zeichen lang.
+  `test-mein-bereich` erlaubt dort keine Erklärungsabsätze über 90
+  Zeichen („die Seite soll leicht sein“). Er ist auf 80 Zeichen
+  gekürzt; was genau drinsteht, sagt die Datei selbst. Danach 153 von
+  153 grün.
