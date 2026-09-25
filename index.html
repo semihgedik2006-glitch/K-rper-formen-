@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-5qFJsnecaqyvQo9jLh3SqG6Y0os3lLSU5g1LYko+Fpk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Qwq7kDf9C45ZRatlKk3Z8z9azKk9P9co88nahCvAey8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4097,6 +4097,36 @@ html{font-size:var(--fs,100%)}
 .chef-tab.on{color:var(--accent-d);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
 
+/* ── Verwaltung am Rechner: Liste links, Formulare rechts (Runde 112) ──
+   CLAUDE.md: „Eine Ansicht, die am Rechner eine Spalte über 1.200 px
+   zieht, ist dort genauso ungestaltet wie ein abgeschnittener Knopf."
+   Team, Studios und System waren genau das: sechs Karten über die
+   ganze Breite untereinander, die Teamliste irgendwo in der Mitte.
+
+   Zwei echte Spalten-Hüllen statt eines Rasters über alle Karten: ein
+   Raster richtet die Zeilen beider Seiten aneinander aus, und eine
+   aufgeklappte Karte links risse rechts Lücken auf. So wächst jede
+   Spalte für sich.
+
+   Am Handy lösen sich die Hüllen auf (display:contents), und data-vw
+   stellt die Reihenfolge von vorher wieder her — dort ändert sich
+   nichts. */
+.chef-pane.vw{display:flex;flex-direction:column}
+.vw-spalte{display:contents}
+[data-vw="1"]{order:1}[data-vw="2"]{order:2}[data-vw="3"]{order:3}[data-vw="4"]{order:4}
+[data-vw="5"]{order:5}[data-vw="6"]{order:6}[data-vw="7"]{order:7}[data-vw="8"]{order:8}
+[data-vw="9"]{order:9}[data-vw="10"]{order:10}[data-vw="11"]{order:11}[data-vw="12"]{order:12}
+[data-vw="13"]{order:13}
+@media (min-width:1100px){
+  .chef-pane.vw{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);
+    column-gap:var(--s24);align-items:start}
+  .vw-spalte{display:block;min-width:0}
+  /* Rechts nichts zu sehen (die Studioleitung sieht die Chef-Karten
+     nicht): dann eine Spalte, keine leere daneben. */
+  .chef-pane.vw:not(:has(> .vw-neben > .card:not([style*="none"]))){grid-template-columns:minmax(0,1fr)}
+  .chef-pane.vw:not(:has(> .vw-neben > .card:not([style*="none"]))) > .vw-neben{display:none}
+}
+
 /* Probetraining: eine Person aufgeklappt zeigt ihre Studios */
 .pb-person .pb-detail{padding-left:var(--s12);opacity:.92}
 .pb-person .pb-detail .pb-zeile{border-top:1px dashed var(--line-2)}
@@ -7929,8 +7959,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
 
           <!-- ── Reiter 3: Team ── -->
-          <div class="chef-pane" data-cpane="team" style="display:none">
-          <div class="card" id="freigabeKarte" data-chef-only="1" style="display:none">
+          <div class="chef-pane vw" data-cpane="team" style="display:none">
+            <div class="vw-spalte vw-haupt">
+          <div data-vw="1" class="card" id="freigabeKarte" data-chef-only="1" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3 data-ikon="uhr">Wartet auf Freigabe</h3>
               <span class="todo-count" id="freigabeZahl"></span>
@@ -7939,25 +7970,20 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               zur Freigabe nichts von der App.</p>
             <div id="freigabeListe"></div>
           </div>
-          <div class="card" data-fold="beitritt" data-chef-only="1">
-            <h3 data-ikon="schluessel">Wer darf sich anmelden</h3>
-            <p class="hint">Ohne Einstellung hier kann sich jeder anmelden, der die
-              Adresse der App kennt – und sieht dann Chat, Team und Aufgaben.</p>
-            <div class="field"><label for="btCode">Firmencode</label>
-              <input class="inp" id="btCode" type="text" maxlength="60"
-                     placeholder="leer = kein Code nötig" autocomplete="off" />
-              <p class="hint" style="margin-top:6px">Wer sich anmeldet, muss ihn eingeben.
-                Gib ihn im Team weiter. Leer lassen schaltet ihn ab.</p></div>
-            <label class="studio-check" style="margin-top:6px">
-              <input type="checkbox" id="btFreigabe" />
-              <span><b>Neue Konten erst nach meiner Freigabe aktiv</b></span>
-            </label>
-            <p class="hint" style="margin-top:6px">Empfohlen — fängt auch den Fall
-              ab, dass der Code die Runde macht.</p>
-            <button class="btn btn-ghost btn-sm" id="btSave" style="width:100%;margin-top:12px">Speichern</button>
-            <p class="em-saved" id="btNote"></p>
+          <div data-vw="4" class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
+            <h3 data-ikon="leute">Team</h3>
+            <p class="hint">Rolle und Studios anpassen oder Zugang entfernen.</p>
+            <div id="empList"></div>
           </div>
-          <div class="card" data-fold="zugang" data-chef-only="1">
+          <div data-vw="5" class="card" data-fold="chefzugaenge" data-chef-only="1">
+            <h3 data-ikon="krone">Chef-Zugänge</h3>
+            <p class="hint">Alle Konten mit vollem Zugriff auf alle Studios. Sie bekommen
+              auch den Monatsbericht per E-Mail.</p>
+            <div id="chefList"></div>
+          </div>
+            </div>
+            <div class="vw-spalte vw-neben">
+          <div data-vw="3" class="card" data-fold="zugang" data-chef-only="1">
             <h3 data-ikon="person">Zugang anlegen</h3>
             <p class="hint">Erstellt ein Konto und ordnet Studios zu. Die Person meldet sich danach mit E-Mail + Passwort an.</p>
             <div class="field"><label for="emName">Name</label>
@@ -7985,18 +8011,25 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <button data-ikon="kopieren" type="button" class="btn btn-ghost btn-sm" id="emCopy">Zugangsdaten kopieren</button>
             </div>
           </div>
-          <div class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
-            <h3 data-ikon="leute">Team</h3>
-            <p class="hint">Rolle und Studios anpassen oder Zugang entfernen.</p>
-            <div id="empList"></div>
+          <div data-vw="2" class="card" data-fold="beitritt" data-chef-only="1">
+            <h3 data-ikon="schluessel">Wer darf sich anmelden</h3>
+            <p class="hint">Ohne Einstellung hier kann sich jeder anmelden, der die
+              Adresse der App kennt – und sieht dann Chat, Team und Aufgaben.</p>
+            <div class="field"><label for="btCode">Firmencode</label>
+              <input class="inp" id="btCode" type="text" maxlength="60"
+                     placeholder="leer = kein Code nötig" autocomplete="off" />
+              <p class="hint" style="margin-top:6px">Wer sich anmeldet, muss ihn eingeben.
+                Gib ihn im Team weiter. Leer lassen schaltet ihn ab.</p></div>
+            <label class="studio-check" style="margin-top:6px">
+              <input type="checkbox" id="btFreigabe" />
+              <span><b>Neue Konten erst nach meiner Freigabe aktiv</b></span>
+            </label>
+            <p class="hint" style="margin-top:6px">Empfohlen — fängt auch den Fall
+              ab, dass der Code die Runde macht.</p>
+            <button class="btn btn-ghost btn-sm" id="btSave" style="width:100%;margin-top:12px">Speichern</button>
+            <p class="em-saved" id="btNote"></p>
           </div>
-          <div class="card" data-fold="chefzugaenge" data-chef-only="1">
-            <h3 data-ikon="krone">Chef-Zugänge</h3>
-            <p class="hint">Alle Konten mit vollem Zugriff auf alle Studios. Sie bekommen
-              auch den Monatsbericht per E-Mail.</p>
-            <div id="chefList"></div>
-          </div>
-          <div class="card" data-fold="onboarding" data-chef-only="1">
+          <div data-vw="6" class="card" data-fold="onboarding" data-chef-only="1">
             <h3 data-ikon="kompass">Onboarding-Checkliste</h3>
             <p class="hint">Schritte für neue Mitarbeiter. Sie sehen die Liste im Infos-Tab und haken sie ab.</p>
             <div id="obEditor"></div>
@@ -8008,17 +8041,38 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <select class="inp" id="obSendTo"></select></div>
             <button data-ikon="kopieren" class="btn btn-primary btn-sm" id="obSend">Checkliste per DM senden</button>
           </div>
+            </div>
           </div>
 
           <!-- ── Reiter 4: Auswertung ── -->
-          <div class="chef-pane" data-cpane="standorte" style="display:none">
-            <div class="card">
+          <div class="chef-pane vw" data-cpane="standorte" style="display:none">
+            <div class="vw-spalte vw-haupt">
+            <div data-vw="1" class="card">
               <h3 data-ikon="gebaeude">Studios</h3>
               <p class="hint">Hier stehen die Standorte, mit denen die App arbeitet.
                 Was du hier änderst, sehen alle sofort.</p>
               <div id="standortListe"></div>
             </div>
-            <div class="card" data-fold="studioneu">
+            <div data-vw="4" class="card">
+              <h3 data-ikon="warnung">Studios werden geschlossen, nicht gelöscht</h3>
+              <p class="hint" style="margin-bottom:0">Geschlossene Studios
+                verschwinden aus allen Auswahllisten, ihre Daten bleiben
+                lesbar. Wieder öffnen geht jederzeit.</p>
+              <details class="nachfrage">
+                <summary>Warum kann ich Studios nicht löschen?</summary>
+                <div class="nachfrage-text">
+                  <p>Jedes Studio hat eine feste Kennung in der Datenbank, und
+                    alle Aufgaben, Schichten, Putzpläne, Geräte und
+                    Chatnachrichten hängen daran.</p>
+                  <p>Würde man ein Studio aus der Liste entfernen, bekämen die
+                    folgenden Studios die Kennung ihres Vorgängers – und damit
+                    dessen Daten. Ohne Fehlermeldung.</p>
+                </div>
+              </details>
+            </div>
+            </div>
+            <div class="vw-spalte vw-neben">
+            <div data-vw="2" class="card" data-fold="studioneu">
               <h3 data-ikon="plus">Studio anlegen</h3>
               <p class="hint">Der Name lässt sich später jederzeit ändern.</p>
               <div class="field"><label for="stNeuName">Name des Studios</label>
@@ -8026,10 +8080,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                        placeholder="z. B. Bergisch Gladbach" /></div>
               <button data-ikon="plus" class="btn btn-primary" id="stNeuBtn">Studio anlegen</button>
             </div>
-            <!-- Terminals für die Zeiterfassung. Ein Tablet am Empfang
-                 wird zur Stempeluhr; nur dort lässt sich stempeln. Das
-                 ist die Ortsbindung, und zwar eine physische. -->
-            <div class="card" data-fold="terminals">
+            <div data-vw="3" class="card" data-fold="terminals">
               <h3 data-ikon="uhr">Stempel-Terminals</h3>
               <p class="hint">Ein Tablet oder ein alter Rechner am Empfang
                 wird zur Stempeluhr. Wer stempeln will, muss an diesem Gerät
@@ -8059,22 +8110,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 </div>
               </details>
             </div>
-            <div class="card">
-              <h3 data-ikon="warnung">Studios werden geschlossen, nicht gelöscht</h3>
-              <p class="hint" style="margin-bottom:0">Geschlossene Studios
-                verschwinden aus allen Auswahllisten, ihre Daten bleiben
-                lesbar. Wieder öffnen geht jederzeit.</p>
-              <details class="nachfrage">
-                <summary>Warum kann ich Studios nicht löschen?</summary>
-                <div class="nachfrage-text">
-                  <p>Jedes Studio hat eine feste Kennung in der Datenbank, und
-                    alle Aufgaben, Schichten, Putzpläne, Geräte und
-                    Chatnachrichten hängen daran.</p>
-                  <p>Würde man ein Studio aus der Liste entfernen, bekämen die
-                    folgenden Studios die Kennung ihres Vorgängers – und damit
-                    dessen Daten. Ohne Fehlermeldung.</p>
-                </div>
-              </details>
             </div>
           </div>
           <div class="chef-pane" data-cpane="firmen" style="display:none">
@@ -8252,33 +8287,108 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
 
           <!-- ── Reiter 5: System ── -->
-          <div class="chef-pane" data-cpane="system" style="display:none">
-            <div class="card" id="rechtKarte" style="display:none">
+          <div class="chef-pane vw" data-cpane="system" style="display:none">
+            <div class="vw-spalte vw-haupt">
+            <div data-vw="1" class="card" id="rechtKarte" style="display:none">
               <h3 data-ikon="waage">Rechtliches ist unvollständig</h3>
               <p class="hint" id="rechtFehltText"></p>
               <button class="btn btn-ghost btn-sm" data-rechtauf="impressum">Ansehen</button>
             </div>
-          <!-- ── Abo ──
-               Steht oben, weil ein Betrieb, bei dem etwas offen ist,
-               hier nachsieht. Der Zustand kommt aus der Datenbank; die
-               Knöpfe führen zu Stripe und nirgendwo sonst — Kartendaten
-               fasst diese App nie an.
-
-               Der Betrag steht hier und NUR hier: die Karte sieht nur
-               der Chef, und was ein Betrieb zahlt, geht das Team
-               nichts an. -->
-          <div class="card" id="aboKarte" data-chef-only="1">
+          <div data-vw="2" class="card" id="aboKarte" data-chef-only="1">
             <h3 data-ikon="karte">Abo</h3>
             <div id="aboStand" class="setup-zeile" style="display:block"></div>
             <p class="hint" id="aboHinweis"></p>
             <div class="btn-row" id="aboKnoepfe" style="margin-top:12px"></div>
           </div>
-          <!-- Neues Design: erst ansehen, dann veröffentlichen.
-               Steht bewusst GANZ OBEN im System-Reiter und nicht
-               zugeklappt: solange das neue Aussehen nicht für alle
-               freigegeben ist, ist das hier die Seite, auf die man
-               kommt, um es anzusehen. -->
-          <div class="card" data-chef-only="1">
+          <div data-vw="9" class="card" data-fold="sichern" data-chef-only="1">
+            <h3 data-ikon="speichern">Daten sichern</h3>
+            <p class="hint">Lädt alle Aufgaben, Putzpläne, Material, Infos und das Team als
+              Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
+            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expXls" style="width:100%">Alles als Excel speichern</button>
+            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">Alles als Daten-Datei (JSON)</button>
+            <details class="nachfrage">
+              <summary>Was steht in der Datei?</summary>
+              <div class="nachfrage-text">
+                <p><b>Drin:</b> Aufgaben, Material, Putzplan, Chat, Geräte,
+                  Schichten, Abwesenheiten, Übergaben, Brett, Team, Infos,
+                  Dokument-Angaben und Nachweise.</p>
+                <p><b>Nicht drin:</b> Direktnachrichten (die gehören zwei
+                  Personen) und der Inhalt hochgeladener Dateien. Beides steht
+                  auch in der Datei selbst.</p>
+              </div>
+            </details>
+            <p class="hint" style="margin:16px 0 8px"><b>Automatisch:</b> jede Nacht
+              um 2:40 Uhr wird die komplette Datenbank gesichert, die letzten sieben
+              Tage bleiben liegen.</p>
+            <details class="nachfrage" style="margin-bottom:12px">
+              <summary>Wozu, wenn ich schon selbst sichere?</summary>
+              <div class="nachfrage-text">
+                <p>Anders als die Dateien oben holt die nächtliche Sicherung nach
+                  einem versehentlichen Löschen wirklich alles zurück — auch die
+                  hochgeladenen Dateien.</p>
+              </div>
+            </details>
+            <div class="sich-stand" id="sichStand" style="display:none"></div>
+            <button data-ikon="schild" class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-admin-only="1">Jetzt zusätzlich sichern</button>
+            <p class="em-saved" id="backupNote"></p>
+          </div>
+          <div data-vw="7" class="card" data-fold="fehler" data-chef-only="1">
+            <h3 data-ikon="kaefer">Fehler im Betrieb</h3>
+            <p class="hint">Wenn bei jemandem etwas nicht lädt, steht es hier —
+              auch wenn er es dir nicht sagt.</p>
+            <div id="fehlerListe"></div>
+          </div>
+          <div data-vw="10" class="card" data-fold="trash" data-fold-offen="1">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3 data-ikon="papierkorb">Papierkorb</h3>
+              <span class="todo-count" id="trashCount"></span>
+            </div>
+            <p class="hint">Gelöschtes bleibt 30 Tage hier liegen.</p>
+            <details class="nachfrage">
+              <summary>Was landet hier — und was nicht?</summary>
+              <div class="nachfrage-text">
+                <p>Aufgaben, Putzaufgaben, Infos, Dokumente und Brett-Beiträge.</p>
+                <p>Chat- und Direktnachrichten nicht — die werden oft absichtlich
+                  gelöscht.</p>
+              </div>
+            </details>
+            <div id="trashList"></div>
+            <button class="btn btn-ghost btn-sm" id="trashEmpty" data-chef-only="1"
+              style="width:100%;margin-top:12px">Papierkorb endgültig leeren</button>
+          </div>
+          <div data-vw="11" class="card" data-fold="monatsbericht" data-chef-only="1">
+            <h3 data-ikon="mail">Bericht</h3>
+            <p class="hint">Über alle Studios. Kommt am Ersten jedes Monats um
+              8 Uhr an alle in der Verwaltung — hier kannst du ihn dir jederzeit
+              selbst schicken, für den Zeitraum, den du brauchst.</p>
+            <div class="field"><label for="repTestTage">Zeitraum</label>
+              <select class="inp" id="repTestTage">
+                <option value="7">Letzte 7 Tage</option>
+                <option value="14">Letzte 14 Tage</option>
+                <option value="30" selected>Letzte 30 Tage</option>
+                <option value="90">Letzte 90 Tage</option>
+                <option value="180">Letzte 180 Tage</option>
+                <option value="365">Letztes Jahr</option>
+                <option value="eigen">Andere Anzahl Tage …</option>
+              </select></div>
+            <!-- Erscheint erst bei „Andere". Ein Zahlenfeld, das
+                 danebensteht und meistens leer bleibt, laesst offen,
+                 welches der beiden gilt. -->
+            <div class="field" id="repTageEigenBox" style="display:none">
+              <label for="repTageEigen">Wie viele Tage zurück?</label>
+              <input class="inp" id="repTageEigen" type="number" min="1" max="370"
+                step="1" value="60" inputmode="numeric" />
+            </div>
+            <button data-ikon="mail" class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%">Bericht an mich senden</button>
+            <p class="em-saved" id="repTestNote"></p>
+          </div>
+          <div data-vw="13" class="card" data-fold="ueber">
+            <h3>ℹ️ Über StudioChat</h3>
+            <p class="hint" id="sysInfo">–</p>
+          </div>
+            </div>
+            <div class="vw-spalte vw-neben">
+          <div data-vw="3" class="card" data-chef-only="1">
             <h3 data-ikon="kontrast">Neues Design</h3>
             <p class="hint">Probier es erst auf deinem Gerät aus. Erst wenn es
               passt, veröffentlichst du es für alle — mit einem Klick, und
@@ -8303,7 +8413,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               </div>
             </details>
           </div>
-          <div class="card" data-fold="funktionen" data-chef-only="1">
+          <div data-vw="4" class="card" data-fold="funktionen" data-chef-only="1">
             <h3 data-ikon="raster">Funktionen</h3>
             <p class="hint">Abgeschaltetes verschwindet aus der Navigation — bei
               allen, sofort. <b>Gelöscht wird nichts.</b></p>
@@ -8318,8 +8428,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               </div>
             </details>
           </div>
-          <!-- Die Farbe der Firma. Ein Kunde soll SEINE App sehen. -->
-          <div class="card" data-fold="marke" data-chef-only="1">
+          <div data-vw="5" class="card" data-fold="marke" data-chef-only="1">
             <h3 data-ikon="kontrast">Farbe der App</h3>
             <p class="hint">Gilt für alle im Betrieb.</p>
             <details class="nachfrage">
@@ -8332,7 +8441,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </details>
             <div id="markeWahl" class="marke-wahl"></div>
           </div>
-          <div class="card" data-fold="rechtform" data-chef-only="1">
+          <div data-vw="6" class="card" data-fold="rechtform" data-chef-only="1">
             <h3 data-ikon="waage">Rechtliche Angaben</h3>
             <p class="hint">Impressum und Datenschutz. Das sieht jeder — auch vor
               dem Anmelden. <b>Pflicht sind Betreiber, Anschrift,
@@ -8387,96 +8496,14 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               Datenschutztext nicht.</b> Vor dem Einsatz mit Beschäftigten gehört er
               einmal fachlich durchgesehen.</p>
           </div>
-          <div class="card" data-fold="fehler" data-chef-only="1">
-            <h3 data-ikon="kaefer">Fehler im Betrieb</h3>
-            <p class="hint">Wenn bei jemandem etwas nicht lädt, steht es hier —
-              auch wenn er es dir nicht sagt.</p>
-            <div id="fehlerListe"></div>
-          </div>
-          <div class="card" data-fold="sheets" data-chef-only="1">
+          <div data-vw="8" class="card" data-fold="sheets" data-chef-only="1">
             <h3 data-ikon="wiederholen">Google-Tabellen abgleichen</h3>
             <p class="hint">Änderungen werden automatisch übertragen. Fehlt in der
               Tabelle einmal etwas, schreibt dieser Knopf alle Studios neu —
               gefahrlos, gelöscht wird nichts.</p>
             <button class="btn btn-ghost btn-sm" id="syncSheetsBtn">Jetzt alle Studios abgleichen</button>
           </div>
-          <div class="card" data-fold="sichern" data-chef-only="1">
-            <h3 data-ikon="speichern">Daten sichern</h3>
-            <p class="hint">Lädt alle Aufgaben, Putzpläne, Material, Infos und das Team als
-              Datei auf dieses Gerät. Gut als Sicherung oder für die Steuerberatung.</p>
-            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expXls" style="width:100%">Alles als Excel speichern</button>
-            <button data-ikon="laden" class="btn btn-ghost btn-sm" id="expJson" style="width:100%;margin-top:8px">Alles als Daten-Datei (JSON)</button>
-            <details class="nachfrage">
-              <summary>Was steht in der Datei?</summary>
-              <div class="nachfrage-text">
-                <p><b>Drin:</b> Aufgaben, Material, Putzplan, Chat, Geräte,
-                  Schichten, Abwesenheiten, Übergaben, Brett, Team, Infos,
-                  Dokument-Angaben und Nachweise.</p>
-                <p><b>Nicht drin:</b> Direktnachrichten (die gehören zwei
-                  Personen) und der Inhalt hochgeladener Dateien. Beides steht
-                  auch in der Datei selbst.</p>
-              </div>
-            </details>
-            <p class="hint" style="margin:16px 0 8px"><b>Automatisch:</b> jede Nacht
-              um 2:40 Uhr wird die komplette Datenbank gesichert, die letzten sieben
-              Tage bleiben liegen.</p>
-            <details class="nachfrage" style="margin-bottom:12px">
-              <summary>Wozu, wenn ich schon selbst sichere?</summary>
-              <div class="nachfrage-text">
-                <p>Anders als die Dateien oben holt die nächtliche Sicherung nach
-                  einem versehentlichen Löschen wirklich alles zurück — auch die
-                  hochgeladenen Dateien.</p>
-              </div>
-            </details>
-            <div class="sich-stand" id="sichStand" style="display:none"></div>
-            <button data-ikon="schild" class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-admin-only="1">Jetzt zusätzlich sichern</button>
-            <p class="em-saved" id="backupNote"></p>
-          </div>
-          <div class="card" data-fold="trash" data-fold-offen="1">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-              <h3 data-ikon="papierkorb">Papierkorb</h3>
-              <span class="todo-count" id="trashCount"></span>
-            </div>
-            <p class="hint">Gelöschtes bleibt 30 Tage hier liegen.</p>
-            <details class="nachfrage">
-              <summary>Was landet hier — und was nicht?</summary>
-              <div class="nachfrage-text">
-                <p>Aufgaben, Putzaufgaben, Infos, Dokumente und Brett-Beiträge.</p>
-                <p>Chat- und Direktnachrichten nicht — die werden oft absichtlich
-                  gelöscht.</p>
-              </div>
-            </details>
-            <div id="trashList"></div>
-            <button class="btn btn-ghost btn-sm" id="trashEmpty" data-chef-only="1"
-              style="width:100%;margin-top:12px">Papierkorb endgültig leeren</button>
-          </div>
-          <div class="card" data-fold="monatsbericht" data-chef-only="1">
-            <h3 data-ikon="mail">Bericht</h3>
-            <p class="hint">Über alle Studios. Kommt am Ersten jedes Monats um
-              8 Uhr an alle in der Verwaltung — hier kannst du ihn dir jederzeit
-              selbst schicken, für den Zeitraum, den du brauchst.</p>
-            <div class="field"><label for="repTestTage">Zeitraum</label>
-              <select class="inp" id="repTestTage">
-                <option value="7">Letzte 7 Tage</option>
-                <option value="14">Letzte 14 Tage</option>
-                <option value="30" selected>Letzte 30 Tage</option>
-                <option value="90">Letzte 90 Tage</option>
-                <option value="180">Letzte 180 Tage</option>
-                <option value="365">Letztes Jahr</option>
-                <option value="eigen">Andere Anzahl Tage …</option>
-              </select></div>
-            <!-- Erscheint erst bei „Andere". Ein Zahlenfeld, das
-                 danebensteht und meistens leer bleibt, laesst offen,
-                 welches der beiden gilt. -->
-            <div class="field" id="repTageEigenBox" style="display:none">
-              <label for="repTageEigen">Wie viele Tage zurück?</label>
-              <input class="inp" id="repTageEigen" type="number" min="1" max="370"
-                step="1" value="60" inputmode="numeric" />
-            </div>
-            <button data-ikon="mail" class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%">Bericht an mich senden</button>
-            <p class="em-saved" id="repTestNote"></p>
-          </div>
-          <div class="card" data-fold="pwreset" data-chef-only="1">
+          <div data-vw="12" class="card" data-fold="pwreset" data-chef-only="1">
             <h3 data-ikon="schluessel">Passwort zurücksetzen</h3>
             <p class="hint">Schickt der Person eine E-Mail, mit der sie sich ein neues
               Passwort setzen kann. Du musst kein Passwort kennen oder vergeben.</p>
@@ -8485,10 +8512,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button class="btn btn-ghost btn-sm" id="prSend">E-Mail zum Zurücksetzen senden</button>
             <p class="em-saved" id="prNote"></p>
           </div>
-          <div class="card" data-fold="ueber">
-            <h3>ℹ️ Über StudioChat</h3>
-            <p class="hint" id="sysInfo">–</p>
-          </div>
+            </div>
           </div>
         </div>
       </section>
@@ -16060,6 +16084,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-verwaltung-pc', datum:'25.9.2026', titel:'Verwaltung am Rechner: Liste links, Formulare rechts', wo:'chef:team', punkte:[
+    'Team: Die Teamliste steht links, „Zugang anlegen", „Wer darf sich anmelden" und die Onboarding-Checkliste rechts daneben.',
+    'Studios: Die Studios links, „Studio anlegen" und die Stempel-Terminals rechts.',
+    'System: Abo, Sicherung und Papierkorb links, die Einstellungen (Design, Funktionen, Farbe, Rechtliches) rechts.',
+    'Klappst du rechts etwas auf, bleibt links alles stehen. Am Handy ändert sich nichts.' ] },
   { id:'2026-09-25-datum-reiter', datum:'25.9.2026', titel:'Einheitliche Zeiten, deutlichere Reiter', wo:'todos', punkte:[
     'Datum und Uhrzeit stehen überall gleich da: „heute 09:05", „gestern 14:30", „05.08. 21:10". Das „Uhr" hinter der Zeit ist weg, und Daten haben immer zwei Stellen (05.08.2026 statt 5.8.2026).',
     'Im Chat steht an jeder Nachricht nur noch die Uhrzeit — der Tag steht im Trenner darüber.',

@@ -34,7 +34,7 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 | Anwendung | `index.html`, **34.700 Zeilen** | `wc -l` |
 | Serverfunktionen | **64** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **2.170 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **148** (145 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Oberfläche) | **149** (146 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
 | Automatische Durchläufe (Regeln) | **17 Dateien**, 1.177 Einzelprüfungen (gezählt am 24.9.2026) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |

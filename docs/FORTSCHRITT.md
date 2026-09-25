@@ -12792,3 +12792,55 @@ Der erste Gesamtdurchlauf nach Runde 110/111 hatte sechs rote Tests:
   im Test.
 - **Zweiter Gesamtdurchlauf: 148 von 148 grün**, ohne dass nebenher
   etwas anderes lief.
+
+## Runde 112 — Verwaltung am Rechner: Liste links, Formulare rechts
+
+> CLAUDE.md: „Eine Ansicht, die am Rechner eine Spalte über 1.200 px
+> zieht, ist dort genauso ungestaltet wie ein abgeschnittener Knopf auf
+> dem Handy."
+
+### Vorher
+
+Team, Studios und System standen am Rechner als eine Spalte über die
+ganze Breite. Die Teamliste war die vierte von sechs Karten, zwischen
+Formularen. Im System standen dreizehn Karten untereinander.
+
+### Jetzt (ab 1.100 px)
+
+| Reiter | links (die Hauptsache) | rechts (Formulare, Einstellungen) |
+|---|---|---|
+| Team | Wartet auf Freigabe, Teamliste, Chef-Zugänge | Zugang anlegen, Wer darf sich anmelden, Onboarding |
+| Studios | Studios, „werden geschlossen, nicht gelöscht“ | Studio anlegen, Stempel-Terminals |
+| System | Rechtliches (Hinweis), Abo, Daten sichern, Fehler im Betrieb, Papierkorb, Monatsbericht, Über | Neues Design, Funktionen, Farbe, Rechtliche Angaben, Tabellen, Passwort zurücksetzen |
+
+### Warum zwei Hüllen und kein Raster über alle Karten
+
+Ein gemeinsames Raster richtet die Zeilen beider Seiten aneinander aus.
+Klappt man rechts eine Karte auf, reisst es links Lücken auf, oder
+Karten springen in die andere Spalte (bei `columns`). Deshalb bekommt
+jede Seite eine echte Hülle (`.vw-spalte`), und jede Spalte wächst für
+sich. Der Durchlauf prüft das: Nach dem Aufklappen rechts steht links
+„Chef-Zugänge“ auf den Pixel gleich.
+
+### Am Handy ändert sich nichts
+
+Die Hüllen lösen sich auf (`display:contents`), die Seite wird eine
+Flex-Spalte, und `data-vw` (die alte Reihenfolge, beim Umbau
+vergeben) stellt über `order` die Reihenfolge von vorher wieder her.
+
+### Die Studioleitung
+
+Sie sieht die Chef-Karten nicht. Im System bliebe rechts nichts übrig.
+Dann gibt es **eine** Spalte und keine leere daneben (`:has`).
+
+### Durchläufe
+
+- **Neu: `tests/test-verwaltung-pc.js`** mit 24 Zusicherungen, bei
+  1280, 1440 und 1920 px:
+  - je Reiter nebeneinander, oben bündig, links breiter;
+  - rechts aufklappen, links bleibt stehen;
+  - Trefferflächen der rechten Spalte ≥ 44 × 44, normal und kompakt;
+  - nichts ragt hinaus;
+  - Gegenprobe Studioleitung: eine Spalte;
+  - Gegenprobe Handy: alte Reihenfolge, eine Spalte.
+- **Gegenprobe:** Die alte Seite fällt mit 18 Zusicherungen durch.
