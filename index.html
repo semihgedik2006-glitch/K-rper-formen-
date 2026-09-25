@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-metcbvl7UcIb7QKTZ+nQ+pxuQkHfqMWn4VU5KwbIBIo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FtONilupwfXEv69JyIfA33JDgyg/EYc7Za1PUOmbiCg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -402,27 +402,42 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);
 /* Die Seitenleiste erst ab 821px: darunter ist sie ausgeblendet, und
    50 unsichtbare Elemente je Bild mitzurechnen wäre Arbeit für nichts
    — nachgezählt am 23.9.2026. */
-.topbar,.demo-bar,body:not(.neu) .mobnav{
+/* ── Runde 122: gleiten nur, wo die Farbe wirklich liegt ──
+   Bis hierhin trugen Kopfzeile, Seitenleiste und Demo-Leiste den
+   Übergang selbst. Damit rechnete der Browser nach jedem Wechsel rund
+   0,35 s lang in JEDEM Bild alle 146 Elemente darunter neu — gemessen
+   (1440 px, CPU ÷4) 13–21 ms Stil je Bild, zusammen etwa 200 ms. Das
+   Budget für 120 Bilder je Sekunde sind 8,3 ms.
+
+   Nachgemessen, welche Elemente dabei wirklich die Farbe wechseln: die
+   Symbolknöpfe, die Reiter und ihre Zeichen gleiten über ihre EIGENEN
+   Übergänge für color und background-color — billig, weil sie nichts
+   vererben. Die angemeldeten Farben braucht es nur dort, wo ein Verlauf
+   oder eine Fläche aus ihnen gebaut ist: „Bericht", „Live", die
+   Demo-Leiste und das „CHAT" im Schriftzug. Genau diese vier gleiten
+   jetzt selbst; der Rahmen springt und rechnet nur einmal.
+   Werkzeug: tests/test-gleiten-rahmen.js zählt, was gleitet und was
+   springt, vorher wie nachher.
+
+   --brand steht an diesen Elementen noch einmal als Formel. Sonst käme
+   er als schon eingesetzter Text herunter und folgte den gleitenden
+   Farben nicht. */
+.tb-bericht,.tb-live,.demo-bar,.tb-brand b{
   --brand:linear-gradient(135deg,var(--accent-2) 0%,var(--accent) 100%);
   /* 350 ms: kurz genug, dass niemand wartet, lang genug, dass man den
      Wechsel als einen Vorgang sieht und nicht als Bildfehler. */
   transition:--accent .35s var(--ease-ios),--accent-2 .35s var(--ease-ios),
              --accent-d .35s var(--ease-ios),--on-accent .35s var(--ease-ios),
-             --accent-glow .35s var(--ease-ios),--tipp-1 .35s var(--ease-ios),
-             --tipp-2 .35s var(--ease-ios),--tipp-kante .35s var(--ease-ios),
-             --akz-w .35s var(--ease-ios),--akz2-w .35s var(--ease-ios),
-             --akz-s .35s var(--ease-ios),--akz2-s .35s var(--ease-ios)}
-@media (min-width:821px){
-  .side{
-    --brand:linear-gradient(135deg,var(--accent-2) 0%,var(--accent) 100%);
-    transition:--accent .35s var(--ease-ios),--accent-2 .35s var(--ease-ios),
-               --accent-d .35s var(--ease-ios),--on-accent .35s var(--ease-ios),
-               --accent-glow .35s var(--ease-ios),--tipp-1 .35s var(--ease-ios),
-               --tipp-2 .35s var(--ease-ios),--tipp-kante .35s var(--ease-ios),
-               --akz-w .35s var(--ease-ios),--akz2-w .35s var(--ease-ios),
-               --akz-s .35s var(--ease-ios),--akz2-s .35s var(--ease-ios)} }
+             --accent-glow .35s var(--ease-ios)}
+/* „Bericht" ist auch ein .icon-btn, und dessen Übergänge (Andrücken,
+   Farbe) stehen weiter unten (body.neu .icon-btn) — sie würden diese
+   hier ersetzen. Deshalb mit höherer Spezifität und mit denselben
+   Werten fürs Andrücken. */
+body .topbar .icon-btn.tb-bericht{transition:--accent .35s var(--ease-ios),--accent-2 .35s var(--ease-ios),
+             --on-accent .35s var(--ease-ios),--accent-glow .35s var(--ease-ios),
+             transform .14s var(--ease-ios),box-shadow .14s var(--ease-ios),color .2s}
 @media (prefers-reduced-motion:reduce){
-  .topbar,.side,.demo-bar,body:not(.neu) .mobnav{transition:none} }
+  .tb-bericht,body .topbar .icon-btn.tb-bericht,.tb-live,.demo-bar,.tb-brand b{transition:none} }
 /* ── Dichte: kompakt (22.9.2026) ─────────────────────────────────────
    Aus den Design-Ideen, Punkt 5: „Für einen Chef mit 14 Studios ist die
    heutige Luftigkeit teuer, für den Trainer am Empfang ist eng zu eng."
@@ -2261,9 +2276,21 @@ body.nurlesen .kopf-plus{display:none !important}
 .auth-card .inp:focus{transform:translateY(-1px)}
 .auth-card .inp{transition:transform .25s var(--ease-out),border-color .2s,box-shadow .2s}
 
-/* Live-Badge pulsiert dezent */
-.tb-live{animation:liveGlow 2.6s ease-in-out infinite}
-@keyframes liveGlow{0%,100%{box-shadow:0 0 0 0 rgba(var(--akz-rgb),0)}50%{box-shadow:0 0 0 4px rgba(var(--akz-rgb),.12)}}
+/* Live-Badge pulsiert dezent — dreimal, dann still (Runde 122).
+   Vorher lief das Glühen endlos über box-shadow. Ein Schatten lässt
+   sich nicht auf der Grafikkarte bewegen: die Kopfzeile wurde in JEDEM
+   Bild neu gemalt, auch wenn niemand etwas tat. Gemessen beim Scrollen
+   der Aufgaben (1440 px, CPU ÷4): Malen 5,9 → 3,0 ms je Bild, nur
+   durch das Abschalten. CLAUDE.md: „keine Endlos-Animationen ohne
+   Grund".
+   Jetzt liegt der Ring auf einem eigenen ::after und nur seine
+   Deckkraft ändert sich — das rechnet die Grafikkarte, nicht die
+   Seite. */
+.tb-live{position:relative}
+.tb-live::after{content:"";position:absolute;inset:0;border-radius:var(--r-pille);pointer-events:none;
+  box-shadow:0 0 0 4px rgba(var(--akz-rgb),.12);opacity:0;
+  animation:liveGlow 2.6s ease-in-out 3 backwards}
+@keyframes liveGlow{0%,100%{opacity:0}50%{opacity:1}}
 
 /* Druck-Feedback steht unten bei „Bewegung im Apple-Stil" — hier nur,
    was dort fehlt. */
@@ -2467,7 +2494,14 @@ body.nurlesen .kopf-plus{display:none !important}
    überhaupt zur Verfügung steht. Die Marke bleibt rot, fett und mit
    Balken links; das Pulsieren holt den Blick beim Öffnen, danach ist
    es nur noch Unruhe. */
-.t-due.over{animation:duePulse 2.2s ease-in-out 3}
+/* Nur in den ersten zwölf Zeilen (Runde 122). Ab der 13. rechnet der
+   Browser eine Zeile erst, wenn sie ins Bild kommt (content-visibility,
+   P-17) — und startet ihre Animation genau dann. Beim Scrollen pulsierte
+   so jede überfällige Zeile, die hereinkam, jede auf einer eigenen Ebene:
+   26 statt 14 Ebenen, Layerize 5,4 → 3,2 ms je Bild (1440 px, CPU ÷4).
+   Wer bis dorthin scrollt, sieht das Rot ohnehin — das Pulsieren ist für
+   den ersten Blick auf die Liste. */
+.todo:not(.ohne-ein) .t-due.over{animation:duePulse 2.2s ease-in-out 3}
 @keyframes duePulse{0%,100%{opacity:1}50%{opacity:.55}}
 
 /* ── Kopfzeile auf schmalen Handys ──
@@ -17154,6 +17188,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-26-fluessiger', datum:'26.9.2026', titel:'Schneller beim Start, ruhiger beim Wechseln', wo:'home', punkte:[
+    'Die App ist beim Öffnen spürbar schneller da. Die Startseite wurde bisher beim Laden bis zu 18-mal neu aufgebaut, jetzt dreimal.',
+    'Beim Wechsel zwischen den Bereichen gleitet die Farbe oben und in der Seitenleiste jetzt überall mit, auch an den kleinen Zeichen — und kostet dabei nur noch halb so viel Rechenzeit.',
+    'Das „Live" oben leuchtet beim Start dreimal auf und bleibt dann ruhig, statt die ganze Zeit zu pulsieren. Das spart am Rechner Strom.' ] },
   { id:'2026-09-25-brett-studio', datum:'25.9.2026', titel:'Schwarzes Brett: Aushänge nur für ein Studio', wo:'team:brett', punkte:[
     'Beim Aushängen wählst du jetzt „Für wen": alle Studios oder nur eines. Ein Aushang nur für Hürth ist in den anderen Studios nicht zu sehen — das hält die Datenbank, nicht nur die Anzeige.',
     'An der Karte steht „Nur Hürth", damit klar ist, wer ihn liest.',
@@ -23191,9 +23229,29 @@ function listenTodoStudio(sk, notify){
          passiert" herein. */
       meldPruefen(sk, 'todo', cachedTodos[sk], first);
       first=false;
-      renderTodos();
+      todosBald();
     }, function(e){ ladeFehler('todos', e, sk); });
   _todosUnsubs.push(unsub);
+}
+
+/* Die Aufgaben je Studio kommen einzeln an — beim Chef vierzehnmal beim
+   Start, und jedes Mal wurde die GANZE Liste (61 Zeilen), die
+   Startseite, die Zähler und die Übersicht neu gebaut, auch wenn die
+   Aufgaben gar nicht offen waren (Runde 122). Jetzt wie bei der
+   Startseite: der erste Aufruf sofort, was in den nächsten 150 ms
+   folgt, in einem Durchgang. Ist die Liste gerade offen, wird immer
+   sofort gezeichnet — wer abhakt, soll es im selben Bild sehen. */
+var _todosZuletzt=0, _todosTimer=null;
+function todosBald(){
+  var seit=Date.now()-_todosZuletzt;
+  if(currentView==='todos' || (!_todosTimer && seit>=HEUTE_ABSTAND_MS)){
+    if(_todosTimer){ clearTimeout(_todosTimer); _todosTimer=null; }
+    _todosZuletzt=Date.now(); renderTodos(); return;
+  }
+  if(_todosTimer) return;
+  _todosTimer=setTimeout(function(){
+    _todosTimer=null; _todosZuletzt=Date.now(); renderTodos();
+  }, Math.max(0, HEUTE_ABSTAND_MS-seit));
 }
 
 /* Ankündigungen */
@@ -24419,7 +24477,25 @@ function heuteZeile(k){
     '<span class="hz-txt"><b>'+esc(k.titel)+'</b><i>'+esc(k.unter)+'</i></span>'+
     '<span class="hz-pfeil">›</span></button>';
 }
+/* ── Höchstens gut sechsmal je Sekunde (Runde 122) ──
+   Beim Start treffen die Antworten der Datenbank kurz hintereinander
+   ein, und fast jede zeichnet die Startseite: beim Chef der Demo
+   18-mal in 270 ms, jedes Mal mit Messen und Kürzen (heutePasst). Jetzt
+   zeichnet der ERSTE Aufruf sofort — kein leeres Bild, keine Wartezeit
+   —, und alles, was innerhalb der nächsten 150 ms kommt, wird zu einem
+   einzigen Nachzeichnen zusammengefasst. Das Ergebnis ist dasselbe; es
+   steht höchstens 150 ms nach der letzten Antwort da. */
+var _heuteZuletzt=0, _heuteTimer=null;
+var HEUTE_ABSTAND_MS=150;
 function renderHeute(){
+  var seit=Date.now()-_heuteZuletzt;
+  if(!_heuteTimer && seit>=HEUTE_ABSTAND_MS){ _heuteZuletzt=Date.now(); renderHeuteJetzt(); return; }
+  if(_heuteTimer) return;
+  _heuteTimer=setTimeout(function(){
+    _heuteTimer=null; _heuteZuletzt=Date.now(); renderHeuteJetzt();
+  }, Math.max(0, HEUTE_ABSTAND_MS-seit));
+}
+function renderHeuteJetzt(){
   var box=$('heuteListe'); if(!box) return;
   /* Die Schnellzugriffe zuerst: sie nehmen der Liste unten Höhe weg,
      und heutePasst() muss mit der Höhe rechnen, die wirklich übrig ist. */
@@ -24895,6 +24971,57 @@ function heutePasst(box){
   /* Zwei Spalten (PC): gekürzt wird nur in der HÖHEREN. Eine Zeile in
      der kürzeren wegzunehmen, gäbe keinen Pixel frei — die Seite ist so
      hoch wie ihre höchste Spalte. */
+  /* ── Erst rechnen, dann einmal wegnehmen (Runde 122) ──
+     Die Schleife unten nimmt EINE Zeile weg und misst dann die ganze
+     Seite neu — beim Chef der Demo 75 volle Layouts beim Start, im
+     CPU-Profil (÷4) 295 ms allein in dieser Funktion, die längste
+     Aufgabe der Ladephase.
+     Jetzt wird einmal gemessen: wie viel zu hoch, wie hoch jede Spalte,
+     wie viel Platz jede Zeile freigibt (ihr Abstand zur vorigen
+     eingeschlossen). Dieselbe Wahl wie unten — der längste Block, bei
+     Gleichstand der untere, bei zwei Spalten nur in der höheren — wird
+     damit VORGERECHNET und in einem Zug ausgeführt. Die Schleife bleibt
+     als genaue Nacharbeit: für den Kopf, der ein „alle ›" bekommt und
+     dadurch umbrechen kann, und für das Streichen ganzer Kategorien.
+     Gerechnet wird nur mit Platz, der SICHER frei wird — lieber eine
+     Runde Nacharbeit als eine Zeile zu viel weg. */
+  function vorausKuerzen(){
+    var ueber = sa.scrollHeight - sa.clientHeight - 2;
+    if(ueber <= 0) return;
+    var sp = box.querySelectorAll('.heute-spalte');
+    var zwei = sp.length === 2;
+    var hoehe = zwei ? [sp[0].offsetHeight, sp[1].offsetHeight] : [0];
+    var liste = bloecke().map(function(b){
+      var zs = [].slice.call(zeilenVon(b));
+      var frei = zs.map(function(z, i){
+        if(!i) return 0;                     // die erste Zeile bleibt ohnehin
+        var a = zs[i-1].getBoundingClientRect(), r = z.getBoundingClientRect();
+        return Math.max(0, Math.floor(r.bottom - a.bottom));
+      });
+      return { b:b, spalte: zwei ? (sp[1].contains(b) ? 1 : 0) : 0, zeilen: zs, frei: frei };
+    });
+    var weg = [], betroffen = [], schritte = 0;
+    while(ueber > 0 && schritte++ < 40){
+      var hoechste = zwei ? (hoehe[0] >= hoehe[1] ? 0 : 1) : 0;
+      var kand = liste.filter(function(x){ return x.spalte === hoechste; });
+      if(!kand.length) kand = liste;
+      var laengster = null;
+      kand.forEach(function(x){
+        if(x.zeilen.length > 1 && (!laengster || x.zeilen.length >= laengster.zeilen.length)) laengster = x;
+      });
+      if(!laengster) break;                  // ab hier streicht die Schleife unten
+      var f = laengster.frei.pop();
+      weg.push(laengster.zeilen.pop());
+      if(betroffen.indexOf(laengster.b) < 0) betroffen.push(laengster.b);
+      if(zwei){
+        var vorher = Math.max(hoehe[0], hoehe[1]);
+        hoehe[laengster.spalte] -= f;
+        ueber -= vorher - Math.max(hoehe[0], hoehe[1]);
+      } else ueber -= f;
+    }
+    weg.forEach(function(z){ z.remove(); });
+    betroffen.forEach(heuteKopfAusgang);
+  }
   function kandidaten(){
     var sp = box.querySelectorAll('.heute-spalte');
     if(sp.length !== 2) return bloecke();
@@ -24902,6 +25029,8 @@ function heutePasst(box){
     var bs = [].slice.call(hoch.querySelectorAll('.heute-block'));
     return bs.length ? bs : bloecke();
   }
+
+  vorausKuerzen();
 
   var schutz = 0, weggefallen = [];
   while(sa.scrollHeight > sa.clientHeight + 2 && schutz++ < 40){

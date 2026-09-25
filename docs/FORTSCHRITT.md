@@ -13493,3 +13493,81 @@ nach der Auslieferung („N alte Aushänge auf ‚alle Studios' gesetzt“).
 alle 26 Regeldateien. Rot war `test-startlesen` (siehe oben). Nach der
 Korrektur liefen er und die sechs anderen Tests am Brett erneut, alle
 grün.
+
+## Runde 122 — Flüssig, zweiter Durchgang: gemessen, dann geändert
+
+> Aus dem Betrieb, 25.9.2026: „mache bis dahin eigenständig Design und
+> Performance upgrades“. Und von früher: „richtig flüssig … im Idealfall
+> 120 fps“.
+
+**Wie gemessen wurde:**
+- CPU ÷4, Chef der Demo, bei 390 und bei 1440 px.
+- Aufzeichnung des Hauptfadens und CPU-Profil beim Start.
+- Headless-Chromium taktet mit 60 Hz. Das Maß ist deshalb die Arbeit je
+  Bild (Budget für 120 Hz: 8,3 ms), nicht die Bildrate.
+- Zuerst gesucht, einzeln abgeschaltet, dann geändert.
+
+**Gefunden und behoben:**
+
+| Fund | Wirkung | jetzt |
+|---|---|---|
+| „LIVE“ glühte **endlos** über `box-shadow` | Die Kopfzeile wurde am PC in jedem Bild neu gemalt, auch in Ruhe: 2,5 ms je Bild ohne jede Bewegung | Der Ring liegt auf einem `::after`, und nur seine Deckkraft ändert sich. Dreimal, dann still. In Ruhe **0,2 ms** je Bild |
+| „überfällig“ pulsierte beim Scrollen neu | Ab Zeile 13 rechnet `content-visibility` eine Zeile erst, wenn sie ins Bild kommt, und startet dann ihre Animation. So entstanden 26 statt 14 Ebenen | Es pulsiert nur in den ersten zwölf Zeilen |
+| Das Farbgleiten lag am **ganzen** Rahmen | 0,35 s lang wurden in jedem Bild 146 Elemente neu gerechnet, 13–21 ms Stil je Bild | Es gleitet nur, wo die Farbe liegt: an „Bericht“, „Live“, der Demo-Leiste und „CHAT“. Stil nach einem Wechsel **311 → 170 ms** |
+| Die Startseite kürzte Zeile für Zeile und maß dazwischen jedes Mal neu | 75 volle Layouts beim Start, 295 ms allein in `heutePasst` | Einmal messen, vorrechnen, in einem Zug kürzen; die alte Schleife macht nur noch die Nacharbeit |
+| Die Startseite wurde beim Start **18-mal** gezeichnet | Jede Antwort der Datenbank zeichnete neu | Der erste Aufruf zeichnet sofort, alles in den nächsten 150 ms in **einem** Durchgang: **3-mal** |
+| Die Aufgabenliste wurde **14-mal** ganz gebaut, auch wenn sie zu war | Je Studio eine Antwort, jedes Mal 61 Zeilen, Startseite, Zähler, Übersicht | Dieselbe Bremse. Ist die Liste offen, wird weiter sofort gezeichnet (wer abhakt, sieht es im selben Bild) |
+
+**Ergebnis:** CPU ÷4, Chef, 1440 px.
+
+| | vorher | jetzt |
+|---|---|---|
+| App sichtbar | 2,17–2,33 s | **1,48 s** |
+| Skriptaufrufe beim Start | 889–976 ms | **354 ms** |
+| Lange Aufgaben beim Start | 9–13 | **5** |
+| Ruhe (Start, Putzplan, Ich, Chat, Verwaltung), Arbeit je Bild | 2,5–2,9 ms | **0,2 ms** |
+| Stil in den 0,7 s nach einem Wechsel zu „Aufgaben“ | 311 ms | **170 ms** |
+| Rahmen-Elemente, die beim Wechsel gleiten / springen | 22 / 17 | **39 / 0** |
+| Aufgaben scrollen, Arbeit je Bild (mit Messschleife) | 12,2 ms | **10,2 ms** |
+
+**Nebenbei besser:** Vorher sprangen 17 Elemente im Rahmen, vor allem
+die Zeichen in den Symbolknöpfen. Das Gleiten am Behälter kam bei ihnen
+nicht an, weil sie ihre Farbe selbst setzen. Jetzt gleiten sie über
+ihre eigenen, billigen Übergänge für `color`.
+
+**Wo es noch nicht bei 120 ist, ehrlich:**
+- **Aufgaben scrollen am PC: 10,2 ms je Bild**, darin rund 1,3 ms für
+  die Messschleife selbst. Der Rest verteilt sich:
+  - etwa 3 ms Ebenen zusammenstellen (Layerize);
+  - etwa 1,5 ms, weil `content-visibility` hereinkommende Zeilen erst
+    dann rechnet.
+- Ein Scroller mit `will-change: scroll-position` hätte die Rasterarbeit
+  von 4 auf 0,8 ms je Bild gesenkt. Er ist **bewusst nicht** gesetzt:
+  - Chromium verzichtet dann bei Bildschirmen mit Faktor 1 (die meisten
+    Rechner mit 1920 × 1080) auf die schärfere Kantenglättung der
+    Schrift.
+  - Aus dem Betrieb kam „schärfer“. Schärfe gegen Rasterzeit, die
+    ohnehin nicht im Hauptfaden läuft, ist hier kein guter Tausch.
+- **Das erste Bild nach einem Wechsel** kostet weiter 90–140 ms (CPU
+  ÷4). Die Akzentfarbe ändert sich an der Wurzel, und die Seite wird
+  einmal ganz neu gerechnet. Das ist Absicht („die Farbe folgt dem
+  Bereich“) und passiert einmal, nicht in jedem Bild.
+- **Die längste Aufgabe beim Start (≈290 ms)** ist das Übersetzen des
+  großen Skriptblocks. Weniger würde es erst mit einer eigenen
+  Skriptdatei, die der Browser zwischenspeichern kann. Das ist ein
+  Umbau mit Folgen für CSP, Tests und Auslieferung und hier nicht
+  gemacht.
+
+**Geprüft:**
+- Die Startseite zeigt nach dem neuen Kürzen **genau dieselben Zeilen**
+  wie vorher: 3 Rollen × 7 Breiten × 2 Dichten, alt gegen neu, 42 von
+  42 gleich.
+- `tests/test-gleiten-rahmen.js` (19) prüft:
+  - den Rahmen gleitet ganz;
+  - keine Endlos-Animation;
+  - höchstens fünfmal zeichnen;
+  - „überfällig“ nur oben;
+  - Gegenproben. Gegen den alten Stand fallen 9 Prüfungen.
+
+**Gesamtdurchlauf: 161 von 161 grün.** Die Startseite nach dem neuen
+Kürzen und Zeichnen: 42 von 42 Fällen gleich dem alten Stand.
