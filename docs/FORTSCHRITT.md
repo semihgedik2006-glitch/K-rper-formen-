@@ -13007,3 +13007,9 @@ vor der Anmeldung ist mit `stub-ohne-login.js` nachgebildet.
 - `test-demo-abo`: Vor „Abo buchen“ setzt der Test jetzt den Haken und
   prüft vorher, dass der Knopf ohne Haken gesperrt ist. Das ist eine
   **zusätzliche** Zusicherung, keine gelockerte.
+- **Gefunden in der Regression:** Der neue Hinweis unter „Ich → Daten →
+  Alles, was über mich gespeichert ist“ war 190 Zeichen lang.
+  `test-mein-bereich` erlaubt dort keine Erklärungsabsätze über 90
+  Zeichen („die Seite soll leicht sein“). Er ist auf 80 Zeichen
+  gekürzt; was genau drinsteht, sagt die Datei selbst. Danach 153 von
+  153 grün.

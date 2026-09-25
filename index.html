@@ -6915,9 +6915,10 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                  hier — mit Direktnachrichten und persönlichem Bereich. -->
             <div class="ich-blatt" id="ichAuskunftKarte">
               <div class="ich-kopf"><h3>Alles, was über mich gespeichert ist</h3></div>
-              <p class="hint" style="margin:0 0 10px">Eine Datei mit allem, was die App über dich
-                gespeichert hat: Profil, Zeiten, Schichten, Aufgaben, Nachrichten, deine
-                Direktnachrichten und dein persönlicher Bereich. Zum Aufbewahren oder Ausdrucken.</p>
+              <!-- Kurz halten: test-mein-bereich lässt in „Ich" keine
+                   Erklärungsabsätze über 90 Zeichen zu („die Seite soll
+                   leicht sein"). Was genau drin ist, steht in der Datei. -->
+              <p class="hint" style="margin:0 0 10px">Profil, Zeiten, Aufgaben, Nachrichten und dein persönlicher Bereich – als Datei.</p>
               <button type="button" class="btn btn-ghost auskunft-knopf" id="ichAuskunft" data-auskunft="">Meine Daten herunterladen</button>
               <p class="em-saved" id="ichAuskunftNote" role="status"></p>
             </div>
