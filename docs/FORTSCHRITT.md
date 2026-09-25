@@ -12531,3 +12531,53 @@ Bereichszeichen.
   Einzeln wiederholt und grün: `test-gestaltung`,
   `test-p4-seitenleiste`, `test-design-107`, `test-sortierung`,
   `test-startseite-putz`.
+
+## Runde 108 — Am Rechner zwei Spalten, wo eine zu breit war
+
+> „mach weiter mit design sachen" (25.9.2026). Und CLAUDE.md: „Eine
+> Ansicht, die am Rechner eine Spalte über 1.200 px zieht, ist dort
+> genauso ungestaltet wie ein abgeschnittener Knopf auf dem Handy."
+
+### Gemessen vorher (1440 px)
+
+In Material, Geräte, Probetraining und der Schulungsliste waren alle
+Karten über 1.000 px breit. In der Materialtabelle stand der Name rund
+900 px von seinen Zahlen entfernt, das Probetraining war 5.298 px lang.
+
+### Was geändert ist (ab 1.100 px)
+
+- **Material:** Die Tabelle steht links (höchstens 960 px), „Reicht
+  noch“ und die Einkaufsliste rechts daneben. Die rechte Seite rollt
+  mit und bleibt oben stehen. Die beiden Karten haben dafür eine
+  gemeinsame Hülle `.mat-seite`; am Handy bleibt die Reihenfolge gleich.
+- **Geräte:** Die Liste steht links, „Gerät aufnehmen“ rechts. Die
+  rechte Karte gibt es nur für die Leitung; ohne sie bleibt es **eine**
+  Spalte. Dafür sorgt `:has()`, damit keine leere Spalte daneben steht.
+- **Probetraining:** Die Einträge stehen links, die Quote rechts. Die
+  Seite ist jetzt 3.295 statt 5.298 px lang.
+- **Schulung:** Die Module stehen in zwei Spalten.
+- **Warum höchstens 960 px links:** Ohne die Grenze lief die Tabelle
+  bei 1920 wieder auf 1.230 px. Rechts bleibt dann Luft, das ist
+  gewollt.
+
+### Dabei gefunden
+
+- **Der Papierkorb im Probetraining (`.pb-weg`) traf nur 26 × 29 px.**
+  Er ist jetzt in der gemeinsamen Regel „Trefferfläche ohne Aussehen
+  zu ändern“ und trifft 44 × 44. Das galt auch am Handy, gemessen
+  wurde es erst jetzt.
+
+### Durchläufe
+
+- **Neu: `tests/test-pc-spalten.js`** mit 30 Zusicherungen, bei 1280,
+  1440 und 1920 px:
+  - je Ansicht nebeneinander und auf gleicher Höhe; die Tabelle ist
+    schmaler als 1.000 px, das Probetraining kürzer als 4.000 px;
+  - Stichprobe der Trefferflächen, normal und kompakt;
+  - Gegenprobe Mitarbeiter bei den Geräten: eine Spalte, keine leere
+    daneben;
+  - Gegenprobe am Handy: untereinander.
+- **Gesamtdurchlauf: 145 von 145 grün**, ohne dass nebenher etwas
+  anderes lief. Damit sind auch `test-sortierung` und
+  `test-startseite-putz` wieder grün, die in Runde 107 nur unter
+  Nebenlast rot waren. Die Vermutung von dort hält.
