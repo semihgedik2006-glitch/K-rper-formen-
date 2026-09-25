@@ -23,6 +23,7 @@ fertig. Dauert etwa zehn Minuten.
 | `SMTP_USER` | `deine@adresse.de` |
 | `SMTP_PASS` | das App-Passwort |
 | `MAIL_FROM` | `deine@adresse.de` |
+| `VORFALL_AN` | *freiwillig:* wohin „Datenschutzvorfall melden" geht. Leer: S.gedik@kformen.com (aus `docs/av/VORFALL.md`) |
 
 Eintragen unter:
 **https://github.com/semihgedik2006-glitch/K-rper-formen-/settings/secrets/actions**

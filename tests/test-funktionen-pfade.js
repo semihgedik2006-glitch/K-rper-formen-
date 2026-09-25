@@ -46,6 +46,7 @@ const OBEN = {
   pushTokens: 'Gehört zum Gerät, nicht zur Firma; gefiltert wird über das Profil.',
   firmen: 'Die Liste der Firmen selbst — sie kann nicht in einer Firma liegen.',
   firmenArchiv: 'Gelöschte Firmen. Läge das IN der Firma, wäre es mit ihr weg.',
+  vorfaelle: 'Gemeldete Datenschutzvorfälle (Runde 113). Gehen an den Betreiber, nicht an die Firma — ein Vorfall kann die Firma selbst betreffen.',
 };
 
 const errs = [];

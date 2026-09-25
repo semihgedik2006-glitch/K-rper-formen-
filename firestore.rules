@@ -1578,7 +1578,22 @@ service cloud.firestore {
       allow read, write: if istAdminKonto();
     }
 
+    // ── Gemeldete Datenschutzvorfälle (P-02, Runde 113) ──
+    // Schreibt nur die Funktion vorfallMelden (Admin-SDK, an diesen
+    // Regeln vorbei). Lesen darf allein der Betreiber: eine Meldung kann
+    // Namen und Einzelheiten aus JEDER Firma enthalten. Unter
+    // firmen/<kennung>/ gibt es die Sammlung nicht — dort steht sie
+    // ausdrücklich zu (siehe unten), damit niemand sie „nachzieht".
+    match /vorfaelle/{id} {
+      allow read: if istAdminKonto();
+      allow write: if false;
+    }
+
     match /firmen/{f} {
+      // Vorfälle liegen betriebsübergreifend oben (/vorfaelle), nie hier.
+      match /vorfaelle/{id} {
+        allow read, write: if false;
+      }
       // Die Stammdaten der Firma. Der Name steht auf dem
       // Anmeldebildschirm, also muss EIN Dokument vor jeder Anmeldung
       // lesbar sein.

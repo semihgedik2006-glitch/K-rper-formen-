@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Qwq7kDf9C45ZRatlKk3Z8z9azKk9P9co88nahCvAey8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PkCasFSdywyHX5Cma0y6A9juEkTUhco9yZWxYJbmI9I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1810,11 +1810,11 @@ body.nurlesen .kopf-plus{display:none !important}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal,#vorfallModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -5169,6 +5169,17 @@ html{font-size:var(--fs,100%)}
 .home-ruhe.lade-ruhe .hr-ico,body.neu .heute-ruhe.lade-ruhe .hr-ico{
   background:transparent;color:var(--warm-tx)}
 .lade-ruhe .hr-ico svg{width:22px;height:22px}
+/* ── Datenschutzvorfall melden (Runde 113) ── */
+.vf-box{max-width:520px}
+.vf-box h3{display:flex;align-items:center;gap:var(--s8);margin:0 var(--s48) var(--s8) 0}
+.vf-box h3 svg{width:22px;height:22px;color:var(--warm-tx)}
+.vf-wozu{margin:0 0 var(--s12)}
+.vf-senden{width:100%;min-height:48px}
+.vf-ergebnis{padding:var(--s16);border-radius:var(--r-md);border:1px solid var(--k-warn);
+  background:var(--f-warn);color:var(--warm-tx);font-size:var(--t-sm);line-height:var(--lh)}
+.vf-ergebnis.gut{border-color:var(--k-ok);background:var(--f-ok);color:var(--ok-tx)}
+.vf-ergebnis b{display:block;font-size:var(--t-md);margin-bottom:var(--s4)}
+#vfErgebnis .btn{margin-top:var(--s12);min-height:44px}
 body.neu .heute-ruhe.lade-ruhe{padding:var(--s12) var(--s16);margin-bottom:var(--s12)}
 .lade-ruhe > div{flex:1 1 14em;min-width:0}
 .lade-ruhe .lf-nochmal{min-height:44px;color:var(--warm-tx);border-color:currentColor}
@@ -8629,6 +8640,44 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <h3 style="margin-bottom:4px">Was ist neu</h3>
     <p class="hint" style="margin:0 0 12px" id="neuStand"></p>
     <div id="neuListe"></div>
+  </div>
+</div>
+
+<!-- DATENSCHUTZVORFALL MELDEN (P-02, Runde 113). Aus dem Betrieb:
+     „es soll einen knopf geben der mir nach ausfüllung sofort eine mail
+     schickt mit einer bestimmten betonung von wichtigkeit". Der Server
+     (vorfallMelden) speichert zuerst und schickt dann die Mail mit
+     Wichtigkeit „hoch". Das Ergebnis steht danach ehrlich hier drin —
+     auch, wenn keine Mail ging. -->
+<div id="vorfallModal" role="dialog" aria-modal="true" aria-labelledby="vfTitel">
+  <div class="pm-box vf-box">
+    <button class="lb-close" id="vfClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="vfTitel" data-ikon="warnung">Datenschutzvorfall melden</h3>
+    <div id="vfForm">
+      <p class="hint vf-wozu">Personendaten sind in falsche Hände geraten, verloren gegangen oder
+        wurden verändert — zum Beispiel ein verlorenes Handy mit angemeldeter App, eine
+        Liste am falschen Ort, eine Nachricht an die falsche Person. <b>Lieber einmal zu
+        viel melden.</b> Die Meldung geht sofort als dringende Mail raus.</p>
+      <div class="field"><label for="vfWas">Was ist passiert? *</label>
+        <textarea class="inp" id="vfWas" rows="4" maxlength="4000"
+          placeholder="z. B. Am Empfang lag die Liste mit den Krankmeldungen offen aus."></textarea></div>
+      <div class="field"><label for="vfWann">Wann bemerkt?</label>
+        <input class="inp" id="vfWann" type="text" maxlength="60" placeholder="z. B. heute 09:10" /></div>
+      <div class="field"><label for="vfBetroffen">Wer oder was ist betroffen?</label>
+        <textarea class="inp" id="vfBetroffen" rows="2" maxlength="2000"
+          placeholder="z. B. drei Mitarbeiterinnen, Kundendaten aus dem Probetraining"></textarea></div>
+      <div class="field"><label for="vfLaeuft">Läuft es noch?</label>
+        <select class="inp" id="vfLaeuft">
+          <option value="unklar">Weiss ich nicht</option>
+          <option value="ja">Ja, es läuft noch</option>
+          <option value="nein">Nein, ist vorbei</option>
+        </select></div>
+      <div class="field"><label for="vfRueckruf">Wie erreicht man dich am schnellsten?</label>
+        <input class="inp" id="vfRueckruf" type="text" maxlength="200" placeholder="Telefonnummer oder „im Studio bis 18 Uhr“" /></div>
+      <p class="em-saved" id="vfFehler" role="alert"></p>
+      <button class="btn btn-primary vf-senden" id="vfSenden" type="button">Jetzt melden</button>
+    </div>
+    <div id="vfErgebnis" hidden aria-live="polite"></div>
   </div>
 </div>
 
@@ -13731,7 +13780,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal','schnellModal','neuModal'];
+               'putzModal','schnellModal','neuModal','vorfallModal'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -15965,6 +16014,10 @@ function allesGruppen(){
     /* Runde 103: jede Auslieferung, nachvollziehbar. */
     {label:'Was ist neu', neu:true, roh:ikon('stern'),
      was: NEUIGKEITEN.length ? 'Zuletzt: '+NEUIGKEITEN[0].titel : 'Was sich zuletzt geändert hat'},
+    /* Runde 113 (P-02). Für jeden, nicht nur die Leitung: eine Datenpanne
+       bemerkt oft, wer am Empfang sitzt. */
+    {label:'Datenschutzvorfall melden', vorfall:true, roh:ikon('warnung'),
+     was:'Daten in falschen Händen? Geht sofort als dringende Mail raus'},
   ]);
   /* Aus FEATURES abgeleitet: dieselben vier Schalter, dieselben
      Beschriftungen, dieselbe Reihenfolge wie im System-Reiter. */
@@ -16012,6 +16065,7 @@ function allesZielAttr(e){
   return ' data-alles="'+esc(e.view||'')+'"'+
     (e.hilfe   ?' data-al-hilfe="1"':'')+
     (e.neu     ?' data-al-neu="1"':'')+
+    (e.vorfall ?' data-al-vorfall="1"':'')+
     (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
     (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
     (e.cgo    ?' data-al-cgo="'+esc(e.cgo)+'"':'');
@@ -16042,6 +16096,7 @@ function allesZiel(el){
      ist — also wird hier nicht gewechselt, sondern geöffnet. */
   if(el.getAttribute('data-al-hilfe')){ hilfeOeffnen(); return; }
   if(el.getAttribute('data-al-neu')){ neuOeffnen(); return; }
+  if(el.getAttribute('data-al-vorfall')){ vorfallOeffnen(); return; }
   showView(view);
   var t=el.getAttribute('data-al-teamtab');
   if(t){ var tb=document.querySelector('[data-teamtab="'+t+'"]'); if(tb) tb.click(); }
@@ -16084,6 +16139,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-vorfall', datum:'25.9.2026', titel:'Neu: Datenschutzvorfall melden', wo:'vorfall', punkte:[
+    'Unter „Alles → Was muss ich wissen?" steht jetzt „Datenschutzvorfall melden" — für jeden im Team.',
+    'Gemeint ist: Personendaten sind in falsche Hände geraten, verloren gegangen oder verändert worden. Zum Beispiel ein verlorenes Handy mit angemeldeter App, eine Liste am falschen Ort oder eine Nachricht an die falsche Person.',
+    'Kurz ausfüllen, „Jetzt melden" — die Meldung geht sofort als dringende Mail raus. Im Fenster steht danach, ob die Mail wirklich raus ist.',
+    'Lieber einmal zu viel melden als einmal zu wenig.' ] },
   { id:'2026-09-25-verwaltung-pc', datum:'25.9.2026', titel:'Verwaltung am Rechner: Liste links, Formulare rechts', wo:'chef:team', punkte:[
     'Team: Die Teamliste steht links, „Zugang anlegen", „Wer darf sich anmelden" und die Onboarding-Checkliste rechts daneben.',
     'Studios: Die Studios links, „Studio anlegen" und die Stempel-Terminals rechts.',
@@ -16207,6 +16267,53 @@ function neuOeffnen(){
   neuPilleSetzen();
 }
 function neuSchliessen(){ var m=$('neuModal'); if(m) m.classList.remove('show'); }
+
+/* ══ DATENSCHUTZVORFALL MELDEN (P-02, Runde 113) ═════════════════════
+   Das Fenster fragt nur, was man in dem Moment weiss. Pflicht ist allein
+   „Was ist passiert?" — wer zögert, weil er nicht alles weiss, meldet
+   sonst gar nicht. Die Antwort des Servers wird wörtlich genommen:
+   „mail: false" heisst, es ging KEINE Mail raus, und genau das steht
+   dann da, mit dem, was jetzt zu tun ist. */
+function vorfallOeffnen(){
+  var m=$('vorfallModal'); if(!m) return;
+  $('vfForm').hidden=false; $('vfErgebnis').hidden=true;
+  $('vfFehler').textContent='';
+  var b=$('vfSenden'); b.disabled=false; b.textContent='Jetzt melden';
+  m.classList.add('show');
+  setTimeout(function(){ var t=$('vfWas'); if(t) t.focus(); }, 60);
+}
+function vorfallSchliessen(){ var m=$('vorfallModal'); if(m) m.classList.remove('show'); }
+function vorfallSenden(){
+  var was=$('vfWas').value.trim();
+  if(was.length<10){ $('vfFehler').textContent='Bitte beschreib in einem Satz, was passiert ist.'; $('vfWas').focus(); return; }
+  var b=$('vfSenden'); b.disabled=true; b.textContent='Wird gemeldet …';
+  $('vfFehler').textContent='';
+  pinFunktion('vorfallMelden')({
+    was:was, wann:$('vfWann').value.trim(), betroffen:$('vfBetroffen').value.trim(),
+    laeuft:$('vfLaeuft').value, rueckruf:$('vfRueckruf').value.trim()
+  }).then(function(r){
+    var d=(r&&r.data)||{};
+    var box=$('vfErgebnis');
+    box.innerHTML = d.mail
+      ? '<div class="vf-ergebnis gut"><b>Gemeldet — die Mail ist raus.</b>'+
+        'Sie ging mit Wichtigkeit „hoch" an die Verantwortliche Stelle. '+
+        'Frist für die Benachrichtigung des Betriebs: bis '+esc(d.fristBis||'')+'. '+
+        'Halte dich erreichbar, falls Rückfragen kommen.</div>'
+      : '<div class="vf-ergebnis"><b>Gespeichert — aber es ging KEINE Mail raus.</b>'+
+        (d.demo ? 'Das hier ist die Demo, dort wird nichts versendet. '
+                : 'Der Mailversand ist gerade nicht möglich. ')+
+        'Die Meldung liegt beim Betreiber vor. Bitte sag zusätzlich sofort der '+
+        'Geschäftsführung Bescheid — persönlich oder per Telefon.</div>';
+    box.innerHTML += '<button type="button" class="btn btn-ghost" id="vfFertig">Schließen</button>';
+    $('vfForm').hidden=true; box.hidden=false;
+    $('vfFertig').addEventListener('click', vorfallSchliessen);
+    ['vfWas','vfWann','vfBetroffen','vfRueckruf'].forEach(function(id){ $(id).value=''; });
+    tick(12);
+  }).catch(function(e){
+    b.disabled=false; b.textContent='Jetzt melden';
+    $('vfFehler').textContent=fnFehler(e)+' Wenn es nicht klappt: sofort der Geschäftsführung Bescheid sagen.';
+  });
+}
 function renderNeu(){
   var box=$('neuListe'), stand=$('neuStand'); if(!box) return;
   var gesehen=PREFS.neuGesehen||'';
@@ -16269,7 +16376,7 @@ var SCHNELL_VORSCHLAG = {
   chef:        ['chef:ueberblick', 'team:schicht', 'chef:anliegen']
 };
 function schnellSchluessel(e){
-  var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.view||''));
+  var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.vorfall ? 'vorfall' : (e.view||'')));
   var unter = e.teamtab || e.ichtab || e.cgo || '';
   return unter ? basis+':'+unter : basis;
 }
@@ -34161,6 +34268,9 @@ function bindActions(){
   // ── Was ist neu ──
   var npl=$('neuPille'); if(npl) npl.addEventListener('click', function(){ tick(8); neuOeffnen(); });
   var nc=$('neuClose'); if(nc) nc.addEventListener('click', neuSchliessen);
+  var vc=$('vfClose'); if(vc) vc.addEventListener('click', vorfallSchliessen);
+  var vs=$('vfSenden'); if(vs) vs.addEventListener('click', vorfallSenden);
+  var vm=$('vorfallModal'); if(vm) vm.addEventListener('click', function(e){ if(e.target===vm) vorfallSchliessen(); });
   var nm=$('neuModal'); if(nm) nm.addEventListener('click', function(e){ if(e.target===nm) neuSchliessen(); });
 
   // ── Schnellzugriffe wählen ──
