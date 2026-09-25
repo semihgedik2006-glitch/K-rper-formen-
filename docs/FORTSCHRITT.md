@@ -12581,3 +12581,93 @@ Karten über 1.000 px breit. In der Materialtabelle stand der Name rund
   anderes lief. Damit sind auch `test-sortierung` und
   `test-startseite-putz` wieder grün, die in Runde 107 nur unter
   Nebenlast rot waren. Die Vermutung von dort hält.
+
+## Runde 109 — Wenn eine Liste nicht lädt, steht es dort
+
+> „Perspektive ist angemeldet, mach schonmal was du machen kannst“
+> (25.9.2026). Aus den angebotenen Design-Punkten zuerst der, der eine
+> **falsche Auskunft** beseitigt: Design-Ideen, Punkt 16.
+
+### Was vorher war
+
+Nachgezählt: rund vierzig Beobachter (`onSnapshot`) schrieben ihren
+Fehler nur in die Konsole des Browsers. Wer die App benutzte, sah
+davon nichts. Die Liste blieb leer, und darunter stand oft „Noch keine
+Aufgaben“ oder „Nichts offen“. Auf der Startseite stand „Alles
+erledigt“, obwohl die Aufgaben nie angekommen waren. Nur zwei Stellen
+(Direktnachrichten) meldeten sich überhaupt, als Toast, der nach drei
+Sekunden weg ist.
+
+### Was jetzt ist
+
+- **Eine gemeinsame Meldung** (`ladeFehler` / `ladeGut`,
+  `LADEORT`, `LADE_NOCHMAL`) in zehn Listen: Chat, Direktnachrichten
+  (Liste und Unterhaltung), Aufgaben, Putzplan, Ankündigungen, Team
+  (Schichten, Abwesenheiten, Übergaben), Material, Geräte (Liste und
+  Meldungen) und Probetraining.
+- Die Meldung steht **dort, wo die Liste wäre**, und sagt:
+  - **was** nicht geladen hat. Bei Aufgaben und Putzplan ist das das
+    **Studio**; beim Team sind es die Teile („Schichten liessen sich
+    nicht laden“);
+  - **warum**, in einem Satz aus `errMsg()`. Gleiche Gründe stehen nur
+    einmal, vierzehn Studios mit derselben Meldung sind ein Satz;
+  - **was trotzdem da ist**, aber nur, wo das sicher stimmt: „Die aus
+    den anderen Studios stehen unten“ oder „Was darunter steht, hat
+    geladen“. Beim Chat steht dazu nichts, denn ob die anderen Kanäle
+    gehen, weiss die App in dem Moment nicht;
+  - **„Nochmal versuchen“**, das den Beobachter über die Funktion neu
+    anlegt, die es ohnehin gibt (`listenTodos`, `loadTeam` …). Es gibt
+    keine zweite Ladelogik.
+- **Fehlt ALLES in einer Ansicht**, trägt sie `.lade-kaputt`, und ihre
+  leeren Zustände verschwinden. Fehlt nur ein Teil, bleiben sie, weil
+  sie dann den Teil beschreiben, der geladen hat.
+- **Startseite:** Fehlen Aufgaben, Putzplan oder Ankündigungen, steht
+  oben in Bernstein „Nicht alles geladen … Was hier nicht steht, ist
+  darum nicht erledigt, sondern unbekannt“, auch wenn darunter anderes
+  steht. „Alles erledigt“ erscheint in dem Fall nicht mehr.
+- Beim Studiowechsel (Team, Material, Geräte) und beim Kanalwechsel
+  wird die alte Meldung verworfen, denn sie galt dem vorigen.
+- „Wenn das bleibt: der Leitung Bescheid geben“ steht nur bei fehlender
+  Berechtigung und nur für die, die nicht selbst Leitung sind.
+
+### Warum so
+
+- **Bernstein, nicht Rot:** Es ist eine Meldung, also eine
+  Statusfarbe mit Bedeutung. Rot bleibt für „kaputt, du musst etwas
+  tun“, und das trifft hier meistens nicht zu.
+- **Kein neuer Toast:** Die Meldung bleibt stehen, solange der Zustand
+  gilt, und geht von selbst, sobald der nächste Schnappschuss kommt
+  (`ladeGut` bei jedem Erfolg; bei nichts gemerktem kostet das einen
+  Objektzugriff).
+
+### Zum Prüfen: ein Schalter in der Demo
+
+`window.DEMO_LADEFEHLER = { 'studio-6/todos': 'permission-denied' }`
+lässt in `demo-daten.js` jeden neuen Beobachter, dessen Pfad das
+Muster enthält, mit diesem Fehler scheitern, an **beiden** Einstiegen
+(Sammlung und Einzeldokument). Wird der Eintrag entfernt, klappt
+„Nochmal versuchen“.
+
+### Was sich hier nicht prüfen lässt
+
+Wie oft das im Betrieb vorkommt, weiss ich nicht. Die echten Ursachen
+(Regel verweigert, Index fehlt, Kontingent erschöpft) lassen sich im
+Test-Browser dieser Umgebung nicht auslösen, weil das echte
+Firebase-SDK hier nicht lädt. Geprüft ist die Anzeige mit dem
+nachgebildeten Fehler der Demo.
+
+### Durchläufe
+
+- **Neu: `tests/test-ladefehler.js`** mit 30 Zusicherungen:
+  - ein Studio scheitert: Studio, Grund und „die anderen stehen unten“
+    werden genannt, die anderen Aufgaben sind da;
+  - „Nochmal versuchen“: die Meldung geht weg, und es sind mehr
+    Aufgaben da (3 → 8);
+  - alles scheitert: kein „Noch keine Aufgaben“ darunter;
+  - Startseite: „Nicht alles geladen“ statt „Alles erledigt“;
+  - Chat und Team (nur die Schichten scheitern);
+  - Gegenprobe ohne Fehler: in neun Ansichten keine Meldung;
+  - der Knopf trifft bei 320 bis 1920 px mindestens 130 × 44 normal
+    und 122 × 44 kompakt.
+- **Gegenprobe:** Mit dem alten Fehler-Rückruf bei den Aufgaben wird
+  der Durchlauf rot („die Meldung steht in der Aufgabenliste — null“).

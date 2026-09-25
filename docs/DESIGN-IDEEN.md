@@ -226,7 +226,7 @@ Zwischenspeicher kommen, leicht entsättigen.
 *Aufwand: mittel.* **Dagegen:** wenn man es falsch trifft, verwirrt es
 mehr, als es hilft.
 
-### 16. Fehler gehören in die Liste, nicht in einen Toast  ◐ *in der Hilfe gebaut (22.9.), sonst offen*
+### 16. Fehler gehören in die Liste, nicht in einen Toast  ✅ *in der Hilfe gebaut (22.9.), in zehn weiteren Listen und auf der Startseite (25.9., Runde 109)*
 
 Ein Toast ist nach drei Sekunden weg. Wenn eine Liste nicht laden konnte,
 gehört das dorthin, wo die Liste wäre — mit „nochmal versuchen".
