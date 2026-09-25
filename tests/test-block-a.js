@@ -142,9 +142,17 @@ async function leiste(p) {
     /* Die Liste steht in der Reihenfolge von „Alles", nicht der Wahl —
        geprüft wird deshalb, dass die Stellen 1, 2 und 3 je einmal da
        sind. (Bis P5 stand zufällig die erste Wahl auch oben.) */
-    pruefe('die Auswahl zeigt die drei Gewählten mit ihrer Stelle',
-      fenster.gewaehlt.length === 3 &&
-      fenster.gewaehlt.map(t => (t.match(/(\d)$/) || [])[1]).sort().join('') === '123', JSON.stringify(fenster.gewaehlt));
+    /* Bis 25.9.2026 stand die Stelle als Ziffer an der Zeile („1", „2",
+       „3"). Aus dem Betrieb: „am besten in einer art mini editor welche
+       das zeigt dann muss man sich nicht irgendwie die zahlen merken".
+       Seitdem steht die Reihenfolge OBEN in der Vorschau, so wie die
+       Knöpfe dastehen werden. Geprüft wird jetzt genau das: drei
+       gewählt, und die Vorschau zeigt dieselben drei in der Reihenfolge
+       der Zeile unten auf der Startseite. */
+    const vorschau = await p.evaluate(() => [...document.querySelectorAll('#schnellVorschau .sz-v-name')].map(x => x.childNodes[0].textContent.trim()));
+    pruefe('die Auswahl zeigt die drei Gewählten, oben in ihrer Reihenfolge',
+      fenster.gewaehlt.length === 3 && vorschau.join('|') === l.slice(0, 3).map(x => x.wort).join('|'),
+      JSON.stringify({ gewaehlt: fenster.gewaehlt, vorschau, zeile: l.slice(0, 3).map(x => x.wort) }));
     pruefe('„Zum Vorschlag" fehlt, solange nichts Eigenes gewählt ist', fenster.vorschlagKnopf === 'none',
       fenster.vorschlagKnopf);
 

@@ -31,7 +31,13 @@ async function start(stub, errs) {
 const reiter = page => page.evaluate(() => {
   const sa = document.querySelector('#view-chef .scroll-area');
   const pane = [...document.querySelectorAll('.chef-pane')].find(p => p.offsetParent !== null);
-  const karten = pane ? [...pane.querySelectorAll('.card')] : [];
+  /* In der Reihenfolge, in der man sie SIEHT: seit Runde 112/116
+     stehen die Karten am Rechner in zwei Spalten und am Handy per
+     CSS-order (data-vw) wieder in der alten Folge — die Folge im
+     Quelltext ist nicht mehr die auf dem Bildschirm. Unsichtbare
+     Karten ans Ende, damit sie nicht als „oben" zählen. */
+  const oben = c => c.offsetParent !== null ? c.getBoundingClientRect().top : Infinity;
+  const karten = pane ? [...pane.querySelectorAll('.card')].sort((x, y) => oben(x) - oben(y)) : [];
   return {
     pane: pane ? pane.getAttribute('data-cpane') : null,
     bildschirme: +(sa.scrollHeight / sa.clientHeight).toFixed(2),

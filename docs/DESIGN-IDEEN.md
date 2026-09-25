@@ -84,7 +84,7 @@ schon), das Suchfeld erst auf die Lupe hin.
 *Aufwand: klein.* **Dagegen:** ein verstecktes Suchfeld kostet einen
 Tipp — bei langen Listen der falsche Tausch.
 
-### 4. Fortschritt als Ring, nicht als Text
+### 4. Fortschritt als Ring, nicht als Text  ✅ *gebaut (25.9., Runde 115) — Aufgabenzähler und Teilschritte, 18 px, neben der Zahl*
 
 „2 von 5 offen" und „1 von 3 erledigt" muss man lesen. Ein 20-px-Ring
 daneben sieht man.
@@ -218,7 +218,7 @@ schneller, obwohl nichts schneller ist.
 
 *Aufwand: klein, aber an vielen Stellen.*
 
-### 15. Offline sichtbar machen, nicht nur melden
+### 15. Offline sichtbar machen, nicht nur melden  ✅ *gebaut (25.9., Runde 115) — entsättigt, ohne Deckkraft, damit der Kontrast bleibt*
 
 Die Leiste oben gibt es. Zusätzlich: Karten, deren Daten aus dem
 Zwischenspeicher kommen, leicht entsättigen.
@@ -251,7 +251,7 @@ dadurch, wo man ist.
 *Aufwand: mittel.* Bei `prefers-reduced-motion` aus — das kann die App
 schon.
 
-### 18. Zahlen zählen hoch
+### 18. Zahlen zählen hoch  ✅ *gebaut (Startseite schon vorher; seit 25.9., Runde 115, auch im Überblick der Verwaltung)*
 
 Startseiten-Kacheln, „2 von 5". 400 ms.
 

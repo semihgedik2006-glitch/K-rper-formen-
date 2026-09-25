@@ -71,7 +71,10 @@ const nebeneinander = (a, b) => !!a && !!b && b.l >= a.r - 1 && Math.abs(a.t - b
   const FAELLE = [
     ['team', '[data-cpane="team"] [data-fold="teamliste"]', '[data-cpane="team"] [data-fold="zugang"]', 'Team: Teamliste links, „Zugang anlegen" rechts'],
     ['standorte', '[data-cpane="standorte"] .vw-haupt > .card', '[data-cpane="standorte"] [data-fold="studioneu"]', 'Studios: Liste links, „Studio anlegen" rechts'],
-    ['system', '#aboKarte', '[data-cpane="system"] .vw-neben > .card:not([style*="none"])', 'System: Abo links, „Neues Design" rechts']
+    ['system', '#aboKarte', '[data-cpane="system"] .vw-neben > .card:not([style*="none"])', 'System: Abo links, „Neues Design" rechts'],
+    /* Runde 116: Nachweise und Auswertung. */
+    ['nachweise', '[data-cpane="nachweise"] [data-fold="allenachweise"]', '[data-cpane="nachweise"] .vw-neben > .card', 'Nachweise: alle links, „Läuft demnächst ab" rechts'],
+    ['report', '[data-cpane="report"] .vw-haupt > .card', '[data-cpane="report"] [data-fold="repstudios"]', 'Auswertung: Bericht links, Studios und Personen rechts']
   ];
   for (const [w, h] of [[1280, 800], [1440, 900], [1920, 1080]]) {
     console.log('\n── ' + w + ' × ' + h + ' ──');
@@ -83,6 +86,13 @@ const nebeneinander = (a, b) => !!a && !!b && b.l >= a.r - 1 && Math.abs(a.t - b
       const L = await kasten(p, links), R = await kasten(p, rechts);
       pruefe(was, nebeneinander(L, R), JSON.stringify({ L, R }));
     }
+    /* Eine zugeklappte Karte links liess neben der vollen rechten Spalte
+       eine leere Fläche stehen („Alle Nachweise": 99 px hoch). Am
+       Rechner startet die Hauptspalte deshalb offen. */
+    await reiter(p, 'nachweise');
+    const zuLinks = await p.evaluate(() => [...document.querySelectorAll('.chef-pane.vw .vw-haupt > .card.fold')]
+      .filter(k => k.classList.contains('zu')).map(k => k.getAttribute('data-fold')));
+    pruefe('am Rechner ist in der Hauptspalte nichts zugeklappt', !zuLinks.length, JSON.stringify(zuLinks));
 
     /* 2. Rechts aufklappen, links bleibt stehen. */
     await reiter(p, 'team');
@@ -151,7 +161,7 @@ const nebeneinander = (a, b) => !!a && !!b && b.l >= a.r - 1 && Math.abs(a.t - b
   {
     const p = await oeffne(b, 390, 844, 'chef');
     const aus = [];
-    for (const id of ['team', 'standorte', 'system']) {
+    for (const id of ['team', 'standorte', 'system', 'nachweise', 'report']) {
       await reiter(p, id);
       const r = await p.evaluate((id) => {
         const karten = [...document.querySelectorAll('[data-cpane="' + id + '"] [data-vw]')].filter(k => k.offsetParent);
@@ -163,7 +173,9 @@ const nebeneinander = (a, b) => !!a && !!b && b.l >= a.r - 1 && Math.abs(a.t - b
       const ok = r.folge.length > 1 && r.folge.every((v, i) => i === 0 || v > r.folge[i - 1]) && r.links.length === 1;
       if (!ok) aus.push(id + ': ' + JSON.stringify(r));
     }
-    pruefe('Handy: Team, Studios und System untereinander in der alten Reihenfolge', !aus.length, aus.join(' | '));
+    pruefe('Handy: Team, Studios, System, Nachweise und Auswertung untereinander in der alten Reihenfolge', !aus.length, aus.join(' | '));
+    const zuHandy = await p.evaluate(() => document.querySelector('[data-cpane="nachweise"] [data-fold="allenachweise"]').classList.contains('zu'));
+    pruefe('Handy: „Alle Nachweise" startet zugeklappt wie bisher', zuHandy);
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }

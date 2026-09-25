@@ -13013,3 +13013,125 @@ vor der Anmeldung ist mit `stub-ohne-login.js` nachgebildet.
   Zeichen („die Seite soll leicht sein“). Er ist auf 80 Zeichen
   gekürzt; was genau drinsteht, sagt die Datei selbst. Danach 153 von
   153 grün.
+
+## Runden 115 und 116 — Ring, Offline, Hochzählen; Schnellzugriffe selbst zusammenstellen
+
+> Aus dem Betrieb, 25.9.2026 (Antwort 12): „ja warum nicht oder lass
+> einen die seite komplett selber anpassen das sich jeder seine
+> gewünschten shortcuts dort einfügen kann, am besten in einer art mini
+> editor welche das zeigt dann muss man sich nicht irgendwie die zahlen
+> merken“
+
+### Runde 115: Design-Ideen 4, 15 und 18
+
+- **Ring (4):** `fortschrittRing(fertig, gesamt)` ist ein 18-px-SVG mit
+  zwei Kreisen. Er steht **neben** „x von y erledigt“, nicht statt der
+  Zahl. Wer es genau wissen will, liest die Zahl; Vorleser bekommen den
+  Ring gar nicht (`aria-hidden`). Voll heisst Grün, weil „fertig“ ein
+  Status ist; sonst die Akzentfarbe. Er steht am Aufgabenzähler und über
+  den Teilschritten einer Aufgabe.
+- **Ohne Netz (15):** `body.ohne-netz` entsättigt den Inhalt der
+  Scroll-Bereiche und den Chat, nicht aber die Kopfzeile, die Leisten
+  und die Ladefehler-Meldungen. Der Text der Leiste sagt jetzt, *warum*
+  es blass ist („du siehst den zuletzt geladenen Stand“).
+  - **Bewusst ohne `opacity`:** Der erste Entwurf hatte zusätzlich
+    `opacity:.9`. Grauer Nebentext wäre damit unter 4,5 : 1 gerutscht.
+    Entsättigen lässt die Helligkeit fast gleich und damit den Kontrast.
+  - Ein Filter auf dem ganzen Bereich ist **eine** Ebene, kein Filter je
+    Zeile.
+- **Hochzählen (18):** Die Startseite konnte es schon (`hochzaehlen`).
+  Neu ist der Überblick der Verwaltung, aber nur beim Öffnen
+  (`_dashZaehlen`). `renderDashboard` läuft bei jeder Aufgabenänderung;
+  zählte es jedes Mal neu, würden die Zahlen ständig flackern. Mit
+  „weniger Bewegung“ am Gerät steht sofort die Endzahl.
+
+### Runde 116: Schnellzugriffe als kleiner Editor
+
+- **Vorschau oben im Fenster:** Die gewählten Knöpfe stehen so da, wie
+  sie auf der Startseite bzw. in der Seitenleiste stehen werden, mit ↑,
+  ↓ und ×. Die Ziffern „1, 2, 3“ an den Listenzeilen sind weg; dort
+  steht nur noch ein Haken. Genau das war der Wunsch: die Reihenfolge
+  sehen statt sie zu zählen.
+- **Am Rechner bis zu sechs, am Handy drei.** Am Handy stehen sie über
+  der unteren Leiste, und die Startseite muss auf einen Bildschirm
+  passen („am besten steht alles auf einer Seite …“). Deshalb gibt es
+  **eine** Liste: Das Handy zeigt die ersten drei, die übrigen sind im
+  Fenster als „nur am Rechner“ markiert. Zwei getrennte Listen je Gerät
+  hätten bedeutet, dass man am Handy etwas einstellt und es am Rechner
+  nicht wiederfindet.
+  - Am Handy lehnt das Fenster einen vierten weiterhin ab. Wer am Rechner
+    sechs hat, sieht am Handy „3 von 3 hier, dazu 3 am Rechner“ und nicht
+    „6 von 3“.
+- **Tasten:** Wo ein Ziel eine eigene Taste hat (`AKTIONEN`, z. B. G für
+  Geräte), steht sie in der Vorschau und am Rechner in der
+  Seitenleiste. Angezeigt wird die Taste, die **wirklich** belegt ist
+  (`keyFor`), also auch eine selbst umgelegte. Der Test drückt die
+  angezeigte Taste und prüft, dass sie dorthin führt.
+- **Verwaltung am Rechner, zwei weitere Reiter:** „Nachweise“ (alle
+  links; „Läuft demnächst ab“ und „Nachweis eintragen“ rechts) und
+  „Auswertung“ (Bericht links; Studios und Personen rechts).
+  - **Gefunden beim Nachmessen:** „Alle Nachweise“ startet zugeklappt.
+    Die linke Spalte war damit 99 px hoch, neben einer 338 px hohen
+    rechten, und 710 px breit leer. Seitdem startet am Rechner (ab 1100
+    px) jede Karte in der **Hauptspalte** offen, solange man sie nicht
+    selbst zugeklappt hat. Am Handy bleibt alles wie vorher; der Test
+    prüft beides.
+- **„Anliegen“** steht noch einspaltig. Dort gibt es nur eine Karte,
+  also nichts, was man sinnvoll danebenstellen könnte. Das richtige
+  Muster dort wäre Liste und Detail wie bei den Aufgaben. Das ist eine
+  eigene Runde.
+
+### Nachgemessen (Treffer per `elementFromPoint`, normal und kompakt)
+
+| Breite | Seitenleiste | Vorschau im Fenster |
+|---|---|---|
+| 320 / 390 / 430 / 820 | — (gibt es dort nicht) | 16 Knöpfe, alle ≥ 44 × 44 |
+| 1280 / 1440 / 1920 | 7 Knöpfe (6 + „Anpassen“), alle ≥ 44 × 44 | 16 Knöpfe, alle ≥ 44 × 44 |
+
+Nichts ragt seitlich hinaus.
+
+**Gefunden beim Nachmessen am Rechner:** Mit sechs Zeilen à 46 px stand
+„Anpassen" bei 1280 × 800 unter dem Rand. Die Seitenleiste musste
+scrollen (Mitarbeiter 88 px, Chef 134 px). Ab vier Einträgen stehen die
+Schnellzugriffe deshalb in **zwei Spalten**, das Zeichen über dem Wort,
+44 px hoch.
+- Ein erster Versuch mit Zeichen und Wort nebeneinander schnitt die
+  Wörter ab („Überbl…“). Übereinander passt bei gleicher Höhe die ganze
+  Spaltenbreite. Von allen 31 Zielen wird nur „Hilfe im Studio“
+  gekürzt; das volle Wort steht im `title`.
+- Die Taste ist in den Kacheln nicht sichtbar, weil dort kein Platz ist.
+  Sie steht im `title` und im Fenster.
+- Danach, gemessen bei 1280 × 800: Mitarbeiter „Anpassen“ unten bei
+  688 px, Chef bei 734 px. Die Fusszeile beginnt bei 740 px, gescrollt
+  wird nicht. Der Test prüft das bei 1280, 1440 und 1920 in beiden
+  Dichten.
+
+### Durchläufe
+
+- **Neu:**
+  - `tests/test-design-115.js` (33 Zusicherungen, 390 und 1440 px, dazu
+    „weniger Bewegung“);
+  - `tests/test-schnell-editor.js` (45 Zusicherungen).
+- **Erweitert:** `test-verwaltung-pc` um Nachweise und Auswertung, das
+  Offen-Starten am Rechner und das Zu-Starten am Handy.
+- **Geändert, mit Zitat im Test:** `test-block-a` prüfte, dass an den
+  Listenzeilen die Ziffern 1, 2 und 3 stehen. Die Ziffern sind auf
+  Wunsch aus dem Betrieb weg („dann muss man sich nicht irgendwie die
+  zahlen merken“). Geprüft wird jetzt, dass die Vorschau dieselben drei
+  in derselben Reihenfolge zeigt wie die Zeile auf der Startseite. Das
+  ist mindestens so streng wie vorher.
+- **Geändert, weil die Messung falsch las:** `test-verwaltung-bereich9`
+  nahm die Karten eines Reiters in Quelltext-Reihenfolge und prüfte, was
+  „oben“ steht. Seit den zwei Spalten steht am Handy per CSS-`order`
+  weiterhin „Läuft demnächst ab“ oben, im Quelltext aber nicht mehr.
+  Der Test sortiert jetzt nach der Lage auf dem Bildschirm, also nach
+  dem, was man sieht. Die Forderung selbst ist unverändert.
+- **Gefunden in der Regression:** `test-gestaltung` meldete eine feste
+  Zeilenhöhe (`1.2`) in den neuen Kacheln. Sie steht jetzt auf der
+  Leiter (`--lh-eng`).
+- **Ergebnis:** 155 Durchläufe im Nebenbaum, 149 grün. Zwei echte Funde
+  (oben) sind behoben. Vier Durchläufe brauchen die installierten
+  `node_modules` der Regeln bzw. Funktionen, die es im Nebenbaum nicht
+  gab: `test-regelumgebung`, `test-abo-leiter`, `test-stripe-felder`
+  und `test-mail-versand`. Alle sechs sind im Hauptbaum einzeln
+  nachgelaufen.

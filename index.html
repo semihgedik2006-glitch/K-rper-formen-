@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-65TsfTOEkB9gUe7MVPUir3rD2kWvRdRbDFDZmK3zs10='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-2ZIQS4Mx2W9J1kYJWHeeo/IDk7kLcYKMAsJigAfyfXM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5171,6 +5171,40 @@ html{font-size:var(--fs,100%)}
 .lade-ruhe .hr-ico svg{width:22px;height:22px}
 /* ── Datenschutzvorfall melden (Runde 113) ── */
 .vf-box{max-width:520px}
+/* ── Schnellzugriffe: Vorschau im Fenster (Runde 116) ── */
+.sz-vorschau{margin:0 0 var(--s12)}
+.sz-v-zeile{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) var(--s8);
+  margin:0 0 var(--s6);border:1px solid var(--line);border-radius:var(--r-md);background:var(--bg-2)}
+.sz-v-zeile.nur-pc{opacity:.75;border-style:dashed}
+.sz-v-name{flex:1 1 auto;min-width:0;font-weight:600;font-size:var(--t-sm)}
+.sz-v-name small{display:block;font-weight:500;color:var(--text-3);font-size:var(--t-xs)}
+.sz-v-knopf{flex:0 0 auto;min-width:44px;min-height:44px;display:grid;place-items:center;
+  border:1px solid var(--line-2);border-radius:var(--r-sm);background:var(--auf-1);color:var(--text);
+  font-size:var(--t-md);cursor:pointer}
+.sz-v-knopf[disabled]{opacity:.35;cursor:default}
+.sz-v-knopf svg{width:16px;height:16px}
+.sz-v-weg{color:var(--danger-tx)}
+.sz-v-zahl{margin:var(--s4) 0 0}
+.sz-dazu{margin-top:var(--s8)}
+.sz-stelle svg{width:16px;height:16px}
+.ss-taste{margin-left:auto;flex:0 0 auto;min-width:22px;padding:0 var(--s4);border:1px solid var(--line-2);
+  border-radius:var(--r-xs);font:600 var(--t-xs)/1.6 var(--font-body);color:var(--text-2);text-align:center;background:var(--bg)}
+/* Die Taste in der Seitenleiste nur dort, wo es eine Tastatur gibt. */
+@media not all and (hover:hover){ .side-schnell .ss-taste{display:none} }
+/* ── Ring (Runde 115) ── */
+.fr-ring{flex:0 0 auto;vertical-align:-4px;margin-right:var(--s6);transform:rotate(-90deg)}
+.fr-ring circle{fill:none;stroke-width:3}
+.fr-spur{stroke:var(--line-2)}
+.fr-teil{stroke:var(--accent);stroke-linecap:round}
+.fr-ring.voll .fr-teil{stroke:var(--ok)}
+#todoCount{display:inline-flex;align-items:center}
+/* ── Ohne Netz (Runde 115) ──
+   Nur der Inhalt, nicht die Werkzeugleiste und nicht die Meldungen.
+   Ein Filter auf dem Scroll-Bereich rechnet ihn als eine Ebene — kein
+   Filter je Zeile. Keine Deckkraft dazu: blasser Text fiele unter
+   4,5 : 1 — entsättigt bleibt die Helligkeit und damit der Kontrast. */
+body.ohne-netz .view .scroll-area > :not(.lade-fehler):not(.sticky-tools),
+body.ohne-netz #chatScroll{filter:saturate(.3)}
 /* ── Hinweis zur Speicherung (Runde 114) ──
    Unten, über allem, aber schmal: er soll gelesen werden, nicht die App
    verdecken. Am Rechner nicht über die volle Breite — eine Zeile über
@@ -6042,6 +6076,16 @@ body.neu .ss-knopf svg{width:18px;height:18px;flex-shrink:0}
 body.neu .ss-knopf:hover{background:var(--auf-1);color:var(--text)}
 body.neu .ss-knopf:active{transform:translateY(1px)}
 body.neu .ss-anpassen{color:var(--text-3)}
+body.neu .side-schnell.viele{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s2) var(--s4)}
+body.neu .side-schnell.viele .ss-kopf,
+body.neu .side-schnell.viele .ss-anpassen{grid-column:1 / -1}
+/* Das Zeichen über dem Wort: bei gleicher Höhe (44 px) bleibt dem
+   Wort die ganze Spaltenbreite. Nebeneinander stand „Überbl…". */
+body.neu .side-schnell.viele .ss-knopf:not(.ss-anpassen){flex-direction:column;justify-content:center;
+  gap:var(--s2);padding:var(--s4);font-size:var(--t-xs);line-height:var(--lh-eng);text-align:center;min-width:0}
+body.neu .side-schnell.viele .ss-knopf span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.neu .side-schnell.viele .ss-knopf svg{width:16px;height:16px}
+body.neu .side-schnell.viele .ss-taste{display:none}
 body.neu .sz-knopf{display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:var(--s4);min-width:0;min-height:60px;padding:var(--s8) var(--s4);
   border:1px solid var(--line-2);border-radius:var(--r-md);cursor:pointer;
@@ -6315,7 +6359,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 </div>
 
 <!-- Hinweis-Leiste: erscheint automatisch, sobald die Internetverbindung weg ist -->
-<div class="offline-bar" id="offlineBar">Keine Internetverbindung – Änderungen werden gesendet, sobald du wieder online bist.</div>
+<div class="offline-bar" id="offlineBar">Keine Internetverbindung – du siehst den zuletzt geladenen Stand. Änderungen werden gesendet, sobald du wieder online bist.</div>
 
 <!-- StudioChat-Logo-Farbverlauf (einmal global definiert) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -8240,14 +8284,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <div id="firmenArchivListe"></div>
             </div>
           </div>
-          <div class="chef-pane" data-cpane="nachweise" style="display:none">
-            <div class="card">
-              <h3 data-ikon="uhr">Läuft demnächst ab</h3>
-              <p class="hint">60 und 14 Tage vorher bekommen die Person und du eine Meldung.
-                Abgelaufene stehen ganz oben.</p>
-              <div id="certSoon" style="margin-top:10px"></div>
-            </div>
-            <div class="card" data-fold="allenachweise">
+          <div class="chef-pane vw" data-cpane="nachweise" style="display:none">
+            <div class="vw-spalte vw-haupt">
+            <div data-vw="2" class="card" data-fold="allenachweise">
               <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
                 <h3 data-ikon="blatt">Alle Nachweise</h3>
                 <span class="todo-count" id="certCount"></span>
@@ -8255,7 +8294,15 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <div id="certSort" style="margin-top:10px"></div>
               <div id="certList"></div>
             </div>
-            <div class="card" data-fold="nachweisneu">
+            </div>
+            <div class="vw-spalte vw-neben">
+            <div data-vw="1" class="card">
+              <h3 data-ikon="uhr">Läuft demnächst ab</h3>
+              <p class="hint">60 und 14 Tage vorher bekommen die Person und du eine Meldung.
+                Abgelaufene stehen ganz oben.</p>
+              <div id="certSoon" style="margin-top:10px"></div>
+            </div>
+            <div data-vw="3" class="card" data-fold="nachweisneu">
               <h3 data-ikon="plus">Nachweis eintragen</h3>
               <p class="hint">Sieht nur die betroffene Person und du – nicht die Studio-Leitung.</p>
               <div class="field"><label for="certPerson">Person</label>
@@ -8267,6 +8314,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <div class="field"><label for="certBis">Gültig bis</label>
                 <input class="inp" id="certBis" type="date" /></div>
               <button class="btn btn-primary btn-sm" id="certAdd">Nachweis speichern</button>
+            </div>
             </div>
           </div>
 
@@ -8318,8 +8366,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 mit Grund, in „Meine Zeiten".</p>
             </div>
           </div>
-          <div class="chef-pane" data-cpane="report" style="display:none">
-          <div class="card">
+          <div class="chef-pane vw" data-cpane="report" style="display:none">
+            <div class="vw-spalte vw-haupt">
+          <div data-vw="1" class="card">
             <h3 data-ikon="trendAuf">Bericht</h3>
             <p class="hint">Zeitraum wählen – die Zahlen rechnen sich sofort neu.</p>
             <div class="field"><label for="repRange">Zeitraum</label>
@@ -8332,16 +8381,19 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <div class="dash-grid" id="repTiles"></div>
             <button data-ikon="laden" class="btn btn-ghost btn-sm" id="repExport" style="width:100%;margin-top:6px">Bericht als Excel speichern</button>
           </div>
-          <div class="card" data-fold="repstudios">
+            </div>
+            <div class="vw-spalte vw-neben">
+          <div data-vw="2" class="card" data-fold="repstudios">
             <h3 data-ikon="pokal">Studios im Vergleich</h3>
             <p class="hint">Wie viel Prozent der Aufgaben sind im Zeitraum erledigt worden?</p>
             <div id="repStudios"></div>
           </div>
-          <div class="card" data-fold="reppersonen">
+          <div data-vw="3" class="card" data-fold="reppersonen">
             <h3 data-ikon="daumen">Wer hat wie viel erledigt?</h3>
             <p class="hint">Kein Ranking zum Vergleichen – nur damit du siehst, wo Unterstützung fehlt.</p>
             <div id="repPeople"></div>
           </div>
+            </div>
           </div>
 
           <!-- ── Reiter 5: System ── -->
@@ -8736,6 +8788,10 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <button class="lb-close" id="schnellClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <h3 style="margin-bottom:6px">Schnellzugriffe</h3>
     <p class="hint" style="margin:0 0 10px" id="schnellHinweis"></p>
+    <!-- Runde 116: so sieht es aus — in der richtigen Reihenfolge, mit
+         ↑ ↓ und Entfernen. Darunter alles, was man dazunehmen kann. -->
+    <div class="sz-vorschau" id="schnellVorschau" aria-live="polite"></div>
+    <div class="kn-gruppe sz-dazu">Dazunehmen</div>
     <div id="schnellListe"></div>
     <div class="sz-fuss">
       <button type="button" class="btn btn-ghost btn-sm" id="schnellVorschlag">Zum Vorschlag</button>
@@ -13612,6 +13668,19 @@ function ppPauseText(t){
    „Uhr" gehört in Sätze („ab 18 Uhr"), nicht in Zeitstempel: neben
    einer Zeit wie 09:05 sagt es nichts, was die Zahl nicht schon sagt. */
 function zweistellig(n){ return (n<10?'0':'')+n; }
+/* ══ FORTSCHRITT ALS RING (Design-Ideen, Punkt 4, Runde 115) ═════════
+   „2 von 5" muss man lesen, einen Ring sieht man. 18 px, zwei Kreise:
+   die Spur und der Anteil. Steht NEBEN der Zahl, nicht statt ihr — die
+   Zahl bleibt für die, die es genau wissen wollen, und für Vorleser.
+   Voll = Grün (Status „fertig"), sonst die Akzentfarbe. */
+function fortschrittRing(fertig, gesamt){
+  if(!(gesamt>0)) return '';
+  var r=7, u=2*Math.PI*r, anteil=Math.max(0, Math.min(1, fertig/gesamt));
+  return '<svg class="fr-ring'+(anteil>=1?' voll':'')+'" viewBox="0 0 18 18" width="18" height="18" aria-hidden="true">'+
+    '<circle class="fr-spur" cx="9" cy="9" r="'+r+'"/>'+
+    '<circle class="fr-teil" cx="9" cy="9" r="'+r+'" stroke-dasharray="'+u.toFixed(2)+'" '+
+      'stroke-dashoffset="'+(u*(1-anteil)).toFixed(2)+'"/></svg>';
+}
 function fmtUhr(ts){
   if(!ts && ts!==0) return '';
   var d=new Date(ts);
@@ -14489,9 +14558,16 @@ document.addEventListener('click', function(ev){
 });
 
 /* ── Offline-Hinweis oben einblenden/ausblenden ── */
+/* Seit Runde 115 (Design-Ideen, Punkt 15) auch am Inhalt: ohne Netz
+   stehen die Listen leicht entsättigt da. Die Leiste oben sagt WARUM —
+   sonst wäre die blasse Seite ein Rätsel. Alles bleibt bedienbar: man
+   kann weiter abhaken, es wird gesendet, sobald wieder Netz da ist.
+   Blass ist nur, was aus dem Zwischenspeicher kommt — die Kopfzeile,
+   die Leisten und die Meldungen darüber bleiben, wie sie sind. */
 function updateOnlineState(){
   var bar=$('offlineBar'); if(!bar) return;
   bar.classList.toggle('show', !navigator.onLine);
+  document.body.classList.toggle('ohne-netz', !navigator.onLine);
 }
 window.addEventListener('online',  function(){ updateOnlineState(); toast('Wieder online ✓'); });
 window.addEventListener('offline', function(){ updateOnlineState(); });
@@ -16278,6 +16354,15 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-schnellzugriffe', datum:'25.9.2026', titel:'Schnellzugriffe selbst zusammenstellen — am Rechner bis zu sechs', wo:'home', punkte:[
+    'Unter „Anpassen" (Startseite unten, am Rechner links in der Seitenleiste) steht oben jetzt, wie deine Schnellzugriffe aussehen werden — in der richtigen Reihenfolge. Mit ↑ und ↓ schiebst du sie, mit × nimmst du einen heraus. Keine Nummern mehr, die man sich merken muss.',
+    'Am Rechner passen bis zu sechs in die Seitenleiste — ab vier in zwei Spalten, damit nichts unter den Rand rutscht. Am Handy stehen die ersten drei; was nur am Rechner steht, ist im Fenster so markiert.',
+    'Gibt es für ein Ziel eine Taste (zum Beispiel G für Geräte), steht sie im Fenster daneben — und am Rechner auch in der Seitenleiste, solange es höchstens drei sind.',
+    'In der Verwaltung stehen am Rechner jetzt auch „Nachweise" und „Auswertung" in zwei Spalten: die Liste links, das Übrige rechts.' ] },
+  { id:'2026-09-25-ring-offline', datum:'25.9.2026', titel:'Fortschritt als Ring, ohne Netz sichtbar blasser', wo:'todos', punkte:[
+    'Neben „12 von 40 erledigt" steht bei den Aufgaben ein kleiner Ring, der sich füllt — auch bei den Teilschritten einer Aufgabe. Ist alles erledigt, wird er grün.',
+    'Ohne Internet wird der Inhalt blasser, und die Leiste oben sagt, warum: du siehst den zuletzt geladenen Stand. Abhaken und Schreiben geht trotzdem — es wird gesendet, sobald das Netz wieder da ist.',
+    'Im Überblick der Verwaltung zählen die Zahlen beim Öffnen kurz hoch. Wer am Gerät „weniger Bewegung" eingestellt hat, sieht sofort die fertige Zahl.' ] },
   { id:'2026-09-25-datenschutz', datum:'25.9.2026', titel:'Deine Daten: Dokumente fürs eigene Studio, Auskunft auf Knopfdruck, AGB', wo:'ich:daten', punkte:[
     'Dokumente: Ein Dokument nur für ein Studio kann aus einem anderen Studio jetzt niemand mehr öffnen — auch nicht über Umwege. Wer hochlädt, entscheidet weiter selbst: alle Studios oder nur ausgewählte. Der Chef sieht über der Liste, welches Dokument wer sieht.',
     'Unter „Ich → Daten" gibt es „Meine Daten herunterladen": eine Datei mit allem, was die App über dich gespeichert hat. Der Chef kann dieselbe Auskunft für jemanden aus dem Team erstellen — ohne Direktnachrichten und persönlichen Bereich.',
@@ -16598,6 +16683,35 @@ function renderNeu(){
    OHNE EIGENE WAHL steht ein Vorschlag je Rolle da. Eine leere Zeile
    erklärt nicht, wofür sie da ist; drei brauchbare Ziele tun es. */
 var SCHNELL_MAX = 3;
+/* Runde 116. Aus dem Betrieb, 25.9.2026: „lass einen die seite komplett
+   selber anpassen das sich jeder seine gewünschten shortcuts dort
+   einfügen kann, am besten in einer art mini editor welche das zeigt
+   dann muss man sich nicht irgendwie die zahlen merken".
+
+   Zwei Dinge daraus:
+   1. Am Rechner hat die Seitenleiste Platz für mehr: bis zu SECHS. Am
+      Handy bleiben es drei — dort stehen sie über der unteren Leiste,
+      und die Startseite passt sonst nicht mehr auf einen Bildschirm.
+      Wer am Rechner sechs wählt, sieht am Handy die ersten drei; die
+      übrigen bleiben über „Alles" erreichbar, zwei Tipps wie immer.
+   2. Statt „1, 2, 3" neben einer langen Liste zeigt das Fenster OBEN
+      die gewählten Knöpfe so, wie sie dastehen werden, mit ↑ ↓ und
+      „Entfernen". Die Reihenfolge sieht man, statt sie zu zählen. Und
+      wo es für ein Ziel eine Taste gibt, steht sie daneben (am Rechner
+      auch in der Seitenleiste) — keine Zahl, die man sich merken muss. */
+var SCHNELL_MAX_PC = 6;
+function schnellMax(){ return (_mobnavBreite && _mobnavBreite.matches) ? SCHNELL_MAX : SCHNELL_MAX_PC; }
+/* Welche Taste führt dorthin? Nur für Ziele, die eine eigene Aktion
+   haben (AKTIONEN); Unterreiter haben keine. */
+var SCHNELL_TASTE = { home:'home', chat:'chat', todos:'arbeit', team:'team', chef:'chef',
+  geraete:'geraete', putzplan:'putz', material:'material', dm:'direkt', ann:'infos' };
+function schnellTaste(key){
+  if(!key || key.indexOf(':')>=0) return '';
+  var a=SCHNELL_TASTE[key] && aktionById(SCHNELL_TASTE[key]);
+  if(!a || (a.manage && !canManage())) return '';
+  var k=keyFor(a);
+  return k ? keyLabel(k) : '';
+}
 /* Seit P5 steht der Putzplan unten in der Leiste und am PC links als
    eigener Eintrag. Als Schnellzugriff wäre er ein dritter Weg an
    dieselbe Stelle; an seinen Platz rückt die Woche mit den eigenen
@@ -16634,13 +16748,13 @@ function schnellEigen(){
 function schnellGewaehlt(kat){
   kat = kat || schnellKatalog();
   var liste = schnellEigen() || SCHNELL_VORSCHLAG[schnellRolle()] || [];
-  return liste.filter(function(k){ return !!kat.nach[k]; }).slice(0, SCHNELL_MAX);
+  return liste.filter(function(k){ return !!kat.nach[k]; }).slice(0, SCHNELL_MAX_PC);
 }
 function schnellSpeichern(liste){
   if(!session) return;
   PREFS.schnell=PREFS.schnell||{};
   if(liste===null) delete PREFS.schnell[session.uid];
-  else PREFS.schnell[session.uid]=liste.slice(0, SCHNELL_MAX);
+  else PREFS.schnell[session.uid]=liste.slice(0, SCHNELL_MAX_PC);
   savePrefs();
 }
 
@@ -16648,7 +16762,7 @@ function renderSchnell(){
   var box=$('schnellLeiste'); if(!box) return;
   if(!layoutNeu() || !session){ box.hidden=true; box.innerHTML=''; return; }
   var kat=schnellKatalog();
-  var gew=schnellGewaehlt(kat);
+  var gew=schnellGewaehlt(kat).slice(0, SCHNELL_MAX);
   box.hidden=false;
   box.innerHTML = gew.map(function(k){
     var x=kat.nach[k], e=x.e;
@@ -16687,13 +16801,19 @@ function schnellSeiteZeichnen(){
   var kat=schnellKatalog();
   var gew=schnellGewaehlt(kat);
   side.insertAdjacentHTML('beforeend',
-    '<div class="side-schnell" role="group" aria-labelledby="ssKopf">'+
+    /* Ab vier Einträgen zwei Spalten (Runde 116): sechs Zeilen à 46 px
+       schoben bei 1280 × 800 „Anpassen" 134 px unter den Rand, die
+       Seitenleiste musste scrollen. Zwei Spalten brauchen die Hälfte;
+       das volle Wort steht im title, die Taste im Fenster. */
+    '<div class="side-schnell'+(gew.length>SCHNELL_MAX?' viele':'')+'" role="group" aria-labelledby="ssKopf">'+
     '<div class="ss-kopf" id="ssKopf">Schnellzugriffe</div>'+
     gew.map(function(k){
       var x=kat.nach[k], e=x.e;
+      var taste=schnellTaste(k);
       return '<button type="button" class="ss-knopf" data-farbe="'+esc(x.farbe||'')+'"'+
-        allesZielAttr(e)+'>'+(e.roh || allesIkon(e.ikon||e.view))+
-        '<span>'+esc(e.label)+'</span></button>';
+        allesZielAttr(e)+' title="'+esc(e.label)+(taste?' — Taste '+esc(taste):'')+'">'+(e.roh || allesIkon(e.ikon||e.view))+
+        '<span>'+esc(e.label)+'</span>'+
+        (taste ? '<kbd class="ss-taste" aria-hidden="true">'+esc(taste)+'</kbd>' : '')+'</button>';
     }).join('')+
     '<button type="button" class="ss-knopf ss-anpassen" id="schnellAnpassenSeite" aria-haspopup="dialog">'+
       ikon(gew.length ? 'stift' : 'plus')+'<span>'+(gew.length ? 'Anpassen' : 'Festlegen')+'</span></button>'+
@@ -16718,11 +16838,33 @@ function renderSchnellWahl(){
   var kat=schnellKatalog();
   var gew=schnellGewaehlt(kat);
   var h=$('schnellHinweis');
-  if(h) h.textContent = 'Bis zu drei Ziele, die du jeden Tag brauchst. Sie stehen '+
-    (_mobnavBreite && _mobnavBreite.matches ? 'auf der Startseite unten, direkt über der Leiste'
-                                            : 'links in der Seitenleiste, auf jeder Seite')+
-    '. Gewählt: '+gew.length+' von '+SCHNELL_MAX+
-    (schnellEigen() ? '.' : ' — ein Vorschlag für deine Rolle, bis du selbst wählst.');
+  var handy=_mobnavBreite && _mobnavBreite.matches;
+  if(h) h.textContent = handy
+    ? 'Bis zu drei Ziele stehen auf der Startseite unten, direkt über der Leiste. '+
+      'Wählst du am Rechner mehr, stehen hier die ersten drei.'+
+      (schnellEigen() ? '' : ' Noch ist es ein Vorschlag für deine Rolle.')
+    : 'Bis zu sechs Ziele stehen links in der Seitenleiste, auf jeder Seite. Am Handy '+
+      'sind es die ersten drei.'+(schnellEigen() ? '' : ' Noch ist es ein Vorschlag für deine Rolle.');
+  var vor=$('schnellVorschau');
+  if(vor){
+    vor.innerHTML = '<div class="kn-gruppe">So sieht es aus</div>'+
+      (gew.length ? gew.map(function(k, i){
+        var x=kat.nach[k], e=x.e, taste=schnellTaste(k);
+        var nurPc = i>=SCHNELL_MAX;
+        return '<div class="sz-v-zeile'+(nurPc?' nur-pc':'')+'" data-farbe="'+esc(x.farbe||'')+'">'+
+          '<span class="sz-wahl-ikon">'+(e.roh || allesIkon(e.ikon||e.view))+'</span>'+
+          '<span class="sz-v-name">'+esc(e.label)+
+            (nurPc ? '<small>nur am Rechner</small>' : '')+'</span>'+
+          (taste ? '<kbd class="ss-taste" title="Taste">'+esc(taste)+'</kbd>' : '')+
+          '<button type="button" class="sz-v-knopf" data-szhoch="'+esc(k)+'" aria-label="'+esc(e.label)+' nach oben"'+(i===0?' disabled':'')+'>↑</button>'+
+          '<button type="button" class="sz-v-knopf" data-szrunter="'+esc(k)+'" aria-label="'+esc(e.label)+' nach unten"'+(i===gew.length-1?' disabled':'')+'>↓</button>'+
+          '<button type="button" class="sz-v-knopf sz-v-weg" data-szweg="'+esc(k)+'" aria-label="'+esc(e.label)+' entfernen">'+ikon('schliessen')+'</button>'+
+        '</div>';
+      }).join('') : '<p class="lese-leer">Noch nichts gewählt — tippe unten, was du jeden Tag brauchst.</p>')+
+      '<p class="hint sz-v-zahl">'+(handy && gew.length>SCHNELL_MAX
+        ? SCHNELL_MAX+' von '+SCHNELL_MAX+' hier, dazu '+(gew.length-SCHNELL_MAX)+' am Rechner'
+        : gew.length+' von '+schnellMax()+' gewählt')+'</p>';
+  }
   var html='', frage='';
   kat.reihe.forEach(function(x){
     if(x.frage!==frage){ frage=x.frage; html+='<div class="kn-gruppe">'+esc(frage)+'</div>'; }
@@ -16733,7 +16875,7 @@ function renderSchnellWahl(){
       '<span style="flex:1 1 auto;min-width:0">'+esc(x.e.label)+'</span>'+
       /* Die Stelle, nicht nur ein Haken: sie sagt auch, in welcher
          Reihenfolge die Knöpfe unten stehen werden. */
-      (pos>=0 ? '<span class="sz-stelle">'+(pos+1)+'</span>' : '')+
+      (pos>=0 ? '<span class="sz-stelle" aria-label="gewählt">'+ikon('hakenKreis')+'</span>' : '')+
       '</button>';
   });
   box.innerHTML=html;
@@ -16748,8 +16890,8 @@ function schnellUmschalten(key){
   var i=liste.indexOf(key);
   if(i>=0) liste.splice(i,1);
   else {
-    if(liste.length>=SCHNELL_MAX){
-      toast('Höchstens drei — tippe erst einen gewählten an, um ihn zu lösen.');
+    if(liste.length>=schnellMax()){
+      toast('Höchstens '+(schnellMax()===3?'drei':'sechs')+' — entferne oben erst einen.');
       return;
     }
     liste.push(key);
@@ -16759,6 +16901,23 @@ function schnellUmschalten(key){
   renderSchnellWahl();
   renderSchnell();
 }
+
+/* Reihenfolge ändern und entfernen, aus der Vorschau (Runde 116). */
+function schnellVerschieben(key, weg){
+  var kat=schnellKatalog();
+  var liste=schnellGewaehlt(kat).slice();
+  var i=liste.indexOf(key); if(i<0) return;
+  var j=i+weg; if(j<0 || j>=liste.length) return;
+  liste.splice(i,1); liste.splice(j,0,key);
+  tick(8); schnellSpeichern(liste); renderSchnellWahl(); renderSchnell();
+}
+document.addEventListener('click', function(ev){
+  var b=ev.target.closest && ev.target.closest('[data-szhoch],[data-szrunter],[data-szweg]');
+  if(!b || b.disabled) return;
+  if(b.hasAttribute('data-szhoch')) schnellVerschieben(b.getAttribute('data-szhoch'), -1);
+  else if(b.hasAttribute('data-szrunter')) schnellVerschieben(b.getAttribute('data-szrunter'), 1);
+  else schnellUmschalten(b.getAttribute('data-szweg'));
+});
 
 /* ── Die Schublade ──
    Derselbe Inhalt, aber über der Seite, auf der man gerade ist. Wer
@@ -24165,6 +24324,7 @@ function renderHome(){
    Zwei Grenzen: über 60 wird nicht gezählt (dauert zu lange), und
    „Bewegung reduzieren" schaltet es ganz ab. Zählende Ziffern sind genau
    die Art Flackern, die dann stört. */
+var _dashZaehlen=false;
 function hochzaehlen(wurzel){
   if(!wurzel || willRuhe()) return;
   wurzel.querySelectorAll('[data-zahl]').forEach(function(el){
@@ -27432,9 +27592,9 @@ function renderTodos(){
   for(var ri=12; ri<reihen.length; ri++) reihen[ri].classList.add('ohne-ein');
   // Zähler rechts neben dem Suchfeld
   var cnt=$('todoCount');
-  if(cnt) cnt.textContent = (_todoFilter || _todoMode!=='alle')
-    ? (shown+(shown===1?' Aufgabe':' Aufgaben'))
-    : (totalAll ? (doneAll+' von '+totalAll+' erledigt') : '');
+  if(cnt) cnt.innerHTML = (_todoFilter || _todoMode!=='alle')
+    ? esc(shown+(shown===1?' Aufgabe':' Aufgaben'))
+    : (totalAll ? fortschrittRing(doneAll, totalAll)+esc(doneAll+' von '+totalAll+' erledigt') : '');
   bindTodoClicks(area);
   renderToday();
   if(currentView==='home') renderHome();
@@ -27923,7 +28083,8 @@ function renderTodoDetail(){
     '<button type="button" class="btn '+(done?'btn-ghost':'btn-primary')+' td-haken" data-td="haken">'+
       (done ? 'Wieder öffnen' : ikon('hakenKreis')+' Abhaken')+'</button>'+
     (t.desc ? '<p class="td-text">'+esc(t.desc)+'</p>' : '')+
-    (schritte.length ? '<div class="td-schritte"><h4>Teilschritte · '+
+    (schritte.length ? '<div class="td-schritte"><h4>'+
+        fortschrittRing(schritte.filter(function(x){ return x && x.d; }).length, schritte.length)+'Teilschritte · '+
         schritte.filter(function(x){ return x && x.d; }).length+' von '+schritte.length+'</h4>'+
       schritte.map(function(x,i){
         return '<button type="button" class="td-schritt'+(x&&x.d?' an':'')+'" data-tdschritt="'+i+'" '+
@@ -28283,8 +28444,11 @@ function renderDashboard(){
     {n:_employees.length, l:'Team'}
   ];
   grid.innerHTML=tiles.map(function(t){
-    return '<div class="dash-tile"><div class="dn'+(t.warn?' warn':'')+'">'+t.n+'</div><div class="dl">'+esc(t.l)+'</div></div>';
+    return '<div class="dash-tile"><div class="dn'+(t.warn?' warn':'')+'" data-zahl="'+t.n+'">'+t.n+'</div><div class="dl">'+esc(t.l)+'</div></div>';
   }).join('');
+  /* Hochzählen nur beim Öffnen des Überblicks, nicht bei jedem
+     Neuzeichnen — renderDashboard läuft bei jeder Aufgabenänderung. */
+  if(_dashZaehlen){ _dashZaehlen=false; hochzaehlen(grid); }
 
   // Geburtstage (nächste 30 Tage)
   var bd=$('dashBday');
@@ -28481,7 +28645,7 @@ function showChefTab(id, keep){
   document.querySelectorAll('.chef-pane').forEach(function(p){
     p.style.display = (p.getAttribute('data-cpane')===id) ? '' : 'none';
   });
-  if(id==='ueberblick'){ renderDashboard(); renderStudioGrid(); renderAttention(); }
+  if(id==='ueberblick'){ _dashZaehlen=true; renderDashboard(); renderStudioGrid(); renderAttention(); }
   if(id==='team'){ renderFreigaben(); beitrittLaden(); }
   if(id==='standorte'){ renderStandorte(); terminalStudioAuswahl(); terminalsBeobachten(); }
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
@@ -31870,6 +32034,14 @@ function foldAufbauen(){
        Eine eigene Entscheidung des Nutzers (PREFS.folds) überstimmt das
        gleich darunter — was er selbst aufgeklappt hat, bleibt auf. */
     if(layoutNeu() && ['startuebergabe','startbrett'].indexOf(id)>=0) offen=false;
+    /* Am Rechner (Runde 116): eine zugeklappte Karte in der Hauptspalte
+       der Verwaltung lässt links eine leere Fläche neben der vollen
+       rechten Spalte stehen — „Alle Nachweise" war dort 99 px hoch in
+       einer 710 px breiten, sonst leeren Spalte. Die Hauptspalte ist
+       das, weswegen man die Seite öffnet; sie startet offen. Am Handy
+       bleibt es, wie es war. */
+    if(!offen && card.closest('.vw-haupt') && window.matchMedia &&
+       window.matchMedia('(min-width:1100px)').matches) offen=true;
     if(PREFS.folds && PREFS.folds[id]!=null) offen = !!PREFS.folds[id];
     card.classList.toggle('zu', !offen);
     if(offen) body.style.height='auto';
