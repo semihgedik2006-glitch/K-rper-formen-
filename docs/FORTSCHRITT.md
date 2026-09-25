@@ -13571,3 +13571,98 @@ ihre eigenen, billigen Übergänge für `color`.
 
 **Gesamtdurchlauf: 161 von 161 grün.** Die Startseite nach dem neuen
 Kürzen und Zeichnen: 42 von 42 Fällen gleich dem alten Stand.
+
+## Runde 123 — Design: Heute im Studio, Antworten ohne Menü, Abhaken mit Gewicht
+
+> Aus dem Betrieb, 25.9.2026: „beim Design kannst du auch ruhig
+> kreativer werden“. Und seit dem 24.9.: „genau so viel Fokus auf die
+> PC-Nutzung wie auf die Handy-Nutzung“.
+
+### Heute im Studio — das Tagesband (PC)
+
+- **Am Rechner** blieb unter der linken Spalte der Startseite fast ein
+  halber Bildschirm leer (1440 × 900: Inhalt bis y = 675).
+- **Dort steht jetzt der Tag als Band:**
+  - eine Zeitachse, mindestens 7–21 Uhr;
+  - jede Schicht meiner Studios als Balken, meiner heißt „Du“ und
+    trägt die Bereichsfarbe;
+  - eine Haarlinie für **jetzt**;
+  - darunter ein Satz: „Gerade da: Anna, Ben“.
+- **Man sieht auf einen Blick**, wer gerade da ist, wer gleich kommt
+  und wann man allein ist. Bisher stand das nur als Wochentabelle
+  unter Team.
+- **Keine neue Abfrage:** `loadMyShifts` holt die Woche meiner Studios
+  ohnehin (für „Mein Dienst“ und den Tausch). Heute wird davon nur
+  gemerkt (`_studioHeute`).
+- **Schichten ohne Überschneidung teilen sich eine Bahn**, höchstens
+  vier Bahnen. Was darüber hinausgeht, nennt der Satz („2 weitere im
+  Schichtplan“).
+- **Das ganze Band ist ein Knopf.** Es öffnet den Schichtplan dieses
+  Studios an diesem Tag.
+- **Nicht am Handy:** Dort zählt jede Zeile („ein Bildschirm, kein
+  Scrollen“). **Nicht beim Chef:** Vierzehn Studios in einem Band
+  wären Striche, keine Übersicht.
+- **Es ist ein Block wie jeder andere** und steht links ganz unten.
+  Passt er nicht (Studioleitung bei 1280 × 800), steht „Heute im
+  Studio“ unter „Ausserdem“. Stumm fällt nichts weg.
+- **Im Bild gefunden:** Die Beschriftung „jetzt“ stand auf der
+  Stundenzahl („11jetzt“). Die Zahl darunter fällt jetzt weg.
+
+### Antworten ohne Menü (Design-Idee 20)
+
+- Bisher brauchte eine Antwort zwei Tipps: Nachricht antippen, dann
+  „Antworten“.
+- **Am Handy:** Die Blase nach rechts ziehen.
+  - Sie folgt dem Finger, und ab 56 px steht der Pfeil ganz da; das
+    Handy tickt einmal. Loslassen heißt antworten.
+  - Dieselbe Richtungsentscheidung wie beim Wischen zum Abhaken: erst
+    prüfen, ob der Finger seitlich wischt oder scrollt.
+  - Der Klick, den der Browser nach dem Wischen noch schickt, öffnet
+    nicht zusätzlich das Blatt.
+- **Am Rechner:** Beim Überfahren steht neben der Blase ein runder
+  Knopf „Antworten“, 44 × 44, bei eigenen links, bei fremden rechts.
+  Es ist **ein** Knopf, der zur Blase unter dem Zeiger wandert, nicht
+  hundertzwanzig. Er hängt in der Blase und scrollt mit ihr.
+
+### Abhaken mit Gewicht (Design-Idee 19)
+
+- Die frisch abgehakte Karte gibt 2 px nach und federt zurück, wie ein
+  Stempel, der aufsetzt.
+- Nur `transform`, mit derselben Verzögerung `--seit` wie Leuchten und
+  Haken. So übersteht es das Neuzeichnen durch den Horcher.
+
+### Beim Messen gefunden, nicht behoben
+
+- **Der Chat ist bei 320 × 640 zu flach:** Für Nachrichten bleiben rund
+  135 px. Kopf, Kanäle und die Karte „Meldungen an?“ nehmen den Rest.
+  Die Karte lässt sich wegklicken, der Rest bleibt. Das steht als
+  Punkt für die nächste Runde; es zu ändern hieße, den Chat-Kopf am
+  kleinen Handy umzubauen.
+
+### Nicht gebaut, mit Grund
+
+- **Studio-Farbe (Idee 23):**
+  - Vierzehn unterscheidbare Farben ohne Rot, Bernstein und Grün
+    (Statusfarben) gibt es nicht. Zwischen 170° und 340° wären es 12°
+    Abstand, zu wenig fürs Auge.
+  - Doppelt vergebene Farben wären schlimmer als keine.
+- **Gelesen-Häkchen und feste Avatarfarben** warten auf die Antwort aus
+  dem Betrieb (Frage vom 25.9.).
+
+### Tests
+
+- `tests/test-chat-antworten.js` (36):
+  - wischen 70 px, als Gegenproben 30 px und senkrecht;
+  - ein Tipp öffnet weiter das Blatt;
+  - Treffer des Knopfs bei 1280/1440/1920, normal und kompakt, fremd
+    und eigen.
+  - Gegen den Stand ohne die Funktion fällt der Test.
+- `tests/test-tagesband.js` (33):
+  - Lage von „Du“ und „jetzt“ auf der Achse, die Uhr steht dafür auf
+    11:20;
+  - der Klick in den Schichtplan;
+  - Treffer, Einpassen und Lesbarkeit ≥ 4,5 : 1 bei 1280/1440/1920,
+    hell und dunkel, normal und kompakt;
+  - nicht am Handy, nicht beim Chef, um 23:10 ohne Linie;
+  - „sacken“ nur an der frisch abgehakten Zeile.
+

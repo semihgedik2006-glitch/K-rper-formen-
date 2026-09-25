@@ -31,10 +31,10 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 
 | | | Quelle |
 |---|---|---|
-| Anwendung | `index.html`, **36.600 Zeilen** | `wc -l` |
+| Anwendung | `index.html`, **36.850 Zeilen** | `wc -l` |
 | Serverfunktionen | **73** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **2.365 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **161** (158 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Oberfläche) | **163** (160 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
 | Automatische Durchläufe (Regeln) | **26 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem sechs Dateien dazu) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |

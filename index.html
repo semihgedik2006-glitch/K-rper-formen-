@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FtONilupwfXEv69JyIfA33JDgyg/EYc7Za1PUOmbiCg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-HEuEMkwAT67MldCuGmeP+4iJgyouAB+NpLnXZMRUiFM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1213,6 +1213,42 @@ html.demo #terminalSchirm{top:44px}
 .msg .meta{display:flex;align-items:center;gap:var(--s6);margin-bottom:var(--s2);flex-wrap:wrap}
 /* Folgenachricht derselben Person: rückt näher heran und wiederholt den Kopf nicht */
 .msg.grp{margin-top:-5px;border-top-left-radius:7px}
+/* ── Antworten, ohne das Menü zu öffnen (Runde 123) ──
+   Aus den Design-Ideen, Punkt 20: „Nach rechts ziehen. Kennt jeder."
+   Bis hierhin brauchte eine Antwort zwei Tipps: Nachricht antippen,
+   dann „Antworten" im Blatt.
+
+   AM HANDY: die Blase folgt dem Finger nach rechts (höchstens 72 px),
+   dahinter wächst der Antwortpfeil. Ab 56 px ist er ganz da, das Handy
+   tickt einmal — loslassen heisst antworten. Nur `transform` und
+   `opacity`: die Blase wird verschoben, nicht neu gesetzt.
+   touch-action:pan-y überlässt das senkrechte Scrollen dem Browser und
+   gibt die waagrechte Bewegung an die App.
+
+   AM RECHNER: beim Überfahren steht neben der Blase ein runder Knopf
+   „Antworten" — EIN Knopf, der zur Blase unter dem Zeiger wandert,
+   nicht hundertzwanzig. 44 × 44, im Leerraum neben der Blase (die ist
+   höchstens 80 % breit), bei eigenen links, bei fremden rechts. */
+.chat-scroll .msg{position:relative;touch-action:pan-y}
+.msg.wischt{transition:none}
+.msg.zurueck{transition:transform .32s var(--spring)}
+.wisch-pfeil{position:absolute;left:-40px;top:50%;width:32px;height:32px;margin-top:-16px;
+  display:grid;place-items:center;border-radius:var(--r-rund);pointer-events:none;
+  background:var(--tipp-1);color:var(--accent-d);opacity:0;transform:scale(.4)}
+.wisch-pfeil svg{width:16px;height:16px}
+.wisch-pfeil.bereit{background:var(--accent);color:var(--on-accent)}
+.msg-antwort{display:none}
+@media (hover:hover) and (pointer:fine){
+  .msg-antwort{position:absolute;top:50%;right:-52px;width:44px;height:44px;margin-top:-22px;
+    display:grid;place-items:center;border-radius:var(--r-rund);cursor:pointer;
+    border:1px solid var(--tipp-kante);background:var(--bg-2);color:var(--accent-d);
+    box-shadow:var(--e1);opacity:0;transform:scale(.85);
+    transition:opacity .16s var(--ease-out),transform .16s var(--ease-out),background .2s}
+  .msg.mine .msg-antwort{right:auto;left:-52px}
+  .msg:hover .msg-antwort,.msg-antwort:focus-visible{opacity:1;transform:none}
+  .msg-antwort:hover{background:var(--tipp-1)}
+  .msg-antwort svg{width:18px;height:18px}
+}
 .msg.grp.mine{border-top-left-radius:16px;border-top-right-radius:7px}
 .meta-min{margin-top:var(--s2)}
 .msg .meta .chat-author{white-space:nowrap}
@@ -2617,7 +2653,8 @@ body.nurlesen .kopf-plus{display:none !important}
 .pp-item.just-done{animation:doneFlash .7s var(--ease-out) var(--seit,0ms) backwards}
 @media (prefers-reduced-motion:reduce){
   .todo.just-done,.pp-item.just-done,
-  .todo.just-done .check,.pp-item.just-done .check{animation:none}
+  .todo.just-done .check,.pp-item.just-done .check,
+  .todo.just-done .swipe-body,.pp-item.just-done .swipe-body{animation:none}
 }
 .pp-body{flex:1;min-width:0}
 .pp-title{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);letter-spacing:var(--ls-s)}
@@ -2801,6 +2838,16 @@ body.nurlesen .kopf-plus{display:none !important}
 .todo.just-done .check,.pp-item.just-done .check{
   animation:checkPop .45s var(--spring) var(--seit,0ms) backwards}
 @keyframes checkPop{0%{transform:scale(1)}45%{transform:scale(1.3)}100%{transform:scale(1)}}
+/* ── Abhaken mit Gewicht (Runde 123, Design-Idee 19) ──
+   „Funken und Lob gibt es. Es fehlt, dass die Karte kurz zusammensackt,
+   bevor sie nach ‚erledigt' wandert." Der Inhalt gibt 2 px nach und
+   kommt federnd zurück — wie ein Stempel, der aufsetzt. Nur transform,
+   dieselbe Verzögerung --seit wie Leuchten und Haken, damit es das
+   Neuzeichnen durch den Horcher übersteht. */
+.todo.just-done .swipe-body,.pp-item.just-done .swipe-body{
+  animation:sacken .5s var(--spring) var(--seit,0ms) backwards}
+@keyframes sacken{0%{transform:none}22%{transform:translateY(2px) scale(.985)}
+  55%{transform:translateY(-1px) scale(1.004)}100%{transform:none}}
 .check{transition:transform .32s var(--spring),background .25s var(--ease-ios),border-color .25s var(--ease-ios)}
 
 /* Pop-ups: aus der Mitte heraus aufziehen, Hintergrund weich verschwimmen */
@@ -6142,6 +6189,35 @@ body.neu .heute-zeile.lesen   {--kat:var(--ber);--kat-f:var(--ber-f)}
 body.neu .heute-zeile.tun     {--kat:#BBA4FF;--kat-f:rgba(var(--akz2-rgb),.3)}
 body.neu.light .heute-zeile.tun{--kat:#5F1FC7;--kat-f:rgba(109,40,217,.2)}
 body.neu .heute-zeile.putz    {--kat:#4EE6D2;--kat-f:rgba(45,212,191,.26)}
+/* ── Das Tagesband (Runde 123) ──
+   Keine Statusfarbe: „Heute im Studio" meldet nichts, es zeigt. Die
+   eigene Schicht trägt die Bereichsfarbe (--ber), die der anderen eine
+   ruhige Tönung. JETZT ist eine Haarlinie in Textfarbe — die einzige
+   senkrechte Linie im Band, und deshalb sofort zu finden. */
+body.neu .heute-kopf.band{--kat:var(--ber)}
+body.neu .heute-zeile.tagesband{--kat:var(--ber);--kat-f:var(--ber-f);
+  display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s6);align-items:stretch;
+  padding:var(--s12) var(--s16) var(--s10)}
+.tb-achse{position:relative;height:14px;font-size:var(--t-2xs);color:var(--text-3);
+  font-variant-numeric:tabular-nums}
+.tb-achse span{position:absolute;top:0;transform:translateX(-50%)}
+.tb-achse span:first-child{transform:none}
+.tb-achse span:last-child{transform:translateX(-100%)}
+.tb-flaeche{position:relative;display:grid;gap:var(--s4);padding:var(--s2) 0}
+.tb-bahn{position:relative;height:24px}
+.tb-schicht{position:absolute;top:0;bottom:0;min-width:34px;display:flex;align-items:center;gap:var(--s6);
+  padding:0 var(--s8);border-radius:var(--r-sm);overflow:hidden;white-space:nowrap;
+  background:var(--auf-1);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--text);
+  font-size:var(--t-xs)}
+.tb-schicht b{font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.tb-schicht i{font-style:normal;color:var(--text-2);font-variant-numeric:tabular-nums}
+.tb-schicht.ich{background:var(--ber);box-shadow:none;color:var(--on-accent)}
+.tb-schicht.ich i{color:inherit;opacity:.85}
+.tb-jetzt{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:var(--r-pille);
+  background:var(--text);pointer-events:none}
+.tb-jetzt em{position:absolute;bottom:100%;left:50%;transform:translate(-50%,-2px);font-style:normal;
+  font-size:var(--t-2xs);font-weight:700;color:var(--text);white-space:nowrap}
+.tb-satz{font-size:var(--t-xs);color:var(--text-2)}
 body.neu.light .heute-zeile.putz{--kat:#0B6A62;--kat-f:rgba(15,118,110,.18)}
 /* Ohne Kachel. Aus dem Betrieb: „es wirkt jetzt mit den grossen
    Symbolen immer noch voll überwältigend."
@@ -17188,6 +17264,13 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-26-tagesband', datum:'26.9.2026', titel:'Wer ist heute mit mir im Studio?', wo:'home', punkte:[
+    'Am Rechner steht auf der Startseite jetzt „Heute im Studio": der Tag als Band, jede Schicht ein Balken, deiner in der Farbe des Bereichs, und eine Linie für jetzt. Darunter steht, wer gerade da ist.',
+    'Ein Klick auf das Band öffnet den Schichtplan dieses Studios für heute.' ] },
+  { id:'2026-09-26-antworten', datum:'26.9.2026', titel:'Im Chat schneller antworten', wo:'chat', punkte:[
+    'Am Handy: eine Nachricht nach rechts ziehen — schon steht „Antwort an …" unten. Wie bei WhatsApp.',
+    'Am Rechner: mit der Maus über eine Nachricht fahren, daneben erscheint „Antworten".',
+    'Und beim Abhaken einer Aufgabe gibt die Karte kurz nach, wie ein Stempel, der aufsetzt.' ] },
   { id:'2026-09-26-fluessiger', datum:'26.9.2026', titel:'Schneller beim Start, ruhiger beim Wechseln', wo:'home', punkte:[
     'Die App ist beim Öffnen spürbar schneller da. Die Startseite wurde bisher beim Laden bis zu 18-mal neu aufgebaut, jetzt dreimal.',
     'Beim Wechsel zwischen den Bereichen gleitet die Farbe oben und in der Seitenleiste jetzt überall mit, auch an den kleinen Zeichen — und kostet dabei nur noch halb so viel Rechenzeit.',
@@ -23083,7 +23166,7 @@ function stopListeners(){
   // angezeigt.
   if(_matSaveTimer){ clearTimeout(_matSaveTimer); _matSaveTimer=null; }
   _matSaveKey=null;
-  _myShifts=[]; _myShiftsAt=0; _myShiftsLoading=false;
+  _myShifts=[]; _myShiftsAt=0; _myShiftsLoading=false; _studioHeute=[];
   /* Dasselbe fuer die Uebergaben und den Gelesen-Stand: beides haengt am
      Konto, nicht am Geraet. Der Stand des Vorgaengers wuerde beim
      Naechsten dafuer sorgen, dass Neues gar nicht erst als neu
@@ -23796,6 +23879,89 @@ function pinNachricht(id, war){
 }
 
 /* Antworten, Reagieren, Bearbeiten, Löschen an den Nachrichten verdrahten */
+/* Die Nachricht zu einer Blase im Verlauf. */
+function msgZuBlase(el){
+  return el ? (_curMsgs||[]).filter(function(x){ return x.id===el.dataset.mid; })[0] : null;
+}
+/* ── Wischen zum Antworten (Runde 123) ──
+   An der Liste EINMAL gebunden, nicht an jeder Blase: der Verlauf wird
+   bei jeder neuen Nachricht neu gezeichnet. Erst entscheiden, ob der
+   Finger seitlich wischt oder scrollt — dieselbe Regel wie beim Wischen
+   zum Abhaken (bindSwipe). Im Wischen wird nichts gemessen: die Weite
+   kommt aus den Fingerkoordinaten. */
+var WISCH_ANTWORT_PX=56;
+function chatWischen(box){
+  var el=null, pfeil=null, x0=0, y0=0, dx=0, aktiv=false, entschieden=false, bereit=false;
+  box.addEventListener('touchstart', function(e){
+    if(e.touches.length!==1) return;
+    var t=e.target;
+    if(!t.closest || t.closest('.poll-opt,[data-sp],input,textarea,.load-older')) return;
+    el=t.closest('.msg'); if(!el || !el.dataset.mid) { el=null; return; }
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY; dx=0;
+    aktiv=true; entschieden=false; bereit=false;
+  }, {passive:true});
+  box.addEventListener('touchmove', function(e){
+    if(!aktiv || !el) return;
+    var mx=e.touches[0].clientX-x0, my=e.touches[0].clientY-y0;
+    if(!entschieden){
+      if(Math.abs(my)>Math.abs(mx)){ aktiv=false; return; }
+      if(mx<10) return;
+      entschieden=true;
+      el.classList.remove('zurueck'); el.classList.add('wischt');
+      pfeil=document.createElement('span');
+      pfeil.className='wisch-pfeil'; pfeil.innerHTML=ikon('antworten');
+      el.appendChild(pfeil);
+    }
+    /* Bis 56 px folgt die Blase dem Finger, danach nur noch zäh. */
+    dx = mx<=0 ? 0 : (mx<=WISCH_ANTWORT_PX ? mx : WISCH_ANTWORT_PX+(mx-WISCH_ANTWORT_PX)*.25);
+    dx = Math.min(dx, 72);
+    el.style.transform='translateX('+dx+'px)';
+    var anteil=Math.min(1, dx/WISCH_ANTWORT_PX);
+    pfeil.style.opacity=String(anteil);
+    pfeil.style.transform='scale('+(.4+.6*anteil)+')';
+    var jetzt = dx>=WISCH_ANTWORT_PX;
+    if(jetzt!==bereit){ bereit=jetzt; pfeil.classList.toggle('bereit', bereit); if(bereit) tick(10); }
+  }, {passive:true});
+  function ende(){
+    if(!el){ aktiv=false; return; }
+    var war=el, m=msgZuBlase(el), los=entschieden && bereit;
+    if(entschieden){
+      box._gewischt=Date.now();
+      war.classList.remove('wischt'); war.classList.add('zurueck');
+      war.style.transform='';
+      if(pfeil){ var p=pfeil; p.style.opacity='0'; setTimeout(function(){ if(p.parentNode) p.parentNode.removeChild(p); }, 320); }
+      setTimeout(function(){ war.classList.remove('zurueck'); }, 340);
+    }
+    el=null; pfeil=null; aktiv=false; entschieden=false; bereit=false;
+    if(los && m) startReply(m);
+  }
+  box.addEventListener('touchend', ende);
+  box.addEventListener('touchcancel', ende);
+}
+/* ── Antworten am Rechner (Runde 123) ──
+   EIN Knopf, der zur Blase unter dem Zeiger wandert. Er hängt IN der
+   Blase (position:absolute daneben), damit er mit ihr scrollt; das
+   Zeichnen des Verlaufs räumt ihn weg, und beim nächsten Überfahren
+   entsteht er neu. Sichtbar nur bei Maus (hover:hover, pointer:fine). */
+function chatAntwortKnopf(box){
+  var knopf=null;
+  box.addEventListener('mouseover', function(e){
+    var el=e.target.closest && e.target.closest('.msg');
+    if(!el || !el.dataset.mid) return;
+    if(!knopf || !box.contains(knopf)){
+      knopf=document.createElement('button');
+      knopf.type='button'; knopf.className='msg-antwort';
+      knopf.title='Antworten'; knopf.setAttribute('aria-label','Antworten');
+      knopf.innerHTML=ikon('antworten');
+      knopf.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        var m=msgZuBlase(knopf.parentNode);
+        if(m) startReply(m);
+      });
+    }
+    if(knopf.parentNode!==el) el.appendChild(knopf);
+  });
+}
 function bindMessageTools(box){
   // Ein Tipp auf die Nachricht öffnet das Aktionsblatt. Alles, was selbst
   // anklickbar ist (Umfrage, Reaktion, Bild, Link), behält seinen eigenen Tipp.
@@ -23813,12 +23979,17 @@ function bindMessageTools(box){
          Das ist die Sorte Fehler, die beim Ersetzen einer eingebauten
          Steuerung entsteht: eine Liste an ganz anderer Stelle nennt das
          eingebaute Element beim Namen. */
-      if(e.target.closest('.react,.msg-quote,.poll-opt,audio,[data-sp],img,a,.chat-author,.load-older')) return;
+      if(e.target.closest('.react,.msg-quote,.poll-opt,audio,[data-sp],img,a,.chat-author,.load-older,.msg-antwort')) return;
+      /* Nach einem Wischen kommt vom Browser noch ein Klick hinterher —
+         der darf nicht zusätzlich das Blatt öffnen. */
+      if(Date.now()-(box._gewischt||0) < 450) return;
       var el=e.target.closest && e.target.closest('.msg');
       if(!el) return;
       var m=(_curMsgs||[]).filter(function(x){ return x.id===el.dataset.mid; })[0];
       msgBlattOeffnen(m);
     });
+    chatWischen(box);
+    chatAntwortKnopf(box);
   }
   box.querySelectorAll('[data-poll]').forEach(function(b){
     b.addEventListener('click',function(e){
@@ -24465,7 +24636,99 @@ function renderBoard(){
 function tageSeit(ms){
   return Math.floor((Date.now()-ms)/86400000);
 }
+/* ══ HEUTE IM STUDIO — das Tagesband (Runde 123) ══════════════════════
+   Aus dem Betrieb, 25.9.2026: „beim Design kannst du auch ruhig
+   kreativer werden". Und seit dem 24.9.: „genau so viel Fokus auf die
+   PC-Nutzung wie auf die Handy-Nutzung".
+
+   Wer ist heute mit mir im Studio, und wann? Bisher stand das nur im
+   Schichtplan unter Team, eine Woche als Tabelle. Hier steht der eine
+   Tag als Band: eine Zeitachse, jede Schicht ein Balken, meiner in der
+   Bereichsfarbe, und eine Linie für JETZT. Man sieht auf einen Blick,
+   wer gerade da ist, wer gleich kommt und wann man allein ist.
+
+   Nichts Neues aus der Datenbank: die Schichten stehen schon da
+   (loadMyShifts holt die Woche meiner Studios für „Mein Dienst" und
+   den Tausch). Balken, die sich zeitlich nicht überschneiden, teilen
+   sich eine Bahn — drei Leute in drei Schichten nacheinander sind eine
+   Zeile, nicht drei. Der Chef sieht es nicht: vierzehn Studios in ein
+   Band gäbe Striche, keine Übersicht; sein Blick ist die Verwaltung.
+
+   Das ganze Band ist EIN Knopf (Treffer über die volle Fläche) und
+   öffnet den Schichtplan dieses Studios an diesem Tag. */
+var TB_BAHNEN_MAX=4;
+function tbMin(hhmm){
+  var m=/^(\d{1,2}):(\d{2})$/.exec(String(hhmm||''));
+  return m ? (+m[1])*60+(+m[2]) : NaN;
+}
+function tagesbandDaten(keys){
+  if(!featureAn('schicht') || isChef() || !keys.length || keys.length>3) return null;
+  var heute=ymd(new Date());
+  var liste=(_studioHeute||[]).filter(function(x){
+    if(x.date!==heute || keys.indexOf(x.sk)<0) return false;
+    var a=tbMin(x.from), b=tbMin(x.to);
+    return !isNaN(a) && !isNaN(b) && b>a;            // unsinnige Zeiten weglassen
+  });
+  if(!liste.length) return null;
+  /* Achse: volle Stunden, mindestens 7–21 Uhr, damit ein einzelner
+     kurzer Dienst nicht die ganze Breite füllt und wie ein Tag aussieht. */
+  var von=7*60, bis=21*60;
+  liste.forEach(function(x){ von=Math.min(von, tbMin(x.from)); bis=Math.max(bis, tbMin(x.to)); });
+  von=Math.floor(von/60)*60; bis=Math.ceil(bis/60)*60;
+  var spanne=bis-von;
+  /* Bahnen packen: früheste zuerst, in die erste Bahn, die frei ist. */
+  liste.sort(function(a,b){ return tbMin(a.from)-tbMin(b.from) || tbMin(b.to)-tbMin(a.to); });
+  var bahnen=[];
+  liste.forEach(function(x){
+    var a=tbMin(x.from);
+    for(var i=0;i<bahnen.length;i++){ if(bahnen[i].ende<=a){ bahnen[i].ende=tbMin(x.to); bahnen[i].s.push(x); return; } }
+    bahnen.push({ ende:tbMin(x.to), s:[x] });
+  });
+  var weg=0;
+  if(bahnen.length>TB_BAHNEN_MAX){
+    bahnen.slice(TB_BAHNEN_MAX).forEach(function(b){ weg+=b.s.length; });
+    bahnen=bahnen.slice(0,TB_BAHNEN_MAX);
+  }
+  var mehrere=keys.length>1;
+  var pct=function(m){ return ((m-von)/spanne*100).toFixed(2); };
+  var jetztMin=new Date().getHours()*60+new Date().getMinutes();
+  var jetztDrin = jetztMin>=von && jetztMin<=bis;
+  var achse='';
+  for(var h=von/60; h<=bis/60; h+=2){
+    /* Die Stundenzahl, über der „jetzt" steht, fällt weg — sonst lasen
+       sich beide als „11jetzt" (im Bild gesehen). */
+    if(jetztDrin && Math.abs(h*60-jetztMin) < spanne*0.05) continue;
+    achse+='<span style="left:'+pct(h*60)+'%">'+h+'</span>';
+  }
+  var jetzt = jetztDrin
+    ? '<span class="tb-jetzt" style="left:'+pct(jetztMin)+'%"><em>jetzt</em></span>' : '';
+  var personen={}, jetztDa=[];
+  var zeilenHtml=bahnen.map(function(b){
+    return '<span class="tb-bahn">'+b.s.map(function(x){
+      var ich=x.uid===session.uid;
+      personen[x.uid]=1;
+      if(!ich && tbMin(x.from)<=jetztMin && jetztMin<tbMin(x.to)) jetztDa.push((x.name||'').split(' ')[0]);
+      var name= ich ? 'Du' : (x.name||'').split(' ')[0];
+      if(mehrere) name+=' · '+studioName(x.sk);
+      return '<span class="tb-schicht'+(ich?' ich':'')+'" style="left:'+pct(tbMin(x.from))+'%;width:'+
+        ((tbMin(x.to)-tbMin(x.from))/spanne*100).toFixed(2)+'%" title="'+esc(name+' '+x.from+'–'+x.to)+'">'+
+        '<b>'+esc(name)+'</b><i>'+esc(x.from.replace(/:00$/,'')+'–'+x.to.replace(/:00$/,''))+'</i></span>';
+    }).join('')+'</span>';
+  }).join('');
+  /* Ein Satz für Screenreader und für alle, die Balken nicht lesen. */
+  var satz = jetztDa.length ? 'Gerade da: '+jetztDa.join(', ')
+           : (jetzt ? 'Gerade ist niemand sonst eingetragen' : Object.keys(personen).length+' im Dienst heute');
+  var sk=liste[0].sk;
+  var band='<button type="button" class="heute-zeile band tagesband" data-heute="team" data-hsk="'+esc(sk)+'"'+
+    ' data-hdatum="'+esc(heute)+'" aria-label="'+esc('Heute im Studio. '+satz+'. Schichtplan öffnen')+'">'+
+    '<span class="tb-achse">'+achse+'</span>'+
+    '<span class="tb-flaeche">'+zeilenHtml+jetzt+'</span>'+
+    '<span class="tb-satz">'+esc(satz)+(weg?' · '+weg+' weitere im Schichtplan':'')+'</span>'+
+    '</button>';
+  return { band:band, personen:Object.keys(personen).length };
+}
 function heuteZeile(k){
+  if(k.band) return k.band;
   return '<button type="button" class="heute-zeile '+k.art+'" data-heute="'+esc(k.ziel)+'"'+
     (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+
     (k.ichtab?' data-hichtab="'+esc(k.ichtab)+'"':'')+
@@ -24777,7 +25040,9 @@ function renderHeuteJetzt(){
          wurden. Beim Putzplan der Leitung ist das nicht dasselbe: eine
          Zeile ist ein Studio, die Zahl sind Punkte. test-neu-design hat
          es gefunden. */
-      ((rest>0 || n>zeigen.length) ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
+      /* Das Tagesband zeigt alle, die heute da sind — „alle N ›" wäre
+         dort eine Verheissung ohne Inhalt. */
+      (art!=='band' && (rest>0 || n>zeigen.length) ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
                 (f?' data-hf="'+esc(f)+'"':'')+'>alle '+n+' ›</button>' : '')+
       '</div>'+(zusatz||'')+'<div class="heute-liste">'+zeigen.map(heuteZeile).join('')+'</div></div>';
     if(breit){
@@ -24813,6 +25078,13 @@ function renderHeuteJetzt(){
   ohneFrist.sort(function(a,b){ return a.ts-b.ts; });
   if(ansichtAn('todos'))
     block('Offen', 'tun', ohneFrist, ohneFrist.slice(0,zeilen(2,5)), 'todos', 'offen');
+  /* ── Heute im Studio (Runde 123) ── siehe tagesbandHTML(). Nur am PC:
+     dort blieb unter der linken Spalte ein halber Bildschirm leer; am
+     Handy zählt jede Zeile (ein Bildschirm, kein Scrollen). Als LETZTER
+     Block links: passt es nicht, fällt er zuerst — und steht dann unter
+     „Ausserdem", wie jede andere Kategorie. */
+  var band = breit ? tagesbandDaten(keys) : null;
+  if(band) block('Heute im Studio', 'band', [band], [band], 'team', null, band.personen, 'l');
 
   /* Eine Spalte allein bekommt kein leeres Gegenüber: dann bleibt es
      eine Liste über die ganze Breite. */
@@ -25562,6 +25834,10 @@ function berichtAnfordern(tage, note){
    Uhr für etwas, das sich selten ändert. Stattdessen einmal laden und
    höchstens alle fünf Minuten erneuern. */
 var _myShifts=[], _myShiftsAt=0, _myShiftsLoading=false;
+/* Alle Schichten meiner Studios von heute — für das Tagesband auf der
+   Startseite (Runde 123). Kommt aus derselben Abfrage wie „Mein Dienst",
+   kostet also keinen Lesevorgang mehr. */
+var _studioHeute=[];
 /* Schichten, die Kollegen abgeben — und bei der Leitung die, bei denen
    jemand zugesagt hat. Runde 103 (Idee B2). Sie kommen aus DERSELBEN
    Abfrage wie „Mein Dienst": die holt ohnehin alle Schichten der
@@ -25603,6 +25879,7 @@ function loadMyShifts(force){
       return (a.date||'').localeCompare(b.date||'') || (a.from||'').localeCompare(b.from||'');
     }
     _myShifts=alle.filter(function(x){ return x.uid===session.uid; }).sort(nachZeit);
+    _studioHeute=alle.filter(function(x){ return x.date===heute; }).sort(nachZeit);
     _tauschAngebote=alle.filter(function(x){
       return x.tausch==='offen' && x.uid!==session.uid;
     }).sort(nachZeit);
