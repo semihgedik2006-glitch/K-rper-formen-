@@ -12675,3 +12675,120 @@ nachgebildeten Fehler der Demo.
   weil ich in der Meldung `line-height:1.45` fest eingetragen hatte
   statt die Stufe aus `:root` zu nehmen. Das ist jetzt `var(--lh)`,
   danach sind `test-gestaltung` und `test-ladefehler` einzeln grün.
+
+## Runde 110/111 — Eine Regel für Datum und Uhrzeit; Reiter mit Strich
+
+> Design-Ideen, Punkt 28: „Startseite: ‚heute 21:10 Uhr'. Chat:
+> ‚21:10'. Übergabe: ‚heute 22:10 Uhr'. Drei Schreibweisen für dieselbe
+> Sache." Und Punkt 6: „‚Aufgaben' (Navigation) ist eine gefüllte Pille,
+> und ‚Alle' (Filter) auch."
+
+### Datum und Uhrzeit (Runde 110)
+
+Nachgezählt waren es vier Schreibweisen: „heute 21:10 Uhr“, „21:10“,
+„5.8.2026“ (ohne Nullen, `toLocaleDateString('de-DE')` an 14
+Stellen) und auf Ausdrucken „25.9.2026, 09:04:33“ mit Sekunden. Die
+Regel steht jetzt als Kommentar über den Funktionen:
+
+| was | wie | Funktion |
+|---|---|---|
+| Uhrzeit | `09:05`, ohne „Uhr“ | `fmtUhr` |
+| Tag | `05.08.`, ein anderes Jahr `05.08.2025` | `fmtTag` |
+| Zeitpunkt | `heute 09:05` · `gestern 09:05` · `05.08. 09:05` | `fmtDateTime` |
+| in Listen | wie Zeitpunkt, heute nur `09:05` | `fmtTime` |
+| im Chat | nur `09:05`, der Tag steht im Trenner | `fmtUhr` |
+| Ablauf, Abo, Nachweis | immer mit Jahr: `05.08.2026` | `fmtTag(d, true)` |
+| Ausdruck, Ausfuhr | `25.09.2026 09:04` | `fmtStand` |
+
+- **Warum ohne „Uhr“:** Neben `09:05` sagt es nichts, was die Zahl
+  nicht schon sagt. In Sätzen („ab 18 Uhr“) bleibt es.
+- **Warum „gestern“ neu:** Es ist das Wort, das man im Studio sagt,
+  und es spart den Blick auf den Kalender.
+- **Wochentage selbst geschrieben** („Di.“): `toLocaleDateString`
+  schreibt je nach Umgebung „Di“ oder „Di.“. Gemessen: Chromium und
+  Node unterscheiden sich.
+
+**Dabei gefunden: „Gestern“ war an der Zeitumstellung falsch.** Der
+Chat-Trenner rechnete „heute − 86.400.000 ms“. In der Nacht nach der
+Umstellung auf Winterzeit hat der Vortag 25 Stunden, und Nachrichten
+aus dessen erster Stunde bekamen ein Datum statt „Gestern“. Jetzt wird
+der Vortag über den Kalender bestimmt. Der Durchlauf stellt das mit
+einer festen Uhr in Berliner Zeit nach; mit der alten Rechnung wird er
+rot.
+
+### Reiter und Filter (Runde 111)
+
+- Reiter (die Bereichsleiste `#subnav` und die Verwaltung
+  `.chef-tabs`) tragen jetzt einen **3-px-Strich unter dem Wort** statt
+  einer Füllung. Filter bleiben Pillen. Der gleitende Marker ist
+  derselbe und bewegt sich ebenso über `transform`; er ist nur flach und
+  sitzt an der Unterkante.
+- Die Segmente im Team (`.pm-tabs`) sind schon eine eigene Form und
+  bleiben, wie sie sind.
+
+**Dabei gefunden: die Reiter trafen nur 36 px hoch**, bei 390 und
+1440 px, in normal und kompakt, und zwar seit es sie gibt.
+`test-knoepfe` misst Knöpfe mit Symbol, keine Reiter. Jetzt haben sie
+`min-height:44px`; der Platz liegt zwischen Wort und Strich.
+
+### Durchläufe
+
+- **Neu: `tests/test-datum.js`** mit 22 Zusicherungen:
+  - Teil A rechnet die Funktionen nach; sie werden aus `index.html`
+    gelesen, nicht abgeschrieben. Dazu gehört die Zeitumstellung mit
+    fester Uhr.
+  - Teil B sieht in der App nach, in sechs Ansichten, am Handy und am
+    Rechner: kein „14:30 Uhr“, kein „5.8.2026“, keine Sekunden, im Chat
+    nur Uhrzeiten, in den Trennern der Tag.
+  - Gegenprobe: Die alte Seite fällt durch (Putzplan „10:40 Uhr“,
+    Geräte „02:40 Uhr“).
+- **Neu: `tests/test-reiter.js`** mit 28 Zusicherungen, bei 390 und
+  1440 px:
+  - der Strich ist ≤ 4 px hoch und sitzt ±2 px unter genau dem offenen
+    Reiter;
+  - er wandert beim Wechsel mit;
+  - der Reiter hat keine Füllung und keinen Schatten, seine Schrift
+    ≥ 4,5 : 1;
+  - „Alle“ bleibt eine gefüllte Pille;
+  - alle Reiter treffen ≥ 44 × 44, normal und kompakt, auch in der
+    Verwaltung.
+  - Gegenprobe: Auf der alten Seite fallen 12 von 24 durch.
+
+### Was der Gesamtdurchlauf dazu fand, und wie es entschieden ist
+
+Der erste Gesamtdurchlauf nach Runde 110/111 hatte sechs rote Tests:
+
+- **`test-p1-aufgaben`, `test-p2-putzplan`, `test-chat-bereich3`:** Die
+  echte Höhe von 44 px für die Reiter kostete Platz. Im neuen Schnitt
+  waren es 16 px (zwei Zeilen), im alten 9 px. Damit rutschte die
+  siebte Aufgabe aus dem Bild, der erste Putzpunkt stand bei 494 statt
+  unter 480, und der Chatverlauf bekam 54 statt 55 %. Die Tests sind
+  **nicht** gelockert, sondern der Platz ist zurückgeholt:
+  - Neuer Schnitt: Der Reiter bleibt 36 hoch, eine unsichtbare Fläche
+    (`::after`) macht 44 daraus. Das geht, weil die Leiste dort
+    umbricht und nichts abschneidet. Den Zeilenabstand von 8 bezahlt
+    der Innenabstand über der Leiste (8 → 4).
+  - Alter Schnitt: Die Leiste schiebt seitlich, der Scroll-Bereich
+    schnitte eine unsichtbare Fläche ab. Dort bleibt die echte Höhe von
+    44, und der Innenabstand über der Leiste (8 → 0) bezahlt sie. Der
+    Chatverlauf hat wieder 362 statt 363 px, also 55 %.
+  - Gemessen: Mit 4 px Überstand traf die Fläche nur 42 px, weil der
+    Reiter einen Rand von 1,5 px hat und ein absolut gesetztes Kind ab
+    der Innenkante misst. Deshalb sind es jetzt 5,5 px.
+- **`test-gestaltung`:** Ich hatte alte Regeln überschrieben statt sie
+  zu ändern. Das ergab zweimal dieselbe Eigenschaft (`.subtab.on`
+  color, `.chef-tabs::before` height …) und eine feste Rundung von 3 px.
+  Jetzt ist alles an der alten Stelle geändert.
+- **`test-design-107` („der Chat hat mehrere Tage“):** Das lag **nicht**
+  an dieser Runde. Die Demo legte alle Chat-Nachrichten in die letzten
+  rund zwölf Stunden, ab dem Vormittag stand dort nur „Heute“. Der Test
+  hing damit an der Uhrzeit, zu der er lief: nachts grün, vormittags
+  rot. Jetzt kommt in der Demo je sechs Nachrichten zurück ein Tag
+  dazu.
+- **`test-schulung` („mit Zeitpunkt“):** Er suchte das Wort „Uhr“. Die
+  Zeit steht jetzt ohne „Uhr“ da. Geprüft wird stattdessen die Uhrzeit
+  selbst (`\d{2}:\d{2}`). Das ist **strenger**, nicht lockerer, denn
+  „Uhr“ stand auch in Sätzen ohne Zeit. Der Grund steht als Kommentar
+  im Test.
+- **Zweiter Gesamtdurchlauf: 148 von 148 grün**, ohne dass nebenher
+  etwas anderes lief.

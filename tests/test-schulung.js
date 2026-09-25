@@ -513,7 +513,12 @@ async function codeHolen(p, name) {
   pruefe('mit dem Modul', /erster Tag/.test(inListe.erste), inListe.erste.slice(0, 80));
   /* „die Uhrzeit tracken und den Ort bzw. der Studio Account" — beides
      muss dastehen, sonst ist der Nachweis halb. */
-  pruefe('mit Zeitpunkt', /Uhr/.test(inListe.erste), inListe.erste.slice(0, 80));
+  /* Bis 25.9.2026 stand hier /Uhr/. Die Zeit heisst seit Runde 110
+     „heute 09:49" ohne „Uhr" (Design-Ideen, Punkt 28: „Drei
+     Schreibweisen für dieselbe Sache"). Geprüft wird jetzt die Uhrzeit
+     selbst, zweistellig — das ist strenger als das Wort, nicht lockerer:
+     „Uhr" stand auch in einem Satz ohne Zeit. */
+  pruefe('mit Zeitpunkt', /\b\d{2}:\d{2}\b/.test(inListe.erste), inListe.erste.slice(0, 80));
   pruefe('und mit dem Gerät, auf dem es lief',
     /am Gerät/.test(inListe.erste), inListe.erste.slice(0, 120));
   pruefe('dazu die Dauer', /Min/.test(inListe.erste), inListe.erste.slice(-60));

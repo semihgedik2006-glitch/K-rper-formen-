@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3zqT2kRNaCQSr7WZ8bc7t0EWrSQGDfaBfwuvfDUHQqc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-5qFJsnecaqyvQo9jLh3SqG6Y0os3lLSU5g1LYko+Fpk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3778,8 +3778,13 @@ html{font-size:var(--fs,100%)}
    eine Zeile, und „Alle" daneben öffnet eine senkrechte Liste. Zweimal
    dasselbe Muster ist eine Hausregel; zwei verschiedene Lösungen für
    dasselbe Problem wären zwei Dinge zum Lernen. */
+/* Oben ohne Innenabstand (bis Runde 111: 8 px). Die Reiter sind seitdem
+   44 statt 35 hoch, damit man sie trifft; die 8 px darüber zahlen den
+   grössten Teil davon, sonst verlöre der Chat 9 px Verlauf
+   (test-chat-bereich3 misst das). Der neue Schnitt setzt seinen
+   eigenen Wert (siehe „Reiter und Filter"). */
 .subnav-zeile{display:flex;align-items:center;gap:var(--s6);
-  padding:var(--s8) var(--rand) 0;flex-shrink:0;min-width:0}
+  padding:0 var(--rand);flex-shrink:0;min-width:0}
 .subnav{position:relative;display:flex;gap:var(--s4);
   flex:1 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none}
 .subnav::-webkit-scrollbar{display:none}
@@ -3790,8 +3795,8 @@ html{font-size:var(--fs,100%)}
   background:var(--auf-1);color:var(--text-2);font-family:var(--font-body);
   font-weight:600;font-size:var(--t-sm);white-space:nowrap;cursor:pointer}
 .subnav-mehr:hover{background:var(--auf-2);color:var(--text)}
-.subnav::before{content:'';position:absolute;left:0;top:0;
-  height:var(--ind-h,38px);width:var(--ind-w,0);
+.subnav::before{content:'';position:absolute;left:0;top:calc(var(--ind-h,38px) - 3px);
+  height:3px;width:var(--ind-w,0);
   transform:translate(var(--ind-x,0),var(--ind-y,8px));
   border-radius:var(--r-pille);background:var(--accent);
   opacity:var(--ind-o,0);pointer-events:none;z-index:0;
@@ -3817,7 +3822,7 @@ html{font-size:var(--fs,100%)}
 @media(max-width:400px){ .subtab{padding-left:var(--s10);padding-right:var(--s10)} }
 .subtab:active{transform:scale(.93)}
 .subtab svg{width:16px;height:16px}
-.subtab.on{color:var(--on-accent);font-weight:700}
+.subtab.on{color:var(--accent-d);font-weight:700}
 /* Die Kanalzeile: „Alle Kanäle" steht FEST links, die Leiste schiebt
    sich daneben. Läge der Knopf in der Leiste, wäre er nach der ersten
    Wischbewegung weg — also genau dann, wenn man ihn braucht. */
@@ -4075,8 +4080,8 @@ html{font-size:var(--fs,100%)}
 .chef-tabs{position:relative;display:flex;gap:var(--s4);overflow-x:auto;scrollbar-width:none;
   min-width:0;padding-bottom:var(--s2)}
 .chef-tabs::-webkit-scrollbar{display:none}
-.chef-tabs::before{content:'';position:absolute;left:0;top:0;
-  height:var(--ind-h,38px);width:var(--ind-w,0);
+.chef-tabs::before{content:'';position:absolute;left:0;top:calc(var(--ind-h,38px) - 3px);
+  height:3px;width:var(--ind-w,0);
   transform:translate(var(--ind-x,0),var(--ind-y,0));
   border-radius:var(--r-pille);background:var(--accent);
   opacity:var(--ind-o,0);pointer-events:none;z-index:0;
@@ -4089,7 +4094,7 @@ html{font-size:var(--fs,100%)}
   font-size:var(--t-sm);cursor:pointer;position:relative;z-index:1;
   transition:transform .3s var(--spring),color .25s}
 .chef-tab:active{transform:scale(.93)}
-.chef-tab.on{color:var(--on-accent);font-weight:700}
+.chef-tab.on{color:var(--accent-d);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
 
 /* Probetraining: eine Person aufgeklappt zeigt ihre Studios */
@@ -5444,7 +5449,7 @@ body.neu .bereich-kopf.eng .bk-txt i{display:none}
 
 /* Die Reiterzeile nimmt die Bereichsfarbe an — sonst wäre der Kopf
    bunt und alles darunter wieder gleich. */
-body.neu #subnav::before{background:var(--ber-f);box-shadow:inset 0 0 0 1px var(--ber)}
+body.neu #subnav::before{background:var(--ber)}
 body.neu .subtab.on{color:var(--ber)}
 /* „Alle" steht am rechten Rand über der schiebbaren Reiterzeile. Ohne
    eigenen Grund schob sich „Material" unter ihm durch, und im Bild sah
@@ -6139,9 +6144,54 @@ body.neu .heute-zeile:active{
   transform:translateY(1px);
   box-shadow:var(--e-tief);
 }
-/* Die Reiterleiste: erhaben ist nur der offene Reiter. Ein Streifen aus
-   sechs erhabenen Flächen ist keine Leiste mehr, sondern eine Wand. */
-body.neu .subtab.on{box-shadow:inset 0 1px 0 var(--kante), var(--e1)}
+/* Die Reiterleiste: bis Runde 111 war der offene Reiter hier erhaben
+   (Schatten wie ein Knopf). Seitdem trägt er einen Strich, und ein
+   Strich schwebt nicht — siehe „Reiter und Filter" unten. */
+
+/* ── Reiter und Filter sehen verschieden aus (Design-Ideen 6, Runde 111) ──
+   Vorher waren „Aufgaben" (WOHIN ich gehe) und „Alle" (WAS ich davon
+   sehe) beide gefüllte Pillen mit Rand, direkt übereinander. Zwei
+   Bedeutungen, ein Aussehen — und wer „Alle" antippt, erwartet, dass
+   sich die Seite wechselt.
+
+   Jetzt: Reiter tragen einen Strich UNTER dem Wort, Filter bleiben
+   Pillen. Der gleitende Marker bleibt, wie er ist, er wird nur flach:
+   derselbe Weg, dieselbe Bewegung (transform), nur 3 px hoch und an der
+   Unterkante. Das gilt für die Reiter eines Bereichs (#subnav) und die
+   der Verwaltung (.chef-tabs). Die Segmente im Team (.pm-tabs) sind
+   schon eine eigene Form und bleiben.
+
+   Der Strich selbst steht bei .subnav::before und .chef-tabs::before
+   (Lage und Höhe), die Farbe bei .subtab.on / .chef-tab.on — an ihrer
+   alten Stelle geändert, nicht hier überschrieben: zweimal dieselbe
+   Eigenschaft ist die Falle, die test-gestaltung sucht. */
+/* Dabei nachgemessen: die Reiter trafen nur 36 px hoch (Hit-Test,
+   normal und kompakt, 390 und 1440 px) — seit es sie gibt.
+
+   Zwei Wege, je nach Leiste:
+   · In einer Leiste, die seitlich schiebt (.chef-tabs, der alte Schnitt
+     von #subnav), schneidet der Scroll-Bereich alles ab, was über den
+     Knopf hinausragt — dort hilft nur echte Höhe: 44.
+   · Im neuen Schnitt bricht #subnav um und schneidet nichts ab. Echte
+     Höhe kostete dort 16 px je Seite (zwei Zeilen à 8), und genau die
+     fehlten: die siebte Aufgabe und der erste Putzpunkt rutschten aus
+     dem Bild (test-p1-aufgaben, test-p2-putzplan). Also bleibt der
+     Reiter 36 hoch und bekommt eine unsichtbare Trefferfläche von
+     44; der Zeilenabstand wächst dafür von 4 auf 8, damit sich die
+     Flächen zweier Zeilen nicht überdecken. Die 4 px bezahlt der
+     Innenabstand über der Leiste (8 → 4), in den die oberste Zeile
+     hineinreicht — so wird die Seite nicht länger.
+     Die Fläche reicht 5,5 px über die Innenkante: der Reiter hat einen
+     Rand von 1,5 px, und ein absolut gesetztes Kind misst ab der
+     Innenkante. Mit 4 px waren es gemessen nur 42. */
+.subtab,.chef-tab{min-height:44px}
+body.neu #subnav{row-gap:var(--s8)}
+body.neu .subnav-zeile{padding-top:var(--s4)}
+body.neu #subnav .subtab{min-height:0}
+body.neu #subnav .subtab::after{content:'';position:absolute;left:0;right:0;top:-5.5px;bottom:-5.5px}
+@media (hover:hover){
+  .subtab:not(.on):hover,.chef-tab:not(.on):hover{color:var(--text)}
+}
 /* Die untere Leiste gibt beim Drücken nach. Eine Füllung hat sie schon
    (der gleitende Marker), ein Schatten wäre einer zu viel. */
 body.neu .mn-reihe button:active{transform:translateY(1px)}
@@ -11105,7 +11155,7 @@ function aboText(id){
   if(!a) return '<span class="abo-leer">kein Abo hinterlegt</span>';
   var t = (ABO_STUFEN[a.stufe] || a.stufe) + ' · ' + (ABO_STATUS[a.status] || a.status);
   if(a.status !== 'gratis' && a.netto) t += ' · ' + fmtEuro(a.netto) + '/Monat';
-  if(a.bisAm) t += ' · bis ' + new Date(a.bisAm).toLocaleDateString('de-DE');
+  if(a.bisAm) t += ' · bis ' + fmtTag(new Date(a.bisAm), true);
   return '<span class="abo-wert abo-'+esc(a.status)+'">'+esc(t)+'</span>';
 }
 
@@ -12623,10 +12673,10 @@ function renderAboKarte(){
       (t > 1 ? 'Noch ' + t + ' Tage.' :
        t === 1 ? 'Noch einen Tag.' : 'Die Testphase ist abgelaufen.');
   } else if(status === 'gekuendigt'){
-    unter = a.bisAm ? 'Läuft noch bis ' + new Date(a.bisAm).toLocaleDateString('de-DE') + '.' : '';
+    unter = a.bisAm ? 'Läuft noch bis ' + fmtTag(new Date(a.bisAm), true) + '.' : '';
   } else if(status === 'aktiv'){
     unter = (a.netto ? fmtEuro(a.netto) + ' netto im Monat' : '') +
-      (a.bisAm ? ' · bezahlt bis ' + new Date(a.bisAm).toLocaleDateString('de-DE') : '');
+      (a.bisAm ? ' · bezahlt bis ' + fmtTag(new Date(a.bisAm), true) : '');
   } else if(status === 'gratis'){
     unter = 'Dauerhaft kostenlos.';
   } else if(['faellig','mahnung1','mahnung2'].indexOf(status) >= 0){
@@ -13195,8 +13245,10 @@ function dayLabel(ts){
   var d=new Date(ts), now=new Date();
   var startToday=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
   if(ts>=startToday) return 'Heute';
-  if(ts>=startToday-86400000) return 'Gestern';
-  return d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+  if(tagWort(d)==='gestern') return 'Gestern';
+  /* Die Kürzel selbst: toLocaleDateString schreibt je nach Browser
+     „Di" oder „Di." — gemessen: Chromium und Node unterscheiden sich. */
+  return ['So.','Mo.','Di.','Mi.','Do.','Fr.','Sa.'][d.getDay()]+' '+fmtTag(d);
 }
 /* Kleiner Konfetti-Regen (z. B. wenn ein Studio alle Aufgaben erledigt hat) */
 function fireConfetti(){
@@ -13334,22 +13386,69 @@ function ppPausiert(t){
 function ppPauseText(t){
   if(!ppPausiert(t)) return '';
   var d=new Date(t.pausiertBis+'T00:00:00');
-  return 'pausiert bis '+d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  return 'pausiert bis '+fmtTag(d);
 }
-function fmtTime(ts){
-  if(!ts) return '';
-  var d=new Date(ts), now=new Date();
-  var t=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-  return d.toDateString()===now.toDateString()?t:d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+t;
+/* ══ EINE REGEL FÜR DATUM UND UHRZEIT (Design-Ideen, Punkt 28) ════════
+   Vorher stand dieselbe Sache in vier Schreibweisen da: Startseite
+   „heute 21:10 Uhr", Chat „21:10", Nachweise „5.8.2026", Fristen
+   „05.08.", Ausdrucke „25.9.2026, 09:04:33". Die Regel jetzt:
+
+     Uhrzeit     zweistellig, ohne „Uhr"               09:05
+     Tag         im laufenden Jahr ohne Jahr           05.08.
+                 sonst mit                             05.08.2025
+     Zeitpunkt   Tag + Uhrzeit, heute/gestern als Wort heute 09:05
+                                                       gestern 09:05
+                                                       05.08. 09:05
+     in Listen   wie Zeitpunkt, nur heute allein die Uhrzeit   (fmtTime)
+     im Chat     nur die Uhrzeit — der Tag steht im Trenner darüber
+     Ablauf,     immer mit Jahr, weil es zählt, WELCHES   05.08.2026
+     Nachweis, Abo, Ausdruck
+
+   „Uhr" gehört in Sätze („ab 18 Uhr"), nicht in Zeitstempel: neben
+   einer Zeit wie 09:05 sagt es nichts, was die Zahl nicht schon sagt. */
+function zweistellig(n){ return (n<10?'0':'')+n; }
+function fmtUhr(ts){
+  if(!ts && ts!==0) return '';
+  var d=new Date(ts);
+  return zweistellig(d.getHours())+':'+zweistellig(d.getMinutes());
 }
-/* Immer Datum + Uhrzeit (für Putzplan „erledigt am/um" und Notizen).
-   Heute -> "heute 14:30", sonst "05.08. 14:30". */
+/* mitJahr: immer mit Jahr (Ablaufdaten, Ausdrucke). Sonst nur, wenn es
+   nicht das laufende ist. */
+function fmtTag(wert, mitJahr){
+  if(!wert && wert!==0) return '';
+  var d = wert instanceof Date ? wert : new Date(wert);
+  if(isNaN(d)) return '';
+  var t=zweistellig(d.getDate())+'.'+zweistellig(d.getMonth()+1)+'.';
+  if(mitJahr || d.getFullYear()!==new Date().getFullYear()) t+=d.getFullYear();
+  return t;
+}
+function tagWort(d){
+  var n=new Date();
+  var heute=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime();
+  var t=d.getTime();
+  if(t>=heute && t<heute+86400000) return 'heute';
+  /* Nicht heute − 86.400.000: an der Zeitumstellung hat der Vortag 23
+     oder 25 Stunden. */
+  var gestern=new Date(n.getFullYear(),n.getMonth(),n.getDate()-1).getTime();
+  if(t>=gestern && t<heute) return 'gestern';
+  return '';
+}
+/* Immer Tag + Uhrzeit: „heute 14:30", „gestern 14:30", „05.08. 14:30". */
 function fmtDateTime(ts){
   if(!ts) return '';
-  var d=new Date(ts), now=new Date();
-  var t=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-  if(d.toDateString()===now.toDateString()) return 'heute '+t+' Uhr';
-  return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+t+' Uhr';
+  var d=new Date(ts);
+  return (tagWort(d) || fmtTag(d))+' '+fmtUhr(d);
+}
+/* In Listen: heute reicht die Uhrzeit. */
+function fmtTime(ts){
+  if(!ts) return '';
+  var d=new Date(ts);
+  return tagWort(d)==='heute' ? fmtUhr(d) : fmtDateTime(ts);
+}
+/* „Stand" auf Ausdrucken und in Ausfuhren: immer mit Jahr, ohne Sekunden. */
+function fmtStand(ts){
+  var d=new Date(ts||Date.now());
+  return fmtTag(d, true)+' '+fmtUhr(d);
 }
 var _toastTimer;
 function toast(msg, isErr){
@@ -15961,6 +16060,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-25-datum-reiter', datum:'25.9.2026', titel:'Einheitliche Zeiten, deutlichere Reiter', wo:'todos', punkte:[
+    'Datum und Uhrzeit stehen überall gleich da: „heute 09:05", „gestern 14:30", „05.08. 21:10". Das „Uhr" hinter der Zeit ist weg, und Daten haben immer zwei Stellen (05.08.2026 statt 5.8.2026).',
+    'Im Chat steht an jeder Nachricht nur noch die Uhrzeit — der Tag steht im Trenner darüber.',
+    'Die Reiter oben (Aufgaben, Putzplan, Material …) haben jetzt einen Strich unter dem Wort statt einer Füllung. So sieht man sofort, was ein Bereich ist und was ein Filter („Alle", „Nur offene"). Sie sind ausserdem leichter zu treffen.' ] },
   { id:'2026-09-25-ladefehler', datum:'25.9.2026', titel:'Wenn etwas nicht lädt, steht es jetzt da', wo:'todos', punkte:[
     'Lädt eine Liste nicht — Aufgaben, Chat, Putzplan, Team, Material, Geräte, Probetraining, Ankündigungen oder Direktnachrichten —, steht oben in der Liste, WAS fehlt und warum. Vorher blieb sie einfach leer, und darunter stand manchmal sogar „Noch keine Aufgaben".',
     'Mit dem Knopf „Nochmal versuchen" lädt sie neu.',
@@ -21680,7 +21783,7 @@ function renderMessages(msgs){
     var meta = gruppiert
       ? (edited ? '<div class="meta-min">'+edited+'</div>' : '')
       : '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+
-        '<time>'+fmtTime(m.ts)+'</time>'+edited+'</div>';
+        '<time>'+fmtUhr(m.ts)+'</time>'+edited+'</div>';
     html+='<div class="msg'+(mine?' mine':'')+(iAmMentioned?' mentioned':'')+
       (gruppiert?' grp':'')+'" data-mid="'+esc(m.id)+'">'+
       (gruppiert ? '' : meta)+
@@ -22047,7 +22150,7 @@ function msgBlattOeffnen(m){
   var canEdit = mine && (Date.now()-(m.ts||0) < EDIT_WINDOW_MS) && !!m.text;
   var vorschau = m.text || (m.img?'Foto':(m.audio?'Sprachnachricht':(m.poll?'Umfrage':'')));
   $('msSheetWho').textContent=m.name||'';
-  $('msSheetWhen').textContent=fmtTime(m.ts);
+  $('msSheetWhen').textContent=fmtDateTime(m.ts);
   $('msSheetPrev').textContent=String(vorschau).slice(0,90);
 
   $('msSheetReact').innerHTML=REACT_EMOJIS.map(function(e){
@@ -25050,7 +25153,7 @@ function renderIchWocheRaster(){
   var heute=ymd(new Date());
   var ende=new Date(_ichWoche); ende.setDate(_ichWoche.getDate()+6);
   if(label) label.textContent =
-    _ichWoche.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' – '+
+    fmtTag(_ichWoche)+' – '+
     ende.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
   var html=['Mo','Di','Mi','Do','Fr','Sa','So'].map(function(t){
     return '<div class="kal-kopf">'+t+'</div>'; }).join('');
@@ -25524,7 +25627,7 @@ function ichCertsLaden(){
       if(c.bis && c.bis<heute){ zustand='abgelaufen'; klasse=' bad'; }
       else if(c.bis && c.bis<bald){ zustand='läuft bald ab'; klasse=' warn'; }
       var datum=c.bis
-        ? new Date(c.bis+'T12:00:00').toLocaleDateString('de-DE')
+        ? fmtTag(new Date(c.bis+'T12:00:00'), true)
         : 'ohne Ablauf';
       /* Hier stand die rohe Kennung: „ersthelfer" statt
          „Erste-Hilfe-Kurs", und bei „Sonstiges" gar nicht das, was
@@ -25540,7 +25643,7 @@ function ichCertsLaden(){
          „Ausgestellt von: —" beantwortet nichts. */
       var mehr=[];
       if(c.aussteller) mehr.push(esc(c.aussteller));
-      if(c.von) mehr.push('seit '+esc(new Date(c.von+'T12:00:00').toLocaleDateString('de-DE')));
+      if(c.von) mehr.push('seit '+esc(fmtTag(new Date(c.von+'T12:00:00'), true)));
       if(c.nummer) mehr.push('Nr. '+esc(c.nummer));
       return '<div class="ich-cert">'+
         '<div class="ich-zeile">'+
@@ -25608,7 +25711,7 @@ function ichPinZeichnen(seit){
     ? 'Zum Ändern brauchst du die bisherige PIN — auch die Leitung kann sie nicht zurücksetzen.'
     : 'Mit dieser PIN stempelst du am Tablet im Studio.';
   if(_pinGesetzt && seit){
-    text.textContent += ' Gesetzt am ' + new Date(seit).toLocaleDateString('de-DE') + '.';
+    text.textContent += ' Gesetzt am ' + fmtTag(new Date(seit), true) + '.';
   }
   altW.style.display = _pinGesetzt ? '' : 'none';
   if(btn) btn.textContent = _pinGesetzt ? 'PIN ändern' : 'PIN speichern';
@@ -26943,7 +27046,7 @@ function todoHTML(t,sk,chefView){
   if(t.due){
     var over=!done && Date.now()>t.due;
     var dd=new Date(t.due);
-    dueBadge='<span class="t-due'+(over?' over':'')+'">'+(over?'überfällig':'bis '+dd.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}))+'</span>';
+    dueBadge='<span class="t-due'+(over?' over':'')+'">'+(over?'überfällig':'bis '+fmtTag(dd))+'</span>';
   }
   /* Das Foto ist ein Beleg fürs Erledigen und muss schnell erreichbar sein –
      aber als Knopf über die volle Breite kostete es 46 Pixel an JEDER Aufgabe,
@@ -28263,7 +28366,7 @@ function exportReport(){
   var zeit = d.days>0 ? ('Letzte '+d.days+' Tage') : 'Gesamter Zeitraum';
   var dauer = d.dauerN ? (d.dauerSum/d.dauerN/86400000).toFixed(1)+' Tage' : '–';
   var html='<h2>StudioChat – Bericht</h2><p>'+esc(zeit)+' · Stand '+
-    esc(new Date().toLocaleString('de-DE'))+'</p>';
+    esc(fmtStand())+'</p>';
   html+=xlsTable('Zusammenfassung',['Kennzahl','Wert'],[
     ['Aufgaben erledigt',d.erledigt],['Aufgaben neu erstellt',d.neu],
     ['Aktuell offen',d.offen],['Davon überfällig',d.ueber],
@@ -28603,7 +28706,7 @@ function backupData(){
     out.probetrainings=docsZuListe(g.probetrainings).map(function(t){
       return { mitarbeiter:t.vonName||'',
                studio:t.studioKey?studioName(t.studioKey):'',
-               tag:t.datum?new Date(t.datum).toLocaleDateString('de-DE'):'',
+               tag:t.datum?fmtTag(new Date(t.datum), true):'',
                abschluss:!!t.abschluss,
                notiz:t.notiz||'',
                erfasstVon:t.erfasstVonName||'',
@@ -28640,7 +28743,7 @@ function exportAllXls(){
   toast('Sicherung wird zusammengestellt …');
   return backupData().then(function(d){
     var html='<h2>StudioChat – Vollständige Sicherung</h2><p>Stand '+
-      esc(new Date().toLocaleString('de-DE'))+'</p>';
+      esc(fmtStand())+'</p>';
     /* Dasselbe Verzeichnis wie in der JSON-Datei, und zwar als ERSTE
        Tabelle. Wer die Datei in zwei Jahren öffnet, soll nicht raten. */
     html+=xlsTable('Was in dieser Datei steht',['','Inhalt'],
@@ -28656,7 +28759,7 @@ function exportAllXls(){
       }));
     html+=xlsTable('Infos',['Datum','Von','Empfänger','Text'],
       _allAnns.map(function(a){
-        return [a.ts?new Date(a.ts).toLocaleString('de-DE'):'', a.from||'',
+        return [a.ts?fmtStand(a.ts):'', a.from||'',
                 (!a.target||a.target==='all')?'Alle':studioName(a.target), a.text||''];
       }));
     if(d.brett.length) html+=xlsTable('Schwarzes Brett',['Datum','Von','Art','Text'],
@@ -29254,7 +29357,7 @@ function printShoppingList(){
   if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
   var pa=$('printArea'); if(!pa) return;
   pa.innerHTML='<h1>Einkaufsliste</h1>'+
-    '<p class="p-sub">Stand: '+esc(new Date().toLocaleString('de-DE'))+
+    '<p class="p-sub">Stand: '+esc(fmtStand())+
     ' · '+(isChef()?'alle Studios':'meine Studios')+'</p>'+
     '<table><tr><th>Artikel</th><th>Menge</th><th>Für welche Studios</th><th>Bestellt</th></tr>'+
     rows.map(function(r){
@@ -29269,7 +29372,7 @@ function exportShoppingList(){
   var rows=shoppingData();
   if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
   downloadXls('StudioChat_Einkaufsliste_'+ymd(new Date())+'.xls',
-    '<h2 data-ikon="wagen">Einkaufsliste</h2><p>Stand '+esc(new Date().toLocaleString('de-DE'))+'</p>'+
+    '<h2 data-ikon="wagen">Einkaufsliste</h2><p>Stand '+esc(fmtStand())+'</p>'+
     xlsTable('Zu bestellen',['Artikel','Menge gesamt','Aufteilung'],
       rows.map(function(r){
         return [r.name, r.total, r.studios.map(function(x){ return x.studio+': '+x.n; }).join(', ')];
@@ -29288,7 +29391,7 @@ function shoppingMail(){
   /* Diese Mail verlaesst das Haus. Ein Kunde haette seinem Lieferanten
      eine Bestellung im Namen eines fremden Betriebs geschickt — von
      allen Stellen mit festem Firmennamen die unangenehmste. */
-  var betreff='Bestellung '+firmaAnzeige()+' · '+new Date().toLocaleDateString('de-DE');
+  var betreff='Bestellung '+firmaAnzeige()+' · '+fmtTag(new Date(), true);
   var text='Guten Tag,\n\nwir möchten Folgendes bestellen:\n\n'
     + rows.map(function(r){ return '· '+r.name+': '+r.total+' Stück'; }).join('\n')
     + '\n\nAufteilung auf die Studios:\n'
@@ -29814,7 +29917,7 @@ function bindPutzplanClicks(box){
         return S('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
           .update({ pausiertBis:bis, pausiertVon:bis?session.name:null })
           .then(function(){
-            toast(bis ? 'Pausiert bis '+new Date(bis+'T00:00:00').toLocaleDateString('de-DE')
+            toast(bis ? 'Pausiert bis '+fmtTag(new Date(bis+'T00:00:00'), true)
                       : 'Wieder aktiv ✓');
             schedulePutzplanSheets(_ppStudioKey);
           })
@@ -30198,7 +30301,7 @@ function exportMaterialExcel(){
     function find(sk,name){ var a=byStudio[sk]||[]; for(var i=0;i<a.length;i++){ if(a[i].name===name) return a[i]; } return null; }
 
     var now=new Date();
-    var stamp=now.toLocaleDateString('de-DE')+' '+now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    var stamp=fmtStand(now);
     var ncols=1+STUDIOS.length;
 
     var thMat='style="background:#0B0A1C;color:#22D3EE;font-weight:bold;border:1px solid #2a3a32;padding:6px 10px;text-align:left"';
@@ -30728,7 +30831,7 @@ function todoBlattOeffnen(t, sk){
   var blatt=$('todoSheet'); if(!blatt) return;
   var done=isDone(t);
   $('tbWho').textContent=t.title||'Aufgabe';
-  $('tbWhere').textContent=studioName(sk)+(t.due?' · fällig '+new Date(t.due).toLocaleDateString('de-DE'):'');
+  $('tbWhere').textContent=studioName(sk)+(t.due?' · fällig '+fmtTag(new Date(t.due), true):'');
 
   // Ohne Foto steht die Kamera schon in der Fußzeile der Aufgabe – hier
   // stünde sie ein zweites Mal.
@@ -30776,7 +30879,7 @@ function todoBlattAktion(was){
     var neu = was==='keine' ? null : new Date(basis+tage*86400000).setHours(23,59,59,999);
     ref.update({ due: neu })
       .then(function(){
-        toast(neu ? 'Frist auf '+new Date(neu).toLocaleDateString('de-DE')+' verschoben' : 'Frist entfernt');
+        toast(neu ? 'Frist auf '+fmtTag(new Date(neu), true)+' verschoben' : 'Frist entfernt');
       })
       .catch(function(e){ toast(errMsg(e),true); });
     return;
@@ -31521,13 +31624,13 @@ function certZeile(c, mitName){
      draufsteht, bestaetigt eine Zeile statt eines Nachweises. */
   var mehr=[];
   if(c.aussteller) mehr.push(esc(c.aussteller));
-  if(c.von) mehr.push('ausgestellt '+esc(new Date(c.von+'T12:00:00').toLocaleDateString('de-DE')));
+  if(c.von) mehr.push('ausgestellt '+esc(fmtTag(new Date(c.von+'T12:00:00'), true)));
   if(c.nummer) mehr.push('Nr. '+esc(c.nummer));
   return '<div class="cert-item">'+
     '<span class="cert-ico">'+a.ico+'</span>'+
     '<div class="cert-body"><div class="cert-title">'+esc(titel)+
       (mitName?' <span class="cert-who">· '+esc(c.name||'')+'</span>':'')+'</div>'+
-    '<div class="cert-meta">'+(c.bis?('gültig bis '+new Date(c.bis+'T00:00:00').toLocaleDateString('de-DE')):'kein Ablaufdatum')+
+    '<div class="cert-meta">'+(c.bis?('gültig bis '+fmtTag(new Date(c.bis+'T00:00:00'), true)):'kein Ablaufdatum')+
       herkunft+'</div>'+
     (mehr.length?'<div class="cert-mehr">'+mehr.join(' · ')+'</div>':'')+
     '</div>'+
