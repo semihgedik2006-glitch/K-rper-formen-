@@ -257,14 +257,14 @@ Startseiten-Kacheln, „2 von 5". 400 ms.
 
 *Aufwand: klein.*
 
-### 19. Abhaken mit Gewicht
+### 19. Abhaken mit Gewicht  ✅ *gebaut (26.9., Runde 123) — der Inhalt sackt 2 px ein und federt zurück*
 
 Funken und Lob gibt es. Es fehlt, dass die Karte kurz zusammensackt,
 bevor sie nach „erledigt" wandert.
 
 *Aufwand: klein.*
 
-### 20. Wischen zum Antworten im Chat
+### 20. Wischen zum Antworten im Chat  ✅ *gebaut (26.9., Runde 123) — am Rechner dazu ein Knopf beim Überfahren*
 
 Nach rechts ziehen. Kennt jeder.
 

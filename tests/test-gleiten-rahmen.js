@@ -62,7 +62,17 @@ const GLEITEN = async () => {
   const name = (e) => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/)[0] : '');
   const vor = f();
   [...document.querySelectorAll('[data-group="g-putz"]')].find(x => x.getClientRects().length).click();
-  await new Promise(r => setTimeout(r, 60)); const mitte = f();
+  /* Nicht auf die Uhr warten: unter Last (Gesamtdurchlauf mit zwei
+     Hälften nebeneinander) war der Übergang nach „60 ms" schon vorbei,
+     weil der Klick selbst länger brauchte — der Durchlauf fiel, einzeln
+     lief er grün. Jetzt wird jeder laufende Übergang angehalten und auf
+     genau 60 ms gestellt, dann gemessen, dann zu Ende gespult. Dieselbe
+     Frage, unabhängig von der Last. */
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const laufend = document.getAnimations().filter(a => a.constructor && a.constructor.name === 'CSSTransition');
+  laufend.forEach(a => { a.pause(); a.currentTime = 60; });
+  const mitte = f();
+  laufend.forEach(a => { try { a.finish(); } catch (e) {} });
   await new Promise(r => setTimeout(r, 700)); const nach = f();
   const gleitet = [], springt = [];
   els.forEach((e, i) => { if (vor[i] === nach[i]) return; (mitte[i] !== vor[i] && mitte[i] !== nach[i] ? gleitet : springt).push(name(e)); });
