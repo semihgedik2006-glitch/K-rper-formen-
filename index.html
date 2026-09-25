@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-EsnFWTe1lDvWi6UMANHMEVAwsAwnj49vGR/2e84uuzQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3zqT2kRNaCQSr7WZ8bc7t0EWrSQGDfaBfwuvfDUHQqc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5108,6 +5108,35 @@ html{font-size:var(--fs,100%)}
   background:var(--f-warn);border:1px solid var(--k-warn);color:var(--warm-tx);
   font-size:var(--t-sm);font-weight:600}
 .mat-alert.show{display:flex}
+
+/* ── Ladefehler dort, wo die Liste wäre (Design-Ideen 16, Runde 109) ──
+   Bernstein, weil es eine Meldung ist: Statusfarben nur für Status. Der
+   Knopf wandert am Handy unter den Text, statt ihn auf drei Wörter je
+   Zeile zu quetschen. In einem PC-Raster geht die Meldung über die
+   ganze Breite. */
+.lade-fehler{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s10) var(--s12);
+  padding:var(--s12) var(--s16);margin:0 0 var(--s12);border-radius:var(--r-md);
+  background:var(--f-warn);border:1px solid var(--k-warn);color:var(--warm-tx);
+  font-size:var(--t-sm);line-height:var(--lh);grid-column:1 / -1}
+.lf-zeichen{display:grid;place-items:center;flex-shrink:0}
+.lf-zeichen svg{width:20px;height:20px}
+.lf-text{flex:1 1 16em;min-width:0}
+.lf-text b{font-weight:800}
+.lf-trotzdem{display:block;margin-top:var(--s4);font-weight:600}
+.lade-fehler .lf-nochmal{min-height:44px;flex-shrink:0;color:inherit;border-color:currentColor}
+#view-chat > .lade-fehler,#dmConvo > .lade-fehler{margin:var(--s8) var(--s12)}
+.view.lade-kaputt .empty{display:none}
+/* Die Startseite ohne Aufgaben: nicht grün „Alles erledigt", sondern
+   Bernstein „Nicht alles geladen". Die Selektoren tragen die Klasse der
+   grünen Fassung mit, sonst gewinnt die (body.neu .heute-ruhe). */
+.home-ruhe.lade-ruhe,body.neu .heute-ruhe.lade-ruhe{flex-wrap:wrap;
+  background:var(--f-warn);border-color:var(--k-warn)}
+.home-ruhe.lade-ruhe .hr-ico,body.neu .heute-ruhe.lade-ruhe .hr-ico{
+  background:transparent;color:var(--warm-tx)}
+.lade-ruhe .hr-ico svg{width:22px;height:22px}
+body.neu .heute-ruhe.lade-ruhe{padding:var(--s12) var(--s16);margin-bottom:var(--s12)}
+.lade-ruhe > div{flex:1 1 14em;min-width:0}
+.lade-ruhe .lf-nochmal{min-height:44px;color:var(--warm-tx);border-color:currentColor}
 
 /* ── Mitarbeiterverwaltung (Chef) ── */
 .emp{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s12) 0;border-top:1px solid var(--line)}
@@ -13989,6 +14018,170 @@ function errMsg(e){
   return e.message || 'Es ist ein Fehler aufgetreten.';
 }
 
+/* ══ LADEFEHLER DORT, WO DIE LISTE WÄRE (Design-Ideen, Punkt 16) ══════
+   Vorher schrieben vierzig Beobachter ihren Fehler nur ins Protokoll der
+   Konsole. Wer die App benutzte, sah davon nichts — nur eine leere Liste,
+   und darunter oft „Noch keine Aufgaben" oder „Nichts offen". Das ist
+   schlimmer als ein Fehler: es ist eine falsche Auskunft.
+
+   Jetzt steht der Fehler dort, wo die Liste stünde:
+     · WAS nicht geladen hat (bei Aufgaben und Putzplan: aus welchem Studio),
+     · WARUM, in einem Satz aus errMsg(),
+     · was TROTZDEM da ist — nur, wo das sicher stimmt,
+     · und „Nochmal versuchen", das den Beobachter neu anlegt.
+   Solange ALLES in einer Ansicht fehlt, blendet `.lade-kaputt` ihre leeren
+   Zustände aus; sonst widerspräche die Fläche darunter der Meldung.
+
+   Benutzung im Beobachter:
+     function(sn){ ladeGut('todos', sk); … }
+     function(e){ ladeFehler('todos', e, sk); }                          */
+var LADEORT = {
+  chat:    { view:'chat',     vor:'chatScroll',  titel:'Die Nachrichten in diesem Kanal' },
+  dm:      { view:'dm',       vor:'dmScroll',    titel:'Diese Unterhaltung', einzahl:true },
+  dmListe: { view:'dm',       vor:'dmPeople',    titel:'Deine Unterhaltungen' },
+  todos:   { view:'todos',    vor:'todoSpalten', titel:'Die Aufgaben', studios:true },
+  putz:    { view:'putzplan', nach:'ppLeiste',   titel:'Der Putzplan', einzahl:true, studios:true },
+  ann:     { view:'ann',      vor:'annArea',     titel:'Die Ankündigungen' },
+  team:    { view:'team',     vor:'teamTabs',    teile:{ schichten:'Schichten', abwesend:'Abwesenheiten', uebergabe:'Übergaben' } },
+  material:{ view:'material', vor:'matAlert',    titel:'Der Bestand dieses Studios', einzahl:true },
+  geraete: { view:'geraete',  vor:'devAlert',    teile:{ liste:'Geräte', verlauf:'Gerätemeldungen' } },
+  probe:   { view:'probe',    vor:'pbListe',     titel:'Die Probetrainings' }
+};
+/* Wie „Nochmal versuchen" den Beobachter neu anlegt. Jeder Eintrag ruft
+   die Funktion, die es ohnehin gibt — keine zweite Ladelogik. */
+var LADE_NOCHMAL = {
+  chat:    function(){ if(currentChannel) listenChannel(currentChannel); },
+  dm:      function(){ if(_dmPeer) openDm(_dmPeer.uid, _dmPeer.name); },
+  dmListe: function(){ listenDmThreads(); },
+  todos:   function(){ listenTodos(); },
+  putz:    function(){ listenClean(); },
+  ann:     function(){ listenAnnouncements(); },
+  team:    function(){ if(_teamStudioKey) loadTeam(_teamStudioKey); },
+  material:function(){ if(_matStudioKey) loadMaterial(_matStudioKey); },
+  geraete: function(){ if(_devStudioKey) loadDevices(_devStudioKey); },
+  probe:   function(){ listenProbe(); }
+};
+var _ladeFehler = {};   // bereich -> { teil: 'Grund' }
+
+function ladeFehler(bereich, e, teil){
+  console.warn('Laden '+bereich+(teil?' '+teil:'')+':', e && e.message);
+  var f = _ladeFehler[bereich] || (_ladeFehler[bereich] = {});
+  /* Der Hinweis auf die Leitung nur für die, die nicht selbst Leitung
+     sind — sonst schickt die App die Studioleitung zu sich selbst. */
+  f[teil || '-'] = errMsg(e) + (e && e.code==='permission-denied' && !canManage()
+    ? ' Wenn das bleibt: der Leitung Bescheid geben.' : '');
+  ladeFehlerZeichnen(bereich);
+}
+/* Ohne teil: den ganzen Bereich zurücksetzen (Studio gewechselt). */
+function ladeGut(bereich, teil){
+  var f = _ladeFehler[bereich];
+  if(!f) return;                              // der häufige Fall: nichts zu tun
+  if(teil===undefined) delete _ladeFehler[bereich];
+  else { delete f[teil || '-']; if(!Object.keys(f).length) delete _ladeFehler[bereich]; }
+  ladeFehlerZeichnen(bereich);
+}
+function ladeStudioKeys(){
+  if(!session) return [];
+  return (canManage() ? managedKeys() : session.studioKeys) || [];
+}
+function aufzaehlen(liste){
+  if(liste.length<2) return liste.join('');
+  return liste.slice(0,-1).join(', ') + ' und ' + liste[liste.length-1];
+}
+function ladeFehlerZeichnen(bereich){
+  var o = LADEORT[bereich]; if(!o) return;
+  var sektion = $('view-'+o.view);
+  var box = $('lf-'+bereich);
+  var f = _ladeFehler[bereich] || {};
+  var teile = Object.keys(f);
+  if(!teile.length){
+    if(box) box.parentNode.removeChild(box);
+    ladeKaputtSetzen(o.view);
+    if(LADE_HEUTE.indexOf(bereich)>=0) homeSpaeter();
+    return;
+  }
+  var anker = $(o.vor || o.nach);
+  if(!anker) return;
+  if(!box){
+    box = document.createElement('div');
+    box.id = 'lf-'+bereich;
+    box.className = 'lade-fehler';
+    box.setAttribute('role', 'alert');
+    anker.parentNode.insertBefore(box, o.nach ? anker.nextSibling : anker);
+  }
+  var titel, trotzdem = '';
+  if(o.studios){
+    var alle = ladeStudioKeys();
+    titel = o.titel + ' aus ' + aufzaehlen(teile.map(studioName));
+    if(alle.length > teile.length){
+      trotzdem = o.view==='todos' ? 'Die aus den anderen Studios stehen unten.'
+                                  : 'Die anderen Studios sind davon nicht betroffen.';
+    }
+  } else if(o.teile){
+    titel = aufzaehlen(teile.map(function(t){ return o.teile[t] || t; }));
+    if(teile.length < Object.keys(o.teile).length) trotzdem = 'Was darunter steht, hat geladen.';
+  } else {
+    titel = o.titel;
+  }
+  var satz = titel + (o.einzahl ? ' liess' : ' liessen') + ' sich gerade nicht laden.';
+  /* Verschiedene Gründe nur einmal: vierzehn Studios mit derselben
+     Meldung sind ein Satz, nicht vierzehn. */
+  var gruende = [];
+  teile.forEach(function(t){ if(gruende.indexOf(f[t])<0) gruende.push(f[t]); });
+  box.innerHTML =
+    '<span class="lf-zeichen" aria-hidden="true">'+ikon('warnung')+'</span>'+
+    '<div class="lf-text"><b>'+esc(satz)+'</b> '+esc(gruende.join(' '))+
+      (trotzdem ? '<span class="lf-trotzdem">'+esc(trotzdem)+'</span>' : '')+'</div>'+
+    '<button type="button" class="btn btn-ghost btn-sm lf-nochmal" data-ladenochmal="'+bereich+'">Nochmal versuchen</button>';
+  ladeKaputtSetzen(o.view);
+  if(LADE_HEUTE.indexOf(bereich)>=0) homeSpaeter();
+}
+/* Fehlt in einer Ansicht ALLES, was sie zeigen würde, verschwinden ihre
+   leeren Zustände. Fehlt nur ein Teil, bleiben sie — sie beschreiben dann
+   den Teil, der geladen hat, und die Meldung darüber sagt, welcher fehlt. */
+function ladeKaputtSetzen(view){
+  var sektion = $('view-'+view); if(!sektion) return;
+  var kaputt = Object.keys(LADEORT).some(function(b){
+    var o = LADEORT[b], f = _ladeFehler[b];
+    if(o.view!==view || !f) return false;
+    var n = Object.keys(f).length;
+    if(o.studios) return n >= ladeStudioKeys().length;
+    if(o.teile) return n >= Object.keys(o.teile).length;
+    return n > 0;
+  });
+  sektion.classList.toggle('lade-kaputt', kaputt);
+}
+/* Die Startseite darf „Alles erledigt" nur sagen, wenn sie es weiss.
+   Fehlen Aufgaben, Putzplan oder Ankündigungen, ist „nichts offen" nicht
+   erledigt, sondern unbekannt — und genau das steht dann dort. */
+var LADE_HEUTE = ['todos','putz','ann'];
+function ladeRuheText(klasse){
+  var fehlt = LADE_HEUTE.filter(function(b){ return !!_ladeFehler[b]; });
+  if(!fehlt.length) return '';
+  var namen = { todos:'Aufgaben', putz:'Putzplan', ann:'Ankündigungen' };
+  return '<div class="'+klasse+' lade-ruhe"><span class="hr-ico" aria-hidden="true">'+ikon('warnung')+'</span>'+
+    '<div><b>Nicht alles geladen</b>'+
+    '<span>'+esc(aufzaehlen(fehlt.map(function(b){ return namen[b]; })))+
+    ' fehlen gerade. Was hier nicht steht, ist darum nicht erledigt, sondern unbekannt.</span></div>'+
+    '<button type="button" class="btn btn-ghost btn-sm lf-nochmal" data-ladenochmal="'+fehlt.join(' ')+'">Nochmal versuchen</button></div>';
+}
+document.addEventListener('click', function(ev){
+  var k = ev.target.closest && ev.target.closest('[data-ladenochmal]');
+  if(!k) return;
+  var b = k.getAttribute('data-ladenochmal');
+  k.disabled = true; k.textContent = 'Lädt …';
+  tick(8);
+  /* Der Knopf kommt von selbst zurück: ladeGut() nimmt die Meldung weg,
+     ein erneuter Fehler zeichnet sie neu. Bleibt beides aus (keine
+     Antwort), gibt er nach acht Sekunden wieder frei. */
+  setTimeout(function(){
+    if(k.isConnected && k.disabled){ k.disabled = false; k.textContent = 'Nochmal versuchen'; }
+  }, 8000);
+  b.split(' ').forEach(function(x){
+    try { (LADE_NOCHMAL[x] || function(){})(); } catch(e){ console.warn('Nochmal '+x+':', e.message); }
+  });
+});
+
 /* ── Offline-Hinweis oben einblenden/ausblenden ── */
 function updateOnlineState(){
   var bar=$('offlineBar'); if(!bar) return;
@@ -15768,13 +15961,18 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
-  { id:'2026-09-25-pc-spalten', datum:'25.9.2026', titel:'Am Rechner: Material, Geräte und Probetraining nebeneinander', punkte:[
+  { id:'2026-09-25-ladefehler', datum:'25.9.2026', titel:'Wenn etwas nicht lädt, steht es jetzt da', wo:'todos', punkte:[
+    'Lädt eine Liste nicht — Aufgaben, Chat, Putzplan, Team, Material, Geräte, Probetraining, Ankündigungen oder Direktnachrichten —, steht oben in der Liste, WAS fehlt und warum. Vorher blieb sie einfach leer, und darunter stand manchmal sogar „Noch keine Aufgaben".',
+    'Mit dem Knopf „Nochmal versuchen" lädt sie neu.',
+    'Fehlt nur ein Studio, steht dort welches — die Aufgaben aus den anderen Studios siehst du darunter wie gewohnt.',
+    'Auf der Startseite steht dann nicht mehr „Alles erledigt", sondern „Nicht alles geladen". Was fehlt, ist nicht erledigt, sondern unbekannt.' ] },
+  { id:'2026-09-25-pc-spalten', datum:'25.9.2026', titel:'Am Rechner: Material, Geräte und Probetraining nebeneinander', wo:'material', punkte:[
     'Material: Die Tabelle steht links, „Reicht noch" und die Einkaufsliste rechts daneben — der Name steht nicht mehr eine halbe Bildschirmbreite von seinen Zahlen entfernt.',
     'Geräte: Die Liste links, „Gerät aufnehmen" rechts.',
     'Probetraining: Die Einträge links, die Quote rechts — die Seite ist nur noch halb so lang.',
     'Schulung: Die Module stehen in zwei Spalten.',
     'Am Handy bleibt alles, wie es ist.' ] },
-  { id:'2026-09-25-design', datum:'25.9.2026', titel:'Vier kleine Verbesserungen', punkte:[
+  { id:'2026-09-25-design', datum:'25.9.2026', titel:'Vier kleine Verbesserungen', wo:'chat', punkte:[
     'Chat: Der Tag („Heute", „Gestern", Datum) bleibt beim Zurückscrollen oben stehen — du weisst immer, von wann die Nachrichten sind.',
     'Schulung: Über den Modulen steht, wie viele du schon geschafft hast und wie viele noch fehlen, mit Balken. Tippst du eine Gruppe an, zählt sie nur diese.',
     'Aufgaben: An offenen Aufgaben steht neben der Kamera jetzt „Foto" — der schnellste Weg, einen Schaden zu belegen.',
@@ -21264,6 +21462,7 @@ var _chatLimit=CHAT_PAGE;   // wächst, wenn man "Ältere laden" antippt
 var _chatMore=false;        // gibt es überhaupt noch ältere?
 function listenChannel(channelId){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
+  ladeGut('chat');                  // die Meldung galt dem vorigen Kanal
   var first=true, startTs=Date.now();
   _chatUnsub = S('channels').doc(channelId).collection('messages')
     .orderBy('ts').limitToLast(_chatLimit)
@@ -21286,9 +21485,10 @@ function listenChannel(channelId){
         });
       }
       first=false;
+      ladeGut('chat');
       _chatMore = snap.docs.length >= _chatLimit;   // evtl. gibt es noch ältere
       renderMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }));
-    }, function(e){ console.error('Chat:',e.message); });
+    }, function(e){ ladeFehler('chat', e); });
 }
 
 /* ── Putzplan über ALLE Studios ──
@@ -21303,6 +21503,7 @@ var _cleanUnsubs = [];
 function listenClean(){
   _cleanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _cleanUnsubs=[];
   cachedClean={};
+  ladeGut('putz');
   /* Je Studio merken, ob der erste Schnappschuss schon durch ist —
      listenClean hat dafuer keine eigene Variable wie listenTodoStudio. */
   var ersterPutz={};
@@ -21312,13 +21513,14 @@ function listenClean(){
       .onSnapshot(function(snap){
         // Abgelaufene gleich hier weg, damit Startseite, Liste, Fortschritt
         // und Ausdruck ohne weiteres Zutun dieselbe Zahl zeigen.
+        ladeGut('putz', sk);
         cachedClean[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
           .filter(function(t){ return !ppAbgelaufen(t); });
         meldPruefen(sk, 'putz', cachedClean[sk], ersterPutz[sk]!==false);
         ersterPutz[sk]=false;
         if(_ppStudioKey===sk){ _ppTasks=cachedClean[sk]; renderPutzplan(); }
         homeSpaeter();
-      }, function(e){ console.error('Putzplan '+sk+':',e.message); });
+      }, function(e){ ladeFehler('putz', e, sk); });
     _cleanUnsubs.push(unsub);
   });
 }
@@ -21344,6 +21546,7 @@ function putzOffenGesamt(keys){
 function listenTodos(){
   _todosUnsubs.forEach(function(u){ u(); }); _todosUnsubs=[];
   cachedTodos={};
+  ladeGut('todos');
   // Chef sieht alle Studios; Mitarbeiter nur die eigenen
   var keys = canManage() ? managedKeys() : session.studioKeys;
   var notify = session.role!=='chef'; // Mitarbeiter bei neuen Aufgaben benachrichtigen
@@ -21364,6 +21567,7 @@ function listenTodoStudio(sk, notify){
           }
         });
       }
+      ladeGut('todos', sk);
       cachedTodos[sk]=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       /* VOR first=false: der erste Schnappschuss legt nur den Stand an,
          sonst braeche beim App-Start die halbe Woche als „gerade
@@ -21371,7 +21575,7 @@ function listenTodoStudio(sk, notify){
       meldPruefen(sk, 'todo', cachedTodos[sk], first);
       first=false;
       renderTodos();
-    }, function(e){ console.error('Todos '+sk+':',e.message); });
+    }, function(e){ ladeFehler('todos', e, sk); });
   _todosUnsubs.push(unsub);
 }
 
@@ -21394,11 +21598,12 @@ function listenAnnouncements(){
         });
       }
       first=false;
+      ladeGut('ann');
       _allAnns=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       renderAnnouncements(_allAnns);
       renderHomeLesen();          // der Text steht auch auf der Startseite
       if(currentView==='ann') markAnnouncementsRead();
-    }, function(e){ console.error('Ann:',e.message); });
+    }, function(e){ ladeFehler('ann', e); });
 }
 var _allAnns=[];
 
@@ -22173,21 +22378,25 @@ function loadTeam(sk){
   _shiftUnsub=_absUnsub=_hoUnsub=null;
   // Erst leeren, damit nicht kurz die Schichten des vorigen Studios stehen
   _shifts=[]; _absences=[]; _handovers=[];
+  ladeGut('team');                 // die Meldung galt dem vorigen Studio
   renderShifts(); renderAbsences(); renderHandovers();
   var ref=S('studios').doc(sk);
   _shiftUnsub=ref.collection('shifts').orderBy('date').onSnapshot(function(sn){
+    ladeGut('team', 'schichten');
     _shifts=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
     renderShifts();
-  }, function(e){ console.warn('Schichten:',e.message); });
+  }, function(e){ ladeFehler('team', e, 'schichten'); });
   _absUnsub=ref.collection('absences').orderBy('from').onSnapshot(function(sn){
+    ladeGut('team', 'abwesend');
     _absences=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
     renderShifts(); renderAbsences();
-  }, function(e){ console.warn('Abwesenheiten:',e.message); });
+  }, function(e){ ladeFehler('team', e, 'abwesend'); });
   _hoUnsub=ref.collection('handovers').orderBy('ts','desc').limit(40).onSnapshot(function(sn){
+    ladeGut('team', 'uebergabe');
     _handovers=sn.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
     erwMelden(_handovers, 'Übergabe');
     renderHandovers();
-  }, function(e){ console.warn('Übergabe:',e.message); });
+  }, function(e){ ladeFehler('team', e, 'uebergabe'); });
   listenBoard(true);   // auf der Team-Seite alle Einträge, nicht nur zwölf
   buildShiftPersonSelect();
 }
@@ -22916,6 +23125,11 @@ function renderHeute(){
   }
   box.classList.toggle('zweispaltig', breit && !!links && !!rechts);
 
+  /* Fehlen Aufgaben, Putzplan oder Ankündigungen, steht das OBEN —
+     auch wenn anderes da ist. Sonst liest man „Dein Dienst heute" und
+     „2 Artikel fehlen" und hält die Liste für vollständig. */
+  var ladeZeile=ladeRuheText('heute-ruhe');
+  if(ladeZeile) html=ladeZeile+html;
   if(!html){
     /* Genau das sagen, was geprüft wurde — nicht mehr.
        Der Satz hiess bis zum 21.9.2026 „Keine Aufgabe ist über ihrer
@@ -23257,10 +23471,10 @@ function renderHome(){
     var ohne=tiles.filter(function(t){ return !(t.n>0); });
 
     if(!mitZahl.length){
-      grid.innerHTML='<div class="home-ruhe">'+
+      grid.innerHTML=ladeRuheText('home-ruhe') || ('<div class="home-ruhe">'+
         '<span class="hr-ico">✓</span>'+
         '<div><b>Alles erledigt</b>'+
-        '<span>Keine offenen Aufgaben, nichts überfällig, nichts fehlt.</span></div></div>';
+        '<span>Keine offenen Aufgaben, nichts überfällig, nichts fehlt.</span></div></div>');
     } else {
       grid.innerHTML=mitZahl.concat(ohne).map(function(t){
         return '<div class="home-tile '+t.cls+(t.n>0?'':' null')+'" data-go="'+t.v+'"'+
@@ -28721,7 +28935,9 @@ function loadMaterial(sk){
   // die Bestände des vorigen Studios da – und wer sofort tippt, würde sie
   // versehentlich beim neuen Studio speichern.
   if(wechsel){ _matItems=[]; renderMaterial(); }
+  ladeGut('material');
   _matUnsub=S('inventory').doc(sk).onSnapshot(function(doc){
+    ladeGut('material');
     // Eigene Schreibvorgänge oder aktives Tippen nicht überschreiben
     if(doc.metadata.hasPendingWrites) return;
     if(document.activeElement && document.activeElement.closest && document.activeElement.closest('#matTable')) return;
@@ -28733,7 +28949,7 @@ function loadMaterial(sk){
     DEFAULT_MATERIALS.forEach(function(n){ if(!present[n]) items.push({name:n, have:0, need:0}); });
     _matItems=items;
     renderMaterial();
-  }, function(e){ console.error('Material:',e.message); });
+  }, function(e){ ladeFehler('material', e); });
 }
 
 /* Effektiv fehlende Menge: bei gesetztem Soll automatisch (Soll−Vorhanden), sonst manuell */
@@ -30125,20 +30341,23 @@ function loadDevices(sk){
   if(_devLogUnsub){ _devLogUnsub(); _devLogUnsub=null; }
   // Erst leeren – sonst stehen kurz die Geräte des vorigen Studios da
   _devices=[]; _devLog=[]; renderDevices();
+  ladeGut('geraete');
   var ref=S('studios').doc(sk);
   _devUnsub=ref.collection('devices').orderBy('name')
     .onSnapshot(function(snap){
+      ladeGut('geraete', 'liste');
       _devices=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       renderDevices();
       if(_devOpenId) fillDeviceModal();
-    }, function(e){ console.warn('Geräte:',e.message); });
+    }, function(e){ ladeFehler('geraete', e, 'liste'); });
   // Nur die letzten 60 Meldungen: der Verlauf soll etwas zeigen, nicht alles
   _devLogUnsub=ref.collection('deviceLog').orderBy('ts','desc').limit(60)
     .onSnapshot(function(snap){
+      ladeGut('geraete', 'verlauf');
       _devLog=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       renderDevices();
       if(_devOpenId) renderDeviceLog();
-    }, function(e){ console.warn('Geräte-Verlauf:',e.message); });
+    }, function(e){ ladeFehler('geraete', e, 'verlauf'); });
 }
 
 /* Wie oft war dieses Gerät in den letzten 90 Tagen defekt?
@@ -30594,9 +30813,10 @@ function listenProbe(){
   if(!ansichtAn('probe')) return;
   _probeUnsub=S('probetrainings').orderBy('datum','desc').limit(400)
     .onSnapshot(function(snap){
+      ladeGut('probe');
       _probe=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       if(currentView==='probe') renderProbe();
-    }, function(e){ console.warn('Probetraining:', e && e.message); });
+    }, function(e){ ladeFehler('probe', e); });
 }
 
 /* Wen die Zahlen etwas angehen: der Chef sieht alle Studios, alle
@@ -31927,6 +32147,7 @@ function listenDmThreads(){
   _dmThreadsFirst=true;
   _dmThreadsUnsub=S('dms').where('participants','array-contains',session.uid)
     .onSnapshot(function(snap){
+      ladeGut('dmListe');
       _dmThreads=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       _dmThreads.sort(function(a,b){ return (b.lastTs||0)-(a.lastTs||0); });
       if(!_dmThreadsFirst){
@@ -31945,7 +32166,7 @@ function listenDmThreads(){
       _dmThreadsFirst=false;
       updateDmBadge();
       if(currentView==='dm' && $('dmConvo').style.display==='none' && (!$('dmSearch')||!$('dmSearch').value)) renderDmPeople('');
-    }, function(e){ console.error('DM-Threads:',e.message); toast('Verlauf: '+errMsg(e),true); });
+    }, function(e){ ladeFehler('dmListe', e); });
 }
 function dmUnreadCount(){
   return _dmThreads.filter(function(t){
@@ -32010,9 +32231,10 @@ function openDm(uid,name){
   $('dmListWrap').style.display='none';
   $('dmConvo').style.display='flex';
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
+  ladeGut('dm');
   _dmUnsub=S('dms').doc(_dmId).collection('messages').orderBy('ts').limitToLast(200)
-    .onSnapshot(function(snap){ renderDmMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })); },
-      function(e){ console.error('DM:',e.message); toast('Chat: '+errMsg(e),true); });
+    .onSnapshot(function(snap){ ladeGut('dm'); renderDmMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })); },
+      function(e){ ladeFehler('dm', e); });
   markDmRead();
   setTimeout(function(){ var t=$('dmText'); if(t&&window.innerWidth>820) t.focus(); },60);
 }

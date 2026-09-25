@@ -335,6 +335,17 @@
     return r;
   }
 
+  /* Für die Durchläufe: ein Ladefehler auf Bestellung (Runde 109).
+     window.DEMO_LADEFEHLER = { 'studios/studio-1/todos': 'permission-denied' }
+     lässt jeden NEUEN Beobachter, dessen Pfad das Muster enthält, mit
+     diesem Fehler scheitern — wie Firestore: danach kommt nichts mehr.
+     Wird der Eintrag entfernt, klappt „Nochmal versuchen". */
+  function ladeFehlerFuer(pfad) {
+    var m = window.DEMO_LADEFEHLER || {};
+    for (var k in m) if (pfad.indexOf(k) >= 0) return { code: m[k], message: 'Demo: ' + m[k] };
+    return null;
+  }
+
   function abfrage(pfad, f) {
     f = f || {};
     function mit(neu) {
@@ -352,6 +363,12 @@
       onSnapshot: function (a, b) {
         var cb = typeof a === 'function' ? a : (a && a.next);
         if (!cb) return function () {};
+        var fehlerCb = typeof a === 'function' ? b : (a && a.error);
+        var fehler = ladeFehlerFuer(pfad);
+        if (fehler) {
+          setTimeout(function () { if (fehlerCb) fehlerCb(fehler); }, 30);
+          return function () {};
+        }
         function feuern() { cb(schnapp(anwenden(holen(pfad), f))); }
         var huelle = function () { feuern(); };
         (HORCHER[pfad] = HORCHER[pfad] || []).push(huelle);
@@ -381,9 +398,15 @@
         var d = holen(pfad).filter(function (x) { return x.id === id; })[0];
         return Promise.resolve(einzelSchnapp(id, d));
       },
-      onSnapshot: function (a) {
+      onSnapshot: function (a, b) {
         var cb = typeof a === 'function' ? a : (a && a.next);
         if (!cb) return function () {};
+        var fehlerCb = typeof a === 'function' ? b : (a && a.error);
+        var fehler = ladeFehlerFuer(voll);
+        if (fehler) {
+          setTimeout(function () { if (fehlerCb) fehlerCb(fehler); }, 30);
+          return function () {};
+        }
         function feuern() {
           var d = holen(pfad).filter(function (x) { return x.id === id; })[0];
           cb(einzelSchnapp(id, d));
