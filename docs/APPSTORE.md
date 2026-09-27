@@ -16,6 +16,13 @@ Apple ändert sie laufend.
 
 ## 1. Google einschalten (heute, etwa 5 Minuten)
 
+> **Stand 27.9.2026: Google ist im Projekt eingeschaltet** — nachgeprüft
+> mit dem öffentlichen Web-Schlüssel (`accounts:createAuthUri` für
+> `google.com` gibt eine Anmeldeadresse zurück; `apple.com` antwortet
+> „OPERATION_NOT_ALLOWED"). Es war schon an, bevor dieser Schritt
+> gemacht wurde. Die Datenschutzerklärung der App nennt es seit
+> demselben Tag. Offen bleibt nur Punkt 4: einmal selbst ausprobieren.
+
 Die App hat den Knopf schon (`konfig.js → anmeldung.google: true`).
 Solange Google in Firebase aus ist, sagt die App beim Tippen: „noch nicht
 eingeschaltet".

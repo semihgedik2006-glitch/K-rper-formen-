@@ -86,6 +86,22 @@ const TREFFER = (el) => {
     await p.waitForTimeout(400);
     const ds = await p.evaluate(() => { const m = document.getElementById('rechtModal'); return m && m.classList.contains('show') ? document.getElementById('rechtInhalt').textContent : ''; });
     pruefe('„Mehr dazu" öffnet die Datenschutzerklärung mit „Auf deinem Gerät"', /Auf deinem Gerät/.test(ds) && /TDDDG/.test(ds), ds.slice(0, 120));
+    /* Anmeldung (27.9.2026): „Mit Google anmelden" war im Projekt schon
+       eingeschaltet, bevor die Datenschutzerklärung es erwähnte. Jetzt
+       steht es drin — und die Zwei-Faktor-Anmeldung nur, wenn sie an ist
+       (der Text beschreibt, was die App tut). */
+    pruefe('Datenschutz nennt die Anmeldung mit Google und was übernommen wird',
+      /Anmeldung/.test(ds) && /Mit Google anmelden/.test(ds) && /Name und E-Mail-Adresse/.test(ds), ds.slice(0, 160));
+    pruefe('… die Zwei-Faktor-Anmeldung nicht, solange sie aus ist', !/Zwei-Faktor-Anmeldung/.test(ds));
+    await p.keyboard.press('Escape');
+    await p.waitForTimeout(200);
+    await p.evaluate(() => { window.KONFIG.zweiFaktor = true; });
+    await p.click('#shMehr');
+    await p.waitForTimeout(400);
+    const ds2 = await p.evaluate(() => document.getElementById('rechtInhalt').textContent);
+    pruefe('GEGENPROBE ist sie an, steht sie da — mit „nur ja oder nein" für die Geschäftsführung',
+      /Zwei-Faktor-Anmeldung/.test(ds2) && /nicht in\s+der Datenbank|nicht in der Datenbank/.test(ds2) && /ja oder nein/.test(ds2), ds2.slice(0, 80));
+    await p.evaluate(() => { window.KONFIG.zweiFaktor = false; });
     await p.keyboard.press('Escape');
     await p.waitForTimeout(200);
 

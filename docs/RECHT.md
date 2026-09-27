@@ -150,6 +150,26 @@ Alle drei sind Funktionen, die ihr wolltet und die sinnvoll sind. Sie
 gehören nur in die Erklärung — und wahrscheinlich in eine Absprache mit
 dem Team.
 
+### Anmeldung (seit 27.9.2026 im Text der App)
+
+- **E-Mail und Passwort:** Das Passwort liegt nur als Prüfwert beim
+  Anmeldedienst.
+- **„Mit Google anmelden“ (freiwillig):**
+  - Erst beim Tippen entsteht eine Verbindung zu Google
+    (`accounts.google.com`, `apis.google.com`).
+  - Google erfährt, dass sich jemand bei StudioChat anmeldet.
+  - Ins Profil übernommen werden nur Name und E-Mail-Adresse
+    (`anbieterNeuesKonto()`).
+  - Die Verknüpfung lässt sich trennen, solange ein Passwort bleibt.
+- **Apple:** Der Absatz erscheint erst, wenn `anmeldung.apple` an ist.
+- **Zwei-Faktor:** Der Absatz erscheint erst mit `zweiFaktor: true`.
+  - Der Schlüssel liegt beim Anmeldedienst, nicht in der Datenbank;
+    eine Telefonnummer braucht es nicht.
+  - Die Geschäftsführung sieht nur ja oder nein.
+
+Am Code nachgeprüft, festgehalten in `tests/test-rechtliches.js`: Der
+Absatz zur Zwei-Faktor-Anmeldung fehlt, solange sie aus ist.
+
 ### Wo es liegt
 
 Google Firebase, Region **europe-west1** (Belgien). Anbieter ist Google

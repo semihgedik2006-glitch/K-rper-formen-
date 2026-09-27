@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-pWCsbsaAltFcGj645qM4DG0v8nolOYvG8w69V4ujHFU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-W+R1kMjUD30GaNI5jJmZUxXgj6FRk0sMzbByMGNGKMM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -11503,6 +11503,46 @@ function renderRecht(){
         'Zweck ist allein die Frage, welche Funktionen niemand benutzt. '+
         'Ein Protokoll, wer wann in der App war, gibt es nicht.</p>'+
 
+      /* ── Anmeldung (27.9.2026) ──
+         Seit Runde 118 gibt es „Mit Google anmelden", seit Runde 119 die
+         Zwei-Faktor-Anmeldung. Beides fehlte hier — und Google war im
+         Projekt schon eingeschaltet, der Knopf funktionierte also, bevor
+         dieser Text es sagte. Die Absätze stehen nur da, wenn der Weg in
+         konfig.js an ist: der Text beschreibt, was die App TUT.
+         Nachgeprüft am Code: anbieterNeuesKonto() übernimmt aus dem
+         Google-Konto nur Name und E-Mail-Adresse ins Profil; zfEinrichten()
+         legt den Schlüssel über den Anmeldedienst an, nicht in der
+         Datenbank. tests/test-rechtliches.js prüft die Absätze. */
+      '<h4>Anmeldung</h4>'+
+      '<p>Mit E-Mail-Adresse und Passwort. Das Passwort liegt nur als '+
+        'nicht umkehrbarer Prüfwert beim Anmeldedienst (Firebase '+
+        'Authentication) – niemand im Betrieb kann es lesen.</p>'+
+      (anbieterAn('google')
+        ? '<p><b>Mit Google anmelden</b> ist freiwillig. Wer es nutzt, meldet '+
+          'sich in einem Fenster von Google an; erst dann wird eine '+
+          'Verbindung zu Google-Diensten für die Anmeldung aufgebaut '+
+          '(<code>accounts.google.com</code>, <code>apis.google.com</code>). '+
+          'Google erfährt dabei, dass du dich bei StudioChat anmeldest. '+
+          'Übernommen werden nur <b>Name und E-Mail-Adresse</b>; der '+
+          'Anmeldedienst hält dazu die Angaben deines Google-Kontos, die '+
+          'Google mitschickt. Die Verknüpfung lässt sich unter Profil → '+
+          'Anmeldung und Sicherheit wieder trennen, solange ein Passwort '+
+          'bleibt.</p>'
+        : '')+
+      (anbieterAn('apple')
+        ? '<p><b>Mit Apple anmelden</b> ist freiwillig und läuft genauso über '+
+          'ein Fenster von Apple. Wer „E-Mail verbergen" wählt, erhält eine '+
+          'Weiterleitungsadresse von Apple.</p>'
+        : '')+
+      (zfAn()
+        ? '<p><b>Zwei-Faktor-Anmeldung</b> (für Leitung und Geschäftsführung '+
+          'vorgesehen): Beim Einrichten entsteht ein geheimer Schlüssel für '+
+          'deine Authenticator-App. Er liegt beim Anmeldedienst, nicht in '+
+          'der Datenbank des Betriebs; eine Telefonnummer wird dafür nicht '+
+          'gebraucht. Die Geschäftsführung sieht nur, <b>ob</b> jemand aus '+
+          'der Leitung den zweiten Faktor eingerichtet hat – ja oder nein.</p>'
+        : '')+
+
       '<h4>Wo es liegt</h4>'+
       '<p>Google Firebase (Firestore, Authentication, Cloud Functions, '+
         'Cloud Storage), Region <b>europe-west1</b> – Belgien, also '+
@@ -17264,6 +17304,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-27-datenschutz-anmeldung', datum:'27.9.2026', titel:'Datenschutz: was bei „Mit Google anmelden" passiert', wo:'ich:daten', punkte:[
+    'In der Datenschutzerklärung steht jetzt ein Abschnitt „Anmeldung": was bei E-Mail und Passwort gespeichert wird und was bei „Mit Google anmelden" an Google geht — nur Name und E-Mail-Adresse werden übernommen.',
+    'Sobald die Zwei-Faktor-Anmeldung eingeschaltet ist, steht auch dazu dort, wo der Schlüssel liegt und was die Geschäftsführung davon sieht (nur ja oder nein).' ] },
   { id:'2026-09-26-tagesband', datum:'26.9.2026', titel:'Wer ist heute mit mir im Studio?', wo:'home', punkte:[
     'Am Rechner steht auf der Startseite jetzt „Heute im Studio": der Tag als Band, jede Schicht ein Balken, deiner in der Farbe des Bereichs, und eine Linie für jetzt. Darunter steht, wer gerade da ist.',
     'Ein Klick auf das Band öffnet den Schichtplan dieses Studios für heute.' ] },
