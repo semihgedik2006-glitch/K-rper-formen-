@@ -98,12 +98,13 @@ Die einzige Sammlung außerhalb der Firmenpfade.
 | `birthday` | Text | freiwillig |
 | `mailAus` | Liste | abgeschaltete Mail-Themen |
 | `handyStempeln` | bool | darf mit dem eigenen Telefon stempeln |
+| `loeschungBeantragt` | Zahl | wann die Person die Löschung beantragt hat (Ich → Daten). Setzt und entfernt **nur der Server** (`loeschungBeantragen`, `loeschungZuruecknehmen`); dazu `aktiv:false` |
 
 **Was ein Benutzer an sich selbst NICHT ändern darf** — steht so in der
 Regel, nicht nur in der App:
 
 ```
-['role','studios','studio','studioKeys','aktiv','firma','admin','handyStempeln']
+['role','studios','studio','studioKeys','aktiv','firma','admin','handyStempeln','loeschungBeantragt']
 ```
 
 **Lesen:** nur Konten **derselben Firma**. `users` liegt außerhalb der

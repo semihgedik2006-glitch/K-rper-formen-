@@ -208,6 +208,11 @@
       USERS.push({ id: 'demo-wartet', firma: KENNUNG, name: 'Lea Neumann', role: 'mitarbeiter',
                    aktiv: false, email: 'lea.neumann@example.org', studios: [], studioKeys: [],
                    beitrittAm: Date.now() - 2 * 3600000 });
+      /* Und ein Löschantrag (App Store 5.1.1(v)) — gesperrt seit
+         gestern, steht in „Löschung beantragt" über der Freigabe. */
+      USERS.push({ id: 'demo-loeschen', firma: KENNUNG, name: 'Ole Vierkant', role: 'mitarbeiter',
+                   aktiv: false, email: 'ole.vierkant@example.org', studios: [STUDIOS[2]], studioKeys: [sk(2)],
+                   loeschungBeantragt: Date.now() - 26 * 3600000 });
     }
   })();
 
@@ -1406,6 +1411,38 @@
       return { ok: true };
     },
     kontoLoeschen: function () { return { ok: true, demo: true }; },
+    /* ── Löschung beantragen — dieselben Prüfungen wie der Server. In
+       der Demo wird niemand wirklich gesperrt: die App zeigt die kleine
+       Seite direkt (demo:true), statt neu zu laden. */
+    loeschungBeantragen: function (d) {
+      if (!d || d.bestaetigt !== true) throw new Error('Bitte den Antrag bestätigen.');
+      var andere = holen('users').filter(function (u) {
+        return u.role === 'chef' && u.aktiv !== false && u.id !== ICH.id;
+      });
+      if (ICH.role === 'chef' && !andere.length) {
+        throw new Error('Du bist die einzige Geschäftsführung. Gib die Rolle erst an jemanden weiter — sonst kann niemand den Antrag abschliessen.');
+      }
+      return { ok: true, demo: true, am: Date.now() };
+    },
+    loeschungZuruecknehmen: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Dieser Bereich ist der Geschäftsführung vorbehalten.');
+      var u = holen('users').filter(function (x) { return x.id === (d && d.uid); })[0];
+      if (!u || !u.loeschungBeantragt) throw new Error('Hier liegt kein Löschantrag.');
+      u.aktiv = true; delete u.loeschungBeantragt;
+      melden('users');
+      return { ok: true };
+    },
+    /* Zugang entfernen: in der Demo verschwindet die Person aus der
+       Liste, bis zum Neuladen. Vorher kam „läuft in der Demo nicht". */
+    zugangEntfernen: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Dieser Bereich ist der Geschäftsführung vorbehalten.');
+      if (!d || !d.uid) throw new Error('Keine Kennung angegeben.');
+      if (d.uid === ICH.id) throw new Error('Den eigenen Zugang kann man hier nicht entfernen.');
+      var l = holen('users'), vor = l.length;
+      legen('users', l.filter(function (x) { return x.id !== d.uid; }));
+      melden('users');
+      return { profil: vor !== holen('users').length, konto: true };
+    },
     /* Zwei-Faktor bei der Leitung (Runde 119): in der Demo hat die erste
        Studioleitung sie schon, alle anderen noch nicht. */
     zweiFaktorStand: function () {
