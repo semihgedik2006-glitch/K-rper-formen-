@@ -13683,3 +13683,26 @@ Runde 122, und zwar nur unter Last:
 - Danach liefen er und die fünf übrigen Tests, die diese Runde
   berühren, erneut: alle grün.
 
+## 27.9.2026 — Die Wiederherstellung ist geprobt (P-07)
+
+- Der Betreiber hat die nächtliche Sicherung `sicherung/2026-09-27` nach
+  `docs/PROBELAUF-DATEN.md` in `formenchat-probe` importiert.
+- Ergebnis aus `gcloud firestore operations list`: `SUCCESSFUL`, 678
+  von 678 Dokumenten, 3,2 MB, 14:13:47–14:13:54 UTC.
+- Von hier aus, ohne Zugangsdaten, gegengeprüft: Das öffentlich lesbare
+  Firmendokument im Probe-Projekt trug genau diese Uhrzeit.
+- **Gefunden:**
+  - Im Probe-Projekt galten noch die Regeln vom August. Die
+    Firmenliste war ohne Anmeldung abrufbar, die seitdem geschlossenen
+    Lücken waren dort offen.
+  - Gleichzeitig lag dort eine Kopie echter Daten, und die
+    Registrierung per E-Mail war frei.
+  - Die Anmeldung wurde deshalb sofort abgeschaltet. Das Löschen der
+    Kopie ist beim Schreiben dieser Zeilen **noch nicht bestätigt**; es
+    wird nachgetragen.
+  - Beides steht jetzt als Pflichtschritt in der Anleitung (2a, 4a).
+- `docs/av/TOM.md` nachgezogen: Wiederherstellung geprobt, Auskunft nach
+  Art. 15 seit dem 25.9. vorhanden, Zweitfaktor eingebaut, aber noch
+  nicht eingeschaltet. Eine zu schlechte oder zu gute Beschreibung in
+  einer Vertragsanlage ist gleichermaßen falsch (vgl. B-35).
+

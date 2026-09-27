@@ -197,9 +197,11 @@ System) und nennt bei einem Fehlschlag den Grund, statt zu schweigen.
 ### 3.2 Wiederherstellbarkeit
 
 Rückspielen erfolgt über den Firestore-Import aus dem Sicherungsordner.
-**Nicht geprobt.** Eine Wiederherstellung, die nie geübt wurde, ist eine
-Hoffnung und keine Maßnahme — das gehört zur Wahrheit dieser Anlage.
-Als Übung ist es überschaubar; sie steht in `docs/OFFEN.md`.
+**Geprobt am 27.9.2026:** die nächtliche Sicherung dieses Tages wurde in
+ein getrenntes Projekt zurückgespielt — 678 von 678 Dokumenten, ohne
+Fehler, in wenigen Sekunden. Die Kopie wird danach gelöscht. Nicht
+Teil der Sicherung sind die Anmeldekonten selbst (sie liegen im
+Anmeldedienst, nicht in der Datenbank).
 
 ### 3.3 Verfügbarkeit im Betrieb
 
@@ -251,9 +253,9 @@ SOC-Bericht für StudioChat selbst — nur für die Plattform darunter.
 | Maßnahme | Stand | Aufwand |
 |---|---|---|
 | Passwort-Mindestlänge auf 12 Zeichen | offen | eine Zeile |
-| Zweitfaktor für Chef-Konten | offen | mittel |
-| Auskunft je Person auf Knopfdruck (Art. 15) | **fehlt**, heute Handarbeit | mittel |
-| Wiederherstellung aus der Sicherung einmal proben | nicht geprobt | klein |
+| Zweitfaktor für Chef-Konten | eingebaut (Authenticator-App), noch nicht eingeschaltet | klein |
+| Auskunft je Person auf Knopfdruck (Art. 15) | **erledigt** (25.9.2026) | — |
+| Wiederherstellung aus der Sicherung einmal proben | **geprobt** (27.9.2026) | — |
 | Externer Penetrationstest | nicht erfolgt | Geld |
 
 Diese Liste gehört in die Anlage und nicht in eine Schublade. Ein Kunde,

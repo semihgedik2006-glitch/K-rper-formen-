@@ -122,6 +122,19 @@ mehrere Zeilen lang ist. Eine Warnung über „etag" ist normal.
 
 ---
 
+## Schritt 2a — PFLICHT: Anmeldung im Probe-Projekt abschalten
+
+Firebase-Konsole → **formenchat-probe** → Authentication → Sign-in
+method → **E-Mail/Passwort deaktivieren** (und jeden anderen Anbieter).
+
+**Warum:** gleich liegt dort eine Kopie echter Daten — Chats,
+Direktnachrichten, Krankmeldungen. Die Regeln im Probe-Projekt können
+älter sein als im Betrieb (am 27.9.2026 waren sie es: Stand August). Wer
+sich dort ein Konto anlegen kann, kommt an alles, was diese älteren
+Regeln durchlassen.
+
+---
+
 ## Schritt 3 — importieren
 
 **Das Datum anpassen** auf die neueste Sicherung aus Schritt 1:
@@ -170,6 +183,25 @@ selbst existiert nicht, nur seine Untersammlungen.
 **Genau die sind der Grund für den Probelauf.** Dort verliert ein Umzug
 lautlos die Hälfte, wenn er falsch gebaut ist. Mein Test dafür ist grün —
 aber an erfundenen Daten.
+
+---
+
+## Schritt 4a — PFLICHT: die Kopie wieder löschen
+
+Sobald nachgesehen ist:
+
+```bash
+gcloud firestore bulk-delete --project=formenchat-probe --database='(default)'
+```
+
+Die Rückfrage nennt das Projekt — **nur bestätigen, wenn dort
+`formenchat-probe` steht.** Verlangt der Befehl Sammlungsnamen, geht
+stattdessen die ganze Probe-Datenbank weg (Schritt 0 legt sie beim
+nächsten Mal wieder an):
+
+```bash
+gcloud firestore databases delete --database='(default)' --project=formenchat-probe
+```
 
 ---
 
