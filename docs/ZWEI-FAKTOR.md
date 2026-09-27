@@ -100,7 +100,7 @@ einen Übergang und ein Werkzeug, das zeigt, wen sie träfe."
 |---|---|---|
 | **1. Hinweis** | Geschäftsführung, Studioleitung und Betreiber ohne zweiten Faktor sehen oben die Leiste „Für die Leitung Pflicht — Jetzt einrichten". Wegklicken gilt nur bis zum nächsten Öffnen | eingebaut, wirkt ab `zweiFaktor: true` |
 | **Werkzeug** | *Verwaltung → Team → Zwei-Faktor bei der Leitung*: wer ihn hat, wer nicht (`zweiFaktorStand`, nur die eigene Firma, nur ja/nein) | eingebaut |
-| **2. Zurücksetzen** | Handy verloren → der zweite Faktor muss sich entfernen lassen, sonst ist das Konto zu. Das Admin-SDK kann das (`updateUser(uid, { multiFactor: { enrolledFactors: null } })`). Es braucht eine Funktion für Betreiber und Geschäftsführung, **mit** Protokoll | **offen, vor Stufe 3 bauen** |
+| **2. Zurücksetzen** | Handy verloren → der zweite Faktor muss sich entfernen lassen, sonst ist das Konto zu. Das Admin-SDK kann das (`updateUser(uid, { multiFactor: { enrolledFactors: null } })`). `zweiFaktorZuruecksetzen`: die Geschäftsführung derselben Firma oder der Betreiber, **nie für sich selbst**, nur mit Grund; Eintrag in `zfProtokoll` (nur der Chef liest). In der App: Verwaltung → Team → „Zwei-Faktor bei der Leitung“ → „Zurücksetzen“ | **gebaut am 27.9.2026** (Runde 124) |
 | **3. Pflicht** | Erst wenn im Werkzeug alle ✓ haben: Die Regeln verlangen für Chef- und Leitungsrechte `request.auth.token.firebase.sign_in_second_factor`. Einrichten geht weiter ohne, denn es läuft nicht über die Datenbank. Niemand sperrt sich also aus | **offen** |
 
 ---

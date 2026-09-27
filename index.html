@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-QJdvHAvQfk7G2EEbIQbztTDF1KBF/ZYoQj2Fz/Evfjc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-uEDJRDwoK6FMLmMpx7TT+V5ZRDotORafCCJJ1chqjBQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5322,6 +5322,18 @@ body:not(.light) .btn-anbieter[data-anbieter="apple"]{background:#000;color:#fff
 .zf-marke{width:22px;height:22px;flex:0 0 auto;color:var(--text-3)}
 .zf-marke.an{color:var(--ok)}
 .zf-marke svg{width:100%;height:100%}
+/* Runde 124: Zurücksetzen. Der Knopf steht rechts in der Zeile — damit
+   ist die Textspalte nicht mehr :last-child, und Name und Rolle klebten
+   in einer Zeile („Piet WinterStudioleitung", im Bild gesehen). Deshalb
+   hier noch einmal grid, an der zweiten Stelle statt der letzten. */
+.zf-liste li > span:nth-child(2){display:grid;flex:1;min-width:0}
+.zf-zurueck{flex:0 0 auto;min-height:44px}
+.zf-weg-form{display:grid;gap:var(--s10);margin-top:var(--s12);padding:var(--s12);border-radius:var(--r-md);background:var(--bg-2)}
+.zf-weg-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
+.zf-weg-knoepfe .btn{min-height:44px}
+.zf-prot-kopf{margin:var(--s16) 0 var(--s6);font-size:var(--t-sm)}
+.zf-prot{list-style:none;margin:0;padding:0;display:grid;gap:var(--s6);font-size:var(--t-xs)}
+.zf-prot small{display:block;color:var(--text-2)}
 body.gast .sich-feld{display:none}
 /* ── Mein Konto — die kleine Seite (Runde 117) ──
    Eine Spalte am Handy, zwei am Rechner: links der Betrieb (das, worum
@@ -16035,10 +16047,68 @@ function zfStandLaden(){
     var ROLLE={ chef:'Geschäftsführung', leiter:'Studioleitung', admin:'Betreiber' };
     box.innerHTML='<p class="zf-summe"><b>'+an+' von '+p.length+'</b> eingerichtet</p>'+
       '<ul class="zf-liste">'+p.map(function(x){
+        /* Runde 124: „Zurücksetzen" nur bei eingerichtetem Faktor und nie
+           beim eigenen Konto — der Server lehnt beides ohnehin ab. */
+        var zurueck = x.an && session && x.uid!==session.uid
+          ? '<button type="button" class="btn btn-ghost btn-sm zf-zurueck" data-zfweg="'+esc(x.uid)+'" data-zfname="'+esc(x.name||'')+'">Zurücksetzen</button>' : '';
         return '<li><span class="zf-marke'+(x.an?' an':'')+'" aria-hidden="true">'+(x.an?ikon('hakenKreis'):ikon('uhr'))+'</span>'+
-          '<span><b>'+esc(x.name || 'Ohne Namen')+'</b><small>'+esc(ROLLE[x.rolle] || x.rolle || '')+' · '+(x.an?'eingerichtet':'noch offen')+'</small></span></li>';
-      }).join('')+'</ul>';
+          '<span><b>'+esc(x.name || 'Ohne Namen')+'</b><small>'+esc(ROLLE[x.rolle] || x.rolle || '')+' · '+(x.an?'eingerichtet':'noch offen')+'</small></span>'+
+          zurueck+'</li>';
+      }).join('')+'</ul>'+
+      '<div class="zf-weg-form" id="zfWegForm" hidden>'+
+        '<p class="hint" id="zfWegText"></p>'+
+        '<div class="field"><label for="zfWegGrund">Grund (steht im Protokoll)</label>'+
+        '<input class="inp" id="zfWegGrund" maxlength="300" placeholder="z. B. Handy verloren" /></div>'+
+        '<div class="zf-weg-knoepfe"><button type="button" class="btn btn-primary btn-sm" id="zfWegOk">Zweiten Faktor entfernen</button>'+
+        '<button type="button" class="btn btn-ghost btn-sm" id="zfWegAbbruch">Abbrechen</button></div></div>'+
+      '<div id="zfProtokoll"></div>';
+    zfZuruecksetzenBinden(box);
+    zfProtokollLaden();
   }).catch(function(e){ box.innerHTML='<p class="hint">Nicht ladbar: '+esc(errMsg(e))+'</p>'; });
+}
+/* ── Zurücksetzen (Runde 124) ──
+   Handy verloren: die Geschäftsführung entfernt den zweiten Faktor einer
+   anderen Person, mit Grund. Die Person meldet sich danach nur mit
+   Passwort an und richtet neu ein. Kein confirm()-Fenster: das Formular
+   steht in der Karte, mit Namen, und verlangt den Grund. */
+function zfZuruecksetzenBinden(box){
+  var form=$('zfWegForm'), ziel=null;
+  box.querySelectorAll('[data-zfweg]').forEach(function(b){
+    b.addEventListener('click', function(){
+      ziel={ uid:b.getAttribute('data-zfweg'), name:b.getAttribute('data-zfname') };
+      $('zfWegText').textContent='Zweiten Faktor von '+(ziel.name||'dieser Person')+' entfernen? Sie meldet sich danach nur mit Passwort an und richtet ihn neu ein.';
+      $('zfWegGrund').value='';
+      form.hidden=false;
+      $('zfWegGrund').focus();
+    });
+  });
+  $('zfWegAbbruch').addEventListener('click', function(){ form.hidden=true; ziel=null; });
+  $('zfWegOk').addEventListener('click', function(){
+    if(!ziel) return;
+    var grund=$('zfWegGrund').value.trim();
+    if(grund.length<5){ toast('Bitte kurz den Grund nennen, z. B. „Handy verloren".', true); $('zfWegGrund').focus(); return; }
+    var btn=this;
+    withBusy(btn, function(){
+      return fnRuf('zweiFaktorZuruecksetzen', { uid:ziel.uid, grund:grund }).then(function(){
+        toast('Zweiter Faktor von '+(ziel.name||'')+' entfernt ✓');
+        form.hidden=true; ziel=null;
+        zfStandLaden();
+      }).catch(function(e){ toast(errMsg(e), true); });
+    });
+  });
+}
+/* Die letzten Einträge des Protokolls — wer wann für wen zurückgesetzt
+   hat. Nur die Geschäftsführung liest es (Regel zfProtokoll). */
+function zfProtokollLaden(){
+  var box=$('zfProtokoll'); if(!box) return;
+  S('zfProtokoll').orderBy('ts','desc').limit(5).get().then(function(sn){
+    if(sn.empty){ box.innerHTML=''; return; }
+    box.innerHTML='<h4 class="zf-prot-kopf">Zuletzt zurückgesetzt</h4><ul class="zf-prot">'+sn.docs.map(function(d){
+      var x=d.data();
+      return '<li><b>'+esc(x.fuerName||'')+'</b> · '+esc(fmtDateTime(x.ts))+' · durch '+esc(x.vonName||'')+
+        '<small>'+esc(x.grund||'')+'</small></li>';
+    }).join('')+'</ul>';
+  }).catch(function(){ box.innerHTML=''; });
 }
 
 /* ── Anmeldung und Sicherheit: womit melde ich mich an? ──
@@ -17310,6 +17380,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-27-zf-zuruecksetzen', datum:'27.9.2026', titel:'Handy verloren? Zwei-Faktor zurücksetzen', wo:'chef:team', punkte:[
+    'Unter Verwaltung → Team → „Zwei-Faktor bei der Leitung" steht bei jedem, der den zweiten Faktor eingerichtet hat, jetzt „Zurücksetzen". Mit einem kurzen Grund entfernt die Geschäftsführung ihn — die Person meldet sich danach mit Passwort an und richtet ihn neu ein.',
+    'Für das eigene Konto geht das nicht: das macht jemand anderes aus der Geschäftsführung oder der Betreiber. Jedes Zurücksetzen steht mit Namen, Zeit und Grund darunter im Protokoll.' ] },
   { id:'2026-09-27-zwei-faktor-an', datum:'27.9.2026', titel:'Zwei-Faktor-Anmeldung ist eingeschaltet', wo:'chef:team', punkte:[
     'Unter Einstellungen → Profil → „Anmeldung und Sicherheit" lässt sie sich jetzt einrichten: QR-Code mit einer Authenticator-App scannen (Google Authenticator, Microsoft Authenticator o. ä.), Code eingeben, fertig. Danach fragt die App nach dem Passwort zusätzlich nach dem Code.',
     'Geschäftsführung und Studioleitung sehen oben einen Hinweis, bis sie eingerichtet ist. Unter Verwaltung → Team → „Zwei-Faktor bei der Leitung" steht, wer sie schon hat.',

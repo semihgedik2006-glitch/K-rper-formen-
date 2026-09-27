@@ -309,6 +309,9 @@
     };
   }
 
+  /* Runde 124: in der Demo zurückgesetzte zweite Faktoren. */
+  var ZF_WEG = {};
+
   var _nr = 0;
   function neueId() { return 'demo' + (++_nr) + '-' + Math.floor(zufall() * 100000); }
 
@@ -1413,8 +1416,24 @@
       }).map(function (u) {
         var an = false;
         if (u.role === 'leiter' && erste) { an = true; erste = false; }
+        if (ZF_WEG[u.id]) an = false;
         return { uid: u.id, name: u.name || '', rolle: u.role, an: an };
       }).sort(function (a, b) { return a.an === b.an ? a.name.localeCompare(b.name) : (a.an ? 1 : -1); }) };
+    },
+    /* Runde 124: dieselben Prüfungen wie der Server, damit die Demo
+       nichts verspricht, was es dort nicht gibt. */
+    zweiFaktorZuruecksetzen: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Zurücksetzen kann nur die Geschäftsführung.');
+      if (!d || !d.uid) throw new Error('Für wen?');
+      if (d.uid === ICH.id) throw new Error('Nicht für dich selbst — das macht jemand anderes aus der Geschäftsführung oder der Betreiber.');
+      var g = String(d.grund || '').trim();
+      if (g.length < 5 || g.length > 300) throw new Error('Bitte kurz den Grund nennen (5 bis 300 Zeichen), z. B. „Handy verloren".');
+      var u = USERS.filter(function (x) { return x.id === d.uid; })[0];
+      if (!u) throw new Error('Konto nicht gefunden.');
+      ZF_WEG[d.uid] = true;
+      holen(P('zfProtokoll')).push({ id: neueId(), ts: Date.now(), von: ICH.id, vonName: ICH.name, fuer: u.id, fuerName: u.name, grund: g });
+      melden(P('zfProtokoll'));
+      return { ok: true };
     },
     firmencodeSetzen: function (d) {
       var roh = d.zufall ? 'K7QM-4XP2' : String(d.code || '').trim();

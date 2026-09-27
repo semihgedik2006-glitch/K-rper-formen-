@@ -6051,6 +6051,55 @@ exports.zweiFaktorStand = region.https.onCall(async (data, context) => {
   return { personen };
 });
 
+/* ══ ZWEI-FAKTOR ZURÜCKSETZEN (Runde 124) ═══════════════════════════
+   docs/ZWEI-FAKTOR.md, Stufe 2: „Handy verloren → der zweite Faktor muss
+   sich entfernen lassen, sonst ist das Konto zu." Vor der Pflicht (Stufe
+   3) muss es das geben.
+
+   WER darf: die Geschäftsführung derselben Firma, oder der Betreiber
+   (admin). NIEMAND für sich selbst — wer nur das Passwort eines Chefs
+   hat, soll damit nicht auch den zweiten Faktor abstreifen können. Hat
+   eine Firma nur einen Chef, hilft der Betreiber.
+   WAS: alle eingetragenen Faktoren des Kontos weg (Admin-SDK); das
+   Passwort bleibt. Die Person richtet danach neu ein.
+   SPUR: ein Eintrag in zfProtokoll (wer, für wen, wann, warum) — nur der
+   Chef liest ihn, schreiben kann ihn nur der Server. Ohne Grund geht es
+   nicht. */
+const ZF_GRUND_MIN = 5, ZF_GRUND_MAX = 300;
+exports.zweiFaktorZuruecksetzen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const ziel = String((data && data.uid) || '').trim();
+  const grund = String((data && data.grund) || '').trim();
+  const betreiber = profil.admin === true;
+  if (profil.role !== 'chef' && !betreiber) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Zurücksetzen kann nur die Geschäftsführung.');
+  }
+  if (!ziel) throw new functions.https.HttpsError('invalid-argument', 'Für wen?');
+  if (ziel === uid) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Nicht für dich selbst — das macht jemand anderes aus der Geschäftsführung oder der Betreiber.');
+  }
+  if (grund.length < ZF_GRUND_MIN || grund.length > ZF_GRUND_MAX) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Bitte kurz den Grund nennen (' + ZF_GRUND_MIN + ' bis ' + ZF_GRUND_MAX + ' Zeichen), z. B. „Handy verloren".');
+  }
+  const zSnap = await db.collection('users').doc(ziel).get();
+  if (!zSnap.exists) throw new functions.https.HttpsError('not-found', 'Konto nicht gefunden.');
+  const z = zSnap.data() || {};
+  const zielFirma = z.firma || KONFIG_FIRMA_RUECKFALL;
+  const meine = firma || KONFIG_FIRMA_RUECKFALL;
+  if (!betreiber && zielFirma !== meine) {
+    throw new functions.https.HttpsError('permission-denied', 'Das Konto gehört nicht zu deinem Betrieb.');
+  }
+  await admin.auth().updateUser(ziel, { multiFactor: { enrolledFactors: null } });
+  await W(zielFirma).collection('zfProtokoll').add({
+    ts: Date.now(), von: uid, vonName: String(profil.name || ''), fuer: ziel,
+    fuerName: String(z.name || ''), grund: grund, alsBetreiber: betreiber && zielFirma !== meine,
+  });
+  return { ok: true };
+});
+
 /* ══ SCHWARZES BRETT: ALTE AUSHÄNGE NACHZIEHEN (Runde 121) ═══════════
    Seit Runde 121 prüft die Leseregel das Feld studios; die App fragt
    (ausser beim Chef) nach studios == 'all' bzw. nach den eigenen Studios.

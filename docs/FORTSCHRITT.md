@@ -13757,3 +13757,53 @@ Runde 122, und zwar nur unter Last:
   Fehler nie. Sichtbar wurde es erst jetzt, weil die Team-Seite mit
   eingeschalteter Zwei-Faktor-Anmeldung `zweiFaktorStand` fragt. `fnRuf`
   liefert jetzt immer ein Versprechen; der Test ist unverändert grün.
+
+## Runde 124 — Zwei-Faktor zurücksetzen (Stufe 2)
+
+> `docs/ZWEI-FAKTOR.md`: „Handy verloren → der zweite Faktor muss sich
+> entfernen lassen, sonst ist das Konto zu.“ Vor der Pflicht (Stufe 3)
+> muss es den Weg zurück geben.
+
+- **`zweiFaktorZuruecksetzen`:** Die Funktion entfernt alle eingetragenen
+  Faktoren eines Kontos über das Admin-SDK. Das Passwort bleibt; die
+  Person richtet danach neu ein.
+  - **Wer darf:** die Geschäftsführung derselben Firma oder der Betreiber
+    (auch über die Firmengrenze; dann steht der Eintrag bei der Firma
+    der Person, gekennzeichnet).
+  - **Niemand für sich selbst.** Wer nur das Passwort eines Chefs hat,
+    soll damit nicht auch den zweiten Faktor abstreifen können. Hat eine
+    Firma nur einen Chef, hilft der Betreiber.
+  - **Nur mit Grund** (5–300 Zeichen).
+- **`zfProtokoll`**, in beiden Bäumen der Regeln: wer, für wen, wann,
+  warum. Lesen nur die Geschäftsführung, schreiben nur der Server.
+- **In der App:** Verwaltung → Team → „Zwei-Faktor bei der Leitung“.
+  - Bei jedem mit eingerichtetem Faktor steht „Zurücksetzen“, nie beim
+    eigenen Konto.
+  - Das Formular steht in der Karte, mit Namen und Pflichtfeld „Grund“;
+    kein `confirm()`.
+  - Darunter die letzten fünf Einträge des Protokolls.
+- **Im Bild gefunden:** In der Zeile mit Knopf klebten Name und Rolle
+  aneinander („Piet WinterStudioleitung“). Die Textspalte war nicht mehr
+  `:last-child`, und die Regel dafür griff nicht. Behoben; der Test misst
+  es jetzt.
+
+**Tests:**
+- `tests/rules/zweifaktor.test.js` (26), gegen Emulator:
+  - wer nicht darf (Leitung, Mitarbeiterin, eigenes Konto, fremde
+    Firma, ohne Grund); danach ist nichts entfernt;
+  - der Chef setzt zurück, die anderen behalten ihren Faktor;
+  - Protokoll ohne Telefonnummer und ohne Schlüssel;
+  - der Betreiber über die Firmengrenze;
+  - die Regel `zfProtokoll` in beiden Bäumen.
+- `tests/test-zf-zuruecksetzen.js` (13):
+  - wo der Knopf steht und dass Name und Rolle untereinander stehen;
+  - ohne Grund nichts, Abbrechen ohne Folgen, mit Grund „noch offen“
+    und Eintrag im Protokoll;
+  - Treffer bei 390/1440, normal und kompakt.
+
+**Nicht prüfbar hier:** das echte Entfernen am Konto. Im Emulator ist es
+geprüft; im Betrieb zeigt es die Übersicht danach („noch offen“).
+
+**Stufe 3 (Pflicht) bleibt offen.** Sie kommt, wenn in der Übersicht alle
+Leitungskonten „eingerichtet“ zeigen.
+
