@@ -402,12 +402,13 @@ Der Entwurf fordert sie zu Recht — sie liegen nur woanders.
 |---|---|
 | „alle tatsächlich eingesetzten Dienste vollständig ergänzen" | `docs/av/UNTERAUFTRAGNEHMER.md` — vollständig **bis auf den Mailversand** |
 | TOMs dokumentieren | `docs/av/TOM.md` — mit Fundstellen im Code, einschließlich der offenen Maßnahmen |
-| Löschfristen festlegen | `docs/av/LOESCHKONZEPT.md` — vollständig **bis auf die Stempelzeiten** |
+| Löschfristen festlegen | `docs/av/LOESCHKONZEPT.md` — vollständig; **Stempelzeiten seit 27.9.2026: drei Jahre**, automatisch gelöscht |
 | VVT erstellen | `docs/av/VERARBEITUNGSVERZEICHNIS.md` |
 | AVV-Entwurf | `docs/av/AV-VERTRAG-ENTWURF.md` |
 
-**Zwei Lücken bleiben in beiden Papieren dieselben:** welcher Anbieter
-den Mailversand macht, und wie lange Stempelzeiten aufbewahrt werden.
+**Eine Lücke bleibt in beiden Papieren dieselbe:** welcher Anbieter
+den Mailversand macht. (Die Aufbewahrung der Stempelzeiten ist seit
+27.9.2026 festgelegt: drei Jahre.)
 
 ---
 
@@ -449,6 +450,6 @@ Vorlage. Als Lücke ist es die ernsteste in diesem Abschnitt.
 | ~~vor dem ersten Kunden~~ | ~~Verfahren für Datenschutzvorfälle festlegen~~ — **geschrieben 17.9.: `av/VORFALL.md`.** Offen bleibt die **Vertretung** | Betreiber |
 | **jetzt** | SMTP-Anbieter nennen — **die Zugangsdaten SIND hinterlegt** (im Ausrollprotokoll steht „SMTP-Zugangsdaten sind hinterlegt."). GitHub gibt ein Secret nicht zurück; der Anbieter steht in der Kopfzeile jeder Mail aus der App („Original anzeigen") | Betreiber |
 | **jetzt** | Markenregister zu „StudioChat" abfragen — Vorarbeit und Anleitung in `MARKE.md`. **Zwei gleichnamige Produkte in derselben Branche gefunden** | Betreiber |
-| **vor dem ersten Kunden** | Aufbewahrungsfrist für Stempelzeiten setzen | Anwalt |
+| ~~vor dem ersten Kunden~~ | ~~Aufbewahrungsfrist für Stempelzeiten setzen~~ — **drei Jahre, vom Betrieb entschieden 27.9.2026, gebaut.** Anwaltlich gegenlesen lassen, ob drei Jahre zum Zweck passen | Anwalt |
 | **vor dem ersten Kunden** | Entscheiden, ob § 8 des AGB-Entwurfs (30 Tage, Export) so zugesagt wird — **dann muss die Exportfunktion gebaut werden** | Betreiber, dann ich |
 | **vor dem Livemodus** | gesamtes Paket anwaltlich durchsehen lassen | Anwalt |

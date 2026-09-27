@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-06T6qIYZHuMVh5oWAIAhhDATqV7RwR7AZJb1yFsS+ps='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3fJnRLqze9+lEf5HPJWOyXNP+ky4JRGq5omS+XaqzIY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2158,6 +2158,28 @@ body.nurlesen .kopf-plus{display:none !important}
 .notif-banner{display:none;align-items:center;gap:var(--s10);margin:var(--s6) var(--rand) var(--s6);
   padding:var(--s6) var(--s12);background:rgba(var(--akz-rgb),.08);border:1px solid rgba(var(--akz-rgb),.3);border-radius:var(--r-sm)}
 .notif-banner.show{display:flex}
+/* ── Chat auf kleinen Handys (Runde 127) ──
+   Aus dem Betrieb, 27.9.2026, auf „auf so kleinen Bildschirmen die
+   Kopfzeile im Chat einklappen": ja. Bei 320 × 640 blieben vom Verlauf
+   rund 135 px — zwei Nachrichten. Im Chat fällt deshalb bei niedrigen
+   Bildschirmen die Bereichszeile („Nachrichten · Alles gelesen") weg;
+   Chat / Direkt / Infos darunter bleiben und sagen, wo man ist. Beim
+   Tippen (Tastatur offen) weichen auch diese Reiter und der Hinweis
+   „Meldungen an?". Nichts davon verschwindet stumm: alles ist einen
+   Tipp neben dem Eingabefeld zurück, und die untere Leiste bleibt. */
+@media (max-height:700px) and (max-width:600px){
+  body.neu.im-chat #bereichZeile{display:none}
+  /* !important, weil buildSubnav() display:flex direkt am Element
+     setzt (style="…") — sonst bliebe die Reiterzeile beim Tippen stehen
+     (so im ersten Messlauf: Reiter noch da).
+     „tippt" setzt chatTipptBinden() — nicht :focus in CSS: beim Tipp auf
+     eine Nachricht verliert das Feld den Fokus VOR dem Klick, die Reiter
+     kämen sofort zurück, und die Nachricht rutschte unter dem Finger
+     weg (test-chat-antworten, 320 px). Zurück kommen sie erst nach
+     400 ms. */
+  body.neu.im-chat.tippt #subnavZeile,
+  body.neu.im-chat.tippt .notif-banner.show{display:none!important}
+}
 .notif-banner svg{width:18px;height:18px;color:var(--accent-d);flex-shrink:0}
 .notif-banner .nb-txt{flex:1;font-size:var(--t-xs);color:var(--text-2);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -4249,7 +4271,7 @@ html{font-size:var(--fs,100%)}
 [data-vw="1"]{order:1}[data-vw="2"]{order:2}[data-vw="3"]{order:3}[data-vw="4"]{order:4}
 [data-vw="5"]{order:5}[data-vw="6"]{order:6}[data-vw="7"]{order:7}[data-vw="8"]{order:8}
 [data-vw="9"]{order:9}[data-vw="10"]{order:10}[data-vw="11"]{order:11}[data-vw="12"]{order:12}
-[data-vw="13"]{order:13}
+[data-vw="13"]{order:13}[data-vw="14"]{order:14}
 @media (min-width:1100px){
   .chef-pane.vw{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);
     column-gap:var(--s24);align-items:start}
@@ -5363,6 +5385,21 @@ body.gast .sich-feld{display:none}
    Eine Spalte am Handy, zwei am Rechner: links der Betrieb (das, worum
    es gerade geht), rechts Profil und Sicherheit. Nie über 880 px breit
    — eine Seite mit vier Karten braucht keinen ganzen Bildschirm. */
+.zf-pflicht{position:fixed;inset:0;z-index:880;display:grid;place-items:center;padding:var(--s16);
+  background:var(--bg);overflow-y:auto}
+.zf-pflicht[hidden]{display:none}
+/* Das Einrichten-Fenster liegt sonst (z-index 210) UNTER der Sperre. */
+body:has(#zfPflicht:not([hidden])) #zfModal{z-index:890}
+.zf-pflicht-karte{max-width:440px;width:100%;display:grid;gap:var(--s12);text-align:center;
+  background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e2)}
+.zf-pflicht-karte h2{margin:0;font-size:var(--t-xl)}
+.zf-pflicht-karte p{margin:0;color:var(--text-2)}
+.zf-pflicht-karte .btn{min-height:48px;width:100%}
+.zf-pflicht-ico{justify-self:center;width:52px;height:52px;display:grid;place-items:center;border-radius:var(--r-rund);
+  background:rgba(var(--akz-rgb),.14);color:var(--accent)}
+.zf-pflicht-ico svg{width:26px;height:26px}
+.zf-pflicht-stand{display:grid;gap:var(--s8);margin-top:var(--s12);padding-top:var(--s12);border-top:1px solid var(--line)}
+.zf-pflicht-stand .btn{min-height:44px}
 .mk-wrap{position:fixed;inset:0;z-index:900;overflow-y:auto;background:var(--bg);
   padding:calc(var(--s24) + var(--sat)) var(--s16) calc(var(--s24) + var(--sab))}
 .mk-seite{max-width:520px;margin:0 auto;display:grid;gap:var(--s16)}
@@ -5421,6 +5458,8 @@ body.gast #profileModal .field:has(#kalHint){display:none}
 .fg-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
 .fg-err:empty{display:none}
 .la-wann{margin:0;align-self:center}
+.sf-stand{display:grid;gap:var(--s4);font-size:var(--t-sm);margin-top:var(--s8)}
+.sf-stand b{font-variant-numeric:tabular-nums}
 /* Löschung beantragen (Ich → Daten): zwei Schritte, der zweite sagt,
    was passiert, bevor etwas passiert. */
 .lz-frage{display:grid;gap:var(--s12);margin:0;max-width:560px}
@@ -6904,7 +6943,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
        erzwungen wird noch nicht (docs/ZWEI-FAKTOR.md). -->
   <div class="mail-leiste zf-leiste" id="zfLeiste" style="display:none">
     <span class="ml-ico" aria-hidden="true" data-ikon="schloss"></span>
-    <span class="ml-text">Für die Leitung ist die Zwei-Faktor-Anmeldung Pflicht — zwei Minuten.</span>
+    <span class="ml-text" id="zfLeisteText">Für die Leitung ist die Zwei-Faktor-Anmeldung Pflicht — zwei Minuten.</span>
     <button class="ml-btn" id="zfLeisteAuf">Jetzt einrichten</button>
     <button class="ml-zu" id="zfLeisteZu" aria-label="Hinweis für heute ausblenden"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
@@ -8862,13 +8901,22 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button data-ikon="schild" class="btn btn-ghost btn-sm" id="backupNow" style="width:100%" data-admin-only="1">Jetzt zusätzlich sichern</button>
             <p class="em-saved" id="backupNote"></p>
           </div>
+          <!-- Aufbewahrung der Stempelzeiten (Runde 127, P-08). Aus dem
+               Betrieb, 27.9.2026: „3 Jahre". Die Karte ist zugleich das
+               Werkzeug, das vorher zeigt, was die Frist trifft. -->
+          <div data-vw="10" class="card" data-fold="stempelfrist" data-chef-only="1" id="sfKarte">
+            <h3 data-ikon="uhr">Stempelzeiten: Aufbewahrung</h3>
+            <p class="hint">Stempelzeiten werden drei Jahre nach ihrem Tag gelöscht, jede Nacht
+              automatisch. Das Arbeitszeitgesetz verlangt mindestens zwei.</p>
+            <div class="sf-stand" id="sfStand" role="status">Wird nachgesehen …</div>
+          </div>
           <div data-vw="7" class="card" data-fold="fehler" data-chef-only="1">
             <h3 data-ikon="kaefer">Fehler im Betrieb</h3>
             <p class="hint">Wenn bei jemandem etwas nicht lädt, steht es hier —
               auch wenn er es dir nicht sagt.</p>
             <div id="fehlerListe"></div>
           </div>
-          <div data-vw="10" class="card" data-fold="trash" data-fold-offen="1">
+          <div data-vw="11" class="card" data-fold="trash" data-fold-offen="1">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3 data-ikon="papierkorb">Papierkorb</h3>
               <span class="todo-count" id="trashCount"></span>
@@ -8886,7 +8934,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button class="btn btn-ghost btn-sm" id="trashEmpty" data-chef-only="1"
               style="width:100%;margin-top:12px">Papierkorb endgültig leeren</button>
           </div>
-          <div data-vw="11" class="card" data-fold="monatsbericht" data-chef-only="1">
+          <div data-vw="12" class="card" data-fold="monatsbericht" data-chef-only="1">
             <h3 data-ikon="mail">Bericht</h3>
             <p class="hint">Über alle Studios. Kommt am Ersten jedes Monats um
               8 Uhr an alle in der Verwaltung — hier kannst du ihn dir jederzeit
@@ -8912,7 +8960,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button data-ikon="mail" class="btn btn-ghost btn-sm" id="repTestSend" style="width:100%">Bericht an mich senden</button>
             <p class="em-saved" id="repTestNote"></p>
           </div>
-          <div data-vw="13" class="card" data-fold="ueber">
+          <div data-vw="14" class="card" data-fold="ueber">
             <h3>ℹ️ Über StudioChat</h3>
             <p class="hint" id="sysInfo">–</p>
           </div>
@@ -9033,7 +9081,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               gefahrlos, gelöscht wird nichts.</p>
             <button class="btn btn-ghost btn-sm" id="syncSheetsBtn">Jetzt alle Studios abgleichen</button>
           </div>
-          <div data-vw="12" class="card" data-fold="pwreset" data-chef-only="1">
+          <div data-vw="13" class="card" data-fold="pwreset" data-chef-only="1">
             <h3 data-ikon="schluessel">Passwort zurücksetzen</h3>
             <p class="hint">Schickt der Person eine E-Mail, mit der sie sich ein neues
               Passwort setzen kann. Du musst kein Passwort kennen oder vergeben.</p>
@@ -9133,6 +9181,22 @@ body.neu .kn-zeile{min-height:var(--zeile)}
         <a class="recht-link" data-rechtauf="datenschutz">Datenschutz</a>
       </p>
     </footer>
+  </div>
+</div>
+
+<!-- ══ ZWEI-FAKTOR IST PFLICHT (Runde 127, Stufe 3) ═══════════════════
+     Nach dem Stichtag kommt, wer zur Leitung gehört und keinen zweiten
+     Faktor hat, nur noch hierhin: einrichten oder abmelden. Einrichten
+     läuft über den Anmeldedienst, nicht über die Datenbank — niemand
+     sperrt sich also aus. -->
+<div id="zfPflicht" class="zf-pflicht" role="dialog" aria-modal="true" aria-labelledby="zfPflichtKopf" hidden>
+  <div class="zf-pflicht-karte">
+    <span class="zf-pflicht-ico" aria-hidden="true" data-ikon="schloss"></span>
+    <h2 id="zfPflichtKopf">Zwei-Faktor-Anmeldung einrichten</h2>
+    <p id="zfPflichtText">Für die Leitung ist sie Pflicht. Das dauert zwei Minuten:
+      eine Authenticator-App aufs Handy, Code scannen, fertig.</p>
+    <button type="button" class="btn btn-primary" id="zfPflichtLos">Jetzt einrichten</button>
+    <button type="button" class="btn btn-ghost" id="zfPflichtAus">Abmelden</button>
   </div>
 </div>
 
@@ -11709,6 +11773,10 @@ function renderRecht(){
       '<p>Solange das Konto besteht. Gelöschtes landet für 30 Tage im '+
         'Papierkorb und ist danach weg. Wochensicherungen des Materials '+
         'werden ein Jahr aufbewahrt.</p>'+
+      /* Runde 127 (P-08): aus dem Betrieb, 27.9.2026, „3 Jahre". */
+      '<p><b>Stempelzeiten</b> werden drei Jahre nach ihrem Tag gelöscht – '+
+        'auch wenn das Konto noch besteht. Das Arbeitszeitgesetz verlangt '+
+        'mindestens zwei Jahre.</p>'+
 
       /* HIER STAND BIS ZUM 17.9.2026 ETWAS FALSCHES, und es stand in
          einem Text, den Beschaeftigte lesen sollen:
@@ -15780,6 +15848,8 @@ function zugangFensterFuellen(){
     withBusy(b, function(){ return u.reload().then(function(){ zfSchritt(auth.currentUser); }); });
   });
   $('zfLeisteAuf').addEventListener('click', function(){ tick(8); zfEinrichten(); });
+  $('zfPflichtLos').addEventListener('click', function(){ tick(8); zfEinrichten(); });
+  $('zfPflichtAus').addEventListener('click', function(){ auth.signOut().then(function(){ location.reload(); }); });
   /* Wer die Zwei-Faktor-Anmeldung in einem anderen Tab oder am Handy
      einrichtet, soll die Leiste hier nicht weiter sehen: beim Zurückkehren
      neu nachsehen. */
@@ -16118,6 +16188,11 @@ function zfBestaetigen(){
 function zfAbschalten(b, box){
   var u=auth.currentUser, f=zfFaktoren(u)[0];
   if(!f) return;
+  if(zfLeitung() && _zfPflichtAb){
+    toast('Für die Leitung ist sie '+(zfPflichtGilt()?'Pflicht':'ab '+fmtTag(_zfPflichtAb, true)+' Pflicht')+
+      ' — abschalten geht nicht. Handy verloren? Die Geschäftsführung kann sie zurücksetzen.', true);
+    return;
+  }
   var warn = zfLeitung() ? '\n\nFür die Leitung ist sie Pflicht — du wirst gleich wieder daran erinnert.' : '';
   if(!confirm('Zwei-Faktor-Anmeldung abschalten?\n\nDann reicht zum Anmelden wieder das Passwort allein.'+warn)) return;
   withBusy(b, function(){
@@ -16158,12 +16233,91 @@ function zfAnmeldungBestaetigen(){
 }
 
 /* ── Die Leiste für die Leitung ── */
+/* ══ PFLICHT (Runde 127, Stufe 3) ═════════════════════════════════════
+   Aus dem Betrieb, 27.9.2026, auf „erst nachsehen, ob alle eingerichtet
+   haben, dann Pflicht mit Übergangsfrist": ja.
+
+   Die Geschäftsführung setzt den Stichtag im Werkzeug (Verwaltung →
+   Team → „Zwei-Faktor bei der Leitung"), eine Woche im Voraus; er steht
+   in config/zweiFaktor {pflichtAb}. Bis dahin sagt die Leiste das Datum
+   und lässt sich wegklicken. Danach kommt, wer zur Leitung gehört und
+   keinen zweiten Faktor hat, nur noch zum Einrichten oder Abmelden.
+
+   WAS DAS SCHÜTZT, EHRLICH: den eigentlichen Schutz macht der
+   Anmeldedienst — wer einen zweiten Faktor HAT, wird beim Anmelden
+   danach gefragt, von Firebase selbst. Diese Sperre sorgt dafür, dass
+   alle aus der Leitung ihn einrichten. Eine Regel in der Datenbank, die
+   den zweiten Faktor im Anmeldeschlüssel verlangt, ist der nächste
+   Schritt (docs/ZWEI-FAKTOR.md) — sie sperrte heute jeden aus, der sich
+   seit dem Einrichten nicht neu angemeldet hat. */
+var _zfPflichtAb=0, _zfPflichtUnsub=null;
+function zfPflichtHoeren(){
+  if(_zfPflichtUnsub || !session) return;
+  try{
+    _zfPflichtUnsub=S('config').doc('zweiFaktor').onSnapshot(function(d){
+      _zfPflichtAb = (d && d.exists && +((d.data()||{}).pflichtAb)) || 0;
+      zfLeisteZeigen();
+      if($('zfStand') && isChef()) zfPflichtStandZeichnen();
+    }, function(){ _zfPflichtAb=0; });
+  }catch(e){}
+}
+function zfPflichtGilt(){ return !!_zfPflichtAb && Date.now() >= _zfPflichtAb; }
+function zfOhneFaktor(){
+  var u=auth.currentUser;
+  return zfAn() && zfLeitung() && !!(u && u.multiFactor) && !zfFaktoren(u).length;
+}
 function zfLeisteZeigen(){
   var l=$('zfLeiste'); if(!l) return;
-  var u=auth.currentUser, weg=false;
+  zfPflichtHoeren();
+  var weg=false;
   try{ weg = sessionStorage.getItem('kf_zf_leiste')==='weg'; }catch(e){}
-  var zeigen = zfAn() && zfLeitung() && !!(u && u.multiFactor) && !zfFaktoren(u).length && !weg;
-  l.style.display = zeigen ? '' : 'none';
+  var fehlt = zfOhneFaktor();
+  /* Die Sperre, sobald der Stichtag da ist. */
+  var sperre=$('zfPflicht');
+  if(sperre){
+    var zu = fehlt && zfPflichtGilt();
+    if(zu){ $('zfPflichtText').textContent='Seit dem '+fmtTag(_zfPflichtAb, true)+' ist sie für die Leitung Pflicht. '+
+      'Das dauert zwei Minuten: eine Authenticator-App aufs Handy, Code scannen, fertig.'; }
+    sperre.hidden = !zu;
+  }
+  var t=$('zfLeisteText');
+  if(t) t.textContent = _zfPflichtAb && !zfPflichtGilt()
+    ? 'Ab '+fmtTag(_zfPflichtAb, true)+' ist die Zwei-Faktor-Anmeldung für die Leitung Pflicht — zwei Minuten.'
+    : 'Für die Leitung ist die Zwei-Faktor-Anmeldung Pflicht — zwei Minuten.';
+  l.style.display = (fehlt && !weg && !zfPflichtGilt()) ? '' : 'none';
+}
+/* Im Werkzeug der Geschäftsführung: Stichtag setzen oder zurücknehmen. */
+function zfPflichtStandZeichnen(){
+  var box=$('zfPflichtStand'); if(!box) return;
+  var offen=+(box.getAttribute('data-offen')||0), namen=box.getAttribute('data-namen')||'';
+  if(!_zfPflichtAb){
+    var ab=new Date(); ab.setDate(ab.getDate()+7); ab.setHours(0,0,0,0);
+    box.innerHTML='<p class="hint"><b>Noch keine Pflicht.</b> Wer noch offen ist, sieht einen Hinweis.</p>'+
+      '<button type="button" class="btn btn-primary btn-sm" id="zfPflichtAn" data-ab="'+ab.getTime()+'">Pflicht ab '+esc(fmtTag(ab, true))+' einschalten</button>';
+  } else {
+    box.innerHTML='<p class="hint"><b>Pflicht '+(zfPflichtGilt()?'seit':'ab')+' dem '+esc(fmtTag(_zfPflichtAb, true))+'.</b> '+
+      (offen ? offen+(offen===1?' Person hat':' Personen haben')+' noch nicht eingerichtet'+(zfPflichtGilt()?' und kommt nur noch zum Einrichten in die App.':' und sieht bis dahin einen Hinweis mit Datum.') : 'Alle haben eingerichtet.')+'</p>'+
+      '<button type="button" class="btn btn-ghost btn-sm" id="zfPflichtWeg">Pflicht wieder aus</button>';
+  }
+  var an=$('zfPflichtAn');
+  if(an) an.addEventListener('click', function(){
+    var ab=+an.getAttribute('data-ab');
+    if(!confirm('Zwei-Faktor-Anmeldung ab '+fmtTag(ab, true)+' zur Pflicht machen?\n\n'+
+      (offen ? 'Noch offen: '+namen+'.\nBis dahin sehen sie einen Hinweis mit Datum, danach kommen sie nur noch zum Einrichten in die App.'
+             : 'Alle aus der Leitung haben schon eingerichtet.'))) return;
+    withBusy(an, function(){
+      return S('config').doc('zweiFaktor').set({ pflichtAb:ab, gesetztVon:session.uid, gesetztAm:Date.now() })
+        .then(function(){ toast('Pflicht ab '+fmtTag(ab, true)+' ✓'); }, function(e){ toast(errMsg(e), true); });
+    });
+  });
+  var weg=$('zfPflichtWeg');
+  if(weg) weg.addEventListener('click', function(){
+    if(!confirm('Pflicht wieder ausschalten?')) return;
+    withBusy(weg, function(){
+      return S('config').doc('zweiFaktor').set({ pflichtAb:0, gesetztVon:session.uid, gesetztAm:Date.now() })
+        .then(function(){ toast('Pflicht ist aus'); }, function(e){ toast(errMsg(e), true); });
+    });
+  });
 }
 
 /* ── Verwaltung → Team: wer hat sie schon ── */
@@ -16191,9 +16345,13 @@ function zfStandLaden(){
         '<input class="inp" id="zfWegGrund" maxlength="300" placeholder="z. B. Handy verloren" /></div>'+
         '<div class="zf-weg-knoepfe"><button type="button" class="btn btn-primary btn-sm" id="zfWegOk">Zweiten Faktor entfernen</button>'+
         '<button type="button" class="btn btn-ghost btn-sm" id="zfWegAbbruch">Abbrechen</button></div></div>'+
+      '<div class="zf-pflicht-stand" id="zfPflichtStand" data-offen="'+(p.length-an)+'" data-namen="'+
+        esc(p.filter(function(x){ return !x.an; }).map(function(x){ return x.name||'Ohne Namen'; }).join(', '))+'"></div>'+
       '<div id="zfProtokoll"></div>';
     zfZuruecksetzenBinden(box);
     zfProtokollLaden();
+    zfPflichtHoeren();
+    zfPflichtStandZeichnen();
   }).catch(function(e){ box.innerHTML='<p class="hint">Nicht ladbar: '+esc(errMsg(e))+'</p>'; });
 }
 /* ── Zurücksetzen (Runde 124) ──
@@ -17521,6 +17679,16 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-27-zf-pflicht', datum:'27.9.2026', titel:'Zwei-Faktor wird für die Leitung Pflicht — mit Vorlauf', wo:'chef:team', punkte:[
+    'Die Geschäftsführung kann unter Verwaltung → Team → „Zwei-Faktor bei der Leitung" einen Stichtag setzen, eine Woche im Voraus. Bis dahin sieht die Leitung einen Hinweis mit Datum, danach kommt man ohne zweiten Faktor nur noch zum Einrichten in die App.',
+    'Für Mitarbeitende ändert sich nichts.' ] },
+  { id:'2026-09-27-stempelfrist', datum:'27.9.2026', titel:'Stempelzeiten werden nach drei Jahren gelöscht', wo:'chef:system', punkte:[
+    'Stempelzeiten bleiben drei Jahre lang, danach löscht die App sie automatisch. Das Arbeitszeitgesetz verlangt mindestens zwei.',
+    'Unter Verwaltung → System steht, was als Nächstes dran ist: ältester Eintrag und wie viele in den nächsten 30 Tagen fällig werden.' ] },
+  { id:'2026-09-27-ruhigere-farben', datum:'27.9.2026', titel:'Ruhigere Profilfarben, besser lesbare Kürzel', wo:'home', punkte:[
+    'Profilfarben leuchten nicht mehr so grell — jede Person behält ihre Farbe, nur etwas ruhiger. Die Buchstaben darauf sind auf jeder Farbe gut zu lesen.' ] },
+  { id:'2026-09-27-chat-klein', datum:'27.9.2026', titel:'Mehr Platz im Chat auf kleinen Handys', wo:'chat', punkte:[
+    'Auf kleinen Handys klappt im Chat die Zeile „Nachrichten" oben ein, und beim Tippen machen auch die Reiter Platz. So siehst du mehr vom Verlauf.' ] },
   { id:'2026-09-27-gelesen-haken', datum:'27.9.2026', titel:'Häkchen wie bei WhatsApp', wo:'chat', punkte:[
     'An deinen eigenen Nachrichten stehen jetzt Häkchen: eins heisst gesendet, zwei graue heissen angekommen, zwei blaue heissen gelesen. In Gruppen werden sie erst blau, wenn alle gelesen haben.',
     'Wer genau gelesen hat: tipp deine Nachricht an und wähl „Gelesen von …". Das gilt auch in Direktnachrichten.' ] },
@@ -18934,7 +19102,20 @@ function bindShrinkHeaders(){
   });
 }
 
+/* Runde 127: Klasse „tippt" für den Chat auf kleinen Handys. Beim
+   Verlassen des Feldes mit Verzögerung, damit der Klick, der das Feld
+   verlassen hat, noch dort ankommt, wo der Finger war. */
+var _tipptWeg=null;
+function chatTipptBinden(){
+  var t=$('chatText'); if(!t || t._tipptGebunden) return; t._tipptGebunden=true;
+  t.addEventListener('focus', function(){ clearTimeout(_tipptWeg); document.body.classList.add('tippt'); });
+  t.addEventListener('blur', function(){
+    clearTimeout(_tipptWeg);
+    _tipptWeg=setTimeout(function(){ if(document.activeElement!==t) document.body.classList.remove('tippt'); }, 400);
+  });
+}
 function showView(id, fromKey, ausVerlauf){
+  chatTipptBinden();
   /* Abgeschaltet heisst: gar nicht erst hin. Wichtig ist der Weg über
      die Hintertür — ein gemerkter letzter Stand, ein Verlaufseintrag,
      ein Hinweis auf der Startseite. Ohne diese Zeile landet jemand nach
@@ -18942,6 +19123,9 @@ function showView(id, fromKey, ausVerlauf){
      die untere Leiste zeigt nirgendwo hin. */
   if(!ansichtAn(id) && id!=='home'){ id='home'; ausVerlauf=true; }
   currentView=id;
+  /* Für die Regeln „Chat auf kleinen Handys" (Runde 127): nur ein
+     Klassenname, kein Messen. */
+  document.body.classList.toggle('im-chat', id==='chat');
   /* Die Farbe des Bereichs, bevor irgendetwas gezeichnet wird — sonst
      baut sich die Ansicht in der alten Farbe auf und springt danach.
      Bei jeder anderen Einstellung als „Lebendig" ändert der Aufruf
@@ -30541,7 +30725,7 @@ function showChefTab(id, keep){
   if(id==='zeiten') zkOeffnen();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
-  if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); renderAboKarte(); }
+  if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); renderAboKarte(); stempelFristLaden(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
 }
 
@@ -31463,6 +31647,17 @@ function sicherungStandLaden(){
   }).catch(function(){ _sichStand=null; });
 }
 
+/* ── Stempelzeiten: was die Löschfrist trifft (Runde 127) ── */
+function stempelFristLaden(){
+  var box=$('sfStand'); if(!box || !isChef()) return;
+  fnRuf('stempelFristStand', {}).then(function(r){
+    var zahl=function(n){ return n===1 ? '1 Eintrag' : (n||0)+' Einträge'; };
+    box.innerHTML=
+      '<span>Ältester Eintrag: <b>'+(r.aeltester ? esc(fmtTag(r.aeltester+'T12:00:00', true)) : 'noch keiner')+'</b></span>'+
+      '<span>Gelöscht wird, was vor dem <b>'+esc(fmtTag(r.grenzTag+'T12:00:00', true))+'</b> liegt: <b>'+zahl(r.faellig)+'</b></span>'+
+      '<span>In den nächsten 30 Tagen fällig: <b>'+zahl(r.in30Tagen)+'</b></span>';
+  }).catch(function(e){ box.textContent='Nicht ladbar: '+errMsg(e); });
+}
 function renderSicherungStand(){
   var el=$('sichStand'); if(!el || !isChef()) return;
   el.style.display='';
@@ -34785,7 +34980,8 @@ function avatarMarkup(u){
   if(u.photo){
     inner='<div class="avatar" style="background-image:url('+safeMedia(u.photo)+');background-size:cover;background-position:center"></div>';
   } else {
-    var bg=(u.color && /^#[0-9a-f]{3,8}$/i.test(u.color))?(' style="background:'+u.color+'"'):'';
+    var farbe=avatarFarbe(u.color);
+    var bg=farbe?(' style="background:'+farbe+(avatarSchrift(farbe)?';color:'+avatarSchrift(farbe):'')+'"'):'';
     var chef=(u.role==='chef' && !u.color)?' chef':'';
     var c=u.emoji?esc(u.emoji):esc(initials(u.name));
     inner='<div class="avatar'+chef+'"'+bg+'>'+c+'</div>';
@@ -35179,6 +35375,43 @@ function renderOnboarding(){
    PROFIL-EDITOR
    ============================================================ */
 var PROFILE_COLORS=['#22D3EE','#FBBF24','#3B82F6','#A855F7','#EF4444','#F59E0B','#14B8A6','#EC4899','#64748B'];
+/* ── Avatarfarben ohne Grellheit (Runde 127, DESIGN-IDEEN 24) ──
+   Aus dem Betrieb, 27.9.2026, auf „nur die Sättigung deckeln": ja.
+   Jede Person behält IHRE Farbe (der Farbton bleibt, gespeichert wird
+   weiter der gewählte Wert) — gezeigt wird sie mit höchstens 62 %
+   Sättigung. Grund: ein grünes „TC" stach in der Kopfzeile heraus wie
+   ein Warnlicht, lauter als der Bericht-Knopf daneben. 62 % ist der
+   Wert, bei dem Türkis, Gelb und Rot ruhig werden und trotzdem noch
+   voneinander zu unterscheiden sind (nachgesehen an der Auswahl). */
+var AVATAR_SAETTIGUNG_MAX=0.62;
+/* Die Schrift auf der Farbe: dunkel oder weiss, je nachdem, was mehr
+   Kontrast hat. Vorher stand auf jeder Farbe dieselbe Schrift — im
+   Hellen weiss auf Gelb, rund 1,7 : 1. Nachgerechnet für die ganze
+   Auswahl in test-avatar-farben. */
+function avatarSchrift(hex){
+  var m=/^#([0-9a-f]{6})$/i.exec(String(hex||'')); if(!m) return '';
+  var lin=function(i){ var v=parseInt(m[1].slice(i,i+2),16)/255; return v<=.03928 ? v/12.92 : Math.pow((v+.055)/1.055,2.4); };
+  var L=.2126*lin(0)+.7152*lin(2)+.0722*lin(4);
+  var dunkel=(L+.05)/(0.0065+.05), weiss=1.05/(L+.05);   // #0A1420 hat L ≈ 0,0065
+  return dunkel>=weiss ? '#0A1420' : '#ffffff';
+}
+function avatarFarbe(hex){
+  var m=/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex||''));
+  if(!m) return /^#([0-9a-f]{4}|[0-9a-f]{8})$/i.test(String(hex||'')) ? String(hex) : '';
+  var h=m[1]; if(h.length===3) h=h.replace(/(.)/g,'$1$1');
+  var r=parseInt(h.slice(0,2),16)/255, g=parseInt(h.slice(2,4),16)/255, b=parseInt(h.slice(4,6),16)/255;
+  var max=Math.max(r,g,b), min=Math.min(r,g,b), l=(max+min)/2, d=max-min;
+  if(!d) return '#'+h.toLowerCase();
+  var sat = l>.5 ? d/(2-max-min) : d/(max+min);
+  if(sat<=AVATAR_SAETTIGUNG_MAX) return '#'+h.toLowerCase();
+  var hue = max===r ? ((g-b)/d + (g<b?6:0)) : (max===g ? (b-r)/d+2 : (r-g)/d+4);
+  hue/=6; sat=AVATAR_SAETTIGUNG_MAX;
+  var q = l<.5 ? l*(1+sat) : l+sat-l*sat, p=2*l-q;
+  var kanal=function(t){ if(t<0) t+=1; if(t>1) t-=1;
+    return t<1/6 ? p+(q-p)*6*t : (t<1/2 ? q : (t<2/3 ? p+(q-p)*(2/3-t)*6 : p)); };
+  var x=function(v){ var s=Math.round(v*255).toString(16); return s.length<2?'0'+s:s; };
+  return '#'+x(kanal(hue+1/3))+x(kanal(hue))+x(kanal(hue-1/3));
+}
 var _pmColor='', _pmPhoto='';
 function applyAvatarEl(av, u){
   if(!av) return;
@@ -35191,7 +35424,8 @@ function applyAvatarEl(av, u){
   } else {
     av.style.backgroundImage='';
     av.textContent = u.emoji ? u.emoji : initials(u.name);
-    av.style.background = u.color || '';
+    av.style.background = avatarFarbe(u.color) || '';
+    av.style.color = avatarSchrift(avatarFarbe(u.color)) || '';
     av.classList.toggle('chef', u.role==='chef' && !u.color);
   }
 }
@@ -35217,7 +35451,7 @@ function openProfile(reiter){
   $('pmPhotoRemove').style.display=_pmPhoto?'inline-flex':'none';
   var c=$('pmColors');
   c.innerHTML='<div class="pm-color'+(_pmColor?'':' sel')+'" data-c="" style="background:var(--brand)" title="Standard"></div>'+
-    PROFILE_COLORS.map(function(col){ return '<div class="pm-color'+(_pmColor===col?' sel':'')+'" data-c="'+col+'" style="background:'+col+'"></div>'; }).join('');
+    PROFILE_COLORS.map(function(col){ return '<div class="pm-color'+(_pmColor===col?' sel':'')+'" data-c="'+col+'" style="background:'+avatarFarbe(col)+'"></div>'; }).join('');
   c.querySelectorAll('.pm-color').forEach(function(el){ el.addEventListener('click',function(){
     _pmColor=el.dataset.c;
     c.querySelectorAll('.pm-color').forEach(function(x){ x.classList.remove('sel'); });

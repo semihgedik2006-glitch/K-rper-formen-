@@ -10,8 +10,9 @@ Stand: 27.9.2026. **Eingeschaltet.**
   Das `mfa.state: DISABLED` darüber betrifft SMS-Codes, die hier bewusst
   nicht genutzt werden.
 - In der App: `konfig.js → zweiFaktor: true`.
-- **Noch keine Pflicht.** Stufe 2 (Zurücksetzen) und Stufe 3 (Pflicht)
-  sind offen, siehe Abschnitt 3.
+- **Pflicht per Stichtag möglich** (Stufe 3, Runde 127). Die
+  Geschäftsführung setzt ihn unter Verwaltung → Team → „Zwei-Faktor bei
+  der Leitung". Zurücksetzen (Stufe 2) gibt es seit Runde 124.
 - **Nicht von hier aus geprüft:** das erste echte Einrichten am Handy.
   Das Firebase-SDK lädt in dieser Umgebung nicht.
 
@@ -101,7 +102,7 @@ einen Übergang und ein Werkzeug, das zeigt, wen sie träfe."
 | **1. Hinweis** | Geschäftsführung, Studioleitung und Betreiber ohne zweiten Faktor sehen oben die Leiste „Für die Leitung Pflicht — Jetzt einrichten". Wegklicken gilt nur bis zum nächsten Öffnen | eingebaut, wirkt ab `zweiFaktor: true` |
 | **Werkzeug** | *Verwaltung → Team → Zwei-Faktor bei der Leitung*: wer ihn hat, wer nicht (`zweiFaktorStand`, nur die eigene Firma, nur ja/nein) | eingebaut |
 | **2. Zurücksetzen** | Handy verloren → der zweite Faktor muss sich entfernen lassen, sonst ist das Konto zu. Das Admin-SDK kann das (`updateUser(uid, { multiFactor: { enrolledFactors: null } })`). `zweiFaktorZuruecksetzen`: die Geschäftsführung derselben Firma oder der Betreiber, **nie für sich selbst**, nur mit Grund; Eintrag in `zfProtokoll` (nur der Chef liest). In der App: Verwaltung → Team → „Zwei-Faktor bei der Leitung“ → „Zurücksetzen“ | **gebaut am 27.9.2026** (Runde 124) |
-| **3. Pflicht** | Erst wenn im Werkzeug alle ✓ haben: Die Regeln verlangen für Chef- und Leitungsrechte `request.auth.token.firebase.sign_in_second_factor`. Einrichten geht weiter ohne, denn es läuft nicht über die Datenbank. Niemand sperrt sich also aus | **offen** |
+| **3. Pflicht** | Die Geschäftsführung setzt im Werkzeug einen **Stichtag** (eine Woche im Voraus, Rückfrage nennt die Offenen; zurücknehmbar) — `config/zweiFaktor {pflichtAb}`, schreiben nur die Geschäftsführung (bestehende Regel, beide Bäume, geprüft in `tests/rules/zweifaktor.test.js`). Bis dahin nennt die Leiste das Datum. Danach kommt, wer zur Leitung gehört und keinen zweiten Faktor hat, nur noch zu „Jetzt einrichten" oder „Abmelden"; abschalten geht dann nicht mehr. **Ehrlich:** der Schutz selbst kommt vom Anmeldedienst (wer einen Faktor hat, wird danach gefragt); die Sperre sorgt dafür, dass alle ihn einrichten. Die Regel `request.auth.token.firebase.sign_in_second_factor` bleibt der nächste Schritt — heute sperrte sie jeden aus, der sich seit dem Einrichten nicht neu angemeldet hat | **gebaut am 27.9.2026** (Runde 127) — Stichtag setzt der Betrieb |
 
 ---
 

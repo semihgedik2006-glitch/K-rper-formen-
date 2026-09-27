@@ -214,6 +214,7 @@ Betriebsrat besteht).
 | **Nicht erfasst** | **Standort.** `Permissions-Policy: geolocation=()` gilt unverändert. Die Ortsbindung ist physisch: das Gerät steht im Studio |
 | **Nicht erfasst** | Was jemand in der Zeit getan hat. Es gibt keine Tätigkeitsprotokolle |
 | **Nicht möglich** | Nachträgliches Ändern oder Löschen eines Stempels — auch nicht durch den Eigentümer. `zeiten` steht in den Regeln auf `write:false`; geschrieben wird ausschließlich serverseitig |
+| **Aufbewahrung** | **Drei Jahre ab dem Tag des Stempels**, festgelegt vom Betrieb am 27.9.2026 (§ 16 Abs. 2 ArbZG verlangt mindestens zwei). Die Funktion `stempelzeitenAblaufen` löscht jede Nacht um 3:50 Uhr, was älter ist — auch Korrekturen, die in derselben Sammlung stehen. Was die Frist trifft, zeigt vorher Verwaltung → System → „Stempelzeiten: Aufbewahrung“ (Zahlen, keine Namen). In der nächtlichen Sicherung liegt ein gelöschter Stempel danach noch bis zu sieben Tage |
 | **Sichtbar für die Person selbst** | ihre eigenen Zeiten, vollständig, im Ich-Bereich |
 | **Sichtbar für die Leitung** | die Zeiten der von ihr geführten Studios |
 

@@ -298,7 +298,7 @@ sein Studio dann am Rand des Auges.
 
 *Aufwand: mittel.*
 
-### 24. Avatare ohne Grellheit
+### 24. Avatare ohne Grellheit — **gebaut (Runde 127), Sättigung gedeckelt**
 
 Das grüne „TC" in der Kopfzeile sticht heraus wie ein Warnlicht — und
 steht direkt neben dem Bericht-Knopf, der eigentlich der lauteste sein

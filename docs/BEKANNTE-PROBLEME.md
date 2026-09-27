@@ -357,9 +357,14 @@ wurde er nie.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open — bewusst nicht von uns gesetzt |
+| **Status** | **BEHOBEN am 27.9.2026** (Runde 127) — drei Jahre, vom Betrieb entschieden |
 
-Stempelzeiten bleiben unbegrenzt liegen. § 16 Abs. 2 ArbZG nennt zwei
+**Seit 27.9.2026:** „3 Jahre" (aus dem Betrieb). `stempelzeitenAblaufen`
+löscht jede Nacht, was mehr als drei Jahre nach seinem Tag liegt;
+Verwaltung → System zeigt vorher, was es trifft. Test:
+`tests/rules/stempelfrist.test.js`.
+
+Vorher: Stempelzeiten blieben unbegrenzt liegen. § 16 Abs. 2 ArbZG nennt zwei
 Jahre für Aufzeichnungen über die werktägliche Arbeitszeit hinaus; wie
 lange darüber hinaus, ist eine Abwägung zwischen Aufbewahrungspflicht
 und Datenminimierung.

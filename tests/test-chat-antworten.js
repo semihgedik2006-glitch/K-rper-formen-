@@ -77,7 +77,8 @@ async function aufraeumen(p) {
 }
 /* Eine Blase in der Mitte des Verlaufs, von jemand anderem. */
 /* Innerhalb des SICHTBAREN Verlaufs: bei 320 × 640 ist er nur rund
-   135 px hoch (Kopf, Kanäle und „Meldungen an?" darüber) — eine Blase
+   135 px hoch (seit Runde 127 rund 210: die Bereichszeile klappt im Chat
+   auf niedrigen Handys ein) — eine Blase
    darüber liegt unter dem Kopf und bekäme den Finger gar nicht. */
 const ziel = (p) => p.evaluate(() => {
   const box = document.getElementById('chatScroll');

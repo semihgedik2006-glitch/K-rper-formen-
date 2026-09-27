@@ -31,11 +31,11 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 
 | | | Quelle |
 |---|---|---|
-| Anwendung | `index.html`, **37.470 Zeilen** | `wc -l` |
-| Serverfunktionen | **76** Cloud Functions | `grep -c '^exports\.'` |
+| Anwendung | `index.html`, **37.686 Zeilen** | `wc -l` |
+| Serverfunktionen | **78** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **2.409 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **166** (163 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
-| Automatische Durchläufe (Regeln) | **28 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem acht Dateien dazu) | `tests/rules/` |
+| Automatische Durchläufe (Oberfläche) | **170** (167 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Regeln) | **29 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem neun Dateien dazu) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
 | Build-Schritt | **keiner** | kein `package.json` im Wurzelverzeichnis |

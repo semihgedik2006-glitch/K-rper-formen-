@@ -612,8 +612,9 @@
       /* In „Allgemein" stehen immer drei eigene Nachrichten — sonst zeigt
          die Demo die Gelesen-Häkchen (Runde 126) nur, wenn der Zufall es
          will. Eine jüngere (grau oder ein Häkchen), zwei ältere (blau).
-         Nicht die allerletzte: am kleinen Handy sind vom Verlauf nur
-         rund 135 px zu sehen, und dort gehört eine fremde Nachricht hin
+         Nicht die allerletzte: am kleinen Handy ist vom Verlauf nur ein
+         schmaler Streifen zu sehen (320 × 640: 212 px seit Runde 127,
+         vorher 135), und dort gehört eine fremde Nachricht hin
          (test-chat-antworten wischt und tippt darauf). */
       if (kanal === 'allgemein' && (i === 4 || i === 10 || i === 16)) u = ICH;
       r.push({
@@ -1445,6 +1446,19 @@
       return { ok: true };
     },
     kontoLoeschen: function () { return { ok: true, demo: true }; },
+    /* Löschfrist der Stempelzeiten (Runde 127) — dieselbe Rechnung wie
+       der Server: älter als drei Jahre ab dem Tag. */
+    stempelFristStand: function () {
+      if (ICH.role !== 'chef') throw new Error('Dieser Bereich ist der Geschäftsführung vorbehalten.');
+      var grenz = function (ms) { var d = new Date(ms); d.setFullYear(d.getFullYear() - 3); return d.toISOString().slice(0, 10); };
+      var z = holen(P('zeiten'));
+      var heute = grenz(Date.now()), in30 = grenz(Date.now() + 30 * 86400000);
+      var tage = z.map(function (x) { return x.tag; }).filter(Boolean).sort();
+      return { jahre: 3, grenzTag: heute,
+               faellig: z.filter(function (x) { return x.tag && x.tag < heute; }).length,
+               in30Tagen: z.filter(function (x) { return x.tag && x.tag < in30; }).length,
+               aeltester: tage[0] || null };
+    },
     /* ── Löschung beantragen — dieselben Prüfungen wie der Server. In
        der Demo wird niemand wirklich gesperrt: die App zeigt die kleine
        Seite direkt (demo:true), statt neu zu laden. */
