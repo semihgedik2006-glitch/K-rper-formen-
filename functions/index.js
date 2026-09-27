@@ -3889,6 +3889,76 @@ exports.backupNow = region
     }
   });
 
+/* ══ STEMPELZEITEN: LÖSCHFRIST (Runde 127, P-08) ══════════════════════
+   Aus dem Betrieb, 27.9.2026: „3 Jahre". § 16 Abs. 2 ArbZG verlangt
+   mindestens zwei; länger aufzuheben ist eine Abwägung gegen die
+   Datenminimierung, und „eine Frist, die niemand gesetzt hat, ist keine
+   Frist, sondern ein Versäumnis" (BEKANNTE-PROBLEME, P-08).
+
+   Gelöscht wird ein Stempel, wenn sein TAG (Feld `tag`, JJJJ-MM-TT,
+   Berliner Zeit) mehr als drei Jahre zurückliegt — jede Nacht, für jede
+   Firma. Korrekturen stehen in derselben Sammlung
+   und laufen mit ab.
+
+   Was es trifft, zeigt vorher stempelFristStand (Verwaltung → System):
+   ältester Eintrag, heute fällig, in den nächsten 30 Tagen fällig. So
+   sieht die Geschäftsführung es kommen, bevor etwas verschwindet — die
+   Hausregel für Änderungen, die echte Daten treffen.
+
+   In der nächtlichen Sicherung liegt ein gelöschter Stempel danach noch
+   BACKUP_TAGE Tage; das steht so im Löschkonzept. */
+const STEMPEL_FRIST_JAHRE = 3;
+function stempelGrenzTag(jetzt) {
+  const d = new Date(berlinDatum(jetzt || Date.now()) + 'T12:00:00Z');
+  d.setUTCFullYear(d.getUTCFullYear() - STEMPEL_FRIST_JAHRE);
+  return d.toISOString().slice(0, 10);          // älter als dieser Tag → weg
+}
+async function stempelFaellig(firma, grenzTag) {
+  return W(firma).collection('zeiten').where('tag', '<', grenzTag);
+}
+exports.stempelzeitenAblaufen = region
+  .runWith({ timeoutSeconds: 540, memory: '256MB' })
+  .pubsub.schedule('50 3 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const grenz = stempelGrenzTag();
+    /* Nur über die Firmen, nicht über die flachen Pfade: das dürfen nur
+       die Termine (test-funktionen-pfade hält das fest — sonst weicht die
+       Trennung der Firmen auf). Stempel entstehen seit ihrer Einführung
+       im September ohnehin nur unter firmen/<k>/zeiten. */
+    for (const firma of await alleFirmen()) {
+      let weg = 0;
+      for (;;) {
+        const snap = await (await stempelFaellig(firma, grenz)).limit(400).get();
+        if (snap.empty) break;
+        const batch = db.batch();
+        snap.docs.forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+        weg += snap.size;
+        if (snap.size < 400) break;
+      }
+      if (weg) console.log('Stempelzeiten abgelaufen (' + (firma || 'flach') + '): ' + weg + ' vor ' + grenz);
+    }
+    return null;
+  });
+/* Für die Geschäftsführung: was die Frist trifft — nur Zahlen und ein
+   Datum, keine Namen. */
+exports.stempelFristStand = region.https.onCall(async (data, context) => {
+  const ich = await requireChef(context);
+  const firma = await firmaVonProfil(ich);
+  const jetzt = Date.now();
+  const heute = stempelGrenzTag(jetzt), in30 = stempelGrenzTag(jetzt + 30 * 86400000);
+  const zaehl = async (grenz) => (await (await stempelFaellig(firma, grenz)).count().get()).data().count;
+  const aeltester = await W(firma).collection('zeiten').orderBy('tag').limit(1).get();
+  return {
+    jahre: STEMPEL_FRIST_JAHRE,
+    grenzTag: heute,
+    faellig: await zaehl(heute),
+    in30Tagen: await zaehl(in30),
+    aeltester: aeltester.empty ? null : (aeltester.docs[0].get('tag') || null)
+  };
+});
+
 /* ── Erledigte einmalige Putzaufgaben wegräumen ──
    Die App blendet sie schon einen Tag nach dem Abhaken aus. Hier
    verschwinden sie wirklich aus der Datenbank, sonst waechst der Putzplan
@@ -6244,7 +6314,7 @@ exports.brettNachziehen = region.pubsub.schedule('every 30 minutes').timeZone('E
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
-                     berlinDatum, tagDanach, erledigt,
+                     berlinDatum, tagDanach, erledigt, stempelGrenzTag,
                      pinZuSchwach, pinHashen, pinPruefen,
                      schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
                      SCHULUNG_VERSUCHE_MAX, SCHULUNG_VERSUCHE_FENSTER_MS,

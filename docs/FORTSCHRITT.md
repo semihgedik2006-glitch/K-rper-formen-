@@ -14016,3 +14016,107 @@ weil ich ja eigentlich bei jedem Problem helfen muss."
   - Der Name im Test geändert, mit dem Zitat aus dem Betrieb.
 - **Nicht prüfbar hier:** die echte Mail und echte Geräte mit
   Tipp-Korrektur.
+
+## Runde 127 — Avatarfarben, Löschfrist Stempelzeiten, Zwei-Faktor-Pflicht, Chat auf kleinen Handys
+
+Aus dem Betrieb, 27.9.2026, auf die offenen Fragen B1–B8:
+
+| Frage | Antwort | Was daraus wurde |
+|---|---|---|
+| 2 Avatarfarben | „ja" (nur die Sättigung deckeln) | Anzeige mit höchstens 62 % Sättigung |
+| 3 Passwort-Mindestlänge | „Nein, 6 reicht immer noch" | nichts geändert |
+| 4 Löschfrist Stempelzeiten | „3 Jahre" | nächtliche Löschung und Werkzeug |
+| 5 Zwei-Faktor-Pflicht | „Ja" | Stichtag, Hinweis, Sperre |
+| 6 Preis und Angebot | „machen wir, nachdem das hier fertig ist" | offen |
+| 7 Chat auf kleinen Handys | „ja" | Bereichszeile klappt ein |
+
+**Avatarfarben**
+
+- `avatarFarbe()` zeigt jede Farbe mit höchstens 62 % Sättigung. Der
+  Farbton bleibt (höchstens 3° Abweichung). Gespeichert wird weiter der
+  gewählte Wert: niemand verliert seine Farbe, und der Deckel lässt sich
+  ändern, ohne Daten anzufassen.
+- **Gefunden dabei:** Auf jeder Farbe stand dieselbe Schrift. Im
+  Hellen war das Weiß auf Gelb, rechnerisch etwa 1,7 : 1.
+  - `avatarSchrift()` wählt jetzt dunkel oder weiß, je nach Kontrast.
+  - Alle neun Farben liegen bei mindestens 4,76 : 1.
+  - Gegenprobe im Test: ungedeckelt mit der alten Schrift lag die
+    kleinste bei 3,44 (hell) und 3,98 (dunkel).
+
+**Stempelzeiten: drei Jahre (P-08 behoben)**
+
+- `stempelzeitenAblaufen` läuft jede Nacht um 3:50 Uhr, für jede
+  Firma. Gelöscht wird, wessen Tag mehr als drei Jahre zurückliegt,
+  Korrekturen eingeschlossen.
+  - Zuerst lief er auch über die flachen Pfade. Der Gesamtdurchlauf
+    (`test-funktionen-pfade`) hat das abgelehnt: das dürfen nur die
+    Termine, sonst weicht die Trennung der Firmen auf.
+  - Stempel gibt es flach ohnehin nicht; sie entstehen seit ihrer
+    Einführung unter `firmen/<k>/zeiten`.
+- **Werkzeug vorher:** Verwaltung → System → „Stempelzeiten:
+  Aufbewahrung“ (`stempelFristStand`, nur Geschäftsführung, nur Zahlen
+  und Tage). Es zeigt den ältesten Eintrag, was heute fällig ist und was
+  in den nächsten 30 Tagen fällig wird.
+- Heute trifft es nichts: die ältesten Stempel sind vom August 2026.
+- In der nächtlichen Sicherung liegt ein gelöschter Stempel noch bis
+  zu sieben Tage. So steht es im Löschkonzept.
+- **Test:** `tests/rules/stempelfrist.test.js` (11) führt die
+  Funktionen im Emulator aus.
+  - Gegenprobe: genau drei Jahre bleibt, Jüngeres bleibt.
+  - Meine erste Erwartung „in 30 Tagen: 4“ war falsch: der Stempel
+    von genau vor drei Jahren wird morgen fällig, richtig sind 5. Der
+    Fehler lag in der Erwartung, nicht im Code.
+- `tests/test-stempelfrist.js` (10) prüft die Karte, keine Namen, die
+  Reihenfolge am Handy und den Satz in der Datenschutzerklärung.
+- Unterlagen: LÖSCHKONZEPT, RECHT (Lücke geschlossen, anwaltlich
+  gegenlesen bleibt), BEKANNTE-PROBLEME P-08.
+
+**Zwei-Faktor-Pflicht (Stufe 3)**
+
+- **Ablauf:**
+  - Die Geschäftsführung setzt im Werkzeug einen Stichtag eine Woche
+    im Voraus. Die Rückfrage nennt die Offenen; zurücknehmen geht.
+  - Bis dahin nennt die Leiste der Leitung das Datum.
+  - Danach kommt, wer zur Leitung gehört und keinen zweiten Faktor hat,
+    nur noch zu „Jetzt einrichten“ oder „Abmelden“.
+  - Mit Pflicht lässt sich der Faktor nicht abschalten. Bei verlorenem
+    Handy hilft Stufe 2.
+- **Keine neue Regel nötig:** `config/zweiFaktor` darf die
+  Geschäftsführung schon schreiben und die Leitung lesen, in beiden
+  Bäumen. Nachgeprüft in `tests/rules/zweifaktor.test.js` (+6
+  Prüfungen, 32).
+- **Ehrlich:**
+  - Den Schutz macht der Anmeldedienst: wer einen Faktor hat, wird
+    danach gefragt.
+  - Die Sperre sorgt dafür, dass alle ihn einrichten.
+  - Die Regel mit `sign_in_second_factor` bleibt der nächste Schritt.
+    Heute sperrte sie jeden aus, der sich seit dem Einrichten nicht neu
+    angemeldet hat.
+- **Das Einrichten-Fenster** (z-index 210) lag zuerst unter der Sperre
+  (880). Jetzt hebt `body:has(#zfPflicht:not([hidden]))` es an.
+- **Test:** `tests/test-zf-pflicht.js` (23) prüft Werkzeug, Leiste,
+  Sperre, Fenster darüber und Abschalten gesperrt.
+  - Gegenproben: mit Faktor keine Sperre, Mitarbeiterin keine Sperre.
+  - Treffer bei 320 / 390 / 1440, normal und kompakt.
+
+**Chat auf kleinen Handys**
+
+- Bei höchstens 700 px Höhe (und höchstens 600 px Breite) fällt im Chat
+  die Bereichszeile weg. Beim Tippen weichen auch die Reiter und
+  „Meldungen an?“.
+- 320 × 640: der Verlauf ist 212 px hoch statt 135 px, beim Tippen
+  322 px.
+- 390 × 844 und der Rechner bleiben unverändert (Gegenprobe im Test).
+- Die Reiterzeile bekommt ihr `display` per Skript direkt am Element.
+  Die Regel brauchte deshalb `!important`; im ersten Messlauf blieb die
+  Zeile stehen. Der Grund steht daneben.
+- **Gefunden im Tipp-Test (`test-chat-antworten`, 320 px):**
+  - Zuerst waren die Reiter per CSS `:focus` eingeklappt. Ein Tipp auf
+    eine Nachricht nimmt dem Feld den Fokus aber VOR dem Klick.
+  - Die Reiter kamen sofort zurück, die Nachricht rutschte unter dem
+    Finger weg, und der Klick landete im Leeren. Auf dem Handy wäre das
+    genauso gewesen.
+  - Jetzt setzt ein Skript die Klasse `tippt`; sie geht erst 400 ms
+    nach dem Verlassen des Feldes.
+- **Test:** `tests/test-chat-klein.js` (11), inklusive „direkt nach
+  dem Verlassen verschiebt sich noch nichts“.

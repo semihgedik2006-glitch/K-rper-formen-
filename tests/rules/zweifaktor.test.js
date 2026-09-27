@@ -132,6 +132,13 @@ const als = (uid) => ({ auth: { uid } });
     await darfNicht(welt + ': die Studioleitung NICHT', fsAls(leiter).doc(p + 'zfProtokoll/p1').get());
     await darfNicht(welt + ': auch der Chef schreibt NICHT hinein (nur der Server)', fsAls(chef).doc(p + 'zfProtokoll/p2').set({ ts: 2 }));
     await darfNicht(welt + ': … und löscht nichts', fsAls(chef).doc(p + 'zfProtokoll/p1').delete());
+    /* Stufe 3 (Runde 127): den Stichtag setzt die Geschäftsführung, die
+       Studioleitung nicht — sonst schöbe man sich die eigene Pflicht weg.
+       Lesen muss ihn jede aus der Leitung, sonst sieht sie Leiste und
+       Sperre nicht. */
+    await darf(welt + ': der Chef setzt den Stichtag (config/zweiFaktor)', fsAls(chef).doc(p + 'config/zweiFaktor').set({ pflichtAb: Date.now() + 7 * 86400000 }));
+    await darfNicht(welt + ': die Studioleitung setzt ihn NICHT', fsAls(leiter).doc(p + 'config/zweiFaktor').set({ pflichtAb: 0 }));
+    await darf(welt + ': die Studioleitung liest ihn', fsAls(leiter).doc(p + 'config/zweiFaktor').get());
   }
   await env.cleanup();
 
