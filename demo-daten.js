@@ -641,7 +641,11 @@
   function lesestaende(kanal, leute) {
     legen(P('channels/' + kanal + '/gelesen'), leute.filter(function (u) {
       return u.id !== ICH.id && u.aktiv !== false;
-    }).map(function (u) { return { id: u.id, uid: u.id, ts: vorMin(zahl(0, 240)) }; }));
+    /* OHNE zufall(): jede gezogene Zufallszahl verschiebt alles, was
+       danach erzeugt wird (Aufgaben, Studios …). So geschehen — die
+       Aufgabenliste der Demo sah plötzlich anders aus, und
+       test-p1-aufgaben zählte nur noch 5 statt 7 Zeilen im Bild. */
+    }).map(function (u, i) { return { id: u.id, uid: u.id, ts: vorMin((i * 37 + kanal.length * 11) % 241) }; }));
   }
   lesestaende('allgemein', USERS);
   STUDIOS.forEach(function (n, i) { lesestaende(sk(i), leuteIn(sk(i))); });
