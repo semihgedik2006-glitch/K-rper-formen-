@@ -13878,6 +13878,12 @@ Leitungskonten „eingerichtet“ zeigen.
   darunter), und `test-loeschung-beantragen` misst Überlappung und
   Textbreite bei 320 / 390 / 1440 / 1920 px. Gegenprobe auf dem alten
   Stand: Textbreite 0 → fällt.
+- **Der Gesamtdurchlauf fand die Reihenfolge am Handy** (164 von 165
+  grün, `test-verwaltung-pc` rot): Die neue Karte hatte `data-vw="1"`
+  von der Freigabe-Karte übernommen — die Zahl ist die Reihenfolge am
+  Handy, wo sich die Spalten auflösen. Jetzt Platz 2, die übrigen
+  Team-Karten rücken eins weiter. Danach die neun Durchläufe, die den
+  Team-Bereich anfassen, einzeln grün.
 
 **Tests**
 

@@ -8417,7 +8417,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <!-- Löschanträge (App Store 5.1.1(v)): wer hier steht, hat unter
                Ich → Daten die Löschung beantragt und ist seitdem gesperrt.
                Unter „Wartet auf Freigabe": die bleibt ganz oben (test-beitritt). -->
-          <div data-vw="1" class="card" id="loeschAntragKarte" data-chef-only="1" style="display:none">
+          <div data-vw="2" class="card" id="loeschAntragKarte" data-chef-only="1" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3 data-ikon="papierkorb">Löschung beantragt</h3>
               <span class="todo-count" id="loeschAntragZahl"></span>
@@ -8425,12 +8425,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <p class="hint">Diese Konten sind gesperrt. Arbeitszeiten und Schichten bleiben beim Betrieb.</p>
             <div id="loeschAntragListe"></div>
           </div>
-          <div data-vw="4" class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
+          <div data-vw="5" class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
             <h3 data-ikon="leute">Team</h3>
             <p class="hint">Rolle und Studios anpassen oder Zugang entfernen.</p>
             <div id="empList"></div>
           </div>
-          <div data-vw="5" class="card" data-fold="chefzugaenge" data-chef-only="1">
+          <div data-vw="6" class="card" data-fold="chefzugaenge" data-chef-only="1">
             <h3 data-ikon="krone">Chef-Zugänge</h3>
             <p class="hint">Alle Konten mit vollem Zugriff auf alle Studios. Sie bekommen
               auch den Monatsbericht per E-Mail.</p>
@@ -8438,7 +8438,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
             </div>
             <div class="vw-spalte vw-neben">
-          <div data-vw="3" class="card" data-fold="zugang" data-chef-only="1">
+          <div data-vw="4" class="card" data-fold="zugang" data-chef-only="1">
             <h3 data-ikon="person">Zugang anlegen</h3>
             <p class="hint">Erstellt ein Konto und ordnet Studios zu. Die Person meldet sich danach mit E-Mail + Passwort an.</p>
             <div class="field"><label for="emName">Name</label>
@@ -8466,7 +8466,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <button data-ikon="kopieren" type="button" class="btn btn-ghost btn-sm" id="emCopy">Zugangsdaten kopieren</button>
             </div>
           </div>
-          <div data-vw="2" class="card" data-fold="beitritt" data-chef-only="1">
+          <div data-vw="3" class="card" data-fold="beitritt" data-chef-only="1">
             <h3 data-ikon="schluessel">Wer darf sich anmelden</h3>
             <!-- Seit Runde 117: der Code sagt, zu WELCHEM Betrieb jemand
                  will — hinein kommt er erst nach deiner Freigabe, immer.
@@ -8488,7 +8488,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button class="btn btn-ghost btn-sm" id="btSave" style="width:100%;margin-top:12px">Speichern</button>
             <p class="em-saved" id="btNote"></p>
           </div>
-          <div data-vw="7" class="card" data-fold="zweifaktor" data-chef-only="1" id="zfStandKarte">
+          <div data-vw="8" class="card" data-fold="zweifaktor" data-chef-only="1" id="zfStandKarte">
             <h3 data-ikon="schloss">Zwei-Faktor bei der Leitung</h3>
             <!-- Das Werkzeug zum Übergang (CLAUDE.md: „bekommt einen
                  Übergang und ein Werkzeug, das zeigt, wen sie träfe").
@@ -8497,7 +8497,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               du, wer sie schon eingerichtet hat.</p>
             <div id="zfStand" class="zf-stand"><p class="hint">Wird geladen …</p></div>
           </div>
-          <div data-vw="6" class="card" data-fold="onboarding" data-chef-only="1">
+          <div data-vw="7" class="card" data-fold="onboarding" data-chef-only="1">
             <h3 data-ikon="kompass">Onboarding-Checkliste</h3>
             <p class="hint">Schritte für neue Mitarbeiter. Sie sehen die Liste im Infos-Tab und haken sie ab.</p>
             <div id="obEditor"></div>
