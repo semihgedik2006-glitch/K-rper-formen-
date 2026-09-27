@@ -82,6 +82,10 @@ const TREFFER = (el) => {
     const br = await p.evaluate(() => Math.round(document.getElementById('speicherHinweis').getBoundingClientRect().width));
     pruefe(w + ' px: am Rechner nicht über die volle Breite (' + br + ' px)', w < 800 || br <= 720, String(br));
 
+    /* Seit 27.9.2026 ist die Zwei-Faktor-Anmeldung eingeschaltet — für
+       die Prüfung „fehlt, solange sie aus ist" wird sie hier AUS gestellt,
+       für die Gegenprobe unten wieder an. */
+    await p.evaluate(() => { window.KONFIG.zweiFaktor = false; });
     await p.click('#shMehr');
     await p.waitForTimeout(400);
     const ds = await p.evaluate(() => { const m = document.getElementById('rechtModal'); return m && m.classList.contains('show') ? document.getElementById('rechtInhalt').textContent : ''; });

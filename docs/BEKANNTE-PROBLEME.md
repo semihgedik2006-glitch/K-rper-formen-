@@ -306,7 +306,7 @@ Maßnahme — nicht als Zusage, weil sie heute nicht wahr wäre.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | **In Arbeit** — eingebaut in Runde 119 (Authenticator-App), wartet aufs Einschalten im Projekt (`docs/ZWEI-FAKTOR.md`). Offen: Zurücksetzen bei verlorenem Handy, dann die Pflicht in den Regeln |
+| **Status** | **Eingeschaltet am 27.9.2026** (Authenticator-App, freiwillig). Offen: Zurücksetzen bei verlorenem Handy, dann die Pflicht in den Regeln (`docs/ZWEI-FAKTOR.md`, Abschnitt 3) |
 
 Für Chef- und Betreiberkonten wäre er angemessen. Ein Betreiberkonto
 kann Firmen anlegen, sperren und Abos setzen.
