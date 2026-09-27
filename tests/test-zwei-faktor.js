@@ -71,7 +71,9 @@ async function konfigMit2FA(p, an) {
   await p.route('**/konfig.js', async (r) => {
     const res = await r.fetch();
     const t = await res.text();
-    await r.fulfill({ response: res, body: t.replace('zweiFaktor: false', 'zweiFaktor: ' + (an ? 'true' : 'false')) });
+    /* Seit 27.9.2026 steht in konfig.js „true" — ersetzt wird deshalb
+       jeder der beiden Werte, nicht nur „false". */
+    await r.fulfill({ response: res, body: t.replace(/zweiFaktor:\s*(true|false)/, 'zweiFaktor: ' + (an ? 'true' : 'false')) });
   });
 }
 

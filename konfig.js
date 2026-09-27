@@ -65,8 +65,10 @@
     /* Zwei-Faktor-Anmeldung per Authenticator-App (Runde 119). Erst auf
        true, wenn sie im Projekt eingeschaltet ist (docs/ZWEI-FAKTOR.md,
        ein Befehl in der Cloud Shell). Vorher sagt die App ehrlich „wird
-       gerade freigeschaltet", statt auf einen Fehler zu laufen. */
-    zweiFaktor: false,
+       gerade freigeschaltet", statt auf einen Fehler zu laufen.
+       Eingeschaltet am 27.9.2026: die Antwort des Befehls zeigte
+       mfa.providerConfigs[].totpProviderConfig mit state ENABLED. */
+    zweiFaktor: true,
 
     /* Firebase-Konsole → Cloud Messaging → Web-Push-Zertifikate.
        Leer: die App laeuft normal, nur ohne Meldungen bei geschlossener App. */

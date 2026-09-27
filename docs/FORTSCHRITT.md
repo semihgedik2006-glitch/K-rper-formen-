@@ -13731,3 +13731,29 @@ Runde 122, und zwar nur unter Last:
   beschreibt, was die App tut, nicht, was sie einmal können wird.
 - `test-rechtliches` prüft beide Richtungen, mit Gegenprobe.
 
+## 27.9.2026 — Google-Anmeldung bestätigt, Zwei-Faktor eingeschaltet
+
+- **„Mit Google anmelden“ funktioniert.** Der Betreiber hat es am Gerät
+  ausprobiert; das ist der Teil, der hier nicht prüfbar war.
+- **TOTP ist im Projekt eingeschaltet.** Befehl aus
+  `docs/ZWEI-FAKTOR.md`, die Antwort zeigte `state: ENABLED` am
+  TOTP-Anbieter.
+  - In der App steht jetzt `zweiFaktor: true`.
+  - Damit zeigt die Datenschutzerklärung den Absatz dazu von selbst.
+  - Die Leitung sieht die Leiste „Jetzt einrichten“.
+- **Die Antwort enthielt den `signerKey` der Passwort-Prüfwerte.** Er
+  steht bewusst nirgends im Repository. Er nützt nur zusammen mit einem
+  Export der Prüfwerte, und den kann nur ein Admin ziehen.
+- **Tests angepasst, nicht gelockert:**
+  - `test-zwei-faktor` ersetzte in `konfig.js` den Text
+    `zweiFaktor: false`, den es nicht mehr gibt. Jetzt ersetzt er
+    jeden der beiden Werte.
+  - `test-rechtliches` stellt für die Prüfung „fehlt, solange aus“ den
+    Schalter selbst auf aus, für die Gegenprobe auf an.
+
+- **Der Gesamtdurchlauf fand einen echten Fehler** (162 von 163 grün,
+  `test-zugang-rolle` rot): `fnRuf` warf SOFORT, wenn schon der Aufbau
+  des Funktionsaufrufs scheiterte — ein `.catch()` dahinter sah den
+  Fehler nie. Sichtbar wurde es erst jetzt, weil die Team-Seite mit
+  eingeschalteter Zwei-Faktor-Anmeldung `zweiFaktorStand` fragt. `fnRuf`
+  liefert jetzt immer ein Versprechen; der Test ist unverändert grün.

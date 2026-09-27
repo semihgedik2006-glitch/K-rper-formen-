@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-W+R1kMjUD30GaNI5jJmZUxXgj6FRk0sMzbByMGNGKMM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-QJdvHAvQfk7G2EEbIQbztTDF1KBF/ZYoQj2Fz/Evfjc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -16173,9 +16173,15 @@ var OHNE_FIRMA = '_ohne';
 function ohneBetrieb(d){ return !!d && (d.firma === OHNE_FIRMA || d.aktiv === false); }
 function wartetAufFreigabe(d){ return ohneBetrieb(d); }
 
+/* Immer ein Versprechen, auch wenn schon der Aufbau scheitert (Funktionen-
+   Baustein nicht geladen, keine App). Vorher warf das SOFORT — und wer
+   .catch() anhängt, bekam den Fehler nie zu sehen: er lief als
+   unbehandelter Fehler durch. Aufgefallen, als die Team-Seite mit
+   eingeschalteter Zwei-Faktor-Anmeldung zweiFaktorStand fragte. */
 function fnRuf(name, daten){
-  return firebase.app().functions(KONFIG.region).httpsCallable(name)(daten || {})
-    .then(function(r){ return (r && r.data) || {}; });
+  return new Promise(function(ok){
+    ok(firebase.app().functions(KONFIG.region).httpsCallable(name)(daten || {}));
+  }).then(function(r){ return (r && r.data) || {}; });
 }
 
 var _mk = { uid:null, profil:null };
@@ -17304,6 +17310,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-27-zwei-faktor-an', datum:'27.9.2026', titel:'Zwei-Faktor-Anmeldung ist eingeschaltet', wo:'chef:team', punkte:[
+    'Unter Einstellungen → Profil → „Anmeldung und Sicherheit" lässt sie sich jetzt einrichten: QR-Code mit einer Authenticator-App scannen (Google Authenticator, Microsoft Authenticator o. ä.), Code eingeben, fertig. Danach fragt die App nach dem Passwort zusätzlich nach dem Code.',
+    'Geschäftsführung und Studioleitung sehen oben einen Hinweis, bis sie eingerichtet ist. Unter Verwaltung → Team → „Zwei-Faktor bei der Leitung" steht, wer sie schon hat.',
+    'Noch ist sie keine Pflicht. Wer das Handy verliert, meldet sich bei der Geschäftsführung — das Zurücksetzen kommt als Nächstes.' ] },
   { id:'2026-09-27-datenschutz-anmeldung', datum:'27.9.2026', titel:'Datenschutz: was bei „Mit Google anmelden" passiert', wo:'ich:daten', punkte:[
     'In der Datenschutzerklärung steht jetzt ein Abschnitt „Anmeldung": was bei E-Mail und Passwort gespeichert wird und was bei „Mit Google anmelden" an Google geht — nur Name und E-Mail-Adresse werden übernommen.',
     'Sobald die Zwei-Faktor-Anmeldung eingeschaltet ist, steht auch dazu dort, wo der Schlüssel liegt und was die Geschäftsführung davon sieht (nur ja oder nein).' ] },

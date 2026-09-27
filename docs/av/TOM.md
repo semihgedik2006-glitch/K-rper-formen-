@@ -253,7 +253,7 @@ SOC-Bericht für StudioChat selbst — nur für die Plattform darunter.
 | Maßnahme | Stand | Aufwand |
 |---|---|---|
 | Passwort-Mindestlänge auf 12 Zeichen | offen | eine Zeile |
-| Zweitfaktor für Chef-Konten | eingebaut (Authenticator-App), noch nicht eingeschaltet | klein |
+| Zweitfaktor für Chef-Konten | eingeschaltet (27.9.2026), noch freiwillig — Pflicht folgt nach dem Zurücksetzen | klein |
 | Auskunft je Person auf Knopfdruck (Art. 15) | **erledigt** (25.9.2026) | — |
 | Wiederherstellung aus der Sicherung einmal proben | **geprobt** (27.9.2026) | — |
 | Externer Penetrationstest | nicht erfolgt | Geld |

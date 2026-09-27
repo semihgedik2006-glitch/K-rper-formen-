@@ -4,8 +4,16 @@
 > accounts". Auf die Frage nach Kosten und Alternativen zur SMS lautete
 > die Empfehlung: Code aus einer Authenticator-App (TOTP).
 
-Stand: 25.9.2026, Runde 119. **Eingebaut, aber noch aus**
-(`konfig.js → zweiFaktor: false`), bis sie im Projekt eingeschaltet ist.
+Stand: 27.9.2026. **Eingeschaltet.**
+- Im Projekt: Der Befehl aus Abschnitt 1 lief am 27.9.2026. Die Antwort
+  zeigte `mfa.providerConfigs[].totpProviderConfig` mit `state: ENABLED`.
+  Das `mfa.state: DISABLED` darüber betrifft SMS-Codes, die hier bewusst
+  nicht genutzt werden.
+- In der App: `konfig.js → zweiFaktor: true`.
+- **Noch keine Pflicht.** Stufe 2 (Zurücksetzen) und Stufe 3 (Pflicht)
+  sind offen, siehe Abschnitt 3.
+- **Nicht von hier aus geprüft:** das erste echte Einrichten am Handy.
+  Das Firebase-SDK lädt in dieser Umgebung nicht.
 
 ---
 
