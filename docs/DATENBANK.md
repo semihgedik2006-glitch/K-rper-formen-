@@ -31,6 +31,7 @@ firmen/{kennung}                     ← Stammdaten, öffentlich lesbar (get)
    │     └── beitrittSchalter        ← Freigabe an/aus
    │
    ├── channels/{kanal}/messages/    ← Teamchat
+   ├── channels/{kanal}/gelesen/{uid} ← Lesestand {ts, uid} für die Häkchen (Runde 126)
    ├── dms/{paar}/messages/          ← Direktnachrichten
    │
    ├── studios/{studioKey}/
@@ -344,7 +345,7 @@ Feld lässt sich nicht abfragen; die App setzt es beim Chef einmal auf
 
 ---
 
-### `vorfaelle/{id}` — gemeldete Datenschutzvorfälle (seit 25.9.2026)
+### `vorfaelle/{id}` — gemeldete Probleme und Datenschutzvorfälle (seit 25.9.2026)
 
 **Oben, nicht in der Firma:** ein Vorfall kann die Firma selbst
 betreffen. **Lesen:** nur der Betreiber. **Schreiben:** niemand, nur die
@@ -354,6 +355,7 @@ ausdrücklich zu.
 | Feld | Anmerkung |
 |---|---|
 | `uid`, `name`, `email`, `rolle`, `firma` | wer gemeldet hat |
+| `art` | `datenschutz` (Frist läuft, „DRINGEND … Frist bis" im Betreff) oder `problem` (seit 27.9.2026, „Problem melden"). Ohne Angabe oder unbekannt: `datenschutz` — im Zweifel die strengere |
 | `was`, `wann`, `betroffen`, `laeuft`, `rueckruf` | die Meldung |
 | `ts` | wann |
 | `mail` | `gesendet` / `fehlgeschlagen` / `nicht eingerichtet` — ehrlich, was mit der Mail war |
@@ -545,3 +547,13 @@ Der Vollexport liegt in Cloud Storage unter `sicherung/JJJJ-MM-TT/`.
 > Firestore-Regeln. Deshalb: `allow read, write: if false` für alle.
 
 **Wiederherstellung: nie geprobt.** Steht so in `docs/av/TOM.md`.
+
+### `channels/{kanal}/gelesen/{uid}` — Lesestand (seit 27.9.2026, Runde 126)
+
+Beide Bäume (flach und `firmen/<k>/`). Ein Dokument je Person und Kanal:
+`{ ts, uid }` — bis wann die Person den Kanal gesehen hat. Daraus rechnet
+die App die Häkchen der anderen (✓ / ✓✓ grau / ✓✓ blau). **Lesen:** wer
+den Kanal lesen darf. **Schreiben:** nur den eigenen, nur diese zwei
+Felder, `ts` höchstens fünf Minuten in der Zukunft. **Löschen:** niemand.
+Direktnachrichten brauchen das nicht: dort steht `readTs.<uid>` schon am
+Unterhaltungs-Dokument. Test: `tests/rules/gelesen.test.js`.

@@ -27,7 +27,7 @@ zu erfinden.**
 |---|---|
 | **Verantwortlich für Meldungen** | Semih Gedik, Kendenicherstraße 15, 50354 Hürth |
 | **Erreichbar unter** | S.gedik@kformen.com |
-| **In der App** | „Alles → Was muss ich wissen? → Datenschutzvorfall melden" — schickt sofort eine Mail mit Wichtigkeit „hoch" und speichert die Meldung (seit 25.9.2026) |
+| **In der App** | „Alles → Was muss ich wissen? → Problem melden" → „Daten in falschen Händen" — schickt sofort eine Mail mit Wichtigkeit „hoch" und speichert die Meldung (seit 25.9.2026; seit 27.9.2026 unter diesem Namen, siehe `vorfaelle/2026-09-27-uebung-handy.md`) |
 | **Vertretung** | **keine** — entschieden am 25.9.2026, im Vertrag offengelegt (siehe Abschnitt 7) |
 
 Ein Einzelunternehmen hat keine Meldekette. Das ist ehrlicher, als eine
@@ -278,7 +278,8 @@ Ebenfalls offen:
 
 * **Der Meldeweg ist eine E-Mail-Adresse.** Ist das Postfach Teil des
   Vorfalls, gibt es keinen zweiten Weg.
-* **Es hat noch nie einen Vorfall gegeben**, an dem dieser Ablauf geprüft
-  worden wäre. Ein Verfahren, das nie gelaufen ist, ist eine Annahme.
-  Ein Trockenlauf — einen erfundenen Vorfall einmal durch alle sechs
-  Schritte führen — dauert eine Stunde und wäre die erste Prüfung.
+* **Einen echten Vorfall hat es noch nicht gegeben.** Am 27.9.2026 lief
+  der erste Trockenlauf (erfundener Fall: Handy verloren): Mail nach etwa
+  20 Sekunden, Konto in der Konsole nach etwa einer Minute gefunden.
+  Akte: `vorfaelle/2026-09-27-uebung-handy.md`. Beim nächsten Mal auch
+  Schritt 3 und 4 mit Uhrzeit festhalten.

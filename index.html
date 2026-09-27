@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-kDi/DhDE7JBLA2+i8hVYKCgGFELPCMJt5iSo87Wy02I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-06T6qIYZHuMVh5oWAIAhhDATqV7RwR7AZJb1yFsS+ps='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -201,6 +201,11 @@
      .30 faellt sie unter die 4,5:1, die diese App ueberall einhaelt.
      .24 ist also der kraeftigste Wert, der die Lesbarkeit nicht
      bezahlt — nicht der schoenste, den ich gefunden habe. */
+  /* Gelesen-Häkchen (Runde 126): „blau wie bei WhatsApp" — aber auf der
+     eigenen Blase, die selbst getönt ist. Nachgemessen an echten
+     Bildpunkten (test-gelesen-haken): 5,4 : 1 dunkel, 5,1 : 1 hell. Das
+     erste Blau (#7DD3FC) lag dunkel bei genau 4,5 — zu knapp. */
+  --haken-gelesen:#A8E4FF;
   --tipp-1:rgba(56,189,248,.24);   /* ruhende Flaeche eines Knopfes */
   --tipp-2:rgba(56,189,248,.34);   /* Finger drauf */
   --tipp-kante:rgba(56,189,248,.75);
@@ -323,6 +328,7 @@ body.light{
   /* Im Hellen braucht dieselbe Wirkung mehr Deckkraft: eine Toenung auf
      Weiss verschwindet schneller als auf Schwarz. Nachgemessen, nicht
      vom dunklen Wert abgeleitet. */
+  --haken-gelesen:#075985;
   --tipp-1:rgba(3,105,161,.19);
   --tipp-2:rgba(3,105,161,.28);
   --tipp-kante:rgba(3,105,161,.65);
@@ -1258,6 +1264,24 @@ html.demo #terminalSchirm{top:44px}
 .tag.chef{background:var(--f-warn);color:var(--warm-tx)}
 .tag.studio{background:rgba(var(--akz-rgb),.14);color:var(--accent-2)}
 .msg .meta time{margin-left:auto;color:var(--text-3);font-size:var(--t-2xs);white-space:nowrap}
+/* ── Gelesen-Häkchen (Runde 126) ──
+   ✓ gesendet · ✓✓ grau zugestellt · ✓✓ blau gelesen. Nur an eigenen
+   Nachrichten. Kein Knopf: wer wissen will, WER gelesen hat, tippt die
+   Nachricht an („Gelesen von …" im Blatt) — so bleibt die Trefferfläche
+   die ganze Blase statt eines 16-Pixel-Zeichens. */
+.haken{display:inline-flex;align-items:center;flex:0 0 auto;color:var(--text-2);margin-left:var(--s4)}
+.haken svg{width:17px;height:12px;display:block}
+.haken[data-stand="gelesen"]{color:var(--haken-gelesen)}
+.meta-min.hat-haken{display:flex;justify-content:flex-end;align-items:center;gap:var(--s4)}
+/* .ms-react und .ms-acts setzen display und schlagen damit hidden —
+   beim ersten Blick standen Reaktionen und Einträge über der Liste. */
+.ms-react[hidden],.ms-acts[hidden]{display:none}
+.ms-info{display:grid;gap:var(--s10);padding:var(--s10) 0}
+.ms-info[hidden]{display:none}
+.ms-info h4{margin:0;font-size:var(--t-sm);color:var(--text-2);display:flex;align-items:center;gap:var(--s6)}
+.ms-info ul{list-style:none;margin:0;padding:0;display:grid;gap:var(--s4)}
+.ms-info li{display:flex;align-items:center;gap:var(--s8);min-height:32px}
+.ms-info .leer{color:var(--text-3);font-size:var(--t-sm)}
 .msg .body{font-size:var(--t-md);color:var(--text);white-space:pre-wrap}
 .chat-empty{margin:auto;text-align:center;color:var(--text-3);padding:var(--s40)}
 .chat-input{display:flex;gap:var(--s8);
@@ -5482,6 +5506,23 @@ body.ohne-netz #chatScroll{filter:saturate(.3)}
 .vf-box h3{display:flex;align-items:center;gap:var(--s8);margin:0 var(--s48) var(--s8) 0}
 .vf-box h3 svg{width:22px;height:22px;color:var(--warm-tx)}
 .vf-wozu{margin:0 0 var(--s12)}
+/* „Worum geht es?" (Runde 126): zwei grosse Wahlkarten statt einer
+   Auswahlliste — die Wahl entscheidet, ob die 72-Stunden-Frist läuft. */
+.vf-art{border:0;margin:0 0 var(--s12);padding:0;display:grid;gap:var(--s8)}
+.vf-art legend{font-size:var(--t-sm);font-weight:600;margin-bottom:var(--s6);padding:0}
+.vf-art label{position:relative;display:flex;align-items:flex-start;gap:var(--s10);min-height:52px;padding:var(--s10) var(--s12);
+  border:1px solid var(--line-2);border-radius:var(--r-md);background:var(--auf-1);cursor:pointer}
+/* Das Auswahlfeld liegt unsichtbar über der GANZEN Karte: getroffen wird
+   die Karte, nicht ein 20-Pixel-Punkt (gemessen in test-vorfall). Den
+   Punkt zeichnet ::before. */
+.vf-art input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.vf-art label > span::before{content:"";float:left;width:18px;height:18px;margin:var(--s2) var(--s10) 0 0;
+  border:2px solid var(--text-2);border-radius:var(--r-rund);box-sizing:border-box}
+.vf-art label:has(input:checked){border-color:var(--accent);background:rgba(var(--akz-rgb),.12)}
+.vf-art label:has(input:checked) > span::before{border-color:var(--accent);box-shadow:inset 0 0 0 4px var(--bg-2);background:var(--accent)}
+.vf-art label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.vf-art b{display:block}
+.vf-art small{display:block;color:var(--text-2);font-size:var(--t-xs)}
 .vf-senden{width:100%;min-height:48px}
 .vf-ergebnis{padding:var(--s16);border-radius:var(--r-md);border:1px solid var(--k-warn);
   background:var(--f-warn);color:var(--warm-tx);font-size:var(--t-sm);line-height:var(--lh)}
@@ -9222,12 +9263,22 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 <div id="vorfallModal" role="dialog" aria-modal="true" aria-labelledby="vfTitel">
   <div class="pm-box vf-box">
     <button class="lb-close" id="vfClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    <h3 id="vfTitel" data-ikon="warnung">Datenschutzvorfall melden</h3>
+    <!-- Seit Runde 126 „Problem melden": aus dem Trockenlauf am 27.9.2026,
+         „ich würde es nur ändern, dass da nicht steht Datenschutzvorfall
+         melden, sondern Problem melden, weil ich ja eigentlich bei jedem
+         Problem helfen muss". Die Art entscheidet, ob die Frist läuft. -->
+    <h3 id="vfTitel" data-ikon="warnung">Problem melden</h3>
     <div id="vfForm">
-      <p class="hint vf-wozu">Personendaten sind in falsche Hände geraten, verloren gegangen oder
-        wurden verändert — zum Beispiel ein verlorenes Handy mit angemeldeter App, eine
-        Liste am falschen Ort, eine Nachricht an die falsche Person. <b>Lieber einmal zu
-        viel melden.</b> Die Meldung geht sofort als dringende Mail raus.</p>
+      <p class="hint vf-wozu">Etwas funktioniert nicht, ist verschwunden — oder Daten sind in
+        falsche Hände geraten? Die Meldung geht sofort als Mail an den Betreiber.
+        <b>Lieber einmal zu viel melden.</b></p>
+      <fieldset class="vf-art" id="vfArt">
+        <legend>Worum geht es? *</legend>
+        <label><input type="radio" name="vfArt" value="problem" />
+          <span><b>Etwas funktioniert nicht</b><small>Ein Fehler, etwas fehlt, etwas stimmt nicht</small></span></label>
+        <label><input type="radio" name="vfArt" value="datenschutz" />
+          <span><b>Daten in falschen Händen</b><small>Verlorenes Handy, Liste offen liegen gelassen, Nachricht an die falsche Person</small></span></label>
+      </fieldset>
       <div class="field"><label for="vfWas">Was ist passiert? *</label>
         <textarea class="inp" id="vfWas" rows="4" maxlength="4000"
           placeholder="z. B. Am Empfang lag die Liste mit den Krankmeldungen offen aus."></textarea></div>
@@ -9945,6 +9996,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     </div>
     <div class="ms-react" id="msSheetReact"></div>
     <div class="ms-acts" id="msSheetActs"></div>
+    <!-- „Gelesen von …" (Runde 126): ersetzt Reaktionen und Einträge,
+         solange es offen ist. -->
+    <div class="ms-info" id="msSheetInfo" hidden></div>
     <button class="btn btn-ghost" id="msSheetClose" style="width:100%">Abbrechen</button>
   </div>
 </div>
@@ -11564,6 +11618,16 @@ function renderRecht(){
       '<p><b>Technisch:</b> Zeitpunkt der letzten Anmeldung, damit die '+
         'Anwesenheitsanzeige funktioniert. Ein Gerätekennzeichen für '+
         'Push-Nachrichten, falls du sie einschaltest.</p>'+
+      /* Runde 126: Gelesen-Häkchen. Wer schreibt, sieht, wer gelesen hat —
+         das ist eine Angabe über DICH, die andere sehen, also steht sie
+         hier. Gespeichert wird je Kanal nur EIN Zeitpunkt, keine Liste je
+         Nachricht (channels/<kanal>/gelesen/<uid>). */
+      '<p><b>Gelesen-Häkchen:</b> Je Chat-Kanal wird gespeichert, bis wann '+
+        'du ihn gelesen hast (ein Zeitpunkt, keine Liste je Nachricht). Wer '+
+        'dort schreibt, sieht daran zwei blaue Häkchen und unter „Gelesen '+
+        'von …“ deinen Namen – wie bei WhatsApp. In Direktnachrichten sieht '+
+        'es die andere Person. Gelesen gilt nur, was du wirklich auf dem '+
+        'Bildschirm hattest.</p>'+
       /* Der Absatz gehoert hierher, obwohl in der Zaehlung keine Person
          vorkommt. Zwei Gruende: erstens ist „anonym" eine Behauptung,
          solange sie nirgends steht — hier steht sie, und die Regel in
@@ -11705,7 +11769,7 @@ function renderRecht(){
 
       '<h4>Wenn etwas schiefgeht</h4>'+
       '<p>Wer bemerkt, dass Daten in falsche Hände geraten sind, meldet das '+
-        'unter <b>Alles → Was muss ich wissen? → Datenschutzvorfall melden</b>. '+
+        'unter <b>Alles → Was muss ich wissen? → Problem melden</b> („Daten in falschen Händen"). '+
         'Die Meldung geht sofort an die Verantwortlichen.</p>'+
 
       '<h4>Deine Rechte</h4>'+
@@ -17332,8 +17396,10 @@ function allesGruppen(){
      was: NEUIGKEITEN.length ? 'Zuletzt: '+NEUIGKEITEN[0].titel : 'Was sich zuletzt geändert hat'},
     /* Runde 113 (P-02). Für jeden, nicht nur die Leitung: eine Datenpanne
        bemerkt oft, wer am Empfang sitzt. */
-    {label:'Datenschutzvorfall melden', vorfall:true, roh:ikon('warnung'),
-     was:'Daten in falschen Händen? Geht sofort als dringende Mail raus'},
+    /* Seit Runde 126 „Problem melden" — jedes Problem, nicht nur der
+       Datenschutz (aus dem Trockenlauf am 27.9.2026). */
+    {label:'Problem melden', vorfall:true, roh:ikon('warnung'),
+     was:'Etwas kaputt oder Daten in falschen Händen? Geht sofort raus'},
   ]);
   /* Aus FEATURES abgeleitet: dieselben vier Schalter, dieselben
      Beschriftungen, dieselbe Reihenfolge wie im System-Reiter. */
@@ -17455,6 +17521,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-27-gelesen-haken', datum:'27.9.2026', titel:'Häkchen wie bei WhatsApp', wo:'chat', punkte:[
+    'An deinen eigenen Nachrichten stehen jetzt Häkchen: eins heisst gesendet, zwei graue heissen angekommen, zwei blaue heissen gelesen. In Gruppen werden sie erst blau, wenn alle gelesen haben.',
+    'Wer genau gelesen hat: tipp deine Nachricht an und wähl „Gelesen von …". Das gilt auch in Direktnachrichten.' ] },
+  { id:'2026-09-27-problem-melden', datum:'27.9.2026', titel:'„Problem melden" statt „Datenschutzvorfall melden"', wo:'vorfall', punkte:[
+    'Unter Alles → Was muss ich wissen? heisst der Eintrag jetzt „Problem melden". Du wählst, worum es geht: „Etwas funktioniert nicht" oder „Daten in falschen Händen". Beides kommt sofort beim Betreiber an.' ] },
   { id:'2026-09-27-loeschung-beantragen', datum:'27.9.2026', titel:'Konto löschen lassen', wo:'ich:daten', punkte:[
     'Unter Ich → Daten steht ganz unten „Löschung beantragen". Vorher steht da, was passiert: du bist sofort gesperrt, die Geschäftsführung bekommt Bescheid und entfernt dein Konto. Deine Arbeitszeiten und Schichten bewahrt der Betrieb auf.',
     'Die Geschäftsführung sieht Anträge unter Verwaltung → Team → „Löschung beantragt" und kann das Konto entfernen — oder die Person wieder freigeben, wenn es ein Versehen war.',
@@ -17733,7 +17804,11 @@ document.addEventListener('click', function(ev){
   if(k && !k.disabled){ tick(8); auskunftHerunterladen(k); }
 });
 
-/* ══ DATENSCHUTZVORFALL MELDEN (P-02, Runde 113) ═════════════════════
+/* ══ PROBLEM MELDEN (P-02, Runde 113; umbenannt in Runde 126) ═══════
+   Bis Runde 126 hiess das „Datenschutzvorfall melden". Aus dem
+   Trockenlauf: „weil ich ja eigentlich bei jedem Problem helfen muss".
+   Die Art ist Pflicht: nur bei „Daten in falschen Händen" läuft die
+   Frist (Art. 33 DSGVO) und steht im Betreff.
    Das Fenster fragt nur, was man in dem Moment weiss. Pflicht ist allein
    „Was ist passiert?" — wer zögert, weil er nicht alles weiss, meldet
    sonst gar nicht. Die Antwort des Servers wird wörtlich genommen:
@@ -17748,21 +17823,26 @@ function vorfallOeffnen(){
   setTimeout(function(){ var t=$('vfWas'); if(t) t.focus(); }, 60);
 }
 function vorfallSchliessen(){ var m=$('vorfallModal'); if(m) m.classList.remove('show'); }
+function vorfallArt(){
+  var r=document.querySelector('#vfArt input:checked'); return r ? r.value : '';
+}
 function vorfallSenden(){
   var was=$('vfWas').value.trim();
+  var art=vorfallArt();
+  if(!art){ $('vfFehler').textContent='Bitte wähle oben, worum es geht.'; var e=document.querySelector('#vfArt input'); if(e) e.focus(); return; }
   if(was.length<10){ $('vfFehler').textContent='Bitte beschreib in einem Satz, was passiert ist.'; $('vfWas').focus(); return; }
   var b=$('vfSenden'); b.disabled=true; b.textContent='Wird gemeldet …';
   $('vfFehler').textContent='';
   pinFunktion('vorfallMelden')({
-    was:was, wann:$('vfWann').value.trim(), betroffen:$('vfBetroffen').value.trim(),
+    art:art, was:was, wann:$('vfWann').value.trim(), betroffen:$('vfBetroffen').value.trim(),
     laeuft:$('vfLaeuft').value, rueckruf:$('vfRueckruf').value.trim()
   }).then(function(r){
     var d=(r&&r.data)||{};
     var box=$('vfErgebnis');
     box.innerHTML = d.mail
       ? '<div class="vf-ergebnis gut"><b>Gemeldet — die Mail ist raus.</b>'+
-        'Sie ging mit Wichtigkeit „hoch" an die Verantwortliche Stelle. '+
-        'Frist für die Benachrichtigung des Betriebs: bis '+esc(d.fristBis||'')+'. '+
+        'Sie ging mit Wichtigkeit „hoch" an den Betreiber. '+
+        (art==='datenschutz' && d.fristBis ? 'Frist für die Benachrichtigung des Betriebs: bis '+esc(d.fristBis)+'. ' : '')+
         'Halte dich erreichbar, falls Rückfragen kommen.</div>'
       : '<div class="vf-ergebnis"><b>Gespeichert — aber es ging KEINE Mail raus.</b>'+
         (d.demo ? 'Das hier ist die Demo, dort wird nichts versendet. '
@@ -17773,6 +17853,7 @@ function vorfallSenden(){
     $('vfForm').hidden=true; box.hidden=false;
     $('vfFertig').addEventListener('click', vorfallSchliessen);
     ['vfWas','vfWann','vfBetroffen','vfRueckruf'].forEach(function(id){ $(id).value=''; });
+    document.querySelectorAll('#vfArt input').forEach(function(r){ r.checked=false; });
     tick(12);
   }).catch(function(e){
     b.disabled=false; b.textContent='Jetzt melden';
@@ -19223,6 +19304,7 @@ function chanLastRead(ch){
 function markChannelRead(ch){
   try{ localStorage.setItem(chanReadKey(ch), String(Date.now())); }catch(e){}
   renderChannelBadges();
+  setTimeout(function(){ try{ lesestandSchreiben(); }catch(e){} }, 60);
 }
 function watchChannelUnread(){
   cleanOldReadKeys();
@@ -23456,6 +23538,7 @@ var _chatLimit=CHAT_PAGE;   // wächst, wenn man "Ältere laden" antippt
 var _chatMore=false;        // gibt es überhaupt noch ältere?
 function listenChannel(channelId){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
+  lesestaendeHoeren(channelId);
   ladeGut('chat');                  // die Meldung galt dem vorigen Kanal
   var first=true, startTs=Date.now();
   _chatUnsub = S('channels').doc(channelId).collection('messages')
@@ -23691,10 +23774,11 @@ function renderMessages(msgs){
     var iAmMentioned = Array.isArray(m.mentions) && m.mentions.indexOf(session.uid)>=0;
     // Der Kopf entfällt bei gruppierten Nachrichten; „bearbeitet" muss aber
     // sichtbar bleiben und wandert dann unter den Text.
+    var haken = mine ? hakenHTML(m, hakenStand(m)) : '';
     var meta = gruppiert
-      ? (edited ? '<div class="meta-min">'+edited+'</div>' : '')
+      ? ((edited || haken) ? '<div class="meta-min'+(haken?' hat-haken':'')+'">'+edited+haken+'</div>' : '')
       : '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+
-        '<time>'+fmtUhr(m.ts)+'</time>'+edited+'</div>';
+        '<time>'+fmtUhr(m.ts)+'</time>'+edited+haken+'</div>';
     html+='<div class="msg'+(mine?' mine':'')+(iAmMentioned?' mentioned':'')+
       (gruppiert?' grp':'')+'" data-mid="'+esc(m.id)+'">'+
       (gruppiert ? '' : meta)+
@@ -23711,7 +23795,174 @@ function renderMessages(msgs){
   });
   bindMessageTools(box);
   if(atBottom) scrollBottom(); else updateFabCount();
+  lesestandSchreiben();
 }
+
+/* ══ GELESEN-HÄKCHEN (Runde 126) ═══════════════════════════════════════
+   Aus dem Betrieb, 27.9.2026: „Jeder, genau wie bei WhatsApp, einfach."
+   An jeder EIGENEN Nachricht:
+     ✓        gesendet   — die Nachricht steht im Verlauf
+     ✓✓ grau  zugestellt — die App jeder Empfängerin war danach offen
+     ✓✓ blau  gelesen    — alle Empfänger haben den Verlauf bis dahin
+                           gesehen (in Gruppen: ALLE, wie bei WhatsApp)
+   Wer genau gelesen hat, steht im Nachrichtenblatt unter „Gelesen von …".
+
+   WIE „GELESEN" GESPEICHERT WIRD: nicht an jeder Nachricht (bei 30
+   Personen wären das 30 Schreibvorgänge je Nachricht), sondern EIN
+   Lesestand je Person und Kanal: channels/<kanal>/gelesen/<uid> =
+   {ts, uid}. Eine Nachricht gilt als gelesen, wenn der Lesestand der
+   Person nicht älter ist als sie. Direktnachrichten hatten so etwas
+   schon (readTs am Unterhaltungs-Dokument) — dort wird es nur angezeigt.
+
+   „ZUGESTELLT" IST EINE UNTERGRENZE. Die App meldet sich höchstens alle
+   15 Minuten als anwesend (lastSeen, Kostenbremse in pingPresence). Wer
+   die App die ganze Zeit offen hat, springt deshalb oft von ✓ direkt auf
+   blau. Grau heisst: sicher angekommen. Kein Grau heisst nicht: nicht
+   angekommen. Genauer ginge es nur mit einer Rückmeldung je Gerät und
+   Nachricht — das wären wieder die 30 Schreibvorgänge.
+
+   GESCHRIEBEN wird der eigene Lesestand nur, wenn der Chat wirklich zu
+   sehen ist (Ansicht offen, Fenster im Vordergrund) und etwas Neues von
+   anderen da ist — nicht bei jedem Zeichnen. */
+var LESE_HAKEN_SVG = {
+  eins: '<svg viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5 6.5 9.5 12.5 2.5"/></svg>',
+  zwei: '<svg viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6.5 4 9.5 10 2.5"/><path d="M7.5 9 8 9.5 14 2.5"/></svg>'
+};
+var HAKEN_TEXT = { gesendet:'Gesendet', zugestellt:'Zugestellt', gelesen:'Gelesen' };
+var _lesestaende = {}, _lesestandUnsub = null, _lesestandKanal = null;
+var _lesestandGeschrieben = {}, _lesestandZuletzt = 0;
+
+function hakenHTML(m, stand){
+  if(!stand) return '';
+  return '<span class="haken" data-haken="'+esc(m.id||'')+'" data-stand="'+stand+'" role="img" '+
+    'aria-label="'+HAKEN_TEXT[stand]+'" title="'+HAKEN_TEXT[stand]+'">'+
+    (stand==='gesendet' ? LESE_HAKEN_SVG.eins : LESE_HAKEN_SVG.zwei)+'</span>';
+}
+/* Wer bekommt die Nachrichten eines Kanals? Dieselbe Einteilung wie
+   kanalErlaubt() in firestore.rules — ohne die eigene Person, ohne
+   Systemkonten. Wer ohne Studios eingetragen ist, darf zwar alles lesen
+   (Rückfall der Regel), wird aber nicht mitgezählt: sonst würde eine
+   Nachricht im Studio-Kanal nie blau. */
+function kanalMitglieder(ch){
+  return (_allUsers||[]).filter(function(u){
+    if(!u || u.uid===session.uid || u.system || u.aktiv===false) return false;
+    if(ch==='allgemein') return true;
+    if(ch==='gruppe-chefs') return u.role==='chef';
+    if(ch==='gruppe-leitung') return u.role==='chef' || u.role==='leiter';
+    return (u.studioKeys||[]).indexOf(ch)>=0;
+  });
+}
+function hakenStandAus(ts, empfaenger, gelesenBis){
+  if(!empfaenger.length) return 'gesendet';
+  var alleGelesen = empfaenger.every(function(u){ return (gelesenBis(u)||0) >= ts; });
+  if(alleGelesen) return 'gelesen';
+  var alleDa = empfaenger.every(function(u){ return (gelesenBis(u)||0) >= ts || (u.lastSeen||0) >= ts; });
+  return alleDa ? 'zugestellt' : 'gesendet';
+}
+function hakenStand(m){
+  if(!m || m.uid!==session.uid || !currentChannel) return null;
+  return hakenStandAus(m.ts||0, kanalMitglieder(currentChannel), function(u){ return _lesestaende[u.uid]; });
+}
+/* Nur die Häkchen neu setzen, nicht den Verlauf neu zeichnen: ein
+   Lesestand eines anderen ändert sonst jedes Mal alle Blasen. */
+function hakenAktualisieren(){
+  var box=$('chatScroll'); if(!box) return;
+  var nach={}; (_curMsgs||[]).forEach(function(m){ nach[m.id]=m; });
+  box.querySelectorAll('[data-haken]').forEach(function(el){
+    var m=nach[el.getAttribute('data-haken')]; if(!m) return;
+    var st=hakenStand(m);
+    if(st && st!==el.getAttribute('data-stand')) el.outerHTML=hakenHTML(m, st);
+  });
+}
+function lesestaendeHoeren(ch){
+  if(_lesestandKanal===ch && _lesestandUnsub) return;
+  if(_lesestandUnsub){ try{ _lesestandUnsub(); }catch(e){} _lesestandUnsub=null; }
+  _lesestaende={}; _lesestandKanal=ch;
+  try{
+    _lesestandUnsub=S('channels').doc(ch).collection('gelesen').onSnapshot(function(snap){
+      var neu={};
+      snap.docs.forEach(function(d){ var x=d.data()||{}; neu[d.id]=+x.ts||0; });
+      _lesestaende=neu;
+      hakenAktualisieren();
+    }, function(){ /* ohne Lesestände bleibt es bei ✓ und grau — kein Fehlerbild */ });
+  }catch(e){}
+}
+function lesestandSchreiben(){
+  var ch=currentChannel;
+  /* currentView steht beim Start auf 'chat', bevor irgendetwas zu sehen
+     ist — deshalb zusätzlich: ist die Chat-Ansicht wirklich offen? */
+  var v=$('view-chat');
+  if(!ch || !session || currentView!=='chat' || document.hidden || !v || !v.classList.contains('show')) return;
+  var neueste=0;
+  (_curMsgs||[]).forEach(function(m){ if(m.uid!==session.uid && (m.ts||0)>neueste) neueste=m.ts||0; });
+  if(!neueste || neueste <= (_lesestandGeschrieben[ch]||0)) return;
+  var jetzt=Date.now();
+  if(jetzt-_lesestandZuletzt < 3000){ setTimeout(lesestandSchreiben, 3100); return; }
+  _lesestandZuletzt=jetzt;
+  _lesestandGeschrieben[ch]=neueste;
+  try{
+    S('channels').doc(ch).collection('gelesen').doc(session.uid)
+      .set({ ts:Math.max(jetzt, neueste), uid:session.uid })
+      .catch(function(){ _lesestandGeschrieben[ch]=0; });
+  }catch(e){ _lesestandGeschrieben[ch]=0; }
+}
+/* „Gelesen von …" im Nachrichtenblatt. Namen ohne Uhrzeit: bekannt ist
+   nur, bis wann jemand den Verlauf gesehen hat — nicht, wann genau diese
+   eine Nachricht. Eine Uhrzeit hier wäre geraten. */
+function leseInfoZeigen(m){
+  var info=$('msSheetInfo'); if(!info) return;
+  var dm = !!m._dm;
+  var empf = dm ? [_userById(m._peer)||{ uid:m._peer, name:(_dmPeer&&_dmPeer.name)||'' }] : kanalMitglieder(currentChannel);
+  var bis = dm ? function(u){ return dmGelesenBis(u.uid); } : function(u){ return _lesestaende[u.uid]; };
+  var ja=[], nein=[];
+  empf.forEach(function(u){ ((bis(u)||0) >= (m.ts||0) ? ja : nein).push(u); });
+  var nm=function(a,b){ return (a.name||'').localeCompare(b.name||''); };
+  ja.sort(nm); nein.sort(nm);
+  var liste=function(l, leer){
+    return l.length ? '<ul>'+l.map(function(u){
+      return '<li>'+avatarMarkup(u)+'<span>'+esc(u.name||'?')+'</span></li>';
+    }).join('')+'</ul>' : '<p class="leer">'+leer+'</p>';
+  };
+  info.innerHTML=
+    '<h4>'+LESE_HAKEN_SVG.zwei.replace('<svg','<svg style="color:var(--haken-gelesen);width:17px;height:12px"')+'Gelesen ('+ja.length+')</h4>'+
+      liste(ja, 'Noch niemand.')+
+    '<h4>'+LESE_HAKEN_SVG.eins.replace('<svg','<svg style="width:17px;height:12px"')+'Noch nicht gelesen ('+nein.length+')</h4>'+
+      liste(nein, 'Alle haben es gelesen.');
+  $('msSheetReact').hidden=true; $('msSheetActs').hidden=true;
+  info.hidden=false;
+  tick(6);
+}
+
+/* ── Direktnachrichten: der Lesestand steht schon am Unterhaltungs-
+   Dokument (readTs.<uid>, seit jeher für „ungelesen" benutzt). ── */
+function dmThread(){
+  return (_dmThreads||[]).filter(function(t){ return t.id===_dmId; })[0] || null;
+}
+function dmGelesenBis(uid){
+  var t=dmThread(); return (t && t.readTs && t.readTs[uid]) || 0;
+}
+function dmHakenStand(m){
+  if(!m || m.uid!==session.uid || !_dmPeer) return null;
+  var peer=_userById(_dmPeer.uid)||{ uid:_dmPeer.uid };
+  return hakenStandAus(m.ts||0, [peer], function(u){ return dmGelesenBis(u.uid); });
+}
+function dmHakenAktualisieren(){
+  var box=$('dmScroll'); if(!box) return;
+  box.querySelectorAll('[data-haken]').forEach(function(el){
+    var m={ id:el.getAttribute('data-haken'), uid:session.uid, ts:+el.getAttribute('data-ts')||0 };
+    var st=dmHakenStand(m);
+    if(st && st!==el.getAttribute('data-stand')){
+      el.setAttribute('data-stand', st);
+      el.setAttribute('aria-label', HAKEN_TEXT[st]); el.setAttribute('title', HAKEN_TEXT[st]);
+      el.innerHTML = st==='gesendet' ? LESE_HAKEN_SVG.eins : LESE_HAKEN_SVG.zwei;
+    }
+  });
+}
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden || !session) return;
+  if(currentView==='chat') lesestandSchreiben();
+  if(currentView==='dm' && _dmId) markDmRead();
+});
 
 /* ── Umfragen im Chat ──
    Statt 30 Einzelantworten steht das Ergebnis in der Nachricht selbst.
@@ -24079,7 +24330,10 @@ function msgBlattOeffnen(m){
   if(canManage()) eintraege.push({id:'pin', ico:ikon('anheften'), txt:m.pinned?'Loslösen':'Oben anheften'});
   if(canEdit)     eintraege.push({id:'edit', ico:ikon('stift'), txt:'Bearbeiten'});
   if(canDel)      eintraege.push({id:'del', ico:ikon('papierkorb'), txt:'Löschen', warn:true});
+  if(mine)        eintraege.splice(0, 0, {id:'info', ico:ikon('auge'), txt:'Gelesen von …'});
 
+  $('msSheetInfo').hidden=true; $('msSheetInfo').innerHTML='';
+  $('msSheetReact').hidden=false; $('msSheetActs').hidden=false;
   $('msSheetActs').innerHTML=eintraege.filter(function(e){ return !e.aus; }).map(function(e){
     return '<button class="ms-act'+(e.warn?' warn':'')+'" data-ma="'+e.id+'">'+
       '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
@@ -24091,6 +24345,9 @@ function msgBlattSchliessen(){ var b=$('msgSheet'); if(b) b.classList.remove('sh
 
 function msgBlattAktion(was){
   var m=_blattMsg; if(!m) return;
+  /* „Gelesen von …" bleibt im selben Blatt: Reaktionen und Einträge
+     weichen der Liste, „Abbrechen" schliesst wie immer. */
+  if(was==='info'){ leseInfoZeigen(m); return; }
   msgBlattSchliessen();
   if(was==='reply') return startReply(m);
   if(was==='fwd')   return openForward(m);
@@ -34559,6 +34816,9 @@ function listenAllUsers(){
        oben in „Wartet auf Freigabe". */
     _wartende=alle.filter(function(u){ return u.aktiv===false; });
     _allUsers=alle.filter(function(u){ return u.aktiv!==false; });
+    /* Wer zum Kanal gehört und wann jemand zuletzt da war, steht hier —
+       beides entscheidet über die Häkchen (Runde 126). */
+    try{ hakenAktualisieren(); if(_dmId) dmHakenAktualisieren(); }catch(e){}
     // Die Teillisten (Team, Chefs) fallen hier mit ab – ein Beobachter
     // statt drei auf derselben Sammlung.
     if(canManage()) verteileUsers();
@@ -34609,6 +34869,7 @@ function listenDmThreads(){
       }
       _dmThreads.forEach(function(t){ _dmThreadPrev[t.id]=(t.lastTs||0); });
       _dmThreadsFirst=false;
+      if(_dmId) dmHakenAktualisieren();
       updateDmBadge();
       if(currentView==='dm' && $('dmConvo').style.display==='none' && (!$('dmSearch')||!$('dmSearch').value)) renderDmPeople('');
     }, function(e){ ladeFehler('dmListe', e); });
@@ -34693,6 +34954,9 @@ function closeDmConvo(){
 }
 function markDmRead(){
   if(!_dmId) return;
+  /* Nur, wenn wirklich hingesehen wird: seit es die Häkchen gibt, heisst
+     dieser Zeitpunkt für die andere Seite „gelesen" (Runde 126). */
+  if(document.hidden) return;
   var u={}; u['readTs.'+session.uid]=Date.now();
   S('dms').doc(_dmId).update(u).catch(function(){});
 }
@@ -34716,7 +34980,8 @@ function renderDmMessages(msgs){
         + (m.text ? '<div class="body">'+markMentions(linkify(esc(m.text)))+'</div>' : '')
         + (m.audio ? audioHTML(safeMedia(m.audio), m.audioMs||0) : '');
     }
-    return '<div class="msg'+(mine?' mine':'')+'"><div class="meta"><b>'+esc(m.name)+'</b><time>'+fmtTime(m.ts)+'</time>'+del+'</div>'+body+'</div>';
+    var dmHaken = mine ? hakenHTML(m, dmHakenStand(m)).replace('<span class="haken"', '<span class="haken" data-ts="'+(+m.ts||0)+'"') : '';
+    return '<div class="msg'+(mine?' mine':'')+'"><div class="meta"><b>'+esc(m.name)+'</b><time>'+fmtTime(m.ts)+'</time>'+dmHaken+del+'</div>'+body+'</div>';
   }).join('');
   box.querySelectorAll('.msg-del').forEach(function(b){
     b.addEventListener('click',function(){

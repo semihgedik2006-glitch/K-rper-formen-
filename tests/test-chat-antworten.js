@@ -131,7 +131,21 @@ async function wisch(p, z, dx, dy, mitte) {
     await aufraeumen(p);
 
     const z2 = await ziel(p);   // der senkrechte Wisch hat gescrollt
-    await p.touchscreen.tap(z2.x, z2.y);
+    /* Getippt wird mitten in den TEXT der Nachricht. Vorher: 40 px vom
+       linken Rand, auf halber Höhe der Blase. Bei einer einzeiligen
+       Nachricht liegt das knapp unter dem Namen — und Chromium schiebt
+       einen Fingertipp auf das nächste anklickbare Element (den Namen,
+       der das Profil öffnet). Aufgefallen am 27.9.2026, als die Demo drei
+       eigene Nachrichten bekam und eine andere Blase zum Ziel wurde:
+       touchstart kam am Namen an, obwohl elementFromPoint den Text
+       meldete. Die Frage bleibt dieselbe: öffnet ein Tipp auf die
+       Nachricht das Blatt? */
+    const t2 = await p.evaluate((mid) => {
+      const b = document.querySelector('[data-mid="' + mid + '"] .body');
+      if (!b) return null;
+      const r = b.getBoundingClientRect(); return { x: r.left + Math.min(60, r.width / 2), y: r.top + r.height / 2 };
+    }, z2.mid) || z2;
+    await p.touchscreen.tap(t2.x, t2.y);
     await p.waitForTimeout(500);
     const s4 = await stand(p);
     pruefe(w + ' px: ein Tipp öffnet weiter das Blatt', s4.blatt && !s4.leiste, JSON.stringify(s4));

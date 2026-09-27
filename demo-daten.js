@@ -474,8 +474,19 @@
         var i = liste.findIndex(function (x) { return x.id === id; });
         if (i < 0) return Promise.reject(new Error('Dokument gibt es nicht'));
         Object.keys(d).forEach(function (k) {
-          if (d[k] && d[k].__loeschen) delete liste[i][k];
-          else liste[i][k] = markeEinloesen(liste[i][k], d[k]);
+          /* „readTs.anna" ist in Firestore ein FELDPFAD: readTs → anna.
+             Bis zum 27.9.2026 schrieb die Demo einen Schlüssel mit Punkt —
+             das „ungelesen" der Direktnachrichten und seit Runde 126 ihre
+             Häkchen blieben in der Demo darum stehen. */
+          var teile = k.split('.'), ziel = liste[i];
+          for (var t = 0; t < teile.length - 1; t++) {
+            if (!ziel[teile[t]] || typeof ziel[teile[t]] !== 'object') ziel[teile[t]] = {};
+            else ziel[teile[t]] = Object.assign({}, ziel[teile[t]]);
+            ziel = ziel[teile[t]];
+          }
+          var letzt = teile[teile.length - 1];
+          if (d[k] && d[k].__loeschen) delete ziel[letzt];
+          else ziel[letzt] = markeEinloesen(ziel[letzt], d[k]);
         });
         melden(pfad);
         return Promise.resolve();
@@ -598,6 +609,13 @@
     var r = [];
     for (var i = anzahl; i > 0; i--) {
       var u = wer[Math.floor(zufall() * wer.length)] || ICH;
+      /* In „Allgemein" stehen immer drei eigene Nachrichten — sonst zeigt
+         die Demo die Gelesen-Häkchen (Runde 126) nur, wenn der Zufall es
+         will. Eine jüngere (grau oder ein Häkchen), zwei ältere (blau).
+         Nicht die allerletzte: am kleinen Handy sind vom Verlauf nur
+         rund 135 px zu sehen, und dort gehört eine fremde Nachricht hin
+         (test-chat-antworten wischt und tippt darauf). */
+      if (kanal === 'allgemein' && (i === 4 || i === 10 || i === 16)) u = ICH;
       r.push({
         id: 'm-' + kanal + '-' + i, uid: u.id, name: u.name, role: u.role,
         studio: (u.studios || [])[0] || '', text: waehle(SAETZE),
@@ -616,6 +634,18 @@
   });
   legen(P('channels/gruppe-leitung/messages'),
     nachrichtenFuer('leitung', USERS.filter(function (u) { return u.role !== 'mitarbeiter'; }), 7));
+  /* Lesestände (Gelesen-Häkchen, Runde 126): jede Person hat den Kanal
+     irgendwann in den letzten vier Stunden zuletzt gelesen. Ältere eigene
+     Nachrichten stehen damit blau, frische noch grau oder mit einem
+     Häkchen — alle drei Stände sind in der Demo zu sehen. */
+  function lesestaende(kanal, leute) {
+    legen(P('channels/' + kanal + '/gelesen'), leute.filter(function (u) {
+      return u.id !== ICH.id && u.aktiv !== false;
+    }).map(function (u) { return { id: u.id, uid: u.id, ts: vorMin(zahl(0, 240)) }; }));
+  }
+  lesestaende('allgemein', USERS);
+  STUDIOS.forEach(function (n, i) { lesestaende(sk(i), leuteIn(sk(i))); });
+  lesestaende('gruppe-leitung', USERS.filter(function (u) { return u.role !== 'mitarbeiter'; }));
 
   /* Aufgaben, Putzplan, Geräte, Material, Schichten, Abwesenheiten,
      Übergaben — je Studio, mit unterschiedlichen Ständen, damit die
@@ -1485,8 +1515,9 @@
       if (String(d.was || '').trim().length < 10) throw new Error('Bitte beschreib in einem Satz, was passiert ist.');
       var bis = new Date(Date.now() + 48 * 3600000);
       var z = function (n) { return (n < 10 ? '0' : '') + n; };
-      return { ok: true, demo: true, mail: false, id: neueId(),
-               fristBis: z(bis.getDate()) + '.' + z(bis.getMonth() + 1) + '.' + bis.getFullYear() + ' ' + z(bis.getHours()) + ':' + z(bis.getMinutes()) };
+      var art = d.art === 'problem' ? 'problem' : 'datenschutz';
+      return { ok: true, demo: true, mail: false, id: neueId(), art: art,
+               fristBis: art === 'problem' ? null : z(bis.getDate()) + '.' + z(bis.getMonth() + 1) + '.' + bis.getFullYear() + ' ' + z(bis.getHours()) + ':' + z(bis.getMinutes()) };
     },
     zeitNachtragen: function (d) {
       var studioKey = String(d.studioKey || '');

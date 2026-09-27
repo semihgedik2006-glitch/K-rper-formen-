@@ -13906,3 +13906,113 @@ Leitungskonten „eingerichtet“ zeigen.
 - **Nicht prüfbar hier:** die Push-Meldung an die Geschäftsführung
   (Messaging) und der echte Anmeldeweg nach dem Neuladen (echtes SDK
   lädt in dieser Umgebung nicht).
+
+## Runde 126 — Gelesen-Häkchen, „Problem melden“, Trockenlauf
+
+Aus dem Betrieb, 27.9.2026, auf die offenen Fragen B1–B8:
+„1. Ja, jeder, genau wie bei WhatsApp, einfach … 8. Können wir gleich
+machen, direkt." Danach der Trockenlauf und: „ich würde es nur ändern,
+dass da nicht steht Datenschutzvorfall melden, sondern Problem melden,
+weil ich ja eigentlich bei jedem Problem helfen muss."
+
+**Gelesen-Häkchen**
+
+- An eigenen Nachrichten, in Kanälen und Direktnachrichten:
+  - ✓ gesendet,
+  - ✓✓ grau zugestellt,
+  - ✓✓ blau gelesen. In Gruppen wird es erst blau, wenn **alle**
+    gelesen haben.
+- Wer genau gelesen hat: Nachricht antippen → „Gelesen von …“ (Namen,
+  keine Uhrzeit — bekannt ist nur, bis wann jemand den Verlauf gesehen
+  hat, nicht wann genau diese Nachricht).
+- **Wie gespeichert:**
+  - Nicht an jeder Nachricht (bei 30 Personen wären das 30
+    Schreibvorgänge je Nachricht).
+  - Stattdessen ein Lesestand je Person und Kanal:
+    `channels/<kanal>/gelesen/<uid> = {ts, uid}`, in beiden Regelbäumen.
+  - Direktnachrichten hatten `readTs.<uid>` schon; dort wird es nur
+    angezeigt.
+- **Geschrieben** wird der eigene Stand nur, wenn der Chat wirklich zu
+  sehen ist und Neues von anderen da ist.
+  - `currentView` steht beim Start auf `'chat'`, bevor irgendetwas zu
+    sehen ist. Deshalb wird zusätzlich geprüft, ob die Ansicht offen ist.
+  - Direktnachrichten galten bisher auch im Hintergrund als gelesen.
+    Seit es Häkchen gibt, heisst das für die andere Seite „gelesen“,
+    also nur noch im Vordergrund.
+- **„Zugestellt“ ist eine Untergrenze.**
+  - Die App meldet sich höchstens alle 15 Minuten als anwesend
+    (Kostenbremse). Wer die App offen hat, springt oft von ✓ direkt
+    auf blau.
+  - Genauer ginge es nur mit einer Rückmeldung je Gerät und Nachricht.
+- **Blau:** dunkel #A8E4FF, hell #075985, an echten Bildpunkten auf
+  der eigenen Blase gemessen: 5,4 : 1 und 5,1 : 1.
+  - Das erste Blau lag dunkel bei genau 4,5.
+  - Der erste Messlauf hatte „dunkel“ gar nicht dunkel gestellt
+    (beide Werte gleich). Jetzt wird das Thema ausdrücklich gesetzt.
+- **Datenschutzerklärung:** Unter „Was gespeichert wird“ steht jetzt
+  der Lesestand.
+
+**Gefunden beim Bauen**
+
+- **`HAKEN_SVG` gab es schon** (der Abhaken-Knopf der Aufgaben). Die
+  spätere Zuweisung überschrieb die neue — die Häkchen zeigten
+  „undefined“. Umbenannt in `LESE_HAKEN_SVG`.
+- **Zweimal schlug `display` das `hidden`-Attribut**, beide Male erst
+  im Bild aufgefallen, nicht im Test (der prüfte das Attribut). Jetzt
+  misst er, was zu sehen ist.
+  - Einmal im Nachrichtenblatt: Reaktionen und Einträge blieben über
+    „Gelesen von …“ stehen.
+  - Das gleiche Muster wie in Runde 125 beim Löschantrag.
+- **Die Demo verstand keine Feldpfade mit Punkt.**
+  - `update({'readTs.anna': …})` schrieb einen Schlüssel „readTs.anna“.
+  - Damit blieb auch das seit langem vorhandene „ungelesen“ der
+    Direktnachrichten in der Demo stehen. Jetzt wie in Firestore.
+- **`test-chat-antworten`: ein Tipp traf den Namen statt der Blase.**
+  - Die Demo hat jetzt drei eigene Nachrichten in „Allgemein“, sonst
+    sieht man keine Häkchen. Damit wurde eine andere Blase zum Ziel.
+  - Chromium schiebt einen Fingertipp auf das nächste anklickbare
+    Element, hier den Namen.
+  - Der Test tippt jetzt mitten in den Text. Die Frage ist
+    unverändert, der Grund steht im Test.
+  - Die eigenen Demo-Nachrichten stehen nicht an letzter Stelle: am
+    kleinen Handy ist nur ein 135-px-Streifen des Verlaufs zu sehen.
+
+**„Problem melden“**
+
+- Der Eintrag heisst jetzt so. Im Fenster ist Pflicht zu wählen:
+  „Etwas funktioniert nicht“ oder „Daten in falschen Händen“.
+- Beides geht sofort als Mail mit Wichtigkeit „hoch“ raus.
+- **Nur bei Datenschutz** stehen „DRINGEND … Frist bis“ im Betreff und
+  die Frist im Ergebnis. Sonst verliert die echte Frist in
+  Alltagsmeldungen ihre Bedeutung.
+- Ohne Angabe oder bei unbekannter Art gilt „datenschutz“: alte
+  App-Fassungen meinten das, und im Zweifel ist es die strengere.
+- Die Auswahlpunkte liegen unsichtbar über der ganzen Karte. Getroffen
+  wird die Karte (≥ 44 px), nicht ein 20-Pixel-Punkt; den Punkt
+  zeichnet `::before`.
+
+**Trockenlauf (P-02)**
+
+- Erster Lauf des Verfahrens aus `docs/av/VORFALL.md`.
+- Mail nach etwa 20 Sekunden, Konto in der Konsole nach etwa einer
+  Minute gefunden. Das sind die Angaben des Betreibers.
+- Akte: `docs/av/vorfaelle/2026-09-27-uebung-handy.md`.
+- Schritt 3 und 4 sind nicht mit Uhrzeit festgehalten; beim nächsten
+  Mal nachholen.
+
+**Tests**
+
+- `tests/test-gelesen-haken.js` (27, neu):
+  - Stände, Umschalten ohne Neuzeichnen, „Gelesen von …“,
+    Direktnachrichten, Schreiben nur sichtbar.
+  - Kontrast an Bildpunkten, hell und dunkel.
+  - Treffer bei 320 / 390 / 1440, normal und kompakt.
+- `tests/rules/gelesen.test.js` (35, neu): beide Bäume, fremde Stände,
+  Zukunft, Felder, Studio-Grenze, wartende Konten, anderer Betrieb.
+- `tests/rules/vorfall.test.js` (+6 Prüfungen, 22): Art, Betreff, Frist,
+  Vorgabe.
+- `tests/test-vorfall.js` (16): neuer Name, Art ist Pflicht, keine Art
+  vorgewählt.
+  - Der Name im Test geändert, mit dem Zitat aus dem Betrieb.
+- **Nicht prüfbar hier:** die echte Mail und echte Geräte mit
+  Tipp-Korrektur.
