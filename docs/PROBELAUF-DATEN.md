@@ -186,21 +186,29 @@ aber an erfundenen Daten.
 
 ---
 
-## Schritt 4a — PFLICHT: die Kopie wieder löschen
+## Schritt 4a — PFLICHT: die Kopie löschen und das Leserecht zurücknehmen
 
-Sobald nachgesehen ist:
-
-```bash
-gcloud firestore bulk-delete --project=formenchat-probe --database='(default)'
-```
-
-Die Rückfrage nennt das Projekt — **nur bestätigen, wenn dort
-`formenchat-probe` steht.** Verlangt der Befehl Sammlungsnamen, geht
-stattdessen die ganze Probe-Datenbank weg (Schritt 0 legt sie beim
-nächsten Mal wieder an):
+Sobald nachgesehen ist. **Von Hand abtippen**, nicht kopieren: am
+27.9.2026 wurde beim Einfügen aus `--project` ein Gedankenstrich, und
+gcloud las die Angabe als Sammlungsnamen.
 
 ```bash
 gcloud firestore databases delete --database='(default)' --project=formenchat-probe
+```
+
+Die Rückfrage nennt das Projekt — **nur bestätigen, wenn dort
+`formenchat-probe` steht.** Schritt 0 legt die Datenbank beim nächsten
+Mal wieder an. (`gcloud firestore bulk-delete` ohne Sammlungsnamen geht
+NICHT: „Empty entity filter. To delete all entities, use database
+deletion instead.")
+
+Danach das Leserecht aus Schritt 2 wieder wegnehmen — es gilt für den
+Ordner mit ALLEN nächtlichen Sicherungen des Betriebs und wird nur
+während eines Probelaufs gebraucht:
+
+```bash
+gcloud storage buckets remove-iam-policy-binding gs://formenchat.firebasestorage.app --member=serviceAccount:service-692000066621@gcp-sa-firestore.iam.gserviceaccount.com --role=roles/storage.objectViewer --project=formenchat
+gcloud storage buckets remove-iam-policy-binding gs://formenchat.firebasestorage.app --member=serviceAccount:service-692000066621@gcp-sa-firestore.iam.gserviceaccount.com --role=roles/storage.legacyBucketReader --project=formenchat
 ```
 
 ---

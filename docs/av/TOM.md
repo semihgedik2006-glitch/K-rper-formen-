@@ -199,7 +199,7 @@ System) und nennt bei einem Fehlschlag den Grund, statt zu schweigen.
 Rückspielen erfolgt über den Firestore-Import aus dem Sicherungsordner.
 **Geprobt am 27.9.2026:** die nächtliche Sicherung dieses Tages wurde in
 ein getrenntes Projekt zurückgespielt — 678 von 678 Dokumenten, ohne
-Fehler, in wenigen Sekunden. Die Kopie wird danach gelöscht. Nicht
+Fehler, in wenigen Sekunden. Die Kopie wurde danach mit der ganzen Probe-Datenbank gelöscht. Nicht
 Teil der Sicherung sind die Anmeldekonten selbst (sie liegen im
 Anmeldedienst, nicht in der Datenbank).
 

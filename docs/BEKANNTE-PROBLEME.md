@@ -332,7 +332,10 @@ nicht mehr, und die seitdem geschlossenen Lücken (B-32, B-45) waren dort
 offen. Mit einer Kopie echter Daten darin und freier Registrierung per
 E-Mail ist das ein Datenleck in Wartestellung. Deshalb stehen in der
 Anleitung jetzt zwei Pflichtschritte: **vor** dem Import die Anmeldung im
-Probe-Projekt abschalten, **nach** der Kontrolle die Kopie löschen.
+Probe-Projekt abschalten, **nach** der Kontrolle die Kopie löschen und
+das Leserecht auf den Sicherungsordner zurücknehmen. Am 27.9.2026 ist
+die Probe-Datenbank um 14:25 UTC gelöscht worden (von aussen geprüft:
+`NOT_FOUND`).
 
 **Was der Probelauf NICHT zeigt:** dass die App mit den zurückgespielten
 Daten läuft — dafür fehlten Anmeldekonten (die Sicherung enthält die

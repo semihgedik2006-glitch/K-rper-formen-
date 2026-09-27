@@ -13697,9 +13697,16 @@ Runde 122, und zwar nur unter Last:
     Lücken waren dort offen.
   - Gleichzeitig lag dort eine Kopie echter Daten, und die
     Registrierung per E-Mail war frei.
-  - Die Anmeldung wurde deshalb sofort abgeschaltet. Das Löschen der
-    Kopie ist beim Schreiben dieser Zeilen **noch nicht bestätigt**; es
-    wird nachgetragen.
+  - Die Anmeldung wurde deshalb sofort abgeschaltet.
+  - Die Probe-Datenbank wurde um 14:25:07 UTC gelöscht. Von außen
+    nachgeprüft: `NOT_FOUND`.
+  - Dabei gelernt:
+    - `bulk-delete` ohne Sammlungsnamen löscht nichts; es verweist auf
+      das Löschen der ganzen Datenbank.
+    - Beim Einfügen wurde aus `--project` ein Gedankenstrich. Die
+      Anleitung sagt jetzt „von Hand abtippen“.
+    - Das Leserecht des Probe-Projekts auf den Sicherungsordner wird
+      nach dem Lauf wieder entzogen (Schritt 4a).
   - Beides steht jetzt als Pflichtschritt in der Anleitung (2a, 4a).
 - `docs/av/TOM.md` nachgezogen: Wiederherstellung geprobt, Auskunft nach
   Art. 15 seit dem 25.9. vorhanden, Zweitfaktor eingebaut, aber noch
