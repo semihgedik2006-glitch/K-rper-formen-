@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-uEDJRDwoK6FMLmMpx7TT+V5ZRDotORafCCJJ1chqjBQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-kDi/DhDE7JBLA2+i8hVYKCgGFELPCMJt5iSo87Wy02I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5357,6 +5357,12 @@ body.gast .sich-feld{display:none}
 .mk-karte .hint{margin:0}
 .mk-karte .field{margin:0}
 .mk-karte .btn{min-height:44px;width:100%}
+/* Nicht in den Zeilen von „Anmeldung und Sicherheit": dort steht der
+   Knopf NEBEN dem Text. Mit voller Breite drückte er „E-Mail und
+   Passwort" auf wenige Pixel und lag darüber (am Rechner gesehen,
+   Runde 125). Wird es eng, rutscht der Knopf unter den Text. */
+.mk-karte .sich-zeile{flex-wrap:wrap}
+.mk-karte .sich-zeile .btn{width:auto}
 .mk-knoepfe{display:grid;gap:var(--s16)}
 .mk-status{display:flex;align-items:center;gap:var(--s8);margin:0}
 .mk-punkt{width:10px;height:10px;border-radius:var(--r-rund);background:var(--warn);flex:0 0 auto}
@@ -5390,6 +5396,18 @@ body.gast #profileModal .field:has(#kalHint){display:none}
 .fg-label{display:block;font-size:var(--t-xs);color:var(--text-2);margin:0 0 var(--s4)}
 .fg-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
 .fg-err:empty{display:none}
+.la-wann{margin:0;align-self:center}
+/* Löschung beantragen (Ich → Daten): zwei Schritte, der zweite sagt,
+   was passiert, bevor etwas passiert. */
+.lz-frage{display:grid;gap:var(--s12);margin:0;max-width:560px}
+.lz-frage[hidden]{display:none}
+/* .btn setzt display und schlägt damit das hidden-Attribut — der erste
+   Knopf blieb neben der offenen Frage stehen (am Rechner gesehen). */
+#ichLoeschAntrag[hidden],#mkLoeschen[hidden]{display:none}
+.lz-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
+.lz-knoepfe .btn{min-height:44px;flex:1 1 180px}
+#ichLoeschAntrag{min-height:44px}
+.lz-folgen{margin:0;padding-left:1.2em;display:grid;gap:var(--s4);color:var(--text-2);font-size:var(--t-sm)}
 .bt-zeile{display:flex;gap:var(--s8);align-items:stretch}
 .bt-zeile .inp{flex:1 1 auto;min-width:0}
 .bt-zeile .btn{flex:0 0 auto;min-height:44px}
@@ -7340,6 +7358,29 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               </div>
               <div id="ichZahlen"></div>
             </div>
+            <!-- Löschung beantragen (App Store 5.1.1(v)). Nicht „Konto
+                 löschen" mit einem Tipp: Zeiten und Schichten gehören dem
+                 Betrieb. Die Person wird sofort gesperrt, die
+                 Geschäftsführung schliesst ab. Nicht für die Geschäfts-
+                 führung selbst, solange sie die einzige ist (der Server
+                 sagt es dann); nicht für Betreiberkonten. -->
+            <div class="ich-blatt" id="ichLoeschKarte">
+              <div class="ich-kopf"><h3>Konto löschen</h3></div>
+              <p class="hint" style="margin:0 0 10px">Deine Zeiten und Schichten bewahrt der Betrieb auf.</p>
+              <button type="button" class="btn btn-ghost mk-loeschen" id="ichLoeschAntrag">Löschung beantragen</button>
+              <div class="lz-frage" id="ichLoeschFrage" hidden>
+                <ul class="lz-folgen">
+                  <li>Du bist sofort gesperrt und siehst nichts mehr vom Betrieb.</li>
+                  <li>Die Geschäftsführung bekommt Bescheid und entfernt dein Konto.</li>
+                  <li>War es ein Versehen, kann sie dich wieder freigeben.</li>
+                </ul>
+                <div class="lz-knoepfe">
+                  <button type="button" class="btn btn-danger" id="ichLoeschJa">Ja, Löschung beantragen</button>
+                  <button type="button" class="btn btn-ghost" id="ichLoeschNein">Abbrechen</button>
+                </div>
+              </div>
+              <p class="em-saved" id="ichLoeschNote" role="status"></p>
+            </div>
           </div>
         </div>
       </section>
@@ -8373,12 +8414,23 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               zur Freigabe nichts von der App.</p>
             <div id="freigabeListe"></div>
           </div>
-          <div data-vw="4" class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
+          <!-- Löschanträge (App Store 5.1.1(v)): wer hier steht, hat unter
+               Ich → Daten die Löschung beantragt und ist seitdem gesperrt.
+               Unter „Wartet auf Freigabe": die bleibt ganz oben (test-beitritt). -->
+          <div data-vw="2" class="card" id="loeschAntragKarte" data-chef-only="1" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <h3 data-ikon="papierkorb">Löschung beantragt</h3>
+              <span class="todo-count" id="loeschAntragZahl"></span>
+            </div>
+            <p class="hint">Diese Konten sind gesperrt. Arbeitszeiten und Schichten bleiben beim Betrieb.</p>
+            <div id="loeschAntragListe"></div>
+          </div>
+          <div data-vw="5" class="card" data-fold="teamliste" data-fold-offen="1" data-chef-only="1">
             <h3 data-ikon="leute">Team</h3>
             <p class="hint">Rolle und Studios anpassen oder Zugang entfernen.</p>
             <div id="empList"></div>
           </div>
-          <div data-vw="5" class="card" data-fold="chefzugaenge" data-chef-only="1">
+          <div data-vw="6" class="card" data-fold="chefzugaenge" data-chef-only="1">
             <h3 data-ikon="krone">Chef-Zugänge</h3>
             <p class="hint">Alle Konten mit vollem Zugriff auf alle Studios. Sie bekommen
               auch den Monatsbericht per E-Mail.</p>
@@ -8386,7 +8438,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
             </div>
             <div class="vw-spalte vw-neben">
-          <div data-vw="3" class="card" data-fold="zugang" data-chef-only="1">
+          <div data-vw="4" class="card" data-fold="zugang" data-chef-only="1">
             <h3 data-ikon="person">Zugang anlegen</h3>
             <p class="hint">Erstellt ein Konto und ordnet Studios zu. Die Person meldet sich danach mit E-Mail + Passwort an.</p>
             <div class="field"><label for="emName">Name</label>
@@ -8414,7 +8466,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <button data-ikon="kopieren" type="button" class="btn btn-ghost btn-sm" id="emCopy">Zugangsdaten kopieren</button>
             </div>
           </div>
-          <div data-vw="2" class="card" data-fold="beitritt" data-chef-only="1">
+          <div data-vw="3" class="card" data-fold="beitritt" data-chef-only="1">
             <h3 data-ikon="schluessel">Wer darf sich anmelden</h3>
             <!-- Seit Runde 117: der Code sagt, zu WELCHEM Betrieb jemand
                  will — hinein kommt er erst nach deiner Freigabe, immer.
@@ -8436,7 +8488,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button class="btn btn-ghost btn-sm" id="btSave" style="width:100%;margin-top:12px">Speichern</button>
             <p class="em-saved" id="btNote"></p>
           </div>
-          <div data-vw="7" class="card" data-fold="zweifaktor" data-chef-only="1" id="zfStandKarte">
+          <div data-vw="8" class="card" data-fold="zweifaktor" data-chef-only="1" id="zfStandKarte">
             <h3 data-ikon="schloss">Zwei-Faktor bei der Leitung</h3>
             <!-- Das Werkzeug zum Übergang (CLAUDE.md: „bekommt einen
                  Übergang und ein Werkzeug, das zeigt, wen sie träfe").
@@ -8445,7 +8497,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               du, wer sie schon eingerichtet hat.</p>
             <div id="zfStand" class="zf-stand"><p class="hint">Wird geladen …</p></div>
           </div>
-          <div data-vw="6" class="card" data-fold="onboarding" data-chef-only="1">
+          <div data-vw="7" class="card" data-fold="onboarding" data-chef-only="1">
             <h3 data-ikon="kompass">Onboarding-Checkliste</h3>
             <p class="hint">Schritte für neue Mitarbeiter. Sie sehen die Liste im Infos-Tab und haken sie ab.</p>
             <div id="obEditor"></div>
@@ -9002,6 +9054,18 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           dir deine Studios zuordnen. Danach öffnet sich die App.</p>
         <button class="btn btn-primary" id="warteNeu" type="button">Nachsehen, ob es freigegeben ist</button>
         <button class="btn btn-ghost" id="mkZurueck" type="button">Anfrage zurückziehen</button>
+      </div>
+      <!-- Löschung beantragt (Ich → Daten): gesperrt, bis die
+           Geschäftsführung abschliesst. Kein „Konto löschen" hier — das
+           hiesse, am Betrieb vorbei zu löschen. -->
+      <div id="mkLoeschung" hidden>
+        <p class="mk-status"><span class="mk-punkt" aria-hidden="true"></span>
+          <span>Löschung beantragt <span id="mkLoeschWann"></span></span></p>
+        <p class="hint">Dein Konto ist gesperrt. Die Geschäftsführung von
+          <b id="mkLoeschFirma">deinem Betrieb</b> entfernt es; deine Arbeitszeiten
+          bewahrt der Betrieb nach seiner Frist auf.</p>
+        <p class="hint">War es ein Versehen? Sag der Geschäftsführung Bescheid —
+          sie kann dich wieder freigeben.</p>
       </div>
     </section>
 
@@ -11651,6 +11715,8 @@ function renderRecht(){
         esc(r.datenschutzKontakt || r.email || 'die Leitung')+'. '+
         '<b>Eine Kopie von allem, was über dich gespeichert ist,</b> lädst du '+
         'selbst herunter: Ich → Daten → „Meine Daten herunterladen". '+
+        'Die <b>Löschung deines Kontos</b> beantragst du dort ebenfalls („Löschung beantragen"); '+
+        'du bist dann sofort gesperrt, und die Geschäftsführung schliesst ab. '+
         'Außerdem steht dir eine Beschwerde bei einer Aufsichtsbehörde zu.</p>'+
 
       (Array.isArray(r.zusatz) && r.zusatz.length
@@ -16290,9 +16356,18 @@ function mkZeichnen(){
   if(wer) wer.textContent='Angemeldet als '+((auth.currentUser&&auth.currentUser.email)||p.email||'');
   try{ applyAvatarEl($('mkAvatar'), Object.assign({ uid:_mk.uid }, p)); }catch(e){}
   var ohne = !p.firma || p.firma === OHNE_FIRMA;
-  $('mkOhne').hidden = !ohne;
-  $('mkWartet').hidden = ohne;
+  var loesch = !!p.loeschungBeantragt;
+  $('mkOhne').hidden = !ohne || loesch;
+  $('mkWartet').hidden = ohne || loesch;
+  $('mkLoeschung').hidden = !loesch;
+  /* Wer die Löschung beantragt hat, löscht nicht selbst (kontoLoeschen
+     lehnt ab): Zeiten und Schichten gehören dem Betrieb. */
+  $('mkLoeschen').hidden = loesch;
   $('mkFirma').textContent = p._firmaName || p.firma || '';
+  if(loesch){
+    $('mkLoeschWann').textContent = fmtDateTime(p.loeschungBeantragt);
+    $('mkLoeschFirma').textContent = p._firmaName || 'deinem Betrieb';
+  }
 }
 function mkBinden(){
   var w=$('warteWrap'); if(w._gebunden) return; w._gebunden=true;
@@ -17380,6 +17455,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-27-loeschung-beantragen', datum:'27.9.2026', titel:'Konto löschen lassen', wo:'ich:daten', punkte:[
+    'Unter Ich → Daten steht ganz unten „Löschung beantragen". Vorher steht da, was passiert: du bist sofort gesperrt, die Geschäftsführung bekommt Bescheid und entfernt dein Konto. Deine Arbeitszeiten und Schichten bewahrt der Betrieb auf.',
+    'Die Geschäftsführung sieht Anträge unter Verwaltung → Team → „Löschung beantragt" und kann das Konto entfernen — oder die Person wieder freigeben, wenn es ein Versehen war.',
+    'Nebenbei behoben: auf der kleinen Seite für neue Konten lagen unter „Anmeldung und Sicherheit" die Knöpfe über dem Text. Jetzt stehen sie daneben.' ] },
   { id:'2026-09-27-zf-zuruecksetzen', datum:'27.9.2026', titel:'Handy verloren? Zwei-Faktor zurücksetzen', wo:'chef:team', punkte:[
     'Unter Verwaltung → Team → „Zwei-Faktor bei der Leitung" steht bei jedem, der den zweiten Faktor eingerichtet hat, jetzt „Zurücksetzen". Mit einem kurzen Grund entfernt die Geschäftsführung ihn — die Person meldet sich danach mit Passwort an und richtet ihn neu ein.',
     'Für das eigene Konto geht das nicht: das macht jemand anderes aus der Geschäftsführung oder der Betreiber. Jedes Zurücksetzen steht mit Namen, Zeit und Grund darunter im Protokoll.' ] },
@@ -19428,7 +19507,10 @@ function listenEmployees(){
    zusaetzlicher Zugriff auf die Datenbank. */
 function renderFreigaben(){
   var karte=$('freigabeKarte'); if(!karte || !isChef()) return;
-  var wartend=_wartende.slice();
+  renderLoeschAntraege();
+  /* Ein Löschantrag ist auch aktiv:false — aber keine Anfrage, die man
+     „freigibt". Er steht in seiner eigenen Karte darunter. */
+  var wartend=_wartende.filter(function(u){ return !u.loeschungBeantragt; });
   karte.style.display = wartend.length ? '' : 'none';
   if(!wartend.length) return;
   var z=$('freigabeZahl');
@@ -19640,6 +19722,54 @@ function renderEmployees(emps){
             : 'Zugang entfernt ✓ — die Adresse ist wieder frei');
         })
         .catch(function(e){ knopf.disabled=false; toast(fnFehler(e),true); });
+    });
+  });
+}
+
+/* ── Löschanträge (App Store 5.1.1(v), docs/APPSTORE.md) ──
+   Die Person hat unter Ich → Daten die Löschung beantragt und ist seit
+   dem Antrag gesperrt. Die Geschäftsführung schliesst ab: „Konto
+   entfernen" (derselbe Weg wie in der Teamliste, zugangEntfernen) —
+   oder „Wieder freigeben", wenn es ein Versehen war. Die Arbeitsdaten
+   bleiben in beiden Fällen beim Betrieb. */
+function renderLoeschAntraege(){
+  var karte=$('loeschAntragKarte'); if(!karte || !isChef()) return;
+  var liste=_wartende.filter(function(u){ return !!u.loeschungBeantragt; });
+  karte.style.display = liste.length ? '' : 'none';
+  var box=$('loeschAntragListe'); if(!box) return;
+  if(!liste.length){ box.innerHTML=''; return; }
+  $('loeschAntragZahl').textContent = liste.length===1 ? '1 Person' : liste.length+' Personen';
+  box.innerHTML = liste.map(function(u){
+    return '<div class="emp fg-zeile la-zeile" data-la="'+esc(u.uid)+'">'+
+      '<div class="fg-kopf"><b>'+esc(u.name||'Ohne Namen')+'</b>'+
+        '<div class="hint" style="margin-top:var(--s2)">'+esc(u.email||'')+'</div></div>'+
+      '<p class="hint la-wann">Beantragt '+esc(fmtDateTime(u.loeschungBeantragt))+'</p>'+
+      '<div class="fg-knoepfe">'+
+        '<button class="btn btn-danger btn-sm" type="button" data-laweg="'+esc(u.uid)+'">Konto entfernen</button>'+
+        '<button class="btn btn-ghost btn-sm" type="button" data-lazurueck="'+esc(u.uid)+'">Wieder freigeben</button>'+
+      '</div></div>';
+  }).join('');
+  var name=function(uid){ return (liste.filter(function(u){ return u.uid===uid; })[0]||{}).name || 'dieses Konto'; };
+  box.querySelectorAll('[data-laweg]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var uid=b.getAttribute('data-laweg');
+      if(!confirm('Konto von „'+name(uid)+'" entfernen?\n\nDas Anmeldekonto und das Profil werden gelöscht. '+
+                  'Arbeitszeiten, Schichten und Nachrichten bleiben beim Betrieb.\n'+
+                  'Das lässt sich nicht rückgängig machen.')) return;
+      withBusy(b, function(){
+        return fnRuf('zugangEntfernen', { uid:uid }).then(function(){ toast('Konto entfernt ✓'); },
+          function(e){ toast(fnFehler(e), true); });
+      });
+    });
+  });
+  box.querySelectorAll('[data-lazurueck]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var uid=b.getAttribute('data-lazurueck');
+      if(!confirm('„'+name(uid)+'" wieder freigeben?\n\nDer Antrag ist dann zurückgenommen, die Person kann die App wieder benutzen.')) return;
+      withBusy(b, function(){
+        return fnRuf('loeschungZuruecknehmen', { uid:uid }).then(function(){ toast('Wieder freigegeben ✓'); },
+          function(e){ toast(fnFehler(e), true); });
+      });
     });
   });
 }
@@ -27756,6 +27886,39 @@ var _pinGesetzt = null;
 
 function pinFunktion(name){
   return firebase.app().functions(KONFIG.region).httpsCallable(name);
+}
+
+/* ── Löschung beantragen (App Store 5.1.1(v)) ──
+   Zwei Schritte: der erste Knopf öffnet die Folgen, erst „Ja" stellt
+   den Antrag. Danach ist die Person gesperrt — live wird neu geladen
+   (die Anmeldung landet auf der kleinen Seite), in der Demo wird die
+   kleine Seite direkt gezeigt. Betreiberkonten sehen die Karte nicht. */
+function loeschAntragBinden(){
+  var karte=$('ichLoeschKarte'), los=$('ichLoeschAntrag'), frage=$('ichLoeschFrage');
+  if(!karte || !los || los._gebunden) return; los._gebunden=true;
+  var note=$('ichLoeschNote');
+  var zu=function(){ frage.hidden=true; los.hidden=false; };
+  los.addEventListener('click', function(){
+    if(session && session.admin===true){ note.textContent='Betreiberkonten entfernt der Betreiber.'; return; }
+    note.textContent=''; los.hidden=true; frage.hidden=false;
+    try{ $('ichLoeschNein').focus(); }catch(e){}
+  });
+  $('ichLoeschNein').addEventListener('click', function(){ zu(); note.textContent=''; los.focus(); });
+  $('ichLoeschJa').addEventListener('click', function(){
+    var b=this;
+    withBusy(b, function(){
+      return fnRuf('loeschungBeantragen', { bestaetigt:true }).then(function(r){
+        var am=(r && r.am) || Date.now();
+        if(r && r.demo){
+          toast('Demo: so sähe es nach dem Antrag aus');
+          zeigeWarten(session.uid, Object.assign({}, session, { aktiv:false, loeschungBeantragt:am }));
+          return;
+        }
+        toast('Löschung beantragt');
+        setTimeout(function(){ location.reload(); }, 600);
+      }, function(e){ zu(); note.textContent=errMsg(e); });
+    });
+  });
 }
 
 function ichPinLaden(){
@@ -36290,6 +36453,8 @@ function bindActions(){
 
   var pinBtn=$('ichPinBtn');
   if(pinBtn) pinBtn.addEventListener('click',function(){ ichPinSpeichern(this); });
+
+  loeschAntragBinden();
 
   // ── Auf ein Studio eingrenzen ──
   var tsc=$('todoStudioChip');

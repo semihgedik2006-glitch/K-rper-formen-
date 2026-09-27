@@ -13807,3 +13807,102 @@ geprüft; im Betrieb zeigt es die Übersicht danach („noch offen“).
 **Stufe 3 (Pflicht) bleibt offen.** Sie kommt, wenn in der Übersicht alle
 Leitungskonten „eingerichtet“ zeigen.
 
+
+## Runde 125 — Löschung beantragen (App Store 5.1.1(v))
+
+> Apple: „Wer ein Konto in der App anlegen kann, muss es in der App auch
+> löschen können.“ Offen seit `docs/APPSTORE.md`, Plan-Punkt C4.
+
+**Was gebaut ist**
+
+- **Ich → Daten → „Löschung beantragen“.** Zwei Schritte: der erste
+  Tipp zeigt, was passiert (gesperrt, Geschäftsführung bekommt
+  Bescheid, Versehen lässt sich zurücknehmen), erst „Ja“ stellt den
+  Antrag. Der Fokus steht dabei auf „Abbrechen“.
+- **Sofort gesperrt.** `loeschungBeantragen` setzt `aktiv:false` und
+  `loeschungBeantragt` (Zeitpunkt). Die Regeln lassen die Person damit
+  nichts mehr lesen; nach dem Neuladen sieht sie die kleine Seite mit
+  „Löschung beantragt“ und dem Weg zurück.
+- **Die Geschäftsführung schliesst ab.**
+  - Sie bekommt eine Push-Meldung.
+  - Unter Verwaltung → Team steht eine eigene Karte „Löschung
+    beantragt“, direkt unter „Wartet auf Freigabe“ (die bleibt ganz oben).
+  - Dort gibt es „Konto entfernen“ (derselbe Weg wie in der
+    Teamliste: `zugangEntfernen`) und „Wieder freigeben“
+    (`loeschungZuruecknehmen`).
+- **Arbeitsdaten bleiben beim Betrieb.** Zeiten, Schichten und
+  Nachrichten werden nicht angefasst — sie unterliegen der
+  Aufbewahrung.
+- **Datenschutzerklärung:** Unter „Deine Rechte“ steht jetzt, wo man
+  die Löschung beantragt.
+
+**Warum so und nicht anders**
+
+- **Kein Löschen mit einem Tipp für Teammitglieder.** Die Zeiten
+  gehören dem Betrieb. Ein Antrag mit sofortiger Sperre gibt der
+  Person die Kontrolle (niemand sieht sie mehr, sie sieht nichts
+  mehr), ohne dem Betrieb Nachweise zu nehmen.
+- **Nicht an der Geschäftsführung vorbei.** Wer beantragt hat, ist
+  auch `aktiv:false` — genau wie eine wartende Beitrittsanfrage. Zwei
+  bestehende Wege hätten das ausgenutzt:
+  - `beitrittZurueckziehen` (verschiebt nach „ohne Firma“),
+  - danach `kontoLoeschen` (löscht Profil und Anmeldung).
+  Beide lehnen bei offenem Antrag jetzt ab. Auf der kleinen Seite fehlt
+  „Konto löschen“ dann ganz.
+- **Das Feld gehört dem Server.** `loeschungBeantragt` steht in der
+  Sperrliste der Selbst-Änderungen. Sonst könnte die Person es löschen
+  und stünde danach als Beitrittsanfrage mit „Freigeben“ da.
+- **Zurücknehmen über den Server, nicht per Regel.** Eine
+  Geschäftsführung darf das Profil einer anderen nicht schreiben
+  (`fremderChef`) — und genau die kann auch einen Antrag gestellt
+  haben. Wer selbst gesperrt ist, nimmt nichts zurück, auch nicht für
+  sich.
+- **Nicht für die einzige Geschäftsführung** (sonst schliesst niemand
+  ab) und **nicht für Betreiberkonten.**
+- **Eine eigene Karte, nicht in „Wartet auf Freigabe“.** Ein Antrag
+  ist keine Anfrage, die man „freigibt“; dort hätte der Knopf
+  „Freigeben“ mit Studio-Auswahl gestanden.
+
+**Gefunden beim Ansehen am Rechner**
+
+- `.btn` setzt `display` und schlägt damit das `hidden`-Attribut: der
+  erste Knopf blieb neben der offenen Frage stehen. Der Test prüfte das
+  Attribut und war grün. Jetzt misst er, ob der Knopf zu sehen ist.
+- Die Ja/Abbrechen-Knöpfe zogen sich über 1.200 px; die Frage ist auf
+  560 px begrenzt.
+- **Älterer Fehler auf der kleinen Seite** (neue Konten, wartende,
+  jetzt auch Löschanträge): `.mk-karte .btn{width:100%}` galt auch in
+  „Anmeldung und Sicherheit“. Der Knopf drückte „E-Mail und Passwort“
+  auf 0 px Breite und lag darüber — am Handy wie am Rechner. Kein Test
+  hatte das gemessen. Jetzt steht der Knopf daneben (bei Enge
+  darunter), und `test-loeschung-beantragen` misst Überlappung und
+  Textbreite bei 320 / 390 / 1440 / 1920 px. Gegenprobe auf dem alten
+  Stand: Textbreite 0 → fällt.
+- **Der Gesamtdurchlauf fand die Reihenfolge am Handy** (164 von 165
+  grün, `test-verwaltung-pc` rot): Die neue Karte hatte `data-vw="1"`
+  von der Freigabe-Karte übernommen — die Zahl ist die Reihenfolge am
+  Handy, wo sich die Spalten auflösen. Jetzt Platz 2, die übrigen
+  Team-Karten rücken eins weiter. Danach die neun Durchläufe, die den
+  Team-Bereich anfassen, einzeln grün.
+
+**Tests**
+
+- `tests/rules/loeschantrag.test.js`: 26 Prüfungen, gegen Firestore- und
+  Auth-Emulator.
+  - Die Funktionen laufen dort wirklich.
+  - Dazu die Regel für das Feld.
+  - Gegenprobe: ohne die Regelzeile fallen genau die drei Prüfungen zum
+    Feld.
+  - Ein erster roter Lauf war ein Fehler in meinen Testdaten: die Firma
+    der „einzigen“ Geschäftsführung hatte eine zweite.
+- `tests/test-loeschung-beantragen.js`: 52 Prüfungen, mit der Demo.
+  - Geprüft wird der Ablauf für Mitarbeiter, einzige Geschäftsführung
+    und Abschluss.
+  - Die Trefferflächen sind gemessen bei 320 / 390 / 430 / 820 / 1280 /
+    1440 / 1920 px, jeweils normal und kompakt.
+- **In der Demo neu:**
+  - ein Löschantrag („Ole Vierkant“),
+  - `zugangEntfernen`, das vorher „läuft in der Demo nicht“ meldete.
+- **Nicht prüfbar hier:** die Push-Meldung an die Geschäftsführung
+  (Messaging) und der echte Anmeldeweg nach dem Neuladen (echtes SDK
+  lädt in dieser Umgebung nicht).

@@ -102,7 +102,7 @@ Der Knopf „Mit Apple anmelden" ist eingebaut und erscheint, sobald in
 | Regel (App Review Guidelines) | Was sie verlangt | Stand bei uns |
 |---|---|---|
 | **4.8 Login Services** | Wer einen fremden Login (z. B. Google) als Anmeldung anbietet, muss auch eine gleichwertige datenschutzfreundliche Option anbieten. „Mit Apple anmelden" erfüllt das | **Vorbereitet** (Abschnitt 2). Ohne Apple nicht einreichen, solange Google drin ist |
-| **5.1.1(v) Konto löschen** | Wer ein Konto in der App anlegen kann, muss es in der App auch löschen können | **Teilweise.** Konten ohne Betrieb löschen sich selbst („Mein Konto"). Teammitglieder können es noch nicht selbst, weil ihre Zeiten und Schichten dem Betrieb gehören (Aufbewahrung). Nötig ist ein Knopf „Löschung beantragen", der die Geschäftsführung benachrichtigt und die Person sofort sperrt; die Daten löscht der Betrieb nach seiner Frist. **Offen** |
+| **5.1.1(v) Konto löschen** | Wer ein Konto in der App anlegen kann, muss es in der App auch löschen können | **Gebaut (27.9.2026).** Konten ohne Betrieb löschen sich selbst („Mein Konto"). Teammitglieder: Ich → Daten → „Löschung beantragen" — sofort gesperrt, die Geschäftsführung bekommt eine Meldung und entfernt das Konto unter Verwaltung → Team (oder gibt es wieder frei). Zeiten und Schichten bleiben beim Betrieb (Aufbewahrung). **Nicht geprüft, ob Apple das so annimmt:** verlangt ist, dass die Löschung in der App angestossen werden kann; eine blosse Sperre zählt nicht. Hier folgt die echte Löschung durch den Betrieb — das gehört in den Prüfhinweis, samt Frist, bis wann der Betrieb abschliesst. Nicht für die einzige Geschäftsführung (sonst schliesst niemand ab). Tests: `tests/rules/loeschantrag.test.js`, `tests/test-loeschung-beantragen.js` |
 | **4.2 Mindestfunktion** | Eine App, die nur eine Webseite in einem Rahmen zeigt, wird oft abgelehnt | Die App braucht in der iOS-Hülle mindestens echte Push-Meldungen (APNs) und sollte ohne Netz starten. **Offen**, kommt mit der Hülle |
 | **3.1.1 / 3.1.3(b)** | Digitale Abos, die in der App verkauft werden, laufen über Apples In-App-Kauf. Dienste, die man woanders kauft und in der App nur nutzt, dürfen das | Die Kasse (Stripe) sollte in der iOS-Fassung **nicht erscheinen**; gebucht wird im Browser. **Vor dem Einreichen prüfen**, die Regel ändert sich gerade (EU, USA) |
 | **2.1 Prüfzugang** | Apple muss sich anmelden können | Ein Prüfkonto in einem eigenen kleinen Testbetrieb anlegen und im App Store Connect hinterlegen. `?demo=` hilft den Prüfern nicht |
@@ -127,7 +127,7 @@ Der Knopf „Mit Apple anmelden" ist eingebaut und erscheint, sobald in
 ### Reihenfolge, wenn das Entwicklerkonto da ist
 
 1. Apple-Anmeldung einrichten (Abschnitt 2), im Web testen.
-2. „Löschung beantragen" für Teammitglieder bauen (5.1.1(v)).
+2. ~~„Löschung beantragen" für Teammitglieder bauen (5.1.1(v)).~~ Gebaut 27.9.2026 — im Prüfhinweis für Apple erklären, dass der Betrieb abschliesst.
 3. Capacitor-Hülle, native Anmeldung, Push.
 4. Kasse in der iOS-Fassung ausblenden.
 5. Prüfkonto, Datenschutz-Angaben, Screenshots, einreichen.

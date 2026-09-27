@@ -529,10 +529,14 @@ service cloud.firestore {
            die Browser-Konsole, und die Freigabe des Chefs waere eine
            Anzeige ohne Schloss. Der Code vom Bildschirm bliebe zwar
            noetig — aber eine von zwei Sperren, die jeder selbst
-           aufmacht, ist keine. */
+           aufmacht, ist keine.
+           'loeschungBeantragt' ebenso: den Antrag stellt und nimmt nur
+           der Server (loeschungBeantragen / loeschungZuruecknehmen).
+           Könnte die Person das Feld selbst löschen, stünde sie danach
+           als Beitrittsanfrage mit „Freigeben" in der Liste. */
         || (request.auth.uid == uid
             && !request.resource.data.diff(resource.data)
-                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma','admin','handyStempeln']));
+                 .affectedKeys().hasAny(['role','studios','studio','studioKeys','aktiv','firma','admin','handyStempeln','loeschungBeantragt']));
       // nur der Chef kann einen Zugang entfernen - und nur in der
       // eigenen Firma. Sonst koennte der Chef von A das Team von B
       // umschreiben oder loeschen; users liegt ja gemeinsam oben.

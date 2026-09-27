@@ -31,11 +31,11 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 
 | | | Quelle |
 |---|---|---|
-| Anwendung | `index.html`, **36.850 Zeilen** | `wc -l` |
-| Serverfunktionen | **74** Cloud Functions | `grep -c '^exports\.'` |
-| Sicherheitsregeln | `firestore.rules`, **2.365 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **164** (161 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
-| Automatische Durchläufe (Regeln) | **26 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem sechs Dateien dazu) | `tests/rules/` |
+| Anwendung | `index.html`, **37.197 Zeilen** | `wc -l` |
+| Serverfunktionen | **76** Cloud Functions | `grep -c '^exports\.'` |
+| Sicherheitsregeln | `firestore.rules`, **2.383 Zeilen** | `wc -l` |
+| Automatische Durchläufe (Oberfläche) | **165** (162 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Regeln) | **27 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem sieben Dateien dazu) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
 | Build-Schritt | **keiner** | kein `package.json` im Wurzelverzeichnis |
@@ -79,7 +79,7 @@ verhindert ausdrücklich, dass sich jemand selbst dazu macht.
 | Geräte-/Sitzungsverwaltung | **NICHT GEFUNDEN** | keine Liste angemeldeter Geräte, kein „überall abmelden" |
 | Konto sperren | **VERIFIZIERT** | `aktiv: false`, wirkt auf Regelebene |
 | Zugang entfernen | **VERIFIZIERT** | `zugangEntfernen`, nur Chef; löscht Anmeldekonto **und** Profil |
-| Eigenes Konto löschen | **NICHT GEFUNDEN** | die Funktion weist den eigenen Zugang ausdrücklich ab |
+| Eigenes Konto löschen | **VERIFIZIERT** | ohne Betrieb: `kontoLoeschen` sofort. Im Team: `loeschungBeantragen` sperrt sofort, die Geschäftsführung schliesst mit `zugangEntfernen` ab oder nimmt mit `loeschungZuruecknehmen` zurück (27.9.2026) |
 
 ---
 

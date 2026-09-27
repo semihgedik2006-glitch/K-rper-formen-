@@ -5962,6 +5962,12 @@ exports.beitrittZurueckziehen = region.https.onCall(async (data, context) => {
   if (!p || p.aktiv !== false) {
     throw new functions.https.HttpsError('failed-precondition', 'Es gibt keine offene Anfrage.');
   }
+  /* Sonst verschwände ein Löschantrag aus der Sicht des Betriebs — und
+     danach ginge kontoLoeschen an der Geschäftsführung vorbei. */
+  if (p.loeschungBeantragt) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Deine Löschung ist beantragt. Abschliessen muss sie die Geschäftsführung.');
+  }
   await ref.update({ firma: OHNE_FIRMA, studios: [], studio: null, studioKeys: [] });
   return { ok: true };
 });
@@ -5983,6 +5989,13 @@ exports.kontoLoeschen = region.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('failed-precondition',
       'Du bist im Team eines Betriebs. Dein Konto entfernt dort die Geschäftsführung.');
   }
+  /* Wer die Löschung beantragt hat, ist auch aktiv:false — aber seine
+     Zeiten und Schichten gehören dem Betrieb. Den Abschluss macht die
+     Geschäftsführung (loeschungBeantragen, unten). */
+  if (p.loeschungBeantragt) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Deine Löschung ist beantragt. Abschliessen muss sie die Geschäftsführung.');
+  }
   await Promise.all([
     ref.delete(),
     db.collection('beitritt').doc(uid).delete(),
@@ -5990,6 +6003,80 @@ exports.kontoLoeschen = region.https.onCall(async (data, context) => {
   ].map((x) => x.catch(() => {})));
   try { await admin.auth().deleteUser(uid); }
   catch (e) { if (!/user-not-found|no user record/i.test(String(e.code || e.message))) throw e; }
+  return { ok: true };
+});
+
+/* ══ LÖSCHUNG BEANTRAGEN (App Store 5.1.1(v), docs/APPSTORE.md) ══════
+   Wer im Team ist, kann sein Konto nicht mit einem Tipp löschen: Zeiten,
+   Schichten und Nachrichten gehören dem Betrieb, der sie aufbewahren
+   muss. Was die Person selbst kann: die Löschung beantragen. Dann
+     · ist sie SOFORT gesperrt (aktiv:false — die Regeln lassen sie
+       nichts mehr lesen, sie sieht nur noch die Mini-Seite),
+     · steht der Antrag mit Datum am Profil (loeschungBeantragt),
+     · bekommt die Geschäftsführung eine Meldung und entfernt das Konto
+       unter Verwaltung → Team — oder gibt es wieder frei, wenn es ein
+       Versehen war.
+
+   Nicht für die letzte Geschäftsführung: sonst stünde der Betrieb ohne
+   Leitung da, und niemand könnte den Antrag abschliessen. Nicht für
+   Betreiberkonten: die laufen nicht über einen Betrieb. */
+exports.loeschungBeantragen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (!data || data.bestaetigt !== true) {
+    throw new functions.https.HttpsError('invalid-argument', 'Bitte den Antrag bestätigen.');
+  }
+  if (profil.admin === true) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Betreiberkonten entfernt der Betreiber, nicht ein Antrag.');
+  }
+  const f = firma || 'koerperformen';
+  const chefs = [];
+  (await db.collection('users').where('role', '==', 'chef').get()).forEach((d) => {
+    const x = d.data() || {};
+    if (gehoertZu(x, f) && x.aktiv !== false) chefs.push(d.id);
+  });
+  const andere = chefs.filter((c) => c !== uid);
+  if (profil.role === 'chef' && !andere.length) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Du bist die einzige Geschäftsführung. Gib die Rolle erst an jemanden weiter — sonst kann niemand den Antrag abschliessen.');
+  }
+  const jetzt = Date.now();
+  await db.collection('users').doc(uid).update({ aktiv: false, loeschungBeantragt: jetzt });
+
+  try {
+    if (andere.length) {
+      const tk = await collectTokens((d) => andere.indexOf(d.uid) >= 0, null, f);
+      await sendPush(tk, 'Löschung beantragt',
+        (profil.name || 'Jemand') + ' möchte das Konto löschen lassen — ist gesperrt (Verwaltung → Team).');
+    }
+  } catch (e) { console.warn('Löschantrag-Meldung:', e.message); }
+  return { ok: true, am: jetzt };
+});
+
+/* ── Antrag war ein Versehen: die Geschäftsführung gibt wieder frei ──
+   Über den Server und nicht per Regel: eine Geschäftsführung darf das
+   Profil einer ANDEREN nicht schreiben (fremderChef) — und genau die
+   kann ja auch einen Antrag gestellt haben. Nur bei offenem Antrag, nur
+   in der eigenen Firma. Wer sonst gesperrt ist, bleibt es. */
+exports.loeschungZuruecknehmen = region.https.onCall(async (data, context) => {
+  const ich = await requireChef(context);
+  const ziel = String((data && data.uid) || '').trim();
+  if (!ziel) throw new functions.https.HttpsError('invalid-argument', 'Keine Kennung angegeben.');
+  /* requireChef fragt nur die Rolle. Eine Geschäftsführung mit eigenem
+     Antrag ist gesperrt und darf sich nicht selbst wieder freigeben. */
+  if (ich.aktiv === false || ziel === context.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'Den eigenen Antrag nimmt eine andere Geschäftsführung zurück.');
+  }
+  const ref = db.collection('users').doc(ziel);
+  const snap = await ref.get();
+  const p = snap.exists ? (snap.data() || {}) : null;
+  if (!p || !p.loeschungBeantragt) {
+    throw new functions.https.HttpsError('failed-precondition', 'Hier liegt kein Löschantrag.');
+  }
+  if ((p.firma || 'koerperformen') !== ((ich || {}).firma || 'koerperformen')) {
+    throw new functions.https.HttpsError('permission-denied', 'Dieser Zugang gehört zu einem anderen Betrieb.');
+  }
+  await ref.update({ aktiv: true, loeschungBeantragt: admin.firestore.FieldValue.delete() });
   return { ok: true };
 });
 
