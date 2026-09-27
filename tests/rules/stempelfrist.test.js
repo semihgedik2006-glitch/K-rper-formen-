@@ -6,7 +6,7 @@
       Frist trifft: ältester Tag, heute fällig, in 30 Tagen fällig —
       nur Zahlen, keine Namen, nur die eigene Firma.
    2. stempelzeitenAblaufen löscht genau, was älter als drei Jahre ist —
-      in jeder Firma und auf den flachen Pfaden. GEGENPROBE: der Stempel
+      in jeder Firma (nicht auf den flachen Pfaden). GEGENPROBE: der Stempel
       von GENAU vor drei Jahren und alles Jüngere bleiben, auch
       Korrekturen, auch eine andere Firma mit jungen Daten.
    3. Die Grenze rechnet in Berliner Tagen.
@@ -92,7 +92,12 @@ const tagVor = (jahre, tage) => {
   pruefe('2. GEGENPROBE genau drei Jahre: bleibt', await da('firmen/sfalpha/zeiten/genau'));
   pruefe('2. GEGENPROBE Jüngeres bleibt', await da('firmen/sfalpha/zeiten/bald') && await da('firmen/sfalpha/zeiten/jung'));
   pruefe('2. in der anderen Firma: das Alte weg, das Junge da', !(await da('firmen/sfbeta/zeiten/b2')) && await da('firmen/sfbeta/zeiten/b1'));
-  pruefe('2. auf den flachen Pfaden ebenso', !(await da('zeiten/flach1')));
+  /* Die flachen Pfade fasst der Lauf NICHT an: Zeitpläne laufen nur über
+     die Firmen (einzige Ausnahme: die Termine, test-funktionen-pfade).
+     Stempel gibt es flach ohnehin nicht — sie entstehen seit ihrer
+     Einführung unter firmen/<k>/zeiten. Zuerst stand hier das Gegenteil;
+     der Gesamtdurchlauf hat es gefunden. */
+  pruefe('2. die flachen Pfade fasst der Lauf nicht an (Zeitpläne nur über Firmen)', await da('zeiten/flach1'));
   const st2 = await fns.stempelFristStand.run({}, als('sfChef'));
   pruefe('danach: nichts mehr fällig, ältester Tag ist genau drei Jahre alt', st2.faellig === 0 && st2.aeltester === tagVor(3, 0), JSON.stringify(st2));
 

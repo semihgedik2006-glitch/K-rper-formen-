@@ -3897,7 +3897,7 @@ exports.backupNow = region
 
    Gelöscht wird ein Stempel, wenn sein TAG (Feld `tag`, JJJJ-MM-TT,
    Berliner Zeit) mehr als drei Jahre zurückliegt — jede Nacht, für jede
-   Firma und die flachen Pfade. Korrekturen stehen in derselben Sammlung
+   Firma. Korrekturen stehen in derselben Sammlung
    und laufen mit ab.
 
    Was es trifft, zeigt vorher stempelFristStand (Verwaltung → System):
@@ -3922,7 +3922,11 @@ exports.stempelzeitenAblaufen = region
   .timeZone('Europe/Berlin')
   .onRun(async () => {
     const grenz = stempelGrenzTag();
-    for (const firma of await alleFirmenUndFlach()) {
+    /* Nur über die Firmen, nicht über die flachen Pfade: das dürfen nur
+       die Termine (test-funktionen-pfade hält das fest — sonst weicht die
+       Trennung der Firmen auf). Stempel entstehen seit ihrer Einführung
+       im September ohnehin nur unter firmen/<k>/zeiten. */
+    for (const firma of await alleFirmen()) {
       let weg = 0;
       for (;;) {
         const snap = await (await stempelFaellig(firma, grenz)).limit(400).get();

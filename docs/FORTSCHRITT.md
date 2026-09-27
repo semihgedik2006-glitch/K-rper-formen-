@@ -14045,9 +14045,14 @@ Aus dem Betrieb, 27.9.2026, auf die offenen Fragen B1–B8:
 
 **Stempelzeiten: drei Jahre (P-08 behoben)**
 
-- `stempelzeitenAblaufen` läuft jede Nacht um 3:50 Uhr, für jede Firma
-  und die flachen Pfade. Gelöscht wird, wessen Tag mehr als drei Jahre
-  zurückliegt, Korrekturen eingeschlossen.
+- `stempelzeitenAblaufen` läuft jede Nacht um 3:50 Uhr, für jede
+  Firma. Gelöscht wird, wessen Tag mehr als drei Jahre zurückliegt,
+  Korrekturen eingeschlossen.
+  - Zuerst lief er auch über die flachen Pfade. Der Gesamtdurchlauf
+    (`test-funktionen-pfade`) hat das abgelehnt: das dürfen nur die
+    Termine, sonst weicht die Trennung der Firmen auf.
+  - Stempel gibt es flach ohnehin nicht; sie entstehen seit ihrer
+    Einführung unter `firmen/<k>/zeiten`.
 - **Werkzeug vorher:** Verwaltung → System → „Stempelzeiten:
   Aufbewahrung“ (`stempelFristStand`, nur Geschäftsführung, nur Zahlen
   und Tage). Es zeigt den ältesten Eintrag, was heute fällig ist und was
