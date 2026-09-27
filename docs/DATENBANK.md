@@ -53,6 +53,7 @@ firmen/{kennung}                     ← Stammdaten, öffentlich lesbar (get)
    ├── anliegen/                     ← Wünsche an die Leitung
    ├── trash/                        ← Papierkorb, 30 Tage
    ├── archives/                     ← Wochensicherungen Material
+   ├── zfProtokoll/                  ← Zwei-Faktor zurückgesetzt: wer, für wen, warum (lesen: Chef; schreiben: nur Server)
    ├── statistik/{tag}               ← anonyme Tageszahlen
    ├── fehler/{sig}                  ← Fehlermeldungen
    ├── pushTokens/{token}            ← Geräte für Meldungen

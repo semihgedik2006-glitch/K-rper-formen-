@@ -1595,6 +1595,14 @@ service cloud.firestore {
         && (isChef());
     }
 
+    /* Zwei-Faktor zurückgesetzt (Runde 124): wer, für wen, wann, warum.
+       Lesen nur die Geschäftsführung, schreiben nur der Server
+       (zweiFaktorZuruecksetzen). Steht auch unter firmen/<k>/. */
+    match /zfProtokoll/{id} {
+      allow read: if aufFlachenPfaden() && istAktiv() && isChef();
+      allow write: if false;
+    }
+
     /* ── Fehlerberichte ───────────────────────────────────────────────
        Wenn bei einem Mitarbeiter etwas nicht laedt, erfaehrt es heute
        niemand. Er sagt es vielleicht — vielleicht auch nicht, und bei
@@ -2305,6 +2313,12 @@ service cloud.firestore {
         match /archives/{weekId} {
           allow read: if inFirma(f) && (isChef());
           allow write: if schreibtIn(f) && (isChef());
+        }
+
+        // Zwei-Faktor zurückgesetzt (Runde 124) — wie oben, flach.
+        match /zfProtokoll/{id} {
+          allow read: if inFirma(f) && isChef();
+          allow write: if false;
         }
 
         // Siehe oben: schreiben darf jeder Angemeldete, lesen nur der Chef.
