@@ -13713,3 +13713,21 @@ Runde 122, und zwar nur unter Last:
   nicht eingeschaltet. Eine zu schlechte oder zu gute Beschreibung in
   einer Vertragsanlage ist gleichermaßen falsch (vgl. B-35).
 
+## 27.9.2026 — Datenschutz: Abschnitt „Anmeldung“
+
+- **„Mit Google anmelden“ war im Projekt schon eingeschaltet**, bevor
+  die Datenschutzerklärung es erwähnte. Der Knopf funktionierte also
+  schon, ohne dass der Text davon sprach.
+  - Nachgeprüft ohne Zugangsdaten, mit dem öffentlichen Web-Schlüssel:
+    `accounts:createAuthUri` gibt für Google eine Adresse zurück, für
+    Apple `OPERATION_NOT_ALLOWED`.
+- **Jetzt steht in der Datenschutzerklärung der App ein Abschnitt
+  „Anmeldung“:**
+  - Passwort nur als Prüfwert;
+  - bei Google erst beim Tippen eine Verbindung zu Google, übernommen
+    nur Name und E-Mail-Adresse;
+  - trennen möglich.
+- **Apple und Zwei-Faktor erscheinen erst, wenn sie an sind.** Der Text
+  beschreibt, was die App tut, nicht, was sie einmal können wird.
+- `test-rechtliches` prüft beide Richtungen, mit Gegenprobe.
+
