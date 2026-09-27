@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-19k0PDKPD6nZdws7lZsKlm1peKRXBjD73227cs33YqA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-kDi/DhDE7JBLA2+i8hVYKCgGFELPCMJt5iSo87Wy02I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5357,6 +5357,12 @@ body.gast .sich-feld{display:none}
 .mk-karte .hint{margin:0}
 .mk-karte .field{margin:0}
 .mk-karte .btn{min-height:44px;width:100%}
+/* Nicht in den Zeilen von „Anmeldung und Sicherheit": dort steht der
+   Knopf NEBEN dem Text. Mit voller Breite drückte er „E-Mail und
+   Passwort" auf wenige Pixel und lag darüber (am Rechner gesehen,
+   Runde 125). Wird es eng, rutscht der Knopf unter den Text. */
+.mk-karte .sich-zeile{flex-wrap:wrap}
+.mk-karte .sich-zeile .btn{width:auto}
 .mk-knoepfe{display:grid;gap:var(--s16)}
 .mk-status{display:flex;align-items:center;gap:var(--s8);margin:0}
 .mk-punkt{width:10px;height:10px;border-radius:var(--r-rund);background:var(--warn);flex:0 0 auto}
@@ -17451,7 +17457,8 @@ function renderAlles(){
 var NEUIGKEITEN = [
   { id:'2026-09-27-loeschung-beantragen', datum:'27.9.2026', titel:'Konto löschen lassen', wo:'ich:daten', punkte:[
     'Unter Ich → Daten steht ganz unten „Löschung beantragen". Vorher steht da, was passiert: du bist sofort gesperrt, die Geschäftsführung bekommt Bescheid und entfernt dein Konto. Deine Arbeitszeiten und Schichten bewahrt der Betrieb auf.',
-    'Die Geschäftsführung sieht Anträge unter Verwaltung → Team → „Löschung beantragt" und kann das Konto entfernen — oder die Person wieder freigeben, wenn es ein Versehen war.' ] },
+    'Die Geschäftsführung sieht Anträge unter Verwaltung → Team → „Löschung beantragt" und kann das Konto entfernen — oder die Person wieder freigeben, wenn es ein Versehen war.',
+    'Nebenbei behoben: auf der kleinen Seite für neue Konten lagen unter „Anmeldung und Sicherheit" die Knöpfe über dem Text. Jetzt stehen sie daneben.' ] },
   { id:'2026-09-27-zf-zuruecksetzen', datum:'27.9.2026', titel:'Handy verloren? Zwei-Faktor zurücksetzen', wo:'chef:team', punkte:[
     'Unter Verwaltung → Team → „Zwei-Faktor bei der Leitung" steht bei jedem, der den zweiten Faktor eingerichtet hat, jetzt „Zurücksetzen". Mit einem kurzen Grund entfernt die Geschäftsführung ihn — die Person meldet sich danach mit Passwort an und richtet ihn neu ein.',
     'Für das eigene Konto geht das nicht: das macht jemand anderes aus der Geschäftsführung oder der Betreiber. Jedes Zurücksetzen steht mit Namen, Zeit und Grund darunter im Protokoll.' ] },

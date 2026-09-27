@@ -115,6 +115,27 @@ const sichtbar = (p, sel) => p.evaluate((s) => { const e = document.querySelecto
     await p.close();
   }
 
+  console.log('\n── 1b. Die kleine Seite: Knopf neben, nicht über dem Text ──');
+  /* Am Rechner gesehen (Runde 125): „.mk-karte .btn{width:100%}" galt
+     auch in „Anmeldung und Sicherheit" — der Knopf drückte „E-Mail und
+     Passwort" auf wenige Pixel und lag darüber. Gemessen wird, ob sich
+     Text und Knopf einer Zeile überlappen. */
+  for (const [w, h] of [[320, 640], [390, 844], [1440, 900], [1920, 1080]]) {
+    /* Die Demo „neu" landet direkt auf der kleinen Seite — dieselbe
+       Karte, die nach dem Antrag erscheint. */
+    const p = await oeffne(b, w, h, 'neu');
+    const r = await p.evaluate(() => [...document.querySelectorAll('#mkSicherheit .sich-zeile')].map(z => {
+      const t = z.querySelector('.sich-was'), k = z.querySelector('.btn');
+      if (!t || !k || !k.getClientRects().length) return null;
+      const a = t.getBoundingClientRect(), c = k.getBoundingClientRect();
+      const ueber = !(c.left >= a.right - 1 || c.right <= a.left + 1 || c.top >= a.bottom - 1 || c.bottom <= a.top + 1);
+      return { ueber, textBreite: Math.round(a.width) };
+    }).filter(Boolean));
+    pruefe(w + ' px: in „Anmeldung und Sicherheit" liegt kein Knopf über seinem Text, der Text hat Platz (≥ 120 px)',
+      r.length >= 2 && r.every(x => !x.ueber && x.textBreite >= 120), JSON.stringify(r));
+    await p.close();
+  }
+
   console.log('\n── 2. Die einzige Geschäftsführung ──');
   {
     const p = await oeffne(b, 1440, 900, 'chef');

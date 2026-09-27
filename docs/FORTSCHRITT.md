@@ -13870,6 +13870,14 @@ Leitungskonten „eingerichtet“ zeigen.
   Attribut und war grün. Jetzt misst er, ob der Knopf zu sehen ist.
 - Die Ja/Abbrechen-Knöpfe zogen sich über 1.200 px; die Frage ist auf
   560 px begrenzt.
+- **Älterer Fehler auf der kleinen Seite** (neue Konten, wartende,
+  jetzt auch Löschanträge): `.mk-karte .btn{width:100%}` galt auch in
+  „Anmeldung und Sicherheit“. Der Knopf drückte „E-Mail und Passwort“
+  auf 0 px Breite und lag darüber — am Handy wie am Rechner. Kein Test
+  hatte das gemessen. Jetzt steht der Knopf daneben (bei Enge
+  darunter), und `test-loeschung-beantragen` misst Überlappung und
+  Textbreite bei 320 / 390 / 1440 / 1920 px. Gegenprobe auf dem alten
+  Stand: Textbreite 0 → fällt.
 
 **Tests**
 
@@ -13881,7 +13889,7 @@ Leitungskonten „eingerichtet“ zeigen.
     Feld.
   - Ein erster roter Lauf war ein Fehler in meinen Testdaten: die Firma
     der „einzigen“ Geschäftsführung hatte eine zweite.
-- `tests/test-loeschung-beantragen.js`: 48 Prüfungen, mit der Demo.
+- `tests/test-loeschung-beantragen.js`: 52 Prüfungen, mit der Demo.
   - Geprüft wird der Ablauf für Mitarbeiter, einzige Geschäftsführung
     und Abschluss.
   - Die Trefferflächen sind gemessen bei 320 / 390 / 430 / 820 / 1280 /
