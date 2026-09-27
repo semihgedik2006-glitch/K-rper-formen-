@@ -122,6 +122,19 @@ mehrere Zeilen lang ist. Eine Warnung über „etag" ist normal.
 
 ---
 
+## Schritt 2a — PFLICHT: Anmeldung im Probe-Projekt abschalten
+
+Firebase-Konsole → **formenchat-probe** → Authentication → Sign-in
+method → **E-Mail/Passwort deaktivieren** (und jeden anderen Anbieter).
+
+**Warum:** gleich liegt dort eine Kopie echter Daten — Chats,
+Direktnachrichten, Krankmeldungen. Die Regeln im Probe-Projekt können
+älter sein als im Betrieb (am 27.9.2026 waren sie es: Stand August). Wer
+sich dort ein Konto anlegen kann, kommt an alles, was diese älteren
+Regeln durchlassen.
+
+---
+
 ## Schritt 3 — importieren
 
 **Das Datum anpassen** auf die neueste Sicherung aus Schritt 1:
@@ -170,6 +183,33 @@ selbst existiert nicht, nur seine Untersammlungen.
 **Genau die sind der Grund für den Probelauf.** Dort verliert ein Umzug
 lautlos die Hälfte, wenn er falsch gebaut ist. Mein Test dafür ist grün —
 aber an erfundenen Daten.
+
+---
+
+## Schritt 4a — PFLICHT: die Kopie löschen und das Leserecht zurücknehmen
+
+Sobald nachgesehen ist. **Von Hand abtippen**, nicht kopieren: am
+27.9.2026 wurde beim Einfügen aus `--project` ein Gedankenstrich, und
+gcloud las die Angabe als Sammlungsnamen.
+
+```bash
+gcloud firestore databases delete --database='(default)' --project=formenchat-probe
+```
+
+Die Rückfrage nennt das Projekt — **nur bestätigen, wenn dort
+`formenchat-probe` steht.** Schritt 0 legt die Datenbank beim nächsten
+Mal wieder an. (`gcloud firestore bulk-delete` ohne Sammlungsnamen geht
+NICHT: „Empty entity filter. To delete all entities, use database
+deletion instead.")
+
+Danach das Leserecht aus Schritt 2 wieder wegnehmen — es gilt für den
+Ordner mit ALLEN nächtlichen Sicherungen des Betriebs und wird nur
+während eines Probelaufs gebraucht:
+
+```bash
+gcloud storage buckets remove-iam-policy-binding gs://formenchat.firebasestorage.app --member=serviceAccount:service-692000066621@gcp-sa-firestore.iam.gserviceaccount.com --role=roles/storage.objectViewer --project=formenchat
+gcloud storage buckets remove-iam-policy-binding gs://formenchat.firebasestorage.app --member=serviceAccount:service-692000066621@gcp-sa-firestore.iam.gserviceaccount.com --role=roles/storage.legacyBucketReader --project=formenchat
+```
 
 ---
 

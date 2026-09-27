@@ -318,7 +318,30 @@ kann Firmen anlegen, sperren und Abos setzen.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open |
+| **Status** | **Geprobt am 27.9.2026** — Import der nächtlichen Sicherung `sicherung/2026-09-27` in `formenchat-probe`: 678 von 678 Dokumenten, 3,2 MB, 7 Sekunden, `operationState: SUCCESSFUL` |
+
+**Der Probelauf am 27.9.2026.** Ausgeführt vom Betreiber in der Cloud
+Shell nach `docs/PROBELAUF-DATEN.md`, Ergebnis aus
+`gcloud firestore operations list` (nicht geschätzt). Von aussen und ohne
+Zugangsdaten nachgesehen: das Firmendokument im Probe-Projekt trug die
+Uhrzeit des Imports.
+
+**Dabei gefunden:** Im Probe-Projekt standen die Sicherheitsregeln vom
+August — die Firmenliste war dort ohne Anmeldung abrufbar, im Betrieb
+nicht mehr, und die seitdem geschlossenen Lücken (B-32, B-45) waren dort
+offen. Mit einer Kopie echter Daten darin und freier Registrierung per
+E-Mail ist das ein Datenleck in Wartestellung. Deshalb stehen in der
+Anleitung jetzt zwei Pflichtschritte: **vor** dem Import die Anmeldung im
+Probe-Projekt abschalten, **nach** der Kontrolle die Kopie löschen und
+das Leserecht auf den Sicherungsordner zurücknehmen. Am 27.9.2026 ist
+die Probe-Datenbank um 14:25 UTC gelöscht worden (von aussen geprüft:
+`NOT_FOUND`).
+
+**Was der Probelauf NICHT zeigt:** dass die App mit den zurückgespielten
+Daten läuft — dafür fehlten Anmeldekonten (die Sicherung enthält die
+Datenbank, nicht die Konten aus Authentication) und eine ausgelieferte
+App im Probe-Projekt. Für einen Ernstfall heisst das: die Datenbank ist
+zurückzuholen; die Konten bestehen im Betrieb ohnehin weiter.
 
 Der Weg ist bekannt — Firestore-Import aus dem Sicherungsordner. Geübt
 wurde er nie.
