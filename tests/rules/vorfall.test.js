@@ -81,6 +81,21 @@ const als = (uid) => ({ auth: { uid } });
   pruefe('Antworten geht an die meldende Person', m.replyTo === 'ben@example.org', m.replyTo);
   pruefe('der Text nennt Firma, Person und „Läuft noch: Ja"', /Körperformen/.test(m.text || '') && /Ben · leiter/.test(m.text || '') && /Ja, es läuft noch/.test(m.text || ''), (m.text || '').slice(0, 300));
   pruefe('in der Datenbank: mail „gesendet"', (await db.doc('vorfaelle/' + r2.id).get()).get('mail') === 'gesendet');
+  pruefe('ohne Art (ältere App-Fassung) gilt es als Datenschutz — gespeichert mit art „datenschutz"',
+    (await db.doc('vorfaelle/' + r2.id).get()).get('art') === 'datenschutz');
+
+  /* „Problem melden" (Runde 126): aus dem Trockenlauf am 27.9.2026,
+     „weil ich ja eigentlich bei jedem Problem helfen muss". Eine Mail
+     wie immer, aber ohne Frist und ohne „Datenschutzvorfall" — sonst
+     verliert die echte Frist ihre Bedeutung. */
+  const r4 = await fns.vorfallMelden.run({ art: 'problem', was: 'Die Aufgabenliste lädt im Studio nicht.' }, als('ben'));
+  const m4 = gesendet[1] || {};
+  pruefe('„Problem": eine Mail geht raus, mit Wichtigkeit „hoch"', gesendet.length === 2 && r4.mail === true && m4.priority === 'high');
+  pruefe('„Problem": im Betreff weder „Datenschutzvorfall" noch eine Frist', /Problem gemeldet/.test(m4.subject || '') && !/Datenschutz|Frist/.test(m4.subject || ''), m4.subject);
+  pruefe('„Problem": im Text „keine Meldefrist", die Antwort ohne Frist', /keine Meldefrist/.test(m4.text || '') && r4.fristBis === null && r4.art === 'problem', JSON.stringify(r4));
+  pruefe('„Problem": gespeichert mit art „problem"', (await db.doc('vorfaelle/' + r4.id).get()).get('art') === 'problem');
+  const r5 = await fns.vorfallMelden.run({ art: 'irgendwas', was: 'Unbekannte Art, sollte Datenschutz werden.' }, als('ben'));
+  pruefe('eine unbekannte Art wird zu „datenschutz" (im Zweifel die strengere)', r5.art === 'datenschutz' && /DRINGEND/.test((gesendet[2] || {}).subject || ''), JSON.stringify(r5));
   fns.__intern.mailerFuerDurchlauf({ sendMail: async () => { throw new Error('SMTP weg'); } });
   const r3 = await fns.vorfallMelden.run({ was: 'Zweiter Fall, diesmal scheitert die Mail.' }, als('ben'));
   pruefe('scheitert die Mail: gespeichert, Antwort mail: false, Vermerk „fehlgeschlagen"',

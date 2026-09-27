@@ -5196,14 +5196,20 @@ const VORFALL_FRIST_STUNDEN = 48;
 const VORFALL_TAGESGRENZE = 5;
 const VORFALL_LAEUFT = { ja: 'Ja, es läuft noch', nein: 'Nein, ist vorbei', unklar: 'Weiss ich nicht' };
 
+/* Seit Runde 126 „Problem melden": die Art sagt, ob es ein
+   Datenschutzvorfall ist (Frist läuft) oder ein anderes Problem. Aus dem
+   Trockenlauf, 27.9.2026: „weil ich ja eigentlich bei jedem Problem
+   helfen muss". Alte App-Fassungen schicken keine Art — sie meinten
+   immer den Datenschutz, also gilt das als Vorgabe. */
 function vorfallText(v, firmaName, fristBis) {
-  return [
-    'DATENSCHUTZVORFALL GEMELDET — BITTE SOFORT ANSEHEN',
-    '',
-    'Eigene Frist laut AV-Vertrag (§ 8 Abs. 4): Kunden benachrichtigen bis spätestens',
-    '  ' + fristBis + ' (48 Stunden ab jetzt).',
-    'Ablauf: docs/av/VORFALL.md, Schritt 1–6.',
-    '',
+  const kopf = v.art === 'problem'
+    ? ['PROBLEM GEMELDET', '', 'Kein Datenschutzvorfall laut Meldung — keine Meldefrist.',
+       'Stellt sich doch einer heraus: docs/av/VORFALL.md, die Uhr läuft dann ab Kenntnis.', '']
+    : ['DATENSCHUTZVORFALL GEMELDET — BITTE SOFORT ANSEHEN', '',
+       'Eigene Frist laut AV-Vertrag (§ 8 Abs. 4): Kunden benachrichtigen bis spätestens',
+       '  ' + fristBis + ' (48 Stunden ab jetzt).',
+       'Ablauf: docs/av/VORFALL.md, Schritt 1–6.', ''];
+  return kopf.concat([
     'Firma:        ' + firmaName + ' (' + (v.firma || '–') + ')',
     'Gemeldet von: ' + (v.name || '–') + ' · ' + (v.rolle || '–') + ' · ' + (v.email || 'keine Adresse'),
     'Rückruf:      ' + (v.rueckruf || '–'),
@@ -5217,7 +5223,7 @@ function vorfallText(v, firmaName, fristBis) {
     v.betroffen || '(nicht angegeben)',
     '',
     'Kennung der Meldung: ' + v.id
-  ].join('\n');
+  ]).join('\n');
 }
 
 exports.vorfallMelden = region.https.onCall(async (data, context) => {
@@ -5229,6 +5235,7 @@ exports.vorfallMelden = region.https.onCall(async (data, context) => {
       'Bitte beschreib in einem Satz, was passiert ist.');
   }
   const laeuft = Object.prototype.hasOwnProperty.call(VORFALL_LAEUFT, data && data.laeuft) ? data.laeuft : 'unklar';
+  const art = data && data.art === 'problem' ? 'problem' : 'datenschutz';
 
   const seit = Date.now() - 86400000;
   const bisher = await db.collection('vorfaelle').where('uid', '==', uid).get();
@@ -5241,7 +5248,7 @@ exports.vorfallMelden = region.https.onCall(async (data, context) => {
   const ts = Date.now();
   const eintrag = {
     uid, name: profil.name || '', email: profil.email || '', rolle: profil.role || '',
-    firma: firma || null, was, laeuft,
+    firma: firma || null, art, was, laeuft,
     wann: text('wann', 60), betroffen: text('betroffen', 2000), rueckruf: text('rueckruf', 200),
     ts, mail: 'offen'
   };
@@ -5264,7 +5271,9 @@ exports.vorfallMelden = region.https.onCall(async (data, context) => {
         to: process.env.VORFALL_AN || VORFALL_AN_STANDARD,
         replyTo: eintrag.email || undefined,
         priority: 'high',
-        subject: '‼ DRINGEND: Datenschutzvorfall gemeldet – ' + firmaName + ' – Frist bis ' + fristBis,
+        subject: art === 'problem'
+          ? '‼ Problem gemeldet – ' + firmaName
+          : '‼ DRINGEND: Datenschutzvorfall gemeldet – ' + firmaName + ' – Frist bis ' + fristBis,
         text: vorfallText(Object.assign({ id: ref.id }, eintrag), firmaName, fristBis)
       });
       mail = true;
@@ -5273,7 +5282,7 @@ exports.vorfallMelden = region.https.onCall(async (data, context) => {
     }
   }
   await ref.update({ mail: mail ? 'gesendet' : (mailer ? 'fehlgeschlagen' : 'nicht eingerichtet') });
-  return { ok: true, id: ref.id, mail, fristBis };
+  return { ok: true, id: ref.id, mail, art, fristBis: art === 'datenschutz' ? fristBis : null };
 });
 
 /* ══════════════════════════════════════════════════════════════════════

@@ -210,7 +210,7 @@ eine Einstufungstabelle mit sieben Beispielen und die Ablage der Akten.
 | **Keine Vertretung** | Ein Einzelunternehmen hat keine Meldekette. Fällt die eine Person aus, meldet niemand — und die Frist des Kunden läuft weiter. **Entschieden am 25.9.2026:** bleibt so, wird im AV-Vertrag offengelegt; die eigene Meldefrist steigt dafür von 24 auf 48 Stunden. |
 | **Ein einziger Meldeweg** | Eine E-Mail-Adresse. Ist das Postfach Teil des Vorfalls, gibt es keinen zweiten. |
 | **Die Behördenanschrift fehlt** | Bewusst: eine veraltete Adresse in einer Notfallvorlage ist schlimmer als keine. |
-| **Nie erprobt** | Ein Verfahren, das nie gelaufen ist, ist eine Annahme. Ein Trockenlauf dauert eine Stunde. |
+| ~~Nie erprobt~~ | **Erprobt am 27.9.2026** (Trockenlauf, `docs/av/vorfaelle/2026-09-27-uebung-handy.md`): Mail nach etwa 20 Sekunden, Konto nach etwa einer Minute gefunden. Daraus: der Knopf heisst jetzt „Problem melden". |
 
 **Seit 25.9.2026 (Runde 113) gibt es in der App „Datenschutzvorfall
 melden"** (Alles → Was muss ich wissen?). Jeder mit freigegebenem Zugang
@@ -221,7 +221,8 @@ Meldung trotzdem gespeichert, und das Fenster sagt, dass KEINE Mail
 ging. Das ist zugleich ein zweiter Eingang neben dem Postfach.
 
 **Aufwand für den Rest:** die Vertretung ist entschieden (keine,
-offengelegt). Offen bleibt ein Trockenlauf.
+offengelegt), der Trockenlauf ist gelaufen (27.9.2026). Offen bleiben
+der zweite Meldeweg und die Behördenanschrift.
 
 ---
 

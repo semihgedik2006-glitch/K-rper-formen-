@@ -69,8 +69,13 @@ const sichtbar = (p) => p.evaluate(() => { const m = document.getElementById('vo
     const p = await oeffne(b, 390, 844, rolle);
     const e = await zumEintrag(p);
     await p.waitForTimeout(400);
-    pruefe(rolle + ': „Datenschutzvorfall melden" unter „Was muss ich wissen?" öffnet das Fenster',
-      !!e && /Datenschutzvorfall/.test(e.text) && /wissen/i.test(e.gruppe) && await sichtbar(p), JSON.stringify(e));
+    /* Seit Runde 126 „Problem melden". Aus dem Trockenlauf am 27.9.2026:
+       „ich würde es nur ändern, dass da nicht steht Datenschutzvorfall
+       melden, sondern Problem melden, weil ich ja eigentlich bei jedem
+       Problem helfen muss". Der Datenschutz steht jetzt als Auswahl im
+       Fenster (Abschnitt 2). */
+    pruefe(rolle + ': „Problem melden" unter „Was muss ich wissen?" öffnet das Fenster',
+      !!e && /Problem melden/.test(e.text) && /wissen/i.test(e.gruppe) && await sichtbar(p), JSON.stringify(e));
     await p.close();
   }
 
@@ -82,7 +87,15 @@ const sichtbar = (p) => p.evaluate(() => { const m = document.getElementById('vo
     await p.click('#vfSenden');
     await p.waitForTimeout(300);
     const leer = await p.evaluate(() => ({ fehler: document.getElementById('vfFehler').textContent, form: !document.getElementById('vfForm').hidden }));
-    pruefe('leer absenden: Hinweis, das Formular bleibt', /Satz/.test(leer.fehler) && leer.form, JSON.stringify(leer));
+    pruefe('leer absenden: erst die Art wählen — Hinweis, das Formular bleibt', /worum es geht/.test(leer.fehler) && leer.form, JSON.stringify(leer));
+    const arten = await p.evaluate(() => [...document.querySelectorAll('#vfArt label')].map(l => l.textContent.replace(/\s+/g, ' ').trim()));
+    pruefe('zwei Arten zur Wahl: „Etwas funktioniert nicht" und „Daten in falschen Händen"',
+      arten.length === 2 && /funktioniert nicht/.test(arten[0]) && /Daten in falschen Händen/.test(arten[1]), JSON.stringify(arten));
+    await p.check('#vfArt input[value="datenschutz"]');
+    await p.click('#vfSenden');
+    await p.waitForTimeout(300);
+    const ohneText = await p.evaluate(() => document.getElementById('vfFehler').textContent);
+    pruefe('Art gewählt, Text fehlt: Hinweis auf den Satz', /Satz/.test(ohneText), ohneText);
 
     await p.fill('#vfWas', 'Am Empfang lag die Liste mit den Krankmeldungen offen aus.');
     await p.fill('#vfWann', 'heute 09:10');
@@ -103,8 +116,9 @@ const sichtbar = (p) => p.evaluate(() => { const m = document.getElementById('vo
 
     await zumEintrag(p);
     await p.waitForTimeout(400);
-    const frisch = await p.evaluate(() => ({ form: !document.getElementById('vfForm').hidden, was: document.getElementById('vfWas').value }));
-    pruefe('wieder geöffnet: ein leeres Formular', frisch.form && frisch.was === '', JSON.stringify(frisch));
+    const frisch = await p.evaluate(() => ({ form: !document.getElementById('vfForm').hidden, was: document.getElementById('vfWas').value,
+      art: !!document.querySelector('#vfArt input:checked') }));
+    pruefe('wieder geöffnet: ein leeres Formular, keine Art vorgewählt', frisch.form && frisch.was === '' && !frisch.art, JSON.stringify(frisch));
     await p.keyboard.press('Escape');
     await p.waitForTimeout(300);
     pruefe('Escape schliesst das Fenster', !(await sichtbar(p)));

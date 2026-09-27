@@ -828,6 +828,21 @@ service cloud.firestore {
     }
 
     // ── Chat-Nachrichten ──
+    // ── Lesestand je Person und Kanal (Gelesen-Häkchen, Runde 126) ──
+    // Lesen darf, wer den Kanal lesen darf — die Häkchen des Absenders
+    // brauchen die Stände aller. Schreiben nur den EIGENEN, nur {ts, uid},
+    // und nicht in die Zukunft (sonst gälten alle künftigen Nachrichten
+    // als gelesen). Löschen: niemand.
+    match /channels/{channelId}/gelesen/{uid} {
+      allow read: if aufFlachenPfaden() && istAktiv() && kanalErlaubt(channelId);
+      allow create, update: if aufFlachenPfaden() && istAktiv() && kanalErlaubt(channelId)
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['ts','uid'])
+        && request.resource.data.uid == uid
+        && request.resource.data.ts is number
+        && request.resource.data.ts <= request.time.toMillis() + 300000;
+      allow delete: if false;
+    }
     match /channels/{channelId}/messages/{msgId} {
       allow read: if aufFlachenPfaden()
         && (istAktiv() && kanalErlaubt(channelId));
@@ -1823,6 +1838,17 @@ service cloud.firestore {
           allow write: if schreibtIn(f) && isChef();
         }
 
+        // Lesestand je Person und Kanal — dieselbe Regel wie flach (Runde 126).
+        match /channels/{channelId}/gelesen/{uid} {
+          allow read: if inFirma(f) && istAktiv() && kanalErlaubt(channelId);
+          allow create, update: if schreibtIn(f) && istAktiv() && kanalErlaubt(channelId)
+            && request.auth.uid == uid
+            && request.resource.data.keys().hasOnly(['ts','uid'])
+            && request.resource.data.uid == uid
+            && request.resource.data.ts is number
+            && request.resource.data.ts <= request.time.toMillis() + 300000;
+          allow delete: if false;
+        }
         match /channels/{channelId}/messages/{msgId} {
           allow read: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId));
           // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
