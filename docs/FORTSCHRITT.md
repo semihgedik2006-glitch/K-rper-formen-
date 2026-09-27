@@ -13751,3 +13751,9 @@ Runde 122, und zwar nur unter Last:
   - `test-rechtliches` stellt für die Prüfung „fehlt, solange aus“ den
     Schalter selbst auf aus, für die Gegenprobe auf an.
 
+- **Der Gesamtdurchlauf fand einen echten Fehler** (162 von 163 grün,
+  `test-zugang-rolle` rot): `fnRuf` warf SOFORT, wenn schon der Aufbau
+  des Funktionsaufrufs scheiterte — ein `.catch()` dahinter sah den
+  Fehler nie. Sichtbar wurde es erst jetzt, weil die Team-Seite mit
+  eingeschalteter Zwei-Faktor-Anmeldung `zweiFaktorStand` fragt. `fnRuf`
+  liefert jetzt immer ein Versprechen; der Test ist unverändert grün.
