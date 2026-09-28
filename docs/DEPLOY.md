@@ -138,6 +138,31 @@ richtigen Konto.
 Dem Konto fehlt eine Rolle im Projekt. In der Firebase-Konsole unter
 *Einstellungen → Nutzer und Berechtigungen* prüfen.
 
+**`404 Site Not Found` beim ersten Deploy in ein NEUES Projekt**
+Seit dem 15.10.2026 bekommt ein neu angelegtes Firebase-Projekt keine
+Hosting-Seite mehr von selbst (Mail von Firebase, 28.9.2026). `formenchat`
+und `formenchat-probe` sind älter und haben ihre Seite schon — betroffen ist
+nur ein Projekt, das ab dann neu entsteht (zweites Probe-Projekt, Kunde,
+iOS). Einmal vor dem ersten Deploy:
+
+```bash
+firebase hosting:sites:create <projekt-id> --project=<projekt-id>
+```
+
+Oder in der Firebase-Konsole: *Hosting → Loslegen*. Auch die Google- und
+Apple-Anmeldung per Weiterleitung läuft über diese Seite
+(`<projekt-id>.firebaseapp.com/__/auth/handler`) — also erst die Seite
+anlegen, dann die Anmeldung ausprobieren.
+
+**Functions-Deploy wird rot, obwohl am Code nichts falsch ist (ab 28.3.2027)**
+Google baut unsere Functions im Hintergrund mit Cloud Build. Ab dem
+28.3.2027 gilt dort der Update-Kanal `regular` für die Build-Rechner (Mail
+von Google, 28.9.2026). Unsere Functions hängen nicht an deren Docker- oder
+Debian-Fassung, deshalb ist nichts umgestellt. Falls doch einmal ein
+Functions-Deploy mit einer Build-Meldung scheitert, die nichts mit unserem
+Code zu tun hat: das ist der erste Verdacht. Die laufende App ist davon
+nicht betroffen — nur die neue Fassung der Functions kommt nicht an.
+
 **Die Änderung ist trotzdem nicht zu sehen**
 Die installierte App auf dem iPhone einmal ganz schließen (aus der
 App-Übersicht hochwischen) und neu öffnen. Seit August sucht sie beim

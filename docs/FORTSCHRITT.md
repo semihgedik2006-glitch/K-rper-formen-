@@ -14120,3 +14120,21 @@ Aus dem Betrieb, 27.9.2026, auf die offenen Fragen B1–B8:
     nach dem Verlassen des Feldes.
 - **Test:** `tests/test-chat-klein.js` (11), inklusive „direkt nach
   dem Verlassen verschiebt sich noch nichts“.
+
+---
+
+## Zwei Mails von Google (28.9.2026) — nur Doku
+
+- **Hosting-Seite erst bei Bedarf (ab 15.10.2026):** betrifft nur neu
+  angelegte Projekte. `formenchat` und `formenchat-probe` haben ihre Seite.
+  Der Schritt `firebase hosting:sites:create` steht jetzt in
+  `docs/DEPLOY.md` („Wenn etwas nicht klappt") und in der Störungstabelle
+  von `docs/PROBELAUF-DATEN.md` — beim nächsten neuen Projekt (Kunde, iOS)
+  wäre das erste Deploy sonst mit „404 Site Not Found" gescheitert.
+- **Cloud-Build-Update-Kanäle (Standard ab 28.3.2027):** wir nutzen Cloud
+  Build nur indirekt über den Functions-Deploy. Bewusst nichts
+  umgestellt: unsere Functions hängen nicht an der Docker-/Debian-Fassung
+  der Build-Rechner. Als erster Verdacht vermerkt, falls ein
+  Functions-Deploy später ohne Code-Grund rot wird.
+- Keine sichtbare Änderung in der App, deshalb kein Eintrag in
+  NEUIGKEITEN.
