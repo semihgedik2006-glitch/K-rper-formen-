@@ -237,6 +237,7 @@ und zählt nur, danach richtig mit Zählprüfung.
 | `Project … or database '(default)' does not exist` | dasselbe: Schritt 0 fehlt. Das Projekt gibt es, die Datenbank nicht. |
 | Nach Schritt 0 kommt trotzdem noch „does not exist" | eine Minute warten und erneut. Google legt den Vertreter kurz nach der Datenbank an. |
 | Cloud Shell sagt „Projekt nicht gesetzt" | egal — bei jedem Befehl steht `--project` dabei |
+| `404 Site Not Found` beim `firebase deploy --only hosting` | nur bei einem Projekt, das **ab dem 15.10.2026 neu angelegt** wurde: es hat noch keine Hosting-Seite. Einmal `firebase hosting:sites:create <projekt-id> --project=<projekt-id>`, dann erneut. `formenchat-probe` selbst hat seine Seite schon. Mehr in `docs/DEPLOY.md`. |
 
 Melde dich auch **mittendrin**. Lieber eine Zwischenfrage als ein Import
 ins falsche Projekt.
