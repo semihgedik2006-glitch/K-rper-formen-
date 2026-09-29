@@ -282,6 +282,58 @@ const VIDEO = { name: 'Einweisung EMS.mp4', mimeType: 'video/mp4', buffer: Buffe
     await p.close();
   }
 
+  console.log('\n── 4b. Nacheinander, zweiter Versuch, Antwort des Speichers ──');
+  {
+    /* Aus dem Betrieb, 29.9.2026: „Das Hochladen hat nicht geklappt
+       (storage/unknown)" bei „paar videos", als viele auf einmal liefen. */
+    const p = await oeffne(b, 1440, 900, 'chef');
+    await zumEditor(p);
+    await artSetzen(p, 0, 'video');
+    await p.evaluate(() => { document.querySelector('[data-schplus="schritt"]').click(); });
+    await p.waitForTimeout(300);
+    await artSetzen(p, 1, 'video');
+    await p.evaluate(() => { window.__demoHochladenMs = 150; });
+    await waehle(p, 0, VIDEO);
+    await waehle(p, 1, { name: 'Zweites.mp4', mimeType: 'video/mp4', buffer: Buffer.alloc(1024 * 1024, 3) });
+    await p.waitForTimeout(400);
+    const z0 = await zeile(p, 0), z1 = await zeile(p, 1);
+    pruefe('zwei Videos: das erste lädt, das zweite wartet und sagt es', z0.wert > 0 && /Wartet — ein Video davor/.test(z1.text) && z1.abbrechen, JSON.stringify({ a: z0.text, b: z1.text }));
+    await p.waitForTimeout(4000);
+    const f0 = await zeile(p, 0), f1 = await zeile(p, 1);
+    pruefe('… danach geht das zweite von selbst los und kommt an', /^blob:/.test(f0.quelle) && /^blob:/.test(f1.quelle), JSON.stringify({ a: f0.hinweis, b: f1.hinweis }));
+
+    /* Einmal abgebrochen: zweiter Versuch von selbst. */
+    await p.evaluate(() => { window.__demoHochladenFehler = 1; });
+    await waehle(p, 0, VIDEO);
+    await p.waitForTimeout(700);
+    const nochmal = await zeile(p, 0);
+    pruefe('ein Abbruch (storage/unknown): „Zweiter Versuch" statt Fehlermeldung', /Zweiter Versuch/.test(nochmal.text) && !/nicht geklappt/.test(nochmal.text), nochmal.text);
+    await p.waitForTimeout(5500);
+    pruefe('… und der zweite Versuch kommt an', /Hochgeladen/.test((await zeile(p, 0)).hinweis));
+
+    /* Zweimal abgebrochen: jetzt die Meldung — mit der Antwort des Speichers. */
+    await p.evaluate(() => { window.__demoHochladenFehler = 2; });
+    await waehle(p, 1, VIDEO);
+    await p.waitForTimeout(4500);
+    const zweimal = await zeile(p, 1);
+    pruefe('zwei Abbrüche: Meldung mit Status und Antwort des Speichers', /nicht geklappt \(storage\/unknown\)/.test(zweimal.text) && /Status 503 — Service Unavailable/.test(zweimal.text), zweimal.text);
+    pruefe('… und der Knopf ist wieder frei zum Nochmal-Versuchen', !zweimal.gesperrt);
+
+    /* Abbrechen, während es wartet. */
+    await p.evaluate(() => { window.__demoHochladenMs = 400; });
+    await waehle(p, 0, VIDEO);
+    await waehle(p, 1, VIDEO);
+    await p.waitForTimeout(300);
+    await p.click('#schModulForm [data-schritt="1"] [data-videoab]');
+    await p.waitForTimeout(300);
+    const ab1 = await zeile(p, 1);
+    pruefe('ein wartendes Video lässt sich abbrechen', /Abgebrochen/.test(ab1.text), ab1.text);
+    await p.waitForTimeout(6000);
+    pruefe('… das laufende kommt trotzdem an, das abgebrochene nicht', /Hochgeladen/.test((await zeile(p, 0)).hinweis) && /Abgebrochen/.test((await zeile(p, 1)).text));
+    pruefe('keine Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+
   console.log('\n── 5. „Zurück" während des Hochladens ──');
   {
     const p = await oeffne(b, 1440, 900, 'chef');

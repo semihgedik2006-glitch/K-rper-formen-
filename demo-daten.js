@@ -1688,6 +1688,9 @@
   var demoSpeicher = {
     ref: function (pfad) {
       return {
+        /* Videos aus dem Grundstock (quelle: 'speicher:…') liegen im
+           Speicher des Betriebs, nicht in der Demo — ehrlich sagen. */
+        getDownloadURL: function () { return Promise.reject({ code: 'demo' }); },
         put: function (datei, meta) {
           var cb = {}, n = 0, groesse = datei.size || 0, uhr = null;
           var task = {
@@ -1705,6 +1708,17 @@
           var erlaubt = /^video\//.test((meta && meta.contentType) || '') && groesse <= 5 * 1024 * 1024 * 1024;
           if (!erlaubt) {
             setTimeout(function () { if (cb.fehler) cb.fehler({ code: 'storage/unauthorized' }); }, 30);
+            return task;
+          }
+          /* Für den Test: die nächsten N Versuche brechen mitten drin ab,
+             wie am 29.9.2026 im Betrieb (storage/unknown). */
+          if (window.__demoHochladenFehler > 0) {
+            window.__demoHochladenFehler--;
+            setTimeout(function () {
+              task.snapshot.bytesTransferred = Math.round(groesse / 3);
+              if (cb.weiter) cb.weiter(task.snapshot);
+              if (cb.fehler) cb.fehler({ code: 'storage/unknown', status: 503, serverResponse: 'Service Unavailable' });
+            }, 200);
             return task;
           }
           uhr = setInterval(function () {
