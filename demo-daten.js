@@ -1688,6 +1688,9 @@
   var demoSpeicher = {
     ref: function (pfad) {
       return {
+        /* Videos aus dem Grundstock (quelle: 'speicher:…') liegen im
+           Speicher des Betriebs, nicht in der Demo — ehrlich sagen. */
+        getDownloadURL: function () { return Promise.reject({ code: 'demo' }); },
         put: function (datei, meta) {
           var cb = {}, n = 0, groesse = datei.size || 0, uhr = null;
           var task = {

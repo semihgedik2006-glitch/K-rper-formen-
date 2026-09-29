@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Wi+eFTeDg/rioZpyWTQ8GbONgkAKQzKtL4caG3SmDmM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-631wmTl8FrvGpViv0dBxrwIfaq04ppc2iTRSRQWldlY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -22076,6 +22076,12 @@ var _schAnsicht = 'uebersicht';
 var _schModul = null, _schLauf = null;
 var _schPos = 0, _schPhase = 'schritte';   // schritte | fragen
 var _schGesehen = [], _schAntworten = [], _schFrageIdx = 0;
+/* Die Reihenfolge des Durchlaufs (29.9.2026): Schritte und Fragen im
+   Wechsel. Eine Frage mit `nach: k` kommt direkt nach Schritt k (ab 0
+   gezählt), eine ohne `nach` am Ende. Aus dem Betrieb: „passende
+   fragen zu dem jeweiligen video und paar andere fragen welche mit den
+   infos aus den videos beantwortet oder hergeleitet werden können". */
+var _schFolge = [], _schFolgeIdx = 0;
 var _schHaken = false, _schOffenerHinweis = '';
 var _schAktivMs = 0, _schUhr = null, _schGesichert = 0;
 var _schGebunden = false;
@@ -22135,7 +22141,12 @@ function schModule(){
     if(m.basis){ fassung.id=m.basis; nachBasis[m.basis]=fassung; }
     else eigene.push(fassung);
   });
-  var liste=(_schBasis.module||[]).map(function(b){
+  /* Ein Modul mit `firma` gehört genau einem Betrieb — seine Videos
+     liegen unter dessen Pfad, und für alle anderen blieben sie stumm. */
+  var meineFirma=_firma || KONFIG.firma || 'koerperformen';
+  var liste=(_schBasis.module||[]).filter(function(b){
+    return !b.firma || b.firma===meineFirma;
+  }).map(function(b){
     var o=nachBasis[b.id];
     /* Die Nummer aus der Datei bleibt: sonst springt ein geändertes
        Modul in der Liste ans Ende, nur weil es geändert wurde. */
@@ -22447,7 +22458,7 @@ function schStarten(){
       .then(function(r){
         var d=(r&&r.data)||{};
         _schLauf={ id:d.lauf, name:d.name||'', durchgang:d.durchgang||1 };
-        _schPos=0; _schPhase='schritte'; _schGesehen=[]; _schFrageIdx=0;
+        _schGesehen=[]; _schFolge=schFolgeBauen(_schModul); schFolgeGehe(0);
         _schHaken=false; _schOffenerHinweis=''; _schAktivMs=0; _schGesichert=Date.now();
         _schAntworten=(_schModul.fragen||[]).map(function(){
           return { versuche:0, falsch:[], richtig:false };
@@ -22500,12 +22511,30 @@ function schFragenStand(){
 }
 
 /* ── 3. Der Durchlauf ──────────────────────────────────────────── */
-function schGesamt(){
-  return (_schModul.schritte||[]).length + (_schModul.fragen||[]).length;
+function schFolgeBauen(m){
+  var schritte=m.schritte||[], fragen=m.fragen||[], folge=[];
+  var nachSchritt=function(f){
+    var n=f && f.nach;
+    return (typeof n==='number' && n>=0 && n<schritte.length) ? n : -1;
+  };
+  schritte.forEach(function(x, k){
+    folge.push({ art:'schritt', i:k });
+    fragen.forEach(function(f, j){ if(nachSchritt(f)===k) folge.push({ art:'frage', i:j }); });
+  });
+  fragen.forEach(function(f, j){ if(nachSchritt(f)<0) folge.push({ art:'frage', i:j }); });
+  return folge;
 }
-function schErledigt(){
-  return _schPhase==='schritte' ? _schPos : (_schModul.schritte||[]).length + _schFrageIdx;
+function schFolgeGehe(idx){
+  _schFolgeIdx=idx;
+  var x=_schFolge[idx]||{ art:'schritt', i:0 };
+  _schPhase = x.art==='frage' ? 'fragen' : 'schritte';
+  if(x.art==='frage') _schFrageIdx=x.i; else _schPos=x.i;
+  _schHaken=schHakenStand(); _schOffenerHinweis='';
 }
+/* Was kommt nach dem aktuellen Eintrag? Für die Beschriftung des Knopfs. */
+function schFolgeNaechste(){ return _schFolge[_schFolgeIdx+1] || null; }
+function schGesamt(){ return _schFolge.length; }
+function schErledigt(){ return _schFolgeIdx; }
 function schLaufZeichnen(){
   var box=$('schLauf'); if(!box || !_schModul || !_schLauf) return;
   var gesamt=schGesamt(), fertig=schErledigt();
@@ -22533,8 +22562,7 @@ function schSchrittMarkup(){
   var inhalt='';
   if(s.art==='video'){
     inhalt = s.quelle
-      ? '<div class="sch-video"><video controls preload="metadata" '+
-        'src="'+esc(s.quelle)+'"></video></div>'
+      ? schVideoMarkup(s.quelle)
       /* Ehrlich statt hübsch: der Kasten sagt, dass das Video fehlt.
          Ein leerer Rahmen liesse jeden glauben, sein Gerät sei schuld. */
       : '<div class="sch-video">'+
@@ -22581,8 +22609,9 @@ function schFrageMarkup(){
     '</div>'+
     (_schOffenerHinweis ? '<div class="sch-hinweis">'+esc(_schOffenerHinweis)+'</div>' : '')+
     (a.richtig ? '<div class="hilfe-knoepfe"><button type="button" class="btn btn-primary" '+
-      'id="schWeiter">'+((_schFrageIdx+1) < (_schModul.fragen||[]).length ?
-      'Nächste Frage' : 'Abschliessen')+'</button></div>' : '')+
+      'id="schWeiter">'+(function(){ var n=schFolgeNaechste();
+        return !n ? 'Abschliessen' : n.art==='frage' ? 'Nächste Frage' : 'Weiter'; })()+
+      '</button></div>' : '')+
     '</div>';
 }
 /* ══ SCHRITT „LESEN" (Runde 104) ═══════════════════════════════════
@@ -22655,7 +22684,7 @@ function schLesenMarkup(s){
   });
   var min=Math.max(1, Math.round(schLesenWorte(s)/200));
   return (s.quelle
-      ? '<div class="sch-video"><video controls preload="metadata" src="'+esc(s.quelle)+'"></video></div>'+
+      ? schVideoMarkup(s.quelle)+
         '<p class="hilfe-ueber">Zum Nachlesen</p>'
       : '<p class="hint">Etwa '+min+(min===1?' Minute':' Minuten')+' Lesezeit · später als Video</p>')+
     /* Am Rechner steht neben dem Text, was in diesem Schritt kommt —
@@ -22709,8 +22738,46 @@ function schLesenBeobachten(){
   stand();
 }
 
+/* ── Videos über ihren Speicherpfad (29.9.2026) ──
+   `quelle: 'speicher:firmen/<k>/schulungen/…'` statt einer fertigen
+   Adresse. Eine fertige Adresse trägt einen Schlüssel — stünde sie in
+   schulungen-basis.js, könnte jeder mit dem öffentlichen Repository das
+   Video ansehen. Mit dem Pfad holt die App die Adresse erst beim
+   Abspielen, und das erlauben die Regeln (storage-videos.rules) nur
+   angemeldeten Leuten der eigenen Firma. */
+var _schVideoUrl = {};
+function schVideoMarkup(q){
+  if(/^speicher:/.test(q)){
+    var url=_schVideoUrl[q];
+    return '<div class="sch-video"><video controls preload="metadata" playsinline data-speicher="'+esc(q)+'"'+
+      (url ? ' src="'+esc(url)+'"' : '')+'></video></div>';
+  }
+  return '<div class="sch-video"><video controls preload="metadata" playsinline src="'+esc(q)+'"></video></div>';
+}
+function schSpeicherUrl(q){
+  if(_schVideoUrl[q]) return Promise.resolve(_schVideoUrl[q]);
+  if(!KONFIG.videoEimer) return Promise.reject({ code:'kein-eimer' });
+  return videoSdkLaden().then(function(){
+    return firebase.app().storage('gs://'+KONFIG.videoEimer).ref(q.slice(9)).getDownloadURL();
+  }).then(function(u){ _schVideoUrl[q]=u; return u; });
+}
+function schVideosAufloesen(box){
+  box.querySelectorAll('video[data-speicher]:not([src])').forEach(function(v){
+    schSpeicherUrl(v.getAttribute('data-speicher')).then(function(u){ v.src=u; }, function(e){
+      var c=(e && e.code)||'';
+      var rahmen=v.parentNode; if(!rahmen) return;
+      rahmen.innerHTML='<div>'+ikon('warnung')+'<b>'+
+        (c==='demo' ? 'In der Vorführung läuft dieses Video nicht' : 'Das Video ließ sich nicht laden')+'</b>'+
+        '<span>'+(c==='demo' ? 'Es liegt im Speicher des Betriebs und ist nur dort zu sehen.'
+          : c==='storage/unauthorized' ? 'Es ist nur für das Team des Betriebs freigegeben.'
+          : 'Ist das Internet da? Die Schulung neu öffnen hilft meistens.')+'</span></div>';
+    });
+  });
+}
+
 function schLaufBinden(box){
   schLesenBeobachten();
+  schVideosAufloesen(box);
   var h=$('schHaken');
   if(h) h.addEventListener('change', function(){
     _schHaken=!!h.querySelector('input').checked;
@@ -22720,7 +22787,9 @@ function schLaufBinden(box){
   if(w) w.addEventListener('click', schWeiter);
   box.querySelectorAll('[data-schzurueckschritt]').forEach(function(b){
     b.addEventListener('click', function(){
-      if(_schPos>0){ _schPos--; _schHaken=schHakenStand(); schLaufZeichnen(); tick(4); }
+      for(var k=_schFolgeIdx-1;k>=0;k--){
+        if(_schFolge[k].art==='schritt'){ schFolgeGehe(k); schLaufZeichnen(); tick(4); return; }
+      }
     });
   });
   box.querySelectorAll('[data-schantwort]').forEach(function(b){
@@ -22737,22 +22806,17 @@ function schHakenStand(){
 }
 function schWeiter(){
   if(_schPhase==='schritte' && !schLesenFertig()) return;
-  if(_schPhase==='schritte'){
-    if(_schGesehen.indexOf(_schPos)<0) _schGesehen.push(_schPos);
-    if(_schPos+1 < (_schModul.schritte||[]).length){
-      _schPos++; _schHaken=schHakenStand(); _schOffenerHinweis='';
-      schLaufZeichnen(); schLaufSichern(); tick(4); return;
-    }
-    /* Keine Fragen? Dann ist das Modul hier zu Ende. */
-    if(!(_schModul.fragen||[]).length) return schAbschliessen();
-    _schPhase='fragen'; _schFrageIdx=0; _schOffenerHinweis='';
-    schLaufZeichnen(); schLaufSichern(); tick(6); return;
-  }
-  if(_schFrageIdx+1 < (_schModul.fragen||[]).length){
-    _schFrageIdx++; _schOffenerHinweis='';
-    schLaufZeichnen(); schLaufSichern(); tick(4); return;
-  }
-  schAbschliessen();
+  if(_schPhase==='schritte' && _schGesehen.indexOf(_schPos)<0) _schGesehen.push(_schPos);
+  /* Beantwortete Fragen überspringen: wer zu einem Schritt zurückblättert
+     und wieder vor geht, muss nicht dieselbe Frage zweimal lösen. */
+  var k=_schFolgeIdx+1;
+  while(k<_schFolge.length && _schFolge[k].art==='frage' &&
+        (_schAntworten[_schFolge[k].i]||{}).richtig) k++;
+  /* Ende der Folge — mit oder ohne Fragen ist das Modul hier zu Ende. */
+  if(k>=_schFolge.length) return schAbschliessen();
+  var vorher=_schPhase;
+  schFolgeGehe(k);
+  schLaufZeichnen(); schLaufSichern(); tick(vorher!==_schPhase ? 6 : 4);
 }
 function schAntwort(i){
   var f=(_schModul.fragen||[])[_schFrageIdx]||{};
@@ -22774,8 +22838,8 @@ function schAntwort(i){
        probieren, bis es sitzt. */
     if((_schModul.strenge||'alles')==='grenze'){
       a.richtig=false; a.fertig=true;
-      if(_schFrageIdx+1 < (_schModul.fragen||[]).length){
-        _schFrageIdx++; schLaufZeichnen(); schLaufSichern(); return;
+      if(_schFolgeIdx+1 < _schFolge.length){
+        schFolgeGehe(_schFolgeIdx+1); schLaufZeichnen(); schLaufSichern(); return;
       }
       return schAbschliessen();
     }
@@ -23157,7 +23221,8 @@ function schEntwurfAus(m){
     fragen:(m.fragen||[]).map(function(f){
       return { frage:String(f.frage||''),
                antworten:(f.antworten||['','']).map(function(a){ return String(a||''); }),
-               richtig:Number(f.richtig||0), hinweis:String(f.hinweis||'') };
+               richtig:Number(f.richtig||0), hinweis:String(f.hinweis||''),
+               nach:(typeof f.nach==='number' ? f.nach : null) };
     })
   };
 }
@@ -23517,6 +23582,13 @@ function schFrageFeldMarkup(f, i){
     '<input class="inp" data-ffeld="hinweis" type="text" maxlength="240" '+
       'style="margin-top:8px" placeholder="Hinweis bei einer falschen Antwort — '+
       'er erklärt, statt zu tadeln" value="'+esc(f.hinweis)+'" />'+
+    '<select class="inp" data-ffeld="nach" aria-label="Wann kommt die Frage?">'+
+      '<option value=""'+(typeof f.nach!=='number'?' selected':'')+'>Kommt am Ende</option>'+
+      ((_schEntwurf && _schEntwurf.schritte)||[]).map(function(st, k){
+        var name=String(st.titel||'').trim() || String(st.text||'').trim().slice(0,40) || ('Schritt '+(k+1));
+        return '<option value="'+k+'"'+(f.nach===k?' selected':'')+'>Direkt nach '+(k+1)+'. '+esc(name)+'</option>';
+      }).join('')+
+    '</select>'+
     '</div>';
 }
 
@@ -23545,7 +23617,8 @@ function schFormBinden(box){
     box.querySelectorAll('[data-frage]').forEach(function(el){
       var f=e.fragen[Number(el.getAttribute('data-frage'))]; if(!f) return;
       el.querySelectorAll('[data-ffeld]').forEach(function(x){
-        f[x.getAttribute('data-ffeld')]=x.value;
+        var n=x.getAttribute('data-ffeld');
+        f[n] = n==='nach' ? (x.value==='' ? null : Number(x.value)) : x.value;
       });
       el.querySelectorAll('[data-fantwort]').forEach(function(x){
         f.antworten[Number(x.getAttribute('data-fantwort'))]=x.value;
@@ -23579,6 +23652,11 @@ function schFormBinden(box){
   function schieben(liste, von, nach){
     if(nach<0 || nach>=liste.length) return;
     var x=liste.splice(von,1)[0]; liste.splice(nach,0,x);
+    /* Eine Frage „nach Schritt 3" gehört zu dem SCHRITT, nicht zur
+       Nummer. Wandert der Schritt, wandert sie mit. */
+    if(liste===_schEntwurf.schritte) _schEntwurf.fragen.forEach(function(f){
+      if(f.nach===von) f.nach=nach; else if(f.nach===nach) f.nach=von;
+    });
   }
   box.querySelectorAll('[data-schhoch]').forEach(function(b){
     b.addEventListener('click', function(){ entwurfSchreiben();
@@ -23590,7 +23668,14 @@ function schFormBinden(box){
       schieben(_schEntwurf.schritte,i,i+1); schModulFormZeichnen(); }); });
   box.querySelectorAll('[data-schweg]').forEach(function(b){
     b.addEventListener('click', function(){ entwurfSchreiben();
-      _schEntwurf.schritte.splice(Number(b.getAttribute('data-schweg')),1);
+      var weg=Number(b.getAttribute('data-schweg'));
+      _schEntwurf.schritte.splice(weg,1);
+      /* Die Frage zum gelöschten Schritt kommt ans Ende, die danach
+         rücken eine Nummer auf. */
+      _schEntwurf.fragen.forEach(function(f){
+        if(typeof f.nach!=='number') return;
+        if(f.nach===weg) f.nach=null; else if(f.nach>weg) f.nach--;
+      });
       schModulFormZeichnen(); }); });
   box.querySelectorAll('[data-schfhoch]').forEach(function(b){
     b.addEventListener('click', function(){ entwurfSchreiben();
@@ -23640,8 +23725,11 @@ function schModulSpeichern(){
   if(String(e.titel).trim().length<3){
     if(note) note.textContent='Bitte einen Titel eintragen.'; return;
   }
+  var neuePos=[], zaehler=0;
   var schritte=e.schritte.filter(function(s){
-    return String(s.text||'').trim() || String(s.titel||'').trim() || s.quelle;
+    var bleibt=!!(String(s.text||'').trim() || String(s.titel||'').trim() || s.quelle);
+    neuePos.push(bleibt ? zaehler++ : null);
+    return bleibt;
   });
   if(!schritte.length){
     if(note) note.textContent='Ohne einen Schritt gibt es nichts zu zeigen.'; return;
@@ -23680,9 +23768,14 @@ function schModulSpeichern(){
       /* Nach dem Aussieben kann die Markierung verrutscht sein. Der
          Text ist die Wahrheit, nicht die Nummer. */
       var richtigText=String(f.antworten[f.richtig]||'');
-      return { frage:String(f.frage).trim(), antworten:antworten,
+      var raus={ frage:String(f.frage).trim(), antworten:antworten,
                richtig:Math.max(0, antworten.indexOf(richtigText)),
                hinweis:String(f.hinweis||'') };
+      /* Nach welchem Schritt die Frage kommt — nur, wenn es den Schritt
+         nach dem Aussieben leerer Schritte noch gibt. */
+      var n=(typeof f.nach==='number') ? neuePos[f.nach] : null;
+      if(typeof n==='number') raus.nach=n;
+      return raus;
     }),
     basis:e.basis||null, aktiv:true
   };
