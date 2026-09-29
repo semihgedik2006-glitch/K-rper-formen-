@@ -617,7 +617,7 @@ Pflicht ist und ob es nach N Monaten wiederholt werden muss (0 = nie).
 | Art | Wofür |
 |---|---|
 | **Text** | Erklärung, Hintergrund, Regel |
-| **Video** | Adresse der Datei. Leer lassen, solange sie fehlt — dann steht „Video folgt" da |
+| **Video** | **„Video hochladen"** (Geschäftsführung und Studioleitung, bis 5 GB) — danach steht die Adresse im Feld. Oder eine Adresse von Hand. Leer lassen, solange es fehlt — dann steht „Video folgt" da |
 | **Bild** | dasselbe mit einem Bild |
 | **Verstanden-Haken** | muss angehakt werden, bevor es weitergeht |
 
@@ -642,8 +642,14 @@ Muster wie bei den 115 Problemlösungen.
 Durchläufe bleiben stehen — sie sind der Nachweis, und der geht nicht
 verloren, weil jemand aufgeräumt hat.
 
-**Videos gibt es noch nicht.** An der Stelle steht „Video folgt" samt
-der vorgesehenen Länge. Die App tut nicht so, als sei der Schritt
+**Videos hochladen (seit 29.9.2026):** beim Schritt „Video" auf
+**„Video hochladen"**, Datei wählen, warten bis „Hochgeladen" dasteht,
+dann **„Speichern"**. Das Fenster muss offen bleiben, solange es lädt.
+Die Videos liegen in einem eigenen Speicher in Frankfurt, nur für die
+eigene Firma sichtbar. Einzelheiten und Kosten: `docs/VIDEOS.md`.
+
+Solange ein Schritt kein Video hat, steht dort „Video folgt" samt der
+vorgesehenen Länge. Die App tut nicht so, als sei der Schritt
 vollständig.
 
 ---

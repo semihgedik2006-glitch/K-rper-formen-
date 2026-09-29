@@ -1679,11 +1679,52 @@
   var KONTO = { uid: ICH.id, email: 'demo@studiochat.example',
                 displayName: ICH.name, emailVerified: true };
 
+  /* Der Video-Eimer in der Demo (29.9.2026): nimmt die Datei, zählt in
+     zwölf Schritten hoch und gibt eine blob:-Adresse zurück — so spielt
+     das Video in der Vorführung wirklich ab, ohne dass etwas das Gerät
+     verlässt. Dieselben zwei Grenzen wie storage-videos.rules (nur
+     Videos, höchstens 5 GiB), damit die Fehlermeldungen der App auch hier
+     zu sehen sind. Tempo über window.__demoHochladenMs (Tests). */
+  var demoSpeicher = {
+    ref: function (pfad) {
+      return {
+        put: function (datei, meta) {
+          var cb = {}, n = 0, groesse = datei.size || 0, uhr = null;
+          var task = {
+            snapshot: { bytesTransferred: 0, totalBytes: groesse, ref: {
+              fullPath: pfad,
+              getDownloadURL: function () { return Promise.resolve(URL.createObjectURL(datei)); }
+            } },
+            on: function (ev, weiter, fehler, fertig) { cb = { weiter: weiter, fehler: fehler, fertig: fertig }; },
+            cancel: function () {
+              clearInterval(uhr);
+              setTimeout(function () { if (cb.fehler) cb.fehler({ code: 'storage/canceled' }); }, 0);
+              return true;
+            }
+          };
+          var erlaubt = /^video\//.test((meta && meta.contentType) || '') && groesse <= 5 * 1024 * 1024 * 1024;
+          if (!erlaubt) {
+            setTimeout(function () { if (cb.fehler) cb.fehler({ code: 'storage/unauthorized' }); }, 30);
+            return task;
+          }
+          uhr = setInterval(function () {
+            n++;
+            task.snapshot.bytesTransferred = Math.min(groesse, Math.round(groesse * n / 12));
+            if (cb.weiter) cb.weiter(task.snapshot);
+            if (n >= 12) { clearInterval(uhr); if (cb.fertig) cb.fertig(); }
+          }, window.__demoHochladenMs || 150);
+          return task;
+        }
+      };
+    }
+  };
+
   window.firebase = {
     apps: [],
     initializeApp: function () { return { firestore: function () { return fs; } }; },
     app: function () {
-      return { firestore: function () { return fs; }, functions: function () { return window.firebase.functions(); } };
+      return { firestore: function () { return fs; }, functions: function () { return window.firebase.functions(); },
+               storage: function () { return demoSpeicher; } };
     },
     firestore: function () { return fs; },
     auth: function () {

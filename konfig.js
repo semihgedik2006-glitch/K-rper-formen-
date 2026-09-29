@@ -92,6 +92,14 @@
     /* Groesste Kantenlaenge fuer Fotos, die in der Datenbank landen. */
     bildMaxKante: 1280,
 
+    /* Der Speicher-Eimer fuer die Schulungsvideos (angelegt am 29.9.2026,
+       Frankfurt). Ein NAME, kein Schluessel — wer hochladen darf, regelt
+       storage-videos.rules. Leer: der Knopf „Video hochladen" erscheint
+       nicht, und im Editor bleibt nur das Feld fuer eine Adresse.
+       Nie der Standard-Eimer: dort liegt die naechtliche Sicherung
+       (docs/VIDEOS.md). */
+    videoEimer: 'formenchat-schulungsvideos',
+
     /* false: die Daten liegen flach (studios/…, channels/…, config/…)
        true:  sie liegen unter firmen/<kennung>/…
 
@@ -210,6 +218,7 @@
     KONFIG.vapidKey       = '';      // kein Push in der Probe
     KONFIG.sheetsAbgleich = false;   // keine echte Tabelle beschreiben
     KONFIG.firma_anzeige  = 'PROBELAUF';
+    KONFIG.videoEimer     = '';      // die Probe hat keinen Video-Eimer
   }
 
   global.KONFIG = KONFIG;

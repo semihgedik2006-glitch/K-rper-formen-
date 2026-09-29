@@ -49,7 +49,11 @@ const SEITEN = {
        CSP vergleicht den Pfad genau (die Anhaengsel ?zx=… zaehlen nicht
        mit): erlaubt ist dieses eine Bild, nicht google.com. */
     img: "'self' data: blob: https://www.google.com/images/cleardot.gif",
-    medien: "'self' data: blob:",
+    /* Die Schulungsvideos aus dem eigenen Video-Eimer (29.9.2026). Sie
+       werden über die Download-Adresse abgespielt, und die liegt auf
+       genau diesem Host — nicht auf *.googleapis.com, das wäre jeder
+       Google-Dienst. Hochgeladen wird über connect-src (googleapis). */
+    medien: "'self' data: blob: https://firebasestorage.googleapis.com",
     verbinden: "'self' https://*.googleapis.com https://*.cloudfunctions.net " +
       "https://*.firebaseio.com wss://*.firebaseio.com " +
       "https://*.firebasedatabase.app wss://*.firebasedatabase.app",

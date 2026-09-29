@@ -375,6 +375,12 @@ hat.
 | `schulungVersuche/{uid}` | die Bremse gegen Durchprobieren | **niemand** |
 | `schulungLaeufe` | ein Durchlauf: `teilnehmer`, `teilnehmerName`, `uid`, `modul`, `geraetUid`, `geraetName`, `studioKey`, `start`, `ende`, `aktivMs`, `durchgang`, `schritteGesehen`, `fragen[]`, `punkte`, `bestanden`, `status` | lesen: die Leitung und die Person selbst · **anlegen: niemand** · ändern: nur das Gerät, nur solange `status == 'laeuft'` |
 
+**Die Videos selbst liegen nicht in der Datenbank**, sondern im Eimer
+`formenchat-schulungsvideos` unter
+`firmen/<firma>/schulungen/<modul>/<zeit>-<dateiname>` (seit 29.9.2026,
+Regeln: `storage-videos.rules`, siehe `docs/VIDEOS.md`). Im Schritt steht
+nur die Abspiel-Adresse als `quelle`.
+
 **`allow create: if false` auf `schulungLaeufe` ist die Zeile, auf die es
 ankommt.** Ein Durchlauf entsteht ausschliesslich in der Cloud Function
 `schulungStart`, und erst, nachdem der Teilnahme-Code gestimmt hat.
