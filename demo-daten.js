@@ -1710,6 +1710,17 @@
             setTimeout(function () { if (cb.fehler) cb.fehler({ code: 'storage/unauthorized' }); }, 30);
             return task;
           }
+          /* Für den Test: die nächsten N Versuche brechen mitten drin ab,
+             wie am 29.9.2026 im Betrieb (storage/unknown). */
+          if (window.__demoHochladenFehler > 0) {
+            window.__demoHochladenFehler--;
+            setTimeout(function () {
+              task.snapshot.bytesTransferred = Math.round(groesse / 3);
+              if (cb.weiter) cb.weiter(task.snapshot);
+              if (cb.fehler) cb.fehler({ code: 'storage/unknown', status: 503, serverResponse: 'Service Unavailable' });
+            }, 200);
+            return task;
+          }
           uhr = setInterval(function () {
             n++;
             task.snapshot.bytesTransferred = Math.min(groesse, Math.round(groesse * n / 12));

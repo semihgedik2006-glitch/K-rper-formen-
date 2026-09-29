@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-631wmTl8FrvGpViv0dBxrwIfaq04ppc2iTRSRQWldlY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-eUhGsAVOadrlar8Tn+XlRTjcvetWIVA3I2wl6eEZojM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -17691,6 +17691,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-29-video-nacheinander', datum:'29.9.2026', titel:'Videos laden nacheinander — und versuchen es zweimal', wo:'schulung', punkte:[
+    'Wählst du mehrere Videos auf einmal, lädt die App sie jetzt eins nach dem anderen hoch. Die übrigen zeigen „Wartet" und starten von selbst.',
+    'Bricht die Verbindung ab, versucht die App es von selbst ein zweites Mal. Klappt es dann immer noch nicht, steht in der Meldung, was der Speicher geantwortet hat.',
+    'Im Editor lässt sich bei jeder Frage wählen, ob sie direkt nach einem bestimmten Schritt kommt oder am Ende.' ] },
   { id:'2026-09-29-video-hochladen', datum:'29.9.2026', titel:'Schulungsvideos direkt hochladen', wo:'schulung', punkte:[
     'Geschäftsführung und Studioleitung laden Videos jetzt selbst hoch: Schulung → Verwalten → Module → Modul bearbeiten → beim Schritt „Video" auf „Video hochladen". Bis 5 GB je Video, mit Fortschritt und Restzeit.',
     'Danach „Speichern" — dann sieht das ganze Team das Video in der Schulung, statt „Video folgt". Die Videos liegen in Frankfurt und sind nur für die eigene Firma sichtbar.' ] },
@@ -23415,7 +23419,11 @@ function schHochLaeuft(){
 }
 function schHochText(h){
   if(h.fehler) return h.fehler;
-  var t=Math.floor(h.prozent)+' % · '+videoGroesse(h.geladen)+' von '+videoGroesse(h.gesamt);
+  if(h.wartet){
+    var vor=_videoSchlange.indexOf(h)+(_videoLaeuft ? 1 : 0);
+    return 'Wartet — '+(vor<=1 ? 'ein Video' : vor+' Videos')+' davor. Es geht von selbst los.';
+  }
+  var t=(h.nochmal ? 'Zweiter Versuch · ' : '')+Math.floor(h.prozent)+' % · '+videoGroesse(h.geladen)+' von '+videoGroesse(h.gesamt);
   /* Die Restzeit erst nach ein paar Sekunden: am Anfang schwankt die
      Rate so stark, dass „noch 3 Stunden" und „noch 2 Minuten" im
      Wechsel kämen. */
@@ -23484,31 +23492,69 @@ function schVideoStarten(s, datei){
       'Tipp: beim Exportieren 1080p oder 720p wählen — für eine Schulung reicht das.';
     s._hoch=h; schHochZeigen(s, true); return;
   }
-  s._hoch=h; schHochZeigen(s, true);
   var firma=_firma || KONFIG.firma || 'koerperformen';
   var e=_schEntwurf;
-  var ordner=String(e.docId||e.basis||'neu').replace(/[^a-zA-Z0-9_-]/g,'-').slice(0,60)||'neu';
-  var name=String(datei.name||'video').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-80);
-  var pfad='firmen/'+firma+'/schulungen/'+ordner+'/'+Date.now()+'-'+name;
+  h.ordner=String(e.docId||e.basis||'neu').replace(/[^a-zA-Z0-9_-]/g,'-').slice(0,60)||'neu';
+  h.name=String(datei.name||'video').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-80);
+  h.firma=firma; h.datei=datei; h.typ=typ; h.s=s; h.versuch=0;
+  /* Eins nach dem anderen (29.9.2026). Aus dem Betrieb kam bei „paar
+     videos" storage/unknown, als 15 Videos auf einmal liefen: jedes
+     Hochladen hält eigene Verbindungen offen, der Browser hat je Server
+     nur sechs, und ein Stück, das zu lange wartet, bricht der Server ab.
+     Nacheinander ist nicht langsamer — die Leitung ist dieselbe. */
+  h.wartet=true;
+  s._hoch=h; _videoSchlange.push(h); schHochZeigen(s, true);
+  videoSchlangeWeiter();
+}
+var _videoSchlange=[], _videoLaeuft=null;
+function videoSchlangeWeiter(){
+  if(_videoLaeuft) return;
+  while(_videoSchlange.length && _videoSchlange[0].s._hoch!==_videoSchlange[0]) _videoSchlange.shift();
+  var h=_videoSchlange.shift(); if(!h) return;
+  _videoLaeuft=h; h.wartet=false; h.start=Date.now();
+  schHochZeigen(h.s, true);
+  /* Die Wartenden rücken eins auf — das sollen sie auch sagen. */
+  _videoSchlange.forEach(function(x){ schHochZeigen(x.s); });
+  schVideoVersuch(h);
+}
+function videoSchlangeFertig(h){
+  if(_videoLaeuft===h) _videoLaeuft=null;
+  videoSchlangeWeiter();
+}
+function schVideoVersuch(h){
+  var s=h.s;
+  h.versuch++;
+  var pfad='firmen/'+h.firma+'/schulungen/'+h.ordner+'/'+Date.now()+'-'+h.name;
   videoSdkLaden().then(function(){
-    if(s._hoch!==h) return;               // inzwischen abgebrochen
+    if(s._hoch!==h) return videoSchlangeFertig(h);      // inzwischen abgebrochen
     var task=firebase.app().storage('gs://'+KONFIG.videoEimer).ref(pfad)
-      .put(datei, { contentType:typ, cacheControl:'private, max-age=86400' });
+      .put(h.datei, { contentType:h.typ, cacheControl:'private, max-age=86400' });
     h.task=task;
     task.on('state_changed', function(snap){
       h.geladen=snap.bytesTransferred; h.gesamt=snap.totalBytes||h.gesamt;
       h.prozent=h.gesamt ? 100*h.geladen/h.gesamt : 0;
       schHochZeigen(s);
     }, function(err){
+      var c=(err && err.code)||'';
+      /* Ein zweiter Versuch von selbst, wenn es nach der Leitung aussieht
+         — nicht bei „abgelehnt" oder „abgebrochen", die kämen wieder. */
+      if(h.versuch<2 && (c==='storage/unknown' || c==='storage/retry-limit-exceeded') && s._hoch===h){
+        console.warn('Video hochladen, zweiter Versuch:', c, err && err.status, err && err.serverResponse);
+        h.nochmal=true; h.geladen=0; h.prozent=0; h.start=Date.now();
+        schHochZeigen(s, true);
+        return setTimeout(function(){ if(s._hoch===h && !h.fehler) schVideoVersuch(h); else videoSchlangeFertig(h); }, 3000);
+      }
       schHochFehler(s, h, err);
+      videoSchlangeFertig(h);
     }, function(){
       task.snapshot.ref.getDownloadURL().then(function(url){
         s.quelle=url;
         h.fertig='Hochgeladen ('+videoGroesse(h.gesamt)+'). Jetzt unten „Speichern" — dann sieht es das Team.';
         schHochZeigen(s, true);
-      }, function(err){ schHochFehler(s, h, err); });
+        videoSchlangeFertig(h);
+      }, function(err){ schHochFehler(s, h, err); videoSchlangeFertig(h); });
     });
-  }, function(err){ schHochFehler(s, h, err); });
+  }, function(err){ schHochFehler(s, h, err); videoSchlangeFertig(h); });
 }
 function schHochFehler(s, h, err){
   var c=(err && err.code)||'';
@@ -23518,6 +23564,13 @@ function schHochFehler(s, h, err){
     : c==='storage/retry-limit-exceeded' ? 'Die Verbindung ist zu lange abgerissen. Bitte noch einmal versuchen.'
     : c==='sdk' ? 'Der Speicher ließ sich nicht laden. Ist das Internet da?'
     : 'Das Hochladen hat nicht geklappt'+(c ? ' ('+c+')' : '')+'. Bitte noch einmal versuchen.';
+  /* Was der Server gesagt hat. Ohne das bleibt „storage/unknown" ein
+     Rätsel — mit Status und erster Zeile lässt es sich einordnen. */
+  if(c && c!=='storage/canceled'){
+    var st=err && (err.status || err.status_), antwort=String((err && err.serverResponse) || '').replace(/\s+/g,' ').trim();
+    if(st || antwort) h.fehler+=' Antwort des Speichers: '+(st ? 'Status '+st : '')+(st && antwort ? ' — ' : '')+antwort.slice(0,160);
+    console.warn('Video hochladen:', c, st, err && err.serverResponse);
+  }
   schHochZeigen(s, true);
 }
 function schVideoBinden(root){
@@ -23544,8 +23597,13 @@ function schVideoBinden(root){
 }
 function schHochAbbrechen(s){
   var h=s && s._hoch; if(!h || h.fehler || h.fertig) return;
-  if(h.task) h.task.cancel();
-  else schHochFehler(s, h, { code:'storage/canceled' });
+  var zustand=h.task && h.task.snapshot && h.task.snapshot.state;
+  if(h.task && !h.wartet && (zustand==='running' || zustand==='paused' || !zustand)) h.task.cancel();
+  else {
+    var i=_videoSchlange.indexOf(h); if(i>=0) _videoSchlange.splice(i,1);
+    schHochFehler(s, h, { code:'storage/canceled' });
+    if(_videoLaeuft===h) videoSchlangeFertig(h);
+  }
 }
 window.addEventListener('beforeunload', function(ev){
   if(schHochLaeuft()){ ev.preventDefault(); ev.returnValue=''; }
