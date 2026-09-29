@@ -1,5 +1,17 @@
 {
   "projects": {
     "default": "formenchat"
+  },
+  "targets": {
+    "formenchat": {
+      "storage": {
+        "sicherung": [
+          "formenchat.firebasestorage.app"
+        ],
+        "videos": [
+          "formenchat-schulungsvideos"
+        ]
+      }
+    }
   }
 }

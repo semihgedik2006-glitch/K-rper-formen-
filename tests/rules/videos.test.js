@@ -1,10 +1,11 @@
 /* ── Der Video-Eimer der Schulungen: wer darf was ─────────────────────
 
    Aus dem Betrieb, 24.9.2026: „Videos kommen noch speicher ort können
-   wir vorbereiten so gut es geht". storage-videos.rules ist vorbereitet,
-   aber noch nicht ausgerollt — den Eimer muss es erst geben (siehe
-   docs/VIDEOS.md). Geprüft wird die Datei trotzdem schon jetzt, damit
-   sie am Tag des Ausrollens nicht zum ersten Mal läuft.
+   wir vorbereiten so gut es geht". Seit dem 29.9.2026 gibt es den Eimer
+   (formenchat-schulungsvideos) und storage-videos.rules wird mit
+   ausgerollt (firebase.json, Ziel „videos"). Die Grenze von 5 GiB lässt
+   sich hier nicht mit echten Bytes prüfen; dass Regeln und App dieselbe
+   Zahl haben, prüft tests/test-video-hochladen.js.
 
    Gegen den Speicher-Emulator, mit dem Firestore-Emulator dahinter —
    die Regeln lesen das Profil aus `users`.

@@ -3,15 +3,15 @@ rules_version = '2';
 // ─────────────────────────────────────────────────────────────────────
 // Firebase Storage – Regeln für den VIDEO-EIMER der Schulungen
 //
-// VORBEREITET am 24.9.2026, noch NICHT ausgerollt. Aus dem Betrieb:
+// Vorbereitet am 24.9.2026, AUSGEROLLT seit dem 29.9.2026: an dem Tag
+// wurde der Eimer `formenchat-schulungsvideos` angelegt. Aus dem Betrieb:
 //   „Videos kommen noch speicher ort können wir vorbereiten so gut es
 //    geht"
 //
 // Entschieden ist seit dem 22.9.2026: ein EIGENER, ZWEITER Eimer —
 // niemals der mit der nächtlichen Sicherung (storage.rules, dort ist
-// alles zu). Diese Datei gehört zu diesem zweiten Eimer. Sie wird erst
-// in firebase.json eingetragen, wenn es den Eimer gibt; ein Eintrag für
-// einen Eimer, den es nicht gibt, bricht die Auslieferung ab.
+// alles zu). Diese Datei gehört zu diesem zweiten Eimer; welcher Eimer
+// welche Datei bekommt, steht in firebase.json (Ziele) und .firebaserc.
 // Die Schritte stehen in docs/VIDEOS.md.
 //
 // Was hier gilt:
@@ -19,7 +19,7 @@ rules_version = '2';
 //   · Auflisten: niemand. Wer ein Video sehen soll, bekommt es über das
 //     Modul, nicht über ein Verzeichnis.
 //   · Hochladen: nur die Leitung (Chef oder Studioleitung) der Firma,
-//     nur Videodateien, höchstens 500 MB.
+//     nur Videodateien, höchstens 5 GB (siehe unten).
 //   · Ersetzen: niemand — ein neues Video ist eine neue Datei.
 //   · Löschen: die Leitung der Firma.
 //   · Alles andere: zu.
@@ -59,7 +59,14 @@ service firebase.storage {
       allow create: if leitungIn(firma)
         && resource == null
         && request.resource.contentType.matches('video/.*')
-        && request.resource.size < 500 * 1024 * 1024;
+        /* Aus dem Betrieb, 29.9.2026: „ich würde die dateien größe auf 4gb
+           erhöhen weil ein video halt auch 4gb groß ist". Die Grenze ist
+           5 GiB, nicht 4: der Mac zählt 1 GB = 1.000.000.000 Byte, Windows
+           zeigt 1.073.741.824 Byte als „GB" an. Ein Video, das dort als
+           „4,2 GB" erscheint, soll nicht knapp daran scheitern. Dieselbe
+           Zahl steht in index.html (VIDEO_GRENZE); test-video-hochladen
+           prüft, dass beide übereinstimmen. */
+        && request.resource.size <= 5 * 1024 * 1024 * 1024;
       allow update: if false;
       allow delete: if leitungIn(firma);
     }

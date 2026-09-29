@@ -14138,3 +14138,80 @@ Aus dem Betrieb, 27.9.2026, auf die offenen Fragen B1–B8:
   Functions-Deploy später ohne Code-Grund rot wird.
 - Keine sichtbare Änderung in der App, deshalb kein Eintrag in
   NEUIGKEITEN.
+
+---
+
+## Runde 128 — Schulungsvideos hochladen (29.9.2026)
+
+Aus dem Betrieb: „ich hab jetzt die schulungsvideos in einem ordner, soll
+ich das auf github irgendwie posten …", dann: „formenchat-schulungsvideos
+isst eerstellt ich würde die daateien größe auf 4gb erhöhen weil ein
+video halt auch 4gb groß ist".
+
+**Gebaut**
+
+- Knopf **„Video hochladen"** im Schulungs-Editor, bei den Schritten
+  „Video" und „Lesetext" (dort „Video dazu"). Nur Geschäftsführung und
+  Studioleitung, nur wenn `KONFIG.videoEimer` gesetzt ist (in der Probe
+  leer).
+  - Fortschritt mit Prozent, Größe und Restzeit.
+  - „Abbrechen" während des Hochladens.
+  - „Speichern" wartet, bis das Video oben ist.
+  - „Zurück" braucht während des Hochladens ein zweites Tippen.
+  - Schließen der Seite fragt nach (`beforeunload`).
+- Das Speicher-SDK wird erst beim ersten Hochladen geholt. Die anderen
+  Nutzer laden keine 40 KB mehr, die sie nie brauchen.
+- `firebase.json` hat jetzt zwei Speicher-Ziele (`sicherung`, `videos`),
+  die Eimer stehen in `.firebaserc`. Eine Änderung an
+  `storage-videos.rules` löst das Ausrollen aus.
+- Sicherheitsregel: `media-src` erlaubt genau
+  `https://firebasestorage.googleapis.com` und nicht `*.googleapis.com`.
+- Die Demo hat einen Video-Eimer zum Anfassen: Sie zählt hoch und spielt
+  das Video danach per `blob:` ab. Nichts verlässt das Gerät.
+
+**Entschieden, und warum**
+
+- **Grenze 5 GiB statt 4.** Der Wunsch war „ein Video ist halt 4 GB“.
+  Windows zeigt GiB als „GB“ an, der Mac rechnet in GB. Bei einer Grenze
+  von genau 4 wäre ein Video, das im Ordner „4,2 GB“ zeigt, am Speicher
+  gescheitert. Die Zahl steht in Regeln und App gleich; der Test prüft
+  das, statt darauf zu vertrauen.
+- **Ziele statt Eimernamen in `firebase.json`.** Mit `bucket` kann das
+  Ausrollen umgehen, der Speicher-Emulator der Regeltests aber nicht:
+  Er verlangt `target` (`emulator/storage/rules/config.js`: „Must supply
+  'target'“). Mit Zielen läuft beides, gemessen im Emulator.
+- **Fortschritt ohne Neuzeichnen.** Nur der Balken und der Text werden
+  aufgefrischt. Wer währenddessen den Titel tippt, behält den Zeiger.
+  Der Test tippt dabei.
+- **Kein automatisches Löschen des alten Videos** beim Ersetzen, weil ein
+  anderes Modul noch darauf zeigen könnte. Steht als offen in
+  `docs/VIDEOS.md`.
+
+**Gefunden beim Bauen**
+
+- Nach dem Hochladen blieb „Anderes Video hochladen“ **gesperrt**. Die
+  Sperre fragte „läuft und kein Fehler“, und ein fertiges Video hat
+  keinen Fehler. Der Test hat es gefunden.
+- Ein zweiter Versuch nach einer Fehlermeldung zeigte den Fortschritt im
+  alten Fehlerkasten, **ohne „Abbrechen“**. Jetzt wird bei jedem neuen
+  Zustand die Zeile neu gebaut, nur Fortschrittsschritte nicht.
+- `firebase-tools` vergibt die Berechtigung für Cross-Service-Regeln
+  (Speicher liest Firestore) **nicht**, wenn es ohne Terminal läuft.
+  Aus GitHub heraus heißt das: Die Regel ist draußen, greift aber nicht,
+  und jeder Upload wird abgelehnt. Der eine Befehl dafür steht in
+  `docs/VIDEOS.md`. Ob die Rolle im Projekt schon da ist, lässt sich von
+  hier nicht sehen.
+- Das Test-Chromium ohne Bildschirm zeigt beim Schließen **keine**
+  Nachfrage, nicht einmal bei einer leeren Seite mit `preventDefault()`.
+  Geprüft wird deshalb, ob die Seite das Ereignis aufhält, mit
+  Gegenprobe.
+
+**Nicht geprüft, und das gehört gesagt**
+
+- Das Hochladen in den **echten** Eimer. Das Firebase-SDK lädt im
+  Test-Browser dieser Umgebung nicht (Proxy-Zertifikat). Der erste echte
+  Upload ist der Test.
+- Ob `firebase deploy --only storage` mit den zwei Zielen gegen
+  `formenchat` durchläuft. Das zeigt der erste Lauf nach dem Merge.
+
+**Test:** `tests/test-video-hochladen.js` (62), `tests/rules/videos.test.js` (15).

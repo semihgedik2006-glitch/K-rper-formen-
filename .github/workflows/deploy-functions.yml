@@ -21,6 +21,7 @@ on:
       - 'functions/**'
       - 'firestore.rules'
       - 'storage.rules'
+      - 'storage-videos.rules'
       - 'firebase.json'
       - '.firebaserc'
       - '*.html'

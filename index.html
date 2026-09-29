@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3fJnRLqze9+lEf5HPJWOyXNP+ky4JRGq5omS+XaqzIY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Wi+eFTeDg/rioZpyWTQ8GbONgkAKQzKtL4caG3SmDmM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5108,6 +5108,18 @@ html{font-size:var(--fs,100%)}
 .sch-feld-kopf b{font-family:var(--font-head);font-weight:800;color:var(--text-3);
   min-width:22px}
 .sch-feld-luft{flex:1}
+/* „Video hochladen" im Schritt (29.9.2026). Der Knopf ist so breit
+   wie sein Wort, nicht die ganze Zeile: daneben steht, was erlaubt ist,
+   und am Rechner ist die Zeile sonst ein 700 px langer Balken. */
+.sch-video-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-top:var(--s8)}
+.sch-video-zeile .btn{width:auto;flex:0 0 auto}
+.sch-video-zeile .hint{flex:1 1 220px;margin:0}
+.sch-lade{margin-top:var(--s8)}
+.sch-lade progress{display:block;width:100%;height:8px;accent-color:var(--accent)}
+.sch-lade-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-top:var(--s6)}
+.sch-lade-text{flex:1 1 200px;font-size:var(--t-xs);color:var(--text-2);
+  font-variant-numeric:tabular-nums}
+.sch-lade-zeile .btn{width:auto;flex:0 0 auto}
 .sch-feld-kopf .inp,.sch-klein{flex:1;margin-top:0}
 .sch-antwortzeile{display:flex;align-items:center;gap:var(--s8);margin-top:var(--s6)}
 .sch-antwortzeile input[type=radio]{width:22px;height:22px;flex-shrink:0;
@@ -17679,6 +17691,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-29-video-hochladen', datum:'29.9.2026', titel:'Schulungsvideos direkt hochladen', wo:'schulung', punkte:[
+    'Geschäftsführung und Studioleitung laden Videos jetzt selbst hoch: Schulung → Verwalten → Module → Modul bearbeiten → beim Schritt „Video" auf „Video hochladen". Bis 5 GB je Video, mit Fortschritt und Restzeit.',
+    'Danach „Speichern" — dann sieht das ganze Team das Video in der Schulung, statt „Video folgt". Die Videos liegen in Frankfurt und sind nur für die eigene Firma sichtbar.' ] },
   { id:'2026-09-27-zf-pflicht', datum:'27.9.2026', titel:'Zwei-Faktor wird für die Leitung Pflicht — mit Vorlauf', wo:'chef:team', punkte:[
     'Die Geschäftsführung kann unter Verwaltung → Team → „Zwei-Faktor bei der Leitung" einen Stichtag setzen, eine Woche im Voraus. Bis dahin sieht die Leitung einen Hinweis mit Datum, danach kommt man ohne zweiten Faktor nur noch zum Einrichten in die App.',
     'Für Mitarbeitende ändert sich nichts.' ] },
@@ -22400,6 +22415,19 @@ function schZurueckBinden(box){
   box.querySelectorAll('[data-schzurueck]').forEach(function(b){
     b.addEventListener('click', function(){
       var wohin=b.getAttribute('data-schzurueck');
+      /* Aus dem Editor heraus, während ein Video lädt: kein confirm()-
+         Fenster (gibt es in dieser App nirgends), sondern ein zweites
+         Tippen. Das Hochladen läuft sonst unsichtbar weiter, und die
+         Adresse landet in einem Entwurf, den keiner mehr speichert. */
+      if(box.id==='schModulForm' && schHochLaeuft()){
+        if(!b._sicher){
+          b._sicher=true;
+          var n=$('schFNote');
+          if(n) n.textContent='Das Video lädt noch. Noch einmal „Zurück", um das Hochladen abzubrechen.';
+          return;
+        }
+        _schEntwurf.schritte.forEach(schHochAbbrechen);
+      }
       if(wohin==='uebersicht'){ schPane('uebersicht'); schUebersichtZeichnen(); }
       else if(wohin==='verwalten'){ schPane('verwalten'); schVerwaltenZeichnen(); }
     });
@@ -23254,6 +23282,7 @@ function schSchrittFeldMarkup(s, i){
         'placeholder="'+(s.art==='lesen' ? 'Video dazu — leer lassen, solange es fehlt'
                                           : 'Adresse der Datei — leer lassen, solange sie fehlt')+'" '+
         'value="'+esc(s.quelle||'')+'" />'+
+        (s.art!=='bild' ? schVideoZeileMarkup(s) : '')+
         (s.art==='video'
           ? '<input class="inp" data-sfeld="dauer" type="number" min="0" max="7200" '+
             'placeholder="Länge in Sekunden" value="'+(s.dauer||'')+'" />'+
@@ -23263,6 +23292,200 @@ function schSchrittFeldMarkup(s, i){
       : '')+
     '</div>';
 }
+/* ── Video hochladen (29.9.2026) ─────────────────────────────────────
+   Aus dem Betrieb: „ich hab jetzt die schulungsvideos in einem ordner"
+   und „ich würde die dateien größe auf 4gb erhöhen weil ein video halt
+   auch 4gb groß ist".
+
+   Die Datei geht direkt vom Rechner in den Video-Eimer
+   (KONFIG.videoEimer, Frankfurt), nicht über GitHub und nicht über die
+   Datenbank. Wer darf, steht in storage-videos.rules: hochladen nur
+   Geschäftsführung und Studioleitung, ansehen nur die eigene Firma.
+   Danach steht die Abspiel-Adresse im Feld darüber — gespeichert wird
+   sie erst mit „Speichern", wie jede andere Änderung im Editor.
+
+   Das Speicher-SDK wird erst beim ersten Hochladen geholt: 40 KB, die
+   sonst jeder bei jedem Start lädt, obwohl zwei Leute im Betrieb es je
+   brauchen. */
+var VIDEO_GRENZE = 5 * 1024 * 1024 * 1024;   // = storage-videos.rules
+var _videoSdk = null;
+function videoHochladenErlaubt(){
+  return !!KONFIG.videoEimer && (isChef() || isLeiter());
+}
+function videoSdkLaden(){
+  if(typeof firebase.app().storage === 'function') return Promise.resolve();
+  if(_videoSdk) return _videoSdk;
+  _videoSdk = new Promise(function(ok, nein){
+    var sc=document.createElement('script');
+    sc.src='https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js';
+    sc.onload=function(){ ok(); };
+    sc.onerror=function(){ _videoSdk=null; nein({ code:'sdk' }); };
+    document.head.appendChild(sc);
+  });
+  return _videoSdk;
+}
+/* Windows zeigt 1.073.741.824 Byte als „1 GB" an, und dort liegen die
+   Videos. Dieselbe Rechnung hier, sonst hiesse dieselbe Datei in der App
+   anders als im Ordner. */
+function videoGroesse(b){
+  var gb=b/1073741824;
+  return gb>=1 ? gb.toFixed(1).replace('.',',')+' GB'
+               : Math.max(1, Math.round(b/1048576))+' MB';
+}
+/* Manche Rechner geben einer .mov oder .mp4 keinen Typ mit. Ohne Typ
+   lehnt der Speicher sie ab (nur video/…) — also aus der Endung. */
+function videoTyp(d){
+  var t=String(d.type||'');
+  if(/^video\//.test(t)) return t;
+  var n=String(d.name||'').toLowerCase();
+  if(/\.(mp4|m4v)$/.test(n)) return 'video/mp4';
+  if(/\.mov$/.test(n)) return 'video/quicktime';
+  if(/\.webm$/.test(n)) return 'video/webm';
+  return '';
+}
+function schHochLaeuft(){
+  return !!_schEntwurf && _schEntwurf.schritte.some(function(s){
+    return s._hoch && !s._hoch.fehler && !s._hoch.fertig;
+  });
+}
+function schHochText(h){
+  if(h.fehler) return h.fehler;
+  var t=Math.floor(h.prozent)+' % · '+videoGroesse(h.geladen)+' von '+videoGroesse(h.gesamt);
+  /* Die Restzeit erst nach ein paar Sekunden: am Anfang schwankt die
+     Rate so stark, dass „noch 3 Stunden" und „noch 2 Minuten" im
+     Wechsel kämen. */
+  var sek=(Date.now()-h.start)/1000;
+  if(sek>8 && h.geladen>0 && h.geladen<h.gesamt){
+    var rest=(h.gesamt-h.geladen)/(h.geladen/sek);
+    t+=' · noch etwa '+(rest<90 ? 'eine Minute' : Math.round(rest/60)+' Minuten');
+  }
+  return t;
+}
+function schVideoZeileMarkup(s){
+  if(!videoHochladenErlaubt()) return '';
+  var h=s._hoch;
+  return '<div class="sch-video-zeile">'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-videowahl="1" data-ikon="hochladen"'+
+        (h && !h.fehler && !h.fertig ? ' disabled' : '')+'>'+(s.quelle ? 'Anderes Video hochladen' : 'Video hochladen')+'</button>'+
+      '<input type="file" accept="video/*,.mp4,.mov,.m4v,.webm" data-videodatei="1" hidden />'+
+      '<p class="hint" data-videohinweis>'+(h && h.fertig ? esc(h.fertig)
+        : 'MP4 am besten, bis 5 GB. Das Fenster muss offen bleiben, bis es fertig ist.')+'</p>'+
+    '</div>'+
+    (h && !h.fertig
+      ? '<div class="sch-lade" data-videolade>'+
+          '<progress max="100" value="'+Math.floor(h.prozent)+'"></progress>'+
+          '<div class="sch-lade-zeile">'+
+            '<span class="sch-lade-text" data-videotext role="status">'+esc(schHochText(h))+'</span>'+
+            (!h.fehler ? '<button type="button" class="btn btn-ghost btn-sm" data-videoab="1">Abbrechen</button>' : '')+
+          '</div>'+
+        '</div>'
+      : '');
+}
+/* Nur die Zeile dieses Schritts auffrischen, nicht das Formular: sonst
+   verliert jemand, der währenddessen einen Text tippt, bei jedem
+   Fortschrittsschritt den Eingabezeiger. */
+function schHochZeigen(s, ganz){
+  var i=_schEntwurf ? _schEntwurf.schritte.indexOf(s) : -1;
+  var feld=i>=0 ? document.querySelector('#schModulForm [data-schritt="'+i+'"]') : null;
+  if(!feld) return;
+  var lade=feld.querySelector('[data-videolade]');
+  var h=s._hoch;
+  if(!ganz && h && lade && !h.fehler && !h.fertig){
+    var pr=lade.querySelector('progress'); if(pr) pr.value=Math.floor(h.prozent);
+    var tx=lade.querySelector('[data-videotext]'); if(tx) tx.textContent=schHochText(h);
+    return;
+  }
+  var alt=feld.querySelector('.sch-video-zeile');
+  if(alt && lade) lade.remove();
+  if(alt){
+    var tmp=document.createElement('div'); tmp.innerHTML=schVideoZeileMarkup(s);
+    alt.replaceWith.apply(alt, [].slice.call(tmp.childNodes));
+    schVideoBinden(feld);
+    ikonenEinsetzen(feld);
+  }
+  var q=feld.querySelector('[data-sfeld="quelle"]');
+  if(q && s.quelle && q.value!==s.quelle) q.value=s.quelle;
+}
+function schVideoStarten(s, datei){
+  if(!datei) return;
+  var typ=videoTyp(datei);
+  var h={ prozent:0, geladen:0, gesamt:datei.size, start:Date.now(), task:null, fehler:null, fertig:null };
+  if(!typ){
+    h.fehler='„'+datei.name+'" ist keine Videodatei. Bitte eine MP4 wählen.';
+    s._hoch=h; schHochZeigen(s, true); return;
+  }
+  if(datei.size>VIDEO_GRENZE){
+    h.fehler='Das Video ist '+videoGroesse(datei.size)+' groß, erlaubt sind bis 5 GB. '+
+      'Tipp: beim Exportieren 1080p oder 720p wählen — für eine Schulung reicht das.';
+    s._hoch=h; schHochZeigen(s, true); return;
+  }
+  s._hoch=h; schHochZeigen(s, true);
+  var firma=_firma || KONFIG.firma || 'koerperformen';
+  var e=_schEntwurf;
+  var ordner=String(e.docId||e.basis||'neu').replace(/[^a-zA-Z0-9_-]/g,'-').slice(0,60)||'neu';
+  var name=String(datei.name||'video').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-80);
+  var pfad='firmen/'+firma+'/schulungen/'+ordner+'/'+Date.now()+'-'+name;
+  videoSdkLaden().then(function(){
+    if(s._hoch!==h) return;               // inzwischen abgebrochen
+    var task=firebase.app().storage('gs://'+KONFIG.videoEimer).ref(pfad)
+      .put(datei, { contentType:typ, cacheControl:'private, max-age=86400' });
+    h.task=task;
+    task.on('state_changed', function(snap){
+      h.geladen=snap.bytesTransferred; h.gesamt=snap.totalBytes||h.gesamt;
+      h.prozent=h.gesamt ? 100*h.geladen/h.gesamt : 0;
+      schHochZeigen(s);
+    }, function(err){
+      schHochFehler(s, h, err);
+    }, function(){
+      task.snapshot.ref.getDownloadURL().then(function(url){
+        s.quelle=url;
+        h.fertig='Hochgeladen ('+videoGroesse(h.gesamt)+'). Jetzt unten „Speichern" — dann sieht es das Team.';
+        schHochZeigen(s, true);
+      }, function(err){ schHochFehler(s, h, err); });
+    });
+  }, function(err){ schHochFehler(s, h, err); });
+}
+function schHochFehler(s, h, err){
+  var c=(err && err.code)||'';
+  h.fehler = c==='storage/canceled' ? 'Abgebrochen. Es wurde nichts gespeichert.'
+    : c==='storage/unauthorized' ? 'Der Speicher hat das Video abgelehnt. Hochladen dürfen nur '+
+        'Geschäftsführung und Studioleitung — und nur Videos bis 5 GB.'
+    : c==='storage/retry-limit-exceeded' ? 'Die Verbindung ist zu lange abgerissen. Bitte noch einmal versuchen.'
+    : c==='sdk' ? 'Der Speicher ließ sich nicht laden. Ist das Internet da?'
+    : 'Das Hochladen hat nicht geklappt'+(c ? ' ('+c+')' : '')+'. Bitte noch einmal versuchen.';
+  schHochZeigen(s, true);
+}
+function schVideoBinden(root){
+  root.querySelectorAll('[data-videowahl]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var inp=b.parentNode.querySelector('[data-videodatei]'); if(inp) inp.click();
+    });
+  });
+  root.querySelectorAll('[data-videodatei]').forEach(function(inp){
+    inp.addEventListener('change', function(){
+      var el=inp.closest('[data-schritt]'); if(!el || !_schEntwurf) return;
+      var s=_schEntwurf.schritte[Number(el.getAttribute('data-schritt'))];
+      var d=inp.files && inp.files[0]; inp.value='';
+      if(s) schVideoStarten(s, d);
+    });
+  });
+  root.querySelectorAll('[data-videoab]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var el=b.closest('[data-schritt]'); if(!el || !_schEntwurf) return;
+      var s=_schEntwurf.schritte[Number(el.getAttribute('data-schritt'))];
+      schHochAbbrechen(s);
+    });
+  });
+}
+function schHochAbbrechen(s){
+  var h=s && s._hoch; if(!h || h.fehler || h.fertig) return;
+  if(h.task) h.task.cancel();
+  else schHochFehler(s, h, { code:'storage/canceled' });
+}
+window.addEventListener('beforeunload', function(ev){
+  if(schHochLaeuft()){ ev.preventDefault(); ev.returnValue=''; }
+});
+
 function schFrageFeldMarkup(f, i){
   return '<div class="sch-feld" data-frage="'+i+'">'+
     '<div class="sch-feld-kopf">'+
@@ -23399,6 +23622,8 @@ function schFormBinden(box){
       else if(f.richtig>j) f.richtig--;
       schModulFormZeichnen(); }); });
 
+  schVideoBinden(box);
+
   var sp=$('schFSpeichern');
   if(sp) sp.addEventListener('click', function(){ entwurfSchreiben(); schModulSpeichern(); });
   var weg=$('schFWeg');
@@ -23408,6 +23633,10 @@ function schFormBinden(box){
 function schModulSpeichern(){
   var e=_schEntwurf, note=$('schFNote'), btn=$('schFSpeichern');
   if(note) note.textContent='';
+  if(schHochLaeuft()){
+    if(note) note.textContent='Das Video lädt noch hoch. Speichern geht, sobald es fertig ist.';
+    return;
+  }
   if(String(e.titel).trim().length<3){
     if(note) note.textContent='Bitte einen Titel eintragen.'; return;
   }

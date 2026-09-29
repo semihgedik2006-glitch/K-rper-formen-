@@ -5,9 +5,11 @@
   "firestore": {
     "rules": "firestore.rules"
   },
-  "storage": {
-    "rules": "storage.rules"
-  },
+  "//storage": "Zwei Eimer, zwei Regeldateien (29.9.2026). sicherung = der Standard-Eimer mit dem nächtlichen Vollexport, dort ist alles zu. videos = die Schulungsvideos, lesbar für die eigene Firma. Absichtlich getrennt, siehe storage-videos.rules. Welcher Eimer zu welchem Ziel gehört, steht in .firebaserc — Ziele statt Eimernamen, weil der Speicher-Emulator der Regeltests nur Ziele kennt.",
+  "storage": [
+    { "target": "sicherung", "rules": "storage.rules" },
+    { "target": "videos", "rules": "storage-videos.rules" }
+  ],
 
   "//emulators": "Nur für die Regeltests unter tests/rules. Der Auth-Emulator wird gebraucht, weil firmaAnlegen ein echtes Anmeldekonto anlegt.",
   "emulators": {
