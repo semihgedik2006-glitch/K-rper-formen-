@@ -14284,3 +14284,57 @@ werden können, öffentlich im repo kann es gerne sein".
   überspringen. Ob es wirklich angesehen wurde, misst die App noch nicht.
 
 **Test:** `tests/test-schulung-beratung.js` (49).
+
+---
+
+## Runde 130 — Beratungs-Schulung strenger, Video-Sperre, Handout (30.9.2026)
+
+Aus dem Betrieb: „formuliere die fragen etwas um und mache es alles etwas
+schwieriger es soll ja auch nicht jeder direkt bestehen, weiter zu sperren
+ist gut aber ich würde die funktion dann bei den chefs aussen vor lassen …
+das handout kannst du selber als pdf datei erstellen".
+
+**Gebaut**
+
+- **67 neue Fragen.** Mehr Fälle aus dem Alltag, genaue Zahlen und
+  Reihenfolgen aus den Videos (2.500 €, < 10 %, 150–200 €, jeder Zweite,
+  die sechs Schritte der Einwandbehandlung). Die falschen Antworten sind
+  plausibel formuliert, keine Scherzantworten.
+- **Bestehensgrenze 80 %**, gewertet wird die erste Antwort.
+  - Bisher lief die App mit Grenze nach einer falschen Antwort sofort
+    weiter. Der Hinweis stand dann unter der NÄCHSTEN Frage oder gar
+    nicht.
+  - Jetzt bleibt die Frage stehen: falsch und richtig sind markiert, der
+    Hinweis steht darunter, dann geht es mit „Weiter“ weiter.
+- **„Weiter“ erst nach dem Video.** Es müssen 90 % der Länge wirklich
+  gelaufen sein. Vorspulen zählt nicht, schneller abspielen schon.
+  - Frei beim Zurückblättern.
+  - Frei, wenn das Video nicht lädt; das steht dann auch da.
+- **Ausnahme für die Geschäftsführung.**
+  - Der Server (`schulungStart`) meldet `ohneVideoSperre`, wenn der
+    TEILNEHMER mit einem Chef-Konto derselben Firma verknüpft ist.
+  - Es zählt also, wer die Schulung macht, nicht auf wessen Gerät sie
+    läuft. Sonst klickte sich jeder am Rechner des Chefs durch.
+- **Die eigene Person in der Kontoliste für Teilnehmer.** Bisher konnte
+  sich die Geschäftsführung nicht selbst verknüpfen, weil `_employees`
+  das eigene Konto nicht enthält. Die Ausnahme hätte damit nie gegriffen.
+  Gefunden im Test.
+- **Handout** `docs/schulung/Handout-Beratungsgespraech.pdf`: 6 Seiten
+  aus den Abschriften, erzeugt mit `docs/schulung/handout-erzeugen.py`.
+  - Ausdrücklich eine Zusammenfassung, kein Original-Handout, ohne Preise.
+  - Die Rollenspiele fehlen auf Wunsch.
+
+**Gemessen**
+
+- Die richtige Antwort steht an den Stellen A bis D 17/17/17/16 Mal.
+- Nur 2 von 67 richtige Antworten sind deutlich (> 15 %) länger als alle
+  anderen. Vorher waren es 34 von 67.
+- Im Test besteht, wer immer „A“ nimmt, nicht.
+
+**Nicht geprüft**
+
+- Die Sperre mit den ECHTEN Videos. Geprüft ist sie mit einem 4-Sekunden-
+  Testvideo (`tests/daten/kurz-video.webm`). Die echten liegen nur im
+  Speicher des Betriebs, und das Firebase-SDK lädt hier nicht.
+
+**Test:** `tests/test-schulung-beratung.js` (60).
