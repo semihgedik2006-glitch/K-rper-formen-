@@ -121,6 +121,28 @@ Zahlen sind eine Größenordnung, keine Zusage.
   aus 4 GB werden oft 300–800 MB. Das heißt ein Zehntel der Abrufkosten
   und ein Zehntel der Wartezeit beim Hochladen.
 
+## Die erste Schulung mit Videos (30.9.2026)
+
+„Das Beratungsgespräch — vom Anruf bis zur Empfehlung" (`m-beratung` in
+`schulungen-basis.js`): alle 15 Videos in einer Schulung, 62 Fragen.
+
+- Die Fragen stammen aus den **Abschriften** der Videos. Der Ton wurde
+  maschinell abgeschrieben (Whisper), dazu alle 12 bis 15 Sekunden ein
+  Standbild angesehen. Die Videos zeigen den Sprecher vor einer Wand,
+  alles Wichtige steckt im Ton.
+- Nach jedem Video kommen die Fragen dazu (`nach: <schritt>`), am Ende
+  sechs Fragen, die mehrere Videos verbinden.
+- **Preise** aus den Beispielgesprächen werden nicht abgefragt: sie
+  ändern sich, und dann wäre die Schulung falsch.
+- `quelle` ist der **Pfad** im Eimer (`speicher:firmen/koerperformen/…`),
+  nicht die Adresse mit Schlüssel — die stünde sonst öffentlich im
+  Repository. Die App holt die Adresse erst beim Abspielen.
+- Die Dateien liegen unter `firmen/koerperformen/schulungen/neu/`, weil
+  sie aus einem neuen Entwurf hochgeladen wurden. **Nicht löschen und
+  nicht umbenennen** — die Schulung zeigt genau auf diese Namen. Den
+  Entwurf „Videos (Entwurf)" in der App darf man löschen; ein gelöschtes
+  Modul löscht keine Dateien.
+
 ## Offen
 
 - **Ein ersetztes Video bleibt im Eimer liegen.** „Anderes Video

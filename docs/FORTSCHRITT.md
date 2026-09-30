@@ -14215,3 +14215,72 @@ video halt auch 4gb groß ist".
   `formenchat` durchläuft. Das zeigt der erste Lauf nach dem Merge.
 
 **Test:** `tests/test-video-hochladen.js` (62), `tests/rules/videos.test.js` (15).
+
+---
+
+## Runde 129 — Schulung „Das Beratungsgespräch" aus 15 Videos (30.9.2026)
+
+Aus dem Betrieb: „alle 15 videos sollen in eine schulung rein weil das
+ja alles auf einander aufbaut, ich hatte mir gedacht du schaust dir das
+an und stellst passende fragen zu dem jeweiligen video und paar andere
+fragen welche mit den infos aus den videos beantwortet oder hergeleitet
+werden können, öffentlich im repo kann es gerne sein".
+
+**Gebaut**
+
+- **Modul `m-beratung`** im Grundstock (Kategorie „Verkauf & Beratung"):
+  - 17 Schritte, davon 15 Videos (zusammen gut zwei Stunden), dazu 62
+    Fragen mit Hinweisen, die erklären statt tadeln.
+  - Pflicht für alle. Das lässt sich im Editor über „Eigene Fassung"
+    umstellen.
+- **Fragen zwischen den Schritten** (Runde 128 vorbereitet, hier
+  erstmals benutzt):
+  - `nach: k` → die Frage kommt direkt nach Schritt k.
+  - „Zurück" springt über schon gelöste Fragen, „Weiter" ebenso.
+  - Im Editor steht bei jeder Frage „Kommt am Ende" oder „Direkt nach …".
+  - Beim Verschieben oder Löschen eines Schritts wandert die Zuordnung
+    mit.
+- **Videos über ihren Speicherpfad** (`quelle: 'speicher:…'`). Die App
+  holt die Abspiel-Adresse erst beim Abspielen und nur für die eigene
+  Firma. In der Demo steht ehrlich: „In der Vorführung läuft dieses
+  Video nicht".
+- **`firma` am Modul:** Es erscheint nur in diesem Betrieb. In jedem
+  anderen wären die Videos stumm.
+
+**Wie die Fragen entstanden sind**
+
+- Jedes Video wurde maschinell abgeschrieben (faster-whisper, Modell
+  „medium", Deutsch). Dazu wurden alle 12 bis 15 Sekunden Standbilder
+  angesehen.
+- Die Videos zeigen nur den Sprecher. Alles Wichtige steckt im Ton.
+- Fragen zu Video 10 (Rollenspiel, 29 Minuten): Es setzt sich aus 5.1,
+  6.1, 7.1 und 9.1 zusammen. Die Fragen dort fragen nur, was neu ist.
+
+**Gefunden beim Bauen**
+
+- **Im ersten Entwurf stand die richtige Antwort 47 von 62 Mal an
+  zweiter Stelle.** Wer das merkt, lernt die Stelle statt des Inhalts.
+  - Die Antworten sind jetzt neu verteilt: 16/15/16/15.
+  - Der Test prüft, dass keine Stelle mehr als 35 % hat.
+- **Nicht behoben:** Die richtige Antwort ist oft die längste und
+  genaueste. Aufmerksame Leute merken das.
+- Die Abschrift lief erst ins Leere:
+  - `ffmpeg` las aus derselben Eingabe wie die Link-Liste und zerschnitt
+    sie.
+  - Eine Hilfsdatei `queue.py` im selben Ordner überdeckte Pythons
+    eigenes Modul `queue`.
+  - Beides betraf nur das Werkzeug, nicht die App.
+
+**Nicht geprüft, und das gehört gesagt**
+
+- **Das Abspielen der echten Videos in der App.** Der Test läuft in der
+  Demo, das Firebase-SDK lädt hier nicht.
+  - Dass die Dateien da sind und abspielbar sind, ist belegt: Alle 15
+    wurden für die Abschrift aus dem Eimer geladen.
+  - Dass `getDownloadURL` über die Regeln durchgeht, ist nicht belegt.
+    Die Regel dafür ist im Emulator geprüft (`videos.test.js`, „Anna
+    sieht ein Video ihrer Firma").
+- **„Weiter" beim Video ist nicht gesperrt.** Man kann ein Video
+  überspringen. Ob es wirklich angesehen wurde, misst die App noch nicht.
+
+**Test:** `tests/test-schulung-beratung.js` (49).
