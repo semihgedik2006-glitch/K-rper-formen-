@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-0+lnaqVE9lgt6yOMFsUGEs1FqepSRJuQwzB/3ioKTNA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ye5X0oZl72sHhu1vZKqoU9WrptAPO2zFdNZSmvM+Le0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -17691,6 +17691,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-30-beratung-strenger', datum:'30.9.2026', titel:'Beratungs-Schulung: strenger und ohne Vorspulen', wo:'schulung', punkte:[
+    'Die Fragen sind neu und schwieriger. Es zählt die erste Antwort; danach siehst du die richtige mit einem Hinweis. Bestanden ist ab 80 % — wer darunter bleibt, macht die Schulung noch einmal.',
+    '„Weiter" geht bei jedem Video erst, wenn es angesehen wurde; Vorspulen zählt nicht. Für die Geschäftsführung gilt das nicht, wenn ihr Teilnehmer mit ihrem Konto verknüpft ist (beim Anlegen „(ich)" wählen).' ] },
   { id:'2026-09-30-schulung-beratung', datum:'30.9.2026', titel:'Neue Schulung: Das Beratungsgespräch', wo:'schulung', punkte:[
     'Unter Ich → Schulung steht jetzt „Das Beratungsgespräch — vom Anruf bis zur Empfehlung": alle 15 Videos in einer Schulung, von der Terminvereinbarung über Bedarfsanalyse und Einwände bis zur VIP-Einladung.',
     'Nach jedem Video kommen ein paar Fragen dazu, am Ende noch einige, die mehrere Videos verbinden. Wer danebenliegt, bekommt einen Hinweis und versucht es noch einmal.',
@@ -22090,6 +22093,11 @@ var _schGesehen = [], _schAntworten = [], _schFrageIdx = 0;
    fragen zu dem jeweiligen video und paar andere fragen welche mit den
    infos aus den videos beantwortet oder hergeleitet werden können". */
 var _schFolge = [], _schFolgeIdx = 0;
+/* Wie weit jedes Video WIRKLICH gelaufen ist, je Schritt (30.9.2026).
+   Aus dem Betrieb: „weiter zu sperren ist gut aber ich würde die
+   funktion dann bei den chefs aussen vor lassen". Gezählt wird nur
+   abgespielte Zeit — Vorspulen bringt nichts. */
+var _schVideoStand = {};
 var _schHaken = false, _schOffenerHinweis = '';
 var _schAktivMs = 0, _schUhr = null, _schGesichert = 0;
 var _schGebunden = false;
@@ -22465,7 +22473,9 @@ function schStarten(){
     return schFn('schulungStart')({ code:code, modul:_schModul.id })
       .then(function(r){
         var d=(r&&r.data)||{};
-        _schLauf={ id:d.lauf, name:d.name||'', durchgang:d.durchgang||1 };
+        _schLauf={ id:d.lauf, name:d.name||'', durchgang:d.durchgang||1,
+                   ohneVideoSperre:!!d.ohneVideoSperre };
+        _schVideoStand={};
         _schGesehen=[]; _schFolge=schFolgeBauen(_schModul); schFolgeGehe(0);
         _schHaken=false; _schOffenerHinweis=''; _schAktivMs=0; _schGesichert=Date.now();
         _schAntworten=(_schModul.fragen||[]).map(function(){
@@ -22587,7 +22597,9 @@ function schSchrittMarkup(){
   } else if(s.art==='lesen'){
     inhalt=schLesenMarkup(s);
   }
-  var weiterAus = (s.art==='bestaetigen' && !_schHaken) || (s.art==='lesen' && !schLesenFertig());
+  var weiterAus = (s.art==='bestaetigen' && !_schHaken) || (s.art==='lesen' && !schLesenFertig()) ||
+                  schVideoGesperrt();
+  if(schVideoGesperrt()) inhalt+='<p class="hint" id="schVideoStand">'+esc(schVideoStandText())+'</p>';
   return '<div class="sch-schritt">'+
     (s.titel ? '<h3>'+esc(s.titel)+'</h3>' : '')+
     (s.art!=='bestaetigen' && s.art!=='lesen' && s.text ? '<p>'+markMentions(linkify(esc(s.text))).replace(/\n/g,'<br/>')+'</p>' : '')+
@@ -22608,15 +22620,15 @@ function schFrageMarkup(){
     '<div class="sch-antworten">'+
       (f.antworten||[]).map(function(t,i){
         var kl='';
-        if(a.richtig && i===f.richtig) kl=' richtig';
+        if((a.richtig || a.fertig) && i===f.richtig) kl=' richtig';
         else if((a.falsch||[]).indexOf(i)>=0) kl=' falsch';
         return '<button type="button" class="sch-antwort'+kl+'" data-schantwort="'+i+'"'+
-          ((a.richtig || (a.falsch||[]).indexOf(i)>=0) ? ' disabled' : '')+'>'+
+          ((a.richtig || a.fertig || (a.falsch||[]).indexOf(i)>=0) ? ' disabled' : '')+'>'+
           '<span class="sch-buchst">'+buchst[i]+'</span><span>'+esc(t)+'</span></button>';
       }).join('')+
     '</div>'+
     (_schOffenerHinweis ? '<div class="sch-hinweis">'+esc(_schOffenerHinweis)+'</div>' : '')+
-    (a.richtig ? '<div class="hilfe-knoepfe"><button type="button" class="btn btn-primary" '+
+    ((a.richtig || a.fertig) ? '<div class="hilfe-knoepfe"><button type="button" class="btn btn-primary" '+
       'id="schWeiter">'+(function(){ var n=schFolgeNaechste();
         return !n ? 'Abschliessen' : n.art==='frage' ? 'Nächste Frage' : 'Weiter'; })()+
       '</button></div>' : '')+
@@ -22774,6 +22786,7 @@ function schVideosAufloesen(box){
     schSpeicherUrl(v.getAttribute('data-speicher')).then(function(u){ v.src=u; }, function(e){
       var c=(e && e.code)||'';
       var rahmen=v.parentNode; if(!rahmen) return;
+      if(typeof box._videoFehler==='function') box._videoFehler();
       rahmen.innerHTML='<div>'+ikon('warnung')+'<b>'+
         (c==='demo' ? 'In der Vorführung läuft dieses Video nicht' : 'Das Video ließ sich nicht laden')+'</b>'+
         '<span>'+(c==='demo' ? 'Es liegt im Speicher des Betriebs und ist nur dort zu sehen.'
@@ -22783,8 +22796,78 @@ function schVideosAufloesen(box){
   });
 }
 
+/* ── „Weiter" erst nach dem Video ─────────────────────────────────
+   Gesperrt, solange weniger als 90 % der Länge wirklich gelaufen sind.
+   Gezählt wird der Fortschritt zwischen zwei Zeitmeldungen des Players
+   — ein Sprung nach vorn (Vorspulen) zählt nicht, schneller abspielen
+   schon (wer mit 1,5-facher Geschwindigkeit schaut, hat es gesehen).
+   Frei ist es:
+     · für die Geschäftsführung (der Teilnehmer ist mit einem Chef-Konto
+       verknüpft; das entscheidet der Server in schulungStart),
+     · wenn der Schritt schon einmal abgeschlossen war (Zurückblättern),
+     · wenn das Video sich nicht abspielen lässt — sonst hinge die ganze
+       Schulung an einer Leitung, die gerade streikt. Das steht dann
+       auch so da. */
+function schVideoSchritt(){
+  var s=(_schModul && (_schModul.schritte||[])[_schPos])||{};
+  return (s.art==='video' || s.art==='lesen') && s.quelle ? s : null;
+}
+function schVideoGesperrt(){
+  if(_schPhase!=='schritte' || !_schLauf || _schLauf.ohneVideoSperre) return false;
+  if(!schVideoSchritt() || _schGesehen.indexOf(_schPos)>=0) return false;
+  var st=_schVideoStand[_schPos];
+  return !(st && (st.fertig || st.fehler));
+}
+function schVideoStandText(){
+  var st=_schVideoStand[_schPos]||{}, s=schVideoSchritt()||{};
+  var dauer=st.dauer || s.dauer || 0;
+  if(!dauer) return 'Weiter geht es, wenn du das Video angesehen hast.';
+  var rest=Math.max(0, dauer*0.9-(st.gesehen||0));
+  return 'Weiter geht es, wenn du das Video angesehen hast — noch etwa '+
+    (rest<90 ? Math.max(1,Math.ceil(rest))+' Sekunden' : Math.round(rest/60)+' Minuten')+'.';
+}
+function schVideoBeobachten(box){
+  var s=schVideoSchritt(); if(!s) return;
+  var v=box.querySelector('.sch-video video'); if(!v) return;
+  var pos=_schPos;
+  var st=_schVideoStand[pos] || (_schVideoStand[pos]={ gesehen:0, dauer:0, fertig:false, fehler:false });
+  var zuletzt=null, gezeigt=0;
+  function auffrischen(){
+    if(_schPos!==pos || _schPhase!=='schritte') return;
+    var w=$('schWeiter'), t=$('schVideoStand');
+    var zu=schVideoGesperrt();
+    if(w) w.disabled=zu;
+    if(t){ if(zu) t.textContent=schVideoStandText(); else t.remove(); }
+  }
+  function pruefen(){
+    if(st.dauer && st.gesehen>=st.dauer*0.9) st.fertig=true;
+    var jetzt=Date.now();
+    if(st.fertig || jetzt-gezeigt>1000){ gezeigt=jetzt; auffrischen(); }
+  }
+  v.addEventListener('loadedmetadata', function(){
+    if(isFinite(v.duration) && v.duration>0) st.dauer=v.duration;
+    auffrischen();
+  });
+  v.addEventListener('timeupdate', function(){
+    var t=v.currentTime;
+    if(zuletzt!==null && !v.seeking){
+      var d=t-zuletzt;
+      if(d>0 && d<=3) st.gesehen+=d;
+    }
+    zuletzt=t; pruefen();
+  });
+  v.addEventListener('seeking', function(){ zuletzt=null; });
+  v.addEventListener('seeked', function(){ zuletzt=v.currentTime; });
+  v.addEventListener('ended', function(){ pruefen(); });
+  v.addEventListener('error', function(){ st.fehler=true; auffrischen(); });
+  /* Die Fehlermeldung aus schVideosAufloesen ersetzt das Element — dann
+     kommt kein error-Ereignis mehr an. */
+  box._videoFehler=function(){ if(_schPos===pos){ st.fehler=true; auffrischen(); } };
+}
+
 function schLaufBinden(box){
   schLesenBeobachten();
+  schVideoBeobachten(box);
   schVideosAufloesen(box);
   var h=$('schHaken');
   if(h) h.addEventListener('change', function(){
@@ -22813,13 +22896,13 @@ function schHakenStand(){
   return s.art==='bestaetigen' && _schGesehen.indexOf(_schPos)>=0;
 }
 function schWeiter(){
-  if(_schPhase==='schritte' && !schLesenFertig()) return;
+  if(_schPhase==='schritte' && (!schLesenFertig() || schVideoGesperrt())) return;
   if(_schPhase==='schritte' && _schGesehen.indexOf(_schPos)<0) _schGesehen.push(_schPos);
   /* Beantwortete Fragen überspringen: wer zu einem Schritt zurückblättert
      und wieder vor geht, muss nicht dieselbe Frage zweimal lösen. */
   var k=_schFolgeIdx+1;
   while(k<_schFolge.length && _schFolge[k].art==='frage' &&
-        (_schAntworten[_schFolge[k].i]||{}).richtig) k++;
+        ((_schAntworten[_schFolge[k].i]||{}).richtig || (_schAntworten[_schFolge[k].i]||{}).fertig)) k++;
   /* Ende der Folge — mit oder ohne Fragen ist das Modul hier zu Ende. */
   if(k>=_schFolge.length) return schAbschliessen();
   var vorher=_schPhase;
@@ -22829,7 +22912,7 @@ function schWeiter(){
 function schAntwort(i){
   var f=(_schModul.fragen||[])[_schFrageIdx]||{};
   var a=_schAntworten[_schFrageIdx];
-  if(!a || a.richtig) return;
+  if(!a || a.richtig || a.fertig) return;
   a.versuche=(a.versuche||0)+1;
   if(i===f.richtig){
     a.richtig=true;
@@ -22844,12 +22927,14 @@ function schAntwort(i){
     /* Bei einer Bestehensgrenze zählt der erste Versuch — dann geht es
        ohne Wiederholung weiter. „Alles richtig" lässt so lange
        probieren, bis es sitzt. */
+    /* Bei einer Bestehensgrenze zählt der erste Versuch. Bis zum
+       30.9.2026 ging es danach sofort zur nächsten Frage — und der
+       Hinweis, der erklären soll, stand unter der NÄCHSTEN Frage oder
+       gar nicht. Jetzt bleibt die Frage stehen: die richtige Antwort
+       ist markiert, der Hinweis steht darunter, und „Weiter" führt
+       weiter. */
     if((_schModul.strenge||'alles')==='grenze'){
       a.richtig=false; a.fertig=true;
-      if(_schFolgeIdx+1 < _schFolge.length){
-        schFolgeGehe(_schFolgeIdx+1); schLaufZeichnen(); schLaufSichern(); return;
-      }
-      return schAbschliessen();
     }
   }
   schLaufZeichnen(); schLaufSichern();
@@ -23019,7 +23104,13 @@ function schVerwaltenZeichnen(){
 function schTnSelectBauen(){
   var sel=$('schTnKonto'); if(!sel) return;
   var leute=(typeof _employees!=='undefined' && _employees) ? _employees : [];
+  /* Das eigene Konto steht in _employees nicht. Ohne diese Zeile konnte
+     sich die Geschäftsführung nicht selbst als Teilnehmer verknüpfen —
+     und die Ausnahme von der Video-Sperre (30.9.2026) griffe nie. */
+  var ich=session && session.uid;
+  var schonDa=leute.some(function(e){ return (e.uid||e.id)===ich; });
   sel.innerHTML='<option value="">— ohne Zugang —</option>'+
+    (ich && !schonDa ? '<option value="'+esc(ich)+'">'+esc((session.name||'Ich')+' (ich)')+'</option>' : '')+
     leute.map(function(e){
       return '<option value="'+esc(e.uid||e.id)+'">'+esc(e.name||e.email||'?')+'</option>';
     }).join('');

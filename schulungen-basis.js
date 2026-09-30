@@ -554,18 +554,26 @@ window.SCHULUNGEN_BASIS = {
       titel: 'Das Beratungsgespräch — vom Anruf bis zur Empfehlung',
       beschreibung: '15 Videos: Terminvereinbarung, Begrüßung, Bedarfsanalyse, Angebot, Einwände, Weiterempfehlung — mit Beispielgesprächen.',
       dauer: 150, pflicht: true, gueltigMonate: 0,
-      strenge: 'alles',
+      /* Aus dem Betrieb, 30.9.2026: „mache es alles etwas schwieriger es
+         soll ja auch nicht jeder direkt bestehen". Bei einer Grenze zählt
+         der ERSTE Versuch; danach zeigt die App die richtige Antwort mit
+         Hinweis, und es geht weiter. Wer unter 80 % bleibt, macht die
+         Schulung noch einmal. */
+      strenge: 'grenze', grenze: 80,
       schritte: [
         /* 0 */
         { art: 'text', titel: 'Worum es geht',
           text: 'Diese Schulung zeigt Schritt für Schritt, wie aus einem Interessenten ein ' +
                 'Mitglied wird, das lange und zufrieden bleibt: vom ersten Anruf über das ' +
                 'Beratungsgespräch bis zur Weiterempfehlung.\n\n' +
-                'Die Videos bauen aufeinander auf. Nach den meisten kommen ein paar Fragen dazu, ' +
-                'am Ende noch einige, die mehrere Videos verbinden. Falsch beantwortet heißt: ' +
-                'Hinweis lesen, noch einmal versuchen.\n\n' +
-                'In den Videos ist mehrfach vom Handout die Rede, mit Musterantworten und ' +
-                'Mustertelefonat. Frag deine Studioleitung danach.\n\n' +
+                'Die Videos bauen aufeinander auf. Nach jedem kommen Fragen dazu, am Ende noch ' +
+                'einige, die mehrere Videos verbinden.\n\n' +
+                'So wird gewertet: Es zählt jeweils die ERSTE Antwort. Liegst du daneben, siehst du ' +
+                'die richtige Antwort und einen Hinweis — dann geht es weiter. Bestanden ist ab 80 % ' +
+                'richtig; sonst machst du die Schulung noch einmal.\n\n' +
+                '„Weiter" geht bei jedem Video erst, wenn du es angesehen hast. Vorspulen zählt nicht.\n\n' +
+                'In den Videos ist mehrfach vom Handout die Rede. Die Zusammenfassung ' +
+                'dazu bekommst du bei deiner Studioleitung.\n\n' +
                 'Alles zusammen dauert gut zwei Stunden. Du musst es nicht am Stück machen.' },
         /* 1 */
         { art: 'video', titel: '1 · Einleitung', dauer: 180,
@@ -636,531 +644,572 @@ window.SCHULUNGEN_BASIS = {
       ],
       fragen: [
         /* ── 1 Einleitung ── */
-        { nach: 1, frage: 'Warum ist es so wichtig, in der Beratung man selbst zu bleiben?',
+        { nach: 1, frage: 'Warum merkt ein Interessent sofort, wenn du dich verstellst oder unsicher bist?',
           antworten: [
-            'Weil ein lockeres Gespräch kürzer dauert',
-            'Weil es im Handout so steht',
-            'Weil der Interessent der Spiegel des Beraters ist — wer sich verstellt, gestresst oder unsicher ist, den durchschaut er',
-            'Weil Interessenten lieber mit Kollegen sprechen, die sie schon kennen'
+            'Weil er vorher Bewertungen gelesen hat',
+            'Weil er mehrere Studios vergleicht',
+            'Weil er in der Beratung dein Spiegel ist',
+            'Weil er schon einmal EMS gemacht hat'
           ], richtig: 2,
-          hinweis: 'Im Video: „der Interessent ist immer Spiegel des Beraters". Verstellen, Stress und Unsicherheit merkt er sofort.' },
-        { nach: 1, frage: 'Du hattest drei Termine hintereinander und merkst, dass du gestresst bist. Der nächste Interessent ist da. Was tust du?',
+          hinweis: '„Der Interessent ist immer Spiegel des Beraters." Stress, Unsicherheit und Verstellen überträgt sich — deshalb: du selbst bleiben.' },
+        { nach: 1, frage: 'Du kommst gehetzt aus drei Terminen, der nächste Interessent wartet schon. Was ist laut Einleitung richtig?',
           antworten: [
-            'Ihn begrüßen, Platz nehmen lassen, ein Getränk anbieten — kurz rausgehen, durchatmen, dann entspannt anfangen',
-            'Gleich loslegen, damit er nicht warten muss',
-            'Den Termin verschieben',
-            'Schnell einen Kollegen schicken'
+            'Begrüßen, Getränk anbieten, kurz rausgehen und durchatmen',
+            'Sofort anfangen, damit er nicht noch länger wartet',
+            'Den Termin an einen Kollegen abgeben, der gerade frei ist',
+            'Mit dem Training anfangen und das Gespräch nachholen'
           ], richtig: 0,
-          hinweis: 'Der Interessent soll eine entspannte, gute Stunde haben. Zwei Minuten Durchatmen sind besser als ein gestresster Start.' },
-        { nach: 1, frage: 'Ein Interessent wirkt auf dich so, als könne er sich das nicht leisten. Was gilt?',
+          hinweis: 'Der Interessent soll eine entspannte Stunde haben. Zwei Minuten Durchatmen verhindern, dass sich dein Stress auf ihn überträgt.' },
+        { nach: 1, frage: 'Welcher Gedanke vor dem Gespräch macht einen Abschluss laut Video am unwahrscheinlichsten?',
           antworten: [
-            'Dann gleich die günstigste Variante anbieten',
-            'Das Gespräch kürzer halten',
-            'Den Preis erst gar nicht nennen',
-            'Niemals für den Kunden denken — das Gespräch genauso führen wie mit jedem anderen'
+            '„Der hat sich bestimmt schon gut informiert."',
+            '„Hoffentlich finde ich sein Ziel heraus."',
+            '„Der hat ja extra einen Termin gemacht."',
+            '„Das ist bestimmt zu teuer für den."'
           ], richtig: 3,
-          hinweis: '„Wenn ihr euch denkt, das ist bestimmt zu teuer für den, dann wird das auch zu teuer für den sein."' },
-        { nach: 1, frage: 'Was ist die eigentliche Aufgabe im Beratungsgespräch?',
+          hinweis: 'Niemals für den Kunden denken: „wenn ihr euch denkt, das ist bestimmt zu teuer für den, dann wird das auch zu teuer für den sein."' },
+        { nach: 1, frage: 'Was ist im Beratungsgespräch laut Einleitung die eigentliche Aufgabe?',
           antworten: [
-            'Möglichst schnell den Preis nennen',
-            'Herausfinden, was der Kunde möchte — und vor allem warum',
-            'Das Studio und die Geräte zeigen',
-            'Die Vorteile von EMS vollständig erklären'
+            'Herausfinden, was der Kunde möchte',
+            'Herausfinden, was er möchte — und warum',
+            'Das Training so gut wie möglich erklären',
+            'Die passende Laufzeit für ihn festlegen'
           ], richtig: 1,
-          hinweis: 'Das Interesse ist schon da: er hat sich informiert, angerufen, einen Termin gemacht und ist hergefahren. Jetzt geht es um das Warum.' },
+          hinweis: 'Das „Was" reicht nicht. Um das „Warum" geht es in allen folgenden Videos.' },
 
         /* ── 2 Call-in / Walk-in ── */
-        { nach: 2, frage: 'Ein Interessent ruft an und fragt als Erstes: „Was kostet das?" Was steckt meistens dahinter?',
+        { nach: 2, frage: 'Welchen Wert hat laut Video ein neues Abo im Schnitt — ohne Empfehlungen und Verlängerungen?',
           antworten: [
-            'Er weiß schlicht nicht, was er sonst fragen soll — und möchte eigentlich eingeladen werden',
-            'Er will Preise vergleichen',
-            'Er will wissen, ob er es sich leisten kann',
-            'Er hat schon woanders unterschrieben'
+            'Etwa 2.500 Euro',
+            'Etwa 500 Euro',
+            'Etwa 1.200 Euro',
+            'Etwa 5.000 Euro'
           ], richtig: 0,
-          hinweis: 'In über 80 % der Fälle. Die meisten waren noch nie in einem EMS-Studio und wissen nicht, was sie fragen sollen.' },
-        { nach: 2, frage: 'Wie reagierst du auf „Was kostet das?" am Telefon?',
+          hinweis: '„Wenn jemand anruft, dann rufen da potenziell mindestens 2.500 Euro an." Deshalb ist schon der erste Anruf so wichtig.' },
+        { nach: 2, frage: 'Ein Anrufer fragt als Erstes: „Was kostet das?" Was steckt laut Video in über 80 % der Fälle dahinter?',
           antworten: [
-            'Alle Preise und Laufzeiten vorlesen',
-            'Sagen, dass man am Telefon keine Preise nennt',
-            'Fragen, ob er schon mal EMS gemacht hat, und ihn zu einem kostenlosen, unverbindlichen Beratungsgespräch einladen',
-            'Auf die Homepage verweisen'
+            'Er will Preise mit anderen Studios vergleichen',
+            'Er prüft, ob er es sich leisten kann',
+            'Er weiß nicht, was er sonst fragen soll',
+            'Er hat ein günstigeres Angebot gesehen'
           ], richtig: 2,
-          hinweis: 'Einladen statt Preisliste. Fragt er ein zweites Mal nach, ehrlich antworten: „die meisten entscheiden sich für …" — und wieder zum Termin.' },
-        { nach: 2, frage: 'Wie schlägst du den Termin vor?',
+          hinweis: 'Die meisten waren noch nie in einem EMS-Studio. Eigentlich möchten sie eingeladen werden.' },
+        { nach: 2, frage: 'Wie antwortest du am besten auf die erste Frage „Was kostet das?"',
           antworten: [
-            '„Wann hätten Sie denn mal Zeit?"',
-            'Mit einer Alternativfrage: „Passt es Ihnen eher vormittags oder abends?" — dann zwei konkrete Zeiten',
-            '„Rufen Sie einfach an, wenn es passt."',
-            'Mit dem nächsten freien Termin in zwei Wochen'
+            'Den günstigsten Wochenbetrag nennen und dann einladen',
+            'Fragen, ob er schon EMS gemacht hat, und kostenlos einladen',
+            'Freundlich erklären, dass es am Telefon keine Preise gibt',
+            'Alle Laufzeiten kurz erklären, dann nach dem Ziel fragen'
           ], richtig: 1,
-          hinweis: 'Immer eine Alternativfrage — und zeitnah. Ein Termin in zwei Wochen wird selten wahrgenommen.' },
-        { nach: 2, frage: 'Jemand fragt: „Was ist das mit dem Strom genau?" Wie antwortest du?',
+          hinweis: 'Erst einladen. Fragt er ein zweites Mal nach, ehrlich: „die meisten entscheiden sich für …" — und zurück zum Termin.' },
+        { nach: 2, frage: 'Der Anrufer fragt zum zweiten Mal nach dem Preis. Was gilt laut Video?',
           antworten: [
-            'Mit einem ausführlichen Fachvortrag über Reizstrom',
-            'Dass das schwer zu erklären ist',
-            'Mit dem Hinweis auf Studien',
-            'Kurz und knapp: die ganze Muskulatur gleichzeitig, nur 20 Minuten, individuell auf die Ziele — und dann die Einladung'
+            'Noch einmal ausweichen, spätestens beim dritten Mal nennen',
+            'Alle Varianten mit Preisen aufzählen',
+            'Auf die Homepage verweisen, dort steht alles',
+            'Offen die Variante nennen, die die meisten wählen, dann Termin'
           ], richtig: 3,
-          hinweis: 'Kein Fachvortrag. Kurz erklären, dann einladen: „Wir nehmen uns eine Stunde Zeit, dann lernen Sie es live kennen."' },
-        { nach: 2, frage: 'Was gehört zum Service, wenn der Termin ein paar Tage in der Zukunft liegt?',
+          hinweis: '„Man braucht der Frage nicht drei, vier Mal ausweichen." Interessenten wissen, dass es mehr kostet als ein Fitnessstudio.' },
+        { nach: 2, frage: 'Warum sollen Termine möglichst zeitnah vereinbart werden?',
           antworten: [
-            'Nichts, er hat ja zugesagt',
-            'Eine Rechnung schicken',
-            'Am Tag vorher anrufen und den Termin bestätigen: Anfahrt, vorher etwas trinken, Handtuch und Sportschuhe',
-            'Einen Flyer per Post senden'
-          ], richtig: 2,
-          hinweis: 'Den Termin einen Tag vorher bestätigen. Wer nicht erreichbar ist, bekommt eine SMS vom Studio-Handy.' },
+            'Damit der Kalender über die Woche gleichmäßig gefüllt ist',
+            'Weil sonst ein anderer Trainer den Termin übernimmt',
+            'Damit der Interessent keine Zeit hat, Preise zu vergleichen',
+            'Weil die Lust jetzt da ist — in zwei Wochen kommen viele nicht'
+          ], richtig: 3,
+          hinweis: '„Wenn ihr die für in zwei Wochen terminiert, dann wird die Wahrscheinlichkeit, dass sie kommen, sehr gering."' },
+        { nach: 2, frage: 'Was gehört laut Video einen Tag vor dem vereinbarten Termin dazu?',
+          antworten: [
+            'Eine E-Mail mit Preisliste und Anfahrtsbeschreibung schicken',
+            'Anrufen und bestätigen: Anfahrt, trinken, Handtuch, Sportschuhe',
+            'Nichts — ein Bestätigungsanruf wirkt unsicher und aufdringlich',
+            'Den Termin an einen erfahrenen Kollegen übergeben, der Zeit hat'
+          ], richtig: 1,
+          hinweis: 'Den Termin bestätigen gehört zum Service. Wer nicht erreichbar ist, bekommt eine SMS vom Studio-Handy.' },
 
         /* ── 3 Call-out ── */
-        { nach: 3, frage: 'Über die Homepage kommt eine Anfrage für ein Probetraining. Wann meldest du dich?',
+        { nach: 3, frage: 'Über ein Online-Formular kommt eine Anfrage rein. Was ist die richtige Reihenfolge, wenn du ihn nicht erreichst?',
           antworten: [
-            'Sobald du sie siehst — am besten direkt anrufen',
-            'Innerhalb der nächsten Woche',
-            'Wenn gerade wenig los ist',
-            'Erst, wenn er sich ein zweites Mal meldet'
+            'Anrufen — E-Mail — am nächsten Tag noch einmal anrufen',
+            'E-Mail — zwei Tage warten — dann anrufen',
+            'Anrufen — SMS — nach einer Woche noch einmal anrufen',
+            'E-Mail — anrufen — Anfrage nach drei Tagen schließen'
           ], richtig: 0,
-          hinweis: 'Viele schreiben zwei, drei Studios an. Wer sich zuerst meldet und zuerst einen Termin hat, gewinnt.' },
-        { nach: 3, frage: 'Du erreichst den Interessenten nicht. Was dann?',
+          hinweis: 'So schnell wie möglich anrufen. Nicht erreicht: E-Mail, und am nächsten Tag noch einmal anrufen.' },
+        { nach: 3, frage: 'Warum gewinnt beim Call-out oft das Studio, das sich zuerst meldet?',
           antworten: [
-            'Nichts — er meldet sich schon',
-            'Jede Stunde anrufen, bis er abnimmt',
-            'Die Anfrage löschen',
-            'Eine E-Mail schreiben und, wenn keine Antwort kommt, am nächsten Tag noch einmal anrufen'
-          ], richtig: 3,
-          hinweis: 'Anrufen, E-Mail, am nächsten Tag noch einmal anrufen.' },
-        { nach: 3, frage: 'Wie machst du einen Interessenten aus einer Online-Aktion (z. B. einem Rücken-Programm) neugierig?',
+            'Weil es professioneller wirkt als die anderen',
+            'Weil die Werbung dann noch frisch im Kopf ist',
+            'Weil viele zwei, drei Studios gleichzeitig anschreiben',
+            'Weil der Interessent dann noch keinen Preis kennt'
+          ], richtig: 2,
+          hinweis: '„Die, die sich als erstes melden und als erstes einen Termin haben, sind die Gewinner."' },
+        { nach: 3, frage: 'Womit erhöhst du bei einer Online-Aktion laut Video die Erscheinungsquote?',
           antworten: [
-            'Gar nicht — einfach einen Termin nennen',
-            'Auf sein Ziel eingehen: nach den Beschwerden fragen und kurz sagen, warum EMS dafür passt — dann einladen',
-            'Ihm per Mail die Preisliste schicken',
-            'Ihm sagen, dass das Programm fast ausgebucht ist'
-          ], richtig: 1,
-          hinweis: 'Das erhöht die Erscheinungsquote: auf das Ziel eingehen (z. B. tiefliegende Muskulatur, bandscheibenschonend), dann mit Alternativfrage terminieren.' },
+            'Mit einem Rabatt für den ersten Monat',
+            'Mit einer Erinnerung eine Stunde vor dem Termin',
+            'Indem du auf sein Ziel eingehst und neugierig machst',
+            'Indem du den Termin möglichst weit hinaus legst'
+          ], richtig: 2,
+          hinweis: 'Z. B. beim Rücken-Programm: nach den Beschwerden fragen, kurz sagen, warum EMS passt — dann mit Alternativfrage einladen.' },
 
         /* ── 4 Begrüßung ── */
-        { nach: 4, frage: 'Um 15 Uhr steht Herr Mayer im Terminplaner, und um 15 Uhr kommt jemand herein, den du nicht kennst. Wie begrüßt du ihn?',
+        { nach: 4, frage: 'Was nennt das Video den „ersten Herzensöffner"?',
           antworten: [
-            'Offen und herzlich mit Namen: „Herzlich willkommen, Herr Mayer!" — den Namen hast du vorher nachgesehen',
-            '„Hallo, was kann ich für Sie tun?"',
-            'Erst im PC nachsehen, wer das sein könnte',
-            'Warten, bis er sich vorstellt'
+            'Den Interessenten mit Namen begrüßen',
+            'Ein Getränk anbieten',
+            'Ihn für den ersten Schritt loben',
+            'Mit Vornamen vorstellen'
           ], richtig: 0,
-          hinweis: 'Der Name ist der erste Herzensöffner. Vorher in den Plan schauen, nicht erst, wenn die Tür aufgeht.' },
-        { nach: 4, frage: 'Warum gibst du dem Interessenten am Anfang einen kurzen Überblick über die Stunde?',
+          hinweis: 'Den Namen vorher im Terminplaner nachsehen — nicht erst, wenn die Tür aufgeht.' },
+        { nach: 4, frage: 'Woraus bildet sich das „magische Viereck"?',
           antworten: [
-            'Damit er weiß, wie lange es dauert',
-            'Weil es so vorgeschrieben ist',
-            'Weil viele unsicher sind — noch nie in einem Studio gewesen — und Unsicherheit das Letzte ist, was wir wollen',
-            'Damit er gleich weiß, was es kostet'
-          ], richtig: 2,
-          hinweis: '„Wir sprechen erst über deine Ziele, dann trainieren wir, danach zeige ich dir, wie du mitmachen kannst." Und fragen, ob man sich Notizen machen darf.' },
-        { nach: 4, frage: 'Wozu dienen die Eisbrecherfragen (z. B. „Wie sind Sie auf uns aufmerksam geworden?")?',
-          antworten: [
-            'Nur für die Statistik',
-            'Um warm zu werden — und sie liefern Infos, die später bei Angebot und Einwänden helfen',
-            'Um Zeit zu überbrücken, bis das Gerät bereit ist',
-            'Um zu prüfen, ob er zahlungsfähig ist'
-          ], richtig: 1,
-          hinweis: 'Wer z. B. sagt, das Fitnessstudio sei nichts für ihn gewesen, hat dir schon ein Argument für später gegeben.' },
-        { nach: 4, frage: 'Du oder Sie?',
-          antworten: [
-            'Immer Du, das ist beim Sport so',
-            'Immer Sie',
-            'Das entscheidet die Studioleitung für alle',
-            'Mit Vornamen vorstellen und darauf achten, wie der Interessent es gerne hätte'
+            'Aus Blickkontakt, Händedruck, Name und Lächeln',
+            'Aus Begrüßung, Überblick, Eisbrecher und Lob',
+            'Aus Stimme, Haltung, Kleidung und Lächeln',
+            'Aus Mundwinkeln und Schultern'
           ], richtig: 3,
-          hinweis: 'Viele bieten dann selbst das Du an. Wer gesiezt werden möchte, wird gesiezt — er soll sich wohlfühlen.' },
-        { nach: 4, frage: 'Ein Interessent hat gelesen, man habe nach EMS riesigen Muskelkater. Was sagst du?',
+          hinweis: 'Je größer das Viereck aus Mundwinkeln und Schultern, desto positiver die Ausstrahlung.' },
+        { nach: 4, frage: 'Welcher Satz gehört laut Video in den Überblick zu Beginn — und warum?',
           antworten: [
-            'Dass das stimmt und dazugehört',
-            'Dass das nur Gerüchte aus dem Internet sind',
-            'Dass das erste Training moderat ist, die Werte gespeichert werden und man sich nach und nach steigert',
-            'Nichts, das merkt er schon'
+            '„Wir fangen gleich mit dem Training an" — damit keine Zeit verloren geht',
+            '„Erst Ziele, dann Training, dann wie du mitmachen kannst" — gegen Unsicherheit',
+            '„Am Ende zeige ich Ihnen unsere Preise" — damit er vorbereitet ist',
+            '„Das Ganze dauert etwa 20 Minuten" — damit er seinen Tag planen kann'
+          ], richtig: 1,
+          hinweis: 'Viele waren noch nie in einem Studio und sind unsicher. Wer weiß, was passiert, entspannt sich. Dazu fragen, ob man Notizen machen darf.' },
+        { nach: 4, frage: 'Wozu sind die Eisbrecherfragen außer zum Warmwerden noch gut?',
+          antworten: [
+            'Sie liefern Infos, die später bei Einwänden helfen',
+            'Sie zeigen, ob er sich die Mitgliedschaft leisten kann',
+            'Sie ersetzen die Bedarfsanalyse bei eiligen Terminen',
+            'Sie sind nur fürs Gefühl, danach nicht mehr wichtig'
+          ], richtig: 0,
+          hinweis: 'Wer sagt, das Fitnessstudio war nichts für ihn, hat dir ein Argument für später gegeben.' },
+        { nach: 4, frage: 'Du oder Sie — was empfiehlt der Trainer?',
+          antworten: [
+            'Immer Du — beim Sport duzt man sich, das lockert auf',
+            'Immer Sie, bis der Interessent von sich aus das Du anbietet',
+            'Mit Vornamen vorstellen und darauf achten, was ihm lieber ist',
+            'Du bei Jüngeren, Sie bei Älteren — das passt fast immer'
           ], richtig: 2,
-          hinweis: '„Heute übertreiben wir nicht, damit du dich die nächsten Tage noch bewegen kannst."' },
+          hinweis: 'Viele bieten dann selbst das Du an. Wer gesiezt werden möchte, wird gesiezt.' },
+        { nach: 4, frage: 'Was ist laut Video besser, wenn du im Gespräch eine Frage vergessen hast?',
+          antworten: [
+            'Den Fragebogen noch einmal von vorn durchgehen, sicher ist sicher',
+            'Sie einfach vergessen — lieber ehrliches Interesse als Roboter',
+            'Das Gespräch kurz unterbrechen und im Leitfaden nachsehen',
+            'Sie auf jeden Fall am Ende des Trainings noch nachholen'
+          ], richtig: 1,
+          hinweis: '„Lieber man vergisst mal eine Frage, als wenn man die ganze Zeit überlegen muss." Unsicherheit spiegelt sich.' },
 
         /* ── 5 Bedarfsanalyse ── */
-        { nach: 5, frage: 'Welches Ziel ist emotional?',
+        { nach: 5, frage: 'Welche Aussage über Kaufentscheidungen macht das Video?',
           antworten: [
-            '5 Kilo abnehmen, um wieder in den Lieblingsbikini zu passen und sich im Sommerurlaub am Strand wohlzufühlen',
-            '5 Kilo abnehmen',
-            'Rückenschmerzen in der Lendenwirbelsäule loswerden',
-            'Zweimal die Woche trainieren'
-          ], richtig: 0,
-          hinweis: 'Emotional ist ein Ziel, wenn man es sich als Bild vorstellen kann.' },
-        { nach: 5, frage: 'Wer redet in einer guten Bedarfsanalyse mehr?',
-          antworten: [
-            'Der Berater — er erklärt das Training',
-            'Beide gleich viel',
-            'Das hängt vom Interessenten ab',
-            'Der Interessent — der Berater stellt offene, geschickte Fragen'
+            'Sie sind etwa zur Hälfte emotional, zur Hälfte rational',
+            'Sie sind vor allem eine Frage des Preises',
+            'Sie sind rational, das Gefühl kommt erst danach',
+            'Heute geht man zum Teil von 100 % emotional aus'
           ], richtig: 3,
-          hinweis: 'Offene Fragen, damit der Interessent ins Reden kommt.' },
-        { nach: 5, frage: 'Der Interessent sagt: „Ich habe Rückenschmerzen." Mit welcher Frage kommst du vom rationalen zum emotionalen Ziel?',
+          hinweis: 'Früher ging man von 80 % emotional aus, heute zum Teil von 100 % — rational wird im Nachhinein erklärt.' },
+        { nach: 5, frage: 'Woran erkennst du, dass ein Ziel emotional ist?',
           antworten: [
-            '„Seit wann genau?"',
-            '„Was wäre für Sie anders, wenn die Schmerzen weg wären?"',
-            '„Waren Sie schon beim Arzt?"',
-            '„Welche Übungen machen Sie zu Hause?"'
+            'Der Kunde nennt eine genaue Zahl',
+            'Der Kunde wird dabei laut',
+            'Es hat mit Aussehen zu tun',
+            'Man kann es sich als Bild vorstellen'
+          ], richtig: 3,
+          hinweis: '„5 Kilo abnehmen" ist keins. „5 Kilo abnehmen, um im Urlaub im Lieblingsbikini am Strand zu liegen" schon.' },
+        { nach: 5, frage: 'Was ist das „dominante Kaufmotiv"?',
+          antworten: [
+            'Der Preis, den er höchstens zahlen will',
+            'Der Hauptgrund, warum er jetzt hier sitzt',
+            'Das Ziel, das am schnellsten erreichbar ist',
+            'Die Laufzeit, die ihn am meisten anspricht'
           ], richtig: 1,
-          hinweis: '„Was wäre anders, wenn …?" Dann kommen die Bilder: abends mit den Kindern spielen statt auf der Couch liegen.' },
-        { nach: 5, frage: 'Was bedeutet „Vergangenheit, Gegenwart, Zukunft" im Leitfaden zur Kaufmotivsuche?',
+          hinweis: 'Er sitzt nicht da, weil er Rückenschmerzen hat, sondern für das, was er ohne sie tun könnte.' },
+        { nach: 5, frage: 'Welche Reihe entspricht dem Leitfaden „Vergangenheit — Gegenwart — Zukunft"?',
           antworten: [
-            'Wie lange hat er es schon — in welchen Situationen merkt er es — was wäre in Zukunft anders',
-            'Früher trainiert, heute nicht, später vielleicht',
-            'Die Reihenfolge von Begrüßung, Training und Angebot',
-            'Die drei Laufzeiten der Mitgliedschaft'
+            '„Wie lange schon?" — „Wann merken Sie es?" — „Was wäre anders, wenn …?"',
+            '„Waren Sie im Fitnessstudio?" — „Was trainieren Sie?" — „Was planen Sie?"',
+            '„Was hat Sie hergeführt?" — „Was kostet es?" — „Wann starten Sie?"',
+            '„Wie alt sind Sie?" — „Wie fit sind Sie?" — „Wie fit wollen Sie sein?"'
           ], richtig: 0,
           hinweis: 'Die Zukunft ist immer das emotionale Ziel.' },
-        { nach: 5, frage: 'Warum fragst du: „Wenn Sie Ihr Ziel erreicht haben, möchten Sie es dann auch halten?"',
+        { nach: 5, frage: 'Was ist ein „Weg-von-Motiv"?',
           antworten: [
-            'Um das Gespräch zu verlängern',
-            'Um zu prüfen, ob er ehrlich ist',
-            'Weil jeder Ja sagt — und du später bei der Laufzeit darauf zurückkommen kannst: er hat es selbst gesagt',
-            'Das ist eine Frage für das Ende der Mitgliedschaft'
+            'Der Wunsch, vom alten Fitnessstudio wegzukommen',
+            'Ein Ziel, das er aufgeben möchte',
+            'Was passiert, wenn er NICHT startet — z. B. eine OP',
+            'Der Grund, warum er früher aufgehört hat'
           ], richtig: 2,
-          hinweis: 'Das gehört zur Einwandvorbehandlung. Was der Interessent selbst ausspricht, hat mehr Nachdruck als jede Empfehlung.' },
-        { nach: 5, frage: 'Was muss vor dem ersten Training passieren?',
+          hinweis: 'Hin-zu- und Weg-von-Motive verstärken. „Was wäre mit Ihrem Rücken, wenn Sie nicht starten?"' },
+        { nach: 5, frage: 'Welche Frage gehört zur Einwandvorbehandlung?',
           antworten: [
-            'Nichts, das Training geht vor',
-            'Die Ziele zusammenfassen und über Kontraindikationen sprechen — mit Unterschrift',
-            'Die Mitgliedschaft unterschreiben',
-            'Eine Körperanalyse'
-          ], richtig: 1,
-          hinweis: 'Kein Training ohne Unterschrift zu den gesundheitlichen Einschränkungen. Und vorher zusammenfassen, „dass ich nichts vergessen habe".' },
+            '„Welche Laufzeit stellen Sie sich denn so vor?"',
+            '„Was haben Sie bisher im Fitnessstudio gezahlt?"',
+            '„Wie lange überlegen Sie schon, etwas zu tun?"',
+            '„Wann könnten Sie denn zum Training wiederkommen?"'
+          ], richtig: 2,
+          hinweis: 'Sagt er später „muss noch überlegen", kannst du darauf zurückkommen. Ebenso: „Gibt es jemanden, der Sie unterstützt?"' },
+        { nach: 5, frage: 'In welcher Reihenfolge geht es am Ende der Bedarfsanalyse weiter?',
+          antworten: [
+            'Kontraindikationen mit Unterschrift — Ziele zusammenfassen — Training',
+            'Training — Ziele zusammenfassen — Kontraindikationen unterschreiben',
+            'Angebot zeigen — Kontraindikationen besprechen — Training',
+            'Ziele zusammenfassen — Training — Kontraindikationen unterschreiben'
+          ], richtig: 0,
+          hinweis: 'Kein Training ohne Unterschrift zu den gesundheitlichen Einschränkungen. Vor dem Training die Ziele zusammenfassen: „damit ich nichts vergessen habe".' },
 
         /* ── 5.1 Beispiel ── */
-        { nach: 6, frage: 'Im Beispiel sagt Nathalie, im Fitnessstudio habe ihr die Anleitung gefehlt, und Zeit habe sie kaum. Was macht der Berater daraus?',
+        { nach: 6, frage: 'Nathalie sagt, im Fitnessstudio habe ihr die Anleitung gefehlt. Was macht der Berater daraus?',
           antworten: [
-            'Er geht nicht darauf ein',
-            'Er empfiehlt ihr ein anderes Fitnessstudio',
-            'Er fragt nach ihrem Budget',
-            'Er fasst es zusammen: ihr ist wichtig, dass jemand an ihrer Seite ist, und der Zeitfaktor — und genau das bietet EMS'
+            'Er erklärt, wie gut die Geräte bei uns sind',
+            'Er fragt nach, welches Studio das war und warum',
+            'Er empfiehlt ihr einen festen Trainingsplan für zu Hause',
+            '„Dir ist wichtig, dass jemand an deiner Seite ist"'
           ], richtig: 3,
-          hinweis: 'Zuhören, zusammenfassen, zurückspiegeln — daraus werden später die Argumente.' },
-        { nach: 6, frage: 'Welches Bild steckt bei Nathalie am Ende hinter „weniger Rückenschmerzen"?',
+          hinweis: 'Zuhören, zusammenfassen, zurückspiegeln — daraus wird später das Argument „immer ein Personal Training".' },
+        { nach: 6, frage: 'Welches Bild steht bei Nathalie am Ende hinter „weniger Rückenschmerzen"?',
           antworten: [
-            'Sie will Muskeln aufbauen',
-            'Sie will weniger Medikamente nehmen',
-            'Am Wochenende Freunden nicht mehr absagen müssen, mit besserer Laune von der Arbeit kommen, ihre Mutter heben können',
-            'Sie will schneller laufen'
-          ], richtig: 2,
-          hinweis: 'Aus einem rationalen Ziel („Rücken") werden konkrete Situationen — das emotionale Ziel.' },
-        { nach: 6, frage: 'Bei welchen Punkten darf man laut Beispiel nur nach Rücksprache mit dem Arzt trainieren?',
+            'Wieder im Fitnessstudio mithalten und mehr Sport machen können',
+            'Freunden nicht absagen, bessere Laune, die Mutter heben können',
+            'Weniger Kopfschmerztabletten nehmen und besser schlafen können',
+            'Morgens ohne Schmerzen aufstehen und fit in den Tag starten'
+          ], richtig: 1,
+          hinweis: 'Aus „Rücken" werden konkrete Situationen — das ist das emotionale Ziel.' },
+        { nach: 6, frage: 'Welche Punkte nennt der Berater, bei denen man nur nach Rücksprache mit dem Arzt trainiert?',
           antworten: [
             'Herzschrittmacher, akute Tumorerkrankung, Epilepsie, Schwangerschaft',
-            'Leichte Knieprobleme',
-            'Rückenschmerzen und Migräne',
-            'Übergewicht'
+            'Knieprobleme, Migräne, hoher Blutdruck, Diabetes Typ 2',
+            'Bandscheibenvorfall, Schwangerschaft, Asthma, Bluthochdruck',
+            'Herzschrittmacher, Migräne, frühere Knieprobleme, Übergewicht'
           ], richtig: 0,
-          hinweis: 'Diese Kontraindikationen werden genannt und abgezeichnet. Die vollständige Liste liegt im Studio.' },
+          hinweis: 'Blutdruck und Diabetes fragt er zusätzlich „zur Trainingsgestaltung". Die vollständige Liste liegt im Studio und wird abgezeichnet.' },
 
         /* ── 6 Angebotspräsentation ── */
-        { nach: 7, frage: 'Warum erwähnst du im Training bei einer Übung, wofür sie ist („die ist jetzt speziell für deinen Nacken")?',
+        { nach: 7, frage: 'Warum sagst du im Training bei einer Übung dazu, wofür sie ist?',
           antworten: [
-            'Damit das Training länger wirkt',
-            'Weil die Übung sonst nicht wirkt',
-            'Das ist nicht nötig',
-            'Weil der Kunde es sonst nicht weiß — so verbindet er das Training mit seinem Ziel'
-          ], richtig: 3,
-          hinweis: 'Nur weil du weißt, wofür die Übung ist, weiß es der Kunde noch lange nicht.' },
-        { nach: 7, frage: 'Wie sprichst du nach dem Training mit dem Interessenten?',
-          antworten: [
-            'Zurückhaltend, damit er sich nicht gedrängt fühlt',
-            'Als wäre er schon Mitglied: „Deine Werte sind auf deiner Chipkarte gespeichert, beim nächsten Mal geht es direkt los."',
-            'Gar nicht, er soll sich erst umziehen',
-            'Du fragst direkt, ob er unterschreiben will'
-          ], richtig: 1,
-          hinweis: 'Wir gehen davon aus, dass er sich anmeldet. Kaufentscheidungsfragen wie „Kannst du dir vorstellen, wiederzukommen?" leiten zum Angebot über.' },
-        { nach: 7, frage: 'Was machst du, bevor du die Mitgliedschaften zeigst?',
-          antworten: [
-            'Die Ziele noch einmal zusammenfassen und die Emotionen wecken — das letzte Gespräch darüber ist 20 Minuten her',
-            'Die Preisliste vorlesen',
-            'Fragen, wie viel er ausgeben möchte',
-            'Den Vertrag ausdrucken'
-          ], richtig: 0,
-          hinweis: 'Erst die Emotion, dann Zahlen, Daten, Fakten.' },
-        { nach: 7, frage: 'Du zeigst mehrere Laufzeiten. Was darf nie fehlen?',
-          antworten: [
-            'Der Hinweis auf die Kündigungsfrist',
-            'Ein Rabatt',
-            'Eine klare Empfehlung — sonst heißt es „Ich schlaf noch eine Nacht drüber"',
-            'Ein Vergleich mit anderen Studios'
+            'Damit er die Übung sauber und richtig ausführt',
+            'Damit das Training professioneller und ruhiger wirkt',
+            'Weil er es sonst nicht mit seinem Ziel verbindet',
+            'Weil er die Muskeln sonst gar nicht richtig spürt'
           ], richtig: 2,
-          hinweis: 'Immer eine Variante empfehlen, mit Begründung aus seinen Zielen. Entscheidet er sich für eine andere: ankreuzen — auch gut.' },
-        { nach: 7, frage: 'Welche Formulierung passt?',
+          hinweis: 'Nur weil DU weißt, dass die Übung für Schulter und Nacken ist, weiß es der Kunde noch lange nicht.' },
+        { nach: 7, frage: 'Wie sprichst du nach dem Training über die Chipkarte?',
           antworten: [
-            '„Der 24-Monats-Vertrag kostet dich 25 Euro die Woche."',
-            '„Bei der 24-Monats-Variante investierst du nur 25 Euro die Woche in deine Gesundheit."',
-            '„Unterschreib bitte hier den Vertrag."',
-            '„Die Kosten sind leider etwas höher."'
+            '„Wenn du dich anmeldest, bekommst du auch eine Chipkarte."',
+            '„Deine Werte sind gespeichert — nächstes Mal geht es direkt los."',
+            '„Die Chipkarte zeige ich dir, wenn du Mitglied bist."',
+            '„Die Chipkarte kostet einmalig eine kleine Gebühr."'
           ], richtig: 1,
-          hinweis: 'Mitgliedschaft statt Vertrag, Investition statt Kosten, Bestätigung statt Unterschrift. Kleinigkeiten mit großer Wirkung.' },
-        { nach: 7, frage: 'Was ist laut Video ein Hauptgrund, wenn sich ein Interessent nicht anmeldet?',
+          hinweis: 'Wir reden so, als wäre er schon Mitglied. Das ist der Übergang zur Angebotspräsentation.' },
+        { nach: 7, frage: 'Der Interessent kann sich nicht zwischen Laufzeiten entscheiden. Was sagt das Video dazu?',
           antworten: [
-            'Der Preis',
-            'Das Training war zu anstrengend',
-            'Die Laufzeit',
-            'Das emotionale Ziel wurde nicht gefunden'
+            'Alle Laufzeiten gleichwertig vorstellen und ihn wählen lassen',
+            'Mit der kürzesten beginnen, damit er sich traut',
+            'Ihm die Unterlagen für zu Hause mitgeben',
+            'Immer eine Variante empfehlen — sonst schläft er drüber'
           ], richtig: 3,
-          hinweis: 'Wenn die Emotionen nicht geweckt wurden, heißt es hinterher „zu teuer".' },
+          hinweis: 'Ohne Empfehlung heißt es: „Muss ich noch eine Nacht drüber schlafen." Entscheidet er sich anders: ankreuzen — auch gut.' },
+        { nach: 7, frage: 'Welche Formulierung empfiehlt das Handout-Beispiel im Video?',
+          antworten: [
+            '„Der Vertrag über 24 Monate kostet dich 25 Euro die Woche."',
+            '„Der Beitrag liegt bei 24 Monaten bei 25 Euro die Woche."',
+            '„Die Kosten für dein Training sind nur 25 Euro die Woche."',
+            '„Du investierst nur 25 Euro die Woche in deine Gesundheit."'
+          ], richtig: 3,
+          hinweis: 'Mitgliedschaft statt Vertrag, Investition statt Kosten oder Beitrag, Bestätigung statt Unterschrift.' },
+        { nach: 7, frage: 'Was ist laut Video ein Hauptgrund, warum sich jemand nicht anmeldet?',
+          antworten: [
+            'Die Laufzeit ist ihm zu lang',
+            'Das emotionale Ziel wurde nicht gefunden',
+            'Die einmaligen Gebühren sind zu hoch',
+            'Das Training war zu anstrengend'
+          ], richtig: 1,
+          hinweis: 'Wurden die Emotionen nicht geweckt, heißt es hinterher „zu teuer".' },
+        { nach: 7, frage: 'Wie präsentierst du die Mitgliedschaften laut Video — und warum?',
+          antworten: [
+            'Sicher und selbstbewusst — Zweifel überträgt sich auf ihn',
+            'Zurückhaltend und leise, damit er sich nicht gedrängt fühlt',
+            'Möglichst schnell, damit die Zahlen nicht lange abschrecken',
+            'Schriftlich zum Mitnehmen, damit er alles in Ruhe lesen kann'
+          ], richtig: 0,
+          hinweis: 'Günstiger als ein Personal Training für rund 25 Euro die Woche geht es kaum. Kein Grund, sich zu verstecken.' },
 
         /* ── 6.1 Beispiel ── */
-        { nach: 8, frage: 'Im Beispiel entscheidet sich Nathalie für 24 Monate. Womit begründet der Berater die Empfehlung?',
+        { nach: 8, frage: 'Womit begründet der Berater im Beispiel die 24 Monate?',
           antworten: [
-            'Dass die meisten 24 Monate machen',
-            'Mit einem Sonderangebot',
-            'Mit ihren eigenen Worten: ihr ist wichtig, das Ziel nicht nur zu erreichen, sondern zu halten',
-            'Dass 12 Monate nicht mehr angeboten werden'
+            'Dass 24 Monate die beliebteste Laufzeit sind',
+            'Dass es die 24 Monate gerade im Angebot günstiger gibt',
+            'Mit ihren eigenen Worten: Ziel erreichen UND halten',
+            'Dass ein Jahr für ihr Ziel auf jeden Fall zu kurz ist'
           ], richtig: 2,
-          hinweis: 'Die Frage aus der Bedarfsanalyse („möchten Sie es dann auch halten?") zahlt sich hier aus.' },
-        { nach: 8, frage: 'Nathalie hat sich entschieden. Wie geht es im Beispiel weiter?',
+          hinweis: 'Die Frage aus der Bedarfsanalyse („möchtest du es dann auch halten?") zahlt sich hier aus.' },
+        { nach: 8, frage: 'Nathalie hat sich für 24 Monate entschieden. Was tut der Berater als Nächstes?',
           antworten: [
-            'Er nimmt selbstverständlich die nächsten Punkte auf: Outfit oder Wäscheservice, einmalige Beträge, Bankverbindung',
-            'Der Berater fragt noch einmal, ob sie wirklich sicher ist',
-            'Er gibt ihr die Unterlagen für zu Hause mit',
-            'Er bietet einen Rabatt an'
-          ], richtig: 0,
+            'Er fragt noch einmal, ob sie sich wirklich sicher ist',
+            'Er gibt ihr die Unterlagen zum Durchlesen mit nach Hause',
+            'Er macht selbstverständlich weiter: Outfit, Gebühren, Bank',
+            'Er bietet ihr zur Sicherheit doch lieber 12 Monate an'
+          ], richtig: 2,
           hinweis: 'Je selbstverständlicher man es erklärt, desto selbstverständlicher ist es für den Kunden.' },
 
         /* ── 7 Einwandbehandlung ── */
-        { nach: 9, frage: 'Ein begeisterter Interessent sagt: „Ich ruf nächste Woche an und mache dann alles fest." Wie viele kommen tatsächlich wieder?',
+        { nach: 9, frage: 'Ein begeisterter Interessent will „nächste Woche anrufen und dann festmachen". Wie viele kommen laut Video wieder?',
           antworten: [
-            'Fast alle',
-            'Etwa die Hälfte',
-            'Rund 30 Prozent',
-            'Weniger als 10 Prozent'
-          ], richtig: 3,
-          hinweis: 'Die Motivation flacht zu Hause ab — wie das Blatt Papier im Video. Deshalb den Einwand im Gespräch behandeln.' },
-        { nach: 9, frage: 'Der Interessent sagt: „Das ist aber teuer." Was ist dein erster Schritt?',
-          antworten: [
-            'Sofort widersprechen: für Personal Training ist das günstig',
-            'Durchatmen, kurz schweigen, Verständnis zeigen',
-            'Einen Rabatt anbieten',
-            'Die günstigste Laufzeit vorschlagen'
-          ], richtig: 1,
-          hinweis: 'Nicht losschießen. „Kann ich mir vorstellen, dass sich das erst mal viel anhört."' },
-        { nach: 9, frage: '„Wenn ich dich richtig verstehe, geht es also nur um die Laufzeit?" — wie heißt dieser Schritt?',
-          antworten: [
-            'Einwand isolieren',
-            'Einwand ignorieren',
-            'Einwand wiederholen',
-            'Einwand abschließen'
+            'Weniger als 10 Prozent',
+            'Ungefähr jeder Zweite',
+            'Ungefähr jeder Dritte',
+            'Etwa 25 Prozent von ihnen'
           ], richtig: 0,
-          hinweis: 'Erst hinterfragen, woran es liegt — dann isolieren, ob das der einzige Punkt ist.' },
+          hinweis: 'Die Motivation flacht zu Hause ab — wie das Blatt Papier im Video.' },
+        { nach: 9, frage: 'Welche Reihenfolge der Einwandbehandlung zeigt das Video?',
+          antworten: [
+            'Verständnis — hinterfragen — Lösung — isolieren — Bedingungsfrage — abschließen',
+            'Hinterfragen — Verständnis — Bedingungsfrage — isolieren — Lösung — abschließen',
+            'Widersprechen — erklären — Verständnis — isolieren — Rabatt — Bedingungsfrage',
+            'Durchatmen/schweigen — Verständnis — hinterfragen — isolieren — Bedingungsfrage — Lösung'
+          ], richtig: 3,
+          hinweis: 'Sechs Schritte. Nicht sofort losschießen („stimmt doch gar nicht"), erst durchatmen und Verständnis zeigen.' },
+        { nach: 9, frage: '„Wenn ich dich richtig verstehe, ist es also nur die Laufzeit?" — was ist das?',
+          antworten: [
+            'Die Bedingungsfrage',
+            'Den Einwand isolieren',
+            'Den Einwand hinterfragen',
+            'Verständnis zeigen'
+          ], richtig: 1,
+          hinweis: 'Isolieren heißt: sicherstellen, dass es der EINZIGE Punkt ist. Danach kommt die Bedingungsfrage.' },
         { nach: 9, frage: 'Welche Frage ist die Bedingungsfrage?',
           antworten: [
-            '„Warum finden Sie das teuer?"',
-            '„Was verdienen Sie denn?"',
-            '„Wenn wir dafür eine Lösung finden — kannst du dir dann vorstellen, mit dem Training zu starten?"',
-            '„Möchten Sie noch einmal darüber schlafen?"'
-          ], richtig: 2,
-          hinweis: 'Danach die Lösung anbieten — oder den Kunden fragen: „Was wäre für dich die optimale Lösung?"' },
-        { nach: 9, frage: 'Du möchtest die einmaligen Gebühren auf zwei, drei Monate verteilen oder die Wäsche schenken. Was muss vorher klar sein?',
+            '„Wenn wir dafür eine Lösung finden — startest du dann?"',
+            '„Was genau stört dich denn an der Laufzeit noch?"',
+            '„Was wäre denn für dich die optimale Lösung dafür?"',
+            '„Gibt es sonst noch Fragen oder Punkte, die offen sind?"'
+          ], richtig: 0,
+          hinweis: 'Erst die Zusage für den Fall einer Lösung — dann die Lösung anbieten oder finden lassen.' },
+        { nach: 9, frage: 'Ein Interessent fürchtet einen Umzug. Welche Lösung zeigt das Video?',
           antworten: [
-            'Nichts, das darf jeder Berater selbst entscheiden',
-            'Dass es mit der Inhaberin bzw. dem Inhaber abgesprochen ist',
-            'Dass der Kunde schon unterschrieben hat',
-            'Dass es schriftlich im Handout steht'
+            '12 Monate, damit er schneller wieder raus ist',
+            'Monatlich kündbar, dafür zum höheren Wochenbetrag',
+            '24 Monate, Sonderkündigungsrecht beim Umzug notiert',
+            'Erst nach dem Umzug anmelden, im neuen Studio vor Ort'
+          ], richtig: 2,
+          hinweis: 'Die günstigste Variante, und das außerordentliche Kündigungsrecht wird ausdrücklich in die Mitgliedschaft geschrieben.' },
+        { nach: 9, frage: 'Du willst die einmaligen Gebühren aufteilen oder die Wäsche schenken. Was muss vorher sein?',
+          antworten: [
+            'Der Kunde muss bereits unterschrieben haben',
+            'Es muss mit der Inhaberin / dem Inhaber abgesprochen sein',
+            'Es muss als offizielle Aktion auf der Homepage stehen',
+            'Der Kunde muss sich für die 24 Monate entscheiden'
           ], richtig: 1,
-          hinweis: 'Im Video ausdrücklich: „muss natürlich auch mit Inhabern abgesprochen sein" — eine Philosophiefrage des Studios.' },
-        { nach: 9, frage: '„Ich muss noch mal überlegen" ist meistens …',
+          hinweis: '„Muss natürlich auch mit Inhabern dementsprechend abgesprochen sein" — eine Philosophiefrage des Studios.' },
+        { nach: 9, frage: '„Ich muss noch mal überlegen." Wie ordnet das Video diesen Satz ein?',
           antworten: [
-            'ein klares Nein',
-            'ein Zeichen, dass er woanders unterschreibt',
-            'eine Bitte um Unterlagen',
-            'ein Vorwand — dahinter steckt ein Einwand wie Preis oder Laufzeit'
+            'Als klares Nein, das man respektieren sollte',
+            'Als Zeichen, dass er noch woanders unterschreiben will',
+            'Als Bitte um schriftliche Unterlagen für zu Hause',
+            'Als Vorwand — dahinter steckt meist Preis oder Laufzeit'
           ], richtig: 3,
-          hinweis: 'Nachfragen: „Du überlegst schon so lange — welche Fragen sind noch offen?" Dann kommt meistens der eigentliche Einwand.' },
-        { nach: 9, frage: 'Der Interessent fragt, warum EMS mehr kostet als ein normales Fitnessstudio. Was ist der wichtigste Punkt?',
+          hinweis: '„Du überlegst schon so lange — welche Fragen sind noch offen?" Dann kommt meist der eigentliche Einwand.' },
+        { nach: 9, frage: 'Warum ist EMS laut Video teurer als ein normales Fitnessstudio — und womit vergleichst du?',
           antworten: [
-            'Die teure Technik',
-            'Die Miete ist höher',
-            'Es ist ein Personal Training — es ist immer jemand an deiner Seite',
-            'Die Geräte kommen aus Deutschland'
-          ], richtig: 2,
-          hinweis: 'Trainer, die mit dem Gerät nach Hause kommen, nehmen 80 bis 100 Euro pro Einheit. Und: eine Investition in die Gesundheit.' },
+            'Wegen der teuren Technik — im Vergleich mit anderen EMS-Studios',
+            'Wegen der Miete in bester Lage — im Vergleich mit Physiotherapie',
+            'Wegen der Wäsche — im Vergleich mit eigener Sportkleidung',
+            'Immer Personal Training — mobile Trainer nehmen 80–100 € je Einheit'
+          ], richtig: 3,
+          hinweis: '„Wir können es nur so günstig anbieten, weil du zu uns kommst." Und: eine Investition in die Gesundheit.' },
 
         /* ── 7.1 Beispiel ── */
-        { nach: 10, frage: 'Im Beispiel will Nathalie „eine Nacht drüber schlafen". Was steckt tatsächlich dahinter?',
+        { nach: 10, frage: 'Was steckt im Beispiel hinter Nathalies „eine Nacht drüber schlafen"?',
           antworten: [
-            'Die einmaligen Beträge zu Beginn sind ihr auf einmal zu viel',
-            'Sie will mit ihrem Partner sprechen',
-            'Die Laufzeit ist ihr zu lang',
-            'Das Training hat ihr nicht gefallen'
+            'Sie will es erst noch mit ihrem Partner besprechen',
+            'Die einmaligen Beträge am Anfang sind ihr zu viel',
+            'Die 24 Monate sind ihr am Ende doch zu lang',
+            'Ihr ist der Wochenbetrag auf Dauer zu hoch'
+          ], richtig: 1,
+          hinweis: 'Den Wochenbetrag fand sie in Ordnung. Durch Nachfragen kommt der wahre Einwand heraus.' },
+        { nach: 10, frage: 'Wie kommt im Beispiel die Lösung zustande?',
+          antworten: [
+            'Er fragt nach ihrer optimalen Lösung — sie schlägt es selbst vor',
+            'Der Berater senkt ihr den Wochenbetrag um ein paar Euro',
+            'Er schenkt ihr sofort die Wäsche im Wert von 60 Euro',
+            'Er holt die Studioleitung dazu, die einen Rabatt gibt'
           ], richtig: 0,
-          hinweis: 'Der Wochenbetrag war in Ordnung. Durch Nachfragen kommt der wahre Einwand heraus — und die Lösung: aufteilen auf drei Monate.' },
-        { nach: 10, frage: 'Wie findet der Berater im Beispiel die Lösung?',
-          antworten: [
-            'Er senkt den Wochenbetrag',
-            'Er gibt nach und lässt sie gehen',
-            'Er holt den Chef dazu',
-            'Er fragt: „Was wäre für dich eine optimale Lösung?" — und sie schlägt selbst vor, den Anfang aufzulockern'
-          ], richtig: 3,
-          hinweis: 'Die Lösung finden lassen: Was der Kunde selbst vorschlägt, trägt er auch mit.' },
+          hinweis: 'Lösung finden lassen: Was der Kunde selbst vorschlägt, trägt er auch mit. Am Ende: auf drei Monate aufgeteilt.' },
 
         /* ── 8 Weiterempfehlung ── */
-        { nach: 11, frage: 'Was kostet uns ein neues Mitglied über klassische Werbung (Flyer, Anzeigen) im Schnitt — und was über eine Empfehlung?',
+        { nach: 11, frage: 'Was kostet ein neues Mitglied laut Video über klassische Werbung im Schnitt?',
           antworten: [
-            'Beides etwa 50 Euro',
-            'Werbung 150 bis 200 Euro, Empfehlung 0 Euro',
-            'Werbung 20 Euro, Empfehlung 100 Euro',
-            'Beides nichts'
-          ], richtig: 1,
-          hinweis: 'Und ein empfohlener Interessent ist auch leichter zu überzeugen: Menschen hören eher auf Freunde als auf Werbung.' },
-        { nach: 11, frage: 'Was ist die Voraussetzung für eine passive Weiterempfehlung?',
-          antworten: [
-            'Ein begeistertes Mitglied — dessen Erwartungen übertroffen wurden',
-            'Ein zufriedenes Mitglied',
-            'Ein Mitglied mit 24 Monaten Laufzeit',
-            'Ein Rabatt für Empfehlungen'
-          ], richtig: 0,
-          hinweis: 'Nett, freundlich und gutes Training sind selbstverständlich. Begeisterung kommt durch „Magic Moments" außer der Reihe.' },
-        { nach: 11, frage: 'Wer ist der „König der Empfehler"?',
-          antworten: [
-            'Das langjährigste Mitglied',
-            'Die Studioleitung',
-            'Der gerade neu gewonnene Kunde',
-            'Freunde der Trainer'
+            '50 bis 80 Euro',
+            '300 bis 400 Euro',
+            '150 bis 200 Euro',
+            'Über 500 Euro'
           ], richtig: 2,
-          hinweis: 'Deshalb bauen wir die aktive Weiterempfehlung direkt ins Beratungsgespräch ein.' },
+          hinweis: 'Werbebudget geteilt durch Neumitglieder: 150 bis 200 Euro. Eine Empfehlung kostet nichts.' },
+        { nach: 11, frage: 'Was ist die Voraussetzung für eine PASSIVE Weiterempfehlung?',
+          antworten: [
+            'Ein zufriedenes Mitglied',
+            'Eine Prämie für den Empfehler',
+            'Ein begeistertes Mitglied',
+            'Ein Mitglied mit langer Laufzeit'
+          ], richtig: 2,
+          hinweis: 'Zufrieden reicht nicht. Begeistert ist, wessen Erwartungen übertroffen wurden — z. B. durch „Magic Moments".' },
+        { nach: 11, frage: 'Wer ist laut Video der „König der Empfehler"?',
+          antworten: [
+            'Der gerade neu gewonnene Kunde',
+            'Das langjährigste Mitglied',
+            'Wer die meisten Freunde im Studio hat',
+            'Wer schon einmal jemanden mitgebracht hat'
+          ], richtig: 0,
+          hinweis: 'Deshalb gehört die aktive Weiterempfehlung direkt ins Beratungsgespräch.' },
 
         /* ── 9 VIP-Einladung ── */
-        { nach: 12, frage: 'Was bekommt ein Neumitglied direkt nach der Anmeldung angeboten?',
+        { nach: 12, frage: 'Wie viele VIP-Einladungen bekommt ein Neumitglied, und was sind sie wert?',
           antworten: [
-            'Einen Rabatt auf die nächste Laufzeit',
-            'Zwei VIP-Einladungen zum Verschenken an Freunde oder Bekannte',
-            'Eine kostenlose Körperanalyse',
-            'Ein zweites Trainingsoutfit'
+            'Eine Einladung im Wert von 100 Euro',
+            'Drei Einladungen, je 25 Euro',
+            'Zwei Einladungen, je 100 Euro',
+            'Zwei Einladungen, je 50 Euro'
+          ], richtig: 3,
+          hinweis: '„Zwei hochwertige VIP-Einladungen im Wert von 100 Euro" — jede entspricht 50 Euro.' },
+        { nach: 12, frage: 'Was bekommt das Neumitglied, wenn sich der Eingeladene anmeldet?',
+          antworten: [
+            'Einen Monat gratis',
+            '50 Euro gutgeschrieben',
+            'Eine zweite Wäsche gratis',
+            'Nichts — die Einladung ist das Geschenk'
           ], richtig: 1,
-          hinweis: 'Zwei Einladungen im Wert von je 50 Euro — „als Neumitglied hast du ein besonderes Privileg".' },
-        { nach: 12, frage: 'Das Neumitglied nennt einen Kollegen, möchte aber die Nummer nicht einfach herausgeben. Was tust du?',
+          hinweis: '„Damit das nicht unfair dir gegenüber ist … bekommst auch du 50 Euro gutgeschrieben."' },
+        { nach: 12, frage: 'Das Neumitglied möchte die Nummer des Kollegen nicht einfach herausgeben. Was tust du?',
           antworten: [
-            'Die Nummer trotzdem erfragen',
-            'Die Einladung verfallen lassen',
-            'Den Kollegen selbst im Internet suchen',
-            'Den Namen notieren, die Einladung reservieren — du rufst das Mitglied ohnehin in zwei Tagen an, bis dahin kann es mit dem Kollegen sprechen'
-          ], richtig: 3,
-          hinweis: 'Unkompliziert bleiben. Und: Wir rufen niemanden an, ohne dass das Mitglied vorher Bescheid gesagt hat.' },
-        { nach: 12, frage: 'Du rufst die eingeladene Person an. Was sagst du?',
-          antworten: [
-            '„Sie haben ein kostenloses Probetraining gewonnen."',
-            '„Möchten Sie Mitglied werden?"',
-            'Dass Soundso eine hochwertige VIP-Einladung an sie verschenkt hat: ein Personal Training mit individueller Beratung',
-            'Die Preise'
-          ], richtig: 2,
-          hinweis: 'Nicht „Probetraining" sagen. Die Einladung kommt von jemandem, der an sie gedacht hat.' },
-        { nach: 12, frage: 'Was ist laut Video der größte Fehler bei der Weiterempfehlung?',
-          antworten: [
-            'Gar nicht zu fragen — dabei spricht jeder Zweite eine Empfehlung aus',
-            'Zu früh fragen',
-            'Zu viele Einladungen zu verschenken',
-            'Die Einladungen zu spät auszudrucken'
+            'Namen notieren, reservieren — in zwei Tagen rufst du eh an',
+            'Die Einladung mitgeben, damit er sie dem Kollegen gibt',
+            'Die Einladung lieber gleich für jemand anderen verwenden',
+            'Den Kollegen selbst über die Firma ausfindig machen'
           ], richtig: 0,
-          hinweis: 'Man ist froh, dass der Kunde unterschrieben hat, und vergisst es. Jeder Zweite empfiehlt — man muss es nur anbieten.' },
-        { nach: 12, frage: '„Mir fällt gerade keiner ein." Was dann?',
+          hinweis: 'Und: Wir rufen niemanden an, ohne dass das Mitglied vorher Bescheid gesagt hat.' },
+        { nach: 12, frage: 'Welches Wort sollst du am Telefon mit der eingeladenen Person NICHT benutzen?',
           antworten: [
-            'Die Einladungen gleich verfallen lassen',
-            'Nachhaken, bis ein Name kommt',
-            'Sie ihm für zu Hause mitgeben',
-            'Die Einladung bis zum nächsten Training liegen lassen und dann noch einmal ansprechen'
+            '„VIP-Einladung"',
+            '„Personal Training"',
+            '„Probetraining"',
+            '„Beratung"'
+          ], richtig: 2,
+          hinweis: 'Sie hat eine hochwertige VIP-Einladung von jemandem bekommen, der an sie gedacht hat — kein „Probetraining".' },
+        { nach: 12, frage: 'Wie oft spricht laut Video ein Neumitglied eine Empfehlung aus, wenn man fragt?',
+          antworten: [
+            'Etwa jeder Zehnte',
+            'Etwa jeder Zweite',
+            'Etwa jeder Fünfte',
+            'Fast jeder'
+          ], richtig: 1,
+          hinweis: 'Der größte Fehler ist, gar nicht zu fragen — weil man froh ist, dass unterschrieben wurde.' },
+        { nach: 12, frage: '„Mir fällt gerade niemand ein." Was machst du?',
+          antworten: [
+            'Die Einladungen gleich verfallen lassen, um nicht zu drängen',
+            'Sie ihm mitgeben, damit er sie später verteilen kann',
+            'Freundlich weiter nachfragen, bis doch ein Name kommt',
+            'Bis zum nächsten Training liegen lassen, dann nachfragen'
           ], richtig: 3,
-          hinweis: '„Du wirst merken, wenn du erzählst — man muss es einfach erlebt haben." Beim nächsten Training noch einmal fragen.' },
+          hinweis: '„Man muss es einfach erlebt haben" — nach dem Erzählen fällt oft jemandem jemand ein.' },
 
         /* ── 9.1 Beispiel ── */
         { nach: 13, frage: 'Wann bringt der Berater im Beispiel die VIP-Einladungen ins Spiel?',
           antworten: [
-            'Ganz am Anfang, bei der Begrüßung',
-            'Direkt nach der Anmeldung, bevor der nächste Termin gebucht wird — als „kleine Überraschung"',
-            'Erst beim dritten Training',
-            'Per E-Mail nach einer Woche'
-          ], richtig: 1,
-          hinweis: 'Der gerade gewonnene Kunde ist begeistert — genau dann.' },
+            'Schon bei der Begrüßung, um Stimmung zu machen',
+            'Beim dritten Training, wenn sie sich eingelebt hat',
+            'Zwei Tage später beim Anruf nach dem Training',
+            'Nach der Anmeldung, bevor der nächste Termin gebucht wird'
+          ], richtig: 3,
+          hinweis: 'Als „kleine Überraschung" — genau dann, wenn die Begeisterung am größten ist.' },
 
         /* ── 10 Rollenspiel ── */
-        { nach: 14, frage: 'Im Rollenspiel fragt Nathalie, ob sie unter dem Trainingsoutfit die Unterwäsche anlassen darf. Was sagt der Berater?',
+        { nach: 14, frage: 'Nathalie fragt, ob sie die Unterwäsche anlassen darf. Was sagt der Berater?',
           antworten: [
-            'Die meisten ziehen alles darunter aus, weil jeder Stoff dazwischen etwas weniger leitet — wenn sie sich wohler fühlt, darf sie sie anlassen',
-            'Nein, das geht nicht',
-            'Ja, das ist sogar besser',
-            'Das muss sie selbst herausfinden'
-          ], richtig: 0,
+            'Nein, sonst funktioniert das Training mit Strom gar nicht',
+            'Stoff leitet etwas schlechter — wenn sie sich wohler fühlt: ja',
+            'Ja, das macht für das Training überhaupt keinen Unterschied',
+            'Das entscheidet der Trainer später je nach Übung und Gerät'
+          ], richtig: 1,
           hinweis: '„Mir ist wichtig, dass du dich wohlfühlst." Ehrlich erklären, dann entscheiden lassen.' },
-        { nach: 14, frage: 'Was passiert im Rollenspiel direkt vor dem Training?',
+        { nach: 14, frage: 'Wie oft fasst der Berater im Rollenspiel Nathalies Ziele zusammen, bevor sie unterschreibt?',
           antworten: [
-            'Die Mitgliedschaft wird unterschrieben',
-            'Die Preise werden genannt',
-            'Kontraindikationen besprechen und abzeichnen lassen, die Ziele zusammenfassen, das Trainingsoutfit geben',
-            'Die VIP-Einladungen werden verschenkt'
-          ], richtig: 2,
-          hinweis: 'Erst Gesundheit und Ziele, dann Training — Angebot und Empfehlung kommen danach.' },
+            'Zweimal: vor dem Training und vor dem Angebot',
+            'Einmal, ganz am Ende vor der Unterschrift',
+            'Gar nicht — er fragt die Ziele nur einmal ab',
+            'Nach jeder Übung einmal kurz im Training'
+          ], richtig: 0,
+          hinweis: 'Vor dem Training („damit wir nichts vergessen") und vor den Zahlen — die Emotion noch einmal wecken.' },
+
         /* ── 11 Kein Abschluss ── */
-        { nach: 15, frage: 'Der Interessent möchte sich heute nicht entscheiden. Wie vereinbarst du den nächsten Termin?',
+        { nach: 15, frage: 'Der Interessent will sich heute nicht entscheiden. Welcher Satz führt am ehesten zum zweiten Termin?',
           antworten: [
             '„Wir können ja schon mal nach einem Termin schauen."',
-            'Verständnis zeigen und vorschlagen, nächste Woche noch einmal richtig zu trainieren — die Werte sind gespeichert, das zweite Mal macht mehr Spaß — und danach weiterschauen',
-            'Ihn bitten, sich zu melden, wenn er so weit ist',
-            'Ihm die Preisliste mitgeben'
-          ], richtig: 1,
-          hinweis: 'Auf „schauen wir mal nach einem Termin" kommt meist „muss erst in meinen Kalender gucken". Ein zweites Training ist ein Grund wiederzukommen.' },
+            '„Melde dich einfach bei uns, wenn du so weit bist."',
+            '„Lass uns nächste Woche noch mal richtig trainieren."',
+            '„Ich rufe dich in ein paar Tagen noch einmal an."'
+          ], richtig: 2,
+          hinweis: 'Auf „schauen wir mal nach einem Termin" kommt meist „muss erst in meinen Kalender gucken".' },
         { nach: 15, frage: 'Wen rufst du zwei Tage nach dem ersten Training an?',
           antworten: [
-            'Nur die, die noch überlegen',
-            'Nur die neuen Mitglieder',
-            'Niemanden, das wirkt aufdringlich',
-            'Beide: neue Mitglieder und Interessenten, die noch überlegen — fragen, wie es ihnen geht, und den nächsten Termin bestätigen'
-          ], richtig: 3,
-          hinweis: 'Manche kennen keinen Muskelkater und wundern sich, warum es wehtut. Der Anruf gehört zum Service — und sichert den nächsten Termin.' },
+            'Nur die Interessenten, die noch überlegen',
+            'Nur die neuen Mitglieder, zur Begrüßung',
+            'Beide — neue Mitglieder und die, die noch überlegen',
+            'Nur die, die nicht zum Folgetermin kamen'
+          ], richtig: 2,
+          hinweis: 'Manche kennen keinen Muskelkater und wundern sich. Der Anruf gehört zum Service und sichert den nächsten Termin.' },
 
         /* ── Zum Schluss: über mehrere Videos ── */
-        { frage: 'Ein Interessent aus einer Online-Aktion sagt am Ende: „Ich muss noch mal mit meinem Partner sprechen." Welche Frage aus der Bedarfsanalyse hilft dir jetzt?',
+        { frage: 'Am Ende sagt ein Interessent: „Ich muss noch mit meinem Partner sprechen." Welche Frage aus der Bedarfsanalyse hilft jetzt?',
           antworten: [
-            '„Wie sind Sie auf uns aufmerksam geworden?"',
-            '„Haben Sie schon mal EMS gemacht?"',
             '„Gibt es jemanden, der Sie bei Ihrem Vorhaben unterstützt?"',
-            '„Wie viel wiegen Sie?"'
-          ], richtig: 2,
-          hinweis: 'Einwandvorbehandlung: Hat er vorhin gesagt, sein Partner steht hinter ihm, kannst du jetzt darauf zurückkommen.' },
-        { frage: 'Bring die Schritte des Beratungsgesprächs in die richtige Reihenfolge.',
-          antworten: [
-            'Begrüßung — Bedarfsanalyse — Training — Angebot (und Einwände) — Weiterempfehlung',
-            'Angebot — Begrüßung — Training — Bedarfsanalyse — Empfehlung',
-            'Bedarfsanalyse — Begrüßung — Angebot — Training — Weiterempfehlung',
-            'Training — Begrüßung — Angebot — Bedarfsanalyse — Weiterempfehlung'
+            '„Wie sind Sie auf uns aufmerksam geworden?"',
+            '„Haben Sie schon einmal EMS gemacht?"',
+            '„Wenn Sie Ihr Ziel erreichen — möchten Sie es halten?"'
           ], richtig: 0,
-          hinweis: 'Das sagt der Berater auch gleich am Anfang: „Wir sprechen über deine Ziele, dann trainieren wir, danach zeige ich dir, wie du mitmachen kannst."' },
-        { frage: 'An drei Stellen im Gespräch fasst du die Ziele des Interessenten zusammen. Welche Reihe stimmt?',
+          hinweis: 'Einwandvorbehandlung: Hat er gesagt, sein Partner steht hinter ihm, kannst du darauf zurückkommen.' },
+        { frage: 'Welche Reihenfolge hat das ganze Beratungsgespräch?',
           antworten: [
-            'Nur ganz am Ende',
-            'Beim Anruf, bei der Begrüßung und beim Abschied',
-            'Gar nicht — der Kunde weiß ja, was er will',
-            'Am Ende der Bedarfsanalyse, vor der Angebotspräsentation, und in der Einwandbehandlung greifst du sie wieder auf'
+            'Begrüßung — Training — Bedarfsanalyse — Angebot — Empfehlung',
+            'Bedarfsanalyse — Begrüßung — Angebot — Training — Empfehlung',
+            'Begrüßung — Bedarfsanalyse — Angebot — Training — Empfehlung',
+            'Begrüßung — Bedarfsanalyse — Training — Angebot — Empfehlung'
           ], richtig: 3,
-          hinweis: 'Die Ziele sind der rote Faden: aufschreiben, zusammenfassen, im richtigen Moment wieder aufgreifen.' },
-        { frage: 'Welche Technik taucht bei der Terminvereinbarung UND bei der Laufzeitwahl auf?',
+          hinweis: 'Das sagt der Berater schon im Überblick: erst Ziele, dann Training, danach wie man mitmachen kann — und die Empfehlung ganz am Schluss.' },
+        { frage: 'Welche Technik taucht bei der Terminvereinbarung UND bei der Laufzeit auf?',
           antworten: [
-            'Der Rabatt',
-            'Die Alternativfrage: „eher vormittags oder abends?" — „eher 12 oder 24 Monate?"',
+            'Die Bedingungsfrage',
+            'Die Alternativfrage',
             'Das Schweigen',
-            'Die Preisliste'
+            'Die Einwandvorbehandlung'
           ], richtig: 1,
-          hinweis: 'Zwei Möglichkeiten zur Wahl statt eines offenen „Wann?" oder „Was möchtest du?".' },
-        { frage: 'Ein Interessent sagt beim Angebot „zu teuer". Du hast in der Bedarfsanalyse erfahren, dass sein Arzt ihm eine Bandscheiben-OP in Aussicht gestellt hat. Wie nutzt du das?',
+          hinweis: '„Eher vormittags oder abends?" — „eher 12 oder 24 Monate?" Zwei Möglichkeiten statt einer offenen Frage.' },
+        { frage: 'In der Bedarfsanalyse hast du erfahren, dass der Arzt eine Bandscheiben-OP in Aussicht gestellt hat. Beim Angebot sagt er „zu teuer". Wie nutzt du das?',
           antworten: [
-            'Mit Verständnis, dann das Weg-von-Motiv aufgreifen: was passiert mit dem Rücken, wenn er nicht startet?',
-            'Gar nicht, das ist privat',
+            'Verständnis zeigen, dann das Weg-von-Motiv ansprechen',
+            'Gar nicht — Gesundheit ist zu privat für den Verkauf',
             'Ihm sagen, dass er sonst sicher operiert wird',
-            'Einen Rabatt anbieten, damit er die OP vermeidet'
+            'Einen Rabatt anbieten, weil es medizinisch ist'
           ], richtig: 0,
-          hinweis: 'Hin-zu- und Weg-von-Motive verstärken das Ziel. Ehrlich bleiben — keine Versprechen, keine Angst machen.' },
-        { frage: 'Warum lohnt es sich, einen Einwand über die einmaligen Gebühren zu lösen (z. B. aufteilen), statt den Interessenten ziehen zu lassen?',
+          hinweis: 'Ehrlich bleiben — keine Versprechen, keine Angst. Aber: „Was ist mit deinem Rücken, wenn du nicht startest?"' },
+        { frage: 'Warum lohnt es sich, einen Einwand zu den einmaligen Gebühren zu lösen, statt den Interessenten ziehen zu lassen?',
           antworten: [
-            'Weil sonst die Statistik schlecht aussieht',
-            'Weil die Gebühren sowieso verhandelbar sind',
-            'Weil ein Abo im Schnitt rund 2.500 Euro wert ist — plus Empfehlungen und Verlängerungen',
-            'Weil er sonst eine schlechte Bewertung schreibt'
+            'Weil die Gebühren ohnehin verhandelbar sind',
+            'Weil er sonst eine schlechte Bewertung schreibt',
+            'Weil ein Abo im Schnitt rund 2.500 Euro wert ist',
+            'Weil sonst die Monatszahlen nicht stimmen'
           ], richtig: 2,
-          hinweis: 'Das kam schon im Video zur Terminvereinbarung: „Wenn jemand anruft, rufen potenziell mindestens 2.500 Euro an." Abgesprochen mit der Inhaberin bzw. dem Inhaber.' }
+          hinweis: 'Aus Video 2 und 7: rund 2.500 Euro, dazu Empfehlungen und Verlängerungen. Immer abgesprochen mit der Inhaberin / dem Inhaber.' },
+        { frage: 'Welcher dieser Sätze widerspricht dem, was die Videos lehren?',
+          antworten: [
+            '„Kann ich mir vorstellen, dass sich das erst mal viel anhört."',
+            '„Das ist bestimmt nichts für dich, oder?"',
+            '„Günstiger als ein Personal Training für rund 25 € die Woche geht es kaum."',
+            '„Deine Werte sind gespeichert, nächstes Mal geht es direkt los."'
+          ], richtig: 1,
+          hinweis: 'Niemals für den Kunden denken — und nichts in den Mund legen. Die anderen drei stehen so in den Videos.' }
       ]
     }
   ]

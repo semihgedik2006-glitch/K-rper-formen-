@@ -5817,7 +5817,19 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
     punkte: 0, bestanden: false, status: 'laeuft',
     ts: jetzt
   });
-  return { ok: true, lauf: lauf.id, name: t.name || '', durchgang: frueher.size + 1 };
+  /* Die Geschäftsführung muss ein Video nicht bis zum Ende laufen
+     lassen, bevor „Weiter" geht (30.9.2026, aus dem Betrieb: „weiter zu
+     sperren ist gut aber ich würde die funktion dann bei den chefs
+     aussen vor lassen"). Entscheidend ist, WER die Schulung macht — der
+     Teilnehmer und sein verknüpftes Konto —, nicht, auf wessen Gerät
+     sie läuft: sonst klickte sich jeder am Rechner des Chefs durch. */
+  let ohneVideoSperre = false;
+  if (t.uid) {
+    const tu = await db.collection('users').doc(String(t.uid)).get();
+    const tp = tu.exists ? (tu.data() || {}) : {};
+    ohneVideoSperre = tp.role === 'chef' && (tp.firma || 'koerperformen') === firma;
+  }
+  return { ok: true, lauf: lauf.id, name: t.name || '', durchgang: frueher.size + 1, ohneVideoSperre };
 });
 
 /* ══════════════════════════════════════════════════════════════════════

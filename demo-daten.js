@@ -1320,7 +1320,11 @@
         status: 'laeuft', ts: Date.now()
       });
       melden(P('schulungLaeufe'));
-      return { ok: true, lauf: id, name: t.name || '', durchgang: frueher + 1 };
+      /* Wie functions/index.js: ohne Video-Sperre nur, wenn der
+         Teilnehmer mit einem Konto der Geschäftsführung verknüpft ist. */
+      var konto = t.uid ? holen('users').filter(function (u) { return u.id === t.uid; })[0] : null;
+      return { ok: true, lauf: id, name: t.name || '', durchgang: frueher + 1,
+               ohneVideoSperre: !!(konto && konto.role === 'chef') };
     },
 
     /* ── Die zwei Wege zur Kasse ──

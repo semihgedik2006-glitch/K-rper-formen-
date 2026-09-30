@@ -18,6 +18,11 @@
    4. Ein Modul mit `firma` erscheint in einem anderen Betrieb nicht.
    5. Editor: bei jeder Frage steht, wann sie kommt; das Feld ist
       ≥ 44 px hoch, auch am Handy.
+   6. (30.9.2026) „weiter zu sperren ist gut aber … bei den chefs aussen
+      vor": „Weiter" erst nach dem Video, Vorspulen zählt nicht; ein
+      Teilnehmer mit Chef-Konto ist ausgenommen.
+   7. „es soll ja auch nicht jeder direkt bestehen": Bestehensgrenze
+      80 %, die erste Antwort zählt, danach richtige Antwort und Hinweis.
 
    Den echten Video-Eimer erreicht dieser Durchlauf NICHT (das
    Firebase-SDK lädt in dieser Umgebung nicht).
@@ -73,6 +78,13 @@ pruefe('jede Frage: mindestens drei Antworten, eine richtige, ein Hinweis',
 const stellen = [0, 0, 0, 0]; M.fragen.forEach(f => stellen[f.richtig]++);
 pruefe('die richtige Antwort steht nicht meistens an derselben Stelle (höchstens 35 %)',
   Math.max(...stellen) / M.fragen.length <= 0.35, stellen.join('/'));
+/* Die zweite Falle nach der Stelle: die richtige Antwort ist die
+   längste und genaueste. Nach dem Umschreiben am 30.9.2026 gemessen:
+   2 von 67 deutlich (> 15 %) länger. */
+const deutlich = M.fragen.filter(f => { const l = f.antworten.map(a => a.length); const r = l[f.richtig];
+  return r > Math.max(...l.filter((x, j) => j !== f.richtig)) * 1.15; }).length;
+pruefe('die richtige Antwort ist höchstens bei 5 Fragen deutlich länger als alle anderen', deutlich <= 5, String(deutlich));
+pruefe('Bestehensgrenze: erster Versuch zählt, 80 %', M.strenge === 'grenze' && M.grenze === 80, M.strenge + ' ' + M.grenze);
 pruefe('keine Frage doppelt', new Set(M.fragen.map(f => f.frage)).size === M.fragen.length);
 /* Preise aus den Beispielgesprächen werden nicht abgefragt: sie ändern
    sich, und dann wäre die Schulung falsch. */
@@ -152,7 +164,7 @@ const weiter = async (p) => { await p.evaluate(() => document.getElementById('sc
     await p.waitForTimeout(1500);
     let s = await stand(p);
     pruefe('der Durchlauf beginnt mit „Worum es geht"', /Worum es geht/.test(s.titel), s.titel);
-    pruefe('Zähler: 1 von 79 (17 Schritte + 62 Fragen)', /^1\/79$/.test(s.zahl), s.zahl);
+    pruefe('Zähler: 1 von ' + (M.schritte.length + M.fragen.length), s.zahl === '1/' + (M.schritte.length + M.fragen.length), s.zahl);
     await weiter(p);
     await p.waitForTimeout(600);
     s = await stand(p);
@@ -162,8 +174,8 @@ const weiter = async (p) => { await p.evaluate(() => document.getElementById('sc
     pruefe('das Video sagt in der Demo ehrlich, dass es hier nicht läuft', /In der Vorführung läuft dieses Video nicht/.test(s.video), s.video.slice(0, 80));
     await weiter(p);
     s = await stand(p);
-    pruefe('direkt nach Video 1 kommt eine Frage dazu', /Warum ist es so wichtig, in der Beratung man selbst zu bleiben/.test(s.frage), s.frage.slice(0, 70));
-    pruefe('… gezählt als „Frage 1 von 62"', /Frage 1 von 62/.test(s.nummer), s.nummer);
+    pruefe('direkt nach Video 1 kommt die erste Frage dazu', s.frage === M.fragen[0].frage, s.frage.slice(0, 70));
+    pruefe('… gezählt als „Frage 1 von ' + M.fragen.length + '"', s.nummer.indexOf('Frage 1 von ' + M.fragen.length) >= 0, s.nummer);
     await richtigBeantworten(p);
     s = await stand(p);
     pruefe('nach der richtigen Antwort: „Nächste Frage" (es folgen noch Fragen zu Video 1)', s.weiter === 'Nächste Frage', s.weiter);
@@ -230,13 +242,110 @@ const weiter = async (p) => { await p.evaluate(() => document.getElementById('sc
         };
       });
       if (w === 1440 && dichte === 'normal') {
-        pruefe('bei allen 62 Fragen steht das Feld', e.anzahl === 62, String(e.anzahl));
+        pruefe('bei allen ' + M.fragen.length + ' Fragen steht das Feld', e.anzahl === M.fragen.length, String(e.anzahl));
         pruefe('Frage 1: „Direkt nach 2. 1 · Einleitung"', /^Direkt nach 2\. 1 · Einleitung/.test(e.erstes), e.erstes);
         pruefe('die letzte Frage: „Kommt am Ende"', e.letztes === 'Kommt am Ende', e.letztes);
       }
       pruefe(w + ' px, ' + dichte + ': das Feld ist ≥ 44 px hoch, trifft, im Bild, keine Querlaufleiste', e.h >= 44 && e.trifft && e.drin && e.quer <= 0, JSON.stringify(e));
       await p.close();
     }
+  }
+
+  /* ── 6. Video-Sperre ── */
+  console.log('\n── 6. „Weiter" erst nach dem Video ──');
+  const TESTVIDEO = APP.replace(/index\.html.*$/, '') + 'tests/daten/kurz-video.webm';
+  async function mitTestvideo(p, konto) {
+    await zurSchulung(p);
+    /* Ein echtes, abspielbares Video an Schritt 1 — das aus dem Betrieb
+       liegt nur im Speicher des Betriebs. 4 Sekunden, liegt unter tests/. */
+    await p.evaluate((u) => { window.SCHULUNGEN_BASIS.module.find(m => m.id === 'm-beratung').schritte[1].quelle = u; }, TESTVIDEO);
+    await p.click('#schVerwaltenBtn'); await p.waitForTimeout(800);
+    await p.fill('#schTnName', konto ? 'Chef selbst' : 'Team Person');
+    if (konto) await p.evaluate(() => { const sel = document.getElementById('schTnKonto'); sel.value = window.firebase.auth().currentUser.uid; sel.dispatchEvent(new Event('change')); });
+    await p.click('#schTnNeu'); await p.waitForTimeout(1100);
+    const code = await p.evaluate(() => (document.getElementById('schCodeText') || {}).textContent.trim());
+    await p.evaluate(() => { const z = document.querySelector('#schVerwalten [data-schzurueck]'); if (z) z.click(); });
+    await p.waitForTimeout(500);
+    await p.evaluate(() => document.querySelector('[data-schmodul="m-beratung"]').click());
+    await p.waitForTimeout(600);
+    await p.evaluate((c) => { document.getElementById('schCodeFeld').value = c; document.getElementById('schStartBtn').click(); }, code);
+    await p.waitForTimeout(1500);
+    await weiter(p);
+    await p.waitForTimeout(800);
+  }
+  const knopf = (p) => p.evaluate(() => ({ aus: !!(document.getElementById('schWeiter') || {}).disabled,
+    text: (document.getElementById('schVideoStand') || {}).textContent || '' }));
+  {
+    const p = await starte(b, 1440, 900);
+    await mitTestvideo(p, false);
+    let k = await knopf(p);
+    pruefe('Video-Schritt: „Weiter" ist gesperrt und sagt warum', k.aus && /Weiter geht es, wenn du das Video angesehen hast/.test(k.text), JSON.stringify(k));
+    /* Vorspulen ans Ende: zählt nicht. */
+    await p.evaluate(() => { const v = document.querySelector('#schLauf video'); v.currentTime = Math.max(0, v.duration - 0.2); });
+    await p.waitForTimeout(1200);
+    k = await knopf(p);
+    pruefe('ans Ende vorgespult: bleibt gesperrt', k.aus, JSON.stringify(k));
+    await p.evaluate(() => { const v = document.querySelector('#schLauf video'); v.muted = true; v.currentTime = 0; return v.play(); });
+    await p.waitForTimeout(5200);
+    k = await knopf(p);
+    pruefe('ganz angesehen: „Weiter" geht, der Hinweis ist weg', !k.aus && !k.text, JSON.stringify(k));
+    pruefe('keine Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+  {
+    const p = await starte(b, 1440, 900);
+    await mitTestvideo(p, true);
+    const k = await knopf(p);
+    pruefe('Teilnehmer mit Chef-Konto: „Weiter" geht sofort', !k.aus && !k.text, JSON.stringify(k));
+    await p.close();
+  }
+
+  /* ── 7. Bestehensgrenze ── */
+  console.log('\n── 7. Nicht jeder besteht ──');
+  {
+    const p = await starte(b, 1440, 900);
+    await zurSchulung(p);
+    const code = await codeHolen(p, 'Rate Mal');
+    await p.evaluate(() => document.querySelector('[data-schmodul="m-beratung"]').click());
+    await p.waitForTimeout(600);
+    await p.evaluate((c) => { document.getElementById('schCodeFeld').value = c; document.getElementById('schStartBtn').click(); }, code);
+    await p.waitForTimeout(1500);
+    await weiter(p); await p.waitForTimeout(500); await weiter(p);
+    /* Die erste Frage absichtlich falsch. */
+    await p.evaluate(() => {
+      const t = document.querySelector('#schLauf .sch-frage').textContent;
+      const f = window.SCHULUNGEN_BASIS.module.find(m => m.id === 'm-beratung').fragen.find(x => x.frage === t);
+      document.querySelector('[data-schantwort="' + ((f.richtig + 1) % f.antworten.length) + '"]').click();
+    });
+    await p.waitForTimeout(300);
+    const nach = await p.evaluate(() => ({
+      richtigMarkiert: !!document.querySelector('.sch-antwort.richtig'),
+      falschMarkiert: !!document.querySelector('.sch-antwort.falsch'),
+      alleZu: [...document.querySelectorAll('[data-schantwort]')].every(x => x.disabled),
+      hinweis: (document.querySelector('.sch-hinweis') || {}).textContent || '',
+      weiter: (document.getElementById('schWeiter') || {}).textContent || '',
+      nochDieselbe: (document.querySelector('.sch-frage') || {}).textContent || ''
+    }));
+    pruefe('falsch beim ersten Versuch: die richtige Antwort ist markiert, keine zweite Chance', nach.richtigMarkiert && nach.falschMarkiert && nach.alleZu, JSON.stringify(nach));
+    pruefe('… der Hinweis steht unter DIESER Frage, dann „Nächste Frage"', nach.hinweis.length > 10 && nach.weiter === 'Nächste Frage' && nach.nochDieselbe === M.fragen[0].frage, JSON.stringify(nach));
+    /* Den Rest mit immer derselben Antwort A durchklicken — wer rät,
+       besteht nicht. */
+    for (let i = 0; i < 200; i++) {
+      const z = await p.evaluate(() => ({ ergebnis: getComputedStyle(document.getElementById('schErgebnis')).display !== 'none',
+        frage: !!document.querySelector('#schLauf .sch-frage'), offen: !!document.querySelector('[data-schantwort]:not([disabled])') }));
+      if (z.ergebnis) break;
+      if (z.frage && z.offen) { await p.evaluate(() => document.querySelector('[data-schantwort="0"]').click()); await p.waitForTimeout(80); }
+      /* Der Schritt „Üben" will einen Haken. */
+      await p.evaluate(() => { const h = document.querySelector('#schHaken input'); if (h && !h.checked) h.click(); });
+      await p.waitForTimeout(60);
+      await p.evaluate(() => { const w = document.getElementById('schWeiter'); if (w && !w.disabled) w.click(); });
+      await p.waitForTimeout(120);
+    }
+    const erg = await p.evaluate(() => (document.getElementById('schErgebnis') || {}).textContent.replace(/\s+/g, ' '));
+    const proz = +((erg.match(/(\d+)%/) || [])[1]);
+    pruefe('wer immer „A" nimmt, besteht nicht: „Noch nicht ganz" unter 80 %', /Noch nicht ganz/.test(erg) && proz < 80, erg.slice(0, 120));
+    pruefe('keine Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
   }
 
   await b.close();
