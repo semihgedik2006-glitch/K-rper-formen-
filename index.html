@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-eUhGsAVOadrlar8Tn+XlRTjcvetWIVA3I2wl6eEZojM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-0+lnaqVE9lgt6yOMFsUGEs1FqepSRJuQwzB/3ioKTNA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -17691,6 +17691,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-09-30-schulung-beratung', datum:'30.9.2026', titel:'Neue Schulung: Das Beratungsgespräch', wo:'schulung', punkte:[
+    'Unter Ich → Schulung steht jetzt „Das Beratungsgespräch — vom Anruf bis zur Empfehlung": alle 15 Videos in einer Schulung, von der Terminvereinbarung über Bedarfsanalyse und Einwände bis zur VIP-Einladung.',
+    'Nach jedem Video kommen ein paar Fragen dazu, am Ende noch einige, die mehrere Videos verbinden. Wer danebenliegt, bekommt einen Hinweis und versucht es noch einmal.',
+    'Die Videos sind nur für das eigene Team abspielbar.' ] },
   { id:'2026-09-29-video-nacheinander', datum:'29.9.2026', titel:'Videos laden nacheinander — und versuchen es zweimal', wo:'schulung', punkte:[
     'Wählst du mehrere Videos auf einmal, lädt die App sie jetzt eins nach dem anderen hoch. Die übrigen zeigen „Wartet" und starten von selbst.',
     'Bricht die Verbindung ab, versucht die App es von selbst ein zweites Mal. Klappt es dann immer noch nicht, steht in der Meldung, was der Speicher geantwortet hat.',
