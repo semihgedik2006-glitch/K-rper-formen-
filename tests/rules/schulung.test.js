@@ -28,6 +28,8 @@
      · ein fremdes Gerät schreibt am laufenden Durchlauf  → gesperrt
      · das Gerät hängt den Durchlauf auf einen anderen Namen um → gesperrt
      · das Gerät ändert einen FERTIGEN Durchlauf          → gesperrt
+     · aus einem Testlauf wird ein echter, oder er hängt
+       sich an ein Konto (1.10.2026)                        → gesperrt
      · jemand von ausserhalb der Firma liest mit          → gesperrt
 
    Und die Gegenproben, ohne die die Liste auch bei einer Regel
@@ -124,6 +126,15 @@ const WELTEN = [
         start: 1, ende: 0, aktivMs: 0, durchgang: 1,
         schritteGesehen: [], fragen: [], punkte: 0, bestanden: false,
         status: 'laeuft', ts: 1 });
+      /* Ein Testlauf mit dem Testcode 0000-0000-0000 (1.10.2026): am
+         Gerät des Chefs, an keinem Konto und keinem Teilnehmer. */
+      await db.doc(w.pfad('schulungLaeufe/l-test')).set({
+        modul: 'm-hygiene', modulTitel: 'Hygiene im Studio', kategorie: 'hygiene',
+        teilnehmer: 'test:max', teilnehmerName: 'Max', uid: null, test: true,
+        geraetUid: 'max', geraetName: 'Max', studioKey: 'studio-1',
+        start: 1, ende: 0, aktivMs: 0, durchgang: 1,
+        schritteGesehen: [], fragen: [], punkte: 0, bestanden: false,
+        status: 'laeuft', ts: 1 });
       /* Und einer, der fertig ist. Der ist der Nachweis. */
       await db.doc(w.pfad('schulungLaeufe/l-fertig')).set({
         modul: 'm-hygiene', modulTitel: 'Hygiene im Studio', kategorie: 'hygiene',
@@ -176,6 +187,23 @@ const WELTEN = [
       alsTablet.doc(P('schulungLaeufe/l-laeuft')).update({ modul: 'm-anderes' }));
     await darfNicht('das Gerät schreibt sich selbst um',
       alsTablet.doc(P('schulungLaeufe/l-laeuft')).update({ geraetUid: 'anna' }));
+
+    /* Seit dem 1.10.2026 gibt es Testläufe. Der Durchlauf gehört dem
+       Gerät — der Chef könnte also aus seinem Test einen echten machen
+       oder ihn an ein Konto hängen, und dann stünde ein „bestanden" in
+       „Meine Schulungen", das nie eins war. */
+    await darfNicht('das Gerät macht aus einem Testlauf einen echten',
+      alsMax.doc(P('schulungLaeufe/l-test')).update({ test: false }));
+    await darfNicht('… auch nicht, indem es das Feld weglässt',
+      alsMax.doc(P('schulungLaeufe/l-test')).set({
+        modul: 'm-hygiene', teilnehmer: 'test:max', geraetUid: 'max', uid: null,
+        status: 'laeuft', ts: 2 }));
+    await darfNicht('das Gerät hängt einen Testlauf an ein Konto',
+      alsMax.doc(P('schulungLaeufe/l-test')).update({ uid: 'max' }));
+    await darfNicht('das Gerät hängt einen echten Durchlauf an ein anderes Konto',
+      alsTablet.doc(P('schulungLaeufe/l-laeuft')).update({ uid: 'ben' }));
+    await darfNicht('ein echter Durchlauf wird nachträglich zum Test erklärt',
+      alsTablet.doc(P('schulungLaeufe/l-laeuft')).update({ test: true }));
 
     // ══ Die Codes ══
     await darfNicht('niemand liest die Teilnahme-Codes — auch der Chef nicht',
@@ -247,6 +275,10 @@ const WELTEN = [
     await darf('GEGENPROBE und schliesst ihn ab',
       alsTablet.doc(P('schulungLaeufe/l-laeuft')).update({
         status: 'fertig', ende: 3, bestanden: true, punkte: 100 }));
+    await darf('GEGENPROBE der Chef schreibt seinen Testlauf fort und schliesst ihn ab',
+      alsMax.doc(P('schulungLaeufe/l-test')).update({
+        aktivMs: 60000, schritteGesehen: [0], punkte: 100, bestanden: true,
+        status: 'fertig', ende: 3 }));
     await darf('GEGENPROBE der Chef darf einen Durchlauf löschen',
       alsMax.doc(P('schulungLaeufe/l-fertig')).delete());
   }

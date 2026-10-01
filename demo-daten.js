@@ -1289,6 +1289,29 @@
       var roh = String((d && d.code) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       var modul = String((d && d.modul) || '');
       if (roh.length !== 12) throw new Error('Der Code besteht aus 12 Zeichen. Bitte noch einmal ansehen.');
+      /* Der Testcode 0000-0000-0000, wie in functions/index.js: nur für
+         die Leitung, ohne Konto und ohne Teilnehmer, als Test markiert. */
+      if (roh === '000000000000') {
+        if (ICH.role !== 'chef' && ICH.role !== 'leiter') {
+          throw new Error('Der Testcode ist nur für die Leitung. Deinen eigenen Code bekommst du von der Studioleitung.');
+        }
+        var tn = 'test:' + ICH.id;
+        var vorher = holen(P('schulungLaeufe')).filter(function (l) {
+          return l.teilnehmer === tn && l.modul === modul; }).length;
+        var tid = neueId();
+        holen(P('schulungLaeufe')).push({
+          id: tid, modul: modul, modulTitel: '', kategorie: '',
+          teilnehmer: tn, teilnehmerName: ICH.name || '', uid: null, test: true,
+          geraetUid: ICH.id, geraetName: ICH.name || '',
+          studioKey: (ICH.studioKeys || [])[0] || null,
+          start: Date.now(), ende: 0, aktivMs: 0, durchgang: vorher + 1,
+          schritteGesehen: [], fragen: [], punkte: 0, bestanden: false,
+          status: 'laeuft', ts: Date.now()
+        });
+        melden(P('schulungLaeufe'));
+        return { ok: true, lauf: tid, name: ICH.name || '', durchgang: vorher + 1,
+                 ohneVideoSperre: ICH.role === 'chef', test: true };
+      }
       var kennung = roh.slice(0, 4);
       /* Erst am Teilnehmer nachsehen — der Normalfall. Nur wenn dort
          kein Code steht, greift der alte Hash-Weg. Genau die Reihenfolge

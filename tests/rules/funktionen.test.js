@@ -1260,6 +1260,65 @@ const TAG = 86400000;
     }
   }
 
+  /* ══ Schulung: der Testcode 0000-0000-0000 (1.10.2026) ══
+     Aus dem Betrieb: „einen universal code … der IMMER geht damit die
+     chefs das auch mal durchtesten können". Der Code steht offen im
+     Repository — geprüft wird deshalb vor allem, dass die ROLLE die
+     Schranke ist und dass ein Testlauf nie als Nachweis zählt. */
+  {
+    const F = db.collection('firmen').doc('alpha');
+    await db.doc('users/schulChef').set({ name: 'Chef Test', role: 'chef', firma: 'alpha', aktiv: true, studioKeys: ['s1'] });
+    await db.doc('users/schulLeiter').set({ name: 'Leitung Test', role: 'leiter', firma: 'alpha', aktiv: true, studioKeys: ['s1'] });
+    await db.doc('users/schulMit').set({ name: 'Mitarbeiter Test', role: 'mitarbeiter', firma: 'alpha', aktiv: true, studioKeys: ['s1'] });
+    await F.collection('schulungTeilnehmer').doc('t-echt').set({
+      name: 'Echte Person', uid: null, kennung: 'M4K7', code: 'M4K7-9TQD-B2HX', gesperrt: false, ts: 1 });
+    const start = (code, wer) => fns.schulungStart.run({ code: code, modul: 'm-beratung' }, { auth: { uid: wer } });
+    const fehler = async (versprechen) => { try { await versprechen; return null; } catch (e) { return e; } };
+
+    const r1 = await start('0000-0000-0000', 'schulChef');
+    pruefe('TESTCODE · die Geschäftsführung kommt hinein', r1 && r1.ok === true && r1.test === true);
+    pruefe('TESTCODE · … ohne Video-Sperre, wie sonst auch beim Chef', r1.ohneVideoSperre === true);
+    const l1 = (await F.collection('schulungLaeufe').doc(r1.lauf).get()).data() || {};
+    pruefe('TESTCODE · der Lauf ist als Test markiert und hängt an keinem Konto',
+      l1.test === true && l1.uid === null && l1.teilnehmer === 'test:schulChef',
+      JSON.stringify({ test: l1.test, uid: l1.uid, teilnehmer: l1.teilnehmer }));
+    pruefe('TESTCODE · Gerät und Name stimmen', l1.geraetUid === 'schulChef' && l1.teilnehmerName === 'Chef Test');
+
+    const r2 = await start('0000 0000 0000', 'schulChef');
+    pruefe('TESTCODE · mit Leerzeichen statt Bindestrichen geht er auch', r2 && r2.test === true);
+    pruefe('TESTCODE · der zweite Test zählt als 2. Durchgang', r2.durchgang === 2, 'war ' + r2.durchgang);
+
+    const r3 = await start('0000-0000-0000', 'schulLeiter');
+    pruefe('TESTCODE · die Studioleitung kommt auch hinein', r3 && r3.test === true);
+    pruefe('TESTCODE · … aber MIT Video-Sperre (nur der Chef ist ausgenommen)', r3.ohneVideoSperre === false);
+
+    const vorher = (await F.collection('schulungLaeufe').get()).size;
+    const e4 = await fehler(start('0000-0000-0000', 'schulMit'));
+    pruefe('TESTCODE · ein Mitarbeiter wird abgewiesen', e4 && e4.code === 'permission-denied' && /nur für die Leitung/.test(e4.message),
+      e4 ? e4.code + ' ' + e4.message : 'ging durch');
+    pruefe('TESTCODE · … und es entsteht kein Lauf', (await F.collection('schulungLaeufe').get()).size === vorher);
+    pruefe('TESTCODE · … und es zählt nicht als Fehlversuch',
+      !(await F.collection('schulungVersuche').doc('schulMit').get()).exists);
+
+    /* „IMMER": auch wenn die Bremse an diesem Gerät gerade zu ist. */
+    await F.collection('schulungVersuche').doc('schulChef').set({ zahl: 10, seit: Date.now() });
+    const e5 = await fehler(start('M4K7-XXXX-XXXX', 'schulChef'));
+    pruefe('GEGENPROBE die Bremse ist wirklich zu', e5 && e5.code === 'resource-exhausted', e5 ? e5.code : 'ging durch');
+    const r5 = await start('0000-0000-0000', 'schulChef');
+    pruefe('TESTCODE · geht auch, wenn die Bremse zu ist', r5 && r5.test === true);
+    await F.collection('schulungVersuche').doc('schulChef').delete();
+
+    /* Gegenproben: der echte Weg ist unverändert. */
+    const r6 = await start('M4K7-9TQD-B2HX', 'schulMit');
+    const l6 = (await F.collection('schulungLaeufe').doc(r6.lauf).get()).data() || {};
+    pruefe('GEGENPROBE ein echter Code geht weiter, und sein Lauf ist KEIN Test',
+      r6.ok === true && !r6.test && l6.test === undefined && l6.teilnehmer === 't-echt');
+    const e7 = await fehler(start('M4K7-9TQD-B2HA', 'schulMit'));
+    pruefe('GEGENPROBE ein falscher Code wird weiter abgewiesen und gezählt',
+      e7 && e7.code === 'permission-denied' &&
+      ((await F.collection('schulungVersuche').doc('schulMit').get()).data() || {}).zahl === 1);
+  }
+
   console.log('\n══ Cloud Functions gegen den Emulator ══');
   protokoll.forEach(z => console.log(z));
   console.log('\n  ' + bestanden + ' bestanden, ' + gefallen + ' gefallen');

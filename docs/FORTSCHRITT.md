@@ -14379,3 +14379,67 @@ Die Firebase-Doku nennt bis zu fünf zweite Faktoren je Konto. Hier ist der
 Server nachgestellt, der erste echte Versuch ist der im Betrieb.
 
 **Test:** `tests/test-zf-geraete.js` (19).
+
+## Runde 132 — Testcode für Schulungen (1.10.2026)
+
+Aus dem Betrieb: „kannst du für die schulungen einen universal code
+erstellen der IMMER geht damit die chefs das auch mal durchtesten können
+ohne sich selber da einen code erstellen zu müssen (code soll
+0000-0000-0000 sein)".
+
+**Gebaut**
+
+- `schulungStart` nimmt **0000-0000-0000** an, für Geschäftsführung und
+  Studioleitung. Der Lauf trägt `test: true`, `uid: null` und
+  `teilnehmer: 'test:<uid>'`.
+- Der Testcode wird **vor** der Fehlversuch-Bremse geprüft. „IMMER“
+  heisst auch nach zehn Fehlversuchen an diesem Gerät.
+- In der App: am Codefeld ein Satz mit dem Testcode (nur die Leitung
+  sieht ihn); oben im Lauf steht „Testlauf“; im Ergebnis, dass er nicht
+  zählt. Die Auswertung und die Zahlen an den Reitern und Modulen lassen
+  Testläufe weg. Darunter steht, wie viele es gab, damit nichts stumm
+  verschwindet. Der Export nimmt sie mit, als `testlauf: true`.
+- Regeln (beide Bäume): `test` und `uid` lassen sich am laufenden
+  Durchlauf nicht mehr ändern.
+
+**Entschieden, und warum**
+
+- **Die Schranke ist die Rolle, nicht der Code.** Der Code steht im
+  öffentlichen Repository. Kein echter Code kann so aussehen, denn das
+  Alphabet hat keine 0. Chef und Studioleitung dürfen ohnehin Codes
+  anlegen, der Testcode gibt ihnen nichts Neues.
+- **Auch die Studioleitung**, nicht nur die Geschäftsführung: Sie legt
+  Module an und muss sie ausprobieren können. Gewünscht war „die chefs“;
+  das ist eine Erweiterung um die Rolle, die dieselben Rechte hat.
+- **Ein Testlauf ist kein Nachweis.** Hinge er am Konto, hakte ein
+  bestandener Test das Pflichtmodul ab. Wer es echt nachweisen will,
+  legt sich als Teilnehmer an.
+- **Video-Sperre wie sonst:** Die Geschäftsführung ist ausgenommen, die
+  Studioleitung nicht (Wunsch vom 30.9.2026).
+
+**Nebenbei gefunden und geschlossen:** Das Gerät eines laufenden
+Durchlaufs durfte bisher `uid` ändern. Ein Tablet hätte damit einen
+Durchlauf an ein beliebiges Konto hängen können, und er wäre dort in
+„Meine Schulungen“ erschienen. Seit dieser Runde ist `uid` fest. Die App
+schreibt das Feld nie nach, also trifft das niemanden.
+
+**Nicht gebaut: „mich freischalten“.** Gemeint war, sich draussen ohne
+den Code der Authenticator-App anzumelden. Den zweiten Faktor des
+eigenen Kontos ohne zweiten Faktor zu entfernen, wäre genau die Lücke,
+die die Zwei-Faktor-Anmeldung schliesst (`zweiFaktorZuruecksetzen`:
+„nie für sich selbst“). Zurücksetzen kann eine andere Person aus der
+Geschäftsführung oder der Inhaber des Projekts selbst in der Cloud
+Shell. Ich fasse keine Zugangsdaten von `formenchat` an.
+
+**Tests**
+
+- `tests/rules/funktionen.test.js`: 15 neue Prüfungen, die die echte
+  Funktion im Emulator ausführen. Darunter: Mitarbeitende abgewiesen,
+  ohne dass ein Fehlversuch zählt; Testcode geht trotz geschlossener Bremse;
+  echter Code unverändert.
+- `tests/rules/schulung.test.js`: 6 neue Zusicherungen je Baum. Gegen
+  die alten Regeln fallen die neuen Zeilen durch (nachgeprüft).
+- `tests/test-schulung-testcode.js` (26), in der Demo, bei 320/390 und
+  1280/1920 px. Neue Knöpfe gibt es keine; der Satz am Codefeld ist
+  Text.
+

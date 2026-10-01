@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-gl90Y6rilNWjHDusxPLa3UZtHjC2BE3Kr6aiXWGtvEY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-X3a0qjek4icBqHwQEiVFHPfquH0XVOIntoH37hVjtW0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -17763,6 +17763,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-01-schulung-testcode', datum:'1.10.2026', titel:'Testcode für Schulungen', wo:'schulung', punkte:[
+    'Geschäftsführung und Studioleitung können jede Schulung mit dem Code 0000-0000-0000 ausprobieren, ohne vorher einen Teilnehmer anzulegen. Der Code geht immer, auch nach Fehlversuchen.',
+    'Ein Testlauf zählt nicht: Er steht nicht in der Auswertung und hakt kein Pflichtmodul ab. Unter der Auswertung steht, wie viele Testläufe es gab.',
+    'Für Mitarbeitende geht der Testcode nicht. Sie brauchen weiter ihren eigenen Code von der Studioleitung.' ] },
   { id:'2026-10-01-zf-geraete', datum:'1.10.2026', titel:'Zwei-Faktor auf mehreren Geräten', wo:'profil', punkte:[
     'Die Authenticator-App muss nicht mehr nur auf einem Gerät sein: unter Profil → Anmeldung und Sicherheit → „Weiteres Gerät" den QR-Code mit dem Handy scannen. Beim Anmelden geht dann der Code von jedem eingerichteten Gerät — wählen musst du nichts.',
     'Einmal angemeldet bleibst du auf dem Gerät angemeldet; der Code kommt nur bei einer neuen Anmeldung.',
@@ -22499,6 +22503,15 @@ function schCodeZeigen(modulId){
         '<p class="hint">Den Code bekommst du von der Studioleitung. Er sagt, '+
           'wer du bist — deshalb brauchst du keinen eigenen Zugang. Mitgeschrieben '+
           'wird ausserdem, wann und an welchem Gerät du die Schulung gemacht hast.</p>'+
+        /* Der Testcode (1.10.2026, aus dem Betrieb: „einen universal code
+           … der IMMER geht damit die chefs das auch mal durchtesten
+           können"). Nur die Leitung sieht den Satz; prüfen tut der Server
+           die Rolle, nicht dieser Satz. */
+        (canManage()
+          ? '<p class="hint" id="schTestHinweis">Zum Ausprobieren für die Leitung: '+
+              '<b style="letter-spacing:.06em;white-space:nowrap">0000-0000-0000</b>. '+
+              'Ein Testlauf zählt nicht und steht nicht in der Auswertung.</p>'
+          : '')+
       '</div>'+
       '<p class="hint" id="schCodeNote" style="min-height:1.2em"></p>'+
       '<button class="btn btn-primary" id="schStartBtn" style="width:100%">Anfangen</button>'+
@@ -22550,7 +22563,7 @@ function schStarten(){
       .then(function(r){
         var d=(r&&r.data)||{};
         _schLauf={ id:d.lauf, name:d.name||'', durchgang:d.durchgang||1,
-                   ohneVideoSperre:!!d.ohneVideoSperre };
+                   ohneVideoSperre:!!d.ohneVideoSperre, test:!!d.test };
         _schVideoStand={};
         _schGesehen=[]; _schFolge=schFolgeBauen(_schModul); schFolgeGehe(0);
         _schHaken=false; _schOffenerHinweis=''; _schAktivMs=0; _schGesichert=Date.now();
@@ -22637,7 +22650,7 @@ function schLaufZeichnen(){
       '<span class="sch-zahl">'+(fertig+1)+'/'+gesamt+'</span>'+
       '<span class="sch-balken"><i style="width:'+
         Math.round(fertig/Math.max(1,gesamt)*100)+'%"></i></span>'+
-      '<span class="sch-zahl">'+esc(_schLauf.name)+'</span>'+
+      '<span class="sch-zahl">'+(_schLauf.test ? 'Testlauf' : esc(_schLauf.name))+'</span>'+
     '</div>';
   box.innerHTML=kopf+'<div class="card">'+
     (_schPhase==='schritte' ? schSchrittMarkup() : schFrageMarkup())+'</div>';
@@ -23044,7 +23057,9 @@ function schErgebnisZeigen(punkte, bestanden, fragen){
     '<div class="sch-kranz">'+ikon(bestanden?'hakenKreis':'warnung')+'</div>'+
     '<h3>'+(bestanden?'Geschafft.':'Noch nicht ganz.')+'</h3>'+
     '<p>'+esc(_schLauf.name)+' · '+esc(_schModul.titel||'')+'<br/>'+
-      (bestanden
+      (_schLauf.test
+        ? 'Das war ein Testlauf mit dem Testcode. Er zählt nicht und steht nicht in der Auswertung.'
+        : bestanden
         ? 'Der Durchlauf ist festgehalten und steht für die Leitung in der Liste.'
         : 'Du kannst das Modul jederzeit noch einmal machen.')+'</p>'+
     '<div class="sch-zahlen">'+
@@ -23100,7 +23115,7 @@ function schLaeufeLaden(){
 var _schVwTab='tn';
 function schVerwaltenZeichnen(){
   var box=$('schVerwalten'); if(!box || !canManage()) return;
-  var fertig=_schAlleLaeufe.filter(function(l){ return l.status==='fertig'; });
+  var fertig=_schAlleLaeufe.filter(function(l){ return l.status==='fertig' && !l.test; });
   var reiter=[
     { id:'tn',   name:'Teilnehmer', zahl:_schTeilnehmer.length },
     { id:'mod',  name:'Module',     zahl:schModule().length },
@@ -23318,10 +23333,18 @@ function schCodeNeu(id, btn){
 }
 function schLaufListeZeichnen(){
   var box=$('schLaufListe'); if(!box) return;
-  var liste=_schAlleLaeufe.filter(function(l){ return l.status==='fertig'; });
+  /* Testläufe (Testcode 0000-0000-0000) sind kein Nachweis und stehen
+     nicht in der Liste. Verschwinden tun sie trotzdem nicht stumm: die
+     Zahl steht darunter. */
+  var liste=_schAlleLaeufe.filter(function(l){ return l.status==='fertig' && !l.test; });
+  var tests=_schAlleLaeufe.filter(function(l){ return l.status==='fertig' && l.test; }).length;
+  var testZeile=tests
+    ? '<p class="hint" id="schTestZahl">'+tests+(tests===1?' Testlauf':' Testläufe')+
+        ' mit dem Testcode — zählen nicht und stehen deshalb nicht in der Liste.</p>'
+    : '';
   if(!liste.length){
     box.innerHTML='<div class="empty"><h3>Noch hat niemand eine Schulung gemacht.</h3>'+
-      '<p>Lege oben einen Teilnehmer an und gib ihm seinen Code.</p></div>';
+      '<p>Lege oben einen Teilnehmer an und gib ihm seinen Code.</p></div>'+testZeile;
     return;
   }
   box.innerHTML=liste.map(function(l){
@@ -23337,7 +23360,7 @@ function schLaufListeZeichnen(){
       '<span class="sch-lauf-zahl">'+fehl+'× daneben</span>'+
       '<span class="sch-marke '+(l.bestanden?'fertig':'faellig')+'">'+
         (l.bestanden?'bestanden':'offen')+'</span></div>';
-  }).join('');
+  }).join('')+testZeile;
 }
 
 
@@ -24056,7 +24079,7 @@ function schModulListeZeichnen(){
     var k=schKat(m.kat);
     var herkunft = m.eigen ? (m.basis ? 'eigene Fassung' : 'selbst angelegt') : 'aus der Datei';
     var zahl=_schAlleLaeufe.filter(function(l){
-      return l.modul===m.id && l.status==='fertig' && l.bestanden; }).length;
+      return l.modul===m.id && l.status==='fertig' && l.bestanden && !l.test; }).length;
     return '<div class="sch-tn-zeile">'+
       '<span class="sch-tn-name">'+esc(m.titel||'')+
         '<span>'+esc(k.name)+' · '+esc(herkunft)+' · '+
@@ -31974,7 +31997,9 @@ function backupData(){
             return sum+Math.max(0,(f.versuche||1)-1); },0),
           durchgang:l.durchgang||1,
           studio:l.studioKey?studioName(l.studioKey):'',
-          geraet:l.geraetName||''
+          geraet:l.geraetName||'',
+          /* Mit dem Testcode 0000-0000-0000 gemacht: kein Nachweis. */
+          testlauf:!!l.test
         };
       });
     /* ── Stempelzeiten ──

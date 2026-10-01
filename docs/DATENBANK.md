@@ -373,7 +373,7 @@ hat.
 | `schulungTeilnehmer` | `name`, `uid` (freiwillig), `kennung`, **`code` (Klartext)**, `codeAm`, `gesperrt` | lesen: die Leitung und die Person selbst · schreiben: die Leitung |
 | `schulungCodes/{kennung}` | `salz`, `hash`, `teilnehmer` — **nur noch Rückfall für Codes von vor dem 22.9.2026** | **niemand** — `allow read, write: if false` |
 | `schulungVersuche/{uid}` | die Bremse gegen Durchprobieren | **niemand** |
-| `schulungLaeufe` | ein Durchlauf: `teilnehmer`, `teilnehmerName`, `uid`, `modul`, `geraetUid`, `geraetName`, `studioKey`, `start`, `ende`, `aktivMs`, `durchgang`, `schritteGesehen`, `fragen[]`, `punkte`, `bestanden`, `status` | lesen: die Leitung und die Person selbst · **anlegen: niemand** · ändern: nur das Gerät, nur solange `status == 'laeuft'` |
+| `schulungLaeufe` | ein Durchlauf: `teilnehmer`, `teilnehmerName`, `uid`, `modul`, `geraetUid`, `geraetName`, `studioKey`, `start`, `ende`, `aktivMs`, `durchgang`, `schritteGesehen`, `fragen[]`, `punkte`, `bestanden`, `status`; bei einem Testlauf mit dem Testcode 0000-0000-0000 zusätzlich `test: true`, `uid: null`, `teilnehmer: 'test:<uid>'` | lesen: die Leitung und die Person selbst · **anlegen: niemand** · ändern: nur das Gerät, nur solange `status == 'laeuft'`, und nie `teilnehmer`, `modul`, `geraetUid`, `uid` oder `test` |
 
 **Die Videos selbst liegen nicht in der Datenbank**, sondern im Eimer
 `formenchat-schulungsvideos` unter

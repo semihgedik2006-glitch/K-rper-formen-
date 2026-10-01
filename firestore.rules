@@ -1139,7 +1139,12 @@ service cloud.firestore {
         && resource.data.status == 'laeuft'
         && request.resource.data.geraetUid == resource.data.geraetUid
         && request.resource.data.teilnehmer == resource.data.teilnehmer
-        && request.resource.data.modul == resource.data.modul);
+        && request.resource.data.modul == resource.data.modul
+        // Ein Testlauf (Testcode 0000-0000-0000) bleibt einer und hängt
+        // sich nicht nachträglich an ein Konto: sonst würde aus einem
+        // Test ein „bestanden" in „Meine Schulungen".
+        && request.resource.data.get('test', false) == resource.data.get('test', false)
+        && request.resource.data.get('uid', null) == resource.data.get('uid', null));
       allow delete: if aufFlachenPfaden() && (istAktiv() && isChef());
     }
 
@@ -2034,7 +2039,12 @@ service cloud.firestore {
             && resource.data.status == 'laeuft'
             && request.resource.data.geraetUid == resource.data.geraetUid
             && request.resource.data.teilnehmer == resource.data.teilnehmer
-            && request.resource.data.modul == resource.data.modul);
+            && request.resource.data.modul == resource.data.modul
+            // Ein Testlauf (Testcode 0000-0000-0000) bleibt einer und hängt
+            // sich nicht nachträglich an ein Konto: sonst würde aus einem
+            // Test ein „bestanden" in „Meine Schulungen".
+            && request.resource.data.get('test', false) == resource.data.get('test', false)
+            && request.resource.data.get('uid', null) == resource.data.get('uid', null));
           allow delete: if schreibtIn(f) && (istAktiv() && isChef());
         }
 
