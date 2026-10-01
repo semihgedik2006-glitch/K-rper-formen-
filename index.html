@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ye5X0oZl72sHhu1vZKqoU9WrptAPO2zFdNZSmvM+Le0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-gl90Y6rilNWjHDusxPLa3UZtHjC2BE3Kr6aiXWGtvEY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5358,6 +5358,11 @@ body:not(.light) .btn-anbieter[data-anbieter="apple"]{background:#000;color:#fff
 .sich-was{flex:1 1 auto;min-width:0;display:grid}
 .sich-was small{color:var(--text-2);font-size:var(--t-xs);overflow-wrap:anywhere}
 .sich-zeile .btn{flex:0 0 auto;min-height:44px}
+/* Zwei Knöpfe in einer Zeile („Weiteres Gerät", „Abschalten") — am Handy
+   rutschen sie unter den Text statt ihn auf zwei Wörter zu quetschen. */
+.sich-zeile:has(.btn + .btn){flex-wrap:wrap}
+.sich-zeile:has(.btn + .btn) .sich-was{flex:1 1 100%}
+.sich-zeile.zf-geraet{padding-left:var(--s12)}
 /* ── Zwei-Faktor (Runde 119) ── */
 #loginForm.zf-schritt > :not(#lgZweiFaktor){display:none}
 .zf-anmeldung .auth-notiz{margin-bottom:var(--s12)}
@@ -5402,6 +5407,11 @@ body.gast .sich-feld{display:none}
 .zf-pflicht[hidden]{display:none}
 /* Das Einrichten-Fenster liegt sonst (z-index 210) UNTER der Sperre. */
 body:has(#zfPflicht:not([hidden])) #zfModal{z-index:890}
+/* Das Fenster wird auch AUS den Profil-Einstellungen geöffnet („Einrichten",
+   „Weiteres Gerät"). Mit derselben Ebene wie das Profilfenster lag es
+   darunter — der Knopf war zu sehen und nicht zu treffen (gefunden
+   1.10.2026 in test-zf-geraete). Darüber, auch über der Gast-Fassung (950). */
+#zfModal.show{z-index:960}
 .zf-pflicht-karte{max-width:440px;width:100%;display:grid;gap:var(--s12);text-align:center;
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e2)}
 .zf-pflicht-karte h2{margin:0;font-size:var(--t-xl)}
@@ -9234,6 +9244,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <a id="zfLink" class="zf-link" href="#">direkt in der App öffnen</a>.</li>
         <li>Den 6-stelligen Code aus der App hier eintragen.</li>
       </ol>
+      <div class="field" id="zfNameFeld" hidden><label for="zfName">Wie heißt das Gerät?</label>
+        <input class="inp" id="zfName" type="text" maxlength="40" placeholder="z. B. Handy" /></div>
       <div class="zf-qr" id="zfQr" aria-label="QR-Code zum Scannen"></div>
       <p class="hint zf-schluessel">Schlüssel zum Abtippen: <code id="zfSchluessel"></code></p>
       <div class="field"><label for="zfCode">Code aus der App</label>
@@ -16118,10 +16130,27 @@ function zfZeile(u){
       '<small>Code aus einer Authenticator-App — wird gerade freigeschaltet.'+pflicht+'</small></span></div>';
   }
   var f=zfFaktoren(u);
+  /* Mehrere Geräte (1.10.2026). Aus dem Betrieb: „ich hab die
+     autenthicater app nur auf dem pc und kann jetzt draussen nichts
+     machen". Firebase erlaubt bis zu fünf zweite Faktoren je Konto,
+     jeder mit eigenem Namen — dieselbe Sicherheit, nur auf mehr als
+     einem Gerät. */
   if(f.length){
+    var mehr = f.length<5
+      ? '<button type="button" class="btn btn-ghost btn-sm" data-sich="zf-mehr">Weiteres Gerät</button>' : '';
+    if(f.length===1){
+      return '<div class="sich-zeile"><span class="sich-was"><b>Zwei-Faktor-Anmeldung</b>'+
+        '<small>an — '+esc(f[0].displayName || 'Authenticator-App')+
+        '. Auch aufs Handy? „Weiteres Gerät".</small></span>'+mehr+
+        '<button type="button" class="btn btn-ghost btn-sm" data-sich="zf-aus">Abschalten</button></div>';
+    }
     return '<div class="sich-zeile"><span class="sich-was"><b>Zwei-Faktor-Anmeldung</b>'+
-      '<small>an — '+esc(f[0].displayName || 'Authenticator-App')+'</small></span>'+
-      '<button type="button" class="btn btn-ghost btn-sm" data-sich="zf-aus">Abschalten</button></div>';
+        '<small>an — auf '+f.length+' Geräten. Beim Anmelden geht der Code von jedem.</small></span>'+mehr+'</div>'+
+      f.map(function(x){
+        return '<div class="sich-zeile zf-geraet"><span class="sich-was"><b>'+esc(x.displayName || 'Authenticator-App')+'</b>'+
+          '<small>eingerichtet'+(x.enrollmentTime ? ' am '+esc(fmtTag(Date.parse(x.enrollmentTime), true)) : '')+'</small></span>'+
+          '<button type="button" class="btn btn-ghost btn-sm" data-sich="zf-weg" data-zf="'+esc(x.uid)+'">Entfernen</button></div>';
+      }).join('');
   }
   return '<div class="sich-zeile"><span class="sich-was"><b>Zwei-Faktor-Anmeldung</b>'+
     '<small>aus.'+pflicht+'</small></span>'+
@@ -16129,14 +16158,19 @@ function zfZeile(u){
 }
 
 /* ── Einrichten ── */
-function zfEinrichten(){
+function zfEinrichten(weiteres){
   var u=auth.currentUser;
   if(!u || !u.multiFactor || !u.multiFactor.getSession){
     toast('In der Demo lässt sich die Zwei-Faktor-Anmeldung nicht einrichten.'); return;
   }
+  _zfWeiteres=!!weiteres;
+  $('zfNameFeld').hidden=!_zfWeiteres;
+  $('zfName').value=_zfWeiteres ? 'Handy' : '';
+  $('zfBestaetigen').textContent=_zfWeiteres ? 'Gerät hinzufügen' : 'Einschalten';
   $('zfModal').classList.add('show');
   zfSchritt(u);
 }
+var _zfWeiteres=false;
 function zfZeige(welcher){
   $('zfLaden').hidden = welcher!=='laden';
   $('zfMail').hidden = welcher!=='mail';
@@ -16187,10 +16221,15 @@ function zfBestaetigen(){
   if(code.length!==6){ $('zfErr').textContent='Bitte die 6 Ziffern aus der App eingeben.'; return; }
   $('zfErr').textContent='';
   withBusy($('zfBestaetigen'), function(){
-    return u.multiFactor.enroll(zfAssertion(code, { sessionInfo:_zfInfo && _zfInfo.sessionInfo }), 'Authenticator-App')
+    /* Jedes Gerät braucht einen eigenen Namen — beim Anmelden und beim
+       Entfernen muss man sie auseinanderhalten können. */
+    var vorhanden=zfFaktoren(u).map(function(x){ return x.displayName; });
+    var name=String(($('zfName')||{}).value||'').trim() || (_zfWeiteres ? 'Gerät '+(vorhanden.length+1) : 'Authenticator-App');
+    if(vorhanden.indexOf(name)>=0) name=name+' '+(vorhanden.length+1);
+    return u.multiFactor.enroll(zfAssertion(code, { sessionInfo:_zfInfo && _zfInfo.sessionInfo }), name)
       .then(function(){
         $('zfModal').classList.remove('show');
-        toast('Zwei-Faktor-Anmeldung ist an ✓');
+        toast(_zfWeiteres ? '„'+name+'" ist eingerichtet ✓ — der Code geht jetzt von beiden' : 'Zwei-Faktor-Anmeldung ist an ✓');
         tick(12);
         zfLeisteZeigen();
         sicherheitZeichnen($('pmSicherheit')); sicherheitZeichnen($('mkSicherheit'));
@@ -16210,6 +16249,21 @@ function zfAbschalten(b, box){
   withBusy(b, function(){
     return u.multiFactor.unenroll(f).then(function(){
       toast('Zwei-Faktor-Anmeldung ist aus'); sicherheitZeichnen(box); zfLeisteZeigen();
+    }, function(e){ toast(e && e.code==='auth/requires-recent-login' ? zfFehlerText('CREDENTIAL_TOO_OLD') : ((e && e.message) || errMsg(e)), true); });
+  });
+}
+
+/* Ein Gerät entfernen, solange ein anderes bleibt — das geht auch bei
+   Pflicht: der Schutz bleibt, nur das alte Handy fliegt raus. */
+function zfGeraetEntfernen(b, box){
+  var u=auth.currentUser, uid=b.getAttribute('data-zf');
+  var f=zfFaktoren(u).filter(function(x){ return x.uid===uid; })[0];
+  if(!f) return;
+  if(zfFaktoren(u).length<2){ zfAbschalten(b, box); return; }
+  if(!confirm('„'+(f.displayName||'Gerät')+'" entfernen?\n\nDanach geht der Code nur noch von den anderen Geräten.')) return;
+  withBusy(b, function(){
+    return u.multiFactor.unenroll(f).then(function(){
+      toast('„'+(f.displayName||'Gerät')+'" ist entfernt'); sicherheitZeichnen(box); zfLeisteZeigen();
     }, function(e){ toast(e && e.code==='auth/requires-recent-login' ? zfFehlerText('CREDENTIAL_TOO_OLD') : ((e && e.message) || errMsg(e)), true); });
   });
 }
@@ -16234,11 +16288,27 @@ function zfAnmeldungBestaetigen(){
   var code=zfCodeAus($('lgZfCode')), err=$('lgZfErr');
   if(!_zfResolver){ zfAnmeldungEnde(); return; }
   if(code.length!==6){ err.textContent='Bitte die 6 Ziffern aus der App eingeben.'; return; }
-  var hint=(_zfResolver.hints || []).filter(function(h){ return h && h.factorId==='totp'; })[0];
-  if(!hint){ err.textContent='Für dieses Konto ist ein anderer zweiter Faktor eingerichtet. Bitte bei der Geschäftsführung melden.'; return; }
+  var hints=(_zfResolver.hints || []).filter(function(h){ return h && h.factorId==='totp'; });
+  if(!hints.length){ err.textContent='Für dieses Konto ist ein anderer zweiter Faktor eingerichtet. Bitte bei der Geschäftsführung melden.'; return; }
+  /* Mehrere Geräte: niemand soll wählen müssen, von welchem der Code
+     kommt. Probiert wird zuerst das Gerät, das hier zuletzt gepasst
+     hat, dann die anderen — ein falscher Code verbraucht die offene
+     Anmeldung nicht. */
+  var zuletzt=''; try{ zuletzt=localStorage.getItem('kf_zf_geraet')||''; }catch(x){}
+  hints.sort(function(a,b){ return (b.uid===zuletzt) - (a.uid===zuletzt); });
+  var resolver=_zfResolver;
+  function falscherCode(e){ return !!e && (/INVALID_CODE|INVALID_TOTP/.test(String(e.code||'')) || /stimmt nicht/.test(String(e.message||''))); }
+  function versuch(i){
+    return resolver.resolveSignIn(zfAssertion(code, { enrollmentId:hints[i].uid })).then(function(){
+      try{ localStorage.setItem('kf_zf_geraet', hints[i].uid); }catch(x){}
+    }, function(e){
+      if(falscherCode(e) && i+1<hints.length) return versuch(i+1);
+      throw e;
+    });
+  }
   err.textContent='';
   withBusy($('lgZfOk'), function(){
-    return _zfResolver.resolveSignIn(zfAssertion(code, { enrollmentId:hint.uid })).then(function(){
+    return versuch(0).then(function(){
       zfAnmeldungEnde(); return anbieterNachholen();
     }, function(e){ err.textContent=(e && e.message) || errMsg(e); });
   });
@@ -16450,6 +16520,8 @@ function sicherheitTun(b, box){
     return;
   }
   if(was==='zf-an'){ zfEinrichten(); return; }
+  if(was==='zf-mehr'){ zfEinrichten(true); return; }
+  if(was==='zf-weg'){ zfGeraetEntfernen(b, box); return; }
   if(was==='zf-aus'){ zfAbschalten(b, box); return; }
   if(!u.linkWithPopup || !u.unlink){ toast('In der Demo lässt sich nichts verknüpfen.'); return; }
   if(was==='verknuepfen'){
@@ -17691,6 +17763,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-01-zf-geraete', datum:'1.10.2026', titel:'Zwei-Faktor auf mehreren Geräten', wo:'profil', punkte:[
+    'Die Authenticator-App muss nicht mehr nur auf einem Gerät sein: unter Profil → Anmeldung und Sicherheit → „Weiteres Gerät" den QR-Code mit dem Handy scannen. Beim Anmelden geht dann der Code von jedem eingerichteten Gerät — wählen musst du nichts.',
+    'Einmal angemeldet bleibst du auf dem Gerät angemeldet; der Code kommt nur bei einer neuen Anmeldung.',
+    'Das Einrichtungsfenster lag, aus dem Profil geöffnet, unter dem Profilfenster. Behoben.' ] },
   { id:'2026-09-30-beratung-strenger', datum:'30.9.2026', titel:'Beratungs-Schulung: strenger und ohne Vorspulen', wo:'schulung', punkte:[
     'Die Fragen sind neu und schwieriger. Es zählt die erste Antwort; danach siehst du die richtige mit einem Hinweis. Bestanden ist ab 80 % — wer darunter bleibt, macht die Schulung noch einmal.',
     '„Weiter" geht bei jedem Video erst, wenn es angesehen wurde; Vorspulen zählt nicht. Für die Geschäftsführung gilt das nicht, wenn ihr Teilnehmer mit ihrem Konto verknüpft ist (beim Anlegen „(ich)" wählen).' ] },

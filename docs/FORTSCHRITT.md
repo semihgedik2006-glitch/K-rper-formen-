@@ -14338,3 +14338,44 @@ das handout kannst du selber als pdf datei erstellen".
   Speicher des Betriebs, und das Firebase-SDK lädt hier nicht.
 
 **Test:** `tests/test-schulung-beratung.js` (60).
+
+---
+
+## Runde 131 — Zwei-Faktor auf mehreren Geräten (1.10.2026)
+
+Aus dem Betrieb: „kannst du noch dafür sorgen das man nicht jedes mal …
+einen code aus einer app eintragen muss ODER das man sich so ein code auch
+via email zukommen lassen kann weil ich zum beispiel hab die
+autenthicater app nur auf dem pc und kann jetzt draussen nichts machen".
+
+**Gebaut**
+
+- **„Weiteres Gerät“** in „Anmeldung und Sicherheit“. Jedes Gerät hat
+  einen Namen (vorbelegt „Handy“).
+  - Bei zwei und mehr Geräten steht jedes in einer eigenen Zeile mit
+    „Entfernen“.
+  - Entfernen geht auch bei Pflicht, solange ein Gerät bleibt.
+- **Anmelden:** Der Code wird gegen jedes Gerät probiert, zuerst das hier
+  zuletzt passende. Niemand muss wählen, von welchem Gerät der Code
+  kommt.
+- **Behoben:** Das Einrichtungsfenster lag, aus dem Profil geöffnet,
+  UNTER dem Profilfenster (beide z-index 210). Es war zu sehen, aber
+  nicht zu treffen. Gefunden, weil der neue Test den Knopf nicht klicken
+  konnte. Jetzt `#zfModal.show{z-index:960}`.
+
+**Entschieden, und warum**
+
+- **Kein Code per E-Mail.** Firebase kennt E-Mail nicht als zweiten
+  Faktor. Ein selbst gebauter E-Mail-Code ginge an Firebase vorbei, und
+  wer das Postfach hat, hätte dann beide Faktoren. Begründung ausführlich
+  in `docs/ZWEI-FAKTOR.md` 3b.
+- **Kein „Gerät merken für 30 Tage“.** Firebase fragt den zweiten Faktor
+  bei jeder NEUEN Anmeldung, das lässt sich nicht abschalten. Eine
+  bestehende Anmeldung bleibt aber auf dem Gerät gespeichert. Im Alltag
+  kommt der Code also selten.
+
+**Nicht geprüft:** Ob Googles Server einen ZWEITEN TOTP-Faktor annimmt.
+Die Firebase-Doku nennt bis zu fünf zweite Faktoren je Konto. Hier ist der
+Server nachgestellt, der erste echte Versuch ist der im Betrieb.
+
+**Test:** `tests/test-zf-geraete.js` (19).
