@@ -5,13 +5,13 @@ nicht nach dem, was am einfachsten zu bauen ist. Zu jedem Punkt steht dabei,
 was er kostet und was dagegen spricht, damit die Entscheidung nicht blind
 fällt.
 
-Nichts davon ist gebaut. Das ist eine Auswahlliste.
+Stand 1.10.2026: das meiste davon ist inzwischen gebaut (mit ✅ markiert). Offen sind Materialbestellung als Mail (braucht die eigene Absenderadresse), Kennzahlen je Studio (braucht eine Datenquelle) und Offline weiterarbeiten (gross, und auf geteilten Tablets eine Datenschutzfrage).
 
 ---
 
 ## Die drei, die ich zuerst bauen würde
 
-### 1. Geräte- und Schadensbuch
+### 1. Geräte- und Schadensbuch  ✅ *gebaut (Geräte mit Verlauf und Fotos)*
 
 **Das Problem:** Geht ein EMS-Gerät kaputt, steht das heute irgendwo im Chat
 und ist nach zwei Tagen nach oben gescrollt. Niemand weiß, welches Gerät wie
@@ -30,7 +30,7 @@ die Geräte eintragen.
 
 ---
 
-### 2. Schichttausch mit Bestätigung
+### 2. Schichttausch mit Bestätigung  ✅ *gebaut (Runde B2, „Zum Übernehmen“)*
 
 **Das Problem:** Schichttausch läuft heute über WhatsApp und mündliche
 Zusagen. Im Dienstplan steht danach die falsche Person, und wer wirklich da
@@ -50,7 +50,7 @@ nicht nachträglich.
 
 ---
 
-### 3. Schulungen und Zertifikate mit Ablaufdatum
+### 3. Schulungen und Zertifikate mit Ablaufdatum  ✅ *gebaut (Schulung, Nachweise mit Ablaufdatum)*
 
 **Das Problem:** Erste-Hilfe-Kurs, Trainerlizenz, EMS-Einweisung nach
 Strahlenschutzverordnung — jedes mit eigenem Ablaufdatum. Das fällt heute
@@ -71,7 +71,7 @@ die Person selbst und der Chef, nicht die Studio-Leitung.
 
 ## Lohnt sich, ist aber kein Notfall
 
-### Umfragen im Chat
+### Umfragen im Chat  ✅ *gebaut*
 
 „Wer kann Samstag?" mit Antwortknöpfen statt 30 Einzelnachrichten. Das
 Ergebnis steht direkt in der Nachricht. **Aufwand:** klein. Die
@@ -85,7 +85,7 @@ einer sauberen Bestellmail und einem Vermerk, wann zuletzt bestellt wurde.
 **Vorher zu klären:** die Absenderadresse (siehe `OFFEN.md`, dort ist der
 Wechsel auf die eigene Domain ohnehin fällig).
 
-### Dienstplan als Kalender abonnieren
+### Dienstplan als Kalender abonnieren  ✅ *gebaut (Kalender-Abo-Link je Person, zurückziehbar)*
 
 Eine `.ics`-Adresse je Person, die sich in Apple- oder Google-Kalender
 eintragen lässt. Danach stehen die Schichten auf dem Handy, ohne dass jemand
@@ -94,7 +94,7 @@ Cloud Function.
 **Achtung:** So eine Adresse ist ein Passwort. Sie muss lang und zufällig
 sein und sich zurückziehen lassen.
 
-### Wiedervorlage für einen selbst
+### Wiedervorlage für einen selbst  ✅ *abgedeckt: eigene To-dos mit „Bis wann“ unter Ich → Persönlich; sie stehen am Tag in „Meine Woche“, und nur man selbst sieht sie*
 
 „Erinnere mich Montag daran." Kein neuer Aufgaben-Typ, nur eine Aufgabe, die
 bis dahin niemand sieht. **Aufwand:** klein.
@@ -112,7 +112,7 @@ normalen Rauschen.
 
 ## Größere Brocken — nur mit Vorlauf
 
-### Zeiterfassung (Kommen/Gehen)
+### Zeiterfassung (Kommen/Gehen)  ✅ *gebaut (Stempeluhr am Terminal, Korrektur nur mit Grund, Löschfrist 3 Jahre)*
 
 Der größte Nutzen von allem hier, und mit Abstand der heikelste Punkt.
 
