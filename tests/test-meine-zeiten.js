@@ -34,6 +34,7 @@ const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FEST = new Date(2026, 8, 17, 10, 0, 0);   // der feste Tag, siehe unten
 
 /* Attrappe für `zeiten`, die die Filter ernst nimmt — sonst sagt der
    Monatswechsel nichts aus. Läuft NACH stub-chef.js. */
@@ -152,6 +153,12 @@ async function starten(errs) {
   await page.route('**://www.gstatic.com/**', r => r.abort());
   await page.route('**fonts.googleapis.com/**', r => r.abort());
   await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
+  /* Der Tag steht fest: Donnerstag, 17.9.2026, 10 Uhr. Die Attrappe legt
+     „vorgestern, gestern, heute" an und erwartet alle drei im laufenden
+     Monat — am 1. und 2. eines Monats liegen zwei davon im Vormonat, und
+     der Test fiel genau dort durch (gefunden am 1.10.2026). Die Uhr
+     läuft weiter, nur das Datum ist fest. */
+  await page.clock.setFixedTime(FEST);
   await page.addInitScript({ path: SP + '/stub-chef.js' });
   await page.addInitScript({ content: ZUSATZ });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -281,7 +288,7 @@ async function zurKarte(page) {
   if (!m) errs.push('Beim Zurückblättern wurde nicht neu nach dem Monat gefragt');
   else {
     const soll = (() => {
-      const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
+      const d = new Date(FEST); d.setDate(1); d.setMonth(d.getMonth() - 1);
       return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
     })();
     if (m[2] !== soll) errs.push('Der Vormonat wurde als „' + m[2] + '" abgefragt, erwartet „' + soll + '"');

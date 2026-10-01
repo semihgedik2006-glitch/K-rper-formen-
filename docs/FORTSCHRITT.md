@@ -14513,6 +14513,17 @@ Dazu zwei Fehler in den Demo-Daten:
   („Niemand ist eingestempelt“). Gewürfelt wird in derselben
   Reihenfolge wie vorher, damit sich nichts anderes verschiebt.
 
+**Ein zweiter Test mit demselben Muster:** `test-meine-zeiten` legt
+„vorgestern, gestern, heute“ an und erwartet alle drei im laufenden
+Monat. Am 1. und 2. eines Monats stimmt das nicht; auf `main` fiel er
+heute genauso. Er läuft jetzt mit festem Datum (17.9.2026,
+`page.clock.setFixedTime`); die Uhr läuft weiter, nur das Datum steht.
+Gelockert ist dabei nichts: alle Prüfungen sind dieselben.
+
+**Gesamtlauf:** 171 Tests. Rot waren zuerst `test-demo` (meine erste
+Demo-Fassung, siehe oben) und `test-meine-zeiten` (Monatserster); beide
+sind nach den Korrekturen einzeln grün.
+
 **Nicht gebaut, aber eine Überlegung wert:** Am Monatsersten könnte die
 Zeiten-Liste von selbst sagen „Im September fehlt noch 1 Feierabend ›“.
 Die Lohnabrechnung für den Vormonat ist genau dann dran.
