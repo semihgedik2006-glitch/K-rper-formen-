@@ -14591,3 +14591,12 @@ Tage zurück, damit die Frage in der Vorführung zu sehen ist.
   bei allen sieben Breiten, der Tipp führt in den September; Gegenprobe
   am 17.9. ohne Hinweis.
 
+
+**Im Durchlauf gefunden:** Drei Schulungstests fielen, weil die
+Auffrischfrage dieselben Klassen trug wie die Frage im Durchlauf
+(`.sch-frage`, `.sch-hinweis`). Die Karte lag unsichtbar in der
+Übersicht, und jede Suche nach „der Frage“ fand sie zuerst. Jetzt hat
+sie eigene Klassen und ist während eines Durchlaufs leer.
+`test-gestaltung` fand einen festen Buchstabenabstand am QR-Code; er
+kommt jetzt von der Leiter (`--ls-m`). Gezielte Regression: 21 Tests,
+nach den Korrekturen alle grün.
