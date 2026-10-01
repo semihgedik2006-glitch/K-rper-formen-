@@ -14507,9 +14507,11 @@ Dazu zwei Fehler in den Demo-Daten:
 - An einem Montag gab es keinen vergessenen Feierabend, weil „gestern“
   ein Sonntag war. Jetzt: der letzte Werktag vor heute.
 - Stempel von heute lagen teils in der Zukunft („Kommen 10:16“ um
-  9:28, Dauer negativ). Jetzt wird nichts gestempelt, was noch nicht
-  passiert ist; gewürfelt wird in derselben Reihenfolge, damit sich
-  nichts anderes verschiebt.
+  9:28, Dauer negativ). Ein Kommen in der Zukunft rückt jetzt kurz vor
+  „jetzt“. Mein erster Versuch hat solche Stempel weggelassen; dann war
+  frühmorgens niemand im Dienst, und `test-demo` fiel im Gesamtlauf
+  („Niemand ist eingestempelt“). Gewürfelt wird in derselben
+  Reihenfolge wie vorher, damit sich nichts anderes verschiebt.
 
 **Nicht gebaut, aber eine Überlegung wert:** Am Monatsersten könnte die
 Zeiten-Liste von selbst sagen „Im September fehlt noch 1 Feierabend ›“.

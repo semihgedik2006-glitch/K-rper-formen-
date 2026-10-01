@@ -1111,13 +1111,17 @@
         var start = 7 + zahl(0, 5);
         /* Nichts stempeln, was heute noch gar nicht passiert ist. Vorher
            stand morgens um halb zehn ein „Kommen 10:16" mit „läuft −0:47 h"
-           da — und test-zeitkorrektur fiel vormittags durch (1.10.2026).
-           Gewürfelt wird trotzdem in derselben Reihenfolge, sonst
+           da (1.10.2026). Ein Kommen in der Zukunft rückt deshalb kurz vor
+           „jetzt" — weglassen ginge nicht: dann wäre frühmorgens niemand im
+           Dienst, und die Demo zeigte den Normalfall nicht (test-demo).
+           Gewürfelt wird in derselben Reihenfolge wie vorher, sonst
            verschöbe sich alles, was danach kommt. */
         var kommenUm = heuteUm(start, zahl(0, 55));
         var pauseJa = j === 0 && zufall() < 0.5;
         var pauseUm = pauseJa ? heuteUm(start + 4, zahl(0, 30)) : 0;
-        if (kommenUm > Date.now()) return;
+        if (kommenUm > Date.now()) {
+          kommenUm = Math.max(heuteUm(0, 1), Date.now() - (5 + (j * 7) % 50) * 60000);
+        }
         stempel(u, k, 'kommen', kommenUm, HEUTE, 'demo-t' + i);
         if (pauseJa && pauseUm <= Date.now()) {
           stempel(u, k, 'pause', pauseUm, HEUTE, 'demo-t' + i);
