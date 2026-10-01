@@ -14527,3 +14527,67 @@ sind nach den Korrekturen einzeln grün.
 **Nicht gebaut, aber eine Überlegung wert:** Am Monatsersten könnte die
 Zeiten-Liste von selbst sagen „Im September fehlt noch 1 Feierabend ›“.
 Die Lohnabrechnung für den Vormonat ist genau dann dran.
+
+## Runde 134 — Vormonat in „Zeiten", QR-Code zum Beitreten, kurz auffrischen (1.10.2026)
+
+Aus dem Betrieb: „ja bau das mit design ideen" — das war die Antwort auf
+den Vorschlag aus Runde 133 (Hinweis auf den Vormonat) und auf die zwei
+Ideen, die aus `DESIGN-RECHERCHE.md` noch offen waren (E2, F1). Aus
+`DESIGN-IDEEN.md` ist nichts mehr offen, was ich empfehlen würde: 21 und
+25 hatte ich dort selbst abgeraten, 22 und 23 sind mit Grund nicht gebaut.
+
+**1. „Im September fehlt noch ein Feierabend."**
+- Unter Verwaltung → Zeiten fragt die App beim laufenden Monat einmal
+  den Vormonat ab. Fehlt dort ein Feierabend, steht oben ein Knopf
+  dahin.
+- Nur beim laufenden Monat und nur einmal beim Öffnen; beim Blättern
+  keine weitere Abfrage.
+- Statusfarbe am Rand (es fehlt etwas), Text in der normalen Schrift;
+  Kontrast damit wie der Fliesstext.
+
+**2. QR-Code zum Beitreten (F1).**
+- „Wer darf sich anmelden" → „QR-Code zum Beitreten zeigen". Darin die
+  Adresse mit `?beitritt=<Code>`. Wer scannt, landet auf „Konto
+  anlegen" mit eingetragenem Code; die Angabe verschwindet danach aus
+  der Adresse.
+- `?firma=` bleibt in der Adresse, `?demo` nicht.
+- Ohne gesetzten Code gibt es kein leeres Bild, sondern den Satz, was
+  zu tun ist. Unsinn in der Adresse wird nicht eingetragen.
+- Unter dem Bild steht, dass nur hineinkommt, wen die Geschäftsführung
+  freigibt, und dass ein Foto ein weitergegebener Code ist.
+
+**3. Kurz auffrischen (E2).**
+- 14 Tage nach einer bestandenen Schulung steht unter Ich → Schulung
+  EINE Frage daraus, unter „Das steht für dich an".
+- **Nichts geht an die Datenbank.** Welche Frage schon dran war, merkt
+  sich nur das Gerät (`kf_auffrischen`); die Antwort wird nirgends
+  gespeichert. Das steht auf der Karte und in der Datenschutzerklärung
+  („Auf deinem Gerät").
+- Je Modul zählt nur der jüngste bestandene Durchlauf; Testläufe nie.
+
+**Entschieden, und warum**
+- **Nicht auf der Startseite.** Dort wären die eigenen Durchläufe bei
+  jedem Start zu laden — eine Abfrage mehr für alle, jeden Tag, für eine
+  Frage alle paar Wochen. Wer nie unter „Schulung" schaut, sieht die
+  Frage deshalb nicht. Das ist der Preis.
+- **Ein anderes Gerät fragt noch einmal.** Weil nichts gespeichert wird,
+  weiss das Handy nicht, dass die Frage am Rechner schon beantwortet ist.
+  Lieber einmal doppelt gefragt als eine Spur in der Datenbank.
+
+**Demo:** Der eigene Durchlauf des Demo-Kontos liegt jetzt 16 statt 11
+Tage zurück, damit die Frage in der Vorführung zu sehen ist.
+
+**Tests**
+- `tests/test-auffrischen.js` (30): Frage erscheint, falsch → richtige
+  Antwort und Hinweis, Fertig räumt weg; Gegenproben: nach 13 Tagen
+  nicht (die Uhr springt), schon beantwortet nicht; im Quelltext kein
+  Schreibweg; Treffer bei allen sieben Breiten, normal und kompakt.
+- `tests/test-beitritt-qr.js` (31): Was im QR steht, wird aus der
+  Bibliothek mitgeschnitten, nicht nachgerechnet; der Weg über die
+  Adresse am Handy und am Rechner; Gegenproben ohne Angabe und mit
+  Unsinn. Die Karte ist eingeklappt — die Probe öffnet sie wie ein
+  Mensch; vorher traf der Hit-Test 0 × 0.
+- `tests/test-zeitkorrektur.js` (+25, jetzt 80): der Hinweis am 1.10.
+  bei allen sieben Breiten, der Tipp führt in den September; Gegenprobe
+  am 17.9. ohne Hinweis.
+
