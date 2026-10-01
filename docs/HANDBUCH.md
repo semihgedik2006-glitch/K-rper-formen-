@@ -306,6 +306,9 @@ dazu („☺" für Reagieren, „↪" für Weiterleiten).
   gemeint sind, steht dann oben eine Leiste ohne Schliessknopf, bis sie
   „Gelesen und verstanden" tippen. Die Leitung sieht „3/12 bestätigt" und
   darunter, wer noch fehlt. Sparsam benutzen.
+  Die Push-Nachricht dazu beginnt mit „‼️ Wichtig". Wer nach einem Tag
+  noch nicht bestätigt hat, bekommt um 10 Uhr eine Erinnerung — eine Woche
+  lang, danach nicht mehr.
 - **Anheften** – wichtige Infos bleiben oben und erscheinen auf der
   Startseite.
 - **Löschen** durch **L C**.

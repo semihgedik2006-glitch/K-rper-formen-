@@ -580,11 +580,87 @@ const _neuerAushang = async (snap, ctx) => {
       if (target === 'all') return true;
       return inStudio(d, target) || d.role === 'chef';
     }, a.uid, (ctx && ctx.params && ctx.params.firma) || null);
-    await sendPush(tokens, '📣 ' + (a.from || 'Leitung'), a.text || '');
+    /* Runde 135/136: eine als wichtig markierte Ankündigung sagt das schon
+       in der Push-Nachricht — und was zu tun ist. */
+    await sendPush(tokens, wichtigTitel(a), wichtigText(a));
 };
 const _ann = beideWelten('announcements/{annId}', _neuerAushang);
 exports.onNewAnnouncement = _ann.flach;
 exports.onNewAnnouncementF = _ann.firma;
+
+function wichtigTitel(a) {
+  return (a && a.wichtig ? '‼️ Wichtig · ' : '📣 ') + ((a && a.from) || 'Leitung');
+}
+function wichtigText(a) {
+  const t = (a && a.text) || '';
+  return a && a.wichtig ? t + '\n\nBitte in der App „Gelesen und verstanden" tippen.' : t;
+}
+
+/* ══ WICHTIG: EINMAL AM TAG ERINNERN (Runde 136) ═══════════════════════
+   Eine wichtige Ankündigung bleibt in der App oben stehen, bis bestätigt
+   ist (Runde 135). Wer die App aber nicht öffnet, sieht die Leiste nie.
+   Deshalb um 10:05 eine Push-Nachricht an genau die, die noch fehlen.
+
+   - Frühestens 20 Stunden nach dem Aushang (die erste Push-Nachricht kam
+     beim Schreiben), höchstens 7 Tage lang. Danach weiss die Leitung aus
+     der Liste ohnehin, wen sie ansprechen muss — eine Woche täglicher
+     Erinnerungen ist genug.
+   - Wer fehlt, rechnet `wichtigFehlende` — dieselbe Regel wie in der App:
+     gemeint, aktiv, nicht die Geschäftsführung, nicht der Absender, noch
+     nicht in `bestaetigtVon`.
+   - Wer Ankündigungen am Gerät abgeschaltet hat, bekommt auch diese nicht
+     (willHaben 'ann'): eine Einstellung, die bei „wichtig" nicht gilt,
+     wäre keine.
+   - Nur über alleFirmen() — wie jeder geplante Lauf ausser den Terminen. */
+const WICHTIG_AB_MS = 20 * 3600 * 1000;
+const WICHTIG_BIS_MS = 7 * 86400000;
+function wichtigFehlende(a, nutzer) {
+  const ziel = (a && a.target) || 'all';
+  const ja = new Set(Array.isArray(a && a.bestaetigtVon) ? a.bestaetigtVon : []);
+  return (nutzer || []).filter((u) => {
+    if (!u || !u.uid || u.aktiv === false || u.role === 'chef') return false;
+    if (u.uid === (a && a.uid)) return false;
+    if (ja.has(u.uid)) return false;
+    if (ziel === 'all') return true;
+    return Array.isArray(u.studioKeys) && u.studioKeys.indexOf(ziel) >= 0;
+  }).map((u) => u.uid);
+}
+function wichtigFaellig(a, jetzt) {
+  const alter = jetzt - ((a && a.ts) || 0);
+  return !!(a && a.wichtig) && alter >= WICHTIG_AB_MS && alter <= WICHTIG_BIS_MS;
+}
+async function wichtigErinnernFirma(firma, jetzt) {
+  const snap = await W(firma).collection('announcements').where('wichtig', '==', true).get();
+  const offen = snap.docs.map((d) => d.data() || {}).filter((a) => wichtigFaellig(a, jetzt));
+  if (!offen.length) return 0;
+  const us = await db.collection('users').get();
+  const nutzer = [];
+  us.forEach((doc) => {
+    const d = doc.data() || {};
+    if (gehoertZu(d, firma)) nutzer.push({ uid: doc.id, role: d.role, aktiv: d.aktiv, studioKeys: d.studioKeys });
+  });
+  let gesendet = 0;
+  for (const a of offen) {
+    const fehlen = new Set(wichtigFehlende(a, nutzer));
+    if (!fehlen.size) continue;
+    const tokens = await collectTokens((d) => fehlen.has(d.uid) && willHaben(d, 'ann'), null, firma);
+    await sendPush(tokens, '‼️ Noch nicht bestätigt · ' + (a.from || 'Leitung'), wichtigText(a));
+    gesendet += tokens.length;
+  }
+  return gesendet;
+}
+exports.wichtigErinnern = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('5 10 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = Date.now();
+    for (const firma of await alleFirmen()) {
+      const n = await wichtigErinnernFirma(firma, jetzt);
+      if (n) console.log('Wichtig erinnert (' + (firma || 'flach') + '): ' + n + ' Geräte');
+    }
+    return null;
+  });
 
 /* ── Neue Direktnachricht → Push an den Empfänger ── */
 const _neueDm = async (snap, ctx) => {
@@ -6391,6 +6467,8 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      pinZuSchwach, pinHashen, pinPruefen,
                      schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
                      SCHULUNG_TESTCODE, schulungTestErlaubt,
+                     wichtigFehlende, wichtigFaellig, wichtigTitel, wichtigText,
+                     WICHTIG_AB_MS, WICHTIG_BIS_MS,
                      SCHULUNG_VERSUCHE_MAX, SCHULUNG_VERSUCHE_FENSTER_MS,
                      geheimHashen, naechsterSchritt,
                      firmencodeNormal, firmencodeErzeugen, OHNE_FIRMA,
