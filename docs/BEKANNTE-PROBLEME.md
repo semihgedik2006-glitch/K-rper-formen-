@@ -1,6 +1,6 @@
 # StudioChat — bekannte Probleme
 
-**Stand:** 17. September 2026
+**Stand:** 1. Oktober 2026
 
 Die zentrale Liste. Jeder Eintrag ist am Code nachprüfbar; wo etwas
 Einschätzung ist, steht das dabei.
@@ -307,7 +307,7 @@ Maßnahme — nicht als Zusage, weil sie heute nicht wahr wäre.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | **Eingeschaltet am 27.9.2026** (Authenticator-App, freiwillig). Zurücksetzen bei verlorenem Handy seit Runde 124. Offen: die Pflicht in den Regeln (`docs/ZWEI-FAKTOR.md`, Abschnitt 3) |
+| **Status** | **Eingeschaltet am 27.9.2026** (Authenticator-App). Zurücksetzen bei verlorenem Handy seit Runde 124. **Pflicht per Stichtag** für die Leitung seit Runde 127 (den Stichtag setzt die Geschäftsführung). Mehrere Geräte je Konto seit 1.10.2026 (Runde 131). Offen bleibt nur die Prüfung in den Datenbank-Regeln (`docs/ZWEI-FAKTOR.md`, Abschnitt 3) |
 
 Für Chef- und Betreiberkonten wäre er angemessen. Ein Betreiberkonto
 kann Firmen anlegen, sperren und Abos setzen.
@@ -426,7 +426,7 @@ falsch.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open |
+| **Status** | **Behoben am 21.9.2026** (Runde 93): Selbstbedienung für die Geschäftsführung, Verwaltung → System → „Alles als Excel speichern“ / „Alles als Daten-Datei (JSON)“. Was drin ist und was bewusst nicht, steht ganz oben in der Datei selbst und in `AGB-ENTWURF.md` § 8 |
 
 Ein vollständiger Export wäre heute Handarbeit über die
 Firebase-Konsole. Wer einen Export im Vertrag zusagt, sagt einen Vorgang

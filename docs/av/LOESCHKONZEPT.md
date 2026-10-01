@@ -1,6 +1,6 @@
 # Löschkonzept
 
-Anlage 3 zum Auftragsverarbeitungsvertrag · Stand 14. September 2026
+Anlage 3 zum Auftragsverarbeitungsvertrag · Stand 1. Oktober 2026
 
 Was wann verschwindet — und was ausdrücklich **nicht** verschwindet.
 Jede Zeile hat eine Fundstelle im Code.
@@ -17,6 +17,7 @@ Diese laufen ohne Zutun, täglich, als geplante Cloud Functions.
 | Einmalige Putzaufgaben nach dem Abhaken | **24 Stunden** | täglich 03:15 | `purgeOneOffCleaning` |
 | Vollsicherung der Datenbank | **7 Tage** | täglich 02:40 | `dailyBackup`, `BACKUP_TAGE = 7` |
 | Wochensicherungen Material | **52 Wochen** | wöchentlich | `archives` |
+| Stempelzeiten | **3 Jahre** ab dem Tag des Stempels | täglich 03:50 | `stempelzeitenAblaufen`, `STEMPEL_FRIST_JAHRE = 3` |
 | Übergaben im Blick der Startseite | **24 Stunden** sichtbar | — | Anzeigefenster, kein Löschen |
 
 > **Beim Papierkorb ist eine Besonderheit zu kennen:** Bei gelöschten
@@ -54,6 +55,7 @@ sähe es.
 | Übergaben | Eine Übergabe ohne Absender ist keine Übergabe |
 | Gerätemeldungen | Wartungshistorie je Gerät |
 | Vergangene Schichten | Betriebliche Aufzeichnung |
+| Schulungs-Durchläufe | Nachweis der Unterweisung; der Name steht im Durchlauf (`teilnehmerName`). Löschen kann sie die Geschäftsführung einzeln |
 
 Der Name bleibt in diesen Einträgen sichtbar, weil er dort mitgeschrieben
 wurde.
@@ -133,7 +135,14 @@ Qualifikationsnachweise mit Ablaufdatum · Dokumente · Probetrainings
 und Reaktionen · **Stempelzeiten** (Zeitpunkt, Art, Person, Studio des
 Geräts, Gerätename — Abschnitt 6 sagt, was dabei ausdrücklich nicht
 erfasst wird) · **registrierte Stempel-Geräte** je Studio, mit dem Hash
-ihres Geräteschlüssels.
+ihres Geräteschlüssels. Nachgetragene oder für ungültig erklärte
+Stempel tragen dazu, wer es war, wann und warum · **Anliegen** an die
+Leitung samt Antwort · **Schulungen**: Teilnehmer mit Name und
+Teilnahme-Code; je Durchlauf Modul, Zeitpunkt, Gerät, Studio, aktive
+Dauer, Versuche und falsch angeklickte Antworten je Frage, Ergebnis,
+Durchgang (der Video-Fortschritt wird **nicht** gespeichert) ·
+**Gelesen-Stand**: je Chat-Kanal und Person ein Zeitpunkt, bis wann
+gelesen wurde.
 
 **Für niemanden lesbar, auch nicht für den Eigentümer:** der Hash der
 Stempel-PIN je Person, mit zufälligem Salz — und die Saat, aus der die
@@ -148,7 +157,13 @@ Termine, Ziele, Wünsche.
 **Technisch:** ein Gerätekennzeichen für Push-Nachrichten, nur wenn
 eingeschaltet · ein Geheimnis je Person für den Kalender-Abo-Link ·
 anonyme Nutzungszahlen je Tag (**ohne Konto, ohne Namen, ohne
-Uhrzeit** — bewusst kein Protokoll je Person).
+Uhrzeit** — bewusst kein Protokoll je Person) · der Schlüssel für den
+zweiten Faktor liegt beim Anmeldedienst, nicht in der Datenbank; ob
+jemand aus der Leitung ihn eingerichtet hat, wird nicht gespeichert,
+sondern beim Öffnen des Werkzeugs dort nachgefragt (`zweiFaktorStand`) ·
+ein Protokoll der
+Zwei-Faktor-Rücksetzungen (wer, für wen, wann, warum; nur die
+Geschäftsführung liest es).
 
 **Von Endkundinnen des Verantwortlichen:** Name, E-Mail-Adresse und
 Termin, sofern die Terminfunktion genutzt wird.

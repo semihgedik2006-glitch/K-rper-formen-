@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-X3a0qjek4icBqHwQEiVFHPfquH0XVOIntoH37hVjtW0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-MNKPs9G0Xy8WqkzN+pl66Nat2azDg8sgBF8upulyrKM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -11702,7 +11702,28 @@ function renderRecht(){
         'Sprachaufnahmen · Aufgaben und wer sie abgehakt hat · Putzplan · '+
         'Materialbestände · Gerätemeldungen · Schichten, Urlaub und '+
         'Krankmeldungen · Übergaben · Qualifikationsnachweise mit '+
-        'Ablaufdatum · Dokumente.</p>'+
+        'Ablaufdatum · Dokumente · Anliegen an die Leitung und ihre Antwort.</p>'+
+      /* Seit dem 1.10.2026. Bis dahin stand nur die Löschfrist der
+         Stempelzeiten weiter unten — dass es sie gibt und was daran
+         steht, stand nirgends. Felder: docs/DATENBANK.md, zeiten. */
+      '<p><b>Stempelzeiten:</b> Kommen, Pause, Zurück und Feierabend mit '+
+        'Uhrzeit, an welchem Gerät und in welchem Studio gestempelt wurde. '+
+        'Trägt die Leitung einen Stempel nach oder erklärt einen für '+
+        'ungültig, steht dabei, wer es war, wann und warum. Sehen können '+
+        'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
+      /* Schulungen (Runde 108 ff., Videos seit 29.9.2026). Gespeichert
+         wird genau, was schulungStart und schLaufSichern schreiben; der
+         Video-Fortschritt bleibt im Browser und gibt nur „Weiter" frei. */
+      '<p><b>Schulungen:</b> Je Durchlauf dein Name, das Modul, wann und '+
+        'an welchem Gerät und Studio, wie lange du aktiv daran warst (nur '+
+        'solange das Fenster vorn war), wie oft du je Frage gebraucht hast, '+
+        'das Ergebnis und der wievielte Durchgang es war. Auch welche '+
+        'Antworten falsch angeklickt wurden, steht am Durchlauf; in den '+
+        'Export der Geschäftsführung geht davon nur die Zahl. Wie weit du '+
+        'ein Video angesehen hast, wird nicht gespeichert; es entscheidet '+
+        'nur auf deinem Gerät, wann „Weiter“ geht. Sehen können die '+
+        'Ergebnisse du und die Leitung. Ein Durchlauf bleibt als Nachweis '+
+        'stehen, bis die Geschäftsführung ihn löscht.</p>'+
       '<p><b>Technisch:</b> Zeitpunkt der letzten Anmeldung, damit die '+
         'Anwesenheitsanzeige funktioniert. Ein Gerätekennzeichen für '+
         'Push-Nachrichten, falls du sie einschaltest.</p>'+
@@ -11775,7 +11796,9 @@ function renderRecht(){
       '<p>Google Firebase (Firestore, Authentication, Cloud Functions, '+
         'Cloud Storage), Region <b>europe-west1</b> – Belgien, also '+
         'innerhalb der EU. Anbieter ist Google Ireland Limited. '+
-        'Eine nächtliche Sicherung liegt in derselben Region.</p>'+
+        'Eine nächtliche Sicherung liegt in derselben Region. '+
+        'Die <b>Schulungsvideos</b> liegen in einem eigenen Speicher in '+
+        '<b>Frankfurt</b> (europe-west3).</p>'+
       /* Der Absatz ist neu am 17.9.2026. Vorher stand hier nur, WO die
          Daten liegen — nicht, dass schon das Oeffnen der Seite eine
          Verbindung zu Google herstellt. Das ist ein Unterschied: die
@@ -17763,6 +17786,13 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-01-zeiten-leitung', datum:'1.10.2026', titel:'Zeiten korrigieren: Studioleitung kann blättern', wo:'chef:zeiten', punkte:[
+    'Unter Verwaltung → Zeiten taten bei der Studioleitung die Monatspfeile und die Studio-Auswahl nichts. Jetzt geht beides, wie bei der Geschäftsführung.',
+    'Tipp für den Monatsersten: Ein vergessener Feierabend von gestern steht im Vormonat — mit „‹" einen Monat zurück.' ] },
+  { id:'2026-10-01-datenschutz-schulung', datum:'1.10.2026', titel:'Datenschutz: Stempelzeiten und Schulungen stehen jetzt drin', wo:'ich:daten', punkte:[
+    'Unter Rechtliches → Datenschutz steht jetzt, was an einem Stempel gespeichert wird (Uhrzeit, Gerät, Studio, bei Nachträgen wer und warum) und wer ihn sieht.',
+    'Ebenso für Schulungen: was ein Durchlauf festhält (Dauer, Versuche je Frage, Ergebnis) und dass nicht gespeichert wird, wie weit du ein Video angesehen hast.',
+    'Die Schulungsvideos liegen in Frankfurt, alles andere wie bisher in Belgien.' ] },
   { id:'2026-10-01-schulung-testcode', datum:'1.10.2026', titel:'Testcode für Schulungen', wo:'schulung', punkte:[
     'Geschäftsführung und Studioleitung können jede Schulung mit dem Code 0000-0000-0000 ausprobieren, ohne vorher einen Teilnehmer anzulegen. Der Code geht immer, auch nach Fehlversuchen.',
     'Ein Testlauf zählt nicht: Er steht nicht in der Auswertung und hakt kein Pflichtmodul ab. Unter der Auswertung steht, wie viele Testläufe es gab.',
@@ -38013,6 +38043,17 @@ function bindActions(){
   var dv=$('designVeroeff');
   if(dv) dv.addEventListener('click', function(){ designVeroeffentlichen(dv); });
 
+  /* Verwaltung → Zeiten gehört auch der Studioleitung. Diese fünf Zeilen
+     standen bis zum 1.10.2026 im Block darunter, der nur für die
+     Geschäftsführung läuft — bei der Studioleitung taten Studio-Auswahl
+     und Monatspfeile deshalb nichts. Gefunden, weil test-zeitkorrektur
+     am Monatsersten einen Monat zurückblättern musste. */
+  var zks=$('zkStudio');
+  if(zks) zks.addEventListener('change', function(){ _zkStudio=zks.value; _zkWahl=null; _zkStorno=null; zkLaden(); });
+  var zkp=$('zkPrev'), zkn=$('zkNext');
+  if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); });
+  if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); });
+
   if(session.role==='chef'){
     // Mitarbeiter anlegen
     $('emCreate').addEventListener('click', createEmployee);
@@ -38058,11 +38099,6 @@ function bindActions(){
 
     var tnb=$('termNeuBtn');
     if(tnb) tnb.addEventListener('click', function(){ terminalAnlegen(this); });
-  var zks=$('zkStudio');
-  if(zks) zks.addEventListener('change', function(){ _zkStudio=zks.value; _zkWahl=null; _zkStorno=null; zkLaden(); });
-  var zkp=$('zkPrev'), zkn=$('zkNext');
-  if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); });
-  if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); });
 
     var ozC=$('oeffnungClose');
     if(ozC) ozC.addEventListener('click', oeffnungSchliessen);

@@ -2,7 +2,7 @@
 
 nach **Art. 30 Abs. 2 DSGVO** — für den Auftragsverarbeiter
 
-Stand 15. September 2026 · **Das brauchst du selbst, nicht der Kunde.**
+Stand 1. Oktober 2026 · **Das brauchst du selbst, nicht der Kunde.**
 
 > Art. 30 Abs. 2 verpflichtet jeden Auftragsverarbeiter, ein Verzeichnis
 > aller Verarbeitungen zu führen, die er im Auftrag durchführt. Es ist
@@ -140,6 +140,29 @@ Namen der abhakenden Personen.
 **Siehe:** `UNTERAUFTRAGNEHMER.md`, Abschnitt 2 — mit dem dort
 genannten Vorbehalt für fremde Kunden.
 
+### 3.6a Schulungen
+
+**Zweck:** Einarbeitung und Unterweisung im Studio, mit Nachweis, wer
+welches Modul wann gemacht hat.
+
+**Betroffene:** Beschäftigte des Verantwortlichen, auch solche ohne
+eigenes Konto (sie werden von der Leitung mit Namen angelegt und
+bekommen einen Teilnahme-Code).
+
+**Datenkategorien:** Name, Teilnahme-Code (im Klartext, nur für die
+Leitung und die Person selbst lesbar), je Durchlauf: Modul, Zeitpunkt,
+Gerät, Studio, aktive Dauer, Versuche und falsch angeklickte Antworten je
+Frage, Ergebnis, Durchgang. Wie weit ein Video angesehen wurde, wird
+**nicht** gespeichert. Testläufe der Leitung mit dem Testcode
+0000-0000-0000 tragen `test: true` und hängen an keiner Person.
+
+**Empfänger:** Studioleitung und Geschäftsführung; jede Person sieht ihre
+eigenen Durchläufe. Im Export erscheint je Frage nur die Zahl der
+Fehlversuche.
+
+**Löschung:** keine automatische Frist; ein Durchlauf bleibt als
+Nachweis, bis die Geschäftsführung ihn löscht.
+
 ### 3.6 Sicherung und Wiederherstellung
 
 **Zweck:** Schutz vor Datenverlust.
@@ -164,7 +187,8 @@ sind anonym und bleiben im eigenen System.
 ## 5. Übermittlung in Drittländer
 
 Keine beabsichtigte Verarbeitung außerhalb der EU. Verarbeitungsort ist
-`europe-west1` (Belgien).
+`europe-west1` (Belgien); die Schulungsvideos liegen in `europe-west3`
+(Frankfurt).
 
 Zum möglichen Zugriff der US-Konzernmutter des Unterauftragnehmers und
 dessen Grundlage: `UNTERAUFTRAGNEHMER.md`, Abschnitt 1.
@@ -186,7 +210,8 @@ Vollständig in `LOESCHKONZEPT.md`. Kurzfassung:
 | Wochensicherungen Material | 52 Wochen |
 | Konto und Profil | auf Weisung, sofort |
 | Arbeitsinhalte einer ausgeschiedenen Person | **bleiben** — siehe Löschkonzept 2.2 |
-| Stempelzeiten | **keine automatische Löschfrist.** Hier ist eine Frist offen und zu setzen: Arbeitszeitnachweise unterliegen Aufbewahrungspflichten (§ 16 Abs. 2 ArbZG nennt zwei Jahre für Aufzeichnungen über die werktägliche Arbeitszeit hinaus), und wie lange darüber hinaus, entscheidet der Verantwortliche. Ein Punkt für den Anwalt, ausdrücklich nicht von uns gesetzt |
+| Stempelzeiten | **drei Jahre** ab dem Tag des Stempels, jede Nacht 3:50 Uhr (`stempelzeitenAblaufen`), vom Betrieb festgelegt am 27.9.2026; § 16 Abs. 2 ArbZG verlangt mindestens zwei |
+| Schulungs-Durchläufe | keine automatische Frist; bleiben als Nachweis, bis die Geschäftsführung sie löscht |
 | Alle Daten eines Kunden | bei Vertragsende auf Weisung; Sicherungen laufen binnen 7 Tagen aus |
 
 ---

@@ -1,6 +1,6 @@
 # Unterauftragnehmer
 
-Anlage 2 zum Auftragsverarbeitungsvertrag · Stand 14. September 2026
+Anlage 2 zum Auftragsverarbeitungsvertrag · Stand 1. Oktober 2026
 
 Der Auftragsverarbeiter setzt für die Erbringung der Leistung folgende
 weitere Auftragsverarbeiter ein. Der Verantwortliche stimmt diesen mit
@@ -23,7 +23,9 @@ Messaging).
 
 **Ort der Verarbeitung:** Region `europe-west1`, Rechenzentrum
 St. Ghislain, **Belgien**. Belegt in `functions/index.js:12` und
-`konfig.js`.
+`konfig.js`. Die Schulungsvideos liegen in einem zweiten Speicher in
+**Frankfurt** (`europe-west3`, `konfig.js` → `videoEimer`), seit
+29.9.2026; derselbe Anbieter, dieselben Bedingungen.
 
 **Drittlandbezug:** Google Ireland Limited ist ein Unternehmen der
 Europäischen Union. Ein Zugriff von Google LLC (USA) als Konzernmutter
