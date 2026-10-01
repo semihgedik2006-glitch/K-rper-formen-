@@ -243,7 +243,7 @@ Formularen — **eine Herstellerangabe, nicht unabhängig geprüft**.
 *Aufwand:* klein. **Kollision:** keine; „Das steht für dich an" gibt es
 seit Runde 100, das hier wäre die Zahl dazu.
 
-### E2. Eine Wiederholungsfrage nach zwei Wochen
+### E2. Eine Wiederholungsfrage nach zwei Wochen  ✅ *gebaut (1.10., Runde 134) — unter Ich → Schulung, nicht auf der Startseite*
 *Vorbild: Axonify, verteiltes Wiederholen* ([Raccoon Gang](https://raccoongang.com/blog/best-microlearning-apps-and-platforms/))
 
 Zwei Wochen nach einer Schulung erscheint unter „Neu für dich" **eine**
@@ -257,7 +257,7 @@ es. Ergebnisse deshalb nur für die Person selbst, nicht für die Leitung.
 
 ## F · Zugang
 
-### F1. Beitreten per QR-Code am Empfang
+### F1. Beitreten per QR-Code am Empfang  ✅ *gebaut (1.10., Runde 134) — die QR-Bibliothek war seit der Zwei-Faktor-Runde schon da*
 *Vorbild: Flip, Blink* ([Flip](https://www.getflip.com/blog/frontline-worker-app/))
 
 Der Firmencode existiert und soll „nicht penetrant" sein. Ein QR-Code

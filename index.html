@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-MNKPs9G0Xy8WqkzN+pl66Nat2azDg8sgBF8upulyrKM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-I894WLS+qzAs1xauMpuPm5lXzKGunFBQlQ56Lr4/9Yg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3281,8 +3281,24 @@ button.ich-zeile:active{opacity:.7}
 .mz-s.mit-knopf em{margin-left:0}
 .zk-weg{margin-left:auto;min-height:44px}
 .zk-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-bottom:var(--s8)}
+/* QR-Code zum Beitreten (Runde 134, DESIGN-RECHERCHE F1). */
+.bt-qr{display:grid;justify-items:center;gap:var(--s8);margin-top:var(--s12);
+  padding:var(--s16);border:1px solid var(--line-2);border-radius:var(--r-md);background:#fff}
+.bt-qr svg{width:min(240px,70vw);height:auto;display:block}
+.bt-qr b{font-family:var(--font-head);font-size:var(--t-lg);letter-spacing:var(--ls-m);color:#111}
+.bt-qr p{margin:0;text-align:center;color:#333;font-size:var(--t-sm);max-width:36ch}
 .zk-kopf select{flex:1 1 180px;min-width:0}
 .zk-monat-nav{display:flex;align-items:center;gap:var(--s4)}
+/* Der Hinweis auf den Vormonat (Runde 134). Ein Status — ein Feierabend
+   fehlt —, deshalb die Warnfarbe am Rand; der Text bleibt in der
+   normalen Schriftfarbe, damit der Kontrast nicht am Ton hängt. */
+.zk-vormonat{display:flex;align-items:center;gap:var(--s8);width:100%;min-height:44px;
+  margin:0 0 var(--s8);padding:var(--s8) var(--s12);text-align:left;cursor:pointer;
+  background:var(--f-warn-leise);border:1.5px solid var(--k-warn);border-radius:var(--r-md);
+  color:var(--text);font:inherit;font-size:var(--t-sm);line-height:var(--lh)}
+.zk-vormonat b{font-weight:700}
+.zk-vormonat .zk-vm-pfeil{margin-left:auto;font-weight:800}
+@media (hover:hover){ .zk-vormonat:hover{border-color:var(--warm-tx)} }
 .zk-pfeil{min-width:44px;min-height:44px}
 .zk-monat{min-width:9em;text-align:center;font-weight:700;font-size:var(--t-sm)}
 .zk-zeile.an{background:var(--auf-1)}
@@ -5030,7 +5046,7 @@ html{font-size:var(--fs,100%)}
 .sch-haken span{font-size:var(--t-md);line-height:var(--lh)}
 /* Die Fragen. Eine je Bildschirm — vier Fragen untereinander laden
    zum Querlesen ein, und wer quer liest, lernt nichts. */
-.sch-frage{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+.sch-frage,.sch-auf-frage{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
   line-height:var(--lh-eng);margin-bottom:var(--s16)}
 .sch-antworten{display:flex;flex-direction:column;gap:var(--s8);margin-bottom:var(--s16)}
 .sch-antwort{display:flex;align-items:flex-start;gap:var(--s12);width:100%;
@@ -5047,9 +5063,12 @@ html{font-size:var(--fs,100%)}
 .sch-antwort.richtig .sch-buchst{background:var(--ok-tx);color:var(--on-accent)}
 .sch-antwort.falsch{border-color:var(--k-warn);background:var(--f-warn-leise)}
 .sch-antwort.falsch .sch-buchst{background:var(--warm-tx);color:var(--on-accent)}
+/* „Kurz auffrischen" (Runde 134, DESIGN-RECHERCHE E2): dieselben
+   Antwortknöpfe wie im Durchlauf, eine Spur kleiner im Titel. */
+#schAuffrisch .sch-auf-frage{font-size:var(--t-md)}
 /* Der Hinweis nach einer falschen Antwort. Er erklärt, statt zu
    tadeln — das ist der ganze Zweck des Bereichs. */
-.sch-hinweis{padding:var(--s12) var(--s16);border-radius:var(--r-md);
+.sch-hinweis,.sch-auf-hinweis{padding:var(--s12) var(--s16);border-radius:var(--r-md);
   background:var(--bg-soft);border-left:3px solid var(--accent);
   font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2);
   margin-bottom:var(--s16);animation:cardUp .3s var(--ease-ios) both}
@@ -8339,6 +8358,14 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <h3 data-ikon="warnung">Das steht für dich an</h3>
               <div id="schFaellig"></div>
             </div>
+            <!-- „Kurz auffrischen" (Runde 134, DESIGN-RECHERCHE E2): zwei
+                 Wochen nach einer bestandenen Schulung EINE Frage daraus.
+                 Nur für die Person selbst — nichts davon geht an die
+                 Datenbank, also auch nicht an die Leitung. -->
+            <div class="card" id="schAuffrischKarte" hidden>
+              <h3 data-ikon="wiederholen">Kurz auffrischen</h3>
+              <div id="schAuffrisch"></div>
+            </div>
             <!-- „Jeder sieht seine eigenen Zahlen." Das ist der
                  Unterschied zwischen einer Auswertung und einer
                  heimlichen Akte — und er steht deshalb ganz oben, nicht
@@ -8589,6 +8616,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 Jeden Code gibt es nur einmal — auch über alle Betriebe hinweg.</p></div>
             <button class="btn btn-ghost btn-sm" id="btSave" style="width:100%;margin-top:12px">Speichern</button>
             <p class="em-saved" id="btNote"></p>
+            <!-- Beitreten per QR-Code (Runde 134, DESIGN-RECHERCHE F1):
+                 der Code steckt in der Adresse, die Freigabe bleibt bei
+                 dir. Ein fotografierter QR-Code ist ein weitergegebener
+                 Firmencode — deshalb steht das dabei. -->
+            <button class="btn btn-ghost btn-sm" id="btQr" type="button" style="width:100%;margin-top:8px">QR-Code zum Beitreten zeigen</button>
+            <div id="btQrBox" hidden></div>
           </div>
           <div data-vw="8" class="card" data-fold="zweifaktor" data-chef-only="1" id="zfStandKarte">
             <h3 data-ikon="schloss">Zwei-Faktor bei der Leitung</h3>
@@ -8836,6 +8869,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
                 </div>
               </div>
+              <button type="button" class="zk-vormonat" id="zkVormonat" hidden></button>
               <p class="hint" id="zkStand"></p>
               <div class="zk-wrap">
                 <div id="zkListe"></div>
@@ -11877,7 +11911,8 @@ function renderRecht(){
       '<h4>Auf deinem Gerät</h4>'+
       '<p>Die App speichert auf deinem Gerät nur, was sie zum Funktionieren '+
         'braucht: deine Anmeldung, deine Einstellungen (zum Beispiel '+
-        'Design, Dichte, Schnellzugriffe) und einen Zwischenspeicher, damit '+
+        'Design, Dichte, Schnellzugriffe), welche Auffrischfrage aus einer '+
+        'Schulung du schon gesehen hast, und einen Zwischenspeicher, damit '+
         'sie auch ohne Netz startet. <b>Keine Werbe- oder Analyse-Cookies, '+
         'kein Nachverfolgen durch Dritte.</b> Diese Speicherung ist für den '+
         'Dienst, den du nutzt, technisch notwendig (§ 25 Abs. 2 Nr. 2 TDDDG).</p>'+
@@ -15913,6 +15948,7 @@ function zugangFensterFuellen(){
     });
   }catch(e){}
   setAuthMode('login');
+  beitrittAusAdresse();
 })();
 
 function setAuthMode(mode){
@@ -16661,7 +16697,7 @@ function zeigeWarten(uid, profil, vorher){
   w.style.display='';
   mkZeichnen();
   if(vorher && vorher.fehler){
-    $('mkCode').value = vorher.code || '';
+    $('mkCode').value = vorher.code || _beitrittAusQr || '';
     $('mkCodeErr').textContent = vorher.fehler;
   }
   mkBinden();
@@ -17786,6 +17822,14 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-01-auffrischen', datum:'1.10.2026', titel:'Schulung: kurz auffrischen', wo:'schulung', punkte:[
+    'Zwei Wochen nach einer bestandenen Schulung steht oben unter Ich → Schulung eine Frage daraus. Richtig: fertig. Falsch: du siehst die richtige Antwort und warum.',
+    'Das ist nur für dich. Die Antwort wird nirgends gespeichert, und die Leitung sieht davon nichts.' ] },
+  { id:'2026-10-01-beitritt-qr', datum:'1.10.2026', titel:'Beitreten per QR-Code', wo:'chef:team', punkte:[
+    'Unter Verwaltung → Team → „Wer darf sich anmelden" zeigt „QR-Code zum Beitreten" ein Bild für den Empfang. Wer es mit dem Handy scannt, landet auf „Konto anlegen", der Firmencode steht schon drin.',
+    'Hinein kommt weiterhin nur, wen du freigibst.' ] },
+  { id:'2026-10-01-zeiten-vormonat', datum:'1.10.2026', titel:'Zeiten: Hinweis auf den Vormonat', wo:'chef:zeiten', punkte:[
+    'Fehlt im letzten Monat noch ein Feierabend, steht das unter Verwaltung → Zeiten jetzt oben — gerade am Monatsersten, wenn die Abrechnung dran ist. Ein Tipp führt direkt hin.' ] },
   { id:'2026-10-01-zeiten-leitung', datum:'1.10.2026', titel:'Zeiten korrigieren: Studioleitung kann blättern', wo:'chef:zeiten', punkte:[
     'Unter Verwaltung → Zeiten taten bei der Studioleitung die Monatspfeile und die Studio-Auswahl nichts. Jetzt geht beides, wie bei der Geschäftsführung.',
     'Tipp für den Monatsersten: Ein vergessener Feierabend von gestern steht im Vormonat — mit „‹" einen Monat zurück.' ] },
@@ -19999,6 +20043,64 @@ function beitrittLaden(){
     var d=doc.exists?(doc.data()||{}):{};
     var c=$('btCode'); if(c) c.value=d.code||'';
   }).catch(function(){});
+}
+/* ── Beitreten per QR-Code (Runde 134, DESIGN-RECHERCHE F1) ──
+   Der Code steckt in der Adresse: scannen, „Konto anlegen" steht offen,
+   der Firmencode ist schon eingetragen. Hinein kommt trotzdem nur, wen
+   die Geschäftsführung freigibt — ein fotografierter QR-Code ist ein
+   weitergegebener Firmencode, und das steht unter dem Bild. */
+function beitrittAdresse(code){
+  /* `?firma=` bleibt stehen (die App liest es beim Start), `?demo` nicht:
+     ein QR-Code aus der Vorführung soll in die echte App führen. */
+  try{
+    var u=new URL(location.href);
+    u.hash=''; u.searchParams.delete('demo'); u.searchParams.set('beitritt', code);
+    return u.toString();
+  }catch(e){
+    return location.origin+location.pathname+'?beitritt='+encodeURIComponent(code);
+  }
+}
+function beitrittQrUmschalten(btn){
+  var box=$('btQrBox'); if(!box) return;
+  if(!box.hidden){ box.hidden=true; box.innerHTML=''; btn.textContent='QR-Code zum Beitreten zeigen'; return; }
+  var code=(($('btCode')||{}).value||'').trim();
+  var note=$('btNote');
+  if(!code){
+    if(note){ note.style.color='var(--danger-tx)'; note.textContent='Erst einen Firmencode setzen und speichern.'; }
+    return;
+  }
+  box.hidden=false;
+  box.innerHTML='<p class="hint">Einen Moment …</p>';
+  btn.textContent='QR-Code ausblenden';
+  qrLaden().then(function(){
+    var q=qrcode(0,'M'); q.addData(beitrittAdresse(code)); q.make();
+    box.innerHTML='<div class="bt-qr" id="btQrBild">'+
+      q.createSvgTag({ cellSize:4, margin:2, scalable:true, alt:'QR-Code zum Beitreten' })+
+      '<b>'+esc(code)+'</b>'+
+      '<p>Mit der Handykamera scannen und ein Konto anlegen. Der Firmencode ist dann schon eingetragen.</p>'+
+      '</div>'+
+      '<p class="hint" style="margin-top:8px">Hinein kommt nur, wen du freigibst. Ein Foto dieses Codes '+
+        'ist ein weitergegebener Firmencode — wenn er in falsche Hände gerät, oben einen neuen setzen.</p>';
+  }).catch(function(){
+    box.innerHTML='<p class="hint">Der QR-Code lässt sich gerade nicht zeichnen. Der Code lautet <b>'+esc(code)+'</b>.</p>';
+  });
+}
+/* Kommt jemand über den QR-Code, steht „Konto anlegen" offen und der
+   Code ist eingetragen. Die Angabe verschwindet danach aus der Adresse:
+   wer die Seite als Lesezeichen ablegt, soll sie nicht mitschleppen. */
+var _beitrittAusQr='';
+function beitrittAusAdresse(){
+  var code='';
+  try{ code=new URLSearchParams(location.search).get('beitritt')||''; }catch(e){}
+  code=String(code).trim();
+  if(!/^[A-Za-z0-9 -]{6,60}$/.test(code)) return;
+  _beitrittAusQr=code;
+  try{
+    var u=new URL(location.href); u.searchParams.delete('beitritt');
+    history.replaceState(history.state, '', u.pathname+u.search+u.hash);
+  }catch(e){}
+  if(typeof setAuthMode==='function' && $('registerForm')) setAuthMode('register');
+  var f=$('rgCode'); if(f) f.value=code;
 }
 function beitrittSpeichern(btn, zufall){
   var code=(($('btCode')||{}).value||'').trim();
@@ -22313,6 +22415,93 @@ function schMeineLaden(){
     }, function(e){ console.warn('Meine Schulungen:', e.message); });
 }
 
+/* ══ KURZ AUFFRISCHEN (Runde 134, DESIGN-RECHERCHE E2) ═════════════
+   Zwei Wochen nach einer bestandenen Schulung steht oben EINE Frage
+   daraus. Richtig: fertig. Falsch: die richtige Antwort und der Hinweis.
+   Kein neuer Durchlauf, kein Nachweis — nur Erinnern.
+
+   „Wird es als Kontrolle empfunden, schadet es." Deshalb geht NICHTS
+   davon an die Datenbank: welche Frage schon dran war, merkt sich nur
+   dieses Gerät (localStorage), die Antwort wird nirgends gespeichert.
+   Die Leitung sieht davon nichts, und das steht auch so da.
+
+   Je Modul zählt nur der jüngste bestandene Durchlauf; nach „Fertig"
+   kommt das nächste Modul dran, das zwei Wochen alt ist. Welche Frage,
+   folgt fest aus der Kennung des Durchlaufs: dieselbe bei jedem Öffnen. */
+var AUFFRISCH_TAGE=14;
+var _schAuf=null;   // { lauf, wahl } — die gerade gegebene Antwort
+function schAuffrischGemerkt(){
+  try{ return JSON.parse(localStorage.getItem('kf_auffrischen')||'{}')||{}; }catch(e){ return {}; }
+}
+function schAuffrischMerken(id){
+  try{
+    var g=schAuffrischGemerkt(); g[id]=Date.now();
+    localStorage.setItem('kf_auffrischen', JSON.stringify(g));
+  }catch(e){}
+}
+function schAuffrischFall(){
+  var gemerkt=schAuffrischGemerkt();
+  var grenze=Date.now()-AUFFRISCH_TAGE*86400000;
+  var juengster={};
+  _schMeine.forEach(function(l){
+    if(l.status!=='fertig' || !l.bestanden || l.test) return;
+    var j=juengster[l.modul];
+    if(!j || (l.ende||0)>(j.ende||0)) juengster[l.modul]=l;
+  });
+  var kandidaten=Object.keys(juengster).map(function(k){ return juengster[k]; })
+    .filter(function(l){ return (l.ende||0)<=grenze && !gemerkt[l.id]; })
+    .sort(function(a,b){ return (b.ende||0)-(a.ende||0); });
+  for(var i=0;i<kandidaten.length;i++){
+    var m=schModulVon(kandidaten[i].modul);
+    var fr=(m && m.fragen)||[];
+    if(!fr.length) continue;
+    var h=0, id=String(kandidaten[i].id);
+    for(var j=0;j<id.length;j++) h=(h*31+id.charCodeAt(j))>>>0;
+    return { lauf:kandidaten[i], modul:m, idx:h%fr.length };
+  }
+  return null;
+}
+function schAuffrischZeichnen(){
+  var karte=$('schAuffrischKarte'), box=$('schAuffrisch');
+  if(!karte || !box) return;
+  var fall=schAuffrischFall();
+  if(!fall){ karte.hidden=true; box.innerHTML=''; return; }
+  karte.hidden=false;
+  var f=fall.modul.fragen[fall.idx]||{};
+  var wahl=(_schAuf && _schAuf.lauf===fall.lauf.id) ? _schAuf.wahl : null;
+  var da=(wahl!==null);
+  var tage=Math.max(AUFFRISCH_TAGE, Math.floor((Date.now()-(fall.lauf.ende||0))/86400000));
+  var buchst='ABCDEFGH';
+  box.innerHTML=
+    '<p class="hint">Eine Frage aus „'+esc(fall.modul.titel||'')+'“ — gemacht vor '+tage+
+      ' Tagen. Nur für dich: die Antwort wird nicht gespeichert, niemand sieht sie.</p>'+
+    '<div class="sch-auf-frage">'+esc(f.frage||'')+'</div>'+
+    '<div class="sch-antworten">'+
+      (f.antworten||[]).map(function(t,i){
+        var kl='';
+        if(da && i===f.richtig) kl=' richtig';
+        else if(da && i===wahl) kl=' falsch';
+        return '<button type="button" class="sch-antwort'+kl+'" data-schauf="'+i+'"'+(da?' disabled':'')+'>'+
+          '<span class="sch-buchst">'+buchst[i]+'</span><span>'+esc(t)+'</span></button>';
+      }).join('')+
+    '</div>'+
+    (da
+      ? '<div class="sch-auf-hinweis">'+(wahl===f.richtig ? 'Richtig. ' : 'Nicht ganz — richtig ist '+buchst[f.richtig]+'. ')+
+          esc(f.hinweis||'')+'</div>'+
+        '<div class="hilfe-knoepfe"><button type="button" class="btn btn-primary" id="schAufFertig">Fertig</button></div>'
+      : '');
+  box.querySelectorAll('[data-schauf]').forEach(function(b){
+    b.addEventListener('click', function(){
+      _schAuf={ lauf:fall.lauf.id, wahl:Number(b.getAttribute('data-schauf')) };
+      schAuffrischZeichnen(); tick(6);
+    });
+  });
+  var fertig=$('schAufFertig');
+  if(fertig) fertig.addEventListener('click', function(){
+    schAuffrischMerken(fall.lauf.id); _schAuf=null; schAuffrischZeichnen();
+  });
+}
+
 /* Wie steht es um dieses Modul bei MIR? */
 /* „2 von 8 geschafft — 6 fehlen noch". Folgt der gewählten Kategorie:
    wer „EMS-Wissen" antippt, sieht den Rest dort. Ein Modul, das wieder
@@ -22363,6 +22552,11 @@ function schPane(welche){
   });
   var b=$('schVerwaltenBtn');
   if(b) b.style.display=(canManage() && welche==='uebersicht') ? '' : 'none';
+  /* Die Auffrischfrage steht nur in der Übersicht. Bleibe sie während
+     eines Durchlaufs unsichtbar im Baum stehen, gäbe es zwei Fragen mit
+     Antwortknöpfen — und jede Suche nach „der" Frage fände die falsche
+     (drei Durchläufe sind genau daran hängen geblieben). */
+  if(welche!=='uebersicht'){ var af=$('schAuffrisch'); if(af) af.innerHTML=''; }
   var sa=document.querySelector('#view-schulung .scroll-area');
   if(sa) sa.scrollTop=0;
 }
@@ -22433,6 +22627,7 @@ function schUebersichtZeichnen(){
     }
   }
   schFaelligZeichnen(alle);
+  schAuffrischZeichnen();
   var zh=$('schZurHilfe');
   if(zh && !zh._hat){
     zh._hat=1;
@@ -29207,6 +29402,7 @@ function zkLaden(){
   var box=$('zkListe'); if(!box) return;
   var mon=$('zkMonat');
   if(mon) mon.textContent=_zkMonat.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+  var vmk=$('zkVormonat'); if(vmk) vmk.hidden=true;
   if(!_zkStudio){ box.innerHTML=emptyMini('Dir ist kein Studio zugeordnet.'); return; }
   var m=zeitMonatKey(_zkMonat), nr=++_zkLaedt;
   box.innerHTML=emptyMini('Wird geladen …');
@@ -29215,16 +29411,44 @@ function zkLaden(){
       if(nr!==_zkLaedt) return;
       _zkRows=sn.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()||{}); });
       zkZeichnen();
+      zkVormonatPruefen(nr);
     })
     .catch(function(e){
       if(nr!==_zkLaedt) return;
       box.innerHTML=emptyMini('Die Zeiten lassen sich gerade nicht laden: '+errMsg(e));
     });
 }
-function zkTage(){
+/* ── Fehlt im Vormonat noch ein Feierabend? (Runde 134) ──
+   Am Monatsersten zeigt die Liste den neuen, leeren Monat — und der
+   vergessene Feierabend von gestern steht im alten. Genau dann ist die
+   Lohnabrechnung für den Vormonat dran. Gefunden am 1.10.2026, als ein
+   Test genau daran hängen blieb.
+   Gefragt wird nur, wenn der LAUFENDE Monat angezeigt wird: eine
+   Abfrage mehr beim Öffnen von „Zeiten", nicht bei jedem Blättern. */
+function zkVormonatPruefen(nr){
+  var knopf=$('zkVormonat'); if(!knopf) return;
+  var jetzt=new Date();
+  var laufend=_zkMonat && _zkMonat.getFullYear()===jetzt.getFullYear() && _zkMonat.getMonth()===jetzt.getMonth();
+  if(!laufend || !_zkStudio){ knopf.hidden=true; return; }
+  var vor=new Date(jetzt.getFullYear(), jetzt.getMonth()-1, 1);
+  S('zeiten').where('studioKey','==',_zkStudio).where('monat','==',zeitMonatKey(vor)).get()
+    .then(function(sn){
+      if(nr!==_zkLaedt) return;
+      var rows=sn.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()||{}); });
+      var n=zkTage(rows).filter(function(t){ return t.fehlt; }).length;
+      if(!n){ knopf.hidden=true; return; }
+      var name=vor.toLocaleDateString('de-DE',{month:'long'});
+      knopf.innerHTML='<span>Im <b>'+esc(name)+'</b> fehlt noch '+
+        (n===1 ? 'ein Feierabend' : n+'× der Feierabend')+'.</span>'+
+        '<span class="zk-vm-pfeil">ansehen ›</span>';
+      knopf.hidden=false;
+    })
+    .catch(function(){ knopf.hidden=true; });
+}
+function zkTage(rows){
   var heute=new Date().toLocaleDateString('sv-SE');
   var nachUid={};
-  _zkRows.forEach(function(z){ (nachUid[z.uid]=nachUid[z.uid]||[]).push(z); });
+  (rows||_zkRows).forEach(function(z){ (nachUid[z.uid]=nachUid[z.uid]||[]).push(z); });
   var tage=[];
   Object.keys(nachUid).forEach(function(uid){
     var name=(nachUid[uid].filter(function(z){ return z.name; })[0]||{}).name||'';
@@ -37883,6 +38107,8 @@ function bindActions(){
   });
 
   // ── Verwaltung: zurück zur Übersicht ──
+  var btq=$('btQr');
+  if(btq) btq.addEventListener('click',function(){ beitrittQrUmschalten(btq); });
   var bts=$('btSave');
   if(bts) bts.addEventListener('click',function(){ beitrittSpeichern(this); });
   var btz=$('btZufall');
@@ -38053,6 +38279,8 @@ function bindActions(){
   var zkp=$('zkPrev'), zkn=$('zkNext');
   if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); });
   if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); });
+  var zkv=$('zkVormonat');
+  if(zkv) zkv.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); tick(6); });
 
   if(session.role==='chef'){
     // Mitarbeiter anlegen

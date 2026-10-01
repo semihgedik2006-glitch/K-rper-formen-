@@ -1062,12 +1062,12 @@
     { id: 'lauf3', modul: 'm-notfall', modulTitel: 'Wenn einem Kunden schlecht wird',
       kategorie: 'notfall', teilnehmer: 'tn-nora', teilnehmerName: 'Nora Haas',
       uid: 'demo-ich', geraetUid: 'demo-ich', geraetName: 'Empfang Brühl', studioKey: sk(7),
-      start: vorTag(11), ende: vorTag(11) + 580000, aktivMs: 552000, durchgang: 2,
+      start: vorTag(16), ende: vorTag(16) + 580000, aktivMs: 552000, durchgang: 2,
       schritteGesehen: [0, 1, 2, 3],
       fragen: [{ frage: 'Erster Schritt?', versuche: 1, falsch: [], richtig: true },
                { frage: 'Kunde sagt, es sei nichts …', versuche: 1, falsch: [], richtig: true },
                { frage: 'Wer entscheidet?', versuche: 2, falsch: [1], richtig: true }],
-      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(11) }
+      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(16) }
   ]);
 
 

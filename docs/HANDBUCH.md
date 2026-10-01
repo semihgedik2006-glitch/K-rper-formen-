@@ -94,6 +94,12 @@ wenigstens eine dieser Schranken bleibt es beim Satz „Dein Chef legt dein
 Konto an" — ein Anmeldeformular anzubieten, das die Regeln danach
 abweisen, wäre schlimmer als keins.
 
+**QR-Code am Empfang (seit 1.10.2026):** Unter *Verwaltung → Team →
+Wer darf sich anmelden* zeigt *QR-Code zum Beitreten* ein Bild. Wer es
+mit der Handykamera scannt, landet auf *Konto anlegen*, der Firmencode
+steht schon drin. Die Freigabe bleibt bei dir; ein Foto des Bildes ist
+ein weitergegebener Code.
+
 Ist die Freigabe eingeschaltet, landet ein neues Konto zuerst im
 Wartebildschirm. Der Chef sieht es ganz oben in *Verwaltung → Team* und
 drückt *Freigeben* — mehr muss er nicht tun.
@@ -555,6 +561,11 @@ nichts davon ist vor dir verborgen.
 > **Mitgeschrieben wird** ausserdem, wann und an welchem Gerät du die
 > Schulung gemacht hast. Die Zeit zählt nur, solange das Fenster
 > wirklich offen ist: Bildschirm gesperrt heisst Uhr aus.
+
+**Kurz auffrischen:** Zwei Wochen nach einer bestandenen Schulung steht
+oben eine Frage daraus. Antippen, Antwort sehen, *Fertig*. Das ist nur
+für dich: die Antwort wird nirgends gespeichert, und die Leitung sieht
+davon nichts. Das Gerät merkt sich nur, dass die Frage schon dran war.
 
 ### Für die Leitung
 

@@ -279,6 +279,63 @@ function stand(p) {
     await p.close();
   }
 
+  /* ── Der Vormonat (Runde 134) ──
+     Am Monatsersten steht der vergessene Feierabend von gestern im alten
+     Monat. Die Liste sagt das jetzt selbst. Die Uhr steht dafür fest: am
+     Donnerstag, 1.10.2026, liegt der letzte Werktag (30.9.) im Vormonat;
+     am 17.9. nicht — dann darf kein Hinweis stehen. */
+  console.log('\n── Der Vormonat ──');
+  for (const [tag, erwartet] of [[new Date(2026, 9, 1, 10, 0), true], [new Date(2026, 8, 17, 10, 0), false]]) {
+    const breiten = erwartet
+      ? [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]
+      : [[390, 844], [1440, 900]];
+    for (const [w, h] of breiten) {
+      const p = await b.newPage({ viewport: { width: w, height: h } });
+      p._fehler = [];
+      p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+      await p.route('**://www.gstatic.com/**', r => r.abort());
+      await p.clock.setFixedTime(tag);
+      await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+      await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+      await p.waitForTimeout(3200);
+      await zuZeiten(p); await studio(p, 'studio-6');
+      await p.waitForTimeout(600);
+      const v = await p.evaluate(() => {
+        const k = document.getElementById('zkVormonat');
+        return { da: !!k && !k.hidden && !!k.offsetParent, text: k ? k.textContent : '' };
+      });
+      const wann = tag.getDate() + '.' + (tag.getMonth() + 1) + '.';
+      if (erwartet) {
+        pruefe(w + ' px, ' + wann + ': der Hinweis auf den Vormonat steht da', v.da && /September/.test(v.text) && /ein Feierabend/.test(v.text), v.text);
+        const m = await p.evaluate(async (SRC) => {
+          const T = eval('(' + SRC + ')');
+          const el = document.getElementById('zkVormonat');
+          el.scrollIntoView({ block: 'center' });
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const out = { normal: T(el) };
+          document.body.dataset.dichte = 'kompakt';
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          out.kompakt = T(el);
+          document.body.dataset.dichte = 'normal';
+          return out;
+        }, TREFFER.toString());
+        pruefe(w + ' px: er trifft ≥ 44 hoch (normal ' + m.normal.w + '×' + m.normal.h + ', kompakt ' + m.kompakt.w + '×' + m.kompakt.h + ')',
+          m.normal.h >= 44 && m.kompakt.h >= 44 && m.normal.w >= 44);
+        await p.evaluate(() => document.getElementById('zkVormonat').click());
+        await p.waitForTimeout(900);
+        const s2 = await stand(p);
+        const mon = await p.evaluate(() => document.getElementById('zkMonat').textContent);
+        pruefe(w + ' px: ein Tipp führt in den September, der Tag steht oben', /September/.test(mon) && s2.fehlt === 1 && /Feierabend fehlt/.test(s2.erste), mon + ' / ' + s2.erste.slice(0, 50));
+        const weg = await p.evaluate(() => document.getElementById('zkVormonat').hidden);
+        pruefe(w + ' px: im September selbst steht kein Hinweis mehr', weg);
+      } else {
+        pruefe('GEGENPROBE ' + w + ' px, ' + wann + ': kein Hinweis, wenn im Vormonat nichts fehlt', !v.da, v.text);
+      }
+      pruefe(w + ' px, ' + wann + ': ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+      await p.close();
+    }
+  }
+
   console.log('\n── Trefferflächen ──');
   for (const [w, h] of [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
     const p = await oeffne(b, 'chef', w, h);
