@@ -597,6 +597,22 @@ zweiter Druck räumt ihn wieder weg.
 **Neuer Code** erzeugt einen neuen und macht den alten wertlos.
 **Stilllegen** macht einen Code sofort wertlos — für jemanden, der geht.
 
+#### Selbst ausprobieren: der Testcode
+
+**0000-0000-0000** startet jede Schulung, ohne dass du vorher einen
+Teilnehmer anlegst. Er geht nur für Geschäftsführung und Studioleitung,
+und zwar immer, auch nach Fehlversuchen an diesem Gerät.
+
+> **Ein Testlauf zählt nicht.** Er steht nicht in der Auswertung und hakt
+> kein Pflichtmodul ab, auch wenn er bestanden ist. Unter der Auswertung
+> steht nur, wie viele Testläufe es gab. Wer eine Schulung wirklich
+> nachweisen will, legt sich als Teilnehmer an (beim Namen „(ich)"
+> wählen).
+>
+> Der Code steht offen im Programm. Das ist Absicht: Er schliesst nichts
+> auf, was die Leitung nicht ohnehin darf. Mitarbeitende bekommen damit
+> nur die Antwort, dass er nicht für sie ist.
+
 **Die Liste** unter *Auswertung* zeigt jeden abgeschlossenen Durchlauf:
 Name, Modul, Zeitpunkt, Studio, Gerät, Dauer, Prozent, Fehlversuche und
 der wievielte Durchgang es war.

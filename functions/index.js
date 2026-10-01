@@ -5701,6 +5701,63 @@ async function schulungVersuchPruefen(firma, uid) {
   return { ref, zahl: d.zahl || 0, seit: d.seit || jetzt };
 }
 
+/* ── Der Testcode 0000-0000-0000 (1.10.2026) ──
+   Aus dem Betrieb: „kannst du für die schulungen einen universal code
+   erstellen der IMMER geht damit die chefs das auch mal durchtesten
+   können ohne sich selber da einen code erstellen zu müssen (code soll
+   0000-0000-0000 sein)".
+
+   - KEIN ECHTER CODE KANN SO AUSSEHEN: das Alphabet oben hat keine 0.
+     Der Testcode trifft also nie einen Teilnehmer.
+   - Der Code ist öffentlich (das Repository ist es). Deshalb ist die
+     Schranke die ROLLE: Geschäftsführung und Studioleitung. Die beiden
+     dürfen ohnehin Codes anlegen (`requireLeitung`) — der Testcode gibt
+     ihnen nichts, was sie nicht schon hätten. Allen anderen sagt er nur,
+     dass er nicht für sie ist.
+   - EIN TESTLAUF IST KEIN NACHWEIS. Er trägt `test: true`, hängt an
+     keinem Teilnehmer und an keinem Konto (`uid: null`): er erscheint
+     weder in „Meine Schulungen" noch hakt er ein Pflichtmodul ab, und
+     die Auswertung zählt ihn nicht. Die Regeln lassen `test` und `uid`
+     danach nicht mehr ändern — sonst würde aus einem Test ein „bestanden".
+   - Die Video-Sperre gilt wie sonst: die Geschäftsführung ist davon
+     ausgenommen, die Studioleitung nicht. */
+const SCHULUNG_TESTCODE = '000000000000';
+function schulungTestErlaubt(profil) {
+  const p = profil || {};
+  return p.role === 'chef' || p.role === 'leiter';
+}
+async function schulungTestStarten(uid, profil, firma, modulId) {
+  if (!schulungTestErlaubt(profil)) {
+    throw new functions.https.HttpsError('permission-denied',
+      'Der Testcode ist nur für die Leitung. Deinen eigenen Code bekommst du von der Studioleitung.');
+  }
+  const F = W(firma);
+  const mSnap = await F.collection('schulungen').doc(modulId).get();
+  const m = mSnap.exists ? (mSnap.data() || {}) : null;
+  if (m && m.aktiv === false) {
+    throw new functions.https.HttpsError('not-found', 'Dieses Modul ist abgeschaltet.');
+  }
+  const teilnehmer = 'test:' + uid;
+  const frueher = await F.collection('schulungLaeufe')
+    .where('teilnehmer', '==', teilnehmer).where('modul', '==', modulId).get();
+  const jetzt = Date.now();
+  const lauf = F.collection('schulungLaeufe').doc();
+  await lauf.set({
+    modul: modulId, modulTitel: (m && m.titel) || '', kategorie: (m && m.kategorie) || '',
+    teilnehmer: teilnehmer, teilnehmerName: profil.name || '',
+    uid: null, test: true,
+    geraetUid: uid, geraetName: profil.name || '',
+    studioKey: (profil.studioKeys || [])[0] || null,
+    start: jetzt, ende: 0, aktivMs: 0,
+    durchgang: frueher.size + 1,
+    schritteGesehen: [], fragen: [],
+    punkte: 0, bestanden: false, status: 'laeuft',
+    ts: jetzt
+  });
+  return { ok: true, lauf: lauf.id, name: profil.name || '', durchgang: frueher.size + 1,
+           ohneVideoSperre: profil.role === 'chef', test: true };
+}
+
 /* ── Anfangen ──
    Der einzige Weg, auf dem ein Durchlauf entsteht. In firestore.rules
    ist `create` auf `schulungLaeufe` fuer JEDEN gesperrt — auch fuer die
@@ -5718,6 +5775,10 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
       ' Zeichen. Bitte noch einmal ansehen.');
   }
   const F = W(firma);
+  /* Der Testcode kommt VOR der Bremse: „IMMER" heisst auch nach zehn
+     Fehlversuchen an diesem Gerät. Raten muss ihn niemand — er steht
+     offen im Repository. Die Schranke ist die Rolle, nicht der Code. */
+  if (roh === SCHULUNG_TESTCODE) return schulungTestStarten(uid, profil, firma, modulId);
   const bremse = await schulungVersuchPruefen(firma, uid);
 
   const kennung = roh.slice(0, SCHULUNG_KENNUNG_LAENGE);
@@ -6329,6 +6390,7 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      berlinDatum, tagDanach, erledigt, stempelGrenzTag,
                      pinZuSchwach, pinHashen, pinPruefen,
                      schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
+                     SCHULUNG_TESTCODE, schulungTestErlaubt,
                      SCHULUNG_VERSUCHE_MAX, SCHULUNG_VERSUCHE_FENSTER_MS,
                      geheimHashen, naechsterSchritt,
                      firmencodeNormal, firmencodeErzeugen, OHNE_FIRMA,
