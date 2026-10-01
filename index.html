@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-41OZoJgKOt4ChwMnnc3w2Gk59SquPTKLFw//+NJGhDA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-I894WLS+qzAs1xauMpuPm5lXzKGunFBQlQ56Lr4/9Yg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3285,7 +3285,7 @@ button.ich-zeile:active{opacity:.7}
 .bt-qr{display:grid;justify-items:center;gap:var(--s8);margin-top:var(--s12);
   padding:var(--s16);border:1px solid var(--line-2);border-radius:var(--r-md);background:#fff}
 .bt-qr svg{width:min(240px,70vw);height:auto;display:block}
-.bt-qr b{font-family:var(--font-head);font-size:var(--t-lg);letter-spacing:.08em;color:#111}
+.bt-qr b{font-family:var(--font-head);font-size:var(--t-lg);letter-spacing:var(--ls-m);color:#111}
 .bt-qr p{margin:0;text-align:center;color:#333;font-size:var(--t-sm);max-width:36ch}
 .zk-kopf select{flex:1 1 180px;min-width:0}
 .zk-monat-nav{display:flex;align-items:center;gap:var(--s4)}
@@ -5046,7 +5046,7 @@ html{font-size:var(--fs,100%)}
 .sch-haken span{font-size:var(--t-md);line-height:var(--lh)}
 /* Die Fragen. Eine je Bildschirm — vier Fragen untereinander laden
    zum Querlesen ein, und wer quer liest, lernt nichts. */
-.sch-frage{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+.sch-frage,.sch-auf-frage{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
   line-height:var(--lh-eng);margin-bottom:var(--s16)}
 .sch-antworten{display:flex;flex-direction:column;gap:var(--s8);margin-bottom:var(--s16)}
 .sch-antwort{display:flex;align-items:flex-start;gap:var(--s12);width:100%;
@@ -5065,10 +5065,10 @@ html{font-size:var(--fs,100%)}
 .sch-antwort.falsch .sch-buchst{background:var(--warm-tx);color:var(--on-accent)}
 /* „Kurz auffrischen" (Runde 134, DESIGN-RECHERCHE E2): dieselben
    Antwortknöpfe wie im Durchlauf, eine Spur kleiner im Titel. */
-#schAuffrisch .sch-frage{font-size:var(--t-md)}
+#schAuffrisch .sch-auf-frage{font-size:var(--t-md)}
 /* Der Hinweis nach einer falschen Antwort. Er erklärt, statt zu
    tadeln — das ist der ganze Zweck des Bereichs. */
-.sch-hinweis{padding:var(--s12) var(--s16);border-radius:var(--r-md);
+.sch-hinweis,.sch-auf-hinweis{padding:var(--s12) var(--s16);border-radius:var(--r-md);
   background:var(--bg-soft);border-left:3px solid var(--accent);
   font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2);
   margin-bottom:var(--s16);animation:cardUp .3s var(--ease-ios) both}
@@ -22475,7 +22475,7 @@ function schAuffrischZeichnen(){
   box.innerHTML=
     '<p class="hint">Eine Frage aus „'+esc(fall.modul.titel||'')+'“ — gemacht vor '+tage+
       ' Tagen. Nur für dich: die Antwort wird nicht gespeichert, niemand sieht sie.</p>'+
-    '<div class="sch-frage">'+esc(f.frage||'')+'</div>'+
+    '<div class="sch-auf-frage">'+esc(f.frage||'')+'</div>'+
     '<div class="sch-antworten">'+
       (f.antworten||[]).map(function(t,i){
         var kl='';
@@ -22486,7 +22486,7 @@ function schAuffrischZeichnen(){
       }).join('')+
     '</div>'+
     (da
-      ? '<div class="sch-hinweis">'+(wahl===f.richtig ? 'Richtig. ' : 'Nicht ganz — richtig ist '+buchst[f.richtig]+'. ')+
+      ? '<div class="sch-auf-hinweis">'+(wahl===f.richtig ? 'Richtig. ' : 'Nicht ganz — richtig ist '+buchst[f.richtig]+'. ')+
           esc(f.hinweis||'')+'</div>'+
         '<div class="hilfe-knoepfe"><button type="button" class="btn btn-primary" id="schAufFertig">Fertig</button></div>'
       : '');
@@ -22552,6 +22552,11 @@ function schPane(welche){
   });
   var b=$('schVerwaltenBtn');
   if(b) b.style.display=(canManage() && welche==='uebersicht') ? '' : 'none';
+  /* Die Auffrischfrage steht nur in der Übersicht. Bleibe sie während
+     eines Durchlaufs unsichtbar im Baum stehen, gäbe es zwei Fragen mit
+     Antwortknöpfen — und jede Suche nach „der" Frage fände die falsche
+     (drei Durchläufe sind genau daran hängen geblieben). */
+  if(welche!=='uebersicht'){ var af=$('schAuffrisch'); if(af) af.innerHTML=''; }
   var sa=document.querySelector('#view-schulung .scroll-area');
   if(sa) sa.scrollTop=0;
 }

@@ -101,14 +101,14 @@ function karte(p) {
   /* Eine FALSCHE Antwort: die richtige steht in der Datei. */
   const falsch = await p.evaluate(() => {
     const m = (window.SCHULUNGEN_BASIS.module || []).find(x => x.id === 'm-notfall');
-    const text = document.querySelector('#schAuffrisch .sch-frage').textContent;
+    const text = document.querySelector('#schAuffrisch .sch-auf-frage').textContent;
     const f = m.fragen.find(x => x.frage === text);
     const daneben = f.richtig === 0 ? 1 : 0;
     document.querySelector('#schAuffrisch [data-schauf="' + daneben + '"]').click();
     return new Promise(r => setTimeout(() => r({
       richtig: document.querySelectorAll('#schAuffrisch .sch-antwort.richtig').length,
       falsch: document.querySelectorAll('#schAuffrisch .sch-antwort.falsch').length,
-      hinweis: (document.querySelector('#schAuffrisch .sch-hinweis') || {}).textContent || '',
+      hinweis: (document.querySelector('#schAuffrisch .sch-auf-hinweis') || {}).textContent || '',
       fertig: !!document.getElementById('schAufFertig'),
       gesperrt: [...document.querySelectorAll('#schAuffrisch [data-schauf]')].every(x => x.disabled)
     }), 400));
