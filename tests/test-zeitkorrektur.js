@@ -80,6 +80,21 @@ async function studio(p, k) {
   await p.evaluate((k) => { const s = document.getElementById('zkStudio'); s.value = k; s.dispatchEvent(new Event('change')); }, k);
   await p.waitForTimeout(800);
 }
+/* Der vergessene Feierabend der Demo liegt am letzten Werktag vor heute.
+   Am Monatsersten ist das der Vormonat, und die Liste zeigt einen Monat:
+   dann geht die Probe — wie ein Mensch — einen Monat zurück. Vorher fiel
+   der Test an jedem Ersten durch (gefunden am 1.10.2026). */
+async function zumVergessenenMonat(p) {
+  const imVormonat = await p.evaluate(() => {
+    const d = new Date();
+    do { d.setDate(d.getDate() - 1); } while (d.getDay() === 0);
+    return d.getMonth() !== new Date().getMonth();
+  });
+  if (imVormonat) {
+    await p.evaluate(() => document.getElementById('zkPrev').click());
+    await p.waitForTimeout(800);
+  }
+}
 function stand(p) {
   return p.evaluate(() => {
     const z = [...document.querySelectorAll('#zkListe [data-zk]')];
@@ -112,6 +127,7 @@ function stand(p) {
     const p = await oeffne(b, 'chef', 390, 844);
     pruefe('Verwaltung → Zeiten ist erreichbar', await zuZeiten(p));
     await studio(p, 'studio-6');
+    await zumVergessenenMonat(p);
     let s = await stand(p);
     pruefe('der Tag ohne Feierabend steht oben', s.fehlt === 1 && /Feierabend fehlt/.test(s.erste), s.erste.slice(0, 80));
     await p.evaluate(() => document.querySelector('#zkListe [data-zk]').click());
@@ -192,10 +208,44 @@ function stand(p) {
     pruefe('die Studioleitung erreicht Verwaltung → Zeiten', await zuZeiten(p));
     let s = await stand(p);
     pruefe('sie sieht nur ihre beiden Studios', s.optionen.join(',') === 'studio-6,studio-7', s.optionen.join(','));
+    /* Bis zum 1.10.2026 waren Studio-Auswahl und Monatspfeile nur für die
+       Geschäftsführung verbunden; bei der Studioleitung taten sie nichts. */
+    const blaettern = await p.evaluate(async () => {
+      const w = (ms) => new Promise(r => setTimeout(r, ms));
+      const mon = () => document.getElementById('zkMonat').textContent;
+      const vorher = mon();
+      document.getElementById('zkPrev').click(); await w(500);
+      const zurueck = mon();
+      document.getElementById('zkNext').click(); await w(500);
+      return { vorher, zurueck, wieder: mon() };
+    });
+    pruefe('die Studioleitung blättert einen Monat zurück', blaettern.zurueck !== blaettern.vorher,
+      JSON.stringify(blaettern));
+    pruefe('… und wieder vor', blaettern.wieder === blaettern.vorher, JSON.stringify(blaettern));
+    await zumVergessenenMonat(p);
+    const wechsel = await p.evaluate(async () => {
+      const s = document.getElementById('zkStudio');
+      s.value = 'studio-7'; s.dispatchEvent(new Event('change'));
+      await new Promise(r => setTimeout(r, 800));
+      const name7 = document.getElementById('zkListe').textContent;
+      s.value = 'studio-6'; s.dispatchEvent(new Event('change'));
+      await new Promise(r => setTimeout(r, 800));
+      return { name7, name6: document.getElementById('zkListe').textContent };
+    });
+    pruefe('… und wechselt das Studio (die Liste ändert sich)', wechsel.name7 !== wechsel.name6,
+      wechsel.name7.slice(0, 60) + ' | ' + wechsel.name6.slice(0, 60));
     /* Ihre eigenen Stempel liegen in Studio 6 — dort ist sie selbst dabei. */
     await studio(p, 'studio-6');
     const eigen = await p.evaluate(async () => {
-      const z = [...document.querySelectorAll('#zkListe [data-zk]')].find(x => /Demo-Studioleitung/.test(x.textContent));
+      const finde = () => [...document.querySelectorAll('#zkListe [data-zk]')].find(x => /Demo-Studioleitung/.test(x.textContent));
+      let z = finde();
+      /* Die eigene Vorgeschichte endet gestern. Am Monatsersten steht im
+         laufenden Monat also noch nichts — dann einen Monat zurück. */
+      if (!z) {
+        document.getElementById('zkPrev').click();
+        await new Promise(r => setTimeout(r, 900));
+        z = finde();
+      }
       if (!z) return null;
       z.click(); await new Promise(r => setTimeout(r, 400));
       const d = document.getElementById('zkDetail');
@@ -216,7 +266,7 @@ function stand(p) {
   console.log('\n── Rechner: Liste und Tag nebeneinander ──');
   for (const [w, h] of [[1280, 800], [1440, 900], [1920, 1080]]) {
     const p = await oeffne(b, 'chef', w, h);
-    await zuZeiten(p); await studio(p, 'studio-6');
+    await zuZeiten(p); await studio(p, 'studio-6'); await zumVergessenenMonat(p);
     const r = await p.evaluate(() => {
       const l = document.getElementById('zkListe').getBoundingClientRect();
       const d = document.getElementById('zkDetail').getBoundingClientRect();
@@ -232,7 +282,7 @@ function stand(p) {
   console.log('\n── Trefferflächen ──');
   for (const [w, h] of [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
     const p = await oeffne(b, 'chef', w, h);
-    await zuZeiten(p); await studio(p, 'studio-6');
+    await zuZeiten(p); await studio(p, 'studio-6'); await zumVergessenenMonat(p);
     if (w < 1100) { await p.evaluate(() => document.querySelector('#zkListe [data-zk]').click()); await p.waitForTimeout(300); }
     for (const dichte of ['normal', 'kompakt']) {
       await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);

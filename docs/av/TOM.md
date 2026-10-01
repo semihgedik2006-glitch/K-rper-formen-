@@ -1,6 +1,6 @@
 # Technische und organisatorische Maßnahmen (Art. 32 DSGVO)
 
-Anlage 1 zum Auftragsverarbeitungsvertrag · Stand 14. September 2026
+Anlage 1 zum Auftragsverarbeitungsvertrag · Stand 1. Oktober 2026
 
 **Diese Beschreibung ist am Programm nachprüfbar.** Jede Angabe hat eine
 Fundstelle. Wo eine Maßnahme fehlt oder schwach ist, steht das hier —
@@ -15,7 +15,10 @@ Verfasser.
 
 Keine eigene Hardware. Alle Verarbeitung läuft bei Google Cloud
 Platform, Region **europe-west1 (St. Ghislain, Belgien)**.
-`functions/index.js:12` · `konfig.js` (`region`).
+`functions/index.js:12` · `konfig.js` (`region`). Einzige Ausnahme: die
+**Schulungsvideos** liegen in einem eigenen Speicher in **Frankfurt
+(europe-west3)**, `konfig.js` (`videoEimer`). Darin sind Lehrvideos des
+Betriebs, keine Daten über Beschäftigte.
 
 Die Zutrittskontrolle zu den Rechenzentren obliegt Google und ist über
 deren Zertifizierungen belegt (ISO 27001, SOC 2/3). Siehe
@@ -40,8 +43,16 @@ deren Zertifizierungen belegt (ISO 27001, SOC 2/3). Siehe
 > und sollte vor dem ersten fremden Kunden passieren. Sie steht nicht
 > hier als Zusage, weil sie heute nicht wahr wäre.
 >
-> **Zweitfaktor gibt es nicht.** Für Konten mit Chef-Rechten wäre er
-> angemessen. Auch das ist eine offene Maßnahme und keine vorhandene.
+> **Zweitfaktor: seit 27.9.2026 eingeschaltet** (Code aus einer
+> Authenticator-App, TOTP; bis zu fünf Geräte je Konto seit 1.10.2026).
+> Freiwillig für alle. Für Geschäftsführung und Studioleitung kann die
+> Geschäftsführung einen Stichtag setzen, ab dem er Pflicht ist; ohne
+> zweiten Faktor kommt man dann nur noch zum Einrichten. Den Schlüssel
+> hält der Anmeldedienst, nicht die Datenbank. Zurücksetzen (Handy
+> verloren) kann nur eine andere Person aus der Geschäftsführung oder
+> der Betreiber, nie die Person selbst, mit Grund und Protokoll
+> (`zweiFaktorZuruecksetzen`, `zfProtokoll`). Einzelheiten:
+> `docs/ZWEI-FAKTOR.md`.
 
 ### 1.3 Zugriffskontrolle — wer welche Daten sieht
 

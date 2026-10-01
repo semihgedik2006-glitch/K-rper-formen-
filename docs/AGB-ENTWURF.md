@@ -238,7 +238,9 @@ Daten-Datei (JSON)"**. Beide Dateien enthalten dieselben Daten.
 > Team, Infos, Chat der öffentlichen Kanäle, Geräte mit Verlauf,
 > Schichten, Abwesenheiten, Übergaben, Schwarzes Brett, Dokumente
 > (Angaben, ohne Dateiinhalt), Nachweise, **Stempelzeiten**,
-> **Anliegen mit Antwort** und **Probetrainings**.
+> **Anliegen mit Antwort**, **Probetrainings**, Lösungen (Text, ohne
+> Fotos) und **Schulungen** (Nachweis und Zahlen; je Frage nur die Zahl
+> der Fehlversuche, Testläufe mit `testlauf: true` markiert).
 >
 > **Was er bewusst NICHT enthält:** Direktnachrichten (die gehören zwei
 > Personen, nicht dem Betrieb), den persönlichen Bereich jedes

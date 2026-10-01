@@ -14443,3 +14443,87 @@ Shell. Ich fasse keine Zugangsdaten von `formenchat` an.
   1280/1920 px. Neue Knöpfe gibt es keine; der Satz am Codefeld ist
   Text.
 
+
+## Runde 133 — Datenschutz nachgezogen, Zeiten bei der Studioleitung (1.10.2026)
+
+Aus dem Betrieb: „kannst du dann mit den anderen sachen weiter machen".
+Offen war aus der Liste vor allem „Rechtstexte an das gebaute Produkt
+angleichen". Beim Nachsehen fehlten drei Dinge, die die App seit Wochen
+speichert.
+
+**Datenschutzerklärung in der App**
+
+- **Stempelzeiten** standen nur mit ihrer Löschfrist drin, aber nicht,
+  was an einem Stempel steht. Jetzt: Uhrzeit, Gerät, Studio, bei
+  Nachträgen und Stornos wer, wann, warum; sehen können es die Person,
+  die Leitung des Studios und die Geschäftsführung (`manages()` in den
+  Regeln).
+- **Schulungen** fehlten ganz. Jetzt: was ein Durchlauf festhält. Der
+  Text sagt ehrlich, dass auch die falsch angeklickten Antworten am
+  Durchlauf stehen (`schFragenStand`, Feld `falsch`); in den Export geht
+  nur die Zahl. Der Video-Fortschritt wird nicht gespeichert, er gibt nur
+  auf dem Gerät „Weiter“ frei.
+- **Ort der Videos:** Frankfurt (europe-west3), alles andere bleibt
+  Belgien.
+- `tests/test-rechtliches.js`: vier neue Prüfungen.
+
+**Anlagen zum AV-Vertrag** (Stand jetzt 1.10.2026)
+
+- `TOM.md`: Dort stand noch „Zweitfaktor gibt es nicht“. Ersetzt durch
+  den heutigen Stand: eingeschaltet, Pflicht per Stichtag, mehrere
+  Geräte, Zurücksetzen nie für sich selbst. Dazu der Video-Speicher in
+  Frankfurt.
+- `UNTERAUFTRAGNEHMER.md`: zweiter Speicherort.
+- `VERARBEITUNGSVERZEICHNIS.md`: neuer Abschnitt 3.6a Schulungen. Bei
+  den Löschfristen stand für Stempelzeiten noch „keine automatische
+  Frist“; seit dem 27.9. sind es drei Jahre.
+- `LOESCHKONZEPT.md`: Stempel-Löschlauf in der Tabelle der automatischen
+  Läufe; Anliegen, Schulungen, Gelesen-Stand und das
+  Zwei-Faktor-Protokoll in der vollständigen Liste. Ob jemand den
+  zweiten Faktor hat, wird **nicht** gespeichert, sondern beim Öffnen des
+  Werkzeugs nachgefragt (`zweiFaktorStand`); das stand zuerst falsch in
+  meinem Entwurf und ist vor dem Commit berichtigt.
+- `AGB-ENTWURF.md` § 8: Lösungen und Schulungen in der Liste des Exports
+  (die App-Datei nannte sie schon).
+- `BEKANNTE-PROBLEME.md`: P-06 und P-11 auf den heutigen Stand (P-11 ist
+  seit Runde 93 erledigt, stand aber noch auf „Open“).
+
+**Ein echter Fehler, gefunden über einen roten Test**
+
+`test-zeitkorrektur` fiel heute Morgen durch, auch auf `main`. Zuerst
+vermutet: die Uhrzeit. Tatsächlich: **heute ist der Monatserste.** Der
+vergessene Feierabend der Demo lag gestern, also im September, und die
+Liste zeigt einen Monat. Die Probe blättert jetzt — wie ein Mensch —
+einen Monat zurück, wenn der Tag im Vormonat liegt.
+
+Beim Zurückblättern als Studioleitung tat der Pfeil nichts. **Grund:**
+Studio-Auswahl und Monatspfeile unter Verwaltung → Zeiten wurden im
+Block gebunden, der nur für die Geschäftsführung läuft. Die
+Studioleitung konnte damit seit Runde 106 weder blättern noch das Studio
+wechseln. Die fünf Zeilen stehen jetzt davor; drei neue Prüfungen halten
+es fest.
+
+Dazu zwei Fehler in den Demo-Daten:
+- An einem Montag gab es keinen vergessenen Feierabend, weil „gestern“
+  ein Sonntag war. Jetzt: der letzte Werktag vor heute.
+- Stempel von heute lagen teils in der Zukunft („Kommen 10:16“ um
+  9:28, Dauer negativ). Ein Kommen in der Zukunft rückt jetzt kurz vor
+  „jetzt“. Mein erster Versuch hat solche Stempel weggelassen; dann war
+  frühmorgens niemand im Dienst, und `test-demo` fiel im Gesamtlauf
+  („Niemand ist eingestempelt“). Gewürfelt wird in derselben
+  Reihenfolge wie vorher, damit sich nichts anderes verschiebt.
+
+**Ein zweiter Test mit demselben Muster:** `test-meine-zeiten` legt
+„vorgestern, gestern, heute“ an und erwartet alle drei im laufenden
+Monat. Am 1. und 2. eines Monats stimmt das nicht; auf `main` fiel er
+heute genauso. Er läuft jetzt mit festem Datum (17.9.2026,
+`page.clock.setFixedTime`); die Uhr läuft weiter, nur das Datum steht.
+Gelockert ist dabei nichts: alle Prüfungen sind dieselben.
+
+**Gesamtlauf:** 171 Tests. Rot waren zuerst `test-demo` (meine erste
+Demo-Fassung, siehe oben) und `test-meine-zeiten` (Monatserster); beide
+sind nach den Korrekturen einzeln grün.
+
+**Nicht gebaut, aber eine Überlegung wert:** Am Monatsersten könnte die
+Zeiten-Liste von selbst sagen „Im September fehlt noch 1 Feierabend ›“.
+Die Lohnabrechnung für den Vormonat ist genau dann dran.

@@ -97,6 +97,18 @@ const TREFFER = (el) => {
     pruefe('Datenschutz nennt die Anmeldung mit Google und was übernommen wird',
       /Anmeldung/.test(ds) && /Mit Google anmelden/.test(ds) && /Name und E-Mail-Adresse/.test(ds), ds.slice(0, 160));
     pruefe('… die Zwei-Faktor-Anmeldung nicht, solange sie aus ist', !/Zwei-Faktor-Anmeldung/.test(ds));
+    /* 1.10.2026: Stempelzeiten, Schulungs-Durchläufe und der Ort der
+       Videos fehlten im Text, obwohl die App sie seit Wochen speichert.
+       Geprüft wird das, was am Code nachprüfbar ist: was am Stempel und
+       am Durchlauf steht, wer es sieht, und wo die Videos liegen. */
+    pruefe('Datenschutz nennt die Stempelzeiten mit Gerät, Studio und Korrektur',
+      /Stempelzeiten:/.test(ds) && /an welchem Gerät/.test(ds) && /wer es war, wann und warum/.test(ds), ds.slice(0, 120));
+    pruefe('… die Schulungs-Durchläufe mit Dauer, Fehlversuchen und wer sie sieht',
+      /Schulungen:/.test(ds) && /wie oft du je Frage/.test(ds) && /du und die Leitung/.test(ds));
+    pruefe('… dass der Video-Fortschritt NICHT gespeichert wird',
+      /Video angesehen hast, wird nicht gespeichert/.test(ds));
+    pruefe('… und dass die Schulungsvideos in Frankfurt liegen',
+      /Schulungsvideos/.test(ds) && /Frankfurt/.test(ds));
     await p.keyboard.press('Escape');
     await p.waitForTimeout(200);
     await p.evaluate(() => { window.KONFIG.zweiFaktor = true; });

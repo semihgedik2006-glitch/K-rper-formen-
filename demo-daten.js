@@ -1109,9 +1109,22 @@
            zeigt den Normalfall nicht. */
         if (zufall() < 0.35) return;
         var start = 7 + zahl(0, 5);
-        stempel(u, k, 'kommen', heuteUm(start, zahl(0, 55)), HEUTE, 'demo-t' + i);
-        if (j === 0 && zufall() < 0.5) {
-          stempel(u, k, 'pause', heuteUm(start + 4, zahl(0, 30)), HEUTE, 'demo-t' + i);
+        /* Nichts stempeln, was heute noch gar nicht passiert ist. Vorher
+           stand morgens um halb zehn ein „Kommen 10:16" mit „läuft −0:47 h"
+           da (1.10.2026). Ein Kommen in der Zukunft rückt deshalb kurz vor
+           „jetzt" — weglassen ginge nicht: dann wäre frühmorgens niemand im
+           Dienst, und die Demo zeigte den Normalfall nicht (test-demo).
+           Gewürfelt wird in derselben Reihenfolge wie vorher, sonst
+           verschöbe sich alles, was danach kommt. */
+        var kommenUm = heuteUm(start, zahl(0, 55));
+        var pauseJa = j === 0 && zufall() < 0.5;
+        var pauseUm = pauseJa ? heuteUm(start + 4, zahl(0, 30)) : 0;
+        if (kommenUm > Date.now()) {
+          kommenUm = Math.max(heuteUm(0, 1), Date.now() - (5 + (j * 7) % 50) * 60000);
+        }
+        stempel(u, k, 'kommen', kommenUm, HEUTE, 'demo-t' + i);
+        if (pauseJa && pauseUm <= Date.now()) {
+          stempel(u, k, 'pause', pauseUm, HEUTE, 'demo-t' + i);
         }
       });
     });
@@ -1151,6 +1164,15 @@
        hat: die Leute aus Studio 6 an den letzten drei Werktagen, einer
        davon hat gestern nicht ausgestempelt. Ohne zufall(): eine neue
        Zufallszahl verschöbe alles, was danach gewürfelt wird. */
+    /* Der vergessene Tag ist der letzte Werktag vor heute — nicht stur
+       „gestern": an einem Montag war gestern Sonntag, und dann gab es in
+       der Demo gar keinen vergessenen Feierabend (1.10.2026). */
+    var vergessen = 1;
+    while (vergessen < 3) {
+      var tv = new Date(); tv.setDate(tv.getDate() - vergessen);
+      if (tv.getDay() !== 0) break;
+      vergessen++;
+    }
     leuteIn(sk(6)).forEach(function (u, j) {
       for (var d2 = 1; d2 <= 3; d2++) {
         var tagX = new Date(); tagX.setDate(tagX.getDate() - d2);
@@ -1158,7 +1180,7 @@
         var tagS = tagX.toLocaleDateString('sv-SE');
         var um2 = function (std, min) { var x = new Date(tagX); x.setHours(std, min, 0, 0); return x.getTime(); };
         stempel(u, sk(6), 'kommen', um2(9 + j, 5), tagS, 'demo-t6');
-        if (j === 0 && d2 === 1) continue;           // gestern vergessen
+        if (j === 0 && d2 === vergessen) continue;   // am letzten Werktag vergessen
         stempel(u, sk(6), 'gehen', um2(15 + j, 10), tagS, 'demo-t6');
       }
     });
