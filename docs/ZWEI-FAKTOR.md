@@ -106,6 +106,32 @@ einen Übergang und ein Werkzeug, das zeigt, wen sie träfe."
 
 ---
 
+## 3b. Mehrere Geräte (1.10.2026)
+
+Aus dem Betrieb: „ich hab die autenthicater app nur auf dem pc und kann
+jetzt draussen nichts machen" — mit der Frage, ob der Code auch per
+E-Mail kommen kann.
+
+- **Gebaut:** „Weiteres Gerät“ unter Profil → Anmeldung und Sicherheit.
+  - Jedes Gerät ist ein eigener zweiter Faktor mit eigenem Namen. Firebase
+    erlaubt bis zu fünf je Konto.
+  - Beim Anmelden probiert die App den Code gegen jedes Gerät, zuerst das,
+    das auf diesem Gerät zuletzt gepasst hat (`localStorage`
+    `kf_zf_geraet`). Ein falscher Code verbraucht die offene Anmeldung
+    nicht.
+  - Ein Gerät entfernen geht auch bei Pflicht, solange ein anderes bleibt.
+- **Nicht gebaut: Code per E-Mail.** Firebase kennt E-Mail nicht als
+  zweiten Faktor, nur Authenticator-App (TOTP) und SMS. Ein selbst
+  gebauter E-Mail-Code ginge an der Anmeldung von Firebase vorbei.
+  Außerdem macht er beide Faktoren vom selben Postfach abhängig: Wer das
+  E-Mail-Konto hat, setzt das Passwort zurück UND bekommt den Code.
+- **Möglich, wenn gewünscht: SMS als zusätzlicher Faktor.** Muss in der
+  Konsole eingeschaltet werden und kostet je SMS. Nicht eingebaut.
+- **„Nicht jedes Mal“:** Die Anmeldung bleibt auf dem Gerät gespeichert
+  (`Persistence.LOCAL`). Der Code kommt nur bei einer neuen Anmeldung,
+  also nach dem Abmelden, auf einem neuen Gerät oder nach dem Löschen der
+  Browserdaten.
+
 ## 4. Für die Leute im Studio
 
 - Welche App? Jede Authenticator-App geht: Google Authenticator, Microsoft
