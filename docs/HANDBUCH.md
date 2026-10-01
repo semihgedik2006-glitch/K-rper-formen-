@@ -302,6 +302,10 @@ dazu („☺" für Reagieren, „↪" für Weiterleiten).
 
 - **Ankündigungen** von **L C** an alle oder an einzelne Studios.
 - **Gelesen-Anzeige**: die Leitung sieht, wie viele es gelesen haben.
+- **Wichtig** (seit 1.10.2026): beim Schreiben anhaken. Bei allen, die
+  gemeint sind, steht dann oben eine Leiste ohne Schliessknopf, bis sie
+  „Gelesen und verstanden" tippen. Die Leitung sieht „3/12 bestätigt" und
+  darunter, wer noch fehlt. Sparsam benutzen.
 - **Anheften** – wichtige Infos bleiben oben und erscheinen auf der
   Startseite.
 - **Löschen** durch **L C**.

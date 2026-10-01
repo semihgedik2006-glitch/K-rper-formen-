@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-I894WLS+qzAs1xauMpuPm5lXzKGunFBQlQ56Lr4/9Yg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Anf6wCcxNFGNfwiPfmnMkV5fh8frqeoIwgh69Cspcvc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1609,6 +1609,21 @@ html.demo #terminalSchirm{top:44px}
   background:var(--f-bad);border-bottom:1px solid var(--k-bad);
   font-size:var(--t-sm);min-height:48px;animation:pinIn .35s var(--ease-ios)}
 .abo-leiste[hidden]{display:none}
+/* „Wichtig — bitte bestätigen" (Runde 135). Dieselbe Bauform wie die
+   Mail-Leiste, OHNE Schliessknopf: sie geht erst weg, wenn bestätigt ist.
+   Das ist der ganze Sinn — und der Grund, warum es sie nur für Aushänge
+   gibt, die die Leitung ausdrücklich als wichtig markiert. */
+.wichtig-leiste[hidden]{display:none}
+.wichtig-leiste .ml-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ann.wichtig{border-left:3px solid var(--k-warn)}
+.ann-wichtig{display:inline-block;margin-right:var(--s8);padding:1px var(--s8);border-radius:var(--r-rund);
+  background:var(--f-warn);color:var(--warm-tx);font-size:var(--t-2xs);font-weight:800;
+  letter-spacing:var(--ls-m);text-transform:uppercase;vertical-align:middle}
+.ann-ok-zeile{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s8)}
+.ann-ok-fertig{font-size:var(--t-sm);font-weight:700;color:var(--ok-tx)}
+.ann-blink{animation:annBlink 1.2s var(--ease-ios) 1 backwards}
+@keyframes annBlink{0%{box-shadow:0 0 0 3px var(--k-warn)}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.ann-blink{animation:none}}
 .abo-leiste .ml-text{color:var(--danger-tx)}
 
 /* ── Nur noch lesen: die „Neu"-Knöpfe verschwinden ──
@@ -6988,6 +7003,11 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <button class="ml-btn" id="zfLeisteAuf">Jetzt einrichten</button>
     <button class="ml-zu" id="zfLeisteZu" aria-label="Hinweis für heute ausblenden"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
+  <div class="mail-leiste wichtig-leiste" id="wichtigLeiste" role="status" hidden>
+    <span class="ml-ico" aria-hidden="true" data-ikon="megafon"></span>
+    <span class="ml-text" id="wichtigText"></span>
+    <button class="ml-btn" id="wichtigAuf" type="button">Lesen</button>
+  </div>
   <div class="mail-leiste" id="mailLeiste" style="display:none">
     <span class="ml-ico" aria-hidden="true"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
     <span class="ml-text" id="mailText">Bitte bestätige deine E-Mail-Adresse.</span>
@@ -8526,6 +8546,11 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <p class="hint">Erscheint sofort bei jedem Mitarbeiter im Portal.</p>
             <div class="field"><textarea class="inp" id="bcText" placeholder="z. B. Wichtige Info zum Wochenende …" maxlength="2000"></textarea></div>
             <div class="field"><label for="bcTarget">Empfänger</label><select class="inp" id="bcTarget"></select></div>
+            <!-- Runde 135 (IDEEN „Notfall-Nachricht mit Empfangsbestätigung"):
+                 sparsam gemeint — wird alles wichtig, ist nichts mehr wichtig. -->
+            <label class="studio-check" id="bcWichtigWrap" style="margin-bottom:10px">
+              <input type="checkbox" id="bcWichtig" />
+              <span>Wichtig: jede Person muss „Verstanden" tippen. Bis dahin steht oben ein Hinweis.</span></label>
             <button class="btn btn-primary btn-sm" id="bcSend">Ankündigung senden</button>
             <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
           </div>
@@ -11771,6 +11796,10 @@ function renderRecht(){
         'von …“ deinen Namen – wie bei WhatsApp. In Direktnachrichten sieht '+
         'es die andere Person. Gelesen gilt nur, was du wirklich auf dem '+
         'Bildschirm hattest.</p>'+
+      /* Runde 135: „Wichtig — bitte bestätigen". */
+      '<p><b>Ankündigungen der Leitung:</b> Gespeichert wird, ob du sie gesehen '+
+        'hast, und bei einer als wichtig markierten, ob du „Gelesen und '+
+        'verstanden" getippt hast. Die Leitung sieht, wer noch fehlt.</p>'+
       /* Der Absatz gehoert hierher, obwohl in der Zaehlung keine Person
          vorkommt. Zwei Gruende: erstens ist „anonym" eine Behauptung,
          solange sie nirgends steht — hier steht sie, und die Regel in
@@ -15930,6 +15959,9 @@ function zugangFensterFuellen(){
     withBusy(b, function(){ return u.reload().then(function(){ zfSchritt(auth.currentUser); }); });
   });
   $('zfLeisteAuf').addEventListener('click', function(){ tick(8); zfEinrichten(); });
+  $('wichtigAuf').addEventListener('click', function(){
+    tick(8); wichtigAnsehen($('wichtigLeiste').getAttribute('data-ann'));
+  });
   $('zfPflichtLos').addEventListener('click', function(){ tick(8); zfEinrichten(); });
   $('zfPflichtAus').addEventListener('click', function(){ auth.signOut().then(function(){ location.reload(); }); });
   /* Wer die Zwei-Faktor-Anmeldung in einem anderen Tab oder am Handy
@@ -17822,6 +17854,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-01-wichtig', datum:'1.10.2026', titel:'Wichtige Infos mit „Verstanden"', wo:'ann', punkte:[
+    'Beim Schreiben einer Ankündigung kann die Leitung „Wichtig" anhaken. Dann steht bei allen, die gemeint sind, oben eine Leiste — bis sie „Gelesen und verstanden" getippt haben.',
+    'Die Leitung sieht am Aushang, wie viele bestätigt haben und wer noch fehlt.',
+    'Sparsam benutzen: Wenn alles wichtig ist, ist nichts mehr wichtig.' ] },
   { id:'2026-10-01-auffrischen', datum:'1.10.2026', titel:'Schulung: kurz auffrischen', wo:'schulung', punkte:[
     'Zwei Wochen nach einer bestandenen Schulung steht oben unter Ich → Schulung eine Frage daraus. Richtig: fertig. Falsch: du siehst die richtige Antwort und warum.',
     'Das ist nur für dich. Die Antwort wird nirgends gespeichert, und die Leitung sieht davon nichts.' ] },
@@ -24681,11 +24717,74 @@ function listenAnnouncements(){
       ladeGut('ann');
       _allAnns=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
       renderAnnouncements(_allAnns);
+      wichtigLeisteZeigen();
       renderHomeLesen();          // der Text steht auch auf der Startseite
       if(currentView==='ann') markAnnouncementsRead();
     }, function(e){ ladeFehler('ann', e); });
 }
 var _allAnns=[];
+
+/* ══ WICHTIG — BITTE BESTÄTIGEN (Runde 135) ═════════════════════════
+   IDEEN.md: „Für den seltenen Fall, dass etwas wirklich alle sofort
+   erreichen muss: Ankündigung, die oben stehen bleibt, bis jede Person
+   sie bestätigt hat. Der Chef sieht, wer noch fehlt."
+
+   - „Gelesen" (readBy) setzt die App von selbst, sobald man den Bereich
+     öffnet. „Bestätigt" (bestaetigtVon) setzt nur ein Tipp auf
+     „Gelesen und verstanden". Das sind zwei Aussagen, und für eine
+     Hygieneregel oder eine Notfallanweisung zählt nur die zweite.
+   - Die Leiste oben hat keinen Schliessknopf und steht in jedem Bereich.
+   - Bestätigen darf jede Person nur für sich selbst, nur bei einem
+     Aushang mit `wichtig`, und zurücknehmen geht nicht (firestore.rules,
+     nurEigeneBestaetigung, beide Bäume).
+   - Die Geschäftsführung bestätigt nicht: sie ist auch beim Lesen
+     ausgenommen (markAnnouncementsRead), und es sind ihre Aushänge. */
+function annFuerMich(a){
+  return !a.target || a.target==='all' || (session.studioKeys||[]).indexOf(a.target)>=0;
+}
+function wichtigOffen(){
+  if(!session || session.role==='chef') return [];
+  return _allAnns.filter(function(a){
+    return a.wichtig && a.uid!==session.uid && annFuerMich(a) &&
+      (a.bestaetigtVon||[]).indexOf(session.uid)<0;
+  }).sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+}
+function wichtigLeisteZeigen(){
+  var l=$('wichtigLeiste'); if(!l) return;
+  var offen=wichtigOffen();
+  if(!offen.length){ l.hidden=true; return; }
+  var a=offen[0];
+  var t=$('wichtigText');
+  if(t) t.textContent='Wichtig'+(offen.length>1?' ('+offen.length+')':'')+' von '+(a.from||'der Leitung')+': '+
+    String(a.text||'').replace(/\s+/g,' ').slice(0,140);
+  l.setAttribute('data-ann', a.id);
+  l.hidden=false;
+}
+function wichtigAnsehen(id){
+  showView('ann');
+  setTimeout(function(){
+    var el=document.querySelector('#annArea [data-annid="'+id+'"]');
+    if(!el) return;
+    el.scrollIntoView({ block:'center', behavior:'smooth' });
+    el.classList.remove('ann-blink'); void el.offsetWidth; el.classList.add('ann-blink');
+  }, 120);
+}
+function wichtigBestaetigen(id, btn){
+  var fv=firebase.firestore.FieldValue;
+  withBusy(btn, function(){
+    return S('announcements').doc(id).update({
+      bestaetigtVon: fv.arrayUnion(session.uid), readBy: fv.arrayUnion(session.uid)
+    }).then(function(){
+      var a=_allAnns.filter(function(x){ return x.id===id; })[0];
+      if(a){
+        a.bestaetigtVon=(a.bestaetigtVon||[]).concat([session.uid]);
+        a.readBy=(a.readBy||[]).concat([session.uid]);
+      }
+      renderAnnouncements(_allAnns); wichtigLeisteZeigen(); tick(8);
+      toast('Bestätigt ✓');
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
 
 /* Mitarbeiter: sichtbare Ankündigungen als gelesen markieren */
 function markAnnouncementsRead(){
@@ -31055,6 +31154,17 @@ document.addEventListener('keydown', function(e){
 });
 var _todoPhotoTarget=null;
 
+/* Der Knopf „Gelesen und verstanden" — nur bei einem wichtigen Aushang,
+   nur für die, die gemeint sind, nie für die Geschäftsführung und nie für
+   den, der ihn geschrieben hat. */
+function annOkHTML(a){
+  if(!a.wichtig || !session || session.role==='chef' || a.uid===session.uid || !annFuerMich(a)) return '';
+  var ja=(a.bestaetigtVon||[]).indexOf(session.uid)>=0;
+  return '<div class="ann-ok-zeile">'+(ja
+    ? '<span class="ann-ok-fertig">✓ Von dir bestätigt</span>'
+    : '<button type="button" class="btn btn-primary btn-sm ann-ok" data-annok="'+esc(a.id)+'">Gelesen und verstanden</button>')+
+    '</div>';
+}
 function renderAnnouncements(anns){
   var area=$('annArea');
   if(session.role!=='chef'){
@@ -31088,39 +31198,45 @@ function renderAnnouncements(anns){
         var keys=(e.studioKeys&&e.studioKeys.length)?e.studioKeys:(e.studios||[]).map(studioKey);
         return keys.indexOf(zielKey)>=0;
       });
-      var gelesenVon={}; (a.readBy||[]).forEach(function(u){ gelesenVon[u]=1; });
+      /* Bei einem wichtigen Aushang zählt das Bestätigen, nicht das
+         Öffnen — gesehen hat man ihn schon, wenn die Leiste oben stand. */
+      var gelesenVon={}; ((a.wichtig ? a.bestaetigtVon : a.readBy)||[]).forEach(function(u){ gelesenVon[u]=1; });
       var fehlen=betroffen.filter(function(e){ return !gelesenVon[e.uid]; });
       var n=betroffen.length-fehlen.length;
+      var wort=a.wichtig ? 'bestätigt' : 'gelesen';
       /* Solange die Personenliste noch nicht da ist (sie kommt aus einem
          eigenen Beobachter), waere „0/0 gelesen" schlicht falsch. Dann
          lieber die nackte Zahl wie frueher. */
       if(!betroffen.length){
-        readHtml='<span class="ann-read">'+ikon('auge')+' '+(a.readBy||[]).length+' gelesen</span>';
-        return '<div class="ann'+(a.pinned?' pinned':'')+'"><div class="ann-head">'+
+        readHtml='<span class="ann-read">'+ikon('auge')+' '+((a.wichtig ? a.bestaetigtVon : a.readBy)||[]).length+' '+wort+'</span>';
+        return '<div class="ann'+(a.pinned?' pinned':'')+(a.wichtig?' wichtig':'')+'" data-annid="'+esc(a.id)+'"><div class="ann-head">'+
           '<span class="pin">'+ikon('megafon')+'</span>'+
           '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
-          '<div class="ann-body">'+markMentions(linkify(esc(a.text)))+'</div>'+
-          '<span class="ann-target">'+esc(label)+'</span>'+readHtml+
+          '<div class="ann-body">'+(a.wichtig?'<span class="ann-wichtig">Wichtig</span>':'')+markMentions(linkify(esc(a.text)))+'</div>'+
+          '<span class="ann-target">'+esc(label)+'</span>'+readHtml+annOkHTML(a)+
           reactionsHTML(a,'aushang')+'</div>';
       }
       readHtml='<button class="ann-read'+(fehlen.length?' offen':'')+'" data-wer="'+esc(a.id)+'">'+
-        ikon('auge')+' '+n+'/'+betroffen.length+' gelesen'+
+        ikon('auge')+' '+n+'/'+betroffen.length+' '+wort+
         (fehlen.length?' · '+fehlen.length+' offen':'')+'</button>'+
         '<div class="ann-wer" data-werliste="'+esc(a.id)+'" hidden>'+
           (fehlen.length
-            ? '<b>Hat es noch nicht gesehen:</b> '+
+            ? '<b>'+(a.wichtig ? 'Hat noch nicht bestätigt:' : 'Hat es noch nicht gesehen:')+'</b> '+
               fehlen.map(function(e){ return esc(e.name||'?'); }).join(' · ')
-            : '<b>Alle haben es gesehen.</b>')+
+            : '<b>'+(a.wichtig ? 'Alle haben bestätigt.' : 'Alle haben es gesehen.')+'</b>')+
         '</div>';
     }
-    return '<div class="ann'+(a.pinned?' pinned':'')+'"><div class="ann-head">'+
+    return '<div class="ann'+(a.pinned?' pinned':'')+(a.wichtig?' wichtig':'')+'" data-annid="'+esc(a.id)+'"><div class="ann-head">'+
       '<span class="pin">'+ikon('megafon')+'</span>'+
       '<b>'+esc(a.from||'Leitung')+'</b><time>'+fmtTime(a.ts)+'</time>'+pinBtn+delBtn+'</div>'+
-      '<div class="ann-body">'+markMentions(linkify(esc(a.text)))+'</div>'+
-      '<span class="ann-target">'+esc(label)+'</span>'+readHtml+
+      '<div class="ann-body">'+(a.wichtig?'<span class="ann-wichtig">Wichtig</span>':'')+markMentions(linkify(esc(a.text)))+'</div>'+
+      '<span class="ann-target">'+esc(label)+'</span>'+readHtml+annOkHTML(a)+
       reactionsHTML(a,'aushang')+'</div>';
   }).join('');
   reaktionenVerdrahten(area);
+  area.querySelectorAll('[data-annok]').forEach(function(b){
+    b.addEventListener('click', function(){ wichtigBestaetigen(b.getAttribute('data-annok'), b); });
+  });
   if(chef){
     area.querySelectorAll('[data-wer]').forEach(function(b){
       b.addEventListener('click',function(){
@@ -38437,16 +38553,25 @@ function bindActions(){
     });
 
     // Ankündigung
+    var bcw=$('bcWichtig');
+    if(bcw) bcw.addEventListener('change', function(){
+      var w=$('bcWichtigWrap'); if(w) w.classList.toggle('on', bcw.checked);
+    });
     $('bcSend').addEventListener('click',function(){
       var btn=this;
       var text=$('bcText').value.trim();
       if(!text){ toast('Bitte Text eingeben.',true); return; }
       // withBusy sperrt den Knopf, bis gesendet ist → keine doppelte Ankündigung
       withBusy(btn,function(){
-        return S('announcements').add({
-          uid:session.uid, from:session.name, text:text,
-          target:$('bcTarget').value, ts:Date.now()
-        }).then(function(){ $('bcText').value=''; saveDraft(); toast('Ankündigung gesendet ✓'); })
+        var wichtig=!!(($('bcWichtig')||{}).checked);
+        var neu={ uid:session.uid, from:session.name, text:text,
+          target:$('bcTarget').value, ts:Date.now() };
+        if(wichtig){ neu.wichtig=true; neu.bestaetigtVon=[]; }
+        return S('announcements').add(neu).then(function(){
+          $('bcText').value=''; saveDraft();
+          var wh=$('bcWichtig'); if(wh){ wh.checked=false; wh.dispatchEvent(new Event('change')); }
+          toast(wichtig ? 'Wichtige Ankündigung gesendet ✓ — jede Person muss bestätigen' : 'Ankündigung gesendet ✓');
+        })
           .catch(function(e){ toast(errMsg(e),true); });
       });
     });

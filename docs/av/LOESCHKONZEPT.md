@@ -142,7 +142,8 @@ Teilnahme-Code; je Durchlauf Modul, Zeitpunkt, Gerät, Studio, aktive
 Dauer, Versuche und falsch angeklickte Antworten je Frage, Ergebnis,
 Durchgang (der Video-Fortschritt wird **nicht** gespeichert) ·
 **Gelesen-Stand**: je Chat-Kanal und Person ein Zeitpunkt, bis wann
-gelesen wurde.
+gelesen wurde · an Ankündigungen, wer sie gesehen hat, und bei
+„wichtigen“ zusätzlich, wer „Gelesen und verstanden“ getippt hat.
 
 **Für niemanden lesbar, auch nicht für den Eigentümer:** der Hash der
 Stempel-PIN je Person, mit zufälligem Salz — und die Saat, aus der die
