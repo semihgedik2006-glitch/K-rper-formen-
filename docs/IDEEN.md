@@ -99,7 +99,7 @@ sein und sich zurückziehen lassen.
 „Erinnere mich Montag daran." Kein neuer Aufgaben-Typ, nur eine Aufgabe, die
 bis dahin niemand sieht. **Aufwand:** klein.
 
-### Notfall-Nachricht mit Empfangsbestätigung
+### Notfall-Nachricht mit Empfangsbestätigung  ✅ *gebaut (1.10.2026, Runde 135) als „Wichtig — bitte bestätigen" an der Ankündigung*
 
 Für den seltenen Fall, dass etwas wirklich alle sofort erreichen muss:
 Ankündigung, die oben stehen bleibt, bis jede Person sie bestätigt hat. Der

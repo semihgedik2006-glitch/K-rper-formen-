@@ -707,6 +707,18 @@ service cloud.firestore {
     // hat — die Oberflaeche nennt dazu die fehlenden Namen. Einen
     // fremden Haken zu setzen heisst, jemanden aus dieser Liste zu
     // nehmen, ohne dass er die Info je gesehen hat.
+    // „Wichtig — bitte bestätigen" (Runde 135): nur sich selbst eintragen,
+    // nur bei einem Aushang mit `wichtig`, nicht wieder austragen.
+    // readBy darf im selben Schritt mit — bestätigt heisst auch gelesen.
+    function nurEigeneBestaetigung() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bestaetigtVon','readBy'])
+        && resource.data.get('wichtig', false) == true
+        && nurMeineKennung(resource.data.get('bestaetigtVon', []),
+                           request.resource.data.get('bestaetigtVon', []))
+        && nurMeineKennung(resource.data.get('readBy', []),
+                           request.resource.data.get('readBy', []))
+        && request.auth.uid in request.resource.data.get('bestaetigtVon', []);
+    }
     function nurEigenerHaken() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
         && nurMeineKennung(resource.data.get('readBy', []),
@@ -1002,6 +1014,7 @@ service cloud.firestore {
         && (isChef()
         || (isLeiter() && resource.data.target in myKeys())
         || (istAktiv() && nurEigenerHaken())
+        || (istAktiv() && nurEigeneBestaetigung())
         // Reagieren darf jeder — nur mit der eigenen Kennung, nur mit einem
         // der sechs Zeichen. Neben dem Gelesen-Haken, nicht statt ihm:
         // „gesehen" und „finde ich gut" sind zwei Aussagen.
@@ -1963,6 +1976,7 @@ service cloud.firestore {
           allow update: if schreibtIn(f) && (isChef()
             || (isLeiter() && resource.data.target in myKeys())
             || (istAktiv() && nurEigenerHaken())
+            || (istAktiv() && nurEigeneBestaetigung())
             // Reagieren darf jeder — nur mit der eigenen Kennung, nur mit
             // einem der sechs Zeichen.
             || (istAktiv() && nurEigeneReaktion()));

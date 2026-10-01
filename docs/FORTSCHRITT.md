@@ -14600,3 +14600,43 @@ sie eigene Klassen und ist während eines Durchlaufs leer.
 `test-gestaltung` fand einen festen Buchstabenabstand am QR-Code; er
 kommt jetzt von der Leiter (`--ls-m`). Gezielte Regression: 21 Tests,
 nach den Korrekturen alle grün.
+
+## Runde 135 — Wichtige Infos mit „Verstanden" (1.10.2026)
+
+Aus dem Betrieb: „mach weiter mit den anderen sachen". Aus `IDEEN.md` war
+die „Notfall-Nachricht mit Empfangsbestätigung" offen; die
+Gelesen-Anzeige an Ankündigungen gab es schon, also war es klein.
+
+**Gebaut**
+- Am Formular „Ankündigung an alle" ein Haken **„Wichtig"**. Der
+  Aushang trägt `wichtig: true` und `bestaetigtVon: []`.
+- Bei allen Gemeinten (nicht die Geschäftsführung, nicht der Absender)
+  steht oben eine **Leiste ohne Schliessknopf**, in jedem Bereich. „Lesen"
+  führt zum Aushang, dort steht **„Gelesen und verstanden"**.
+- Die Leitung sieht am Aushang „n/m bestätigt" und, aufgeklappt, wer
+  noch fehlt — dieselbe Liste wie bisher beim Lesen.
+- Regeln, beide Bäume: `nurEigeneBestaetigung()` — nur die eigene
+  Kennung, nur bei `wichtig`, nur hinzufügen, `readBy` darf im selben
+  Schritt mit, sonst nichts.
+
+**Entschieden, und warum**
+- **Öffnen ist nicht bestätigen.** „Gelesen" setzt die App von selbst,
+  sobald jemand den Bereich aufmacht. Für eine Hygieneregel zählt aber,
+  dass jemand sagt „verstanden". Deshalb zwei Felder und ein eigener Tipp.
+- **Kein Schliessknopf.** Sonst wäre es eine Leiste wie jede andere. Die
+  Kehrseite steht im Formular und in den Neuigkeiten: sparsam benutzen.
+- **Kein Demo-Eintrag.** Eine Leiste in der Vorführung verschöbe jede
+  Prüfung der Startseite; der Test legt den Aushang selbst an.
+
+**Tests**
+- `tests/rules/wichtig.test.js` (24, beide Welten): für andere
+  bestätigen, zurücknehmen, fremde entfernen, bei einem normalen Aushang
+  „bestätigen", sich selbst „wichtig" setzen, nebenbei Text ändern →
+  alles abgewiesen; Gegenproben: eigener Eintrag, „gelesen" allein, der
+  Chef.
+- `tests/test-wichtig.js` (44): Haken am Formular, gespeicherte Felder,
+  „bestätigt" statt „gelesen", die Leiste, Gegenproben normal/fremdes
+  Studio, Öffnen bestätigt nichts, nach dem Tipp genau die eigene Kennung;
+  Treffer von „Lesen" bei allen sieben Breiten und „Gelesen und
+  verstanden" bei vier, normal und kompakt.
+
