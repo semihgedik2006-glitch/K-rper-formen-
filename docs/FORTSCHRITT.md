@@ -14640,3 +14640,66 @@ Gelesen-Anzeige an Ankündigungen gab es schon, also war es klein.
   Treffer von „Lesen" bei allen sieben Breiten und „Gelesen und
   verstanden" bei vier, normal und kompakt.
 
+## Runde 136 — Wichtige Infos: Push-Nachricht und Erinnerung (1.10.2026)
+
+Aus dem Betrieb: „mach weiter mit den anderen sachen so lange" — während
+der Datumsprobe lief (siehe unten), also nur am Server, nicht an
+`index.html`.
+
+**Gebaut (`functions/index.js`)**
+- Die Push-Nachricht zu einer wichtigen Ankündigung heisst „‼️ Wichtig ·
+  <Absender>“ und endet mit der Bitte, „Gelesen und verstanden“ zu tippen.
+  Normale bleiben „📣 <Absender>“.
+- **`wichtigErinnern`**, täglich 10:05: an genau die, die noch fehlen.
+  Frühestens 20 Stunden nach dem Aushang, höchstens 7 Tage lang. Wer
+  fehlt, rechnet `wichtigFehlende` mit derselben Regel wie die App.
+
+**Entschieden, und warum**
+- **Die Einstellung am Gerät gilt auch hier.** Wer Ankündigungen
+  abgeschaltet hat, bekommt auch die Erinnerung nicht. Eine Einstellung,
+  die bei „wichtig“ nicht gilt, wäre keine; die Leiste in der App bleibt
+  ja trotzdem.
+- **Eine Woche, dann Schluss.** Danach weiss die Leitung aus der Liste,
+  wen sie ansprechen muss. Tägliche Erinnerungen ohne Ende wären genau
+  das Rauschen, vor dem `IDEEN.md` warnt.
+
+**Tests** (`tests/rules/funktionen.test.js`, jetzt 209): die echte
+Funktion im Emulator. Der Versand wird abgefangen; geprüft wird, an
+welche Geräte er ginge. Nur an die Person, die fehlt, nicht an Bestätigte,
+ein anderes Studio, die GF, Inaktive oder Geräte mit „Ankündigungen aus“;
+nicht nach 2 Stunden, nicht nach 8 Tagen, nicht bei einem normalen
+Aushang.
+- **Beim ersten Anlauf gefunden:** `admin.messaging = …` griff nicht. Die
+  Eigenschaft sitzt am Prototyp, und die Zuweisung wird still
+  ignoriert. Die Probe sah deshalb nichts und lief trotzdem — der echte
+  Versand ging ins Leere. Jetzt mit `Object.defineProperty`, danach
+  wieder entfernt.
+
+## Datumsprobe: alle Oberflächentests mit vorgestelltem Datum (1./2.10.2026)
+
+Anlass: Am 1.10. fielen zwei Tests nur, weil Monatserster war — und beim
+Nachsehen kam ein echter Fehler heraus (Studioleitung konnte unter
+„Zeiten" nicht blättern, Runde 133). Die Frage war: Wo liegen noch
+solche Fehler, die nur an bestimmten Tagen auftreten?
+
+**Wie:** `libfaketime` vor Node und Chromium; jeder Test startet zur
+vorgestellten Uhrzeit, die Uhr läuft weiter. Gegen dieselbe App, keine
+Änderung am Code für die Probe.
+
+| Lauf | Ergebnis |
+|---|---|
+| Montag, 2.11.2026, 8:00 (der letzte Werktag liegt im Vormonat) | 173 von 174 grün |
+| Donnerstag, 31.12.2026, 23:30 (Jahreswechsel während des Laufs) | 172 von 173 grün |
+
+**Die beiden Roten waren keine Datumsfehler der App:**
+- `test-aufgaben-tempo` hängt unter libfaketime genau bei der
+  CPU-Drosselung über das DevTools-Protokoll; mit echter Uhr läuft er in
+  20 Sekunden durch. Ein Zusammenspiel der Werkzeuge, nicht der App. Im
+  zweiten Lauf ausgelassen.
+- `test-zwischenspeicher` war einmal rot und beim Wiederholen grün, mit
+  echter und mit vorgestellter Uhr. Er wartet auf den Wechsel des Service
+  Workers; unter der Last des Gesamtlaufs reichte die Zeit einmal nicht.
+
+**Nicht geprobt:** ein Sonntag (die Demo kennt keine Sonntagsdienste)
+und die Zeitumstellung Ende März/Oktober. Beides wäre der nächste Lauf.
+

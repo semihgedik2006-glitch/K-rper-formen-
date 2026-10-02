@@ -1319,6 +1319,71 @@ const TAG = 86400000;
       ((await F.collection('schulungVersuche').doc('schulMit').get()).data() || {}).zahl === 1);
   }
 
+  /* ══ Wichtig: einmal am Tag erinnern (Runde 136) ══
+     Push lässt sich hier nicht zustellen. Der Versand wird deshalb
+     abgefangen: geprüft wird, an WELCHE Geräte die Erinnerung ginge. */
+  {
+    /* admin.messaging sitzt am Prototyp; eine einfache Zuweisung wird
+       still ignoriert (beim ersten Anlauf so passiert — die Probe sah
+       nichts und lief trotzdem). Deshalb als eigene Eigenschaft, und am
+       Ende wieder weg. */
+    const gesendet = [];
+    Object.defineProperty(admin, 'messaging', { configurable: true, writable: true,
+      value: () => ({ sendEachForMulticast: async (m) => {
+        gesendet.push(m); return { responses: m.tokens.map(() => ({ success: true })) }; } }) });
+    try {
+      const T = Date.now();
+      await db.doc('firmen/alpha').set({ name: 'Alpha', aktiv: true }, { merge: true });
+      const F = db.collection('firmen').doc('alpha');
+      const leute = {
+        wBest:  { role: 'mitarbeiter', studioKeys: ['s1'] },
+        wOffen: { role: 'mitarbeiter', studioKeys: ['s1'] },
+        wFremd: { role: 'mitarbeiter', studioKeys: ['s2'] },
+        wChef:  { role: 'chef', studioKeys: [] },
+        wAus:   { role: 'mitarbeiter', studioKeys: ['s1'], aktiv: false },
+        wLeise: { role: 'mitarbeiter', studioKeys: ['s1'] }
+      };
+      for (const [uid, d] of Object.entries(leute)) {
+        await db.doc('users/' + uid).set(Object.assign({ name: uid, firma: 'alpha' }, d));
+        await db.doc('pushTokens/tok-' + uid).set({ uid: uid, firma: 'alpha', role: d.role, studioKeys: d.studioKeys,
+          notify: uid === 'wLeise' ? { ann: false } : { ann: true } });
+      }
+      await F.collection('announcements').doc('w-faellig').set({ uid: 'wChef', from: 'GF', text: 'Neue Regel',
+        target: 's1', ts: T - 30 * 3600000, wichtig: true, bestaetigtVon: ['wBest'], readBy: [] });
+      await F.collection('announcements').doc('w-frisch').set({ uid: 'wChef', from: 'GF', text: 'Gerade eben',
+        target: 'all', ts: T - 2 * 3600000, wichtig: true, bestaetigtVon: [], readBy: [] });
+      await F.collection('announcements').doc('w-alt').set({ uid: 'wChef', from: 'GF', text: 'Vor acht Tagen',
+        target: 'all', ts: T - 8 * 86400000, wichtig: true, bestaetigtVon: [], readBy: [] });
+      await F.collection('announcements').doc('w-normal').set({ uid: 'wChef', from: 'GF', text: 'Normal',
+        target: 'all', ts: T - 30 * 3600000, readBy: [] });
+
+      await fns.wichtigErinnern.run({});
+      const alle = gesendet.flatMap((m) => m.tokens);
+      pruefe('WICHTIG · erinnert wird genau, wer noch fehlt (aktiv, gemeint, nicht bestätigt)',
+        alle.length === 1 && alle[0] === 'tok-wOffen', JSON.stringify(alle));
+      pruefe('WICHTIG · nicht, wer schon bestätigt hat / ein anderes Studio / die GF / inaktiv / Ankündigungen aus',
+        !alle.some((t) => /wBest|wFremd|wChef|wAus|wLeise/.test(t)));
+      pruefe('WICHTIG · nicht nach 2 Stunden und nicht nach 8 Tagen, kein normaler Aushang',
+        gesendet.length === 1 && /Neue Regel/.test(gesendet[0].data.body), JSON.stringify(gesendet.map((m) => m.data.body)));
+      const erste = (gesendet[0] || { data: {} }).data;
+      pruefe('WICHTIG · die Überschrift sagt „Noch nicht bestätigt"', /Noch nicht bestätigt/.test(erste.title || ''), erste.title);
+      pruefe('WICHTIG · der Text sagt, was zu tun ist', /Gelesen und verstanden/.test(erste.body || ''));
+      /* Die erste Push-Nachricht beim Schreiben: wichtig heisst „‼️ Wichtig",
+         sonst wie bisher „📣". */
+      const I = fns.__intern;
+      pruefe('WICHTIG · erste Push-Nachricht: Überschrift und Bitte',
+        I.wichtigTitel({ wichtig: true, from: 'GF' }) === '‼️ Wichtig · GF' &&
+        /Gelesen und verstanden/.test(I.wichtigText({ wichtig: true, text: 'X' })));
+      pruefe('GEGENPROBE normale Ankündigung: Überschrift und Text wie bisher',
+        I.wichtigTitel({ from: 'GF' }) === '📣 GF' && I.wichtigText({ text: 'X' }) === 'X');
+      for (const uid of Object.keys(leute)) {
+        await db.doc('users/' + uid).delete(); await db.doc('pushTokens/tok-' + uid).delete();
+      }
+    } finally {
+      delete admin.messaging;
+    }
+  }
+
   console.log('\n══ Cloud Functions gegen den Emulator ══');
   protokoll.forEach(z => console.log(z));
   console.log('\n  ' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
