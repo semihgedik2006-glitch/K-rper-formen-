@@ -14675,3 +14675,31 @@ Aushang.
   Versand ging ins Leere. Jetzt mit `Object.defineProperty`, danach
   wieder entfernt.
 
+## Datumsprobe: alle Oberflächentests mit vorgestelltem Datum (1./2.10.2026)
+
+Anlass: Am 1.10. fielen zwei Tests nur, weil Monatserster war — und beim
+Nachsehen kam ein echter Fehler heraus (Studioleitung konnte unter
+„Zeiten" nicht blättern, Runde 133). Die Frage war: Wo liegen noch
+solche Fehler, die nur an bestimmten Tagen auftreten?
+
+**Wie:** `libfaketime` vor Node und Chromium; jeder Test startet zur
+vorgestellten Uhrzeit, die Uhr läuft weiter. Gegen dieselbe App, keine
+Änderung am Code für die Probe.
+
+| Lauf | Ergebnis |
+|---|---|
+| Montag, 2.11.2026, 8:00 (der letzte Werktag liegt im Vormonat) | 173 von 174 grün |
+| Donnerstag, 31.12.2026, 23:30 (Jahreswechsel während des Laufs) | 172 von 173 grün |
+
+**Die beiden Roten waren keine Datumsfehler der App:**
+- `test-aufgaben-tempo` hängt unter libfaketime genau bei der
+  CPU-Drosselung über das DevTools-Protokoll; mit echter Uhr läuft er in
+  20 Sekunden durch. Ein Zusammenspiel der Werkzeuge, nicht der App. Im
+  zweiten Lauf ausgelassen.
+- `test-zwischenspeicher` war einmal rot und beim Wiederholen grün, mit
+  echter und mit vorgestellter Uhr. Er wartet auf den Wechsel des Service
+  Workers; unter der Last des Gesamtlaufs reichte die Zeit einmal nicht.
+
+**Nicht geprobt:** ein Sonntag (die Demo kennt keine Sonntagsdienste)
+und die Zeitumstellung Ende März/Oktober. Beides wäre der nächste Lauf.
+
