@@ -286,7 +286,8 @@ var USERS = [
           : (path === 'certificates' ? CERTS
           /* Bestellungen (Runde 137): get() UND onSnapshot */
           : (path === 'bestellungen' ? (window.__bestellungen || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])));
+          : (path === 'kennzahlen' ? (window.__kennzahlen || [])
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -319,7 +320,8 @@ var USERS = [
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
                    (path==='bestellungen' ? (window.__bestellungen || []) :
-                   (path==='documents' ? DOCS : [])))))));
+                   (path==='kennzahlen' ? (window.__kennzahlen || []) :
+                   (path==='documents' ? DOCS : []))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();

@@ -645,7 +645,9 @@ var USERS = [
              onSnapshot. Ohne __bestellungen leer: das ist der Normalfall
              eines Betriebs, der noch nie über die App bestellt hat. */
           : (path === 'bestellungen' ? (window.__bestellungen || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])))))))));
+          /* Kennzahlen (Runde 138) — get() UND onSnapshot */
+          : (path === 'kennzahlen' ? (window.__kennzahlen || [])
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))))))))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -748,6 +750,7 @@ var USERS = [
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
                    (path==='probetrainings' ? (window.__probe || PROBE) :
                    (path==='bestellungen' ? (window.__bestellungen || []) :
+                   (path==='kennzahlen' ? (window.__kennzahlen || []) :
                    /* board fehlte hier, obwohl get() es kennt. Das
                       Schwarze Brett haengt mit onSnapshot zu — es blieb
                       deshalb IMMER leer, und jeder Durchlauf darueber
@@ -759,7 +762,7 @@ var USERS = [
                       window.__firmen / window.__firmenArchiv hin. So merkt
                       keiner der anderen Durchlaeufe etwas davon. */
                    (path==='firmen' ? (window.__firmen||[]) :
-                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))))))))));
+                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : [])))))))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         /* Zuhoerer merken, damit ein ZWEITER Schnappschuss moeglich ist.
            Die Attrappe feuerte bisher genau einmal je Sammlung. Fuer

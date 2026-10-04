@@ -83,6 +83,28 @@ service cloud.firestore {
     function manages(studioKey) {
       return isChef() || (isLeiter() && studioKey in myKeys());
     }
+    /* ── Kennzahlen je Studio (Runde 138) ──
+       Ein Dokument je Studio und Monat, Kennung "<studio>_<JJJJ-MM>".
+       Nur zwei Zahlen — Mitglieder am Monatsende und Kündigungen —,
+       eingetragen von der Leitung des Studios. Die Kennung muss zu den
+       Feldern passen: sonst liesse sich unter dem Namen von Studio A
+       eine Zahl für Studio B ablegen, und die Leseregel schaute aufs
+       falsche Feld. */
+    function kennzahlOk(kId) {
+      return request.resource.data.keys().hasOnly(['studioKey', 'monat', 'mitglieder', 'kuendigungen', 'vonUid', 'vonName', 'ts'])
+        && request.resource.data.studioKey is string
+        && request.resource.data.monat is string
+        && request.resource.data.monat.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$')
+        && kId == request.resource.data.studioKey + '_' + request.resource.data.monat
+        && request.resource.data.mitglieder is int
+        && request.resource.data.mitglieder >= 0 && request.resource.data.mitglieder <= 100000
+        && request.resource.data.kuendigungen is int
+        && request.resource.data.kuendigungen >= 0 && request.resource.data.kuendigungen <= 100000
+        && request.resource.data.vonUid == request.auth.uid
+        && request.resource.data.vonName is string && request.resource.data.vonName.size() <= 60
+        && request.resource.data.ts is number
+        && manages(request.resource.data.studioKey);
+    }
 
     /* ── Gehoert dieses Studio zu meinen? ──
        manages() fragt nach dem Verwalten und ist fuer einen Mitarbeiter
@@ -1050,6 +1072,21 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    /* ── Kennzahlen je Studio (Runde 138) ──
+       Lesen: wer das Studio verwaltet (Chef alle, Leitung ihre). Die App
+       der Leitung fragt je Studio mit studioKey == …, damit die Regel
+       die Abfrage beweisen kann. Mitarbeiter nicht — es sind Zahlen des
+       Betriebs, nicht des Teams. Ändern: dieselben, nur mit passender
+       Kennung; Studio und Monat bleiben, was sie waren. Löschen: der
+       Chef. */
+    match /kennzahlen/{kId} {
+      allow read: if aufFlachenPfaden() && manages(resource.data.studioKey);
+      allow create: if aufFlachenPfaden() && kennzahlOk(kId);
+      allow update: if aufFlachenPfaden() && kennzahlOk(kId)
+        && manages(resource.data.studioKey);
+      allow delete: if aufFlachenPfaden() && isChef();
+    }
+
     // ── Dokumente (Metadaten) ──
     match /documents/{docId} {
       allow read: if aufFlachenPfaden()
@@ -2011,6 +2048,15 @@ service cloud.firestore {
           allow read: if inFirma(f)
             && (isChef() || (isLeiter() && resource.data.studioKeys.hasAny(myKeys())));
           allow write: if false;
+        }
+
+        // Kennzahlen je Studio: wie oben (Runde 138)
+        match /kennzahlen/{kId} {
+          allow read: if inFirma(f) && manages(resource.data.studioKey);
+          allow create: if schreibtIn(f) && kennzahlOk(kId);
+          allow update: if schreibtIn(f) && kennzahlOk(kId)
+            && manages(resource.data.studioKey);
+          allow delete: if schreibtIn(f) && isChef();
         }
 
         match /documents/{docId} {

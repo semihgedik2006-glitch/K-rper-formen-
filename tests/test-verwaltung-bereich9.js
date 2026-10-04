@@ -162,7 +162,12 @@ const reiter = page => page.evaluate(() => {
        Betrieb: „füge hinzu das die leitung die zeiten ändern kann".
        Die Grenze steht im Server (zeitNachtragen) und ist in
        tests/rules/zeitkorrektur.test.js geprüft. */
-    if (l.kacheln.length !== 6) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 6 Kacheln');
+    /* Sieben seit „Kennzahlen" (4.10.2026, Runde 138): die Studioleitung
+       trägt Mitglieder und Kündigungen IHRER Studios ein — „geht fit".
+       Die Grenze steht in firestore.rules (tests/rules/kennzahlen.test.js). */
+    if (l.kacheln.length !== 7) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 7 Kacheln');
+    if (!l.kacheln.some(k => /Kennzahlen/.test(k)))
+      errs.push('Leiter sieht „Kennzahlen" nicht — dann kann sie die Monatszahlen nicht eintragen');
     if (!l.kacheln.some(k => /Zeiten/.test(k)))
       errs.push('Leiter sieht „Zeiten" nicht — dann kann sie keinen vergessenen Feierabend nachtragen');
     if (l.kacheln.some(k => /Team|Nachweise/.test(k))) errs.push('Leiter sieht einen Chef-Reiter');

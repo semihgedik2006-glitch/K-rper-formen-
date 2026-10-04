@@ -888,7 +888,41 @@
       });
     }
   });
+  /* Runde 138: ältere Probetrainings (vor 35 bis 200 Tagen), damit die
+     Kennzahlen einen Verlauf über sechs Monate haben. Eigene Kennung
+     „pa-", damit nichts mit den bisherigen kollidiert. Die Ansicht
+     „Probetraining" zeigt standardmässig 30 Tage — dort ändert sich
+     nichts. */
+  STUDIOS.forEach(function (_, i) {
+    for (var q = 0; q < zahl(10, 22); q++) {
+      var qu = jemandIn(sk(i)), qw = vorTag(zahl(35, 200));
+      probe.push({ id: 'pa-' + i + '-' + q, studioKey: sk(i), datum: qw, ts: qw,
+        abschluss: zufall() < 0.45, vonUid: qu.id, vonName: qu.name,
+        notiz: '', erfasstVon: qu.id, erfasstVonName: qu.name });
+    }
+  });
   legen(P('probetrainings'), probe);
+
+  /* Kennzahlen je Studio (Runde 138): sieben Monate bis zum Vormonat.
+     Für Studio 3 und Studio 6 (die Demo-Studioleitung) fehlt der
+     Vormonat — so sieht man den Hinweis „Zahlen fehlen noch" und kann
+     das Eintragen ausprobieren. */
+  (function () {
+    var heute = new Date(), kz = [];
+    STUDIOS.forEach(function (_, i) {
+      var mitglieder = zahl(180, 520);
+      for (var mo = 7; mo >= 1; mo--) {
+        var d = new Date(heute.getFullYear(), heute.getMonth() - mo, 1);
+        var monat = d.getFullYear() + '-' + (d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1);
+        var kuend = zahl(2, 12);
+        mitglieder = Math.max(50, mitglieder + zahl(-6, 16) - kuend);
+        if (mo === 1 && (i === 3 || i === 6)) continue;
+        kz.push({ id: sk(i) + '_' + monat, studioKey: sk(i), monat: monat, mitglieder: mitglieder,
+          kuendigungen: kuend, vonUid: 'demo-chef', vonName: 'Demo-Geschäftsführung', ts: d.getTime() + 32 * TAG });
+      }
+    });
+    legen(P('kennzahlen'), kz);
+  })();
 
   /* ── Anliegen ──
      Gab es in der Demo bisher gar nicht: die Sammlung blieb leer, und

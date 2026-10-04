@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-GCcIk4gV9pE5j8Cnm1bJCmC6Wvpg9AXcIdaO/JTG5pc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-W9VlXdA8iiLl0k3V2SeDlFMZme22f/0Jy+cgXtSzqdY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3296,6 +3296,36 @@ button.ich-zeile:active{opacity:.7}
 .mz-s.mit-knopf em{margin-left:0}
 .zk-weg{margin-left:auto;min-height:44px}
 .zk-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-bottom:var(--s8)}
+/* ── Kennzahlen (Runde 138) ──
+   Veränderungen stehen in Textfarbe mit Pfeil, nicht grün/rot: mehr
+   Kündigungen sind schlecht, mehr Mitglieder gut — eine Farbe, die je
+   Spalte das Gegenteil heisst, macht Statusfarben bedeutungslos. */
+.kz-wrap{display:grid;gap:var(--s16);align-items:start}
+@media (min-width:1200px){ .kz-wrap{grid-template-columns:minmax(0,1fr) 360px} }
+.kz-wahl{margin-bottom:var(--s10)}
+.kz-fehlt{margin-bottom:var(--s10)}
+.kz-tabelle-huelle{overflow-x:auto}
+.kz-tab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:var(--t-sm)}
+.kz-tab th{font-size:var(--t-xs);font-weight:700;color:var(--text-3);text-align:right;
+  padding:var(--s6) var(--s8);border-bottom:1px solid var(--line-2);white-space:nowrap}
+.kz-tab th:first-child,.kz-tab td:first-child{text-align:left}
+.kz-tab td{padding:var(--s8);border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.kz-tab td:first-child{font-weight:600;white-space:normal;min-width:7em}
+.kz-tab tr.kz-summe td{font-weight:800;border-bottom:none;border-top:1px solid var(--line-2)}
+.kz-tab .kz-leer{color:var(--text-3)}
+.kz-tab .kz-d{display:block;font-size:var(--t-2xs);color:var(--text-2);font-weight:600}
+.kz-spark{width:72px;height:24px;color:var(--accent-d);vertical-align:middle}
+.kz-spark polyline{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.kz-spark circle{fill:currentColor}
+@media (max-width:699px){ .kz-tab .kz-alt{display:none} }
+.kz-zeile{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px;gap:var(--s8);align-items:end;
+  padding:var(--s8) 0;border-top:1px solid var(--line)}
+.kz-zeile:first-child{border-top:none}
+.kz-zeile .kz-name{font-weight:600;align-self:center;min-width:0;overflow-wrap:anywhere}
+.kz-zeile .kz-name small{display:block;font-weight:400;color:var(--text-3);font-size:var(--t-xs)}
+.kz-zeile label{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-bottom:var(--s2)}
+.kz-zeile input{width:100%;min-height:44px;text-align:right;font-variant-numeric:tabular-nums}
+.kz-speichern{width:100%;min-height:48px;margin-top:var(--s8)}
 /* QR-Code zum Beitreten (Runde 134, DESIGN-RECHERCHE F1). */
 .bt-qr{display:grid;justify-items:center;gap:var(--s8);margin-top:var(--s12);
   padding:var(--s16);border:1px solid var(--line-2);border-radius:var(--r-md);background:#fff}
@@ -8966,6 +8996,30 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 ein nachgetragener Stempel kommt dazu, ein falscher wird als
                 ungültig markiert und bleibt sichtbar. Die Person sieht beides,
                 mit Grund, in „Meine Zeiten".</p>
+            </div>
+          </div>
+          <!-- ── Kennzahlen je Studio (Runde 138) ──
+               Am Rechner: Tabelle links, Eintragen rechts. Am Handy
+               untereinander, die Tabelle zeigt dann nur den letzten
+               Monat und den Verlauf. -->
+          <div class="chef-pane" data-cpane="kennzahlen" style="display:none">
+            <div class="kz-wrap">
+              <div class="card kz-haupt">
+                <div class="chip-row kz-wahl" id="kzWahl" role="group" aria-label="Welche Zahl"></div>
+                <button type="button" class="zk-vormonat kz-fehlt" id="kzFehlt" hidden></button>
+                <div class="kz-tabelle-huelle" id="kzTabelle"></div>
+                <p class="hint kz-quelle" id="kzQuelle"></p>
+              </div>
+              <div class="card kz-neben" id="kzEintragKarte">
+                <h3 data-ikon="stift">Monatszahlen eintragen</h3>
+                <p class="hint">Zwei Zahlen je Studio, einmal im Monat: wie viele
+                  Mitglieder am Monatsende und wie viele Kündigungen im Monat.</p>
+                <div class="field"><label for="kzMonatWahl">Monat</label>
+                  <select class="inp" id="kzMonatWahl"></select></div>
+                <div id="kzEintrag"></div>
+                <p class="em-saved" id="kzFehler" role="alert"></p>
+                <button type="button" class="btn btn-primary kz-speichern" id="kzSpeichern">Speichern</button>
+              </div>
             </div>
           </div>
           <div class="chef-pane vw" data-cpane="report" style="display:none">
@@ -17950,6 +18004,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-04-kennzahlen', datum:'4.10.2026', titel:'Kennzahlen je Studio', wo:'chef:kennzahlen', punkte:[
+    'Unter Verwaltung → Kennzahlen steht je Studio eine Zeile mit den letzten sechs Monaten: Mitglieder, Zuwachs, Kündigungen, Probetrainings, Abschlüsse und Quote — mit Verlauf und Gesamtzeile.',
+    'Probetrainings und Abschlüsse rechnet die App aus euren Einträgen. Mitglieder und Kündigungen trägt die Studioleitung einmal im Monat ein — zwei Zahlen je Studio, rechts daneben.',
+    'Fehlen die Zahlen für den Vormonat, steht das oben, und am 1. und 4. kommt eine Erinnerung aufs Handy.' ] },
   { id:'2026-10-04-bestellung', datum:'4.10.2026', titel:'Material: mit einem Knopf beim Lieferanten bestellen', wo:'material', punkte:[
     'Unter Material → Einkaufsliste öffnet „Bestellen" eine fertige Bestellung: was fehlt, wie viel, für welches Studio. Was woanders bestellt wird, nimmst du mit einem Tipp heraus.',
     '„An Lieferant senden" schickt sie direkt ab — du bekommst eine Kopie, und Antworten des Lieferanten landen bei dir.',
@@ -24595,6 +24653,7 @@ function stopListeners(){
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
   bestellAufraeumen();
+  _kzDaten={}; _kzProbe=[]; _kzGeladen=false; _kzLaedt=false;
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
   hilfeAufraeumen();
@@ -31625,6 +31684,11 @@ var CHEFTABS=[
      ausgestempelt hat. */
   {id:'zeiten',     label:'Zeiten',     ico:ikon('uhr'),
    was:'Stempelzeiten des Teams, vergessenen Feierabend nachtragen'},
+  /* Runde 138: Mitglieder, Kündigungen, Probetrainings je Studio und
+     Monat. Für die ganze Leitung — die Studioleitung trägt ein und
+     sieht ihre Studios. */
+  {id:'kennzahlen', label:'Kennzahlen', ico:ikon('raster'),
+   was:'Mitglieder, Kündigungen, Probetrainings je Studio und Monat'},
   {id:'report',     label:'Auswertung', ico:ikon('trendAuf'),
    was:'Bericht über einen Zeitraum, drucken, Excel, Monatsbericht'},
   {id:'system',     label:'System',     ico:ikon('regler'),
@@ -31773,10 +31837,240 @@ function showChefTab(id, keep){
   if(id==='nachweise') renderCerts();
   if(id==='anliegen') anliegenLaden();
   if(id==='zeiten') zkOeffnen();
+  if(id==='kennzahlen') kzOeffnen();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); renderAboKarte(); stempelFristLaden(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
+}
+
+/* ══ KENNZAHLEN JE STUDIO (Runde 138) ═════════════════════════════════
+   Aus dem Betrieb, 4.10.2026: Kennzahlen je Studio — Probetrainings,
+   Abschlüsse, Kündigungen, Mitglieder, mit Verlauf über die Monate.
+   Auf die Frage nach der Quelle: Mitglieder und Kündigungen trägt die
+   Studioleitung am Monatsersten ein („geht fit"), eine Erinnerung kommt
+   aufs Handy (kennzahlenErinnern in functions/index.js).
+
+   WOHER DIE ZAHLEN KOMMEN — und das steht auch unter der Tabelle:
+   · Probetrainings, Abschlüsse, Quote: aus den Einträgen unter
+     „Probetraining", nach dem Tag des Trainings. Nichts wird doppelt
+     erhoben.
+   · Mitglieder, Kündigungen: kennzahlen/<studio>_<JJJJ-MM>, eingetragen.
+   · Zuwachs: Mitglieder minus Mitglieder des Vormonats — nur, wenn
+     beide da sind. Eine geschätzte Zahl stünde sonst neben echten.
+
+   Ein leeres Feld heisst „nicht eingetragen" und steht als „–" da, nie
+   als 0: null Kündigungen ist eine Aussage, „nicht eingetragen" eine
+   andere.
+
+   WER: der Chef alle Studios, die Studioleitung ihre (die Regel lässt
+   sie nur je Studio abfragen, deshalb eine Abfrage je Studio).
+   Gezeigt werden die sechs abgeschlossenen Monate bis zum Vormonat. */
+var KZ_MONATE = 6;
+var KZ_ARTEN = [
+  { id:'mitglieder',   name:'Mitglieder',     probe:false },
+  { id:'zuwachs',      name:'Zuwachs',        probe:false },
+  { id:'kuendigungen', name:'Kündigungen',    probe:false },
+  { id:'probe',        name:'Probetrainings', probe:true },
+  { id:'abschluss',    name:'Abschlüsse',     probe:true },
+  { id:'quote',        name:'Quote',          probe:true }
+];
+var _kzArt='mitglieder', _kzDaten={}, _kzProbe=[], _kzGeladen=false, _kzLaedt=false;
+
+function kzMonatKey(d){ return d.getFullYear()+'-'+zweistellig(d.getMonth()+1); }
+/* Die Monate bis zum Vormonat, älteste zuerst. Über den Kalender
+   gerechnet, nicht über 30 Tage: sonst fiele im März der Februar aus. */
+function kzMonate(n){
+  var d=new Date(), aus=[];
+  for(var i=n;i>=1;i--) aus.push(kzMonatKey(new Date(d.getFullYear(), d.getMonth()-i, 1)));
+  return aus;
+}
+function kzMonatName(m, lang){
+  var n=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'][(+m.slice(5,7))-1];
+  return lang ? n+' '+m.slice(0,4) : n.slice(0,3)+(n.length>3?'.':'');
+}
+function kzStudios(){ return managedStudios().map(function(n){ return { name:n, key:studioKey(n) }; }); }
+
+function kzOeffnen(){
+  kzWahlZeichnen(); kzMonatWahlFuellen();
+  if(_kzGeladen){ kzZeichnen(); return; }
+  kzLaden();
+}
+function kzLaden(){
+  if(_kzLaedt || !session || !canManage()) return;
+  _kzLaedt=true;
+  var box=$('kzTabelle'); if(box && !_kzGeladen) box.innerHTML='<p class="hint">Wird geladen …</p>';
+  var monate=kzMonate(KZ_MONATE+1);              // einer mehr: für den ersten Zuwachs
+  var abMs=new Date(+monate[0].slice(0,4), +monate[0].slice(5,7)-1, 1).getTime();
+  var jobs=[];
+  if(isChef()) jobs.push(S('kennzahlen').where('monat','>=',monate[0]).get());
+  else kzStudios().forEach(function(st){ jobs.push(S('kennzahlen').where('studioKey','==',st.key).get()); });
+  var probeJob = ansichtAn('probe')
+    ? S('probetrainings').where('datum','>=',abMs).orderBy('datum','desc').limit(5000).get()
+        .catch(function(e){ console.warn('Kennzahlen/Probetraining:', e && e.message); return null; })
+    : Promise.resolve(null);
+  Promise.all([Promise.all(jobs), probeJob]).then(function(r){
+    _kzDaten={};
+    r[0].forEach(function(sn){ sn.forEach(function(d){ var x=d.data()||{}; _kzDaten[x.studioKey+'_'+x.monat]=x; }); });
+    _kzProbe = r[1] ? r[1].docs.map(function(d){ return d.data()||{}; }) : [];
+    _kzGeladen=true; _kzLaedt=false;
+    kzZeichnen();
+  }).catch(function(e){
+    _kzLaedt=false;
+    if(box) box.innerHTML='<p class="hint">Die Kennzahlen ließen sich nicht laden: '+esc(errMsg(e))+'</p>';
+  });
+}
+function kzWahlZeichnen(){
+  var box=$('kzWahl'); if(!box) return;
+  var arten=KZ_ARTEN.filter(function(a){ return !a.probe || ansichtAn('probe'); });
+  if(!arten.some(function(a){ return a.id===_kzArt; })) _kzArt=arten[0].id;
+  box.innerHTML=arten.map(function(a){
+    return '<button type="button" class="chip'+(a.id===_kzArt?' on':'')+'" data-kzart="'+a.id+'" aria-pressed="'+(a.id===_kzArt)+'">'+esc(a.name)+'</button>';
+  }).join('');
+  box.querySelectorAll('[data-kzart]').forEach(function(b){
+    b.addEventListener('click', function(){ _kzArt=b.getAttribute('data-kzart'); kzWahlZeichnen(); kzZeichnen(); tick(6); });
+  });
+}
+/* Ein Wert für Studio × Monat × Art. null heisst: gibt es nicht. */
+function kzWert(key, monat, art){
+  if(art==='mitglieder' || art==='kuendigungen'){
+    var e=_kzDaten[key+'_'+monat]; return e && typeof e[art]==='number' ? e[art] : null;
+  }
+  if(art==='zuwachs'){
+    var d=new Date(+monat.slice(0,4), +monat.slice(5,7)-2, 1);
+    var jetzt=kzWert(key, monat, 'mitglieder'), vor=kzWert(key, kzMonatKey(d), 'mitglieder');
+    return (jetzt===null || vor===null) ? null : jetzt-vor;
+  }
+  var n=0, ja=0;
+  _kzProbe.forEach(function(p){
+    if(p.studioKey!==key || !p.datum) return;
+    if(kzMonatKey(new Date(p.datum))!==monat) return;
+    n++; if(p.abschluss) ja++;
+  });
+  if(art==='probe') return n;
+  if(art==='abschluss') return ja;
+  return n ? Math.round(ja/n*100) : null;          // quote
+}
+/* Die Summe über alle Studios. Bei Mitglieder/Kündigungen/Zuwachs nur,
+   wenn ALLE Studios eine Zahl haben — eine Summe über die Hälfte sähe
+   aus wie ein Einbruch. Die Quote über alle Probetrainings, nicht als
+   Mittel der Quoten. */
+function kzSumme(studios, monat, art){
+  if(art==='quote'){
+    var n=0, ja=0;
+    studios.forEach(function(st){ n+=kzWert(st.key, monat, 'probe'); ja+=kzWert(st.key, monat, 'abschluss'); });
+    return n ? Math.round(ja/n*100) : null;
+  }
+  var summe=0, alle=true;
+  studios.forEach(function(st){ var v=kzWert(st.key, monat, art); if(v===null) alle=false; else summe+=v; });
+  return alle ? summe : null;
+}
+function kzZahl(v, art){
+  if(v===null) return '<span class="kz-leer" title="nicht eingetragen">–</span>';
+  if(art==='zuwachs') return (v>0?'+':v<0?'−':'±')+Math.abs(v).toLocaleString('de-DE');
+  return v.toLocaleString('de-DE')+(art==='quote'?' %':'');
+}
+function kzSpark(werte){
+  var zahlen=werte.filter(function(v){ return v!==null; });
+  if(zahlen.length<2) return '';
+  var min=Math.min.apply(null, zahlen), max=Math.max.apply(null, zahlen), sp=(max-min)||1;
+  var pkt=[], letzt=null;
+  werte.forEach(function(v, i){
+    if(v===null) return;
+    var x=2+i*(68/(werte.length-1)), y=21-((v-min)/sp)*18;
+    pkt.push(x.toFixed(1)+','+y.toFixed(1)); letzt=[x,y];
+  });
+  return '<svg class="kz-spark" viewBox="0 0 72 24" aria-hidden="true"><polyline points="'+pkt.join(' ')+'"/>'+
+    '<circle cx="'+letzt[0].toFixed(1)+'" cy="'+letzt[1].toFixed(1)+'" r="2.5"/></svg>';
+}
+function kzZeichnen(){
+  var box=$('kzTabelle'); if(!box || !_kzGeladen) return;
+  var studios=kzStudios(), monate=kzMonate(KZ_MONATE), art=_kzArt;
+  var artName=(KZ_ARTEN.filter(function(a){ return a.id===art; })[0]||{}).name||'';
+  var letzt=monate[monate.length-1], vorletzt=monate[monate.length-2];
+  function zeile(name, werte, klasse){
+    var v=werte[werte.length-1], w=werte[werte.length-2], d='';
+    if(art!=='zuwachs' && v!==null && w!==null && v!==w){
+      d='<span class="kz-d">'+(v>w?'↑ ':'↓ ')+Math.abs(v-w).toLocaleString('de-DE')+(art==='quote'?' Pkt.':'')+' zum Vormonat</span>';
+    }
+    return '<tr'+(klasse?' class="'+klasse+'"':'')+'><td>'+esc(name)+'</td>'+
+      werte.map(function(x, i){
+        return '<td'+(i<werte.length-1?' class="kz-alt"':'')+'>'+kzZahl(x, art)+(i===werte.length-1?d:'')+'</td>';
+      }).join('')+
+      '<td>'+kzSpark(werte)+'</td></tr>';
+  }
+  box.innerHTML='<table class="kz-tab"><caption class="nur-vorlesen">'+esc(artName)+' je Studio und Monat</caption><thead><tr><th scope="col">Studio</th>'+
+    monate.map(function(m, i){ return '<th scope="col"'+(i<monate.length-1?' class="kz-alt"':'')+'>'+esc(kzMonatName(m))+'</th>'; }).join('')+
+    '<th scope="col">Verlauf</th></tr></thead><tbody>'+
+    studios.map(function(st){ return zeile(st.name, monate.map(function(m){ return kzWert(st.key, m, art); })); }).join('')+
+    (studios.length>1 ? zeile('Gesamt', monate.map(function(m){ return kzSumme(studios, m, art); }), 'kz-summe') : '')+
+    '</tbody></table>';
+  // Was im Vormonat noch fehlt — der Grund, warum man hierher kommt
+  var fehlen=studios.filter(function(st){ return !_kzDaten[st.key+'_'+letzt]; });
+  var hinw=$('kzFehlt');
+  if(hinw){
+    hinw.hidden=!fehlen.length;
+    if(fehlen.length){
+      hinw.innerHTML=ikon('warnung')+'<span><b>'+esc(kzMonatName(letzt, true))+':</b> Zahlen fehlen noch für '+
+        esc(fehlen.length>3 ? fehlen.length+' Studios' : fehlen.map(function(x){ return x.name; }).join(', '))+
+        '</span><span class="zk-vm-pfeil">Eintragen ›</span>';
+      hinw.onclick=function(){
+        var w=$('kzMonatWahl'); if(w){ w.value=letzt; kzEintragZeichnen(); }
+        var k=$('kzEintragKarte'); if(k) sanftInsBild(k,{block:'start'});
+        var erst=document.querySelector('#kzEintrag input'); if(erst) setTimeout(function(){ try{ erst.focus({preventScroll:true}); }catch(e){} }, 300);
+      };
+    }
+  }
+  var q=$('kzQuelle');
+  if(q) q.textContent = (ansichtAn('probe') ? 'Probetrainings und Abschlüsse kommen aus den Einträgen unter „Probetraining". ' : '')+
+    'Mitglieder und Kündigungen trägt die Studioleitung am Monatsanfang ein; „–" heißt: noch nicht eingetragen. '+
+    'Zuwachs = Mitglieder minus Vormonat.';
+  kzEintragZeichnen();
+}
+function kzMonatWahlFuellen(){
+  var sel=$('kzMonatWahl'); if(!sel || sel.options.length) return;
+  var d=new Date(), opt=[];
+  for(var i=1;i<=12;i++){ var m=kzMonatKey(new Date(d.getFullYear(), d.getMonth()-i, 1)); opt.push('<option value="'+m+'">'+esc(kzMonatName(m, true))+'</option>'); }
+  sel.innerHTML=opt.join('');
+  sel.addEventListener('change', kzEintragZeichnen);
+}
+function kzEintragZeichnen(){
+  var box=$('kzEintrag'), sel=$('kzMonatWahl'); if(!box || !sel || !_kzGeladen) return;
+  var monat=sel.value; $('kzFehler').textContent='';
+  box.innerHTML=kzStudios().map(function(st, i){
+    var e=_kzDaten[st.key+'_'+monat];
+    var wert=function(f){ return e && typeof e[f]==='number' ? e[f] : ''; };
+    return '<div class="kz-zeile" data-kzst="'+esc(st.key)+'">'+
+      '<span class="kz-name">'+esc(st.name)+(e ? '<small title="'+esc(e.vonName||'')+'">✓ eingetragen'+(e.ts?' '+esc(fmtTag(e.ts)):'')+'</small>' : '')+'</span>'+
+      '<span><label for="kzM'+i+'">Mitglieder</label><input class="inp" id="kzM'+i+'" type="number" min="0" max="100000" step="1" inputmode="numeric" data-f="mitglieder" value="'+wert('mitglieder')+'" /></span>'+
+      '<span><label for="kzK'+i+'">Kündigungen</label><input class="inp" id="kzK'+i+'" type="number" min="0" max="100000" step="1" inputmode="numeric" data-f="kuendigungen" value="'+wert('kuendigungen')+'" /></span>'+
+    '</div>';
+  }).join('') || '<p class="hint">Dir ist kein Studio zugeordnet.</p>';
+}
+function kzSpeichern(){
+  var sel=$('kzMonatWahl'), fehler=$('kzFehler'); if(!sel) return;
+  var monat=sel.value, schreib=[], problem='';
+  document.querySelectorAll('#kzEintrag [data-kzst]').forEach(function(z){
+    if(problem) return;
+    var key=z.getAttribute('data-kzst');
+    var m=z.querySelector('[data-f="mitglieder"]').value.trim(), k=z.querySelector('[data-f="kuendigungen"]').value.trim();
+    if(!m && !k) return;
+    var name=(z.querySelector('.kz-name').firstChild||{}).textContent||key;
+    if(!m || !k){ problem='Bei '+name+' fehlt eine der beiden Zahlen.'; return; }
+    if(!/^\d{1,6}$/.test(m) || !/^\d{1,6}$/.test(k) || +m>100000 || +k>100000){ problem='Bei '+name+' bitte ganze Zahlen ab 0 eintragen.'; return; }
+    var alt=_kzDaten[key+'_'+monat];
+    if(alt && alt.mitglieder===+m && alt.kuendigungen===+k) return;
+    schreib.push({ studioKey:key, monat:monat, mitglieder:+m, kuendigungen:+k,
+                   vonUid:session.uid, vonName:String(session.name||'').slice(0,60), ts:Date.now() });
+  });
+  if(problem){ fehler.textContent=problem; return; }
+  if(!schreib.length){ fehler.textContent='Nichts Neues zum Speichern.'; return; }
+  var b=$('kzSpeichern'); b.disabled=true; fehler.textContent='';
+  Promise.all(schreib.map(function(x){ return S('kennzahlen').doc(x.studioKey+'_'+x.monat).set(x); })).then(function(){
+    schreib.forEach(function(x){ _kzDaten[x.studioKey+'_'+x.monat]=x; });
+    b.disabled=false; toast(schreib.length===1 ? 'Gespeichert ✓' : schreib.length+' Studios gespeichert ✓'); tick(10);
+    kzZeichnen();
+  }).catch(function(e){ b.disabled=false; fehler.textContent=errMsg(e); });
 }
 
 /* ══ ANLIEGEN — DIE SEITE DER LEITUNG ═══════════════════════════════
@@ -32285,7 +32579,9 @@ function backupSammeln(){
     weich(S('schulungLaeufe').orderBy('ts','desc').limit(1000).get(), 'Schulungen'),
     /* Seit Runde 137: die Bestellungen an den Lieferanten. Ohne orderBy
        — die Kennung läuft rückwärts nach der Zeit (bestellKennung). */
-    weich(S('bestellungen').limit(500).get(), 'Bestellungen')
+    weich(S('bestellungen').limit(500).get(), 'Bestellungen'),
+    // Seit Runde 138: die eingetragenen Kennzahlen je Studio und Monat
+    weich(S('kennzahlen').get(), 'Kennzahlen')
   ];
   kanaele.forEach(function(ch){
     jobs.push(weich(S('channels').doc(ch).collection('messages')
@@ -32305,6 +32601,7 @@ function backupSammeln(){
                 loesungen:r[i++],
                 schulungen:r[i++],
                 bestellungen:r[i++],
+                kennzahlen:r[i++],
                 chat:{}, studios:{} };
     kanaele.forEach(function(ch){ daten.chat[ch]=r[i++]; });
     STUDIOS.forEach(function(s){
@@ -32336,7 +32633,8 @@ function backupData(){
                    'Stempelzeiten','Anliegen mit Antwort','Probetrainings',
                    'Lösungen (Text, ohne Fotos)',
                    'Schulungen (Nachweis und Zahlen)',
-                   'Bestellungen an den Lieferanten'],
+                   'Bestellungen an den Lieferanten',
+                   'Kennzahlen (Mitglieder und Kündigungen je Studio und Monat)'],
         nichtEnthalten:[
           'Direktnachrichten — gehören zwei Personen, nicht dem Betrieb',
           'Persönlicher Bereich — gehört der einzelnen Person, nicht dem Betrieb',
@@ -32437,6 +32735,11 @@ function backupData(){
                           aufteilung:(p.studios||[]).map(function(q){ return studioName(q.key)+': '+q.n; }).join(', ') };
                }) };
     }).sort(function(a,b){ return a.datum<b.datum ? 1 : -1; });
+    out.kennzahlen=docsZuListe(g.kennzahlen).map(function(k){
+      return { studio:studioName(k.studioKey), monat:k.monat||'', mitglieder:k.mitglieder,
+               kuendigungen:k.kuendigungen, eingetragenVon:k.vonName||'',
+               am:k.ts?new Date(k.ts).toISOString():'' };
+    }).sort(function(a,b){ return (a.monat+a.studio)<(b.monat+b.studio) ? -1 : 1; });
     out.loesungen=docsZuListe(g.loesungen).map(function(l){
       var schritte = (Array.isArray(l.schritte) && l.schritte.length)
         ? l.schritte : String(l.loesung||'').split('\n')
@@ -37699,6 +38002,7 @@ function bindActions(){
   var shP=$('shopPrint'); if(shP) shP.addEventListener('click', printShoppingList);
   var shX=$('shopXls');   if(shX) shX.addEventListener('click', exportShoppingList);
   var shM=$('shopMail'); if(shM) shM.addEventListener('click', bestellenOeffnen);
+  var kzS=$('kzSpeichern'); if(kzS) kzS.addEventListener('click', kzSpeichern);
   /* Bestellen (Runde 137). Die frühere Geräte-Adresse (PREFS.lieferantMail)
      wird nicht mehr bearbeitet, nur noch als Vorschlag und Rückfall
      gelesen — siehe lieferantBearbeiten und shoppingMail. */

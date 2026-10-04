@@ -130,8 +130,10 @@ const ansicht = page => page.evaluate(() => {
     // Kachel hat und keine doppelt ist.
     /* „Zeiten" seit dem 24.9.2026 (P-09): „füge hinzu das die leitung
        die zeiten ändern kann falls jemand sich nicht ausgestempelt hat". */
+    /* „Kennzahlen" seit dem 4.10.2026 (Runde 138): „Kennzahlen je
+       Studio … geht fit". */
     const ERWARTET = ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise',
-                      'Anliegen', 'Zeiten', 'Auswertung', 'System'];
+                      'Anliegen', 'Zeiten', 'Kennzahlen', 'Auswertung', 'System'];
     ERWARTET.forEach(function (w) {
       if (!uebersicht.kacheln.some(function (k) { return k.indexOf(w) >= 0; })) {
         errs.push('Kachel „' + w + '" fehlt in der Verwaltung');
