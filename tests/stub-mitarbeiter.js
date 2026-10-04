@@ -82,9 +82,16 @@ var USERS = [
       { id: 't4', title: 'Empfang aufräumen', desc: '', done: false, createdBy: 'Chef', ts: Date.now() - 60000000 }
     ]
   };
+  /* „Heute erledigt" heisst heute — auch kurz nach Mitternacht. Vorher
+     stand hier „vor 90 Minuten"; zwischen 0:00 und 1:30 Uhr war das
+     gestern, ein täglicher Punkt also zu Recht wieder offen, und
+     test-startseite-putz und test-sortierung fielen (Datumsprobe,
+     4.10.2026). Die App hatte recht, die Annahme nicht. */
+  var HEUTE_0 = new Date(); HEUTE_0.setHours(0, 0, 0, 0);
+  var HEUTE_ERLEDIGT = Math.max(HEUTE_0.getTime(), Date.now() - 5400000);
   var CLEAN = {
     'studio-6': [
-      { id:'c1', title:'Böden wischen', recurring:'daily', done:true, doneBy:'Anna', doneAt:Date.now()-5400000, ts:Date.now()-90000000 },
+      { id:'c1', title:'Böden wischen', recurring:'daily', done:true, doneBy:'Anna', doneAt:HEUTE_ERLEDIGT, ts:Date.now()-90000000 },
       /* c2 laesst sich ueber window.__ppPause pausieren — so kann ein
          Durchlauf den Zustand pruefen, ohne erst zu klicken. */
       { id:'c2', title:'Spiegel putzen', recurring:'weekly', done:false, ts:Date.now()-80000000,

@@ -14700,6 +14700,26 @@ vorgestellten Uhrzeit, die Uhr läuft weiter. Gegen dieselbe App, keine
   echter und mit vorgestellter Uhr. Er wartet auf den Wechsel des Service
   Workers; unter der Last des Gesamtlaufs reichte die Zeit einmal nicht.
 
-**Nicht geprobt:** ein Sonntag (die Demo kennt keine Sonntagsdienste)
-und die Zeitumstellung Ende März/Oktober. Beides wäre der nächste Lauf.
+**Dritter Lauf (4.10.2026): Berliner Zeit, Sonntag 25.10.2026, 0:30 Uhr.**
+Bis dahin liefen alle Proben in UTC — die Studios rechnen aber in
+Berliner Zeit. Die Nacht der Zeitumstellung, ein Sonntag, und das Datum
+ist in Berlin schon Sonntag, in UTC noch Samstag: 171 von 173 grün.
+
+- Rot: `test-startseite-putz` und `test-sortierung`, beide am Putzplan.
+- Eingegrenzt mit fünf Läufen: Weder der Sonntag noch die Umstellung noch
+  die Zeitzone ist es — beide fallen um **0:30 Uhr an jedem Tag**,
+  mittags nie.
+- Ursache: In den Testdaten war der tägliche Punkt „Böden wischen" als
+  „vor 90 Minuten erledigt" angelegt. Zwischen 0:00 und 1:30 Uhr ist das
+  gestern, der Punkt also zu Recht wieder offen. **Die App hatte recht,
+  die Testdaten nicht.** Jetzt heisst „heute erledigt" heute, auch kurz
+  nach Mitternacht (`stub-mitarbeiter.js`, `stub-chef.js`,
+  `stub-leiter.js`); tagsüber ändert sich nichts.
+- Danach beide um 0:30, 0:00:20 und 12:00 grün; drei weitere
+  Putzplan-Tests mit echter Uhr grün.
+
+**Zusammen aus drei Läufen:** kein Datumsfehler in der App. Gefunden hat
+die Probe zwei Testdaten mit versteckter Uhrzeit-Annahme — und am Anfang,
+über den Monatsersten, den echten Fehler bei der Studioleitung
+(Runde 133).
 
