@@ -813,6 +813,21 @@
     DB[P('inventory')].push({ id: k, items: posten });
   });
 
+  /* Bestellung an den Lieferanten (Runde 137): ein hinterlegter
+     Lieferant und eine Bestellung von vor drei Tagen — für die Studios
+     der Demo-Studioleitung, damit sie auch dort „zuletzt bestellt"
+     sieht. Die Adresse ist eine .example-Adresse: aus der Demo geht
+     ohnehin nichts raus, und eine echte Firma soll hier nicht stehen. */
+  holen(P('config')).push({ id: 'lieferant', name: 'Frottee-Lieferant (Beispiel)',
+    email: 'bestellung@lieferant.example', kundennr: 'K-1042' });
+  legen(P('bestellungen'), [{
+    id: 'bestellung-demo-1', ts: vorTag(3), vonUid: 'demo-chef', vonName: 'Demo-Geschäftsführung',
+    an: 'bestellung@lieferant.example', lieferant: 'Frottee-Lieferant (Beispiel)',
+    studioKeys: [sk(6), sk(7)],
+    positionen: [{ name: POSTEN[0], menge: 12, studios: [{ key: sk(6), n: 6 }, { key: sk(7), n: 6 }] },
+                 { name: POSTEN[1], menge: 4, studios: [{ key: sk(6), n: 4 }] }]
+  }]);
+
   /* Schwarzes Brett, Aushänge, Nachweise, Probetrainings, Dokumente */
   var brett = [];
   for (var b = 0; b < 9; b++) {
@@ -1577,6 +1592,27 @@
       var alt = cfg.filter(function (x) { return x.id === 'registrierung'; })[0];
       if (alt) alt.code = roh; else cfg.push({ id: 'registrierung', code: roh, codeNorm: n });
       return { code: roh, codeNorm: n };
+    },
+    /* Aus der Demo geht keine Mail raus — und das sagt die Antwort
+       auch (demo: true). Protokolliert wird trotzdem, damit sich
+       „zuletzt bestellt" vorführen lässt. */
+    bestellungSenden: function (d) {
+      if (ICH.role !== 'chef' && ICH.role !== 'leiter') throw new Error('Bestellen kann die Leitung.');
+      var pos = (d && d.positionen) || [];
+      if (!pos.length) throw new Error('Es fehlt nichts — es gibt nichts zu bestellen.');
+      var lief = holen(P('config')).filter(function (x) { return x.id === 'lieferant'; })[0];
+      if (!lief || !lief.email) throw new Error('Es ist noch kein Lieferant hinterlegt. Das macht die Geschäftsführung unter Material → Einkaufsliste.');
+      var keys = [];
+      pos.forEach(function (p) { (p.studios || []).forEach(function (x) {
+        if (ICH.role !== 'chef' && (ICH.studioKeys || []).indexOf(x.key) < 0) throw new Error('Bestellen kannst du nur für deine eigenen Studios.');
+        if (keys.indexOf(x.key) < 0) keys.push(x.key);
+      }); });
+      var e = { id: 'bestellung-' + neueId(), ts: Date.now(), vonUid: ICH.id, vonName: ICH.name,
+        an: lief.email, lieferant: lief.name || '', studioKeys: keys, positionen: pos,
+        notiz: String(d.notiz || ''), demo: true };
+      holen(P('bestellungen')).unshift(e);
+      melden(P('bestellungen'));
+      return { ok: true, demo: true, id: e.id, ts: e.ts, an: lief.email, kopieAn: null, artikel: pos.length };
     },
     vorfallMelden: function (d) {
       if (String(d.was || '').trim().length < 10) throw new Error('Bitte beschreib in einem Satz, was passiert ist.');

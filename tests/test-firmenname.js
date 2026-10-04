@@ -88,6 +88,13 @@ async function start(opt) {
       try { Object.defineProperty(window.location, 'href', beschr); } catch (e) { /* dann greift der request-Fang */ }
       b2.click();
       await new Promise(r => setTimeout(r, 400));
+      /* Seit Runde 137 öffnet „Bestellen" erst die Vorschau; das
+         Mailprogramm ist dort der zweite Knopf. Geprüft wird dieselbe
+         Mail wie vorher. */
+      const mp = document.getElementById('bsMailto');
+      if (!mp) return { fehler: 'kein Knopf „Im Mailprogramm öffnen"' };
+      mp.click();
+      await new Promise(r => setTimeout(r, 400));
       return { url: window.__mailto, fehler: null };
     });
     if (!mail.url && mailUrl) mail.url = mailUrl;

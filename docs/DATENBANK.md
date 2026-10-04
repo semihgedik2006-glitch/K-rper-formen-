@@ -362,6 +362,40 @@ ausdrücklich zu.
 
 ---
 
+### `firmen/{kennung}/bestellungen/{id}` — Bestellungen beim Lieferanten (seit 4.10.2026, Runde 137)
+
+Beide Bäume (flach und `firmen/<k>/`). **Schreiben:** niemand, nur die
+Funktion `bestellungSenden` — und die erst, **nachdem** die Mail
+rausgegangen ist. So steht „zuletzt bestellt" nur da, wo wirklich
+bestellt wurde. **Lesen:** der Chef alles; eine Studio-Leitung die
+Bestellungen, deren `studioKeys` eines ihrer Studios enthält (Abfrage
+`array-contains-any`, wie bei den Dokumenten). Mitarbeiter nicht.
+
+| Feld | Anmerkung |
+|---|---|
+| `ts` | wann gesendet |
+| `vonUid`, `vonName` | wer bestellt hat (`vonUid` → die Art.-15-Auskunft findet sie von selbst) |
+| `an`, `lieferant` | Adresse und Name des Lieferanten zum Zeitpunkt der Bestellung |
+| `positionen` | `[{ name, menge, studios:[{ key, n }] }]` — genau das, was in der Mail stand |
+| `studioKeys` | alle betroffenen Studios, für die Leseregel |
+| `notiz`, `kopieAn` | Anmerkung; an wen die Kopie ging |
+
+**Die Kennung läuft rückwärts nach der Zeit** (`9999999999999 − ts`).
+Eine Abfrage ohne `orderBy` kommt nach Kennung sortiert zurück — die
+neueste also zuerst, ohne zusammengesetzten Index (`array-contains-any`
+plus `orderBy` bräuchte einen, und das Projekt hat bewusst keine
+Index-Datei).
+
+### `firmen/{kennung}/config/lieferant`
+
+`{ name, email, kundennr, ts, von }`. Schreiben: der Chef (allgemeine
+`config`-Regel). Lesen: jedes aktive Konto der Firma — darin steht nur
+die Bestelladresse eines Geschäftspartners. Bis Runde 137 lag die
+Adresse nur im Gerät (`PREFS.lieferantMail`); die bleibt als Vorschlag
+beim ersten Hinterlegen und als Rückfall fürs Mailprogramm.
+
+---
+
 ### Schulung: fünf Sammlungen (seit 22.9.2026)
 
 Webinare mit Videos und Fragen — und ein Nachweis, wer sie wann gemacht

@@ -109,6 +109,10 @@ const TREFFER = (el) => {
       /Video angesehen hast, wird nicht gespeichert/.test(ds));
     pruefe('… und dass die Schulungsvideos in Frankfurt liegen',
       /Schulungsvideos/.test(ds) && /Frankfurt/.test(ds));
+    /* Runde 137: eine Bestellung geht mit Name und Mailadresse der
+       bestellenden Person an den Lieferanten — das muss dastehen. */
+    pruefe('… und dass eine Bestellung Name und Mailadresse an den Lieferanten gibt',
+      /Bestellungen beim Lieferanten:/.test(ds) && /Namen/.test(ds) && /E-Mail-Adresse \(als Antwortadresse und Kopie\)/.test(ds));
     await p.keyboard.press('Escape');
     await p.waitForTimeout(200);
     await p.evaluate(() => { window.KONFIG.zweiFaktor = true; });

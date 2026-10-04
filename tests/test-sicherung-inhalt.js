@@ -42,7 +42,10 @@ const errs = [];
       return new echtBlob(teile, opt);
     };
     window.URL.createObjectURL = function(){ return 'blob:test'; };
-    window.URL.revokeObjectURL = function(){};`);
+    window.URL.revokeObjectURL = function(){};
+    window.__bestellungen = [{ id: '8240000000000-a', ts: Date.now() - 86400000, vonUid: 'testuid', vonName: 'Max',
+      an: 'shop@lieferant.example', lieferant: 'Frottee', notiz: '', kopieAn: 'max@example.org', studioKeys: ['studio-1'],
+      positionen: [{ name: 'Handtücher', menge: 12, studios: [{ key: 'studio-1', n: 12 }] }] }];`);
   await page.addInitScript({ path: path.join(SP, 'stub-chef.js') });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2800);
@@ -151,6 +154,24 @@ const errs = [];
         const nenntSch = (d.hinweise.enthalten || []).join(' ');
         if (!/Schulung/i.test(nenntSch)) {
           errs.push('FEHLT: das Verzeichnis oben nennt die Schulungen nicht');
+        }
+      }
+      /* ══ 4d. Bestellungen, seit Runde 137 ══
+         Eine neue Sammlung, die nicht mitgeht, ist die Zusage aus § 8,
+         die schon zweimal gebrochen war. Die Attrappe legt eine
+         Bestellung hin; sie muss mit Artikel, Menge und Person in der
+         Datei stehen — und das Verzeichnis muss sie nennen. */
+      if (!Array.isArray(d.bestellungen)) {
+        errs.push('FEHLT: die Bestellungen stehen nicht in der Datei');
+      } else {
+        const be = d.bestellungen[0] || {};
+        if (!d.bestellungen.length) errs.push('LEER: die Bestellung der Attrappe fehlt in der Sicherung');
+        else if (be.von !== 'Max' || !(be.positionen || []).length || be.positionen[0].artikel !== 'Handtücher' ||
+                 be.positionen[0].menge !== 12) {
+          errs.push('FALSCH: die Bestellung steht nicht vollständig drin: ' + JSON.stringify(be).slice(0, 160));
+        }
+        if (!/Bestellungen/.test((d.hinweise.enthalten || []).join(' '))) {
+          errs.push('FEHLT: das Verzeichnis oben nennt die Bestellungen nicht');
         }
       }
       /* Und die Codes: ein Schulungs-Code in der Sicherung wäre

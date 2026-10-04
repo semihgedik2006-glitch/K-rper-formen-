@@ -413,9 +413,23 @@ Ein Tipp auf **⋯** öffnet ein Blatt von unten mit beschrifteten Einträgen:
   Deshalb wird hier – anders als bei den Aufgaben – nicht nach Dringlichkeit
   umsortiert, sondern gefiltert.
 - **Einkaufsliste** (**L C**) – zählt über alle eigenen Studios zusammen,
-  mit Aufteilung je Studio. Zum Drucken, als Excel, in die Zwischenablage
-  oder als fertige **Bestellmail** an den Lieferanten. Dort liegt auch der
-  **Excel-Export über alle Studios**.
+  mit Aufteilung je Studio. Zum Drucken, als Excel, in die Zwischenablage.
+  Dort liegt auch der **Excel-Export über alle Studios**.
+- **Bestellen** (**L C**, seit 4.10.2026) – öffnet die fertige Bestellung:
+  jeder fehlende Artikel mit Menge und Aufteilung je Studio. Was woanders
+  bestellt wird, nimmt man mit einem Tipp heraus; eine Anmerkung („bis
+  Freitag") geht mit. **„An Lieferant senden"** schickt sie über den
+  Mailversand der App an den hinterlegten Lieferanten, mit Kopie an die
+  bestellende Person; Antworten landen bei ihr. **„Im Mailprogramm
+  öffnen"** ist der zweite Weg — und der einzige, solange der Mailversand
+  nicht eingerichtet ist (dann sagt die App das).
+- **Zuletzt bestellt** steht danach über der Liste, mit Person und Zahl;
+  „Verlauf" zeigt die letzten zehn. An jedem Artikel, der in den letzten
+  zwei Wochen bestellt wurde, steht **„bestellt 4.10."** — damit niemand
+  doppelt bestellt.
+- **Lieferant** (**C**) – Name, Bestelladresse und Kundennummer, einmal für
+  den ganzen Betrieb, direkt unter der Einkaufsliste. Die Studioleitung
+  sieht ihn, ändert ihn aber nicht.
 - **Verbrauchs-Vorhersage** (**C**) – „reicht noch etwa X Wochen", gerechnet
   aus den echten Wochen-Sicherungen, keine Schätzung.
 - **Entfernen fragt nach** und lässt sich acht Sekunden lang rückgängig
