@@ -5,6 +5,10 @@ Ohne diese Einrichtung versendet StudioChat **keine** E-Mails. Betroffen sind:
 - der **Monatsbericht** an den Chef (automatisch am Monatsersten)
 - die **Termin-Mails** an Kunden aus `wachstum.html` — Bestätigung, Erinnerung,
   Follow-up und Storno
+- die **Bestellung beim Lieferanten** aus Material → Einkaufsliste (seit
+  4.10.2026). Ohne SMTP sagt die App „nicht eingerichtet" und öffnet
+  stattdessen das Mailprogramm. Absender ist `MAIL_FROM` mit dem Namen des
+  Betriebs davor; Antworten gehen an die Person, die bestellt hat.
 
 Die App selbst funktioniert ohne SMTP vollständig weiter. Es fehlen nur die
 E-Mails.

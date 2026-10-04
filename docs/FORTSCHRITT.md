@@ -14723,3 +14723,71 @@ die Probe zwei Testdaten mit versteckter Uhrzeit-Annahme — und am Anfang,
 über den Monatsersten, den echten Fehler bei der Studioleitung
 (Runde 133).
 
+## Runde 137: Bestellung per Mail (4.10.2026)
+
+Aus dem Betrieb, auf die Frage nach dem Nächsten: **„Bestellung per Mail
+(Empfohlen)"** — aus der Materialliste mit einem Knopf eine fertige
+Bestellmail an den Lieferanten, plus Vermerk, wann zuletzt bestellt
+wurde. Zuerst über den bisherigen Absender, die eigene Domain kann
+später kommen.
+
+**Was gebaut ist**
+- „Bestellen" (vorher „Bestellmail") öffnet ein Fenster mit genau der
+  Liste, die rausgeht. Herausnehmen per Haken, Anmerkung dazu. Zwei Wege:
+  „An Lieferant senden" (Server) und „Im Mailprogramm öffnen" (wie bisher).
+- `bestellungSenden` (Callable): nur Leitung, Studio-Leitung nur für ihre
+  Studios; Empfänger **ausschliesslich** `config/lieferant`; Kopie und
+  Antwortadresse an die bestellende Person; höchstens 10 je Betrieb und
+  Tag; im Abo-Zustand „nur lesen" nicht.
+- Protokoll `bestellungen/` in **beiden** Regelbäumen, Schreiben nur der
+  Server. Daraus „Zuletzt bestellt …", „Verlauf" und „bestellt 4.10." an
+  der Zeile (14 Tage).
+- Lieferant für den ganzen Betrieb statt je Gerät; der Chef pflegt ihn
+  unter der Einkaufsliste.
+- Export (§ 8 AGB), Datenschutztext, Demo (Lieferant, eine Bestellung,
+  Versand mit „Demo — es ging keine Mail raus").
+
+**Warum so entschieden**
+- *Warum über den Server, wenn es mailto schon gab?* Ein mailto weiss
+  nicht, ob es abgeschickt wurde. Das Gedächtnis („wurde schon
+  bestellt?") war der eigentliche Wunsch. Deshalb protokolliert der
+  Server **erst nach** dem erfolgreichen Versand — scheitert er, steht
+  nirgends „bestellt".
+- *Warum keine freie Empfängeradresse?* Eine Funktion, die mit unserem
+  Absender an beliebige Adressen beliebigen Text schickt, ist ein
+  Spam-Versand. Fest ist nur die Adresse, die der Chef hinterlegt hat,
+  plus Tagesgrenze. Getestet: eine Adresse im Aufruf wird ignoriert.
+- *Warum Mengen nicht änderbar?* Die Aufteilung auf die Studios stünde
+  sonst neben einer Summe, die nicht mehr stimmt — beim Lieferanten käme
+  ein Widerspruch an. Aufrunden auf Kartons geht über die Anmerkung.
+- *Warum die rückwärts laufende Kennung?* Die Studio-Leitung muss nach
+  ihren Studios fragen (`array-contains-any`, sonst lässt die Regel sie
+  nicht). Mit `orderBy('ts')` bräuchte das einen zusammengesetzten Index,
+  und das Projekt hat keine Index-Datei. Ohne `orderBy` kommt die
+  Antwort nach Kennung — also so gebaut, dass das die neueste zuerst ist.
+- *Warum „bestellt" nicht grün?* Statusfarben nur für Status. „Bestellt"
+  heisst weder gut noch schlecht, sondern „schon unterwegs". Deshalb ein
+  Umriss in der Bereichsfarbe.
+
+**Tests**
+- `tests/rules/bestellung.test.js` (49): Regeln in beiden Welten — Chef
+  liest alles, Leitung per `array-contains-any` nur ihre Studios,
+  Mitarbeiter nichts, schreiben niemand. Dazu die echte Funktion im
+  Emulator mit Ersatz-Versender: ohne Lieferant / ohne SMTP / Versand
+  gescheitert → nichts protokolliert; fremde Adresse ignoriert; Leitung
+  nicht für fremde Studios; Tagesgrenze; „nur lesen".
+- `tests/test-bestellung.js` (74): Demo, Chef und Studio-Leitung,
+  Trefferflächen aller neuen Knöpfe bei 320–1920 px in beiden Dichten.
+  Gegenprobe: mit 1 statt 14 Tagen fehlt „bestellt" an „Handtücher" — der
+  Durchlauf wird rot.
+- `test-firmenname` geht jetzt über das Fenster zum Mailprogramm (gleiche
+  Prüfung der Mail), `test-sicherung-inhalt` prüft die Bestellungen in der
+  Datei, `test-rechtliches` den neuen Datenschutz-Absatz.
+
+**Nicht geprüft, und das ist offen:** Eine echte Mail ist aus dieser
+Umgebung nicht rausgegangen. Nachgesehen: Der letzte Funktions-Deploy
+(Lauf 36946426600) trägt **keine** Warnung „SMTP ist nicht
+eingerichtet" — die Geheimnisse sind also hinterlegt. Ob der Anbieter
+die Mail an eine fremde Adresse annimmt (Gmail z. B. setzt den Absender
+auf das eigene Konto), zeigt erst die erste echte Bestellung.
+

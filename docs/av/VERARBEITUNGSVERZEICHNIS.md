@@ -163,6 +163,26 @@ Fehlversuche.
 **Löschung:** keine automatische Frist; ein Durchlauf bleibt als
 Nachweis, bis die Geschäftsführung ihn löscht.
 
+### 3.6b Bestellungen beim Lieferanten (seit 4.10.2026)
+
+**Zweck:** Nachbestellung von Verbrauchsmaterial beim Lieferanten des
+Verantwortlichen, mit Vermerk, wann was bestellt wurde.
+
+**Betroffene:** die Person aus der Leitung, die bestellt.
+
+**Datenkategorien:** Name und E-Mail-Adresse der bestellenden Person,
+Zeitpunkt, bestellte Artikel mit Menge und Studio, Anmerkung.
+
+**Empfänger:** der vom Verantwortlichen hinterlegte Lieferant (Name und
+E-Mail-Adresse gehen dort als Absender-Hinweis, Antwortadresse und
+Kopie hin) — auf Weisung des Verantwortlichen, der die Adresse selbst
+einträgt und jede Bestellung selbst auslöst. Versand über den
+SMTP-Dienst aus `UNTERAUFTRAGNEHMER.md`. Innerhalb der App: Leitung und
+Geschäftsführung.
+
+**Löschung:** keine automatische Frist; mit dem Konto bzw. den Daten
+des Kunden.
+
 ### 3.6 Sicherung und Wiederherstellung
 
 **Zweck:** Schutz vor Datenverlust.
@@ -176,7 +196,8 @@ Region `europe-west1`.
 
 ## 4. Kategorien der Übermittlung
 
-Empfänger: die in `UNTERAUFTRAGNEHMER.md` genannten. Keine weiteren.
+Empfänger: die in `UNTERAUFTRAGNEHMER.md` genannten — und, nur auf
+Auslösen durch den Verantwortlichen, sein Lieferant (3.6b). Keine weiteren.
 
 Keine Übermittlung zu Werbezwecken. Keine Weitergabe an Dritte. Kein
 Verkauf von Daten. Kein Analysedienst im Browser — die Nutzungszahlen

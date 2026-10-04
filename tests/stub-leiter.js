@@ -223,6 +223,10 @@ var USERS = [
           },
           get: function () {
             var data = (path === 'users') ? PROFILE : {};
+            if (path === 'config' && id === 'lieferant') {
+              var lf = window.__lieferant;
+              return Promise.resolve({ exists: !!lf, id: id, data: function () { return lf || {}; } });
+            }
             if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }
             return Promise.resolve({ exists: true, id: id, data: function () { return data; } });
           },
@@ -280,7 +284,9 @@ var USERS = [
           : gl ? (DEVLOG[gl[1]] || [])
           : gt ? (TODOS[gt[1]] || [])
           : (path === 'certificates' ? CERTS
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []));
+          /* Bestellungen (Runde 137): get() UND onSnapshot */
+          : (path === 'bestellungen' ? (window.__bestellungen || [])
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -312,7 +318,8 @@ var USERS = [
                    (path==='certificates' ? CERTS :
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? USERS : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
-                   (path==='documents' ? DOCS : []))))));
+                   (path==='bestellungen' ? (window.__bestellungen || []) :
+                   (path==='documents' ? DOCS : [])))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();
@@ -346,6 +353,7 @@ var USERS = [
       return { httpsCallable: function (name) {
         return function (data) {
           window.__aufruf = { name: name, data: data };
+          if (window.__antwort && window.__antwort[name]) return window.__antwort[name](data);
           return Promise.resolve({ data: { ok: true, empfaenger: 1, tage: (data && data.tage) || 30 } });
         };
       } };

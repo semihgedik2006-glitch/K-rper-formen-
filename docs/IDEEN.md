@@ -5,7 +5,7 @@ nicht nach dem, was am einfachsten zu bauen ist. Zu jedem Punkt steht dabei,
 was er kostet und was dagegen spricht, damit die Entscheidung nicht blind
 fällt.
 
-Stand 1.10.2026: das meiste davon ist inzwischen gebaut (mit ✅ markiert). Offen sind Materialbestellung als Mail (braucht die eigene Absenderadresse), Kennzahlen je Studio (braucht eine Datenquelle) und Offline weiterarbeiten (gross, und auf geteilten Tablets eine Datenschutzfrage).
+Stand 1.10.2026: das meiste davon ist inzwischen gebaut (mit ✅ markiert). Offen sind Kennzahlen je Studio (braucht eine Datenquelle) und Offline weiterarbeiten (gross, und auf geteilten Tablets eine Datenschutzfrage).
 
 ---
 
@@ -77,7 +77,7 @@ die Person selbst und der Chef, nicht die Studio-Leitung.
 Ergebnis steht direkt in der Nachricht. **Aufwand:** klein. Die
 Reaktions-Mechanik im Chat ist schon fast das, was man braucht.
 
-### Materialbestellung als fertige Mail
+### Materialbestellung als fertige Mail  ✅ *gebaut (4.10.2026, Runde 137 — über den bisherigen Absender; eigene Domain bleibt offen)*
 
 Die Einkaufsliste gibt es. Was fehlt, ist der Knopf „an Lieferant senden" mit
 einer sauberen Bestellmail und einem Vermerk, wann zuletzt bestellt wurde.

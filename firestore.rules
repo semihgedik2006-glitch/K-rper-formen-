@@ -1034,6 +1034,22 @@ service cloud.firestore {
         && (istAktiv());
     }
 
+    /* ── Bestellungen an den Lieferanten (Runde 137) ──
+       Das Protokoll hinter „zuletzt bestellt am …". Geschrieben wird es
+       NUR vom Server (bestellungSenden), und zwar erst, wenn die Mail
+       wirklich raus ist — sonst stünde „bestellt" da, wo nichts
+       bestellt ist. Lesen: der Chef alles, eine Studio-Leitung die
+       Bestellungen, die eines ihrer Studios betreffen. Mitarbeiter
+       nicht: sie bestellen nicht, und darin stehen Name und Mailadresse
+       der Person, die bestellt hat.
+       Ohne `is list` davor — aus demselben Grund wie bei den Dokumenten:
+       sonst lässt sich array-contains-any nicht beweisen. */
+    match /bestellungen/{bId} {
+      allow read: if aufFlachenPfaden()
+        && (isChef() || (isLeiter() && resource.data.studioKeys.hasAny(myKeys())));
+      allow write: if false;
+    }
+
     // ── Dokumente (Metadaten) ──
     match /documents/{docId} {
       allow read: if aufFlachenPfaden()
@@ -1988,6 +2004,13 @@ service cloud.firestore {
           allow read: if inFirma(f) && (istAktiv());
           // Eintragen dürfen alle Eingeloggten; das Soll-Limit setzt die Verwaltung
           allow write: if schreibtIn(f) && (istAktiv());
+        }
+
+        // Bestellungen: wie oben — nur der Server schreibt (Runde 137)
+        match /bestellungen/{bId} {
+          allow read: if inFirma(f)
+            && (isChef() || (isLeiter() && resource.data.studioKeys.hasAny(myKeys())));
+          allow write: if false;
         }
 
         match /documents/{docId} {

@@ -6460,6 +6460,196 @@ exports.brettNachziehen = region.pubsub.schedule('every 30 minutes').timeZone('E
     return null;
   });
 
+/* ══ BESTELLUNG PER MAIL (Runde 137) ══════════════════════════════════
+   Aus dem Betrieb, 4.10.2026, auf die Frage, was als Nächstes kommt:
+   „Bestellung per Mail" — aus der Materialliste mit einem Knopf eine
+   fertige Bestellmail an den Lieferanten, plus Vermerk, wann zuletzt
+   bestellt wurde. Zuerst über den bisherigen Absender.
+
+   ── WARUM ÜBER DEN SERVER UND NICHT NUR mailto ──────────────────────
+   Die Bestellmail über das Mailprogramm gab es schon (seit Runde 59).
+   Was ihr fehlte, ist das Gedächtnis: niemand wusste, ob schon bestellt
+   war — zwei Leitungen bestellten dieselben Handtücher, oder keiner.
+   Ein mailto weiss nicht, ob es abgeschickt wurde. Dieser Weg schon:
+   erst wenn der Versand geklappt hat, steht die Bestellung im Protokoll
+   und in der App „zuletzt bestellt am …".
+
+   ── WER, AN WEN ──────────────────────────────────────────────────────
+   · Senden darf die Leitung (Chef und Studio-Leitung) — wie die
+     Einkaufsliste auch. Eine Studio-Leitung nur für ihre Studios.
+   · Empfänger ist AUSSCHLIESSLICH die hinterlegte Lieferantenadresse
+     (config/lieferant, setzt der Chef). Keine freie Adresse aus dem
+     Aufruf: sonst wäre das ein Versandweg mit unserem Absender an
+     beliebige Leute. Dazu höchstens BESTELL_TAGESGRENZE Mails je Betrieb
+     und Tag.
+   · Antworten gehen an die Person, die bestellt hat (Reply-To), und sie
+     bekommt eine Kopie (CC) — das ersetzt den „Gesendet"-Ordner, den
+     der Weg über das eigene Mailprogramm hatte.
+
+   ── WAS HINEINKOMMT ─────────────────────────────────────────────────
+   Die Positionen kommen aus der Vorschau, so wie die Leitung sie
+   gesehen (und vielleicht auf volle Kartons aufgerundet) hat. Was in
+   der Vorschau stand, steht in der Mail — nicht eine Liste, die der
+   Server inzwischen anders zusammengezählt hätte.
+
+   Ohne eingerichteten Mailversand (SMTP-Geheimnisse) wird nichts
+   protokolliert und ehrlich „nicht eingerichtet" gemeldet; die App
+   bietet dann das Mailprogramm an. */
+const BESTELL_TAGESGRENZE = 10;
+const BESTELL_POS_MAX = 100, BESTELL_MENGE_MAX = 100000, BESTELL_NOTIZ_MAX = 600;
+const MAIL_MUSTER = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]{2,}$/;
+
+/* Positionen aus dem Aufruf prüfen und in eine saubere Form bringen.
+   Wirft bei allem, was nicht passt — lieber eine klare Absage als eine
+   Mail, in der „NaN Stück" steht. */
+function bestellPositionen(roh, darfStudio) {
+  if (!Array.isArray(roh) || !roh.length) {
+    throw new functions.https.HttpsError('invalid-argument', 'Es fehlt nichts — es gibt nichts zu bestellen.');
+  }
+  if (roh.length > BESTELL_POS_MAX) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Höchstens ' + BESTELL_POS_MAX + ' Artikel je Bestellung.');
+  }
+  const ganz = (x) => Number.isInteger(x) && x >= 1 && x <= BESTELL_MENGE_MAX;
+  return roh.map((p) => {
+    const name = String((p && p.name) || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    const menge = Number(p && p.menge);
+    if (!name || !ganz(menge)) {
+      throw new functions.https.HttpsError('invalid-argument',
+        'Jeder Artikel braucht einen Namen und eine Menge von 1 bis ' + BESTELL_MENGE_MAX + '.');
+    }
+    const studios = (Array.isArray(p.studios) ? p.studios : []).slice(0, 30).map((s) => {
+      const key = String((s && s.key) || '').trim().slice(0, 60);
+      const n = Number(s && s.n);
+      if (!key || !ganz(n)) {
+        throw new functions.https.HttpsError('invalid-argument', 'Die Aufteilung auf die Studios ist unvollständig.');
+      }
+      if (!darfStudio(key)) {
+        throw new functions.https.HttpsError('permission-denied',
+          'Bestellen kannst du nur für deine eigenen Studios.');
+      }
+      return { key, n };
+    });
+    return { name, menge, studios };
+  });
+}
+
+/* Der Text der Mail. Rein rechnerisch — damit ihn der Test ohne Versand
+   lesen kann. `namen` bildet Studio-Kennungen auf Namen ab. */
+function bestellText(o) {
+  const z = [];
+  z.push('Guten Tag' + (o.lieferant ? ' ' + o.lieferant : '') + ',');
+  z.push('');
+  z.push('wir möchten Folgendes bestellen' + (o.kundennr ? ' (Kundennummer ' + o.kundennr + ')' : '') + ':');
+  z.push('');
+  o.positionen.forEach((p) => z.push('· ' + p.name + ': ' + p.menge + ' Stück'));
+  const mitAufteilung = o.positionen.filter((p) => p.studios.length);
+  if (mitAufteilung.length) {
+    z.push('');
+    z.push('Aufteilung auf die Studios:');
+    mitAufteilung.forEach((p) => {
+      z.push('· ' + p.name + ' – ' + p.studios.map((s) => (o.namen[s.key] || s.key) + ': ' + s.n).join(', '));
+    });
+  }
+  if (o.notiz) { z.push(''); z.push('Anmerkung:'); z.push(o.notiz); }
+  z.push('');
+  z.push('Vielen Dank und freundliche Grüße');
+  if (o.vonName) z.push(o.vonName);
+  z.push(o.firmaName);
+  if (o.vonMail) {
+    z.push('');
+    z.push('Antworten auf diese Mail gehen direkt an ' + (o.vonName || o.vonMail) + ' (' + o.vonMail + ').');
+  }
+  return z.join('\n');
+}
+
+/* Dokumentkennung, die rückwärts nach der Zeit sortiert: die neueste
+   Bestellung steht vorne. So braucht die Abfrage der Studio-Leitung
+   (array-contains-any) weder orderBy noch einen eigenen Index — eine
+   Abfrage ohne Sortierung kommt nach Dokumentkennung zurück. */
+function bestellKennung(ts) {
+  return String(9999999999999 - ts).padStart(13, '0') + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+exports.bestellungSenden = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const chef = profil.role === 'chef';
+  if (!chef && profil.role !== 'leiter') {
+    throw new functions.https.HttpsError('permission-denied', 'Bestellen kann die Leitung.');
+  }
+  if (firma) {
+    const abo = await db.collection('firmen').doc(firma).collection('abo').doc('aktuell').get();
+    if (abo.exists && aboZugriff(abo.get('status')) !== 'voll') {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Gerade lässt sich nichts ändern — und damit auch nichts bestellen.');
+    }
+  }
+  const meine = Array.isArray(profil.studioKeys) ? profil.studioKeys : [];
+  const positionen = bestellPositionen(data && data.positionen, (k) => chef || meine.indexOf(k) >= 0);
+  if (!chef && positionen.some((p) => !p.studios.length)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Zu jedem Artikel gehört das Studio, für das er ist.');
+  }
+  const notiz = String((data && data.notiz) || '').trim().slice(0, BESTELL_NOTIZ_MAX);
+
+  const wurzel = W(firma);
+  const lief = (await wurzel.collection('config').doc('lieferant').get()).data() || {};
+  const an = String(lief.email || '').trim();
+  if (!MAIL_MUSTER.test(an)) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Es ist noch kein Lieferant hinterlegt. Das macht die Geschäftsführung unter Material → Einkaufsliste.');
+  }
+
+  const seit = Date.now() - 86400000;
+  const heute = await wurzel.collection('bestellungen').where('ts', '>', seit).get();
+  if (heute.size >= BESTELL_TAGESGRENZE) {
+    throw new functions.https.HttpsError('resource-exhausted',
+      'Heute sind schon ' + BESTELL_TAGESGRENZE + ' Bestellungen rausgegangen. Weitere bitte über das Mailprogramm.');
+  }
+
+  const mailer = getMailer();
+  if (!mailer) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Der Mailversand ist noch nicht eingerichtet. Öffne die Bestellung stattdessen im Mailprogramm.');
+  }
+
+  const studioKeys = [];
+  positionen.forEach((p) => p.studios.forEach((s) => { if (studioKeys.indexOf(s.key) < 0) studioKeys.push(s.key); }));
+  const namen = {};
+  for (const k of studioKeys) namen[k] = await studioName(firma, k);
+  const firmaName = await firmaAnzeigeName(firma);
+  const vonMail = MAIL_MUSTER.test(String(profil.email || '')) ? String(profil.email) : '';
+  const ts = Date.now();
+  const kundennr = String(lief.kundennr || '').trim().slice(0, 40);
+  const text = bestellText({ lieferant: String(lief.name || '').trim().slice(0, 80), kundennr,
+    positionen, namen, notiz, vonName: String(profil.name || ''), vonMail, firmaName });
+  const datum = new Date(ts).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  try {
+    await mailer.sendMail({
+      from: '"' + firmaName.replace(/"/g, '') + '" <' + (process.env.MAIL_FROM || process.env.SMTP_USER) + '>',
+      to: an,
+      cc: vonMail || undefined,
+      replyTo: vonMail || undefined,
+      subject: 'Bestellung ' + firmaName + ' · ' + datum,
+      text
+    });
+  } catch (e) {
+    console.error('Bestellmail gescheitert:', e && e.message);
+    throw new functions.https.HttpsError('unavailable',
+      'Die Mail ging nicht raus. Bitte später noch einmal — oder über das Mailprogramm.');
+  }
+
+  /* Erst NACH dem Versand protokollieren: „zuletzt bestellt" soll nur
+     dastehen, wenn die Mail wirklich unterwegs ist. */
+  const id = bestellKennung(ts);
+  await wurzel.collection('bestellungen').doc(id).set({
+    ts, vonUid: uid, vonName: String(profil.name || ''), an,
+    lieferant: String(lief.name || ''), positionen, studioKeys,
+    notiz, kopieAn: vonMail || null
+  });
+  return { ok: true, id, ts, an, kopieAn: vonMail || null, artikel: positionen.length };
+});
+
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
@@ -6480,6 +6670,7 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      kennungVon, aboIdAusRechnung, periodeAusRechnung, periodeAusAbo,
                      ABO_STATUS, ABO_STUFEN, LEITERN,
                      vorfallText, betrifft, auskunftSauber,
+                     bestellPositionen, bestellText, bestellKennung, BESTELL_TAGESGRENZE,
                      /* Nur für tests/rules/vorfall.test.js: ein Ersatz-Versender,
                         der festhält, was er bekommt. Ohne ihn liesse sich die
                         Wichtigkeit der Mail nicht prüfen, ohne echt zu senden. */

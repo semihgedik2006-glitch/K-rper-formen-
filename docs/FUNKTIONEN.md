@@ -31,11 +31,11 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 
 | | | Quelle |
 |---|---|---|
-| Anwendung | `index.html`, **37.686 Zeilen** | `wc -l` |
-| Serverfunktionen | **78** Cloud Functions | `grep -c '^exports\.'` |
-| Sicherheitsregeln | `firestore.rules`, **2.409 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **177** (174 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
-| Automatische Durchläufe (Regeln) | **29 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem neun Dateien dazu) | `tests/rules/` |
+| Anwendung | `index.html`, **39.011 Zeilen** | `wc -l` |
+| Serverfunktionen | **80** Cloud Functions | `grep -c '^exports\.'` |
+| Sicherheitsregeln | `firestore.rules`, **2.456 Zeilen** | `wc -l` |
+| Automatische Durchläufe (Oberfläche) | **178** (175 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Regeln) | **31 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem elf Dateien dazu) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
 | Build-Schritt | **keiner** | kein `package.json` im Wurzelverzeichnis |
@@ -271,6 +271,7 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 | Foto zur Aufgabe | **VERIFIZIERT** | |
 | Putzplan | **VERIFIZIERT** | Anlegen Chefsache, Abhaken darf jeder |
 | Material mit Soll-Bestand | **VERIFIZIERT** | Eintragen darf jeder, das Soll setzt die Verwaltung |
+| Bestellung beim Lieferanten (seit 4.10.2026) | **TEILWEISE** | Vorschau, Herausnehmen, „zuletzt bestellt", Lieferant je Betrieb: geprüft (`tests/test-bestellung.js`, Demo). Der Versand selbst: im Emulator mit Ersatz-Versender geprüft (`tests/rules/bestellung.test.js`) — **echt verschickt wurde noch keine**; ohne SMTP-Geheimnisse sagt die App „nicht eingerichtet" und bietet das Mailprogramm an |
 | Geräte- und Schadensbuch | **VERIFIZIERT** | mit Protokoll je Gerät |
 | Schichtplan | **VERIFIZIERT** | Einteilen nur die Verwaltung |
 | Abwesenheiten | **VERIFIZIERT** | **zwei Arten: Urlaub und Krank** |

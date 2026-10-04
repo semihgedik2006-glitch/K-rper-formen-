@@ -493,6 +493,13 @@ var USERS = [
                Dokument NICHT — das ist der Normalfall, auf dem jeder
                andere Durchlauf steht: dann gilt der Rückfall auf
                konfig.js, und zwar nur für die eigene Firma. */
+            /* Der Lieferant (Runde 137). Ohne __lieferant gibt es das
+               Dokument NICHT — so steht jeder Betrieb da, bis die
+               Geschäftsführung einen hinterlegt. */
+            if (path === 'config' && id === 'lieferant') {
+              var lf = window.__lieferant;
+              return Promise.resolve({ exists: !!lf, id: id, data: function () { return lf || {}; } });
+            }
             if (path === 'config' && id === 'recht') {
               var rr = window.__recht;
               return Promise.resolve({ exists: !!rr, id: id,
@@ -634,7 +641,11 @@ var USERS = [
              aussagelos. */
           : (path === 'users' ? (window.__users || USERS)
           : (path === 'statistik' ? (window.__statistik || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))))))));
+          /* Bestellungen (Runde 137) — an BEIDEN Stellen, get() und
+             onSnapshot. Ohne __bestellungen leer: das ist der Normalfall
+             eines Betriebs, der noch nie über die App bestellt hat. */
+          : (path === 'bestellungen' ? (window.__bestellungen || [])
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])))))))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -736,6 +747,7 @@ var USERS = [
                    (path==='archives' ? ARCH_HIST.concat(ARCHIVES) : (path==='users' ? (window.__users || USERS) : (path==='announcements' ? ANNS :
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
                    (path==='probetrainings' ? (window.__probe || PROBE) :
+                   (path==='bestellungen' ? (window.__bestellungen || []) :
                    /* board fehlte hier, obwohl get() es kennt. Das
                       Schwarze Brett haengt mit onSnapshot zu — es blieb
                       deshalb IMMER leer, und jeder Durchlauf darueber
@@ -747,7 +759,7 @@ var USERS = [
                       window.__firmen / window.__firmenArchiv hin. So merkt
                       keiner der anderen Durchlaeufe etwas davon. */
                    (path==='firmen' ? (window.__firmen||[]) :
-                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : [])))))))))))));
+                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         /* Zuhoerer merken, damit ein ZWEITER Schnappschuss moeglich ist.
            Die Attrappe feuerte bisher genau einmal je Sammlung. Fuer
@@ -823,6 +835,9 @@ var USERS = [
       return { httpsCallable: function (name) {
         return function (data) {
           window.__aufruf = { name: name, data: data };
+          /* Ein Durchlauf kann für EINE Funktion eine eigene Antwort
+             hinlegen (z. B. einen Fehler „nicht eingerichtet"). */
+          if (window.__antwort && window.__antwort[name]) return window.__antwort[name](data);
           return Promise.resolve({ data: { ok: true, empfaenger: 1, tage: (data && data.tage) || 30 } });
         };
       } };

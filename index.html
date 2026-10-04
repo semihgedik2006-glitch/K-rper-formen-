@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-NcEj9XLiS4Q/j4CLQgIY0/qyCZXzIrDLZoPZfR6YeUc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-GCcIk4gV9pE5j8Cnm1bJCmC6Wvpg9AXcIdaO/JTG5pc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1900,11 +1900,11 @@ body.nurlesen .kopf-plus{display:none !important}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal,#vorfallModal,#zfModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal,#vorfallModal,#zfModal,#bestellModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show{display:flex}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -4636,6 +4636,46 @@ html{font-size:var(--fs,100%)}
 .shop-n{font-family:var(--font-head);font-weight:800;color:var(--warm-tx);
   font-size:var(--t-lg);white-space:nowrap}
 .shop-s{color:var(--text-3);font-size:var(--t-xs);margin-top:var(--s2)}
+/* ── Bestellung (Runde 137) ──
+   „bestellt 2.10." an der Zeile ist KEINE Statusfarbe: bestellt heisst
+   weder gut noch schlecht, sondern „schon unterwegs, nicht doppelt
+   bestellen". Deshalb die Bereichsfarbe als Umriss, nicht Grün. */
+.bs-chip{display:inline-block;margin-left:var(--s6);padding:0 var(--s8);border-radius:var(--r-pille);
+  border:1px solid rgba(var(--akz-rgb),.45);color:var(--accent-d);font-size:var(--t-2xs);font-weight:700;
+  white-space:nowrap;vertical-align:middle}
+.bs-stand{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;margin:0 0 var(--s6);
+  color:var(--text-2);font-size:var(--t-xs)}
+.bs-stand svg{width:16px;height:16px;flex:0 0 auto;color:var(--text-3)}
+.bs-stand-text{flex:1 1 12em;min-width:0}
+.bs-verlauf-knopf{min-height:44px;padding:0 var(--s12);background:none;border:none;color:var(--accent-d);
+  font:inherit;font-weight:700;cursor:pointer;border-radius:var(--r-xs)}
+.bs-verlauf-knopf:hover{text-decoration:underline}
+.bs-verlauf{flex:1 1 100%;margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.bs-verlauf li{padding:var(--s8) 0;border-bottom:1px solid var(--line)}
+.bs-verlauf b{display:block;color:var(--text);font-size:var(--t-sm)}
+.bs-verlauf small{display:block;color:var(--text-3);font-size:var(--t-xs);margin-top:var(--s2)}
+.bs-lief{margin-top:var(--s12);padding-top:var(--s10);border-top:1px solid var(--line)}
+.bs-lief-zeile{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap}
+.bs-lief-text{flex:1 1 14em;min-width:0;color:var(--text-2);font-size:var(--t-xs);overflow-wrap:anywhere}
+.bs-lief-text b{color:var(--text)}
+.bs-lief-form{margin-top:var(--s10)}
+.bs-lief-knoepfe{display:flex;gap:var(--s8);justify-content:flex-end;flex-wrap:wrap}
+.bs-box{max-width:520px}
+.bs-box h3{display:flex;align-items:center;gap:var(--s8);margin:0 var(--s48) var(--s8) 0}
+.bs-box h3 svg{width:22px;height:22px;color:var(--accent-d)}
+.bs-an{color:var(--text-2);font-size:var(--t-sm);margin:0 0 var(--s10);overflow-wrap:anywhere}
+.bs-liste{border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s12);overflow:hidden}
+.bs-pos{display:flex;align-items:center;gap:var(--s10);min-height:48px;padding:var(--s6) var(--s12);
+  border-top:1px solid var(--line);cursor:pointer}
+.bs-pos:first-child{border-top:none}
+.bs-pos input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent)}
+.bs-pos-name{flex:1;min-width:0}
+.bs-pos-name small{display:block;color:var(--text-3);font-size:var(--t-xs)}
+.bs-pos-n{font-family:var(--font-head);font-weight:800;font-size:var(--t-md);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+.bs-pos.raus .bs-pos-name,.bs-pos.raus .bs-pos-n{color:var(--text-3);text-decoration:line-through}
+.bs-knoepfe{display:grid;gap:var(--s8)}
+.bs-senden{min-height:48px}
 
 /* "Ältere Nachrichten laden" ganz oben im Chat */
 .load-older{display:block;margin:var(--s4) auto var(--s12);background:var(--bg-2);
@@ -7954,17 +7994,39 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <span class="todo-count" id="shopCount"></span>
             </div>
             <p class="hint">Was insgesamt fehlt – zusammengezählt über alle deine Studios.</p>
+            <!-- Runde 137: „zuletzt bestellt" — aus dem Protokoll, das
+                 der Server erst schreibt, wenn die Mail raus ist. -->
+            <div class="bs-stand" id="bsStand" hidden></div>
             <div id="shopList"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button data-ikon="mail" class="btn btn-primary btn-sm" id="shopMail">Bestellen</button>
               <button data-ikon="drucken" class="btn btn-ghost btn-sm" id="shopPrint">Drucken</button>
               <button data-ikon="laden" class="btn btn-ghost btn-sm" id="shopXls">Als Excel</button>
               <button data-ikon="kopieren" class="btn btn-ghost btn-sm" id="shopCopy">Kopieren</button>
-              <button data-ikon="mail" class="btn btn-ghost btn-sm" id="shopMail">Bestellmail</button>
               <button data-ikon="laden" class="btn btn-ghost btn-sm" id="matExport" style="display:none">Alle Studios</button>
             </div>
-            <div class="field" style="margin-top:10px;margin-bottom:0">
-              <label for="shopMailTo">Adresse des Lieferanten (nur auf diesem Gerät gespeichert)</label>
-              <input class="inp" id="shopMailTo" type="email" placeholder="bestellung@lieferant.de" autocomplete="off" />
+            <!-- Der Lieferant gilt für den ganzen Betrieb (config/lieferant).
+                 Bis Runde 137 stand die Adresse nur auf dem Gerät, auf dem
+                 sie jemand eingetippt hatte — die zweite Leitung fing von
+                 vorne an. Ändern darf ihn die Geschäftsführung. -->
+            <div class="bs-lief" id="bsLief">
+              <div class="bs-lief-zeile">
+                <span class="bs-lief-text" id="bsLiefText">Lieferant: noch keiner hinterlegt</span>
+                <button type="button" class="btn btn-ghost btn-sm" id="bsLiefAendern" hidden>Ändern</button>
+              </div>
+              <div class="bs-lief-form" id="bsLiefForm" hidden>
+                <div class="field"><label for="bsLiefName">Name des Lieferanten</label>
+                  <input class="inp" id="bsLiefName" type="text" maxlength="80" placeholder="z. B. Frottee Müller GmbH" autocomplete="off" /></div>
+                <div class="field"><label for="bsLiefMail">E-Mail für Bestellungen</label>
+                  <input class="inp" id="bsLiefMail" type="email" maxlength="120" placeholder="bestellung@lieferant.de" autocomplete="off" /></div>
+                <div class="field"><label for="bsLiefKd">Kundennummer (falls vorhanden)</label>
+                  <input class="inp" id="bsLiefKd" type="text" maxlength="40" autocomplete="off" /></div>
+                <p class="em-saved" id="bsLiefFehler" role="alert"></p>
+                <div class="bs-lief-knoepfe">
+                  <button type="button" class="btn btn-ghost btn-sm" id="bsLiefAbbrechen">Abbrechen</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="bsLiefSpeichern">Speichern</button>
+                </div>
+              </div>
             </div>
           </div>
           </div>
@@ -9446,6 +9508,31 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <button class="btn btn-primary vf-senden" id="vfSenden" type="button">Jetzt melden</button>
     </div>
     <div id="vfErgebnis" hidden aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- Bestellung an den Lieferanten (Runde 137). Aus dem Betrieb,
+     4.10.2026: „Bestellung per Mail" — mit einem Knopf eine fertige
+     Bestellmail, plus Vermerk, wann zuletzt bestellt wurde.
+     Das Fenster IST die Kontrolle, die der Weg über das Mailprogramm
+     hatte: man sieht, was rausgeht, und nimmt heraus, was woanders
+     bestellt wird. Gesendet wird genau diese Liste. -->
+<div id="bestellModal" role="dialog" aria-modal="true" aria-labelledby="bsTitel">
+  <div class="pm-box bs-box">
+    <button class="lb-close" id="bsClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="bsTitel" data-ikon="mail">Bestellung</h3>
+    <div id="bsForm">
+      <p class="bs-an" id="bsAn"></p>
+      <div class="bs-liste" id="bsListe"></div>
+      <div class="field"><label for="bsNotiz">Anmerkung für den Lieferanten (optional)</label>
+        <textarea class="inp" id="bsNotiz" rows="2" maxlength="600" placeholder="z. B. Lieferung bitte bis Freitag"></textarea></div>
+      <p class="em-saved" id="bsFehler" role="alert"></p>
+      <div class="bs-knoepfe">
+        <button type="button" class="btn btn-primary bs-senden" id="bsSenden">An Lieferant senden</button>
+        <button type="button" class="btn btn-ghost" id="bsMailto">Im Mailprogramm öffnen</button>
+      </div>
+    </div>
+    <div id="bsErgebnis" hidden aria-live="polite"></div>
   </div>
 </div>
 
@@ -11800,6 +11887,14 @@ function renderRecht(){
       '<p><b>Ankündigungen der Leitung:</b> Gespeichert wird, ob du sie gesehen '+
         'hast, und bei einer als wichtig markierten, ob du „Gelesen und '+
         'verstanden" getippt hast. Die Leitung sieht, wer noch fehlt.</p>'+
+      /* Runde 137: Bestellung per Mail. Hier geht etwas aus dem Haus —
+         an den Lieferanten, mit Name und Mailadresse der bestellenden
+         Person. Das gehört genannt, nicht vorausgesetzt. */
+      '<p><b>Bestellungen beim Lieferanten:</b> Schickt die Leitung eine '+
+        'Bestellung aus der App, geht sie mit ihrem <b>Namen</b> und ihrer '+
+        '<b>E-Mail-Adresse</b> (als Antwortadresse und Kopie) an den '+
+        'hinterlegten Lieferanten. Gespeichert wird, wer wann was bestellt '+
+        'hat – sichtbar für die Leitung.</p>'+
       /* Der Absatz gehoert hierher, obwohl in der Zaehlung keine Person
          vorkommt. Zwei Gruende: erstens ist „anonym" eine Behauptung,
          solange sie nirgends steht — hier steht sie, und die Regel in
@@ -14745,7 +14840,8 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal','schnellModal','neuModal','vorfallModal','zfModal'];
+               'putzModal','schnellModal','neuModal','vorfallModal','zfModal',
+               'bestellModal'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -17854,6 +17950,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-04-bestellung', datum:'4.10.2026', titel:'Material: mit einem Knopf beim Lieferanten bestellen', wo:'material', punkte:[
+    'Unter Material → Einkaufsliste öffnet „Bestellen" eine fertige Bestellung: was fehlt, wie viel, für welches Studio. Was woanders bestellt wird, nimmst du mit einem Tipp heraus.',
+    '„An Lieferant senden" schickt sie direkt ab — du bekommst eine Kopie, und Antworten des Lieferanten landen bei dir.',
+    'Danach steht oben „Zuletzt bestellt …", und an jedem bestellten Artikel zwei Wochen lang „bestellt 4.10." — so bestellt niemand dasselbe doppelt.',
+    'Den Lieferanten hinterlegt die Geschäftsführung einmal für den ganzen Betrieb, direkt unter der Einkaufsliste. Solange der Mailversand nicht eingerichtet ist, sagt die App das und öffnet stattdessen dein Mailprogramm.' ] },
   { id:'2026-10-02-wichtig-erinnern', datum:'2.10.2026', titel:'Wichtige Infos: Erinnerung aufs Handy', wo:'ann', punkte:[
     'Die Push-Nachricht zu einer wichtigen Ankündigung beginnt jetzt mit „‼️ Wichtig".',
     'Wer nach einem Tag noch nicht „Gelesen und verstanden" getippt hat, bekommt um 10 Uhr eine Erinnerung — eine Woche lang, danach nicht mehr.',
@@ -19409,7 +19510,7 @@ function showView(id, fromKey, ausVerlauf){
     ensureCertsLoaded(); ensureTrashLoaded();
   }
   if(id==='archive') ensureArchivesLoaded();
-  if(id==='material'){ ensureMaterialLoaded(); ensureArchivesLoaded(); }
+  if(id==='material'){ ensureMaterialLoaded(); ensureArchivesLoaded(); bestellungenLaden(); }
   if(id==='putzplan') ensurePutzplanLoaded();
   if(id==='geraete') ensureDevicesLoaded();
   if(id==='schulung') schOeffnen();
@@ -24493,6 +24594,7 @@ function stopListeners(){
   _cleanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _cleanUnsubs=[];
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
+  bestellAufraeumen();
   if(_empUnsub){ _empUnsub(); _empUnsub=null; }
   if(_docsUnsub){ _docsUnsub(); _docsUnsub=null; }
   hilfeAufraeumen();
@@ -32180,7 +32282,10 @@ function backupSammeln(){
        Datenbank-Sicherung da, und drei Fotos je Eintrag machen aus
        einer lesbaren Datei eine unbenutzbare. */
     weich(S('loesungen').orderBy('ts','desc').limit(500).get(), 'Lösungen'),
-    weich(S('schulungLaeufe').orderBy('ts','desc').limit(1000).get(), 'Schulungen')
+    weich(S('schulungLaeufe').orderBy('ts','desc').limit(1000).get(), 'Schulungen'),
+    /* Seit Runde 137: die Bestellungen an den Lieferanten. Ohne orderBy
+       — die Kennung läuft rückwärts nach der Zeit (bestellKennung). */
+    weich(S('bestellungen').limit(500).get(), 'Bestellungen')
   ];
   kanaele.forEach(function(ch){
     jobs.push(weich(S('channels').doc(ch).collection('messages')
@@ -32199,6 +32304,7 @@ function backupSammeln(){
                 zeiten:r[i++], anliegen:r[i++], probetrainings:r[i++],
                 loesungen:r[i++],
                 schulungen:r[i++],
+                bestellungen:r[i++],
                 chat:{}, studios:{} };
     kanaele.forEach(function(ch){ daten.chat[ch]=r[i++]; });
     STUDIOS.forEach(function(s){
@@ -32229,7 +32335,8 @@ function backupData(){
                    'Dokumente (Angaben, ohne Dateiinhalt)','Nachweise',
                    'Stempelzeiten','Anliegen mit Antwort','Probetrainings',
                    'Lösungen (Text, ohne Fotos)',
-                   'Schulungen (Nachweis und Zahlen)'],
+                   'Schulungen (Nachweis und Zahlen)',
+                   'Bestellungen an den Lieferanten'],
         nichtEnthalten:[
           'Direktnachrichten — gehören zwei Personen, nicht dem Betrieb',
           'Persönlicher Bereich — gehört der einzelnen Person, nicht dem Betrieb',
@@ -32318,6 +32425,18 @@ function backupData(){
        vielen Megabyte, die niemand mehr durchsieht. Dass sie fehlen,
        steht deshalb dran — ein Export, der etwas weglässt, ohne es zu
        sagen, ist schlimmer als einer, der es gar nicht erst anbietet. */
+    /* ── Bestellungen (Runde 137) ──
+       Was wann bei wem bestellt wurde, und von wem. Die Kopie-Adresse
+       der bestellenden Person bleibt draussen: wer bestellt hat, steht
+       mit Namen da, und die Mailadressen des Teams stehen unter team. */
+    out.bestellungen=docsZuListe(g.bestellungen).map(function(x){
+      return { datum:x.ts?new Date(x.ts).toISOString():'', von:x.vonName||'',
+               lieferant:x.lieferant||'', an:x.an||'', anmerkung:x.notiz||'',
+               positionen:(x.positionen||[]).map(function(p){
+                 return { artikel:p.name||'', menge:p.menge||0,
+                          aufteilung:(p.studios||[]).map(function(q){ return studioName(q.key)+': '+q.n; }).join(', ') };
+               }) };
+    }).sort(function(a,b){ return a.datum<b.datum ? 1 : -1; });
     out.loesungen=docsZuListe(g.loesungen).map(function(l){
       var schritte = (Array.isArray(l.schritte) && l.schritte.length)
         ? l.schritte : String(l.loesung||'').split('\n')
@@ -33068,13 +33187,19 @@ function renderShoppingList(){
   var box=$('shopList'); if(!box) return;
   box.innerHTML = rows.length
     ? rows.map(function(r){
-        return '<div class="shop-row"><div class="shop-h"><b>'+esc(r.name)+'</b>'+
+        var schon=zuletztBestellt(r.name);
+        return '<div class="shop-row"><div class="shop-h"><b>'+esc(r.name)+
+          (schon ? '<span class="bs-chip" title="Bestellt am '+esc(fmtDateTime(schon.ts))+
+            (schon.vonName?' von '+esc(schon.vonName):'')+'">bestellt '+esc(fmtTag(schon.ts))+'</span>' : '')+
+          '</b>'+
           '<span class="shop-n">'+r.total+'×</span></div>'+
           '<div class="shop-s">'+r.studios.map(function(x){
             return esc(x.studio)+' '+x.n;
           }).join(' · ')+'</div></div>';
       }).join('')
     : '<p class="att-ok">✓ Nichts fehlt – alle Studios sind versorgt.</p>';
+  bestellStandZeichnen();
+  lieferantZeichnen();
 }
 function shoppingText(){
   return shoppingData().map(function(r){
@@ -33114,8 +33239,8 @@ function exportShoppingList(){
    eigenen Mailversand: so geht nichts ohne Kontrolle raus, die Mail liegt
    im gesendeten Ordner des Absenders, und es kostet nichts. Wer sie später
    automatisch verschicken will, hat die Vorlage damit schon fertig. */
-function shoppingMail(){
-  var rows=shoppingData();
+function shoppingMail(auswahl){
+  var rows=auswahl || shoppingData();
   if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
   /* Diese Mail verlaesst das Haus. Ein Kunde haette seinem Lieferanten
      eine Bestellung im Namen eines fremden Betriebs geschickt — von
@@ -33127,8 +33252,13 @@ function shoppingMail(){
     + rows.map(function(r){
         return '· '+r.name+' – '+r.studios.map(function(x){ return x.studio+': '+x.n; }).join(', ');
       }).join('\n')
+    + (_bsNotiz() ? '\n\nAnmerkung:\n'+_bsNotiz() : '')
     + '\n\nVielen Dank und freundliche Grüße\n'+(session.name||'')+'\n'+firmaAnzeige();
-  var adresse=(PREFS.lieferantMail||'').trim();
+  /* Seit Runde 137 kommt die Adresse aus config/lieferant (für den
+     ganzen Betrieb). Die alte, nur auf diesem Gerät gemerkte Adresse
+     bleibt der Rückfall, bis die Geschäftsführung den Lieferanten
+     hinterlegt hat. */
+  var adresse=((_lieferant && _lieferant.email) || PREFS.lieferantMail || '').trim();
   // mailto verträgt keine beliebige Länge. Über 1800 Zeichen schneiden
   // manche Mailprogramme still ab – dann lieber ohne Text öffnen und
   // den Rest in die Zwischenablage legen.
@@ -33140,6 +33270,208 @@ function shoppingMail(){
     url='mailto:'+encodeURIComponent(adresse)+'?subject='+encodeURIComponent(betreff);
   }
   window.location.href=url;
+}
+
+/* ══ BESTELLUNG AN DEN LIEFERANTEN (Runde 137) ═══════════════════════
+   Aus dem Betrieb, 4.10.2026: „Bestellung per Mail" — aus der
+   Materialliste mit einem Knopf eine fertige Bestellmail an den
+   Lieferanten, plus Vermerk, wann zuletzt bestellt wurde.
+
+   „Bestellen" öffnet ein Fenster mit genau der Liste, die rausgeht.
+   Darin lässt sich herausnehmen, was woanders bestellt wird, und eine
+   Anmerkung dazuschreiben. Gesendet wird über den Server
+   (bestellungSenden) an den hinterlegten Lieferanten; der Server
+   protokolliert erst, wenn die Mail raus ist — nur dann steht
+   „bestellt" an der Zeile.
+
+   Mengen sind bewusst NICHT änderbar: die Aufteilung auf die Studios
+   stünde sonst neben einer Summe, die nicht mehr passt, und beim
+   Lieferanten käme ein Widerspruch an. Wer auf volle Kartons aufrunden
+   will, schreibt es in die Anmerkung.
+
+   Ohne eingerichteten Mailversand sagt die App das, und das
+   Mailprogramm bleibt der Weg — mit derselben Auswahl. */
+var BESTELLT_FRISCH_TAGE = 14;
+var _lieferant = null, _lieferantGeladen = false;
+var _bestellungen = [], _bestellUnsub = null, _bsVerlaufAuf = false;
+var _bsZeilen = [];      // die Liste im Fenster, mit Haken
+
+function bestellAufraeumen(){
+  if(_bestellUnsub){ try{ _bestellUnsub(); }catch(e){} _bestellUnsub=null; }
+  _bestellungen=[]; _lieferant=null; _lieferantGeladen=false; _bsVerlaufAuf=false; _bsZeilen=[];
+}
+function bestellungenLaden(){
+  if(!session || !canManage() || _bestellUnsub) return;
+  /* Die Studio-Leitung fragt nach IHREN Studios — so verlangt es die
+     Leseregel. Ohne orderBy: die Kennung läuft rückwärts nach der Zeit,
+     die Antwort kommt also schon neueste zuerst (siehe bestellKennung
+     in functions/index.js). Sortiert wird trotzdem, falls nicht. */
+  var q;
+  if(isChef()) q=S('bestellungen').limit(20);
+  else {
+    var keys=managedKeys().slice(0,30);
+    if(!keys.length) return;
+    q=S('bestellungen').where('studioKeys','array-contains-any',keys).limit(20);
+  }
+  _bestellUnsub=q.onSnapshot(function(snap){
+    var l=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; l.push(x); });
+    _bestellungen=l.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    renderShoppingList();
+  }, function(e){ console.warn('Bestellungen:', e && e.message); });
+  S('config').doc('lieferant').get().then(function(d){
+    _lieferant = d.exists ? (d.data()||{}) : null;
+    _lieferantGeladen=true; lieferantZeichnen();
+  }).catch(function(){ _lieferantGeladen=true; lieferantZeichnen(); });
+}
+/* Wann wurde dieser Artikel zuletzt bestellt — in den letzten
+   BESTELLT_FRISCH_TAGE Tagen? Älteres zählt nicht: dann ist die
+   Lieferung längst da, und der Artikel fehlt wieder. */
+function zuletztBestellt(name){
+  var grenze=Date.now()-BESTELLT_FRISCH_TAGE*86400000;
+  for(var i=0;i<_bestellungen.length;i++){
+    var b=_bestellungen[i]; if((b.ts||0)<grenze) break;
+    var pos=b.positionen||[];
+    for(var j=0;j<pos.length;j++){ if(pos[j] && pos[j].name===name) return b; }
+  }
+  return null;
+}
+function bestellStandZeichnen(){
+  var box=$('bsStand'); if(!box) return;
+  var b=_bestellungen[0];
+  if(!b){ box.hidden=true; box.innerHTML=''; return; }
+  box.hidden=false;
+  var n=(b.positionen||[]).length;
+  box.innerHTML=ikon('uhr')+
+    '<span class="bs-stand-text">Zuletzt bestellt <b>'+esc(fmtDateTime(b.ts))+'</b>'+
+      (b.vonName?' · '+esc(b.vonName):'')+' · '+n+(n===1?' Artikel':' Artikel')+'</span>'+
+    '<button type="button" class="bs-verlauf-knopf" id="bsVerlaufKnopf" aria-expanded="'+(_bsVerlaufAuf?'true':'false')+'">'+
+      (_bsVerlaufAuf?'Verlauf schließen':'Verlauf')+'</button>'+
+    (_bsVerlaufAuf ? '<ul class="bs-verlauf">'+_bestellungen.slice(0,10).map(function(x){
+        var p=x.positionen||[];
+        return '<li><b>'+esc(fmtDateTime(x.ts))+(x.vonName?' · '+esc(x.vonName):'')+'</b>'+
+          '<small>'+esc(p.map(function(q){ return q.name+' '+q.menge; }).join(' · '))+'</small>'+
+          '<small>an '+esc(x.lieferant||x.an||'')+'</small></li>';
+      }).join('')+'</ul>' : '');
+  var k=$('bsVerlaufKnopf');
+  if(k) k.addEventListener('click', function(){ _bsVerlaufAuf=!_bsVerlaufAuf; bestellStandZeichnen(); });
+}
+function lieferantZeichnen(){
+  var t=$('bsLiefText'), knopf=$('bsLiefAendern'), form=$('bsLiefForm');
+  if(!t || !session) return;
+  var l=_lieferant;
+  if(l && l.email){
+    t.innerHTML='Lieferant: <b>'+esc(l.name||l.email)+'</b>'+(l.name?' · '+esc(l.email):'')+
+      (l.kundennr?' · Kd.-Nr. '+esc(l.kundennr):'');
+  } else {
+    t.textContent = !_lieferantGeladen ? 'Lieferant wird geladen …'
+      : (isChef() ? 'Noch kein Lieferant hinterlegt — dann kann die Bestellung direkt an ihn gehen.'
+                  : 'Noch kein Lieferant hinterlegt. Das macht die Geschäftsführung.');
+  }
+  if(knopf){
+    knopf.hidden = !isChef() || !form.hidden;
+    knopf.textContent = (l && l.email) ? 'Ändern' : 'Hinterlegen';
+  }
+}
+function lieferantBearbeiten(auf){
+  var form=$('bsLiefForm'); if(!form) return;
+  form.hidden=!auf; $('bsLiefFehler').textContent='';
+  if(auf){
+    var l=_lieferant||{};
+    $('bsLiefName').value=l.name||'';
+    // Die alte, nur auf diesem Gerät gemerkte Adresse als Vorschlag
+    $('bsLiefMail').value=l.email||PREFS.lieferantMail||'';
+    $('bsLiefKd').value=l.kundennr||'';
+    setTimeout(function(){ try{ $('bsLiefName').focus(); }catch(e){} }, 30);
+  }
+  lieferantZeichnen();
+}
+var MAIL_MUSTER_APP = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]{2,}$/;
+function lieferantSpeichern(){
+  var name=$('bsLiefName').value.trim(), mail=$('bsLiefMail').value.trim(), kd=$('bsLiefKd').value.trim();
+  if(!MAIL_MUSTER_APP.test(mail)){
+    $('bsLiefFehler').textContent='Bitte eine gültige Mailadresse eintragen, z. B. bestellung@lieferant.de.';
+    $('bsLiefMail').focus(); return;
+  }
+  var neu={ name:name, email:mail, kundennr:kd, ts:Date.now(), von:session.name||'' };
+  var b=$('bsLiefSpeichern'); b.disabled=true;
+  S('config').doc('lieferant').set(neu).then(function(){
+    _lieferant=neu; _lieferantGeladen=true; b.disabled=false;
+    lieferantBearbeiten(false); toast('Lieferant gespeichert'); tick(8);
+  }).catch(function(e){ b.disabled=false; $('bsLiefFehler').textContent=errMsg(e); });
+}
+
+function _bsNotiz(){ var n=$('bsNotiz'); return n ? n.value.trim() : ''; }
+function _bsAuswahl(){ return _bsZeilen.filter(function(z){ return z.mit; }).map(function(z){ return z.r; }); }
+function bestellenOeffnen(){
+  var rows=shoppingData();
+  if(!rows.length){ toast('Es fehlt gerade nichts.',true); return; }
+  var m=$('bestellModal'); if(!m) return;
+  _bsZeilen=rows.map(function(r){ return { r:r, mit:true }; });
+  var l=_lieferant;
+  $('bsTitel').innerHTML=ikon('mail')+esc(l && l.email ? 'Bestellung an '+(l.name||l.email) : 'Bestellung');
+  $('bsAn').innerHTML = (l && l.email)
+    ? 'An <b>'+esc(l.email)+'</b>'+(session.email?' · Kopie an dich ('+esc(session.email)+')':'')
+    : 'Es ist noch kein Lieferant hinterlegt'+(isChef()?' — das geht unter der Einkaufsliste.':' — das macht die Geschäftsführung.')+
+      ' Bis dahin geht die Bestellung über dein Mailprogramm.';
+  $('bsForm').hidden=false; $('bsErgebnis').hidden=true; $('bsFehler').textContent='';
+  var send=$('bsSenden'); send.disabled=!(l && l.email); send.textContent='An Lieferant senden';
+  send.hidden=!(l && l.email);
+  bestellListeZeichnen();
+  m.classList.add('show');
+}
+function bestellListeZeichnen(){
+  var box=$('bsListe'); if(!box) return;
+  box.innerHTML=_bsZeilen.map(function(z, i){
+    var r=z.r;
+    return '<label class="bs-pos'+(z.mit?'':' raus')+'">'+
+      '<input type="checkbox" data-bs="'+i+'"'+(z.mit?' checked':'')+' />'+
+      '<span class="bs-pos-name">'+esc(r.name)+
+        '<small>'+esc(r.studios.map(function(x){ return x.studio+' '+x.n; }).join(' · '))+'</small></span>'+
+      '<span class="bs-pos-n">'+r.total+'×</span></label>';
+  }).join('');
+  box.querySelectorAll('[data-bs]').forEach(function(c){
+    c.addEventListener('change', function(){
+      _bsZeilen[+c.getAttribute('data-bs')].mit=c.checked;
+      c.closest('.bs-pos').classList.toggle('raus', !c.checked);
+      var n=_bsAuswahl().length, send=$('bsSenden');
+      send.disabled=!n || !(_lieferant && _lieferant.email);
+      send.textContent = n ? 'An Lieferant senden' : 'Nichts ausgewählt';
+    });
+  });
+}
+function bestellenSchliessen(){ var m=$('bestellModal'); if(m) m.classList.remove('show'); }
+function bestellenSenden(){
+  var auswahl=_bsAuswahl();
+  if(!auswahl.length){ $('bsFehler').textContent='Es ist nichts ausgewählt.'; return; }
+  var b=$('bsSenden'); b.disabled=true; b.textContent='Wird gesendet …';
+  $('bsFehler').textContent='';
+  pinFunktion('bestellungSenden')({
+    positionen: auswahl.map(function(r){
+      return { name:r.name, menge:r.total,
+               studios:r.studios.map(function(x){ return { key:studioKey(x.studio), n:x.n }; }) };
+    }),
+    notiz: _bsNotiz()
+  }).then(function(res){
+    var d=(res&&res.data)||{};
+    var box=$('bsErgebnis');
+    box.innerHTML=(d.demo
+      ? '<div class="vf-ergebnis"><b>Demo — es ging keine Mail raus.</b>'+
+        'Im Betrieb ginge sie jetzt an '+esc(d.an||'')+', mit einer Kopie an dich. '+
+        'Die Bestellung steht trotzdem unter „Zuletzt bestellt", damit man sieht, wie es aussieht.</div>'
+      : '<div class="vf-ergebnis gut"><b>Bestellt — die Mail ist raus.</b>'+
+        'Sie ging an '+esc(d.an||'')+(d.kopieAn?', eine Kopie an '+esc(d.kopieAn):'')+'. '+
+        'Antworten des Lieferanten kommen direkt bei dir an.</div>')+
+      '<button type="button" class="btn btn-ghost" id="bsFertig">Schließen</button>';
+    $('bsForm').hidden=true; box.hidden=false;
+    $('bsFertig').addEventListener('click', bestellenSchliessen);
+    $('bsNotiz').value='';
+    tick(12);
+  }).catch(function(e){
+    b.disabled=false; b.textContent='An Lieferant senden';
+    var t=fnFehler(e);
+    $('bsFehler').textContent=t+(/Mailprogramm/.test(t)?'':' Alternativ: über das Mailprogramm.');
+    var mp=$('bsMailto'); if(mp) try{ mp.focus(); }catch(x){}
+  });
 }
 
 function scheduleMaterialSave(){
@@ -37366,14 +37698,20 @@ function bindActions(){
   // Einkaufsliste: drucken, als Excel, in die Zwischenablage
   var shP=$('shopPrint'); if(shP) shP.addEventListener('click', printShoppingList);
   var shX=$('shopXls');   if(shX) shX.addEventListener('click', exportShoppingList);
-  var shM=$('shopMail'); if(shM) shM.addEventListener('click', shoppingMail);
-  var shMT=$('shopMailTo');
-  if(shMT){
-    shMT.value=PREFS.lieferantMail||'';
-    shMT.addEventListener('change',function(){
-      PREFS.lieferantMail=shMT.value.trim(); savePrefs();
-    });
-  }
+  var shM=$('shopMail'); if(shM) shM.addEventListener('click', bestellenOeffnen);
+  /* Bestellen (Runde 137). Die frühere Geräte-Adresse (PREFS.lieferantMail)
+     wird nicht mehr bearbeitet, nur noch als Vorschlag und Rückfall
+     gelesen — siehe lieferantBearbeiten und shoppingMail. */
+  var bsS=$('bsSenden'); if(bsS) bsS.addEventListener('click', bestellenSenden);
+  var bsM=$('bsMailto'); if(bsM) bsM.addEventListener('click', function(){
+    var a=_bsAuswahl(); if(!a.length){ $('bsFehler').textContent='Es ist nichts ausgewählt.'; return; }
+    shoppingMail(a);
+  });
+  var bsC=$('bsClose'); if(bsC) bsC.addEventListener('click', bestellenSchliessen);
+  var bsMod=$('bestellModal'); if(bsMod) bsMod.addEventListener('click', function(e){ if(e.target===bsMod) bestellenSchliessen(); });
+  var bsLA=$('bsLiefAendern'); if(bsLA) bsLA.addEventListener('click', function(){ lieferantBearbeiten(true); });
+  var bsLX=$('bsLiefAbbrechen'); if(bsLX) bsLX.addEventListener('click', function(){ lieferantBearbeiten(false); });
+  var bsLS=$('bsLiefSpeichern'); if(bsLS) bsLS.addEventListener('click', lieferantSpeichern);
   var shC=$('shopCopy');
   if(shC) shC.addEventListener('click',function(){
     var t=shoppingText();
