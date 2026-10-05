@@ -514,6 +514,20 @@ Beides wird regelmäßig vermutet und ist **nicht vorhanden**. Siehe
 
 ---
 
+## P-18 · Konten mit fehlender oder falscher Studio-Kennung
+
+| | |
+|---|---|
+| **Schweregrad** | **HOCH** für die Betroffenen — sie können keine Aufgaben anlegen oder abhaken |
+| **Status** | **Werkzeug da seit 5.10.2026** (Runde 140): Verwaltung → Team zeigt die Betroffenen, „Zuordnung reparieren" trägt nach. **Wie viele echte Konten betroffen sind, ist von hier nicht einsehbar** |
+
+Aus dem Betrieb gemeldet: „Ein Mitarbeiter kann keine Aufgaben anlegen,
+aber den Putzplan schon." Die Regel für Aufgaben prüft `studioKeys` im
+Konto, das Abhaken im Putzplan nicht. Ältere Konten haben das Feld teils
+nicht; die App rechnet es beim Anzeigen aus den Namen und verdeckt so das
+Problem. Bewusst NICHT automatisch repariert: erst zeigen, wen es trifft
+(Hausregel für Änderungen an echten Konten).
+
 ## P-17 · Die Aufgaben brauchen bis zum ersten Bild zu lange
 
 | | |

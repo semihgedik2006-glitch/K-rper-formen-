@@ -15020,3 +15020,38 @@ Aufgaben anlegen. Steht sie nicht da, liegt es an etwas anderem; dann
 steht beim nächsten Versuch des Mitarbeiters ein Eintrag unter System →
 Fehler.
 
+## Runde 141: Durchsicht der Runden 137–140 auf Lücken und Fehler (5.10.2026)
+
+Aus dem Betrieb: „kannst du nochmal alles überschauen und überarbeiten und
+überprüfen auf Lücken und Fehler". Durchgesehen wurde der Code der letzten
+vier Runden Zeile für Zeile, dazu Regeln (beide Bäume, öffentlich lesbare
+Dokumente), Export, Maskierung in allen neuen Anzeigen.
+
+**Gefunden und behoben**
+| Wo | Fehler | Warum er zählt |
+|---|---|---|
+| Kennzahlen | Jeder Wechsel der Zahl oben (Mitglieder → Quote) baute die Eingabefelder neu — Eingetipptes, aber nicht Gespeichertes war weg | genau der Weg „erst nachsehen, dann eintragen" |
+| Kennzahlen | Einmal geladen, nie wieder — trug eine zweite Leitung ein, stand bis zum Neuladen „fehlt noch" da | zwei Leute, eine Zahl |
+| Erinnerung | ging an JEDEN Betrieb, auch an solche, die die Kennzahlen nie geöffnet haben | für einen fremden Kunden Lärm ohne Anlass; jetzt erst ab dem ersten Eintrag |
+| Terminal | kam der Stempel an, ging aber die Antwort verloren, schickte das Terminal ihn als „ohne Netz" nach → doppelter Stempel (offlineId fängt das nicht, der erste hatte keine) | ein „Pause" zu viel in der Arbeitszeit |
+| Terminal | „Terminal beenden" mit wartenden Stempeln: sie gingen still verloren, die PIN blieb im Tab | jetzt Warnung mit Namen, danach wird aufgeräumt |
+| Vorlagen | nahmen die neue Tageszeit nicht mit | „Theke abends wischen" kam als „jederzeit" zurück |
+
+**Durchgesehen, ohne Befund:** neue Sammlungen in beiden Regelbäumen
+(bestellungen, kennzahlen); die öffentlich lesbaren Dokumente
+(beitrittSchalter, studios, recht, Firmendokument) sind Absicht und
+begründet; kein `allow read: if request.auth != null` im Speicher; alle
+neuen Anzeigen maskieren Namen und Texte; der Export enthält weder PIN noch
+Kopie-Adresse; Auskunft nach Art. 15 findet Bestellungen und Kennzahlen
+über `vonUid`.
+
+**Bewusst offen, mit Empfehlung:** P-05 Passwort-Mindestlänge (6 Zeichen)
+— eine Zeile, aber eine Entscheidung des Betriebs; P-01 Studiogrenze bei
+Aufgaben/Putzplan/Geräten/Material — bewusst betriebsweit; P-18 — welche
+echten Konten betroffen sind, zeigt nur die Karte unter Team.
+
+**Tests:** `offline-stempel` 17 (+2: verlorene Antwort, Gegenprobe nach 5
+Minuten), `kennzahlen` 53 (+1: Betrieb ohne Eintrag), `test-kennzahlen`
+52 (+1, Gegenprobe: mit dem alten Neuaufbau rot), `test-tageszeit` 83
+(+1 Vorlage), `test-offline` 40 (+2 Beenden).
+

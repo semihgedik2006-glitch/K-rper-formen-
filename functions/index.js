@@ -5170,7 +5170,23 @@ exports.stempeln = region.https.onCall(async (data, context) => {
   const tag = berlinDatum(wann);
   const heute = await W(firma).collection('zeiten')
     .where('uid', '==', uid).where('tag', '==', tag).get();
-  /* Schon angekommen? Dann nicht ein zweites Mal (siehe offlineId). */
+  /* Schon angekommen? Dann nicht ein zweites Mal (siehe offlineId).
+     Dazu der Fall, den offlineId nicht fängt (Runde 141): der Stempel kam
+     beim Server an, nur die ANTWORT ging unterwegs verloren — das
+     Terminal hielt ihn für „ohne Netz" und schickt ihn nach. Ein
+     Stempel derselben Person an DIESEM Gerät, höchstens zwei Minuten vor
+     der gemerkten Zeit und ohne offlineId, ist dann derselbe. */
+  if (ohneNetz) {
+    const doppelt = heute.docs.find((d) => {
+      const z = d.data() || {};
+      return !z.offlineId && z.terminalId === terminalId &&
+        (z.ts || 0) <= wann && wann - (z.ts || 0) <= 2 * 60000;
+    });
+    if (doppelt) {
+      const z = doppelt.data() || {};
+      return { ok: true, art: z.art, ts: z.ts, name: person.name || '', fremd: !!z.fremd, ohneNetz: false, schonDa: true };
+    }
+  }
   if (offlineId) {
     const da = heute.docs.find((d) => d.get('offlineId') === offlineId);
     if (da) {
@@ -6732,6 +6748,13 @@ const MONATSNAMEN = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli
 async function kennzahlenErinnernFirma(firma, jetzt) {
   const monat = kennzahlMonatVor(jetzt);
   const wurzel = W(firma);
+  /* Nur, wer die Kennzahlen benutzt (Runde 141). Sonst bekäme jede
+     Studioleitung jedes Betriebs am Monatsersten eine Aufforderung für
+     eine Ansicht, die dort nie jemand geöffnet hat — für einen Betrieb,
+     der danach nicht gefragt hat, ist das Lärm. Benutzt heisst: es gibt
+     schon einen Eintrag. */
+  const benutzt = await wurzel.collection('kennzahlen').limit(1).get();
+  if (benutzt.empty) return 0;
   let studios = {};
   try {
     const cfg = (await wurzel.collection('config').doc('studios').get()).data() || {};
