@@ -386,6 +386,18 @@ neueste also zuerst, ohne zusammengesetzten Index (`array-contains-any`
 plus `orderBy` bräuchte einen, und das Projekt hat bewusst keine
 Index-Datei).
 
+### `firmen/{kennung}/kennzahlen/{studio}_{JJJJ-MM}` — Kennzahlen je Studio (seit 4.10.2026, Runde 138)
+
+Beide Bäume. `{ studioKey, monat, mitglieder, kuendigungen, vonUid,
+vonName, ts }` — genau diese Felder, ganze Zahlen 0 bis 100.000, die
+Kennung muss `studioKey + '_' + monat` sein (sonst stünde eine Zahl von
+Studio B unter dem Namen von Studio A). **Lesen und Schreiben:** wer das
+Studio verwaltet (`manages`): der Chef alle, die Leitung ihre — die App
+der Leitung fragt deshalb je Studio mit `studioKey ==`. **Löschen:** der
+Chef. Mitarbeiter gar nicht. Test: `tests/rules/kennzahlen.test.js`.
+Probetrainings und Abschlüsse stehen hier **nicht** — sie werden aus
+`probetrainings/` gezählt, damit nichts doppelt erhoben wird.
+
 ### `firmen/{kennung}/config/lieferant`
 
 `{ name, email, kundennr, ts, von }`. Schreiben: der Chef (allgemeine

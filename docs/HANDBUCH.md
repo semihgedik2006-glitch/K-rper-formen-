@@ -890,6 +890,25 @@ im Rest der App.
   Das Ablaufdatum wird je nach Art vorgeschlagen.
 - **Entfernen**.
 
+### Kennzahlen (**L C**, seit 4.10.2026)
+- **Tabelle je Studio** über die sechs abgeschlossenen Monate bis zum
+  Vormonat, mit **Gesamtzeile** und **Verlauf**. Oben wählt man die Zahl:
+  **Mitglieder**, **Zuwachs**, **Kündigungen**, **Probetrainings**,
+  **Abschlüsse**, **Quote**. Am Handy stehen nur der letzte Monat (mit
+  „↑ 4 zum Vormonat") und der Verlauf.
+- **Woher:** Probetrainings und Abschlüsse rechnet die App aus den
+  Einträgen unter „Probetraining". Mitglieder und Kündigungen trägt die
+  Studioleitung ein. **„–" heißt nicht eingetragen**, nie 0; die
+  Gesamtzeile summiert nur, wenn alle Studios eine Zahl haben.
+- **Monatszahlen eintragen** (rechts daneben): Monat wählen, je Studio
+  zwei Zahlen, Speichern. Fehlt der Vormonat, steht oben „September:
+  Zahlen fehlen noch für …" – ein Tipp führt hin.
+- **Erinnerung:** am 1. und 4. um 9:55 Uhr eine Push-Nachricht an die
+  Studioleitung, deren Studio noch fehlt; Studios ohne Leitung an die
+  Geschäftsführung.
+- Die Studioleitung sieht und pflegt nur ihre Studios; Mitarbeiter
+  sehen den Bereich nicht.
+
 ### Auswertung
 - **Bericht** über einen wählbaren Zeitraum, mit Excel-Export.
 - **Studios im Vergleich** – Fortschritt je Studio (zugeklappt).

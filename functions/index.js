@@ -6650,6 +6650,90 @@ exports.bestellungSenden = region.https.onCall(async (data, context) => {
   return { ok: true, id, ts, an, kopieAn: vonMail || null, artikel: positionen.length };
 });
 
+/* ══ KENNZAHLEN JE STUDIO: ERINNERUNG AM MONATSANFANG (Runde 138) ═════
+   Aus dem Betrieb, 4.10.2026, auf den Vorschlag „am Monatsersten zwei
+   Zahlen eintragen, eine Minute im Monat, eine Erinnerung kommt aufs
+   Handy": „geht fit".
+
+   Am 1. und noch einmal am 4. um 9:55 Uhr: wer ein Studio leitet, für
+   das die Zahlen des Vormonats noch fehlen, bekommt eine Push-Nachricht
+   mit genau diesen Studios. Ein Studio ohne aktive Studioleitung fällt
+   der Geschäftsführung zu — sonst erinnerte niemand daran. Hat die
+   Leitung eingetragen, kommt am 4. nichts mehr. Geschlossene Studios
+   zählen nicht. Wer Aufgaben-Meldungen am Gerät abgeschaltet hat, bekommt
+   auch diese nicht (willHaben 'todos').
+   Nur über alleFirmen(), wie jeder geplante Lauf. */
+function kennzahlMonatVor(jetzt) {
+  const t = berlinDatum(jetzt);          // 'JJJJ-MM-TT' in Berliner Zeit
+  let j = +t.slice(0, 4), m = +t.slice(5, 7) - 1;
+  if (m === 0) { m = 12; j -= 1; }
+  return j + '-' + String(m).padStart(2, '0');
+}
+/* Wer bekommt welche Studios genannt? Rein rechnerisch, damit es der
+   Test ohne Datenbank prüfen kann. studios: { key: name }, vorhanden:
+   Set der Studios mit Eintrag, nutzer: [{ uid, role, aktiv, studioKeys }]. */
+function kennzahlEmpfaenger(studios, vorhanden, nutzer) {
+  const fehlen = Object.keys(studios).filter((k) => !vorhanden.has(k));
+  const aus = {};
+  const dazu = (uid, k) => { (aus[uid] = aus[uid] || []).push(studios[k]); };
+  fehlen.forEach((k) => {
+    const leitung = (nutzer || []).filter((u) => u && u.aktiv !== false && u.role === 'leiter' &&
+      Array.isArray(u.studioKeys) && u.studioKeys.indexOf(k) >= 0);
+    if (leitung.length) leitung.forEach((u) => dazu(u.uid, k));
+    else (nutzer || []).filter((u) => u && u.aktiv !== false && u.role === 'chef').forEach((u) => dazu(u.uid, k));
+  });
+  return aus;
+}
+const MONATSNAMEN = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August',
+  'September', 'Oktober', 'November', 'Dezember'];
+async function kennzahlenErinnernFirma(firma, jetzt) {
+  const monat = kennzahlMonatVor(jetzt);
+  const wurzel = W(firma);
+  let studios = {};
+  try {
+    const cfg = (await wurzel.collection('config').doc('studios').get()).data() || {};
+    (Array.isArray(cfg.liste) ? cfg.liste : []).forEach((x) => {
+      if (x && x.id && x.aktiv !== false) studios[x.id] = x.name || x.id;
+    });
+  } catch (e) { /* Rückfall unten */ }
+  if (!Object.keys(studios).length) studios = await alleStudios(firma);
+  if (!Object.keys(studios).length) return 0;
+  const snap = await wurzel.collection('kennzahlen').where('monat', '==', monat).get();
+  const vorhanden = new Set(snap.docs.map((d) => d.get('studioKey')));
+  const us = await db.collection('users').get();
+  const nutzer = [];
+  us.forEach((doc) => {
+    const d = doc.data() || {};
+    if (gehoertZu(d, firma)) nutzer.push({ uid: doc.id, role: d.role, aktiv: d.aktiv, studioKeys: d.studioKeys });
+  });
+  const wem = kennzahlEmpfaenger(studios, vorhanden, nutzer);
+  const name = MONATSNAMEN[+monat.slice(5, 7) - 1];
+  let gesendet = 0;
+  for (const uid of Object.keys(wem)) {
+    const liste = wem[uid];
+    const tokens = await collectTokens((d) => d.uid === uid && willHaben(d, 'todos'), null, firma);
+    await sendPush(tokens, '📊 Kennzahlen ' + name,
+      'Bitte Mitglieder und Kündigungen eintragen: ' + liste.join(', ') +
+      '. Verwaltung → Kennzahlen, dauert eine Minute.');
+    gesendet += tokens.length;
+  }
+  return gesendet;
+}
+exports.kennzahlenErinnern = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('55 9 1,4 * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = Date.now();
+    for (const firma of await alleFirmen()) {
+      try {
+        const n = await kennzahlenErinnernFirma(firma, jetzt);
+        if (n) console.log('Kennzahlen erinnert (' + (firma || 'flach') + '): ' + n + ' Geräte');
+      } catch (e) { console.error('Kennzahlen erinnern (' + (firma || 'flach') + '):', e.message); }
+    }
+    return null;
+  });
+
 exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
@@ -6671,6 +6755,7 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      ABO_STATUS, ABO_STUFEN, LEITERN,
                      vorfallText, betrifft, auskunftSauber,
                      bestellPositionen, bestellText, bestellKennung, BESTELL_TAGESGRENZE,
+                     kennzahlMonatVor, kennzahlEmpfaenger, kennzahlenErinnernFirma,
                      /* Nur für tests/rules/vorfall.test.js: ein Ersatz-Versender,
                         der festhält, was er bekommt. Ohne ihn liesse sich die
                         Wichtigkeit der Mail nicht prüfen, ohne echt zu senden. */

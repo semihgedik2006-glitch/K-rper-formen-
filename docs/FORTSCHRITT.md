@@ -14791,3 +14791,78 @@ eingerichtet" — die Geheimnisse sind also hinterlegt. Ob der Anbieter
 die Mail an eine fremde Adresse annimmt (Gmail z. B. setzt den Absender
 auf das eigene Konto), zeigt erst die erste echte Bestellung.
 
+## Runde 138: Kennzahlen je Studio (4.10.2026)
+
+Aus dem Betrieb, auf den Plan mit Rückfragen: „4 und 2" (Kennzahlen und
+Offline), und zu den Fragen: Mitglieder und Kündigungen trägt die
+Studioleitung monatlich ein („geht fit"), die Grenze Chef alle / Leitung
+ihre / Mitarbeiter nichts („geht auch fit"). Offline folgt als eigene
+Auslieferung.
+
+**Was gebaut ist**
+- Neuer Reiter **Verwaltung → Kennzahlen** (Chef und Studioleitung):
+  Tabelle Studios × sechs Monate bis zum Vormonat, Gesamtzeile, Verlauf
+  als kleine Linie; Auswahl Mitglieder / Zuwachs / Kündigungen /
+  Probetrainings / Abschlüsse / Quote. Am Rechner Tabelle links,
+  Eintragen rechts; am Handy nur letzter Monat und Verlauf.
+- **Monatszahlen eintragen**: zwei Zahlen je Studio und Monat,
+  `kennzahlen/<studio>_<JJJJ-MM>`, Regeln in beiden Bäumen.
+- **Erinnerung** `kennzahlenErinnern`: am 1. und 4. um 9:55 an die
+  Leitung, deren Studio im Vormonat fehlt; Studios ohne aktive Leitung
+  an die GF.
+- Export (§ 8), Demo (sieben Monate, zwei Studios ohne Vormonat, ältere
+  Probetrainings für den Verlauf), Attrappen (get und onSnapshot).
+
+**Warum so entschieden**
+- *Probetrainings nicht eintragen lassen:* sie stehen schon in der App.
+  Eine zweite Zahl dafür liefe auseinander, und dann weiss niemand,
+  welche stimmt.
+- *„–" statt 0:* null Kündigungen ist eine Aussage, „nicht eingetragen"
+  eine andere. Die Gesamtzeile summiert deshalb nur, wenn alle Studios
+  eine Zahl haben — eine Summe über die Hälfte sähe aus wie ein Einbruch.
+- *Zuwachs gerechnet, nicht eingetragen:* Mitglieder minus Vormonat; nur
+  wenn beide Zahlen da sind.
+- *Veränderung ohne Grün/Rot:* mehr Kündigungen sind schlecht, mehr
+  Mitglieder gut — eine Farbe, die je Spalte das Gegenteil hiesse, macht
+  Statusfarben bedeutungslos. Pfeil und Zahl in Textfarbe.
+- *Abgeschlossene Monate:* der laufende Monat ist für Mitglieder immer
+  leer und für Probetrainings unvollständig; beides sähe aus wie ein
+  Absturz.
+- *Die Leitung fragt je Studio:* die Regel `manages(resource.data.studioKey)`
+  lässt sich für eine Abfrage mit `studioKey ==` beweisen, nicht für eine
+  ungefilterte. Ein Studio mehr = eine Abfrage mehr, bei zwei Studios
+  vernachlässigbar.
+- *Erinnerung an die GF nur für Studios ohne Leitung:* sonst bekäme der
+  Chef jeden Monat vierzehn Studios gemeldet, die längst in Arbeit sind.
+
+**Tests**
+- `tests/rules/kennzahlen.test.js` (52): Regeln in beiden Welten (eigene
+  Studios, Kennung passt, ganze Zahlen, kein Zusatzfeld, nicht im Namen
+  eines anderen, Mitarbeiter nichts, löschen nur der Chef) und die
+  Erinnerung im Emulator (wer, welche Studios, Jahreswechsel in Berliner
+  Zeit, abgeschaltete Meldungen, nichts mehr am 4., wenn alles da ist).
+- `tests/test-kennzahlen.js` (51): jede Zelle gegen die Demo-Datenbank
+  nachgezählt (Mitglieder, Zuwachs, Probetrainings, Quote), Lücken,
+  Gesamtzeile, Hinweis, Eintragen mit Fehlerfällen, Leitung am Handy,
+  Mitarbeiter ohne Reiter, Trefferflächen 320–1920 px in beiden Dichten.
+  Gegenprobe: summiert die Gesamtzeile trotz Lücke, wird der Durchlauf rot.
+- `test-navigation` und `test-verwaltung-bereich9` kennen den neuen
+  Reiter (GF 10 Kacheln, Leitung 7) — die Erwartung ist erweitert, nicht
+  gelockert; `test-sicherung-inhalt` prüft die Kennzahlen in der Datei.
+
+**Nicht geprüft:** eine echte Erinnerung auf einem Handy (der Versand ist
+im Emulator abgefangen).
+
+
+**Nebenbei gefunden (5.10.2026, 2:24 Uhr):** Im Gesamtlauf war
+`test-p2-putzplan` rot — nicht wegen der Kennzahlen, sondern wegen der
+Uhrzeit. Die Demo legte erledigte Putzpunkte „vor 1 bis 10 Stunden" an;
+zwischen 0 und 10 Uhr liegt das im Vortag, und ein täglicher Punkt ist
+dann zu Recht wieder offen. Die App hatte recht, die Testdaten nicht —
+dieselbe Falle wie in Runde 136. Jetzt höchstens bis Mitternacht zurück.
+Danach alle Putzplan- und Demo-Tests grün (7).
+
+**Ein eigener Fehler, sofort behoben:** Beim Hochzählen der Version war
+`sw.js` kurz leer (das Skript öffnete die Datei zum Schreiben, bevor es
+sie gelesen hatte) und wurde so gepusht. Wiederhergestellt, bevor der
+Oberflächenlauf begann und bevor etwas gemergt war.

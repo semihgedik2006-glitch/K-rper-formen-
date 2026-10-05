@@ -5,7 +5,7 @@ nicht nach dem, was am einfachsten zu bauen ist. Zu jedem Punkt steht dabei,
 was er kostet und was dagegen spricht, damit die Entscheidung nicht blind
 fällt.
 
-Stand 1.10.2026: das meiste davon ist inzwischen gebaut (mit ✅ markiert). Offen sind Kennzahlen je Studio (braucht eine Datenquelle) und Offline weiterarbeiten (gross, und auf geteilten Tablets eine Datenschutzfrage).
+Stand 1.10.2026: das meiste davon ist inzwischen gebaut (mit ✅ markiert). Offen sind die Anbindung der Kennzahlen an das Vertragssystem (braucht eine Datenquelle) und Offline weiterarbeiten (gross, und auf geteilten Tablets eine Datenschutzfrage).
 
 ---
 
@@ -125,7 +125,7 @@ mitbestimmungspflichtig, sobald es einen Betriebsrat gibt.
 einbaut. Erst mit Steuerberater und Arbeitsrecht klären, was verlangt wird,
 dann bauen. Vorher wäre es ein Werkzeug, auf das sich niemand berufen kann.
 
-### Kennzahlen je Studio
+### Kennzahlen je Studio  ✅ *gebaut (4.10.2026, Runde 138) — Mitglieder und Kündigungen trägt die Leitung monatlich ein, bis es eine Schnittstelle zum Vertragssystem gibt*
 
 Probetrainings, Abschlüsse, Kündigungen, Mitgliederzahl als Kacheln im
 Chef-Bereich, mit Verlauf über die Monate.

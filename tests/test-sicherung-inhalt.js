@@ -45,7 +45,9 @@ const errs = [];
     window.URL.revokeObjectURL = function(){};
     window.__bestellungen = [{ id: '8240000000000-a', ts: Date.now() - 86400000, vonUid: 'testuid', vonName: 'Max',
       an: 'shop@lieferant.example', lieferant: 'Frottee', notiz: '', kopieAn: 'max@example.org', studioKeys: ['studio-1'],
-      positionen: [{ name: 'Handtücher', menge: 12, studios: [{ key: 'studio-1', n: 12 }] }] }];`);
+      positionen: [{ name: 'Handtücher', menge: 12, studios: [{ key: 'studio-1', n: 12 }] }] }];
+    window.__kennzahlen = [{ id: 'studio-1_2026-09', studioKey: 'studio-1', monat: '2026-09', mitglieder: 412,
+      kuendigungen: 7, vonUid: 'testuid', vonName: 'Max', ts: Date.now() - 86400000 }];`);
   await page.addInitScript({ path: path.join(SP, 'stub-chef.js') });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2800);
@@ -174,6 +176,13 @@ const errs = [];
           errs.push('FEHLT: das Verzeichnis oben nennt die Bestellungen nicht');
         }
       }
+      /* ══ 4e. Kennzahlen, seit Runde 138 ══ */
+      const kz = (d.kennzahlen || [])[0] || {};
+      if (!Array.isArray(d.kennzahlen) || !d.kennzahlen.length) errs.push('FEHLT: die Kennzahlen stehen nicht in der Datei');
+      else if (kz.monat !== '2026-09' || kz.mitglieder !== 412 || kz.kuendigungen !== 7 || !kz.studio) {
+        errs.push('FALSCH: die Kennzahl steht nicht vollständig drin: ' + JSON.stringify(kz));
+      }
+      if (!/Kennzahlen/.test((d.hinweise.enthalten || []).join(' '))) errs.push('FEHLT: das Verzeichnis nennt die Kennzahlen nicht');
       /* Und die Codes: ein Schulungs-Code in der Sicherung wäre
          dasselbe wie eine Stempel-PIN darin — wer sie liest, macht die
          Schulung für einen Kollegen. */
