@@ -15104,3 +15104,56 @@ Zeichenarten, alle verschieden, kein `Math.random`), Merkung bei kurzem /
 langem Passwort / zweitem Faktor, Leiste nur für die eigene Adresse
 (Gegenprobe fremde Adresse), „Link schicken", „×", Treffer ≥ 44 × 44 bei
 320–1920 px in beiden Dichten. Gegenprobe gegen den alten Stand: 9 rot.
+
+## Runde 143: Durchsicht am Rechner (5.10.2026)
+
+Aus dem Betrieb: „okay mach weiter". CLAUDE.md: „Der PC ist das
+Hauptgerät". Gemessen statt angesehen: jede Ansicht und jeder Reiter der
+Verwaltung bei 1920 × 1080, jede Karte über 1.000 px notiert, dann die
+Bildschirmfotos dazu.
+
+**Gefunden und behoben**
+| Wo | Fehler | Warum er zählt |
+|---|---|---|
+| Zeiten | ein leerer, anklickbarer Kasten in Bernstein über der Liste | Statusfarbe ohne Status; ein Knopf ohne Beschriftung |
+| Team → Zwei-Faktor | das Formular „Zweiten Faktor entfernen" stand immer offen, ohne Namen | sah aus, als wäre schon jemand ausgewählt |
+| Material → Bestellung | „Ändern" am Lieferanten auch für die Studioleitung | sie darf ihn nicht ändern — der Knopf führte in einen Fehler |
+| Erstellen | „Neue Aufgabe" 1.654 px breit, jedes Feld über die ganze Seite | jetzt links, Vorlagen und Ankündigung rechts (dieselben Hüllen wie Team) |
+| Schulung | drei persönliche Karten je 1.654 px untereinander | jetzt nebeneinander (auto-fill: eine allein bleibt ein Drittel breit) |
+| Studio-Auswahl | Kästchen oben links, am Namen klebend | `.field label{display:block}` schlug `.studio-check` |
+| alle 44 zuklappbaren Karten | Kopf 27 px hoch getroffen | eine zugeklappte Karte sieht aus wie ein Knopf, getroffen wurde ein Streifen |
+
+**Warum so**
+- **Die drei ersten Fehler hatten EINE Ursache:** das Attribut `hidden`
+  ist im Browser nur `display:none` mit der geringsten Gewichtung; jede
+  Klasse mit `display:flex/grid` schlägt es. Statt drei Einzelregeln eine
+  für alle: `[hidden]{display:none!important}`. Vorher geprüft: kein
+  Element wird sowohl per `hidden` als auch per `style.display`
+  umgeschaltet (das bliebe jetzt verborgen). Dieselbe Falle stand in
+  Runde 142 schon einmal an der Passwort-Leiste.
+- **Kartenköpfe: nach oben vergrössert, nicht nach unten.** Rand −18 px,
+  Innenabstand +18 px — das Bild bleibt, die Fläche wächst in den
+  Innenabstand der Karte (nie unter 18 px, auch nicht in „kompakt", weil
+  in Pixeln gesetzt). Nach unten läge sie über dem ersten Feld des
+  aufgeklappten Inhalts. Geprüft: die Überschrift steht in allen 216
+  Messungen dort, wo sie vorher stand.
+- **Die 4 px unter der Reiterleiste:** die Reiter sind 36 px hoch mit
+  unsichtbarer 44-px-Fläche, die unten 4 px in den Inhalt ragt (Runde
+  P4, bewusst: echte Höhe hätte die siebte Aufgabe aus dem Bild
+  geschoben). Eine zuklappbare Karte ganz oben verlor dadurch 3 px
+  (41). Nur dort 4 px Abstand — betroffen: Dokumente, Probetraining;
+  die Startseite nicht.
+
+**Durchgesehen, ohne Änderung:** Anliegen (Liste + Antwort schon
+nebeneinander), Putzplan (zwei Spalten), Schichtplan (Wochenraster),
+Kennzahlen (die breite Tabelle trägt sieben Monate). Offen und bewusst
+nicht in dieser Runde: Archiv „Erledigte Aufgaben" (Zeilen über die
+ganze Breite) und Dokumente (Liste über die ganze Breite) — beides
+Listen, die von der Breite nicht leiden, aber gewinnen könnten.
+
+**Tests:** `tests/test-hidden.js` (13: alle Ansichten, drei Rollen,
+Handy und Rechner, mit Gegenprobe — gegen den alten Stand 3 rot),
+`tests/test-pc-durchsicht.js` (29: Erstellen und Schulung bei 1280/1440/
+1920 mit Gegenprobe 390, Kästchen mittig, Treffer bei 320–1920 in
+beiden Dichten, 216 Kartenköpfe — gegen den alten Stand 10 rot).
+

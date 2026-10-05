@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ZAnveQ5no3mJCwcZ7Ni4r6kXURsUkJkKl7uH7WgLLoc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-n9ebYOzLslvIKp3snYx5cWvFYuX5UMSGGc17ARmJdhQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -563,6 +563,17 @@ button[data-ikon]:not(.btn){display:inline-flex;align-items:center;gap:var(--s6)
    beiden Bauformen, die wirklich nur ein Zeichen tragen. */
 button[data-ikon].icon-btn,
 button[data-ikon].attach-btn{justify-content:center}
+
+/* ── hidden heisst unsichtbar (Runde 143) ──────────────────────────────
+   Das Attribut hidden ist im Browser nur display:none mit der
+   geringsten Gewichtung — jede Klasse mit display:flex/grid schlägt es.
+   Gefunden bei der Durchsicht am Rechner, drei Stellen auf einmal: ein
+   leerer, anklickbarer Bernstein-Kasten unter Zeiten (.zk-vormonat), das
+   offene Formular „Zweiten Faktor entfernen" ohne Namen (.zf-weg-form)
+   und „Ändern" am Lieferanten für die Studioleitung (.btn), die ihn gar
+   nicht ändern darf. Eine Regel für alle statt einer je Klasse;
+   tests/test-hidden.js geht jede Ansicht durch. */
+[hidden]{display:none!important}
 
 /* ── Buttons ── */
 /* ── Knöpfe stehen NICHT mehr in Versalien (22.9.2026) ───────────────
@@ -1354,6 +1365,14 @@ html.demo #terminalSchirm{top:44px}
   #schListe{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s10)}
   #schListe > .sch-karte{margin-bottom:0}
   #schListe > .empty{grid-column:1 / -1}
+  /* Runde 143: „Das steht für dich an", „Kurz auffrischen", „Was du
+     schon gemacht hast" waren je 1.654 px breit (1920 px). auto-fill
+     statt auto-fit: steht nur eine da, bleibt sie ein Drittel breit und
+     zieht sich nicht wieder über die ganze Seite. */
+  .sch-oben{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));
+    gap:var(--s16);align-items:start}
+  .sch-oben > .card{margin-bottom:0}
+  .sch-oben:has(> .card:not([hidden]):not([style*="none"])){margin-bottom:var(--s20)}
 }
 .todo-progress{display:flex;align-items:center;gap:var(--s12);margin:var(--s2) 0 var(--s12);padding:var(--s10) var(--s12);
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
@@ -1797,6 +1816,19 @@ body.nurlesen .kopf-plus{display:none !important}
 .card.fold > .fold-head{display:flex;align-items:center;gap:var(--s10);cursor:pointer;
   user-select:none;-webkit-user-select:none;margin:0;
   padding:var(--s2) 0;border-radius:var(--r-sm);transition:color .2s}
+/* Runde 143: der Kopf war nur 27 px hoch — eine zugeklappte Karte sieht
+   aus wie ein grosser Knopf, getroffen wurde aber nur ein Streifen in der
+   Mitte (gemessen per Hit-Test, 44 Karten in der App). Die Fläche wächst
+   18 px nach oben in den Innenabstand der Karte (der ist nie kleiner
+   als 18 px, auch in „kompakt": clamp in Pixeln). Nach oben, nicht nach
+   unten: unten läge sie über dem ersten Feld des aufgeklappten Inhalts.
+   Das Bild verschiebt sich nicht — Rand minus, Innenabstand plus. */
+.card.fold > .fold-head:first-child{margin-top:-18px;padding-top:calc(var(--s2) + 18px)}
+/* Steht eine solche Karte ganz oben im Bereich, reicht die unsichtbare
+   Fläche der Reiter darüber 4 px in ihren Kopf (gewollt, siehe
+   #subnav .subtab::after) — gemessen 41 px bei „Dokument hinzufügen".
+   Die 4 px Abstand gibt es nur dort. */
+.scroll-area > .card.fold:first-child{margin-top:var(--s4)}
 .card.fold > .fold-head:hover{color:var(--accent-d)}
 .card.fold > .fold-head > *{margin-bottom:0}
 .fold-head .fold-main{flex:1;min-width:0;display:flex;align-items:baseline;
@@ -2233,6 +2265,12 @@ body.nurlesen .kopf-plus{display:none !important}
   border-radius:var(--r-sm);cursor:pointer;font-size:var(--t-sm);background:var(--auf-1);
   user-select:none;min-height:44px;box-sizing:border-box}
 .studio-check.on{border-color:var(--accent);background:rgba(var(--akz-rgb),.1);color:var(--accent-2)}
+/* Runde 143: innerhalb eines .field gewann „.field label{display:block}"
+   (Gewicht 0,1,1 gegen 0,1,0) — das Kästchen sass oben links und klebte
+   am Namen („Für welche Studios?" in Erstellen, Dokument hochladen,
+   „Wichtig" an der Ankündigung). */
+.field label.studio-check{display:flex;font-family:var(--font-body);font-weight:400;
+  letter-spacing:normal;margin-bottom:0}
 /* Die Handy-Freigabe steht allein und nicht im zweispaltigen Raster der
    Studios — sie ist eine andere Art Entscheidung. Die 44px erbt sie
    inzwischen von .studio-check selbst; hier bleibt nur die Breite. */
@@ -8493,6 +8531,10 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <!-- Was offen ist, steht ganz oben — und nur dann. Ein
                  Kasten, der jeden Tag „alles erledigt" sagt, nimmt
                  Platz für eine Nachricht, die man einmal braucht. -->
+            <!-- Runde 143: am Rechner stehen die drei Karten für die
+                 Person nebeneinander statt je 1.650 px breit untereinander.
+                 Am Handy ist die Hülle ein gewöhnlicher Block. -->
+            <div class="sch-oben">
             <div class="card" id="schFaelligKarte" style="display:none">
               <h3 data-ikon="warnung">Das steht für dich an</h3>
               <div id="schFaellig"></div>
@@ -8512,6 +8554,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <div class="card" id="schMeineKarte" style="display:none">
               <h3 data-ikon="pokal">Was du schon gemacht hast</h3>
               <div id="schMeine"></div>
+            </div>
             </div>
             <!-- Der offene Rest (DESIGN-RECHERCHE E1): was schon geschafft
                  ist und was fehlt, als Zahl und Balken. Nur für die
@@ -8602,7 +8645,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
 
           <!-- ── Reiter 2: Erstellen ── -->
-          <div class="chef-pane" data-cpane="erstellen" style="display:none">
+          <!-- Runde 143: am Rechner das Formular links, Vorlagen und
+               Ankündigung rechts (dieselben Hüllen wie Team/System). Vorher
+               zog „Neue Aufgabe" jedes Feld über 1.600 px. Am Handy lösen
+               sich die Hüllen auf, die Reihenfolge bleibt. -->
+          <div class="chef-pane vw" data-cpane="erstellen" style="display:none">
+          <div class="vw-spalte vw-haupt">
           <div class="card" data-fold="neueaufgabe" data-fold-offen="1" data-nurwenn="todos">
             <h3 data-ikon="hakenKreis">Neue Aufgabe erstellen</h3>
             <p class="hint">Einem oder allen Studios zuweisen.</p>
@@ -8656,6 +8704,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <button class="btn btn-primary btn-sm" id="ntAdd">Aufgabe erstellen</button>
             <div class="draft-row"><p class="draft-note" id="ntDraftNote"></p></div>
           </div>
+          </div>
+          <div class="vw-spalte vw-neben">
           <div class="card" data-fold="vorlagen" data-nurwenn="todos">
             <h3 data-ikon="kopieren">Vorlagen</h3>
             <p class="hint">Aufgaben, die immer wieder gleich sind, einmal speichern und
@@ -8679,6 +8729,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <span>Wichtig: jede Person muss „Verstanden" tippen. Bis dahin steht oben ein Hinweis.</span></label>
             <button class="btn btn-primary btn-sm" id="bcSend">Ankündigung senden</button>
             <div class="draft-row"><p class="draft-note" id="bcDraftNote"></p></div>
+          </div>
           </div>
           </div>
 
@@ -18361,6 +18412,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-05-rechner', datum:'5.10.2026', titel:'Am Rechner aufgeräumt', wo:'chef:erstellen', punkte:[
+    'Verwaltung → Erstellen: am Rechner steht „Neue Aufgabe" links, Vorlagen und Ankündigung rechts daneben, statt dass jedes Feld über die ganze Breite läuft.',
+    'Schulung: „Das steht für dich an", „Kurz auffrischen" und „Was du schon gemacht hast" stehen am Rechner nebeneinander.',
+    'Zugeklappte Karten reagieren jetzt auf einen Tipp auf die ganze Kopfzeile, nicht nur auf einen schmalen Streifen. Bei „Für welche Studios?" sitzt das Kästchen wieder mittig neben dem Namen.',
+    'Weg sind: ein leerer gelber Kasten unter Zeiten, ein offenes Formular „Zweiten Faktor entfernen" ohne Namen unter Team und „Ändern" beim Lieferanten für die Studioleitung.' ] },
   { id:'2026-10-05-passwort', datum:'5.10.2026', titel:'Passwörter: jetzt mindestens 8 Zeichen', wo:'profil', punkte:[
     'Neue Passwörter brauchen mindestens 8 Zeichen – beim Konto anlegen und wenn die Geschäftsführung jemanden im Team anlegt. Der Knopf „Vorschlag" macht jetzt 12 Zeichen.',
     'Wer ein älteres, kürzeres Passwort hat, kommt weiter herein. Oben steht dann ein Hinweis mit „Link schicken": darüber setzt man per E-Mail ein neues.',
