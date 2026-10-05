@@ -15156,4 +15156,8 @@ Handy und Rechner, mit Gegenprobe — gegen den alten Stand 3 rot),
 `tests/test-pc-durchsicht.js` (29: Erstellen und Schulung bei 1280/1440/
 1920 mit Gegenprobe 390, Kästchen mittig, Treffer bei 320–1920 in
 beiden Dichten, 216 Kartenköpfe — gegen den alten Stand 10 rot).
+Angepasst, nicht gelockert: `test-schulung` und `test-auffrischen` lasen
+die direkten Kinder von `#schUebersicht`; die Karten liegen jetzt in der
+Hülle `.sch-oben`. Beide prüfen dieselbe Reihenfolge („Das steht für dich
+an" zuerst, „Kurz auffrischen" danach) jetzt durch die Hülle hindurch.
 
