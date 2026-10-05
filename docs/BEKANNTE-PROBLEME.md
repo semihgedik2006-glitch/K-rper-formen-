@@ -294,7 +294,25 @@ ausdrücklich verbietet; oder das Repository auf privat.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL** |
-| **Status** | Open |
+| **Status** | **In der App behoben am 5.10.2026** (Runde 142): neue Passwörter brauchen 8 Zeichen. **Offen:** dieselbe Grenze im Anmeldedienst selbst |
+
+**Seit 5.10.2026:** `PW_MIN = 8` beim Konto anlegen und beim Zugang
+anlegen durch die Geschäftsführung; der Knopf „Vorschlag" macht 12
+Zeichen aus `crypto.getRandomValues`. Ältere Konten werden **nicht**
+gesperrt: wer sich mit einem kürzeren Passwort anmeldet, sieht oben „Dein
+Passwort hat weniger als 8 Zeichen" mit „Link schicken". Gemerkt wird
+dafür auf dem Gerät nur die Adresse, nicht das Passwort; beim Abmelden
+wird die Merkung gelöscht. Test: `tests/test-passwortlaenge.js`.
+
+**Was damit NICHT erreicht ist:** Der Anmeldedienst von Firebase nimmt
+weiter 6 Zeichen an — über die Seite „Passwort zurücksetzen" aus der
+Mail kann man also wieder ein kurzes setzen. Abstellen lässt sich das
+nur in der Konsole (Passwortrichtlinie, Modus „benachrichtigen", damit
+bestehende Konten nicht gesperrt werden). Nach meinem Kenntnisstand
+setzt das das Upgrade auf Identity Platform voraus; **von hier aus nicht
+geprüft**, und Produktions-Einstellungen fasse ich nicht an.
+
+Vorher:
 
 Sechs Zeichen sind nach heutigem Stand wenig. Eine Erhöhung auf zwölf
 ist **eine Zeile**. Steht in `docs/av/TOM.md` ausdrücklich als offene

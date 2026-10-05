@@ -45,6 +45,10 @@ unterscheiden, steht es dabei:
 
 - **Anmelden** mit E-Mail und Passwort.
 - **Passwort vergessen** – Link per E-Mail anfordern.
+- **Passwörter haben mindestens 8 Zeichen** (seit 5.10.2026). Wer noch ein
+  kürzeres hat, kommt weiter herein und sieht oben „Dein Passwort hat
+  weniger als 8 Zeichen" mit „Link schicken" – darüber per E-Mail ein
+  neues setzen.
 - **Selbst registrieren** ist möglich, ergibt aber immer die Rolle
   *Mitarbeiter*. Chef- und Leiter-Konten legt ausschließlich ein Chef an.
 - **Angemeldet bleiben** – die App merkt sich die Anmeldung, bis man sich
@@ -897,7 +901,7 @@ im Rest der App.
 - **Entwürfe** werden automatisch zwischengespeichert.
 
 ### Team (**C**)
-- **Zugang anlegen**: Name, E-Mail, Passwort (mit Vorschlagsgenerator),
+- **Zugang anlegen**: Name, E-Mail, Passwort (mindestens 8 Zeichen; „Vorschlag“ macht 12),
   Rolle, Studios. Zugangsdaten mit einem Tipp kopieren.
 - **Rolle und Studios ändern**.
 - **Passwort zurücksetzen**.

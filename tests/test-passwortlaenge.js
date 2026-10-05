@@ -94,6 +94,19 @@ async function demo(b, w, h, merkung) {
   await p.addInitScript((m) => {
     localStorage.setItem('kf_tour', '99:demo-ich');
     if (m) localStorage.setItem('kf_pw_kurz', m);
+    /* Die Demo baut bei jedem firebase.auth() ein neues Objekt; die App
+       hält eines davon fest. Mitschreiben deshalb schon beim Einsetzen. */
+    window.__links = [];
+    let fb;
+    Object.defineProperty(window, 'firebase', { configurable: true, get: () => fb, set: (v) => {
+      fb = v;
+      if (v && typeof v.auth === 'function' && !v.auth.__mit) {
+        const alt = v.auth;
+        v.auth = function () { const a = alt.apply(this, arguments);
+          a.sendPasswordResetEmail = (mail) => { window.__links.push(mail); return Promise.resolve(); }; return a; };
+        Object.assign(v.auth, alt); v.auth.__mit = true;
+      }
+    } });
   }, merkung || '');
   await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3200);
@@ -170,23 +183,29 @@ const sichtbar = (p) => p.evaluate(() => {
   {
     const p = await demo(b, 390, 844);
     const v = await p.evaluate(() => {
-      const alle = []; for (let i = 0; i < 300; i++) alle.push(suggestPassword());
+      /* Über den Knopf, wie ein Mensch — die Funktionen der App sind
+         nicht global erreichbar. Der Knopf liegt im Team-Fenster und
+         wird hier direkt ausgelöst. */
+      const k = document.getElementById('emPwGen'), f = document.getElementById('emPw');
+      const alle = []; for (let i = 0; i < 300; i++) { k.click(); alle.push(f.value); }
       const art = (pw) => /[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[2-9]/.test(pw) && /[!?#$%]/.test(pw);
-      return { laenge: alle.every(x => x.length === 12), arten: alle.every(art), verschieden: new Set(alle).size,
-               quelle: suggestPassword.toString(), min: PW_MIN };
+      return { laenge: alle.every(x => x.length === 12), arten: alle.every(art), verschieden: new Set(alle).size };
     });
     pruefe('12 Zeichen', v.laenge);
     pruefe('jedes Mal Gross, klein, Ziffer und Sonderzeichen', v.arten);
     pruefe('300 Vorschläge, 300 verschiedene', v.verschieden === 300, v.verschieden);
-    pruefe('Zufall aus crypto.getRandomValues, nicht aus Math.random', /crypto\.getRandomValues/.test(v.quelle) && !/Math\.random/.test(v.quelle));
-    pruefe('PW_MIN ist 8', v.min === 8, v.min);
+    const html = require('fs').readFileSync(__dirname + '/../index.html', 'utf8');
+    const anf = html.indexOf('function suggestPassword(){');
+    const quelle = html.slice(anf, html.indexOf('\n}\n', anf));
+    pruefe('Zufall aus crypto.getRandomValues, nicht aus Math.random', anf > 0 && /crypto\.getRandomValues/.test(quelle) && !/Math\.random/.test(quelle));
+    pruefe('PW_MIN ist 8', /var PW_MIN = 8;/.test(html));
 
     console.log('\n── 2. Team anlegen ──');
     const t = await p.evaluate(() => {
       document.getElementById('emName').value = 'Neu Person';
       document.getElementById('emEmail').value = 'neu@studio.de';
       document.getElementById('emPw').value = 'abc1234';
-      createEmployee();
+      document.getElementById('emCreate').click();
       return { t: document.getElementById('emCreateNote').textContent, ph: document.getElementById('emPw').placeholder };
     });
     pruefe('7 Zeichen → „Passwort muss mind. 8 Zeichen haben."', /mind\. 8 Zeichen/.test(t.t), t.t);
@@ -211,11 +230,6 @@ const sichtbar = (p) => p.evaluate(() => {
     pruefe('Merkung für die eigene Adresse → Leiste steht oben', await sichtbar(p));
     const text = await p.evaluate(() => document.getElementById('pwLeiste').innerText.replace(/\s+/g, ' '));
     pruefe('… sie sagt, worum es geht, und bietet „Link schicken"', /weniger als 8 Zeichen/.test(text) && /Link schicken/.test(text), text);
-    await p.evaluate(() => {
-      window.__links = [];
-      const a = firebase.auth();
-      a.sendPasswordResetEmail = (m) => { window.__links.push(m); return Promise.resolve(); };
-    });
     await p.click('#pwLeisteAuf');
     await p.waitForTimeout(400);
     const n = await p.evaluate(() => ({ links: window.__links, merk: localStorage.getItem('kf_pw_kurz'),
