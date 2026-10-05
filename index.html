@@ -8674,20 +8674,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <!-- ── Reiter 3: Team ── -->
           <div class="chef-pane vw" data-cpane="team" style="display:none">
             <div class="vw-spalte vw-haupt">
-          <!-- Runde 140: Konten, deren Studio-Kennung in der Datenbank nicht
-               zu ihren Studios passt. Für sie lehnt die Datenbank Aufgaben
-               ab (anlegen, abhaken), der Putzplan geht — genau das Bild aus
-               dem Betrieb. Gezeigt wird, WEN es betrifft; geändert wird erst
-               auf Knopfdruck. -->
-          <div data-vw="1" class="card" id="zuordKarte" data-chef-only="1" hidden>
-            <h3 data-ikon="warnung">Studio-Zuordnung unvollständig</h3>
-            <p class="hint">Bei diesen Konten passt die Studio-Kennung in der Datenbank nicht
-              zu den Studios, die du ihnen gegeben hast. Sie sehen alles, können aber keine
-              Aufgaben anlegen oder abhaken.</p>
-            <div id="zuordListe"></div>
-            <p class="em-saved" id="zuordFehler" role="alert"></p>
-            <button type="button" class="btn btn-primary btn-sm" id="zuordReparieren">Zuordnung reparieren</button>
-          </div>
           <div data-vw="1" class="card" id="freigabeKarte" data-chef-only="1" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
               <h3 data-ikon="uhr">Wartet auf Freigabe</h3>
@@ -8696,6 +8682,21 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <p class="hint">Diese Leute haben sich selbst angemeldet und sehen bis
               zur Freigabe nichts von der App.</p>
             <div id="freigabeListe"></div>
+          </div>
+          <!-- Runde 140: Konten, deren Studio-Kennung in der Datenbank nicht
+               zu ihren Studios passt. Für sie lehnt die Datenbank Aufgaben
+               ab (anlegen, abhaken), der Putzplan geht — genau das Bild aus
+               dem Betrieb. Gezeigt wird, WEN es betrifft; geändert wird erst
+               auf Knopfdruck. Hinter „Wartet auf Freigabe": wer wartet,
+               geht vor (test-beitritt prüft Platz 1). -->
+          <div data-vw="1" class="card" id="zuordKarte" data-chef-only="1" hidden>
+            <h3 data-ikon="warnung">Studio-Zuordnung unvollständig</h3>
+            <p class="hint">Bei diesen Konten passt die Studio-Kennung in der Datenbank nicht
+              zu den Studios, die du ihnen gegeben hast. Sie sehen alles, können aber keine
+              Aufgaben anlegen oder abhaken.</p>
+            <div id="zuordListe"></div>
+            <p class="em-saved" id="zuordFehler" role="alert"></p>
+            <button type="button" class="btn btn-primary btn-sm" id="zuordReparieren">Zuordnung reparieren</button>
           </div>
           <!-- Löschanträge (App Store 5.1.1(v)): wer hier steht, hat unter
                Ich → Daten die Löschung beantragt und ist seitdem gesperrt.
