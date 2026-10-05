@@ -27,7 +27,12 @@ deren Zertifizierungen belegt (ISO 27001, SOC 2/3). Siehe
 ### 1.2 Zugangskontrolle — wer sich anmelden kann
 
 * Anmeldung über Firebase Authentication mit E-Mail und Passwort.
-* **Passwort-Mindestlänge: 6 Zeichen** (`index.html:11153`).
+* **Passwort-Mindestlänge: 8 Zeichen** für neue Passwörter in der App
+  (Konto anlegen, Zugang anlegen; `PW_MIN` in `index.html`, seit
+  5.10.2026). Ältere, kürzere Passwörter gelten weiter; wer sich damit
+  anmeldet, wird gebeten, ein neues zu setzen. **Einschränkung:** der
+  Anmeldedienst selbst (und die Seite „Passwort zurücksetzen" von
+  Firebase) nimmt bis zu einer Einstellung in der Konsole weiter 6 an.
 * Konten müssen nach der Registrierung **freigegeben** werden, bevor sie
   etwas sehen: ein Profil ohne `aktiv` kommt an keine Daten heran. Die
   Regel prüft das, nicht nur die Oberfläche (`firestore.rules`,
@@ -263,7 +268,7 @@ SOC-Bericht für StudioChat selbst — nur für die Plattform darunter.
 
 | Maßnahme | Stand | Aufwand |
 |---|---|---|
-| Passwort-Mindestlänge auf 12 Zeichen | offen | eine Zeile |
+| Passwort-Mindestlänge | **8 in der App seit 5.10.2026**; im Anmeldedienst offen (Einstellung in der Konsole) | `BEKANNTE-PROBLEME.md`, P-05 |
 | Zweitfaktor für Chef-Konten | eingeschaltet (27.9.2026), noch freiwillig — Pflicht folgt nach dem Zurücksetzen | klein |
 | Auskunft je Person auf Knopfdruck (Art. 15) | **erledigt** (25.9.2026) | — |
 | Wiederherstellung aus der Sicherung einmal proben | **geprobt** (27.9.2026) | — |

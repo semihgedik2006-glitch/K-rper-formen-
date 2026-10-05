@@ -34,7 +34,7 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 | Anwendung | `index.html`, **39.773 Zeilen** | `wc -l` |
 | Serverfunktionen | **81** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **2.502 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **181** (178 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Oberfläche) | **182** (179 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
 | Automatische Durchläufe (Regeln) | **33 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem dreizehn Dateien dazu) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
@@ -72,7 +72,7 @@ verhindert ausdrücklich, dass sich jemand selbst dazu macht.
 | Freigabe durch den Chef | **VERIFIZIERT** | je Betrieb einstellbar; ohne Freigabe kommt das Konto an **keine** Daten |
 | Passwort zurücksetzen | **VERIFIZIERT** | auf dem Anmeldebildschirm und durch den Chef auslösbar |
 | E-Mail-Bestätigung | **TEILWEISE** | wird verschickt und angezeigt, **blockiert den Zugang aber nicht** |
-| Passwort-Mindestlänge | **VERIFIZIERT: 6 Zeichen** | in `docs/av/TOM.md` ausdrücklich als zu kurz geführt |
+| Passwort-Mindestlänge | **VERIFIZIERT: 8 Zeichen in der App** (seit 5.10.2026) | der Anmeldedienst nimmt bis zur Einstellung in der Konsole weiter 6 an; ältere Passwörter gelten weiter, mit Hinweis (P-05) |
 | Zwei-Faktor-Authentifizierung | **NICHT GEFUNDEN** | offen geführt in `TOM.md` |
 | Automatische Abmeldung bei Inaktivität | **NICHT GEFUNDEN** | |
 | Sperre nach Fehlversuchen | **TEILWEISE** | Firebase drosselt selbst (`auth/too-many-requests`); eine eigene Sperre gibt es nicht |

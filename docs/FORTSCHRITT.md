@@ -15045,7 +15045,7 @@ neuen Anzeigen maskieren Namen und Texte; der Export enthält weder PIN noch
 Kopie-Adresse; Auskunft nach Art. 15 findet Bestellungen und Kennzahlen
 über `vonUid`.
 
-**Bewusst offen, mit Empfehlung:** P-05 Passwort-Mindestlänge (6 Zeichen)
+**Bewusst offen, mit Empfehlung:** P-05 Passwort-Mindestlänge (6 Zeichen; in Runde 142 umgesetzt)
 — eine Zeile, aber eine Entscheidung des Betriebs; P-01 Studiogrenze bei
 Aufgaben/Putzplan/Geräten/Material — bewusst betriebsweit; P-18 — welche
 echten Konten betroffen sind, zeigt nur die Karte unter Team.
@@ -15055,3 +15055,52 @@ Minuten), `kennzahlen` 53 (+1: Betrieb ohne Eintrag), `test-kennzahlen`
 52 (+1, Gegenprobe: mit dem alten Neuaufbau rot), `test-tageszeit` 83
 (+1 Vorlage), `test-offline` 40 (+2 Beenden).
 
+## Runde 142: Passwörter mindestens 8 Zeichen (5.10.2026)
+
+Am Ende von Runde 141 empfohlen („mindestens 8"), Antwort aus dem
+Betrieb: „okay mach weiter". Umgesetzt mit Übergang, weil es echte Konten
+betrifft.
+
+**Gebaut**
+- `PW_MIN = 8` beim Konto anlegen (vorher gar keine eigene Prüfung — es
+  galt nur die 6 von Firebase) und beim Zugang anlegen im Team (vorher 6).
+- Wer sich mit einem kürzeren Passwort anmeldet, kommt herein und sieht
+  die Leiste „Dein Passwort hat weniger als 8 Zeichen" mit „Link
+  schicken" (derselbe Weg wie „Passwort ändern"). Auch wenn danach der
+  zweite Faktor gefragt wird — dann stimmte das Passwort ja.
+
+**Warum so**
+- **Kein Sperren.** Die Länge eines bestehenden Passworts kennt niemand
+  ausser dem Gerät, auf dem es gerade getippt wird. Eine harte Grenze
+  beim Anmelden hätte genau die Leute ausgesperrt, die nicht wissen,
+  warum. Deshalb: bitten, nicht sperren.
+- **Was gemerkt wird:** nur die Adresse, im `localStorage` dieses Geräts —
+  nicht das Passwort, nicht seine Länge, nichts in der Datenbank. Eine
+  Liste „wer hat ein kurzes Passwort" bei der Geschäftsführung wäre selbst
+  ein Angriffsziel. Beim Abmelden wird die Merkung gelöscht (geteiltes
+  Tablet); die nächste Anmeldung mit Passwort setzt sie neu.
+- **Acht, nicht zwölf.** P-05 nannte zwölf als Möglichkeit. Acht ist die
+  Untergrenze, die die einschlägigen Empfehlungen für Konten mit zweitem
+  Faktor nennen, und die Leitung hat ihn. Für Studio-Konten, die sich an
+  einem Tablet am Empfang anmelden, ist zwölf im Alltag eher ein Grund für
+  den Zettel am Bildschirm.
+
+**Dabei gefunden**
+- Der Passwort-Vorschlag im Team kam aus `Math.random` und wurde mit
+  `sort(() => Math.random() - 0.5)` gemischt (schief verteilt), 10 Zeichen.
+  Jetzt 12 Zeichen aus `crypto.getRandomValues`, Fisher-Yates.
+- Das Startpasswort beim Anlegen einer Firma (`firmaAnlegen`, 14 Zeichen)
+  kam ebenfalls aus `Math.random`. Jetzt `crypto.randomInt`
+  (`startPasswort()`). Die Zufallsendung der Firmenkennung bleibt bei
+  `Math.random` — sie ist ausdrücklich keine Sicherheitsgrenze.
+
+**Nicht erreicht, offen benannt:** Der Anmeldedienst nimmt weiter 6 an
+(Seite „Passwort zurücksetzen"). Das ist eine Einstellung in der Konsole
+(P-05), von hier aus nicht prüfbar.
+
+**Tests:** `tests/test-passwortlaenge.js` (27): Konto anlegen mit 7/8
+Zeichen, Zugang anlegen mit 7, Vorschlag 300-mal (12 Zeichen, alle
+Zeichenarten, alle verschieden, kein `Math.random`), Merkung bei kurzem /
+langem Passwort / zweitem Faktor, Leiste nur für die eigene Adresse
+(Gegenprobe fremde Adresse), „Link schicken", „×", Treffer ≥ 44 × 44 bei
+320–1920 px in beiden Dichten. Gegenprobe gegen den alten Stand: 9 rot.

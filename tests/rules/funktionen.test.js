@@ -428,17 +428,29 @@ const TAG = 86400000;
       if (waise && waise.uid) { try { await auth.deleteUser(waise.uid); } catch (e) {} }
     }
 
-    let kennung = null, fehler = null;
+    let kennung = null, fehler = null, startPw = null;
     try {
       const r = await fns.firmaAnlegen.run(
         { name: 'Studio Müller GmbH', email: 'chef-' + Date.now() + '@mueller.example',
           studios: 3 },
         { auth: { uid: 'betreiber' } });
       kennung = r && r.kennung;
+      startPw = r && r.passwort;
     } catch (e) { fehler = e; }
 
     pruefe('Firma anlegen: geht durch', !!kennung,
       fehler ? String(fehler.message) : 'keine Kennung zurückbekommen');
+    /* Runde 142: das Startpasswort kommt aus crypto.randomInt, nicht aus
+       Math.random. Geprüft am Ergebnis UND an der Quelle — am Ergebnis
+       allein sieht man den Unterschied nicht. */
+    const I = fns.__intern;
+    pruefe('Firma anlegen: Startpasswort 14 Zeichen, nur aus der Menge ohne l/I/0/O',
+      typeof startPw === 'string' && startPw.length === 14 && [...startPw].every(c => I.START_PW_ZEICHEN.includes(c)),
+      String(startPw && startPw.length));
+    const viele = new Set(); for (let i = 0; i < 300; i++) viele.add(I.startPasswort());
+    pruefe('Startpasswort: 300 Aufrufe, 300 verschiedene', viele.size === 300, String(viele.size));
+    pruefe('Startpasswort: Zufall aus crypto.randomInt, kein Math.random',
+      /crypto\.randomInt/.test(I.startPasswort.toString()) && !/Math\.random/.test(I.startPasswort.toString()));
 
     if (kennung) {
       const st = await db.doc('firmen/' + kennung + '/config/studios').get();

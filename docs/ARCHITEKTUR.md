@@ -308,7 +308,7 @@ Getrennt nach **nachgewiesenem Problem** und **Verbesserungsvorschlag**.
 | Studiogrenze beim Lesen: Brett, Dokumente, Chat-Kanäle | `firestore.rules` | **Art.-9-Daten sind seit 17.9. begrenzt** (`meinStudio()`); für die Sammlungen ausserhalb von `studios/…` ist es offen. `BEKANNTE-PROBLEME.md`, P-01 |
 | ~~Google Fonts extern nachgeladen~~ | `index.html` | **behoben 17.9.2026** — lokal unter `schriften/` |
 | Keine Lizenzdatei im öffentlichen Repository | Wurzelverzeichnis | Nutzungsrechte ungeklärt |
-| Passwort-Mindestlänge 6 Zeichen | `index.html` | in `TOM.md` als offen geführt |
+| ~~Passwort-Mindestlänge 6 Zeichen~~ | `index.html` | **8 in der App seit 5.10.2026**; der Anmeldedienst selbst nimmt bis zur Einstellung in der Konsole weiter 6 an (P-05) |
 | Kein Verfahren für Datenschutzvorfälle | — | Pflicht nach Art. 33 DSGVO |
 | Wiederherstellung nie geprobt | — | „eine Hoffnung, keine Maßnahme" |
 | Keine Löschfrist für Stempelzeiten | `functions/index.js` | Daten bleiben unbegrenzt |
