@@ -14954,3 +14954,69 @@ Versuch. **Prüfliste (10 Minuten, ein Handy, ein Tablet):**
 6. Flugmodus an, die App ganz schliessen und neu öffnen → sie startet
    (zuletzt geladener Stand) statt mit „Firebase-Fehler".
 
+## Runde 140: Mitarbeiter kann keine Aufgaben anlegen; Tageszeit (5.10.2026)
+
+Aus dem Betrieb: „Ein Mitarbeiter kann irgendwie keine Aufgaben anlegen,
+aber den Putzplan schon" — und von ihm: „Vielleicht wäre eine Option
+cool, wo man die Aufgaben und Putzplan sortieren kann, so dass ich die
+abends Aufgaben auch abends eintragen kann und die morgens Aufgaben eben
+morgens."
+
+**Die Ursache (aus Code und Regeln, nicht aus dem echten Konto — das ist
+von hier nicht einsehbar):**
+- Die Regel für Aufgaben (anlegen UND abhaken) verlangt, dass das Studio
+  in `studioKeys` des Kontos steht. Beim Putzplan prüft die Regel beim
+  Abhaken das Studio nicht. Genau dieser Unterschied ergibt das Bild
+  „Aufgaben nein, Putzplan ja".
+- Die App rechnet die Kennungen beim Anmelden aus den Studio-NAMEN neu
+  und zeigt deshalb alles richtig an — auch wenn `studioKeys` im Konto
+  fehlt oder falsch ist. Dass ältere Konten das Feld nicht haben, ahnt der
+  Code schon lange (an drei Stellen steht ein Rückfall „wenn studioKeys
+  fehlt, aus den Namen"). Nur die Regel hat keinen Rückfall — zu Recht:
+  sie darf dem Namen nicht trauen.
+- Umgekehrt gab es eine zweite Lücke: wird ein Studio umbenannt, behalten
+  die Konten den alten Namen; die App machte daraus `studio--1`.
+
+**Was gebaut ist**
+- Verwaltung → Team: Karte **„Studio-Zuordnung unvollständig"** mit allen
+  betroffenen Konten und dem Grund; **„Zuordnung reparieren"** trägt nach:
+  fehlende/falsche Kennung aus dem Namen (das ist, was die Leitung
+  angehakt hat), veralteter Name aus der Kennung. Unklare Fälle werden
+  gezeigt, nicht geraten. Die Übersicht meldet „N Konten können keine
+  Aufgaben anlegen". Geändert wird erst auf Knopfdruck — die Hausregel für
+  Änderungen an echten Konten: erst zeigen, wen es trifft.
+- Lehnt die Datenbank eine Aufgabe ab, sagt die App dem Mitarbeiter, woran
+  es liegt und wer es behebt (statt „Dafür fehlt dir die Berechtigung"),
+  und meldet es unter System → Fehler.
+- Beim Anmelden gilt bei unbekanntem Studionamen die Kennung aus dem Konto.
+- **Tageszeit**: Morgens / Mittags / Abends (sonst jederzeit) an Aufgaben,
+  eigenen Aufgaben und Putzaufgaben, beim Anlegen und Bearbeiten. Marke an
+  der Zeile (neutral, kein Status). Sortierung „Nach Tageszeit" bei
+  Aufgaben und Putzplan: was jetzt dran ist oben, dann jederzeit, dann der
+  Rest des Tages; im Putzplan als Gruppen. Export trägt die Tageszeit mit.
+
+**Warum so entschieden**
+- *„Jetzt dran" zuerst statt Morgens–Mittags–Abends:* der Wunsch war,
+  abends die Abendaufgaben vor sich zu haben. Eine feste Reihenfolge hätte
+  sie abends ans Ende gestellt.
+- *Standard-Sortierung unverändert:* wer nichts umstellt, sieht nichts
+  Neues ausser der Marke — „Nach Tageszeit" ist eine Option, wie gewünscht.
+- *Die eigene Aufgabe steht zuerst auf „Jederzeit":* die Uhrzeit beim
+  Anlegen sagt nichts darüber, wann die Aufgabe dran ist.
+- *Grenzen 12 und 17 Uhr:* die üblichen Schichtwechsel; an einer Stelle.
+- *Demo:* Tageszeiten nach Index statt per Zufall vergeben — ein
+  zusätzlicher Zufallswert hätte alle folgenden Demo-Daten verschoben.
+
+**Tests:** `tests/test-tageszeit.js` (82): Gruppen und Reihenfolge um
+19:30 und 8:30, Aufgaben-Sortierung, Anlegen/Bearbeiten mit Tageszeit,
+eigene Aufgabe, Zuordnung (drei Fälle, Gegenprobe passendes Konto,
+Reparatur schreibt genau die fehlenden Felder), die Meldung beim
+Mitarbeiter, Trefferflächen 320–1920 px. Gegenprobe: mit konstantem Rang
+wird der Durchlauf an vier Stellen rot.
+
+**Was der Betrieb jetzt tun sollte:** Verwaltung → Team öffnen. Steht dort
+die Karte, „Zuordnung reparieren" tippen — danach kann der Mitarbeiter
+Aufgaben anlegen. Steht sie nicht da, liegt es an etwas anderem; dann
+steht beim nächsten Versuch des Mitarbeiters ein Eintrag unter System →
+Fehler.
+

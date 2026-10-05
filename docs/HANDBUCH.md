@@ -335,6 +335,11 @@ dazu („☺" für Reagieren, „↪" für Weiterleiten).
 
 ### Ansehen und abhaken
 - Aufgaben je Studio, mit Titel, Beschreibung und wer sie erstellt hat.
+- **Tageszeit** (seit 5.10.2026): „Morgens", „Mittags" oder „Abends" beim
+  Anlegen und Bearbeiten, sonst „jederzeit"; die Marke steht an der Zeile.
+  Sortierung **„Nach Tageszeit"**: was jetzt dran ist, steht oben (bis 12
+  Uhr morgens, bis 17 Uhr mittags, danach abends), dann „jederzeit", dann
+  der Rest des Tages.
 - **Abhaken** durch Antippen des Kreises **oder** durch Wischen nach rechts.
 - Nach dem Abhaken stehen Name und Uhrzeit an der Aufgabe.
 - **Rückgängig-Leiste** erscheint kurz nach jeder Änderung.
@@ -392,6 +397,9 @@ Ein Tipp auf **⋯** öffnet ein Blatt von unten mit beschrifteten Einträgen:
 - **Eigene Liste je Studio**, oben umschaltbar.
 - **Abhaken** durch Antippen oder Wischen; Name und Uhrzeit werden vermerkt.
 - **Fortschritt** („3 von 8 erledigt").
+- **Tageszeit** (seit 5.10.2026) wie bei den Aufgaben. In der Sortierung
+  „Nach Tageszeit" steht der Plan in Gruppen: „Jetzt · Abends",
+  „Jederzeit", dann der Rest des Tages – am PC nebeneinander.
 - **Wiederholung**: täglich und wöchentlich setzen sich von selbst zurück;
   eigenes Intervall in Stunden, Tagen oder Wochen.
 - **Einmalige Aufgaben verschwinden 24 Stunden nach dem Abhaken** – aus der
@@ -966,6 +974,17 @@ Chef machen, und das eigene Profil ändern.
 Wer einen Chef herabstufen muss, braucht die Ebene darüber (Admin).
 
 ---
+
+### Studio-Zuordnung unvollständig (**C**, seit 5.10.2026)
+Unter Verwaltung → Team erscheint eine Karte, wenn bei einem Konto die
+Studio-Kennung in der Datenbank nicht zu seinen Studios passt (fehlt,
+falsche Kennung, oder der Studioname ist nach einer Umbenennung veraltet).
+Diese Personen sehen alles, können aber **keine Aufgaben anlegen oder
+abhaken** – der Putzplan geht. „Zuordnung reparieren" trägt die fehlenden
+Angaben nach; die Übersicht meldet „N Konten können keine Aufgaben
+anlegen". Lehnt die Datenbank bei einem Mitarbeiter eine Aufgabe ab, sagt
+die App ihm genau das, und die Geschäftsführung findet es unter System →
+Fehler.
 
 ## 15b. Studios verwalten (**C**)
 
