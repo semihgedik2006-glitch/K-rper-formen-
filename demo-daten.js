@@ -722,7 +722,13 @@
         id: 'c-' + k + '-' + c, title: waehle(PUTZ),
         recurring: waehle(['daily', 'weekly']),
         done: pf, doneBy: pf ? pw.name : undefined, doneByUid: pf ? pw.id : undefined,
-        doneAt: pf ? vorStd(zahl(1, 10)) : undefined,
+        /* Heute erledigt heisst heute — auch kurz nach Mitternacht. „Vor
+           1 bis 10 Stunden" lag zwischen 0 und 10 Uhr im Vortag, und ein
+           täglicher Punkt war dann zu Recht wieder offen: am 5.10. um
+           2:24 Uhr zeigte die Demo keinen einzigen abgehakten Punkt
+           (test-p2-putzplan rot). Dieselbe Falle wie in Runde 136 bei
+           den Stempeln. */
+        doneAt: pf ? Math.max(heuteUm(0, 1), vorStd(zahl(1, 10))) : undefined,
         ts: vorTag(zahl(10, 60))
       });
     }

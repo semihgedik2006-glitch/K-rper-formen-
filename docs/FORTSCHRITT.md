@@ -14853,3 +14853,16 @@ Auslieferung.
 **Nicht geprüft:** eine echte Erinnerung auf einem Handy (der Versand ist
 im Emulator abgefangen).
 
+
+**Nebenbei gefunden (5.10.2026, 2:24 Uhr):** Im Gesamtlauf war
+`test-p2-putzplan` rot — nicht wegen der Kennzahlen, sondern wegen der
+Uhrzeit. Die Demo legte erledigte Putzpunkte „vor 1 bis 10 Stunden" an;
+zwischen 0 und 10 Uhr liegt das im Vortag, und ein täglicher Punkt ist
+dann zu Recht wieder offen. Die App hatte recht, die Testdaten nicht —
+dieselbe Falle wie in Runde 136. Jetzt höchstens bis Mitternacht zurück.
+Danach alle Putzplan- und Demo-Tests grün (7).
+
+**Ein eigener Fehler, sofort behoben:** Beim Hochzählen der Version war
+`sw.js` kurz leer (das Skript öffnete die Datei zum Schreiben, bevor es
+sie gelesen hatte) und wurde so gepusht. Wiederhergestellt, bevor der
+Oberflächenlauf begann und bevor etwas gemergt war.
