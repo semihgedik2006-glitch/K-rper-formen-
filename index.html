@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-W9VlXdA8iiLl0k3V2SeDlFMZme22f/0Jy+cgXtSzqdY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-WwuCi+1cqnxC2UT4+sGWqWdJNHHuaR1o3N2h8vUptlQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2464,6 +2464,15 @@ body.nurlesen .kopf-plus{display:none !important}
   transform:translateY(-100%);transition:transform .3s var(--ease-out);
   padding-top:calc(7px + var(--sat))}
 .offline-bar.show{transform:none}
+/* Terminal: Stempel ohne Netz (Runde 139). „Wartet" ist ein Zustand und
+   darf die Warnfarbe tragen; „nicht gespeichert" ist ein Fehler. */
+.tm-ws{display:flex;align-items:center;gap:var(--s10);flex-wrap:wrap;margin:0 0 var(--s10);
+  padding:var(--s10) var(--s12);border-radius:var(--r-md);border:1px solid var(--k-warn);
+  background:var(--f-warn);color:var(--warm-tx);font-size:var(--t-sm)}
+.tm-ws svg{width:18px;height:18px;flex:0 0 auto}
+.tm-ws span{flex:1 1 14em;min-width:0}
+.tm-ws.problem{border-color:var(--k-bad);background:var(--f-bad);color:var(--danger-tx)}
+.tm-ws-ok{margin-left:auto}
 
 /* ── Chat: Trenner „Neue Nachrichten" ── */
 .new-sep{display:flex;align-items:center;gap:var(--s10);align-self:stretch;margin:var(--s10) 0 var(--s4);
@@ -10456,11 +10465,11 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 <script src="konfig.js"></script>
 
 <!-- Firebase SDKs (compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js" crossorigin="anonymous"></script>
 
 <!-- ══ DEMO-MODUS ════════════════════════════════════════════════════
      Mit ?demo in der Adresse laeuft die App gegen eine kleine Datenbank
@@ -11298,6 +11307,7 @@ try{
   db.enablePersistence({ synchronizeTabs:true }).catch(function(e){
     console.warn('Offline-Speicher nicht aktiv:', e && e.code);
   });
+  offlineSchreibenEinbauen();
   // Login auf dem Gerät merken (kein ständiges Neu-Anmelden auf dem Handy)
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
   /* Kein firebase.storage(): Dokumente liegen als Text in der Datenbank.
@@ -11909,7 +11919,10 @@ function renderRecht(){
       '<p><b>Stempelzeiten:</b> Kommen, Pause, Zurück und Feierabend mit '+
         'Uhrzeit, an welchem Gerät und in welchem Studio gestempelt wurde. '+
         'Trägt die Leitung einen Stempel nach oder erklärt einen für '+
-        'ungültig, steht dabei, wer es war, wann und warum. Sehen können '+
+        'ungültig, steht dabei, wer es war, wann und warum. Ein Stempel, '+
+        'der am Terminal ohne Netz erfasst wurde, trägt zusätzlich, wann er '+
+        'angekommen ist; bis dahin liegt er samt PIN nur im geöffneten '+
+        'Fenster des Terminals. Sehen können '+
         'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
       /* Schulungen (Runde 108 ff., Videos seit 29.9.2026). Gespeichert
          wird genau, was schulungStart und schLaufSichern schreiben; der
@@ -13025,6 +13038,8 @@ function terminalStaendeLaden(){
         .forEach(function(z){ letzte[z.uid]=z.art; });
       _tmStaende = letzte;
       renderTerminalListe();
+      /* Nach einem Neuladen im selben Tab: Gemerktes weiter nachreichen. */
+      if(tmWsLesen(TM_WS_SCHLUESSEL).length){ tmWsPlanen(); tmWarteschlangeSenden(); }
     })
     .catch(function(){ _tmStaende={}; renderTerminalListe(); });
 }
@@ -13065,9 +13080,16 @@ function renderTerminalListe(){
   html+=hier.map(tmKachel).join('');
   if(andere.length && hier.length) html+='<p class="tm-gruppe">Aus anderen Studios</p>';
   html+=andere.map(tmKachel).join('');
-  box.innerHTML=html;
+  box.innerHTML=tmWsHinweisHTML()+html;
   box.querySelectorAll('[data-tmwer]').forEach(function(b){
     b.addEventListener('click',function(){ terminalPinOeffnen(b.getAttribute('data-tmwer')); });
+  });
+  box.querySelectorAll('[data-tmwsok]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var id=b.getAttribute('data-tmwsok');
+      tmWsSchreiben(TM_WS_PROBLEME, tmWsLesen(TM_WS_PROBLEME).filter(function(x){ return x.id!==id; }));
+      renderTerminalListe();
+    });
   });
   tmSucheZeigen();
 }
@@ -13082,6 +13104,8 @@ function tmKachel(u){
   var zst = !stand ? 'noch nicht da'
           : stand==='pause' ? 'in der Pause'
           : stand==='gehen' ? 'Feierabend' : 'im Dienst';
+  /* Ein gemerkter Stempel ohne Netz: der Stand ist noch offen. */
+  if(tmWsLesen(TM_WS_SCHLUESSEL).some(function(x){ return x.uid===u.id; })) zst='Stempel wartet auf Netz';
   /* Bei jemandem aus einem anderen Studio steht dessen Studio davor.
      Sonst stünden zwei Leute gleichen Namens ununterscheidbar
      nebeneinander — und man sähe nicht, dass hier jemand aushilft. */
@@ -13173,9 +13197,99 @@ function renderTerminalTasten(){
   });
 }
 
+/* ══ STEMPELN OHNE NETZ (Runde 139) ═══════════════════════════════════
+   Auf die Frage, ob das Terminal ohne Netz trotzdem stempeln darf, mit
+   Vermerk: „doch".
+
+   Ohne Netz (oder wenn der Server nicht antwortet) merkt sich das
+   Terminal den Stempel mit der Uhrzeit des Geräts und schickt ihn nach,
+   sobald wieder Netz da ist. Der Server prüft dann wie sonst — Gerät,
+   Person, PIN — und vermerkt am Stempel „ohne Netz erfasst".
+
+   WO DIE PIN SOLANGE LIEGT: im sessionStorage dieses Tabs, nicht im
+   localStorage. Sie verschwindet, wenn der Tab geschlossen wird, und
+   wird gelöscht, sobald der Stempel angekommen ist. Ohne PIN liesse
+   sich nachträglich nicht prüfen, dass die Person selbst gestempelt hat.
+   Der Preis: wird das Tablet ohne Netz neu gestartet, ist der Stempel
+   weg — und genau das sagt die Meldung beim Merken („Seite offen
+   lassen").
+
+   Lehnt der Server einen nachgeschickten Stempel ab (falsche PIN, älter
+   als 12 Stunden), steht das so lange auf dem Terminal, bis es jemand
+   gelesen hat: ein Stempel, der still verschwindet, ist der schlimmste
+   Fall — die Person glaubt, sie sei eingestempelt. */
+var TM_WS_SCHLUESSEL = 'kf_stempelOhneNetz', TM_WS_PROBLEME = 'kf_stempelProbleme';
+var _tmWsSendet = false, _tmWsTimer = null;
+function tmWsLesen(k){ try{ return JSON.parse(sessionStorage.getItem(k)||'[]')||[]; }catch(e){ return []; } }
+function tmWsSchreiben(k, l){ try{ sessionStorage.setItem(k, JSON.stringify(l)); }catch(e){} }
+/* Kein Netz ODER keine Antwort: dann lohnt das Merken. Eine echte
+   Absage des Servers (falsche PIN …) ist dagegen sofort zu zeigen. */
+function tmOhneNetzFehler(e){
+  if(!navigator.onLine) return true;
+  var c=String((e && e.code)||'');
+  return /unavailable|deadline-exceeded/.test(c) || /network|failed to fetch|netzwerk/i.test(String((e && e.message)||''));
+}
+function tmMerken(wer, pin){
+  var l=tmWsLesen(TM_WS_SCHLUESSEL);
+  var e={ id:'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), uid:wer.id, name:wer.name||'', pin:pin, ts:Date.now() };
+  l.push(e); tmWsSchreiben(TM_WS_SCHLUESSEL, l);
+  var zeit=new Date(e.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  toast('Ohne Netz gemerkt: '+(wer.name||'')+' um '+zeit+'. Geht raus, sobald wieder Netz da ist – Seite bitte offen lassen.');
+  tick(12);
+  terminalPinSchliessen();
+  renderTerminalListe();
+  tmWsPlanen();
+}
+function tmWsPlanen(){
+  if(_tmWsTimer) return;
+  _tmWsTimer=setInterval(function(){
+    if(!tmWsLesen(TM_WS_SCHLUESSEL).length){ clearInterval(_tmWsTimer); _tmWsTimer=null; return; }
+    tmWarteschlangeSenden();
+  }, 30000);
+}
+function tmWarteschlangeSenden(){
+  if(_tmWsSendet || !_tmAktiv || !navigator.onLine) return;
+  var l=tmWsLesen(TM_WS_SCHLUESSEL); if(!l.length) return;
+  var e=l[0]; _tmWsSendet=true;
+  pinFunktion('stempeln')({ terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim, uid:e.uid, pin:e.pin,
+                            offlineTs:e.ts, offlineId:e.id })
+    .then(function(r){
+      var d=(r&&r.data)||{};
+      tmWsSchreiben(TM_WS_SCHLUESSEL, tmWsLesen(TM_WS_SCHLUESSEL).filter(function(x){ return x.id!==e.id; }));
+      if(d.art) _tmStaende[e.uid]=d.art;
+      var zeit=new Date(e.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+      toast('Nachgereicht: '+(TM_WORT[d.art]||d.art||'Stempel')+' um '+zeit+' ✓ — '+e.name);
+      _tmWsSendet=false; renderTerminalListe(); tmWarteschlangeSenden();
+    })
+    .catch(function(err){
+      _tmWsSendet=false;
+      if(tmOhneNetzFehler(err)) return;        // später noch einmal
+      tmWsSchreiben(TM_WS_SCHLUESSEL, tmWsLesen(TM_WS_SCHLUESSEL).filter(function(x){ return x.id!==e.id; }));
+      var p=tmWsLesen(TM_WS_PROBLEME);
+      p.push({ id:e.id, name:e.name, ts:e.ts, grund:fnFehler(err) }); tmWsSchreiben(TM_WS_PROBLEME, p);
+      renderTerminalListe(); tmWarteschlangeSenden();
+    });
+}
+/* Oben auf dem Terminal: was noch wartet und was nicht ankam. */
+function tmWsHinweisHTML(){
+  var l=tmWsLesen(TM_WS_SCHLUESSEL), p=tmWsLesen(TM_WS_PROBLEME), h='';
+  var uhr=function(ts){ return new Date(ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); };
+  if(l.length) h+='<div class="tm-ws" role="status">'+ikon('uhr')+'<span><b>'+
+    (l.length===1?'1 Stempel wartet':l.length+' Stempel warten')+'</b> auf Netz: '+
+    esc(l.map(function(x){ return x.name+' '+uhr(x.ts); }).join(', '))+'. Seite bitte offen lassen.</span></div>';
+  p.forEach(function(x){
+    h+='<div class="tm-ws problem" role="alert">'+ikon('warnung')+'<span><b>Nicht gespeichert:</b> '+esc(x.name)+', '+
+      esc(uhr(x.ts))+' (ohne Netz erfasst) — '+esc(x.grund)+' Bitte bei der Leitung nachtragen lassen.</span>'+
+      '<button type="button" class="btn btn-ghost btn-sm tm-ws-ok" data-tmwsok="'+esc(x.id)+'">Verstanden</button></div>';
+  });
+  return h;
+}
+
 function terminalStempeln(btn){
   if(!_tmWer || !_tmAktiv) return;
   if(_tmPin.length<4){ toast('Bitte die PIN eingeben.',true); return; }
+  if(!navigator.onLine){ tmMerken(_tmWer, _tmPin); return; }
+  var wer=_tmWer, pin=_tmPin;
   withBusy(btn, function(){
     return pinFunktion('stempeln')({
       terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim, uid:_tmWer.id, pin:_tmPin
@@ -13189,6 +13303,7 @@ function terminalStempeln(btn){
       terminalPinSchliessen();
       renderTerminalListe();
     }).catch(function(e){
+      if(tmOhneNetzFehler(e)){ tmMerken(wer, pin); return; }
       _tmPin=''; renderTerminalPunkte();
       toast(fnFehler(e), true);
     });
@@ -15478,12 +15593,114 @@ document.addEventListener('click', function(ev){
    kann weiter abhaken, es wird gesendet, sobald wieder Netz da ist.
    Blass ist nur, was aus dem Zwischenspeicher kommt — die Kopfzeile,
    die Leisten und die Meldungen darüber bleiben, wie sie sind. */
+/* ══ SPEICHERN OHNE NETZ (Runde 139) ═══════════════════════════════════
+   Aus dem Betrieb, 4.10.2026: „eigentlich hat jedes Studio Netz, aber
+   man weiss ja nie, wo und wann es ausfällt".
+
+   Die Datenbank merkt sich Änderungen ohne Netz schon lange
+   (enablePersistence) und schickt sie nach. Was fehlte: ihr Versprechen
+   („gespeichert") kommt erst, wenn der SERVER bestätigt hat. Ohne Netz
+   also nie — und jede Stelle, die darauf wartet, blieb hängen: der Knopf
+   ausgegraut, das Fenster offen, kein „✓". Wer dann ein zweites Mal
+   tippte, schrieb es doppelt.
+
+   Jetzt: kommt die Bestätigung nicht, wird nach kurzer Zeit als „auf dem
+   Gerät gemerkt" weitergemacht — ohne Netz nach OFFLINE_WARTEN_MS, bei
+   Netz, das nur langsam ist (WLAN ohne Internet), nach LANGSAM_MS. Die
+   Leiste oben zählt, was noch wartet; kommt alles an, steht „Alles
+   nachgereicht ✓" da. Scheitert etwas beim Nachreichen (z. B. keine
+   Berechtigung mehr), sagt die App das — still verloren geht nichts.
+
+   Eingebaut an der Datenbank selbst (set, update, delete, add, commit),
+   damit nicht 80 Stellen einzeln geändert werden müssen und keine
+   vergessen wird. Nur, wenn das echte Datenbank-Programm geladen ist:
+   die Demo und die Testattrappen haben diese Klassen nicht. */
+var OFFLINE_WARTEN_MS = 1500, LANGSAM_MS = 8000;
+var _wartend = 0, _warEtwasOffen = false;
+function lokalAbwarten(p, wert){
+  if(!p || typeof p.then!=='function') return p;
+  var fertig=false, frueh=false;
+  return new Promise(function(res, rej){
+    p.then(function(v){
+      fertig=true;
+      if(frueh){ _wartend=Math.max(0,_wartend-1); wartendZeigen(); }
+      else res(v);
+    }, function(e){
+      fertig=true;
+      if(frueh){
+        _wartend=Math.max(0,_wartend-1); wartendZeigen();
+        toast('Eine Änderung ohne Netz ließ sich nicht nachreichen: '+errMsg(e), true);
+      } else rej(e);
+    });
+    setTimeout(function(){
+      if(fertig) return;
+      frueh=true; _wartend++; _warEtwasOffen=true; wartendZeigen();
+      res(wert);
+      /* Nach dem eigenen „✓" der aufrufenden Stelle, damit die ehrliche
+         Meldung das letzte Wort hat — aber nur, wenn inzwischen nichts
+         Neueres passiert ist. Sonst überschrieb „gemerkt" die Meldung,
+         dass das Nachreichen gescheitert ist (gefunden in test-offline). */
+      var ohne=!navigator.onLine;
+      setTimeout(function(){
+        if(fertig) return;
+        toast(ohne ? 'Ohne Netz auf dem Gerät gemerkt – geht raus, sobald wieder Netz da ist.'
+                   : 'Verbindung langsam – auf dem Gerät gemerkt, wird gesendet …');
+      }, 60);
+    }, navigator.onLine ? LANGSAM_MS : OFFLINE_WARTEN_MS);
+  });
+}
+/* Für den Durchlauf (tests/test-offline.js): die Logik lässt sich nur
+   prüfen, wenn sie sich ohne das echte Datenbank-Programm aufrufen lässt. */
+window.__lokalAbwarten = lokalAbwarten;
+
+function offlineSchreibenEinbauen(){
+  try{
+    var FS=firebase.firestore;
+    var DR=FS && FS.DocumentReference && FS.DocumentReference.prototype;
+    if(!DR || typeof DR.set!=='function' || DR.__lokal) return false;
+    var CR=FS.CollectionReference && FS.CollectionReference.prototype;
+    var WB=FS.WriteBatch && FS.WriteBatch.prototype;
+    var set=DR.set, upd=DR.update, del=DR['delete'];
+    DR.set=function(){ return lokalAbwarten(set.apply(this, arguments)); };
+    DR.update=function(){ return lokalAbwarten(upd.apply(this, arguments)); };
+    DR['delete']=function(){ return lokalAbwarten(del.apply(this, arguments)); };
+    /* add = neue Kennung + set. So kennt die App die Kennung auch dann,
+       wenn die Bestätigung des Servers noch aussteht. */
+    if(CR && typeof CR.add==='function' && typeof CR.doc==='function'){
+      CR.add=function(d){ var ref=this.doc(); return lokalAbwarten(set.call(ref, d).then(function(){ return ref; }), ref); };
+    }
+    if(WB && typeof WB.commit==='function'){
+      var com=WB.commit; WB.commit=function(){ return lokalAbwarten(com.apply(this, arguments)); };
+    }
+    DR.__lokal=true;
+    return true;
+  }catch(e){ console.warn('Speichern ohne Netz nicht eingebaut:', e && e.message); return false; }
+}
+
+function wartendZeigen(){
+  updateOnlineState();
+  if(!_wartend && _warEtwasOffen && navigator.onLine){
+    _warEtwasOffen=false;
+    toast('Alles nachgereicht ✓');
+  }
+}
 function updateOnlineState(){
   var bar=$('offlineBar'); if(!bar) return;
-  bar.classList.toggle('show', !navigator.onLine);
-  document.body.classList.toggle('ohne-netz', !navigator.onLine);
+  var offline=!navigator.onLine;
+  var n=_wartend, wort=n===1?'1 Änderung wartet':n+' Änderungen warten';
+  bar.textContent = offline
+    ? 'Keine Internetverbindung – du siehst den zuletzt geladenen Stand.'+
+      (n ? ' '+wort+' auf diesem Gerät und gehen raus, sobald du wieder online bist.'
+         : ' Änderungen werden gesendet, sobald du wieder online bist.')
+    : (n ? 'Verbindung langsam – '+wort+' noch auf diesem Gerät …' : bar.textContent);
+  bar.classList.toggle('show', offline || n>0);
+  document.body.classList.toggle('ohne-netz', offline);
 }
-window.addEventListener('online',  function(){ updateOnlineState(); toast('Wieder online ✓'); });
+window.addEventListener('online',  function(){
+  updateOnlineState();
+  toast(_wartend ? 'Wieder online – '+(_wartend===1?'1 Änderung wird':_wartend+' Änderungen werden')+' nachgereicht …' : 'Wieder online ✓');
+  tmWarteschlangeSenden();
+});
 window.addEventListener('offline', function(){ updateOnlineState(); });
 updateOnlineState();
 
@@ -18004,6 +18221,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-05-ohne-netz', datum:'5.10.2026', titel:'Wenn das Netz ausfällt', wo:'home', punkte:[
+    'Fällt das Internet aus, bleibt nichts mehr hängen: Abhaken, Schreiben und Speichern merkt sich das Gerät, und oben steht, wie viele Änderungen noch warten. Kommt das Netz zurück, steht „Alles nachgereicht ✓" da.',
+    'Das Stempel-Terminal stempelt ohne Netz weiter. Der Stempel geht raus, sobald wieder Netz da ist, mit der Uhrzeit von vorhin und dem Vermerk „ohne Netz erfasst" – die Leitung und die Person sehen ihn in den Zeiten.',
+    'Wichtig am Terminal: die Seite offen lassen, bis die Meldung „Nachgereicht" kommt. Ein Stempel ohne Netz, der älter als 12 Stunden ist, wird nicht mehr angenommen – den trägt dann die Leitung nach.' ] },
   { id:'2026-10-04-kennzahlen', datum:'4.10.2026', titel:'Kennzahlen je Studio', wo:'chef:kennzahlen', punkte:[
     'Unter Verwaltung → Kennzahlen steht je Studio eine Zeile mit den letzten sechs Monaten: Mitglieder, Zuwachs, Kündigungen, Probetrainings, Abschlüsse und Quote — mit Verlauf und Gesamtzeile.',
     'Probetrainings und Abschlüsse rechnet die App aus euren Einträgen. Mitglieder und Kündigungen trägt die Studioleitung einmal im Monat ein — zwei Zahlen je Studio, rechts daneben.',
@@ -29623,6 +29844,10 @@ function zkStempelZeile(z, knopf){
     ? '<small class="mz-korr">nachgetragen von '+esc(z.korrigiertVonName||'der Leitung')+
       (z.korrigiertAm ? ' am '+esc(fmtDateTime(z.korrigiertAm)) : '')+
       (z.grund ? ' · „'+esc(z.grund)+'“' : '')+'</small>' : '';
+  /* Runde 139: am Terminal ohne Netz erfasst — die Uhrzeit ist die des
+     Geräts, angekommen ist der Stempel später. Beides steht da. */
+  if(z.ohneNetz) wer += '<small class="mz-korr">ohne Netz erfasst'+
+    (z.empfangen ? ' · angekommen '+esc(fmtDateTime(z.empfangen)) : '')+'</small>';
   var weg = z.storno
     ? '<small class="mz-korr">ungültig · '+esc(z.storno.vonName||'Leitung')+
       (z.storno.am ? ', '+esc(fmtDateTime(z.storno.am)) : '')+
@@ -32823,6 +33048,7 @@ function backupData(){
                /* Korrekturen (P-09) gehören in eine Arbeitszeitauskunft:
                   wer hat nachgetragen oder für ungültig erklärt, und warum. */
                korrektur:z.quelle==='korrektur' ? (z.korrigiertVonName||'')+': '+(z.grund||'') : '',
+               ohneNetz:z.ohneNetz ? 'ohne Netz erfasst, angekommen '+(z.empfangen?new Date(z.empfangen).toISOString():'') : '',
                ungueltig:z.storno ? (z.storno.vonName||'')+': '+(z.storno.grund||'') : '',
                datum:z.ts?new Date(z.ts).toISOString():'' };
     });

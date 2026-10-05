@@ -131,6 +131,21 @@ Fünf Bereiche in der unteren Leiste:
   Adresse und lässt sich verlinken.
 - Am Rechner steht die Navigation seitlich statt unten.
 - **Offline-Hinweis** als Leiste ganz oben, sobald die Verbindung weg ist.
+  Seit 5.10.2026 mit Zahl: „2 Änderungen warten auf diesem Gerät".
+- **Ohne Netz weiterarbeiten** (seit 5.10.2026): Abhaken, Schreiben,
+  Speichern merkt sich das Gerät; nichts bleibt mehr mit grauem Knopf
+  hängen. Kommt das Netz zurück, steht „Alles nachgereicht ✓" da. Geht
+  beim Nachreichen etwas schief (z. B. keine Berechtigung mehr), sagt die
+  App das. Dinge, die der Server selbst erledigt (Bestellen, Schulungs-
+  Code, Mail), gehen ohne Netz weiterhin nicht – sie sagen es.
+- **Stempel-Terminal ohne Netz**: der Stempel wird mit der Uhrzeit des
+  Tippens gemerkt („Ohne Netz gemerkt … Seite bitte offen lassen") und
+  geht raus, sobald wieder Netz da ist – oben steht, wie viele warten,
+  an der Person „Stempel wartet auf Netz". Angekommen trägt er „ohne Netz
+  erfasst · angekommen …" (in „Meine Zeiten" und bei der Leitung). Lehnt
+  der Server ihn ab (falsche PIN, älter als 12 Stunden), bleibt auf dem
+  Terminal „Nicht gespeichert: … bitte bei der Leitung nachtragen lassen"
+  stehen, bis jemand „Verstanden" tippt.
 
 ---
 

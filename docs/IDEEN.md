@@ -5,7 +5,7 @@ nicht nach dem, was am einfachsten zu bauen ist. Zu jedem Punkt steht dabei,
 was er kostet und was dagegen spricht, damit die Entscheidung nicht blind
 fällt.
 
-Stand 1.10.2026: das meiste davon ist inzwischen gebaut (mit ✅ markiert). Offen sind die Anbindung der Kennzahlen an das Vertragssystem (braucht eine Datenquelle) und Offline weiterarbeiten (gross, und auf geteilten Tablets eine Datenschutzfrage).
+Stand 1.10.2026: das meiste davon ist inzwischen gebaut (mit ✅ markiert). Offen ist die Anbindung der Kennzahlen an das Vertragssystem (braucht eine Datenquelle). Offline ist gebaut, vor Ort noch zu prüfen.
 
 ---
 
@@ -135,7 +135,7 @@ Von Hand eintragen hält niemand durch. Sinnvoll wird das erst, wenn die Zahlen
 automatisch aus dem System kommen, in dem die Verträge liegen. Solange das
 nicht geklärt ist, würde ich es lassen.
 
-### Offline weiterarbeiten
+### Offline weiterarbeiten  ✅ *gebaut (5.10.2026, Runde 139) — Speichern hängt nicht mehr, Terminal stempelt ohne Netz mit Vermerk; vor Ort noch zu prüfen*
 
 Im Keller mancher Studios ist kein Empfang. Heute geht dann nichts.
 Machbar wäre: Aufgaben abhaken und Nachrichten schreiben landen in einer

@@ -1738,10 +1738,24 @@
       var person = USERS.filter(function (u) { return u.id === String(d.uid || ''); })[0];
       if (!person) throw new Error('Diese Person gibt es nicht.');
 
-      var tag = new Date().toLocaleDateString('sv-SE');
+      /* Runde 139: nachgeschickt ohne Netz — wie der echte Server: Zeit des
+         Geräts, höchstens 12 Stunden, einmal je offlineId, Vermerk. */
+      var ohneNetz = d.offlineTs !== undefined && d.offlineTs !== null;
+      var wann = Date.now();
+      if (ohneNetz) {
+        wann = Math.round(Number(d.offlineTs));
+        if (!isFinite(wann) || wann > Date.now() + 120000) throw new Error('Die Uhrzeit dieses Stempels stimmt nicht (liegt in der Zukunft). Bitte bei der Leitung nachtragen lassen.');
+        if (wann < Date.now() - 12 * STD) throw new Error('Dieser Stempel ohne Netz ist älter als 12 Stunden. Bitte bei der Leitung nachtragen lassen.');
+      }
+      var tag = new Date(wann).toLocaleDateString('sv-SE');
       var meine = holen(P('zeiten'))
         .filter(function (z) { return z.uid === person.id && z.tag === tag; })
         .sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      if (ohneNetz && d.offlineId) {
+        var da = meine.filter(function (z) { return z.offlineId === d.offlineId; })[0];
+        if (da) return { ok: true, art: da.art, ts: da.ts, name: person.name || '', fremd: !!da.fremd, ohneNetz: true, schonDa: true };
+      }
+      meine = meine.filter(function (z) { return (z.ts || 0) <= wann; });
       var letzte = meine.length ? meine[meine.length - 1].art : null;
       var art = (!letzte || letzte === 'gehen') ? 'kommen'
               : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
@@ -1749,18 +1763,20 @@
 
       var jetzt = Date.now();
       var fremd = (person.studioKeys || []).indexOf(term.studioKey) < 0;
-      holen(P('zeiten')).push({
+      var neu = {
         id: neueId(), uid: person.id, name: person.name || '',
-        studioKey: term.studioKey, art: art, ts: jetzt, tag: tag,
+        studioKey: term.studioKey, art: art, ts: wann, tag: tag,
         /* monat und fremd wie beim echten `stempeln` — ohne monat wäre
            der frisch gesetzte Stempel in „Meine Zeiten" unsichtbar. */
         monat: tag.slice(0, 7), fremd: fremd,
         terminalId: term.id, terminalName: term.name || ''
-      });
+      };
+      if (ohneNetz) { neu.ohneNetz = true; neu.empfangen = jetzt; neu.offlineId = String(d.offlineId || ''); }
+      holen(P('zeiten')).push(neu);
       melden(P('zeiten'));
       term.letzterStempel = jetzt;
       melden(P('terminals'));
-      return { ok: true, art: art, ts: jetzt, name: person.name || '', fremd: fremd };
+      return { ok: true, art: art, ts: wann, name: person.name || '', fremd: fremd, ohneNetz: ohneNetz };
     }
   };
 

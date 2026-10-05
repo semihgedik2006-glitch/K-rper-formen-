@@ -262,6 +262,7 @@ Bewegung des Feldes, die ein Chef machen darf (`firmaWechselErlaubt()`).
 | `terminalId`, `terminalName` | welches Gerät |
 | `grund`, `korrigiertVon`, `korrigiertVonName`, `korrigiertAm` | nur bei `quelle: korrektur` — wer hat nachgetragen, wann, warum |
 | `storno` | `{ von, vonName, am, grund }` — als ungültig markiert; der Stempel bleibt, gerechnet wird ohne ihn |
+| `ohneNetz`, `empfangen`, `offlineId` | seit 5.10.2026 (Runde 139): am Terminal ohne Netz erfasst. `ts` ist die Uhrzeit des Geräts (höchstens 12 Stunden zurück, nicht in der Zukunft), `empfangen` die Ankunft beim Server, `offlineId` verhindert, dass derselbe Stempel zweimal ankommt |
 
 ```
 allow read:  eigene Zeiten ODER Leitung dieses Studios
