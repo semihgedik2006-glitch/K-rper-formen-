@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-WwuCi+1cqnxC2UT4+sGWqWdJNHHuaR1o3N2h8vUptlQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-/XW1ontMmQcrSiybf4dyagg0SFRR5mYWsNowj0boO4U='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5305,6 +5305,13 @@ html{font-size:var(--fs,100%)}
   border:1px solid transparent}
 .prio-hoch{background:var(--f-bad);color:var(--danger-tx);border-color:var(--k-bad)}
 .prio-niedrig{background:var(--auf-2);color:var(--text-3);border-color:var(--line-2)}
+.zuord-liste{list-style:none;margin:0 0 var(--s10);padding:0}
+.zuord-liste li{padding:var(--s8) 0;border-top:1px solid var(--line)}
+.zuord-liste li:first-child{border-top:none}
+.zuord-liste small{display:block;color:var(--text-3);font-size:var(--t-xs)}
+.t-zeit{display:inline-flex;align-items:center;font-size:var(--t-2xs);font-weight:700;
+  letter-spacing:var(--ls-s);color:var(--text-2);background:var(--auf-1);border:1px solid var(--line-2);
+  padding:var(--s2) var(--s6);border-radius:var(--r-pille);margin-left:var(--s6);vertical-align:middle}
 .t-rep{display:inline-flex;align-items:center;gap:var(--s4);font-size:var(--t-2xs);font-weight:700;
   text-transform:uppercase;letter-spacing:var(--ls-s);color:var(--accent-2);
   background:rgba(var(--akz-rgb),.12);padding:var(--s2) var(--s6);border-radius:var(--r-pille);margin-left:var(--s6);vertical-align:middle}
@@ -8614,6 +8621,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <option value="w">Wochen</option>
                 </select>
               </div></div>
+            <div class="field"><label for="ntZeit">Tageszeit (optional)</label>
+              <select class="inp" id="ntZeit">
+        <option value="">Jederzeit</option>
+        <option value="morgens">Morgens</option>
+        <option value="mittags">Mittags</option>
+        <option value="abends">Abends</option>
+              </select></div>
             <div class="field"><label for="ntDue">Fällig bis (optional)</label>
               <input class="inp" id="ntDue" type="date" /></div>
             <div class="field"><label for="ntAssign">Wer soll das machen? (optional)</label>
@@ -8668,6 +8682,21 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <p class="hint">Diese Leute haben sich selbst angemeldet und sehen bis
               zur Freigabe nichts von der App.</p>
             <div id="freigabeListe"></div>
+          </div>
+          <!-- Runde 140: Konten, deren Studio-Kennung in der Datenbank nicht
+               zu ihren Studios passt. Für sie lehnt die Datenbank Aufgaben
+               ab (anlegen, abhaken), der Putzplan geht — genau das Bild aus
+               dem Betrieb. Gezeigt wird, WEN es betrifft; geändert wird erst
+               auf Knopfdruck. Hinter „Wartet auf Freigabe": wer wartet,
+               geht vor (test-beitritt prüft Platz 1). -->
+          <div data-vw="1" class="card" id="zuordKarte" data-chef-only="1" hidden>
+            <h3 data-ikon="warnung">Studio-Zuordnung unvollständig</h3>
+            <p class="hint">Bei diesen Konten passt die Studio-Kennung in der Datenbank nicht
+              zu den Studios, die du ihnen gegeben hast. Sie sehen alles, können aber keine
+              Aufgaben anlegen oder abhaken.</p>
+            <div id="zuordListe"></div>
+            <p class="em-saved" id="zuordFehler" role="alert"></p>
+            <button type="button" class="btn btn-primary btn-sm" id="zuordReparieren">Zuordnung reparieren</button>
           </div>
           <!-- Löschanträge (App Store 5.1.1(v)): wer hier steht, hat unter
                Ich → Daten die Löschung beantragt und ist seitdem gesperrt.
@@ -10107,6 +10136,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <option value="">⚪ Normal</option>
           <option value="niedrig">🔵 Kann warten</option>
         </select></div>
+      <div class="field"><label for="teZeit">Tageszeit</label>
+        <select class="inp" id="teZeit">
+        <option value="">Jederzeit</option>
+        <option value="morgens">Morgens</option>
+        <option value="mittags">Mittags</option>
+        <option value="abends">Abends</option>
+        </select></div>
     </div>
     <div class="field"><label for="teSteps">Teilschritte (eine Zeile = ein Häkchen)</label>
       <textarea class="inp" id="teSteps" rows="4" maxlength="1200" placeholder="Geräte abwischen&#10;Gurte prüfen"></textarea>
@@ -10133,6 +10169,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <div class="field"><label for="otDue">Bis wann (optional)</label>
         <input class="inp" id="otDue" type="date" /></div>
     </div>
+    <div class="field"><label for="otZeit">Tageszeit (optional)</label>
+      <select class="inp" id="otZeit">
+        <option value="">Jederzeit</option>
+        <option value="morgens">Morgens</option>
+        <option value="mittags">Mittags</option>
+        <option value="abends">Abends</option>
+      </select></div>
     <p class="hint">Einmalige Aufgabe. Wiederkehrende legt die Leitung an.</p>
     <button class="btn btn-primary btn-sm" id="otSave" style="width:100%">Aufgabe anlegen</button>
   </div>
@@ -10172,6 +10215,15 @@ body.neu .kn-zeile{min-height:var(--zeile)}
         <option value="hoch">🔴 Dringend</option>
         <option value="">⚪ Normal</option>
         <option value="niedrig">🔵 Kann warten</option>
+      </select></div>
+    <!-- Runde 140: aus dem Betrieb, „so dass ich die abends Aufgaben
+         auch abends eintragen kann und die morgens Aufgaben eben morgens". -->
+    <div class="field"><label for="ppZeit">Tageszeit</label>
+      <select class="inp" id="ppZeit">
+        <option value="">Jederzeit</option>
+        <option value="morgens">Morgens</option>
+        <option value="mittags">Mittags</option>
+        <option value="abends">Abends</option>
       </select></div>
     <div class="field"><label for="ppRepeat">Wiederholung</label>
       <select class="inp" id="ppRepeat">
@@ -17212,7 +17264,19 @@ function enterApp(uid, data){
   if(_firma){ try{ localStorage.setItem(FIRMA_SPEICHER, _firma); }catch(e){} }
   session.studios = (session.studios && session.studios.length)
     ? session.studios : (session.studio ? [session.studio] : []);
-  session.studioKeys = session.studios.map(studioKey);
+  /* Runde 140: Wird ein Studio umbenannt, behalten die Profile den alten
+     Namen — aus ihm entstand dann die Kennung 'studio--1', und die Person
+     sah ihr eigenes Studio nicht mehr. Steht im Profil eine Kennung, die
+     die Studioliste kennt, gilt sie, und der Name kommt aus der Liste. */
+  var profilKeys = Array.isArray(session.studioKeys) ? session.studioKeys.slice() : [];
+  session.studioKeys = session.studios.map(function(n, i){
+    var k = studioKey(n);
+    if(k === 'studio--1' && profilKeys[i] && studioName(profilKeys[i]) !== profilKeys[i]){
+      session.studios[i] = studioName(profilKeys[i]);
+      return profilKeys[i];
+    }
+    return k;
+  });
   $('authWrap').classList.remove('show');
   /* Die Abo-Stufe VOR showApp holen, sonst baut sich der
      Verwaltungsbereich einmal ohne Schlösser auf und flackert dann.
@@ -18221,6 +18285,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-05-tageszeit', datum:'5.10.2026', titel:'Aufgaben und Putzplan nach Tageszeit', wo:'putzplan', punkte:[
+    'Aufgaben und Putzaufgaben können jetzt „Morgens", „Mittags" oder „Abends" tragen – beim Anlegen und beim Bearbeiten. Ohne Angabe gelten sie „jederzeit".',
+    'In der Sortierung gibt es „Nach Tageszeit": oben steht, was jetzt dran ist. Wer abends kommt, sieht die Abendaufgaben zuerst.',
+    'Konnte jemand keine Aufgaben anlegen, aber den Putzplan abhaken? Dann passte die Studio-Zuordnung im Konto nicht. Die Geschäftsführung sieht das jetzt unter Verwaltung → Team und repariert es mit einem Tipp.' ] },
   { id:'2026-10-05-ohne-netz', datum:'5.10.2026', titel:'Wenn das Netz ausfällt', wo:'home', punkte:[
     'Fällt das Internet aus, bleibt nichts mehr hängen: Abhaken, Schreiben und Speichern merkt sich das Gerät, und oben steht, wie viele Änderungen noch warten. Kommt das Netz zurück, steht „Alles nachgereicht ✓" da.',
     'Das Stempel-Terminal stempelt ohne Netz weiter. Der Stempel geht raus, sobald wieder Netz da ist, mit der Uhrzeit von vorhin und dem Vermerk „ohne Netz erfasst" – die Leitung und die Person sehen ihn in den Zeiten.',
@@ -20355,6 +20423,7 @@ function verteileUsers(){
   emps.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
   _employees=emps;
   renderDashboard(); renderOnboarding();
+  zuordnungZeichnen();
   if(isChef()){
     renderEmployees(emps);                 // Bearbeiten bleibt Chef-Sache
     _chefs=_allUsers.filter(function(u){ return u.role==='chef'; })
@@ -28313,6 +28382,88 @@ function wunschArtSetzen(art){
    Eine Abschrift waere eine zweite Stelle, an der doneByUid vergessen
    wird — und genau das ist hier schon einmal passiert (der Kommentar
    an der Aufgabenliste erzaehlt es). */
+/* ── Studio-Zuordnung prüfen (Runde 140) ──
+   Was in einem Konto stehen MUSS, damit die Datenbank Aufgaben zulässt:
+   studioKeys passend zu den Studios. Drei Fälle:
+   · Kennungen fehlen oder passen nicht, die Namen sind bekannt → die
+     Kennungen aus den Namen (die Namen sind das, was die Leitung im
+     Team-Reiter angehakt hat).
+   · Ein Name ist unbekannt (Studio umbenannt), die Kennungen sind
+     bekannt → die Namen aus den Kennungen.
+   · Beides unklar → nicht raten; die Leitung öffnet die Person und
+     speichert die Studios neu.
+   Die Geschäftsführung selbst braucht keine Kennungen (sie verwaltet
+   alle) und wird nicht geprüft. */
+function zuordnungFall(e){
+  if(!e || e.role==='chef' || e.aktiv===false) return null;
+  var namen=(e.studios&&e.studios.length) ? e.studios : (e.studio ? [e.studio] : []);
+  if(!namen.length) return null;                    // „ohne Studio" meldet die Übersicht
+  var bekannt=function(k){ return studioName(k)!==k; };
+  var ausNamen=namen.map(function(n){
+    for(var i=0;i<_studioListe.length;i++){ if(_studioListe[i] && _studioListe[i].name===n) return _studioListe[i].id; }
+    return null;
+  });
+  var gespeichert=Array.isArray(e.studioKeys) ? e.studioKeys : [];
+  var namenOk=ausNamen.every(function(k){ return !!k; });
+  if(namenOk && gespeichert.length===ausNamen.length &&
+     ausNamen.every(function(k){ return gespeichert.indexOf(k)>=0; })) return null;
+  if(namenOk) return { neu:{ studioKeys:ausNamen }, was: gespeichert.length ? 'Kennung passt nicht' : 'Kennung fehlt' };
+  if(gespeichert.length && gespeichert.every(bekannt)){
+    var nn=gespeichert.map(studioName);
+    return { neu:{ studios:nn, studio:nn[0] }, was:'Studioname veraltet' };
+  }
+  return { neu:null, was:'unklar — bitte unter Team öffnen und die Studios neu speichern' };
+}
+function zuordnungListe(){
+  return (_employees||[]).map(function(e){ return { e:e, f:zuordnungFall(e) }; })
+    .filter(function(x){ return !!x.f; });
+}
+function zuordnungZeichnen(){
+  var karte=$('zuordKarte'), box=$('zuordListe'); if(!karte || !box) return;
+  if(!isChef()){ karte.hidden=true; return; }
+  var l=zuordnungListe();
+  karte.hidden=!l.length;
+  if(!l.length) return;
+  box.innerHTML='<ul class="zuord-liste">'+l.map(function(x){
+    var namen=(x.e.studios&&x.e.studios.length)?x.e.studios:(x.e.studio?[x.e.studio]:[]);
+    return '<li><b>'+esc(x.e.name||'?')+'</b><small>'+esc(namen.join(', '))+' · '+esc(x.f.was)+'</small></li>';
+  }).join('')+'</ul>';
+  var b=$('zuordReparieren');
+  if(b) b.hidden=!l.some(function(x){ return !!x.f.neu; });
+}
+function zuordnungReparieren(btn){
+  var l=zuordnungListe().filter(function(x){ return !!x.f.neu; });
+  if(!l.length) return;
+  $('zuordFehler').textContent='';
+  withBusy(btn, function(){
+    return Promise.all(l.map(function(x){
+      return db.collection('users').doc(x.e.uid||x.e.id).update(x.f.neu);
+    })).then(function(){
+      toast(l.length===1 ? 'Zuordnung repariert ✓' : l.length+' Konten repariert ✓'); tick(10);
+    }).catch(function(e){ $('zuordFehler').textContent=errMsg(e); });
+  });
+}
+
+/* ── Wenn die Datenbank eine Aufgabe ablehnt (Runde 140) ──
+   Aus dem Betrieb, 5.10.2026: „Ein Mitarbeiter kann irgendwie keine
+   Aufgaben anlegen, aber den Putzplan schon."
+
+   Beim Putzplan prüft die Regel beim Abhaken das Studio nicht; bei den
+   Aufgaben (anlegen UND abhaken) schon — gegen studioKeys im Konto. Fehlt
+   dieses Feld oder passt es nicht (ältere Konten, Studio umbenannt), sieht
+   die Person alles, darf aber nichts an Aufgaben ändern. Vorher stand dann
+   nur „Dafür fehlt dir die Berechtigung" — ohne Hinweis, woran es liegt.
+   Jetzt steht da, wer es beheben kann und wo, und die Geschäftsführung
+   findet es unter System → Fehler. */
+function aufgabeFehlerText(e, sk){
+  if(e && /permission/.test(String(e.code||'')) && !canManage()){
+    fehlerMelden('Aufgabe abgelehnt: Studio '+sk+' nicht im Konto (studioKeys)', 'aufgabe', 0, '');
+    return 'Dein Konto ist in der Datenbank diesem Studio noch nicht zugeordnet. '+
+      'Die Leitung kann das unter Verwaltung → Team mit „Zuordnung reparieren" beheben.';
+  }
+  return errMsg(e);
+}
+
 function aufgabeHaken(sk, id, done){
   return S('studios').doc(sk).collection('todos').doc(id)
     .update({ done:done, doneBy:done?session.name:null,
@@ -30803,6 +30954,12 @@ function sortTodos(list){
     a.sort(function(x,y){ return (x.title||'').localeCompare(y.title||'','de'); });
   } else if(_todoSort==='neu'){
     a.sort(function(x,y){ return (y.ts||0)-(x.ts||0); });
+  } else if(_todoSort==='tageszeit'){
+    /* Was jetzt dran ist, oben; innerhalb wie im Standard. */
+    a.sort(function(x,y){
+      return (isDone(x)-isDone(y)) || (tzRang(x)-tzRang(y)) ||
+             ((x.due||Infinity)-(y.due||Infinity)) || ((x.ts||0)-(y.ts||0));
+    });
   } else if(_todoSort==='prio'){
     /* Erledigte bleiben unten, auch wenn sie „dringend" tragen — eine
        abgehakte Aufgabe ist nicht mehr dringend. */
@@ -31296,7 +31453,7 @@ function bindTodoClicks(area){
          Beinahe waere es unbemerkt geblieben: die Attrappe lieferte das
          Feld, der Durchlauf war gruen — geprueft wurde damit etwas, das
          die App gar nicht schreibt. */
-      aufgabeHaken(sk, id, done).catch(function(e){ toast(errMsg(e),true); });
+      aufgabeHaken(sk, id, done).catch(function(e){ toast(aufgabeFehlerText(e, sk),true); });
     });
     var dk=node.querySelector('[data-tdanke]');
     if(dk) dk.addEventListener('click', function(e){
@@ -31510,7 +31667,7 @@ function todoDetailAktion(was, knopf){
   if(was==='haken'){
     var chk=document.querySelector('#todoArea .todo.gewaehlt .check');
     if(chk) chk.click();
-    else aufgabeHaken(w.sk, w.t.id, !isDone(w.t)).catch(function(e){ toast(errMsg(e),true); });
+    else aufgabeHaken(w.sk, w.t.id, !isDone(w.t)).catch(function(e){ toast(aufgabeFehlerText(e, w.sk),true); });
     return;
   }
   if(was==='bearbeiten' && canManage()){ openTodoEdit(w.t, w.sk); return; }
@@ -32056,7 +32213,7 @@ function showChefTab(id, keep){
     p.style.display = (p.getAttribute('data-cpane')===id) ? '' : 'none';
   });
   if(id==='ueberblick'){ _dashZaehlen=true; renderDashboard(); renderStudioGrid(); renderAttention(); }
-  if(id==='team'){ renderFreigaben(); beitrittLaden(); zfStandLaden(); }
+  if(id==='team'){ renderFreigaben(); beitrittLaden(); zfStandLaden(); zuordnungZeichnen(); }
   if(id==='standorte'){ renderStandorte(); terminalStudioAuswahl(); terminalsBeobachten(); }
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
@@ -32549,6 +32706,10 @@ function renderAttention(){
     });
     if(ohne.length) rows.push({i:ikon('person'), t:ohne.length+(ohne.length===1?' Person ohne Studio':' Personen ohne Studio'),
       s:ohne.map(function(e){ return e.name; }).join(', '), v:'chef', ctab:'team'});
+    // 4b) Studio-Kennung passt nicht (Runde 140): Aufgaben gehen dort nicht
+    var zuord=zuordnungListe();
+    if(zuord.length) rows.push({i:ikon('warnung'), t:zuord.length+(zuord.length===1?' Konto kann keine Aufgaben anlegen':' Konten können keine Aufgaben anlegen'),
+      s:zuord.map(function(x){ return x.e.name; }).join(', ')+' — Studio-Zuordnung reparieren', v:'chef', ctab:'team'});
   }
   // 5) ungelesene Ankündigungen im Team
   if(isChef() && _employees.length){
@@ -32882,6 +33043,7 @@ function backupData(){
                    erledigtVon:t.doneBy||'', erledigtAm:t.doneAt?new Date(t.doneAt).toISOString():'',
                    faellig:t.due?new Date(t.due).toISOString():'', wiederholung:t.recurring||'',
                    grund:t.grund||'', grundVon:t.grundVon||'',
+                   tageszeit:(TAGESZEITEN[t.tageszeit]||{}).wort||'',
                    erstellt:t.ts?new Date(t.ts).toISOString():'' };
         }),
         material:(_invAll[sk]||[]).map(function(it){
@@ -32889,6 +33051,7 @@ function backupData(){
         }),
         putzplan:docsZuListe(q.cleaning).map(function(t){
           return { titel:t.title||'', wiederholung:t.recurring||'', erledigt:!!t.done,
+                   tageszeit:(TAGESZEITEN[t.tageszeit]||{}).wort||'',
                    kuerzel:t.doneKuerzel||'', konto:t.doneBy||'',
                    erledigtAm:t.doneAt?new Date(t.doneAt).toISOString():'' };
         }),
@@ -34228,10 +34391,57 @@ function prioRang(x){
   return r===undefined ? 1 : r;
 }
 function prioMarke(x){
-  if(!x || !x.prio) return '';
-  if(x.prio==='hoch')    return '<span class="prio prio-hoch">Dringend</span>';
-  if(x.prio==='niedrig') return '<span class="prio prio-niedrig">Kann warten</span>';
-  return '';
+  /* Die Tageszeit hängt hier mit dran: dieselben drei Stellen (Aufgaben,
+     Wochenliste, Putzplan) zeigen sie dann, ohne dass eine vergessen wird. */
+  var z=zeitMarke(x);
+  if(!x || !x.prio) return z;
+  if(x.prio==='hoch')    return '<span class="prio prio-hoch">Dringend</span>'+z;
+  if(x.prio==='niedrig') return '<span class="prio prio-niedrig">Kann warten</span>'+z;
+  return z;
+}
+
+/* ══ TAGESZEIT (Runde 140) ════════════════════════════════════════════
+   Aus dem Betrieb, 5.10.2026: „Vielleicht wäre eine Option cool, wo man
+   die Aufgaben und Putzplan sortieren kann, so dass ich die abends
+   Aufgaben auch abends eintragen kann und die morgens Aufgaben eben
+   morgens."
+
+   Eine Aufgabe oder Putzaufgabe kann Morgens, Mittags oder Abends
+   tragen; ohne Angabe gilt „Jederzeit". In der Sortierung „Nach
+   Tageszeit" steht das, was JETZT dran ist, oben — wer abends kommt,
+   sieht die Abendaufgaben zuerst, dann was jederzeit geht, dann den
+   Rest des Tages in seiner Reihenfolge.
+
+   Die Grenzen (12 und 17 Uhr) sind die üblichen Schichtwechsel; sie
+   stehen nur hier. Die Marke an der Zeile ist neutral gefärbt —
+   „abends" ist kein Status. */
+var TAGESZEITEN = { morgens:{ wort:'Morgens' }, mittags:{ wort:'Mittags' }, abends:{ wort:'Abends' } };
+var TZ_FOLGE = ['morgens','mittags','abends'];
+function jetztTageszeit(d){
+  var h=(d||new Date()).getHours();
+  return h<12 ? 'morgens' : (h<17 ? 'mittags' : 'abends');
+}
+function zeitMarke(x){
+  var z=x && TAGESZEITEN[x.tageszeit];
+  return z ? '<span class="t-zeit">'+esc(z.wort)+'</span>' : '';
+}
+/* 0 = jetzt dran, 1 = jederzeit, 2 und 3 = der Rest des Tages */
+function tzRang(x){
+  var z=x && TAGESZEITEN[x.tageszeit] ? x.tageszeit : '';
+  if(!z) return 1;
+  var j=TZ_FOLGE.indexOf(jetztTageszeit()), i=TZ_FOLGE.indexOf(z);
+  var abstand=(i-j+3)%3;
+  return abstand===0 ? 0 : abstand+1;
+}
+function tzGruppen(){
+  var j=jetztTageszeit(), aus=[];
+  aus.push({ id:'tz-'+j, wort:'Jetzt · '+TAGESZEITEN[j].wort, passt:function(t){ return tzRang(t)===0; } });
+  aus.push({ id:'tz-jederzeit', wort:'Jederzeit', passt:function(t){ return tzRang(t)===1; } });
+  [2,3].forEach(function(r){
+    var z=TZ_FOLGE[(TZ_FOLGE.indexOf(j)+r-1)%3];
+    aus.push({ id:'tz-'+z, wort:TAGESZEITEN[z].wort, passt:function(t){ return tzRang(t)===r; } });
+  });
+  return aus;
 }
 
 /* Rangfolge fuer „nach Rhythmus": haeufig zuerst.
@@ -34281,6 +34491,10 @@ function renderPutzplan(){
     if(wieSort==='prio'){
       var pr=prioRang(a)-prioRang(b); if(pr) return pr;
       return (a.title||'').localeCompare(b.title||'','de');
+    }
+    if(wieSort==='tageszeit'){
+      var tr=tzRang(a)-tzRang(b); if(tr) return tr;
+      return (a.ts||0)-(b.ts||0);
     }
     return (a.ts||0)-(b.ts||0);
   });
@@ -34363,8 +34577,10 @@ function renderPutzplan(){
      dann die gewünschte Reihenfolge, und Gruppen würden sie wieder
      zerschneiden. Auch „nach Rhythmus": dort gilt weiter „offene vor
      erledigten" über den ganzen Plan (test-sortierung prüft beides). */
-  if(wieSort==='standard'){
-    var GRUPPEN=[
+  /* „Nach Tageszeit" (Runde 140) steht ebenfalls in Gruppen: „Jetzt ·
+     Abends", „Jederzeit", dann der Rest des Tages — am PC als Spalten. */
+  if(wieSort==='standard' || wieSort==='tageszeit'){
+    var GRUPPEN= wieSort==='tageszeit' ? tzGruppen() : [
       { id:'taeglich',    wort:'Täglich',            passt:function(t){ return ppRang(t)<=1.5; } },
       { id:'woechentlich',wort:'Wöchentlich',        passt:function(t){ var r=ppRang(t); return r>1.5 && r<=3; } },
       { id:'anders',      wort:'In eigenem Abstand', passt:function(t){ return ppRang(t)===4; } },
@@ -34551,6 +34767,7 @@ var _ppEdit=null;                 // null = anlegen, sonst die Aufgabe
 /* Wiederholung aus einer vorhandenen Aufgabe in die Felder zurueck. */
 function ppWiederholungSetzen(t){
   var pr=$('ppPrio'); if(pr) pr.value = (t && t.prio) || '';
+  var tz=$('ppZeit'); if(tz) tz.value = (t && TAGESZEITEN[t.tageszeit]) ? t.tageszeit : '';
   var rep=$('ppRepeat'); if(!rep) return;
   rep.value = t && t.recurring ? t.recurring : '';
   var eigen = rep.value==='custom';
@@ -34638,6 +34855,7 @@ function addPutzTask(btn){
       var data={ title:title, done:false, doneBy:null, doneAt:null,
         createdBy:session.name, createdByUid:session.uid, ts:Date.now() };
       var pr=($('ppPrio')||{}).value; if(pr) data.prio=pr;
+      var tz=($('ppZeit')||{}).value; if(tz) data.tageszeit=tz;
       if(recurring){ data.recurring=recurring;
         if(recurring==='custom'){ data.intervalMs=intervalMs; data.intervalN=intN; data.intervalUnit=intUnit; } }
       batch.set(ref,data);
@@ -34670,6 +34888,7 @@ function savePutzTask(btn, title){
   var recurring=$('ppRepeat').value||null;
   var neu={ title:title, recurring:recurring||null,
             prio:($('ppPrio')||{}).value || null,
+            tageszeit:($('ppZeit')||{}).value || null,
             intervalMs:null, intervalN:null, intervalUnit:null,
             geaendertVon:session.name, geaendertAm:Date.now() };
   if(recurring==='custom'){
@@ -35750,8 +35969,12 @@ function oeffneEigeneAufgabe(){
   var sel=$('otStudio'); if(!sel) return;
   var meine=(session&&session.studios)||[];
   if(!meine.length){ toast('Dir ist kein Studio zugeteilt.',true); return; }
-  sel.innerHTML=meine.map(function(n){
-    return '<option value="'+esc(studioKey(n))+'">'+esc(n)+'</option>';
+  /* Die Kennung aus session.studioKeys, nicht noch einmal aus dem Namen
+     gerechnet — dort steht seit Runde 140 auch die Kennung aus dem
+     Profil, wenn ein Studio umbenannt wurde. */
+  var keys=(session&&session.studioKeys)||[];
+  sel.innerHTML=meine.map(function(n, i){
+    return '<option value="'+esc(keys[i]||studioKey(n))+'">'+esc(n)+'</option>';
   }).join('');
   /* Bei einem einzigen Studio ist die Auswahl nur Ballast. */
   sel.parentElement.style.display = meine.length>1 ? '' : 'none';
@@ -35759,6 +35982,7 @@ function oeffneEigeneAufgabe(){
     ? 'Die Aufgabe erscheint bei allen im gewählten Studio.'
     : 'Die Aufgabe erscheint bei allen in ' + meine[0] + '.';
   $('otTitle').value=''; $('otDesc').value=''; $('otDue').value='';
+  if($('otZeit')) $('otZeit').value='';
   $('ownTodoModal').classList.add('show');
   setTimeout(function(){ $('otTitle').focus(); }, 90);
 }
@@ -35781,6 +36005,7 @@ function speichereEigeneAufgabe(btn){
        niemand Aufgaben im Namen des Chefs anlegt. */
     createdByUid: session.uid
   };
+  var tzEigen=($('otZeit')||{}).value; if(tzEigen) daten.tageszeit=tzEigen;
   if(dat){
     /* Fällig am Ende des Tages, nicht um 00:00 — sonst ist eine Aufgabe
        „für heute" den ganzen Tag überfällig. */
@@ -35793,7 +36018,7 @@ function speichereEigeneAufgabe(btn){
         schliesseEigeneAufgabe();
         toast('Aufgabe angelegt ✓');
       })
-      .catch(function(e){ toast(errMsg(e),true); });
+      .catch(function(e){ toast(aufgabeFehlerText(e, sk),true); });
   });
 }
 
@@ -35805,6 +36030,7 @@ function openTodoEdit(t, sk){
   $('teDesc').value=t.desc||'';
   $('teDue').value = t.due ? ymd(new Date(t.due)) : '';
   $('tePrio').value = t.prio || '';
+  if($('teZeit')) $('teZeit').value = TAGESZEITEN[t.tageszeit] ? t.tageszeit : '';
   var steps=Array.isArray(t.steps)?t.steps:[];
   $('teSteps').value=steps.map(function(x){ return (x&&x.t)||''; }).join('\n');
   var fertig=steps.filter(function(x){ return x&&x.d; }).length;
@@ -35866,6 +36092,7 @@ function saveTodoEdit(btn){
   /* null statt '' bei Normal: ein leerer String ist ein Wert, und die
      Liste stuende dann voller Felder, die nichts bedeuten. */
   neu.prio = $('tePrio').value || null;
+  if($('teZeit')) neu.tageszeit = $('teZeit').value || null;
 
   withBusy(btn,function(){
     return S('studios').doc(sk).collection('todos').doc(t.id).update(neu)
@@ -38220,6 +38447,7 @@ function bindActions(){
     {id:'faellig',  label:'Nach Fälligkeit'},
     {id:'name',     label:'Nach Name'},
     {id:'prio',     label:'Nach Dringlichkeit'},
+    {id:'tageszeit',label:'Nach Tageszeit'},
     {id:'neu',      label:'Neueste zuerst'}
   ], 'standard', function(){ _todoSort=sortWahl('todo','standard'); renderTodos(); });
   _todoSort=sortWahl('todo','standard');
@@ -38229,6 +38457,7 @@ function bindActions(){
   var shX=$('shopXls');   if(shX) shX.addEventListener('click', exportShoppingList);
   var shM=$('shopMail'); if(shM) shM.addEventListener('click', bestellenOeffnen);
   var kzS=$('kzSpeichern'); if(kzS) kzS.addEventListener('click', kzSpeichern);
+  var zuR=$('zuordReparieren'); if(zuR) zuR.addEventListener('click', function(){ zuordnungReparieren(zuR); });
   /* Bestellen (Runde 137). Die frühere Geräte-Adresse (PREFS.lieferantMail)
      wird nicht mehr bearbeitet, nur noch als Vorschlag und Rückfall
      gelesen — siehe lieferantBearbeiten und shoppingMail. */
@@ -38981,6 +39210,7 @@ function bindActions(){
     {id:'name',     label:'Nach Name'},
     {id:'rhythmus', label:'Nach Rhythmus'},
     {id:'prio',     label:'Nach Dringlichkeit'},
+    {id:'tageszeit',label:'Nach Tageszeit'},
     {id:'zuletzt',  label:'Zuletzt erledigt'}
   ], 'standard', renderPutzplan);
   /* Schalter, keine Auswahl: nochmal antippen macht ihn wieder aus.
@@ -39487,6 +39717,7 @@ function bindActions(){
       }
       var dueVal=$('ntDue').value;
       var due = dueVal ? new Date(dueVal+'T23:59:59').getTime() : 0;
+      var tageszeit=($('ntZeit')||{}).value||'';
       // Teilschritte: eine Zeile = ein Häkchen in der Aufgabe
       var stepsEl=$('ntSteps');
       var steps=(stepsEl ? stepsEl.value : '').split('\n')
@@ -39512,6 +39743,7 @@ function bindActions(){
           if(recurring==='custom'){ data.intervalMs=intervalMs; data.intervalN=intN; data.intervalUnit=intUnit; }
         }
         if(due) data.due=due;
+        if(tageszeit) data.tageszeit=tageszeit;
         if(photo) data.photo=photo;
         if(steps.length) data.steps=steps.map(function(s){ return {t:s.t, d:false}; });
         batch.set(ref,data);
@@ -39521,6 +39753,7 @@ function bindActions(){
         return batch.commit()
           .then(function(){
             $('ntTitle').value=''; $('ntDesc').value=''; $('ntRepeat').value=''; $('ntCustomWrap').style.display='none'; $('ntDue').value='';
+            if($('ntZeit')) $('ntZeit').value='';
             if($('ntSteps')) $('ntSteps').value='';
             if($('ntAssign')) $('ntAssign').value='';
             $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');

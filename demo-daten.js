@@ -680,7 +680,11 @@
         createdBy: 'Geschäftsführung', ts: vorTag(zahl(1, 20)),
         due: zufall() < 0.35 ? Date.now() + (zufall() < 0.4 ? -1 : 1) * zahl(1, 5) * TAG : undefined,
         dringend: zufall() < 0.15 ? true : undefined,
-        recurring: zufall() < 0.25 ? waehle(['daily', 'weekly']) : undefined
+        recurring: zufall() < 0.25 ? waehle(['daily', 'weekly']) : undefined,
+        /* Runde 140: Tageszeit. Nach dem Index verteilt, nicht per
+           zufall(): ein zusätzlicher Zufallswert verschöbe alle folgenden
+           Demo-Daten, und andere Durchläufe zählen genau die nach. */
+        tageszeit: ['morgens', undefined, 'abends', undefined, 'mittags'][a % 5]
       });
     }
     /* Eine Aufgabe, die NIEMANDEM gehört — damit „Ich übernehme das" in
@@ -729,6 +733,7 @@
            (test-p2-putzplan rot). Dieselbe Falle wie in Runde 136 bei
            den Stempeln. */
         doneAt: pf ? Math.max(heuteUm(0, 1), vorStd(zahl(1, 10))) : undefined,
+        tageszeit: ['morgens', 'abends', undefined][c % 3],
         ts: vorTag(zahl(10, 60))
       });
     }

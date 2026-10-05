@@ -35,8 +35,8 @@ firmen/{kennung}                     ← Stammdaten, öffentlich lesbar (get)
    ├── dms/{paar}/messages/          ← Direktnachrichten
    │
    ├── studios/{studioKey}/
-   │     ├── todos/                  ← Aufgaben
-   │     ├── cleaning/               ← Putzplan
+   │     ├── todos/                  ← Aufgaben (seit Runde 140 mit `tageszeit`: morgens/mittags/abends, fehlt = jederzeit)
+   │     ├── cleaning/               ← Putzplan (ebenso `tageszeit`)
    │     ├── cleaningNotes/
    │     ├── devices/                ← Geräte
    │     ├── deviceLog/              ← Protokoll je Gerät
