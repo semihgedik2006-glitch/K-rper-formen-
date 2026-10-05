@@ -974,6 +974,16 @@ function firmaKennung(name) {
   return (rein || 'firma') + '-' + zufall;
 }
 
+/* Startpasswort für den ersten Chef einer neuen Firma: 14 Zeichen aus
+   einer Menge ohne l/I/0/O, jedes aus crypto.randomInt (gleichverteilt). */
+const START_PW_ZEICHEN = 'abcdefghjkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ23456789';
+function startPasswort() {
+  const crypto = require('crypto');
+  let pw = '';
+  for (let i = 0; i < 14; i++) pw += START_PW_ZEICHEN[crypto.randomInt(START_PW_ZEICHEN.length)];
+  return pw;
+}
+
 /* ── Firma anlegen ──
    Firma, Anmeldekonto des ersten Chefs und dessen Profil in einem Zug:
    einzeln ist nichts davon brauchbar.
@@ -1016,12 +1026,10 @@ exports.firmaAnlegen = region
     }
 
     // Passwort: lang genug, damit es nicht geraten wird, und aus einer
-    // Zeichenmenge ohne Verwechslungsgefahr (kein l/I/0/O).
-    const zeichen = 'abcdefghjkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let passwort = '';
-    for (let i = 0; i < 14; i++) {
-      passwort += zeichen[Math.floor(Math.random() * zeichen.length)];
-    }
+    // Zeichenmenge ohne Verwechslungsgefahr (kein l/I/0/O). Der Zufall
+    // kommt aus crypto.randomInt, nicht aus Math.random (Runde 142):
+    // Math.random ist nicht für Geheimnisse gemacht.
+    const passwort = startPasswort();
 
     const konto = await admin.auth().createUser({
       email: email, password: passwort, displayName: 'Geschaeftsfuehrung',
@@ -6800,7 +6808,7 @@ exports.kennzahlenErinnern = region
     return null;
   });
 
-exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
+exports.__intern = { startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
                      berlinDatum, tagDanach, erledigt, stempelGrenzTag,
