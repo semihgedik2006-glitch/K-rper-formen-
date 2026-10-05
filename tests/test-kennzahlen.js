@@ -182,6 +182,20 @@ function tabelle(p) {
   pruefe('Quote = Abschlüsse / Probetrainings (' + n0 + ', ' + m5 + ')', t.zeilen[n0][5] === (nn ? Math.round(ja / nn * 100) : null), t.zeilen[n0][5] + ' / ' + ja + '/' + nn);
   await p.evaluate(() => document.querySelector('[data-kzart="mitglieder"]').click());
 
+  /* Runde 141: wer eintippt und dann oben die Zahl wechselt, verliert
+     das Eingetippte nicht mehr. */
+  const bleibt = await p.evaluate(async () => {
+    const w = (ms) => new Promise(r => setTimeout(r, ms));
+    const f = document.querySelector('#kzEintrag [data-f="kuendigungen"]');
+    const vorher = f.value; f.value = '77';
+    document.querySelector('[data-kzart="quote"]').click(); await w(200);
+    document.querySelector('[data-kzart="mitglieder"]').click(); await w(200);
+    const nachher = document.querySelector('#kzEintrag [data-f="kuendigungen"]').value;
+    document.querySelector('#kzEintrag [data-f="kuendigungen"]').value = vorher;
+    return nachher;
+  });
+  pruefe('eingetippt, dann oben umgeschaltet: die Zahl bleibt stehen', bleibt === '77', bleibt);
+
   // Eintragen
   const ein = await p.evaluate(async (KZ) => {
     const w = (ms) => new Promise(r => setTimeout(r, ms));

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-/XW1ontMmQcrSiybf4dyagg0SFRR5mYWsNowj0boO4U='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-YybWGA5JvoUMz+dB181/RtncB64w0pEo/vfcKKFT05E='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -13040,6 +13040,10 @@ function terminalBeenden(still){
   var cb=$('tmCode'); if(cb) cb.hidden=true;
   if(!still){
     try{ localStorage.removeItem(TERM_SCHLUESSEL); }catch(e){}
+    /* Gemerkte Stempel samt PIN mit wegräumen: ohne den Schlüssel
+       lassen sie sich nicht mehr senden, und eine PIN soll nicht in
+       einem Gerät liegen bleiben, das kein Terminal mehr ist. */
+    try{ sessionStorage.removeItem(TM_WS_SCHLUESSEL); sessionStorage.removeItem(TM_WS_PROBLEME); }catch(e){}
     toast('Terminal beendet — das Gerät ist wieder eine normale App.');
   }
 }
@@ -18285,6 +18289,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-05-nachgebessert', datum:'5.10.2026', titel:'Nachgebessert: Kennzahlen, Terminal, Vorlagen', wo:'chef:kennzahlen', punkte:[
+    'Kennzahlen: Wer Zahlen eintippt und oben zwischen Mitglieder, Quote usw. umschaltet, verliert das Eingetippte nicht mehr. Die Tabelle holt beim Öffnen immer den neuesten Stand.',
+    'Die Erinnerung am Monatsersten kommt nur in Betrieben, die schon Kennzahlen eingetragen haben.',
+    'Terminal: „Terminal beenden" warnt, wenn noch Stempel ohne Netz warten, und nennt die Namen. Ein Stempel, dessen Antwort unterwegs verloren ging, steht nicht mehr doppelt da.',
+    'Vorlagen für Aufgaben merken sich jetzt auch die Tageszeit.' ] },
   { id:'2026-10-05-tageszeit', datum:'5.10.2026', titel:'Aufgaben und Putzplan nach Tageszeit', wo:'putzplan', punkte:[
     'Aufgaben und Putzaufgaben können jetzt „Morgens", „Mittags" oder „Abends" tragen – beim Anlegen und beim Bearbeiten. Ohne Angabe gelten sie „jederzeit".',
     'In der Sortierung gibt es „Nach Tageszeit": oben steht, was jetzt dran ist. Wer abends kommt, sieht die Abendaufgaben zuerst.',
@@ -32275,7 +32284,10 @@ function kzStudios(){ return managedStudios().map(function(n){ return { name:n, 
 
 function kzOeffnen(){
   kzWahlZeichnen(); kzMonatWahlFuellen();
-  if(_kzGeladen){ kzZeichnen(); return; }
+  /* Den letzten Stand sofort zeigen und trotzdem neu holen: trägt eine
+     zweite Leitung gerade ein, stünde sonst bis zum Neuladen der App
+     „fehlt noch" da (Runde 141). */
+  if(_kzGeladen) kzZeichnen();
   kzLaden();
 }
 function kzLaden(){
@@ -32292,11 +32304,15 @@ function kzLaden(){
         .catch(function(e){ console.warn('Kennzahlen/Probetraining:', e && e.message); return null; })
     : Promise.resolve(null);
   Promise.all([Promise.all(jobs), probeJob]).then(function(r){
+    var erstes=!_kzGeladen;
     _kzDaten={};
     r[0].forEach(function(sn){ sn.forEach(function(d){ var x=d.data()||{}; _kzDaten[x.studioKey+'_'+x.monat]=x; }); });
     _kzProbe = r[1] ? r[1].docs.map(function(d){ return d.data()||{}; }) : [];
     _kzGeladen=true; _kzLaedt=false;
     kzZeichnen();
+    /* Das Eintragen nur neu aufbauen, wenn niemand gerade tippt — sonst
+       wären halb eingetragene Zahlen weg. */
+    if(erstes || !kzEintragBeruehrt()) kzEintragZeichnen();
   }).catch(function(e){
     _kzLaedt=false;
     if(box) box.innerHTML='<p class="hint">Die Kennzahlen ließen sich nicht laden: '+esc(errMsg(e))+'</p>';
@@ -32407,7 +32423,23 @@ function kzZeichnen(){
   if(q) q.textContent = (ansichtAn('probe') ? 'Probetrainings und Abschlüsse kommen aus den Einträgen unter „Probetraining". ' : '')+
     'Mitglieder und Kündigungen trägt die Studioleitung am Monatsanfang ein; „–" heißt: noch nicht eingetragen. '+
     'Zuwachs = Mitglieder minus Vormonat.';
-  kzEintragZeichnen();
+  /* Hier stand kzEintragZeichnen(). Damit baute jeder Wechsel der Zahl
+     oben (Mitglieder → Quote …) die Eingabefelder neu auf, und was jemand
+     schon eingetippt, aber nicht gespeichert hatte, war weg (Runde 141).
+     Neu aufgebaut wird jetzt nur beim Laden, beim Monatswechsel und nach
+     dem Speichern. */
+}
+/* Hat jemand in den Feldern etwas geändert, das noch nicht gespeichert ist? */
+function kzEintragBeruehrt(){
+  var sel=$('kzMonatWahl'); if(!sel) return false;
+  var monat=sel.value, geaendert=false;
+  document.querySelectorAll('#kzEintrag [data-kzst]').forEach(function(z){
+    var e=_kzDaten[z.getAttribute('data-kzst')+'_'+monat]||{};
+    var m=z.querySelector('[data-f="mitglieder"]').value, k=z.querySelector('[data-f="kuendigungen"]').value;
+    if(m!==(typeof e.mitglieder==='number'?String(e.mitglieder):'') ||
+       k!==(typeof e.kuendigungen==='number'?String(e.kuendigungen):'')) geaendert=true;
+  });
+  return geaendert;
 }
 function kzMonatWahlFuellen(){
   var sel=$('kzMonatWahl'); if(!sel || sel.options.length) return;
@@ -32451,7 +32483,7 @@ function kzSpeichern(){
   Promise.all(schreib.map(function(x){ return S('kennzahlen').doc(x.studioKey+'_'+x.monat).set(x); })).then(function(){
     schreib.forEach(function(x){ _kzDaten[x.studioKey+'_'+x.monat]=x; });
     b.disabled=false; toast(schreib.length===1 ? 'Gespeichert ✓' : schreib.length+' Studios gespeichert ✓'); tick(10);
-    kzZeichnen();
+    kzZeichnen(); kzEintragZeichnen();
   }).catch(function(e){ b.disabled=false; fehler.textContent=errMsg(e); });
 }
 
@@ -37315,6 +37347,7 @@ function useTemplate(){
   $('ntDesc').value=t.desc||'';
   if($('ntSteps')) $('ntSteps').value=(t.steps||[]).join('\n');
   $('ntRepeat').value=t.recurring||'';
+  if($('ntZeit')) $('ntZeit').value = TAGESZEITEN[t.tageszeit] ? t.tageszeit : '';
   $('ntCustomWrap').style.display = t.recurring==='custom' ? 'block' : 'none';
   if(t.recurring==='custom'){
     $('ntIntN').value=t.intervalN||6;
@@ -37334,6 +37367,9 @@ function saveAsTemplate(){
     .map(function(x){ return x.trim(); }).filter(function(x){ return !!x; }).slice(0,20);
   var t={ name:name.slice(0,60), title:title, desc:($('ntDesc').value||'').trim(),
           steps:steps, recurring:$('ntRepeat').value||'' };
+  /* Die Tageszeit gehört zur Vorlage (Runde 141): „Theke abends wischen"
+     ist morgens nicht dieselbe Aufgabe. */
+  var tzV=($('ntZeit')||{}).value; if(tzV) t.tageszeit=tzV;
   if(t.recurring==='custom'){
     t.intervalN=parseInt($('ntIntN').value,10)||1;
     t.intervalUnit=$('ntIntUnit').value;
@@ -39462,9 +39498,18 @@ function bindActions(){
   });
   var tab=$('tmAus');
   if(tab) tab.addEventListener('click', function(){
+    /* Runde 141: warten noch Stempel ohne Netz, gingen sie mit dem
+       Beenden verloren (sie brauchen den Schlüssel dieses Geräts). Das
+       muss vorher dastehen, mit Namen. */
+    var warten=tmWsLesen(TM_WS_SCHLUESSEL);
+    var hinweis = warten.length
+      ? '\n\nACHTUNG: '+(warten.length===1?'1 Stempel wartet':warten.length+' Stempel warten')+' noch auf Netz ('+
+        warten.map(function(x){ return x.name; }).join(', ')+'). Beim Beenden gehen sie verloren und '+
+        'müssen von der Leitung nachgetragen werden.'
+      : '';
     if(confirm('Terminal beenden?\n\nDieses Gerät ist danach wieder eine '+
       'normale App. Zum Stempeln muss es neu eingerichtet werden — '+
-      'der Schlüssel wird dabei neu vergeben.')) terminalBeenden(false);
+      'der Schlüssel wird dabei neu vergeben.'+hinweis)) terminalBeenden(false);
   });
 
   /* Der Design-Schalter. Der Geräte-Knopf hängt an keiner Rolle: er

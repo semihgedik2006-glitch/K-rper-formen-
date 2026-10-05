@@ -94,6 +94,26 @@ const als = (uid) => ({ auth: { uid } });
   const zahl = (await db.collection(F + 'zeiten').where('uid', '==', 'olga').get()).size;
   pruefe('von den abgewiesenen ist keiner gespeichert', zahl === 3, String(zahl));
 
+  /* Runde 141: der Stempel kam an, nur die Antwort ging verloren — das
+     Terminal schickt ihn als „ohne Netz" nach. Er darf nicht doppelt
+     dastehen. */
+  await db.doc('users/olaf').set({ name: 'Olaf', role: 'mitarbeiter', firma: 'koerperformen', aktiv: true, studioKeys: ['studio-1'] });
+  await db.doc(F + 'zeitPins/olaf').set({ salz: 'sz2', hash: I.pinHashen('8642', 'sz2'), fehlversuche: 0 });
+  for (const d of (await db.collection(F + 'zeiten').where('uid', '==', 'olaf').get()).docs) await d.ref.delete();
+  const ol = Object.assign({}, basis, { uid: 'olaf', pin: '8642' });
+  const echt = await fns.stempeln.run(ol, als('tablet'));
+  const nach = await fns.stempeln.run(Object.assign({}, ol, { offlineTs: echt.ts + 3000, offlineId: 'o-verloren' }), als('tablet'));
+  const zo = (await db.collection(F + 'zeiten').where('uid', '==', 'olaf').get()).size;
+  pruefe('Antwort verloren, als „ohne Netz" nachgeschickt → kein zweiter Stempel', zo === 1 && nach.schonDa === true, zo + ' / ' + JSON.stringify(nach));
+  /* GEGENPROBE: liegt der vorige Stempel mehr als zwei Minuten zurück,
+     ist der nachgeschickte ein eigener. */
+  const vorhin = Date.now() - 5 * 60000;
+  const ref = (await db.collection(F + 'zeiten').where('uid', '==', 'olaf').get()).docs[0].ref;
+  await ref.update({ ts: vorhin });
+  const eigen = await fns.stempeln.run(Object.assign({}, ol, { offlineTs: Date.now() - 1000, offlineId: 'o-eigen' }), als('tablet'));
+  const zo2 = (await db.collection(F + 'zeiten').where('uid', '==', 'olaf').get()).size;
+  pruefe('GEGENPROBE: liegt der vorige Stempel 5 Minuten zurück, ist der nachgeschickte ein eigener', zo2 === 2 && !eigen.schonDa, zo2 + ' / ' + JSON.stringify(eigen));
+
   pruefe('offlineZeitPruefen: 11:59 Stunden alt geht', I.offlineZeitPruefen(jetzt - (12 * 60 - 1) * 60000, jetzt) === jetzt - (12 * 60 - 1) * 60000);
 
   console.log('\n── Stempeln ohne Netz ──');

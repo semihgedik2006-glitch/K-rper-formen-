@@ -160,6 +160,19 @@ const K = (studio, monat, uid, f) => Object.assign({ studioKey: studio, monat, m
     await I.kennzahlenErinnernFirma('kz', Date.UTC(2026, 9, 4, 8));
     pruefe('am 4.: alles eingetragen → niemand bekommt etwas', gesendet.length === 0, JSON.stringify(gesendet));
 
+    /* Runde 141: ein Betrieb, der die Kennzahlen nie benutzt hat, bekommt
+       keine Aufforderung — sonst kämen jeden Monat Pushes für eine
+       Ansicht, nach der dort niemand gefragt hat. */
+    gesendet.length = 0;
+    const N = db.collection('firmen').doc('kz-nie');
+    await N.set({ name: 'Nie', aktiv: true });
+    await N.collection('config').doc('studios').set({ liste: [{ id: 's1', name: 'Mitte' }] });
+    await db.doc('users/nLei').set({ name: 'nLei', firma: 'kz-nie', role: 'leiter', studioKeys: ['s1'] });
+    await db.doc('pushTokens/tok-nLei').set({ uid: 'nLei', firma: 'kz-nie', role: 'leiter', studioKeys: ['s1'] });
+    await I.kennzahlenErinnernFirma('kz-nie', jetzt);
+    pruefe('ein Betrieb ohne einen einzigen Eintrag bekommt keine Erinnerung', gesendet.length === 0, JSON.stringify(gesendet));
+    await db.doc('users/nLei').delete(); await db.doc('pushTokens/tok-nLei').delete();
+
     const R = I.kennzahlEmpfaenger({ a: 'A', b: 'B' }, new Set(), [
       { uid: 'l', role: 'leiter', studioKeys: ['a', 'b'] }, { uid: 'c', role: 'chef' }]);
     pruefe('eine Leitung mit zwei Studios bekommt EINE Nachricht mit beiden', JSON.stringify(R) === '{"l":["A","B"]}', JSON.stringify(R));

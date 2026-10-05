@@ -145,7 +145,8 @@ Fünf Bereiche in der unteren Leiste:
   erfasst · angekommen …" (in „Meine Zeiten" und bei der Leitung). Lehnt
   der Server ihn ab (falsche PIN, älter als 12 Stunden), bleibt auf dem
   Terminal „Nicht gespeichert: … bitte bei der Leitung nachtragen lassen"
-  stehen, bis jemand „Verstanden" tippt.
+  stehen, bis jemand „Verstanden" tippt. „Terminal beenden" warnt, wenn
+  noch Stempel warten (mit Namen) – sie gingen beim Beenden verloren.
 
 ---
 

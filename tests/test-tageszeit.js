@@ -198,6 +198,24 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
     const k = await p.evaluate(() => [...document.querySelectorAll('#ppList .pp-gruppe h4')].map(h => h.textContent));
     pruefe('GEGENPROBE um 8:30: „Jetzt · Morgens" steht vorne, danach Jederzeit, Mittags, Abends',
       k[0] === 'Jetzt · Morgens' && k.filter(x => x !== 'Jetzt · Morgens').join('|') === ['Jederzeit', 'Mittags', 'Abends'].filter(x => k.indexOf(x) >= 0).join('|'), k.join('|'));
+    /* Runde 141: eine Vorlage nimmt die Tageszeit mit. */
+    p.on('dialog', d => d.accept('Tageszeit-Vorlage'));
+    const tpl = await p.evaluate(async () => {
+      const w = (ms) => new Promise(r => setTimeout(r, ms));
+      const a = [...document.querySelectorAll('[data-group="g-alles"]')].find(x => x.offsetParent); if (a) { a.click(); await w(500); }
+      const e = [...document.querySelectorAll('[data-alles][data-al-cgo="erstellen"]')].find(x => x.offsetParent); if (e) { e.click(); await w(700); }
+      document.querySelectorAll('.card.fold.zu').forEach(k => { if (k.querySelector('#tplSave, #ntZeit')) k.querySelector('.fold-head').click(); });
+      await w(300);
+      document.getElementById('ntTitle').value = 'Abends Theke wischen';
+      document.getElementById('ntZeit').value = 'abends';
+      document.getElementById('tplSave').click(); await w(600);
+      document.getElementById('ntTitle').value = ''; document.getElementById('ntZeit').value = '';
+      const sel = document.getElementById('tplSelect');
+      const opt = [...sel.options].find(o => /Tageszeit-Vorlage/.test(o.textContent)); if (opt) sel.value = opt.value;
+      document.getElementById('tplUse').click(); await w(300);
+      return { titel: document.getElementById('ntTitle').value, zeit: document.getElementById('ntZeit').value };
+    });
+    pruefe('eine Vorlage nimmt die Tageszeit mit', tpl.titel === 'Abends Theke wischen' && tpl.zeit === 'abends', JSON.stringify(tpl));
     await p.close();
   }
 

@@ -226,6 +226,16 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
       return { ws: JSON.parse(sessionStorage.getItem('kf_stempelOhneNetz') || '[]').length, toast: document.getElementById('toast').textContent };
     });
     pruefe('Netz da, aber keine Antwort („Failed to fetch"): ebenfalls gemerkt', t3.ws === 1 && /Ohne Netz gemerkt/.test(t3.toast), JSON.stringify(t3));
+    /* Runde 141: beim Beenden warnt das Terminal vor wartenden Stempeln
+       und räumt sie samt PIN weg. */
+    let frage = '';
+    p.once('dialog', d => { frage = d.message(); d.accept(); });
+    const ende = await p.evaluate(async () => {
+      document.getElementById('tmAus').click(); await new Promise(r => setTimeout(r, 400));
+      return { ws: sessionStorage.getItem('kf_stempelOhneNetz'), pr: sessionStorage.getItem('kf_stempelProbleme') };
+    });
+    pruefe('„Terminal beenden" warnt: „1 Stempel wartet … (Anna Meier) … gehen sie verloren"', /1 Stempel wartet.*Anna Meier.*verloren/s.test(frage), frage);
+    pruefe('… und räumt die gemerkten Stempel samt PIN weg', !ende.ws && !ende.pr, JSON.stringify(ende));
     pruefe('ohne Skriptfehler (2)', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
