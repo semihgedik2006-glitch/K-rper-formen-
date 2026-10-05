@@ -5039,8 +5039,40 @@ function naechsterSchritt(letzteArt) {
    Der Grund ist nicht Misstrauen, sondern Beweiswert. Eine Aufzeichnung,
    die sich nachtraeglich beliebig aendern laesst, ist als Nachweis
    nichts wert — auch dann, wenn sie nie geaendert wurde. */
+/* ── Stempeln ohne Netz (Runde 139) ──
+   Aus dem Betrieb, 4.10.2026: „eigentlich hat jedes Studio Netz, aber
+   man weiss ja nie, wo und wann es ausfällt" — und auf die Frage, ob das
+   Terminal dann trotzdem stempeln darf, mit Vermerk: „doch".
+
+   Das Terminal merkt sich den Stempel mit der Uhrzeit des GERÄTS und
+   schickt ihn nach, sobald wieder Netz da ist. Geprüft wird beim
+   Nachschicken genau wie sonst — Gerät, Person, PIN. Dazu:
+   · höchstens OFFLINE_MAX_MS alt und nicht in der Zukunft (die Uhr des
+     Geräts lässt sich verstellen; ein Stempel von gestern Nacht ist ein
+     Fall für die Leitung, nicht für die Warteschlange),
+   · der Stempel trägt `ohneNetz: true` und `empfangen` (wann er wirklich
+     ankam) — die Leitung sieht beides, die Person in „Meine Zeiten" auch,
+   · `offlineId` macht das Nachschicken wiederholbar: kommt derselbe
+     Stempel zweimal an (Antwort unterwegs verloren), gibt es ihn einmal. */
+const OFFLINE_MAX_MS = 12 * 3600 * 1000;
+function offlineZeitPruefen(roh, jetzt) {
+  const o = Number(roh);
+  if (!Number.isFinite(o) || o > jetzt + 2 * 60000) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Die Uhrzeit dieses Stempels stimmt nicht (liegt in der Zukunft). Bitte bei der Leitung nachtragen lassen.');
+  }
+  if (o < jetzt - OFFLINE_MAX_MS) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Dieser Stempel ohne Netz ist älter als 12 Stunden. Bitte bei der Leitung nachtragen lassen.');
+  }
+  return Math.round(o);
+}
+
 exports.stempeln = region.https.onCall(async (data, context) => {
   const { firma } = await anruferProfil(context);
+  const ohneNetz = !!(data && data.offlineTs !== undefined && data.offlineTs !== null);
+  const wann = ohneNetz ? offlineZeitPruefen(data.offlineTs, Date.now()) : Date.now();
+  const offlineId = ohneNetz ? String((data && data.offlineId) || '').trim().slice(0, 40) : '';
   const terminalId = String((data && data.terminalId) || '').trim();
   const geheim = String((data && data.geheim) || '').trim();
   const uid = String((data && data.uid) || '').trim();
@@ -5135,20 +5167,31 @@ exports.stempeln = region.https.onCall(async (data, context) => {
      schneller gefunden, als ein Index angelegt waere — denselben Weg
      geht der Browser seit jeher (siehe papierkorbLaden in
      index.html). */
-  const tag = berlinDatum(new Date());
+  const tag = berlinDatum(wann);
   const heute = await W(firma).collection('zeiten')
     .where('uid', '==', uid).where('tag', '==', tag).get();
+  /* Schon angekommen? Dann nicht ein zweites Mal (siehe offlineId). */
+  if (offlineId) {
+    const da = heute.docs.find((d) => d.get('offlineId') === offlineId);
+    if (da) {
+      const z = da.data() || {};
+      return { ok: true, art: z.art, ts: z.ts, name: person.name || '', fremd: !!z.fremd, ohneNetz: true, schonDa: true };
+    }
+  }
+  /* Der nächste Schritt richtet sich nach dem letzten Stempel VOR diesem
+     Zeitpunkt — bei einem nachgeschickten also nicht nach einem, der
+     inzwischen später dazukam. */
   let letzteArt = null, letzteZeit = -1;
   heute.forEach((d) => {
     const z = d.data() || {};
-    if ((z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
+    if ((z.ts || 0) <= wann && (z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
   });
   const art = naechsterSchritt(letzteArt);
 
   const jetzt = Date.now();
-  await W(firma).collection('zeiten').add({
+  await W(firma).collection('zeiten').add(Object.assign({
     uid, name: person.name || '', studioKey: term.studioKey,
-    art, ts: jetzt, tag,
+    art, ts: wann, tag,
     /* `monat` ist Absicht und keine Bequemlichkeit: „Meine Zeiten"
        liest monatsweise ueber ZWEI GLEICHHEITSFILTER (uid, monat).
        Ein Bereich auf `tag` neben der Gleichheit auf `uid` braeuchte
@@ -5159,10 +5202,10 @@ exports.stempeln = region.https.onCall(async (data, context) => {
     fremd,
     quelle: 'terminal',
     terminalId, terminalName: term.name || ''
-  });
+  }, ohneNetz ? { ohneNetz: true, empfangen: jetzt, offlineId } : {}));
   await tSnap.ref.update({ letzterStempel: jetzt });
 
-  return { ok: true, art, ts: jetzt, name: person.name || '', fremd };
+  return { ok: true, art, ts: wann, name: person.name || '', fremd, ohneNetz };
 });
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -6756,6 +6799,7 @@ exports.__intern = { mailWillHaben, kontenImStudio, collectMonthly, monatsText, 
                      vorfallText, betrifft, auskunftSauber,
                      bestellPositionen, bestellText, bestellKennung, BESTELL_TAGESGRENZE,
                      kennzahlMonatVor, kennzahlEmpfaenger, kennzahlenErinnernFirma,
+                     offlineZeitPruefen, OFFLINE_MAX_MS,
                      /* Nur für tests/rules/vorfall.test.js: ein Ersatz-Versender,
                         der festhält, was er bekommt. Ohne ihn liesse sich die
                         Wichtigkeit der Mail nicht prüfen, ohne echt zu senden. */

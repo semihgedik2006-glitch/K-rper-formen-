@@ -31,11 +31,11 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 
 | | | Quelle |
 |---|---|---|
-| Anwendung | `index.html`, **39.315 Zeilen** | `wc -l` |
+| Anwendung | `index.html`, **39.541 Zeilen** | `wc -l` |
 | Serverfunktionen | **81** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **2.502 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **179** (176 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
-| Automatische Durchläufe (Regeln) | **32 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem zwölf Dateien dazu) | `tests/rules/` |
+| Automatische Durchläufe (Oberfläche) | **180** (177 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Regeln) | **33 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem dreizehn Dateien dazu) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
 | Build-Schritt | **keiner** | kein `package.json` im Wurzelverzeichnis |
@@ -271,6 +271,7 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 | Foto zur Aufgabe | **VERIFIZIERT** | |
 | Putzplan | **VERIFIZIERT** | Anlegen Chefsache, Abhaken darf jeder |
 | Material mit Soll-Bestand | **VERIFIZIERT** | Eintragen darf jeder, das Soll setzt die Verwaltung |
+| Ohne Netz weiterarbeiten (seit 5.10.2026) | **TEILWEISE** | Die Logik (nichts hängt, Zähler, „nachgereicht", Fehler beim Nachreichen) und das Terminal ohne Netz sind geprüft (`tests/test-offline.js`, `tests/rules/offline-stempel.test.js`). **Mit dem echten Datenbank-Programm nicht** — es lädt in der Testumgebung nicht; Prüfliste für vor Ort in `FORTSCHRITT.md`, Runde 139 |
 | Kennzahlen je Studio (seit 4.10.2026) | **VERIFIZIERT** (Demo, Regeln, Erinnerung im Emulator) | Probetrainings/Abschlüsse/Quote aus den Einträgen, Mitglieder/Kündigungen eingetragen von der Leitung; Erinnerung am 1. und 4. (`kennzahlenErinnern`). Eine echte Push-Nachricht ist aus dieser Umgebung nicht verschickt worden |
 | Bestellung beim Lieferanten (seit 4.10.2026) | **TEILWEISE** | Vorschau, Herausnehmen, „zuletzt bestellt", Lieferant je Betrieb: geprüft (`tests/test-bestellung.js`, Demo). Der Versand selbst: im Emulator mit Ersatz-Versender geprüft (`tests/rules/bestellung.test.js`) — **echt verschickt wurde noch keine**; ohne SMTP-Geheimnisse sagt die App „nicht eingerichtet" und bietet das Mailprogramm an |
 | Geräte- und Schadensbuch | **VERIFIZIERT** | mit Protokoll je Gerät |

@@ -14866,3 +14866,91 @@ Danach alle Putzplan- und Demo-Tests grün (7).
 `sw.js` kurz leer (das Skript öffnete die Datei zum Schreiben, bevor es
 sie gelesen hatte) und wurde so gepusht. Wiederhergestellt, bevor der
 Oberflächenlauf begann und bevor etwas gemergt war.
+
+## Runde 139: Wenn das Netz ausfällt (5.10.2026)
+
+Aus dem Betrieb: „eigentlich hat jedes Studio Netz, aber man weiss ja
+nie, wo und wann es ausfällt und wie es bei Kunden ist" — und auf die
+Frage, ob das Terminal ohne Netz mit Vermerk stempeln darf: „doch".
+Zur Frage „zwei Leute haken offline dasselbe ab → wer zuerst sendet":
+„geht so fit".
+
+**Was beim Nachsehen herauskam** (aus dem Code, nicht gemessen — siehe
+unten):
+- Die Datenbank merkte sich Änderungen ohne Netz längst
+  (`enablePersistence`). **Aber** ihr Versprechen „gespeichert" kommt
+  erst mit der Bestätigung des Servers — ohne Netz also nie. Jede Stelle,
+  die darauf wartet (fast alle: Knopf grau bis fertig, dann „✓" und
+  Fenster zu), blieb hängen. Wer nochmal tippte, schrieb doppelt.
+- Das Terminal rief den Server zum Stempeln — ohne Netz kam nur eine
+  Fehlermeldung, und der Stempel war weg.
+- Die Firebase-Programme von gstatic wurden ohne `crossorigin` geladen;
+  der Service Worker legt solche („opaken") Antworten bewusst nicht in
+  den Vorrat. Ein Start der App ganz ohne Netz hätte deshalb am
+  Datenbank-Programm scheitern können.
+
+**Was gebaut ist**
+- `lokalAbwarten` an der Datenbank selbst (set, update, delete, add,
+  commit): kommt keine Bestätigung, geht es nach 1,5 s (ohne Netz) bzw.
+  8 s (Netz, aber langsam) als „auf dem Gerät gemerkt" weiter. Die Leiste
+  oben zählt, was wartet; „Alles nachgereicht ✓", sobald es ankommt;
+  scheitert das Nachreichen, eine Meldung. Nur aktiv, wenn das echte
+  Datenbank-Programm geladen ist.
+- Terminal: ohne Netz (oder ohne Antwort) wird der Stempel mit der
+  Gerätezeit gemerkt und nachgeschickt (`offlineTs`, `offlineId`). Der
+  Server prüft wie sonst und vermerkt `ohneNetz` + `empfangen`;
+  höchstens 12 Stunden alt, nicht in der Zukunft, nicht doppelt.
+  Abgelehntes bleibt als „Nicht gespeichert … Leitung" stehen.
+- Der Vermerk „ohne Netz erfasst · angekommen …" am Stempel (Meine
+  Zeiten und Leitung), im Export, im Datenschutztext.
+- `crossorigin="anonymous"` an den fünf gstatic-Skripten (gstatic
+  antwortet mit `access-control-allow-origin: *`, nachgesehen), damit der
+  Service Worker sie vorrätig hält.
+
+**Warum so entschieden**
+- *An der Datenbank statt an 80 Stellen:* eine Stelle, die jemand beim
+  nächsten Formular vergisst, hängt wieder. So gilt es für alles, auch
+  für Neues.
+- *Die PIN im sessionStorage:* ohne PIN liesse sich nachträglich nicht
+  prüfen, dass die Person selbst gestempelt hat — und ein Stempel ohne
+  diese Prüfung wäre einer für jeden. sessionStorage verschwindet mit dem
+  Tab und wird nach dem Ankommen gelöscht; localStorage bliebe
+  dauerhaft. Der Preis (Neustart ohne Netz = Stempel weg) steht in der
+  Meldung beim Merken.
+- *12 Stunden:* ein Ausfall über eine Schicht hinaus ist ein Fall für
+  die Leitung (Nachtragen mit Grund), nicht für die Warteschlange — die
+  Uhr des Geräts lässt sich verstellen.
+- *Wer zuerst sendet:* zwei Leute haken offline dieselbe Aufgabe ab →
+  es steht drin, wessen Änderung zuletzt ankommt; abgehakt ist sie so
+  oder so. Das ist das Verhalten der Datenbank und hier richtig.
+
+**Tests**
+- `tests/test-offline.js` (38): die Logik ohne Netz / mit Netz / langsam
+  / Fehler beim Nachreichen; das Terminal ohne Netz (gemerkt, PIN nicht im
+  localStorage, nachgeschickt mit Gerätezeit, Ablehnung bleibt stehen,
+  „Failed to fetch" zählt als ohne Netz); der Vermerk in „Meine Zeiten";
+  „Verstanden" 44 × 44 bei 320–1920 px. Gegenprobe: mit 60 s Wartezeit
+  wird der Durchlauf rot.
+- **Gefunden beim ersten Lauf:** die Meldung „gemerkt" kam 60 ms
+  verzögert und überschrieb eine inzwischen gekommene Fehlermeldung.
+  Jetzt nur, wenn bis dahin nichts passiert ist.
+- `tests/rules/offline-stempel.test.js` (15): der Server im Emulator.
+
+**Was NICHT geprüft ist — und vor Ort geprüft werden sollte.** Das echte
+Datenbank-Programm lädt in dieser Testumgebung nicht (Proxy-Zertifikat).
+Ob es nach einem Ausfall seine Warteschlange abarbeitet und ob die
+Programme beim Start ohne Netz aus dem Vorrat kommen, zeigt erst ein
+Versuch. **Prüfliste (10 Minuten, ein Handy, ein Tablet):**
+1. App öffnen, einmal neu laden (damit der neue Service Worker läuft).
+2. Flugmodus an. Eine Aufgabe abhaken → der Haken sitzt sofort, oben
+   „1 Änderung wartet".
+3. Eine Chat-Nachricht schreiben → sie steht da, der Senden-Knopf ist
+   nicht grau.
+4. Flugmodus aus → nach wenigen Sekunden „Alles nachgereicht ✓"; auf
+   einem zweiten Gerät sind Haken und Nachricht da.
+5. Terminal-Tablet: WLAN aus, mit PIN stempeln → „Ohne Netz gemerkt";
+   WLAN an → „Nachgereicht"; in Verwaltung → Zeiten steht „ohne Netz
+   erfasst".
+6. Flugmodus an, die App ganz schliessen und neu öffnen → sie startet
+   (zuletzt geladener Stand) statt mit „Firebase-Fehler".
+
