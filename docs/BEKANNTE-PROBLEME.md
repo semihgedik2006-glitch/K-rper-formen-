@@ -546,6 +546,15 @@ nicht; die App rechnet es beim Anzeigen aus den Namen und verdeckt so das
 Problem. Bewusst NICHT automatisch repariert: erst zeigen, wen es trifft
 (Hausregel für Änderungen an echten Konten).
 
+**Nachtrag 6.10.2026 (Runde 145):** „Es konnten wieder ein paar Studio
+Leiter keine Aufgaben anlegen." Die Hauptursache war eine andere als
+hier: bei der Studioleitung war der Knopf „Aufgabe erstellen" gar nicht
+verdrahtet (nur für die Rolle `chef`) — er tat nichts. Behoben. Dieser
+Punkt hier wirkte zusätzlich: mit „Alle Studios" liess EIN Studio ohne
+Kennung die ganze Aufgabe scheitern. Jetzt bietet das Formular nur an,
+was die Regel erlaubt, und nennt das Gesperrte. Die Daten selbst repariert
+weiterhin die Geschäftsführung mit „Zuordnung reparieren".
+
 ## P-17 · Die Aufgaben brauchen bis zum ersten Bild zu lange
 
 | | |
