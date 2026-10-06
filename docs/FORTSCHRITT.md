@@ -15161,3 +15161,30 @@ die direkten Kinder von `#schUebersicht`; die Karten liegen jetzt in der
 Hülle `.sch-oben`. Beide prüfen dieselbe Reihenfolge („Das steht für dich
 an" zuerst, „Kurz auffrischen" danach) jetzt durch die Hülle hindurch.
 
+## Runde 144: Dokumente und Archiv am Rechner (6.10.2026)
+
+Die zwei Listen, die in Runde 143 bewusst offen blieben. Gemessen bei
+1920 px: beide 1.654 px breit — der Name einer Datei links, ihr „…" ganz
+rechts.
+
+**Gebaut:** dasselbe Muster wie Material und Geräte (Runde 108): links
+höchstens 960 px, rechts 320–400 px, die rechte Spalte nur, wenn dort
+etwas steht (`:has`). Dokumente: Liste links, „Dokument hinzufügen"
+rechts; dafür eine Hülle `.doc-haupt` um Sicht, Kategorien, Sortierung
+und Liste (der Ladehinweis, der sich vor `docList` setzt, landet mit in
+der Hülle). Archiv: ohne Umbau, nur CSS.
+
+**Dabei gefunden:** `position:sticky; top:12px` (wie beim Material)
+greift hier schon in Ruhe, weil die Karte ganz oben steht — die rechte
+Spalte stand 12 px tiefer als die linke. Hier `top:0`. Die 4 px Abstand
+für die Reiterleiste (Runde 143) bleiben: am Rechner ragt deren
+unsichtbare Fläche genauso hinein.
+
+**Mitarbeiter:** dürfen nicht hochladen → eine Spalte, Liste auf 960 px
+begrenzt, keine leere Spalte daneben. Die Sicherungen sieht nur die
+Geschäftsführung → für alle anderen ebenfalls eine Spalte.
+
+**Tests:** `test-pc-durchsicht.js` Abschnitt 6 (+15, jetzt 44):
+1280/1440/1920 als Chef und Mitarbeiter, Gegenprobe 390, Treffer bei
+320–1920 in beiden Dichten. Gegen den alten Stand rot.
+

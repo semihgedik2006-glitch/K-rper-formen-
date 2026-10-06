@@ -29,6 +29,12 @@
       wurde ein Streifen), und die Überschrift steht dort, wo sie
       vorher stand (Innenabstand + 2 px): das Bild hat sich nicht
       verschoben.
+   6. Runde 144 — Dokumente und Archiv bei 1280 / 1440 / 1920: Liste
+      bzw. „Erledigte Aufgaben" links und höchstens 960 px breit, das
+      Formular bzw. die Sicherungen rechts, beide Spalten oben bündig
+      (vorher stand rechts 12 px tiefer). Mitarbeiter (kein Hochladen):
+      eine Spalte, keine leere daneben. GEGENPROBE 390: untereinander
+      wie vorher. Treffer ≥ 44 bei 320–1920 in beiden Dichten.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -238,6 +244,83 @@ const ERST = '[data-cpane="erstellen"] ';
     }
     pruefe(gemessen + ' Köpfe gemessen (zu und offen), alle ≥ 44 px hoch getroffen', gemessen >= 150 && !zuKlein.length, [...new Set(zuKlein)].join(', '));
     pruefe('… die Überschriften stehen, wo sie standen (Innenabstand + 2 px)', !versatz.length, [...new Set(versatz)].join(', '));
+  }
+
+  console.log('\n── 6. Dokumente und Archiv ──');
+  async function seite(rolle, w, h, ziel) {
+    const p = await b.newPage({ viewport: { width: w, height: h } });
+    p._fehler = [];
+    p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3300);
+    p._da = await ueberAlles(p, '[data-alles="' + ziel + '"]');
+    return p;
+  }
+  for (const [w, h] of PC) {
+    let p = await seite('chef', w, h, 'docs');
+    const liste = await kasten(p, '#view-docs .doc-haupt');
+    const neu = await kasten(p, '#docUploadCard');
+    pruefe(w + ' px Dokumente: Liste links (≤ 960 px), „Dokument hinzufügen" rechts, oben bündig',
+      p._da && nebeneinander(liste, neu) && liste.w <= 960, JSON.stringify({ liste, neu }));
+    pruefe(w + ' px Dokumente: ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+    p = await seite('chef', w, h, 'archive');
+    const erl = await kasten(p, '#archErledigtCard');
+    const sich = await kasten(p, '#weekArchiveCard');
+    pruefe(w + ' px Archiv: „Erledigte Aufgaben" links (≤ 960 px), Sicherungen rechts, oben bündig',
+      p._da && nebeneinander(erl, sich) && erl.w <= 960, JSON.stringify({ erl, sich }));
+    await p.close();
+    p = await seite('mitarbeiter', w, h, 'docs');
+    const m = await p.evaluate(() => {
+      const sa = document.querySelector('#view-docs .scroll-area'), l = document.querySelector('#view-docs .doc-haupt').getBoundingClientRect();
+      const u = document.getElementById('docUploadCard');
+      return { grid: getComputedStyle(sa).display, breite: Math.round(l.width), hochladen: !!u && u.offsetParent !== null };
+    });
+    pruefe(w + ' px Dokumente als Mitarbeiter: eine Spalte (kein Raster), Liste ≤ 960 px, kein Hochladen',
+      m.grid !== 'grid' && m.breite <= 960 && !m.hochladen, JSON.stringify(m));
+    await p.close();
+  }
+  {
+    let p = await seite('chef', 390, 844, 'docs');
+    const neu = await kasten(p, '#docUploadCard'), liste = await kasten(p, '#view-docs .doc-haupt');
+    pruefe('GEGENPROBE 390 px Dokumente: „Dokument hinzufügen" über der Liste, gleiche linke Kante',
+      !!neu && !!liste && neu.l === liste.l && neu.t < liste.t, JSON.stringify({ neu, liste }));
+    await p.close();
+    p = await seite('chef', 390, 844, 'archive');
+    const sich = await kasten(p, '#weekArchiveCard'), erl = await kasten(p, '#archErledigtCard');
+    pruefe('GEGENPROBE 390 px Archiv: Sicherungen über „Erledigte Aufgaben", gleiche linke Kante',
+      !!sich && !!erl && sich.l === erl.l && sich.t < erl.t, JSON.stringify({ sich, erl }));
+    await p.close();
+  }
+  {
+    const zuKlein = [];
+    for (const [ziel, sel] of [['docs', ['#docUploadCard > .fold-head', '#docSort button']], ['archive', ['#archSaveNow', '#archClear']]]) {
+      const p = await seite('chef', 390, 844, ziel);
+      for (const [w, h] of GROESSEN) {
+        await p.setViewportSize({ width: w, height: h });
+        await p.waitForTimeout(250);
+        for (const dichte of ['normal', 'kompakt']) {
+          await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
+          const m = await p.evaluate(async ([SRC, sel]) => {
+            const T = eval('(' + SRC + ')');
+            const aus = {};
+            for (const s of sel) {
+              const el = document.querySelector(s);
+              if (!el || !el.offsetParent) { aus[s] = { w: -1, h: -1 }; continue; }
+              el.scrollIntoView({ block: 'center' });
+              await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+              aus[s] = T(el);
+            }
+            return aus;
+          }, [TREFFER.toString(), sel]);
+          for (const [s, r] of Object.entries(m)) if (r.w < 44 || r.h < 44) zuKlein.push(ziel + ' ' + w + '/' + dichte + ' ' + s + ' ' + r.w + '×' + r.h);
+        }
+      }
+      await p.close();
+    }
+    pruefe('Dokumente und Archiv: Treffer ≥ 44 × 44 bei 320–1920 px, normal und kompakt', !zuKlein.length, zuKlein.join(', '));
   }
 
   await b.close();
