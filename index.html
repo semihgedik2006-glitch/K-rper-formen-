@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ZUCueyWcl1txUFfrqD8fHemE6SuE8N4jXRM8Yp+57i4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-TJRJPqTJJb1NTDcnIhWvvItmQwxFBL0gAFW9KAdC/Xg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1948,11 +1948,18 @@ body.nurlesen .kopf-plus{display:none !important}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal,#vorfallModal,#zfModal,#bestellModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
+/* Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail. Er muss
+   VOR der Anmeldung und über dem Startbild stehen (#splash 1000,
+   #loadingWrap 999). */
+#aktionModal.show{z-index:1050}
+#aktionModal .ak-ok{color:var(--ok-tx);font-weight:700}
+#aktionModal .ak-fehler{color:var(--danger-tx)}
+#aktionModal .ak-knoepfe{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s12)}
 #devModal .pm-box,.pm-box{position:relative;width:100%;max-width:420px;background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s24);box-shadow:var(--e3);max-height:88vh;overflow-y:auto}
 /* „Speichern" lag ganz unten in einem Fenster, das scrollt: Namen ändern,
@@ -9529,6 +9536,32 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 </div>
 
 <!-- ══ ZWEI-FAKTOR EINRICHTEN (Runde 119) ═════════════════════════════ -->
+<!-- Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail landet
+     hier (?mode=verifyEmail|resetPassword&oobCode=…). Eingelöst wird erst
+     auf Knopfdruck — Virenscanner öffnen Links vorab. -->
+<div id="aktionModal" role="dialog" aria-modal="true" aria-labelledby="akKopf">
+  <div class="pm-box">
+    <h3 id="akKopf" style="margin-bottom:6px">StudioChat</h3>
+    <div id="akBestaetigen" hidden>
+      <p class="hint" style="margin:0 0 12px">Ein Tipp, und deine E-Mail-Adresse ist bestätigt.</p>
+      <button class="btn btn-primary" id="akBestaetigenKnopf" type="button">Adresse bestätigen</button>
+    </div>
+    <div id="akPasswort" hidden>
+      <p class="hint" style="margin:0 0 12px" id="akPwFuer">Neues Passwort wählen.</p>
+      <div class="field"><label for="akPw1">Neues Passwort</label>
+        <div class="pw-wrap"><input class="inp" id="akPw1" type="password" placeholder="8+ Zeichen" autocomplete="new-password" />
+          <button type="button" class="pw-auge" data-pw="akPw1" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
+      <div class="field"><label for="akPw2">Wiederholen</label>
+        <div class="pw-wrap"><input class="inp" id="akPw2" type="password" placeholder="Passwort" autocomplete="new-password" />
+          <button type="button" class="pw-auge" data-pw="akPw2" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
+      <p class="auth-err" id="akPwFehler" role="alert"></p>
+      <button class="btn btn-primary" id="akPwKnopf" type="button">Passwort speichern</button>
+    </div>
+    <p class="hint" id="akMeldung" role="status" hidden></p>
+    <div class="ak-knoepfe"><button class="btn btn-ghost" id="akWeiter" type="button" hidden>Zur App</button></div>
+  </div>
+</div>
+
 <div id="zfModal" role="dialog" aria-modal="true" aria-labelledby="zfKopf">
   <div class="pm-box zf-box">
     <button class="lb-close" id="zfZu" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -11438,6 +11471,9 @@ function FDoc(){
 try{
   firebase.initializeApp(FIREBASE_CONFIG);
   auth = firebase.auth();
+  /* Runde 146: die Mails, die Firebase selbst noch verschickt (Rückfall,
+     Hinweis beim zweiten Faktor), auf Deutsch statt Englisch. */
+  try{ auth.languageCode = 'de'; }catch(e){}
   // Firestore mit Long-Polling-Auto-Detection: fixt Mobilfunk-/Proxy-Probleme
   // auf Handy (Samsung/iPhone), wenn der normale WebChannel-Stream blockiert wird
   db = firebase.firestore();
@@ -12399,6 +12435,14 @@ var MAIL_RUHE = 7*24*3600000;
 function mailHinweisPruefen(){
   var leiste=$('mailLeiste'); if(!leiste) return;
   var u = auth.currentUser;
+  /* Runde 146: wer in einem anderen Tab oder am Handy bestätigt hat, sah
+     hier weiter „Bitte bestätige" — emailVerified ändert sich erst nach
+     einem reload(). Beim Zurückkommen einmal nachfragen (höchstens alle
+     30 Sekunden). */
+  if(u && !u.emailVerified && u.reload && Date.now()-(mailHinweisPruefen._zuletzt||0) > 30000){
+    mailHinweisPruefen._zuletzt=Date.now();
+    u.reload().then(function(){ if(auth.currentUser && auth.currentUser.emailVerified) mailHinweisPruefen(); }, function(){});
+  }
   // Kein Konto, schon bestätigt, oder gar keine Adresse: nichts zu tun.
   if(!u || u.emailVerified || !u.email){ leiste.style.display='none'; return; }
   try{
@@ -12410,19 +12454,145 @@ function mailHinweisPruefen(){
   leiste.style.display='flex';
 }
 
+/* ══ ANMELDE-MAILS ÜBER DEN EIGENEN VERSAND (Runde 146) ═══════════════
+   Aus dem Betrieb, 6.10.2026: „die Mail Bestätigung geht auch oft nicht,
+   und manche Mails kommen nie an auch nicht im Spam".
+
+   Die Mails von Firebase selbst kamen auf Englisch, von
+   noreply@formenchat.firebaseapp.com, unterschrieben „Your
+   project-873830492257 team" — wie Phishing, und so behandelt. Jetzt
+   verschickt sie der Server (authMailSenden) über denselben Weg wie
+   Bericht und Bestellung: deutsch, Absender StudioChat, Link in die App.
+
+   Ohne SMTP, bei einem Versandfehler oder wenn die Funktion nicht
+   erreichbar ist: der alte Weg über Firebase. Die Bremse („gerade eben
+   schon verschickt") und eine falsche Adresse sind dagegen Antworten,
+   keine Ausfälle — die kommen so beim Menschen an. */
+function anmeldeMailSenden(art, email){
+  return fnRuf('authMailSenden', art==='passwort' ? { art:art, email:email } : { art:art })
+    .catch(function(e){
+      var c=String((e && e.code) || '');
+      if(/resource-exhausted|invalid-argument|unauthenticated/.test(c)) throw e;
+      console.warn('Anmelde-Mail über den eigenen Versand ging nicht, nehme Firebase:', c, e && e.message);
+      if(art==='passwort') return auth.sendPasswordResetEmail(email).then(function(){ return { ok:true, alt:true }; });
+      var u=auth.currentUser;
+      if(!u || !u.sendEmailVerification) throw e;
+      return u.sendEmailVerification().then(function(){ return { ok:true, alt:true }; });
+    });
+}
+function anmeldeMailFehler(e){
+  var c=String((e && e.code) || '');
+  /* Die Bremse und falsche Eingaben bringen ihren Satz vom Server mit. */
+  if(/resource-exhausted|invalid-argument/.test(c) && e.message) return e.message;
+  if(c==='auth/too-many-requests') return 'Gerade eben schon verschickt. Bitte kurz warten.';
+  return errMsg(e);
+}
+
 function mailErneutSenden(btn){
   var u = auth.currentUser;
-  if(!u || !u.sendEmailVerification){ toast('Geht gerade nicht.',true); return; }
+  if(!u){ toast('Geht gerade nicht.',true); return; }
   withBusy(btn, function(){
-    return u.sendEmailVerification()
-      .then(function(){ toast('Mail verschickt – schau auch im Spam nach ✓'); })
-      .catch(function(e){
-        // too-many-requests ist der häufigste Fall und klingt roh
-        toast(e && e.code==='auth/too-many-requests'
-          ? 'Gerade eben schon verschickt. Bitte kurz warten.'
-          : errMsg(e), true);
-      });
+    return anmeldeMailSenden('bestaetigen')
+      .then(function(r){
+        if(r && r.schon){
+          toast('Deine Adresse ist schon bestätigt ✓');
+          return u.reload ? u.reload().then(mailHinweisPruefen, function(){}) : null;
+        }
+        toast('Mail an '+u.email+' verschickt – schau auch im Spam nach ✓');
+      })
+      .catch(function(e){ toast(anmeldeMailFehler(e), true); });
   });
+}
+
+/* ══ DER LINK AUS DER MAIL (Runde 146) ═══════════════════════════════════
+   authMailSenden schickt Links in die App: ?mode=verifyEmail&oobCode=…
+   oder ?mode=resetPassword&oobCode=…. Hier werden sie eingelöst — mit
+   denselben Firebase-Aufrufen, die die Seite von Firebase benutzt hätte
+   (applyActionCode, confirmPasswordReset), aber auf Deutsch und mit der
+   Mindestlänge von 8 Zeichen, die die Firebase-Seite nicht kennt (P-05).
+
+   Erst auf Knopfdruck: Firmen-Postfächer lassen Links vorab von einem
+   Scanner öffnen. Lösten wir beim Öffnen ein, wäre der Link für den
+   Menschen danach „schon benutzt". */
+var _akCode='', _akModus='';
+function anmeldeAktionPruefen(){
+  var q; try{ q=new URLSearchParams(location.search); }catch(e){ return; }
+  var modus=q.get('mode'), code=q.get('oobCode');
+  if(!code || (modus!=='verifyEmail' && modus!=='resetPassword')) return;
+  _akCode=code; _akModus=modus;
+  /* Den Code aus der Adresszeile nehmen: ein Lesezeichen oder ein Neuladen
+     soll ihn nicht ein zweites Mal vorlegen. */
+  try{ history.replaceState(null, '', location.pathname + location.hash); }catch(e){}
+  var m=$('aktionModal'); if(!m) return;
+  $('akKopf').textContent = modus==='verifyEmail' ? 'E-Mail-Adresse bestätigen' : 'Neues Passwort';
+  $('akBestaetigen').hidden = modus!=='verifyEmail';
+  $('akPasswort').hidden = true;
+  $('akMeldung').hidden = true; $('akWeiter').hidden = true;
+  m.classList.add('show');
+  if(modus==='resetPassword'){
+    if(!auth.verifyPasswordResetCode){ akMelden('Hier nicht verfügbar.', true); return; }
+    auth.verifyPasswordResetCode(code).then(function(email){
+      $('akPwFuer').textContent='Neues Passwort für '+email+' — mindestens '+PW_MIN+' Zeichen.';
+      $('akPasswort').hidden=false;
+      $('akPwKnopf').setAttribute('data-mail', email);
+      setTimeout(function(){ try{ $('akPw1').focus(); }catch(e){} }, 80);
+    }, function(e){ akMelden(akCodeFehler(e, 'passwort'), true); });
+  }
+}
+function akCodeFehler(e, art){
+  var c=String((e && e.code) || '');
+  if(/expired-action-code|invalid-action-code/.test(c)){
+    return art==='passwort'
+      ? 'Dieser Link ist abgelaufen oder wurde schon benutzt. Fordere unter „Passwort vergessen" einfach einen neuen an.'
+      : 'Dieser Link ist abgelaufen oder wurde schon benutzt. Ist deine Adresse schon bestätigt, ist alles gut — sonst fordere in der App einen neuen an.';
+  }
+  return errMsg(e);
+}
+function akMelden(text, fehler){
+  var m=$('akMeldung'); m.textContent=text; m.hidden=false;
+  m.className='hint '+(fehler ? 'ak-fehler' : 'ak-ok');
+  $('akWeiter').hidden=false;
+  $('akWeiter').textContent = (_akModus==='resetPassword' && !fehler) ? 'Zur Anmeldung' : 'Zur App';
+}
+function akBestaetigen(btn){
+  if(!_akCode || !auth.applyActionCode){ akMelden('Hier nicht verfügbar.', true); return; }
+  withBusy(btn, function(){
+    return auth.applyActionCode(_akCode).then(function(){
+      _akCode='';
+      $('akBestaetigen').hidden=true;
+      akMelden('Bestätigt ✓ Deine E-Mail-Adresse ist jetzt bestätigt.', false);
+      var u=auth.currentUser;
+      if(u && u.reload) u.reload().then(function(){ try{ mailHinweisPruefen(); }catch(e){} }, function(){});
+    }, function(e){
+      $('akBestaetigen').hidden=true;
+      akMelden(akCodeFehler(e, 'bestaetigen'), true);
+    });
+  });
+}
+function akPasswortSpeichern(btn){
+  var a=$('akPw1').value, b=$('akPw2').value, f=$('akPwFehler');
+  f.textContent='';
+  if(a.length<PW_MIN){ f.textContent='Bitte mindestens '+PW_MIN+' Zeichen.'; return; }
+  if(a!==b){ f.textContent='Die beiden Passwörter stimmen nicht überein.'; return; }
+  withBusy(btn, function(){
+    return auth.confirmPasswordReset(_akCode, a).then(function(){
+      _akCode='';
+      $('akPasswort').hidden=true;
+      var mail=btn.getAttribute('data-mail')||'';
+      if(mail && $('lgEmail') && !auth.currentUser) $('lgEmail').value=mail;
+      akMelden('Gespeichert ✓ Melde dich jetzt mit dem neuen Passwort an.', false);
+    }, function(e){
+      if(/weak-password/.test(String(e && e.code))){ f.textContent='Bitte mindestens '+PW_MIN+' Zeichen.'; return; }
+      $('akPasswort').hidden=true;
+      akMelden(akCodeFehler(e, 'passwort'), true);
+    });
+  });
+}
+function anmeldeAktionBinden(){
+  var b=$('akBestaetigenKnopf'); if(b) b.addEventListener('click', function(){ tick(8); akBestaetigen(this); });
+  var p=$('akPwKnopf'); if(p) p.addEventListener('click', function(){ tick(8); akPasswortSpeichern(this); });
+  var w=$('akPw2'); if(w) w.addEventListener('keydown', function(e){ if(e.key==='Enter') akPasswortSpeichern($('akPwKnopf')); });
+  var z=$('akWeiter'); if(z) z.addEventListener('click', function(){ $('aktionModal').classList.remove('show'); });
 }
 
 function mailHinweisBinden(){
@@ -16444,9 +16614,9 @@ function zugangFensterFuellen(){
   $('forgotLink').addEventListener('click', function(){
     var email = $('lgEmail').value.trim();
     if(!email){ $('loginErr').textContent='Bitte E-Mail eingeben.'; return; }
-    auth.sendPasswordResetEmail(email)
-      .then(function(){ toast('Reset-Link gesendet – E-Mail prüfen.'); })
-      .catch(function(e){ $('loginErr').textContent = authErrMsg(e.code); });
+    anmeldeMailSenden('passwort', email)
+      .then(function(){ toast('Wenn es zu '+email+' ein Konto gibt, ist der Link unterwegs – schau auch im Spam nach.'); })
+      .catch(function(e){ $('loginErr').textContent = /resource-exhausted|invalid-argument/.test(String(e && e.code)) ? anmeldeMailFehler(e) : authErrMsg(e.code); });
   });
 
   // Registrierung gibt es NUR als Chef-Zugang (über #chef). Mitarbeiter legt der Chef im Portal an.
@@ -16484,7 +16654,10 @@ function zugangFensterFuellen(){
   $('zfCode').addEventListener('keydown', function(e){ if(e.key==='Enter') zfBestaetigen(); });
   $('zfMailSenden').addEventListener('click', function(){
     var b=this, u=auth.currentUser; if(!u) return;
-    withBusy(b, function(){ return u.sendEmailVerification().then(function(){ toast('Mail an '+u.email+' geschickt ✓'); }, function(e){ toast(errMsg(e), true); }); });
+    withBusy(b, function(){ return anmeldeMailSenden('bestaetigen').then(function(r){
+      if(r && r.schon){ toast('Schon bestätigt ✓'); return u.reload().then(function(){ zfSchritt(auth.currentUser); }); }
+      toast('Mail an '+u.email+' geschickt ✓');
+    }, function(e){ toast(anmeldeMailFehler(e), true); }); });
   });
   $('zfMailFertig').addEventListener('click', function(){
     var b=this, u=auth.currentUser; if(!u) return;
@@ -16499,7 +16672,7 @@ function zugangFensterFuellen(){
   /* Wer die Zwei-Faktor-Anmeldung in einem anderen Tab oder am Handy
      einrichtet, soll die Leiste hier nicht weiter sehen: beim Zurückkehren
      neu nachsehen. */
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden && session) zfLeisteZeigen(); });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && session){ zfLeisteZeigen(); try{ mailHinweisPruefen(); }catch(e){} } });
   $('zfLeisteZu').addEventListener('click', function(){
     try{ sessionStorage.setItem('kf_zf_leiste','weg'); }catch(e){} $('zfLeiste').style.display='none';
   });
@@ -17024,11 +17197,11 @@ function pwLeisteLink(b){
   var adr=pwKurzAdresse();
   if(!adr){ toast('Keine E-Mail-Adresse an diesem Konto.', true); return; }
   withBusy(b, function(){
-    return auth.sendPasswordResetEmail(adr).then(function(){
+    return anmeldeMailSenden('passwort', adr).then(function(){
       try{ localStorage.removeItem('kf_pw_kurz'); }catch(e){}
       $('pwLeiste').hidden=true;
       toast('Link an '+adr+' geschickt ✓ — bitte mindestens '+PW_MIN+' Zeichen.');
-    }, function(e){ toast(errMsg(e), true); });
+    }, function(e){ toast(anmeldeMailFehler(e), true); });
   });
 }
 /* Im Werkzeug der Geschäftsführung: Stichtag setzen oder zurücknehmen. */
@@ -17176,9 +17349,9 @@ function sicherheitTun(b, box){
   if(!u){ toast('Bitte erst anmelden.', true); return; }
   if(was==='passwort'){
     withBusy(b, function(){
-      return auth.sendPasswordResetEmail(u.email).then(function(){
+      return anmeldeMailSenden('passwort', u.email).then(function(){
         toast('Link zum Ändern an '+u.email+' geschickt ✓');
-      }, function(e){ toast(errMsg(e), true); });
+      }, function(e){ toast(anmeldeMailFehler(e), true); });
     });
     return;
   }
@@ -17233,8 +17406,8 @@ function doRegister(){
            Konto trotzdem entstehen. Man kann sie in der App jederzeit
            erneut anfordern. */
         try{
-          if(auth.currentUser && auth.currentUser.sendEmailVerification){
-            auth.currentUser.sendEmailVerification()
+          if(auth.currentUser){
+            anmeldeMailSenden('bestaetigen')
               .catch(function(e){ console.warn('Bestätigungsmail:', e && e.message); });
           }
         }catch(e){}
@@ -17460,6 +17633,9 @@ function enterApp(uid, data){
 /* ============================================================
    AUTH STATE OBSERVER
    ============================================================ */
+/* Runde 146: der Link aus einer Bestätigungs- oder Passwort-Mail —
+   vor allem anderen, auch ohne Anmeldung. */
+try{ anmeldeAktionBinden(); anmeldeAktionPruefen(); }catch(e){ console.warn('Link aus der Mail:', e && e.message); }
 auth.onAuthStateChanged(function(user){
   hideLoading();
   /* Abgemeldet: die Merkung „Passwort zu kurz" gehört nicht auf ein
@@ -18447,6 +18623,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-06-mails', datum:'6.10.2026', titel:'Bestätigungs- und Passwort-Mails kommen an', wo:'profil', punkte:[
+    'Die Mail zum Bestätigen der Adresse und die Mail für ein neues Passwort kommen jetzt auf Deutsch und von StudioChat – vorher kamen sie auf Englisch von einer fremd wirkenden Adresse und wurden von web.de, GMX oder Outlook oft still aussortiert.',
+    'Der Link aus der Mail öffnet die App. Dort tippst du auf „Adresse bestätigen" bzw. wählst dein neues Passwort (mindestens 8 Zeichen).',
+    'Nach dem Bestätigen verschwindet der Hinweis „Bitte bestätige …" von selbst, wenn du in die App zurückkommst.' ] },
   { id:'2026-10-06-leiter-aufgaben', datum:'6.10.2026', titel:'Studioleitung: Aufgaben anlegen geht wieder', wo:'chef:erstellen', punkte:[
     'Für die Studioleitung tat „Aufgabe erstellen" unter Verwaltung → Erstellen nichts. Das ist behoben – ebenso „Ankündigung senden", Foto, Wiederholung und „Vorlage übernehmen" dort, der Export in der Auswertung und „Liste leeren" im Archiv.',
     'Steht ein Studio im Konto nur mit Namen, aber nicht freigeschaltet, ist es in der Auswahl ausgegraut, mit einem Hinweis darunter. Die anderen Studios gehen trotzdem – vorher scheiterte mit „Alle Studios" die ganze Aufgabe.',
@@ -39931,20 +40111,20 @@ function bindActions(){
       withBusy(this, function(){ return berichtAnfordern(berichtTage(), note); });
     });
 
-    // Passwort zurücksetzen (schickt eine E-Mail von Firebase)
+    // Passwort zurücksetzen (schickt eine E-Mail — seit Runde 146 über den eigenen Versand)
     var prs=$('prSend');
     if(prs) prs.addEventListener('click',function(){
       var btn=this, mail=($('prEmail').value||'').trim();
       var note=$('prNote');
       if(!mail){ toast('Bitte E-Mail eingeben.',true); return; }
       withBusy(btn,function(){
-        return auth.sendPasswordResetEmail(mail).then(function(){
+        return anmeldeMailSenden('passwort', mail).then(function(){
           if(note){ note.textContent='✓ E-Mail an '+mail+' gesendet.'; note.style.color='var(--ok-tx)'; }
           $('prEmail').value='';
           toast('E-Mail zum Zurücksetzen gesendet ✓');
         }).catch(function(e){
-          if(note){ note.textContent='Hat nicht geklappt: '+errMsg(e); note.style.color='var(--danger)'; }
-          toast(errMsg(e),true);
+          if(note){ note.textContent='Hat nicht geklappt: '+anmeldeMailFehler(e); note.style.color='var(--danger)'; }
+          toast(anmeldeMailFehler(e),true);
         });
       });
     });

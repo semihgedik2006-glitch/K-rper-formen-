@@ -1818,6 +1818,11 @@ service cloud.firestore {
     match /beitrittVersuche/{uid} {
       allow read, write: if false;
     }
+    /* Runde 146: Zähler für Bestätigungs- und Passwort-Mails (Bremse).
+       Schreibt nur der Server; vom Gerät aus weder lesen noch schreiben. */
+    match /mailVersand/{id} {
+      allow read, write: if false;
+    }
 
     match /firmen/{f} {
       // Vorfälle liegen betriebsübergreifend oben (/vorfaelle), nie hier.
@@ -1829,6 +1834,9 @@ service cloud.firestore {
         allow read, write: if false;
       }
       match /beitrittVersuche/{uid} {
+        allow read, write: if false;
+      }
+      match /mailVersand/{id} {
         allow read, write: if false;
       }
       // Die Stammdaten der Firma. Der Name steht auf dem

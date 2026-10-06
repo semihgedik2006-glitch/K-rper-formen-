@@ -10,8 +10,23 @@ Ohne diese Einrichtung versendet StudioChat **keine** E-Mails. Betroffen sind:
   stattdessen das Mailprogramm. Absender ist `MAIL_FROM` mit dem Namen des
   Betriebs davor; Antworten gehen an die Person, die bestellt hat.
 
+- seit 6.10.2026 auch die **Bestätigungs- und Passwort-Mails** (Runde
+  146). Vorher verschickte die Firebase selbst — auf Englisch, von
+  `noreply@formenchat.firebaseapp.com`, unterschrieben mit „Your
+  project-873830492257 team"; strenge Postfächer (web.de, GMX, Outlook)
+  sortierten sie still aus. Jetzt gehen sie über denselben Zugang wie
+  alles andere, auf Deutsch, mit StudioChat als Absender, und der Link
+  führt in die App. Ohne SMTP nimmt die App den alten Weg über Firebase.
+
 Die App selbst funktioniert ohne SMTP vollständig weiter. Es fehlen nur die
 E-Mails.
+
+> **Für den Rückfallweg (einmalig, in der Firebase-Konsole):** Projekt-
+> einstellungen → „Öffentlicher Name" auf **StudioChat** setzen. Dann
+> steht in den Mails, die Firebase selbst noch verschickt (Rückfall, der
+> Hinweis beim Einrichten des zweiten Faktors), nicht mehr
+> „project-873830492257". Von hier aus nicht prüfbar — das ist eine
+> Einstellung am Betrieb.
 
 ---
 

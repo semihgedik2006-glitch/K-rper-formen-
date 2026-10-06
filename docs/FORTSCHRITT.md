@@ -15242,3 +15242,72 @@ bei 320–1920 in beiden Dichten; Kontrast des Hinweises hell 6,55 und
 dunkel 6,85, gerechnet über dem durchscheinenden Hintergrund) — gegen den
 alten Stand rot. `tests/rules/leiter-aufgaben.test.js` (18, beide Bäume).
 
+## Runde 146: Bestätigungs- und Passwort-Mails über den eigenen Versand (6.10.2026)
+
+Aus dem Betrieb: „die Mail Bestätigung geht auch oft nicht, und manche
+Mails kommen nie an auch nicht im Spam oder so bitte korrigiere beides bis
+es Einwand frei funktioniert".
+
+**Nachgesehen, nicht vermutet** (im Postfach des Betreibers, gezielt nach
+Rückläufern und Mails der App gesucht):
+- Die Mails, die **Firebase selbst** verschickt — Adresse bestätigen,
+  Passwort neu, Hinweis zum zweiten Faktor — kommen auf **Englisch**, von
+  `noreply@formenchat.firebaseapp.com`, unterschrieben mit „Your
+  **project-873830492257** team". Genau so sieht eine Phishing-Mail aus.
+  web.de, GMX, T-Online und Outlook sortieren so etwas oft still aus —
+  ohne Rückläufer, ohne Spam-Ordner. Das passt genau zu „kommen nie an,
+  auch nicht im Spam".
+- Die Mails des **Betriebs** (Aufgaben, Bericht, Bestellung) gehen über
+  das Gmail-Postfach per SMTP: rund 200 in 14 Tagen (das Tageslimit von
+  Gmail liegt bei etwa 500 — daran liegt es nicht), Rückläufer nur für
+  Adressen, die es nicht gibt (`test@mitarbeiter.de`, eine vertippte
+  GMX-Adresse).
+
+**Gebaut**
+- `authMailSenden` (Server): erzeugt mit dem Admin-SDK dieselben Links
+  wie Firebase und verschickt sie über den eigenen SMTP-Zugang — deutsch,
+  Absender „StudioChat", Text- und HTML-Teil. Der Link führt in die App
+  (`?mode=verifyEmail|resetPassword&oobCode=…`).
+- In der App ein Fenster für diesen Link, vor jeder Anmeldung und über dem
+  Startbild. **Eingelöst wird erst auf Knopfdruck:** Firmenpostfächer
+  lassen Links vorab von einem Scanner öffnen; ein Link, der sich beim
+  Öffnen selbst verbraucht, wäre für den Menschen danach „schon benutzt".
+  Das neue Passwort verlangt hier 8 Zeichen — die Seite von Firebase
+  kannte nur 6 (P-05).
+- Alle sieben Stellen, die eine solche Mail auslösen (Konto anlegen,
+  Bestätigungsleiste, Zwei-Faktor, Passwort vergessen, „Passwort zu kurz",
+  Profil → Passwort ändern, Verwaltung → Passwort zurücksetzen), gehen
+  über diesen Weg.
+- „Bitte bestätige …" verschwand nach dem Bestätigen in einem anderen Tab
+  nicht: `emailVerified` ändert sich erst nach `reload()`. Jetzt beim
+  Zurückkommen in die App nachgefragt (höchstens alle 30 Sekunden).
+- `auth.languageCode = 'de'`: was Firebase noch selbst schickt, auf
+  Deutsch.
+
+**Warum so**
+- **Rückfall statt Abbruch.** Ohne SMTP, bei einem Versandfehler oder wenn
+  die Funktion nicht erreichbar ist, nimmt die App den alten Weg über
+  Firebase. Schlechter als vorher wird es nie. Die Bremse und eine
+  falsche Adresse sind dagegen Antworten, keine Ausfälle — die kommen so
+  beim Menschen an.
+- **Nichts verraten:** für eine Adresse ohne Konto antwortet die Funktion
+  genauso wie bei Erfolg, verschickt aber nichts.
+- **Bremse:** eine Minute Abstand, 8 am Tag je Konto bzw. je Adresse, 300
+  am Tag insgesamt — der Monatsbericht soll nicht an jemandem scheitern,
+  der „Passwort vergessen" in Schleife drückt.
+
+**Nicht prüfbar von hier, offen benannt:** dass eine echte Mail bei
+web.de, GMX oder Outlook ankommt. Der Weg ist derselbe, über den die
+Aufgaben-Mails nachweislich rausgehen. Empfohlen: der öffentliche Name des
+Projekts in der Firebase-Konsole (MAIL-SETUP.md), und auf Dauer ein
+Absender mit eigener Domain statt Gmail.
+
+**Tests:** `tests/rules/auth-mail.test.js` (18, im Emulator AUSGEFÜHRT:
+deutsch, Absender, Link in die App, der Code bestätigt die Adresse im
+Auth-Emulator wirklich, Bremse, kein Verrat, Rückfall-Fehler, Aufräumen).
+`tests/test-anmelde-mail.js` (25: eigener Versand mit Rückfall, Bremse
+ohne Rückfall, Link-Fenster vor der Anmeldung, Code aus der Adresszeile,
+erst auf Knopfdruck, 7 Zeichen abgelehnt, Treffer bei 320–1920 in beiden
+Dichten) — gegen den alten Stand rot. `test-passwort`: fünf statt drei
+Augen-Knöpfe (die zwei neuen Felder im Link-Fenster haben ihres auch).
+
