@@ -230,6 +230,16 @@ den Code).
 Fehlversuche beim Firmencode je Konto (`n`, `seit`). Nach zehn in einer
 Stunde ist Schluss. Nur der Server.
 
+### `mailVersand/{id}` (seit Runde 146)
+
+Bremse für Bestätigungs- und Passwort-Mails (`authMailSenden`): `zuletzt`,
+`tag` (JJJJ-MM-TT, Berlin), `n`. Die Kennung ist die Konto-Kennung
+(Bestätigen) oder `pw_` + die ersten 40 Zeichen des SHA-256 der
+kleingeschriebenen Adresse (Passwort — auch für Adressen ohne Konto,
+die Adresse selbst steht nicht drin). `_gesamt` zählt alle des Tages
+(höchstens 300). Nur der Server; beim Löschen eines Kontos werden beide
+Einträge mit gelöscht.
+
 ### Konto ohne Betrieb: `firma: '_ohne'` (seit Runde 117)
 
 Ein neues Konto entsteht mit `firma:'_ohne'`, `aktiv:false`,

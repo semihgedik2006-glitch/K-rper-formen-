@@ -305,8 +305,9 @@ dafür auf dem Gerät nur die Adresse, nicht das Passwort; beim Abmelden
 wird die Merkung gelöscht. Test: `tests/test-passwortlaenge.js`.
 
 **Was damit NICHT erreicht ist:** Der Anmeldedienst von Firebase nimmt
-weiter 6 Zeichen an — über die Seite „Passwort zurücksetzen" aus der
-Mail kann man also wieder ein kurzes setzen. Abstellen lässt sich das
+weiter 6 Zeichen an. Seit Runde 146 führt der Link aus der Passwort-Mail
+in die App, und dort gelten 8 — über die API direkt ginge es weiterhin
+mit 6. Abstellen lässt sich das
 nur in der Konsole (Passwortrichtlinie, Modus „benachrichtigen", damit
 bestehende Konten nicht gesperrt werden). Nach meinem Kenntnisstand
 setzt das das Upgrade auf Identity Platform voraus; **von hier aus nicht

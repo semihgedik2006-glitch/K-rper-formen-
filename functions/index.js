@@ -2406,6 +2406,8 @@ exports.zugangEntfernen = region
           'Das Anmeldekonto liess sich nicht entfernen.');
       }
     }
+    const altMail = ((await db.collection('users').doc(uid).get()).data() || {}).email;
+    await authMailSpurenWeg(uid, altMail);
     await db.collection('users').doc(uid).delete();
     return { profil: true, konto: konto };
   });
@@ -3001,6 +3003,166 @@ function getMailer() {
   });
   return _mailer;
 }
+
+/* ══ ANMELDE-MAILS SELBST VERSCHICKEN (Runde 146) ══════════════════════
+   Aus dem Betrieb, 6.10.2026: „die Mail Bestätigung geht auch oft nicht,
+   und manche Mails kommen nie an auch nicht im Spam".
+
+   NACHGESEHEN, NICHT VERMUTET (im Postfach des Betreibers): die Mails,
+   die Firebase selbst verschickt — Adresse bestätigen, Passwort neu —,
+   kommen auf ENGLISCH, von noreply@formenchat.firebaseapp.com, und sind
+   unterschrieben mit „Your project-873830492257 team". Genau so sieht
+   eine Phishing-Mail aus; web.de, GMX und Outlook sortieren so etwas
+   still aus, ohne Rückläufer und ohne Spam-Ordner. Die Mails des
+   Betriebs (Bericht, Aufgaben, Bestellung) gehen dagegen über das eigene
+   Postfach (SMTP) und kommen an: sie stehen dort unter „Gesendet", und
+   Rückläufer gab es nur für Adressen, die es nicht gibt.
+
+   Also: dieselben Links, vom Admin-SDK erzeugt, über denselben Weg wie die
+   anderen Mails, auf Deutsch, mit StudioChat als Absender. Der Link führt
+   in die App (?mode=…&oobCode=…), und die löst ihn erst auf Knopfdruck
+   ein: Virenscanner von Firmenpostfächern öffnen Links vorab — ein Link,
+   der sich beim Öffnen selbst verbraucht, wäre dann für den Menschen
+   „abgelaufen".
+
+   Ohne SMTP oder wenn der Versand scheitert, antwortet die Funktion mit
+   einem Fehler, und die App nimmt den alten Weg über Firebase — schlechter
+   als vorher wird es nie.
+
+   Bremse: eine Minute Abstand und höchstens 8 am Tag je Konto bzw. je
+   Adresse, dazu höchstens 300 am Tag insgesamt. Gmail lässt rund 500
+   Mails am Tag zu, und der Monatsbericht soll nicht an einem Spassvogel
+   scheitern, der „Passwort vergessen" in Schleife drückt. */
+const AUTH_MAIL_ABSTAND_MS = 60 * 1000;
+const AUTH_MAIL_PRO_TAG = 8;
+const AUTH_MAIL_GESAMT_TAG = 300;
+
+function authMailLink(firebaseLink, modus) {
+  let code = '';
+  try { code = new URL(firebaseLink).searchParams.get('oobCode') || ''; } catch (e) { code = ''; }
+  if (!code) throw new Error('Kein Code im Link');
+  return appAdresse() + '/?mode=' + modus + '&oobCode=' + encodeURIComponent(code);
+}
+
+function authMailText(art, link, email, name) {
+  const gruss = name ? 'Hallo ' + name + ',' : 'Hallo,';
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const knopf = (txt) => '<p style="margin:24px 0"><a href="' + esc(link) + '" style="display:inline-block;padding:12px 20px;' +
+    'background:#1f2937;color:#ffffff;border-radius:999px;text-decoration:none;font-weight:700">' + esc(txt) + '</a></p>' +
+    '<p style="color:#555;font-size:13px">Falls der Knopf nicht geht, diesen Link öffnen:<br>' + esc(link) + '</p>';
+  if (art === 'bestaetigen') {
+    const text = gruss + '\n\nbitte bestätige deine E-Mail-Adresse für StudioChat. Öffne dazu diesen Link ' +
+      'und tippe dort auf „Adresse bestätigen":\n\n' + link + '\n\n' +
+      'Der Link gilt nur begrenzte Zeit. Ist er abgelaufen, forderst du in der App einfach einen neuen an.\n' +
+      'Hast du kein Konto bei StudioChat angelegt, kannst du diese Mail löschen.\n\nViele Grüße\nStudioChat';
+    return {
+      subject: 'Bitte bestätige deine E-Mail-Adresse für StudioChat',
+      text,
+      html: '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#111">' +
+        '<p>' + esc(gruss) + '</p><p>bitte bestätige deine E-Mail-Adresse für StudioChat.</p>' + knopf('Adresse bestätigen') +
+        '<p>Der Link gilt nur begrenzte Zeit. Ist er abgelaufen, forderst du in der App einfach einen neuen an. ' +
+        'Hast du kein Konto bei StudioChat angelegt, kannst du diese Mail löschen.</p><p>Viele Grüße<br>StudioChat</p></div>',
+    };
+  }
+  const text = gruss + '\n\njemand — hoffentlich du — möchte das Passwort für ' + email + ' bei StudioChat neu setzen. ' +
+    'Öffne diesen Link und wähle ein neues Passwort (mindestens 8 Zeichen):\n\n' + link + '\n\n' +
+    'Warst du das nicht? Dann ignoriere diese Mail — dein Passwort bleibt, wie es ist.\n\nViele Grüße\nStudioChat';
+  return {
+    subject: 'Neues Passwort für StudioChat',
+    text,
+    html: '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#111">' +
+      '<p>' + esc(gruss) + '</p><p>jemand — hoffentlich du — möchte das Passwort für <b>' + esc(email) +
+      '</b> bei StudioChat neu setzen.</p>' + knopf('Neues Passwort wählen') +
+      '<p>Warst du das nicht? Dann ignoriere diese Mail — dein Passwort bleibt, wie es ist.</p><p>Viele Grüße<br>StudioChat</p></div>',
+  };
+}
+
+/* Gibt '' zurück, wenn gesendet werden darf (und zählt dann mit),
+   sonst den Grund. Eine Transaktion, damit zwei schnelle Klicks nicht
+   beide durchgehen. */
+async function authMailDrosseln(docId, jetzt) {
+  const ref = db.collection('mailVersand').doc(docId);
+  const gesamt = db.collection('mailVersand').doc('_gesamt');
+  const tag = berlinDatum(jetzt);
+  return db.runTransaction(async (tx) => {
+    const d = (await tx.get(ref)).data() || {};
+    const g = (await tx.get(gesamt)).data() || {};
+    const heute = d.tag === tag ? (d.n || 0) : 0;
+    const alle = g.tag === tag ? (g.n || 0) : 0;
+    if (d.zuletzt && jetzt - d.zuletzt < AUTH_MAIL_ABSTAND_MS) return 'gerade';
+    if (heute >= AUTH_MAIL_PRO_TAG) return 'genug';
+    if (alle >= AUTH_MAIL_GESAMT_TAG) return 'voll';
+    tx.set(ref, { zuletzt: jetzt, tag, n: heute + 1 });
+    tx.set(gesamt, { tag, n: alle + 1 });
+    return '';
+  });
+}
+function authMailDocId(email) {
+  return 'pw_' + require('crypto').createHash('sha256').update(String(email).toLowerCase()).digest('hex').slice(0, 40);
+}
+/* Beim Löschen eines Kontos die Zähler mit weg — Daten, die nur zum
+   Bremsen da waren, überleben das Konto nicht. */
+async function authMailSpurenWeg(uid, email) {
+  const weg = [db.collection('mailVersand').doc(uid).delete()];
+  if (email) weg.push(db.collection('mailVersand').doc(authMailDocId(email)).delete());
+  await Promise.all(weg.map((x) => x.catch(() => {})));
+}
+
+exports.authMailSenden = region.https.onCall(async (data, context) => {
+  const art = data && data.art;
+  if (art !== 'bestaetigen' && art !== 'passwort') {
+    throw new functions.https.HttpsError('invalid-argument', 'Unbekannte Art.');
+  }
+  const mailer = getMailer();
+  if (!mailer) throw new functions.https.HttpsError('failed-precondition', 'kein-smtp');
+  const jetzt = Date.now();
+  let email, name = '', docId;
+  if (art === 'bestaetigen') {
+    requireAuth(context);
+    const u = await admin.auth().getUser(context.auth.uid);
+    if (!u.email) throw new functions.https.HttpsError('failed-precondition', 'Dieses Konto hat keine E-Mail-Adresse.');
+    if (u.emailVerified) return { ok: true, schon: true };
+    email = u.email;
+    name = String(u.displayName || '').slice(0, 60);
+    docId = context.auth.uid;
+  } else {
+    email = String((data && data.email) || '').trim().toLowerCase();
+    if (!email || email.length > 200 || !MAIL_MUSTER.test(email)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Bitte eine gültige E-Mail-Adresse eingeben.');
+    }
+    docId = authMailDocId(email);
+  }
+  const bremse = await authMailDrosseln(docId, jetzt);
+  if (bremse) {
+    throw new functions.https.HttpsError('resource-exhausted',
+      bremse === 'gerade' ? 'Gerade eben schon verschickt. Bitte eine Minute warten — und im Spam nachsehen.'
+        : bremse === 'genug' ? 'Heute schon mehrmals verschickt. Bitte im Spam nachsehen oder morgen noch einmal.'
+          : 'Gerade sind zu viele Mails unterwegs. Bitte später noch einmal.');
+  }
+  let link;
+  try {
+    link = art === 'bestaetigen'
+      ? await admin.auth().generateEmailVerificationLink(email)
+      : await admin.auth().generatePasswordResetLink(email);
+  } catch (e) {
+    /* Passwort für eine Adresse ohne Konto: nichts verraten — dieselbe
+       Antwort wie bei Erfolg, sonst liesse sich abfragen, wer ein Konto hat. */
+    if (art === 'passwort' && /(user|email)[-_]not[-_]found/i.test(String(e.code || '') + ' ' + String(e.message || ''))) {
+      return { ok: true };
+    }
+    console.error('Anmelde-Link (' + art + '):', e.code || '', e.message);
+    throw new functions.https.HttpsError('internal', 'Link konnte nicht erzeugt werden.');
+  }
+  const m = authMailText(art, authMailLink(link, art === 'bestaetigen' ? 'verifyEmail' : 'resetPassword'), email, name);
+  const von = process.env.MAIL_FROM || process.env.SMTP_USER;
+  try {
+    await mailer.sendMail({ from: '"StudioChat" <' + von + '>', to: email, subject: m.subject, text: m.text, html: m.html });
+  } catch (e) {
+    console.error('Anmelde-Mail (' + art + ') nicht versandt:', e.message);
+    throw new functions.https.HttpsError('unavailable', 'versand');
+  }
+  return { ok: true };
+});
 
 /* Vorlage laden (Firestore-Überschreibung → sonst Standard) und Platzhalter füllen */
 async function buildMail(tplId, appt, firma) {
@@ -6295,6 +6457,7 @@ exports.kontoLoeschen = region.https.onCall(async (data, context) => {
     ref.delete(),
     db.collection('beitritt').doc(uid).delete(),
     db.collection('beitrittVersuche').doc(uid).delete(),
+    authMailSpurenWeg(uid, p.email),
   ].map((x) => x.catch(() => {})));
   try { await admin.auth().deleteUser(uid); }
   catch (e) { if (!/user-not-found|no user record/i.test(String(e.code || e.message))) throw e; }
@@ -6808,7 +6971,7 @@ exports.kennzahlenErinnern = region
     return null;
   });
 
-exports.__intern = { startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
+exports.__intern = { authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
                      berlinDatum, tagDanach, erledigt, stempelGrenzTag,

@@ -4,7 +4,8 @@
    Finger wund und sieht nie, was danebenging.
 
    Geprüft wird:
-     1. An jedem der drei Passwortfelder sitzt ein Knopf.
+     1. An jedem der fünf Passwortfelder sitzt ein Knopf (drei zum
+        Anmelden und Anlegen, zwei für den Link aus der Passwort-Mail).
      2. Er schaltet wirklich um – und wieder zurück.
      3. Der Cursor steht danach am ENDE, nicht am Anfang. Sonst tippt man
         beim Weiterschreiben mitten ins eigene Passwort.
@@ -41,7 +42,10 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
     typen: [...document.querySelectorAll('.pw-auge')].map(k => k.getAttribute('type')),
   }));
   console.log('Felder/Knöpfe:', JSON.stringify(anzahl));
-  if (anzahl.knoepfe !== 3) errs.push('FEHLT: ' + anzahl.knoepfe + ' Knöpfe statt 3');
+  /* Fünf seit Runde 146: zu Anmelden und Konto anlegen (3) kommen die
+     zwei Felder im Fenster für den Link aus der Passwort-Mail — auch dort
+     tippt man ein neues Passwort, auch dort braucht es das Auge. */
+  if (anzahl.knoepfe !== 5) errs.push('FEHLT: ' + anzahl.knoepfe + ' Knöpfe statt 5');
   if (anzahl.typen.some(t => t !== 'button')) {
     errs.push('GEFÄHRLICH: ein Knopf hat kein type="button" – er sendet das Formular ab');
   }

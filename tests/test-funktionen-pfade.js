@@ -49,6 +49,7 @@ const OBEN = {
   vorfaelle: 'Gemeldete Datenschutzvorfälle (Runde 113). Gehen an den Betreiber, nicht an die Firma — ein Vorfall kann die Firma selbst betreffen.',
   firmencodes: 'Verzeichnis Code → Firma (Runde 117). Muss ÜBER allen Firmen liegen: nur so lässt sich zusagen, dass es keinen Code zweimal gibt.',
   beitrittVersuche: 'Fehlversuche beim Code je Konto (Runde 117). Das Konto gehört zu dem Zeitpunkt noch zu keiner Firma.',
+  mailVersand: 'Zähler für Bestätigungs- und Passwort-Mails (Runde 146). Gilt je Konto bzw. je Adresse — auch für Adressen ohne Konto und ohne Firma.',
   beitritt: 'Beitritts-Nachweis aus der alten Anmeldung (vor Runde 117). Gehört zum Konto; kontoLoeschen räumt ihn mit weg.',
 };
 
