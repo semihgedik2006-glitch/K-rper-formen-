@@ -15188,3 +15188,57 @@ Geschäftsführung → für alle anderen ebenfalls eine Spalte.
 1280/1440/1920 als Chef und Mitarbeiter, Gegenprobe 390, Treffer bei
 320–1920 in beiden Dichten. Gegen den alten Stand rot.
 
+## Runde 145: Studioleitung kann wieder Aufgaben anlegen (6.10.2026)
+
+Aus dem Betrieb: „Es konnten wieder ein paar Studio Leiter keine Aufgaben
+anlegen, könntest du dir das bitte nochmal anschauen und beheben und mir
+sagen was der Grund war".
+
+**Der Grund — gemessen, nicht vermutet.** In der Demo als Studioleitung:
+Verwaltung → Erstellen, Titel leer lassen, „Aufgabe erstellen" — nicht
+einmal „Bitte Aufgabe eingeben." erschien. Als Chef derselbe Klick: die
+Meldung kommt. Der Knopf war bei der Leitung nie mit einer Aktion
+verbunden: alle Knöpfe der Verwaltung werden in EINEM Block angemeldet,
+und der stand unter `if(session.role==='chef')`. Den Reiter „Erstellen"
+sieht die Leitung aber (er ist nicht `chefOnly`). Ebenso tot waren dort
+Foto, Wiederholung, „Vorlage übernehmen", „Ankündigung senden" und
+„Wichtig", dazu Zeitraum und Export der Auswertung und „Liste leeren" im
+Archiv — neun sichtbare Knöpfe ohne Wirkung, ohne Fehlermeldung. So stand
+es in jedem Stand der Geschichte hier (ab 23.9.2026).
+
+**Warum Runde 140 es nicht fand:** gemeldet war damals „ein Mitarbeiter",
+und der Mitarbeiter legt über ein eigenes Fenster an, das funktionierte.
+Gefunden und behoben wurde dort die fehlende Studio-Kennung im Konto —
+die gibt es wirklich, und sie wirkt bei der Leitung zusätzlich (s. u.).
+Möglich, dass die Meldung damals schon von einer Studioleitung kam; von
+hier aus nicht nachprüfbar.
+
+**Behoben**
+- Die Knöpfe von „Erstellen", Auswertung und „Liste leeren" hängen jetzt
+  an `canManage()` (Chef und Leitung); was nur der Chef darf (Zugänge
+  anlegen, Abo, Studios, Sicherungen, Papierkorb …), bleibt beim Chef.
+- **Zweite Ursache, im Emulator nachgestellt**
+  (`tests/rules/leiter-aufgaben.test.js`): die Regel fragt die
+  Kennungen im Konto (`studioKeys`), das Formular bot an, was in den
+  NAMEN steht. Fehlt zu einem Namen die Kennung, scheitert mit „Alle
+  Studios" der GANZE Batch — auch die Aufgabe im eigenen Studio. Jetzt
+  bietet `schreibStudios()` an, was die Regel erlaubt; Gesperrtes steht
+  ausgegraut da, mit Hinweis (wer es behebt, wo, „danach neu laden").
+  Dasselbe für die Empfänger einer Ankündigung, „Dokument als Aufgabe",
+  die Aufgabe zu einer Defektmeldung (sonst ging die Meldung selbst mit
+  verloren) und „Liste leeren".
+- Abgelehnte Aufgaben der Leitung landen jetzt unter System → Fehler, mit
+  Rolle und den Kennungen im Konto (vorher nur beim Mitarbeiter), und
+  die Meldung nennt die Geschäftsführung statt „die Leitung" — die Karte
+  zum Reparieren sieht nur der Chef.
+
+**Bewusst NICHT gemacht:** Kennungen in echten Konten automatisch
+nachtragen. Welche Konten betroffen sind, zeigt seit Runde 140 die Karte
+unter Team; repariert wird mit einem Tipp der Geschäftsführung.
+
+**Tests:** `tests/test-leiter-aufgaben.js` (26: jeder Knopf reagiert;
+Konto stimmt / halb / Datenbank lehnt ab; Mitarbeiter-Fenster; Treffer
+bei 320–1920 in beiden Dichten; Kontrast des Hinweises hell 6,55 und
+dunkel 6,85, gerechnet über dem durchscheinenden Hintergrund) — gegen den
+alten Stand rot. `tests/rules/leiter-aufgaben.test.js` (18, beide Bäume).
+

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-MVNghBmk9lQ8KoOGt91OnpNINm0yi4Cl7QAuK7fGrrk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ZUCueyWcl1txUFfrqD8fHemE6SuE8N4jXRM8Yp+57i4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5359,6 +5359,15 @@ html{font-size:var(--fs,100%)}
   border:1px solid transparent}
 .prio-hoch{background:var(--f-bad);color:var(--danger-tx);border-color:var(--k-bad)}
 .prio-niedrig{background:var(--auf-2);color:var(--text-3);border-color:var(--line-2)}
+/* Runde 145: Hinweis im Formular „Neue Aufgabe", wenn ein Studio im Konto
+   nicht freigeschaltet ist — Bernstein, weil es ein Zustand ist, der
+   behoben werden muss. Gesperrte Zeilen mit gestrichelter Kante statt
+   blass (opacity drückte den Text unter 4,5 : 1), nicht durchgestrichen:
+   das Studio gibt es, nur das Konto ist nicht zugeordnet. */
+.card .hint.zuord-hinweis{color:var(--warm-tx);background:var(--f-warn);border-radius:var(--r-sm);
+  padding:var(--s8) var(--s10);margin:var(--s6) 0 0}
+.studio-check.gesperrt{border-style:dashed;background:transparent;color:var(--text-2);cursor:not-allowed}
+.studio-check.gesperrt input{cursor:not-allowed}
 .zuord-liste{list-style:none;margin:0 0 var(--s10);padding:0}
 .zuord-liste li{padding:var(--s8) 0;border-top:1px solid var(--line)}
 .zuord-liste li:first-child{border-top:none}
@@ -8682,7 +8691,10 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <p class="hint" style="margin:6px 0 0">Große Aufgaben werden so zu einer kleinen Checkliste zum Abhaken.</p></div>
             <div class="field"><label>Für welche Studios?</label>
               <label class="studio-check" style="margin-bottom:7px" id="ntAllWrap"><input type="checkbox" id="ntAllStudios" /><span><b>Alle Studios</b></span></label>
-              <div class="studio-checks" id="ntStudios"></div></div>
+              <div class="studio-checks" id="ntStudios"></div>
+              <!-- Runde 145: steht im Konto ein Studio nur als Name, nicht als
+                   Kennung, lässt die Regel dort nichts anlegen. Das sagen wir. -->
+              <p class="hint zuord-hinweis" id="ntZuordHinweis" role="status" hidden></p></div>
             <div class="field"><label for="ntRepeat">Wiederholung</label>
               <select class="inp" id="ntRepeat">
                 <option value="">Keine (einmalig)</option>
@@ -17411,6 +17423,10 @@ function enterApp(uid, data){
      sah ihr eigenes Studio nicht mehr. Steht im Profil eine Kennung, die
      die Studioliste kennt, gilt sie, und der Name kommt aus der Liste. */
   var profilKeys = Array.isArray(session.studioKeys) ? session.studioKeys.slice() : [];
+  /* Runde 145: die Kennungen, wie sie im Konto STEHEN — nur die prüft die
+     Regel. session.studioKeys wird unten aus den Namen gerechnet und kann
+     davon abweichen; schreibStudios() vergleicht beides. */
+  session.kontoKeys = profilKeys.slice();
   session.studioKeys = session.studios.map(function(n, i){
     var k = studioKey(n);
     if(k === 'studio--1' && profilKeys[i] && studioName(profilKeys[i]) !== profilKeys[i]){
@@ -18431,6 +18447,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-06-leiter-aufgaben', datum:'6.10.2026', titel:'Studioleitung: Aufgaben anlegen geht wieder', wo:'chef:erstellen', punkte:[
+    'Für die Studioleitung tat „Aufgabe erstellen" unter Verwaltung → Erstellen nichts. Das ist behoben – ebenso „Ankündigung senden", Foto, Wiederholung und „Vorlage übernehmen" dort, der Export in der Auswertung und „Liste leeren" im Archiv.',
+    'Steht ein Studio im Konto nur mit Namen, aber nicht freigeschaltet, ist es in der Auswahl ausgegraut, mit einem Hinweis darunter. Die anderen Studios gehen trotzdem – vorher scheiterte mit „Alle Studios" die ganze Aufgabe.',
+    'Geschäftsführung: solche Konten zeigt Verwaltung → Team unter „Studio-Zuordnung unvollständig"; „Zuordnung reparieren" behebt es. Die betroffene Person lädt die App danach einmal neu.' ] },
   { id:'2026-10-06-dokumente', datum:'6.10.2026', titel:'Dokumente und Archiv am Rechner', wo:'docs', punkte:[
     'Dokumente: am Rechner steht die Liste links und „Dokument hinzufügen" rechts daneben. Name und „…" einer Datei liegen nicht mehr eine ganze Bildschirmbreite auseinander.',
     'Archiv: „Erledigte Aufgaben" links, die Sicherungen rechts daneben.',
@@ -20360,6 +20380,56 @@ function renderChannelBadges(){
   });
 }
 
+/* ══ WO DARF ICH SCHREIBEN? (Runde 145) ═══════════════════════════════
+   Aus dem Betrieb, 6.10.2026: „Es konnten wieder ein paar Studio Leiter
+   keine Aufgaben anlegen".
+
+   Die Regel fragt die KENNUNGEN im Konto (studioKeys, manages()).
+   Angeboten wurde aber, was in den NAMEN im Konto steht. Fehlte zu einem
+   Namen die Kennung, scheiterte die ganze Aufgabe: das Formular schickt
+   alle angehakten Studios in EINEM Batch, und der gilt ganz oder gar
+   nicht — mit „Alle Studios" auch für die Studios, die stimmen
+   (im Emulator nachgestellt: tests/rules/leiter-aufgaben.test.js).
+   Einen Mitarbeiter trifft das seltener: er legt immer in einem Studio
+   an.
+
+   Jetzt wird angeboten, was auch die Regel erlaubt. Ein Studio, das im
+   Namen steht, aber nicht als Kennung, steht ausgegraut da, mit dem Grund
+   und dem Weg zur Behebung (Verwaltung → Team → „Zuordnung reparieren"). */
+function schreibStudios(){
+  if(isChef()) return STUDIOS_ALPHA.map(function(n){ return { key:studioKey(n), name:n, ok:true }; });
+  var konto=(session&&session.kontoKeys)||[];
+  var namen=(session&&session.studios)||[], keys=(session&&session.studioKeys)||[];
+  var aus=[], gesehen={};
+  namen.forEach(function(n, i){
+    var k=keys[i]||studioKey(n);
+    if(gesehen[k]) return;
+    gesehen[k]=true;
+    aus.push({ key:k, name:n, ok: konto.indexOf(k)>=0 });
+  });
+  /* Kennungen ohne passenden Namen (Studio umbenannt): die Regel erlaubt
+     sie, also auch hier. */
+  konto.forEach(function(k){
+    if(gesehen[k] || studioName(k)===k) return;
+    gesehen[k]=true;
+    aus.push({ key:k, name:studioName(k), ok:true });
+  });
+  return aus.sort(function(a, b){ return a.name.localeCompare(b.name, 'de'); });
+}
+/* Darf dieses Konto in diesem Studio eine Aufgabe anlegen? Dieselbe
+   Frage wie die Regel: Chef überall, sonst die Kennung im Konto. */
+function darfAufgabeIn(sk){
+  return isChef() || ((session&&session.kontoKeys)||[]).indexOf(sk)>=0;
+}
+function schreibGesperrtText(liste){
+  var weg=liste.filter(function(x){ return !x.ok; }).map(function(x){ return x.name; });
+  if(!weg.length) return '';
+  return (weg.length===1 ? weg[0]+' ist' : weg.join(', ')+' sind')+
+    ' in deinem Konto noch nicht freigeschaltet — dort kannst du gerade nichts anlegen. '+
+    'Die Geschäftsführung behebt das unter Verwaltung → Team mit „Zuordnung reparieren"; '+
+    'danach die App einmal neu laden.';
+}
+
 /* ── Chef-Dropdowns ── */
 var _chefSelBound=false;
 function buildChefSelects(){
@@ -20368,20 +20438,27 @@ function buildChefSelects(){
   if(isChef()){
     var oa=document.createElement('option'); oa.value='all'; oa.textContent='Alle Mitarbeiter'; t.appendChild(oa);
   }
-  managedStudios().forEach(function(s){ var o=document.createElement('option'); o.value=studioKey(s); o.textContent='Nur '+s; t.appendChild(o); });
+  var darf=schreibStudios();
+  /* Ankündigungen prüft die Regel genauso (target in myKeys()). */
+  darf.filter(function(x){ return x.ok; }).forEach(function(x){
+    var o=document.createElement('option'); o.value=x.key; o.textContent='Nur '+x.name; t.appendChild(o);
+  });
 
   // Aufgaben: Studio-Mehrfachauswahl (Checkboxen)
   var ns=$('ntStudios'); ns.innerHTML='';
-  managedStudios().forEach(function(s){
-    var lab=document.createElement('label'); lab.className='studio-check';
-    var cb=document.createElement('input'); cb.type='checkbox'; cb.value=studioKey(s);
+  darf.forEach(function(x){
+    var lab=document.createElement('label'); lab.className='studio-check'+(x.ok?'':' gesperrt');
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.value=x.key;
+    if(!x.ok){ cb.disabled=true; lab.title='In deinem Konto noch nicht freigeschaltet'; }
     cb.addEventListener('change',function(){
       lab.classList.toggle('on',cb.checked);
       if(!cb.checked){ $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on'); }
     });
-    var span=document.createElement('span'); span.textContent=s;
+    var span=document.createElement('span'); span.textContent=x.name+(x.ok?'':' — nicht freigeschaltet');
     lab.appendChild(cb); lab.appendChild(span); ns.appendChild(lab);
   });
+  var hin=$('ntZuordHinweis');
+  if(hin){ var txt=schreibGesperrtText(darf); hin.textContent=txt; hin.hidden=!txt; }
   buildAssignSelect();
   // Nur einmal verdrahten – "Alle Studios" würde sonst mehrfach umschalten
   if(_chefSelBound) return;
@@ -20389,7 +20466,9 @@ function buildChefSelects(){
   var all=$('ntAllStudios');
   all.addEventListener('change',function(){
     $('ntAllWrap').classList.toggle('on', all.checked);
-    $('ntStudios').querySelectorAll('input').forEach(function(cb){
+    /* Nur, was freigeschaltet ist — ein gesperrtes Studio im Batch liesse
+       die ganze Aufgabe scheitern. */
+    $('ntStudios').querySelectorAll('input:not(:disabled)').forEach(function(cb){
       cb.checked=all.checked; cb.parentElement.classList.toggle('on',all.checked);
     });
   });
@@ -21291,6 +21370,14 @@ function openDocFile(d){
 
 function docToTodo(d){
   var studios=(d.studios==='all'||!d.studios)?STUDIOS.map(studioKey):d.studios;
+  /* Runde 145: die Studioleitung legt nur dort an, wo die Regel es
+     erlaubt. Bei einem Dokument „für alle Studios" standen hier alle 14 —
+     und ein einziges fremdes liess den ganzen Batch scheitern. */
+  if(!isChef()){
+    var darf=schreibStudios().filter(function(x){ return x.ok; }).map(function(x){ return x.key; });
+    studios=studios.filter(function(k){ return darf.indexOf(k)>=0; });
+    if(!studios.length){ toast('Für keines deiner freigeschalteten Studios.',true); return; }
+  }
   /* Ein Fehlgriff hat vorher stillschweigend in ALLEN 14 Studios eine Aufgabe
      angelegt – und die muss man dann einzeln wieder löschen. */
   if(!confirm('„'+(d.name||d.fileName)+'" als Aufgabe an '+studios.length+
@@ -21307,7 +21394,7 @@ function docToTodo(d){
     });
   });
   batch.commit().then(function(){ toast('Als Aufgabe an '+studios.length+' Studio'+(studios.length>1?'s':'')+' ✓'); })
-    .catch(function(e){ toast(errMsg(e),true); });
+    .catch(function(e){ toast(aufgabeFehlerText(e, studios.join(',')),true); });
 }
 
 function deleteDoc(d){
@@ -28620,10 +28707,14 @@ function zuordnungReparieren(btn){
    Jetzt steht da, wer es beheben kann und wo, und die Geschäftsführung
    findet es unter System → Fehler. */
 function aufgabeFehlerText(e, sk){
-  if(e && /permission/.test(String(e.code||'')) && !canManage()){
-    fehlerMelden('Aufgabe abgelehnt: Studio '+sk+' nicht im Konto (studioKeys)', 'aufgabe', 0, '');
+  /* Runde 145: auch für die Studioleitung (vorher !canManage() — die
+     Leitung bekam nur „keine Berechtigung", und unter System → Fehler
+     stand nichts). Nur der Chef braucht keine Kennung im Konto. */
+  if(e && /permission/.test(String(e.code||'')) && !isChef()){
+    fehlerMelden('Aufgabe abgelehnt ('+((session&&session.role)||'?')+'): Studio '+sk+
+      ' nicht im Konto (studioKeys: '+(((session&&session.kontoKeys)||[]).join(',')||'leer')+')', 'aufgabe', 0, '');
     return 'Dein Konto ist in der Datenbank diesem Studio noch nicht zugeordnet. '+
-      'Die Leitung kann das unter Verwaltung → Team mit „Zuordnung reparieren" beheben.';
+      'Die Geschäftsführung behebt das unter Verwaltung → Team mit „Zuordnung reparieren"; danach die App einmal neu laden.';
   }
   return errMsg(e);
 }
@@ -31337,6 +31428,9 @@ function clearArchive(){
   var refs=[];
   STUDIOS.forEach(function(s){
     var sk=studioKey(s);
+    /* Runde 145: die Studioleitung löscht nur in ihren Studios — ein
+       fremdes im Batch liesse das ganze Leeren scheitern. */
+    if(!darfAufgabeIn(sk)) return;
     (cachedTodos[sk]||[]).filter(isArchived).forEach(function(t){ refs.push({sk:sk,id:t.id}); });
   });
   if(!refs.length){ toast('Archiv ist leer.'); return; }
@@ -35631,7 +35725,11 @@ function reportDevice(art, btn){
     var schonOffen = art==='defekt' && (cachedTodos[_devStudioKey]||[]).some(function(t){
       return t.devId===d.id && !isDone(t) && !isArchived(t);
     });
-    if(art==='defekt' && !schonOffen){
+    /* Runde 145: die Aufgabe nur, wo die Regel das Anlegen erlaubt. Sonst
+       scheiterte der ganze Batch — und mit ihm die Meldung selbst, obwohl
+       Gerätezustand und Verlauf jeder melden darf. */
+    var ohneAufgabe = art==='defekt' && !schonOffen && !darfAufgabeIn(_devStudioKey);
+    if(art==='defekt' && !schonOffen && !ohneAufgabe){
       batch.set(ref.collection('todos').doc(), {
         title:(d.name||'Gerät')+' defekt',
         desc:text+'\n\nGemeldet von '+session.name+(d.place?' · Standort: '+d.place:''),
@@ -35646,7 +35744,8 @@ function reportDevice(art, btn){
       toast(art==='behoben' ? 'Als in Ordnung vermerkt ✓'
         : (art==='wartung' ? 'Wartung vermerkt ✓'
           : (schonOffen ? 'Defekt vermerkt – es gibt schon eine offene Aufgabe dazu ✓'
-                        : 'Defekt gemeldet – Aufgabe für die Leitung angelegt ✓')));
+            : (ohneAufgabe ? 'Defekt gemeldet ✓ – die Leitung sieht ihn am Gerät (eine Aufgabe kannst du in diesem Studio nicht anlegen)'
+                        : 'Defekt gemeldet – Aufgabe für die Leitung angelegt ✓'))));
       tick(12);
     }).catch(function(e){ toast(errMsg(e),true); });
   });
@@ -36154,20 +36253,27 @@ function speichereProbe(btn){
    bleibt im Formular der Verwaltung. */
 function oeffneEigeneAufgabe(){
   var sel=$('otStudio'); if(!sel) return;
-  var meine=(session&&session.studios)||[];
-  if(!meine.length){ toast('Dir ist kein Studio zugeteilt.',true); return; }
-  /* Die Kennung aus session.studioKeys, nicht noch einmal aus dem Namen
-     gerechnet — dort steht seit Runde 140 auch die Kennung aus dem
-     Profil, wenn ein Studio umbenannt wurde. */
-  var keys=(session&&session.studioKeys)||[];
-  sel.innerHTML=meine.map(function(n, i){
-    return '<option value="'+esc(keys[i]||studioKey(n))+'">'+esc(n)+'</option>';
+  if(!((session&&session.studios)||[]).length){ toast('Dir ist kein Studio zugeteilt.',true); return; }
+  /* Runde 145: nur Studios, in denen die Regel das Anlegen auch erlaubt
+     (Kennung im Konto) — siehe schreibStudios(). Vorher stand hier jedes
+     Studio aus den Namen, und eines ohne Kennung führte erst beim
+     Speichern zu „keine Berechtigung". */
+  var alle=schreibStudios(), meine=alle.filter(function(x){ return x.ok; });
+  if(!meine.length){
+    fehlerMelden('Aufgabe: kein Studio im Konto freigeschaltet (studioKeys leer oder unpassend)', 'aufgabe', 0, '');
+    toast('Dein Konto ist in der Datenbank noch keinem Studio zugeordnet. '+
+      'Die Geschäftsführung behebt das unter Verwaltung → Team mit „Zuordnung reparieren"; danach die App einmal neu laden.', true);
+    return;
+  }
+  sel.innerHTML=meine.map(function(x){
+    return '<option value="'+esc(x.key)+'">'+esc(x.name)+'</option>';
   }).join('');
   /* Bei einem einzigen Studio ist die Auswahl nur Ballast. */
   sel.parentElement.style.display = meine.length>1 ? '' : 'none';
-  $('otWo').textContent = meine.length>1
+  $('otWo').textContent = (meine.length>1
     ? 'Die Aufgabe erscheint bei allen im gewählten Studio.'
-    : 'Die Aufgabe erscheint bei allen in ' + meine[0] + '.';
+    : 'Die Aufgabe erscheint bei allen in ' + meine[0].name + '.') +
+    (meine.length<alle.length ? ' ' + schreibGesperrtText(alle) : '');
   $('otTitle').value=''; $('otDesc').value=''; $('otDue').value='';
   if($('otZeit')) $('otZeit').value='';
   $('ownTodoModal').classList.add('show');
@@ -39720,8 +39826,6 @@ function bindActions(){
       sendChecklistDM(sel.value, sel.options[sel.selectedIndex].text, _onboardSteps);
     });
 
-    // Archiv leeren
-    var ac=$('archClear'); if(ac) ac.addEventListener('click', clearArchive);
     var ssb=$('syncSheetsBtn'); if(ssb) ssb.addEventListener('click',function(){
       var btn=this;
       withBusy(btn,function(){ return syncAllToSheets(false); });
@@ -39762,13 +39866,9 @@ function bindActions(){
     });
 
     // Aufgaben-Vorlagen
-    var tu=$('tplUse'); if(tu) tu.addEventListener('click', useTemplate);
     var tsv=$('tplSave'); if(tsv) tsv.addEventListener('click', saveAsTemplate);
     var td=$('tplDel'); if(td) td.addEventListener('click', deleteTemplate);
 
-    // Auswertung: Zeitraum wechseln + Bericht speichern
-    var rr=$('repRange'); if(rr) rr.addEventListener('change', renderReport);
-    var rx=$('repExport'); if(rx) rx.addEventListener('click', exportReport);
 
     // Papierkorb endgültig leeren
     var te=$('trashEmpty'); if(te) te.addEventListener('click', emptyTrash);
@@ -39848,6 +39948,29 @@ function bindActions(){
         });
       });
     });
+  }
+
+  /* ══ VERWALTEN: Chef UND Studioleitung (Runde 145) ═══════════════════
+     Aus dem Betrieb, 6.10.2026: „Es konnten wieder ein paar Studio Leiter
+     keine Aufgaben anlegen".
+
+     Alles bis hierher hing an session.role==='chef' — auch die Knöpfe
+     im Reiter „Erstellen", den die Studioleitung sieht. Bei ihr waren
+     „Aufgabe erstellen", Foto, Wiederholung, „Vorlage übernehmen",
+     „Ankündigung senden" und „Wichtig" ohne jede Wirkung, dazu Zeitraum
+     und Export der Auswertung und „Liste leeren" im Archiv: kein Fehler,
+     keine Meldung, der Knopf tat einfach nichts. So stand es mindestens
+     seit dem 23.9.2026 (weiter reicht die Geschichte hier nicht).
+     Gemessen: tests/test-leiter-aufgaben.js, Abschnitt 1. */
+  if(canManage()){
+    var tu=$('tplUse'); if(tu) tu.addEventListener('click', useTemplate);
+
+    // Auswertung: Zeitraum wechseln + Bericht speichern
+    var rr=$('repRange'); if(rr) rr.addEventListener('change', renderReport);
+    var rx=$('repExport'); if(rx) rx.addEventListener('click', exportReport);
+
+    // Archiv leeren (die Leitung: nur in ihren Studios, siehe clearArchive)
+    var ac=$('archClear'); if(ac) ac.addEventListener('click', clearArchive);
 
     // Entwürfe automatisch zwischenspeichern
     ['bcText','ntTitle','ntDesc'].forEach(function(idd){
@@ -39962,7 +40085,7 @@ function bindActions(){
             saveDraft();
             toast('Aufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' erstellt ✓');
           })
-          .catch(function(e){ toast(errMsg(e),true); });
+          .catch(function(e){ toast(aufgabeFehlerText(e, targets.join(',')),true); });
       });
     });
   }
