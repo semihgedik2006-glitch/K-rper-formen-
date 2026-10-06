@@ -1,7 +1,12 @@
 __pycache__/
 *.pyc
 functions/.env
-functions/node_modules/
+# OHNE Schrägstrich am Ende: „functions/node_modules/" trifft nur ein
+# Verzeichnis. Am 6.10.2026 war es in einem Arbeitsverzeichnis ein
+# symbolischer Link — der rutschte so in den Commit und brach den
+# Pages-Lauf (Upload artifact).
+functions/node_modules
+node_modules
 
 # Bildschirmfotos aus den Testlaeufen – entstehen bei jedem Lauf neu
 tests/*.png
