@@ -174,7 +174,9 @@ async function codeHolen(p, name) {
   const faellig = await p.evaluate(() => {
     const k = document.getElementById('schFaelligKarte');
     const uebersicht = document.getElementById('schUebersicht');
-    const kinder = [...uebersicht.children];
+    /* Runde 143: die persönlichen Karten stehen in der Hülle .sch-oben
+       (am Rechner nebeneinander). „Ganz oben" gilt durch sie hindurch. */
+    const kinder = [...uebersicht.children].flatMap(x => x.classList.contains('sch-oben') ? [...x.children] : [x]);
     return {
       sichtbar: !!k && k.style.display !== 'none',
       zeilen: document.querySelectorAll('[data-schfaellig]').length,

@@ -90,7 +90,10 @@ function karte(p) {
   pruefe('aus dem richtigen Modul', /Wenn einem Kunden schlecht wird/.test(k.text), k.text.slice(0, 120));
   pruefe('und sie sagt, dass nichts gespeichert wird', /nicht gespeichert/.test(k.text) && /niemand sieht/.test(k.text));
   const reihenfolge = await p.evaluate(() => {
-    const kinder = [...document.getElementById('schUebersicht').children].filter(x => x.offsetParent);
+    /* Runde 143: die persönlichen Karten stehen in der Hülle .sch-oben
+       (am Rechner nebeneinander). Die Reihenfolge gilt durch sie hindurch. */
+    const kinder = [...document.getElementById('schUebersicht').children]
+      .flatMap(x => x.classList.contains('sch-oben') ? [...x.children] : [x]).filter(x => x.offsetParent);
     return kinder.map(x => x.id || x.className).slice(0, 3);
   });
   /* Pflicht geht vor: „Das steht für dich an" bleibt oben. */
