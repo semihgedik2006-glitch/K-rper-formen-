@@ -42,7 +42,11 @@ async function start(stub, errs) {
         ersteUeberfaellig: first ? Math.round(first.getBoundingClientRect().top - sa.getBoundingClientRect().top) : -1,
         ersteAufgabeIstUeberfaellig: !!(document.querySelector('.todo') || {}).classList &&
           document.querySelector('.todo').classList.contains('overdue'),
-        erstesStudio: (document.querySelector('.studio-head') || {}).textContent || '',
+        /* Seit Runde 147 steht oben EIN Studio (Auswahl wie im Putzplan).
+           „Studio mit Überfälligem vorn" heisst jetzt: ohne eigene Wahl
+           ist genau dieses Studio vorausgewählt. */
+        erstesStudio: (function () { const s = document.getElementById('todoStudioWahl');
+          return s && s.selectedOptions[0] ? s.selectedOptions[0].textContent : ''; })(),
         chipZahlen: [...document.querySelectorAll('.chip-num')].map(n => n.parentElement.dataset.tfilter + '=' + n.textContent),
       };
     });
@@ -55,10 +59,14 @@ async function start(stub, errs) {
     if (!platz.chipZahlen.length) errs.push('Keine Zahlen an den Filtern');
 
     // Aktionsblatt
-    const alteSymbole = await page.evaluate(() => document.querySelectorAll('.t-snooze,.t-del,.t-photo-add').length);
+    /* .t-del steht seit Runde 147 wieder in der Zeile — ausdrücklich
+       gewünscht („Weg, wie im Putzplan": Stift und Papierkorb in der
+       Zeile, der Rest hinter „…"). Gezählt werden nur noch die übrigen
+       alten Mini-Symbole. */
+    const alteSymbole = await page.evaluate(() => document.querySelectorAll('.t-snooze,.t-photo-add').length);
     if (alteSymbole) errs.push('Alte Mini-Symbole an der Aufgabe: ' + alteSymbole);
 
-    await page.evaluate(() => document.querySelector('.t-mehr').click());
+    await page.evaluate(() => document.querySelector('.todo.overdue .t-mehr').click());
     await page.waitForTimeout(450);
     const blatt = await page.evaluate(() => {
       const acts = [...document.querySelectorAll('#tbActs .ms-act')];
@@ -146,19 +154,25 @@ async function start(stub, errs) {
            er nicht ins Chef-Formular fuehrt. */
         anlegenDa: document.getElementById('todoNew').style.display !== 'none',
         kleinesFenster: !!document.getElementById('ownTodoModal'),
-        kamera: document.querySelectorAll('.t-cam').length,
-        mehr: document.querySelectorAll('.t-mehr').length,
+        zeilen: document.querySelectorAll('#todoArea .todo').length,
+        mehr: document.querySelectorAll('#todoArea .t-mehr').length,
       };
     });
     console.log('MITARBEITER:', JSON.stringify(ma));
     if (!ma.anlegenDa) errs.push('Mitarbeiter sieht keinen Anlegen-Knopf mehr');
     if (!ma.kleinesFenster) errs.push('Das kleine Fenster fuer eigene Aufgaben fehlt');
     if (ma.ersteAufgabe > 260) errs.push('Erste Aufgabe erst bei y=' + ma.ersteAufgabe);
-    if (!ma.kamera) errs.push('Kein Foto-Knopf an der Aufgabe');
-
-    // Ohne Foto und ohne Verwaltungsrechte stünde hinter „⋯" nur die Kamera,
-    // die eine Zeile darüber schon sichtbar ist – also gibt es kein „⋯".
-    if (ma.mehr) errs.push('Mitarbeiter sieht ein leeres „Mehr"-Menue: ' + ma.mehr);
+    /* Seit Runde 147 steht das Foto hinter „⋯" (gewählt: „Weg, wie im
+       Putzplan" — Foto, Grund, Frist und Danke hinter „…"). Also hat
+       JEDE Zeile ein „⋯", und darin steht „Foto hinzufügen". */
+    if (!ma.mehr || ma.mehr !== ma.zeilen) errs.push('Nicht jede Zeile hat „⋯": ' + ma.mehr + ' von ' + ma.zeilen);
+    await page.evaluate(() => document.querySelector('#todoArea .t-mehr').click());
+    await page.waitForTimeout(400);
+    const maBlatt = await page.evaluate(() => [...document.querySelectorAll('#tbActs .ms-act')].map(a => a.textContent.trim()));
+    console.log('MITARBEITER-BLATT:', JSON.stringify(maBlatt));
+    if (!maBlatt.some(e => /Foto hinzufügen/.test(e))) errs.push('Kein „Foto hinzufügen" im Blatt');
+    if (maBlatt.some(e => /Löschen|Bearbeiten/.test(e))) errs.push('Mitarbeiter sieht Löschen/Bearbeiten im Blatt');
+    await page.evaluate(() => document.getElementById('tbClose').click());
 
     await page.screenshot({ path: SP + '/aufgaben-mitarbeiter.png' });
     await b.close();

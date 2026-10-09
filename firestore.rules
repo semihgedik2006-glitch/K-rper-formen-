@@ -813,6 +813,8 @@ service cloud.firestore {
 
     // Aufgaben: was ein Mitarbeiter im EIGENEN Studio anfassen darf.
     //   done/doneBy/doneByUid/doneAt   abhaken
+    //   doneKuerzel                    wer am Geraet abhakt (Runde 147,
+    //                                  wie im Putzplan)
     //   steps                          Teilschritte abhaken
     //   assignedTo/assignedName        „ich uebernehme das"
     //   grund/grundVon/grundAm         Grund fuer die Verzoegerung
@@ -820,7 +822,7 @@ service cloud.firestore {
     // NICHT dabei: title, due, recurring, createdByUid — alles vier
     // ist in der App Sache der Leitung.
     function todoMitarbeiterFelder() {
-      return ['done','doneBy','doneByUid','doneAt','steps',
+      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','steps',
               'assignedTo','assignedName','grund','grundVon','grundAm',
               'photo','photoBy','photoAt'];
     }

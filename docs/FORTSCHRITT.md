@@ -15311,3 +15311,131 @@ erst auf Knopfdruck, 7 Zeichen abgelehnt, Treffer bei 320–1920 in beiden
 Dichten) — gegen den alten Stand rot. `test-passwort`: fünf statt drei
 Augen-Knöpfe (die zwei neuen Felder im Link-Fenster haben ihres auch).
 
+
+## Runde 147: Die Aufgaben, aufgebaut wie der Putzplan (9.10.2026)
+
+> „kannst du es bitte machen das der aufgaben bereich vom aufbau und
+> layout GENAU so wie der purtzplan aufgestellt ist das wäre für uns viel
+> übersichtlicher, falls du fragen hast frag erstmal und baue das
+> gründlich bitte"
+
+Vier Rückfragen, vier Antworten:
+- **Gruppen:** „1 und 3", also nach Fälligkeit als Standard, wahlweise nach
+  Tageszeit; innerhalb einer Gruppe steht zuerst, was jetzt dran ist.
+- **Studio:** „Ein Studio, Auswahl oben". Wer mehrere Studios hat,
+  bekommt zusätzlich „Alle Studios".
+- **Detailfeld am PC:** „Weg, wie im Putzplan". Stift und Papierkorb
+  stehen in der Zeile; Foto, Grund, Frist und Danke liegen hinter „…".
+- **Kopfzeile:** „Wie Putzplan, Rest in ‚Filter'".
+
+**Gebaut**
+- **Dieselbe Leiste wie im Putzplan.** Studio, Fortschritt, „Wer hakt
+  ab?", Filter und Drucken, mit denselben Klassen. Der Test vergleicht
+  beide Leisten Element für Element. Suche, Schnellfilter (mit Zahlen)
+  und Sortierung klappen unter „Filter" auf.
+- **Gruppen nach Fälligkeit:** Überfällig · Heute · Diese Woche · Später
+  · Ohne Frist.
+  - Jede Gruppe zeigt „x von y" und einen Balken, wie im Putzplan; am PC
+    stehen sie als Spalten nebeneinander.
+  - Tägliche Aufgaben gehören zu „Heute", wöchentliche zu „Diese Woche".
+  - Innerhalb einer Gruppe stehen offene vor erledigten, dann was jetzt
+    dran ist (Tageszeit), dann die Frist.
+  - „Nach Tageszeit" ergibt die Gruppen des Putzplans. Name,
+    Dringlichkeit und „Neueste" ergeben eine flache Liste; erledigte
+    stehen jetzt auch dort unten, wie im Putzplan.
+- **Zeile wie ein Putzpunkt:** Haken, Titel mit Marken, darunter der
+  Stand.
+  - Der Stand lautet „noch offen" oder „✓ Kürzel (Konto) · Zeit", dazu
+    „Ich übernehme das".
+  - Beschreibung, Teilschritte, Grund, Dokument und Foto bleiben in der
+    Zeile.
+  - Rechts stehen Stift, Papierkorb und „…", je 44 × 44 und ohne Abstand
+    dazwischen.
+- **„Wer hakt ab?"** nutzt dasselbe Kürzel wie im Putzplan (eine Ablage je
+  Gerät). Beim Abhaken landet es in `doneKuerzel`.
+- **Notizen:** dieselbe Sammlung wie im Putzplan (`cleaningNotes`), mit
+  „→ Aufgabe" für alle. Bei „Alle Studios" ist die Karte ausgeblendet.
+- **Drucken:** ein Zettel mit den offenen Aufgaben, mit Kästchen und
+  Kürzelfeld.
+- **„+ Neu"** wählt das oben gewählte Studio schon vor, wie beim Putzplan.
+- **Sprünge** von der Startseite oder der Übersicht setzen die Auswahl.
+  Zählt ein Sprung über alle Studios („3 überfällig"), zeigt die Liste
+  auch alle; die Kachel eines Studios grenzt auf dieses ein.
+- **Entfernt:**
+  - das Detailfeld am PC;
+  - der Studio-Chip mit dem Fenster „Studio wählen";
+  - die Kamera und der Danke-Knopf in der Zeile. Beides steht im Blatt
+    hinter „…"; wer gedankt hat, steht weiter an der Zeile.
+- **Tastatur am PC bleibt:** ↑/↓ wählen, Leertaste oder x hakt ab, e
+  bearbeitet, Enter öffnet „…". Gewählt wird erst, wenn jemand die Pfeile
+  benutzt.
+
+**Gefunden beim Bauen**
+- **Vorauswahl springt beim Abhaken.** Ohne eigene Wahl war das Studio
+  mit dem meisten Überfälligen vorgewählt. Hakte man dessen überfällige
+  Aufgabe ab, sprang die Liste in ein anderes Studio, mitten in der
+  Arbeit. Gefunden hat das `test-p1-aufgaben`: die abgehakte Zeile war
+  verschwunden. Jetzt ist die Vorauswahl eingefroren, sobald die Liste
+  einmal mit Daten im Bild war. Gemerkt wird sie nicht; das bleibt der
+  eigenen Wahl vorbehalten.
+- **Zu schmale Spalten.** Bei der Spaltenbreite des Putzplans (300 px)
+  brach in der Aufgabenzeile „Ich übernehme das" in die dritte Zeile um.
+  Die Aufgaben-Spalten haben deshalb mindestens 440 px: bei 1440 sind es
+  zwei, bei 1920 drei.
+- **Neuzeichnen bei jedem Öffnen.** Jedes Öffnen der Seite neu zu zeichnen
+  kostete 50 bis 80 ms bis zum ersten Bild. Jetzt wird nur neu
+  gezeichnet, wenn ein Sprung Studio oder Filter umgestellt hat.
+- **Alte Sortierwahl.** Eine gemerkte Wahl „Nach Fälligkeit" (alte
+  Sortierung) fiel zunächst nicht in die Gruppen. Der neue Test hat das
+  gefunden; jetzt wird sie auf den Standard umgeschrieben.
+
+**Warum so**
+- **Vorauswahl nach Dringlichkeit statt nach Alphabet.** Mit dem ersten
+  Studio im Alphabet wäre das Überfällige der Geschäftsführung beim
+  Öffnen unsichtbar gewesen. Früher stand es wenigstens im ersten Block
+  oben („studiosNachDringlichkeit"). Die Auswahl zeigt die Zahl ohnehin
+  an („Hürth · 2 überfällig").
+- **Eigene Klassen `t-edit`, `t-del`, `.todo`.** Die Klassen
+  `pp-item`, `pp-del` und `pp-edit` werden nicht wiederverwendet. Tests
+  und Code wählen `.pp-item` und `.pp-del` ohne `#ppList` aus, und die
+  Aufgaben stehen im Dokument vor dem Putzplan. Das Aussehen ist
+  geteilt, die Namen nicht (siehe Kommentar im CSS: „Eine Klasse ist ein
+  Name").
+- **Übergang für `doneKuerzel`.** App und Regel werden getrennt
+  ausgeliefert. Ein Haken mit Kürzel, den die alte Regel ablehnt, geht
+  deshalb ohne Kürzel noch einmal raus. Ohne eingetragenes Kürzel wird
+  das Feld gar nicht geschrieben; eine solche Aufgabe sieht in der
+  Datenbank genau aus wie vorher.
+- **Notizen geteilt statt doppelt.** Zwei Notizzettel für ein Studio
+  hießen: die Hälfte liest man nie.
+
+**Messung**
+- **Tempo** (`test-aufgaben-tempo`, Demo-Chef, „Alle Studios" mit 61
+  Aufgaben, CPU ÷4, Median bis zum ersten Bild, dieselbe Maschine):
+  | | vorher | nachher |
+  |---|---|---|
+  | 390 px | ~120 ms | ~100 ms |
+  | 1440 px | ~130 ms | ~150 ms |
+
+  Am PC stehen jetzt Beschreibung und Stand in der Zeile, die vorher im
+  Detailfeld standen. Mit einem gewählten Studio ist die Liste viel
+  kürzer. Gemessen ist das nicht.
+- **Trefferflächen:** jedes Bedienelement der Leiste, der Werkzeuge
+  (zu und offen) und der Zeilen ≥ 44 × 44 per `elementFromPoint`, bei
+  320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, normal und kompakt.
+  Nirgends waagerechtes Scrollen.
+
+**Tests**
+- `tests/test-aufgaben-wie-putzplan.js` (53 Prüfungen). Gegen den alten
+  Stand rot, von Hand nachgeprüft.
+- `tests/rules/aufgabe-kuerzel.test.js` (14 Prüfungen, beide Welten).
+  Gegen die alte Regel rot: vier Fehlschläge.
+- **Umgebaut, nicht gelockert** (Zitat steht jeweils im Test):
+  - `test-p1-aufgaben`: Das Detailfeld ist auf Wunsch entfallen; geprüft
+    wird jetzt, dass es fehlt, dazu Tastatur, Höhe der ersten Zeile und
+    die Handgriffe in der Zeile.
+  - `test-aufgaben-bereich4`: Studio vorn heißt jetzt „vorausgewählt";
+    der Papierkorb in der Zeile ist gewollt; das Foto liegt im Blatt.
+  - `test-aufgaben-tempo`: wählt „Alle Studios", weil es die lange Liste
+    misst.
+  - `test-all`: öffnet „Filter", bevor es sortiert.

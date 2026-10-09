@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-TJRJPqTJJb1NTDcnIhWvvItmQwxFBL0gAFW9KAdC/Xg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-sKKRQoYtOsYzSeGk7u8JGv4ILN3a93h/leTWL8WlYlE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -357,12 +357,12 @@ button{color:inherit}
    zentriert darüber. Das ist dieselbe Lösung, die Apple in den eigenen
    Richtlinien empfiehlt: getrennte Größe für Auge und Finger. */
 .react,.pin-x,.pin-go,.ann-del,.ann-pin,.shift-x,.check,.t-cam,.mat-del,
-.msg-del,.pp-del,.cert-del,.mini-x,.pb-weg{position:relative}
+.msg-del,.pp-del,.t-del,.t-edit,.cert-del,.mini-x,.pb-weg{position:relative}
 /* .pb-weg seit Runde 108: der Papierkorb im Probetraining war 26 × 29,
    gefunden beim Nachmessen am Rechner (test-pc-spalten). */
 .react::after,.pin-x::after,.pin-go::after,.ann-del::after,.ann-pin::after,
 .shift-x::after,.check::after,.t-cam::after,.mat-del::after,.msg-del::after,
-.pp-del::after,.cert-del::after,.mini-x::after,.pb-weg::after{
+.pp-del::after,.t-del::after,.t-edit::after,.cert-del::after,.mini-x::after,.pb-weg::after{
   content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:max(100%,44px);height:max(100%,44px)}
 html{-webkit-text-size-adjust:100%;height:100%}
@@ -1398,61 +1398,43 @@ html.demo #terminalSchirm{top:44px}
    neun Ansichten, der gestapelte Zahlen sucht, nicht Zahlen ueberhaupt. */
 .pcount{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);white-space:nowrap;
   font-variant-numeric:tabular-nums}
-.todo{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s16);background:var(--bg-2);
-  border:none;border-radius:var(--r-md);margin-bottom:var(--s8)}
-.todo.done{opacity:.58}
+.todo{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s12);background:var(--bg-soft);
+  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8)}
+/* Runde 147: eine Aufgabe sieht aus wie ein Putzpunkt (.pp-item) —
+   Fläche, Haarlinie, Abstand, Blässe beim Erledigen. Gewünscht war
+   „GENAU so wie der Putzplan". Die Klasse bleibt .todo: .pp-item
+   wählen Tests und Code im Putzplan ohne #ppList aus. */
+.todo.done{opacity:.62}
 .todo.done .t-title{text-decoration:line-through;color:var(--text-2)}
 .check{width:26px;height:26px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid var(--line-2);
   background:none;cursor:pointer;display:grid;place-items:center;margin-top:var(--s1)}
 .check svg{width:15px;height:15px;color:var(--on-accent);opacity:0;transform:scale(.5);transition:.2s}
-/* ── Aufgaben am PC: zwei Spalten (Runde 103, P1) ──
-   Unter 1100 px gibt es die Detailspalte nicht — dort ist die Liste die
-   Ansicht, und „…" öffnet das Blatt wie bisher. */
-.todo-detail{display:none}
+/* ── Aufgaben am PC (Runde 147) ──
+   Das Detailfeld rechts (Runde 103, P1) ist weg; die Gruppen stehen als
+   Spalten nebeneinander wie im Putzplan (.pp-gruppen). Was bleibt, ist
+   die Tastatur: die mit ↑/↓ gewählte Zeile trägt einen Rahmen. */
+#todoArea .todo.gewaehlt{box-shadow:inset 0 0 0 2px var(--accent), var(--e1)}
+/* Stift, Papierkorb, „…": je 44 × 44 und OHNE Abstand dazwischen —
+   die Trefferflächen stossen aneinander, statt sich zu überlappen. */
+.t-knoepfe{display:flex;flex-shrink:0;margin:calc(-1 * var(--s8)) calc(-1 * var(--s6)) 0 0}
+.t-knoepfe .t-edit,.t-knoepfe .t-del,.t-knoepfe .t-mehr{width:44px;min-height:44px;padding:0;
+  display:inline-grid;place-items:center}
+/* Am PC höchstens so viele Spalten, dass eine Zeile Platz für Titel,
+   Stand und die drei Knöpfe hat (gemessen: bei 300 px brach „Ich
+   übernehme das" in die dritte Zeile). */
 @media(min-width:1100px){
-  .todo-spalten{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,400px);
-    gap:var(--s20);align-items:start}
-  .todo-detail{display:block;position:sticky;top:var(--s72);
-    max-height:calc(100vh - 240px);overflow:auto;
-    padding:var(--s20);border-radius:var(--radius);background:var(--bg-2);
-    border:1px solid var(--line);box-shadow:var(--e2)}
-  /* Die Liste wird dicht: was rechts im Detail steht, steht nicht
-     zusätzlich in jeder Zeile. Titel, Marken, Fuss bleiben. */
-  #todoArea .todo{padding:var(--s10) var(--s12);margin-bottom:var(--s6);cursor:pointer}
-  /* Auch der Fuss („erstellt von", „erledigt von", Kamera) steht rechts
-     im Detail. Ohne ihn ist eine Zeile eine Zeile: gemessen vorher 5,
-     nachher PC_ZEILEN Aufgaben bei 1440 × 900 im Bild. */
-  #todoArea .todo .t-desc,#todoArea .todo .sub-list,#todoArea .todo .t-photo,
-  #todoArea .todo .t-foot,#todoArea .todo .t-danke-zeile{display:none}
-  #todoArea .todo .swipe-body{align-items:center}
-  #todoArea .todo.gewaehlt{box-shadow:inset 0 0 0 2px var(--accent), var(--e1)}
-  @media (hover:hover){ #todoArea .todo:not(.gewaehlt):hover{box-shadow:inset 0 0 0 1px var(--line-2), var(--e1)} }
+  #todoArea .pp-gruppen{grid-template-columns:repeat(auto-fit,minmax(440px,1fr))}
 }
-.td-kopf h3{margin:0 0 var(--s6);font-size:var(--t-xl);line-height:var(--lh-eng)}
-.td-marken{display:flex;gap:var(--s6);flex-wrap:wrap;margin-bottom:var(--s12)}
-.td-haken{width:100%;min-height:48px;margin-bottom:var(--s16);gap:var(--s8)}
-.td-haken svg{width:20px;height:20px}
-.td-text{margin:0 0 var(--s16);font-size:var(--t-md);line-height:var(--lh);color:var(--text);white-space:pre-wrap}
-.td-schritte{margin:0 0 var(--s16)}
-.td-schritte h4,.td-info dt{font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-l);
-  text-transform:uppercase;color:var(--text-2)}
-.td-schritte h4{margin:0 0 var(--s6)}
-.td-schritt{display:flex;align-items:center;gap:var(--s10);width:100%;min-height:44px;
-  padding:var(--s6) var(--s8);border:none;background:none;cursor:pointer;text-align:left;
-  font-family:var(--font-body);font-size:var(--t-sm);color:var(--text);border-radius:var(--r-sm)}
-.td-schritt:hover{background:var(--auf-1)}
-.td-schritt.an{color:var(--text-2);text-decoration:line-through}
-.td-grund{margin:0 0 var(--s16)}
-.td-info{display:grid;grid-template-columns:auto 1fr;gap:var(--s6) var(--s16);margin:0 0 var(--s16)}
-.td-info dt{margin:0;align-self:center}
-.td-info dd{margin:0;font-size:var(--t-sm);color:var(--text)}
-.td-foto{display:block;max-width:100%;border-radius:var(--r-md);margin:var(--s12) 0}
-.td-aktionen{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s12)}
-.td-aktionen .btn{min-height:44px}
-.td-tasten{margin:var(--s16) 0 0;font-size:var(--t-2xs);color:var(--text-2)}
-.td-leer{display:flex;flex-direction:column;align-items:center;gap:var(--s10);
-  padding:var(--s24) var(--s12);text-align:center;color:var(--text-2)}
-.td-leer svg{width:32px;height:32px}
+#todoArea.pp-ruhig .todo:not(.just-done){animation:none}
+.td-ueber .pg-kopf h4{color:var(--danger-tx)}
+.t-offen{color:var(--text-3)}
+.pp-meta.t-foot{margin-top:var(--s4);font-size:var(--t-xs);align-items:center}
+.pp-meta .t-cam{margin-left:0}
+/* Bei „Alle Studios": das Studio als leise Marke vorne in der Zeile.
+   Neutral — ein Studio ist kein Status. */
+.t-studio{display:inline-flex;align-items:center;font-size:var(--t-2xs);font-weight:700;
+  padding:var(--s1) var(--s6);border-radius:var(--r-xs);background:var(--auf-2);color:var(--text-2)}
+.todo .t-desc{margin-top:var(--s4)}
 
 /* Der Putzplan stand hier nicht mit drin (gefunden in Runde 103, P2):
    ein abgehakter Putzpunkt war durchgestrichen, sein Kästchen aber LEER
@@ -1738,7 +1720,7 @@ body.nurlesen .kopf-plus{display:none !important}
 @media(min-width:1100px){
   .pp-gruppen{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
     align-items:start;gap:var(--s16) var(--s20)}
-  .pp-gruppe .pp-item{margin-bottom:var(--s6)}
+  .pp-gruppe .pp-item,.pp-gruppe .todo{margin-bottom:var(--s6)}
 }
 .pp-konto{color:var(--text-3);font-weight:400}
 /* Der Grund an einer offenen Aufgabe: warm, nicht rot. Es ist eine
@@ -1948,11 +1930,11 @@ body.nurlesen .kopf-plus{display:none !important}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#studioModal,#schnellModal,#neuModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#studioModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
 /* Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail. Er muss
    VOR der Anmeldung und über dem Startbild stehen (#splash 1000,
    #loadingWrap 999). */
@@ -2801,12 +2783,12 @@ body.nurlesen .kopf-plus{display:none !important}
 
    Eine Klasse ist ein Name, keine Formatvorlage. Wer sie teilt, teilt
    auch, was sie auswaehlt. */
-.pp-del,.pp-edit{background:none;border:none;color:var(--text-3);cursor:pointer;padding:var(--s6);border-radius:var(--r-xs);flex-shrink:0;transition:.2s}
-.pp-del:hover{color:var(--danger-tx);background:var(--f-bad)}
+.pp-del,.pp-edit,.t-del,.t-edit{background:none;border:none;color:var(--text-3);cursor:pointer;padding:var(--s6);border-radius:var(--r-xs);flex-shrink:0;transition:.2s}
+.pp-del:hover,.t-del:hover{color:var(--danger-tx);background:var(--f-bad)}
 /* Kein Rot beim Zeigen: Bearbeiten ist keine Handlung, vor der man
    erschrecken soll. */
-.pp-edit:hover{color:var(--accent-d);background:var(--tipp-1)}
-.pp-del svg,.pp-edit svg{width:16px;height:16px}
+.pp-edit:hover,.t-edit:hover{color:var(--accent-d);background:var(--tipp-1)}
+.pp-del svg,.pp-edit svg,.t-del svg,.t-edit svg{width:16px;height:16px}
 /* Notizen */
 .pp-note{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
   border-left:3px solid var(--accent-3);border-radius:var(--r-sm);margin-bottom:var(--s8);animation:rowIn .3s var(--ease-out) backwards}
@@ -2934,7 +2916,7 @@ body.nurlesen .kopf-plus{display:none !important}
    Ein eigener kleiner Knopf unter dem Fuss der Zeile: 44 px hoch,
    Pille, das Herz in der Farbe der Aufgabenliste. „Bedankt" ist
    gefüllt — ein Zustand, der sich ohne Farbe allein erkennen lässt
-   (Wort und aria-pressed). Kein Zähler, siehe dankeHTML(). */
+   (Wort und aria-pressed). Kein Zähler, siehe dankeText(). */
 .t-danke-zeile{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s6)}
 .t-danke{display:inline-flex;align-items:center;gap:var(--s6);min-height:44px;
   padding:0 var(--s12);border-radius:var(--r-pille);cursor:pointer;
@@ -7997,17 +7979,44 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           </div>
         </div>
         <div class="scroll-area" data-shrinks="1">
-          <!-- Suche UND Filter in einer Zeile.
-               Vorher zwei Zeilen uebereinander: 40px Suchfeld plus 54px
-               Filter. Gemessen begann die erste Aufgabe damit erst bei
-               407px — auf einem 844er-Handy fast in der Mitte.
+          <!-- ══ AUFBAU WIE DER PUTZPLAN (Runde 147) ════════════════════
+               Aus dem Betrieb, 9.10.2026: „kannst du es bitte machen das
+               der aufgaben bereich vom aufbau und layout GENAU so wie der
+               putzplan aufgestellt ist das wäre für uns viel
+               übersichtlicher".
 
-               Die Suche liegt links und schrumpft auf ihre Lupe, solange
-               nichts darin steht; die Filter scrollen daneben weiter.
-               Tippt man hinein, wird sie breit und die Filter rutschen
-               nach rechts aus dem Bild — sie bleiben erreichbar, sind
-               beim Suchen aber ohnehin nicht das, was man sucht. -->
-          <div class="sticky-tools">
+               Dieselbe EINE Zeile: Studio, Fortschritt, wer abhakt,
+               Filter, Drucken. Suche, Schnellfilter und Sortierung
+               klappen unter „Filter" auf; darunter beginnen direkt die
+               Gruppen — nach Fälligkeit (Überfällig, Heute, Diese Woche,
+               Später, Ohne Frist), wahlweise nach Tageszeit. Am PC stehen
+               die Gruppen als Spalten nebeneinander, wie im Putzplan.
+
+               Das Detailfeld rechts (Runde 103, P1) ist weg: Stift und
+               Papierkorb stehen in der Zeile, Foto, Grund und Frist
+               hinter „…" — auch das wie im Putzplan. -->
+          <div class="pp-leiste no-print" id="tdLeiste">
+            <select class="inp pp-studiowahl" id="todoStudioWahl" aria-label="Studio"></select>
+            <div class="pp-fort" id="tdFort" aria-hidden="true"><i id="tdFortBalken"></i></div>
+            <span class="pp-fort-zahl" id="tdProgress"></span>
+            <button type="button" class="chip pp-wer-knopf" id="tdWerKnopf"
+                    aria-expanded="false" aria-controls="tdWerZeile"></button>
+            <button type="button" class="chip pp-filter-knopf" id="tdFilterKnopf"
+                    aria-expanded="false" aria-controls="tdWerkzeuge">Filter</button>
+            <button data-ikon="drucken" class="btn btn-ghost btn-sm" id="tdPrint" title="Aufgaben ausdrucken">Drucken</button>
+          </div>
+          <!-- Dasselbe Kürzel wie im Putzplan: es gehört zum GERÄT, und
+               wer am Studio-Tablet steht, hakt hier wie dort ab. -->
+          <div class="pp-wer" id="tdWerZeile" hidden>
+            <label for="tdKuerzel">Wer hakt ab?</label>
+            <input class="inp" id="tdKuerzel" type="text" maxlength="20"
+                   autocomplete="off" placeholder="z. B. AB" />
+            <span class="hint" id="tdWerHint"></span>
+          </div>
+
+          <!-- Suche, Schnellfilter und Sortierung — die Werkzeuge, die
+               vorher als eigene Zeile über der Liste standen. -->
+          <div class="sticky-tools no-print pp-werkzeuge" id="tdWerkzeuge" hidden>
             <div class="chip-row werkzeugzeile">
               <div class="todo-search klein">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -8020,25 +8029,29 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <button class="chip" data-tfilter="meine">Für mich</button>
               <span class="chip-trenner" aria-hidden="true"></span>
               <button class="chip" data-tdring="1">Dringend</button>
-              <!-- Auf ein Studio eingrenzen. Steht als Chip in der Zeile,
-                   die es ohnehin gibt, und kostet damit keine Höhe — der
-                   Versuch mit einem Raster darüber hat die überfällige
-                   Aufgabe auf y=2017 geschoben. Nur für die Verwaltung:
-                   wer ein Studio hat, hat nichts einzugrenzen. -->
-              <button class="chip" id="todoStudioChip" data-manage-only
-                      aria-haspopup="dialog" style="display:none">Alle Studios</button>
-              <!-- Inhalt kommt aus sortFeld(); die Wahl liegt in PREFS.sort
-                   und ueberlebt damit das Neuladen. Vorher stand sie in
-                   einer blossen Variablen. -->
+              <!-- Inhalt kommt aus sortFeld(); die Wahl liegt in PREFS.sort. -->
               <select class="chip" id="todoSort" style="padding-right:26px"></select>
             </div>
           </div>
-          <!-- Am PC (ab 1100 px) zwei Spalten: links die Liste, rechts die
-               gewählte Aufgabe im Detail (Runde 103, P1). Am Handy bleibt
-               es die Liste — die Detailspalte ist dort gar nicht da. -->
-          <div class="todo-spalten" id="todoSpalten">
+
+          <!-- Die Aufgaben selbst: ohne Kartenrahmen, gruppiert. -->
+          <div id="todoCard" class="pp-plan">
+            <h3 id="todoListTitle" class="nur-vorlesen">Aufgaben</h3>
             <div id="todoArea"></div>
-            <aside class="todo-detail" id="todoDetail" aria-label="Aufgabe im Detail" aria-live="polite"></aside>
+          </div>
+
+          <!-- Notizen vom Team — DIESELBEN wie im Putzplan (eine Sammlung
+               je Studio). Zwei Notizzettel für ein Studio hiessen: die
+               Hälfte liest man nie. Bei „Alle Studios" ausgeblendet —
+               eine Notiz gehört zu einem Studio. -->
+          <div class="card" data-fold="tdnotes" id="tdNotesCard">
+            <h3 data-ikon="blatt">Notizen</h3>
+            <p class="hint">Dieselben Notizen wie im Putzplan — Platz für Hinweise vom Team, z. B. „Wischmopp ist kaputt".</p>
+            <div class="mat-add">
+              <input class="inp" id="tdNoteInput" type="text" placeholder="Notiz …" maxlength="300" />
+              <button class="btn btn-ghost btn-sm" id="tdNoteAdd">+ Notiz</button>
+            </div>
+            <div id="tdNotes" style="margin-top:12px"></div>
           </div>
         </div>
       </section>
@@ -9656,18 +9669,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
   <div class="tm-fuss">
     <span id="tmHinweis">Name antippen, dann PIN eingeben.</span>
     <button class="tm-aus" id="tmAus">Terminal beenden</button>
-  </div>
-</div>
-
-<!-- Studio wählen. Dritte Stelle mit derselben Bauform — Kanal, Bereich,
-     Studio. Ein Muster, dreimal benutzt, ist eine Hausregel. -->
-<div id="studioModal">
-  <div class="pm-box">
-    <button class="lb-close" id="studioWahlClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    <h3 style="margin-bottom:6px">Studio wählen</h3>
-    <p class="hint" style="margin:0 0 10px">Die Liste zeigt danach nur dieses
-      Studio. Sortiert nach Rückstand.</p>
-    <div id="studioWahlListe"></div>
   </div>
 </div>
 
@@ -15776,7 +15777,7 @@ var LADEORT = {
   chat:    { view:'chat',     vor:'chatScroll',  titel:'Die Nachrichten in diesem Kanal' },
   dm:      { view:'dm',       vor:'dmScroll',    titel:'Diese Unterhaltung', einzahl:true },
   dmListe: { view:'dm',       vor:'dmPeople',    titel:'Deine Unterhaltungen' },
-  todos:   { view:'todos',    vor:'todoSpalten', titel:'Die Aufgaben', studios:true },
+  todos:   { view:'todos',    nach:'tdLeiste',   titel:'Die Aufgaben', studios:true },
   putz:    { view:'putzplan', nach:'ppLeiste',   titel:'Der Putzplan', einzahl:true, studios:true },
   ann:     { view:'ann',      vor:'annArea',     titel:'Die Ankündigungen' },
   team:    { view:'team',     vor:'teamTabs',    teile:{ schichten:'Schichten', abwesend:'Abwesenheiten', uebergabe:'Übergaben' } },
@@ -15853,8 +15854,7 @@ function ladeFehlerZeichnen(bereich){
     var alle = ladeStudioKeys();
     titel = o.titel + ' aus ' + aufzaehlen(teile.map(studioName));
     if(alle.length > teile.length){
-      trotzdem = o.view==='todos' ? 'Die aus den anderen Studios stehen unten.'
-                                  : 'Die anderen Studios sind davon nicht betroffen.';
+      trotzdem = 'Die anderen Studios sind davon nicht betroffen.';
     }
   } else if(o.teile){
     titel = aufzaehlen(teile.map(function(t){ return o.teile[t] || t; }));
@@ -18623,6 +18623,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-09-aufgaben', datum:'9.10.2026', titel:'Aufgaben sehen jetzt aus wie der Putzplan', wo:'todos', punkte:[
+    'Oben eine Leiste wie im Putzplan: Studio, Fortschritt, „Wer hakt ab?", Filter und Drucken. Suche, Schnellfilter und Sortierung stehen unter „Filter".',
+    'Die Aufgaben stehen in Gruppen nach Fälligkeit – Überfällig, Heute, Diese Woche, Später, Ohne Frist –, jede mit „2 von 5" und Balken; in jeder Gruppe zuerst, was jetzt dran ist. Am Rechner stehen die Gruppen nebeneinander.',
+    'Oben wählst du das Studio; wer mehrere hat, kann auch „Alle Studios" wählen. Beim Abhaken wird dein Kürzel mitgeschrieben, wie im Putzplan.',
+    'Leitung: Stift und Papierkorb stehen direkt an der Aufgabe. Foto, Grund, Frist und „Danke" findest du hinter „⋯". Darunter stehen dieselben Notizen wie im Putzplan.' ] },
   { id:'2026-10-06-mails', datum:'6.10.2026', titel:'Bestätigungs- und Passwort-Mails kommen an', wo:'profil', punkte:[
     'Die Mail zum Bestätigen der Adresse und die Mail für ein neues Passwort kommen jetzt auf Deutsch und von StudioChat – vorher kamen sie auf Englisch von einer fremd wirkenden Adresse und wurden von web.de, GMX oder Outlook oft still aussortiert.',
     'Der Link aus der Mail öffnet die App. Dort tippst du auf „Adresse bestätigen" bzw. wählst dein neues Passwort (mindestens 8 Zeichen).',
@@ -19732,49 +19737,10 @@ function chefTabMarker(sofort){
   schriftenNachmessen();
 }
 
-/* ══ STUDIO WÄHLEN ══════════════════════════════════════════════════
-   Was dem Chef in den Aufgaben fehlte, war das Eingrenzen: vierzehn
-   Studios untereinander sind 238 Bedienelemente auf zwölf
-   Bildschirmhöhen. Ein Studio sind 37.
-
-   ERST STAND HIER EIN RASTER ÜBER DER LISTE. Das war falsch, und
-   test-aufgaben-bereich4 hat es gefunden: die erste ÜBERFÄLLIGE
-   Aufgabe rutschte auf y=2017. Die Liste sortiert längst nach
-   Dringlichkeit — eine zweite Übersicht darüber hat den Überblick
-   nicht verbessert, sondern verdeckt.
-
-   Jetzt ein Chip in der Werkzeugzeile, die es ohnehin gibt. Kostet
-   keine Höhe, und der Weg dahinter ist derselbe wie bei Kanal und
-   Bereich: eine senkrechte Liste. Dreimal dasselbe Muster ist eine
-   Hausregel. */
-function studioWaehlerOeffnen(){
-  var m=$('studioModal'); if(!m) return;
-  renderStudioWahl();
-  m.classList.add('show');
-}
-function studioWaehlerSchliessen(){
-  var m=$('studioModal'); if(m) m.classList.remove('show');
-}
-function renderStudioWahl(){
-  var box=$('studioWahlListe'); if(!box) return;
-  /* Dieselbe Reihenfolge wie die Liste darunter: nach Rückstand. Eine
-     Auswahl, die anders sortiert als das, was sie steuert, lässt einen
-     zweimal suchen. */
-  var html='<button type="button" class="kn-zeile'+(_todoStudio?'':' an')+'" '+
-    'data-studiowahl="">Alle Studios</button>';
-  html+=studiosNachDringlichkeit().map(function(s){
-    var sk=studioKey(s);
-    var offen=(cachedTodos[sk]||[]).filter(function(t){ return !isDone(t) && !isArchived(t); });
-    var faellig=offen.filter(function(t){ return t.due && Date.now()>t.due; }).length;
-    return '<button type="button" class="kn-zeile'+(sk===_todoStudio?' an':'')+'" '+
-      'data-studiowahl="'+esc(sk)+'">'+
-      '<span style="flex:1 1 auto;min-width:0">'+esc(s)+'</span>'+
-      (faellig ? '<span class="sm-marke warn">'+faellig+' überfällig</span>'
-               : '<span class="ich-zeit">'+offen.length+' offen</span>')+
-      '</button>';
-  }).join('');
-  box.innerHTML=html;
-}
+/* Die Studio-Auswahl der Aufgaben stand bis Runde 147 als Chip mit
+   eigenem Fenster („Studio wählen") in der Werkzeugzeile. Jetzt steht
+   sie wie im Putzplan als Auswahlfeld vorne in der Leiste — siehe
+   todoStudioWahlBauen(). Fenster und Chip sind entfernt. */
 
 /* ══ BEREICH WÄHLEN ═════════════════════════════════════════════════
    „Alle" neben der Reiterleiste, wenn sie nicht aufs Bild passt —
@@ -20223,6 +20189,16 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='archive') ensureArchivesLoaded();
   if(id==='material'){ ensureMaterialLoaded(); ensureArchivesLoaded(); bestellungenLaden(); }
   if(id==='putzplan') ensurePutzplanLoaded();
+  /* Neu zeichnen nur, wenn ein Sprung von woanders Studio oder Filter
+     umgestellt hat — die Daten selbst hält der Beobachter ohnehin aktuell
+     (todosBald). Jedes Öffnen neu zu zeichnen kostete gemessen 50–80 ms
+     bis zum ersten Bild (test-aufgaben-tempo). */
+  if(id==='todos'){
+    /* Wer die Seite öffnet, sieht die vorausgewählte Liste — ab jetzt
+       springt sie nicht mehr von selbst (todoStudioPruefen). */
+    if(_todoStudioAuto && _todoStudio && cachedTodos[_todoStudio]) _todoStudioAuto=false;
+    if(_tdStand!==todoStand()) renderTodos(); else tdNotizenLaden();
+  }
   if(id==='geraete') ensureDevicesLoaded();
   if(id==='schulung') schOeffnen();
   if(id==='probe'){ if(!_probeUnsub) listenProbe(); renderProbe(); }
@@ -26547,10 +26523,10 @@ function scrollBottom(){
 
 /* Aktueller Text im Aufgaben-Suchfeld (leer = alles anzeigen) */
 var _todoFilter='';
-/* Welches Studio die Aufgabenliste gerade zeigt. Leer = alle.
-   Nur fuer die Verwaltung von Bedeutung: ein Mitarbeiter sieht ohnehin
-   nur seine eigenen. */
-var _todoStudio='';
+/* Welches Studio die Aufgabenliste gerade zeigt (Runde 147: oben in
+   der Leiste, wie im Putzplan). '' = alle Studios, null = noch nicht
+   entschieden (dann gilt die gemerkte Wahl, siehe todoStudioPruefen). */
+var _todoStudio=null;
 
 /* Aktiver Schnellfilter: alle | offen | faellig | meine – und Sortierung */
 var _todoMode='alle', _todoSort='standard', _todoDring=false;
@@ -27664,6 +27640,7 @@ function heuteTippBinden(el){
       var f=el.getAttribute('data-hf');
       if(f){
         _todoMode=f;
+        todoStudioFuerSprung('');
         document.querySelectorAll('[data-tfilter]').forEach(function(x){
           x.classList.toggle('on', x.getAttribute('data-tfilter')===f);
         });
@@ -27975,7 +27952,7 @@ function renderHome(){
     al.querySelectorAll('[data-go]').forEach(function(el){
       el.addEventListener('click',function(){
         var f=el.getAttribute('data-f');
-        if(f){ _todoMode=f; document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
+        if(f){ _todoMode=f; todoStudioFuerSprung(''); document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
         showView(el.getAttribute('data-go'));
       });
     });
@@ -28019,7 +27996,7 @@ function renderHome(){
     grid.querySelectorAll('[data-go]').forEach(function(el){
       el.addEventListener('click',function(){
         var f=el.getAttribute('data-f');
-        if(f){ _todoMode=f; document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
+        if(f){ _todoMode=f; todoStudioFuerSprung(''); document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
         tick(8); showView(el.getAttribute('data-go'));
       });
     });
@@ -28070,24 +28047,16 @@ function renderHome(){
           }).join('');
         brenn.querySelectorAll('[data-bpgo]').forEach(function(el){
           el.addEventListener('click',function(){
-            // Zu den offenen Aufgaben und dort an die Überschrift dieses
-            // Studios scrollen – die Aufgabenliste zeigt alle verwalteten
-            // Studios untereinander, es gibt keine Auswahl zum Umschalten.
-            var name=studioName(el.getAttribute('data-bpgo'));
+            // Zu den offenen Aufgaben DIESES Studios. Seit Runde 147 gibt
+            // es oben die Studio-Auswahl — eingegrenzt statt gescrollt.
             _todoFilter=''; _todoMode='offen';
             var ts=$('todoSearch'); if(ts) ts.value='';
             document.querySelectorAll('[data-tfilter]').forEach(function(x){
               x.classList.toggle('on', x.getAttribute('data-tfilter')==='offen');
             });
-            tick(9); showView('todos');
-            setTimeout(function(){
-              var heads=document.querySelectorAll('#view-todos .studio-head');
-              for(var i=0;i<heads.length;i++){
-                if(heads[i].textContent.indexOf(name)>=0){
-                  sanftInsBild(heads[i],{behavior:'smooth',block:'start'}); break;
-                }
-              }
-            }, 320);
+            todoStudioFuerSprung(el.getAttribute('data-bpgo'));
+            tick(9); showView('todos'); renderTodos();
+            var sa=document.querySelector('#view-todos .scroll-area'); if(sa) sa.scrollTop=0;
           });
         });
       } else {
@@ -28900,10 +28869,27 @@ function aufgabeFehlerText(e, sk){
 }
 
 function aufgabeHaken(sk, id, done){
-  return S('studios').doc(sk).collection('todos').doc(id)
-    .update({ done:done, doneBy:done?session.name:null,
+  var ref=S('studios').doc(sk).collection('todos').doc(id);
+  var daten={ done:done, doneBy:done?session.name:null,
               doneByUid:done?session.uid:null,
-              doneAt:done?Date.now():null });
+              doneAt:done?Date.now():null };
+  /* Runde 147: das Kürzel vom Gerät kommt mit, wie im Putzplan („Wer
+     hakt ab?"). Geschrieben wird es nur, wenn eines eingetragen ist
+     oder eines zurückgenommen werden muss — eine Aufgabe ohne Kürzel
+     bleibt damit genau so, wie sie vorher geschrieben wurde.
+
+     ÜBERGANG: die App kann ein paar Minuten vor der Regel ausgeliefert
+     sein, die doneKuerzel erlaubt (beides läuft getrennt). Lehnt die
+     Regel ab, geht der Haken ohne Kürzel noch einmal raus — lieber
+     ohne Kürzel abgehakt als gar nicht. */
+  var t=todoFinden(sk, id);
+  var k=done ? putzKuerzel() : '';
+  if(k || (t && t.doneKuerzel)) daten.doneKuerzel = k || null;
+  return ref.update(daten).catch(function(e){
+    if(!('doneKuerzel' in daten) || !e || !/permission/i.test(String(e.code||''))) throw e;
+    delete daten.doneKuerzel;
+    return ref.update(daten);
+  });
 }
 
 /* ══ ABSCHICKEN ═════════════════════════════════════════════════════
@@ -31377,44 +31363,76 @@ function checkDueReminders(){
   localNotify('Aufgaben-Erinnerung', teile.join(' · '));
 }
 
-/* Aufgaben nach der gewählten Reihenfolge sortieren */
-function sortTodos(list){
-  var a=list.slice();
-  if(_todoSort==='faellig'){
-    a.sort(function(x,y){
-      var dx=x.due||Infinity, dy=y.due||Infinity;
-      return (isDone(x)-isDone(y)) || (dx-dy) || ((x.ts||0)-(y.ts||0));
-    });
-  } else if(_todoSort==='name'){
-    a.sort(function(x,y){ return (x.title||'').localeCompare(y.title||'','de'); });
-  } else if(_todoSort==='neu'){
-    a.sort(function(x,y){ return (y.ts||0)-(x.ts||0); });
-  } else if(_todoSort==='tageszeit'){
-    /* Was jetzt dran ist, oben; innerhalb wie im Standard. */
-    a.sort(function(x,y){
-      return (isDone(x)-isDone(y)) || (tzRang(x)-tzRang(y)) ||
-             ((x.due||Infinity)-(y.due||Infinity)) || ((x.ts||0)-(y.ts||0));
-    });
-  } else if(_todoSort==='prio'){
-    /* Erledigte bleiben unten, auch wenn sie „dringend" tragen — eine
-       abgehakte Aufgabe ist nicht mehr dringend. */
-    a.sort(function(x,y){
-      return (isDone(x)-isDone(y)) || (prioRang(x)-prioRang(y)) ||
-             (x.title||'').localeCompare(y.title||'','de');
-    });
-  } else {
-    /* Standard: was brennt, steht oben. Nach Erstellungsdatum allein landet
-           eine überfällige Aufgabe von gestern hinter zehn entspannten von
-           vorletzter Woche. */
-    a.sort(function(x,y){
-      var ux = (!isDone(x) && x.due && Date.now()>x.due) ? 0 : 1;
-      var uy = (!isDone(y) && y.due && Date.now()>y.due) ? 0 : 1;
-      return (isDone(x)-isDone(y)) || (ux-uy) ||
-             (ux===0 ? (x.due||0)-(y.due||0) : 0) ||
-             ((x.ts||0)-(y.ts||0));
-    });
+/* ── Reihenfolge der Aufgaben ──
+   Runde 147: wie im Putzplan stehen erledigte IMMER unter offenen, in
+   jeder Sortierung — eine abgehakte Aufgabe soll auch alphabetisch nicht
+   über einer offenen stehen, sonst sucht man den nächsten Punkt
+   zwischen abgehakten.
+
+   „Standard" ist jetzt „nach Fälligkeit" und steht in Gruppen (siehe
+   todoFristGruppe). Innerhalb einer Gruppe gilt, was der Betrieb sich
+   gewünscht hat („1 und 3"): erst was JETZT dran ist (Tageszeit), dann
+   die Frist. Die frühere eigene Wahl „Nach Fälligkeit" meinte dasselbe
+   und fällt deshalb auf den Standard zurück. */
+function todoSortArt(){
+  var w=sortWahl('todo','standard');
+  return w==='faellig' ? 'standard' : w;
+}
+function todoVergleich(x,y){
+  var d=isDone(x)-isDone(y); if(d) return d;
+  var frist=function(){ return ((x.due||Infinity)-(y.due||Infinity)) || ((x.ts||0)-(y.ts||0)); };
+  if(_todoSort==='name') return (x.title||'').localeCompare(y.title||'','de');
+  if(_todoSort==='neu') return (y.ts||0)-(x.ts||0);
+  if(_todoSort==='prio'){
+    return (prioRang(x)-prioRang(y)) || (x.title||'').localeCompare(y.title||'','de');
   }
-  return a;
+  if(_todoSort==='tageszeit') return (tzRang(x)-tzRang(y)) || frist();
+  return (tzRang(x)-tzRang(y)) || frist();
+}
+
+/* ── Gruppen nach Fälligkeit (Runde 147) ──
+   Dieselbe Bauform wie im Putzplan (Täglich, Wöchentlich, …), nur die
+   Frage ist eine andere: nicht „wie oft", sondern „bis wann".
+
+     Überfällig    offen, Frist vorbei
+     Heute         Frist heute — und was heute schon erledigt dasteht,
+                   auch wenn die Frist vorbei war; tägliche Aufgaben
+     Diese Woche   Frist bis Sonntag; wöchentliche Aufgaben
+     Später        Frist danach; lange eigene Abstände
+     Ohne Frist    einmalig und ohne Datum
+
+   Eine erledigte Aufgabe mit verpasster Frist steht unter „Heute" und
+   nicht unter „Überfällig": überfällig ist sie nicht mehr, und
+   „Überfällig" soll nur zeigen, was noch liegt. */
+var TD_FRIST_GRUPPEN=[
+  { id:'ueberfaellig', wort:'Überfällig' },
+  { id:'heute',        wort:'Heute' },
+  { id:'woche',        wort:'Diese Woche' },
+  { id:'spaeter',      wort:'Später' },
+  { id:'ohne',         wort:'Ohne Frist' }
+];
+function todoFristGruppe(t, jetzt){
+  jetzt = jetzt || Date.now();
+  var h=new Date(jetzt); h.setHours(0,0,0,0);
+  var morgen=h.getTime()+86400000;
+  /* Bis Montag 0 Uhr: Sonntag gehört noch zu dieser Woche. */
+  var bisMontag=((8-h.getDay())%7)||7;
+  var wochenEnde=new Date(h.getFullYear(), h.getMonth(), h.getDate()+bisMontag).getTime();
+  if(t.due){
+    if(!isDone(t) && jetzt>t.due) return 'ueberfaellig';
+    if(t.due<morgen) return 'heute';
+    if(t.due<wochenEnde) return 'woche';
+    return 'spaeter';
+  }
+  if(t.recurring==='daily') return 'heute';
+  if(t.recurring==='weekly') return 'woche';
+  if(t.recurring==='custom'){
+    var ms=t.intervalMs||0;
+    if(ms && ms<=86400000) return 'heute';
+    if(ms && ms<=604800000) return 'woche';
+    return 'spaeter';
+  }
+  return 'ohne';
 }
 
 /* ── Leerer Bereich, der die Wahrheit sagt ──
@@ -31429,9 +31447,10 @@ function leerText(gesamt){
       (_todoMode!=='alle' ? ' Der Filter „'+esc(chipLabel(_todoMode))+'" ist zusätzlich aktiv.' : ''),
       'hakenKreis');
   }
-  if(_todoMode!=='alle'){
-    return emptyHTML('Keine '+FILTERWORT[_todoMode]+' Aufgaben',
-      gesamt ? 'Es gibt '+gesamt+(gesamt===1?' Aufgabe':' Aufgaben')+' – tippe auf „Alle", um sie zu sehen.'
+  if(_todoMode!=='alle' || _todoDring){
+    var wort = _todoMode!=='alle' ? FILTERWORT[_todoMode] : 'dringenden';
+    return emptyHTML('Keine '+wort+' Aufgaben',
+      gesamt ? 'Es gibt '+gesamt+(gesamt===1?' Aufgabe':' Aufgaben')+' – tippe auf „Alle" (unter „Filter"), um sie zu sehen.'
              : 'Hier ist noch gar nichts angelegt.', 'hakenKreis');
   }
   /* Der Weg nur fuer den, der ihn gehen kann. Ein Mitarbeiter sieht den
@@ -31498,84 +31517,263 @@ function studiosNachDringlichkeit(){
   return mit.concat(ohne);
 }
 
+/* ══ STUDIO OBEN WÄHLEN (Runde 147) ════════════════════════════════════
+   Wie im Putzplan: EIN Studio, ausgewählt oben in der Leiste. Wer mehr
+   als ein Studio hat — Geschäftsführung, Leitung mehrerer Studios —,
+   bekommt zusätzlich „Alle Studios"; dann trägt jede Zeile ihr Studio.
+
+   Die Wahl bleibt auf dem Gerät (kf_todo_studio). `null` heisst „noch
+   nie gewählt" und ist etwas anderes als '' („Alle Studios"): wer
+   bewusst „Alle" gewählt hat, soll beim nächsten Öffnen nicht wieder
+   beim ersten Studio landen.
+
+   Ein Sprung von woanders her (Startseite „2 überfällig", Kachel in der
+   Übersicht) setzt die Auswahl selbst — siehe todoStudioFuerSprung() —
+   und merkt sie sich NICHT: das war ein Weg, keine Einstellung. */
+var TD_STUDIO_MERK='kf_todo_studio';
+function todoStudioListe(){
+  if(!session) return [];
+  if(canManage()) return managedStudios().map(function(s){ return { key:studioKey(s), name:s }; });
+  var namen=session.studios||[];
+  return (session.studioKeys||[]).map(function(sk,i){ return { key:sk, name:namen[i]||studioName(sk) }; })
+    .sort(function(a,b){ return a.name.localeCompare(b.name,'de'); });
+}
+/* Solange niemand selbst gewählt hat (nichts gemerkt), steht das Studio
+   mit dem MEISTEN Überfälligen vorne — dieselbe Regel wie früher bei den
+   Studio-Blöcken (studiosNachDringlichkeit): „eine überfällige Aufgabe
+   in Seelscheid lag hinter dreizehn Studio-Blöcken". Mit „erstes Studio
+   im Alphabet" wäre sie jetzt sogar ganz unsichtbar gewesen. Die Wahl
+   wird bei jedem Zeichnen neu getroffen, bis jemand selbst wählt — die
+   Aufgaben der Studios kommen nacheinander an. */
+var _todoStudioAuto=false, _tdAutoGesehen=null;
+function todoStudioDringlichst(keys){
+  var jetzt=Date.now(), best=keys[0]||'', n=0;
+  keys.forEach(function(sk){
+    var u=(cachedTodos[sk]||[]).filter(function(t){
+      return !isArchived(t) && !isDone(t) && t.due && jetzt>t.due;
+    }).length;
+    if(u>n){ n=u; best=sk; }
+  });
+  return best;
+}
+function todoStudioPruefen(liste){
+  var keys=liste.map(function(x){ return x.key; });
+  var mehr=keys.length>1;
+  /* Eingefroren, sobald die Liste mit Daten auf dem Bildschirm stand:
+     wer das Überfällige abhakt, soll nicht mitten in der Arbeit in ein
+     anderes Studio springen (gefunden von test-p1-aufgaben — die
+     abgehakte Zeile war danach verschwunden). Gemerkt wird sie nicht,
+     das bleibt der eigenen Wahl vorbehalten. */
+  if(_todoStudioAuto && _tdAutoGesehen===_todoStudio) _todoStudioAuto=false;
+  if(_todoStudio===null || _todoStudioAuto){
+    var m=null; try{ m=localStorage.getItem(TD_STUDIO_MERK); }catch(e){}
+    if(m!==null && (m==='' ? mehr : keys.indexOf(m)>=0)){ _todoStudio=m; _todoStudioAuto=false; }
+    else { _todoStudio=todoStudioDringlichst(keys); _todoStudioAuto=true; }
+  }
+  /* Steht die vorausgewählte Liste jetzt mit Daten im Bild, gilt sie ab
+     dem nächsten Zeichnen als gesetzt (siehe oben). */
+  _tdAutoGesehen = (_todoStudioAuto && currentView==='todos' && _todoStudio && cachedTodos[_todoStudio]) ? _todoStudio : null;
+  if(_todoStudio && keys.indexOf(_todoStudio)<0) _todoStudio=keys[0]||'';
+  if(!_todoStudio && !mehr) _todoStudio=keys[0]||'';
+  return keys;
+}
+/* Für Sprünge, die über ALLE eigenen Studios zählen (Startseite,
+   Hinweise): dann zeigt die Liste auch alle — sonst stünde unter
+   „3 überfällig" eine Liste mit einer. */
+function todoStudioFuerSprung(sk){
+  _todoStudio = sk || (todoStudioListe().length>1 ? '' : null);
+  _todoStudioAuto=false;
+}
+function todoStudioWahlBauen(liste){
+  var sel=$('todoStudioWahl'); if(!sel) return;
+  var jetzt=Date.now();
+  var html=(liste.length>1 ? '<option value="">Alle Studios</option>' : '')+
+    liste.map(function(x){
+      var ue=(cachedTodos[x.key]||[]).filter(function(t){
+        return !isArchived(t) && !isDone(t) && t.due && jetzt>t.due;
+      }).length;
+      return '<option value="'+esc(x.key)+'">'+esc(x.name)+(ue ? ' · '+ue+' überfällig' : '')+'</option>';
+    }).join('');
+  /* Nur neu schreiben, wenn sich etwas geändert hat: ein Auswahlfeld,
+     das gerade offen ist, klappt sonst bei jedem Haken eines Kollegen zu. */
+  if(sel._html!==html){ sel.innerHTML=html; sel._html=html; }
+  sel.value=_todoStudio||'';
+  sel.hidden=!liste.length;
+  if(!sel._da){
+    sel._da=true;
+    sel.addEventListener('change', function(){
+      _todoStudio=sel.value; _todoStudioAuto=false;
+      try{ localStorage.setItem(TD_STUDIO_MERK, _todoStudio); }catch(e){}
+      _todoWahl=null;
+      tick(6); renderTodos();
+      var sa=document.querySelector('#view-todos .scroll-area');
+      if(sa) sa.scrollTop=0;
+    });
+  }
+}
+
+/* ── Leiste: wer hakt ab, und ist ein Filter an? ──
+   Wie ppLeisteSetzen — beide Antworten stehen AUF dem Knopf. */
+function tdLeisteSetzen(){
+  var wk=$('tdWerKnopf');
+  if(wk){
+    var k=putzKuerzel();
+    wk.innerHTML = k ? 'Wer: <b>'+esc(k)+'</b>' : 'Wer hakt ab?';
+    wk.classList.toggle('leer', !k);
+    wk.title = k ? 'Kürzel ändern' : 'Kürzel eintragen — wird bei jedem Haken mitgeschrieben';
+  }
+  var fk=$('tdFilterKnopf');
+  if(fk){
+    var an=(_todoFilter?1:0)+(_todoMode!=='alle'?1:0)+(_todoDring?1:0)+
+           (todoSortArt()!=='standard'?1:0);
+    fk.innerHTML = 'Filter'+(an ? ' <b class="chip-num">'+an+'</b>' : '');
+    fk.classList.toggle('on', an>0);
+  }
+}
+/* Das Kürzelfeld der Aufgaben teilt sich die Ablage mit dem Putzplan
+   (PP_KUERZEL). Beide Felder zeigen deshalb immer dasselbe. */
+function tdKuerzelBinden(){
+  var f=$('tdKuerzel'); if(!f) return;
+  if(document.activeElement!==f) f.value=putzKuerzel();
+  if(f._da) return;
+  f._da=true;
+  var speichern=function(){
+    var v=f.value.trim().slice(0,20);
+    try{ localStorage.setItem(PP_KUERZEL, v); }catch(e){}
+    var pf=$('ppKuerzel'); if(pf) pf.value=v;
+    tdWerHinweis(); tdLeisteSetzen();
+    if(typeof putzWerHinweis==='function') putzWerHinweis();
+    if(typeof ppLeisteSetzen==='function') ppLeisteSetzen();
+  };
+  f.addEventListener('input', speichern);
+  f.addEventListener('change', speichern);
+  f.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){ e.preventDefault(); ppAufklappen('tdWerKnopf','tdWerZeile'); }
+  });
+  var wk=$('tdWerKnopf'), fk=$('tdFilterKnopf'), dr=$('tdPrint');
+  if(wk) wk.addEventListener('click', function(){ ppAufklappen('tdWerKnopf','tdWerZeile'); });
+  if(fk) fk.addEventListener('click', function(){ ppAufklappen('tdFilterKnopf','tdWerkzeuge'); });
+  if(dr) dr.addEventListener('click', printTodos);
+  tdWerHinweis();
+}
+function tdWerHinweis(){
+  var h=$('tdWerHint'); if(!h) return;
+  var k=putzKuerzel();
+  h.textContent = k
+    ? 'Wird bei jedem Haken mitgeschrieben — hier und im Putzplan.'
+    : 'Ohne Kürzel steht später nur der Studio-Zugang da.';
+  h.classList.toggle('pp-wer-leer', !k);
+}
+
+/* Zahlen an den Schnellfiltern, wie im Putzplan: über ALLE Aufgaben der
+   Auswahl, nicht über die gefilterten — sonst zeigte „Überfällig" nach
+   dem Antippen seine eigene Zahl als 0. */
+function tdZahlenSetzen(alle, gezeigt){
+  var jetzt=Date.now(), zahl={ offen:0, faellig:0, meine:0 };
+  alle.forEach(function(x){
+    var t=x.t; if(isDone(t)) return;
+    zahl.offen++;
+    if(t.due && jetzt>t.due) zahl.faellig++;
+    if(session && t.assignedTo===session.uid) zahl.meine++;
+  });
+  document.querySelectorAll('[data-tfilter]').forEach(function(c){
+    var f=c.getAttribute('data-tfilter');
+    var alt=c.querySelector('.chip-num'); if(alt) alt.remove();
+    if(!zahl[f]) return;
+    var b=document.createElement('b');
+    b.className='chip-num'; b.textContent=zahl[f];
+    c.appendChild(b);
+  });
+  var z=$('todoCount');
+  if(z) z.textContent = (_todoFilter || _todoMode!=='alle' || _todoDring)
+    ? gezeigt+' von '+alle.length : '';
+}
+
+var _tdGezeichnetFuer=null, _tdStand=null;
+function todoStand(){
+  return [_todoStudio, _todoMode, _todoFilter, _todoDring?1:0, _todoSort].join('|');
+}
 function renderTodos(){
-  var area=$('todoArea');
-  var shown=0, totalAll=0, doneAll=0;   // für den Zähler über der Liste
-  if(canManage()){
-    // Kurzer Titel, Umfang in die Unterzeile: „Aufgaben aller Studios" brach
-    // neben dem Anlegen-Knopf auf zwei Zeilen um.
-    $('todoTitle').textContent='Aufgaben';
-    $('todoSub').textContent = isChef()
-      ? 'Alle '+STUDIOS.length+' Studios.'
-      : 'Deine Studios: '+managedStudios().join(', ');
-    /* Eingegrenzt oder nicht — der Chip sagt es, und die Unterzeile
-       auch. Beides ohne eine einzige Zeile Höhe zusätzlich. */
-    var chip=$('todoStudioChip');
-    if(chip){
-      chip.style.display = (managedStudios().length>1) ? '' : 'none';
-      chip.textContent = _todoStudio ? (studioName(_todoStudio)||'Studio') : 'Alle Studios';
-      chip.classList.toggle('on', !!_todoStudio);
-    }
-    if(_todoStudio) $('todoSub').textContent = 'Nur ' + (studioName(_todoStudio)||'') + '.';
-    var html='';
-    studiosNachDringlichkeit().forEach(function(s){
-      var sk=studioKey(s);
-      if(_todoStudio && sk!==_todoStudio) return;
-      var all=sortTodos((cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); }));
-      totalAll+=all.length; doneAll+=all.filter(isDone).length;
-      var list=all.filter(todoMatchesFilter);
-      if(!list.length) return;
-      shown+=list.length;
-      // Pro Studio: Überschrift + eigener Fortschrittsbalken
-      var d=all.filter(isDone).length;
-      html+='<h3 class="studio-head" style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(s)+'</h3>';
-      if(!_todoFilter && _todoMode==='alle') html+=progressHTML(d,all.length);
-      html+=list.map(function(t){ return todoHTML(t,sk,true); }).join('');
-    });
-    area.innerHTML = html || leerText(totalAll);
+  var area=$('todoArea'); if(!area) return;
+  var liste=todoStudioListe();
+  var keys=todoStudioPruefen(liste);
+  todoStudioWahlBauen(liste);
+  tdKuerzelBinden();
+  var gewaehlt = _todoStudio ? [_todoStudio] : keys;
+  var mitStudio = !_todoStudio && keys.length>1;
+  $('todoTitle').textContent='Aufgaben';
+  $('todoSub').textContent = mitStudio
+    ? 'Alle '+keys.length+' Studios — antippen hakt ab.'
+    : 'Antippen hakt ab — mit Name und Uhrzeit.';
+  var lt=$('todoListTitle');
+  if(lt) lt.textContent='Aufgaben · '+(_todoStudio ? studioName(_todoStudio) : 'alle Studios');
+
+  var alle=[];
+  gewaehlt.forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){ if(!isArchived(t)) alle.push({ t:t, sk:sk }); });
+  });
+  alle.sort(function(a,b){ return todoVergleich(a.t,b.t); });
+
+  /* Fortschritt über ALLE Aufgaben der Auswahl, nie über die gefilterten
+     — dieselbe Regel wie im Putzplan. */
+  var jetzt=Date.now();
+  var fertigAlle=alle.filter(function(x){ return isDone(x.t); }).length;
+  var ueberAlle=alle.filter(function(x){ return !isDone(x.t) && x.t.due && jetzt>x.t.due; }).length;
+  var prog=$('tdProgress');
+  if(prog) prog.textContent = alle.length
+    ? fertigAlle+' von '+alle.length+' erledigt'+(ueberAlle ? ' · '+ueberAlle+' überfällig' : '')
+    : '';
+  var balken=$('tdFortBalken');
+  if(balken) balken.style.width=(alle.length ? Math.round(fertigAlle/alle.length*100) : 0)+'%';
+  tdLeisteSetzen();
+
+  var list=alle.filter(function(x){ return todoMatchesFilter(x.t); });
+  tdZahlenSetzen(alle, list.length);
+  if(!keys.length){
+    area.innerHTML=emptyHTML('Keine Studios','Dir ist noch kein Studio zugeordnet.','gebaeude');
+  } else if(!list.length){
+    area.innerHTML=leerText(alle.length);
   } else {
-    var multi = session.studios.length>1;
-    $('todoTitle').textContent = multi ? 'Aufgaben' : ('Aufgaben · '+(session.studios[0]||''));
-    $('todoSub').textContent = multi ? 'Aus deinen Studios – einfach abhaken.' : 'Deine To-dos – einfach abhaken.';
-    var html='';
-    session.studioKeys.forEach(function(sk, idx){
-      var sName=session.studios[idx];
-      var all=sortTodos((cachedTodos[sk]||[]).filter(function(t){ return !isArchived(t); }));
-      var list=all.filter(todoMatchesFilter);
-      var done=all.filter(isDone).length, total=all.length;
-      totalAll+=total; doneAll+=done; shown+=list.length;
-      if(multi) html+='<h3 class="studio-head" style="margin:18px 0 9px;font-size:1.1rem;color:var(--accent-2)">'+esc(sName)+'</h3>';
-      if(total){
-        if(!_todoFilter && _todoMode==='alle') html+=progressHTML(done,total);
-        html += list.length
-          ? list.map(function(t){ return todoHTML(t,sk,false); }).join('')
-          : '<p class="lese-leer" style="margin:2px 0 14px">In diesem Studio passt nichts zum Filter.</p>';
-      } else {
-        html+='<p class="lese-leer" style="margin:2px 0 14px">Keine offenen Aufgaben.</p>';
-      }
-    });
-    // Passt nirgends etwas, sagt ein einzelner klarer Hinweis mehr als eine
-    // Reihe von „nichts gefunden" unter jedem Studio.
-    area.innerHTML = (!shown && totalAll) ? leerText(totalAll)
-      : (html || emptyHTML('Keine Studios','Dir ist noch kein Studio zugeordnet.','gebaeude'));
+    /* Einlaufen nur beim ersten Zeichnen dieser Auswahl — nicht bei
+       jedem Haken eines Kollegen (siehe CSS #todoArea.pp-ruhig). */
+    var auswahl=_todoStudio||'*';
+    area.classList.toggle('pp-ruhig', _tdGezeichnetFuer===auswahl);
+    _tdGezeichnetFuer=auswahl;
+    var chef=canManage();
+    var zeile=function(x){ return todoHTML(x.t, x.sk, chef, mitStudio); };
+    /* Gruppen in „Standard" (nach Fälligkeit) und „Nach Tageszeit"; wer
+       ausdrücklich nach Name, Dringlichkeit oder Alter sortiert, bekommt
+       eine FLACHE Liste — wie im Putzplan. */
+    if(_todoSort==='standard' || _todoSort==='tageszeit'){
+      var GRUPPEN = _todoSort==='tageszeit'
+        ? tzGruppen().map(function(g){ return { id:g.id, wort:g.wort, passt:function(x){ return g.passt(x.t); } }; })
+        : TD_FRIST_GRUPPEN.map(function(g){
+            return { id:g.id, wort:g.wort, passt:function(x){ return todoFristGruppe(x.t, jetzt)===g.id; } };
+          });
+      area.innerHTML='<div class="pp-gruppen">'+GRUPPEN.map(function(g){
+        var drin=list.filter(g.passt); if(!drin.length) return '';
+        var fertig=drin.filter(function(x){ return isDone(x.t); }).length;
+        var pct=Math.round(fertig/drin.length*100);
+        var zahl = g.id==='ueberfaellig' ? drin.length+' offen' : fertig+' von '+drin.length;
+        return '<section class="pp-gruppe td-gruppe'+(fertig===drin.length?' fertig':'')+
+            (g.id==='ueberfaellig'?' td-ueber':'')+'" data-tdgruppe="'+g.id+'">'+
+          '<div class="pg-kopf"><h4>'+esc(g.wort)+'</h4>'+
+            '<span class="pg-zahl">'+zahl+'</span>'+
+            '<i class="pg-balken" aria-hidden="true"><i style="width:'+pct+'%"></i></i></div>'+
+          drin.map(zeile).join('')+'</section>';
+      }).join('')+'</div>';
+    } else {
+      area.innerHTML=list.map(zeile).join('');
+    }
   }
   /* ── Eingeblendet wird, was man sieht ──
-     rowIn lief bei JEDEM Öffnen der Seite auf jeder Zeile — beim Chef
-     61 Animationen, von denen gut 50 unterhalb des Bildschirms liegen.
-     Gemessen am 23.9.2026: gut 300 ms lang Stil-Durchgänge über rund
-     200 Elemente, jedes Bild, für eine Bewegung, die niemand sieht.
-
      Zwölf Zeilen füllen auch ein grosses Tablet; darunter erscheinen
-     die Zeilen ohne Bewegung. Nur geschrieben, nichts gelesen — kein
-     Layout mitten im Aufbau. */
+     die Zeilen ohne Bewegung (gemessen am 23.9.2026, siehe dort). */
   var reihen=area.querySelectorAll('.todo');
   for(var ri=12; ri<reihen.length; ri++) reihen[ri].classList.add('ohne-ein');
-  // Zähler rechts neben dem Suchfeld
-  var cnt=$('todoCount');
-  if(cnt) cnt.innerHTML = (_todoFilter || _todoMode!=='alle')
-    ? esc(shown+(shown===1?' Aufgabe':' Aufgaben'))
-    : (totalAll ? fortschrittRing(doneAll, totalAll)+esc(doneAll+' von '+totalAll+' erledigt') : '');
   bindTodoClicks(area);
+  _tdStand=todoStand();
+  tdNotizenLaden();
   renderToday();
   if(currentView==='home') renderHome();
   updateBadges();
@@ -31586,6 +31784,70 @@ function renderTodos(){
       if(_chefTab==='report') renderReport();
     }
   }
+}
+
+/* ── Aufgaben ausdrucken (Runde 147) ──
+   Derselbe Wandzettel wie beim Putzplan: eine Zeile je OFFENER Aufgabe,
+   Kästchen und Kürzelfeld. Erledigte stehen nicht drauf — der Zettel
+   ist für das, was noch zu tun ist. */
+function printTodos(){
+  var pa=$('printArea'); if(!pa) return;
+  var keys = _todoStudio ? [_todoStudio] : todoStudioListe().map(function(x){ return x.key; });
+  var mehr = keys.length>1, zeilen=[];
+  keys.forEach(function(sk){
+    (cachedTodos[sk]||[]).forEach(function(t){
+      if(!isArchived(t) && !isDone(t)) zeilen.push({ t:t, sk:sk });
+    });
+  });
+  if(!zeilen.length){ toast('Hier ist gerade nichts offen — nichts zu drucken.'); return; }
+  var jetzt=Date.now();
+  zeilen.sort(function(a,b){
+    var ga=TD_FRIST_GRUPPEN.findIndex(function(g){ return g.id===todoFristGruppe(a.t, jetzt); });
+    var gb=TD_FRIST_GRUPPEN.findIndex(function(g){ return g.id===todoFristGruppe(b.t, jetzt); });
+    return (ga-gb) || todoVergleich(a.t, b.t);
+  });
+  var heute=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  var rows=zeilen.map(function(x){
+    var t=x.t;
+    var frist = t.due ? (jetzt>t.due ? 'überfällig' : 'bis '+fmtTag(new Date(t.due), true))
+      : (t.recurring ? repLabelFor(t) : '—');
+    return '<tr><td>'+esc(t.title||'')+(mehr ? ' <i>('+esc(studioName(x.sk))+')</i>' : '')+'</td>'+
+      '<td>'+esc(frist)+'</td><td class="p-box"></td><td class="p-sign"></td></tr>';
+  }).join('');
+  pa.innerHTML='<h1>Aufgaben · '+esc(mehr ? 'alle Studios' : studioName(keys[0]))+'</h1>'+
+    '<p class="p-sub">Stand: '+esc(heute)+' · '+zeilen.length+' offen</p>'+
+    '<table><tr><th>Aufgabe</th><th>Frist</th><th>Erledigt</th><th>Kürzel</th></tr>'+rows+'</table>'+
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' · '+esc(firmaAnzeige())+
+      ' — Abgehaktes bitte in der App nachtragen.</p>';
+  window.print();
+}
+
+/* ── Notizen vom Team, auch hier (Runde 147) ──
+   Dieselbe Sammlung wie im Putzplan (studios/<k>/cleaningNotes): ein
+   Notizzettel je Studio, an zwei Stellen zu sehen. Der Beobachter läuft
+   nur, solange die Aufgaben offen sind und EIN Studio gewählt ist. */
+var _tdNotes=[], _tdNoteUnsub=null, _tdNoteFuer=null;
+function tdNotizenLaden(){
+  var card=$('tdNotesCard');
+  if(card) card.hidden=!_todoStudio;
+  if(currentView!=='todos') return;
+  var sk=_todoStudio||null;
+  if(sk===_tdNoteFuer) return;
+  if(_tdNoteUnsub){ _tdNoteUnsub(); _tdNoteUnsub=null; }
+  _tdNoteFuer=sk; _tdNotes=[]; renderTdNotes();
+  if(!sk) return;
+  _tdNoteUnsub=S('studios').doc(sk).collection('cleaningNotes').orderBy('ts','desc').limit(50)
+    .onSnapshot(function(snap){
+      if(_tdNoteFuer!==sk) return;
+      _tdNotes=snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); });
+      renderTdNotes(); foldZahlen();
+    }, function(e){ console.error('Notizen (Aufgaben):', e.message); });
+}
+function renderTdNotes(){
+  notizenZeichnen($('tdNotes'), _tdNotes, _tdNoteFuer, 'aufgabe');
+}
+function addTdNote(){
+  notizAnlegen($('tdNoteInput'), _tdNoteFuer);
 }
 
 /* Chef-Archiv: erledigte (einmalige) Aufgaben, gruppiert pro Studio */
@@ -31623,10 +31885,17 @@ function clearArchive(){
   })).then(function(){ toast('Archiv geleert ✓'); }).catch(function(e){ toast(errMsg(e),true); });
 }
 
-function todoHTML(t,sk,chefView){
+/* ── Eine Aufgabe als Zeile — gebaut wie ein Putzpunkt (Runde 147) ──
+   Haken links, Titel mit Marken, darunter EINE Zeile mit dem Stand:
+   „noch offen" oder „✓ AB (Konto) · Zeit" — wer, mit Kürzel, und wann.
+   Rechts Stift und Papierkorb für die Leitung, dahinter „…" für Foto,
+   Grund und Frist. Beschreibung, Teilschritte, Grund, Dokument, Danke
+   und Foto bleiben in der Zeile: anders als ein Putzpunkt hat eine
+   Aufgabe oft einen Satz dazu, und der gehört dorthin, wo man sie liest.
+
+   mitStudio: bei „Alle Studios" trägt jede Zeile ihr Studio. */
+function todoHTML(t,sk,chefView,mitStudio){
   var done=isDone(t);
-  var foot=['erstellt von '+esc(t.createdBy||'Chef')];
-  if(done&&t.doneBy) foot.push('<span class="done-by">✓ erledigt von '+esc(t.doneBy)+'</span>');
   var rep=prioMarke(t)+(t.recurring
     ? '<span class="t-rep">'+ikon('wiederholen')+' '+esc(repLabelFor(t))+'</span>' : '');
   /* Der Grund steht IN der Liste, nicht nur im Blatt dahinter. Der Chef
@@ -31643,38 +31912,33 @@ function todoHTML(t,sk,chefView){
     var dd=new Date(t.due);
     dueBadge='<span class="t-due'+(over?' over':'')+'">'+(over?'überfällig':'bis '+fmtTag(dd))+'</span>';
   }
-  /* Das Foto ist ein Beleg fürs Erledigen und muss schnell erreichbar sein –
-     aber als Knopf über die volle Breite kostete es 46 Pixel an JEDER Aufgabe,
-     auch an den vielen, die nie eines bekommen. Jetzt steht es als kleines
-     Symbol in der Fußzeile, in derselben Zeile wie „erstellt von". */
   var photoHtml = t.photo
     ? '<img class="t-photo" data-zoom src="'+safeMedia(t.photo)+'" alt="Foto zur Aufgabe" />'
     : '';
-  /* An einer OFFENEN Aufgabe steht „Foto" daneben (DESIGN-IDEEN Nr.
-     26): klein und grau war die Kamera der am wenigsten gefundene
-     Weg, einen Schaden zu belegen. Erledigt reicht das Zeichen. */
-  var photoBtn = t.photo ? '' :
-    '<button class="t-cam'+(done?'':' mit-wort')+'" data-photoadd="1" title="Foto hinzufügen" aria-label="Foto hinzufügen">'+
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>'+
-    (done ? '' : '<span>Foto</span>')+'</button>';
+  /* Foto anhängen und „Danke" sagen stehen seit Runde 147 hinter „…"
+     — so hat es der Betrieb gewählt („Weg, wie im Putzplan"). In der
+     Zeile bleibt, was man SEHEN muss: das Foto selbst und von wem ein
+     Danke kam. */
   var isOver = !done && t.due && Date.now()>t.due;   // überfällig → roter Balken links
-  // Zugewiesene Person anzeigen
   var assign='';
   if(t.assignedTo){
     var mineTask = t.assignedTo===session.uid;
     assign='<span class="t-assign'+(mineTask?' me':'')+'">'+(mineTask?'für dich':'für '+esc(t.assignedName||'?'))+'</span>';
   } else if(!done){
     /* „Ich übernehme das" — nur an OFFENEN Aufgaben, die noch niemandem
-       gehören. Zwei Leute, die dasselbe machen, sind im Studio kein
-       theoretischer Fall: der Putzplan haengt an der Tuer, die Aufgaben
-       stehen im Handy, und wer gerade Zeit hat, faengt an.
-
-       Es ist ausdruecklich KEINE Zuweisung durch den Chef, sondern eine
-       Meldung. Deshalb kann man sie auch wieder loesen (siehe unten):
-       wer sich vertut oder doch nicht dazu kommt, soll die Aufgabe nicht
-       blockieren. */
+       gehören. Ausdrücklich KEINE Zuweisung durch den Chef, sondern
+       eine Meldung (siehe bindTodoClicks). */
     assign='<button class="t-nimm" data-tnimm="'+esc(t.id)+'">Ich übernehme das</button>';
   }
+  /* Wer und wann — Kürzel vorne, Konto in Klammern, wie im Putzplan:
+     den Chef interessiert die Person, nicht das Tablet. */
+  var wer = done ? (t.doneKuerzel
+    ? esc(t.doneKuerzel)+' <span class="pp-konto">('+esc(t.doneBy||'')+')</span>'
+    : esc(t.doneBy||'')) : '';
+  var stand = done
+    ? '<span class="pp-doneby done-by">✓ '+(wer ? wer+(t.doneAt ? ' · '+fmtDateTime(t.doneAt) : '') : 'erledigt')+'</span>'
+    : '<span class="t-offen">noch offen</span>';
+  var studioMarke = mitStudio ? '<span class="t-studio">'+esc(studioName(sk))+'</span>' : '';
   // Teilschritte: kleine Checkliste innerhalb der Aufgabe
   var steps=Array.isArray(t.steps)?t.steps:[];
   var stepsHtml='', stepCount='';
@@ -31686,23 +31950,30 @@ function todoHTML(t,sk,chefView){
         '<span class="sbox">✓</span><span class="stxt">'+esc((s&&s.t)||'')+'</span></li>';
     }).join('')+'</ul>';
   }
+  /* Stift VOR dem Papierkorb, wie im Putzplan: die häufigere Handlung
+     zuerst. Nur, wo die Leitung auch schreiben darf (darfAufgabeIn —
+     dieselbe Frage wie die Regel). Eigene Klassen t-edit/t-del, nicht
+     pp-edit/pp-del: eine Klasse ist ein Name (siehe CSS dort). */
+  var darf = chefView && canManage() && darfAufgabeIn(sk);
+  var stift = darf ? '<button class="t-edit" data-tedit="1" aria-label="bearbeiten" title="Bearbeiten">'+ikon('stift')+'</button>' : '';
+  var del = darf ? '<button class="t-del" data-tdel="1" aria-label="löschen" title="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
+  /* „…" an JEDER Aufgabe: dort stehen Foto, Grund, Frist und Danke —
+     Foto, Grund und Danke darf jeder. */
+  var mehr = '<button class="t-mehr" data-tmehr="1" title="Mehr: Foto, Grund, Frist, Danke" aria-label="Mehr">⋯</button>';
   var frisch=frischAttr(t.id, done);
   return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+frisch.cls+'"'+frisch.stil+
     ' data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
     '<div class="swipe-hint">✓</div><div class="swipe-body">'+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
-    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+assign+stepCount+'</div>'+
+    '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+stepCount+'</div>'+
+    '<div class="pp-meta t-foot">'+studioMarke+stand+assign+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     stepsHtml+
     grundHtml+
     (t.docUrl?'<a class="t-doc" href="'+safeUrl(t.docUrl)+'" target="_blank" rel="noopener">'+ikon('blatt')+' Dokument öffnen</a>':'')+
-    '<div class="t-foot">'+foot.join('<span style="margin:0 3px">·</span>')+photoBtn+'</div>'+
-    dankeHTML(t, done)+
+    dankeText(t, done)+
     photoHtml+'</div>'+
-    /* Bearbeiten, Frist verschieben und Löschen lagen als 25 × 27 Pixel große
-       Symbole am Rand jeder Zeile. Sie stecken jetzt im Aktionsblatt, das ein
-       Tipp auf die Aufgabe öffnet – beschriftet und daumengroß. */
-    ((chefView || t.photo) ? '<button class="t-mehr" data-tmehr="1" title="Mehr" aria-label="Mehr">⋯</button>' : '')+
+    '<div class="t-knoepfe">'+stift+del+mehr+'</div>'+
     '</div></div>';
 }
 
@@ -31797,26 +32068,15 @@ function dankeGueltig(t){
   }).filter(function(e){ return e.fuer===t.doneAt && e.n; })
     .sort(function(a,b){ return a.ts-b.ts; });
 }
-function dankeHTML(t, done){
+/* In der Zeile (Runde 147): nur, WER gedankt hat — gesagt wird es im
+   Blatt hinter „…". */
+function dankeText(t, done){
   if(!done || !t.doneByUid || !session) return '';
-  var alle=dankeGueltig(t);
+  var alle=dankeGueltig(t); if(!alle.length) return '';
   var ich=session.uid;
-  if(t.doneByUid===ich){
-    return alle.length
-      ? '<div class="t-danke-zeile"><span class="t-danke-von">'+ikon('herz')+
-        ' Danke von '+esc(alle.map(function(e){ return e.n; }).join(', '))+'</span></div>'
-      : '';
-  }
-  var meins=alle.some(function(e){ return e.uid===ich; });
-  var andere=alle.filter(function(e){ return e.uid!==ich; });
-  return '<div class="t-danke-zeile">'+
-    '<button type="button" class="t-danke'+(meins?' an':'')+'" data-tdanke="1" '+
-      'aria-pressed="'+(meins?'true':'false')+'" '+
-      'aria-label="'+esc((meins?'Danke zurücknehmen':'Danke sagen')+' an '+(t.doneBy||''))+'">'+
-      ikon('herz')+'<span>'+(meins?'Bedankt':'Danke')+'</span></button>'+
-    (andere.length ? '<span class="t-danke-von">auch von '+
-      esc(andere.map(function(e){ return e.n; }).join(', '))+'</span>' : '')+
-    '</div>';
+  var namen=alle.map(function(e){ return e.uid===ich ? 'dir' : e.n; });
+  return '<div class="t-danke-zeile"><span class="t-danke-von">'+ikon('herz')+
+    ' Danke von '+esc(namen.join(', '))+'</span></div>';
 }
 /* Die ganze Karte wird geschrieben, wie bei den Reaktionen. Hat
    inzwischen jemand anderes gedankt, lehnt die Regel ab (sie sieht, dass
@@ -31863,6 +32123,20 @@ function dankeGelesen(){
   ref.set({ gelesenDanke:jetzt }, {merge:true}).catch(function(){});
 }
 
+function todoFinden(sk, id){
+  return (cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0] || null;
+}
+/* Löschen aus der Zeile — derselbe Weg wie im Blatt („…" → Löschen):
+   Rückfrage, Papierkorb, acht Sekunden „Rückgängig". */
+function todoLoeschen(t, sk){
+  if(!t || !sk) return;
+  if(!confirm('Aufgabe löschen?\n\n„'+(t.title||'')+'"')) return;
+  var backup=JSON.parse(JSON.stringify(t));
+  S('studios').doc(sk).collection('todos').doc(t.id).delete()
+    .then(function(){ toTrash('todos', sk, backup); offerUndoTodo(sk, backup); })
+    .catch(function(e){ toast(aufgabeFehlerText(e, sk),true); });
+}
+
 function bindTodoClicks(area){
   area.querySelectorAll('.todo').forEach(function(node){
     var id=node.dataset.id, sk=node.dataset.sid;
@@ -31892,10 +32166,6 @@ function bindTodoClicks(area){
          Feld, der Durchlauf war gruen — geprueft wurde damit etwas, das
          die App gar nicht schreibt. */
       aufgabeHaken(sk, id, done).catch(function(e){ toast(aufgabeFehlerText(e, sk),true); });
-    });
-    var dk=node.querySelector('[data-tdanke]');
-    if(dk) dk.addEventListener('click', function(e){
-      e.stopPropagation(); dankeUmschalten(sk, id, dk);
     });
     // Teilschritte abhaken
     node.querySelectorAll('[data-step]').forEach(function(li){
@@ -31964,49 +32234,36 @@ function bindTodoClicks(area){
       var t=(cachedTodos[sk]||[]).filter(function(x){ return x.id===id; })[0];
       if(t) todoBlattOeffnen(t, sk);
     });
-    var padd=node.querySelector('[data-photoadd]');
-    if(padd) padd.addEventListener('click',function(){
-      _todoPhotoTarget={ sk:sk, id:id };
-      $('todoFileShared').click();
+    var ted=node.querySelector('[data-tedit]');
+    if(ted) ted.addEventListener('click',function(e){
+      e.stopPropagation();
+      var t=todoFinden(sk, id); if(t) openTodoEdit(t, sk);
+    });
+    var tdl=node.querySelector('[data-tdel]');
+    if(tdl) tdl.addEventListener('click',function(e){
+      e.stopPropagation();
+      todoLoeschen(todoFinden(sk, id), sk);
     });
     // Nach rechts wischen = abhaken
     bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
-    /* Am PC wählt ein Klick auf die Zeile sie für die Detailspalte aus.
-       Knöpfe, Links und Teilschritte behalten ihre eigene Wirkung. */
-    node.addEventListener('click', function(e){
-      if(!todoBreit()) return;
-      if(e.target.closest('button,a,input,select,textarea,label,.sub-item')) return;
-      todoWaehlen(id, sk);
-    });
   });
-  todoWahlMarkieren();
-  renderTodoDetail();
+  if(area.id==='todoArea') todoWahlMarkieren();
 }
 
-/* ══ AUFGABEN AM PC: LISTE LINKS, DETAIL RECHTS (Runde 103, P1) ══════
-   Aus dem Betrieb: der PC ist das Hauptgerät, Aufgaben und Putzplan sind
-   die meistgenutzten Bereiche. Gemessen bei 1440 × 900: 5 von 61
-   Aufgaben im Bild, jede Zeile 1.174 px breit — der Titel links, „…"
-   ganz rechts, dazwischen nichts.
+/* ══ TASTATUR AM PC (Runde 103, P1 — seit Runde 147 ohne Detailfeld) ══
+   Das Detailfeld rechts ist weg (Runde 147: „GENAU so wie der
+   Putzplan"); Stift, Papierkorb und „…" stehen in der Zeile. Die
+   Tastatur bleibt, sie kostet keinen Platz:
 
-   Jetzt ab 1100 px zwei Spalten. Links die Liste, dichter (Beschreibung,
-   Teilschritte und Foto stehen rechts statt in der Zeile). Rechts die
-   gewählte Aufgabe mit allem, was es zu ihr gibt, und den Handgriffen:
-   abhaken, Teilschritte, Danke, Grund, bearbeiten.
+     ↑/↓ (oder k/j)  Zeile wählen — die gewählte trägt einen Rahmen
+     Leertaste, x    abhaken
+     e               bearbeiten (Leitung)
+     Enter           „…" öffnen
 
-   KEINE ZWEITE LOGIK. Die Knöpfe rechts lösen dieselben Knöpfe der Zeile
-   aus (Haken, Teilschritt) oder dieselben Funktionen (Blatt, Bearbeiten,
-   Danke). Wer eine Handlung ändert, ändert sie an einer Stelle.
-
-   Tastatur, nur in dieser Ansicht und nur, wenn nichts anderes den Fokus
-   hat: ↑/↓ (oder k/j) wählen, Leertaste oder x hakt ab, e bearbeitet
-   (Leitung), Enter öffnet „Mehr". Die Buchstaben sind mit den
-   Kürzeln der App (AKTIONEN) abgeglichen: keiner doppelt. */
+   Gewählt wird erst, wenn jemand die Pfeile benutzt: ein Rahmen, der
+   ohne Zutun um die erste Zeile liegt, sähe aus wie ein Fehler. Die
+   Buchstaben sind mit den Kürzeln der App (AKTIONEN) abgeglichen. */
 var _todoWahl=null;   // { id, sk }
-/* Solange niemand selbst gewählt hat, steht rechts die erste OFFENE
-   Aufgabe der Liste — auch wenn die Liste sich beim Laden noch umsortiert
-   (die Studios kommen nacheinander an). */
-var _todoWahlVonHand=false;
 var _todoBreitMq=null;
 function todoBreit(){
   if(!_todoBreitMq && window.matchMedia) _todoBreitMq=window.matchMedia('(min-width:1100px)');
@@ -32014,105 +32271,36 @@ function todoBreit(){
 }
 function todoWahlDaten(){
   if(!_todoWahl) return null;
-  var t=(cachedTodos[_todoWahl.sk]||[]).filter(function(x){ return x.id===_todoWahl.id; })[0];
+  var t=todoFinden(_todoWahl.sk, _todoWahl.id);
   return t ? { t:t, sk:_todoWahl.sk } : null;
 }
 function todoZeilen(){ return [].slice.call(document.querySelectorAll('#todoArea .todo')); }
 function todoWaehlen(id, sk, sichtbarMachen){
   _todoWahl = { id:id, sk:sk };
-  _todoWahlVonHand = true;
   todoWahlMarkieren(sichtbarMachen);
-  renderTodoDetail();
 }
 function todoWahlMarkieren(sichtbarMachen){
-  if(!todoBreit()) return;
   var zeilen=todoZeilen();
-  /* Nichts gewählt, oder die gewählte ist weggefiltert: die erste
-     OFFENE nehmen. Eine leere rechte Spalte neben einer vollen Liste
-     sähe aus wie ein Fehler. */
-  var da = _todoWahl && zeilen.some(function(z){ return z.dataset.id===_todoWahl.id && z.dataset.sid===_todoWahl.sk; });
-  if(!da || !_todoWahlVonHand){
-    var erste = zeilen.filter(function(z){ return !z.classList.contains('done'); })[0] || zeilen[0];
-    _todoWahl = erste ? { id:erste.dataset.id, sk:erste.dataset.sid } : null;
-  }
+  /* Ist die gewählte weggefiltert oder gelöscht, ist nichts gewählt —
+     nicht still die nächste, sonst hakte die Leertaste etwas ab, das
+     niemand ausgesucht hat. */
+  if(_todoWahl && !zeilen.some(function(z){ return z.dataset.id===_todoWahl.id && z.dataset.sid===_todoWahl.sk; })) _todoWahl=null;
   zeilen.forEach(function(z){
     var an = !!_todoWahl && z.dataset.id===_todoWahl.id && z.dataset.sid===_todoWahl.sk;
     z.classList.toggle('gewaehlt', an);
     if(an && sichtbarMachen && z.scrollIntoView) z.scrollIntoView({ block:'nearest' });
   });
 }
-function renderTodoDetail(){
-  var box=$('todoDetail'); if(!box) return;
-  if(!todoBreit()){ box.innerHTML=''; return; }
-  var w=todoWahlDaten();
-  if(!w){
-    box.innerHTML='<div class="td-leer">'+ikon('hakenKreis')+
-      '<p>Wähle links eine Aufgabe — hier steht dann alles dazu.</p></div>';
-    return;
-  }
-  var t=w.t, sk=w.sk, done=isDone(t);
-  var schritte=Array.isArray(t.steps)?t.steps:[];
-  var info=[];
-  info.push(['Studio', studioName(sk)]);
-  if(t.due) info.push(['Frist', new Date(t.due).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})+
-    (!done && Date.now()>t.due ? ' · überfällig' : '')]);
-  if(t.recurring) info.push(['Rhythmus', repLabelFor(t)]);
-  info.push(['Zuständig', t.assignedName || 'Jeder im Studio']);
-  info.push(['Erstellt von', t.createdBy || 'Leitung']);
-  if(done) info.push(['Erledigt', (t.doneBy||'')+(t.doneAt?' · '+fmtDateTime(t.doneAt):'')]);
-  box.innerHTML=
-    '<div class="td-kopf"><h3>'+esc(t.title||'Aufgabe')+'</h3>'+
-      '<div class="td-marken">'+prioMarke(t)+'</div></div>'+
-    '<button type="button" class="btn '+(done?'btn-ghost':'btn-primary')+' td-haken" data-td="haken">'+
-      (done ? 'Wieder öffnen' : ikon('hakenKreis')+' Abhaken')+'</button>'+
-    (t.desc ? '<p class="td-text">'+esc(t.desc)+'</p>' : '')+
-    (schritte.length ? '<div class="td-schritte"><h4>'+
-        fortschrittRing(schritte.filter(function(x){ return x && x.d; }).length, schritte.length)+'Teilschritte · '+
-        schritte.filter(function(x){ return x && x.d; }).length+' von '+schritte.length+'</h4>'+
-      schritte.map(function(x,i){
-        return '<button type="button" class="td-schritt'+(x&&x.d?' an':'')+'" data-tdschritt="'+i+'" '+
-          'aria-pressed="'+(x&&x.d?'true':'false')+'"><span class="sbox">✓</span>'+esc((x&&x.t)||'')+'</button>';
-      }).join('')+'</div>' : '')+
-    (t.grund && !done ? '<div class="t-grund td-grund">'+ikon('warnung')+' '+esc(t.grund)+
-      (t.grundVon?' <span class="t-grund-wer">— '+esc(t.grundVon)+'</span>':'')+'</div>' : '')+
-    '<dl class="td-info">'+info.map(function(x){
-      return '<dt>'+esc(x[0])+'</dt><dd>'+esc(x[1])+'</dd>'; }).join('')+'</dl>'+
-    dankeHTML(t, done)+
-    (t.photo ? '<img class="td-foto" src="'+esc(t.photo)+'" alt="Foto zur Aufgabe" loading="lazy">' : '')+
-    '<div class="td-aktionen">'+
-      (canManage() ? '<button type="button" class="btn btn-ghost btn-sm" data-td="bearbeiten">'+ikon('stift')+' Bearbeiten</button>' : '')+
-      '<button type="button" class="btn btn-ghost btn-sm" data-td="foto">'+ikon('foto')+
-        (t.photo ? ' Foto ersetzen' : ' Foto')+'</button>'+
-      '<button type="button" class="btn btn-ghost btn-sm" data-td="mehr">'+
-        (done ? 'Mehr …' : 'Grund, Frist, mehr …')+'</button>'+
-    '</div>'+
-    '<p class="td-tasten">↑ ↓ wählen · Leertaste abhaken'+(canManage()?' · E bearbeiten':'')+' · Enter mehr</p>';
-
-  box.querySelectorAll('[data-td]').forEach(function(b){
-    b.addEventListener('click', function(){ todoDetailAktion(b.getAttribute('data-td'), b); });
-  });
-  box.querySelectorAll('[data-tdschritt]').forEach(function(b){
-    b.addEventListener('click', function(){
-      var z=document.querySelector('#todoArea .todo.gewaehlt [data-step="'+b.getAttribute('data-tdschritt')+'"]');
-      if(z) z.click();
-    });
-  });
-  var dk=box.querySelector('[data-tdanke]');
-  if(dk) dk.addEventListener('click', function(){ dankeUmschalten(sk, t.id, dk); });
-}
-function todoDetailAktion(was, knopf){
+function todoTastenAktion(was){
   var w=todoWahlDaten(); if(!w) return;
   if(was==='haken'){
     var chk=document.querySelector('#todoArea .todo.gewaehlt .check');
     if(chk) chk.click();
-    else aufgabeHaken(w.sk, w.t.id, !isDone(w.t)).catch(function(e){ toast(aufgabeFehlerText(e, w.sk),true); });
     return;
   }
-  if(was==='bearbeiten' && canManage()){ openTodoEdit(w.t, w.sk); return; }
+  if(was==='bearbeiten' && canManage() && darfAufgabeIn(w.sk)){ openTodoEdit(w.t, w.sk); return; }
   if(was==='mehr'){ todoBlattOeffnen(w.t, w.sk); return; }
-  if(was==='foto'){ _todoPhotoTarget={ sk:w.sk, id:w.t.id }; $('todoFileShared').click(); return; }
 }
-/* Tastatur für die Liste am PC. */
 document.addEventListener('keydown', function(e){
   if(currentView!=='todos' || !todoBreit()) return;
   if(e.ctrlKey||e.metaKey||e.altKey) return;
@@ -32122,19 +32310,20 @@ document.addEventListener('keydown', function(e){
   var i=zeilen.findIndex(function(z){ return z.classList.contains('gewaehlt'); });
   if(k==='ArrowDown' || k==='j' || k==='ArrowUp' || k==='k'){
     e.preventDefault();
-    var n = (k==='ArrowDown'||k==='j') ? Math.min(zeilen.length-1, i+1) : Math.max(0, i-1);
+    var n = i<0 ? 0 : ((k==='ArrowDown'||k==='j') ? Math.min(zeilen.length-1, i+1) : Math.max(0, i-1));
     var z=zeilen[n];
     todoWaehlen(z.dataset.id, z.dataset.sid, true);
     return;
   }
+  if(i<0) return;
   /* Leertaste nur, wenn der Fokus nicht auf einem Knopf liegt — sonst
      löste sie den Knopf UND den Haken aus. */
   if((k===' ' && !(document.activeElement && document.activeElement.tagName==='BUTTON')) || k==='x'){
-    e.preventDefault(); todoDetailAktion('haken'); return;
+    e.preventDefault(); todoTastenAktion('haken'); return;
   }
-  if(k==='e' && canManage()){ e.preventDefault(); todoDetailAktion('bearbeiten'); return; }
+  if(k==='e' && canManage()){ e.preventDefault(); todoTastenAktion('bearbeiten'); return; }
   if(k==='Enter' && !(document.activeElement && document.activeElement.tagName==='BUTTON')){
-    e.preventDefault(); todoDetailAktion('mehr'); return;
+    e.preventDefault(); todoTastenAktion('mehr'); return;
   }
 });
 var _todoPhotoTarget=null;
@@ -32370,7 +32559,7 @@ function renderStudioGrid(){
       _todoFilter=''; _todoMode='alle';
       var ts=$('todoSearch'); if(ts) ts.value='';
       document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')==='alle'); });
-      _todoStudio = studioKey(el.getAttribute('data-open-studio'));
+      todoStudioFuerSprung(studioKey(el.getAttribute('data-open-studio')));
       tick(8); showView('todos');
       renderTodos();
       var sa=document.querySelector('#view-todos .scroll-area');
@@ -33205,7 +33394,7 @@ function renderAttention(){
       var ct=el.getAttribute('data-ctab-go');
       if(ct){ showChefTab(ct); return; }
       var f=el.getAttribute('data-f');
-      if(f){ _todoMode=f; document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
+      if(f){ _todoMode=f; todoStudioFuerSprung(''); document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')===f); }); }
       tick(8); showView(el.getAttribute('data-go'));
     });
   });
@@ -35369,26 +35558,35 @@ function savePutzTask(btn, title){
   });
 }
 
-/* Notiz hinzufügen */
-function addPutzNote(){
-  var inp=$('ppNoteInput'); var text=(inp.value||'').trim();
+/* Notiz hinzufügen.
+   Seit Runde 147 aus zwei Stellen: Putzplan und Aufgaben zeigen
+   DIESELBEN Notizen eines Studios (cleaningNotes). */
+function addPutzNote(){ notizAnlegen($('ppNoteInput'), _ppStudioKey); }
+function notizAnlegen(inp, sk){
+  if(!inp) return;
+  var text=(inp.value||'').trim();
   if(!text){ return; }
-  if(!_ppStudioKey){ toast('Bitte zuerst ein Studio wählen.',true); return; }
+  if(!sk){ toast('Bitte zuerst ein Studio wählen.',true); return; }
   inp.value='';
-  S('studios').doc(_ppStudioKey).collection('cleaningNotes').add({
+  S('studios').doc(sk).collection('cleaningNotes').add({
     text:text, by:session.name, byUid:session.uid,
     /* Dieselbe Frage wie beim Abhaken: unter der Notiz steht sonst der
        Studio-Zugang, und niemand weiss, wer sie geschrieben hat. */
     kuerzel:putzKuerzel()||null, ts:Date.now()
-  }).then(function(){ schedulePutzplanSheets(_ppStudioKey); })
+  }).then(function(){ schedulePutzplanSheets(sk); })
     .catch(function(e){ toast(errMsg(e),true); });
 }
 
 function renderPutzNotes(){
-  var box=$('ppNotes'); if(!box) return;
-  if(!_ppNotes.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.88rem">Noch keine Notizen.</p>'; return; }
+  notizenZeichnen($('ppNotes'), _ppNotes, _ppStudioKey, 'putz');
+}
+/* art: 'putz' (Putzplan) oder 'aufgabe' (Aufgaben). Unterschied ist nur
+   der Weg aus der Notiz heraus: „→ Putzaufgabe" oder „→ Aufgabe". */
+function notizenZeichnen(box, liste, sk, art){
+  if(!box) return;
+  if(!liste.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.88rem">Noch keine Notizen.</p>'; return; }
   var chef=canManage();
-  box.innerHTML=_ppNotes.map(function(n){
+  box.innerHTML=liste.map(function(n){
     var mine=n.byUid===session.uid;
     var canDel = chef || (mine && (Date.now()-(n.ts||0) < 3600000));
     var del = canDel ? '<button class="pp-note-del" data-notedel="'+esc(n.id)+'">löschen</button>' : '';
@@ -35396,10 +35594,13 @@ function renderPutzNotes(){
        den Geraeten gibt es den Weg schon — eine Defektmeldung erzeugt
        eine Aufgabe —, beim Putzplan fehlte er.
 
-       Nur fuer die Leitung: anlegen darf laut firestore.rules ohnehin
-       nur sie. Ein Knopf, der beim Mitarbeiter in eine Fehlermeldung
-       laeuft, waere eine Sackgasse mit Einladung. */
-    var machen = chef ? '<button class="pp-note-tat" data-notetask="'+esc(n.id)+'">→ Putzaufgabe</button>' : '';
+       Putzaufgaben legt laut firestore.rules nur die Leitung an — ein
+       Knopf, der beim Mitarbeiter in eine Fehlermeldung laeuft, waere
+       eine Sackgasse mit Einladung. Eine AUFGABE darf seit dem 13.8.
+       jeder anlegen; dort steht der Weg deshalb für alle. */
+    var machen = art==='aufgabe'
+      ? '<button class="pp-note-tat" data-notetask="'+esc(n.id)+'">→ Aufgabe</button>'
+      : (chef ? '<button class="pp-note-tat" data-notetask="'+esc(n.id)+'">→ Putzaufgabe</button>' : '');
     // Gleiche Darstellung wie beim Abhaken: Kürzel vorne, Konto in Klammern
     var wer = n.kuerzel
       ? esc(n.kuerzel)+' <span class="pp-konto">('+esc(n.by||'')+')</span>'
@@ -35410,23 +35611,25 @@ function renderPutzNotes(){
   box.querySelectorAll('[data-notetask]').forEach(function(b){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-notetask'), n=null;
-      _ppNotes.forEach(function(x){ if(x.id===id) n=x; });
+      liste.forEach(function(x){ if(x.id===id) n=x; });
       if(!n) return;
+      var titel=String(n.text||'').trim().slice(0,120);
+      /* Die Notiz bleibt stehen. Sie automatisch zu loeschen hiesse,
+         jemandem seine Nachricht wegzunehmen, weil man sie gelesen hat —
+         der Loeschknopf steht daneben, das ist eine eigene Entscheidung. */
+      if(art==='aufgabe'){ aufgabeAnlegenOeffnen(titel, sk); return; }
       /* Anlegen-Zustand, dann den Text hineinschreiben: das Fenster
          leert das Feld beim Oeffnen, also erst danach setzen. */
       oeffnePutzAufgabe();
       var f=$('ppTitle');
-      if(f){ f.value=String(n.text||'').trim().slice(0,120); }
-      /* Die Notiz bleibt stehen. Sie automatisch zu loeschen hiesse,
-         jemandem seine Nachricht wegzunehmen, weil man sie gelesen hat —
-         der Loeschknopf steht daneben, das ist eine eigene Entscheidung. */
+      if(f){ f.value=titel; }
     });
   });
   box.querySelectorAll('[data-notedel]').forEach(function(b){
     b.addEventListener('click',function(){
       var id=b.getAttribute('data-notedel');
-      S('studios').doc(_ppStudioKey).collection('cleaningNotes').doc(id).delete()
-        .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
+      S('studios').doc(sk).collection('cleaningNotes').doc(id).delete()
+        .then(function(){ schedulePutzplanSheets(sk); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
@@ -36108,9 +36311,14 @@ function todoBlattOeffnen(t, sk){
   $('tbWho').textContent=t.title||'Aufgabe';
   $('tbWhere').textContent=studioName(sk)+(t.due?' · fällig '+fmtTag(new Date(t.due), true):'');
 
-  // Ohne Foto steht die Kamera schon in der Fußzeile der Aufgabe – hier
-  // stünde sie ein zweites Mal.
-  var eintraege = t.photo ? [{ id:'foto', ico:ikon('foto'), txt:'Foto ersetzen' }] : [];
+  /* Runde 147: das Foto steht nur noch hier (vorher als Kamera in der
+     Zeile), dazu das Danke — die Zeile ist gebaut wie ein Putzpunkt. */
+  var eintraege = [{ id:'foto', ico:ikon('foto'), txt:t.photo ? 'Foto ersetzen' : 'Foto hinzufügen' }];
+  if(done && t.doneByUid && session && t.doneByUid!==session.uid){
+    var bedankt=dankeGueltig(t).some(function(e){ return e.uid===session.uid; });
+    eintraege.push({ id:'danke', ico:ikon('herz'),
+      txt:(bedankt ? 'Danke zurücknehmen' : 'Danke sagen')+(t.doneBy ? ' an '+t.doneBy : '') });
+  }
   if(canManage()){
     eintraege.push({ id:'bearbeiten', ico:ikon('stift'), txt:'Bearbeiten' });
     if(t.due && !done){
@@ -36145,6 +36353,7 @@ function todoBlattAktion(was){
   todoBlattSchliessen();
 
   if(was==='foto'){ _todoPhotoTarget={ sk:sk, id:t.id }; $('todoFileShared').click(); return; }
+  if(was==='danke'){ dankeUmschalten(sk, t.id, null); return; }
   if(was==='bearbeiten') return openTodoEdit(t, sk);
 
   if(was==='plus1' || was==='plus7' || was==='keine'){
@@ -36431,6 +36640,35 @@ function speichereProbe(btn){
    Das Fenster ist deshalb absichtlich klein. Alles, was mehr kann —
    Wiederholung, Zuweisung, mehrere Studios, Teilschritte, Foto —
    bleibt im Formular der Verwaltung. */
+/* „+ Neu" auf der Aufgabenseite (und „→ Aufgabe" an einer Notiz).
+   Wie beim Putzplan ist das Studio vorausgewählt, das oben in der
+   Leiste steht — wer auf der Seite von Hürth anlegt, meint in neun von
+   zehn Fällen Hürth (Runde 147). Die Leitung kommt ins volle Formular,
+   alle anderen ins kleine Fenster. */
+function aufgabeAnlegenOeffnen(titel, sk){
+  if(!canManage()){
+    oeffneEigeneAufgabe();
+    var sel=$('otStudio');
+    if(sel && sk && [].some.call(sel.options, function(o){ return o.value===sk; })) sel.value=sk;
+    if(titel){ var ot=$('otTitle'); if(ot) ot.value=titel; }
+    return;
+  }
+  showView('chef');
+  setTimeout(function(){
+    showChefTab('erstellen');
+    var box=$('ntStudios');
+    if(box && sk && !box.querySelector('input:checked')){
+      [].forEach.call(box.querySelectorAll('input'), function(cb){
+        if(cb.value===sk && !cb.disabled){ cb.checked=true; cb.parentElement.classList.add('on'); }
+      });
+    }
+    var f=$('ntTitle');
+    if(f){
+      if(titel) f.value=titel;
+      sanftInsBild(f,{behavior:'smooth',block:'center'}); setTimeout(function(){ f.focus(); },250);
+    }
+  }, 120);
+}
 function oeffneEigeneAufgabe(){
   var sel=$('otStudio'); if(!sel) return;
   if(!((session&&session.studios)||[]).length){ toast('Dir ist kein Studio zugeteilt.',true); return; }
@@ -36788,6 +37026,7 @@ function foldZahlen(){
   foldZahl('shop', fehlt? fehlt+' Artikel' : 'nichts fehlt', fehlt?'warn':'');
   // Putzplan-Notizen
   foldZahl('ppnotes', _ppNotes.length ? _ppNotes.length+'' : '', '');
+  foldZahl('tdnotes', _tdNotes.length ? _tdNotes.length+'' : '', '');
   // Papierkorb
   foldZahl('trash', _trash.length ? _trash.length+'' : '', '');
 }
@@ -38793,15 +39032,9 @@ function bindActions(){
   // „+ Neue Aufgabe" auf der Aufgabenseite: führt direkt ins Formular,
   // statt drei Wechsel über die Verwaltung zu verlangen.
   var tn=$('todoNew');
-  if(tn) tn.addEventListener('click',function(){
-    if(!canManage()){ oeffneEigeneAufgabe(); return; }
-    showView('chef');
-    setTimeout(function(){
-      showChefTab('erstellen');
-      var f=$('ntTitle');
-      if(f){ sanftInsBild(f,{behavior:'smooth',block:'center'}); setTimeout(function(){ f.focus(); },250); }
-    }, 120);
-  });
+  if(tn) tn.addEventListener('click',function(){ aufgabeAnlegenOeffnen('', _todoStudio); });
+  var tdNa=$('tdNoteAdd'); if(tdNa) tdNa.addEventListener('click', addTdNote);
+  var tdNi=$('tdNoteInput'); if(tdNi) tdNi.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); addTdNote(); } });
 
   var pbN=$('pbNew'); if(pbN) pbN.addEventListener('click', oeffneProbe);
   var pbC=$('pbClose'); if(pbC) pbC.addEventListener('click', schliesseProbe);
@@ -38919,15 +39152,19 @@ function bindActions(){
     tick(8); renderTodos();
   });
   // Sortierung der Aufgaben
+  /* Runde 147: „Standard" IST jetzt „nach Fälligkeit", in Gruppen wie
+     im Putzplan. Eine eigene Wahl „Nach Fälligkeit" daneben hiesse
+     zweimal dasselbe; eine gemerkte alte Wahl landet über todoSortArt()
+     im Standard. */
+  if(sortWahl('todo','standard')==='faellig') sortSetzen('todo','standard');
   sortFeld($('todoSort'), 'todo', [
-    {id:'standard', label:'Sortierung: Standard'},
-    {id:'faellig',  label:'Nach Fälligkeit'},
+    {id:'standard', label:'Nach Fälligkeit'},
+    {id:'tageszeit',label:'Nach Tageszeit'},
     {id:'name',     label:'Nach Name'},
     {id:'prio',     label:'Nach Dringlichkeit'},
-    {id:'tageszeit',label:'Nach Tageszeit'},
     {id:'neu',      label:'Neueste zuerst'}
-  ], 'standard', function(){ _todoSort=sortWahl('todo','standard'); renderTodos(); });
-  _todoSort=sortWahl('todo','standard');
+  ], 'standard', function(){ _todoSort=todoSortArt(); renderTodos(); });
+  _todoSort=todoSortArt();
   // Material-Suche
   // Einkaufsliste: drucken, als Excel, in die Zwischenablage
   var shP=$('shopPrint'); if(shP) shP.addEventListener('click', printShoppingList);
@@ -39478,24 +39715,6 @@ function bindActions(){
   if(pinBtn) pinBtn.addEventListener('click',function(){ ichPinSpeichern(this); });
 
   loeschAntragBinden();
-
-  // ── Auf ein Studio eingrenzen ──
-  var tsc=$('todoStudioChip');
-  if(tsc) tsc.addEventListener('click', studioWaehlerOeffnen);
-  var swc=$('studioWahlClose');
-  if(swc) swc.addEventListener('click', studioWaehlerSchliessen);
-  var swl=$('studioWahlListe');
-  if(swl) swl.addEventListener('click', function(e){
-    var b=e.target.closest('[data-studiowahl]'); if(!b) return;
-    _todoStudio = b.getAttribute('data-studiowahl');
-    studioWaehlerSchliessen(); tick(8); renderTodos();
-    var sa=document.querySelector('#view-todos .scroll-area');
-    if(sa) sa.scrollTop=0;
-  });
-  var swm=$('studioModal');
-  if(swm) swm.addEventListener('click', function(e){
-    if(e.target===swm) studioWaehlerSchliessen();
-  });
 
   // ── Was ist neu ──
   var npl=$('neuPille'); if(npl) npl.addEventListener('click', function(){ tick(8); neuOeffnen(); });

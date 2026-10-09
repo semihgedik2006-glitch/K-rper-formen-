@@ -38,7 +38,11 @@ const SP = process.env.SP || __dirname;
   }));
   console.log('AUFGABEN:', JSON.stringify(t, null, 1));
 
-  // Sortierung testen
+  // Sortierung testen. Seit Runde 147 liegt sie unter „Filter" — aus dem
+  // Betrieb: „GENAU so wie der purtzplan", und dort klappt „Filter" Suche
+  // und Sortierung erst auf.
+  await page.click('#tdFilterKnopf');
+  await page.waitForTimeout(200);
   await page.selectOption('#todoSort', 'name');
   await page.waitForTimeout(400);
   const sorted = await page.evaluate(() => [...document.querySelectorAll('.t-title')].map(x => x.textContent.replace(/🔁.*|⚠.*|für.*/g, '').trim()).slice(0, 4));

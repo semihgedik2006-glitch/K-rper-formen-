@@ -41,7 +41,11 @@ function pruefe(was, bedingung, hinweis) {
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
-    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    /* Seit Runde 147 zeigt die Liste EIN Studio, oben gewählt („GENAU so
+       wie der purtzplan"). Gemessen wird hier die lange Liste — die gibt
+       es unter „Alle Studios", also wird genau das gewählt (kf_todo_studio
+       = '' heisst „Alle Studios"). */
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); localStorage.setItem('kf_todo_studio', ''); });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3300);
 
