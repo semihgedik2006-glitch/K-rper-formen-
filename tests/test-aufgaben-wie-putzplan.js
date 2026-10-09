@@ -172,6 +172,19 @@ const GRUPPEN = () => [...document.querySelectorAll('#todoArea .pp-gruppe')].map
     pruefe('„Filter" und „Wer hakt ab?" sind zu, bis man sie öffnet', bau.werkzeugeZu && bau.werZu);
     pruefe('Kein Detailfeld und keine Spalten Liste/Detail mehr', !bau.detail && !bau.spalten);
     pruefe('Notizen-Karte wie im Putzplan', bau.notizen);
+    /* Auch die HÖHE der Leiste: beim ersten Anlauf brach sie bei 430 px
+       wegen eines längeren Fortschrittstextes in drei Reihen. */
+    for (const [w, h] of [[430, 932], [390, 844], [1440, 900]]) {
+      await p.setViewportSize({ width: w, height: h }); await p.waitForTimeout(250);
+      await zuDenAufgaben(p);
+      const tdH = await p.evaluate(() => Math.round(document.getElementById('tdLeiste').getBoundingClientRect().height));
+      await p.evaluate(() => { const s = document.querySelector('[data-subview="putzplan"]'); if (s) s.click(); });
+      await p.waitForTimeout(600);
+      const ppH = await p.evaluate(() => Math.round(document.getElementById('ppLeiste').getBoundingClientRect().height));
+      pruefe(w + ' px: die Leiste ist so hoch wie im Putzplan (' + tdH + ' / ' + ppH + ' px)', tdH > 0 && Math.abs(tdH - ppH) <= 2);
+    }
+    await p.setViewportSize({ width: 1440, height: 900 }); await p.waitForTimeout(250);
+    await zuDenAufgaben(p);
     await p.click('#tdFilterKnopf'); await p.waitForTimeout(200);
     pruefe('„Filter" klappt die Werkzeuge auf',
       await p.evaluate(() => !document.getElementById('tdWerkzeuge').hidden &&
@@ -202,8 +215,12 @@ const GRUPPEN = () => [...document.querySelectorAll('#todoArea .pp-gruppe')].map
     const fort = await p.evaluate(() => ({ t: document.getElementById('tdProgress').textContent,
       w: document.getElementById('tdFortBalken').style.width }));
     const n = woche ? 9 : 8;
-    pruefe('Fortschritt über alle: „2 von ' + n + ' erledigt · 1 überfällig", Balken gesetzt',
-      fort.t === '2 von ' + n + ' erledigt · 1 überfällig' && fort.w === Math.round(2 / n * 100) + '%', JSON.stringify(fort));
+    /* Derselbe Satz wie im Putzplan, OHNE „· 1 überfällig": mit dem
+       Zusatz brach die Leiste bei 430 px in eine dritte Reihe (154 statt
+       102 px hoch, test-rahmen). Die Zahl steht ohnehin am Gruppenkopf
+       „Überfällig" und in der Studio-Auswahl. */
+    pruefe('Fortschritt über alle: „2 von ' + n + ' erledigt", Balken gesetzt',
+      fort.t === '2 von ' + n + ' erledigt' && fort.w === Math.round(2 / n * 100) + '%', JSON.stringify(fort));
     const zeile = await p.evaluate(() => {
       const e = document.querySelector('[data-id="a-erl"] .pp-meta');
       const o = document.querySelector('[data-id="a-heute"] .pp-meta');

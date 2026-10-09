@@ -347,8 +347,9 @@ dieselben Gruppen mit „x von y", dieselben Zeilen.
   Studios"** wählen; dann steht an jeder Zeile ihr Studio. Ein Studio
   mit Überfälligem sagt es schon in der Auswahl („Hürth · 2 überfällig").
   Die Wahl bleibt auf dem Gerät.
-- **Fortschritt** – „5 von 12 erledigt · 2 überfällig", mit Balken. Er
-  zählt immer alle Aufgaben der Auswahl, nie nur die gefilterten.
+- **Fortschritt** – „5 von 12 erledigt", mit Balken. Er zählt immer alle
+  Aufgaben der Auswahl, nie nur die gefilterten. Wie viele überfällig
+  sind, steht am Gruppenkopf „Überfällig" und in der Studio-Auswahl.
 - **Wer hakt ab?** – dasselbe Kürzel wie im Putzplan (eines je Gerät). Es
   wird beim Abhaken mitgeschrieben: „✓ AB (Studio Hürth) · 14:20".
 - **Filter** – klappt Suche, Schnellfilter und Sortierung auf. Ist etwas
