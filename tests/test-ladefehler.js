@@ -111,10 +111,19 @@ async function knopfMessen(p, sel) {
   {
     const p = await oeffne(b, 1440, 900, 'leiter', { 'studio-6/todos': 'permission-denied' });
     await zu(p, 'todos');
+    /* Seit Runde 147 steht oben EIN Studio („GENAU so wie der
+       purtzplan"). Dass die Aufgaben des anderen Studios trotzdem da
+       sind und nach „Nochmal versuchen" mehr dazukommen, sieht man
+       unter „Alle Studios" — das wählt die Leitung mit zwei Studios. */
+    await p.selectOption('#todoStudioWahl', '');
+    await p.waitForTimeout(500);
     const m = await meldung(p, 'lf-todos');
     pruefe('die Meldung steht in der Aufgabenliste', !!m, JSON.stringify(m));
     pruefe('sie nennt das Studio und den Grund', !!m && /Die Aufgaben aus .+ liessen sich gerade nicht laden/.test(m.text) && /Berechtigung/.test(m.text), m && m.text);
-    pruefe('und sagt, was trotzdem da ist', !!m && /anderen Studios stehen unten/.test(m.text), m && m.text);
+    /* Vorher: „Die aus den anderen Studios stehen unten." Ein „unten"
+       gibt es seit Runde 147 nicht mehr (die Studios stehen in der
+       Auswahl oben); der Satz ist jetzt derselbe wie beim Putzplan. */
+    pruefe('und sagt, was trotzdem da ist', !!m && /anderen Studios sind davon nicht betroffen/.test(m.text), m && m.text);
     const da = await p.evaluate(() => ({ zeilen: document.querySelectorAll('#todoArea .todo').length }));
     pruefe('die Aufgaben aus dem anderen Studio SIND da (' + da.zeilen + ' Zeilen)', da.zeilen > 0, JSON.stringify(da));
 
