@@ -15471,3 +15471,9 @@ Vier Rückfragen, vier Antworten:
     „…".
   - `test-design-115`: Balken der Leiste statt Ring.
   - `test-ueberblick`: Eingrenzen über die Auswahl statt über den Chip.
+
+**Durchläufe:** Oberfläche 184 / 184 grün (`ZEIT=420`, siehe oben),
+Regeln 36 / 36 Dateien grün im Emulator. **Nicht prüfbar von hier:** der
+echte Anmeldeweg mit dem Firebase-SDK (Proxy-Zertifikat) und die
+ausgelieferte Regel am Produktionsprojekt. Der Übergang für
+`doneKuerzel` fängt den Fall ab, dass die App vor der Regel draußen ist.
