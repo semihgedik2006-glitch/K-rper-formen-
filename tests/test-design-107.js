@@ -12,9 +12,8 @@
       Balken; folgt der gewählten Kategorie. Gegenprobe: die Zahl
       stimmt mit den Modulen überein, die unten als erledigt markiert
       sind.
-   3. AUFGABEN (Ideen Nr. 26): An einer OFFENEN Aufgabe steht „Foto"
-      neben der Kamera; an einer erledigten nicht. Die Kamera trifft
-      man 44 × 44, ohne dass die Zeile höher wird.
+   3. AUFGABEN (Ideen Nr. 26, seit Runde 147 hinter „…"): „Foto
+      hinzufügen" ist der erste Eintrag im Blatt, „…" trifft man 44 × 44.
    4. RECHNER (Ideen Nr. 29): Unten in der Seitenleiste steht
       „Tastenkürzel ?", ein Klick öffnet die Übersicht; die
       Seitenleiste verrät beim Darüberfahren die Taste. Am Handy nicht.
@@ -115,7 +114,15 @@ const nav = (p, g) => p.evaluate((g) => document.querySelector('.mobnav [data-gr
     await p.close();
   }
 
-  console.log('\n── 3. Aufgaben: „Foto" an offenen Aufgaben ──');
+  /* Seit Runde 147 steht „Foto" nicht mehr in der Zeile, sondern als
+     ERSTER Eintrag im Blatt hinter „…" — auf ausdrücklichen Wunsch:
+     „GENAU so wie der purtzplan", Rückfrage zum Detailfeld beantwortet
+     mit „Weg, wie im Putzplan" (Foto, Grund, Frist und Danke hinter
+     „…"). Der Zielkonflikt mit Idee Nr. 26 (die kleine graue Kamera
+     wurde kaum gefunden) ist in docs/FORTSCHRITT.md, Runde 147, benannt.
+     Geprüft wird jetzt: „…" trifft man 44 × 44 an jeder offenen Aufgabe,
+     und „Foto hinzufügen" steht im Blatt ganz oben, ≥ 44 hoch. */
+  console.log('\n── 3. Aufgaben: „Foto hinzufügen" hinter „…" ──');
   for (const [w, h] of [[320, 568], [390, 844], [430, 932], [820, 1180]]) {
     const p = await oeffne(b, w, h);
     await nav(p, 'g-arbeit'); await p.waitForTimeout(1200);
@@ -123,20 +130,23 @@ const nav = (p, g) => p.evaluate((g) => document.querySelector('.mobnav [data-gr
       await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
       const r = await p.evaluate(async (SRC) => {
         const T = eval('(' + SRC + ')');
-        const offen = document.querySelector('#todoArea .todo:not(.done) .t-cam');
-        const erledigt = document.querySelector('#todoArea .todo.done .t-cam');
-        if (!offen) return null;
-        offen.scrollIntoView({ block: 'center' });
+        const mehr = document.querySelector('#todoArea .todo:not(.done) .t-mehr');
+        if (!mehr) return null;
+        mehr.scrollIntoView({ block: 'center' });
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        return { wort: offen.textContent.trim(), m: T(offen), sichtbar: Math.round(offen.getBoundingClientRect().height),
-                 erledigtWort: erledigt ? erledigt.textContent.trim() : null };
+        const m = T(mehr);
+        mehr.click();
+        await new Promise(r => setTimeout(r, 400));
+        const erst = document.querySelector('#tbActs .ms-act');
+        const aus = { m, erstes: erst ? erst.textContent.trim() : null, h: erst ? Math.round(erst.getBoundingClientRect().height) : 0 };
+        document.getElementById('tbClose').click();
+        await new Promise(r => setTimeout(r, 300));
+        return aus;
       }, TREFFER.toString());
-      pruefe(w + ' px, ' + dichte + ': „Foto" steht an der offenen Aufgabe, Treffer ≥ 44 × 44 (' + (r && r.m.w) + ' × ' + (r && r.m.h) + ')',
-        !!r && r.wort === 'Foto' && r.m.w >= 44 && r.m.h >= 44, JSON.stringify(r));
-      if (dichte === 'normal') {
-        pruefe(w + ' px: die Zeile wird dadurch nicht höher (Knopf sichtbar ' + (r && r.sichtbar) + ' px)', !!r && r.sichtbar <= 30);
-        if (r && r.erledigtWort !== null) pruefe(w + ' px: GEGENPROBE an einer erledigten Aufgabe nur das Zeichen', r.erledigtWort === '', r.erledigtWort);
-      }
+      pruefe(w + ' px, ' + dichte + ': „…" an der offenen Aufgabe trifft ≥ 44 × 44 (' + (r && r.m.w) + ' × ' + (r && r.m.h) + ')',
+        !!r && r.m.w >= 44 && r.m.h >= 44, JSON.stringify(r));
+      pruefe(w + ' px, ' + dichte + ': im Blatt steht „Foto hinzufügen" ganz oben, ≥ 44 hoch',
+        !!r && r.erstes === 'Foto hinzufügen' && r.h >= 44, JSON.stringify(r));
     }
     await p.close();
   }

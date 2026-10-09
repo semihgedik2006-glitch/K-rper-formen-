@@ -143,6 +143,17 @@ const GLEITEN = async () => {
     const p = await oeffne(b, 1440, 900);
     await p.evaluate(() => [...document.querySelectorAll('[data-group="g-arbeit"]')].find(x => x.getClientRects().length).click());
     await p.waitForTimeout(1200);
+    /* Seit Runde 147 zeigt die Liste EIN Studio, oben gewählt („GENAU so
+       wie der purtzplan"). Mehr als zwölf Zeilen gibt es in der Demo nur
+       unter „Alle Studios" — also genau das wählen. */
+    await p.selectOption('#todoStudioWahl', '');
+    await p.waitForTimeout(800);
+    /* Und flach nach Name: in den Gruppen nach Fälligkeit steht alles
+       Überfällige ganz oben — unterhalb der zwölften Zeile gäbe es dann
+       nichts zu prüfen, und „darunter nicht" wäre leer bestanden. */
+    await p.click('#tdFilterKnopf');
+    await p.selectOption('#todoSort', 'name');
+    await p.waitForTimeout(800);
     const r = await p.evaluate(() => {
       const oben = [...document.querySelectorAll('.todo:not(.ohne-ein) .t-due.over')].map(x => getComputedStyle(x).animationName);
       const unten = [...document.querySelectorAll('.todo.ohne-ein .t-due.over')].map(x => getComputedStyle(x).animationName);

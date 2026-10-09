@@ -156,7 +156,7 @@ function pruefe(name, bedingung, zusatz) {
     const erste = document.querySelector('#studioGrid [data-open-studio]');
     if (!erste) return null;
     erste.click();
-    return true;
+    return erste.getAttribute('data-open-studio');
   });
   await page.waitForTimeout(800);
   const gelandet = await page.evaluate(() => !!document.querySelector('#view-todos.show'));
@@ -164,31 +164,34 @@ function pruefe(name, bedingung, zusatz) {
 
   /* Und sie GRENZT EIN, statt nur hinzuscrollen. Vorher landete man in
      derselben Liste aus vierzehn Studios, nur weiter unten — 238
-     Bedienelemente auf zwölf Bildschirmhöhen. */
-  const eng = await page.evaluate(() => ({
-    koepfe: document.querySelectorAll('#todoArea .studio-head').length,
-    chip: (document.getElementById('todoStudioChip') || {}).textContent || '',
-    unterzeile: (document.getElementById('todoSub') || {}).textContent || ''
-  }));
-  console.log('NACH DEM ANTIPPEN:', JSON.stringify(eng));
-  pruefe('die Liste zeigt danach NUR dieses Studio', eng.koepfe === 1, JSON.stringify(eng));
-  pruefe('und sagt WELCHES — am Chip und in der Unterzeile',
-    /^Nur /.test(eng.unterzeile.trim()) && eng.chip.trim() !== 'Alle Studios',
-    JSON.stringify(eng));
+     Bedienelemente auf zwölf Bildschirmhöhen.
 
-  /* Zurück über denselben Chip. Ein Weg hinein, der keinen Weg hinaus
-     hat, ist eine Falle — und der Chip ist der einzige Ort, an dem der
-     Zustand überhaupt sichtbar ist. */
-  const zurueckOk = await page.evaluate(async () => {
-    document.getElementById('todoStudioChip').click();
-    await new Promise(r => setTimeout(r, 500));
-    const alle = document.querySelector('#studioWahlListe [data-studiowahl=""]');
-    if (!alle) return -1;
-    alle.click();
-    await new Promise(r => setTimeout(r, 600));
-    return document.querySelectorAll('#todoArea .studio-head').length;
+     Seit Runde 147 steht das Studio oben in einer Auswahl wie im
+     Putzplan („GENAU so wie der purtzplan"); der Chip mit dem Fenster
+     „Studio wählen" ist weg. Dieselben Aussagen, am neuen Ort: nur
+     dieses Studio, die Auswahl sagt welches, „Alle Studios" führt
+     zurück. */
+  const eng = await page.evaluate(() => {
+    const sel = document.getElementById('todoStudioWahl');
+    return {
+      studios: [...new Set([...document.querySelectorAll('#todoArea .todo')].map(t => t.dataset.sid))],
+      zeilen: document.querySelectorAll('#todoArea .todo').length,
+      auswahl: sel && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : ''
+    };
   });
-  pruefe('„Alle Studios" bringt die ganze Liste zurück', zurueckOk > 1, 'Köpfe: ' + zurueckOk);
+  console.log('NACH DEM ANTIPPEN:', JSON.stringify(eng));
+  pruefe('die Liste zeigt danach NUR dieses Studio', eng.zeilen > 0 && eng.studios.length === 1, JSON.stringify(eng));
+  pruefe('und sagt WELCHES — oben in der Auswahl',
+    !!eng.auswahl && eng.auswahl.indexOf(klickbar) === 0, JSON.stringify(eng) + ' / ' + klickbar);
+
+  const zurueckOk = await page.evaluate(async () => {
+    const sel = document.getElementById('todoStudioWahl');
+    if (![...sel.options].some(o => o.value === '')) return -1;
+    sel.value = ''; sel.dispatchEvent(new Event('change'));
+    await new Promise(r => setTimeout(r, 600));
+    return new Set([...document.querySelectorAll('#todoArea .todo')].map(t => t.dataset.sid)).size;
+  });
+  pruefe('„Alle Studios" bringt die ganze Liste zurück', zurueckOk > 1, 'Studios in der Liste: ' + zurueckOk);
 
   await page.screenshot({ path: path.join(SP, 'ueberblick.png') });
   await b.close();

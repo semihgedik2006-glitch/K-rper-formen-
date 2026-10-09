@@ -32,7 +32,10 @@ async function seite(b, rolle, ruhig) {
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
-  await p.addInitScript(() => localStorage.setItem('kf_prefs', JSON.stringify({ theme: 'dark' })));
+  /* kf_todo_studio '' = „Alle Studios" (Runde 147, Studio oben wie im
+     Putzplan): C1 braucht erledigte UND offene Aufgaben in der Liste, und
+     die gibt es in der Demo nur über alle Studios zusammen. */
+  await p.addInitScript(() => { localStorage.setItem('kf_prefs', JSON.stringify({ theme: 'dark' })); localStorage.setItem('kf_todo_studio', ''); });
   await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3200);
   await p.evaluate(() => { const t = document.getElementById('tourWeg'); if (t && t.offsetParent) t.click(); });

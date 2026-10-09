@@ -59,8 +59,18 @@ async function offeneLautListe(p) {
     if (t) t.click();
   });
   await p.waitForTimeout(1100);
+  /* Seit Runde 147 steht oben EIN Studio („GENAU so wie der
+     purtzplan"), und die Zahl steht im Fortschritt der Leiste
+     (#tdProgress) statt am alten Zähler. Das Abzeichen zählt ALLE
+     eigenen Studios — verglichen wird deshalb mit „Alle Studios", wo es
+     die Wahl gibt. */
+  await p.evaluate(() => {
+    const s = document.getElementById('todoStudioWahl');
+    if (s && [...s.options].some(o => o.value === '')) { s.value = ''; s.dispatchEvent(new Event('change')); }
+  });
+  await p.waitForTimeout(500);
   return await p.evaluate(() => {
-    const z = document.getElementById('todoCount');
+    const z = document.getElementById('tdProgress');
     const m = /(\d+)\s*von\s*(\d+)/.exec(z ? z.textContent : '');
     return m ? { fertig: +m[1], gesamt: +m[2], offen: +m[2] - +m[1] } : null;
   });

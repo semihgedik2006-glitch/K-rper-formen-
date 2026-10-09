@@ -338,54 +338,84 @@ dazu („☺" für Reagieren, „↪" für Weiterleiten).
 
 ## 7. Aufgaben
 
+Seit dem 9.10.2026 **aufgebaut wie der Putzplan**: dieselbe Leiste oben,
+dieselben Gruppen mit „x von y", dieselben Zeilen.
+
+### Die Leiste
+- **Studio** – vorne in der Leiste. Wer mehr als ein Studio hat
+  (Geschäftsführung, Leitung mehrerer Studios), kann auch **„Alle
+  Studios"** wählen; dann steht an jeder Zeile ihr Studio. Ein Studio
+  mit Überfälligem sagt es schon in der Auswahl („Hürth · 2 überfällig").
+  Die Wahl bleibt auf dem Gerät.
+- **Fortschritt** – „5 von 12 erledigt", mit Balken. Er zählt immer alle
+  Aufgaben der Auswahl, nie nur die gefilterten. Wie viele überfällig
+  sind, steht am Gruppenkopf „Überfällig" und in der Studio-Auswahl.
+- **Wer hakt ab?** – dasselbe Kürzel wie im Putzplan (eines je Gerät). Es
+  wird beim Abhaken mitgeschrieben: „✓ AB (Studio Hürth) · 14:20".
+- **Filter** – klappt Suche, Schnellfilter und Sortierung auf. Ist etwas
+  davon an, steht die Zahl auf dem Knopf („Filter 2").
+- **Drucken** – ein Zettel mit allen offenen Aufgaben, Kästchen und
+  Kürzelfeld.
+
+### Gruppen
+- Standard: **nach Fälligkeit** – Überfällig · Heute · Diese Woche ·
+  Später · Ohne Frist. Tägliche Aufgaben stehen unter „Heute",
+  wöchentliche unter „Diese Woche". Was heute erledigt wurde, obwohl die
+  Frist schon vorbei war, steht unter „Heute" – „Überfällig" zeigt nur,
+  was noch liegt.
+- Innerhalb einer Gruppe: offene vor erledigten, dann **was jetzt dran
+  ist** (Tageszeit), dann die Frist.
+- Sortierung **„Nach Tageszeit"**: Gruppen „Jetzt · Abends", „Jederzeit",
+  dann der Rest des Tages (bis 12 Uhr morgens, bis 17 Uhr mittags, danach
+  abends).
+- Nach Name, Dringlichkeit oder „Neueste zuerst" ist die Liste flach.
+- **Am PC stehen die Gruppen als Spalten nebeneinander**, am Handy
+  untereinander.
+
 ### Ansehen und abhaken
-- Aufgaben je Studio, mit Titel, Beschreibung und wer sie erstellt hat.
+- **Abhaken** durch Antippen des Kästchens **oder** durch Wischen nach rechts.
+- Unter dem Titel steht der Stand: „noch offen" oder wer mit welchem
+  Kürzel wann abgehakt hat; dazu „Ich übernehme das" oder für wen sie ist.
+- **Rückgängig-Leiste** erscheint kurz nach jeder Änderung.
+- **Teilschritte** – bis zu 20 je Aufgabe, einzeln abhakbar.
 - **Tageszeit** (seit 5.10.2026): „Morgens", „Mittags" oder „Abends" beim
   Anlegen und Bearbeiten, sonst „jederzeit"; die Marke steht an der Zeile.
-  Sortierung **„Nach Tageszeit"**: was jetzt dran ist, steht oben (bis 12
-  Uhr morgens, bis 17 Uhr mittags, danach abends), dann „jederzeit", dann
-  der Rest des Tages.
-- **Abhaken** durch Antippen des Kreises **oder** durch Wischen nach rechts.
-- Nach dem Abhaken stehen Name und Uhrzeit an der Aufgabe.
-- **Rückgängig-Leiste** erscheint kurz nach jeder Änderung.
-- **Teilschritte** – bis zu 20 je Aufgabe, einzeln abhakbar, mit
-  Fortschrittsbalken.
-- **Foto anhängen** als Nachweis – die Kamera steht in der Fußzeile der
-  Aufgabe.
 - **Dokument öffnen**, wenn die Aufgabe aus einem Dokument entstanden ist.
 - Erledigte verschwinden nach etwa 3 Stunden ins Archiv.
+- **Am PC mit der Tastatur:** ↑ ↓ wählen · Leertaste oder x abhaken ·
+  E bearbeiten (**L C**) · Enter öffnet „⋯".
 
-### Reihenfolge
-- **Überfälliges steht oben.** In der Standard-Sortierung kommen zuerst die
-  überfälligen Aufgaben (die mit der ältesten Frist zuerst), dann der Rest,
-  dann das Erledigte.
-- Für **L C**: **Studios mit überfälligen Aufgaben rutschen nach vorn**, alle
-  übrigen bleiben alphabetisch. Vorher lag eine überfällige Aufgabe in
-  Seelscheid hinter dreizehn Studio-Blöcken.
-
-### Filtern und finden
-- **Filter**: Alle · Nur offene · Überfällig · Für mich. **An jedem Filter
-  steht die Zahl**, wie viele Aufgaben er zeigen würde.
+### Filtern und finden (unter „Filter")
+- **Schnellfilter**: Alle · Nur offene · Überfällig · Für mich, dazu
+  **Dringend**. An jedem Filter steht die Zahl, wie viele Aufgaben er
+  zeigen würde.
 - **Suchfeld** innerhalb der Aufgaben.
-- **Sortierung**: Standard (Dringlichkeit), nach Fälligkeit, nach Name,
-  nach Erstellung.
+- **Sortierung**: Nach Fälligkeit (Standard, in Gruppen), Nach Tageszeit,
+  Nach Name, Nach Dringlichkeit, Neueste zuerst.
 - Findet ein Filter nichts, sagt der Hinweis **warum** und wie man wieder
   herauskommt – nicht „es gibt keine Aufgaben", wenn es welche gibt.
 
-### An einer Aufgabe (**L C**)
+### An einer Aufgabe
+- **L C**: **Stift** (bearbeiten) und **Papierkorb** stehen direkt in der
+  Zeile, wie im Putzplan. Gelöschtes landet im Papierkorb und lässt sich
+  kurz zurückholen.
+- **⋯** an jeder Aufgabe öffnet ein Blatt von unten:
+  - **Foto hinzufügen** bzw. **Foto ersetzen** – für alle;
+  - **Danke sagen** an den, der sie erledigt hat – für alle außer ihm
+    selbst; wer gedankt hat, steht danach an der Zeile;
+  - **Warum nicht erledigt?** – der Grund, für alle an offenen Aufgaben;
+  - **L C**: Bearbeiten · Frist einen Tag / eine Woche später · Frist
+    entfernen · Löschen. Gerechnet wird ab heute, nicht ab der alten Frist.
 
-Ein Tipp auf **⋯** öffnet ein Blatt von unten mit beschrifteten Einträgen:
-
-- **Bearbeiten** – Titel, Beschreibung, Frist, Zuweisung, Teilschritte.
-  Unveränderte Teilschritte behalten ihr Häkchen.
-- **Frist: einen Tag später** · **eine Woche später** · **Frist entfernen**.
-  Gerechnet wird ab heute, nicht ab der alten Frist – sonst bliebe sie
-  überfällig.
-- **Foto ersetzen**, wenn schon eines dranhängt.
-- **Löschen** – landet im Papierkorb.
+### Notizen
+- Unter den Aufgaben stehen **dieselben Notizen wie im Putzplan** – ein
+  Notizzettel je Studio, an beiden Stellen zu sehen. Aus einer Notiz wird
+  mit **„→ Aufgabe"** eine Aufgabe (der Text steht dann schon im Titel).
+  Bei „Alle Studios" ist die Karte ausgeblendet.
 
 ### Anlegen (**L C**)
-- **„+ Neu"** oben rechts auf der Aufgabenseite führt direkt ins Formular.
+- **„+ Neu"** oben rechts auf der Aufgabenseite führt direkt ins Formular;
+  das Studio, das oben gewählt ist, ist schon angekreuzt.
 - Titel, Beschreibung, **mehrere Studios gleichzeitig** oder alle.
 - **Fällig bis** – Datum, danach gilt sie als überfällig.
 - **Zuweisen** an eine bestimmte Person.
