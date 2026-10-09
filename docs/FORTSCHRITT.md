@@ -15388,6 +15388,29 @@ Vier Rückfragen, vier Antworten:
 - **Alte Sortierwahl.** Eine gemerkte Wahl „Nach Fälligkeit" (alte
   Sortierung) fiel zunächst nicht in die Gruppen. Der neue Test hat das
   gefunden; jetzt wird sie auf den Standard umgeschrieben.
+- **Gleiche Namen bei den Notizen.** Die Notizen der Aufgaben trugen
+  dieselben Namen wie die des Putzplans (`.pp-note`, `data-notetask`).
+  `test-putzplan-werkzeuge` traf deshalb „→ Aufgabe" statt
+  „→ Putzaufgabe". Jetzt heißen sie `td-note`, gestaltet wie die des
+  Putzplans.
+- **Drei Reihen bei 390 px.** Die Leiste brach bei 390 px in drei Reihen
+  (154 statt 102 px). Gründe: der Zusatz „· 2 überfällig" im
+  Fortschritt und die Auswahl, deren Breite sich nach der längsten
+  Option richtet (209 px). Jetzt gilt:
+  - der Fortschritt ist derselbe Satz wie im Putzplan;
+  - am gewählten Studio steht in der Auswahl keine Zahl, sie steht am
+    Gruppenkopf;
+  - am Handy ist die Auswahl höchstens 150 px breit, in Aufgaben UND
+    Putzplan.
+
+  Der Putzplan hätte mit Daten genauso drei Reihen gehabt; im ersten
+  Vergleich war er leer und deshalb niedriger. Der Test vergleicht jetzt
+  beide mit Daten.
+- **Zeitüberschreitungen.** `test-pc-durchsicht` (347 s) und
+  `test-video-hochladen` (255 s) brauchen auf dieser Maschine auch im
+  ALTEN Stand länger als die 240 s des Gesamtdurchlaufs. Gemessen ist das
+  gegen origin/main auf einem zweiten Server. Der letzte Durchlauf lief
+  deshalb mit `ZEIT=420`.
 
 **Warum so**
 - **Vorauswahl nach Dringlichkeit statt nach Alphabet.** Mit dem ersten
@@ -15426,8 +15449,9 @@ Vier Rückfragen, vier Antworten:
   Nirgends waagerechtes Scrollen.
 
 **Tests**
-- `tests/test-aufgaben-wie-putzplan.js` (53 Prüfungen). Gegen den alten
-  Stand rot, von Hand nachgeprüft.
+- `tests/test-aufgaben-wie-putzplan.js` (59 Prüfungen, mit der Höhe der
+  Leiste gegen den Putzplan). Gegen den alten Stand rot, von Hand
+  nachgeprüft.
 - `tests/rules/aufgabe-kuerzel.test.js` (14 Prüfungen, beide Welten).
   Gegen die alte Regel rot: vier Fehlschläge.
 - **Umgebaut, nicht gelockert** (Zitat steht jeweils im Test):
@@ -15439,3 +15463,11 @@ Vier Rückfragen, vier Antworten:
   - `test-aufgaben-tempo`: wählt „Alle Studios", weil es die lange Liste
     misst.
   - `test-all`: öffnet „Filter", bevor es sortiert.
+  - `test-block-c`, `test-gleiten-rahmen`, `test-startseite-offen`,
+    `test-ladefehler`: „Alle Studios", wo sie eine lange Liste oder alle
+    Studios brauchen. `test-gleiten-rahmen` sortiert zusätzlich nach
+    Name, weil in den Gruppen alles Überfällige oben steht.
+  - `test-block-d`, `test-design-107`: Danke und Foto im Blatt hinter
+    „…".
+  - `test-design-115`: Balken der Leiste statt Ring.
+  - `test-ueberblick`: Eingrenzen über die Auswahl statt über den Chip.
