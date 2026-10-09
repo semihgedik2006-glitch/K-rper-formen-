@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-sKKRQoYtOsYzSeGk7u8JGv4ILN3a93h/leTWL8WlYlE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-qJuZAKEOIT8InM6j5uHdl8veUt1nERoLgOuXB8a/zNs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1695,6 +1695,12 @@ body.nurlesen .kopf-plus{display:none !important}
 .pp-leiste{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;
   margin:var(--s2) 0 var(--s12)}
 .pp-leiste .pp-studiowahl{flex:0 1 auto;width:auto;max-width:240px;min-height:44px}
+/* Am Handy schmaler (Runde 147, Aufgaben und Putzplan zugleich): die
+   Breite der Auswahl richtet sich nach der LÄNGSTEN Option („Alle
+   Studios", „Ebertplatz"), gemessen 209 px. Daneben passten Balken und
+   „3 von 5 erledigt" bei 390 px nicht mehr — die Leiste brach in drei
+   Reihen (154 statt 102 px). 150 px reichen für jeden Studionamen. */
+@media(max-width:480px){ .pp-leiste .pp-studiowahl{max-width:150px} }
 .pp-fort{flex:1 1 72px;min-width:72px;height:8px;border-radius:var(--r-pille);
   background:var(--auf-2);overflow:hidden}
 .pp-fort i{display:block;height:100%;width:0;border-radius:var(--r-pille);
@@ -2790,22 +2796,22 @@ body.nurlesen .kopf-plus{display:none !important}
 .pp-edit:hover,.t-edit:hover{color:var(--accent-d);background:var(--tipp-1)}
 .pp-del svg,.pp-edit svg,.t-del svg,.t-edit svg{width:16px;height:16px}
 /* Notizen */
-.pp-note{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
+.pp-note,.td-note{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
   border-left:3px solid var(--accent-3);border-radius:var(--r-sm);margin-bottom:var(--s8);animation:rowIn .3s var(--ease-out) backwards}
-.pp-note-text{font-size:var(--t-md);white-space:pre-wrap;word-break:break-word}
+.pp-note-text,.td-note-text{font-size:var(--t-md);white-space:pre-wrap;word-break:break-word}
 /* Zwei Knoepfe rechts statt einem: der Name links, die Handlungen
    rechts. margin-left:auto am ersten schiebt beide an den Rand, ohne
    dass die Zeile bei einem langen Namen umbricht. */
-.pp-note-foot{display:flex;align-items:baseline;gap:var(--s10);margin-top:var(--s4);font-size:var(--t-2xs);color:var(--text-3)}
-.pp-note-foot > span{min-width:0;overflow-wrap:anywhere}
-.pp-note-del,.pp-note-tat{background:none;border:none;cursor:pointer;font-size:var(--t-2xs);padding:0;flex-shrink:0}
-.pp-note-del{color:var(--text-3)}
-.pp-note-foot > button:first-of-type{margin-left:auto}
-.pp-note-del:hover{color:var(--danger-tx)}
+.pp-note-foot,.td-note-foot{display:flex;align-items:baseline;gap:var(--s10);margin-top:var(--s4);font-size:var(--t-2xs);color:var(--text-3)}
+.pp-note-foot > span,.td-note-foot > span{min-width:0;overflow-wrap:anywhere}
+.pp-note-del,.pp-note-tat,.td-note-del,.td-note-tat{background:none;border:none;cursor:pointer;font-size:var(--t-2xs);padding:0;flex-shrink:0}
+.pp-note-del,.td-note-del{color:var(--text-3)}
+.pp-note-foot > button:first-of-type,.td-note-foot > button:first-of-type{margin-left:auto}
+.pp-note-del:hover,.td-note-del:hover{color:var(--danger-tx)}
 /* Nicht rot: aus einer Notiz eine Aufgabe zu machen ist die Handlung,
    die man haeufiger will, und keine, vor der man erschrecken soll. */
-.pp-note-tat{color:var(--accent-d);font-weight:600}
-.pp-note-tat:hover{text-decoration:underline}
+.pp-note-tat,.td-note-tat{color:var(--accent-d);font-weight:600}
+.pp-note-tat:hover,.td-note-tat:hover{text-decoration:underline}
 
 /* ============================================================
    BEWEGUNG IM APPLE-STIL
@@ -31592,7 +31598,12 @@ function todoStudioWahlBauen(liste){
       var ue=(cachedTodos[x.key]||[]).filter(function(t){
         return !isArchived(t) && !isDone(t) && t.due && jetzt>t.due;
       }).length;
-      return '<option value="'+esc(x.key)+'">'+esc(x.name)+(ue ? ' · '+ue+' überfällig' : '')+'</option>';
+      /* Am GEWÄHLTEN Studio ohne Zahl: die geschlossene Auswahl zeigt
+         dessen Text, und „Hürth · 1 überfällig" liess die Leiste bei
+         390 px in eine dritte Reihe umbrechen (gemessen 154 statt 102 px).
+         Seine Zahl steht ohnehin am Gruppenkopf „Überfällig". */
+      var zeig = ue && x.key!==_todoStudio;
+      return '<option value="'+esc(x.key)+'">'+esc(x.name)+(zeig ? ' · '+ue+' überfällig' : '')+'</option>';
     }).join('');
   /* Nur neu schreiben, wenn sich etwas geändert hat: ein Auswahlfeld,
      das gerade offen ist, klappt sonst bei jedem Haken eines Kollegen zu. */
@@ -31718,11 +31729,12 @@ function renderTodos(){
      — dieselbe Regel wie im Putzplan. */
   var jetzt=Date.now();
   var fertigAlle=alle.filter(function(x){ return isDone(x.t); }).length;
-  var ueberAlle=alle.filter(function(x){ return !isDone(x.t) && x.t.due && jetzt>x.t.due; }).length;
   var prog=$('tdProgress');
-  if(prog) prog.textContent = alle.length
-    ? fertigAlle+' von '+alle.length+' erledigt'+(ueberAlle ? ' · '+ueberAlle+' überfällig' : '')
-    : '';
+  /* Derselbe Satz wie im Putzplan. Ein Zusatz „· 2 überfällig" liess die
+     Leiste bei 430 px in eine dritte Reihe umbrechen (154 statt 102 px,
+     test-rahmen) — die Zahl steht ohnehin am Gruppenkopf „Überfällig"
+     und in der Studio-Auswahl. */
+  if(prog) prog.textContent = alle.length ? fertigAlle+' von '+alle.length+' erledigt' : '';
   var balken=$('tdFortBalken');
   if(balken) balken.style.width=(alle.length ? Math.round(fertigAlle/alle.length*100) : 0)+'%';
   tdLeisteSetzen();
@@ -35584,12 +35596,18 @@ function renderPutzNotes(){
    der Weg aus der Notiz heraus: „→ Putzaufgabe" oder „→ Aufgabe". */
 function notizenZeichnen(box, liste, sk, art){
   if(!box) return;
+  /* Eigene Namen fuer die Aufgaben-Seite (td-note, data-tdnote…): beide
+     Notizlisten stehen gleichzeitig im Dokument, und wer `.pp-note` oder
+     `[data-notetask]` ohne #ppNotes sucht, traefe sonst die der Aufgaben
+     — sie stehen weiter oben. Gefunden von test-putzplan-werkzeuge
+     („→ Putzaufgabe öffnet nichts"). Eine Klasse ist ein Name. */
+  var K = art==='aufgabe' ? 'td-note' : 'pp-note', A = art==='aufgabe' ? 'data-tdnote' : 'data-note';
   if(!liste.length){ box.innerHTML='<p style="color:var(--text-3);font-size:.88rem">Noch keine Notizen.</p>'; return; }
   var chef=canManage();
   box.innerHTML=liste.map(function(n){
     var mine=n.byUid===session.uid;
     var canDel = chef || (mine && (Date.now()-(n.ts||0) < 3600000));
-    var del = canDel ? '<button class="pp-note-del" data-notedel="'+esc(n.id)+'">löschen</button>' : '';
+    var del = canDel ? '<button class="'+K+'-del" '+A+'del="'+esc(n.id)+'">löschen</button>' : '';
     /* „Wischmopp ist kaputt" landete bisher hier und blieb liegen. Bei
        den Geraeten gibt es den Weg schon — eine Defektmeldung erzeugt
        eine Aufgabe —, beim Putzplan fehlte er.
@@ -35599,18 +35617,18 @@ function notizenZeichnen(box, liste, sk, art){
        eine Sackgasse mit Einladung. Eine AUFGABE darf seit dem 13.8.
        jeder anlegen; dort steht der Weg deshalb für alle. */
     var machen = art==='aufgabe'
-      ? '<button class="pp-note-tat" data-notetask="'+esc(n.id)+'">→ Aufgabe</button>'
-      : (chef ? '<button class="pp-note-tat" data-notetask="'+esc(n.id)+'">→ Putzaufgabe</button>' : '');
+      ? '<button class="'+K+'-tat" '+A+'task="'+esc(n.id)+'">→ Aufgabe</button>'
+      : (chef ? '<button class="'+K+'-tat" '+A+'task="'+esc(n.id)+'">→ Putzaufgabe</button>' : '');
     // Gleiche Darstellung wie beim Abhaken: Kürzel vorne, Konto in Klammern
     var wer = n.kuerzel
       ? esc(n.kuerzel)+' <span class="pp-konto">('+esc(n.by||'')+')</span>'
       : esc(n.by||'—');
-    return '<div class="pp-note"><div class="pp-note-text">'+markMentions(linkify(esc(n.text)))+'</div>'+
-      '<div class="pp-note-foot"><span>'+wer+' · '+fmtDateTime(n.ts)+'</span>'+machen+del+'</div></div>';
+    return '<div class="'+K+'"><div class="'+K+'-text">'+markMentions(linkify(esc(n.text)))+'</div>'+
+      '<div class="'+K+'-foot"><span>'+wer+' · '+fmtDateTime(n.ts)+'</span>'+machen+del+'</div></div>';
   }).join('');
-  box.querySelectorAll('[data-notetask]').forEach(function(b){
+  box.querySelectorAll('['+A+'task]').forEach(function(b){
     b.addEventListener('click',function(){
-      var id=b.getAttribute('data-notetask'), n=null;
+      var id=b.getAttribute(A+'task'), n=null;
       liste.forEach(function(x){ if(x.id===id) n=x; });
       if(!n) return;
       var titel=String(n.text||'').trim().slice(0,120);
@@ -35625,9 +35643,9 @@ function notizenZeichnen(box, liste, sk, art){
       if(f){ f.value=titel; }
     });
   });
-  box.querySelectorAll('[data-notedel]').forEach(function(b){
+  box.querySelectorAll('['+A+'del]').forEach(function(b){
     b.addEventListener('click',function(){
-      var id=b.getAttribute('data-notedel');
+      var id=b.getAttribute(A+'del');
       S('studios').doc(sk).collection('cleaningNotes').doc(id).delete()
         .then(function(){ schedulePutzplanSheets(sk); })
         .catch(function(e){ toast(errMsg(e),true); });

@@ -176,12 +176,17 @@ const GRUPPEN = () => [...document.querySelectorAll('#todoArea .pp-gruppe')].map
        wegen eines längeren Fortschrittstextes in drei Reihen. */
     for (const [w, h] of [[430, 932], [390, 844], [1440, 900]]) {
       await p.setViewportSize({ width: w, height: h }); await p.waitForTimeout(250);
-      await zuDenAufgaben(p);
+      await zuDenAufgaben(p); await studio(p, 'studio-6');
       const tdH = await p.evaluate(() => Math.round(document.getElementById('tdLeiste').getBoundingClientRect().height));
+      /* Beide mit Daten (Hürth): ein leerer Putzplan hat keinen
+         Fortschrittstext und wäre deshalb niedriger — ein Vergleich,
+         der nichts vergleicht. */
       await p.evaluate(() => { const s = document.querySelector('[data-subview="putzplan"]'); if (s) s.click(); });
       await p.waitForTimeout(600);
+      await p.selectOption('#ppStudio', 'studio-6'); await p.waitForTimeout(500);
       const ppH = await p.evaluate(() => Math.round(document.getElementById('ppLeiste').getBoundingClientRect().height));
       pruefe(w + ' px: die Leiste ist so hoch wie im Putzplan (' + tdH + ' / ' + ppH + ' px)', tdH > 0 && Math.abs(tdH - ppH) <= 2);
+      if (w < 1100) pruefe(w + ' px: höchstens zwei Reihen (≤ 110 px)', tdH <= 110, tdH + ' px');
     }
     await p.setViewportSize({ width: 1440, height: 900 }); await p.waitForTimeout(250);
     await zuDenAufgaben(p);
@@ -255,10 +260,18 @@ const GRUPPEN = () => [...document.querySelectorAll('#todoArea .pp-gruppe')].map
 
     /* ══ 6. Studio oben ══ */
     console.log('\n── 6. Studio oben ──');
+    /* Die Zahl steht an den ANDEREN Studios; am gewählten nicht — dessen
+       Text zeigt die geschlossene Auswahl, und mit Zahl brach die Leiste
+       bei 390 px in drei Reihen. Gelesen wird deshalb, während Brühl
+       gewählt ist. */
+    await studio(p, 'studio-7');
     const opt = await p.evaluate(() => [...document.querySelectorAll('#todoStudioWahl option')].map(o => o.value + '|' + o.textContent));
     pruefe('Auswahl: „Alle Studios" zuerst, dann die Studios', /^\|Alle Studios$/.test(opt[0]) && opt.length > 2, JSON.stringify(opt.slice(0, 4)));
-    pruefe('Ein Studio mit Überfälligem sagt es in der Auswahl („Hürth · 1 überfällig")',
+    pruefe('Ein anderes Studio mit Überfälligem sagt es in der Auswahl („Hürth · 1 überfällig")',
       opt.some(o => /^studio-6\|Hürth · 1 überfällig$/.test(o)), JSON.stringify(opt));
+    await studio(p, 'studio-6');
+    const opt6 = await p.evaluate(() => document.getElementById('todoStudioWahl').selectedOptions[0].textContent);
+    pruefe('… am gewählten Studio ohne Zahl (die steht am Gruppenkopf)', opt6 === 'Hürth', opt6);
     const nurH = await p.evaluate(() => [...document.querySelectorAll('#todoArea .todo')].every(t => t.dataset.sid === 'studio-6'));
     pruefe('Ein Studio gewählt: nur dessen Aufgaben, ohne Studio-Marke an der Zeile',
       nurH && !(await p.evaluate(() => document.querySelector('#todoArea .t-studio'))));
