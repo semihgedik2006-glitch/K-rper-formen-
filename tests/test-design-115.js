@@ -6,9 +6,9 @@
       und Leben"
 
    Geprüft wird:
-   1. Der Aufgabenzähler trägt einen Ring NEBEN der Zahl — die Zahl
-      bleibt lesbar („x von y erledigt"). Der Ring zeigt den richtigen
-      Anteil (dashoffset), voll heisst grün.
+   1. Der Fortschritt der Aufgaben (seit Runde 147 der Balken der Leiste,
+      wie im Putzplan): Zahl lesbar („x von y erledigt"), Balken mit dem
+      richtigen Anteil, nicht voll heisst nicht grün.
    2. Ohne Netz: die Leiste oben sagt, was los ist, der Inhalt ist
       entsättigt, die Leiste selbst NICHT. Mit Netz ist alles wieder
       normal. Bedienbar bleibt es: ein Knopf im Inhalt nimmt Klicks.
@@ -54,27 +54,31 @@ async function zuDenAufgaben(p) {
     const ctx = await b.newContext({ viewport: { width: w, height: h } });
     const p = await oeffne(ctx, 'chef');
 
-    /* ══ 1. Ring ══ */
+    /* ══ 1. Fortschritt ══
+       Seit Runde 147 steht der Fortschritt der Aufgaben wie im Putzplan
+       als Balken in der Leiste („GENAU so wie der purtzplan"), der Ring
+       am alten Zähler ist damit weg. Dieselben Zusicherungen am Balken:
+       Zahl lesbar, Anteil richtig, für Vorleser die Zahl, nicht voll →
+       nicht grün (an den Gruppenköpfen). */
     await zuDenAufgaben(p);
     const ring = await p.evaluate(() => {
-      const z = document.getElementById('todoCount');
-      const svg = z && z.querySelector('svg.fr-ring');
+      const z = document.getElementById('tdProgress');
+      const bal = document.getElementById('tdFortBalken');
       const m = /(\d+)\s*von\s*(\d+)/.exec(z ? z.textContent : '');
-      const teil = svg && svg.querySelector('.fr-teil');
-      const u = teil ? parseFloat(teil.getAttribute('stroke-dasharray')) : 0;
-      const off = teil ? parseFloat(teil.getAttribute('stroke-dashoffset')) : 0;
-      const r = svg ? svg.getBoundingClientRect() : null;
-      return { text: z ? z.textContent.trim() : '', svg: !!svg, fertig: m ? +m[1] : -1, gesamt: m ? +m[2] : -1,
-               anteil: u ? 1 - off / u : -1, versteckt: svg ? svg.getAttribute('aria-hidden') : null,
-               w: r ? Math.round(r.width) : 0, voll: svg ? svg.classList.contains('voll') : null };
+      const gr = [...document.querySelectorAll('#todoArea .pp-gruppe')].map(g => {
+        const t = /(\d+) von (\d+)/.exec(g.querySelector('.pg-zahl').textContent);
+        return { fertig: g.classList.contains('fertig'), voll: !!t && t[1] === t[2] };
+      });
+      return { text: z ? z.textContent.trim() : '', fertig: m ? +m[1] : -1, gesamt: m ? +m[2] : -1,
+               anteil: bal ? parseFloat(bal.style.width) / 100 : -1,
+               versteckt: (document.getElementById('tdFort') || { getAttribute: () => null }).getAttribute('aria-hidden'),
+               gruppen: gr };
     });
-    pruefe('der Zähler zeigt einen Ring', ring.svg, JSON.stringify(ring));
-    pruefe('die Zahl bleibt daneben lesbar: „' + ring.text + '"', ring.gesamt > 0);
-    pruefe('der Ring zeigt den richtigen Anteil (' + ring.anteil.toFixed(3) + ')',
+    pruefe('die Leiste zeigt den Fortschritt als Zahl: „' + ring.text + '"', ring.gesamt > 0, JSON.stringify(ring));
+    pruefe('der Balken zeigt den richtigen Anteil (' + ring.anteil.toFixed(3) + ')',
       ring.gesamt > 0 && Math.abs(ring.anteil - ring.fertig / ring.gesamt) < 0.01);
-    pruefe('Vorleser hören die Zahl, nicht den Ring (aria-hidden)', ring.versteckt === 'true');
-    pruefe('der Ring ist 18 px und damit klein neben der Zeile', ring.w === 18, 'w=' + ring.w);
-    pruefe('nicht voll → nicht grün', ring.voll === (ring.fertig === ring.gesamt));
+    pruefe('Vorleser hören die Zahl, nicht den Balken (aria-hidden)', ring.versteckt === 'true');
+    pruefe('nicht voll → nicht grün (Gruppenköpfe)', ring.gruppen.length > 0 && ring.gruppen.filter(g => !g.voll).every(g => !g.fertig), JSON.stringify(ring.gruppen));
 
     /* ══ 2. Ohne Netz ══ */
     await ctx.setOffline(true);
