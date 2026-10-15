@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-qJuZAKEOIT8InM6j5uHdl8veUt1nERoLgOuXB8a/zNs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ETil/SUloqary5aD64Kj2F6gVlZ91buBCRMKCgvGFvA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -357,12 +357,12 @@ button{color:inherit}
    zentriert darüber. Das ist dieselbe Lösung, die Apple in den eigenen
    Richtlinien empfiehlt: getrennte Größe für Auge und Finger. */
 .react,.pin-x,.pin-go,.ann-del,.ann-pin,.shift-x,.check,.t-cam,.mat-del,
-.msg-del,.pp-del,.t-del,.t-edit,.cert-del,.mini-x,.pb-weg{position:relative}
+.msg-del,.pp-del,.t-del,.t-edit,.griff,.cert-del,.mini-x,.pb-weg{position:relative}
 /* .pb-weg seit Runde 108: der Papierkorb im Probetraining war 26 × 29,
    gefunden beim Nachmessen am Rechner (test-pc-spalten). */
 .react::after,.pin-x::after,.pin-go::after,.ann-del::after,.ann-pin::after,
 .shift-x::after,.check::after,.t-cam::after,.mat-del::after,.msg-del::after,
-.pp-del::after,.t-del::after,.t-edit::after,.cert-del::after,.mini-x::after,.pb-weg::after{
+.pp-del::after,.t-del::after,.t-edit::after,.griff::after,.cert-del::after,.mini-x::after,.pb-weg::after{
   content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:max(100%,44px);height:max(100%,44px)}
 html{-webkit-text-size-adjust:100%;height:100%}
@@ -1414,6 +1414,28 @@ html.demo #terminalSchirm{top:44px}
    Spalten nebeneinander wie im Putzplan (.pp-gruppen). Was bleibt, ist
    die Tastatur: die mit ↑/↓ gewählte Zeile trägt einen Rahmen. */
 #todoArea .todo.gewaehlt{box-shadow:inset 0 0 0 2px var(--accent), var(--e1)}
+/* ── Der Griff zum Verschieben (Runde 148) ──
+   Drei Striche links, leise — er ist ein Werkzeug, kein Inhalt. 40 px
+   breit und bis in den Innenabstand der Zeile gezogen, damit seine
+   Trefferfläche (≥ 44) nicht in die des Hakens daneben greift.
+   touch-action:none, sonst rollt der Finger die Seite, statt die Zeile
+   zu ziehen. */
+.griff{flex-shrink:0;width:40px;min-height:44px;padding:0;
+  /* Vom Innenabstand der Zeile aus gerechnet (--s12: 12 px, kompakt 9):
+     ein fester Wert von -10 px schob den Griff in „kompakt" über die
+     Kante, und die Zeile (overflow:hidden) schnitt ihn auf 39 px ab. */
+  margin:calc(3px - var(--s12)) calc(12px - var(--s12)) calc(3px - var(--s12)) calc(2px - var(--s12));
+  /* Rechts dasselbe umgekehrt: der Abstand zum Haken ist ebenfalls
+     --s12. In „kompakt" (9 px) griffen die beiden Trefferflächen sonst
+     2 px ineinander — gemessen 42 statt 44. */
+  display:inline-grid;place-items:center;background:none;border:none;border-radius:var(--r-xs);
+  color:var(--text-3);cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.griff svg{width:18px;height:18px}
+@media (hover:hover){ .griff:hover{color:var(--text-2);background:var(--auf-1)} }
+.griff:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.zieht{z-index:6;box-shadow:var(--e3);transition:none!important;cursor:grabbing}
+.zieht .griff{cursor:grabbing;color:var(--accent-d)}
+.weicht{transition:transform .16s var(--ease-out)!important}
 /* Stift, Papierkorb, „…": je 44 × 44 und OHNE Abstand dazwischen —
    die Trefferflächen stossen aneinander, statt sich zu überlappen. */
 .t-knoepfe{display:flex;flex-shrink:0;margin:calc(-1 * var(--s8)) calc(-1 * var(--s6)) 0 0}
@@ -8037,6 +8059,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <button class="chip" data-tdring="1">Dringend</button>
               <!-- Inhalt kommt aus sortFeld(); die Wahl liegt in PREFS.sort. -->
               <select class="chip" id="todoSort" style="padding-right:26px"></select>
+              <!-- Runde 148: nur da, wenn es eine eigene Reihenfolge gibt -->
+              <button class="chip" id="tdReiheWeg" type="button" hidden>Eigene Reihenfolge zurücksetzen</button>
             </div>
           </div>
 
@@ -8262,6 +8286,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <span class="chip-trenner" aria-hidden="true"></span>
               <button class="chip" data-ppdring="1">Dringend</button>
               <select class="chip" id="ppSort" style="padding-right:26px"></select>
+              <button class="chip" id="ppReiheWeg" type="button" hidden>Eigene Reihenfolge zurücksetzen</button>
             </div>
           </div>
 
@@ -18629,6 +18654,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-15-reihenfolge', datum:'15.10.2026', titel:'Aufgaben und Putzplan selbst ordnen', wo:'todos', punkte:[
+    'Links an jeder offenen Aufgabe und an jedem Putzpunkt stehen drei Striche. Daran ziehen – mit dem Finger oder der Maus – und die Aufgabe dorthin schieben, wo du sie haben willst. Am PC geht es auch mit den Pfeiltasten, wenn die Striche ausgewählt sind.',
+    'Die Reihenfolge gilt nur für dich und auf allen deinen Geräten; die anderen sehen ihre eigene. Verschoben wird innerhalb der Gruppe (z. B. „Heute" oder „Täglich").',
+    'Neue Aufgaben stehen oben in ihrer Gruppe, bis du sie einsortierst. Zurück zur üblichen Ordnung: „Filter" → „Eigene Reihenfolge zurücksetzen".' ] },
   { id:'2026-10-09-aufgaben', datum:'9.10.2026', titel:'Aufgaben sehen jetzt aus wie der Putzplan', wo:'todos', punkte:[
     'Oben eine Leiste wie im Putzplan: Studio, Fortschritt, „Wer hakt ab?", Filter und Drucken. Suche, Schnellfilter und Sortierung stehen unter „Filter".',
     'Die Aufgaben stehen in Gruppen nach Fälligkeit – Überfällig, Heute, Diese Woche, Später, Ohne Frist –, jede mit „2 von 5" und Balken; in jeder Gruppe zuerst, was jetzt dran ist. Am Rechner stehen die Gruppen nebeneinander.',
@@ -28398,6 +28427,7 @@ function ladeGelesenStand(){
     var x=(d.exists && d.data()) || {};
     _gelesen={ ho:+x.gelesenHo||0, brett:+x.gelesenBrett||0, danke:+x.gelesenDanke||0 };
     renderHomeLesen();
+    reiheAusKonto(x);
   }).catch(function(){ /* ohne Stand gilt alles als ungelesen — das ist
     die harmlosere Richtung: man sieht einen Punkt zu viel, nicht einen
     zu wenig. */ });
@@ -31626,6 +31656,7 @@ function todoStudioWahlBauen(liste){
 /* ── Leiste: wer hakt ab, und ist ein Filter an? ──
    Wie ppLeisteSetzen — beide Antworten stehen AUF dem Knopf. */
 function tdLeisteSetzen(){
+  reiheKnopf('tdReiheWeg', 'aufgaben', todoSortArt()==='standard', renderTodos);
   var wk=$('tdWerKnopf');
   if(wk){
     var k=putzKuerzel();
@@ -31723,7 +31754,14 @@ function renderTodos(){
   gewaehlt.forEach(function(sk){
     (cachedTodos[sk]||[]).forEach(function(t){ if(!isArchived(t)) alle.push({ t:t, sk:sk }); });
   });
-  alle.sort(function(a,b){ return todoVergleich(a.t,b.t); });
+  /* Runde 148: in der Standard-Sortierung zählt zuerst die eigene
+     Reihenfolge (reiheVergleich) — offene vor erledigten bleibt davor. */
+  var rangA = _todoSort==='standard' ? reiheRang('aufgaben') : null;
+  alle.sort(function(a,b){
+    var d=isDone(a.t)-isDone(b.t); if(d) return d;
+    if(rangA && !isDone(a.t)) return reiheVergleich(rangA, a.sk+'/'+a.t.id, b.sk+'/'+b.t.id, function(){ return todoVergleich(a.t,b.t); });
+    return todoVergleich(a.t,b.t);
+  });
 
   /* Fortschritt über ALLE Aufgaben der Auswahl, nie über die gefilterten
      — dieselbe Regel wie im Putzplan. */
@@ -31752,7 +31790,8 @@ function renderTodos(){
     area.classList.toggle('pp-ruhig', _tdGezeichnetFuer===auswahl);
     _tdGezeichnetFuer=auswahl;
     var chef=canManage();
-    var zeile=function(x){ return todoHTML(x.t, x.sk, chef, mitStudio); };
+    var ziehbar=_todoSort==='standard';
+    var zeile=function(x){ return todoHTML(x.t, x.sk, chef, mitStudio, ziehbar); };
     /* Gruppen in „Standard" (nach Fälligkeit) und „Nach Tageszeit"; wer
        ausdrücklich nach Name, Dringlichkeit oder Alter sortiert, bekommt
        eine FLACHE Liste — wie im Putzplan. */
@@ -31906,7 +31945,7 @@ function clearArchive(){
    Aufgabe oft einen Satz dazu, und der gehört dorthin, wo man sie liest.
 
    mitStudio: bei „Alle Studios" trägt jede Zeile ihr Studio. */
-function todoHTML(t,sk,chefView,mitStudio){
+function todoHTML(t,sk,chefView,mitStudio,ziehbar){
   var done=isDone(t);
   var rep=prioMarke(t)+(t.recurring
     ? '<span class="t-rep">'+ikon('wiederholen')+' '+esc(repLabelFor(t))+'</span>' : '');
@@ -31976,6 +32015,7 @@ function todoHTML(t,sk,chefView,mitStudio){
   return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+frisch.cls+'"'+frisch.stil+
     ' data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
     '<div class="swipe-hint">✓</div><div class="swipe-body">'+
+    ((ziehbar && !done) ? griffHTML() : '')+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+stepCount+'</div>'+
     '<div class="pp-meta t-foot">'+studioMarke+stand+assign+'</div>'+
@@ -32259,7 +32299,12 @@ function bindTodoClicks(area){
     // Nach rechts wischen = abhaken
     bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
   });
-  if(area.id==='todoArea') todoWahlMarkieren();
+  if(area.id==='todoArea'){
+    todoWahlMarkieren();
+    ziehenBinden(area, 'todo', 'aufgaben', function(z){ return z.dataset.sid+'/'+z.dataset.id; }, function(){
+      reiheAufraeumen('aufgaben'); renderTodos();
+    });
+  }
 }
 
 /* ══ TASTATUR AM PC (Runde 103, P1 — seit Runde 147 ohne Detailfeld) ══
@@ -35142,8 +35187,11 @@ function renderPutzplan(){
      erledigte Aufgabe soll auch alphabetisch nicht ueber einer offenen
      stehen, sonst sucht man den naechsten Punkt zwischen abgehakten. */
   var wieSort=sortWahl('putz','standard');
+  var rangP = wieSort==='standard' ? reiheRang('putz') : null;
   var list=_ppTasks.slice().sort(function(a,b){
     var d=isDone(a)-isDone(b); if(d) return d;
+    /* Runde 148: die eigene Reihenfolge, nur in „Standard". */
+    if(rangP && !isDone(a)) return reiheVergleich(rangP, _ppStudioKey+'/'+a.id, _ppStudioKey+'/'+b.id, function(){ return (a.ts||0)-(b.ts||0); });
     if(wieSort==='name') return (a.title||'').localeCompare(b.title||'','de');
     if(wieSort==='rhythmus'){
       var r=ppRang(a)-ppRang(b); if(r) return r;
@@ -35219,6 +35267,7 @@ function renderPutzplan(){
     return '<div class="pp-item'+(d?' done':'')+(pause?' pausiert':'')+frisch.cls+'"'+frisch.stil+
       ' data-id="'+esc(t.id)+'">'+
       '<div class="swipe-hint">✓</div><div class="swipe-body">'+
+      ((wieSort==='standard' && !d) ? griffHTML() : '')+
       (pause
         ? '<span class="pp-pauseico" aria-hidden="true">'+ikon('pause')+'</span>'
         : '<button class="check" data-check="'+esc(t.id)+'" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>')+
@@ -35263,6 +35312,10 @@ function renderPutzplan(){
     box.innerHTML=list.map(zeile).join('');
   }
   bindPutzplanClicks(box);
+  ziehenBinden(box, 'pp-item', 'putz', function(z){ return _ppStudioKey+'/'+z.dataset.id; }, function(){
+    reiheAufraeumen('putz'); renderPutzplan();
+  });
+  ppLeisteSetzen();
 }
 
 /* ── Leiste: wer hakt ab, und ist ein Filter an? ──
@@ -35270,6 +35323,7 @@ function renderPutzplan(){
    vergisst, dass ein Filter läuft oder wer gerade abhakt, stehen beide
    Antworten AUF dem Knopf: „Filter · 2", „Wer: AB". */
 function ppLeisteSetzen(){
+  reiheKnopf('ppReiheWeg', 'putz', sortWahl('putz','standard')==='standard', renderPutzplan);
   var wk=$('ppWerKnopf');
   if(wk){
     var k=putzKuerzel();
@@ -35327,6 +35381,254 @@ function putzKuerzelBinden(){
   if(fk) fk.addEventListener('click', function(){ ppAufklappen('ppFilterKnopf','ppWerkzeuge'); });
   putzWerHinweis();
 }
+
+/* ══ EIGENE REIHENFOLGE (Runde 148) ═══════════════════════════════════
+   Aus dem Betrieb, 15.10.2026: „kannst du noch dafür sorgen das man
+   aufgaben und aufgaben im putzplan selber sortieren kann auch als
+   mitarbeiter das es einfach für einen selber übersichtlicher ist, es
+   reichen drei striche an der seite mit denen man die aufgaben dann hin
+   und her bewegen kann".
+
+   Was daraus folgt:
+     · FÜR EINEN SELBER: die Reihenfolge gehört der Person, nicht der
+       Aufgabe. Sie liegt in privat/<uid> (reiheAufgaben, reihePutz) —
+       dort darf jeder ohnehin nur sich selbst lesen und schreiben, eine
+       neue Regel braucht es nicht, und niemand sonst sieht, wie jemand
+       seine Liste ordnet. Auf dem Gerät liegt eine Abschrift
+       (kf_reihe_<uid>), damit die Liste schon vor der Antwort der
+       Datenbank richtig dasteht. Die neuere von beiden gilt.
+     · DREI STRICHE: ein Griff links an jeder offenen Zeile. Ziehen mit
+       Finger oder Maus; am PC auch mit ↑/↓, solange der Griff den Fokus
+       hat (sonst wäre es für die Tastatur unerreichbar).
+     · INNERHALB DER GRUPPE. Die Gruppen sagen etwas über die Aufgabe
+       (überfällig, täglich) — die eigene Reihenfolge ordnet darin, sie
+       verschiebt keine Aufgabe in „Heute", die erst nächste Woche dran
+       ist.
+     · NUR IN DER STANDARD-SORTIERUNG. Wer ausdrücklich nach Name oder
+       Dringlichkeit sortiert, will genau das; dort gibt es keinen Griff.
+     · NEUES OBEN. Eine Aufgabe, die noch keinen Platz hat, steht in
+       ihrer Gruppe vorn — wer sich seine Liste geordnet hat, soll eine
+       neue Aufgabe nicht unten zwischen seinen eigenen suchen müssen.
+     · Erledigte haben keinen Griff und bleiben unten.
+
+   Gespeichert werden Schlüssel „<studio>/<id>", eine Liste je Bereich.
+   Die Liste ist global über alle Studios — bei „Alle Studios" gilt
+   dieselbe Reihenfolge wie im einzelnen Studio. Was es nicht mehr gibt,
+   fällt beim nächsten Speichern heraus. */
+var _reihe={ aufgaben:[], putz:[], ts:0 }, _reiheUid=null, _reiheTimer=null;
+var REIHE_MAX=800;
+function reiheMerkKey(){ return 'kf_reihe_'+((session&&session.uid)||''); }
+function reiheGeraet(){
+  if(!session || _reiheUid===session.uid) return;
+  _reiheUid=session.uid;
+  _reihe={ aufgaben:[], putz:[], ts:0 };
+  try{
+    var x=JSON.parse(localStorage.getItem(reiheMerkKey())||'null');
+    if(x && typeof x==='object') _reihe={ aufgaben:Array.isArray(x.aufgaben)?x.aufgaben:[], putz:Array.isArray(x.putz)?x.putz:[], ts:+x.ts||0 };
+  }catch(e){}
+}
+/* Aus privat/<uid> (ladeGelesenStand liest das Dokument ohnehin). */
+function reiheAusKonto(x){
+  reiheGeraet();
+  var ts=+(x && x.reiheTs)||0;
+  if(!ts || ts<=_reihe.ts) return;
+  _reihe={ aufgaben:Array.isArray(x.reiheAufgaben)?x.reiheAufgaben.slice(0,REIHE_MAX):[],
+           putz:Array.isArray(x.reihePutz)?x.reihePutz.slice(0,REIHE_MAX):[], ts:ts };
+  try{ localStorage.setItem(reiheMerkKey(), JSON.stringify(_reihe)); }catch(e){}
+  if(typeof renderTodos==='function') renderTodos();
+  if(typeof renderPutzplan==='function' && _ppStudioKey) renderPutzplan();
+}
+/* Schlüssel -> Platz. Fehlt ein Schlüssel, hat die Aufgabe keinen Platz. */
+function reiheRang(art){
+  reiheGeraet();
+  var m={}; (_reihe[art]||[]).forEach(function(k,i){ m[k]=i; });
+  return m;
+}
+/* Vergleich für die Standard-Sortierung: Neues vor Geordnetem,
+   Geordnetes nach Platz, sonst wie bisher (rest). */
+function reiheVergleich(rang, ka, kb, rest){
+  var ra=rang[ka], rb=rang[kb], ha=ra!==undefined, hb=rb!==undefined;
+  if(ha && hb) return ra-rb;
+  if(ha!==hb) return ha ? 1 : -1;
+  return rest();
+}
+/* Eine Gruppe neu geordnet: deren Schlüssel in der neuen Reihenfolge
+   ans Ende, alle anderen behalten ihren Platz untereinander. */
+function reiheSetzen(art, schluessel){
+  reiheGeraet();
+  var weg={}; schluessel.forEach(function(k){ weg[k]=1; });
+  var liste=(_reihe[art]||[]).filter(function(k){ return !weg[k]; }).concat(schluessel);
+  _reihe[art]=liste.slice(-REIHE_MAX);
+  _reihe.ts=Date.now();
+  reiheSichern();
+}
+/* Was gelöscht ist, fällt heraus — aber nur aus Studios, deren Liste
+   geladen ist. Ein Studio, das gerade nicht geladen hat, verlöre sonst
+   seine ganze Reihenfolge. */
+function reiheAufraeumen(art){
+  var quelle = art==='putz' ? cachedClean : cachedTodos;
+  var vorher=(_reihe[art]||[]).length;
+  _reihe[art]=(_reihe[art]||[]).filter(function(k){
+    var i=k.lastIndexOf('/'), sk=k.slice(0,i), id=k.slice(i+1);
+    var l=quelle[sk];
+    return !l || l.some(function(t){ return t.id===id; });
+  });
+  if(_reihe[art].length!==vorher) reiheSichern();
+}
+function reiheLeeren(art){
+  reiheGeraet();
+  _reihe[art]=[]; _reihe.ts=Date.now();
+  reiheSichern();
+}
+function reiheSichern(){
+  try{ localStorage.setItem(reiheMerkKey(), JSON.stringify(_reihe)); }catch(e){}
+  /* Gebündelt: wer fünf Zeilen hintereinander verschiebt, schreibt
+     einmal, nicht fünfmal. */
+  if(_reiheTimer) clearTimeout(_reiheTimer);
+  _reiheTimer=setTimeout(function(){
+    _reiheTimer=null;
+    var ref=privatRef(); if(!ref) return;
+    ref.set({ reiheAufgaben:_reihe.aufgaben, reihePutz:_reihe.putz, reiheTs:_reihe.ts }, {merge:true})
+      .catch(function(e){ console.warn('Reihenfolge nicht gesichert:', e && e.message); });
+  }, 700);
+}
+
+/* Der Griff. Ein Knopf, damit er per Tastatur erreichbar ist. */
+var GRIFF_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>';
+function griffHTML(){
+  return '<button type="button" class="griff" data-griff="1" aria-label="Verschieben – ziehen, oder Pfeiltaste hoch/runter" title="Ziehen zum Verschieben">'+GRIFF_SVG+'</button>';
+}
+
+/* ── Ziehen ──
+   box:   die Liste (todoArea, ppList)
+   zeile: Klasse der Zeilen ('todo', 'pp-item')
+   art:   'aufgaben' | 'putz'
+   schl:  function(zeile) -> Schlüssel „<studio>/<id>"
+   neu:   function() — nach dem Speichern neu zeichnen
+
+   Verschoben wird nur zwischen Geschwistern derselben Gruppe. Gemessen
+   wird EINMAL beim Aufsetzen (alles lesen, dann schreiben); während des
+   Ziehens bewegt sich nur transform — kein Layout je Bild. */
+function ziehenBinden(box, zeile, art, schl, neu){
+  if(!box) return;
+  box.querySelectorAll('[data-griff]').forEach(function(g){
+    var row=g.closest('.'+zeile); if(!row) return;
+    /* Wischen zum Abhaken hört am Zeilenrand auf touchstart — am Griff
+       darf es nicht anspringen. */
+    g.addEventListener('touchstart', function(e){ e.stopPropagation(); }, {passive:true});
+    g.addEventListener('click', function(e){ e.stopPropagation(); });
+    g.addEventListener('keydown', function(e){
+      if(e.key!=='ArrowUp' && e.key!=='ArrowDown') return;
+      e.preventDefault(); e.stopPropagation();
+      var geschw=ziehbareGeschwister(row, zeile);
+      var i=geschw.indexOf(row), j=i+(e.key==='ArrowUp'?-1:1);
+      if(i<0 || j<0 || j>=geschw.length) return;
+      var reihe=geschw.slice(); reihe.splice(i,1); reihe.splice(j,0,row);
+      var k=schl(row);
+      reiheSetzen(art, reihe.map(schl));
+      tick(6); neu();
+      /* Den Fokus wieder auf denselben Griff — sonst springt er nach dem
+         Neuzeichnen an den Seitenanfang, und die nächste Pfeiltaste
+         scrollt statt zu schieben. */
+      var neuGriff=[].slice.call(box.querySelectorAll('.'+zeile)).filter(function(z){ return schl(z)===k; })[0];
+      if(neuGriff && neuGriff.querySelector('[data-griff]')) neuGriff.querySelector('[data-griff]').focus();
+    });
+    g.addEventListener('pointerdown', function(e){
+      if(e.button!==undefined && e.button!==0) return;
+      e.preventDefault();
+      ziehenStarten(e, g, row, zeile, art, schl, neu);
+    });
+  });
+}
+function ziehbareGeschwister(row, zeile){
+  return [].slice.call(row.parentElement.children).filter(function(z){
+    return z.classList.contains(zeile) && z.querySelector('[data-griff]');
+  });
+}
+function ziehenStarten(e, griff, row, zeile, art, schl, neu){
+  var geschw=ziehbareGeschwister(row, zeile);
+  if(geschw.length<2) return;
+  var sa=row.closest('.scroll-area');
+  /* Lesen … */
+  var rects=geschw.map(function(z){ return z.getBoundingClientRect(); });
+  var start=geschw.indexOf(row);
+  var hoehe=rects[start].height;
+  var abstand = geschw.length>1
+    ? (start<geschw.length-1 ? rects[start+1].top-rects[start].bottom : rects[start].top-rects[start-1].bottom) : 0;
+  var schritt=hoehe+Math.max(0,abstand);
+  var mitten=rects.map(function(r){ return r.top+r.height/2; });
+  var y0=e.clientY, s0=sa?sa.scrollTop:0, ziel=start, letztY=e.clientY, lauf=null;
+  /* … dann schreiben. */
+  row.classList.add('zieht');
+  zeilenWeichen(geschw, row, true);
+  try{ griff.setPointerCapture(e.pointerId); }catch(x){}
+  tick(6);
+  function stellen(){
+    var dy=(letztY-y0)+((sa?sa.scrollTop:0)-s0);
+    row.style.transform='translateY('+dy+'px)';
+    var mitte=mitten[start]+dy, z=start;
+    for(var i=0;i<geschw.length;i++){
+      if(i<start && mitte<mitten[i]){ z=i; break; }
+    }
+    if(z===start) for(var j=geschw.length-1;j>start;j--){ if(mitte>mitten[j]){ z=j; break; } }
+    ziel=z;
+    geschw.forEach(function(o,i){
+      if(o===row) return;
+      var v=0;
+      if(start<ziel && i>start && i<=ziel) v=-schritt;
+      if(start>ziel && i<start && i>=ziel) v=schritt;
+      o.style.transform = v ? 'translateY('+v+'px)' : '';
+    });
+  }
+  /* Am Rand des Bereichs rollt die Liste mit — sonst liesse sich eine
+     Aufgabe nicht über den sichtbaren Teil hinaus verschieben. */
+  function rollen(){
+    lauf=null;
+    if(!sa) return;
+    var r=sa.getBoundingClientRect(), v=0;
+    if(letztY<r.top+48) v=-10; else if(letztY>r.bottom-48) v=10;
+    if(v){ sa.scrollTop+=v; stellen(); lauf=requestAnimationFrame(rollen); }
+  }
+  function bewegt(ev){
+    letztY=ev.clientY; stellen();
+    if(!lauf) lauf=requestAnimationFrame(rollen);
+  }
+  function fertig(){
+    griff.removeEventListener('pointermove', bewegt);
+    griff.removeEventListener('pointerup', fertig);
+    griff.removeEventListener('pointercancel', fertig);
+    if(lauf){ cancelAnimationFrame(lauf); lauf=null; }
+    row.classList.remove('zieht');
+    zeilenWeichen(geschw, row, false);
+    geschw.forEach(function(o){ o.style.transform=''; });
+    if(ziel===start) return;
+    var reihe=geschw.slice(); reihe.splice(start,1); reihe.splice(ziel,0,row);
+    reiheSetzen(art, reihe.map(schl));
+    tick(8); neu();
+  }
+  griff.addEventListener('pointermove', bewegt);
+  griff.addEventListener('pointerup', fertig);
+  griff.addEventListener('pointercancel', fertig);
+}
+/* „Eigene Reihenfolge zurücksetzen": nur sichtbar, wenn es eine gibt
+   und sie gerade gilt (Standard-Sortierung). Fragt nach — eine
+   sorgfältig geordnete Liste ist mit einem Fehlgriff sonst weg. */
+function reiheKnopf(id, art, gilt, neu){
+  var b=$(id); if(!b) return;
+  reiheGeraet();
+  b.hidden = !(gilt && (_reihe[art]||[]).length);
+  if(b._da) return;
+  b._da=true;
+  b.addEventListener('click', function(){
+    if(!confirm('Eigene Reihenfolge zurücksetzen?\n\nDie Liste steht danach wieder in der üblichen Ordnung. Das gilt nur für dich.')) return;
+    reiheLeeren(art); tick(8); neu();
+    toast('Reihenfolge zurückgesetzt');
+  });
+}
+function zeilenWeichen(geschw, row, an){
+  geschw.forEach(function(o){ if(o!==row) o.classList.toggle('weicht', an); });
+}
+
 function putzWerHinweis(){
   var h=$('ppWerHint'); if(!h) return;
   var k=putzKuerzel();

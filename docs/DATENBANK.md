@@ -563,6 +563,22 @@ Begründung steht in `FORTSCHRITT.md`, Runde 95.
 
 ---
 
+### `firmen/{kennung}/privat/{uid}` — eigene Reihenfolge (seit 15.10.2026, Runde 148)
+
+Drei Felder am Dokument selbst, neben `gelesenHo` / `gelesenBrett` /
+`gelesenDanke`:
+
+| Feld | Inhalt |
+|---|---|
+| `reiheAufgaben` | Liste „<studio>/<id>" — die selbst gezogene Reihenfolge der Aufgaben |
+| `reihePutz` | dasselbe für den Putzplan |
+| `reiheTs` | wann zuletzt geändert; auf einem Gerät gilt die neuere von Konto und Gerät (`kf_reihe_<uid>`) |
+
+Höchstens 800 Einträge je Liste; gelöschte Aufgaben fallen beim nächsten
+Verschieben heraus. Lesen und schreiben nur die Person selbst (bestehende
+Regel für `privat/{uid}`, beide Welten) — keine neue Regel. Die Sicherung
+enthält `privat` nie.
+
 ## 3. Indexe
 
 **NICHT VERIFIZIERBAR** von hier aus: Es gibt keine

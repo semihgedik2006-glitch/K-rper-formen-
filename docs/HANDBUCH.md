@@ -385,6 +385,18 @@ dieselben Gruppen mit „x von y", dieselben Zeilen.
 - **Am PC mit der Tastatur:** ↑ ↓ wählen · Leertaste oder x abhaken ·
   E bearbeiten (**L C**) · Enter öffnet „⋯".
 
+### Eigene Reihenfolge (seit 15.10.2026, für alle)
+- An jeder offenen Aufgabe steht links ein **Griff ≡**. Daran ziehen
+  (Finger oder Maus) verschiebt die Aufgabe **innerhalb ihrer Gruppe**.
+  Am PC geht es auch mit der Tastatur: Griff anklicken bzw. mit Tab
+  hinspringen, dann ↑ / ↓.
+- Die Reihenfolge gehört **nur dir** – niemand sonst sieht sie, und sie
+  gilt auf allen deinen Geräten.
+- Eine **neue Aufgabe** steht in ihrer Gruppe oben, bis du sie einsortierst.
+- Sie gilt in der Sortierung „Nach Fälligkeit" (Standard). Bei „Nach
+  Name" o. ä. gibt es keinen Griff.
+- **Zurücksetzen:** unter „Filter" → „Eigene Reihenfolge zurücksetzen".
+
 ### Filtern und finden (unter „Filter")
 - **Schnellfilter**: Alle · Nur offene · Überfällig · Für mich, dazu
   **Dringend**. An jedem Filter steht die Zahl, wie viele Aufgaben er
@@ -440,6 +452,9 @@ dieselben Gruppen mit „x von y", dieselben Zeilen.
 - **Einmalige Aufgaben verschwinden 24 Stunden nach dem Abhaken** – aus der
   Liste, aus dem Ausdruck und aus der Google-Tabelle. Nicht erledigte
   bleiben stehen.
+- **Eigene Reihenfolge** (seit 15.10.2026, für alle): Griff ≡ links an
+  jedem offenen Punkt, verschieben innerhalb der Gruppe – genau wie bei
+  den Aufgaben, nur für dich. Gilt in der Standard-Sortierung.
 - **Notizen** vom Team („Wischmopp ist kaputt") – jeder darf schreiben,
   eigene innerhalb einer Stunde löschen, **L C** jederzeit.
 - **Drucken** – sauberer Wandzettel mit Kästchen zum Abhaken und Feld fürs

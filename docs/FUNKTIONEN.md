@@ -31,10 +31,10 @@ weil es fehlt, sondern weil ich es nicht sehen darf.
 
 | | | Quelle |
 |---|---|---|
-| Anwendung | `index.html`, **40.496 Zeilen** | `wc -l` |
+| Anwendung | `index.html`, **40.816 Zeilen** | `wc -l` |
 | Serverfunktionen | **82** Cloud Functions | `grep -c '^exports\.'` |
 | Sicherheitsregeln | `firestore.rules`, **2.512 Zeilen** | `wc -l` |
-| Automatische Durchläufe (Oberfläche) | **187** (184 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
+| Automatische Durchläufe (Oberfläche) | **188** (185 `test-*`, dazu zwei Prüfungen und ein Belastungstest) | `ls tests/*.js` ohne `stub-` |
 | Automatische Durchläufe (Regeln) | **36 Dateien** (Einzelprüfungen zuletzt gezählt am 24.9.2026: 1.177, seitdem sechzehn Dateien dazu) | `tests/rules/` |
 | Ansichten | 16 | `NAV` in `index.html` |
 | Sammlungen in der Datenbank | 31 | `firestore.rules` |
@@ -267,6 +267,7 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 |---|---|---|
 | Tageszeit an Aufgaben und Putzplan, Sortierung „Nach Tageszeit" (seit 5.10.2026) | **VERIFIZIERT** | `tests/test-tageszeit.js` (Demo, Uhr fest auf 8:30 und 19:30) |
 | Aufgaben aufgebaut wie der Putzplan: Leiste, Gruppen nach Fälligkeit, Studio oben, Kürzel beim Abhaken (seit 9.10.2026) | **VERIFIZIERT** | `tests/test-aufgaben-wie-putzplan.js`, `tests/rules/aufgabe-kuerzel.test.js` |
+| Eigene Reihenfolge in Aufgaben und Putzplan, für alle (Griff ≡, in privat/<uid>) (seit 15.10.2026) | **VERIFIZIERT** | `tests/test-eigene-reihenfolge.js` (Maus, Finger, Tastatur) |
 | Studio-Zuordnung prüfen und reparieren (seit 5.10.2026) | **VERIFIZIERT** (Attrappe) | Wer in echten Konten betroffen ist, zeigt die Karte unter Team — aus dieser Umgebung nicht einsehbar |
 | Aufgaben mit Frist | **VERIFIZIERT** | Mitarbeiter dürfen seit 13.8. einmalige Aufgaben im eigenen Studio anlegen |
 | Wiederkehrende Aufgaben | **VERIFIZIERT** | nur die Verwaltung |
