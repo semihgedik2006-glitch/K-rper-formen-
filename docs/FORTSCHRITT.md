@@ -15537,3 +15537,6 @@ ausgelieferte Regel am Produktionsprojekt. Der Übergang für
   - Neuladen, Konto vor Gerät, Neues oben, Zurücksetzen, Gegenprobe
     „Nach Name";
   - Griff und Haken ≥ 44 × 44 bei 320–1920 px, normal und kompakt.
+
+**Durchläufe:** Oberfläche 185 / 185 grün (`ZEIT=420`, wie in Runde 147
+begründet). Regeln unverändert (keine neue Sammlung, keine neue Regel).
