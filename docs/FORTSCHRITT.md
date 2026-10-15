@@ -15477,3 +15477,66 @@ Regeln 36 / 36 Dateien grün im Emulator. **Nicht prüfbar von hier:** der
 echte Anmeldeweg mit dem Firebase-SDK (Proxy-Zertifikat) und die
 ausgelieferte Regel am Produktionsprojekt. Der Übergang für
 `doneKuerzel` fängt den Fall ab, dass die App vor der Regel draußen ist.
+
+## Runde 148: Eigene Reihenfolge in Aufgaben und Putzplan (15.10.2026)
+
+> „kannst du noch dafür sorgen das man uafgaben und aufgaben im putzplan
+> selber sortieren kann auch als mitarbeiter das es einfach für einen
+> selber übersichtlicher ist, es reichen drei striche an der seite mit
+> denen man die aufgaben dann hin und her bewegen kann"
+
+**Gebaut**
+- **Griff ≡** links an jeder offenen Zeile, in Aufgaben und Putzplan, für
+  alle Rollen. Ziehen mit Finger oder Maus; am PC auch ↑/↓, solange der
+  Griff den Fokus hat. Unter „Filter" gibt es „Eigene Reihenfolge
+  zurücksetzen" (nur sichtbar, wenn es eine gibt).
+- **Gespeichert pro Person** in `privat/<uid>`
+  (`reiheAufgaben`, `reihePutz`, `reiheTs`), dazu eine Abschrift auf dem
+  Gerät (`kf_reihe_<uid>`). Es gilt die neuere von beiden.
+- **Gemeinsame Mechanik** `ziehenBinden()` für beide Listen. Gemessen
+  wird einmal beim Aufsetzen, danach bewegt sich nur `transform`; am Rand
+  rollt die Liste mit.
+
+**Warum so**
+- **„Für einen selber".** Die Reihenfolge gehört der Person, nicht der
+  Aufgabe. An der Aufgabe gespeichert, würde jeder jedem die Liste
+  umsortieren. `privat/<uid>` darf ohnehin nur die Person selbst lesen
+  und schreiben, in beiden Welten. Eine neue Regel braucht es nicht, und
+  in die Sicherung kommt `privat` nie.
+- **Innerhalb der Gruppe.** Die Gruppen sagen etwas über die Aufgabe
+  (überfällig, heute, täglich). Eigene Ordnung darf keine Aufgabe nach
+  „Heute" schieben, die erst nächste Woche dran ist.
+- **Nur in der Standard-Sortierung.** Wer ausdrücklich nach Name oder
+  Dringlichkeit sortiert, will genau das; dort gibt es keinen Griff.
+- **Neues oben.** Eine Aufgabe ohne Platz steht in ihrer Gruppe vorn.
+  Wer seine Liste geordnet hat, soll Neues nicht unten zwischen seinen
+  eigenen suchen müssen.
+- **Erledigte** haben keinen Griff und bleiben unten, wie bisher.
+- **Am Studio-Tablet mit einem gemeinsamen Zugang** teilen sich alle, die
+  daran arbeiten, eine Reihenfolge. Sie gehört zum Konto, nicht zum
+  Kürzel. Das ist die ehrliche Folge von „pro Person", wenn die Person
+  sich nicht anmeldet.
+
+**Gefunden beim Bauen**
+- **Griff in „kompakt" zu schmal.** Mit festen Rändern war der Griff in
+  „kompakt" nur 39 bzw. 42 px breit. Ursache: Die Zeile hat dort 9 statt
+  12 px Innenabstand. Sie schnitt den Griff ab, und seine Trefferfläche
+  griff 2 px in die des Hakens. Die Ränder werden jetzt aus `--s12`
+  gerechnet.
+- **Erste Wisch-Probe prüfte nichts.** Der erste Fingertest blieb auch
+  OHNE den Schutz gegen das Wischen grün. Der Zug ging überwiegend nach
+  unten, und das Wischen hielt ihn für Rollen. Der Test zieht jetzt
+  zusätzlich fast nur nach rechts. Ohne Schutz wird dabei abgehakt
+  (rot), mit Schutz nicht (grün).
+
+**Tests**
+- `tests/test-eigene-reihenfolge.js` (50 Prüfungen):
+  - Leitung und Mitarbeiter, Aufgaben und Putzplan;
+  - Maus, Finger (Chrome-Protokoll) und Tastatur;
+  - nur `privat/` beschrieben, nichts an Aufgaben oder Putzpunkten;
+  - Neuladen, Konto vor Gerät, Neues oben, Zurücksetzen, Gegenprobe
+    „Nach Name";
+  - Griff und Haken ≥ 44 × 44 bei 320–1920 px, normal und kompakt.
+
+**Durchläufe:** Oberfläche 185 / 185 grün (`ZEIT=420`, wie in Runde 147
+begründet). Regeln unverändert (keine neue Sammlung, keine neue Regel).
