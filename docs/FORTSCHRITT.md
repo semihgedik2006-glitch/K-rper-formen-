@@ -15540,3 +15540,77 @@ ausgelieferte Regel am Produktionsprojekt. Der Übergang für
 
 **Durchläufe:** Oberfläche 185 / 185 grün (`ZEIT=420`, wie in Runde 147
 begründet). Regeln unverändert (keine neue Sammlung, keine neue Regel).
+
+---
+
+## Runde 149: Das Studio-Gehirn in StudioChat (18.10.2026)
+
+Aus dem Betrieb, 17.10.2026: *„ich kann dir aber auch zugriff auf github
+geben das du zugriff auf studio chat hast … und wir nutzen es darüber"*.
+Auf die Rückfragen: im Rettungsring **und** als eigener Punkt unter
+„Alles", für **alle von Körperformen**, und die 115 Handbuch-Einträge als
+Startwissen ins Gehirn (das passiert beim Gehirn selbst, nicht hier).
+
+**Was gebaut ist**
+- **Function `gehirnFrage`** (`functions/index.js`): prüft Anmeldung,
+  Freigabe (`aktiv`) und Firma (nur `koerperformen` bzw. die flache
+  Datenbank), zählt über `tagesGrenze` (300 am Tag) und reicht die Frage
+  an den Cloudflare Worker weiter. Mitgeschickt werden nur Name und
+  Studio.
+- **Hilfe-Fenster:** neue Tafel `#hilfeGehirn`. Am Rechner steht sie
+  rechts wie ein Eintrag, die Suche bleibt links. Am Handy ist sie eine
+  eigene Seite. Im Start der Hilfe steht „Studio-Gehirn fragen". Unter
+  jeder Trefferliste steht „Studio-Gehirn fragen: ‚…'", die Suche ist
+  dann schon eingetragen.
+- **„Alles → Was muss ich wissen?"** hat den Eintrag „Studio-Gehirn"
+  (`data-al-gehirn`). Er öffnet die Hilfe direkt auf der Frage.
+- Eintrag in `NEUIGKEITEN`, `wo:'gehirn'`.
+
+**Warum so entschieden**
+- **Über eine Function, nicht direkt aus dem Browser.** Der Worker
+  verlangt einen Schlüssel, und das Repository ist öffentlich. Der
+  Schlüssel liegt als GitHub-Secret `STUDIO_GEHIRN_KEY` in
+  `functions/.env`. Ohne ihn sagt die App genau das.
+- **Kein Verlauf in Firestore.** Fragen und Antworten liegen beim Gehirn
+  (Leitstand, mit Löschfrist), sonst landeten sie im nächtlichen
+  Vollexport unter `sicherung/`. In der App lebt der Verlauf nur, bis
+  das Fenster neu geladen wird.
+- **Herkunft statt Status.** „Aus dem Studio-Wissen" und „Noch nicht
+  geprüft" sind Marken in Akzent bzw. Grau, nicht in Grün oder Rot. Das
+  eine ist eine Herkunft, kein Erfolg.
+- **Antworttext wird mit `esc()` gesetzt.** Was von der KI kommt, ist
+  fremder Text (geprüft mit einem `<img onerror>` in der Antwort).
+
+**Tests**
+- `tests/test-gehirn.js` (39 Prüfungen):
+  - Eintrag in „Alles" und dass er die Hilfe auf der Frage öffnet;
+  - Aufruf von `gehirnFrage` mit `art`/`text`;
+  - geprüfte und ungeprüfte Antwort, Fehler an Ort und Stelle, Idee;
+  - Escape, kein HTML aus der Antwort;
+  - aus der Suche heraus bei 390 und 1440 px;
+  - fremde Firma ohne Eintrag, Knopf und Verweis;
+  - Trefferflächen ≥ 44 × 44 bei 320 / 390 / 430 / 820 / 1280 / 1440 /
+    1920 px, normal und kompakt.
+- Gegenprobe: Mit `gehirnVerfuegbar()` fest auf `true` werden die drei
+  Fremde-Firma-Prüfungen rot.
+- `tests/test-neu-design.js` kennt `data-al-gehirn` als vierte
+  Fenster-Zeile, so wie Hilfe, Neu und Problem melden.
+
+**Nicht geprüft, und deshalb hier gesagt**
+- Der echte Weg App → Function → Worker lief hier nicht. Das echte
+  Firebase-SDK lädt im Test-Browser nicht, und die Function braucht das
+  Secret. Geprüft ist die Oberfläche gegen die Attrappe. Die Function
+  ist nur auf Syntax geprüft (`node --check`).
+- **Test-Umgebung:** Der Proxy dieser Sitzung lieferte das echte SDK
+  trotz `route.abort()` aus. Die Durchläufe liefen deshalb mit einer
+  Vorlade-Datei, die `www.gstatic.com` per `--host-resolver-rules`
+  sperrt. An den Tests selbst ist nichts geändert. Ohne diese Datei
+  starteten auf `main` auch `test-knoepfe`, `test-quer` und
+  `test-funktionen-schalter` nicht.
+
+**Durchläufe:** test-gehirn, test-knoepfe, test-gestaltung,
+test-abgeschnitten, test-quer, test-csp, test-hilfe-pc, test-loesungen,
+test-neu-design, test-neu-messlatte, test-navigation, test-ems-wissen,
+test-ems-schulung, test-schnell-editor, test-funktionen-schalter,
+test-funktionen-pfade und test-ausliefern sind grün. Der volle Lauf
+aller 185 lief **nicht**.

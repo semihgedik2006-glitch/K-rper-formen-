@@ -214,6 +214,9 @@ jobs:
             echo "STRIPE_PREIS_PREMIUM_STUDIO="${{ secrets.STRIPE_PREIS_PREMIUM_STUDIO }}""
             echo "APP_URL="${{ secrets.APP_URL }}""
             echo "TEST_TAGE="${{ secrets.TEST_TAGE }}""
+            # Studio-Gehirn: derselbe Wert wie STUDIO_KEY beim Cloudflare
+            # Worker. Fehlt er, sagt der Bereich in der App genau das.
+            echo "STUDIO_GEHIRN_KEY="${{ secrets.STUDIO_GEHIRN_KEY }}""
           } > functions/.env
 
       # Nur ein Hinweis im Protokoll, kein Abbruch — sonst fällt fehlender

@@ -6971,7 +6971,101 @@ exports.kennzahlenErinnern = region
     return null;
   });
 
-exports.__intern = { authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
+/* ══════════════════════════════════════════════════════════════════════
+   STUDIO-GEHIRN
+
+   Aus dem Betrieb, 17.10.2026:
+     „ich kann dir aber auch zugriff auf github geben das du zugriff auf
+      studio chat hast … und wir nutzen es darüber"
+
+   Das Studio-Gehirn ist ein eigener kleiner Server (Cloudflare Worker,
+   Wissen in einer eigenen Datenbank, dieselbe KI auch für WhatsApp).
+   StudioChat stellt die Frage nur weiter und zeigt die Antwort.
+
+   ── WARUM ÜBER EINE FUNCTION UND NICHT DIREKT AUS DEM BROWSER ───────
+   Der Worker will einen Schlüssel (STUDIO_GEHIRN_KEY). Stünde er in der
+   App, stünde er in einem ÖFFENTLICHEN Repository. Hier liegt er in
+   functions/.env, kommt aus den GitHub-Secrets — und die Function prüft
+   vorher, wer fragt: angemeldet, freigegeben, und Körperformen. Andere
+   Firmen derselben Datenbank sehen den Bereich nicht und kommen auch
+   über einen nachgebauten Aufruf nicht hinein.
+
+   ── WAS NICHT HIER LIEGT ────────────────────────────────────────────
+   Keine Fragen, keine Antworten in Firestore. Der Verlauf liegt beim
+   Gehirn (Leitstand, mit Löschfrist). So landet er auch nicht im
+   nächtlichen Vollexport unter sicherung/.
+   ══════════════════════════════════════════════════════════════════════ */
+const GEHIRN_FIRMEN = ['koerperformen'];
+const GEHIRN_URL_STANDARD = 'https://studio-gehirn.semihgedik2006.workers.dev';
+const GEHIRN_TEXT_MAX = 2000;
+const GEHIRN_TAGESGRENZE = 300;
+
+/* null = flache Datenbank ohne Mandanten: das ist Körperformen selbst. */
+function gehirnErlaubt(firma) {
+  return firma === null || firma === undefined || GEHIRN_FIRMEN.indexOf(firma) >= 0;
+}
+
+/* Was an den Worker geht. Nur Name und Studio, keine Mailadresse, keine
+   Kennung — mehr braucht der Leitstand nicht, um nachzufragen. */
+function gehirnAuftrag(daten, profil) {
+  const art = (daten || {}).art === 'idee' ? 'idee' : 'frage';
+  const text = String((daten || {}).text || '').trim().slice(0, GEHIRN_TEXT_MAX);
+  const p = profil || {};
+  const studio = String(p.studio || (Array.isArray(p.studios) && p.studios[0]) || '').slice(0, 60);
+  const name = String(p.name || 'Unbekannt').slice(0, 60);
+  const body = art === 'idee' ? { text, name, studio } : { frage: text, name, studio };
+  return { art, text, body };
+}
+
+exports.gehirnFrage = region
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const { profil } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) {
+      throw new functions.https.HttpsError('permission-denied',
+        'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    }
+    const auftrag = gehirnAuftrag(data, profil);
+    if (!auftrag.text) {
+      throw new functions.https.HttpsError('invalid-argument', 'Bitte zuerst eine Frage eingeben.');
+    }
+    const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
+    if (!schluessel) {
+      throw new functions.https.HttpsError('failed-precondition',
+        'Das Studio-Gehirn ist noch nicht verbunden (STUDIO_GEHIRN_KEY fehlt in den GitHub-Secrets).');
+    }
+    await tagesGrenze('gehirnFrage', GEHIRN_TAGESGRENZE, firma);
+    const url = (process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/' + auftrag.art;
+    let antwort, json;
+    try {
+      antwort = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel },
+        body: JSON.stringify(auftrag.body)
+      });
+      json = await antwort.json().catch(() => ({}));
+    } catch (e) {
+      console.error('gehirnFrage: nicht erreichbar', e && e.message);
+      throw new functions.https.HttpsError('unavailable', 'Das Studio-Gehirn ist gerade nicht erreichbar. Bitte gleich noch einmal.');
+    }
+    if (!antwort.ok) {
+      console.error('gehirnFrage HTTP ' + antwort.status + ':', JSON.stringify(json).slice(0, 300));
+      if (antwort.status === 429) {
+        throw new functions.https.HttpsError('resource-exhausted', json.fehler || 'Für heute ist die Grenze erreicht. Morgen geht es weiter.');
+      }
+      throw new functions.https.HttpsError('internal', 'Das Studio-Gehirn hat nicht geantwortet (' + antwort.status + ').');
+    }
+    if (auftrag.art === 'idee') return { ok: true };
+    return {
+      antwort: String(json.antwort || '').slice(0, 6000),
+      abgedeckt: !!json.abgedeckt,
+      offen: json.offenId || null
+    };
+  });
+
+exports.__intern = { gehirnErlaubt, gehirnAuftrag, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+                     authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
                      berlinDatum, tagDanach, erledigt, stempelGrenzTag,
