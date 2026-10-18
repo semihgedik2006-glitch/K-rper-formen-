@@ -15614,3 +15614,68 @@ test-neu-design, test-neu-messlatte, test-navigation, test-ems-wissen,
 test-ems-schulung, test-schnell-editor, test-funktionen-schalter,
 test-funktionen-pfade und test-ausliefern sind grün. Der volle Lauf
 aller 185 lief **nicht**.
+
+---
+
+## Runde 150 — Studio-Gehirn bekommt eine eigene Seite, hilft bei der App, legt an und berichtet (18.10.2026)
+
+Wunsch aus dem Betrieb: „coole animationen … mehr in die app integrieren
+… bei fragen bezüglich zur app helfen … sachen auch anlegen … und das
+dann zusammenfasst, dass die chefs und ich wissen was abgeht". Auf
+Rückfrage: alles nacheinander, Anlegen nur als **Vorschlag mit
+Bestätigung**, Bericht **täglich und montags**, in der App und per Mail.
+
+**Was gebaut ist**
+1. **Eigene Seite „Gehirn"** (Ich → Gehirn, und unter „Alles"). Die
+   Frage im Hilfe-Fenster ist weg — eine Seite hat Platz für Verlauf,
+   Vorschläge und Bericht. Am Rechner ab 1100 px zwei Spalten: links das
+   Gespräch, rechts Lagebericht und Hilfe. Animationen: Ankunft der
+   Seite, ein Puls am Symbol **nur solange es denkt**, drei hüpfende
+   Punkte, Antwort Wort für Wort. Alles per `transform`/`opacity`, keine
+   Endlos-Animation im Ruhezustand, bei „weniger Bewegung" aus.
+2. **App-Hilfe:** 67 Einträge aus `docs/HANDBUCH.md` gehen ins Wissen
+   (Kategorie „App & Studio Chat"). Unter einer Antwort stehen bis zu
+   zwei Knöpfe „Zu … ›", die direkt auf die passende Seite führen —
+   nur Seiten, die die Person sehen darf.
+3. **„Anlegen lassen"** (Chef und Leitung): neue Function `gehirnAktion`
+   macht aus einem Satz einen Vorschlag für eine Aufgabe oder eine
+   Ansage. Der Vorschlag füllt das **echte** Formular im Chef-Bereich
+   vor; gespeichert wird erst mit dem gewohnten Knopf. **Warum so:** eine
+   KI, die selbst speichert, schreibt irgendwann etwas Falsches an 14
+   Studios. Geprüft wird serverseitig (`gehirnVorschlagPruefen`): Typ,
+   Längen, Frist nicht in der Vergangenheit, Studios nur aus den eigenen,
+   „wichtig" nur bei Ansagen.
+4. **Lagebericht:** `lageberichtTag` (19:00) und `lageberichtWoche`
+   (Mo 7:30) fassen Fragen, offene Punkte und Ideen zusammen, legen das
+   Ergebnis unter `config/lagebericht` ab und mailen den Chefs (Thema
+   „lagebericht", abschaltbar). `lageberichtJetzt` aktualisiert auf
+   Knopfdruck, ohne Mail. Die Zahlen kommen vom Worker (`/api/bericht`,
+   Worker 2.3); ohne ihn sagt der Bericht das, statt Zahlen zu erfinden.
+
+**Regeln:** `config/lagebericht` lesen nur Chef und Leitung, schreiben
+niemand (nur die Function) — in **beiden** Pfaden, der allgemeine
+`config/{doc}`-Treffer schliesst das Dokument aus. Neuer Regeltest
+`tests/rules/lagebericht.test.js` (beide Welten + fremde Firma).
+
+**Gefunden beim Bauen**
+- Eine klebende Eingabezeile verdeckte bei 320 px die Beispiel-Chips
+  (Trefferfläche 0 × 0). Die Eingabe klebt jetzt nicht mehr.
+- `test-funktionen-pfade` verlangt, dass zeitgesteuerte Functions
+  sichtbar über `alleFirmen()` laufen — die Schleife steht deshalb im
+  Export, nicht in einer Hilfsfunktion.
+- Feste Werte (50 %, 5 px, .04em) auf die Leiter in `:root` gezogen.
+
+**Durchläufe grün:** test-gehirn (63), test-gehirn-aktion (23),
+test-navigation, test-neu-design, test-knoepfe, test-gestaltung,
+test-abgeschnitten, test-quer, test-csp, test-hilfe-pc, test-loesungen,
+test-schnell-editor, test-glocke, test-funktionen-schalter,
+test-funktionen-pfade, test-neu-messlatte, test-ems-wissen,
+test-ems-schulung, test-ausliefern. Gegenprobe: „Anlegen lassen" für
+alle sichtbar → test-gehirn rot.
+
+**Nicht geprüft, und deshalb hier gesagt**
+- Der echte Weg App → Function → Gemini/Worker lief hier nicht (SDK lädt
+  im Test-Browser nicht). Die Oberfläche ist gegen die Attrappe geprüft,
+  die Prüfregeln der Function als Einheitstest.
+- Der Regeltest läuft nur in CI (Emulator).
+- Der volle Lauf aller Tests lief nicht.

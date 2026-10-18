@@ -1312,7 +1312,8 @@ service cloud.firestore {
       // Dekoration.
       allow read: if aufFlachenPfaden()
         && (istAktiv() && doc != 'registrierung'
-                   && doc != 'beitrittSchalter' && doc != 'studios');
+                   && doc != 'beitrittSchalter' && doc != 'studios'
+                   && doc != 'lagebericht');
       // 'studios' muss auch beim SCHREIBEN ausgenommen sein, nicht nur
       // beim Lesen. Sonst haengt die Sperre "die Liste darf nur wachsen"
       // in der Luft: diese Regel hier erlaubt dem Chef write, und in
@@ -1324,7 +1325,19 @@ service cloud.firestore {
          am Server vorbei. Dieselbe Falle wie bei 'studios'. */
       allow write: if aufFlachenPfaden()
         && (isChef() && doc != 'studios'
-            && doc != 'registrierung' && doc != 'beitrittSchalter');
+            && doc != 'registrierung' && doc != 'beitrittSchalter'
+            && doc != 'lagebericht');
+    }
+
+    // ── Lagebericht des Studio-Gehirns (Runde 150) ──
+    // Lesen: nur die Leitung. Darin stehen Fragen aus dem Team und was in
+    // den Studios liegen geblieben ist - das ist eine Zusammenfassung fuer
+    // die Leitung, kein Aushang. Schreiben: nur der Server (Zeitplan).
+    // Deshalb ist 'lagebericht' oben in der allgemeinen config-Regel
+    // ausgenommen: in Firestore genuegt EINE erlaubende Regel.
+    match /config/lagebericht {
+      allow read: if aufFlachenPfaden() && (isChef() || isLeiter());
+      allow write: if false;
     }
 
     // ── Direktnachrichten (1:1) – nur die beiden Beteiligten ──
@@ -2222,7 +2235,8 @@ service cloud.firestore {
              Team nichts an; dass gerade nichts gespeichert wird, schon.
              Geschrieben wird es ausschliesslich vom Server. */
           allow read: if inFirma(f) && (istAktiv() && doc != 'registrierung'
-                       && doc != 'beitrittSchalter' && doc != 'studios');
+                       && doc != 'beitrittSchalter' && doc != 'studios'
+                       && doc != 'lagebericht');
           // 'studios' muss auch beim SCHREIBEN ausgenommen sein, nicht nur
           // beim Lesen. Sonst haengt die Sperre "die Liste darf nur wachsen"
           // in der Luft: diese Regel hier erlaubt dem Chef write, und in
@@ -2238,7 +2252,14 @@ service cloud.firestore {
              Zustand, der beim Sperren zwei Tage lang unbemerkt blieb. */
           allow write: if schreibtIn(f)
                        && (isChef() && doc != 'studios' && doc != 'zugriff'
-                           && doc != 'registrierung' && doc != 'beitrittSchalter');
+                           && doc != 'registrierung' && doc != 'beitrittSchalter'
+                           && doc != 'lagebericht');
+        }
+
+        // Lagebericht des Studio-Gehirns — dieselbe Regel wie flach (Runde 150).
+        match /config/lagebericht {
+          allow read: if inFirma(f) && (isChef() || isLeiter());
+          allow write: if false;
         }
 
         match /dms/{dmId} {

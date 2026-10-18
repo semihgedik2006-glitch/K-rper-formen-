@@ -7064,7 +7064,288 @@ exports.gehirnFrage = region
     };
   });
 
+/* ══════════════════════════════════════════════════════════════════════
+   STUDIO-GEHIRN, RUNDE 150: ANLEGEN LASSEN UND LAGEBERICHT
+
+   Aus dem Betrieb, 18.10.2026: „sachen auch anlegen … für die chefs und
+   das dann zusammenfasst das die chefs und ich wissen was abgeht".
+   Auf die Rückfragen: Vorschlag + Bestätigen; Bericht täglich und
+   montags, in der App und per Mail.
+
+   ── WARUM GEMINI UND NICHT DER WORKER ───────────────────────────────
+   Für beides braucht es Daten AUS StudioChat (Studios, offene Aufgaben)
+   und eine Antwort in fester Form. Der Worker kennt die App nicht; der
+   Gemini-Schlüssel liegt hier schon (marketingChat). Der Worker liefert
+   nur seine eigenen Zahlen (/api/bericht).
+
+   ── WAS DIE KI NICHT DARF ───────────────────────────────────────────
+   Nichts anlegen. gehirnAktion gibt einen VORSCHLAG zurück; die App
+   füllt damit das normale Formular, und erst der Mensch drückt dort
+   „erstellen" — mit seinen eigenen Rechten. Studios, die die Person
+   nicht verwalten darf, fallen hier schon heraus.
+   ══════════════════════════════════════════════════════════════════════ */
+const GEHIRN_AKTION_GRENZE = 100;
+const DATUM_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+async function geminiJson(system, nutzer, apiKey) {
+  const resp = await fetch(
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: 'user', parts: [{ text: nutzer }] }],
+        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
+      })
+    });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error('Gemini HTTP ' + resp.status + ': ' + JSON.stringify(json).slice(0, 300));
+  const teile = (((json.candidates || [])[0] || {}).content || {}).parts || [];
+  const text = teile.map(p => p.text || '').join('');
+  try { return JSON.parse(text); } catch (e) {
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) { try { return JSON.parse(m[0]); } catch (e2) { /* unten */ } }
+  }
+  throw new Error('Gemini: keine lesbare Antwort');
+}
+
+/* Prüft, was die KI vorschlägt, und macht es harmlos. Rein rechnerisch,
+   damit es sich ohne Datenbank prüfen lässt (siehe __intern).
+     roh        Antwort der KI
+     namen      { studioKey: 'Name' } der Firma
+     erlaubt    Studio-Kennungen, die die Person verwalten darf
+     rolle      'chef' | 'leiter'
+     heute      'YYYY-MM-DD' (Berlin) */
+function gehirnVorschlagPruefen(roh, namen, erlaubt, rolle, heute) {
+  const r = roh || {};
+  const typ = r.typ === 'ankuendigung' ? 'ankuendigung' : (r.typ === 'aufgabe' ? 'aufgabe' : null);
+  if (!typ) return null;
+  const kurz = (s, n) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
+  const titel = kurz(r.titel, 120);
+  const text = String(r.text || '').trim().slice(0, typ === 'ankuendigung' ? 2000 : 1000);
+  if (typ === 'aufgabe' && !titel) return null;
+  if (typ === 'ankuendigung' && !text && !titel) return null;
+  const schritte = typ === 'aufgabe' && Array.isArray(r.schritte)
+    ? r.schritte.map(x => kurz(x, 120)).filter(Boolean).slice(0, 12) : [];
+  let frist = String(r.frist || '');
+  if (!DATUM_RE.test(frist) || (heute && frist < heute)) frist = '';
+  /* Studios: Namen der KI auf Kennungen abbilden, und zwar NUR auf die,
+     die diese Person verwalten darf. „alle" heisst für die Leitung:
+     alle eigenen. Eine Ankündigung an „alle Mitarbeiter" gibt es nur
+     für den Chef — dieselbe Grenze wie im Formular. */
+  const erlaubtSet = new Set(erlaubt || []);
+  const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
+  const gewuenscht = Array.isArray(r.studios) ? r.studios.map(String) : [];
+  let alle = r.alle === true || gewuenscht.some(s => /^alle/i.test(s.trim()));
+  let keys = [];
+  if (!alle) {
+    for (const g of gewuenscht) {
+      const n = norm(g);
+      if (!n) continue;
+      const k = Object.keys(namen || {}).find(key => erlaubtSet.has(key) &&
+        (norm(namen[key]) === n || norm(namen[key]).indexOf(n) >= 0 || n.indexOf(norm(namen[key])) >= 0));
+      if (k && keys.indexOf(k) < 0) keys.push(k);
+    }
+  }
+  if (alle && rolle !== 'chef') { alle = false; keys = Array.from(erlaubtSet).filter(k => namen && namen[k]); }
+  if (typ === 'ankuendigung' && !alle) keys = keys.slice(0, 1);
+  return {
+    typ, titel, text, schritte, frist, alle,
+    studioKeys: keys,
+    studioNamen: keys.map(k => (namen || {})[k] || k),
+    wichtig: typ === 'ankuendigung' && r.wichtig === true
+  };
+}
+
+exports.gehirnAktion = region
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const { profil } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) {
+      throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    }
+    const rolle = profil.role;
+    if (rolle !== 'chef' && rolle !== 'leiter') {
+      throw new functions.https.HttpsError('permission-denied', '„Anlegen lassen" gibt es für Studioleitung und Chefs.');
+    }
+    const auftrag = String((data || {}).text || '').trim().slice(0, 1000);
+    if (!auftrag) throw new functions.https.HttpsError('invalid-argument', 'Bitte zuerst schreiben, was angelegt werden soll.');
+    const apiKey = process.env.GEMINI_API_KEY || '';
+    if (!apiKey) throw new functions.https.HttpsError('failed-precondition', 'GEMINI_API_KEY fehlt (GitHub-Secret).');
+    await tagesGrenze('gehirnAktion', GEHIRN_AKTION_GRENZE, firma);
+
+    const namen = await alleStudios(firma);
+    const erlaubt = rolle === 'chef'
+      ? Object.keys(namen)
+      : (Array.isArray(profil.studioKeys) ? profil.studioKeys : []).filter(k => namen[k]);
+    const heute = tagBerlin(new Date());
+    const wochentag = new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin', weekday: 'long' });
+    const system =
+      'Du wandelst eine kurze Anweisung der Studioleitung eines EMS-Studios in einen Vorschlag für StudioChat um. ' +
+      'Heute ist ' + wochentag + ', ' + heute + ' (Europe/Berlin). ' +
+      'Antworte NUR mit JSON: {"typ":"aufgabe"|"ankuendigung"|"keins","titel":"...","text":"...","schritte":["..."],' +
+      '"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"],"wichtig":true|false,"hinweis":"..."}. ' +
+      'Regeln: "aufgabe" = etwas, das im Studio erledigt und abgehakt wird; "ankuendigung" = eine Information an das Team. ' +
+      'Titel kurz (max. 80 Zeichen), Text sachlich. Teilschritte nur, wenn die Anweisung mehrere Tätigkeiten nennt. ' +
+      'Frist nur, wenn eine Zeit genannt ist ("bis Freitag" = der nächste Freitag). ' +
+      'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '; "alle" wenn alle gemeint sind. ' +
+      'Keine Kundennamen oder Gesundheitsdaten übernehmen. Ist es weder Aufgabe noch Ankündigung: typ "keins" und ein kurzer hinweis.';
+    let roh;
+    try { roh = await geminiJson(system, auftrag, apiKey); }
+    catch (e) {
+      console.error('gehirnAktion:', e.message);
+      throw new functions.https.HttpsError('unavailable', 'Die KI hat gerade nicht geantwortet. Bitte gleich noch einmal.');
+    }
+    const vorschlag = gehirnVorschlagPruefen(roh, namen, erlaubt, rolle, heute);
+    return {
+      vorschlag,
+      hinweis: vorschlag ? '' : String((roh && roh.hinweis) || '').slice(0, 300)
+    };
+  });
+
+/* ── Lagebericht ─────────────────────────────────────────────────────
+   Täglich 19 Uhr („tag") und montags 7:30 Uhr („woche"). Gespeichert
+   unter config/lagebericht (lesen nur Leitung, schreiben nur hier),
+   per Mail an die Chefs (Schalter „lagebericht" unter Meldungen). */
+async function gehirnWorkerBericht(tage) {
+  const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
+  if (!schluessel) return null;
+  try {
+    const url = (process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/bericht';
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel },
+      body: JSON.stringify({ tage })
+    });
+    if (!r.ok) { console.error('Lagebericht: Worker HTTP ' + r.status); return null; }
+    return await r.json();
+  } catch (e) { console.error('Lagebericht: Worker', e.message); return null; }
+}
+
+/* Ohne KI: dieselben Fakten, schlicht aufgezählt. Lieber ein nüchterner
+   Bericht als keiner, wenn Gemini einmal nicht antwortet. */
+function lageberichtOhneKi(art, g, studios) {
+  const teile = [];
+  const zeitraum = art === 'woche' ? 'In den letzten 7 Tagen' : 'Heute';
+  if (g) {
+    teile.push(zeitraum + ' gingen ' + g.fragen + (g.fragen === 1 ? ' Frage' : ' Fragen') + ' an das Studio-Gehirn' +
+      (g.fragen ? ', davon ' + g.abgedeckt + ' direkt aus dem Studio-Wissen beantwortet.' : '.'));
+    if (g.offenGesamt) teile.push(g.offenGesamt + (g.offenGesamt === 1 ? ' Frage wartet' : ' Fragen warten') + ' im Leitstand auf eine Antwort.');
+    if ((g.ideen || []).length) teile.push((g.ideen || []).length + ' neue ' + ((g.ideen || []).length === 1 ? 'Idee' : 'Ideen') + ' aus dem Team.');
+  } else {
+    teile.push('Die Zahlen des Studio-Gehirns waren gerade nicht abrufbar.');
+  }
+  const offen = studios.filter(s => s.aufgaben || s.putz).sort((a, b) => (b.aufgaben + b.putz) - (a.aufgaben + a.putz));
+  if (offen.length) {
+    teile.push('Noch offen: ' + offen.slice(0, 4).map(s => s.name + ' (' + standSatz({ aufgaben: s.aufgaben, putz: s.putz, gesamt: s.aufgaben + s.putz }) + ')').join(', ') + '.');
+  } else if (studios.length) {
+    teile.push('In allen Studios ist alles abgehakt.');
+  }
+  return teile.join(' ');
+}
+
+async function lageberichtBauen(firma, art) {
+  const tage = art === 'woche' ? 7 : 1;
+  const g = await gehirnWorkerBericht(tage);
+  const namen = await alleStudios(firma);
+  const studios = [];
+  for (const k of Object.keys(namen).sort((a, b) => String(namen[a]).localeCompare(String(namen[b]), 'de'))) {
+    const s = await offenImStudio(firma, k);
+    if (s.dokumente) studios.push({ name: namen[k], aufgaben: s.aufgaben, putz: s.putz });
+  }
+  const zahlen = {
+    fragen: g ? g.fragen : 0, abgedeckt: g ? g.abgedeckt : 0,
+    offen: g ? g.offenGesamt : 0, ideen: g ? (g.ideen || []).length : 0,
+    wissen: g ? g.wissen : 0
+  };
+  let text = '', ki = false;
+  const apiKey = process.env.GEMINI_API_KEY || '';
+  if (apiKey) {
+    try {
+      const system =
+        'Du schreibst für die Geschäftsführung eines EMS-Studio-Betriebs den ' +
+        (art === 'woche' ? 'Wochenrückblick (5 bis 8 Sätze)' : 'Tagesbericht (3 bis 5 Sätze)') +
+        ' aus den Daten des Studio-Gehirns (Fragen der Mitarbeiter an eine KI) und dem Stand der Aufgaben und Putzpläne. ' +
+        'Deutsch, sachlich, freundlich, ohne Aufzählungszeichen und ohne Markdown. Nenne: wie viel gefragt wurde und worum es ' +
+        'hauptsächlich ging (Themen zusammenfassen, keine Einzelfragen wörtlich), was offen ist und im Leitstand beantwortet ' +
+        'werden sollte, welche Ideen kamen, und welche Studios noch etwas offen haben. Keine Personennamen, keine Kundendaten, ' +
+        'keine Gesundheitsdetails. Erfinde nichts, was nicht in den Daten steht. ' +
+        'Antworte als JSON: {"text":"..."}';
+      const daten = {
+        zeitraum: art === 'woche' ? 'letzte 7 Tage' : 'heute',
+        gehirn: g ? {
+          fragen: g.fragen, ausWissen: g.abgedeckt, offenImLeitstand: g.offenGesamt,
+          neueOffeneFragen: (g.offen || []).map(o => ({ frage: String(o.frage || '').slice(0, 200), studio: o.studio || '' })),
+          ideen: (g.ideen || []).map(i => ({ idee: String(i.text || '').slice(0, 200), studio: i.studio || '' })),
+          beispielFragen: (g.beispiele || []).map(b => String(b.text || '').slice(0, 160))
+        } : 'nicht abrufbar',
+        studios
+      };
+      const roh = await geminiJson(system, JSON.stringify(daten), apiKey);
+      text = String((roh && roh.text) || '').trim().slice(0, 3000);
+      ki = !!text;
+    } catch (e) { console.error('Lagebericht KI:', e.message); }
+  }
+  if (!text) text = lageberichtOhneKi(art, g, studios);
+  return { text, zahlen, studios: studios.slice(0, 20), stand: Date.now(), ki };
+}
+
+async function lageberichtFirma(firma, art) {
+  {
+    if (!gehirnErlaubt(firma)) return;
+    const b = await lageberichtBauen(firma, art);
+    await W(firma).collection('config').doc('lagebericht').set({ [art]: b }, { merge: true });
+    const chefs = await kontenImStudio(firma, null, 'chef');
+    const datum = new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin', weekday: 'long', day: '2-digit', month: '2-digit' });
+    const betreff = art === 'woche' ? 'Wochenrückblick vom Studio-Gehirn' : 'Lagebericht vom Studio-Gehirn – ' + datum;
+    const z = b.zahlen;
+    await teamMail(firma, chefs, betreff,
+      b.text + '\n\n' +
+      'Fragen: ' + z.fragen + ' · davon aus dem Wissen: ' + z.abgedeckt + ' · offen im Leitstand: ' + z.offen + ' · neue Ideen: ' + z.ideen + '\n\n' +
+      'In der App: Ich → Gehirn. Abschalten lässt sich diese Mail unter Einstellungen → Meldungen → „Lagebericht vom Studio-Gehirn".',
+      'lagebericht');
+  }
+}
+
+exports.lageberichtTag = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('0 19 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    for (const firma of await alleFirmen()) await lageberichtFirma(firma, 'tag');
+    return null;
+  });
+
+exports.lageberichtWoche = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('30 7 * * 1')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    for (const firma of await alleFirmen()) await lageberichtFirma(firma, 'woche');
+    return null;
+  });
+
+/* Für die Vorführung und danach: der Chef kann den Tagesbericht sofort
+   neu erstellen lassen, statt bis 19 Uhr zu warten. Ohne Mail. */
+exports.lageberichtJetzt = region
+  .runWith({ timeoutSeconds: 120, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const profil = await requireChef(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) {
+      throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    }
+    await tagesGrenze('lageberichtJetzt', 20, firma);
+    const art = (data || {}).art === 'woche' ? 'woche' : 'tag';
+    const b = await lageberichtBauen(firma, art);
+    await W(firma).collection('config').doc('lagebericht').set({ [art]: b }, { merge: true });
+    return { ok: true };
+  });
+
 exports.__intern = { gehirnErlaubt, gehirnAuftrag, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+                     gehirnVorschlagPruefen, lageberichtOhneKi,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,

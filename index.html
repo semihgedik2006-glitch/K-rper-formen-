@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-DQ0cQgQ9EZVXCI1qjjg8Acsf1Ijtb1Y8BWhAS+qxlX0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-C9WXrTUCY9UwXj8KYB01dIka9xGXKSpR1u8LoFSBWKg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5064,20 +5064,109 @@ html{font-size:var(--fs,100%)}
    350px stehen sie untereinander, ohne dass einer abgeschnitten wird —
    genau der Fall, der beim Nachmessen sonst auffällt. */
 .hilfe-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
-/* Studio-Gehirn: Frage und Antwort untereinander, die Antwort mit
-   Haarlinie links in der Farbe des Bereichs — kein Statusgrün, denn
-   „aus dem Wissen" ist eine Herkunft, kein Erfolg. */
-.gehirn-verlauf{display:flex;flex-direction:column;gap:var(--s12);margin:var(--s12) 0 var(--s16)}
-.gehirn-frage{align-self:flex-end;max-width:85%;background:var(--bg-3);border:1px solid var(--line);
-  border-radius:var(--r-md);padding:var(--s8) var(--s12);font-size:var(--t-sm);line-height:var(--lh)}
-.gehirn-antwort{border-left:3px solid var(--accent);padding:var(--s4) 0 var(--s4) var(--s12);
-  font-size:var(--t-sm);line-height:var(--lh);color:var(--text)}
-.gehirn-antwort p{margin:0 0 var(--s6);white-space:pre-wrap;overflow-wrap:anywhere}
-.gehirn-antwort.denkt p{color:var(--text-3)}
-.gehirn-antwort.fehler{border-left-color:var(--line-2)}
-.gehirn-hinweis{margin-top:var(--s16)}
 .hilfe-treffer-gehirn{margin-top:var(--s16)}
 .hilfe-treffer-gehirn .btn{min-height:44px;width:100%}
+
+/* ══ Studio-Gehirn (Runde 150) ══════════════════════════════════════
+   Aus dem Betrieb, 18.10.2026: „coole Animationen … mehr in die App
+   integrieren … gut präsentieren".
+
+   Bewegung nach den Regeln aus CLAUDE.md: nur transform und opacity,
+   einmalige Einblendungen mit fill-mode backwards, und die einzige
+   Endlos-Animation (das Nachdenken) läuft nur, solange wirklich
+   gewartet wird. Bei „weniger Bewegung" steht alles still. */
+.gehirn-layout{display:flex;flex-direction:column;gap:var(--s16);padding-bottom:var(--s8)}
+.gehirn-haupt{display:flex;flex-direction:column;gap:var(--s12);min-width:0}
+.gehirn-seite{display:flex;flex-direction:column;gap:var(--s12);min-width:0}
+@media (min-width:1100px){
+  .gehirn-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);
+    align-items:start;gap:var(--s24)}
+  .gehirn-seite{position:sticky;top:0}
+}
+/* Der Kopf: Farbe geht von der Kante aus und läuft aus. */
+.gehirn-hero{position:relative;overflow:hidden;border-radius:var(--radius);
+  padding:var(--s20) var(--s16);background:
+  radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
+  radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--accent-2) 18%, transparent), transparent 60%),
+  var(--bg-2);display:flex;gap:var(--s16);align-items:center}
+.gehirn-hero h3{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);margin:0 0 var(--s4)}
+.gehirn-hero p{margin:0;color:var(--text-2);font-size:var(--t-sm);line-height:var(--lh)}
+/* Die Kugel: ein Leuchten beim Ankommen, ein ruhiges Pulsieren nur
+   beim Nachdenken. */
+.gehirn-orb{flex:0 0 auto;width:56px;height:56px;border-radius:var(--r-rund);display:grid;place-items:center;
+  color:#fff;background:radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2) 70%);
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent),
+             0 8px 24px color-mix(in srgb, var(--accent-2) 35%, transparent);
+  animation:gehirnAnkunft .6s cubic-bezier(.2,.9,.3,1.2) backwards}
+.gehirn-orb svg{width:28px;height:28px}
+.gehirn-orb.denkt{animation:gehirnPuls 1.4s ease-in-out infinite}
+@keyframes gehirnAnkunft{from{opacity:0;transform:scale(.6) rotate(-12deg)}}
+@keyframes gehirnPuls{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.gehirn-chips{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.gehirn-chip{min-height:44px;padding:0 var(--s12);border-radius:var(--r-pille);
+  border:1px solid var(--line-2);background:var(--bg-2);color:var(--text);
+  font:inherit;font-size:var(--t-sm);cursor:pointer;text-align:left;
+  animation:gehirnRein .35s ease-out backwards}
+.gehirn-chip:nth-child(2){animation-delay:.05s}.gehirn-chip:nth-child(3){animation-delay:.1s}
+.gehirn-chip:nth-child(4){animation-delay:.15s}.gehirn-chip:nth-child(5){animation-delay:.2s}
+.gehirn-chip:hover{border-color:var(--accent)}
+.gehirn-chip:active{transform:scale(.97)}
+.gehirn-verlauf{display:flex;flex-direction:column;gap:var(--s12)}
+.gehirn-frage{align-self:flex-end;max-width:85%;background:var(--bg-3);border:1px solid var(--line);
+  border-radius:var(--r-md) var(--r-md) var(--r-xs) var(--r-md);padding:var(--s8) var(--s12);
+  font-size:var(--t-sm);line-height:var(--lh);overflow-wrap:anywhere;
+  animation:gehirnVonRechts .3s ease-out backwards}
+.gehirn-antwort{position:relative;background:var(--bg-2);border-radius:var(--r-md);
+  padding:var(--s12) var(--s12) var(--s12) var(--s16);font-size:var(--t-sm);line-height:var(--lh);
+  color:var(--text);animation:gehirnRein .35s ease-out backwards;overflow:hidden}
+.gehirn-antwort::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(var(--accent), var(--accent-2))}
+.gehirn-antwort .ga-text{margin:0 0 var(--s8);white-space:pre-wrap;overflow-wrap:anywhere}
+.gehirn-antwort.fehler::before{background:var(--line-2)}
+.gehirn-antwort .ga-kopf{display:flex;align-items:center;gap:var(--s6);margin-bottom:var(--s6);
+  font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:var(--ls-m)}
+.gehirn-antwort .ga-kopf svg{width:14px;height:14px;color:var(--accent-d)}
+.gehirn-ziele{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s8)}
+.gehirn-ziele .btn{min-height:44px}
+/* Drei Punkte, die nacheinander hüpfen — nur solange gewartet wird. */
+.gehirn-denkt{display:inline-flex;gap:var(--s6);align-items:center;height:20px}
+.gehirn-denkt i{width:7px;height:7px;border-radius:var(--r-rund);background:var(--accent);
+  animation:gehirnHuepf 1s ease-in-out infinite}
+.gehirn-denkt i:nth-child(2){animation-delay:.15s;background:color-mix(in srgb, var(--accent) 50%, var(--accent-2))}
+.gehirn-denkt i:nth-child(3){animation-delay:.3s;background:var(--accent-2)}
+@keyframes gehirnHuepf{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-6px);opacity:1}}
+@keyframes gehirnRein{from{opacity:0;transform:translateY(10px)}}
+@keyframes gehirnVonRechts{from{opacity:0;transform:translateX(14px)}}
+/* Das Eingabefeld steht im Fluss unter dem Gespräch, NICHT angeheftet.
+   Angeheftet deckte es auf 320 × 640 mehr als die halbe Seite ab und
+   lag über den Beispielfragen (gemessen: Trefferfläche 0 × 0). Nach dem
+   Absenden rollt die Seite ohnehin zur neuen Antwort, und das Feld
+   steht direkt darunter. */
+.gehirn-eingabe{padding:var(--s8) 0 var(--s4);display:flex;flex-direction:column;gap:var(--s8)}
+.gehirn-eingabe textarea{min-height:64px}
+.gehirn-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
+.gehirn-knoepfe .btn{flex:1 1 140px;min-height:44px}
+.gehirn-hinweis-klein{font-size:var(--t-2xs);color:var(--text-3);margin:0}
+/* Vorschlag zum Anlegen (Stufe 3) */
+.gehirn-vorschlag{border:1px solid var(--line-2);border-radius:var(--r-md);padding:var(--s12);
+  margin-top:var(--s8);background:var(--bg)}
+.gehirn-vorschlag dl{display:grid;grid-template-columns:auto 1fr;gap:var(--s4) var(--s12);margin:0 0 var(--s12)}
+.gehirn-vorschlag dt{color:var(--text-3);font-size:var(--t-2xs);font-weight:700;text-transform:uppercase;letter-spacing:var(--ls-m);padding-top:var(--s2)}
+.gehirn-vorschlag dd{margin:0;overflow-wrap:anywhere}
+/* Lagebericht (Stufe 4) */
+.gehirn-bericht .gb-text{white-space:pre-wrap;line-height:var(--lh);font-size:var(--t-sm);margin:0 0 var(--s8)}
+.gehirn-bericht .gb-zahlen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s8);margin-bottom:var(--s8)}
+.gehirn-bericht .gb-zahl{background:var(--bg-3);border-radius:var(--r-sm);padding:var(--s8);text-align:center}
+.gehirn-bericht .gb-zahl b{display:block;font-family:var(--font-head);font-size:var(--t-lg)}
+.gehirn-bericht .gb-zahl span{font-size:var(--t-2xs);color:var(--text-3)}
+.gehirn-bericht .gb-reiter{display:flex;gap:var(--s6);margin-bottom:var(--s8)}
+.gehirn-bericht .gb-reiter .btn{min-height:44px;flex:1}
+.gehirn-hervor{animation:gehirnHervor 1.2s ease-out 1}
+@keyframes gehirnHervor{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent)}
+  100%{box-shadow:0 0 0 14px transparent}}
+@media (prefers-reduced-motion:reduce){
+  .gehirn-orb,.gehirn-orb.denkt,.gehirn-chip,.gehirn-frage,.gehirn-antwort,.gehirn-denkt i,.gehirn-hervor{animation:none}
+}
 .hilfe-knoepfe .btn{flex:1 1 180px;min-height:44px}
 /* Die Fotos. Feste Höhe, damit nichts springt, wenn sie nachkommen —
    ein Bild ohne reservierten Platz schiebt beim Eintreffen alles
@@ -5111,13 +5200,11 @@ html{font-size:var(--fs,100%)}
     grid-template-rows:minmax(0,1fr);gap:0;padding:0;overflow:hidden}
   .hilfe-body.zwei > #hilfeSuchTeil,.hilfe-body.zwei > #hilfeListe{grid-column:1;grid-row:1;
     overflow-y:auto;padding:var(--s20);border-right:1px solid var(--line)}
-  .hilfe-body.zwei > #hilfeEintrag,.hilfe-body.zwei > #hilfeForm,.hilfe-body.zwei > #hilfeGehirn,
-  .hilfe-body.zwei > #hilfeLeer{
+  .hilfe-body.zwei > #hilfeEintrag,.hilfe-body.zwei > #hilfeForm,.hilfe-body.zwei > #hilfeLeer{
     grid-column:2;grid-row:1;overflow-y:auto;padding:var(--s20) var(--s24)}
   .hilfe-body.zwei > #hilfeLeer{margin:var(--s20) var(--s24);min-height:0;align-self:start}
   /* „‹ Zurück" braucht es rechts nicht — links steht ja, wo man war. */
-  .hilfe-body.zwei #hilfeEintrag > .hilfe-zurueck,
-  .hilfe-body.zwei #hilfeGehirn > .hilfe-zurueck{display:none}
+  .hilfe-body.zwei #hilfeEintrag > .hilfe-zurueck{display:none}
   .hilfe-body.zwei [data-heintrag].an{border-color:var(--accent);background:var(--tipp-1)}
 }
 @media (max-width:620px){
@@ -8607,6 +8694,64 @@ body.neu .kn-zeile{min-height:var(--zeile)}
            Fenster wie bei der Hilfe: eine Schulung ist nichts, was man
            nebenbei aufschlägt — man setzt sich hin und braucht den
            ganzen Bildschirm. -->
+      <!-- ══ STUDIO-GEHIRN (Runde 150) ══════════════════════════════
+           Eine eigene Seite statt einer Tafel im Hilfe-Fenster: Fragen
+           und Antworten brauchen Platz, und die Leitung bekommt hier
+           ihren Lagebericht und „Anlegen lassen". Links das Gespräch,
+           am Rechner rechts die Seitenleiste. -->
+      <section class="view" id="view-gehirn">
+        <div class="view-head shrink">
+          <div class="vh-line">
+            <div class="vh-text">
+              <h2>Studio-Gehirn</h2>
+              <p>Frag in eigenen Worten — zum Studio, zu EMS und zur App.</p>
+            </div>
+          </div>
+        </div>
+        <div class="scroll-area" data-shrinks="1">
+          <div class="gehirn-layout">
+            <div class="gehirn-haupt">
+              <div class="gehirn-hero" id="gehirnHero">
+                <div class="gehirn-orb" id="gehirnOrb" aria-hidden="true"></div>
+                <div>
+                  <h3>Was möchtest du wissen?</h3>
+                  <p>Steht es im Studio-Wissen, kommt die Antwort sofort. Sonst gibt es eine erste
+                    Einschätzung, und die Frage geht an Semih — seine Antwort wissen danach alle.</p>
+                </div>
+              </div>
+              <div class="gehirn-chips" id="gehirnChips"></div>
+              <div class="gehirn-verlauf" id="gehirnVerlauf"></div>
+              <div class="gehirn-eingabe">
+                <label class="nur-vorlesen" for="gehirnFeld">Deine Frage</label>
+                <textarea class="inp" id="gehirnFeld" rows="2" maxlength="2000"
+                  placeholder="Zum Beispiel: Was mache ich, wenn eine Kundin ein Attest abgibt?"></textarea>
+                <div class="gehirn-knoepfe">
+                  <button type="button" class="btn btn-primary btn-sm" id="gehirnFragen">Fragen</button>
+                  <button type="button" class="btn btn-ghost btn-sm" id="gehirnAnlegen" style="display:none"
+                    title="Aus deiner Nachricht eine Aufgabe oder Ankündigung vorschlagen lassen">Anlegen lassen</button>
+                  <button type="button" class="btn btn-ghost btn-sm" id="gehirnIdee">Als Idee an die Leitung</button>
+                </div>
+                <p class="gehirn-hinweis-klein">Die Antworten schreibt eine KI. Sie kann sich irren — im Zweifel bei der
+                  Studioleitung nachfragen. Bitte keine Kundennamen, Telefonnummern oder Diagnosen eintippen.</p>
+              </div>
+            </div>
+            <aside class="gehirn-seite" id="gehirnSeite">
+              <div class="card gehirn-bericht" id="gehirnBericht" style="display:none"></div>
+              <div class="card">
+                <h3 data-ikon="gehirn">So hilft dir das Gehirn</h3>
+                <ul class="hint" style="margin:0;padding-left:18px;line-height:var(--lh)">
+                  <li>Abläufe im Studio: Attest, Kündigung, Notfall, Wäsche …</li>
+                  <li>EMS-Wissen: wer darf trainieren, wie oft, worauf achten</li>
+                  <li>Die App selbst: „Wie lege ich eine Aufgabe an?" — mit Knopf direkt dorthin</li>
+                  <li id="gehirnHilfeLeitung" style="display:none">Für die Leitung: „Anlegen lassen" macht aus einem Satz
+                    eine Aufgabe oder Ankündigung zum Prüfen</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
       <section class="view" id="view-schulung">
         <div class="view-head shrink">
           <div class="vh-line">
@@ -10032,9 +10177,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <div id="hilfeListe" style="display:none"></div>
       <!-- Ein einzelner Eintrag, Schritt für Schritt -->
       <div id="hilfeEintrag" class="hilfe-eintrag" style="display:none"></div>
-      <!-- Das Studio-Gehirn: Frage in eigenen Worten, Antwort von der KI
-           aus dem Studio-Wissen. Am Rechner rechts wie ein Eintrag. -->
-      <div id="hilfeGehirn" class="hilfe-eintrag hilfe-gehirn" style="display:none"></div>
       <!-- Nur am Rechner: die rechte Spalte, solange noch nichts gewählt ist. -->
       <div id="hilfeLeer" class="hilfe-leer" style="display:none">
         <p class="hilfe-leer-titel">Wähle links eine Frage</p>
@@ -14047,6 +14189,9 @@ function teamAn(){ return teamFeatures().some(function(f){ return featureAn(f.id
 /* Gilt für Ansichten der unteren Leiste UND für die Team-Reiter. */
 function ansichtAn(v){
   if(v==='team') return teamAn();
+  /* Das Studio-Gehirn gibt es nur für Körperformen — kein Schalter
+     unter „System", sondern eine Frage der Firma. */
+  if(v==='gehirn') return gehirnVerfuegbar();
   /* „Lösungen" ist seit dem 22.9.2026 keine Seite mehr, sondern das
      Hilfe-Fenster in der Kopfzeile. Der Schalter bleibt (er schaltet
      jetzt den Rettungsring ab), aber als ANSICHT gibt es sie nicht
@@ -18271,7 +18416,11 @@ var NAVGROUPS = [
      hinter dem Knopf oben rechts. Sie zweimal zu bauen — einmal hier,
      einmal in der Verwaltung — wären zwei Stellen, an denen dieselbe
      Liste auseinanderlaufen kann. */
-  {id:'g-ich', label:'Ich', views:['ich','persoenlich','schulung'],
+  /* Runde 150: das Studio-Gehirn als vierter Reiter. Es gehört zu
+     „was muss ICH wissen" wie die Schulung — nicht zum Tagesgeschäft
+     unter „Betrieb". Für Firmen ohne Gehirn fällt der Reiter über
+     ansichtAn() weg. */
+  {id:'g-ich', label:'Ich', views:['ich','persoenlich','schulung','gehirn'],
    icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.3 18.7a6.2 6.2 0 0 1 11.4 0"/>'},
   {id:'g-komm', label:'Chat', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
@@ -18356,6 +18505,9 @@ var NAV = [
      die Glühbirne — die trug bis zum 22.9. die Lösungen, und zwei
      Bedeutungen auf einem Zeichen sind eine zu viel. */
   {id:'schulung', label:'Schulung', icon:'<rect x="2" y="4" width="20" height="14" rx="2"/><path d="m10 9 5 2.5-5 2.5z"/><path d="M8 21h8"/>'},
+  /* Glühbirne: „eine Idee haben" und „Bescheid wissen". Seit dem
+     22.9. trägt sie nichts anderes mehr (siehe Schulung oben). */
+  {id:'gehirn', label:'Gehirn', icon:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
   {id:'archive', label:'Archiv', icon:'<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>', manageOnly:true},
   {id:'chef',  label:'Chef',     icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>', manageOnly:true}
@@ -18549,10 +18701,10 @@ function allesGruppen(){
     {label:'Hilfe im Studio', hilfe:true, feature:'loesungen',
      roh:ikon('rettung'),
      was:'Wenn es jetzt klemmt: 115 Probleme, Schritt für Schritt'},
-    /* Studio-Gehirn (17.10.2026): nur für Körperformen. `gehirn:true`
-       öffnet die Hilfe direkt auf der Frage. */
-    gehirnVerfuegbar() ? {label:'Studio-Gehirn', gehirn:true, roh:ikon('gehirn'),
-     was:'Frag, was nicht im Handbuch steht — die KI antwortet aus dem Studio-Wissen'} : null,
+    /* Studio-Gehirn: seit Runde 150 eine eigene Ansicht. Ob es sie gibt,
+       entscheidet ansichtAn() — wie bei jeder anderen Zeile. */
+    {label:'Studio-Gehirn', view:'gehirn', ikon:'gehirn',
+     was:'Frag in eigenen Worten — Studio, EMS und die App selbst'},
     {label:'Schulung',      view:'schulung', ikon:'schulung',
      was:'Vorher wissen, wie es geht — Webinare mit Fragen'},
     /* Runde 103: jede Auslieferung, nachvollziehbar. */
@@ -18610,7 +18762,6 @@ function allesGruppen(){
 function allesZielAttr(e){
   return ' data-alles="'+esc(e.view||'')+'"'+
     (e.hilfe   ?' data-al-hilfe="1"':'')+
-    (e.gehirn  ?' data-al-gehirn="1"':'')+
     (e.neu     ?' data-al-neu="1"':'')+
     (e.vorfall ?' data-al-vorfall="1"':'')+
     (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
@@ -18642,7 +18793,6 @@ function allesZiel(el){
   /* Die Hilfe ist keine Seite. Sie legt sich über das, was gerade da
      ist — also wird hier nicht gewechselt, sondern geöffnet. */
   if(el.getAttribute('data-al-hilfe')){ hilfeOeffnen(); return; }
-  if(el.getAttribute('data-al-gehirn')){ gehirnZeigen(''); return; }
   if(el.getAttribute('data-al-neu')){ neuOeffnen(); return; }
   if(el.getAttribute('data-al-vorfall')){ vorfallOeffnen(); return; }
   showView(view);
@@ -18687,6 +18837,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-18-gehirn-seite', datum:'18.10.2026', titel:'Studio-Gehirn: eigene Seite, Hilfe zur App und Lagebericht', wo:'gehirn', punkte:[
+    'Das Studio-Gehirn hat jetzt eine eigene Seite: unten „Ich" → Reiter „Gehirn" (oder „Alles" → Studio-Gehirn). Zum Start stehen dort Beispielfragen zum Antippen; die Antwort schreibt sich Wort für Wort hin.',
+    'Es kennt jetzt auch die App selbst: Frag z. B. „Wie lege ich eine Aufgabe an?" – unter der Antwort steht ein Knopf, der direkt dorthin führt.',
+    'Für Studioleitung und Chefs: „Anlegen lassen" macht aus einem Satz wie „Bis Freitag in allen Studios die Geräte desinfizieren" eine fertig ausgefüllte Aufgabe oder Ankündigung. Erstellt wird sie erst, wenn du sie im Formular prüfst und auf „erstellen" drückst.',
+    'Ebenfalls für die Leitung: rechts bzw. oben steht der Lagebericht – jeden Abend um 19 Uhr, was im Studio-Gehirn los war und was in den Studios offen ist, montags als Wochenrückblick. Er kommt zusätzlich per Mail (abschaltbar unter Einstellungen → Meldungen, „Lagebericht vom Studio-Gehirn").' ] },
   { id:'2026-10-18-gehirn', datum:'18.10.2026', titel:'Neu: das Studio-Gehirn beantwortet Fragen', wo:'gehirn', punkte:[
     'Unter „Alles → Was muss ich wissen?" steht „Studio-Gehirn". Dort tippst du eine Frage in eigenen Worten – zum Beispiel „Was mache ich, wenn eine Kundin ein Attest abgibt?" – und bekommst sofort eine Antwort.',
     'Auch in der Hilfe (Rettungsring oben): Findet die Suche nichts Passendes, steht darunter „Studio-Gehirn fragen" – deine Suche ist dann schon eingetragen.',
@@ -19229,7 +19384,7 @@ var SCHNELL_VORSCHLAG = {
   chef:        ['chef:ueberblick', 'team:schicht', 'chef:anliegen']
 };
 function schnellSchluessel(e){
-  var basis = e.hilfe ? 'hilfe' : (e.gehirn ? 'gehirn' : (e.neu ? 'neu' : (e.vorfall ? 'vorfall' : (e.view||''))));
+  var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.vorfall ? 'vorfall' : (e.view||'')));
   var unter = e.teamtab || e.ichtab || e.cgo || '';
   return unter ? basis+':'+unter : basis;
 }
@@ -20285,6 +20440,7 @@ function showView(id, fromKey, ausVerlauf){
   }
   if(id==='ich') ichOeffnen();
   if(id==='persoenlich') persoenlichOeffnen();
+  if(id==='gehirn') gehirnOeffnen();
   if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); }
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
@@ -22588,16 +22744,15 @@ function hilfePane(welche){
   var zwei = hilfeZweiSpalten();
   var body=$('hilfeBody');
   if(body) body.classList.toggle('zwei', zwei);
-  var rechts = (welche==='eintrag' || welche==='form' || welche==='gehirn') ? welche : 'leer';
+  var rechts = (welche==='eintrag' || welche==='form') ? welche : 'leer';
   [['hilfeSuchTeil','start'],['hilfeListe','liste'],
-   ['hilfeEintrag','eintrag'],['hilfeForm','form'],['hilfeGehirn','gehirn'],['hilfeLeer','leer']].forEach(function(p){
+   ['hilfeEintrag','eintrag'],['hilfeForm','form'],['hilfeLeer','leer']].forEach(function(p){
     var el=$(p[0]); if(!el) return;
     var an = zwei ? (p[1]===_hLinks || p[1]===rechts) : (p[1]===welche);
     el.style.display = an ? '' : 'none';
   });
   if(zwei){
-    var r=$(rechts==='leer' ? 'hilfeLeer' : (rechts==='form' ? 'hilfeForm' :
-            (rechts==='gehirn' ? 'hilfeGehirn' : 'hilfeEintrag')));
+    var r=$(rechts==='leer' ? 'hilfeLeer' : (rechts==='form' ? 'hilfeForm' : 'hilfeEintrag'));
     if(r) r.scrollTop=0;
     hilfeWahlMarkieren();
   } else if(body) body.scrollTop=0;
@@ -23148,106 +23303,330 @@ function hilfeLoeschen(e){
 
 /* ── Studio-Gehirn ──────────────────────────────────────────────────
    Aus dem Betrieb, 17.10.2026: das Studio-Gehirn „übers Studio Chat
-   nutzen" — im Rettungsring UND als eigener Punkt unter „Alles".
+   nutzen". Seit Runde 150 (18.10.2026) eine eigene Seite unter „Ich",
+   dazu: „coole Animationen", Hilfe zur App, „Sachen anlegen … für die
+   Chefs" und ein Lagebericht.
 
    Gefragt wird über die Function gehirnFrage, nie direkt beim Worker:
    dessen Schlüssel gehört nicht in ein öffentliches Repository. Die
-   Function prüft auch, ob das Konto zu Körperformen gehört; der Knopf
-   hier versteckt sich nur, er ist keine Grenze.
+   Function prüft auch, ob das Konto zu Körperformen gehört; was hier
+   versteckt wird, ist Ordnung, keine Grenze.
 
    Der Verlauf dieser Sitzung liegt nur im Speicher. Gespeichert wird
    beim Gehirn (Leitstand, mit Löschfrist) — nicht in Firestore, damit
    er nicht im nächtlichen Vollexport landet. */
 var GEHIRN_FIRMEN = ['koerperformen'];
-var _gVerlauf = [], _gLaeuft = false, _gEntwurf = '';
+var _gVerlauf = [], _gLaeuft = false, _gGebunden = false, _gBericht = null, _gBerichtArt = 'tag', _gBerichtLaeuft = false;
 function gehirnVerfuegbar(){
   if(!session || session.aktiv===false) return false;
   return _firma===null || GEHIRN_FIRMEN.indexOf(_firma)>=0;
 }
+/* Von außen (Rettungsring, Suche): zur Seite, Text schon eingetragen. */
 function gehirnZeigen(vorschlag){
-  if(!_hAn) hilfeOeffnen();
-  if(typeof vorschlag==='string' && vorschlag) _gEntwurf = vorschlag;
-  hilfePane('gehirn');
+  if(typeof hilfeSchliessen==='function' && _hAn) hilfeSchliessen();
+  showView('gehirn');
+  var f=$('gehirnFeld');
+  if(f && typeof vorschlag==='string' && vorschlag){ f.value=vorschlag; }
+  if(f) setTimeout(function(){ f.focus(); }, 80);
+}
+function gehirnWenigBewegung(){
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+var GEHIRN_BEISPIELE = [
+  'Was mache ich, wenn eine Kundin ein Attest abgibt?',
+  'Darf jemand mit Herzschrittmacher trainieren?',
+  'Wie wasche ich die EMS-Westen?',
+  'Wie lege ich eine Aufgabe an?',
+  'Ein Kunde bekommt einen Krampf – was tun?'
+];
+/* Wohin in der App? Aus den Wörtern der FRAGE, nicht der Antwort —
+   sonst hängt unter jeder Antwort, die „Aufgabe" erwähnt, ein Knopf.
+   Höchstens zwei, und nur Ziele, die es für diese Person gibt. */
+var GEHIRN_ZIELE = [
+  { re:/aufgabe|to-?do/i,                     view:'todos',    name:'Aufgaben' },
+  { re:/putz/i,                               view:'putzplan', name:'Putzplan' },
+  { re:/material|bestell|nachschub/i,         view:'material', name:'Material' },
+  { re:/ger[äa]t|schaden|defekt/i,            view:'geraete',  name:'Geräte' },
+  { re:/probetraining|probe/i,                view:'probe',    name:'Probetraining' },
+  { re:/dokument|datei|pdf/i,                 view:'docs',     name:'Dokumente' },
+  { re:/schicht|urlaub|abwesen|krank|übergabe|uebergabe|brett|dienstplan/i, view:'team', name:'Team' },
+  { re:/ank[üu]ndigung|aushang|infos?\b/i,    view:'ann',      name:'Infos' },
+  { re:/direktnachricht|privat schreiben/i,   view:'dm',       name:'Direkt' },
+  { re:/\bchat|kanal|nachricht/i,             view:'chat',     name:'Chat' },
+  { re:/schulung|webinar|nachweis/i,          view:'schulung', name:'Schulung' },
+  { re:/profil|passwort|einstellung|aussehen|meldungen|benachrichtigung/i, view:'persoenlich', name:'Persönlich' },
+  { re:/verwaltung|kennzahl|auswertung/i,     view:'chef',     name:'Verwaltung', manage:true }
+];
+function gehirnZiele(frage){
+  var raus=[];
+  GEHIRN_ZIELE.forEach(function(z){
+    if(raus.length>=2 || !z.re.test(frage||'')) return;
+    if(z.manage && !canManage()) return;
+    if(!ansichtAn(z.view)) return;
+    if(raus.some(function(r){ return r.view===z.view; })) return;
+    raus.push(z);
+  });
+  return raus;
+}
+function gehirnOeffnen(){
+  gehirnBinden();
+  var orb=$('gehirnOrb');
+  if(orb && !orb.firstChild) orb.innerHTML=ikon('gehirn');
+  var chips=$('gehirnChips');
+  if(chips) chips.innerHTML = _gVerlauf.length ? '' : GEHIRN_BEISPIELE.map(function(b){
+    return '<button type="button" class="gehirn-chip" data-gbeispiel="'+esc(b)+'">'+esc(b)+'</button>';
+  }).join('');
+  if(chips) chips.querySelectorAll('[data-gbeispiel]').forEach(function(b){
+    b.addEventListener('click', function(){ var f=$('gehirnFeld'); f.value=b.getAttribute('data-gbeispiel'); gehirnSenden('frage'); });
+  });
+  var an=$('gehirnAnlegen'); if(an) an.style.display = canManage() ? '' : 'none';
+  var hl=$('gehirnHilfeLeitung'); if(hl) hl.style.display = canManage() ? '' : 'none';
+  ikonenEinsetzen($('view-gehirn'));
   gehirnZeichnen();
-  setTimeout(function(){ var f=$('gehirnFeld'); if(f) f.focus(); }, 60);
+  gehirnBerichtLaden();
 }
-function gehirnText(t){
-  /* Die Antwort ist Fliesstext mit Zeilenumbrüchen (pre-wrap). esc()
-     zuerst: was von der KI kommt, ist für die Seite fremder Text. */
-  return esc(String(t||''));
+function gehirnBinden(){
+  if(_gGebunden) return; _gGebunden=true;
+  var f=$('gehirnFeld');
+  if(f) f.addEventListener('keydown', function(ev){
+    /* Strg/Cmd + Enter schickt ab; ein blosses Enter bleibt ein
+       Zeilenumbruch — die Frage darf zwei Sätze haben. */
+    if(ev.key==='Enter' && (ev.metaKey || ev.ctrlKey)){ ev.preventDefault(); gehirnSenden('frage'); }
+  });
+  var b1=$('gehirnFragen');  if(b1) b1.addEventListener('click', function(){ gehirnSenden('frage'); });
+  var b2=$('gehirnIdee');    if(b2) b2.addEventListener('click', function(){ gehirnSenden('idee'); });
+  var b3=$('gehirnAnlegen'); if(b3) b3.addEventListener('click', function(){ gehirnSenden('aktion'); });
 }
+function gehirnText(t){ return esc(String(t||'')); }
 function gehirnZeichnen(){
-  var box=$('hilfeGehirn'); if(!box) return;
-  var verlauf = _gVerlauf.map(function(v){
-    var frage = '<div class="gehirn-frage">'+(v.idee ? '<b>Idee:</b> ' : '')+gehirnText(v.text)+'</div>';
+  var box=$('gehirnVerlauf'); if(!box) return;
+  var orb=$('gehirnOrb'); if(orb) orb.classList.toggle('denkt', _gLaeuft);
+  box.innerHTML=_gVerlauf.map(function(v, i){
+    var frage='<div class="gehirn-frage">'+
+      (v.art==='idee' ? '<b>Idee:</b> ' : (v.art==='aktion' ? '<b>Anlegen:</b> ' : ''))+gehirnText(v.text)+'</div>';
+    var kopf='<div class="ga-kopf">'+ikon('gehirn')+'<span>Studio-Gehirn</span></div>';
     var antwort;
     if(v.laeuft){
-      antwort = '<div class="gehirn-antwort denkt" aria-live="polite"><p>'+
-        (v.idee ? 'Wird gespeichert …' : 'Das Studio-Gehirn sucht im Studio-Wissen …')+'</p></div>';
+      antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+
+        '<span class="gehirn-denkt" role="status" aria-label="Das Studio-Gehirn denkt nach"><i></i><i></i><i></i></span></div>';
     } else if(v.fehler){
-      antwort = '<div class="gehirn-antwort fehler" role="alert"><p><b>Hat nicht geklappt.</b> '+
-        gehirnText(v.fehler)+'</p></div>';
-    } else if(v.idee){
-      antwort = '<div class="gehirn-antwort"><p>Danke! Deine Idee ist bei der Leitung gelandet.</p></div>';
+      antwort='<div class="gehirn-antwort fehler" role="alert">'+kopf+
+        '<p class="ga-text"><b>Hat nicht geklappt.</b> '+gehirnText(v.fehler)+'</p></div>';
+    } else if(v.art==='idee'){
+      antwort='<div class="gehirn-antwort">'+kopf+'<p class="ga-text">Danke! Deine Idee ist bei der Leitung gelandet.</p></div>';
+    } else if(v.art==='aktion'){
+      antwort='<div class="gehirn-antwort">'+kopf+gehirnVorschlagHTML(v, i)+'</div>';
     } else {
-      antwort = '<div class="gehirn-antwort" aria-live="polite"><p>'+gehirnText(v.antwort)+'</p>'+
+      var ziele=gehirnZiele(v.text);
+      antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+
+        '<p class="ga-text" data-gtext="'+i+'">'+(v.getippt ? gehirnText(v.antwort) : '')+'</p>'+
         '<div class="hilfe-marken">'+
         (v.abgedeckt
           ? '<span class="hilfe-marke">Aus dem Studio-Wissen</span>'
           : '<span class="hilfe-marke grau">Noch nicht geprüft · ging an Semih'+
             (v.offen ? ' (Nr. '+esc(String(v.offen))+')' : '')+'</span>')+
-        '</div></div>';
+        '</div>'+
+        (ziele.length ? '<div class="gehirn-ziele">'+ziele.map(function(z){
+          return '<button type="button" class="btn btn-ghost btn-sm" data-gziel="'+esc(z.view)+'">Zu '+esc(z.name)+' ›</button>';
+        }).join('')+'</div>' : '')+
+        '</div>';
     }
     return frage+antwort;
   }).join('');
-  box.innerHTML =
-    '<button type="button" class="hilfe-zurueck" data-hzurueck="start">‹ Zurück</button>'+
-    '<h3>Studio-Gehirn</h3>'+
-    '<p class="hilfe-problem">Frag in eigenen Worten, was nicht im Handbuch steht. '+
-    'Steht es im Studio-Wissen, kommt die Antwort sofort. Sonst bekommst du eine erste '+
-    'Einschätzung, und die Frage geht an Semih — seine Antwort wissen danach alle.</p>'+
-    (verlauf ? '<div class="gehirn-verlauf">'+verlauf+'</div>' : '')+
-    '<label class="hilfe-frage" for="gehirnFeld">Deine Frage</label>'+
-    '<textarea class="inp" id="gehirnFeld" rows="3" maxlength="2000" '+
-    'placeholder="Zum Beispiel: Was mache ich, wenn eine Kundin ein Attest abgibt?"></textarea>'+
-    '<div class="hilfe-knoepfe" style="margin-top:var(--s12)">'+
-      '<button type="button" class="btn btn-primary btn-sm" id="gehirnFragen"'+(_gLaeuft?' disabled':'')+'>Fragen</button>'+
-      '<button type="button" class="btn btn-ghost btn-sm" id="gehirnIdee"'+(_gLaeuft?' disabled':'')+'>Als Idee an die Leitung</button>'+
-    '</div>'+
-    '<p class="hilfe-fuss gehirn-hinweis">Die Antworten schreibt eine KI. Sie kann sich irren — '+
-    'im Zweifel bei der Studioleitung nachfragen. Bitte keine Kundennamen, Telefonnummern '+
-    'oder Diagnosen eintippen.</p>';
-  var feld=$('gehirnFeld');
-  if(feld){
-    feld.value=_gEntwurf;
-    feld.addEventListener('input', function(){ _gEntwurf=feld.value; });
-    feld.addEventListener('keydown', function(ev){
-      /* Am Rechner: Strg/Cmd + Enter schickt ab. Ein blosses Enter
-         bleibt ein Zeilenumbruch — die Frage darf zwei Sätze haben. */
-      if(ev.key==='Enter' && (ev.metaKey || ev.ctrlKey)){ ev.preventDefault(); gehirnSenden('frage'); }
-    });
+  box.querySelectorAll('[data-gziel]').forEach(function(b){
+    b.addEventListener('click', function(){ showView(b.getAttribute('data-gziel')); tick(8); });
+  });
+  box.querySelectorAll('[data-gvorschlag]').forEach(function(b){
+    b.addEventListener('click', function(){ gehirnVorschlagUebernehmen(_gVerlauf[+b.getAttribute('data-gvorschlag')]); });
+  });
+  /* Die neueste Antwort schreibt sich Wort für Wort hin — einmal. */
+  _gVerlauf.forEach(function(v, i){
+    if(v.art==='frage' && !v.laeuft && !v.fehler && !v.getippt){
+      v.getippt=true;
+      gehirnTippen(box.querySelector('[data-gtext="'+i+'"]'), v.antwort||'');
+    }
+  });
+  var chips=$('gehirnChips'); if(chips && _gVerlauf.length) chips.innerHTML='';
+  var b=[$('gehirnFragen'),$('gehirnIdee'),$('gehirnAnlegen')];
+  b.forEach(function(x){ if(x) x.disabled=_gLaeuft; });
+}
+/* Wort für Wort, aber höchstens ~1,2 Sekunden lang: lange Antworten
+   kommen in grösseren Stücken. Bei „weniger Bewegung" sofort. */
+function gehirnTippen(el, text){
+  if(!el) return;
+  if(gehirnWenigBewegung()){ el.textContent=text; return; }
+  var worte=text.split(/(\s+)/), i=0;
+  var proBild=Math.max(1, Math.ceil(worte.length/72));
+  function schritt(){
+    if(!el.isConnected){ return; }
+    i=Math.min(worte.length, i+proBild);
+    el.textContent=worte.slice(0,i).join('');
+    if(i<worte.length) requestAnimationFrame(schritt);
   }
-  var f=$('gehirnFragen'); if(f) f.addEventListener('click', function(){ gehirnSenden('frage'); });
-  var i=$('gehirnIdee'); if(i) i.addEventListener('click', function(){ gehirnSenden('idee'); });
-  hilfeZurueckBinden(box);
+  requestAnimationFrame(schritt);
 }
 function gehirnSenden(art){
   if(_gLaeuft) return;
-  var text=String(_gEntwurf||'').trim();
-  if(!text){ toast('Bitte zuerst eine Frage eintippen.', true); var f=$('gehirnFeld'); if(f) f.focus(); return; }
-  var v={ text:text, idee:art==='idee', laeuft:true };
-  _gVerlauf.push(v); _gLaeuft=true; _gEntwurf='';
+  var f=$('gehirnFeld');
+  var text=String((f && f.value)||'').trim();
+  if(!text){ toast('Bitte zuerst etwas eintippen.', true); if(f) f.focus(); return; }
+  if(art==='aktion' && !canManage()) return;
+  var v={ text:text, art:art, laeuft:true };
+  _gVerlauf.push(v); _gLaeuft=true; if(f) f.value='';
   gehirnZeichnen();
-  firebase.app().functions(KONFIG.region).httpsCallable('gehirnFrage')({ art:art, text:text })
+  gehirnNachUnten();
+  var name = art==='aktion' ? 'gehirnAktion' : 'gehirnFrage';
+  var daten = art==='aktion' ? { text:text } : { art:art, text:text };
+  firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
     .then(function(r){
       var d=(r && r.data) || {};
-      v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null;
+      if(art==='aktion'){ v.vorschlag=d.vorschlag||null; v.hinweis=d.hinweis||''; }
+      else { v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; }
     })
     .catch(function(err){ v.fehler=errMsg(err); })
     .then(function(){
       v.laeuft=false; _gLaeuft=false;
-      if(_hAn && _hAnsicht==='gehirn') gehirnZeichnen();
+      if(currentView==='gehirn'){ gehirnZeichnen(); gehirnNachUnten(); }
     });
+}
+function gehirnNachUnten(){
+  var box=$('gehirnVerlauf'); if(!box || !box.lastElementChild) return;
+  requestAnimationFrame(function(){
+    sanftInsBild(box.lastElementChild, { behavior: gehirnWenigBewegung() ? 'auto' : 'smooth', block:'end' });
+  });
+}
+
+/* ── Stufe 3: Vorschlag zum Anlegen ──────────────────────────────────
+   Aus dem Betrieb: „sachen auch anlegen … für die chefs" — und auf die
+   Rückfrage: Vorschlag + Bestätigen.
+
+   Bestätigt wird im ECHTEN Formular unter Verwaltung → Erstellen: die
+   KI füllt es aus, der Mensch prüft und drückt dort „erstellen". So gibt
+   es keinen zweiten Schreibweg mit eigenen Fehlern, und angelegt wird
+   mit den Rechten der Person, die drückt — nicht mit denen der KI. */
+function gehirnVorschlagHTML(v, i){
+  var s=v.vorschlag;
+  if(!s){
+    return '<p class="ga-text">'+gehirnText(v.hinweis || 'Daraus konnte ich nichts zum Anlegen machen. '+
+      'Schreib es z. B. so: „Bis Freitag in allen Studios die Geräte desinfizieren".')+'</p>';
+  }
+  var typ = s.typ==='ankuendigung' ? 'Ankündigung' : 'Aufgabe';
+  var studios = s.alle ? 'Alle Studios' : (s.studioNamen||[]).join(', ') || '—';
+  return '<p class="ga-text">Mein Vorschlag — prüf ihn und übernimm ihn ins Formular:</p>'+
+    '<div class="gehirn-vorschlag"><dl>'+
+      '<dt>Art</dt><dd>'+esc(typ)+(s.wichtig ? ' · wichtig' : '')+'</dd>'+
+      (s.titel ? '<dt>Titel</dt><dd>'+esc(s.titel)+'</dd>' : '')+
+      (s.text ? '<dt>Text</dt><dd>'+esc(s.text)+'</dd>' : '')+
+      ((s.schritte||[]).length ? '<dt>Schritte</dt><dd>'+s.schritte.map(esc).join('<br>')+'</dd>' : '')+
+      (s.frist ? '<dt>Fällig</dt><dd>'+esc(s.frist.split('-').reverse().join('.'))+'</dd>' : '')+
+      '<dt>Für</dt><dd>'+esc(studios)+'</dd>'+
+    '</dl>'+
+    '<button type="button" class="btn btn-primary btn-sm" data-gvorschlag="'+i+'" style="width:100%;min-height:44px">'+
+      'Ins Formular übernehmen und prüfen ›</button></div>';
+}
+function gehirnVorschlagUebernehmen(v){
+  if(!v || !v.vorschlag || !canManage()) return;
+  var s=v.vorschlag;
+  showView('chef');
+  setTimeout(function(){
+    showChefTab('erstellen');
+    var ziel;
+    if(s.typ==='ankuendigung'){
+      var t=$('bcText'); if(t){ t.value=s.text||s.titel||''; t.dispatchEvent(new Event('input')); }
+      var sel=$('bcTarget');
+      if(sel){
+        var wert = s.alle ? 'all' : ((s.studioKeys||[])[0]||'');
+        if([].some.call(sel.options, function(o){ return o.value===wert; })) sel.value=wert;
+      }
+      var w=$('bcWichtig'); if(w) w.checked=!!s.wichtig;
+      ziel=$('bcText');
+    } else {
+      var ti=$('ntTitle'); if(ti){ ti.value=s.titel||''; ti.dispatchEvent(new Event('input')); }
+      var de=$('ntDesc'); if(de) de.value=s.text||'';
+      var st=$('ntSteps'); if(st) st.value=(s.schritte||[]).join('\n');
+      var du=$('ntDue'); if(du) du.value=s.frist||'';
+      var box=$('ntStudios'), alle=$('ntAllStudios');
+      if(box){
+        [].forEach.call(box.querySelectorAll('input'), function(cb){
+          var an = !cb.disabled && (s.alle || (s.studioKeys||[]).indexOf(cb.value)>=0);
+          cb.checked=an; cb.parentElement.classList.toggle('on', an);
+        });
+      }
+      if(alle && s.alle){ alle.checked=true; alle.dispatchEvent(new Event('change')); }
+      ziel=$('ntTitle');
+    }
+    var karte = ziel && ziel.closest ? ziel.closest('.card') : null;
+    if(karte){
+      karte.classList.remove('gehirn-hervor'); void karte.offsetWidth; karte.classList.add('gehirn-hervor');
+      sanftInsBild(karte,{behavior:'smooth',block:'start'});
+    }
+    toast('Vom Studio-Gehirn ausgefüllt — bitte prüfen und dann erstellen.');
+  }, 120);
+}
+
+/* ── Stufe 4: Lagebericht ────────────────────────────────────────────
+   Aus dem Betrieb: „zusammenfasst das die chefs und ich wissen was
+   abgeht" — täglich und montags als Wochenrückblick. Geschrieben wird
+   er von der Function (zeitgesteuert); hier wird nur gelesen. Lesen
+   darf die Leitung (Regel config/lagebericht). */
+function gehirnBerichtLaden(){
+  var karte=$('gehirnBericht'); if(!karte) return;
+  if(!canManage()){ karte.style.display='none'; return; }
+  karte.style.display='';
+  if(!_gBericht) karte.innerHTML='<h3 data-ikon="gehirn">Lagebericht</h3><p class="hint">Lädt …</p>';
+  ikonenEinsetzen(karte);
+  S('config').doc('lagebericht').get().then(function(d){
+    _gBericht = d.exists ? (d.data()||{}) : {};
+    gehirnBerichtZeichnen();
+  }).catch(function(){
+    _gBericht = {};
+    gehirnBerichtZeichnen('Der Lagebericht liess sich gerade nicht laden.');
+  });
+}
+function gehirnBerichtZeichnen(fehler){
+  var karte=$('gehirnBericht'); if(!karte) return;
+  var b=(_gBericht||{})[_gBerichtArt];
+  var reiter='<div class="gb-reiter" role="tablist">'+
+    '<button type="button" class="btn btn-sm '+(_gBerichtArt==='tag'?'btn-primary':'btn-ghost')+'" data-gbart="tag" role="tab" aria-selected="'+(_gBerichtArt==='tag')+'">Heute</button>'+
+    '<button type="button" class="btn btn-sm '+(_gBerichtArt==='woche'?'btn-primary':'btn-ghost')+'" data-gbart="woche" role="tab" aria-selected="'+(_gBerichtArt==='woche')+'">Woche</button></div>';
+  var inhalt;
+  if(fehler){ inhalt='<p class="hint">'+esc(fehler)+'</p>'; }
+  else if(!b){
+    inhalt='<p class="hint">'+(_gBerichtArt==='tag'
+      ? 'Der erste Tagesbericht kommt heute Abend um 19 Uhr.'
+      : 'Der erste Wochenrückblick kommt am Montagmorgen.')+'</p>';
+  } else {
+    var z=b.zahlen||{};
+    inhalt='<div class="gb-zahlen">'+
+      '<div class="gb-zahl"><b>'+(z.fragen||0)+'</b><span>Fragen</span></div>'+
+      '<div class="gb-zahl"><b>'+(z.offen||0)+'</b><span>offen</span></div>'+
+      '<div class="gb-zahl"><b>'+(z.ideen||0)+'</b><span>Ideen</span></div></div>'+
+      '<p class="gb-text">'+esc(b.text||'')+'</p>'+
+      '<p class="hint" style="margin:0">Stand '+esc(b.stand ? fmtDateTime(b.stand) : '—')+
+      (b.ki===false ? ' · ohne KI zusammengestellt' : '')+'</p>';
+  }
+  /* Nur der Chef: sofort neu erstellen lassen, statt bis 19 Uhr bzw.
+     Montag zu warten — gedacht für die Vorführung und für Tage, an
+     denen man es früher wissen will. Ohne Mail. */
+  var jetzt = isChef()
+    ? '<button type="button" class="btn btn-ghost btn-sm" data-gbjetzt="1" style="width:100%;min-height:44px;margin-top:var(--s8)">'+
+      (_gBerichtLaeuft ? 'Wird erstellt …' : 'Jetzt aktualisieren')+'</button>' : '';
+  karte.innerHTML='<h3 data-ikon="gehirn">Lagebericht</h3>'+reiter+inhalt+jetzt;
+  ikonenEinsetzen(karte);
+  karte.querySelectorAll('[data-gbart]').forEach(function(x){
+    x.addEventListener('click', function(){ _gBerichtArt=x.getAttribute('data-gbart'); gehirnBerichtZeichnen(); });
+  });
+  var jb=karte.querySelector('[data-gbjetzt]');
+  if(jb){
+    jb.disabled=_gBerichtLaeuft;
+    jb.addEventListener('click', function(){
+      if(_gBerichtLaeuft) return;
+      _gBerichtLaeuft=true; gehirnBerichtZeichnen();
+      firebase.app().functions(KONFIG.region).httpsCallable('lageberichtJetzt')({ art:_gBerichtArt })
+        .then(function(){ _gBerichtLaeuft=false; gehirnBerichtLaden(); })
+        .catch(function(err){ _gBerichtLaeuft=false; gehirnBerichtZeichnen(); toast(errMsg(err), true); });
+    });
+  }
 }
 
 /* Der Knopf oben, die Tasten und das Feld — einmal gebunden. */
@@ -23287,7 +23666,6 @@ function gehirnSenden(art){
           if(_hVon==='liste' && _hListe.length){ hilfePane('liste'); hilfeListeZeichnen(); }
           else hilfeStartZeigen(); }
         else if(_hAnsicht==='liste'){ ev.preventDefault(); hilfeStartZeigen(); }
-        else if(_hAnsicht==='gehirn'){ ev.preventDefault(); hilfeStartZeigen(); }
         else hilfeSchliessen();
       }
     });
@@ -38842,13 +39220,18 @@ var MAIL_OPTS = [
         'auch da, wo nichts fertig wurde.';
     } },
   { id:'bericht', name:'Monatsbericht', chef:true,
-    hint:function(){ return 'Einmal im Monat die Zahlen aller Studios.'; } }
+    hint:function(){ return 'Einmal im Monat die Zahlen aller Studios.'; } },
+  /* Runde 150: der Lagebericht des Studio-Gehirns. Eigener Schalter,
+     weil er etwas anderes sagt als die Tagesübersicht um 20:30 Uhr —
+     wer die eine nicht will, will die andere vielleicht trotzdem. */
+  { id:'lagebericht', name:'Lagebericht vom Studio-Gehirn', chef:true, gehirn:true,
+    hint:function(){ return 'Jeden Abend um 19 Uhr in drei bis fünf Sätzen, was los war — montags als Wochenrückblick.'; } }
 ];
 var _mailAus = [];
 
 function buildMailOptions(){
   var box=$('mailOpts'); if(!box || !session) return;
-  var zeigen=MAIL_OPTS.filter(function(o){ return !o.chef || canManage(); });
+  var zeigen=MAIL_OPTS.filter(function(o){ return (!o.chef || canManage()) && (!o.gehirn || gehirnVerfuegbar()); });
   box.innerHTML=zeigen.map(function(o){
     var an = _mailAus.indexOf(o.id) < 0;
     var text = (typeof o.hint==='function') ? o.hint() : o.hint;
