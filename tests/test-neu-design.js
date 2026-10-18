@@ -154,9 +154,8 @@ async function seite(b, stub, such, breite) {
            24.9. eine zweite derselben Art: „Was ist neu". Seit dem 25.9.
            (Runde 113) eine dritte: „Datenschutzvorfall melden" — aus dem
            Betrieb: „es soll einen knopf geben der mir nach ausfüllung
-           sofort eine mail schickt". Seit dem 18.10.2026 eine vierte:
-           „Studio-Gehirn" öffnet die Hilfe direkt auf der Frage. */
-        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-gehirn') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall')),
+           sofort eine mail schickt". */
+        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall')),
       })),
       abgeschnitten: zeilen.some(z => {
         const t = z.querySelector('b');
@@ -235,21 +234,6 @@ async function seite(b, stub, such, breite) {
           ladeZu: document.getElementById('allesLade').hidden,
         };
         if (auf) document.getElementById('hilfeZu').click();
-        return raus;
-      }
-      /* „Studio-Gehirn" (seit 18.10.2026) öffnet dasselbe Fenster wie
-         die Hilfe, nur gleich auf der Frage. Beleg: Fenster auf UND die
-         Frage sichtbar. */
-      if (z.getAttribute('data-al-gehirn')) {
-        const auf = document.getElementById('hilfe').classList.contains('show') &&
-          getComputedStyle(document.getElementById('hilfeGehirn')).display !== 'none';
-        const raus = {
-          name, tipps, reiterOk,
-          view: auf ? 'FENSTER-AUF' : 'FENSTER-ZU',
-          ziel: 'FENSTER-AUF',
-          ladeZu: document.getElementById('allesLade').hidden,
-        };
-        if (document.getElementById('hilfe').classList.contains('show')) document.getElementById('hilfeZu').click();
         return raus;
       }
       /* „Was ist neu" (seit 24.9.) ist dieselbe Art: ein Fenster. */

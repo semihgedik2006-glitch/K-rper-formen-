@@ -500,6 +500,14 @@ var USERS = [
               var lf = window.__lieferant;
               return Promise.resolve({ exists: !!lf, id: id, data: function () { return lf || {}; } });
             }
+            /* Lagebericht des Studio-Gehirns (Runde 150). Ohne
+               __lagebericht gibt es das Dokument nicht — so steht jeder
+               Betrieb da, bis der Zeitplan das erste Mal lief. Die App
+               liest ihn nur mit get(), nicht als Beobachter. */
+            if (path === 'config' && id === 'lagebericht') {
+              var lb = window.__lagebericht;
+              return Promise.resolve({ exists: !!lb, id: id, data: function () { return lb || {}; } });
+            }
             if (path === 'config' && id === 'recht') {
               var rr = window.__recht;
               return Promise.resolve({ exists: !!rr, id: id,
