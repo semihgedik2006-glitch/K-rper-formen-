@@ -15,7 +15,7 @@
    8. Der Bericht ohne KI nennt die Zahlen und die Studios mit Offenem.
    ══════════════════════════════════════════════════════════════════ */
 const { __intern } = require('../functions/index.js');
-const { gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson } = __intern;
+const { gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson } = __intern;
 
 let gut = 0, schlecht = 0;
 function pruefe(was, b, info) {
@@ -99,6 +99,33 @@ pruefe('ohne Status: unlesbare Antwort', /lesbare/.test(geminiFehlerText(0)), ge
   global.fetch = async (url) => { gerufen.push(url); return antwortMit(429); };
   f = null; try { await geminiJson('s', 'n', 'k'); } catch (e) { f = e; }
   pruefe('alle überlastet → jedes Modell versucht, Meldung „Kontingent"', f && gerufen.length === GEMINI_MODELLE.length && /Kontingent/.test(f.message), [gerufen.length, f && f.message]);
+  /* Live am 18.10.2026: Gemini antwortete mit 402 (Zahlung). */
+  gerufen = [];
+  global.fetch = async (url) => { gerufen.push(url); return antwortMit(402); };
+  f = null; try { await geminiJson('s', 'n', 'k'); } catch (e) { f = e; }
+  pruefe('402 → kein weiteres Gemini-Modell, Meldung „Zahlung"', f && gerufen.length === 1 && /Zahlung/.test(f.message), [gerufen.length, f && f.message]);
+
+  process.env.STUDIO_GEHIRN_KEY = 'test';
+  gerufen = [];
+  global.fetch = async (url) => { gerufen.push(url);
+    if (url.includes('generativelanguage')) return antwortMit(402);
+    return { ok: true, status: 200, json: async () => ({ ergebnis: { typ: 'aufgabe', titel: 'Test' } }) }; };
+  const e2 = await kiJson('s', 'n', 'k');
+  pruefe('Gemini 402 → Studio-Gehirn (/api/json) springt ein', e2 && e2.titel === 'Test' && gerufen.length === 2 && /\/api\/json$/.test(gerufen[1]), gerufen);
+
+  gerufen = [];
+  global.fetch = async (url) => { gerufen.push(url);
+    if (url.includes('generativelanguage')) return antwortMit(402);
+    return { ok: false, status: 404, json: async () => ({}) }; };
+  f = null; try { await kiJson('s', 'n', 'k'); } catch (e) { f = e; }
+  pruefe('beide aus → Meldung trägt den Gemini-Grund', f && /Zahlung/.test(f.message), f && f.message);
+
+  gerufen = [];
+  global.fetch = async (url) => { gerufen.push(url); return { ok: true, status: 200, json: async () => ({ ergebnis: { typ: 'keins' } }) }; };
+  const e3 = await kiJson('s', 'n', '');
+  pruefe('ohne Gemini-Schlüssel direkt das Studio-Gehirn', e3 && e3.typ === 'keins' && gerufen.length === 1, gerufen);
+  delete process.env.STUDIO_GEHIRN_KEY;
+
   global.fetch = echt; console.error = fehlerAus;
   ende();
 })();
