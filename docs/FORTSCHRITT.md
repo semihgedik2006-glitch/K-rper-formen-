@@ -15679,3 +15679,29 @@ alle sichtbar → test-gehirn rot.
   die Prüfregeln der Function als Einheitstest.
 - Der Regeltest läuft nur in CI (Emulator).
 - Der volle Lauf aller Tests lief nicht.
+
+---
+
+## Runde 151 — „Anlegen lassen" weicht auf eine zweite KI aus und nennt den Grund (18.10.2026)
+
+**Aus dem Betrieb:** Erster Live-Versuch („Test-Aufgabe für Hürth, nur
+für heute") kam mit „Die KI hat gerade nicht geantwortet" zurück. Der
+Grund war von hier aus nicht zu sehen — die Meldung hat ihn verschluckt.
+
+**Geändert:** `geminiJson` probiert der Reihe nach `gemini-2.5-flash`,
+`gemini-flash-latest`, `gemini-2.5-flash-lite`, `gemini-flash-lite-latest`.
+Bei abgelehntem Schlüssel (401/403, 400 mit „API key") hört es sofort
+auf — ein anderes Modell hilft dann nicht. Die Meldung nennt jetzt den
+Grund (`geminiFehlerText`: Kontingent, Schlüssel, Nummer, unlesbar).
+Gilt auch für den Lagebericht.
+
+**Warum so:** Ohne Zugriff auf die Logs von `formenchat` ist die
+Meldung in der App die einzige Spur. Sie muss den Grund tragen.
+
+**Geprüft:** `test-gehirn-aktion` (31, davon 8 neu, mit nachgestelltem
+`fetch`: 429 → zweites Modell; 403 → kein weiteres; alle 429 → jedes
+versucht). test-gehirn, test-csp, test-funktionen-pfade,
+test-funktionen-schalter, test-neu-messlatte, test-ausliefern grün.
+
+**Nicht geprüft:** Der echte Aufruf an Gemini — welcher Grund live
+vorlag, ist offen, bis die neue Meldung einmal erscheint.

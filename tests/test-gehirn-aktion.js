@@ -15,7 +15,7 @@
    8. Der Bericht ohne KI nennt die Zahlen und die Studios mit Offenem.
    ══════════════════════════════════════════════════════════════════ */
 const { __intern } = require('../functions/index.js');
-const { gehirnVorschlagPruefen: P, lageberichtOhneKi } = __intern;
+const { gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson } = __intern;
 
 let gut = 0, schlecht = 0;
 function pruefe(was, b, info) {
@@ -74,7 +74,38 @@ const t2 = lageberichtOhneKi('woche', null, [{ name: 'Hürth', aufgaben: 0, putz
 pruefe('ohne Worker-Zahlen sagt er das ehrlich', /nicht abrufbar/.test(t2), t2);
 pruefe('alles erledigt wird so gesagt', /alles abgehakt/.test(t2), t2);
 
+console.log('\n── KI-Ausfall: Ersatz und Grund ──');
+/* Live am 18.10.2026: „Anlegen lassen" meldete nur „nicht geantwortet". */
+pruefe('mehr als ein Modell zum Ausweichen', Array.isArray(GEMINI_MODELLE) && GEMINI_MODELLE.length >= 2, GEMINI_MODELLE);
+pruefe('429 sagt: Kontingent', /Kontingent/.test(geminiFehlerText(429)), geminiFehlerText(429));
+pruefe('403 sagt: Schlüssel', /Schlüssel/.test(geminiFehlerText(403)), geminiFehlerText(403));
+pruefe('500 nennt die Nummer', /\(500\)/.test(geminiFehlerText(500)), geminiFehlerText(500));
+pruefe('ohne Status: unlesbare Antwort', /lesbare/.test(geminiFehlerText(0)), geminiFehlerText(0));
+
+(async () => {
+  const echt = global.fetch;
+  const fehlerAus = console.error; console.error = () => {};
+  const antwortMit = (status, text) => ({ ok: status === 200, status,
+    json: async () => status === 200 ? { candidates: [{ content: { parts: [{ text }] } }] } : { error: { message: 'x' } } });
+  let gerufen = [];
+  global.fetch = async (url) => { gerufen.push(url); return gerufen.length === 1 ? antwortMit(429) : antwortMit(200, '{"typ":"keins"}'); };
+  const r = await geminiJson('s', 'n', 'k');
+  pruefe('erstes Modell 429 → das zweite antwortet', r && r.typ === 'keins' && gerufen.length === 2 && gerufen[1].includes(GEMINI_MODELLE[1]), gerufen);
+  gerufen = [];
+  global.fetch = async (url) => { gerufen.push(url); return antwortMit(403); };
+  let f = null; try { await geminiJson('s', 'n', 'k'); } catch (e) { f = e; }
+  pruefe('Schlüssel abgelehnt → kein weiteres Modell, Grund in der Meldung', f && gerufen.length === 1 && /Schlüssel/.test(f.message), [gerufen.length, f && f.message]);
+  gerufen = [];
+  global.fetch = async (url) => { gerufen.push(url); return antwortMit(429); };
+  f = null; try { await geminiJson('s', 'n', 'k'); } catch (e) { f = e; }
+  pruefe('alle überlastet → jedes Modell versucht, Meldung „Kontingent"', f && gerufen.length === GEMINI_MODELLE.length && /Kontingent/.test(f.message), [gerufen.length, f && f.message]);
+  global.fetch = echt; console.error = fehlerAus;
+  ende();
+})();
+
+function ende() {
 console.log(schlecht
   ? '\n✗ Studio-Gehirn Rechnung: ' + schlecht + ' von ' + (gut + schlecht) + ' falsch'
   : '\n✓ Studio-Gehirn Rechnung: Vorschläge harmlos, Bericht ehrlich — ' + gut + ' Zusicherungen');
 process.exit(schlecht ? 1 : 0);
+}
