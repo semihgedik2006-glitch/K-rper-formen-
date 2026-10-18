@@ -15705,3 +15705,33 @@ test-funktionen-schalter, test-neu-messlatte, test-ausliefern grün.
 
 **Nicht geprüft:** Der echte Aufruf an Gemini — welcher Grund live
 vorlag, ist offen, bis die neue Meldung einmal erscheint.
+
+---
+
+## Runde 152 — Gemini verlangt Zahlung (402); Ersatz über Workers AI (18.10.2026)
+
+**Gefunden:** Mit dem Grund in der Meldung (Runde 151) zeigte der
+zweite Live-Versuch **402** — Google verlangt für den Gemini-Schlüssel
+eine Zahlung. Andere Gemini-Modelle helfen da nicht.
+
+**Geändert:**
+- 402 bricht wie 401/403 sofort ab und heisst „verlangt eine Zahlung".
+- Neu `kiJson`: erst Gemini, dann das Studio-Gehirn über den neuen
+  Worker-Pfad `/api/json` (Worker 2.4, Workers AI, kostenlos, Schlüssel
+  `STUDIO_GEHIRN_KEY`). „Anlegen lassen" und Lagebericht nutzen beide.
+  Ohne Gemini-Schlüssel geht es direkt zum Worker.
+- Scheitern beide, trägt die Meldung den Gemini-Grund.
+
+**Warum so:** Das Studio-Gehirn läuft schon auf Workers AI und kostet
+nichts. Die Zahlungsfrage bei Google klärt der Betrieb, aber die App
+soll bis dahin nicht stehen. Gemini bleibt zuerst, weil es JSON
+verlässlicher liefert.
+
+**Geprüft:** test-gehirn-aktion (35, davon 4 neu, mit nachgestelltem
+`fetch`), Worker-Pfad mit nachgestellter KI (200 / 401 / 400), test-csp,
+test-funktionen-pfade, test-funktionen-schalter, test-neu-messlatte.
+
+**Nicht geprüft:** Workers AI echt. Der Ersatz greift erst, wenn
+Worker 2.4 eingefügt ist. Auch der **Marketing-Chat** nutzt denselben
+Gemini-Schlüssel und dürfte bis zur Zahlung ebenfalls 402 melden —
+nicht umgestellt.

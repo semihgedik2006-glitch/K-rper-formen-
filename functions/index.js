@@ -7096,6 +7096,7 @@ const GEMINI_MODELLE = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-f
 /* Aus HTTP-Status ein Satz für Menschen. Rein rechnerisch (__intern). */
 function geminiFehlerText(status) {
   if (status === 429) return 'Das Kontingent der KI ist gerade aufgebraucht. Bitte in ein paar Minuten noch einmal.';
+  if (status === 402) return 'Das Google-Konto der KI verlangt eine Zahlung (402). Bitte Abrechnung im Google AI Studio prüfen.';
   if (status === 400 || status === 401 || status === 403) return 'Der KI-Schlüssel wird abgelehnt (' + status + '). Bitte GEMINI_API_KEY prüfen.';
   if (status) return 'Die KI hat gerade nicht geantwortet (' + status + '). Bitte gleich noch einmal.';
   return 'Die KI hat keine lesbare Antwort geliefert. Bitte anders formulieren oder gleich noch einmal.';
@@ -7125,8 +7126,9 @@ async function geminiJson(system, nutzer, apiKey) {
     if (!resp.ok) {
       console.error('Gemini ' + modell + ' HTTP ' + resp.status + ':', JSON.stringify(json).slice(0, 300));
       letzter = resp.status;
-      /* Schlüssel abgelehnt: ein anderes Modell hilft nicht. */
-      if (resp.status === 401 || resp.status === 403) break;
+      /* Schlüssel abgelehnt oder Zahlung verlangt (402, live am
+         18.10.2026): ein anderes Modell hilft nicht. */
+      if (resp.status === 401 || resp.status === 402 || resp.status === 403) break;
       if (resp.status === 400 && /API.?key/i.test(JSON.stringify(json))) break;
       continue;
     }
@@ -7142,6 +7144,40 @@ async function geminiJson(system, nutzer, apiKey) {
   const f = new Error(geminiFehlerText(letzter));
   f.status = letzter;
   throw f;
+}
+
+/* Dieselbe Aufgabe über das Studio-Gehirn (Cloudflare Workers AI,
+   kostenlos). Ersatz, wenn Gemini nicht antwortet — live am 18.10.2026
+   mit 402. Braucht Worker 2.4 (/api/json) und STUDIO_GEHIRN_KEY. */
+async function gehirnWorkerJson(system, nutzer) {
+  const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
+  if (!schluessel) throw new Error('STUDIO_GEHIRN_KEY fehlt');
+  const url = (process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/json';
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel },
+    body: JSON.stringify({ system, text: nutzer })
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.ergebnis || typeof j.ergebnis !== 'object') {
+    throw new Error('Studio-Gehirn ' + r.status + ': ' + String(j.fehler || '').slice(0, 120));
+  }
+  return j.ergebnis;
+}
+
+/* Erst Gemini, dann das Studio-Gehirn. Scheitern beide, trägt die
+   Meldung den Gemini-Grund — der ist für Menschen lesbar. */
+async function kiJson(system, nutzer, apiKey) {
+  let geminiFehler = null;
+  if (apiKey) {
+    try { return await geminiJson(system, nutzer, apiKey); }
+    catch (e) { geminiFehler = e; }
+  }
+  try { return await gehirnWorkerJson(system, nutzer); }
+  catch (e) {
+    console.error('KI-Ersatz Studio-Gehirn:', e.message);
+    throw geminiFehler || new Error(geminiFehlerText(0));
+  }
 }
 
 /* Prüft, was die KI vorschlägt, und macht es harmlos. Rein rechnerisch,
@@ -7207,7 +7243,6 @@ exports.gehirnAktion = region
     const auftrag = String((data || {}).text || '').trim().slice(0, 1000);
     if (!auftrag) throw new functions.https.HttpsError('invalid-argument', 'Bitte zuerst schreiben, was angelegt werden soll.');
     const apiKey = process.env.GEMINI_API_KEY || '';
-    if (!apiKey) throw new functions.https.HttpsError('failed-precondition', 'GEMINI_API_KEY fehlt (GitHub-Secret).');
     await tagesGrenze('gehirnAktion', GEHIRN_AKTION_GRENZE, firma);
 
     const namen = await alleStudios(firma);
@@ -7227,7 +7262,7 @@ exports.gehirnAktion = region
       'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '; "alle" wenn alle gemeint sind. ' +
       'Keine Kundennamen oder Gesundheitsdaten übernehmen. Ist es weder Aufgabe noch Ankündigung: typ "keins" und ein kurzer hinweis.';
     let roh;
-    try { roh = await geminiJson(system, auftrag, apiKey); }
+    try { roh = await kiJson(system, auftrag, apiKey); }
     catch (e) {
       console.error('gehirnAktion:', e.message);
       throw new functions.https.HttpsError('unavailable', e.message);
@@ -7296,7 +7331,7 @@ async function lageberichtBauen(firma, art) {
   };
   let text = '', ki = false;
   const apiKey = process.env.GEMINI_API_KEY || '';
-  if (apiKey) {
+  {
     try {
       const system =
         'Du schreibst für die Geschäftsführung eines EMS-Studio-Betriebs den ' +
@@ -7317,7 +7352,7 @@ async function lageberichtBauen(firma, art) {
         } : 'nicht abrufbar',
         studios
       };
-      const roh = await geminiJson(system, JSON.stringify(daten), apiKey);
+      const roh = await kiJson(system, JSON.stringify(daten), apiKey);
       text = String((roh && roh.text) || '').trim().slice(0, 3000);
       ki = !!text;
     } catch (e) { console.error('Lagebericht KI:', e.message); }
@@ -7379,7 +7414,7 @@ exports.lageberichtJetzt = region
   });
 
 exports.__intern = { gehirnErlaubt, gehirnAuftrag, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
-                     gehirnVorschlagPruefen, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson,
+                     gehirnVorschlagPruefen, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
