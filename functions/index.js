@@ -7087,27 +7087,61 @@ exports.gehirnFrage = region
 const GEHIRN_AKTION_GRENZE = 100;
 const DATUM_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+/* Reihenfolge der Modelle: fällt eines aus (Kontingent, Überlast, nicht
+   verfügbar), versucht es das nächste. Am 18.10.2026 kam „Anlegen
+   lassen" live nur mit „Die KI hat gerade nicht geantwortet" zurück —
+   ohne Grund. Deshalb jetzt Ersatzmodelle UND ein Grund in der Meldung. */
+const GEMINI_MODELLE = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest'];
+
+/* Aus HTTP-Status ein Satz für Menschen. Rein rechnerisch (__intern). */
+function geminiFehlerText(status) {
+  if (status === 429) return 'Das Kontingent der KI ist gerade aufgebraucht. Bitte in ein paar Minuten noch einmal.';
+  if (status === 400 || status === 401 || status === 403) return 'Der KI-Schlüssel wird abgelehnt (' + status + '). Bitte GEMINI_API_KEY prüfen.';
+  if (status) return 'Die KI hat gerade nicht geantwortet (' + status + '). Bitte gleich noch einmal.';
+  return 'Die KI hat keine lesbare Antwort geliefert. Bitte anders formulieren oder gleich noch einmal.';
+}
+
 async function geminiJson(system, nutzer, apiKey) {
-  const resp = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: 'user', parts: [{ text: nutzer }] }],
-        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
-      })
-    });
-  const json = await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new Error('Gemini HTTP ' + resp.status + ': ' + JSON.stringify(json).slice(0, 300));
-  const teile = (((json.candidates || [])[0] || {}).content || {}).parts || [];
-  const text = teile.map(p => p.text || '').join('');
-  try { return JSON.parse(text); } catch (e) {
-    const m = text.match(/\{[\s\S]*\}/);
-    if (m) { try { return JSON.parse(m[0]); } catch (e2) { /* unten */ } }
+  let letzter = 0;
+  for (const modell of GEMINI_MODELLE) {
+    let resp, json;
+    try {
+      resp = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/' + modell + ':generateContent',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: system }] },
+            contents: [{ role: 'user', parts: [{ text: nutzer }] }],
+            generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
+          })
+        });
+      json = await resp.json().catch(() => ({}));
+    } catch (e) {
+      console.error('Gemini ' + modell + ': Netz', e.message);
+      letzter = 503; continue;
+    }
+    if (!resp.ok) {
+      console.error('Gemini ' + modell + ' HTTP ' + resp.status + ':', JSON.stringify(json).slice(0, 300));
+      letzter = resp.status;
+      /* Schlüssel abgelehnt: ein anderes Modell hilft nicht. */
+      if (resp.status === 401 || resp.status === 403) break;
+      if (resp.status === 400 && /API.?key/i.test(JSON.stringify(json))) break;
+      continue;
+    }
+    const teile = (((json.candidates || [])[0] || {}).content || {}).parts || [];
+    const text = teile.filter(p => !p.thought).map(p => p.text || '').join('');
+    try { return JSON.parse(text); } catch (e) {
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) { try { return JSON.parse(m[0]); } catch (e2) { /* nächstes Modell */ } }
+    }
+    console.error('Gemini ' + modell + ': keine lesbare Antwort', text.slice(0, 200));
+    letzter = 0;
   }
-  throw new Error('Gemini: keine lesbare Antwort');
+  const f = new Error(geminiFehlerText(letzter));
+  f.status = letzter;
+  throw f;
 }
 
 /* Prüft, was die KI vorschlägt, und macht es harmlos. Rein rechnerisch,
@@ -7196,7 +7230,7 @@ exports.gehirnAktion = region
     try { roh = await geminiJson(system, auftrag, apiKey); }
     catch (e) {
       console.error('gehirnAktion:', e.message);
-      throw new functions.https.HttpsError('unavailable', 'Die KI hat gerade nicht geantwortet. Bitte gleich noch einmal.');
+      throw new functions.https.HttpsError('unavailable', e.message);
     }
     const vorschlag = gehirnVorschlagPruefen(roh, namen, erlaubt, rolle, heute);
     return {
@@ -7345,7 +7379,7 @@ exports.lageberichtJetzt = region
   });
 
 exports.__intern = { gehirnErlaubt, gehirnAuftrag, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
-                     gehirnVorschlagPruefen, lageberichtOhneKi,
+                     gehirnVorschlagPruefen, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
