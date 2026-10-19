@@ -16067,3 +16067,66 @@ eingefügt ist.
 **Gefunden nebenbei:** `test-navigation` ist auf `main` seit #215
 (Schichtplaner) rot — der Chef sieht 11 Kacheln statt 10. Nicht von hier;
 die Erwartung im Test gehört zu #215 und wurde hier nicht angefasst.
+
+---
+
+## Runde 158 — Studio-Gehirn Stufe 2: das eigene Fenster und sichtbare Schritte (19.10.2026)
+
+**Aus dem Betrieb:** „ich möchte das die ki am startbildschirm präsentiert
+wird und ein eigenes Fenster so zu sagen wird wenn man drauf klickt und
+dann so Iron Man mäßig agiert für uns … und auch Schritte macht
+automatisch und wir das sehen und so auch statt nur diese Punkte".
+
+**Gebaut**
+- **„Gehirn" auf der Startseite — ohne zusätzliche Höhe.** Erst als
+  eigene Kachel über der Liste gebaut: 68 px, und die Durchläufe sagten
+  nein — auf 320 × 568 passte die Startseite nicht mehr
+  (test-neu-design: 414 > 350), auf 390 × 844 rutschte der Putzplan nach
+  „Ausserdem" (test-startseite-putz), test-block-d fand seine Zeile nicht
+  mehr. Jetzt an drei Stellen, je nachdem, was sichtbar ist:
+  neues Aussehen am Handy in der Bereichszeile neben „Neu" (`#jarvisStart`),
+  bisheriges Aussehen rechts neben der Begrüssung (`#jarvisStartAlt`),
+  am Rechner in der Kopfleiste (`#jarvisStartPc`, auf jeder Seite).
+  Gemessen: die Bereichszeile wird bei 360/390/430/820 px nicht höher
+  (der Kopf gibt Platz ab, `flex-basis:140px`). Unter 380 px wartet
+  „Gehirn", solange „Neu" dasteht (sonst bräche das Datum um, +18 px);
+  unter 640 px Höhe fehlt es — wie „Neu", aus demselben Grund.
+- **Eigenes Vollbild-Fenster** (`#jarvis`): dunkler Hintergrund mit
+  Farbe von oben, ein Kern aus drei drehenden Ringen (nur `transform`,
+  nur solange das Fenster offen ist; beim Arbeiten schneller und der
+  Kern pulsiert), Statuszeile, darunter das Gespräch. Am Rechner ab
+  1100 px zwei Spalten: Kern links, Gespräch rechts.
+- **Derselbe Verlauf** wie unter Ich → Gehirn (`gehirnZeichnenIn` zeichnet
+  in beide), dieselbe Ausführung, dieselben Regeln.
+- **Sichtbare Schritte** statt Punkten (`gehirnSchritt`): „Lese deinen
+  Satz …", „Erkannt: …", „Suche ‚…' in Putzplan und Aufgaben …",
+  „Abgehakt ✓", „Vorschau fertig — gespeichert wird erst mit deinem
+  Druck". Laufend gestaffelt, danach klein über der Antwort.
+- **Öffnet das Gehirn eine Seite, geht das Fenster zu** — man sieht die
+  App wechseln. Escape und ✕ schliessen; `showView` schliesst es auch.
+- **Sprechen im Fenster** schickt nach dem Reden gleich ab (wie ein
+  Sprachassistent); auf der Seite bleibt Zeit zum Prüfen.
+
+**Bewusst noch nicht:** mehrere Aufträge aus einem Satz („… und …").
+Dafür müsste die Function eine Liste von Befehlen liefern und jeder
+einzeln geprüft werden — als Nächstes, wenn sich das Fenster bewährt.
+
+**Geprüft:** test-gehirn (142; neu: Kachel bei 390 und 1440 px,
+Vollbild, zwei Spalten am Rechner, Antwort mit Schritten im Fenster und
+auf der Seite, „öffne den putzplan" mit Schritten und Wechsel, Escape,
+„weniger Bewegung", fremde Firma ohne Kachel, Trefferflächen von
+Kachel, ✕, Senden, Sprechen bei 320–1920 px normal und kompakt).
+Gegenprobe: Kachel versteckt → rot. Dazu die Startseiten-Durchläufe
+(test-block-b/c/d, test-gleiten-rahmen, test-p3-startseite,
+test-startseite-putz, test-tagesband) und test-csp, test-neu-messlatte,
+test-gestaltung, test-knoepfe, test-abgeschnitten, test-quer,
+test-neu-design, test-hilfe-pc, test-ausliefern.
+
+**Nicht geprüft:** das Gefühl auf einem echten Handy (Ringe, Tempo) —
+das sagt nur jemand im Studio.
+
+Nachtrag: Die Pille in der Kopfleiste ist aus der Bereichsfarbe gebaut
+und gleitet beim Bereichswechsel mit (`--accent`-Übergang wie
+„Bericht") — test-gleiten-rahmen hatte sie als „springt" gefunden. Die
+neue Prüfung „neues Aussehen 360/390/430/820/320 px" in test-gehirn misst,
+dass die Bereichszeile mit Knopf nicht höher wird.

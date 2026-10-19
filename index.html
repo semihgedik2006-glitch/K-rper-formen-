@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-QUWkyATP2ZCByYqvgj88Xym9p38s+x6Tem+ERaOTf5M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-uQNi2RYzhsAFH2jG3+LG0COywmODYfcuXeIVr5ICyJE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5247,6 +5247,90 @@ html{font-size:var(--fs,100%)}
 .gehirn-denkt i:nth-child(3){animation-delay:.3s;background:var(--accent-2)}
 @keyframes gehirnHuepf{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-6px);opacity:1}}
 @keyframes gehirnRein{from{opacity:0;transform:translateY(10px)}}
+/* ── Sichtbare Schritte und das eigene Fenster (19.10.2026) ─────────── */
+.gs-schritte{list-style:none;margin:var(--s6) 0;padding:0;display:flex;flex-direction:column;gap:var(--s4);font-size:var(--t-sm)}
+.gs-schritte li{display:flex;gap:var(--s8);align-items:baseline;color:var(--text-2);
+  animation:gehirnRein .3s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--gs-i,0) * 90ms)}
+.gs-schritte li span{flex:0 0 auto;width:16px;text-align:center;color:var(--ok-tx);font-weight:700}
+.gs-schritte li.jetzt span{color:var(--accent)}
+.gs-schritte.still{font-size:var(--t-xs);opacity:.8}
+.gs-schritte.still li{animation:none}
+.jv-kachel{flex-shrink:0;display:inline-flex;align-items:center;gap:var(--s8);min-height:44px;min-width:44px;margin-top:var(--s2);
+  padding:0 var(--s12) 0 var(--s6);border-radius:var(--r-pille);cursor:pointer;font:inherit;font-weight:700;font-size:var(--t-sm);
+  border:1px solid color-mix(in srgb, var(--accent) 55%, var(--line-2));color:var(--text);
+  background:linear-gradient(100deg, color-mix(in srgb, var(--accent) 24%, var(--bg-2)), var(--bg-2));
+  box-shadow:0 1px 0 var(--line) inset,0 6px 16px -10px color-mix(in srgb, var(--accent) 80%, transparent);
+  transition:transform .25s var(--spring)}
+.jv-kachel:active{transform:scale(.94)}
+.jv-kachel[hidden]{display:none}
+#jarvisStart{margin-left:auto;margin-bottom:var(--s8)}
+.neu-pille:not([hidden]) + #jarvisStart{margin-left:0}
+/* Damit die Zeile einreihig bleibt: der Bereichskopf gibt Platz ab
+   (er kürzt seine Unterzeile mit „…"), statt die Pille in eine zweite
+   Reihe zu schieben — gemessen bei 360 und 430 px. */
+body.neu .bereich-zeile:has(#jarvisStart:not([hidden])) .bereich-kopf{flex-basis:140px}
+/* Unter 380 px reicht der Platz nicht für „Neu" UND „Gehirn": das Datum
+   im Kopf bräche um (gemessen 360 px: +18 px). „Neu" ist vorübergehend —
+   solange es dasteht, wartet „Gehirn" (es bleibt unter Ich → Gehirn). */
+@media(max-width:379px){ .neu-pille:not([hidden]) + #jarvisStart{display:none} }
+.jv-pc{margin-top:0;margin-right:var(--s8);
+  /* Die Pille steht im Rahmen und ist aus der Bereichsfarbe gebaut —
+     sie gleitet beim Bereichswechsel mit wie „Bericht" (siehe oben,
+     test-gleiten-rahmen). */
+  transition:--accent .35s var(--ease-ios),--accent-2 .35s var(--ease-ios),transform .25s var(--spring)}
+@media (prefers-reduced-motion:reduce){ .jv-pc{transition:none} }
+/* Handy-Zeile nur bis 820 px (darüber gibt es die Zeile nicht), die
+   Kopfleisten-Pille nur darüber. Auf sehr kurzen Bildschirmen (568 px)
+   nicht — wie die „Neu"-Pille: die Zeile bräche um, und die Startseite
+   passte nicht mehr. Erreichbar bleibt das Gehirn unter Ich → Gehirn. */
+@media(min-width:821px){ #jarvisStart,#jarvisStartAlt{display:none} }
+@media(max-width:820px){ .jv-pc{display:none} }
+@media(max-height:640px){ #jarvisStart{display:none} }
+.jv-kachel-kern{flex:0 0 auto;width:32px;height:32px;border-radius:var(--r-rund);display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%, #fff 0, var(--accent) 35%, var(--accent-2) 100%);
+  box-shadow:0 0 12px 1px color-mix(in srgb, var(--accent) 50%, transparent)}
+.jv-kachel-kern i{width:10px;height:10px;border-radius:var(--r-rund);background:#fff;opacity:.85}
+@media (max-width:399px){ #jarvisStart,#jarvisStartAlt{padding:0 var(--s6)} #jarvisStart .jv-kachel-wort,#jarvisStartAlt .jv-kachel-wort{display:none} }
+.jarvis{position:fixed;inset:0;z-index:900;display:flex;justify-content:center;
+  background:radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--accent) 30%, #05070d) 0%, #05070d 60%);
+  color:#EEF4FF;opacity:0;transition:opacity .22s ease}
+.jarvis.da{opacity:1}
+.jarvis[hidden]{display:none}
+body.jv-offen{overflow:hidden}
+.jv-rahmen{width:100%;max-width:1180px;height:100%;display:grid;grid-template-rows:auto auto 1fr;
+  padding:max(var(--s12), env(safe-area-inset-top)) var(--s16) max(var(--s12), env(safe-area-inset-bottom))}
+.jv-kopf{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-head);font-weight:700;
+  letter-spacing:var(--ls-l);text-transform:uppercase;font-size:var(--t-xs);color:#B9C7E6}
+.jv-kopf .icon-btn{color:#EEF4FF;min-width:44px;min-height:44px}
+.jv-links{display:flex;flex-direction:column;align-items:center;gap:var(--s8);padding:var(--s8) 0}
+.jv-kern{position:relative;width:132px;height:132px;display:grid;place-items:center}
+.jv-kern i{position:absolute;inset:0;border-radius:var(--r-rund);border:2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  border-top-color:transparent;border-left-color:transparent;animation:jvDreh 6s linear infinite}
+.jv-kern i:nth-child(2){inset:var(--s16);border-color:color-mix(in srgb, var(--accent-2) 70%, transparent);border-bottom-color:transparent;border-right-color:transparent;animation-duration:4s;animation-direction:reverse}
+.jv-kern i:nth-child(3){inset:var(--s32);border-style:dashed;border-color:color-mix(in srgb, #fff 35%, transparent);animation-duration:9s}
+.jv-kern b{width:44px;height:44px;border-radius:var(--r-rund);
+  background:radial-gradient(circle at 35% 30%, #fff 0, var(--accent) 40%, var(--accent-2) 100%);
+  box-shadow:0 0 28px 6px color-mix(in srgb, var(--accent) 55%, transparent)}
+.jv-kern.denkt b{animation:gehirnPuls .9s ease-in-out infinite}
+.jv-kern.denkt i{animation-duration:1.6s}
+@keyframes jvDreh{to{transform:rotate(360deg)}}
+.jv-status{margin:0;text-align:center;font-size:var(--t-sm);color:#C9D6F2;min-height:1.5em;max-width:34ch}
+.jv-rechts{display:flex;flex-direction:column;min-height:0;gap:var(--s8)}
+.jv-verlauf{flex:1 1 auto;overflow:auto;min-height:0;padding-right:var(--s4)}
+.jarvis .gehirn-antwort,.jarvis .gehirn-frage{color:var(--text)}
+.jv-eingabe{display:flex;flex-direction:column;gap:var(--s8)}
+.jv-eingabe textarea{min-height:56px}
+@media (min-width:1100px){
+  .jv-rahmen{grid-template-columns:340px 1fr;grid-template-rows:auto 1fr;column-gap:var(--s32)}
+  .jv-kopf{grid-column:1 / -1}
+  .jv-links{justify-content:center}
+  .jv-kern{width:200px;height:200px}
+  .jv-kern b{width:64px;height:64px}
+}
+@media (prefers-reduced-motion:reduce){
+  .gs-schritte li,.jv-kern i,.jv-kern.denkt b{animation:none}
+  .jarvis{transition:none}
+}
 @keyframes gehirnVonRechts{from{opacity:0;transform:translateX(14px)}}
 /* Das Eingabefeld steht im Fluss unter dem Gespräch, NICHT angeheftet.
    Angeheftet deckte es auf 320 × 640 mehr als die halbe Seite ab und
@@ -7529,6 +7613,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
            um das Studio. Das Wort daneben verschwindet auf schmalen
            Bildschirmen, wie beim Suchknopf — derselbe Weg, dieselbe
            Klasse-Bauform. -->
+      <button type="button" class="jv-kachel jv-pc" id="jarvisStartPc" hidden aria-haspopup="dialog" aria-label="Studio-Gehirn öffnen">
+        <span class="jv-kachel-kern" aria-hidden="true"><i></i></span><span class="jv-kachel-wort">Studio-Gehirn</span></button>
       <button class="icon-btn hilfeknopf" id="hilfeBtn"
               title="Hilfe im Studio — was ist das Problem?"
               aria-label="Hilfe im Studio">
@@ -7591,6 +7677,15 @@ body.neu .kn-zeile{min-height:var(--zeile)}
         <button type="button" class="neu-pille" id="neuPille" hidden
                 aria-haspopup="dialog" title="Was ist neu in der App">
           <span class="np-punkt" aria-hidden="true"></span>Neu</button>
+        <!-- Studio-Gehirn auf der Startseite (19.10.2026, aus dem Betrieb:
+             „das die ki am startbildschirm präsentiert wird und ein eigenes
+             Fenster … wird wenn man drauf klickt"). Hier in der Zeile kostet
+             es keine Höhe: als eigene Kachel über der Liste waren es 68 px,
+             und auf 320 × 568 passte die Startseite nicht mehr auf den
+             Bildschirm (test-neu-design), auf 390 × 844 rutschte der Putzplan
+             nach „Ausserdem" (test-startseite-putz). -->
+        <button type="button" class="jv-kachel" id="jarvisStart" hidden aria-haspopup="dialog" aria-label="Studio-Gehirn öffnen">
+          <span class="jv-kachel-kern" aria-hidden="true"><i></i></span><span class="jv-kachel-wort">Gehirn</span></button>
       </div>
 
       <!-- Die Schublade. Derselbe Inhalt wie die Seite „Alles", nur
@@ -7623,7 +7718,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
       <!-- START -->
       <section class="view" id="view-home">
-        <div class="view-head shrink"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
+        <div class="view-head shrink"><div class="vh-line"><div class="vh-text"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
+          <!-- Im bisherigen Aussehen rechts neben der Begrüssung (dort ist
+               der Seitenkopf sichtbar); im neuen Aussehen steht derselbe
+               Knopf in der Bereichszeile (#jarvisStart). -->
+          <button type="button" class="jv-kachel" id="jarvisStartAlt" hidden aria-haspopup="dialog" aria-label="Studio-Gehirn öffnen">
+            <span class="jv-kachel-kern" aria-hidden="true"><i></i></span><span class="jv-kachel-wort">Gehirn</span></button></div></div>
         <div class="scroll-area" data-shrinks="1">
 
           <!-- ══ WAS HEUTE DRAN IST (nur im neuen Design) ═══════════
@@ -11119,6 +11219,31 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
 }
 </script>
 
+<!-- Studio-Gehirn im eigenen Fenster („Iron Man mäßig", 19.10.2026) -->
+<div class="jarvis" id="jarvis" hidden role="dialog" aria-modal="true" aria-labelledby="jarvisTitel">
+  <div class="jv-rahmen">
+    <div class="jv-kopf">
+      <span id="jarvisTitel">Studio-Gehirn</span>
+      <button type="button" class="icon-btn" id="jarvisZu" data-ikon="schliessen" aria-label="Schließen"></button>
+    </div>
+    <div class="jv-links">
+      <div class="jv-kern" id="jarvisKern" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+      <p class="jv-status" id="jarvisStatus" role="status">Bereit. Frag mich — oder sag, was ich tun soll.</p>
+    </div>
+    <div class="jv-rechts">
+      <div class="jv-verlauf gehirn-verlauf" id="jarvisVerlauf"></div>
+      <div class="jv-eingabe">
+        <label class="nur-vorlesen" for="jarvisFeld">Frage oder Auftrag</label>
+        <textarea class="inp" id="jarvisFeld" rows="2" maxlength="2000"
+          placeholder="z. B. „Öffne den Putzplan", „Wer hat heute Dienst?" oder „Klo ist sauber"></textarea>
+        <div class="gehirn-knoepfe">
+          <button type="button" class="btn btn-ghost btn-sm gehirn-mic" id="jarvisMic" data-ikon="mikrofon" style="display:none" aria-pressed="false">Sprechen</button>
+          <button type="button" class="btn btn-primary btn-sm" id="jarvisSenden">Senden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 (function(){
 'use strict';
@@ -19071,6 +19196,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-19-gehirn-fenster', datum:'19.10.2026', titel:'Das Studio-Gehirn hat ein eigenes Fenster', wo:'home', punkte:[
+    'Ganz oben auf der Startseite steht jetzt „Studio-Gehirn". Ein Tipp öffnet ein eigenes Vollbild-Fenster mit leuchtendem Kern – dort fragst du oder sagst, was passieren soll.',
+    'Statt drei Punkten siehst du jetzt, was das Gehirn gerade tut: „Lese deinen Satz …", „Erkannt: abhaken", „Suche ‚Toiletten‘ …", „Abgehakt ✓".',
+    'Sagt es „Öffne den Putzplan", geht das Fenster zu und du siehst, wie die App dorthin wechselt. Mit „Sprechen" schickt es nach dem Reden gleich ab.' ] },
   { id:'2026-10-19-gehirn-schnell', datum:'19.10.2026', titel:'Studio-Gehirn: schneller und verzeiht Tippfehler', wo:'gehirn', punkte:[
     'Häufige Sätze erkennt die App jetzt selbst – sofort, ohne auf die KI zu warten: „öffne den Putzplan", „wer hat heute Dienst", „was ist offen", „ich bin heute krank", „Übergabe: …" oder „Klo ist sauber".',
     'Tippfehler und andere Wörter für dasselbe sind kein Problem mehr: „öfne", „Wasserspendr", „Klo" statt „Toiletten" – das Gehirn weiß, was gemeint ist.',
@@ -20402,6 +20531,7 @@ function bereichKopfSetzen(){
   }
   kopfPlusUmhaengen();
   neuPilleSetzen();
+  jarvisKachel();
 }
 
 /* Reiter innerhalb der aktuellen Gruppe (oben unter der Kopfzeile) */
@@ -20699,6 +20829,8 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='ich') ichOeffnen();
   if(id==='persoenlich') persoenlichOeffnen();
   if(id==='gehirn') gehirnOeffnen();
+  jarvisKachel(id);
+  if(id!=='gehirn') jarvisZu();
   if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); spWunschZeigen(); }
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
@@ -23669,15 +23801,25 @@ function gehirnBinden(){
 }
 function gehirnText(t){ return esc(String(t||'')); }
 function gehirnZeichnen(){
-  var box=$('gehirnVerlauf'); if(!box) return;
   var orb=$('gehirnOrb'); if(orb) orb.classList.toggle('denkt', _gLaeuft);
+  var tippen=[];
+  gehirnZeichnenIn($('gehirnVerlauf'), tippen);
+  if(jarvisOffen()) gehirnZeichnenIn($('jarvisVerlauf'), tippen);
+  tippen.forEach(function(v){ v.getippt=true; });
+  _gVerlauf.forEach(function(v){ if(v.laeuft) return; if(v.vorschlag) v.gezeigt=true; if(v.angelegt) v.jetzt=false; });
+  var chips=$('gehirnChips'); if(chips && _gVerlauf.length) chips.innerHTML='';
+  [$('gehirnFragen'),$('gehirnMic'),$('jarvisSenden'),$('jarvisMic')].forEach(function(x){ if(x) x.disabled=_gLaeuft; });
+  jarvisStatus();
+}
+function gehirnZeichnenIn(box, tippen){
+  if(!box) return;
   box.innerHTML=_gVerlauf.map(function(v, i){
     var frage='<div class="gehirn-frage">'+
       (v.art==='idee' ? '<b>Idee:</b> ' : '')+gehirnText(v.text)+'</div>';
     var kopf='<div class="ga-kopf">'+ikon('gehirn')+'<span>Studio-Gehirn</span></div>';
     var antwort;
     if(v.laeuft){
-      antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+
+      antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+gehirnSchritteHTML(v, true)+
         '<span class="gehirn-denkt" role="status" aria-label="Das Studio-Gehirn denkt nach"><i></i><i></i><i></i></span></div>';
     } else if(v.fehler){
       antwort='<div class="gehirn-antwort fehler" role="alert">'+kopf+
@@ -23701,10 +23843,11 @@ function gehirnZeichnen(){
         }).join('')+'</div>' : '')+
         '</div>';
     }
+    if(!v.laeuft && v.schritte && v.schritte.length) antwort=antwort.replace(kopf, kopf+gehirnSchritteHTML(v, false));
     return frage+antwort;
   }).join('');
   box.querySelectorAll('[data-gziel]').forEach(function(b){
-    b.addEventListener('click', function(){ showView(b.getAttribute('data-gziel')); tick(8); });
+    b.addEventListener('click', function(){ jarvisZu(); showView(b.getAttribute('data-gziel')); tick(8); });
   });
   box.querySelectorAll('[data-gvorschlag]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnVorschlagUebernehmen(_gVerlauf[+b.getAttribute('data-gvorschlag')]); });
@@ -23719,19 +23862,16 @@ function gehirnZeichnen(){
   box.querySelectorAll('[data-grueck]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnAbhakenRueck(+b.getAttribute('data-grueck'), b); });
   });
-  /* Jede Vorschau kommt genau einmal herein — beim nächsten Zeichnen
+  /* Die neueste Antwort schreibt sich Wort für Wort hin — einmal (in
+     jedem offenen Verlauf; das Merken macht gehirnZeichnen danach).
+     Jede Vorschau kommt genau einmal herein — beim nächsten Zeichnen
      (neue Frage darunter) steht sie still. */
-  _gVerlauf.forEach(function(v){ if(v.vorschlag) v.gezeigt=true; if(v.angelegt) v.jetzt=false; });
-  /* Die neueste Antwort schreibt sich Wort für Wort hin — einmal. */
   _gVerlauf.forEach(function(v, i){
     if(v.art==='frage' && !v.laeuft && !v.fehler && !v.getippt){
-      v.getippt=true;
+      if(tippen.indexOf(v)<0) tippen.push(v);
       gehirnTippen(box.querySelector('[data-gtext="'+i+'"]'), v.antwort||'');
     }
   });
-  var chips=$('gehirnChips'); if(chips && _gVerlauf.length) chips.innerHTML='';
-  var b=[$('gehirnFragen'),$('gehirnMic')];
-  b.forEach(function(x){ if(x) x.disabled=_gLaeuft; });
 }
 /* Wort für Wort, aber höchstens ~1,2 Sekunden lang: lange Antworten
    kommen in grösseren Stücken. Bei „weniger Bewegung" sofort. */
@@ -23748,13 +23888,14 @@ function gehirnTippen(el, text){
   }
   requestAnimationFrame(schritt);
 }
-function gehirnSenden(art){
+function gehirnSenden(art, feldId){
   if(_gLaeuft) return;
-  var f=$('gehirnFeld');
+  var f=$(feldId||'gehirnFeld');
   var text=String((f && f.value)||'').trim();
   if(!text){ toast('Bitte zuerst etwas eintippen.', true); if(f) f.focus(); return; }
-  var v={ text:text, art:art, laeuft:true };
+  var v={ text:text, art:art, laeuft:true, schritte:[] };
   _gVerlauf.push(v); _gLaeuft=true; if(f) f.value='';
+  gehirnSchritt(v, art==='auto' ? 'Lese deinen Satz …' : 'Suche im Studio-Wissen …');
   gehirnZeichnen();
   gehirnNachUnten();
   /* Schnellweg (19.10.2026, „die ki braucht echt lang"): was die App
@@ -23763,26 +23904,31 @@ function gehirnSenden(art){
     var schnell=gehirnSchnell(text);
     if(schnell){
       v.art='aktion'; v.vorschlag=schnell; v.schnell=true;
+      gehirnSchritt(v, 'Erkannt: '+gehirnArtName(schnell), true);
       Promise.resolve(gehirnSofort(v)).catch(function(err){ v.fehler=errMsg(err); }).then(function(){
         v.laeuft=false; _gLaeuft=false;
-        if(currentView==='gehirn'){ gehirnZeichnen(); gehirnNachUnten(); }
+        if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
       });
       return;
     }
   }
+  if(art==='auto') gehirnSchritt(v, 'Frage das Studio-Gehirn …');
   var name = art==='auto' ? 'gehirnAktion' : 'gehirnFrage';
   var daten = art==='auto' ? { text:text, kontext:gehirnKontext() } : { art:art, text:text };
   firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
     .then(function(r){
       var d=(r && r.data) || {};
-      if(art==='auto' && d.art==='frage'){ v.art='frage'; v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; return; }
-      if(art==='auto'){ v.art='aktion'; v.vorschlag=d.vorschlag||null; v.hinweis=d.hinweis||''; return gehirnSofort(v); }
+      if(art==='auto' && d.art==='frage'){ v.art='frage'; v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null;
+        gehirnSchritt(v, d.abgedeckt ? 'Im Studio-Wissen gefunden' : 'Erste Einschätzung — die Frage geht an Semih', true); return; }
+      if(art==='auto'){ v.art='aktion'; v.vorschlag=d.vorschlag||null; v.hinweis=d.hinweis||'';
+        gehirnSchritt(v, d.vorschlag ? 'Erkannt: '+gehirnArtName(d.vorschlag) : 'Nichts zum Ausführen gefunden', true);
+        return gehirnSofort(v); }
       else { v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; }
     })
     .catch(function(err){ v.fehler=errMsg(err); })
     .then(function(){
       v.laeuft=false; _gLaeuft=false;
-      if(currentView==='gehirn'){ gehirnZeichnen(); gehirnNachUnten(); }
+      if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
     });
 }
 function gehirnNachUnten(){
@@ -23948,16 +24094,26 @@ function gehirnSofort(v){
   if(s.typ==='navigation'){
     if(!ansichtAn(s.ziel)){ v.vorschlag=null; v.hinweis='„'+s.zielName+'" gibt es in deiner App nicht.'; return; }
     v.geoeffnet=true;
+    gehirnSchritt(v, 'Öffne '+s.zielName+(s.studioName ? ' · '+s.studioName : '')+' …', true);
     /* Erst zeichnen (die Karte steht im Verlauf, wenn man zurückkommt),
        dann wechseln. */
     setTimeout(function(){ gehirnOeffne(s); }, gehirnWenigBewegung() ? 0 : 450);
     return;
   }
-  if(s.typ==='abfrage') return gehirnAbfrage(v);
-  if(s.typ==='abhaken') return gehirnAbhakenSuchen(v);
-  if(s.typ==='defekt') return gehirnDefektSuchen(v);
+  if(s.typ==='abfrage'){ gehirnSchritt(v, 'Schaue nach'+(s.studioName ? ' in '+s.studioName : ' in deinen Studios')+' …', true); return gehirnAbfrage(v); }
+  if(s.typ==='abhaken'){
+    gehirnSchritt(v, 'Suche „'+s.was+'" in Putzplan und Aufgaben …', true);
+    var r=gehirnAbhakenSuchen(v);
+    if(!v.wahl || !v.wahl.length) gehirnSchritt(v, 'Nichts Offenes gefunden', true);
+    else if(v.wahl.length>1) gehirnSchritt(v, v.wahl.length+' passen — du wählst', true);
+    return r;
+  }
+  if(s.typ==='defekt'){ gehirnSchritt(v, 'Suche Gerät „'+s.geraet+'" in '+s.studioName+' …', true); return gehirnDefektSuchen(v); }
+  if(s.typ==='abwesenheit' || s.typ==='uebergabe' || s.typ==='aufgabe' || s.typ==='ankuendigung' || s.typ==='idee')
+    gehirnSchritt(v, 'Vorschau fertig — gespeichert wird erst mit deinem Druck', true);
 }
 function gehirnOeffne(s){
+  jarvisZu();
   showView(s.ziel);
   if(s.ziel==='team' && s.studioKey){
     var sel=$('teamStudio'); if(sel) sel.value=s.studioKey;
@@ -24214,9 +24370,10 @@ function gehirnAbhakenSchreiben(bereich, k, t, done){
 function gehirnAbhaken(v, x, btn){
   var arbeit=gehirnAbhakenSchreiben(x.b||v.vorschlag.bereich, x.k, x.t, true).then(function(){
     v.erledigt=x; v.angelegt='Abgehakt: '+(x.t.title||x.t.text||'Eintrag')+' ('+studioName(x.k)+')';
+    gehirnSchritt(v, 'Abgehakt ✓', true);
     v.jetzt=!gehirnWenigBewegung(); tick(12);
-    if(currentView==='gehirn') gehirnZeichnen();
-  }).catch(function(e){ v.wahl=[]; v.hinweis=e && e.message ? e.message : errMsg(e); if(currentView==='gehirn') gehirnZeichnen(); });
+    if(gehirnSichtbar()) gehirnZeichnen();
+  }).catch(function(e){ v.wahl=[]; v.hinweis=e && e.message ? e.message : errMsg(e); if(gehirnSichtbar()) gehirnZeichnen(); });
   if(btn) withBusy(btn, function(){ return arbeit; });
   return arbeit;
 }
@@ -24321,8 +24478,8 @@ function gehirnDefektMelden(v, btn){
    taste der Handytastatur geht ohnehin. Nichts davon geht über unsere
    Server: der Text landet im Feld, abgeschickt wird mit „Senden". */
 var _gHoert=null;
-function gehirnMicBinden(){
-  var btn=$('gehirnMic'); if(!btn) return;
+function gehirnMicBinden(knopfId, feldId){
+  var btn=$(knopfId||'gehirnMic'); if(!btn) return;
   var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){ btn.style.display='none'; return; }
   btn.style.display='';
@@ -24330,15 +24487,96 @@ function gehirnMicBinden(){
     if(_gHoert){ try{ _gHoert.stop(); }catch(e){} return; }
     var r; try{ r=new SR(); }catch(e){ toast('Spracheingabe geht auf diesem Gerät nicht.', true); return; }
     r.lang='de-DE'; r.interimResults=true; r.continuous=false;
-    var f=$('gehirnFeld'), vorher=(f.value||'').trim();
+    var f=$(feldId||'gehirnFeld'), vorher=(f.value||'').trim();
     r.onresult=function(ev){
       var t=''; for(var k=0;k<ev.results.length;k++) t+=ev.results[k][0].transcript;
       f.value=(vorher ? vorher+' ' : '')+t;
     };
     r.onerror=function(ev){ if(ev && ev.error==='not-allowed') toast('Bitte das Mikrofon für die App erlauben.', true); };
-    r.onend=function(){ _gHoert=null; btn.classList.remove('hoert'); btn.setAttribute('aria-pressed','false'); btn.lastChild.textContent='Sprechen'; };
-    _gHoert=r; btn.classList.add('hoert'); btn.setAttribute('aria-pressed','true'); btn.lastChild.textContent='Zuhören …';
+    r.onend=function(){ _gHoert=null; btn.classList.remove('hoert'); btn.setAttribute('aria-pressed','false'); btn.lastChild.textContent='Sprechen'; jarvisStatus();
+      /* Im Fenster schickt das Ende des Sprechens gleich ab — wie bei
+         einem Sprachassistenten. Auf der Seite bleibt Zeit zum Prüfen. */
+      if(feldId==='jarvisFeld' && (f.value||'').trim() && (f.value||'').trim()!==vorher) gehirnSenden('auto', 'jarvisFeld'); };
+    _gHoert=r; btn.classList.add('hoert'); btn.setAttribute('aria-pressed','true'); btn.lastChild.textContent='Zuhören …'; jarvisStatus();
     try{ r.start(); }catch(e){ r.onend(); }
+  });
+}
+
+/* ── Sichtbare Schritte (19.10.2026) ────────────────────────────────
+   „… Schritte macht automatisch und wir das sehen und so auch statt nur
+   diese Punkte". Jeder Schritt kommt einmal herein (gestaffelt, nur
+   transform/opacity); der laufende trägt einen Punkt. */
+function gehirnSchritt(v, text, fertig){
+  if(!v.schritte) v.schritte=[];
+  v.schritte.forEach(function(x){ x.ok=true; });
+  v.schritte.push({ t:text, ok:!!fertig });
+  if(gehirnSichtbar()) gehirnZeichnen();
+}
+function gehirnSchritteHTML(v, laeuft){
+  var l=v.schritte||[]; if(!l.length) return '';
+  return '<ol class="gs-schritte'+(laeuft ? '' : ' still')+'">'+l.map(function(x, i){
+    return '<li style="--gs-i:'+i+'" class="'+(x.ok || !laeuft ? 'ok' : 'jetzt')+'"><span aria-hidden="true">'+(x.ok || !laeuft ? '✓' : '•')+'</span>'+esc(x.t)+'</li>';
+  }).join('')+'</ol>';
+}
+var GEHIRN_ARTNAMEN={ navigation:'Seite öffnen', abfrage:'nachschauen', abwesenheit:'Abwesenheit eintragen', uebergabe:'Übergabe schreiben',
+  abhaken:'abhaken', defekt:'Defekt melden', aufgabe:'Aufgabe anlegen', ankuendigung:'Ankündigung', idee:'Idee an die Leitung', frage:'Frage' };
+function gehirnArtName(s){ return GEHIRN_ARTNAMEN[(s&&s.typ)||''] || 'Auftrag'; }
+function gehirnSichtbar(){ return currentView==='gehirn' || jarvisOffen(); }
+
+/* ── Das eigene Fenster („Jarvis") ──────────────────────────────────
+   Aus dem Betrieb (19.10.2026): „das die ki am startbildschirm präsentiert
+   wird und ein eigenes Fenster so zu sagen wird wenn man drauf klickt und
+   dann so Iron Man mäßig agiert". Derselbe Verlauf wie unter Ich →
+   Gehirn, dieselbe Ausführung — nur gross. Öffnet es eine Seite, geht
+   das Fenster zu, damit man sieht, wie die App sich bewegt. */
+var _jvGebunden=false, _jvVorher=null;
+function jarvisOffen(){ var j=$('jarvis'); return !!(j && !j.hidden); }
+function jarvisAuf(){
+  if(!gehirnVerfuegbar()) return;
+  var j=$('jarvis'); if(!j) return;
+  jarvisBinden();
+  _jvVorher=document.activeElement;
+  j.hidden=false;
+  document.body.classList.add('jv-offen');
+  gehirnZeichnen();
+  requestAnimationFrame(function(){ j.classList.add('da'); var f=$('jarvisFeld'); if(f && !('ontouchstart' in window)) f.focus(); gehirnNachUnten(); });
+  tick(8);
+}
+function jarvisZu(){
+  var j=$('jarvis'); if(!j || j.hidden) return;
+  j.classList.remove('da'); j.hidden=true;
+  document.body.classList.remove('jv-offen');
+  if(_jvVorher && _jvVorher.focus && document.contains(_jvVorher)) try{ _jvVorher.focus(); }catch(e){}
+}
+function jarvisStatus(){
+  var st=$('jarvisStatus'), kern=$('jarvisKern'); if(!st) return;
+  var letzte=_gVerlauf[_gVerlauf.length-1];
+  if(kern) kern.classList.toggle('denkt', _gLaeuft);
+  if(_gLaeuft){
+    var l=(letzte && letzte.schritte) || [];
+    st.textContent = l.length ? l[l.length-1].t : 'Ich arbeite …';
+  } else if(_gHoert){ st.textContent='Ich höre zu …'; }
+  else st.textContent = letzte ? 'Erledigt. Was noch?' : 'Bereit. Frag mich — oder sag, was ich tun soll.';
+}
+function jarvisBinden(){
+  if(_jvGebunden) return; _jvGebunden=true;
+  var zu=$('jarvisZu'); if(zu) zu.addEventListener('click', jarvisZu);
+  var los=$('jarvisSenden'); if(los) los.addEventListener('click', function(){ gehirnSenden('auto', 'jarvisFeld'); });
+  var f=$('jarvisFeld');
+  if(f) f.addEventListener('keydown', function(ev){
+    if(ev.key==='Enter' && !ev.shiftKey){ ev.preventDefault(); gehirnSenden('auto', 'jarvisFeld'); }
+  });
+  var j=$('jarvis');
+  if(j) j.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ ev.preventDefault(); jarvisZu(); } });
+  gehirnMicBinden('jarvisMic', 'jarvisFeld');
+}
+function jarvisKachel(ansicht){
+  var an=gehirnVerfuegbar();
+  var heim=(ansicht||currentView)==='home';
+  [['jarvisStart', an && layoutNeu() && heim], ['jarvisStartAlt', an && !layoutNeu() && heim], ['jarvisStartPc', an]].forEach(function(x){
+    var k=$(x[0]); if(!k) return;
+    k.hidden=!x[1];
+    if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', jarvisAuf); }
   });
 }
 

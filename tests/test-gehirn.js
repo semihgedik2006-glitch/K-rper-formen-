@@ -71,6 +71,11 @@ async function oeffne(b, w, h, opt) {
   return p;
 }
 const zu = (p) => p._ctx.close();
+/* Der „Gehirn"-Knopf steht je nach Aussehen und Breite an einer von drei
+   Stellen: Bereichszeile (neu, Handy), Seitenkopf (bisher, Handy),
+   Kopfleiste (Rechner). */
+const jvKnopf = (p) => p.evaluate(() => ['#jarvisStart', '#jarvisStartAlt', '#jarvisStartPc'].find(s => {
+  const el = document.querySelector(s); return el && el.getClientRects().length && getComputedStyle(el).display !== 'none'; }) || null);
 const sichtbar = (p, sel) => p.evaluate((s) => {
   const el = document.querySelector(s);
   return !!el && el.getClientRects().length > 0 && getComputedStyle(el).display !== 'none';
@@ -546,6 +551,81 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
+
+  console.log('\n── 12 Das eigene Fenster („Jarvis") ──');
+  /* Aus dem Betrieb (19.10.2026): „das die ki am startbildschirm
+     präsentiert wird und ein eigenes Fenster … wird … und Schritte macht
+     automatisch und wir das sehen und so auch statt nur diese Punkte". */
+  for (const [w, h] of [[390, 844], [1440, 900]]) {
+    const p = await oeffne(b, w, h);
+    await p.waitForTimeout(300);
+    const knopf = await jvKnopf(p);
+    pruefe(w + ' px: „Gehirn" steht auf der Startseite (' + knopf + ')', await sichtbar(p, '#view-home.show') && (w < 821 ? knopf === '#jarvisStartAlt' : knopf === '#jarvisStartPc'));
+    await p.click(knopf); await p.waitForTimeout(400);
+    pruefe(w + ' px: ein Tipp öffnet das eigene Fenster', await sichtbar(p, '#jarvis') && await p.evaluate(() => {
+      const r = document.getElementById('jarvis').getBoundingClientRect(); return r.width >= innerWidth - 1 && r.height >= innerHeight - 1; }));
+    if (w === 1440) {
+      const sp = await p.evaluate(() => { const l = document.querySelector('.jv-links').getBoundingClientRect(), r = document.querySelector('.jv-rechts').getBoundingClientRect(); return { neben: r.left >= l.right - 1, rb: Math.round(r.width) }; });
+      pruefe('am Rechner zwei Spalten: Kern links, Gespräch rechts', sp.neben && sp.rb > 500, JSON.stringify(sp));
+    }
+    await antwort(p, { gehirnFrage: { data: { antwort: 'Westen im Schonprogramm waschen.', abgedeckt: true } } });
+    await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?');
+    await p.click('#jarvisSenden');
+    await p.waitForFunction(() => !document.querySelector('#jarvisVerlauf .gehirn-denkt'), null, { timeout: 5000 });
+    await p.waitForTimeout(1500);
+    const jt = await p.evaluate(() => document.getElementById('jarvisVerlauf').innerText);
+    pruefe(w + ' px: Antwort im Fenster, mit sichtbaren Schritten', /Schonprogramm/.test(jt) && /Frage das Studio-Gehirn/.test(jt) && /Im Studio-Wissen gefunden/.test(jt), jt.slice(0, 300));
+    pruefe(w + ' px: dieselbe Antwort steht auch unter Ich → Gehirn', /Schonprogramm/.test(await p.evaluate(() => document.getElementById('gehirnVerlauf').innerText)));
+    pruefe(w + ' px: Status sagt, dass es fertig ist', /Erledigt/.test(await p.textContent('#jarvisStatus')));
+    // Auftrag: Schritte, dann geht das Fenster zu und die Seite öffnet sich
+    await p.fill('#jarvisFeld', 'öffne den putzplan');
+    await p.click('#jarvisSenden');
+    await p.waitForTimeout(150);
+    const schritte = await p.evaluate(() => document.getElementById('jarvisVerlauf').innerText);
+    pruefe(w + ' px: „öffne den putzplan": Schritte „Erkannt" und „Öffne Putzplan"', /Erkannt: Seite öffnen/.test(schritte) && /Öffne Putzplan/.test(schritte), schritte.slice(-200));
+    await p.waitForTimeout(900);
+    pruefe(w + ' px: … danach ist das Fenster zu und der Putzplan offen', !(await sichtbar(p, '#jarvis')) && await sichtbar(p, '#view-putzplan.show'));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+  {
+    const p = await oeffne(b, 390, 844);
+    await p.click(await jvKnopf(p)); await p.waitForTimeout(300);
+    await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+    pruefe('Escape schliesst das Fenster', !(await sichtbar(p, '#jarvis')) && await sichtbar(p, '#view-home.show'));
+    await zu(p);
+  }
+  /* Neues Aussehen (live): der Knopf steht in der Bereichszeile — ohne
+     zusätzliche Höhe. Auf 320 × 568 bleibt er weg (wie „Neu"). */
+  for (const [w, h, da] of [[360, 780, true], [390, 844, true], [430, 932, true], [820, 1180, true], [320, 568, false]]) {
+    const ctx = await b.newContext({ viewport: { width: w, height: h } });
+    const p = await ctx.newPage();
+    await p.addInitScript({ path: SP + '/stub-chef.js' });
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
+    await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
+    await p.waitForTimeout(800);
+    const k = await jvKnopf(p);
+    /* Einreihig = die Zeile ist mit Knopf nicht höher als ohne. */
+    const zeile = await p.evaluate(() => { const z = document.getElementById('bereichZeile'), k = document.getElementById('jarvisStart');
+      const mit = z.getBoundingClientRect().height; const war = k.hidden; k.hidden = true; const ohne = z.getBoundingClientRect().height; k.hidden = war;
+      return Math.round(mit - ohne); });
+    /* Unter 380 px wartet „Gehirn", solange „Neu" dasteht (siehe CSS). */
+    const neuDa = await sichtbar(p, '#neuPille');
+    const wartet = w < 380 && neuDa;
+    pruefe('neues Aussehen ' + w + '×' + h + ': ' + (!da ? 'kein Knopf (zu kurz)' : (wartet ? 'wartet hinter „Neu"' : 'Knopf in der Bereichszeile')) + ', Zeile bleibt einreihig',
+      da ? ((wartet ? k === null : k === '#jarvisStart') && zeile <= 0) : k === null, k + ' · Zeile ' + zeile + ' px höher · Neu ' + neuDa);
+    if (da && !wartet) { await p.click(k); await p.waitForTimeout(300); pruefe('… und er öffnet das Fenster', await sichtbar(p, '#jarvis')); }
+    await ctx.close();
+  }
+  {
+    const p = await oeffne(b, 390, 844, { wenigBewegung: true });
+    await p.click(await jvKnopf(p)); await p.waitForTimeout(300);
+    const anim = await p.evaluate(() => [...document.querySelectorAll('#jarvisKern i')].map(i => getComputedStyle(i).animationName));
+    pruefe('„weniger Bewegung": die Ringe drehen sich nicht', anim.length === 3 && anim.every(a => a === 'none'), JSON.stringify(anim));
+    await zu(p);
+  }
+
   console.log('\n── 11 Fremde Firma ──');
   {
     const p = await oeffne(b, 390, 844, { vorher: () => { window.__firma = 'fremd-ab12'; } });
@@ -561,6 +641,8 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('fremde Firma: kein Knopf in der Hilfe', !(await sichtbar(p, '#hilfeGehirnBtn')));
     await p.fill('#hilfeSuche', 'quokka'); await p.waitForTimeout(300);
     pruefe('fremde Firma: kein Verweis unter den Treffern', !(await p.$('#hilfeTreffer [data-hgehirn]')));
+    await p.evaluate(() => { const z = document.getElementById('hilfeZu'); if (z) z.click(); });
+    pruefe('fremde Firma: kein „Gehirn"-Knopf auf der Startseite', !(await jvKnopf(p)));
     await zu(p);
   }
 
@@ -592,6 +674,16 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       zuKlein = zuKlein.concat(await ids('#gehirnVerlauf [data-gziel], #gehirnVerlauf [data-gvorschlag], #gehirnVerlauf [data-ganlegen]'));
       await p.click('#gehirnVerlauf [data-ganlegen]'); await p.waitForTimeout(400);
       zuKlein = zuKlein.concat(await ids('#gehirnVerlauf .gv-fertig [data-gziel]'));
+      // Das eigene Fenster: Kachel auf der Startseite und die Knöpfe darin
+      await p.evaluate(() => { location.hash = '#home'; }); await p.waitForTimeout(400);
+      const jk = await jvKnopf(p);
+      if (jk) zuKlein = zuKlein.concat(await ids(jk));
+      if (jk) {
+        await p.click(jk); await p.waitForTimeout(300);
+        zuKlein = zuKlein.concat(await ids('#jarvisZu, #jarvisSenden, #jarvisMic'));
+        const jvBreit = await p.evaluate(() => document.getElementById('jarvis').scrollWidth > innerWidth + 1);
+        if (jvBreit) zuKlein.push('Fenster ragt seitlich hinaus');
+      } else if (h > 640 || w >= 821) zuKlein.push('„Gehirn" nicht erreichbar');
       const breit = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
       pruefe(w + ' px ' + dichte + ': jedes neue Bedienelement ≥ 44 × 44, nichts ragt hinaus',
         !zuKlein.length && !breit, zuKlein.join(', ') + (breit ? ' · Seite scrollt seitlich' : ''));
