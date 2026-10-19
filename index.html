@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ObfHGGhW4POf2ugnAGDUg1bDAnkPknMTRG71xibDnMg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-dfbykKhFkwwbJOdMYFXG7Esrjc8tIPiouHu9uz1criA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5231,11 +5231,18 @@ html{font-size:var(--fs,100%)}
 .gehirn-verlauf > *{flex-shrink:0}
 .gehirn-frage{align-self:flex-end;max-width:85%;background:var(--bg-3);border:1px solid var(--line);
   border-radius:var(--r-md) var(--r-md) var(--r-xs) var(--r-md);padding:var(--s8) var(--s12);
-  font-size:var(--t-sm);line-height:var(--lh);overflow-wrap:anywhere;
-  animation:gehirnVonRechts .3s ease-out backwards}
+  font-size:var(--t-sm);line-height:var(--lh);overflow-wrap:anywhere}
+/* Einblenden genau einmal (20.10.2026). Der Verlauf wird bei jedem
+   Schritt neu geschrieben; mit der Animation an der Karte selbst lief
+   sie bei jedem Schritt für ALLE Karten neu an — das Flackern, das als
+   „sieht sehr buggy aus" ankam. Jetzt trägt nur, was jünger ist als die
+   Einblendung, die Klasse .rein, und --rein (negativ) setzt die Bewegung
+   dort fort, wo sie vor dem Neuschreiben stand. */
+.gehirn-frage.rein{animation:gehirnVonRechts .3s ease-out backwards;animation-delay:var(--rein,0ms)}
 .gehirn-antwort{position:relative;background:var(--bg-2);border-radius:var(--r-md);
   padding:var(--s12) var(--s12) var(--s12) var(--s16);font-size:var(--t-sm);line-height:var(--lh);
-  color:var(--text);animation:gehirnRein .35s ease-out backwards;overflow:hidden}
+  color:var(--text);overflow:hidden}
+.gehirn-antwort.rein{animation:gehirnRein .35s ease-out backwards;animation-delay:var(--rein,0ms)}
 .gehirn-antwort::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
   background:linear-gradient(var(--accent), var(--accent-2))}
 .gehirn-antwort .ga-text{margin:0 0 var(--s8);white-space:pre-wrap;overflow-wrap:anywhere}
@@ -5245,6 +5252,11 @@ html{font-size:var(--fs,100%)}
 .gehirn-antwort .ga-kopf svg{width:14px;height:14px;color:var(--accent-d)}
 .gehirn-ziele{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s8)}
 .gehirn-ziele .btn{min-height:44px}
+/* Daumen (20.10.2026): jede Bewertung ist ein Trainingsbeispiel. */
+.ga-daumen{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-top:var(--s8)}
+.ga-daumen .btn{min-height:44px;gap:var(--s6)}
+.ga-daumen .btn .sym{width:16px;height:16px}
+.ga-daumen .ga-runter .sym{transform:rotate(180deg)}
 /* Drei Punkte, die nacheinander hüpfen — nur solange gewartet wird. */
 .gehirn-denkt{display:inline-flex;gap:var(--s6);align-items:center;height:20px}
 .gehirn-denkt i{width:7px;height:7px;border-radius:var(--r-rund);background:var(--accent);
@@ -5255,8 +5267,8 @@ html{font-size:var(--fs,100%)}
 @keyframes gehirnRein{from{opacity:0;transform:translateY(10px)}}
 /* ── Sichtbare Schritte und das eigene Fenster (19.10.2026) ─────────── */
 .gs-schritte{list-style:none;margin:var(--s6) 0;padding:0;display:flex;flex-direction:column;gap:var(--s4);font-size:var(--t-sm)}
-.gs-schritte li{display:flex;gap:var(--s8);align-items:baseline;color:var(--text-2);
-  animation:gehirnRein .3s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--gs-i,0) * 90ms)}
+.gs-schritte li{display:flex;gap:var(--s8);align-items:baseline;color:var(--text-2)}
+.gs-schritte li.rein{animation:gehirnRein .3s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:var(--rein,0ms)}
 .gs-schritte li span{flex:0 0 auto;width:16px;text-align:center;color:var(--ok-tx);font-weight:700}
 .gs-schritte li.jetzt span{color:var(--accent)}
 .gs-schritte.still{font-size:var(--t-xs);opacity:.8}
@@ -5297,45 +5309,185 @@ body.neu .bereich-zeile:has(#jarvisStart:not([hidden])) .bereich-kopf{flex-basis
   box-shadow:0 0 12px 1px color-mix(in srgb, var(--accent) 50%, transparent)}
 .jv-kachel-kern i{width:10px;height:10px;border-radius:var(--r-rund);background:#fff;opacity:.85}
 @media (max-width:399px){ #jarvisStart,#jarvisStartAlt{padding:0 var(--s6)} #jarvisStart .jv-kachel-wort,#jarvisStartAlt .jv-kachel-wort{display:none} }
-.jarvis{position:fixed;inset:0;z-index:900;display:flex;justify-content:center;
-  background:radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--accent) 30%, #05070d) 0%, #05070d 60%);
-  color:#EEF4FF;opacity:0;transition:opacity .22s ease}
+/* ── Das Fenster als HUD (20.10.2026) ─────────────────────────────────
+   Aus dem Betrieb: „richtig abgespacet … das man sich wirklich wie in
+   einer jarvis umgebung fühlt … mit geilen animationen und viel motion"
+   — und auf die Rückfrage: Iron-Man-HUD, „mit bewegung und leben".
+
+   Eine eigene Welt: das Fenster setzt die Farben der App für sich neu
+   (fest Cyan auf Nachtblau, auch im hellen Modus), damit Karten,
+   Knöpfe und Felder darin ohne Sonderregeln mitziehen.
+
+   Flüssig nach Hausregel: bewegt wird nur transform und opacity; das
+   Partikelfeld ist ein <canvas> und läuft nur, solange das Fenster offen
+   und sichtbar ist. Die Dauerbewegung hat hier ihren Grund — sie ist
+   der Wunsch. Bei „weniger Bewegung" steht alles still. */
+.jarvis{--jv-rgb:95,225,255;--jv-cyan:#5FE1FF;--jv-blau:#7AA8FF;--jv-nacht:#03070F;
+  --jv-glas:rgba(8,26,44,.78);--jv-kante:rgba(var(--jv-rgb),.32);--jv-leise:#9EC6DC;
+  --jv-schrift:ui-monospace,'SF Mono','Cascadia Mono','Roboto Mono',Menlo,Consolas,monospace;
+  --bg:#03070F;--bg-2:rgba(8,26,44,.86);--bg-soft:#061220;--bg-3:#0B2234;
+  --line:rgba(var(--jv-rgb),.16);--line-2:rgba(var(--jv-rgb),.42);
+  --text:#E8F8FF;--text-2:#C3DDEB;--text-3:#A6C8DA;
+  --accent:#5FE1FF;--accent-2:#7AA8FF;--accent-3:#B69CFF;--accent-d:#5FE1FF;
+  --akz-rgb:95,225,255;--akz2-rgb:122,168,255;--accent-glow:rgba(95,225,255,.3);--on-accent:#02131D;
+  --brand:linear-gradient(135deg,#7AA8FF 0%,#5FE1FF 100%);
+  position:fixed;inset:0;z-index:900;display:flex;justify-content:center;overflow:hidden;
+  background:radial-gradient(90% 70% at 50% 38%, rgba(var(--jv-rgb),.16) 0%, transparent 60%),
+    radial-gradient(120% 90% at 50% 120%, rgba(122,168,255,.14) 0%, transparent 55%), var(--jv-nacht);
+  color:var(--text);opacity:0;transition:opacity .25s ease}
 .jarvis.da{opacity:1}
 .jarvis[hidden]{display:none}
 body.jv-offen{overflow:hidden}
-.jv-rahmen{width:100%;max-width:1180px;height:100%;display:grid;grid-template-rows:auto auto 1fr;
+/* Hintergrund in drei Lagen: Partikel, Raster, Abtastlinie */
+.jv-feld{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.jv-raster{position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background-image:linear-gradient(rgba(var(--jv-rgb),.07) 1px, transparent 1px),linear-gradient(90deg, rgba(var(--jv-rgb),.07) 1px, transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(70% 60% at 50% 45%, #000 0%, transparent 75%);mask-image:radial-gradient(70% 60% at 50% 45%, #000 0%, transparent 75%)}
+/* Das Raster steht still: als wandernde Ebene über den ganzen Schirm
+   kostete es am Rechner sichtbar Bilder (gemessen 20.10.2026, 1920 px,
+   CPU ÷4: 72 statt 88 Bilder in 2 s). Bewegung kommt von Partikeln,
+   Abtastlinie und Kern. */
+.jv-scan{position:absolute;left:0;right:0;top:0;height:22%;pointer-events:none;
+  background:linear-gradient(transparent, rgba(var(--jv-rgb),.07) 70%, rgba(var(--jv-rgb),.22) 99%, transparent);
+  transform:translate3d(0,-100%,0);animation:jvScan 6.5s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes jvScan{to{transform:translate3d(0,560%,0)}}
+.jv-rahmen{position:relative;width:100%;max-width:1240px;height:100%;display:grid;grid-template-rows:auto auto 1fr;
   padding:max(var(--s12), env(safe-area-inset-top)) var(--s16) max(var(--s12), env(safe-area-inset-bottom))}
-.jv-kopf{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-head);font-weight:700;
-  letter-spacing:var(--ls-l);text-transform:uppercase;font-size:var(--t-xs);color:#B9C7E6}
-.jv-kopf .icon-btn{color:#EEF4FF;min-width:44px;min-height:44px}
-.jv-links{display:flex;flex-direction:column;align-items:center;gap:var(--s8);padding:var(--s8) 0}
-.jv-kern{position:relative;width:132px;height:132px;display:grid;place-items:center}
-.jv-kern i{position:absolute;inset:0;border-radius:var(--r-rund);border:2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+/* Eckwinkel wie im Visier */
+.jv-ecke{position:absolute;width:26px;height:26px;border:2px solid rgba(var(--jv-rgb),.55);pointer-events:none}
+.jv-ecke.ol{left:var(--s6);top:var(--s6);border-right:0;border-bottom:0;transform-origin:0 0}
+.jv-ecke.or{right:var(--s6);top:var(--s6);border-left:0;border-bottom:0;transform-origin:100% 0}
+.jv-ecke.ul{left:var(--s6);bottom:var(--s6);border-right:0;border-top:0;transform-origin:0 100%}
+.jv-ecke.ur{right:var(--s6);bottom:var(--s6);border-left:0;border-top:0;transform-origin:100% 100%}
+.jv-kopf{position:relative;display:flex;justify-content:space-between;align-items:center;gap:var(--s8);
+  font-family:var(--jv-schrift);font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase;font-size:var(--t-xs);color:var(--jv-leise)}
+.jv-titel{display:inline-flex;align-items:center;gap:var(--s8);min-width:0;color:var(--jv-cyan)}
+.jv-punkt{flex:0 0 auto;width:8px;height:8px;border-radius:var(--r-rund);background:var(--jv-cyan);
+  box-shadow:0 0 10px 2px rgba(var(--jv-rgb),.7);animation:jvBlinken 2.4s ease-in-out infinite}
+@keyframes jvBlinken{50%{opacity:.35}}
+.jv-kopf-knoepfe{display:flex;gap:var(--s4)}
+.jv-kopf .icon-btn{color:var(--text);min-width:44px;min-height:44px;border-radius:var(--r-sm);
+  border:1px solid var(--line);background:rgba(var(--jv-rgb),.05)}
+.jv-kopf .icon-btn[aria-pressed="false"]{color:var(--jv-leise)}
+.jv-links{position:relative;display:flex;flex-direction:column;align-items:center;gap:var(--s8);padding:var(--s8) 0}
+/* Der Kern: Skala, Bögen, drei Ringe, die Kugel */
+.jv-kern{position:relative;width:132px;height:132px;display:grid;place-items:center;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.jv-kern > svg{position:absolute;inset:-14%;width:128%;height:128%;overflow:visible;pointer-events:none}
+.jv-skala{animation:jvDreh 40s linear infinite}
+.jv-skala circle{fill:none;stroke:rgba(var(--jv-rgb),.45);stroke-width:5;stroke-dasharray:1 4.236}
+.jv-boegen{animation:jvDreh 11s linear infinite reverse}
+.jv-boegen circle{fill:none;stroke-width:2;stroke-linecap:round}
+.jv-boegen .b1{stroke:var(--jv-cyan);stroke-dasharray:60 520;opacity:.9}
+.jv-boegen .b2{stroke:var(--jv-blau);stroke-dasharray:22 120 90 340;opacity:.75}
+.jv-kern i{position:absolute;inset:0;border-radius:var(--r-rund);border:2px solid rgba(var(--jv-rgb),.7);
   border-top-color:transparent;border-left-color:transparent;animation:jvDreh 6s linear infinite}
-.jv-kern i:nth-child(2){inset:var(--s16);border-color:color-mix(in srgb, var(--accent-2) 70%, transparent);border-bottom-color:transparent;border-right-color:transparent;animation-duration:4s;animation-direction:reverse}
-.jv-kern i:nth-child(3){inset:var(--s32);border-style:dashed;border-color:color-mix(in srgb, #fff 35%, transparent);animation-duration:9s}
-.jv-kern b{width:44px;height:44px;border-radius:var(--r-rund);
-  background:radial-gradient(circle at 35% 30%, #fff 0, var(--accent) 40%, var(--accent-2) 100%);
-  box-shadow:0 0 28px 6px color-mix(in srgb, var(--accent) 55%, transparent)}
-.jv-kern.denkt b{animation:gehirnPuls .9s ease-in-out infinite}
-.jv-kern.denkt i{animation-duration:1.6s}
+.jv-kern i:nth-of-type(2){inset:var(--s16);border-color:rgba(122,168,255,.7);border-bottom-color:transparent;border-right-color:transparent;animation-duration:4s;animation-direction:reverse}
+.jv-kern i:nth-of-type(3){inset:var(--s32);border-style:dashed;border-color:rgba(255,255,255,.35);animation-duration:9s}
+.jv-kern b{position:relative;width:44px;height:44px;border-radius:var(--r-rund);
+  background:radial-gradient(circle at 35% 30%, #fff 0, var(--jv-cyan) 38%, #1D6FA8 100%);
+  box-shadow:0 0 28px 6px rgba(var(--jv-rgb),.55), 0 0 90px 24px rgba(var(--jv-rgb),.18)}
+/* Wellen, die aus dem Kern laufen — nur beim Denken und Sprechen */
+.jv-kern s{position:absolute;inset:30%;border-radius:var(--r-rund);border:1px solid rgba(var(--jv-rgb),.8);opacity:0;pointer-events:none}
+.jarvis.jv-z-denkt .jv-kern s,.jarvis.jv-z-spricht .jv-kern s{animation:jvWelle 1.8s cubic-bezier(.2,.6,.4,1) infinite}
+.jarvis .jv-kern s:nth-of-type(2){animation-delay:.6s}
+.jarvis .jv-kern s:nth-of-type(3){animation-delay:1.2s}
+@keyframes jvWelle{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+.jarvis.jv-z-denkt .jv-kern{transform:scale(1.06)}
+.jarvis.jv-z-denkt .jv-kern b{animation:gehirnPuls .9s ease-in-out infinite}
+.jarvis.jv-z-hoert .jv-kern{transform:scale(1.04)}
 @keyframes jvDreh{to{transform:rotate(360deg)}}
-.jv-status{margin:0;text-align:center;font-size:var(--t-sm);color:#C9D6F2;min-height:1.5em;max-width:34ch}
-.jv-rechts{display:flex;flex-direction:column;min-height:0;gap:var(--s8)}
-.jv-verlauf{flex:1 1 auto;overflow:auto;min-height:0;padding-right:var(--s4)}
-.jarvis .gehirn-antwort,.jarvis .gehirn-frage{color:var(--text)}
+/* Equalizer unter dem Kern: hört zu / spricht */
+.jv-eq{display:flex;align-items:center;gap:var(--s2);height:28px}
+.jv-eq u{display:block;width:3px;height:100%;border-radius:var(--r-pille);background:linear-gradient(var(--jv-cyan), var(--jv-blau));
+  transform:scaleY(.12);opacity:.55;transition:transform .3s ease, opacity .3s ease}
+.jarvis.jv-z-hoert .jv-eq u,.jarvis.jv-z-spricht .jv-eq u,.jarvis.jv-z-denkt .jv-eq u{opacity:1;animation:jvEq .9s ease-in-out infinite alternate}
+.jarvis.jv-z-denkt .jv-eq u{animation-duration:1.6s;opacity:.7}
+.jv-eq u:nth-child(3n){animation-delay:-.3s}
+.jv-eq u:nth-child(3n+1){animation-delay:-.55s}
+.jv-eq u:nth-child(4n){animation-delay:-.15s;animation-duration:.7s}
+.jv-eq u:nth-child(5n){animation-delay:-.75s}
+@keyframes jvEq{0%{transform:scaleY(.15)}100%{transform:scaleY(1)}}
+.jv-status{margin:0;text-align:center;font-family:var(--jv-schrift);font-size:var(--t-sm);color:var(--text-2);min-height:1.5em;max-width:34ch}
+.jv-status::after{content:"▍";margin-left:var(--s2);color:var(--jv-cyan);animation:jvBlinken 1s steps(1) infinite}
+/* Messwerte (am Rechner) */
+.jv-werte{display:none;margin:0;width:100%;max-width:300px;font-family:var(--jv-schrift);font-size:var(--t-2xs);
+  letter-spacing:var(--ls-m);text-transform:uppercase}
+.jv-werte div{display:flex;justify-content:space-between;gap:var(--s12);padding:var(--s6) 0;border-bottom:1px dashed var(--line)}
+.jv-werte dt{color:var(--jv-leise)}
+.jv-werte dd{margin:0;color:var(--text);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Startprotokoll beim Öffnen */
+.jv-log{position:absolute;left:var(--s32);top:calc(var(--s72) + var(--s8));margin:0;padding:0;list-style:none;pointer-events:none;display:none;
+  font-family:var(--jv-schrift);font-size:var(--t-2xs);color:var(--jv-leise);letter-spacing:var(--ls-s)}
+.jv-log li{opacity:0}
+.jarvis.jv-boot .jv-log li{animation:jvLog 1.9s ease-out backwards}
+.jarvis.jv-boot .jv-log li:nth-child(2){animation-delay:.18s}
+.jarvis.jv-boot .jv-log li:nth-child(3){animation-delay:.36s}
+.jarvis.jv-boot .jv-log li:nth-child(4){animation-delay:.54s}
+@keyframes jvLog{0%{opacity:0;transform:translateX(-8px)}12%{opacity:1;transform:none}70%{opacity:.9}100%{opacity:0}}
+.jarvis.jv-boot .jv-ecke{animation:jvEcke .55s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes jvEcke{from{transform:scale(2.2);opacity:0}}
+.jarvis.jv-boot .jv-kern{animation:jvKernAuf .9s cubic-bezier(.2,.9,.25,1.15) backwards}
+@keyframes jvKernAuf{from{transform:scale(.3) rotate(-90deg);opacity:0}}
+.jarvis.jv-boot .jv-rechts{animation:jvRechtsAuf .6s .15s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes jvRechtsAuf{from{opacity:0;transform:translate3d(0,14px,0)}}
+.jv-rechts{position:relative;display:flex;flex-direction:column;min-height:0;gap:var(--s8)}
+.jv-verlauf{flex:1 1 auto;overflow:auto;min-height:0;padding-right:var(--s4);overscroll-behavior:contain}
+/* Hologramm-Karten */
+.jarvis .gehirn-antwort{background:var(--jv-glas);border:1px solid var(--jv-kante);
+  box-shadow:inset 0 0 24px rgba(var(--jv-rgb),.06), 0 0 18px rgba(var(--jv-rgb),.08)}
+.jarvis .gehirn-antwort::before{background:linear-gradient(var(--jv-cyan), var(--jv-blau));box-shadow:0 0 12px rgba(var(--jv-rgb),.8)}
+.jarvis .gehirn-antwort .ga-kopf{font-family:var(--jv-schrift);color:var(--jv-cyan)}
+.jarvis .gehirn-frage{background:rgba(122,168,255,.12);border-color:rgba(122,168,255,.35)}
+.jarvis .gehirn-antwort.rein{animation-name:jvHolo;animation-duration:.55s;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+@keyframes jvHolo{0%{opacity:0;transform:translate3d(0,12px,0) scale(.98)}40%{opacity:.6}60%{opacity:.35}100%{opacity:1;transform:none}}
+.jarvis .gehirn-antwort.rein::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg, transparent 30%, rgba(var(--jv-rgb),.22) 50%, transparent 70%);
+  transform:translate3d(-110%,0,0);animation:jvStreif .9s ease-out backwards;animation-delay:var(--rein,0ms)}
+@keyframes jvStreif{to{transform:translate3d(110%,0,0)}}
 .jv-eingabe{display:flex;flex-direction:column;gap:var(--s8)}
-.jv-eingabe textarea{min-height:56px}
+/* Leerer Verlauf: Begrüssung und Vorschläge zum Antippen */
+.jv-leer{margin:auto 0;padding:var(--s16) 0;text-align:center}
+.jv-gruss{margin:0 0 var(--s6);font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);line-height:var(--lh-eng);
+  color:var(--text);text-shadow:0 0 24px rgba(var(--jv-rgb),.45)}
+.jv-unter{margin:0 auto var(--s16);max-width:44ch;color:var(--text-2);font-size:var(--t-sm)}
+.jv-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s8)}
+.jv-chip{min-height:44px;padding:0 var(--s16);border-radius:var(--r-pille);border:1px solid var(--jv-kante);
+  background:rgba(var(--jv-rgb),.07);color:var(--text);font:inherit;font-size:var(--t-sm);cursor:pointer;
+  transition:transform .15s ease, background-color .2s ease, border-color .2s ease}
+.jv-chip:hover{background:rgba(var(--jv-rgb),.16);border-color:var(--jv-cyan)}
+.jv-chip:active{transform:scale(.96)}
+.jv-chip:focus-visible{outline:2px solid var(--jv-cyan);outline-offset:2px}
+.jarvis.jv-boot .jv-chip{animation:jvRechtsAuf .5s cubic-bezier(.2,.8,.2,1) backwards}
+.jarvis.jv-boot .jv-chip:nth-child(2){animation-delay:.08s}
+.jarvis.jv-boot .jv-chip:nth-child(3){animation-delay:.16s}
+.jarvis.jv-boot .jv-chip:nth-child(4){animation-delay:.24s}
+.jv-eingabe textarea{min-height:56px;font-size:16px;background:rgba(3,12,22,.8);border-color:var(--jv-kante);
+  box-shadow:inset 0 0 18px rgba(var(--jv-rgb),.06)}
+.jv-eingabe textarea:focus{border-color:var(--jv-cyan);box-shadow:0 0 0 3px rgba(var(--jv-rgb),.25), inset 0 0 18px rgba(var(--jv-rgb),.08)}
+@media (max-height:640px) and (max-width:1099px){
+  .jv-kern{width:96px;height:96px}
+  .jv-eq{height:18px}
+  .jv-log{display:none}
+}
 @media (min-width:1100px){
-  .jv-rahmen{grid-template-columns:340px 1fr;grid-template-rows:auto 1fr;column-gap:var(--s32)}
+  .jv-rahmen{grid-template-columns:360px 1fr;grid-template-rows:auto 1fr;column-gap:var(--s40);padding:var(--s24) var(--s32)}
   .jv-kopf{grid-column:1 / -1}
-  .jv-links{justify-content:center}
-  .jv-kern{width:200px;height:200px}
-  .jv-kern b{width:64px;height:64px}
+  .jv-links{justify-content:center;gap:var(--s16)}
+  .jv-kern{width:210px;height:210px}
+  .jv-kern b{width:66px;height:66px}
+  .jv-eq{height:36px}
+  .jv-werte{display:block}
+  .jv-log{display:block}
+  .jv-ecke{width:40px;height:40px}
 }
 @media (prefers-reduced-motion:reduce){
-  .gs-schritte li,.jv-kern i,.jv-kern.denkt b{animation:none}
-  .jarvis{transition:none}
+  .gs-schritte li,.jv-kern i,.jv-kern.denkt b,.jarvis.jv-z-denkt .jv-kern b,.jv-skala,.jv-boegen,.jv-scan,.jv-punkt,
+  .jarvis .jv-kern s,.jarvis .jv-eq u,.jv-status::after,.jarvis.jv-boot .jv-log li,.jarvis.jv-boot .jv-ecke,.jarvis.jv-boot .jv-kern,
+  .jarvis.jv-boot .jv-rechts,.jarvis .gehirn-antwort.rein,.jarvis .gehirn-antwort.rein::after,.jarvis.jv-boot .jv-chip{animation:none}
+  .jv-chip{transition:none}
+  .jv-scan{display:none}
+  .jarvis,.jv-kern{transition:none}
 }
 @keyframes gehirnVonRechts{from{opacity:0;transform:translateX(14px)}}
 /* Das Eingabefeld steht im Fluss unter dem Gespräch, NICHT angeheftet.
@@ -5416,7 +5568,7 @@ body.jv-offen{overflow:hidden}
 @keyframes gehirnHervor{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent)}
   100%{box-shadow:0 0 0 14px transparent}}
 @media (prefers-reduced-motion:reduce){
-  .gehirn-orb,.gehirn-orb.denkt,.gehirn-chip,.gehirn-frage,.gehirn-antwort,.gehirn-denkt i,.gehirn-hervor,
+  .gehirn-orb,.gehirn-orb.denkt,.gehirn-chip,.gehirn-frage,.gehirn-antwort,.gehirn-frage.rein,.gehirn-antwort.rein,.gs-schritte li.rein,.gehirn-denkt i,.gehirn-hervor,
   .gv-karte.gv-neu>*,.gv-fertig.gv-jetzt,.gv-fertig.gv-jetzt .gv-haken path,.gehirn-mic.hoert{animation:none}
 }
 .hilfe-knoepfe .btn{flex:1 1 180px;min-height:44px}
@@ -11227,14 +11379,34 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
 
 <!-- Studio-Gehirn im eigenen Fenster („Iron Man mäßig", 19.10.2026) -->
 <div class="jarvis" id="jarvis" hidden role="dialog" aria-modal="true" aria-labelledby="jarvisTitel">
+  <canvas class="jv-feld" id="jarvisFeldchen" aria-hidden="true"></canvas>
+  <div class="jv-raster" aria-hidden="true"></div>
+  <div class="jv-scan" aria-hidden="true"></div>
   <div class="jv-rahmen">
+    <span class="jv-ecke ol" aria-hidden="true"></span><span class="jv-ecke or" aria-hidden="true"></span>
+    <span class="jv-ecke ul" aria-hidden="true"></span><span class="jv-ecke ur" aria-hidden="true"></span>
+    <ol class="jv-log" aria-hidden="true"><li>&gt; Systeme starten</li><li>&gt; Studio-Wissen verbunden</li><li>&gt; App-Steuerung bereit</li><li>&gt; Online</li></ol>
     <div class="jv-kopf">
-      <span id="jarvisTitel">Studio-Gehirn</span>
-      <button type="button" class="icon-btn" id="jarvisZu" data-ikon="schliessen" aria-label="Schließen"></button>
+      <span class="jv-titel"><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Studio-Gehirn</span></span>
+      <span class="jv-kopf-knoepfe">
+        <button type="button" class="icon-btn" id="jarvisTon" data-ikon="ton" aria-pressed="true" aria-label="Ton und Stimme" title="Ton und Stimme an/aus"></button>
+        <button type="button" class="icon-btn" id="jarvisZu" data-ikon="schliessen" aria-label="Schließen"></button>
+      </span>
     </div>
     <div class="jv-links">
-      <div class="jv-kern" id="jarvisKern" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+      <div class="jv-kern" id="jarvisKern" aria-hidden="true">
+        <svg class="jv-skala" viewBox="0 0 200 200"><circle cx="100" cy="100" r="96"/></svg>
+        <svg class="jv-boegen" viewBox="0 0 200 200"><circle class="b1" cx="100" cy="100" r="88"/><circle class="b2" cx="100" cy="100" r="80"/></svg>
+        <i></i><i></i><i></i><s></s><s></s><s></s><b></b>
+      </div>
+      <div class="jv-eq" aria-hidden="true"><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div>
       <p class="jv-status" id="jarvisStatus" role="status">Bereit. Frag mich — oder sag, was ich tun soll.</p>
+      <dl class="jv-werte">
+        <div><dt>Zeit</dt><dd id="jarvisUhr">--:--:--</dd></div>
+        <div><dt>Studio</dt><dd id="jarvisOrt">—</dd></div>
+        <div><dt>Verbindung</dt><dd id="jarvisNetz">online</dd></div>
+        <div><dt>Erledigt</dt><dd id="jarvisZahl">0</dd></div>
+      </dl>
     </div>
     <div class="jv-rechts">
       <div class="jv-verlauf gehirn-verlauf" id="jarvisVerlauf"></div>
@@ -12299,6 +12471,8 @@ var IKONEN = {
   blitz:       '<path d="M13 2 3 14h8l-1 8 10-12h-8z"/>',
   feuer:       '<path d="M12 2s5 5 5 9a5 5 0 0 1-10 0c0-1.5.8-3 1.6-4 .3 1 .9 1.8 1.7 2 0-2.5.9-5 1.7-7z"/>' +
                '<path d="M12 22a7 7 0 0 0 7-7c0-1.2-.3-2.4-.8-3.5"/>',
+  ton:         '<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>',
+  stumm:       '<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m16 9 6 6M22 9l-6 6"/>',
   daumen:      '<path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>' +
                '<path d="M7 11l4-9a3 3 0 0 1 3 3v5h5a2 2 0 0 1 2 2.4l-1.6 7A2 2 0 0 1 17.4 22H7z"/>'
 };
@@ -23820,10 +23994,39 @@ function gehirnZeichnen(){
   [$('gehirnFragen'),$('gehirnMic'),$('jarvisSenden'),$('jarvisMic')].forEach(function(x){ if(x) x.disabled=_gLaeuft; });
   jarvisStatus();
 }
+/* Einblenden genau einmal (20.10.2026): wer jünger ist als die
+   Einblendung, bekommt .rein und mit --rein die schon vergangene Zeit
+   (negativ) — so läuft die Bewegung beim Neuschreiben einfach weiter,
+   statt von vorn zu beginnen. Alles Ältere steht still. */
+var GEHIRN_REIN_MS=900;
+function gehirnRein(obj, feld){
+  var jetzt=Date.now();
+  if(!obj[feld]) obj[feld]=jetzt;
+  var alt=jetzt-obj[feld];
+  if(alt>GEHIRN_REIN_MS) return { k:'', s:'' };
+  return { k:' rein', s:' style="--rein:'+(-alt)+'ms"' };
+}
+var JV_VORSCHLAEGE=['Wer hat heute Dienst?','Was ist heute offen?','Öffne den Putzplan','Wie wasche ich die Westen?'];
+function jvLeerHTML(){
+  var h=new Date().getHours();
+  var gruss=(h<5 || h>=18) ? 'Guten Abend' : (h<11 ? 'Guten Morgen' : 'Hallo');
+  var vorname=String((typeof session!=='undefined' && session && session.name) || '').split(' ')[0];
+  return '<div class="jv-leer"><p class="jv-gruss">'+esc(gruss+(vorname ? ', '+vorname : ''))+'.</p>'+
+    '<p class="jv-unter">Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
+    '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){ return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'">'+esc(t)+'</button>'; }).join('')+'</div></div>';
+}
 function gehirnZeichnenIn(box, tippen){
   if(!box) return;
+  if(box.id==='jarvisVerlauf' && !_gVerlauf.length){
+    box.innerHTML=jvLeerHTML();
+    box.querySelectorAll('[data-jvbefehl]').forEach(function(b){
+      b.addEventListener('click', function(){ var f=$('jarvisFeld'); if(f) f.value=b.getAttribute('data-jvbefehl'); gehirnSenden('auto', 'jarvisFeld'); });
+    });
+    return;
+  }
   box.innerHTML=_gVerlauf.map(function(v, i){
-    var frage='<div class="gehirn-frage">'+
+    var rf=gehirnRein(v, '_abF');
+    var frage='<div class="gehirn-frage'+rf.k+'"'+rf.s+'>'+
       (v.art==='idee' ? '<b>Idee:</b> ' : '')+gehirnText(v.text)+'</div>';
     var kopf='<div class="ga-kopf">'+ikon('gehirn')+'<span>Studio-Gehirn</span></div>';
     var antwort;
@@ -23850,9 +24053,12 @@ function gehirnZeichnenIn(box, tippen){
         (ziele.length ? '<div class="gehirn-ziele">'+ziele.map(function(z){
           return '<button type="button" class="btn btn-ghost btn-sm" data-gziel="'+esc(z.view)+'">Zu '+esc(z.name)+' ›</button>';
         }).join('')+'</div>' : '')+
+        gehirnDaumenHTML(v, i)+
         '</div>';
     }
     if(!v.laeuft && v.schritte && v.schritte.length) antwort=antwort.replace(kopf, kopf+gehirnSchritteHTML(v, false));
+    var ra=gehirnRein(v, '_abA');
+    antwort=antwort.replace('<div class="gehirn-antwort', '<div'+ra.s+' class="gehirn-antwort'+ra.k);
     return frage+antwort;
   }).join('');
   box.querySelectorAll('[data-gziel]').forEach(function(b){
@@ -23871,6 +24077,10 @@ function gehirnZeichnenIn(box, tippen){
   box.querySelectorAll('[data-grueck]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnAbhakenRueck(+b.getAttribute('data-grueck'), b); });
   });
+  box.querySelectorAll('[data-gdaumen]').forEach(function(b){
+    var t=b.getAttribute('data-gdaumen').split('|');
+    b.addEventListener('click', function(){ gehirnDaumen(+t[0], +t[1]); });
+  });
   /* Die neueste Antwort schreibt sich Wort für Wort hin — einmal (in
      jedem offenen Verlauf; das Merken macht gehirnZeichnen danach).
      Jede Vorschau kommt genau einmal herein — beim nächsten Zeichnen
@@ -23881,6 +24091,32 @@ function gehirnZeichnenIn(box, tippen){
       gehirnTippen(box.querySelector('[data-gtext="'+i+'"]'), v.antwort||'');
     }
   });
+}
+/* ── Daumen unter einer Antwort (20.10.2026) ───────────────────────
+   Aus dem Betrieb: „muss ich jetzt hoffen das ich und das team 500
+   verschiedene fragen stellt". Ein Daumen hoch ist ein geprüftes
+   Beispiel fürs eigene Training; „Stimmt nicht" geht als offene Frage
+   an Semih — wie „falsch" bei WhatsApp. Nur, wenn das Gehirn die
+   Nummer der Antwort mitgeschickt hat. */
+function gehirnDaumenHTML(v, i){
+  if(!v.nachricht) return '';
+  if(v.bewertet){
+    return '<div class="ga-daumen"><span class="hilfe-marke">'+(v.bewertet>0
+      ? 'Danke! Zählt als geprüftes Beispiel fürs Training.'
+      : 'Danke! Die Antwort geht zur Prüfung an Semih.')+'</span></div>';
+  }
+  return '<div class="ga-daumen" role="group" aria-label="War die Antwort richtig?">'+
+    '<button type="button" class="btn btn-ghost btn-sm ga-hoch" data-gdaumen="'+i+'|1"'+(v.bewertetGerade ? ' disabled' : '')+'>'+ikon('daumen')+'<span>Passt</span></button>'+
+    '<button type="button" class="btn btn-ghost btn-sm ga-runter" data-gdaumen="'+i+'|-1"'+(v.bewertetGerade ? ' disabled' : '')+'>'+ikon('daumen')+'<span>Stimmt nicht</span></button>'+
+    '</div>';
+}
+function gehirnDaumen(i, wert){
+  var v=_gVerlauf[i]; if(!v || !v.nachricht || v.bewertet || v.bewertetGerade) return;
+  v.bewertetGerade=true; gehirnZeichnen();
+  firebase.app().functions(KONFIG.region).httpsCallable('gehirnBewerten')({ nachricht:v.nachricht, wert:wert })
+    .then(function(){ v.bewertet=wert; jvTon(wert>0 ? 'fertig' : 'schritt'); })
+    .catch(function(err){ toast(errMsg(err), true); })
+    .then(function(){ v.bewertetGerade=false; if(gehirnSichtbar()) gehirnZeichnen(); });
 }
 /* Wort für Wort, aber höchstens ~1,2 Sekunden lang: lange Antworten
    kommen in grösseren Stücken. Bei „weniger Bewegung" sofort. */
@@ -23927,12 +24163,12 @@ function gehirnSenden(art, feldId){
   firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
     .then(function(r){
       var d=(r && r.data) || {};
-      if(art==='auto' && d.art==='frage'){ v.art='frage'; v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null;
+      if(art==='auto' && d.art==='frage'){ v.art='frage'; v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; v.nachricht=d.nachricht||null;
         gehirnSchritt(v, d.abgedeckt ? 'Im Studio-Wissen gefunden' : 'Erste Einschätzung — die Frage geht an Semih', true); return; }
       if(art==='auto'){ v.art='aktion'; v.vorschlag=d.vorschlag||null; v.hinweis=d.hinweis||'';
         gehirnSchritt(v, d.vorschlag ? 'Erkannt: '+gehirnArtName(d.vorschlag) : 'Nichts zum Ausführen gefunden', true);
         return gehirnSofort(v); }
-      else { v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; }
+      else { v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; v.nachricht=d.nachricht||null; }
     })
     .catch(function(err){ v.fehler=errMsg(err); })
     .then(function(){
@@ -24532,13 +24768,14 @@ function gehirnMicBinden(knopfId, feldId){
 function gehirnSchritt(v, text, fertig){
   if(!v.schritte) v.schritte=[];
   v.schritte.forEach(function(x){ x.ok=true; });
-  v.schritte.push({ t:text, ok:!!fertig });
+  v.schritte.push({ t:text, ok:!!fertig, _ab:Date.now() });
   if(gehirnSichtbar()) gehirnZeichnen();
 }
 function gehirnSchritteHTML(v, laeuft){
   var l=v.schritte||[]; if(!l.length) return '';
   return '<ol class="gs-schritte'+(laeuft ? '' : ' still')+'">'+l.map(function(x, i){
-    return '<li style="--gs-i:'+i+'" class="'+(x.ok || !laeuft ? 'ok' : 'jetzt')+'"><span aria-hidden="true">'+(x.ok || !laeuft ? '✓' : '•')+'</span>'+esc(x.t)+'</li>';
+    var r=gehirnRein(x, '_ab');
+    return '<li'+r.s+' class="'+(x.ok || !laeuft ? 'ok' : 'jetzt')+r.k+'"><span aria-hidden="true">'+(x.ok || !laeuft ? '✓' : '•')+'</span>'+esc(x.t)+'</li>';
   }).join('')+'</ol>';
 }
 var GEHIRN_ARTNAMEN={ navigation:'Seite öffnen', abfrage:'nachschauen', abwesenheit:'Abwesenheit eintragen', uebergabe:'Übergabe schreiben',
@@ -24554,20 +24791,30 @@ function gehirnSichtbar(){ return currentView==='gehirn' || jarvisOffen(); }
    das Fenster zu, damit man sieht, wie die App sich bewegt. */
 var _jvGebunden=false, _jvVorher=null;
 function jarvisOffen(){ var j=$('jarvis'); return !!(j && !j.hidden); }
+var _jvBootUhr=0;
 function jarvisAuf(){
   if(!gehirnVerfuegbar()) return;
   var j=$('jarvis'); if(!j) return;
   jarvisBinden();
   _jvVorher=document.activeElement;
+  /* Hochfahren: Ecken, Kern, Protokoll — einmal je Öffnen, gut eine
+     Sekunde. Bedienbar ist alles sofort. */
+  clearTimeout(_jvBootUhr);
+  j.classList.add('jv-boot');
+  _jvBootUhr=setTimeout(function(){ j.classList.remove('jv-boot'); }, 2200);
   j.hidden=false;
   document.body.classList.add('jv-offen');
   gehirnZeichnen();
+  jvWerte(); jvUhrStart(); jvFeldStart();
+  jvTon('auf');
   requestAnimationFrame(function(){ j.classList.add('da'); var f=$('jarvisFeld'); if(f && !('ontouchstart' in window)) f.focus(); gehirnNachUnten(); });
   tick(8);
 }
 function jarvisZu(){
   var j=$('jarvis'); if(!j || j.hidden) return;
-  j.classList.remove('da'); j.hidden=true;
+  jvTon('zu'); jvStill();
+  jvUhrStop(); jvFeldStop();
+  j.classList.remove('da', 'jv-boot'); j.hidden=true;
   document.body.classList.remove('jv-offen');
   if(_jvVorher && _jvVorher.focus && document.contains(_jvVorher)) try{ _jvVorher.focus(); }catch(e){}
 }
@@ -24575,6 +24822,7 @@ function jarvisStatus(){
   var st=$('jarvisStatus'), kern=$('jarvisKern'); if(!st) return;
   var letzte=_gVerlauf[_gVerlauf.length-1];
   if(kern) kern.classList.toggle('denkt', _gLaeuft);
+  jvZustand();
   if(_gLaeuft){
     var l=(letzte && letzte.schritte) || [];
     st.textContent = l.length ? l[l.length-1].t : 'Ich arbeite …';
@@ -24584,6 +24832,11 @@ function jarvisStatus(){
 function jarvisBinden(){
   if(_jvGebunden) return; _jvGebunden=true;
   var zu=$('jarvisZu'); if(zu) zu.addEventListener('click', jarvisZu);
+  var ton=$('jarvisTon'); if(ton){ jvTonKnopf(); ton.addEventListener('click', function(){
+    _jvTonAn=!_jvTonAn; try{ localStorage.setItem('kf_jv_ton', _jvTonAn ? '1' : '0'); }catch(e){}
+    if(!_jvTonAn) jvStill(); else jvTon('schritt');
+    jvTonKnopf();
+  }); }
   var los=$('jarvisSenden'); if(los) los.addEventListener('click', function(){ gehirnSenden('auto', 'jarvisFeld'); });
   var f=$('jarvisFeld');
   if(f) f.addEventListener('keydown', function(ev){
@@ -24593,6 +24846,195 @@ function jarvisBinden(){
   if(j) j.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ ev.preventDefault(); jarvisZu(); } });
   gehirnMicBinden('jarvisMic', 'jarvisFeld');
 }
+/* ── HUD: Zustand, Ton, Stimme, Partikel, Uhr (20.10.2026) ──────────
+   Aus dem Betrieb: „richtig abgespacet … mit geilen animationen und
+   viel motion" und „jarvis soll ton haben auch".
+
+   ZUSTAND: eine Klasse am Fenster (jv-z-hoert / -denkt / -spricht);
+   CSS macht daraus Wellen, Equalizer und Puls.
+
+   TON: kurze Klänge aus dem Gerät selbst (Web Audio, keine Dateien) —
+   beim Öffnen, Senden, je Schritt, bei Fertig und Fehler. STIMME: die
+   Antwort auf eine Frage liest die Sprachausgabe des Geräts vor
+   (kostenlos, nichts verlässt das Gerät). Beides hängt an EINEM Knopf
+   oben im Fenster und ist gemerkt; Standard: an.
+
+   Die Übergänge erkennt jvZustand aus dem, was ohnehin gezeichnet wird
+   (läuft / Schritte / fertig) — kein zweiter Weg durch gehirnSenden. */
+var _jvTonAn=true;
+try{ _jvTonAn=localStorage.getItem('kf_jv_ton')!=='0'; }catch(e){}
+var _jvKlang=null, _jvWar={ laeuft:false, schritte:0, n:0 }, _jvSpricht=false;
+function jvTonKnopf(){
+  var b=$('jarvisTon'); if(!b) return;
+  b.setAttribute('aria-pressed', _jvTonAn ? 'true' : 'false');
+  b.setAttribute('aria-label', _jvTonAn ? 'Ton und Stimme ausschalten' : 'Ton und Stimme einschalten');
+  b.innerHTML=ikon(_jvTonAn ? 'ton' : 'stumm');
+}
+function jvTon(art){
+  if(!_jvTonAn || !jarvisOffen() && art!=='zu') return;
+  try{
+    var AC=window.AudioContext || window.webkitAudioContext; if(!AC) return;
+    if(!_jvKlang) _jvKlang=new AC();
+    var c=_jvKlang; if(c.state==='suspended' && c.resume) c.resume();
+    var t0=c.currentTime+0.01;
+    var TOENE={
+      auf:[[220,660,0,.42,.05,'sine'],[330,990,.08,.42,.035,'triangle']],
+      zu:[[660,200,0,.3,.04,'sine']],
+      senden:[[880,1320,0,.09,.05,'triangle']],
+      schritt:[[1500,1500,0,.035,.025,'sine']],
+      fertig:[[660,660,0,.12,.045,'sine'],[990,990,.1,.22,.045,'sine']],
+      fehler:[[300,180,0,.28,.05,'sawtooth']]
+    }[art];
+    if(!TOENE) return;
+    TOENE.forEach(function(x){
+      var o=c.createOscillator(), g=c.createGain();
+      o.type=x[5]; o.frequency.setValueAtTime(x[0], t0+x[2]);
+      o.frequency.exponentialRampToValueAtTime(x[1], t0+x[2]+x[3]);
+      g.gain.setValueAtTime(0.0001, t0+x[2]);
+      g.gain.exponentialRampToValueAtTime(x[4], t0+x[2]+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+x[2]+x[3]);
+      o.connect(g); g.connect(c.destination);
+      o.start(t0+x[2]); o.stop(t0+x[2]+x[3]+0.02);
+    });
+  }catch(e){}
+}
+function jvStill(){
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+  _jvSpricht=false;
+  var j=$('jarvis'); if(j) j.classList.remove('jv-z-spricht');
+}
+/* Vorlesen ohne Warnzeile und ohne Zeichen, die als Wort gesprochen
+   würden; höchstens ~600 Zeichen. */
+function jvSprechen(text){
+  if(!_jvTonAn || !jarvisOffen() || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+  var t=String(text||'').split('\n\n⚠️')[0].replace(/[*_#>•]/g,' ').replace(/\s+/g,' ').trim().slice(0, 600);
+  if(!t) return;
+  try{
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=1.05; u.pitch=1;
+    var stimmen=window.speechSynthesis.getVoices()||[];
+    var de=stimmen.filter(function(x){ return /^de/i.test(x.lang); });
+    if(de.length) u.voice=de.filter(function(x){ return /google|neural|natural|anna|markus|helena|katja|conrad/i.test(x.name); })[0] || de[0];
+    var kern=document.querySelector('#jarvisKern b');
+    u.onstart=function(){ _jvSpricht=true; jvZustand(); };
+    u.onend=u.onerror=function(){ _jvSpricht=false; jvZustand(); };
+    u.onboundary=function(){
+      if(kern && kern.animate && !gehirnWenigBewegung()) kern.animate([{ transform:'scale(1.16)' }, { transform:'scale(1)' }], { duration:220, easing:'ease-out' });
+    };
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function jvZustand(){
+  var j=$('jarvis'); if(!j) return;
+  j.classList.toggle('jv-z-denkt', !!_gLaeuft);
+  j.classList.toggle('jv-z-hoert', !!_gHoert && !_gLaeuft);
+  j.classList.toggle('jv-z-spricht', !!_jvSpricht && !_gLaeuft);
+  var letzte=_gVerlauf[_gVerlauf.length-1], schr=(letzte && letzte.schritte || []).length;
+  if(jarvisOffen()){
+    if(_gLaeuft && !_jvWar.laeuft){ jvTon('senden'); jvStill(); }
+    else if(_gLaeuft && schr>_jvWar.schritte) jvTon('schritt');
+    if(!_gLaeuft && _jvWar.laeuft && letzte){
+      if(letzte.fehler) jvTon('fehler');
+      else { jvTon('fertig'); if(letzte.art==='frage') jvSprechen(letzte.antwort); }
+    }
+  }
+  _jvWar={ laeuft:!!_gLaeuft, schritte:schr, n:_gVerlauf.length };
+  jvWerte();
+}
+function jvWerte(){
+  if(!jarvisOffen()) return;
+  var ort=$('jarvisOrt'), zahl=$('jarvisZahl'), netz=$('jarvisNetz');
+  if(ort){ var k=gehirnMeineKeys()[0]; ort.textContent=k ? studioName(k) : '—'; }
+  if(zahl) zahl.textContent=String(_gVerlauf.filter(function(v){ return !v.laeuft && !v.fehler; }).length);
+  if(netz) netz.textContent=navigator.onLine===false ? 'offline' : 'online';
+}
+var _jvUhr=0;
+function jvUhrStart(){
+  jvUhrStop();
+  var u=$('jarvisUhr'); if(!u) return;
+  function z(){ var d=new Date(); u.textContent=[d.getHours(), d.getMinutes(), d.getSeconds()].map(function(n){ return (n<10?'0':'')+n; }).join(':'); }
+  z(); _jvUhr=setInterval(z, 1000);
+}
+function jvUhrStop(){ if(_jvUhr){ clearInterval(_jvUhr); _jvUhr=0; } }
+/* Partikelfeld: Punkte, die treiben und sich nahe beieinander mit
+   Linien verbinden. Beim Denken ziehen sie schneller zum Kern. Läuft
+   nur, solange das Fenster offen und die Seite sichtbar ist; bei
+   „weniger Bewegung" gar nicht. Je Bild unter 1 ms (70 Punkte). */
+var _jvF={ an:false, raf:0, p:[], w:0, h:0, dpr:1 };
+function jvFeldMass(){
+  var c=$('jarvisFeldchen'); if(!c) return;
+  /* Bewusst in halber Auflösung: die Punkte sind Lichtpunkte, keine
+     Schrift, und das Hochskalieren macht sie weich wie Leuchten. Das
+     Feld ist so gross wie das Fenster — jedes Bild malt es ganz neu,
+     und die Kosten wachsen mit den Bildpunkten. */
+  _jvF.w=c.clientWidth; _jvF.h=c.clientHeight;
+  /* Höchstens ~200 000 Bildpunkte, egal wie gross der Bildschirm:
+     1920 × 1080 malt so mit 0,31, ein Handy mit 0,5. */
+  _jvF.dpr=Math.min(0.5, Math.sqrt(200000/Math.max(1, _jvF.w*_jvF.h)));
+  c.width=Math.max(1, Math.round(_jvF.w*_jvF.dpr)); c.height=Math.max(1, Math.round(_jvF.h*_jvF.dpr));
+  /* Die Mitte des Kerns einmal hier messen, nicht in jedem Bild. */
+  var k=$('jarvisKern'), r=k && k.getBoundingClientRect();
+  _jvF.kx=r && r.width ? r.left+r.width/2 : _jvF.w/2; _jvF.ky=r && r.height ? r.top+r.height/2 : _jvF.h/2;
+  _jvF.ring=r && r.width ? r.width*0.75 : 120;
+}
+function jvFeldStart(){
+  var c=$('jarvisFeldchen'); if(!c || _jvF.an || gehirnWenigBewegung() || !c.getContext) return;
+  var ctx=c.getContext('2d'); if(!ctx) return;
+  _jvF.an=true; jvFeldMass();
+  /* Nach dem Hochfahren steht der Kern an seinem Platz — dann noch einmal messen. */
+  setTimeout(function(){ if(_jvF.an) jvFeldMass(); }, 1000);
+  var n=_jvF.w<600 ? 30 : 46;
+  _jvF.p=[];
+  for(var i=0;i<n;i++) _jvF.p.push({ x:Math.random()*_jvF.w, y:Math.random()*_jvF.h, vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+    r:Math.random()*2+2, ring:0.8+Math.random()*0.9 });
+  /* Linien in drei Helligkeiten gesammelt: drei Striche je Bild statt
+     einem je Paar. Gemessen am 20.10.2026 (CPU ÷4, 1440 px): einzeln
+     gezeichnet 17 ms je Bild beim Denken — gesammelt siehe Test 12b. */
+  var STUFEN=['rgba(95,225,255,.05)','rgba(95,225,255,.10)','rgba(95,225,255,.17)'], NAH=10000;
+  function bild(){
+    if(!_jvF.an) return;
+    _jvF.raf=requestAnimationFrame(bild);
+    if(document.hidden) return;
+    var w=_jvF.w, h=_jvF.h;
+    ctx.setTransform(_jvF.dpr,0,0,_jvF.dpr,0,0);
+    ctx.clearRect(0,0,w,h);
+    var kx=_jvF.kx, ky=_jvF.ky, denkt=!!_gLaeuft, R=_jvF.ring;
+    var P=_jvF.p, i, j, a, b2, dx, dy, q, dd, f;
+    for(i=0;i<P.length;i++){
+      a=P[i];
+      if(denkt){
+        /* Beim Denken kreisen sie um den Kern, jeder auf seiner Bahn. */
+        dx=a.x-kx; dy=a.y-ky; dd=Math.sqrt(dx*dx+dy*dy)||1;
+        f=(R*a.ring*1.6-dd)*0.0016;
+        a.vx+=dx/dd*f-dy/dd*0.05; a.vy+=dy/dd*f+dx/dd*0.05;
+        a.vx*=0.965; a.vy*=0.965;
+      } else {
+        a.vx+=(Math.random()-.5)*0.03; a.vy+=(Math.random()-.5)*0.03;
+        a.vx*=0.99; a.vy*=0.99;
+      }
+      a.x+=a.vx; a.y+=a.vy;
+      if(a.x<-10) a.x=w+10; else if(a.x>w+10) a.x=-10;
+      if(a.y<-10) a.y=h+10; else if(a.y>h+10) a.y=-10;
+    }
+    ctx.lineWidth=2;
+    for(var s=0;s<3;s++){
+      ctx.beginPath();
+      for(i=0;i<P.length;i++){
+        a=P[i];
+        for(j=i+1;j<P.length;j++){
+          b2=P[j]; dx=a.x-b2.x; dy=a.y-b2.y; q=dx*dx+dy*dy;
+          if(q<NAH && Math.min(2, Math.floor((1-q/NAH)*3))===s){ ctx.moveTo(a.x,a.y); ctx.lineTo(b2.x,b2.y); }
+        }
+      }
+      ctx.strokeStyle=STUFEN[s]; ctx.stroke();
+    }
+    ctx.fillStyle='rgba(160,236,255,.8)';
+    for(i=0;i<P.length;i++){ a=P[i]; ctx.fillRect(a.x-a.r/2, a.y-a.r/2, a.r, a.r); }
+  }
+  if(!_jvF.groesse){ _jvF.groesse=true; window.addEventListener('resize', function(){ if(_jvF.an) jvFeldMass(); }, { passive:true }); }
+  _jvF.raf=requestAnimationFrame(bild);
+}
+function jvFeldStop(){ _jvF.an=false; if(_jvF.raf) cancelAnimationFrame(_jvF.raf); _jvF.raf=0; }
 function jarvisKachel(ansicht){
   var an=gehirnVerfuegbar();
   var heim=(ansicht||currentView)==='home';

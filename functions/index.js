@@ -7066,9 +7066,59 @@ async function gehirnFrageAusfuehren(auftrag, firma) {
     return {
       antwort: String(json.antwort || '').slice(0, 6000),
       abgedeckt: !!json.abgedeckt,
-      offen: json.offenId || null
+      offen: json.offenId || null,
+      /* Für den Daumen unter der Antwort (20.10.2026). */
+      nachricht: Number(json.nachrichtId) > 0 ? Number(json.nachrichtId) : null
     };
 }
+
+/* ── Daumen unter einer Antwort (20.10.2026) ────────────────────────
+   Aus dem Betrieb: „muss ich jetzt hoffen das ich und das team 500
+   verschiedene fragen stellt". Ein Daumen hoch ist ein geprüftes
+   Beispiel fürs eigene Training; Daumen runter geht als offene Frage an
+   Semih. Der Name kommt aus dem Profil, nicht aus dem Aufruf — der
+   Worker lässt nur die eigene Antwort bewerten. */
+function gehirnBewertungPruefen(daten) {
+  const d = daten || {};
+  const wert = Number(d.wert);
+  const nachricht = Number(d.nachricht);
+  if (!(wert === 1 || wert === -1)) return null;
+  if (!Number.isInteger(nachricht) || nachricht <= 0) return null;
+  return { wert, nachricht };
+}
+
+exports.gehirnBewerten = region
+  .runWith({ timeoutSeconds: 30, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const { profil } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) {
+      throw new functions.https.HttpsError('permission-denied',
+        'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    }
+    const b = gehirnBewertungPruefen(data);
+    if (!b) throw new functions.https.HttpsError('invalid-argument', 'Diese Bewertung verstehe ich nicht.');
+    const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
+    if (!schluessel) throw new functions.https.HttpsError('failed-precondition', 'Das Studio-Gehirn ist noch nicht verbunden.');
+    await tagesGrenze('gehirnBewerten', GEHIRN_TAGESGRENZE, firma);
+    const name = String((profil || {}).name || 'Unbekannt').slice(0, 60);
+    let antwort, json;
+    try {
+      antwort = await fetch((process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/bewertung', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel },
+        body: JSON.stringify({ nachrichtId: b.nachricht, wert: b.wert, name })
+      });
+      json = await antwort.json().catch(() => ({}));
+    } catch (e) {
+      throw new functions.https.HttpsError('unavailable', 'Das Studio-Gehirn ist gerade nicht erreichbar.');
+    }
+    if (!antwort.ok || !json.ok) {
+      console.error('gehirnBewerten HTTP ' + antwort.status + ':', JSON.stringify(json).slice(0, 200));
+      throw new functions.https.HttpsError('failed-precondition', json.fehler || 'Die Bewertung kam nicht an.');
+    }
+    return { ok: true, wert: b.wert, offen: json.offenId || null };
+  });
 
 /* ══════════════════════════════════════════════════════════════════════
    STUDIO-GEHIRN, RUNDE 150: ANLEGEN LASSEN UND LAGEBERICHT
@@ -7585,7 +7635,7 @@ exports.lageberichtJetzt = region
     return { ok: true };
   });
 
-exports.__intern = { gehirnErlaubt, gehirnAuftrag, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

@@ -639,6 +639,111 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     if (da && !wartet) { await p.click(k); await p.waitForTimeout(300); pruefe('… und er öffnet das Fenster', await sichtbar(p, '#jarvis')); }
     await ctx.close();
   }
+  console.log('\n── 12b HUD, Ton, Daumen (20.10.2026) ──');
+  /* Aus dem Betrieb (20.10.2026): „richtig abgespacet … wie in einer
+     jarvis umgebung … viel motion", „jarvis soll ton haben auch" und
+     „muss ich jetzt hoffen das ich und das team 500 verschiedene fragen
+     stellt". */
+  {
+    const p = await oeffne(b, 1440, 900);
+    await p.click(await jvKnopf(p)); await p.waitForTimeout(400);
+    const leer = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-jvbefehl]')].map(x => x.textContent));
+    pruefe('leeres Fenster: Begrüssung und vier Vorschläge zum Antippen', leer.length === 4 && /Guten|Hallo/.test(await p.textContent('#jarvisVerlauf')), JSON.stringify(leer));
+    const boot = await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-boot'));
+    pruefe('beim Öffnen fährt das HUD hoch (jv-boot)', boot);
+    await p.waitForTimeout(2400);
+    pruefe('… und das Hochfahren endet wieder', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-boot'))));
+    const feld = await p.evaluate(() => { const c = document.getElementById('jarvisFeldchen'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return { n, w: c.width }; });
+    pruefe('Partikelfeld zeichnet, solange das Fenster offen ist (in reduzierter Auflösung)', feld.n > 50 && feld.w > 400 && feld.w < 1440, JSON.stringify(feld));
+    const uhr = await p.textContent('#jarvisUhr');
+    pruefe('Uhr läuft (HH:MM:SS)', /^\d\d:\d\d:\d\d$/.test(uhr), uhr);
+    // Ton: Knopf schaltet, wird gemerkt
+    pruefe('Ton ist zu Beginn an', await p.getAttribute('#jarvisTon', 'aria-pressed') === 'true');
+    await p.click('#jarvisTon');
+    pruefe('ein Tipp schaltet Ton und Stimme aus (gemerkt)', await p.getAttribute('#jarvisTon', 'aria-pressed') === 'false' &&
+      await p.evaluate(() => localStorage.getItem('kf_jv_ton')) === '0');
+    await p.click('#jarvisTon');
+    pruefe('… und wieder an', await p.getAttribute('#jarvisTon', 'aria-pressed') === 'true');
+    // Vorschlag antippen, Zustand „denkt", Klänge, Vorlesen
+    await p.evaluate(() => {
+      window.__klaenge = 0;
+      const o = AudioContext.prototype.createOscillator;
+      AudioContext.prototype.createOscillator = function () { window.__klaenge++; return o.call(this); };
+      window.__gesprochen = [];
+      if (window.speechSynthesis) window.speechSynthesis.speak = (u) => { window.__gesprochen.push(u.text); };
+      window.__antwort = window.__antwort || {};
+      window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Die Westen im Schonprogramm waschen.\n\n⚠️ Noch nicht geprüft.', abgedeckt: true, nachricht: 41 } }), 700));
+      window.__bewertet = [];
+      window.__antwort.gehirnBewerten = (d) => { window.__bewertet.push(d); return Promise.resolve({ data: { ok: true } }); };
+    });
+    await p.click('#jarvisVerlauf [data-jvbefehl="Wie wasche ich die Westen?"]');
+    await p.waitForTimeout(200);
+    pruefe('Antippen schickt ab, das HUD „denkt" (Wellen, Equalizer)', await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-z-denkt') &&
+      getComputedStyle(document.querySelector('#jarvisKern s')).animationName === 'jvWelle'));
+    await p.waitForFunction(() => !document.querySelector('#jarvisVerlauf .gehirn-denkt'), null, { timeout: 5000 });
+    await p.waitForTimeout(300);
+    pruefe('nach der Antwort denkt es nicht mehr', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-z-denkt'))));
+    const ton = await p.evaluate(() => ({ k: window.__klaenge, g: window.__gesprochen }));
+    pruefe('Klänge beim Senden und Fertig; die Antwort wird vorgelesen — ohne Warnzeile', ton.k >= 2 && ton.g.length === 1 && /Schonprogramm/.test(ton.g[0]) && !/geprüft/.test(ton.g[0]), JSON.stringify(ton));
+    // Daumen
+    const d = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-gdaumen]')].map(x => x.textContent.trim()));
+    pruefe('unter der Antwort: „Passt" und „Stimmt nicht"', d.join('|') === 'Passt|Stimmt nicht', JSON.stringify(d));
+    await p.click('#jarvisVerlauf .ga-hoch'); await p.waitForTimeout(300);
+    const bw = await p.evaluate(() => ({ b: window.__bewertet, t: document.querySelector('#jarvisVerlauf .ga-daumen').textContent, s: document.querySelector('#gehirnVerlauf .ga-daumen') && document.querySelector('#gehirnVerlauf .ga-daumen').textContent }));
+    pruefe('„Passt" ruft gehirnBewerten mit Nummer und +1, dann ein Danke (auch unter Ich → Gehirn)', bw.b.length === 1 && bw.b[0].nachricht === 41 && bw.b[0].wert === 1 && /Training/.test(bw.t) && /Training/.test(bw.s || ''), JSON.stringify(bw));
+    // Einblenden nur einmal: nach einer zweiten Frage steht die erste still
+    await p.evaluate(() => { window.__antwort.gehirnAktion = () => Promise.resolve({ data: { art: 'frage', antwort: 'Zweite.', abgedeckt: true } }); });
+    await p.fill('#jarvisFeld', 'Noch eine Frage'); await p.click('#jarvisSenden');
+    await p.waitForTimeout(80);
+    const still = await p.evaluate(() => { const k = document.querySelectorAll('#jarvisVerlauf .gehirn-antwort'); return { erste: getComputedStyle(k[0]).animationName, zweite: getComputedStyle(k[1]).animationName }; });
+    pruefe('Einblenden genau einmal: die alte Karte steht still, die neue kommt herein', still.erste === 'none' && still.zweite === 'jvHolo', JSON.stringify(still));
+    await p.waitForFunction(() => !document.querySelector('#jarvisVerlauf .gehirn-denkt'), null, { timeout: 5000 });
+    pruefe('ohne nachricht-Nummer kein Daumen', await p.evaluate(() => document.querySelectorAll('#jarvisVerlauf .ga-daumen').length === 1));
+    // Schliessen hält das Feld an
+    await p.click('#jarvisZu'); await p.waitForTimeout(200);
+    const nachZu = await p.evaluate(() => new Promise(r => { let n = 0; const c = document.getElementById('jarvisFeldchen'); const g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); setTimeout(() => { const d = g.getImageData(0, 0, c.width, c.height).data; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; r(n); }, 300); }));
+    pruefe('nach dem Schliessen zeichnet das Feld nicht weiter', nachZu === 0, nachZu);
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+  /* Flüssig heisst: Arbeit je Bild unter 8,3 ms, mit 4-fach gedrosselter
+     CPU — offen, und während es denkt (dann ziehen die Partikel zum
+     Kern und laufen Wellen und Equalizer). Gemessen über die
+     Hauptfaden-Zeit je gezeichnetem Bild, nicht angesehen. */
+  for (const [w, h] of [[390, 844], [1440, 900], [1920, 1080]]) {
+    const p = await oeffne(b, w, h);
+    await p.click(await jvKnopf(p)); await p.waitForTimeout(2600);
+    const cdp = await p.context().newCDPSession(p);
+    await cdp.send('Performance.enable');
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    const miss = async (dauer) => {
+      const a = await cdp.send('Performance.getMetrics');
+      const bilder = await p.evaluate((ms) => new Promise(r => { let n = 0; const ende = performance.now() + ms; (function f() { n++; if (performance.now() < ende) requestAnimationFrame(f); else r(n); })(); }), dauer);
+      const z = await cdp.send('Performance.getMetrics');
+      const wert = (m, k) => (m.metrics.find(x => x.name === k) || {}).value || 0;
+      return { ms: Math.round((wert(z, 'TaskDuration') - wert(a, 'TaskDuration')) * 1000 / bilder * 10) / 10, bilder };
+    };
+    const ruhe = await miss(3000);
+    await p.evaluate(() => { window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Ok.', abgedeckt: true } }), 6000)); });
+    await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?'); await p.click('#jarvisSenden');
+    await p.waitForTimeout(300);
+    const denkt = await miss(3000);
+    pruefe(w + ' px, CPU ÷4: Arbeit je Bild offen ' + ruhe.ms + ' ms, beim Denken ' + denkt.ms + ' ms (Grenze 8,3)', ruhe.ms < 8.3 && denkt.ms < 8.3, JSON.stringify({ ruhe, denkt }));
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    await zu(p);
+  }
+  {
+    const p = await oeffne(b, 390, 844, { wenigBewegung: true });
+    await p.click(await jvKnopf(p)); await p.waitForTimeout(500);
+    const r = await p.evaluate(() => {
+      const c = document.getElementById('jarvisFeldchen'); const d = c.getContext('2d').getImageData(0, 0, Math.max(1, c.width), Math.max(1, c.height)).data;
+      let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++;
+      const bewegt = [...document.querySelectorAll('#jarvis *')].filter(e => getComputedStyle(e).animationName !== 'none' && e.getClientRects().length).map(e => e.className.baseVal !== undefined ? e.className.baseVal : e.className);
+      return { n, bewegt };
+    });
+    pruefe('„weniger Bewegung": kein Partikelfeld, nichts im HUD bewegt sich', r.n === 0 && r.bewegt.length === 0, JSON.stringify(r));
+    await zu(p);
+  }
   {
     const p = await oeffne(b, 390, 844, { wenigBewegung: true });
     await p.click(await jvKnopf(p)); await p.waitForTimeout(300);
@@ -687,7 +792,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       }, { s: sel, T: TREFFER.toString() });
       let zuKlein = await ids('#gehirnChips .gehirn-chip, #gehirnFragen, #gehirnMic, #gehirnBericht button, #gehirnVorschlaege button');
       await antwort(p, {
-        gehirnFrage: { data: { antwort: 'Ok.', abgedeckt: true } },
+        gehirnFrage: { data: { antwort: 'Ok.', abgedeckt: true, nachricht: 7 } },
         gehirnAktion: { data: { vorschlag: { typ: 'aufgabe', titel: 'X', alle: true, studioKeys: [], studioNamen: [] } } }
       });
       await p.fill('#gehirnFeld', 'Wie lege ich eine Aufgabe an?'); await p.click('#gehirnFragen'); await fertig(p);
@@ -695,13 +800,18 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       zuKlein = zuKlein.concat(await ids('#gehirnVerlauf [data-gziel], #gehirnVerlauf [data-gvorschlag], #gehirnVerlauf [data-ganlegen]'));
       await p.click('#gehirnVerlauf [data-ganlegen]'); await p.waitForTimeout(400);
       zuKlein = zuKlein.concat(await ids('#gehirnVerlauf .gv-fertig [data-gziel]'));
+      // Daumen unter einer Antwort mit Nummer (20.10.2026)
+      await antwort(p, { gehirnAktion: { data: { art: 'frage', antwort: 'Ok.', abgedeckt: true, nachricht: 7 } } });
+      await p.fill('#gehirnFeld', 'Wie wasche ich die Westen?'); await p.click('#gehirnFragen'); await fertig(p);
+      if (!(await p.$('#gehirnVerlauf [data-gdaumen]'))) zuKlein.push('Daumen fehlt');
+      zuKlein = zuKlein.concat(await ids('#gehirnVerlauf [data-gdaumen]'));
       // Das eigene Fenster: Kachel auf der Startseite und die Knöpfe darin
       await p.evaluate(() => { location.hash = '#home'; }); await p.waitForTimeout(400);
       const jk = await jvKnopf(p);
       if (jk) zuKlein = zuKlein.concat(await ids(jk));
       if (jk) {
         await p.click(jk); await p.waitForTimeout(300);
-        zuKlein = zuKlein.concat(await ids('#jarvisZu, #jarvisSenden, #jarvisMic'));
+        zuKlein = zuKlein.concat(await ids('#jarvisZu, #jarvisTon, #jarvisSenden, #jarvisMic, #jarvisVerlauf .jv-chip'));
         const jvBreit = await p.evaluate(() => document.getElementById('jarvis').scrollWidth > innerWidth + 1);
         if (jvBreit) zuKlein.push('Fenster ragt seitlich hinaus');
       } else if (h > 640 || w >= 821) zuKlein.push('„Gehirn" nicht erreichbar');
