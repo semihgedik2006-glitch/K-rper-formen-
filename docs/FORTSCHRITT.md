@@ -16130,3 +16130,30 @@ und gleitet beim Bereichswechsel mit (`--accent`-Übergang wie
 „Bericht") — test-gleiten-rahmen hatte sie als „springt" gefunden. Die
 neue Prüfung „neues Aussehen 360/390/430/820/320 px" in test-gehirn misst,
 dass die Bereichszeile mit Knopf nicht höher wird.
+
+
+## Runde 159 — Gehirn-Fenster: Verlauf scrollt, Karten nicht mehr gestaucht (19.10.2026)
+
+Aus dem Betrieb, mit Bildschirmfoto vom Rechner: „der chat lässt sich
+nicht scrollen und es sieht sehr buggy aus".
+
+**Ursache:** `.gehirn-verlauf` ist eine Flex-Spalte. Auf der Seite hat
+sie keine feste Höhe, im Fenster schon (`.jv-verlauf`, `flex:1;
+min-height:0`). Flex-Kinder schrumpfen dann standardmässig, und weil
+`.gehirn-antwort` `overflow:hidden` hat, gibt ihre Mindesthöhe nach —
+jede Karte wurde auf ihre erste Zeile gestaucht. Da dadurch nichts mehr
+überstand, gab es auch nichts zu scrollen. Auf der Seite war es nie zu
+sehen, nur im Fenster.
+
+**Lösung:** `.gehirn-verlauf > *{flex-shrink:0}`. Dazu scrollt
+`gehirnNachUnten` im offenen Fenster den Verlauf selbst ans Ende (vorher
+nur die Seite). Die neueste Karte wächst nach dem Senden noch (Schritte,
+Einblendung); ein einmaliges Scrollen landete auf 390 px 31 px zu hoch.
+Deshalb ein `ResizeObserver` an der neuesten Karte, der unten hält,
+solange niemand selbst nach oben gescrollt hat (Abstand > 48 px löst das
+Kleben). Kein Vermessen im Klick: gelesen wird im Beobachter bzw. im
+nächsten Bild.
+
+**Geprüft:** test-gehirn, neue Prüfung bei 320/390/820/1280/1440/1920 px
+mit sieben Antworten: Verlauf scrollt, keine Karte gestaucht, die
+neueste steht ganz im Bild. Vor der Änderung schlug sie fehl.
