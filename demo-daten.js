@@ -935,6 +935,48 @@
     legen(P('kennzahlen'), kz);
   })();
 
+  /* Schichtplaner (Runde 156): so sähe es aus, nachdem die Chefin die
+     Excel-Vorlage eingelesen hat. Ohne zufall() — jeder Aufruf dort
+     verschöbe alles, was danach erfunden wird. Studio 6 (Hürth) ist
+     bewusst knapp besetzt, damit in der Demo Lücken und Rückfragen zu
+     sehen sind; der Demo-Mitarbeiter steht mit drin und sieht deshalb
+     die Karte „Meine Wünsche". */
+  (function () {
+    var ROLLEN = ['Vollzeit', 'Teilzeit', 'Vollzeit', 'Minijob', 'Vollzeit', 'Azubi', 'Teilzeit', 'Duales Studium'];
+    var team = [];
+    USERS.forEach(function (u, n) {
+      if (u.role === 'chef' || u.aktiv === false || !(u.studioKeys || []).length) return;
+      var rolle = u.role === 'leiter' ? 'Vollzeit' : ROLLEN[n % ROLLEN.length];
+      var haupt = u.studioKeys[0], i = +haupt.split('-')[1];
+      team.push({
+        id: u.id, uid: u.id, name: u.name, rolle: rolle, haupt: haupt,
+        /* Springer in die Nachbarstudios — so arbeiten die Studios in
+           Köln auch: wer in Nippes fehlt, kommt aus Longerich. */
+        studios: [sk((i + 13) % 14), sk((i + 1) % 14)],
+        wocheStd: rolle === 'Vollzeit' ? 40 : (rolle === 'Teilzeit' ? 20 : (rolle === 'Minijob' ? 0 : 30)),
+        maxMonatStd: rolle === 'Minijob' ? 40 : 0, maxTageWoche: rolle === 'Minijob' ? 2 : 5,
+        allein: rolle !== 'Azubi', u18: false, kann: u.role === 'leiter' ? ['Probetraining', 'Abschluss'] : [],
+        verf: n % 4 === 1 ? { 3: 'nie' } : (n % 4 === 2 ? { 6: 'nie', 7: 'nie' } : {}),
+        sperre: rolle === 'Duales Studium' ? 'Di Uni' : '', lieber: ['Früh', 'Spät', 'egal'][n % 3], notiz: '', ts: Date.now()
+      });
+    });
+    legen(P('planerTeam'), team);
+    holen(P('config')).push({ id: 'schichtplaner', wunschFristTag: 15, eingelesenAm: vorTag(3),
+      eingelesenVon: 'Demo-Geschäftsführung',
+      schichten: { alle: [
+        { id: 'alle-frueh', name: 'Früh', von: '07:00', bis: '14:00', tage: [1, 2, 3, 4, 5], min: 1, braucht: '' },
+        { id: 'alle-spaet', name: 'Spät', von: '14:00', bis: '21:00', tage: [1, 2, 3, 4, 5], min: 1, braucht: '' },
+        { id: 'alle-samstag', name: 'Samstag', von: '09:00', bis: '14:00', tage: [6], min: 1, braucht: '' }
+      ] } });
+    var naechster = new Date(); naechster = new Date(naechster.getFullYear(), naechster.getMonth() + 1, 1);
+    var m = naechster.getFullYear() + '-' + String(naechster.getMonth() + 1).padStart(2, '0');
+    legen(P('planerWuensche'), team.filter(function (_, n) { return n % 3 === 0; }).map(function (p, n) {
+      return { id: p.uid + '_' + m, uid: p.uid, name: p.name, monat: m,
+        frei: [m + '-0' + (3 + n % 6), m + '-1' + (n % 9)], lieber: p.lieber, notiz: '', ts: vorTag(2) };
+    }));
+  })();
+
+
   /* ── Anliegen ──
      Gab es in der Demo bisher gar nicht: die Sammlung blieb leer, und
      damit war der ganze Bereich „Anliegen" unvorfuehrbar — und im

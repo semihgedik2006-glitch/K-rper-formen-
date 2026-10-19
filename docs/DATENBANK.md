@@ -51,6 +51,9 @@ firmen/{kennung}                     ← Stammdaten, öffentlich lesbar (get)
    ├── loesungen/  +  loesungBilder/ ← Probleme und was hilft (Text + Fotos)
    ├── certificates/                 ← Nachweise (Premium)
    ├── probetrainings/               ← Zahlen, KEINE Kundennamen
+   ├── planerTeam/{id}               ← Schichtplaner: Rolle, Stunden, wer wann kann (Chef; die Person liest ihre eigene) — Runde 156
+   ├── planerWuensche/{uid}_{JJJJ-MM} ← Wunsch-frei-Tage, früh/spät — jeder nur für sich
+   ├── planerPlaene/{JJJJ-MM}        ← Entwurf des Monats (Chef)
    ├── anliegen/                     ← Wünsche an die Leitung
    ├── trash/                        ← Papierkorb, 30 Tage
    ├── archives/                     ← Wochensicherungen Material
@@ -636,3 +639,19 @@ den Kanal lesen darf. **Schreiben:** nur den eigenen, nur diese zwei
 Felder, `ts` höchstens fünf Minuten in der Zukunft. **Löschen:** niemand.
 Direktnachrichten brauchen das nicht: dort steht `readTs.<uid>` schon am
 Unterhaltungs-Dokument. Test: `tests/rules/gelesen.test.js`.
+
+
+### Schichtplaner (seit 19.10.2026, Runde 156)
+
+| Pfad | Inhalt | lesen | schreiben |
+|---|---|---|---|
+| `planerTeam/{uid oder x-name}` | `name, uid, rolle, haupt, studios[], wocheStd, maxMonatStd, maxTageWoche, allein, u18, kann[], verf{1..7}, sperre, lieber, notiz, ts` — aus der Excel-Vorlage | Chef; die Person ihre eigene Zeile | Chef |
+| `planerWuensche/{uid}_{JJJJ-MM}` | `uid, name, monat, frei[], lieber ('', Früh, Spät, egal), notiz ≤ 140, ts` | Chef; die Person ihre eigenen | die Person selbst, nur diese Felder |
+| `planerPlaene/{JJJJ-MM}` | `einsaetze[], luecken[], hinweise[], personen[], feiertage[], erstellt, veroeffentlicht` | Chef | Chef |
+| `config/schichtplaner` | `schichten{alle|studio-N: [{id,name,von,bis,tage[],min,braucht}]}, studios{}, wunschFristTag, feiertageZu, eingelesenAm` | alle Aktiven | Chef |
+
+Veröffentlichte Schichten landen in `studios/{k}/shifts` mit `planer: 'JJJJ-MM'` und
+`note: <Schichtname>` — ein zweites Veröffentlichen ersetzt genau diese und lässt
+von Hand Eingetragenes stehen. Personen ohne App-Konto (`x-…`) werden geplant, aber
+nicht veröffentlicht; sie stehen in der LogX-Tabelle. Tests:
+`tests/rules/schichtplaner.test.js`, `tests/test-schichtplaner*.js`.

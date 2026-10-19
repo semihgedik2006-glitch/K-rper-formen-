@@ -15892,3 +15892,125 @@ test-geraete*, test-ausliefern.
 
 **Nicht geprüft:** wie gut die echte KI Fragen von Aufträgen trennt;
 Spracheingabe auf echten Handys (iPhone-PWA hat sie je nach iOS nicht).
+
+---
+
+## Runde 156 — Schichtplaner: der Monatsplan für alle Studios auf Knopfdruck (19.10.2026)
+
+**Aus dem Betrieb:** „Sie erstellt momentan alle Schichtpläne selber
+innerhalb von LogX … und das kostet sie mehrere Stunden an Aufwand immer
+wieder." Und dazu: „sorg dafür dass das interface übersichtlich,
+minimalistisch und sortiert wird sodass die chefs am ende wirklich fast
+nichts an arbeit zu tun haben".
+
+**Was man sieht**
+- **Verwaltung → Schichtplaner** (nur Chef; über „Alles" in zwei Tipps):
+  Monat, drei Schritte (Team · Schichten · Wünsche), **ein** Knopf.
+  Am Rechner steht das in einer Zeile.
+- Schritt 1 ist **einmal** die Excel-Vorlage einlesen
+  (`vorlagen/Schichtplaner-Vorlage.xlsx`, in der App herunterladbar):
+  Rolle, Haupt- und Springer-Studios, Stunden, wer wann kann, wer nicht
+  allein sein darf, unter 18, Fähigkeiten, Sperrzeiten, früh/spät. Die
+  Schichtzeiten stehen in derselben Datei.
+- „Plan erstellen" → Zahlen (verteilt · Lücken · Rückfragen), links
+  **„Zu klären"**, rechts der Plan eines Studios (das mit den meisten
+  offenen Punkten zuerst). Antippen öffnet die Auswahl: wer kann, und
+  ausgegraut **mit Grund**, wer nicht.
+- **„Im Team-Schichtplan veröffentlichen"** schreibt in den bestehenden
+  Schichtplan (Tausch, Kalender-Abo, „Meine Woche" gehen damit von
+  selbst); **„Für LogX kopieren"** legt eine Tabelle in die Zwischenablage.
+- **Team → Schichten → „Meine Wünsche"** für alle, die im Plan stehen:
+  Tage antippen, früh/spät, Bemerkung — bis zum 15. des Vormonats. Danach
+  ist die Karte zu, mit dem Satz warum.
+
+**Warum es jetzt doch gebaut ist.** In Sitzung 9 stand
+„Automatische Schichtplanung — bewusst nicht gebaut: wer wann kann,
+hängt an Absprachen, die nicht in der App stehen." Genau das ändert
+sich: die Absprachen kommen über die Excel-Vorlage und die Wünsche in die
+App. Der Einwand „ein Vorschlag, den man jedes Mal korrigieren muss, ist
+langsamer als selbst eintragen" bleibt richtig — deshalb zeigt der
+Planer nicht den ganzen Plan zum Prüfen, sondern nur, was ein Mensch
+entscheiden muss.
+
+**Warum keine KI.** Die Rechnung (`schichtplaner.js`) ist ein festes
+Regelwerk: gleiche Angaben, derselbe Plan, jede Einteilung mit Grund
+(„Hauptstudio · wollte früh · 24 → 31 von 171 Std."). Hart, nie
+gebrochen: Urlaub/krank (auch offene Anträge — wer frei beantragt hat,
+soll nicht ausgerechnet dann eingeteilt werden), „nie", eine Schicht am
+Tag, 11 Stunden Ruhe, unter 18 nur 6–20 Uhr und höchstens 8 Stunden,
+Minijob-Monatsgrenze, „nicht allein". Weich: Wunsch-frei, Höchsttage pro
+Woche, Soll + 15 %. Weiches bricht der Planer nur, wenn sonst niemand da
+wäre — und dann als **Rückfrage** („bitte kurz absprechen"). Aus dem
+Betrieb: „wenn die maschine begründet warum es nicht geht dann ja aber
+die mitarbeiter können ggf. auch gefragt werden das sollte dann aber
+klar gezeigt werden".
+
+**Warum eine eigene Datei.** Die Rechnung hat keine Oberfläche; so
+läuft sie in Node (`test-schichtplaner-rechnung.js`) und wird erst beim
+Öffnen geladen. Im Vorrat des Service Workers (v31), `no-cache` wie die
+anderen Inhaltsdateien.
+
+**Warum die Excel-Datei ohne Bibliothek gelesen wird.** Eine .xlsx ist
+ein ZIP mit XML; das Inhaltsverzeichnis lesen und mit
+`DecompressionStream('deflate-raw')` entpacken sind ~80 Zeilen. Eine
+Bibliothek wäre der zweite Dritte, von dem die App lädt (ARCHITEKTUR §10).
+Spalten werden über die **Kopfzeile** gefunden, nicht über ihre Stelle;
+Zeilen „Beispiel: …" übersprungen. Geprüft an einer mit openpyxl und
+einer mit LibreOffice gespeicherten Datei — **nicht** an einer aus
+Microsoft Excel (keine hier).
+
+**Warum nur der Chef.** Ob Studioleitungen für ihre Studios mitplanen,
+ist offen (Frage 17 an die Geschäftsführung). Die engere Regel ist die
+sichere; aufmachen ist eine Zeile je Pfad.
+
+**Neue Sammlungen — in BEIDEN Regelpfaden** (flach und `firmen/<k>/`):
+`planerTeam` (Chef; die Person liest ihre eigene Zeile),
+`planerWuensche/<uid>_<JJJJ-MM>` (jeder nur für sich, feste Felder),
+`planerPlaene/<JJJJ-MM>` (Chef). Dazu `config/schichtplaner` über die
+allgemeine config-Regel (lesen alle Aktiven — die Frist —, schreiben
+Chef). Die Attrappen `stub-chef`/`stub-leiter` kennen die drei an
+**beiden** Einstiegen. Die Frist hält die Oberfläche und der Planer ein,
+nicht die Regel — sie zu prüfen bräuchte bei jedem Speichern ein get()
+mehr, für etwas, das ohnehin nichts bewirkt (verspätete Wünsche rechnet
+der Planer nicht mit und sagt das).
+
+**Gefunden beim Messen**
+- `.sp` ist schon der Sprachnachrichten-Spieler. Die erste Fassung hiess
+  `sp-…` und bekam dessen `max-width:280px` — der Planer stand als
+  schmaler Streifen da. Jetzt `spl-…`.
+- Eine haftende Seitenspalte, die höher ist als das Fenster, lässt ihr
+  Ende nie sehen: „Veröffentlichen" war bei 1280 × 800 nicht erreichbar.
+  Jetzt haftet nur die Auswahl, und sie steht zuletzt in der Spalte —
+  ein haftendes Element legt sich über alles nach ihm (bei 1280–1920 px
+  lag es zuerst über „Veröffentlichen", Hit-Test 0 × 0).
+- Ein Kalender mit sieben festen Spalten gibt bei 320 px 36 px je Tag.
+  Jetzt trägt jeder Tag seinen Wochentag selbst und die Reihe bricht um.
+
+**Geprüft**
+- `tests/test-schichtplaner-rechnung.js` — 55 Prüfungen (harte Regeln,
+  Wünsche, Lücken mit Grund, Feiertage NRW, Excel-Vorlage, LogX-Tabelle,
+  Tempo). Gemessen: 14 Studios × 60 Personen × November in 113 ms.
+  Gegenprobe: Ruhezeit und „nicht allein" abgeschaltet → 5 rot.
+- `tests/test-schichtplaner.js` — 62 Prüfungen in der Demo: Weg über
+  „Alles", Erstellen, Umbesetzen, LogX-Kopie, Veröffentlichen (steht
+  danach im Team-Schichtplan), Excel einlesen, Rollen, Wünsche speichern,
+  Trefferflächen per Hit-Test bei 320/390/430/820/1280/1440/1920 px,
+  normal und kompakt, keine waagerechte Rollleiste.
+- `tests/rules/schichtplaner.test.js` — 65 Prüfungen in beiden Welten.
+  Gegenprobe: eigene uid nicht verlangt, Team für alle lesbar → 7 rot.
+  Der ganze Regelsatz (`npm test` in tests/rules): grün.
+- test-ausliefern, test-zwischenspeicher, test-gestaltung,
+  test-abgeschnitten, test-funktionen-pfade, test-demo: grün.
+
+**Nicht geprüft / hier nicht prüfbar**
+- test-knoepfe, test-quer, test-navigation, test-neu-design und test-csp
+  scheitern in dieser Umgebung **auch auf dem unveränderten main**
+  („Die App ist gar nicht gestartet" bzw. „0 Messungen"). Ihre Aussage
+  fehlt also; die Trefferflächen des Planers misst test-schichtplaner
+  selbst.
+- Schreiben gegen die echte Datenbank (SDK lädt im Test-Browser nicht).
+- Ob die Spalten der LogX-Tabelle zu LogX passen — LogX ist noch nicht
+  angesehen (Fragen 19/20).
+- Die Regeln aus den Antworten der Chefin (Mindestbesetzung je Tageszeit,
+  wer als Begleitung zählt, Feiertage, Vorrang bei Konflikten) — die
+  Gewichte stehen offen in `bewerten()` und werden nachgezogen.

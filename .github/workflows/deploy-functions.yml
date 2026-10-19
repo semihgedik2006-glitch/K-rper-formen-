@@ -31,6 +31,8 @@ on:
       - 'loesungen-basis.js'
       - 'schulungen-basis.js'
       - 'ems-wissen.js'
+      - 'schichtplaner.js'
+      - 'vorlagen/**'
       - 'qrcode.js'
       - 'robots.txt'
       - 'manifest.json'
