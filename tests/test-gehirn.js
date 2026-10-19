@@ -301,6 +301,103 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
+
+  console.log('\n── 8c Steuern: öffnen, nachschauen, eintragen ──');
+  /* Aus dem Betrieb (19.10.2026): „kannst du auch dafür sorgen das die ki
+     die ganze app steuern kann". Entschieden: alle mit den eigenen Rechten;
+     Lesen sofort, Speichern mit Vorschau. */
+  {
+    const p = await oeffne(b, 1440, 900);
+    await aufSeite(p);
+    pruefe('zwei Beispiele, die etwas tun', (await p.$$('#gehirnChips [data-gbefehl]')).length === 2);
+    // Öffnen: sofort, ohne Knopf
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'navigation', ziel: 'putzplan', zielName: 'Putzplan', studioKey: '', studioName: '' } } } });
+    await p.fill('#gehirnFeld', 'Öffne den Putzplan'); await p.click('#gehirnAnlegen');
+    await p.waitForTimeout(1200);
+    pruefe('„Öffne den Putzplan": der Putzplan ist offen, ohne weiteren Druck', await sichtbar(p, '#view-putzplan.show'));
+    // Nachschauen: Aufgaben aus dem Speicher der App
+    await aufSeite(p);
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abfrage', was: 'aufgaben', studioKey: '', studioName: '' } } } });
+    await p.fill('#gehirnFeld', 'Was ist offen?'); await p.click('#gehirnAnlegen'); await fertig(p);
+    const abf = await p.evaluate(() => { const k = [...document.querySelectorAll('#gehirnVerlauf .gv-karte')].pop(); return k ? k.innerText : ''; });
+    pruefe('„Was ist offen?": Karte mit Studios und Zahlen, sofort', /Offene Aufgaben/i.test(abf) && /\d+ offen/.test(abf), abf.slice(0, 200));
+    // Dienst heute: mit den Rechten gelesen
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abfrage', was: 'dienst', studioKey: 'studio-6', studioName: 'Hürth' } } } });
+    await p.fill('#gehirnFeld', 'Wer hat heute Dienst in Hürth?'); await p.click('#gehirnAnlegen'); await fertig(p);
+    const dienst = await p.evaluate(() => { const k = [...document.querySelectorAll('#gehirnVerlauf .gv-karte')].pop(); return k ? k.innerText : ''; });
+    pruefe('„Wer hat heute Dienst?": die heutige Schicht steht da', /Heute im Dienst/i.test(dienst) && /09:00–14:00/.test(dienst), dienst.slice(0, 200));
+    pruefe('nichts davon hat etwas gespeichert', !(await p.evaluate(() => (window.__schreib || []).some(x => /shifts|absences|handovers|todos/.test(x.pfad)))));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+  {
+    const p = await oeffne(b, 390, 844, { stub: 'stub-mitarbeiter.js' });
+    await aufSeite(p);
+    const morgen = await p.evaluate(() => { const d = new Date(Date.now() + 864e5); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); });
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abwesenheit', art: 'urlaub', von: morgen, bis: morgen, notiz: '', studioKey: 'studio-6', studioName: 'Hürth' } } } });
+    await p.fill('#gehirnFeld', 'Ich will morgen Urlaub'); await p.click('#gehirnAnlegen'); await fertig(p);
+    const k = await p.evaluate(() => { const c = [...document.querySelectorAll('#gehirnVerlauf .gv-karte')].pop(); const b = c && c.querySelector('[data-ganlegen]'); return { t: c ? c.innerText : '', knopf: b ? b.textContent.trim() : '' }; });
+    pruefe('Mitarbeiter, Urlaub: Vorschau als „Antrag", Knopf „Antrag stellen"', /ANTRAG/i.test(k.t) && /geht an die Leitung/.test(k.t) && k.knopf === 'Antrag stellen', JSON.stringify(k));
+    pruefe('… vor dem Druck nichts gespeichert', !(await p.evaluate(() => (window.__schreib || []).some(x => /absences/.test(x.pfad)))));
+    await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-ganlegen]')].pop().click());
+    await p.waitForTimeout(500);
+    const ab = await p.evaluate(() => (window.__schreib || []).filter(x => /absences/.test(x.pfad)));
+    pruefe('… danach: Antrag mit status „offen", im eigenen Studio, für sich selbst', ab.length === 1 && /studios\/studio-6\/absences/.test(ab[0].pfad) &&
+      ab[0].daten.status === 'offen' && ab[0].daten.uid === 'testuid' && ab[0].daten.type === 'urlaub' && ab[0].daten.from === morgen, JSON.stringify(ab).slice(0, 300));
+    pruefe('… und der Haken steht da', /Antrag gestellt/.test(await verlaufText(p)));
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'uebergabe', text: 'Handtücher sind alle', studioKey: 'studio-6', studioName: 'Hürth' } } } });
+    await p.fill('#gehirnFeld', 'Übergabe: Handtücher sind alle'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-ganlegen]')].pop().click());
+    await p.waitForTimeout(500);
+    const ho = await p.evaluate(() => (window.__schreib || []).filter(x => /handovers/.test(x.pfad)));
+    pruefe('Übergabe: eingetragen mit Text und eigenem Namen', ho.length === 1 && ho[0].daten.text === 'Handtücher sind alle' && ho[0].daten.uid === 'testuid', JSON.stringify(ho).slice(0, 200));
+    // Fremdes Studio: nichts
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'uebergabe', text: 'X', studioKey: 'studio-7', studioName: 'Brühl' } } } });
+    await p.fill('#gehirnFeld', 'Übergabe in Brühl: X'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-ganlegen]')].pop().click());
+    await p.waitForTimeout(400);
+    pruefe('fremdes Studio: nichts gespeichert', (await p.evaluate(() => (window.__schreib || []).filter(x => /handovers/.test(x.pfad)).length)) === 1);
+    // Mitarbeiter will eine Aufgabe: Hinweis
+    await antwort(p, { gehirnAktion: { data: { vorschlag: null, hinweis: 'Aufgaben und Ankündigungen legt die Studioleitung an.' } } });
+    await p.fill('#gehirnFeld', 'Leg eine Aufgabe an'); await p.click('#gehirnAnlegen'); await fertig(p);
+    pruefe('Mitarbeiter will eine Aufgabe: der Hinweis steht da', /legt die Studioleitung an/.test(await verlaufText(p)));
+    // Im Formular bearbeiten
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abwesenheit', art: 'frei', von: morgen, bis: morgen, notiz: '', studioKey: 'studio-6', studioName: 'Hürth' } } } });
+    await p.fill('#gehirnFeld', 'Morgen frei'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-gvorschlag]')].pop().click());
+    await p.waitForTimeout(700);
+    const form = await p.evaluate(() => ({ t: document.getElementById('abType').value, f: document.getElementById('abFrom').value }));
+    pruefe('„Im Formular bearbeiten": Team → Abwesend ist ausgefüllt', await sichtbar(p, '#view-team.show') && form.t === 'frei' && form.f === morgen, JSON.stringify(form));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+
+
+  console.log('\n── 8d Vorschläge zum Antippen ──');
+  /* Entscheidung 19.10.2026: „läuft von selbst" = Vorschläge, ein Tipp
+     erledigt es. Erste Fassung: überfällige Aufgaben, +1 Woche. */
+  {
+    const p = await oeffne(b, 1440, 900);
+    await aufSeite(p);
+    const karte = await p.evaluate(() => { const k = document.getElementById('gehirnVorschlaege'); return k && getComputedStyle(k).display !== 'none' ? k.innerText : ''; });
+    pruefe('Chef: „Das könnte ich für dich tun" nennt die überfällige Aufgabe', /Das könnte ich für dich tun/.test(karte) && /Geräte desinfizieren/.test(karte), karte.slice(0, 200));
+    const vorher = await p.evaluate(() => (window.__schreib || []).length);
+    await p.click('#gehirnVorschlaege [data-gplus7^="studio-6/t1"]');
+    await p.waitForTimeout(400);
+    const w = await p.evaluate((n) => (window.__schreib || []).slice(n).filter(x => x.art === 'update'), vorher);
+    const neu = w[0] && w[0].daten.due;
+    pruefe('„+1 Woche": Frist ab heute eine Woche später', w.length === 1 && /studios\/studio-6\/todos\/t1/.test(w[0].pfad) &&
+      neu > Date.now() + 6 * 864e5 && neu < Date.now() + 8 * 864e5, JSON.stringify(w));
+    const t2 = await p.evaluate(() => document.getElementById('gehirnVorschlaege').innerText);
+    pruefe('… danach „verschoben auf" und „Rückgängig"', /verschoben auf/.test(t2) && /Rückgängig/.test(t2), t2.slice(0, 200));
+    await p.click('#gehirnVorschlaege [data-gplus7^="studio-6/t1"]');
+    await p.waitForTimeout(400);
+    const w2 = await p.evaluate((n) => (window.__schreib || []).slice(n).filter(x => x.art === 'update'), vorher);
+    pruefe('„Rückgängig" setzt die alte Frist zurück', w2.length === 2 && w2[1].daten.due < Date.now(), JSON.stringify(w2[1] || {}));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+
   console.log('\n── 9 Lagebericht ──');
   {
     const p = await oeffne(b, 1440, 900, { vorher: () => {
@@ -331,7 +428,10 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await aufSeite(p);
     pruefe('Mitarbeiter: die Seite ist da', await sichtbar(p, '#view-gehirn.show'));
     pruefe('Mitarbeiter: kein Lagebericht', !(await sichtbar(p, '#gehirnBericht')));
-    pruefe('Mitarbeiter: kein „Anlegen lassen"', !(await sichtbar(p, '#gehirnAnlegen')));
+    /* Seit 19.10.2026 („die ganze app steuern", Entscheidung: alle, mit
+       den eigenen Rechten) hat auch der Mitarbeiter „Erledigen lassen". */
+    pruefe('Mitarbeiter: „Erledigen lassen" ist da', await sichtbar(p, '#gehirnAnlegen') &&
+      (await p.textContent('#gehirnAnlegen')).trim() === 'Erledigen lassen');
     await zu(p);
   }
 
@@ -386,7 +486,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
         });
         return zuKlein;
       }, { s: sel, T: TREFFER.toString() });
-      let zuKlein = await ids('#gehirnChips .gehirn-chip, #gehirnFragen, #gehirnIdee, #gehirnAnlegen, #gehirnBericht button');
+      let zuKlein = await ids('#gehirnChips .gehirn-chip, #gehirnFragen, #gehirnIdee, #gehirnAnlegen, #gehirnBericht button, #gehirnVorschlaege button');
       await antwort(p, {
         gehirnFrage: { data: { antwort: 'Ok.', abgedeckt: true } },
         gehirnAktion: { data: { vorschlag: { typ: 'aufgabe', titel: 'X', alle: true, studioKeys: [], studioNamen: [] } } }

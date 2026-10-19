@@ -15777,3 +15777,65 @@ test-neu-design, test-navigation, test-quer, test-hilfe-pc grün.
 
 **Nicht geprüft:** das Schreiben gegen die echte Datenbank (SDK lädt im
 Test-Browser nicht) — gegen die Attrappe ja.
+
+---
+
+## Runde 154 — Das Studio-Gehirn steuert die App (19.10.2026)
+
+**Aus dem Betrieb:** „kannst du auch dafür sorgen das die ki die ganze app
+steuern kann oder das so machen das es weitesgehend läuft". Auf
+Rückfrage entschieden: **alle**, aber nur mit den eigenen Rechten;
+**Lesen und Öffnen sofort, Speichern mit Vorschau**; „läuft von selbst"
+heisst **Vorschläge zum Antippen**.
+
+**Grundgerüst: ein Katalog statt freier Steuerung.** Die Function
+`gehirnAktion` (jetzt für alle Rollen) lässt die KI genau EINE Aktion
+aus einer festen Liste wählen; `gehirnBefehlPruefen` verwirft alles
+andere:
+
+| Aktion | wer | was passiert |
+|---|---|---|
+| `navigation` | alle | Seite öffnet sofort (nur Ziele, die es für die Person gibt; Verwaltung nur Leitung) |
+| `abfrage` aufgaben / dienst / abwesend | alle | Karte sofort, aus dem App-Speicher bzw. mit den Rechten der Person gelesen |
+| `abwesenheit` | alle, nur für sich selbst | Vorschau → „Antrag stellen" / „Jetzt eintragen" (Urlaub/Frei von Mitarbeitern = Antrag, krank sofort) |
+| `uebergabe` | alle | Vorschau → „Jetzt eintragen" |
+| `aufgabe`, `ankuendigung` | Leitung, Chef | wie bisher; Mitarbeiter bekommen einen Hinweis |
+
+**Warum ein Katalog:** „Die ganze App steuern" als freie Fernbedienung
+hiesse, dass eine KI, die sich irrt, irgendetwas irgendwo auslöst. Mit
+dem Katalog kann sie nur auswählen, was es gibt, und geschrieben wird
+im Gerät mit denselben Feldern wie die Formulare — dieselben Regeln,
+kein zweiter Schreibweg. Erweitern heisst: eine Zeile im Katalog, eine
+Prüfung, eine Vorschau.
+
+**Datenschutz:** Die KI bekommt nur den Satz der Person und die
+Studionamen. Namen aus Dienstplan und Abwesenheiten liest das Gerät
+selbst, NACHDEM die KI gesagt hat, was nachgeschaut werden soll — sie
+gehen nicht an die KI. Schichten für andere einzutragen ist deshalb
+bewusst noch nicht dabei (bräuchte die Teamnamen bei der KI).
+
+**Vorschläge:** Karte „Das könnte ich für dich tun" auf der
+Gehirn-Seite — überfällige Aufgaben der eigenen Studios; die Leitung
+verschiebt mit einem Tipp um eine Woche (gleiche Rechnung wie am
+Aufgaben-Blatt: ab heute), „Rückgängig" setzt die alte Frist. Gerechnet
+im Gerät, ohne KI.
+
+**Sonst:** Knopf heisst „Erledigen lassen" und ist für alle da; zwei
+Beispiel-Chips, die etwas tun. Tagesgrenze `gehirnAktion` 100 → 400 je
+Betrieb (jetzt alle Mitarbeitenden). `stub-mitarbeiter.js` kennt jetzt
+`window.__antwort` wie `stub-chef.js`.
+
+**Geprüft:** test-gehirn (97; neu: Öffnen ohne Druck, Abfrage Aufgaben
+und Dienst, nichts gespeichert beim Lesen, Mitarbeiter-Antrag mit
+status „offen", Übergabe, fremdes Studio verweigert, Hinweis bei
+Aufgabe, „Im Formular bearbeiten" füllt Team → Abwesend, Vorschläge
++1 Woche und Rückgängig, Trefferflächen). Gegenprobe: Studio-Prüfung
+entfernt → „fremdes Studio" rot. test-gehirn-aktion (50; 15 neu für den
+Katalog).
+
+**Nicht geprüft:** echte KI-Antworten auf diese neuen Befehle (nur die
+Prüfung dahinter); Schreiben gegen die echte Datenbank.
+
+**Als Nächstes:** mehr Katalog (Gerät defekt melden, Schicht für andere,
+Putzplan-Punkt abhaken), mehr Vorschläge (offene Urlaubsanträge,
+fehlendes Material), Spracheingabe.
