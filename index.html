@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FSY3WxSI50H7p4os+PCWNlfuoPaSWFlziBDU0grUauo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-oyQ4NR/EkT5uH6r/N2KYYtcxjseRvZ8bg9gIsuG3TpA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5153,6 +5153,53 @@ html{font-size:var(--fs,100%)}
 .gehirn-vorschlag dl{display:grid;grid-template-columns:auto 1fr;gap:var(--s4) var(--s12);margin:0 0 var(--s12)}
 .gehirn-vorschlag dt{color:var(--text-3);font-size:var(--t-2xs);font-weight:700;text-transform:uppercase;letter-spacing:var(--ls-m);padding-top:var(--s2)}
 .gehirn-vorschlag dd{margin:0;overflow-wrap:anywhere}
+/* Vorschau-Karte (18.10.2026, „mit animationen … übersichtlicher"):
+   der Vorschlag sieht aus wie die Aufgabe, die entsteht. Die Teile
+   kommen einmal nacheinander herein (--gv-i), nur per transform und
+   opacity; danach steht alles still. */
+.gv-karte{border:1px solid var(--line-2);border-radius:var(--r-md);background:var(--bg);
+  padding:var(--s12);margin-top:var(--s8);display:flex;flex-direction:column;gap:var(--s8);
+  box-shadow:0 1px 0 var(--line) inset,0 6px 18px -10px rgba(0,0,0,.35)}
+.gv-karte.gv-neu>*{animation:gehirnRein .34s cubic-bezier(.2,.8,.2,1) backwards;
+  animation-delay:calc(var(--gv-i,0) * 70ms)}
+.gv-kopf{display:flex;align-items:center;gap:var(--s6);flex-wrap:wrap}
+.gv-art{font-size:var(--t-2xs);font-weight:700;text-transform:uppercase;letter-spacing:var(--ls-m);
+  color:var(--accent-tx, var(--accent));background:color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius:var(--r-pille);padding:var(--s2) var(--s8)}
+.gv-wichtig{font-size:var(--t-2xs);font-weight:700;color:var(--warm-tx)}
+.gv-titel{font-family:var(--font-head);font-size:var(--t-lg);font-weight:700;line-height:var(--lh-eng);overflow-wrap:anywhere}
+.gv-text{margin:0;color:var(--text-2);font-size:var(--t-sm);white-space:pre-wrap;overflow-wrap:anywhere}
+.gv-schritte{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s4)}
+.gv-schritte li{display:flex;gap:var(--s8);align-items:flex-start;font-size:var(--t-sm)}
+.gv-kaestchen{flex:0 0 auto;width:16px;height:16px;margin-top:var(--s2);border:2px solid var(--line-2);border-radius:var(--r-xs)}
+.gv-meta{display:flex;flex-wrap:wrap;gap:var(--s6)}
+.gv-chip{font-size:var(--t-xs);background:var(--bg-3);border-radius:var(--r-pille);padding:var(--s4) var(--s10);color:var(--text-2)}
+.gv-knoepfe{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.gv-knoepfe .btn{flex:1 1 160px;min-height:44px}
+/* Angelegt: ein Haken zeichnet sich einmal (stroke-dashoffset), die
+   Karte bekommt den Status-Rand. Grün heisst hier etwas: „ist gespeichert". */
+.gv-karte.gv-fertig{border-color:var(--ok-tx)}
+.gv-erfolg{display:flex;align-items:center;gap:var(--s8);font-weight:700;color:var(--ok-tx)}
+.gv-haken{width:28px;height:28px;flex:0 0 auto}
+.gv-haken circle{fill:none;stroke:currentColor;stroke-width:2;opacity:.35}
+.gv-haken path{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:24;stroke-dashoffset:0}
+.gv-fertig.gv-jetzt .gv-haken path{animation:gvHaken .5s .1s ease-out backwards}
+.gv-fertig.gv-jetzt{animation:gehirnHervor 1.2s ease-out 1}
+@keyframes gvHaken{from{stroke-dashoffset:24}}
+/* Während die KI baut: eine Karte im Rohbau statt nur drei Punkten —
+   man sieht, WAS gleich kommt. Der Glanz läuft per transform. */
+.gv-rohbau{position:relative;overflow:hidden;border:1px dashed var(--line-2);border-radius:var(--r-md);
+  padding:var(--s12);margin-top:var(--s8);display:flex;flex-direction:column;gap:var(--s8)}
+.gv-rohbau i{display:block;height:12px;border-radius:var(--r-xs);background:var(--bg-3)}
+.gv-rohbau i:nth-child(2){width:70%;height:18px}
+.gv-rohbau i:nth-child(3){width:90%}
+.gv-rohbau i:nth-child(4){width:45%}
+.gv-rohbau::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,color-mix(in srgb, var(--accent) 16%, transparent),transparent);
+  animation:gvGlanz 1.3s ease-in-out infinite}
+@keyframes gvGlanz{to{transform:translateX(100%)}}
+.gv-rohbau-text{font-size:var(--t-xs);color:var(--text-3);margin:0}
 /* Lagebericht (Stufe 4) */
 .gehirn-bericht .gb-text{white-space:pre-wrap;line-height:var(--lh);font-size:var(--t-sm);margin:0 0 var(--s8)}
 .gehirn-bericht .gb-zahlen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s8);margin-bottom:var(--s8)}
@@ -5165,7 +5212,8 @@ html{font-size:var(--fs,100%)}
 @keyframes gehirnHervor{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent)}
   100%{box-shadow:0 0 0 14px transparent}}
 @media (prefers-reduced-motion:reduce){
-  .gehirn-orb,.gehirn-orb.denkt,.gehirn-chip,.gehirn-frage,.gehirn-antwort,.gehirn-denkt i,.gehirn-hervor{animation:none}
+  .gehirn-orb,.gehirn-orb.denkt,.gehirn-chip,.gehirn-frage,.gehirn-antwort,.gehirn-denkt i,.gehirn-hervor,
+  .gv-karte.gv-neu>*,.gv-fertig.gv-jetzt,.gv-fertig.gv-jetzt .gv-haken path,.gv-rohbau::after{animation:none}
 }
 .hilfe-knoepfe .btn{flex:1 1 180px;min-height:44px}
 /* Die Fotos. Feste Höhe, damit nichts springt, wenn sie nachkommen —
@@ -18837,6 +18885,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-19-gehirn-vorschau', datum:'19.10.2026', titel:'„Anlegen lassen": Vorschau und direkt anlegen', wo:'gehirn', punkte:[
+    'Während das Studio-Gehirn deinen Auftrag umsetzt, siehst du schon den Rohbau der Karte. Danach baut sich die Aufgabe Stück für Stück auf: Titel, Schritte zum Abhaken, Frist und Studio – so, wie sie später in der Liste steht.',
+    'Passt alles, tippst du „Jetzt anlegen" (bei Ankündigungen „Jetzt senden"). Ein Haken zeichnet sich, und „Zu den Aufgaben ›" bringt dich hin. Willst du noch etwas ändern, nimm „Im Formular bearbeiten".' ] },
   { id:'2026-10-18-gehirn-anlegen-fix', datum:'18.10.2026', titel:'„Anlegen lassen" klappt zuverlässiger', wo:'gehirn', punkte:[
     'Antwortet die Google-KI nicht, übernimmt beim „Anlegen lassen" und beim Lagebericht von selbst die KI des Studio-Gehirns – statt gleich aufzugeben.',
     'Klappt es trotzdem nicht, steht jetzt der Grund da (z. B. „Kontingent aufgebraucht") statt nur „hat nicht geantwortet".' ] },
@@ -23409,7 +23460,11 @@ function gehirnZeichnen(){
       (v.art==='idee' ? '<b>Idee:</b> ' : (v.art==='aktion' ? '<b>Anlegen:</b> ' : ''))+gehirnText(v.text)+'</div>';
     var kopf='<div class="ga-kopf">'+ikon('gehirn')+'<span>Studio-Gehirn</span></div>';
     var antwort;
-    if(v.laeuft){
+    if(v.laeuft && v.art==='aktion'){
+      antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+
+        '<div class="gv-rohbau" role="status" aria-label="Das Studio-Gehirn baut den Vorschlag"><i></i><i></i><i></i><i></i></div>'+
+        '<p class="gv-rohbau-text">Baue deinen Vorschlag …</p></div>';
+    } else if(v.laeuft){
       antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+
         '<span class="gehirn-denkt" role="status" aria-label="Das Studio-Gehirn denkt nach"><i></i><i></i><i></i></span></div>';
     } else if(v.fehler){
@@ -23442,6 +23497,12 @@ function gehirnZeichnen(){
   box.querySelectorAll('[data-gvorschlag]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnVorschlagUebernehmen(_gVerlauf[+b.getAttribute('data-gvorschlag')]); });
   });
+  box.querySelectorAll('[data-ganlegen]').forEach(function(b){
+    b.addEventListener('click', function(){ gehirnJetztAnlegen(+b.getAttribute('data-ganlegen'), b); });
+  });
+  /* Jede Vorschau kommt genau einmal herein — beim nächsten Zeichnen
+     (neue Frage darunter) steht sie still. */
+  _gVerlauf.forEach(function(v){ if(v.vorschlag) v.gezeigt=true; if(v.angelegt) v.jetzt=false; });
   /* Die neueste Antwort schreibt sich Wort für Wort hin — einmal. */
   _gVerlauf.forEach(function(v, i){
     if(v.art==='frage' && !v.laeuft && !v.fehler && !v.getippt){
@@ -23513,19 +23574,80 @@ function gehirnVorschlagHTML(v, i){
     return '<p class="ga-text">'+gehirnText(v.hinweis || 'Daraus konnte ich nichts zum Anlegen machen. '+
       'Schreib es z. B. so: „Bis Freitag in allen Studios die Geräte desinfizieren".')+'</p>';
   }
-  var typ = s.typ==='ankuendigung' ? 'Ankündigung' : 'Aufgabe';
-  var studios = s.alle ? 'Alle Studios' : (s.studioNamen||[]).join(', ') || '—';
-  return '<p class="ga-text">Mein Vorschlag — prüf ihn und übernimm ihn ins Formular:</p>'+
-    '<div class="gehirn-vorschlag"><dl>'+
-      '<dt>Art</dt><dd>'+esc(typ)+(s.wichtig ? ' · wichtig' : '')+'</dd>'+
-      (s.titel ? '<dt>Titel</dt><dd>'+esc(s.titel)+'</dd>' : '')+
-      (s.text ? '<dt>Text</dt><dd>'+esc(s.text)+'</dd>' : '')+
-      ((s.schritte||[]).length ? '<dt>Schritte</dt><dd>'+s.schritte.map(esc).join('<br>')+'</dd>' : '')+
-      (s.frist ? '<dt>Fällig</dt><dd>'+esc(s.frist.split('-').reverse().join('.'))+'</dd>' : '')+
-      '<dt>Für</dt><dd>'+esc(studios)+'</dd>'+
-    '</dl>'+
-    '<button type="button" class="btn btn-primary btn-sm" data-gvorschlag="'+i+'" style="width:100%;min-height:44px">'+
-      'Ins Formular übernehmen und prüfen ›</button></div>';
+  var ank = s.typ==='ankuendigung';
+  var studios = s.alle ? (ank ? 'Alle Mitarbeiter' : 'Alle Studios') : ((s.studioNamen||[]).join(', ') || '—');
+  var teile=[], n=0;
+  function teil(html){ teile.push(html.replace('<X', '<div style="--gv-i:'+(n++)+'"').replace('</X>','</div>')); }
+  teil('<X class="gv-kopf"><span class="gv-art">'+(ank ? 'Ankündigung' : 'Aufgabe')+'</span>'+
+    (s.wichtig ? '<span class="gv-wichtig">‼️ wichtig</span>' : '')+'</X>');
+  if(!ank && s.titel) teil('<X class="gv-titel">'+esc(s.titel)+'</X>');
+  if(s.text || (ank && s.titel)) teil('<X><p class="gv-text">'+esc(s.text || s.titel)+'</p></X>');
+  if((s.schritte||[]).length) teil('<X><ul class="gv-schritte">'+s.schritte.map(function(x){
+    return '<li><span class="gv-kaestchen" aria-hidden="true"></span><span>'+esc(x)+'</span></li>'; }).join('')+'</ul></X>');
+  teil('<X class="gv-meta">'+
+    (s.frist ? '<span class="gv-chip">Fällig '+esc(s.frist.split('-').reverse().join('.'))+'</span>' : '')+
+    '<span class="gv-chip">'+esc(studios)+'</span></X>');
+  if(v.angelegt){
+    var ziel = ank ? 'ann' : 'todos';
+    teil('<X class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true">'+
+      '<circle cx="14" cy="14" r="12"/><path d="M8 14.5l4 4 8-9"/></svg><span>'+esc(v.angelegt)+'</span></X>');
+    teil('<X class="gv-knoepfe"><button type="button" class="btn btn-ghost btn-sm" data-gziel="'+ziel+'">'+
+      (ank ? 'Zu den Infos ›' : 'Zu den Aufgaben ›')+'</button></X>');
+  } else {
+    teil('<X class="gv-knoepfe">'+
+      '<button type="button" class="btn btn-primary btn-sm" data-ganlegen="'+i+'">'+(ank ? 'Jetzt senden' : 'Jetzt anlegen')+'</button>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-gvorschlag="'+i+'">Im Formular bearbeiten</button></X>');
+  }
+  var klasse='gv-karte'+(v.gezeigt ? '' : ' gv-neu')+(v.angelegt ? ' gv-fertig' : '')+(v.jetzt ? ' gv-jetzt' : '');
+  return '<p class="ga-text">'+(v.angelegt ? 'Erledigt:' : 'Mein Vorschlag — so würde es aussehen:')+'</p>'+
+    '<div class="'+klasse+'" data-gvkarte="'+i+'">'+teile.join('')+'</div>';
+}
+/* „Jetzt anlegen" — der zweite Weg neben dem Formular. Die Bestätigung
+   ist der Druck auf den Knopf, NACHDEM die Person die Vorschau gesehen
+   hat. Geschrieben wird mit ihren Rechten und in genau derselben Form
+   wie das Formular unter Verwaltung → Erstellen (gleiche Felder), damit
+   die Regel und die Aufgabenliste keinen zweiten Fall kennen müssen.
+   Studios nur aus schreibStudios() — was dort nicht freigeschaltet ist,
+   liesse den ganzen Stapel scheitern. */
+function gehirnJetztAnlegen(i, btn){
+  var v=_gVerlauf[i]; if(!v || !v.vorschlag || v.angelegt || !canManage()) return;
+  var s=v.vorschlag;
+  var darf=schreibStudios().filter(function(x){ return x.ok; });
+  var darfKeys=darf.map(function(x){ return x.key; });
+  withBusy(btn, function(){
+    var arbeit;
+    if(s.typ==='ankuendigung'){
+      var ziel = (s.alle && isChef()) ? 'all' : ((s.studioKeys||[]).filter(function(k){ return darfKeys.indexOf(k)>=0; })[0]||'');
+      if(!ziel){ toast('Für dieses Studio darfst du keine Ankündigung senden.', true); return Promise.resolve(); }
+      var text=(s.text||s.titel||'').trim();
+      var neu={ uid:session.uid, from:session.name, text:text, target:ziel, ts:Date.now() };
+      if(s.wichtig){ neu.wichtig=true; neu.bestaetigtVon=[]; }
+      arbeit=S('announcements').add(neu).then(function(){
+        return ziel==='all' ? 'Ankündigung an alle gesendet' : 'Ankündigung gesendet';
+      });
+    } else {
+      var targets = s.alle ? darfKeys.slice() : (s.studioKeys||[]).filter(function(k){ return darfKeys.indexOf(k)>=0; });
+      if(!targets.length){ toast('Kein Studio, für das du anlegen darfst — bitte im Formular wählen.', true); return Promise.resolve(); }
+      var due = s.frist ? new Date(s.frist+'T23:59:59').getTime() : 0;
+      var batch=db.batch();
+      targets.forEach(function(sk){
+        var data={ title:s.titel, desc:s.text||'', done:false, doneBy:null, doneAt:null,
+          createdBy:session.name, createdByUid:session.uid, ts:Date.now() };
+        if(due) data.due=due;
+        if((s.schritte||[]).length) data.steps=s.schritte.slice(0,20).map(function(x){ return { t:String(x).slice(0,120), d:false }; });
+        batch.set(S('studios').doc(sk).collection('todos').doc(), data);
+      });
+      arbeit=batch.commit().then(function(){
+        return 'Aufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' angelegt';
+      }).catch(function(e){ throw new Error(aufgabeFehlerText(e, targets.join(','))); });
+    }
+    return arbeit.then(function(satz){
+      if(!satz) return;
+      v.angelegt=satz; v.jetzt=!gehirnWenigBewegung();
+      tick(12);
+      gehirnZeichnen();
+    }).catch(function(e){ toast(e && e.message ? e.message : errMsg(e), true); });
+  });
 }
 function gehirnVorschlagUebernehmen(v){
   if(!v || !v.vorschlag || !canManage()) return;
