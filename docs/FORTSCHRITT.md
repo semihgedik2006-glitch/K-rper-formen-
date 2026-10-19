@@ -15839,3 +15839,56 @@ Prüfung dahinter); Schreiben gegen die echte Datenbank.
 **Als Nächstes:** mehr Katalog (Gerät defekt melden, Schicht für andere,
 Putzplan-Punkt abhaken), mehr Vorschläge (offene Urlaubsanträge,
 fehlendes Material), Spracheingabe.
+
+---
+
+## Runde 155 — Ein Knopf; abhaken, Defekt melden, Sprechen, mehr Vorschläge (19.10.2026)
+
+**Aus dem Betrieb:** „kannst du auch dafür sorgen das man nur einen knopf
+drücken muss beim fragen und nicht 3 das verwirrt mehr als es hilft
+tatsächlich" — und „ja mach weiter" für die nächste Stufe.
+
+**Ein Knopf.** „Fragen", „Erledigen lassen" und „Als Idee an die Leitung"
+sind jetzt „Senden". `gehirnAktion` sortiert: die KI wählt aus dem
+Katalog auch `frage` und `idee`; `gehirnWeg` (rein rechnerisch, getestet)
+entscheidet:
+- `frage` — die Function fragt selbst den Worker (`gehirnFrageAusfuehren`,
+  derselbe Weg wie `gehirnFrage`) und gibt die Antwort zurück. Ein
+  Aufruf aus der App, nicht zwei.
+- **Kann die KI den Satz nicht einordnen (oder fällt sie aus), wird er
+  eine Frage.** Lieber eine Antwort aus dem Wissen als „hat nicht
+  geklappt" — das Wissen läuft ohne Gemini.
+- `unklar` — eine bekannte Aktion, die die Prüfung nicht besteht (Urlaub
+  gestern): Hinweis statt einer Wissensantwort.
+- `idee` — Vorschau, erst „An die Leitung schicken" schickt.
+Die Beispiel-Chips fragen weiter direkt (`gehirnFrage`) — da ist schon
+klar, dass es Fragen sind, und es spart die Einordnung.
+
+**Neu im Katalog:** `abhaken` (Putzplan oder Aufgabe) und `defekt`.
+Die KI nennt nur, WAS gemeint ist; welcher Eintrag oder welches Gerät
+das ist, sucht das Gerät in den eigenen Listen (Wortvergleich, eindeutig
+nur bei klarem Vorsprung, sonst Auswahl). Abhaken passiert sofort mit
+„Rückgängig" (Entscheidung „Kleinigkeiten sofort"), Defekt erst nach
+„Jetzt melden" — mit denselben drei Schreibvorgängen wie das
+Geräte-Fenster (Verlauf, Zustand, Aufgabe nur wo erlaubt und noch keine
+offen).
+
+**Sprechen:** Spracherkennung des Browsers, wo vorhanden; sonst ist der
+Knopf weg. Der Text landet im Feld, nichts geht über unsere Server.
+
+**Vorschläge:** zusätzlich fehlendes Material und — für die Leitung —
+wartende Urlaubsanträge („Entscheiden ›" öffnet Team → Abwesend im
+Studio).
+
+**Weggefallen:** der Rohbau während des Wartens (die Art steht erst
+nach der Antwort fest); stattdessen die Denk-Punkte und der Puls.
+
+**Geprüft:** test-gehirn (109), test-gehirn-aktion (62). Gegenprobe:
+eindeutiger Treffer nicht abgehakt → zwei Prüfungen rot. Dazu
+test-csp, test-neu-messlatte, test-gestaltung, test-knoepfe,
+test-abgeschnitten, test-quer, test-neu-design, test-navigation,
+test-hilfe-pc, test-funktionen-pfade, test-funktionen-schalter,
+test-geraete*, test-ausliefern.
+
+**Nicht geprüft:** wie gut die echte KI Fragen von Aufträgen trennt;
+Spracheingabe auf echten Handys (iPhone-PWA hat sie je nach iOS nicht).

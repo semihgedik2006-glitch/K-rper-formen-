@@ -15,7 +15,7 @@
    8. Der Bericht ohne KI nennt die Zahlen und die Studios mit Offenem.
    ══════════════════════════════════════════════════════════════════ */
 const { __intern } = require('../functions/index.js');
-const { gehirnBefehlPruefen: B, gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson } = __intern;
+const { gehirnWeg: W, gehirnBefehlPruefen: B, gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson } = __intern;
 
 let gut = 0, schlecht = 0;
 function pruefe(was, b, info) {
@@ -92,6 +92,22 @@ console.log('\n── Steuern: Befehle aus dem Katalog (19.10.2026) ──');
   b = B({ typ: 'aufgabe', titel: 'X', studios: [NAMEN[ERL[0]]] }, NAMEN, ERL, 'leiter', HEUTE);
   pruefe('Leitung: Aufgabe geht weiter durch die bisherige Prüfung', b && b.typ === 'aufgabe' && b.studioKeys.join() === ERL[0], b);
   pruefe('Unbekannter Typ: nichts', B({ typ: 'loeschen', alles: true }, NAMEN, ERL, 'chef', HEUTE) === null);
+  // Ein Knopf für alles (19.10.2026: „nur einen knopf … beim fragen")
+  pruefe('Weg: KI sagt frage → frage', W({ typ: 'frage' }, B({ typ: 'frage' }, NAMEN, ERL, 'chef', HEUTE)) === 'frage');
+  pruefe('Weg: KI liefert nichts → frage', W(null, null) === 'frage');
+  pruefe('Weg: Unbekanntes → frage', W({ typ: 'quatsch' }, null) === 'frage');
+  pruefe('Weg: keins mit Grund → hinweis', W({ typ: 'keins', hinweis: 'Löschen gibt es nicht' }, null) === 'hinweis');
+  pruefe('Weg: bekannte Aktion, Prüfung gescheitert → unklar', W({ typ: 'abwesenheit', art: 'urlaub', von: '2020-01-01' }, null) === 'unklar');
+  pruefe('Weg: geprüfte Aktion → aktion', W({ typ: 'uebergabe' }, { typ: 'uebergabe' }) === 'aktion');
+  b = B({ typ: 'idee', text: 'Wir bräuchten mehr Handtücher' }, NAMEN, ERL, 'mitarbeiter', HEUTE);
+  pruefe('Idee: Text bleibt, wird nicht sofort geschickt (Vorschau)', b && b.typ === 'idee' && /Handtücher/.test(b.text), b);
+  b = B({ typ: 'abhaken', bereich: 'putzplan', was: 'Westen waschen' }, NAMEN, ERL, 'mitarbeiter', HEUTE);
+  pruefe('Abhaken: Bereich und Stichwort', b && b.typ === 'abhaken' && b.bereich === 'putzplan' && b.was === 'Westen waschen', b);
+  pruefe('Abhaken: unbekannter Bereich wird verworfen', B({ typ: 'abhaken', bereich: 'material', was: 'x' }, NAMEN, ERL, 'chef', HEUTE) === null);
+  pruefe('Abhaken: ohne Stichwort nichts', B({ typ: 'abhaken', bereich: 'aufgabe', was: ' ' }, NAMEN, ERL, 'chef', HEUTE) === null);
+  b = B({ typ: 'defekt', geraet: 'Gerät 2', text: 'piept dreimal' }, NAMEN, ERL, 'mitarbeiter', HEUTE);
+  pruefe('Defekt: Gerät, Text, eigenes Studio', b && b.typ === 'defekt' && b.geraet === 'Gerät 2' && b.studioKey === ERL[0], b);
+  pruefe('Defekt: ohne Gerät nichts', B({ typ: 'defekt', geraet: '', text: 'x' }, NAMEN, ERL, 'mitarbeiter', HEUTE) === null);
 }
 
 console.log('\n── Bericht ohne KI ──');

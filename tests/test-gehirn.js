@@ -92,9 +92,16 @@ const antwort = (p, mit) => p.evaluate((m) => {
   Object.keys(m).forEach(k => {
     const v = m[k];
     window.__antwort[k] = v.fehler ? () => Promise.reject(v.fehler) : () => Promise.resolve({ data: v.data });
+    /* Seit 19.10.2026 ein Knopf: getippte Sätze gehen an gehirnAktion,
+       die eine Frage selbst beantwortet ({ art:'frage', antwort … }).
+       Eine Antwort für gehirnFrage gilt deshalb auch dort. */
+    if (k === 'gehirnFrage' && !m.gehirnAktion) {
+      window.__antwort.gehirnAktion = v.fehler ? () => Promise.reject(v.fehler)
+        : () => Promise.resolve({ data: Object.assign({ art: 'frage' }, v.data) });
+    }
   });
 }, mit);
-const fertig = (p) => p.waitForFunction(() => !document.querySelector('#gehirnVerlauf .gehirn-denkt, #gehirnVerlauf .gv-rohbau'), null, { timeout: 5000 });
+const fertig = (p) => p.waitForFunction(() => !document.querySelector('#gehirnVerlauf .gehirn-denkt'), null, { timeout: 5000 });
 const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerlauf').innerText);
 
 (async () => {
@@ -158,12 +165,21 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('ein Fehler steht dort, wo die Antwort stünde', /Hat nicht geklappt/.test(await verlaufText(p)));
     pruefe('danach lässt sich wieder fragen', await p.evaluate(() => !document.getElementById('gehirnFragen').disabled));
 
-    await antwort(p, { gehirnFrage: { data: { ok: true } } });
-    await p.fill('#gehirnFeld', 'Getränkeautomat im Wartebereich');
-    await p.click('#gehirnIdee');
+    /* Ein Knopf: eine Idee erkennt die Function; geschickt wird erst
+       nach „An die Leitung schicken". */
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'idee', text: 'Getränkeautomat im Wartebereich' } } } });
+    await p.fill('#gehirnFeld', 'Wir bräuchten einen Getränkeautomat im Wartebereich');
+    await p.click('#gehirnFragen');
     await fertig(p);
+    const a0 = await p.evaluate(() => window.__aufruf);
+    pruefe('ein Knopf: getippter Satz geht an gehirnAktion', a0 && a0.name === 'gehirnAktion' && /Getränkeautomat/.test(a0.data.text), JSON.stringify(a0));
+    pruefe('Idee: Vorschau mit „An die Leitung schicken"', /An die Leitung schicken/.test(await verlaufText(p)));
+    await antwort(p, { gehirnFrage: { data: { ok: true } } });
+    await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-ganlegen]')].pop().click());
+    await p.waitForTimeout(400);
     const a2 = await p.evaluate(() => window.__aufruf);
-    pruefe('„Als Idee an die Leitung" schickt art:idee', a2 && a2.data.art === 'idee', JSON.stringify(a2));
+    pruefe('… und erst der Druck schickt art:idee', a2 && a2.name === 'gehirnFrage' && a2.data.art === 'idee', JSON.stringify(a2));
+    pruefe('… danach „bei der Leitung gelandet"', /bei der Leitung gelandet/.test(await verlaufText(p)));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await zu(p);
   }
@@ -187,13 +203,16 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
   {
     const p = await oeffne(b, 1440, 900);
     await aufSeite(p);
-    pruefe('Chef: „Anlegen lassen" ist da', await sichtbar(p, '#gehirnAnlegen'));
+    /* Aus dem Betrieb (19.10.2026): „nur einen knopf … beim fragen und
+       nicht 3 das verwirrt mehr als es hilft". */
+    const knoepfe = await p.evaluate(() => [...document.querySelectorAll('.gehirn-knoepfe button')].filter(b => b.getClientRects().length && getComputedStyle(b).display !== 'none').map(b => b.textContent.trim()));
+    pruefe('ein Knopf zum Abschicken: „Senden" (dazu höchstens „Sprechen")', knoepfe.filter(t => t !== 'Sprechen' && t !== 'Zuhören …').join() === 'Senden', JSON.stringify(knoepfe));
     const sk = await p.evaluate(() => { const cb = document.querySelector('#ntStudios input:not(:disabled)'); return cb ? cb.value : null; });
     await antwort(p, { gehirnAktion: { data: { vorschlag: {
       typ: 'aufgabe', titel: 'Geräte desinfizieren', text: 'Alle Westen und Kabel', schritte: ['Westen', 'Kabel'],
       frist: '2026-10-23', alle: false, studioKeys: sk ? [sk] : [], studioNamen: ['Hürth'], wichtig: false } } } });
     await p.fill('#gehirnFeld', 'Bis Freitag in Hürth die Geräte desinfizieren');
-    await p.click('#gehirnAnlegen');
+    await p.click('#gehirnFragen');
     await fertig(p);
     const a3 = await p.evaluate(() => window.__aufruf);
     pruefe('ruft gehirnAktion mit dem Text', a3 && a3.name === 'gehirnAktion' && /desinfizieren/.test(a3.data.text), JSON.stringify(a3));
@@ -216,7 +235,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await aufSeite(p);
     await antwort(p, { gehirnAktion: { data: { vorschlag: null, hinweis: 'Das ist eine Frage, keine Aufgabe.' } } });
     await p.fill('#gehirnFeld', 'Wie spät ist es?');
-    await p.click('#gehirnAnlegen');
+    await p.click('#gehirnFragen');
     await fertig(p);
     pruefe('ohne Vorschlag steht der Hinweis da', /eine Frage, keine Aufgabe/.test(await verlaufText(p)));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
@@ -234,9 +253,10 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     // Während die KI baut: ein Rohbau der Karte, kein leerer Platz
     await p.evaluate(() => { window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = () => new Promise(r => { window.__losGeht = r; }); });
     await p.fill('#gehirnFeld', 'Bis Freitag in Hürth die Geräte desinfizieren');
-    await p.click('#gehirnAnlegen');
+    await p.click('#gehirnFragen');
     await p.waitForTimeout(150);
-    pruefe('während die KI baut: Rohbau der Karte mit Text', await sichtbar(p, '#gehirnVerlauf .gv-rohbau') && /Baue deinen Vorschlag/.test(await verlaufText(p)));
+    pruefe('während die KI arbeitet: das Gehirn denkt (Punkte, Symbol pulsiert)', await sichtbar(p, '#gehirnVerlauf .gehirn-denkt') &&
+      await p.evaluate(() => document.getElementById('gehirnOrb').classList.contains('denkt')));
     await p.evaluate((k) => window.__losGeht({ data: { vorschlag: {
       typ: 'aufgabe', titel: 'Geräte desinfizieren', text: 'Westen und Kabel', schritte: ['Westen', 'Kabel'],
       frist: '2026-10-23', alle: false, studioKeys: k ? [k] : [], studioNamen: ['Hürth'], wichtig: false } } }), sk);
@@ -279,7 +299,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'ankuendigung', titel: '', text: 'Morgen Teammeeting um 9', schritte: [],
       frist: '', alle: true, studioKeys: [], studioNamen: [], wichtig: true } } } });
     await p.fill('#gehirnFeld', 'Sag allen: morgen Teammeeting um 9, wichtig');
-    await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.click('#gehirnFragen'); await fertig(p);
     const vorher2 = await p.evaluate(() => (window.__schreib || []).length);
     const knopf = await p.evaluate(() => { const l = document.querySelectorAll('#gehirnVerlauf [data-ganlegen]'); return l.length ? l[l.length - 1].textContent.trim() : ''; });
     pruefe('Ankündigung: der Knopf heisst „Jetzt senden"', knopf === 'Jetzt senden', knopf);
@@ -295,7 +315,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const p = await oeffne(b, 390, 844, { wenigBewegung: true });
     await aufSeite(p);
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'aufgabe', titel: 'X', alle: true, studioKeys: [], studioNamen: [] } } } });
-    await p.fill('#gehirnFeld', 'Aufgabe X'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.fill('#gehirnFeld', 'Aufgabe X'); await p.click('#gehirnFragen'); await fertig(p);
     const anim = await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf .gv-karte > *')].map(c => getComputedStyle(c).animationName));
     pruefe('„weniger Bewegung": die Karte steht sofort ganz da', anim.length && anim.every(a => a === 'none'), JSON.stringify(anim));
     await zu(p);
@@ -312,18 +332,18 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('zwei Beispiele, die etwas tun', (await p.$$('#gehirnChips [data-gbefehl]')).length === 2);
     // Öffnen: sofort, ohne Knopf
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'navigation', ziel: 'putzplan', zielName: 'Putzplan', studioKey: '', studioName: '' } } } });
-    await p.fill('#gehirnFeld', 'Öffne den Putzplan'); await p.click('#gehirnAnlegen');
+    await p.fill('#gehirnFeld', 'Öffne den Putzplan'); await p.click('#gehirnFragen');
     await p.waitForTimeout(1200);
     pruefe('„Öffne den Putzplan": der Putzplan ist offen, ohne weiteren Druck', await sichtbar(p, '#view-putzplan.show'));
     // Nachschauen: Aufgaben aus dem Speicher der App
     await aufSeite(p);
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abfrage', was: 'aufgaben', studioKey: '', studioName: '' } } } });
-    await p.fill('#gehirnFeld', 'Was ist offen?'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.fill('#gehirnFeld', 'Was ist offen?'); await p.click('#gehirnFragen'); await fertig(p);
     const abf = await p.evaluate(() => { const k = [...document.querySelectorAll('#gehirnVerlauf .gv-karte')].pop(); return k ? k.innerText : ''; });
     pruefe('„Was ist offen?": Karte mit Studios und Zahlen, sofort', /Offene Aufgaben/i.test(abf) && /\d+ offen/.test(abf), abf.slice(0, 200));
     // Dienst heute: mit den Rechten gelesen
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abfrage', was: 'dienst', studioKey: 'studio-6', studioName: 'Hürth' } } } });
-    await p.fill('#gehirnFeld', 'Wer hat heute Dienst in Hürth?'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.fill('#gehirnFeld', 'Wer hat heute Dienst in Hürth?'); await p.click('#gehirnFragen'); await fertig(p);
     const dienst = await p.evaluate(() => { const k = [...document.querySelectorAll('#gehirnVerlauf .gv-karte')].pop(); return k ? k.innerText : ''; });
     pruefe('„Wer hat heute Dienst?": die heutige Schicht steht da', /Heute im Dienst/i.test(dienst) && /09:00–14:00/.test(dienst), dienst.slice(0, 200));
     pruefe('nichts davon hat etwas gespeichert', !(await p.evaluate(() => (window.__schreib || []).some(x => /shifts|absences|handovers|todos/.test(x.pfad)))));
@@ -335,7 +355,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await aufSeite(p);
     const morgen = await p.evaluate(() => { const d = new Date(Date.now() + 864e5); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); });
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abwesenheit', art: 'urlaub', von: morgen, bis: morgen, notiz: '', studioKey: 'studio-6', studioName: 'Hürth' } } } });
-    await p.fill('#gehirnFeld', 'Ich will morgen Urlaub'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.fill('#gehirnFeld', 'Ich will morgen Urlaub'); await p.click('#gehirnFragen'); await fertig(p);
     const k = await p.evaluate(() => { const c = [...document.querySelectorAll('#gehirnVerlauf .gv-karte')].pop(); const b = c && c.querySelector('[data-ganlegen]'); return { t: c ? c.innerText : '', knopf: b ? b.textContent.trim() : '' }; });
     pruefe('Mitarbeiter, Urlaub: Vorschau als „Antrag", Knopf „Antrag stellen"', /ANTRAG/i.test(k.t) && /geht an die Leitung/.test(k.t) && k.knopf === 'Antrag stellen', JSON.stringify(k));
     pruefe('… vor dem Druck nichts gespeichert', !(await p.evaluate(() => (window.__schreib || []).some(x => /absences/.test(x.pfad)))));
@@ -346,24 +366,24 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       ab[0].daten.status === 'offen' && ab[0].daten.uid === 'testuid' && ab[0].daten.type === 'urlaub' && ab[0].daten.from === morgen, JSON.stringify(ab).slice(0, 300));
     pruefe('… und der Haken steht da', /Antrag gestellt/.test(await verlaufText(p)));
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'uebergabe', text: 'Handtücher sind alle', studioKey: 'studio-6', studioName: 'Hürth' } } } });
-    await p.fill('#gehirnFeld', 'Übergabe: Handtücher sind alle'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.fill('#gehirnFeld', 'Übergabe: Handtücher sind alle'); await p.click('#gehirnFragen'); await fertig(p);
     await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-ganlegen]')].pop().click());
     await p.waitForTimeout(500);
     const ho = await p.evaluate(() => (window.__schreib || []).filter(x => /handovers/.test(x.pfad)));
     pruefe('Übergabe: eingetragen mit Text und eigenem Namen', ho.length === 1 && ho[0].daten.text === 'Handtücher sind alle' && ho[0].daten.uid === 'testuid', JSON.stringify(ho).slice(0, 200));
     // Fremdes Studio: nichts
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'uebergabe', text: 'X', studioKey: 'studio-7', studioName: 'Brühl' } } } });
-    await p.fill('#gehirnFeld', 'Übergabe in Brühl: X'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.fill('#gehirnFeld', 'Übergabe in Brühl: X'); await p.click('#gehirnFragen'); await fertig(p);
     await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-ganlegen]')].pop().click());
     await p.waitForTimeout(400);
     pruefe('fremdes Studio: nichts gespeichert', (await p.evaluate(() => (window.__schreib || []).filter(x => /handovers/.test(x.pfad)).length)) === 1);
     // Mitarbeiter will eine Aufgabe: Hinweis
     await antwort(p, { gehirnAktion: { data: { vorschlag: null, hinweis: 'Aufgaben und Ankündigungen legt die Studioleitung an.' } } });
-    await p.fill('#gehirnFeld', 'Leg eine Aufgabe an'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.fill('#gehirnFeld', 'Leg eine Aufgabe an'); await p.click('#gehirnFragen'); await fertig(p);
     pruefe('Mitarbeiter will eine Aufgabe: der Hinweis steht da', /legt die Studioleitung an/.test(await verlaufText(p)));
     // Im Formular bearbeiten
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abwesenheit', art: 'frei', von: morgen, bis: morgen, notiz: '', studioKey: 'studio-6', studioName: 'Hürth' } } } });
-    await p.fill('#gehirnFeld', 'Morgen frei'); await p.click('#gehirnAnlegen'); await fertig(p);
+    await p.fill('#gehirnFeld', 'Morgen frei'); await p.click('#gehirnFragen'); await fertig(p);
     await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-gvorschlag]')].pop().click());
     await p.waitForTimeout(700);
     const form = await p.evaluate(() => ({ t: document.getElementById('abType').value, f: document.getElementById('abFrom').value }));
@@ -394,6 +414,46 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.waitForTimeout(400);
     const w2 = await p.evaluate((n) => (window.__schreib || []).slice(n).filter(x => x.art === 'update'), vorher);
     pruefe('„Rückgängig" setzt die alte Frist zurück', w2.length === 2 && w2[1].daten.due < Date.now(), JSON.stringify(w2[1] || {}));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+
+
+  console.log('\n── 8e Abhaken, Defekt, Vorschläge Material ──');
+  {
+    const p = await oeffne(b, 1440, 900);
+    await aufSeite(p);
+    // Abhaken eindeutig: sofort, mit Rückgängig
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abhaken', bereich: 'putzplan', was: 'Toiletten', studioKey: 'studio-6', studioName: 'Hürth' } } } });
+    const v0 = await p.evaluate(() => (window.__schreib || []).length);
+    await p.fill('#gehirnFeld', 'Toiletten sind sauber'); await p.click('#gehirnFragen'); await fertig(p); await p.waitForTimeout(300);
+    const w1 = await p.evaluate((n) => (window.__schreib || []).slice(n), v0);
+    pruefe('„Toiletten sind sauber": sofort abgehakt (Putzplan c3, mit Namen)', w1.length === 1 && /cleaning\/c3/.test(w1[0].pfad) && w1[0].daten.done === true && w1[0].daten.doneByUid === 'testuid', JSON.stringify(w1).slice(0, 300));
+    pruefe('… „Abgehakt" mit Rückgängig', /Abgehakt: Toiletten reinigen/.test(await verlaufText(p)) && !!(await p.$('#gehirnVerlauf [data-grueck]')));
+    await p.click('#gehirnVerlauf [data-grueck]'); await p.waitForTimeout(300);
+    const w2 = await p.evaluate((n) => (window.__schreib || []).slice(n), v0);
+    pruefe('„Rückgängig" nimmt den Haken zurück', w2.length === 2 && w2[1].daten.done === false, JSON.stringify(w2[1] || {}));
+    // nichts gefunden
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abhaken', bereich: 'putzplan', was: 'Fenster Dach', studioKey: 'studio-6', studioName: 'Hürth' } } } });
+    await p.fill('#gehirnFeld', 'Dachfenster erledigt'); await p.click('#gehirnFragen'); await fertig(p);
+    pruefe('nichts Passendes: Hinweis, nichts geschrieben', /finde ich nichts Offenes/.test(await verlaufText(p)) &&
+      (await p.evaluate((n) => (window.__schreib || []).slice(n).length, v0)) === 2);
+    // Defekt: Gerät gefunden → Vorschau → melden
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'defekt', geraet: 'Gerät 1', text: 'piept dreimal', studioKey: 'studio-6', studioName: 'Hürth' } } } });
+    await p.fill('#gehirnFeld', 'Gerät 1 piept dreimal'); await p.click('#gehirnFragen'); await fertig(p);
+    const kd = await p.evaluate(() => { const k = [...document.querySelectorAll('#gehirnVerlauf .gv-karte')].pop(); return k ? k.innerText : ''; });
+    pruefe('Defekt: Vorschau nennt das richtige Gerät', /EMS-Gerät 1/.test(kd) && /Kabine links/.test(kd) && /Jetzt melden/.test(kd), kd.slice(0, 200));
+    pruefe('… vor dem Druck nichts gespeichert', (await p.evaluate((n) => (window.__schreib || []).slice(n).length, v0)) === 2);
+    await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf [data-ganlegen]')].pop().click());
+    await p.waitForTimeout(500);
+    const w3 = await p.evaluate((n) => (window.__schreib || []).slice(n), v0 + 2);
+    const pf = w3.map(x => x.pfad).join(' ');
+    pruefe('… danach: Verlauf, Zustand „defekt" und Aufgabe für die Leitung', /deviceLog/.test(pf) && /devices\/d1/.test(pf) && /todos/.test(pf) &&
+      w3.some(x => /devices\/d1/.test(x.pfad) && x.daten.status === 'defekt'), JSON.stringify(w3).slice(0, 400));
+    // Vorschläge: Material
+    await aufSeite(p);
+    const vk = await p.evaluate(() => document.getElementById('gehirnVorschlaege').innerText);
+    pruefe('Vorschläge nennen fehlendes Material mit „Ansehen ›"', /Artikel fehl/.test(vk) && /Ansehen/.test(vk), vk.slice(0, 200));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await zu(p);
   }
@@ -430,8 +490,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('Mitarbeiter: kein Lagebericht', !(await sichtbar(p, '#gehirnBericht')));
     /* Seit 19.10.2026 („die ganze app steuern", Entscheidung: alle, mit
        den eigenen Rechten) hat auch der Mitarbeiter „Erledigen lassen". */
-    pruefe('Mitarbeiter: „Erledigen lassen" ist da', await sichtbar(p, '#gehirnAnlegen') &&
-      (await p.textContent('#gehirnAnlegen')).trim() === 'Erledigen lassen');
+    pruefe('Mitarbeiter: derselbe eine Knopf „Senden"', await sichtbar(p, '#gehirnFragen') && !(await p.$('#gehirnAnlegen')) && !(await p.$('#gehirnIdee')));
     await zu(p);
   }
 
@@ -486,13 +545,13 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
         });
         return zuKlein;
       }, { s: sel, T: TREFFER.toString() });
-      let zuKlein = await ids('#gehirnChips .gehirn-chip, #gehirnFragen, #gehirnIdee, #gehirnAnlegen, #gehirnBericht button, #gehirnVorschlaege button');
+      let zuKlein = await ids('#gehirnChips .gehirn-chip, #gehirnFragen, #gehirnMic, #gehirnBericht button, #gehirnVorschlaege button');
       await antwort(p, {
         gehirnFrage: { data: { antwort: 'Ok.', abgedeckt: true } },
         gehirnAktion: { data: { vorschlag: { typ: 'aufgabe', titel: 'X', alle: true, studioKeys: [], studioNamen: [] } } }
       });
       await p.fill('#gehirnFeld', 'Wie lege ich eine Aufgabe an?'); await p.click('#gehirnFragen'); await fertig(p);
-      await p.fill('#gehirnFeld', 'Aufgabe X'); await p.click('#gehirnAnlegen'); await fertig(p);
+      await p.fill('#gehirnFeld', 'Aufgabe X'); await p.click('#gehirnFragen'); await fertig(p);
       zuKlein = zuKlein.concat(await ids('#gehirnVerlauf [data-gziel], #gehirnVerlauf [data-gvorschlag], #gehirnVerlauf [data-ganlegen]'));
       await p.click('#gehirnVerlauf [data-ganlegen]'); await p.waitForTimeout(400);
       zuKlein = zuKlein.concat(await ids('#gehirnVerlauf .gv-fertig [data-gziel]'));

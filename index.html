@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Oef9tX1kUywkSYGAcXAzH4Pc/rxgh5MePE0Ef0HCXy0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-uSE9u+9iCEsNuljRkpu/pIQIYPTZuZkYDedBPsaU+T8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5187,24 +5187,16 @@ html{font-size:var(--fs,100%)}
 .gv-fertig.gv-jetzt .gv-haken path{animation:gvHaken .5s .1s ease-out backwards}
 .gv-fertig.gv-jetzt{animation:gehirnHervor 1.2s ease-out 1}
 @keyframes gvHaken{from{stroke-dashoffset:24}}
-/* Während die KI baut: eine Karte im Rohbau statt nur drei Punkten —
-   man sieht, WAS gleich kommt. Der Glanz läuft per transform. */
-.gv-rohbau{position:relative;overflow:hidden;border:1px dashed var(--line-2);border-radius:var(--r-md);
-  padding:var(--s12);margin-top:var(--s8);display:flex;flex-direction:column;gap:var(--s8)}
-.gv-rohbau i{display:block;height:12px;border-radius:var(--r-xs);background:var(--bg-3)}
-.gv-rohbau i:nth-child(2){width:70%;height:18px}
-.gv-rohbau i:nth-child(3){width:90%}
-.gv-rohbau i:nth-child(4){width:45%}
-.gv-rohbau::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
-  background:linear-gradient(90deg,transparent,color-mix(in srgb, var(--accent) 16%, transparent),transparent);
-  animation:gvGlanz 1.3s ease-in-out infinite}
-@keyframes gvGlanz{to{transform:translateX(100%)}}
-.gv-rohbau-text{font-size:var(--t-xs);color:var(--text-3);margin:0}
 .gv-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s8)}
 .gv-liste li{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s8);align-items:baseline;font-size:var(--t-sm)}
 .gv-liste li small{flex:1 1 100%;color:var(--text-3);font-size:var(--t-xs);overflow-wrap:anywhere}
 .gv-ueber{color:var(--danger-tx);font-weight:700}
 .gehirn-chip-tun{display:inline-flex;align-items:center;gap:var(--s6)}
+.gv-wahl{display:flex;flex-direction:column;gap:var(--s6);margin-top:var(--s6)}
+.gv-wahl .btn{min-height:44px;justify-content:flex-start;text-align:left}
+.gv-wahl small,.gv-titel small{color:var(--text-3);font-weight:400;font-size:var(--t-xs)}
+.gehirn-knoepfe .gehirn-mic{flex:0 0 auto;min-width:44px}
+.gehirn-mic.hoert{border-color:var(--accent);animation:gehirnPuls 1.2s ease-in-out infinite}
 .gv-vorschlaege li{align-items:center}
 .gv-vorschlaege li b{flex:1 1 100%;overflow-wrap:anywhere}
 .gv-vorschlaege li span{flex:1 1 auto;color:var(--text-2)}
@@ -5224,7 +5216,7 @@ html{font-size:var(--fs,100%)}
   100%{box-shadow:0 0 0 14px transparent}}
 @media (prefers-reduced-motion:reduce){
   .gehirn-orb,.gehirn-orb.denkt,.gehirn-chip,.gehirn-frage,.gehirn-antwort,.gehirn-denkt i,.gehirn-hervor,
-  .gv-karte.gv-neu>*,.gv-fertig.gv-jetzt,.gv-fertig.gv-jetzt .gv-haken path,.gv-rohbau::after{animation:none}
+  .gv-karte.gv-neu>*,.gv-fertig.gv-jetzt,.gv-fertig.gv-jetzt .gv-haken path,.gehirn-mic.hoert{animation:none}
 }
 .hilfe-knoepfe .btn{flex:1 1 180px;min-height:44px}
 /* Die Fotos. Feste Höhe, damit nichts springt, wenn sie nachkommen —
@@ -8773,22 +8765,21 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <div class="gehirn-hero" id="gehirnHero">
                 <div class="gehirn-orb" id="gehirnOrb" aria-hidden="true"></div>
                 <div>
-                  <h3>Was möchtest du wissen?</h3>
-                  <p>Steht es im Studio-Wissen, kommt die Antwort sofort. Sonst gibt es eine erste
-                    Einschätzung, und die Frage geht an Semih — seine Antwort wissen danach alle.</p>
+                  <h3>Frag mich — oder sag, was ich tun soll</h3>
+                  <p>Ein Knopf für alles: Fragen beantworte ich aus dem Studio-Wissen, Aufträge wie „Öffne den
+                    Putzplan" oder „Ich bin morgen krank" erledige ich — gespeichert wird erst nach deinem Druck.</p>
                 </div>
               </div>
               <div class="gehirn-chips" id="gehirnChips"></div>
               <div class="gehirn-verlauf" id="gehirnVerlauf"></div>
               <div class="gehirn-eingabe">
-                <label class="nur-vorlesen" for="gehirnFeld">Deine Frage</label>
+                <label class="nur-vorlesen" for="gehirnFeld">Frage oder Auftrag</label>
                 <textarea class="inp" id="gehirnFeld" rows="2" maxlength="2000"
-                  placeholder="Zum Beispiel: Was mache ich, wenn eine Kundin ein Attest abgibt?"></textarea>
+                  placeholder="Frag etwas oder sag, was ich tun soll — z. B. „Wie wasche ich die Westen?" oder „Ich bin morgen krank"></textarea>
                 <div class="gehirn-knoepfe">
-                  <button type="button" class="btn btn-primary btn-sm" id="gehirnFragen">Fragen</button>
-                  <button type="button" class="btn btn-ghost btn-sm" id="gehirnAnlegen"
-                    title="Die KI öffnet, schaut nach oder trägt ein — gespeichert wird erst nach deinem Druck">Erledigen lassen</button>
-                  <button type="button" class="btn btn-ghost btn-sm" id="gehirnIdee">Als Idee an die Leitung</button>
+                  <button type="button" class="btn btn-ghost btn-sm gehirn-mic" id="gehirnMic" data-ikon="mikrofon"
+                    style="display:none" aria-pressed="false">Sprechen</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="gehirnFragen">Senden</button>
                 </div>
                 <p class="gehirn-hinweis-klein">Die Antworten schreibt eine KI. Sie kann sich irren — im Zweifel bei der
                   Studioleitung nachfragen. Bitte keine Kundennamen, Telefonnummern oder Diagnosen eintippen.</p>
@@ -8803,8 +8794,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <li>Abläufe im Studio: Attest, Kündigung, Notfall, Wäsche …</li>
                   <li>EMS-Wissen: wer darf trainieren, wie oft, worauf achten</li>
                   <li>Die App selbst: „Wie lege ich eine Aufgabe an?" — mit Knopf direkt dorthin</li>
-                  <li>„Erledigen lassen": „Öffne den Putzplan", „Was ist heute offen?", „Ich bin morgen krank",
-                    „Übergabe: Handtücher sind alle" — was speichert, zeigt erst eine Vorschau</li>
+                  <li>Aufträge: „Öffne den Putzplan", „Was ist heute offen?", „Ich bin morgen krank",
+                    „Westen waschen ist erledigt", „Gerät 2 ist kaputt" — was speichert, zeigt erst eine Vorschau</li>
+                  <li>Ideen: „Wir bräuchten mehr Handtücher" — geht nach deinem Okay an die Leitung</li>
                   <li id="gehirnHilfeLeitung" style="display:none">Für die Leitung zusätzlich: Aufgaben und Ankündigungen
                     aus einem Satz</li>
                 </ul>
@@ -18899,6 +18891,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-19-gehirn-ein-knopf', datum:'19.10.2026', titel:'Studio-Gehirn: nur noch ein Knopf', wo:'gehirn', punkte:[
+    'Unter Ich → Gehirn gibt es nur noch „Senden". Ob du etwas fragst, etwas erledigt haben willst oder eine Idee hast, erkennt das Gehirn selbst.',
+    'Neu zum Erledigen: „Toiletten sind sauber" hakt den Putzplan-Punkt ab (mit Rückgängig), „Gerät 2 piept dreimal" meldet den Defekt nach deinem Okay. Ideen gehen erst an die Leitung, wenn du „An die Leitung schicken" drückst.',
+    'Mit „Sprechen" kannst du – wo das Handy es kann – einfach reinsprechen statt tippen.',
+    'Für die Leitung zeigt „Das könnte ich für dich tun" jetzt auch fehlendes Material und wartende Urlaubsanträge.' ] },
   { id:'2026-10-19-gehirn-steuern', datum:'19.10.2026', titel:'Das Studio-Gehirn erledigt Dinge für dich', wo:'gehirn', punkte:[
     'Unter Ich → Gehirn heißt der zweite Knopf jetzt „Erledigen lassen" – für alle. Schreib z. B. „Öffne den Putzplan", „Was ist heute in Hürth offen?" oder „Wer hat heute Dienst?" – das passiert sofort.',
     'Auch eintragen geht: „Ich bin morgen krank", „Ich möchte am Freitag frei" oder „Übergabe: Handtücher sind alle". Du siehst erst eine Vorschau; gespeichert wird mit „Jetzt eintragen" bzw. „Antrag stellen". Urlaub und Frei gehen wie immer als Antrag an die Leitung.',
@@ -23460,9 +23457,8 @@ function gehirnOeffnen(){
     b.addEventListener('click', function(){ var f=$('gehirnFeld'); f.value=b.getAttribute('data-gbeispiel'); gehirnSenden('frage'); });
   });
   if(chips) chips.querySelectorAll('[data-gbefehl]').forEach(function(b){
-    b.addEventListener('click', function(){ var f=$('gehirnFeld'); f.value=b.getAttribute('data-gbefehl'); gehirnSenden('aktion'); });
+    b.addEventListener('click', function(){ var f=$('gehirnFeld'); f.value=b.getAttribute('data-gbefehl'); gehirnSenden('auto'); });
   });
-  var an=$('gehirnAnlegen'); if(an) an.style.display='';
   var hl=$('gehirnHilfeLeitung'); if(hl) hl.style.display = canManage() ? '' : 'none';
   ikonenEinsetzen($('view-gehirn'));
   gehirnZeichnen();
@@ -23474,11 +23470,13 @@ function gehirnBinden(){
   if(f) f.addEventListener('keydown', function(ev){
     /* Strg/Cmd + Enter schickt ab; ein blosses Enter bleibt ein
        Zeilenumbruch — die Frage darf zwei Sätze haben. */
-    if(ev.key==='Enter' && (ev.metaKey || ev.ctrlKey)){ ev.preventDefault(); gehirnSenden('frage'); }
+    if(ev.key==='Enter' && (ev.metaKey || ev.ctrlKey)){ ev.preventDefault(); gehirnSenden('auto'); }
   });
-  var b1=$('gehirnFragen');  if(b1) b1.addEventListener('click', function(){ gehirnSenden('frage'); });
-  var b2=$('gehirnIdee');    if(b2) b2.addEventListener('click', function(){ gehirnSenden('idee'); });
-  var b3=$('gehirnAnlegen'); if(b3) b3.addEventListener('click', function(){ gehirnSenden('aktion'); });
+  /* Ein Knopf (19.10.2026, aus dem Betrieb: „nur einen knopf … beim
+     fragen und nicht 3 das verwirrt mehr als es hilft"). Ob Frage,
+     Auftrag oder Idee, entscheidet die Function. */
+  var b1=$('gehirnFragen');  if(b1) b1.addEventListener('click', function(){ gehirnSenden('auto'); });
+  gehirnMicBinden();
 }
 function gehirnText(t){ return esc(String(t||'')); }
 function gehirnZeichnen(){
@@ -23486,14 +23484,10 @@ function gehirnZeichnen(){
   var orb=$('gehirnOrb'); if(orb) orb.classList.toggle('denkt', _gLaeuft);
   box.innerHTML=_gVerlauf.map(function(v, i){
     var frage='<div class="gehirn-frage">'+
-      (v.art==='idee' ? '<b>Idee:</b> ' : (v.art==='aktion' ? '<b>Anlegen:</b> ' : ''))+gehirnText(v.text)+'</div>';
+      (v.art==='idee' ? '<b>Idee:</b> ' : '')+gehirnText(v.text)+'</div>';
     var kopf='<div class="ga-kopf">'+ikon('gehirn')+'<span>Studio-Gehirn</span></div>';
     var antwort;
-    if(v.laeuft && v.art==='aktion'){
-      antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+
-        '<div class="gv-rohbau" role="status" aria-label="Das Studio-Gehirn baut den Vorschlag"><i></i><i></i><i></i><i></i></div>'+
-        '<p class="gv-rohbau-text">Baue deinen Vorschlag …</p></div>';
-    } else if(v.laeuft){
+    if(v.laeuft){
       antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+
         '<span class="gehirn-denkt" role="status" aria-label="Das Studio-Gehirn denkt nach"><i></i><i></i><i></i></span></div>';
     } else if(v.fehler){
@@ -23529,6 +23523,13 @@ function gehirnZeichnen(){
   box.querySelectorAll('[data-ganlegen]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnJetztAnlegen(+b.getAttribute('data-ganlegen'), b); });
   });
+  box.querySelectorAll('[data-gwahl]').forEach(function(b){
+    var t=b.getAttribute('data-gwahl').split('|');
+    b.addEventListener('click', function(){ gehirnWahl(+t[0], +t[1], b); });
+  });
+  box.querySelectorAll('[data-grueck]').forEach(function(b){
+    b.addEventListener('click', function(){ gehirnAbhakenRueck(+b.getAttribute('data-grueck'), b); });
+  });
   /* Jede Vorschau kommt genau einmal herein — beim nächsten Zeichnen
      (neue Frage darunter) steht sie still. */
   _gVerlauf.forEach(function(v){ if(v.vorschlag) v.gezeigt=true; if(v.angelegt) v.jetzt=false; });
@@ -23540,7 +23541,7 @@ function gehirnZeichnen(){
     }
   });
   var chips=$('gehirnChips'); if(chips && _gVerlauf.length) chips.innerHTML='';
-  var b=[$('gehirnFragen'),$('gehirnIdee'),$('gehirnAnlegen')];
+  var b=[$('gehirnFragen'),$('gehirnMic')];
   b.forEach(function(x){ if(x) x.disabled=_gLaeuft; });
 }
 /* Wort für Wort, aber höchstens ~1,2 Sekunden lang: lange Antworten
@@ -23567,12 +23568,13 @@ function gehirnSenden(art){
   _gVerlauf.push(v); _gLaeuft=true; if(f) f.value='';
   gehirnZeichnen();
   gehirnNachUnten();
-  var name = art==='aktion' ? 'gehirnAktion' : 'gehirnFrage';
-  var daten = art==='aktion' ? { text:text } : { art:art, text:text };
+  var name = art==='auto' ? 'gehirnAktion' : 'gehirnFrage';
+  var daten = art==='auto' ? { text:text } : { art:art, text:text };
   firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
     .then(function(r){
       var d=(r && r.data) || {};
-      if(art==='aktion'){ v.vorschlag=d.vorschlag||null; v.hinweis=d.hinweis||''; return gehirnSofort(v); }
+      if(art==='auto' && d.art==='frage'){ v.art='frage'; v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; return; }
+      if(art==='auto'){ v.art='aktion'; v.vorschlag=d.vorschlag||null; v.hinweis=d.hinweis||''; return gehirnSofort(v); }
       else { v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; }
     })
     .catch(function(err){ v.fehler=errMsg(err); })
@@ -23605,6 +23607,9 @@ function gehirnVorschlagHTML(v, i){
   if(s.typ==='navigation') return gehirnNavHTML(v);
   if(s.typ==='abfrage') return gehirnAbfrageHTML(v);
   if(s.typ==='abwesenheit' || s.typ==='uebergabe') return gehirnEintragHTML(v, i);
+  if(s.typ==='idee') return gehirnIdeeHTML(v, i);
+  if(s.typ==='abhaken') return gehirnAbhakenHTML(v, i);
+  if(s.typ==='defekt') return gehirnDefektHTML(v, i);
   var ank = s.typ==='ankuendigung';
   var studios = s.alle ? (ank ? 'Alle Mitarbeiter' : 'Alle Studios') : ((s.studioNamen||[]).join(', ') || '—');
   var teile=[], n=0;
@@ -23644,6 +23649,8 @@ function gehirnJetztAnlegen(i, btn){
   var v=_gVerlauf[i]; if(!v || !v.vorschlag || v.angelegt) return;
   var s=v.vorschlag;
   if(s.typ==='abwesenheit' || s.typ==='uebergabe') return gehirnEintragen(v, btn);
+  if(s.typ==='idee') return gehirnIdeeSenden(v, btn);
+  if(s.typ==='defekt') return gehirnDefektMelden(v, btn);
   if(!canManage()) return;
   var darf=schreibStudios().filter(function(x){ return x.ok; });
   var darfKeys=darf.map(function(x){ return x.key; });
@@ -23745,6 +23752,8 @@ function gehirnSofort(v){
     return;
   }
   if(s.typ==='abfrage') return gehirnAbfrage(v);
+  if(s.typ==='abhaken') return gehirnAbhakenSuchen(v);
+  if(s.typ==='defekt') return gehirnDefektSuchen(v);
 }
 function gehirnOeffne(s){
   showView(s.ziel);
@@ -23902,12 +23911,224 @@ function gehirnInsTeam(s){
   }, 160);
 }
 
+/* ── Stufe 2 (19.10.2026): Idee, abhaken, Defekt melden ─────────────── */
+function gehirnIdeeHTML(v, i){
+  var s=v.vorschlag;
+  return '<p class="ga-text">'+(v.angelegt ? 'Erledigt:' : 'Das klingt nach einer Idee für die Leitung:')+'</p>'+
+    '<div class="gv-karte'+(v.gezeigt ? '' : ' gv-neu')+(v.angelegt ? ' gv-fertig' : '')+(v.jetzt ? ' gv-jetzt' : '')+'">'+
+    '<div style="--gv-i:0" class="gv-kopf"><span class="gv-art">Idee</span></div>'+
+    '<div style="--gv-i:1"><p class="gv-text">'+esc(s.text)+'</p></div>'+
+    (v.angelegt
+      ? '<div style="--gv-i:2" class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12"/>'+
+        '<path d="M8 14.5l4 4 8-9"/></svg><span>'+esc(v.angelegt)+'</span></div>'
+      : '<div style="--gv-i:2" class="gv-knoepfe"><button type="button" class="btn btn-primary btn-sm" data-ganlegen="'+i+'">An die Leitung schicken</button></div>')+
+    '</div>';
+}
+function gehirnIdeeSenden(v, btn){
+  withBusy(btn, function(){
+    return firebase.app().functions(KONFIG.region).httpsCallable('gehirnFrage')({ art:'idee', text:v.vorschlag.text })
+      .then(function(){ v.angelegt='Danke! Deine Idee ist bei der Leitung gelandet.'; v.jetzt=!gehirnWenigBewegung(); tick(12); gehirnZeichnen(); })
+      .catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+/* Wörter vergleichen statt Zeichenketten: „Westen waschen" findet
+   „EMS-Westen waschen (Schonprogramm)". Treffer = Anteil der Wörter
+   aus dem Satz, die im Eintrag vorkommen. */
+function gehirnWoerter(x){
+  return String(x||'').toLowerCase().replace(/[^a-z0-9äöüß]+/g,' ').split(' ').filter(function(w){ return w.length>1 || /\d/.test(w); });
+}
+function gehirnTreffer(satz, eintrag){
+  var a=gehirnWoerter(satz), b=gehirnWoerter(eintrag).join(' ');
+  if(!a.length) return 0;
+  var n=a.filter(function(w){ return b.indexOf(w.length>4 ? w.slice(0, w.length-1) : w)>=0; }).length;
+  return n/a.length;
+}
+function gehirnBeste(satz, liste, text){
+  var bewertet=liste.map(function(x){ return { x:x, p:gehirnTreffer(satz, text(x)) }; })
+    .filter(function(r){ return r.p>=0.5; })
+    .sort(function(a,b){ return b.p-a.p; });
+  if(!bewertet.length) return [];
+  /* Eindeutig nur, wenn der Beste klar vorn liegt — sonst fragen. */
+  if(bewertet.length===1 || bewertet[0].p-bewertet[1].p>=0.25) return [bewertet[0].x];
+  return bewertet.slice(0,4).map(function(r){ return r.x; });
+}
+/* Abhaken: „Kleinigkeiten sofort, mit Rückgängig" (Entscheidung
+   19.10.2026). Ein eindeutiger Treffer wird gleich abgehakt; mehrere
+   stehen zur Wahl; keiner → Hinweis. Dieselben Felder wie in der Liste. */
+function gehirnAbhakenSuchen(v){
+  var s=v.vorschlag;
+  var keys = s.studioKey ? [s.studioKey] : gehirnMeineKeys();
+  var kandidaten=[];
+  keys.forEach(function(k){
+    var quelle = s.bereich==='putzplan' ? (cachedClean[k]||[]) : (cachedTodos[k]||[]);
+    quelle.forEach(function(t){
+      if(isDone(t) || isArchived(t)) return;
+      if(s.bereich==='putzplan' && ppPausiert(t)) return;
+      kandidaten.push({ k:k, t:t });
+    });
+  });
+  v.wahl=gehirnBeste(s.was, kandidaten, function(x){ return x.t.title||x.t.text||''; });
+  if(v.wahl.length===1) return gehirnAbhaken(v, v.wahl[0], null);
+}
+function gehirnAbhakenSchreiben(bereich, k, t, done){
+  if(bereich==='aufgabe'){
+    return aufgabeHaken(k, t.id, done).catch(function(e){ throw new Error(aufgabeFehlerText(e, k)); });
+  }
+  var kuerzel = done ? putzKuerzel() : null;
+  return S('studios').doc(k).collection('cleaning').doc(t.id)
+    .update({ done:done, doneBy:done?session.name:null, doneByUid:done?session.uid:null,
+              doneKuerzel:kuerzel||null, doneAt:done?Date.now():null })
+    .then(function(){ schedulePutzplanSheets(k); });
+}
+function gehirnAbhaken(v, x, btn){
+  var arbeit=gehirnAbhakenSchreiben(v.vorschlag.bereich, x.k, x.t, true).then(function(){
+    v.erledigt=x; v.angelegt='Abgehakt: '+(x.t.title||x.t.text||'Eintrag')+' ('+studioName(x.k)+')';
+    v.jetzt=!gehirnWenigBewegung(); tick(12);
+    if(currentView==='gehirn') gehirnZeichnen();
+  }).catch(function(e){ v.wahl=[]; v.hinweis=e && e.message ? e.message : errMsg(e); if(currentView==='gehirn') gehirnZeichnen(); });
+  if(btn) withBusy(btn, function(){ return arbeit; });
+  return arbeit;
+}
+function gehirnWahl(i, j, btn){
+  var v=_gVerlauf[i]; if(!v || !v.wahl || !v.wahl[j] || v.angelegt) return;
+  if(v.vorschlag.typ==='defekt'){ v.geraet=v.wahl[j]; v.wahl=[v.geraet]; gehirnZeichnen(); return; }
+  gehirnAbhaken(v, v.wahl[j], btn);
+}
+function gehirnAbhakenRueck(i, btn){
+  var v=_gVerlauf[i]; if(!v || !v.erledigt) return;
+  var x=v.erledigt;
+  withBusy(btn, function(){
+    return gehirnAbhakenSchreiben(v.vorschlag.bereich, x.k, x.t, false).then(function(){
+      v.angelegt='Zurückgenommen: '+(x.t.title||x.t.text||'Eintrag'); v.erledigt=null; v.jetzt=false; gehirnZeichnen();
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+function gehirnAbhakenHTML(v, i){
+  var s=v.vorschlag, ziel = s.bereich==='putzplan' ? 'putzplan' : 'todos';
+  var name = s.bereich==='putzplan' ? 'Putzplan' : 'Aufgaben';
+  if(v.angelegt){
+    return '<div class="gv-karte'+(v.erledigt ? ' gv-fertig' : '')+(v.jetzt ? ' gv-jetzt' : '')+'">'+
+      '<div class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12"/>'+
+      '<path d="M8 14.5l4 4 8-9"/></svg><span>'+esc(v.angelegt)+'</span></div>'+
+      '<div class="gv-knoepfe">'+(v.erledigt ? '<button type="button" class="btn btn-ghost btn-sm" data-grueck="'+i+'">Rückgängig</button>' : '')+
+      '<button type="button" class="btn btn-ghost btn-sm" data-gziel="'+ziel+'">Zum '+name+' ›</button></div></div>';
+  }
+  if(v.hinweis) return '<p class="ga-text">'+gehirnText(v.hinweis)+'</p>';
+  if(!v.wahl || !v.wahl.length){
+    return '<p class="ga-text">Zu „'+esc(s.was)+'" finde ich nichts Offenes'+(s.studioName ? ' in '+esc(s.studioName) : '')+'.</p>'+
+      '<div class="gehirn-ziele"><button type="button" class="btn btn-ghost btn-sm" data-gziel="'+ziel+'">Zum '+name+' ›</button></div>';
+  }
+  return '<p class="ga-text">Welches meinst du?</p><div class="gv-wahl">'+v.wahl.map(function(x, j){
+    return '<button type="button" class="btn btn-ghost btn-sm" data-gwahl="'+i+'|'+j+'">'+esc(x.t.title||x.t.text||'Eintrag')+
+      ' <small>'+esc(studioName(x.k))+'</small></button>';
+  }).join('')+'</div>';
+}
+/* Defekt melden: das Gerät sucht das Gerät selbst (Liste des Studios,
+   mit den Rechten der Person gelesen). Gemeldet wird wie im Geräte-
+   Fenster: Verlauf, Zustand und — nur wo die Regel es erlaubt und noch
+   keine offen ist — eine Aufgabe für die Leitung. */
+function gehirnDefektSuchen(v){
+  var s=v.vorschlag;
+  return S('studios').doc(s.studioKey).collection('devices').get().then(function(sn){
+    var liste=sn.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()); });
+    v.wahl=gehirnBeste(s.geraet, liste, function(d){ return (d.name||'')+' '+(d.place||''); });
+    if(v.wahl.length===1) v.geraet=v.wahl[0];
+  }).catch(function(e){ v.wahl=[]; v.hinweis=errMsg(e); });
+}
+function gehirnDefektHTML(v, i){
+  var s=v.vorschlag;
+  if(v.hinweis && !v.angelegt) return '<p class="ga-text">'+gehirnText(v.hinweis)+'</p>';
+  if(!v.geraet){
+    if(v.wahl && v.wahl.length) return '<p class="ga-text">Welches Gerät meinst du?</p><div class="gv-wahl">'+v.wahl.map(function(d, j){
+      return '<button type="button" class="btn btn-ghost btn-sm" data-gwahl="'+i+'|'+j+'">'+esc(d.name||'Gerät')+
+        (d.place ? ' <small>'+esc(d.place)+'</small>' : '')+'</button>'; }).join('')+'</div>';
+    return '<p class="ga-text">Ein Gerät „'+esc(s.geraet)+'" finde ich in '+esc(s.studioName)+' nicht.</p>'+
+      '<div class="gehirn-ziele"><button type="button" class="btn btn-ghost btn-sm" data-gziel="geraete">Zu den Geräten ›</button></div>';
+  }
+  var d=v.geraet;
+  var teile='<div style="--gv-i:0" class="gv-kopf"><span class="gv-art">Defekt melden</span><span class="gv-chip">'+esc(s.studioName)+'</span></div>'+
+    '<div style="--gv-i:1" class="gv-titel">'+esc(d.name||'Gerät')+(d.place ? ' <small>'+esc(d.place)+'</small>' : '')+'</div>'+
+    (s.text ? '<div style="--gv-i:2"><p class="gv-text">'+esc(s.text)+'</p></div>' : '');
+  if(v.angelegt){
+    teile+='<div style="--gv-i:3" class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12"/>'+
+      '<path d="M8 14.5l4 4 8-9"/></svg><span>'+esc(v.angelegt)+'</span></div>'+
+      '<div style="--gv-i:4" class="gv-knoepfe"><button type="button" class="btn btn-ghost btn-sm" data-gziel="geraete">Zu den Geräten ›</button></div>';
+  } else {
+    teile+='<div style="--gv-i:3" class="gv-knoepfe"><button type="button" class="btn btn-primary btn-sm" data-ganlegen="'+i+'">Jetzt melden</button>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-gziel="geraete">Zu den Geräten ›</button></div>';
+  }
+  return '<p class="ga-text">'+(v.angelegt ? 'Erledigt:' : 'So würde ich es melden:')+'</p>'+
+    '<div class="gv-karte'+(v.gezeigt ? '' : ' gv-neu')+(v.angelegt ? ' gv-fertig' : '')+(v.jetzt ? ' gv-jetzt' : '')+'">'+teile+'</div>';
+}
+function gehirnDefektMelden(v, btn){
+  var s=v.vorschlag, d=v.geraet; if(!d || v.angelegt) return;
+  if(gehirnMeineKeys().indexOf(s.studioKey)<0){ toast('Für dieses Studio darfst du nichts melden.', true); return; }
+  var ref=S('studios').doc(s.studioKey);
+  var text=s.text||'Defekt (über das Studio-Gehirn gemeldet)';
+  withBusy(btn, function(){
+    var batch=db.batch();
+    batch.set(ref.collection('deviceLog').doc(), { devId:d.id, devName:d.name||'Gerät', art:'defekt',
+      text:text, by:session.name, byUid:session.uid, ts:Date.now() });
+    batch.update(ref.collection('devices').doc(d.id), { status:'defekt', lastNote:text, lastBy:session.name, lastAt:Date.now() });
+    var schonOffen=(cachedTodos[s.studioKey]||[]).some(function(t){ return t.devId===d.id && !isDone(t) && !isArchived(t); });
+    var mitAufgabe=!schonOffen && darfAufgabeIn(s.studioKey);
+    if(mitAufgabe){
+      batch.set(ref.collection('todos').doc(), { title:(d.name||'Gerät')+' defekt',
+        desc:text+'\n\nGemeldet von '+session.name+(d.place?' · Standort: '+d.place:''), devId:d.id,
+        done:false, doneBy:null, doneAt:null, createdBy:session.name, createdByUid:session.uid, ts:Date.now() });
+    }
+    return batch.commit().then(function(){
+      v.angelegt = mitAufgabe ? 'Defekt gemeldet — Aufgabe für die Leitung angelegt' :
+        (schonOffen ? 'Defekt vermerkt — es gibt schon eine offene Aufgabe dazu' : 'Defekt gemeldet — die Leitung sieht ihn am Gerät');
+      v.jetzt=!gehirnWenigBewegung(); tick(12); gehirnZeichnen();
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+/* Sprechen statt tippen — die Spracherkennung des Browsers, wo es sie
+   gibt (Chrome, Safari). Wo nicht, bleibt der Knopf weg; die Diktier-
+   taste der Handytastatur geht ohnehin. Nichts davon geht über unsere
+   Server: der Text landet im Feld, abgeschickt wird mit „Senden". */
+var _gHoert=null;
+function gehirnMicBinden(){
+  var btn=$('gehirnMic'); if(!btn) return;
+  var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ btn.style.display='none'; return; }
+  btn.style.display='';
+  btn.addEventListener('click', function(){
+    if(_gHoert){ try{ _gHoert.stop(); }catch(e){} return; }
+    var r; try{ r=new SR(); }catch(e){ toast('Spracheingabe geht auf diesem Gerät nicht.', true); return; }
+    r.lang='de-DE'; r.interimResults=true; r.continuous=false;
+    var f=$('gehirnFeld'), vorher=(f.value||'').trim();
+    r.onresult=function(ev){
+      var t=''; for(var k=0;k<ev.results.length;k++) t+=ev.results[k][0].transcript;
+      f.value=(vorher ? vorher+' ' : '')+t;
+    };
+    r.onerror=function(ev){ if(ev && ev.error==='not-allowed') toast('Bitte das Mikrofon für die App erlauben.', true); };
+    r.onend=function(){ _gHoert=null; btn.classList.remove('hoert'); btn.setAttribute('aria-pressed','false'); btn.lastChild.textContent='Sprechen'; };
+    _gHoert=r; btn.classList.add('hoert'); btn.setAttribute('aria-pressed','true'); btn.lastChild.textContent='Zuhören …';
+    try{ r.start(); }catch(e){ r.onend(); }
+  });
+}
+
 /* ── Vorschläge zum Antippen (19.10.2026) ─────────────────────────────
    Entscheidung aus dem Betrieb: „läuft von selbst" heisst Vorschläge,
    die ein Tipp erledigt — nicht, dass die KI selbst handelt. Gerechnet
    wird hier im Gerät aus dem, was die App ohnehin geladen hat; keine KI,
    kein Aufruf. Erste Fassung: überfällige Aufgaben. */
-var _gVerschoben={};
+var _gVerschoben={}, _gAntraege=null, _gAntraegeGeholt=false;
+function gehirnAntraegeHolen(){
+  _gAntraegeGeholt=true;
+  var heute=ymd(new Date());
+  Promise.all(managedKeys().map(function(sk){
+    return S('studios').doc(sk).collection('absences').where('status','==','offen').get()
+      .then(function(sn){ var n=0; sn.forEach(function(d){ if((d.data().to||'')>=heute) n++; }); return { sk:sk, n:n }; })
+      .catch(function(){ return { sk:sk, n:0 }; });
+  })).then(function(r){
+    _gAntraege=r.filter(function(x){ return x.n>0; });
+    setTimeout(function(){ _gAntraegeGeholt=false; }, 5*60000);
+    if(currentView==='gehirn') gehirnVorschlaegeZeichnen();
+  });
+}
 function gehirnVorschlaegeZeichnen(){
   var box=$('gehirnVorschlaege'); if(!box) return;
   var jetzt=Date.now(), liste=[];
@@ -23919,13 +24140,27 @@ function gehirnVorschlaegeZeichnen(){
   });
   liste.sort(function(a,b){ return (a.t.due||0)-(b.t.due||0); });
   var offen=liste.filter(function(x){ return !_gVerschoben[x.k+'/'+x.t.id]; }).length;
-  if(!liste.length){ box.style.display='none'; box.innerHTML=''; return; }
+  /* Dazu: fehlendes Material (aus dem App-Speicher) und — für die
+     Leitung — Urlaubsanträge, die warten (einmal je Öffnen gelesen). */
+  var mat=0, matSt=0;
+  gehirnMeineKeys().forEach(function(k){
+    var n=(_invAll[k]||[]).filter(function(it){ return itemNeed(it)>0; }).length;
+    if(n){ mat+=n; matSt++; }
+  });
+  var extra='';
+  if(mat && ansichtAn('material')) extra+='<li><b>'+mat+(mat===1 ? ' Artikel fehlt' : ' Artikel fehlen')+'</b><span>in '+matSt+(matSt===1 ? ' Studio' : ' Studios')+'</span>'+
+    '<button type="button" class="btn btn-ghost btn-sm" data-gziel-v="material">Ansehen ›</button></li>';
+  if(_gAntraege && _gAntraege.length) extra+='<li><b>'+_gAntraege.reduce(function(a,r){ return a+r.n; },0)+' Urlaubsantrag'+
+    (_gAntraege.reduce(function(a,r){ return a+r.n; },0)===1 ? '' : 'e')+' warten</b><span>'+_gAntraege.map(function(r){ return esc(studioName(r.sk)); }).join(', ')+'</span>'+
+    '<button type="button" class="btn btn-ghost btn-sm" data-gantrag="'+esc(_gAntraege[0].sk)+'">Entscheiden ›</button></li>';
+  if(!_gAntraegeGeholt && canManage()) gehirnAntraegeHolen();
+  if(!liste.length && !extra){ box.style.display='none'; box.innerHTML=''; return; }
   box.style.display='';
   var darf=canManage();
   box.innerHTML='<h3 data-ikon="gehirn">'+(darf ? 'Das könnte ich für dich tun' : 'Gerade überfällig')+'</h3>'+
-    '<p class="hint" style="margin:0 0 var(--s8)">'+(offen ? offen+(offen===1 ? ' Aufgabe ist' : ' Aufgaben sind')+' überfällig.' : 'Alles verschoben.')+
+    '<p class="hint" style="margin:0 0 var(--s8)">'+(!liste.length ? 'Keine Aufgabe ist überfällig.' : (offen ? offen+(offen===1 ? ' Aufgabe ist' : ' Aufgaben sind')+' überfällig.' : 'Alles verschoben.'))+
     (darf ? ' Ein Tipp verschiebt die Frist um eine Woche.' : '')+'</p>'+
-    '<ul class="gv-liste gv-vorschlaege">'+liste.slice(0,4).map(function(x){
+    '<ul class="gv-liste gv-vorschlaege">'+extra+liste.slice(0,4).map(function(x){
       var key=x.k+'/'+x.t.id, v=_gVerschoben[key];
       return '<li><b>'+esc(x.t.title||'Aufgabe')+'</b><span>'+esc(studioName(x.k))+
         (v ? ' · verschoben auf '+esc(fmtTag(new Date(v.neu), true)) : ' · fällig war '+esc(fmtTag(new Date(x.t.due), true)))+'</span>'+
@@ -23936,6 +24171,14 @@ function gehirnVorschlaegeZeichnen(){
     (liste.length>4 ? 'Alle '+liste.length+' ansehen ›' : 'Zu den Aufgaben ›')+'</button>';
   box.querySelectorAll('[data-gziel-v]').forEach(function(b){
     b.addEventListener('click', function(){ showView(b.getAttribute('data-gziel-v')); tick(8); });
+  });
+  box.querySelectorAll('[data-gantrag]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var sk=b.getAttribute('data-gantrag');
+      showView('team'); var sel=$('teamStudio'); if(sel) sel.value=sk; loadTeam(sk);
+      setTimeout(function(){ var r=document.querySelector('[data-teamtab="abwesend"]'); if(r) r.click(); }, 120);
+      tick(8);
+    });
   });
   box.querySelectorAll('[data-gplus7]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnFristWoche(b.getAttribute('data-gplus7'), b); });
