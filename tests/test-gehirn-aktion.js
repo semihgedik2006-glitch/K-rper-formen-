@@ -15,7 +15,7 @@
    8. Der Bericht ohne KI nennt die Zahlen und die Studios mit Offenem.
    ══════════════════════════════════════════════════════════════════ */
 const { __intern } = require('../functions/index.js');
-const { gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson } = __intern;
+const { gehirnBefehlPruefen: B, gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson } = __intern;
 
 let gut = 0, schlecht = 0;
 function pruefe(was, b, info) {
@@ -62,6 +62,37 @@ pruefe('Ankündigung: genau ein Ziel', v && v.studioKeys.length === 1, v);
 pruefe('Ankündigung: „wichtig" bleibt', v && v.wichtig === true, v);
 v = P({ typ: 'ankuendigung', text: 'Info', studios: ['alle'] }, NAMEN, ['studio-1'], 'leiter', HEUTE);
 pruefe('Leitung: Ankündigung an „alle" wird zu ihrem Studio', v && v.alle === false && v.studioKeys.join() === 'studio-1', v);
+
+
+console.log('\n── Steuern: Befehle aus dem Katalog (19.10.2026) ──');
+/* Aus dem Betrieb: „das die ki die ganze app steuern kann". Entschieden:
+   alle, aber nur mit den eigenen Rechten; Lesen sofort, Speichern mit Vorschau. */
+{
+  const ERL = Object.keys(NAMEN).slice(0, 1);
+  let b = B({ typ: 'navigation', ziel: 'putzplan', studio: NAMEN[ERL[0]] }, NAMEN, ERL, 'mitarbeiter', HEUTE);
+  pruefe('Öffnen: Ziel aus dem Katalog, Studio aus den eigenen', b && b.typ === 'navigation' && b.ziel === 'putzplan' && b.studioKey === ERL[0], b);
+  pruefe('Öffnen: unbekanntes Ziel wird verworfen', B({ typ: 'navigation', ziel: 'admin' }, NAMEN, ERL, 'chef', HEUTE) === null);
+  pruefe('Öffnen: Verwaltung nicht für Mitarbeiter', B({ typ: 'navigation', ziel: 'chef' }, NAMEN, ERL, 'mitarbeiter', HEUTE) === null);
+  const fremd = Object.keys(NAMEN).find(k => ERL.indexOf(k) < 0);
+  b = B({ typ: 'abfrage', was: 'aufgaben', studio: NAMEN[fremd] }, NAMEN, ERL, 'mitarbeiter', HEUTE);
+  pruefe('Abfrage: fremdes Studio wird nicht übernommen', b && b.typ === 'abfrage' && b.studioKey === '', b);
+  pruefe('Abfrage: nur bekannte Arten', B({ typ: 'abfrage', was: 'gehaelter' }, NAMEN, ERL, 'chef', HEUTE) === null);
+  const morgen = new Date(new Date(HEUTE + 'T12:00:00Z').getTime() + 864e5).toISOString().slice(0, 10);
+  b = B({ typ: 'abwesenheit', art: 'urlaub', von: morgen, bis: '' }, NAMEN, ERL, 'mitarbeiter', HEUTE);
+  pruefe('Abwesenheit: Urlaub ab morgen, ohne Ende = ein Tag, eigenes Studio', b && b.art === 'urlaub' && b.bis === morgen && b.studioKey === ERL[0], b);
+  pruefe('Abwesenheit: Urlaub in der Vergangenheit wird verworfen', B({ typ: 'abwesenheit', art: 'urlaub', von: '2020-01-01' }, NAMEN, ERL, 'mitarbeiter', HEUTE) === null);
+  pruefe('Abwesenheit: krank ab heute geht', !!B({ typ: 'abwesenheit', art: 'krank', von: HEUTE }, NAMEN, ERL, 'mitarbeiter', HEUTE));
+  pruefe('Abwesenheit: Ende vor Beginn wird zu einem Tag', (B({ typ: 'abwesenheit', art: 'frei', von: morgen, bis: HEUTE }, NAMEN, ERL, 'mitarbeiter', HEUTE) || {}).bis === morgen);
+  pruefe('Abwesenheit: unbekannte Art wird verworfen', B({ typ: 'abwesenheit', art: 'kur', von: morgen }, NAMEN, ERL, 'mitarbeiter', HEUTE) === null);
+  b = B({ typ: 'uebergabe', text: 'Handtücher sind alle' }, NAMEN, ERL, 'mitarbeiter', HEUTE);
+  pruefe('Übergabe: Text, eigenes Studio', b && b.text === 'Handtücher sind alle' && b.studioKey === ERL[0], b);
+  pruefe('Übergabe ohne Studio der Person: nichts', B({ typ: 'uebergabe', text: 'x' }, NAMEN, [], 'mitarbeiter', HEUTE) === null);
+  b = B({ typ: 'aufgabe', titel: 'X', studios: ['alle'] }, NAMEN, ERL, 'mitarbeiter', HEUTE);
+  pruefe('Mitarbeiter: Aufgabe anlegen wird abgelehnt — mit Hinweis', b && b.typ === 'verboten' && /Studioleitung/.test(b.hinweis), b);
+  b = B({ typ: 'aufgabe', titel: 'X', studios: [NAMEN[ERL[0]]] }, NAMEN, ERL, 'leiter', HEUTE);
+  pruefe('Leitung: Aufgabe geht weiter durch die bisherige Prüfung', b && b.typ === 'aufgabe' && b.studioKeys.join() === ERL[0], b);
+  pruefe('Unbekannter Typ: nichts', B({ typ: 'loeschen', alles: true }, NAMEN, ERL, 'chef', HEUTE) === null);
+}
 
 console.log('\n── Bericht ohne KI ──');
 const t = lageberichtOhneKi('tag', { fragen: 12, abgedeckt: 9, offenGesamt: 2, ideen: [{}] },

@@ -7084,7 +7084,7 @@ exports.gehirnFrage = region
    „erstellen" — mit seinen eigenen Rechten. Studios, die die Person
    nicht verwalten darf, fallen hier schon heraus.
    ══════════════════════════════════════════════════════════════════════ */
-const GEHIRN_AKTION_GRENZE = 100;
+const GEHIRN_AKTION_GRENZE = 400;
 const DATUM_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /* Reihenfolge der Modelle: fällt eines aus (Kontingent, Überlast, nicht
@@ -7228,6 +7228,84 @@ function gehirnVorschlagPruefen(roh, namen, erlaubt, rolle, heute) {
   };
 }
 
+/* ── Studio-Gehirn steuert die App (19.10.2026) ──────────────────────
+   Aus dem Betrieb: „kannst du auch dafür sorgen das die ki die ganze app
+   steuern kann". Entschieden: alle dürfen, aber nur, was sie selbst
+   dürfen; Lesen und Öffnen sofort, alles was speichert mit Vorschau und
+   Knopf. Die KI wählt nur aus diesem Katalog — nichts ausserhalb davon
+   kann sie auslösen, und geschrieben wird im Gerät mit den Rechten der
+   Person (dieselben Regeln wie die Formulare). */
+const GEHIRN_BEFEHL_ZIELE = {
+  home: 'Startseite', todos: 'Aufgaben', putzplan: 'Putzplan', material: 'Material',
+  geraete: 'Geräte', team: 'Team (Schichten, Abwesenheiten, Übergaben, Brett)', chat: 'Chat',
+  ann: 'Infos der Leitung', dm: 'Direktnachrichten', docs: 'Dokumente', schulung: 'Schulung',
+  probe: 'Probetraining', persoenlich: 'Profil und Einstellungen', archive: 'Archiv', chef: 'Verwaltung'
+};
+const GEHIRN_ABFRAGEN = ['aufgaben', 'dienst', 'abwesend'];
+
+/* Prüft den Befehl der KI und macht ihn harmlos. Rein rechnerisch
+   (__intern). Aufgabe und Ankündigung gehen weiter durch
+   gehirnVorschlagPruefen; der Rest wird hier geprüft. */
+function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
+  const r = roh || {};
+  const verwaltet = rolle === 'chef' || rolle === 'leiter';
+  const kurz = (s, n) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
+  const erlaubtSet = new Set(erlaubt || []);
+  const norm = x => String(x || '').toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
+  const studioVon = (wert) => {
+    const liste = Array.isArray(wert) ? wert : (wert ? [wert] : []);
+    for (const g of liste) {
+      const n = norm(g);
+      if (!n) continue;
+      const k = Object.keys(namen || {}).find(key => erlaubtSet.has(key) &&
+        (norm(namen[key]) === n || norm(namen[key]).indexOf(n) >= 0 || n.indexOf(norm(namen[key])) >= 0));
+      if (k) return k;
+    }
+    return '';
+  };
+  const mitStudio = (o, k) => Object.assign(o, { studioKey: k, studioName: k ? ((namen || {})[k] || k) : '' });
+
+  if (r.typ === 'aufgabe' || r.typ === 'ankuendigung') {
+    if (!verwaltet) return { typ: 'verboten', hinweis: 'Aufgaben und Ankündigungen legt die Studioleitung an. Frag sie, oder schick es als Idee an die Leitung.' };
+    return gehirnVorschlagPruefen(r, namen, erlaubt, rolle, heute);
+  }
+  if (r.typ === 'navigation') {
+    const ziel = String(r.ziel || '');
+    if (!GEHIRN_BEFEHL_ZIELE[ziel]) return null;
+    if (ziel === 'chef' && !verwaltet) return null;
+    return mitStudio({ typ: 'navigation', ziel, zielName: GEHIRN_BEFEHL_ZIELE[ziel] }, studioVon(r.studio || r.studios));
+  }
+  if (r.typ === 'abfrage') {
+    const was = String(r.was || '');
+    if (GEHIRN_ABFRAGEN.indexOf(was) < 0) return null;
+    return mitStudio({ typ: 'abfrage', was }, studioVon(r.studio || r.studios));
+  }
+  if (r.typ === 'abwesenheit') {
+    const art = ['urlaub', 'krank', 'frei'].indexOf(r.art) >= 0 ? r.art : '';
+    let von = String(r.von || ''), bis = String(r.bis || '');
+    if (!art || !DATUM_RE.test(von)) return null;
+    if (!DATUM_RE.test(bis) || bis < von) bis = von;
+    /* Krank darf heute beginnen (oder gestern, wer es morgens nachträgt);
+       Urlaub und Frei liegen in der Zukunft. Mehr als ein Jahr voraus
+       ist fast sicher ein falsch gelesenes Datum. */
+    const gestern = heute ? new Date(new Date(heute + 'T12:00:00Z').getTime() - 864e5).toISOString().slice(0, 10) : '';
+    if (heute && von < (art === 'krank' ? gestern : heute)) return null;
+    const grenze = heute ? (Number(heute.slice(0, 4)) + 1) + heute.slice(4) : '';
+    if (grenze && bis > grenze) return null;
+    const k = studioVon(r.studio || r.studios) || (erlaubt || [])[0] || '';
+    if (!k) return null;
+    return mitStudio({ typ: 'abwesenheit', art, von, bis, notiz: kurz(r.notiz, 200) }, k);
+  }
+  if (r.typ === 'uebergabe') {
+    const text = String(r.text || '').trim().slice(0, 500);
+    if (!text) return null;
+    const k = studioVon(r.studio || r.studios) || (erlaubt || [])[0] || '';
+    if (!k) return null;
+    return mitStudio({ typ: 'uebergabe', text }, k);
+  }
+  return null;
+}
+
 exports.gehirnAktion = region
   .runWith({ timeoutSeconds: 60, memory: '256MB' })
   .https.onCall(async (data, context) => {
@@ -7237,11 +7315,9 @@ exports.gehirnAktion = region
       throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
     }
     const rolle = profil.role;
-    if (rolle !== 'chef' && rolle !== 'leiter') {
-      throw new functions.https.HttpsError('permission-denied', '„Anlegen lassen" gibt es für Studioleitung und Chefs.');
-    }
+    const verwaltet = rolle === 'chef' || rolle === 'leiter';
     const auftrag = String((data || {}).text || '').trim().slice(0, 1000);
-    if (!auftrag) throw new functions.https.HttpsError('invalid-argument', 'Bitte zuerst schreiben, was angelegt werden soll.');
+    if (!auftrag) throw new functions.https.HttpsError('invalid-argument', 'Bitte zuerst schreiben, was passieren soll.');
     const apiKey = process.env.GEMINI_API_KEY || '';
     await tagesGrenze('gehirnAktion', GEHIRN_AKTION_GRENZE, firma);
 
@@ -7251,26 +7327,36 @@ exports.gehirnAktion = region
       : (Array.isArray(profil.studioKeys) ? profil.studioKeys : []).filter(k => namen[k]);
     const heute = tagBerlin(new Date());
     const wochentag = new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin', weekday: 'long' });
+    const ziele = Object.keys(GEHIRN_BEFEHL_ZIELE).filter(z => z !== 'chef' || verwaltet)
+      .map(z => z + ' = ' + GEHIRN_BEFEHL_ZIELE[z]).join('; ');
     const system =
-      'Du wandelst eine kurze Anweisung der Studioleitung eines EMS-Studios in einen Vorschlag für StudioChat um. ' +
-      'Heute ist ' + wochentag + ', ' + heute + ' (Europe/Berlin). ' +
-      'Antworte NUR mit JSON: {"typ":"aufgabe"|"ankuendigung"|"keins","titel":"...","text":"...","schritte":["..."],' +
-      '"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"],"wichtig":true|false,"hinweis":"..."}. ' +
-      'Regeln: "aufgabe" = etwas, das im Studio erledigt und abgehakt wird; "ankuendigung" = eine Information an das Team. ' +
-      'Titel kurz (max. 80 Zeichen), Text sachlich. Teilschritte nur, wenn die Anweisung mehrere Tätigkeiten nennt. ' +
-      'Frist nur, wenn eine Zeit genannt ist ("bis Freitag" = der nächste Freitag). ' +
-      'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '; "alle" wenn alle gemeint sind. ' +
-      'Keine Kundennamen oder Gesundheitsdaten übernehmen. Ist es weder Aufgabe noch Ankündigung: typ "keins" und ein kurzer hinweis.';
+      'Du steuerst die App StudioChat eines EMS-Studios für eine Person mit der Rolle ' +
+      (rolle === 'chef' ? 'Geschäftsführung' : (rolle === 'leiter' ? 'Studioleitung' : 'Mitarbeiter')) + '. ' +
+      'Heute ist ' + wochentag + ', ' + heute + ' (Europe/Berlin). Wähle GENAU EINE Aktion und antworte NUR mit JSON. ' +
+      'Mögliche Aktionen: ' +
+      '{"typ":"navigation","ziel":"<Schlüssel>","studio":"Studioname oder leer"} — eine Seite öffnen. Ziele: ' + ziele + '. ' +
+      '{"typ":"abfrage","was":"aufgaben"|"dienst"|"abwesend","studio":"Studioname oder leer"} — offene/überfällige Aufgaben, wer heute Dienst hat, wer heute fehlt. ' +
+      '{"typ":"abwesenheit","art":"urlaub"|"krank"|"frei","von":"YYYY-MM-DD","bis":"YYYY-MM-DD","notiz":"..."} — die Person meldet SICH SELBST ab (nur sich selbst). ' +
+      '{"typ":"uebergabe","text":"...","studio":"Studioname oder leer"} — Notiz an die nächste Schicht. ' +
+      (verwaltet
+        ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]} — etwas, das im Studio erledigt und abgehakt wird. ' +
+          '{"typ":"ankuendigung","text":"...","studios":["Studioname" oder "alle"],"wichtig":true|false} — Information an das Team. '
+        : '') +
+      '{"typ":"keins","hinweis":"..."} — wenn nichts davon passt oder es um andere Personen geht (z. B. jemand anderen krankmelden). ' +
+      'Regeln: Datumsangaben wie "morgen", "bis Freitag" in echte Daten umrechnen. Titel kurz (max. 80 Zeichen). ' +
+      'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '. ' +
+      'Keine Kundennamen und keine Gesundheitsdetails übernehmen — bei "krank" keinen Grund in die Notiz.';
     let roh;
     try { roh = await kiJson(system, auftrag, apiKey); }
     catch (e) {
       console.error('gehirnAktion:', e.message);
       throw new functions.https.HttpsError('unavailable', e.message);
     }
-    const vorschlag = gehirnVorschlagPruefen(roh, namen, erlaubt, rolle, heute);
+    const geprueft = gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute);
+    if (geprueft && geprueft.typ === 'verboten') return { vorschlag: null, hinweis: geprueft.hinweis };
     return {
-      vorschlag,
-      hinweis: vorschlag ? '' : String((roh && roh.hinweis) || '').slice(0, 300)
+      vorschlag: geprueft,
+      hinweis: geprueft ? '' : String((roh && roh.hinweis) || '').slice(0, 300)
     };
   });
 
@@ -7414,7 +7500,7 @@ exports.lageberichtJetzt = region
   });
 
 exports.__intern = { gehirnErlaubt, gehirnAuftrag, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
-                     gehirnVorschlagPruefen, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
+                     gehirnVorschlagPruefen, gehirnBefehlPruefen, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
