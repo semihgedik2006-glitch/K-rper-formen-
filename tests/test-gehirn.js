@@ -94,7 +94,7 @@ const antwort = (p, mit) => p.evaluate((m) => {
     window.__antwort[k] = v.fehler ? () => Promise.reject(v.fehler) : () => Promise.resolve({ data: v.data });
   });
 }, mit);
-const fertig = (p) => p.waitForFunction(() => !document.querySelector('#gehirnVerlauf .gehirn-denkt'), null, { timeout: 5000 });
+const fertig = (p) => p.waitForFunction(() => !document.querySelector('#gehirnVerlauf .gehirn-denkt, #gehirnVerlauf .gv-rohbau'), null, { timeout: 5000 });
 const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerlauf').innerText);
 
 (async () => {
@@ -223,6 +223,84 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
+  console.log('\n── 8b Vorschau-Karte, Animation, „Jetzt anlegen" ──');
+  /* Aus dem Betrieb (18.10.2026): „mit animationen … beim anlegen und
+     das es übersichtlicher funktioniert". */
+  {
+    const p = await oeffne(b, 1440, 900);
+    await aufSeite(p);
+    /* Hürth ist in der Attrappe studio-6; der Chef darf in jedes Studio schreiben. */
+    const sk = 'studio-6';
+    // Während die KI baut: ein Rohbau der Karte, kein leerer Platz
+    await p.evaluate(() => { window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = () => new Promise(r => { window.__losGeht = r; }); });
+    await p.fill('#gehirnFeld', 'Bis Freitag in Hürth die Geräte desinfizieren');
+    await p.click('#gehirnAnlegen');
+    await p.waitForTimeout(150);
+    pruefe('während die KI baut: Rohbau der Karte mit Text', await sichtbar(p, '#gehirnVerlauf .gv-rohbau') && /Baue deinen Vorschlag/.test(await verlaufText(p)));
+    await p.evaluate((k) => window.__losGeht({ data: { vorschlag: {
+      typ: 'aufgabe', titel: 'Geräte desinfizieren', text: 'Westen und Kabel', schritte: ['Westen', 'Kabel'],
+      frist: '2026-10-23', alle: false, studioKeys: k ? [k] : [], studioNamen: ['Hürth'], wichtig: false } } }), sk);
+    await fertig(p);
+    const karte = await p.evaluate(() => {
+      const k = document.querySelector('#gehirnVerlauf .gv-karte');
+      return k && { neu: k.classList.contains('gv-neu'), anim: [...k.children].map(c => getComputedStyle(c).animationName),
+        verz: [...k.children].map(c => getComputedStyle(c).animationDelay), text: k.innerText,
+        kaestchen: k.querySelectorAll('.gv-kaestchen').length };
+    });
+    pruefe('die Vorschau sieht aus wie eine Aufgabe (Titel, Schritte, Frist, Studio)', karte && /Geräte desinfizieren/.test(karte.text) &&
+      karte.kaestchen === 2 && /23\.10\.2026/.test(karte.text) && /Hürth/.test(karte.text), karte && karte.text);
+    pruefe('… die Teile kommen nacheinander herein (gestaffelt)', karte && karte.neu && karte.anim.every(a => a === 'gehirnRein') &&
+      new Set(karte.verz).size === karte.verz.length, karte && JSON.stringify(karte.verz));
+    pruefe('zwei klare Wege: „Jetzt anlegen" und „Im Formular bearbeiten"',
+      await sichtbar(p, '#gehirnVerlauf [data-ganlegen]') && await sichtbar(p, '#gehirnVerlauf [data-gvorschlag]'));
+    const vorher = await p.evaluate(() => (window.__schreib || []).length);
+    pruefe('vor dem Druck ist nichts gespeichert', vorher === await p.evaluate(() => (window.__schreib || []).length));
+    await p.click('#gehirnVerlauf [data-ganlegen]');
+    await p.waitForTimeout(500);
+    const geschrieben = await p.evaluate((n) => (window.__schreib || []).slice(n), vorher);
+    const g = geschrieben[0] || {};
+    pruefe('„Jetzt anlegen" schreibt die Aufgabe ins gewählte Studio', geschrieben.length === 1 && sk && g.pfad.indexOf('studios/' + sk + '/todos/') >= 0, JSON.stringify(geschrieben).slice(0, 300));
+    pruefe('… mit denselben Feldern wie das Formular', g.daten && g.daten.title === 'Geräte desinfizieren' && g.daten.done === false &&
+      g.daten.createdByUid === 'testuid' && g.daten.steps && g.daten.steps.length === 2 && typeof g.daten.due === 'number', JSON.stringify(g.daten));
+    const fertigK = await p.evaluate(() => {
+      const k = document.querySelector('#gehirnVerlauf .gv-karte');
+      const pfad = k && k.querySelector('.gv-haken path');
+      return k && { fertig: k.classList.contains('gv-fertig'), haken: pfad ? getComputedStyle(pfad).animationName : '',
+        neuWieder: k.classList.contains('gv-neu'), text: k.innerText, knopf: !!k.querySelector('[data-ganlegen]') };
+    });
+    pruefe('danach: Haken zeichnet sich, „angelegt" steht da', fertigK && fertigK.fertig && fertigK.haken === 'gvHaken' && /angelegt/.test(fertigK.text), JSON.stringify(fertigK));
+    pruefe('… die Karte kommt NICHT ein zweites Mal herein, und „Jetzt anlegen" ist weg', fertigK && !fertigK.neuWieder && !fertigK.knopf);
+    await p.click('#gehirnVerlauf .gv-fertig [data-gziel]');
+    await p.waitForTimeout(400);
+    pruefe('„Zu den Aufgaben ›" führt hin', await sichtbar(p, '#view-todos.show'));
+
+    // Ankündigung: „Jetzt senden"
+    await aufSeite(p);
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'ankuendigung', titel: '', text: 'Morgen Teammeeting um 9', schritte: [],
+      frist: '', alle: true, studioKeys: [], studioNamen: [], wichtig: true } } } });
+    await p.fill('#gehirnFeld', 'Sag allen: morgen Teammeeting um 9, wichtig');
+    await p.click('#gehirnAnlegen'); await fertig(p);
+    const vorher2 = await p.evaluate(() => (window.__schreib || []).length);
+    const knopf = await p.evaluate(() => { const l = document.querySelectorAll('#gehirnVerlauf [data-ganlegen]'); return l.length ? l[l.length - 1].textContent.trim() : ''; });
+    pruefe('Ankündigung: der Knopf heisst „Jetzt senden"', knopf === 'Jetzt senden', knopf);
+    await p.evaluate(() => { const l = document.querySelectorAll('#gehirnVerlauf [data-ganlegen]'); l[l.length - 1].click(); });
+    await p.waitForTimeout(500);
+    const a = (await p.evaluate((n) => (window.__schreib || []).slice(n), vorher2)).filter(x => /^announcements/.test(x.pfad));
+    pruefe('… schreibt eine Ankündigung an alle, „wichtig" mit leerer Bestätigungsliste', a.length === 1 && /announcements/.test(a[0].pfad) &&
+      a[0].daten.target === 'all' && a[0].daten.wichtig === true && Array.isArray(a[0].daten.bestaetigtVon), JSON.stringify(a).slice(0, 300));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+  {
+    const p = await oeffne(b, 390, 844, { wenigBewegung: true });
+    await aufSeite(p);
+    await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'aufgabe', titel: 'X', alle: true, studioKeys: [], studioNamen: [] } } } });
+    await p.fill('#gehirnFeld', 'Aufgabe X'); await p.click('#gehirnAnlegen'); await fertig(p);
+    const anim = await p.evaluate(() => [...document.querySelectorAll('#gehirnVerlauf .gv-karte > *')].map(c => getComputedStyle(c).animationName));
+    pruefe('„weniger Bewegung": die Karte steht sofort ganz da', anim.length && anim.every(a => a === 'none'), JSON.stringify(anim));
+    await zu(p);
+  }
+
   console.log('\n── 9 Lagebericht ──');
   {
     const p = await oeffne(b, 1440, 900, { vorher: () => {
@@ -315,7 +393,9 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       });
       await p.fill('#gehirnFeld', 'Wie lege ich eine Aufgabe an?'); await p.click('#gehirnFragen'); await fertig(p);
       await p.fill('#gehirnFeld', 'Aufgabe X'); await p.click('#gehirnAnlegen'); await fertig(p);
-      zuKlein = zuKlein.concat(await ids('#gehirnVerlauf [data-gziel], #gehirnVerlauf [data-gvorschlag]'));
+      zuKlein = zuKlein.concat(await ids('#gehirnVerlauf [data-gziel], #gehirnVerlauf [data-gvorschlag], #gehirnVerlauf [data-ganlegen]'));
+      await p.click('#gehirnVerlauf [data-ganlegen]'); await p.waitForTimeout(400);
+      zuKlein = zuKlein.concat(await ids('#gehirnVerlauf .gv-fertig [data-gziel]'));
       const breit = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
       pruefe(w + ' px ' + dichte + ': jedes neue Bedienelement ≥ 44 × 44, nichts ragt hinaus',
         !zuKlein.length && !breit, zuKlein.join(', ') + (breit ? ' · Seite scrollt seitlich' : ''));

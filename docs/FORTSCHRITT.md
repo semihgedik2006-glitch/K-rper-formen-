@@ -15735,3 +15735,45 @@ test-funktionen-pfade, test-funktionen-schalter, test-neu-messlatte.
 Worker 2.4 eingefügt ist. Auch der **Marketing-Chat** nutzt denselben
 Gemini-Schlüssel und dürfte bis zur Zahlung ebenfalls 402 melden —
 nicht umgestellt.
+
+---
+
+## Runde 153 — „Anlegen lassen": Vorschau-Karte, Animation, direkt anlegen (19.10.2026)
+
+**Aus dem Betrieb:** „es klappt, wäre es auch möglich das mit animationen
+zu machen beim anlegen und so und das es übersichtlicher funktioniert".
+
+**Was man sieht**
+- Während die KI arbeitet: ein **Rohbau** der Karte (Platzhalter-Zeilen
+  mit einem Glanz, der per `transform` durchläuft) und „Baue deinen
+  Vorschlag …" — statt drei Punkten weiss man, was kommt.
+- Der Vorschlag ist eine **Vorschau-Karte**, die aussieht wie die
+  Aufgabe: Art-Marke, Titel, Text, Schritte mit leeren Kästchen, Frist
+  und Studio als Chips. Die Teile kommen einmal gestaffelt herein
+  (`--gv-i` × 70 ms, nur `transform`/`opacity`, `backwards`); beim
+  nächsten Zeichnen steht sie still.
+- Zwei klare Wege: **„Jetzt anlegen"** („Jetzt senden" bei Ankündigungen)
+  und „Im Formular bearbeiten" (der bisherige Weg).
+- Danach zeichnet sich ein **Haken** (`stroke-dashoffset`, einmal), der
+  Rand wird grün — Grün heisst hier „gespeichert" — und „Zu den
+  Aufgaben ›" führt hin.
+- „Weniger Bewegung": alles steht sofort.
+
+**Warum direkt anlegen, obwohl „Vorschlag + Bestätigen" gewählt war:**
+Die Bestätigung ist der Druck auf „Jetzt anlegen" *nach* der Vorschau —
+die KI schreibt weiterhin nie selbst. Geschrieben wird mit den Rechten
+der Person und mit denselben Feldern wie das Formular unter
+Verwaltung → Erstellen, damit Regeln und Aufgabenliste keinen zweiten
+Fall kennen. Studios nur aus `schreibStudios()`; eine Ankündigung an
+„alle" nur für Chefs.
+
+**Geprüft:** test-gehirn (77, davon 14 neu: Rohbau, Vorschau-Inhalt,
+Staffelung, beide Knöpfe, Schreiben mit Formularfeldern, Haken, kein
+zweites Hereinkommen, Ankündigung „wichtig", weniger Bewegung,
+Trefferflächen 320–1920 px normal und kompakt). Gegenprobe:
+`schreibStudios()` leer → vier Prüfungen rot. Dazu test-csp,
+test-neu-messlatte, test-gestaltung, test-knoepfe, test-abgeschnitten,
+test-neu-design, test-navigation, test-quer, test-hilfe-pc grün.
+
+**Nicht geprüft:** das Schreiben gegen die echte Datenbank (SDK lädt im
+Test-Browser nicht) — gegen die Attrappe ja.
