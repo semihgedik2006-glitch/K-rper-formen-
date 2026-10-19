@@ -678,10 +678,22 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     });
     await p.click('#jarvisVerlauf [data-jvbefehl="Wie wasche ich die Westen?"]');
     await p.waitForTimeout(200);
+    /* Aus dem Betrieb (20.10.2026): „mehr animationen für den chat und so
+       hologramme dinger". */
+    const holo = await p.evaluate(() => {
+      const f = document.querySelector('#jarvisVerlauf .gehirn-frage'), k = document.querySelector('#jarvisVerlauf .gehirn-antwort');
+      return { frage: getComputedStyle(f).animationName, funk: getComputedStyle(f, '::after').animationName,
+        laeuft: k.classList.contains('ga-laeuft') && getComputedStyle(k, '::after').animationName,
+        ecken: (getComputedStyle(k).backgroundImage.match(/linear-gradient/g) || []).length };
+    });
+    pruefe('Hologramm: Frage wird gesendet (mit Funkstrahl), Karte tastet beim Denken ab, Eckwinkel', holo.frage === 'jvSenden' && holo.funk === 'jvFunk' && holo.laeuft === 'jvKarteScan' && holo.ecken >= 4, JSON.stringify(holo));
     pruefe('Antippen schickt ab, das HUD „denkt" (Wellen, Equalizer)', await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-z-denkt') &&
       getComputedStyle(document.querySelector('#jarvisKern s')).animationName === 'jvWelle'));
     await p.waitForFunction(() => !document.querySelector('#jarvisVerlauf .gehirn-denkt'), null, { timeout: 5000 });
-    await p.waitForTimeout(300);
+    const tippt = await p.evaluate(() => { const g = document.querySelector('#jarvisVerlauf .ga-text'); return { an: g.classList.contains('tippt'), cursor: getComputedStyle(g, '::after').animationName, karte: getComputedStyle(document.querySelector('#jarvisVerlauf .gehirn-antwort')).animationName }; });
+    pruefe('Antwort projiziert sich (jvHolo) und schreibt mit leuchtendem Cursor', tippt.an && tippt.cursor === 'jvBlinken' && tippt.karte === 'jvHolo', JSON.stringify(tippt));
+    await p.waitForTimeout(1500);
+    pruefe('… der Cursor verschwindet, wenn alles dasteht', await p.evaluate(() => !document.querySelector('#jarvisVerlauf .ga-text.tippt')));
     pruefe('nach der Antwort denkt es nicht mehr', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-z-denkt'))));
     const ton = await p.evaluate(() => ({ k: window.__klaenge, g: window.__gesprochen }));
     pruefe('Klänge beim Senden und Fertig; die Antwort wird vorgelesen — ohne Warnzeile', ton.k >= 2 && ton.g.length === 1 && /Schonprogramm/.test(ton.g[0]) && !/geprüft/.test(ton.g[0]), JSON.stringify(ton));

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-dfbykKhFkwwbJOdMYFXG7Esrjc8tIPiouHu9uz1criA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-MpmlQVcrKIkjZ0jUUvIeotyUH0zmCZuDGmXcPY4qKrs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5401,15 +5401,16 @@ body.jv-offen{overflow:hidden}
 .jv-eq{display:flex;align-items:center;gap:var(--s2);height:28px}
 .jv-eq u{display:block;width:3px;height:100%;border-radius:var(--r-pille);background:linear-gradient(var(--jv-cyan), var(--jv-blau));
   transform:scaleY(.12);opacity:.55;transition:transform .3s ease, opacity .3s ease}
-.jarvis.jv-z-hoert .jv-eq u,.jarvis.jv-z-spricht .jv-eq u,.jarvis.jv-z-denkt .jv-eq u{opacity:1;animation:jvEq .9s ease-in-out infinite alternate}
-.jarvis.jv-z-denkt .jv-eq u{animation-duration:1.6s;opacity:.7}
+.jarvis.jv-z-hoert .jv-eq u,.jarvis.jv-z-spricht .jv-eq u{opacity:1;animation:jvEq .9s ease-in-out infinite alternate}
+.jarvis.jv-z-denkt .jv-eq u{opacity:.7;animation:jvEq 1.6s ease-in-out infinite alternate}
 .jv-eq u:nth-child(3n){animation-delay:-.3s}
 .jv-eq u:nth-child(3n+1){animation-delay:-.55s}
 .jv-eq u:nth-child(4n){animation-delay:-.15s;animation-duration:.7s}
 .jv-eq u:nth-child(5n){animation-delay:-.75s}
 @keyframes jvEq{0%{transform:scaleY(.15)}100%{transform:scaleY(1)}}
 .jv-status{margin:0;text-align:center;font-family:var(--jv-schrift);font-size:var(--t-sm);color:var(--text-2);min-height:1.5em;max-width:34ch}
-.jv-status::after{content:"▍";margin-left:var(--s2);color:var(--jv-cyan);animation:jvBlinken 1s steps(1) infinite}
+.jv-status::after,.jarvis .ga-text.tippt::after{content:"";display:inline-block;width:.45em;height:1.05em;margin-left:var(--s2);vertical-align:-.15em;
+  background:var(--jv-cyan);box-shadow:0 0 8px rgba(var(--jv-rgb),.8);animation:jvBlinken 1s steps(1) infinite}
 /* Messwerte (am Rechner) */
 .jv-werte{display:none;margin:0;width:100%;max-width:300px;font-family:var(--jv-schrift);font-size:var(--t-2xs);
   letter-spacing:var(--ls-m);text-transform:uppercase}
@@ -5433,19 +5434,72 @@ body.jv-offen{overflow:hidden}
 @keyframes jvRechtsAuf{from{opacity:0;transform:translate3d(0,14px,0)}}
 .jv-rechts{position:relative;display:flex;flex-direction:column;min-height:0;gap:var(--s8)}
 .jv-verlauf{flex:1 1 auto;overflow:auto;min-height:0;padding-right:var(--s4);overscroll-behavior:contain}
-/* Hologramm-Karten */
-.jarvis .gehirn-antwort{background:var(--jv-glas);border:1px solid var(--jv-kante);
+/* Hologramm-Karten (20.10.2026, „mehr animationen für den chat und so
+   hologramme dinger"). Was still steht, kostet nichts: Eckwinkel und
+   feine Zeilen liegen als Hintergrund-Ebenen auf der Karte. Bewegt wird
+   nur beim Hereinkommen (einmal) und solange gedacht wird — und nur
+   transform/opacity. */
+.jarvis .gehirn-antwort{border:1px solid var(--jv-kante);
+  background:
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right top / 16px 2px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right top / 2px 16px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right bottom / 16px 2px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right bottom / 2px 16px no-repeat,
+    repeating-linear-gradient(0deg, rgba(var(--jv-rgb),.035) 0 1px, transparent 1px 4px),
+    var(--jv-glas);
   box-shadow:inset 0 0 24px rgba(var(--jv-rgb),.06), 0 0 18px rgba(var(--jv-rgb),.08)}
 .jarvis .gehirn-antwort::before{background:linear-gradient(var(--jv-cyan), var(--jv-blau));box-shadow:0 0 12px rgba(var(--jv-rgb),.8)}
 .jarvis .gehirn-antwort .ga-kopf{font-family:var(--jv-schrift);color:var(--jv-cyan)}
 .jarvis .gehirn-frage{background:rgba(122,168,255,.12);border-color:rgba(122,168,255,.35)}
-.jarvis .gehirn-antwort.rein{animation-name:jvHolo;animation-duration:.55s;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
-@keyframes jvHolo{0%{opacity:0;transform:translate3d(0,12px,0) scale(.98)}40%{opacity:.6}60%{opacity:.35}100%{opacity:1;transform:none}}
+.jarvis .gehirn-antwort.rein{animation-name:jvHolo;animation-duration:.7s;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+/* Projektion: erst eine Lichtlinie, dann klappt die Karte auf und
+   flackert einmal wie ein Hologramm, das sich stabilisiert. */
+@keyframes jvHolo{0%{opacity:0;transform:scale(.5,.02)}22%{opacity:1;transform:scale(1,.02)}55%{transform:scale(1,1.03)}
+  64%{opacity:.55}72%{opacity:1}80%{opacity:.75}100%{opacity:1;transform:none}}
+/* Die Frage wird „gesendet": sie kommt von rechts, ein Funkstrahl läuft
+   nach links Richtung Kern. */
+.jarvis .gehirn-frage{position:relative}
+.jarvis .gehirn-frage.rein{animation-name:jvSenden;animation-duration:.45s}
+@keyframes jvSenden{0%{opacity:0;transform:translate3d(36px,0,0) scale(.92)}60%{opacity:1}100%{transform:none}}
+.jarvis .gehirn-frage::after{content:"";position:absolute;right:100%;top:50%;width:140px;height:1px;opacity:0;pointer-events:none;
+  background:linear-gradient(90deg, transparent, var(--jv-cyan));transform-origin:100% 50%}
+.jarvis .gehirn-frage.rein::after{animation:jvFunk .7s ease-out backwards;animation-delay:calc(var(--rein,0ms) + 120ms)}
+@keyframes jvFunk{0%{opacity:1;transform:scaleX(0)}55%{opacity:.9;transform:scaleX(1)}100%{opacity:0;transform:translate3d(-80px,0,0) scaleX(.4)}}
+/* Schritte: jeder kommt von links, der Haken springt auf */
+.jarvis .gs-schritte li{font-family:var(--jv-schrift);font-size:var(--t-xs)}
+.jarvis .gs-schritte li.rein{animation-name:jvSchritt;animation-duration:.4s}
+@keyframes jvSchritt{0%{opacity:0;transform:translate3d(-14px,0,0)}60%{opacity:1}100%{transform:none}}
+.jarvis .gs-schritte li span{display:inline-block}
+.jarvis .gs-schritte li.rein span{animation:jvHaken .45s cubic-bezier(.3,1.6,.5,1) backwards;animation-delay:calc(var(--rein,0ms) + 120ms)}
+@keyframes jvHaken{0%{opacity:0;transform:scale(0)}100%{opacity:1;transform:none}}
+/* Solange gedacht wird: eine Abtastlinie fährt über die Karte. Die
+   laufende Karte ist meist auch .rein — die zweite Zeile gewinnt deshalb
+   über den Lichtstreif (gemessen: vorher lief jvStreif statt der Linie). */
+.jarvis .gehirn-antwort.ga-laeuft::after,.jarvis .gehirn-antwort.rein.ga-laeuft::after{content:"";position:absolute;left:0;right:0;top:0;height:40%;pointer-events:none;
+  background:linear-gradient(transparent, rgba(var(--jv-rgb),.16) 85%, rgba(var(--jv-rgb),.45) 99%, transparent);
+  transform:translate3d(0,-100%,0);animation:jvKarteScan 1.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes jvKarteScan{to{transform:translate3d(0,260%,0)}}
 .jarvis .gehirn-antwort.rein::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(100deg, transparent 30%, rgba(var(--jv-rgb),.22) 50%, transparent 70%);
   transform:translate3d(-110%,0,0);animation:jvStreif .9s ease-out backwards;animation-delay:var(--rein,0ms)}
 @keyframes jvStreif{to{transform:translate3d(110%,0,0)}}
 .jv-eingabe{display:flex;flex-direction:column;gap:var(--s8)}
+/* Projektor unter dem Kern und Datenpakete zum Gespräch (am Rechner) */
+.jv-kern::after{content:"";position:absolute;left:12%;right:12%;bottom:-22%;height:16%;border-radius:var(--r-rund);pointer-events:none;
+  background:radial-gradient(closest-side, rgba(var(--jv-rgb),.4), transparent);animation:jvFlimmern 3.2s ease-in-out infinite}
+@keyframes jvFlimmern{0%,100%{opacity:.55}45%{opacity:1}50%{opacity:.7}55%{opacity:1}}
+.jv-paket{display:none}
+@media (min-width:1100px){
+  .jv-paket{display:block;position:absolute;left:100%;top:calc(50% - var(--s2));width:var(--s40);height:var(--s4);overflow:hidden;opacity:0;transition:opacity .3s ease}
+  .jarvis.jv-z-denkt .jv-paket{opacity:1}
+  .jv-paket::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg, rgba(var(--jv-rgb),.12), rgba(var(--jv-rgb),.35))}
+  .jv-paket i{position:absolute;top:0;left:0;width:var(--s8);height:100%;border-radius:var(--r-pille);background:var(--jv-cyan);
+    box-shadow:0 0 8px rgba(var(--jv-rgb),.9);transform:translate3d(-12px,0,0)}
+  .jarvis.jv-z-denkt .jv-paket i{animation:jvPaket .9s linear infinite}
+  .jarvis.jv-z-denkt .jv-paket i:nth-child(2){animation-delay:.3s}
+  .jarvis.jv-z-denkt .jv-paket i:nth-child(3){animation-delay:.6s}
+}
+@keyframes jvPaket{to{transform:translate3d(52px,0,0)}}
 /* Leerer Verlauf: Begrüssung und Vorschläge zum Antippen */
 .jv-leer{margin:auto 0;padding:var(--s16) 0;text-align:center}
 .jv-gruss{margin:0 0 var(--s6);font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);line-height:var(--lh-eng);
@@ -5484,7 +5538,10 @@ body.jv-offen{overflow:hidden}
 @media (prefers-reduced-motion:reduce){
   .gs-schritte li,.jv-kern i,.jv-kern.denkt b,.jarvis.jv-z-denkt .jv-kern b,.jv-skala,.jv-boegen,.jv-scan,.jv-punkt,
   .jarvis .jv-kern s,.jarvis .jv-eq u,.jv-status::after,.jarvis.jv-boot .jv-log li,.jarvis.jv-boot .jv-ecke,.jarvis.jv-boot .jv-kern,
-  .jarvis.jv-boot .jv-rechts,.jarvis .gehirn-antwort.rein,.jarvis .gehirn-antwort.rein::after,.jarvis.jv-boot .jv-chip{animation:none}
+  .jarvis.jv-boot .jv-rechts,.jarvis .gehirn-antwort.rein,.jarvis .gehirn-antwort.rein::after,.jarvis.jv-boot .jv-chip,
+  .jarvis .gehirn-frage.rein,.jarvis .gehirn-frage.rein::after,.jarvis .gs-schritte li.rein,.jarvis .gs-schritte li.rein span,
+  .jarvis .gehirn-antwort.ga-laeuft::after,.jarvis .gehirn-antwort.rein.ga-laeuft::after,.jv-kern::after,.jarvis.jv-z-denkt .jv-paket i,.jarvis .ga-text.tippt::after{animation:none}
+  .jarvis .gehirn-antwort.ga-laeuft::after,.jarvis .gehirn-antwort.rein.ga-laeuft::after{display:none}
   .jv-chip{transition:none}
   .jv-scan{display:none}
   .jarvis,.jv-kern{transition:none}
@@ -11399,6 +11456,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
         <svg class="jv-boegen" viewBox="0 0 200 200"><circle class="b1" cx="100" cy="100" r="88"/><circle class="b2" cx="100" cy="100" r="80"/></svg>
         <i></i><i></i><i></i><s></s><s></s><s></s><b></b>
       </div>
+      <span class="jv-paket" aria-hidden="true"><i></i><i></i><i></i></span>
       <div class="jv-eq" aria-hidden="true"><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div>
       <p class="jv-status" id="jarvisStatus" role="status">Bereit. Frag mich — oder sag, was ich tun soll.</p>
       <dl class="jv-werte">
@@ -19376,6 +19434,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-20-jarvis-hud', datum:'20.10.2026', titel:'Studio-Gehirn: Hologramm-Fenster mit Ton, dazu Daumen', wo:'home', punkte:[
+    'Das Fenster des Studio-Gehirns sieht jetzt aus wie ein Iron-Man-Bildschirm: leuchtender Kern, schwebende Lichtpunkte, eine Uhr und eine Begrüssung mit vier Vorschlägen zum Antippen.',
+    'Deine Frage fliegt als Funkspruch zum Kern, die Antwort baut sich wie ein Hologramm auf und schreibt sich mit leuchtendem Cursor hin. Beim Nachdenken kreisen die Lichtpunkte um den Kern.',
+    'Jarvis hat Ton: kurze Klänge beim Öffnen, Senden und Fertig, und die Antwort wird vorgelesen. Oben im Fenster schaltest du beides mit einem Tipp ab.',
+    'Unter jeder Antwort stehen jetzt „Passt" und „Stimmt nicht". Passt hilft, unsere eigene KI zu trainieren – Stimmt nicht schickt die Antwort zur Prüfung an Semih.' ] },
   { id:'2026-10-19-gehirn-scrollen', datum:'19.10.2026', titel:'Studio-Gehirn-Fenster: Verlauf scrollt wieder', wo:'home', punkte:[
     'Im Fenster des Studio-Gehirns waren die Antworten auf eine Zeile zusammengedrückt und der Verlauf ließ sich nicht scrollen. Jetzt steht jede Antwort ganz da, und du kannst nach oben scrollen.',
     'Nach dem Senden springt der Verlauf ans Ende und bleibt dort, bis die Antwort fertig ist – scrollst du selbst nach oben, lässt er dich in Ruhe.' ] },
@@ -24031,7 +24094,7 @@ function gehirnZeichnenIn(box, tippen){
     var kopf='<div class="ga-kopf">'+ikon('gehirn')+'<span>Studio-Gehirn</span></div>';
     var antwort;
     if(v.laeuft){
-      antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+gehirnSchritteHTML(v, true)+
+      antwort='<div class="gehirn-antwort ga-laeuft" aria-live="polite">'+kopf+gehirnSchritteHTML(v, true)+
         '<span class="gehirn-denkt" role="status" aria-label="Das Studio-Gehirn denkt nach"><i></i><i></i><i></i></span></div>';
     } else if(v.fehler){
       antwort='<div class="gehirn-antwort fehler" role="alert">'+kopf+
@@ -24125,11 +24188,13 @@ function gehirnTippen(el, text){
   if(gehirnWenigBewegung()){ el.textContent=text; return; }
   var worte=text.split(/(\s+)/), i=0;
   var proBild=Math.max(1, Math.ceil(worte.length/72));
+  el.classList.add('tippt');
   function schritt(){
     if(!el.isConnected){ return; }
     i=Math.min(worte.length, i+proBild);
     el.textContent=worte.slice(0,i).join('');
     if(i<worte.length) requestAnimationFrame(schritt);
+    else el.classList.remove('tippt');
   }
   requestAnimationFrame(schritt);
 }
@@ -24868,7 +24933,7 @@ function jvTonKnopf(){
   var b=$('jarvisTon'); if(!b) return;
   b.setAttribute('aria-pressed', _jvTonAn ? 'true' : 'false');
   b.setAttribute('aria-label', _jvTonAn ? 'Ton und Stimme ausschalten' : 'Ton und Stimme einschalten');
-  b.innerHTML=ikon(_jvTonAn ? 'ton' : 'stumm');
+  b.innerHTML=_jvTonAn ? ikon('ton') : ikon('stumm');
 }
 function jvTon(art){
   if(!_jvTonAn || !jarvisOffen() && art!=='zu') return;
@@ -24907,7 +24972,7 @@ function jvStill(){
    würden; höchstens ~600 Zeichen. */
 function jvSprechen(text){
   if(!_jvTonAn || !jarvisOffen() || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
-  var t=String(text||'').split('\n\n⚠️')[0].replace(/[*_#>•]/g,' ').replace(/\s+/g,' ').trim().slice(0, 600);
+  var t=String(text||'').split(/\n\n\u26a0/)[0].replace(/[*_#>•]/g,' ').replace(/\s+/g,' ').trim().slice(0, 600);
   if(!t) return;
   try{
     window.speechSynthesis.cancel();
