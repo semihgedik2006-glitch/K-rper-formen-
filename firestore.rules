@@ -106,7 +106,7 @@ service cloud.firestore {
         && manages(request.resource.data.studioKey);
     }
 
-    /* ── Schichtplaner: Wünsche der Mitarbeiter (Runde 154) ──
+    /* ── Schichtplaner: Wünsche der Mitarbeiter (Runde 156) ──
        Jeder trägt nur für SICH ein, unter der Kennung <uid>_<JJJJ-MM>
        — so gibt es je Person und Monat genau ein Dokument, und niemand
        kann unter fremdem Namen „frei" wünschen. Die Frist hält die
@@ -1110,7 +1110,7 @@ service cloud.firestore {
       allow delete: if aufFlachenPfaden() && isChef();
     }
 
-    /* ── Schichtplaner (Runde 154) ──
+    /* ── Schichtplaner (Runde 156) ──
        planerTeam: Rolle, Stunden, wer wann kann — das plant der Chef.
          Die Person selbst darf ihre eigene Zeile lesen (sonst wüsste
          die App nicht, ob sie nach Wünschen fragen soll), sonst niemand.
@@ -2126,7 +2126,7 @@ service cloud.firestore {
           allow delete: if schreibtIn(f) && isChef();
         }
 
-        // Schichtplaner: wie oben (Runde 154)
+        // Schichtplaner: wie oben (Runde 156)
         match /planerTeam/{pId} {
           allow read: if inFirma(f) && (isChef() || pId == request.auth.uid);
           allow write: if schreibtIn(f) && isChef();

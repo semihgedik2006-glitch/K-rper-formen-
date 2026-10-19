@@ -15780,7 +15780,122 @@ Test-Browser nicht) — gegen die Attrappe ja.
 
 ---
 
-## Runde 154 — Schichtplaner: der Monatsplan für alle Studios auf Knopfdruck (19.10.2026)
+## Runde 154 — Das Studio-Gehirn steuert die App (19.10.2026)
+
+**Aus dem Betrieb:** „kannst du auch dafür sorgen das die ki die ganze app
+steuern kann oder das so machen das es weitesgehend läuft". Auf
+Rückfrage entschieden: **alle**, aber nur mit den eigenen Rechten;
+**Lesen und Öffnen sofort, Speichern mit Vorschau**; „läuft von selbst"
+heisst **Vorschläge zum Antippen**.
+
+**Grundgerüst: ein Katalog statt freier Steuerung.** Die Function
+`gehirnAktion` (jetzt für alle Rollen) lässt die KI genau EINE Aktion
+aus einer festen Liste wählen; `gehirnBefehlPruefen` verwirft alles
+andere:
+
+| Aktion | wer | was passiert |
+|---|---|---|
+| `navigation` | alle | Seite öffnet sofort (nur Ziele, die es für die Person gibt; Verwaltung nur Leitung) |
+| `abfrage` aufgaben / dienst / abwesend | alle | Karte sofort, aus dem App-Speicher bzw. mit den Rechten der Person gelesen |
+| `abwesenheit` | alle, nur für sich selbst | Vorschau → „Antrag stellen" / „Jetzt eintragen" (Urlaub/Frei von Mitarbeitern = Antrag, krank sofort) |
+| `uebergabe` | alle | Vorschau → „Jetzt eintragen" |
+| `aufgabe`, `ankuendigung` | Leitung, Chef | wie bisher; Mitarbeiter bekommen einen Hinweis |
+
+**Warum ein Katalog:** „Die ganze App steuern" als freie Fernbedienung
+hiesse, dass eine KI, die sich irrt, irgendetwas irgendwo auslöst. Mit
+dem Katalog kann sie nur auswählen, was es gibt, und geschrieben wird
+im Gerät mit denselben Feldern wie die Formulare — dieselben Regeln,
+kein zweiter Schreibweg. Erweitern heisst: eine Zeile im Katalog, eine
+Prüfung, eine Vorschau.
+
+**Datenschutz:** Die KI bekommt nur den Satz der Person und die
+Studionamen. Namen aus Dienstplan und Abwesenheiten liest das Gerät
+selbst, NACHDEM die KI gesagt hat, was nachgeschaut werden soll — sie
+gehen nicht an die KI. Schichten für andere einzutragen ist deshalb
+bewusst noch nicht dabei (bräuchte die Teamnamen bei der KI).
+
+**Vorschläge:** Karte „Das könnte ich für dich tun" auf der
+Gehirn-Seite — überfällige Aufgaben der eigenen Studios; die Leitung
+verschiebt mit einem Tipp um eine Woche (gleiche Rechnung wie am
+Aufgaben-Blatt: ab heute), „Rückgängig" setzt die alte Frist. Gerechnet
+im Gerät, ohne KI.
+
+**Sonst:** Knopf heisst „Erledigen lassen" und ist für alle da; zwei
+Beispiel-Chips, die etwas tun. Tagesgrenze `gehirnAktion` 100 → 400 je
+Betrieb (jetzt alle Mitarbeitenden). `stub-mitarbeiter.js` kennt jetzt
+`window.__antwort` wie `stub-chef.js`.
+
+**Geprüft:** test-gehirn (97; neu: Öffnen ohne Druck, Abfrage Aufgaben
+und Dienst, nichts gespeichert beim Lesen, Mitarbeiter-Antrag mit
+status „offen", Übergabe, fremdes Studio verweigert, Hinweis bei
+Aufgabe, „Im Formular bearbeiten" füllt Team → Abwesend, Vorschläge
++1 Woche und Rückgängig, Trefferflächen). Gegenprobe: Studio-Prüfung
+entfernt → „fremdes Studio" rot. test-gehirn-aktion (50; 15 neu für den
+Katalog).
+
+**Nicht geprüft:** echte KI-Antworten auf diese neuen Befehle (nur die
+Prüfung dahinter); Schreiben gegen die echte Datenbank.
+
+**Als Nächstes:** mehr Katalog (Gerät defekt melden, Schicht für andere,
+Putzplan-Punkt abhaken), mehr Vorschläge (offene Urlaubsanträge,
+fehlendes Material), Spracheingabe.
+
+---
+
+## Runde 155 — Ein Knopf; abhaken, Defekt melden, Sprechen, mehr Vorschläge (19.10.2026)
+
+**Aus dem Betrieb:** „kannst du auch dafür sorgen das man nur einen knopf
+drücken muss beim fragen und nicht 3 das verwirrt mehr als es hilft
+tatsächlich" — und „ja mach weiter" für die nächste Stufe.
+
+**Ein Knopf.** „Fragen", „Erledigen lassen" und „Als Idee an die Leitung"
+sind jetzt „Senden". `gehirnAktion` sortiert: die KI wählt aus dem
+Katalog auch `frage` und `idee`; `gehirnWeg` (rein rechnerisch, getestet)
+entscheidet:
+- `frage` — die Function fragt selbst den Worker (`gehirnFrageAusfuehren`,
+  derselbe Weg wie `gehirnFrage`) und gibt die Antwort zurück. Ein
+  Aufruf aus der App, nicht zwei.
+- **Kann die KI den Satz nicht einordnen (oder fällt sie aus), wird er
+  eine Frage.** Lieber eine Antwort aus dem Wissen als „hat nicht
+  geklappt" — das Wissen läuft ohne Gemini.
+- `unklar` — eine bekannte Aktion, die die Prüfung nicht besteht (Urlaub
+  gestern): Hinweis statt einer Wissensantwort.
+- `idee` — Vorschau, erst „An die Leitung schicken" schickt.
+Die Beispiel-Chips fragen weiter direkt (`gehirnFrage`) — da ist schon
+klar, dass es Fragen sind, und es spart die Einordnung.
+
+**Neu im Katalog:** `abhaken` (Putzplan oder Aufgabe) und `defekt`.
+Die KI nennt nur, WAS gemeint ist; welcher Eintrag oder welches Gerät
+das ist, sucht das Gerät in den eigenen Listen (Wortvergleich, eindeutig
+nur bei klarem Vorsprung, sonst Auswahl). Abhaken passiert sofort mit
+„Rückgängig" (Entscheidung „Kleinigkeiten sofort"), Defekt erst nach
+„Jetzt melden" — mit denselben drei Schreibvorgängen wie das
+Geräte-Fenster (Verlauf, Zustand, Aufgabe nur wo erlaubt und noch keine
+offen).
+
+**Sprechen:** Spracherkennung des Browsers, wo vorhanden; sonst ist der
+Knopf weg. Der Text landet im Feld, nichts geht über unsere Server.
+
+**Vorschläge:** zusätzlich fehlendes Material und — für die Leitung —
+wartende Urlaubsanträge („Entscheiden ›" öffnet Team → Abwesend im
+Studio).
+
+**Weggefallen:** der Rohbau während des Wartens (die Art steht erst
+nach der Antwort fest); stattdessen die Denk-Punkte und der Puls.
+
+**Geprüft:** test-gehirn (109), test-gehirn-aktion (62). Gegenprobe:
+eindeutiger Treffer nicht abgehakt → zwei Prüfungen rot. Dazu
+test-csp, test-neu-messlatte, test-gestaltung, test-knoepfe,
+test-abgeschnitten, test-quer, test-neu-design, test-navigation,
+test-hilfe-pc, test-funktionen-pfade, test-funktionen-schalter,
+test-geraete*, test-ausliefern.
+
+**Nicht geprüft:** wie gut die echte KI Fragen von Aufträgen trennt;
+Spracheingabe auf echten Handys (iPhone-PWA hat sie je nach iOS nicht).
+
+---
+
+## Runde 156 — Schichtplaner: der Monatsplan für alle Studios auf Knopfdruck (19.10.2026)
 
 **Aus dem Betrieb:** „Sie erstellt momentan alle Schichtpläne selber
 innerhalb von LogX … und das kostet sie mehrere Stunden an Aufwand immer

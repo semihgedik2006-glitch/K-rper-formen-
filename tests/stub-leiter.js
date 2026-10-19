@@ -287,7 +287,7 @@ var USERS = [
           /* Bestellungen (Runde 137): get() UND onSnapshot */
           : (path === 'bestellungen' ? (window.__bestellungen || [])
           : (path === 'kennzahlen' ? (window.__kennzahlen || [])
-          /* Schichtplaner (Runde 154) — get() UND onSnapshot. Leer, ausser
+          /* Schichtplaner (Runde 156) — get() UND onSnapshot. Leer, ausser
              ein Durchlauf legt window.__planerTeam usw. hin. */
           : (path === 'planerTeam' ? (window.__planerTeam || [])
           : (path === 'planerWuensche' ? (window.__planerWuensche || [])

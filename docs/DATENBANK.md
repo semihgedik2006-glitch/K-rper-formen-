@@ -51,7 +51,7 @@ firmen/{kennung}                     ← Stammdaten, öffentlich lesbar (get)
    ├── loesungen/  +  loesungBilder/ ← Probleme und was hilft (Text + Fotos)
    ├── certificates/                 ← Nachweise (Premium)
    ├── probetrainings/               ← Zahlen, KEINE Kundennamen
-   ├── planerTeam/{id}               ← Schichtplaner: Rolle, Stunden, wer wann kann (Chef; die Person liest ihre eigene) — Runde 154
+   ├── planerTeam/{id}               ← Schichtplaner: Rolle, Stunden, wer wann kann (Chef; die Person liest ihre eigene) — Runde 156
    ├── planerWuensche/{uid}_{JJJJ-MM} ← Wunsch-frei-Tage, früh/spät — jeder nur für sich
    ├── planerPlaene/{JJJJ-MM}        ← Entwurf des Monats (Chef)
    ├── anliegen/                     ← Wünsche an die Leitung
@@ -641,7 +641,7 @@ Direktnachrichten brauchen das nicht: dort steht `readTs.<uid>` schon am
 Unterhaltungs-Dokument. Test: `tests/rules/gelesen.test.js`.
 
 
-### Schichtplaner (seit 19.10.2026, Runde 154)
+### Schichtplaner (seit 19.10.2026, Runde 156)
 
 | Pfad | Inhalt | lesen | schreiben |
 |---|---|---|---|

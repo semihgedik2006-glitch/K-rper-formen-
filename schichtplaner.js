@@ -1,4 +1,4 @@
-/* ══ SCHICHTPLANER — die Rechnung (Runde 154) ═══════════════════════
+/* ══ SCHICHTPLANER — die Rechnung (Runde 156) ═══════════════════════
    Aus dem Betrieb, 19.10.2026: die Chefin erstellt die Pläne für 14
    Studios von Hand, „und das kostet sie mehrere Stunden an Aufwand
    immer wieder". Der Wunsch: eine Maschine, in die man einmal einträgt,

@@ -232,7 +232,7 @@ Nicht gebaut, weil es der Sache schadet:
 - **Urlaubskonto mit Resttagen** – das ist Lohnbuchhaltung, halb gebaut
   schlimmer als gar nicht.
 - ~~**Automatische Schichtplanung** – wer wann kann, hängt an Absprachen, die
-  nicht in der App stehen.~~ **Seit Runde 154 gebaut** (Verwaltung →
+  nicht in der App stehen.~~ **Seit Runde 156 gebaut** (Verwaltung →
   Schichtplaner): die Absprachen kommen über eine Excel-Vorlage und die
   Wünsche der Mitarbeiter in die App. Begründung in FORTSCHRITT.md.
 - **Aufgaben per Ziehen umsortieren** – die Reihenfolge ergibt sich aus

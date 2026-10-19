@@ -935,7 +935,7 @@
     legen(P('kennzahlen'), kz);
   })();
 
-  /* Schichtplaner (Runde 154): so sähe es aus, nachdem die Chefin die
+  /* Schichtplaner (Runde 156): so sähe es aus, nachdem die Chefin die
      Excel-Vorlage eingelesen hat. Ohne zufall() — jeder Aufruf dort
      verschöbe alles, was danach erfunden wird. Studio 6 (Hürth) ist
      bewusst knapp besetzt, damit in der Demo Lücken und Rückfragen zu

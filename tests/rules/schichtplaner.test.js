@@ -1,4 +1,4 @@
-/* ── SCHICHTPLANER (Runde 154) ───────────────────────────────────────
+/* ── SCHICHTPLANER (Runde 156) ───────────────────────────────────────
    Aus dem Betrieb, 19.10.2026: die Chefin plant 14 Studios; die
    Mitarbeiter tragen ihre Wünsche selbst ein — „wenn sie vergessen
    wünsche etc. zu äussern haben sie pech".

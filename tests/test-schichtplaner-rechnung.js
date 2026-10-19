@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SCHICHTPLANER — DIE RECHNUNG (Runde 154)
+   SCHICHTPLANER — DIE RECHNUNG (Runde 156)
 
    Aus dem Betrieb, 19.10.2026: „der will lieber Frühschicht, der will
    lieber Spätschicht, der kann nur von dann bis dann … Urlaube etc."

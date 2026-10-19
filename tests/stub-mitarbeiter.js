@@ -506,6 +506,10 @@ var USERS = [
       return { httpsCallable: function (name) {
         return function (data) {
           window.__aufruf = { name: name, data: data };
+          /* Wie in stub-chef.js: eine eigene Antwort je Funktion. Fehlte
+             hier, solange der Mitarbeiter keine KI-Aufrufe ausser Fragen
+             hatte (seit 19.10.2026 „Erledigen lassen" für alle). */
+          if (window.__antwort && window.__antwort[name]) return window.__antwort[name](data);
           return Promise.resolve({ data: { ok: true, empfaenger: 1, tage: (data && data.tage) || 30 } });
         };
       } };
