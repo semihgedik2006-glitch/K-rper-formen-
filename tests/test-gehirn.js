@@ -537,7 +537,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
   }
 
   console.log('\n── 10 Aus dem Rettungsring ──');
-  for (const [w, h] of [[390, 844], [1440, 900]]) {
+  for (const [w, h] of [[320, 568], [390, 844], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
     const p = await oeffne(b, w, h);
     await p.click('#hilfeBtn'); await p.waitForTimeout(400);
     pruefe(w + ' px: im Start der Hilfe steht „Studio-Gehirn fragen"', await sichtbar(p, '#hilfeGehirnBtn'));
@@ -556,7 +556,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
   /* Aus dem Betrieb (19.10.2026): „das die ki am startbildschirm
      präsentiert wird und ein eigenes Fenster … wird … und Schritte macht
      automatisch und wir das sehen und so auch statt nur diese Punkte". */
-  for (const [w, h] of [[390, 844], [1440, 900]]) {
+  for (const [w, h] of [[320, 568], [390, 844], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
     const p = await oeffne(b, w, h);
     await p.waitForTimeout(300);
     const knopf = await jvKnopf(p);
@@ -586,6 +586,27 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.waitForTimeout(900);
     pruefe(w + ' px: … danach ist das Fenster zu und der Putzplan offen', !(await sichtbar(p, '#jarvis')) && await sichtbar(p, '#view-putzplan.show'));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+  /* Aus dem Betrieb (19.10.2026): „der chat lässt sich nicht scrollen und
+     es sieht sehr buggy aus" — die Karten waren auf ihren Kopf gestaucht. */
+  for (const [w, h] of [[320, 568], [390, 844], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
+    const p = await oeffne(b, w, h);
+    await p.click(await jvKnopf(p)); await p.waitForTimeout(300);
+    await antwort(p, { gehirnFrage: { data: { antwort: 'Eine längere Antwort mit mehreren Sätzen. Sie soll ganz zu sehen sein. Und noch ein Satz, damit die Karte Höhe hat.', abgedeckt: true } } });
+    for (let i = 0; i < 6; i++) {
+      await p.fill('#jarvisFeld', 'Frage Nummer ' + i);
+      await p.click('#jarvisSenden');
+      await p.waitForFunction(() => !document.querySelector('#jarvisVerlauf .gehirn-denkt'), null, { timeout: 5000 });
+    }
+    await p.waitForTimeout(1600);
+    const m = await p.evaluate(() => {
+      const v = document.getElementById('jarvisVerlauf');
+      const gestaucht = [...v.querySelectorAll('.gehirn-antwort')].filter(a => a.scrollHeight > a.clientHeight + 1).length;
+      const letzte = v.lastElementChild.getBoundingClientRect(), box = v.getBoundingClientRect();
+      return { scrollt: v.scrollHeight > v.clientHeight + 10, gestaucht, unten: letzte.bottom <= box.bottom + 2 && letzte.bottom > box.top };
+    });
+    pruefe(w + ' px: Fenster-Verlauf scrollt, keine Karte gestaucht, die neueste steht im Bild', m.scrollt && m.gestaucht === 0 && m.unten, JSON.stringify(m));
     await zu(p);
   }
   {
