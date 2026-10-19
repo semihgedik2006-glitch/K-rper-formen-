@@ -106,6 +106,27 @@ service cloud.firestore {
         && manages(request.resource.data.studioKey);
     }
 
+    /* ── Schichtplaner: Wünsche der Mitarbeiter (Runde 154) ──
+       Jeder trägt nur für SICH ein, unter der Kennung <uid>_<JJJJ-MM>
+       — so gibt es je Person und Monat genau ein Dokument, und niemand
+       kann unter fremdem Namen „frei" wünschen. Die Frist hält die
+       Oberfläche ein und der Planer (was danach kommt, rechnet er nicht
+       mit). Eine Regel dafür bräuchte die Frist aus config/ — ein get()
+       mehr bei jedem Speichern, für etwas, das ohnehin nichts bewirkt. */
+    function planerWunschOk(wId) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['uid', 'name', 'monat', 'frei', 'lieber', 'notiz', 'ts'])
+        && d.uid == request.auth.uid
+        && d.monat is string
+        && d.monat.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$')
+        && wId == request.auth.uid + '_' + d.monat
+        && d.name is string && d.name.size() <= 60
+        && d.frei is list && d.frei.size() <= 31
+        && d.lieber in ['', 'Früh', 'Spät', 'egal']
+        && d.notiz is string && d.notiz.size() <= 140
+        && d.ts is number;
+    }
+
     /* ── Gehoert dieses Studio zu meinen? ──
        manages() fragt nach dem Verwalten und ist fuer einen Mitarbeiter
        immer falsch. Fuers LESEN braucht es eine zweite, weitere Frage:
@@ -1087,6 +1108,29 @@ service cloud.firestore {
       allow update: if aufFlachenPfaden() && kennzahlOk(kId)
         && manages(resource.data.studioKey);
       allow delete: if aufFlachenPfaden() && isChef();
+    }
+
+    /* ── Schichtplaner (Runde 154) ──
+       planerTeam: Rolle, Stunden, wer wann kann — das plant der Chef.
+         Die Person selbst darf ihre eigene Zeile lesen (sonst wüsste
+         die App nicht, ob sie nach Wünschen fragen soll), sonst niemand.
+       planerWuensche: siehe planerWunschOk().
+       planerPlaene: der Entwurf eines Monats, nur der Chef.
+       Ob Studioleiter für ihre Studios mitplanen, ist eine offene Frage
+       an die Geschäftsführung. Bis dahin gilt die engere Regel. */
+    match /planerTeam/{pId} {
+      allow read: if aufFlachenPfaden() && (isChef() || pId == request.auth.uid);
+      allow write: if aufFlachenPfaden() && isChef();
+    }
+    match /planerWuensche/{wId} {
+      allow read: if aufFlachenPfaden()
+        && (isChef() || resource.data.uid == request.auth.uid);
+      allow create, update: if aufFlachenPfaden() && istAktiv() && planerWunschOk(wId);
+      allow delete: if aufFlachenPfaden()
+        && (isChef() || resource.data.uid == request.auth.uid);
+    }
+    match /planerPlaene/{monat} {
+      allow read, write: if aufFlachenPfaden() && isChef();
     }
 
     // ── Dokumente (Metadaten) ──
@@ -2080,6 +2124,23 @@ service cloud.firestore {
           allow update: if schreibtIn(f) && kennzahlOk(kId)
             && manages(resource.data.studioKey);
           allow delete: if schreibtIn(f) && isChef();
+        }
+
+        // Schichtplaner: wie oben (Runde 154)
+        match /planerTeam/{pId} {
+          allow read: if inFirma(f) && (isChef() || pId == request.auth.uid);
+          allow write: if schreibtIn(f) && isChef();
+        }
+        match /planerWuensche/{wId} {
+          allow read: if inFirma(f)
+            && (isChef() || resource.data.uid == request.auth.uid);
+          allow create, update: if schreibtIn(f) && istAktiv() && planerWunschOk(wId);
+          allow delete: if schreibtIn(f)
+            && (isChef() || resource.data.uid == request.auth.uid);
+        }
+        match /planerPlaene/{monat} {
+          allow read: if inFirma(f) && isChef();
+          allow write: if schreibtIn(f) && isChef();
         }
 
         match /documents/{docId} {

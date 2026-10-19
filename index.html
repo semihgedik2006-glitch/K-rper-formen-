@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-oyQ4NR/EkT5uH6r/N2KYYtcxjseRvZ8bg9gIsuG3TpA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-uzwU15Ax6Vjf7nwX6I4Z1bum3u9Onv+RXdETe8i1hgk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3406,6 +3406,117 @@ button.ich-zeile:active{opacity:.7}
 .kz-zeile label{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-bottom:var(--s2)}
 .kz-zeile input{width:100%;min-height:44px;text-align:right;font-variant-numeric:tabular-nums}
 .kz-speichern{width:100%;min-height:48px;margin-top:var(--s8)}
+/* ══ Schichtplaner (Runde 154) ══════════════════════════════════════
+   Wenige, grosse Dinge: oben Monat, drei Schritte, ein Knopf. Rot und
+   Bernstein nur für das, was sie melden — Lücke und Rückfrage. */
+.spl-start{display:flex;flex-direction:column;gap:var(--s12)}
+.spl-monat{display:flex;align-items:center;justify-content:space-between;gap:var(--s8)}
+.spl-monat b{font-family:var(--font-head);font-size:var(--t-lg);font-weight:800;text-align:center;flex:1}
+.spl-schritte{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s8)}
+.spl-schritt{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:var(--s10);align-items:center;
+  padding:var(--s8) 0;border-top:1px solid var(--line)}
+.spl-schritt:first-child{border-top:none}
+.spl-nr{width:28px;height:28px;border-radius:var(--r-rund);display:grid;place-items:center;
+  font-weight:800;font-size:var(--t-xs);background:var(--auf-2);color:var(--text-2)}
+.spl-schritt.fertig .spl-nr{background:var(--f-ok-leise);color:var(--ok-tx)}
+.spl-schritt b{display:block;font-weight:700}
+.spl-schritt small{display:block;color:var(--text-3);font-size:var(--t-xs);overflow-wrap:anywhere}
+.spl-schritt .btn{min-height:44px;white-space:nowrap}
+.spl-knoepfe{display:flex;gap:var(--s6);flex-wrap:wrap;justify-content:flex-end}
+.spl-los{width:100%;min-height:52px;font-size:var(--t-md)}
+.spl-stand{margin:0;font-size:var(--t-xs);color:var(--text-3);min-height:1em}
+.spl-stand.fehler{color:var(--danger-tx)}
+.spl-ergebnis{display:flex;flex-direction:column;gap:var(--s16);margin-top:var(--s16)}
+.spl-zahlen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s8)}
+.spl-zahl{background:var(--bg-2);border-radius:var(--r-md);padding:var(--s10) var(--s8);text-align:center;box-shadow:var(--e1)}
+.spl-zahl b{display:block;font-family:var(--font-head);font-size:var(--t-xl);font-weight:800;font-variant-numeric:tabular-nums}
+.spl-zahl span{font-size:var(--t-2xs);color:var(--text-3);font-weight:600}
+.spl-zahl.bad b{color:var(--danger-tx)}
+.spl-zahl.warn b{color:var(--warm-tx)}
+.spl-layout{display:grid;gap:var(--s16);align-items:start}
+.spl-seite{display:flex;flex-direction:column;gap:var(--s16);min-width:0}
+/* Am Rechner steht der Kopf in EINER Zeile: Monat · drei Schritte ·
+   Knopf. Untereinander zöge er sich sonst über die halbe Höhe, und der
+   Plan finge erst unter dem Bildrand an. */
+@media (min-width:1100px){
+  .spl-start{display:grid;grid-template-columns:240px minmax(0,1fr) 260px;align-items:center;column-gap:var(--s24)}
+  .spl-schritte{flex-direction:row;gap:var(--s16)}
+  .spl-schritt{flex:1 1 0;border-top:none;border-left:1px solid var(--line);padding:0 0 0 var(--s16);
+    grid-template-columns:28px minmax(0,1fr);grid-template-rows:auto auto}
+  .spl-schritt .spl-knoepfe{grid-column:2;justify-content:flex-start;margin-top:var(--s6)}
+  .spl-stand{grid-column:1 / -1}
+  .spl-zelle{white-space:nowrap}
+  .spl-layout{grid-template-columns:380px minmax(0,1fr)}
+  /* Nicht die ganze Spalte haftet, nur die Auswahl: eine haftende
+     Spalte, die höher ist als das Fenster, lässt ihr unteres Ende nie
+     sehen — „Veröffentlichen" war bei 1280 × 800 nicht zu erreichen
+     (gemessen, test-schichtplaner). Die Spalte reicht so tief wie der
+     Plan, und die Auswahl bleibt beim Herunterrollen oben stehen. */
+  .spl-seite{align-self:stretch}
+  .spl-wahl{position:sticky;top:var(--s8);z-index:1}
+  .spl.chef-pane{max-width:1500px}
+}
+.spl-klaeren h3,.spl-aktionen h3,.spl-wahl h3{margin-top:0}
+.spl-punkt{display:block;width:100%;text-align:left;background:none;border:none;border-left:3px solid var(--f-bad);
+  padding:var(--s8) var(--s10);margin:0 0 var(--s8);border-radius:0 var(--r-sm) var(--r-sm) 0;
+  color:var(--text);font:inherit;cursor:pointer;min-height:44px}
+.spl-punkt.warn{border-left-color:var(--f-warn)}
+.spl-punkt:hover{background:var(--auf-1)}
+.spl-punkt b{display:block;font-weight:700}
+.spl-punkt small{display:block;color:var(--text-2);font-size:var(--t-xs);line-height:var(--lh)}
+.spl-punkt.an{background:var(--auf-2)}
+.spl-alle-ok{display:flex;gap:var(--s8);align-items:center;color:var(--ok-tx);font-weight:600}
+.spl-mehr{width:100%}
+.spl-aktionen{display:flex;flex-direction:column;gap:var(--s8)}
+.spl-aktionen .btn{width:100%;min-height:48px}
+.spl-aktionen .hint{margin:0}
+.spl-wahl-liste{display:flex;flex-direction:column;gap:var(--s6)}
+.spl-person{display:flex;align-items:center;justify-content:space-between;gap:var(--s8);width:100%;min-height:44px;
+  padding:var(--s6) var(--s10);border:1.5px solid var(--line-2);border-radius:var(--r-sm);background:var(--bg-2);
+  color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.spl-person:hover:not(:disabled){border-color:var(--accent)}
+.spl-person:disabled{opacity:.55;cursor:not-allowed}
+.spl-person small{color:var(--text-3);font-size:var(--t-xs);text-align:right}
+.spl-person.jetzt{border-color:var(--accent);background:rgba(var(--akz-rgb),.10)}
+.spl-plan-kopf{display:flex;gap:var(--s8);align-items:center;margin-bottom:var(--s10)}
+.spl-plan-kopf select{max-width:360px}
+.spl-tabelle-huelle{overflow-x:auto}
+.spl-tab{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+.spl-tab th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-align:left;padding:var(--s6) var(--s8);
+  text-transform:uppercase;letter-spacing:var(--ls-m);border-bottom:1px solid var(--line-2)}
+.spl-tab td{padding:var(--s4) var(--s6);border-bottom:1px solid var(--line);vertical-align:top}
+.spl-tab td.spl-tag{white-space:nowrap;font-weight:600;padding-left:var(--s8);font-variant-numeric:tabular-nums}
+.spl-tab td.spl-tag small{display:block;font-weight:400;color:var(--text-3);font-size:var(--t-2xs)}
+.spl-tab tr.we td.spl-tag{color:var(--accent-d)}
+.spl-tab tr.heute td{background:rgba(var(--akz-rgb),.06)}
+.spl-zelle{display:block;width:100%;min-height:44px;text-align:left;background:none;border:1px solid transparent;
+  border-radius:var(--r-sm);padding:var(--s4) var(--s8);color:var(--text);font:inherit;cursor:pointer}
+.spl-zelle:hover{border-color:var(--line-2);background:var(--auf-1)}
+.spl-zelle.luecke{border:1.5px dashed var(--f-bad);color:var(--danger-tx);font-weight:700}
+.spl-zelle.rueck{box-shadow:inset 3px 0 0 var(--f-warn)}
+.spl-zelle.an{border-color:var(--accent);background:rgba(var(--akz-rgb),.10)}
+.spl-zelle small{display:block;color:var(--text-3);font-size:var(--t-2xs)}
+.spl-team{margin-top:var(--s12)}
+.spl-team summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700}
+.spl-team table{width:100%;border-collapse:collapse;font-size:var(--t-sm);font-variant-numeric:tabular-nums}
+.spl-team td,.spl-team th{padding:var(--s6) var(--s8);border-bottom:1px solid var(--line);text-align:right}
+.spl-team td:first-child,.spl-team th:first-child{text-align:left}
+.spl-team th{font-size:var(--t-2xs);color:var(--text-3);font-weight:700}
+.spl-team .unter{color:var(--warm-tx);font-weight:700}
+/* Wünsche der Mitarbeiter */
+.spl-w-label{margin:var(--s12) 0 var(--s6);font-weight:700;font-size:var(--t-sm)}
+/* Kein Kalenderraster mit sieben festen Spalten: bei 320 px wären das
+   36 px je Tag — zu klein für den Finger. Jeder Tag trägt seinen
+   Wochentag selbst, und die Reihe bricht um, wo Platz ist. */
+.spl-w-tage{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:var(--s4)}
+.spl-w-tag small{display:block;font-size:var(--t-2xs);font-weight:600;color:var(--text-3)}
+.spl-w-tag.we small{color:var(--accent-d)}
+.spl-w-tag{min-height:48px;min-width:44px;line-height:var(--lh-eng);border:1.5px solid var(--line-2);border-radius:var(--r-sm);background:var(--bg-2);
+  color:var(--text);font:inherit;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer;padding:0}
+.spl-w-tag.an{background:rgba(var(--akz-rgb),.18);border-color:var(--accent);color:var(--accent-d)}
+.spl-w-tag:disabled{opacity:.5;cursor:not-allowed}
+.spl-wunsch.zu .chip{pointer-events:none;opacity:.6}
+@media (min-width:1100px){ .spl-wunsch{max-width:560px} }
 /* QR-Code zum Beitreten (Runde 134, DESIGN-RECHERCHE F1). */
 .bt-qr{display:grid;justify-items:center;gap:var(--s8);margin-top:var(--s12);
   padding:var(--s16);border:1px solid var(--line-2);border-radius:var(--r-md);background:#fff}
@@ -8530,6 +8641,26 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               </div>
               <div id="shiftGrid" style="margin-top:10px"></div>
             </div>
+            <!-- Wünsche für den nächsten Plan (Runde 154). Aus dem
+                 Betrieb: „die mitarbeiter selber am besten wenn sie
+                 vergessen wünsche etc. zu äussern haben sie pech".
+                 Deshalb steht die Frist gross da, und danach ist die
+                 Karte zu – nicht versteckt. -->
+            <div class="card spl-wunsch" id="spWunschKarte" hidden>
+              <h3 data-ikon="kalender" id="spWunschTitel">Meine Wünsche</h3>
+              <p class="hint" id="spWunschFrist"></p>
+              <p class="spl-w-label">Tage, an denen ich frei haben möchte</p>
+              <div class="spl-w-tage" id="spWunschTage" role="group" aria-label="Wunsch-frei-Tage"></div>
+              <p class="spl-w-label">In diesem Monat lieber</p>
+              <div class="chip-row" id="spWunschLieber" role="group" aria-label="Lieber früh oder spät">
+                <button type="button" class="chip" data-splieber="Früh">Früh</button>
+                <button type="button" class="chip" data-splieber="Spät">Spät</button>
+                <button type="button" class="chip" data-splieber="egal">Egal</button>
+              </div>
+              <div class="field" style="margin-top:var(--s12)"><label for="spWunschNotiz">Bemerkung (optional)</label>
+                <input class="inp" id="spWunschNotiz" type="text" maxlength="140" placeholder="z. B. am 14. erst ab 12 Uhr" /></div>
+              <button type="button" class="btn btn-primary btn-sm" id="spWunschSpeichern">Wünsche speichern</button>
+            </div>
             <div class="card" id="shiftAddCard" style="display:none">
               <h3 data-ikon="plus">Schicht eintragen</h3>
               <div class="row">
@@ -9393,6 +9524,55 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                Am Rechner: Tabelle links, Eintragen rechts. Am Handy
                untereinander, die Tabelle zeigt dann nur den letzten
                Monat und den Verlauf. -->
+          <!-- ══ SCHICHTPLANER (Runde 154) ══════════════════════════════
+               Aus dem Betrieb: „das kostet sie mehrere Stunden an
+               Aufwand immer wieder". Aufbau nach einer Regel: oben
+               steht, was fehlt, darunter EIN Knopf. Danach nur das, was
+               ein Mensch entscheiden muss (Zu klären), der Plan selbst
+               zum Nachsehen. Am Rechner stehen beide nebeneinander. -->
+          <div class="chef-pane spl" data-cpane="schichtplaner" style="display:none">
+            <div class="card spl-start">
+              <div class="spl-monat" role="group" aria-label="Monat">
+                <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatZurueck" aria-label="Voriger Monat">‹</button>
+                <b id="spMonatName">–</b>
+                <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatVor" aria-label="Nächster Monat">›</button>
+              </div>
+              <ol class="spl-schritte" id="spSchritte"></ol>
+              <button type="button" class="btn btn-primary spl-los" id="spLos">Plan erstellen</button>
+              <p class="spl-stand" id="spStand" role="status"></p>
+              <input type="file" id="spDatei" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+            </div>
+            <div class="spl-ergebnis" id="spErgebnis" hidden>
+              <div class="spl-zahlen" id="spZahlen"></div>
+              <div class="spl-layout">
+                <div class="spl-seite">
+                  <div class="card spl-klaeren" id="spKlaeren"></div>
+                  <div class="card spl-aktionen">
+                    <h3 data-ikon="hakenKreis">Fertig?</h3>
+                    <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
+                    <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
+                    <p class="hint" id="spAktionHinweis">Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.</p>
+                  </div>
+                  <!-- Die Auswahl steht ZULETZT: sie haftet am Rechner beim
+                       Herunterrollen oben, und ein haftendes Element legt
+                       sich über alles, was nach ihm kommt. „Veröffentlichen"
+                       lag so bei 1280–1920 px darunter (gemessen). -->
+                  <div class="card spl-wahl" id="spWahl" hidden></div>
+                </div>
+                <div class="card spl-plan">
+                  <div class="spl-plan-kopf">
+                    <label class="nur-vorlesen" for="spStudio">Studio</label>
+                    <select class="inp" id="spStudio"></select>
+                  </div>
+                  <div class="spl-tabelle-huelle" id="spTabelle"></div>
+                  <details class="spl-team">
+                    <summary>Stunden je Person</summary>
+                    <div id="spTeam"></div>
+                  </details>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="chef-pane" data-cpane="kennzahlen" style="display:none">
             <div class="kz-wrap">
               <div class="card kz-haupt">
@@ -18885,6 +19065,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-19-schichtplaner', datum:'19.10.2026', titel:'Neu: der Schichtplaner schlägt den Monatsplan vor', wo:'chef:schichtplaner', punkte:[
+    'Für die Geschäftsführung: unter „Verwaltung → Schichtplaner" einmal die Excel-Vorlage einlesen (wer in welchem Studio arbeitet, Stunden, wer wann kann, wer nicht allein sein darf). Danach erstellt ein Knopf den Plan für den nächsten Monat – für alle Studios auf einmal, Urlaub und Krankmeldungen schon berücksichtigt.',
+    'Was noch ein Mensch entscheiden muss, steht oben unter „Zu klären": rote Lücken (niemand frei, mit Grund und wen man fragen könnte) und Rückfragen (z. B. jemand müsste an einem Wunsch-frei-Tag kommen). Antippen und eine andere Person wählen – ausgegraut steht, warum jemand nicht geht.',
+    'Fertig? „Im Team-Schichtplan veröffentlichen" trägt die Schichten bei allen ein, „Für LogX kopieren" legt eine Tabelle zum Einfügen in die Zwischenablage.',
+    'Für alle, die im Plan stehen: unter „Team → Schichten" gibt es jetzt „Meine Wünsche". Tage antippen, an denen du frei haben möchtest, und ob du lieber früh oder spät arbeitest – bis zum 15. des Vormonats. Was später kommt, kann nicht mehr berücksichtigt werden.' ] },
   { id:'2026-10-19-gehirn-vorschau', datum:'19.10.2026', titel:'„Anlegen lassen": Vorschau und direkt anlegen', wo:'gehirn', punkte:[
     'Während das Studio-Gehirn deinen Auftrag umsetzt, siehst du schon den Rohbau der Karte. Danach baut sich die Aufgabe Stück für Stück auf: Titel, Schritte zum Abhaken, Frist und Studio – so, wie sie später in der Liste steht.',
     'Passt alles, tippst du „Jetzt anlegen" (bei Ankündigungen „Jetzt senden"). Ein Haken zeichnet sich, und „Zu den Aufgaben ›" bringt dich hin. Willst du noch etwas ändern, nimm „Im Formular bearbeiten".' ] },
@@ -20495,7 +20680,7 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='ich') ichOeffnen();
   if(id==='persoenlich') persoenlichOeffnen();
   if(id==='gehirn') gehirnOeffnen();
-  if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); }
+  if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); spWunschZeigen(); }
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
 }
 
@@ -33390,6 +33575,10 @@ function renderDashboard(){
 var CHEFTABS=[
   {id:'ueberblick', label:'Überblick',  ico:ikon('umfrage'),
    was:'Zahlen aller Studios, was gerade hakt, Geburtstage'},
+  /* Runde 154: der Monatsplan für alle Studios. Nur der Chef, bis die
+     Frage beantwortet ist, ob Studioleiter selbst planen. */
+  {id:'schichtplaner', label:'Schichtplaner', ico:ikon('kalender'), chefOnly:true,
+   was:'Monatsplan für alle Studios vorschlagen lassen, prüfen, veröffentlichen'},
   {id:'erstellen',  label:'Erstellen',  ico:ikon('plus'),
    was:'Aufgabe anlegen, Ankündigung senden, Vorlagen'},
   {id:'team',       label:'Team',       ico:ikon('leute'), chefOnly:true,
@@ -33565,10 +33754,661 @@ function showChefTab(id, keep){
   if(id==='anliegen') anliegenLaden();
   if(id==='zeiten') zkOeffnen();
   if(id==='kennzahlen') kzOeffnen();
+  if(id==='schichtplaner') spOeffnen();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); renderAboKarte(); stempelFristLaden(); }
   if(!keep){ var sa=document.querySelector('#view-chef .scroll-area'); if(sa) sa.scrollTop=0; }
+}
+
+/* ══ SCHICHTPLANER (Runde 154) ═══════════════════════════════════════
+   Aus dem Betrieb, 19.10.2026: „sorg dafür dass das interface
+   übersichtlich, minimalistisch und sortiert wird sodass die chefs am
+   ende wirklich fast nichts an arbeit zu tun haben".
+
+   Daraus folgt der Ablauf, und er steht so auf dem Bildschirm:
+     1. Team      — einmal die Excel-Vorlage einlesen (Rollen, Stunden,
+                    wer wann kann). Danach nur noch, wenn sich etwas ändert.
+     2. Schichten — kommen aus derselben Datei.
+     3. Wünsche   — tragen die Mitarbeiter selbst ein, bis zur Frist.
+   Dann EIN Knopf. Was danach noch Arbeit ist, steht unter „Zu klären":
+   Lücken (rot) und Rückfragen (Bernstein). Alles andere ist erledigt.
+
+   Die Rechnung selbst liegt in schichtplaner.js und wird erst beim
+   Öffnen geladen. Die Daten:
+     config/schichtplaner      Schichten je Studio, Wunschfrist (lesen alle)
+     planerTeam/<id>           Angaben je Person (nur Chef; die Person
+                               selbst darf ihre eigene lesen)
+     planerWuensche/<uid>_<M>  Wünsche, von der Person selbst
+     planerPlaene/<JJJJ-MM>    der Entwurf (nur Chef)
+
+   NUR DER CHEF. Ob Studioleiter für ihre Studios planen, ist eine der
+   offenen Fragen an die Geschäftsführung (Frage 17). Bis zur Antwort
+   ist die engere Regel die sichere. */
+var SP_DATEI = 'schichtplaner.js';
+var _sp = { monat:null, conf:null, team:[], wuensche:[], plan:null, studio:'', wahl:null, gebunden:false, laedt:false };
+var _spLibStatus = '', _spLibWarte = [];
+
+function spLib(){
+  return new Promise(function(fertig, fehler){
+    if(window.SCHICHTPLANER) return fertig(window.SCHICHTPLANER);
+    _spLibWarte.push([fertig, fehler]);
+    if(_spLibStatus==='laedt') return;
+    _spLibStatus='laedt';
+    var s=document.createElement('script');
+    s.src=SP_DATEI;
+    function durch(ok){
+      _spLibStatus = ok ? 'da' : '';
+      var w=_spLibWarte; _spLibWarte=[];
+      w.forEach(function(p){ ok ? p[0](window.SCHICHTPLANER) : p[1](new Error('Der Schichtplaner liess sich nicht laden. Bitte Verbindung prüfen.')); });
+    }
+    s.onload=function(){ durch(!!window.SCHICHTPLANER); };
+    s.onerror=function(){ durch(false); };
+    document.head.appendChild(s);
+  });
+}
+
+/* Geplant wird der NÄCHSTE Monat — so arbeitet die Chefin heute auch
+   („meistens einen monat im vorraus"). */
+function spMonatPlus(m, n){
+  var p=m.split('-'), d=new Date(+p[0], +p[1]-1+n, 1);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+function spMonatJetzt(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
+var SP_MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function spMonatName(m){ var p=m.split('-'); return SP_MONATE[+p[1]-1]+' '+p[0]; }
+function spDatumKurz(d){ var p=d.split('-'); return +p[2]+'.'+(+p[1])+'.'; }
+/* Wünsche für Monat M bis zum <Tag>. des Vormonats, 23:59. */
+function spFrist(m){
+  var tag=+((_sp.conf && _sp.conf.wunschFristTag) || 15);
+  var v=spMonatPlus(m,-1).split('-');
+  return new Date(+v[0], +v[1]-1, tag, 23, 59, 59).getTime();
+}
+function spStudios(){
+  return _studioListe.filter(function(s){ return s && s.aktiv!==false; });
+}
+/* Studioname aus der Excel-Datei → Kennung. Gross/klein und Leerzeichen
+   egal; ein unbekannter Name gibt '' zurück und wird gemeldet — anders
+   als studioKey(), das für die alte Welt 'studio--1' liefert. */
+function spStudioKey(name){
+  var n=String(name||'').toLowerCase().replace(/\s+/g,' ').trim();
+  if(!n) return '';
+  var s=spStudios().filter(function(x){ return x.name.toLowerCase()===n; })[0];
+  return s ? s.id : '';
+}
+function spNameNorm(n){ return String(n||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim(); }
+/* Excel-Zeile → Konto in der App, über den Namen. Wer (noch) kein
+   Konto hat, wird trotzdem geplant — nur sieht er seinen Plan dann
+   nicht in der App, sondern in LogX. */
+function spKontoFuer(name){
+  var n=spNameNorm(name);
+  var treffer=_allUsers.filter(function(u){ return !u.system && spNameNorm(u.name)===n; });
+  if(treffer.length===1) return treffer[0];
+  if(!treffer.length){
+    // „Lisa M." in der Tabelle, „Lisa Müller" in der App
+    var teile=n.split(' ');
+    treffer=_allUsers.filter(function(u){
+      var t=spNameNorm(u.name).split(' ');
+      return !u.system && t[0]===teile[0] && (!teile[1] || (t[1]||'').indexOf(teile[1])===0);
+    });
+    if(treffer.length===1) return treffer[0];
+  }
+  return null;
+}
+
+function spOeffnen(){
+  if(!isChef()) return;
+  if(!_sp.monat) _sp.monat=spMonatPlus(spMonatJetzt(),1);
+  spBinden();
+  /* Erst die Rechnung, dann die Daten: ohne sie lässt sich ein
+     gespeicherter Plan zwar zeigen, aber nicht umbesetzen. */
+  spLib().then(spLaden, function(e){ spStand(e.message, true); });
+}
+function spBinden(){
+  if(_sp.gebunden) return; _sp.gebunden=true;
+  $('spMonatZurueck').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,-1); _sp.plan=null; spLaden(); tick(8); });
+  $('spMonatVor').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,1); _sp.plan=null; spLaden(); tick(8); });
+  $('spLos').addEventListener('click', function(){ spErstellen(this); });
+  $('spDatei').addEventListener('change', function(){
+    var f=this.files && this.files[0]; this.value='';
+    if(f) spEinlesen(f);
+  });
+  $('spStudio').addEventListener('change', function(){ _sp.studio=this.value; _sp.wahl=null; spPlanZeichnen(); spWahlZeichnen(); });
+  $('spVeroeffentlichen').addEventListener('click', function(){ spVeroeffentlichen(this); });
+  $('spLogx').addEventListener('click', function(){ spKopieren(); });
+}
+
+function spLaden(){
+  var m=_sp.monat;
+  $('spMonatName').textContent=spMonatName(m);
+  $('spLos').textContent='Plan für '+SP_MONATE[+m.split('-')[1]-1]+' erstellen';
+  spStand('Lade …');
+  return Promise.all([
+    S('config').doc('schichtplaner').get(),
+    S('planerTeam').get(),
+    S('planerWuensche').where('monat','==',m).get(),
+    S('planerPlaene').doc(m).get()
+  ]).then(function(r){
+    if(m!==_sp.monat) return;   // inzwischen weitergeblättert
+    _sp.conf = r[0].exists ? (r[0].data()||{}) : {};
+    _sp.team = r[1].docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; })
+      .sort(function(a,b){ return (a.name||'').localeCompare(b.name||'','de'); });
+    _sp.wuensche = r[2].docs.map(function(d){ return d.data()||{}; });
+    var p = r[3].exists ? r[3].data() : null;
+    _sp.plan = p && p.einsaetze ? p : null;
+    spStand('');
+    spSchritteZeichnen();
+    spErgebnisZeichnen();
+  }).catch(function(e){ spStand(errMsg(e), true); });
+}
+function spStand(t, fehler){
+  var el=$('spStand'); if(!el) return;
+  el.textContent=t||''; el.classList.toggle('fehler', !!fehler);
+}
+
+function spSchichtenAnzahl(){
+  var sch=(_sp.conf && _sp.conf.schichten)||{}, n=0;
+  Object.keys(sch).forEach(function(k){ n+=(sch[k]||[]).length; });
+  return n;
+}
+function spSchritteZeichnen(){
+  var box=$('spSchritte'); if(!box) return;
+  var m=_sp.monat, frist=spFrist(m), jetzt=Date.now();
+  var ids=_sp.team.map(function(p){ return p.uid; }).filter(Boolean);
+  var mitWunsch=_sp.wuensche.filter(function(w){ return ids.indexOf(w.uid)>=0; }).length;
+  var fd=new Date(frist), fristText=fd.getDate()+'.'+(fd.getMonth()+1)+'.';
+  var nSch=spSchichtenAnzahl();
+  var stand=_sp.conf && _sp.conf.eingelesenAm ? 'Stand '+new Date(_sp.conf.eingelesenAm).toLocaleDateString('de-DE') : '';
+  var schritte=[
+    { fertig:_sp.team.length>0, titel:'Team',
+      text:_sp.team.length ? _sp.team.length+' Personen'+(stand?' · '+stand:'') : 'Noch leer – einmal die Excel-Vorlage einlesen',
+      knopf:'<span class="spl-knoepfe"><button type="button" class="btn btn-ghost btn-sm" data-spdatei="1">'+(_sp.team.length?'Neu einlesen':'Excel einlesen')+'</button>'+
+        /* Die leere Vorlage liegt mit in der App — die Chefin soll sie
+           nicht bei jemandem erfragen müssen. */
+        '<a class="btn btn-ghost btn-sm" href="vorlagen/Schichtplaner-Vorlage.xlsx" download>Vorlage</a></span>' },
+    { fertig:nSch>0, titel:'Schichten',
+      text:nSch ? nSch+' Schichtzeiten · aus der Excel-Datei' : 'Kommen aus derselben Excel-Datei (Blatt „Schichten")',
+      knopf:'' },
+    { fertig:jetzt>frist, titel:'Wünsche',
+      text:mitWunsch+' von '+ids.length+' eingetragen · '+(jetzt>frist ? 'Frist war am '+fristText : 'bis '+fristText),
+      knopf:'' }
+  ];
+  box.innerHTML=schritte.map(function(s,i){
+    return '<li class="spl-schritt'+(s.fertig?' fertig':'')+'">'+
+      '<span class="spl-nr" aria-hidden="true">'+(s.fertig?'✓':(i+1))+'</span>'+
+      '<span><b>'+esc(s.titel)+'</b><small>'+esc(s.text)+'</small></span>'+s.knopf+'</li>';
+  }).join('');
+  box.querySelectorAll('[data-spdatei]').forEach(function(b){
+    b.addEventListener('click', function(){ $('spDatei').click(); });
+  });
+  var los=$('spLos');
+  los.disabled = !_sp.team.length || !nSch;
+  if(_sp.plan) los.textContent='Neu erstellen';
+}
+
+/* ── Excel einlesen ── */
+function spEinlesen(datei){
+  spStand('Lese „'+datei.name+'" …');
+  var lib;
+  spLib().then(function(l){ lib=l; return datei.arrayBuffer(); })
+  .then(function(buf){ return lib.excelLesen(buf); })
+  .then(function(blaetter){
+    var r=lib.ausVorlage(blaetter, spStudioKey);
+    if(!r.personen.length){ throw new Error(r.fehler[0] || 'In der Datei steht noch niemand im Blatt „Mitarbeiter".'); }
+    var ohneKonto=[];
+    r.personen.forEach(function(p){
+      var u=spKontoFuer(p.name);
+      p.uid = u ? u.uid : null;
+      p.id = u ? u.uid : 'x-'+spNameNorm(p.name).replace(/ /g,'-').slice(0,40);
+      if(!u) ohneKonto.push(p.name);
+    });
+    var nSch=0; Object.keys(r.schichten).forEach(function(k){ nSch+=r.schichten[k].length; });
+    var weg=_sp.team.filter(function(t){ return !r.personen.some(function(p){ return p.id===t.id; }); });
+    var frage=r.personen.length+' Personen und '+nSch+' Schichtzeiten gefunden.'+
+      (weg.length ? '\n\n'+weg.length+' bisher Eingetragene stehen nicht mehr in der Datei und werden entfernt: '+weg.map(function(p){ return p.name; }).join(', ')+'.' : '')+
+      (ohneKonto.length ? '\n\nOhne Konto in der App (werden trotzdem geplant): '+ohneKonto.join(', ')+'.' : '')+
+      (r.fehler.length ? '\n\nBitte prüfen:\n· '+r.fehler.slice(0,6).join('\n· ') : '')+
+      '\n\nÜbernehmen?';
+    if(!confirm(frage)){ spStand('Nicht übernommen.'); return; }
+    var b=db.batch(), jetzt=Date.now();
+    r.personen.forEach(function(p){
+      var d={}; Object.keys(p).forEach(function(k){ if(k!=='id') d[k]=p[k]; });
+      d.ts=jetzt;
+      b.set(S('planerTeam').doc(p.id), d);
+    });
+    weg.forEach(function(p){ b.delete(S('planerTeam').doc(p.id)); });
+    /* Schichten nur ersetzen, wenn die Datei welche enthält — eine
+       Datei ohne Blatt „Schichten" soll nicht die bisherigen löschen. */
+    var conf={ eingelesenAm:jetzt, eingelesenVon:session.name };
+    if(nSch) conf.schichten=r.schichten;
+    if(Object.keys(r.studios).length) conf.studios=r.studios;
+    b.set(S('config').doc('schichtplaner'), conf, {merge:true});
+    return b.commit().then(function(){
+      toast(r.personen.length+' Personen eingelesen ✓');
+      return spLaden();
+    });
+  }).catch(function(e){ spStand(e && e.message ? e.message : errMsg(e), true); });
+}
+
+/* ── Was die Rechnung bekommt ── */
+function spSchichtenFuer(key){
+  var sch=(_sp.conf && _sp.conf.schichten)||{};
+  return (sch[key] && sch[key].length) ? sch[key] : (sch.alle||[]);
+}
+function spAbwesenheitenLaden(m){
+  var von=m+'-01', bis=m+'-31';
+  return Promise.all(spStudios().map(function(st){
+    return S('studios').doc(st.id).collection('absences').get().then(function(sn){
+      return sn.docs.map(function(d){ return d.data()||{}; });
+    }).catch(function(){ return []; });
+  })).then(function(listen){
+    var r=[], gesehen={};
+    listen.forEach(function(l){ l.forEach(function(a){
+      if(!a.uid || !a.from || (a.to||a.from)<von || a.from>bis) return;
+      /* Abgelehnter Urlaub ist kein Urlaub. Offene Anträge zählen
+         dagegen: wer frei beantragt hat, soll nicht ausgerechnet dann
+         eingeteilt werden — das stünde morgen im Konflikt. */
+      if(absStatus(a)==='abgelehnt') return;
+      var k=a.uid+a.from+a.to; if(gesehen[k]) return; gesehen[k]=1;
+      r.push({ id:a.uid, von:a.from, bis:a.to||a.from, art:a.type });
+    }); });
+    return r;
+  });
+}
+function spEingabe(abwesend){
+  var frist=spFrist(_sp.monat), wuensche={}, spaet=[];
+  _sp.wuensche.forEach(function(w){
+    var p=_sp.team.filter(function(t){ return t.uid && t.uid===w.uid; })[0];
+    if(!p) return;
+    /* Wer zu spät kommt, hat Pech — so gewollt. Es steht aber im Plan,
+       damit niemand rätselt, warum sein Wunsch fehlt. */
+    if((w.ts||0)>frist){ spaet.push(p.name); return; }
+    wuensche[p.id]={ frei:w.frei||[], lieber:w.lieber||'', notiz:w.notiz||'' };
+  });
+  return {
+    eingabe:{
+      monat:_sp.monat,
+      studios:spStudios().map(function(s){ return { key:s.id, name:s.name, schichten:spSchichtenFuer(s.id) }; })
+        .filter(function(s){ return s.schichten.length; }),
+      personen:_sp.team.map(function(p){
+        return { id:p.id, uid:p.uid, name:p.name, rolle:p.rolle, haupt:p.haupt, studios:p.studios||[],
+          wocheStd:p.wocheStd, maxMonatStd:p.maxMonatStd, maxTageWoche:p.maxTageWoche, allein:p.allein!==false,
+          u18:!!p.u18, kann:p.kann||[], verf:p.verf||{}, sperre:p.sperre||'', lieber:p.lieber||'' };
+      }),
+      abwesend:abwesend.map(function(a){
+        var p=_sp.team.filter(function(t){ return t.uid===a.id; })[0];
+        return p ? { id:p.id, von:a.von, bis:a.bis, art:a.art } : null;
+      }).filter(Boolean),
+      wuensche:wuensche,
+      feiertageZu:!!(_sp.conf && _sp.conf.feiertageZu)
+    },
+    spaet:spaet
+  };
+}
+
+function spErstellen(btn){
+  if(_sp.plan && _sp.plan.veroeffentlicht &&
+     !confirm('Der Plan für '+spMonatName(_sp.monat)+' ist schon veröffentlicht. Neu erstellen? Von Hand Geändertes geht dabei verloren.')) return;
+  /* Ohne withBusy: das stellt am Ende die alte Beschriftung wieder
+     her, und aus „Neu erstellen" würde wieder „Plan für … erstellen". */
+  if(btn.dataset.busy==='1') return;
+  btn.dataset.busy='1'; btn.disabled=true;
+  function fertig(){ btn.dataset.busy=''; spSchritteZeichnen(); }
+  (function(){
+    var lib;
+    spStand('Rechne …');
+    return spLib().then(function(l){ lib=l; return spAbwesenheitenLaden(_sp.monat); })
+    .then(function(abw){
+      var e=spEingabe(abw);
+      var t0=Date.now();
+      var r=lib.planen(e.eingabe);
+      if(e.spaet.length) r.hinweise.unshift('Nach der Frist eingetragen, nicht berücksichtigt: '+e.spaet.join(', '));
+      var plan={ monat:_sp.monat, einsaetze:r.einsaetze, luecken:r.luecken, hinweise:r.hinweise,
+        personen:r.personen, feiertage:r.feiertage, erstellt:Date.now(), erstelltVon:session.name,
+        veroeffentlicht:null };
+      _sp.plan=plan; _sp.wahl=null;
+      spStand('Fertig in '+((Date.now()-t0)/1000).toFixed(1).replace('.',',')+' s · gespeichert');
+      spErgebnisZeichnen();
+      return spPlanSpeichern();
+    }).catch(function(e){ spStand(e && e.message ? e.message : errMsg(e), true); })
+      .then(fertig, fertig);
+  })();
+}
+function spPlanSpeichern(){
+  return S('planerPlaene').doc(_sp.monat).set(_sp.plan)
+    .catch(function(e){ spStand('Nicht gespeichert: '+errMsg(e), true); });
+}
+
+/* ── Das Ergebnis ── */
+function spErgebnisZeichnen(){
+  var box=$('spErgebnis'); if(!box) return;
+  var p=_sp.plan;
+  box.hidden=!p;
+  spSchritteZeichnen();
+  if(!p) return;
+  var rueck=p.einsaetze.filter(function(x){ return x.rueckfrage; });
+  $('spZahlen').innerHTML=
+    '<div class="spl-zahl"><b>'+p.einsaetze.length+'</b><span>Schichten verteilt</span></div>'+
+    '<div class="spl-zahl'+(p.luecken.length?' bad':'')+'"><b>'+p.luecken.length+'</b><span>Lücken</span></div>'+
+    '<div class="spl-zahl'+(rueck.length?' warn':'')+'"><b>'+rueck.length+'</b><span>Rückfragen</span></div>';
+  var sel=$('spStudio');
+  var mit=spStudios().filter(function(s){ return spSchichtenFuer(s.id).length; });
+  if(!_sp.studio || !mit.some(function(s){ return s.id===_sp.studio; })){
+    // Das Studio mit den meisten offenen Punkten zuerst
+    var n={}; p.luecken.concat(rueck).forEach(function(x){ n[x.studio]=(n[x.studio]||0)+1; });
+    var sortiert=mit.slice().sort(function(a,b){ return (n[b.id]||0)-(n[a.id]||0); });
+    _sp.studio=sortiert[0] ? sortiert[0].id : '';
+  }
+  sel.innerHTML=mit.map(function(s){
+    var k=p.luecken.filter(function(x){ return x.studio===s.id; }).length+rueck.filter(function(x){ return x.studio===s.id; }).length;
+    return '<option value="'+esc(s.id)+'"'+(s.id===_sp.studio?' selected':'')+'>'+esc(s.name)+(k?' · '+k+' zu klären':'')+'</option>';
+  }).join('');
+  var hin=$('spAktionHinweis');
+  if(hin && p.veroeffentlicht) hin.textContent='Veröffentlicht am '+new Date(p.veroeffentlicht).toLocaleDateString('de-DE')+'. Erneut veröffentlichen ersetzt die Schichten dieses Monats.';
+  spKlaerenZeichnen();
+  spPlanZeichnen();
+  spWahlZeichnen();
+  spTeamZeichnen();
+  ikonenEinsetzen($('spErgebnis'));
+}
+function spPunktText(x){
+  return SP_TAGE_KURZ[new Date(x.datum+'T12:00').getDay()]+' '+spDatumKurz(x.datum)+' · '+x.studioName+' · '+x.schichtName+' '+x.von+'–'+x.bis;
+}
+var SP_TAGE_KURZ=['So','Mo','Di','Mi','Do','Fr','Sa'];
+function spKlaerenZeichnen(){
+  var box=$('spKlaeren'), p=_sp.plan; if(!box||!p) return;
+  var punkte=p.luecken.map(function(l){
+    var fr=(l.fragen||[]).map(function(f){ return f.name+' ('+f.warum+')'; });
+    return { art:'luecke', x:l, titel:spPunktText(l),
+      text:'Niemand frei – '+l.grund+(fr.length?'. Fragen: '+fr.join(', '):'') };
+  }).concat(p.einsaetze.filter(function(x){ return x.rueckfrage; }).map(function(x){
+    return { art:'rueck', x:x, titel:spPunktText(x), text:x.name+' eingeteilt, obwohl: '+x.rueckfrage+' – bitte kurz absprechen' };
+  })).sort(function(a,b){ return a.x.datum.localeCompare(b.x.datum) || a.x.studioName.localeCompare(b.x.studioName,'de'); });
+  var GRENZE=8, alle=box.getAttribute('data-alle')==='1';
+  var html='<h3 data-ikon="warnung">Zu klären</h3>';
+  if(!punkte.length){
+    html+='<p class="spl-alle-ok">'+ikon('hakenKreis')+'Nichts – jede Schicht ist besetzt, kein Wunsch gebrochen.</p>';
+  } else {
+    html+=(alle?punkte:punkte.slice(0,GRENZE)).map(function(pt){
+      return '<button type="button" class="spl-punkt'+(pt.art==='rueck'?' warn':'')+'" data-sppunkt="'+
+        esc(pt.x.datum+'|'+pt.x.studio+'|'+pt.x.schicht+'|'+(pt.art==='rueck'?pt.x.id:''))+'">'+
+        '<b>'+esc(pt.titel)+'</b><small>'+esc(pt.text)+'</small></button>';
+    }).join('');
+    if(punkte.length>GRENZE) html+='<button type="button" class="btn btn-ghost btn-sm spl-mehr" data-spalle="1">'+
+      (alle?'Weniger zeigen':'Alle '+punkte.length+' zeigen')+'</button>';
+  }
+  if(p.hinweise && p.hinweise.length){
+    html+='<details class="spl-team"><summary>'+p.hinweise.length+' Hinweise</summary><ul class="hint" style="padding-left:18px;margin:0">'+
+      p.hinweise.map(function(h){ return '<li>'+esc(h)+'</li>'; }).join('')+'</ul></details>';
+  }
+  box.innerHTML=html;
+  box.querySelectorAll('[data-sppunkt]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=b.getAttribute('data-sppunkt').split('|');
+      _sp.studio=t[1]; $('spStudio').value=t[1];
+      _sp.wahl={ datum:t[0], studio:t[1], schicht:t[2], ohne:t[3]||'' };
+      spPlanZeichnen(); spWahlZeichnen();
+      var z=document.querySelector('.spl-zelle.an'); if(z) sanftInsBild(z,{block:'center'});
+    });
+  });
+  var mehr=box.querySelector('[data-spalle]');
+  if(mehr) mehr.addEventListener('click', function(){ box.setAttribute('data-alle', alle?'':'1'); spKlaerenZeichnen(); });
+}
+
+/* Tage untereinander, Schichten nebeneinander. Bei 14 Studios × 30
+   Tagen wäre alles auf einmal eine Wand; ein Studio nach dem anderen
+   bleibt lesbar — das mit den meisten offenen Punkten steht vorn. */
+function spPlanZeichnen(){
+  var box=$('spTabelle'), p=_sp.plan; if(!box||!p) return;
+  var sk=_sp.studio, sch=spSchichtenFuer(sk);
+  var monatTage=[], j=+_sp.monat.split('-')[0], mo=+_sp.monat.split('-')[1];
+  var n=new Date(j, mo, 0).getDate();
+  for(var i=1;i<=n;i++) monatTage.push(_sp.monat+'-'+('0'+i).slice(-2));
+  var heute=ymd(new Date()), ft={};
+  (p.feiertage||[]).forEach(function(f){ ft[f.datum]=f.name; });
+  var html='<table class="spl-tab"><thead><tr><th>Tag</th>'+sch.map(function(s){
+    return '<th>'+esc(s.name)+' <span style="font-weight:400">'+esc(s.von)+'–'+esc(s.bis)+'</span></th>'; }).join('')+'</tr></thead><tbody>';
+  monatTage.forEach(function(d){
+    var dt=new Date(d+'T12:00'), wt=dt.getDay(), wtIso=wt===0?7:wt;
+    html+='<tr class="'+(wt===0||wt===6?'we':'')+(d===heute?' heute':'')+'"><td class="spl-tag">'+SP_TAGE_KURZ[wt]+' '+spDatumKurz(d)+
+      (ft[d]?'<small>'+esc(ft[d])+'</small>':'')+'</td>';
+    sch.forEach(function(s){
+      if(s.tage && s.tage.length && s.tage.indexOf(wtIso)<0){ html+='<td></td>'; return; }
+      var drin=p.einsaetze.filter(function(x){ return x.datum===d && x.studio===sk && x.schicht===s.id; });
+      var luecke=p.luecken.filter(function(x){ return x.datum===d && x.studio===sk && x.schicht===s.id; })[0];
+      html+='<td>';
+      drin.forEach(function(x){
+        var an=_sp.wahl && _sp.wahl.datum===d && _sp.wahl.schicht===s.id && _sp.wahl.ohne===x.id;
+        html+='<button type="button" class="spl-zelle'+(x.rueckfrage?' rueck':'')+(an?' an':'')+'" data-spzelle="'+esc(d+'|'+s.id+'|'+x.id)+'" title="'+esc(x.grund+(x.rueckfrage?' · Rückfrage: '+x.rueckfrage:''))+'">'+esc(x.name)+'</button>';
+      });
+      if(luecke){
+        var an2=_sp.wahl && _sp.wahl.datum===d && _sp.wahl.schicht===s.id && !_sp.wahl.ohne;
+        html+='<button type="button" class="spl-zelle luecke'+(an2?' an':'')+'" data-spzelle="'+esc(d+'|'+s.id+'|')+'">fehlt'+(luecke.fehlt>1?' ×'+luecke.fehlt:'')+'</button>';
+      }
+      html+='</td>';
+    });
+    html+='</tr>';
+  });
+  box.innerHTML=html+'</tbody></table>';
+  box.querySelectorAll('[data-spzelle]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=b.getAttribute('data-spzelle').split('|');
+      _sp.wahl={ datum:t[0], studio:_sp.studio, schicht:t[1], ohne:t[2]||'' };
+      box.querySelectorAll('.spl-zelle.an').forEach(function(z){ z.classList.remove('an'); });
+      b.classList.add('an');
+      spWahlZeichnen();
+      var w=$('spWahl'); if(w) sanftInsBild(w,{block:'nearest'});
+    });
+  });
+}
+
+/* Umbesetzen: wer käme infrage, und warum die anderen nicht. */
+function spWahlZeichnen(){
+  var box=$('spWahl'), w=_sp.wahl, p=_sp.plan; if(!box) return;
+  if(!w || !p || !window.SCHICHTPLANER){ box.hidden=true; return; }
+  var e=spEingabe([]).eingabe;
+  /* Abwesenheiten stehen im gespeicherten Plan nicht — für die Auswahl
+     reicht, was beim Erstellen schon galt: wer da im Urlaub war, steht
+     dort auch nicht drin. Deshalb hier nur die Regeln des Tages. */
+  var liste=window.SCHICHTPLANER.alternativen(e, p, w);
+  var sch=spSchichtenFuer(w.studio).filter(function(s){ return s.id===w.schicht; })[0]||{};
+  var titel=SP_TAGE_KURZ[new Date(w.datum+'T12:00').getDay()]+' '+spDatumKurz(w.datum)+' · '+(sch.name||'')+' '+(sch.von||'')+'–'+(sch.bis||'');
+  box.hidden=false;
+  box.innerHTML='<h3 data-ikon="leute">'+esc(titel)+'</h3>'+
+    '<p class="hint" style="margin-top:0">'+(w.ohne?'Wer soll statt dessen?':'Wer übernimmt?')+'</p>'+
+    (liste.length ? '' : '<p class="lese-leer">Diesem Studio ist niemand zugeordnet. In der Excel-Datei unter „Hauptstudio" oder „Weitere Studios" eintragen und neu einlesen.</p>')+
+    '<div class="spl-wahl-liste">'+liste.map(function(x){
+      var jetzt=x.id===w.ohne;
+      return '<button type="button" class="spl-person'+(jetzt?' jetzt':'')+'" data-spwahl="'+esc(x.id)+'"'+(x.grund||jetzt?' disabled':'')+'>'+
+        '<span>'+esc(x.name)+'</span><small>'+esc(jetzt?'eingeteilt':(x.grund||x.weich||''))+'</small></button>';
+    }).join('')+'</div>'+
+    (w.ohne?'<button type="button" class="btn btn-ghost btn-sm" data-spweg="1" style="margin-top:var(--s8);width:100%">Austragen (Lücke lassen)</button>':'')+
+    '<button type="button" class="btn btn-ghost btn-sm" data-spzu="1" style="margin-top:var(--s8);width:100%">Schliessen</button>';
+  ikonenEinsetzen(box);
+  box.querySelectorAll('[data-spwahl]').forEach(function(b){
+    b.addEventListener('click', function(){ spSetzen(b.getAttribute('data-spwahl')); });
+  });
+  var weg=box.querySelector('[data-spweg]'); if(weg) weg.addEventListener('click', function(){ spSetzen(null); });
+  box.querySelector('[data-spzu]').addEventListener('click', function(){ _sp.wahl=null; spPlanZeichnen(); spWahlZeichnen(); });
+}
+function spSetzen(neuId){
+  var w=_sp.wahl, p=_sp.plan; if(!w||!p) return;
+  var sch=spSchichtenFuer(w.studio).filter(function(s){ return s.id===w.schicht; })[0]; if(!sch) return;
+  var st=spStudios().filter(function(s){ return s.id===w.studio; })[0]||{name:w.studio};
+  if(w.ohne){
+    p.einsaetze=p.einsaetze.filter(function(x){ return !(x.datum===w.datum && x.studio===w.studio && x.schicht===w.schicht && x.id===w.ohne); });
+  }
+  var luecke=p.luecken.filter(function(x){ return x.datum===w.datum && x.studio===w.studio && x.schicht===w.schicht; })[0];
+  if(neuId){
+    var person=_sp.team.filter(function(t){ return t.id===neuId; })[0]; if(!person) return;
+    p.einsaetze.push({ id:person.id, name:person.name, datum:w.datum, studio:w.studio, studioName:st.name,
+      schicht:sch.id, schichtName:sch.name, von:sch.von, bis:sch.bis, grund:'von Hand · '+session.name });
+    if(luecke && !w.ohne){
+      luecke.fehlt--;
+      if(luecke.fehlt<=0) p.luecken=p.luecken.filter(function(x){ return x!==luecke; });
+    }
+  } else if(w.ohne){
+    if(luecke) luecke.fehlt++;
+    else p.luecken.push({ datum:w.datum, studio:w.studio, studioName:st.name, schicht:sch.id, schichtName:sch.name,
+      von:sch.von, bis:sch.bis, fehlt:1, grund:'von Hand ausgetragen', fragen:[] });
+  }
+  _sp.wahl=null;
+  spErgebnisZeichnen();
+  spPlanSpeichern();
+  tick(8);
+}
+function spTeamZeichnen(){
+  var box=$('spTeam'), p=_sp.plan; if(!box||!p) return;
+  box.innerHTML='<table><thead><tr><th>Name</th><th>Std.</th><th>Soll</th><th>Tage</th><th>WE</th><th>Früh/Spät</th></tr></thead><tbody>'+
+    p.personen.map(function(x){
+      var unter=x.soll && x.std<x.soll*0.85;
+      return '<tr><td>'+esc(x.name)+'<br><small class="hint">'+esc(x.rolle||'')+'</small></td>'+
+        '<td class="'+(unter?'unter':'')+'">'+String(x.std).replace('.',',')+'</td><td>'+(x.soll||'–')+'</td>'+
+        '<td>'+x.tage+'</td><td>'+x.wochenenden+'</td><td>'+x.frueh+'/'+x.spaet+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+/* ── Raus aus dem Planer ── */
+function spKopieren(){
+  var p=_sp.plan; if(!p || !window.SCHICHTPLANER) return;
+  var text=window.SCHICHTPLANER.alsTabelle(p);
+  function ok(){ toast(p.einsaetze.length+' Schichten kopiert – in Excel oder LogX einfügen ✓'); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(ok, function(){ spKopierenAlt(text); ok(); });
+  } else { spKopierenAlt(text); ok(); }
+}
+function spKopierenAlt(text){
+  var t=document.createElement('textarea'); t.value=text; t.setAttribute('readonly','');
+  t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(t);
+}
+/* Veröffentlichen schreibt in den Schichtplan, den das Team schon kennt
+   (studios/<k>/shifts) — mit Tausch, Kalender-Abo und „Meine Woche".
+   Jede Schicht trägt `planer: <Monat>`: so ersetzt ein zweites
+   Veröffentlichen genau die eigenen Einträge und lässt von Hand
+   Eingetragenes stehen. */
+function spVeroeffentlichen(btn){
+  var p=_sp.plan; if(!p) return;
+  var mitKonto=p.einsaetze.filter(function(x){ return _sp.team.some(function(t){ return t.id===x.id && t.uid; }); });
+  var ohne=p.einsaetze.length-mitKonto.length;
+  if(!confirm(mitKonto.length+' Schichten für '+spMonatName(_sp.monat)+' im Team-Schichtplan veröffentlichen?'+
+     (p.luecken.length?'\n\nAchtung: '+p.luecken.length+' Lücken sind noch offen.':'')+
+     (ohne?'\n\n'+ohne+' Schichten von Personen ohne App-Konto bleiben draussen (die stehen nur in der LogX-Tabelle).':'')+
+     (p.veroeffentlicht?'\n\nDie bisher veröffentlichten Schichten dieses Monats werden ersetzt.':''))) return;
+  withBusy(btn, function(){
+    var studios=spStudios().map(function(s){ return s.id; });
+    return Promise.all(studios.map(function(sk){
+      return S('studios').doc(sk).collection('shifts').where('planer','==',_sp.monat).get()
+        .then(function(sn){ return sn.docs.map(function(d){ return d.ref; }); });
+    })).then(function(alt){
+      var ops=[];
+      alt.forEach(function(l){ l.forEach(function(ref){ ops.push(function(b){ b.delete(ref); }); }); });
+      mitKonto.forEach(function(x){
+        var t=_sp.team.filter(function(t){ return t.id===x.id; })[0];
+        var ref=S('studios').doc(x.studio).collection('shifts').doc();
+        ops.push(function(b){ b.set(ref, { date:x.datum, from:x.von, to:x.bis, uid:t.uid, name:x.name,
+          note:x.schichtName, planer:_sp.monat, createdBy:session.name, createdByUid:session.uid, ts:Date.now() }); });
+      });
+      // Höchstens 450 Schreibvorgänge je Stapel (Grenze 500)
+      var stapel=[];
+      for(var i=0;i<ops.length;i+=450){
+        var b=db.batch(); ops.slice(i,i+450).forEach(function(f){ f(b); }); stapel.push(b.commit());
+      }
+      return Promise.all(stapel);
+    }).then(function(){
+      p.veroeffentlicht=Date.now();
+      toast(mitKonto.length+' Schichten veröffentlicht ✓');
+      spErgebnisZeichnen();
+      return spPlanSpeichern();
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+
+/* ══ Wünsche der Mitarbeiter (Team → Schichten) ══════════════════════
+   Für den Monat, der als Nächstes geplant wird. Nach der Frist bleibt
+   die Karte sichtbar, aber zu — mit dem Satz, warum. */
+var _spW = { monat:null, frei:[], lieber:'', gebunden:false, frist:0 };
+function spWunschZeigen(){
+  var karte=$('spWunschKarte'); if(!karte) return;
+  if(!session || isChef() || !featureAn('schicht')){ karte.hidden=true; return; }
+  var m=spMonatPlus(spMonatJetzt(),1);
+  /* Ab dem Tag nach der Frist geht es um den übernächsten Monat — dann
+     plant die Chefin ihn als Nächstes. */
+  Promise.all([
+    S('config').doc('schichtplaner').get().catch(function(){ return null; }),
+    S('planerTeam').doc(session.uid).get().catch(function(){ return null; })
+  ]).then(function(r){
+    var conf = r[0] && r[0].exists ? r[0].data()||{} : {};
+    _sp.conf = _sp.conf || conf;
+    var tag=+(conf.wunschFristTag||15);
+    var jetzt=new Date();
+    if(jetzt.getDate()>tag) m=spMonatPlus(spMonatJetzt(),2);
+    /* Nur wer im Planer steht, bekommt die Karte. Sonst fragt die App
+       nach Wünschen für einen Plan, in dem man gar nicht vorkommt. */
+    if(!(r[1] && r[1].exists)){ karte.hidden=true; return; }
+    _spW.monat=m;
+    var v=spMonatPlus(m,-1).split('-');
+    _spW.frist=new Date(+v[0], +v[1]-1, tag, 23, 59, 59).getTime();
+    return S('planerWuensche').doc(session.uid+'_'+m).get().then(function(d){
+      var w=d && d.exists ? d.data()||{} : {};
+      _spW.frei=(w.frei||[]).slice(); _spW.lieber=w.lieber||'';
+      $('spWunschNotiz').value=w.notiz||'';
+      karte.hidden=false;
+      spWunschBinden();
+      spWunschZeichnen();
+    });
+  }).catch(function(){ karte.hidden=true; });
+}
+function spWunschZeichnen(){
+  var m=_spW.monat, zu=Date.now()>_spW.frist, karte=$('spWunschKarte');
+  karte.classList.toggle('zu', zu);
+  $('spWunschTitel').lastChild.textContent='Meine Wünsche für '+spMonatName(m);
+  var f=new Date(_spW.frist);
+  $('spWunschFrist').textContent = zu
+    ? 'Die Frist war am '+f.getDate()+'.'+(f.getMonth()+1)+'. – der Plan wird gerade erstellt. Änderungen bitte direkt mit der Leitung absprechen.'
+    : 'Bis '+f.getDate()+'.'+(f.getMonth()+1)+'. eintragen. Was danach kommt, kann nicht mehr berücksichtigt werden.';
+  var p=m.split('-'), n=new Date(+p[0], +p[1], 0).getDate(), html='';
+  for(var d=1; d<=n; d++){
+    var k=m+'-'+('0'+d).slice(-2), an=_spW.frei.indexOf(k)>=0, wt=new Date(+p[0], +p[1]-1, d).getDay();
+    html+='<button type="button" class="spl-w-tag'+(an?' an':'')+(wt===0||wt===6?' we':'')+'" data-spwtag="'+k+'" aria-pressed="'+an+'"'+
+      ' aria-label="'+SP_TAGE_KURZ[wt]+' '+d+'.'+(+p[1])+'."'+(zu?' disabled':'')+'><small>'+SP_TAGE_KURZ[wt]+'</small>'+d+'</button>';
+  }
+  var box=$('spWunschTage'); box.innerHTML=html;
+  box.querySelectorAll('[data-spwtag]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k=b.getAttribute('data-spwtag'), i=_spW.frei.indexOf(k);
+      if(i>=0) _spW.frei.splice(i,1); else _spW.frei.push(k);
+      b.classList.toggle('an', i<0); b.setAttribute('aria-pressed', String(i<0));
+    });
+  });
+  document.querySelectorAll('[data-splieber]').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-splieber')===_spW.lieber);
+  });
+  $('spWunschNotiz').disabled=zu;
+  $('spWunschSpeichern').disabled=zu;
+}
+function spWunschBinden(){
+  if(_spW.gebunden) return; _spW.gebunden=true;
+  document.querySelectorAll('[data-splieber]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var v=b.getAttribute('data-splieber');
+      _spW.lieber = _spW.lieber===v ? '' : v;
+      spWunschZeichnen();
+    });
+  });
+  $('spWunschSpeichern').addEventListener('click', function(){
+    var btn=this;
+    if(Date.now()>_spW.frist){ toast('Die Frist ist vorbei.', true); return; }
+    withBusy(btn, function(){
+      return S('planerWuensche').doc(session.uid+'_'+_spW.monat).set({
+        uid:session.uid, name:session.name, monat:_spW.monat,
+        frei:_spW.frei.slice().sort(), lieber:_spW.lieber,
+        notiz:$('spWunschNotiz').value.trim().slice(0,140), ts:Date.now()
+      }).then(function(){ toast('Wünsche gespeichert ✓'); })
+        .catch(function(e){ toast(errMsg(e), true); });
+    });
+  });
 }
 
 /* ══ KENNZAHLEN JE STUDIO (Runde 138) ═════════════════════════════════

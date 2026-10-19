@@ -287,7 +287,12 @@ var USERS = [
           /* Bestellungen (Runde 137): get() UND onSnapshot */
           : (path === 'bestellungen' ? (window.__bestellungen || [])
           : (path === 'kennzahlen' ? (window.__kennzahlen || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))));
+          /* Schichtplaner (Runde 154) — get() UND onSnapshot. Leer, ausser
+             ein Durchlauf legt window.__planerTeam usw. hin. */
+          : (path === 'planerTeam' ? (window.__planerTeam || [])
+          : (path === 'planerWuensche' ? (window.__planerWuensche || [])
+          : (path === 'planerPlaene' ? (window.__planerPlaene || [])
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])))))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -321,7 +326,10 @@ var USERS = [
                    (path==='inventory' ? Object.keys(INVENTORY).map(function(k){ return {id:k, items:INVENTORY[k].items}; }) :
                    (path==='bestellungen' ? (window.__bestellungen || []) :
                    (path==='kennzahlen' ? (window.__kennzahlen || []) :
-                   (path==='documents' ? DOCS : []))))))));
+                   (path==='planerTeam' ? (window.__planerTeam || []) :
+                   (path==='planerWuensche' ? (window.__planerWuensche || []) :
+                   (path==='planerPlaene' ? (window.__planerPlaene || []) :
+                   (path==='documents' ? DOCS : [])))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();

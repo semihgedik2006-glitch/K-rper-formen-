@@ -99,7 +99,7 @@
       },
       {
         "//": "Die Inhaltsdateien (Handbuch, Schulungen, EMS-Wissen). Bis zum 24.9.2026 stand hier max-age=604800 mit der Annahme, VERSION in sw.js hochzuzählen hole die neue Fassung. Das stimmte nicht: der Service Worker holte beim Update durch den HTTP-Zwischenspeicher und legte die Woche alte Datei in den neuen Vorrat — die fünf EMS-Schulungen waren live und auf den Geräten unsichtbar. Jetzt no-cache: der Browser fragt jedes Mal nach, und solange sich nichts geändert hat, antwortet der Server mit 304 ohne Inhalt. Die Dateien liegen ohnehin im Vorrat des Service Workers, offline geht also nichts verloren. tests/test-zwischenspeicher.js prüft beides.",
-        "source": "/@(loesungen-basis|schulungen-basis|ems-wissen).js",
+        "source": "/@(loesungen-basis|schulungen-basis|ems-wissen|schichtplaner).js",
         "headers": [
           { "key": "Cache-Control", "value": "no-cache" }
         ]

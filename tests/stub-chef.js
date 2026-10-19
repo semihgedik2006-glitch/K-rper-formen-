@@ -655,7 +655,12 @@ var USERS = [
           : (path === 'bestellungen' ? (window.__bestellungen || [])
           /* Kennzahlen (Runde 138) — get() UND onSnapshot */
           : (path === 'kennzahlen' ? (window.__kennzahlen || [])
-          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : []))))))))));
+          /* Schichtplaner (Runde 154) — get() UND onSnapshot. Leer, ausser
+             ein Durchlauf legt window.__planerTeam usw. hin. */
+          : (path === 'planerTeam' ? (window.__planerTeam || [])
+          : (path === 'planerWuensche' ? (window.__planerWuensche || [])
+          : (path === 'planerPlaene' ? (window.__planerPlaene || [])
+          : (path === 'inventory' ? Object.keys(INVENTORY).map(function (k) { return { id: k, items: INVENTORY[k].items }; }) : [])))))))))))));
         var self = this;
         if (self._filter && self._filter.length) {
           list = list.filter(function (d) {
@@ -759,6 +764,9 @@ var USERS = [
                    (path==='probetrainings' ? (window.__probe || PROBE) :
                    (path==='bestellungen' ? (window.__bestellungen || []) :
                    (path==='kennzahlen' ? (window.__kennzahlen || []) :
+                   (path==='planerTeam' ? (window.__planerTeam || []) :
+                   (path==='planerWuensche' ? (window.__planerWuensche || []) :
+                   (path==='planerPlaene' ? (window.__planerPlaene || []) :
                    /* board fehlte hier, obwohl get() es kennt. Das
                       Schwarze Brett haengt mit onSnapshot zu — es blieb
                       deshalb IMMER leer, und jeder Durchlauf darueber
@@ -770,7 +778,7 @@ var USERS = [
                       window.__firmen / window.__firmenArchiv hin. So merkt
                       keiner der anderen Durchlaeufe etwas davon. */
                    (path==='firmen' ? (window.__firmen||[]) :
-                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : [])))))))))))))));
+                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))))))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         /* Zuhoerer merken, damit ein ZWEITER Schnappschuss moeglich ist.
            Die Attrappe feuerte bisher genau einmal je Sammlung. Fuer
