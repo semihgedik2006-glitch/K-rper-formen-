@@ -16014,3 +16014,56 @@ der Planer nicht mit und sagt das).
 - Die Regeln aus den Antworten der Chefin (Mindestbesetzung je Tageszeit,
   wer als Begleitung zählt, Feiertage, Vorrang bei Konflikten) — die
   Gewichte stehen offen in `bewerten()` und werden nachgezogen.
+
+---
+
+## Runde 157 — Studio-Gehirn Stufe 1: schnell und fehlertolerant (19.10.2026)
+
+**Aus dem Betrieb:** „das klappt alles leider nur so halb, und die ki
+braucht echt lang zum antworten … das die ki auch rechtschreib Fehler
+verzeiht und aus einem Kontext was versteht zum Beispiel
+staubsaugen=saugen". Auf Rückfrage: erst Stufe 1 (schnell, fehlertolerant),
+dann Stufe 2 (eigenes Vollbild); Kontext ausdrücklich **mit Vornamen des
+Teams** („das wirkt persönlicher"); Synonyme pflegt Semih im Leitstand.
+
+**Warum es langsam war** (nachgerechnet, nicht gemessen): jede Nachricht
+ging erst an Gemini (402, vergeblich), dann an Gemma 4 auf Workers AI,
+das vor jeder Antwort „nachdenkt", bei Fragen danach ein zweites Mal.
+
+**Geändert**
+- **Schnellweg im Gerät** (`gehirnSchnell`): Öffnen, „wer hat Dienst",
+  „wer fehlt", „was ist offen", „ich bin (heute|morgen) krank",
+  „Übergabe: …", „… ist sauber/erledigt" — mit Tippfehler-Toleranz
+  (Abstand 1) und einer kleinen Liste gleicher Wörter. Liefert denselben
+  Befehl wie die KI und läuft durch dieselbe Ausführung. Was nicht sicher
+  passt (Fragen, andere Personen, andere Tage), geht an die KI.
+- **Zuordnen verzeiht mehr** (`gehirnTreffer`): Stamm, Abstand 1,
+  gleiche Wörter („Klo" → „Toiletten reinigen"); Abhaken sucht in
+  Putzplan UND Aufgaben.
+- **Gemini 30 Minuten aussetzen** nach 401/402/403 (`_geminiAusBis`).
+- **Kontext an die KI** (`gehirnKontextText`): offene Putzpunkte und
+  Aufgaben der eigenen Studios, Vornamen, der eigene Name — gekürzt,
+  begrenzt (je 40), Anführungszeichen und Zeilen entschärft.
+- **Worker 2.5:** schnelles Modell zuerst (Llama 3.3 70B fast), Gemma
+  nur als Ersatz; Wissenssuche mit Tippfehler-Korrektur gegen das
+  Wörterbuch des Wissens und **Synonymgruppen** (Startliste mit ~40
+  Gruppen, im Leitstand unter „Synonyme" pflegbar, Tabelle
+  `einstellungen`).
+
+**Datenschutz, offen gesagt:** Vornamen und Titel von Putzpunkten und
+Aufgaben gehen jetzt an Cloudflare (bzw. Google, sobald bezahlt). So
+freigegeben vom Betrieb; die Geschäftsführung sollte das im
+Verarbeitungsverzeichnis nachtragen.
+
+**Geprüft:** test-gehirn (122; neu 13 im Schnellweg: Tippfehler beim
+Öffnen, Dienst, offen, krank, „Klo ist sauber", „Wasserspendr
+aufgefüllt", und fünf Sätze, die an die KI gehen MÜSSEN),
+test-gehirn-aktion (69; Kontext, Gemini-Sperre), Worker-Prüfung
+(Synonyme, Tippfehler, Leitstand-Pfad 401/200).
+
+**Nicht geprüft:** echte Antwortzeiten nach Worker 2.5 — erst, wenn er
+eingefügt ist.
+
+**Gefunden nebenbei:** `test-navigation` ist auf `main` seit #215
+(Schichtplaner) rot — der Chef sieht 11 Kacheln statt 10. Nicht von hier;
+die Erwartung im Test gehört zu #215 und wurde hier nicht angefasst.

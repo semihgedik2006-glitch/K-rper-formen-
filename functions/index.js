@@ -7173,11 +7173,19 @@ async function gehirnWorkerJson(system, nutzer) {
 
 /* Erst Gemini, dann das Studio-Gehirn. Scheitern beide, trägt die
    Meldung den Gemini-Grund — der ist für Menschen lesbar. */
+/* Verlangt Google eine Zahlung (402) oder lehnt den Schlüssel ab, wird
+   Gemini 30 Minuten lang gar nicht erst gefragt — jeder vergebliche
+   Versuch kostete live eine knappe Sekunde (19.10.2026: „die ki braucht
+   echt lang"). Gilt je Instanz; nach einem Neustart wird neu geprüft. */
+let _geminiAusBis = 0;
 async function kiJson(system, nutzer, apiKey) {
   let geminiFehler = null;
-  if (apiKey) {
+  if (apiKey && Date.now() >= _geminiAusBis) {
     try { return await geminiJson(system, nutzer, apiKey); }
-    catch (e) { geminiFehler = e; }
+    catch (e) {
+      geminiFehler = e;
+      if ([401, 402, 403].indexOf(e.status) >= 0) _geminiAusBis = Date.now() + 30 * 60000;
+    }
   }
   try { return await gehirnWorkerJson(system, nutzer); }
   catch (e) {
@@ -7335,6 +7343,24 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
   return null;
 }
 
+/* Kontext aus der App (19.10.2026, freigegeben: „ja er darf auch
+   Mitarbeiter Namen haben … das wirkt persönlicher"): was es im Studio
+   gibt, damit die KI „Klo ist sauber" dem Putzpunkt „Toiletten
+   reinigen" zuordnet. Nur Titel und Vornamen, gekürzt und begrenzt —
+   keine Kundendaten, keine Inhalte aus Chats. Rein rechnerisch (__intern). */
+function gehirnKurz(x, n) { return String(x || '').replace(/[\r\n"]+/g, ' ').trim().slice(0, n); }
+function gehirnKontextText(k) {
+  if (!k || typeof k !== 'object') return '';
+  const liste = (a, n, m) => (Array.isArray(a) ? a : []).map(x => gehirnKurz(x, m)).filter(Boolean).slice(0, n);
+  const teile = [];
+  const putz = liste(k.putz, 40, 60), aufg = liste(k.aufgaben, 40, 80), ger = liste(k.geraete, 30, 50), team = liste(k.team, 40, 30);
+  if (putz.length) teile.push('Offene Putzpunkte: ' + JSON.stringify(putz));
+  if (aufg.length) teile.push('Offene Aufgaben: ' + JSON.stringify(aufg));
+  if (ger.length) teile.push('Geräte: ' + JSON.stringify(ger));
+  if (team.length) teile.push('Team (Vornamen): ' + JSON.stringify(team));
+  return teile.length ? ' Was es gerade gibt — nutze genau diese Bezeichnungen bei "was"/"geraet": ' + teile.join('; ') + '.' : '';
+}
+
 /* Ein Knopf für alles (19.10.2026): wohin mit dem Satz? Rein rechnerisch
    (__intern). „frage", wenn die KI es so sagt, nichts liefert oder etwas
    Unbekanntes; „unklar", wenn eine bekannte Aktion die Prüfung nicht
@@ -7392,7 +7418,9 @@ exports.gehirnAktion = region
       '{"typ":"keins","hinweis":"..."} — nur wenn etwas getan werden soll, das es nicht gibt oder das andere Personen betrifft (z. B. jemand anderen krankmelden, etwas löschen). ' +
       'Regeln: Datumsangaben wie "morgen", "bis Freitag" in echte Daten umrechnen. Titel kurz (max. 80 Zeichen). ' +
       'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '. ' +
-      'Keine Kundennamen und keine Gesundheitsdetails übernehmen — bei "krank" keinen Grund in die Notiz.';
+      'Keine Kundennamen und keine Gesundheitsdetails übernehmen — bei "krank" keinen Grund in die Notiz. ' +
+      'Die Person heisst ' + gehirnKurz(profil.name, 40) + '. Rechtschreibfehler und Umgangssprache sind normal — lies, was gemeint ist.' +
+      gehirnKontextText((data || {}).kontext);
     let roh = null;
     try { roh = await kiJson(system, auftrag, apiKey); }
     catch (e) {
@@ -7558,7 +7586,8 @@ exports.lageberichtJetzt = region
   });
 
 exports.__intern = { gehirnErlaubt, gehirnAuftrag, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
-                     gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
+                     gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
+                     geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,

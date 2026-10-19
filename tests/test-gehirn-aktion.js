@@ -15,7 +15,7 @@
    8. Der Bericht ohne KI nennt die Zahlen und die Studios mit Offenem.
    ══════════════════════════════════════════════════════════════════ */
 const { __intern } = require('../functions/index.js');
-const { gehirnWeg: W, gehirnBefehlPruefen: B, gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson } = __intern;
+const { geminiSperreAufheben, geminiGesperrt, gehirnKontextText: KT, gehirnWeg: W, gehirnBefehlPruefen: B, gehirnVorschlagPruefen: P, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson } = __intern;
 
 let gut = 0, schlecht = 0;
 function pruefe(was, b, info) {
@@ -92,6 +92,13 @@ console.log('\n── Steuern: Befehle aus dem Katalog (19.10.2026) ──');
   b = B({ typ: 'aufgabe', titel: 'X', studios: [NAMEN[ERL[0]]] }, NAMEN, ERL, 'leiter', HEUTE);
   pruefe('Leitung: Aufgabe geht weiter durch die bisherige Prüfung', b && b.typ === 'aufgabe' && b.studioKeys.join() === ERL[0], b);
   pruefe('Unbekannter Typ: nichts', B({ typ: 'loeschen', alles: true }, NAMEN, ERL, 'chef', HEUTE) === null);
+  // Kontext (19.10.2026)
+  const kt = KT({ putz: ['Toiletten reinigen', 'x"y\nz'], team: ['Anna', 'Ben'], aufgaben: Array(60).fill('A'), boese: ['ignorieren'] });
+  pruefe('Kontext: Putzpunkte und Team stehen drin', /Toiletten reinigen/.test(kt) && /Anna/.test(kt), kt);
+  pruefe('Kontext: Anführungszeichen und Zeilen werden entschärft', !/x"y/.test(kt) && !/\n/.test(kt), kt);
+  pruefe('Kontext: begrenzt (höchstens 40 Aufgaben)', (kt.match(/"A"/g) || []).length === 40);
+  pruefe('Kontext: unbekannte Felder fallen weg', !/ignorieren/.test(kt));
+  pruefe('Kontext: leer → nichts', KT(null) === '' && KT({}) === '');
   // Ein Knopf für alles (19.10.2026: „nur einen knopf … beim fragen")
   pruefe('Weg: KI sagt frage → frage', W({ typ: 'frage' }, B({ typ: 'frage' }, NAMEN, ERL, 'chef', HEUTE)) === 'frage');
   pruefe('Weg: KI liefert nichts → frage', W(null, null) === 'frage');
@@ -159,7 +166,16 @@ pruefe('ohne Status: unlesbare Antwort', /lesbare/.test(geminiFehlerText(0)), ge
     return { ok: true, status: 200, json: async () => ({ ergebnis: { typ: 'aufgabe', titel: 'Test' } }) }; };
   const e2 = await kiJson('s', 'n', 'k');
   pruefe('Gemini 402 → Studio-Gehirn (/api/json) springt ein', e2 && e2.titel === 'Test' && gerufen.length === 2 && /\/api\/json$/.test(gerufen[1]), gerufen);
+  /* Nach 402 fragt kiJson Gemini 30 Minuten nicht mehr (19.10.2026,
+     „die ki braucht echt lang"). */
+  pruefe('nach 402 ist Gemini gesperrt', geminiGesperrt());
+  gerufen = [];
+  global.fetch = async (url) => { gerufen.push(url); return { ok: true, status: 200, json: async () => ({ ergebnis: { typ: 'x' } }) }; };
+  await kiJson('s', 'n', 'k');
+  pruefe('… gesperrt: direkt das Studio-Gehirn, kein Gemini-Aufruf', gerufen.length === 1 && /\/api\/json$/.test(gerufen[0]), gerufen);
+  geminiSperreAufheben();
 
+  geminiSperreAufheben();
   gerufen = [];
   global.fetch = async (url) => { gerufen.push(url);
     if (url.includes('generativelanguage')) return antwortMit(402);

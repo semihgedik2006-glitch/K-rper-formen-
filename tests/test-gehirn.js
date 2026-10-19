@@ -458,6 +458,43 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
+
+  console.log('\n── 8f Schnellweg ohne KI, Tippfehler ──');
+  /* Aus dem Betrieb (19.10.2026): „die ki braucht echt lang … das die ki
+     auch rechtschreib Fehler verzeiht … staubsaugen=saugen". */
+  {
+    const p = await oeffne(b, 1440, 900);
+    const kiWeg = () => p.evaluate(() => { window.__kiGefragt = 0; window.__antwort = window.__antwort || {};
+      window.__antwort.gehirnAktion = () => { window.__kiGefragt++; return Promise.resolve({ data: { art: 'frage', antwort: 'KI', abgedeckt: true } }); }; });
+    const sag = async (satz) => { await aufSeite(p); await kiWeg(); await p.fill('#gehirnFeld', satz); await p.click('#gehirnFragen'); await fertig(p); await p.waitForTimeout(800); };
+    const ki = () => p.evaluate(() => window.__kiGefragt);
+    const letzteKarte = () => p.evaluate(() => { const k = [...document.querySelectorAll('#gehirnVerlauf .gehirn-antwort')].pop(); return k ? k.innerText : ''; });
+    await sag('öfne den putzplan');
+    pruefe('„öfne den putzplan" (Tippfehler): Putzplan offen, ohne KI', await sichtbar(p, '#view-putzplan.show') && (await ki()) === 0);
+    await sag('Dienstplan');
+    pruefe('„Dienstplan": Team offen, ohne KI', await sichtbar(p, '#view-team.show') && (await ki()) === 0);
+    await sag('wer hat heute dienst in hürth');
+    pruefe('„wer hat heute dienst in hürth": Dienst-Karte, ohne KI', /Heute im Dienst/i.test(await letzteKarte()) && (await ki()) === 0, await letzteKarte());
+    await sag('was ist offen');
+    pruefe('„was ist offen": Aufgaben-Karte, ohne KI', /Offene Aufgaben/i.test(await letzteKarte()) && (await ki()) === 0);
+    await sag('ich bin heute krank');
+    pruefe('„ich bin heute krank": Vorschau Krank, ohne KI', /Krank/.test(await letzteKarte()) && /Jetzt eintragen/.test(await letzteKarte()) && (await ki()) === 0, await letzteKarte());
+    const v0 = await p.evaluate(() => (window.__schreib || []).length);
+    await sag('klo ist sauber');
+    const w = await p.evaluate((n) => (window.__schreib || []).slice(n), v0);
+    pruefe('„klo ist sauber" (gleiches Wort): Toiletten abgehakt, ohne KI', w.length === 1 && /cleaning\/c3/.test(w[0].pfad) && (await ki()) === 0, JSON.stringify(w).slice(0, 200));
+    await sag('Wasserspendr aufgefüllt');
+    const w2 = await p.evaluate((n) => (window.__schreib || []).slice(n), v0 + 1);
+    pruefe('„Wasserspendr aufgefüllt" (Tippfehler): Aufgabe t3 abgehakt', w2.length === 1 && /todos\/t3/.test(w2[0].pfad) && w2[0].daten.done === true, JSON.stringify(w2).slice(0, 200));
+    // Fragen und Unklares gehen an die KI
+    for (const satz of ['Wie wasche ich die Westen?', 'Was mache ich bei einem Krampf', 'Anna ist krank', 'Aufgabe für Hürth: Spiegel putzen', 'ich bin ab Montag krank']) {
+      await sag(satz);
+      pruefe('„' + satz + '" geht an die KI', (await ki()) === 1);
+    }
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+
   console.log('\n── 9 Lagebericht ──');
   {
     const p = await oeffne(b, 1440, 900, { vorher: () => {
