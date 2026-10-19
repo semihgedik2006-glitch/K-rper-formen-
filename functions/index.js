@@ -7030,6 +7030,12 @@ exports.gehirnFrage = region
     if (!auftrag.text) {
       throw new functions.https.HttpsError('invalid-argument', 'Bitte zuerst eine Frage eingeben.');
     }
+    return gehirnFrageAusfuehren(auftrag, firma);
+  });
+
+/* Der Weg zum Worker — von gehirnFrage und (seit 19.10.2026, „nur einen
+   knopf") von gehirnAktion, wenn die KI den Satz als Frage erkennt. */
+async function gehirnFrageAusfuehren(auftrag, firma) {
     const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
     if (!schluessel) {
       throw new functions.https.HttpsError('failed-precondition',
@@ -7062,7 +7068,7 @@ exports.gehirnFrage = region
       abgedeckt: !!json.abgedeckt,
       offen: json.offenId || null
     };
-  });
+}
 
 /* ══════════════════════════════════════════════════════════════════════
    STUDIO-GEHIRN, RUNDE 150: ANLEGEN LASSEN UND LAGEBERICHT
@@ -7265,6 +7271,11 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
   };
   const mitStudio = (o, k) => Object.assign(o, { studioKey: k, studioName: k ? ((namen || {})[k] || k) : '' });
 
+  if (r.typ === 'frage') return { typ: 'frage' };
+  if (r.typ === 'idee') {
+    const text = String(r.text || '').trim().slice(0, 2000);
+    return text ? { typ: 'idee', text } : { typ: 'frage' };
+  }
   if (r.typ === 'aufgabe' || r.typ === 'ankuendigung') {
     if (!verwaltet) return { typ: 'verboten', hinweis: 'Aufgaben und Ankündigungen legt die Studioleitung an. Frag sie, oder schick es als Idee an die Leitung.' };
     return gehirnVorschlagPruefen(r, namen, erlaubt, rolle, heute);
@@ -7296,6 +7307,24 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
     if (!k) return null;
     return mitStudio({ typ: 'abwesenheit', art, von, bis, notiz: kurz(r.notiz, 200) }, k);
   }
+  /* Stufe 2 (19.10.2026): abhaken und Defekt melden. Die KI nennt nur,
+     WAS gemeint ist (in Worten); welcher Eintrag das ist, sucht das
+     Gerät in den eigenen Listen — Gerätenamen und Putzpunkte gehen
+     nicht an die KI. */
+  if (r.typ === 'abhaken') {
+    const bereich = r.bereich === 'aufgabe' ? 'aufgabe' : (r.bereich === 'putzplan' ? 'putzplan' : '');
+    const was = kurz(r.was, 120);
+    if (!bereich || !was) return null;
+    return mitStudio({ typ: 'abhaken', bereich, was }, studioVon(r.studio || r.studios));
+  }
+  if (r.typ === 'defekt') {
+    const geraet = kurz(r.geraet, 80);
+    const text = String(r.text || '').trim().slice(0, 500);
+    if (!geraet) return null;
+    const k = studioVon(r.studio || r.studios) || (erlaubt || [])[0] || '';
+    if (!k) return null;
+    return mitStudio({ typ: 'defekt', geraet, text }, k);
+  }
   if (r.typ === 'uebergabe') {
     const text = String(r.text || '').trim().slice(0, 500);
     if (!text) return null;
@@ -7304,6 +7333,20 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
     return mitStudio({ typ: 'uebergabe', text }, k);
   }
   return null;
+}
+
+/* Ein Knopf für alles (19.10.2026): wohin mit dem Satz? Rein rechnerisch
+   (__intern). „frage", wenn die KI es so sagt, nichts liefert oder etwas
+   Unbekanntes; „unklar", wenn eine bekannte Aktion die Prüfung nicht
+   besteht (z. B. Urlaub in der Vergangenheit) — sonst bekäme man auf
+   „Ich will gestern Urlaub" eine Antwort aus dem Wissen; „hinweis" bei
+   „keins" mit Begründung; sonst „aktion". */
+const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee'];
+function gehirnWeg(roh, geprueft) {
+  if (geprueft) return geprueft.typ === 'frage' ? 'frage' : 'aktion';
+  const t = roh && roh.typ;
+  if (t === 'keins') return roh.hinweis ? 'hinweis' : 'frage';
+  return GEHIRN_BEKANNT.indexOf(t) >= 0 ? 'unklar' : 'frage';
 }
 
 exports.gehirnAktion = region
@@ -7334,26 +7377,41 @@ exports.gehirnAktion = region
       (rolle === 'chef' ? 'Geschäftsführung' : (rolle === 'leiter' ? 'Studioleitung' : 'Mitarbeiter')) + '. ' +
       'Heute ist ' + wochentag + ', ' + heute + ' (Europe/Berlin). Wähle GENAU EINE Aktion und antworte NUR mit JSON. ' +
       'Mögliche Aktionen: ' +
+      '{"typ":"frage"} — eine Frage zum Studio, zu EMS, zu Abläufen oder zur Bedienung der App (das Studio-Wissen antwortet). Im Zweifel IMMER "frage". ' +
+      '{"typ":"idee","text":"..."} — ein Vorschlag, eine Idee oder ein Anliegen an die Leitung (z. B. "wir bräuchten …", "man könnte …"). ' +
       '{"typ":"navigation","ziel":"<Schlüssel>","studio":"Studioname oder leer"} — eine Seite öffnen. Ziele: ' + ziele + '. ' +
       '{"typ":"abfrage","was":"aufgaben"|"dienst"|"abwesend","studio":"Studioname oder leer"} — offene/überfällige Aufgaben, wer heute Dienst hat, wer heute fehlt. ' +
       '{"typ":"abwesenheit","art":"urlaub"|"krank"|"frei","von":"YYYY-MM-DD","bis":"YYYY-MM-DD","notiz":"..."} — die Person meldet SICH SELBST ab (nur sich selbst). ' +
       '{"typ":"uebergabe","text":"...","studio":"Studioname oder leer"} — Notiz an die nächste Schicht. ' +
+      '{"typ":"abhaken","bereich":"putzplan"|"aufgabe","was":"Stichwort, z. B. Westen waschen","studio":"Studioname oder leer"} — etwas als erledigt markieren. ' +
+      '{"typ":"defekt","geraet":"Name oder Beschreibung des Geräts","text":"was los ist","studio":"Studioname oder leer"} — ein Gerät als defekt melden. ' +
       (verwaltet
         ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]} — etwas, das im Studio erledigt und abgehakt wird. ' +
           '{"typ":"ankuendigung","text":"...","studios":["Studioname" oder "alle"],"wichtig":true|false} — Information an das Team. '
         : '') +
-      '{"typ":"keins","hinweis":"..."} — wenn nichts davon passt oder es um andere Personen geht (z. B. jemand anderen krankmelden). ' +
+      '{"typ":"keins","hinweis":"..."} — nur wenn etwas getan werden soll, das es nicht gibt oder das andere Personen betrifft (z. B. jemand anderen krankmelden, etwas löschen). ' +
       'Regeln: Datumsangaben wie "morgen", "bis Freitag" in echte Daten umrechnen. Titel kurz (max. 80 Zeichen). ' +
       'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '. ' +
       'Keine Kundennamen und keine Gesundheitsdetails übernehmen — bei "krank" keinen Grund in die Notiz.';
-    let roh;
+    let roh = null;
     try { roh = await kiJson(system, auftrag, apiKey); }
     catch (e) {
-      console.error('gehirnAktion:', e.message);
-      throw new functions.https.HttpsError('unavailable', e.message);
+      /* Ein Knopf für alles: kann die KI den Satz nicht einordnen, wird
+         er eine Frage — Fragen beantwortet das Studio-Gehirn auch ohne
+         sie. Lieber eine Antwort aus dem Wissen als „hat nicht geklappt". */
+      console.error('gehirnAktion (wird Frage):', e.message);
     }
     const geprueft = gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute);
     if (geprueft && geprueft.typ === 'verboten') return { vorschlag: null, hinweis: geprueft.hinweis };
+    const weg = gehirnWeg(roh, geprueft);
+    if (weg === 'unklar') {
+      return { vorschlag: null, hinweis: 'Das konnte ich so nicht eintragen — schau bitte noch einmal auf Datum, Studio oder was genau gemeint ist.' };
+    }
+    const istFrage = weg === 'frage';
+    if (istFrage) {
+      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: auftrag }, profil), firma);
+      return Object.assign({ art: 'frage' }, a);
+    }
     return {
       vorschlag: geprueft,
       hinweis: geprueft ? '' : String((roh && roh.hinweis) || '').slice(0, 300)
@@ -7500,7 +7558,7 @@ exports.lageberichtJetzt = region
   });
 
 exports.__intern = { gehirnErlaubt, gehirnAuftrag, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
-                     gehirnVorschlagPruefen, gehirnBefehlPruefen, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
+                     gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, lageberichtOhneKi, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
                      collectTokens, inStudio, willHaben, fertigMeldungen, standSatz,
                      berlinZuUtc, icsZeit, icsText, icsFalten, icsBauen, tokenGleich,
