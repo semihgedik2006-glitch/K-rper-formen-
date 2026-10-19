@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Ve9V62kV38RByQKB8xer0uMoAOGvwrDMDkYSt1BJD1U='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-QUWkyATP2ZCByYqvgj88Xym9p38s+x6Tem+ERaOTf5M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -19071,6 +19071,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-19-gehirn-schnell', datum:'19.10.2026', titel:'Studio-Gehirn: schneller und verzeiht Tippfehler', wo:'gehirn', punkte:[
+    'Häufige Sätze erkennt die App jetzt selbst – sofort, ohne auf die KI zu warten: „öffne den Putzplan", „wer hat heute Dienst", „was ist offen", „ich bin heute krank", „Übergabe: …" oder „Klo ist sauber".',
+    'Tippfehler und andere Wörter für dasselbe sind kein Problem mehr: „öfne", „Wasserspendr", „Klo" statt „Toiletten" – das Gehirn weiß, was gemeint ist.',
+    'Bei allem anderen kennt die KI jetzt die offenen Putzpunkte und Aufgaben deines Studios und die Vornamen im Team – und trifft dadurch genauer.' ] },
   { id:'2026-10-19-schichtplaner', datum:'19.10.2026', titel:'Neu: der Schichtplaner schlägt den Monatsplan vor', wo:'chef:schichtplaner', punkte:[
     'Für die Geschäftsführung: unter „Verwaltung → Schichtplaner" einmal die Excel-Vorlage einlesen (wer in welchem Studio arbeitet, Stunden, wer wann kann, wer nicht allein sein darf). Danach erstellt ein Knopf den Plan für den nächsten Monat – für alle Studios auf einmal, Urlaub und Krankmeldungen schon berücksichtigt.',
     'Was noch ein Mensch entscheiden muss, steht oben unter „Zu klären": rote Lücken (niemand frei, mit Grund und wen man fragen könnte) und Rückfragen (z. B. jemand müsste an einem Wunsch-frei-Tag kommen). Antippen und eine andere Person wählen – ausgegraut steht, warum jemand nicht geht.',
@@ -23753,8 +23757,21 @@ function gehirnSenden(art){
   _gVerlauf.push(v); _gLaeuft=true; if(f) f.value='';
   gehirnZeichnen();
   gehirnNachUnten();
+  /* Schnellweg (19.10.2026, „die ki braucht echt lang"): was die App
+     selbst sicher erkennt, passiert ohne KI — unter einer Sekunde. */
+  if(art==='auto'){
+    var schnell=gehirnSchnell(text);
+    if(schnell){
+      v.art='aktion'; v.vorschlag=schnell; v.schnell=true;
+      Promise.resolve(gehirnSofort(v)).catch(function(err){ v.fehler=errMsg(err); }).then(function(){
+        v.laeuft=false; _gLaeuft=false;
+        if(currentView==='gehirn'){ gehirnZeichnen(); gehirnNachUnten(); }
+      });
+      return;
+    }
+  }
   var name = art==='auto' ? 'gehirnAktion' : 'gehirnFrage';
-  var daten = art==='auto' ? { text:text } : { art:art, text:text };
+  var daten = art==='auto' ? { text:text, kontext:gehirnKontext() } : { art:art, text:text };
   firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
     .then(function(r){
       var d=(r && r.data) || {};
@@ -24122,10 +24139,36 @@ function gehirnIdeeSenden(v, btn){
 function gehirnWoerter(x){
   return String(x||'').toLowerCase().replace(/[^a-z0-9äöüß]+/g,' ').split(' ').filter(function(w){ return w.length>1 || /\d/.test(w); });
 }
+/* Wörter, die im Studio dasselbe meinen — für das Zuordnen im Gerät
+   („Klo ist sauber" → „Toiletten reinigen"). Die grosse, pflegbare
+   Liste für die Wissenssuche liegt im Leitstand (Synonyme). */
+var GEHIRN_GLEICH = [
+  ['staubsaugen','saugen','sauger','gesaugt'], ['wischen','gewischt','putzen','geputzt','reinigen','gereinigt','sauber','säubern'],
+  ['toilette','toiletten','wc','klo'], ['waschen','gewaschen','wäsche','waschmaschine'], ['weste','westen','anzug'],
+  ['handtuch','handtücher','tücher'], ['desinfizieren','desinfiziert','desinfektion','desi'], ['müll','mülleimer','abfall','müllsack'],
+  ['spiegel','spiegeln'], ['boden','böden','fussboden'], ['wasser','wasserspender','getränke'], ['kabine','kabinen','umkleide']
+];
+function gehirnStamm(w){ return w.length>5 ? w.slice(0, w.length-2) : (w.length>4 ? w.slice(0, w.length-1) : w); }
+function gehirnAbstand(a, b){
+  if(a===b) return 0; if(Math.abs(a.length-b.length)>2) return 9;
+  var v=[]; for(var j=0;j<=b.length;j++) v[j]=j;
+  for(var i=1;i<=a.length;i++){ var n=[i]; for(var k=1;k<=b.length;k++) n[k]=Math.min(v[k]+1, n[k-1]+1, v[k-1]+(a[i-1]===b[k-1]?0:1)); v=n; }
+  return v[b.length];
+}
+function gehirnWortPasst(w, ziel){
+  var s=gehirnStamm(w);
+  if(ziel.some(function(z){ return z.indexOf(s)===0 || (gehirnStamm(z)===s); })) return true;
+  if(w.length>=5 && ziel.some(function(z){ return z.length>=5 && gehirnAbstand(w, z)<=1; })) return true;
+  var gruppe=GEHIRN_GLEICH.filter(function(g){ return g.some(function(x){ return gehirnStamm(x)===s || x===w; }); })[0];
+  return !!(gruppe && ziel.some(function(z){ return gruppe.some(function(x){ return z.indexOf(gehirnStamm(x))===0; }); }));
+}
+var GEHIRN_FUELL = ['ist','sind','wurde','wurden','hab','habe','haben','hat','schon','jetzt','gerade','erledigt','fertig','gemacht',
+  'abgehakt','hake','hak','ab','bitte','mal','den','die','das','der','im','in','am','beim','von','und','auch','alles','kaputt',
+  'defekt','geht','nicht','mehr','funktioniert','piept','spinnt','putzplan','aufgabe','aufgaben'];
 function gehirnTreffer(satz, eintrag){
-  var a=gehirnWoerter(satz), b=gehirnWoerter(eintrag).join(' ');
+  var a=gehirnWoerter(satz).filter(function(w){ return GEHIRN_FUELL.indexOf(w)<0; }), b=gehirnWoerter(eintrag);
   if(!a.length) return 0;
-  var n=a.filter(function(w){ return b.indexOf(w.length>4 ? w.slice(0, w.length-1) : w)>=0; }).length;
+  var n=a.filter(function(w){ return gehirnWortPasst(w, b); }).length;
   return n/a.length;
 }
 function gehirnBeste(satz, liste, text){
@@ -24145,11 +24188,14 @@ function gehirnAbhakenSuchen(v){
   var keys = s.studioKey ? [s.studioKey] : gehirnMeineKeys();
   var kandidaten=[];
   keys.forEach(function(k){
-    var quelle = s.bereich==='putzplan' ? (cachedClean[k]||[]) : (cachedTodos[k]||[]);
-    quelle.forEach(function(t){
-      if(isDone(t) || isArchived(t)) return;
-      if(s.bereich==='putzplan' && ppPausiert(t)) return;
-      kandidaten.push({ k:k, t:t });
+    ['putzplan','aufgabe'].forEach(function(bereich){
+      if(s.bereich!=='beides' && s.bereich!==bereich) return;
+      var quelle = bereich==='putzplan' ? (cachedClean[k]||[]) : (cachedTodos[k]||[]);
+      quelle.forEach(function(t){
+        if(isDone(t) || isArchived(t)) return;
+        if(bereich==='putzplan' && ppPausiert(t)) return;
+        kandidaten.push({ k:k, t:t, b:bereich });
+      });
     });
   });
   v.wahl=gehirnBeste(s.was, kandidaten, function(x){ return x.t.title||x.t.text||''; });
@@ -24166,7 +24212,7 @@ function gehirnAbhakenSchreiben(bereich, k, t, done){
     .then(function(){ schedulePutzplanSheets(k); });
 }
 function gehirnAbhaken(v, x, btn){
-  var arbeit=gehirnAbhakenSchreiben(v.vorschlag.bereich, x.k, x.t, true).then(function(){
+  var arbeit=gehirnAbhakenSchreiben(x.b||v.vorschlag.bereich, x.k, x.t, true).then(function(){
     v.erledigt=x; v.angelegt='Abgehakt: '+(x.t.title||x.t.text||'Eintrag')+' ('+studioName(x.k)+')';
     v.jetzt=!gehirnWenigBewegung(); tick(12);
     if(currentView==='gehirn') gehirnZeichnen();
@@ -24183,14 +24229,15 @@ function gehirnAbhakenRueck(i, btn){
   var v=_gVerlauf[i]; if(!v || !v.erledigt) return;
   var x=v.erledigt;
   withBusy(btn, function(){
-    return gehirnAbhakenSchreiben(v.vorschlag.bereich, x.k, x.t, false).then(function(){
+    return gehirnAbhakenSchreiben(x.b||v.vorschlag.bereich, x.k, x.t, false).then(function(){
       v.angelegt='Zurückgenommen: '+(x.t.title||x.t.text||'Eintrag'); v.erledigt=null; v.jetzt=false; gehirnZeichnen();
     }).catch(function(e){ toast(errMsg(e), true); });
   });
 }
 function gehirnAbhakenHTML(v, i){
-  var s=v.vorschlag, ziel = s.bereich==='putzplan' ? 'putzplan' : 'todos';
-  var name = s.bereich==='putzplan' ? 'Putzplan' : 'Aufgaben';
+  var s=v.vorschlag, b=(v.erledigt && v.erledigt.b) || s.bereich;
+  var ziel = b==='aufgabe' ? 'todos' : 'putzplan';
+  var name = b==='aufgabe' ? 'Aufgaben' : 'Putzplan';
   if(v.angelegt){
     return '<div class="gv-karte'+(v.erledigt ? ' gv-fertig' : '')+(v.jetzt ? ' gv-jetzt' : '')+'">'+
       '<div class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12"/>'+
@@ -24293,6 +24340,98 @@ function gehirnMicBinden(){
     _gHoert=r; btn.classList.add('hoert'); btn.setAttribute('aria-pressed','true'); btn.lastChild.textContent='Zuhören …';
     try{ r.start(); }catch(e){ r.onend(); }
   });
+}
+
+/* ── Schnellweg ohne KI (19.10.2026) ────────────────────────────────
+   Aus dem Betrieb: „die ki braucht echt lang … rechtschreib Fehler
+   verzeiht". Die häufigsten Sätze erkennt das Gerät selbst — mit
+   Tippfehler-Toleranz — und liefert denselben Befehl, den sonst die KI
+   liefert. Durch dieselbe Ausführung, also dieselben Regeln. Was hier
+   nicht SICHER passt, geht wie bisher an die KI. */
+var GEHIRN_ZIELWORTE = [
+  [['putzplan','putzliste','putzen','reinigungsplan'], 'putzplan', 'Putzplan'],
+  [['aufgaben','aufgabe','todo','todos'], 'todos', 'Aufgaben'],
+  [['material','lager','bestand','nachschub'], 'material', 'Material'],
+  [['geräte','gerät','geraete','geraet','maschinen'], 'geraete', 'Geräte'],
+  [['team','dienstplan','schichtplan','schichten','schicht','urlaub','abwesenheit'], 'team', 'Team'],
+  [['chat','nachrichten','kanal'], 'chat', 'Chat'],
+  [['infos','info','ankündigungen','ankuendigungen','aushang'], 'ann', 'Infos der Leitung'],
+  [['dokumente','dokument','unterlagen','dateien'], 'docs', 'Dokumente'],
+  [['schulung','schulungen','webinar'], 'schulung', 'Schulung'],
+  [['startseite','start','home'], 'home', 'Startseite'],
+  [['probetraining','probetrainings'], 'probe', 'Probetraining'],
+  [['verwaltung','chefbereich'], 'chef', 'Verwaltung'],
+  [['profil','einstellungen','passwort'], 'persoenlich', 'Profil und Einstellungen']
+];
+function gehirnHat(woerter, liste){
+  return woerter.some(function(w){ return liste.some(function(l){ return w===l || (w.length>=5 && l.length>=5 && gehirnAbstand(w,l)<=1); }); });
+}
+function gehirnStudioIn(text){
+  var w=gehirnWoerter(text), keys=gehirnMeineKeys();
+  var alle = isChef() ? STUDIOS.map(studioKey) : keys;
+  for(var i=0;i<alle.length;i++){
+    var n=gehirnWoerter(studioName(alle[i]));
+    if(n.length && n.every(function(x){ return w.some(function(y){ return y===x || (x.length>=5 && gehirnAbstand(x,y)<=1); }); })) return alle[i];
+  }
+  return '';
+}
+function gehirnSchnell(text){
+  var roh=String(text||'').trim(), t=roh.toLowerCase(), w=gehirnWoerter(t);
+  if(!w.length || roh.length>160) return null;
+  var sk=gehirnStudioIn(t), meine=gehirnMeineKeys();
+  function mitStudio(o, k){ o.studioKey=k||''; o.studioName=k ? studioName(k) : ''; return o; }
+  // Übergabe: „Übergabe: …"
+  var ue=/^(übergabe|uebergabe|ubergabe|übergbe|notiz)\s*[:\-–]\s*(.+)$/i.exec(roh);
+  if(ue && (sk || meine[0])) return mitStudio({ typ:'uebergabe', text:ue[2].trim().slice(0,500) }, sk||meine[0]);
+  // Selbst krank melden: „ich bin (heute|morgen) krank" — andere Tage an die KI
+  if(gehirnHat(w, ['krank','krang','erkrankt']) && /\b(ich|bin)\b/.test(t) && !/\b(ist|sind|hat|wer)\b/.test(t)){
+    var tag=/übermorgen|uebermorgen/.test(t) ? 2 : (/\bmorgen\b/.test(t) ? 1 : (/\bheute\b/.test(t) || !/\d|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|woche|bis\b/.test(t) ? 0 : -1));
+    if(tag>=0 && (sk||meine[0])){
+      var d=new Date(); d.setDate(d.getDate()+tag);
+      return mitStudio({ typ:'abwesenheit', art:'krank', von:ymd(d), bis:ymd(d), notiz:'' }, sk||meine[0]);
+    }
+  }
+  // Nachschauen
+  if(/\bwer\b/.test(t) && gehirnHat(w, ['dienst','schicht','arbeitet','arbeiten','da'])) return mitStudio({ typ:'abfrage', was:'dienst' }, sk);
+  if(/\bwer\b/.test(t) && gehirnHat(w, ['fehlt','fehlen','krank','urlaub','abwesend'])) return mitStudio({ typ:'abfrage', was:'abwesend' }, sk);
+  if((/\bwas\b/.test(t) && gehirnHat(w, ['offen','überfällig','ueberfaellig','ansteht','erledigen'])) || /offene aufgaben|was ist zu tun|was steht an/.test(t))
+    return mitStudio({ typ:'abfrage', was:'aufgaben' }, sk);
+  // Öffnen: „öffne …", „zeig mir …", „geh zu …" oder nur der Name
+  var erstes=t.split(/\s+/)[0]||'';
+  var VERBEN=['öffne','öffnen','oeffne','zeig','zeige','geh','gehe','mach','zu','zum','zur','bring','wechsel','wechsle'];
+  var istVerb=VERBEN.some(function(x){ return x===erstes || (erstes.length>=4 && x.length>=4 && gehirnAbstand(erstes, x)<=1); });
+  var oe = istVerb ? [null,null,null,null,null,null,null,null, t.slice(erstes.length)] : null;
+  /* Ohne Verb nur, wenn der Satz NUR aus dem Namen besteht („Putzplan",
+     „Dienstplan") — „Aufgabe X" ist ein Auftrag, kein Ziel. */
+  var nurName = w.length<=2 && roh.split(/\s+/).length===w.length && w.every(function(x){ return GEHIRN_ZIELWORTE.some(function(z){ return gehirnHat([x], z[0]); }); });
+  var rest = oe ? gehirnWoerter(oe[8]) : (nurName ? w : null);
+  if(rest){
+    for(var i=0;i<GEHIRN_ZIELWORTE.length;i++){
+      var z=GEHIRN_ZIELWORTE[i];
+      if(gehirnHat(rest, z[0]) && ansichtAn(z[1]) && (z[1]!=='chef' || canManage()))
+        return mitStudio({ typ:'navigation', ziel:z[1], zielName:z[2] }, sk);
+    }
+  }
+  // Abhaken: „Toiletten sind sauber", „hab gesaugt", „Westen waschen erledigt"
+  var frage=/\?\s*$/.test(roh) || /^(wie|was|wann|wo|warum|wieso|wer|welche[rsmn]?|muss|darf|kann|soll|sollte)\b/.test(t);
+  if(!frage && (gehirnHat(w, ['erledigt','fertig','sauber','gemacht','geputzt','gesaugt','gewischt','abgehakt','gewaschen','desinfiziert','aufgefüllt']) || /\bhak(e)?\b.*\bab\b/.test(t))){
+    var was=roh.replace(/\b(ist|sind|wurde|wurden|hab|habe|haben|schon|jetzt|gerade|erledigt|fertig|abgehakt|bitte|hak|hake|ab)\b/gi,' ').replace(/\s+/g,' ').trim();
+    if(was) return mitStudio({ typ:'abhaken', bereich:'beides', was:was||roh }, sk);
+  }
+  return null;
+}
+/* Was die KI wissen darf (Freigabe 19.10.2026: auch Vornamen des Teams):
+   offene Putzpunkte und Aufgaben der eigenen Studios, die Vornamen.
+   Keine Chats, keine Kundendaten. */
+function gehirnKontext(){
+  var keys=gehirnMeineKeys(), putz=[], aufg=[];
+  keys.forEach(function(k){
+    (cachedClean[k]||[]).forEach(function(t){ if(!isDone(t) && putz.length<40) putz.push(t.title||t.text||''); });
+    (cachedTodos[k]||[]).forEach(function(t){ if(!isDone(t) && !isArchived(t) && aufg.length<40) aufg.push(t.title||''); });
+  });
+  var team=[];
+  (_allUsers||[]).forEach(function(u){ var v=String(u.name||'').split(' ')[0]; if(v && team.indexOf(v)<0 && team.length<40) team.push(v); });
+  return { putz:putz, aufgaben:aufg, team:team };
 }
 
 /* ── Vorschläge zum Antippen (19.10.2026) ─────────────────────────────
