@@ -57,6 +57,23 @@ console.log('── Stimme (20.10.2026) ──');
   pruefe('Stimme: nur Stimmen aus der Liste, sonst die erste', SP({ text: 'x', stimme: 'en-US-Evil' }).stimme === __intern.GEHIRN_STIMMEN[0] && SP({ text: 'x', stimme: 'de-DE-Chirp3-HD-Puck' }).stimme === 'de-DE-Chirp3-HD-Puck');
   pruefe('Stimme: ohne Text nichts', SP({ text: '   ' }) === null);
 }
+console.log('── Erinnerung, Tausch, Stichpunkte (20.10.2026) ──');
+{
+  const EP = __intern.gehirnErinnerungPruefen, J = Date.now();
+  pruefe('Erinnerung: in 1 Stunde mit Text → geht', EP({ text: '  Wäsche  aufhängen ', wann: J + 3600000 }, J).text === 'Wäsche aufhängen');
+  pruefe('Erinnerung: in der Vergangenheit, zu bald oder > 7 Tage → nichts', EP({ text: 'x', wann: J - 1 }, J) === null && EP({ text: 'x', wann: J + 5000 }, J) === null && EP({ text: 'x', wann: J + 8 * 86400000 }, J) === null);
+  pruefe('Erinnerung: ohne Text → nichts; Text auf 140 gekürzt', EP({ text: ' ', wann: J + 3600000 }, J) === null && EP({ text: 'y'.repeat(300), wann: J + 3600000 }, J).text.length === 140);
+  const NAM = { 'studio-1': 'Hürth' };
+  const BB = (r) => B(r, NAM, ['studio-1'], 'mitarbeiter', '2026-10-20');
+  const morgen = new Date(Date.now() + 86400000).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+  const ki = BB({ typ: 'erinnerung', wann: morgen + 'T09:30', text: 'Handtücher' });
+  pruefe('KI-Erinnerung „morgen 09:30" wird zur Zeit in UTC, Text bleibt', ki && ki.typ === 'erinnerung' && ki.wann > Date.now() && new Date(ki.wann).toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit' }) === '09:30' && ki.text === 'Handtücher', ki);
+  pruefe('KI-Erinnerung mit kaputter Zeit → nichts', BB({ typ: 'erinnerung', wann: 'morgen', text: 'x' }) === null);
+  pruefe('Tausch: Datum heute oder später → geht; gestern → nichts', BB({ typ: 'tausch', datum: '2026-10-25' }).datum === '2026-10-25' && BB({ typ: 'tausch', datum: '2026-10-19' }) === null);
+  const ST = __intern.gehirnStichpunkteText;
+  pruefe('Stichpunkte: jede Zeile mit •, Spiegelstriche weg, höchstens 8', ST('- Klo putzen\n* Handtücher fehlen\n\n• Lea kommt später') === '• Klo putzen\n• Handtücher fehlen\n• Lea kommt später' && ST(Array(12).fill('a').join('\n')).split('\n').length === 8);
+  pruefe('Stichpunkte: leer → leer', ST('') === '' && ST(null) === '');
+}
 console.log('── Vorschlag prüfen ──');
 pruefe('unbekannter Typ → kein Vorschlag', P({ typ: 'keins', titel: 'x' }, NAMEN, ALLE, 'chef', HEUTE) === null);
 pruefe('Aufgabe ohne Titel → kein Vorschlag', P({ typ: 'aufgabe', titel: '  ' }, NAMEN, ALLE, 'chef', HEUTE) === null);

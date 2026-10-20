@@ -7096,6 +7096,131 @@ function gehirnBewertungPruefen(daten) {
   return { wert, nachricht };
 }
 
+/* ── Erinnerungen (20.10.2026) ──────────────────────────────────────
+   Aus der Ideenliste („mach alles davon"): „erinner mich um 18 Uhr an
+   die Wäsche" kommt als Push. Gespeichert unter firmen/<f>/
+   gehirnErinnerungen — NUR der Server liest und schreibt dort (Regel
+   „false" in beiden Welten). So braucht es keine Abfrage über alle
+   privat-Bereiche hinweg und keinen eigenen Index. Höchstens 20 offene
+   je Person, höchstens 7 Tage im Voraus, Text höchstens 140 Zeichen. */
+const GEHIRN_ERINNERUNG_MAX = 20;
+function gehirnErinnerungPruefen(daten, jetzt) {
+  const d = daten || {};
+  const text = String(d.text || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+  const wann = Number(d.wann);
+  if (!text || !Number.isFinite(wann)) return null;
+  if (wann < jetzt + 30000 || wann > jetzt + 7 * 86400000) return null;
+  return { text, wann: Math.round(wann) };
+}
+exports.gehirnErinnerung = region
+  .runWith({ timeoutSeconds: 30, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const { profil, uid } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    const sammlung = W(firma).collection('gehirnErinnerungen');
+    const ich = uid || (context.auth && context.auth.uid);
+    if ((data || {}).art === 'weg') {
+      const id = String((data || {}).id || '').slice(0, 60);
+      if (!id) throw new functions.https.HttpsError('invalid-argument', 'Welche Erinnerung?');
+      const ref = sammlung.doc(id); const doc = await ref.get();
+      if (!doc.exists || doc.data().uid !== ich) throw new functions.https.HttpsError('not-found', 'Diese Erinnerung gibt es nicht (mehr).');
+      await ref.delete();
+      return { ok: true };
+    }
+    const e = gehirnErinnerungPruefen(data, Date.now());
+    if (!e) throw new functions.https.HttpsError('invalid-argument', 'Die Zeit muss in der Zukunft liegen, höchstens 7 Tage — und es braucht einen Text.');
+    const offen = await sammlung.where('uid', '==', ich).get();
+    if (offen.size >= GEHIRN_ERINNERUNG_MAX) throw new functions.https.HttpsError('resource-exhausted', 'Du hast schon ' + GEHIRN_ERINNERUNG_MAX + ' offene Erinnerungen.');
+    const ref = await sammlung.add({ uid: ich, text: e.text, faellig: e.wann, erstellt: Date.now() });
+    return { id: ref.id, wann: e.wann };
+  });
+async function gehirnErinnerungenFirma(firma, jetzt) {
+  const snap = await W(firma).collection('gehirnErinnerungen').where('faellig', '<=', jetzt).limit(100).get();
+  let n = 0;
+  for (const doc of snap.docs) {
+    const e = doc.data() || {};
+    try {
+      const tokens = await collectTokens((d) => d.uid === e.uid, null, firma);
+      await sendPush(tokens, '⏰ Erinnerung', String(e.text || ''));
+      n++;
+    } catch (err) { console.error('Erinnerung ' + doc.id + ':', err.message); }
+    await doc.ref.delete().catch(() => {});
+  }
+  return n;
+}
+exports.gehirnErinnerungenSenden = region
+  .runWith({ timeoutSeconds: 120, memory: '256MB' })
+  .pubsub.schedule('every 5 minutes')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = Date.now();
+    /* alleFirmen(): angelegt wird unter W(firmaVonProfil) — das ist
+       flach nur, wenn es gar keine Firmen-Sammlung gibt, und genau dann
+       liefert alleFirmen() [null]. */
+    for (const firma of await alleFirmen()) {
+      try {
+        const n = await gehirnErinnerungenFirma(firma, jetzt);
+        if (n) console.log('Erinnerungen gesendet (' + (firma || 'flach') + '): ' + n);
+      } catch (e) { console.error('Erinnerungen (' + (firma || 'flach') + '):', e.message); }
+    }
+    return null;
+  });
+
+/* ── Übergabe in Stichpunkte fassen (20.10.2026) ────────────────────
+   „Übergabe diktieren → saubere Stichpunkte". Die KI bekommt nur den
+   Text der Übergabe — keine Namen aus dem Profil, keine Daten der App. */
+function gehirnStichpunkteText(roh) {
+  const zeilen = String(roh || '').split(/\n+/).map(z => z.replace(/^[\s•*\-–]+/, '').trim()).filter(Boolean).slice(0, 8);
+  return zeilen.map(z => '• ' + z.slice(0, 120)).join('\n').slice(0, 700);
+}
+exports.gehirnUmformen = region
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const { profil } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    const text = String((data || {}).text || '').trim().slice(0, 1500);
+    if (!text) throw new functions.https.HttpsError('invalid-argument', 'Kein Text.');
+    await tagesGrenze('gehirnUmformen', 200, firma);
+    const system = 'Du fasst eine Übergabe-Notiz für die nächste Schicht eines EMS-Fitnessstudios zusammen. ' +
+      'Schreibe 2 bis 6 kurze Stichpunkte auf Deutsch, je höchstens 12 Wörter, jeder in einer eigenen Zeile. Nichts erfinden, nichts weglassen, was zu tun ist. ' +
+      'Keine Kundennamen und keine Gesundheitsdetails übernehmen. Antworte NUR mit JSON: {"text":"Zeile 1\nZeile 2"}';
+    let roh = null;
+    try { roh = await kiJson(system, text, process.env.GEMINI_API_KEY || ''); } catch (e) { console.error('gehirnUmformen:', e.message); }
+    const neu = gehirnStichpunkteText(roh && roh.text);
+    if (!neu) throw new functions.https.HttpsError('unavailable', 'Das hat gerade nicht geklappt — die Übergabe bleibt, wie sie ist.');
+    return { text: neu };
+  });
+
+/* ── Defekt mit Foto (20.10.2026) ───────────────────────────────────
+   Das Foto geht an den Worker (Workers AI, Bild nur gelesen, nicht
+   gespeichert) und kommt als Gerät + Beschreibung zurück. Die App bittet,
+   nur das Gerät zu fotografieren. Gemeldet wird danach im normalen
+   Defekt-Weg — mit Vorschau. */
+exports.gehirnFoto = region
+  .runWith({ timeoutSeconds: 60, memory: '512MB' })
+  .https.onCall(async (data, context) => {
+    const { profil } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    const bild = String((data || {}).bild || '');
+    if (!/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(bild) || bild.length > 900000) throw new functions.https.HttpsError('invalid-argument', 'Das Foto ist zu gross oder kein Bild.');
+    const geraete = (Array.isArray((data || {}).geraete) ? data.geraete : []).map(x => String(x || '').slice(0, 60)).filter(Boolean).slice(0, 40);
+    const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
+    if (!schluessel) throw new functions.https.HttpsError('failed-precondition', 'Das Studio-Gehirn ist noch nicht verbunden.');
+    await tagesGrenze('gehirnFoto', 100, firma);
+    let antwort, json;
+    try {
+      antwort = await fetch((process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/bild', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel }, body: JSON.stringify({ bild, geraete })
+      });
+      json = await antwort.json().catch(() => ({}));
+    } catch (e) { throw new functions.https.HttpsError('unavailable', 'Das Studio-Gehirn ist gerade nicht erreichbar.'); }
+    if (!antwort.ok) throw new functions.https.HttpsError('unavailable', String(json.fehler || 'Das Foto konnte ich nicht lesen.').slice(0, 160));
+    return { geraet: String(json.geraet || '').slice(0, 80), text: String(json.text || '').slice(0, 400) };
+  });
+
 /* ── Menschliche Stimme (20.10.2026) ────────────────────────────────
    Aus dem Betrieb: „lebendig wirkt von der stimme und wie ein echter
    mensch als assistent". Der Worker holt die Stimme bei Google (nur wenn
@@ -7437,6 +7562,21 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
     if (!k) return null;
     return mitStudio({ typ: 'defekt', geraet, text }, k);
   }
+  /* Etappe 4 (20.10.2026): Erinnerung und Schichttausch. */
+  if (r.typ === 'erinnerung') {
+    const m = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})$/.exec(String(r.wann || ''));
+    const text = kurz(r.text, 140);
+    if (!m || !text) return null;
+    const wann = berlinZuUtc(m[1], m[2] + ':' + m[3]).getTime();
+    const jetzt = Date.now();
+    if (wann < jetzt + 30000 || wann > jetzt + 7 * 86400000) return null;
+    return { typ: 'erinnerung', wann, text };
+  }
+  if (r.typ === 'tausch') {
+    const datum = String(r.datum || '');
+    if (!DATUM_RE.test(datum) || datum < heute) return null;
+    return { typ: 'tausch', datum };
+  }
   if (r.typ === 'uebergabe') {
     const text = String(r.text || '').trim().slice(0, 500);
     if (!text) return null;
@@ -7471,7 +7611,7 @@ function gehirnKontextText(k) {
    besteht (z. B. Urlaub in der Vergangenheit) — sonst bekäme man auf
    „Ich will gestern Urlaub" eine Antwort aus dem Wissen; „hinweis" bei
    „keins" mit Begründung; sonst „aktion". */
-const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage'];
+const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage', 'erinnerung', 'tausch'];
 /* Mehrere Aufträge in einem Satz (20.10.2026): „Klo ist sauber und die
    Handtücher sind leer". Höchstens drei; jeder einzeln geprüft wie
    sonst auch. Fragen und Verbotenes fallen heraus — eine Frage mitten
@@ -7530,6 +7670,8 @@ exports.gehirnAktion = region
         ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]} — etwas, das im Studio erledigt und abgehakt wird. ' +
           '{"typ":"ankuendigung","text":"...","studios":["Studioname" oder "alle"],"wichtig":true|false} — Information an das Team. '
         : '') +
+      '{"typ":"erinnerung","wann":"YYYY-MM-DDTHH:MM","text":"woran erinnert wird"} — die Person will SICH SELBST später erinnern lassen (höchstens 7 Tage im Voraus, Uhrzeit Europe/Berlin). ' +
+      '{"typ":"tausch","datum":"YYYY-MM-DD"} — die Person kann an einem Tag ihre EIGENE Schicht nicht machen und sucht jemanden, der sie übernimmt. ' +
       '{"typ":"rueckfrage","frage":"...","optionen":["...","..."]} — NUR wenn klar etwas getan werden soll, aber zwei oder drei Deutungen gleich gut passen; jede Option ist ein kurzer, vollständiger Satz, den man so wieder schicken kann. ' +
       '{"typ":"keins","hinweis":"..."} — nur wenn etwas getan werden soll, das es nicht gibt oder das andere Personen betrifft (z. B. jemand anderen krankmelden, etwas löschen). ' +
       'Regeln: Datumsangaben wie "morgen", "bis Freitag" in echte Daten umrechnen. Titel kurz (max. 80 Zeichen). ' +
@@ -7704,7 +7846,7 @@ exports.lageberichtJetzt = region
     return { ok: true };
   });
 
-exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

@@ -16453,3 +16453,58 @@ Klang — im Test-Browser gibt es beides nicht; der Equalizer am echten
 Mikrofon ist nur gebaut, nicht gemessen. Die menschliche Stimme geht
 erst, wenn bei Google ein Schlüssel angelegt und im Worker hinterlegt
 ist.
+
+
+## Runde 164 — Jarvis Etappe 4: Erinnerungen, Tagesabschluss, Schicht abgeben, Suche, Foto, offline (20.10.2026)
+
+Letzte Etappe aus „mach alles davon".
+
+**Erinnerungen.** Schnellweg liest „in 20 Minuten", „um 18 Uhr",
+„morgen um 9", „morgen früh"; sonst die KI (`erinnerung` mit Zeit in
+Europe/Berlin, über `berlinZuUtc` umgerechnet). Gespeichert unter
+`firmen/<f>/gehirnErinnerungen` — für Clients in BEIDEN Welten zu
+(`allow read, write: if false`, Regeltest `gehirn-erinnerung.test.js`),
+angelegt und gelöscht nur von der Function `gehirnErinnerung`
+(höchstens 20 offen je Person, höchstens 7 Tage voraus). Der Zeitplan
+`gehirnErinnerungenSenden` läuft alle 5 Minuten über `alleFirmen()`
+und schickt den Push mit `sendPush`. **Warum eine eigene Sammlung und
+nicht privat/<uid>:** dort hätte der Zeitplan über alle Konten hinweg
+suchen müssen (Sammlungsgruppe, eigener Index — den gibt es in diesem
+Projekt nicht); eine Sammlung, die nur der Server sieht, braucht beides
+nicht. Kosten: ein weiterer Zeitplan (Cloud Scheduler).
+
+**Tagesabschluss im Dialog** („Feierabend"): Putzplan → Aufgaben (die
+Mini-Fenster) → Übergabe. Gespeichert wird über `gehirnEintragen` —
+derselbe Schreibweg wie sonst. **Gefunden:** der Verlauf steht zweimal
+im DOM (Seite und Fenster); `$('gxUe…')` las das Feld der versteckten
+Seite und überschrieb den getippten Text mit „". Jetzt hält das
+input-Ereignis den Text, und beim Neuzeichnen bleiben Fokus und Cursor
+im Feld.
+
+**Übergabe in Stichpunkte** (`gehirnUmformen`, KI nur mit dem Text der
+Übergabe), auch in der normalen Übergabe-Vorschau.
+
+**Schicht abgeben:** liest die eigenen Schichten des Tages und setzt
+`tausch/tauschVon/tauschTs` wie „Ich kann nicht" im Team-Bereich.
+
+**Suche über alles:** `sucheTreffer` unverändert aus `doSearch`
+herausgelöst; dieselbe Trefferliste im Gespräch.
+
+**Defekt mit Foto:** im Gerät auf höchstens 768 px als JPEG verkleinert,
+über `gehirnFoto` an den Worker (`/api/bild`, Llama 3.2 Vision, Bild nur
+gelesen). Zurück kommen Gerät und Beschreibung, gemeldet wird im
+normalen Defekt-Weg mit Vorschau. Hinweis beim ersten Tipp: nur das Gerät
+fotografieren.
+
+**Ohne Netz:** Hinweis oben im Fenster; die KI wird nicht gefragt;
+Abhaken bestätigt sofort mit „wird nachgetragen" (die Datenbank hält den
+Schreibvorgang in ihrer Warteschlange, `enablePersistence`).
+
+**Geprüft:** test-gehirn 12f (Erinnerung anlegen/löschen, morgen 9 Uhr,
+Suche ohne KI, Schicht ausschreiben mit genau den Tauschfeldern,
+Tagesabschluss mit Stichpunkten und Übergabe, Foto als JPEG, offline),
+test-gehirn-aktion (Erinnerung, Tausch, Stichpunkte), Regeltest im
+Emulator (16 bestanden), Worker-Prüfung (Foto mit Lizenz-Zustimmung).
+
+**Nicht geprüft:** echter Push zur Erinnerungszeit (läuft erst nach dem
+Ausrollen), echtes Bildmodell, echte Kamera.
