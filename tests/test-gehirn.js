@@ -849,6 +849,72 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
+  console.log('\n── 12f Erinnerung, Tagesabschluss, Schicht abgeben, Suche, Foto, offline (20.10.2026) ──');
+  {
+    const p = await oeffne(b, 1440, 900, { vorher: () => { localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); } });
+    await p.keyboard.press('j'); await p.waitForTimeout(500);
+    await p.evaluate(() => { window.__ki = 0; window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = () => { window.__ki++; return Promise.resolve({ data: { art: 'frage', antwort: 'KI', abgedeckt: true } }); };
+      window.__erin = []; window.__antwort.gehirnErinnerung = (d) => { window.__erin.push(d); return Promise.resolve({ data: d.art === 'neu' ? { id: 'e1', wann: d.wann } : { ok: true } }); }; });
+    const sag = async (satz, ms) => { await p.fill('#jarvisFeld', satz); await p.click('#jarvisSenden'); await p.waitForTimeout(ms || 900); };
+    const letzte = () => p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gehirn-antwort')].pop().innerText);
+    // Erinnerung
+    const vor = Date.now();
+    await sag('erinner mich in 20 minuten an die Wäsche');
+    const k1 = await letzte();
+    pruefe('„erinner mich in 20 minuten an die Wäsche": Vorschau mit Zeit und Text, ohne KI', /Erinnerung/.test(k1) && /die Wäsche/.test(k1) && /heute, \d\d:\d\d Uhr/.test(k1) && (await p.evaluate(() => window.__ki)) === 0, k1);
+    await p.click('#jarvisVerlauf [data-gerinnern]'); await p.waitForTimeout(300);
+    const e1 = await p.evaluate(() => window.__erin[0]);
+    pruefe('… „Erinnern" legt sie an: Text und Zeitpunkt (≈ in 20 min)', e1 && e1.art === 'neu' && e1.text === 'die Wäsche' && Math.abs(e1.wann - (vor + 20 * 60000)) < 15000 && /Ich erinnere dich/.test(await letzte()), JSON.stringify(e1));
+    await p.click('#jarvisVerlauf [data-gerinweg]'); await p.waitForTimeout(300);
+    pruefe('… und „Erinnerung löschen" nimmt sie zurück', (await p.evaluate(() => JSON.stringify(window.__erin[1]))) === JSON.stringify({ art: 'weg', id: 'e1' }));
+    await sag('erinnere mich morgen um 9 daran die Handtücher aufzuhängen');
+    const k2 = await letzte();
+    pruefe('„… morgen um 9 daran die Handtücher aufzuhängen": morgen, 09:00 Uhr', /morgen, 09:00 Uhr/.test(k2) && /die Handtücher aufzuhängen/.test(k2), k2);
+    // Suche
+    await sag('such nach Handtücher');
+    const su = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-gsuche]')].map(x => x.innerText.replace(/\s+/g, ' ')));
+    pruefe('„such nach Handtücher": Treffer aus der App, ohne KI', su.some(t => /Aufgabe/i.test(t) && /Handtücher waschen/.test(t)) && (await p.evaluate(() => window.__ki)) === 0, JSON.stringify(su));
+    // Schicht abgeben
+    const v0 = await p.evaluate(() => (window.__schreib || []).length);
+    await sag('kann heute jemand für mich übernehmen', 1200);
+    const ts = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-gtausch]')].map(x => x.innerText.replace(/\s+/g, ' ')));
+    pruefe('„kann heute jemand für mich übernehmen": deine Schichten von heute zum Ausschreiben', ts.length === 2 && ts.some(t => /09:00–14:00/.test(t)), JSON.stringify(ts));
+    await p.click('#jarvisVerlauf [data-gtausch]'); await p.waitForTimeout(300);
+    const w = await p.evaluate((n) => (window.__schreib || []).slice(n), v0);
+    pruefe('… „Ausschreiben" setzt den Tausch wie im Team-Bereich (tausch offen, von mir)', w.length === 1 && /shifts\/s\d/.test(w[0].pfad) && w[0].daten.tausch === 'offen' && w[0].daten.tauschVon === 'testuid', JSON.stringify(w));
+    // Tagesabschluss
+    await p.evaluate(() => { window.__antwort.gehirnUmformen = (d) => Promise.resolve({ data: { text: '• Handtücher in der Maschine\n• Gerät 2 zickt' } }); });
+    await sag('feierabend');
+    const s1 = await letzte();
+    pruefe('„feierabend": Tagesabschluss, Schritt 1 von 3 mit Mini-Putzplan', /Schritt 1 von 3/.test(s1) && /Putzplan/.test(s1) && !!(await p.$('#jarvisVerlauf .gx-karte .gm-fenster')), s1.slice(0, 200));
+    await p.click('#jarvisVerlauf [data-gabschl$="|weiter"]'); await p.waitForTimeout(400);
+    pruefe('… „Weiter": Schritt 2, Aufgaben', /Schritt 2 von 3/.test(await letzte()) && (await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gm-fenster b')].pop().textContent)) === 'Aufgaben');
+    await p.click('#jarvisVerlauf [data-gabschl$="|weiter"]'); await p.waitForTimeout(300);
+    await p.fill('#jarvisVerlauf [data-gabtext]', 'handtücher sind in der maschine und gerät 2 zickt'); await p.click('#jarvisVerlauf [data-gabschl$="|stich"]'); await p.waitForTimeout(300);
+    pruefe('… Schritt 3: Übergabe, „In Stichpunkte fassen" setzt den Text', (await p.inputValue('#jarvisVerlauf [data-gabtext]')) === '• Handtücher in der Maschine\n• Gerät 2 zickt');
+    const v1 = await p.evaluate(() => (window.__schreib || []).length);
+    await p.click('#jarvisVerlauf [data-gabschl$="|speichern"]'); await p.waitForTimeout(400);
+    const ho = await p.evaluate((n) => (window.__schreib || []).slice(n), v1);
+    const ende = await letzte();
+    pruefe('… „Übergabe speichern · Feierabend": Übergabe wie im Team-Bereich, dann Feierabend', ho.length === 1 && /handovers/.test(ho[0].pfad) && /Gerät 2 zickt/.test(ho[0].daten.text) && ho[0].daten.uid === 'testuid' && /erledigt/.test(ende), JSON.stringify(ho).slice(0, 200) + ' ' + ende.slice(0, 120));
+    // Foto
+    await p.evaluate(() => { window.__foto = []; window.__antwort.gehirnFoto = (d) => { window.__foto.push(d); return Promise.resolve({ data: { geraet: 'EMS-Gerät 2', text: 'Kabel am Stecker gebrochen.' } }); }; });
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8DwnwEIGBmQAQBQ6QH/q9b0jgAAAABJRU5ErkJggg==', 'base64');
+    await p.setInputFiles('#jarvisFotoDatei', { name: 'geraet.png', mimeType: 'image/png', buffer: png }); await p.waitForTimeout(1200);
+    const fo = await p.evaluate(() => ({ f: window.__foto[0] && { jpeg: /^data:image\/jpeg;base64,/.test(window.__foto[0].bild), geraete: window.__foto[0].geraete.length }, t: document.getElementById('jarvisVerlauf').innerText }));
+    pruefe('Foto: verkleinert als JPEG an gehirnFoto, mit Geräteliste; „Erkannt: EMS-Gerät 2" → Defekt-Weg', fo.f && fo.f.jpeg && /Erkannt: EMS-Gerät 2/.test(fo.t) && /Suche Gerät/.test(fo.t), JSON.stringify(fo.f) + ' ' + fo.t.slice(-300));
+    // ohne Netz
+    await p.context().setOffline(true); await p.waitForTimeout(200);
+    pruefe('ohne Netz: Hinweis oben im Fenster', await sichtbar(p, '#jarvisOffline'));
+    await sag('was mache ich bei einem attest');
+    pruefe('ohne Netz: die KI wird nicht gefragt, freundlicher Hinweis', /Ohne Netz kann ich gerade nur Schnellbefehle/.test(await letzte()) && (await p.evaluate(() => window.__ki)) === 0);
+    await sag('vorhänge sind gewaschen');
+    pruefe('ohne Netz: Schnellbefehl geht trotzdem, „wird nachgetragen"', /wird nachgetragen/.test(await p.evaluate(() => document.getElementById('jarvisVerlauf').innerText.slice(-400))), await p.evaluate(() => document.getElementById('jarvisVerlauf').innerText.slice(-400)));
+    await p.context().setOffline(false);
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+
   console.log('\n── 12b HUD, Ton, Daumen (20.10.2026) ──');
   /* Aus dem Betrieb (20.10.2026): „richtig abgespacet … wie in einer
      jarvis umgebung … viel motion", „jarvis soll ton haben auch" und
@@ -1039,6 +1105,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
         zuKlein = zuKlein.concat(await ids('#jarvisZu, #jarvisTon, #jarvisGespraecheBtn, #jarvisSenden, #jarvisMic, #jarvisVerlauf .jv-chip'));
         zuKlein = zuKlein.concat(await ids('#jarvisKacheln .jv-kl'));
         zuKlein = zuKlein.concat(await ids('#jarvisPersonaBtn'));
+        zuKlein = zuKlein.concat(await ids('#jarvisFoto'));
         await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(200);
         zuKlein = zuKlein.concat(await ids('#jarvisPersona button, #jarvisPersona input, #jarvisPersona select'));
         await p.click('#jvPZu'); await p.waitForTimeout(150);

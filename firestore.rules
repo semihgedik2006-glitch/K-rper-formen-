@@ -1827,6 +1827,14 @@ service cloud.firestore {
 
     // ── Push-Tokens (für Benachrichtigungen) ──
     // Die Server-Funktion liest sie per Admin-Rechten; Clients schreiben nur ihren eigenen.
+    // ── Erinnerungen des Studio-Gehirns (20.10.2026) ──
+    // Nur der Server: die Function gehirnErinnerung legt an und löscht,
+    // der Zeitplan gehirnErinnerungenSenden schickt den Push. Kein Client
+    // liest hier — auch nicht die eigene (dafür gibt es keinen Bedarf).
+    match /gehirnErinnerungen/{id} {
+      allow read, write: if false;
+    }
+
     match /pushTokens/{token} {
       allow read: if false;
       allow create, update: if istAktiv()
@@ -2582,6 +2590,11 @@ service cloud.firestore {
            keine Person aufnehmen — die Regel laesst bei statistik nur
            drei Felder durch und bei fehler nur einen Text unter 400
            Zeichen. */
+        // ── Erinnerungen des Studio-Gehirns (20.10.2026) — wie flach: nur der Server ──
+        match /gehirnErinnerungen/{id} {
+          allow read, write: if false;
+        }
+
         match /pushTokens/{token} {
           allow read: if false;
           allow create, update: if inFirma(f) && (istAktiv()
