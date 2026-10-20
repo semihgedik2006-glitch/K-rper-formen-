@@ -730,6 +730,59 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
+  console.log('\n── 12d Briefing, Kacheln, mehrere Aufträge, Rückfrage, Quellen (20.10.2026) ──');
+  {
+    const p = await oeffne(b, 1440, 900, { vorher: () => { window.__gesprochen = []; } });
+    await p.evaluate(() => { if (window.speechSynthesis) window.speechSynthesis.speak = (u) => { window.__gesprochen.push(u.text); }; });
+    await p.keyboard.press('j'); await p.waitForTimeout(2800);
+    const brief = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .jv-brief li')].map(l => l.textContent));
+    pruefe('Morgen-Briefing im leeren Gespräch: Aufgaben mit überfällig, Putzplan, Material', brief.some(t => /Aufgaben offen, \d+ überfällig/.test(t)) && brief.some(t => /^Putzplan: \d+ offen/.test(t)) && brief.some(t => /Material/.test(t)), JSON.stringify(brief));
+    const gesagt = await p.evaluate(() => window.__gesprochen);
+    pruefe('… einmal am Tag vorgelesen, mit Gruss und Namen', gesagt.length === 1 && /(Guten|Hallo)/.test(gesagt[0]) && /Test/.test(gesagt[0]) && /Aufgaben offen/.test(gesagt[0]), JSON.stringify(gesagt));
+    await p.click('#jarvisZu'); await p.keyboard.press('j'); await p.waitForTimeout(2000);
+    pruefe('… beim zweiten Öffnen am selben Tag nicht noch einmal', (await p.evaluate(() => window.__gesprochen.length)) === 1);
+    const kacheln = await p.evaluate(() => [...document.querySelectorAll('#jarvisKacheln .jv-kl')].map(k => k.getAttribute('data-jvmini') + ':' + k.querySelector('b').textContent));
+    pruefe('„Heute im Studio": fünf Kacheln mit Zahlen', kacheln.length === 5 && /^todos:\d+$/.test(kacheln[0]), JSON.stringify(kacheln));
+    await p.evaluate(() => { window.__kiGefragt = 0; window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = (d) => { window.__kiGefragt++; window.__kiDaten = d; return Promise.resolve({ data: { art: 'frage', antwort: 'KI', abgedeckt: true } }); }; });
+    await p.click('#jarvisKacheln [data-jvmini="putzplan"]'); await p.waitForTimeout(700);
+    pruefe('Kachel „Putzplan" holt das Mini-Fenster, ohne KI', (await p.evaluate(() => { const f = [...document.querySelectorAll('#jarvisVerlauf .gm-fenster b')].pop(); return f && f.textContent; })) === 'Putzplan' && (await p.evaluate(() => window.__kiGefragt)) === 0);
+    // mehrere Aufträge im Schnellweg
+    const v0 = await p.evaluate(() => (window.__schreib || []).length);
+    await p.fill('#jarvisFeld', 'spiegel ist sauber und klo ist sauber'); await p.click('#jarvisSenden'); await p.waitForTimeout(1200);
+    const w = await p.evaluate((n) => (window.__schreib || []).slice(n).map(x => x.pfad), v0);
+    const karten = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gehirn-frage')].slice(-2).map(x => x.textContent));
+    pruefe('„spiegel ist sauber und klo ist sauber": zwei Aufträge, zwei Karten, ohne KI', w.length === 2 && w.some(x => /cleaning\/c2/.test(x)) && w.some(x => /cleaning\/c3/.test(x)) && /und klo ist sauber/.test(karten[1]) && (await p.evaluate(() => window.__kiGefragt)) === 0, JSON.stringify({ w, karten }));
+    pruefe('Rückgängig im Gespräch läuft als Countdown', (await p.evaluate(() => getComputedStyle([...document.querySelectorAll('#jarvisVerlauf .ga-rueck-zeit')].pop(), '::after').animationName)) === 'gmCountdown');
+    // mehrere Aufträge über die KI
+    await p.evaluate(() => { window.__antwort.gehirnAktion = (d) => { window.__kiDaten = d; return Promise.resolve({ data: { vorschlag: { typ: 'abhaken', bereich: 'putzplan', was: 'Vorhänge', studioKey: 'studio-6', studioName: 'Hürth' },
+      weitere: [{ typ: 'navigation', ziel: 'material', zielName: 'Material', studioKey: 'studio-6', studioName: 'Hürth' }] } }); }; });
+    await p.fill('#jarvisFeld', 'kümmere dich um die vorhänge, danach bitte den bestand'); await p.click('#jarvisSenden'); await p.waitForTimeout(1500);
+    const zwei = await p.evaluate(() => ({ titel: [...document.querySelectorAll('#jarvisVerlauf .gm-fenster b')].pop().textContent, ab: /Abgehakt: Vorhänge waschen/.test(document.getElementById('jarvisVerlauf').innerText), ton: window.__kiDaten && window.__kiDaten.ton }));
+    pruefe('KI mit zwei Aufträgen: erst abgehakt, dann Mini-Fenster Material; Ton „locker" mitgeschickt', zwei.ab && zwei.titel === 'Material' && zwei.ton === 'locker' && /\(1 von 2\)/.test(await p.evaluate(() => document.getElementById('jarvisVerlauf').innerText)), JSON.stringify(zwei));
+    // Rückfrage
+    await p.evaluate(() => { window.__antwort.gehirnAktion = () => Promise.resolve({ data: { vorschlag: { typ: 'rueckfrage', frage: 'Meinst du den Putzplan oder die Aufgaben?', optionen: ['Öffne den Putzplan', 'Öffne die Aufgaben'] } } }); });
+    await p.fill('#jarvisFeld', 'kannst du da mal was machen'); await p.click('#jarvisSenden'); await p.waitForTimeout(900);
+    const rf = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-grf]')].map(x => x.textContent));
+    pruefe('Rückfrage: zwei Möglichkeiten zum Antippen', rf.join('|') === 'Öffne den Putzplan|Öffne die Aufgaben', JSON.stringify(rf));
+    await p.click('#jarvisVerlauf [data-grf="Öffne die Aufgaben"]'); await p.waitForTimeout(900);
+    pruefe('… ein Tipp schickt sie ab: Mini-Fenster Aufgaben', (await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gm-fenster b')].pop().textContent)) === 'Aufgaben');
+    // Quellen und Gelernt
+    await p.evaluate(() => { window.__antwort.gehirnAktion = () => Promise.resolve({ data: { art: 'frage', antwort: 'Die Studioleitung hat die Schlüssel.', abgedeckt: true,
+      quellen: [{ thema: 'Wer hat Schlüssel?', auszug: 'Die Studioleitung.', gelernt: true }] } }); });
+    await p.fill('#jarvisFeld', 'wer hat die schlüssel'); await p.click('#jarvisSenden'); await p.waitForTimeout(1600);
+    const q = await p.evaluate(() => { const k = [...document.querySelectorAll('#jarvisVerlauf .gehirn-antwort')].pop(); const d = k.querySelector('details.ga-quellen');
+      return { gelernt: !!k.querySelector('.hilfe-marke.gelernt'), zu: d && !d.open, summary: d && d.querySelector('summary').textContent }; });
+    await p.click('#jarvisVerlauf details.ga-quellen summary'); await p.waitForTimeout(200);
+    const qo = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf details.ga-quellen')].pop().innerText);
+    pruefe('Quellen: „Woher weiß ich das?" klappt Thema und Auszug auf; „Gelernt!" steht dabei', q.gelernt && q.zu && q.summary === 'Woher weiß ich das?' && /Wer hat Schlüssel\?/.test(qo) && /Die Studioleitung\./.test(qo), JSON.stringify(q) + ' ' + qo);
+    // Ton „sachlich" aus der Persönlichkeit
+    await p.evaluate(() => { localStorage.setItem('kf_jv_persona', JSON.stringify({ ton: 'sachlich' })); window.__antwort.gehirnAktion = (d) => { window.__kiDaten = d; return Promise.resolve({ data: { art: 'frage', antwort: 'Ok.', abgedeckt: true } }); }; });
+    await p.fill('#jarvisFeld', 'noch eine frage'); await p.click('#jarvisSenden'); await p.waitForTimeout(900);
+    pruefe('Ton „sachlich" geht mit, wenn so eingestellt', (await p.evaluate(() => window.__kiDaten.ton)) === 'sachlich');
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+
   console.log('\n── 12b HUD, Ton, Daumen (20.10.2026) ──');
   /* Aus dem Betrieb (20.10.2026): „richtig abgespacet … wie in einer
      jarvis umgebung … viel motion", „jarvis soll ton haben auch" und
@@ -918,6 +971,8 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       if (jk) {
         await p.click(jk); await p.waitForTimeout(300);
         zuKlein = zuKlein.concat(await ids('#jarvisZu, #jarvisTon, #jarvisGespraecheBtn, #jarvisSenden, #jarvisMic, #jarvisVerlauf .jv-chip'));
+        zuKlein = zuKlein.concat(await ids('#jarvisKacheln .jv-kl'));
+        if (h > 740 || w >= 1100) { if (!(await p.$('#jarvisKacheln .jv-kl'))) zuKlein.push('Kacheln fehlen'); }
         await p.fill('#jarvisFeld', 'öffne den putzplan'); await p.click('#jarvisSenden'); await p.waitForTimeout(800);
         if (!(await p.$('#jarvisVerlauf .gm-haken'))) zuKlein.push('Mini-Fenster fehlt');
         zuKlein = zuKlein.concat(await ids('#jarvisVerlauf .gm-haken, #jarvisVerlauf [data-gmzu], #jarvisVerlauf .gm-studios button, #jarvisVerlauf .gm-ganz'));
