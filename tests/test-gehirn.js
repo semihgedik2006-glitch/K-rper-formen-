@@ -783,6 +783,72 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
+  console.log('\n── 12e Stimme, Zuhören, Weckwort, Persönlichkeit (20.10.2026) ──');
+  /* Aus dem Betrieb (20.10.2026): „lebendig wirkt von der stimme und wie
+     ein echter mensch als assistent" — und auf die Ideenliste „mach alles
+     davon" (gedrückt halten, echte Wellenform, Weckwort, Persönlichkeit). */
+  const SR_ATTRAPPE = () => {
+    window.__srs = [];
+    window.SpeechRecognition = function () { window.__srs.push(this); };
+    window.SpeechRecognition.prototype.start = function () { this.gestartet = true; };
+    window.SpeechRecognition.prototype.stop = function () { if (this.beendet) return; this.beendet = true; const s = this; setTimeout(() => s.onend && s.onend(), 0); };
+    window.__sag = (r, text, fertig) => { const e = [{ transcript: text }]; e.isFinal = !!fertig; r.onresult({ resultIndex: 0, results: [e] }); };
+  };
+  {
+    const p = await oeffne(b, 1440, 900, { vorher: SR_ATTRAPPE });
+    await p.evaluate(() => { window.__gesprochen = []; if (window.speechSynthesis) window.speechSynthesis.speak = (u) => { window.__gesprochen.push(u.text); };
+      window.__audio = []; const A = window.Audio; window.Audio = function (src) { const a = new A(); window.__audio.push(src); a.play = () => Promise.resolve(); return a; };
+      window.__stimme = []; window.__antwort = window.__antwort || {};
+      window.__antwort.gehirnStimme = (d) => { window.__stimme.push(d); return Promise.resolve({ data: { audio: 'SUQz', mime: 'audio/mpeg' } }); };
+      localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); });
+    await p.keyboard.press('j'); await p.waitForTimeout(600);
+    pruefe('Kern ist ein Knopf zum Gedrückthalten (mit Spracherkennung)', await sichtbar(p, '#jarvisHalten'));
+    // Persönlichkeit
+    await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(200);
+    await p.fill('#jvPName', 'Friday'); await p.click('#jarvisPersona [data-jvw="sachlich"]'); await p.waitForTimeout(150);
+    await p.selectOption('#jvPProfi', 'de-DE-Chirp3-HD-Charon'); await p.click('#jvPProbe'); await p.waitForTimeout(300);
+    const pers = await p.evaluate(() => ({ p: JSON.parse(localStorage.getItem('kf_jv_persona')), titel: document.getElementById('jarvisTitel').textContent, stimme: window.__stimme.slice(-1)[0], audio: window.__audio.slice(-1)[0] }));
+    pruefe('Persönlichkeit: Name, Tonfall und Stimme gemerkt, Titel heisst jetzt „Friday"', pers.p.name === 'Friday' && pers.p.ton === 'sachlich' && pers.p.profiStimme === 'de-DE-Chirp3-HD-Charon' && pers.titel === 'Friday', JSON.stringify(pers));
+    pruefe('Probehören: menschliche Stimme mit der gewählten Stimme, abgespielt als MP3', pers.stimme && pers.stimme.stimme === 'de-DE-Chirp3-HD-Charon' && /Friday/.test(pers.stimme.text) && pers.audio === 'data:audio/mpeg;base64,SUQz', JSON.stringify(pers));
+    await p.click('#jvPZu'); await p.waitForTimeout(150);
+    // Gedrückt halten: hören, Untertitel, loslassen → abgeschickt
+    const box = await p.evaluate(() => { const r = document.getElementById('jarvisHalten').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+    await p.mouse.move(box.x, box.y); await p.mouse.down(); await p.waitForTimeout(150);
+    const hoert = await p.evaluate(() => ({ n: window.__srs.length, an: document.getElementById('jarvis').classList.contains('jv-z-hoert') }));
+    await p.evaluate(() => window.__sag(window.__srs[window.__srs.length - 1], 'öffne die aufgaben', false));
+    const ut = await p.evaluate(() => document.getElementById('jarvisUntertitel').textContent);
+    await p.waitForTimeout(500); await p.mouse.up(); await p.waitForTimeout(900);
+    const nach = await p.evaluate(() => ({ titel: (() => { const f = [...document.querySelectorAll('#jarvisVerlauf .gm-fenster b')].pop(); return f && f.textContent; })(), beendet: window.__srs[window.__srs.length - 1].beendet }));
+    pruefe('Gedrückt halten: hört zu (Zustand „hört"), Live-Untertitel, Loslassen schickt ab → Mini-Fenster Aufgaben', hoert.n === 1 && hoert.an && ut === 'öffne die aufgaben' && nach.beendet && nach.titel === 'Aufgaben', JSON.stringify({ hoert, ut, nach }));
+    // Leertaste im leeren Feld
+    await p.click('#jarvisFeld'); await p.keyboard.down(' '); await p.waitForTimeout(150);
+    const lt = await p.evaluate(() => ({ n: window.__srs.length, feld: document.getElementById('jarvisFeld').value }));
+    await p.keyboard.up(' '); await p.waitForTimeout(200);
+    pruefe('Leertaste im leeren Feld: halten und sprechen (kein Leerzeichen im Feld)', lt.n === 2 && lt.feld === '' && (await p.evaluate(() => window.__srs[1].beendet)), JSON.stringify(lt));
+    // Antwort mit menschlicher Stimme
+    await p.evaluate(() => { window.__antwort.gehirnAktion = () => Promise.resolve({ data: { art: 'frage', antwort: 'Westen im Schonprogramm.\n\n⚠️ Noch nicht geprüft.', abgedeckt: true } }); window.__audio = []; window.__stimme = []; });
+    await p.fill('#jarvisFeld', 'wie wasche ich westen'); await p.click('#jarvisSenden'); await p.waitForTimeout(1200);
+    const st = await p.evaluate(() => ({ s: window.__stimme, a: window.__audio, g: window.__gesprochen.length }));
+    pruefe('Antwort wird mit menschlicher Stimme vorgelesen (ohne Warnzeile), nicht mit der Gerätestimme', st.s.length === 1 && st.s[0].text === 'Westen im Schonprogramm.' && st.a.length === 1 && st.g === 0, JSON.stringify(st));
+    // Keine menschliche Stimme eingerichtet → Gerät, und nicht jedes Mal neu fragen
+    await p.evaluate(() => { window.__antwort.gehirnStimme = (d) => { window.__stimme.push(d); return Promise.resolve({ data: { aus: true, grund: 'keine Stimme eingerichtet' } }); }; window.__stimme = []; });
+    await p.fill('#jarvisFeld', 'noch eine frage'); await p.click('#jarvisSenden'); await p.waitForTimeout(1000);
+    await p.fill('#jarvisFeld', 'und noch eine'); await p.click('#jarvisSenden'); await p.waitForTimeout(1000);
+    const ers = await p.evaluate(() => ({ s: window.__stimme.length, g: window.__gesprochen.length }));
+    pruefe('Ohne eingerichtete Stimme: Gerätestimme, und nur einmal nachgefragt', ers.s === 1 && ers.g === 2, JSON.stringify(ers));
+    // Weckwort
+    await p.click('#jarvisPersonaBtn'); await p.click('#jvPWeck'); await p.click('#jvPZu'); await p.waitForTimeout(300);
+    const weck = await p.evaluate(() => { const r = window.__srs.filter(x => x.continuous && !x.beendet).pop(); return { da: !!r, zeichen: !document.getElementById('jarvisWeck').hidden, text: document.getElementById('jarvisWeck').textContent }; });
+    pruefe('Weckwort an: hört dauerhaft, Hinweis „hört auf „Hey Friday"" oben', weck.da && weck.zeichen && /Hey Friday/.test(weck.text), JSON.stringify(weck));
+    await p.evaluate(() => { const r = window.__srs.filter(x => x.continuous && !x.beendet).pop(); window.__sag(r, 'Hey Friday öffne den Putzplan', true); });
+    await p.waitForTimeout(900);
+    pruefe('„Hey Friday öffne den Putzplan" → Mini-Fenster Putzplan', (await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gm-fenster b')].pop().textContent)) === 'Putzplan');
+    await p.click('#jarvisZu'); await p.waitForTimeout(200);
+    pruefe('Fenster zu: das Mikrofon hört nicht mehr', await p.evaluate(() => window.__srs.filter(x => x.continuous).every(x => x.beendet)));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+
   console.log('\n── 12b HUD, Ton, Daumen (20.10.2026) ──');
   /* Aus dem Betrieb (20.10.2026): „richtig abgespacet … wie in einer
      jarvis umgebung … viel motion", „jarvis soll ton haben auch" und
@@ -972,6 +1038,10 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
         await p.click(jk); await p.waitForTimeout(300);
         zuKlein = zuKlein.concat(await ids('#jarvisZu, #jarvisTon, #jarvisGespraecheBtn, #jarvisSenden, #jarvisMic, #jarvisVerlauf .jv-chip'));
         zuKlein = zuKlein.concat(await ids('#jarvisKacheln .jv-kl'));
+        zuKlein = zuKlein.concat(await ids('#jarvisPersonaBtn'));
+        await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(200);
+        zuKlein = zuKlein.concat(await ids('#jarvisPersona button, #jarvisPersona input, #jarvisPersona select'));
+        await p.click('#jvPZu'); await p.waitForTimeout(150);
         if (h > 740 || w >= 1100) { if (!(await p.$('#jarvisKacheln .jv-kl'))) zuKlein.push('Kacheln fehlen'); }
         await p.fill('#jarvisFeld', 'öffne den putzplan'); await p.click('#jarvisSenden'); await p.waitForTimeout(800);
         if (!(await p.$('#jarvisVerlauf .gm-haken'))) zuKlein.push('Mini-Fenster fehlt');

@@ -16402,3 +16402,54 @@ test-gehirn-aktion (Rückfrage, Mehrfach, Vorname/Ton), Worker-Prüfung
 
 **Nicht geprüft:** Worker 2.8 ist erst wirksam, wenn er eingespielt ist
 — bis dahin fehlen nur „Woher weiß ich das?" und der Vorname.
+
+
+## Runde 163 — Jarvis Etappe 3: Stimme, Zuhören, Weckwort, Persönlichkeit (20.10.2026)
+
+Fortsetzung von Runde 161/162 („mach alles davon"), Wunsch dahinter:
+„das die ki lebendig wirkt von der stimme und wie ein echter mensch als
+assistent".
+
+**Menschliche Stimme.** Workers AI hat keine deutsche Stimme (aura-2
+nur en/es, MeloTTS ohne Deutsch). Deshalb Google Cloud Text-to-Speech
+über den Worker (`/api/stimme`, Secret `GOOGLE_TTS_KEY`), Stimmen
+Chirp 3 HD. Tagesgrenze 30 000 Zeichen (`LIMIT_STIMME_ZEICHEN_TAG`) —
+damit bleibt es im Freikontingent von 1 Mio. Zeichen im Monat. Ohne
+Schlüssel antwortet der Worker `{aus:true}`, die App nimmt die Stimme des
+Geräts und fragt in derselben Sitzung nicht noch einmal nach. Die
+Function `gehirnStimme` lässt nur vier deutsche Stimmen zu.
+
+**Gefunden beim Bauen:** `jvSprechen` ruft `jvZustand`, und `jvZustand`
+rief beim Übergang „fertig" wieder `jvSprechen` — mit dem alten Stand
+gemerkt hielt es den Übergang jedes Mal für neu: Stapelüberlauf. Jetzt
+merkt sich `jvZustand` den neuen Stand, bevor es reagiert.
+
+**Zuhören.** Eine Funktion für alle Wege (`gehirnHoerenStart`): Knopf
+„Sprechen", Kern gedrückt halten (kurz tippen = bis zur Sprechpause,
+halten = bis loslassen), Leertaste im leeren Feld. Live-Untertitel unter
+dem Kern. Am Rechner treibt das echte Mikrofon den Equalizer (Analyser,
+je Bild nur `transform`); auf Touch-Geräten nicht, weil sich dort
+Spracherkennung und Mikrofon schlecht teilen. Beim Vorlesen mit der
+menschlichen Stimme pulsiert der Kern mit dem Pegel.
+
+**Weckwort.** Abschaltbar je Gerät, Standard aus. Nur solange das
+Fenster offen ist; was nach „Hey <Name>" gesagt wird, geht ab; nur der
+Name → kurzer Ton, der nächste Satz geht ab. Während Jarvis arbeitet
+oder man den Kern hält, ist das Weckwort aus — eine Erkennung zur Zeit.
+
+**Persönlichkeit** je Gerät (`kf_jv_persona`): Name (Titel, Begrüssung,
+Weckwort), Tonfall locker/sachlich (geht an das Gehirn), Stimme
+menschlich/Gerät mit Auswahl, Weckwort, Probehören.
+
+**Geprüft:** test-gehirn 12e mit einer Attrappe der Spracherkennung
+(Gedrückthalten, Untertitel, Abschicken, Leertaste, Weckwort, Fenster
+zu = Mikro aus), menschliche Stimme als MP3, Ersatz Gerätestimme nur
+einmal nachgefragt, Persönlichkeit gemerkt; Abschnitt 13 misst die
+neuen Knöpfe; Worker-Prüfung (`/api/stimme` ohne/mit Schlüssel,
+Tagesgrenze); test-gehirn-aktion (`gehirnStimmePruefen`).
+
+**Nicht geprüft:** echte Spracherkennung, echtes Mikrofon und echter
+Klang — im Test-Browser gibt es beides nicht; der Equalizer am echten
+Mikrofon ist nur gebaut, nicht gemessen. Die menschliche Stimme geht
+erst, wenn bei Google ein Schlüssel angelegt und im Worker hinterlegt
+ist.
