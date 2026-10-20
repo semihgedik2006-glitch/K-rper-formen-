@@ -337,9 +337,15 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('zwei Beispiele, die etwas tun', (await p.$$('#gehirnChips [data-gbefehl]')).length === 2);
     // Öffnen: sofort, ohne Knopf
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'navigation', ziel: 'putzplan', zielName: 'Putzplan', studioKey: '', studioName: '' } } } });
+    /* Seit 20.10.2026 ein Mini-Fenster im Gespräch statt Seitenwechsel —
+       aus dem Betrieb: „statt die seite putzplan direkt zu öffnen zum
+       beispiel sowas als mini fenster in der ki seite zu öffnen". */
     await p.fill('#gehirnFeld', 'Öffne den Putzplan'); await p.click('#gehirnFragen');
-    await p.waitForTimeout(1200);
-    pruefe('„Öffne den Putzplan": der Putzplan ist offen, ohne weiteren Druck', await sichtbar(p, '#view-putzplan.show'));
+    await fertig(p); await p.waitForTimeout(400);
+    const mf = await p.evaluate(() => { const f = [...document.querySelectorAll('#gehirnVerlauf .gm-fenster')].pop(); return f ? f.innerText : ''; });
+    pruefe('„Öffne den Putzplan": Mini-Fenster im Gespräch, die Seite bleibt', /Putzplan/.test(mf) && /Toiletten reinigen/.test(mf) && await sichtbar(p, '#view-gehirn.show'), mf.slice(0, 200));
+    await p.click('#gehirnVerlauf .gm-ganz'); await p.waitForTimeout(500);
+    pruefe('… „Ganz öffnen" führt auf die Seite', await sichtbar(p, '#view-putzplan.show'));
     // Nachschauen: Aufgaben aus dem Speicher der App
     await aufSeite(p);
     await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'abfrage', was: 'aufgaben', studioKey: '', studioName: '' } } } });
@@ -474,10 +480,13 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const sag = async (satz) => { await aufSeite(p); await kiWeg(); await p.fill('#gehirnFeld', satz); await p.click('#gehirnFragen'); await fertig(p); await p.waitForTimeout(800); };
     const ki = () => p.evaluate(() => window.__kiGefragt);
     const letzteKarte = () => p.evaluate(() => { const k = [...document.querySelectorAll('#gehirnVerlauf .gehirn-antwort')].pop(); return k ? k.innerText : ''; });
+    const miniTitel = () => p.evaluate(() => { const f = [...document.querySelectorAll('#gehirnVerlauf .gm-fenster b')].pop(); return f ? f.textContent : ''; });
     await sag('öfne den putzplan');
-    pruefe('„öfne den putzplan" (Tippfehler): Putzplan offen, ohne KI', await sichtbar(p, '#view-putzplan.show') && (await ki()) === 0);
+    pruefe('„öfne den putzplan" (Tippfehler): Mini-Fenster Putzplan, ohne KI', (await miniTitel()) === 'Putzplan' && (await ki()) === 0, await miniTitel());
     await sag('Dienstplan');
-    pruefe('„Dienstplan": Team offen, ohne KI', await sichtbar(p, '#view-team.show') && (await ki()) === 0);
+    pruefe('„Dienstplan": Mini-Fenster „Dienst heute", ohne KI', (await miniTitel()) === 'Dienst heute' && (await ki()) === 0, await miniTitel());
+    await sag('geh zum putzplan');
+    pruefe('„geh zum putzplan": wer ausdrücklich hin will, kommt auf die Seite', await sichtbar(p, '#view-putzplan.show') && (await ki()) === 0);
     await sag('wer hat heute dienst in hürth');
     pruefe('„wer hat heute dienst in hürth": Dienst-Karte, ohne KI', /Heute im Dienst/i.test(await letzteKarte()) && (await ki()) === 0, await letzteKarte());
     await sag('was ist offen');
@@ -582,9 +591,13 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.click('#jarvisSenden');
     await p.waitForTimeout(150);
     const schritte = await p.evaluate(() => document.getElementById('jarvisVerlauf').innerText);
-    pruefe(w + ' px: „öffne den putzplan": Schritte „Erkannt" und „Öffne Putzplan"', /Erkannt: Seite öffnen/.test(schritte) && /Öffne Putzplan/.test(schritte), schritte.slice(-200));
+    pruefe(w + ' px: „öffne den putzplan": Schritte „Erkannt" und „Hole Putzplan ins Gespräch"', /Erkannt: Fenster öffnen/.test(schritte) && /Hole Putzplan ins Gespräch/.test(schritte), schritte.slice(-200));
     await p.waitForTimeout(900);
-    pruefe(w + ' px: … danach ist das Fenster zu und der Putzplan offen', !(await sichtbar(p, '#jarvis')) && await sichtbar(p, '#view-putzplan.show'));
+    /* Seit 20.10.2026 bleibt das Fenster offen — das Mini-Fenster steht im
+       Gespräch („… als mini fenster in der ki seite zu öffnen"). */
+    pruefe(w + ' px: … das Mini-Fenster steht im Gespräch, Jarvis bleibt offen', await sichtbar(p, '#jarvis') && !!(await p.$('#jarvisVerlauf .gm-fenster')));
+    await p.click('#jarvisVerlauf .gm-ganz'); await p.waitForTimeout(500);
+    pruefe(w + ' px: … „Ganz öffnen": Fenster zu, Putzplan offen', !(await sichtbar(p, '#jarvis')) && await sichtbar(p, '#view-putzplan.show'));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await zu(p);
   }
@@ -639,6 +652,84 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     if (da && !wartet) { await p.click(k); await p.waitForTimeout(300); pruefe('… und er öffnet das Fenster', await sichtbar(p, '#jarvis')); }
     await ctx.close();
   }
+  console.log('\n── 12c Mini-Fenster, Rückgängig, Gespräche, Taste J (20.10.2026) ──');
+  /* Aus dem Betrieb (20.10.2026): „statt die seite putzplan direkt zu
+     öffnen … als mini fenster in der ki seite … verschiedene farben …
+     viel mehr motion … lockereren ton … mini interaktionen und chat
+     verläufe speicherung" — und auf die Ideenliste: „mach alles davon". */
+  for (const [w, h] of [[390, 844], [1440, 900]]) {
+    const p = await oeffne(b, w, h);
+    await p.keyboard.press('j'); await p.waitForTimeout(500);
+    pruefe(w + ' px: Taste J öffnet Jarvis', await sichtbar(p, '#jarvis'));
+    await p.fill('#jarvisFeld', 'öffne den putzplan'); await p.click('#jarvisSenden'); await p.waitForTimeout(900);
+    const m = await p.evaluate(() => {
+      const f = [...document.querySelectorAll('#jarvisVerlauf .gm-fenster')].pop();
+      return f && { ort: f.querySelector('.gm-ort').textContent, farbe: getComputedStyle(f).getPropertyValue('--gm').trim(),
+        zeilen: [...f.querySelectorAll('.gm-zeile')].map(z => z.innerText.replace(/\s+/g, ' ').trim()), spruch: !!f.previousElementSibling && f.previousElementSibling.className };
+    });
+    pruefe(w + ' px: Mini-Putzplan im Studio mit Offenem (Hürth), eigene Farbe, mit Spruch', m && m.ort === 'Hürth' && m.farbe === '#4EE6D2' && m.zeilen.some(z => /Toiletten reinigen/.test(z)) && m.spruch === 'ga-spruch', JSON.stringify(m));
+    const v0 = await p.evaluate(() => (window.__schreib || []).length);
+    await p.click('#jarvisVerlauf .gm-haken[aria-label="Toiletten reinigen abhaken"]'); await p.waitForTimeout(250);
+    const nach = await p.evaluate((n) => ({ w: (window.__schreib || []).slice(n), gedrueckt: document.querySelector('#jarvisVerlauf .gm-haken[aria-label="Toiletten reinigen wieder öffnen"]') ? true : false,
+      rueck: !!document.querySelector('#jarvisVerlauf [data-gmrueck]'), puls: !!document.querySelector('#jarvisVerlauf .gm-zeile.gm-puls'),
+      stimmung: document.getElementById('jarvis').className }), v0);
+    pruefe(w + ' px: Abhaken im Mini-Fenster schreibt Putzplan c3 (mit Namen), Zeile hakt sich, Rückgängig mit Countdown', nach.w.length === 1 && /cleaning\/c3/.test(nach.w[0].pfad) && nach.w[0].daten.done === true && nach.w[0].daten.doneByUid === 'testuid' && nach.gedrueckt && nach.rueck && nach.puls, JSON.stringify(nach).slice(0, 300));
+    pruefe(w + ' px: … der Kern leuchtet kurz grün (Stimmung „ok")', /jv-s-ok/.test(nach.stimmung), nach.stimmung);
+    await p.click('#jarvisVerlauf [data-gmrueck]'); await p.waitForTimeout(250);
+    const zurueck = await p.evaluate((n) => (window.__schreib || []).slice(n), v0);
+    pruefe(w + ' px: Rückgängig nimmt den Haken zurück', zurueck.length === 2 && zurueck[1].daten.done === false && !(await p.$('#jarvisVerlauf [data-gmrueck]')), JSON.stringify(zurueck[1] || {}));
+    if (w === 1440) {
+      // Countdown: nach 10 s ist „Rückgängig" weg
+      await p.click('#jarvisVerlauf .gm-haken[aria-label="Toiletten reinigen abhaken"]'); await p.waitForTimeout(300);
+      const anim = await p.evaluate(() => getComputedStyle(document.querySelector('#jarvisVerlauf .gm-rueck'), '::after').animationName);
+      await p.waitForTimeout(10200);
+      pruefe('Rückgängig läuft als Countdown (gmCountdown) und ist nach 10 s weg', anim === 'gmCountdown' && !(await p.$('#jarvisVerlauf [data-gmrueck]')), anim);
+      // Studio wechseln
+      await p.click('#jarvisVerlauf .gm-studios button[aria-pressed="false"]'); await p.waitForTimeout(400);
+      pruefe('Studio-Knopf wechselt das Studio im Mini-Fenster', await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gm-fenster')].pop().querySelector('.gm-ort').textContent !== 'Hürth'));
+      // Einklappen und wieder auf
+      await p.click('#jarvisVerlauf [data-gmzu]'); await p.waitForTimeout(200);
+      pruefe('Einklappen lässt eine Zeile „wieder aufklappen" stehen', !(await p.$('#jarvisVerlauf .gm-fenster')) && !!(await p.$('#jarvisVerlauf [data-gmauf]')));
+      await p.click('#jarvisVerlauf [data-gmauf]'); await p.waitForTimeout(200);
+      pruefe('… und wieder auf', !!(await p.$('#jarvisVerlauf .gm-fenster')));
+      // Aufgaben, Material, Geräte
+      for (const [satz, titel, muster] of [['zeig mir die aufgaben', 'Aufgaben', /Geräte desinfizieren[\s\S]*überfällig/], ['öffne material', 'Material', /fehlen|Bestand passt/], ['öffne die geräte', 'Geräte', /Geräten in Ordnung/]]) {
+        await p.fill('#jarvisFeld', satz); await p.click('#jarvisSenden'); await p.waitForTimeout(900);
+        const f = await p.evaluate(() => { const x = [...document.querySelectorAll('#jarvisVerlauf .gm-fenster')].pop(); return x ? { t: x.querySelector('b').textContent, i: x.innerText } : null; });
+        pruefe('„' + satz + '": Mini-Fenster ' + titel, f && f.t === titel && muster.test(f.i), JSON.stringify(f).slice(0, 240));
+      }
+    }
+    // Gespräche: gespeichert, nach Neuladen wieder da
+    const gespeichert = await p.evaluate(() => { const k = Object.keys(localStorage).filter(x => /^kf_gehirn_gespr_/.test(x)); return k.length ? JSON.parse(localStorage.getItem(k[0])) : null; });
+    pruefe(w + ' px: das Gespräch steht auf dem Gerät (je Konto), als Abschrift', gespeichert && gespeichert.length === 1 && gespeichert[0].e[0].t === 'öffne den putzplan' && /Putzplan/.test(gespeichert[0].e[0].a), JSON.stringify(gespeichert).slice(0, 200));
+    await p.reload({ waitUntil: 'domcontentloaded' });
+    await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 }); await p.waitForTimeout(600);
+    await p.keyboard.press('j'); await p.waitForTimeout(500);
+    pruefe(w + ' px: nach dem Neuladen steht das Gespräch wieder da (still, ohne Einblenden)', await p.evaluate(() => {
+      const k = document.querySelector('#jarvisVerlauf .gehirn-antwort.ga-alt'); return !!k && getComputedStyle(k).animationName === 'none'; }));
+    await p.click('#jarvisGespraecheBtn'); await p.waitForTimeout(300);
+    const liste = await p.evaluate(() => [...document.querySelectorAll('#jarvisGespraeche [data-jvgespr]')].map(x => x.innerText));
+    pruefe(w + ' px: „Gespeicherte Gespräche" listet es mit Datum', liste.length === 1 && /öffne den putzplan/.test(liste[0]), JSON.stringify(liste));
+    await p.click('#jarvisGespraeche [data-jvneu]'); await p.waitForTimeout(300);
+    pruefe(w + ' px: „Neues Gespräch" leert den Verlauf, das alte bleibt gespeichert', !!(await p.$('#jarvisVerlauf .jv-leer')) &&
+      await p.evaluate(() => JSON.parse(localStorage.getItem(Object.keys(localStorage).filter(x => /^kf_gehirn_gespr_/.test(x))[0])).length === 1));
+    await p.click('#jarvisGespraecheBtn'); await p.waitForTimeout(200);
+    await p.click('#jarvisGespraeche [data-jvweg]'); await p.click('#jarvisGespraeche [data-jvweg]'); await p.waitForTimeout(200);
+    pruefe(w + ' px: „Alle löschen" (mit zweitem Tipp) löscht die Abschriften', await p.evaluate(() => !Object.keys(localStorage).some(x => /^kf_gehirn_gespr_/.test(x))));
+    pruefe(w + ' px: ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+  {
+    // Putzplan komplett: Spruch, Klang „komplett"
+    const p = await oeffne(b, 1440, 900);
+    await p.keyboard.press('j'); await p.waitForTimeout(400);
+    await p.fill('#jarvisFeld', 'öffne den putzplan'); await p.click('#jarvisSenden'); await p.waitForTimeout(900);
+    for (let n = 0; n < 6; n++) { const b2 = await p.$('#jarvisVerlauf .gm-haken[aria-pressed="false"]'); if (!b2) break; await b2.click(); await p.waitForTimeout(150); }
+    const sp = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .ga-spruch')].pop().textContent);
+    pruefe('Putzplan komplett: der Spruch feiert es', /komplett|erledigt|durch|fertig/i.test(sp) && /Putzplan/.test(sp), sp);
+    await zu(p);
+  }
+
   console.log('\n── 12b HUD, Ton, Daumen (20.10.2026) ──');
   /* Aus dem Betrieb (20.10.2026): „richtig abgespacet … wie in einer
      jarvis umgebung … viel motion", „jarvis soll ton haben auch" und
@@ -738,7 +829,10 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const ruhe = await miss(3000);
     await p.evaluate(() => { window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Ok.', abgedeckt: true } }), 6000)); });
     await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?'); await p.click('#jarvisSenden');
-    await p.waitForTimeout(300);
+    /* Erst einschwingen lassen: der Wechsel in „denkt" (Einblenden der
+       Karte, Partikel auf die Bahn) ist einmalig, gemessen wird der
+       Dauerzustand. */
+    await p.waitForTimeout(1000);
     const denkt = await miss(3000);
     pruefe(w + ' px, CPU ÷4: Arbeit je Bild offen ' + ruhe.ms + ' ms, beim Denken ' + denkt.ms + ' ms (Grenze 8,3)', ruhe.ms < 8.3 && denkt.ms < 8.3, JSON.stringify({ ruhe, denkt }));
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
@@ -823,7 +917,15 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       if (jk) zuKlein = zuKlein.concat(await ids(jk));
       if (jk) {
         await p.click(jk); await p.waitForTimeout(300);
-        zuKlein = zuKlein.concat(await ids('#jarvisZu, #jarvisTon, #jarvisSenden, #jarvisMic, #jarvisVerlauf .jv-chip'));
+        zuKlein = zuKlein.concat(await ids('#jarvisZu, #jarvisTon, #jarvisGespraecheBtn, #jarvisSenden, #jarvisMic, #jarvisVerlauf .jv-chip'));
+        await p.fill('#jarvisFeld', 'öffne den putzplan'); await p.click('#jarvisSenden'); await p.waitForTimeout(800);
+        if (!(await p.$('#jarvisVerlauf .gm-haken'))) zuKlein.push('Mini-Fenster fehlt');
+        zuKlein = zuKlein.concat(await ids('#jarvisVerlauf .gm-haken, #jarvisVerlauf [data-gmzu], #jarvisVerlauf .gm-studios button, #jarvisVerlauf .gm-ganz'));
+        await p.click('#jarvisVerlauf .gm-haken[aria-pressed="false"]'); await p.waitForTimeout(200);
+        zuKlein = zuKlein.concat(await ids('#jarvisVerlauf [data-gmrueck]'));
+        await p.click('#jarvisGespraecheBtn'); await p.waitForTimeout(200);
+        zuKlein = zuKlein.concat(await ids('#jarvisGespraeche button'));
+        await p.click('#jarvisGespraecheBtn'); await p.waitForTimeout(150);
         const jvBreit = await p.evaluate(() => document.getElementById('jarvis').scrollWidth > innerWidth + 1);
         if (jvBreit) zuKlein.push('Fenster ragt seitlich hinaus');
       } else if (h > 640 || w >= 821) zuKlein.push('„Gehirn" nicht erreichbar');
