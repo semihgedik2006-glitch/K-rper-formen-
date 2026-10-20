@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-AclFn/cEin3RzZ/grC07kUuRSh+LSthwfmFiXe4iVVE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jnQfj2tvJy3keb9bEasP8izHXDHb6Tq4alDRL1/dgWg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5250,6 +5250,12 @@ html{font-size:var(--fs,100%)}
 .gehirn-antwort .ga-kopf{display:flex;align-items:center;gap:var(--s6);margin-bottom:var(--s6);
   font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:var(--ls-m)}
 .gehirn-antwort .ga-kopf svg{width:14px;height:14px;color:var(--accent-d)}
+/* Formis Zeichen: ein kleines schwarzes Loch mit Lichtring (20.10.2026) */
+.gx-feld{display:flex;flex-direction:column;gap:var(--s4);margin-top:var(--s8);font-size:var(--t-sm);color:var(--text-2)}
+.gx-feld .inp{width:100%}
+.ga-loch{flex:none;width:14px;height:14px;border-radius:var(--r-rund);
+  background:radial-gradient(circle, #000 0 42%, #fff 50%, var(--accent-d) 62%, transparent 74%);
+  box-shadow:0 0 6px 1px rgba(var(--akz-rgb),.45)}
 .gehirn-ziele{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s8)}
 .gehirn-ziele .btn{min-height:44px}
 /* Daumen (20.10.2026): jede Bewertung ist ein Trainingsbeispiel. */
@@ -5345,6 +5351,17 @@ body.neu .bereich-zeile:has(#jarvisStart:not([hidden])) .bereich-kopf{flex-basis
     radial-gradient(80% 60% at 30% 40%, rgba(var(--jv-t1),.10) 0%, transparent 60%), var(--jv-nacht);
   color:var(--text);opacity:0;transition:opacity .25s ease}
 .jarvis.da{opacity:1}
+/* Buchstaben, die ins Loch wirbeln und als Sätze wieder herauskommen
+   (20.10.2026, aus dem Betrieb: „ganz viele random Buchstaben die sich
+   ins Loch drehen und dann als Sätze rauskommen"). Eine eigene Leinwand
+   um den Kern, nur bemalt, solange Buchstaben fliegen.
+
+   Erst als einzelne Elemente mit Web Animations gebaut — gemessen
+   (CPU ÷4, 1440 px, beim Denken): 57 ms je Bild statt 16 ms ohne. Jeder
+   neue Buchstabe und jede Bewegung lief hier über den Hauptfaden. Auf
+   der Leinwand: ein Pfad Text je Bild. */
+.jv-zeichen{position:absolute;left:50%;top:50%;width:min(340%, 94vw);height:auto;aspect-ratio:1 / 1;
+  transform:translate(-50%,-50%);pointer-events:none}
 .jarvis[hidden]{display:none}
 /* Die Themen. Farbe folgt dem Bereich wie in den Mini-Fenstern; Rot,
    Bernstein und Grün bleiben dem Status vorbehalten. */
@@ -5551,7 +5568,8 @@ body.jv-offen{overflow:hidden}
 .jv-persona label,.jv-persona .jv-pz{display:flex;flex-direction:column;gap:var(--s4);font-size:var(--t-xs);color:var(--text-2)}
 .jv-persona input[type=text],.jv-persona select{min-height:44px;font-size:16px}
 .jv-persona .jv-pw{display:flex;flex-wrap:wrap;gap:var(--s6)}
-.jv-persona .jv-pw button{min-height:44px;padding:0 var(--s12);border-radius:var(--r-pille);border:1px solid var(--line-2);background:transparent;
+.jv-persona .jv-pw .inp{flex:1 1 180px;min-height:44px}
+.jv-persona .jv-pw button{min-height:44px;min-width:44px;padding:0 var(--s12);border-radius:var(--r-pille);border:1px solid var(--line-2);background:transparent;
   color:var(--text-2);font:inherit;font-size:var(--t-sm);cursor:pointer}
 .jv-persona .jv-pw button[aria-pressed="true"]{border-color:var(--jv-cyan);background:rgba(var(--jv-rgb),.16);color:var(--text)}
 .jv-persona .jv-phinweis{margin:0;font-size:var(--t-xs);color:var(--text-3)}
@@ -5827,7 +5845,7 @@ body.jv-offen{overflow:hidden}
 @media (prefers-reduced-motion:reduce){ .gx-punkte i.jetzt{animation:none} }
 /* Rückfrage zum Antippen, Quellen, „Gelernt!" (20.10.2026) */
 .ga-rueckfragen{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s8)}
-.ga-rueckfragen .btn{min-height:44px}
+.ga-rueckfragen .btn,.jarvis .ga-rueckfragen .btn{min-height:44px}
 .ga-quellen{margin-top:var(--s8);border-top:1px dashed var(--line-2);padding-top:var(--s4)}
 .ga-quellen summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-size:var(--t-xs);font-weight:700;color:var(--accent-d);list-style:none}
 .ga-quellen summary::-webkit-details-marker{display:none}
@@ -11713,6 +11731,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
         <svg class="jv-boegen" viewBox="0 0 200 200" aria-hidden="true"><circle class="b1" cx="100" cy="100" r="88"/><circle class="b2" cx="100" cy="100" r="80"/></svg>
         <i></i><i></i><i></i><s></s><s></s><s></s><b></b>
         <canvas class="jv-loch" id="jarvisLoch" aria-hidden="true"></canvas>
+        <canvas class="jv-zeichen" id="jarvisZeichen" aria-hidden="true" data-zeichen="0"></canvas>
         <button type="button" class="jv-halten" id="jarvisHalten" hidden aria-label="Gedrückt halten und sprechen" title="Gedrückt halten und sprechen — oder einmal tippen"></button>
       </div>
       <p class="jv-untertitel" id="jarvisUntertitel" aria-live="polite"></p>
@@ -19700,6 +19719,13 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-20-formi-mail', datum:'20.10.2026', titel:'Formi: dein Studio, schlauer bei Rückfragen, Mails, Buchstaben im Loch', wo:'home', punkte:[
+    'Unter „Persönlichkeit" legst du jetzt „Mein Studio" fest. Nennst du kein Studio, nimmt Formi deins – und fragt nach, wenn du keins gewählt hast, statt zu raten.',
+    'Formi lernt aus deinen Richtigstellungen: einmal „ich meinte Hürth" – beim nächsten Mal weiss Formi, wo der Briefkasten ist.',
+    'Die Antwortkarten tragen jetzt Formis Namen mit einem kleinen schwarzen Loch.',
+    'Wenn du fragst, wirbeln Buchstaben ins Loch; die Antwort kommt als Satz wieder heraus.',
+    '„Effekte" unter „Persönlichkeit": Automatisch schaltet auf schwächeren Geräten von selbst auf weniger Teilchen.',
+    'Formi kann Mails schreiben: „Schreib lea@… eine Mail, ob sie morgen kann" – du siehst den Entwurf, änderst ihn und tippst „Senden". (Braucht das Formi-Postfach – richtet Semih ein.)' ] },
   { id:'2026-10-20-formi-bezug', datum:'20.10.2026', titel:'Formi versteht, worauf du dich beziehst', wo:'home', punkte:[
     'Hat Formi das falsche Studio erwischt, reicht jetzt „in Hürth" oder „ich hab Hürth gesagt" – Formi nimmt deinen letzten Satz und macht ihn dort.',
     'Auch Nachfragen klappen: „und wie lange dauert das?" oder „mach das auch für Longerich" – Formi liest die letzten Nachrichten mit.',
@@ -24485,7 +24511,7 @@ function gehirnZeichnenInRoh(box, tippen){
     var rf=gehirnRein(v, '_abF');
     var frage='<div class="gehirn-frage'+rf.k+'"'+rf.s+'>'+
       (v.art==='idee' ? '<b>Idee:</b> ' : '')+gehirnText(v.text)+'</div>';
-    var kopf='<div class="ga-kopf">'+ikon('gehirn')+'<span>Studio-Gehirn</span></div>';
+    var kopf='<div class="ga-kopf"><span class="ga-loch" aria-hidden="true"></span><span>'+esc(jvPersona().name)+'</span></div>';
     var antwort;
     if(v.alt){
       antwort='<div class="gehirn-antwort ga-alt">'+kopf+'<p class="ga-text">'+gehirnText(v.antwort)+'</p></div>';
@@ -24539,6 +24565,10 @@ function gehirnZeichnenInRoh(box, tippen){
     b.addEventListener('click', function(){ gehirnAbhakenRueck(+b.getAttribute('data-grueck'), b); });
   });
   box.querySelectorAll('[data-gerinnern]').forEach(function(b){ b.addEventListener('click', function(){ gehirnErinnern(+b.getAttribute('data-gerinnern'), b); }); });
+  box.querySelectorAll('[data-gmail]').forEach(function(b){ b.addEventListener('click', function(){ gehirnMailSenden(+b.getAttribute('data-gmail'), b); }); });
+  box.querySelectorAll('[data-gmailfeld]').forEach(function(f){ f.addEventListener('input', function(){
+    var x=f.getAttribute('data-gmailfeld').split('|'), v=_gVerlauf[+x[0]]; if(v && v.vorschlag) v.vorschlag[x[1]]=f.value;
+  }); });
   box.querySelectorAll('[data-gerinweg]').forEach(function(b){ b.addEventListener('click', function(){ gehirnErinnerungWeg(+b.getAttribute('data-gerinweg'), b); }); });
   box.querySelectorAll('[data-gsuche]').forEach(function(b){ var t=b.getAttribute('data-gsuche').split('|'); b.addEventListener('click', function(){ gehirnSucheOeffnen(+t[0], +t[1]); }); });
   box.querySelectorAll('[data-gtausch]').forEach(function(b){ var t=b.getAttribute('data-gtausch').split('|'); b.addEventListener('click', function(){ gehirnTauschen(+t[0], +t[1], b); }); });
@@ -24654,7 +24684,7 @@ function gehirnSenden(art, feldId){
   gehirnSchritt(v, art==='auto' ? 'Lese deinen Satz …' : 'Suche im Studio-Wissen …');
   if(art==='auto'){
     var bezug=gehirnBezug(text);
-    if(bezug){ text=bezug.text; gehirnSchritt(v, 'Bezieht sich auf „'+bezug.vorher+'" → „'+text+'"', true); }
+    if(bezug){ text=bezug.text; v.bezug=true; gehirnSchritt(v, 'Bezieht sich auf „'+bezug.vorher+'" → „'+text+'"', true); }
   }
   gehirnZeichnen();
   gehirnNachUnten();
@@ -24731,7 +24761,7 @@ function gehirnTonfall(){ return jvPersona().ton==='sachlich' ? 'sachlich' : 'lo
    Je Gerät: Name, Tonfall, Stimme (menschlich über Google oder die des
    Geräts), Weckwort. Aus dem Betrieb: „wie ein echter mensch als
    assistent" — und auf die Ideenliste „mach alles davon". */
-var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false };
+var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false, studio:'', effekte:'auto' };
 var JV_PROFI_STIMMEN=[['de-DE-Chirp3-HD-Aoede','Aoede (weiblich)'],['de-DE-Chirp3-HD-Kore','Kore (weiblich)'],['de-DE-Chirp3-HD-Charon','Charon (männlich)'],['de-DE-Chirp3-HD-Puck','Puck (männlich)']];
 function jvPersona(){
   var p={}; try{ p=JSON.parse(localStorage.getItem('kf_jv_persona')||'{}')||{}; }catch(e){}
@@ -24764,6 +24794,11 @@ function jvPersonaAuf(auf){
   function wahl(feld, wert, text){ return '<button type="button" data-jvp="'+feld+'" data-jvw="'+esc(wert)+'" aria-pressed="'+(p[feld]===wert ? 'true' : 'false')+'">'+esc(text)+'</button>'; }
   pn.innerHTML='<h2>Persönlichkeit und Stimme</h2><div class="jv-pinhalt">'+
     '<label>Name<input type="text" class="inp" id="jvPName" maxlength="20" value="'+esc(p.name)+'" autocomplete="off"></label>'+
+    (gehirnAlleMeineKeys().length>1 ? '<div class="jv-pz">Mein Studio<div class="jv-pw" role="group" aria-label="Mein Studio">'+
+      gehirnAlleMeineKeys().slice(0,14).map(function(k){ return '<button type="button" data-jvp="studio" data-jvw="'+esc(k)+'" aria-pressed="'+(gehirnMeinStudio()===k ? 'true' : 'false')+'">'+esc(studioName(k))+'</button>'; }).join('')+
+      '</div><p class="jv-phinweis">Hier nehme ich an, dass du bist, wenn du kein Studio nennst.</p></div>' : '')+
+    '<div class="jv-pz">Effekte<div class="jv-pw" role="group" aria-label="Effekte">'+wahl('effekte','auto','Automatisch')+wahl('effekte','voll','Voll')+wahl('effekte','sparsam','Sparsam')+'</div>'+
+      '<p class="jv-phinweis">Automatisch: weniger Teilchen, sobald dein Gerät ins Stocken kommt.</p></div>'+
     '<div class="jv-pz">Tonfall<div class="jv-pw" role="group" aria-label="Tonfall">'+wahl('ton','locker','Locker')+wahl('ton','sachlich','Sachlich')+'</div></div>'+
     '<div class="jv-pz">Stimme<div class="jv-pw" role="group" aria-label="Stimme">'+wahl('stimme','profi','Menschlich')+wahl('stimme','geraet','Vom Gerät')+'</div>'+
     (_jvProfiAus && p.stimme==='profi' ? '<p class="jv-phinweis">Die menschliche Stimme ist gerade nicht eingerichtet — ich spreche mit der Stimme des Geräts.</p>' : '')+'</div>'+
@@ -24772,10 +24807,14 @@ function jvPersonaAuf(auf){
       : '<label>Stimme des Geräts<select class="inp" id="jvPGeraet"><option value="">automatisch</option>'+geraete.map(function(x){ return '<option value="'+esc(x.name)+'"'+(x.name===p.geraetStimme ? ' selected' : '')+'>'+esc(x.name)+'</option>'; }).join('')+'</select></label>')+
     (SR ? '<div class="jv-pz">Freihändig<div class="jv-pw">'+'<button type="button" id="jvPWeck" aria-pressed="'+(p.weckwort ? 'true' : 'false')+'">„Hey '+esc(p.name)+'" hören</button></div>'+
       '<p class="jv-phinweis">Solange dieses Fenster offen ist, hört das Mikrofon auf „Hey '+esc(p.name)+'". Kostet etwas Akku; geht im Chrome-Browser.</p></div>' : '')+
+    (isChef() ? '<div class="jv-pz">Mail-Code der Leitung<p class="jv-phinweis">Wer diesen Code in eine Mail an Formi schreibt („Code: …"), legt per Mail Aufgaben und Ankündigungen an. Gespeichert wird nur ein Hash — merk ihn dir gut.</p>'+
+      '<div class="jv-pw"><input type="password" class="inp" id="jvPCode" minlength="8" maxlength="64" autocomplete="new-password" aria-label="Neuer Mail-Code" placeholder="neuer Code, mind. 8 Zeichen"><button type="button" id="jvPCodeSetzen">Code speichern</button></div></div>' : '')+
     '</div><div class="jv-gk"><button type="button" class="btn btn-primary btn-sm" id="jvPProbe">Probehören</button><button type="button" class="btn btn-ghost btn-sm" id="jvPZu">Fertig</button></div>';
   var n=$('jvPName'); if(n) n.addEventListener('change', function(){ jvPersonaSetzen({ name:n.value }); });
   pn.querySelectorAll('[data-jvp]').forEach(function(x){ x.addEventListener('click', function(){
     var a={}; a[x.getAttribute('data-jvp')]=x.getAttribute('data-jvw'); jvPersonaSetzen(a); jvPersonaAuf(true);
+    if(a.effekte){ _jvQ.stufe=null; jvQualitaetNeu(); }
+    if(a.studio){ var o=$('jarvisOrt'); if(o) o.textContent=studioName(a.studio); }
   }); });
   var pr=$('jvPProfi'); if(pr) pr.addEventListener('change', function(){ jvPersonaSetzen({ profiStimme:pr.value }); });
   var ge=$('jvPGeraet'); if(ge) ge.addEventListener('change', function(){ jvPersonaSetzen({ geraetStimme:ge.value }); });
@@ -24785,6 +24824,15 @@ function jvPersonaAuf(auf){
     var vorher=_jvTonAn; _jvTonAn=true; jvSprechen('Hi'+(gehirnVorname() ? ' '+gehirnVorname() : '')+', ich bin '+q.name+'. So klinge ich.'); _jvTonAn=vorher;
   });
   var zu=$('jvPZu'); if(zu) zu.addEventListener('click', function(){ if(n && n.value) jvPersonaSetzen({ name:n.value }); jvPersonaAuf(false); });
+  var cs=$('jvPCodeSetzen'); if(cs) cs.addEventListener('click', function(){
+    var f=$('jvPCode'), code=String((f && f.value)||'');
+    if(!/^\S{8,64}$/.test(code)){ toast('Der Code braucht 8 bis 64 Zeichen ohne Leerzeichen.', true); if(f) f.focus(); return; }
+    withBusy(cs, function(){
+      return firebase.app().functions(KONFIG.region).httpsCallable('formiCodeSetzen')({ code:code }).then(function(){
+        if(f) f.value=''; toast('Mail-Code gespeichert ✓');
+      }).catch(function(e){ toast(errMsg(e), true); });
+    });
+  });
 }
 /* Am Ende kleben: die neueste Karte wächst noch (Schritte, Einblendung).
    Solange niemand selbst nach oben scrollt, bleibt der Verlauf unten. */
@@ -24823,6 +24871,7 @@ function gehirnVorschlagHTML(v, i){
   }
   if(s.typ==='navigation') return v.mini ? gehirnMiniHTML(v, i) : gehirnNavHTML(v);
   if(s.typ==='erinnerung') return gehirnErinnerungHTML(v, i);
+  if(s.typ==='mail') return gehirnMailHTML(v, i);
   if(s.typ==='suche') return gehirnSucheHTML(v, i);
   if(s.typ==='abschluss') return gehirnAbschlussHTML(v, i);
   if(s.typ==='tausch') return gehirnTauschHTML(v, i);
@@ -24963,8 +25012,30 @@ function gehirnVorschlagUebernehmen(v){
    Die KI liefert nur einen Befehl aus dem Katalog der Function
    (gehirnBefehlPruefen); ausgeführt wird hier, mit denselben Feldern
    wie die Formulare, also unter denselben Regeln. */
-function gehirnMeineKeys(){
+function gehirnAlleMeineKeys(){
   return canManage() ? managedKeys() : (((session&&session.studioKeys)||[]).slice());
+}
+/* Mein Studio (20.10.2026, aus dem Betrieb: Formi nahm Longerich, obwohl
+   Semih in Hürth ist — es nahm einfach das erste Studio der Liste). Je
+   Gerät unter „Persönlichkeit" gewählt; es steht dann überall vorn, wo
+   Formi ein Studio annimmt. Ohne Wahl und mit mehreren Studios fragt
+   Formi nach, statt zu raten. */
+function gehirnMeinStudio(){
+  var alle=gehirnAlleMeineKeys(), w=jvPersona().studio;
+  if(w && alle.indexOf(w)>=0) return w;
+  return alle.length===1 ? alle[0] : '';
+}
+function gehirnMeineKeys(){
+  var alle=gehirnAlleMeineKeys(), m=gehirnMeinStudio();
+  return m ? [m].concat(alle.filter(function(k){ return k!==m; })) : alle;
+}
+/* Ein Studio wird gebraucht, aber keins steht im Satz und keins ist
+   gewählt: nachfragen. Die Optionen sind ganze Sätze, die man so wieder
+   schicken kann. */
+function gehirnStudioRueckfrage(roh){
+  var alle=gehirnAlleMeineKeys().slice(0,6);
+  return { typ:'rueckfrage', frage:'In welchem Studio? (Unter „Persönlichkeit" kannst du dein Studio festlegen, dann frage ich nicht mehr.)',
+    optionen:alle.map(function(k){ return String(roh).replace(/[.!]+$/,'')+' in '+studioName(k); }) };
 }
 function gehirnSofort(v){
   var s=v.vorschlag; if(!s) return;
@@ -25007,6 +25078,7 @@ function gehirnSofort(v){
   if(s.typ==='defekt'){ gehirnSchritt(v, 'Suche Gerät „'+s.geraet+'" in '+s.studioName+' …', true); return gehirnDefektSuchen(v); }
   if(s.typ==='rueckfrage'){ gehirnSchritt(v, 'Nicht ganz eindeutig — tipp an, was du meinst', true); return; }
   if(s.typ==='erinnerung'){ gehirnSchritt(v, 'Vorschau — „Erinnern" tippen, dann kommt sie als Push', true); return; }
+  if(s.typ==='mail'){ gehirnSchritt(v, 'Entwurf — lies drüber, dann „Senden"', true); return; }
   if(s.typ==='suche'){
     gehirnSchritt(v, 'Suche „'+s.q+'" in der App …', true);
     v.treffer=sucheTreffer(s.q).slice(0, 8);
@@ -25014,7 +25086,9 @@ function gehirnSofort(v){
     return;
   }
   if(s.typ==='abschluss'){
-    var ak=s.studioKey || gehirnMeineKeys()[0];
+    var ak=s.studioKey || gehirnMeinStudio();
+    if(!ak && gehirnAlleMeineKeys().length>1){ v.vorschlag=gehirnStudioRueckfrage(v.text||'Feierabend'); gehirnSchritt(v, 'Welches Studio? — tipp an', true); return; }
+    ak=ak || gehirnMeineKeys()[0];
     v.abschluss={ schritt:0, k:ak, text:'' };
     v.mini={ ziel:'putzplan', k:ak, keys:[ak] };
     v.spruch=gehirnSpruch('abschluss');
@@ -25265,6 +25339,31 @@ function gehirnZeitText(ms){
   var tage=Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate())-h)/86400000);
   var tag = tage===0 ? 'heute' : (tage===1 ? 'morgen' : (tage===2 ? 'übermorgen' : d.toLocaleDateString('de-DE',{ weekday:'long', day:'2-digit', month:'2-digit' })));
   return tag+', '+d.toLocaleTimeString('de-DE',{ hour:'2-digit', minute:'2-digit' })+' Uhr';
+}
+/* Mail aus der App (20.10.2026, aus dem Betrieb: „man sollte dann auch
+   über die App Mails verschicken können"). Formi schreibt einen Entwurf;
+   Betreff und Text lassen sich ändern; erst „Senden" schickt ihn — über
+   das Formi-Postfach, unten mit deinem Namen. */
+function gehirnMailHTML(v, i){
+  var s=v.vorschlag;
+  if(v.gesendet) return '<div class="gv-karte gv-fertig'+(v.jetzt ? ' gv-jetzt' : '')+'"><div class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12"/>'+
+    '<path d="M8 14.5l4 4 8-9"/></svg><span>Mail an '+esc(s.an)+' ist raus.</span></div></div>';
+  return '<div class="gx-karte"><div class="gx-kopf"><b>Mail</b><span>an '+esc(s.an)+'</span></div>'+
+    '<label class="gx-feld">Betreff<input type="text" class="inp" maxlength="120" data-gmailfeld="'+i+'|betreff" value="'+esc(s.betreff)+'"></label>'+
+    '<label class="gx-feld">Text<textarea class="inp" rows="5" maxlength="4000" data-gmailfeld="'+i+'|text">'+esc(s.text)+'</textarea></label>'+
+    '<div class="gx-knoepfe"><button type="button" class="btn btn-primary btn-sm" data-gmail="'+i+'">Senden</button></div>'+
+    '<p class="gx-hinweis">Geht über das Formi-Postfach; unten steht, dass du sie geschickt hast.</p></div>';
+}
+function gehirnMailSenden(i, btn){
+  var v=_gVerlauf[i]; if(!v || v.gesendet || !v.vorschlag) return;
+  var s=v.vorschlag;
+  if(!String(s.text||'').trim()){ toast('Bitte einen Text schreiben.', true); return; }
+  withBusy(btn, function(){
+    return firebase.app().functions(KONFIG.region).httpsCallable('formiMailSenden')({ an:s.an, betreff:s.betreff, text:s.text }).then(function(){
+      v.gesendet=true; v.angelegt='Mail an '+s.an+' gesendet.'; v.jetzt=!gehirnWenigBewegung();
+      gehirnStimmung('ok'); jvTon('fertig'); tick(10); gehirnZeichnen(); gehirnVerlaufSichern();
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
 }
 function gehirnErinnerungHTML(v, i){
   var s=v.vorschlag;
@@ -25814,6 +25913,17 @@ function gehirnAbhakenSuchen(v){
     });
   });
   v.wahl=gehirnBeste(s.was, kandidaten, function(x){ return x.t.title||x.t.text||''; });
+  /* Passt derselbe Punkt in mehreren Studios: erst das, was Formi aus
+     einer Richtigstellung gelernt hat, dann Mein Studio — sonst fragen. */
+  if(!s.studioKey && v.wahl.length>1){
+    var studios=v.wahl.map(function(x){ return x.k; }).filter(function(k, n, a){ return a.indexOf(k)===n; });
+    if(studios.length>1){
+      var gel=gehirnLernLesen()[gehirnLernSchluessel(s.was)], mein=gehirnMeinStudio(), eng=null;
+      if(gel && studios.indexOf(gel)>=0){ eng=gel; gehirnSchritt(v, 'Gemerkt: „'+s.was+'" ist bei dir meist in '+studioName(gel), true); }
+      else if(mein && studios.indexOf(mein)>=0) eng=mein;
+      if(eng) v.wahl=v.wahl.filter(function(x){ return x.k===eng; });
+    }
+  }
   if(v.wahl.length===1) return gehirnAbhaken(v, v.wahl[0], null);
 }
 function gehirnAbhakenSchreiben(bereich, k, t, done){
@@ -25835,6 +25945,7 @@ function gehirnAbhaken(v, x, btn){
   if(offline) schreiben.catch(function(e){ toast(errMsg(e), true); });
   var arbeit=(offline ? Promise.resolve() : schreiben).then(function(){
     v.erledigt=x; v.angelegt='Abgehakt: '+(x.t.title||x.t.text||'Eintrag')+' ('+studioName(x.k)+')'+(offline ? ' — wird nachgetragen' : '');
+    if(v.vorschlag && v.vorschlag.was && (v.bezug || !v.vorschlag.studioKey)) gehirnLernen(v.vorschlag.was, x.k);
     v.spruch=gehirnSpruch('abgehakt');
     /* Rückgängig mit Countdown (20.10.2026): 10 Sekunden, dann ist der
        Knopf weg — wie im Mini-Fenster. */
@@ -25977,7 +26088,7 @@ function gehirnSchritteHTML(v, laeuft){
     return '<li'+r.s+' class="'+(x.ok || !laeuft ? 'ok' : 'jetzt')+r.k+'"><span aria-hidden="true">'+(x.ok || !laeuft ? '✓' : '•')+'</span>'+esc(x.t)+'</li>';
   }).join('')+'</ol>';
 }
-var GEHIRN_ARTNAMEN={ erinnerung:'Erinnerung', suche:'Suche', abschluss:'Tagesabschluss', tausch:'Schicht abgeben', rueckfrage:'Rückfrage', navigation:'Fenster öffnen', abfrage:'nachschauen', abwesenheit:'Abwesenheit eintragen', uebergabe:'Übergabe schreiben',
+var GEHIRN_ARTNAMEN={ mail:'Mail schreiben', erinnerung:'Erinnerung', suche:'Suche', abschluss:'Tagesabschluss', tausch:'Schicht abgeben', rueckfrage:'Rückfrage', navigation:'Fenster öffnen', abfrage:'nachschauen', abwesenheit:'Abwesenheit eintragen', uebergabe:'Übergabe schreiben',
   abhaken:'abhaken', defekt:'Defekt melden', aufgabe:'Aufgabe anlegen', ankuendigung:'Ankündigung', idee:'Idee an die Leitung', frage:'Frage' };
 function gehirnArtName(s){ return GEHIRN_ARTNAMEN[(s&&s.typ)||''] || 'Auftrag'; }
 function gehirnSichtbar(){ return currentView==='gehirn' || jarvisOffen(); }
@@ -26178,6 +26289,89 @@ function jvGeraetSprechen(t, p, nr){
     window.speechSynthesis.speak(u);
   }catch(e){}
 }
+var _jvZ={ uhr:0, pool:'', liste:[], ctx:null, S:0, dpr:1, leer:true };
+function jvZeichenAn(){ return jarvisOffen() && !gehirnWenigBewegung() && _jvF.an; }
+function jvZeichenMass(){
+  var c=$('jarvisZeichen'); if(!c || !c.getContext) return;
+  _jvZ.S=c.clientWidth||400;
+  /* Schrift braucht Schärfe: bis zu ~110 000 Bildpunkte, höchstens 1:1 */
+  _jvZ.dpr=Math.min(1, Math.sqrt(110000/Math.max(1, _jvZ.S*_jvZ.S)));
+  c.width=c.height=Math.max(1, Math.round(_jvZ.S*_jvZ.dpr));
+  _jvZ.ctx=c.getContext('2d'); _jvZ.leer=true;
+}
+function jvZeichenNeu(ch, raus, verz){
+  var rh=_jvL.rh||20, R=_jvZ.S/2;
+  var F=_jvF.farbe||JV_FARBEN.bunt, f=F[Math.floor(Math.random()*3)];
+  _jvZ.liste.push({ ch:ch, raus:raus, verz:verz||0, w:Math.random()*Math.PI*2,
+    r:raus ? rh*1.1 : R*(0.8+Math.random()*0.18), dreh:0.8+Math.random()*0.5, f:f });
+  var c=$('jarvisZeichen'); if(c) c.setAttribute('data-zeichen', _jvZ.liste.length);
+}
+/* Was getippt wurde, und solange Formi denkt immer neue Buchstaben
+   daraus, wirbeln vom Rand der Leinwand ins Loch. */
+function jvZeichenStart(text){
+  if(!jvZeichenAn()) return;
+  if(!_jvZ.ctx) jvZeichenMass();
+  _jvZ.pool=String(text||'').replace(/\s+/g,'')+'FORMI';
+  String(text||'').replace(/\s+/g,'').slice(0, innerWidth<600 ? 20 : 30).split('').forEach(function(ch, i){ jvZeichenNeu(ch, false, i*3); });
+  clearInterval(_jvZ.uhr);
+  var max=innerWidth<600 ? 22 : 30;
+  _jvZ.uhr=setInterval(function(){
+    if(!_gLaeuft || !jvZeichenAn()){ clearInterval(_jvZ.uhr); _jvZ.uhr=0; return; }
+    if(_jvZ.liste.length<max) jvZeichenNeu(_jvZ.pool.charAt(Math.floor(Math.random()*_jvZ.pool.length))||'F', false, 0);
+  }, innerWidth<600 ? 140 : 90);
+}
+/* Die Antwort: ihre Buchstaben kommen einer nach dem anderen aus dem
+   Loch und laufen als Satz auf einer Spirale nach aussen, bis sie sich
+   auflösen — währenddessen schreibt sich der Text in der Karte. */
+function jvZeichenRaus(text){
+  clearInterval(_jvZ.uhr); _jvZ.uhr=0;
+  if(!jvZeichenAn() || !text) return;
+  if(!_jvZ.ctx) jvZeichenMass();
+  var w0=Math.random()*Math.PI*2;
+  String(text).replace(/\s+/g,' ').trim().slice(0, innerWidth<600 ? 30 : 48).split('').forEach(function(ch, i){
+    if(ch===' ') return;
+    jvZeichenNeu(ch, true, i*2);
+    _jvZ.liste[_jvZ.liste.length-1].w=w0;
+  });
+}
+/* Ein Bild der Buchstaben — aus bild() heraus, jedes Bild, aber nur
+   solange welche fliegen. */
+function jvZeichenBild(dt){
+  var g=_jvZ.ctx; if(!g) return;
+  var L=_jvZ.liste;
+  if(!L.length){
+    if(!_jvZ.leer){ g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,g.canvas.width,g.canvas.height); _jvZ.leer=true;
+      var c0=$('jarvisZeichen'); if(c0) c0.setAttribute('data-zeichen', 0); }
+    return;
+  }
+  _jvZ.leer=false;
+  var S=_jvZ.S, R=S/2, rh=_jvL.rh||20, COS=Math.cos(JV_NEIGUNG), SIN=Math.sin(JV_NEIGUNG);
+  g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,g.canvas.width,g.canvas.height);
+  g.font="700 18px ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
+  g.textAlign='center'; g.textBaseline='middle';
+  g.globalCompositeOperation='lighter';
+  var rest=[], i, a, q, lx, ly, x, y, al, sk;
+  for(i=0;i<L.length;i++){
+    a=L[i];
+    if(a.verz>0){ a.verz-=dt; rest.push(a); continue; }
+    q=(a.r-rh)/(R-rh);                                /* 0 am Loch … 1 am Rand */
+    a.w+=0.045*a.dreh*Math.pow(Math.max(0.08, a.r/R), -1.2)*0.2*dt;
+    /* Nach der Antwort stürzt der Rest schneller hinein — die Bühne gehört
+       dann dem Satz, der herauskommt. */
+    a.r+= (a.raus ? (3+q*4) : -(1.2+(1-q)*3.5)*(_gLaeuft ? 1 : 3))*dt;
+    if((!a.raus && a.r<=rh*1.05) || (a.raus && a.r>=R*0.92)) continue;
+    lx=Math.cos(a.w)*a.r; ly=Math.sin(a.w)*a.r*(0.35+0.65*q);
+    x=R+lx*COS-ly*SIN; y=R+lx*SIN+ly*COS;
+    al=a.raus ? Math.min(1, q*4, (1-q)*3) : Math.min(1, (1-q)*5, q*3);
+    sk=0.35+0.75*q;
+    g.setTransform(_jvZ.dpr*sk, 0, 0, _jvZ.dpr*sk, x*_jvZ.dpr, y*_jvZ.dpr);
+    g.fillStyle='rgba('+((a.f[0]+(255-a.f[0])*0.3)|0)+','+((a.f[1]+(255-a.f[1])*0.3)|0)+','+((a.f[2]+(255-a.f[2])*0.3)|0)+','+al.toFixed(2)+')';
+    g.fillText(a.ch, 0, 0);
+    rest.push(a);
+  }
+  if(rest.length!==L.length){ var c=$('jarvisZeichen'); if(c) c.setAttribute('data-zeichen', rest.length); }
+  _jvZ.liste=rest;
+}
 function jvZustand(){
   var j=$('jarvis'); if(!j) return;
   j.classList.toggle('jv-z-denkt', !!_gLaeuft);
@@ -26190,9 +26384,10 @@ function jvZustand(){
   var war=_jvWar;
   _jvWar={ laeuft:!!_gLaeuft, schritte:schr, n:_gVerlauf.length, kachelnBei:war.kachelnBei };
   if(jarvisOffen()){
-    if(_gLaeuft && !war.laeuft){ jvTon('senden'); jvStill(); }
+    if(_gLaeuft && !war.laeuft){ jvTon('senden'); jvStill(); jvZeichenStart(letzte && letzte.text); }
     else if(_gLaeuft && schr>war.schritte) jvTon('schritt');
     if(!_gLaeuft && war.laeuft && letzte){
+      jvZeichenRaus(letzte.fehler ? '' : (letzte.art==='frage' ? letzte.antwort : (letzte.spruch || letzte.angelegt || letzte.hinweis || '')));
       if(letzte.fehler){ jvTon('fehler'); gehirnStimmung('fehler'); jvVibrieren([40,60,40]); }
       else {
         var warn = letzte.art==='aktion' && (!letzte.vorschlag || (letzte.hinweis && !letzte.angelegt) ||
@@ -26417,6 +26612,42 @@ function jvUhrStop(){ if(_jvUhr){ clearInterval(_jvUhr); _jvUhr=0; } }
 var _jvF={ an:false, raf:0, p:[], w:0, h:0, dpr:1, farbe:null, ziel:null };
 var _jvL={ c:null, ctx:null, S:0, dpr:1, rh:20, p:[], halo:[], jet:[] };
 var JV_NEIGUNG=-0.35, JV_FLACH=0.3;   /* Drehung der Scheibe, Höhe : Breite */
+/* Qualitätsstufe (20.10.2026, aus dem Betrieb: „automatische
+   Qualitätsstufe"): „hoch" für starke Rechner, „mittel" als Start,
+   „niedrig", sobald Bilder ausfallen. Gemessen wird während des Laufens:
+   je 60 Bilder der Anteil der Abstände, die deutlich länger sind als der
+   Bildtakt. Über 25 % → eine Stufe runter (und 20 s nicht wieder hoch);
+   viermal hintereinander unter 3 % → eine Stufe hoch. Die Auflösung des
+   grossen Felds bleibt gleich; es ändern sich Teilchenzahl und die
+   Auflösung der Scheibe. „Voll" und „Sparsam" unter „Persönlichkeit"
+   halten die Stufe fest. */
+var JV_STUFEN={ hoch:{ loch:160000, n:1.3, fn:1.3 }, mittel:{ loch:120000, n:1, fn:1 }, niedrig:{ loch:60000, n:0.5, fn:0.5 } };
+var JV_STUFEN_FOLGE=['niedrig','mittel','hoch'];
+var _jvQ={ stufe:null, proben:[], ruhig:0, sperre:0 };
+function jvQualitaetStart(){
+  var e=jvPersona().effekte;
+  if(e==='voll') return 'hoch';
+  if(e==='sparsam') return 'niedrig';
+  return (navigator.hardwareConcurrency||2)>=8 && innerWidth>=1100 ? 'hoch' : 'mittel';
+}
+function jvQualitaet(){ if(!_jvQ.stufe) _jvQ.stufe=jvQualitaetStart(); return JV_STUFEN[_jvQ.stufe]; }
+function jvQualitaetNeu(){
+  _jvQ.proben=[]; _jvQ.ruhig=0;
+  var j=$('jarvis'); jvQualitaet(); if(j) j.setAttribute('data-effekte', _jvQ.stufe);
+  if(_jvF.an){ jvFeldMass(); jvLochTeilchen(); jvFeldTeilchen(); }
+}
+function jvQualitaetMessen(delta){
+  if(jvPersona().effekte!=='auto' || !(delta>0) || delta>500) return;
+  var P=_jvQ.proben; P.push(delta);
+  if(P.length<60) return;
+  var takt=Math.max(6.9, Math.min.apply(null, P)), lang=0;
+  for(var i=0;i<P.length;i++) if(P[i]>takt*1.6) lang++;
+  _jvQ.proben=[];
+  var n=JV_STUFEN_FOLGE.indexOf(_jvQ.stufe), anteil=lang/60;
+  if(anteil>0.25 && n>0){ _jvQ.stufe=JV_STUFEN_FOLGE[n-1]; _jvQ.sperre=Date.now()+20000; jvQualitaetNeu(); return; }
+  if(anteil<0.03){ _jvQ.ruhig++; if(_jvQ.ruhig>=4 && n<2 && Date.now()>_jvQ.sperre){ _jvQ.stufe=JV_STUFEN_FOLGE[n+1]; jvQualitaetNeu(); } }
+  else _jvQ.ruhig=0;
+}
 function jvFeldMass(){
   var c=$('jarvisFeldchen'); if(!c) return;
   _jvF.w=c.clientWidth; _jvF.h=c.clientHeight;
@@ -26436,7 +26667,7 @@ function jvFeldMass(){
   var L=$('jarvisLoch'); _jvL.c=L;
   if(L){
     _jvL.S=L.clientWidth||300;
-    _jvL.dpr=Math.min(0.9, Math.sqrt(120000/Math.max(1, _jvL.S*_jvL.S)));
+    _jvL.dpr=Math.min(0.9, Math.sqrt(jvQualitaet().loch/Math.max(1, _jvL.S*_jvL.S)));
     L.width=L.height=Math.max(1, Math.round(_jvL.S*_jvL.dpr));
     _jvL.rh=kb && kb.offsetWidth ? kb.offsetWidth/2 : _jvL.S*0.07;
   }
@@ -26452,8 +26683,13 @@ function jvTeilchen(a, innen){
   a.x=null;
   return a;
 }
+function jvFeldTeilchen(){
+  var n=Math.round((_jvF.w<600 ? 40 : 56)*jvQualitaet().fn);
+  _jvF.p=[];
+  for(var i=0;i<n;i++){ var t=jvTeilchen({}, true); t.r=_jvF.ring*0.9+Math.random()*_jvF.weit; _jvF.p.push(t); }
+}
 function jvLochTeilchen(){
-  var R=_jvL.S/2, rh=_jvL.rh, n=_jvL.S<450 ? 110 : 170, i, a;
+  var R=_jvL.S/2, rh=_jvL.rh, n=Math.round((_jvL.S<450 ? 110 : 170)*jvQualitaet().n), i, a;
   _jvL.p=[];
   for(i=0;i<n;i++){
     a={ w:Math.random()*Math.PI*2, c:Math.floor(Math.random()*3), x:null };
@@ -26477,13 +26713,14 @@ function jvFeldStart(){
   _jvL.ctx=_jvL.c && _jvL.c.getContext ? _jvL.c.getContext('2d') : null;
   if(_jvL.ctx && j) j.classList.add('jv-loch-an');
   /* Nach dem Hochfahren steht der Kern an seinem Platz — dann noch einmal messen. */
-  setTimeout(function(){ if(_jvF.an){ jvFeldMass(); jvLochTeilchen(); } }, 1000);
+  setTimeout(function(){ if(_jvF.an){ jvFeldMass(); jvLochTeilchen(); jvZeichenMass(); } }, 1000);
+  jvZeichenMass();
   if(!_jvF.ziel) _jvF.ziel=JV_FARBEN.bunt;
   if(!_jvF.farbe) _jvF.farbe=_jvF.ziel.map(function(x){ return x.slice(); });
-  var n=_jvF.w<600 ? 40 : 56, i;
-  _jvF.p=[];
-  for(i=0;i<n;i++){ var t=jvTeilchen({}, true); t.r=_jvF.ring*0.9+Math.random()*_jvF.weit; _jvF.p.push(t); }
+  var i;
+  jvFeldTeilchen();
   jvLochTeilchen();
+  var j0=$('jarvis'); if(j0) j0.setAttribute('data-effekte', _jvQ.stufe);
   ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,c.width,c.height);
   if(_jvL.ctx){ _jvL.ctx.setTransform(1,0,0,1,0,0); _jvL.ctx.clearRect(0,0,_jvL.c.width,_jvL.c.height); }
   var COS=Math.cos(JV_NEIGUNG), SIN=Math.sin(JV_NEIGUNG);
@@ -26506,13 +26743,19 @@ function jvFeldStart(){
      in jedem Bild kosteten bei CPU ÷4 rund doppelt so viel). Bewegt wird
      nach der vergangenen Zeit (dt), nicht nach Bildern — auf 60 Hz läuft
      jede Leinwand mit 30, auf 120 Hz mit 60 Schritten je Sekunde. */
-  var zug=0, zuletztL=0, zuletztF=0;
+  var zug=0, zuletztL=0, zuletztF=0, zuletztZ=0, vorher=0;
   function bild(jetzt){
     if(!_jvF.an) return;
     _jvF.raf=requestAnimationFrame(bild);
-    if(document.hidden) return;
+    if(document.hidden){ vorher=0; return; }
     jetzt=jetzt||performance.now();
+    if(vorher) jvQualitaetMessen(jetzt-vorher);
+    vorher=jetzt;
     zug^=1;
+    /* Die Buchstaben im selben Takt wie die Scheibe: jede geänderte
+       Leinwand kostet je Bild (gemessen 20.10.2026: eine dritte Leinwand
+       in jedem Bild +8 ms bei CPU ÷4), so sind es höchstens zwei je Bild. */
+    if(zug){ jvZeichenBild(zuletztZ ? Math.min(4, (jetzt-zuletztZ)/16.7) : 1); zuletztZ=jetzt; }
     var dt;
     if(zug && _jvL.ctx){ dt=zuletztL ? Math.min(4, (jetzt-zuletztL)/16.7) : 1; zuletztL=jetzt; }
     else { dt=zuletztF ? Math.min(4, (jetzt-zuletztF)/16.7) : 1; zuletztF=jetzt; }
@@ -26627,7 +26870,7 @@ function jvThema(name){
   if(name==='bunt') j.removeAttribute('data-thema'); else j.setAttribute('data-thema', name);
   _jvF.ziel=JV_FARBEN[name];
 }
-function jvFeldStop(){ _jvF.an=false; if(_jvF.raf) cancelAnimationFrame(_jvF.raf); _jvF.raf=0; var j=$('jarvis'); if(j) j.classList.remove('jv-loch-an'); }
+function jvFeldStop(){ _jvZ.liste=[]; clearInterval(_jvZ.uhr); _jvZ.uhr=0; if(_jvZ.ctx){ _jvZ.ctx.setTransform(1,0,0,1,0,0); _jvZ.ctx.clearRect(0,0,_jvZ.ctx.canvas.width,_jvZ.ctx.canvas.height); _jvZ.leer=true; } _jvF.an=false; if(_jvF.raf) cancelAnimationFrame(_jvF.raf); _jvF.raf=0; var j=$('jarvis'); if(j) j.classList.remove('jv-loch-an'); }
 function jarvisKachel(ansicht){
   var an=gehirnVerfuegbar();
   var heim=(ansicht||currentView)==='home';
@@ -26700,6 +26943,17 @@ function gehirnBezug(text){
   }
   return null;
 }
+/* Formi lernt aus Richtigstellungen (20.10.2026): „Briefkasten" → Hürth.
+   Je Gerät und Person, höchstens 80 Einträge; nur Stichwort und Studio. */
+function gehirnLernKey(){ return 'kf_gehirn_lern_'+((session && session.uid) || 'x'); }
+function gehirnLernSchluessel(was){ return gehirnWoerter(String(was||'').toLowerCase()).map(gehirnStamm).sort().join(' '); }
+function gehirnLernLesen(){ try{ return JSON.parse(localStorage.getItem(gehirnLernKey())||'{}')||{}; }catch(e){ return {}; } }
+function gehirnLernen(was, k){
+  var sch=gehirnLernSchluessel(was); if(!sch || !k) return;
+  var l=gehirnLernLesen(); delete l[sch]; l[sch]=k;
+  var ks=Object.keys(l); while(ks.length>80){ delete l[ks.shift()]; }
+  try{ localStorage.setItem(gehirnLernKey(), JSON.stringify(l)); }catch(e){}
+}
 /* Die letzten Wechsel kurz für die KI: was gesagt wurde, was herauskam.
    Bleibt im Aufruf, wird nirgends gespeichert. */
 function gehirnVerlaufKurz(){
@@ -26714,16 +26968,20 @@ function gehirnVerlaufKurz(){
 function gehirnSchnell(text){
   var roh=String(text||'').trim(), t=roh.toLowerCase(), w=gehirnWoerter(t);
   if(!w.length || roh.length>160) return null;
-  var sk=gehirnStudioIn(t), meine=gehirnMeineKeys();
+  var sk=gehirnStudioIn(t), meine=gehirnMeineKeys(), std=sk||gehirnMeinStudio();
+  var mehrere=gehirnAlleMeineKeys().length>1;
   function mitStudio(o, k){ o.studioKey=k||''; o.studioName=k ? studioName(k) : ''; return o; }
   // Übergabe: „Übergabe: …"
   var ue=/^(übergabe|uebergabe|ubergabe|übergbe|notiz)\s*[:\-–]\s*(.+)$/i.exec(roh);
-  if(ue && (sk || meine[0])) return mitStudio({ typ:'uebergabe', text:ue[2].trim().slice(0,500) }, sk||meine[0]);
+  if(ue && !std && mehrere) return gehirnStudioRueckfrage(roh);
+  if(ue && std) return mitStudio({ typ:'uebergabe', text:gehirnOhneStudio(ue[2].trim(), sk).slice(0,500) }, std);
   /* Etappe 4 (20.10.2026) — was das Gerät sicher erkennt; der Rest geht
      an die KI, die dieselben Typen kennt. */
   if(/^erinner/.test(t)){ var er=gehirnErinnerungLesen(roh); if(er) return { typ:'erinnerung', wann:er.wann, text:er.text }; }
-  if(/^(tagesabschluss|feierabend|schichtende|schicht beenden|ich mach(e)? feierabend|abschluss machen)\b/.test(t) && (sk||meine[0]))
-    return mitStudio({ typ:'abschluss' }, sk||meine[0]);
+  if(/^(tagesabschluss|feierabend|schichtende|schicht beenden|ich mach(e)? feierabend|abschluss machen)\b/.test(t)){
+    if(!std && mehrere) return gehirnStudioRueckfrage(roh);
+    if(std) return mitStudio({ typ:'abschluss' }, std);
+  }
   if(/\b(kann|könnte|koennte)\b.*\b(jemand|wer)\b.*(für mich|fuer mich|übernehmen|uebernehmen|einspringen)|\bschicht\b.*\b(tauschen|abgeben)\b|\bich kann\b.*\bnicht\b.*\b(arbeiten|kommen)\b/.test(t)){
     var td=gehirnTagLesen(t); if(td) return { typ:'tausch', datum:td };
   }
@@ -26732,9 +26990,10 @@ function gehirnSchnell(text){
   // Selbst krank melden: „ich bin (heute|morgen) krank" — andere Tage an die KI
   if(gehirnHat(w, ['krank','krang','erkrankt']) && /\b(ich|bin)\b/.test(t) && !/\b(ist|sind|hat|wer)\b/.test(t)){
     var tag=/übermorgen|uebermorgen/.test(t) ? 2 : (/\bmorgen\b/.test(t) ? 1 : (/\bheute\b/.test(t) || !/\d|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|woche|bis\b/.test(t) ? 0 : -1));
-    if(tag>=0 && (sk||meine[0])){
+    if(tag>=0 && !std && mehrere) return gehirnStudioRueckfrage(roh);
+    if(tag>=0 && std){
       var d=new Date(); d.setDate(d.getDate()+tag);
-      return mitStudio({ typ:'abwesenheit', art:'krank', von:ymd(d), bis:ymd(d), notiz:'' }, sk||meine[0]);
+      return mitStudio({ typ:'abwesenheit', art:'krank', von:ymd(d), bis:ymd(d), notiz:'' }, std);
     }
   }
   // Nachschauen

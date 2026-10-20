@@ -7572,6 +7572,16 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
     if (wann < jetzt + 30000 || wann > jetzt + 7 * 86400000) return null;
     return { typ: 'erinnerung', wann, text };
   }
+  /* Mail aus der App (20.10.2026): nur ein Entwurf — abgeschickt wird
+     erst mit „Senden" unter der Vorschau, über formiMailSenden. */
+  if (r.typ === 'mail') {
+    const an = String(r.an || '').trim().toLowerCase().slice(0, 120);
+    if (!FORMI_MAIL_RE.test(an)) return null;
+    const betreff = kurz(r.betreff, 120) || 'Nachricht aus dem Studio';
+    const text = String(r.text || '').trim().slice(0, 4000);
+    if (!text) return null;
+    return { typ: 'mail', an, betreff, text };
+  }
   if (r.typ === 'tausch') {
     const datum = String(r.datum || '');
     if (!DATUM_RE.test(datum) || datum < heute) return null;
@@ -7605,6 +7615,45 @@ function gehirnKontextText(k) {
   return teile.length ? ' Was es gerade gibt — nutze genau diese Bezeichnungen bei "was"/"geraet": ' + teile.join('; ') + '.' : '';
 }
 
+/* Der Systemtext für gehirnAktion — auch für Mails mit Leitungs-Code
+   (formiMail). Reine Rechnung (__intern). */
+function gehirnAktionSystem(o) {
+  const rolle = o.rolle, namen = o.namen || {}, erlaubt = o.erlaubt || [], heute = o.heute || tagBerlin(new Date());
+  const verwaltet = rolle === 'chef' || rolle === 'leiter';
+  const wochentag = new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin', weekday: 'long' });
+  const ziele = Object.keys(GEHIRN_BEFEHL_ZIELE).filter(z => z !== 'chef' || verwaltet)
+    .map(z => z + ' = ' + GEHIRN_BEFEHL_ZIELE[z]).join('; ');
+  return (
+    'Du steuerst die App StudioChat eines EMS-Studios für eine Person mit der Rolle ' +
+    (rolle === 'chef' ? 'Geschäftsführung' : (rolle === 'leiter' ? 'Studioleitung' : 'Mitarbeiter')) + '. ' +
+    'Heute ist ' + wochentag + ', ' + heute + ' (Europe/Berlin). Wähle eine Aktion und antworte NUR mit JSON. ' +
+    'Enthält der Satz MEHRERE getrennte Aufträge (z. B. "Klo ist sauber und die Handtücher sind leer"), antworte {"befehle":[Aktion, Aktion]} mit höchstens 3 Aktionen. ' +
+    'Mögliche Aktionen: ' +
+    '{"typ":"frage"} — eine Frage zum Studio, zu EMS, zu Abläufen oder zur Bedienung der App (das Studio-Wissen antwortet). Im Zweifel IMMER "frage". ' +
+    '{"typ":"idee","text":"..."} — ein Vorschlag, eine Idee oder ein Anliegen an die Leitung (z. B. "wir bräuchten …", "man könnte …"). ' +
+    '{"typ":"navigation","ziel":"<Schlüssel>","studio":"Studioname oder leer"} — eine Seite öffnen. Ziele: ' + ziele + '. ' +
+    '{"typ":"abfrage","was":"aufgaben"|"dienst"|"abwesend","studio":"Studioname oder leer"} — offene/überfällige Aufgaben, wer heute Dienst hat, wer heute fehlt. ' +
+    '{"typ":"abwesenheit","art":"urlaub"|"krank"|"frei","von":"YYYY-MM-DD","bis":"YYYY-MM-DD","notiz":"..."} — die Person meldet SICH SELBST ab (nur sich selbst). ' +
+    '{"typ":"uebergabe","text":"...","studio":"Studioname oder leer"} — Notiz an die nächste Schicht. ' +
+    '{"typ":"abhaken","bereich":"putzplan"|"aufgabe","was":"Stichwort, z. B. Westen waschen","studio":"Studioname oder leer"} — etwas als erledigt markieren. ' +
+    '{"typ":"defekt","geraet":"Name oder Beschreibung des Geräts","text":"was los ist","studio":"Studioname oder leer"} — ein Gerät als defekt melden. ' +
+    (verwaltet
+      ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]} — etwas, das im Studio erledigt und abgehakt wird. ' +
+        '{"typ":"ankuendigung","text":"...","studios":["Studioname" oder "alle"],"wichtig":true|false} — Information an das Team. '
+      : '') +
+    '{"typ":"erinnerung","wann":"YYYY-MM-DDTHH:MM","text":"woran erinnert wird"} — die Person will SICH SELBST später erinnern lassen (höchstens 7 Tage im Voraus, Uhrzeit Europe/Berlin). ' +
+    '{"typ":"mail","an":"name@beispiel.de","betreff":"...","text":"..."} — eine E-Mail schreiben, NUR wenn eine Mailadresse im Satz steht (die Person sieht sie vorher und schickt sie selbst ab). ' +
+    '{"typ":"tausch","datum":"YYYY-MM-DD"} — die Person kann an einem Tag ihre EIGENE Schicht nicht machen und sucht jemanden, der sie übernimmt. ' +
+    '{"typ":"rueckfrage","frage":"...","optionen":["...","..."]} — NUR wenn klar etwas getan werden soll, aber zwei oder drei Deutungen gleich gut passen; jede Option ist ein kurzer, vollständiger Satz, den man so wieder schicken kann. ' +
+    '{"typ":"keins","hinweis":"..."} — nur wenn etwas getan werden soll, das es nicht gibt oder das andere Personen betrifft (z. B. jemand anderen krankmelden, etwas löschen). ' +
+    'Regeln: Datumsangaben wie "morgen", "bis Freitag" in echte Daten umrechnen. Titel kurz (max. 80 Zeichen). ' +
+    'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '. ' +
+    'Keine Kundennamen und keine Gesundheitsdetails übernehmen — bei "krank" keinen Grund in die Notiz. ' +
+    'Die Person heisst ' + gehirnKurz(o.name, 40) + '. Rechtschreibfehler und Umgangssprache sind normal — lies, was gemeint ist.' +
+    gehirnKontextText(o.kontext) +
+    gehirnVerlaufText(o.verlauf));
+}
+
 /* Der Gesprächsverlauf (20.10.2026, „er kann nicht auf vorherige
    nachrichten eingehen"): die letzten höchstens vier Wechsel aus dem
    Gerät, gekürzt. Nur für diesen Aufruf, nirgends gespeichert. Steht im
@@ -7627,7 +7676,7 @@ function gehirnVerlaufText(v) {
    besteht (z. B. Urlaub in der Vergangenheit) — sonst bekäme man auf
    „Ich will gestern Urlaub" eine Antwort aus dem Wissen; „hinweis" bei
    „keins" mit Begründung; sonst „aktion". */
-const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage', 'erinnerung', 'tausch'];
+const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage', 'erinnerung', 'tausch', 'mail'];
 /* Mehrere Aufträge in einem Satz (20.10.2026): „Klo ist sauber und die
    Handtücher sind leer". Höchstens drei; jeder einzeln geprüft wie
    sonst auch. Fragen und Verbotenes fallen heraus — eine Frage mitten
@@ -7665,37 +7714,7 @@ exports.gehirnAktion = region
       ? Object.keys(namen)
       : (Array.isArray(profil.studioKeys) ? profil.studioKeys : []).filter(k => namen[k]);
     const heute = tagBerlin(new Date());
-    const wochentag = new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin', weekday: 'long' });
-    const ziele = Object.keys(GEHIRN_BEFEHL_ZIELE).filter(z => z !== 'chef' || verwaltet)
-      .map(z => z + ' = ' + GEHIRN_BEFEHL_ZIELE[z]).join('; ');
-    const system =
-      'Du steuerst die App StudioChat eines EMS-Studios für eine Person mit der Rolle ' +
-      (rolle === 'chef' ? 'Geschäftsführung' : (rolle === 'leiter' ? 'Studioleitung' : 'Mitarbeiter')) + '. ' +
-      'Heute ist ' + wochentag + ', ' + heute + ' (Europe/Berlin). Wähle eine Aktion und antworte NUR mit JSON. ' +
-      'Enthält der Satz MEHRERE getrennte Aufträge (z. B. "Klo ist sauber und die Handtücher sind leer"), antworte {"befehle":[Aktion, Aktion]} mit höchstens 3 Aktionen. ' +
-      'Mögliche Aktionen: ' +
-      '{"typ":"frage"} — eine Frage zum Studio, zu EMS, zu Abläufen oder zur Bedienung der App (das Studio-Wissen antwortet). Im Zweifel IMMER "frage". ' +
-      '{"typ":"idee","text":"..."} — ein Vorschlag, eine Idee oder ein Anliegen an die Leitung (z. B. "wir bräuchten …", "man könnte …"). ' +
-      '{"typ":"navigation","ziel":"<Schlüssel>","studio":"Studioname oder leer"} — eine Seite öffnen. Ziele: ' + ziele + '. ' +
-      '{"typ":"abfrage","was":"aufgaben"|"dienst"|"abwesend","studio":"Studioname oder leer"} — offene/überfällige Aufgaben, wer heute Dienst hat, wer heute fehlt. ' +
-      '{"typ":"abwesenheit","art":"urlaub"|"krank"|"frei","von":"YYYY-MM-DD","bis":"YYYY-MM-DD","notiz":"..."} — die Person meldet SICH SELBST ab (nur sich selbst). ' +
-      '{"typ":"uebergabe","text":"...","studio":"Studioname oder leer"} — Notiz an die nächste Schicht. ' +
-      '{"typ":"abhaken","bereich":"putzplan"|"aufgabe","was":"Stichwort, z. B. Westen waschen","studio":"Studioname oder leer"} — etwas als erledigt markieren. ' +
-      '{"typ":"defekt","geraet":"Name oder Beschreibung des Geräts","text":"was los ist","studio":"Studioname oder leer"} — ein Gerät als defekt melden. ' +
-      (verwaltet
-        ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]} — etwas, das im Studio erledigt und abgehakt wird. ' +
-          '{"typ":"ankuendigung","text":"...","studios":["Studioname" oder "alle"],"wichtig":true|false} — Information an das Team. '
-        : '') +
-      '{"typ":"erinnerung","wann":"YYYY-MM-DDTHH:MM","text":"woran erinnert wird"} — die Person will SICH SELBST später erinnern lassen (höchstens 7 Tage im Voraus, Uhrzeit Europe/Berlin). ' +
-      '{"typ":"tausch","datum":"YYYY-MM-DD"} — die Person kann an einem Tag ihre EIGENE Schicht nicht machen und sucht jemanden, der sie übernimmt. ' +
-      '{"typ":"rueckfrage","frage":"...","optionen":["...","..."]} — NUR wenn klar etwas getan werden soll, aber zwei oder drei Deutungen gleich gut passen; jede Option ist ein kurzer, vollständiger Satz, den man so wieder schicken kann. ' +
-      '{"typ":"keins","hinweis":"..."} — nur wenn etwas getan werden soll, das es nicht gibt oder das andere Personen betrifft (z. B. jemand anderen krankmelden, etwas löschen). ' +
-      'Regeln: Datumsangaben wie "morgen", "bis Freitag" in echte Daten umrechnen. Titel kurz (max. 80 Zeichen). ' +
-      'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '. ' +
-      'Keine Kundennamen und keine Gesundheitsdetails übernehmen — bei "krank" keinen Grund in die Notiz. ' +
-      'Die Person heisst ' + gehirnKurz(profil.name, 40) + '. Rechtschreibfehler und Umgangssprache sind normal — lies, was gemeint ist.' +
-      gehirnKontextText((data || {}).kontext) +
-      gehirnVerlaufText((data || {}).verlauf);
+    const system = gehirnAktionSystem({ rolle, namen, erlaubt, name: profil.name, kontext: (data || {}).kontext, verlauf: (data || {}).verlauf, heute });
     let roh = null;
     try { roh = await kiJson(system, auftrag, apiKey); }
     catch (e) {
@@ -7725,6 +7744,206 @@ exports.gehirnAktion = region
       vorschlag: geprueft,
       hinweis: geprueft ? '' : String((roh && roh.hinweis) || '').slice(0, 300)
     };
+  });
+
+/* ── Formi per Mail (20.10.2026) ─────────────────────────────────────
+   Aus dem Betrieb: „nur Mail erstmal falls das möglich ist kostenlos";
+   auf die Rückfragen: ein eigenes Gmail-Postfach, schreiben darf
+   „jeder", Formi antwortet direkt per Mail, aus der App sollen Mails
+   verschickt werden können, und „per Mail Aufgaben etc. anlegen … mit
+   einem Geheim-Code welche die Leitung nur kennt".
+
+   Aufbau (kostenlos): ein Google-Apps-Script im Formi-Postfach
+   (tools/formi-mail/Code.gs) schaut alle 5 Minuten nach neuen Mails und
+   schickt sie hierher (formiMail). Zurück kommt der Antworttext; das
+   Skript antwortet im selben Verlauf. Für das Senden aus der App ruft
+   formiMailSenden das Skript auf (Web-App). Beide Richtungen prüfen
+   denselben Schlüssel FORMI_MAIL_TOKEN (GitHub Secret → functions/.env
+   und Skript-Eigenschaft) — er steht nirgends im Code.
+
+   Grenzen: ohne Code nur Fragen an das Studio-Wissen (keine Teamdaten,
+   kein Kontext aus der App), höchstens 10 Mails je Absender und Tag, 150
+   im ganzen. Mit Code: nur Aufgaben und Ankündigungen; fünf falsche
+   Codes am Tag, dann gilt für heute kein Code mehr. Der Code liegt nur
+   als Hash (scrypt mit Salz) in gehirnGeheim — die Sammlung ist für
+   Clients in beiden Welten zu, und Felder namens hash fehlen im Export. */
+const FORMI_MAIL_RE = /^[^\s@<>(),;:"']{1,64}@[a-z0-9.-]{1,120}\.[a-z]{2,24}$/i;
+const FORMI_MAIL_PRO_ABSENDER = 10;
+const FORMI_MAIL_GESAMT = 150;
+const FORMI_MAIL_SENDEN_PRO_TAG = 20;
+const FORMI_CODE_FEHLVERSUCHE = 5;
+
+/* Den Code aus dem Text nehmen: „Code: …" oder „Geheimcode: …" irgendwo
+   in der Mail. Zurück: Code und der Text ohne die Code-Zeile. Rein
+   rechnerisch (__intern). */
+function formiCodeLesen(text) {
+  const t = String(text || '');
+  const m = /(?:^|\n|\s)(?:geheim[- ]?code|formi[- ]?code|code)\s*[:=]\s*(\S{4,64})/i.exec(t);
+  if (!m) return { code: '', codes: [], text: t.trim() };
+  /* „Code: abc123." — das Satzzeichen kann zum Code gehören oder nicht:
+     beides wird geprüft. */
+  const ohne = m[1].replace(/[.,;!?)]+$/, '');
+  return { code: m[1], codes: ohne && ohne !== m[1] ? [m[1], ohne] : [m[1]], text: (t.slice(0, m.index) + ' ' + t.slice(m.index + m[0].length)).replace(/[ \t]+/g, ' ').trim() };
+}
+/* Zitierte Vorgeschichte und Signaturen abschneiden — Formi soll nur die
+   neue Nachricht lesen. Rein rechnerisch (__intern). */
+function formiMailText(text) {
+  const zeilen = String(text || '').replace(/\r/g, '').split('\n');
+  const aus = [];
+  for (const z of zeilen) {
+    if (/^\s*>/.test(z)) break;
+    if (/^\s*(am|on)\s.+(schrieb|wrote)\s*.*:\s*$/i.test(z)) break;
+    if (/^\s*-{2,}\s*$/.test(z) || /^\s*_{5,}\s*$/.test(z)) break;
+    if (/^\s*(von|from):\s/i.test(z) && aus.length) break;
+    aus.push(z);
+  }
+  return aus.join('\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, 2000);
+}
+function formiCodeHash(code, salz) {
+  return require('crypto').scryptSync(String(code), String(salz), 32).toString('hex');
+}
+function formiGleich(a, b) {
+  const A = Buffer.from(String(a || '')), B = Buffer.from(String(b || ''));
+  return A.length === B.length && A.length > 0 && require('crypto').timingSafeEqual(A, B);
+}
+/* Die Firma für das Postfach: dieselbe Wahl wie bei einem Profil ohne
+   eigene Angabe. */
+async function formiMailFirma() {
+  return firmaVonProfil({ firma: process.env.FORMI_MAIL_FIRMA || 'koerperformen' });
+}
+const FORMI_FUSS = '\n\n— Formi, die Studio-KI von Körperformen\nAntworte einfach auf diese Mail, wenn etwas nicht stimmt oder fehlt.';
+
+/* Aufgaben und Ankündigungen aus einer Mail mit gültigem Code anlegen —
+   in genau der Form, in der die App sie anlegt (gehirnJetztAnlegen). */
+async function formiMailAnlegen(v, firma, namen) {
+  const ref = W(firma);
+  if (v.typ === 'ankuendigung') {
+    const ziel = v.alle ? 'all' : (v.studioKeys[0] || '');
+    if (!ziel) return 'Für welches Studio? Nenn es bitte in der Mail (z. B. „für Hürth") oder schreib „an alle".';
+    const neu = { uid: 'formi-mail', from: 'Formi (Mail)', text: (v.text || v.titel).trim(), target: ziel, ts: Date.now() };
+    if (v.wichtig) { neu.wichtig = true; neu.bestaetigtVon = []; }
+    await ref.collection('announcements').add(neu);
+    return 'Ankündigung gesendet' + (ziel === 'all' ? ' (an alle).' : ' (' + (namen[ziel] || ziel) + ').');
+  }
+  const ziele = v.alle ? Object.keys(namen) : v.studioKeys;
+  if (!ziele.length) return 'Für welches Studio? Nenn es bitte in der Mail (z. B. „für Hürth") oder schreib „für alle".';
+  const due = v.frist ? berlinZuUtc(v.frist, '23:59').getTime() : 0;
+  const batch = db.batch();
+  ziele.forEach(k => {
+    const d = { title: v.titel, desc: v.text || '', done: false, doneBy: null, doneAt: null,
+      createdBy: 'Formi (Mail)', createdByUid: 'formi-mail', ts: Date.now() };
+    if (due) d.due = due;
+    if ((v.schritte || []).length) d.steps = v.schritte.slice(0, 20).map(x => ({ t: String(x).slice(0, 120), d: false }));
+    batch.set(ref.collection('studios').doc(k).collection('todos').doc(), d);
+  });
+  await batch.commit();
+  return 'Aufgabe „' + v.titel + '" angelegt für ' + ziele.map(k => namen[k] || k).join(', ') + (v.frist ? ', fällig am ' + v.frist.split('-').reverse().join('.') : '') + '.';
+}
+
+exports.formiMail = region
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(async (req, res) => {
+    if (req.method !== 'POST') { res.status(405).send(''); return; }
+    const schluessel = process.env.FORMI_MAIL_TOKEN || '';
+    if (!schluessel) { res.status(503).json({ fehler: 'FORMI_MAIL_TOKEN fehlt' }); return; }
+    if (!formiGleich(req.get('x-formi-token'), schluessel)) { res.status(401).json({ fehler: 'Kein Zugriff' }); return; }
+    const b = req.body || {};
+    const von = String(b.von || '').trim().toLowerCase().slice(0, 160);
+    const betreff = String(b.betreff || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+    const roh = formiMailText(b.text);
+    if (!FORMI_MAIL_RE.test(von)) { res.json({ still: true }); return; }
+    let firma;
+    try { firma = await formiMailFirma(); } catch (e) { res.json({ still: true }); return; }
+    if (!gehirnErlaubt(firma)) { res.json({ still: true }); return; }
+    const absenderTag = 'formiMail_' + require('crypto').createHash('sha256').update(von).digest('hex').slice(0, 16);
+    try {
+      await tagesGrenze('formiMail', FORMI_MAIL_GESAMT, firma);
+      await tagesGrenze(absenderTag, FORMI_MAIL_PRO_ABSENDER, firma);
+    } catch (e) { res.json({ still: true }); return; }
+    const inhalt = [betreff && !/^(re|aw|fwd?|wg):?\s*$/i.test(betreff) ? betreff : '', roh].filter(Boolean).join('\n').trim();
+    const { code, codes, text } = formiCodeLesen(inhalt);
+    if (!text) { res.json({ antwort: 'Hi! Schreib mir einfach deine Frage in die Mail – ich antworte dir direkt.' + FORMI_FUSS }); return; }
+
+    if (code) {
+      let fehl = false;
+      try {
+        const g = await W(firma).collection('gehirnGeheim').doc('mail').get();
+        const d = g.exists ? g.data() : null;
+        fehl = !d || !d.hash || !d.salz || !codes.some(c => formiGleich(formiCodeHash(c, d.salz), d.hash));
+      } catch (e) { fehl = true; }
+      if (fehl) {
+        try { await tagesGrenze('formiMailFalsch', FORMI_CODE_FEHLVERSUCHE, firma); }
+        catch (e) { res.json({ still: true }); return; }
+        res.json({ antwort: 'Der Code stimmt nicht – ich habe nichts angelegt.' + FORMI_FUSS }); return;
+      }
+      const namen = await alleStudios(firma);
+      const erlaubt = Object.keys(namen);
+      const heute = tagBerlin(new Date());
+      const system = gehirnAktionSystem({ rolle: 'chef', namen, erlaubt, name: 'Leitung (per Mail)', heute }) +
+        ' Per Mail sind NUR "aufgabe" und "ankuendigung" möglich.';
+      let rohK = null;
+      try { rohK = await kiJson(system, text, process.env.GEMINI_API_KEY || ''); } catch (e) { rohK = null; }
+      const liste = gehirnMehrfach(rohK, x => gehirnBefehlPruefen(x, namen, erlaubt, 'chef', heute)) ||
+        [gehirnBefehlPruefen(rohK && Array.isArray(rohK.befehle) && rohK.befehle.length === 1 ? rohK.befehle[0] : rohK, namen, erlaubt, 'chef', heute)];
+      const saetze = [];
+      for (const v of liste.filter(Boolean)) {
+        if (v.typ !== 'aufgabe' && v.typ !== 'ankuendigung') continue;
+        try { saetze.push(await formiMailAnlegen(v, firma, namen)); }
+        catch (e) { console.error('formiMail anlegen:', e.message); saetze.push('Das hat nicht geklappt: ' + (v.titel || 'Eintrag') + '.'); }
+      }
+      res.json({ antwort: (saetze.length ? 'Erledigt:\n• ' + saetze.join('\n• ') : 'Per Mail mit Code lege ich Aufgaben und Ankündigungen an – daraus konnte ich keine machen. Schreib z. B.: „Aufgabe für Hürth: Wasserspender auffüllen bis Freitag".') + FORMI_FUSS });
+      return;
+    }
+
+    try {
+      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text }, { name: 'Mail ' + von.split('@')[0].slice(0, 40), studio: '' }), firma);
+      const antwort = String(a.antwort || '').trim() || 'Dazu weiß ich noch nichts.';
+      res.json({ antwort: antwort + (a.abgedeckt ? '' : '\n\nDie Frage habe ich an die Leitung weitergegeben – sie ergänzt mein Wissen.') + FORMI_FUSS });
+    } catch (e) {
+      console.error('formiMail Frage:', e && e.message);
+      res.json({ antwort: 'Ich komme gerade nicht an mein Wissen. Probier es bitte später noch einmal.' + FORMI_FUSS });
+    }
+  });
+
+/* Mails aus der App (über Formi). Jeder aus dem Team, höchstens 20 am
+   Tag je Person; unten steht, wer sie geschickt hat. */
+exports.formiMailSenden = region
+  .runWith({ timeoutSeconds: 30, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const { profil } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
+    const url = process.env.FORMI_MAIL_URL || '', token = process.env.FORMI_MAIL_TOKEN || '';
+    if (!url || !token) throw new functions.https.HttpsError('failed-precondition', 'Formi-Mail ist noch nicht eingerichtet (FORMI_MAIL_URL / FORMI_MAIL_TOKEN fehlen) — siehe tools/formi-mail/ANLEITUNG.md.');
+    const v = gehirnBefehlPruefen(Object.assign({ typ: 'mail' }, data || {}), {}, [], profil.role, tagBerlin(new Date()));
+    if (!v) throw new functions.https.HttpsError('invalid-argument', 'Bitte eine gültige Mailadresse und einen Text angeben.');
+    await tagesGrenze('formiSenden_' + context.auth.uid, FORMI_MAIL_SENDEN_PRO_TAG, firma);
+    const name = gehirnKurz(profil.name, 60) || 'jemand aus dem Team';
+    let antwort, json;
+    try {
+      antwort = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, an: v.an, betreff: v.betreff, text: v.text + '\n\n— gesendet von ' + name + ' über Formi (Studio Chat)' }), redirect: 'follow' });
+      json = await antwort.json().catch(() => ({}));
+    } catch (e) {
+      throw new functions.https.HttpsError('unavailable', 'Das Formi-Postfach ist gerade nicht erreichbar.');
+    }
+    if (!antwort.ok || !json.ok) throw new functions.https.HttpsError('internal', 'Senden hat nicht geklappt' + (json && json.fehler ? ': ' + String(json.fehler).slice(0, 120) : '.'));
+    return { ok: true, an: v.an };
+  });
+
+/* Den Leitungs-Code setzen (nur Geschäftsführung). Gespeichert wird nur
+   der Hash; den Code selbst kennt danach niemand ausser der Leitung. */
+exports.formiCodeSetzen = region
+  .runWith({ timeoutSeconds: 30, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const { profil } = await anruferProfil(context);
+    if (profil.role !== 'chef') throw new functions.https.HttpsError('permission-denied', 'Den Mail-Code legt die Geschäftsführung fest.');
+    const firma = await firmaVonProfil(profil);
+    const code = String((data || {}).code || '');
+    if (!/^\S{8,64}$/.test(code)) throw new functions.https.HttpsError('invalid-argument', 'Der Code braucht 8 bis 64 Zeichen ohne Leerzeichen.');
+    const salz = require('crypto').randomBytes(16).toString('hex');
+    await W(firma).collection('gehirnGeheim').doc('mail').set({ hash: formiCodeHash(code, salz), salz, gesetzt: Date.now(), gesetztVon: context.auth.uid });
+    return { ok: true };
   });
 
 /* ── Lagebericht ─────────────────────────────────────────────────────
@@ -7866,7 +8085,7 @@ exports.lageberichtJetzt = region
     return { ok: true };
   });
 
-exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

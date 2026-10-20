@@ -16623,3 +16623,86 @@ höchstens vier, ohne den aktuellen Satz), test-gehirn-aktion (Kürzen,
 nur die letzten vier, Hintergrund-Hinweis).
 **Nicht geprüft:** wie gut das echte Modell den Verlauf nutzt — das
 zeigt erst der Betrieb nach dem Ausrollen der Functions.
+
+## Runde 167 — Formi: Mein Studio, Rückfrage, Lernen, Zeichen, Buchstaben, Effekte, Mail, Wochenbericht (20.10.2026)
+
+Aus dem Betrieb, auf die Verbesserungsliste: „1,2,3,4,5(am besten so
+ganz viele random Buchstaben die sich ins Loch drehen und dann als Sätze
+rauskommen oder so) 6, 7(kann man nicht irgendwie meine Stimme einsprechen
+…), 8, 9(nur Mail erstmal falls das möglich ist kostenlos)". Auf die
+Rückfragen: eigene Stimme „erstmal ohne"; ein neues Gmail-Postfach;
+schreiben darf „jeder", Formi antwortet per Mail, aus der App sollen
+Mails rausgehen, und mit einem „Geheim-Code welche die Leitung nur
+kennt" sollen per Mail Aufgaben angelegt werden.
+
+**1 Mein Studio.** Je Gerät unter „Persönlichkeit". `gehirnMeineKeys()`
+stellt es an den Anfang — damit folgt jede Stelle, die bisher das erste
+Studio der Liste nahm (Longerich auf Semihs Bildschirmfoto), ohne eigene
+Änderung. `gehirnAlleMeineKeys()` ist die rohe Liste.
+
+**2 Rückfrage statt raten.** Ohne Studio im Satz, ohne Mein Studio und
+mit mehreren Studios: Übergabe, Feierabend und „ich bin krank" fragen
+nach — als ganze Sätze zum Antippen (`gehirnStudioRueckfrage`). Zwei
+bestehende Tests (8f, 12f) setzen dafür jetzt Mein Studio, mit dem Zitat;
+die Nachfrage selbst prüft 12h. Passt ein Punkt in mehreren Studios,
+gewinnt erst das Gelernte, dann Mein Studio, sonst steht beides zur Wahl.
+
+**3 Lernen.** Nach dem Abhaken ohne genanntes Studio oder nach einer
+Richtigstellung merkt sich das Gerät Stichwort → Studio
+(`kf_gehirn_lern_<uid>`, höchstens 80, nur Stichwort und Studio). Bewusst
+im Gerät, nicht in Firestore: es ist eine Vorliebe dieser Person, und
+Gehirn-Daten gehören nicht in den nächtlichen Vollexport.
+
+**4** Antwortkarten: Formis Name und ein kleines schwarzes Loch.
+
+**5 Buchstaben.** Erst als einzelne Elemente mit Web Animations gebaut —
+gemessen beim Denken (CPU ÷4, 1440 px) 57 ms je Bild statt 16 ms. Jetzt
+eine Leinwand um den Kern (`#jarvisZeichen`): die Buchstaben des Satzes
+und laufend neue aus ihm drehen sich ins Loch; die Antwort kommt Buchstabe
+für Buchstabe als Satz auf einer Spirale heraus. **Warum im Takt der
+Scheibe:** jede Leinwand, die sich ändert, kostet je Bild (+8 ms, wenn
+eine dritte in jedem Bild läuft); im Takt der Scheibe ändern sich
+höchstens zwei je Bild. Mehrkosten beim Denken jetzt rund 3–4 ms.
+
+**6 Effekte.** Stufen hoch/mittel/niedrig: je 60 Bilder wird gezählt,
+wie viele Abstände deutlich länger als der Bildtakt sind — über 25 %
+eine Stufe runter (20 s Sperre), viermal unter 3 % eine hoch. „Voll" und
+„Sparsam" halten fest. Die Auflösung des grossen Felds bleibt, es ändern
+sich Teilchenzahl und die Auflösung der Scheibe.
+
+**7 Eigene Stimme:** nicht gebaut („erstmal ohne"). Recherchiert:
+kostenlos und für Firmen erlaubt gibt es das nicht; ElevenLabs ab etwa
+5 $/Monat, Google nur auf Freischaltung.
+
+**8 Wochenbericht** im Leitstand (Worker 2.9, `/api/wochenbericht`):
+die Fragen der letzten 7 Tage ohne Antwort aus dem Wissen und die mit
+Daumen runter, ähnliche zusammengefasst (`fragenGruppieren`: gleiche
+Suchwörter, Tippfehler bis Abstand 1, mindestens die Hälfte der Wörter
+der kürzeren Frage). Den Worker rollt Semih aus (Cloudflare-Editor).
+
+**9 Formi per Mail** (kostenlos): Apps Script im Formi-Postfach
+(`tools/formi-mail/Code.gs`, Anleitung daneben), Function `formiMail`
+(Anfrage aus dem Skript), `formiMailSenden` (aus der App, über die
+Web-App des Skripts), `formiCodeSetzen` (nur Chef). Neue Sammlung
+`gehirnGeheim` in BEIDEN Regel-Bäumen, für Clients zu (Regeltest
+gehirn-geheim, 18). Der Code liegt nur als scrypt-Hash mit Salz.
+**Grenzen:** ohne Code nur Fragen an das Studio-Wissen — keine Teamdaten,
+kein App-Kontext; 10 Mails je Absender und 150 gesamt am Tag; mit Code nur
+Aufgaben und Ankündigungen, fünf falsche Codes am Tag sperren Codes für
+den Rest des Tages. Automatische Mails (Abwesenheit, noreply, Newsletter)
+werden nie beantwortet — sonst schreiben sich zwei Automaten endlos an.
+**Warum der Schlüssel im Inhalt der Web-App-Anfrage steht:** Apps-Script-
+Web-Apps sehen keine Kopfzeilen. In Richtung Function steht er im Kopf.
+**Was „jeder" bedeutet:** wer die Adresse kennt, bekommt Antworten aus
+dem Studio-Wissen — steht so in der Anleitung.
+
+**Geprüft:** test-gehirn 12h (Rückfrage ohne KI, Formi-Zeichen, Wahl in
+zwei Studios, Richtigstellung → gelernt → beim nächsten Mal sofort, Mein
+Studio, Effekte, Mail-Code nur gültig, Mail-Entwurf ändern und senden,
+Buchstaben rein, raus und wieder weg, bei „weniger Bewegung" keine),
+Abschnitt 13 misst Mail-Entwurf und Rückfrage; test-gehirn-aktion (Code
+lesen, Mailtext ohne Zitat, Hash, Adressen, Aktion mail, Systemtext,
+formiMail 503/401/still); test-formi-mail-skript (17, mit nachgebautem
+Gmail); Worker-Prüfung 2.9 (45); Regeltest gehirn-geheim.
+**Nicht geprüft:** echtes Gmail, echter Trigger, echte Zustellung; das
+echte Modell mit Mails; die Qualitätsstufe auf echten Geräten.

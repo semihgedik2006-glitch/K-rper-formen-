@@ -219,6 +219,11 @@ jobs:
             # Studio-Gehirn: derselbe Wert wie STUDIO_KEY beim Cloudflare
             # Worker. Fehlt er, sagt der Bereich in der App genau das.
             echo "STUDIO_GEHIRN_KEY="${{ secrets.STUDIO_GEHIRN_KEY }}""
+            # Formi per Mail (20.10.2026): die Adresse der Web-App des
+            # Apps-Scripts im Formi-Postfach und der gemeinsame Schlüssel.
+            # Siehe tools/formi-mail/ANLEITUNG.md.
+            echo "FORMI_MAIL_URL="${{ secrets.FORMI_MAIL_URL }}""
+            echo "FORMI_MAIL_TOKEN="${{ secrets.FORMI_MAIL_TOKEN }}""
           } > functions/.env
 
       # Nur ein Hinweis im Protokoll, kein Abbruch — sonst fällt fehlender
