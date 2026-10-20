@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-tI0JxezvCWQAkJxBH9XgMHUTbx+ZjJcUWjzZgCLV2aY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Sv+vEvE6tdvtq5bqUxp2H55LR2+K6pjjPPQHVc8O4mA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5488,6 +5488,30 @@ body.jv-offen{overflow:hidden}
   transform:translate3d(-110%,0,0);animation:jvStreif .9s ease-out backwards;animation-delay:var(--rein,0ms)}
 @keyframes jvStreif{to{transform:translate3d(110%,0,0)}}
 .jv-eingabe{display:flex;flex-direction:column;gap:var(--s8)}
+/* Gedrückt halten zum Sprechen: der Kern selbst ist der Knopf */
+.jv-halten{position:absolute;inset:8%;z-index:1;border:0;border-radius:var(--r-rund);background:transparent;cursor:pointer;touch-action:none;
+  -webkit-tap-highlight-color:transparent}
+.jv-halten:focus-visible{outline:2px solid var(--jv-cyan);outline-offset:4px}
+.jv-halten[hidden]{display:none}
+.jarvis.jv-z-hoert .jv-kern b{box-shadow:0 0 34px 10px rgba(var(--jv-rgb),.75), 0 0 110px 30px rgba(var(--jv-rgb),.25)}
+.jv-untertitel{margin:0;min-height:0;max-width:34ch;text-align:center;font-size:var(--t-lg);line-height:var(--lh-eng);color:var(--jv-cyan);
+  text-shadow:0 0 18px rgba(var(--jv-rgb),.55);opacity:0;transform:translate3d(0,6px,0);transition:opacity .25s ease, transform .25s ease}
+.jv-untertitel.da{opacity:1;transform:none}
+.jv-untertitel:empty{display:none}
+.jarvis.jv-pegel .jv-eq u,.jarvis.jv-pegel .jv-kern b{animation:none}
+.jv-weck{margin-left:var(--s8);padding:var(--s2) var(--s8);border-radius:var(--r-pille);border:1px solid var(--jv-kante);font-size:var(--t-2xs);
+  color:var(--jv-cyan);letter-spacing:var(--ls-m);animation:jvBlinken 2.4s ease-in-out infinite}
+.jv-weck[hidden]{display:none}
+/* Persönlichkeit und Stimme */
+.jv-persona label,.jv-persona .jv-pz{display:flex;flex-direction:column;gap:var(--s4);font-size:var(--t-xs);color:var(--text-2)}
+.jv-persona input[type=text],.jv-persona select{min-height:44px;font-size:16px}
+.jv-persona .jv-pw{display:flex;flex-wrap:wrap;gap:var(--s6)}
+.jv-persona .jv-pw button{min-height:44px;padding:0 var(--s12);border-radius:var(--r-pille);border:1px solid var(--line-2);background:transparent;
+  color:var(--text-2);font:inherit;font-size:var(--t-sm);cursor:pointer}
+.jv-persona .jv-pw button[aria-pressed="true"]{border-color:var(--jv-cyan);background:rgba(var(--jv-rgb),.16);color:var(--text)}
+.jv-persona .jv-phinweis{margin:0;font-size:var(--t-xs);color:var(--text-3)}
+.jv-persona .jv-pinhalt{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--s12)}
+@media (prefers-reduced-motion:reduce){ .jv-untertitel{transition:none} .jv-weck{animation:none} }
 /* Gespeicherte Gespräche (20.10.2026: „chat verläufe speicherung") */
 .jv-gespraeche{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;gap:var(--s8);padding:var(--s12);
   border:1px solid var(--jv-kante);border-radius:var(--r-md);background:rgba(3,10,20,.985);
@@ -11604,19 +11628,22 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <span class="jv-ecke ul" aria-hidden="true"></span><span class="jv-ecke ur" aria-hidden="true"></span>
     <ol class="jv-log" aria-hidden="true"><li>&gt; Systeme starten</li><li>&gt; Studio-Wissen verbunden</li><li>&gt; App-Steuerung bereit</li><li>&gt; Online</li></ol>
     <div class="jv-kopf">
-      <span class="jv-titel"><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Studio-Gehirn</span></span>
+      <span class="jv-titel"><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Studio-Gehirn</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span></span>
       <span class="jv-kopf-knoepfe">
+        <button type="button" class="icon-btn" id="jarvisPersonaBtn" data-ikon="regler" aria-expanded="false" aria-controls="jarvisPersona" aria-label="Persönlichkeit und Stimme" title="Persönlichkeit und Stimme"></button>
         <button type="button" class="icon-btn" id="jarvisGespraecheBtn" data-ikon="uhr" aria-expanded="false" aria-controls="jarvisGespraeche" aria-label="Gespeicherte Gespräche" title="Gespeicherte Gespräche"></button>
         <button type="button" class="icon-btn" id="jarvisTon" data-ikon="ton" aria-pressed="true" aria-label="Ton und Stimme" title="Ton und Stimme an/aus"></button>
         <button type="button" class="icon-btn" id="jarvisZu" data-ikon="schliessen" aria-label="Schließen"></button>
       </span>
     </div>
     <div class="jv-links">
-      <div class="jv-kern" id="jarvisKern" aria-hidden="true">
-        <svg class="jv-skala" viewBox="0 0 200 200"><circle cx="100" cy="100" r="96"/></svg>
-        <svg class="jv-boegen" viewBox="0 0 200 200"><circle class="b1" cx="100" cy="100" r="88"/><circle class="b2" cx="100" cy="100" r="80"/></svg>
+      <div class="jv-kern" id="jarvisKern">
+        <svg class="jv-skala" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="96"/></svg>
+        <svg class="jv-boegen" viewBox="0 0 200 200" aria-hidden="true"><circle class="b1" cx="100" cy="100" r="88"/><circle class="b2" cx="100" cy="100" r="80"/></svg>
         <i></i><i></i><i></i><s></s><s></s><s></s><b></b>
+        <button type="button" class="jv-halten" id="jarvisHalten" hidden aria-label="Gedrückt halten und sprechen" title="Gedrückt halten und sprechen — oder einmal tippen"></button>
       </div>
+      <p class="jv-untertitel" id="jarvisUntertitel" aria-live="polite"></p>
       <span class="jv-paket" aria-hidden="true"><i></i><i></i><i></i></span>
       <div class="jv-eq" aria-hidden="true"><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div>
       <p class="jv-status" id="jarvisStatus" role="status">Bereit. Frag mich — oder sag, was ich tun soll.</p>
@@ -11631,6 +11658,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <div class="jv-rechts">
       <div class="jv-verlauf gehirn-verlauf" id="jarvisVerlauf"></div>
       <div class="jv-gespraeche" id="jarvisGespraeche" hidden role="region" aria-label="Gespeicherte Gespräche"></div>
+      <div class="jv-gespraeche jv-persona" id="jarvisPersona" hidden role="region" aria-label="Persönlichkeit und Stimme"></div>
       <div class="jv-eingabe">
         <label class="nur-vorlesen" for="jarvisFeld">Frage oder Auftrag</label>
         <textarea class="inp" id="jarvisFeld" rows="2" maxlength="2000"
@@ -19598,6 +19626,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-20-jarvis-stimme', datum:'20.10.2026', titel:'Jarvis hört zu und spricht wie ein Mensch', wo:'home', punkte:[
+    'Halte den leuchtenden Kern gedrückt und sprich – loslassen, und Jarvis legt los. Am Rechner geht das auch mit der Leertaste im leeren Feld. Was du sagst, steht live als Untertitel unter dem Kern.',
+    'Am Rechner tanzt der Equalizer mit deiner echten Stimme. Und wenn Jarvis antwortet, pulsiert der Kern im Takt.',
+    'Neu oben im Fenster: „Persönlichkeit". Gib Jarvis einen Namen, wähle locker oder sachlich und eine Stimme – auf Wunsch eine menschliche Stimme statt der vom Handy.',
+    'Freihändig: Schalte „Hey Jarvis" ein, dann reicht ein „Hey Jarvis, öffne den Putzplan" – solange das Fenster offen ist.' ] },
   { id:'2026-10-20-jarvis-briefing', datum:'20.10.2026', titel:'Jarvis: Briefing, Kacheln und mehrere Aufträge auf einmal', wo:'home', punkte:[
     'Beim ersten Öffnen am Tag begrüsst dich Jarvis mit einem kurzen Briefing: wer Dienst hat, was offen und überfällig ist, was fehlt oder defekt ist – auf Wunsch vorgelesen.',
     'Neben dem Kern stehen jetzt Kacheln „Heute im Studio". Ein Tipp holt Aufgaben, Putzplan, Dienst, Material oder Geräte als Mini-Fenster ins Gespräch.',
@@ -24338,7 +24371,7 @@ function jvLeerHTML(){
     return '<li style="--gm:'+c.farbe+';--gm-rgb:'+c.rgb+'">'+ikon(c.ikon)+'<span>'+esc(x[1])+'</span></li>';
   }).join('') : '<li style="--gm:#5FE1FF;--gm-rgb:95,225,255">'+ikon('hakenKreis')+'<span>Alles ruhig — nichts offen.</span></li>')+'</ul>';
   return '<div class="jv-leer"><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
-    '<p class="jv-unter">Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
+    '<p class="jv-unter">Ich bin '+esc(jvPersona().name)+'. Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
     '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){ return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'">'+esc(t)+'</button>'; }).join('')+'</div></div>';
 }
 function gehirnZeichnenIn(box, tippen){
@@ -24576,8 +24609,62 @@ function gehirnWeitere(liste){
 }
 /* Ton der Antworten: „locker" (Standard) oder „sachlich" — je Gerät
    wählbar (Persönlichkeit, Etappe 3). */
-function gehirnTonfall(){
-  try{ var p=JSON.parse(localStorage.getItem('kf_jv_persona')||'{}'); return p.ton==='sachlich' ? 'sachlich' : 'locker'; }catch(e){ return 'locker'; }
+function gehirnTonfall(){ return jvPersona().ton==='sachlich' ? 'sachlich' : 'locker'; }
+/* ── Persönlichkeit (20.10.2026) ────────────────────────────────────
+   Je Gerät: Name, Tonfall, Stimme (menschlich über Google oder die des
+   Geräts), Weckwort. Aus dem Betrieb: „wie ein echter mensch als
+   assistent" — und auf die Ideenliste „mach alles davon". */
+var JV_PERSONA_STD={ name:'Jarvis', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false };
+var JV_PROFI_STIMMEN=[['de-DE-Chirp3-HD-Aoede','Aoede (weiblich)'],['de-DE-Chirp3-HD-Kore','Kore (weiblich)'],['de-DE-Chirp3-HD-Charon','Charon (männlich)'],['de-DE-Chirp3-HD-Puck','Puck (männlich)']];
+function jvPersona(){
+  var p={}; try{ p=JSON.parse(localStorage.getItem('kf_jv_persona')||'{}')||{}; }catch(e){}
+  var r=Object.assign({}, JV_PERSONA_STD, p);
+  r.name=String(r.name||'').replace(/[^\wäöüÄÖÜß \-]/g,'').trim().slice(0,20) || 'Jarvis';
+  return r;
+}
+function jvPersonaSetzen(aenderung){
+  var p=Object.assign(jvPersona(), aenderung);
+  try{ localStorage.setItem('kf_jv_persona', JSON.stringify(p)); }catch(e){}
+  jvPersonaAnwenden();
+  return p;
+}
+function jvPersonaAnwenden(){
+  var t=$('jarvisTitel'); if(t) t.textContent=jvPersona().name;
+  jvWeckPruefen();
+}
+function jvPersonaAuf(auf){
+  var pn=$('jarvisPersona'), b=$('jarvisPersonaBtn'); if(!pn) return;
+  if(auf===undefined) auf=pn.hidden;
+  pn.hidden=!auf; if(b) b.setAttribute('aria-expanded', auf ? 'true' : 'false');
+  if(!auf) return;
+  jvGesprAuf(false);
+  var p=jvPersona();
+  var geraete=(window.speechSynthesis && window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : []).filter(function(x){ return /^de/i.test(x.lang); });
+  var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+  function wahl(feld, wert, text){ return '<button type="button" data-jvp="'+feld+'" data-jvw="'+esc(wert)+'" aria-pressed="'+(p[feld]===wert ? 'true' : 'false')+'">'+esc(text)+'</button>'; }
+  pn.innerHTML='<h2>Persönlichkeit und Stimme</h2><div class="jv-pinhalt">'+
+    '<label>Name<input type="text" class="inp" id="jvPName" maxlength="20" value="'+esc(p.name)+'" autocomplete="off"></label>'+
+    '<div class="jv-pz">Tonfall<div class="jv-pw" role="group" aria-label="Tonfall">'+wahl('ton','locker','Locker')+wahl('ton','sachlich','Sachlich')+'</div></div>'+
+    '<div class="jv-pz">Stimme<div class="jv-pw" role="group" aria-label="Stimme">'+wahl('stimme','profi','Menschlich')+wahl('stimme','geraet','Vom Gerät')+'</div>'+
+    (_jvProfiAus && p.stimme==='profi' ? '<p class="jv-phinweis">Die menschliche Stimme ist gerade nicht eingerichtet — ich spreche mit der Stimme des Geräts.</p>' : '')+'</div>'+
+    (p.stimme==='profi'
+      ? '<label>Welche Stimme<select class="inp" id="jvPProfi">'+JV_PROFI_STIMMEN.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===p.profiStimme ? ' selected' : '')+'>'+esc(x[1])+'</option>'; }).join('')+'</select></label>'
+      : '<label>Stimme des Geräts<select class="inp" id="jvPGeraet"><option value="">automatisch</option>'+geraete.map(function(x){ return '<option value="'+esc(x.name)+'"'+(x.name===p.geraetStimme ? ' selected' : '')+'>'+esc(x.name)+'</option>'; }).join('')+'</select></label>')+
+    (SR ? '<div class="jv-pz">Freihändig<div class="jv-pw">'+'<button type="button" id="jvPWeck" aria-pressed="'+(p.weckwort ? 'true' : 'false')+'">„Hey '+esc(p.name)+'" hören</button></div>'+
+      '<p class="jv-phinweis">Solange dieses Fenster offen ist, hört das Mikrofon auf „Hey '+esc(p.name)+'". Kostet etwas Akku; geht im Chrome-Browser.</p></div>' : '')+
+    '</div><div class="jv-gk"><button type="button" class="btn btn-primary btn-sm" id="jvPProbe">Probehören</button><button type="button" class="btn btn-ghost btn-sm" id="jvPZu">Fertig</button></div>';
+  var n=$('jvPName'); if(n) n.addEventListener('change', function(){ jvPersonaSetzen({ name:n.value }); });
+  pn.querySelectorAll('[data-jvp]').forEach(function(x){ x.addEventListener('click', function(){
+    var a={}; a[x.getAttribute('data-jvp')]=x.getAttribute('data-jvw'); jvPersonaSetzen(a); jvPersonaAuf(true);
+  }); });
+  var pr=$('jvPProfi'); if(pr) pr.addEventListener('change', function(){ jvPersonaSetzen({ profiStimme:pr.value }); });
+  var ge=$('jvPGeraet'); if(ge) ge.addEventListener('change', function(){ jvPersonaSetzen({ geraetStimme:ge.value }); });
+  var wk=$('jvPWeck'); if(wk) wk.addEventListener('click', function(){ jvPersonaSetzen({ weckwort:!jvPersona().weckwort }); jvPersonaAuf(true); });
+  var pb=$('jvPProbe'); if(pb) pb.addEventListener('click', function(){
+    var q=jvPersona(); if(n && n.value) q=jvPersonaSetzen({ name:n.value });
+    var vorher=_jvTonAn; _jvTonAn=true; jvSprechen('Hi'+(gehirnVorname() ? ' '+gehirnVorname() : '')+', ich bin '+q.name+'. So klinge ich.'); _jvTonAn=vorher;
+  });
+  var zu=$('jvPZu'); if(zu) zu.addEventListener('click', function(){ if(n && n.value) jvPersonaSetzen({ name:n.value }); jvPersonaAuf(false); });
 }
 /* Am Ende kleben: die neueste Karte wächst noch (Schritte, Einblendung).
    Solange niemand selbst nach oben scrollt, bleibt der Verlauf unten. */
@@ -25047,6 +25134,7 @@ function jvGesprAuf(auf){
   if(auf===undefined) auf=p.hidden;
   p.hidden=!auf; if(b) b.setAttribute('aria-expanded', auf ? 'true' : 'false');
   if(!auf) return;
+  var pn=$('jarvisPersona'); if(pn && !pn.hidden) jvPersonaAuf(false);
   gehirnVerlaufSichern();
   var l=gehirnGesprLesen();
   p.innerHTML='<h2>Gespeicherte Gespräche</h2>'+
@@ -25458,21 +25546,8 @@ function gehirnMicBinden(knopfId, feldId){
   if(!SR){ btn.style.display='none'; return; }
   btn.style.display='';
   btn.addEventListener('click', function(){
-    if(_gHoert){ try{ _gHoert.stop(); }catch(e){} return; }
-    var r; try{ r=new SR(); }catch(e){ toast('Spracheingabe geht auf diesem Gerät nicht.', true); return; }
-    r.lang='de-DE'; r.interimResults=true; r.continuous=false;
-    var f=$(feldId||'gehirnFeld'), vorher=(f.value||'').trim();
-    r.onresult=function(ev){
-      var t=''; for(var k=0;k<ev.results.length;k++) t+=ev.results[k][0].transcript;
-      f.value=(vorher ? vorher+' ' : '')+t;
-    };
-    r.onerror=function(ev){ if(ev && ev.error==='not-allowed') toast('Bitte das Mikrofon für die App erlauben.', true); };
-    r.onend=function(){ _gHoert=null; btn.classList.remove('hoert'); btn.setAttribute('aria-pressed','false'); btn.lastChild.textContent='Sprechen'; jarvisStatus();
-      /* Im Fenster schickt das Ende des Sprechens gleich ab — wie bei
-         einem Sprachassistenten. Auf der Seite bleibt Zeit zum Prüfen. */
-      if(feldId==='jarvisFeld' && (f.value||'').trim() && (f.value||'').trim()!==vorher) gehirnSenden('auto', 'jarvisFeld'); };
-    _gHoert=r; btn.classList.add('hoert'); btn.setAttribute('aria-pressed','true'); btn.lastChild.textContent='Zuhören …'; jarvisStatus();
-    try{ r.start(); }catch(e){ r.onend(); }
+    if(_gHoert){ gehirnHoerenStop(); return; }
+    gehirnHoerenStart(feldId||'gehirnFeld', btn);
   });
 }
 
@@ -25524,6 +25599,7 @@ function jarvisAuf(){
   gehirnZeichnen();
   jvWerte(); jvUhrStart(); jvFeldStart();
   jvKachelnZeichnen(); gehirnLageLaden();
+  jvPersonaAnwenden(); jvPersonaAuf(false);
   jvTon('auf');
   setTimeout(jvBriefingSprechen, 1300);
   requestAnimationFrame(function(){ j.classList.add('da'); var f=$('jarvisFeld'); if(f && !('ontouchstart' in window)) f.focus(); gehirnNachUnten(); });
@@ -25532,6 +25608,7 @@ function jarvisAuf(){
 function jarvisZu(){
   var j=$('jarvis'); if(!j || j.hidden) return;
   jvTon('zu'); jvStill();
+  jvWeckStop(); gehirnHoerenStop();
   jvUhrStop(); jvFeldStop();
   j.classList.remove('da', 'jv-boot'); j.hidden=true;
   document.body.classList.remove('jv-offen');
@@ -25553,6 +25630,8 @@ function jarvisBinden(){
   if(_jvGebunden) return; _jvGebunden=true;
   var zu=$('jarvisZu'); if(zu) zu.addEventListener('click', jarvisZu);
   var gb=$('jarvisGespraecheBtn'); if(gb) gb.addEventListener('click', function(){ jvGesprAuf(); });
+  var pb=$('jarvisPersonaBtn'); if(pb) pb.addEventListener('click', function(){ jvPersonaAuf(); });
+  jvHaltenBinden();
   var ton=$('jarvisTon'); if(ton){ jvTonKnopf(); ton.addEventListener('click', function(){
     _jvTonAn=!_jvTonAn; try{ localStorage.setItem('kf_jv_ton', _jvTonAn ? '1' : '0'); }catch(e){}
     if(!_jvTonAn) jvStill(); else jvTon('schritt');
@@ -25622,21 +25701,57 @@ function jvTon(art){
 }
 function jvStill(){
   try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+  _jvSprechNr++;
+  if(_jvAudio){ try{ _jvAudio.pause(); }catch(e){} _jvAudio=null; }
+  jvPegelStop();
   _jvSpricht=false;
   var j=$('jarvis'); if(j) j.classList.remove('jv-z-spricht');
 }
 /* Vorlesen ohne Warnzeile und ohne Zeichen, die als Wort gesprochen
    würden; höchstens ~600 Zeichen. */
+/* Erst die menschliche Stimme (Google über den Worker), sonst die des
+   Geräts. Ist die menschliche nicht eingerichtet, merkt sich die App das
+   für diese Sitzung und fragt nicht bei jedem Satz neu. */
+var _jvProfiAus='', _jvSprechNr=0, _jvAudio=null;
 function jvSprechen(text){
-  if(!_jvTonAn || !jarvisOffen() || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+  if(!_jvTonAn || !jarvisOffen()) return;
   var t=String(text||'').split(/\n\n\u26a0/)[0].replace(/[*_#>•]/g,' ').replace(/\s+/g,' ').trim().slice(0, 600);
   if(!t) return;
+  jvStill();
+  var p=jvPersona(), nr=++_jvSprechNr;
+  if(p.stimme==='profi' && !_jvProfiAus){
+    _jvSpricht=true; jvZustand();
+    firebase.app().functions(KONFIG.region).httpsCallable('gehirnStimme')({ text:t, stimme:p.profiStimme }).then(function(r){
+      if(nr!==_jvSprechNr || !jarvisOffen()) return;
+      var d=(r && r.data) || {};
+      if(!d.audio){ _jvProfiAus=d.grund||'aus'; return jvGeraetSprechen(t, p, nr); }
+      jvAudioAbspielen(d.audio, nr);
+    }).catch(function(){ if(nr===_jvSprechNr){ _jvProfiAus='fehler'; jvGeraetSprechen(t, p, nr); } });
+    return;
+  }
+  jvGeraetSprechen(t, p, nr);
+}
+function jvAudioAbspielen(b64, nr){
+  try{
+    var a=new Audio('data:audio/mpeg;base64,'+b64);
+    _jvAudio=a;
+    a.onended=a.onerror=function(){ if(_jvAudio===a){ _jvAudio=null; _jvSpricht=false; jvPegelStop(); jvZustand(); } };
+    _jvSpricht=true; jvZustand();
+    var spiel=a.play();
+    if(spiel && spiel.catch) spiel.catch(function(){ if(_jvAudio===a){ _jvAudio=null; _jvSpricht=false; jvZustand(); } });
+    jvPegelVonAudio(a);
+  }catch(e){ _jvSpricht=false; jvZustand(); }
+}
+function jvGeraetSprechen(t, p, nr){
+  if(nr!==_jvSprechNr || !window.speechSynthesis || !window.SpeechSynthesisUtterance){ _jvSpricht=false; jvZustand(); return; }
   try{
     window.speechSynthesis.cancel();
     var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=1.05; u.pitch=1;
     var stimmen=window.speechSynthesis.getVoices()||[];
     var de=stimmen.filter(function(x){ return /^de/i.test(x.lang); });
-    if(de.length) u.voice=de.filter(function(x){ return /google|neural|natural|anna|markus|helena|katja|conrad/i.test(x.name); })[0] || de[0];
+    var gewaehlt=p && p.geraetStimme ? de.filter(function(x){ return x.name===p.geraetStimme; })[0] : null;
+    if(gewaehlt) u.voice=gewaehlt;
+    else if(de.length) u.voice=de.filter(function(x){ return /google|neural|natural|anna|markus|helena|katja|conrad/i.test(x.name); })[0] || de[0];
     var kern=document.querySelector('#jarvisKern b');
     u.onstart=function(){ _jvSpricht=true; jvZustand(); };
     u.onend=u.onerror=function(){ _jvSpricht=false; jvZustand(); };
@@ -25652,10 +25767,15 @@ function jvZustand(){
   j.classList.toggle('jv-z-hoert', !!_gHoert && !_gLaeuft);
   j.classList.toggle('jv-z-spricht', !!_jvSpricht && !_gLaeuft);
   var letzte=_gVerlauf[_gVerlauf.length-1], schr=(letzte && letzte.schritte || []).length;
+  /* Erst den neuen Stand merken, DANN reagieren: jvSprechen ruft wieder
+     jvZustand auf — mit dem alten Stand hielte es den Übergang für neu
+     und spräche endlos (Stapelüberlauf, gefunden 20.10.2026). */
+  var war=_jvWar;
+  _jvWar={ laeuft:!!_gLaeuft, schritte:schr, n:_gVerlauf.length, kachelnBei:war.kachelnBei };
   if(jarvisOffen()){
-    if(_gLaeuft && !_jvWar.laeuft){ jvTon('senden'); jvStill(); }
-    else if(_gLaeuft && schr>_jvWar.schritte) jvTon('schritt');
-    if(!_gLaeuft && _jvWar.laeuft && letzte){
+    if(_gLaeuft && !war.laeuft){ jvTon('senden'); jvStill(); }
+    else if(_gLaeuft && schr>war.schritte) jvTon('schritt');
+    if(!_gLaeuft && war.laeuft && letzte){
       if(letzte.fehler){ jvTon('fehler'); gehirnStimmung('fehler'); jvVibrieren([40,60,40]); }
       else {
         var warn = letzte.art==='aktion' && (!letzte.vorschlag || (letzte.hinweis && !letzte.angelegt) ||
@@ -25667,7 +25787,8 @@ function jvZustand(){
       }
     }
   }
-  _jvWar={ laeuft:!!_gLaeuft, schritte:schr, n:_gVerlauf.length, kachelnBei:_jvWar.kachelnBei };
+  if(war.laeuft && !_gLaeuft) setTimeout(jvWeckPruefen, 400);
+  if(_gLaeuft && _jvWeck) jvWeckStop();
   jvWerte();
   if(jarvisOffen() && !_gLaeuft && _jvWar.kachelnBei!==_gVerlauf.length){ _jvWar.kachelnBei=_gVerlauf.length; jvKachelnZeichnen(); }
 }
@@ -25678,6 +25799,171 @@ function jvWerte(){
   if(zahl) zahl.textContent=String(_gVerlauf.filter(function(v){ return !v.laeuft && !v.fehler; }).length);
   if(netz) netz.textContent=navigator.onLine===false ? 'offline' : 'online';
 }
+/* ── Pegel (20.10.2026) ────────────────────────────────────────────
+   „Wellenform reagiert auf deine echte Stimme": beim Zuhören das
+   Mikrofon, beim Sprechen die menschliche Stimme. Je Bild werden nur
+   transform-Werte geschrieben (14 Balken, eine Kugel); gelesen wird der
+   Analyser, nicht das Layout. Ohne Erlaubnis oder Gerät: die
+   CSS-Animation wie bisher. */
+var _jvPegel={ raf:0, analyser:null, strom:null, quelle:null, ctx:null };
+function jvPegelStart(analyser){
+  jvPegelStop(true);
+  var j=$('jarvis'); if(!j || gehirnWenigBewegung()) return;
+  _jvPegel.analyser=analyser;
+  var balken=[].slice.call(document.querySelectorAll('#jarvis .jv-eq u')), kugel=document.querySelector('#jarvisKern b');
+  var daten=new Uint8Array(analyser.frequencyBinCount);
+  j.classList.add('jv-pegel');
+  function bild(){
+    if(!_jvPegel.analyser) return;
+    analyser.getByteFrequencyData(daten);
+    var schritt=Math.max(1, Math.floor(daten.length/2/balken.length)), summe=0;
+    for(var i=0;i<balken.length;i++){
+      var w=daten[i*schritt]/255; summe+=w;
+      balken[i].style.transform='scaleY('+(0.12+w*0.88).toFixed(3)+')';
+    }
+    if(kugel) kugel.style.transform='scale('+(1+Math.min(0.35, summe/balken.length*0.5)).toFixed(3)+')';
+    _jvPegel.raf=requestAnimationFrame(bild);
+  }
+  _jvPegel.raf=requestAnimationFrame(bild);
+}
+function jvPegelStop(nurAnzeige){
+  if(_jvPegel.raf) cancelAnimationFrame(_jvPegel.raf);
+  _jvPegel.raf=0; _jvPegel.analyser=null;
+  var j=$('jarvis'); if(j) j.classList.remove('jv-pegel');
+  [].forEach.call(document.querySelectorAll('#jarvis .jv-eq u, #jarvisKern b'), function(x){ x.style.transform=''; });
+  if(nurAnzeige) return;
+  if(_jvPegel.strom){ try{ _jvPegel.strom.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} _jvPegel.strom=null; }
+}
+function jvPegelKontext(){
+  var AC=window.AudioContext || window.webkitAudioContext; if(!AC) return null;
+  if(!_jvPegel.ctx) _jvPegel.ctx=new AC();
+  if(_jvPegel.ctx.state==='suspended' && _jvPegel.ctx.resume) _jvPegel.ctx.resume();
+  return _jvPegel.ctx;
+}
+function jvPegelVomMikro(){
+  /* Nur am Rechner: auf Handys teilen sich Spracherkennung und Mikrofon
+     schlecht, und die Erkennung geht vor. */
+  if(('ontouchstart' in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+  navigator.mediaDevices.getUserMedia({ audio:true }).then(function(strom){
+    if(!_gHoert){ strom.getTracks().forEach(function(t){ t.stop(); }); return; }
+    var c=jvPegelKontext(); if(!c){ strom.getTracks().forEach(function(t){ t.stop(); }); return; }
+    var an=c.createAnalyser(); an.fftSize=64; an.smoothingTimeConstant=0.6;
+    c.createMediaStreamSource(strom).connect(an);
+    _jvPegel.strom=strom;
+    jvPegelStart(an);
+  }).catch(function(){});
+}
+function jvPegelVonAudio(audio){
+  try{
+    var c=jvPegelKontext(); if(!c) return;
+    var an=c.createAnalyser(); an.fftSize=64; an.smoothingTimeConstant=0.55;
+    var q=c.createMediaElementSource(audio); q.connect(an); an.connect(c.destination);
+    jvPegelStart(an);
+  }catch(e){}
+}
+
+/* ── Zuhören: Knopf, Kern gedrückt halten, Leertaste, Weckwort ──────
+   Eine Erkennung zur Zeit. Im Fenster schickt das Ende des Sprechens
+   ab; auf der Seite bleibt Zeit zum Prüfen. Live-Untertitel unter dem
+   Kern. */
+function gehirnHoerenStart(feldId, btn){
+  var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR || _gHoert) return false;
+  jvWeckStop();
+  jvStill();
+  var r; try{ r=new SR(); }catch(e){ toast('Spracheingabe geht auf diesem Gerät nicht.', true); return false; }
+  r.lang='de-DE'; r.interimResults=true; r.continuous=false;
+  var f=$(feldId||'gehirnFeld'), vorher=(f.value||'').trim(), ut=$('jarvisUntertitel');
+  r.onresult=function(ev){
+    var t=''; for(var k=0;k<ev.results.length;k++) t+=ev.results[k][0].transcript;
+    f.value=(vorher ? vorher+' ' : '')+t;
+    if(ut && feldId==='jarvisFeld'){ ut.textContent=t; ut.classList.add('da'); }
+  };
+  r.onerror=function(ev){ if(ev && ev.error==='not-allowed') toast('Bitte das Mikrofon für die App erlauben.', true); };
+  r.onend=function(){
+    _gHoert=null; jvPegelStop();
+    if(btn){ btn.classList.remove('hoert'); btn.setAttribute('aria-pressed','false'); if(btn.lastChild) btn.lastChild.textContent='Sprechen'; }
+    if(ut){ ut.classList.remove('da'); setTimeout(function(){ if(!_gHoert) ut.textContent=''; }, 300); }
+    jarvisStatus();
+    if(feldId==='jarvisFeld' && (f.value||'').trim() && (f.value||'').trim()!==vorher) gehirnSenden('auto', 'jarvisFeld');
+    setTimeout(jvWeckPruefen, 600);
+  };
+  _gHoert=r;
+  if(btn){ btn.classList.add('hoert'); btn.setAttribute('aria-pressed','true'); if(btn.lastChild) btn.lastChild.textContent='Zuhören …'; }
+  jvTon('schritt'); jarvisStatus();
+  try{ r.start(); }catch(e){ r.onend(); return false; }
+  if(feldId==='jarvisFeld') jvPegelVomMikro();
+  return true;
+}
+function gehirnHoerenStop(){ if(_gHoert){ try{ _gHoert.stop(); }catch(e){} } }
+var _jvHaltenAb=0, _jvLeertaste=false;
+function jvHaltenBinden(){
+  var h=$('jarvisHalten'); if(!h || h._gebunden) return; h._gebunden=true;
+  var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+  h.hidden=!SR; if(!SR) return;
+  h.addEventListener('pointerdown', function(e){
+    e.preventDefault();
+    if(_gHoert){ gehirnHoerenStop(); _jvHaltenAb=0; return; }
+    if(gehirnHoerenStart('jarvisFeld', $('jarvisMic'))) _jvHaltenAb=Date.now();
+  });
+  /* Kurz getippt: hört weiter, bis man aufhört zu sprechen. Gehalten:
+     loslassen beendet. */
+  function los(){ if(_jvHaltenAb && Date.now()-_jvHaltenAb>450) gehirnHoerenStop(); _jvHaltenAb=0; }
+  h.addEventListener('pointerup', los); h.addEventListener('pointercancel', los); h.addEventListener('pointerleave', los);
+  h.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); if(_gHoert) gehirnHoerenStop(); else gehirnHoerenStart('jarvisFeld', $('jarvisMic')); } });
+  /* Leertaste im leeren Feld: halten und sprechen. */
+  var f=$('jarvisFeld');
+  if(f){
+    f.addEventListener('keydown', function(e){
+      if(e.key===' ' && !e.repeat && !f.value && !_gHoert){ e.preventDefault(); if(gehirnHoerenStart('jarvisFeld', $('jarvisMic'))) _jvLeertaste=true; }
+      else if(e.key===' ' && _jvLeertaste){ e.preventDefault(); }
+    });
+    f.addEventListener('keyup', function(e){ if(e.key===' ' && _jvLeertaste){ _jvLeertaste=false; gehirnHoerenStop(); } });
+  }
+}
+
+/* ── Weckwort (20.10.2026: „Hey Jarvis") ─────────────────────────────
+   Nur wenn eingeschaltet, nur solange das Fenster offen ist, nur mit
+   Spracherkennung (Chrome). Was nach dem Namen gesagt wird, geht ab;
+   nur der Name → kurzer Ton, der nächste Satz geht ab. */
+var _jvWeck=null, _jvWeckWartet=false;
+function jvWeckPruefen(){
+  var an=jvPersona().weckwort && jarvisOffen() && !_gHoert && !_gLaeuft;
+  var w=$('jarvisWeck'); if(w){ w.hidden=!jvPersona().weckwort || !jarvisOffen(); w.textContent='hört auf „Hey '+jvPersona().name+'"'; }
+  if(an) jvWeckStart(); else if(!jvPersona().weckwort || !jarvisOffen()) jvWeckStop();
+}
+function jvWeckStart(){
+  var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR || _jvWeck || _gHoert) return;
+  var name=jvPersona().name.toLowerCase();
+  var muster=new RegExp('(?:^|\\s)(?:hey|hei|hallo|ok|okay)?\\s*'+name.replace(/[^a-zäöüß0-9]/g,'.?')+'[,.!?]?\\s*(.*)$', 'i');
+  var r; try{ r=new SR(); }catch(e){ return; }
+  r.lang='de-DE'; r.interimResults=false; r.continuous=true;
+  r.onresult=function(ev){
+    for(var k=ev.resultIndex;k<ev.results.length;k++){
+      if(!ev.results[k].isFinal) continue;
+      var t=String(ev.results[k][0].transcript||'').trim();
+      if(_jvWeckWartet){ _jvWeckWartet=false; if(t) jvWeckSenden(t); continue; }
+      var m=muster.exec(t);
+      if(!m) continue;
+      var rest=(m[1]||'').trim();
+      if(rest.length>2) jvWeckSenden(rest);
+      else { _jvWeckWartet=true; jvTon('schritt'); gehirnStimmung('ok'); }
+    }
+  };
+  r.onerror=function(){};
+  r.onend=function(){ if(_jvWeck===r){ _jvWeck=null; setTimeout(jvWeckPruefen, 500); } };
+  _jvWeck=r;
+  try{ r.start(); }catch(e){ _jvWeck=null; }
+}
+function jvWeckStop(){ var r=_jvWeck; _jvWeck=null; _jvWeckWartet=false; if(r){ try{ r.stop(); }catch(e){} } }
+function jvWeckSenden(text){
+  var f=$('jarvisFeld'); if(!f || _gLaeuft) return;
+  f.value=text;
+  var ut=$('jarvisUntertitel'); if(ut){ ut.textContent=text; ut.classList.add('da'); setTimeout(function(){ ut.classList.remove('da'); ut.textContent=''; }, 1200); }
+  gehirnSenden('auto', 'jarvisFeld');
+}
+
 var _jvUhr=0;
 function jvUhrStart(){
   jvUhrStop();
