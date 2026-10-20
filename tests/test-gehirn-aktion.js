@@ -34,6 +34,22 @@ console.log('── Daumen prüfen (20.10.2026) ──');
   pruefe('ohne gültige Nachricht → nichts', BP({ wert: 1 }) === null && BP({ wert: 1, nachricht: -3 }) === null && BP({ wert: 1, nachricht: 1.5 }) === null);
   pruefe('ein Name aus dem Aufruf wird nicht übernommen', !('name' in BP({ wert: 1, nachricht: 7, name: 'Chef' })));
 }
+console.log('── Rückfrage, mehrere Aufträge, Ton (20.10.2026) ──');
+{
+  const NAM = { 'studio-1': 'Hürth' };
+  const RF = (r) => B(r, NAM, ['studio-1'], 'mitarbeiter', '2026-10-20');
+  const rf = RF({ typ: 'rueckfrage', frage: 'Meinst du den Putzplan oder die Aufgaben?', optionen: ['Öffne den Putzplan', 'Öffne die Aufgaben', 'Öffne den Putzplan', 'x'.repeat(200)] });
+  pruefe('Rückfrage: Optionen ohne Doppel, höchstens 3, gekürzt', rf && rf.typ === 'rueckfrage' && rf.optionen.length === 3 && rf.optionen[2].length === 80, rf);
+  pruefe('Rückfrage mit nur einer Option → nichts', RF({ typ: 'rueckfrage', frage: 'Was?', optionen: ['A'] }) === null);
+  const M = __intern.gehirnMehrfach;
+  const zwei = M({ befehle: [{ typ: 'abhaken', bereich: 'putzplan', was: 'Klo' }, { typ: 'frage' }, { typ: 'abhaken', bereich: 'putzplan', was: 'Handtücher' }, { typ: 'abhaken', bereich: 'putzplan', was: 'Spiegel' }] }, RF);
+  pruefe('mehrere Aufträge: höchstens 3 gelesen, die Frage fällt heraus', zwei && zwei.length === 2 && zwei[1].was === 'Handtücher', zwei);
+  pruefe('nur ein gültiger Auftrag → kein Mehrfach', M({ befehle: [{ typ: 'abhaken', bereich: 'putzplan', was: 'Klo' }, { typ: 'keins' }] }, RF) === null);
+  pruefe('ohne befehle → kein Mehrfach', M({ typ: 'abhaken' }, RF) === null);
+  const A = __intern.gehirnAuftrag;
+  pruefe('Vorname und Ton gehen an das Gehirn, Ton nur locker/sachlich', A({ text: 'x', ton: 'sachlich' }, { name: 'Lea Meier' }).body.vorname === 'Lea' &&
+    A({ text: 'x', ton: 'sachlich' }, { name: 'Lea' }).body.ton === 'sachlich' && A({ text: 'x', ton: 'frech' }, { name: 'Lea' }).body.ton === 'locker');
+}
 console.log('── Vorschlag prüfen ──');
 pruefe('unbekannter Typ → kein Vorschlag', P({ typ: 'keins', titel: 'x' }, NAMEN, ALLE, 'chef', HEUTE) === null);
 pruefe('Aufgabe ohne Titel → kein Vorschlag', P({ typ: 'aufgabe', titel: '  ' }, NAMEN, ALLE, 'chef', HEUTE) === null);

@@ -16285,3 +16285,72 @@ Abschnitt 13 misst Ton-Knopf, Vorschläge und Daumen ≥ 44 × 44 bei
 Nachrichtennummer ohne Doppelzeile, nur eigene Antwort bewertbar,
 Umentscheidung, Übungsstapel mit Doppel-, Markdown- und Unsinnsschutz,
 Export ohne Absender, nur mit ADMIN_KEY, Leitstand-Skript gültig).
+
+
+## Runde 161 — Jarvis Etappe 1: Mini-Fenster, lockerer Ton, Gespräche, Taste J (20.10.2026)
+
+Aus dem Betrieb:
+
+> „jetzt will ich noch ein schritt weiter, das ai interface soll
+> interaktiv werden und statt die seite putzplan direkt zu öffnen zum
+> beispiel sowas als mini fenster in der ki seite zu öffnen und
+> verschiedene farben und viel mehhr motion und einen lockereren ton …
+> und mini interaktionen und chat verläufe speicherung … und denk dir
+> selber auch noch 20 weitere sachen aus"
+
+Auf die Liste mit 20 Ideen: „mach alles davon". Gebaut wird in vier
+Etappen; das hier ist die erste.
+
+**Mini-Fenster.** „Öffne den Putzplan" (Schnellweg oder KI) holt den
+Putzplan als Fenster ins Gespräch, statt die Seite zu wechseln — ebenso
+Aufgaben, Dienst heute, Material und Geräte. Abhaken schreibt über
+`gehirnAbhakenSchreiben`, also genau wie bisher mit den Rechten der
+Person. Wer ausdrücklich die Seite will („ganz", „Seite", „wechsle",
+„geh zu"), bekommt sie wie vorher; im Fenster führt „Ganz öffnen ›" hin.
+Ohne genanntes Studio nimmt das Fenster das erste mit Offenem (für die
+Leitung), höchstens sechs Studio-Knöpfe zum Wechseln.
+
+**Warum nicht nur ein Link:** Der Wunsch war ausdrücklich, im Gespräch
+zu bleiben. Gelesen wird aus dem Speicher der App, wo er schon da ist
+(Putzplan, Aufgaben, Material), sonst einmal mit `get()`; es entsteht
+kein zweiter Schreibweg.
+
+**Farben.** Jedes Fenster trägt seine Farbe als `--gm` (Kante,
+Leuchten, Symbol); die Schrift bleibt `--text`, damit der Kontrast in
+Hell und Dunkel stimmt. Grün/Bernstein/Rot nur für Status (Haken,
+Wartung, defekt, überfällig).
+
+**Rückgängig mit Countdown.** 10 Sekunden, der Balken läuft per
+`transform` leer, danach ist der Knopf weg. Der Balken ist
+`pointer-events:none` — sonst traf „Rückgängig" nur 41 px hoch
+(gemessen, Abschnitt 13).
+
+**Lockerer Ton.** Feste Sätze in Abwandlungen mit Vornamen
+(`gehirnSpruch`); die Schritte darunter bleiben sachlich. Der Satz unter
+dem Kern wird je Eintrag einmal gewählt — sonst wechselte er bei jedem
+Neuzeichnen.
+
+**Gespräche.** Auf dem Gerät, je Konto (`kf_gehirn_gespr_<uid>`),
+höchstens 30, als Abschrift (Frage + Antwort bzw. was getan wurde) —
+keine Putzplan-Daten. Bewusst nicht in Firestore: der nächtliche
+Vollexport unter `sicherung/` soll keine Gehirn-Fragen enthalten. Das
+letzte Gespräch der letzten 12 Stunden steht beim Öffnen wieder da
+(still, ohne Einblenden).
+
+**Kern-Stimmung, Vibration, Taste J.** Kurzes Leuchten in
+`--ok`/`--warm`/`--danger`, nur als Meldung. Vibration nur auf
+Touch-Geräten und nur bei eingeschaltetem Ton. J steht in der
+Tastenkürzel-Liste (änderbar wie die anderen).
+
+**Leistung.** Beim Denken lag 1920 px mit allen Ebenen bei 9,2 ms je
+Bild. Equalizer und Kugel stehen beim Denken jetzt still, der
+gestrichelte Ring dreht sich nicht mehr. Die Messung schwingt 1 s ein,
+bevor sie zählt (der Wechsel in „denkt" ist einmalig, gemessen wird der
+Dauerzustand) — die Grenze bleibt 8,3 ms.
+
+**Geändert in Tests, mit Zitat:** 8c, 8f und 12 erwarteten den
+Seitenwechsel; sie prüfen jetzt das Mini-Fenster und „Ganz öffnen" —
+Grundlage ist der zitierte Wunsch. „geh zum putzplan" prüft, dass die
+Seite weiter erreichbar ist.
+
+**Nicht geprüft:** Vibration und Klang nur als Aufruf, echte Geräte nicht.

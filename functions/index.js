@@ -7013,7 +7013,12 @@ function gehirnAuftrag(daten, profil) {
   const p = profil || {};
   const studio = String(p.studio || (Array.isArray(p.studios) && p.studios[0]) || '').slice(0, 60);
   const name = String(p.name || 'Unbekannt').slice(0, 60);
-  const body = art === 'idee' ? { text, name, studio } : { frage: text, name, studio };
+  /* Vorname und Ton (20.10.2026, „einen lockereren ton das die ki
+     lebendig wirkt"): der Ton kommt vom Gerät (wählbar), nur „sachlich"
+     oder „locker". */
+  const vorname = name.split(' ')[0].slice(0, 30);
+  const ton = (daten || {}).ton === 'sachlich' ? 'sachlich' : 'locker';
+  const body = art === 'idee' ? { text, name, studio } : { frage: text, name, studio, vorname, ton };
   return { art, text, body };
 }
 
@@ -7067,6 +7072,10 @@ async function gehirnFrageAusfuehren(auftrag, firma) {
       antwort: String(json.antwort || '').slice(0, 6000),
       abgedeckt: !!json.abgedeckt,
       offen: json.offenId || null,
+      /* „Woher weiß ich das?" und „Gelernt!" (20.10.2026) */
+      quellen: (Array.isArray(json.quellen) ? json.quellen : []).slice(0, 3).map(q => ({
+        thema: String((q && q.thema) || '').slice(0, 120), auszug: String((q && q.auszug) || '').slice(0, 400), gelernt: !!(q && q.gelernt)
+      })).filter(q => q.thema),
       /* Für den Daumen unter der Antwort (20.10.2026). */
       nachricht: Number(json.nachrichtId) > 0 ? Number(json.nachrichtId) : null
     };
@@ -7330,6 +7339,15 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
   const mitStudio = (o, k) => Object.assign(o, { studioKey: k, studioName: k ? ((namen || {})[k] || k) : '' });
 
   if (r.typ === 'frage') return { typ: 'frage' };
+  /* Rückfrage (20.10.2026): zwei, drei Deutungen zum Antippen. Die
+     Optionen gehen als neuer Satz durch denselben Weg — nichts wird
+     dadurch direkt ausgeführt. */
+  if (r.typ === 'rueckfrage') {
+    const frage = kurz(r.frage, 160);
+    const optionen = [];
+    (Array.isArray(r.optionen) ? r.optionen : []).forEach(o => { const t = kurz(o, 80); if (t && optionen.indexOf(t) < 0 && optionen.length < 3) optionen.push(t); });
+    return frage && optionen.length >= 2 ? { typ: 'rueckfrage', frage, optionen } : null;
+  }
   if (r.typ === 'idee') {
     const text = String(r.text || '').trim().slice(0, 2000);
     return text ? { typ: 'idee', text } : { typ: 'frage' };
@@ -7417,7 +7435,17 @@ function gehirnKontextText(k) {
    besteht (z. B. Urlaub in der Vergangenheit) — sonst bekäme man auf
    „Ich will gestern Urlaub" eine Antwort aus dem Wissen; „hinweis" bei
    „keins" mit Begründung; sonst „aktion". */
-const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee'];
+const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage'];
+/* Mehrere Aufträge in einem Satz (20.10.2026): „Klo ist sauber und die
+   Handtücher sind leer". Höchstens drei; jeder einzeln geprüft wie
+   sonst auch. Fragen und Verbotenes fallen heraus — eine Frage mitten
+   in einer Aufzählung beantwortet das Gehirn nicht nebenbei. Rein
+   rechnerisch (__intern). */
+function gehirnMehrfach(roh, pruefe) {
+  if (!roh || !Array.isArray(roh.befehle)) return null;
+  const liste = roh.befehle.slice(0, 3).map(pruefe).filter(x => x && x.typ !== 'frage' && x.typ !== 'verboten' && x.typ !== 'rueckfrage');
+  return liste.length >= 2 ? liste : null;
+}
 function gehirnWeg(roh, geprueft) {
   if (geprueft) return geprueft.typ === 'frage' ? 'frage' : 'aktion';
   const t = roh && roh.typ;
@@ -7451,7 +7479,8 @@ exports.gehirnAktion = region
     const system =
       'Du steuerst die App StudioChat eines EMS-Studios für eine Person mit der Rolle ' +
       (rolle === 'chef' ? 'Geschäftsführung' : (rolle === 'leiter' ? 'Studioleitung' : 'Mitarbeiter')) + '. ' +
-      'Heute ist ' + wochentag + ', ' + heute + ' (Europe/Berlin). Wähle GENAU EINE Aktion und antworte NUR mit JSON. ' +
+      'Heute ist ' + wochentag + ', ' + heute + ' (Europe/Berlin). Wähle eine Aktion und antworte NUR mit JSON. ' +
+      'Enthält der Satz MEHRERE getrennte Aufträge (z. B. "Klo ist sauber und die Handtücher sind leer"), antworte {"befehle":[Aktion, Aktion]} mit höchstens 3 Aktionen. ' +
       'Mögliche Aktionen: ' +
       '{"typ":"frage"} — eine Frage zum Studio, zu EMS, zu Abläufen oder zur Bedienung der App (das Studio-Wissen antwortet). Im Zweifel IMMER "frage". ' +
       '{"typ":"idee","text":"..."} — ein Vorschlag, eine Idee oder ein Anliegen an die Leitung (z. B. "wir bräuchten …", "man könnte …"). ' +
@@ -7465,6 +7494,7 @@ exports.gehirnAktion = region
         ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]} — etwas, das im Studio erledigt und abgehakt wird. ' +
           '{"typ":"ankuendigung","text":"...","studios":["Studioname" oder "alle"],"wichtig":true|false} — Information an das Team. '
         : '') +
+      '{"typ":"rueckfrage","frage":"...","optionen":["...","..."]} — NUR wenn klar etwas getan werden soll, aber zwei oder drei Deutungen gleich gut passen; jede Option ist ein kurzer, vollständiger Satz, den man so wieder schicken kann. ' +
       '{"typ":"keins","hinweis":"..."} — nur wenn etwas getan werden soll, das es nicht gibt oder das andere Personen betrifft (z. B. jemand anderen krankmelden, etwas löschen). ' +
       'Regeln: Datumsangaben wie "morgen", "bis Freitag" in echte Daten umrechnen. Titel kurz (max. 80 Zeichen). ' +
       'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '. ' +
@@ -7479,6 +7509,9 @@ exports.gehirnAktion = region
          sie. Lieber eine Antwort aus dem Wissen als „hat nicht geklappt". */
       console.error('gehirnAktion (wird Frage):', e.message);
     }
+    const mehrere = gehirnMehrfach(roh, x => gehirnBefehlPruefen(x, namen, erlaubt, rolle, heute));
+    if (mehrere) return { vorschlag: mehrere[0], weitere: mehrere.slice(1), hinweis: '' };
+    if (roh && Array.isArray(roh.befehle) && roh.befehle.length === 1) roh = roh.befehle[0];
     const geprueft = gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute);
     if (geprueft && geprueft.typ === 'verboten') return { vorschlag: null, hinweis: geprueft.hinweis };
     const weg = gehirnWeg(roh, geprueft);
@@ -7635,7 +7668,7 @@ exports.lageberichtJetzt = region
     return { ok: true };
   });
 
-exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, gehirnMehrfach, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
