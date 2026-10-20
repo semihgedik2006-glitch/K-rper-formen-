@@ -16157,3 +16157,131 @@ nächsten Bild.
 **Geprüft:** test-gehirn, neue Prüfung bei 320/390/820/1280/1440/1920 px
 mit sieben Antworten: Verlauf scrollt, keine Karte gestaucht, die
 neueste steht ganz im Bild. Vor der Änderung schlug sie fehl.
+
+
+## Runde 160 — Jarvis als HUD mit Ton, Daumen und Übungsstapel (20.10.2026)
+
+Aus dem Betrieb, zwei Wünsche in einer Nachricht:
+
+> „gibts noch irgendwas was wir ausbessern können oder muss ich jetzt
+> hoffen das ich und das team 500 verschiedene fragen stellt unnd ich auf
+> 100 verschiedene auf die es keine antwort gab antworte ? Das design
+> würde ich ggerne mehr ausbauen und es richtig abgespacet machen … wie
+> in einer jarvis umgebung … mit geilen animationen und viel motion"
+
+Auf die Rückfragen: Training „Beides", Aussehen „Iron-Man-HUD mit
+Bewegung und Leben", und nachgeschoben: „jarvis soll ton haben auch".
+
+### Training: Gold, ohne 100 Fragen selbst zu beantworten (Worker 2.7)
+
+**Übungsstapel.** Die KI nimmt einen Wissenseintrag und schreibt zwei
+Fragen, wie das Team sie tippen würde (locker, eine gern mit
+Tippfehler), mit einer Antwort NUR aus diesem Eintrag. Semih wischt sie
+im Leitstand unter „Üben" durch: J = passt, N = weg, Frage und Antwort
+vorher korrigierbar (Strg+Enter). Zuerst kommen Einträge dran, zu denen
+es noch keine Übung gibt. Doppelte Fragen werden nicht gespeichert,
+unlesbare KI-Antworten zählen als Fehler statt als leere Karte.
+
+**Warum prüfen statt schreiben:** Eine fertige Antwort zu prüfen dauert
+Sekunden, eine zu schreiben Minuten. Das Gold bleibt menschlich
+geprüft; die KI liefert nur den Entwurf.
+
+**Daumen.** Unter jeder Antwort im Studio Chat „Passt" und „Stimmt
+nicht". Passt = geprüftes Beispiel. Stimmt nicht = offene Frage an
+Semih, wie „falsch" bei WhatsApp (gibt es schon eine offene zur selben
+Nachricht, wird sie wiederverwendet). Bewerten darf nur, wer gefragt
+hat: Der Worker vergleicht den Absender der Nachricht mit dem Namen,
+den die Function aus dem Profil nimmt — nicht aus dem Aufruf. Dafür
+gibt `/api/frage` jetzt die Nummer der Nachricht zurück.
+
+**Zählweise geändert:** Gold aus offenen Fragen zählt jetzt am Wissen
+(Quelle „Offene Frage N"), nicht mehr an der Tabelle `offen`. Die räumt
+der nächtliche Lauf nach 180 Tagen auf — der Zähler wäre rückwärts
+gelaufen. Eine Antwort mit Daumen zählt nicht zusätzlich als „aus dem
+Wissen"; eine mit Daumen runter gar nicht.
+
+**Export.** „Trainingsdaten herunterladen" im Leitstand liefert alle
+Paare als JSONL (`gold: true/false`, Quelle), ohne Absender — das
+Futter fürs spätere Nachtrainieren.
+
+Die Tabellen `uebung` und `bewertung` legt der Worker selbst an (beim
+ersten Aufruf); an der D1-Konsole ist nichts zu tun.
+
+### Das Fenster als HUD
+
+Eigene Farbwelt (Cyan auf Nachtblau, auch im hellen Modus): Das Fenster
+setzt die Farb-Marken der App für sich neu, damit Karten, Knöpfe und
+Felder ohne Sonderregeln mitziehen. Dazu Partikelfeld (canvas),
+Raster, Abtastlinie, Eckwinkel, Kern mit Skala und Bögen, Wellen und
+Equalizer je Zustand (hört / denkt / spricht), Uhr und Messwerte am
+Rechner, Startprotokoll beim Öffnen, Begrüssung mit vier Vorschlägen
+im leeren Verlauf, Hologramm-Einblendung mit Lichtstreif.
+
+**Ton.** Kurze Klänge aus Web Audio (keine Dateien): Öffnen, Senden,
+je Schritt, Fertig, Fehler, Schliessen. Die Antwort auf eine Frage liest
+die Sprachausgabe des Geräts vor — ohne die Warnzeile „Noch nicht
+geprüft", höchstens ~600 Zeichen. Ein Knopf oben schaltet beides,
+gemerkt je Gerät, Standard an. Die Übergänge erkennt `jvZustand` aus
+dem, was ohnehin gezeichnet wird — kein zweiter Weg durch
+`gehirnSenden`.
+
+### Hologramme im Gespräch
+
+Nachgeschoben (20.10.2026): „mehr animationen für den chat und so
+hologramme dinger". Die Frage wird „gesendet" (kommt von rechts, ein
+Funkstrahl läuft Richtung Kern), die Antwort projiziert sich (erst eine
+Lichtlinie, dann klappt sie auf und flackert einmal wie ein Hologramm,
+das sich fängt), dazu ein Lichtstreif. Schritte kommen einzeln von
+links, der Haken springt auf. Solange gedacht wird, tastet eine Linie
+die Karte ab und am Rechner laufen Datenpakete vom Kern zum Gespräch.
+Die Antwort schreibt sich mit leuchtendem Cursor. Karten tragen
+Eckwinkel und feine Zeilen — als Hintergrund-Ebenen, also ohne Kosten
+je Bild. Unter dem Kern flimmert ein Projektor.
+
+Alles davon bewegt nur transform/opacity, läuft einmal beim
+Hereinkommen (über `.rein`) oder nur während des Denkens, und steht bei
+„weniger Bewegung" still.
+
+### Gefunden: das Flackern hinter „sieht sehr buggy aus"
+
+Der Verlauf wird bei jedem Schritt komplett neu geschrieben. Die
+Einblend-Animation stand an `.gehirn-frage`/`.gehirn-antwort` und den
+Schritten selbst — sie lief also bei jedem Schritt für ALLE Karten neu
+an. Jetzt bekommt nur, was jünger als 0,9 s ist, die Klasse `.rein`,
+und `--rein` (negativ, die schon vergangene Zeit) setzt die Bewegung
+nach dem Neuschreiben dort fort, wo sie war. Test: nach der zweiten
+Frage hat die erste Karte keine Animation, die neue `jvHolo`.
+
+### Gemessen, nicht angesehen: Arbeit je Bild
+
+CPU ÷4, Hauptfaden-Zeit je gezeichnetem Bild (Grenze 8,3 ms):
+
+- Erste Fassung: 1440 px beim Denken **21,9 ms**, 1920 px **25,8 ms**.
+  Zerlegt nach Ebenen: das Partikelfeld (ein Strich je Paar; beim
+  Denken zogen alle Punkte zum Kern, also fast jedes Paar nah).
+- Linien in drei Helligkeiten gesammelt (drei Striche je Bild),
+  beim Denken kreisen die Punkte auf eigenen Bahnen statt zu klumpen:
+  Skript 3,9 → 0,6 ms — aber die Fläche blieb teuer.
+- Das Feld malt jetzt in reduzierter Auflösung, höchstens ~200 000
+  Bildpunkte gleich welcher Bildschirm (die Punkte werden dadurch weich
+  wie Leuchten). Das Raster steht still (als wandernde Ebene über den
+  ganzen Schirm kostete es Bilder). Ergebnis siehe Test 12b; alle drei
+  Grössen unter 8,3 ms.
+
+**Nicht geprüft:** echte Geräte, echte Grafikkarte — hier rechnet
+Chromium ohne Bildschirm in Software, das ist eher pessimistisch.
+Klang und Stimme sind im Test nur als Aufrufe gezählt (Oszillatoren,
+gesprochener Text), nicht gehört. Die Stimme hängt am Gerät: ohne
+deutsche Stimme liest der Browser mit seiner Standardstimme.
+
+**Geprüft:** test-gehirn (Abschnitt 12b neu: Begrüssung und
+Vorschläge, Hochfahren, Partikelfeld nur bei offenem Fenster, Uhr,
+Ton-Knopf gemerkt, Zustand „denkt", Klänge und Vorlesen ohne
+Warnzeile, Daumen ruft `gehirnBewerten` mit Nummer, Einblenden genau
+einmal, Leistung je Bild, „weniger Bewegung" ohne jede Bewegung;
+Abschnitt 13 misst Ton-Knopf, Vorschläge und Daumen ≥ 44 × 44 bei
+320 bis 1920 px, normal und kompakt), test-gehirn-aktion
+(`gehirnBewertungPruefen`), Worker-Prüfung mit echter SQLite (27:
+Nachrichtennummer ohne Doppelzeile, nur eigene Antwort bewertbar,
+Umentscheidung, Übungsstapel mit Doppel-, Markdown- und Unsinnsschutz,
+Export ohne Absender, nur mit ADMIN_KEY, Leitstand-Skript gültig).

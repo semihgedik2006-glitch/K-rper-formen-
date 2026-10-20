@@ -26,6 +26,14 @@ const NAMEN = { 'studio-1': 'Hürth', 'studio-2': 'Brühl', 'studio-3': 'Köln-P
 const ALLE = Object.keys(NAMEN);
 const HEUTE = '2026-10-18';
 
+console.log('── Daumen prüfen (20.10.2026) ──');
+{
+  const BP = __intern.gehirnBewertungPruefen;
+  pruefe('hoch und runter gehen durch', BP({ wert: 1, nachricht: 7 }).wert === 1 && BP({ wert: -1, nachricht: '7' }).nachricht === 7);
+  pruefe('anderer Wert → nichts', BP({ wert: 5, nachricht: 7 }) === null && BP({ wert: 0, nachricht: 7 }) === null);
+  pruefe('ohne gültige Nachricht → nichts', BP({ wert: 1 }) === null && BP({ wert: 1, nachricht: -3 }) === null && BP({ wert: 1, nachricht: 1.5 }) === null);
+  pruefe('ein Name aus dem Aufruf wird nicht übernommen', !('name' in BP({ wert: 1, nachricht: 7, name: 'Chef' })));
+}
 console.log('── Vorschlag prüfen ──');
 pruefe('unbekannter Typ → kein Vorschlag', P({ typ: 'keins', titel: 'x' }, NAMEN, ALLE, 'chef', HEUTE) === null);
 pruefe('Aufgabe ohne Titel → kein Vorschlag', P({ typ: 'aufgabe', titel: '  ' }, NAMEN, ALLE, 'chef', HEUTE) === null);
