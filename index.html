@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-YqQ3DsXiWCiV6v9fn8LOMe8IKJYoHm0MLry4LMByiSY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-AclFn/cEin3RzZ/grC07kUuRSh+LSthwfmFiXe4iVVE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5337,9 +5337,12 @@ body.neu .bereich-zeile:has(#jarvisStart:not([hidden])) .bereich-kopf{flex-basis
   --akz-rgb:95,225,255;--akz2-rgb:122,168,255;--accent-glow:rgba(95,225,255,.3);--on-accent:#02131D;
   --brand:linear-gradient(135deg,#7AA8FF 0%,#5FE1FF 100%);
   position:fixed;inset:0;z-index:900;display:flex;justify-content:center;overflow:hidden;
-  background:radial-gradient(90% 70% at 50% 38%, rgba(var(--jv-t1),.14) 0%, transparent 60%),
-    radial-gradient(70% 60% at 0% 100%, rgba(var(--jv-t2),.16) 0%, transparent 60%),
-    radial-gradient(70% 60% at 100% 0%, rgba(var(--jv-t3),.12) 0%, transparent 60%), var(--jv-nacht);
+  /* Nebel wie auf den Vorlagen (20.10.2026): farbige Wolken, die von
+     den Ecken ausgehen und auslaufen. */
+  background:radial-gradient(60% 50% at 88% 8%, rgba(var(--jv-t3),.26) 0%, transparent 70%),
+    radial-gradient(45% 40% at 70% 0%, rgba(255,150,90,.10) 0%, transparent 70%),
+    radial-gradient(70% 60% at 0% 100%, rgba(var(--jv-t2),.22) 0%, transparent 65%),
+    radial-gradient(80% 60% at 30% 40%, rgba(var(--jv-t1),.10) 0%, transparent 60%), var(--jv-nacht);
   color:var(--text);opacity:0;transition:opacity .25s ease}
 .jarvis.da{opacity:1}
 .jarvis[hidden]{display:none}
@@ -5351,17 +5354,21 @@ body.neu .bereich-zeile:has(#jarvisStart:not([hidden])) .bereich-kopf{flex-basis
 .jarvis[data-thema="material"]{--jv-t1:187,164,255;--jv-t2:255,143,200;--jv-t3:95,225,255}
 .jarvis[data-thema="geraete"]{--jv-t1:125,184,255;--jv-t2:95,225,255;--jv-t3:182,156,255}
 .jarvis[data-thema="wissen"]{--jv-t1:255,200,120;--jv-t2:255,143,200;--jv-t3:95,225,255}
-/* Farbstreifen schräg durchs Bild. Sie stehen still: wandernd kosteten
-   sie am Rechner rund 2 ms je Bild (CPU ÷4, gemessen 20.10.2026) — die
-   Bewegung machen die Ströme im Canvas. Der Rahmen schneidet sie ab —
-   sonst wäre das Fenster breiter als der Bildschirm. Ohne Maske: eine
-   Maske auf einer bewegten Ebene kostet jedes Bild (gemessen). */
+/* Sterne: zwei Lagen aus Lichtpunkten, einmal gemalt. Die zweite
+   funkelt über die Deckkraft (läuft im Compositor, kein Neuzeichnen).
+   Der Rahmen schneidet ab, damit nichts über den Bildschirm ragt. */
 .jv-strom-rahmen{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-.jv-strom{position:absolute;left:0;top:0;width:200%;height:100%;pointer-events:none;opacity:.6;
-  background:repeating-linear-gradient(118deg, transparent 0, rgba(var(--jv-t1),.16) 6%, transparent 12%,
-    rgba(var(--jv-t2),.14) 19%, transparent 25%, rgba(var(--jv-t3),.13) 31%, transparent 37.5%);
-  transform:translate3d(-37.5%,0,0);transition:opacity .6s ease}
-.jarvis.jv-z-denkt .jv-strom{opacity:1}
+.jv-strom,.jv-strom::after{position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,.9), transparent),
+    radial-gradient(1px 1px at 37% 72%, rgba(255,255,255,.7), transparent),
+    radial-gradient(1.5px 1.5px at 64% 33%, rgba(220,230,255,.85), transparent),
+    radial-gradient(1px 1px at 82% 81%, rgba(255,255,255,.6), transparent),
+    radial-gradient(1px 1px at 91% 12%, rgba(255,220,240,.8), transparent),
+    radial-gradient(1px 1px at 23% 52%, rgba(255,255,255,.55), transparent);
+  background-size:260px 260px}
+.jv-strom{opacity:.7}
+.jv-strom::after{content:"";background-size:410px 410px;background-position:130px 70px;animation:jvFunkeln 4.5s ease-in-out infinite alternate}
+@keyframes jvFunkeln{from{opacity:.15}to{opacity:1}}
 body.jv-offen{overflow:hidden}
 /* Hintergrund in drei Lagen: Partikel, Raster, Abtastlinie */
 .jv-feld{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
@@ -5415,14 +5422,19 @@ body.jv-offen{overflow:hidden}
   /* Schwarzes Loch: dunkle Mitte, heller Photonenring, Leuchten in der
      Themenfarbe. Dahinter dreht die Akkretionsscheibe. */
   background:radial-gradient(circle, #000 0 58%, #05030C 70%, rgba(255,255,255,.85) 80%, rgba(var(--jv-t1),.9) 86%, transparent 100%);
-  box-shadow:0 0 28px 6px rgba(var(--jv-t1),.5), 0 0 90px 24px rgba(var(--jv-t2),.22)}
-.jv-kern b::before{content:"";position:absolute;inset:-70%;border-radius:var(--r-rund);z-index:-1;pointer-events:none;
-  background:radial-gradient(closest-side, transparent 55%, var(--jv-nacht) 100%), conic-gradient(from 0deg, rgba(var(--jv-t1),.95), rgba(var(--jv-t2),.85), rgba(var(--jv-t3),.95), rgba(var(--jv-t1),.25), rgba(var(--jv-t2),.9), rgba(var(--jv-t1),.95));
-  /* Ohne Maske: die Mitte deckt die schwarze Kugel ab, der Rand läuft
-     über den durchscheinenden Verlauf aus. Eine Maske auf der drehenden
-     Ebene kostete je Bild (gemessen). */
-  opacity:.75;animation:jvDreh 7s linear infinite}
-.jarvis.jv-z-denkt .jv-kern b::before{animation-duration:2.4s}
+  box-shadow:0 0 50px 16px rgba(var(--jv-t1),.45), 0 0 150px 56px rgba(var(--jv-t2),.22)}
+/* Die Scheibe als stilles Bild — nur zu sehen, wenn das Canvas nicht
+   läuft („weniger Bewegung"). Sonst malt #jarvisLoch Scheibe, Loch,
+   Lichtring und Jets darüber. */
+.jv-kern b::before{content:"";position:absolute;inset:-130%;border-radius:var(--r-rund);z-index:-1;pointer-events:none;
+  background:radial-gradient(closest-side, transparent 30%, rgba(255,255,255,.75) 34%, rgba(var(--jv-t1),.8) 44%, rgba(var(--jv-t2),.45) 64%, transparent 100%);
+  transform:rotate(-20deg) scaleY(.3)}
+.jarvis.jv-loch-an .jv-kern b::before{display:none}
+/* Die HUD-Ringe weichen dem Loch (Vorlagen vom 20.10.2026: keine Ringe,
+   nur Materie). */
+.jv-kern > svg,.jv-kern i{display:none}
+.jv-loch{position:absolute;left:50%;top:50%;width:min(300%, 100vw);height:auto;aspect-ratio:1 / 1;
+  transform:translate(-50%,-50%);pointer-events:none}
 /* Wellen, die aus dem Kern laufen — nur beim Denken und Sprechen */
 .jv-kern s{position:absolute;inset:30%;border-radius:var(--r-rund);border:1px solid rgba(var(--jv-rgb),.8);opacity:0;pointer-events:none}
 .jarvis.jv-z-denkt .jv-kern s,.jarvis.jv-z-spricht .jv-kern s{animation:jvWelle 1.8s cubic-bezier(.2,.6,.4,1) infinite}
@@ -5656,7 +5668,7 @@ body.jv-offen{overflow:hidden}
   .jv-ecke{width:40px;height:40px}
 }
 @media (prefers-reduced-motion:reduce){
-  .gs-schritte li,.jv-kern i,.jv-kern.denkt b,.jv-kern b::before,.jarvis.jv-z-denkt .jv-kern b,.jv-skala,.jv-boegen,.jv-scan,.jv-punkt,
+  .gs-schritte li,.jv-kern i,.jv-kern.denkt b,.jv-strom::after,.jarvis.jv-z-denkt .jv-kern b,.jv-skala,.jv-boegen,.jv-scan,.jv-punkt,
   .jarvis .jv-kern s,.jarvis .jv-eq u,.jv-status::after,.jarvis.jv-boot .jv-log li,.jarvis.jv-boot .jv-ecke,.jarvis.jv-boot .jv-kern,
   .jarvis.jv-boot .jv-rechts,.jarvis .gehirn-antwort.rein,.jarvis .gehirn-antwort.rein::after,.jarvis.jv-boot .jv-chip,
   .jarvis .gehirn-frage.rein,.jarvis .gehirn-frage.rein::after,.jarvis .gs-schritte li.rein,.jarvis .gs-schritte li.rein span,
@@ -11701,6 +11713,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
         <svg class="jv-skala" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="96"/></svg>
         <svg class="jv-boegen" viewBox="0 0 200 200" aria-hidden="true"><circle class="b1" cx="100" cy="100" r="88"/><circle class="b2" cx="100" cy="100" r="80"/></svg>
         <i></i><i></i><i></i><s></s><s></s><s></s><b></b>
+        <canvas class="jv-loch" id="jarvisLoch" aria-hidden="true"></canvas>
         <button type="button" class="jv-halten" id="jarvisHalten" hidden aria-label="Gedrückt halten und sprechen" title="Gedrückt halten und sprechen — oder einmal tippen"></button>
       </div>
       <p class="jv-untertitel" id="jarvisUntertitel" aria-live="polite"></p>
@@ -19688,9 +19701,13 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-20-formi-bezug', datum:'20.10.2026', titel:'Formi versteht, worauf du dich beziehst', wo:'home', punkte:[
+    'Hat Formi das falsche Studio erwischt, reicht jetzt „in Hürth" oder „ich hab Hürth gesagt" – Formi nimmt deinen letzten Satz und macht ihn dort.',
+    'Auch Nachfragen klappen: „und wie lange dauert das?" oder „mach das auch für Longerich" – Formi liest die letzten Nachrichten mit.',
+    '„Ich habe Briefkasten in Hürth erledigt" findet den Punkt jetzt auch mit „ich" und Studio im Satz.' ] },
   { id:'2026-10-20-formi', datum:'20.10.2026', titel:'Aus Jarvis wird Formi – bunter und lebendiger', wo:'home', punkte:[
     'Das Studio-Gehirn heisst jetzt Formi. „Hey Formi" weckt es, und am Rechner öffnet weiterhin die Taste J das Fenster.',
-    'Der Kern ist ein schwarzes Loch: aus ihm strömen bunte Streifen in Spiralen, und farbige Bänder ziehen durchs Bild. Wenn Formi nachdenkt, stürzt alles in den Kern zurück.',
+    'Der Kern ist ein schwarzes Loch mit leuchtender, geneigter Scheibe aus Lichtfäden, Jets nach oben und unten und buntem Nebel mit Sternen. Denkt Formi nach, dreht die Scheibe schneller und die Materie stürzt hinein; spricht Formi, leuchten die Jets.',
     'Die Farben folgen dem Thema: Putzplan türkis, Aufgaben orange, Dienst pink, Material violett, Geräte blau – beim Tippen und beim Mini-Fenster.',
     'Wer Formi unter „Persönlichkeit" einen eigenen Namen gegeben hat, behält ihn.' ] },
   { id:'2026-10-20-jarvis-ablaeufe', datum:'20.10.2026', titel:'Jarvis: Erinnerungen, Feierabend, Schicht abgeben, Foto', wo:'home', punkte:[
@@ -24636,6 +24653,10 @@ function gehirnSenden(art, feldId){
   var v={ text:text, art:art, laeuft:true, schritte:[], _z:Date.now() };
   _gVerlauf.push(v); _gLaeuft=true; if(f) f.value='';
   gehirnSchritt(v, art==='auto' ? 'Lese deinen Satz …' : 'Suche im Studio-Wissen …');
+  if(art==='auto'){
+    var bezug=gehirnBezug(text);
+    if(bezug){ text=bezug.text; gehirnSchritt(v, 'Bezieht sich auf „'+bezug.vorher+'" → „'+text+'"', true); }
+  }
   gehirnZeichnen();
   gehirnNachUnten();
   /* Schnellweg (19.10.2026, „die ki braucht echt lang"): was die App
@@ -24672,7 +24693,7 @@ function gehirnSenden(art, feldId){
   }
   if(art==='auto') gehirnSchritt(v, 'Frage das Studio-Gehirn …');
   var name = art==='auto' ? 'gehirnAktion' : 'gehirnFrage';
-  var daten = art==='auto' ? { text:text, kontext:gehirnKontext(), ton:gehirnTonfall() } : { art:art, text:text, ton:gehirnTonfall() };
+  var daten = art==='auto' ? { text:text, kontext:gehirnKontext(), ton:gehirnTonfall(), verlauf:gehirnVerlaufKurz() } : { art:art, text:text, ton:gehirnTonfall() };
   firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
     .then(function(r){
       var d=(r && r.data) || {};
@@ -26372,98 +26393,215 @@ function jvUhrStart(){
   z(); _jvUhr=setInterval(z, 1000);
 }
 function jvUhrStop(){ if(_jvUhr){ clearInterval(_jvUhr); _jvUhr=0; } }
-/* Materie aus dem schwarzen Loch (20.10.2026, Formi): bunte Streifen
-   strömen in Spiralen aus dem Kern und verglühen zum Rand. Beim Denken
-   kehrt sich der Strom um — alles stürzt in den Kern. Beim Sprechen
-   strömt es schneller. Die Farben gleiten in etwa einer Sekunde zum
-   neuen Thema. Läuft nur, solange das Fenster offen und sichtbar ist;
-   bei „weniger Bewegung" gar nicht.
+/* Materie aus dem schwarzen Loch (20.10.2026, Formi; nach den
+   Vorlagen vom selben Tag: seidige Lichtfäden um ein schwarzes Loch,
+   eine geneigte, leuchtende Scheibe, Jets nach oben und unten, bunter
+   Nebel).
 
-   Kosten: keine Paarsuche mehr wie beim alten Punktnetz (46 Punkte =
-   1 035 Paare je Bild), sondern ein Strich je Teilchen, gesammelt in
-   sechs Pfade (drei Farben × zwei Helligkeiten). 56 Teilchen am
-   Rechner, 40 am Handy. */
+   Zwei Leinwände, ein Bildtakt:
+   - #jarvisLoch, nur um den Kern, in höherer Auflösung: die Scheibe
+     (Teilchen auf Keplerbahnen — innen schneller und heller, fast weiss),
+     das Loch selbst, der Lichtring darum und die Jets.
+   - #jarvisFeldchen, das ganze Fenster, in niedriger Auflösung: Fäden,
+     die aus der Scheibe hinaus in den Raum schwingen.
+
+   **Warum Spuren und keine langen Striche:** jedes Bild wird nur leicht
+   ausgeblendet (destination-out) und jedes Teilchen malt ein kurzes
+   Stück dazu. Die Fäden entstehen aus den Spuren — lange, gebogene Linien
+   kosten so so viel wie kurze.
+
+   Beim Denken dreht die Scheibe schneller und die Materie stürzt hinein,
+   beim Sprechen leuchten die Jets. Die Farben gleiten in etwa einer
+   Sekunde zum Thema. Läuft nur, solange das Fenster offen und sichtbar
+   ist; bei „weniger Bewegung" gar nicht (dann bleibt ein stilles Bild
+   aus CSS). */
 var _jvF={ an:false, raf:0, p:[], w:0, h:0, dpr:1, farbe:null, ziel:null };
+var _jvL={ c:null, ctx:null, S:0, dpr:1, rh:20, p:[], halo:[], jet:[] };
+var JV_NEIGUNG=-0.35, JV_FLACH=0.3;   /* Drehung der Scheibe, Höhe : Breite */
 function jvFeldMass(){
   var c=$('jarvisFeldchen'); if(!c) return;
-  /* Bewusst in halber Auflösung: die Streifen sind Licht, keine Schrift,
-     und das Hochskalieren macht sie weich wie Leuchten. Das Feld ist so
-     gross wie das Fenster — jedes Bild malt es ganz neu, und die Kosten
-     wachsen mit den Bildpunkten. */
   _jvF.w=c.clientWidth; _jvF.h=c.clientHeight;
-  /* Höchstens ~120 000 Bildpunkte, egal wie gross der Bildschirm:
-     1920 × 1080 malt so mit 0,24, ein Handy mit 0,45. Bei 200 000 kostete
-     das Feld am Rechner gut 1 ms je Bild mehr (CPU ÷4, 20.10.2026). */
-  _jvF.dpr=Math.min(0.45, Math.sqrt(120000/Math.max(1, _jvF.w*_jvF.h)));
+  /* Höchstens ~110 000 Bildpunkte für das ganze Fenster: die Fäden sind
+     Licht, keine Schrift, und das Hochskalieren macht sie weich. */
+  _jvF.dpr=Math.min(0.45, Math.sqrt(110000/Math.max(1, _jvF.w*_jvF.h)));
   c.width=Math.max(1, Math.round(_jvF.w*_jvF.dpr)); c.height=Math.max(1, Math.round(_jvF.h*_jvF.dpr));
   /* Die Mitte des Kerns einmal hier messen, nicht in jedem Bild. */
-  var k=$('jarvisKern'), r=k && k.getBoundingClientRect();
+  var k=$('jarvisKern'), r=k && k.getBoundingClientRect(), kb=k && k.querySelector('b');
   _jvF.kx=r && r.width ? r.left+r.width/2 : _jvF.w/2; _jvF.ky=r && r.height ? r.top+r.height/2 : _jvF.h/2;
   _jvF.ring=r && r.width ? r.width*0.75 : 120;
-  /* Bis zur fernsten Ecke, damit die Ströme über den Rand hinaus laufen. */
   var ex=Math.max(_jvF.kx, _jvF.w-_jvF.kx), ey=Math.max(_jvF.ky, _jvF.h-_jvF.ky);
   _jvF.weit=Math.sqrt(ex*ex+ey*ey)+20;
+  /* Das Loch: so gross wie die Kugel im Kern, damit das stille Bild und
+     das bewegte an derselben Stelle stehen. Die Leinwand höchstens
+     ~120 000 Bildpunkte. */
+  var L=$('jarvisLoch'); _jvL.c=L;
+  if(L){
+    _jvL.S=L.clientWidth||300;
+    _jvL.dpr=Math.min(0.9, Math.sqrt(120000/Math.max(1, _jvL.S*_jvL.S)));
+    L.width=L.height=Math.max(1, Math.round(_jvL.S*_jvL.dpr));
+    _jvL.rh=kb && kb.offsetWidth ? kb.offsetWidth/2 : _jvL.S*0.07;
+  }
 }
 function jvTeilchen(a, innen){
-  var R0=_jvF.ring*0.32;
+  /* Fäden für das grosse Feld: sie starten am Rand der Scheibe. */
+  var R0=_jvF.ring*0.9;
   a.w=Math.random()*Math.PI*2;
   a.r=innen ? R0+Math.random()*_jvF.ring*0.4 : _jvF.weit*(0.6+Math.random()*0.4);
-  a.v=0.35+Math.random()*0.9;       /* nach aussen je Bild */
-  a.dreh=(Math.random()<0.5 ? 1 : 1.25)*(0.5+Math.random()*0.6); /* Drall */
+  a.v=0.25+Math.random()*0.7;
+  a.dreh=0.5+Math.random()*0.7;
   a.c=Math.floor(Math.random()*3);
+  a.x=null;
   return a;
+}
+function jvLochTeilchen(){
+  var R=_jvL.S/2, rh=_jvL.rh, n=_jvL.S<450 ? 110 : 170, i, a;
+  _jvL.p=[];
+  for(i=0;i<n;i++){
+    a={ w:Math.random()*Math.PI*2, c:Math.floor(Math.random()*3), x:null };
+    a.r=rh*1.35+(R*0.92-rh*1.35)*Math.pow(Math.random(), 1.7);
+    _jvL.p.push(a);
+  }
+  _jvL.halo=[];
+  for(i=0;i<22;i++) _jvL.halo.push({ w:Math.random()*Math.PI*2, r:rh*(1.08+Math.random()*0.32), c:Math.floor(Math.random()*3), x:null });
+  _jvL.jet=[];
+  for(i=0;i<(_jvL.S<450 ? 16 : 26);i++) _jvL.jet.push({ t:Math.random(), f:Math.random()*6.3, seite:i%2 ? 1 : -1, x:null });
+}
+/* Ein Farbton für Fäden: innen ins Weisse gemischt (heisse Scheibe). */
+function jvMisch(f, weiss, alpha){
+  return 'rgba('+((f[0]+(255-f[0])*weiss)|0)+','+((f[1]+(255-f[1])*weiss)|0)+','+((f[2]+(255-f[2])*weiss)|0)+','+alpha+')';
 }
 function jvFeldStart(){
   var c=$('jarvisFeldchen'); if(!c || _jvF.an || gehirnWenigBewegung() || !c.getContext) return;
   var ctx=c.getContext('2d'); if(!ctx) return;
   _jvF.an=true; jvFeldMass();
+  var j=$('jarvis');
+  _jvL.ctx=_jvL.c && _jvL.c.getContext ? _jvL.c.getContext('2d') : null;
+  if(_jvL.ctx && j) j.classList.add('jv-loch-an');
   /* Nach dem Hochfahren steht der Kern an seinem Platz — dann noch einmal messen. */
-  setTimeout(function(){ if(_jvF.an) jvFeldMass(); }, 1000);
+  setTimeout(function(){ if(_jvF.an){ jvFeldMass(); jvLochTeilchen(); } }, 1000);
   if(!_jvF.ziel) _jvF.ziel=JV_FARBEN.bunt;
   if(!_jvF.farbe) _jvF.farbe=_jvF.ziel.map(function(x){ return x.slice(); });
-  var n=_jvF.w<600 ? 40 : 56;
+  var n=_jvF.w<600 ? 40 : 56, i;
   _jvF.p=[];
-  for(var i=0;i<n;i++){ var t=jvTeilchen({}, true); t.r=_jvF.ring*0.32+Math.random()*_jvF.weit; _jvF.p.push(t); }
-  var pfade=[[],[],[],[],[],[]];
-  function bild(){
+  for(i=0;i<n;i++){ var t=jvTeilchen({}, true); t.r=_jvF.ring*0.9+Math.random()*_jvF.weit; _jvF.p.push(t); }
+  jvLochTeilchen();
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,c.width,c.height);
+  if(_jvL.ctx){ _jvL.ctx.setTransform(1,0,0,1,0,0); _jvL.ctx.clearRect(0,0,_jvL.c.width,_jvL.c.height); }
+  var COS=Math.cos(JV_NEIGUNG), SIN=Math.sin(JV_NEIGUNG);
+  var pfade=[]; for(i=0;i<12;i++) pfade.push([]);
+  function strich(L, x0, y0, x1, y1){ L.push(x0, y0, x1, y1); }
+  function malen(g, L, stil, breite){
+    if(!L.length) return;
+    g.strokeStyle=stil; g.lineWidth=breite; g.beginPath();
+    for(var k=0;k<L.length;k+=4){ g.moveTo(L[k],L[k+1]); g.lineTo(L[k+2],L[k+3]); }
+    g.stroke();
+  }
+  function ausblenden(g, cw, ch, wie){
+    g.setTransform(1,0,0,1,0,0);
+    g.globalCompositeOperation='destination-out';
+    g.fillStyle='rgba(0,0,0,'+wie+')'; g.fillRect(0,0,cw,ch);
+    g.globalCompositeOperation='lighter';
+  }
+  /* Abwechselnd: in einem Bild die Scheibe, im nächsten die Fäden. So
+     arbeitet jedes Bild nur an einer Leinwand (gemessen 20.10.2026: beide
+     in jedem Bild kosteten bei CPU ÷4 rund doppelt so viel). Bewegt wird
+     nach der vergangenen Zeit (dt), nicht nach Bildern — auf 60 Hz läuft
+     jede Leinwand mit 30, auf 120 Hz mit 60 Schritten je Sekunde. */
+  var zug=0, zuletztL=0, zuletztF=0;
+  function bild(jetzt){
     if(!_jvF.an) return;
     _jvF.raf=requestAnimationFrame(bild);
     if(document.hidden) return;
-    var w=_jvF.w, h=_jvF.h;
+    jetzt=jetzt||performance.now();
+    zug^=1;
+    var dt;
+    if(zug && _jvL.ctx){ dt=zuletztL ? Math.min(4, (jetzt-zuletztL)/16.7) : 1; zuletztL=jetzt; }
+    else { dt=zuletztF ? Math.min(4, (jetzt-zuletztF)/16.7) : 1; zuletztF=jetzt; }
+    var denkt=!!_gLaeuft, spricht=!!_jvSpricht && !denkt;
+    var F=_jvF.farbe, Z=_jvF.ziel, k, a, x, y, q, P, L, g;
+    for(i=0;i<3;i++) for(k=0;k<3;k++) F[i][k]+=(Z[i][k]-F[i][k])*Math.min(1, 0.03*dt);
+
+    /* ── Das Loch ── */
+    g=_jvL.ctx;
+    if(zug && g && _jvL.S){
+      var S=_jvL.S, R=S/2, rh=_jvL.rh, tempo=denkt ? 2.4 : (spricht ? 1.5 : 1);
+      ausblenden(g, _jvL.c.width, _jvL.c.height, 1-Math.pow(0.935, dt));
+      g.setTransform(_jvL.dpr,0,0,_jvL.dpr,0,0);
+      for(i=0;i<12;i++) pfade[i].length=0;
+      P=_jvL.p;
+      for(i=0;i<P.length;i++){
+        a=P[i];
+        /* Kepler: innen schneller. */
+        a.w+=0.05*Math.pow(rh*1.35/a.r, 1.5)*tempo*dt;
+        if(denkt){ a.r-=(0.18+a.r*0.004)*dt; if(a.r<rh*1.15){ a.r=R*0.92; a.x=null; } }
+        var lx=Math.cos(a.w)*a.r, ly=Math.sin(a.w)*a.r*JV_FLACH;
+        x=R+lx*COS-ly*SIN; y=R+lx*SIN+ly*COS;
+        if(a.x!==null){
+          q=(a.r-rh)/(R-rh);   /* 0 innen … 1 aussen */
+          /* vorne (unten) oder hinten, innen oder aussen */
+          strich(pfade[(Math.sin(a.w)>0 ? 6 : 0)+a.c*2+(q<0.35 ? 0 : 1)], a.x, a.y, x, y);
+        }
+        a.x=x; a.y=y;
+      }
+      /* hinten */
+      for(i=0;i<6;i++) malen(g, pfade[i], jvMisch(F[i>>1], (i&1) ? 0.05 : 0.55, (i&1) ? 0.55 : 0.9), (i&1) ? 1.6 : 2.2);
+      /* das Loch selbst: deckend schwarz, jedes Bild neu */
+      g.globalCompositeOperation='source-over';
+      g.fillStyle='#000'; g.beginPath(); g.arc(R, R, rh*1.02, 0, 6.2832); g.fill();
+      g.globalCompositeOperation='lighter';
+      /* Photonenring: ein dünner, heller Rand. Er wird jedes Bild schwach
+         nachgezogen und hält sich mit dem Ausblenden bei etwa 60 %. */
+      g.strokeStyle=jvMisch(F[0], 0.7, Math.min(1, 0.045*dt)); g.lineWidth=2; g.beginPath(); g.arc(R, R, rh*1.05, 0, 6.2832); g.stroke();
+      /* Lichtring: die Scheibe hinter dem Loch, umgelenkt (wie auf der Vorlage) */
+      for(i=6;i<12;i++) pfade[i-6].length=0;
+      L=_jvL.halo;
+      for(i=0;i<L.length;i++){
+        a=L[i]; a.w+=0.06*tempo*dt;
+        x=R+Math.cos(a.w)*a.r; y=R+Math.sin(a.w)*a.r;
+        if(a.x!==null) strich(pfade[a.c*2], a.x, a.y, x, y);
+        a.x=x; a.y=y;
+      }
+      for(i=0;i<3;i++) malen(g, pfade[i*2], jvMisch(F[i], 0.55, 0.55), 1.4);
+      /* vorne */
+      for(i=6;i<12;i++) malen(g, pfade[i], jvMisch(F[(i-6)>>1], (i&1) ? 0.05 : 0.55, (i&1) ? 0.6 : 0.95), (i&1) ? 1.6 : 2.4);
+      /* Jets: Wendeln entlang der Achse — beim Sprechen hell */
+      var stark=spricht ? 0.9 : (denkt ? 0.5 : 0.3), ax=SIN, ay=-COS;
+      L=_jvL.jet; pfade[0].length=0;
+      for(i=0;i<L.length;i++){
+        a=L[i]; a.t+=0.006*(spricht ? 2 : 1)*dt; a.f+=0.22*dt;
+        if(a.t>1){ a.t=0; a.x=null; }
+        var lang=rh*0.9+a.t*(R*0.95-rh*0.9), breit=rh*(0.25+a.t*0.5)*Math.cos(a.f);
+        x=R+ax*lang*a.seite+COS*breit; y=R+ay*lang*a.seite+SIN*breit;
+        if(a.x!==null) strich(pfade[0], a.x, a.y, x, y);
+        a.x=x; a.y=y;
+      }
+      malen(g, pfade[0], jvMisch(F[0], 0.7, stark), 1.3);
+    }
+
+    if(zug && _jvL.ctx) return;
+    /* ── Fäden im ganzen Fenster ── */
+    var w=_jvF.w, h=_jvF.h, kx=_jvF.kx, ky=_jvF.ky, W=_jvF.weit, R0=_jvF.ring*0.9;
+    ausblenden(ctx, c.width, c.height, 1-Math.pow(0.9, dt));
     ctx.setTransform(_jvF.dpr,0,0,_jvF.dpr,0,0);
-    ctx.clearRect(0,0,w,h);
-    var kx=_jvF.kx, ky=_jvF.ky, R0=_jvF.ring*0.32, W=_jvF.weit;
-    var denkt=!!_gLaeuft, tempo=denkt ? -2.2 : (_jvSpricht ? 2.2 : 1);
-    var F=_jvF.farbe, Z=_jvF.ziel, i, k, a, x0, y0, x1, y1, r1, q, P=_jvF.p;
-    /* Farben gleiten zum Thema (je Bild 6 % des Rests). */
-    for(i=0;i<3;i++) for(k=0;k<3;k++) F[i][k]+=(Z[i][k]-F[i][k])*0.06;
     for(i=0;i<6;i++) pfade[i].length=0;
+    var raus=denkt ? -2 : (spricht ? 2 : 1);
+    P=_jvF.p;
     for(i=0;i<P.length;i++){
       a=P[i];
-      q=Math.max(0.15, a.r/W);
-      x0=kx+Math.cos(a.w)*a.r; y0=ky+Math.sin(a.w)*a.r*0.82;
-      /* Je näher am Kern, desto schneller der Drall — wie eine Scheibe. */
-      a.w+=a.dreh*0.018/q*(denkt ? 1.8 : 1);
-      a.r+=a.v*tempo*(0.6+q*2.4);
+      q=Math.max(0.12, a.r/W);
+      a.w+=a.dreh*0.012/q*(denkt ? 1.6 : 1)*dt;
+      a.r+=a.v*raus*(0.6+q*2.4)*dt;
       if(a.r>W){ jvTeilchen(a, true); continue; }
       if(a.r<R0){ jvTeilchen(a, false); continue; }
-      r1=a.r;
-      x1=kx+Math.cos(a.w)*r1; y1=ky+Math.sin(a.w)*r1*0.82;
-      /* Den Strich nach hinten verlängern: aus einem Schritt wird ein Streifen. */
-      x0=x1+(x0-x1)*3.5; y0=y1+(y0-y1)*3.5;
-      pfade[a.c*2+(q<0.45 ? 1 : 0)].push(x0,y0,x1,y1);
+      /* Die Fäden bleiben nahe der Scheibenebene und fächern nach aussen auf. */
+      var fl=JV_FLACH+q*0.9, lx2=Math.cos(a.w)*a.r, ly2=Math.sin(a.w)*a.r*fl;
+      x=kx+lx2*COS-ly2*SIN; y=ky+lx2*SIN+ly2*COS;
+      if(a.x!==null) strich(pfade[a.c*2+(q<0.4 ? 0 : 1)], a.x, a.y, x, y);
+      a.x=x; a.y=y;
     }
-    for(i=0;i<6;i++){
-      var L=pfade[i]; if(!L.length) continue;
-      var f=F[i>>1];
-      ctx.strokeStyle='rgba('+(f[0]|0)+','+(f[1]|0)+','+(f[2]|0)+','+((i&1) ? .8 : .22)+')';
-      ctx.lineWidth=(i&1) ? 2.6 : 2;
-      ctx.beginPath();
-      for(k=0;k<L.length;k+=4){ ctx.moveTo(L[k],L[k+1]); ctx.lineTo(L[k+2],L[k+3]); }
-      ctx.stroke();
-    }
+    for(i=0;i<6;i++) malen(ctx, pfade[i], jvMisch(F[i>>1], (i&1) ? 0.1 : 0.35, (i&1) ? 0.35 : 0.7), (i&1) ? 1.8 : 2.4);
   }
-  if(!_jvF.groesse){ _jvF.groesse=true; window.addEventListener('resize', function(){ if(_jvF.an) jvFeldMass(); }, { passive:true }); }
+  if(!_jvF.groesse){ _jvF.groesse=true; window.addEventListener('resize', function(){ if(_jvF.an){ jvFeldMass(); jvLochTeilchen(); } }, { passive:true }); }
   _jvF.raf=requestAnimationFrame(bild);
 }
 /* Thema (20.10.2026): das Fenster färbt sich nach dem, worum es gerade
@@ -26490,7 +26628,7 @@ function jvThema(name){
   if(name==='bunt') j.removeAttribute('data-thema'); else j.setAttribute('data-thema', name);
   _jvF.ziel=JV_FARBEN[name];
 }
-function jvFeldStop(){ _jvF.an=false; if(_jvF.raf) cancelAnimationFrame(_jvF.raf); _jvF.raf=0; }
+function jvFeldStop(){ _jvF.an=false; if(_jvF.raf) cancelAnimationFrame(_jvF.raf); _jvF.raf=0; var j=$('jarvis'); if(j) j.classList.remove('jv-loch-an'); }
 function jarvisKachel(ansicht){
   var an=gehirnVerfuegbar();
   var heim=(ansicht||currentView)==='home';
@@ -26533,6 +26671,46 @@ function gehirnStudioIn(text){
     if(n.length && n.every(function(x){ return w.some(function(y){ return y===x || (x.length>=5 && gehirnAbstand(x,y)<=1); }); })) return alle[i];
   }
   return '';
+}
+/* Den Studionamen samt „in/im/bei" aus einem Satz nehmen. */
+function gehirnOhneStudio(roh, sk){
+  if(!sk) return roh;
+  var n=String(studioName(sk)||'').trim(); if(!n) return roh;
+  var muster=n.split(/\s+/).map(function(x){ return x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s+');
+  return String(roh).replace(new RegExp('(?:\\b(?:in|im|bei|für|fuer|aus)\\s+)?'+muster, 'ig'), ' ').replace(/\s+/g,' ').trim();
+}
+/* Bezug auf die letzte Nachricht (20.10.2026, „er kann nicht auf vorherige
+   nachrichten eingehen"): eine reine Richtigstellung des Studios —
+   „in Hürth", „ich habe in Hürth gesagt", „nein, Hürth" — wird mit dem
+   letzten eigenen Satz zusammengesetzt. Alles andere mit Bezug löst die KI
+   über den mitgeschickten Verlauf. */
+var GEHIRN_BEZUG_FUELL=/\b(nein|ne|nee|doch|ich|hab|habe|hatte|meinte|meine|gemeint|gesagt|sagte|sag|war|in|im|bei|für|fuer|das|dem|den|studio|also|sorry|sry|aber|natürlich|natuerlich|nicht|sondern)\b/gi;
+function gehirnBezug(text){
+  var t=String(text||'').trim(), sk=gehirnStudioIn(t.toLowerCase());
+  if(!sk || t.length>80) return null;
+  var rest=gehirnOhneStudio(t, sk).replace(GEHIRN_BEZUG_FUELL,' ').replace(/[^\wäöüÄÖÜß]+/g,' ').trim();
+  if(rest) return null;
+  for(var i=_gVerlauf.length-2;i>=0 && i>=_gVerlauf.length-6;i--){
+    var v=_gVerlauf[i];
+    if(!v || v.folge || v.direkt || !v.text || v.art==='frage') continue;
+    if(Date.now()-(v._z||0)>15*60000) return null;
+    var alt=gehirnStudioIn(String(v.text).toLowerCase());
+    var basis=alt ? gehirnOhneStudio(v.text, alt) : String(v.text);
+    if(gehirnStudioIn(basis.toLowerCase())) return null;
+    return { text:basis.replace(/[.!]+$/,'')+' in '+studioName(sk), vorher:v.text };
+  }
+  return null;
+}
+/* Die letzten Wechsel kurz für die KI: was gesagt wurde, was herauskam.
+   Bleibt im Aufruf, wird nirgends gespeichert. */
+function gehirnVerlaufKurz(){
+  var aus=[];
+  for(var i=_gVerlauf.length-2;i>=0 && aus.length<4;i--){
+    var v=_gVerlauf[i];
+    if(!v || !v.text || v.laeuft) continue;
+    aus.unshift({ f:String(v.text).slice(0,200), a:String(gehirnAktionText(v)||'').slice(0,240) });
+  }
+  return aus;
 }
 function gehirnSchnell(text){
   var roh=String(text||'').trim(), t=roh.toLowerCase(), w=gehirnWoerter(t);
@@ -26583,8 +26761,15 @@ function gehirnSchnell(text){
   }
   // Abhaken: „Toiletten sind sauber", „hab gesaugt", „Westen waschen erledigt"
   var frage=/\?\s*$/.test(roh) || /^(wie|was|wann|wo|warum|wieso|wer|welche[rsmn]?|muss|darf|kann|soll|sollte)\b/.test(t);
+  /* „ich habe in Hürth gesagt" ist eine Richtigstellung, kein Abhaken —
+     „gesagt" liegt nur einen Buchstaben neben „gesaugt" (gefunden im
+     Betrieb, 20.10.2026). Das entscheidet die KI mit dem Verlauf. */
+  if(/\b(gesagt|gemeint|meinte|meine|sagte|sag ich)\b/.test(t)) return null;
   if(!frage && (gehirnHat(w, ['erledigt','fertig','sauber','gemacht','geputzt','gesaugt','gewischt','abgehakt','gewaschen','desinfiziert','aufgefüllt']) || /\bhak(e)?\b.*\bab\b/.test(t))){
-    var was=roh.replace(/\b(ist|sind|wurde|wurden|hab|habe|haben|schon|jetzt|gerade|erledigt|fertig|abgehakt|bitte|hak|hake|ab)\b/gi,' ').replace(/\s+/g,' ').trim();
+    /* Nur das, was abgehakt werden soll: ohne Füllwörter und ohne das
+       Studio — „ich habe Briefkasten in Hürth erledigt" suchte sonst nach
+       „ich Briefkasten in Hürth" und fand nichts (Betrieb, 20.10.2026). */
+    var was=gehirnOhneStudio(roh, sk).replace(/\b(ist|sind|wurde|wurden|hab|habe|haben|hat|schon|jetzt|gerade|grad|eben|erledigt|fertig|abgehakt|bitte|hak|hake|ab|ich|wir|mal|doch|auch|heute)\b/gi,' ').replace(/\s+/g,' ').trim();
     if(was) return mitStudio({ typ:'abhaken', bereich:'beides', was:was||roh }, sk);
   }
   return null;

@@ -7605,6 +7605,22 @@ function gehirnKontextText(k) {
   return teile.length ? ' Was es gerade gibt — nutze genau diese Bezeichnungen bei "was"/"geraet": ' + teile.join('; ') + '.' : '';
 }
 
+/* Der Gesprächsverlauf (20.10.2026, „er kann nicht auf vorherige
+   nachrichten eingehen"): die letzten höchstens vier Wechsel aus dem
+   Gerät, gekürzt. Nur für diesen Aufruf, nirgends gespeichert. Steht im
+   Systemtext als Hintergrund — die KI soll den neuen Satz damit zu einem
+   vollständigen Auftrag ergänzen, nicht den Verlauf ausführen. */
+function gehirnVerlaufText(v) {
+  const liste = (Array.isArray(v) ? v : []).slice(-4)
+    .map(x => (x && typeof x === 'object') ? { f: gehirnKurz(x.f, 200), a: gehirnKurz(x.a, 240) } : null)
+    .filter(x => x && x.f);
+  if (!liste.length) return '';
+  return ' Bisheriges Gespräch (älteste zuerst, NUR Hintergrund — nichts davon erneut ausführen): ' +
+    liste.map((x, i) => (i + 1) + ') Person: ' + JSON.stringify(x.f) + (x.a ? ' — Ergebnis: ' + JSON.stringify(x.a) : '')).join(' ') +
+    ' Bezieht sich der neue Satz darauf (z. B. "in Hürth", "ich meinte den Spiegel", "und das andere?", "wie lange dauert das?"), ' +
+    'lies beides zusammen und antworte mit dem vollständigen Auftrag. Bei "frage" ergänze "frage":"die Frage als vollständiger Satz ohne Bezugswörter".';
+}
+
 /* Ein Knopf für alles (19.10.2026): wohin mit dem Satz? Rein rechnerisch
    (__intern). „frage", wenn die KI es so sagt, nichts liefert oder etwas
    Unbekanntes; „unklar", wenn eine bekannte Aktion die Prüfung nicht
@@ -7678,7 +7694,8 @@ exports.gehirnAktion = region
       'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k])) + '. ' +
       'Keine Kundennamen und keine Gesundheitsdetails übernehmen — bei "krank" keinen Grund in die Notiz. ' +
       'Die Person heisst ' + gehirnKurz(profil.name, 40) + '. Rechtschreibfehler und Umgangssprache sind normal — lies, was gemeint ist.' +
-      gehirnKontextText((data || {}).kontext);
+      gehirnKontextText((data || {}).kontext) +
+      gehirnVerlaufText((data || {}).verlauf);
     let roh = null;
     try { roh = await kiJson(system, auftrag, apiKey); }
     catch (e) {
@@ -7698,7 +7715,10 @@ exports.gehirnAktion = region
     }
     const istFrage = weg === 'frage';
     if (istFrage) {
-      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: auftrag }, profil), firma);
+      /* Mit Bezug („wie lange dauert das?") schickt die KI die Frage
+         ausgeschrieben mit — das Studio-Wissen kennt den Verlauf nicht. */
+      const voll = roh && typeof roh.frage === 'string' && roh.frage.trim() ? roh.frage.trim().slice(0, 1000) : auftrag;
+      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: voll }, profil), firma);
       return Object.assign({ art: 'frage' }, a);
     }
     return {
@@ -7846,7 +7866,7 @@ exports.lageberichtJetzt = region
     return { ok: true };
   });
 
-exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

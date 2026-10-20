@@ -16535,19 +16535,43 @@ schreibt. Interne IDs (`#jarvis…`, `jv…`) bleiben — umbenennen hätte
 nur Tests und Risiko gebracht, sehen tut sie niemand. Ältere
 NEUIGKEITEN-Einträge bleiben, wie sie waren: sie sind Geschichte.
 
-**Schwarzes Loch.** Die Kugel im Kern ist jetzt schwarz mit hellem
-Photonenring; dahinter dreht eine Akkretionsscheibe (konischer Verlauf
-in drei Themenfarben, per Maske zum Ring geschnitten, bewegt nur über
-`transform`). Beim Denken dreht sie schneller.
+**Schwarzes Loch — zweiter Anlauf nach Vorlagen.** Der erste Wurf
+(schwarze Kugel, drehender Farbring, gerade Striche aus dem Kern) war
+„nicht ganz so wie ich es meinte"; Semih schickte drei Vorlagen: seidige
+Lichtfäden um ein schwarzes Loch, eine Spiralgalaxie in einer leuchtenden
+Ellipse, eine geneigte Akkretionsscheibe mit Jets. Jetzt:
 
-**Bunte Materie.** Das Partikelnetz ist ersetzt: Teilchen strömen als
-Streifen in Spiralen aus dem Kern und laufen zum Rand aus; beim Denken
-kehrt sich der Strom um und alles stürzt hinein, beim Sprechen strömt es
-schneller. **Warum das billiger ist als vorher:** das alte Netz suchte
-je Bild alle Paare (46 Punkte = 1 035 Abstände); jetzt gibt es einen
-Strich je Teilchen, gesammelt in sechs Pfade (drei Farben × zwei
-Helligkeiten), auch bei 120 Teilchen. Dazu eine Ebene farbiger
-Schrägstreifen, einmal gemalt und nur verschoben.
+- `#jarvisLoch`, eine eigene Leinwand nur um den Kern (300 % der
+  Kerngrösse, höchstens Bildschirmbreite, ~120 000 Bildpunkte): eine
+  geneigte Scheibe aus Teilchen auf Keplerbahnen (innen schneller und
+  fast weiss, aussen farbig), das Loch selbst deckend schwarz, ein
+  dünner Photonenring, ein Lichtring als umgelenkte Rückseite der
+  Scheibe, Jets als Wendeln entlang der Achse. Die vordere Hälfte der
+  Scheibe wird NACH dem Loch gemalt und läuft davor vorbei.
+- `#jarvisFeldchen` (ganzes Fenster, ~110 000 Bildpunkte): Fäden, die aus
+  der Scheibe in den Raum schwingen und nach aussen auffächern.
+- **Spuren statt Striche:** jedes Bild blendet nur leicht aus
+  (`destination-out`), jedes Teilchen malt ein kurzes Stück — die langen,
+  gebogenen Fäden entstehen aus der Spur und kosten nicht mehr als kurze.
+- **Abwechselnd malen:** in einem Bild die Scheibe, im nächsten die
+  Fäden; bewegt wird nach vergangener Zeit (dt). Auf 60 Hz macht jede
+  Leinwand 30 Schritte je Sekunde, auf 120 Hz 60.
+- Hintergrund: farbiger Nebel aus den Ecken (Themenfarben plus ein
+  warmer Ton), zwei Sternlagen, eine funkelt über die Deckkraft.
+- Die HUD-Ringe und Bögen um den Kern sind weg (die Vorlagen haben
+  keine). Bei „weniger Bewegung" steht ein stilles Bild aus CSS: schwarze
+  Kugel mit Ring und geneigter Scheibe.
+
+**Leistung, ehrlich:** Gegenprobe mit `main` in derselben Umgebung,
+1440 px, CPU ÷4, Arbeit je Bild bei offenem Fenster: `main` 9,5–11,2 ms,
+dieser Stand 12,0–13,1 ms (drei Durchläufe je Seite). Formi kostet also
+rund 2 ms je Bild mehr als das alte HUD. Beide liegen hier über der
+Grenze 8,3 ms — wie seit Runde 164 in dieser Umgebung auch `main`. Der
+Test ist nicht gelockert. Unterwegs gemessen und verworfen: wandernde
+Schrägstreifen (+2 ms), eine Maske auf der drehenden Scheibe, beide
+Leinwände in jedem Bild (~doppelt so teuer). **Achtung beim Messen:**
+ein Gesamtdurchlauf lief einmal unbemerkt parallel und verdoppelte alle
+Zahlen — erst nachsehen, ob der Rechner frei ist.
 
 **Themenfarben.** `data-thema` am Fenster setzt drei Farben
 (`--jv-t1..3`); das Canvas gleitet in etwa einer Sekunde hin. Gesetzt
@@ -16560,5 +16584,42 @@ vorbehalten (die Stimmung des Kerns nutzt sie weiter). Die Themenfarben
 färben nur Schmuck, nie Schrift: die Schrift steht weiter auf
 Nachtblau, wie gemessen.
 
-Bei „weniger Bewegung" steht alles: kein Canvas, keine drehende
-Scheibe, keine wandernden Streifen.
+
+## Runde 166 — Formi geht auf vorherige Nachrichten ein (20.10.2026)
+
+Aus dem Betrieb, mit zwei Bildschirmfotos: „hier ist noch ein kontext
+problem ausserdem hab ich gemerkt das er nicht auf vorherige nachrichten
+eingehen kann".
+
+**Was die Fotos zeigten:** „ich habe in Hürth gesagt" wurde als
+*Abhaken von „ich in Hürth gesagt"* gelesen — „gesagt" liegt einen
+Buchstaben neben „gesaugt", und der unscharfe Wortvergleich hielt es für
+Putzen. „ich habe Briefkasten in Hürth erledigt" fand nichts, weil „ich"
+und „in Hürth" im Suchwort blieben; „Briefkasten erledigt in Hürth"
+klappte.
+
+**Drei Teile:**
+1. Schnellweg: Sätze mit „gesagt/gemeint/meinte" sind nie Abhaken. Aus
+   dem Suchwort fallen Füllwörter (ich, wir, mal, doch, heute …) und das
+   Studio samt „in/im/bei" (`gehirnOhneStudio`).
+2. **Richtigstellung im Gerät** (`gehirnBezug`): besteht der Satz nur aus
+   einem Studio und Füllwörtern („in Hürth", „nein, Hürth", „ich hab
+   Hürth gesagt"), wird der letzte eigene Satz (höchstens 15 Minuten alt)
+   mit diesem Studio neu geschickt — sichtbar als Schritt „Bezieht sich
+   auf …". Ohne KI, sofort.
+3. **Verlauf an die KI** (`gehirnVerlaufKurz` → `verlauf`, in den
+   Functions `gehirnVerlaufText`): die letzten höchstens vier Wechsel,
+   Satz und Ergebnis gekürzt, als Hintergrund im Systemtext. Die KI soll
+   den neuen Satz damit zu einem vollständigen Auftrag ergänzen. Für
+   Fragen gibt sie die Frage **ausgeschrieben** zurück (`"frage"`), und
+   die geht an das Studio-Wissen — **warum so:** der Worker kennt den
+   Verlauf nicht; so bleibt er unverändert und muss nicht neu ausgerollt
+   werden. Der Verlauf wird nirgends gespeichert (Gehirn-Fragen gehören
+   nicht in Firestore — Vollexport).
+
+**Geprüft:** test-gehirn 12g (Richtigstellung ohne KI und abgehakt in
+Hürth; „ich habe … in Hürth erledigt" findet den Punkt; Verlauf geht mit,
+höchstens vier, ohne den aktuellen Satz), test-gehirn-aktion (Kürzen,
+nur die letzten vier, Hintergrund-Hinweis).
+**Nicht geprüft:** wie gut das echte Modell den Verlauf nutzt — das
+zeigt erst der Betrieb nach dem Ausrollen der Functions.
