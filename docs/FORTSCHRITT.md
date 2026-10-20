@@ -16508,3 +16508,12 @@ Emulator (16 bestanden), Worker-Prüfung (Foto mit Lizenz-Zustimmung).
 
 **Nicht geprüft:** echter Push zur Erinnerungszeit (läuft erst nach dem
 Ausrollen), echtes Bildmodell, echte Kamera.
+
+**Leistung, ehrlich:** Der Leistungstest (Arbeit je Bild) war in diesem
+Lauf rot — auf allen Ständen gleich: in derselben Umgebung gemessen
+lagen dieser Zweig, `main` (Etappe 3) und der Stand vor Etappe 3 bei
+1440 px beim Denken alle bei 15–16 ms (vorher, auf einer anderen
+Maschine, 5–6 ms). Die Umgebung lief nach einem Neustart mit 2 Kernen.
+Etappe 4 ändert am HUD nichts, was je Bild arbeitet. Der Test bleibt,
+wie er ist; die Grenze 8,3 ms gilt weiter und gehört beim nächsten Lauf
+auf einer normalen Maschine wieder geprüft.
