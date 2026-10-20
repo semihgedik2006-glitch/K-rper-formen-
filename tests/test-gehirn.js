@@ -658,7 +658,16 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
      viel mehr motion … lockereren ton … mini interaktionen und chat
      verläufe speicherung" — und auf die Ideenliste: „mach alles davon". */
   for (const [w, h] of [[390, 844], [1440, 900]]) {
-    const p = await oeffne(b, w, h);
+    /* Die Wochen-Sicherung des Chefs startet 4 s nach dem Anmelden und
+       schreibt nach archives/. Auf einem langsamen Rechner fiel sie mitten
+       in die Zählung der Schreibvorgänge unten (gefunden 20.10.2026). Sie
+       gehört nicht zu diesem Test — also gilt sie hier als heute erledigt. */
+    const p = await oeffne(b, w, h, { vorher: () => {
+      const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const tag = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - tag);
+      const kw = Math.ceil(((t - new Date(Date.UTC(t.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7);
+      localStorage.setItem('kf_arch_' + t.getUTCFullYear() + '-KW' + String(kw).padStart(2, '0'), String(Date.now()));
+    } });
     await p.keyboard.press('j'); await p.waitForTimeout(500);
     pruefe(w + ' px: Taste J öffnet Jarvis', await sichtbar(p, '#jarvis'));
     await p.fill('#jarvisFeld', 'öffne den putzplan'); await p.click('#jarvisSenden'); await p.waitForTimeout(900);
@@ -1060,6 +1069,34 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('fremde Firma: kein Verweis unter den Treffern', !(await p.$('#hilfeTreffer [data-hgehirn]')));
     await p.evaluate(() => { const z = document.getElementById('hilfeZu'); if (z) z.click(); });
     pruefe('fremde Firma: kein „Gehirn"-Knopf auf der Startseite', !(await jvKnopf(p)));
+    await zu(p);
+  }
+
+  console.log('\n── 12g Bezug auf vorherige Nachrichten (20.10.2026) ──');
+  /* Aus dem Betrieb, 20.10.2026: „hier ist noch ein kontext problem
+     ausserdem hab ich gemerkt das er nicht auf vorherige nachrichten
+     eingehen kann". Bildschirmfoto: „ich habe in Hürth gesagt" wurde als
+     Abhaken von „ich in Hürth gesagt" gelesen; „ich habe Briefkasten in
+     Hürth erledigt" fand nichts, „Briefkasten erledigt in Hürth" schon. */
+  {
+    const p = await oeffne(b, 1440, 900, { vorher: () => { localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); } });
+    await p.keyboard.press('j'); await p.waitForTimeout(500);
+    await p.evaluate(() => { window.__ki = []; window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = (d) => { window.__ki.push(d); return Promise.resolve({ data: { art: 'frage', antwort: 'Etwa 20 Minuten.', abgedeckt: true } }); }; });
+    const sag = async (satz, ms) => { await p.fill('#jarvisFeld', satz); await p.click('#jarvisSenden'); await p.waitForTimeout(ms || 900); };
+    const letzte = () => p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gehirn-antwort')].pop().innerText);
+    await sag('Wasserspender auffüllen ist erledigt in Rath');
+    const k0 = await letzte();
+    await sag('ich habe in Hürth gesagt');
+    const k1 = await letzte();
+    pruefe('„ich habe in Hürth gesagt" nimmt den letzten Satz und macht ihn in Hürth — ohne KI', /Bezieht sich auf/.test(k1) && /Wasserspender auffüllen ist erledigt in Hürth/.test(k1) && /Abgehakt/.test(k1) && (await p.evaluate(() => window.__ki.length)) === 0, k0.slice(0, 120) + ' || ' + k1.slice(0, 300));
+    await sag('ich habe Geräte desinfizieren in Hürth erledigt');
+    const k2 = await letzte();
+    pruefe('„ich habe Geräte desinfizieren in Hürth erledigt": „ich" und das Studio stören die Suche nicht', /Abgehakt/.test(k2) && /Geräte desinfizieren/.test(k2) && !/ich Geräte/.test(k2), k2.slice(0, 300));
+    await sag('und wie lange dauert das?');
+    const d = await p.evaluate(() => window.__ki[window.__ki.length - 1]);
+    pruefe('Was an die KI geht, trägt den Verlauf mit (die letzten Sätze und was herauskam, höchstens 4)', d && Array.isArray(d.verlauf) && d.verlauf.length >= 2 && d.verlauf.length <= 4 &&
+      d.verlauf.some(x => /Geräte desinfizieren in Hürth/.test(x.f)) && d.verlauf.every(x => typeof x.a === 'string') && !d.verlauf.some(x => /wie lange dauert/.test(x.f)), JSON.stringify(d && d.verlauf));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await zu(p);
   }
 

@@ -46,6 +46,13 @@ console.log('── Rückfrage, mehrere Aufträge, Ton (20.10.2026) ──');
   pruefe('mehrere Aufträge: höchstens 3 gelesen, die Frage fällt heraus', zwei && zwei.length === 2 && zwei[1].was === 'Handtücher', zwei);
   pruefe('nur ein gültiger Auftrag → kein Mehrfach', M({ befehle: [{ typ: 'abhaken', bereich: 'putzplan', was: 'Klo' }, { typ: 'keins' }] }, RF) === null);
   pruefe('ohne befehle → kein Mehrfach', M({ typ: 'abhaken' }, RF) === null);
+  /* Verlauf (20.10.2026, „er kann nicht auf vorherige nachrichten
+     eingehen"): höchstens vier Wechsel, gekürzt, nur Hintergrund. */
+  const VT = __intern.gehirnVerlaufText;
+  pruefe('Verlauf: ohne Liste kein Text', VT() === '' && VT('x') === '' && VT([{ a: 'nur Antwort' }]) === '');
+  const vt = VT([1, 2, 3, 4, 5, 6].map(n => ({ f: 'Satz ' + n + ' ' + 'x'.repeat(400), a: 'Ergebnis ' + n })));
+  pruefe('Verlauf: nur die letzten vier, jeder Satz gekürzt, als Hintergrund markiert und mit Auftrag zum Ergänzen',
+    !/Satz 2 /.test(vt) && /Satz 3 /.test(vt) && /Satz 6 /.test(vt) && !/x{201}/.test(vt) && /NUR Hintergrund/.test(vt) && /"frage":"die Frage als vollständiger Satz/.test(vt), vt.slice(0, 160));
   const A = __intern.gehirnAuftrag;
   pruefe('Vorname und Ton gehen an das Gehirn, Ton nur locker/sachlich', A({ text: 'x', ton: 'sachlich' }, { name: 'Lea Meier' }).body.vorname === 'Lea' &&
     A({ text: 'x', ton: 'sachlich' }, { name: 'Lea' }).body.ton === 'sachlich' && A({ text: 'x', ton: 'frech' }, { name: 'Lea' }).body.ton === 'locker');
