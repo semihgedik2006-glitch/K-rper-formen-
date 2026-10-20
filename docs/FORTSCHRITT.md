@@ -16354,3 +16354,51 @@ Grundlage ist der zitierte Wunsch. „geh zum putzplan" prüft, dass die
 Seite weiter erreichbar ist.
 
 **Nicht geprüft:** Vibration und Klang nur als Aufruf, echte Geräte nicht.
+
+
+## Runde 162 — Jarvis Etappe 2: Briefing, Kacheln, mehrere Aufträge, Rückfrage, Quellen (20.10.2026)
+
+Fortsetzung von Runde 161 („mach alles davon").
+
+**Lage im Gerät.** `gehirnLageZahlen` rechnet Aufgaben (offen,
+überfällig), Putzplan und Material aus dem Speicher der App; nur Dienst
+und defekte Geräte werden gelesen — höchstens sechs Studios, alle fünf
+Minuten einmal (`gehirnLageLaden`). Nichts davon geht an eine KI.
+
+**Morgen-Briefing** im leeren Gespräch, einmal am Tag beim ersten
+Öffnen vorgelesen (gemerkt je Gerät unter `kf_jv_brief`, nur mit Ton).
+**Kacheln „Heute im Studio"** neben dem Kern; ein Tipp holt das
+Mini-Fenster ohne Satz und ohne KI (`gehirnMiniDirekt`). Die Kacheln
+werden nur neu geschrieben, wenn sich ihr Inhalt ändert — sonst lief
+das Einblenden beim Hochfahren bei jedem Nachladen neu an. Auf dem
+Handy unter 740 px Höhe weg, damit das Gespräch Platz behält.
+
+**Mehrere Aufträge.** Im Schnellweg wird zuerst geteilt („und", „,",
+„;", „sowie", „danach") — aber nur, wenn JEDER Teil für sich sicher
+erkannt wird; sonst der ganze Satz wie bisher. Vorher wurde „Spiegel
+ist sauber und Klo ist sauber" als EIN Abhaken mit zwei Treffern zur
+Auswahl gelesen. Über die KI: `{"befehle":[…]}`, höchstens drei, jeder
+einzeln geprüft (`gehirnMehrfach`); Fragen fallen heraus. Jeder
+weitere Auftrag bekommt eine eigene Karte mit „(2 von 3)".
+
+**Rückfrage.** Neuer Typ `rueckfrage` mit 2–3 Optionen als ganze
+Sätze; ein Tipp schickt die Option durch denselben Weg. Ausgeführt wird
+dadurch nichts direkt.
+
+**Quellen und „Gelernt!".** Worker 2.8 nennt zu jeder Antwort Thema und
+Auszug der Wissenseinträge und markiert solche aus „Offene Frage N".
+Die App zeigt „Woher weiß ich das?" zum Aufklappen. Dazu schickt die App
+den Ton (locker/sachlich) und die Function den Vornamen — der Worker
+baut daraus die Persönlichkeit der Antwort.
+
+**Rückgängig im Gespräch** läuft jetzt auch als 10-s-Countdown.
+
+**Geprüft:** test-gehirn Abschnitt 12d (Briefing, einmal am Tag
+vorgelesen, Kacheln, Kachel ohne KI, zwei Aufträge im Schnellweg mit
+zwei Schreibvorgängen, zwei Aufträge über die KI, Rückfrage, Quellen
+und Gelernt, Ton „sachlich"), Abschnitt 13 (Kacheln ≥ 44 × 44),
+test-gehirn-aktion (Rückfrage, Mehrfach, Vorname/Ton), Worker-Prüfung
+(Quellen, Gelernt, Ton im Auftrag an die KI).
+
+**Nicht geprüft:** Worker 2.8 ist erst wirksam, wenn er eingespielt ist
+— bis dahin fehlen nur „Woher weiß ich das?" und der Vorname.

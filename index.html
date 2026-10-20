@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SOA2E0D/42FqXm9e7GM0cyt2jh1EjphSkQVjEL7DXMo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-tI0JxezvCWQAkJxBH9XgMHUTbx+ZjJcUWjzZgCLV2aY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5526,6 +5526,42 @@ body.jv-offen{overflow:hidden}
   .jarvis.jv-z-denkt .jv-paket i:nth-child(3){animation-delay:.6s}
 }
 @keyframes jvPaket{to{transform:translate3d(52px,0,0)}}
+/* Morgen-Briefing im leeren Verlauf (20.10.2026) */
+.jv-brief{list-style:none;margin:0 auto var(--s16);padding:0;max-width:440px;display:flex;flex-direction:column;gap:var(--s6);text-align:left}
+.jv-brief li{display:flex;align-items:center;gap:var(--s8);padding:var(--s6) var(--s12);border-radius:var(--r-sm);
+  border:1px solid rgba(var(--gm-rgb),.35);background:rgba(var(--gm-rgb),.08);font-size:var(--t-sm);color:var(--text)}
+.jv-brief li .sym{width:16px;height:16px;color:var(--gm);flex:0 0 auto}
+.jarvis.jv-boot .jv-brief li{animation:jvSchritt .45s cubic-bezier(.2,.8,.2,1) backwards}
+.jarvis.jv-boot .jv-brief li:nth-child(2){animation-delay:.1s}
+.jarvis.jv-boot .jv-brief li:nth-child(3){animation-delay:.2s}
+.jarvis.jv-boot .jv-brief li:nth-child(4){animation-delay:.3s}
+.jarvis.jv-boot .jv-brief li:nth-child(5){animation-delay:.4s}
+/* „Heute im Studio": Kacheln neben dem Kern, ein Tipp holt das Mini-Fenster */
+.jv-kacheln{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s6);width:100%;max-width:340px}
+.jv-kl{--gm:var(--jv-cyan);--gm-rgb:var(--jv-rgb);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--s2);
+  min-width:52px;min-height:52px;padding:var(--s4) var(--s6);border-radius:var(--r-sm);border:1px solid rgba(var(--gm-rgb),.45);
+  background:rgba(var(--gm-rgb),.08);color:var(--text);font:inherit;cursor:pointer;
+  transition:transform .15s ease, background-color .2s ease, border-color .2s ease}
+.jv-kl .sym{width:16px;height:16px;color:var(--gm)}
+.jv-kl b{font-family:var(--jv-schrift);font-size:var(--t-sm);line-height:var(--lh-1)}
+.jv-kl span{display:none;font-size:var(--t-2xs);color:var(--text-2);letter-spacing:var(--ls-s)}
+.jv-kl:hover{background:rgba(var(--gm-rgb),.18);border-color:var(--gm)}
+.jv-kl:active{transform:scale(.94)}
+.jv-kl:focus-visible{outline:2px solid var(--gm);outline-offset:2px}
+.jv-kl.warn b{color:var(--warm-tx)}
+.jv-kl.bad b{color:var(--danger-tx)}
+.jarvis.jv-boot .jv-kl{animation:jvRechtsAuf .5s cubic-bezier(.2,.8,.2,1) backwards}
+.jarvis.jv-boot .jv-kl:nth-child(2){animation-delay:.06s}
+.jarvis.jv-boot .jv-kl:nth-child(3){animation-delay:.12s}
+.jarvis.jv-boot .jv-kl:nth-child(4){animation-delay:.18s}
+.jarvis.jv-boot .jv-kl:nth-child(5){animation-delay:.24s}
+@media (max-width:1099px) and (max-height:740px){ .jv-kacheln{display:none} }
+@media (min-width:1100px){
+  .jv-kacheln{display:grid;grid-template-columns:repeat(5, 1fr);max-width:none}
+  .jv-kl{min-height:64px}
+  .jv-kl span{display:block}
+}
+@media (prefers-reduced-motion:reduce){ .jarvis.jv-boot .jv-brief li,.jarvis.jv-boot .jv-kl{animation:none} .jv-kl{transition:none} }
 /* Leerer Verlauf: Begrüssung und Vorschläge zum Antippen */
 .jv-leer{margin:auto 0;padding:var(--s16) 0;text-align:center}
 .jv-gruss{margin:0 0 var(--s6);font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);line-height:var(--lh-eng);
@@ -5687,10 +5723,32 @@ body.jv-offen{overflow:hidden}
   animation:gmCountdown 10s linear forwards;animation-delay:var(--rest,0ms)}
 @keyframes gmCountdown{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .gm-klein{display:flex;align-items:center;gap:var(--s8);margin-top:var(--s8)}
+.ga-rueck-zeit{position:relative;overflow:hidden}
+.ga-rueck-zeit::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--accent);transform-origin:0 50%;pointer-events:none;
+  animation:gmCountdown 10s linear forwards;animation-delay:var(--rest,0ms)}
+@media (prefers-reduced-motion:reduce){ .ga-rueck-zeit::after{animation:none;display:none} }
 .gm-klein .btn{min-height:44px;border-color:rgba(var(--gm-rgb),.5)}
 .gm-fenster.rein{animation:gmAuf .55s cubic-bezier(.2,.9,.25,1.1) backwards;animation-delay:var(--rein,0ms);transform-origin:50% 0}
 @keyframes gmAuf{0%{opacity:0;transform:scale(.92,.2)}60%{opacity:1;transform:scale(1.01,1.02)}100%{transform:none}}
 .ga-spruch{margin:0 0 var(--s6);font-size:var(--t-sm);color:var(--text-2)}
+/* Rückfrage zum Antippen, Quellen, „Gelernt!" (20.10.2026) */
+.ga-rueckfragen{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s8)}
+.ga-rueckfragen .btn{min-height:44px}
+.ga-quellen{margin-top:var(--s8);border-top:1px dashed var(--line-2);padding-top:var(--s4)}
+.ga-quellen summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-size:var(--t-xs);font-weight:700;color:var(--accent-d);list-style:none}
+.ga-quellen summary::-webkit-details-marker{display:none}
+.ga-quellen summary::before{content:"";width:8px;height:8px;margin-right:var(--s8);border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  transform:rotate(-45deg);transition:transform .2s ease}
+.ga-quellen[open] summary::before{transform:rotate(45deg)}
+.ga-quellen ul{list-style:none;margin:0;padding:0 0 var(--s4);display:flex;flex-direction:column;gap:var(--s8)}
+.ga-quellen li{padding:var(--s8) var(--s12);border-radius:var(--r-sm);background:rgba(var(--akz-rgb),.07);border-left:2px solid var(--accent);font-size:var(--t-xs);color:var(--text-2)}
+.ga-quellen li b{display:block;color:var(--text);font-size:var(--t-sm)}
+.ga-quellen[open] li{animation:gmZeile .35s cubic-bezier(.2,.8,.2,1) backwards}
+.ga-quellen[open] li:nth-child(2){animation-delay:.07s}
+.ga-quellen[open] li:nth-child(3){animation-delay:.14s}
+.hilfe-marke.gelernt{background:var(--f-ok);color:var(--ok-tx);border-color:var(--k-ok)}
+.hilfe-marke.gelernt.rein{animation:gmPop .5s cubic-bezier(.3,1.6,.5,1) backwards;animation-delay:var(--rein,0ms)}
+@media (prefers-reduced-motion:reduce){ .ga-quellen[open] li,.hilfe-marke.gelernt.rein{animation:none} .ga-quellen summary::before{transition:none} }
 .jarvis .ga-spruch{color:var(--jv-cyan);font-family:var(--jv-schrift);font-size:var(--t-xs)}
 @media (prefers-reduced-motion:reduce){
   .gm-zeile.rein,.gm-zeile.gm-puls,.gm-zeile.gm-puls .gm-haken i,.gm-zeile.gm-puls .gm-haken[aria-pressed="true"] svg,.gm-fenster.rein{animation:none}
@@ -11562,6 +11620,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
       <span class="jv-paket" aria-hidden="true"><i></i><i></i><i></i></span>
       <div class="jv-eq" aria-hidden="true"><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div>
       <p class="jv-status" id="jarvisStatus" role="status">Bereit. Frag mich — oder sag, was ich tun soll.</p>
+      <div class="jv-kacheln" id="jarvisKacheln" role="group" aria-label="Heute im Studio"></div>
       <dl class="jv-werte">
         <div><dt>Zeit</dt><dd id="jarvisUhr">--:--:--</dd></div>
         <div><dt>Studio</dt><dd id="jarvisOrt">—</dd></div>
@@ -19539,6 +19598,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-20-jarvis-briefing', datum:'20.10.2026', titel:'Jarvis: Briefing, Kacheln und mehrere Aufträge auf einmal', wo:'home', punkte:[
+    'Beim ersten Öffnen am Tag begrüsst dich Jarvis mit einem kurzen Briefing: wer Dienst hat, was offen und überfällig ist, was fehlt oder defekt ist – auf Wunsch vorgelesen.',
+    'Neben dem Kern stehen jetzt Kacheln „Heute im Studio". Ein Tipp holt Aufgaben, Putzplan, Dienst, Material oder Geräte als Mini-Fenster ins Gespräch.',
+    'Mehrere Aufträge in einem Satz klappen jetzt: „Spiegel ist sauber und Klo ist sauber". Ist etwas nicht eindeutig, fragt Jarvis zurück und du tippst einfach an, was du meinst.',
+    'Unter Antworten aus dem Studio-Wissen steht „Woher weiß ich das?" – und „Gelernt!", wenn die Antwort aus einer Frage stammt, die vorher offen war.' ] },
   { id:'2026-10-20-jarvis-mini', datum:'20.10.2026', titel:'Jarvis holt Putzplan & Co. als Mini-Fenster ins Gespräch', wo:'home', punkte:[
     'Sagst du „Öffne den Putzplan", springt die App nicht mehr weg: der Putzplan erscheint als buntes Mini-Fenster direkt im Gespräch – zum Abhaken mit einem Tipp. Genauso Aufgaben, Dienst heute, Material und Geräte, jedes in seiner Farbe.',
     'Nach dem Abhaken läuft 10 Sekunden lang ein „Rückgängig" mit. Ist der Putzplan komplett, gibt es Konfetti. Willst du doch die ganze Seite: „Ganz öffnen ›" oder „geh zum Putzplan".',
@@ -24181,11 +24245,99 @@ function gehirnRein(obj, feld){
   return { k:' rein', s:' style="--rein:'+(-alt)+'ms"' };
 }
 var JV_VORSCHLAEGE=['Wer hat heute Dienst?','Was ist heute offen?','Öffne den Putzplan','Wie wasche ich die Westen?'];
-function jvLeerHTML(){
+/* ── Lage: Morgen-Briefing und „Heute im Studio" (20.10.2026) ────────
+   Gerechnet im Gerät aus dem, was die App ohnehin geladen hat; nur
+   Dienst und defekte Geräte werden gelesen (höchstens 6 Studios, alle
+   5 Minuten einmal). Nichts davon geht an eine KI. */
+var _gLage={ zeit:0, dienst:null, defekt:null, laedt:null };
+function gehirnLageLaden(){
+  if(_gLage.laedt) return _gLage.laedt;
+  if(Date.now()-_gLage.zeit<300000) return Promise.resolve();
+  var keys=gehirnMeineKeys().slice(0,6), heute=ymd(new Date());
+  if(!keys.length) return Promise.resolve();
+  _gLage.laedt=Promise.all([
+    Promise.all(keys.map(function(k){ return S('studios').doc(k).collection('shifts').where('date','==',heute).get()
+      .then(function(sn){ return sn.docs.map(function(d){ return String(d.data().name||'').split(' ')[0]; }).filter(Boolean); }).catch(function(){ return []; }); })),
+    Promise.all(keys.map(function(k){ return S('studios').doc(k).collection('devices').get()
+      .then(function(sn){ return sn.docs.filter(function(d){ return d.data().status==='defekt'; }).length; }).catch(function(){ return 0; }); }))
+  ]).then(function(r){
+    var namen=[]; r[0].forEach(function(l){ l.forEach(function(n){ if(namen.indexOf(n)<0) namen.push(n); }); });
+    _gLage.dienst=namen; _gLage.defekt=r[1].reduce(function(a,b){ return a+b; }, 0); _gLage.zeit=Date.now();
+  }).then(function(){ _gLage.laedt=null; if(jarvisOffen()){ jvKachelnZeichnen(); if(!_gVerlauf.length) gehirnZeichnen(); } },
+    function(){ _gLage.laedt=null; });
+  return _gLage.laedt;
+}
+function gehirnLageZahlen(){
+  var keys=gehirnMeineKeys(), jetzt=Date.now(), z={ putz:0, aufg:0, ueber:0, mat:0, dienst:_gLage.dienst, defekt:_gLage.defekt };
+  keys.forEach(function(k){
+    (cachedClean[k]||[]).forEach(function(t){ if(!isDone(t) && !isArchived(t) && !ppPausiert(t)) z.putz++; });
+    (cachedTodos[k]||[]).forEach(function(t){ if(!isDone(t) && !isArchived(t)){ z.aufg++; if(t.due && t.due<jetzt) z.ueber++; } });
+    (_invAll[k]||[]).forEach(function(it){ if(itemNeed(it)>0) z.mat++; });
+  });
+  return z;
+}
+function gehirnBriefing(){
+  var z=gehirnLageZahlen(), l=[];
+  if(z.dienst && z.dienst.length) l.push(['team', 'Heute im Dienst: '+z.dienst.slice(0,5).join(', ')+(z.dienst.length>5 ? ' und '+(z.dienst.length-5)+' weitere' : '')]);
+  if(z.aufg) l.push(['todos', z.aufg+(z.aufg===1 ? ' Aufgabe offen' : ' Aufgaben offen')+(z.ueber ? ', '+z.ueber+' überfällig' : '')]);
+  if(z.putz) l.push(['putzplan', 'Putzplan: '+z.putz+' offen']);
+  if(z.mat) l.push(['material', 'Material: '+z.mat+(z.mat===1 ? ' Artikel fehlt' : ' Artikel fehlen')]);
+  if(z.defekt) l.push(['geraete', z.defekt+(z.defekt===1 ? ' Gerät defekt' : ' Geräte defekt')]);
+  return l;
+}
+function jvGruss(){
   var h=new Date().getHours();
-  var gruss=(h<5 || h>=18) ? 'Guten Abend' : (h<11 ? 'Guten Morgen' : 'Hallo');
-  var vorname=String((typeof session!=='undefined' && session && session.name) || '').split(' ')[0];
-  return '<div class="jv-leer"><p class="jv-gruss">'+esc(gruss+(vorname ? ', '+vorname : ''))+'.</p>'+
+  return (h<5 || h>=18) ? 'Guten Abend' : (h<11 ? 'Guten Morgen' : 'Hallo');
+}
+function jvKachelnZeichnen(){
+  var box=$('jarvisKacheln'); if(!box) return;
+  var z=gehirnLageZahlen();
+  var K=[['todos', z.aufg, 'Aufgaben', z.ueber ? 'bad' : ''], ['putzplan', z.putz, 'Putzplan', ''], ['team', z.dienst ? z.dienst.length : '–', 'Dienst', ''],
+    ['material', z.mat, 'Material', z.mat ? 'warn' : ''], ['geraete', z.defekt===null ? '–' : z.defekt, 'Defekt', z.defekt ? 'bad' : '']];
+  var html=K.filter(function(x){ return ansichtAn(x[0]); }).map(function(x){
+    var c=GEHIRN_MINI[x[0]];
+    return '<button type="button" class="jv-kl'+(x[3] ? ' '+x[3] : '')+'" data-jvmini="'+x[0]+'" style="--gm:'+c.farbe+';--gm-rgb:'+c.rgb+'" '+
+      'aria-label="'+esc(x[2]+': '+x[1])+' — als Mini-Fenster öffnen">'+ikon(c.ikon)+'<b>'+esc(String(x[1]))+'</b><span>'+esc(x[2])+'</span></button>';
+  }).join('');
+  /* Nur neu schreiben, wenn sich etwas geändert hat — sonst liefe das
+     Einblenden beim Hochfahren jedes Mal neu an. */
+  if(box._html===html) return;
+  box._html=html; box.innerHTML=html;
+  box.querySelectorAll('[data-jvmini]').forEach(function(b){ b.addEventListener('click', function(){ gehirnMiniDirekt(b.getAttribute('data-jvmini')); }); });
+}
+/* Kachel oder Briefing angetippt: das Mini-Fenster ohne KI und ohne Satz. */
+function gehirnMiniDirekt(ziel){
+  if(_gLaeuft || !GEHIRN_MINI[ziel]) return;
+  var c=GEHIRN_MINI[ziel];
+  var v={ text:c.name, art:'aktion', schritte:[], _z:Date.now(), direkt:true,
+    vorschlag:{ typ:'navigation', ziel:ziel, zielName:c.name, studioKey:'', studioName:'' } };
+  _gVerlauf.push(v);
+  Promise.resolve(gehirnSofort(v)).then(function(){
+    if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
+    gehirnVerlaufSichern();
+  });
+  gehirnZeichnen(); gehirnNachUnten(); tick(8);
+}
+/* Einmal am Tag beim ersten Öffnen: das Briefing vorlesen (wenn Ton an). */
+function jvBriefingSprechen(){
+  var tag=ymd(new Date());
+  try{ if(localStorage.getItem('kf_jv_brief')===tag) return; }catch(e){ return; }
+  Promise.race([gehirnLageLaden(), new Promise(function(r){ setTimeout(r, 2000); })]).then(function(){
+    if(!jarvisOffen() || _gVerlauf.length || !_jvTonAn) return;
+    var l=gehirnBriefing(), n=gehirnVorname();
+    var text=jvGruss()+(n ? ', '+n : '')+'! '+(l.length ? l.map(function(x){ return x[1]; }).join('. ')+'.' : 'Alles ruhig — nichts offen.');
+    try{ localStorage.setItem('kf_jv_brief', tag); }catch(e){}
+    jvSprechen(text);
+  });
+}
+function jvLeerHTML(){
+  var vorname=gehirnVorname();
+  var l=gehirnBriefing();
+  var brief='<ul class="jv-brief" aria-label="Heute">'+(l.length ? l.map(function(x){
+    var c=GEHIRN_MINI[x[0]];
+    return '<li style="--gm:'+c.farbe+';--gm-rgb:'+c.rgb+'">'+ikon(c.ikon)+'<span>'+esc(x[1])+'</span></li>';
+  }).join('') : '<li style="--gm:#5FE1FF;--gm-rgb:95,225,255">'+ikon('hakenKreis')+'<span>Alles ruhig — nichts offen.</span></li>')+'</ul>';
+  return '<div class="jv-leer"><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
     '<p class="jv-unter">Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
     '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){ return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'">'+esc(t)+'</button>'; }).join('')+'</div></div>';
 }
@@ -24225,7 +24377,9 @@ function gehirnZeichnenIn(box, tippen){
           ? '<span class="hilfe-marke">Aus dem Studio-Wissen</span>'
           : '<span class="hilfe-marke grau">Noch nicht geprüft · ging an Semih'+
             (v.offen ? ' (Nr. '+esc(String(v.offen))+')' : '')+'</span>')+
+        gehirnGelerntHTML(v)+
         '</div>'+
+        gehirnQuellenHTML(v)+
         (ziele.length ? '<div class="gehirn-ziele">'+ziele.map(function(z){
           return '<button type="button" class="btn btn-ghost btn-sm" data-gziel="'+esc(z.view)+'">Zu '+esc(z.name)+' ›</button>';
         }).join('')+'</div>' : '')+
@@ -24252,6 +24406,13 @@ function gehirnZeichnenIn(box, tippen){
   });
   box.querySelectorAll('[data-grueck]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnAbhakenRueck(+b.getAttribute('data-grueck'), b); });
+  });
+  box.querySelectorAll('[data-grf]').forEach(function(b){
+    b.addEventListener('click', function(){
+      if(_gLaeuft) return;
+      var feld = box.id==='jarvisVerlauf' ? 'jarvisFeld' : 'gehirnFeld', f=$(feld);
+      if(f){ f.value=b.getAttribute('data-grf'); gehirnSenden('auto', feld); }
+    });
   });
   box.querySelectorAll('[data-gmhaken]').forEach(function(b){
     var t=b.getAttribute('data-gmhaken'), cut=t.indexOf('|');
@@ -24291,6 +24452,22 @@ function gehirnZeichnenIn(box, tippen){
    Beispiel fürs eigene Training; „Stimmt nicht" geht als offene Frage
    an Semih — wie „falsch" bei WhatsApp. Nur, wenn das Gehirn die
    Nummer der Antwort mitgeschickt hat. */
+/* „Woher weiß ich das?" und „Gelernt!" (20.10.2026). Das Gehirn nennt
+   Thema und Auszug der Wissenseinträge, aus denen die Antwort kommt;
+   stammt einer aus einer früher offenen Frage, die Semih beantwortet
+   hat, steht „Gelernt!" daneben. */
+function gehirnQuellenHTML(v){
+  var q=(v.quellen||[]).filter(function(x){ return x && x.thema; });
+  if(!q.length) return '';
+  return '<details class="ga-quellen"><summary>Woher weiß ich das?</summary><ul>'+q.map(function(x){
+    return '<li><b>'+esc(x.thema)+'</b>'+esc(x.auszug||'')+'</li>';
+  }).join('')+'</ul></details>';
+}
+function gehirnGelerntHTML(v){
+  if(!(v.quellen||[]).some(function(x){ return x && x.gelernt; })) return '';
+  var r=gehirnRein(v, '_abG');
+  return '<span class="hilfe-marke gelernt'+r.k+'"'+r.s+'>Gelernt! Das wusste ich vorher nicht</span>';
+}
 function gehirnDaumenHTML(v, i){
   if(!v.nachricht) return '';
   if(v.bewertet){
@@ -24341,11 +24518,21 @@ function gehirnSenden(art, feldId){
   /* Schnellweg (19.10.2026, „die ki braucht echt lang"): was die App
      selbst sicher erkennt, passiert ohne KI — unter einer Sekunde. */
   if(art==='auto'){
-    var schnell=gehirnSchnell(text);
+    var schnell=null, schnellWeitere=[];
+    /* Mehrere Aufträge in einem Satz, die das Gerät alle selbst kennt
+       („Spiegel ist sauber und Klo ist sauber"): zuerst geteilt — aber
+       nur, wenn JEDER Teil für sich sicher erkannt wird. Sonst der ganze
+       Satz wie bisher, und was das Gerät nicht kennt, entscheidet die KI. */
+    var teile=text.split(/\s*(?:,|;|\bund\b|\bsowie\b|\bdanach\b)\s*/i).map(function(x){ return x.trim(); }).filter(Boolean);
+    if(teile.length>=2 && teile.length<=3){
+      var erkannt=teile.map(gehirnSchnell);
+      if(erkannt.every(Boolean)){ schnell=erkannt[0]; schnellWeitere=erkannt.slice(1).map(function(s, n){ return { s:s, text:teile[n+1] }; }); }
+    }
+    if(!schnell) schnell=gehirnSchnell(text);
     if(schnell){
       v.art='aktion'; v.vorschlag=schnell; v.schnell=true;
-      gehirnSchritt(v, 'Erkannt: '+gehirnArtName(schnell), true);
-      Promise.resolve(gehirnSofort(v)).catch(function(err){ v.fehler=errMsg(err); }).then(function(){
+      gehirnSchritt(v, 'Erkannt: '+gehirnArtName(schnell)+(schnellWeitere.length ? ' (1 von '+(schnellWeitere.length+1)+')' : ''), true);
+      Promise.resolve(gehirnSofort(v)).then(function(){ return gehirnWeitere(schnellWeitere); }).catch(function(err){ v.fehler=errMsg(err); }).then(function(){
         v.laeuft=false; _gLaeuft=false;
         if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
         gehirnVerlaufSichern();
@@ -24355,16 +24542,17 @@ function gehirnSenden(art, feldId){
   }
   if(art==='auto') gehirnSchritt(v, 'Frage das Studio-Gehirn …');
   var name = art==='auto' ? 'gehirnAktion' : 'gehirnFrage';
-  var daten = art==='auto' ? { text:text, kontext:gehirnKontext() } : { art:art, text:text };
+  var daten = art==='auto' ? { text:text, kontext:gehirnKontext(), ton:gehirnTonfall() } : { art:art, text:text, ton:gehirnTonfall() };
   firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
     .then(function(r){
       var d=(r && r.data) || {};
-      if(art==='auto' && d.art==='frage'){ v.art='frage'; v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; v.nachricht=d.nachricht||null;
+      if(art==='auto' && d.art==='frage'){ v.art='frage'; v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; v.nachricht=d.nachricht||null; v.quellen=d.quellen||[];
         gehirnSchritt(v, d.abgedeckt ? 'Im Studio-Wissen gefunden' : 'Erste Einschätzung — die Frage geht an Semih', true); return; }
       if(art==='auto'){ v.art='aktion'; v.vorschlag=d.vorschlag||null; v.hinweis=d.hinweis||'';
-        gehirnSchritt(v, d.vorschlag ? 'Erkannt: '+gehirnArtName(d.vorschlag) : 'Nichts zum Ausführen gefunden', true);
-        return gehirnSofort(v); }
-      else { v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; v.nachricht=d.nachricht||null; }
+        var weitere=Array.isArray(d.weitere) ? d.weitere.slice(0,2) : [];
+        gehirnSchritt(v, d.vorschlag ? 'Erkannt: '+gehirnArtName(d.vorschlag)+(weitere.length ? ' (1 von '+(weitere.length+1)+')' : '') : 'Nichts zum Ausführen gefunden', true);
+        return Promise.resolve(gehirnSofort(v)).then(function(){ return gehirnWeitere(weitere.map(function(s){ return { s:s }; })); }); }
+      else { v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; v.nachricht=d.nachricht||null; v.quellen=d.quellen||[]; }
     })
     .catch(function(err){ v.fehler=errMsg(err); })
     .then(function(){
@@ -24372,6 +24560,24 @@ function gehirnSenden(art, feldId){
       if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
       gehirnVerlaufSichern();
     });
+}
+/* Weitere Aufträge aus demselben Satz: nacheinander, jeder mit eigener
+   Karte und eigenen Schritten, durch dieselbe Ausführung. */
+function gehirnWeitere(liste){
+  return (liste||[]).reduce(function(kette, x, n){
+    return kette.then(function(){
+      var nv={ text:'… und '+(x.text || gehirnArtName(x.s)), art:'aktion', vorschlag:x.s, schritte:[], _z:Date.now(), folge:true };
+      _gVerlauf.push(nv);
+      gehirnSchritt(nv, 'Erkannt: '+gehirnArtName(x.s)+' ('+(n+2)+' von '+(liste.length+1)+')', true);
+      if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
+      return Promise.resolve(gehirnSofort(nv)).catch(function(e){ nv.fehler=errMsg(e); });
+    });
+  }, Promise.resolve());
+}
+/* Ton der Antworten: „locker" (Standard) oder „sachlich" — je Gerät
+   wählbar (Persönlichkeit, Etappe 3). */
+function gehirnTonfall(){
+  try{ var p=JSON.parse(localStorage.getItem('kf_jv_persona')||'{}'); return p.ton==='sachlich' ? 'sachlich' : 'locker'; }catch(e){ return 'locker'; }
 }
 /* Am Ende kleben: die neueste Karte wächst noch (Schritte, Einblendung).
    Solange niemand selbst nach oben scrollt, bleibt der Verlauf unten. */
@@ -24409,6 +24615,10 @@ function gehirnVorschlagHTML(v, i){
       'Schreib es z. B. so: „Öffne den Putzplan", „Wer hat heute Dienst?" oder „Ich bin morgen krank".')+'</p>';
   }
   if(s.typ==='navigation') return v.mini ? gehirnMiniHTML(v, i) : gehirnNavHTML(v);
+  if(s.typ==='rueckfrage'){
+    return '<p class="ga-text">'+gehirnText(s.frage)+'</p><div class="ga-rueckfragen" role="group" aria-label="Was meinst du?">'+
+      (s.optionen||[]).map(function(o){ return '<button type="button" class="btn btn-ghost btn-sm" data-grf="'+esc(o)+'">'+esc(o)+'</button>'; }).join('')+'</div>';
+  }
   if(s.typ==='abfrage') return gehirnAbfrageHTML(v);
   if(s.typ==='abwesenheit' || s.typ==='uebergabe') return gehirnEintragHTML(v, i);
   if(s.typ==='idee') return gehirnIdeeHTML(v, i);
@@ -24583,6 +24793,7 @@ function gehirnSofort(v){
     return r;
   }
   if(s.typ==='defekt'){ gehirnSchritt(v, 'Suche Gerät „'+s.geraet+'" in '+s.studioName+' …', true); return gehirnDefektSuchen(v); }
+  if(s.typ==='rueckfrage'){ gehirnSchritt(v, 'Nicht ganz eindeutig — tipp an, was du meinst', true); return; }
   if(s.typ==='abwesenheit' || s.typ==='uebergabe' || s.typ==='aufgabe' || s.typ==='ankuendigung' || s.typ==='idee')
     gehirnSchritt(v, 'Vorschau fertig — gespeichert wird erst mit deinem Druck', true);
 }
@@ -24736,7 +24947,7 @@ function gehirnMiniHaken(i, id, rueck){
   if(done && !nachher.offen.length){
     v.spruch=gehirnSpruch('komplett', GEHIRN_MINI[m.ziel].name);
     gehirnStimmung('ok'); jvTon('komplett'); jvVibrieren([20,60,30]);
-    if(m.ziel==='putzplan' && !gehirnWenigBewegung() && typeof fireConfetti==='function') fireConfetti();
+    if(!gehirnWenigBewegung() && typeof fireConfetti==='function') fireConfetti();
   } else if(done){ gehirnStimmung('ok'); jvTon('fertig'); jvVibrieren([16]); }
   else { jvTon('schritt'); jvVibrieren([8]); }
   tick(10);
@@ -25128,6 +25339,10 @@ function gehirnAbhaken(v, x, btn){
   var arbeit=gehirnAbhakenSchreiben(x.b||v.vorschlag.bereich, x.k, x.t, true).then(function(){
     v.erledigt=x; v.angelegt='Abgehakt: '+(x.t.title||x.t.text||'Eintrag')+' ('+studioName(x.k)+')';
     v.spruch=gehirnSpruch('abgehakt');
+    /* Rückgängig mit Countdown (20.10.2026): 10 Sekunden, dann ist der
+       Knopf weg — wie im Mini-Fenster. */
+    v._rueckBis=Date.now()+GEHIRN_RUECK_MS;
+    setTimeout(function(){ if(gehirnSichtbar()) gehirnZeichnen(); }, GEHIRN_RUECK_MS+80);
     gehirnSchritt(v, 'Abgehakt ✓', true);
     v.jetzt=!gehirnWenigBewegung(); tick(12);
     if(gehirnSichtbar()) gehirnZeichnen();
@@ -25157,7 +25372,8 @@ function gehirnAbhakenHTML(v, i){
     return '<div class="gv-karte'+(v.erledigt ? ' gv-fertig' : '')+(v.jetzt ? ' gv-jetzt' : '')+'">'+
       '<div class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12"/>'+
       '<path d="M8 14.5l4 4 8-9"/></svg><span>'+esc(v.angelegt)+'</span></div>'+
-      '<div class="gv-knoepfe">'+(v.erledigt ? '<button type="button" class="btn btn-ghost btn-sm" data-grueck="'+i+'">Rückgängig</button>' : '')+
+      '<div class="gv-knoepfe">'+(v.erledigt && !(v._rueckBis && v._rueckBis<=Date.now()) ? '<button type="button" class="btn btn-ghost btn-sm ga-rueck-zeit" data-grueck="'+i+'"'+
+        (v._rueckBis ? ' style="--rest:'+(-(GEHIRN_RUECK_MS-(v._rueckBis-Date.now())))+'ms"' : '')+'>Rückgängig</button>' : '')+
       '<button type="button" class="btn btn-ghost btn-sm" data-gziel="'+ziel+'">Zum '+name+' ›</button></div></div>';
   }
   if(v.hinweis) return '<p class="ga-text">'+gehirnText(v.hinweis)+'</p>';
@@ -25277,7 +25493,7 @@ function gehirnSchritteHTML(v, laeuft){
     return '<li'+r.s+' class="'+(x.ok || !laeuft ? 'ok' : 'jetzt')+r.k+'"><span aria-hidden="true">'+(x.ok || !laeuft ? '✓' : '•')+'</span>'+esc(x.t)+'</li>';
   }).join('')+'</ol>';
 }
-var GEHIRN_ARTNAMEN={ navigation:'Fenster öffnen', abfrage:'nachschauen', abwesenheit:'Abwesenheit eintragen', uebergabe:'Übergabe schreiben',
+var GEHIRN_ARTNAMEN={ rueckfrage:'Rückfrage', navigation:'Fenster öffnen', abfrage:'nachschauen', abwesenheit:'Abwesenheit eintragen', uebergabe:'Übergabe schreiben',
   abhaken:'abhaken', defekt:'Defekt melden', aufgabe:'Aufgabe anlegen', ankuendigung:'Ankündigung', idee:'Idee an die Leitung', frage:'Frage' };
 function gehirnArtName(s){ return GEHIRN_ARTNAMEN[(s&&s.typ)||''] || 'Auftrag'; }
 function gehirnSichtbar(){ return currentView==='gehirn' || jarvisOffen(); }
@@ -25307,7 +25523,9 @@ function jarvisAuf(){
   document.body.classList.add('jv-offen');
   gehirnZeichnen();
   jvWerte(); jvUhrStart(); jvFeldStart();
+  jvKachelnZeichnen(); gehirnLageLaden();
   jvTon('auf');
+  setTimeout(jvBriefingSprechen, 1300);
   requestAnimationFrame(function(){ j.classList.add('da'); var f=$('jarvisFeld'); if(f && !('ontouchstart' in window)) f.focus(); gehirnNachUnten(); });
   tick(8);
 }
@@ -25449,8 +25667,9 @@ function jvZustand(){
       }
     }
   }
-  _jvWar={ laeuft:!!_gLaeuft, schritte:schr, n:_gVerlauf.length };
+  _jvWar={ laeuft:!!_gLaeuft, schritte:schr, n:_gVerlauf.length, kachelnBei:_jvWar.kachelnBei };
   jvWerte();
+  if(jarvisOffen() && !_gLaeuft && _jvWar.kachelnBei!==_gVerlauf.length){ _jvWar.kachelnBei=_gVerlauf.length; jvKachelnZeichnen(); }
 }
 function jvWerte(){
   if(!jarvisOffen()) return;
